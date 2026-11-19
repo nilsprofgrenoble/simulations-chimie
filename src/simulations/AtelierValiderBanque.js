@@ -2696,6 +2696,47 @@ export const PLAUSIBLES = [
       F('Pas cohérent : il faut peser 18,0 g, car 0,100 mol de glucose pèsent 18,0 g au total', 'Cette masse correspond à un litre de solution ; pour 500 mL, la quantité de glucose est 0,0500 mol et non 0,100 mol.'),
       F('Pas cohérent : 9,00 g est trop peu pour dissoudre dans 500 mL de solution', 'Une masse de 9,00 g dans 0,500 L fait 18,0 g/L, très en dessous de la solubilité du glucose (de l’ordre de 900 g/L) : tout se dissout.'),
     ] }),
+
+  P({ id: 'lewis1g-val-ammonium', domaine: 'Schéma de Lewis des molécules et des ions', niveau: 1, titre: 'Doublets de l’ion ammonium NH₄⁺', plausible: false,
+    enonce: 'Un élève cherche le nombre d’électrons de valence de l’ion ammonium NH₄⁺ (l’azote en a 5, chaque hydrogène 1). Il annonce : « il y a 9 électrons de valence, donc 4,5 doublets à placer ».',
+    reperes: [['Un doublet', 'contient 2 électrons : leur nombre est un entier'], ['Un cation', 'a perdu des électrons par rapport aux atomes seuls'], ['Électrons à répartir', 'se déduisent des électrons de valence des atomes et de la charge de l’ion']],
+    ver: 'Un nombre de doublets doit être entier : 4,5 doublets n’a pas de sens. L’élève n’a pas retiré l’électron perdu par l’ion (charge +1) : n_T = 9 − 1 = 8 électrons, soit 4 doublets.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il n’a pas retiré l’électron perdu par cet ion de charge +', 'Les atomes seuls apportent 5 + 4 × 1 = 9 électrons ; l’ion en a perdu un : n_T = 9 − 1 = 8 électrons, donc 4 doublets, un nombre entier.'),
+      F('il a ajouté l’électron de la charge au lieu de le retirer', 'Ajouter la charge donnerait 9 + 1 = 10 électrons, pas 9 : l’erreur n’est pas là, c’est la charge qui n’a pas été retirée.'),
+      F('il a compté N avec son numéro atomique Z au lieu de sa valence', 'Avec Z(N) = 7, on obtiendrait 7 + 4 − 1 = 10 électrons, pas 9 : l’erreur est de ne pas avoir retiré l’électron perdu.'),
+    ] }),
+  P({ id: 'lewis1g-val-diazote', domaine: 'Schéma de Lewis des molécules et des ions', niveau: 2, titre: 'Schéma de la molécule de diazote N₂', plausible: false,
+    enonce: 'Un élève propose pour N₂ le schéma N=N : une liaison double et un doublet non liant sur chaque atome d’azote. Il affirme que chaque atome N est bien entouré de 8 électrons.',
+    reperes: [['L’azote seul', 'a 5 électrons de valence'], ['L’octet', 'c’est 8 électrons autour d’un atome'], ['Compter autour d’un atome', '2 électrons par liaison (doublet partagé) et 2 par doublet non liant']],
+    ver: 'Autour de chaque N : 2 liaisons × 2 + 1 doublet non liant × 2 = 6 électrons, pas 8. Les 5 doublets de N₂ (n_T = 10) doivent être répartis en une liaison triple et un doublet non liant sur chaque N : 3 × 2 + 2 = 8.',
+    q2: 'Que penser de cette affirmation ?',
+    options: [
+      V('elle est fausse : chaque N n’a que 6 électrons autour de lui, pas 8', 'Il faut compter 2 électrons par liaison : 2 × 2 + 2 = 6. Avec une liaison triple, on obtient 3 × 2 + 2 = 8.'),
+      F('elle est juste : le schéma contient bien les 5 doublets de N₂', 'Le schéma ne contient que 2 + 1 + 1 = 4 doublets, alors que N₂ en compte 5 (n_T = 10) : autour de chaque N, il y a 2 × 2 + 2 = 6 électrons.'),
+      F('elle est juste : l’azote forme toujours deux liaisons dans une molécule', 'Il manque 8 − 5 = 3 électrons à l’azote : il forme trois liaisons, ici une liaison triple entre les deux atomes.'),
+    ] }),
+  P({ id: 'lewis1g-val-eau', domaine: 'Schéma de Lewis des molécules et des ions', niveau: 1, titre: 'Doublets de la molécule d’eau H₂O', plausible: true,
+    enonce: 'Un élève annonce pour l’eau H₂O (l’oxygène a 6 électrons de valence, chaque hydrogène 1) : « n_T = 8 électrons de valence, soit 4 doublets, dont 2 liants et 2 non liants ».',
+    reperes: [['Comptage', 'n_T = somme des électrons de valence ; n_D = n_T ÷ 2'], ['Chaque H', 'forme une liaison avec O et n’a pas de doublet non liant (duet)'], ['L’oxygène', 'doit avoir 8 électrons autour de lui']],
+    ver: 'n_T = 6 + 2 × 1 = 8 électrons et n_D = 4 doublets. Les deux liaisons O–H font 2 doublets liants ; il reste 2 doublets non liants, sur O (2 × 2 + 2 × 2 = 8 électrons autour de O). Le résultat est cohérent.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('cohérent : 4 doublets, dont 2 liants (O–H) et 2 non liants sur O', 'Autour de O : 2 liaisons × 2 + 2 doublets × 2 = 8 électrons ; autour de chaque H : 2 électrons.'),
+      F('pas cohérent : il devrait y avoir 4 doublets liants, un par électron', 'Un doublet contient deux électrons : 8 électrons font 4 doublets, et tous ne sont pas liants.'),
+      F('pas cohérent : chaque H devrait porter deux doublets non liants', 'Un atome H a déjà 2 électrons autour de lui grâce à la liaison avec O (duet) : il ne peut pas en porter davantage.'),
+    ] }),
+  P({ id: 'lewis1g-val-hydroxyde', domaine: 'Schéma de Lewis des molécules et des ions', niveau: 2, titre: 'Charge de l’ion hydroxyde HO⁻', plausible: false,
+    enonce: 'Un élève dessine l’ion hydroxyde HO⁻ : une liaison O–H, trois doublets non liants sur l’oxygène, et il place la charge − sur l’atome d’hydrogène.',
+    reperes: [['Charge d’un atome', 'électrons de valence de l’atome seul − électrons qu’il possède dans l’ion'], ['Électrons possédés', 'un par liaison, deux par doublet non liant'], ['Une charge', 'appartient à un atome précis, pas à une liaison']],
+    ver: 'H possède 1 électron dans l’ion, comme seul : il est neutre. L’oxygène en possède 7 alors qu’il en a 6 seul : un de plus, donc c’est lui qui porte la charge −.',
+    q2: 'Que penser de ce schéma ?',
+    options: [
+      V('la charge − va sur O, qui possède un électron de plus que l’atome O seul', 'Charge = électrons de valence seul − électrons possédés : pour O, 6 − 7 = −1 ; pour H, 1 − 1 = 0.'),
+      F('il est juste : H a gagné l’électron en plus dans sa liaison avec O', 'Dans une liaison covalente, le doublet est partagé : H possède 1 électron, comme seul, il est donc neutre.'),
+      F('la charge − devrait être sur la liaison O–H, partagée entre les deux atomes', 'Une charge appartient à un atome, calculée atome par atome ; une liaison est un doublet partagé, elle ne porte pas de charge entière.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────
