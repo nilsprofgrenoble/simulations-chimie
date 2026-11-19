@@ -1,7 +1,9 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi, Formule } from "../commun";
+import { puces } from "./Travail";
+import { FSens, FBilanP, FDTm, FU, FCroise, FContreEff, FBain, FHypo } from "./EchangeurSchemas";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 30;
@@ -327,7 +329,11 @@ export function SimulationEchangeur() {
   const [mode, setMode] = useState(() => modeOuverture('echangeur-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('echangeur-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('echangeur-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('echangeur-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('echangeur-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 1 ? g1 : g2, setGuide = parc === 1 ? setG1 : setG2;
   const [rg, setRg] = useEtatPersistant('echangeur-guide-reglage-v1', { go: false, contre: false, cst: false, gm: 'contre' });
   const [r, setR] = useState(() => ({ ...PRESETS.guide }));
   const [preset, setPreset] = useState('guide');
@@ -337,12 +343,13 @@ export function SimulationEchangeur() {
   const [typeDefi, setTypeDefi] = useState('U');
   const maj = o => { setR(x => ({ ...x, ...o })); setPreset(''); };
   // Retour au début du parcours : on remet l'échangeur du parcours dans son état de départ
-  useEffect(() => { if (guide.etape === 0) setRg({ go: false, contre: false, cst: false, gm: 'contre' }); }, [guide.etape, setRg]);
+  useEffect(() => { if (guide.etape === 0) setRg({ go: false, contre: false, cst: false, gm: 'contre' }); }, [guide.etape, parc, setRg]);
   const choisirPreset = k => { setPreset(k); if (PRESETS[k]) setR({ ...PRESETS[k] }); };
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const G = PRESETS.guide;
-  const iEt = id => ETAPES_IDS.indexOf(id);
+  // Rang d'une étape dans le parcours en cours ; -1 si elle appartient à un parcours précédent (déjà vue), Infinity si elle est dans un parcours suivant
+  const iEt = id => { const k = ORDRE_PARC[parc - 1].indexOf(id); return k >= 0 ? k : ORDRE_PARC.slice(0, parc - 1).some(l => l.includes(id)) ? -1 : Infinity; };
   const etape = guide.etape;
   const gMode = etape < iEt('contre') ? 'co' : etape < iEt('bain') ? (rg.contre ? 'contre' : 'co') : (rg.cst ? rg.gm : 'contre');
   const gCst = etape >= iEt('bain') && rg.cst;
@@ -357,7 +364,7 @@ export function SimulationEchangeur() {
     const TCSc = r1(sCt.TCS), TFSc = r1(sCt.TFS), d1c = r1(G.TCE - TFSc), d2c = r1(TCSc - G.TFE), dTmc = lmtd(d1c, d2c);
     return { TCS, TFS, QmF, QmC, PF, PC, d1, d2, dTm, S, U, TCSc, TFSc, d1c, d2c, dTmc, Pc: G.U * S * dTmc, Pco: G.U * S * dTm };
   })();
-  const ETAPES = [
+  const TOUTES = [
     { id: 'intro', titre: 'À quoi sert un échangeur ?', focus: ['schema'],
       texte: <>Un échangeur thermique transfère de l’énergie d’un fluide <strong style={{ color: ROUGE }}>chaud</strong> à un fluide <strong style={{ color: BLEU }}>froid</strong>. Dans un échangeur <strong>coaxial</strong>, le fluide chaud circule dans le tube intérieur et l’eau froide dans l’enveloppe qui l’entoure.</>,
       tache: { type: 'qcm', q: 'Comment l’énergie passe-t-elle du fluide chaud au fluide froid ?',
@@ -372,6 +379,11 @@ export function SimulationEchangeur() {
       tache: { type: 'qcm', q: 'Comment circulent les deux fluides ?', options: ['Dans le même sens : c’est un échangeur à co-courant', 'En sens opposés : c’est un échangeur à contre-courant', 'On ne peut pas le savoir'], bonne: 0,
         expl: 'Les deux fluides entrent du même côté (à gauche) et ressortent du même côté (à droite) : c’est le co-courant.', indice: "Regardez le sens des flèches des deux fluides sur le schéma." } },
     { id: 'profils', titre: 'Les profils de température', focus: ['graphe'],
+      retenirTitre: 'À RETENIR : CO-COURANT ET CONTRE-COURANT',
+      retenir: <>
+        <FSens/>
+        {puces(<><strong>Co-courant</strong> : les deux fluides circulent dans le même sens.</>, <><strong>Contre-courant</strong> : ils circulent en sens opposés ; l’eau froide entre du côté où le fluide chaud sort.</>)}
+      </>,
       texte: <>Le graphique montre la température de chaque fluide <strong>tout le long</strong> de l’échangeur, de l’entrée du fluide chaud (x = 0) à l’autre extrémité (x = {G.L} m).</>,
       tache: { type: 'qcm', q: 'Le long de l’échangeur, l’écart de température entre le fluide chaud et le fluide froid…',
         options: ['diminue : il est grand à l’entrée et petit à la sortie', 'reste constant', 'augmente'], bonne: 0,
@@ -385,7 +397,6 @@ export function SimulationEchangeur() {
         pieges: [[G.QvF, 'C’est le débit en kg·h⁻¹ : il faut des kg·s⁻¹ (1 h = 3 600 s).'], [G.QvF / 60, '1 h = 3 600 s, et non 60 s.']],
         expl: `Q_mF = 100 kg·h⁻¹ / 3 600 s·h⁻¹ = ${nf(A.QmF)} kg·s⁻¹.`, indice: "Débit massique = masse d’eau recueillie ÷ durée." } },
     { id: 'PF', titre: 'La puissance reçue par l’eau froide', focus: ['releve'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Puissance reçue par un fluide : <strong>P = Q<sub>m</sub> · C · (T<sub>sortie</sub> − T<sub>entrée</sub>)</strong>.</li><li>Débit massique en kg·s⁻¹ ; pour l’eau C = 4 180 J·kg⁻¹·K⁻¹.</li><li>Sans pertes, la puissance perdue par le fluide chaud est égale à celle reçue par le fluide froid.</li></ul></>,
       texte: <>Lisez T<Sub c="FS"/> dans le relevé (T<Sub c="FE"/> = {G.TFE} °C) et reprenez Q<Sub c="mF"/> calculé à l’étape précédente. L’eau froide reçoit la puissance P<Sub c="F"/> = Q<Sub c="mF"/> · C · (T<Sub c="FS"/> − T<Sub c="FE"/>), avec C = 4 180 J·kg⁻¹·K⁻¹.</>,
       tache: { type: 'num', q: 'Puissance P_F reçue par l’eau froide', unite: 'W', vrai: A.PF, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Relevé : T_FE = ${G.TFE} °C et T_FS = ${t1(A.TFS)} °C, donc T_FS − T_FE = ${t1(A.TFS - G.TFE)} K.`,
@@ -405,6 +416,12 @@ export function SimulationEchangeur() {
       tache: { type: 'qcm', q: 'On trouve |P_C| ≈ P_F. Pourquoi ?', options: ['On suppose qu’il n’y a pas de pertes vers l’extérieur : tout ce que cède le fluide chaud est reçu par le fluide froid', 'Parce que les deux débits sont égaux', 'Parce que les deux fluides sortent à la même température'], bonne: 0,
         expl: 'C’est l’hypothèse du cours : |P_C| = P_F = P_trans. Ici, le petit écart vient seulement de l’arrondi des températures au 0,1 °C. En TP, l’écart est plus grand (pertes vers l’air, incertitudes des sondes et des débitmètres).', indice: "Comparez ce que le fluide chaud cède à ce que le fluide froid reçoit." } },
     { id: 'dT2', titre: 'Les écarts aux deux extrémités', focus: ['graphe'],
+      retenirTitre: 'À RETENIR : LA PUISSANCE ÉCHANGÉE',
+      retenir: <>
+        <FBilanP/>
+        <Formule><mi>P</mi><mo>=</mo><msub><mi>Q</mi><mi>m</mi></msub><mo>·</mo><mi>C</mi><mo>·</mo><mi>ΔT</mi></Formule>
+        {puces(<>ΔT = T<sub>sortie</sub> − T<sub>entrée</sub>, Q<sub>m</sub> en kg·s⁻¹ ; pour l’eau, C = 4 180 J·kg⁻¹·K⁻¹.</>, <>Le fluide chaud <strong>cède</strong> de l’énergie (P &lt; 0), le fluide froid en <strong>reçoit</strong> (P &gt; 0).</>)}
+      </>,
       texte: <>On note ΔT<Sub c="1"/> et ΔT<Sub c="2"/> les écarts entre les deux fluides aux deux extrémités. À gauche, ΔT<Sub c="1"/> = T<Sub c="CE"/> − T<Sub c="FE"/> = {G.TCE} − {G.TFE} = {A.d1} °C. À droite, quelles températures se font face ?</>,
       tache: { type: 'num', q: 'Écart ΔT_2 à droite', unite: '°C', vrai: A.d2, tol: 0.03, affiche: x => t1(x),
         calcul: () => [`À droite (co-courant), les deux fluides sortent : on compare T_CS et T_FS, relevées dans le tableau.`,
@@ -412,7 +429,6 @@ export function SimulationEchangeur() {
         pieges: [[r1(A.TFS - G.TFE), 'C’est l’échauffement de l’eau froide. ΔT_2 est l’écart entre les deux fluides à la même extrémité.'], [r1(G.TCE - A.TCS), 'C’est le refroidissement du fluide chaud. ΔT_2 est l’écart entre les deux fluides à la même extrémité.']],
         expl: `À droite, sortent le fluide chaud et l’eau froide : ΔT_2 = T_CS − T_FS = ${t1(A.TCS)} − ${t1(A.TFS)} = ${t1(A.d2)} °C.`, indice: "ΔT_2 = T_chaud − T_froid, à l’extrémité de droite." } },
     { id: 'dTm', titre: 'L’écart de température moyen', focus: ['graphe'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>L’écart de température varie le long de l’échangeur : on utilise la <strong>moyenne logarithmique</strong>.</li><li><strong>ΔT<sub>m</sub> = (ΔT<sub>1</sub> − ΔT<sub>2</sub>) / ln(ΔT<sub>1</sub> / ΔT<sub>2</sub>)</strong>, ΔT<sub>1</sub> et ΔT<sub>2</sub> étant les écarts aux deux extrémités.</li><li>Ce n’est pas la moyenne arithmétique.</li></ul></>,
       texte: <>L’écart varie beaucoup le long de l’échangeur. La bonne moyenne est la <strong>moyenne logarithmique</strong> (relation fournie) : ΔT<Sub c="m"/> = (ΔT<Sub c="1"/> − ΔT<Sub c="2"/>) / ln(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>), avec ΔT<Sub c="1"/> = {A.d1} °C et ΔT<Sub c="2"/> calculé à l’étape précédente.</>,
       tache: { type: 'num', q: 'Écart de température moyen ΔT_m', unite: '°C', vrai: A.dTm, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Écarts aux deux extrémités (co-courant) : ΔT_1 = ${G.TCE} − ${G.TFE} = ${A.d1} °C ; ΔT_2 = ${t1(A.d2)} °C.`,
@@ -423,6 +439,12 @@ export function SimulationEchangeur() {
         pieges: [[(A.d1 + A.d2) / 2, 'C’est la moyenne arithmétique. Utilisez la relation du cours : (ΔT_1 − ΔT_2) / ln(ΔT_1 / ΔT_2).'], [(A.d1 - A.d2) / Math.log10(A.d1 / A.d2), 'Vous avez utilisé log (logarithme décimal) : il faut ln (logarithme népérien).']],
         expl: `ΔT_m = (${A.d1} − ${t1(A.d2)}) / ln(${A.d1} / ${t1(A.d2)}) ≈ ${nf(A.dTm)} °C, bien moins que la moyenne arithmétique (${nf((A.d1 + A.d2) / 2)} °C) : une grande partie de l’échangeur travaille avec un petit écart.`, indice: "ΔT_m = (ΔT₁ − ΔT₂) ÷ ln(ΔT₁ ÷ ΔT₂), avec les écarts aux deux extrémités." } },
     { id: 'S', titre: 'La surface d’échange', focus: ['releve'],
+      retenirTitre: 'À RETENIR : L’ÉCART DE TEMPÉRATURE MOYEN',
+      retenir: <>
+        <FDTm/>
+        <Formule><msub><mi>ΔT</mi><mi>m</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>ΔT</mi><mn>1</mn></msub><mo>−</mo><msub><mi>ΔT</mi><mn>2</mn></msub></mrow><mrow><mi>ln</mi><mo>(</mo><mfrac><msub><mi>ΔT</mi><mn>1</mn></msub><msub><mi>ΔT</mi><mn>2</mn></msub></mfrac><mo>)</mo></mrow></mfrac></Formule>
+        {puces(<>ΔT<sub>1</sub> et ΔT<sub>2</sub> sont les écarts entre les deux fluides aux deux extrémités de l’échangeur.</>, <>L’écart varie : on prend la <strong>moyenne logarithmique</strong>, pas la moyenne arithmétique.</>)}
+      </>,
       texte: <>L’échange se fait à travers la paroi latérale du tube intérieur : un cylindre de diamètre D = {G.D} mm et de longueur L = {dec(G.L, 1)} m, de surface S = π · D · L.</>,
       tache: { type: 'num', q: 'Surface d’échange S', unite: 'm²', vrai: A.S, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Conversion en m : D = ${G.D} mm = ${dec(G.D / 1000, 3)} m ; L = ${dec(G.L, 1)} m.`,
@@ -430,7 +452,6 @@ export function SimulationEchangeur() {
         pieges: [[Math.PI * G.D * G.L, 'D est en mm : convertissez-le en m (20 mm = 0,020 m).'], [Math.PI * G.D / 2000 * G.L, 'S = π·D·L avec le diamètre, pas le rayon.'], [Math.PI * (G.D / 1000) ** 2 / 4, 'C’est la section du tube (π·D²/4), où circule le fluide. La surface d’échange est la paroi latérale : π·D·L.']],
         expl: `S = π × 0,020 m × 3,0 m ≈ ${nf(A.S)} m².`, indice: "S = π × D × L (surface latérale du tube intérieur), avec D en mètres." } },
     { id: 'U', titre: 'Estimer le coefficient global d’échange', focus: ['releve'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li><strong>P = U · S · ΔT<sub>m</sub></strong>, donc U = P / (S · ΔT<sub>m</sub>), en W·m⁻²·K⁻¹.</li><li>U mesure l’efficacité des échanges à travers la paroi : plus U est grand, plus la puissance échangée est grande pour une même surface.</li></ul></>,
       texte: <>Comme en TP, on admet que la puissance transférée dans l’échangeur est P<Sub c="F"/>. La relation du cours est P = U · S · ΔT<Sub c="m"/>. Déduisez-en U, qui caractérise l’efficacité des échanges à travers la paroi.</>,
       tache: { type: 'num', q: 'Coefficient global d’échange U', unite: 'W·m⁻²·K⁻¹', vrai: A.U, tol: 0.03, affiche: x => nf(x),
         calcul: () => [`On admet que la puissance transférée est P = P_F = ${nf(A.PF)} W.`,
@@ -438,6 +459,14 @@ export function SimulationEchangeur() {
           `U = ${nf(A.PF)} / (${nf(A.S)} × ${nf(A.dTm)}) = ${nf(A.PF)} / ${nf(A.S * A.dTm)} = ${nf(A.U)} W·m⁻²·K⁻¹.`],
         pieges: [[A.PF * A.S / A.dTm, 'U = P / (S·ΔT_m) : on divise P par le produit S·ΔT_m.'], [A.PF / (A.S * (A.d1 + A.d2) / 2), 'Il faut ΔT_m (moyenne logarithmique), pas la moyenne arithmétique.']],
         expl: `U = ${nf(A.PF)} / (${nf(A.S)} × ${nf(A.dTm)}) ≈ ${nf(A.U)} W·m⁻²·K⁻¹. La simulation était réglée sur U = ${G.U} W·m⁻²·K⁻¹ : l’écart vient de l’arrondi des températures.`, indice: "P = U × S × ΔT_m, donc U = P ÷ (S × ΔT_m)." } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : LE COEFFICIENT GLOBAL D’ÉCHANGE U',
+      retenir: <>
+        <FU/>
+        <Formule><mi>P</mi><mo>=</mo><mi>U</mi><mo>·</mo><mi>S</mi><mo>·</mo><msub><mi>ΔT</mi><mi>m</mi></msub></Formule>
+        {puces(<>À S et ΔT<sub>m</sub> fixés, plus U est grand, plus la puissance échangée est grande.</>, <>U s’exprime en W·m⁻²·K⁻¹ ; on le déduit de P, de S et de ΔT<sub>m</sub>.</>)}
+      </>,
+      texte: <>Vous savez faire le bilan d’un échangeur (P<Sub c="C"/> &lt; 0, P<Sub c="F"/> &gt; 0, |P<Sub c="C"/>| = P<Sub c="F"/>), calculer ΔT<Sub c="m"/> et S = π·D·L, puis estimer U. Le parcours 2 passe à contre-courant et à un côté chaud à température constante.</>, tache: null },
     { id: 'contre', titre: 'Passer à contre-courant', focus: ['schema'],
       texte: <>On garde le même échangeur, les mêmes débits et les mêmes températures d’entrée. On inverse seulement le branchement de l’eau froide : elle entre maintenant à droite.</>,
       tache: { type: 'action', ok: rg.contre, label: 'Brancher l’eau froide à contre-courant', faire: () => setRg(x => ({ ...x, contre: true })),
@@ -447,6 +476,11 @@ export function SimulationEchangeur() {
       tache: { type: 'qcm', q: 'Que remarquez-vous ?', options: ['T_FS est supérieure à T_CS : l’eau froide sort plus chaude que le fluide chaud', 'T_FS est toujours inférieure à T_CS', 'T_FS est supérieure à T_CE'], bonne: 0,
         expl: 'À contre-courant, l’eau froide qui sort (à gauche) est au contact du fluide chaud qui entre, encore très chaud : elle peut donc sortir plus chaude que le fluide chaud ne sort. C’est impossible à co-courant, où les deux températures se rapprochent sans se croiser. Mais T_FS reste toujours inférieure à T_CE.', indice: "Comparez les températures de sortie des deux fluides." } },
     { id: 'dTmc', titre: 'L’écart moyen à contre-courant', focus: ['graphe'],
+      retenirTitre: 'À RETENIR : LE CROISEMENT DES TEMPÉRATURES',
+      retenir: <>
+        <FCroise/>
+        {puces(<>À contre-courant, l’eau froide peut sortir <strong>plus chaude</strong> que le fluide chaud ne sort.</>, <>Elle reste toujours plus froide que le fluide chaud à l’entrée de celui-ci.</>)}
+      </>,
       texte: <>Attention : à contre-courant, ce ne sont plus les mêmes températures qui se font face. À gauche, ΔT<Sub c="1"/> = T<Sub c="CE"/> − T<Sub c="FS"/> ; à droite, ΔT<Sub c="2"/> = T<Sub c="CS"/> − T<Sub c="FE"/>. Calculez ΔT<Sub c="m"/> avec les nouvelles valeurs du relevé (T<Sub c="CE"/> = {G.TCE} °C et T<Sub c="FE"/> = {G.TFE} °C, inchangées).</>,
       tache: { type: 'num', q: 'Écart de température moyen ΔT_m à contre-courant', unite: '°C', vrai: A.dTmc, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`À contre-courant : ΔT_1 = T_CE − T_FS = ${G.TCE} − ${t1(A.TFSc)} = ${t1(A.d1c)} °C ; ΔT_2 = T_CS − T_FE = ${t1(A.TCSc)} − ${G.TFE} = ${t1(A.d2c)} °C.`,
@@ -456,11 +490,15 @@ export function SimulationEchangeur() {
         pieges: [[A.dTm, 'C’est la valeur du co-courant. À contre-courant, ce ne sont plus les mêmes températures qui se font face : l’entrée de l’un est en face de la sortie de l’autre (ΔT_1 = T_CE − T_FS et ΔT_2 = T_CS − T_FE).'], [(A.d1c + A.d2c) / 2, 'C’est la moyenne arithmétique : utilisez la moyenne logarithmique.', 0.01]],
         expl: `ΔT_1 = ${G.TCE} − ${t1(A.TFSc)} = ${t1(A.d1c)} °C et ΔT_2 = ${t1(A.TCSc)} − ${G.TFE} = ${t1(A.d2c)} °C, donc ΔT_m ≈ ${nf(A.dTmc)} °C (contre ${nf(A.dTm)} °C à co-courant).`, indice: "Même formule, avec les écarts aux deux extrémités du contre-courant." } },
     { id: 'P2', titre: 'Quel mode est le plus efficace ?', focus: ['graphe'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>À mêmes températures d’entrée, le <strong>contre-courant</strong> donne un ΔT<sub>m</sub> plus grand que le co-courant, donc plus de puissance échangée.</li><li>Il permet aussi de chauffer le fluide froid au-delà de la température de sortie du fluide chaud.</li></ul></>,
       texte: <>Même échangeur (même U, même S), mêmes débits, mêmes températures d’entrée : seul le sens de l’eau froide a changé.</>,
       tache: { type: 'qcm', q: 'À contre-courant, la puissance transférée P = U · S · ΔT_m est…', options: ['plus grande, parce que ΔT_m est plus grand', 'plus grande, parce que U est plus grand', 'la même qu’à co-courant'], bonne: 0,
         expl: `P passe d’environ ${nf(A.Pco, 2)} W à ${nf(A.Pc, 2)} W. En première approximation, U ne change pas : à débits fixés, il dépend de la paroi et des films de liquide de chaque côté, pas du sens de circulation (en pratique, il peut différer de quelques % car les propriétés de l’eau varient avec la température). C’est ΔT_m qui augmente, car à contre-courant l’écart entre les fluides reste plus régulier tout le long. Pour comparer les deux modes en TP, comparez donc P (ou T_FS) à mêmes débits et mêmes températures d’entrée, plutôt que U : avec les incertitudes de mesure, des valeurs de U voisines ou différentes ne prouvent rien.`, indice: "P = U × S × ΔT_m : qu’est-ce qui change entre co-courant et contre-courant ?" } },
     { id: 'bain', titre: 'Un côté chaud à température constante', focus: ['schema'],
+      retenirTitre: 'À RETENIR : POURQUOI LE CONTRE-COURANT ÉCHANGE PLUS',
+      retenir: <>
+        <FContreEff/>
+        {puces(<>Même U, même S, mêmes entrées : la puissance P = U · S · ΔT<sub>m</sub> suit ΔT<sub>m</sub>.</>, <>À contre-courant l’écart entre les fluides reste plus régulier : ΔT<sub>m</sub> est plus grand, donc P aussi.</>)}
+      </>,
       texte: <>Remplaçons le fluide chaud par un milieu à <strong>température constante</strong> : un bain bien agité à {G.TCE} °C (comme le serpentin du cours), ou de la vapeur d’eau qui se condense (elle reste à 100 °C sous 1 bar tant qu’elle se condense).</>,
       tache: { type: 'action', ok: rg.cst, label: `Remplacer le fluide chaud par un bain à ${G.TCE} °C`, faire: () => setRg(x => ({ ...x, cst: true, gm: 'contre' })),
         consigne: rg.cst ? null : 'Cliquez pour placer le bain' } },
@@ -469,12 +507,23 @@ export function SimulationEchangeur() {
       tache: { type: 'qcm', q: 'Que constatez-vous ?', options: ['Les profils et la température de sortie de l’eau froide sont les mêmes dans les deux modes', 'Le contre-courant reste plus efficace', 'Le co-courant devient plus efficace'], bonne: 0,
         expl: 'La température du côté chaud est la même partout : peu importe par où entre l’eau froide, elle « voit » toujours la même température. Avec changement d’état (vapeur qui se condense) ou avec un bain, les deux modes sont équivalents.', indice: "Comparez les profils de température dans les deux modes." } },
     { id: 'hypo', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'],
+      retenirTitre: 'À RETENIR : CÔTÉ CHAUD À TEMPÉRATURE CONSTANTE',
+      retenir: <>
+        <FBain/>
+        {puces(<>Bain agité ou vapeur qui se condense : le sens de circulation n’a <strong>plus d’importance</strong>.</>, <>Avec la vapeur, la puissance vient du changement d’état du fluide chaud.</>)}
+      </>,
       texte: <>Ouvrez l’encadré « Hypothèses de travail » sous la simulation.</>,
       tache: { type: 'qcm', q: 'Quelle hypothèse de la simulation n’est PAS exactement vérifiée en TP ?', options: ['L’absence de pertes thermiques : en TP, |P_C| et P_F ne sont pas tout à fait égales', 'Le fait que l’énergie passe du fluide chaud au fluide froid', 'La conservation du débit d’eau entre l’entrée et la sortie'], bonne: 0,
         expl: 'Une partie de l’énergie s’échange avec l’air de la salle, et les sondes et débitmètres ont leurs incertitudes. Autre simplification à retenir : dans la simulation, U ne dépend pas des débits, alors qu’en réalité il augmente avec eux.', indice: "Pensez à ce qui n’est jamais parfait dans un montage réel." } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      texte: <>Vous savez faire le bilan d’un échangeur (P<Sub c="C"/> &lt; 0, P<Sub c="F"/> &gt; 0, |P<Sub c="C"/>| = P<Sub c="F"/>), calculer ΔT<Sub c="m"/> et S = π·D·L, estimer U, et reconnaître le co-courant et le contre-courant d’après les profils. En exploration libre, chargez « Échangeur coaxial du TP » pour retrouver vos mesures, puis passez au défi.</>, tache: null },
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : LES HYPOTHÈSES DU MODÈLE',
+      retenir: <>
+        <FHypo/>
+        {puces(<>Régime stationnaire, pas de pertes, U constant, eau liquide : ce sont des <strong>hypothèses</strong>.</>, <>En TP, pertes vers l’air et incertitudes de mesure : |P<sub>chaud</sub>| et P<sub>froid</sub> diffèrent un peu.</>)}
+      </>,
+      texte: <>Vous savez comparer le co-courant et le contre-courant d’après les profils et le ΔT<Sub c="m"/>, et vous connaissez les limites du modèle. En exploration libre, chargez « Échangeur coaxial du TP » pour retrouver vos mesures, puis passez au défi.</>, tache: null },
   ];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(x => x.id === id));
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => mode === 'guide' && et.focus.includes(id);
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {});
@@ -654,7 +703,8 @@ export function SimulationEchangeur() {
     </div>
   );
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : contre-courant et bain</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
@@ -675,7 +725,12 @@ export function SimulationEchangeur() {
       </div>
       <div className={`ech-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : vue}
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Parcours :</span>
+            {[[1, '1. Le bilan thermique'], [2, '2. Contre-courant et bain']].map(([k, nom]) => <button key={k} aria-pressed={parc === k} onClick={() => setParc(k)} style={styleBouton(parc === k, ORANGE_GUIDE)}>{nom}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
           : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
             : null}
       </div>
@@ -705,4 +760,7 @@ export function SimulationEchangeur() {
     </div>
   );
 }
-const ETAPES_IDS = ['intro', 'go', 'sens', 'profils', 'QmF', 'PF', 'PC', 'bilan', 'dT2', 'dTm', 'S', 'U', 'contre', 'croise', 'dTmc', 'P2', 'bain', 'bainMode', 'hypo', 'bravo'];
+const ORDRE_PARC = [
+  ['intro', 'go', 'sens', 'profils', 'QmF', 'PF', 'PC', 'bilan', 'dT2', 'dTm', 'S', 'U', 'bilan1'],
+  ['contre', 'croise', 'dTmc', 'P2', 'bain', 'bainMode', 'hypo', 'bravo'],
+];
