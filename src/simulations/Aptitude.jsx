@@ -274,7 +274,17 @@ export function SimulationAptitude() {
   const [mode, setMode] = useState(() => modeOuverture('aptitude-guide-v2'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('aptitude-guide-v2', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('aptitude-guide-v2', VIDE), [g2, setG2] = useEtatPersistant('aptitude-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('aptitude-guide-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('aptitude-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
+  const ORDRE_PARC = [['principe', 'difference', 'arrivee', 'moyenne', 'ecartType', 'z', 'classer', 'bilan1'],
+    ['hypotheses', 'henry', 'masque', 'choisirExclu', 'exclu', 'borne', 'bilan2'],
+    ['robuste', 'iso', 'pourquoiSigma', 'reperes', 'signe', 'suivi', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const [graine] = useEtatPersistant('aptitude-graine-v2', Math.floor(Math.random() * 1e6));
   const [ouverts, setOuverts] = useState({ hypo: true, alertes: true, reglages: true, comparer: true });
   const [formule, setFormule] = useState('ref');
@@ -303,7 +313,7 @@ export function SimulationAptitude() {
       : jeuActif === 'mes' ? { v: vMes, unite: '', dec: 2, nom: `Mes résultats (${vMes.length} laboratoires)`, xpt: xptSaisi.trim() ? lireNombre(xptSaisi) : (vMes.length ? mediane(vMes) : NaN), sigmaPt: lireNombre(sigmaSaisi), consensus: !xptSaisi.trim() }
         : { ...PARCOURS, consensus: false };
   const v = D.v;
-  const formuleActive = enGuide && etape < IDX.choisirExclu ? 'ref' : formule;
+  const formuleActive = enGuide && etape < iEt('choisirExclu') ? 'ref' : formule;
   const calc = v.length >= 3 ? zScores(v, formuleActive, { xpt: D.xpt, sigmaPt: D.sigmaPt }) : { z: [], centre: NaN, disp: NaN };
   const tousZ = Object.fromEntries(Object.keys(FORMULES).map(f => [f, v.length >= 3 ? zScores(v, f, { xpt: D.xpt, sigmaPt: D.sigmaPt }).z : []]));
   const visibles = v.slice(0, arrives), tous = arrives >= v.length;
@@ -316,7 +326,7 @@ export function SimulationAptitude() {
     return () => clearTimeout(id);
   }, [enArrivee, arrives, v.length]);
   // Nouveaux résultats : dans le parcours, l'élève les reçoit à l'étape d'arrivée ; ensuite (et en exploration), ils s'affichent directement
-  useEffect(() => { setArrives(enGuide && guide.etape <= 2 ? 0 : v.length); setClasses({}); setClassesVerif(false); }, [mode, jeuActif, p, dispersion, biais, deux, tirage]);
+  useEffect(() => { setArrives(enGuide && guide.etape <= iEt('arrivee') ? 0 : v.length); setClasses({}); setClassesVerif(false); }, [mode, parc, jeuActif, p, dispersion, biais, deux, tirage]);
   function choisirFormule(f) { setFormule(f); setVuFormule(x => ({ ...x, [`${etape}-${f}`]: true })); }
 
   // ── Valeurs de la campagne du parcours ──
@@ -328,7 +338,7 @@ export function SimulationAptitude() {
   const classesOk = P.every((_, i) => classes[i] === categorie(zRef[i]).cle);
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
-  const ETAPES = [
+  const TOUTES = [
     { id: 'principe', titre: 'Un essai d’aptitude', focus: [],
       texte: <>Un organisateur envoie le <strong>même échantillon</strong> d'eau à 10 laboratoires, qui dosent les ions nitrate avec leur méthode
         habituelle. Chacun reçoit ensuite un <strong>score</strong> qui évalue sa performance : le z-score. Le référentiel demande de savoir « évaluer le
@@ -375,6 +385,8 @@ export function SimulationAptitude() {
       retenir: <><FZ/>{puces(<>z est un écart exprimé en <strong>nombre d’écarts-types</strong>, sans unité.</>, <>|z| ≤ 2 : satisfaisant ; 2 &lt; |z| &lt; 3 : discutable ; |z| ≥ 3 : non satisfaisant.</>, <>Le signe de z dit dans quel sens est l’écart.</>)}</>,
       texte: <>Classez chaque laboratoire dans le tableau : |z| ≤ 2 satisfaisant ; 2 &lt; |z| &lt; 3 discutable ; |z| ≥ 3 non satisfaisant.</>,
       tache: { type: 'action', ok: classesVerif && classesOk, consigne: classesVerif && classesOk ? null : 'Classez les 10 laboratoires, puis vérifiez.' } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez calculer un z-score avec la formule du référentiel et classer les laboratoires. Mais cette formule repose sur des hypothèses : le parcours 2 les examine.</>, tache: null },
     { id: 'hypotheses', titre: 'Sur quoi reposent ces seuils ?', focus: ['hypo'],
       texte: <>Lisez l'encadré « Hypothèses de travail » : toute l'interprétation en dépend.</>,
       tache: { type: 'qcm', q: 'D’où viennent les seuils |z| = 2 et |z| = 3 ?', options: ['De la loi normale : un laboratoire compétent a environ 95 % de chances d’avoir |z| ≤ 2, et 99,7 % d’avoir |z| ≤ 3', 'Ce sont des valeurs choisies au hasard', 'Du nombre de laboratoires'], bonne: 0, indice: "Pour une loi normale, quelle proportion des valeurs est à moins de 2 écarts-types ? à moins de 3 ?" } },
@@ -402,9 +414,11 @@ export function SimulationAptitude() {
       texte: <>Revenez à la formule du référentiel et lisez la première alerte. Avec p laboratoires, cette formule ne peut jamais donner |z| &gt; (p − 1) / √p.</>,
       tache: { type: 'qcm', q: 'Avec 10 laboratoires, quelle catégorie est impossible à atteindre ?', options: ['non satisfaisant : |z| ne peut pas dépasser 2,85', 'discutable', 'aucune'], bonne: 0,
         expl: 'Avec 9 laboratoires, la borne tombe à 2,67 ; avec 5, à 1,79 : même « discutable » devient impossible. Il faut le savoir avant d’interpréter un essai à peu de participants.', indice: "Quand x̄ et s viennent des mêmes résultats, |z| est limité à (n − 1)/√n. Comparez ce maximum à 2 et à 3." } },
-    { id: 'robuste', titre: 'Des statistiques robustes', focus: ['formule'],
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
       retenirTitre: 'Une limite mathématique',
       retenir: <><FBorne/>{puces(<>Si x̄ et s incluent le laboratoire évalué, |z| ne peut pas dépasser (p − 1) ÷ √p.</>, <>Avec peu de participants, certaines catégories sont impossibles à atteindre.</>)}</>,
+      texte: <>Vous avez vu que le seuil 2 et le seuil 3 supposent une loi normale, qu’un laboratoire aberrant peut se cacher dans x̄ et s, et que la formule du référentiel a une limite mathématique. Le parcours 3 présente les statistiques robustes et la norme ISO 13528.</>, tache: null },
+    { id: 'robuste', titre: 'Des statistiques robustes', focus: ['formule'],
       texte: <>Choisissez « Médiane et MAD (robuste) » : la médiane remplace la moyenne, et s* = 1,483 × MAD remplace s (la MAD est la médiane des écarts absolus à la médiane). Une valeur aberrante les déplace très peu. Les résultats (mg/L) : {P.map(x => fmt(x, 1)).join(' ; ')}.</>,
       tache: { type: 'num', q: 'Médiane des 10 résultats', unite: 'mg/L', vrai: medP, tol: 0.001, affiche: x => fmt(x, 2),
         calcul: () => { const t = [...P].sort((a, b) => a - b), n = t.length;
@@ -450,14 +464,15 @@ export function SimulationAptitude() {
         le seuil 3 peut être inatteignable, et toute interprétation suppose une loi normale à vérifier. En exploration libre, comparez les formules sur
         d'autres campagnes, ou sur les résultats de vos apprentis.</>, tache: null },
   ];
-  const idx = id => ETAPES.findIndex(e => e.id === id);
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
+  const idx = iEt;
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const vu = id => !enGuide || etape >= idx(id);
   const passe = id => !enGuide || etape > idx(id);   // étape dépassée (toujours vrai hors parcours guidé)
   const zCache = enGuide && formuleActive === 'iso' && !passe('iso');   // z (ISO) du labo 10 : c'est la réponse de l'étape « iso »
-  useEffect(() => { if (enGuide && etape > idx('arrivee') && arrives < v.length) setArrives(v.length); }, [etape, enGuide]);
+  useEffect(() => { if (enGuide && etape > idx('arrivee') && arrives < v.length) setArrives(v.length); }, [etape, enGuide, parc]);
   // Dans le parcours, le jeu « Repères » n'est proposé qu'à son étape ; on revient à la campagne des nitrates ailleurs
-  useEffect(() => { if (enGuide && etape < idx('reperes') && jeu !== 'parcours') setJeu('parcours'); }, [etape, enGuide]);
+  useEffect(() => { if (enGuide && etape < idx('reperes') && jeu !== 'parcours') setJeu('parcours'); }, [etape, enGuide, parc]);
   const montrerZ = !enGuide || etape > idx('z');
   const montrerComparaison = !enGuide || etape >= idx('iso');
   const hl = id => enGuide && et.focus.includes(id);
@@ -649,8 +664,10 @@ export function SimulationAptitude() {
 
   // ════════════════ MISE EN PAGE ════════════════
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi(); if (m === 'explore') setJeu('mes'); if (m === 'guide') setJeu('parcours'); }
+  const NOMS_PARC = ['1. Le z-score', '2. Les hypothèses et leurs limites', '3. Statistiques robustes et norme ISO'];
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
       <OngletExercices />
@@ -677,7 +694,12 @@ export function SimulationAptitude() {
         {selecteurFormule}
         <div className="ap-l1">
           {graphique}
-          {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+          {enGuide ? <div>
+            <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+              <span style={{ color: KIT.txt2 }}>Parcours :</span>
+              {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+            </div>
+            <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
             : <div style={styleBoite}><Section titre="Le jeu de données" ouvert={ouverts.reglages} onBascule={() => setOuverts(o => ({ ...o, reglages: !o.reglages }))}>{reglages}</Section></div>}
         </div>
         <div className="ap-l2">
@@ -694,7 +716,6 @@ export function SimulationAptitude() {
 }
 
 // Numéro de l'étape où le sélecteur de formule apparaît (la formule du référentiel est imposée avant)
-const IDX = { choisirExclu: 10 };
 // Les jeux de données : leur nom dit ce qu'on y trouve
 const JEUX = { mes: 'Mes résultats', parcours: 'Un laboratoire nettement aberrant (10 labos)', reperes: 'Des laboratoires très dispersés (14 labos)', simulee: 'Une campagne simulée, réglable' };
 const cellule = { padding: '4px 6px', border: `1px solid ${KIT.bord}`, textAlign: 'center', fontSize: 13.5 };
