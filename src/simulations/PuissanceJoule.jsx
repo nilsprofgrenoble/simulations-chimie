@@ -6,6 +6,7 @@ import { fr, chauffe, C_EAU } from "./elecModele";
 import { BLEU, VERMILLON, alea } from "./elecOutils";
 import { Curseur, VoletDefiGen, Graphe } from "./elecCommun";
 import { Pic } from "../Pictos";
+import { SchemaChaine, SchemaUI, SchemaJoule, SchemaRendement, SchemaCalo, SchemaBilan } from "./PuissanceJouleSchemas";
 
 // ====================================================
 //  SIM 71 — PUISSANCE, EFFET JOULE ET RENDEMENT (1G spé PC, « Aspects énergétiques des phénomènes électriques »)
@@ -111,20 +112,12 @@ export function SimulationPuissanceJoule() {
 
   const ETAPES = [
     { id: 'travail', titre: 'Le travail électrique', depart: () => voir('dipole'),
+      texte: <>Une pile alimente une lampe : la lampe <strong>reçoit</strong> de l’énergie de la pile, qui lui en <strong>cède</strong>. Cette énergie échangée s’appelle le <strong>travail électrique W<sub>élec</sub></strong> (en joules). Un dipôle qui <strong>fournit</strong> du travail électrique au reste du circuit fonctionne en <strong>générateur</strong> (pile) ; celui qui en <strong>reçoit</strong> fonctionne en <strong>récepteur</strong> (lampe, moteur, résistance chauffante).</>,
+      tache: { type: 'qcm', q: 'Une bouilloire électrique, qui reçoit du travail électrique du secteur, fonctionne en…', options: ['récepteur', 'générateur', 'ni l’un ni l’autre', 'les deux à la fois'], bonne: 0, expl: 'Elle reçoit de l’énergie électrique : c’est un récepteur.', indice: "Un récepteur reçoit de l’énergie électrique et la transforme. La bouilloire reçoit-elle ou fournit-elle de l’énergie électrique ?" } },
+    { id: 'puissance', titre: 'La puissance : un débit d’énergie', depart: () => voir('dipole', { k: 2, dt: 60 }),
       retenirTitre: 'À RETENIR : GÉNÉRATEUR ET RÉCEPTEUR',
       retenir: <>
-        <svg viewBox="0 0 360 120" role="img" aria-label="Chaîne énergétique : la pile, générateur, cède un travail électrique à la lampe, récepteur, qui le convertit en énergie lumineuse et en transfert thermique" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <rect x="8" y="34" width="86" height="48" rx="8" fill="#e0f2fe" stroke="#0369a1" strokeWidth="2" />
-          <text x="51" y="55" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0369a1">pile</text><text x="51" y="71" textAnchor="middle" fontSize="11" fill="#0369a1">générateur</text>
-          <rect x="140" y="34" width="86" height="48" rx="8" fill="#fef3c7" stroke="#b45309" strokeWidth="2" />
-          <text x="183" y="55" textAnchor="middle" fontSize="12" fontWeight="700" fill="#b45309">lampe</text><text x="183" y="71" textAnchor="middle" fontSize="11" fill="#b45309">récepteur</text>
-          <line x1="94" y1="58" x2="130" y2="58" stroke="#334155" strokeWidth="2.6" /><polygon points="140,58 129,52 129,64" fill="#334155" />
-          <text x="117" y="46" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">W<tspan fontSize="9" dy="3">élec</tspan></text>
-          <line x1="226" y1="48" x2="262" y2="30" stroke="#ca8a04" strokeWidth="2.4" /><polygon points="270,26 258,26 264,36" fill="#ca8a04" />
-          <line x1="226" y1="68" x2="262" y2="88" stroke="#c2410c" strokeWidth="2.4" /><polygon points="270,92 258,94 264,84" fill="#c2410c" />
-          <text x="274" y="30" fontSize="11" fill="#854d0e">lumière</text><text x="274" y="96" fontSize="11" fill="#c2410c">chaleur</text><text x="274" y="108" fontSize="11" fill="#c2410c">(pertes)</text>
-          <text x="117" y="112" textAnchor="middle" fontSize="10.5" fill="#475569">énergie en joules (J)</text>
-        </svg>
+        <SchemaChaine/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Le <strong>travail électrique W<sub>élec</sub></strong> (en joules) est l’énergie échangée par un dipôle avec le reste du circuit.</li>
           <li><strong>Générateur</strong> : fournit du travail électrique (pile). <strong>Récepteur</strong> : en reçoit (lampe, moteur, résistance chauffante, bouilloire).</li>
@@ -132,15 +125,21 @@ export function SimulationPuissanceJoule() {
           <li><strong>Piège :</strong> <em>W</em> en italique est un travail (J) ; W droit est le watt (unité de puissance).</li>
         </ul>
       </>,
-      texte: <>Une pile alimente une lampe : la lampe <strong>reçoit</strong> de l’énergie de la pile, qui lui en <strong>cède</strong>. Cette énergie échangée s’appelle le <strong>travail électrique W<sub>élec</sub></strong> (en joules). Un dipôle qui <strong>fournit</strong> du travail électrique au reste du circuit fonctionne en <strong>générateur</strong> (pile) ; celui qui en <strong>reçoit</strong> fonctionne en <strong>récepteur</strong> (lampe, moteur, résistance chauffante).</>,
-      tache: { type: 'qcm', q: 'Une bouilloire électrique, qui reçoit du travail électrique du secteur, fonctionne en…', options: ['récepteur', 'générateur', 'ni l’un ni l’autre', 'les deux à la fois'], bonne: 0, expl: 'Elle reçoit de l’énergie électrique : c’est un récepteur.', indice: "Un récepteur reçoit de l’énergie électrique et la transforme. La bouilloire reçoit-elle ou fournit-elle de l’énergie électrique ?" } },
-    { id: 'puissance', titre: 'La puissance : un débit d’énergie', depart: () => voir('dipole', { k: 2, dt: 60 }),
       texte: <>La <strong>puissance P</strong> est l’énergie échangée par seconde : <strong>P = W / Δt</strong>, donc <strong>W = P × Δt</strong>. Son unité est le <strong>watt</strong> : 1 W = 1 J·s⁻¹. Un radiateur de 500 W reçoit 500 J chaque seconde. Attention : <strong>W</strong> en italique désigne un travail (en J), alors que <strong>W</strong> droit est le watt.
         <ExempleResolu>Radiateur de 500 W pendant 1 h : W = 500 × 3600 = <strong>1 800 000 J</strong> = 1,8 MJ. C’est énorme en joules… d’où une autre unité : 500 W × 1 h = <strong>500 W·h</strong> = 0,5 kWh.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Parmi ces unités, laquelle est une unité d’énergie ?', options: ['le W·h', 'le W', 'le J·s⁻¹', 'l’A'], bonne: 0, expl: 'Le W·h est une puissance × une durée : c’est une énergie (1 W·h = 3600 J).', indice: "Une puissance se mesure en W (1 W = 1 J/s). Quelle unité correspond au produit d’une puissance par une durée ?" } },
     { id: 'ui', titre: 'Puissance d’un dipôle : P = U × I', depart: () => voir('dipole', { k: 0 }),
+      texte: <>Pour un dipôle soumis à la tension U et traversé par le courant I : <strong>P<sub>élec</sub> = U × I</strong> (W, V, A), donc <strong>W<sub>élec</sub> = U × I × Δt</strong>. Choisissez une lampe LED de 5 W sous 220 V et lisez l’intensité.
+        <ExempleResolu>I = P / U = 5 / 220 = 0,0227 A = <strong>22,7 mA</strong>.</ExempleResolu></>,
+      tache: { type: 'num', q: 'Un aspirateur de 1500 W est alimenté sous 220 V. Quelle intensité (en A) le traverse ?', unite: 'A', vrai: 6.82, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[330000, 'Tu as multiplié : P = U × I donc I = P / U.'], [220 / 1500, 'Tu as divisé à l’envers : I = P / U (la puissance au numérateur).']],
+        calcul: () => [
+          'Formule : P = U × I, donc I = P / U (tension du secteur de 220 V, régime continu, comme dans le cours).',
+          'Données : P = 1500 W ; U = 220 V (déjà en W et en V, pas de conversion).',
+          'I = 1500 / 220 = 6,818 A, soit 6,82 A (environ 6,8 A).'], expl: 'I = P / U = 1500 / 220 = 6,8 A.', indice: "P = U × I, donc I = P / U, avec P en watts et U en volts." } },
+    { id: 'cout', titre: 'Le kilowattheure et le coût', depart: () => voir('dipole', { k: 3, dt: 10 }),
       retenirTitre: 'À RETENIR : PUISSANCE, ÉNERGIE ET COÛT',
       retenir: <>
+        <SchemaUI/>
         <Formule><mi>P</mi><mo>=</mo><mfrac><mi>W</mi><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac><mspace width="1.2em"/><msub><mi>P</mi><mtext>élec</mtext></msub><mo>=</mo><mi>U</mi><mo>×</mo><mi>I</mi><mspace width="1.2em"/><msub><mi>W</mi><mtext>élec</mtext></msub><mo>=</mo><mi>U</mi><mo>×</mo><mi>I</mi><mo>×</mo><mi>Δ</mi><mi>t</mi></Formule>
                 <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
           <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Unité</th></tr></thead>
@@ -158,14 +157,6 @@ export function SimulationPuissanceJoule() {
           <li><strong>Pièges :</strong> garder les minutes ou les W ; multiplier au lieu de diviser (I = P / U).</li>
         </ul>
       </>,
-      texte: <>Pour un dipôle soumis à la tension U et traversé par le courant I : <strong>P<sub>élec</sub> = U × I</strong> (W, V, A), donc <strong>W<sub>élec</sub> = U × I × Δt</strong>. Choisissez une lampe LED de 5 W sous 220 V et lisez l’intensité.
-        <ExempleResolu>I = P / U = 5 / 220 = 0,0227 A = <strong>22,7 mA</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Un aspirateur de 1500 W est alimenté sous 220 V. Quelle intensité (en A) le traverse ?', unite: 'A', vrai: 6.82, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[330000, 'Tu as multiplié : P = U × I donc I = P / U.'], [220 / 1500, 'Tu as divisé à l’envers : I = P / U (la puissance au numérateur).']],
-        calcul: () => [
-          'Formule : P = U × I, donc I = P / U (tension du secteur de 220 V, régime continu, comme dans le cours).',
-          'Données : P = 1500 W ; U = 220 V (déjà en W et en V, pas de conversion).',
-          'I = 1500 / 220 = 6,818 A, soit 6,82 A (environ 6,8 A).'], expl: 'I = P / U = 1500 / 220 = 6,8 A.', indice: "P = U × I, donc I = P / U, avec P en watts et U en volts." } },
-    { id: 'cout', titre: 'Le kilowattheure et le coût', depart: () => voir('dipole', { k: 3, dt: 10 }),
       texte: <>La facture se calcule en <strong>kWh</strong> : 1 kWh = 1 kW pendant 1 h = <strong>3,6·10⁶ J</strong>. Avec un tarif de 0,20 €/kWh :
         <ExempleResolu>Aspirateur de 1500 W pendant 10 min : W = 1,5 kW × (10/60) h = <strong>0,25 kWh</strong> ; coût = 0,25 × 0,20 = <strong>0,05 €</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Un radiateur de 500 W fonctionne pendant 24 h. Quel est le coût (en €) à 0,20 €/kWh ?', unite: '€', vrai: 2.4, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[2400, 'Convertis d’abord en kWh : 500 W = 0,5 kW, 0,5 × 24 = 12 kWh.'], [12, 'Tu as trouvé l’énergie en kWh (12 kWh). Il reste à la multiplier par le tarif : 0,20 €/kWh.'], [12 / 0.2, 'Le coût = énergie (kWh) × tarif (€/kWh) : on multiplie par 0,20, on ne divise pas.']],
@@ -175,17 +166,6 @@ export function SimulationPuissanceJoule() {
           'W = 0,5 × 24 = 12 kWh.',
           'Coût = énergie × tarif = 12 × 0,20 = 2,40 € (tarif constant de 0,20 €/kWh).'], expl: 'E = 0,5 kW × 24 h = 12 kWh ; coût = 12 × 0,20 = 2,40 €.', indice: "Énergie = puissance × durée. Convertis la puissance en kW et la durée en heures pour obtenir des kWh, puis multiplie par le prix du kWh." } },
     { id: 'joule', titre: 'L’effet Joule', depart: () => setAtelier('joule'),
-      retenirTitre: 'À RETENIR : L’EFFET JOULE',
-      retenir: <>
-        <Formule><mi>P</mi><mo>=</mo><mi>R</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mspace width="1.5em"/><mi>Q</mi><mo>=</mo><msub><mi>W</mi><mtext>élec</mtext></msub><mo>=</mo><mi>R</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mo>×</mo><mi>Δ</mi><mi>t</mi></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Dans un <strong>conducteur ohmique</strong>, tout le travail électrique reçu est converti en <strong>transfert thermique</strong> (effet Joule).</li>
-          <li>L’intensité est <strong>au carré</strong> : I × 2 donne P × 4. Le carré ne porte que sur I, pas sur R.</li>
-          <li><strong>Exemple :</strong> R = 22 Ω, I = 2,0 A, Δt = 30 s : P = 22 × 2,0² = 88 W ; Q = 88 × 30 = 2 640 J.</li>
-          <li><strong>Lignes à haute tension :</strong> pour transporter P = U × I, augmenter U diminue I ; les pertes r × I² chutent (U × 4 donne I ÷ 4 et pertes ÷ 16).</li>
-          <li><strong>Hypothèses :</strong> résistance constante, régime continu, ligne simplifiée de 0,1 Ω/km.</li>
-        </ul>
-      </>,
       texte: <>Dans un <strong>conducteur ohmique</strong>, tout le travail électrique reçu est converti en <strong>transfert thermique</strong> : c’est l’<strong>effet Joule</strong>. Avec U = R × I : <strong>P = R × I²</strong> et <strong>Q = W<sub>élec</sub> = R × I² × Δt</strong>. L’intensité est <strong>au carré</strong> : doublez I et la puissance est multipliée par 4 !
         <ExempleResolu>R = 47 Ω, I = 1 A, Δt = 60 s : P = 47 × 1² = 47 W ; Q = 47 × 60 = <strong>2820 J</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Un résistor de 100 Ω est traversé par 0,50 A. Quelle puissance thermique (en W) dissipe-t-il ?', unite: 'W', vrai: 25, tol: 0.02, affiche: x => String(x), pieges: [[50, 'Attention : I est au carré, P = R × I² = 100 × 0,5².'], [2500, 'Le carré porte seulement sur I, pas sur R : P = R × I² (et non (R × I)²).']],
@@ -195,19 +175,21 @@ export function SimulationPuissanceJoule() {
           'Carré de l’intensité : I² = 0,50² = 0,25 A².',
           'P = 100 × 0,25 = 25 W.'], expl: 'P = R × I² = 100 × 0,50² = 25 W.', indice: "Effet Joule : P = R × I², avec R en ohms et I en ampères. Le carré porte seulement sur I." } },
     { id: 'ligne', titre: 'Pertes en ligne : pourquoi la haute tension ?', depart: () => setAtelier('ligne'),
+      retenirTitre: 'À RETENIR : L’EFFET JOULE',
+      retenir: <>
+        <SchemaJoule/>
+        <Formule><mi>P</mi><mo>=</mo><mi>R</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mspace width="1.5em"/><mi>Q</mi><mo>=</mo><msub><mi>W</mi><mtext>élec</mtext></msub><mo>=</mo><mi>R</mi><mo>×</mo><msup><mi>I</mi><mn>2</mn></msup><mo>×</mo><mi>Δ</mi><mi>t</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Dans un <strong>conducteur ohmique</strong>, tout le travail électrique reçu est converti en <strong>transfert thermique</strong> (effet Joule).</li>
+          <li>L’intensité est <strong>au carré</strong> : I × 2 donne P × 4. Le carré ne porte que sur I, pas sur R.</li>
+          <li><strong>Exemple :</strong> R = 22 Ω, I = 2,0 A, Δt = 30 s : P = 22 × 2,0² = 88 W ; Q = 88 × 30 = 2 640 J.</li>
+          <li><strong>Lignes à haute tension :</strong> pour transporter P = U × I, augmenter U diminue I ; les pertes r × I² chutent (U × 4 donne I ÷ 4 et pertes ÷ 16).</li>
+          <li><strong>Hypothèses :</strong> résistance constante, régime continu, ligne simplifiée de 0,1 Ω/km.</li>
+        </ul>
+      </>,
       texte: <>Les câbles ne sont pas parfaits : ils ont une petite résistance (≈ 0,1 Ω/km) et dissipent de l’énergie par <strong>effet Joule</strong> : P<sub>perdue</sub> = r × I². Pour transporter une puissance P = U × I, on peut garder P en <strong>augmentant U</strong> : l’intensité I = P / U <strong>diminue</strong>, et les pertes diminuent comme I². D’où les lignes à <strong>400 000 V</strong> ! Essayez 100 kV puis 400 kV.</>,
       tache: { type: 'qcm', q: 'Pour réduire les pertes par effet Joule dans une ligne, on…', options: ['augmente la tension et diminue l’intensité', 'diminue la tension et augmente l’intensité', 'augmente l’intensité', 'allonge la ligne'], bonne: 0, expl: 'P = U × I fixée : U plus grande → I plus petite → pertes r × I² plus petites.', indice: "Les pertes valent R × I². Comment diminuer I tout en transportant la même puissance P = U × I ?" } },
     { id: 'rendement', titre: 'Le rendement d’un convertisseur', depart: () => voir('rendement', { k: 'moteur' }),
-      retenirTitre: 'À RETENIR : LE RENDEMENT',
-      retenir: <>
-        <Formule><mi>η</mi><mo>=</mo><mfrac><mtext>énergie utile</mtext><mtext>énergie consommée</mtext></mfrac><mo>=</mo><mfrac><msub><mi>P</mi><mtext>utile</mtext></msub><msub><mi>P</mi><mtext>consommée</mtext></msub></mfrac><mo>≤</mo><mn>1</mn></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le rendement est un nombre <strong>sans unité</strong>, toujours ≤ 1 (souvent en %). Énergie consommée = énergie utile + pertes.</li>
-          <li><strong>Méthode :</strong> identifier l’énergie (ou puissance) <strong>utile</strong> et celle <strong>consommée</strong>, diviser <strong>utile / consommée</strong>, puis × 100 pour un pourcentage.</li>
-          <li><strong>Exemple :</strong> un chargeur reçoit 10 W et fournit 8,0 W : η = 8,0 / 10 = 0,80 = 80 % ; 2,0 W sont perdus en chaleur.</li>
-          <li><strong>Piège :</strong> inverser le rapport (η ne peut pas dépasser 1) ; confondre pertes et énergie utile.</li>
-        </ul>
-      </>,
       texte: <>Un <strong>convertisseur</strong> transforme l’énergie reçue en énergie utile, avec des pertes (sous forme de chaleur). Le <strong>rendement</strong> est <strong>η = énergie utile / énergie consommée = P<sub>utile</sub> / P<sub>consommée</sub></strong> : un nombre sans unité, toujours ≤ 1 (souvent donné en %).
         <ExempleResolu>Moteur : W<sub>élec</sub> = 100 J reçus, W<sub>méca</sub> = 90 J fournis (10 J dissipés en chaleur) : η = 90 / 100 = <strong>0,90 = 90 %</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Un moteur reçoit 200 W et fournit 150 W de puissance mécanique. Quel est son rendement (en %) ?', unite: '%', vrai: 75, tol: 0.02, affiche: x => String(x), pieges: [[0.75, 'Exprime le rendement en pourcentage : 0,75 = 75 %.'], [133, 'Tu as inversé : η = utile / consommée.'], [25, 'C’est la part de puissance perdue (25 %). Le rendement est la part utile : η = P_utile / P_consommée.'], [50, 'C’est la puissance perdue (200 − 150 = 50 W). Le rendement est le rapport utile / consommée.']],
@@ -217,8 +199,23 @@ export function SimulationPuissanceJoule() {
           'η = 150 / 200 = 0,75.',
           'En pourcentage : 0,75 × 100 = 75 %.'], expl: 'η = 150 / 200 = 0,75 = 75 %.', indice: "Rendement = puissance utile ÷ puissance consommée, à exprimer en pourcentage." } },
     { id: 'calo', titre: 'L’expérience : chauffer de l’eau', depart: () => setAtelier('calo'),
+      retenirTitre: 'À RETENIR : LE RENDEMENT',
+      retenir: <>
+        <SchemaRendement/>
+        <Formule><mi>η</mi><mo>=</mo><mfrac><mtext>énergie utile</mtext><mtext>énergie consommée</mtext></mfrac><mo>=</mo><mfrac><msub><mi>P</mi><mtext>utile</mtext></msub><msub><mi>P</mi><mtext>consommée</mtext></msub></mfrac><mo>≤</mo><mn>1</mn></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Le rendement est un nombre <strong>sans unité</strong>, toujours ≤ 1 (souvent en %). Énergie consommée = énergie utile + pertes.</li>
+          <li><strong>Méthode :</strong> identifier l’énergie (ou puissance) <strong>utile</strong> et celle <strong>consommée</strong>, diviser <strong>utile / consommée</strong>, puis × 100 pour un pourcentage.</li>
+          <li><strong>Exemple :</strong> un chargeur reçoit 10 W et fournit 8,0 W : η = 8,0 / 10 = 0,80 = 80 % ; 2,0 W sont perdus en chaleur.</li>
+          <li><strong>Piège :</strong> inverser le rapport (η ne peut pas dépasser 1) ; confondre pertes et énergie utile.</li>
+        </ul>
+      </>,
+      texte: <>Une résistance chauffante plongée dans <strong>0,2 kg d’eau</strong> reçoit W<sub>élec</sub> = U × I × Δt (courbe bleue). L’eau reçoit Q = m × C × Δθ (courbe orange), avec C = 4180 J·kg⁻¹·K⁻¹. Si tout était transféré à l’eau, les deux courbes seraient confondues. Déplacez le curseur de temps : <strong>Q reste un peu en dessous de W<sub>élec</sub></strong>. Décochez « avec pertes » pour comparer : les deux courbes se rapprochent, mais restent distinctes, car la cuve, la résistance et le thermomètre (40 J·K⁻¹) absorbent aussi de l’énergie.</>,
+      tache: { type: 'qcm', q: 'Pourquoi le transfert thermique Q reçu par l’eau est-il un peu inférieur au travail électrique W_élec ?', options: ['Une partie de la chaleur chauffe le récipient et l’air ambiant (pertes)', 'L’énergie disparaît', 'La résistance consomme de l’eau', 'Q = W_élec exactement, c’est une erreur de mesure'], bonne: 0, expl: 'Le rendement est inférieur à 1 : une partie de l’énergie chauffe le récipient et le thermomètre, et une autre est perdue vers l’air.', indice: "Compare l’énergie électrique fournie à la chaleur reçue par l’eau : où a pu aller le reste de l’énergie ?" } },
+    { id: 'rho_calo', titre: 'Rendement de l’expérience', depart: () => { setAtelier('calo'); setCa(c => ({ ...c, t: 300, pertes: true })); },
       retenirTitre: 'À RETENIR : BILAN ÉNERGÉTIQUE EXPÉRIMENTAL',
       retenir: <>
+        <SchemaCalo/>
         <Formule><msub><mi>W</mi><mtext>élec</mtext></msub><mo>=</mo><mi>U</mi><mo>×</mo><mi>I</mi><mo>×</mo><mi>Δ</mi><mi>t</mi><mspace width="1.5em"/><mi>Q</mi><mo>=</mo><mi>m</mi><mo>×</mo><mi>C</mi><mo>×</mo><mi>Δ</mi><mi>θ</mi></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Résistance chauffante dans <strong>0,2 kg d’eau</strong> : l’énergie électrique reçue W<sub>élec</sub> est comparée à celle reçue par l’eau Q (C<sub>eau</sub> = 4 180 J·kg⁻¹·K⁻¹).</li>
@@ -227,9 +224,6 @@ export function SimulationPuissanceJoule() {
           <li><strong>Méthode :</strong> calculer W<sub>élec</sub>, calculer Q, puis η = Q / W<sub>élec</sub>.</li>
         </ul>
       </>,
-      texte: <>Une résistance chauffante plongée dans <strong>0,2 kg d’eau</strong> reçoit W<sub>élec</sub> = U × I × Δt (courbe bleue). L’eau reçoit Q = m × C × Δθ (courbe orange), avec C = 4180 J·kg⁻¹·K⁻¹. Si tout était transféré à l’eau, les deux courbes seraient confondues. Déplacez le curseur de temps : <strong>Q reste un peu en dessous de W<sub>élec</sub></strong>. Décochez « avec pertes » pour comparer : les deux courbes se rapprochent, mais restent distinctes, car la cuve, la résistance et le thermomètre (40 J·K⁻¹) absorbent aussi de l’énergie.</>,
-      tache: { type: 'qcm', q: 'Pourquoi le transfert thermique Q reçu par l’eau est-il un peu inférieur au travail électrique W_élec ?', options: ['Une partie de la chaleur chauffe le récipient et l’air ambiant (pertes)', 'L’énergie disparaît', 'La résistance consomme de l’eau', 'Q = W_élec exactement, c’est une erreur de mesure'], bonne: 0, expl: 'Le rendement est inférieur à 1 : une partie de l’énergie chauffe le récipient et le thermomètre, et une autre est perdue vers l’air.', indice: "Compare l’énergie électrique fournie à la chaleur reçue par l’eau : où a pu aller le reste de l’énergie ?" } },
-    { id: 'rho_calo', titre: 'Rendement de l’expérience', depart: () => { setAtelier('calo'); setCa(c => ({ ...c, t: 300, pertes: true })); },
       texte: <>À t = 300 s on mesure : Q = 6656 J et W<sub>élec</sub> = 7330 J. Le rendement du dispositif « résistance + eau » vaut η = Q / W<sub>élec</sub>.</>,
       tache: { type: 'num', q: 'Calculez η en % (Q = 6656 J ; W_élec = 7330 J).', unite: '%', vrai: 90.8, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.1, 'Tu as inversé : η = Q / W_élec (utile / consommée).'], [0.908, 'Exprime le rendement en pourcentage : multiplie le rapport par 100.'], [(7330 - 6656) / 7330 * 100, 'C’est la part d’énergie perdue. Le rendement est la part utile : η = Q / W_élec.']],
         calcul: () => [
@@ -237,9 +231,10 @@ export function SimulationPuissanceJoule() {
           'Données : Q = 6656 J ; W_élec = 7330 J (mêmes unités, des joules).',
           'η = 6656 / 7330 = 0,908.',
           'En pourcentage : 0,908 × 100 = 90,8 %.'], expl: 'η = 6656 / 7330 = 0,908 = 90,8 %.', indice: "Rendement = énergie utile ÷ énergie consommée, soit Q / W(élec), puis × 100 pour l’exprimer en %." } },
-    { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
+    { id: 'fin', titre: 'Le bilan', depart: null,
       retenirTitre: 'À RETENIR : LE BILAN',
       retenir: <>
+        <SchemaBilan/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li><strong>P = W / Δt</strong> (W) ; <strong>P<sub>élec</sub> = U × I</strong> ; W<sub>élec</sub> = U × I × Δt ; 1 kWh = 3,6 × 10⁶ J.</li>
           <li><strong>Effet Joule</strong> : P = R × I², Q = R × I² × Δt ; pertes en ligne ↓ quand U ↑ et I ↓.</li>
@@ -248,7 +243,7 @@ export function SimulationPuissanceJoule() {
           <li><strong>Pièges :</strong> oublier le carré de I ; rendement inversé ; mélanger W (travail) et W (watt).</li>
         </ul>
       </>,
-      texte: <>Bravo : vous savez calculer puissance, énergie et rendement. Voici le bilan à garder.</>, tache: null },
+      texte: <>Vous savez calculer puissance, énergie et rendement. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
