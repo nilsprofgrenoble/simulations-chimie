@@ -3,6 +3,7 @@ import { useState, useRef, useMemo } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
+import { FicheGravitation, FichePoids, FicheChamps, FicheChampE, FicheForceQE, FicheBilanChamp } from "./ChampForceFiches";
 import { Pic } from "../Pictos";
 
 // ====================================================
@@ -315,10 +316,16 @@ export function SimulationChampForce() {
   const etape = guide.etape;
   const g2 = G * MT / (2 * RT) ** 2, gSol = G * MT / RT ** 2;
   const a2R = terre && Math.abs(cM.d / RT - 2) < 0.03;
-  const enSalle = terre && vue.H < 100;
   const auSol = terre && hAlt < 1000;
   const a10 = !terre && src === 'plus' && Qabs === 10 && Math.abs(cM.d - 0.10) < 0.003;
   const E10 = K * 10e-9 / 0.01;
+  // actions proposées par les boutons du parcours (le même geste que sur les réglages)
+  const poser2R = () => { setSrc('terre'); setZ(0); setPosT({ x: 0, y: 2 * RT }); };
+  const zoomerSalle = () => { setSrc('terre'); setZ(1); setPosT({ x: 0, y: RT + 1.2 }); };
+  const choisirPlus = () => { choisirSource('plus'); setQabs(10); setQ(2); };
+  const choisirMoins = () => choisirSource('moins');
+  const poser10 = () => { setSrc('plus'); setQabs(10); setPosC({ x: 0.10, y: 0 }); };
+  const poserQneg = () => { if (terre) choisirSource('plus'); setQ(-2); };
   const ETAPES = [
     { id: 'idee', titre: 'Une action à distance… et un champ', focus: ['scene'],
       texte: <>La Terre attire la Lune, un satellite, une pomme, sans les toucher. Pour décrire cette action à distance, on dit que la Terre (de masse M<sub>T</sub>) crée
@@ -330,14 +337,11 @@ export function SimulationChampForce() {
       texte: <>Observez les flèches grises tout autour de la Terre.</>,
       tache: { type: 'qcm', q: `En chaque point, le vecteur ${GRAV} est dirigé…`, options: ['vers le centre O de la Terre : le champ est centripète', 'vers l’extérieur : le champ est centrifuge', 'toujours vers le bas de l’écran'], bonne: 0,
         expl: `Le vecteur ${GRAV} est porté par la droite (OM) et dirigé vers le centre de la Terre. « Vers le bas » n’est vrai que localement, à la surface.`, indice: "Le champ de gravitation traduit l’attraction de la Terre : vers quel point est-on attiré, en n’importe quel endroit ?" } },
-    { id: 'placer2R', titre: 'Placer un objet', focus: ['scene', 'reglages'],
-      texte: <>Placez l’objet à la distance <strong>d = 2 R<sub>T</sub></strong> du centre de la Terre, soit à environ 12 740 km (lisez « Distance au centre » dans les mesures).</>,
-      tache: { type: 'action', ok: a2R, label: 'Placer l’objet à deux rayons terrestres', faire: () => { setSrc('terre'); setZ(0); setPosT({ x: 0, y: 2 * RT }); },
-        consigne: 'Faites glisser l’objet M jusqu’à d = 2 R_T' } },
-    { id: 'valeur2R', titre: 'Norme du champ', focus: ['mesures', 'calcul'],
-      texte: <>La norme du champ de gravitation à la distance d du centre de la Terre est <strong>{GRAV} = G·M<sub>T</sub> / d²</strong>. Lisez-la dans « Mesures » (le calcul détaillé est juste en dessous).</>,
+    { id: 'valeur2R', titre: 'Norme du champ', focus: ['scene', 'reglages', 'mesures', 'calcul'],
+      texte: <>Placez l’objet à la distance <strong>d = 2 R<sub>T</sub></strong> du centre de la Terre, soit environ 12 740 km (glissez-le, ou utilisez le bouton).
+        {' '}<button onClick={poser2R} style={stylePetitBouton(true, '#2563eb')}>Placer l’objet à 2 R_T</button><br/>La norme du champ de gravitation à la distance d du centre de la Terre est <strong>{GRAV} = G·M<sub>T</sub> / d²</strong>. Lisez-la dans « Mesures » (le calcul détaillé est juste en dessous), avec d lue dans « Distance au centre ».</>,
       tache: { type: 'num', q: `Norme de ${GRAV} à d = 2 R_T`, unite: 'N·kg⁻¹', vrai: g2, tol: 0.03, affiche: v => val(v), cs: 2,
-        bloque: a2R ? null : 'Placez d’abord l’objet à d = 2 R_T (étape précédente).',
+        bloque: a2R ? null : 'Placez d’abord l’objet à d = 2 R_T (bouton ci-dessus).',
         pieges: [[gSol / 2, 'Le champ n’est pas divisé par 2 quand la distance double : il varie en 1/d².'],
           [G * MT / (2 * RT), 'Vous avez oublié le carré : au dénominateur, c’est d² = (2 R_T)², pas d.'],
           [gSol, 'C’est la valeur au sol (d = R_T). Ici, la distance au centre de la Terre est d = 2 R_T.']],
@@ -349,60 +353,25 @@ export function SimulationChampForce() {
           `${GRAV} = ${puiss(G * MT, 4)} / ${puiss((2 * RT) ** 2, 4)} = ${val(g2)} N·kg⁻¹.`],
         expl: `${GRAV} = G·M_T / (2 R_T)² ≈ ${val(g2)} N·kg⁻¹, quatre fois moins qu’au sol (9,82 N·kg⁻¹).`, indice: "La norme du champ dépend de la distance d au centre de la Terre : g = G × M / d². Que devient d² quand d est doublée ? Compare avec la valeur à la surface." } },
     { id: 'loi', titre: 'Comment varie le champ ?', focus: ['scene', 'mesures'],
-      retenirTitre: 'À RETENIR : LE CHAMP DE GRAVITATION',
-      retenir: <>
-        <Formule><mi>𝒢</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><msub><mi>M</mi><mtext>T</mtext></msub></mrow><msup><mi>d</mi><mn>2</mn></msup></mfrac><mspace width="1.5em"/><mi>G</mi><mo>=</mo><mn>6,674</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>11</mn></mrow></msup><mtext> N·m²·kg⁻²</mtext></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Distance d au centre de la Terre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Norme 𝒢 (N·kg⁻¹)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>R<sub>T</sub> (sol)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>9,82</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2 R<sub>T</sub></td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,45</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>4 R<sub>T</sub></td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,61</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>10 R<sub>T</sub></td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,098</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>La norme varie en <strong>1 / d²</strong> : d × 2 donne 𝒢 ÷ 4 ; d × 4 donne 𝒢 ÷ 16.</li>
-          <li><strong>Données :</strong> M<sub>T</sub> = 5,972 × 10²⁴ kg ; R<sub>T</sub> = 6,371 × 10⁶ m. <strong>d est la distance au centre</strong>, en <strong>mètres</strong>.</li>
-          <li><strong>Pièges :</strong> oublier le carré ; mesurer d depuis le sol au lieu du centre ; garder des km.</li>
-        </ul>
-      </>,
       texte: <>Déplacez l’objet à <strong>4 R<sub>T</sub></strong> (environ 25 500 km) et comparez.</>,
       tache: { type: 'qcm', q: `Quand la distance au centre double, la norme de ${GRAV} est…`, options: ['divisée par 4', 'divisée par 2', 'inchangée'], bonne: 0,
         expl: `${GRAV} = G·M_T / d² : si d est multiplié par 2, d² est multiplié par 4, donc ${GRAV} est divisé par 4 (2,45 → 0,61 N·kg⁻¹).`, indice: "La norme est proportionnelle à 1 / d². Remplace d par 2 d dans g = G × M / d²." } },
     { id: 'lignes', titre: 'Les lignes de champ', focus: ['scene'],
-      retenirTitre: 'À RETENIR : LIGNES DE CHAMP',
-      retenir: <>
-        <svg viewBox="0 0 360 140" role="img" aria-label="Lignes de champ : autour de la Terre (gravitation) et d’une charge négative, elles convergent vers le centre ; autour d’une charge positive, elles divergent" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="110.0" y1="62.0" x2="93.0" y2="62.0" stroke="#475569" strokeWidth="2" /><polygon points="86.0,62.0 93.0,58.5 93.0,65.5" fill="#475569" /><line x1="95.9" y1="95.9" x2="83.9" y2="83.9" stroke="#475569" strokeWidth="2" /><polygon points="79.0,79.0 86.4,81.4 81.4,86.4" fill="#475569" /><line x1="62.0" y1="110.0" x2="62.0" y2="93.0" stroke="#475569" strokeWidth="2" /><polygon points="62.0,86.0 65.5,93.0 58.5,93.0" fill="#475569" /><line x1="28.1" y1="95.9" x2="40.1" y2="83.9" stroke="#475569" strokeWidth="2" /><polygon points="45.0,79.0 42.6,86.4 37.6,81.4" fill="#475569" /><line x1="14.0" y1="62.0" x2="31.0" y2="62.0" stroke="#475569" strokeWidth="2" /><polygon points="38.0,62.0 31.0,65.5 31.0,58.5" fill="#475569" /><line x1="28.1" y1="28.1" x2="40.1" y2="40.1" stroke="#475569" strokeWidth="2" /><polygon points="45.0,45.0 37.6,42.6 42.6,37.6" fill="#475569" /><line x1="62.0" y1="14.0" x2="62.0" y2="31.0" stroke="#475569" strokeWidth="2" /><polygon points="62.0,38.0 58.5,31.0 65.5,31.0" fill="#475569" /><line x1="95.9" y1="28.1" x2="83.9" y2="40.1" stroke="#475569" strokeWidth="2" /><polygon points="79.0,45.0 81.4,37.6 86.4,42.6" fill="#475569" /><circle cx="62" cy="62" r="19" fill="#bae6fd" stroke="#0369a1" strokeWidth="2" /><text x="62" y="66" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0369a1">M<tspan fontSize="8" dy="3">T</tspan></text>
-          <line x1="204.0" y1="62.0" x2="221.0" y2="62.0" stroke="#dc2626" strokeWidth="2" /><polygon points="228.0,62.0 221.0,65.5 221.0,58.5" fill="#dc2626" /><line x1="197.0" y1="79.0" x2="209.0" y2="91.0" stroke="#dc2626" strokeWidth="2" /><polygon points="213.9,95.9 206.5,93.5 211.5,88.5" fill="#dc2626" /><line x1="180.0" y1="86.0" x2="180.0" y2="103.0" stroke="#dc2626" strokeWidth="2" /><polygon points="180.0,110.0 176.5,103.0 183.5,103.0" fill="#dc2626" /><line x1="163.0" y1="79.0" x2="151.0" y2="91.0" stroke="#dc2626" strokeWidth="2" /><polygon points="146.1,95.9 148.5,88.5 153.5,93.5" fill="#dc2626" /><line x1="156.0" y1="62.0" x2="139.0" y2="62.0" stroke="#dc2626" strokeWidth="2" /><polygon points="132.0,62.0 139.0,58.5 139.0,65.5" fill="#dc2626" /><line x1="163.0" y1="45.0" x2="151.0" y2="33.0" stroke="#dc2626" strokeWidth="2" /><polygon points="146.1,28.1 153.5,30.5 148.5,35.5" fill="#dc2626" /><line x1="180.0" y1="38.0" x2="180.0" y2="21.0" stroke="#dc2626" strokeWidth="2" /><polygon points="180.0,14.0 183.5,21.0 176.5,21.0" fill="#dc2626" /><line x1="197.0" y1="45.0" x2="209.0" y2="33.0" stroke="#dc2626" strokeWidth="2" /><polygon points="213.9,28.1 211.5,35.5 206.5,30.5" fill="#dc2626" /><circle cx="180" cy="62" r="19" fill="#fee2e2" stroke="#dc2626" strokeWidth="2" /><text x="180" y="68" textAnchor="middle" fontSize="18" fontWeight="700" fill="#dc2626">+</text>
-          <line x1="346.0" y1="62.0" x2="329.0" y2="62.0" stroke="#2563eb" strokeWidth="2" /><polygon points="322.0,62.0 329.0,58.5 329.0,65.5" fill="#2563eb" /><line x1="331.9" y1="95.9" x2="319.9" y2="83.9" stroke="#2563eb" strokeWidth="2" /><polygon points="315.0,79.0 322.4,81.4 317.4,86.4" fill="#2563eb" /><line x1="298.0" y1="110.0" x2="298.0" y2="93.0" stroke="#2563eb" strokeWidth="2" /><polygon points="298.0,86.0 301.5,93.0 294.5,93.0" fill="#2563eb" /><line x1="264.1" y1="95.9" x2="276.1" y2="83.9" stroke="#2563eb" strokeWidth="2" /><polygon points="281.0,79.0 278.6,86.4 273.6,81.4" fill="#2563eb" /><line x1="250.0" y1="62.0" x2="267.0" y2="62.0" stroke="#2563eb" strokeWidth="2" /><polygon points="274.0,62.0 267.0,65.5 267.0,58.5" fill="#2563eb" /><line x1="264.1" y1="28.1" x2="276.1" y2="40.1" stroke="#2563eb" strokeWidth="2" /><polygon points="281.0,45.0 273.6,42.6 278.6,37.6" fill="#2563eb" /><line x1="298.0" y1="14.0" x2="298.0" y2="31.0" stroke="#2563eb" strokeWidth="2" /><polygon points="298.0,38.0 294.5,31.0 301.5,31.0" fill="#2563eb" /><line x1="331.9" y1="28.1" x2="319.9" y2="40.1" stroke="#2563eb" strokeWidth="2" /><polygon points="315.0,45.0 317.4,37.6 322.4,42.6" fill="#2563eb" /><circle cx="298" cy="62" r="19" fill="#dbeafe" stroke="#2563eb" strokeWidth="2" /><text x="298" y="67" textAnchor="middle" fontSize="18" fontWeight="700" fill="#2563eb">−</text>
-          <text x="62" y="128" textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">Terre : centripète</text>
-          <text x="180" y="128" textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">Q &gt; 0 : centrifuge</text>
-          <text x="298" y="128" textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">Q &lt; 0 : centripète</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un <strong>champ</strong> est un <strong>vecteur défini en chaque point</strong> de l’espace (direction, sens, norme), qu’un objet y soit présent ou non ; la <strong>force</strong> n’existe que sur un objet placé dans le champ.</li>
-          <li>Une <strong>ligne de champ</strong> est tangente au vecteur champ en chacun de ses points et orientée dans son sens.</li>
-          <li>Champ de gravitation de la Terre : <strong>centripète</strong>. Champ d’une charge Q &gt; 0 : <strong>centrifuge</strong> ; Q &lt; 0 : <strong>centripète</strong>.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : LE CHAMP DE GRAVITATION',
+      retenir: <FicheGravitation/>,
       texte: <>Une <strong>ligne de champ</strong> est une courbe qui donne, en chaque point, la direction et le sens du champ. Autour de la Terre, ce sont des demi-droites
         qui convergent vers son centre (traits bleus fléchés).</>,
       tache: { type: 'qcm', q: `En un point, le vecteur ${GRAV} est…`, options: ['tangent à la ligne de champ qui passe par ce point, et orienté dans son sens', 'perpendiculaire à la ligne de champ', 'sans rapport avec les lignes de champ'], bonne: 0,
         expl: 'Le vecteur champ est tangent aux lignes de champ, qui sont orientées dans le sens du champ.', indice: "Une ligne de champ est tracée pour que le champ lui soit lié en chaque point. Quelle est la relation entre le vecteur champ et la ligne de champ qui passe par ce point ?" } },
-    { id: 'zoom', titre: 'Zoomer jusqu’à la salle de classe', focus: ['reglages', 'scene'],
-      texte: <>Avec le curseur « Zoom », rapprochez-vous de la surface jusqu’à voir une <strong>salle de classe</strong> (une vue de moins de 100 m de haut). Regardez les flèches pendant le zoom.</>,
-      tache: { type: 'action', ok: enSalle, label: 'Zoomer sur la salle de classe', faire: () => { setSrc('terre'); setZ(1); setPosT({ x: 0, y: RT + 1.2 }); },
-        consigne: 'Zoomez jusqu’à la salle de classe' } },
-    { id: 'uniforme', titre: 'Un champ localement uniforme', focus: ['scene', 'uniformite'],
-      texte: <>Dans la salle, les flèches semblent identiques. Le cadre « Uniformité » chiffre les écarts entre les vecteurs de la vue.</>,
+    { id: 'uniforme', titre: 'Un champ localement uniforme', focus: ['reglages', 'scene', 'uniformite'],
+      texte: <>Avec le curseur « Zoom » (ou le bouton), rapprochez-vous de la surface jusqu’à voir une <strong>salle de classe</strong> (une vue de moins de 100 m de haut).
+        {' '}<button onClick={zoomerSalle} style={stylePetitBouton(true, '#2563eb')}>Zoomer sur la salle de classe</button><br/>Dans la salle, les flèches semblent identiques. Le cadre « Uniformité » chiffre les écarts entre les vecteurs de la vue.</>,
       tache: { type: 'qcm', q: `À l’échelle de la salle, les vecteurs ${GRAV}…`, options: ['ont la même direction, le même sens et la même norme : le champ est uniforme', 'pointent dans des directions très différentes', 'sont nuls'], bonne: 0,
         expl: 'Sur quelques mètres, les écarts sont infimes (environ 10⁻⁴ % pour la norme, moins de 10⁻⁴ ° pour la direction) : on dit que le champ de pesanteur est localement uniforme. À l’échelle de la Terre, il ne l’est pas du tout.', indice: "À l’échelle d’une salle, la distance au centre de la Terre change-t-elle de façon notable ? Que deviennent alors la direction, le sens et la norme du champ ?" } },
     { id: 'g', titre: 'L’intensité de la pesanteur', focus: ['mesures'],
       texte: <>Près du sol, le champ de gravitation terrestre est appelé <strong>champ de pesanteur</strong> <Vec>g</Vec>. Lisez sa norme g au niveau de la salle.</>,
       tache: { type: 'num', q: 'Norme g du champ de pesanteur au sol (d’après le modèle)', unite: 'N·kg⁻¹', vrai: gSol, tol: 0.01, affiche: v => val(v), cs: 3,
-        bloque: auSol ? null : 'Placez l’objet près du sol (étape précédente).',
+        bloque: auSol ? null : 'Placez l’objet près du sol : zoomez sur la salle (étape précédente).',
         pieges: [[G * MT / RT, 'Vous avez oublié le carré : au dénominateur, c’est R_T², pas R_T.'],
           [G * MT / (RT / 1e3) ** 2, 'Convertissez la distance en mètres : R_T = 6,371 × 10⁶ m (et non 6 371 km).']],
         calcul: () => [
@@ -413,15 +382,7 @@ export function SimulationChampForce() {
         expl: 'g = G·M_T / R_T² ≈ 9,82 N·kg⁻¹. La valeur mesurée à Paris (9,81) est un peu plus faible : le modèle néglige la rotation de la Terre et sa forme aplatie.', indice: "g = G × M / R², avec M la masse de la Terre et R son rayon (en mètres). Utilise les valeurs du modèle affichées." } },
     { id: 'poids', titre: 'Le poids', focus: ['reglages', 'mesures'],
       retenirTitre: 'À RETENIR : CHAMP DE PESANTEUR ET POIDS',
-      retenir: <>
-        <Formule><mi>g</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><msub><mi>M</mi><mtext>T</mtext></msub></mrow><msubsup><mi>R</mi><mtext>T</mtext><mn>2</mn></msubsup></mfrac><mo>≈</mo><mn>9,82</mn><mtext> N·kg⁻¹</mtext><mspace width="1.5em"/><mi>P</mi><mo>=</mo><mi>m</mi><mo>×</mo><mi>g</mi></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Près du sol, le champ de gravitation s’appelle <strong>champ de pesanteur</strong> ; il est <strong>localement uniforme</strong> : à l’échelle d’une salle, même direction, même sens, même norme (écarts de l’ordre de 10⁻⁴ %), mais pas à l’échelle de la Terre.</li>
-          <li>La force subie par une masse m est <strong>F = m × g</strong> : c’est son <strong>poids</strong> (vertical, vers le centre de la Terre).</li>
-          <li><strong>Exemple :</strong> m = 10 kg : P = 10 × 9,82 ≈ 98 N.</li>
-          <li><strong>Hypothèses :</strong> Terre sphérique homogène (valeur mesurée à Paris : 9,81 ; rotation et aplatissement négligés).</li>
-        </ul>
-      </>,
+      retenir: <FichePoids/>,
       texte: <>Un objet de masse m placé dans ce champ subit la force <Vec>F</Vec> = m·<Vec>g</Vec> : c’est son <strong>poids</strong> <Vec>P</Vec>. Réglez la masse sur 60 kg ; au sol, g = {val(gSol)} N·kg⁻¹ (étape précédente).</>,
       tache: { type: 'num', q: 'Poids d’un élève de 60 kg', unite: 'N', vrai: 60 * gSol, tol: 0.02, affiche: v => fmt(v, 0), cs: 3,
         pieges: [[60, 'Le poids est une force, en newton : P = m × g.'], [60 / gSol, 'On multiplie : P = m × g.']],
@@ -429,39 +390,23 @@ export function SimulationChampForce() {
           `Formule : P = m × g, avec m = 60 kg et g = ${val(gSol)} N·kg⁻¹ (champ de pesanteur au sol, étape précédente).`,
           `P = 60 × ${val(gSol)} = ${fmt(60 * gSol, 0)} N.`],
         expl: `P = m × g = 60 × 9,82 ≈ ${fmt(60 * gSol, 0)} N, dirigé vers le centre de la Terre (verticale, vers le bas).`, indice: "Poids : P = m × g, avec m en kg et g la norme du champ de pesanteur trouvée précédemment (en N/kg)." } },
-    { id: 'plus', titre: 'Une charge électrique crée aussi un champ', focus: ['reglages', 'scene'],
-      texte: <>De même, un corps de charge Q crée en chaque point un <strong>champ électrostatique</strong> <Vec>E</Vec>. Choisissez la source « Charge Q {'>'} 0 ».</>,
-      tache: { type: 'action', ok: src === 'plus', label: 'Choisir Q > 0', faire: () => { choisirSource('plus'); setQabs(10); setQ(2); },
-        consigne: 'Choisissez la source « Charge Q > 0 »' } },
-    { id: 'centrifuge', titre: 'Le champ d’une charge positive', focus: ['scene'],
-      texte: <>Observez les flèches et les lignes de champ.</>,
+    { id: 'centrifuge', titre: 'Le champ d’une charge positive', focus: ['reglages', 'scene'],
+      texte: <>De même, un corps de charge Q crée en chaque point un <strong>champ électrostatique</strong> <Vec>E</Vec>. Choisissez la source « Charge Q {'>'} 0 » (ou le bouton), puis observez les flèches et les lignes de champ.
+        {' '}<button onClick={choisirPlus} style={stylePetitBouton(true, '#2563eb')}>Choisir Q &gt; 0</button></>,
       tache: { type: 'qcm', q: 'Le champ créé par une charge Q > 0 est…', options: ['centrifuge : il part de la charge vers l’extérieur', 'centripète : dirigé vers la charge', 'nul en dehors de la boule'], bonne: 0,
         expl: 'Une charge positive crée un champ centrifuge : les lignes de champ partent de la charge.', indice: "Le champ indique la force subie par une charge test positive. Une charge positive attire-t-elle ou repousse-t-elle une charge test positive ?" } },
-    { id: 'moins', titre: 'Et une charge négative ?', focus: ['reglages', 'scene'],
-      texte: <>Choisissez maintenant la source « Charge Q {'<'} 0 ».</>,
-      tache: { type: 'action', ok: src === 'moins', label: 'Choisir Q < 0', faire: () => choisirSource('moins'), consigne: 'Choisissez la source « Charge Q < 0 »' } },
-    { id: 'centripete', titre: 'Le champ d’une charge négative', focus: ['scene'],
-      texte: <>Comparez avec le cas précédent. Changez aussi le signe de la charge test q : le champ change-t-il ?</>,
+    { id: 'centripete', titre: 'Le champ d’une charge négative', focus: ['reglages', 'scene'],
+      texte: <>Choisissez maintenant la source « Charge Q {'<'} 0 » (ou le bouton).
+        {' '}<button onClick={choisirMoins} style={stylePetitBouton(true, '#2563eb')}>Choisir Q &lt; 0</button><br/>Comparez avec le cas précédent. Changez aussi le signe de la charge test q : le champ change-t-il ?</>,
       tache: { type: 'qcm', q: 'Le champ créé par une charge Q < 0…', options: ['est centripète (dirigé vers la charge), quel que soit le signe de q', 'est centrifuge', 'change de sens selon le signe de la charge q placée en M'], bonne: 0,
         expl: 'Les lignes de champ arrivent sur une charge négative. Le champ ne dépend que de la source Q et du point M, pas de la charge q placée en M.', indice: "Le champ indique la force subie par une charge test positive. Une charge négative attire-t-elle ou repousse-t-elle une charge test positive ?" } },
-    { id: 'placer10', titre: 'Calculer un champ électrostatique', focus: ['reglages', 'scene'],
-      texte: <>Reprenez <strong>Q = +10 nC</strong> et placez la charge test à <strong>10 cm</strong> du centre de la boule.</>,
-      tache: { type: 'action', ok: a10, label: 'Q = +10 nC, q à 10 cm', faire: () => { setSrc('plus'); setQabs(10); setPosC({ x: 0.10, y: 0 }); },
-        consigne: 'Source Q > 0 réglée sur 10 nC, charge test à 10,0 cm' } },
-    { id: 'calculE', titre: 'La norme de E', focus: ['calcul'],
-      retenirTitre: 'À RETENIR : LE CHAMP ÉLECTROSTATIQUE',
-      retenir: <>
-        <Formule><mi>E</mi><mo>=</mo><mfrac><mrow><mi>k</mi><mo>×</mo><mrow><mo>|</mo><mi>Q</mi><mo>|</mo></mrow></mrow><msup><mi>d</mi><mn>2</mn></msup></mfrac><mspace width="1.5em"/><mi>k</mi><mo>=</mo><mn>9,0</mn><mo>×</mo><msup><mn>10</mn><mn>9</mn></msup><mtext> N·m²·C⁻²</mtext></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Méthode :</strong> convertir en unités SI (1 nC = 10⁻⁹ C ; 1 cm = 10⁻² m), calculer d², puis k × |Q| / d², exprimer E en <strong>N·C⁻¹</strong>.</li>
-          <li><strong>Exemple :</strong> Q = 5,0 nC, d = 30 cm : E = 9,0 × 10⁹ × 5,0 × 10⁻⁹ / (0,30)² = 45 / 0,090 = <strong>5,0 × 10² N·C⁻¹</strong>.</li>
-          <li>Le champ ne dépend que de la <strong>source Q</strong> et du point M, pas de la charge q placée en M.</li>
-          <li><strong>Hypothèse :</strong> source assimilée à une charge ponctuelle. <strong>Pièges :</strong> oublier le carré ; oublier les conversions ; oublier k.</li>
-        </ul>
-      </>,
-      texte: <>La norme du champ électrostatique est <strong>E = k·|Q| / d²</strong>, avec k = 9,0 × 10⁹ N·m²·C⁻². Faites le calcul vous-même (Q en coulombs, d en mètres) avant de lire la mesure.</>,
+    { id: 'calculE', titre: 'La norme de E', focus: ['reglages', 'scene', 'calcul'],
+      retenirTitre: 'À RETENIR : LES CHAMPS ET LEURS LIGNES',
+      retenir: <FicheChamps/>,
+      texte: <>Reprenez <strong>Q = +10 nC</strong> et placez la charge test à <strong>10 cm</strong> du centre de la boule.
+        {' '}<button onClick={poser10} style={stylePetitBouton(true, '#2563eb')}>Q = +10 nC, q à 10 cm</button><br/>La norme du champ électrostatique est <strong>E = k·|Q| / d²</strong>, avec k = 9,0 × 10⁹ N·m²·C⁻². Faites le calcul vous-même (Q en coulombs, d en mètres) avant de lire la mesure.</>,
       tache: { type: 'num', q: 'Norme de E à 10 cm de Q = +10 nC', unite: 'N·C⁻¹', vrai: E10, tol: 0.02, affiche: v => fmt(v, 0),
-        bloque: a10 ? null : 'Revenez à Q = +10 nC avec la charge test à 10 cm (étape précédente).',
+        bloque: a10 ? null : 'Réglez Q = +10 nC avec la charge test à 10 cm (bouton ci-dessus).',
         pieges: [[0.9, 'Convertissez d en mètres : 10 cm = 10 × 10⁻² m.'], [9e12, 'Convertissez Q en coulombs : 10 nC = 10 × 10⁻⁹ C.'], [900, 'N’oubliez pas le carré : d² = (10 × 10⁻² m)² = 10⁻² m².'],
           [1e-6, 'Vous avez oublié la constante k = 9,0 × 10⁹ N·m²·C⁻² au numérateur.']],
         calcul: () => [
@@ -471,26 +416,19 @@ export function SimulationChampForce() {
           'Numérateur : k·|Q| = 9,0 × 10⁹ × 1,0 × 10⁻⁸ = 90 N·m²·C⁻¹.',
           `E = 90 / (1,0 × 10⁻²) = ${fmt(E10, 0)} N·C⁻¹ (soit 9,0 × 10³).`],
         expl: 'E = 9,0 × 10⁹ × 10 × 10⁻⁹ / (10 × 10⁻²)² = 90 / 10⁻² = 9,0 × 10³ N·C⁻¹.', indice: "E = k × |Q| / d², avec d en mètres et Q en coulombs (10 cm = 0,10 m ; 1 nC = 10⁻⁹ C)." } },
-    { id: 'qneg', titre: 'Une charge test négative', focus: ['reglages', 'scene', 'vecteurs'],
-      texte: <>Réglez la charge test sur <strong>q = −2 nC</strong>. Comparez les flèches <Vec>E</Vec> (vert) et <Vec>F</Vec> (rouge) en M.</>,
-      tache: { type: 'action', ok: !terre && q === -2, label: 'Régler q = −2 nC', faire: () => { if (terre) choisirSource('plus'); setQ(-2); }, consigne: 'Curseur « charge test q » sur −2 nC' } },
-    { id: 'sensF', titre: 'Sens de la force', focus: ['vecteurs'],
-      texte: <>La force subie par la charge q placée dans le champ est <Vec>F</Vec> = q·<Vec>E</Vec>.</>,
+    { id: 'sensF', titre: 'Sens de la force', focus: ['reglages', 'scene', 'vecteurs'],
+      retenirTitre: 'À RETENIR : LE CHAMP ÉLECTROSTATIQUE',
+      retenir: <FicheChampE/>,
+      texte: <>Réglez la charge test sur <strong>q = −2 nC</strong>.
+        {' '}<button onClick={poserQneg} style={stylePetitBouton(true, '#2563eb')}>Régler q = −2 nC</button><br/>Comparez les flèches <Vec>E</Vec> (vert) et <Vec>F</Vec> (rouge) en M. La force subie par la charge q placée dans le champ est <Vec>F</Vec> = q·<Vec>E</Vec>.</>,
       tache: { type: 'qcm', q: 'Pour q < 0, la force F = q·E est…', options: ['de sens opposé à E', 'de même sens que E', 'perpendiculaire à E'], bonne: 0,
         expl: 'q < 0 : F = q·E est colinéaire à E mais de sens opposé. Si q > 0, F et E ont le même sens.', indice: "F = q × E (vecteurs). Que devient le sens de F par rapport à E quand q est négatif ?" } },
     { id: 'normeF', titre: 'Norme de la force', focus: ['calcul'],
       retenirTitre: 'À RETENIR : FORCE ÉLECTROSTATIQUE',
-      retenir: <>
-        <Formule><mover><mi>F</mi><mo>→</mo></mover><mo>=</mo><mi>q</mi><mo>×</mo><mover><mi>E</mi><mo>→</mo></mover><mspace width="1.5em"/><mi>F</mi><mo>=</mo><mrow><mo>|</mo><mi>q</mi><mo>|</mo></mrow><mo>×</mo><mi>E</mi></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>q &gt; 0 : <Vec>F</Vec> a le <strong>même sens</strong> que <Vec>E</Vec> ; q &lt; 0 : sens <strong>opposé</strong>. La <strong>norme</strong> est toujours positive : F = |q| × E.</li>
-          <li><strong>Exemple :</strong> q = −3,0 nC dans E = 5,0 × 10² N·C⁻¹ : F = 3,0 × 10⁻⁹ × 5,0 × 10² = <strong>1,5 × 10⁻⁶ N</strong>, de sens opposé à <Vec>E</Vec>.</li>
-          <li><strong>Pièges :</strong> q en nC non converti ; signe moins dans une norme ; diviser au lieu de multiplier.</li>
-        </ul>
-      </>,
+      retenir: <FicheForceQE/>,
       texte: <>Calculez la norme de la force : <strong>F = |q|·E</strong>, avec |q| = 2 nC et E = {fmt(E10, 0)} N·C⁻¹ (champ calculé à l’étape précédente).</>,
       tache: { type: 'num', q: 'Norme de la force sur q = −2 nC à 10 cm de Q = +10 nC', unite: 'N', vrai: 2e-9 * E10, tol: 0.03, affiche: v => puiss(v, 2), cs: 2,
-        bloque: a10 && q === -2 ? null : 'Il faut Q = +10 nC, la charge test à 10 cm et q = −2 nC (étapes précédentes).',
+        bloque: a10 && q === -2 ? null : 'Il faut Q = +10 nC, la charge test à 10 cm (étape du champ) et q = −2 nC (étape précédente).',
         pieges: [[-2e-9 * E10, 'La norme d’une force est positive : F = |q| × E.'], [2 * E10, 'Convertissez q en coulombs : 2 nC = 2 × 10⁻⁹ C.'],
           [2e-9 / E10, 'Formule inversée : F = |q| × E (on multiplie), on ne divise pas.']],
         calcul: () => [
@@ -499,24 +437,9 @@ export function SimulationChampForce() {
           `E = ${fmt(E10, 0)} N·C⁻¹ (soit 9,0 × 10³).`,
           `F = 2 × 10⁻⁹ × ${fmt(E10, 0)} = ${puiss(2e-9 * E10, 2)} N.`],
         expl: 'F = |q| × E = 2 × 10⁻⁹ × 9,0 × 10³ = 1,8 × 10⁻⁵ N.', indice: "F = |q| × E, avec q en coulombs (1 nC = 10⁻⁹ C) et E la norme du champ calculée précédemment." } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bilan', titre: 'Le bilan', focus: [],
       retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Source du champ</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Champ</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Force sur une charge test positive</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Terre (gravitation)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>centripète</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>—</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Q &gt; 0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>centrifuge</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>repousse q &gt; 0</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Q &lt; 0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>centripète</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>attire q &gt; 0</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Champs : <Vec>{GRAV}</Vec> = −(G × M / d²) <Vec>u</Vec> et <Vec>E</Vec> = (k × Q / d²) <Vec>u</Vec> (<Vec>u</Vec> : vecteur unitaire du centre vers M).</li>
-          <li>Forces : <Vec>F</Vec> = m <Vec>{GRAV}</Vec> (poids <Vec>P</Vec> = m <Vec>g</Vec>) et <Vec>F</Vec> = q <Vec>E</Vec> (même sens que <Vec>E</Vec> si q &gt; 0, opposé si q &lt; 0).</li>
-          <li>Le champ est tangent aux lignes de champ ; le champ de pesanteur est uniforme à l’échelle locale.</li>
-          <li><strong>Méthode :</strong> convertir en unités SI, appliquer la formule avec le carré de la distance, vérifier l’unité (N·kg⁻¹ ou N·C⁻¹).</li>
-        </ul>
-      </>,
+      retenir: <FicheBilanChamp/>,
       texte: <>Vous savez décrire un champ de gravitation et un champ électrostatique, et en déduire la force subie par un objet. Essayez maintenant les défis.</>, tache: null },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
@@ -534,13 +457,13 @@ export function SimulationChampForce() {
     if (md === 'defi' && !defi) lancerDefi('signes');
     else if (md === 'defi') lancerDefi(defi.type);
     if (md === 'guide') {                       // la scène doit correspondre à l'étape où l'on reprend
-      const i = guide.etape, iCharges = ETAPES.findIndex(e => e.id === 'plus');
+      const i = guide.etape, iCharges = ETAPES.findIndex(e => e.id === 'centrifuge'), iUnif = ETAPES.findIndex(e => e.id === 'uniforme'), iF = ETAPES.findIndex(e => e.id === 'sensF');
       if (i < iCharges) {
         setSrc('terre');
         if (i <= 3) { setZ(0); setPosT({ x: RT * 0.9, y: RT * 1.2 }); }
-        else if (i >= 7) { setZ(1); setPosT({ x: 0, y: RT + 1.2 }); }
+        else if (i >= iUnif) { setZ(1); setPosT({ x: 0, y: RT + 1.2 }); }
         else setZ(0);
-      } else { setSrc('plus'); setQabs(10); setPosC({ x: 0.10, y: 0 }); if (i < iCharges + 7) setQ(2); }
+      } else { setSrc('plus'); setQabs(10); setPosC({ x: 0.10, y: 0 }); setQ(i <= iF ? 2 : -2); }
     }
   }
   const finParcours = (
