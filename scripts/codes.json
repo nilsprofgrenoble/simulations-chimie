@@ -1002,5 +1002,20 @@
  "37:prevoir:etl-ana-limite": "ANA452",
  "77:plausible:etl-val-gsigma": "VAL252",
  "77:plausible:etl-val-prolonge": "VAL253",
- "36:etl-calcul": "REA41"
+ "36:etl-calcul": "REA41",
+ "34:chir-halogenes.0": "SAPP259",
+ "34:chir-halogenes.1": "SAPP260",
+ "34:chir-heteroatomes.0": "SAPP261",
+ "34:chir-heteroatomes.1": "SAPP262",
+ "37:prevoir:chir-asym-aminopropanol": "ANA453",
+ "37:prevoir:chir-pas-asym-chloropentane": "ANA454",
+ "37:prevoir:chir-priorite-brome-chlore": "ANA455",
+ "37:prevoir:chir-voisins-serine": "ANA456",
+ "37:prevoir:chir-h-devant": "ANA457",
+ "37:prevoir:chir-miroir-R": "ANA458",
+ "77:plausible:chir-val-pentane": "VAL254",
+ "77:plausible:chir-val-h-devant": "VAL255",
+ "77:plausible:chir-val-serine": "VAL256",
+ "36:chir-priorites": "REA42",
+ "36:chir-configuration": "REA43"
 }
