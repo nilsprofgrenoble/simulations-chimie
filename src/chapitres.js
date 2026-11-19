@@ -57,7 +57,7 @@ export const CHAPITRES = [
   { id: 'tstl-distillation', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux de matière : transport et transformation', label: '🧪 Distillation', sims: [42, 41, 43], domaines: ['Distillation'] },
   { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'SPCL · Ondes', label: '🌊 Ondes', sims: [83, 84, 87, 88, 91, 114], domaines: ['Ondes'] },
   { id: 'tstl-ondes-observer', niveau: 'TSTL', rubrique: 'SPCL · Ondes', label: '👁️ Des ondes pour observer : l’œil, la loupe, le microscope et la lunette', sims: [117, 118, 120], domaines: ['Œil et loupe', 'Microscope', 'Lunette astronomique'] },
-  { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'SPCL · Chimie et développement durable', label: '🧪 Acides et bases', sims: [85], domaines: ['Acides et bases'] },
+  { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'SPCL · Chimie et développement durable', label: '🧪 Acides et bases', sims: [147, 148, 149, 85], domaines: ['Acides et bases'] },
   { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'SPCL · Chimie et développement durable', label: '⚗️ Synthèse organique : mécanismes et optimisation', sims: [86, 92, 90], domaines: ['Synthèse organique', 'Mécanismes réactionnels', 'Optimiser une synthèse'] },
 
   // BTS : trois rubriques (Analyse, Synthèse, Formulation), chacune découpée en chapitres. Les anciens identifiants

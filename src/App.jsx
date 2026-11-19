@@ -92,6 +92,9 @@ const SimulationAminoAcides = paresseux(() => import("./simulations/AminoAcides"
 const SimulationConductimetrie = paresseux(() => import("./simulations/Conductimetrie"), "SimulationConductimetrie");
 const SimulationEtalonnage = paresseux(() => import("./simulations/Etalonnage"), "SimulationEtalonnage");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
+const SimulationPhAcide = paresseux(() => import("./simulations/AcidesBases"), "SimulationPhAcide");
+const SimulationPredominancePka = paresseux(() => import("./simulations/AcidesBases"), "SimulationPredominancePka");
+const SimulationTamponCdd = paresseux(() => import("./simulations/AcidesBases"), "SimulationTamponCdd");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
 const SimulationDeuxCorps = paresseux(() => import("./simulations/DeuxCorps"), "SimulationDeuxCorps");
@@ -285,7 +288,13 @@ const SIMULATIONS = [
     component: SimulationEchographe2D },
   { id:89, label:"Machines thermiques : PAC, groupe froid et COP", niveau:"TSTL", icon:"🔥", color:"#b45309",
     component: SimulationMachinesThermiques },
-  { id:85, label:"Acides et bases : pH, pKa, tampon et titrage", niveau:"TSTL", icon:"🧪", color:"#0f766e",
+  { id:147, label:"Acides et bases : le pH d'un acide fort ou faible", niveau:"TSTL", icon:"🧪", color:"#0f766e",
+    component: SimulationPhAcide },
+  { id:148, label:"Acides et bases : pH, pKa et prédominance", niveau:"TSTL", icon:"📊", color:"#0f766e",
+    component: SimulationPredominancePka },
+  { id:149, label:"Acides et bases : la solution tampon", niveau:"TSTL", icon:"🧫", color:"#0f766e",
+    component: SimulationTamponCdd },
+  { id:85, label:"Acides et bases : titrage pH-métrique et choix d'un indicateur", niveau:"TSTL", icon:"⚗️", color:"#0f766e",
     component: SimulationAcidesBases },
   { id:92, label:"Mécanismes réactionnels : addition de HBr, carbocation et flèches courbes", niveau:"TSTL", icon:"⚗️", color:"#7c3aed", component: SimulationMecanismesReactionnels },
   { id:93, label:"Régiosélectivité de l'addition de HBr : carbocations et produit majoritaire", niveau:"BTS", icon:"⚗️", color:"#7c3aed", component: SimulationRegioselectiviteHBr },
