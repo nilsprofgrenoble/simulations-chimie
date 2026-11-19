@@ -3,6 +3,7 @@ import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
 import { genTrace, genPont, genTemps } from "./RealiserC1";
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
+import { IONS as CDT_I } from "./conductimetrieModele";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
@@ -1117,6 +1118,37 @@ function genPlanFactoriel() {
     retenir: ['Codage : x = (valeur − centre) / demi-étendue ; −1 au niveau bas, +1 au niveau haut, 0 au centre.', 'Coefficient = moitié de l’écart entre les moyennes des niveaux +1 et −1 : a = (Moy⁺ − Moy⁻) / 2.', 'Prévision : on remplace les x par leurs valeurs codées, interactions comprises (produits des x).', 'Degrés de liberté = n − p : sans eux, on ne peut ni estimer σ ni tester.'] };
 }
 
+function genConductimetrieTG() {
+  const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c])).join('')}`; };
+  const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
+  const sel = tire([{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na⁺', lc: CDT_I.Na.lambda, an: 'Cl⁻', la: CDT_I.Cl.lambda }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na⁺', lc: CDT_I.Na.lambda, an: 'NO₃⁻', la: CDT_I.NO3.lambda }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na⁺', lc: CDT_I.Na.lambda, an: 'CH₃COO⁻', la: CDT_I.AcO.lambda }]);
+  const S = sel.lc + sel.la;
+  const c1 = tire([0.0020, 0.0030, 0.0040, 0.0050, 0.0080]);
+  const intro = <>Conductivités ioniques molaires à 25 °C : λ({sel.cat}) = <b>{nb(sel.lc, 2)}</b> et λ({sel.an}) = <b>{nb(sel.la, 2)}</b> mS·m²·mol⁻¹. Les solutions sont diluées et le soluté, {sel.nom} ({sel.f}), est totalement dissocié.</>;
+  const q1 = { id: 'k0', type: 'num', q: <>{intro} Calculez la conductivité σ d’une solution de concentration <b>{sci(c1, 2)}{NB}mol/L</b> (en mS·m⁻¹, 2 chiffres significatifs).</>, unite: 'mS·m⁻¹', vrai: S * c1 * 1000, tolRel: 0.05, csMin: 2,
+    aide: 'σ = (λ(cation) + λ(anion)) × c, avec c en mol·m⁻³ : 1 mol/L = 1 000 mol·m⁻³.',
+    pieges: [[S * c1, 'Vous avez gardé c en mol/L ; la loi demande des mol·m⁻³ (× 1 000) quand λ est en mS·m²·mol⁻¹.'], [sel.lc * c1 * 1000, 'Il manque la contribution de l’anion : les deux ions contribuent à σ.'], [sel.la * c1 * 1000, 'Il manque la contribution du cation : les deux ions contribuent à σ.']],
+    expl: <>c = {sci(c1, 2)}{NB}mol/L = {nb(c1 * 1000, 2)}{NB}mol·m⁻³ ; σ = ({nb(sel.lc, 2)} + {nb(sel.la, 2)}) × {nb(c1 * 1000, 2)} = <b>{nb(S * c1 * 1000, 3)}{NB}mS·m⁻¹</b>.</> };
+  const c2 = tire([0.0020, 0.0030, 0.0040, 0.0060]), sm = Math.round(S * c2 * 1000 * 10) / 10, cc = sm / S / 1000;
+  const q2 = { id: 'k1', type: 'num', q: <>Pour la même espèce, on mesure σ = <b>{nb(sm, 3)}{NB}mS·m⁻¹</b>. Calculez la concentration du soluté (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: cc, tolRel: 0.05, csMin: 2,
+    aide: 'c = σ / (λ(cation) + λ(anion)) donne c en mol·m⁻³ ; divisez par 1 000 pour obtenir des mol/L.',
+    pieges: [[sm / S, 'Ce résultat est en mol·m⁻³ ; convertissez-le en mol/L (÷ 1 000).'], [sm / sel.lc / 1000, 'Il faut diviser par la somme des deux λ, pas par celui du cation seul.'], [sm * S / 1000, 'Le rapport est inversé : on divise σ par la somme des λ.']],
+    expl: <>c = {avecIndices(`frac(σ|λ(cation) + λ(anion))`)} = {avecIndices(`frac(${nb(sm, 3)}|${nb(sel.lc, 2)} + ${nb(sel.la, 2)})`)} = {nb(sm / S, 3)}{NB}mol·m⁻³ = <b>{sci(cc, 2)}{NB}mol/L</b>.</> };
+  const VA = 20.0, cB = 0.100, VE = tire([8.0, 12.0, 14.0, 15.0, 16.0]), cA = cB * VE / VA;
+  const q3 = { id: 'k2', type: 'num', q: <>On titre <b>{nb(VA, 3)}{NB}mL</b> d’acide chlorhydrique, dilué dans de l’eau, par de la soude à <b>{nb(cB, 3)}{NB}mol/L</b>. La courbe σ = f(V) présente une rupture de pente pour V = <b>{nb(VE, 2)}{NB}mL</b>. Calculez la concentration de l’acide (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: cA, tolRel: 0.05, csMin: 2,
+    aide: 'À l’équivalence, les quantités sont égales : c_A × V_A = c_B × V_E.',
+    pieges: [[cB * VA / VE, 'Le rapport des volumes est inversé : c_A = c_B × V_E / V_A.'], [cB * VE, 'C’est la quantité de HO⁻ versée en mmol ; divisez-la par la prise d’essai V_A.'], [cB, 'C’est la concentration de la soude, pas celle de l’acide.']],
+    expl: <>c_A × V_A = c_B × V_E donc c_A = {avecIndices(`frac(0,100 × ${nb(VE, 2)}|${nb(VA, 3)})`)} = <b>{nb(cA, 4)}{NB}mol/L</b>.</> };
+  const cA2 = tire([0.040, 0.050, 0.060]), VB = tire([14.0, 16.0, 18.0]), n = cB * VB - cA2 * VA;
+  const q4 = { id: 'k3', type: 'num', q: <>On titre <b>{nb(VA, 3)}{NB}mL</b> d’acide chlorhydrique à <b>{nb(cA2, 3)}{NB}mol/L</b> par de la soude à <b>{nb(cB, 3)}{NB}mol/L</b>. On a versé <b>{nb(VB, 3)}{NB}mL</b> de soude, soit plus que le volume équivalent (transformation totale). Quelle quantité d’ions HO⁻ reste-t-il dans le bécher (en mmol, 2 chiffres significatifs) ?</>, unite: 'mmol', vrai: n, tolRel: 0.05, csMin: 2,
+    aide: 'n(HO⁻) restant = n(HO⁻) versé − n(H₃O⁺) initial = c_B × V_B − c_A × V_A (mol/L × mL = mmol).',
+    pieges: [[cB * VB, 'C’est la quantité de HO⁻ versée : une partie a réagi avec H₃O⁺.'], [cA2 * VA, 'C’est la quantité d’ions H₃O⁺ du départ ; il faut la retrancher à la quantité de HO⁻ versée.'], [cB * VB + cA2 * VA, 'Il faut retrancher la quantité d’ions H₃O⁺ consommés, pas l’ajouter.']],
+    expl: <>n(HO⁻) versé = {nb(cB, 3)} × {nb(VB, 3)} = {nb(cB * VB, 3)}{NB}mmol ; n(H₃O⁺) initial = {nb(cA2, 3)} × {nb(VA, 3)} = {nb(cA2 * VA, 3)}{NB}mmol ; reste = <b>{nb(n, 3)}{NB}mmol</b>.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Conductimétrie : loi de Kohlrausch, concentration à partir de σ, volume équivalent et bilan après l’équivalence.', questions: [q1, q2, q3, q4],
+    retenir: ['Loi de Kohlrausch : σ = Σ λ × c, avec c en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³) et λ en mS·m²·mol⁻¹.', 'Une solution diluée seulement : au-delà de 10 mol·m⁻³ environ, la loi n’est plus valable.', 'La rupture de pente de la courbe repère le volume équivalent : c_A × V_A = c_B × V_E.', 'Après l’équivalence, les ions HO⁻ versés en excès restent en solution : n(HO⁻) = c_B × V_B − c_A × V_A.'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -1142,6 +1174,7 @@ export const FAMILLES = [
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'tmp-calcul', groupe: 'Formules', titre: 'Solution tampon : ajout d’acide, bilan de matière et pH du tampon (TG)', gen: genTamponTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'aam-calcul', groupe: 'Formules', titre: 'Acides α-aminés : rapport des formes, pourcentages et pH pour une proportion (TG)', gen: genAminoAcidesTG, domaine: 'Acides α-aminés : forme selon le pH' },
+  { id: 'cdt-calcul', groupe: 'Formules', titre: 'Conductimétrie : loi de Kohlrausch, concentration, volume équivalent et bilan après l’équivalence (TG)', gen: genConductimetrieTG, domaine: 'Conductimétrie : conductivité et titrage' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },

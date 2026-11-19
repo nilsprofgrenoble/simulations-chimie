@@ -975,5 +975,22 @@
  "77:plausible:aam-val-neutre": "VAL245",
  "77:plausible:aam-val-rapport": "VAL246",
  "77:plausible:aam-val-sang": "VAL247",
- "36:aam-calcul": "REA39"
+ "36:aam-calcul": "REA39",
+ "34:cdt-sapp-sel.0": "SAPP247",
+ "34:cdt-sapp-sel.1": "SAPP248",
+ "34:cdt-sapp-equiv.0": "SAPP249",
+ "34:cdt-sapp-equiv.1": "SAPP250",
+ "34:cdt-sapp-pente.0": "SAPP251",
+ "34:cdt-sapp-pente.1": "SAPP252",
+ "34:cdt-sapp-compo.0": "SAPP253",
+ "34:cdt-sapp-compo.1": "SAPP254",
+ "37:prevoir:cdt-ana-domaine": "ANA446",
+ "37:prevoir:cdt-ana-dilution": "ANA447",
+ "37:prevoir:cdt-ana-nitrique": "ANA448",
+ "37:prevoir:cdt-ana-apres": "ANA449",
+ "77:plausible:cdt-val-unite": "VAL248",
+ "77:plausible:cdt-val-spectateurs": "VAL249",
+ "77:plausible:cdt-val-conc": "VAL250",
+ "77:plausible:cdt-val-faible": "VAL251",
+ "36:cdt-calcul": "REA40"
 }
