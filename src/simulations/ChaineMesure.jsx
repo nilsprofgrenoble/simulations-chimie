@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, IndiceDefi, ORANGE_GUIDE, ARetenir, Frac, avecIndices, fmt, lireNombre, proche } from "../commun";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { FCaracteristique, FPont, FCAN, FHysteresis, FChaine } from "./ChaineSchemas";
 
 const SIM_ID = 8;
 declarerDefis(SIM_ID, [['principal', 'Étalonner et exploiter la chaîne de mesure']]);
@@ -105,63 +107,32 @@ export function Simulation8({ plotlyReady }) {
         <strong> convertisseur analogique-numérique</strong> (CAN), puis <strong>traitement</strong> (algorithme). Chaque maillon transforme la grandeur : E → Rp → Ur → N.</>,
       tache: { type: 'qcm', q: 'Quelle est la grandeur physique que l’on cherche à mesurer ?', indice: 'Repérez l’entrée de la chaîne : la grandeur physique à mesurer est celle que reçoit le capteur. Les autres grandeurs (Rp, Ur, N) sont produites ensuite par les maillons suivants.', options: ['L’éclairement E, en lux', 'La résistance Rp de la photorésistance', 'Le nombre N donné par le CAN'], bonne: 0,
         expl: 'Rp, Ur et N ne sont que des images successives de l’éclairement E.' } },
-    { id: 'capteur', titre: 'Le capteur', focus: ['source', 'capteur', 'graph'], bloc: 'capteur',
-      texte: <>La photorésistance change de résistance quand elle est éclairée. Le graphique donne sa caractéristique Rp = f(E) (les points sont des mesures). Choisissez un éclairement de 200 lx.</>,
-      tache: { type: 'action', ok: E === 200, label: '☁ Choisir E = 200 lx', faire: () => setE(200), consigne: E === 200 ? null : `Éclairement : ${E} lx → 200 lx` } },
-    { id: 'rp', titre: 'Lire la caractéristique', focus: ['graph', 'capteur'], bloc: 'capteur',
-      texte: <>Le point bleu repère l'état actuel du capteur sur la courbe. Lisez sa résistance sur l'axe vertical (les pointillés vous aident).</>,
+    { id: 'rp', titre: 'Régler la source, lire la caractéristique', focus: ['source', 'graph', 'capteur'], bloc: 'capteur',
+      texte: <>La photorésistance change de résistance quand elle est éclairée. Le graphique donne sa caractéristique Rp = f(E) (les points sont des mesures). Réglez l'éclairement à <strong>200 lx</strong> avec le curseur ou les boutons de la source lumineuse : le point bleu repère alors l'état du capteur sur la courbe. Lisez sa résistance sur l'axe vertical (les pointillés vous aident).</>,
       tache: { type: 'num', q: 'Résistance Rp de la photorésistance pour E = 200 lx', unite: 'Ω', vrai: Rp200, tol: 0.03, affiche: x => fmt(x, 0),
         indice: 'Sur l’axe horizontal, repérez E = 200 lx ; montez jusqu’à la courbe, puis lisez la valeur correspondante sur l’axe vertical. Les pointillés relient le point courant aux deux axes. Rp s’exprime en ohms (Ω).',
-        bloque: E !== 200 ? 'Réglez d’abord E = 200 lx à l’étape précédente.' : null,
+        bloque: E !== 200 ? `Réglez d’abord E = 200 lx avec la source lumineuse (actuellement ${E} lx).` : null,
         expl: `Rp ≈ ${fmt(Rp200, 0)} Ω.` } },
     { id: 'sens', titre: 'Sens de variation', focus: ['graph', 'source'], bloc: 'capteur',
-      retenirTitre: 'À RETENIR : LA CARACTÉRISTIQUE DE LA PHOTORÉSISTANCE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>E (lx)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>R<sub>p</sub> (Ω)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>11</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>5 600</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>70</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2 500</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>200</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 540</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>470</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 010</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1 050</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>387</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1 590</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>346</td></tr>
-          </tbody>
-        </table>
-        <p style={{ margin: '2px 0 4px', fontSize: 12.5, color: '#475569' }}>(extrait : 6 des 9 points de mesure du modèle)</p>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Plus la photorésistance est éclairée, <strong>plus sa résistance diminue</strong> (la lumière libère des porteurs de charge) : R<sub>p</sub> ↘ quand E ↗.</li>
-          <li>La caractéristique Rp = f(E) est <strong>non linéaire</strong> : elle se lit sur la courbe (points de mesure, interpolés entre deux points).</li>
-          <li>Grandeur d’entrée de la chaîne : l’<strong>éclairement E</strong> (en lux, lx) ; R<sub>p</sub> en ohms (Ω).</li>
-        </ul>
-      </>,
       texte: <>Déplacez le curseur de la source lumineuse et observez le point sur la courbe.</>,
       tache: { type: 'qcm', q: 'Quand l’éclairement augmente, la résistance de la photorésistance…', indice: 'Comparez deux positions du point : déplacez le curseur de la source vers la droite (E augmente) et regardez si le point monte ou descend sur la courbe Rp = f(E).', options: ['diminue', 'augmente', 'reste constante'], bonne: 0,
         expl: 'La lumière libère des porteurs de charge : la résistance baisse, d’où le nom de photorésistance.' } },
     { id: 'condit', titre: 'Le conditionneur', focus: ['conditionneur', 'graph'], bloc: 'conditionneur',
-      retenirTitre: 'À RETENIR : LE PONT DIVISEUR',
+      retenirTitre: 'À RETENIR : LA CARACTÉRISTIQUE DE LA PHOTORÉSISTANCE',
       retenir: <>
-        <svg viewBox="0 0 360 150" role="img" aria-label="Pont diviseur de tension : la photorésistance Rp est reliée à l’alimentation 5 V, la résistance R de 1000 ohms à la masse ; la tension Ur est prise aux bornes de R et envoyée à l’entrée du convertisseur" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="90" y1="14" x2="250" y2="14" stroke="#334155" strokeWidth="2" /><text x="94" y="10" fontSize="12" fontWeight="700" fill="#b45309">+5 V</text>
-          <line x1="130" y1="14" x2="130" y2="30" stroke="#334155" strokeWidth="2" />
-          <rect x="116" y="30" width="28" height="42" fill="#fef3c7" stroke="#b45309" strokeWidth="2.5" /><text x="152" y="56" fontSize="13" fontWeight="700" fill="#92400e">R<tspan fontSize="9" dy="3">p</tspan><tspan dy="-3"> (photorésistance)</tspan></text>
-          <line x1="130" y1="72" x2="130" y2="84" stroke="#334155" strokeWidth="2" />
-          <circle cx="130" cy="84" r="3.5" fill="#334155" /><line x1="130" y1="84" x2="60" y2="84" stroke="#0072b2" strokeWidth="2.5" /><text x="14" y="80" fontSize="12.5" fontWeight="700" fill="#0072b2">U<tspan fontSize="9" dy="3">r</tspan><tspan dy="-3"> → CAN</tspan></text>
-          <line x1="130" y1="84" x2="130" y2="92" stroke="#334155" strokeWidth="2" />
-          <rect x="116" y="92" width="28" height="34" fill="#e0f2fe" stroke="#0369a1" strokeWidth="2.5" /><text x="152" y="114" fontSize="13" fontWeight="700" fill="#0369a1">R = 1000 Ω</text>
-          <line x1="130" y1="126" x2="130" y2="138" stroke="#334155" strokeWidth="2" /><line x1="112" y1="138" x2="148" y2="138" stroke="#334155" strokeWidth="2.5" /><line x1="118" y1="143" x2="142" y2="143" stroke="#334155" strokeWidth="2" /><text x="156" y="142" fontSize="11" fill="#475569">masse</text>
-        </svg>
-        <Formule><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><msub><mi>R</mi><mi>p</mi></msub><mo>+</mo><mi>R</mi></mrow></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le CAN mesure des <strong>tensions</strong> (0 à 5 V), pas des résistances : le conditionneur convertit la variation de R<sub>p</sub> en variation de U<sub>r</sub>.</li>
-          <li>R<sub>p</sub> ↘ quand E ↗, donc U<sub>r</sub> ↗ : plus il y a de lumière, plus la tension est grande.</li>
-          <li>Formule valable si l’entrée du CAN <strong>ne prélève pas de courant</strong> sur le pont.</li>
-        </ul>
+        <FCaracteristique/>
+        {puces(<>Plus la photorésistance est éclairée, plus sa résistance diminue : la lumière libère des porteurs de charge. R<sub>p</sub> ↘ quand E ↗.</>, <>La caractéristique R<sub>p</sub> = f(E) est <strong>non linéaire</strong> : on la lit sur la courbe (interpolée entre deux points de mesure).</>, <>Grandeur d’entrée de la chaîne : l’<strong>éclairement E</strong> (lux, lx) ; R<sub>p</sub> en ohms (Ω).</>)}
       </>,
-      texte: <>La carte Arduino ne sait pas mesurer une résistance. On place la photorésistance dans un <strong>pont diviseur de tension</strong> alimenté en 5 V : Ur = 5 × R / (R<sub>p</sub> + R), avec R = 1000 Ω.</>,
+      texte: <>La carte Arduino ne sait pas mesurer une résistance. On place la photorésistance dans un <strong>pont diviseur de tension</strong> alimenté en 5 V, avec R = 1000 Ω :<Formule><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><msub><mi>R</mi><mi>p</mi></msub><mo>+</mo><mi>R</mi></mrow></mfrac></Formule></>,
       tache: { type: 'qcm', q: 'À quoi sert le conditionneur ?', indice: 'Comparez ce que fournit le capteur (une résistance) et ce que sait mesurer l’entrée du CAN (une tension) : le conditionneur fait le lien entre les deux.', options: ['À transformer la variation de résistance en variation de tension, que le CAN sait mesurer', 'À rendre le capteur plus sensible à la lumière', 'À allumer les phares'], bonne: 0,
         expl: 'Le CAN d’une entrée analogique de l’Arduino mesure des tensions entre 0 et 5 V.' } },
     { id: 'ur', titre: 'Calculer la tension', focus: ['conditionneur', 'graph'], bloc: 'conditionneur',
+      retenirTitre: 'À RETENIR : LE PONT DIVISEUR',
+      retenir: <>
+        <FPont/>
+        <Formule><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><msub><mi>R</mi><mi>p</mi></msub><mo>+</mo><mi>R</mi></mrow></mfrac></Formule>
+        {puces(<>Le CAN mesure des <strong>tensions</strong> (0 à 5 V), pas des résistances : le conditionneur convertit la variation de R<sub>p</sub> en variation de U<sub>r</sub>.</>, <>R<sub>p</sub> ↘ quand E ↗, donc U<sub>r</sub> ↗ : plus il y a de lumière, plus la tension est grande.</>)}
+      </>,
       texte: <>Pour E = 200 lx, vous connaissez Rp ({fmt(Rp200, 0)} Ω, lue à l’étape précédente). Calculez Ur avec la formule du pont diviseur (R = 1000 Ω).</>,
       tache: { type: 'num', q: 'Tension Ur', unite: 'V', vrai: Ur200, tol: 0.01, affiche: x => fmt(x, 2), cs: 3, detail: true,
         indice: 'Remplacez Rp et R par leurs valeurs en Ω : le résultat est en V. Gardez au moins 3 chiffres significatifs.',
@@ -184,7 +155,7 @@ export function Simulation8({ plotlyReady }) {
           [100, 'Vous avez calculé 10². Le nombre de valeurs est 2¹⁰ : c’est 2 qui est élevé à la puissance 10.']],
         bloque: bits !== B0 ? 'Choisissez 10 bits dans la liste.' : null, expl: '2¹⁰ = 1024 valeurs, de 0 à 1023.' } },
     { id: 'quantum', titre: 'Le quantum', focus: ['can', 'graph'], bloc: 'can',
-      texte: <>Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité. Dans ce modèle, N va de 0 à 2<sup>n</sup> − 1 pour une tension de 0 à 5 V, donc <strong>q = 5 / (2<sup>n</sup> − 1)</strong>.</>,
+      texte: <>Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité. Dans ce modèle, N va de 0 à 2<sup>n</sup> − 1 pour une tension de 0 à 5 V, donc :<Formule><mi>q</mi><mo>=</mo><mfrac><mn>5</mn><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></Formule></>,
       tache: { type: 'num', q: 'Quantum q pour 10 bits', unite: 'mV', vrai: q10, tol: 0.01, affiche: x => fmt(x, 2), cs: 3,
         indice: <>Utilisez q = (V<sub>max</sub> − V<sub>min</sub>) / (2ⁿ − 1), avec une plage de 0 à 5 V et n = 10 bits. Le calcul donne q en V : l’unité demandée est le mV (1 V = 1 000 mV).</>,
         calcul: () => [`Modèle du parcours : N va de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V (CAN idéal, référence 5 V exacte).`,
@@ -195,24 +166,7 @@ export function Simulation8({ plotlyReady }) {
           [5000 / B0, 'Vous avez divisé par le nombre de bits (10). Il faut diviser par le nombre de pas, 2ⁿ − 1, avec n = 10.']],
         bloque: bits !== B0 ? 'Choisissez 10 bits dans la liste.' : null, expl: `q = 5 / 1023 = ${fmt(q10 / 1000, 5)} V = ${fmt(q10, 2)} mV.` } },
     { id: 'n', titre: 'Le nombre N', focus: ['can', 'graph'], bloc: 'can',
-      retenirTitre: 'À RETENIR : LE CONVERTISSEUR ANALOGIQUE-NUMÉRIQUE',
-      retenir: <>
-        <Formule><mi>N</mi><mo>=</mo><mo>⌊</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo><mo>⌋</mo><mspace width="1.5em"/><mi>q</mi><mo>=</mo><mfrac><mn>5</mn><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>n (bits)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Valeurs de N</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>N<sub>max</sub> = 2<sup>n</sup> − 1</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>q (mV)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>256</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>255</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>19,6</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>10 (Arduino Uno)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 024</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 023</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4,89</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>12</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 096</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 095</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,22</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>N est un <strong>entier</strong> (partie entière) entre 0 et 2<sup>n</sup> − 1, pour U<sub>r</sub> de 0 à 5 V.</li>
-          <li>Le <strong>quantum</strong> q est la variation de tension qui fait changer N d’une unité : plus n est grand, plus q est petit, donc plus la mesure est <strong>précise</strong>.</li>
-          <li>Attention aux unités : q en mV, U<sub>r</sub> en V ; U<sub>r</sub>′ = N × q.</li>
-        </ul>
-      </>,
-      texte: <>Le CAN calcule N = Ur / 5 × (2<sup>n</sup> − 1), tronqué à l'entier inférieur. Reprenez Ur = {fmt(Ur200, 2)} V (E = 200 lx).</>,
+      texte: <>Le CAN calcule N, tronqué à l'entier inférieur :<Formule><mi>N</mi><mo>=</mo><mo>⌊</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo><mo>⌋</mo></Formule>Reprenez Ur = {fmt(Ur200, 2)} V (E = 200 lx).</>,
       tache: { type: 'num', q: 'Nombre N donné par le CAN', unite: '', vrai: N200, tol: 0.004, affiche: x => fmt(x, 0),
         indice: 'Appliquez N = Ur / 5 × (2ⁿ − 1), avec Ur en V (valeur de l’étape précédente, gardez au moins 3 chiffres significatifs) et n = 10. N est la partie entière du résultat : on tronque, on n’arrondit pas.',
         calcul: () => [`Formule : N = Ur / 5 × (2ⁿ − 1), puis on garde la partie entière (troncature, pas d’arrondi).`,
@@ -224,6 +178,12 @@ export function Simulation8({ plotlyReady }) {
         bloque: !reglage200 ? 'Gardez E = 200 lx, R = 1000 Ω et 10 bits.' : null,
         expl: `N = ${fmt(Ur200, 3)} / 5 × 1023 ≈ ${fmt(N200, 0)}.` } },
     { id: 'arduino', titre: 'Le traitement : allumer les phares', focus: ['arduino', 'montage'], bloc: 'arduino',
+      retenirTitre: 'À RETENIR : LE CONVERTISSEUR ANALOGIQUE-NUMÉRIQUE',
+      retenir: <>
+        <FCAN/>
+        <Formule><mi>N</mi><mo>=</mo><mo>⌊</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo><mo>⌋</mo></Formule>
+        {puces(<>N est un <strong>entier</strong> (partie entière) entre 0 et 2<sup>n</sup> − 1, pour U<sub>r</sub> de 0 à 5 V.</>, <>Le <strong>quantum</strong> q est la variation de tension qui fait changer N d’une unité (q = 5 V pour 2<sup>n</sup> − 1 pas). 8 bits : 19,6 mV ; 12 bits : 1,22 mV.</>, <>Attention aux unités : q en mV, U<sub>r</sub> en V.</>)}
+      </>,
       texte: <>Le programme compare N à deux seuils, <strong>{SEUIL_BAS}</strong> et <strong>{SEUIL_HAUT}</strong>. Si N est inférieur au seuil bas, il met la sortie 8 à HIGH (la LED s'allume) ; s'il est supérieur au seuil haut, il la met à LOW. Choisissez E = 70 lx, puis activez les phares (bouton à gauche).</>,
       tache: { type: 'action', ok: E === 70 && pharesOn, label: '🌆 Choisir E = 70 lx', faire: () => setE(70),
         consigne: [E !== 70 && 'Éclairement : 70 lx', !pharesOn && 'Phares : activez-les (bouton « Activer phares »)'].filter(Boolean).join('\n') || null } },
@@ -231,31 +191,16 @@ export function Simulation8({ plotlyReady }) {
       texte: <>À 70 lx, Rp = {fmt(Rp70, 0)} Ω, donc N = {fmt(N70, 0)}.</>,
       tache: { type: 'qcm', q: 'Que fait le programme ?', indice: 'Relisez les règles du programme : comparez d’abord N aux deux seuils, puis appliquez la règle qui correspond (N inférieur au seuil bas, supérieur au seuil haut, ou compris entre les deux).', options: [`Il allume les phares, car N = ${N70} est inférieur à ${SEUIL_BAS}`, `Il éteint les phares, car N = ${N70} est inférieur à ${SEUIL_BAS}`, `Il laisse les phares éteints, car N est inférieur à ${SEUIL_HAUT}`], bonne: 0,
         expl: 'Il fait sombre : la photorésistance a une grande résistance, donc Ur et N sont faibles.' } },
-    { id: 'monte200', titre: 'Un peu plus de lumière', focus: ['source', 'arduino'], bloc: 'arduino',
-      texte: <>Gardez les phares activés, allumés, et passez à E = 200 lx (N = {fmt(N200, 0)}).</>,
-      tache: { type: 'action', ok: E === 200 && pharesOn && ledOn, label: '☁ Choisir E = 200 lx', faire: () => setE(200),
-        consigne: (E === 200 && pharesOn && ledOn) ? null : (!(pharesOn && (ledOn || E === 70)) ? 'Les phares doivent d’abord être allumés : revenez à 70 lx avec les phares activés, puis passez à 200 lx.' : `Éclairement : ${E} lx → 200 lx`) } },
-    { id: 'hyst', titre: 'Entre les deux seuils', focus: ['arduino', 'montage'], bloc: 'arduino',
-      retenirTitre: 'À RETENIR : L’HYSTÉRÉSIS',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Valeur de N</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Phares</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Sortie 8</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>N &lt; 393 (seuil bas)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>allumés</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>la sortie passe à HIGH</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>N &gt; 491 (seuil haut)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>éteints</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>la sortie passe à LOW</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>393 ≤ N ≤ 491</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>état précédent</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>aucune condition vraie</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Entre les deux seuils, la sortie <strong>garde son état précédent</strong> : c’est une <strong>hystérésis</strong>.</li>
-          <li>Deux seuils évitent que le moindre nuage ou le bruit de mesure fasse <strong>clignoter</strong> les phares autour d’un seul seuil.</li>
-          <li>Plus il fait sombre, plus N est faible : les phares s’allument sous le seuil bas.</li>
-        </ul>
-      </>,
-      texte: <>N = {fmt(N200, 0)} est compris entre {SEUIL_BAS} et {SEUIL_HAUT} : ni inférieur au seuil bas, ni supérieur au seuil haut.</>,
-      tache: { type: 'qcm', q: 'Que deviennent les phares ?', indice: 'Vérifiez si N est inférieur au seuil bas, puis s’il est supérieur au seuil haut. Si aucune de ces deux conditions n’est vraie, demandez-vous si le programme contient une instruction qui modifie la sortie 8.', options: ['Ils restent dans l’état précédent (allumés)', 'Ils s’éteignent', 'On ne peut pas savoir'], bonne: 0,
+    { id: 'hyst', titre: 'Entre les deux seuils', focus: ['source', 'arduino', 'montage'], bloc: 'arduino',
+      texte: <>Gardez les phares activés et allumés, puis passez à E = 200 lx : N = {fmt(N200, 0)} est compris entre {SEUIL_BAS} et {SEUIL_HAUT}, ni inférieur au seuil bas, ni supérieur au seuil haut.</>,
+      tache: { type: 'qcm', q: 'Que deviennent les phares ?', bloque: (E === 200 && pharesOn && ledOn) ? null : (!pharesOn ? 'Activez d’abord les phares (bouton « Activer phares »).' : (E === 200 ? 'Les phares doivent d’abord être allumés : revenez à 70 lx, puis passez à 200 lx.' : `Éclairement : ${E} lx → 200 lx (les phares étant allumés à 70 lx).`)), indice: 'Vérifiez si N est inférieur au seuil bas, puis s’il est supérieur au seuil haut. Si aucune de ces deux conditions n’est vraie, demandez-vous si le programme contient une instruction qui modifie la sortie 8.', options: ['Ils restent dans l’état précédent (allumés)', 'Ils s’éteignent', 'On ne peut pas savoir'], bonne: 0,
         expl: 'Aucune condition n’est vraie : la sortie garde sa valeur précédente. C’est une hystérésis.' } },
     { id: 'eteint', titre: 'Plein jour', focus: ['source', 'arduino'], bloc: 'arduino',
+      retenirTitre: 'À RETENIR : L’HYSTÉRÉSIS',
+      retenir: <>
+        <FHysteresis/>
+        {puces(<>Entre les deux seuils, la sortie <strong>garde son état précédent</strong> : c’est une <strong>hystérésis</strong>.</>, <>Plus il fait sombre, plus N est faible : les phares s’allument sous le seuil bas ({SEUIL_BAS}) et s’éteignent au-dessus du seuil haut ({SEUIL_HAUT}).</>)}
+      </>,
       texte: <>Passez à E = 470 lx (Rp = {fmt(Rp470, 0)} Ω, N = {fmt(N470, 0)}).</>,
       tache: { type: 'action', ok: E === 470 && pharesOn && !ledOn, label: '🌤 Choisir E = 470 lx', faire: () => setE(470),
         consigne: (E === 470 && pharesOn && !ledOn) ? null : (!pharesOn ? 'Les phares doivent rester activés.' : `Éclairement : ${E} lx → 470 lx`) } },
@@ -264,36 +209,16 @@ export function Simulation8({ plotlyReady }) {
       tache: { type: 'qcm', q: `Pourquoi utiliser deux seuils (${SEUIL_BAS} et ${SEUIL_HAUT}) ?`, indice: 'Imaginez un seul seuil et un éclairement qui fluctue autour de lui (nuage, ombre) : que ferait la sortie à chaque franchissement du seuil ?', options: ['Pour éviter que les phares clignotent quand l’éclairement fluctue autour d’un seuil', 'Pour mesurer deux éclairements différents', 'Parce que le CAN a deux entrées'], bonne: 0,
         expl: 'Avec un seul seuil, le moindre nuage ou le bruit de mesure ferait basculer les phares en permanence.' } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'], bloc: 'conditionneur',
-      retenirTitre: 'À RETENIR : LES HYPOTHÈSES DU MODÈLE',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Photorésistance</strong> : 9 points de mesure, interpolés en échelle log-log ; Rp garde la valeur du point extrême en dessous de 11 lx et au-dessus de 1 590 lx.</li>
-          <li><strong>Alimentation 5 V parfaite</strong> et résistance R exacte (tolérance ignorée).</li>
-          <li><strong>Pont non chargé</strong> : l’entrée du CAN ne prélève pas de courant sur le pont.</li>
-          <li><strong>CAN idéal</strong> à n bits, référence 5 V, sans bruit ni erreur de gain ou de décalage.</li>
-        </ul>
-      </>,
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', q: 'Quelle hypothèse justifie la formule du pont diviseur Ur = 5 R / (Rp + R) ?', indice: 'Relisez l’encadré « Hypothèses de travail » : cherchez celle qui concerne ce qui est branché au point où l’on mesure Ur (entre Rp et R).', options: ['L’entrée du CAN ne prélève pas de courant sur le pont', 'La photorésistance a une résistance constante', 'La tension d’alimentation est inférieure à 5 V'], bonne: 0,
         expl: 'Si l’entrée du CAN laissait passer un courant non négligeable, il faudrait en tenir compte dans le calcul de Ur.' } },
-    { id: 'bravo', titre: 'Bravo !', focus: [], bloc: 'capteur',
+    { id: 'bravo', titre: 'Le bilan', focus: [], bloc: 'capteur',
       retenirTitre: 'À RETENIR : LA CHAÎNE DE MESURE',
       retenir: <>
-        <svg viewBox="0 0 360 100" role="img" aria-label="Chaîne de mesure : l’éclairement E agit sur le capteur, la photorésistance, qui donne Rp ; le conditionneur, un pont diviseur, donne la tension Ur ; le convertisseur analogique-numérique donne le nombre N ; l’algorithme compare N aux seuils et commande les phares" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <rect x="4" y="30" width="78" height="40" rx="6" fill="#fef3c7" stroke="#b45309" strokeWidth="2" /><text x="43" y="48" textAnchor="middle" fontSize="11" fontWeight="700" fill="#92400e">capteur</text><text x="43" y="62" textAnchor="middle" fontSize="10" fill="#92400e">photorésistance</text>
-          <rect x="94" y="30" width="78" height="40" rx="6" fill="#e0f2fe" stroke="#0369a1" strokeWidth="2" /><text x="133" y="48" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#0c4a6e">conditionneur</text><text x="133" y="62" textAnchor="middle" fontSize="10" fill="#0c4a6e">pont diviseur</text>
-          <rect x="184" y="30" width="78" height="40" rx="6" fill="#ede9fe" stroke="#6d28d9" strokeWidth="2" /><text x="223" y="52" textAnchor="middle" fontSize="11" fontWeight="700" fill="#4c1d95">CAN</text><text x="223" y="64" textAnchor="middle" fontSize="10" fill="#4c1d95">n bits</text>
-          <rect x="274" y="30" width="82" height="40" rx="6" fill="#dcfce7" stroke="#15803d" strokeWidth="2" /><text x="315" y="48" textAnchor="middle" fontSize="11" fontWeight="700" fill="#14532d">traitement</text><text x="315" y="62" textAnchor="middle" fontSize="10" fill="#14532d">algorithme</text>
-          <line x1="82" y1="50" x2="94" y2="50" stroke="#334155" strokeWidth="2" /><line x1="172" y1="50" x2="184" y2="50" stroke="#334155" strokeWidth="2" /><line x1="262" y1="50" x2="274" y2="50" stroke="#334155" strokeWidth="2" />
-          <text x="43" y="20" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">E (lx)</text><text x="88" y="86" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">R<tspan fontSize="9" dy="3">p</tspan><tspan dy="-3"> (Ω)</tspan></text>
-          <text x="178" y="86" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">U<tspan fontSize="9" dy="3">r</tspan><tspan dy="-3"> (V)</tspan></text><text x="268" y="86" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">N</text>
-          <text x="315" y="20" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">phares</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Chaîne</strong> : E → R<sub>p</sub> → U<sub>r</sub> → N → décision. Chaque maillon transforme la grandeur : capteur, conditionneur, CAN, traitement.</li>
-          <li>U<sub>r</sub> = 5 R / (R<sub>p</sub> + R) ; N = ⌊U<sub>r</sub> / 5 × (2<sup>n</sup> − 1)⌋ ; q = 5 / (2<sup>n</sup> − 1).</li>
-          <li>Algorithme à deux seuils (393 et 491) : l’hystérésis évite les basculements parasites.</li>
-        </ul>
+        <FChaine/>
+        <Formule><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><msub><mi>R</mi><mi>p</mi></msub><mo>+</mo><mi>R</mi></mrow></mfrac></Formule>
+        <Formule><mi>N</mi><mo>=</mo><mo>⌊</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo><mo>⌋</mo></Formule>
+        {puces(<><strong>Hypothèses du modèle :</strong> photorésistance à 9 points de mesure interpolés (log-log) ; alimentation 5 V parfaite et R exacte ; pont non chargé ; CAN idéal à n bits, référence 5 V, sans bruit.</>, <>Deux seuils ({SEUIL_BAS} et {SEUIL_HAUT}) : l’hystérésis évite que les phares clignotent quand l’éclairement fluctue.</>)}
       </>,
       texte: <>Vous savez suivre une grandeur à travers une chaîne de mesure : E → Rp → Ur → N, puis décision. En exploration libre, changez R et le nombre de bits : que deviennent le quantum et la
         sensibilité ?</>, tache: null },
