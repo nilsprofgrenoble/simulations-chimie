@@ -13,6 +13,8 @@
 // Aucune de ces fonctions ne dépend de React : elles sont testables seules.
 
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
+import { IONS as CDT_IONS } from "./conductimetrieModele";
+const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
 const sci3 = x => { const [m, e] = Number(x).toExponential(2).split('e'); return `${Number(m).toLocaleString('fr-FR')} × 10${[...String(Number(e))].map(c => SUP[c]).join('')}`; };
@@ -464,6 +466,100 @@ export const ENONCES = [
         utiles: ['pKa2', 'pH', 'C'], raisons: { pKa1: 'pKA1 est trop éloigné du pH : le cation est négligeable, on ne lit que le couple 2.', V: 'Le volume ne change pas les concentrations : il n’intervient pas ici.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
         cherche: { bonne: 'La concentration de l’anion (en mol/L)', faux: ['Le rapport [anion] / [zwitterion] (sans unité)', 'La concentration en ions oxonium (en mol/L)', 'Le pourcentage d’anion (en %)'] },
         manque: null, solution: { txt: '[anion] = C × r / (1 + r), avec r = 10^(pH − pKA2)', val: p.C * r / (1 + r), u: 'mol/L' } };
+    },
+  },
+  // ───────────────────────────── Conductimétrie (TG, sim 135) : conductivité d’une solution et titrage conductimétrique
+  {
+    id: 'cdt-sapp-sel', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Conductivité d’une solution de sel', noms: ['Conductivité de la solution', 'Concentration à partir de la conductivité'],
+    gen: () => { const s = tire(CDT_SELS); return { s, C: tire([0.0020, 0.0030, 0.0040, 0.0050, 0.0080]), V: tire([100, 250, 500]) }; },
+    build: (p, q) => {
+      const s = p.s, lc = CDT_IONS[s.cat].lambda, la = CDT_IONS[s.an].lambda, somme = lc + la;
+      const sigma = Math.round(somme * p.C * 1000 * 10) / 10;
+      const tokens = {
+        lc: tok(`${nb(lc, 1)} mS·m²·mol⁻¹`, `Conductivité ionique molaire de ${CDT_IONS[s.cat].f} à 25 °C`, lc, 'mS·m²·mol⁻¹'),
+        la: tok(`${nb(la, 1)} mS·m²·mol⁻¹`, `Conductivité ionique molaire de ${CDT_IONS[s.an].f} à 25 °C`, la, 'mS·m²·mol⁻¹'),
+        C: tok(`${nb(p.C, 4)} mol/L`, 'Concentration en soluté apporté', p.C, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
+        sigma: tok(`${nb(sigma, 1)} mS·m⁻¹`, 'Conductivité mesurée à 25 °C', sigma, 'mS·m⁻¹'),
+      };
+      const debut = ['Une solution de ', s.nom, ' (', s.f, ', totalement dissocié en ', CDT_IONS[s.cat].f, ' et ', CDT_IONS[s.an].f, ') est diluée : ', 'λ(', CDT_IONS[s.cat].f, ') = ', T('lc'), ' et λ(', CDT_IONS[s.an].f, ') = ', T('la'), '. '];
+      if (q === 0) return { tokens, derivees: ['σ = λ(cation) × c + λ(anion) × c, avec c en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³)'], texte: [...debut, 'La solution, de concentration ', T('C'), ', occupe un volume de ', T('V'), '. Quelle est sa conductivité ?'],
+        utiles: ['lc', 'la', 'C'], raisons: { V: 'Le volume ne change pas la concentration, donc pas la conductivité : σ dépend des concentrations, pas de la quantité de solution.' },
+        cherche: { bonne: 'La conductivité σ (en mS·m⁻¹)', faux: ['La concentration du soluté (en mol/L)', 'La conductivité ionique molaire du soluté (en mS·m²·mol⁻¹)', 'La résistance électrique de la cellule (en Ω)'] },
+        manque: null, solution: { txt: 'σ = (λ(cation) + λ(anion)) × c, avec c en mol·m⁻³', val: somme * p.C * 1000, u: 'mS·m⁻¹' } };
+      return { tokens, derivees: ['c = σ / (λ(cation) + λ(anion)), en mol·m⁻³, puis conversion en mol/L'], texte: [...debut, 'La conductivité mesurée vaut ', T('sigma'), ' ; le volume de solution est ', T('V'), '. Quelle est la concentration du soluté ?'],
+        utiles: ['lc', 'la', 'sigma'], raisons: { V: 'Le volume ne change pas une concentration : on la déduit de σ et des conductivités ioniques molaires.' },
+        cherche: { bonne: 'La concentration du soluté (en mol/L)', faux: ['La conductivité de la solution (en mS·m⁻¹)', 'La quantité de soluté dissous (en mmol)', 'La conductivité ionique molaire de la solution (en mS·m²·mol⁻¹)'] },
+        manque: null, solution: { txt: 'c = σ / (λ(cation) + λ(anion)) = en mol·m⁻³, soit en mol/L après division par 1 000', val: sigma / somme / 1000, u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'cdt-sapp-equiv', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Volume équivalent d’un titrage conductimétrique', noms: ['Concentration de l’acide', 'Quantité d’ions HO⁻ versée à l’équivalence'],
+    gen: () => ({ cB: tire([0.050, 0.100, 0.200]), VA: tire([10.0, 20.0, 25.0]), VE: tire([8.0, 10.5, 12.0, 14.5, 16.0]), eau: tire([150, 180, 190]) }),
+    build: (p, q) => {
+      const tokens = {
+        VA: tok(`${nb(p.VA, 1)} mL`, 'Volume de la prise d’essai d’acide', p.VA, 'mL'),
+        eau: tok(`${p.eau} mL`, 'Volume d’eau ajouté avant le titrage', p.eau, 'mL'),
+        cB: tok(`${nb(p.cB, 3)} mol/L`, 'Concentration de la solution d’hydroxyde de sodium', p.cB, 'mol/L'),
+        VE: tok(`${nb(p.VE, 1)} mL`, 'Volume équivalent lu à la rupture de pente de la courbe', p.VE, 'mL'),
+      };
+      const debut = ['On titre une prise d’essai de ', T('VA'), ' d’acide chlorhydrique, de concentration cA inconnue, diluée dans ', T('eau'), ' d’eau, par une solution d’hydroxyde de sodium de concentration ', T('cB'), '. Le suivi de la conductivité donne une rupture de pente pour un volume versé ', T('VE'), '. '];
+      if (q === 0) return { tokens, derivees: ['à l’équivalence : cA × VA = cB × VE'], texte: [...debut, 'Quelle est la concentration cA de l’acide ?'],
+        utiles: ['VA', 'cB', 'VE'], raisons: { eau: 'L’eau ajoutée dilue l’acide mais ne change pas sa quantité de matière : elle ne sert pas au calcul de cA.' },
+        cherche: { bonne: 'La concentration cA de l’acide (en mol/L)', faux: ['La quantité d’acide titré (en mmol)', 'La concentration de la solution de soude (en mol/L)', 'La concentration de l’acide après dilution (en mol/L)'] },
+        manque: null, solution: { txt: 'cA = cB × VE / VA (quantités égales à l’équivalence)', val: p.cB * p.VE / p.VA, u: 'mol/L' } };
+      return { tokens, derivees: ['n(HO⁻) versé à l’équivalence = cB × VE'], texte: [...debut, 'Quelle quantité d’ions HO⁻ a-t-on versée à l’équivalence ?'],
+        utiles: ['cB', 'VE'], raisons: { VA: 'La prise d’essai sert à calculer la concentration de l’acide, pas la quantité de HO⁻ versée.', eau: 'L’eau de dilution ne contient pas d’ions HO⁻ : elle n’intervient pas.' },
+        cherche: { bonne: 'La quantité n(HO⁻) versée (en mmol)', faux: ['La concentration en ions HO⁻ dans le bécher (en mol/L)', 'La quantité d’ions H₃O⁺ restants (en mmol)', 'Le volume équivalent (en mL)'] },
+        manque: null, solution: { txt: 'n(HO⁻) = cB × VE (mol/L × mL = mmol)', val: p.cB * p.VE, u: 'mmol' } };
+    },
+  },
+  {
+    id: 'cdt-sapp-pente', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Variation de la conductivité en cours de titrage', noms: ['Variation de σ avant l’équivalence', 'Variation de σ après l’équivalence'],
+    gen: () => ({ dn: tire([0.10, 0.20, 0.30, 0.50]), Vt: tire([200, 210, 220, 250]), acide: tire(['chlorhydrique', 'nitrique']) }),
+    build: (p, q) => {
+      const an = p.acide === 'chlorhydrique' ? 'Cl' : 'NO3', I = CDT_IONS;
+      const tokens = {
+        dn: tok(`${nb(p.dn, 2)} mmol`, 'Quantité d’ions HO⁻ ajoutée', p.dn, 'mmol'),
+        Vt: tok(`${p.Vt} mL`, 'Volume total de la solution (supposé constant)', p.Vt, 'mL'),
+        lH: tok(`${nb(I.H3O.lambda, 1)} mS·m²·mol⁻¹`, 'Conductivité ionique molaire de H₃O⁺', I.H3O.lambda, 'mS·m²·mol⁻¹'),
+        lNa: tok(`${nb(I.Na.lambda, 1)} mS·m²·mol⁻¹`, 'Conductivité ionique molaire de Na⁺', I.Na.lambda, 'mS·m²·mol⁻¹'),
+        lHO: tok(`${nb(I.HO.lambda, 1)} mS·m²·mol⁻¹`, 'Conductivité ionique molaire de HO⁻', I.HO.lambda, 'mS·m²·mol⁻¹'),
+        lAn: tok(`${nb(I[an].lambda, 1)} mS·m²·mol⁻¹`, `Conductivité ionique molaire de ${I[an].f}`, I[an].lambda, 'mS·m²·mol⁻¹'),
+      };
+      const fac = 1000 * p.dn / p.Vt;
+      const debut = ['On titre une solution d’acide ', p.acide, ' par la soude (Na⁺, HO⁻). Conductivités ioniques molaires à 25 °C : λ(H₃O⁺) = ', T('lH'), ', λ(Na⁺) = ', T('lNa'), ', λ(HO⁻) = ', T('lHO'), ' et λ(', I[an].f, ') = ', T('lAn'), '. On ajoute ', T('dn'), ' d’ions HO⁻ ; le volume total, ', T('Vt'), ', est supposé constant. '];
+      if (q === 0) return { tokens, derivees: ['Δσ = (λ(Na⁺) − λ(H₃O⁺)) × Δc, avec Δc en mol·m⁻³ (1 mmol/mL = 1 000 mol·m⁻³)'], texte: [...debut, 'Avant l’équivalence, chaque ion HO⁻ réagit avec un ion H₃O⁺ et un ion Na⁺ apparaît. Quelle est la variation de la conductivité ?'],
+        utiles: ['lH', 'lNa', 'dn', 'Vt'], raisons: { lHO: 'Avant l’équivalence, HO⁻ est consommé : il ne reste pas en solution, sa conductivité ionique molaire n’intervient pas.', lAn: 'L’ion spectateur ne change pas : sa concentration reste la même (à volume constant).' },
+        cherche: { bonne: 'La variation Δσ de la conductivité (en mS·m⁻¹)', faux: ['La conductivité σ finale de la solution (en mS·m⁻¹)', 'La variation de la quantité d’ions Na⁺ (en mmol)', 'La variation du pH de la solution (sans unité)'] },
+        manque: null, solution: { txt: 'Δσ = (λ(Na⁺) − λ(H₃O⁺)) × Δc, avec Δc = Δn / Vt en mol·m⁻³', val: (I.Na.lambda - I.H3O.lambda) * fac, u: 'mS·m⁻¹' } };
+      return { tokens, derivees: ['Δσ = (λ(Na⁺) + λ(HO⁻)) × Δc, avec Δc en mol·m⁻³'], texte: [...debut, 'Après l’équivalence, les ions HO⁻ ajoutés ne réagissent plus : ils s’accumulent avec les ions Na⁺ correspondants. Quelle est la variation de la conductivité ?'],
+        utiles: ['lNa', 'lHO', 'dn', 'Vt'], raisons: { lH: 'Après l’équivalence, il n’y a plus d’ions H₃O⁺ à consommer : cet ion n’intervient pas dans la variation.', lAn: 'L’ion spectateur ne change pas : sa concentration reste la même (à volume constant).' },
+        cherche: { bonne: 'La variation Δσ de la conductivité (en mS·m⁻¹)', faux: ['La conductivité σ finale de la solution (en mS·m⁻¹)', 'La variation de la quantité d’ions HO⁻ (en mmol)', 'La variation du volume équivalent (en mL)'] },
+        manque: null, solution: { txt: 'Δσ = (λ(Na⁺) + λ(HO⁻)) × Δc, avec Δc = Δn / Vt en mol·m⁻³', val: (I.Na.lambda + I.HO.lambda) * fac, u: 'mS·m⁻¹' } };
+    },
+  },
+  {
+    id: 'cdt-sapp-compo', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Composition après l’équivalence d’un titrage', noms: ['Quantité d’ions HO⁻ restants', 'Concentration en ions HO⁻'],
+    gen: () => ({ cA: tire([0.040, 0.050, 0.060]), VA: 20.0, cB: 0.100, VB: tire([14.0, 16.0, 18.0]), eau: tire([150, 180]) }),
+    build: (p, q) => {
+      const tokens = {
+        cA: tok(`${nb(p.cA, 3)} mol/L`, 'Concentration de l’acide chlorhydrique titré', p.cA, 'mol/L'),
+        VA: tok(`${nb(p.VA, 1)} mL`, 'Volume de la prise d’essai d’acide', p.VA, 'mL'),
+        eau: tok(`${p.eau} mL`, 'Volume d’eau ajouté avant le titrage', p.eau, 'mL'),
+        cB: tok(`${nb(p.cB, 3)} mol/L`, 'Concentration de la solution d’hydroxyde de sodium', p.cB, 'mol/L'),
+        VB: tok(`${nb(p.VB, 1)} mL`, 'Volume de soude versé', p.VB, 'mL'),
+      };
+      const reste = p.cB * p.VB - p.cA * p.VA, Vt = p.VA + p.eau + p.VB;
+      const debut = ['Une prise d’essai de ', T('VA'), ' d’acide chlorhydrique à ', T('cA'), ' est diluée dans ', T('eau'), ' d’eau, puis titrée par de la soude à ', T('cB'), '. On a versé ', T('VB'), ' de soude, soit plus que le volume équivalent (la transformation est totale). '];
+      if (q === 0) return { tokens, derivees: ['n(HO⁻) restant = cB × VB − cA × VA (mol/L × mL = mmol)'], texte: [...debut, 'Quelle quantité d’ions HO⁻ reste-t-il dans le bécher ?'],
+        utiles: ['cA', 'VA', 'cB', 'VB'], raisons: { eau: 'L’eau de dilution ne change pas les quantités de matière : elle intervient seulement dans les concentrations.' },
+        cherche: { bonne: 'La quantité n(HO⁻) restante (en mmol)', faux: ['La concentration en HO⁻ dans le bécher (en mol/L)', 'La quantité d’ions H₃O⁺ du départ (en mmol)', 'La quantité d’ions HO⁻ versés (en mmol)'] },
+        manque: null, solution: { txt: 'n(HO⁻) restant = cB × VB − cA × VA', val: reste, u: 'mmol' } };
+      return { tokens, derivees: ['n(HO⁻) restant = cB × VB − cA × VA, puis [HO⁻] = n / (VA + volume d’eau + VB)'], texte: [...debut, 'Quelle est la concentration en ions HO⁻ dans le bécher ?'],
+        utiles: ['cA', 'VA', 'eau', 'cB', 'VB'], raisons: {},
+        cherche: { bonne: 'La concentration en HO⁻ (en mol/L)', faux: ['La quantité d’ions HO⁻ restants (en mmol)', 'La concentration de la soude versée (en mol/L)', 'La concentration en ions Na⁺ (en mol/L)'] },
+        manque: null, solution: { txt: '[HO⁻] = (cB × VB − cA × VA) / (VA + volume d’eau + VB) ; mmol / mL = mol/L', val: reste / Vt, u: 'mol/L' } };
     },
   },
   // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
