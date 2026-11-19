@@ -92,3 +92,25 @@ export function tirageDefiSigma() {
   const sigma = sigmaTitrage({ analyte, cA, VB });
   return { analyte, cA, VA: VA0, VB, VE, sigma, sigmaTot: sigmaTotale({ analyte, cA, VB }) };
 }
+
+// ---------- modélisation par deux droites (vue « comme en TP ») ----------
+//  On ne garde que les points mesurés loin de l'équivalence (à ZONE_ECARTEE mL ou plus de V_E, de part et d'autre) : près de V_E la courbe réelle
+//  s'arrondit (réaction pas parfaitement totale, autoprotolyse de l'eau, dilution, incertitude de mesure). Contrairement au titrage pH-métrique,
+//  où l'information est dans le saut de pH autour de V_E, ici elle est dans les deux droites, loin de V_E.
+export const ZONE_ECARTEE = 2;   // mL
+const regression = pts => {
+  const n = pts.length, mx = pts.reduce((s, q) => s + q.VB, 0) / n, my = pts.reduce((s, q) => s + q.sigma, 0) / n;
+  const a = pts.reduce((s, q) => s + (q.VB - mx) * (q.sigma - my), 0) / pts.reduce((s, q) => s + (q.VB - mx) ** 2, 0);
+  return { a, b: my - a * mx };
+};
+export function pointsMesures(p, pas = 1, vmax = V_BURETTE) {
+  const pts = []; for (let i = 0; i <= Math.round(vmax / pas); i++) { const VB = Math.round(i * pas * 100) / 100; pts.push({ VB, sigma: sigmaTitrage({ ...p, VB }) }); }
+  return pts;
+}
+// pts : points mesurés ; VE : volume équivalent (sert seulement à choisir les points écartés) ; renvoie les deux droites σ = a·V + b et leur intersection
+export function deuxDroites(pts, VE, zone = ZONE_ECARTEE) {
+  const avant = pts.filter(q => q.VB <= VE - zone + 1e-9), apres = pts.filter(q => q.VB >= VE + zone - 1e-9);
+  const ecartes = pts.filter(q => q.VB > VE - zone + 1e-9 && q.VB < VE + zone - 1e-9);
+  const d1 = regression(avant), d2 = regression(apres);
+  return { avant, apres, ecartes, d1, d2, VEmod: (d2.b - d1.b) / (d1.a - d2.a) };
+}

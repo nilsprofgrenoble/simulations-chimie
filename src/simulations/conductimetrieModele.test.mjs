@@ -56,4 +56,12 @@ for (let i = 0; i < 5000; i++) {
   for (const k of [2, 3]) ok(Math.abs(sig(d.sigmaTot, k) - d.sigma) <= 0.06 * d.sigma, 'tolérance défi 2 ' + k);
   ok(d.sigma > 30 && d.sigma < 400, 'ordre de grandeur σ défi 2 ' + d.sigma);
 }
+// vue « comme en TP » : deux droites ajustées sur les points éloignés de V_E (acides forts, eau ajoutée ≥ 180 mL) : V_E retrouvé à moins de 5 %
+for (const an of ['hcl', 'hno3']) for (const cA of M.CONC_A) for (const eau of [180, 480]) {
+  const VE = M.volumeEquivalent(cA), r = M.deuxDroites(M.pointsMesures({ analyte: an, cA, Vinit: M.VA0 + eau }, 1), VE);
+  ok(r.avant.length >= 3 && r.apres.length >= 3, `points utilisés ${an} ${cA}`);
+  ok(r.ecartes.every(q => Math.abs(q.VB - VE) < M.ZONE_ECARTEE), 'points écartés proches de V_E');
+  ok(r.avant.concat(r.apres).every(q => Math.abs(q.VB - VE) >= M.ZONE_ECARTEE - 1e-9), 'points utilisés loin de V_E');
+  ok(Math.abs(r.VEmod - VE) / VE <= 0.05, `V_E par deux droites ${an} ${cA} ${eau} : ${r.VEmod}`);
+}
 console.log('conductimetrieModele : tous les tests passent (' + n + ' + 10 000 tirages ; écart maximal de lecture de V_E : ' + (100 * pire).toFixed(1) + ' %)');
