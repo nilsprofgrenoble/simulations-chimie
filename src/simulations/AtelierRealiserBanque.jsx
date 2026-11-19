@@ -11,6 +11,7 @@ import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
 import * as ME from "./mesureModele";
+import * as CM from "./combustionModele";
 import * as RX from "./redoxModele";
 import * as CL from "./couleursModele";
 import * as AB from "./acidesBasesModele";
@@ -1215,6 +1216,63 @@ function genDissolutionIonique1G() {
   [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Dissolution d’un solide ionique : équation de dissolution, concentration en soluté apporté et concentration effective de chaque ion, masse à peser et quantité d’ions dans un prélèvement.', questions: [q0, q1, q2, q3, q4, q5],
     retenir: ['Équation : solide (s) → ions (aq), charge conservée, l’eau ne s’écrit pas ; un ion polyatomique reste groupé.', 'Concentration effective : [ion] = coefficient × c, avec c = n / V et n = m / M (V en litres).', 'Pour la masse à peser : c = [ion] / coefficient, puis m = c × V × M.'] };
+}
+
+// ───────────── Combustions (1G) : équation, liaisons rompues et formées, énergie molaire de réaction, écart, énergie libérée, pouvoir calorifique ─────────────
+function genCombustion1G() {
+  const ent = x => String(Math.round(Math.abs(x)));
+  const sg = x => (x < 0 ? '−' : '') + ent(x);
+  const cnt = x => String(x).replace('.', ',');
+  const tm = (x, f) => (x === 1 ? f : `${CM.coefTexte(x).trim()}${NB}${f}`);
+  const eqTxt = (f, o, c, h) => `${f} + ${tm(o, 'O₂')} → ${tm(c, 'CO₂')} + ${tm(h, 'H₂O')}`;
+  const donnees = <>Données : énergies de liaison moyennes, en kJ·mol⁻¹ : D(C–H) = {CM.D_LIAISON.CH} ; D(C–C) = {CM.D_LIAISON.CC} ; D(C–O) = {CM.D_LIAISON.CO} ; D(O–H) = {CM.D_LIAISON.OH} ; D(O=O) = {CM.D_LIAISON.OO} ; D(C=O) = {CM.D_LIAISON.CdO}. Hypothèse du modèle : tous les corps sont pris à l’état gazeux.</>;
+  const decrit = c => Object.entries(CM.liaisonsMolecule(c)).filter(([, n]) => n).map(([t, n]) => `${cnt(n)}${NB}liaison${n > 1 ? 's' : ''}${NB}${CM.NOM_LIAISON[t]}`).join(', ');
+  const c = tire(CM.COMBUSTIBLES), k = CM.coefficients(c);
+  const eqC = CM.equation(c), R = CM.energieRompue(c), F = CM.energieFormee(c), Er = CM.energieReaction(c), M = CM.masseMolaire(c);
+  const contexte = <>On étudie la combustion complète du {c.nom} {c.f} ({c.usage}), d’équation <b>{eqC}</b> (pour 1 mol de {c.nom}). Une molécule de {c.nom} contient {decrit(c)}.</>;
+  // q0 : équation équilibrée (combustibles à coefficients entiers pour que les propositions soient distinctes)
+  const e0 = tire(CM.COMBUSTIBLES.filter(CM.estEntiere)), k0 = CM.coefficients(e0), a0 = CM.atomes(e0);
+  const bonne0 = eqTxt(e0.f, k0.O2, k0.CO2, k0.H2O);
+  const faux0 = [eqTxt(e0.f, k0.O2, k0.CO2, a0.H), eqTxt(e0.f, k0.CO2, k0.CO2, k0.H2O), eqTxt(e0.f, 2 * k0.CO2 + k0.H2O, k0.CO2, k0.H2O)].filter((x, i, t) => x !== bonne0 && t.indexOf(x) === i);
+  while (faux0.length < 3) faux0.push(eqTxt(e0.f, k0.O2 + faux0.length + 1, k0.CO2, k0.H2O));
+  const opts0 = melange([bonne0, ...faux0]);
+  const q0 = { id: 'c0', type: 'qcm', q: <>Quelle est l’équation équilibrée de la combustion complète du {e0.nom} {e0.f}, avec le coefficient 1 pour le {e0.nom} ?</>, options: opts0, bonne: opts0.indexOf(bonne0),
+    aide: 'Équilibrez dans l’ordre C, puis H, puis O. Une molécule H₂O contient 2 atomes H, une molécule O₂ contient 2 atomes O.',
+    expl: <>C : {a0.C} atome{a0.C > 1 ? 's' : ''}, donc {k0.CO2} CO₂. H : {a0.H} atomes, donc {k0.H2O} H₂O. O : {k0.CO2} × 2 + {k0.H2O} = {2 * k0.CO2 + k0.H2O} atomes à droite{a0.O ? ', dont 1 est déjà dans la molécule du combustible' : ''} : il faut {k0.O2} O₂. Équation : <b>{bonne0}</b>.</> };
+  // q1 : énergie à fournir pour rompre les liaisons des réactifs
+  const q1 = { id: 'c1', type: 'num', q: <>{contexte} {donnees} Calculez l’énergie à fournir pour rompre toutes les liaisons des réactifs, en <b>kJ/mol</b> de {c.nom}.</>, unite: 'kJ/mol', vrai: R, csMin: 3, tolRel: 0.01,
+    aide: 'Comptez : les liaisons de la molécule de combustible, et une liaison O=O par molécule O₂ de l’équation. Multipliez chaque nombre par D et additionnez.',
+    pieges: [[R - (k.O2 - 1) * CM.D_LIAISON.OO, 'Il y a une liaison O=O par molécule O₂ : il faut multiplier D(O=O) par le coefficient de O₂ dans l’équation.'], [R - CM.D_LIAISON.OO * k.O2, 'Vous avez oublié de rompre le dioxygène : chaque molécule O₂ contient une liaison O=O.'], [F, 'Ce sont les liaisons des produits : on demande ici celles des réactifs.']],
+    expl: <>Rompues : {Object.entries(CM.liaisonsRompues(c)).map(([t, n]) => `${cnt(n)} × ${CM.NOM_LIAISON[t]}`).join(' + ')} ; énergie : {Object.entries(CM.liaisonsRompues(c)).map(([t, n]) => `${cnt(n)} × ${CM.D_LIAISON[t]}`).join(' + ')} = <b>{ent(R)}{NB}kJ/mol</b>.</> };
+  // q2 : énergie libérée par la formation des liaisons des produits
+  const q2 = { id: 'c2', type: 'num', q: <>{contexte} {donnees} La molécule CO₂ s’écrit O=C=O et la molécule H₂O s’écrit H–O–H. Calculez l’énergie libérée par la formation de toutes les liaisons des produits, en <b>kJ/mol</b> de {c.nom}, comme un nombre positif.</>, unite: 'kJ/mol', vrai: F, csMin: 3, tolRel: 0.01,
+    aide: 'Chaque CO₂ contient 2 liaisons C=O et chaque H₂O contient 2 liaisons O–H : multipliez par les coefficients de l’équation.',
+    pieges: [[F - k.CO2 * CM.D_LIAISON.CdO, 'Chaque molécule CO₂ contient deux liaisons C=O, pas une.'], [F - k.H2O * CM.D_LIAISON.OH, 'Chaque molécule H₂O contient deux liaisons O–H, pas une.'], [-F, 'L’énergie libérée se donne ici comme un nombre positif.'], [R, 'Ce sont les liaisons des réactifs : on demande ici celles des produits.']],
+    expl: <>Formées : {cnt(2 * k.CO2)} × C=O et {cnt(2 * k.H2O)} × O–H : {cnt(2 * k.CO2)} × {CM.D_LIAISON.CdO} + {cnt(2 * k.H2O)} × {CM.D_LIAISON.OH} = <b>{ent(F)}{NB}kJ/mol</b>.</> };
+  // q3 : énergie molaire de réaction
+  const q3 = { id: 'c3', type: 'num', q: <>{contexte} {donnees} La molécule CO₂ s’écrit O=C=O et la molécule H₂O s’écrit H–O–H. Estimez l’énergie molaire de réaction E<sub>r</sub>, avec son signe, en <b>kJ/mol</b> de {c.nom}.</>, unite: 'kJ/mol', vrai: Er, csMin: 3, tolRel: 0.01,
+    aide: 'E_r = Σ D(liaisons rompues) − Σ D(liaisons formées). Rompues : combustible et O₂. Formées : C=O de CO₂ et O–H de H₂O.',
+    pieges: [[-Er, 'Le signe est faux : une combustion libère de l’énergie, E_r est négative.'], [R + F, 'On soustrait l’énergie libérée à l’énergie fournie, on ne les additionne pas.'], [R - CM.D_LIAISON.OO * k.O2 - F, 'Vous avez oublié de rompre les liaisons O=O du dioxygène.']],
+    expl: <>Σ D(rompues) = {ent(R)} kJ/mol ; Σ D(formées) = {ent(F)} kJ/mol ; E<sub>r</sub> = {ent(R)} − {ent(F)} = <b>{sg(Er)}{NB}kJ/mol</b> (estimation : énergies moyennes, phase gazeuse).</> };
+  // q4 : écart relatif avec la valeur de référence
+  const q4 = { id: 'c4', type: 'num', q: <>L’énergie molaire de réaction estimée de la combustion du {c.nom} est E<sub>r</sub> = <b>{sg(Er)}{NB}kJ/mol</b> ; la valeur de référence tabulée, pour la même réaction (gaz), est <b>{sg(c.ref)}{NB}kJ/mol</b>. Calculez l’écart relatif entre l’estimation et la référence, en <b>%</b>.</>, unite: '%', vrai: CM.ecartRelatif(c) * 100, csMin: 2, tolRel: 0.06,
+    aide: 'Écart relatif = |estimation − référence| ÷ |référence|, puis ×100 pour l’exprimer en pourcentage.',
+    pieges: [[CM.ecartRelatif(c), 'Le rapport est donné en pourcentage : multipliez par 100.'], [Math.abs(Er - c.ref), 'C’est l’écart absolu en kJ/mol : divisez-le par la référence et exprimez en %.']],
+    expl: <>|{sg(Er)} − ({sg(c.ref)})| = {ent(Er - c.ref)} kJ/mol ; écart relatif = {ent(Er - c.ref)} ÷ {ent(c.ref)} = {nb(CM.ecartRelatif(c), 3)}, soit <b>{avecU(CM.ecartRelatif(c) * 100, '%', 2)}</b>. Un écart de quelques % est normal : les énergies de liaison sont des moyennes.</> };
+  // q5 : énergie libérée par une masse donnée
+  const m5 = tire([10, 20, 50, 100]), Q5 = m5 / M * (-Er);
+  const q5 = { id: 'c5', type: 'num', q: <>La combustion complète d’une mole de {c.nom} {c.f} libère, d’après l’estimation, <b>{ent(Er)}{NB}kJ</b> (E<sub>r</sub> = {sg(Er)}{NB}kJ/mol). Sa masse molaire est <b>M = {nb(M, 3)}{NB}g/mol</b>. Calculez l’énergie libérée par la combustion complète de <b>{nb(m5, 3)}{NB}g</b> de {c.nom}, en <b>kJ</b>.</>, unite: 'kJ', vrai: Q5, csMin: 3, tolRel: 0.01,
+    aide: 'D’abord la quantité de matière n = m / M, puis l’énergie = n × |E_r|.',
+    pieges: [[m5 * (-Er), 'Vous avez multiplié la masse par E_r : il faut passer par la quantité de matière n = m / M.'], [m5 * M / (-Er), 'Le raisonnement est inversé : l’énergie est n × |E_r|, avec n = m / M.'], [-Er / M, 'C’est l’énergie par gramme : multipliez par la masse brûlée.']],
+    expl: <>n = m / M = {nb(m5, 3)} ÷ {nb(M, 3)} = {nb(m5 / M, 3)}{NB}mol ; énergie = n × |E<sub>r</sub>| = {nb(m5 / M, 3)} × {ent(Er)} = <b>{avecU(Q5, 'kJ', 3)}</b>.</> };
+  // q6 : pouvoir calorifique
+  const q6 = { id: 'c6', type: 'num', q: <>Pour le {c.nom} {c.f}, l’énergie molaire de réaction estimée est E<sub>r</sub> = <b>{sg(Er)}{NB}kJ/mol</b> et la masse molaire est <b>M = {nb(M, 3)}{NB}g/mol</b>. Calculez son pouvoir calorifique estimé, en <b>MJ/kg</b> (1 kJ/g = 1 MJ/kg).</>, unite: 'MJ/kg', vrai: CM.pouvoirCalorifique(c), csMin: 3, tolRel: 0.01,
+    aide: 'PC = |E_r| ÷ M : des kJ par mole divisés par des g par mole donnent des kJ/g, soit des MJ/kg.',
+    pieges: [[-Er, 'C’est l’énergie par mole : divisez par la masse molaire pour obtenir l’énergie par gramme.'], [-Er * M, 'On divise par la masse molaire, on ne multiplie pas.'], [CM.pouvoirCalorifique(c) * 1000, 'Facteur 1000 : 1 kJ/g = 1 MJ/kg, il n’y a pas de conversion à faire.']],
+    expl: <>PC = |E<sub>r</sub>| ÷ M = {ent(Er)} ÷ {nb(M, 3)} = {nb(CM.pouvoirCalorifique(c), 3)}{NB}kJ/g, soit <b>{avecU(CM.pouvoirCalorifique(c), 'MJ/kg', 3)}</b>.</> };
+  [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Combustions : équation équilibrée, énergie de rupture et de formation des liaisons, énergie molaire de réaction estimée, écart avec la référence, énergie libérée et pouvoir calorifique.', questions: [q0, q1, q2, q3, q4, q5, q6],
+    retenir: ['Équilibrer dans l’ordre C, H, O ; un alcool apporte déjà un atome O.', 'E_r ≈ Σ D(rompues) − Σ D(formées) ; E_r < 0 : exothermique ; estimation avec des énergies moyennes, en phase gazeuse.', 'Pouvoir calorifique : PC = |E_r| ÷ M, en kJ/g = MJ/kg ; énergie libérée par une masse m : (m / M) × |E_r|.'] };
 }
 
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
@@ -2570,6 +2628,7 @@ export const FAMILLES = [
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
   { id: 'mes1g-calcul', groupe: 'Formules', titre: 'Mesure et incertitudes : moyenne, incertitude-type de type A et de type B, arrondi et comparaison à une référence (1G)', gen: genMesure1G, domaine: 'Mesure et incertitudes (1G)' },
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
+  { id: 'comb1g-calcul', groupe: 'Formules', titre: 'Combustions : équation, énergie des liaisons, énergie molaire de réaction, écart avec la référence et pouvoir calorifique (1G)', gen: genCombustion1G, domaine: 'Combustions : énergie de réaction et énergies de liaison' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
