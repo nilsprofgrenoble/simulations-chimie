@@ -7,6 +7,7 @@ import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
+import * as CO2 from "./co2DissousModele";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
@@ -1061,6 +1062,68 @@ function genTampstlAjout() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Un acide fort consomme la base A⁻ et forme AH ; une base forte consomme AH et forme A⁻ (réactions quasi totales).', 'pH = pKa + log(frac(n(A⁻)|n(AH))) avec les quantités après la réaction.', 'Le tampon est épuisé si l’ajout dépasse la quantité du réactif.'] };
 }
+// ---------- CO₂ dissous (TSTL, PCM) ----------
+const fmv = x => (x < 0.001 || x >= 1e5) ? sciF(x) : String(Number(Number(x).toPrecision(2))).replace('.', ',');
+function tirageCo2Eau() {
+  for (let k = 0; k < 500; k++) {
+    const t = CO2.tirageEau(), c2 = PRE.arrondiCS(t.c, 2), h2 = PRE.arrondiCS(Math.sqrt(CO2.KA1 * c2 * 1e-3), 2), pH2 = -Math.log10(h2), v = [c2, h2, pH2, pH2 - 1];
+    if (v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(Math.abs(x), Math.abs(y))))) return { t, c2, h2, pH2 };
+  }
+  throw new Error('tirage co2dis-henry impossible');
+}
+function genCo2Eau() {
+  const { t, c2, h2, pH2 } = tirageCo2Eau(), fP = t.P < 1 ? nbF(t.P, 1) : nbF(t.P, 0), as = nbF(t.a, 2), cs = fmv(c2), hs = sciF(h2);
+  const intro = `Une eau pure est en équilibre, à ${t.T}${NB}°C, avec un gaz dont la pression partielle en CO₂ vaut ${fP}${NB}kPa. Le coefficient de solubilité du CO₂ vaut a = ${as}${NB}mmol·L⁻¹·kPa⁻¹ ; le couple CO₂,H₂O / HCO₃⁻ a pour pKa1 = 6,35, soit Ka1 = 4,5${NB}×${NB}10⁻⁷.`;
+  const q1 = { id: 'c0', type: 'num', q: <>Avec la loi de Henry [CO₂] = a × P(CO₂), calculez <b>[CO₂]</b> (en mmol/L, 2 chiffres significatifs).</>, unite: 'mmol/L', vrai: c2, tolRel: 0.05, csMin: 2,
+    aide: '[CO₂] = a × P(CO₂), avec a en mmol·L⁻¹·kPa⁻¹ et P en kPa : le résultat est en mmol/L.',
+    pieges: [[t.P / t.a, 'Il faut multiplier a par P(CO₂), pas les diviser.'], [c2 * 1e-3, 'L’unité demandée est le mmol/L : ne convertissez pas en mol/L ici.'], [t.a, 'C’est la valeur de a ; [CO₂] = a × P(CO₂).']],
+    expl: <>[CO₂] = {as} × {fP} = <b>{cs}{NB}mmol/L</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>Avec [CO₂] = {cs}{NB}mmol/L = {fmv(c2 * 1e-3)}{NB}mol/L, [H₃O⁺] = [HCO₃⁻] et Ka1 = {avecIndices('frac([H₃O⁺]²|[CO₂])')}, calculez <b>[H₃O⁺]</b> (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: h2, tolRel: 0.05, csMin: 2,
+    aide: '[H₃O⁺]² = Ka1 × [CO₂], donc [H₃O⁺] = racine carrée de (Ka1 × [CO₂]), avec [CO₂] en mol/L.',
+    pieges: [[CO2.KA1 * c2 * 1e-3, 'C’est [H₃O⁺]² : il faut prendre la racine carrée.'], [Math.sqrt(CO2.KA1 * c2), 'La concentration doit être en mol/L : divisez [CO₂] en mmol/L par 1 000 avant de calculer.'], [c2 * 1e-3, 'C’est [CO₂] en mol/L ; on demande [H₃O⁺] = racine carrée de (Ka1 × [CO₂]).']],
+    expl: <>[H₃O⁺] = racine carrée de (4,5 × 10⁻⁷ × {fmv(c2 * 1e-3)}) = <b>{hs}{NB}mol/L</b>.</> };
+  const q3 = { id: 'c2', type: 'num', q: <>Avec [H₃O⁺] = {hs}{NB}mol/L, calculez le <b>pH</b> de l’eau (2 chiffres significatifs au moins, sans unité).</>, unite: '', vrai: pH2, tolRel: 0.02, csMin: 2,
+    aide: 'pH = −log([H₃O⁺]) (touche log, avec [H₃O⁺] en mol/L).',
+    pieges: [[h2, 'C’est la concentration [H₃O⁺] : le pH est son opposé du logarithme décimal.'], [Math.log10(h2), 'Le signe est inversé : pH = −log([H₃O⁺]).'], [t.P / 100, 'Le pH se calcule à partir de [H₃O⁺] par −log, pas à partir de la pression.']],
+    expl: <>pH = −log({hs}) = <b>{nbF(pH2, 2)}</b>.</> };
+  const q4 = { id: 'c3', type: 'num', q: <>La pression partielle du CO₂ est maintenant <b>multipliée par 100</b>. Sachant que pH = ½ (pKa1 − log [CO₂]), calculez le nouveau <b>pH</b> (sans unité).</>, unite: '', vrai: pH2 - 1, tolRel: 0.02, csMin: 2,
+    aide: '[CO₂] est multipliée par 100 : log [CO₂] augmente de 2, donc le pH diminue de ½ × 2 = 1 unité.',
+    pieges: [[pH2 - 2, 'Il faut le facteur ½ : le pH ne baisse que de 1 unité, pas de 2.'], [pH2 - 0.5, 'Une baisse de 0,5 unité correspond à une pression multipliée par 10, pas par 100.'], [pH2, 'C’est le pH avant le changement de pression : il diminue de 1 unité.']],
+    expl: <>log(100) = 2, donc le pH baisse de ½ × 2 = 1 : pH = {nbF(pH2, 2)} − 1 = <b>{nbF(pH2 - 1, 2)}</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Loi de Henry : [CO₂] = a × P(CO₂).', 'Avec [H₃O⁺] = [HCO₃⁻] : [H₃O⁺] = racine carrée de (Ka1 × [CO₂]) et pH = ½ (pKa1 − log [CO₂]).', 'Pression × 100 : pH − 1 unité.'] };
+}
+function tirageCo2Milieu() {
+  for (let k = 0; k < 500; k++) {
+    const t = CO2.tirageMilieu(), c2 = PRE.arrondiCS(t.c, 2), r1 = PRE.arrondiCS(CO2.rapportHCO3(t.pH), 2), h2 = PRE.arrondiCS(c2 * r1, 2), co2 = PRE.arrondiCS(h2 * 10 ** (t.pH - CO2.PKA2), 2), s2 = PRE.arrondiCS((c2 + h2 + co2) / c2, 2), v = [c2, h2, co2, s2];
+    if (v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(x, y)))) return { t, c2, r1, h2, co2, s2 };
+  }
+  throw new Error('tirage co2dis-milieu impossible');
+}
+function genCo2Milieu() {
+  const { t, c2, r1, h2, co2, s2 } = tirageCo2Milieu(), fP = t.P < 1 ? nbF(t.P, 2) : nbF(t.P, 0), as = nbF(t.a, 2), pHs = nbF(t.pH, 1), cs = fmv(c2), hs = fmv(h2), os = fmv(co2);
+  const intro = `Un milieu dont le pH est maintenu à ${pHs} est en équilibre, à ${t.T}${NB}°C, avec un gaz dont la pression partielle en CO₂ vaut ${fP}${NB}kPa. On donne a = ${as}${NB}mmol·L⁻¹·kPa⁻¹, pKa1 = 6,35 (CO₂,H₂O / HCO₃⁻) et pKa2 = 10,3 (HCO₃⁻ / CO₃²⁻).`;
+  const q1 = { id: 'm0', type: 'num', q: <>Calculez <b>[CO₂]</b> avec la loi de Henry (en mmol/L, 2 chiffres significatifs).</>, unite: 'mmol/L', vrai: c2, tolRel: 0.05, csMin: 2,
+    aide: '[CO₂] = a × P(CO₂), résultat en mmol/L.',
+    pieges: [[t.P / t.a, 'Il faut multiplier a par P(CO₂), pas les diviser.'], [t.a, 'C’est la valeur de a ; [CO₂] = a × P(CO₂).']],
+    expl: <>[CO₂] = {as} × {fP} = <b>{cs}{NB}mmol/L</b>.</> };
+  const q2 = { id: 'm1', type: 'num', q: <>Avec [CO₂] = {cs}{NB}mmol/L, calculez <b>[HCO₃⁻]</b> = [CO₂] × 10<sup>pH − pKa1</sup> (en mmol/L, 2 chiffres significatifs).</>, unite: 'mmol/L', vrai: h2, tolRel: 0.05, csMin: 2,
+    aide: 'Rapport base sur acide = 10 puissance (pH − pKa1) ; multipliez-le par [CO₂].',
+    pieges: [[c2 / r1, 'Le rapport est inversé : à ce pH supérieur à pKa1, HCO₃⁻ est plus concentré que CO₂.'], [r1, 'C’est le rapport [HCO₃⁻] sur [CO₂] : il faut encore le multiplier par [CO₂].'], [c2 * 10 ** (t.pH - CO2.PKA2), 'Vous avez utilisé pKa2 : pour HCO₃⁻, c’est pKa1 du couple CO₂,H₂O / HCO₃⁻.']],
+    expl: <>[HCO₃⁻] = {cs} × 10<sup>{pHs} − 6,35</sup> = {cs} × {fmv(r1)} = <b>{hs}{NB}mmol/L</b>.</> };
+  const q3 = { id: 'm2', type: 'num', q: <>Avec [HCO₃⁻] = {hs}{NB}mmol/L, calculez <b>[CO₃²⁻]</b> = [HCO₃⁻] × 10<sup>pH − pKa2</sup> (en mmol/L, 2 chiffres significatifs).</>, unite: 'mmol/L', vrai: co2, tolRel: 0.05, csMin: 2,
+    aide: 'Pour le couple HCO₃⁻ / CO₃²⁻ : [CO₃²⁻] sur [HCO₃⁻] = 10 puissance (pH − pKa2), avec pKa2 = 10,3.',
+    pieges: [[h2 / 10 ** (t.pH - CO2.PKA2), 'Le rapport est inversé : ici pH < pKa2, donc CO₃²⁻ est moins concentré que HCO₃⁻.'], [h2 * r1, 'Vous avez utilisé pKa1 : pour CO₃²⁻ c’est pKa2 = 10,3.'], [10 ** (t.pH - CO2.PKA2), 'C’est le rapport [CO₃²⁻] sur [HCO₃⁻] : il faut encore le multiplier par [HCO₃⁻].']],
+    expl: <>[CO₃²⁻] = {hs} × 10<sup>{pHs} − 10,3</sup> = <b>{os}{NB}mmol/L</b>.</> };
+  const q4 = { id: 'm3', type: 'num', q: <>Avec [CO₂] = {cs}, [HCO₃⁻] = {hs} et [CO₃²⁻] = {os}{NB}mmol/L, calculez le rapport <b>{avecIndices('frac(C_T|[CO₂])')}</b> où C<sub>T</sub> = [CO₂] + [HCO₃⁻] + [CO₃²⁻] (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: s2, tolRel: 0.05, csMin: 2,
+    aide: 'Additionnez les trois concentrations pour obtenir C_T, puis divisez par [CO₂].',
+    pieges: [[c2 + h2 + co2, 'C’est C_T en mmol/L : on demande le rapport C_T divisé par [CO₂].'], [c2 / (c2 + h2 + co2), 'Le rapport est inversé : C_T est plus grand que [CO₂].'], [h2 / c2, 'Il manque [CO₂] et [CO₃²⁻] dans C_T : C_T est la somme des trois espèces.']],
+    expl: <>C<sub>T</sub> = {cs} + {hs} + {os} = {fmv(c2 + h2 + co2)}{NB}mmol/L ; {avecIndices(`frac(${fmv(c2 + h2 + co2)}|${cs})`)} = <b>{fmv(s2)}</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['[CO₂] = a × P(CO₂) ; frac([HCO₃⁻]|[CO₂]) = 10^(pH − pKa1) ; frac([CO₃²⁻]|[HCO₃⁻]) = 10^(pH − pKa2).', 'C_T = [CO₂] + [HCO₃⁻] + [CO₃²⁻] augmente avec le pH du milieu.'] };
+}
 function genPredoBeer() {
   const u = PRE.tirageIndicateur(), Cs = sciF(u.C), eps = sciF(u.eps), ls = nbF(u.l, 2), pHs = nbF(u.pH, 2), As = nbF(u.abs, 3);
   const Ind = u.abs / (u.eps * u.l), Ind2 = PRE.arrondiCS(Ind, 2), HInd2 = PRE.arrondiCS(u.C - Ind2, 2), r2 = PRE.arrondiCS(Ind2 / HInd2, 2), pKa2 = u.pH - Math.log10(r2);
@@ -1420,6 +1483,8 @@ export const FAMILLES = [
   { id: 'predo-beer', groupe: 'Formules', titre: 'Indicateur coloré : spectrophotométrie et pKa (terminale STL)', gen: genPredoBeer, domaine: 'pH, pKa et diagramme de prédominance' },
   { id: 'tampstl-prepa', groupe: 'Formules', titre: 'Préparer une solution tampon de pH donné (terminale STL)', gen: genTampstlPrepa, domaine: 'Solution tampon : choix du couple et préparation' },
   { id: 'tampstl-ajout', groupe: 'Formules', titre: 'pH d’un tampon après un ajout d’acide ou de base (terminale STL)', gen: genTampstlAjout, domaine: 'Solution tampon : choix du couple et préparation' },
+  { id: 'co2dis-henry', groupe: 'Formules', titre: 'CO₂ dissous : eau en équilibre avec un gaz (terminale STL)', gen: genCo2Eau, domaine: 'CO₂ dissous : couples et solubilité' },
+  { id: 'co2dis-milieu', groupe: 'Formules', titre: 'CO₂ dissous : milieu de pH imposé (terminale STL)', gen: genCo2Milieu, domaine: 'CO₂ dissous : couples et solubilité' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },

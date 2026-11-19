@@ -17,6 +17,7 @@ import { IONS as CDT_IONS } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
+import * as CO2 from "./co2DissousModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -419,6 +420,57 @@ export const ENONCES = [
         utiles: ['pKa', 'nA', 'nAH', 'x'], raisons,
         cherche: { bonne: 'Le pH du tampon après l’ajout (sans unité)', faux: ['La quantité de A⁻ après la réaction (en mmol)', 'Le rapport n(A⁻) sur n(AH) après la réaction (sans unité)', 'Le pH initial du tampon (sans unité)'] },
         manque: null, solution: { txt: 'pH = pKa + log(n(A⁻) sur n(AH)), avec les quantités après la réaction', val: cp.pKa + Math.log10(b.nA / b.nAH), u: '' } };
+    },
+  },
+  // ───────────────────────────── CO₂ dissous (TSTL, PCM) : loi de Henry, pH de l'eau, milieu de pH imposé
+  {
+    id: 'co2dis-sapp-eau', domaine: 'CO₂ dissous : couples et solubilité', titre: 'Eau en équilibre avec un gaz contenant du CO₂', noms: ['Concentration en CO₂ dissous', 'pH de l’eau'],
+    gen: () => { const t = CO2.tirageEau(); return { P: t.P, T: t.T, V: tire([50, 100, 250]) }; },
+    build: (p, q) => {
+      const a = CO2.A_T[p.T], c = a * p.P, fP = p.P < 1 ? nb(p.P, 1) : nb(p.P, 0);
+      const tokens = {
+        P: tok(`${fP} kPa`, 'Pression partielle du CO₂ dans le gaz', p.P, 'kPa'),
+        a: tok(`${nb(a, 2)} mmol·L⁻¹·kPa⁻¹`, 'Coefficient de solubilité du CO₂ à cette température', a, 'mmol/L/kPa'),
+        pKa: tok('6,35', 'pKa du couple CO₂,H₂O / HCO₃⁻', CO2.PKA1, ''),
+        T: tok(`${p.T} °C`, 'Température de l’eau', p.T, '°C'),
+        V: tok(`${p.V} mL`, 'Volume d’eau dans le flacon', p.V, 'mL'),
+      };
+      const debut = ['Un flacon de volume d’eau ', T('V'), ', à ', T('T'), ', est en équilibre avec un gaz dont la pression partielle en CO₂ vaut ', T('P'), '. Le coefficient de solubilité du CO₂ vaut ', T('a'), ' et le pKa du couple CO₂,H₂O / HCO₃⁻ vaut ', T('pKa'), '. '];
+      const raisons = { V: 'Le volume d’eau ne change pas la concentration à l’équilibre : elle ne dépend que de a et de la pression partielle.', T: 'La température a servi à fixer la valeur de a, déjà donnée : elle n’intervient plus dans le calcul.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration en CO₂ dissous ?'],
+        utiles: ['a', 'P'], raisons: { ...raisons, pKa: 'Le pKa sert à calculer le pH, pas la concentration en CO₂ dissous.' },
+        cherche: { bonne: 'La concentration en CO₂ dissous [CO₂] (en mmol/L)', faux: ['Le pH de l’eau à l’équilibre (sans unité)', 'La quantité de CO₂ dissous dans le flacon (en mmol)', 'La concentration en ions HCO₃⁻ (en mmol/L)'] },
+        manque: null, solution: { txt: '[CO₂] = a × P(CO₂) (loi de Henry)', val: c, u: 'mmol/L' } };
+      return { tokens, derivees: ['[CO₂] = a × P(CO₂), à convertir en mol/L (1 mmol/L = 10⁻³ mol/L)'], texte: [...debut, 'Quel est le pH de l’eau ?'],
+        utiles: ['a', 'P', 'pKa'], raisons,
+        cherche: { bonne: 'Le pH de l’eau à l’équilibre (sans unité)', faux: ['La concentration en CO₂ dissous (en mmol/L)', 'La concentration en ions H₃O⁺ (en mol/L)', 'Le pKa du couple (sans unité)'] },
+        manque: null, solution: { txt: 'pH = ½ (pKa − log [CO₂]), avec [CO₂] en mol/L', val: CO2.pHFormule(c), u: '' } };
+    },
+  },
+  {
+    id: 'co2dis-sapp-milieu', domaine: 'CO₂ dissous : couples et solubilité', titre: 'CO₂ dans un milieu de pH imposé', noms: ['Concentration en HCO₃⁻', 'Rapport du carbone dissous total à [CO₂]'],
+    gen: () => { const t = CO2.tirageMilieu(); return { P: t.P, T: t.T, pH: t.pH, V: tire([100, 250, 500]) }; },
+    build: (p, q) => {
+      const a = CO2.A_T[p.T], m = CO2.milieu(p.P, p.T, p.pH), fP = p.P < 1 ? nb(p.P, 2) : nb(p.P, 0);
+      const tokens = {
+        P: tok(`${fP} kPa`, 'Pression partielle du CO₂ dans le gaz', p.P, 'kPa'),
+        a: tok(`${nb(a, 2)} mmol·L⁻¹·kPa⁻¹`, 'Coefficient de solubilité du CO₂', a, 'mmol/L/kPa'),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH imposé au milieu', p.pH, ''),
+        pKa1: tok('6,35', 'pKa1 du couple CO₂,H₂O / HCO₃⁻', CO2.PKA1, ''),
+        pKa2: tok('10,3', 'pKa2 du couple HCO₃⁻ / CO₃²⁻', CO2.PKA2, ''),
+        T: tok(`${p.T} °C`, 'Température du milieu', p.T, '°C'),
+        V: tok(`${p.V} mL`, 'Volume du milieu', p.V, 'mL'),
+      };
+      const debut = ['Un milieu de volume ', T('V'), ' dont le pH est maintenu à ', T('pH'), ' est en équilibre, à ', T('T'), ', avec un gaz de pression partielle en CO₂ ', T('P'), '. On donne a = ', T('a'), ', pKa1 = ', T('pKa1'), ' et pKa2 = ', T('pKa2'), '. '];
+      const raisons = { V: 'Le volume du milieu ne change pas les concentrations à l’équilibre : il n’intervient pas.', T: 'La température a servi à fixer la valeur de a, déjà donnée : elle n’intervient plus dans le calcul.' };
+      if (q === 0) return { tokens, derivees: ['[CO₂] = a × P(CO₂)'], texte: [...debut, 'Quelle est la concentration en ions HCO₃⁻ ?'],
+        utiles: ['a', 'P', 'pH', 'pKa1'], raisons: { ...raisons, pKa2: 'Le pKa2 concerne le couple HCO₃⁻ / CO₃²⁻ : il ne sert pas pour [HCO₃⁻].' },
+        cherche: { bonne: 'La concentration en ions HCO₃⁻ (en mmol/L)', faux: ['La concentration en CO₂ dissous (en mmol/L)', 'La concentration en ions CO₃²⁻ (en mmol/L)', 'Le rapport [HCO₃⁻] sur [CO₂] (sans unité)'] },
+        manque: null, solution: { txt: '[HCO₃⁻] = [CO₂] × 10^(pH − pKa1), avec [CO₂] = a × P(CO₂)', val: m.hco3, u: 'mmol/L' } };
+      return { tokens, derivees: ['[HCO₃⁻] = [CO₂] × 10^(pH − pKa1) et [CO₃²⁻] = [HCO₃⁻] × 10^(pH − pKa2)'], texte: [...debut, 'Combien de fois le carbone inorganique dissous total C_T = [CO₂] + [HCO₃⁻] + [CO₃²⁻] dépasse-t-il [CO₂] ?'],
+        utiles: ['pH', 'pKa1', 'pKa2'], raisons: { ...raisons, a: 'La valeur de a et la pression se simplifient dans le rapport C_T sur [CO₂] : elles ne servent pas.', P: 'La valeur de a et la pression se simplifient dans le rapport C_T sur [CO₂] : elles ne servent pas.' },
+        cherche: { bonne: 'Le rapport C_T sur [CO₂] (sans unité)', faux: ['Le carbone dissous total C_T (en mmol/L)', 'Le rapport [HCO₃⁻] sur [CO₂] (sans unité)', 'La concentration en CO₂ dissous (en mmol/L)'] },
+        manque: null, solution: { txt: 'C_T sur [CO₂] = 1 + 10^(pH − pKa1) + 10^(2 pH − pKa1 − pKa2)', val: m.solub, u: '' } };
     },
   },
   // ───────────────────────────── Force des acides (TG) : K_A, pH, taux d'avancement
