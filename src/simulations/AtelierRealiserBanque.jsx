@@ -1465,6 +1465,58 @@ function genChiraliteConfig() {
     retenir: ['Un carbone asymétrique (C*) est lié à 4 atomes ou groupes tous différents.', 'L’image dans un miroir d’un C* de configuration R est S (et réciproquement).', 'Échanger deux groupes inverse la lettre R ou S.'] };
 }
 
+// ── Évaporation et cristallisation de KNO₃ (terminale STL) : solubilités tabulées, équilibre atteint (pas de sursaturation) ──
+const SOL_KNO3 = { 10: 20.9, 20: 31.6, 30: 45.8, 40: 63.9, 50: 85.5, 60: 110, 70: 138, 80: 169 };
+function genCristRefroidissement() {
+  let T1, T2, s2, sH, mEau, mSel, diss;
+  for (let k = 0; k < 200; k++) {
+    T1 = tire([70, 80]); T2 = tire([10, 20, 30, 40]); s2 = SOL_KNO3[T2]; sH = SOL_KNO3[T1]; mEau = tire([150, 200, 250, 300, 500]);
+    diss = s2 * mEau / 100;
+    mSel = Math.round(mEau * (s2 + tire([0.4, 0.6, 0.8]) * (sH - s2)) / 100 / 10) * 10;
+    if (mSel > diss + 10 && mSel < sH * mEau / 100 && mSel !== 100) break;
+  }
+  const cr = mSel - diss, eta = cr / mSel * 100;
+  const q1 = { id: 'r0', type: 'num', q: <>On dissout <b>{mSel}{NB}g</b> de nitrate de potassium KNO₃ dans <b>{mEau}{NB}g</b> d’eau à {T1}{NB}°C (solution insaturée), puis on refroidit jusqu’à <b>{T2}{NB}°C</b>. À cette température, la solubilité de KNO₃ est de <b>{nb(s2, 3)}{NB}g pour 100{NB}g d’eau</b>. Quelle masse maximale de KNO₃ reste dissoute dans les {mEau}{NB}g d’eau ? En <b>g</b>.</>, unite: 'g', vrai: diss, csMin: 3,
+    aide: 'La solubilité est donnée pour 100 g d’eau : multipliez-la par m(eau) / 100 g.',
+    pieges: [[s2, 'C’est la solubilité pour 100 g d’eau : ici il y a une autre masse d’eau, il faut la multiplier par m(eau) / 100.'], [s2 * 100 / mEau, 'Proportion à l’envers : plus il y a d’eau, plus on dissout de sel (on multiplie par m(eau) / 100).']],
+    expl: <>m(dissous) = {nb(s2, 3)} × {mEau} / 100 = <b>{avecU(diss, 'g', 3)}</b>.</> };
+  const q2 = { id: 'r1', type: 'num', q: <>Quelle masse de cristaux de KNO₃ obtient-on ? On suppose l’équilibre atteint à {T2}{NB}°C (pas de sursaturation) et qu’aucun sel n’est perdu par ailleurs. En <b>g</b>.</>, unite: 'g', vrai: cr, csMin: 3,
+    aide: 'Ce qui cristallise est ce qui ne peut plus rester dissous : m(cristaux) = m(introduit) − m(dissous).',
+    pieges: [[diss, 'C’est la masse restée dissoute. Les cristaux sont le reste : masse introduite moins masse dissoute.'], [mSel, 'C’est la masse totale introduite : une partie reste dissoute dans l’eau-mère.']],
+    expl: <>m(cristaux) = m(introduit) − m(dissous) = {mSel} − {nb(diss, 3)} = <b>{avecU(cr, 'g', 3)}</b>.</> };
+  const q3 = { id: 'r2', type: 'num', q: <>Calculez le rendement de la cristallisation η = m(cristaux) / m(introduit) × 100. En <b>%</b>.</>, unite: '%', vrai: eta, csMin: 2,
+    aide: 'Rapport de la masse de cristaux à la masse de sel introduite, puis × 100.',
+    pieges: [[cr / mSel, 'Vous avez donné le rapport : le rendement est demandé en %, multipliez par 100.'], [diss / mSel * 100, 'C’est la part restée dissoute dans l’eau-mère, pas celle récupérée.']],
+    expl: <>η = {nb(cr, 3)} / {mSel} × 100 = <b>{avecU(eta, '%', 2)}</b>. Il reste du sel dans l’eau-mère : on ne récupère jamais tout.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'Cristallisation par refroidissement de KNO₃ : sel dissous, masse de cristaux et rendement.', questions: [q1, q2, q3],
+    retenir: ['Solubilité : masse maximale de sel dissoute pour 100 g d’eau à une température donnée.', 'm(cristaux) = m(introduit) − m(dissous), avec m(dissous) = solubilité × m(eau) / 100.', 'η = m(cristaux) / m(introduit) × 100 : jamais 100 %, le sel dissous reste dans l’eau-mère.'] };
+}
+function genCristEvaporation() {
+  let Tv, s, mSel, mEau0, mSat, mF;
+  for (let k = 0; k < 300; k++) {
+    Tv = tire([40, 50, 60, 70, 80]); s = SOL_KNO3[Tv]; mSel = tire([30, 40, 50, 60, 80]); mEau0 = tire([100, 150, 200]);
+    mSat = mSel * 100 / s; mF = tire([10, 20, 25, 30, 40, 50]);
+    if (mSat < mEau0 - 10 && mF < mSat - 5 && mSat > 12) break;
+  }
+  const evap1 = mEau0 - mSat, diss = s * mF / 100, cr = mSel - diss;
+  const q1 = { id: 'e0', type: 'num', q: <>Une solution contient <b>{mSel}{NB}g</b> de KNO₃ dans <b>{mEau0}{NB}g</b> d’eau, maintenue à <b>{Tv}{NB}°C</b> sous pression réduite. À cette température, la solubilité de KNO₃ est de <b>{nb(s, 3)}{NB}g pour 100{NB}g d’eau</b>. On évapore l’eau : quelle masse d’eau doit-il rester pour que la solution soit juste saturée ? En <b>g</b>.</>, unite: 'g', vrai: mSat, csMin: 3,
+    aide: 'À saturation, les m(sel) grammes sont le maximum que dissout m(eau) : m(sel) / m(eau) = solubilité / 100 g. Isolez m(eau).',
+    pieges: [[mSel * s / 100, 'Produit en croix à l’envers : m(eau) = m(sel) × 100 / solubilité, et non multiplié par la solubilité.'], [evap1, 'C’est la masse d’eau à évaporer, pas celle qui reste à saturation.']],
+    expl: <>m(eau) = m(sel) × 100 / s = {mSel} × 100 / {nb(s, 3)} = <b>{avecU(mSat, 'g', 3)}</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>Quelle masse d’eau faut-il évaporer au minimum pour que les premiers cristaux apparaissent ? En <b>g</b>.</>, unite: 'g', vrai: evap1, csMin: 3,
+    aide: 'Masse d’eau évaporée = masse d’eau de départ − masse d’eau restante à saturation. Le sel, lui, ne s’évapore pas.',
+    pieges: [[mSat, 'C’est la masse d’eau qui reste à saturation, pas celle qui a été évaporée.']],
+    expl: <>m(évaporée) = {mEau0} − {nb(mSat, 3)} = <b>{avecU(evap1, 'g', 3)}</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>On continue d’évaporer jusqu’à ce qu’il ne reste que <b>{mF}{NB}g</b> d’eau, toujours à {Tv}{NB}°C (équilibre atteint). Quelle masse de cristaux a-t-on obtenue ? En <b>g</b>.</>, unite: 'g', vrai: cr, csMin: 3,
+    aide: 'La masse dissoute est la solubilité × m(eau restante) / 100 ; les cristaux sont le reste du sel.',
+    pieges: [[diss, 'C’est la masse restée dissoute dans l’eau restante. Les cristaux sont le reste : masse de sel moins masse dissoute.'], [mSel, 'C’est toute la masse de sel : une partie reste dissoute dans l’eau restante.']],
+    expl: <>m(dissous) = {nb(s, 3)} × {mF} / 100 = {nb(diss, 3)} g ; m(cristaux) = {mSel} − {nb(diss, 3)} = <b>{avecU(cr, 'g', 3)}</b>.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'Cristallisation par évaporation de KNO₃ à température constante : eau à saturation, eau évaporée, masse de cristaux.', questions: [q1, q2, q3],
+    retenir: ['Évaporer : le sel ne part pas, seule l’eau diminue, la solution se concentre.', 'À saturation : m(eau) = m(sel) × 100 / solubilité.', 'Au-delà : m(cristaux) = m(sel) − solubilité × m(eau restante) / 100.'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -1485,6 +1537,8 @@ export const FAMILLES = [
   { id: 'tampstl-ajout', groupe: 'Formules', titre: 'pH d’un tampon après un ajout d’acide ou de base (terminale STL)', gen: genTampstlAjout, domaine: 'Solution tampon : choix du couple et préparation' },
   { id: 'co2dis-henry', groupe: 'Formules', titre: 'CO₂ dissous : eau en équilibre avec un gaz (terminale STL)', gen: genCo2Eau, domaine: 'CO₂ dissous : couples et solubilité' },
   { id: 'co2dis-milieu', groupe: 'Formules', titre: 'CO₂ dissous : milieu de pH imposé (terminale STL)', gen: genCo2Milieu, domaine: 'CO₂ dissous : couples et solubilité' },
+  { id: 'crist-refroidissement', groupe: 'Formules', titre: 'Cristallisation par refroidissement : sel dissous, cristaux et rendement (terminale STL)', gen: genCristRefroidissement, domaine: 'Évaporation et cristallisation' },
+  { id: 'crist-evaporation', groupe: 'Formules', titre: 'Cristallisation par évaporation : eau à saturation et masse de cristaux (terminale STL)', gen: genCristEvaporation, domaine: 'Évaporation et cristallisation' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },

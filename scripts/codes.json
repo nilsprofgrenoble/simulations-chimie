@@ -1073,5 +1073,7 @@
  "77:plausible:co2dis-val-air": "VAL263",
  "77:plausible:co2dis-val-milieu": "VAL264",
  "36:co2dis-henry": "REA50",
- "36:co2dis-milieu": "REA51"
+ "36:co2dis-milieu": "REA51",
+ "36:crist-refroidissement": "REA52",
+ "36:crist-evaporation": "REA53"
 }
