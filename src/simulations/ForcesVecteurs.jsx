@@ -92,7 +92,7 @@ function PlancheForce({ scene, vec, setVec, editable, echelle, fantome, aide = t
   const F = vec.L * echelle;
   return (
     <svg ref={svg} viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`${sc.titre}. Vecteur force de ${vec.L} cm à l’échelle 1 cm pour ${echelle} N`}
-      style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, touchAction: 'none', userSelect: 'none' }}
+      style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, touchAction: 'none', userSelect: 'none' }}
       onPointerMove={e => { if (drag.current && editable) mettre(e); }} onPointerUp={() => { drag.current = false; }} onPointerCancel={() => { drag.current = false; }}>
       {lignes}
       <Decor id={scene}/>
@@ -131,7 +131,7 @@ function Reciproques({ scene, F, mA, mB, montrer, masqueA = false }) {
         {nom === 'B' && <circle cx={x0 - 8} cy={cy} r="8" fill="none" stroke="#334155" strokeWidth="3"/>}</g>;
     };
     return (
-      <svg viewBox={`0 0 ${W} 262`} width="100%" role="img" aria-label={`Deux dynamomètres à ressort A et B accrochés l’un à l’autre : A est fixé au mur, une main tire sur B vers la droite. Les ressorts s’allongent quand la force augmente${masqueA ? '' : `. Chacun indique ${fr(F, 1)} N`}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+      <svg viewBox={`0 0 ${W} 262`} width="100%" role="img" aria-label={`Deux dynamomètres à ressort A et B accrochés l’un à l’autre : A est fixé au mur, une main tire sur B vers la droite. Les ressorts s’allongent quand la force augmente${masqueA ? '' : `. Chacun indique ${fr(F, 1)} N`}`} style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
         {une && <text x="10" y="24" fontSize="16" fill="#334155">Échelle : 1 cm ↔ 4 N</text>}
         <rect x="8" y="70" width="16" height="90" fill="#94a3b8" stroke="#475569" strokeWidth="2.5"/><text x="20" y="182" textAnchor="middle" fontSize="16" fill="#334155">mur</text>
         <line x1="24" y1={cy} x2={xA} y2={cy} stroke="#334155" strokeWidth="3"/>
@@ -160,7 +160,7 @@ function Reciproques({ scene, F, mA, mB, montrer, masqueA = false }) {
       <text x={x} y={sol + 22} textAnchor="middle" fontSize="17" fontWeight="700" fill="#0f172a" stroke="none">{nom} ({m} kg)</text></g>;
   };
   return (
-    <svg viewBox={`0 0 ${W} 232`} width="100%" role="img" aria-label="Deux patineurs en contact : A pousse B" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+    <svg viewBox={`0 0 ${W} 232`} width="100%" role="img" aria-label="Deux patineurs en contact : A pousse B" style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="10" y1="200" x2="550" y2="200" stroke="#94a3b8" strokeWidth="3"/>
       {bonhomme(205, sA, "A", mA)}{bonhomme(355, sB, "B", mB)}
       <circle cx={C.x} cy={C.y} r="5" fill="#0f172a"/>
