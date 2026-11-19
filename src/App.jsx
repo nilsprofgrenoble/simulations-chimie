@@ -120,6 +120,7 @@ const SimulationMicroscope = paresseux(() => import("./simulations/Microscope"),
 const SimulationLunette = paresseux(() => import("./simulations/Lunette"), "SimulationLunette");
 const SimulationChiralite = paresseux(() => import("./simulations/Chiralite"), "SimulationChiralite");
 const SimulationAcideFaible = paresseux(() => import("./simulations/AcideFaible"), "SimulationAcideFaible");
+const SimulationPredoTstl = paresseux(() => import("./simulations/PredoTstl"), "SimulationPredoTstl");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -257,6 +258,8 @@ const SIMULATIONS = [
     component: SimulationChiralite },
   { id:138, label:"Acide faible : coefficient de dissociation, constante d’acidité Ka et pKa", niveau:"TSTL", icon:"🧫", color:"#b45309",
     component: SimulationAcideFaible },
+  { id:139, label:"pH, pKa et espèce prédominante", niveau:"TSTL", icon:"🎨", color:"#7c3aed",
+    component: SimulationPredoTstl },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",

@@ -1029,5 +1029,17 @@
  "77:plausible:dissoc-val-alpha-impossible": "VAL257",
  "77:plausible:dissoc-val-ka-coherent": "VAL258",
  "36:dissoc-alpha": "REA44",
- "36:dissoc-ka": "REA45"
+ "36:dissoc-ka": "REA45",
+ "34:predo-sapp-rapport.0": "SAPP267",
+ "34:predo-sapp-rapport.1": "SAPP268",
+ "34:predo-sapp-beer.0": "SAPP269",
+ "34:predo-sapp-beer.1": "SAPP270",
+ "37:prevoir:predo-ana-ph-monte": "ANA463",
+ "37:prevoir:predo-ana-predomine": "ANA464",
+ "37:prevoir:predo-ana-indicateur": "ANA465",
+ "37:prevoir:predo-ana-beer": "ANA466",
+ "77:plausible:predo-val-rapport-impossible": "VAL259",
+ "77:plausible:predo-val-pka-indicateur": "VAL260",
+ "36:predo-rapport": "REA46",
+ "36:predo-beer": "REA47"
 }
