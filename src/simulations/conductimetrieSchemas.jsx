@@ -78,23 +78,32 @@ export function SceneConductimetrie({ points, anionId = 'Cl', lecture = null, ce
 
 // ---------- graphique σ = f(V_B) ----------
 //  trace : points reliés par une ligne ; mesures : points isolés (défi) ; marqueur : { VB, sigma } ; VE : abscisse de l'équivalence (ligne orange) ou null ; yMax : borne haute fixée
-export function GraphiqueConductivite({ trace = [], mesures = null, marqueur = null, VE = null, yMax = 250, titre = '' }) {
+export function GraphiqueConductivite({ trace = [], mesures = null, marqueur = null, VE = null, yMax = 250, titre = '', tp = null }) {
   const X = v => 56 + 16.5 * v, Y = s => 196 - 176 * s / yMax;
   const pas = yMax > 300 ? 100 : yMax > 150 ? 50 : 25, graduations = []; for (let g = 0; g <= yMax + 1e-9; g += pas) graduations.push(g);
-  const ligne = (trace.length ? trace : []).map(p => `${X(p.VB).toFixed(1)},${Y(p.sigma).toFixed(1)}`).join(' ');
+  const ligne = (!tp && trace.length ? trace : []).map(p => `${X(p.VB).toFixed(1)},${Y(p.sigma).toFixed(1)}`).join(' ');
+  // vue « comme en TP » : points mesurés non reliés, points proches de V_E écartés (zone hachurée), deux droites modélisées en pointillés
+  const vI = tp ? Math.min(20, Math.max(0, Number.isFinite(tp.res.VEmod) ? tp.res.VEmod : VE)) : 0;
+  const droite = (d, v1, v2) => <line x1={X(v1)} y1={Y(d.a * v1 + d.b)} x2={X(v2)} y2={Y(d.a * v2 + d.b)} stroke={COL.txt} strokeWidth="2.2" strokeDasharray="8 5"/>;
   return (
     <svg viewBox="0 0 400 252" style={{ ...stl, maxWidth: 520 }} role="img"
-      aria-label={`${titre || 'Graphique'} : conductivité σ en mS par mètre en fonction du volume de soude versé, de 0 à 20 mL.${marqueur ? ` Le point courant est à ${fr(marqueur.VB)} mL, σ = ${fr(marqueur.sigma, 0)} mS par mètre.` : ''}`}>
+      aria-label={`${titre || 'Graphique'} : conductivité σ en mS par mètre en fonction du volume de soude versé, de 0 à 20 mL.${marqueur && !tp ? ` Le point courant est à ${fr(marqueur.VB)} mL, σ = ${fr(marqueur.sigma, 0)} mS par mètre.` : ''}${tp ? ` Points mesurés non reliés. Les ${tp.res.ecartes.length} points proches de l’équivalence sont écartés ; deux droites en pointillés passent par les points alignés de chaque côté et se coupent près de ${fr(vI)} mL.` : ''}`}>
+      <defs><clipPath id="cd-clip"><rect x="56" y="20" width="330" height="176"/></clipPath>
+        <pattern id="cd-hach" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="#fb923c" strokeWidth="2"/></pattern></defs>
       <rect x="56" y="20" width="330" height="176" fill="#f8fafc" stroke="#cbd5e1"/>
       {graduations.map(g => <g key={g}><line x1="56" y1={Y(g)} x2="386" y2={Y(g)} stroke="#e2e8f0"/><text x="50" y={Y(g) + 5} fontSize="16" textAnchor="end" fill={COL.txt}>{g}</text></g>)}
       {[0, 5, 10, 15, 20].map(v => <g key={v}><line x1={X(v)} y1="196" x2={X(v)} y2="202" stroke={COL.txt}/><text x={X(v)} y="220" fontSize="16" textAnchor="middle" fill={COL.txt}>{v}</text></g>)}
       <text x="56" y="14" fontSize="16" fill={COL.gris}>σ (mS·m⁻¹)</text>
       <text x="386" y="244" fontSize="16" textAnchor="end" fill={COL.gris}>volume de soude versé (mL)</text>
+      {tp && <g><rect x={X(Math.max(0, VE - 2))} y="20" width={X(Math.min(20, VE + 2)) - X(Math.max(0, VE - 2))} height="176" fill="url(#cd-hach)" opacity="0.4"/>
+        <text x={X(VE)} y="64" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.orange} stroke="#f8fafc" strokeWidth="4" paintOrder="stroke">écartés</text></g>}
       {VE != null && <g><line x1={X(VE)} y1="20" x2={X(VE)} y2="196" stroke={COL.orange} strokeWidth="2" strokeDasharray="5 4"/><text x={X(VE) + 6} y="38" fontSize="16" fontWeight="700" fill={COL.orange}>équivalence</text></g>}
       {ligne && <polyline points={ligne} fill="none" stroke={COL.bleu} strokeWidth="3" strokeLinejoin="round"/>}
-      {mesures && <g>{mesures.length > 1 && <polyline points={mesures.map(p => `${X(p.VB).toFixed(1)},${Y(p.sigma).toFixed(1)}`).join(' ')} fill="none" stroke="#93c5fd" strokeWidth="1.5"/>}
-        {mesures.map(p => <circle key={p.VB} cx={X(p.VB)} cy={Y(p.sigma)} r="4.2" fill={COL.bleu} stroke="#fff" strokeWidth="1"/>)}</g>}
-      {marqueur && <g><line x1={X(marqueur.VB)} y1={Y(marqueur.sigma)} x2={X(marqueur.VB)} y2="196" stroke={COL.rouge} strokeWidth="1.5" strokeDasharray="4 3"/><circle cx={X(marqueur.VB)} cy={Y(marqueur.sigma)} r="6" fill={COL.rouge} stroke="#fff" strokeWidth="1.5"/></g>}
+      {tp && <g clipPath="url(#cd-clip)">{droite(tp.res.d1, 0, Math.min(20, vI + 1.5))}{droite(tp.res.d2, Math.max(0, vI - 1.5), 20)}</g>}
+      {tp && <g>{tp.res.avant.concat(tp.res.apres).map(p => <circle key={p.VB} cx={X(p.VB)} cy={Y(p.sigma)} r="4.4" fill={COL.bleu} stroke="#fff" strokeWidth="1"/>)}
+        {tp.res.ecartes.map(p => <circle key={p.VB} cx={X(p.VB)} cy={Y(p.sigma)} r="4.6" fill="#fff" stroke={COL.gris} strokeWidth="2.2"/>)}</g>}
+      {mesures && <g>{mesures.map(p => <circle key={p.VB} cx={X(p.VB)} cy={Y(p.sigma)} r="4.2" fill={COL.bleu} stroke="#fff" strokeWidth="1"/>)}</g>}
+      {marqueur && !tp && <g><line x1={X(marqueur.VB)} y1={Y(marqueur.sigma)} x2={X(marqueur.VB)} y2="196" stroke={COL.rouge} strokeWidth="1.5" strokeDasharray="4 3"/><circle cx={X(marqueur.VB)} cy={Y(marqueur.sigma)} r="6" fill={COL.rouge} stroke="#fff" strokeWidth="1.5"/></g>}
     </svg>);
 }
 
@@ -232,5 +241,28 @@ export function SvgGrotthuss() {
       <text x="200" y="376" fontSize="15" textAnchor="middle" fill={COL.txt}>pointillés : liaison faible avec la voisine</text>
       <text x="200" y="398" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.txt}>les molécules restent en place :</text>
       <text x="200" y="420" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.rouge}>seule la charge + avance</text>
+    </svg>);
+}
+
+// carte « À retenir » : modéliser par deux droites en écartant les points proches de l'équivalence
+export function SvgDroitesCarte() {
+  const y1 = x => 48 + 0.85 * (x - 55), y2 = x => 179.75 - 0.5 * (x - 210);
+  const utilises = [[62, y1(62) + 2], [88, y1(88) - 2], [114, y1(114) + 1], [140, y1(140) - 2], [272, y2(272) + 2], [302, y2(302) - 2], [332, y2(332) + 1], [362, y2(362) - 1]];
+  const ecartes = [[178, 148], [210, 167], [242, 157]];
+  return (
+    <svg viewBox="0 0 400 270" style={stl} role="img" aria-label="Courbe de titrage conductimétrique : des points mesurés non reliés. Deux droites en pointillés passent par les points alignés avant et après l’équivalence et se coupent au volume équivalent. Trois points creux proches de l’équivalence, dans une zone hachurée, sont écartés : la courbe s’y arrondit.">
+      <defs><clipPath id="cd-clip2"><rect x="40" y="24" width="350" height="172"/></clipPath><pattern id="cd-hach2" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="#fb923c" strokeWidth="2"/></pattern></defs>
+      <rect x="40" y="24" width="350" height="172" fill="#f8fafc" stroke="#cbd5e1"/>
+      <rect x="170" y="24" width="80" height="172" fill="url(#cd-hach2)" opacity="0.4"/>
+      <text x="210" y="62" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.orange} stroke="#f8fafc" strokeWidth="4" paintOrder="stroke">écartés</text>
+      <line x1="210" y1="24" x2="210" y2="196" stroke={COL.orange} strokeWidth="2" strokeDasharray="5 4"/>
+      <text x="218" y="40" fontSize="16" fontWeight="700" fill={COL.orange}>équivalence</text>
+      <g clipPath="url(#cd-clip2)"><line x1="55" y1={y1(55)} x2="236" y2={y1(236)} stroke={COL.txt} strokeWidth="2.2" strokeDasharray="8 5"/><line x1="186" y1={y2(186)} x2="380" y2={y2(380)} stroke={COL.txt} strokeWidth="2.2" strokeDasharray="8 5"/></g>
+      {utilises.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="5" fill={COL.bleu} stroke="#fff" strokeWidth="1"/>)}
+      {ecartes.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="5.2" fill="#fff" stroke={COL.gris} strokeWidth="2.4"/>)}
+      <text x="40" y="16" fontSize="16" fill={COL.gris}>σ</text><text x="390" y="222" fontSize="16" textAnchor="end" fill={COL.gris}>volume de soude versé</text>
+      <circle cx="52" cy="248" r="5" fill={COL.bleu}/><text x="62" y="254" fontSize="16" fill={COL.txt}>utilisés</text>
+      <circle cx="148" cy="248" r="5.2" fill="#fff" stroke={COL.gris} strokeWidth="2.4"/><text x="158" y="254" fontSize="16" fill={COL.txt}>écartés</text>
+      <line x1="238" y1="248" x2="278" y2="248" stroke={COL.txt} strokeWidth="2.2" strokeDasharray="8 5"/><text x="286" y="254" fontSize="16" fill={COL.txt}>droites</text>
     </svg>);
 }

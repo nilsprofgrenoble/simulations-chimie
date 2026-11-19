@@ -7,7 +7,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./conductimetrieModele";
 import { QCM_PARCOURS as Q } from "./conductimetrieQcm";
-import { SceneConductimetrie, GraphiqueConductivite, BarresContribution, SvgKohlrauschCarte, SvgRemplacerCarte, SvgCourbeVCarte, SvgConcentrationCarte, SvgFaibleCarte, SvgGrotthuss } from "./conductimetrieSchemas";
+import { SceneConductimetrie, GraphiqueConductivite, BarresContribution, SvgKohlrauschCarte, SvgRemplacerCarte, SvgCourbeVCarte, SvgConcentrationCarte, SvgFaibleCarte, SvgGrotthuss, SvgDroitesCarte } from "./conductimetrieSchemas";
 
 const SIM_ID = 135, CLE_GUIDE = 'conductimetrie-tg-guide-v1';
 declarerDefis(SIM_ID, [['conc', 'Concentration d’un acide à partir de la courbe'], ['sigma', 'Conductivité prévue en cours de titrage']]);
@@ -26,10 +26,10 @@ declarerDefis(SIM_ID, [['conc', 'Concentration d’un acide à partir de la cour
 const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
 const COL = { bleu: '#0369a1', orange: '#b45309', vert: '#15803d', rouge: '#b91c1c', gris: '#64748b', violet: '#7c3aed' };
 const PRESET = { an: 'hcl', cA: 0.050, VB: 5, eau: 180 };
-const IDS = ['ions', 'lambda', 'kohl', 'acide', 'reaction', 'avant', 'apres', 'pente', 've', 'conc', 'compo', 'faible', 'bilan'];
+const IDS = ['ions', 'lambda', 'kohl', 'acide', 'reaction', 'avant', 'apres', 'pente', 've', 'droites', 'conc', 'compo', 'faible', 'bilan'];
 // état affiché à chaque étape du parcours : volume versé, partie déjà tracée de la courbe
-const SC_VB = { reaction: 0, avant: 5, apres: 15, pente: 20, ve: 20, conc: 10, compo: 15, faible: 5, bilan: 10 };
-const SC_VMAX = { reaction: 0, avant: 5, apres: 15, pente: 20, ve: 20, conc: 20, compo: 20, faible: 20, bilan: 20 };
+const SC_VB = { reaction: 0, avant: 5, apres: 15, pente: 20, ve: 20, droites: 10, conc: 10, compo: 15, faible: 5, bilan: 10 };
+const SC_VMAX = { reaction: 0, avant: 5, apres: 15, pente: 20, ve: 20, droites: 20, conc: 20, compo: 20, faible: 20, bilan: 20 };
 const yMaxDe = m => { const s = m <= 120 ? 25 : 50; return Math.ceil(m * 1.05 / s) * s; };
 const nbPoints = n => (n < 0.02 ? 0 : Math.max(1, Math.round(n / 0.1)));      // un point = 0,1 mmol, sans échelle affichée
 
@@ -84,6 +84,7 @@ export function SimulationConductimetrie() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('conc');
   const [hypoOuv, setHypoOuv] = useState(false);
+  const [vueTP, setVueTP] = useState(false);
   const [ouv, setOuv] = useState({ contrib: false, lambda: false, fins: false, essayer: false, retenir: false, mesures: false });
   const [ti, setTi] = useState(PRESET);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
@@ -108,6 +109,8 @@ export function SimulationConductimetrie() {
   const trace = full.filter(p => p.VB <= vmax + 1e-9);
   const pointsTit = { H3O: nbPoints(comp.c.H3O * comp.Vt / 1000), HO: nbPoints(comp.c.HO * comp.Vt / 1000), Na: nbPoints(comp.c.Na * comp.Vt / 1000), anion: nbPoints(comp.c[an.anion] * comp.Vt / 1000), acide: nbPoints(comp.acide * comp.Vt / 1000) };
   const contribs = [['H3O', 'H₃O⁺'], ['HO', 'HO⁻'], ['Na', 'Na⁺'], [an.anion, M.IONS[an.anion].f]].map(([id, f]) => ({ id, f, couleur: M.IONS[id].couleur, v: M.IONS[id].lambda * comp.c[id] }));
+  const tpOn = enGuide ? idE === 'droites' : (enExplore && vueTP);
+  const tp = tpOn ? { res: M.deuxDroites(M.pointsMesures({ analyte, cA, Vinit }, 1), VE) } : null;
   const pen = M.pente({ analyte, cA, Vinit }, VB);
   const concMax = Math.max(...['H3O', 'HO', 'Na', an.anion].map(k => comp.c[k]));
 
@@ -178,6 +181,20 @@ export function SimulationConductimetrie() {
         calcul: () => ['Le volume équivalent est l’abscisse du point où la pente change : le minimum de σ.', 'On lit V_E = 10,0 mL (le minimum de σ est à environ 60 mS·m⁻¹).'],
         pieges: [[60, 'C’est la valeur de σ au minimum, en mS·m⁻¹ ; on demande son abscisse, un volume en mL.'], [20, 'C’est la fin du graphique ; le volume équivalent est l’abscisse du minimum de σ.'], [5, 'C’est le volume de l’étape « avant l’équivalence », pas l’abscisse du minimum.']],
         expl: 'Le minimum de σ est à V_E = 10,0 mL : les deux segments, l’un descendant, l’autre montant, se coupent en ce point.', indice: 'Cherchez l’abscisse (en mL) du point le plus bas de la courbe, là où la pente change de signe.' } },
+    { id: 'droites', titre: 'En pratique : deux droites pour trouver V_E', focus: ['graphique'],
+      retenirTitre: 'À RETENIR : MODÉLISER PAR DEUX DROITES',
+      retenir: <>
+        <SvgDroitesCarte/>
+        <Ul>
+          <li>Au laboratoire : des points mesurés, non reliés, puis <strong>deux droites</strong> (pointillés) passant par les points alignés avant et après l’équivalence ; leur intersection donne V<sub>E</sub>.</li>
+          <li>On <strong>écarte les points proches de V<sub>E</sub></strong> : la courbe réelle s’y arrondit (réaction pas parfaitement totale, dilution, incertitude de mesure).</li>
+          <li>Différence avec le titrage pH-métrique : là, l’information est dans le saut de pH autour de V<sub>E</sub> ; ici, elle est dans les deux droites, <strong>loin</strong> de V<sub>E</sub>.</li>
+          <li>Moyen de s’en souvenir : <strong>« en conductimétrie, on s’éloigne de l’équivalence pour la repérer »</strong>. Idée fausse : « V<sub>E</sub> est le point mesuré le plus bas ». Vrai : V<sub>E</sub> est à l’intersection des deux droites.</li>
+        </Ul></>,
+      texte: <>Au laboratoire, on ne trace pas une courbe continue : on mesure σ pour des volumes réguliers (points <strong>pleins</strong>) sans les relier, puis on modélise par <strong>deux droites en pointillés</strong>. Les points <strong>creux</strong>, dans la zone hachurée à moins de 2&nbsp;mL de V<sub>E</sub>, sont <strong>écartés</strong> du tracé.</>,
+      tache: { type: 'qcm', q: 'Pourquoi écarte-t-on les points proches de l’équivalence pour tracer les deux droites ?', ...Q.droites,
+        expl: 'Près de V_E, la courbe réelle s’arrondit (la réaction n’est pas parfaitement totale, l’eau s’autoprotolyse, la dilution courbe un peu les segments, les mesures sont incertaines) : ces points ne sont plus sur les droites. Contrairement au titrage pH-métrique, où le saut de pH autour de V_E porte l’information, on repère ici l’équivalence avec les points éloignés, bien alignés.',
+        indice: 'Regardez où se trouvent les points creux par rapport aux deux droites en pointillés : sont-ils alignés avec les autres points ?' } },
     { id: 'conc', titre: 'Du volume équivalent à la concentration', focus: ['graphique'],
       retenirTitre: 'À RETENIR : DEUX SEGMENTS, UN POINT DE RUPTURE',
       retenir: <>
@@ -255,7 +272,7 @@ export function SimulationConductimetrie() {
       {defi.type === 'conc' ? <>
         <div style={{ ...lbl, marginBottom: 8 }}>On titre <strong>{nbf(defi.VA, 1)}{NB}mL</strong> d’<strong>{M.ANALYTES[defi.analyte].nom}</strong>, de concentration c<sub>A</sub> inconnue, dilués dans 180 mL d’eau, par la soude à c<sub>B</sub> = <strong>0,100{NB}mol/L</strong>. Le graphique donne les mesures de conductivité tous les 1 mL. Déterminez c<sub>A</sub> (marge acceptée : 8{NB}% de la valeur).</div>
         {champ('c', 'c_A', 'mol/L')}
-        <IndiceDefi cache={false}>Prolongez les deux segments de la courbe : leur intersection donne le volume équivalent V<sub>E</sub>. Puis c<sub>A</sub> = c<sub>B</sub> × V<sub>E</sub> / V<sub>A</sub>, avec V<sub>E</sub> et V<sub>A</sub> dans la même unité.</IndiceDefi>
+        <IndiceDefi cache={false}>Tracez deux droites passant par les points alignés de chaque côté de l’équivalence, sans utiliser les points proches de celle-ci (à moins de 2&nbsp;mL de V<sub>E</sub>) : leur intersection donne le volume équivalent V<sub>E</sub>. Puis c<sub>A</sub> = c<sub>B</sub> × V<sub>E</sub> / V<sub>A</sub>, avec V<sub>E</sub> et V<sub>A</sub> dans la même unité.</IndiceDefi>
       </> : <>
         <div style={{ ...lbl, marginBottom: 8 }}>On titre <strong>{nbf(defi.VA, 1)}{NB}mL</strong> d’<strong>{M.ANALYTES[defi.analyte].nom}</strong> à <strong>{nbf(defi.cA, 3)}{NB}mol/L</strong>, dilués dans 180 mL d’eau (volume de départ : 200 mL), par la soude à <strong>0,100{NB}mol/L</strong>. Le volume total est 200 mL + V<sub>B</sub>. On a versé V<sub>B</sub> = <strong>{nbf(defi.VB, 1)}{NB}mL</strong>. Calculez la conductivité σ à 3 chiffres significatifs (transformation totale ; marge acceptée : 6{NB}% de la valeur ; λ dans le tableau de données).</div>
         {champ('s', 'σ', 'mS·m⁻¹')}
@@ -278,6 +295,7 @@ export function SimulationConductimetrie() {
       <li><strong>Température constante : 25 °C</strong> ; les conductivités ioniques molaires λ sont des valeurs usuelles arrondies au dixième, données du problème (non à retrouver) et supposées constantes.</li>
       <li><strong>Loi de Kohlrausch</strong> : σ = Σ λ × c, valable pour une solution <strong>diluée</strong> (concentrations des ions inférieures à environ 10 mol·m⁻³, soit 1,0×10⁻² mol/L) ; au-delà, les interactions entre ions font s’écarter σ de la somme des contributions. La simulation signale quand ce domaine est dépassé.</li>
       <li><strong>Activités ≈ concentrations</strong> ; volumes additifs : le volume total est la somme du volume de départ et du volume de soude versé, donc la <strong>dilution est prise en compte</strong> (les segments de la courbe sont presque droits, pas exactement).</li>
+      <li><strong>Vue « comme en TP »</strong> : les points sont calculés avec le modèle (sans bruit de mesure) tous les 1 mL ; les deux droites sont ajustées par régression linéaire sur les points éloignés de V<sub>E</sub> d’au moins 2 mL. L’intersection donne V<sub>E</sub> à quelques % près : l’écart vient de la dilution (segments un peu courbes) et, pour l’acide éthanoïque, de la courbure de la première partie.</li>
       <li><strong>Titrage rapide et idéal</strong> : réaction de titrage supposée totale dans le parcours (programme). Pour dessiner la courbe, la composition est calculée exactement (conservation de la charge, pK<sub>A</sub>(CH₃COOH / CH₃COO⁻) = 4,8, K<sub>e</sub> = 10⁻¹⁴) : H₃O⁺ et HO⁻ sont comptés, ce qui arrondit un peu la courbe autour de l’équivalence, surtout pour l’acide faible.</li>
       <li><strong>Acide titré par la soude</strong> à 0,100 mol/L, prise d’essai de 20,0 mL ; trois acides (chlorhydrique, nitrique, éthanoïque) ; les ions du sel (Na⁺ et l’anion de l’acide) sont des ions spectateurs.</li>
       <li><strong>Conductimètre idéal</strong> : la cellule est étalonnée, elle affiche directement σ en mS·m⁻¹ (1 mS·cm⁻¹ = 100 mS·m⁻¹) ; mesures sans bruit.</li>
@@ -332,8 +350,10 @@ export function SimulationConductimetrie() {
   const boxGraph = !dd && !enSel && deja('avant') && (
     <div style={{ ...styleBoite, ...cadre('graphique') }}>
       <div style={titreCarte}>Conductivité en fonction du volume de soude versé</div>
-      {enExplore && <div style={aide}>La courbe se lit de gauche à droite. Le point rouge est le volume versé choisi ; le trait orange pointillé marque l’équivalence.</div>}
-      <GraphiqueConductivite trace={trace} marqueur={{ VB, sigma }} VE={apres('ve') ? VE : null} yMax={yMax} titre="Titrage conductimétrique"/>
+      {enExplore && <div style={aide}>{vueTP ? 'Vue « comme en TP » : points mesurés tous les 1 mL, non reliés. Les deux droites en pointillés passent par les points éloignés de l’équivalence ; leur intersection donne V_E. Avec peu d’eau ou avec l’acide éthanoïque, les segments sont moins droits : la lecture de V_E est moins précise.' : 'La courbe se lit de gauche à droite. Le point rouge est le volume versé choisi ; le trait orange pointillé marque l’équivalence.'}</div>}
+      {enExplore && <label style={{ display: 'flex', alignItems: 'center', gap: 8, minHeight: 42, fontSize: 15, color: KIT.txt, cursor: 'pointer', marginBottom: 4 }}><input type="checkbox" checked={vueTP} onChange={e => setVueTP(e.target.checked)} style={{ width: 22, height: 22, flex: '0 0 auto' }}/>Voir comme en TP : points et deux droites</label>}
+      <GraphiqueConductivite trace={trace} marqueur={{ VB, sigma }} VE={apres('ve') ? VE : null} yMax={yMax} titre="Titrage conductimétrique" tp={tp}/>
+      {tp && <div style={{ ...aide, marginTop: 4, marginBottom: 0 }}>● points utilisés · ○ points écartés (à moins de 2 mL de V<sub>E</sub>) · pointillés noirs : droites modélisées</div>}
     </div>);
   const sectionBarres = (
     <BarresContribution contributions={contribs} sigma={sigma}/>);
