@@ -1061,5 +1061,17 @@
  "37:prevoir:frc-sommet-trajectoire": "ANA473",
  "37:prevoir:frc-dv-freinage": "ANA474",
  "37:prevoir:frc-chrono-uniforme": "ANA475",
- "37:prevoir:frc-dv-lune": "ANA476"
+ "37:prevoir:frc-dv-lune": "ANA476",
+ "34:co2dis-sapp-eau.0": "SAPP277",
+ "34:co2dis-sapp-eau.1": "SAPP278",
+ "34:co2dis-sapp-milieu.0": "SAPP279",
+ "34:co2dis-sapp-milieu.1": "SAPP280",
+ "37:prevoir:co2dis-ana-henry": "ANA477",
+ "37:prevoir:co2dis-ana-temp": "ANA478",
+ "37:prevoir:co2dis-ana-pred": "ANA479",
+ "37:prevoir:co2dis-ana-milieu": "ANA480",
+ "77:plausible:co2dis-val-air": "VAL263",
+ "77:plausible:co2dis-val-milieu": "VAL264",
+ "36:co2dis-henry": "REA50",
+ "36:co2dis-milieu": "REA51"
 }

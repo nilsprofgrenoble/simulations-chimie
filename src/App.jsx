@@ -122,6 +122,7 @@ const SimulationChiralite = paresseux(() => import("./simulations/Chiralite"), "
 const SimulationAcideFaible = paresseux(() => import("./simulations/AcideFaible"), "SimulationAcideFaible");
 const SimulationPredoTstl = paresseux(() => import("./simulations/PredoTstl"), "SimulationPredoTstl");
 const SimulationTamponTstl = paresseux(() => import("./simulations/TamponTstl"), "SimulationTamponTstl");
+const SimulationCo2Dissous = paresseux(() => import("./simulations/Co2Dissous"), "SimulationCo2Dissous");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -264,6 +265,8 @@ const SIMULATIONS = [
     component: SimulationPredoTstl },
   { id:141, label:"Solution tampon : choisir le couple et la préparer", niveau:"TSTL", icon:"🧪", color:"#0f766e",
     component: SimulationTamponTstl },
+  { id:142, label:"CO₂ dissous : couples, répartition des espèces et solubilité", niveau:"TSTL", icon:"🫧", color:"#0e7490",
+    component: SimulationCo2Dissous },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
