@@ -69,12 +69,35 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
       {s.id === activeId && <span aria-hidden="true">●</span>}
     </button>
   );
+  // Parties du programme sans simulation (ou couvertes en partie) : en grisé, non cliquables, avec l'état écrit en toutes lettres
+  const avenirListe = g => {
+    let theme = null;
+    return (
+      <ul style={{ listStyle: 'none', margin: g.label ? '0 0 0 8px' : 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {g.avenirItems.map((x, i) => {
+          const entete = x.th !== theme; theme = x.th;
+          return (
+            <li key={i}>
+              {entete && <div style={{ fontSize: 11.5, fontWeight: 800, letterSpacing: 0.4, textTransform: 'uppercase', color: TXT2, margin: '6px 0 2px' }}>{x.th}</div>}
+              <div style={{ padding: '5px 9px', border: `1.5px ${x.e === 'partiel' ? 'solid' : 'dashed'} #94a3b8`, borderRadius: 10, fontSize: 13, lineHeight: 1.35, color: '#64748b', background: '#f8fafc' }}>
+                <span style={{ display: 'inline-block', marginRight: 6, padding: '0 6px', border: '1.5px solid #64748b', borderRadius: 999, fontSize: 10.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.3,
+                  ...(x.e === 'partiel' ? { background: '#64748b', color: 'white' } : {}) }}>{x.e === 'partiel' ? 'en partie' : 'à venir'}</span>
+                {x.t}
+                {x.e === 'partiel' && x.reste && <span style={{ display: 'block', marginTop: 2, fontSize: 12 }}>Manque : {x.reste}</span>}
+                {x.e === 'partiel' && x.chap && <button onClick={() => allerChap(x.chap)} style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12, fontFamily: 'inherit', textDecoration: 'underline' }}>Voir ce qui existe ▶</button>}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    );
+  };
   const groupe = (g, k) => g.sousEntete ? (
     <div key={k} role="heading" aria-level={4} style={{ gridColumn: '1 / -1', fontSize: 12.5, fontWeight: 800, color: VERT, paddingLeft: 2, marginTop: 4 }}>{g.sousEntete}</div>
   ) : (
     <div key={k} style={{ minWidth: 0 }}>
       {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/>{g.chap && <button data-page-chapitre-lien={g.chap} onClick={() => allerChap(g.chap)} title="Simulations et exercices d’entraînement de ce chapitre" style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12.5, fontFamily: 'inherit', textDecoration: 'underline' }}>📚 Page du chapitre : simulations + exercices ▶</button>}</div>}
-      {g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>}
+      {g.avenirItems ? avenirListe(g) : g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>}
     </div>
   );
   // Les rubriques (intitulés « entete ») se replient : on découpe la liste à plat en sections « intitulé + chapitres qui suivent »
@@ -88,7 +111,8 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
     return sections.flatMap((sec, i) => {
       if (!sec.entete) return sec.groupes.map((g, k) => groupe(g, `${m.key}-${i}-${k}`));
       const cle = `${m.key}|${sec.entete}`;
-      const nbSims = sec.groupes.reduce((n, g) => n + (g.sims?.length || 0), 0);
+      const nbSims = sec.groupes.reduce((n, g) => n + (g.sims?.length || 0) + (g.avenirItems?.length || 0), 0);
+      const avenir = sec.groupes.some(g => g.avenirItems);
       const contientActif = sec.groupes.some(g => g.sims?.some(x => x.id === activeId));
       const deplie = rubriquesOuvertes[cle] ?? contientActif;
       return [
@@ -98,7 +122,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
               fontSize: 13, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', color: TXT2 }}>
             <span aria-hidden="true" style={{ fontSize: 10, width: 12 }}>{deplie ? '▼' : '▶'}</span>
             <span style={{ flex: 1 }}>{sec.entete}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0, textTransform: 'none' }}>{nbSims} simulation{nbSims > 1 ? 's' : ''}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0, textTransform: 'none' }}>{avenir ? `${nbSims} partie${nbSims > 1 ? 's' : ''} du programme` : `${nbSims} simulation${nbSims > 1 ? 's' : ''}`}</span>
           </button>
         </div>,
         ...(deplie ? sec.groupes.map((g, k) => groupe(g, `${cle}-${k}`)) : []),

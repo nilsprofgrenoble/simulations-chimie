@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { resteDuNiveau } from "./couverture";
 import { compter } from "./stats";
 import { BandeauContexte } from "./commun";
 import { CONTEXTES } from "./contextes";
@@ -460,6 +461,12 @@ function construireMenus() {
       sousRubrique = c.sousRubrique || sousRubrique;
       { const sims = c.sims.filter(id => !SIMS_HORS_MENU.has(id)).map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche); if (sims.length) groupes.push({ label: c.label, chap: c.id, sims }); }
     });
+    // Parties du programme pas encore couvertes : section repliée « Pas encore couvert », en grisé (estimation, voir couverture.js)
+    const reste = resteDuNiveau(m.key);
+    if (reste.length) {
+      groupes.push({ entete: "Pas encore couvert", avenir: true, sims: [] });
+      reste.forEach(r => groupes.push({ label: reste.length > 1 ? r.label : undefined, avenirItems: r.items, sims: [] }));
+    }
     return { ...m, groupes };
   });
 }
