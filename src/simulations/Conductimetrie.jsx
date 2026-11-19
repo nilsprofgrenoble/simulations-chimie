@@ -1,12 +1,13 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, ARetenir, LigneMesure, IndiceDefi, Curseur } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./conductimetrieModele";
 import { QCM_PARCOURS as Q } from "./conductimetrieQcm";
-import { SceneConductimetrie, GraphiqueConductivite, BarresContribution, SvgKohlrauschCarte, SvgRemplacerCarte, SvgCourbeVCarte, SvgConcentrationCarte, SvgFaibleCarte } from "./conductimetrieSchemas";
+import { SceneConductimetrie, GraphiqueConductivite, BarresContribution, SvgKohlrauschCarte, SvgRemplacerCarte, SvgCourbeVCarte, SvgConcentrationCarte, SvgFaibleCarte, SvgGrotthuss } from "./conductimetrieSchemas";
 
 const SIM_ID = 135, CLE_GUIDE = 'conductimetrie-tg-guide-v1';
 declarerDefis(SIM_ID, [['conc', 'Concentration d’un acide à partir de la courbe'], ['sigma', 'Conductivité prévue en cours de titrage']]);
@@ -38,6 +39,37 @@ const FConc = <Formule><msub><mi>c</mi><mi mathvariant="normal">A</mi></msub><mo
 const Ul = ({ children }) => <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>{children}</ul>;
 
 // équation de titrage : une seule ligne, jamais coupée (la police se réduit sur téléphone) ; l'intitulé passe au-dessus si la place manque
+// Encart dépliable : pourquoi λ(H₃O⁺) est grand alors que l'ion H₃O⁺ ne « court » pas (transfert de la charge de proche en proche)
+const EncartGrotthuss = () => {
+  const [ouvert, setOuvert] = useState(false);
+  useEffect(() => {
+    if (!ouvert) return undefined;
+    const f = e => { if (e.key === 'Escape') setOuvert(false); };
+    window.addEventListener('keydown', f); return () => window.removeEventListener('keydown', f);
+  }, [ouvert]);
+  const p = { margin: '0 0 8px', fontSize: 15, lineHeight: 1.55, color: KIT.txt };
+  return (<>
+    <button type="button" data-grotthuss="1" onClick={() => setOuvert(true)} style={{ marginTop: 8, minHeight: 42, padding: '8px 14px', borderRadius: 10, border: '2px solid #7aa6d6', background: '#eaf2fb', color: '#0b4f94', fontWeight: 700, fontSize: 14.5, cursor: 'pointer', textAlign: 'left' }}>
+      🔍 Pourquoi λ(H₃O⁺) est-il si grand ?
+    </button>
+    {ouvert && createPortal(
+      <div role="dialog" aria-modal="true" aria-label="Pourquoi λ(H₃O⁺) est-il si grand ?" onClick={e => { if (e.target === e.currentTarget) setOuvert(false); }} style={{ position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(15,23,42,0.7)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 8, overflowY: 'auto' }}>
+        <div style={{ background: '#fff', borderRadius: 12, width: '100%', maxWidth: 520, padding: '14px 14px 12px', boxSizing: 'border-box', margin: 'auto' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+            <div style={{ fontWeight: 800, fontSize: 17, color: KIT.txt, lineHeight: 1.3 }}>Pourquoi λ(H₃O⁺) est-il si grand ?</div>
+            <button type="button" onClick={() => setOuvert(false)} aria-label="Fermer" style={{ flex: '0 0 auto', minHeight: 40, minWidth: 40, borderRadius: 8, border: '1px solid #9fb8d4', background: '#fff', fontSize: 18, cursor: 'pointer' }}>✕</button>
+          </div>
+          <p style={p}>L’ion H₃O⁺ ne « court » pas plus vite que les autres ions. Ce qui avance très vite, c’est la <strong>charge +</strong>.</p>
+          <SvgGrotthuss/>
+          <p style={p}>Une molécule d’eau voisine capte un H⁺ de H₃O⁺ : des liaisons se défont et se refont, et la charge + se retrouve sur la voisine, puis sur la suivante… comme un relais. Les molécules, elles, restent en place.</p>
+          <p style={p}>Ce « relais » transporte la charge bien plus vite que le déplacement d’un ion : λ(H₃O⁺) = 35,0 est donc bien plus grand que λ(Na⁺) = 5,0. Un mécanisme du même type explique la valeur élevée de λ(HO⁻) = 19,9.</p>
+          <p style={{ ...p, fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Schéma simplifié (hors programme, pour comprendre) : les doublets non liants ne sont pas dessinés et, en réalité, plusieurs molécules sont concernées en même temps.</p>
+          <button type="button" onClick={() => setOuvert(false)} style={{ ...styleBouton, minHeight: 44, width: '100%' }}>Fermer</button>
+        </div>
+      </div>, document.body)}
+  </>);
+};
+
 const Equation = ({ analyte }) => (
   <span style={{ display: 'inline-block', whiteSpace: 'nowrap', fontSize: 'clamp(12px, 3.9vw, 17px)', fontWeight: 700, color: KIT.txt, lineHeight: 1.6 }}>
     {analyte === 'eth' ? 'CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O' : 'H₃O⁺\u00a0+\u00a0HO⁻\u00a0→\u00a02\u00a0H₂O'}</span>);
@@ -89,7 +121,7 @@ export function SimulationConductimetrie() {
     { id: 'lambda', titre: 'Tous les ions ne conduisent pas pareil', focus: ['donnees'],
       texte: <>À même concentration, deux ions n’ont pas la même efficacité pour conduire le courant. On la mesure par la <strong>conductivité ionique molaire λ</strong>, en mS·m²·mol⁻¹ (à 25 °C). Le tableau de données donne par exemple λ(H₃O⁺)&nbsp;=&nbsp;35,0 ; λ(Na⁺)&nbsp;=&nbsp;5,0 ; λ(Cl⁻)&nbsp;=&nbsp;7,6 ; λ(HO⁻)&nbsp;=&nbsp;19,9.</>,
       tache: { type: 'qcm', q: 'Que peut-on dire de H₃O⁺ et de Na⁺ ?', ...Q.lambda,
-        expl: 'À concentration égale, la contribution d’un ion à σ est proportionnelle à son λ : H₃O⁺ (35,0) conduit 7 fois mieux que Na⁺ (5,0). λ dépend de l’ion lui-même (H₃O⁺ est très mobile dans l’eau), pas seulement de sa charge.',
+        expl: 'À concentration égale, la contribution d’un ion à σ est proportionnelle à son λ : H₃O⁺ (35,0) conduit 7 fois mieux que Na⁺ (5,0). λ dépend de l’ion lui-même, pas seulement de sa charge. Pour H₃O⁺, ce n’est pas l’ion qui court : la charge + se transmet de proche en proche entre molécules d’eau voisines (voir le bouton sous les données).',
         indice: 'Comparez 35,0 et 5,0 : plus λ est grand, plus l’ion contribue à la conductivité quand les concentrations sont égales.' } },
     { id: 'kohl', titre: 'La loi de Kohlrausch', focus: ['scene', 'donnees'],
       texte: <>La conductivité σ d’une solution diluée est la somme des contributions de chaque ion : {FKohl}avec c en mol·m⁻³ (attention : 1 mol/L = 1 000 mol·m⁻³). On prépare une solution de chlorure de sodium de concentration c = 1,0×10⁻² mol/L ; NaCl est totalement dissocié en Na⁺ et Cl⁻. On donne λ(Na⁺)&nbsp;=&nbsp;5,0 et λ(Cl⁻)&nbsp;=&nbsp;7,6 mS·m²·mol⁻¹. L’affichage du conductimètre est masqué : prévoyez sa valeur.</>,
@@ -292,6 +324,7 @@ export function SimulationConductimetrie() {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 18px', fontSize: 16, color: KIT.txt }}>
         {lignesLambda.map(k => <span key={k} style={{ whiteSpace: 'nowrap' }}>λ({M.IONS[k].f}) = <strong>{nbf(M.IONS[k].lambda, 1)}</strong></span>)}
       </div>
+      <EncartGrotthuss/>
     </div>);
   const boxDonnees = enGuide && deja('lambda') ? tableLambda : null;
 
@@ -320,6 +353,7 @@ export function SimulationConductimetrie() {
         {lignesLambda.map(k => <span key={k} style={{ whiteSpace: 'nowrap' }}>λ({M.IONS[k].f}) = <strong>{nbf(M.IONS[k].lambda, 1)}</strong></span>)}
       </div>
       <div style={{ ...aide, marginTop: 6, marginBottom: 0 }}>En mS·m²·mol⁻¹, à 25 °C.</div>
+      <EncartGrotthuss/>
     </Section>);
 
   // ---------- défi : graphique des mesures ----------
