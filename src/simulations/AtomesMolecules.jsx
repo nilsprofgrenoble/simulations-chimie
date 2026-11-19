@@ -259,7 +259,11 @@ function VoletDefi({ defi, setDefi, changerType, ion, analyse, planche }) {
 export function SimulationAtomesMolecules() {
   const [mode, setMode] = useState(() => modeOuverture('atomes-guide-v1'));
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('atomes-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('atomes-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('atomes-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('atomes-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 2 ? g2 : g1, setGuide = parc === 2 ? setG2 : setG1;
   const [defi, setDefi] = useState(null);
   const [atelier, setAtelier] = useState('ion');            // 'ion' (atomes et ions) | 'mol' (molécules)
   const [ion, setIon] = useState(ION0);
@@ -300,7 +304,7 @@ export function SimulationAtomesMolecules() {
   const voirMol = (id, r, solution = false) => { setAtelier('mol'); setMol(solution ? molRef(id) : initMol(id)); if (r) setRendu(r); };
   const molOk = id => molEff.id === id && analyse.ok;
   const eOx = etatEntite(8, 8), eF = etatEntite(9, 9), eNa = etatEntite(11, 11);
-  const ETAPES = [
+  const TOUTES = [
     { id: 'gaz', titre: 'Les gaz nobles : des atomes stables', depart: () => voirAtome(10),
       texte: <>La plupart des atomes ne restent pas seuls dans la nature. Les <strong>gaz nobles</strong> (hélium, néon, argon…) sont les seuls à vivre en atomes isolés : on dit qu’ils sont <strong>stables</strong>. Leur secret : leur dernière couche d’électrons, la <strong>couche de valence</strong>, est <strong>pleine</strong>.
         <ExempleResolu>Le néon (Z = 10) : {configTxt(10)}. Sa couche de valence (la dernière, n = 2) contient 2 + 6 = <strong>8 électrons</strong> : c’est un <strong>octet</strong>. Elle est pleine.
@@ -428,19 +432,22 @@ export function SimulationAtomesMolecules() {
         <ExempleResolu>Règles de départ : C fait 4 liaisons, O fait 2, H fait 1. Un H ne peut être lié qu’à un seul atome : il ne peut pas faire le pont entre deux atomes.</ExempleResolu>
         À vous : proposez un schéma de Lewis de C₂H₆O (n’importe lequel des deux).</>,
       tache: { type: 'action', ok: molOk('C2H6O'), consigne: 'Construisez une molécule C₂H₆O dont tous les atomes affichent ✓ (et qui est d’un seul tenant).' } },
-    { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
+    { id: 'fin', titre: 'Le bilan', depart: null,
       texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
         <li>Un atome « veut » ressembler à un <strong>gaz noble</strong> : couche de valence pleine : octet (8 électrons) ; duet (2) uniquement pour H et He, dont la seule couche est n = 1.</li>
         <li>Pour y arriver : devenir un <strong>ion</strong> (gagner ou perdre des électrons) ou former des <strong>liaisons</strong> (partager des électrons).</li>
         <li>Schéma de Lewis : liaisons (traits entre atomes) et doublets non liants (traits sur l’atome) ; chaque atome voit 8 électrons (2 pour H).</li>
         <li>Le modèle de l’octet est utile pour les petits atomes (Z ≤ 18) ; il a des exceptions, vues plus tard.</li></ul></ARetenir>, tache: null },
   ];
+  const ORDRE_PARC = [['gaz', 'valence', 'manque', 'anion', 'cation', 'vocab', 'proche', 'essentiel1'],
+    ['h2', 'hcl', 'o2', 'tirets', 'regle', 'h2o', 'co2', 'essentiel2', 'nh3', 'isomeres', 'fin']];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(e => e.id === id));
   useEffect(() => {           // à l'arrivée sur une étape, on met en place sa situation de départ
     if (mode !== 'guide') return;
     const d = ETAPES[Math.min(guide.etape, ETAPES.length - 1)].depart;
     if (d) d();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, guide.etape]);
+  }, [mode, guide.etape, parc]);
 
   // ════════════════ DÉFIS ════════════════
   function lancer(type, prec) {
@@ -553,12 +560,14 @@ export function SimulationAtomesMolecules() {
     <li>cation : + (perte d’électrons) · anion : − (gain)</li>
     <li>liaisons + doublets non liants = 4 (H : 1 liaison)</li></ul></ARetenir>;
 
+  const NOMS_PARC = ['1. Atomes et ions', '2. Molécules et schémas de Lewis'];
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : {NOMS_PARC[1].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
-  const idxFin = ETAPES.findIndex(e => e.id === 'fin'), finVu = !enGuide || guide.etape >= idxFin;     // parcours : élément et hypothèses n'apparaissent qu'à la fin
+  const idxFin = ETAPES.findIndex(e => e.id === 'fin'), finVu = !enGuide || (idxFin >= 0 && guide.etape >= idxFin);     // parcours : élément et hypothèses n'apparaissent qu'à la fin
   const ateliers = enExplore && (
     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
       <span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Atelier :</span>
@@ -593,7 +602,12 @@ export function SimulationAtomesMolecules() {
           {!enDefi && atelierEff === 'ion' && <div className={`am-col${enExplore ? ' deux' : ''}`}>{panneauIon}{finVu && choixElement}</div>}
           {!enDefi && atelierEff === 'mol' && <div className={`am-col${enExplore ? ' deux' : ''}`}><div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}><div style={styleBoite}>{plancheDefi}</div>{tableauBilan}</div>{choixMolecule}</div>}
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? panneauHypo : null}
       </div>
       {enDefi && defi.type === 'lewis' && <div style={{ marginBottom: 12 }}>{tableauBilan}</div>}
       {!enDefi && finVu && <div className="am-l2">{panneauHypo}</div>}
