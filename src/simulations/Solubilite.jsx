@@ -1,5 +1,6 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
+import { FicheVocab, FicheInteractions, FichePolarite, FicheNaCl, FicheExtraction, FicheBilan } from "./SolubiliteFiches";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, lireProgression, IndiceDefi } from "../commun";
 import { ESPECES, ANA, ORDRE_LIQ, ORDRE_SOL, TYPES, bilan, partPolaire, BATTERIE, RT, NACL, SEUIL_LIQ, SEUIL_SOL, SEUIL_ION } from "./solubiliteModele";
@@ -200,29 +201,13 @@ export function SimulationSolubilite() {
       tache: { type: 'qcm', q: 'Dans l’état initial (eau pure et éthanol pur séparés), quelle est la plus forte interaction entre molécules d’eau ?', options: ['la liaison hydrogène', 'la dispersion (dipôles instantanés)', 'l’interaction ion–ion'], bonne: 0,
         expl: 'L’eau possède des H liés à O (donneurs) et des O (accepteurs) : chaque molécule établit des liaisons hydrogène (≈ 17 kJ/mol chacune), bien plus fortes que les interactions de Van der Waals.', indice: "Dans l’eau, chaque molécule possède un groupe O–H très polarisé. Quelle interaction forte s’établit entre un H d’une molécule et le O d’une autre ?" } },
     { id: 'vocab', titre: 'Miscibilité ou solubilité ?', focus: ['notion'],
-      retenirTitre: 'À RETENIR : VOCABULAIRE ET MÉTHODE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Système</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Mot juste</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Critère</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>deux liquides</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>miscibles / non miscibles</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>une ou deux phases, quelles que soient les proportions</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>un solide dans un liquide</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>soluble / peu soluble</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>soluté (solide) dans le solvant ; quantité maximale limitée (solubilité, en g/kg)</td></tr>
-          </tbody>
-        </table>
-        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-          <li>Écrire l’<strong>état initial</strong> : interactions A…A et B…B (corps purs séparés).</li>
-          <li>Écrire l’<strong>état final</strong> : interactions A…B (mélange).</li>
-          <li><strong>Bilan</strong> = ce que l’on perd − ce que l’on regagne ; le comparer à ce que l’agitation thermique peut compenser (RT ≈ 2,5 kJ/mol à 25 °C).</li>
-        </ol>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Bilan faible → <strong>mélange ou dissolution</strong> ; grosse perte → <strong>deux phases</strong> ou solide non dissous ; entre les deux : cas limite.</li>
-        </ul>
-      </>,
       texte: <>Deux <strong>liquides</strong> sont <strong>miscibles</strong> s’ils forment une seule phase quelles que soient les proportions (eau et éthanol), <strong>non miscibles</strong> s’ils restent en deux phases (eau et huile). Aucun des deux n’est « le soluté » : ils jouent le même rôle, on les appelle simplement A et B.
         Pour un <strong>solide</strong> dans un liquide, on parle de <strong>solubilité</strong> : le liquide est le <strong>solvant</strong>, le solide est le <strong>soluté</strong>, et il y a une quantité maximale que l’on peut dissoudre (au-delà, le solide reste au fond : la solution est saturée).</>,
       tache: { type: 'qcm', q: 'On verse de l’huile dans du vinaigre (de l’eau) : deux phases apparaissent. On dit que…', options: ['l’huile et l’eau sont non miscibles', 'l’huile est le soluté et l’eau le solvant, car l’eau est en plus grande quantité', 'l’huile est un soluté saturé'], bonne: 0,
         expl: 'Ce sont deux liquides : on parle de miscibilité. Le même raisonnement (comparer état initial et état final) vaut pour la miscibilité de deux liquides et pour la solubilité d’un solide.', indice: "Que dit-on de deux liquides qui forment deux phases séparées ? Ne confonds pas ce mot avec « soluté » et « solvant »." } },
     { id: 'ee', titre: 'Eau et éthanol', focus: ['paires', 'bilan'],
+      retenirTitre: 'À RETENIR : VOCABULAIRE ET MÉTHODE',
+      retenir: <FicheVocab/>,
       texte: <>Choisissez l’<strong>eau</strong> (liquide A) et l’<strong>éthanol</strong> (liquide B), puis dépliez « Interactions possibles ». L’eau et l’éthanol ont tous les deux des H liés à O et des O porteurs de doublets non liants : la liaison H se fait entre un H lié à O et un doublet non liant d’un O voisin, dans l’alignement de la liaison O–H.</>,
       tache: { type: 'action', ok: est('eau', 'ethanol'), label: 'Eau + éthanol', faire: () => setSel({ solv: 'eau', sol: 'ethanol' }), consigne: 'A : eau ; B : éthanol' } },
     { id: 'eeq', titre: 'Une petite perte', focus: ['bilan'],
@@ -233,27 +218,12 @@ export function SimulationSolubilite() {
       texte: <>Choisissez maintenant l’<strong>eau</strong> (A) et l’<strong>hexane</strong> (B). L’hexane est constitué de molécules apolaires : aucune liaison H, aucun dipôle permanent.</>,
       tache: { type: 'action', ok: est('eau', 'hexane'), label: 'Eau + hexane', faire: () => setSel({ solv: 'eau', sol: 'hexane' }), consigne: 'A : eau ; B : hexane' } },
     { id: 'ehq', titre: 'Ce que l’on perd', focus: ['bilan'],
-      retenirTitre: 'À RETENIR : LES TROIS INTERACTIONS ET LE BILAN',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Interaction</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Où ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Énergie</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Force</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>liaison hydrogène</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>O–H…O, N–H…O (H lié à O ou N)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 17 kJ/mol par liaison</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>forte</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>dipôle–dipôle</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>molécules polaires</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>quelques kJ/mol</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>moyen</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>dispersion</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>toutes les molécules (dipôles instantanés)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>croît avec la taille de la molécule</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>faible</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Eau + éthanol</strong> : chaque liaison H rompue est remplacée par une autre → petite perte → <strong>miscibles</strong>.</li>
-          <li><strong>Eau + hexane</strong> : l’hexane n’a ni H lié à O ni dipôle permanent ; les liaisons H eau…eau perdues ne sont pas remplacées → perte bien supérieure au seuil thermique → <strong>non miscibles</strong>.</li>
-          <li><strong>Hexane + cyclohexane</strong> : dispersion remplacée par de la dispersion → bilan nul → miscibles.</li>
-          <li><strong>« Qui se ressemble s’assemble »</strong> : la perte est faible quand A…B ressemble à A…A et B…B.</li>
-        </ul>
-      </>,
       texte: <>Dans l’état final, une molécule d’eau voisine d’une molécule d’hexane ne peut plus faire de liaison H avec elle.</>,
       tache: { type: 'qcm', q: 'Quelle interaction est responsable de la grosse perte de stabilité ?', options: ['la liaison hydrogène eau…eau, perdue et non remplacée', 'la dispersion, qui devient plus forte', 'les interactions ioniques'], bonne: 0,
         expl: 'Les liaisons H eau…eau (état initial) ne sont remplacées que par de faibles interactions de Van der Waals eau…hexane. La perte est énorme : l’eau et l’hexane ne sont pas miscibles.', indice: "Quelles interactions existaient entre molécules d’eau avant le mélange, et lesquelles ne sont pas remplacées après ? Repère la plus grosse perte dans le tableau." } },
     { id: 'ehn', titre: 'Un ordre de grandeur', focus: ['bilan'],
+      retenirTitre: 'À RETENIR : LES TROIS INTERACTIONS',
+      retenir: <FicheInteractions/>,
       texte: <>Gardez le couple eau–hexane de l’étape précédente. Survolez (ou touchez) les deux barres de la liaison hydrogène : celle de gauche (état initial) et celle de droite (état final). Les valeurs sont en kJ pour 1 L de mélange (0,5 L d’eau + 0,5 L d’hexane). La perte est la différence entre les deux : c’est le pointillé rouge.</>,
       tache: { type: 'num', q: 'Perte liée à la liaison hydrogène (initial − final, en kJ par litre)', unite: 'kJ/L', vrai: bw('eau', 'hexane').types[2].perte, tol: 0.06, affiche: v => nb(v), cs: 2,
         calcul: () => { const t = bw('eau', 'hexane').types[2];
@@ -273,30 +243,12 @@ export function SimulationSolubilite() {
       tache: { type: 'qcm', q: 'Hexane et cyclohexane sont…', options: ['miscibles : les interactions A…B sont comparables aux interactions A…A et B…B', 'non miscibles', 'miscibles grâce aux liaisons hydrogène'], bonne: 0,
         expl: 'Le bilan est pratiquement nul : on remplace des interactions de dispersion par des interactions de dispersion équivalentes.', indice: "Compare les interactions entre les deux liquides (A…B) à celles de chaque liquide avec lui-même (A…A et B…B) : sont-elles du même ordre de grandeur ?" } },
     { id: 'cont', titre: 'Une échelle continue de polarité', focus: ['echelle'],
-      retenirTitre: 'À RETENIR : UNE ÉCHELLE CONTINUE DE POLARITÉ',
-      retenir: <>
-        <svg viewBox="0 0 360 120" role="img" aria-label="Échelle de polarité : de gauche à droite, la part polaire de la cohésion augmente ; le rouge Soudan (environ 10 %) est proche de l’apolaire, l’octan-1-ol (35 %) est intermédiaire, l’acide carminique (60 %) et l’éthanol (environ 67 %) sont plutôt polaires, le méthanol (74 %) l’est davantage ; l’eau est à l’extrémité polaire" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <rect x="20" y="50" width="64" height="18" fill="#fde68a" /><rect x="84" y="50" width="64" height="18" fill="#fcd34d" /><rect x="148" y="50" width="64" height="18" fill="#93c5fd" /><rect x="212" y="50" width="64" height="18" fill="#60a5fa" /><rect x="276" y="50" width="64" height="18" fill="#3b82f6" />
-          <rect x="20" y="50" width="320" height="18" fill="none" stroke="#334155" strokeWidth="1.5" />
-          <text x="20" y="84" fontSize="11" fontWeight="700" fill="#92400e">apolaire (dispersion)</text>
-          <text x="340" y="84" textAnchor="end" fontSize="11" fontWeight="700" fill="#1d4ed8">polaire (OH, dipôles)</text>
-          <line x1="52" y1="44" x2="52" y2="50" stroke="#334155" /><text x="52" y="38" textAnchor="middle" fontSize="10.5" fill="#334155">Soudan</text><text x="52" y="28" textAnchor="middle" fontSize="10.5" fill="#334155">10 %</text>
-          <line x1="132" y1="44" x2="132" y2="50" stroke="#334155" /><text x="132" y="38" textAnchor="middle" fontSize="10.5" fill="#334155">octanol</text><text x="132" y="28" textAnchor="middle" fontSize="10.5" fill="#334155">35 %</text>
-          <line x1="212" y1="44" x2="212" y2="50" stroke="#334155" /><text x="206" y="38" textAnchor="middle" fontSize="10.5" fill="#334155">carminique</text><text x="206" y="28" textAnchor="middle" fontSize="10.5" fill="#334155">60 %</text>
-          <line x1="234" y1="68" x2="234" y2="74" stroke="#334155" /><text x="234" y="98" textAnchor="middle" fontSize="10.5" fill="#334155">éthanol ≈ 67 %</text>
-          <line x1="257" y1="44" x2="257" y2="50" stroke="#334155" /><text x="268" y="38" textAnchor="middle" fontSize="10.5" fill="#334155">méthanol</text><text x="268" y="28" textAnchor="middle" fontSize="10.5" fill="#334155">74 %</text>
-          <text x="180" y="116" textAnchor="middle" fontSize="10.5" fill="#475569">part polaire de la cohésion (dipôles + liaisons H)</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Une molécule n’est ni « polaire » ni « apolaire » : sa cohésion est un <strong>mélange</strong> de dispersion, de dipôles et de liaisons H.</li>
-          <li>Une molécule d’alcool a une partie <strong>hydrophile</strong> (OH) et une partie <strong>lipophile</strong> (chaîne carbonée) : plus la chaîne s’allonge, plus la part polaire baisse (méthanol 74 %, octan-1-ol 35 %) et moins l’alcool est miscible à l’eau.</li>
-          <li>Un colorant est soluble dans le solvant dont la polarité ressemble à la sienne : le rouge Soudan (lipophile) dans l’huile, l’acide carminique (nombreux OH) dans l’eau et l’éthanol.</li>
-        </ul>
-      </>,
       texte: <>Une molécule n’est pas « polaire » ou « apolaire » : sa cohésion se répartit entre dispersion, dipôles permanents et liaisons H. L’échelle place chaque espèce selon la <strong>part polaire de sa cohésion</strong> (dipôles + liaisons H), de 0 % (hexane) à près de 90 % (eau).</>,
       tache: { type: 'qcm', q: 'Où se place l’éthanol sur cette échelle ?', options: ['entre les deux : environ deux tiers de sa cohésion sont polaires (groupe OH), le reste vient de la chaîne C₂H₅', 'tout à gauche, avec l’hexane', 'tout à droite, au-delà de l’eau'], bonne: 0,
         expl: 'Le groupe OH apporte liaisons H et dipôle ; la chaîne éthyle n’apporte que de la dispersion. L’éthanol est intermédiaire : c’est pour cela qu’il se mélange à l’eau et, en partie, aux solvants apolaires.', indice: "Compare la part polaire (groupe OH) et la part apolaire (chaîne carbonée) dans la cohésion de l’éthanol, puis place-le entre l’eau et l’hexane." } },
     { id: 'alc', titre: 'Allonger la chaîne carbonée', focus: ['choix', 'echelle', 'bilan'],
+      retenirTitre: 'À RETENIR : UNE ÉCHELLE CONTINUE DE POLARITÉ',
+      retenir: <FichePolarite/>,
       texte: <>Gardez l’<strong>eau</strong> en A et essayez successivement en B le méthanol, l’éthanol, le propan-1-ol, le butan-1-ol, le pentan-1-ol, puis l’<strong>octan-1-ol</strong>. Tous ont un seul groupe OH.</>,
       tache: { type: 'action', ok: est('eau', 'octanol'), label: 'Eau + octan-1-ol', faire: () => setSel({ solv: 'eau', sol: 'octanol' }), consigne: 'A : eau ; B : octan-1-ol' } },
     { id: 'alcq', titre: 'Un groupe OH dilué', focus: ['bilan'],
@@ -347,58 +299,24 @@ export function SimulationSolubilite() {
       tache: { type: 'qcm', q: 'Pourquoi NaCl est-il beaucoup moins soluble dans l’éthanol (0,65 g/kg contre 360 g/kg dans l’eau) ?', options: ['les ions y sont moins bien entourés : la solvatation rend une trentaine de kJ/mol de moins, alors que le cristal coûte toujours autant', 'l’éthanol ne contient pas d’oxygène', 'l’éthanol est apolaire'], bonne: 0,
         expl: 'L’éthanol entoure les ions, mais moins bien que l’eau (permittivité plus faible, molécules plus grosses). Il suffit de perdre une trentaine de kJ/mol sur plus de 700 pour que le solde passe en zone orange.', indice: "Compare l’énergie rendue par l’entourage des ions dans l’éthanol et dans l’eau. Que devient le bilan quand le cristal coûte toujours autant ?" } },
     { id: 'naclac', titre: 'Et dans l’acétone ?', focus: ['choix', 'bilan'],
-      retenirTitre: 'À RETENIR : DISSOUDRE UN SOLIDE IONIQUE (NaCl)',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Solvant</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Solubilité de NaCl (g/kg)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Pourquoi</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>360</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>entoure bien Na<sup>+</sup> (O δ−) et Cl<sup>−</sup> (liaison H)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>éthanol</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,65</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>entoure moins bien les ions</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>acétone</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,0004</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pas de H pour Cl<sup>−</sup> : ion mal entouré</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>État initial</strong> : défaire le cristal (interaction ion–ion), environ 720 kJ/mol. <strong>État final</strong> : chaque ion s’entoure de molécules de solvant (solvatation).</li>
-          <li>Dans l’eau, les deux termes sont énormes et <strong>presque égaux</strong> (solde de quelques kJ/mol) : le sel se dissout.</li>
-          <li>Il suffit de perdre quelques dizaines de kJ/mol sur la solvatation pour que le solide ne se dissolve plus : la solubilité de NaCl est <strong>très sensible au solvant</strong>.</li>
-          <li>Un solvant dissout bien les ions s’il est <strong>polaire</strong> et s’il peut orienter vers chaque ion le bon côté : O (δ−) vers Na<sup>+</sup>, H (δ+) vers Cl<sup>−</sup>.</li>
-        </ul>
-      </>,
       texte: <>L’acétone est polaire, avec une permittivité proche de celle de l’éthanol. Mais elle n’a pas de H lié à O. Choisissez l’<strong>acétone</strong> comme solvant.</>,
       tache: { type: 'qcm', q: 'Pourquoi NaCl est-il pratiquement insoluble dans l’acétone ?', options: ['l’acétone ne peut pas faire de liaison H avec l’ion Cl⁻, qui est mal entouré', 'l’acétone est apolaire', 'l’acétone réagit avec le sel'], bonne: 0,
         expl: 'Na⁺ est entouré par les O de l’acétone, mais Cl⁻ n’a pas de H (δ+) à attirer : il n’est retenu que par des interactions plus faibles. Le solde passe en zone rouge (mesure : 0,0004 g/kg).', indice: "Pour dissoudre un cristal ionique, il faut bien entourer ses ions. Quelles interactions l’acétone peut-elle établir avec l’ion Cl⁻ (pense aux liaisons hydrogène) ?" } },
     { id: 'extr', titre: 'Application : l’extraction', focus: [],
-      retenirTitre: 'À RETENIR : L’EXTRACTION',
-      retenir: <>
-        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-          <li>Le soluté doit être <strong>très soluble</strong> dans le solvant extracteur (bilan faible).</li>
-          <li>Le solvant extracteur doit être <strong>non miscible</strong> à la phase d’origine (grosse perte eau…solvant).</li>
-          <li>On agite, on laisse décanter, on sépare les deux phases.</li>
-        </ol>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Exemple :</strong> le diiode, apolaire, passe de l’eau au cyclohexane (non miscible à l’eau) ; avec l’éthanol ou l’acétone, miscibles à l’eau, il n’y aurait qu’une seule phase.</li>
-          <li><strong>Limite du modèle :</strong> le bilan d’énergie traite l’entropie très grossièrement (≈ RT·ln 2) ; un résultat « cas limite » dépend de la température et des proportions.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : DISSOUDRE UN SOLIDE IONIQUE (NaCl)',
+      retenir: <FicheNaCl/>,
       texte: <>Extraire une espèce d’une solution aqueuse, c’est la transférer dans un second solvant. Il faut qu’elle y soit très soluble (bilan faible) et que ce solvant ne se mélange pas à l’eau (grosse perte eau…solvant).</>,
       tache: { type: 'qcm', q: 'Pour extraire le diiode d’une solution aqueuse, on choisit…', options: ['le cyclohexane : non miscible avec l’eau, et dissout bien le diiode', 'l’éthanol : il dissout le diiode', 'l’acétone : miscible à l’eau'], bonne: 0,
         expl: 'L’éthanol et l’acétone sont miscibles à l’eau : il n’y aurait qu’une seule phase, donc pas d’extraction possible.', indice: "Le solvant extracteur doit dissoudre le diiode et ne pas se mélanger à l’eau. Vérifie ces deux critères pour chaque solvant proposé." } },
     { id: 'limites', titre: 'Les limites du modèle', focus: [],
+      retenirTitre: 'À RETENIR : L’EXTRACTION',
+      retenir: <FicheExtraction/>,
       texte: <>Le bilan d’énergie est un outil puissant, mais il ne dit pas tout. Il ne traite l’<strong>entropie</strong> que très grossièrement : l’agitation thermique favorise le mélange, d’environ RT·ln 2 ≈ 1,7 kJ/mol à 25 °C. Il se trompe aussi sur certains couples : par exemple il annonce un « cas limite » pour l’eau et l’acétone, qui sont miscibles. Les seuils utilisés ici sont réglés sur des cas connus : ce sont des repères, pas des lois.</>,
       tache: { type: 'qcm', q: 'Un résultat « cas limite » signifie…', options: ['que le mélange peut se produire ou non selon la température et les proportions', 'que le modèle a fait une erreur de calcul', 'que les liquides sont non miscibles'], bonne: 0,
         expl: 'Quand la perte est de l’ordre de grandeur de l’énergie thermique disponible, les deux issues sont possibles : seule l’expérience (ou un calcul plus complet) tranche.', indice: "Le modèle compare des énergies de cohésion. Que signifie un bilan très proche de l’équilibre ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
       retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Deux liquides : miscibles ou non. Un solide dans un liquide : soluble ou non (solubilité limitée).</li>
-          <li><strong>Méthode :</strong> comparer l’état initial (A…A et B…B) à l’état final (A…B) ; bilan faible → mélange, grosse perte → deux phases.</li>
-          <li>Trois interactions de molécules : liaison H (≈ 17 kJ/mol), dipôle–dipôle, dispersion ; entre ions : interaction ion–ion, écrantée par le solvant.</li>
-          <li>« Qui se ressemble s’assemble » ; entre polaire et apolaire, il y a un <strong>continuum</strong> (parties hydrophile et lipophile).</li>
-          <li>Solide ionique : cristal très coûteux à défaire, mais l’eau entoure très bien les ions ; dans la plupart des autres solvants, la balance penche du mauvais côté.</li>
-          <li>Extraction : soluté très soluble dans le solvant extracteur, qui doit être non miscible à la phase d’origine.</li>
-        </ul>
-      </>,
+      retenir: <FicheBilan/>,
       texte: <>Vous savez prévoir solubilité et miscibilité en comparant les interactions avant et après. Passez aux défis !</>, tache: null },
   ];
   const cadre = id => enGuide && (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []).includes(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
@@ -407,16 +325,19 @@ export function SimulationSolubilite() {
 
   // ════════════════ PANNEAUX ════════════════
   const R = roles(liquide);
-  const bouton = (id, role) => <button key={id} onClick={() => choisir({ [role]: id })} style={stylePetitBouton(sel[role] === id, role === 'solv' ? '#0284c7' : '#7c3aed')}>{ESPECES[id].nom}{id === 'ccl4' ? ' ⚠' : ''}</button>;
   const choix = !enDefi && (
     <div style={{ ...styleBoite, ...cadre('choix') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Choisir les deux espèces</div>
       {(sel.solv === 'ccl4' || sel.sol === 'ccl4') && <div style={{ fontSize: 13, color: '#b45309', lineHeight: 1.45, marginBottom: 6 }}>⚠ Le tétrachlorométhane est toxique (foie, cancérogène suspecté) et destructeur de la couche d’ozone : il est interdit dans les établissements scolaires. Il figure ici seulement parce qu’il est un solvant apolaire de référence dans les tables.</div>}
-      <div style={{ fontSize: 13, color: '#0284c7', fontWeight: 700, margin: '2px 0 4px' }}>Espèce A — un liquide</div>
-      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>{ORDRE_LIQ.map(i => bouton(i, 'solv'))}</div>
-      <div style={{ fontSize: 13, color: '#7c3aed', fontWeight: 700, margin: '2px 0 4px' }}>Espèce B — un liquide (question de miscibilité) ou un solide (question de solubilité)</div>
-      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 4 }}>{ORDRE_LIQ.map(i => bouton(i, 'sol'))}</div>
-      <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', alignItems: 'center' }}><span style={{ fontSize: 12.5, color: KIT.txt2 }}>solides :</span>{ORDRE_SOL.map(i => bouton(i, 'sol'))}</div>
+      <label style={{ display: 'block', fontSize: 13, color: '#0284c7', fontWeight: 700, margin: '2px 0 4px' }}>Espèce A — un liquide
+        <select value={sel.solv} aria-label="Espèce A" onChange={e => choisir({ solv: e.target.value })} style={{ display: 'block', width: '100%', minHeight: 42, fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, marginTop: 3 }}>
+          {ORDRE_LIQ.map(i => <option key={i} value={i}>{ESPECES[i].nom}{i === 'ccl4' ? ' ⚠' : ''}</option>)}
+        </select></label>
+      <label style={{ display: 'block', fontSize: 13, color: '#7c3aed', fontWeight: 700, margin: '8px 0 2px' }}>Espèce B — un liquide (miscibilité) ou un solide (solubilité)
+        <select value={sel.sol} aria-label="Espèce B" onChange={e => choisir({ sol: e.target.value })} style={{ display: 'block', width: '100%', minHeight: 42, fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, marginTop: 3 }}>
+          <optgroup label="Liquides">{ORDRE_LIQ.map(i => <option key={i} value={i}>{ESPECES[i].nom}{i === 'ccl4' ? ' ⚠' : ''}</option>)}</optgroup>
+          <optgroup label="Solides">{ORDRE_SOL.map(i => <option key={i} value={i}>{ESPECES[i].nom}</option>)}</optgroup>
+        </select></label>
     </div>);
 
   // la question posée : miscibilité (deux liquides) ou solubilité (un solide)
@@ -438,7 +359,11 @@ export function SimulationSolubilite() {
   const BLOCS = [['cartes', '1. Les deux espèces : formules et cohésion'], ['echelle', '2. Une échelle continue : de l’apolaire au polaire'],
     ['paires', '3. Interactions possibles : état initial → état final'], ['bilan', '4. Bilan énergétique et verdict']];
   const focusGuide = enGuide ? (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []) : [];
-  const estOuvert = k => enDefi || !!ouv[k] || focusGuide.includes(k);
+  const idxEtape = Math.min(etape, ETAPES.length - 1);
+  // guide : un panneau n'apparaît qu'à l'étape qui l'introduit, puis reste affiché
+  const vuG = k => !enGuide || ETAPES.slice(0, idxEtape + 1).some(e => (e.focus || []).includes(k));
+  const apresEtape = id => !enGuide || idxEtape >= ETAPES.findIndex(e => e.id === id);
+  const estOuvert = k => enDefi || (enGuide ? vuG(k) : !!ouv[k]) || focusGuide.includes(k);
   const bloc = (k, contenu) => {
     const i = BLOCS.findIndex(x => x[0] === k), o = estOuvert(k), suiv = BLOCS[i + 1];
     return (
@@ -447,7 +372,7 @@ export function SimulationSolubilite() {
           style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', fontSize: 15.5, fontWeight: 700, color: KIT.txt }}>
           <span>{BLOCS[i][1]}</span><span style={{ fontSize: 12, color: KIT.txt2, fontWeight: 600 }}>{o ? '▲ replier' : '▼ déplier'}</span></button>
         {o && <div style={{ marginTop: 8 }}>{contenu}
-          {suiv && !estOuvert(suiv[0]) && <button onClick={() => setOuv(v => ({ ...v, [suiv[0]]: true }))} style={{ ...styleBouton(true, '#334155'), marginTop: 10 }}>Étape suivante : {suiv[1]} ▼</button>}</div>}
+          {!enGuide && suiv && !estOuvert(suiv[0]) && <button onClick={() => setOuv(v => ({ ...v, [suiv[0]]: true }))} style={{ ...styleBouton(true, '#334155'), marginTop: 10 }}>Étape suivante : {suiv[1]} ▼</button>}</div>}
       </div>);
   };
 
@@ -691,14 +616,14 @@ export function SimulationSolubilite() {
               <td style={{ padding: '3px 6px', fontWeight: 700 }}>{nomEsp(c)}</td>
               <td style={{ padding: '3px 6px' }}>avec l’eau : <span style={{ color: COUL[bilan('eau', c).classe], fontWeight: 700 }}>{ETIQ_LIQ[bilan('eau', c).classe]}</span> ({nb(bilan('eau', c).total)} kJ/L)</td>
               <td style={{ padding: '3px 6px' }}>avec {nomEsp(defi.sol)} : <span style={{ color: COUL[bilan(c, defi.sol).classe], fontWeight: 700 }}>{ETIQ_SOL[bilan(c, defi.sol).classe]}</span> ({nb(bilan(c, defi.sol).total)} kJ/mol)</td></tr>)}</tbody></table></div>}
-          {choix}
+          {vuG('choix') && choix}
           {!(enDefi && defi.type === 'extraction') && (solv === sol ? <div style={styleBoite}>Choisissez deux espèces différentes.</div> : <>
-            {notion}{bloc('cartes', cartes)}{bloc('echelle', echelle)}{bloc('paires', ion ? pairesIon : paires)}{bloc('bilan', bilanPanneau)}</>)}
+            {vuG('notion') && notion}{vuG('cartes') && bloc('cartes', cartes)}{vuG('echelle') && bloc('echelle', echelle)}{vuG('paires') && bloc('paires', ion ? pairesIon : paires)}{vuG('bilan') && bloc('bilan', bilanPanneau)}</>)}
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
       </div>
-      <div style={{ marginBottom: 12 }}>{limites}</div>
-      {!enDefi && <div className="sl-l2">{panneauHypo}</div>}
+      {apresEtape('limites') && <div style={{ marginBottom: 12 }}>{limites}</div>}
+      {!enDefi && apresEtape('ehn') && <div className="sl-l2">{panneauHypo}</div>}
       {mode === 'explore' && <div className="sl-l2">{aEssayer}{retenir}</div>}
     </div>
   );
