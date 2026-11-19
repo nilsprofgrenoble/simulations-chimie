@@ -1,0 +1,11 @@
+// QCM du parcours guidé de la simulation 167 (fichier séparé pour pouvoir contrôler par script la longueur des options : la bonne réponse, en tête ici, n'est ni la plus courte ni la plus longue, longueurs comptées telles qu'elles s'affichent (une fraction compte pour la plus longue de ses deux lignes)).
+// Les textes passent par avecIndices : vec(u)_t, a_t, frac(v²|R) s'affichent avec flèche, indice et vraie fraction.
+export const QCM_PARCOURS = {
+  repere: { options: ['elle change : elle reste tangente au cercle en tout point', 'elle ne change pas : le repère est fixe pendant le mouvement', 'elle change : elle pointe toujours vers le centre du cercle', 'elle reste verticale, comme la direction du poids'], bonne: 0 },
+  vitesse: { options: ['v sur vec(u)_t, et 0 sur vec(u)_n', '0 sur vec(u)_t, v sur vec(u)_n', 'v sur vec(u)_t, et frac(v²|R) sur vec(u)_n', 'frac(v²|R) sur vec(u)_t, et 0 sur vec(u)_n'], bonne: 0 },
+  pred: { options: ['non : la direction de vec(v) change tout le temps, donc vec(v) varie', 'oui : la norme de v est constante, donc l’accélération est nulle', 'non : elle est tangente à la trajectoire, dans le sens du mouvement', 'on ne peut pas répondre sans connaître le rayon du cercle'], bonne: 0 },
+  uniforme: { options: ['norme constante, dirigé vers le centre : sa direction change', 'vecteur constant : même norme et même direction en tout point', 'norme nulle : le point n’accélère pas, il tourne seulement', 'tangent à la trajectoire, dans le sens du mouvement'], bonne: 0 },
+  rayon: { options: ['multipliée par 4 : a est proportionnelle à v²', 'multipliée par 2 : a est directement proportionnelle à v', 'inchangée : le rayon R reste le même', 'divisée par 2 : a est proportionnelle à frac(1|v)'], bonne: 0 },
+  acc: { options: ['a_t est positive : vec(a) est penché vers l’avant', 'a_t est négative : vec(a) penche vers l’arrière', 'a_t est nulle : seule la composante normale compte', 'a_t ne dépend pas de la vitesse : elle est toujours nulle'], bonne: 0 },
+  ralenti: { options: ['a_t < 0 ; a_n reste positive, dirigée vers le centre', 'a_t et a_n deviennent toutes les deux négatives', 'a_n s’annule dès que le point commence à freiner', 'vec(a) pointe vers l’extérieur du cercle, à l’opposé du centre'], bonne: 0 },
+};

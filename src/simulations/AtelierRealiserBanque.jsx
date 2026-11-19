@@ -1820,6 +1820,42 @@ function genEtalonnageTG() {
     retenir: ['Constante de cellule : k = σ(étalon) / G(étalon), en m⁻¹ ; ensuite σ = k × G pour toute solution mesurée avec cette cellule.', 'Droite d’étalonnage : G = a × c, passant par l’origine ; c = G / a (G en mS, a en mS par mmol/L : c en mmol/L).', 'La droite n’est valable que pour une solution diluée (c inférieure à 10 mmol/L environ) : au-delà, on dilue.', 'Solution diluée F fois : c(S) = F × c(S′).'] };
 }
 
+function genFrenetTG() {
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
+  const v = tire([2.0, 3.0, 4.0, 5.0, 6.0]), R = tire([1.5, 2.0, 2.5, 4.0, 5.0, 8.0]), an = v * v / R;
+  const q1 = { id: 'fr0', type: 'num', q: <>Un point décrit un cercle de rayon <b>{nb(R, 2)}{NB}m</b> à vitesse de norme constante <b>{nb(v, 2)}{NB}m/s</b> (mouvement circulaire uniforme). Calculez la norme de son accélération (en m/s², 2 chiffres significatifs).</>, unite: 'm/s²', vrai: an, tolRel: 0.05, csMin: 2,
+    aide: 'Mouvement uniforme : frac(dv|dt) = 0, il reste la coordonnée normale a = frac(v²|R) (v en m/s, R en m).',
+    pieges: [[v / R, 'Vous avez calculé v divisée par R : il faut v au carré, divisée par R.'], [v * v * R, 'Le rayon est au dénominateur : a = v² divisée par R.'], [v * v / (2 * R), 'Il n’y a pas de facteur 2 : a = v² divisée par R.'], [v * v, 'Vous avez oublié de diviser par le rayon R.']],
+    expl: <>a = {avecIndices(`frac(v²|R)`)} = {avecIndices(`frac(${nb(v, 2)}²|${nb(R, 2)})`)} = <b>{nb(an, 3)}{NB}m/s²</b>, dirigée vers le centre du cercle.</> };
+  const a2 = tire([2.0, 4.0, 5.0, 8.0]), R2 = tire([1.0, 2.0, 2.5, 4.0]), v2 = Math.sqrt(a2 * R2);
+  const q2 = { id: 'fr1', type: 'num', q: <>Un point décrit un cercle de rayon <b>{nb(R2, 2)}{NB}m</b> à vitesse de norme constante. La norme de son accélération vaut <b>{nb(a2, 2)}{NB}m/s²</b>. Calculez la norme de sa vitesse (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: v2, tolRel: 0.05, csMin: 2,
+    aide: 'a = v² divisée par R, donc v² = a × R et v est la racine carrée de a × R.',
+    pieges: [[a2 * R2, 'Vous avez oublié la racine carrée : c’est v² qui vaut a × R.'], [a2 / R2, 'Il faut multiplier a par R (pas diviser), puis prendre la racine carrée.'], [Math.sqrt(a2 / R2), 'Il faut multiplier a par R, pas le diviser.'], [a2, 'La vitesse ne se confond pas avec l’accélération : v² = a × R.']],
+    expl: <>v² = a × R = {nb(a2, 2)} × {nb(R2, 2)} = {nb(a2 * R2, 3)}, donc v = <b>{nb(v2, 3)}{NB}m/s</b>.</> };
+  const sens = tire([1, -1]), vi = sens > 0 ? tire([2.0, 3.0, 4.0]) : tire([4.0, 6.0, 8.0]), dv = sens > 0 ? tire([2.0, 4.0, 6.0]) : tire([2.0, 4.0]), dt = tire([2.0, 4.0, 5.0]), vf = vi + sens * dv, at = (vf - vi) / dt;
+  const q3 = { id: 'fr2', type: 'num', q: <>Sur un cercle, la norme de la vitesse d’un point passe de <b>{nb(vi, 2)}{NB}m/s</b> à <b>{nb(vf, 2)}{NB}m/s</b> en <b>{nb(dt, 2)}{NB}s</b>, de façon régulière. Calculez la coordonnée tangentielle a<sub>t</sub> = {avecIndices('frac(dv|dt)')} de son accélération (en m/s², avec son signe, 2 chiffres significatifs).</>, unite: 'm/s²', vrai: at, tolRel: 0.05, csMin: 2,
+    aide: 'a_t = frac(dv|dt) = (v finale − v initiale) divisée par la durée : positive si la vitesse augmente, négative si elle diminue.',
+    pieges: [[Math.abs(at), 'Attention au signe : la vitesse diminue, donc frac(dv|dt) est négative.'], [(vf + vi) / dt, 'Il faut la variation de vitesse (v finale − v initiale), pas la somme.'], [vf - vi, 'Il faut diviser la variation de vitesse par la durée.'], [dt / (vf - vi), 'Le rapport est inversé : frac(dv|dt) = variation de vitesse divisée par durée.']],
+    expl: <>a<sub>t</sub> = {avecIndices(`frac(dv|dt)`)} = {avecIndices(`frac(${nb(vf, 2)} − ${nb(vi, 2)}|${nb(dt, 2)})`)} = <b>{nb(at, 3)}{NB}m/s²</b> ({at > 0 ? 'positive : le point accélère' : 'négative : le point ralentit'}).</> };
+  // on écarte les tirages où a_n seule, |a_t| seule ou leur somme donnerait la norme à 8 % près (une réponse fausse serait acceptée par la tolérance)
+  const C4 = []; [2.0, 3.0, 4.0].forEach(v => [1.5, 2.0, 2.5, 4.0].forEach(R => [1.5, 2.0, 3.0, -2.0, -1.5].forEach(a => { const n = Math.hypot(a, v * v / R); if ([v * v / R, Math.abs(a), Math.abs(a) + v * v / R].every(x => Math.abs(x - n) > 0.08 * n)) C4.push([v, R, a]); })));
+  const [v4, R4, at4] = tire(C4), an4 = v4 * v4 / R4, n4 = Math.hypot(at4, an4);
+  const q4 = { id: 'fr3', type: 'num', q: <>Un point décrit un cercle de rayon <b>{nb(R4, 2)}{NB}m</b>. À l’instant étudié, sa vitesse vaut <b>{nb(v4, 2)}{NB}m/s</b> et {avecIndices('frac(dv|dt)')} = <b>{nb(at4, 2)}{NB}m/s²</b>. Calculez la norme de son accélération (en m/s², 2 chiffres significatifs).</>, unite: 'm/s²', vrai: n4, tolRel: 0.05, csMin: 2,
+    aide: 'Coordonnées perpendiculaires : a_t = frac(dv|dt) et a_n = v² divisée par R ; la norme est la racine de la somme des carrés de a_t et de a_n (le signe de a_t ne change pas la norme).',
+    pieges: [[Math.abs(at4) + an4, 'Les deux coordonnées sont perpendiculaires : on ne les additionne pas, on prend la racine de la somme des carrés.'], [an4, 'C’est la seule coordonnée normale : il manque a_t = frac(dv|dt).'], [Math.abs(at4), 'C’est la seule coordonnée tangentielle : il manque a_n = frac(v²|R).'], [Math.sqrt(Math.abs(at4) + an4), 'Il faut les carrés sous la racine : a_t au carré plus a_n au carré.']],
+    expl: <>a<sub>t</sub> = {nb(at4, 2)} ; a<sub>n</sub> = {avecIndices(`frac(v²|R)`)} = {nb(an4, 3)} ; a = <b>{nb(n4, 3)}{NB}m/s²</b>.</> };
+  // virages de route plausibles : accélération de l'ordre de 1 à 5 m/s² (jamais plus de 5 : cf. VAL277), on écarte le reste des couples (vitesse, rayon)
+  const C5 = []; [36, 54, 72, 90, 108].forEach(k => [50, 80, 100, 200, 250].forEach(R => { const a = (k / 3.6) ** 2 / R; if (a >= 1 && a <= 5.0) C5.push([k, R]); }));
+  const [vk, R5] = tire(C5), ms = vk / 3.6, a5 = ms * ms / R5;
+  const q5 = { id: 'fr4', type: 'num', q: <>Une voiture roule à vitesse de norme constante <b>{nb(vk, 3)}{NB}km/h</b> dans un virage circulaire de rayon <b>{nb(R5, 3)}{NB}m</b>. Calculez la norme de son accélération (en m/s², 2 chiffres significatifs).</>, unite: 'm/s²', vrai: a5, tolRel: 0.05, csMin: 2,
+    aide: 'Convertissez d’abord la vitesse en m/s (÷ 3,6), puis a = v² divisée par R.',
+    pieges: [[vk * vk / R5, 'La vitesse n’est pas convertie : il faut des m/s (÷ 3,6) avant de calculer v².'], [ms / R5, 'Il faut v au carré, divisée par R.'], [vk / (3.6 * 3.6) / R5, 'Vous avez converti sans mettre v au carré : c’est (v en m/s)² qu’il faut.'], [ms * ms * R5, 'Le rayon est au dénominateur.']],
+    expl: <>v = {nb(vk, 3)} ÷ 3,6 = {nb(ms, 3)}{NB}m/s ; a = {avecIndices(`frac(v²|R)`)} = {avecIndices(`frac(${nb(ms, 3)}²|${nb(R5, 3)})`)} = <b>{nb(a5, 3)}{NB}m/s²</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Mouvement circulaire : coordonnées de l’accélération dans le repère de Frenet, mouvement uniforme et non uniforme.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Repère de Frenet : vec(u)_t tangent (sens du mouvement), vec(u)_n normal (vers le centre). Vitesse : vec(v) = v × vec(u)_t.', 'Accélération : a_t = frac(dv|dt) (sur vec(u)_t) et a_n = frac(v²|R) (sur vec(u)_n), v en m/s, R en m.', 'Mouvement circulaire uniforme : a_t = 0 mais a n’est pas nulle : a = frac(v²|R), vers le centre.', 'La norme est la racine de la somme des carrés de a_t et de a_n ; a_t > 0 si le point accélère, a_t < 0 s’il ralentit.'] };
+}
+
 // ───────── Chiralité et carbone asymétrique (TSTL, PCM) ─────────
 function genChiraliteReperer() {
   const MOLS = [
@@ -2035,6 +2071,7 @@ export const FAMILLES = [
   { id: 'aam-calcul', groupe: 'Formules', titre: 'Acides α-aminés : rapport des formes, pourcentages et pH pour une proportion (TG)', gen: genAminoAcidesTG, domaine: 'Acides α-aminés : forme selon le pH' },
   { id: 'cdt-calcul', groupe: 'Formules', titre: 'Conductimétrie : loi de Kohlrausch, concentration, volume équivalent et bilan après l’équivalence (TG)', gen: genConductimetrieTG, domaine: 'Conductimétrie : conductivité et titrage' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
+  { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
