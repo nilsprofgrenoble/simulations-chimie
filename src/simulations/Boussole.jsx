@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
+import { SchemaBoussole, SchemaDipole, SchemaTangentes, SchemaPythagore, SchemaEchelle, SchemaTrompe } from "./BoussoleSchemas";
 import { Pic } from "../Pictos";
 
 const SIM_ID = 46;
@@ -183,18 +184,11 @@ export function SimulationBoussole({ naviguer }) {
     { id: 'pres', titre: 'Approcher l’aimant', focus: ['scene', 'reglages'],
       retenirTitre: 'À RETENIR : LE CHAMP MAGNÉTIQUE ET LA BOUSSOLE',
       retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Caractéristique du vecteur B</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Précision</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>direction</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>suivant la droite portant le vecteur</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>sens</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>celui que désigne le pôle nord de l’aiguille de la boussole</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>intensité (norme)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>en tesla (T) : 1 mT = 10⁻³ T ; 1 µT = 10⁻⁶ T</td></tr>
-          </tbody>
-        </table>
+        <SchemaBoussole/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un aimant, un courant ou la Terre créent un <strong>champ magnétique</strong>, représenté par un <strong>vecteur</strong>.</li>
-          <li>Une <strong>boussole</strong> (petit aimant mobile) s’aligne sur le champ <strong>total</strong> : son pôle nord indique le sens du champ.</li>
-          <li>Champ terrestre : B<sub>Terre</sub> ≈ 50 µT, dirigé vers le nord (valeur du cours).</li>
+          <li>Un aimant, un courant ou la Terre créent un <strong>champ magnétique</strong>, représenté par un <strong>vecteur</strong> : direction, sens, intensité (norme) en tesla (T).</li>
+          <li>Une <strong>boussole</strong> s’aligne sur le champ <strong>total</strong> : son pôle nord indique le <strong>sens</strong> du champ.</li>
+          <li>Champ terrestre : B<sub>Terre</sub> ≈ 50 µT, dirigé vers le nord (1 µT = 10⁻⁶ T).</li>
         </ul>
       </>,
       texte: <>Remettez l’aimant et placez la boussole <strong>à 10 cm de son centre, sur son axe</strong> (à droite). L’aimant est horizontal : son pôle N pointe vers l’est.</>,
@@ -221,33 +215,26 @@ export function SimulationBoussole({ naviguer }) {
       tache: { type: 'qcm', q: 'En doublant la distance à l’aimant, son champ est divisé par…', options: ['2', '4', '8'], bonne: 2,
         expl: 'Le champ d’un aimant (dipôle) décroît comme 1/r³ : distance × 2, champ ÷ 8 (540 µT → 68 µT).', indice: "Le champ décroît comme une puissance de 1/d. Testez dans la simulation : mesurez à d, puis à 2d." } },
     { id: 'tangente', titre: 'La boussole des tangentes', focus: ['scene', 'mesures', 'addition'],
-      retenirTitre: 'À RETENIR : CHAMP D’UN AIMANT ET BOUSSOLE DES TANGENTES',
+      retenirTitre: 'À RETENIR : CHAMP D’UN AIMANT',
       retenir: <>
-        <Formule><mi>B</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>=</mo><msub><mi>B</mi><mtext>réf</mtext></msub><mo>×</mo><msup><mrow><mo>(</mo><mfrac><msub><mi>r</mi><mtext>réf</mtext></msub><mi>r</mi></mfrac><mo>)</mo></mrow><mn>3</mn></msup><mspace width="1.5em"/><mi>tan</mi><mi>α</mi><mo>=</mo><mfrac><msub><mi>B</mi><mtext>aimant</mtext></msub><msub><mi>B</mi><mtext>Terre</mtext></msub></mfrac></Formule>
+        <SchemaDipole/>
+        <Formule><mi>B</mi><mo>(</mo><mi>r</mi><mo>)</mo><mo>=</mo><msub><mi>B</mi><mtext>réf</mtext></msub><mo>×</mo><msup><mrow><mo>(</mo><mfrac><msub><mi>r</mi><mtext>réf</mtext></msub><mi>r</mi></mfrac><mo>)</mo></mrow><mn>3</mn></msup></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Sur son axe, le champ d’un aimant (modèle de dipôle) <strong>décroît en 1/r³</strong> : en doublant la distance, il est divisé par 8. Ici, B<sub>réf</sub> = 20 mT à r<sub>réf</sub> = 3 cm.</li>
-          <li>Boussole des tangentes : le champ de l’aimant (est – ouest) est <strong>perpendiculaire</strong> à celui de la Terre (nord) ; l’aiguille dévie de α avec tan α = B<sub>aimant</sub> / B<sub>Terre</sub>.</li>
-          <li>Pour α = 45° : tan α = 1, donc <strong>B<sub>aimant</sub> = B<sub>Terre</sub></strong>.</li>
+          <li>Sur son axe, le champ d’un aimant (modèle de dipôle) <strong>décroît en 1/r³</strong> : distance × 2, champ ÷ 8 ; distance × 3, champ ÷ 27.</li>
+          <li>Dans ce modèle : B<sub>réf</sub> = 20 mT à r<sub>réf</sub> = 3 cm. L’aimant est idéal : la décroissance réelle dépend de sa forme.</li>
         </ul>
       </>,
       texte: <>Le champ de l’aimant (est – ouest) est perpendiculaire à celui de la Terre (nord). L’aiguille dévie d’un angle α tel que tan α = B<sub>aimant</sub> / B<sub>Terre</sub>. <strong>Placez la boussole sur l’axe</strong> (à droite ou à gauche) pour obtenir une déviation de <strong>45°</strong> (±3°) : que valent alors les deux champs ?</>,
       tache: { type: 'action', ok: surAxe && calme && Math.abs(Math.abs(dev) - 45) < 3, label: 'Placer pour 45°', faire: () => aPlace(rEq, 0), consigne: 'Faites glisser la boussole sur l’axe horizontal jusqu’à obtenir 45° (déviation lue dans « Mesures »)' } },
     { id: 'somme', titre: 'Additionner deux champs perpendiculaires', focus: ['addition', 'mesures'],
-      retenirTitre: 'À RETENIR : ADDITION VECTORIELLE DE DEUX CHAMPS',
+      retenirTitre: 'À RETENIR : LA BOUSSOLE DES TANGENTES',
       retenir: <>
-        <svg viewBox="0 0 360 190" role="img" aria-label="Addition de deux champs perpendiculaires : le champ de la Terre B Terre pointe vers le nord, vers le haut, le champ de l’aimant B aimant pointe vers l’est, vers la droite ; le champ total est la diagonale du rectangle ; l’aiguille de la boussole, alignée sur le champ total, est déviée de l’angle alpha par rapport au nord, avec tan alpha égal à B aimant divisé par B Terre" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="90" y1="160" x2="90" y2="44" stroke="#0072b2" strokeWidth="3.4" /><polygon points="90,30 82,48 98,48" fill="#0072b2" /><text x="40" y="96" fontSize="12" fontWeight="700" fill="#0072b2">B<tspan fontSize="9" dy="3">Terre</tspan></text><text x="96" y="22" fontSize="11" fill="#475569">nord</text>
-          <line x1="90" y1="160" x2="236" y2="160" stroke="#d55e00" strokeWidth="3.4" /><polygon points="250,160 232,152 232,168" fill="#d55e00" /><text x="150" y="182" fontSize="12" fontWeight="700" fill="#d55e00">B<tspan fontSize="9" dy="3">aimant</tspan></text><text x="256" y="164" fontSize="11" fill="#475569">est</text>
-          <line x1="90" y1="160" x2="236" y2="48" stroke="#334155" strokeWidth="3.4" /><polygon points="248,38 228,44 238,58" fill="#334155" />
-          <line x1="90" y1="44" x2="236" y2="44" stroke="#94a3b8" strokeDasharray="4 3" /><line x1="236" y1="44" x2="236" y2="160" stroke="#94a3b8" strokeDasharray="4 3" />
-          <path d="M90 124 A36 36 0 0 1 112 132" fill="none" stroke="#475569" strokeWidth="1.5" /><text x="116" y="124" fontSize="13" fontWeight="700" fill="#475569">α</text>
-          <text x="196" y="86" fontSize="12" fontWeight="700" fill="#334155">B<tspan fontSize="9" dy="3">total</tspan></text>
-        </svg>
-        <Formule><mi>B</mi><mo>=</mo><msqrt><msubsup><mi>B</mi><mtext>Terre</mtext><mn>2</mn></msubsup><mo>+</mo><msubsup><mi>B</mi><mtext>aimant</mtext><mn>2</mn></msubsup></msqrt></Formule>
+        <SchemaTangentes/>
+        <Formule><mi>tan</mi><mi>α</mi><mo>=</mo><mfrac><msub><mi>B</mi><mtext>aimant</mtext></msub><msub><mi>B</mi><mtext>Terre</mtext></msub></mfrac></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Les champs s’ajoutent <strong>comme des vecteurs</strong> (somme vectorielle), pas comme des nombres.</li>
-          <li>Deux champs <strong>perpendiculaires</strong> : théorème de Pythagore ; s’ils ont la même intensité, B<sub>total</sub> = √2 × B (≈ 1,41 B).</li>
-          <li>Ne pas oublier la racine carrée : B² est la somme des carrés.</li>
+          <li>Le champ de l’aimant (est – ouest) est <strong>perpendiculaire</strong> à celui de la Terre (nord) : l’aiguille se place sur le champ total et dévie de α.</li>
+          <li>Si l’aimant est deux fois plus intense que la Terre, tan α = 2 donc α ≈ 63°.</li>
+          <li>Pour α = 45° : tan α = 1, donc B<sub>aimant</sub> = B<sub>Terre</sub>.</li>
         </ul>
       </>,
       texte: <>Les deux champs ont la même intensité (50 µT) et sont perpendiculaires. Le champ total est la diagonale du carré.</>,
@@ -261,20 +248,14 @@ export function SimulationBoussole({ naviguer }) {
           [B_T * 1e6, 'C’est l’intensité d’un seul champ. Le champ total est la somme vectorielle des deux.']],
         expl: 'B = √(50² + 50²) = 50 × √2 ≈ 70,7 µT. Même résultat que pour deux bobines voisines du moteur pas à pas (×√2).', indice: "Si l’aiguille dévie de 45°, les deux composantes ont la même intensité : additionnez-les vectoriellement (Pythagore)." } },
     { id: 'grandeur', titre: 'Ordres de grandeur', focus: ['echelle'],
-      retenirTitre: 'À RETENIR : ORDRES DE GRANDEUR',
+      retenirTitre: 'À RETENIR : ADDITION DE DEUX CHAMPS',
       retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Source</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Intensité</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>En tesla</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>champ de la Terre</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>50 µT</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>5 × 10⁻⁵ T</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>aimant droit (à 3 cm, sur l’axe)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>20 mT</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2 × 10⁻² T</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>électroaimant puissant</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 à 10 T</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 à 10 T</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>record de laboratoire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>100 T</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>10² T</td></tr>
-          </tbody>
-        </table>
+        <SchemaPythagore/>
+        <Formule><mi>B</mi><mo>=</mo><msqrt><msubsup><mi>B</mi><mn>1</mn><mn>2</mn></msubsup><mo>+</mo><msubsup><mi>B</mi><mn>2</mn><mn>2</mn></msubsup></msqrt></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Les champs magnétiques s’étendent sur <strong>plus de 6 ordres de grandeur</strong> : on utilise une <strong>échelle logarithmique</strong>.</li>
-          <li>Avant de comparer deux champs, les exprimer dans la <strong>même unité</strong> (10 T / 50 µT = 10 / 5 × 10⁻⁵ = 2 × 10⁵).</li>
+          <li>Les champs s’ajoutent <strong>comme des vecteurs</strong>, pas comme des nombres : 30 µT + 40 µT perpendiculaires donnent 50 µT, pas 70.</li>
+          <li>Deux champs perpendiculaires : théorème de Pythagore. Ne pas oublier la <strong>racine carrée</strong>.</li>
+          <li>Deux champs égaux perpendiculaires : B<sub>total</sub> = √2 × B ≈ 1,41 B.</li>
         </ul>
       </>,
       texte: <>Sur l’échelle logarithmique, la Terre est à 50 µT, un aimant droit à 20 mT, un électroaimant puissant à 1 – 10 T et le record à 100 T. Comparez un électroaimant de 10 T avec le champ de la Terre.</>,
@@ -287,25 +268,24 @@ export function SimulationBoussole({ naviguer }) {
           [B_T / 10, 'Division à l’envers : on cherche 10 T divisé par le champ terrestre.']],
         expl: '10 / (50 × 10⁻⁶) = 200 000 : un électroaimant de 10 T est 200 000 fois plus intense que le champ terrestre.', indice: "Divisez 10 T par le champ terrestre exprimé en tesla (50 µT = 50 × 10⁻⁶ T)." } },
     { id: 'local', titre: 'Une boussole peut se tromper', focus: ['scene'],
-      retenirTitre: 'À RETENIR : UNE BOUSSOLE PEUT SE TROMPER',
+      retenirTitre: 'À RETENIR : ORDRES DE GRANDEUR',
       retenir: <>
+        <SchemaEchelle/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>La boussole indique la direction du champ <strong>total</strong> : elle ne pointe vers le nord que si le champ terrestre domine.</li>
-          <li>Près d’un aimant, d’un haut-parleur ou d’un câble parcouru par un courant, un <strong>champ local plus intense</strong> s’ajoute vectoriellement à celui de la Terre : l’aiguille dévie.</li>
-          <li>Plus on s’éloigne de la source locale, plus son champ diminue (en 1/r³ pour un aimant) et plus l’aiguille revient vers le nord.</li>
+          <li>Les champs magnétiques s’étendent sur <strong>plus de 6 ordres de grandeur</strong> : Terre 50 µT, aimant 20 mT, électroaimant 1 à 10 T, record 100 T.</li>
+          <li>Avant de comparer, mettre les champs dans la <strong>même unité</strong> : 1 T / 50 µT = 1 / (5 × 10⁻⁵) = 2 × 10⁴.</li>
         </ul>
       </>,
       texte: <>Près d’un aimant, la boussole ne pointe plus le nord.</>,
       tache: { type: 'qcm', q: 'Pourquoi une boussole peut-elle se tromper près d’un haut-parleur ou d’un câble parcouru par un courant ?', options: ['un champ local plus intense que celui de la Terre s’ajoute vectoriellement à lui', 'la Terre a changé de pôle', 'la boussole est trop lourde'], bonne: 0,
         expl: 'Tout aimant ou courant proche crée un champ qui s’ajoute à celui de la Terre ; s’il est plus fort, l’aiguille s’oriente dans la direction du champ total, pas vers le nord.', indice: "Les champs s’ajoutent comme des vecteurs : la boussole indique la direction du champ total." } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LE BILAN',
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : UNE BOUSSOLE PEUT SE TROMPER, ET LE BILAN',
       retenir: <>
+        <SchemaTrompe/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le champ magnétique est un <strong>vecteur</strong> (direction, sens, intensité en tesla) ; la boussole s’aligne sur le champ total.</li>
-          <li><strong>Somme vectorielle</strong> : B = √(B₁² + B₂²) pour deux champs perpendiculaires (× √2 s’ils sont égaux) ; tan α = B<sub>aimant</sub> / B<sub>Terre</sub>.</li>
-          <li>Champ d’un aimant : décroissance en <strong>1/r³</strong>.</li>
-          <li>Ordres de grandeur : Terre 50 µT, aimant 20 mT, électroaimant 1 – 10 T, record 100 T.</li>
+          <li>La boussole indique le champ <strong>total</strong> : près d’un aimant, d’un haut-parleur ou d’un câble parcouru par un courant, un champ local plus intense dévie l’aiguille.</li>
+          <li>Bilan : champ = vecteur (tesla) ; somme vectorielle B = √(B₁² + B₂²) pour deux champs perpendiculaires ; tan α = B<sub>aimant</sub> / B<sub>Terre</sub> ; aimant en <strong>1/r³</strong>.</li>
         </ul>
       </>,
       texte: <>Vous savez lire un champ magnétique, additionner deux champs et situer son intensité. Essayez maintenant le défi : mesurer un champ avec la boussole.</>, tache: null },
