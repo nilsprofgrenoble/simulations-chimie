@@ -46,11 +46,23 @@ function Decor({ id }) {
     <g {...TRAIT}><circle cx="207" cy="126" r="14" fill="#fde68a"/><line x1="205" y1="142" x2="188" y2="205"/><line x1="188" y1="205" x2="212" y2="262"/><line x1="188" y1="205" x2="160" y2="262"/>
       <line x1="203" y1="152" x2="270" y2="198"/><line x1="200" y1="160" x2="270" y2="208"/></g></g>;
   if (id === 'ballon') return <g><line x1="20" y1="262" x2="540" y2="262" stroke="#64748b" strokeWidth="3"/>
-    <circle cx="230" cy="238" r="24" fill="#fff" stroke="#0f172a" strokeWidth="2.5"/><polygon points="230,228 238,234 235,244 225,244 222,234" fill="#0f172a"/>
-    <path d="M122 262 L206 262 L206 238 L176 226 L156 226 L152 110 L124 110 L128 226 L122 234 Z" fill="#e2e8f0" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round"/></g>;
-  return <g><rect x="150" y="262" width="300" height="24" fill="#c9a36a" stroke="#7c5a2b" strokeWidth="2"/><rect x="295" y="70" width="10" height="192" fill="#94a3b8" stroke="#475569" strokeWidth="2"/>
-    <rect x="285" y="58" width="30" height="12" fill="#94a3b8" stroke="#475569" strokeWidth="2"/>
-    <line x1="300" y1="30" x2="470" y2="30" stroke="#7c5a2b" strokeWidth="10" strokeLinecap="round"/><rect x="282" y="12" width="36" height="46" rx="3" fill="#64748b" stroke="#334155" strokeWidth="2.5"/></g>;
+    <circle cx="230" cy="238" r="24" fill="#fff" stroke="#0f172a" strokeWidth="2.5"/>
+    <polygon points="230,227 240,234 236,246 224,246 220,234" fill="#0f172a"/>
+    <g stroke="#0f172a" strokeWidth="2" strokeLinecap="round"><line x1="230" y1="227" x2="230" y2="215"/><line x1="240" y1="234" x2="251" y2="229"/><line x1="236" y1="246" x2="243" y2="256"/><line x1="224" y1="246" x2="217" y2="256"/><line x1="220" y1="234" x2="209" y2="229"/></g>
+    <path d="M134 30 L172 30 L178 196 L138 196 Z" fill="#2563eb" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round"/>
+    <path d="M136 168 L177 168 L178 180 L137 180 Z" fill="#fff" stroke="#0f172a" strokeWidth="2"/>
+    <path d="M132 196 L180 196 L184 218 L206 232 L206 248 Q206 262 192 262 L124 262 Q114 262 114 250 L122 224 Z" fill="#111827" stroke="#0f172a" strokeWidth="3" strokeLinejoin="round"/>
+    <line x1="118" y1="256" x2="204" y2="256" stroke="#fff" strokeWidth="3"/>
+    <g stroke="#fff" strokeWidth="2.5" strokeLinecap="round"><line x1="156" y1="208" x2="170" y2="214"/><line x1="160" y1="200" x2="174" y2="207"/></g></g>;
+  return <g><rect x="110" y="110" width="380" height="152" fill="#d6b27c" stroke="#7c5a2b" strokeWidth="3"/>
+    <g stroke="#b08850" strokeWidth="2" fill="none"><path d="M120 150 Q300 140 480 152"/><path d="M120 190 Q300 200 480 188"/><path d="M120 228 Q300 220 480 230"/></g>
+    <rect x="297" y="116" width="6" height="58" fill="#cbd5e1" opacity="0.8" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3"/>
+    <rect x="297" y="66" width="6" height="44" fill="#94a3b8" stroke="#475569" strokeWidth="2"/>
+    <rect x="286" y="58" width="28" height="9" rx="2" fill="#94a3b8" stroke="#475569" strokeWidth="2"/>
+    <rect x="316" y="30" width="170" height="18" rx="9" fill="#c9a36a" stroke="#7c5a2b" strokeWidth="2.5"/>
+    <path d="M282 24 Q250 24 236 52 L246 56 Q258 38 282 38 Z" fill="#64748b" stroke="#334155" strokeWidth="2.5" strokeLinejoin="round"/>
+    <rect x="276" y="14" width="46" height="44" rx="4" fill="#64748b" stroke="#334155" strokeWidth="2.5"/>
+    <rect x="276" y="50" width="46" height="8" fill="#475569"/><line x1="284" y1="20" x2="284" y2="46" stroke="#cbd5e1" strokeWidth="3" strokeLinecap="round"/></g>;
 }
 const maxLongueur = (pt, ang) => { const a = ang * Math.PI / 180; let L = 6.5;
   while (L > 0 && (pt.x + L * PX_CM * Math.cos(a) < 10 || pt.x + L * PX_CM * Math.cos(a) > W - 10 || pt.y - L * PX_CM * Math.sin(a) < 10 || pt.y - L * PX_CM * Math.sin(a) > H - 10)) L -= 0.25;
@@ -103,19 +115,31 @@ function PlancheForce({ scene, vec, setVec, editable, echelle, fantome, aide = t
 function Reciproques({ scene, F, mA, mB, montrer, masqueA = false }) {
   const une = montrer === true || montrer === 'une', deux = montrer === true;
   if (scene === 'dyno') {
-    const L = F * 10, cx = 193, cy = 100;
+    const L = F * 10, cx = 218, cy = 114;
+    const dyna = (x0, nom, aff) => <g>
+      <rect x={x0} y="78" width="160" height="54" rx="9" fill="#e2e8f0" stroke="#334155" strokeWidth="2.5"/>
+      <rect x={x0 + 12} y="84" width="84" height="24" rx="4" fill="#fff" stroke="#334155" strokeWidth="1.8"/>
+      <text x={x0 + 54} y="103" textAnchor="middle" fontSize="19" fontWeight="800" fill="#0f172a">{aff}</text>
+      <g stroke="#475569" strokeWidth="1.8">{Array.from({ length: 15 }, (_, k) => <line key={k} x1={x0 + 12 + k * 9.6} y1="124" x2={x0 + 12 + k * 9.6} y2={k % 5 === 0 ? 114 + 4 : 120}/>)}</g>
+      <text x={x0 + 80} y="68" textAnchor="middle" fontSize="18" fontWeight="800" fill="#0f172a">Dynamomètre {nom}</text></g>;
     return (
-      <svg viewBox={`0 0 ${W} 232`} width="100%" role="img" aria-label={`Deux dynamomètres accrochés, tirés vers la droite par une main${masqueA ? '' : ` avec ${F} N`}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-        <rect x="10" y="50" width="16" height="100" fill="#94a3b8" stroke="#475569" strokeWidth="2"/><text x="8" y="176" fontSize="16" fill="#334155">support fixe</text>
-        {[['A', 26], ['B', 200]].map(([n, x0]) => <g key={n}>
-          <rect x={x0} y="88" width="160" height="24" rx="6" fill="#f1f5f9" stroke="#334155" strokeWidth="2.5"/>
-          <rect x={x0 + 84} y="52" width="74" height="30" rx="4" fill="#fff" stroke="#334155" strokeWidth="1.5"/><text x={x0 + 121} y="74" textAnchor="middle" fontSize="19" fontWeight="800" fill="#0f172a">{n === 'A' && masqueA ? '?' : `${fr(F, 1)} N`}</text>
-          <text x={x0 + 30} y="76" textAnchor="middle" fontSize="24" fontWeight="800" fill="#0f172a">{n}</text></g>)}
-        <circle cx={cx} cy={cy} r="7" fill="#fff" stroke="#334155" strokeWidth="2.5"/>
-        <line x1="360" y1="100" x2="410" y2="100" stroke="#334155" strokeWidth="3"/><circle cx="440" cy="100" r="28" fill="#fde2d4" stroke="#334155" strokeWidth="2"/><text x="440" y="106" textAnchor="middle" fontSize="16" fontWeight="700" fill="#334155">main</text>
-        {une && <g><Fleche x={cx} y={cy} dx={L} dy={0} couleur={FORCE} ep={4.5}/><EtqF x={cx + 8} y={cy + 52} c={FORCE} ind="B/A"/></g>}
-        {deux && <g><Fleche x={cx} y={cy} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/><EtqF x={cx - 8} y={cy + 52} c={FORCE2} ind="A/B" fin/></g>}
-        {une && <text x="10" y="222" fontSize="16" fill="#334155">Échelle : 1 cm ↔ 4 N</text>}
+      <svg viewBox={`0 0 ${W} 256`} width="100%" role="img" aria-label={`Deux dynamomètres A et B accrochés l’un à l’autre : A est fixé au mur, une main tire sur B vers la droite${masqueA ? '' : `. Chacun indique ${fr(F, 1)} N`}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+        {une && <text x="10" y="24" fontSize="16" fill="#334155">Échelle : 1 cm ↔ 4 N</text>}
+        <rect x="8" y="70" width="16" height="90" fill="#94a3b8" stroke="#475569" strokeWidth="2.5"/><text x="16" y="182" textAnchor="middle" fontSize="16" fill="#334155">mur</text>
+        <line x1="24" y1={cy} x2="40" y2={cy} stroke="#334155" strokeWidth="3"/>
+        {dyna(40, 'A', masqueA ? '?' : `${fr(F, 1)} N`)}
+        {dyna(236, 'B', `${fr(F, 1)} N`)}
+        <circle cx="206" cy={cy} r="9" fill="none" stroke="#334155" strokeWidth="3"/><circle cx="226" cy={cy} r="9" fill="none" stroke="#334155" strokeWidth="3"/>
+        <line x1="396" y1={cy} x2="456" y2={cy} stroke="#334155" strokeWidth="3"/>
+        <rect x="452" y="96" width="46" height="38" rx="12" fill="#fde2d4" stroke="#334155" strokeWidth="2.5"/>
+        <g stroke="#334155" strokeWidth="2"><line x1="464" y1="102" x2="464" y2="128"/><line x1="476" y1="102" x2="476" y2="128"/><line x1="488" y1="102" x2="488" y2="128"/></g>
+        <Fleche x={504} y={cy} dx={32} dy={0} couleur="#94a3b8" ep={4}/><text x="520" y="100" textAnchor="middle" fontSize="15" fontWeight="700" fill="#64748b">on tire</text>
+        <text x="475" y="156" textAnchor="middle" fontSize="16" fill="#334155">main</text>
+        {une && <g><Fleche x={cx} y={cy} dx={L} dy={0} couleur={FORCE} ep={4.5}/><EtqF x={cx + 8} y={cy + 54} c={FORCE} ind="B/A"/></g>}
+        {deux && <g><Fleche x={cx} y={cy} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/><EtqF x={cx - 8} y={cy + 54} c={FORCE2} ind="A/B" fin/></g>}
+        <circle cx={cx} cy={cy} r="5" fill="#0f172a"/>
+        <text x={cx} y="208" textAnchor="middle" fontSize="15" fill="#334155">point noir : les deux crochets accrochés se touchent</text>
+        <text x="10" y="236" fontSize="16" fill="#334155">A est fixé au mur, B est accroché à A, on tire B vers la droite.</text>
       </svg>);
   }
   const C = { x: 280, y: 124 }, L = F / 80 * PX_CM;
@@ -147,7 +171,7 @@ function PanneauPoids({ pw, setPw, verrouAstre, mode = 'explore', etape = '' }) 
   const suiteGuide = ['grav', 'iss'].includes(etape);          // on ne dévoile le calcul qu'à partir de l'étape où il sert de mesure
   const montreCalcul = !enDefi && (enExplore || suiteGuide), montreAlt = !enDefi && (enExplore || suiteGuide), montreMasse = !enDefi && enExplore;
   const a = astre(pw.astre), h = pw.h * 1000, g0 = gravite(a), g = gravite(a, h), F = forceGrav(a, pw.m, h);
-  const E = nicesc(F), L = Math.min(2.6, F / E);
+  const E = nicesc(F), L = Math.min(2.6, F / E), objY = 186 - Math.min(pw.h, 3000) * 0.045;   // à 0 km l'objet est posé sur la surface
   const donnees = [[`Masse de ${a.nom}`, `${sci(a.M)} kg`], [`Rayon de ${a.nom}`, `${sci(a.R)} m`], ['Constante de gravitation G', `${sci(G)} N·m²·kg⁻²`]];
   return (
     <div style={styleBoite}>
@@ -158,13 +182,17 @@ function PanneauPoids({ pw, setPw, verrouAstre, mode = 'explore', etape = '' }) 
           {ASTRES.map(x => <option key={x.id} value={x.id}>{x.Nom}</option>)}</select></label>}
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 220px' }}>
-          <svg viewBox="0 0 220 250" width="100%" style={{ maxWidth: 260, display: 'block', margin: '0 auto', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }} role="img" aria-label={`Un objet de ${fr(pw.m, 1)} kg attiré par ${a.nom}`}>
-            <ellipse cx="110" cy="330" rx="200" ry="150" fill={a.id === 'terre' ? '#bfdbfe' : a.id === 'lune' ? '#e2e8f0' : '#fecaca'} stroke="#475569" strokeWidth="2"/>
-            <text x="110" y="205" textAnchor="middle" fontSize="14" fontWeight="700" fill="#334155">{a.Nom}</text>
-            <circle cx="110" cy="70" r="12" fill="#fde68a" stroke="#92400e" strokeWidth="2"/><text x="110" y="46" textAnchor="middle" fontSize="13" fill="#334155">objet : {fr(pw.m, 1)} kg</text>
-            <Fleche x={110} y={70} dx={0} dy={L * PX_CM} couleur={FORCE} ep={4.5}/>
-            <TV x={128} y={70 + L * PX_CM * 0.6} c={FORCE} s={16}>{pw.h === 0 ? 'P' : 'F'}</TV>
-            {!enDefi && <text x="8" y="240" fontSize="12" fill="#334155">Échelle : 1 cm ↔ {fr(E, E < 1 ? 1 : 0)} N</text>}</svg>
+          <svg viewBox="0 0 220 310" width="100%" style={{ maxWidth: 260, display: 'block', margin: '0 auto', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }} role="img" aria-label={`Un objet de ${fr(pw.m, 1)} kg ${pw.h === 0 ? 'posé à la surface de' : `à ${pw.h} km d’altitude au-dessus de`} ${a.nom}, attiré par ${a.nom} : le poids est une flèche vers le bas`}>
+            <circle cx="110" cy="500" r="300" fill={a.id === 'terre' ? '#bfdbfe' : a.id === 'lune' ? '#e2e8f0' : '#fecaca'} stroke="#475569" strokeWidth="2"/>
+            <text x="12" y="232" fontSize="16" fontWeight="700" fill="#334155">{a.Nom}</text>
+            {pw.h > 0 && <g><line x1="52" y1="198" x2="52" y2={objY + 12} stroke="#64748b" strokeWidth="1.5" strokeDasharray="4 3"/>
+              <text x="58" y={(objY + 12 + 198) / 2 + 5} fontSize="14" fill="#334155">h = {pw.h} km</text></g>}
+            <circle cx="110" cy={objY} r="12" fill="#fde68a" stroke="#92400e" strokeWidth="2"/>
+            <text x="110" y={objY - 20} textAnchor="middle" fontSize="14" fontWeight="700" fill="#334155">objet : {fr(pw.m, 1)} kg</text>
+            <Fleche x={110} y={objY} dx={0} dy={L * PX_CM} couleur={FORCE} ep={4.5}/>
+            <TV x={128} y={objY + L * PX_CM * 0.6} c={FORCE} s={16}>{pw.h === 0 ? 'P' : 'F'}</TV>
+            {pw.h > 0 && <text x="212" y="282" textAnchor="end" fontSize="12" fill="#64748b">altitude exagérée sur le schéma</text>}
+            {!enDefi && <text x="8" y="302" fontSize="13" fill="#334155">Échelle : 1 cm ↔ {fr(E, E < 1 ? 1 : 0)} N</text>}</svg>
         </div>
         <div style={{ flex: '1 1 260px', fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
           {montreMasse && <label style={{ display: 'block', fontWeight: 600 }}>Masse de l’objet : <strong>{fr(pw.m, 1)} kg</strong>
@@ -281,9 +309,9 @@ export function SimulationForcesVecteurs() {
   const Cle = ({ children }) => <div style={{ margin: '8px 0', padding: '6px 10px', background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: 8, fontWeight: 700, fontSize: 14.5, lineHeight: 1.45 }}>Phrase-clé : {children}</div>;
   const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, '#4338ca'), margin: '6px 0' }}>{label}</button>;
   const ETAPES = [
-    { id: 'action', titre: 'Une action mécanique', depart: () => voirVec('ballon', 100, 0, 0),
+    { id: 'action', titre: 'Une action mécanique', depart: () => voirVec('caisse', 100, 0, 0),
       texte: <>Quand un système <strong>agit</strong> sur un autre (il le pousse, le tire, le retient…), on dit qu’il exerce une <strong>action mécanique</strong>. Celui qui crée l’action est l’<strong>auteur</strong>, celui qui la subit est le <strong>receveur</strong>.
-        <ExempleResolu>Le pied du footballeur frappe le ballon : l’auteur est le <strong>pied</strong>, le receveur est le <strong>ballon</strong>. L’action modifie la trajectoire et la vitesse du ballon.</ExempleResolu>
+        <ExempleResolu>L’homme pousse la caisse : l’auteur est l’<strong>homme</strong> (ses mains), le receveur est la <strong>caisse</strong>. L’action peut faire bouger la caisse. De même, un footballeur frappe un ballon : l’auteur est le <strong>pied</strong>, le receveur est le <strong>ballon</strong>.</ExempleResolu>
         À vous : une main pousse une porte.</>,
       tache: { type: 'qcm', q: 'Une main pousse une porte. Quel est le receveur de l’action ?', options: ['la porte', 'la main', 'la Terre', 'le sol'], bonne: 0, expl: 'La main est l’auteur (elle crée l’action) ; la porte est le receveur (elle la subit).', indice: "L’auteur crée l’action, le receveur la subit. Sur quel objet la main agit-elle ?" } },
     { id: 'types', titre: 'Contact ou à distance ?', depart: () => voirVec('caisse', 100, 3, 0),
