@@ -175,3 +175,9 @@ export function bilan(parties) {
 }
 
 export const couverturesDuNiveau = niveau => COUVERTURE.filter(c => c.niveau === niveau);
+
+// Parties pas (ou pas entièrement) couvertes d'un niveau, par programme : sert au menu et à l'accueil.
+export const resteDuNiveau = niveau =>
+  couverturesDuNiveau(niveau)
+    .map(c => ({ id: c.id, label: c.label, items: c.parties.filter(p => p.e !== 'ok') }))
+    .filter(x => x.items.length);
