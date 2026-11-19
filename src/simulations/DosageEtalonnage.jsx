@@ -5,6 +5,8 @@ import { Formule, cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEta
 import { regression, rng, gauss, RISQUE_FISHER } from "./etalonnageModele";
 import { exporterRapportPDF } from "./etalonnagePDF";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { FGamme, FRepet, FOrdreGrandeur, FDroite, FResidus, FFisher, FInversion, FRemontee, FLimites } from "./DosageSchemas";
 
 const SIM_ID = 11;
 declarerDefis(SIM_ID, [['principal', 'Doser la caféine d’une crème inconnue']]);
@@ -166,11 +168,19 @@ function Hypotheses() {
 }
 
 // ════════════════ SIMULATION ════════════════
+const ORDRE_PARC = [
+  ['contexte', 'sref', 'masseAtt', 'cMere', 'dilution', 'cInj', 'volume', 'gamme', 'repetitions', 'bilan1'],
+  ['mesurer', 'pente', 'hypotheses', 'r2', 'fisher', 'fisherSens', 'echantillon', 'cEch', 'pourcent', 'discussion', 'ld', 'bravo']];
+
 export function SimulationDosageEtalonnage() {
   const [mode, setMode] = useState(() => modeOuverture('dosage-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('dosage-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('dosage-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('dosage-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('dosage-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 1 ? g1 : g2, setGuide = parc === 1 ? setG1 : setG2;
   const [graine] = useEtatPersistant('dosage-graine-v1', () => Math.floor(Math.random() * 1e6));
   const [techId, setTechId] = useState('clhp');
   const [volumes, setVolumes] = useEtatPersistant('dosage-volumes-v1', [10, 20, 30, 40, 50]);
@@ -264,7 +274,7 @@ export function SimulationDosageEtalonnage() {
   const vPour1 = 1.0 * TECHNIQUES.clhp.vFiole / TECHNIQUES.clhp.cRef * 1000;   // µL pour 1,00 mg/L
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
-  const ETAPES = [
+  const TOUTES = [
     { id: 'contexte', titre: 'Doser la caféine d’une crème', focus: [],
       texte: <>Une crème cosmétique contient, d'après son fabricant, <strong>5 % en masse de caféine</strong>. On la dose par CLHP, détection à 272 nm :
         l'aire du pic de caféine est proportionnelle à sa concentration, A = a × C + b. Pour connaître a et b, on fait un <strong>étalonnage externe</strong> :
@@ -315,44 +325,34 @@ export function SimulationDosageEtalonnage() {
           [1.0 / TECHNIQUES.clhp.cRef * 1000, 'Vous avez oublié de multiplier par le volume de la fiole (20 mL) : V = C × V_fiole / C_ref.'],
           [TECHNIQUES.clhp.cRef * TECHNIQUES.clhp.vFiole / 1.0, 'Formule à l’envers : on cherche V = C × V_fiole / C_ref (et non C_ref × V_fiole / C).']], indice: "La quantité de matière se conserve à la dilution : C_ref × V_prélevé = C_étalon × V_fiole." } },
     { id: 'gamme', titre: 'Concevoir la gamme', focus: ['gamme'],
-      retenirTitre: 'À RETENIR : PRÉPARER LA GAMME D’ÉTALONS',
-      retenir: <>
-        <Formule><mi>C</mi><mo>=</mo><mfrac><mrow><msub><mi>C</mi><mtext>ref</mtext></msub><mo>×</mo><mi>V</mi></mrow><msub><mi>V</mi><mtext>fiole</mtext></msub></mfrac><mspace width="1.5em"/><mi>V</mi><mo>=</mo><mfrac><mrow><mi>C</mi><mo>×</mo><msub><mi>V</mi><mtext>fiole</mtext></msub></mrow><msub><mi>C</mi><mtext>ref</mtext></msub></mfrac><mspace width="1.5em"/><mi>F</mi><mo>=</mo><mfrac><msub><mi>C</mi><mtext>mère</mtext></msub><msub><mi>C</mi><mtext>fille</mtext></msub></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Ordre de grandeur</strong> : m(caféine attendue) = teneur annoncée × m(crème) ; C = m / V avec V en litres ; on dilue (ici F = 1000) pour que l’échantillon tombe dans la gamme.</li>
-          <li>La gamme doit <strong>encadrer</strong> la concentration attendue, de préférence <strong>vers le milieu</strong> de la gamme.</li>
-          <li>Préférer des prélèvements <strong>précis</strong> (deux pipettes jaugées plutôt qu’un prélèvement de 20 µL) ; unités cohérentes (mL ↔ µL, mg/L).</li>
-          <li>Chaque niveau est mesuré <strong>deux fois</strong> ; pour valider la linéarité, il faut des <strong>fioles indépendantes</strong>.</li>
-        </ul>
-      </>,
       texte: <>Dans le cadre « Ma gamme », choisissez le nombre d'étalons et le volume prélevé pour chacun. Les vérifications s'affichent en direct : il faut
         encadrer les {fmt(cInjAtt, 2)} mg/L attendus, de préférence vers le milieu de la gamme.</>,
       tache: { type: 'action', ok: verif.valide, consigne: verif.valide ? '✅ Gamme valide' : 'Corrigez la gamme jusqu’à ce que toutes les vérifications passent.' } },
     { id: 'repetitions', titre: 'Les répétitions', focus: ['gamme'],
+      retenirTitre: 'À RETENIR : PRÉPARER LA GAMME D’ÉTALONS',
+      retenir: <>
+        <FGamme/>
+        <Formule><mi>C</mi><mo>=</mo><mfrac><mrow><msub><mi>C</mi><mtext>réf</mtext></msub><mo>×</mo><mi>V</mi></mrow><msub><mi>V</mi><mtext>fiole</mtext></msub></mfrac></Formule>
+        {puces(<>La gamme doit <strong>encadrer</strong> la concentration attendue, de préférence <strong>vers le milieu</strong>.</>, <>Préférer des prélèvements <strong>précis</strong> (deux pipettes jaugées plutôt qu’un prélèvement de 20 µL) ; unités cohérentes (mL ↔ µL, mg/L).</>)}
+      </>,
       texte: <>On mesure chaque niveau deux fois. On peut injecter deux fois la même fiole, ou préparer deux fioles indépendantes.</>,
       tache: { type: 'qcm', q: 'Que mesure l’écart entre deux injections de la même fiole ?', options: ['Seulement la répétabilité de l’injection : l’erreur de préparation de la fiole est la même pour les deux', 'Toutes les erreurs du dosage', 'L’erreur de préparation'], bonne: 0, indice: "Deux injections de la même fiole ont la même préparation. Qu’est-ce qui peut alors différer ?" } },
     { id: 'mesurer', titre: 'Préparer et mesurer', focus: ['gamme'],
+      retenirTitre: 'À RETENIR : RÉPÉTITIONS : MÊME FIOLE OU NON',
+      retenir: <>
+        <FRepet/>
+        {puces(<>Deux injections de la <strong>même fiole</strong> ne mesurent que la <strong>répétabilité de l’injection</strong> : l’erreur de préparation est commune.</>, <>Des <strong>fioles indépendantes</strong> contiennent toutes les sources de variabilité (préparation et mesure) : indispensables pour valider la linéarité.</>)}
+      </>,
       texte: <>Cliquez sur « Préparer et mesurer (même fiole injectée deux fois) », comme dans l'activité du collègue.</>,
       tache: { type: 'action', ok: !!mes.injection, consigne: mes.injection ? '✅ Gamme mesurée' : 'Mesurez la gamme.' } },
-    { id: 'pente', titre: 'La droite d’étalonnage', focus: ['stats'],
-      retenirTitre: 'À RETENIR : LA DROITE D’ÉTALONNAGE',
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : L’ORDRE DE GRANDEUR ATTENDU',
       retenir: <>
-        <svg viewBox="0 0 360 200" role="img" aria-label="Droite d’étalonnage : le signal A, par exemple l’aire du pic, est porté en fonction de la concentration C des étalons ; les points sont presque alignés sur une droite A = a C + b ; le signal mesuré pour l’échantillon permet de lire la concentration injectée C ; l’échantillon doit se situer à l’intérieur de la gamme" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="50" y1="20" x2="50" y2="170" stroke="#334155" strokeWidth="2" /><line x1="50" y1="170" x2="340" y2="170" stroke="#334155" strokeWidth="2" />
-          <text x="14" y="26" fontSize="12" fontWeight="700" fill="#334155">A</text><text x="340" y="190" textAnchor="end" fontSize="12" fontWeight="700" fill="#334155">C (mg/L)</text>
-          <line x1="50" y1="160" x2="330" y2="34" stroke="#0072b2" strokeWidth="2.5" />
-          <circle cx="88" cy="143" r="5" fill="#0072b2" /><circle cx="130" cy="126" r="5" fill="#0072b2" /><circle cx="176" cy="108" r="5" fill="#0072b2" /><circle cx="222" cy="83" r="5" fill="#0072b2" /><circle cx="270" cy="62" r="5" fill="#0072b2" />
-          <line x1="50" y1="97" x2="190" y2="97" stroke="#d55e00" strokeWidth="1.8" strokeDasharray="5 4" /><line x1="190" y1="97" x2="190" y2="170" stroke="#d55e00" strokeWidth="1.8" strokeDasharray="5 4" />
-          <circle cx="190" cy="97" r="6" fill="#d55e00" /><text x="196" y="88" fontSize="12" fontWeight="700" fill="#d55e00">A<tspan fontSize="9" dy="3">éch</tspan></text><text x="190" y="186" textAnchor="middle" fontSize="12" fontWeight="700" fill="#d55e00">C<tspan fontSize="9" dy="3">éch</tspan></text>
-          <text x="56" y="38" fontSize="11.5" fill="#0072b2">pente a = sensibilité</text><text x="56" y="52" fontSize="11.5" fill="#0072b2">ordonnée b</text>
-        </svg>
-        <Formule><mi>A</mi><mo>=</mo><mi>a</mi><mo>×</mo><mi>C</mi><mo>+</mo><mi>b</mi><mspace width="1.5em"/><msub><mi>C</mi><mtext>éch</mtext></msub><mo>=</mo><mfrac><mrow><msub><mi>A</mi><mtext>éch</mtext></msub><mo>−</mo><mi>b</mi></mrow><mi>a</mi></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>La <strong>pente a</strong> est la <strong>sensibilité</strong> de la méthode ; la régression linéaire (DROITEREG) donne a et b.</li>
-          <li>On mesure le signal de l’échantillon (moyenne des injections) puis on lit C ; valable <strong>dans le domaine de la gamme</strong> (pas d’extrapolation).</li>
-          <li>Attention à l’ordre : (A − b) / a, la pente est au dénominateur.</li>
-        </ul>
+        <FOrdreGrandeur/>
+        {puces(<><strong>m(caféine attendue) = teneur annoncée × m(crème)</strong> ; C = m / V avec V en litres ; on divise par le facteur de dilution pour viser la gamme.</>, <>Avant d’étalonner, on sait ainsi <strong>où tombera l’échantillon</strong> : c’est ce qui décide du choix de la gamme.</>)}
       </>,
+      texte: <>Vous savez estimer la concentration attendue et préparer une gamme d’étalons adaptée. Passez au parcours suivant pour mesurer et exploiter.</>, tache: null },
+    { id: 'pente', titre: 'La droite d’étalonnage', focus: ['stats'],
       texte: <>La régression linéaire (la fonction DROITEREG du tableur) donne la pente a et l'ordonnée à l'origine b. Lisez-les dans « Exploitation ».</>,
       tache: { type: 'num', q: 'Pente a de la droite', unite: `${TECHNIQUES.clhp.signal} par mg/L`, vrai: reg ? reg.a : NaN, tol: 0.01, affiche: v => fmt(v, 2),
         aide: 'À lire dans « Exploitation » : a est la pente de la droite A = a × C + b (ce n’est ni l’ordonnée à l’origine b, ni R²).',
@@ -360,30 +360,25 @@ export function SimulationDosageEtalonnage() {
           [reg.R2, 'C’est le coefficient de détermination R², qui mesure l’alignement des points, pas la pente.']], reg.a) : [],
         bloque: reg ? null : 'Mesurez d’abord la gamme.', indice: "Ordre de grandeur : signal d’un étalon ÷ sa concentration, si l’ordonnée à l’origine est petite." } },
     { id: 'hypotheses', titre: 'Les hypothèses de la régression', focus: ['hypo'],
+      retenirTitre: 'À RETENIR : LA DROITE D’ÉTALONNAGE',
+      retenir: <>
+        <FDroite/>
+        <Formule><mi>A</mi><mo>=</mo><mi>a</mi><mo>×</mo><mi>C</mi><mo>+</mo><mi>b</mi></Formule>
+        {puces(<>La <strong>pente a</strong> est la <strong>sensibilité</strong> de la méthode ; la régression linéaire (DROITEREG) donne a et b.</>, <>La droite n’est valable que <strong>dans le domaine de la gamme</strong> : pas d’extrapolation.</>)}
+      </>,
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', q: 'La régression linéaire ordinaire suppose que…', options: ['les concentrations des étalons sont connues avec une erreur négligeable, et que toute l’erreur est sur le signal', 'le coefficient R² vaut 1', 'l’échantillon est hors de la gamme'], bonne: 0,
         expl: 'C’est pour cela qu’on prépare les étalons avec la verrerie la plus précise possible : la régression ne « voit » pas leurs erreurs.', indice: "Les concentrations sont préparées avec soin ; le signal, lui, fluctue d’une injection à l’autre." } },
     { id: 'r2', titre: 'Le R² suffit-il ?', focus: ['stats'],
-      retenirTitre: 'À RETENIR : VALIDER LE MODÈLE LINÉAIRE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Critère</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Observation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Conclusion</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>R² proche de 1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>les points sont proches d’une droite</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ne suffit pas à valider le modèle</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>résidus</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>répartis au hasard autour de 0, même dispersion</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>linéarité et homoscédasticité plausibles</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>test de Fisher</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F &lt; F<sub>critique</sub></td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>linéarité acceptée</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>test de Fisher</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F &gt; F<sub>critique</sub></td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>écarts trop grands pour être dus au hasard : linéarité rejetée</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Hypothèses de la régression ordinaire : concentrations des étalons connues avec une erreur négligeable ; toute l’erreur est sur le signal ; résidus aléatoires de même dispersion.</li>
-          <li>Le test de Fisher n’est valable qu’avec des <strong>fioles indépendantes</strong> : avec la même fiole, les répétitions ignorent l’erreur de préparation et le test rejette à tort.</li>
-        </ul>
-      </>,
       texte: <>R² = {reg ? fmt(reg.R2, 4) : '?'}. Un R² proche de 1 dit que les points sont proches d'une droite, mais il ne dit pas si les écarts à la droite sont
         dus au hasard ou à un défaut du modèle. Regardez le graphique des résidus.</>,
       tache: { type: 'qcm', q: 'Pour juger la linéarité, on regarde…', options: ['les résidus (pas de tendance) et un test statistique, pas seulement R²', 'uniquement R² ≥ 0,99', 'uniquement la pente'], bonne: 0, indice: "Un R² proche de 1 ne suffit pas : que regarde-t-on sur l’écart des points à la droite ?" } },
     { id: 'fisher', titre: 'Le test de Fisher', focus: ['stats'],
+      retenirTitre: 'À RETENIR : VALIDER LE MODÈLE LINÉAIRE',
+      retenir: <>
+        <FResidus/>
+        {puces(<><strong>Hypothèses de la régression ordinaire</strong> : concentrations des étalons connues avec une erreur négligeable ; toute l’erreur est sur le signal ; résidus aléatoires de même dispersion.</>, <>Un R² proche de 1 ne suffit pas : on regarde les <strong>résidus</strong> (pas de tendance) et on complète par un test statistique.</>)}
+      </>,
       texte: <>Le test de Fisher compare les écarts à la droite à la dispersion des répétitions. Si F &gt; F<sub>critique</sub>, les écarts à la droite sont trop grands
         pour être dus au hasard : la linéarité est rejetée. Mesurez maintenant la gamme avec « deux fioles indépendantes », et comparez les deux tests.
         Dans l'activité du collègue (une fiole injectée deux fois), on trouve F = 13,9 pour F<sub>critique</sub> = 4,53.</>,
@@ -394,17 +389,14 @@ export function SimulationDosageEtalonnage() {
         options: ['Avec la même fiole, les répétitions ignorent l’erreur de préparation : on compare les écarts à la droite à une dispersion trop petite, et le test rejette à tort', 'Parce que les fioles sont plus propres', 'Il est valable dans les deux cas'], bonne: 0,
         expl: 'C’est ce qui arrive aux données du collègue : leur F élevé ne prouve pas que la réponse est non linéaire. Il montre surtout que chaque étalon porte sa propre erreur de préparation.', indice: "Des points issus de la même fiole partagent la même erreur de préparation. Sont-ils indépendants ?" } },
     { id: 'echantillon', titre: 'Mesurer l’échantillon', focus: ['ech'],
+      retenirTitre: 'À RETENIR : LE TEST DE FISHER',
+      retenir: <>
+        <FFisher/>
+        {puces(<>Si F &gt; F<sub>critique</sub>, les écarts à la droite sont trop grands pour être dus au hasard : la linéarité est rejetée (risque de 5 %).</>, <>Le test n’est valable qu’avec des <strong>fioles indépendantes</strong> : avec la même fiole, il rejette à tort.</>)}
+      </>,
       texte: <>Choisissez la dilution B, puis cliquez sur « Préparer et injecter l'échantillon » (deux injections).</>,
       tache: { type: 'action', ok: !!mes.ech, consigne: mes.ech ? '✅ Échantillon mesuré' : 'Mesurez l’échantillon.' } },
     { id: 'cEch', titre: 'La concentration injectée', focus: ['stats'],
-      retenirTitre: 'À RETENIR : DE LA CONCENTRATION INJECTÉE À LA TENEUR',
-      retenir: <>
-        <Formule><msub><mi>C</mi><mtext>mère</mtext></msub><mo>=</mo><msub><mi>C</mi><mtext>injectée</mtext></msub><mo>×</mo><mi>F</mi><mspace width="1.2em"/><mi>m</mi><mo>=</mo><msub><mi>C</mi><mtext>mère</mtext></msub><mo>×</mo><mi>V</mi><mspace width="1.2em"/><mtext>teneur (%)</mtext><mo>=</mo><mfrac><msub><mi>m</mi><mtext>dosée</mtext></msub><msub><mi>m</mi><mtext>échantillon</mtext></msub></mfrac><mo>×</mo><mn>100</mn></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Remonter la chaîne : concentration injectée → × facteur de dilution → concentration de la solution mère → × volume (en litres) → masse de caféine → ÷ masse de crème (même unité) × 100.</li>
-          <li>Un résultat éloigné de la valeur annoncée invite à discuter la <strong>méthode</strong> (extraction incomplète d’une crème : on le vérifie par un <strong>ajout dosé</strong>), non à « chercher 5 % ».</li>
-        </ul>
-      </>,
       texte: <>On utilise la droite : C = (A − b) / a, avec A la moyenne des deux injections{echMoy != null ? ` (${fmt(echMoy, 2)})` : ''}{reg ? `, et a = ${fmt(reg.a, 3)}, b = ${fmt(reg.b, 3)} (droite d'étalonnage, lue dans « Exploitation »)` : ''}.</>,
       tache: { type: 'num', q: 'Concentration de caféine dans la solution injectée', unite: 'mg/L', vrai: cInj ?? NaN, tol: 0.01, affiche: v => fmt(v, 3),
         calcul: () => ['On inverse la droite d’étalonnage A = a × C + b, donc C = (A − b) / a. Hypothèse : la droite reste valable pour l’échantillon (modèle linéaire, échantillon dans la gamme, pas d’effet de matrice).',
@@ -417,6 +409,12 @@ export function SimulationDosageEtalonnage() {
           [reg.a / echMoy, 'Formule à l’envers : C = (A − b) / a, la pente est au dénominateur.'],
           [echMoy - reg.b, 'Il faut aussi diviser par la pente a : C = (A − b) / a.']], cInj) : [], indice: "Inversez la droite A = a × C + b : C = (A − b) / a." } },
     { id: 'pourcent', titre: 'La teneur de la crème', focus: [],
+      retenirTitre: 'À RETENIR : LIRE LA CONCENTRATION DE L’ÉCHANTILLON',
+      retenir: <>
+        <FInversion/>
+        <Formule><mi>C</mi><mo>=</mo><mfrac><mrow><mi>A</mi><mo>−</mo><mi>b</mi></mrow><mi>a</mi></mfrac></Formule>
+        {puces(<>On utilise la <strong>moyenne</strong> des injections de l’échantillon ; la pente est au <strong>dénominateur</strong>.</>, <>Valable si l’échantillon tombe dans la gamme et se comporte comme les étalons (pas d’effet de matrice).</>)}
+      </>,
       texte: <>On remonte : × 1000 (dilution), × 0,100 L (fiole de S<sub>éch-mère</sub>) donne la masse de caféine, puis on divise par la masse de crème pesée ({fmt(CREME.m, 2)} g).{cInj != null && <> Concentration injectée trouvée à l'étape précédente : {fmt(cInj, 3)} mg/L.</>}</>,
       tache: { type: 'num', q: 'Teneur en caféine de la crème, en % en masse', unite: '%', vrai: pourcent ?? NaN, tol: 0.01, affiche: v => fmt(v, 2),
         calcul: () => {
@@ -431,18 +429,16 @@ export function SimulationDosageEtalonnage() {
           [pourcent * 1000, 'Problème d’unités : la masse de caféine (mg) et la masse de crème (2,34 g = 2340 mg) doivent être dans la même unité, et le volume de la fiole en litres.'],
           [pourcent / 100, 'Vous donnez une fraction : la teneur est demandée en % (il faut multiplier par 100).']], pourcent) : [], indice: "Remontez les dilutions : concentration injectée × facteur de dilution × volume de la fiole donne la masse, puis divisez par la masse de crème." } },
     { id: 'discussion', titre: 'Et les 5 % annoncés ?', focus: [],
+      retenirTitre: 'À RETENIR : DE LA CONCENTRATION INJECTÉE À LA TENEUR',
+      retenir: <>
+        <FRemontee/>
+        <Formule><msub><mi>C</mi><mtext>mère</mtext></msub><mo>=</mo><msub><mi>C</mi><mtext>injectée</mtext></msub><mo>×</mo><mi>F</mi><mspace width="1.2em"/><mi>m</mi><mo>=</mo><msub><mi>C</mi><mtext>mère</mtext></msub><mo>×</mo><mi>V</mi></Formule>
+        {puces(<>Remonter la chaîne en gardant des <strong>unités cohérentes</strong> : volume en litres, masses dans la même unité.</>, <>Un écart à la valeur annoncée invite à discuter la <strong>méthode</strong> (extraction incomplète : on le vérifie par un <strong>ajout dosé</strong>), non à « chercher 5 % ».</>)}
+      </>,
       texte: <>Vous trouvez environ {pourcent != null ? fmt(pourcent, 1) : '?'} %, pour 5 % annoncés.</>,
       tache: { type: 'qcm', q: 'Quelle piste explorer en priorité ?', options: ['L’extraction : une crème se dissout mal, une partie de la caféine peut rester piégée. On le vérifie avec un ajout dosé (crème dopée avec une quantité connue)', 'Recommencer jusqu’à trouver 5 %', 'Augmenter R²'], bonne: 0,
         expl: 'L’étalonnage externe suppose que la caféine de l’échantillon se comporte comme celle des étalons (pas d’effet de matrice). Un ajout dosé, ou un rendement d’extraction, le vérifie.', indice: "Qu’est-ce qui diffère entre une solution simple et une crème, avant l’injection ?" } },
     { id: 'ld', titre: 'Limites de détection et de quantification', focus: ['stats'],
-      retenirTitre: 'À RETENIR : LIMITES DE DÉTECTION ET DE QUANTIFICATION',
-      retenir: <>
-        <Formule><mtext>LD</mtext><mo>=</mo><mfrac><mrow><mn>3</mn><mo>×</mo><mi>s</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow><mi>a</mi></mfrac><mspace width="1.5em"/><mtext>LQ</mtext><mo>=</mo><mfrac><mrow><mn>10</mn><mo>×</mo><mi>s</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow><mi>a</mi></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>s(b) est l’écart-type de l’ordonnée à l’origine ; a la pente : on divise par a pour passer d’un signal à une concentration (mg/L).</li>
-          <li><strong>LD</strong> : plus petite concentration détectable ; <strong>LQ</strong> : plus petite concentration quantifiable avec une incertitude acceptable. D’autres conventions existent (avec s(y/x) ou des blancs répétés).</li>
-        </ul>
-      </>,
       texte: <>Comme dans l'activité, on prend LD = 3 s(b) / a et LQ = 10 s(b) / a. s(b) (écart-type de l'ordonnée à l'origine) et a (pente) se lisent dans « Exploitation ». (D'autres conventions existent, par exemple avec s(y/x) ou à partir de blancs répétés.)</>,
       tache: { type: 'num', q: 'Limite de quantification LQ', unite: 'mg/L', vrai: LQ ?? NaN, tol: 0.02, affiche: v => fmt(v, 3), bloque: LQ == null ? 'Mesurez d’abord la gamme.' : null,
         calcul: () => ['LQ = 10 × s(b) / a, où s(b) est l’écart-type de l’ordonnée à l’origine (donné par la régression, qui suppose des erreurs de loi normale et de même dispersion sur toute la gamme) et a la pente. La division par a convertit un signal en concentration.',
@@ -451,20 +447,19 @@ export function SimulationDosageEtalonnage() {
         pieges: reg ? piegesLoin([[LD, 'C’est la limite de détection LD (facteur 3). Pour la limite de quantification, le facteur est 10.'],
           [10 * reg.sb, 'Il faut diviser par la pente a, pour passer d’un signal à une concentration en mg/L.'],
           [10 * reg.sb * reg.a, 'On divise par la pente a (on ne la multiplie pas) pour obtenir une concentration.']], LQ) : [], indice: "La LQ se calcule à partir d’un écart-type et de la pente a de la droite." } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LE BILAN',
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : LIMITES DE DÉTECTION ET DE QUANTIFICATION',
       retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Étalonnage externe</strong> : gamme de concentrations connues → droite A = a C + b → C = (A − b) / a dans le domaine de la gamme.</li>
-          <li>Valider : R² <em>et</em> résidus <em>et</em> test de Fisher (fioles indépendantes).</li>
-          <li>Remonter à la teneur : × F, × V, ÷ m(échantillon) × 100 ; discuter l’écart à la valeur annoncée (extraction).</li>
-          <li>LD = 3 s(b) / a ; LQ = 10 s(b) / a.</li>
-        </ul>
+        <FLimites/>
+        <Formule><mtext>LD</mtext><mo>=</mo><mfrac><mrow><mn>3</mn><mo>×</mo><mi>s</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow><mi>a</mi></mfrac><mspace width="1.5em"/><mtext>LQ</mtext><mo>=</mo><mfrac><mrow><mn>10</mn><mo>×</mo><mi>s</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow><mi>a</mi></mfrac></Formule>
+        {puces(<>s(b) : écart-type de l’ordonnée à l’origine ; on divise par a pour passer d’un signal à une concentration (mg/L).</>, <><strong>LD</strong> : plus petite concentration détectable ; <strong>LQ</strong> : plus petite quantifiable avec une incertitude acceptable. D’autres conventions existent (avec s(y/x) ou des blancs répétés).</>, <><strong>Étalonnage externe</strong> : gamme → droite A = a C + b → C = (A − b) / a ; valider par R², résidus <em>et</em> test de Fisher.</>)}
       </>,
       texte: <>Vous avez mené un dosage par étalonnage externe complet : de l'ordre de grandeur à la gamme, de la régression aux hypothèses, jusqu'au
         résultat et à sa discussion. En exploration libre, changez de technique (spectrophotométrie, absorption atomique) ou exploitez vos propres données.</>, tache: null },
   ];
-  const idx = id => ETAPES.findIndex(e => e.id === id);
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(x => x.id === id));
+  // une étape absente du parcours courant est « déjà faite » dans le parcours 2 et « pas encore vue » dans le parcours 1
+  const idx = id => { const k = ETAPES.findIndex(e => e.id === id); return k >= 0 ? k : (parc === 2 ? -1 : Infinity); };
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const vu = id => !enGuide || etape >= idx(id);
   const passe = id => !enGuide || etape > idx(id);   // étape dépassée (toujours vrai hors parcours guidé)
@@ -649,7 +644,8 @@ export function SimulationDosageEtalonnage() {
   // ════════════════ MISE EN PAGE ════════════════
   function changerMode(m) { setMode(m); if (m === 'defi') nouveauDefi(); }
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : mesurer et exploiter</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
       <OngletExercices />
@@ -697,7 +693,12 @@ export function SimulationDosageEtalonnage() {
             {blocGamme}
             {blocExploitation}
           </div>
-          {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+          {enGuide ? <div>
+            <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Parcours :</span>
+              {[[1, '1. Préparer la gamme'], [2, '2. Mesurer et exploiter']].map(([k, nom]) => <button key={k} aria-pressed={parc === k} onClick={() => setParc(k)} style={styleBouton(parc === k, ORANGE_GUIDE)}>{nom}</button>)}
+            </div>
+            <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
             : enDefi ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
               : <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
                 <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
