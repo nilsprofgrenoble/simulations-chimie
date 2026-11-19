@@ -2990,6 +2990,27 @@ export const PREVOIR = [
       F('les ions Cl⁻ et CH₃COO⁻ ont le même λ', 'Leurs λ diffèrent (7,6 et 4,1) ; mais après l’équivalence la quantité de ces anions ne varie plus, donc ils ne modifient pas la pente.'),
       F('la réaction de titrage consomme encore des ions H₃O⁺', 'Après l’équivalence, il n’y a plus d’acide à titrer : la réaction ne consomme plus rien, les ions HO⁻ versés restent en solution.'),
     ] },
+  { id: 'etl-ana-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Deux cellules, une même solution',
+    enonce: 'On mesure, dans la même solution de chlorure de sodium et à la même température, la conductance avec deux cellules de conductimétrie. La cellule 1 affiche G₁ = 1,50 mS ; la cellule 2, dont les plaques sont plus éloignées, affiche G₂ = 0,75 mS.', q: 'Que peut-on en conclure ?', options: [
+      V('les conductances diffèrent, la conductivité σ est la même', 'G dépend de la cellule, σ non : avec σ = k × G, une constante k deux fois plus grande compense une conductance deux fois plus petite.'),
+      F('les deux solutions n’ont pas la même conductivité σ', 'La solution est la même : σ est identique. C’est la conductance G qui dépend de la cellule, par sa constante k.'),
+      F('une des deux cellules est certainement défectueuse', 'Aucun défaut : deux cellules de géométries différentes donnent des conductances différentes pour la même solution.'),
+      F('la solution est deux fois plus concentrée avec la cellule 1', 'La concentration est la même : seule la cellule change, donc G change mais ni la concentration ni σ.'),
+    ] },
+  { id: 'etl-ana-conditions', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Étalonner avec un autre soluté',
+    enonce: 'Pour doser une solution d’acide chlorhydrique, un élève trace la droite d’étalonnage G = f(c) avec des solutions étalons de chlorure de sodium, mesurées avec la même cellule, puis lit la concentration de l’acide sur cette droite.', q: 'Que penser de cette démarche ?', options: [
+      V('elle est faussée : la pente dépend des ions du soluté', 'La pente vaut a = (λ₊ + λ₋) / k : elle dépend du soluté. H₃O⁺ conduit bien mieux que Na⁺ : la concentration lue serait fausse.'),
+      F('elle est valable : G ne dépend que de la concentration', 'G dépend aussi des ions présents, par leurs λ : il faut des étalons du même soluté que la solution dosée.'),
+      F('elle est valable si la température est constante', 'La température constante est nécessaire mais pas suffisante : le soluté doit aussi être le même pour les étalons.'),
+      F('elle est faussée : la cellule doit changer avec le soluté', 'La même cellule convient pour tous les solutés : c’est la pente de la droite qui change, pas la cellule.'),
+    ] },
+  { id: 'etl-ana-limite', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Un étalon concentré sous la droite',
+    enonce: 'On mesure la conductance d’étalons de chlorure de sodium de 2 à 10 mmol/L : les points sont alignés sur une droite passant par l’origine. Un étalon à 100 mmol/L donne un point situé nettement sous le prolongement de cette droite.', q: 'Comment l’expliquer ?', options: [
+      V('les interactions entre ions deviennent notables', 'Au-delà de 10 mmol/L environ, les ions interagissent : G cesse d’être proportionnelle à c et se trouve sous la droite prolongée.'),
+      F('la cellule a été mal rincée avant cette mesure', 'Une erreur de rinçage serait aléatoire ; ici l’écart est systématique et grandit avec c : c’est le domaine de validité de la droite.'),
+      F('le chlorure de sodium n’est plus dissocié à 100 mmol/L', 'NaCl reste totalement dissocié à cette concentration : l’écart vient des interactions entre ions, pas d’une dissociation incomplète.'),
+      F('la conductance diminue toujours quand c augmente', 'En solution diluée, G augmente avec c ; à forte concentration elle augmente moins vite que c, mais elle ne diminue pas.'),
+    ] },
   { id: 'pil-ana-pont', domaine: 'Piles : fonctionnement et capacité', titre: 'On retire le pont salin',
     enonce: 'Une pile zinc-cuivre alimente une petite lampe. On retire le pont salin qui relie les deux solutions, sans toucher aux fils.', q: 'Que se passe-t-il ?', options: [
       V('la lampe s’éteint : le circuit est ouvert', 'Sans pont salin, aucun ion ne circule entre les deux solutions : le circuit est ouvert et le courant s’arrête aussitôt.'),

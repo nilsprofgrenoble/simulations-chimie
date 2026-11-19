@@ -562,6 +562,48 @@ export const ENONCES = [
         manque: null, solution: { txt: '[HO⁻] = (cB × VB − cA × VA) / (VA + volume d’eau + VB) ; mmol / mL = mol/L', val: reste / Vt, u: 'mol/L' } };
     },
   },
+  // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule
+  {
+    id: 'etl-sapp-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Constante de cellule et conductivité d’une solution', noms: ['Constante de la cellule', 'Conductivité d’une solution à partir de sa conductance'],
+    gen: () => { const k = tire([50, 60, 80, 100]); return { k, Ge: Number((141 / k).toPrecision(3)), Gx: tire([0.60, 0.85, 1.20, 1.55]) }; },
+    build: (p, q) => {
+      const tokens = {
+        sE: tok('141 mS·m⁻¹', 'Conductivité de la solution étalon de chlorure de potassium (écrite sur le flacon)', 141, 'mS·m⁻¹'),
+        Ge: tok(`${nb(p.Ge, 3)} mS`, 'Conductance de la solution étalon, mesurée avec la cellule', p.Ge, 'mS'),
+        Gx: tok(`${nb(p.Gx, 2)} mS`, 'Conductance de la solution à étudier, mesurée avec la même cellule', p.Gx, 'mS'),
+        k: tok(`${p.k} m⁻¹`, 'Constante de la cellule', p.k, 'm⁻¹'),
+      };
+      const debut = ['Un conductimètre mesure une conductance G ; la conductivité σ s’en déduit grâce à la constante de cellule k. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'La cellule plonge dans une solution étalon de conductivité ', T('sE'), ' : elle affiche ', T('Ge'), '. Avec la même cellule, une autre solution affiche ', T('Gx'), '. Quelle est la constante de la cellule ?'],
+        utiles: ['sE', 'Ge'], raisons: { Gx: 'La conductance de la solution étudiée ne sert pas à étalonner la cellule : l’étalonnage utilise la solution de conductivité connue.' },
+        cherche: { bonne: 'La constante de cellule k (en m⁻¹)', faux: ['La conductivité de la solution étudiée (en mS·m⁻¹)', 'La concentration de la solution étudiée (en mmol/L)', 'La conductance de la cellule dans l’air (en mS)'] },
+        manque: null, solution: { txt: 'k = σ(étalon) / G(étalon) (des mS·m⁻¹ divisés par des mS donnent des m⁻¹)', val: 141 / p.Ge, u: 'm⁻¹' } };
+      return { tokens, derivees: [], texte: [...debut, 'La cellule, de constante ', T('k'), ', plonge dans une solution étalon de conductivité ', T('sE'), ' (conductance ', T('Ge'), ') puis dans une solution à étudier. Cette dernière affiche ', T('Gx'), '. Quelle est sa conductivité ?'],
+        utiles: ['k', 'Gx'], raisons: { sE: 'La conductivité de l’étalon a déjà servi à déterminer k : elle ne sert pas à calculer celle de la solution étudiée.', Ge: 'La conductance de l’étalon a déjà servi à déterminer k : elle n’intervient plus.' },
+        cherche: { bonne: 'La conductivité σ de la solution étudiée (en mS·m⁻¹)', faux: ['La constante de cellule k (en m⁻¹)', 'La concentration de la solution étudiée (en mmol/L)', 'La conductance de la solution à 25 °C (en mS)'] },
+        manque: null, solution: { txt: 'σ = k × G (des m⁻¹ multipliés par des mS donnent des mS·m⁻¹)', val: p.k * p.Gx, u: 'mS·m⁻¹' } };
+    },
+  },
+  {
+    id: 'etl-sapp-droite', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Doser avec une droite d’étalonnage', noms: ['Concentration lue sur la droite d’étalonnage', 'Concentration de la solution avant dilution'],
+    gen: () => ({ a: tire([0.095, 0.120, 0.155, 0.210]), G: tire([0.45, 0.62, 0.78, 0.93]), F: tire([10, 20, 25, 50]) }),
+    build: (p, q) => {
+      const tokens = {
+        a: tok(`${nb(p.a, 3)} mS par mmol/L`, 'Coefficient directeur de la droite d’étalonnage G = a × c (droite passant par l’origine)', p.a, 'mS·L·mmol⁻¹'),
+        G: tok(`${nb(p.G, 2)} mS`, 'Conductance de la solution diluée, mesurée avec la même cellule que les étalons', p.G, 'mS'),
+        F: tok(`${p.F}`, 'Facteur de dilution (volume final divisé par volume prélevé)', p.F, ''),
+      };
+      const debut = ['On trace la droite d’étalonnage G = a × c avec des étalons dilués (c inférieure à 10 mmol/L) : son coefficient directeur vaut ', T('a'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'La solution diluée affiche ', T('G'), ', mesurée avec la même cellule. Le facteur de dilution est ', T('F'), '. Quelle est la concentration de la solution diluée ?'],
+        utiles: ['a', 'G'], raisons: { F: 'Le facteur de dilution sert à remonter à la solution de départ, pas à lire la concentration de la solution diluée.' },
+        cherche: { bonne: 'La concentration de la solution diluée (en mmol/L)', faux: ['La concentration de la solution de départ (en mol/L)', 'La conductivité de la solution diluée (en mS·m⁻¹)', 'La constante de la cellule (en m⁻¹)'] },
+        manque: null, solution: { txt: 'c = G / a (G en mS, a en mS par mmol/L, donc c en mmol/L)', val: p.G / p.a, u: 'mmol/L' } };
+      return { tokens, derivees: [{ id: 'cd', nom: 'Concentration de la solution diluée', expr: 'c′ = G / a', val: p.G / p.a, u: 'mmol/L' }], texte: [...debut, 'La solution étudiée a été diluée ', T('F'), ' fois ; la solution diluée affiche ', T('G'), '. Quelle est la concentration de la solution de départ ?'],
+        utiles: ['a', 'G', 'F'], raisons: {},
+        cherche: { bonne: 'La concentration de la solution de départ (en mol/L)', faux: ['La concentration de la solution diluée (en mmol/L)', 'La conductance de la solution de départ (en mS)', 'La quantité de soluté dans la solution diluée (en mmol)'] },
+        manque: null, solution: { txt: 'c(S) = F × G / a, en mmol/L, puis ÷ 1 000 pour obtenir des mol/L', val: p.F * p.G / p.a / 1000, u: 'mol/L' } };
+    },
+  },
   // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
   {
     id: 'pil-sapp-capacite', domaine: 'Piles : fonctionnement et capacité', titre: 'Capacité d’une pile zinc-cuivre', noms: ['Quantité d’ions cuivre initiale', 'Capacité électrique de la pile'],

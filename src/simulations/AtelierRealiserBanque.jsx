@@ -1149,6 +1149,34 @@ function genConductimetrieTG() {
     retenir: ['Loi de Kohlrausch : σ = Σ λ × c, avec c en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³) et λ en mS·m²·mol⁻¹.', 'Une solution diluée seulement : au-delà de 10 mol·m⁻³ environ, la loi n’est plus valable.', 'La rupture de pente de la courbe repère le volume équivalent : c_A × V_A = c_B × V_E.', 'Après l’équivalence, les ions HO⁻ versés en excès restent en solution : n(HO⁻) = c_B × V_B − c_A × V_A.'] };
 }
 
+function genEtalonnageTG() {
+  const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c] || c)).join('')}`; };
+  const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
+  const k = tire([50, 60, 80, 100]), Ge = Number((141 / k).toPrecision(3)), kc = 141 / Ge;
+  const q1 = { id: 'e0', type: 'num', q: <>Une cellule plongée dans une solution étalon de chlorure de potassium, de conductivité <b>141{NB}mS·m⁻¹</b>, affiche une conductance <b>{nb(Ge, 3)}{NB}mS</b>. Calculez la constante de la cellule (en m⁻¹, 2 chiffres significatifs).</>, unite: 'm⁻¹', vrai: kc, tolRel: 0.05, csMin: 2,
+    aide: 'σ(étalon) = k × G(étalon) : isolez k. Des mS·m⁻¹ divisés par des mS donnent des m⁻¹.',
+    pieges: [[Ge / 141, 'Le rapport est inversé : k = σ divisée par G.'], [141 * Ge, 'Il faut diviser σ par G, pas les multiplier.'], [0.141 / Ge, 'Vous avez converti σ en S·m⁻¹ sans convertir G : convertissez les deux ou aucune.']],
+    expl: <>k = {avecIndices(`frac(σ|G)`)} = {avecIndices(`frac(141|${nb(Ge, 3)})`)} = <b>{nb(kc, 3)}{NB}m⁻¹</b>.</> };
+  const Gx = tire([0.45, 0.62, 0.85, 1.20, 1.55]);
+  const q2 = { id: 'e1', type: 'num', q: <>Avec cette cellule (constante <b>{nb(k, 2)}{NB}m⁻¹</b>), une solution affiche <b>{nb(Gx, 2)}{NB}mS</b>. Calculez sa conductivité σ (en mS·m⁻¹, 2 chiffres significatifs).</>, unite: 'mS·m⁻¹', vrai: k * Gx, tolRel: 0.05, csMin: 2,
+    aide: 'σ = k × G : multipliez la constante de cellule par la conductance ; le résultat sort en mS·m⁻¹.',
+    pieges: [[k / Gx, 'Vous avez divisé k par G : la relation est σ = k × G.'], [Gx / k, 'Vous avez divisé G par k : la relation est σ = k × G.'], [k * Gx / 1000, 'Votre résultat est en S·m⁻¹ : la question demande des mS·m⁻¹ (× 1 000).']],
+    expl: <>σ = k × G = {nb(k, 2)} × {nb(Gx, 2)} = <b>{nb(k * Gx, 3)}{NB}mS·m⁻¹</b>.</> };
+  const a = tire([0.095, 0.120, 0.155, 0.210]), G = tire([0.45, 0.62, 0.78, 0.93]), cd = G / a;
+  const q3 = { id: 'e2', type: 'num', q: <>La droite d’étalonnage d’un soluté, tracée avec des étalons dilués, a pour équation G = a × c avec a = <b>{nb(a, 3)}{NB}mS par mmol/L</b>. Une solution diluée du même soluté affiche <b>{nb(G, 2)}{NB}mS</b>. Calculez sa concentration (en mmol/L, 2 chiffres significatifs).</>, unite: 'mmol/L', vrai: cd, tolRel: 0.05, csMin: 2,
+    aide: 'G = a × c, donc c = G divisée par a : avec G en mS et a en mS par mmol/L, c sort en mmol/L.',
+    pieges: [[a / G, 'Le rapport est inversé : c = G divisée par a.'], [G * a, 'Il faut diviser G par a, pas les multiplier.'], [G / a / 1000, 'Vous avez donné c en mol/L : la question demande des mmol/L.']],
+    expl: <>c = {avecIndices(`frac(G|a)`)} = {avecIndices(`frac(${nb(G, 2)}|${nb(a, 3)})`)} = <b>{nb(cd, 3)}{NB}mmol/L</b>.</> };
+  const F = tire([10, 20, 25, 50]);
+  const q4 = { id: 'e3', type: 'num', q: <>La solution diluée précédente, de concentration <b>{nb(cd, 2)}{NB}mmol/L</b>, provient d’une solution de départ diluée <b>{F}{NB}fois</b>. Calculez la concentration de la solution de départ (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: F * cd / 1000, tolRel: 0.05, csMin: 2,
+    aide: 'c(solution de départ) = F × c(solution diluée), puis 1 mmol/L = 10⁻³ mol/L.',
+    pieges: [[cd / F / 1000, 'Vous avez divisé par F : la solution de départ est plus concentrée, il faut multiplier.'], [F * cd, 'Ce résultat est en mmol/L ; convertissez-le en mol/L (÷ 1 000).'], [cd / 1000, 'Il manque le facteur de dilution : c(S) = F × c(S′).']],
+    expl: <>c(S) = F × c(S′) = {F} × {nb(cd, 3)} = {nb(F * cd, 3)}{NB}mmol/L = <b>{sci(F * cd / 1000, 2)}{NB}mol/L</b>.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Dosage conductimétrique par étalonnage : constante de cellule, conductivité, lecture sur la droite d’étalonnage et dilution.', questions: [q1, q2, q3, q4],
+    retenir: ['Constante de cellule : k = σ(étalon) / G(étalon), en m⁻¹ ; ensuite σ = k × G pour toute solution mesurée avec cette cellule.', 'Droite d’étalonnage : G = a × c, passant par l’origine ; c = G / a (G en mS, a en mS par mmol/L : c en mmol/L).', 'La droite n’est valable que pour une solution diluée (c inférieure à 10 mmol/L environ) : au-delà, on dilue.', 'Solution diluée F fois : c(S) = F × c(S′).'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -1175,6 +1203,7 @@ export const FAMILLES = [
   { id: 'tmp-calcul', groupe: 'Formules', titre: 'Solution tampon : ajout d’acide, bilan de matière et pH du tampon (TG)', gen: genTamponTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'aam-calcul', groupe: 'Formules', titre: 'Acides α-aminés : rapport des formes, pourcentages et pH pour une proportion (TG)', gen: genAminoAcidesTG, domaine: 'Acides α-aminés : forme selon le pH' },
   { id: 'cdt-calcul', groupe: 'Formules', titre: 'Conductimétrie : loi de Kohlrausch, concentration, volume équivalent et bilan après l’équivalence (TG)', gen: genConductimetrieTG, domaine: 'Conductimétrie : conductivité et titrage' },
+  { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
