@@ -5,6 +5,8 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./ondesModele";
+import { puces } from "./Travail";
+import { FChemins, FPhase, FEcart, FInterfrange, FYoung, FSixInterf, FReseau, FOrdresMax, FDispersion, FMesureRaie, FSpectro } from "./InterferencesSchemas";
 
 const SIM_ID = 84;
 declarerDefis(SIM_ID, [['fentes', 'Quelle est la distance entre les deux fentes ?'], ['pas', 'Quel est le pas du réseau ?'], ['raie', 'Quelle est la longueur d’onde de la raie ?']]);
@@ -166,7 +168,11 @@ export function SimulationInterferences({ naviguer }) {
   const [mode, setMode] = useState(() => modeOuverture('interferences-guide-v1'));
   useSignalerMode(mode);
   const [suiviFentes, noterFentes] = useCompteurDefi(), [suiviPas, noterPas] = useCompteurDefi(), [suiviRaie, noterRaie] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('interferences-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('interferences-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('interferences-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('interferences-guide-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('interferences-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [defi, setDefi] = useState(null);
   const [typeDefi, setTypeDefi] = useState('fentes');
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -222,7 +228,7 @@ export function SimulationInterferences({ naviguer }) {
   const pointeVert = reseauHg && Math.abs(rz.x1 + xVert) <= tolPt && Math.abs(rz.x2 - xVert) <= tolPt;
   const lamVertMes = Lmes > 0 ? M.lambdaDepuisOrdre(1, 3.3e-6, Math.atan2(Lmes / 2, 1000)) * 1e9 : NaN;
   const aMesG = Lmes > 0 ? M.pasDepuisOrdre(1, 532e-9, Math.atan2(Lmes / 2, 1000)) * 1e6 : NaN;
-  const ETAPES = [
+  const TOUTES = [
     { id: 'sources', titre: 'Deux sources, une seule fréquence', focus: ['scene'],
       texte: <>Dans cette <strong>cuve à ondes</strong> (vue de dessus), deux vibreurs <strong>S₁</strong> et <strong>S₂</strong> frappent l’eau, reliés au <strong>même générateur</strong> : ils vibrent à 20{NB}Hz, en même temps. Les cercles qui s’étalent sont les crêtes des deux ondes.</>,
       tache: { type: 'qcm', q: 'Deux ondes de même fréquence et de déphasage constant sont dites…', options: ['synchrones', 'sinusoïdales', 'indépendantes'], bonne: 0,
@@ -252,6 +258,8 @@ export function SimulationInterferences({ naviguer }) {
         pieges: [[r1 + r2, 'Vous avez additionné les deux distances. La différence de distances est r₂ − r₁.']],
         expl: `δ = |r₂ − r₁| ≈ ${nbf(delta, 1)} cm.`, indice: "δ = |d₂ − d₁| : mesurez la distance du point à chaque source." } },
     { id: 'tau', titre: 'Le retard τ', focus: ['sonde'],
+      retenirTitre: 'Chemins, δ et retard',
+      retenir: <><FChemins/>{puces(<>δ est la différence entre les deux distances parcourues ; le retard τ est le temps que met l’onde pour la parcourir.</>, <>Sur l’axe de symétrie, les deux distances sont égales : δ = 0, les ondes arrivent ensemble.</>)}</>,
       texte: <>Les ondes se propagent à la célérité <em>v</em> = <em>λ</em> × <em>f</em> = 2{NB}cm × 20{NB}Hz = 0,40{NB}m/s. Calculez le retard τ = δ / <em>v</em>, en millisecondes.</>,
       tache: { type: 'num', q: 'Retard τ', unite: 'ms', vrai: delta * 1e-2 / 0.4 * 1e3, tol: 0.05, affiche: v => nbf(v, 0), cs: 2,
         bloque: cuveBase && Math.abs(delta - 3) < 0.3 ? null : 'Placez d’abord M avec le bouton « Rétablir le point M » au-dessus de la cuve.',
@@ -263,30 +271,8 @@ export function SimulationInterferences({ naviguer }) {
       tache: { type: 'qcm', q: 'Au point M, où τ = 75 ms et T = 50 ms, l’interférence est…', options: ['constructive', 'destructive', 'ni l’une ni l’autre exactement'], bonne: 1,
         expl: '75 ms = 50 ms + 25 ms = 1 × T + T/2 : le retard vaut une période plus une demi-période, donc l’interférence est destructive. On le vérifie sur la vue « amplitude » : M est dans une zone claire (calme).', indice: "Calculez τ ÷ T : un nombre entier donne une interférence constructive, un demi-entier une destructive." } },
     { id: 'constructive', titre: 'Chercher une frange agitée', focus: ['scene', 'sonde'],
-      retenirTitre: 'À RETENIR : INTERFÉRENCES DE DEUX ONDES SYNCHRONES',
-      retenir: <>
-        <svg viewBox="0 0 360 170" role="img" aria-label="Interférences de deux ondes synchrones : les sources S1 et S2 sont séparées de s ; au point M, les deux ondes ont parcouru les distances r1 et r2 ; la différence de distances delta vaut r2 moins r1 en valeur absolue ; sur l’axe de symétrie, delta est nul et les ondes sont en phase" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="30" y1="85" x2="330" y2="85" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="5 4" /><text x="236" y="102" fontSize="10.5" fill="#64748b">axe de symétrie</text>
-          <circle cx="40" cy="55" r="7" fill="#0072b2" /><text x="26" y="44" fontSize="12.5" fontWeight="700" fill="#0072b2">S₁</text>
-          <circle cx="40" cy="115" r="7" fill="#d55e00" /><text x="26" y="140" fontSize="12.5" fontWeight="700" fill="#d55e00">S₂</text>
-          <line x1="40" y1="55" x2="230" y2="42" stroke="#0072b2" strokeWidth="2.5" /><line x1="40" y1="115" x2="230" y2="42" stroke="#d55e00" strokeWidth="2.5" />
-          <circle cx="230" cy="42" r="6" fill="#eab308" stroke="#92400e" strokeWidth="1.5" /><text x="240" y="40" fontSize="13" fontWeight="700" fill="#92400e">M</text>
-          <text x="120" y="38" fontSize="12" fontWeight="700" fill="#0072b2">r₁</text><text x="120" y="102" fontSize="12" fontWeight="700" fill="#d55e00">r₂</text>
-          <text x="8" y="164" fontSize="11.5" fill="#334155">δ = |r₂ − r₁|  ;  τ = δ / v</text>
-        </svg>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Interférence</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Retard</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Différence de distances</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ondes</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>constructive (frange agitée)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>τ = k·T</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>δ = k·λ</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>en phase</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>destructive (zone calme)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>τ = k·T + T/2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>δ = (k + ½)·λ</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>en opposition de phase</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Deux ondes <strong>synchrones</strong> (même fréquence, déphasage constant) qui se superposent <strong>interfèrent</strong> ; k est un entier.</li>
-          <li>Le retard vient de la différence de distances : τ = δ / v, avec v = λ × f et T = 1 / f.</li>
-          <li>Sur l’<strong>axe de symétrie</strong>, δ = 0 : interférence constructive.</li>
-        </ul>
-      </>,
+      retenirTitre: 'Constructive ou destructive',
+      retenir: <><FPhase/>{puces(<>Ondes <strong>synchrones</strong> (même fréquence, déphasage constant) : elles interfèrent, k est un entier.</>, <>Avec v = λ × f et T = 1 ÷ f : τ = k·T équivaut à δ = k·λ.</>)}</>,
       texte: <>Placez M sur une autre <strong>frange agitée</strong> que celle de l’axe : un point où le retard est une période (τ = <em>T</em>), c’est-à-dire δ = <em>λ</em> = 2{NB}cm.</>,
       tache: { type: 'action', ok: cuveBase && nature === 'constructive' && Math.abs(P.y) > 1, bloque: cuveBase ? null : 'Remettez d’abord s = 6 cm et λ = 2 cm.', label: 'Placer M (δ = λ)', faire: () => { setCuve(PRESET_CUVE); setScene('cuve'); setP({ x: 14, y: M.yPourDelta(6, 2, 14) }); }, consigne: 'Placez M sur une frange agitée, hors de l’axe' } },
     { id: 'lignes', titre: 'Les lignes d’interférence', focus: ['reglages', 'scene'],
@@ -299,6 +285,10 @@ export function SimulationInterferences({ naviguer }) {
       texte: <>Comparez avec <em>s</em> = 6{NB}cm.</>,
       tache: { type: 'qcm', q: 'Quand on éloigne les sources l’une de l’autre, les franges…', options: ['se resserrent et sont plus nombreuses', 's’écartent et sont moins nombreuses', 'ne changent pas'], bonne: 0,
         expl: 'Plus les sources sont éloignées, plus la différence de distances varie vite quand M se déplace : on passe plus vite d’une frange à l’autre. L’interfrange diminue.', indice: "Essayez dans la simulation : comparez le nombre de franges pour deux écartements." } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Plus de sources écartées, plus de franges',
+      retenir: <><FEcart/>{puces(<>Plus les sources sont éloignées, plus la différence de distances change vite quand M se déplace : les franges se resserrent.</>, <>Trait plein : franges constructives (δ = 0, λ, 2λ…) ; tirets : destructives (δ = λ÷2, 3λ÷2…).</>)}</>,
+      texte: <>Vous savez relier retard, différence de distances et nature de l’interférence. Passez au parcours 2 : la lumière interfère aussi.</>, tache: null },
     { id: 'young', titre: 'La lumière aussi interfère', focus: ['scene', 'reglages'],
       texte: <>Un <strong>laser</strong> (<em>λ</em> = 532{NB}nm) éclaire deux fentes très fines, séparées de <em>l</em> = 300{NB}µm. Chaque fente est une source secondaire : les deux ondes sont synchrones, car elles viennent du même laser. L’écran est à <em>D</em> = 2,50{NB}m.</>,
       tache: { type: 'action', ok: youngBase, label: 'Passer aux fentes de Young', faire: () => { setScene('young'); setYz({ a: 40, l: 300, lam: 532, D: 2.5, expo: 2, x1: -10, x2: 10 }); }, consigne: 'Fentes de Young : l = 300 µm, λ = 532 nm, D = 2,50 m' } },
@@ -310,6 +300,8 @@ export function SimulationInterferences({ naviguer }) {
       texte: <>L’<strong>interfrange</strong> <em>i</em> est la distance entre deux franges brillantes consécutives. Pour la mesurer précisément, on mesure plusieurs interfranges d’un coup : placez le repère 1 au centre d’une frange brillante et le repère 2 au centre de la <strong>6ᵉ frange</strong> suivante (6 interfranges plus loin).</>,
       tache: { type: 'action', ok: pointeYoung, bloque: youngBase ? null : 'Revenez au réglage de base avec le bouton « Rétablir le réglage » sous l’image.', label: 'Placer pour moi', consigne: 'Repères sur deux franges brillantes séparées de 6 interfranges', faire: () => setYz(z => ({ ...z, x1: -3 * iY, x2: 3 * iY })) } },
     { id: 'interfrange', titre: 'Calculer l’interfrange', focus: ['mesures'],
+      retenirTitre: 'L’interfrange',
+      retenir: <><FInterfrange/>{puces(<>L’<strong>interfrange i</strong> est la distance entre deux franges brillantes consécutives.</>, <>On mesure plusieurs interfranges d’un coup, puis on divise par leur nombre.</>)}</>,
       texte: <>Lisez la distance <em>d</em> entre vos repères dans « Mesures », puis calculez l’interfrange <em>i</em> = <em>d</em> / 6.</>,
       tache: { type: 'num', q: 'Interfrange i', unite: 'mm', vrai: Lmes / nY, tol: 0.02, affiche: v => nbf(v, 2), cs: 3,
         bloque: pointeYoung ? null : 'Placez d’abord les repères (étape précédente).',
@@ -321,6 +313,8 @@ export function SimulationInterferences({ naviguer }) {
       tache: { type: 'qcm', q: 'Si l’on rapproche les deux fentes (l diminue), l’interfrange…', options: ['augmente', 'diminue', 'reste le même'], bonne: 0,
         expl: 'Avec i = λD/l, l’interfrange est inversement proportionnel à l : si l diminue, i augmente. C’est cohérent avec la cuve : sources plus rapprochées, franges plus larges.', indice: "i = λD ÷ l : que devient i quand l diminue ?" } },
     { id: 'calcl', titre: 'La distance entre les fentes', focus: ['mesures'],
+      retenirTitre: 'Les fentes de Young',
+      retenir: <><FYoung/><Formule><mi>i</mi><mo>=</mo><mfrac><mrow><mi>λ</mi><mo>×</mo><mi>D</mi></mrow><mi>l</mi></mfrac></Formule>{puces(<>Chaque fente est une <strong>source secondaire</strong> ; les deux ondes sont synchrones car elles viennent du même laser.</>, <>Fentes plus proches ou écran plus loin : franges plus larges.</>)}</>,
       texte: <>Revenez au réglage de base si besoin. Avec <em>i</em> = <em>d</em> / 6, déduisez la distance <em>l</em> entre les fentes : isolez <em>l</em> dans <em>i</em> = <em>λ</em>·<em>D</em> / <em>l</em> et calculez-la en micromètres (<em>λ</em> = 532{NB}nm, <em>D</em> = 2,50{NB}m).</>,
       tache: { type: 'num', q: 'Distance l entre les fentes', unite: 'µm', vrai: lCalc, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
         bloque: pointeYoung ? null : 'Placez d’abord les repères (étape « Mesurer plusieurs interfranges »).',
@@ -329,19 +323,13 @@ export function SimulationInterferences({ naviguer }) {
         pieges: [[lCalc * 1e-6, 'Le résultat est à donner en micromètres (1 µm = 10⁻⁶ m).'], [lCalc / 1000, 'Vous avez donné l en millimètres ; l’unité demandée est le micromètre.']],
         expl: 'l = λD/i ≈ 300 µm : les deux fentes sont distantes d’environ un tiers de millimètre (valeur exacte de la simulation : 300 µm ; l’écart vient du pointé).', indice: "l = λD ÷ i, avec toutes les longueurs dans la même unité." } },
     { id: 'pourquoi6', titre: 'Pourquoi six interfranges ?', focus: ['incert'],
-      retenirTitre: 'À RETENIR : LES FENTES DE YOUNG',
-      retenir: <>
-        <Formule><mi>i</mi><mo>=</mo><mfrac><mrow><mi>λ</mi><mo>×</mo><mi>D</mi></mrow><mi>l</mi></mfrac><mspace width="1.5em"/><mi>l</mi><mo>=</mo><mfrac><mrow><mi>λ</mi><mo>×</mo><mi>D</mi></mrow><mi>i</mi></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Chaque fente est une <strong>source secondaire</strong> ; les deux ondes sont synchrones car elles viennent du même laser.</li>
-          <li>L’<strong>interfrange i</strong> est la distance entre deux franges brillantes consécutives ; elle <strong>augmente</strong> si les fentes se rapprochent (l diminue) ou si l’écran s’éloigne (D augmente).</li>
-          <li>L’éclat des franges décroît loin du centre : c’est l’<strong>enveloppe de diffraction</strong> de chaque fente.</li>
-          <li>On mesure <strong>6 interfranges</strong> : l’incertitude de pointé est la même, mais elle pèse moins sur une grande distance ; i = d / 6.</li>
-        </ul>
-      </>,
       texte: <>Le panneau « Incertitude » donne le poids de chaque source d’erreur sur <em>l</em>. L’incertitude de pointé d’un repère est la même quelle que soit la distance mesurée.</>,
       tache: { type: 'qcm', q: 'Pourquoi mesure-t-on 6 interfranges plutôt qu’un seul ?', options: ['l’incertitude de pointé est la même, mais elle pèse moins sur une grande distance : l’incertitude relative sur i diminue', 'parce que l’interfrange change d’une frange à l’autre', 'pour que la mesure soit plus rapide'], bonne: 0,
         expl: 'Chaque repère est pointé à ± 3 pixels près. Sur une distance 6 fois plus grande, cette incertitude pèse 6 fois moins en valeur relative : on gagne en précision.', indice: "L’erreur de pointé est la même pour 1 ou 6 interfranges. Que devient son poids relatif ?" } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Pourquoi six interfranges ?',
+      retenir: <><FSixInterf/>{puces(<>L’éclat des franges décroît loin du centre : c’est l’<strong>enveloppe de diffraction</strong> de chaque fente.</>, <>Mesurer plusieurs interfranges réduit l’incertitude relative sur i, donc sur l.</>)}</>,
+      texte: <>Vous savez mesurer l’interfrange et en déduire la distance entre deux fentes. Passez au parcours 3 : le réseau.</>, tache: null },
     { id: 'reseau', titre: 'Beaucoup de fentes : le réseau', focus: ['scene', 'reglages'],
       texte: <>Un <strong>réseau</strong> est une plaque portant un très grand nombre de traits fins, parallèles et équidistants. La distance entre deux traits voisins est le <strong>pas</strong> <em>a</em> du réseau. Ici <em>a</em> = 3,3{NB}µm (environ 300 traits par mm), éclairé par le laser vert à <em>D</em> = 1,00{NB}m.</>,
       tache: { type: 'action', ok: reseauBase, label: 'Passer au réseau', faire: () => { setScene('reseau'); setRz({ pas: 3.3, source: 'laser', lam: 532, D: 1, expo: 2, x1: -100, x2: 100 }); }, consigne: 'Réseau de 3,3 µm, laser vert, D = 1,00 m' } },
@@ -360,6 +348,8 @@ export function SimulationInterferences({ naviguer }) {
         pieges: [[Math.atan2(Lmes / 2, 1000), 'Votre calculatrice est en radians : l’angle demandé est en degrés.'], [deg(Math.atan2(Lmes, 1000)), 'Vous avez utilisé la distance entre les deux repères : x₁ est la moitié.']],
         expl: `θ₁ = ${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°.`, indice: "tan θ = (L ÷ 2) ÷ D : utilisez la touche arctan de la calculatrice." } },
     { id: 'pas', titre: 'Le pas du réseau', focus: ['mesures'],
+      retenirTitre: 'Le réseau et ses ordres',
+      retenir: <><FReseau/>{puces(<>Un <strong>réseau</strong> : un très grand nombre de traits parallèles ; le <strong>pas a</strong> est la distance entre deux traits voisins.</>, <>Les taches (ordres k = 0, ±1, ±2…) sont fines, bien séparées et lumineuses : faciles à pointer.</>)}</>,
       texte: <>La <strong>formule des réseaux</strong> relie l’angle de déviation <em>θ</em><sub>k</sub> de l’ordre <em>k</em>, la longueur d’onde et le pas : <strong>sin θ<sub>k</sub> = k·λ / a</strong>. Pour <em>k</em> = 1 et <em>λ</em> = 532{NB}nm, calculez le pas <em>a</em>, en micromètres.</>,
       tache: { type: 'num', q: 'Pas a du réseau', unite: 'µm', vrai: aMesG, tol: 0.03, affiche: v => nbf(v, 2), cs: 3,
         bloque: pointeReseau ? null : 'Placez d’abord les repères (étape « Les ordres de diffraction »).',
@@ -373,15 +363,8 @@ export function SimulationInterferences({ naviguer }) {
         pieges: [[6.2, 'Un ordre est un nombre entier : prenez la partie entière.']],
         expl: 'k < a/λ ≈ 6,2 : les ordres vont théoriquement de −6 à +6. En pratique, les ordres élevés sont très écartés, presque rasants, peu lumineux, et sortent de l’image (écran plan) : on n’en voit ici que quelques-uns.', indice: "sin θ ne peut pas dépasser 1 : p ≤ a ÷ λ. Gardez la partie entière." } },
     { id: 'blanche', titre: 'Et en lumière blanche ?', focus: ['reglages', 'ecran'],
-      retenirTitre: 'À RETENIR : LE RÉSEAU',
-      retenir: <>
-        <Formule><mi>sin</mi><msub><mi>θ</mi><mi>k</mi></msub><mo>=</mo><mfrac><mrow><mi>k</mi><mo>×</mo><mi>λ</mi></mrow><mi>a</mi></mfrac><mspace width="1.5em"/><mi>tan</mi><msub><mi>θ</mi><mn>1</mn></msub><mo>=</mo><mfrac><msub><mi>x</mi><mn>1</mn></msub><mi>D</mi></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un <strong>réseau</strong> est une plaque portant un très grand nombre de traits fins, parallèles et équidistants ; le <strong>pas a</strong> est la distance entre deux traits voisins (3,3 µm ≈ 300 traits / mm).</li>
-          <li>Par rapport à deux fentes, les taches sont <strong>fines, bien séparées et lumineuses</strong> : plus faciles à pointer.</li>
-          <li>Les taches sont numérotées par leur <strong>ordre k</strong> (k = 0 au centre, ± 1, ± 2…) ; un ordre n’existe que si k·λ / a &lt; 1, donc k &lt; a / λ.</li>
-        </ul>
-      </>,
+      retenirTitre: 'Combien d’ordres ?',
+      retenir: <><FOrdresMax/>{puces(<>Un ordre existe seulement si k·λ ÷ a est inférieur à 1.</>, <>En pratique, les ordres élevés sont très écartés et peu lumineux : on n’en voit que quelques-uns à l’écran.</>)}</>,
       texte: <>Remplacez le laser par une <strong>lumière blanche</strong> (toutes les couleurs). Observez la tache centrale et les ordres 1 et 2.</>,
       tache: { type: 'action', ok: scene === 'reseau' && rz.source === 'blanche', label: 'Lumière blanche', faire: () => { setScene('reseau'); setR({ source: 'blanche' }); }, consigne: 'Choisissez « Lumière blanche »' } },
     { id: 'dispersion', titre: 'Le réseau disperse la lumière', focus: ['ecran'],
@@ -389,21 +372,11 @@ export function SimulationInterferences({ naviguer }) {
       tache: { type: 'qcm', q: 'Dans le spectre d’ordre 1, quelle couleur est la plus éloignée du centre ?', options: ['le rouge (λ la plus grande)', 'le violet (λ la plus petite)', 'toutes les couleurs sont à la même distance'], bonne: 0,
         expl: 'D’après sin θ₁ = λ / a, plus λ est grande, plus θ₁ est grand : le rouge (≈ 700 nm) est plus dévié que le violet (≈ 400 nm). C’est l’inverse d’un prisme. Un réseau sépare donc les longueurs d’onde : c’est le principe du spectrophotomètre à réseau.', indice: "sin θ = λ ÷ a : θ augmente avec λ." } },
     { id: 'mercure', titre: 'Une lampe à vapeur de mercure', focus: ['reglages', 'ecran'],
+      retenirTitre: 'Le réseau disperse la lumière',
+      retenir: <><FDispersion/>{puces(<>Chaque longueur d’onde est déviée d’un angle différent : le réseau <strong>sépare les couleurs</strong>.</>, <>Une lampe à vapeur n’émet que quelques <strong>raies</strong> : des taches colorées séparées.</>)}</>,
       texte: <>Une lampe à vapeur de mercure n’émet que quelques <strong>raies</strong> (longueurs d’onde bien précises). Choisissez-la : vous voyez 4 raies dans chaque ordre. Le réseau (3,3{NB}µm) est celui qu’on a mesuré.</>,
       tache: { type: 'action', ok: reseauHg, label: 'Lampe à mercure', faire: () => { setScene('reseau'); setRz({ pas: 3.3, source: 'mercure', lam: 532, D: 1, expo: 2, x1: -100, x2: 100 }); }, consigne: 'Choisissez « Lampe à mercure » (réseau 3,3 µm, D = 1,00 m)' } },
     { id: 'raie', titre: 'Mesurer une longueur d’onde', focus: ['ecran', 'mesures'],
-      retenirTitre: 'À RETENIR : MESURER UNE LONGUEUR D’ONDE',
-      retenir: <>
-        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-          <li>Pointer les taches d’ordre −1 et +1 : la distance entre les repères vaut 2x₁.</li>
-          <li>Calculer θ₁ = arctan(x₁ / D) (en degrés).</li>
-          <li>En déduire λ = a·sin θ₁ / k (avec k = 1) ; convertir en nm.</li>
-        </ol>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Pointer un <strong>ordre élevé</strong> (ou plusieurs ordres) réduit l’incertitude relative sur θ, donc sur λ.</li>
-          <li>Garder la même unité pour a et D ; λ s’exprime ici en nanomètres (1 µm = 1 000 nm).</li>
-        </ul>
-      </>,
       texte: <>Placez les repères sur la raie <strong>verte</strong> d’ordre −1 et d’ordre +1, puis calculez sa longueur d’onde avec <em>a</em> = 3,3{NB}µm et <em>D</em> = 1,00{NB}m : <em>λ</em> = <em>a</em>·sin θ₁ (<em>k</em> = 1).</>,
       tache: { type: 'num', q: 'Longueur d’onde λ de la raie verte', unite: 'nm', vrai: lamVertMes, tol: 0.03, affiche: v => nbf(v, 0), cs: 3,
         bloque: reseauHg ? (pointeVert ? null : 'Placez d’abord les repères sur la raie verte d’ordre ±1 avec le bouton « Rétablir le réglage » au-dessus de l’image.') : 'Choisissez d’abord la lampe à mercure (étape précédente).',
@@ -411,38 +384,24 @@ export function SimulationInterferences({ naviguer }) {
         pieges: [[lamVertMes * 1e-9, 'Le résultat est à donner en nanomètres.'], [3.3e-6 * Math.sin(Math.atan2(Lmes, 1000)) * 1e9, 'Vous avez utilisé la distance entre les deux repères au lieu de x₁ (sa moitié) pour calculer l’angle.']],
         expl: `λ ≈ ${nbf(lamVertMes, 0)} nm : c’est bien une raie verte (valeur exacte de la raie du mercure : 546 nm).`, indice: "λ = a·sin θ ÷ p, avec p = 1." } },
     { id: 'spectro', titre: 'Le spectrophotomètre à réseau', focus: [],
-      retenirTitre: 'À RETENIR : LE RÉSEAU DISPERSE LA LUMIÈRE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ordre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Aspect</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Explication</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>k = 0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>blanche</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>tache centrale, toutes les couleurs superposées</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>k = ±1, ±2…</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>spectres étalés</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>chaque λ est déviée d’un angle différent : sin θ<sub>k</sub> = k·λ / a</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>même ordre</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>rouge plus éloigné du centre que le violet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>λ plus grande → θ plus grand</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Une lampe à vapeur (mercure) n’émet que des <strong>raies</strong> : quelques longueurs d’onde bien précises, qui donnent des taches colorées séparées.</li>
-          <li>Dans un <strong>spectrophotomètre</strong>, le réseau sépare les longueurs d’onde : une fente ne laisse passer qu’une petite plage, choisie en tournant le réseau.</li>
-        </ul>
-      </>,
+      retenirTitre: 'Mesurer une longueur d’onde',
+      retenir: <><FMesureRaie/>{puces(<>Garder la même unité pour a et D ; λ se donne ici en nanomètres (1 µm = 1 000 nm).</>)}</>,
       texte: <>Dans un spectrophotomètre, la lumière de la lampe est d’abord étalée en spectre par un <strong>réseau</strong>. Une fente ne laisse passer qu’une petite plage de longueurs d’onde à la fois (on tourne le réseau pour choisir laquelle) ; cette lumière traverse ensuite l’échantillon, puis arrive sur le détecteur.</>,
       tache: { type: 'qcm', q: 'Quel est le rôle du réseau dans un spectrophotomètre ?', options: ['séparer les longueurs d’onde de la lumière blanche pour choisir celle qui traverse l’échantillon', 'absorber la lumière que l’échantillon n’absorbe pas', 'augmenter l’intensité de la lumière'], bonne: 0,
         expl: 'Le réseau disperse la lumière : à chaque longueur d’onde correspond une direction. En tournant le réseau, on envoie la longueur d’onde choisie vers la fente de sortie, puis vers l’échantillon et enfin vers le détecteur.', indice: "Le réseau disperse la lumière : que fait-il aux différentes longueurs d’onde ?" } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Interférences</strong> : ondes synchrones ; constructives si τ = k·T (δ = k·λ), destructives si τ = k·T + T/2 ; τ = δ / v.</li>
-          <li><strong>Fentes de Young</strong> : i = λ·D / l, sous l’enveloppe de diffraction ; on mesure plusieurs interfranges.</li>
-          <li><strong>Réseau</strong> de pas a : sin θ<sub>k</sub> = k·λ / a ; il disperse la lumière blanche en spectres.</li>
-          <li>Plusieurs interfranges ou un ordre élevé réduisent l’incertitude relative.</li>
-        </ul>
-      </>,
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Le réseau dans un spectrophotomètre',
+      retenir: <><FSpectro/>{puces(<>Le réseau étale la lumière blanche en spectre ; une fente ne laisse passer qu’une petite plage de longueurs d’onde.</>, <>On tourne le réseau pour choisir la longueur d’onde qui traverse l’échantillon.</>)}</>,
       texte: <>Vous savez interpréter une figure d’interférences, relier retard et distance, et mesurer une distance entre fentes, un pas de réseau ou une longueur d’onde. Essayez maintenant les défis.</>, tache: null },
   ];
+  const ORDRE_PARC = [['sources', 'amplitude', 'franges', 'axe', 'axeretard', 'placer', 'delta', 'tau', 'nature', 'constructive', 'lignes', 'ecart', 'effet', 'bilan1'],
+    ['young', 'figure', 'pointer', 'interfrange', 'dependance', 'calcl', 'pourquoi6', 'bilan2'],
+    ['reseau', 'interet', 'ordres', 'theta', 'pas', 'ordremax', 'blanche', 'dispersion', 'mercure', 'raie', 'spectro', 'bravo']];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(e => e.id === id));
   const idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
-  const IDS = ETAPES.map(e => e.id), apres = id => !enGuide || etape > IDS.indexOf(id);      // en parcours guidé, une grandeur n’est affichée qu’après l’étape où l’élève la calcule
+  // étapes des autres parcours : déjà passées (parcours précédents) ou pas encore atteintes (parcours suivants)
+  const IDS = ETAPES.map(e => e.id), iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
+  const apres = id => !enGuide || etape > iEt(id);      // en parcours guidé, une grandeur n’est affichée qu’après l’étape où l’élève la calcule      // en parcours guidé, une grandeur n’est affichée qu’après l’étape où l’élève la calcule
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   const rendreBase = () => {
@@ -524,8 +483,10 @@ export function SimulationInterferences({ naviguer }) {
       <li><strong>Affichages</strong> : la vue « amplitude » de la cuve est normalisée localement (elle montre le contraste des franges, pas la décroissance de l’onde avec la distance). Faire varier λ à fréquence fixe revient à changer la célérité des ondes (par exemple la profondeur de l’eau). Dans le montage de Young, les maxima des franges les plus éloignées sont légèrement décalés vers le centre par l’enveloppe de diffraction : l’effet est faible avec des fentes de 40 µm.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
+  const NOMS_PARC = ['1. Interférences dans une cuve', '2. Les fentes de Young', '3. Le réseau'];
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -712,7 +673,12 @@ export function SimulationInterferences({ naviguer }) {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Deux ondes <strong>synchrones</strong> qui se superposent <strong>interfèrent</strong> : l’amplitude est maximale là où elles arrivent en phase, minimale là où elles arrivent en opposition de phase. On l’observe avec des ondes à la surface de l’eau comme avec la lumière (fentes de Young, réseau).</div>
       <div className={`it-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {enGuide ? <div className="it-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="it-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="it-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="it-carte">{panneauHypo}</div> : null}
         <div className="it-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'fentes' ? suiviFentes : defi.type === 'pas' ? suiviPas : suiviRaie}/></div>}
           <div className={`it-pri${mode !== 'explore' ? ' pile' : ''}`}>
