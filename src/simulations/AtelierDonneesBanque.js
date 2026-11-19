@@ -22,6 +22,7 @@ import * as CO2 from "./co2DissousModele";
 import * as EXT from "./extractionAcideBaseModele";
 import * as QM from "./quantiteMatiereModele";
 import * as CD from "./concentrationModele";
+import * as LW from "./lewisModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -365,6 +366,33 @@ export const ENONCES = [
         utiles: ['V', 'Vm', 'M'], raisons: { mB: 'On demande la masse du gaz seul : la masse du ballon vide ne sert pas.', th: 'La température est déjà prise en compte dans la valeur de V_m donnée.' },
         cherche: { bonne: 'La masse m de gaz dans le ballon (en g)', faux: ['La masse totale du ballon rempli de gaz (en g)', 'La quantité de matière de gaz (en mol)', 'La masse volumique du gaz (en g/L)'] },
         manque: null, solution: { txt: 'm = n × M, avec n = V / V_m', val: n * M, u: 'g' } };
+    },
+  },
+  // ───────────────────────────── Schéma de Lewis (1G) : électrons de valence et doublets
+  {
+    id: 'lewis1g-entite', domaine: 'Schéma de Lewis des molécules et des ions', titre: 'Une entité dont on veut le schéma de Lewis', noms: ['Nombre d’électrons de valence de l’entité', 'Nombre de doublets de l’entité'],
+    gen: () => ({ e: tire(['H2O', 'NH3', 'CO2', 'CH4', 'H3Op', 'NH4p', 'HOm']), Tb: tire([20, 25, 30]) }),
+    build: (p, q) => {
+      const e = LW.entite(p.e), n = LW.nT(e), noms = [...new Set(e.atomes)], M = e.atomes.reduce((t, a) => t + ({ H: 1.0, C: 12.0, N: 14.0, O: 16.0 })[a], 0);
+      const tokens = {
+        Z1: tok(`Z(${noms[0]}) = ${LW.ZAtome(noms[0])}`, `Numéro atomique de l’atome ${noms[0]}`, LW.ZAtome(noms[0]), ''),
+        Z2: tok(`Z(${noms[1]}) = ${LW.ZAtome(noms[1])}`, `Numéro atomique de l’atome ${noms[1]}`, LW.ZAtome(noms[1]), ''),
+        M: tok(`${nb(M, 1)} g/mol`, `Masse molaire de ${e.nom}`, M, 'g/mol'),
+        Tb: tok(`${p.Tb} °C`, 'Température de la salle', p.Tb, '°C'),
+      };
+      if (e.q !== 0) tokens.q = tok(`${e.q > 0 ? '+' : '−'}${Math.abs(e.q)}`, `Charge de l’ion ${e.formule} (en unités de charge élémentaire)`, e.q, 'e');
+      const raisons = { M: 'La masse molaire sert à passer de la masse à la quantité de matière : elle ne compte pas d’électrons de valence.', Tb: 'La température de la salle n’intervient pas dans la structure électronique de l’entité.' };
+      const debut = ['On étudie ', e.q !== 0 ? 'l’ion ' : 'la molécule ', e.nom, ' ', e.formule, ' (masse molaire ', T('M'), '), dans une salle à ', T('Tb'), '. Ses atomes ont pour numéros atomiques ', T('Z1'), ' et ', T('Z2'), ...(e.q !== 0 ? [' ; l’ion porte la charge ', T('q'), '.'] : [' ; l’entité est électriquement neutre.'])];
+      const utiles = e.q !== 0 ? ['Z1', 'Z2', 'q'] : ['Z1', 'Z2'];
+      if (q === 0) return { tokens, derivees: ['électrons de valence de chaque atome seul, d’après son numéro atomique (configuration électronique)'], texte: [...debut, ' On veut établir son schéma de Lewis : combien d’électrons de valence faut-il représenter au total ?'],
+        utiles, raisons,
+        cherche: { bonne: 'Le nombre total n_T d’électrons de valence de l’entité', faux: ['La quantité de matière de l’entité (en mol)', 'La masse molaire de l’entité (en g/mol)', 'Le nombre total d’électrons de tous les atomes de l’entité'] },
+        manque: null, solution: { txt: 'n_T = somme des électrons de valence des atomes seuls − charge de l’entité', val: n, u: 'électrons' } };
+      return { tokens, derivees: ['électrons de valence de chaque atome seul, d’après son numéro atomique (configuration électronique)', { id: 'nT', nom: 'Nombre total d’électrons de valence', expr: 'n_T = somme des électrons de valence − charge', val: n, u: 'électrons' }],
+        texte: [...debut, ' On veut placer les électrons de valence par paires : combien de doublets faut-il répartir ?'],
+        utiles, raisons,
+        cherche: { bonne: 'Le nombre n_D de doublets d’électrons à répartir', faux: ['Le nombre de liaisons de l’atome central', 'Le nombre total n_T d’électrons de valence', 'Le nombre d’atomes de l’entité'] },
+        manque: null, solution: { txt: 'n_D = n_T ÷ 2', val: n / 2, u: 'doublets' } };
     },
   },
   // ───────────────────────────── Concentration en quantité de matière (1G) : dissolution et dilution

@@ -7,6 +7,7 @@ import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
 import * as QM from "./quantiteMatiereModele";
 import * as CD from "./concentrationModele";
+import * as LW from "./lewisModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -949,6 +950,41 @@ function genQuantiteMatiere1G() {
   [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Quantité de matière : masse molaire d’une espèce, puis n à partir d’une masse, du volume d’un gaz (volume molaire) ou du volume d’un liquide (masse volumique), puis composition d’un mélange.', questions: [q1, q2, q3, q4, q5, q6],
     retenir: ['M = somme des masses molaires atomiques, chacune multipliée par son indice ; n = m / M (m en g, M en g/mol).', 'Gaz : n = V / V_m, avec V_m (en L/mol) donné pour une température et une pression ; liquide : n = ρ·V / M.', 'Mélange : un calcul de n par constituant ; la part en nombre de molécules se compare avec n, pas avec la masse.', 'Convertir avant de calculer : mg → g, mL → L.'] };
+}
+
+// ───────────── Schéma de Lewis (1G) : électrons de valence, doublets, doublets non liants, charge d’un atome ─────────────
+function genLewis1G() {
+  const ZTxt = e => [...new Set(e.atomes)].map(a => `Z(${a}) = ${LW.ZAtome(a)}`).join(', ');
+  const somme = e => LW.valencesDe(e).reduce((t, v) => t + v, 0);
+  const sommeDistincts = e => [...new Set(e.atomes)].reduce((t, a) => t + LW.valenceAtome(a), 0);
+  const sommeZ = e => e.atomes.reduce((t, a) => t + LW.ZAtome(a), 0);
+  const prog = LW.ENTITES_PROGRAMME;
+  const e1 = tire(prog), n1 = LW.nT(e1), S1 = somme(e1);
+  const q1 = { id: 'lw0', type: 'num', q: <>Calculez le nombre total <b>n<sub>T</sub></b> d’électrons de valence de <b>{e1.nom} {e1.formule}</b>. Numéros atomiques : {ZTxt(e1)}.{e1.id === 'Nap' && <> Convention : pour un ion monoatomique issu d’un métal, on ne représente pas sa couche externe pleine (ici n = 2) ; on compte les électrons de valence de l’atome seul, moins la charge.</>}</>, unite: 'électrons', vrai: n1, csMin: String(Math.abs(n1)).length, tolRel: 0,
+    aide: 'Pour chaque atome, écris la configuration électronique : les électrons de valence sont ceux de la couche la plus externe. Additionne-les pour tous les atomes (l’indice de la formule compte), puis tiens compte de la charge : un cation a perdu des électrons, un anion en a gagné.',
+    pieges: [[sommeZ(e1) - e1.q, 'Vous avez utilisé les numéros atomiques Z : il faut seulement les électrons de la couche la plus externe de chaque atome.'], [S1 + e1.q, 'La charge est appliquée à l’envers : un cation a perdu des électrons (on les retire), un anion en a gagné (on les ajoute).'],
+      [sommeDistincts(e1) - e1.q, 'Il faut compter chaque atome de la formule : l’indice (H₂O, NH₃…) donne le nombre d’atomes du même élément.']].concat(e1.q !== 0 ? [[S1, 'Vous avez oublié la charge de l’ion : n_T = (électrons de valence des atomes seuls) − charge.']] : []),
+    expl: <>{[...new Set(e1.atomes)].map(a => { const k = e1.atomes.filter(x => x === a).length; return `${k > 1 ? k + ' × ' : ''}${LW.valenceAtome(a)} (${a})`; }).join(' + ')} = {S1}{e1.q !== 0 ? <> ; charge {e1.q > 0 ? '+' : '−'}{Math.abs(e1.q)} : n<sub>T</sub> = {S1} {e1.q > 0 ? '−' : '+'} {Math.abs(e1.q)} = <b>{n1}</b></> : <> : n<sub>T</sub> = <b>{n1}</b></>} électrons.</> };
+  const e2 = tire(prog.filter(e => LW.nD(e) > 0 && e.id !== e1.id)), n2 = LW.nD(e2), T2 = LW.nT(e2);
+  const q2 = { id: 'lw1', type: 'num', q: <>Combien de <b>doublets d’électrons</b> n<sub>D</sub> faut-il répartir dans <b>{e2.nom} {e2.formule}</b> ? Numéros atomiques : {ZTxt(e2)}.</>, unite: 'doublets', vrai: n2, csMin: String(n2).length, tolRel: 0,
+    aide: 'D’abord n_T (électrons de valence de tous les atomes, corrigés de la charge), puis n_D = n_T ÷ 2 : un doublet contient deux électrons.',
+    pieges: [[T2, 'C’est le nombre d’électrons n_T : un doublet contient deux électrons, il faut diviser par 2.'], [(somme(e2) + e2.q) / 2, 'La charge est appliquée à l’envers : un cation a perdu des électrons, un anion en a gagné.']].concat(e2.q !== 0 ? [[somme(e2) / 2, 'Vous avez oublié la charge de l’ion dans le comptage de n_T.']] : []),
+    expl: <>n<sub>T</sub> = {T2} électrons ; n<sub>D</sub> = {T2} ÷ 2 = <b>{n2}</b> doublets.</> };
+  const ent3 = LW.ENTITES_PROGRAMME.filter(e => { const r = LW.structureRef(e); return r.lp.reduce((t, x) => t + x, 0) > 0 && e.id !== e1.id; });
+  const e3 = tire(ent3), r3 = LW.structureRef(e3), liants3 = r3.liens.reduce((t, x) => t + x, 0), nd3 = LW.nD(e3), lp3 = nd3 - liants3;
+  const q3 = { id: 'lw2', type: 'num', q: <>Le schéma de Lewis de <b>{e3.nom} {e3.formule}</b> comporte <b>{liants3} doublet{liants3 > 1 ? 's' : ''} liant{liants3 > 1 ? 's' : ''}</b> (une liaison double compte pour deux doublets). Combien de <b>doublets non liants</b> comporte-t-il ? Numéros atomiques : {ZTxt(e3)}.</>, unite: 'doublets', vrai: lp3, csMin: String(lp3).length, tolRel: 0,
+    aide: 'Le nombre total de doublets est n_D = n_T ÷ 2. Les doublets non liants sont ceux qui ne sont pas liants : n_D moins les doublets liants.',
+    pieges: [[nd3, 'C’est le nombre total de doublets n_D : il faut en retirer les doublets liants.'], [liants3, 'C’est le nombre de doublets liants : on demande les doublets non liants, ceux qui restent.'], [nd3 + liants3, 'Il faut retirer les doublets liants du total, pas les ajouter.']],
+    expl: <>n<sub>T</sub> = {LW.nT(e3)}, donc n<sub>D</sub> = {nd3} doublets ; doublets non liants = {nd3} − {liants3} = <b>{lp3}</b>.</> };
+  const ent4 = [['H3Op', 0], ['HOm', 1], ['NH4p', 0], ['Clm', 0], ['O2m', 0]].map(([id, k]) => [LW.entite(id), k]);
+  const [e4, k4] = tire(ent4), r4 = LW.structureRef(e4), a4 = e4.atomes[k4], b4 = LW.liaisonsAtome(r4, k4), l4 = r4.lp[k4], v4 = LW.valenceAtome(a4), c4 = v4 - (b4 + 2 * l4);
+  const q4 = { id: 'lw3', type: 'num', q: <>Dans le schéma de <b>{e4.nom} {e4.formule}</b>, l’atome <b>{a4}</b> ({'Z = ' + LW.ZAtome(a4)}) {b4 === 0 ? <b>n’est lié à aucun atome</b> : <>est lié par <b>{b4} liaison{b4 > 1 ? 's' : ''} simple{b4 > 1 ? 's' : ''}</b></>} et {l4 === 0 ? <b>ne porte aucun doublet non liant</b> : <>porte <b>{l4} doublet{l4 > 1 ? 's' : ''} non liant{l4 > 1 ? 's' : ''}</b></>}. Quelle charge porte-t-il, en unités de charge élémentaire e (écrivez par exemple +1, −1 ou 0) ?</>, unite: 'e', vrai: c4, csMin: 1, tolRel: 0,
+    aide: 'Charge = (électrons de valence de l’atome seul) − (électrons qu’il possède dans l’entité). Dans l’entité, il possède 1 électron par liaison et 2 par doublet non liant.',
+    pieges: [[-c4, 'Le signe est inversé : si l’atome possède moins d’électrons que seul, la charge est positive ; s’il en possède plus, elle est négative.'], [v4 - (2 * b4 + 2 * l4), 'Chaque liaison ne compte que pour 1 électron appartenant à l’atome (le doublet est partagé) : électrons possédés = liaisons + 2 × doublets non liants.'], [v4 - 2 * l4, 'Il faut aussi compter les liaisons : chacune apporte 1 électron à l’atome.']],
+    expl: <>Électrons de valence de {a4} seul : {v4} ; électrons possédés dans l’entité : {b4} + 2 × {l4} = {b4 + 2 * l4} ; charge = {v4} − {b4 + 2 * l4} = <b>{c4 > 0 ? '+' : c4 < 0 ? '−' : ''}{Math.abs(c4)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
+  return { intro: 'Schéma de Lewis : nombre total d’électrons de valence, nombre de doublets, doublets non liants et charge portée par un atome.', questions: [q1, q2, q3, q4],
+    retenir: ['n_T = somme des électrons de valence des atomes seuls − charge de l’entité ; n_D = n_T ÷ 2.', 'Doublets non liants = n_D − doublets liants (une liaison double compte pour 2, une triple pour 3).', 'Charge d’un atome = électrons de valence seul − (liaisons + 2 × doublets non liants).'] };
 }
 
 // ───────────── Concentration en quantité de matière (1G) : concentration, masse à peser, prélèvement, dilution ─────────────
@@ -2170,6 +2206,7 @@ export const FAMILLES = [
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
   { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
+  { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },

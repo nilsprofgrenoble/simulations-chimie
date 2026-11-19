@@ -85,6 +85,7 @@ const SimulationInteractions = paresseux(() => import("./simulations/Interaction
 const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactivite"), "SimulationRadioactivite");
 const SimulationQuantiteMatiere = paresseux(() => import("./simulations/QuantiteMatiere"), "SimulationQuantiteMatiere");
 const SimulationConcentrationDilution = paresseux(() => import("./simulations/ConcentrationDilution"), "SimulationConcentrationDilution");
+const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
 const SimulationPredominance = paresseux(() => import("./simulations/Predominance"), "SimulationPredominance");
@@ -346,6 +347,7 @@ const SIMULATIONS = [
     component: SimulationExtraction },
   { id:152, label:"Quantité de matière : masse molaire, volume molaire", niveau:"1G", icon:"⚖️", color:"#0f766e", component: SimulationQuantiteMatiere },
   { id:153, label:"Concentration en quantité de matière : dissolution et dilution", niveau:"1G", icon:"🧪", color:"#0369a1", component: SimulationConcentrationDilution },
+  { id:154, label:"Schéma de Lewis : établir celui d’une molécule ou d’un ion", niveau:"1G", icon:"🧩", color:"#0f766e", component: SimulationLewis },
   { id:115, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
     component: SimulationLentilleMince },
   { id:150, label:"Ondes mécaniques : célérité et retard", niveau:"1G", icon:"🌊", color:"#0369a1",

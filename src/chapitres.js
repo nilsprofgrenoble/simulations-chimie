@@ -32,6 +32,7 @@ export const CHAPITRES = [
 
   { id: '1g-evolution', niveau: '1G', label: '⚗️ Suivi de l’évolution d’un système, siège d’une transformation', sims: [152, 153, 1, 2, 25, 10], domaines: ['Chimie', 'Titrage direct', 'Quantité de matière : masse molaire et volume molaire', 'Concentration en quantité de matière : dissolution et dilution'] },
   { id: '1g-champ', niveau: '1G', label: '🌍 Interactions fondamentales et notion de champ', sims: [51, 48, 49, 50], domaines: ['Interactions et champs'] },
+  { id: 'structure-entites', niveau: '1G', label: '🧩 De la structure à la polarité d’une entité', sims: [154], domaines: ['Schéma de Lewis des molécules et des ions'] },
   { id: '1g-cohesion', niveau: '1G', label: '🧪 Cohésion, solubilité et miscibilité', sims: [53], domaines: ['Cohésion et solubilité'] },
   { id: '1g-organique', niveau: '1G', label: '🧬 La chimie organique', sims: [102, 111], domaines: ['Chimie organique'] },
   { id: '1g-synthese', niveau: '1G', label: '🧫 Synthèse organique : protocole, rendement et contrôle', sims: [109, 112], domaines: ['Synthèse et rendement'] },

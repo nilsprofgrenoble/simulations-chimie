@@ -4455,6 +4455,35 @@ export const PREVOIR = [
       F('les deux : la masse de sel pesée et le volume nominal sont les mêmes', 'La masse et le volume affiché sont les mêmes, mais pas la précision avec laquelle le volume réel est obtenu : elle dépend du verre.'),
       F('aucun des deux : seule une pipette jaugée donne un volume précis ici', 'La pipette jaugée sert à prélever un volume précis ; pour le volume final d’une solution, c’est la fiole jaugée qui convient.'),
     ] },
+
+  { id: 'lewis1g-ammonium-ammoniac', domaine: 'Schéma de Lewis des molécules et des ions', titre: 'Ammoniac et ion ammonium',
+    enonce: 'L’ammoniac NH₃ (N : 5 électrons de valence, H : 1) fixe un ion H⁺ et devient l’ion ammonium NH₄⁺. On rappelle n_T = somme des électrons de valence − charge de l’entité.', q: 'Comparé au schéma de NH₃, celui de NH₄⁺ comporte…', options: [
+      V('le même nombre de doublets : n_T = 8 dans NH₃ comme dans NH₄⁺', 'NH₃ : 5 + 3 = 8 électrons ; NH₄⁺ : 5 + 4 − 1 = 8 électrons. Les 4 doublets sont les mêmes : l’un d’eux, non liant dans NH₃, devient liant dans NH₄⁺.'),
+      F('un doublet de plus : n_T = 8 + 2 = 10 avec l’atome H en plus', 'L’atome H supplémentaire apporte 1 électron, mais l’ion a perdu un électron (charge +) : au total n_T ne change pas.'),
+      F('un doublet de moins : n_T = 8 − 2 = 6 à cause de la charge +', 'La charge + retire un seul électron, et l’atome H supplémentaire en apporte un : le bilan est nul, n_T reste égal à 8.'),
+      F('deux doublets de plus : n_T = 8 + 4 = 12 avec les deux e⁻ de H⁺', 'H⁺ n’a plus aucun électron : le doublet de la nouvelle liaison est un doublet non liant de l’azote, qui devient liant.'),
+    ] },
+  { id: 'lewis1g-carbone-liaisons', domaine: 'Schéma de Lewis des molécules et des ions', titre: 'Les liaisons du carbone dans CH₄ et CO₂',
+    enonce: 'L’atome de carbone a 4 électrons de valence, l’hydrogène 1 et l’oxygène 6. On cherche le schéma de CH₄ puis celui de CO₂ (le carbone est l’atome central) en respectant l’octet.', q: 'Combien de liaisons l’atome de carbone forme-t-il dans chaque molécule (une liaison double compte pour deux) ?', options: [
+      V('quatre dans les deux : il lui manque 4 électrons pour avoir 8', 'Dans CH₄, 4 liaisons simples ; dans CO₂, 2 liaisons doubles : dans les deux cas 4 doublets partagés, soit 8 électrons autour de C.'),
+      F('quatre dans CH₄ et deux dans CO₂ : CO₂ n’a que deux traits', 'Il faut compter les doublets partagés : CO₂ a deux liaisons doubles, soit 4 doublets partagés par C.'),
+      F('quatre dans CH₄ et six dans CO₂ : chaque O apporte trois liaisons', 'Chaque O n’a besoin que de 8 − 6 = 2 liaisons : deux atomes O font 4 doublets partagés avec C, pas 6.'),
+      F('deux dans les deux : il ne partage que ses deux électrons p', 'Pour avoir 8 électrons autour de C, il en manque 4 : il forme 4 liaisons (compte double comprise), pas 2.'),
+    ] },
+  { id: 'lewis1g-lacune-hplus-naplus', domaine: 'Schéma de Lewis des molécules et des ions', titre: 'Deux cations, une seule lacune',
+    enonce: 'Les ions H⁺ et Na⁺ sont deux cations de charge +1 (Z(H) = 1, Z(Na) = 11). Le schéma de H⁺ comporte un rectangle vide, la lacune électronique ; celui de Na⁺ n’en comporte pas.', q: 'Pourquoi le schéma de Na⁺ n’a-t-il pas de lacune ?', options: [
+      V('la couche externe de Na⁺ (n = 2) est déjà pleine à 8 électrons', 'Na perd l’électron de sa couche n = 3 et garde la couche n = 2 complète (8 électrons). Pour H⁺, il ne reste aucun électron : il manque le doublet du duet.'),
+      F('Na a perdu un électron : il lui en reste 10, donc plus de lacune', 'Le nombre total d’électrons ne décide pas : c’est la couche externe qui compte. Celle de Na⁺ (n = 2) est pleine ; celle de H⁺ (n = 1) est vide.'),
+      F('Na⁺ garde son électron de valence 3s : il n’a rien à compléter', 'Na⁺ a perdu son électron de valence (3s¹) : c’est sa couche n = 2, pleine, qui le rend stable, pas cet électron.'),
+      F('le sodium est un métal : un métal ne porte jamais de lacune', 'La raison n’est pas le type d’élément mais la couche externe : celle de Na⁺ (n = 2) est pleine, celle de H⁺ (n = 1) est vide.'),
+    ] },
+  { id: 'lewis1g-anion-cation', domaine: 'Schéma de Lewis des molécules et des ions', titre: 'Compter les électrons d’un cation et d’un anion',
+    enonce: 'On compare l’ion oxyde O²⁻ à l’atome d’oxygène seul (6 électrons de valence), puis l’ion sodium Na⁺ à l’atome de sodium seul (1 électron de valence). Convention : on ne représente pas la couche externe pleine d’un ion monoatomique issu d’un métal ; on compte les électrons de valence de l’atome seul, moins la charge.', q: 'Quelle proposition donne correctement n_T, le nombre d’électrons de valence à représenter ?', options: [
+      V('O²⁻ : 8, plus que O seul ; Na⁺ : 0, moins que Na seul', 'Un anion a gagné des électrons (6 + 2 = 8), un cation en a perdu (1 − 1 = 0).'),
+      F('O²⁻ : 4, moins que O seul ; Na⁺ : 2, plus que Na seul', 'Le signe est inversé : une charge − indique des électrons gagnés (n_T augmente), une charge + des électrons perdus.'),
+      F('O²⁻ : 6, autant que O seul ; Na⁺ : 1, autant que Na seul', 'La charge change le nombre d’électrons : 2 de plus pour 2−, 1 de moins pour +.'),
+      F('O²⁻ : 7, un électron de plus ; Na⁺ : 0, un de moins', 'La charge 2− correspond à deux électrons gagnés, pas un seul : n_T = 6 + 2 = 8.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

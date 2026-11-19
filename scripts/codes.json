@@ -1228,5 +1228,16 @@
  "77:plausible:mol1g-conc-val-prelevement": "VAL297",
  "77:plausible:mol1g-conc-val-facteur": "VAL298",
  "77:plausible:mol1g-conc-val-masse": "VAL299",
- "36:mol1g-conc-calcul": "REA75"
+ "36:mol1g-conc-calcul": "REA75",
+ "34:lewis1g-entite.0": "SAPP329",
+ "34:lewis1g-entite.1": "SAPP330",
+ "37:prevoir:lewis1g-ammonium-ammoniac": "ANA529",
+ "37:prevoir:lewis1g-carbone-liaisons": "ANA530",
+ "37:prevoir:lewis1g-lacune-hplus-naplus": "ANA531",
+ "37:prevoir:lewis1g-anion-cation": "ANA532",
+ "77:plausible:lewis1g-val-ammonium": "VAL300",
+ "77:plausible:lewis1g-val-diazote": "VAL301",
+ "77:plausible:lewis1g-val-eau": "VAL302",
+ "77:plausible:lewis1g-val-hydroxyde": "VAL303",
+ "36:lewis1g-calcul": "REA76"
 }
