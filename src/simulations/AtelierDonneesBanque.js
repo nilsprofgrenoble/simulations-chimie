@@ -3409,6 +3409,52 @@ export const ENONCES = [
         manque: null, solution: { txt: 'coefficient = multiplicateur m₁ de la demi-équation × coefficient de l’oxydant dans cette demi-équation', val: r.reactifs.find(([id]) => id === oxId)?.[1] ?? r.m1 * r.d1.a, u: '' } };
     },
   },
+  // ───────────────────────────── Mesure et incertitudes (1G) : incertitude-type d'une série et d'une mesure unique
+  {
+    id: 'mes1g-sapp-serie', domaine: 'Mesure et incertitudes (1G)', titre: 'Une durée de chute mesurée plusieurs fois', noms: ['Incertitude-type de type A de la moyenne', 'Incertitude-type de type B d’une mesure unique'],
+    gen: () => ({ N: tire([4, 9, 16, 25, 36]), s: tire([0.06, 0.08, 0.12, 0.15]), a: tire([0.1, 0.2, 0.3]), h: tire([1.20, 1.50, 2.00]), th: tire([19, 21, 23]) }),
+    build: epure((p, q) => {
+      p = { ...p, xb: Math.round(Math.sqrt(2 * p.h / 9.81) * 100) / 100 };
+      const tokens = {
+        N: tok(`${p.N} mesures`, 'Nombre de mesures de la série', p.N, ''),
+        s: tok(`${nb(p.s, 2)} s`, 'Écart-type expérimental de la série', p.s, 's'),
+        xb: tok(`${nb(p.xb, 2)} s`, 'Durée moyenne de chute de la série', p.xb, 's'),
+        h: tok(`${nb(p.h, 2)} m`, 'Hauteur de chute de la bille', p.h, 'm'),
+        th: tok(`${p.th} °C`, 'Température de la salle', p.th, '°C'),
+        a: tok(`${nb(p.a, 1)} s`, 'Demi-largeur de l’intervalle donnée par la notice du chronomètre', p.a, 's'),
+      };
+      const raisons = { xb: 'La durée moyenne sert à écrire le résultat, pas à calculer l’incertitude-type.', h: 'La hauteur de chute ne change pas la façon d’évaluer l’incertitude-type.', th: 'La température de la salle n’intervient pas dans l’évaluation de l’incertitude-type.' };
+      const debut = ['Un élève laisse tomber une bille d’une hauteur de ', T('h'), ' dans une salle à ', T('th'), '. Il chronomètre la chute à la main en faisant ', T('N'), ' dans les mêmes conditions : la durée moyenne est ', T('xb'), ' et l’écart-type expérimental de la série est ', T('s'), '. '];
+      if (q === 0) return { tokens, derivees: ['√N : racine carrée du nombre de mesures'],
+        texte: [...debut, 'Quelle est l’incertitude-type de type A sur la durée moyenne ?'],
+        utiles: ['s', 'N'], raisons: { ...raisons, a: 'Cette donnée sert à une évaluation de type B ; ici on dispose d’une série de mesures.' },
+        cherche: { bonne: 'L’incertitude-type u de la moyenne, de type A (en s)', faux: ['La vitesse moyenne de la bille (en m/s)', 'L’incertitude de type B d’une mesure unique (en s)', 'La durée moyenne de chute (en s)'] },
+        manque: null, solution: { txt: 'u = s / √N', val: p.s / Math.sqrt(p.N), u: 's' } };
+      return { tokens, derivees: ['la demi-largeur est déjà donnée : aucun calcul préalable'],
+        texte: ['Un autre élève ne chronomètre qu’une seule fois la chute d’une bille. La notice de son chronomètre, avec le temps de réaction de l’opérateur, indique une demi-largeur d’intervalle ', T('a'), '. La salle est à ', T('th'), ' ; l’élève a laissé tomber la bille de ', T('h'), '. Un premier élève, lui, avait obtenu avec 25 mesures un écart-type de ', T('s'), '. Quelle est l’incertitude-type de type B de la mesure unique ?'],
+        utiles: ['a'], raisons: { ...raisons, s: 'Cet écart-type vient d’une autre série : il ne sert pas pour une mesure unique évaluée par les caractéristiques de l’instrument.' },
+        cherche: { bonne: 'L’incertitude-type de type B de la mesure unique (en s)', faux: ['L’incertitude-type de type A de la moyenne (en s)', 'La hauteur de chute (en m)', 'La durée moyenne de chute (en s)'] },
+        manque: null, solution: { txt: 'u = a / √3 (loi uniforme sur ± a)', val: p.a / Math.sqrt(3), u: 's' } };
+    }),
+  },
+  {
+    id: 'mes1g-sapp-instrument', domaine: 'Mesure et incertitudes (1G)', titre: 'Un volume lu sur une éprouvette graduée', noms: ['Incertitude-type de type B d’une lecture unique'],
+    gen: () => ({ grad: tire([1, 2, 5]), V: tire([34, 46, 62, 78]), th: tire([19, 21, 23]), M: tire([20, 30]), mL: tire([0.5, 1.0]) }),
+    build: epure((p, q) => {
+      const a = p.grad / 2;
+      const tokens = {
+        grad: tok(`${p.grad} mL`, 'Écart entre deux graduations de l’éprouvette', p.grad, 'mL'),
+        V: tok(`${p.V} mL`, 'Volume lu sur l’éprouvette', p.V, 'mL'),
+        th: tok(`${p.th} °C`, 'Température de la salle', p.th, '°C'),
+        M: tok(`${p.M} g`, 'Masse d’eau pesée au préalable', p.M, 'g'),
+      };
+      return { tokens, derivees: ['a = graduation / 2 : demi-largeur de l’intervalle de lecture'],
+        texte: ['Un élève lit une seule fois le volume d’eau dans une éprouvette graduée : le niveau est à ', T('V'), '. Deux graduations successives sont séparées de ', T('grad'), ' ; on admet que la valeur vraie est située dans l’intervalle d’une demi-graduation de part et d’autre de la lecture, avec la même probabilité en tout point (loi uniforme). La salle est à ', T('th'), ' et l’eau avait été pesée : ', T('M'), '. Quelle est l’incertitude-type de type B de cette lecture ?'],
+        utiles: ['grad'], raisons: { V: 'Le volume lu donne la valeur mesurée, pas son incertitude-type.', th: 'La température de la salle n’intervient pas dans cette évaluation de type B.', M: 'La masse d’eau ne sert pas à évaluer l’incertitude-type de la lecture.' },
+        cherche: { bonne: 'L’incertitude-type de type B de la lecture (en mL)', faux: ['L’incertitude-type de type A d’une série (en mL)', 'La masse volumique de l’eau (en g/mL)', 'Le volume lu (en mL)'] },
+        manque: null, solution: { txt: 'u = a / √3 avec a = graduation / 2', val: a / Math.sqrt(3), u: 'mL' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

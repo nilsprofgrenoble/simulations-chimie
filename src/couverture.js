@@ -47,7 +47,7 @@ export const COUVERTURE = [
 
   // ───────────────────────── Première spé PC ─────────────────────────
   { id: '1G', niveau: '1G', label: 'Première spé PC', parties: [
-    { th: MESURE, t: 'Variabilité de la mesure, incertitudes-types de type A et B', e: 'avenir' },
+    { th: MESURE, t: 'Variabilité de la mesure, incertitudes-types de type A et B', e: 'ok', chap: '1g-mesure' },
     { th: CTM, t: 'Composition du système initial : masse molaire, quantité de matière, concentration', e: 'ok', chap: '1g-evolution' },
     { th: CTM, t: 'Absorbance et loi de Beer-Lambert', e: 'ok', chap: '1g-evolution' },
     { th: CTM, t: 'Oxydo-réduction : couples, demi-équations, équation de réaction', e: 'ok', chap: '1g-evolution' },

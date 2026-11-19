@@ -72,6 +72,7 @@ export const EXOS_DE_SIM = {
   155: [/(^|\.)geo1g-/, /plausible\.geo1g-/],
   158: [/(^|\.)savon1g-/, /plausible\.savon1g-/],                                                              // Savons et amphiphilie : pourquoi un savon lave
   157: [/(^|\.)diss1g-/, /plausible\.diss1g-/],                                                              // Dissolution d’un solide ionique : équation et concentration des ions
+  161: [/(^|\.)mes1g-/, /plausible\.mes1g-/],                                                                  // Mesure et incertitudes : variabilité, types A et B
   125: [/(^|\.)equ-/, /plausible\.equ-/],
   129: [/(^|\.)fab-/, /plausible\.fab-/],
   130: [/(^|\.)pdi-/, /plausible\.pdi-/],
