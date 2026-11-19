@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, sci } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, sci, ORANGE_GUIDE } from "../commun";
 import { ECHANTILLONS, POS, STRUCT, METAUX_PAR_STRUCT, compacite, masseVol, fermer, denombrer, cleLigne, FR, SITES, formSite, rSite,
   HOTES, INSERES, IONIQUES, coordPrevue } from "./maillesModele";
 import { fr } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, GRIS, VERT, alea } from "./elecOutils";
 import { Curseur, VoletDefiGen } from "./elecCommun";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { FReseau, FComptage, FContact, FCompacite, FBilanM, FSites, FTaille, FNaCl, FBilanIon } from "./MaillesSchemas";
 
 // ====================================================
 //  SIM 74 — MAILLES CRISTALLINES : motif, dénombrement, compacité, sites interstitiels, cristaux ioniques
@@ -173,10 +175,17 @@ const solution = d => {
 };
 
 // ====================================================
+const ORDRE_PARC = [['contexte', 'cs', 'cfc', 'contact', 'rayon', 'coord', 'compacite', 'masse', 'bilan1'],
+  ['oct', 'tet', 'rsite', 'carbone', 'nacl', 'ioncontact', 'regle', 'bilan2']];
+
 export function SimulationMailles() {
   const [mode, setMode] = useState(() => modeOuverture('mail-guide-v1'));
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('mail-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('mail-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('mail-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('mail-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 1 ? g1 : g2, setGuide = parc === 1 ? setG1 : setG2;
   const [defi, setDefi] = useState(null);
   const [atelier, setAtelier] = useState('maille');
   const [met, setMet] = useState('Cu');
@@ -202,7 +211,7 @@ export function SimulationMailles() {
   };
   const Cu = ECHANTILLONS.Cu, RCu = rMetal('Cu'), FeG = HOTES.FeG, RFeG = STRUCT.F.R(FeG.a), NaCl = IONIQUES.NaCl;
 
-  const ETAPES = [
+  const TOUTES = [
     { id: 'contexte', titre: 'Réseau, nœuds, motif et maille', depart: () => voir({ atelier: 'maille', met: 'Cu', echelle: 0.4, contact: false, corrige: false }),
       texte: <>Un cristal est un empilement périodique en 3 dimensions. On le décrit avec trois idées :
         <ul style={{ margin: '4px 0', paddingLeft: 18 }}><li>le <strong>réseau</strong> : un ensemble de points, les <strong>nœuds</strong>, qui se déduisent les uns des autres par translation ;</li>
@@ -212,22 +221,8 @@ export function SimulationMailles() {
       tache: { type: 'qcm', q: 'Le cuivre est cubique à faces centrées, avec un atome de cuivre sur chaque nœud. Quel est son motif ?', options: ['un seul atome de cuivre', 'quatre atomes de cuivre', 'la maille cubique entière', 'un nœud du réseau'], bonne: 0,
         expl: 'Le motif est un atome Cu. La maille contient 4 atomes parce qu’elle contient 4 nœuds (et non parce que le motif en comporte 4).', indice: "Distingue le motif (ce qu’on place sur chaque nœud du réseau) du nombre d’atomes par maille (où l’on compte les atomes partagés entre plusieurs mailles)." } },
     { id: 'cs', titre: 'Compter les atomes : la maille cubique simple', depart: () => voir({ atelier: 'maille', met: 'Po', echelle: 0.45, contact: false, corrige: false }),
-      retenirTitre: 'À RETENIR : COMPTER LES ATOMES D’UNE MAILLE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Position</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Part dans la maille</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Total pour la position</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>sommet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1/8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>8 × 1/8 = 1</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>milieu d’arête</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1/4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>12 × 1/4 = 3</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>centre de face</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1/2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>6 × 1/2 = 3</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>intérieur de la maille</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 chacun</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Cubique simple : <strong>1</strong> atome ; cubique centré : 1 + 1 = <strong>2</strong> ; cubique à faces centrées : 1 + 3 = <strong>4</strong>.</li>
-          <li>Réseau = nœuds ; motif = atome(s) sur chaque nœud ; maille = volume qui reconstruit le cristal par translation.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : RÉSEAU, MOTIF ET MAILLE',
+      retenir: <><FReseau/>{puces(<><strong>Réseau</strong> = nœuds ; <strong>motif</strong> = atome(s) sur chaque nœud ; <strong>maille</strong> = volume qui reconstruit le cristal par translation.</>, <>Le nombre d’atomes par maille vient du nombre de nœuds de la maille, pas du motif.</>)}</>,
       texte: <>Les atomes situés sur un <strong>sommet</strong> sont partagés entre 8 mailles voisines : seule <strong>1/8</strong> de chacun appartient en propre à la maille. Cliquez sur « Afficher le dénombrement » pour vérifier vos comptes. Exemple en cubique simple (polonium) : 8 sommets × 1/8 = 1 atome par maille.
         <ExempleResolu>Règle générale : sommet <strong>1/8</strong> ; milieu d’arête <strong>1/4</strong> ; centre de face <strong>1/2</strong> ; intérieur de la maille <strong>1</strong>.</ExempleResolu>
         Passez à la maille cubique centrée (tungstène, bouton CC) et comptez avant de répondre.</>,
@@ -240,30 +235,11 @@ export function SimulationMailles() {
         calcul: () => ['Sommets : 8 × 1/8 = 1 atome en propre.', 'Centres des 6 faces : chaque atome est partagé entre 2 mailles, donc 6 × 1/2 = 3 atomes.', 'Total : 1 + 3 = 4 atomes par maille.'],
         pieges: [[14, 'Vous avez compté 8 sommets + 6 faces en entier : sommets 1/8, faces 1/2.'], [7, 'Les atomes des faces sont partagés entre 2 mailles : 1/2 chacun (et non 1).']], expl: '8 × 1/8 + 6 × 1/2 = 1 + 3 = 4.', indice: "Compte les atomes des sommets (chacun partagé entre 8 mailles) et ceux des centres de faces (chacun partagé entre 2 mailles)." } },
     { id: 'contact', titre: 'Des sphères qui se touchent', depart: () => voir({ atelier: 'maille', met: 'Cu', echelle: 0.5, contact: true, corrige: false }),
+      retenirTitre: 'À RETENIR : COMPTER LES ATOMES D’UNE MAILLE',
+      retenir: <><FComptage/>{puces(<>Un atome partagé entre plusieurs mailles ne compte que pour une fraction : 1/8 au sommet (8 mailles), 1/4 sur une arête (4), 1/2 sur une face (2).</>)}</>,
       texte: <>On assimile les atomes à des <strong>sphères dures</strong>. Dans un métal, elles se touchent le long de la direction où elles sont le plus proches (trait pointillé). Augmentez la taille des atomes avec le curseur « Taille des sphères » jusqu’à ce qu’elles se touchent (100 %). Le trait pointillé montre alors une longueur de <strong>4 R</strong>.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'maille' && echelle >= 0.97, consigne: 'Réglez la taille des sphères à 100 % (atomes en contact).' } },
     { id: 'rayon', titre: 'Relier a et R', depart: () => voir({ atelier: 'maille', met: 'Cu', echelle: 1, contact: true, corrige: false }),
-      retenirTitre: 'À RETENIR : A ET R, LE CONTACT ENTRE ATOMES',
-      retenir: <>
-        <svg viewBox="0 0 400 290" role="img" aria-label="Face d’une maille cubique à faces centrées : les atomes, assimilés à des sphères de rayon R, se touchent le long de la diagonale de la face, qui mesure a racine de 2 et porte quatre rayons" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <rect x="70" y="62" width="160" height="160" fill="none" stroke="#334155" strokeWidth="2" />
-          <circle cx="70" cy="62" r="56.6" fill="#0072b2" fillOpacity="0.22" stroke="#0072b2" strokeWidth="1.6" /><circle cx="230" cy="62" r="56.6" fill="#0072b2" fillOpacity="0.22" stroke="#0072b2" strokeWidth="1.6" /><circle cx="70" cy="222" r="56.6" fill="#0072b2" fillOpacity="0.22" stroke="#0072b2" strokeWidth="1.6" /><circle cx="230" cy="222" r="56.6" fill="#0072b2" fillOpacity="0.22" stroke="#0072b2" strokeWidth="1.6" /><circle cx="150" cy="142" r="56.6" fill="#0072b2" fillOpacity="0.22" stroke="#0072b2" strokeWidth="1.6" />
-          <line x1="70" y1="62" x2="230" y2="222" stroke="#d55e00" strokeWidth="2.4" strokeDasharray="6 4" />
-          <text x="256" y="76" fontSize="13" fontWeight="700" fill="#334155">face d’une maille CFC</text>
-          <text x="256" y="106" fontSize="13" fontWeight="700" fill="#d55e00">diagonale = a√2</text>
-          <text x="256" y="126" fontSize="13" fontWeight="700" fill="#d55e00">= R + 2R + R = 4R</text>
-          <text x="256" y="160" fontSize="13" fill="#334155">donc</text>
-          <text x="256" y="180" fontSize="14" fontWeight="700" fill="#334155">R = a√2 / 4</text>
-        </svg>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Structure</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Contact le long de</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Relation</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique simple</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>arête</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>a = 2R</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique centré</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>diagonale du cube</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>a√3 = 4R</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique à faces centrées</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>diagonale d’une face</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>a√2 = 4R</td></tr>
-          </tbody>
-        </table>
-      </>,
       texte: <>Le pointillé est la <strong>diagonale d’une face</strong> du cube : sa longueur est a√2 (théorème de Pythagore) et elle porte 4 rayons (R + 2R + R). Donc <strong>a√2 = 4 R</strong>.
         <ExempleResolu>Les autres structures : cubique simple a = 2R (arête) ; cubique centré a√3 = 4R (diagonale du cube).</ExempleResolu>
         Pour le cuivre, a = {fr(Cu.a, 5)} nm.</>,
@@ -272,6 +248,8 @@ export function SimulationMailles() {
           `R = ${fr(Cu.a, 5)} × ${fr(Math.SQRT2, 4)} / 4 = ${fr(Cu.a * Math.SQRT2, 5)} / 4 = ${fr(RCu, 4)} nm.`],
         pieges: [[Cu.a * Math.SQRT2, 'a√2 est la longueur de la diagonale de la face : elle porte 4 rayons (R + 2R + R), donc R = a√2 / 4.'], [Cu.a / 2, 'a / 2 correspond à la relation a = 2R du cubique simple : ici les atomes se touchent sur la diagonale d’une face.'], [Cu.a * Math.sqrt(3) / 4, 'a√3 / 4 est la relation du cubique centré (diagonale du cube).']], expl: 'R = a√2 / 4 = 0,36149 × 1,4142 / 4 = 0,1278 nm.', indice: "En cubique à faces centrées, les atomes sont tangents le long de la diagonale d’une face : a√2 = 4 R. Isole R." } },
     { id: 'coord', titre: 'La coordinence', depart: () => voir({ atelier: 'maille', met: 'W', echelle: 0.6, contact: true, corrige: false }),
+      retenirTitre: 'À RETENIR : LE CONTACT ENTRE ATOMES',
+      retenir: <><FContact/>{puces(<>Modèle des <strong>sphères dures</strong> : les atomes se touchent le long de la direction où ils sont le plus proches.</>, <>Pythagore : la diagonale d’une face mesure a√2 ; celle du cube, a√3.</>)}</>,
       texte: <>La <strong>coordinence</strong> d’un atome est le nombre de ses plus proches voisins (ceux qu’il touche). Dans le tungstène (cubique centré), regardez l’atome du centre et le trait pointillé.</>,
       tache: { type: 'qcm', q: 'Quelle est la coordinence du cubique centré ?', options: ['6', '8', '12', '14'], bonne: 1, expl: 'L’atome central touche les 8 atomes des sommets. (Cubique simple : 6 ; cubique à faces centrées : 12.)', indice: "La coordinence est le nombre de plus proches voisins d’un atome. Pour l’atome central de la maille cubique centrée, combien d’atomes le touchent ?" } },
     { id: 'compacite', titre: 'La compacité', depart: () => voir({ atelier: 'maille', met: 'Cu', echelle: 1, contact: true, corrige: false }),
@@ -289,21 +267,7 @@ export function SimulationMailles() {
           [compacite(4, RCu, Cu.a) * 0.75, 'Le volume d’une sphère est (4/3) π R³ : n’oubliez pas le facteur 4/3.']], expl: 'C = 4 × (4/3) × π × 0,1278³ / 0,36149³ = 0,74. Cette valeur est la même pour tous les métaux CFC.', indice: "Compacité = volume occupé par les atomes ÷ volume de la maille = n × (4/3) π R³ / a³." } },
     { id: 'masse', titre: 'La masse volumique', depart: () => voir({ atelier: 'maille', met: 'Cu', echelle: 0.5, contact: false, corrige: false }),
       retenirTitre: 'À RETENIR : COMPACITÉ ET MASSE VOLUMIQUE',
-      retenir: <>
-        <Formule><mi>C</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo>×</mo><mfrac><mn>4</mn><mn>3</mn></mfrac><mi>π</mi><msup><mi>R</mi><mn>3</mn></msup></mrow><msup><mi>a</mi><mn>3</mn></msup></mfrac><mspace width="1.5em"/><mi>ρ</mi><mo>=</mo><mfrac><mrow><mi>n</mi><mo>×</mo><mi>M</mi></mrow><mrow><msub><mi>N</mi><mtext>A</mtext></msub><mo>×</mo><msup><mi>a</mi><mn>3</mn></msup></mrow></mfrac></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Structure</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>n</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Coordinence</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Compacité C</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique simple</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>6</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,52</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique centré</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,68</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cubique à faces centrées</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>12</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,74</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>C est une fraction (sans unité) comprise entre 0 et 1, pas un pourcentage.</li>
-          <li>ρ en g/cm³ : M en g/mol, a converti en cm (1 nm = 10⁻⁷ cm), N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.</li>
-        </ul>
-      </>,
+      retenir: <><FCompacite/>{puces(<>C est une fraction (sans unité) comprise entre 0 et 1, pas un pourcentage.</>, <>ρ en g/cm³ : M en g/mol, a converti en cm, N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.</>)}</>,
       texte: <>La masse d’une maille est n M / N<sub>A</sub> et son volume a³ : <strong>ρ = n M / (N<sub>A</sub> a³)</strong>, avec a en cm (1 nm = 10⁻⁷ cm). Pour le cuivre : n = 4 atomes par maille, a = {fr(Cu.a, 5)} nm, M(Cu) = {fr(Cu.M, 3)} g/mol. N<sub>A</sub> = 6,022 × 10²³ mol⁻¹.</>,
       tache: { type: 'num', q: 'Masse volumique du cuivre (en g/cm³)', unite: 'g/cm³', vrai: masseVol(4, Cu.M, Cu.a), tol: 0.02, affiche: x => fr(x, 2),
         calcul: () => { const aCm = Cu.a * 1e-7, m = 4 * Cu.M / 6.02214076e23;
@@ -325,19 +289,7 @@ export function SimulationMailles() {
         pieges: [[4, 'C’est le nombre de sites octaédriques. Les sites tétraédriques sont tous à l’intérieur de la maille : comptez-les.']], expl: '8 sites, tous à l’intérieur de la maille : 2 par atome.', indice: "Les sites tétraédriques sont au centre de chacun des huit petits cubes d’arête a/2 qui composent la maille. Combien y en a-t-il ?" } },
     { id: 'rsite', titre: 'Quelle taille pour le site ?', depart: () => voir({ atelier: 'sites', hote: 'FeG', site: 'oct', ins: null, echelle: 0.45, contact: false, corrige: false }),
       retenirTitre: 'À RETENIR : LES SITES INTERSTITIELS DU CFC',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Site</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Entouré de</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Par maille</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Position</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rayon maximal</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>octaédrique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>6 atomes hôtes (octaèdre)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>centre du cube et milieux des arêtes</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>r = a/2 − R ≈ 0,414 R</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>tétraédrique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4 atomes hôtes (tétraèdre)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>au quart des diagonales du cube</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>r = a√3/4 − R ≈ 0,225 R</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un atome inséré ne rentre sans déformer la maille que si son rayon est inférieur à celui du site.</li>
-          <li>Le carbone (plus gros que le site octaédrique du fer γ) s’y insère en déformant la maille : la solubilité reste limitée, mais plus grande que dans le fer α (sites plus petits).</li>
-        </ul>
-      </>,
+      retenir: <><FSites/>{puces(<>Sites octaédriques : centre du cube (1) + milieux des 12 arêtes (12 × 1/4 = 3). Sites tétraédriques : 8, tous à l’intérieur de la maille.</>, <>Un atome inséré ne rentre sans déformer la maille que si son rayon est inférieur à celui du site.</>)}</>,
       texte: <>Un atome inséré dans un site octaédrique du CFC touche deux atomes hôtes alignés le long de l’arête : <strong>a = 2R + 2r</strong>, donc <strong>r = a/2 − R</strong>.
         Fer γ : a = {fr(FeG.a, 4)} nm, donc R = a√2 / 4 = {fr(RFeG, 4)} nm.</>,
       tache: { type: 'num', q: 'Rayon maximal d’un atome logé dans un site octaédrique du fer γ (en nm)', unite: 'nm', vrai: FeG.a / 2 - RFeG, tol: 0.03, affiche: x => fr(x, 4),
@@ -349,6 +301,8 @@ export function SimulationMailles() {
       tache: { type: 'qcm', q: 'Que peut-on conclure pour le carbone dans le fer γ ?', options: ['Il s’insère en déformant la maille : la solubilité est limitée, mais bien plus grande que dans le fer α dont les sites sont plus petits', 'Il rentre exactement dans le site octaédrique', 'Il ne peut pas s’insérer du tout dans le fer', 'Le site octaédrique du fer γ est plus petit que celui du fer α'], bonne: 0,
         expl: 'Plus le site est grand, plus la déformation est faible. Fer α : sites de 0,019 et 0,036 nm ; fer γ : 0,053 nm. La solubilité maximale du carbone est d’environ 2 % en masse dans γ contre 0,02 % dans α.', indice: "Compare le rayon maximal du site octaédrique du fer γ au rayon de l’atome de carbone : le carbone y entre-t-il sans déformer la maille ?" } },
     { id: 'nacl', titre: 'Un cristal ionique : NaCl', depart: () => voir({ atelier: 'ionique', ion: 'NaCl', echelle: 0.8, contact: false, corrige: false }),
+      retenirTitre: 'À RETENIR : LA TAILLE DES SITES',
+      retenir: <><FTaille/>{puces(<>Le carbone, plus gros que le site octaédrique du fer γ, s’y insère en déformant la maille : la solubilité reste limitée, mais plus grande que dans le fer α (sites plus petits).</>)}</>,
       texte: <>Dans NaCl, les ions Cl⁻ (bleu) forment un réseau <strong>cubique à faces centrées</strong> et les ions Na⁺ (rouge) occupent tous les <strong>sites octaédriques</strong> : ceux que vous avez comptés à l’étape précédente ! Dénombrez les ions Na⁺ de la maille (tableau, ligne par ligne).</>,
       tache: { type: 'num', q: 'Nombre d’ions Na⁺ par maille de NaCl', unite: '', vrai: 4, tol: 0.001, affiche: x => String(x),
         calcul: () => ['Les ions Na⁺ occupent les sites octaédriques du réseau CFC des ions Cl⁻.', 'Milieux des 12 arêtes : 12 × 1/4 = 3 ions Na⁺ ; centre du cube : 1 × 1 = 1 ion Na⁺.', 'Total : 3 + 1 = 4 ions Na⁺ par maille (comme 4 Cl⁻ : 8 × 1/8 + 6 × 1/2).'],
@@ -360,32 +314,21 @@ export function SimulationMailles() {
           `r₊ + r₋ = ${fr(NaCl.cat.r, 3)} + ${fr(NaCl.an.r, 3)} = ${fr(NaCl.cat.r + NaCl.an.r, 3)} nm.`, `a = 2 × ${fr(NaCl.cat.r + NaCl.an.r, 3)} = ${fr(2 * (NaCl.cat.r + NaCl.an.r), 3)} nm.`],
         pieges: [[2 * Math.SQRT2 * NaCl.an.r, 'Dans NaCl les anions ne se touchent pas entre eux : le contact a lieu entre un cation et un anion voisins, le long de l’arête (a = 2 (r₊ + r₋)).'], [NaCl.cat.r + NaCl.an.r, 'C’est a / 2 : l’arête porte 2 fois r₊ + r₋ (Cl⁻, Na⁺, Cl⁻).']], expl: 'a = 2 × (0,102 + 0,181) = 0,566 nm, à 0,4 % du paramètre mesuré (0,5640 nm).', indice: "Cation et anion sont en contact le long de l’arête de la maille : a = 2 (r₊ + r₋)." } },
     { id: 'regle', titre: 'Prévoir la coordinence', depart: () => voir({ atelier: 'ionique', ion: 'CsCl', echelle: 0.8, contact: true, corrige: true }),
-      retenirTitre: 'À RETENIR : LES CRISTAUX IONIQUES',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>r₊ / r₋</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Coordinence du cation</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>0,225 à 0,414</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>4</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>0,414 à 0,732</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>6</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>0,732 à 1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>8</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>NaCl : Cl⁻ en réseau CFC, Na⁺ dans tous les sites octaédriques ; 4 Na⁺ et 4 Cl⁻ par maille.</li>
-          <li>Contact entre un cation et un anion voisins (jamais anion–anion) : pour NaCl, a = 2 (r₊ + r₋).</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : LE CRISTAL IONIQUE NaCl',
+      retenir: <><FNaCl/>{puces(<>NaCl : Cl⁻ en réseau CFC, Na⁺ dans tous les sites octaédriques ; 4 Na⁺ et 4 Cl⁻ par maille.</>, <>Contact entre un cation et un anion voisins (jamais anion–anion) : a = 2 (r₊ + r₋).</>)}</>,
       texte: <>Un cation s’entoure d’autant d’anions que possible, à condition de les toucher. Le rapport <strong>r<sub>+</sub> / r<sub>−</sub></strong> permet de prévoir : de 0,225 à 0,414 → 4 voisins ; de 0,414 à 0,732 → 6 ; de 0,732 à 1 → 8.
         Pour CsCl : r(Cs⁺) = {fr(IONIQUES.CsCl.cat.r, 3)} nm et r(Cl⁻) = {fr(IONIQUES.CsCl.an.r, 3)} nm.</>,
       tache: { type: 'qcm', q: 'Coordinence prévue pour Cs⁺ dans CsCl (r₊ / r₋ = 0,96)', options: ['4', '6', '8', '12'], bonne: 2, expl: '0,96 est compris entre 0,732 et 1 : le cation est entouré de 8 anions (maille cubique simple d’anions, cation au centre).', indice: "Compare le rapport r₊ / r₋ aux domaines de stabilité de chaque coordinence (tableau du cours)." } },
-    { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Cristal = réseau + motif ; atomes en propre : sommet 1/8, arête 1/4, face 1/2, intérieur 1 (CS 1 ; CC 2 ; CFC 4).</li>
-        <li>Contact : CS a = 2R ; CC a√3 = 4R ; CFC a√2 = 4R. Coordinences 6, 8, 12.</li>
-        <li>C = n (4/3)πR³ / a³ : 0,52 ; 0,68 ; 0,74. ρ = n M / (N<sub>A</sub> a³).</li>
-        <li>CFC : 4 sites octaédriques (r = a/2 − R = 0,414 R) et 8 tétraédriques (r = a√3/4 − R = 0,225 R).</li>
-        <li>Cristal ionique : anions et cations comptés séparément ; contact cation–anion ; r<sub>+</sub> / r<sub>−</sub> prévoit la coordinence.</li></ul></ARetenir>, tache: null },
+    { id: 'bilan1', titre: 'Le bilan', depart: null,
+      retenirTitre: 'À RETENIR : MÉTAUX, DE LA MAILLE À LA MASSE VOLUMIQUE',
+      retenir: <><FBilanM/>{puces(<>Cristal = <strong>réseau + motif</strong> ; atomes en propre : sommet 1/8, arête 1/4, face 1/2, intérieur 1.</>, <>Coordinences : 6 (CS), 8 (CC), 12 (CFC). Compacités : 0,52 ; 0,68 ; 0,74.</>)}</>,
+      texte: <>Vous savez compter les atomes d’une maille, relier a et R, calculer la compacité et la masse volumique d’un métal. Le <strong>parcours 2</strong> étudie les vides du CFC (acier) et les cristaux ioniques.</>, tache: null },
+    { id: 'bilan2', titre: 'Le bilan', depart: null,
+      retenirTitre: 'À RETENIR : SITES ET CRISTAUX IONIQUES',
+      retenir: <><FBilanIon/>{puces(<>CFC : 4 sites octaédriques (r = a/2 − R = 0,414 R) et 8 tétraédriques (r = a√3/4 − R = 0,225 R).</>, <>Cristal ionique : anions et cations comptés séparément ; NaCl a 4 Na⁺ et 4 Cl⁻ par maille.</>)}</>,
+      texte: <>Vous savez compter et dimensionner les sites interstitiels, et prévoir la coordinence d’un cristal ionique.</>, tache: null },
   ];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(x => x.id === id));
   useEffect(() => {
     if (mode !== 'guide') return;
     const dep = ETAPES[Math.min(guide.etape, ETAPES.length - 1)].depart;
@@ -495,6 +438,7 @@ export function SimulationMailles() {
     <li>sommet 1/8 ; arête 1/4 ; face 1/2 ; intérieur 1</li><li>CS a = 2R ; CC a√3 = 4R ; CFC a√2 = 4R</li><li>C = n (4/3)πR³ / a³ ; ρ = n M / (N<sub>A</sub> a³)</li><li>CFC : 4 sites octaédriques, 8 tétraédriques</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : sites et cristaux ioniques</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
@@ -520,7 +464,12 @@ export function SimulationMailles() {
           {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution} indice={indiceDefi}/></div>}
           {!enDefi && planche}
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Parcours :</span>
+            {[[1, '1. Les métaux'], [2, '2. Sites et cristaux ioniques']].map(([k, nom]) => <button key={k} aria-pressed={parc === k} onClick={() => setParc(k)} style={styleBouton(parc === k, ORANGE_GUIDE)}>{nom}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? panneauHypo : null}
       </div>
       {!enDefi && <div className="mail-l2">{panneauHypo}</div>}
       {enExplore && <div className="mail-l2">{aEssayer}{retenir}</div>}
