@@ -70,6 +70,7 @@ export const EXOS_DE_SIM = {
   154: [/(^|\.)lewis1g-/, /plausible\.lewis1g-/],                                                              // Schéma de Lewis : établir celui d’une molécule ou d’un ion
   156: [/(^|\.)redox1g-/, /plausible\.redox1g-/],                                                                    // Oxydo-réduction : couples, demi-équations et équation de réaction
   155: [/(^|\.)geo1g-/, /plausible\.geo1g-/],
+  160: [/(^|\.)coul1g-/, /plausible\.coul1g-/],                                                                        // Couleurs : synthèses additive et soustractive, couleur des objets
   158: [/(^|\.)savon1g-/, /plausible\.savon1g-/],                                                              // Savons et amphiphilie : pourquoi un savon lave
   157: [/(^|\.)diss1g-/, /plausible\.diss1g-/],                                                              // Dissolution d’un solide ionique : équation et concentration des ions
   161: [/(^|\.)mes1g-/, /plausible\.mes1g-/],                                                                  // Mesure et incertitudes : variabilité, types A et B

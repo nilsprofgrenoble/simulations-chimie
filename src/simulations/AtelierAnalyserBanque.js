@@ -4712,6 +4712,42 @@ export const PREVOIR = [
       F('1 : le facteur √3 est le même pour les deux lentilles', 'Le facteur √3 est le même, mais a ne l’est pas : u = a / √3 est proportionnelle à la demi-largeur, qui double.'),
       F('4 : u varie comme le carré de la largeur de l’intervalle', 'u = a / √3 est proportionnelle à a, pas à a² : doubler la largeur double u.'),
     ] },
+  // ───────────────────────────── Couleurs (1G) : synthèses additive et soustractive, couleur des objets
+  { id: 'coul1g-ana-vert-bleu', domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Deux lampes, une verte et une bleue',
+    enonce: 'Dans une pièce sans autre lumière, une lampe verte et une lampe bleue, de même puissance, éclairent la même zone d’un écran blanc.', q: 'Quelle couleur observe-t-on dans la zone éclairée par les deux lampes ?', options: [
+      F('noir : les deux lumières se gênent et s’annulent l’une l’autre', 'Des lumières ne se retirent pas : elles s’ajoutent. La zone est plus lumineuse que chaque disque seul, elle n’est pas noire.'),
+      F('jaune : le vert l’emporte et le bleu n’a pas d’effet visible', 'Le jaune est de la lumière rouge et verte. Ici, le bleu stimule aussi des cônes de l’œil : la couleur perçue n’est pas du jaune.'),
+      V('cyan : les cônes sensibles au vert et au bleu sont stimulés', 'Les lumières s’additionnent (synthèse additive) : vert + bleu = cyan. Les cônes sensibles au rouge restent au repos.'),
+      F('vert foncé : comme un mélange de peintures bleue et verte', 'Ce raisonnement est celui des peintures (synthèse soustractive). Pour des lampes qui émettent de la lumière, on additionne : le résultat est clair.'),
+    ] },
+  { id: 'coul1g-ana-filtres-succession', domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Un filtre magenta puis un filtre jaune',
+    enonce: 'Un filtre magenta laisse passer le rouge et le bleu. Un filtre jaune laisse passer le rouge et le vert. On les place l’un derrière l’autre sur le trajet d’une lumière blanche.', q: 'De quelle couleur est la lumière qui sort du second filtre ?', options: [
+      F('blanche : les deux filtres se complètent et rendent toutes les radiations', 'Chaque filtre retire des radiations, aucun n’en ajoute : le vert est absorbé par le magenta, le bleu par le jaune.'),
+      F('orange : le magenta et le jaune se mélangent comme deux peintures', 'On ne mélange pas les couleurs des filtres : on suit les radiations qui traversent les deux. Il n’y a pas de vert pour faire de l’orange.'),
+      F('noire : deux filtres de couleurs différentes arrêtent toute la lumière', 'Le rouge est laissé passer par les deux filtres : il reste de la lumière, rouge.'),
+      V('rouge : c’est la seule radiation qui traverse les deux filtres à la fois', 'Le rouge est dans la liste des deux filtres ; le vert est absorbé par le premier, le bleu par le second.'),
+    ] },
+  { id: 'coul1g-ana-ballon-vert', domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Un ballon magenta éclairé en vert',
+    enonce: 'Un ballon paraît magenta en lumière blanche : il diffuse le rouge et le bleu, et absorbe le vert. On l’éclaire uniquement avec une lampe verte, dans une pièce sans autre lumière.', q: 'De quelle couleur paraît le ballon ?', options: [
+      F('vert : un objet prend la couleur de la lumière qui l’éclaire', 'Un objet ne fait que renvoyer une partie de la lumière reçue : il ne peut pas diffuser un vert qu’il absorbe.'),
+      F('magenta : la couleur d’un objet ne dépend pas de la lumière reçue', 'Le ballon n’est magenta que s’il reçoit du rouge et du bleu à diffuser. Sous une lumière verte, ce n’est plus le cas.'),
+      V('noir : le vert reçu est absorbé, rien n’est renvoyé vers l’œil', 'La lumière diffusée ne contient que des radiations reçues. Le ballon n’en diffuse aucune parmi celles que la lampe envoie : il paraît noir (dans le modèle idéal ; un vrai ballon paraîtrait très sombre).'),
+      F('cyan : le vert de la lampe s’ajoute au bleu que le ballon diffuse', 'La lampe n’envoie pas de bleu : le ballon n’a pas de bleu à diffuser, et il absorbe le vert reçu.'),
+    ] },
+  { id: 'coul1g-ana-filtre-cyan-rouge', domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Un filtre cyan devant une lampe rouge',
+    enonce: 'Un filtre cyan laisse passer le vert et le bleu, et absorbe le rouge. On le place devant une lampe qui n’émet que de la lumière rouge, dans une pièce sans autre lumière.', q: 'Que voit-on de l’autre côté du filtre ?', options: [
+      F('du cyan : un filtre donne sa couleur à toute lumière qui le traverse', 'Un filtre ne fabrique pas de lumière : il ne laisse passer que des radiations qu’il reçoit, ici seulement du rouge.'),
+      V('du noir : le filtre absorbe entièrement la lumière rouge de la lampe', 'La lampe n’envoie que du rouge, et le filtre cyan absorbe le rouge : aucune radiation ne ressort.'),
+      F('du rouge : une lumière rouge traverse n’importe quel filtre transparent', 'Un filtre transparent ne laisse pas passer toutes les radiations : le filtre cyan absorbe le rouge.'),
+      F('du blanc : le cyan et le rouge sont complémentaires et s’ajoutent', 'Cyan et rouge donnent du blanc quand on ajoute des lumières ; un filtre, lui, n’ajoute rien : il absorbe le rouge.'),
+    ] },
+  { id: 'coul1g-ana-modele-affiche', domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Les couleurs d’une affiche imprimée',
+    enonce: 'Les couleurs d’une affiche sont obtenues avec des encres cyan, magenta et jaune déposées sur du papier blanc. L’affiche est éclairée par la lumière du jour.', q: 'Quel modèle permet de prévoir la couleur d’une zone de l’affiche ?', options: [
+      F('la synthèse additive : les encres émettent des lumières qui s’ajoutent', 'Une encre n’émet pas de lumière : elle absorbe certaines radiations de la lumière qu’elle reçoit.'),
+      F('la synthèse additive : la lumière du jour contient du rouge, du vert et du bleu', 'La lumière du jour contient bien ces trois radiations, mais la couleur dépend de ce que les encres retirent, pas d’une addition.'),
+      F('aucun des deux : les encres sont des objets, ni des lumières ni des filtres', 'Les encres agissent comme des filtres posés sur le papier : le modèle soustractif s’applique aussi aux objets colorés.'),
+      V('la synthèse soustractive : les encres absorbent une partie de la lumière', 'Chaque encre absorbe une partie de la lumière blanche que le papier diffuse : c’est le principe de l’impression en couleurs.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

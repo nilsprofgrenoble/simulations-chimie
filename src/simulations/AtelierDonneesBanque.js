@@ -26,8 +26,10 @@ import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
 import * as RX from "./redoxModele";
+import * as CL from "./couleursModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
 const sci3 = x => { const [m, e] = Number(x).toExponential(2).split('e'); return `${Number(m).toLocaleString('fr-FR')} × 10${[...String(Number(e))].map(c => SUP[c]).join('')}`; };
 export const nb = (x, d = null) => (d == null
@@ -3453,6 +3455,35 @@ export const ENONCES = [
         utiles: ['grad'], raisons: { V: 'Le volume lu donne la valeur mesurée, pas son incertitude-type.', th: 'La température de la salle n’intervient pas dans cette évaluation de type B.', M: 'La masse d’eau ne sert pas à évaluer l’incertitude-type de la lecture.' },
         cherche: { bonne: 'L’incertitude-type de type B de la lecture (en mL)', faux: ['L’incertitude-type de type A d’une série (en mL)', 'La masse volumique de l’eau (en g/mL)', 'Le volume lu (en mL)'] },
         manque: null, solution: { txt: 'u = a / √3 avec a = graduation / 2', val: a / Math.sqrt(3), u: 'mL' } };
+    }),
+  },
+  // ───────────────────────────── Couleurs (1G) : radiations renvoyées ou absorbées par un objet
+  {
+    id: 'coul1g-sapp-objet', domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Un objet éclairé par une lampe colorée', noms: ['Nombre de radiations renvoyées par l’objet éclairé en lumière colorée', 'Nombre de radiations absorbées par l’objet en lumière blanche'],
+    gen: () => ({ o: tire(CL.OBJETS.filter(o => !['papier', 'ardoise'].includes(o.id))), l: tire(CL.LUMIERES.filter(l => l.id !== 'blanche')), P: tire([20, 40, 60, 100]), d: tire([0.5, 1.0, 2.0]), t: tire([5, 10, 15]) }),
+    build: epure((p, q) => {
+      const nObj = CL.bandesPresentes(p.o.v).length, nLum = CL.bandesPresentes(p.l.v).length, communes = CL.bandesPresentes(CL.traverse(p.l.v, p.o.v)).length;
+      const tokens = {
+        o: tok(CL.nomCouleur(p.o.v), `Couleur de l’objet en lumière blanche (il diffuse ${nObj} radiation${nObj > 1 ? 's' : ''} sur les trois)`, nObj, 'radiations'),
+        l: tok(CL.nomCouleur(p.l.v), `Couleur de la lampe (elle envoie ${nLum} radiation${nLum > 1 ? 's' : ''} sur les trois)`, nLum, 'radiations'),
+        P: tok(`${p.P} W`, 'Puissance de la lampe', p.P, 'W'),
+        d: tok(`${nb(p.d, 1)} m`, 'Distance entre la lampe et l’objet', p.d, 'm'),
+        t: tok(`${p.t} min`, 'Durée de l’éclairage', p.t, 'min'),
+      };
+      const raisons = { P: 'La puissance règle l’intensité de la lumière, pas les radiations absorbées ou diffusées : elle ne change pas la couleur perçue dans ce modèle.', d: 'La distance ne change pas la nature des radiations reçues : elle n’intervient pas pour savoir lesquelles sont diffusées.', t: 'La durée de l’éclairage ne change pas les radiations absorbées ou diffusées par l’objet.', l: 'En lumière blanche, l’objet reçoit les trois radiations : la lampe colorée utilisée dans une autre expérience ne change pas ce qu’il absorbe.' };
+      const debut = [`${cap(p.o.nom)} est de couleur `, T('o'), ' en lumière blanche. '];
+      if (q === 0) return { tokens, derivees: [],
+        texte: [...debut, 'On l’éclaire uniquement avec une lampe de couleur ', T('l'), ', de puissance ', T('P'), ', placée à ', T('d'), ' de l’objet pendant ', T('t'), ', dans une pièce sans autre lumière. Combien de radiations (rouge, vert, bleu) l’objet renvoie-t-il vers l’œil ?'],
+        utiles: ['o', 'l'], raisons,
+        cherche: { bonne: 'Le nombre de radiations communes à la lumière reçue et à celles que l’objet diffuse', faux: ['Le nombre de radiations que la lampe envoie', 'La puissance lumineuse totale renvoyée par l’objet (en W)', 'Le nombre de radiations que l’objet diffuse en lumière blanche'] },
+        manque: null,
+        solution: { txt: 'radiations renvoyées = radiations reçues qui sont aussi diffusées par l’objet', val: communes, u: 'radiations' } };
+      return { tokens, derivees: [],
+        texte: [...debut, 'Plus tard, on l’éclaire avec une lampe de couleur ', T('l'), ', de puissance ', T('P'), ', pendant ', T('t'), '. Combien de radiations (rouge, vert, bleu) l’objet absorbe-t-il quand on l’éclaire en lumière blanche ?'],
+        utiles: ['o'], raisons: { ...raisons, l: 'La lampe colorée est utilisée plus tard : la question porte sur la lumière blanche, qui contient les trois radiations.' },
+        cherche: { bonne: 'Le nombre de radiations absorbées en lumière blanche (3 moins celles qu’il diffuse)', faux: ['Le nombre de radiations que l’objet diffuse en lumière blanche', 'Le nombre de radiations que la lampe colorée envoie', 'La durée nécessaire pour absorber la lumière (en min)'] },
+        manque: null,
+        solution: { txt: 'radiations absorbées = 3 − radiations diffusées', val: 3 - nObj, u: 'radiations' } };
     }),
   },
 ];
