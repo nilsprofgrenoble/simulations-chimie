@@ -4,6 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, Formule, avecIndices, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
+import { FDef, FConserv, FPerte, FBilan } from "./EnergieMecaSchemas";
 import { nbf, tire, useLecture, Schema, Fl, T, TV, TL, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
 import * as M from "./energieModele";
 
@@ -62,42 +63,6 @@ function Barres({ T, idx, m, montrer }) {
     </svg>);
 }
 
-// ---------- schémas des cartes « À retenir » ----------
-const SchemaDef = () => (
-  <Schema aria="Bille sur une cuvette : en haut, énergie potentielle maximale et énergie cinétique nulle ; au point bas, énergie cinétique maximale ; l'énergie mécanique est la somme des deux" h={160}>
-    <path d="M30,40 Q180,260 330,40" fill="none" stroke={NOIR} strokeWidth="3"/>
-    <circle cx="48" cy="58" r="7" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><circle cx="180" cy="142" r="7" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
-    <rect x="12" y="84" width="14" height="40" fill={VERT} opacity="0.85"/><text x="10" y="138" fontSize="10.5" fontWeight="700" fill={VERT}>E pp max</text>
-    <rect x="160" y="104" width="40" height="12" fill={BLEU} opacity="0.85"/><text x="112" y="158" fontSize="10.5" fontWeight="700" fill={BLEU}>E c max (v max)</text>
-    <T x={10} y={16} s={12.5} w={700}>E pp = m g z   ·   E c = ½ m v²   ·   E m = E c + E pp</T>
-    <Fl x1={190} y1={142} x2={236} y2={142} c={VERT}/><TV x={206} y={131} c={VERT} s={12}>v</TV>
-  </Schema>);
-const SchemaConserv = () => (
-  <Schema aria="Trois positions de la bille sans frottement : à chaque fois, la somme de la barre verte (énergie potentielle) et de la barre bleue (énergie cinétique) donne la même hauteur totale, l'énergie mécanique" h={160}>
-    {[[40, 80, 0], [150, 40, 40], [260, 0, 80]].map(([x, ep, ec], i) => <g key={i}>
-      <rect x={x} y={130 - ep - ec} width="26" height={ep} fill={VERT} opacity="0.85"/><rect x={x} y={130 - ec} width="26" height={ec} fill={BLEU} opacity="0.85"/>
-      <line x1={x - 8} y1={50} x2={x + 34} y2={50} stroke={NOIR} strokeDasharray="3 3"/></g>)}
-    <T x={36} y={146} s={11} w={700}>haut</T><T x={140} y={146} s={11} w={700}>milieu</T><T x={252} y={146} s={11} w={700}>bas</T>
-    <T x={10} y={16} s={12.5} w={700}>Sans frottement : E m = E c + E pp se conserve</T><T x={10} y={32} s={11.5} c={GRIS} w={500}>l’énergie passe de E pp (vert) à E c (bleu), sans perte</T>
-    <T x={310} y={86} s={11} c={VERT} w={700}>E pp</T><T x={310} y={102} s={11} c={BLEU} w={700}>E c</T>
-  </Schema>);
-const SchemaPerte = () => (
-  <Schema aria="Avec frottement, l'énergie mécanique diminue de façon régulière quand la distance parcourue augmente : la bille s'arrête moins haut que son point de départ" h={160}>
-    <line x1="40" y1="130" x2="340" y2="130" stroke={GRIS} strokeWidth="2"/><line x1="40" y1="130" x2="40" y2="40" stroke={GRIS} strokeWidth="2"/>
-    <line x1="40" y1="56" x2="320" y2="56" stroke="#94a3b8" strokeDasharray="4 4"/><line x1="40" y1="56" x2="320" y2="112" stroke={ORANGE} strokeWidth="3.5"/>
-    <T x={44} y={50} s={11} w={700}>E m départ</T><T x={198} y={112} s={11.5} c={ORANGE} w={700}>E m diminue</T><T x={300} y={146} s={11} w={700}>s</T>
-    <TL x={10} y={18} s={12.5} segs={['ΔE m = W(', { v: 'f' }, ') = − f × s  (< 0)']}/><T x={10} y={34} s={11.5} c={GRIS} w={500}>l’énergie perdue chauffe la piste et la bille</T>
-  </Schema>);
-const SchemaBilan = () => (
-  <Schema aria="Deux situations : sans frottement la bille remonte à la même hauteur ; avec frottement elle s'arrête plus bas" h={150}>
-    <path d="M20,40 Q100,200 180,40" fill="none" stroke={NOIR} strokeWidth="3"/><path d="M200,40 Q280,200 360,40" fill="none" stroke={NOIR} strokeWidth="3"/>
-    <line x1="14" y1="40" x2="186" y2="40" stroke={BLEU} strokeDasharray="4 3"/><line x1="194" y1="40" x2="366" y2="40" stroke={BLEU} strokeDasharray="4 3"/>
-    <circle cx="180" cy="40" r="6" fill={VERT}/><circle cx="349" cy="54" r="6" fill={ORANGE}/>
-    <T x={20} y={112} s={12} c={VERT} w={700}>sans frottement :</T><T x={20} y={128} s={12} c={VERT} w={700}>même hauteur</T>
-    <T x={206} y={112} s={12} c={ORANGE} w={700}>avec frottement :</T><T x={206} y={128} s={12} c={ORANGE} w={700}>moins haut</T>
-    <T x={10} y={16} s={12.5} w={700}>E m conservée   ou   E m diminue de |W(f)|</T>
-  </Schema>);
-
 export function SimulationEnergieMeca() {
   const [mode, setMode] = useState(() => modeOuverture('energie-guide-v1'));
   useSignalerMode(mode);
@@ -135,7 +100,7 @@ export function SimulationEnergieMeca() {
         expl: 'E_c = ½ m v² et v = 0 : l’énergie cinétique est nulle au départ.', indice: 'E_c = ½ × m × v² : que vaut v au départ ?' } },
     { id: 'em0', titre: 'L’énergie mécanique', focus: ['mesures'],
       retenirTitre: 'À RETENIR : LES TROIS ÉNERGIES',
-      retenir: <><SchemaDef/>{FEm}{puces(<>Phrase-clé : <strong>haut = énergie de position, bas = énergie de mouvement</strong>.</>, <>E<sub>pp</sub> = m g z ne dépend que de la hauteur (et du choix de z = 0) ; E<sub>c</sub> = ½ m v² dépend de la vitesse.</>, <>Exemple : 0,200 kg à 0,50 m ⇒ E<sub>pp</sub> = 0,98 J.</>, <><strong>Idée fausse</strong> : « l’énergie potentielle est toujours positive ». <strong>Vrai</strong> : tout dépend de l’origine z = 0 choisie.</>)}</>,
+      retenir: <><FDef/>{FEm}{puces(<>Phrase-clé : <strong>haut = énergie de position, bas = énergie de mouvement</strong>.</>, <>E<sub>pp</sub> = m g z ne dépend que de la hauteur (et du choix de z = 0) ; E<sub>c</sub> = ½ m v² dépend de la vitesse.</>, <>Exemple : 0,300 kg à 0,40 m ⇒ E<sub>pp</sub> = 1,18 J.</>, <><strong>Idée fausse</strong> : « l’énergie potentielle est toujours positive ». <strong>Vrai</strong> : tout dépend de l’origine z = 0 choisie.</>)}</>,
       texte: <>L’<strong>énergie mécanique</strong> est la somme des deux : <strong><Ind b="E" i="m"/> = <Ind b="E" i="c"/> + <Ind b="E" i="pp"/></strong>. Au départ : <Ind b="E" i="pp"/> = {nbf(Epp0, 2)}{NB}J et <Ind b="E" i="c"/> = 0.</>,
       tache: { type: 'num', q: 'Énergie mécanique au départ', unite: 'J', vrai: Epp0, tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
         calcul: () => [`E_m = E_c + E_pp = 0 + ${nbf(Epp0, 2)} = ${nbf(Epp0, 2)} J.`], pieges: [],
@@ -150,7 +115,7 @@ export function SimulationEnergieMeca() {
         expl: 'z = 0 donc E_pp = m g z = 0 (c’est l’origine choisie).', indice: 'E_pp = m g z : que vaut z au point bas ?' } },
     { id: 'ecbas', titre: 'Sans frottement, l’énergie mécanique se conserve', focus: ['mesures'],
       retenirTitre: 'À RETENIR : CONSERVATION DE L’ÉNERGIE MÉCANIQUE',
-      retenir: <><SchemaConserv/>{puces(<>Sans frottement, <strong>E<sub>m</sub> reste constante</strong> : ce que E<sub>pp</sub> perd, E<sub>c</sub> le gagne.</>, <>Exemple : de 0,98 J d’énergie potentielle en haut, il reste 0 J en bas et 0,98 J d’énergie cinétique.</>, <>Seul le poids travaille ici : la réaction <strong>vec(R)</strong>, perpendiculaire au déplacement, ne travaille pas.</>, <><strong>Idée fausse</strong> : « l’énergie cinétique est maximale en haut ». <strong>Vrai</strong> : en haut elle est nulle, en bas elle est maximale.</>)}</>,
+      retenir: <><FConserv/>{puces(<>Sans frottement, <strong>E<sub>m</sub> reste constante</strong> : ce que E<sub>pp</sub> perd, E<sub>c</sub> le gagne.</>, <>Exemple : de 1,18 J d’énergie potentielle en haut, il reste 0 J en bas et 1,18 J d’énergie cinétique.</>, <>Seul le poids travaille ici : la réaction <strong>vec(R)</strong>, perpendiculaire au déplacement, ne travaille pas.</>, <><strong>Idée fausse</strong> : « l’énergie cinétique est maximale en haut ». <strong>Vrai</strong> : en haut elle est nulle, en bas elle est maximale.</>)}</>,
       texte: <>Sans frottement, l’énergie mécanique <strong>se conserve</strong> : <Ind b="E" i="m"/> au point bas = <Ind b="E" i="m"/> au départ = {nbf(Epp0, 2)}{NB}J, et <Ind b="E" i="pp"/> = 0 au point bas.</>,
       tache: { type: 'num', q: 'Énergie cinétique au point bas', unite: 'J', vrai: Epp0, tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
         calcul: () => ['E_c = E_m − E_pp = ' + `${nbf(Epp0, 2)} − 0 = ${nbf(Epp0, 2)} J.`], pieges: [],
@@ -184,7 +149,7 @@ export function SimulationEnergieMeca() {
         expl: `E_c(bas) = ${nbf(EcBas1, 3)} J : inférieure aux ${nbf(Epp0, 2)} J d’énergie mécanique de départ.`, indice: 'E_m(bas) = E_m(départ) + W(f) ; au point bas E_pp = 0, donc E_c = E_m.' } },
     { id: 'chaleur', titre: 'Où est passée l’énergie ?', focus: ['mesures'],
       retenirTitre: 'À RETENIR : AVEC FROTTEMENT',
-      retenir: <><SchemaPerte/>{FPertes}{puces(<>Avec frottement, <strong>E<sub>m</sub> diminue</strong> : elle n’est plus conservée.</>, <>L’énergie « perdue » n’a pas disparu : elle est transférée à la piste et à la bille sous forme d’<strong>énergie thermique</strong> (elles chauffent).</>, <>Exemple : f = 0,30 N sur s = 1,15 m ⇒ ΔE<sub>m</sub> = − 0,345 J.</>, <><strong>Idée fausse</strong> : « le frottement détruit l’énergie ». <strong>Vrai</strong> : il la convertit en chaleur.</>)}</>,
+      retenir: <><FPerte/>{FPertes}{puces(<>Avec frottement, <strong>E<sub>m</sub> diminue</strong> : elle n’est plus conservée.</>, <>L’énergie « perdue » n’a pas disparu : elle est transférée à la piste et à la bille sous forme d’<strong>énergie thermique</strong> (elles chauffent).</>, <>Exemple : f = 0,50 N sur s = 0,80 m ⇒ ΔE<sub>m</sub> = − 0,40 J.</>, <><strong>Idée fausse</strong> : « le frottement détruit l’énergie ». <strong>Vrai</strong> : il la convertit en chaleur.</>)}</>,
       texte: <>Au point bas, la bille a une énergie cinétique plus faible que sans frottement : <Ind b="E" i="c"/> = {nbf(EcBas1, 3)}{NB}J au lieu de {nbf(Epp0, 2)}{NB}J.</>,
       tache: { type: 'qcm', q: 'Que devient l’énergie mécanique perdue ?', options: ['elle est transférée sous forme d’énergie thermique (la piste et la bille chauffent)', 'elle disparaît', 'elle devient de l’énergie potentielle supplémentaire'], bonne: 0,
         expl: 'L’énergie totale se conserve : la diminution de E_m correspond à un transfert d’énergie thermique (le « chaud ») au milieu environnant.', indice: 'L’énergie ne disparaît pas : sous quelle forme se retrouve-t-elle quand deux surfaces frottent ?' } },
@@ -198,9 +163,9 @@ export function SimulationEnergieMeca() {
         calcul: () => [`À l’arrêt, E_c = 0 donc E_m = E_pp = m g z = 0,200 × 9,8 × ${nbf(hFin1, 3)} = ${nbf(EmFin1, 3)} J.`],
         pieges: [[Epp0, 'Cette valeur est l’énergie mécanique de départ : il faut la hauteur finale.']],
         expl: `E_m(final) = m g z = ${nbf(EmFin1, 3)} J, inférieure à ${nbf(Epp0, 2)} J.`, indice: 'À l’arrêt, E_c = 0, donc E_m = E_pp = m × g × z.' } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
       retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <><SchemaBilan/>{FEm}{puces(<><strong>E<sub>pp</sub> = m g z</strong> ; <strong>E<sub>c</sub> = ½ m v²</strong> ; <strong>E<sub>m</sub> = E<sub>c</sub> + E<sub>pp</sub></strong>.</>, <>Sans frottement : E<sub>m</sub> constante, la bille remonte à la même hauteur.</>, <>Avec frottement : ΔE<sub>m</sub> = W(vec(f)) = − f s &lt; 0, énergie transférée en chaleur.</>, <>Lien avec le chapitre précédent : ΔE<sub>c</sub> = ΣW (théorème de l’énergie cinétique).</>)}</>,
+      retenir: <><FBilan/>{FEm}{puces(<><strong>E<sub>pp</sub> = m g z</strong> ; <strong>E<sub>c</sub> = ½ m v²</strong> ; <strong>E<sub>m</sub> = E<sub>c</sub> + E<sub>pp</sub></strong>.</>, <>Sans frottement : E<sub>m</sub> constante, la bille remonte à la même hauteur.</>, <>Avec frottement : ΔE<sub>m</sub> = W(vec(f)) = − f s &lt; 0, énergie transférée en chaleur.</>, <>Lien avec le chapitre précédent : ΔE<sub>c</sub> = ΣW (théorème de l’énergie cinétique).</>)}</>,
       texte: <>Vous savez suivre les conversions d’énergie d’une bille sur une piste, avec ou sans frottement. Essayez maintenant l’exploration, puis les défis.</>, tache: null },
   ];
   const IDS = ETAPES.map(e => e.id), idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
