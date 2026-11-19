@@ -25,7 +25,11 @@ export function CoupleCram({ mol, items, ariaLabel }) {
 // ═════════ Scène : une double liaison C=C et ses quatre groupes ═════════
 //  haut : [bool, bool], le groupe prioritaire de chaque carbone est-il en haut ? ; rangs : badges 1 et 2 ; relier : trait entre les deux groupes prioritaires ; verdict : 'Z' | 'E' | null
 export function SceneAlcene({ m, haut, rangs = false, relier = false, verdict = null, titre = '' }) {
-  const X = [155, 265], XE = [88, 332], YC = 135, YH = 72, YB = 198, YTH = 62, YTB = 222;
+  // La liaison arrive sur le PREMIER atome du groupe : à droite on écrit CH₂CH₃, à gauche H₃CH₂C (écriture inversée, comme sur une formule semi-développée).
+  const X = [155, 265], BX = [112, 308], YC = 135, YTH = 62, YTB = 222, YBH = 58, YBB = 218;
+  const inverse = et => (et.match(/[A-Z][a-z]?[₀-₉]*/g) || [et]).reverse().join('');
+  const largeur = et => 13 * [...et].length;
+  const centre = (k, et) => (k === 0 ? BX[0] - 6 - largeur(et) / 2 : BX[1] + 6 + largeur(et) / 2);
   const cote = (k, j) => (m.subs[k] ? (m.subs[k][0] === j ? (haut[k] ? 'haut' : 'bas') : (haut[k] ? 'bas' : 'haut')) : null);
   const groupes = [0, 1].map(k => {
     const vs = m.g.voisins[m.c[k]].map(v => v.j).filter(j => j !== m.c[1 - k]);
@@ -33,29 +37,28 @@ export function SceneAlcene({ m, haut, rangs = false, relier = false, verdict = 
     return vs.map((j, i) => ({ j, k, pos: i === 0 ? 'haut' : 'bas', rang: 0 }));
   }).flat();
   const prio = groupes.filter(g => g.rang === 1);
-  const yG = pos => (pos === 'haut' ? YH : YB);
   return (
-    <svg viewBox="0 0 420 270" role="img" style={base}
+    <svg viewBox="-20 0 460 270" role="img" style={base}
       aria-label={`Double liaison C=C de ${m.nom} : ${groupes.map(g => `${M.etiqAlc(m, g.j)} ${g.pos === 'haut' ? 'au-dessus' : 'au-dessous'} du carbone ${g.k === 0 ? 'de gauche' : 'de droite'}`).join(', ')}.${verdict ? ` Configuration ${verdict}.` : ''}`}>
       {titre && <text x="210" y="22" textAnchor="middle" fontSize="18" fontWeight="800" fill={COL.encre}>{titre}</text>}
       {relier && prio.length === 2 && (() => {
-        const [p, q] = prio, mm = p.pos === q.pos, col = mm ? COL.vert : COL.rouge;
+        const [p, q] = prio, mm = p.pos === q.pos, col = mm ? COL.vert : COL.rouge, cp = centre(p.k, M.etiqAlc(m, p.j)), cq = centre(q.k, M.etiqAlc(m, q.j));
         return mm
-          ? <g stroke={col} strokeWidth="3.5" strokeDasharray="7 5" fill="none"><path d={`M ${XE[0]} ${p.pos === 'haut' ? 38 : 236} H ${XE[1]}`}/><path d={`M ${XE[0]} ${p.pos === 'haut' ? 38 : 236} V ${p.pos === 'haut' ? 48 : 226}`} strokeDasharray="none"/><path d={`M ${XE[1]} ${p.pos === 'haut' ? 38 : 236} V ${p.pos === 'haut' ? 48 : 226}`} strokeDasharray="none"/></g>
-          : <path d={`M ${XE[0] + 22} ${yG(p.pos) + (p.pos === 'haut' ? 18 : -18)} L ${XE[1] - 22} ${yG(q.pos) + (q.pos === 'haut' ? 18 : -18)}`} stroke={col} strokeWidth="3.5" strokeDasharray="7 5" fill="none"/>;
+          ? <g stroke={col} strokeWidth="3.5" strokeDasharray="7 5" fill="none"><path d={`M ${cp} ${p.pos === 'haut' ? 38 : 236} H ${cq}`}/><path d={`M ${cp} ${p.pos === 'haut' ? 38 : 236} V ${p.pos === 'haut' ? 46 : 228}`} strokeDasharray="none"/><path d={`M ${cq} ${p.pos === 'haut' ? 38 : 236} V ${p.pos === 'haut' ? 46 : 228}`} strokeDasharray="none"/></g>
+          : <path d={`M ${cp} ${p.pos === 'haut' ? 74 : 200} L ${cq} ${q.pos === 'haut' ? 74 : 200}`} stroke={col} strokeWidth="3.5" strokeDasharray="7 5" fill="none"/>;
       })()}
       {[0, 1].map(k => <g key={k}>
-        <line x1={X[k]} y1={YC} x2={XE[k]} y2={YH + 6} stroke={COL.encre} strokeWidth="3.4" strokeLinecap="round"/>
-        <line x1={X[k]} y1={YC} x2={XE[k]} y2={YB - 6} stroke={COL.encre} strokeWidth="3.4" strokeLinecap="round"/>
+        <line x1={X[k]} y1={YC} x2={BX[k]} y2={YBH} stroke={COL.encre} strokeWidth="3.4" strokeLinecap="round"/>
+        <line x1={X[k]} y1={YC} x2={BX[k]} y2={YBB} stroke={COL.encre} strokeWidth="3.4" strokeLinecap="round"/>
       </g>)}
       <line x1={X[0]} y1={YC - 6} x2={X[1]} y2={YC - 6} stroke={COL.encre} strokeWidth="3.4"/>
       <line x1={X[0]} y1={YC + 6} x2={X[1]} y2={YC + 6} stroke={COL.encre} strokeWidth="3.4"/>
       {X.map((x, k) => <g key={k}><circle cx={x} cy={YC} r="15" fill="#fff" stroke="#64748b" strokeWidth="2.6"/><text x={x} y={YC + 6} textAnchor="middle" fontSize="18" fontWeight="800" fill="#475569">C</text></g>)}
       {groupes.map((g, i) => {
-        const x = XE[g.k], y = g.pos === 'haut' ? YTH : YTB, et = M.etiqAlc(m, g.j), by = g.pos === 'haut' ? y - 8 : y + 4;
-        const bx = x + (g.k === 0 ? -1 : 1) * (6 * [...et].length + 22);
+        const y = g.pos === 'haut' ? YTH : YTB, et = M.etiqAlc(m, g.j), by = g.pos === 'haut' ? y - 8 : y + 4;
+        const bx = g.k === 0 ? BX[0] - 6 - largeur(et) - 18 : BX[1] + 6 + largeur(et) + 18;
         return (<g key={i}>
-          <text data-groupe={et} x={x} y={y} textAnchor="middle" fontSize="21" fontWeight="800" fill={rangs && g.rang ? COUL_RANG[g.rang] : COL.encre}>{et}</text>
+          <text data-groupe={et} x={g.k === 0 ? BX[0] - 6 : BX[1] + 6} y={y} textAnchor={g.k === 0 ? 'end' : 'start'} fontSize="21" fontWeight="800" fill={rangs && g.rang ? COUL_RANG[g.rang] : COL.encre}>{g.k === 0 ? inverse(et) : et}</text>
           {rangs && g.rang > 0 && <g><circle cx={bx} cy={by - 6} r="12" fill={COUL_RANG[g.rang]}/><text x={bx} y={by} textAnchor="middle" fontSize="17" fontWeight="800" fill="#fff">{g.rang}</text></g>}
         </g>);
       })}
