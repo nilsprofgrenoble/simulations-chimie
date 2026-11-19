@@ -1359,5 +1359,14 @@
  "77:plausible:comb1g-val-ecart-methanol": "VAL348",
  "77:plausible:comb1g-val-liaisons-ch4": "VAL349",
  "77:plausible:comb1g-val-eau-liquide": "VAL350",
- "36:comb1g-calcul": "REA86"
+ "36:comb1g-calcul": "REA86",
+ "34:top-sapp-formule.0": "SAPP352",
+ "34:top-sapp-formule.1": "SAPP353",
+ "37:prevoir:top-ana-cinq-liaisons": "ANA575",
+ "37:prevoir:top-ana-chaine-longue": "ANA576",
+ "37:prevoir:top-ana-meme-molecule": "ANA577",
+ "77:plausible:top-val-cyclobutane": "VAL351",
+ "77:plausible:top-val-nombre": "VAL352",
+ "77:plausible:top-val-ok-penetene": "VAL353",
+ "36:top-calcul": "REA87"
 }

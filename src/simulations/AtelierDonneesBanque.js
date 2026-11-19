@@ -3522,6 +3522,27 @@ export const ENONCES = [
         manque: null, solution: { txt: 'PC = |E_r| ÷ M, avec E_r = Σ D(rompues) − Σ D(formées)', val: CMB.pouvoirCalorifique(c), u: 'MJ/kg' } };
     }),
   },
+  // ───────────────────────────── Formules topologiques et isomérie de constitution (TG, sim 172)
+  {
+    id: 'top-sapp-formule', domaine: 'Formules topologiques et isomérie de constitution', titre: 'Formule brute d’une molécule à partir de son squelette', noms: ['Hydrogènes d’un composé avec une double liaison', 'Hydrogènes d’un alcool saturé'],
+    // données liées par des couples plausibles (hex-1-ène, hept-1-ène… ; pentan-1-ol, hexan-1-ol…) : température d'ébullition (°C), masse volumique (g/mL)
+    gen: () => { const n = tire([5, 6, 7, 8]); return { n, ene: { 5: [30, 0.64], 6: [63, 0.67], 7: [94, 0.70], 8: [121, 0.71] }[n], ol: { 5: [138, 0.81], 6: [157, 0.82], 7: [176, 0.82], 8: [195, 0.82] }[n] }; },
+    build: (p, q) => {
+      const [teb, rho] = q === 0 ? p.ene : p.ol, M = q === 0 ? 14 * p.n : 14 * p.n + 18;
+      const tokens = {
+        n: tok(`${p.n} atomes de carbone`, 'Nombre d’atomes de carbone de la molécule', p.n, ''),
+        teb: tok(`${teb} °C`, 'Température d’ébullition de l’espèce', teb, '°C'),
+        rho: tok(`${nb(rho, 2)} g/mL`, 'Masse volumique de l’espèce', rho, 'g/mL'),
+        M: tok(`${M} g/mol`, 'Masse molaire de l’espèce', M, 'g/mol'),
+      };
+      const raisons = { teb: 'La température d’ébullition ne dit rien de l’enchaînement des atomes : elle ne sert pas à trouver le nombre d’hydrogènes.', rho: 'La masse volumique est une propriété du liquide, pas une donnée sur la structure de la molécule.', M: 'La masse molaire est une conséquence de la formule brute : ici on cherche justement cette formule, à partir du squelette, sans l’utiliser.' };
+      const cherche = { bonne: 'Le nombre d’atomes d’hydrogène de la molécule', faux: ['La masse molaire de la molécule (en g/mol)', 'Le nombre de liaisons C–C de la molécule', 'La masse volumique de la molécule (en g/mL)'] };
+      if (q === 0) return { tokens, derivees: [], texte: ['Un composé liquide, de température d’ébullition ', T('teb'), ', de masse volumique ', T('rho'), ' et de masse molaire ', T('M'), ', a une molécule formée d’une chaîne de ', T('n'), ' non cyclique, avec une seule double liaison C=C et rien d’autre (que des atomes de carbone et d’hydrogène). Combien d’atomes d’hydrogène la molécule compte-t-elle ?'],
+        utiles: ['n'], raisons, cherche, manque: null, solution: { txt: 'chaîne saturée : 2n + 2 H ; une double liaison C=C retire 2 H, donc 2n H', val: 2 * p.n, u: 'atomes d’hydrogène' } };
+      return { tokens, derivees: [], texte: ['Un alcool liquide, de température d’ébullition ', T('teb'), ', de masse volumique ', T('rho'), ' et de masse molaire ', T('M'), ', a une molécule formée d’une chaîne de ', T('n'), ' saturée, non cyclique, portant un seul groupe –OH. Combien d’atomes d’hydrogène la molécule compte-t-elle, en comptant celui du groupe –OH ?'],
+        utiles: ['n'], raisons, cherche, manque: null, solution: { txt: 'le groupe –OH remplace un H de la chaîne saturée (2n + 2 H) et en apporte un : 2n + 2 H au total', val: 2 * p.n + 2, u: 'atomes d’hydrogène' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
