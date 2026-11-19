@@ -134,7 +134,11 @@ export function SimulationVitesseOrdre1() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
   const [suiviV, noterV] = useCompteurDefi(), [suiviO, noterO] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant(CLE_GUIDE, VIDE), [g2, setG2] = useEtatPersistant(CLE_GUIDE + '-p2', VIDE), [g3, setG3] = useEtatPersistant(CLE_GUIDE + '-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant(CLE_GUIDE + '-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('vit');
   const [hypoOuv, setHypoOuv] = useState(false), [pyOuv, setPyOuv] = useState(false), [optOuv, setOptOuv] = useState(false), [revoirScene, setRevoirScene] = useState(false);
   const [ti, setTi] = useState(PRESET);
@@ -143,9 +147,14 @@ export function SimulationVitesseOrdre1() {
   const setT = f => setTi(s => ({ ...s, ...f }));
 
   // ---------- étapes du parcours ----------
-  const IDS = ['montage', 'courbe', 'deltac', 'signe', 'tangente', 'pente', 'pente12', 'diminue', 'demi', 'demi2', 'demi3', 'vc', 'kconst', 'ln', 'compB', 'conclB', 'bruit', 'bravo'];
+  const ORDRE_PARC = [['montage', 'courbe', 'deltac', 'signe', 'tangente', 'pente', 'pente12', 'diminue', 'bilan1'],
+    ['demi', 'demi2', 'demi3', 'vc', 'kconst', 'ln', 'bilan2'],
+    ['compB', 'conclB', 'bruit', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const etape = guide.etape, idE = enGuide ? IDS[Math.min(etape, IDS.length - 1)] : null;
-  const apres = id => !enGuide || etape > IDS.indexOf(id), deja = id => !enGuide || etape >= IDS.indexOf(id);
+  const apres = id => !enGuide || etape > iEt(id), deja = id => !enGuide || etape >= iEt(id);
 
   // ---------- grandeurs effectives ----------
   const sigma = dd ? SIGMA_DEFI : ti.sigma;
@@ -173,16 +182,17 @@ export function SimulationVitesseOrdre1() {
 
   // ---------- états attendus (rétablissements du parcours) ----------
   const attendu = {
+    demi: { type: 'A', sigma: 0 }, demi2: { type: 'A', sigma: 0 }, demi3: { type: 'A', sigma: 0 }, vc: { type: 'A', sigma: 0 }, kconst: { type: 'A', sigma: 0 }, ln: { type: 'A', sigma: 0 },
     pente: { t: 4, tang: true }, pente12: { t: 12, tang: true }, compB: { type: 'B' }, conclB: { type: 'B' },
     bruit: { type: 'A', sigma: SIGMA_GUIDE, t: 6 },
   }[idE] || null;
   const conforme = !attendu || ((attendu.t == null || Math.abs(ti.t - attendu.t) < 0.05) && (attendu.tang == null || ti.tang === attendu.tang) && (!attendu.type || ti.type === attendu.type) && (attendu.sigma == null || ti.sigma === attendu.sigma));
   const bloque = conforme ? null : 'Rétablissez d’abord la situation avec le bouton au-dessus du graphique.';
   const retablir = () => setT({ ...attendu, ...(attendu.sigma != null ? { graine: 7 } : {}) });
-  const libelleRetablir = attendu && `Rétablir : ${attendu.type === 'B' ? 'transformation B' : attendu.type === 'A' ? 'RCl avec mesures bruitées' : ''}${attendu.t != null && !attendu.type ? `curseur à t = ${nbf(attendu.t, 1)} min` : ''}${attendu.tang ? ', tangente tracée' : ''}`;
+  const libelleRetablir = attendu && `Rétablir : ${attendu.type === 'B' ? 'transformation B' : attendu.type === 'A' ? (attendu.sigma === 0 ? 'transformation A, mesures sans bruit' : 'RCl avec mesures bruitées') : ''}${attendu.t != null && !attendu.type ? `curseur à t = ${nbf(attendu.t, 1)} min` : ''}${attendu.tang ? ', tangente tracée' : ''}`;
 
   const v6 = M.vit({ type: 'A', c0: 40, k: 0.15 }, 6);
-  const ETAPES = [
+  const TOUTES = [
     { id: 'montage', titre: 'La transformation suivie', focus: ['scene'],
       texte: <>On étudie l’<strong>hydrolyse du 2-chloro-2-méthylpropane</strong> (CH₃)₃C–Cl, noté RCl, dans un mélange d’eau et de propanone maintenu à température constante ; son équation est écrite en haut de l’écran. La transformation est totale. À <em>t</em> = 0, la concentration en RCl est <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹ (soit 0,0400{NB}mol·L⁻¹). Une cellule de conductimétrie plonge dans le bécher : le schéma montre le même bécher à <em>t</em> = 0 et à <em>t</em> = 10{NB}min.</>,
       tache: { type: 'qcm', q: 'Pourquoi la conductimétrie convient-elle pour suivre cette transformation ?', options: ['la conductivité augmente, car des ions H₃O⁺ et Cl⁻ se forment au fur et à mesure que RCl disparaît', 'la conductivité diminue, car le réactif RCl disparaît', 'la conductivité ne change pas : elle sert seulement à contrôler la température'], bonne: 0,
@@ -224,7 +234,7 @@ export function SimulationVitesseOrdre1() {
       texte: <>À <em>t</em> = 4,0{NB}min, <em>v</em> = 3,3{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 22,0{NB}mmol·L⁻¹. À <em>t</em> = 12,0{NB}min, <em>v</em> = 0,99{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 6,6{NB}mmol·L⁻¹.</>,
       tache: { type: 'qcm', q: 'Comment la vitesse volumique de disparition évolue-t-elle au cours du temps ?', options: ['elle diminue, en même temps que la concentration du réactif', 'elle reste constante : la transformation avance au même rythme', 'elle augmente, car il se forme de plus en plus d’ions'], bonne: 0,
         expl: 'v passe de 3,3 à 0,99 mmol·L⁻¹·min⁻¹ : elle diminue quand RCl, de moins en moins concentré, disparaît. La tangente est de plus en plus plate. On va maintenant tester le lien précis entre v et c.', indice: 'Comparez les deux valeurs de v données et la pente des deux tangentes.' },
-      retenirTitre: 'À RETENIR : LA VITESSE VOLUMIQUE DE DISPARITION',
+      retenirTitre: 'La vitesse volumique de disparition',
       retenir: <>
         <SvgVitesse/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -232,6 +242,8 @@ export function SimulationVitesseOrdre1() {
           <li>Exemple de la simulation : v = 3,3 mmol·L⁻¹·min⁻¹ à 4 min, 0,99 à 12 min. <strong>La vitesse volumique diminue</strong> : le réactif est consommé.</li>
           <li><strong>Idée fausse</strong> : « la vitesse reste constante ». <strong>Vrai</strong> : la courbe c(t) s’aplatit, la tangente aussi.</li>
         </ul></> },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez lire une vitesse volumique de disparition sur une courbe, avec une vitesse moyenne ou avec la tangente, et vous savez que cette vitesse diminue au cours du temps. Le parcours 2 étudie le temps de demi-réaction et teste une loi d’ordre 1.</>, tache: null },
     { id: 'demi', titre: 'Le temps de demi-réaction', focus: ['courbe'],
       texte: <>Le <strong>temps de demi-réaction</strong> <em>t</em><sub>½</sub> est la durée au bout de laquelle la concentration du réactif limitant a diminué de moitié (transformation totale). Ici <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹ : un trait en pointillés marque <em>c</em><sub>0</sub>/2 = 20,0{NB}mmol·L⁻¹. Déplacez le curseur de temps jusqu’à ce trait.</>,
       tache: { type: 'num', q: 'Temps de demi-réaction t½', unite: 'min', vrai: 4.62, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
@@ -254,7 +266,7 @@ export function SimulationVitesseOrdre1() {
         calcul: () => ['v / c = 3,3 / 22,0 = 0,150 (mmol·L⁻¹·min⁻¹ divisé par mmol·L⁻¹ : l’unité restante est min⁻¹).', 'v / c ≈ 0,150 min⁻¹.'],
         pieges: [[6.67, 'Le rapport est inversé : on demande v / c.'], [3.3 * 22.0, 'On divise v par c, on ne les multiplie pas.']],
         expl: 'v / c = 3,3 / 22,0 = 0,150 min⁻¹.', indice: 'Divisez v par c : l’unité du résultat est min⁻¹.' },
-      retenirTitre: 'À RETENIR : LE TEMPS DE DEMI-RÉACTION',
+      retenirTitre: 'Le temps de demi-réaction',
       retenir: <>
         <SvgDemiReaction/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -272,6 +284,8 @@ export function SimulationVitesseOrdre1() {
         calcul: () => ['Pente = [ln(c/c°) à 10,0 min − ln(c/c°) à 0] / (10,0 − 0) = (−4,72 − (−3,22)) / 10,0.', 'Pente = −1,50 / 10,0 = −0,150 min⁻¹ : la pente est négative. Donc k = 0,150 min⁻¹, comme avec v / c.'],
         pieges: [[0.150, 'ln c diminue quand t augmente : la pente est négative (elle vaut −k).'], [-6.67, 'Le rapport est inversé : pente = Δ(ln c) / Δt.'], [-1.5, 'Il faut diviser par Δt = 10,0 min.']],
         expl: 'Pente = −0,150 min⁻¹, donc k = 0,150 min⁻¹ : la même valeur que par le rapport v / c. Les points sont alignés : c’est la signature d’une loi d’ordre 1.', indice: 'Pente = (variation de ln(c/c°)) / (variation de t) entre les deux points donnés.' } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez lire des temps de demi-réaction successifs et tester une loi d’ordre 1 : le rapport v ÷ c reste constant et ln c est une droite en fonction du temps. Le parcours 3 applique ces tests à une autre transformation puis à des mesures bruitées.</>, tache: null },
     { id: 'compB', titre: 'Une autre transformation : B', focus: ['courbe'],
       texte: <>Toutes les transformations ne suivent pas une loi d’ordre 1. Pour le savoir, on applique les mêmes tests à leurs mesures. Voici une <strong>autre transformation, notée B</strong> : un autre réactif, suivi de la même façon, avec la même concentration initiale <em>c</em><sub>0</sub> = 40,0{NB}mmol·L⁻¹. Sa loi de vitesse n’est pas donnée. Sa première demi-réaction dure 4,6{NB}min, comme pour RCl : <em>c</em> = 20,0{NB}mmol·L⁻¹ à <em>t</em> = 4,6{NB}min.
         <br/>Affichez ses mesures avec le bouton « Transformation B » sous le graphique. Cherchez l’instant où <em>c</em> atteint 10,0{NB}mmol·L⁻¹ (deuxième trait), puis calculez la durée de la <strong>deuxième</strong> demi-réaction (de 20,0 à 10,0{NB}mmol·L⁻¹).</>,
@@ -279,7 +293,7 @@ export function SimulationVitesseOrdre1() {
         calcul: () => ['Pour B, c = 10,0 mmol·L⁻¹ à t ≈ 13,9 min.', 'Durée = 13,9 − 4,6 = 9,3 min environ (9,24 min avec les valeurs exactes) : le double de la première.'],
         pieges: [[13.86, '13,9 min est l’instant où c = c₀/4 ; la durée est la différence avec 4,6 min.'], [4.62, '4,6 min est la durée de la première demi-réaction. Lisez la deuxième sur la courbe de B.']],
         expl: 'Pour B : 4,6 min puis 9,2 min : t½ n’est pas constant, il double à chaque fois.', indice: 'Durée = (instant où c = 10,0) − 4,6 min.' },
-      retenirTitre: 'À RETENIR : LA LOI DE VITESSE D’ORDRE 1',
+      retenirTitre: 'La loi de vitesse d’ordre 1',
       retenir: <>
         <SvgLoiOrdre1/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -295,7 +309,7 @@ export function SimulationVitesseOrdre1() {
       texte: <>Dans une vraie expérience, chaque mesure est entachée d’un petit écart aléatoire, dont l’<strong>écart-type</strong> est noté σ (ici σ = 0,4{NB}mmol·L⁻¹). Revenez à la <strong>transformation A (RCl)</strong> et à <em>t</em> = 6,0{NB}min (bouton ci-dessus). On estime <em>v</em> avec deux points écartés de Δ<em>t</em> et centrés sur <em>t</em> : <em>v</em> ≈ −(<em>c</em><sub>2</sub> − <em>c</em><sub>1</sub>) / Δ<em>t</em>. Le tableau donne l’estimation pour quatre valeurs de Δ<em>t</em> ; « Nouvelle série » refait l’expérience. Valeur exacte du modèle, inconnue en pratique : {nbf(v6, 2)}{NB}mmol·L⁻¹·min⁻¹.</>,
       tache: { type: 'qcm', q: 'Quel intervalle Δt donne le meilleur compromis ?', options: ['Δt = 4 min : assez grand pour que le bruit compte peu, assez petit pour que la courbe reste presque une droite', 'Δt = 1 min : plus l’intervalle est petit, plus on se rapproche de la tangente', 'Δt = 8 min : plus l’intervalle est grand, plus la mesure est précise'], bonne: 0, bloque,
         expl: 'Avec Δt = 1 min, l’écart dû au bruit atteint environ 23 % : les estimations varient beaucoup d’une série à l’autre. Avec Δt = 8 min, le bruit pèse peu (3 %) mais la courbure fausse la sécante d’environ 6 %. Δt = 4 min : environ 6 % de bruit et 1,5 % de courbure.', indice: 'Refaites plusieurs séries et regardez comment varient les estimations pour chaque Δt, et si elles s’écartent systématiquement de 2,44.' },
-      retenirTitre: 'À RETENIR : TESTER L’ORDRE 1',
+      retenirTitre: 'Tester l’ordre 1',
       retenir: <>
         <SvgTestOrdre1/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -303,9 +317,9 @@ export function SimulationVitesseOrdre1() {
           <li><strong>Un seul test négatif suffit pour rejeter l’ordre 1</strong>. Comparer au moins deux demi-réactions : la première seule ne prouve rien.</li>
           <li><strong>Idée fausse</strong> : « la courbe décroît, donc c’est d’ordre 1 ». <strong>Vrai</strong> : A et B décroissent toutes deux, une seule suit l’ordre 1.</li>
         </ul></> },
-    { id: 'bravo', titre: 'Bilan', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
       texte: <>Vous savez déterminer une vitesse volumique de disparition à partir d’une courbe, lire un temps de demi-réaction, et tester si une évolution suit une loi d’ordre 1. Passez à l’exploration (autres constantes, bruit, quatre graphiques) ou tentez les deux défis.</>, tache: null,
-      retenirTitre: 'À RETENIR : ESTIMER UNE VITESSE SUR DES MESURES BRUITÉES',
+      retenirTitre: 'Estimer une vitesse sur des mesures bruitées',
       retenir: <>
         <SvgIntervalle/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -315,10 +329,11 @@ export function SimulationVitesseOrdre1() {
         </ul></> },
   ];
   // La carte « vitesse volumique » conclut la question de l’étape « diminue » : elle s’affiche à l’étape suivante. Les autres cartes sont déjà posées sur l’étape qui suit leur question.
-  [['diminue', 'demi']].forEach(([de, vers]) => {
-    const a = ETAPES.find(e => e.id === de), b = ETAPES.find(e => e.id === vers);
+  [['diminue', 'bilan1']].forEach(([de, vers]) => {
+    const a = TOUTES.find(e => e.id === de), b = TOUTES.find(e => e.id === vers);
     b.retenir = a.retenir; b.retenirTitre = a.retenirTitre; delete a.retenir; delete a.retenirTitre;
   });
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
@@ -408,8 +423,10 @@ export function SimulationVitesseOrdre1() {
       <li><strong>Limites du modèle</strong> : durée de 20{NB}min, un point toutes les 0,5{NB}min, un seul réactif suivi ; les facteurs cinétiques, la catalyse et le mécanisme réactionnel ne sont pas traités ici. Le test de l’ordre 1 se fait sur la durée du suivi : il ne prouve pas la validité de la loi hors de cette plage.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
+  const NOMS_PARC = ['1. Vitesse volumique de disparition', '2. Demi-réaction et loi d’ordre 1', '3. Une autre transformation et des mesures bruitées'];
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -481,7 +498,7 @@ export function SimulationVitesseOrdre1() {
     </div>);
   // Dans le parcours guidé, le schéma du montage n'est utile qu'à la première étape : ensuite on garde l'équation et on le replie,
   // pour que le graphique, objet des étapes suivantes, remonte sous la consigne. Un bouton permet de le revoir.
-  const sceneRepliee = enGuide && etape > 0 && !revoirScene;
+  const sceneRepliee = enGuide && etape > iEt('montage') && !revoirScene;
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {equation}
@@ -490,7 +507,7 @@ export function SimulationVitesseOrdre1() {
         : <>
           <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Le montage : suivi par conductimétrie</div>
           <SvgMontage/>
-          {enGuide && etape > 0 && <button onClick={() => setRevoirScene(false)} style={{ ...stylePetitBouton(false, '#475569'), marginTop: 6 }}>Masquer le schéma</button>}
+          {enGuide && etape > iEt('montage') && <button onClick={() => setRevoirScene(false)} style={{ ...stylePetitBouton(false, '#475569'), marginTop: 6 }}>Masquer le schéma</button>}
         </>}
     </div>);
   const graphiqueCourbe = (!enGuide || deja('courbe')) && (
@@ -621,7 +638,12 @@ plt.tight_layout(); plt.show()`;
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>À partir de la <strong>courbe d’évolution d’une concentration</strong>, on détermine une <strong>vitesse volumique</strong> et un <strong>temps de demi-réaction</strong>, puis on teste si l’évolution suit une <strong>loi de vitesse d’ordre 1</strong>.</div>
       <div className={`vo-l1${!enExplore ? ' cote' : ''}`}>
-        {enGuide ? <div className="vo-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="vo-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="vo-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="vo-carte">{panneauHypo}</div> : null}
         <div className="vo-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'vit' ? suiviV : suiviO}/></div>}
           {dd ? <div style={{ ...styleBoite, marginBottom: 12 }}>{equation}</div> : <div style={{ marginBottom: 12 }}>{sceneBox}</div>}
