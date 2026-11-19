@@ -1163,5 +1163,15 @@
  "77:plausible:ond1g-celerite-val-eau": "VAL278",
  "77:plausible:ond1g-celerite-val-sonar": "VAL279",
  "77:plausible:ond1g-celerite-val-seisme": "VAL280",
- "36:ond1g-celerite": "REA69"
+ "36:ond1g-celerite": "REA69",
+ "34:ond1g-periode-corde.0": "SAPP311",
+ "34:ond1g-periode-corde.1": "SAPP312",
+ "37:prevoir:ond1g-periode-frequence-lambda": "ANA507",
+ "37:prevoir:ond1g-periode-milieu": "ANA508",
+ "37:prevoir:ond1g-periode-phase-opposition": "ANA509",
+ "37:prevoir:ond1g-periode-lecture-T": "ANA510",
+ "77:plausible:ond1g-periode-val-periode": "VAL281",
+ "77:plausible:ond1g-periode-val-son": "VAL282",
+ "77:plausible:ond1g-periode-val-celerite": "VAL283",
+ "36:ond1g-periode": "REA70"
 }

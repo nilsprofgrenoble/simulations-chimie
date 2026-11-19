@@ -120,6 +120,7 @@ const SimulationRefraction = paresseux(() => import("./simulations/Refraction"),
 const SimulationLentille = paresseux(() => import("./simulations/Lentille"), "SimulationLentille");
 const SimulationLentilleMince = paresseux(() => import("./simulations/LentilleMince"), "SimulationLentilleMince");
 const SimulationOndesCelerite = paresseux(() => import("./simulations/OndesCelerite"), "SimulationOndesCelerite");
+const SimulationOndesPeriode = paresseux(() => import("./simulations/OndesPeriode"), "SimulationOndesPeriode");
 const SimulationOeilLoupe = paresseux(() => import("./simulations/OeilLoupe"), "SimulationOeilLoupe");
 const SimulationMicroscope = paresseux(() => import("./simulations/Microscope"), "SimulationMicroscope");
 const SimulationLunette = paresseux(() => import("./simulations/Lunette"), "SimulationLunette");
@@ -339,6 +340,8 @@ const SIMULATIONS = [
     component: SimulationLentilleMince },
   { id:150, label:"Ondes mécaniques : célérité et retard", niveau:"1G", icon:"🌊", color:"#0369a1",
     component: SimulationOndesCelerite },
+  { id:151, label:"Ondes mécaniques : période, longueur d’onde et relation λ = c·T", niveau:"1G", icon:"🌊", color:"#0369a1",
+    component: SimulationOndesPeriode },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",

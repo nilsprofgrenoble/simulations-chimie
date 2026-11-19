@@ -539,6 +539,33 @@ function genLentille() {
     retenir: ['Relation de conjugaison : 1/OA′ − 1/OA = 1/f′, avec des grandeurs ALGÉBRIQUES (origine O, sens de la lumière positif).', 'Un objet réel est avant la lentille : OA est NÉGATIF.', 'Grandissement γ = OA′ / OA = A′B′ / AB : γ < 0 image renversée, γ > 0 image droite ; |γ| > 1 agrandie.', 'On additionne les INVERSES des distances, jamais les distances.'] };
 }
 
+// ──────────────────────── Famille « Ondes mécaniques périodiques » (1re spécialité) : période, fréquence, longueur d'onde, célérité ────────────────────────
+function genOndesPeriode() {
+  const T1 = tire([0.20, 0.25, 0.40, 0.50]), n1 = tire([3, 4, 5]), dt1 = Number((n1 * T1).toPrecision(3));
+  const q1 = { id: 'o0', type: 'num', q: <>Sur l’enregistrement du mouvement d’un point d’une corde, on compte <b>{n1} oscillations complètes</b> en <b>{nb(dt1, 2)}{NB}s</b>. Calculez la période T de l’onde, en <b>s</b>.</>, unite: 's', vrai: T1, csMin: 2,
+    aide: 'La période est la durée d’UNE oscillation : divisez la durée totale par le nombre d’oscillations.',
+    pieges: [[dt1 * n1, 'Vous avez multiplié : la durée d’une seule oscillation est plus courte que la durée totale, donc il faut diviser.'], [n1 / dt1, 'Vous avez calculé le nombre d’oscillations par seconde (la fréquence) : la période est son inverse.'], [dt1, 'Vous avez gardé la durée totale : elle contient ' + n1 + ' oscillations.']],
+    expl: <>T = durée ÷ nombre d’oscillations = {nb(dt1, 2)} ÷ {n1} = <b>{avecU(T1, 's', 2)}</b>.</> };
+  const Tms = tire([100, 200, 250, 400, 500]), f2 = 1000 / Tms;
+  const q2 = { id: 'o1', type: 'num', q: <>Un point de la corde effectue une oscillation complète en <b>{Tms}{NB}ms</b>. Calculez la fréquence f de l’onde, en <b>Hz</b>.</>, unite: 'Hz', vrai: f2, csMin: 2,
+    aide: 'Convertissez d’abord la période en secondes (1 ms = 10⁻³ s), puis prenez l’inverse : f = 1 ÷ T.',
+    pieges: [[1 / Tms, 'Vous avez gardé la période en millisecondes : il faut la convertir en secondes (1 ms = 10⁻³ s) avant de prendre l’inverse.'], [Tms / 1000, 'Vous avez donné la période en secondes : la fréquence est son inverse, f = 1 ÷ T.']],
+    expl: <>T = {Tms} ms = {nb(Tms / 1000, 2)} s ; f = 1 ÷ T = 1 ÷ {nb(Tms / 1000, 2)} = <b>{avecU(f2, 'Hz', 2)}</b>.</> };
+  const fk = tire([0.5, 1.0, 2.0, 4.0]), lamcm = 340 / (fk * 1000) * 100;
+  const q3 = { id: 'o2', type: 'num', q: <>Un haut-parleur émet un son de fréquence <b>{nb(fk, 2)}{NB}kHz</b>. La célérité du son dans l’air est <b>340{NB}m/s</b>. Calculez la longueur d’onde λ du son, en <b>cm</b>.</>, unite: 'cm', vrai: lamcm, csMin: 2,
+    aide: 'Convertissez la fréquence en hertz (1 kHz = 10³ Hz), utilisez λ = c ÷ f (c’est λ = c × T avec T = 1 ÷ f), puis convertissez le résultat de m en cm.',
+    pieges: [[lamcm / 100, 'Votre résultat est en mètres : la réponse est demandée en centimètres (1 m = 100 cm).'], [340 * fk * 1000 * 100, 'Vous avez multiplié c par f : la longueur d’onde est c ÷ f.'], [340 / fk * 100, 'Vous avez gardé la fréquence en kHz : convertissez-la en Hz (× 10³) avant de diviser.']],
+    expl: <>f = {nb(fk, 2)} kHz = {fk * 1000} Hz ; λ = c ÷ f = 340 ÷ {fk * 1000} = {String(Number((lamcm / 100).toPrecision(3))).replace('.', ',')} m = <b>{avecU(lamcm, 'cm', 2)}</b>.</> };
+  const [lc, tm] = tire([[12, 40], [20, 50], [24, 80], [15, 50], [20, 80], [24, 60]]), c4 = lc / 100 / (tm / 1000);
+  const q4 = { id: 'o3', type: 'num', q: <>Sur une photo de la corde, deux crêtes voisines sont distantes de <b>{lc}{NB}cm</b>. Sur l’enregistrement d’un point, deux sommets successifs sont séparés de <b>{tm}{NB}ms</b>. Calculez la célérité c de l’onde, en <b>m/s</b>.</>, unite: 'm/s', vrai: c4, csMin: 2,
+    aide: 'Pendant une période, l’onde parcourt une longueur d’onde : c = λ ÷ T. Convertissez λ en m (1 cm = 10⁻² m) et T en s (1 ms = 10⁻³ s) avant de diviser.',
+    pieges: [[lc / (tm / 1000), 'Vous avez gardé λ en cm : le résultat est alors en cm/s ; convertissez λ en mètres pour obtenir des m/s.'], [lc / tm, 'Les unités ne sont pas converties (cm et ms) : λ doit être en m et T en s.'], [(tm / 1000) / (lc / 100), 'Vous avez divisé T par λ : la célérité est λ ÷ T.'], [lc / 100 * (tm / 1000), 'Vous avez multiplié λ par T : il faut diviser.']],
+    expl: <>λ = {lc} cm = {nb(lc / 100, 2)} m ; T = {tm} ms = {nb(tm / 1000, 2)} s ; c = λ ÷ T = {nb(lc / 100, 2)} ÷ {nb(tm / 1000, 2)} = <b>{avecU(c4, 'm/s', 2)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 0.03 * Math.abs(q.vrai)); });      // un piège égal (ou presque) à la bonne réponse n'a pas de sens
+  return { intro: 'Ondes mécaniques périodiques : période, fréquence, longueur d’onde et célérité, avec les conversions d’unités.', questions: [q1, q2, q3, q4],
+    retenir: ['Période T (en s) : durée d’une oscillation complète ; fréquence f = 1 ÷ T (en Hz).', 'Longueur d’onde λ : distance parcourue par l’onde pendant une période, donc c = λ ÷ T et λ = c × T = c ÷ f.', 'Convertir AVANT de calculer : ms → s (× 10⁻³), kHz → Hz (× 10³), cm → m (× 10⁻²).', 'La source impose T ; le milieu impose c ; λ en résulte.'] };
+}
+
 // ──────────────────────── Familles « L'œil et la loupe » (terminale STL) ────────────────────────
 function genOeilAccomm() {
   const D = tire([25, 30, 50, 80]), Dmm = D * 10, f = 1 / (1 / 17 + 1 / Dmm);
@@ -1950,6 +1977,7 @@ export const FAMILLES = [
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'ond1g-celerite', groupe: 'Formules', titre: 'Ondes mécaniques : célérité, retard et distance (1re spé)', gen: genOndCelerite, domaine: 'Ondes mécaniques : célérité et retard' },
+  { id: 'ond1g-periode', groupe: 'Formules', titre: 'Ondes mécaniques : période, fréquence, longueur d’onde et célérité (1re spé)', gen: genOndesPeriode, domaine: 'Ondes mécaniques périodiques' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },
   { id: 'pfac-calcul', groupe: 'Formules', titre: 'Plan factoriel : codage, coefficient, prévision et degrés de liberté (BTS)', gen: genPlanFactoriel, domaine: 'Plans' },
   { id: 'dop-calcul', groupe: 'Formules', titre: 'Effet Doppler : du décalage à la vitesse (TSTL)', gen: genDoppler, domaine: 'Ondes' },

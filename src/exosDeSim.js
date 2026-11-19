@@ -94,6 +94,7 @@ export const EXOS_DE_SIM = {
   85: [/ab-(choix-indicateur-acide-faible|demi-equivalence|pka-demi-equivalence|ph-equivalence-ok)/, /^titrage/, /hypothese\.titrage/, /^titrage-direct/, /ab-titr-/],
   141: [/(^|\.)tampstl-/, /plausible\.tampstl-/],                                                                  // Solution tampon : choix du couple et préparation (TSTL, PCM)
   120: [/lunet-/, /plausible\.lunet-/],                                                                              // La lunette astronomique (TSTL)
+  151: [/ond1g-periode/, /plausible\.ond1g-periode/],                                                                // Ondes mécaniques : période, longueur d'onde (1G)
   115: [/lum1-/, /plausible\.lum1-/],                                                                                  // Lentille mince (1G)
   150: [/ond1g-celerite/, /plausible\.ond1g-celerite/],                                                          // Ondes mécaniques : célérité et retard (1G)
   107: [/mec-(em|epp|chute)/, /plausible\.mec-(epp|em)/],
