@@ -65,7 +65,7 @@ export const COUVERTURE = [
     { th: NRJ, t: 'Aspects énergétiques des phénomènes mécaniques', e: 'ok', chap: '1g-energie-meca' },
     { th: OND, t: 'Ondes mécaniques : célérité, retard, période, longueur d’onde', e: 'ok', chap: 'ondes-meca' },
     { th: OND, t: 'Image donnée par une lentille mince', e: 'ok', chap: '1g-lentille' },
-    { th: OND, t: 'Couleurs : synthèse additive et soustractive', e: 'avenir' },
+    { th: OND, t: 'Couleurs : synthèse additive et soustractive', e: 'ok', chap: '1g-couleurs' },
     { th: OND, t: 'Modèles ondulatoire et particulaire de la lumière : photon, niveaux d’énergie', e: 'avenir' },
   ] },
 

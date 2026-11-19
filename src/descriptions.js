@@ -1,6 +1,7 @@
 // Courtes descriptions des simulations, affichées en infobulle dans le menu de l'en-tête (clé : titre de la simulation).
 export const DESCRIPTIONS = {
   "Mesure et incertitudes : variabilité, types A et B": "Une mesure varie : histogramme, moyenne, écart-type ; incertitude-type de type A (s/√N) et de type B (a/√3) ; écrire le résultat et le comparer à une référence.",
+  "Couleurs : lumières, filtres et couleur des objets": "Synthèse additive (lampes R, V, B) et soustractive (filtres) ; couleurs complémentaires ; couleur d’un objet selon la lumière : absorption, diffusion, transmission. Modèle à trois bandes.",
   "Savons et amphiphilie : pourquoi un savon lave": "Huile et eau ne se mélangent pas, le savon les disperse : tête polaire et chaîne apolaire de l’ion stéarate, orientation à l’interface, micelles, salissure grasse piégée puis emportée au rinçage.",
   "Concentration en quantité de matière : dissolution et dilution": "Concentration c = n/V en mol/L et lien avec la concentration en masse ; masse de solide à peser pour une dissolution ; volume de solution mère à prélever et facteur de dilution pour une dilution ; choix de la verrerie (fiole jaugée, pipette jaugée). Parcours guidé en 13 étapes, exploration libre et 2 défis.",
   "Oxydo-réduction : couples, demi-équations et équation de réaction": "Transfert d’électrons entre réducteur et oxydant : couples, demi-équations (milieu acide compris), puis équation de réaction (Fe/Cu²⁺, Cu/Ag⁺, MnO₄⁻/Fe²⁺). Parcours, exploration, défis.",

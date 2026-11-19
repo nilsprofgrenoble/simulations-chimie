@@ -12,6 +12,7 @@ import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
 import * as ME from "./mesureModele";
 import * as RX from "./redoxModele";
+import * as CL from "./couleursModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -1091,6 +1092,44 @@ function genSavon1G() {
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai && Math.abs(x - q.vrai) > Math.max(q.tolRel * 1.5, 0.02) * Math.abs(q.vrai)); });
   return { intro: 'Savons : atomes de l’ion carboxylate, masse molaire du sel de sodium et quantité de matière de savon.', questions: [q1, q2, q3, q4],
     retenir: ['Ion carboxylate CH₃–(CH₂)ₙ–COO⁻ : n + 2 atomes de carbone et 2n + 3 atomes d’hydrogène.', 'Masse molaire du savon (sel de sodium) : on additionne les masses molaires atomiques de tous les atomes, ion Na⁺ compris.', 'Quantité de matière : n = m / M (m en g, M en g/mol).'] };
+}
+
+// ───────────── Couleurs (1G) : mélange de lumières, filtres, couleur d'un objet éclairé, radiations absorbées, sous-pixels ─────────────
+function genCouleurs1G() {
+  const NOMS = ['noir', 'rouge', 'vert', 'bleu', 'jaune', 'cyan', 'magenta', 'blanc'];
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  // fixes : erreurs classiques toujours proposées comme distracteurs (le reste est tiré au hasard)
+  const qcm = (id, q, bonne, aide, expl, fixes = []) => {
+    const imposes = [...new Set(fixes)].filter(n => n !== bonne).slice(0, 3);
+    const faux = [...imposes, ...melange(NOMS.filter(n => n !== bonne && !imposes.includes(n)))].slice(0, 3), opts = melange([bonne, ...faux]);
+    return { id, type: 'qcm', q, options: opts, bonne: opts.indexOf(bonne), aide, expl };
+  };
+  const lampe = c => ({ rouge: 'rouge', vert: 'verte', bleu: 'bleue' }[c]);
+  const prim = ['rouge', 'vert', 'bleu'];
+  const [a, b] = melange(prim).slice(0, 2), somme = CL.nomCouleur(CL.additif(CL.COULEURS[a], CL.COULEURS[b]));
+  const q1 = qcm('cl0', <>Dans une pièce sans autre lumière, une lampe <b>{lampe(a)}</b> et une lampe <b>{lampe(b)}</b> éclairent la même zone d’un écran blanc. De quelle couleur est la zone éclairée par les deux ?</>, somme,
+    'Les lumières s’additionnent : écris les radiations (rouge, vert, bleu) présentes dans la zone, puis donne la couleur correspondante.', <>Synthèse additive : {a} + {b} = <b>{somme}</b>.</>, ['marron', 'noir']);
+  const [f1, f2] = melange(CL.VERRES.slice(0, 3)).slice(0, 2), sortie = CL.nomCouleur(CL.traverse(CL.traverse(CL.COULEURS.blanc, f1.v), f2.v));
+  const q2 = qcm('cl1', <>Une lumière blanche traverse {f1.nom}, puis {f2.nom}. De quelle couleur est la lumière qui sort du second filtre ?</>, sortie,
+    'Un filtre laisse passer certaines radiations et absorbe les autres : cherche les radiations (rouge, vert, bleu) que laissent passer les deux filtres. Jaune : rouge et vert ; cyan : vert et bleu ; magenta : rouge et bleu.',
+    <>Le {f1.court} laisse passer {CL.listeBandes(f1.v)} ; le {f2.court} laisse passer {CL.listeBandes(f2.v)}. Les radiations communes : {CL.listeBandes(CL.traverse(f1.v, f2.v))}. Couleur : <b>{sortie}</b>.</>, [CL.nomCouleur(f2.v), 'noir']);
+  const o3 = tire(CL.OBJETS.filter(o => !['papier', 'ardoise'].includes(o.id))), l3 = tire(CL.LUMIERES.filter(l => l.id !== 'blanche')), c3 = CL.couleurPercue(l3.v, o3.v);
+  const q3 = qcm('cl2', <>{cap(o3.nom)} est de couleur <b>{CL.nomCouleur(o3.v)}</b> en lumière blanche. On l’éclaire uniquement avec une <b>{l3.nom}</b>, dans une pièce sans autre lumière. De quelle couleur paraît-il ?</>, c3,
+    'L’objet diffuse certaines radiations (il absorbe la couleur complémentaire de la sienne). Il ne renvoie que les radiations qui sont à la fois envoyées par la lampe et diffusées par lui.',
+    <>L’objet diffuse {CL.listeBandes(o3.v)} ; la lampe envoie {CL.listeBandes(l3.v)}. Radiations renvoyées : {CL.listeBandes(CL.traverse(l3.v, o3.v))}. Couleur perçue : <b>{c3}</b>.</>, [CL.nomCouleur(l3.v), CL.nomCouleur(o3.v), 'noir']);
+  const o4 = tire(CL.OBJETS.filter(o => !['papier', 'ardoise'].includes(o.id))), dif4 = CL.bandesPresentes(o4.v).length, abs4 = 3 - dif4;
+  const q4 = { id: 'cl3', type: 'num', q: <>Un objet paraît <b>{CL.nomCouleur(o4.v)}</b> en lumière blanche. Combien de radiations parmi le rouge, le vert et le bleu absorbe-t-il (modèle à trois radiations ; un objet idéal diffuse ou absorbe entièrement chaque radiation) ?</>, unite: 'radiations', vrai: abs4, csMin: 1, tolRel: 0,
+    aide: 'La lumière blanche contient trois radiations. L’objet diffuse celles qui composent sa couleur et absorbe les autres : l’objet absorbe la complémentaire de sa couleur.',
+    pieges: [[dif4, 'C’est le nombre de radiations diffusées : l’objet absorbe les autres.'], [3, 'L’objet n’absorbe pas tout : il diffuse les radiations qui donnent sa couleur.'], [0, 'Un objet qui n’absorbe rien paraît blanc : celui-ci est coloré, donc il absorbe certaines radiations.']],
+    expl: <>La lumière blanche en contient 3. Une couleur {CL.nomCouleur(o4.v)} est formée de {dif4} radiation{dif4 > 1 ? 's' : ''} diffusée{dif4 > 1 ? 's' : ''} : l’objet en absorbe 3 − {dif4} = <b>{abs4}</b>.</> };
+  const c5 = tire(['rouge', 'vert', 'bleu', 'jaune', 'cyan', 'magenta', 'blanc']), n5 = CL.bandesPresentes(CL.COULEURS[c5]).length;
+  const q5 = { id: 'cl4', type: 'num', q: <>Une zone d’un écran affiche du <b>{c5}</b>. Chaque pixel est formé de trois sous-pixels : un rouge, un vert, un bleu. Combien de sous-pixels sont allumés dans un pixel de cette zone (chaque sous-pixel est éteint ou allumé à pleine intensité) ?</>, unite: 'sous-pixels', vrai: n5, csMin: 1, tolRel: 0,
+    aide: 'Synthèse additive : on allume les sous-pixels dont les lumières, ajoutées, donnent la couleur voulue. Écris la couleur en rouge, vert, bleu.',
+    pieges: [[3, 'Allumer les trois sous-pixels donne du blanc : seul le blanc les demande tous.'], [1, 'Un seul sous-pixel donne une primaire (rouge, vert ou bleu) : les autres couleurs en demandent davantage.'], [2, 'Seules les couleurs secondaires (jaune, cyan, magenta) se forment avec deux sous-pixels allumés.']],
+    expl: <>{cap(c5)} = {CL.listeBandes(CL.COULEURS[c5])} : <b>{n5}</b> sous-pixel{n5 > 1 ? 's' : ''} allumé{n5 > 1 ? 's' : ''}.</> };
+  [q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
+  return { intro: 'Couleurs : mélange de lumières colorées, filtres, couleur perçue d’un objet éclairé, radiations absorbées et sous-pixels d’un écran (modèle à trois bandes).', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Synthèse additive : rouge + vert = jaune, vert + bleu = cyan, rouge + bleu = magenta, les trois = blanc.', 'Synthèse soustractive : un filtre ne laisse passer que certaines radiations ; deux filtres : seules les radiations communes passent.', 'Un objet ne renvoie que les radiations qu’il diffuse parmi celles qu’il reçoit ; il absorbe la complémentaire de sa couleur en lumière blanche.'] };
 }
 
 // ───────────── Concentration en quantité de matière (1G) : concentration, masse à peser, prélèvement, dilution ─────────────
@@ -2533,6 +2572,7 @@ export const FAMILLES = [
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
+  { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
   { id: 'redox1g-calcul', groupe: 'Formules', titre: 'Oxydo-réduction : électrons échangés, coefficients de l’équation, quantités de réactifs et de produits (1G)', gen: genRedox1G, domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction' },
   { id: 'geo1g-calcul', groupe: 'Formules', titre: 'Géométrie, électronégativité et polarité : écart Δχ, doublets, angle idéal, liaisons polarisées (1G)', gen: genGeoPolarite, domaine: 'Géométrie et polarité des entités' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },

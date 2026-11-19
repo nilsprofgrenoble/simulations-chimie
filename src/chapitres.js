@@ -40,6 +40,7 @@ export const CHAPITRES = [
   { id: '1g-energie-meca', niveau: '1G', label: '🎢 Aspects énergétiques des phénomènes mécaniques', sims: [106, 107, 108], domaines: ['Mécanique'] },
   { id: '1g-mouvement', niveau: '1G', label: '🚀 Mouvement d’un système', sims: [52], domaines: ['Mécanique'] },
   { id: 'ondes-meca', niveau: '1G', label: '🌊 Ondes mécaniques', sims: [150, 151], domaines: ['Ondes mécaniques : célérité et retard', 'Ondes mécaniques périodiques'] },
+  { id: '1g-couleurs', niveau: '1G', label: '🎨 Couleurs : lumières, filtres et couleur des objets', sims: [160], domaines: ['Couleurs : synthèses additive et soustractive, couleur des objets'] },
   { id: '1g-lentille', niveau: '1G', label: '🔍 Image donnée par une lentille mince', sims: [115], domaines: ['Lentille mince'] },
   { id: '1g-mesure', niveau: '1G', label: '📏 Mesure et incertitudes', sims: [161], domaines: ['Mesure et incertitudes (1G)'] },
 

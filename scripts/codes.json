@@ -1332,5 +1332,18 @@
  "77:plausible:mes1g-val-typeb-eprouvette": "VAL337",
  "77:plausible:mes1g-val-compat": "VAL338",
  "77:plausible:mes1g-val-100-pesees": "VAL339",
- "36:mes1g-calcul": "REA84"
+ "36:mes1g-calcul": "REA84",
+ "34:coul1g-sapp-objet.0": "SAPP348",
+ "34:coul1g-sapp-objet.1": "SAPP349",
+ "37:prevoir:coul1g-ana-vert-bleu": "ANA565",
+ "37:prevoir:coul1g-ana-filtres-succession": "ANA566",
+ "37:prevoir:coul1g-ana-ballon-vert": "ANA567",
+ "37:prevoir:coul1g-ana-filtre-cyan-rouge": "ANA568",
+ "37:prevoir:coul1g-ana-modele-affiche": "ANA569",
+ "77:plausible:coul1g-val-marron": "VAL340",
+ "77:plausible:coul1g-val-citron-bleu": "VAL341",
+ "77:plausible:coul1g-val-cyan-magenta": "VAL342",
+ "77:plausible:coul1g-val-feuille-verte": "VAL343",
+ "77:plausible:coul1g-val-noir-imprimante": "VAL344",
+ "36:coul1g-calcul": "REA85"
 }

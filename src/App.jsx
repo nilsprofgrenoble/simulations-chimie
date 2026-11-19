@@ -91,6 +91,7 @@ const SimulationOxydoReduction = paresseux(() => import("./simulations/OxydoRedu
 const SimulationGeometriePolarite = paresseux(() => import("./simulations/GeometriePolarite"), "SimulationGeometriePolarite");
 const SimulationSavonAmphiphile = paresseux(() => import("./simulations/SavonAmphiphile"), "SimulationSavonAmphiphile");
 const SimulationDissolutionIonique = paresseux(() => import("./simulations/DissolutionIonique"), "SimulationDissolutionIonique");
+const SimulationCouleurs = paresseux(() => import("./simulations/Couleurs"), "SimulationCouleurs");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
 const SimulationPredominance = paresseux(() => import("./simulations/Predominance"), "SimulationPredominance");
@@ -363,6 +364,7 @@ const SIMULATIONS = [
   { id:158, label:"Savons et amphiphilie : pourquoi un savon lave", niveau:"1G", icon:"🧼", color:"#0e7490", component: SimulationSavonAmphiphile },
   { id:161, label:"Mesure et incertitudes : variabilité, types A et B", niveau:"1G", icon:"📏", color:"#b45309", component: SimulationMesureIncertitudes },
   { id:157, label:"Dissolution d’un solide ionique dans l’eau : équation et concentration des ions", niveau:"1G", icon:"🧂", color:"#0e7490", component: SimulationDissolutionIonique },
+  { id:160, label:"Couleurs : lumières, filtres et couleur des objets", niveau:"1G", icon:"🎨", color:"#c026d3", component: SimulationCouleurs },
   { id:156, label:"Oxydo-réduction : couples, demi-équations et équation de réaction", niveau:"1G", icon:"🔋", color:"#be123c", component: SimulationOxydoReduction },
   { id:115, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
     component: SimulationLentilleMince },
