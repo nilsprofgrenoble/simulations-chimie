@@ -3417,6 +3417,27 @@ export const PREVOIR = [
       F('trop grande : à forte absorbance, l’appareil surestime A', 'C’est l’inverse : la courbe mesurée passe sous la droite, A est sous-estimée, donc c aussi.'),
       F('correcte, à condition d’utiliser une cuve plus longue', 'Une cuve plus longue ferait encore augmenter A : il faudrait au contraire diluer (ou raccourcir la cuve).'),
     ] },
+  { id: 'irt-ana-esterification', domaine: 'Spectroscopie infrarouge : données tabulées', titre: 'Acide carboxylique devenu ester',
+    enonce: 'On estérifie un acide carboxylique par un alcool, puis on isole l’ester pur (lavé et séché). On compare le spectre infrarouge du produit à celui de l’acide de départ, au-dessus de 1500 cm⁻¹.', q: 'Quel changement observe-t-on ?', options: [
+      V('la bande O–H très large disparaît, la bande C=O se décale vers le haut', 'L’ester n’a plus de liaison O–H ; sa bande C=O, dans l’intervalle 1735–1750, est un peu au-dessus de celle de l’acide (1700–1725).'),
+      F('la bande O–H très large reste, mais la bande C=O a complètement disparu', 'C’est l’inverse : l’ester garde sa liaison C=O (bande fine et forte), mais ne porte plus de liaison O–H.'),
+      F('une bande O–H large apparaît vers 3300 cm⁻¹, celle de l’alcool de départ', 'L’alcool a réagi et l’ester pur n’en contient plus : aucune bande O–H ne subsiste dans le produit purifié.'),
+      F('aucune bande ne change : seule l’empreinte digitale diffère', 'La bande O–H très large disparaît et la bande C=O se décale : les changements se voient dès la zone des groupes caractéristiques.'),
+    ] },
+  { id: 'irt-ana-oh-nh', domaine: 'Spectroscopie infrarouge : données tabulées', titre: 'Deux flacons sans étiquette',
+    enonce: 'Deux flacons contiennent, l’un de l’éthanol, l’autre de l’éthylamine. Dans les deux spectres infrarouges, on observe une ou plusieurs bandes au-dessus de 3200 cm⁻¹ et aucune bande vers 1700 cm⁻¹.', q: 'Comment les distinguer avec le tableau de données ?', options: [
+      V('par l’allure : bande large et forte (alcool), bandes fines (amine)', 'O–H d’un alcool : large et forte (3200–3700) ; N–H : fines et moyennes (3100–3500). Les positions se recouvrent, l’allure tranche.'),
+      F('par la position seule : une bande O–H est toujours plus haute que N–H', 'Les intervalles se recouvrent (3200–3700 pour O–H, 3100–3500 pour N–H) : la position seule ne suffit pas.'),
+      F('par une bande C=O, présente dans l’un des deux flacons seulement', 'Ni l’éthanol ni l’éthylamine ne contiennent de liaison C=O : aucune bande vers 1700 cm⁻¹ n’apparaît.'),
+      F('l’éthylamine n’absorbe pas du tout au-dessus de 3000 cm⁻¹ (pas de N–H)', 'La liaison N–H absorbe dans l’intervalle 3100–3500 : l’amine primaire montre même deux bandes.'),
+    ] },
+  { id: 'irt-ana-empreinte', domaine: 'Spectroscopie infrarouge : données tabulées', titre: 'Mêmes bandes : que conclure ?',
+    enonce: 'Deux liquides purs, A et B, ont chacun une bande fine et forte vers 1715 cm⁻¹, de petites bandes vers 2970 cm⁻¹ et aucune autre bande au-dessus de 1500 cm⁻¹. Tableau : C=O d’aldéhyde ou de cétone 1705–1740 cm⁻¹ ; C–H 2850–3000 cm⁻¹.', q: 'Que peut-on conclure avec le tableau seul ?', options: [
+      V('ils ont un groupe C=O et des liaisons C–H, sans nommer l’espèce', 'Le tableau associe des bandes à des liaisons, donc à des groupes. Il ne suffit pas à nommer l’espèce : plusieurs espèces ont ces mêmes groupes.'),
+      F('A et B sont la même espèce, car leurs bandes sont les mêmes', 'Des espèces différentes peuvent avoir les mêmes groupes, donc les mêmes bandes dans ces zones : on ne peut pas conclure qu’il s’agit de la même espèce.'),
+      F('A et B sont deux cétones, car 1715 est dans l’intervalle 1705–1740 cm⁻¹', 'Cet intervalle est commun aux aldéhydes et aux cétones : sans autre bande (C–H d’aldéhyde), on ne peut pas trancher.'),
+      F('A et B n’ont pas de groupe C=O, car 1715 est hors du tableau', 'Le tableau contient plusieurs lignes C=O autour de 1700–1740 cm⁻¹ : 1715 y a sa place.'),
+    ] },
   { id: 'nwt-ana-balance', domaine: 'Deuxième loi de Newton', titre: 'Une balance dans la cabine',
     enonce: 'Un voyageur de masse 70 kg est debout sur une balance posée sur le sol d’une cabine d’ascenseur. La cabine démarre vers le haut. Le voyageur est soumis à son poids vec(P) et à la réaction vec(R) de la balance ; la balance indique la norme R.', q: 'Pendant le démarrage, comment se comparent R et P ?', options: [
       V('R est plus grande que P : la somme des forces est vers le haut', 'Le voyageur accélère vers le haut avec la cabine : vec(a)_G est vers le haut, donc Σ vec(F) aussi. Avec un axe vers le haut, R − P > 0 : R est plus grande que P, et la balance indique plus que d’habitude.'),

@@ -100,6 +100,7 @@ const SimulationAminoAcides = paresseux(() => import("./simulations/AminoAcides"
 const SimulationConductimetrie = paresseux(() => import("./simulations/Conductimetrie"), "SimulationConductimetrie");
 const SimulationEtalonnage = paresseux(() => import("./simulations/Etalonnage"), "SimulationEtalonnage");
 const SimulationUvVisible = paresseux(() => import("./simulations/UvVisible"), "SimulationUvVisible");
+const SimulationIrTabulees = paresseux(() => import("./simulations/IrTabulees"), "SimulationIrTabulees");
 const SimulationFrenet = paresseux(() => import("./simulations/Frenet"), "SimulationFrenet");
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationVecteursVA = paresseux(() => import("./simulations/VecteursVitesseAcceleration"), "SimulationVecteursVA");
@@ -274,6 +275,7 @@ const SIMULATIONS = [
   { id:136, label:"Dosage conductimétrique par étalonnage : conductance, constante de cellule et courbe d’étalonnage", niveau:"TG", icon:"📈", color:"#0369a1", component: SimulationEtalonnage },
   { id:167, label:"Mouvement circulaire : le repère de Frenet, vitesse et accélération", niveau:"TG", icon:"🎡", color:"#b91c1c", component: SimulationFrenet },
   { id:169, label:"Spectroscopie UV-visible : identifier une espèce, puis la doser", niveau:"TG", icon:"🔆", color:"#6d28d9", component: SimulationUvVisible },
+  { id:170, label:"Spectroscopie infrarouge : identifier un groupe ou une espèce avec des données tabulées", niveau:"TG", icon:"🔬", color:"#0f766e", component: SimulationIrTabulees },
   { id:168, label:"Deuxième loi de Newton : de la somme des forces à l’accélération du centre de masse", niveau:"TG", icon:"🛗", color:"#3f6212", component: SimulationNewton },
   { id:166, label:"Vecteurs position, vitesse et accélération", niveau:"TG", icon:"🏎️", color:"#0b4f94", component: SimulationVecteursVA },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
