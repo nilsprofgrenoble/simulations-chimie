@@ -1,8 +1,10 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { FResistance, FPuissance, FSerie, FChute, FOrdre, FBilanParoi } from "./ParoiSchemas";
 
 const SIM_ID = 31;
 declarerDefis(SIM_ID, [['principal', 'Paroi multicouche']]);
@@ -57,6 +59,13 @@ const nf = (x, n = 3) => (isFinite(x) ? Number(x).toLocaleString('fr-FR', { maxi
 const dec = (x, d) => Number(x).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
 const t1 = x => (isFinite(x) ? dec(Math.round(x * 10) / 10, 1) : '—');
 const Sub = ({ c }) => <sub>{c}</sub>;
+const Rth = <msub><mi>R</mi><mi>th</mi></msub>;
+const FRth = <Formule>{Rth}<mo>=</mo><mfrac><mi>e</mi><mrow><mi>λ</mi><mo>×</mo><mi>S</mi></mrow></mfrac></Formule>;
+const FRthEL = <FormuleEnLigne>{Rth}<mo>=</mo><mfrac><mi>e</mi><mrow><mi>λ</mi><mo>×</mo><mi>S</mi></mrow></mfrac></FormuleEnLigne>;
+const FPui = <Formule><mi>P</mi><mo>=</mo><mfrac><mi>ΔT</mi>{Rth}</mfrac></Formule>;
+const FPuiT = <Formule><mi>P</mi><mo>=</mo><mfrac><mrow><msub><mi>T</mi><mi>int</mi></msub><mo>−</mo><msub><mi>T</mi><mi>ext</mi></msub></mrow>{Rth}</mfrac></Formule>;
+const FSom = <Formule><msub><mi>R</mi><mi>th,global</mi></msub><mo>=</mo><msub><mi>R</mi><mn>1</mn></msub><mo>+</mo><msub><mi>R</mi><mn>2</mn></msub><mo>+</mo><msub><mi>R</mi><mn>3</mn></msub></Formule>;
+const FChuteF = <Formule><msub><mi>ΔT</mi><mi>i</mi></msub><mo>=</mo><msub><mi>R</mi><mi>i</mi></msub><mo>×</mo><mi>P</mi></Formule>;
 const eTxt = l => (l.u === 'cm' ? `${nf(l.e / 10, 3)} cm` : `${nf(l.e, 4)} mm`);
 const ROUGE = '#dc2626', BLEU = '#2563eb', VIOLET = '#7e22ce';
 
@@ -300,11 +309,12 @@ export function SimulationParoi() {
         options: ['De l’intérieur (chaud) vers l’extérieur (froid)', 'De l’extérieur vers l’intérieur', 'Elle ne traverse pas : le mur arrête le transfert'], bonne: 0,
         expl: 'Le transfert thermique se fait toujours du milieu le plus chaud vers le plus froid. Un mur ne l’arrête pas : il le ralentit plus ou moins (c’est son pouvoir isolant).', indice: "L’énergie thermique passe spontanément du corps chaud vers le corps froid." } },
     { id: 'lambda', titre: 'Conductivité et résistance thermique', focus: ['donnees'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li><strong>λ</strong> (W·m⁻¹·K⁻¹) est propre au matériau ; plus λ est petit, meilleur est l’isolant.</li><li><strong>R<sub>th</sub> = e / (λ · S)</strong> (K·W⁻¹) dépend aussi de l’épaisseur et de la surface.</li><li>Puissance à travers la paroi : <strong>φ = ΔT / R<sub>th</sub></strong>.</li></ul></>,
-      texte: <>La <strong>conductivité thermique λ</strong> (W·m⁻¹·K⁻¹) dit si un matériau laisse passer facilement l’énergie. La <strong>résistance thermique R<Sub c="th"/></strong> (K·W⁻¹) d’une paroi dépend en plus de son épaisseur e et de sa surface S : <strong>R<Sub c="th"/> = e / (λ · S)</strong>.</>,
+      texte: <>La <strong>conductivité thermique λ</strong> (W·m⁻¹·K⁻¹) dit si un matériau laisse passer facilement l’énergie. La <strong>résistance thermique R<Sub c="th"/></strong> (K·W⁻¹) d’une paroi dépend en plus de son épaisseur e et de sa surface S : {FRthEL}.</>,
       tache: { type: 'qcm', q: 'Laquelle de ces deux grandeurs dépend de la forme de la paroi (épaisseur, surface) ?', options: ['La résistance thermique R_th', 'La conductivité thermique λ', 'Les deux'], bonne: 0,
         expl: 'λ est une propriété du matériau : la brique a la même λ en 1 cm ou en 1 m. R_th dépend aussi de e et de S : doubler e double R_th ; doubler S divise R_th par 2.', indice: "Un même matériau, en plus grande épaisseur, résiste-t-il autant ? La conductivité décrit-elle le matériau ou l’objet ?" } },
     { id: 'Rb', titre: 'La résistance thermique de la brique', focus: ['donnees'],
+      retenirTitre: 'Résistance thermique d’une couche',
+      retenir: <><FResistance/>{FRth}{puces(<><strong>λ</strong> (W·m⁻¹·K⁻¹) est propre au matériau : λ petit = bon isolant.</>, <>R<sub>th</sub> (K·W⁻¹) dépend aussi de e (en m) et de S (en m²).</>, <>Doubler e double R<sub>th</sub> ; doubler S la divise par 2.</>)}</>,
       texte: <>Données : e = 20 cm, λ = 0,25 W·m⁻¹·K⁻¹, S = 1 m². Attention aux unités : l’épaisseur doit être en <strong>mètres</strong>.</>,
       tache: { type: 'num', q: 'R_th de la brique', unite: 'K·W⁻¹', vrai: A.Rb, tol: 0.02, affiche: x => nf(x),
         calcul: () => ['Conversion de l’épaisseur en mètres : e = 20 cm = 0,20 m.',
@@ -312,13 +322,15 @@ export function SimulationParoi() {
         pieges: [[20 / 0.25, 'e = 20 cm = 0,20 m : convertissez en mètres.'], [200 / 0.25, 'e doit être en m (0,20 m), pas en mm.'], [0.25 / 0.2, 'R_th = e / (λ·S) : on divise e par λ·S, pas l’inverse.']],
         expl: 'R_th = e / (λ·S) = 0,20 / (0,25 × 1) = 0,80 K·W⁻¹.', indice: "R_th = e ÷ (λ × S), avec e en mètres." } },
     { id: 'P1', titre: 'La puissance thermique à travers la brique', focus: ['schema'],
-      texte: <>La puissance thermique P qui traverse la paroi est d’autant plus grande que l’écart de température est grand et que la résistance est faible : <strong>P = (T<Sub c="int"/> − T<Sub c="ext"/>) / R<Sub c="th"/></strong>. Calculez-la pour le mur de brique seul (R<Sub c="th"/> trouvée à l’étape 3).</>,
+      texte: <>La puissance thermique P qui traverse la paroi est d’autant plus grande que l’écart de température est grand et que la résistance est faible : Calculez-la pour le mur de brique seul (R<Sub c="th"/> trouvée à l’étape 3) :{FPuiT}</>,
       tache: { type: 'num', q: 'Puissance P', unite: 'W', vrai: A.P1, tol: 0.02, affiche: x => nf(x),
         calcul: () => ['Écart de température : T_int − T_ext = 20 − 0 = 20 °C (soit 20 K).',
           `P = (T_int − T_ext) / R_th = 20 / ${nf(A.Rb)} = ${nf(A.P1)} W.`],
         pieges: [[20 * A.Rb, 'On divise : P = ΔT / R_th (plus R_th est grande, plus P est faible).']],
         expl: 'P = 20 / 0,80 = 25 W : le mur laisse passer 25 J par seconde.', indice: "P = (T_int − T_ext) ÷ R_th, avec la résistance de la brique." } },
     { id: 'profil1', titre: 'La température à l’intérieur du mur', focus: ['graphe'],
+      retenirTitre: 'La puissance thermique',
+      retenir: <><FPuissance/>{FPui}{puces(<>La chaleur va du chaud vers le froid.</>, <>R<sub>th</sub> grande : P petite, le mur « freine » le transfert.</>, <>P en W (soit J·s⁻¹), R<sub>th</sub> en K·W⁻¹, ΔT en K ou en °C.</>)}</>,
       texte: <>Le graphique montre la température en chaque point de l’épaisseur du mur, de l’intérieur (à gauche) vers l’extérieur (à droite).</>,
       tache: { type: 'qcm', q: 'Comment varie la température dans une couche homogène ?', options: ['Linéairement : une droite, la température baisse de façon régulière', 'Brutalement au milieu de la couche', 'Elle reste égale à celle de l’intérieur'], bonne: 0,
         expl: 'En régime stationnaire, la même puissance P traverse chaque tranche du mur : l’écart de température par millimètre est constant dans un matériau homogène. Le profil est donc une droite, d’autant plus inclinée que λ est faible.', indice: "Dans un matériau homogène, la puissance est la même en tout point. Que dit cela du profil de température ?" } },
@@ -333,7 +345,8 @@ export function SimulationParoi() {
         pieges: [[0.036 / 0.1, 'Fraction à l’envers : R_th = e / (λ·S), avec e = 0,10 m au numérateur.'], [10 / 0.036, 'e = 10 cm = 0,10 m : convertissez en mètres.'], [A.Rb, 'C’est la valeur de la brique : la laine de bois a une λ bien plus faible.']],
         expl: `R_th = 0,10 / (0,036 × 1) ≈ ${nf(A.Rl)} K·W⁻¹ : ${nf(A.Rl / A.Rb, 2)} fois la résistance de la brique, pour la moitié de l’épaisseur.`, indice: "Même formule : R_th = e ÷ (λ × S)." } },
     { id: 'serie', titre: 'Les résistances s’ajoutent', focus: ['donnees'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Couches traversées l’une après l’autre par la même puissance : <strong>R<sub>th,global</sub> = R₁ + R₂ + R₃</strong>.</li><li>Ajouter une couche augmente R<sub>th</sub> et diminue la puissance perdue φ = ΔT / R<sub>th,global</sub>.</li></ul></>,
+      retenirTitre: 'Couches en série',
+      retenir: <><FSerie/>{FSom}{puces(<>Couches traversées l’une après l’autre par la même puissance : leurs résistances s’ajoutent.</>, <>Ajouter une couche augmente R<sub>th,global</sub> et diminue la puissance perdue.</>)}</>,
       texte: <>La plaque de plâtre a une résistance R<Sub c="th"/> ≈ {nf(A.Rp, 2)} K·W⁻¹ (même calcul). Les trois couches sont traversées l’une après l’autre par la même puissance : elles sont <strong>en série</strong>, et leurs résistances s’ajoutent.</>,
       tache: { type: 'num', q: 'R_th,global de la paroi', unite: 'K·W⁻¹', vrai: A.Rt, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Plâtre : R_th = 0,013 / (0,33 × 1) = ${nf(A.Rp)} K·W⁻¹ (e = 13 mm = 0,013 m).`,
@@ -350,7 +363,8 @@ export function SimulationParoi() {
           [20 * A.Rt, 'On divise : P = ΔT / R_th,global (plus R_th est grande, plus P est faible).']],
         expl: `P = 20 / ${nf(A.Rt)} ≈ ${nf(A.P2)} W, contre 25 W sans isolant : on divise la puissance perdue par ${nf(A.Rt / A.Rb, 2)}.`, indice: "Même formule, avec la résistance globale R_th,global de la paroi." } },
     { id: 'dTl', titre: 'Où tombe l’écart de température ?', focus: ['graphe'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>La chute de température dans chaque couche est <strong>proportionnelle à sa résistance</strong> : ΔT<sub>i</sub> = R<sub>i</sub> · φ.</li><li>L’essentiel de l’écart tombe dans la couche la plus résistante, donc dans l’isolant.</li></ul></>,
+      retenirTitre: 'Chute de température dans une couche',
+      retenir: <><FChute/>{FChuteF}{puces(<>La chute de température d’une couche est proportionnelle à sa résistance.</>, <>L’essentiel de l’écart tombe dans la couche la plus résistante : l’isolant.</>, <>Même idée qu’en électricité : U = R × I.</>)}</>,
       texte: <>Le graphique montre maintenant les trois couches : la pente change à chaque couche. La même puissance P les traverse toutes ; l’écart de température aux bornes d’une couche vaut <strong>ΔT = P × R<Sub c="th"/></strong> (comme U = R × I en électricité). Utilisez la puissance P après isolation (étape 9) et la résistance de la laine de bois (étape 7).</>,
       tache: { type: 'num', q: 'Écart de température ΔT aux bornes de la laine de bois', unite: '°C', vrai: A.dTl, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`La puissance qui traverse la laine de bois est la même que celle de toute la paroi : P = ${nf(A.P2)} W (celle d’après isolation).`,
@@ -370,6 +384,8 @@ export function SimulationParoi() {
       tache: { type: 'qcm', q: 'Quand on inverse l’ordre des couches, la puissance P qui traverse le mur…', options: ['reste la même, mais les températures aux interfaces changent', 'augmente', 'diminue'], bonne: 0,
         expl: 'Les résistances s’ajoutent dans n’importe quel ordre : R_th,global et P ne changent pas. Seules les températures aux interfaces changent, ce qui peut compter dans un vrai mur (condensation, gel).', indice: "R_th,global est la somme des résistances : change-t-elle si l’on permute les couches ?" } },
     { id: 'conception', titre: 'Dimensionner l’isolant', focus: ['slider'],
+      retenirTitre: 'L’ordre des couches',
+      retenir: <><FOrdre/>{puces(<>Les résistances s’ajoutent dans n’importe quel ordre : R<sub>th,global</sub> et P ne changent pas.</>, <>Seules les températures aux interfaces changent (condensation, gel).</>)}</>,
       texte: <>Cahier des charges (exercice du TD) : pour 1 m², il faut <strong>R<Sub c="th,global"/> ≥ 4 K·W⁻¹</strong>. Quelle épaisseur minimale de laine de bois (λ = 0,036 W·m⁻¹·K⁻¹) faut-il ? La brique (R<Sub c="th"/> = {nf(A.Rb)} K·W⁻¹) et le plâtre (R<Sub c="th"/> ≈ {nf(A.Rp, 2)} K·W⁻¹) sont inchangés.</>,
       tache: { type: 'num', q: 'Épaisseur minimale de laine de bois', unite: 'cm', vrai: A.emin, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Résistance minimale de la laine : R_min = 4 − R_plâtre − R_brique = 4 − ${nf(A.Rp)} − ${nf(A.Rb)} = ${nf(4 - A.Rp - A.Rb)} K·W⁻¹.`,
@@ -386,7 +402,9 @@ export function SimulationParoi() {
       tache: { type: 'qcm', q: 'Pour additionner les résistances des couches, on suppose que…',
         options: ['la même puissance traverse toutes les couches (régime stationnaire, bon contact entre couches, pas de fuite sur les côtés)', 'chaque couche est traversée par une puissance différente', 'la température est la même dans toute la paroi'], bonne: 0,
         expl: 'Sans ces hypothèses (ponts thermiques, fuites sur les côtés, mauvais contact entre couches, régime variable), le calcul n’est qu’une approximation. Autre simplification : ici la face du mur est à la température de l’air ; en réalité un film d’air limite l’échange (option « films d’air » en exploration libre).', indice: "Le flux est-il le même à travers toutes les couches quand le régime est établi ?" } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Bilan : paroi multicouche',
+      retenir: <><FBilanParoi/></>,
       texte: <>Vous savez calculer la résistance thermique d’une couche (R<Sub c="th"/> = e / (λ·S)), additionner les résistances de couches superposées, en déduire la puissance P = ΔT / R<Sub c="th"/> et l’écart de température aux bornes de chaque couche, et dimensionner une épaisseur d’isolant. En exploration libre, chargez le simple et le double vitrage (exercice 2 du TD), ajoutez les films d’air et comparez les matériaux.</>, tache: null },
   ];
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
