@@ -119,6 +119,7 @@ const SimulationOeilLoupe = paresseux(() => import("./simulations/OeilLoupe"), "
 const SimulationMicroscope = paresseux(() => import("./simulations/Microscope"), "SimulationMicroscope");
 const SimulationLunette = paresseux(() => import("./simulations/Lunette"), "SimulationLunette");
 const SimulationChiralite = paresseux(() => import("./simulations/Chiralite"), "SimulationChiralite");
+const SimulationConfigurationRS = paresseux(() => import("./simulations/Chiralite"), "SimulationConfigurationRS");
 const SimulationAcideFaible = paresseux(() => import("./simulations/AcideFaible"), "SimulationAcideFaible");
 const SimulationPredoTstl = paresseux(() => import("./simulations/PredoTstl"), "SimulationPredoTstl");
 const SimulationTamponTstl = paresseux(() => import("./simulations/TamponTstl"), "SimulationTamponTstl");
@@ -259,8 +260,10 @@ const SIMULATIONS = [
     component: SimulationMicroscope },
   { id:120, label:"La lunette astronomique : afocale, grossissement", niveau:"TSTL", icon:"🔭", color:"#0e7490",
     component: SimulationLunette },
-  { id:137, label:"Chiralité et configuration absolue R/S : carbone asymétrique, Cram, règles CIP", niveau:"TSTL", icon:"🫲", color:"#0f766e",
+  { id:137, label:"Chiralité et carbone asymétrique : molécule chirale, miroir, représentation de Cram", niveau:"TSTL", icon:"🫲", color:"#0f766e",
     component: SimulationChiralite },
+  { id:145, label:"Configuration absolue R/S : règles CIP, sens de rotation, deux carbones asymétriques", niveau:"TSTL", icon:"🧭", color:"#0f766e",
+    component: SimulationConfigurationRS },
   { id:138, label:"Acide faible : coefficient de dissociation, constante d’acidité Ka et pKa", niveau:"TSTL", icon:"🧫", color:"#b45309",
     component: SimulationAcideFaible },
   { id:139, label:"pH, pKa et espèce prédominante", niveau:"TSTL", icon:"🎨", color:"#7c3aed",

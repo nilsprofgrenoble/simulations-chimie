@@ -1102,5 +1102,14 @@
  "36:stereo-nombre": "REA57",
  "36:stereo-racemique": "REA58",
  "37:prevoir:stereo-ana-proprietes": "ANA489",
- "37:prevoir:stereo-ana-meso": "ANA490"
+ "37:prevoir:stereo-ana-meso": "ANA490",
+ "34:chir-miroir-distance.0": "SAPP289",
+ "34:chir-miroir-distance.1": "SAPP290",
+ "34:chir-cram-liaisons.0": "SAPP291",
+ "34:chir-cram-liaisons.1": "SAPP292",
+ "37:prevoir:chir-ana-remplacer": "ANA491",
+ "37:prevoir:chir-ana-plan-symetrie": "ANA492",
+ "77:plausible:chir-val-ethanol": "VAL269",
+ "36:chir-reperer": "REA59",
+ "36:chir-cram-bilan": "REA60"
 }

@@ -9,11 +9,13 @@ import * as M from "./chiraliteModele";
 import { Cram, VueAxe, COUL_GROUPE } from "./ChiraliteSchema";
 import { FICHES } from "./ChiraliteFiches";
 
-const SIM_ID = 137;
-declarerDefis(SIM_ID, [['rs', 'Configuration R ou S d’un carbone asymétrique'], ['cram', 'Obtenir la configuration demandée'], ['nasym', 'Compter les carbones asymétriques']]);
+const ID_CHIRALITE = 137, ID_CONFIG_RS = 145;
+declarerDefis(ID_CHIRALITE, [['nasym', 'Compter les carbones asymétriques'], ['chirale', 'Dire si une molécule est chirale']]);
+declarerDefis(ID_CONFIG_RS, [['rs', 'Configuration R ou S d’un carbone asymétrique'], ['cram', 'Obtenir la configuration demandée']]);
 
 // ====================================================
-//  SIM 137 — CHIRALITÉ ET CONFIGURATION ABSOLUE R/S (TSTL, PCM : Constitution de la matière › Structure spatiale)
+//  SIM 137 — CHIRALITÉ ET CARBONE ASYMÉTRIQUE et SIM 145 — CONFIGURATION ABSOLUE R/S (TSTL, PCM : Constitution de la matière › Structure spatiale)
+//  Une seule base de code, deux simulations : partie 1 (chiralité, C*, miroir, symétrie) et partie 2 (règles CIP, R/S, deux carbones).
 //  Chaque carbone asymétrique = 4 groupes classés par priorité (règles CIP du programme) + leur disposition (dessin de Cram).
 //  R si, le groupe n°4 étant derrière, 1 → 2 → 3 tourne dans le sens horaire ; S sinon. Tout est calculé par chiraliteModele.js (testé).
 // ====================================================
@@ -84,12 +86,16 @@ const NOMS_PAIRES = { plan: 'Échanger les deux groupes du plan', devant: 'Écha
 // ====================================================
 //  COMPOSANT
 // ====================================================
-export function SimulationChiralite() {
-  const [mode, setMode] = useState(() => modeOuverture('chiralite-guide-v1'));
+export const SimulationChiralite = () => <SimulationBase partie={1}/>;
+export const SimulationConfigurationRS = () => <SimulationBase partie={2}/>;
+
+function SimulationBase({ partie }) {
+  const SIM_ID = partie === 1 ? ID_CHIRALITE : ID_CONFIG_RS, p1 = partie === 1;
+  const [mode, setMode] = useState(() => modeOuverture(p1 ? 'chiralite-guide-v2' : 'chiralite-rs-guide-v1'));
   useSignalerMode(mode);
-  const [suiviR, noterR] = useCompteurDefi(), [suiviC, noterC] = useCompteurDefi(), [suiviN, noterN] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('chiralite-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
-  const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('rs');
+  const [suiviR, noterR] = useCompteurDefi(), [suiviC, noterC] = useCompteurDefi(), [suiviN, noterN] = useCompteurDefi(), [suiviH, noterH] = useCompteurDefi();
+  const [guide, setGuide] = useEtatPersistant(p1 ? 'chiralite-guide-v2' : 'chiralite-rs-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState(p1 ? 'nasym' : 'rs');
   const [hypoOuv, setHypoOuv] = useState(false), [molOuv, setMolOuv] = useState(false), [axeOuv, setAxeOuv] = useState(false);
   const [P, setP] = useState(P0);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
@@ -105,7 +111,7 @@ export function SimulationChiralite() {
   const dep = patch => () => setP(x => ({ ...P0, id: x.id, aff: x.aff, flips: x.flips, ...patch }));
   const sensDe = r => (r === 'R' ? 'horaire' : 'antihoraire');
   const qcmRS = conf => ({ options: [`${conf} : 1 → 2 → 3 tourne dans le sens ${sensDe(conf)}`, `${M.inverse(conf)} : 1 → 2 → 3 tourne dans le sens ${sensDe(conf)}`, `${M.inverse(conf)} : 1 → 2 → 3 tourne dans le sens ${sensDe(M.inverse(conf))}`, 'on ne peut pas conclure : cela dépend de l’observateur'], bonne: 0 });
-  const ETAPES = [
+  const TOUTES = [
     { id: 'vis', titre: 'Un objet et son image', sc: 'vis', focus: ['scene'], depart: dep({}),
       texte: <>Voici un <strong>ressort en hélice</strong> et <strong>son image dans un miroir</strong> (le trait bleu est le miroir). Les deux ressorts se ressemblent beaucoup : l’un est l’image de l’autre. On se demande s’ils sont <strong>identiques</strong>, c’est-à-dire si l’on peut poser exactement l’un sur l’autre en le tournant ou en le déplaçant, sans le déformer.</>,
       tache: { type: 'qcm', q: 'Peut-on superposer le ressort et son image dans le miroir, en les tournant ?', options: ['non : leurs hélices sont de sens opposés', 'oui : il suffit de retourner l’image du ressort', 'oui : les deux ressorts ont la même taille', 'oui : le miroir ne modifie jamais un objet'], bonne: 0,
@@ -145,12 +151,15 @@ export function SimulationChiralite() {
       tache: { type: 'qcm', q: 'Comment appelle-t-on une molécule non superposable à son image dans un miroir ?', options: ['une molécule chirale', 'une molécule achirale', 'une molécule asymétrique', 'une molécule symétrique'], bonne: 0,
         indice: 'On a utilisé ce mot pour la main droite et la main gauche.', expl: 'Une molécule non superposable à son image est chirale. Une molécule qui possède un seul carbone asymétrique est chirale. La relation entre une molécule chirale et son image dans un miroir s’appelle l’énantiomérie : ces deux molécules sont des énantiomères.' } },
     { id: 'symetrie', titre: 'Un plan de symétrie : la molécule est achirale', sc: 'miroir', focus: ['scene'], depart: dep({ id: 'propan2ol', aff: A_PRO, miroir: true }),
+      retenirTitre: 'À RETENIR : OBJET CHIRAL ET IMAGE', retenir: FICHES.miroir,
       texte: <>Voici le propan-2-ol et son image dans un miroir : on peut les superposer, la molécule est <strong>achirale</strong>. Elle possède un <strong>plan de symétrie</strong> qui passe par C, O et H et sépare les deux groupes CH₃. Une molécule qui possède un <strong>axe</strong>, un <strong>plan</strong> ou un <strong>centre de symétrie</strong> est superposable à son image : elle n’est pas chirale, même si elle contient des carbones asymétriques.</>,
       tache: { type: 'qcm', q: 'Quelles conditions rendent une molécule chirale ?', options: ['un C* et aucun élément de symétrie', 'au moins un C*, même si elle a un plan de symétrie', 'aucun C* et un plan de symétrie', 'un plan de symétrie, quel que soit le reste'], bonne: 0,
         indice: 'Le propan-2-ol, avec son plan de symétrie, est superposable à son image : la symétrie empêche la chiralité.', expl: 'Une molécule est chirale si elle a au moins un carbone asymétrique et aucun axe, plan ou centre de symétrie. Un élément de symétrie la rend superposable à son image, donc achirale.' } },
-    { id: 'z', titre: 'Classer les atomes : le numéro atomique', sc: 'z', focus: ['scene'], depart: null,
+    { id: 'bravo1', titre: 'Bravo ! Le bilan de la chiralité', sc: 'cram', focus: [], depart: dep({ id: 'lactique', aff: A_LAC }),
       retenirTitre: 'À RETENIR : C* ET MOLÉCULE CHIRALE', retenir: FICHES.asym,
-      texte: <>Pour <strong>décrire</strong> une molécule chirale, on classe ses 4 groupes de <strong>1</strong> (prioritaire) à <strong>4</strong> (le moins prioritaire). Ce sont les <strong>règles de Cahn, Ingold et Prelog</strong> (CIP). Première règle : on regarde l’atome lié au carbone C* ; <strong>plus son numéro atomique Z est grand, plus il est prioritaire</strong>. Voici quelques valeurs de Z.</>,
+      texte: <>Vous savez dessiner une molécule en représentation de Cram, repérer un <strong>carbone asymétrique</strong> et dire si une molécule est <strong>chirale</strong>. La suite, « Configuration absolue R/S », apprend à <strong>décrire</strong> une molécule chirale : classer ses groupes (règles CIP) et lire la lettre R ou S. Essayez l’exploration, puis les défis.</>, tache: null },
+    { id: 'z', titre: 'Classer les atomes : le numéro atomique', sc: 'z', focus: ['scene'], depart: null,
+      texte: <>Vous savez repérer un carbone asymétrique. Pour <strong>décrire</strong> une molécule chirale, on classe ses 4 groupes de <strong>1</strong> (prioritaire) à <strong>4</strong> (le moins prioritaire). Ce sont les <strong>règles de Cahn, Ingold et Prelog</strong> (CIP). Première règle : on regarde l’atome lié au carbone C* ; <strong>plus son numéro atomique Z est grand, plus il est prioritaire</strong>. Voici quelques valeurs de Z.</>,
       tache: { type: 'num', q: 'Parmi C, N et O, quel est le numéro atomique Z de l’atome le plus prioritaire ?', unite: '', vrai: 8, tol: 0, affiche: v => `${v}`, carnet: false,
         calcul: () => ['Z(C) = 6, Z(N) = 7, Z(O) = 8.', 'Le plus grand Z est celui de O : 8.'], pieges: [[7, 'N a Z = 7, mais O a un Z plus grand.'], [6, 'C a le plus petit Z des trois.']],
         expl: 'O (Z = 8) est prioritaire devant N (Z = 7) et C (Z = 6).', indice: 'Cherchez le plus grand des trois nombres Z.' } },
@@ -224,6 +233,8 @@ export function SimulationChiralite() {
       retenirTitre: 'À RETENIR : LE BILAN', retenir: FICHES.bilan,
       texte: <>Vous savez repérer un carbone asymétrique, classer ses 4 groupes avec les règles CIP, regarder depuis l’axe C → 4 et donner la configuration R ou S, y compris pour deux carbones. Essayez l’exploration, puis les défis.</>, tache: null },
   ];
+  const IDS_PARTIE1 = ['vis', 'chirale', 'cram', 'quatre', 'asym', 'achiral', 'choisir', 'miroir-cram', 'miroir-q', 'symetrie', 'bravo1'];
+  const ETAPES = TOUTES.filter(e => IDS_PARTIE1.includes(e.id) === p1);
   const etape = Math.min(guide.etape, ETAPES.length - 1);
   const IDS = ETAPES.map(e => e.id), idE = ETAPES[etape].id, scE = ETAPES[etape].sc;
   const depuis = id => !enGuide || etape >= IDS.indexOf(id);
@@ -248,6 +259,7 @@ export function SimulationChiralite() {
     rs: () => { const mm = tire(M.CHIRALES_1), a = tire(M.toutesLesAff(mm, cen(mm))); return { type: 'rs', mid: mm.id, aff: a, rep: null, verifie: false, rangs: false }; },
     cram: () => { const mm = tire(M.CHIRALES_1), cible = tire(['R', 'S']), a = dispoAlea(mm, cen(mm), cible, true); return { type: 'cram', mid: mm.id, aff: a, cible, verifie: false, rangs: false, reps: {} }; },
     nasym: () => { const mm = tire(M.CATALOGUE); return { type: 'nasym', mid: mm.id, reps: {}, verifie: false, vrai: M.centresAsym(mm).length }; },
+    chirale: () => { const mm = tire(M.CATALOGUE.filter(x => !x.chaine)); return { type: 'chirale', mid: mm.id, rep: null, verifie: false, vrai: M.centresAsym(mm).length > 0 }; },
   };
   const nouveauDefi = t => setDefi(tirages[t]());
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); }
@@ -258,24 +270,27 @@ export function SimulationChiralite() {
     let ok;
     if (defi.type === 'rs') ok = defi.rep === M.configuration(dm.g, cen(dm), defi.aff);
     else if (defi.type === 'cram') ok = M.configuration(dm.g, cen(dm), defi.aff) === defi.cible;
+    else if (defi.type === 'chirale') ok = defi.rep === defi.vrai;
     else { const x = lireNombre(defi.reps.r); ok = isFinite(x) && proche(x, defi.vrai, 0); }
     setDefi(x => ({ ...x, verifie: true, ok }));
-    ({ rs: noterR, cram: noterC, nasym: noterN })[defi.type](ok);
+    ({ rs: noterR, cram: noterC, nasym: noterN, chirale: noterH })[defi.type](ok);
   };
   const echangerDefi = cle => majDefi({ aff: M.echanger(defi.aff, ...PAIRES[cle]) });
   const voletDefi = defi && (
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {[['rs', 'R ou S ?'], ['cram', 'Obtenir R ou S'], ['nasym', 'Compter les C*']].map(([t, l]) => <button key={t} onClick={() => choisirDefi(t)} aria-pressed={defi.type === t} style={stylePetitBouton(defi.type === t, '#0369a1')}>{l}</button>)}
+        {(p1 ? [['nasym', 'Compter les C*'], ['chirale', 'Chirale ou non ?']] : [['rs', 'R ou S ?'], ['cram', 'Obtenir R ou S']]).map(([t, l]) => <button key={t} onClick={() => choisirDefi(t)} aria-pressed={defi.type === t} style={stylePetitBouton(defi.type === t, '#0369a1')}>{l}</button>)}
       </div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.type === 'rs' ? 'Défi : quelle est la configuration ?' : defi.type === 'cram' ? `Défi : obtenez la configuration ${defi.cible}` : 'Défi : combien de carbones asymétriques ?'}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.type === 'rs' ? 'Défi : quelle est la configuration ?' : defi.type === 'cram' ? `Défi : obtenez la configuration ${defi.cible}` : defi.type === 'chirale' ? 'Défi : cette molécule est-elle chirale ?' : 'Défi : combien de carbones asymétriques ?'}</div>
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>
         {defi.type === 'rs' && <>Voici <strong>{dm.nom}</strong> en représentation de Cram. Classez les groupes du C* avec les règles CIP, puis choisissez la configuration du carbone : <strong>R</strong> ou <strong>S</strong>.</>}
         {defi.type === 'cram' && <>Voici <strong>{dm.nom}</strong>. Avec les boutons, échangez des groupes pour obtenir la configuration <strong>{defi.cible}</strong>, puis cliquez sur « Vérifier ».</>}
         {defi.type === 'nasym' && <>Voici la formule semi-développée de <strong>{dm.nom}</strong> : <strong style={{ fontFamily: 'monospace', fontSize: 16 }}>{dm.semi}</strong>. Comptez les carbones asymétriques (n’oubliez pas les atomes H).</>}
+        {defi.type === 'chirale' && <>Voici la formule semi-développée de <strong>{dm.nom}</strong> : <strong style={{ fontFamily: 'monospace', fontSize: 16 }}>{dm.semi}</strong>. On admet qu’elle n’a ni axe, ni plan, ni centre de symétrie quand elle possède un C*. Est-elle chirale ?</>}
       </div>
       {defi.type === 'rs' && <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>{['R', 'S'].map(l => <button key={l} onClick={() => majDefi({ rep: l })} aria-pressed={defi.rep === l} style={{ ...stylePetitBouton(defi.rep === l, '#0369a1'), minWidth: 64, fontSize: 18 }}>{l}</button>)}</div>}
       {defi.type === 'cram' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{Object.keys(PAIRES).map(k => <button key={k} onClick={() => echangerDefi(k)} style={stylePetitBouton(false)}>{NOMS_PAIRES[k]}</button>)}</div>}
+      {defi.type === 'chirale' && <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>{[[true, 'oui, chirale'], [false, 'non, pas chirale']].map(([v, l]) => <button key={l} onClick={() => majDefi({ rep: v })} aria-pressed={defi.rep === v} style={{ ...stylePetitBouton(defi.rep === v, '#0369a1'), minWidth: 110 }}>{l}</button>)}</div>}
       {defi.type === 'nasym' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>Nombre de C*</span>
@@ -286,18 +301,25 @@ export function SimulationChiralite() {
       {defi.type === 'rs' && <IndiceDefi cache={false}>Étapes : 1) classer les 4 groupes (Z de l’atome lié, puis les voisins) ; 2) placer le n°4 derrière : s’il est en coin plein, on inverse la lettre ; 3) sens de 1 → 2 → 3 : horaire = R, antihoraire = S.</IndiceDefi>}
       {defi.type === 'cram' && <IndiceDefi cache={false}>Chaque échange de deux groupes inverse la configuration. Déterminez d’abord la configuration actuelle (cochez « Afficher les priorités » si besoin).</IndiceDefi>}
       {defi.type === 'nasym' && <IndiceDefi cache={false}>Un C* est lié à 4 groupes tous différents. Un carbone CH₂, CH₃ ou lié à deux groupes identiques n’est pas asymétrique.</IndiceDefi>}
+      {defi.type === 'chirale' && <IndiceDefi cache={false}>Cherchez un carbone lié à 4 groupes tous différents (H compris) : s’il y en a au moins un et qu’aucun élément de symétrie n’existe, la molécule est chirale.</IndiceDefi>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
         <button id="ch-verif" onClick={verifierDefi} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
-        {avecIndices(defi.ok ? (defi.type === 'nasym' ? `✓ Correct : ${defi.vrai} carbone${defi.vrai > 1 ? 's' : ''} asymétrique${defi.vrai > 1 ? 's' : ''}.` : `✓ Correct : configuration ${M.configuration(dm.g, cen(dm), defi.aff)}.`)
-          : defi.type === 'nasym' ? '✗ Vérifiez : un C* porte 4 groupes différents (H compris).' : defi.type === 'cram' ? '✗ La configuration obtenue n’est pas celle demandée : échangez deux groupes.' : '✗ Vérifiez le classement des groupes, la position du n°4 (devant : on inverse) et le sens de 1 → 2 → 3.')}
+        {avecIndices(defi.ok ? (defi.type === 'chirale' ? `✓ Correct : la molécule ${defi.vrai ? 'est chirale' : 'n’est pas chirale'}.` : defi.type === 'nasym' ? `✓ Correct : ${defi.vrai} carbone${defi.vrai > 1 ? 's' : ''} asymétrique${defi.vrai > 1 ? 's' : ''}.` : `✓ Correct : configuration ${M.configuration(dm.g, cen(dm), defi.aff)}.`)
+          : defi.type === 'chirale' ? '✗ Vérifiez : cherchez un carbone lié à 4 groupes tous différents (H compris).' : defi.type === 'nasym' ? '✗ Vérifiez : un C* porte 4 groupes différents (H compris).' : defi.type === 'cram' ? '✗ La configuration obtenue n’est pas celle demandée : échangez deux groupes.' : '✗ Vérifiez le classement des groupes, la position du n°4 (devant : on inverse) et le sens de 1 → 2 → 3.')}
       </div>}
     </div>);
 
   // ════════════════ HYPOTHÈSES ════════════════
-  const hypotheses = indicesProfond(
+  const hypotheses = indicesProfond(p1 ? (
+    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
+      <li><strong>Critère de chiralité du programme</strong> : une molécule est chirale si elle possède au moins un carbone asymétrique et aucun axe, plan ou centre de symétrie. Pour les molécules du catalogue, un seul C* suffit.</li>
+      <li><strong>Molécules</strong> : chaînes ouvertes, tous les H sont dessinés autour du carbone étudié. Le composé méso (deux carbones asymétriques compensés par un plan de symétrie) est traité dans la simulation « Stéréoisomères ».</li>
+      <li><strong>Dessin de Cram</strong> : convention de perspective (coin plein vers l’observateur, tirets vers l’arrière). Les angles ne sont pas à l’échelle ; la molécule réelle est un tétraèdre.</li>
+      <li><strong>Image dans un miroir</strong> : le dessin de droite échange la gauche et la droite ; on le compare à la molécule de gauche pour savoir si elles sont superposables.</li>
+    </ul>) : (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Règles CIP limitées au programme</strong> : on compare le numéro atomique Z de l’atome lié au C*, puis, en cas d’égalité, les atomes voisins couche par couche. Les cas plus subtils (isotopes, cycles, groupes très ramifiés) ne sont pas traités.</li>
       <li><strong>Double liaison</strong> : comptée deux fois (l’atome du bout est écrit deux fois) ; les liaisons triples, les cycles et les aromatiques ne sont pas dans le catalogue.</li>
@@ -305,7 +327,7 @@ export function SimulationChiralite() {
       <li><strong>Dessin de Cram</strong> : convention de perspective (coin plein vers l’observateur, tirets vers l’arrière). Les angles ne sont pas à l’échelle ; la molécule réelle est un tétraèdre.</li>
       <li><strong>Configuration absolue R/S</strong> : calculée avec le groupe n°4 derrière. Si le n°4 est devant, on lit le sens puis on inverse la lettre.</li>
       <li><strong>Limite</strong> : la lettre R ou S ne dit rien du sens de rotation de la lumière polarisée ; c’est une autre mesure.</li>
-    </ul>);
+    </ul>));
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
 
   // ════════════════ SCÈNE ════════════════
@@ -343,7 +365,7 @@ export function SimulationChiralite() {
   })();
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      {enDefi && defi ? (defi.type === 'nasym' ? <div style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, color: KIT.txt, padding: '30px 6px', overflowWrap: 'anywhere' }}>{dm.semi}</div>
+      {enDefi && defi ? (['nasym', 'chirale'].includes(defi.type) ? <div style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, color: KIT.txt, padding: '30px 6px', overflowWrap: 'anywhere' }}>{dm.semi}</div>
         : <Cram mol={dm} affs={[defi.aff]} rangs={defi.rangs ? rangsDe(dm, cen(dm)) : null} ariaLabel={`Représentation de Cram de ${dm.nom}`}/>) : sceneContenu}
       {clicsActifs && P.err && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#dc2626', lineHeight: 1.45 }}>{P.err}</div>}
       {clicsActifs && P.clics.length >= 3 && <div role="status" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#15803d' }}>✓ Classement trouvé : {ordreTxt(m, c)}</div>}
@@ -354,18 +376,19 @@ export function SimulationChiralite() {
   const mesures = (
     <div style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      {(enExplore || depuis('asym')) && <LigneMesure nom="Carbones asymétriques (C*)" valeur={`${nAsym}`} couleur="#b45309"/>}
-      {(enExplore || apres('miroir-q')) && <LigneMesure nom="Molécule chirale ?" valeur={nAsym > 0 ? 'oui' : 'non'} couleur={nAsym > 0 ? '#15803d' : '#475569'}/>}
-      {enExplore && distinct && <div style={{ padding: '5px 0', borderBottom: `1px dashed ${KIT.bord}`, fontSize: 14 }}>
+      {(enExplore || (p1 && depuis('asym'))) && <LigneMesure nom="Carbones asymétriques (C*)" valeur={`${nAsym}`} couleur="#b45309"/>}
+      {(enExplore || (p1 && apres('miroir-q'))) && <LigneMesure nom="Molécule chirale ?" valeur={nAsym > 0 ? 'oui' : 'non'} couleur={nAsym > 0 ? '#15803d' : '#475569'}/>}
+      {enExplore && !p1 && distinct && <div style={{ padding: '5px 0', borderBottom: `1px dashed ${KIT.bord}`, fontSize: 14 }}>
         <div style={{ color: KIT.txt2, fontWeight: 600 }}>{`Priorités${chaine ? ` (C${m.numeros[P.cv]})` : ''}`}</div>
         <div style={{ color: '#b91c1c', fontWeight: 700, display: 'flex', flexWrap: 'wrap', gap: '2px 14px', marginTop: 2 }}>{cl.ordre.map((x, k) => <span key={x.j}>{k + 1} : {M.etiquette(m, c, x.j)}</span>)}</div>
       </div>}
-      {enExplore && !distinct && <LigneMesure nom="Priorités" valeur="deux groupes identiques" couleur="#475569"/>}
-      {enExplore && distinct && <LigneMesure nom={`Sens de 1 → 2 → 3, n°4 derrière`} valeur={M.sensDansLAxe(m.g, c, aff)} couleur="#0369a1"/>}
-      {afficheConf && (chaine
+      {enExplore && !p1 && !distinct && <LigneMesure nom="Priorités" valeur="deux groupes identiques" couleur="#475569"/>}
+      {enExplore && !p1 && distinct && <LigneMesure nom={`Sens de 1 → 2 → 3, n°4 derrière`} valeur={M.sensDansLAxe(m.g, c, aff)} couleur="#0369a1"/>}
+      {!p1 && afficheConf && (chaine
         ? <LigneMesure nom="Configuration" valeur={`(${m.numeros[0]}${M.configuration(m.g, m.chaine.c1, affs[0]) || '–'},${m.numeros[1]}${M.configuration(m.g, m.chaine.c2, affs[1]) || '–'})`} couleur="#b45309"/>
         : <LigneMesure nom="Configuration absolue" valeur={conf || 'sans objet'} couleur="#b45309"/>)}
-      {enExplore && P.miroir && !chaine && conf && <LigneMesure nom="Image dans un miroir" valeur={M.inverse(conf)} couleur="#0369a1"/>}
+      {enExplore && !p1 && P.miroir && !chaine && conf && <LigneMesure nom="Image dans un miroir" valeur={M.inverse(conf)} couleur="#0369a1"/>}
+      {enExplore && p1 && P.miroir && <LigneMesure nom="Image dans un miroir" valeur={nAsym > 0 ? 'non superposable' : 'superposable'} couleur="#0369a1"/>}
     </div>);
 
   // ════════════════ RÉGLAGES ════════════════
@@ -379,7 +402,7 @@ export function SimulationChiralite() {
       <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Choisir une molécule
         <select value={P.id} onChange={e => choisirMol(e.target.value)} style={{ display: 'block', width: '100%', minHeight: 42, marginTop: 4, fontSize: 15, borderRadius: 10, border: `1.5px solid ${KIT.bord}`, padding: '0 8px' }}>
           <optgroup label="Un carbone asymétrique">{M.CHIRALES_1.map(x => <option key={x.id} value={x.id}>{x.nom}</option>)}</optgroup>
-          <optgroup label="Deux carbones asymétriques">{M.DEUX_CENTRES.map(x => <option key={x.id} value={x.id}>{x.nom}</option>)}</optgroup>
+          {!p1 && <optgroup label="Deux carbones asymétriques">{M.DEUX_CENTRES.map(x => <option key={x.id} value={x.id}>{x.nom}</option>)}</optgroup>}
           <optgroup label="Pas de carbone asymétrique">{M.ACHIRALES.map(x => <option key={x.id} value={x.id}>{x.nom}</option>)}</optgroup>
         </select>
       </label>
@@ -397,15 +420,17 @@ export function SimulationChiralite() {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {reglMol}
-      <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45, marginBottom: 6 }}>Échanger deux groupes change la disposition dans l’espace : la configuration peut changer de lettre.</div>
-      {boutonsEchange}
+      {p1 ? <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45, marginBottom: 6 }}>Choisissez une molécule, puis affichez son image dans un miroir : sont-elles superposables ?</div> : <>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45, marginBottom: 6 }}>Échanger deux groupes change la disposition dans l’espace : la configuration peut changer de lettre.</div>
+        {boutonsEchange}</>}
       {!chaine && caseA('Afficher l’image dans un miroir', P.miroir, v => maj({ miroir: v }))}
-      {caseA('Afficher les priorités (pastilles 1 à 4)', P.rangs, v => maj({ rangs: v }))}
-      <Section titre={`Regarder dans l’axe C → 4 · ${Math.round(P.t * 100)} %`} ouvert={axeOuv} onBascule={() => setAxeOuv(o => !o)}>
-        {caseA('Afficher la vue dans l’axe', P.axe, v => maj({ axe: v }))}
-        <Curseur nom="Tourner la molécule" valeur={P.t * 100} onChange={v => maj({ t: v / 100, axe: true })} min={0} max={100} pas={1} unite="%" decimales={0} couleur="#0f172a"/>
-        {caseA('Afficher la flèche 1 → 2 → 3 (en fin de rotation)', P.fleche, v => maj({ fleche: v }))}
-      </Section>
+      {!p1 && <>
+        {caseA('Afficher les priorités (pastilles 1 à 4)', P.rangs, v => maj({ rangs: v }))}
+        <Section titre={`Regarder dans l’axe C → 4 · ${Math.round(P.t * 100)} %`} ouvert={axeOuv} onBascule={() => setAxeOuv(o => !o)}>
+          {caseA('Afficher la vue dans l’axe', P.axe, v => maj({ axe: v }))}
+          <Curseur nom="Tourner la molécule" valeur={P.t * 100} onChange={v => maj({ t: v / 100, axe: true })} min={0} max={100} pas={1} unite="%" decimales={0} couleur="#0f172a"/>
+          {caseA('Afficher la flèche 1 → 2 → 3 (en fin de rotation)', P.fleche, v => maj({ fleche: v }))}
+        </Section></>}
     </div>);
   const reglagesGuide = (
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
@@ -414,7 +439,7 @@ export function SimulationChiralite() {
       {idE === 'axe' && <Curseur nom="Tourner la molécule" valeur={P.t * 100} onChange={v => maj({ t: v / 100 })} min={0} max={100} pas={1} unite="%" decimales={0} couleur="#0f172a"/>}
       {idE === 'deux-action' && boutonsEchange}
     </div>);
-  const reglagesDefi = defi && defi.type !== 'nasym' && (
+  const reglagesDefi = defi && ['rs', 'cram'].includes(defi.type) && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {caseA('Afficher les priorités (pastilles 1 à 4)', defi.rangs, v => majDefi({ rangs: v }))}
@@ -422,21 +447,27 @@ export function SimulationChiralite() {
   const aEssayer = indicesProfond(
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
-      <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
+      {p1 ? <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
+        <li>Choisissez l’acide 2-hydroxypropanoïque et affichez son image dans un miroir : les deux dessins sont-ils superposables ?</li>
+        <li>Comparez le propan-2-ol et le 3-chloropentane : pourquoi n’ont-ils pas de C* ?</li>
+        <li>Parmi les molécules du menu, lesquelles sont chirales ? Quel point commun ont-elles ?</li>
+      </ul> : <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Choisissez l’acide 2-hydroxypropanoïque, affichez son image dans un miroir : que devient la lettre ?</li>
         <li>Échangez deux groupes : la lettre change-t-elle toujours ? Et en échangeant trois groupes de suite ?</li>
         <li>Mettez le groupe de priorité 4 en coin plein : le sens lu sur le dessin donne-t-il directement la bonne lettre ?</li>
-        <li>Comparez le propan-2-ol et le 3-chloropentane : pourquoi n’ont-ils pas de C* ?</li>
         <li>Prenez la thréonine : combien de combinaisons (2·,3·) peut-on obtenir avec les boutons ?</li>
-      </ul>
+      </ul>}
     </div>);
   const retenir = (
     <ARetenir>
-      <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
+      {p1 ? <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>C* : carbone lié à 4 groupes tous différents ; une molécule qui en a un seul est chirale</li>
+        <li>chirale : non superposable à son image dans un miroir (au moins un C* et aucun élément de symétrie)</li>
+        <li>Cram : trait plein dans le plan, coin plein devant, tirets derrière</li>
+      </ul> : <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>priorités CIP : Z de l’atome lié, puis les voisins ; double liaison comptée deux fois</li>
         <li>n°4 derrière : 1 → 2 → 3 horaire = R, antihoraire = S ; n°4 devant : on inverse ; l’image dans un miroir inverse R et S</li>
-      </ul>
+      </ul>}
     </ARetenir>);
 
   return (
@@ -451,19 +482,19 @@ export function SimulationChiralite() {
         @media (max-width: 900px) { .ch-l1.cote, .ch-pri { grid-template-columns: minmax(0, 1fr); } .ch-l1.cote .ch-main { order: 1; } .ch-l1.cote .ch-carte { order: 2; } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Chiralité et configuration absolue R/S</h2>
+        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>{p1 ? 'Chiralité et carbone asymétrique' : 'Configuration absolue R/S'}</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Qu’est-ce qu’un <strong>carbone asymétrique</strong> ? Comment classer ses 4 groupes avec les <strong>règles CIP</strong> et en déduire la configuration <strong>R</strong> ou <strong>S</strong> ?</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>{p1 ? <>Qu’est-ce qu’une molécule <strong>chirale</strong> ? Comment repérer un <strong>carbone asymétrique</strong> et dessiner une molécule en <strong>représentation de Cram</strong> ?</> : <>Comment classer les 4 groupes d’un carbone asymétrique avec les <strong>règles CIP</strong> et en déduire la configuration <strong>R</strong> ou <strong>S</strong> ?</>}</div>
       <div className={`ch-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {enGuide ? <div className="ch-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="ch-carte">{panneauHypo}</div> : null}
         <div className="ch-main">
-          {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'rs' ? suiviR : defi.type === 'cram' ? suiviC : suiviN}/></div>}
+          {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'rs' ? suiviR : defi.type === 'cram' ? suiviC : defi.type === 'chirale' ? suiviH : suiviN}/></div>}
           <div className={`ch-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {scene}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {enGuide ? (['miroir-cram', 'inverse', 'axe', 'deux-action'].includes(idE) && reglagesGuide) : enDefi ? reglagesDefi : reglagesExplore}
-              {(enExplore || (enGuide && depuis('asym') && scE !== 'vis')) && mesures}
+              {(enExplore || (enGuide && (p1 ? depuis('asym') && scE !== 'vis' : depuis('deux')))) && mesures}
             </div>
           </div>
         </div>
