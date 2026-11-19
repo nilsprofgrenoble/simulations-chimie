@@ -10,6 +10,7 @@ import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
+import * as RX from "./redoxModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -1020,6 +1021,46 @@ function genLewis1G() {
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
   return { intro: 'Schéma de Lewis : nombre total d’électrons de valence, nombre de doublets, doublets non liants et charge portée par un atome.', questions: [q1, q2, q3, q4],
     retenir: ['n_T = somme des électrons de valence des atomes seuls − charge de l’entité ; n_D = n_T ÷ 2.', 'Doublets non liants = n_D − doublets liants (une liaison double compte pour 2, une triple pour 3).', 'Charge d’un atome = électrons de valence seul − (liaisons + 2 × doublets non liants).'] };
+}
+
+// ───────────── Oxydo-réduction (1G) : électrons échangés, coefficients de l'équation, quantités de réactifs et de produits ─────────────
+function genRedox1G() {
+  const TRS = RX.TRANSFORMATIONS, dem = d => RX.demiTxt(d);
+  const donnee = f => { for (let i = 0; i < 60; i++) { const n = tire([2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 9.0, 12.0, 15.0, 18.0]), v = f(n); if (Math.abs(Number(v.toPrecision(2)) - v) < 1e-9) return n; } return 6.0; };   // donnée à 2 chiffres significatifs dont le résultat en a au plus 2
+  const plusLoin = (x, v) => isFinite(x) && x > 0 && Math.abs(x - v) > 0.011 * Math.abs(v);
+  const garde = (v, liste) => { const vus = new Set(); return liste.filter(([x]) => plusLoin(x, v) && !vus.has(x) && vus.add(x)); };
+  const couples = (r, t) => <>Couples : <b>{RX.coupleTxt(t.couple1)}</b> et <b>{RX.coupleTxt(t.couple2)}</b>. Demi-équations : {dem(r.d1)} et {dem(r.d2)}.</>;
+  // 1. nombre d'électrons échangés (plus petit multiple commun)
+  const t1 = tire(TRS), r1 = RX.equationDe(t1), ox1 = RX.texte(RX.COUPLES[t1.couple1][0]), red1 = RX.texte(RX.COUPLES[t1.couple2][1]);
+  const q1 = { id: 'rx0', type: 'num', q: <>On étudie la réaction entre <b>{red1}</b> (réducteur) et <b>{ox1}</b> (oxydant). {couples(r1, t1)} Combien d’<b>électrons</b> sont échangés dans l’équation de réaction écrite avec les plus petits coefficients entiers ?</>, unite: 'électrons', vrai: r1.E, csMin: String(r1.E).length, tolRel: 0,
+    aide: 'Les électrons captés par l’oxydant doivent être aussi nombreux que ceux cédés par le réducteur : cherche le plus petit nombre divisible par les nombres d’électrons des deux demi-équations (plus petit multiple commun).',
+    pieges: garde(r1.E, [[r1.n1 * r1.n2, 'Tu as multiplié les deux nombres d’électrons : le plus petit multiple commun peut être plus petit que leur produit.'], [r1.n1 + r1.n2, 'Il faut égaliser les électrons captés et cédés, pas les additionner : cherche le plus petit multiple commun.'], [Math.min(r1.n1, r1.n2), 'Ce nombre est inférieur à l’un des deux : l’autre demi-équation échange plus d’électrons.'], [1, 'Il faut au moins le nombre d’électrons de chaque demi-équation.']]),
+    expl: <>Les demi-équations échangent {r1.n1} et {r1.n2} électron{r1.n1 > 1 || r1.n2 > 1 ? 's' : ''} : le plus petit multiple commun est <b>{r1.E}</b> (multiplicateurs {r1.m1} et {r1.m2}).</> };
+  // 2. coefficient d'une espèce dans l'équation
+  const t2 = tire(TRS.filter(t => t.id !== t1.id)), r2 = RX.equationDe(t2), ox2 = RX.texte(RX.COUPLES[t2.couple1][0]), red2 = RX.texte(RX.COUPLES[t2.couple2][1]);
+  const esp2 = tire([...r2.reactifs.map(([id, c]) => [id, c, 'r']), ...r2.produits.map(([id, c]) => [id, c, 'p'])]), [id2, c2] = esp2;
+  const dans = [...r2.d1.gauche, ...r2.d1.droite, ...r2.d2.gauche, ...r2.d2.droite].find(([id]) => id === id2), cd = dans ? dans[1] : 1;
+  const q2 = { id: 'rx1', type: 'num', q: <>On étudie la réaction entre <b>{red2}</b> (réducteur) et <b>{ox2}</b> (oxydant). {couples(r2, t2)} Quel est, dans l’équation de réaction écrite avec les plus petits coefficients entiers, le <b>coefficient devant {RX.texte(id2)}</b> ?</>, unite: '', vrai: c2, csMin: String(c2).length, tolRel: 0,
+    aide: 'Multiplie chaque demi-équation pour égaliser les électrons (multiplicateurs m₁ et m₂), additionne-les, puis lis le coefficient de l’espèce dans la somme ; une espèce présente des deux côtés se simplifie.',
+    pieges: garde(c2, [[r2.E, 'C’est le nombre d’électrons échangés, pas le coefficient de cette espèce.'], [r2.m1, 'C’est le multiplicateur de la demi-équation du couple 1 : il reste à le multiplier par le coefficient de l’espèce dans sa demi-équation.'], [r2.m2, 'C’est le multiplicateur de la demi-équation du couple 2 : il reste à le multiplier par le coefficient de l’espèce dans sa demi-équation.'], [cd, 'C’est le coefficient dans la demi-équation, avant multiplication : il faut tenir compte du multiplicateur.']]),
+    expl: <>Multiplicateurs {r2.m1} et {r2.m2} (E = {r2.E} électrons). Équation : {RX.equationTxt(r2, false)}. Le coefficient de {RX.texte(id2)} est <b>{c2}</b>.</> };
+  // 3. quantité d'oxydant qui réagit avec une quantité de réducteur (rapport des coefficients de l'équation)
+  const t3 = tire(TRS), r3 = RX.equationDe(t3), red3 = RX.COUPLES[t3.couple2][1], ox3 = RX.COUPLES[t3.couple1][0], cR3 = r3.reactifs.find(([id]) => id === red3)[1], cO3 = r3.reactifs.find(([id]) => id === ox3)[1];
+  const nR = donnee(n => n * cO3 / cR3), nO3 = nR * cO3 / cR3;
+  const q3 = { id: 'rx2', type: 'num', q: <>On étudie la réaction entre <b>{RX.texte(red3)}</b> (réducteur) et <b>{RX.texte(ox3)}</b> (oxydant). {couples(r3, t3)} Une quantité <b>{nb(nR, 2)}{NB}mmol</b> de {RX.texte(red3)} réagit. D’après l’équation de réaction (plus petits coefficients entiers), quelle quantité de <b>{RX.texte(ox3)}</b> est consommée, en <b>mmol</b> ?</>, unite: 'mmol', vrai: nO3, csMin: 2, tolRel: 0.01,
+    aide: 'Établis d’abord l’équation de réaction : les coefficients de l’oxydant et du réducteur donnent le rapport de leurs quantités consommées (n(oxydant) / coefficient de l’oxydant = n(réducteur) / coefficient du réducteur).',
+    pieges: garde(nO3, [[nR, 'Tu as supposé autant d’oxydant que de réducteur : le rapport des quantités est celui des coefficients de l’équation.'], [nR * cR3 / cO3, 'Le rapport est inversé : n(oxydant) = n(réducteur) × coefficient de l’oxydant ÷ coefficient du réducteur.'], [nR * cO3, 'Il faut aussi diviser par le coefficient du réducteur : n(oxydant) / c(oxydant) = n(réducteur) / c(réducteur).']]),
+    expl: <>Équation : {RX.equationTxt(r3, false)}. n({RX.texte(ox3)}) = n({RX.texte(red3)}) × {cO3} ÷ {cR3} = {nb(nR, 2)} × {cO3} ÷ {cR3} = <b>{avecU(nO3, 'mmol', 2)}</b>.</> };
+  // 4. quantité d'un produit formé à partir d'une quantité d'oxydant consommée
+  const t4 = tire(TRS), r4 = RX.equationDe(t4), ox4 = RX.COUPLES[t4.couple1][0], cO4 = r4.reactifs.find(([id]) => id === ox4)[1];
+  const prods = r4.produits.filter(([id]) => id !== 'H2O'), [idP, cP] = tire(prods), nO4 = donnee(n => n * cP / cO4), nP = nO4 * cP / cO4;
+  const q4 = { id: 'rx3', type: 'num', q: <>On étudie la réaction entre <b>{RX.texte(RX.COUPLES[t4.couple2][1])}</b> (réducteur) et <b>{RX.texte(ox4)}</b> (oxydant). {couples(r4, t4)} Une quantité <b>{nb(nO4, 2)}{NB}mmol</b> de {RX.texte(ox4)} est consommée. D’après l’équation de réaction (plus petits coefficients entiers), quelle quantité de <b>{RX.texte(idP)}</b> se forme, en <b>mmol</b> ?</>, unite: 'mmol', vrai: nP, csMin: 2, tolRel: 0.01,
+    aide: 'Établis d’abord l’équation de réaction : n(produit) / coefficient du produit = n(oxydant) / coefficient de l’oxydant.',
+    pieges: garde(nP, [[nO4, 'Tu as supposé autant de produit que d’oxydant consommé : le rapport des quantités est celui des coefficients de l’équation.'], [nO4 * cO4 / cP, 'Le rapport est inversé : n(produit) = n(oxydant) × coefficient du produit ÷ coefficient de l’oxydant.'], [nO4 * cP, 'Il faut aussi diviser par le coefficient de l’oxydant : n(produit) / c(produit) = n(oxydant) / c(oxydant).']]),
+    expl: <>Équation : {RX.equationTxt(r4, false)}. n({RX.texte(idP)}) = n({RX.texte(ox4)}) × {cP} ÷ {cO4} = {nb(nO4, 2)} × {cP} ÷ {cO4} = <b>{avecU(nP, 'mmol', 2)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
+  return { intro: 'Oxydo-réduction : électrons échangés, coefficients de l’équation de réaction, et quantités de réactifs et de produits reliées par les coefficients.', questions: [q1, q2, q3, q4],
+    retenir: ['Électrons échangés : plus petit multiple commun des nombres d’électrons des deux demi-équations ; ils disparaissent de l’équation de réaction.', 'Coefficient d’une espèce dans l’équation = multiplicateur de sa demi-équation × son coefficient dans cette demi-équation (après simplification).', 'Les quantités consommées ou formées sont dans le rapport des coefficients de l’équation : n(A) / coefficient(A) = n(B) / coefficient(B).'] };
 }
 
 // ───────────── Savons et amphiphilie (1G) : atomes de l'ion carboxylate, masse molaire du savon, quantité de matière ─────────────
@@ -2319,6 +2360,7 @@ export const FAMILLES = [
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
+  { id: 'redox1g-calcul', groupe: 'Formules', titre: 'Oxydo-réduction : électrons échangés, coefficients de l’équation, quantités de réactifs et de produits (1G)', gen: genRedox1G, domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction' },
   { id: 'geo1g-calcul', groupe: 'Formules', titre: 'Géométrie, électronégativité et polarité : écart Δχ, doublets, angle idéal, liaisons polarisées (1G)', gen: genGeoPolarite, domaine: 'Géométrie et polarité des entités' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },

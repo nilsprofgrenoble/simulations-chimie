@@ -1279,5 +1279,18 @@
  "77:plausible:diss1g-val-sulfate-sodium": "VAL319",
  "77:plausible:diss1g-val-sulfate-casse": "VAL320",
  "77:plausible:diss1g-val-conversion-ml": "VAL321",
- "36:diss1g-calcul": "REA79"
+ "36:diss1g-calcul": "REA79",
+ "34:redox1g-equation.0": "SAPP337",
+ "34:redox1g-equation.1": "SAPP338",
+ "37:prevoir:redox1g-fe2-deux-roles": "ANA546",
+ "37:prevoir:redox1g-al-cu-proportions": "ANA547",
+ "37:prevoir:redox1g-demi-fausse": "ANA548",
+ "37:prevoir:redox1g-acide-h-plus": "ANA549",
+ "77:plausible:redox1g-val-demi-charge": "VAL322",
+ "77:plausible:redox1g-val-equation-juste": "VAL323",
+ "77:plausible:redox1g-val-electrons-presents": "VAL324",
+ "77:plausible:redox1g-val-al-cu": "VAL325",
+ "77:plausible:redox1g-val-permanganate": "VAL326",
+ "77:plausible:redox1g-val-iode": "VAL327",
+ "36:redox1g-calcul": "REA80"
 }

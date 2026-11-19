@@ -25,6 +25,7 @@ import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
+import * as RX from "./redoxModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -3304,6 +3305,32 @@ export const ENONCES = [
         utiles: ['xc', 'xx', 'seuil', 'n'], raisons: { M: 'La masse molaire ne renseigne pas sur la polarité des liaisons.' },
         cherche: { bonne: 'Le nombre de liaisons polarisées de la molécule', faux: ['L’écart d’électronégativité Δχ de la liaison, sans conclure', 'La polarité de la molécule entière (polaire ou apolaire)', 'La masse molaire de la molécule (en g/mol)'] },
         manque: null, solution: { txt: nPol === 0 ? 'Δχ ≤ 0,4 : aucune liaison n’est polarisée' : 'Δχ > 0,4 : chacune des ' + n + ' liaisons est polarisée', val: nPol, u: 'liaisons' } };
+    },
+  },
+  // ───────────────────────────── Oxydo-réduction (1G) : transfert d'électrons et équation de réaction
+  {
+    id: 'redox1g-equation', domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction', titre: 'Une transformation dont on veut l’équation de réaction', noms: ['Nombre d’électrons échangés dans l’équation', 'Coefficient de l’oxydant dans l’équation'],
+    gen: () => ({ t: tire(RX.TRANSFORMATIONS.map(x => x.id)), c: tire([0.10, 0.20, 0.50]), V: tire([50, 100, 200]), Tb: tire([20, 25]), m: tire([2.0, 5.0, 10.0]) }),
+    build: (p, q) => {
+      const t = RX.TRANSFORMATIONS.find(x => x.id === p.t), r = RX.equationDe(t), [oxId, redId] = [RX.COUPLES[t.couple1][0], RX.COUPLES[t.couple2][1]];
+      const tokens = {
+        d1: tok(RX.demiTxt(r.d1), `Demi-équation du couple ${RX.coupleTxt(t.couple1)} (${r.n1} électron${r.n1 > 1 ? 's' : ''} échangé${r.n1 > 1 ? 's' : ''})`, r.n1, 'électrons'),
+        d2: tok(RX.demiTxt(r.d2), `Demi-équation du couple ${RX.coupleTxt(t.couple2)} (${r.n2} électron${r.n2 > 1 ? 's' : ''} échangé${r.n2 > 1 ? 's' : ''})`, r.n2, 'électrons'),
+        c: tok(`${nb(p.c, 2)} mol/L`, 'Concentration de la solution', p.c, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
+        Tb: tok(`${p.Tb} °C`, 'Température de la salle', p.Tb, '°C'),
+      };
+      const raisons = { c: 'La concentration ne change ni les couples ni les nombres d’électrons : elle servirait à un calcul de quantité de matière, pas à écrire l’équation.', V: 'Le volume intervient dans un calcul de quantité de matière, pas dans l’écriture de l’équation de réaction.', Tb: 'La température de la salle ne modifie pas les demi-équations ni l’équation de réaction à ce niveau.' };
+      const debut = ['On réalise la transformation suivante : ', t.obs, ' Le réducteur est ', RX.texte(redId), ' et l’oxydant est ', RX.texte(oxId), ' ; la solution a une concentration ', T('c'), ' et un volume de ', T('V'), ', dans une salle à ', T('Tb'), '. Les demi-équations de leurs couples sont ', T('d1'), ' et ', T('d2'), '. '];
+      if (q === 0) return { tokens, derivees: ['les électrons captés par l’oxydant et cédés par le réducteur doivent être en même nombre : multiplier chaque demi-équation par un nombre entier'], texte: [...debut, 'Combien d’électrons sont échangés dans l’équation de réaction (plus petits coefficients entiers) ?'],
+        utiles: ['d1', 'd2'], raisons,
+        cherche: { bonne: 'Le nombre E d’électrons échangés dans l’équation', faux: ['La quantité de matière d’électrons cédés par le réducteur (en mol)', 'La charge électrique de l’ion oxydant (en unités e)', 'Le nombre d’atomes du réducteur dans sa formule brute'] },
+        manque: null, solution: { txt: 'E = plus petit multiple commun de n₁ et n₂', val: r.E, u: 'électrons' } };
+      return { tokens, derivees: [{ id: 'E', nom: 'Nombre E d’électrons échangés', expr: 'E = plus petit multiple commun de n₁ et n₂', val: r.E, u: 'électrons' }],
+        texte: [...debut, 'Quel est le coefficient de l’oxydant dans l’équation de réaction (plus petits coefficients entiers) ?'],
+        utiles: ['d1', 'd2'], raisons,
+        cherche: { bonne: 'Le coefficient stœchiométrique de l’oxydant dans l’équation', faux: ['Le nombre d’électrons de sa demi-équation avant multiplication', 'La concentration de l’oxydant dans la solution (en mol/L)', 'La charge de l’oxydant en unités de charge élémentaire'] },
+        manque: null, solution: { txt: 'coefficient = multiplicateur m₁ de la demi-équation × coefficient de l’oxydant dans cette demi-équation', val: r.reactifs.find(([id]) => id === oxId)?.[1] ?? r.m1 * r.d1.a, u: '' } };
     },
   },
 ];

@@ -86,6 +86,7 @@ const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactiv
 const SimulationQuantiteMatiere = paresseux(() => import("./simulations/QuantiteMatiere"), "SimulationQuantiteMatiere");
 const SimulationConcentrationDilution = paresseux(() => import("./simulations/ConcentrationDilution"), "SimulationConcentrationDilution");
 const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
+const SimulationOxydoReduction = paresseux(() => import("./simulations/OxydoReduction"), "SimulationOxydoReduction");
 const SimulationGeometriePolarite = paresseux(() => import("./simulations/GeometriePolarite"), "SimulationGeometriePolarite");
 const SimulationSavonAmphiphile = paresseux(() => import("./simulations/SavonAmphiphile"), "SimulationSavonAmphiphile");
 const SimulationDissolutionIonique = paresseux(() => import("./simulations/DissolutionIonique"), "SimulationDissolutionIonique");
@@ -354,6 +355,7 @@ const SIMULATIONS = [
   { id:155, label:"Géométrie, électronégativité et polarité d’une entité", niveau:"1G", icon:"🧊", color:"#7c3aed", component: SimulationGeometriePolarite },
   { id:158, label:"Savons et amphiphilie : pourquoi un savon lave", niveau:"1G", icon:"🧼", color:"#0e7490", component: SimulationSavonAmphiphile },
   { id:157, label:"Dissolution d’un solide ionique dans l’eau : équation et concentration des ions", niveau:"1G", icon:"🧂", color:"#0e7490", component: SimulationDissolutionIonique },
+  { id:156, label:"Oxydo-réduction : couples, demi-équations et équation de réaction", niveau:"1G", icon:"🔋", color:"#be123c", component: SimulationOxydoReduction },
   { id:115, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
     component: SimulationLentilleMince },
   { id:150, label:"Ondes mécaniques : célérité et retard", niveau:"1G", icon:"🌊", color:"#0369a1",

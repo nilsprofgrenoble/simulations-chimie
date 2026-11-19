@@ -50,7 +50,7 @@ export const COUVERTURE = [
     { th: MESURE, t: 'Variabilité de la mesure, incertitudes-types de type A et B', e: 'avenir' },
     { th: CTM, t: 'Composition du système initial : masse molaire, quantité de matière, concentration', e: 'ok', chap: '1g-evolution' },
     { th: CTM, t: 'Absorbance et loi de Beer-Lambert', e: 'ok', chap: '1g-evolution' },
-    { th: CTM, t: 'Oxydo-réduction : couples, demi-équations, équation de réaction', e: 'avenir' },
+    { th: CTM, t: 'Oxydo-réduction : couples, demi-équations, équation de réaction', e: 'ok', chap: '1g-evolution' },
     { th: CTM, t: 'Évolution d’un système : avancement et tableau d’avancement', e: 'ok', chap: '1g-evolution' },
     { th: CTM, t: 'Titrage avec repérage de l’équivalence', e: 'ok', chap: '1g-evolution' },
     { th: CTM, t: 'Structure des entités : schéma de Lewis, géométrie, électronégativité, polarité', e: 'ok', chap: 'structure-entites' },
