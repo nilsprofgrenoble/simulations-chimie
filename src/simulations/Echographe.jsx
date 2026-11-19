@@ -4,6 +4,8 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { FAllerRetour, FRetard, FFroid, F340, FGazHe, FOrdres, FInterfaces, FGel, FProfondeur, FAbsorption, FLambda, FSepare, FCompromis } from "./EchographeSchemas";
 import * as M from "./echoModele";
 
 const SIM_ID = 88;
@@ -130,11 +132,22 @@ function Zoom({ lst, f, u1, u2, sMasque }) {
     </svg>);
 }
 
+const FDt = <Formule><mi>Δ</mi><mi>t</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>d</mi></mrow><mi>v</mi></mfrac></Formule>;
+const FVit = <Formule><mi>v</mi><mo>=</mo><msqrt><mfrac><mrow><mi>γ</mi><mo>×</mo><mi>R</mi><mo>×</mo><mi>T</mi></mrow><mi>M</mi></mfrac></msqrt></Formule>;
+const FProf = <Formule><mi>d</mi><mo>=</mo><mfrac><mrow><mi>v</mi><mo>×</mo><mi>Δ</mi><mi>t</mi></mrow><mn>2</mn></mfrac></Formule>;
+const FRT = <Formule><mi>R</mi><mo>+</mo><mi>T</mi><mo>=</mo><mn>1</mn><mspace width="1.5em"/><mi>L</mi><mo>=</mo><mn>10</mn><mo>×</mo><mi>log</mi><mfrac><mtext>énergie reçue</mtext><mtext>énergie émise</mtext></mfrac></Formule>;
+const FAtt = <Formule><mtext>atténuation</mtext><mo>=</mo><mi>α</mi><mo>×</mo><mi>f</mi><mo>×</mo><msub><mi>d</mi><mtext>AR</mtext></msub></Formule>;
+const FLam = <Formule><mi>λ</mi><mo>=</mo><mfrac><mi>v</mi><mi>f</mi></mfrac><mspace width="1.5em"/><mi>λ</mi><mo>≤</mo><mi>s</mi><mo>⇒</mo><mi>f</mi><mo>≥</mo><mfrac><mi>v</mi><mi>s</mi></mfrac></Formule>;
+
 export function SimulationEchographe() {
   const [mode, setMode] = useState(() => modeOuverture('echographe-guide-v1'));
   useSignalerMode(mode);
   const [sDis, nDis] = useCompteurDefi(), [sCel, nCel] = useCompteurDefi(), [sPro, nPro] = useCompteurDefi(), [sFre, nFre] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('echographe-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('echographe-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('echographe-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('echographe-guide-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('echographe-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('distance');
   const [hypoOuv, setHypoOuv] = useState(false);
   const [scene, setScene] = useState('capteur');
@@ -168,7 +181,7 @@ export function SimulationEchographe() {
   const v340 = M.distanceAffichee(M.retardAllerRetour(1.2, M.celeriteGaz(0)));
   const baseCap = () => { setScene('capteur'); setCap({ d: 1.2, T: 20, gaz: 'air', tb: 20 }); };
   const baseEcho = () => { setScene('echo'); setEco(e => ({ ...e, f: 5, gel: true })); };
-  const ETAPES = [
+  const TOUTES = [
     { id: 'principe', titre: 'Mesurer une durée', focus: ['scene'],
       texte: <>Un <strong>capteur de distance à ultrasons</strong> (télémètre, aide au stationnement) contient un émetteur et un récepteur côte à côte. Il envoie une brève salve d’ultrasons, qui se réfléchit sur un obstacle et revient. Le schéma montre le trajet (animation ralentie).</>,
       tache: { type: 'qcm', q: 'Que mesure directement le capteur ?', options: ['la durée entre l’émission de la salve et sa réception', 'la distance de l’obstacle', 'la célérité des ultrasons'], bonne: 0,
@@ -178,29 +191,17 @@ export function SimulationEchographe() {
       tache: { type: 'qcm', q: 'Quelle distance la salve parcourt-elle entre l’émission et la réception ?', options: ['2 d', 'd', 'd / 2'], bonne: 0,
         expl: 'La salve va jusqu’à l’obstacle (d) puis revient (d) : le trajet total est 2d, donc Δt = 2d / v.', indice: "La salve va jusqu’à l’obstacle, puis revient." } },
     { id: 'oscillo', titre: 'Lire le retard', focus: ['scene', 'reglages'],
+      retenirTitre: 'Un aller et un retour',
+      retenir: <><FAllerRetour/>{FDt}{puces(<>La salve parcourt <strong>2 d</strong> : jusqu’à l’obstacle, puis le retour.</>, <>Le capteur ne mesure qu’une <strong>durée</strong> : la distance s’en déduit avec une célérité supposée connue.</>)}</>,
       texte: <>L’oscillogramme montre la salve émise à <em>t</em> = 0 et l’écho reçu plus tard. Placez le <strong>repère 1</strong> (orange) au début de la salve émise et le <strong>repère 2</strong> (bleu) au début de l’écho. On peut cliquer sur l’écran ou utiliser les curseurs.</>,
       tache: { type: 'action', ok: pointeCap, label: 'Placer pour moi (réglage de départ)', faire: () => { baseCap(); setRc({ r1: 0, r2: teBase }); }, consigne: 'Repère 1 sur l’émission, repère 2 sur l’écho' } },
     { id: 'lecture', titre: 'Le retard Δt', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : MESURER UNE DISTANCE PAR ÉCHO',
-      retenir: <>
-        <svg viewBox="0 0 380 130" role="img" aria-label="Principe de la mesure d’une distance par écho : un capteur à ultrasons, émetteur et récepteur côte à côte, envoie une salve vers un obstacle situé à la distance d ; la salve se réfléchit et revient ; elle parcourt donc deux fois la distance d pendant la durée delta t" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <rect x="8" y="40" width="46" height="50" rx="5" fill="#e0e7ff" stroke="#4338ca" strokeWidth="2" /><text x="31" y="60" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#3730a3">émetteur</text><text x="31" y="78" textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#3730a3">récepteur</text>
-          <rect x="320" y="30" width="14" height="70" fill="#94a3b8" stroke="#334155" strokeWidth="2" /><text x="327" y="22" textAnchor="middle" fontSize="11.5" fontWeight="700" fill="#334155">obstacle</text>
-          <line x1="56" y1="56" x2="316" y2="56" stroke="#0072b2" strokeWidth="3" /><polygon points="318,56 304,50 304,62" fill="#0072b2" /><text x="150" y="48" fontSize="11.5" fontWeight="700" fill="#0072b2">salve émise</text>
-          <line x1="316" y1="76" x2="60" y2="76" stroke="#d55e00" strokeWidth="3" strokeDasharray="6 4" /><polygon points="56,76 70,70 70,82" fill="#d55e00" /><text x="150" y="96" fontSize="11.5" fontWeight="700" fill="#d55e00">écho reçu</text>
-          <line x1="56" y1="114" x2="316" y2="114" stroke="#334155" strokeWidth="1.5" /><line x1="56" y1="109" x2="56" y2="119" stroke="#334155" /><line x1="316" y1="109" x2="316" y2="119" stroke="#334155" /><text x="186" y="126" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">d</text>
-        </svg>
-        <Formule><mi>Δ</mi><mi>t</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>d</mi></mrow><mi>v</mi></mfrac><mspace width="1.5em"/><mi>d</mi><mo>=</mo><mfrac><mrow><mi>v</mi><mo>×</mo><mi>Δ</mi><mi>t</mi></mrow><mn>2</mn></mfrac><mspace width="1.5em"/><mi>v</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>d</mi></mrow><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le capteur mesure un <strong>retard Δt</strong> (entre le début de la salve émise et celui de l’écho) ; la distance se déduit d’une célérité <strong>supposée connue</strong>.</li>
-          <li>La salve fait un <strong>aller et un retour</strong> : elle parcourt 2d, d’où le facteur 2.</li>
-          <li>Mesurer d au mètre ruban et Δt à l’oscillogramme permet d’<strong>étalonner</strong> la célérité v ; un échographe utilise une valeur moyenne v = 1 540 m·s⁻¹ dans les tissus.</li>
-        </ul>
-      </>,
       texte: <>Lisez dans « Mesures » la durée entre vos deux repères : c’est le retard <strong>Δt</strong> de l’écho.</>,
       tache: { type: 'num', q: 'Retard Δt', unite: 'ms', vrai: dtMes, tol: 0.02, affiche: v => nbf(v, 1), cs: 2, bloque: pointeCap ? null : 'Placez d’abord les repères (étape précédente).',
         calcul: () => [`Repère 1 : ${nbf(rc.r1, 2)} ms ; repère 2 : ${nbf(rc.r2, 2)} ms.`, `Δt = ${nbf(rc.r2, 2)} − ${nbf(rc.r1, 2)} = ${nbf(dtMes, 2)} ms.`], expl: `Δt ≈ ${nbf(dtMes, 1)} ms.`, indice: "Mesurez entre le début de l’émission et le début de l’écho." } },
     { id: 'celerite', titre: 'Déduire la célérité', focus: ['mesures'],
+      retenirTitre: 'Lire le retard Δt',
+      retenir: <><FRetard/>{puces(<>Repère 1 au <strong>début de la salve émise</strong>, repère 2 au <strong>début de l’écho</strong> : Δt est la durée entre les deux.</>, <>Hypothèse : célérité uniforme sur tout le trajet. Étalonner, c’est en déduire v avec une distance connue.</>)}</>,
       texte: <>Votre mesure : Δt = <strong>{nbf(dtMes, 2)}{NB}ms</strong>. On a mesuré au mètre ruban <em>d</em> = 1,200{NB}m. Avec Δt = 2<em>d</em> / <em>v</em>, calculez la célérité <em>v</em> des ultrasons dans l’air de la salle. C’est un <strong>étalonnage</strong>.</>,
       tache: { type: 'num', q: 'Célérité v', unite: 'm/s', vrai: 2.4 / (dtMes * 1e-3), tol: 0.02, affiche: v => nbf(v, 0), cs: 3, bloque: pointeCap ? null : 'Placez d’abord les repères.',
         calcul: () => ['Hypothèse : célérité uniforme sur tout le trajet (air à température uniforme).', `Unités SI : Δt = ${nbf(dtMes, 2)} ms = ${nbf(dtMes * 1e-3, 5)} s ; d = 1,200 m.`, `v = 2d / Δt = 2 × 1,200 / ${nbf(dtMes * 1e-3, 5)} = ${nbf(2.4 / (dtMes * 1e-3), 0)} m/s.`],
@@ -220,12 +221,16 @@ export function SimulationEchographe() {
         pieges: [[Math.sqrt(1.4 * 8.314 * 273.15 / 29), 'M doit être en kg/mol (0,029) et non en g/mol.'], [1.4 * 8.314 * 273.15 / 0.029, 'Il manque la racine carrée : v = √(γRT / M).']],
         expl: `v = ${nbf(M.celeriteGaz(0), 1)} m/s à 0 °C, contre ${nbf(M.celeriteGaz(20), 1)} m/s à 20 °C.`, indice: "v = √(γRT ÷ M), avec T en kelvin et M en kg/mol." } },
     { id: 'erreur', titre: 'Un capteur réglé sur 340 m/s', focus: ['mesures'],
+      retenirTitre: 'Température et célérité',
+      retenir: <><FFroid/>{FVit}{puces(<>Dans un gaz parfait, v varie comme la racine de T (en kelvin) : plus froid, v plus petite.</>, <>Le trajet 2 d ne change pas : le retard Δt = 2 d ÷ v augmente.</>)}</>,
       texte: <>Beaucoup de capteurs calculent <em>d</em> = <em>v</em><sub>0</sub>·Δt / 2 avec une célérité fixe <em>v</em><sub>0</sub> = 340{NB}m/s, valable vers 20 °C. Vous avez calculé à l’étape précédente <em>v</em> = {nbf(M.celeriteGaz(0), 1)}{NB}m/s à 0 °C, donc un retard réel de {nbf(2.4 / M.celeriteGaz(0) * 1e3, 2)}{NB}ms. L’obstacle est réellement à 1,200{NB}m. Quelle distance le capteur affiche-t-il ?</>,
       tache: { type: 'num', q: 'Distance affichée', unite: 'm', vrai: v340, tol: 0.002, affiche: v => nbf(v, 3), cs: 4,
         calcul: () => [`Retard réel à 0 °C : Δt = 2 × 1,200 / ${nbf(M.celeriteGaz(0), 1)} = ${nbf(2.4 / M.celeriteGaz(0) * 1e3, 3)} ms.`, `Distance affichée : d = 340 × ${nbf(2.4 / M.celeriteGaz(0), 6)} / 2 = ${nbf(v340, 3)} m.`],
         pieges: [[1.2, 'Le capteur n’affiche pas la vraie distance : il utilise une célérité fausse à 0 °C.']],
         expl: `Le capteur affiche ${nbf(v340, 3)} m au lieu de 1,200 m, soit une erreur de ${nbf((v340 - 1.2) * 100, 1)} cm (${nbf((v340 / 1.2 - 1) * 100, 1)} %) : il surestime parce que la célérité réelle est plus faible que 340 m/s.`, indice: "L’appareil suppose une célérité de 340 m/s : d = 340 × Δt ÷ 2." } },
     { id: 'gaz', titre: 'Changer de gaz', focus: ['reglages', 'scene'],
+      retenirTitre: 'Un capteur réglé sur 340 m·s⁻¹',
+      retenir: <><F340/>{puces(<>Beaucoup de capteurs utilisent une célérité fixe, valable vers 20 °C.</>, <>Hors de cette température, la distance affichée est <strong>fausse</strong> : l’appareil ne mesure pas la température.</>)}</>,
       texte: <>Remplissez maintenant l’espace d’<strong>hélium</strong> (<em>M</em> = 4,0{NB}g/mol, <em>γ</em> = 1,67), à 20 °C, obstacle à 1,20{NB}m.</>,
       tache: { type: 'action', ok: scene === 'capteur' && cap.gaz === 'he' && cap.T === 20 && cap.d === 1.2, label: 'Passer à l’hélium', faire: () => { setScene('capteur'); setCap({ d: 1.2, T: 20, gaz: 'he', tb: 20 }); }, consigne: 'Gaz : hélium' } },
     { id: 'gazqcm', titre: 'Dans l’hélium', focus: ['scene'],
@@ -233,27 +238,15 @@ export function SimulationEchographe() {
       tache: { type: 'qcm', q: 'Dans l’hélium, le retard de l’écho est…', options: ['plus petit : les ultrasons y vont plus vite', 'plus grand : l’hélium est plus léger', 'identique : seule la température compte'], bonne: 0,
         expl: 'La célérité dépend de la nature du gaz. L’hélium a une masse molaire très faible (4 g/mol contre 29 g/mol), donc v est bien plus grande : environ 1 010 m/s, le retard est trois fois plus petit.', indice: "Comparez la masse molaire de l’hélium à celle de l’air : v = √(γRT ÷ M)." } },
     { id: 'milieux', titre: 'Gaz, liquides, solides', focus: ['scene'],
-      retenirTitre: 'À RETENIR : CÉLÉRITÉ DU SON',
-      retenir: <>
-        <Formule><mi>v</mi><mo>=</mo><msqrt><mfrac><mrow><mi>γ</mi><mo>×</mo><mi>R</mi><mo>×</mo><mi>T</mi></mrow><mi>M</mi></mfrac></msqrt></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Milieu (20 °C)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Célérité</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Données</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gaz (air)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 343 m·s⁻¹</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>γ = 1,40 ; M = 29 g·mol⁻¹</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gaz (hélium)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>plus grande que dans l’air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>γ = 1,67 ; M = 4,0 g·mol⁻¹</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>liquides (eau, huile)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 1 400 à 1 500 m·s⁻¹</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}></td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>solides (acier, verre)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 5 000 à 6 000 m·s⁻¹</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}></td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Dans un gaz parfait, v augmente avec la <strong>température</strong> (T en kelvin : T = θ + 273,15) et diminue avec la <strong>masse molaire</strong> ; R = 8,314 J·mol⁻¹·K⁻¹, M en kg·mol⁻¹.</li>
-          <li>Plus la célérité est <strong>petite</strong> (froid), plus le <strong>retard</strong> de l’écho est grand ; un capteur réglé sur 340 m/s affiche alors une distance trop grande.</li>
-          <li>En général, v<sub>solide</sub> &gt; v<sub>liquide</sub> &gt; v<sub>gaz</sub>.</li>
-        </ul>
-      </>,
+      retenirTitre: 'La célérité dépend du gaz',
+      retenir: <><FGazHe/>{puces(<>Hélium : masse molaire très faible (4 g·mol⁻¹ contre 29 pour l’air), donc v bien plus grande.</>, <>Le retard est trois fois plus petit dans l’hélium que dans l’air.</>)}</>,
       texte: <>Ordres de grandeur à 20 °C : <strong>gaz</strong> (air) 343{NB}m/s ; <strong>liquides</strong> (eau, huile) environ 1{NB}400 à 1{NB}500{NB}m/s ; <strong>solides</strong> (acier, verre) environ 5{NB}000 à 6{NB}000{NB}m/s. Le son se propage en général plus vite dans un solide que dans un liquide, et plus vite dans un liquide que dans un gaz.</>,
       tache: { type: 'qcm', q: 'Quel est l’ordre de grandeur de la célérité du son dans l’eau ?', options: ['environ 1 500 m/s', 'environ 340 m/s', 'environ 6 000 m/s'], bonne: 0,
         expl: 'Dans l’eau, le son va environ quatre fois plus vite que dans l’air : de l’ordre de 1 500 m/s. C’est aussi l’ordre de grandeur de la célérité dans les tissus mous du corps humain, qui sont majoritairement constitués d’eau (le muscle en contient environ 75 %).', indice: "Le son va plus vite dans un liquide que dans un gaz, plusieurs fois plus vite que dans l’air." } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Célérité du son : ordres de grandeur',
+      retenir: <><FOrdres/>{puces(<>Gaz (air) 343 m·s⁻¹ ; liquides (eau) environ 1 500 ; solides (acier) environ 5 000.</>, <>Le son va en général plus vite dans un solide que dans un liquide, et plus vite dans un liquide que dans un gaz.</>)}</>,
+      texte: <>Vous savez mesurer un retard, en déduire une distance ou une célérité, et expliquer l’effet de la température et de la nature du milieu. Passez au parcours 2 pour le principe de l’échographe.</>, tache: null },
     { id: 'sonde', titre: 'L’échographe : le même principe', focus: ['scene', 'reglages'],
       texte: <>Un échographe applique le même principe pour voir à l’intérieur du corps : la sonde émet une impulsion d’ultrasons (de 1 à 15{NB}MHz), qui traverse des tissus et revient partiellement à chaque changement de milieu. Commençons par poser la sonde <strong>directement sur la peau</strong>, sans gel, à 4{NB}MHz.</>,
       tache: { type: 'action', ok: scene === 'echo' && !eco.gel, label: 'Passer à l’échographe (sans gel)', faire: () => { setScene('echo'); setEco(e => ({ ...e, f: 4, gel: false })); }, consigne: 'Échographe, sonde sans gel' } },
@@ -262,6 +255,8 @@ export function SimulationEchographe() {
       tache: { type: 'qcm', q: 'Où se forme un écho ?', options: ['à l’interface entre deux milieux différents', 'partout dans le tissu, uniformément', 'uniquement à la surface de la peau'], bonne: 0,
         expl: 'À chaque interface entre deux milieux, une partie de l’énergie est réfléchie (écho) et le reste est transmis. Les pics du balayage correspondent aux interfaces : peau, graisse, muscle, organe…', indice: "Une partie de l’onde est réfléchie quand les propriétés du milieu changent." } },
     { id: 'sansgel', titre: 'Sans gel', focus: ['tableau', 'scene'],
+      retenirTitre: 'Un écho naît à une interface',
+      retenir: <><FInterfaces/>{puces(<>À chaque changement de milieu, une partie de l’énergie est réfléchie : c’est un <strong>écho</strong>.</>, <>Chaque pic du balayage A correspond à une interface ; sous le seuil de détection, il n’est pas vu.</>)}</>,
       texte: <>Sans gel, l’interface air/peau a un coefficient énergétique de réflexion <em>R</em> = 0,99 (tableau « Interfaces »). Presque toute l’énergie est renvoyée à la surface. Observez le balayage : les échos plus profonds sont affaiblis, et certains passent sous le seuil de détection.</>,
       tache: { type: 'num', q: 'Quel pourcentage de l’énergie pénètre dans la peau ?', unite: '%', vrai: 1, tol: 0.05, affiche: v => nbf(v, 0),
         calcul: () => ['À une interface, R + T = 1.', 'T = 1 − R = 1 − 0,99 = 0,01 soit 1 %.'], pieges: [[99, 'Ces 99 % sont l’énergie réfléchie (R). L’énergie transmise est T = 1 − R.']],
@@ -273,22 +268,8 @@ export function SimulationEchographe() {
         pieges: [[20, 'Vous n’avez compté qu’une traversée (10 log 0,01 = −20 dB) : il y en a deux, à l’aller et au retour.'], [4, 'Le niveau s’exprime avec 10 log (énergie), et il y a deux traversées : 10 × log(10⁻⁴).']],
         expl: 'Tous les échos situés sous la peau sont 40 dB plus faibles qu’avec du gel (en comparant les niveaux dans le tableau, à 4 MHz). L’écho de l’interface muscle/organe, celui des détails et celui du fond passent alors sous le seuil de −80 dB : sans gel, on ne voit pas l’organe.', indice: "Le signal traverse deux fois l’interface (aller et retour) : calculez 10·log de l’énergie transmise, et doublez." } },
     { id: 'gel', titre: 'Avec du gel', focus: ['reglages', 'scene'],
-      retenirTitre: 'À RETENIR : INTERFACE, RÉFLEXION ET GEL',
-      retenir: <>
-        <Formule><mi>R</mi><mo>+</mo><mi>T</mi><mo>=</mo><mn>1</mn><mspace width="1.5em"/><mi>L</mi><mo>=</mo><mn>10</mn><mo>×</mo><mi>log</mi><mfrac><mtext>énergie reçue</mtext><mtext>énergie émise</mtext></mfrac></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Interface</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>R</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>T</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Conséquence</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>air / peau (sans gel)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,99</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,01</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>traversée aller-retour : T² = 10⁻⁴, soit − 40 dB</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gel / peau</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,02</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,98</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>presque tout entre dans la peau</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un <strong>écho</strong> se forme à chaque <strong>interface</strong> entre deux milieux différents ; R = fraction d’énergie réfléchie, T = fraction transmise.</li>
-          <li>Sans gel, presque toute l’énergie est renvoyée à la surface : les échos plus profonds sont très affaiblis. Le <strong>gel</strong> supprime l’interface air / peau.</li>
-          <li>Le niveau d’un écho dépend de R de l’interface et de l’absorption sur le trajet aller-retour.</li>
-        </ul>
-      </>,
+      retenirTitre: 'Le gel de contact',
+      retenir: <><FGel/>{FRT}{puces(<>Sans gel, l’air entre la sonde et la peau réfléchit presque tout : on ne voit pas l’organe.</>, <>Le gel supprime cette interface : presque toute l’énergie entre dans la peau.</>)}</>,
       texte: <>Le gel remplace l’air entre la sonde et la peau. Pour l’interface gel/peau, <em>R</em> = 0,02 donc <em>T</em> = 0,98 : presque tout entre dans la peau. Activez le gel.</>,
       tache: { type: 'action', ok: scene === 'echo' && eco.gel, label: 'Mettre du gel', faire: () => { setScene('echo'); setEco(e => ({ ...e, gel: true })); }, consigne: 'Gel activé' } },
     { id: 'hauteur', titre: 'Lire un pic', focus: ['scene', 'tableau'],
@@ -305,6 +286,8 @@ export function SimulationEchographe() {
         pieges: [[M.V_APPAREIL * dtMesUs * 1e-6 * 100, 'Vous avez oublié de diviser par 2 : l’onde fait un aller-retour.'], [M.V_APPAREIL * dtMesUs * 1e-6 / 2, 'Le résultat est demandé en centimètres.']],
         expl: `d ≈ ${nbf(M.V_APPAREIL * dtMesUs * 1e-6 / 2 * 100, 2)} cm. L’organe est en réalité à 3,50 cm : l’écart vient de ce que la célérité varie un peu d’un tissu à l’autre.`, indice: "Profondeur = v × Δt ÷ 2 (aller-retour), avec la célérité de l’appareil." } },
     { id: 'absorption', titre: 'L’absorption', focus: ['tableau'],
+      retenirTitre: 'La profondeur d’un organe',
+      retenir: <><FProfondeur/>{FProf}{puces(<>L’échographe utilise une célérité moyenne de 1 540 m·s⁻¹ pour tous les tissus.</>, <>Le résultat est approché : la célérité varie un peu d’un tissu à l’autre.</>)}</>,
       texte: <>Même sans interface, tout milieu <strong>absorbe</strong> l’onde, d’autant plus que la fréquence est élevée. Le coefficient d’absorption du muscle est 1,1{NB}dB·cm⁻¹ par MHz, soit <strong>5,5{NB}dB·cm⁻¹ à 5{NB}MHz</strong>. L’atténuation en dB est proportionnelle à la distance parcourue, aller et retour compris.</>,
       tache: { type: 'num', q: 'Atténuation due à une couche de muscle de 2,0 cm, aller-retour compris', unite: 'dB', vrai: 22, tol: 0.02, affiche: v => nbf(v, 0), cs: 2,
         calcul: () => ['Hypothèse : coefficient constant dans la couche, l’onde la traverse deux fois (aller et retour).', 'Distance parcourue : 2 × 2,0 = 4,0 cm.', 'Atténuation : 5,5 dB/cm × 4,0 cm = 22 dB.'],
@@ -314,18 +297,13 @@ export function SimulationEchographe() {
       texte: <>Réglez maintenant la fréquence à <strong>10{NB}MHz</strong>. Observez les échos profonds.</>,
       tache: { type: 'action', ok: scene === 'echo' && eco.gel && eco.f >= 10, label: 'Régler 10 MHz', faire: () => { setScene('echo'); setEco(e => ({ ...e, f: 10, gel: true })); }, consigne: 'Fréquence : 10 MHz' } },
     { id: 'pourquoi', titre: 'Des échos qui disparaissent', focus: ['scene'],
-      retenirTitre: 'À RETENIR : L’ABSORPTION',
-      retenir: <>
-        <Formule><mtext>atténuation (dB)</mtext><mo>=</mo><mi>α</mi><mo>×</mo><mi>f</mi><mo>×</mo><mtext>distance parcourue (aller-retour)</mtext></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Tout milieu <strong>absorbe</strong> l’onde, d’autant plus que la <strong>fréquence</strong> est élevée ; pour le muscle, α = 1,1 dB·cm⁻¹·MHz (5,5 dB·cm⁻¹ à 5 MHz).</li>
-          <li>L’atténuation en dB est <strong>proportionnelle à la distance</strong> parcourue, aller et retour compris (2 × la profondeur).</li>
-          <li>À fréquence élevée, les échos profonds passent sous le <strong>seuil de détection</strong> : la pénétration diminue.</li>
-        </ul>
-      </>,
       texte: <>À 10{NB}MHz, les échos de l’organe et du fond ont disparu.</>,
       tache: { type: 'qcm', q: 'Pourquoi ?', options: ['l’absorption augmente avec la fréquence : ces échos passent sous le seuil de détection', 'les ultrasons ne sont plus réfléchis à haute fréquence', 'la célérité a diminué'], bonne: 0,
         expl: 'Le coefficient d’absorption croît avec la fréquence. À 10 MHz, l’atténuation aller-retour jusqu’à l’organe dépasse ce que le récepteur peut détecter : la pénétration est limitée.', indice: "L’absorption augmente avec la fréquence : que devient un écho profond ?" } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Absorption et pénétration',
+      retenir: <><FAbsorption/>{FAtt}{puces(<>L’atténuation est proportionnelle à la fréquence f et à la distance parcourue d<sub>AR</sub> (aller et retour compris).</>, <>À haute fréquence, les échos profonds passent sous le seuil de détection : la pénétration est limitée.</>)}</>,
+      texte: <>Vous savez expliquer comment un échographe forme ses échos, le rôle du gel, comment il calcule une profondeur et pourquoi la fréquence limite la pénétration. Passez au parcours 3 pour la résolution.</>, tache: null },
     { id: 'lambda', titre: 'La longueur d’onde', focus: ['mesures'],
       texte: <>La plus petite structure qu’on peut distinguer est de l’ordre de la longueur d’onde <em>λ</em> = <em>v</em> / <em>f</em> dans le milieu : c’est la <strong>résolution</strong>. Dans l’organe, <em>v</em> = 1{NB}590{NB}m/s. Calculez <em>λ</em> à 5{NB}MHz.</>,
       tache: { type: 'num', q: 'Longueur d’onde λ à 5 MHz', unite: 'mm', vrai: M.longueurOnde(ORG, 5), tol: 0.02, affiche: v => nbf(v, 3), cs: 2,
@@ -333,6 +311,8 @@ export function SimulationEchographe() {
         pieges: [[M.longueurOnde(ORG, 5) * 1e-3, 'Le résultat est demandé en millimètres.'], [1590 / 5, 'Convertissez 5 MHz en hertz (5 × 10⁶ Hz).']],
         expl: 'λ ≈ 0,32 mm : on ne peut guère distinguer des détails plus petits que cette taille.', indice: "λ = v ÷ f, avec f en hertz." } },
     { id: 'detailsbas', titre: 'Deux petits détails', focus: ['scene', 'reglages', 'zoom'],
+      retenirTitre: 'Longueur d’onde et résolution',
+      retenir: <><FLambda/>{puces(<>On ne distingue pas des détails plus petits que la longueur d’onde λ : c’est la <strong>résolution</strong>.</>, <>Haute fréquence : λ petite, détails fins visibles.</>)}</>,
       texte: <>Deux petits détails (calcifications) se trouvent dans l’organe, séparés de <em>s</em> = 0,8{NB}mm. Le zoom les montre. Réglez la fréquence à <strong>1{NB}MHz</strong>.</>,
       tache: { type: 'action', ok: scene === 'echo' && eco.gel && eco.f === 1 && eco.s === 0.8, label: 'Régler 1 MHz', faire: () => { setScene('echo'); setEco({ f: 1, gel: true, s: 0.8 }); }, consigne: 'Fréquence : 1 MHz, s = 0,8 mm' } },
     { id: 'separation', titre: 'Un seul pic', focus: ['zoom'],
@@ -340,38 +320,30 @@ export function SimulationEchographe() {
       tache: { type: 'qcm', q: 'Pourquoi voit-on un seul pic ?', options: ['l’écart s (0,8 mm) est inférieur à la longueur d’onde (1,59 mm) : les échos se recouvrent', 'les détails sont trop absorbés', 'le fond de l’organe masque les détails'], bonne: 0,
         expl: 'Dans cette simulation, deux détails sont séparés si leur écart s est au moins égal à λ. Ici s < λ : les deux échos ne se distinguent pas.', indice: "Comparez l’écart entre les deux détails à la longueur d’onde." } },
     { id: 'fmin', titre: 'Séparer les détails', focus: ['mesures'],
+      retenirTitre: 'Séparer deux détails',
+      retenir: <><FSepare/>{FLam}{puces(<>Deux détails séparés de s se distinguent si λ ≤ s.</>, <>Sinon leurs échos se recouvrent : un seul pic.</>)}</>,
       texte: <>Quelle est la fréquence minimale pour que les deux détails (<em>s</em> = 0,8{NB}mm, dans l’organe où <em>v</em> = 1{NB}590{NB}m/s) soient séparés ? On écrit la condition <em>λ</em> ≤ <em>s</em>. Vérifiez ensuite avec le curseur de fréquence.</>,
       tache: { type: 'num', q: 'Fréquence minimale', unite: 'MHz', vrai: M.frequenceMin(0.8, ORG), tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
         calcul: () => ['Condition : λ = v / f ≤ s donc f ≥ v / s.', 'Unités SI : s = 0,8 mm = 0,8 × 10⁻³ m.', `f = 1 590 / 0,8 × 10⁻³ = ${nbf(M.frequenceMin(0.8, ORG) * 1e6, 0)} Hz = ${nbf(M.frequenceMin(0.8, ORG), 2)} MHz.`],
         pieges: [[M.frequenceMin(0.8, ORG) * 1e6, 'Le résultat est demandé en mégahertz (1 MHz = 10⁶ Hz).']],
         expl: 'f ≥ 2,0 MHz environ. Autour de 2 MHz, les deux pics commencent à se séparer sur le zoom ; au-dessus, le creux entre eux se creuse.', indice: "Les détails sont séparés si λ est au plus égale à leur écart s : f = v ÷ s." } },
     { id: 'compromis', titre: 'Un compromis', focus: ['reglages'],
-      retenirTitre: 'À RETENIR : RÉSOLUTION ET CHOIX DE LA FRÉQUENCE',
-      retenir: <>
-        <Formule><mi>λ</mi><mo>=</mo><mfrac><mi>v</mi><mi>f</mi></mfrac><mspace width="1.5em"/><mi>λ</mi><mo>≤</mo><mi>s</mi><mo>⇒</mo><mi>f</mi><mo>≥</mo><mfrac><mi>v</mi><mi>s</mi></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>La plus petite structure distinguable est de l’ordre de la <strong>longueur d’onde</strong> λ dans le milieu : c’est la <strong>résolution</strong>.</li>
-          <li>Deux détails séparés de s ne sont distingués que si λ ≤ s : il faut une fréquence <strong>assez élevée</strong>.</li>
-          <li><strong>Compromis</strong> : fréquence élevée = meilleure résolution mais moindre pénétration (absorption) ; on choisit une fréquence qui permet encore de détecter l’écho le plus profond.</li>
-        </ul>
-      </>,
       texte: <>On veut voir l’organe et son fond (à 7{NB}cm de profondeur) avec une résolution d’environ 0,5{NB}mm. Une résolution de 0,5{NB}mm demande <em>f</em> ≥ 3,2{NB}MHz. Mais l’écho du fond n’est plus détecté au-delà d’environ 5,6{NB}MHz (testez-le avec le curseur).</>,
       tache: { type: 'qcm', q: 'Quelle fréquence choisir ?', options: ['entre 3,2 et 5,6 MHz : λ assez petite et écho du fond encore détecté', '15 MHz : c’est la longueur d’onde la plus petite', '1 MHz : c’est la fréquence la moins absorbée'], bonne: 0,
         expl: 'Augmenter la fréquence améliore la résolution (λ plus petite) mais diminue la pénétration (absorption plus forte). On choisit un compromis selon la profondeur de l’organe : fréquence plus élevée pour les organes superficiels, plus basse pour les organes profonds.', indice: "Cherchez un compromis : assez haute pour séparer les détails, assez basse pour que l’écho du fond soit encore détecté." } },
     { id: 'fin', titre: 'Ce que vous savez faire', focus: [],
-      retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Capteur à ultrasons : il mesure un <strong>retard</strong> Δt = 2d / v ; d = v·Δt / 2.</li>
-          <li>Gaz parfait : v = √(γRT / M) ; ordres de grandeur : gaz ≈ 340 m/s, liquides ≈ 1 500 m/s, solides ≈ 5 000 à 6 000 m/s.</li>
-          <li>À une interface, R + T = 1 ; un écho naît à chaque changement de milieu ; le gel supprime l’interface air / peau.</li>
-          <li>L’absorption atténue l’onde (dB ∝ distance et fréquence) ; résolution ≈ λ = v / f : compromis résolution – pénétration.</li>
-        </ul>
-      </>,
+      retenirTitre: 'Résolution ou pénétration ?',
+      retenir: <><FCompromis/>{FAtt}{puces(<>Fréquence plus élevée : meilleure résolution, mais absorption plus forte, donc moins de pénétration.</>, <>On choisit un compromis selon la profondeur de l’organe visé.</>)}</>,
       texte: <>Vous savez mesurer un retard, en déduire une distance ou une célérité, et expliquer le principe d’un échographe, ses limites et le choix de la fréquence. Explorez librement, puis essayez les défis.</>, tache: null },
   ];
+  const ORDRE_PARC = [['principe', 'trajet', 'oscillo', 'lecture', 'celerite', 'temperature', 'influence', 'formule', 'erreur', 'gaz', 'gazqcm', 'milieux', 'bilan1'],
+    ['sonde', 'interface', 'sansgel', 'perte', 'gel', 'hauteur', 'pointer', 'profondeur', 'absorption', 'hautefreq', 'pourquoi', 'bilan2'],
+    ['lambda', 'detailsbas', 'separation', 'fmin', 'compromis', 'fin']];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(e => e.id === id));
   const IDS = ETAPES.map(e => e.id), idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
-  const apres = id => !enGuide || etape > IDS.indexOf(id);
+  // étapes des autres parcours : déjà passées (parcours précédents) ou pas encore atteintes (parcours suivants)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
+  const apres = id => !enGuide || etape > iEt(id);
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   const rendreBase = () => {
@@ -459,8 +431,15 @@ export function SimulationEchographe() {
       <li><strong>Résolution</strong> : dans cette simulation, chaque écho a une enveloppe gaussienne de durée σ = 1/f, soit une résolution <strong>axiale</strong> (en profondeur) d’environ λ/2 ; deux détails identiques, alignés dans l’axe du faisceau, sont séparés si leur écart s est au moins égal à la longueur d’onde (critère simplifié, qui dépend en réalité du nombre d’oscillations de l’impulsion). La résolution <strong>latérale</strong> (liée à la diffraction et à la largeur du faisceau) n’est pas modélisée.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
+  const NOMS_PARC = ['1. La célérité du son', '2. Le principe de l’échographe', '3. La résolution'];
+  const choisirParcours = k => {
+    setParc(k);
+    if (k === 1 && g1.etape <= 2) { baseCap(); setRc({ r1: 2, r2: 12 }); }
+    if (k === 3 && g3.etape === 0) { baseEcho(); setEco(e => ({ ...e, s: 0.8 })); }
+  };
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => choisirParcours(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -618,7 +597,12 @@ export function SimulationEchographe() {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une onde ultrasonore se réfléchit sur un obstacle : le <strong>retard</strong> de l’écho donne la distance (Δt = 2d / v). Un échographe utilise le même principe, mais dans des tissus qui <strong>réfléchissent</strong>, <strong>transmettent</strong> et <strong>absorbent</strong> les ultrasons.</div>
       <div className={`ec-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {enGuide ? <div className="ec-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="ec-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="ec-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => choisirParcours(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="ec-carte">{panneauHypo}</div> : null}
         <div className="ec-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={{ distance: sDis, celerite: sCel, profondeur: sPro, frequence: sFre }[defi.type]}/></div>}
           <div className={`ec-pri${mode !== 'explore' ? ' pile' : ''}`}>
