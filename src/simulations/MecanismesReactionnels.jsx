@@ -2,8 +2,10 @@
 // Tout est piloté par la coordonnée de réaction u (voir mecaModele.js).
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
+import { puces } from "./Travail";
+import { FFlecheCourbe, FCarbocation, FProfil, FAddition, FStereo, FBilanMeca } from "./MecaSchemas";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi, ORANGE_GUIDE } from "../commun";
 import { Pic } from "../Pictos";
 import { JALONS, energie, vitesse, EA1, EA2, DELTA_E, E_CARBOCATION, PRODUITS, descripteurProduit, geometrieVSEPR, polarimetre, POLARI } from "./mecaModele";
 import { Mol2D } from "./MecaVue2D";
@@ -142,14 +144,8 @@ function etapesGuide(u, setU, ouvrirDessin, reussi) {
     { titre: 'Qu\'est-ce qu\'une flèche courbe ?',
       retenirTitre: 'À RETENIR : LA FLÈCHE COURBE',
       retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Une <strong>flèche courbe</strong> représente le déplacement d’un <strong>doublet d’électrons</strong>, jamais celui d’un atome.</li>
-          <li><strong>Début</strong> de la flèche : la <strong>source</strong> du doublet, une liaison (π ou σ) ou un doublet non liant. <strong>Pointe</strong> : sa destination, un atome ou une liaison à former.</li>
-          <li>Elle va d’un site <strong>riche en électrons</strong> (<strong>nucléophile</strong>, qui donne un doublet) vers un site <strong>pauvre en électrons</strong> (<strong>électrophile</strong>, qui a une lacune).</li>
-          <li><strong>Polarisation</strong> : dans H–Br, le brome, plus électronégatif, attire le doublet de la liaison : Br est δ–, H est δ+. Le H est donc le site électrophile.</li>
-          <li>Une liaison π (double liaison C=C) est riche en électrons : elle joue le rôle de nucléophile.</li>
-          <li><strong>Pièges :</strong> une flèche qui part d’un atome ; une flèche qui va d’un site pauvre vers un site riche ; oublier de rompre une liaison quand une autre se forme.</li>
-        </ul>
+        <FFlecheCourbe/>
+        {puces(<>Une flèche courbe représente le déplacement d’un <strong>doublet d’électrons</strong>, jamais celui d’un atome.</>, <>Elle va d’un site <strong>riche</strong> en électrons (nucléophile) vers un site <strong>pauvre</strong> (électrophile, avec une lacune).</>, <>Dans H–Br, le brome est plus électronégatif : Br est δ–, H est δ+.</>)}
       </>,
       texte: <>Amène la bille au sommet de la première bosse (ET₁). Des <strong>flèches courbes</strong> rouges apparaissent : elles montrent le déplacement d'un <strong>doublet d'électrons</strong>, de sa source (le début de la flèche) vers sa destination (la pointe).</>,
       tache: { type: 'action', ...va(0.25), consigne: 'Place la bille sur ET₁ (curseur ou clic sur la courbe).', indice: 'Fais glisser le curseur jusqu’à ce que la bille soit au sommet de la première bosse.' } },
@@ -160,12 +156,8 @@ function etapesGuide(u, setU, ouvrirDessin, reussi) {
     { titre: 'Le carbocation',
       retenirTitre: 'À RETENIR : LE CARBOCATION',
       retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un <strong>carbocation</strong> est un carbone C⁺ qui n’a que <strong>6 électrons</strong> sur sa couche externe : il a une <strong>lacune</strong>. Il se forme quand la liaison H–Br est rompue et que Br part avec le doublet (Br⁻ a 4 doublets non liants).</li>
-          <li><strong>Géométrie (VSEPR)</strong> : 3 liaisons, aucun doublet non liant, donc 3 sites : les sites s’écartent au maximum, dans un <strong>plan à 120°</strong> (plan trigonal). Une double liaison compte pour un seul site.</li>
-          <li>C’est un <strong>intermédiaire réactionnel</strong> : il se situe dans un <strong>creux</strong> du profil d’énergie, avec une énergie élevée. Un <strong>état de transition</strong> est un <strong>sommet</strong>, qu’on ne peut pas isoler.</li>
-          <li>Le carbocation est très réactif : sa lacune attend un doublet. Br⁻ la comble à l’étape 2.</li>
-        </ul>
+        <FCarbocation/>
+        {puces(<>Un <strong>carbocation</strong> est un carbone C⁺ à <strong>6 électrons</strong> : il a une lacune, d’où sa grande réactivité.</>, <>3 sites autour de C⁺ (VSEPR) : les liaisons s’écartent dans un <strong>plan à 120°</strong>.</>, <>C’est un <strong>intermédiaire</strong> (creux du profil), pas un état de transition (sommet).</>)}
       </>,
       texte: <>Place la bille dans le creux central. La liaison H–Br est rompue : Br est resté avec le doublet, c'est l'ion <strong>Br⁻</strong> (quatre doublets non liants). Le carbone voisin ne possède plus que 6 électrons : c'est un <strong>carbocation C⁺</strong>. Le carré bleu marque sa <strong>lacune électronique</strong>.</>,
       tache: { type: 'action', ...va(0.5), consigne: 'Place la bille sur le carbocation (intermédiaire).', indice: 'Cherche le creux entre les deux bosses.' } },
@@ -175,17 +167,19 @@ function etapesGuide(u, setU, ouvrirDessin, reussi) {
       tache: { type: 'qcm', q: 'Dans l’étape 2, qu’est-ce qui se passe ?', options: ['Le carbocation C⁺ se déplace vers Br⁻ pour l’attaquer', 'Un doublet non liant de Br⁻ attaque le carbone C⁺ (la lacune)', 'Un atome H quitte le carbone pour rejoindre Br⁻'], bonne: 1, indice: 'Qui possède un doublet à donner ? Qui a une lacune à combler ?', expl: <>Br⁻ est le <strong>nucléophile</strong> (doublet non liant), C⁺ est l'<strong>électrophile</strong> (lacune). C'est le doublet de Br⁻ qui devient la liaison C–Br.</> } },
     { titre: 'À toi de dessiner : l\'étape 2', texte: <>Retourne dans l'atelier de dessin, choisis « Étape 2 » et trace la flèche courbe de l'attaque de Br⁻ sur le carbocation.</>,
       tache: { type: 'action', ok: !!reussi[2], label: 'Ouvrir l\'atelier de dessin', faire: () => ouvrirDessin(2), consigne: 'Trace la flèche de l\'étape 2, puis clique sur « Vérifier ».', indice: 'Qui possède un doublet à donner ? Qui a une lacune à combler ? La flèche va du premier vers le second.' } },
+    { titre: 'Le bilan',
+      retenirTitre: 'À RETENIR : L’ADDITION ÉLECTROPHILE DE HBr',
+      retenir: <>
+        <FAddition/>
+        {puces(<>C’est une <strong>addition</strong> (la double liaison disparaît) <strong>électrophile</strong> (le premier site attaqué est H, pauvre en électrons).</>, <>Deux étapes et un intermédiaire : le profil a deux sommets et un creux.</>, <>Aucun catalyseur ; le modèle ne représente que HBr non solvaté.</>)}
+      </>,
+      texte: <>Tu sais écrire les deux étapes du mécanisme avec leurs flèches courbes. Le parcours 2 lit le profil d’énergie et explique pourquoi le produit est un mélange racémique.</>, tache: null },
     { titre: 'Lire le profil : la barrière de l’étape 1',
       retenirTitre: 'À RETENIR : LIRE UN PROFIL D’ÉNERGIE',
       retenir: <>
-        <Formule><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><mi>E</mi><mo>(</mo><mtext>sommet</mtext><mo>)</mo><mo>−</mo><mi>E</mi><mo>(</mo><mtext>départ de l’étape</mtext><mo>)</mo><mspace width="1.5em"/><mi>Δ</mi><mi>E</mi><mo>=</mo><mi>E</mi><mo>(</mo><mtext>produit</mtext><mo>)</mo><mo>−</mo><mi>E</mi><mo>(</mo><mtext>réactifs</mtext><mo>)</mo></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Énergie d’activation E<sub>a</sub></strong> : hauteur à gravir entre le <strong>départ de l’étape</strong> et son <strong>sommet</strong> (état de transition), en kJ·mol⁻¹. Le départ de l’étape 2 est le carbocation, pas les réactifs.</li>
-          <li><strong>Exemple :</strong> départ à 20 kJ·mol⁻¹, sommet à 80 kJ·mol⁻¹ : E<sub>a</sub> = 60 kJ·mol⁻¹.</li>
-          <li>Plus la barrière est <strong>haute</strong>, plus l’étape est <strong>lente</strong>. L’étape qui a la <strong>barrière la plus haute</strong> limite la vitesse : c’est l’étape <strong>cinétiquement déterminante</strong> (ici, l’étape 1).</li>
-          <li><strong>ΔE</strong> du bilan : énergie finale moins énergie initiale, <strong>le signe compte</strong>. ΔE &lt; 0 : la réaction libère de l’énergie.</li>
-          <li><strong>Hypothèse :</strong> les énergies de la simulation sont des ordres de grandeur arrondis, choisis pour illustrer le mécanisme, pas des mesures.</li>
-        </ul>
+        <FProfil/>
+        <Formule><msub><mi>E</mi><mi>a</mi></msub><mo>=</mo><mi>E</mi><mo>(</mo><mtext>sommet</mtext><mo>)</mo><mo>−</mo><mi>E</mi><mo>(</mo><mtext>départ</mtext><mo>)</mo></Formule>
+        {puces(<>Plus la barrière est <strong>haute</strong>, plus l’étape est <strong>lente</strong> : la plus haute limite la vitesse.</>, <>Le départ de l’étape 2 est le carbocation, pas les réactifs.</>, <>ΔE = E(produit) − E(réactifs) : <strong>le signe compte</strong>. Les énergies de la simulation sont des ordres de grandeur.</>)}
       </>,
       texte: <>L'énergie d'activation d'une étape est la hauteur à gravir entre le départ de l'étape et son sommet. Pour l'étape 1, il faut passer de <strong>0 kJ/mol</strong> (réactifs) au sommet ET₁. Active « Montrer les énergies » pour lire les valeurs.</>,
       tache: { type: 'num', q: 'Quelle est l’énergie d’activation de l’étape 1 ?', unite: 'kJ/mol', vrai: EA1, tol: 0.02, cs: 3, indice: 'Énergie du sommet ET₁ moins énergie des réactifs.', calcul: () => [`E(ET₁) − E(réactifs) = ${JALONS[1].E} − ${JALONS[0].E} = ${EA1} kJ/mol`], pieges: [[JALONS[1].E - E_CARBOCATION, 'Tu as pris le carbocation comme départ : l’étape 1 part des réactifs.']] } },
@@ -194,19 +188,6 @@ function etapesGuide(u, setU, ouvrirDessin, reussi) {
     { titre: 'Quelle étape décide de la vitesse ?', texte: <>Plus la barrière est haute, plus l'étape est difficile à franchir, donc lente.</>,
       tache: { type: 'qcm', q: 'Quelle étape limite la vitesse de la réaction ?', options: ['L’étape 1 (barrière la plus haute)', 'L’étape 2 (c’est la dernière)', 'Les deux ont la même vitesse'], bonne: 0, indice: 'Compare les deux énergies d’activation.', expl: <>Ea₁ = 100 kJ/mol est bien supérieure à Ea₂ = 10 kJ/mol : l'étape 1 est l'étape lente. Le carbocation, une fois formé, réagit presque aussitôt.</> } },
     { titre: 'Bilan énergétique',
-      retenirTitre: 'À RETENIR : L’ADDITION ÉLECTROPHILE DE HBr',
-      retenir: <>
-        <Formule><mtext>CH₃–CH=CH–CH₃</mtext><mo>+</mo><mtext>HBr</mtext><mo>→</mo><mtext>CH₃–CHBr–CH₂–CH₃</mtext></Formule>
-        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-          <li><strong>Étape 1 (lente)</strong> : le doublet π attaque H (δ+) ; la liaison H–Br se rompt, Br part avec le doublet. On obtient le <strong>carbocation</strong> et Br⁻ (deux flèches courbes).</li>
-          <li><strong>Étape 2 (rapide)</strong> : un doublet non liant de Br⁻ attaque le carbone C⁺ (une flèche courbe). On obtient le <strong>2-bromobutane</strong>.</li>
-        </ol>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>C’est une <strong>addition</strong> (la double liaison disparaît) <strong>électrophile</strong> (le premier site attaqué est H, pauvre en électrons).</li>
-          <li>Le mécanisme se fait en <strong>deux étapes</strong> avec un intermédiaire : le profil a deux sommets et un creux.</li>
-          <li>Aucun catalyseur : HBr s’additionne seul. Le modèle ne représente que HBr non solvaté.</li>
-        </ul>
-      </>,
       texte: <>Place la bille sur le produit. La réaction libère-t-elle de l'énergie ? Compare l'énergie du produit à celle des réactifs.</>,
       tache: { type: 'num', q: 'Quelle est la variation d’énergie entre réactifs et produit ?', unite: 'kJ/mol', vrai: DELTA_E, tol: 0.02, cs: 2, indice: 'Énergie finale moins énergie initiale (le signe compte).', calcul: () => [`E(produit) − E(réactifs) = ${JALONS[4].E} − ${JALONS[0].E} = ${DELTA_E} kJ/mol`] } },
     { titre: 'Devant ou derrière le plan ?', texte: <>Le carbocation est plan : Br⁻ peut arriver <strong>par l'avant</strong> ou <strong>par l'arrière</strong>. Les deux faces sont équivalentes. Observe les deux produits.</>,
@@ -214,32 +195,16 @@ function etapesGuide(u, setU, ouvrirDessin, reussi) {
     { titre: 'Mesurer au polarimètre',
       retenirTitre: 'À RETENIR : STÉRÉOCHIMIE ET POLARIMÈTRE',
       retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le carbocation est <strong>plan</strong> : Br⁻ peut attaquer <strong>par l’avant ou par l’arrière</strong>, avec la <strong>même probabilité</strong>. Le carbone C2 du produit devient <strong>stéréogène</strong> (4 groupes différents).</li>
-          <li>On obtient les <strong>deux énantiomères (R) et (S) en quantités égales</strong> : un <strong>mélange racémique</strong>.</li>
-        </ul>
-        <Formule><mtext>e.e.</mtext><mo>=</mo><mfrac><mrow><mo>|</mo><msub><mi>n</mi><mi>R</mi></msub><mo>−</mo><msub><mi>n</mi><mi>S</mi></msub><mo>|</mo></mrow><mrow><msub><mi>n</mi><mi>R</mi></msub><mo>+</mo><msub><mi>n</mi><mi>S</mi></msub></mrow></mfrac><mo>×</mo><mn>100</mn><mspace width="1.5em"/><mi>α</mi><mo>=</mo><mtext>e.e.</mtext><mo>×</mo><mi>α</mi><mo>(</mo><mtext>énantiomère pur</mtext><mo>)</mo></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un <strong>polarimètre</strong> mesure la rotation α du plan de polarisation de la lumière. Chaque énantiomère fait tourner le plan d’un angle <strong>opposé</strong> ; dans un mélange 50/50 les rotations <strong>se compensent</strong> : α = 0, le mélange est <strong>optiquement inactif</strong>.</li>
-          <li>Loi de Biot : α = [α]·ℓ·c. Dans la simulation : cuve de 1 dm, c = 0,50 g·mL⁻¹, pouvoir rotatoire spécifique pris à ± 23,1 °·mL·g⁻¹·dm⁻¹ (valeur indicative).</li>
-          <li>Le signe + ou − de la rotation se mesure ; il n’a pas de lien direct avec les lettres R et S.</li>
-        </ul>
+        <FStereo/>
+        {puces(<>Le carbocation est <strong>plan</strong> : Br⁻ l’attaque avec la même probabilité par l’avant ou par l’arrière.</>, <>On obtient (R) et (S) à 50 % chacun : un <strong>mélange racémique</strong> ; au polarimètre les rotations opposées se compensent : α = 0.</>, <>Le signe + ou − de la rotation n’a pas de lien direct avec les lettres R et S.</>)}
       </>,
       texte: <>Un mélange racémique contient autant de (R) que de (S). Un polarimètre mesure la rotation du plan de polarisation de la lumière. Déplace le curseur de composition du polarimètre (en dessous), puis réponds.</>,
       tache: { type: 'qcm', q: 'Que mesure-t-on au polarimètre pour le mélange racémique obtenu dans cette réaction ?', options: ['Une rotation α = 0 : le mélange est optiquement inactif', 'La rotation d’un énantiomère pur', 'Une rotation positive, car il y a autant de (S) que de (R)'], bonne: 0, indice: 'Les deux énantiomères tournent le plan de polarisation du même angle, mais dans des sens opposés.', expl: <>Le (R) et le (S) ont des pouvoirs rotatoires opposés. À 50 % chacun, les rotations se compensent : α = 0, e.e. = 0 %. On ne peut donc pas distinguer un racémique d'un composé achiral par cette mesure.</> } },
-    { titre: 'Bilan', texte: <>Tu sais lire un mécanisme : les <strong>flèches courbes</strong> suivent les doublets, du <strong>nucléophile</strong> (doublet) vers l'<strong>électrophile</strong> (lacune).</>,
+    { titre: 'Le bilan', texte: <>Tu sais lire un mécanisme : les <strong>flèches courbes</strong> suivent les doublets, du <strong>nucléophile</strong> (doublet) vers l'<strong>électrophile</strong> (lacune).</>,
+      retenirTitre: 'À RETENIR : LE BILAN DU MÉCANISME',
       retenir: <>
-        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-          <li><strong>Polariser</strong> : repérer le site riche (liaison π) et le site pauvre (H δ+).</li>
-          <li><strong>Dessiner</strong> les flèches courbes : du doublet vers la lacune.</li>
-          <li><strong>Étape 1 lente</strong> → carbocation (intermédiaire plan, 120°) ; <strong>étape 2 rapide</strong> → 2-bromobutane.</li>
-          <li><strong>Lire le profil</strong> : E<sub>a</sub> = sommet − départ ; ΔE = produit − réactifs.</li>
-        </ol>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Face plane attaquée de chaque côté : <strong>mélange racémique</strong>, optiquement inactif (α = 0).</li>
-          <li><strong>Hypothèses :</strong> énergies arrondies et illustratives, HBr non solvaté, carbocation plan, deux faces équiprobables.</li>
-          <li><strong>Pièges :</strong> flèche partant d’un atome ; confondre intermédiaire (creux) et état de transition (sommet) ; barrière mesurée depuis les réactifs pour l’étape 2.</li>
-        </ul>
+        <FBilanMeca/>
+        {puces(<>Face plane attaquée de chaque côté : <strong>mélange racémique</strong>, optiquement inactif.</>, <><strong>Pièges :</strong> une flèche qui part d’un atome ; confondre intermédiaire (creux) et état de transition (sommet) ; mesurer la barrière de l’étape 2 depuis les réactifs.</>)}
       </> },
   ];
 }
@@ -287,7 +252,11 @@ export function SimulationMecanismesReactionnels() {
   const [mode, setMode] = useState(() => modeOuverture('meca-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('meca-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('meca-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('meca-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('meca-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 1 ? g1 : g2, setGuide = parc === 1 ? setG1 : setG2;
   const [u, setU] = useState(0);
   const [lecture, setLecture] = useState(false);
   const [vue, setVue] = useState('2d');
@@ -318,10 +287,18 @@ export function SimulationMecanismesReactionnels() {
   }, [lecture]);
 
   const ouvrirDessin = n => { setLecture(false); setEtapeDessin(n); setVue('dessin'); };
-  const etapes = etapesGuide(u, k => { setLecture(false); setU(k); }, ouvrirDessin, reussiDessin);
+  const toutes = etapesGuide(u, k => { setLecture(false); setU(k); }, ouvrirDessin, reussiDessin);
+  const coupure = toutes.findIndex(e => e.titre === 'Lire le profil : la barrière de l’étape 1');
+  const etapes = parc === 1 ? toutes.slice(0, coupure) : toutes.slice(coupure);
   const iStereo = etapes.findIndex(e => e.titre === 'Devant ou derrière le plan ?');
   const iPolar = etapes.findIndex(e => e.titre === 'Mesurer au polarimètre');
   const finParcours = guide.etape >= etapes.length;
+  const finNoeud = (
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : profil d’énergie et stéréochimie</button>}
+      <button onClick={() => setMode('explore')} style={styleBouton(true, '#334155')}>Explorer</button>
+      <button onClick={() => setMode('defi')} style={styleBouton(true, '#0ea5e9')}>Défi</button>
+    </span>);
   const juste = q => q.type === 'num' ? proche(lireNombre(df.reps[q.id] ?? ''), q.vrai, q.tol) : df.reps[q.id] === q.bonne;
 
   const visuel = (
@@ -405,9 +382,13 @@ export function SimulationMecanismesReactionnels() {
         {visuel}
         <div style={{ flex: '1 1 300px', minWidth: 280, display: 'flex', flexDirection: 'column', gap: 10 }}>
           {mode === 'guide' && <>
-            <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours} />
-            {guide.etape >= iStereo && <div style={styleBoite}><Stereo2Faces numC={numC} /></div>}
-            {guide.etape >= iPolar && <div style={styleBoite}><Polarimetre pctR={pctR} setPctR={setPctR} /></div>}
+            <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Parcours :</span>
+              {[[1, '1. Flèches courbes et carbocation'], [2, '2. Profil d’énergie et stéréochimie']].map(([k, nom]) => <button key={k} aria-pressed={parc === k} onClick={() => setParc(k)} style={styleBouton(parc === k, ORANGE_GUIDE)}>{nom}</button>)}
+            </div>
+            <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finNoeud} />
+            {iStereo >= 0 && guide.etape >= iStereo && <div style={styleBoite}><Stereo2Faces numC={numC} /></div>}
+            {iPolar >= 0 && guide.etape >= iPolar && <div style={styleBoite}><Polarimetre pctR={pctR} setPctR={setPctR} /></div>}
           </>}
           {mode === 'explore' && <div style={styleBoite}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Mesures sur le profil</div>
