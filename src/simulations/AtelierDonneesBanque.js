@@ -24,6 +24,7 @@ import * as QM from "./quantiteMatiereModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
+import * as DM from "./dissolutionModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -478,6 +479,39 @@ export const ENONCES = [
         utiles: ['c0', 'c1', 'V1'], raisons,
         cherche: { bonne: 'Le volume de solution mère à prélever (en mL)', faux: ['Le volume d’eau distillée à ajouter (en mL)', 'La quantité de matière d’eau dans la fiole (en mol)', 'Le facteur de dilution (sans unité)'] },
         manque: null, solution: { txt: 'V_mère = c_fille × V_fille / c_mère', val: p.c1 * p.V1 / p.c0, u: 'mL' } };
+    }),
+  },
+  // ───────────────────────────── Dissolution d'un solide ionique (1G) : équation et concentration des ions
+  {
+    id: 'diss1g-sapp-solution', domaine: 'Dissolution d’un solide ionique : équation et concentration des ions', titre: 'Une solution de solide ionique à préparer', noms: ['Concentration en soluté apporté', 'Concentration effective d’un ion'],
+    gen: () => {
+      const s = tire(DM.SELS), M = DM.masseMolaire(s), V = tire([100, 250, 500]), c = tire([0.050, 0.100, 0.200, 0.500]);
+      return { id: s.id, V, m: Number((c * V / 1000 * M).toPrecision(3)), th: tire([20, 25]), mF: tire([62.4, 78.4, 85.3]), ion: tire(['cat', 'an']) };
+    },
+    build: epure((p, q) => {
+      const s = DM.selDe(p.id), M = DM.masseMolaire(s), I = s[p.ion];
+      const tokens = {
+        m: tok(`${nb(p.m)} g`, `Masse de ${s.nom} dissoute`, p.m, 'g'),
+        M: tok(`${nb(M, 1)} g/mol`, `Masse molaire du ${s.nom}`, M, 'g/mol'),
+        V: tok(`${nb(p.V, 1)} mL`, 'Volume de la fiole jaugée, donc volume de la solution', p.V / 1000, 'L'),
+        th: tok(`${p.th} °C`, 'Température du laboratoire', p.th, '°C'),
+        mF: tok(`${nb(p.mF, 1)} g`, 'Masse de la fiole jaugée vide', p.mF, 'g'),
+      };
+      const raisons = { th: 'La température ne change pas la quantité de matière de soluté dans ce modèle de solution idéale.', mF: 'La masse de la fiole vide ne sert pas : seule la masse de soluté dissous compte.' };
+      const c = p.m / M / (p.V / 1000);
+      const debut = ['On dissout ', T('m'), ' de ', s.nom, ' ', s.f, ' anhydre (solide ionique, de masse molaire ', T('M'), ') dans une fiole jaugée de ', T('V'), ', complétée jusqu’au trait de jauge. La fiole vide pèse ', T('mF'), ' et le laboratoire est à ', T('th'), '. '];
+      if (q === 0) return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = m / M', val: p.m / M, u: 'mol' }],
+        texte: [...debut, 'Quelle est la concentration en soluté apporté de la solution ?'],
+        utiles: ['m', 'M', 'V'], raisons,
+        cherche: { bonne: 'La concentration c en soluté apporté (en mol/L)', faux: ['La concentration en masse de la solution (en g/L)', 'La concentration effective d’un seul ion (en mol/L)', 'Le volume d’eau versé dans la fiole (en mL)'] },
+        manque: null, solution: { txt: 'c = n / V, avec n = m / M et V converti en litres', val: c, u: 'mol/L' } };
+      return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = m / M', val: p.m / M, u: 'mol' }, { id: 'c', nom: 'Concentration en soluté apporté', expr: 'c = n / V', val: c, u: 'mol/L' }],
+        texte: [...debut, 'Le solide est formé d’ions ', s.cat.s, ' et ', s.an.s, '. Quelle est la concentration effective en ions ', I.s, ' dans la solution ?'],
+        utiles: ['m', 'M', 'V'], raisons,
+        cherche: { bonne: `La concentration [${I.s}] de l’ion ${I.s} (en mol/L)`, faux: ['La concentration c en soluté apporté (en mol/L)', 'La quantité de matière de soluté dissous (en mol)', 'La concentration totale de tous les ions (en mol/L)'] },
+        manque: { bonne: 'Il manque la relation entre [ion] et c, à écrire avec l’équation de dissolution', faux: ['Il manque la solubilité du solide dans l’eau', 'Il manque la masse volumique de la solution', 'Il manque le volume de la solution'],
+          expl: `La masse, la masse molaire et le volume donnent c = n / V, mais la concentration effective de l’ion vaut [${I.s}] = coefficient × c : cette relation s’écrit avec l’équation de dissolution ${DM.equation(s)}, que l’énoncé ne donne pas (il donne seulement les ions). Le coefficient de ${I.s} est ${I.nu}.` },
+        solution: { txt: `[${I.s}] = ${I.nu} × c, avec c = n / V et n = m / M`, val: I.nu * c, u: 'mol/L' } };
     }),
   },
   // ───────────────────────────── Équilibre chimique (TG) : Qr, K, taux d'avancement final

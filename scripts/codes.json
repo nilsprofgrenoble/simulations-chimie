@@ -1265,5 +1265,19 @@
  "77:plausible:savon1g-val-lavage": "VAL312",
  "77:plausible:savon1g-val-carbones": "VAL313",
  "77:plausible:savon1g-val-masse": "VAL314",
- "36:savon1g-calcul": "REA78"
+ "36:savon1g-calcul": "REA78",
+ "34:diss1g-sapp-solution.0": "SAPP335",
+ "34:diss1g-sapp-solution.1": "SAPP336",
+ "37:prevoir:diss1g-ana-cl-double": "ANA542",
+ "37:prevoir:diss1g-ana-dilution-ions": "ANA543",
+ "37:prevoir:diss1g-ana-meme-masse": "ANA544",
+ "37:prevoir:diss1g-ana-sulfate-ions": "ANA545",
+ "77:plausible:diss1g-val-eau-ecrite": "VAL315",
+ "77:plausible:diss1g-val-charge-alcl3": "VAL316",
+ "77:plausible:diss1g-val-cl-mgcl2": "VAL317",
+ "77:plausible:diss1g-val-masse-nacl": "VAL318",
+ "77:plausible:diss1g-val-sulfate-sodium": "VAL319",
+ "77:plausible:diss1g-val-sulfate-casse": "VAL320",
+ "77:plausible:diss1g-val-conversion-ml": "VAL321",
+ "36:diss1g-calcul": "REA79"
 }

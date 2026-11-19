@@ -88,6 +88,7 @@ const SimulationConcentrationDilution = paresseux(() => import("./simulations/Co
 const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
 const SimulationGeometriePolarite = paresseux(() => import("./simulations/GeometriePolarite"), "SimulationGeometriePolarite");
 const SimulationSavonAmphiphile = paresseux(() => import("./simulations/SavonAmphiphile"), "SimulationSavonAmphiphile");
+const SimulationDissolutionIonique = paresseux(() => import("./simulations/DissolutionIonique"), "SimulationDissolutionIonique");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
 const SimulationPredominance = paresseux(() => import("./simulations/Predominance"), "SimulationPredominance");
@@ -352,6 +353,7 @@ const SIMULATIONS = [
   { id:154, label:"Schéma de Lewis : établir celui d’une molécule ou d’un ion", niveau:"1G", icon:"🧩", color:"#0f766e", component: SimulationLewis },
   { id:155, label:"Géométrie, électronégativité et polarité d’une entité", niveau:"1G", icon:"🧊", color:"#7c3aed", component: SimulationGeometriePolarite },
   { id:158, label:"Savons et amphiphilie : pourquoi un savon lave", niveau:"1G", icon:"🧼", color:"#0e7490", component: SimulationSavonAmphiphile },
+  { id:157, label:"Dissolution d’un solide ionique dans l’eau : équation et concentration des ions", niveau:"1G", icon:"🧂", color:"#0e7490", component: SimulationDissolutionIonique },
   { id:115, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
     component: SimulationLentilleMince },
   { id:150, label:"Ondes mécaniques : célérité et retard", niveau:"1G", icon:"🌊", color:"#0369a1",

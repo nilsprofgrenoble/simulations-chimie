@@ -9,6 +9,7 @@ import * as QM from "./quantiteMatiereModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
+import * as DM from "./dissolutionModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -1087,6 +1088,52 @@ function genConcentration1G() {
   [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Concentration en quantité de matière : concentration d’une solution préparée par dissolution, masse à peser, quantité de soluté dans un prélèvement, lien avec la concentration en masse, volume de solution mère et concentration de la fille dans une dilution.', questions: [q1, q2, q3, q4, q5, q6],
     retenir: ['c = n / V (V en litres) et n = c × V ; C_m = c × M (g/L) ; dissolution : m = c × V × M.', 'Dilution : la quantité de soluté se conserve, c_mère × V_mère = c_fille × V_fille ; F = c_mère / c_fille = V_fille / V_mère (F > 1, sans unité).', 'Volume précis : fiole jaugée pour le volume final, pipette jaugée pour le prélèvement ; on complète jusqu’au trait de jauge.'] };
+}
+
+// ───────────── Dissolution d'un solide ionique (1G) : équation, concentration en soluté apporté et concentration effective des ions ─────────────
+function genDissolutionIonique1G() {
+  const ionDe = s => { const k = tire(['cat', 'an']); return [s[k], k === 'cat' ? s.an : s.cat]; };
+  // q0 : équation de dissolution (sels dont les deux coefficients ne sont pas égaux à 1, pour que les propositions fausses soient distinctes)
+  const s0 = tire(DM.SELS.filter(x => x.cat.nu + x.an.nu > 2)), bonne0 = DM.equation(s0);
+  const f0 = [bonne0, `${s0.f}(s) + H₂O(l) → ${DM.coef(s0.cat.nu)}${s0.cat.s}(aq) + ${DM.coef(s0.an.nu)}${s0.an.s}(aq)`,
+    `${s0.f}(s) → ${s0.cat.s}(aq) + ${s0.an.s}(aq)`, `${s0.f}(s) → ${DM.coef(s0.an.nu)}${s0.cat.s}(aq) + ${DM.coef(s0.cat.nu)}${s0.an.s}(aq)`];
+  const opts0 = melange(f0);
+  const q0 = { id: 'd0', type: 'qcm', q: <>Le solide ionique {s0.nom} {s0.f} (anhydre) est formé d’ions {s0.cat.s} et {s0.an.s}. Quelle est l’équation de sa dissolution dans l’eau ?</>, options: opts0, bonne: opts0.indexOf(bonne0),
+    aide: 'À gauche le solide (s), à droite les ions (aq) avec un coefficient pour que la charge totale soit nulle ; l’eau, solvant, ne s’écrit pas.',
+    expl: <>Le solide est neutre : {DM.chargePlus(s0)} charge{DM.chargePlus(s0) > 1 ? 's' : ''} + et {DM.chargeMoins(s0)} charge{DM.chargeMoins(s0) > 1 ? 's' : ''} − par formule, donc {s0.cat.nu} ion{s0.cat.nu > 1 ? 's' : ''} {s0.cat.s} et {s0.an.nu} ion{s0.an.nu > 1 ? 's' : ''} {s0.an.s}. Équation : <b>{bonne0}</b> (l’eau n’est pas écrite).</> };
+  // q1 : concentration effective d'un ion à partir de c
+  const s1 = tire(DM.SELS), [I1] = ionDe(s1), c1 = tire([0.0100, 0.0200, 0.0500, 0.100, 0.200, 0.500]), v1 = I1.nu * c1;
+  const q1 = { id: 'd1', type: 'num', q: <>Une solution de {s1.nom} {s1.f} anhydre a une concentration en soluté apporté <b>c = {nb(c1, 3)}{NB}mol/L</b> (le solide est formé d’ions {s1.cat.s} et {s1.an.s}). Calculez la concentration effective en ions {I1.s}, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: v1, csMin: 3, tolRel: 0.01,
+    aide: 'Écrivez l’équation de dissolution : le coefficient de l’ion donne [ion] = coefficient × c.',
+    pieges: [[c1, 'C’est la concentration en soluté apporté c : il faut multiplier par le coefficient de l’ion dans l’équation.'], [c1 / I1.nu, 'On multiplie c par le coefficient, on ne divise pas.'], [c1 * (s1.cat.nu + s1.an.nu), 'Ce nombre compte tous les ions : on demande seulement l’ion ' + I1.s + '.'], [c1 * I1.q, 'La charge de l’ion n’intervient pas : seul compte son coefficient dans l’équation.']],
+    expl: <>{DM.equation(s1)} : coefficient de {I1.s} = {I1.nu}. [{I1.s}] = {I1.nu} × c = {I1.nu} × {nb(c1, 3)} = <b>{avecU(v1, 'mol/L', 3)}</b>.</> };
+  // q2 : concentration en soluté apporté à partir de la masse
+  const s2 = tire(DM.SELS), M2 = DM.masseMolaire(s2), V2 = tire([100, 250, 500]), c2t = tire([0.050, 0.100, 0.200, 0.500]), m2 = Number((c2t * V2 / 1000 * M2).toPrecision(3)), n2 = m2 / M2, c2 = n2 / (V2 / 1000);
+  const q2 = { id: 'd2', type: 'num', q: <>On dissout <b>{nb(m2, 3)}{NB}g</b> de {s2.nom} {s2.f} anhydre (M = {nb(M2, 1)}{NB}g/mol) dans une fiole jaugée de <b>{nb(V2, 4)}{NB}mL</b>, complétée jusqu’au trait de jauge. Calculez la concentration en soluté apporté c, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: c2, csMin: 3, tolRel: 0.01,
+    aide: 'n = m / M, puis c = n / V avec V en litres (1 L = 1000 mL).',
+    pieges: [[n2 / V2, 'Vous n’avez pas converti les mL en L : V = ' + nb(V2 / 1000, 3) + ' L.'], [m2 / (V2 / 1000), 'C’est la concentration en masse (en g/L) : pour c en mol/L, il faut diviser la masse par M.'], [n2, 'C’est la quantité de matière n (en mol) : il faut encore diviser par le volume.']],
+    expl: <>n = m / M = {nb(m2, 3)} / {nb(M2, 1)} = {nb(n2, 3)}{NB}mol ; V = {nb(V2 / 1000, 3)}{NB}L ; c = n / V = <b>{avecU(c2, 'mol/L', 3)}</b>.</> };
+  // q3 : concentration effective d'un ion à partir de la masse (trois calculs)
+  const s3 = tire(DM.SELS), M3 = DM.masseMolaire(s3), V3 = tire([100, 250, 500]), c3t = tire([0.050, 0.100, 0.200, 0.500]), m3 = Number((c3t * V3 / 1000 * M3).toPrecision(3)), [I3] = ionDe(s3), n3 = m3 / M3, c3 = n3 / (V3 / 1000), v3 = I3.nu * c3;
+  const q3 = { id: 'd3', type: 'num', q: <>On dissout <b>{nb(m3, 3)}{NB}g</b> de {s3.nom} {s3.f} anhydre (M = {nb(M3, 1)}{NB}g/mol, solide formé d’ions {s3.cat.s} et {s3.an.s}) dans une fiole jaugée de <b>{nb(V3, 4)}{NB}mL</b>, complétée jusqu’au trait de jauge. Calculez la concentration effective en ions {I3.s}, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: v3, csMin: 3, tolRel: 0.01,
+    aide: 'Trois calculs : n = m / M, c = n / V (V en litres), puis [ion] = coefficient × c.',
+    pieges: [[c3, 'C’est la concentration en soluté apporté c : il reste à multiplier par le coefficient de ' + I3.s + ' dans l’équation.'], [I3.nu * n3, 'C’est une quantité de matière (en mol) : il faut diviser par le volume en litres.'], [v3 / 1000, 'Vous n’avez pas converti les mL en L : V = ' + nb(V3 / 1000, 3) + ' L.']],
+    expl: <>n = m / M = {nb(n3, 3)}{NB}mol ; c = n / V = {nb(n3, 3)} / {nb(V3 / 1000, 3)} = {nb(c3, 3)}{NB}mol/L ; coefficient de {I3.s} = {I3.nu}, donc [{I3.s}] = <b>{avecU(v3, 'mol/L', 3)}</b>.</> };
+  // q4 : masse à peser pour obtenir une concentration effective donnée
+  const s4 = tire(DM.SELS), M4 = DM.masseMolaire(s4), V4 = tire([100, 250, 500]), [I4] = ionDe(s4), c4 = tire([0.050, 0.100, 0.200, 0.500]), cible4 = I4.nu * c4, m4 = c4 * (V4 / 1000) * M4;
+  const q4 = { id: 'd4', type: 'num', q: <>On veut préparer <b>{nb(V4, 4)}{NB}mL</b> de solution de {s4.nom} {s4.f} anhydre (M = {nb(M4, 1)}{NB}g/mol, solide formé d’ions {s4.cat.s} et {s4.an.s}) avec une concentration effective en ions {I4.s} égale à <b>{nb(cible4, 3)}{NB}mol/L</b>. Calculez la masse de solide à peser, en <b>g</b>.</>, unite: 'g', vrai: m4, csMin: 3, tolRel: 0.01,
+    aide: 'Remontez : c = [ion] / coefficient, puis n = c × V (V en litres) et m = n × M.',
+    pieges: [[cible4 * (V4 / 1000) * M4, 'Vous avez utilisé [' + I4.s + '] à la place de c : divisez-la par le coefficient de l’ion dans l’équation.'], [cible4 * I4.nu * (V4 / 1000) * M4, 'Il faut diviser par le coefficient de l’ion, pas multiplier : c = [ion] / coefficient.'], [m4 * 1000, 'Vous n’avez pas converti les mL en L : V = ' + nb(V4 / 1000, 3) + ' L.']],
+    expl: <>c = [{I4.s}] / {I4.nu} = {nb(cible4, 3)} / {I4.nu} = {nb(c4, 3)}{NB}mol/L ; n = c × V = {nb(c4, 3)} × {nb(V4 / 1000, 3)} = {nb(c4 * V4 / 1000, 3)}{NB}mol ; m = n × M = <b>{avecU(m4, 'g', 3)}</b>.</> };
+  // q5 : quantité d'ions dans un prélèvement
+  const s5 = tire(DM.SELS), [I5] = ionDe(s5), c5 = tire([0.050, 0.100, 0.200, 0.500]), V5 = tire([10.0, 20.0, 25.0, 50.0]), n5 = I5.nu * c5 * V5;   // mmol
+  const q5 = { id: 'd5', type: 'num', q: <>Une solution de {s5.nom} {s5.f} anhydre a une concentration en soluté apporté <b>c = {nb(c5, 3)}{NB}mol/L</b> (solide formé d’ions {s5.cat.s} et {s5.an.s}). On en prélève <b>{nb(V5, 3)}{NB}mL</b>. Calculez la quantité d’ions {I5.s} dans ce prélèvement, en <b>mmol</b>.</>, unite: 'mmol', vrai: n5, csMin: 3, tolRel: 0.01,
+    aide: 'D’abord [ion] = coefficient × c, puis n = [ion] × V ; mol/L × mL donne des mmol.',
+    pieges: [[c5 * V5, 'C’est la quantité de soluté apporté : il faut multiplier par le coefficient de ' + I5.s + ' dans l’équation.'], [n5 / 1000, 'Le résultat est demandé en mmol : mol/L × mL = mmol, sans conversion.'], [I5.nu * c5 / (V5 / 1000), 'On multiplie la concentration par le volume, on ne divise pas : n = [ion] × V.']],
+    expl: <>[{I5.s}] = {I5.nu} × {nb(c5, 3)} = {nb(I5.nu * c5, 3)}{NB}mol/L ; n = [{I5.s}] × V = {nb(I5.nu * c5, 3)} × {nb(V5, 3)} = <b>{avecU(n5, 'mmol', 3)}</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Dissolution d’un solide ionique : équation de dissolution, concentration en soluté apporté et concentration effective de chaque ion, masse à peser et quantité d’ions dans un prélèvement.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['Équation : solide (s) → ions (aq), charge conservée, l’eau ne s’écrit pas ; un ion polyatomique reste groupé.', 'Concentration effective : [ion] = coefficient × c, avec c = n / V et n = m / M (V en litres).', 'Pour la masse à peser : c = [ion] / coefficient, puis m = c × V × M.'] };
 }
 
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
@@ -2269,6 +2316,7 @@ export const FAMILLES = [
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
   { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
+  { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'geo1g-calcul', groupe: 'Formules', titre: 'Géométrie, électronégativité et polarité : écart Δχ, doublets, angle idéal, liaisons polarisées (1G)', gen: genGeoPolarite, domaine: 'Géométrie et polarité des entités' },

@@ -4513,6 +4513,35 @@ export const PREVOIR = [
       F('sa chaîne est polaire : les liaisons C–H y sont davantage polarisées', 'Les liaisons C–H restent apolaires : la chaîne est apolaire dans les deux entités, et c’est la tête qui change.'),
       F('il n’a pas de contre-ion Na⁺ : seul un sel de sodium peut vraiment laver', 'Le contre-ion ne lave pas : l’ion Na⁺ n’intervient pas dans l’action lavante, c’est la charge de la tête COO⁻ qui compte.'),
     ] },
+  // ───────────────────────────── Dissolution d'un solide ionique (1G) : équation et concentration des ions
+  { id: 'diss1g-ana-cl-double', domaine: 'Dissolution d’un solide ionique : équation et concentration des ions', titre: 'Même quantité de sel, deux sels différents',
+    enonce: 'On dissout 0,10 mol de chlorure de sodium NaCl dans de l’eau pour obtenir 1,0 L de solution (solution 1), et 0,10 mol de chlorure de calcium CaCl₂ pour obtenir aussi 1,0 L de solution (solution 2). Les équations de dissolution sont NaCl(s) → Na⁺(aq) + Cl⁻(aq) et CaCl₂(s) → Ca²⁺(aq) + 2 Cl⁻(aq).', q: 'La concentration effective en ions chlorure de la solution 2, par rapport à celle de la solution 1, est…', options: [
+      V('deux fois plus grande : chaque formule CaCl₂ libère deux ions Cl⁻ au lieu d’un', 'n(Cl⁻) = 2 × 0,10 = 0,20 mol dans 1,0 L pour la solution 2, contre 0,10 mol pour la solution 1 : [Cl⁻] = 0,20 mol/L contre 0,10 mol/L.'),
+      F('la même : les deux solutions contiennent 0,10 mol de soluté dans 1,0 L', 'La quantité de soluté est la même, mais [Cl⁻] dépend du coefficient de Cl⁻ dans l’équation : 2 pour CaCl₂, 1 pour NaCl.'),
+      F('deux fois plus petite : Ca²⁺ porte 2 charges, il faut donc moitié moins d’ions Cl⁻', 'Les 2 charges de Ca²⁺ sont compensées par 2 ions Cl⁻ : il y en a plus, pas moins. Seul compte le nombre d’ions Cl⁻ libérés par formule.'),
+      F('trois fois plus grande : la solution 2 contient trois ions par formule', 'Les trois ions (Ca²⁺ et 2 Cl⁻) existent bien, mais on demande seulement les ions chlorure : 2 par formule contre 1 pour NaCl, soit le double.'),
+    ] },
+  { id: 'diss1g-ana-dilution-ions', domaine: 'Dissolution d’un solide ionique : équation et concentration des ions', titre: 'Rapport des concentrations des ions du chlorure de magnésium',
+    enonce: 'Une solution de chlorure de magnésium MgCl₂ est préparée par dissolution du solide dans l’eau, quelle que soit sa concentration c en soluté apporté. L’équation de dissolution est MgCl₂(s) → Mg²⁺(aq) + 2 Cl⁻(aq).', q: 'Dans cette solution, le rapport [Cl⁻] / [Mg²⁺] est…', options: [
+      V('égal à 2 : chaque formule libère 2 ions Cl⁻ pour 1 ion Mg²⁺', 'Les coefficients de l’équation donnent [Mg²⁺] = c et [Cl⁻] = 2c : le rapport vaut 2, quelle que soit c.'),
+      F('égal à 1 : le cristal est neutre, donc il y a autant d’ions de chaque sorte', 'La neutralité impose l’égalité des charges, pas des nombres d’ions : 1 ion Mg²⁺ (2 charges +) est compensé par 2 ions Cl⁻.'),
+      F('égal à 1/2 : l’ion Mg²⁺ porte 2 charges, il y en a donc deux fois plus que de Cl⁻', 'La charge d’un ion n’intervient pas dans sa concentration : seul compte son coefficient dans l’équation. Il y a deux fois plus d’ions Cl⁻ que d’ions Mg²⁺.'),
+      F('égal à 3 : la solution contient 3 ions par formule dissoute', 'Les 3 ions (1 Mg²⁺ et 2 Cl⁻) existent bien par formule, mais le rapport demandé compare Cl⁻ à Mg²⁺ : 2 pour 1.'),
+    ] },
+  { id: 'diss1g-ana-meme-masse', domaine: 'Dissolution d’un solide ionique : équation et concentration des ions', titre: 'Même masse de deux chlorures',
+    enonce: 'On dissout 5,0 g de chlorure de sodium NaCl (M = 58,5 g/mol) dans une fiole jaugée de 250 mL, et 5,0 g de chlorure de potassium KCl (M = 74,6 g/mol) dans une autre fiole jaugée de 250 mL. Chaque formule libère un seul ion chlorure Cl⁻.', q: 'La solution qui contient la plus grande concentration en ions chlorure est celle de…', options: [
+      V('chlorure de sodium : sa masse molaire est plus faible', 'n = m / M : à masse égale, la plus petite masse molaire donne la plus grande quantité de matière. [Cl⁻] = c : environ 0,34 mol/L pour NaCl contre 0,27 mol/L pour KCl.'),
+      F('chlorure de potassium : sa masse molaire est plus grande, donc il apporte plus d’ions', 'Pour une même masse, une masse molaire plus grande donne moins de moles : n = m / M diminue quand M augmente.'),
+      F('la même : un seul ion Cl⁻ par formule dans les deux cas, donc même concentration', 'Le nombre d’ions Cl⁻ par formule est le même, mais pas le nombre de formules dissoutes : n = m / M dépend de la masse molaire du sel.'),
+      F('chlorure de potassium : son cation K⁺, plus gros, rend la solution plus concentrée en ions', 'La taille du cation n’intervient pas dans la concentration en Cl⁻ : [Cl⁻] = c = m / (M × V), seule la masse molaire du sel compte ici.'),
+    ] },
+  { id: 'diss1g-ana-sulfate-ions', domaine: 'Dissolution d’un solide ionique : équation et concentration des ions', titre: 'Ions sodium et ions sulfate',
+    enonce: 'Une solution de sulfate de sodium Na₂SO₄ est préparée à la concentration c en soluté apporté. L’équation de dissolution est Na₂SO₄(s) → 2 Na⁺(aq) + SO₄²⁻(aq).', q: 'Dans cette solution, la concentration effective en ions sodium est…', options: [
+      V('le double de celle des ions sulfate : il y a 2 ions Na⁺ pour 1 ion SO₄²⁻', 'Les coefficients de l’équation donnent [Na⁺] = 2c et [SO₄²⁻] = c.'),
+      F('égale à celle des ions sulfate : le cristal est neutre, donc il y a autant d’ions de chaque sorte', 'La neutralité impose l’égalité des charges, pas des nombres d’ions : 2 ions Na⁺ (2 charges +) compensent 1 ion SO₄²⁻ (2 charges −).'),
+      F('la moitié de celle des ions sulfate : l’ion sulfate porte deux charges', 'La charge d’un ion n’intervient pas dans sa concentration : seul compte le nombre d’ions par formule, 2 Na⁺ pour 1 SO₄²⁻.'),
+      F('égale à c divisée par 3 : les trois ions se partagent la quantité c', 'Chaque formule dissoute libère 2 Na⁺ et 1 SO₄²⁻ : les ions ne se partagent pas c, ils en sont des multiples : [Na⁺] = 2c.'),
+    ] },
   // ───────────────────────────── Géométrie, électronégativité et polarité (1G)
   { id: 'geo1g-ana-ccl4', domaine: 'Géométrie et polarité des entités', titre: 'Liaisons polarisées, molécule apolaire',
     enonce: 'Dans la molécule de tétrachlorométhane CCl₄, quatre liaisons C–Cl identiques sont réparties autour de l’atome de carbone dans une géométrie tétraédrique. Chaque liaison C–Cl est polarisée (Δχ = 0,5 > 0,4).', q: 'La molécule CCl₄ est…', options: [
