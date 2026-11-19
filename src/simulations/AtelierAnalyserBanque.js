@@ -4578,6 +4578,34 @@ export const PREVOIR = [
       V('CO₂ est linéaire : les deux liaisons se compensent', 'G⁺ et G⁻ sont confondus pour CO₂ (linéaire) ; pour H₂O (coudée), ils sont distincts : la molécule est polaire.'),
       F('l’oxygène est plus électronégatif dans H₂O que dans CO₂', 'L’oxygène a la même électronégativité (3,5) dans les deux molécules : ce n’est pas elle qui distingue les deux cas, c’est la géométrie.'),
     ] },
+  { id: 'redox1g-fe2-deux-roles', domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction', titre: 'L’ion Fe²⁺ dans la réaction du fer avec Fe³⁺',
+    enonce: 'Le fer solide réagit avec les ions Fe³⁺ selon Fe + 2 Fe³⁺ → 3 Fe²⁺. L’ion Fe²⁺ appartient à deux couples : Fe³⁺/Fe²⁺ (Fe³⁺ + e⁻ = Fe²⁺) et Fe²⁺/Fe (Fe²⁺ + 2 e⁻ = Fe).', q: 'Quel rôle joue l’ion Fe²⁺ au sein de chacun de ces deux couples ?', options: [
+      V('réducteur dans le couple Fe³⁺/Fe²⁺, oxydant dans le couple Fe²⁺/Fe', 'Dans Fe³⁺ + e⁻ = Fe²⁺, Fe²⁺ est du côté du réducteur ; dans Fe²⁺ + 2 e⁻ = Fe, il est du côté de l’oxydant : un même ion peut jouer les deux rôles selon le couple.'),
+      F('oxydant dans le couple Fe³⁺/Fe²⁺, réducteur dans le couple Fe²⁺/Fe', 'Les rôles sont inversés : l’oxydant est l’espèce qui capte des électrons, donc celle qui s’écrit à gauche du signe égal avec les électrons. Dans le premier couple, c’est Fe³⁺.'),
+      F('réducteur dans les deux couples, car il possède des électrons de plus que Fe³⁺', 'Le rôle dépend de la place dans chaque couple : dans Fe²⁺/Fe, Fe²⁺ est l’espèce qui capte des électrons pour devenir Fe, donc l’oxydant.'),
+      F('oxydant dans les deux couples, car c’est le produit de la réaction', 'Être un produit ne dit rien du rôle : dans Fe³⁺/Fe²⁺, Fe²⁺ est le réducteur du couple (il peut céder un électron pour redevenir Fe³⁺).'),
+    ] },
+  { id: 'redox1g-al-cu-proportions', domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction', titre: 'L’aluminium et les ions cuivre(II)',
+    enonce: 'Un atome d’aluminium cède 3 électrons (Al = Al³⁺ + 3 e⁻) et un ion Cu²⁺ en capte 2 (Cu²⁺ + 2 e⁻ = Cu). On fait réagir de l’aluminium avec des ions Cu²⁺, sans écrire l’équation.', q: 'Dans quelles proportions les atomes Al et les ions Cu²⁺ réagissent-ils ?', options: [
+      V('2 atomes Al pour 3 ions Cu²⁺', '2 × 3 = 6 électrons cédés par l’aluminium et 3 × 2 = 6 captés par le cuivre : les électrons s’annulent. L’équation est 2 Al + 3 Cu²⁺ → 2 Al³⁺ + 3 Cu.'),
+      F('3 atomes Al pour 2 ions Cu²⁺', 'Il faut croiser : ce sont les nombres d’électrons qui s’échangent. 3 Al céderaient 9 électrons, alors que 2 Cu²⁺ n’en captent que 4.'),
+      F('1 atome Al pour 1 ion Cu²⁺', '1 Al cède 3 électrons mais 1 Cu²⁺ n’en capte que 2 : les électrons ne s’annuleraient pas.'),
+      F('3 atomes Al pour 3 ions Cu²⁺', '3 Al cèdent 9 électrons, 3 Cu²⁺ en captent 6 : il resterait 3 électrons non captés.'),
+    ] },
+  { id: 'redox1g-demi-fausse', domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction', titre: 'Quelle demi-équation est incorrecte ?',
+    enonce: 'Quatre élèves ont écrit une demi-équation. On vérifie, pour chacune, que les éléments et la charge sont conservés (un électron porte la charge −1).', q: 'Laquelle est incorrecte ?', options: [
+      V('Fe³⁺ + 2 e⁻ = Fe²⁺', 'Fe³⁺ n’a besoin que d’un électron pour devenir Fe²⁺ : la demi-équation correcte est Fe³⁺ + e⁻ = Fe²⁺ (charge +2 de chaque côté).'),
+      F('Zn²⁺ + 2 e⁻ = Zn', 'Cette demi-équation est correcte : +2 − 2 = 0 à gauche, et l’atome Zn est neutre à droite.'),
+      F('Ag⁺ + e⁻ = Ag', 'Cette demi-équation est correcte : +1 − 1 = 0 à gauche, et l’atome Ag est neutre à droite.'),
+      F('Al³⁺ + 3 e⁻ = Al', 'Cette demi-équation est correcte : +3 − 3 = 0 à gauche, et l’atome Al est neutre à droite.'),
+    ] },
+  { id: 'redox1g-acide-h-plus', domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction', titre: 'Pourquoi des ions H⁺ dans une demi-équation ?',
+    enonce: 'En milieu acide, la demi-équation du couple MnO₄⁻/Mn²⁺ s’écrit MnO₄⁻ + 8 H⁺ + 5 e⁻ = Mn²⁺ + 4 H₂O. L’ion MnO₄⁻ contient de l’oxygène mais pas d’hydrogène.', q: 'D’où viennent les 8 ions H⁺ écrits à gauche ?', options: [
+      V('de la solution acide : ils apportent l’hydrogène des 4 H₂O formées', 'Les 4 atomes d’oxygène de MnO₄⁻ se retrouvent dans 4 H₂O, qui contiennent 8 atomes d’hydrogène : ils viennent des ions H⁺ de la solution acide.'),
+      F('des molécules d’eau formées : elles libèrent leurs H⁺ à gauche', 'Les molécules d’eau sont des produits (à droite) : elles ne peuvent pas fournir de réactifs. Au contraire, leur hydrogène a besoin d’être apporté par des ions H⁺.'),
+      F('des 5 électrons : chaque électron s’associe à des ions H⁺ pour former de l’eau', 'Un électron n’est pas un atome d’hydrogène et n’en contient pas : les ions H⁺ servent à conserver l’élément H, pas à transporter les électrons.'),
+      F('ils sont ajoutés pour équilibrer les charges, comme les électrons', 'Les charges s’équilibrent avec les électrons, en dernier. Les H⁺ servent d’abord à conserver l’élément hydrogène des molécules d’eau formées.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

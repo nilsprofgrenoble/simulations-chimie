@@ -68,6 +68,7 @@ export const EXOS_DE_SIM = {
   152: [/(^|\.)mol1g-qte-/, /plausible\.mol1g-qte-/],
   153: [/(^|\.)mol1g-conc-/, /plausible\.mol1g-conc-/],
   154: [/(^|\.)lewis1g-/, /plausible\.lewis1g-/],                                                              // Schéma de Lewis : établir celui d’une molécule ou d’un ion
+  156: [/(^|\.)redox1g-/, /plausible\.redox1g-/],                                                                    // Oxydo-réduction : couples, demi-équations et équation de réaction
   155: [/(^|\.)geo1g-/, /plausible\.geo1g-/],
   158: [/(^|\.)savon1g-/, /plausible\.savon1g-/],                                                              // Savons et amphiphilie : pourquoi un savon lave
   157: [/(^|\.)diss1g-/, /plausible\.diss1g-/],                                                              // Dissolution d’un solide ionique : équation et concentration des ions
