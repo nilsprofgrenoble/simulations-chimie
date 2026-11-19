@@ -4,6 +4,8 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
   BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import * as O from "./organiqueModele";
+import { puces } from "./Travail";
+import { FQuatre, FPrefixes, FRamifie, FAnatomie, FFamilles, FSuffixes, FNumero, FLire } from "./NomenclatureSchemas";
 
 const SIM_ID = 102;
 declarerDefis(SIM_ID, [['nom', 'Nommer une molécule'], ['formule', 'Retrouver la formule à partir du nom'], ['groupe', 'Groupe caractéristique et famille'], ['brute', 'Écrire la formule brute']]);
@@ -138,7 +140,11 @@ export function SimulationNomenclatureOrganique() {
   const [mode, setMode] = useState(() => modeOuverture('nomenclature-organique-guide-v1'));
   useSignalerMode(mode);
   const [sNom, noterNom] = useCompteurDefi(), [sFormule, noterFormule] = useCompteurDefi(), [sGroupe, noterGroupe] = useCompteurDefi(), [sBrute, noterBrute] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('nomenclature-organique-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('nomenclature-organique-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('nomenclature-organique-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('nomenclature-organique-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 1 ? g1 : g2, setGuide = parc === 1 ? setG1 : setG2;
   const [consBrut, setConsBrut] = useState({ ...DEPART, cle: null });
   const [defi, setDefi] = useState(null);
   const [typeDefi, setTypeDefi] = useState('nom');
@@ -178,7 +184,7 @@ export function SimulationNomenclatureOrganique() {
   };
   const construire = (nomCible, label) => ({ type: 'action', ok: nomCons === nomCible, label: 'Construire pour moi', consigne: label || `Construisez : ${nomCible}`,
     faire: () => setCons(c => ({ ...etatDepuisMol(R(nomCible)), vue: c.vue })) });
-  const ETAPES = [
+  const TOUTES = [
     { id: 'regle', titre: 'Chaque carbone fait 4 liaisons', focus: ['scene'], scene: [{ m: R('propane'), masqueH: true }],
       texte: <>Voici le squelette du propane : trois atomes de carbone liés entre eux. Les atomes d’hydrogène ne sont pas écrits, mais ils sont là. <strong>Règle à retenir : un atome de carbone établit toujours 4 liaisons.</strong></>,
       tache: { type: 'num', q: 'Combien d’atomes d’hydrogène porte un carbone situé à une extrémité de la chaîne ?', unite: '', vrai: 3, tol: 0, affiche: v => String(v),
@@ -186,6 +192,8 @@ export function SimulationNomenclatureOrganique() {
         pieges: [[4, 'Les 4 liaisons comptent aussi la liaison avec le carbone voisin : il n’en reste que 3 pour les hydrogènes.'], [2, 'Vous avez compté le carbone du milieu (2 voisins C, donc 2 H) : on demande un carbone d’extrémité (1 seul voisin C).']],
         expl: 'Un carbone d’extrémité porte 3 H (CH₃) ; celui du milieu, lié à 2 carbones, en porte 2 (CH₂).', indice: 'Au total 4 liaisons, dont 1 avec le carbone voisin.' } },
     { id: 'brute', titre: 'La formule brute', focus: ['scene'], scene: [{ m: R('éthanol') }],
+      retenirTitre: 'À RETENIR : 4 LIAISONS PAR CARBONE',
+      retenir: <><FQuatre/>{puces(<>Un carbone établit <strong>toujours 4 liaisons</strong> : le nombre de H qu’il porte est <strong>4 − le nombre de carbones voisins</strong>.</>, <>La formule <strong>brute</strong> donne seulement le nombre d’atomes (C₄H₁₀) ; la formule <strong>semi-développée</strong> montre aussi leur enchaînement.</>)}</>,
       texte: <>Dans la <strong>formule semi-développée</strong>, on écrit les liaisons entre les atomes C, O… mais pas les liaisons C–H : les H sont regroupés sur chaque atome (CH₃, CH₂, OH). La <strong>formule brute</strong> donne seulement le nombre d’atomes de chaque élément, par exemple CO₂ pour le dioxyde de carbone.</>,
       tache: { type: 'qcm', q: 'Quelle est la formule brute de cette molécule ?', options: ['C₂H₆O', 'C₂H₅O', 'C₃H₆O', 'C₂H₆'], bonne: 0, indice: 'Comptez séparément les C, les H (3 + 2 + 1…) et les O.',
         expl: '2 atomes de C, 3 + 2 + 1 = 6 atomes de H et 1 atome de O : C₂H₆O.' } },
@@ -204,11 +212,13 @@ export function SimulationNomenclatureOrganique() {
       tache: { type: 'qcm', q: 'Laquelle de ces molécules n’est pas un alcane ?', options: ['B', 'A', 'C'], bonne: 0, indice: 'Un alcane ne contient que des atomes C et H.',
         expl: 'B contient un atome d’oxygène : ce n’est pas un hydrocarbure, donc pas un alcane. A et C ne contiennent que C et H, avec des liaisons simples.' } },
     { id: 'prefixes', titre: 'Nommer un alcane linéaire', focus: ['scene'], scene: [{ m: R('pentane') }],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>nombre de C : 1 → <strong>méth</strong> ; 2 → <strong>éth</strong> ; 3 → <strong>prop</strong> ; 4 → <strong>but</strong> ; 5 → <strong>pent</strong> ; 6 → <strong>hex</strong></li><li>nom = préfixe + <strong>ane</strong></li></ul>,
-      texte: <>Le nom d’un alcane linéaire s’obtient en accolant un <strong>préfixe</strong>, qui dépend du nombre d’atomes de carbone, et la terminaison <strong>« ane »</strong>.</>,
-      tache: { type: 'qcm', q: 'Quel est le nom de cet alcane ?', options: ['pentane', 'butane', 'hexane'], bonne: 0, indice: 'Comptez les atomes de carbone puis utilisez le tableau « À retenir ».',
+
+      texte: <>Le nom d’un alcane linéaire s’obtient en accolant un <strong>préfixe</strong>, qui dépend du nombre d’atomes de carbone, et la terminaison <strong>« ane »</strong>. Préfixes : 1 C <strong>méth</strong>, 2 C <strong>éth</strong>, 3 C <strong>prop</strong>, 4 C <strong>but</strong>, 5 C <strong>pent</strong>, 6 C <strong>hex</strong>.</>,
+      tache: { type: 'qcm', q: 'Quel est le nom de cet alcane ?', options: ['pentane', 'butane', 'hexane'], bonne: 0, indice: 'Comptez les atomes de carbone, puis cherchez le préfixe dans la liste de l’énoncé.',
         expl: '5 atomes de carbone : préfixe « pent », terminaison « ane » : pentane.' } },
     { id: 'principale', titre: 'Alcane ramifié : la chaîne principale', focus: ['scene'], scene: [{ m: R('3-méthylhexane'), flip: true }],
+      retenirTitre: 'À RETENIR : PRÉFIXES DES ALCANES',
+      retenir: <><FPrefixes/>{puces(<>Un alcane linéaire se nomme <strong>préfixe + ane</strong>, le préfixe donnant le nombre de carbones.</>, <>À savoir par cœur : <strong>méth · éth · prop · but</strong> (1 à 4 C), puis <strong>pent · hex</strong> (5 et 6 C).</>)}</>,
       texte: <>Pour nommer un alcane ramifié, on procède par étapes. <strong>Étape 1 : repérer la chaîne principale</strong>, c’est-à-dire la plus longue chaîne de carbones. Les carbones qui n’en font pas partie forment des <strong>ramifications</strong> (substituants).</>,
       tache: { type: 'num', q: 'Combien d’atomes de carbone compte la chaîne principale ?', unite: '', vrai: 6, tol: 0, affiche: v => String(v),
         calcul: () => ['La chaîne principale est la plus longue chaîne de carbones : ici la ligne horizontale, soit 6 carbones.', 'Le carbone situé en dehors de la ligne horizontale est une ramification (un substituant), pas un maillon de la chaîne principale.'],
@@ -221,7 +231,7 @@ export function SimulationNomenclatureOrganique() {
         pieges: [[4, 'C’est le numéro obtenu de gauche à droite. L’autre sens donne un numéro plus petit : c’est lui qu’il faut choisir.']],
         expl: 'On numérote de droite à gauche : la ramification est portée par le carbone n° 2.', indice: 'Lisez le numéro sous la ramification pour chacun des deux sens.' } },
     { id: 'substituant', titre: 'Nommer la ramification', focus: ['scene'], scene: [{ m: R('3-éthylhexane'), chaine: true, surligner: 'sub' }],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>–CH₃ : <strong>méthyl</strong>e</li><li>–CH₂–CH₃ : <strong>éthyl</strong>e</li></ul>,
+
       texte: <><strong>Étape 3 : nommer chaque ramification.</strong> La chaîne principale est surlignée en jaune ; la ramification est entourée en bleu. Une ramification s’appelle un <strong>substituant</strong> : on lui donne le nom de l’alcane correspondant, avec la terminaison « yl ».</>,
       tache: { type: 'qcm', q: 'Comment s’appelle ce substituant (formé de 2 atomes de carbone) ?', options: ['éthyle', 'méthyle', 'propyle'], bonne: 0, indice: 'Il compte 2 carbones : préfixe « éth », terminaison « yl ».',
         expl: 'Un substituant de 2 carbones, –CH₂–CH₃, s’appelle éthyle.' } },
@@ -229,12 +239,18 @@ export function SimulationNomenclatureOrganique() {
       texte: <><strong>Étape 4 : assembler.</strong> Le nom s’écrit : numéro du substituant, tiret, nom du substituant (sans le « e » final), puis nom de l’alcane de la chaîne principale. Ici la chaîne principale compte 6 carbones et la ramification est un méthyle.</>,
       tache: qcmNom(R('3-méthylhexane'), 'Numéro du carbone qui porte le méthyle (plus petit possible), puis « méthyl », puis le nom de l’alcane à 6 carbones.', /numérot/) },
     { id: 'di', titre: 'Deux substituants identiques', focus: ['scene'], scene: [{ m: R('2,3-diméthylbutane'), chaine: true }],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>deux substituants identiques : préfixe <strong>di</strong> (trois : <strong>tri</strong>)</li><li>une <strong>virgule</strong> entre deux numéros, un <strong>tiret</strong> entre un numéro et une lettre</li></ul>,
+      retenirTitre: 'À RETENIR : NOMMER UN ALCANE RAMIFIÉ',
+      retenir: <><FRamifie/>{puces(<>Quatre temps : <strong>chaîne la plus longue</strong>, <strong>plus petits numéros</strong>, <strong>nom des ramifications</strong> (méthyle : 1 C, éthyle : 2 C), <strong>assemblage</strong>.</>, <>Le nom d’un substituant vient de l’alcane correspondant : <strong>méthane → méthyle</strong>.</>)}</>,
+
       texte: <>Quand plusieurs substituants sont <strong>identiques</strong>, on écrit leurs numéros séparés par des virgules et on ajoute le préfixe <strong>di</strong> (deux) devant le nom du substituant. Ici, la chaîne principale compte 4 carbones et porte deux méthyles.</>,
       tache: qcmNom(R('2,3-diméthylbutane'), 'Deux méthyles : « diméthyl », avec les deux numéros séparés par une virgule.', /di/) },
     { id: 'alpha', titre: 'Deux substituants différents', focus: ['scene'], scene: [{ m: R('3-éthyl-2-méthylpentane'), flip: true, chaine: true }],
       texte: <><strong>Étape 5.</strong> Quand les substituants sont différents, on les cite dans l’<strong>ordre alphabétique</strong> (éthyl avant méthyl). Les lettres sont accolées ; un tiret sépare une lettre d’un numéro, une virgule sépare deux numéros.</>,
       tache: qcmNom(R('3-éthyl-2-méthylpentane'), 'Numérotez pour avoir les plus petits numéros, puis citez éthyl avant méthyl (ordre alphabétique).', /alphab/) },
+    { id: 'bilan1', titre: 'Le bilan', focus: [], scene: [{ m: R('3-éthyl-2-méthylpentane'), flip: true, chaine: true }],
+      retenirTitre: 'À RETENIR : LIRE UN NOM D’ALCANE',
+      retenir: <><FAnatomie/>{puces(<>Deux substituants <strong>identiques</strong> : préfixe <strong>di</strong> (trois : <strong>tri</strong>) et les numéros séparés par une <strong>virgule</strong>.</>, <>Un <strong>tiret</strong> sépare un numéro d’une lettre ; deux substituants <strong>différents</strong> se citent dans l’<strong>ordre alphabétique</strong>.</>)}</>,
+      texte: <>Vous savez nommer un alcane linéaire ou ramifié, avec un ou plusieurs substituants. Le parcours 2 ajoute les <strong>groupes caractéristiques</strong> (alcool, aldéhyde, cétone, acide) et le passage du nom à la formule. Explorez librement, ou essayez les défis.</>, tache: null },
     { id: 'hydroxyle', titre: 'Le groupe hydroxyle : les alcools', focus: ['scene'], scene: [{ m: R('éthanol'), surligner: 'groupe', legende: 'A' }, { m: R('propan-2-ol'), flip: true, surligner: 'groupe', legende: 'B' }],
       texte: <>Certains atomes ou groupes d’atomes, appelés <strong>groupes caractéristiques</strong>, donnent aux molécules qui les portent des propriétés chimiques semblables. Dans A et B, le groupe entouré est un groupe <strong>–OH</strong> lié à un carbone saturé : le <strong>groupe hydroxyle</strong>. Ces composés sont des <strong>alcools</strong>.</>,
       tache: { type: 'qcm', q: 'Quel est le groupe caractéristique des alcools ?', options: ['le groupe hydroxyle –OH', 'le groupe carbonyle C=O', 'le groupe carboxyle –COOH'], bonne: 0, indice: 'Regardez ce qui est entouré en bleu dans A et B.',
@@ -255,7 +271,9 @@ export function SimulationNomenclatureOrganique() {
       tache: { type: 'qcm', q: 'Laquelle est une cétone ?', options: ['C', 'A', 'B', 'D'], bonne: 0, indice: 'Cherchez un C=O au milieu de la chaîne, lié à deux carbones.',
         expl: 'C est une cétone : son groupe C=O est au milieu de la chaîne, lié à deux carbones. A est un alcool, B un aldéhyde, D un acide carboxylique.' } },
     { id: 'num-alcool', titre: 'Nommer un alcool : le numéro', focus: ['scene'], scene: [{ m: R('butan-2-ol'), flip: true, chaine: true, surligner: 'groupe', numeros: ['g', 'd'] }],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>alcool : <strong>ol</strong> · aldéhyde : <strong>al</strong> · cétone : <strong>one</strong> · acide carboxylique : <strong>oïque</strong></li><li>nom = alcane de même nombre de C (sans le « e ») + <strong>–numéro–</strong> + suffixe</li></ul>,
+      retenirTitre: 'À RETENIR : LES FAMILLES',
+      retenir: <><FFamilles/>{puces(<>Le groupe <strong>–OH</strong> (hydroxyle) fait un <strong>alcool</strong> ; le groupe <strong>–COOH</strong> (carboxyle) fait un <strong>acide carboxylique</strong>.</>, <>Le groupe <strong>carbonyle C=O</strong> : en <strong>bout de chaîne</strong> (lié à un H), un <strong>aldéhyde</strong> ; <strong>au milieu</strong> (lié à deux C), une <strong>cétone</strong>.</>)}</>,
+
       texte: <>Avec un groupe caractéristique : <strong>1.</strong> la chaîne principale est la plus longue chaîne <em>qui porte le groupe</em> ; <strong>2.</strong> on la numérote pour que <strong>le groupe</strong> ait le plus petit numéro possible ; <strong>3.</strong> le nom est celui de l’alcane (sans le « e » final), le numéro du groupe entre deux tirets, puis le suffixe (« ol » pour un alcool).</>,
       tache: { type: 'num', q: 'Quel est le plus petit numéro possible pour le carbone qui porte le groupe –OH ?', unite: '', vrai: 2, tol: 0, affiche: v => String(v),
         calcul: () => ['De gauche à droite (bleu), le groupe –OH est sur le carbone n° 3.', 'De droite à gauche (orange), il est sur le carbone n° 2.', 'Le groupe doit avoir le plus petit numéro : 2.'],
@@ -265,13 +283,17 @@ export function SimulationNomenclatureOrganique() {
       texte: <>Vous avez la chaîne principale (4 carbones : but-) et le numéro du groupe –OH. Il reste à assembler le nom avec le suffixe « ol ».</>,
       tache: qcmNom(R('butan-2-ol'), 'but + an + –2– + ol : le « e » de « butane » disparaît devant le suffixe.', /numérot/) },
     { id: 'nom-aldehyde', titre: 'Nommer un aldéhyde', focus: ['scene'], scene: [{ m: R('pentanal'), surligner: 'groupe' }],
+      retenirTitre: 'À RETENIR : LES SUFFIXES',
+      retenir: <><FSuffixes/>{puces(<>Chaque famille a son suffixe : <strong>ol</strong> (alcool), <strong>al</strong> (aldéhyde), <strong>one</strong> (cétone), <strong>oïque</strong> (acide, précédé du mot « acide »).</>, <>Le nom s’écrit : <strong>alcane sans son « e »</strong> + suffixe, avec le numéro du groupe entre deux tirets quand il faut le préciser.</>)}</>,
       texte: <>Le groupe carbonyle d’un aldéhyde est toujours en bout de chaîne : c’est le carbone n° 1, <strong>pas besoin de numéro</strong>. Suffixe : « al ».</>,
       tache: qcmNom(R('pentanal'), 'Chaîne de 5 carbones (pent) + an + al.') },
     { id: 'nom-cetone', titre: 'Nommer une cétone', focus: ['scene'], scene: [{ m: R('pentan-2-one'), flip: true, chaine: true, surligner: 'groupe', numeros: ['g', 'd'] }],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>propanone et butanone : un seul emplacement possible pour le C=O, donc <strong>pas de numéro</strong></li></ul>,
-      texte: <>Pour une cétone, on numérote la chaîne pour que le carbone du groupe C=O ait le plus petit numéro, puis on utilise le suffixe « one ». Le numéro est écrit entre deux tirets.</>,
+
+      texte: <>Pour une cétone, on numérote la chaîne pour que le carbone du groupe C=O ait le plus petit numéro, puis on utilise le suffixe « one ». Le numéro est écrit entre deux tirets. Pour la propanone et la butanone, le C=O n’a qu’un seul emplacement possible : pas de numéro.</>,
       tache: qcmNom(R('pentan-2-one'), 'Chaîne de 5 carbones, C=O sur le carbone n° 2 (plus petit numéro possible), suffixe « one ».', /numérot/) },
     { id: 'nom-acide', titre: 'Nommer un acide carboxylique', focus: ['scene'], scene: [{ m: R('acide propanoïque'), flip: true, surligner: 'groupe' }],
+      retenirTitre: 'À RETENIR : OÙ PLACER LE NUMÉRO',
+      retenir: <><FNumero/>{puces(<>Alcool et cétone : on numérote la chaîne pour que <strong>le groupe porte le plus petit numéro</strong>.</>, <>Aldéhyde et acide : le groupe est en bout de chaîne, <strong>carbone n° 1</strong> : <strong>aucun numéro</strong> à écrire.</>)}</>,
       texte: <>Le groupe carboxyle est lui aussi en bout de chaîne (carbone n° 1, pas de numéro). Le nom commence par le mot <strong>« acide »</strong> et le suffixe est <strong>« oïque »</strong>.</>,
       tache: qcmNom(R('acide propanoïque'), 'acide + nom de l’alcane de 3 carbones (sans le « e ») + oïque.') },
     { id: 'construire1', titre: 'Du nom à la formule (1/4)', focus: ['reglages', 'scene'], scene: 'cons', ctrl: ['n', 'groupe'], fiche: ['nom'], depart: DEPART,
@@ -286,14 +308,14 @@ export function SimulationNomenclatureOrganique() {
     { id: 'construire4', titre: 'Du nom à la formule (4/4)', focus: ['reglages', 'scene'], scene: 'cons', ctrl: ['n', 'groupe', 'pos', 'sub'], fiche: ['nom'], depart: DEPART,
       texte: <>Dernier défi de construction, avec deux substituants différents : 3-éthyl-2-méthylpentane. Lisez le nom de gauche à droite : chaîne de 5 carbones (pentane), un méthyle sur le carbone 2 et un éthyle sur le carbone 3.</>,
       tache: construire('3-éthyl-2-méthylpentane', 'Construisez le 3-éthyl-2-méthylpentane') },
-    { id: 'bravo', titre: 'Bravo !', focus: [], scene: [{ m: R('acide éthanoïque'), surligner: 'groupe' }],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.8 }}>
-        <li>un carbone fait <strong>4 liaisons</strong> ; la formule semi-développée montre l’enchaînement des atomes, la formule brute seulement leur nombre</li>
-        <li>alcane : hydrocarbure à chaîne saturée non cyclique ; nom = préfixe (méth, éth, prop, but, pent, hex) + <strong>ane</strong></li>
-        <li>ramifié : chaîne principale la plus longue, numéros les plus petits, substituants (méthyl, éthyl) par ordre alphabétique, di/tri si identiques</li>
-        <li>hydroxyle –OH : alcool (<strong>ol</strong>) · carbonyle C=O : aldéhyde (<strong>al</strong>) ou cétone (<strong>one</strong>) · carboxyle –COOH : acide (<strong>oïque</strong>)</li></ul>,
+    { id: 'bilan2', titre: 'Le bilan', focus: [], scene: [{ m: R('acide éthanoïque'), surligner: 'groupe' }],
+      retenirTitre: 'À RETENIR : DU NOM À LA FORMULE',
+      retenir: <><FLire/>{puces(<>On lit le nom <strong>de la fin vers le début</strong> : chaîne principale (pentane : 5 C), puis substituants (diméthyl : deux CH₃), puis leurs numéros.</>, <>Un carbone fait toujours <strong>4 liaisons</strong> : on complète chaque carbone avec des H.</>)}</>,
       texte: <>Vous savez écrire la formule brute d’une molécule simple, reconnaître son groupe caractéristique et sa famille, la nommer, et retrouver sa formule à partir de son nom. Explorez librement, ou essayez les défis.</>, tache: null },
   ];
+  const ORDRE_PARC = [['regle', 'brute', 'limite', 'chaine', 'alcanes', 'prefixes', 'principale', 'numeroter', 'substituant', 'assembler', 'di', 'alpha', 'bilan1'],
+    ['hydroxyle', 'carbonyle', 'carboxyle', 'famille', 'num-alcool', 'nom-alcool', 'nom-aldehyde', 'nom-cetone', 'nom-acide', 'construire1', 'construire2', 'construire3', 'construire4', 'bilan2']];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(x => x.id === id));
   const eC = ETAPES[Math.min(etape, ETAPES.length - 1)], idE = eC.id;
   const hl = id => enGuide && eC.focus.includes(id);
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {});
@@ -488,10 +510,11 @@ export function SimulationNomenclatureOrganique() {
     </ARetenir>);
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => { setParc(2); setConsBrut({ ...DEPART, cle: null }); }} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : groupes</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
-  const derniereEtape = enGuide && idE === 'bravo';
+  const derniereEtape = enGuide && (idE === 'bilan1' || idE === 'bilan2');
   const montrerReglages = enGuide ? ctrlVisibles.size > 0 && eC.scene === 'cons' : mode === 'explore';
 
   return (
@@ -513,7 +536,12 @@ export function SimulationNomenclatureOrganique() {
       </div>
       {!enGuide && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une molécule organique se décrit par sa <strong>formule brute</strong> et sa <strong>formule semi-développée</strong>. Son <strong>nom</strong> se déduit de la chaîne carbonée et de son <strong>groupe caractéristique</strong>, qui détermine sa <strong>famille</strong>.</div>}
       <div className={`no-l1${mode !== 'explore' ? ' cote' : ''}${enGuide && eC.scene === 'cons' ? ' cons' : ''}`}>
-        {enGuide ? <div className="no-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="no-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="no-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Parcours :</span>
+            {[[1, '1. Les alcanes'], [2, '2. Groupes et familles']].map(([k, nom]) => <button key={k} aria-pressed={parc === k} onClick={() => { setParc(k); setConsBrut({ ...DEPART, cle: null }); }} style={styleBouton(parc === k, ORANGE_GUIDE)}>{nom}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="no-carte">{panneauHypo}</div> : null}
         <div className="no-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}</div>}
           {!enDefi && <div className={`no-pri${mode !== 'explore' && !(enGuide && eC.scene === 'cons') ? ' pile' : ''}`}>
