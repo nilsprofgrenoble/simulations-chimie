@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
+import { FicheQuantite, FicheTableau, FicheLimitant, FicheEtatFinal, FicheVolumeMolaire, FicheEcarts } from "./AvancementFiches";
 
 const SIM_ID = 1;
 declarerDefis(SIM_ID, [['principal', 'Prévoir, ne pas déborder, trouver le limitant']]);
@@ -346,6 +347,8 @@ export function Simulation1() {
         pieges: [[100, 'Le volume doit être en litres : 50 mL = 0,050 L.'], [2 / 0.05, 'C’est c × V.'],
           [params.Va / 1000, 'Vous avez donné le volume en litres : il faut le multiplier par la concentration c (n = c × V).']], indice: "Quantité d’ions H⁺ : n = c × V, avec c en mol/L et V en litres (convertis les mL)." } },
     { id: 'tabInit', titre: 'Le tableau d’avancement : état initial', focus: ['tableau'],
+      retenirTitre: 'À RETENIR : QUANTITÉ DE MATIÈRE',
+      retenir: <FicheQuantite/>,
       texte: <>Le tableau d'avancement est apparu sous le schéma. Remplissez la ligne de l'<strong>état initial</strong> (en mol) : au départ,
         il n'y a encore aucun produit. Reprenez n₁ = {sci(n1Aff, 3)} mol de Mg (étape 6) et n₂ = {fmt(n2, 3)} mol d'ions H⁺ (étape 7).</>,
       tache: { type: 'action', ok: initOk, consigne: initOk ? null : 'Remplissez les 4 cases, puis cliquez sur « Vérifier la ligne ».' } },
@@ -354,15 +357,14 @@ export function Simulation1() {
         On note n₁ et n₂ les quantités initiales de Mg et de H⁺.</>,
       tache: { type: 'action', ok: coursOk, consigne: coursOk ? null : 'Choisissez l’expression de chaque case, puis vérifiez la ligne.' } },
     { id: 'limitant', titre: 'Le réactif limitant', focus: ['tableau'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Le <strong>réactif limitant</strong> est celui qui est épuisé le premier : il fixe l’arrêt de la réaction.</li><li>Pour chaque réactif, on cherche x tel que n<sub>restant</sub> = 0 (en tenant compte du coefficient) ; le <strong>plus petit x</strong> l’emporte.</li><li>Ici : Mg donne x = n₁, H⁺ donne x = n₂ / 2.</li></ul></>,
+      retenirTitre: 'À RETENIR : LE TABLEAU D’AVANCEMENT',
+      retenir: <FicheTableau/>,
       texte: <>La réaction s'arrête quand un réactif est épuisé. Si c'est Mg : n₁ − x = 0. Si c'est H⁺ : n₂ − 2x = 0. Ici, n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'qcm', q: 'Quel est le réactif limitant ?', options: ['Le magnésium Mg', 'Les ions H⁺', 'Aucun des deux'], bonne: 0,
         expl: `x = n₁ = ${sci(n1Aff, 2)} mol pour Mg, et x = n₂/2 = ${sci(n2 / 2, 2)} mol pour H⁺ : le plus petit gagne. L’acide est en large excès.`, indice: "Écris l’équation de la réaction avec ses coefficients : le réactif limitant est celui qui disparaît en premier, c’est-à-dire celui qui a la plus petite valeur de n divisé par son coefficient." } },
     { id: 'xmax', titre: 'L’avancement maximal', focus: ['tableau'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Transformation totale : <strong>x<sub>f</sub> = x<sub>max</sub></strong>.</li><li>x<sub>max</sub> = plus petite valeur de x annulant la quantité d’un réactif (en mol).</li><li>État final : n(réactif) = n<sub>initial</sub> − coefficient × x<sub>max</sub> ; n(produit) = coefficient × x<sub>max</sub>.</li></ul></>,
-      retenirTitre: 'À RETENIR : TABLEAU D’AVANCEMENT',
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Transformation totale : <strong>x<sub>f</sub> = x<sub>max</sub></strong>.</li><li>x<sub>max</sub> = plus petite valeur de x annulant la quantité d’un réactif (en mol).</li><li>État final : n(réactif) = n<sub>initial</sub> − coefficient × x<sub>max</sub> ; n(produit) = coefficient × x<sub>max</sub>.</li></ul></>,
-      retenirTitre: 'À RETENIR : TABLEAU D’AVANCEMENT',
+      retenirTitre: 'À RETENIR : LE RÉACTIF LIMITANT',
+      retenir: <FicheLimitant/>,
       texte: <>La transformation est totale : l'avancement final x<sub>f</sub> est égal à l'avancement maximal x<sub>max</sub>. Rappel : n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'num', q: 'Avancement maximal x_max', unite: 'mol', vrai: n1Aff, tol: 0.02,
         calcul: () => [`Si Mg est limitant : n₁ − x = 0, donc x = n₁ = ${sci(n1Aff, 3)} mol.`,
@@ -373,7 +375,8 @@ export function Simulation1() {
       texte: <>Remplissez la dernière ligne avec x<sub>f</sub> = x<sub>max</sub> = {sci(n1Aff, 3)} mol (étape 11). Rappel : n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'action', ok: finOk, consigne: finOk ? null : 'Remplissez x_f et les 4 cases, puis vérifiez la ligne.' } },
     { id: 'Vm', titre: 'Le volume molaire', focus: ['eprouvette'],
-      retenir: <><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Volume molaire : <strong>V<sub>m</sub> = V(gaz) / n(gaz)</strong>, en L·mol⁻¹.</li><li>Il dépend de la température et de la pression, pas de la nature du gaz (ordre de grandeur : ≈ 24 L·mol⁻¹ à 20 °C et 1 bar).</li><li>Convertir : 1 mL = 10⁻³ L.</li></ul></>,
+      retenirTitre: 'À RETENIR : L’ÉTAT FINAL',
+      retenir: <FicheEtatFinal/>,
       texte: <>Le dihydrogène formé a la quantité n(H₂) = x<sub>max</sub> = {sci(n1Aff, 3)} mol, et il occupe le volume V(H₂) = {fmt(Veleve, 1)} mL que vous avez mesuré.
         Le volume molaire est le volume occupé par une mole : V<sub>m</sub> = V(H₂) / n(H₂).</>,
       tache: { type: 'num', q: 'Volume molaire V_m, en L/mol', unite: 'L/mol', vrai: VmEleve, tol: 0.02,
@@ -383,6 +386,8 @@ export function Simulation1() {
         pieges: [[VmEleve * 1000, 'Le volume doit être en litres.'], [1 / VmEleve, 'C’est V / n, et non n / V.'], [VmEleve / 2, 'n(H₂) = x_max, et non 2 x_max.']],
         surReussite: v => setMes(x => ({ ...x, Vm: v })), indice: "V_m = V / n(H₂), avec V en litres. L’équation produit 1 mole de H₂ pour 1 mole de Mg consommée : n(H₂) est égale à l’avancement maximal." } },
     { id: 'ecart', titre: 'Comparer à la valeur attendue', focus: [],
+      retenirTitre: 'À RETENIR : LE VOLUME MOLAIRE',
+      retenir: <FicheVolumeMolaire/>,
       texte: <>À 20 °C et sous 1013 hPa, le volume molaire d'un gaz vaut environ <strong>{fmt(VM_REF, 1)} L/mol</strong>. Avec votre V<sub>m</sub> = {fmt(mes.Vm ?? VmEleve, 2)} L/mol (étape 13), l'écart relatif vaut
         |V<sub>m</sub> − {fmt(VM_REF, 1)}| / {fmt(VM_REF, 1)}. Le gaz recueilli sur l'eau contient un peu de vapeur d'eau, ce qui augmente le V<sub>m</sub> mesuré d'environ 2 % : un petit écart positif est donc attendu, ce n'est pas forcément une erreur de manipulation.</>,
       tache: { type: 'num', q: 'Écart relatif, en %', unite: '%', vrai: Math.abs((mes.Vm ?? VmEleve) - VM_REF) / VM_REF * 100, tol: 0.15,
@@ -398,6 +403,8 @@ export function Simulation1() {
         options: ['De la vapeur d’eau se mélange au dihydrogène, et le gaz peut être encore tiède', 'Il manque du magnésium', 'L’acide était trop concentré'], bonne: 0,
         expl: 'La vapeur d’eau ajoute environ 2 % au volume à 20 °C. D’autres erreurs, comme une fuite au bouchon ou du gaz perdu avant de reboucher, donneraient au contraire un volume trop petit.', indice: "Que fait la réaction à la température du gaz recueilli ? Un gaz plus chaud occupe-t-il un volume plus grand ou plus petit ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
+      retenirTitre: 'À RETENIR : D’OÙ VIENNENT LES ÉCARTS',
+      retenir: <FicheEcarts/>,
       texte: <>Vous avez mené une étude quantitative complète : quantités de matière, tableau d'avancement, réactif limitant et volume
         molaire. En exploration libre, vous trouverez la manip avec tous les réglages, et un tableau d'avancement pour n'importe quelle
         réaction.</>, tache: null },
@@ -555,14 +562,14 @@ export function Simulation1() {
     else { const m = 50 + Math.floor(r() * 150), Va = 2 + Math.floor(r() * 18), c = [0.5, 1, 1.5, 2][Math.floor(r() * 4)];
       setDefi({ type, params: { m, Va, c, T: 20 }, reps: {}, verifie: false }); }
   }
-  const VmDefi = vmApparent(20);
+  const VmDefi = Number(vmApparent(20).toFixed(1));     // valeur affichée = valeur du corrigé
   const questionsDefi = !defi ? [] : defi.type === 'prevoir' ? [
-    { id: 'v', q: `Avec ${defi.params.m} mg de magnésium et l'acide en excès, quel volume de gaz attendez-vous ? (V_m = ${fmt(VmDefi, 1)} L/mol dans la salle)`, unite: 'mL', vrai: defi.params.m / 1000 / M_MG * VmDefi * 1000, tol: 0.03 },
+    { id: 'v', q: `Avec ${defi.params.m} mg de magnésium et l'acide en excès, quel volume de gaz attendez-vous ? (V_m = ${fmt(VmDefi, 1)} L/mol dans la salle)`, unite: 'mL', vrai: defi.params.m / 1000 / M_MG * VmDefi * 1000, tol: 0.05 },
   ] : defi.type === 'deborder' ? [
-    { id: 'm', q: `Quelle masse maximale de magnésium peut-on utiliser sans faire déborder l'éprouvette de 100 mL ? (On suppose le gaz à la température de la salle et V_m = ${fmt(VmDefi, 1)} L/mol, volume molaire apparent du gaz mesuré dans la salle, vapeur d'eau comprise.)`, unite: 'mg', vrai: 0.1 / VmDefi * M_MG * 1000, tol: 0.03 },
+    { id: 'm', q: `Quelle masse maximale de magnésium peut-on utiliser sans faire déborder l'éprouvette de 100 mL ? (On suppose le gaz à la température de la salle et V_m = ${fmt(VmDefi, 1)} L/mol, volume molaire apparent du gaz mesuré dans la salle, vapeur d'eau comprise.)`, unite: 'mg', vrai: 0.1 / VmDefi * M_MG * 1000, tol: 0.05 },
   ] : [
     { id: 'l', q: `${defi.params.m} mg de magnésium, ${defi.params.Va} mL d'acide à ${fmt(defi.params.c, 1)} mol/L. Réactif limitant (tapez Mg ou H+)`, unite: '', texte: true, vrai: mod.limitant },
-    { id: 'x', q: 'Avancement maximal x_max', unite: 'mol', vrai: mod.xmax, tol: 0.03 },
+    { id: 'x', q: 'Avancement maximal x_max', unite: 'mol', vrai: mod.xmax, tol: 0.05 },
   ];
   const justeD = q => {
     const s = (defi.reps[q.id] || '').trim();
@@ -665,12 +672,12 @@ export function Simulation1() {
               </div>}
         </div>
         <div className="av-l2">
-          {<div>
+          {vu('manip') && <div>
             <Section titre="Commandes" ouvert={ouverts.commandes} onBascule={() => setOuverts(o => ({ ...o, commandes: !o.commandes }))}>
-              {enGuide && !vu('manip') ? <div style={{ fontSize: 13, color: KIT.txt2 }}>Les commandes apparaîtront au fil du parcours.</div> : commandesManip}
+              {commandesManip}
             </Section>
           </div>}
-          {<div><Section titre="Mesures" ouvert={ouverts.mesures} onBascule={() => setOuverts(o => ({ ...o, mesures: !o.mesures }))}>{mesuresManip}</Section></div>}
+          {vu('manip') && <div><Section titre="Mesures" ouvert={ouverts.mesures} onBascule={() => setOuverts(o => ({ ...o, mesures: !o.mesures }))}>{mesuresManip}</Section></div>}
           {enGuide && vu('tabInit') && <div style={{ ...styleBoite, gridColumn: '1 / -1', position: 'relative' }}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Tableau d'avancement</div>
             {tableau}
@@ -678,7 +685,7 @@ export function Simulation1() {
           </div>}
         </div>
       </>}
-      {vueManip && <PanneauHypotheses>
+      {vueManip && vu('bravo') && <PanneauHypotheses>
         <li><strong>Réaction totale et unique</strong> : Mg + 2 H⁺ → Mg²⁺ + H₂. Le magnésium est supposé pur (pas d’oxyde en surface) et entièrement consommé s’il est limitant.</li>
         <li><strong>Gaz</strong> : le dihydrogène est supposé parfait, non dissous dans l’eau (très peu soluble), recueilli en totalité (pas de fuite au bouchon).</li>
         <li><strong>Pression</strong> : le gaz est à la pression atmosphérique, car les niveaux d’eau dans l’éprouvette et dans la cuve sont supposés égaux (la différence de hauteur est négligée).</li>
