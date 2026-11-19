@@ -45,7 +45,7 @@ export const EXOS_DE_SIM = {
   59: [/^poids2/, /frc-(masse-poids|poids-prop|actions|echelle|direction-poids|poids-pomme|poids-rover)/],
   60: [/frc-(objet-immobile|vitesse-constante|cycliste|glissement|parachutiste|reaction-sol|actions)/],
   67: [/^poids2/, /frc-(chute-sans-air|iss-flotte)/],
-  140: [/frc-(chute-sans-air|parachutiste|vitesse-constante)/],
+  140: [/^chute2/, /frc-(dv-|sommet|chrono-uniforme|chute-sans-air|parachutiste|vitesse-constante)/],
   // ── 1re spé ──
   102: [/(^|\.)org-/],                                                                                         // Nomenclature et groupes caractéristiques
   1: [/avancement-max/, /^cinetique$/],

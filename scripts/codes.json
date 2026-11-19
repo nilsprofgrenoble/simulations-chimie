@@ -1053,5 +1053,13 @@
  "77:plausible:tampstl-val-egal": "VAL261",
  "77:plausible:tampstl-val-prepa": "VAL262",
  "36:tampstl-prepa": "REA48",
- "36:tampstl-ajout": "REA49"
+ "36:tampstl-ajout": "REA49",
+ "34:chute2.0": "SAPP275",
+ "34:chute2.1": "SAPP276",
+ "37:prevoir:frc-dv-chute": "ANA471",
+ "37:prevoir:frc-dv-montee": "ANA472",
+ "37:prevoir:frc-sommet-trajectoire": "ANA473",
+ "37:prevoir:frc-dv-freinage": "ANA474",
+ "37:prevoir:frc-chrono-uniforme": "ANA475",
+ "37:prevoir:frc-dv-lune": "ANA476"
 }

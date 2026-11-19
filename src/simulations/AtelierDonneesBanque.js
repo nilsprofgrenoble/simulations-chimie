@@ -1805,6 +1805,33 @@ export const ENONCES = [
     },
   },
   {
+    id: 'chute2', domaine: 'Forces et principe d’inertie', titre: 'Une chronophotographie de chute libre', noms: ['Vitesse de la bille en M₃', 'Variation de vitesse entre deux photos'],
+    gen: () => { const tau = tire([0.10, 0.20, 0.25]); return { tau, d: Math.round(39.2 * tau * tau * 100) / 100, H: Math.round(313.6 * tau * tau * 10) / 10, m: tire([20, 50, 100]),
+      v1: Math.round(29.4 * tau * 100) / 100, v2: Math.round(39.2 * tau * 100) / 100 }; },
+    build: (p, q) => {
+      const tokens = { tau: tok(`${nb(p.tau, 2)} s`, 'Durée entre deux photos successives', p.tau, 's'), m: tok(`${p.m} g`, 'Masse de la bille', p.m / 1000, 'kg') };
+      const debut = ['Une bille est lâchée sans vitesse initiale et filmée en chute libre : une photo est prise toutes les ', T('tau'), '. La bille a une masse de ', T('m'), '. '];
+      if (q === 0) {
+        tokens.d = tok(`${nb(p.d, 2)} m`, 'Distance entre les positions M₂ et M₄', p.d, 'm');
+        tokens.H = tok(`${nb(p.H, 1)} m`, 'Hauteur totale de chute sur les 9 photos', p.H, 'm');
+        return { tokens, derivees: [{ id: 'dur', nom: 'Durée entre M₂ et M₄ (deux intervalles)', expr: '2 × τ', val: 2 * p.tau, u: 's' }],
+          texte: [...debut, 'Sur les 9 photos, la hauteur totale de chute est ', T('H'), ', et la distance M₂M₄ vaut ', T('d'), '. Quelle est la valeur de la vitesse de la bille au point M₃ (en m/s) ?'],
+          utiles: ['tau', 'd'],
+          raisons: { H: 'La hauteur totale de chute ne sert pas : la vitesse en M₃ se déduit de la distance M₂M₄ et de la durée correspondante.', m: 'La masse de la bille n’intervient pas pour déduire une vitesse d’une chronophotographie.' },
+          cherche: { bonne: 'La valeur de la vitesse v de la bille au point M₃ (en m/s)', faux: ['La valeur de la variation de vitesse Δv entre deux photos (en m/s)', 'La valeur du poids de la bille (en N)', 'La durée totale de la chute (en s)'] },
+          manque: null, solution: { txt: 'v ≈ M₂M₄ / (2τ)', val: p.d / (2 * p.tau), u: 'm/s' } };
+      }
+      tokens.v1 = tok(`${nb(p.v1, 2)} m/s`, 'Valeur de la vitesse à une photo', p.v1, 'm/s');
+      tokens.v2 = tok(`${nb(p.v2, 2)} m/s`, 'Valeur de la vitesse à la photo suivante', p.v2, 'm/s');
+      return { tokens, derivees: [],
+        texte: [...debut, 'La valeur de sa vitesse est ', T('v1'), ' à une photo, puis ', T('v2'), ' à la photo suivante, vers le bas dans les deux cas. Quelle est la valeur de la variation de vitesse Δv entre ces deux photos (en m/s) ?'],
+        utiles: ['v1', 'v2'],
+        raisons: { tau: 'La durée entre deux photos ne sert pas pour la valeur de Δv : on compare simplement les deux vitesses.', m: 'La masse de la bille n’intervient pas dans la variation de vitesse (frottements négligés).' },
+        cherche: { bonne: 'La valeur de la variation de vitesse Δv entre les deux photos (en m/s)', faux: ['La valeur moyenne de la vitesse entre les deux photos (en m/s)', 'La distance parcourue entre les deux photos (en m)', 'La valeur du poids de la bille (en N)'] },
+        manque: null, solution: { txt: 'Δv = v₂ − v₁ (même sens)', val: p.v2 - p.v1, u: 'm/s' } };
+    },
+  },
+  {
     id: 'vitesse2', domaine: 'Mouvement et vitesse', titre: 'La vitesse d’un cycliste', noms: ['Vitesse moyenne', 'Durée du trajet'],
     gen: () => { const [d, t] = tire([[6, 20], [9, 20], [9, 25], [3, 10], [4.5, 15], [15, 40], [12, 25]]); const [v, tt] = tire([[18, 200], [21.6, 300], [25.2, 400], [28.8, 600]]);
       return { d, t, m: tire([65, 72, 80]), v, dm: Math.round(v / 3.6 * tt) }; },

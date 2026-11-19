@@ -2054,6 +2054,48 @@ export const PREVOIR = [
       F('parallèle à la pente, vers le bas de la pente', 'La caisse tend à glisser parallèlement à la pente, mais son poids reste vertical.'),
       F('perpendiculaire à la pente', 'Le poids ne dépend pas de l’inclinaison. La réaction normale du sol est perpendiculaire à la pente, mais ce n’est pas le poids.'),
     ] },
+  { id: 'frc-dv-chute', domaine: 'Forces et principe d’inertie', titre: 'Sens de la variation de vitesse d’une bille qui tombe',
+    enonce: 'Une bille est lâchée sans vitesse initiale et tombe (frottements de l’air négligés). On compare son vecteur vitesse à deux instants voisins de la chute.', q: 'Le vecteur variation de vitesse vec(Δv) entre ces deux instants est dirigé…', options: [
+      V('vers le bas', 'La valeur de la vitesse vers le bas augmente : vec(Δv) est vers le bas, comme le poids, seule force qui s’exerce sur la bille.'),
+      F('vers le haut, pour s’opposer à la chute', 'Rien ne s’oppose à la chute (frottements négligés). La vitesse vers le bas augmente, donc vec(Δv) est vers le bas.'),
+      F('nul, car la bille tombe en ligne droite', 'Une trajectoire rectiligne ne suffit pas : la valeur de la vitesse augmente, donc le vecteur vitesse varie.'),
+      F('horizontal, car la bille est lâchée sans vitesse initiale', 'Sans vitesse initiale, la bille prend tout de même de la vitesse, vers le bas : vec(Δv) est vertical, vers le bas.'),
+    ] },
+  { id: 'frc-dv-montee', domaine: 'Forces et principe d’inertie', titre: 'Variation de vitesse pendant la montée d’une balle',
+    enonce: 'Une balle est lancée vers le haut. Pendant la montée, sa vitesse diminue (frottements de l’air négligés).', q: 'Pendant la montée, le vecteur variation de vitesse vec(Δv) est dirigé…', options: [
+      F('vers le haut, comme le mouvement de la balle', 'La vitesse vers le haut diminue : on retire de la vitesse vers le haut. vec(Δv) est opposé au mouvement, donc vers le bas.'),
+      V('vers le bas, comme le poids', 'La vitesse vers le haut diminue : vec(Δv) est vers le bas, comme le poids, seule force qui s’exerce sur la balle.'),
+      F('nul, car la balle se déplace toujours dans le même sens', 'Se déplacer dans un seul sens n’empêche pas la vitesse de varier : elle diminue, donc vec(Δv) n’est pas nul.'),
+      F('vers le haut au début, puis vers le bas ensuite', 'vec(Δv) a toujours le sens de la somme des forces : il reste vers le bas tant que le poids est la seule force.'),
+    ] },
+  { id: 'frc-sommet-trajectoire', domaine: 'Forces et principe d’inertie', titre: 'Une balle au sommet de sa trajectoire',
+    enonce: 'Une balle lancée vers le haut atteint le point le plus haut de sa trajectoire : à cet instant précis, sa vitesse est nulle (frottements de l’air négligés).', q: 'À cet instant, la somme des forces qui s’exercent sur la balle est…', options: [
+      F('nulle, puisque la balle est arrêtée', 'La balle repart vers le bas juste après : sa vitesse varie, donc la somme des forces n’est pas nulle.'),
+      F('dirigée vers le haut, pour retenir la balle', 'Aucune force vers le haut ne s’exerce : la main a lâché la balle et les frottements sont négligés.'),
+      V('égale au poids, dirigée vers le bas', 'Seul le poids agit. Une vitesse nulle à un instant n’implique pas une somme des forces nulle : la vitesse varie juste après, la balle redescend.'),
+      F('inexistante : on ne peut pas parler de force quand la vitesse est nulle', 'Le poids s’exerce à tout instant, même quand la vitesse est nulle.'),
+    ] },
+  { id: 'frc-dv-freinage', domaine: 'Forces et principe d’inertie', titre: 'Variation de vitesse d’une voiture qui freine',
+    enonce: 'Une voiture roule en ligne droite vers la droite et freine : sa vitesse diminue.', q: 'Le vecteur variation de vitesse vec(Δv) est dirigé…', options: [
+      F('vers la droite, comme le mouvement', 'La vitesse vers la droite diminue : on retire de la vitesse vers la droite, donc vec(Δv) est vers la gauche.'),
+      F('nul, car la voiture ne change pas de direction', 'La direction ne change pas, mais la valeur de la vitesse diminue : le vecteur vitesse varie.'),
+      F('vertical, vers le bas, comme le poids', 'Le poids est vertical et compensé par la route : il n’intervient pas dans la variation de la vitesse horizontale.'),
+      V('vers la gauche, comme la somme des forces', 'La vitesse vers la droite diminue : vec(Δv) est vers la gauche, dans le même sens que la somme des forces (les freins et les frottements l’emportent sur la force motrice).'),
+    ] },
+  { id: 'frc-chrono-uniforme', domaine: 'Forces et principe d’inertie', titre: 'Un palet sur coussin d’air',
+    enonce: 'Sur la chronophotographie d’un palet sur une table à coussin d’air, les positions successives sont alignées et régulièrement espacées.', q: 'Que peut-on dire de vec(Δv) et de la somme des forces ?', options: [
+      F('vec(Δv) n’est pas nul : le palet avance, donc sa vitesse varie', 'Avancer ne veut pas dire accélérer : si la vitesse est constante, vec(Δv) est nul.'),
+      V('vec(Δv) est nul et les forces se compensent', 'Positions alignées et régulièrement espacées : mouvement rectiligne uniforme, vec(Δv) nul. D’après le principe d’inertie, la somme des forces est nulle.'),
+      F('vec(Δv) est nul, donc aucune force ne s’exerce sur le palet', 'vec(Δv) nul signifie que les forces se compensent (le poids et la force du coussin d’air), pas qu’il n’y en a aucune.'),
+      F('vec(Δv) est dans le sens du mouvement, car il faut une force pour avancer', 'Il ne faut pas de force pour entretenir un mouvement : à vitesse constante, les forces se compensent.'),
+    ] },
+  { id: 'frc-dv-lune', domaine: 'Forces et principe d’inertie', titre: 'La même chute sur la Lune',
+    enonce: 'On lâche une bille sans vitesse initiale, d’abord sur la Terre, puis sur la Lune, et on réalise les deux chronophotographies avec la même durée entre deux photos (frottements négligés).', q: 'Entre deux photos voisines, le vecteur vec(Δv) de la bille sur la Lune est…', options: [
+      F('aussi long que sur la Terre : la chute libre est la même partout', 'Le poids dépend de l’astre : il est plus petit sur la Lune, donc la vitesse varie moins entre deux photos.'),
+      F('plus long que sur la Terre, car il n’y a pas d’air sur la Lune', 'Sur Terre aussi, on néglige les frottements : la différence vient du poids, plus petit sur la Lune.'),
+      V('plus court que sur la Terre, toujours vers le bas', 'Le poids est plus petit sur la Lune (g plus petit) : la vitesse varie moins vite, mais toujours vers le bas.'),
+      F('dirigé vers le haut sur la Lune', 'Le poids est dirigé vers le bas sur la Lune comme sur la Terre : vec(Δv) est vers le bas.'),
+    ] },
   // ── Seconde : solutions, circuits, lumière, matière à l’échelle microscopique ──
   { id: 'sol-masse-double', domaine: 'Solutions et concentration', titre: 'Deux fois plus de sel',
     enonce: 'On dissout 5 g de sel dans une fiole jaugée de 100 mL, puis 10 g de sel dans une autre fiole jaugée de 100 mL.', q: 'La concentration en masse de la 2e solution est…', options: [
