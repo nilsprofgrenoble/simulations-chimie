@@ -1429,6 +1429,28 @@ export const ENONCES = [
         manque: null, solution: { txt: 'O₁O₂ = f′obj + f′oc (foyers F′obj et Foc confondus)', val: (p.f1 + p.f2) / 1000, u: 'm' } };
     },
   },
+  // ───────────────────────────── Circuit RC (TG, sim 174) : temps caractéristique et intensité initiale
+  {
+    id: 'rc-sapp-circuit', domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Un condensateur dans un montage de laboratoire', noms: ['Temps caractéristique du circuit', 'Intensité au début de la charge'],
+    gen: () => ({ E: tire([3, 5, 6, 9, 12]), R: tire([1, 2.2, 4.7, 10, 22, 47]), C: tire([0.47, 1, 4.7, 10, 22, 47, 100]), L: tire([15, 25, 40]), T: tire([19, 21, 23]) }),
+    build: (p, q) => {
+      const tokens = {
+        E: tok(`${nb(p.E, 0)} V`, 'Tension du générateur', p.E, 'V'),
+        R: tok(`${nb(p.R, p.R < 10 ? 1 : 0)} kΩ`, 'Résistance du résistor en série avec le condensateur', p.R, 'kΩ'),
+        C: tok(`${nb(p.C, p.C < 1 ? 2 : p.C < 10 ? 1 : 0)} µF`, 'Capacité du condensateur', p.C, 'µF'),
+        L: tok(`${p.L} cm`, 'Longueur des fils de connexion', p.L, 'cm'),
+        T: tok(`${p.T} °C`, 'Température de la salle de TP', p.T, '°C'),
+      };
+      const debut = ['Un élève monte en série un générateur de tension continue ', T('E'), ', un résistor de résistance ', T('R'), ' et un condensateur de capacité ', T('C'), ', initialement déchargé. Les fils mesurent ', T('L'), ' et la salle est à ', T('T'), '. À t = 0, il ferme l’interrupteur. '];
+      const raisons = { L: 'Les fils sont supposés de résistance nulle : leur longueur n’intervient pas dans l’étude du circuit RC.', T: 'La température de la salle ne joue aucun rôle dans le modèle du circuit RC idéal.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le temps caractéristique du circuit ?'], utiles: ['R', 'C'], raisons: { ...raisons, E: 'La tension du générateur fixe la tension finale du condensateur, pas la durée du phénomène : τ = R × C ne dépend pas de E.' },
+        cherche: { bonne: 'Le temps caractéristique τ du circuit (en ms)', faux: ['La charge maximale q du condensateur (en µC)', 'L’intensité maximale du courant (en mA)', 'La tension finale aux bornes du condensateur (en V)'] },
+        manque: null, solution: { txt: 'τ = R × C (kΩ × µF = ms)', val: p.R * p.C, u: 'ms' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est l’intensité du courant juste après la fermeture de l’interrupteur ?'], utiles: ['E', 'R'], raisons: { ...raisons, C: 'À t = 0 le condensateur est déchargé : u_C = 0, donc u_R = E et i(0) = frac(E|R). La capacité n’intervient pas dans cette valeur.' },
+        cherche: { bonne: 'L’intensité i(0) à la fermeture de l’interrupteur (en mA)', faux: ['Le temps caractéristique τ du circuit (en ms)', 'La charge finale q = C × E du condensateur (en µC)', 'La tension aux bornes du condensateur en régime stationnaire (en V)'] },
+        manque: null, solution: { txt: 'u_C(0) = 0 donc i(0) = frac(E|R) (V divisés par kΩ donnent des mA)', val: p.E / p.R, u: 'mA' } };
+    },
+  },
   // ───────────────────────────── Deuxième loi de Newton (TG, sim 168) : somme des forces, accélération du centre de masse
   {
     id: 'nwt-sapp-chariot', domaine: 'Deuxième loi de Newton', titre: 'Chariot tiré par un fil', noms: ['Somme des forces sur l’axe du rail', 'Accélération du chariot'],

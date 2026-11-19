@@ -2218,6 +2218,44 @@ function genTopoTG() {
     retenir: ['Un carbone fait toujours 4 liaisons ; les liaisons qui ne servent pas à relier des atomes lourds sont des liaisons C–H.', 'Chaîne saturée non cyclique de n carbones : 2n + 2 atomes d’hydrogène. Une double liaison C=C ou un cycle retire 2 H.', 'Le groupe –OH d’un alcool remplace un H et en apporte un : le nombre total d’H ne change pas.', 'Les liaisons C–H sont celles qui relient un H à un carbone : l’H du groupe –OH est lié à l’oxygène.'] };
 }
 
+function genRCTG() {
+  // Circuit RC (TG, sim 174). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const d = x => String(x).replace('.', ',');                       // valeurs de menus propres : 2,2 ; 0,47 ; 10
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const RS = [1, 2.2, 4.7, 10, 22, 47], CS = [0.47, 1, 4.7, 10, 22, 47, 100];
+  const R1 = tire(RS), C1 = tire(CS), t1 = R1 * C1;
+  const q1 = { id: 'rc0', type: 'num', q: <>Un résistor de résistance <b>R = {d(R1)}{NB}kΩ</b> est associé en série à un condensateur de capacité <b>C = {d(C1)}{NB}µF</b>. Calculez le temps caractéristique τ du circuit (en ms, 2 chiffres significatifs).</>, unite: 'ms', vrai: t1, tolRel: 0.05, csMin: 2,
+    aide: 'τ = R × C : avec R en kΩ et C en µF, le produit est directement en ms (1 kΩ × 1 µF = 1 ms).',
+    pieges: [[t1 * 1000, 'Vous avez converti un seul des deux préfixes : kΩ × µF = ms (10³ × 10⁻⁶ = 10⁻³).'], [R1 / C1, 'Il faut multiplier R par C, pas les diviser.'], [R1 + C1, 'Le temps caractéristique est le produit R × C, pas la somme.'], [t1 / 1000, 'Vous avez donné τ en secondes : la réponse est attendue en ms (kΩ × µF = ms).']],
+    expl: <>τ = R × C = {d(R1)}{NB}kΩ × {d(C1)}{NB}µF = <b>{nb(t1, 3)}{NB}ms</b> (kΩ × µF = ms ; soit {nb(t1 / 1000, 3)}{NB}s).</> };
+  const R2 = tire(RS), C2 = tire(CS), t2 = Number((R2 * C2).toPrecision(2)), c2 = t2 / R2;
+  const q2 = { id: 'rc1', type: 'num', q: <>On mesure sur un montage le temps caractéristique <b>τ = {d(t2)}{NB}ms</b>. Le résistor a une résistance <b>R = {d(R2)}{NB}kΩ</b>. Calculez la capacité C du condensateur (en µF, 2 chiffres significatifs).</>, unite: 'µF', vrai: c2, tolRel: 0.05, csMin: 2,
+    aide: 'τ = R × C donc C = τ divisée par R ; avec τ en ms et R en kΩ, C est en µF.',
+    pieges: [[t2 * R2, 'Il faut diviser τ par R, pas les multiplier.'], [R2 / t2, 'Le rapport est inversé : C = τ divisée par R.'], [c2 * 1000, 'Vous avez donné C en nF : la réponse est attendue en µF (ms divisées par kΩ donnent des µF).'], [c2 / 1000, 'Vous avez donné C en mF : ms divisées par kΩ donnent directement des µF.']],
+    expl: <>C = {avecIndices('frac(τ|R)')} = {avecIndices(`frac(${d(t2)} ms|${d(R2)} kΩ)`)} = <b>{nb(c2, 3)}{NB}µF</b> (ms divisées par kΩ = µF).</> };
+  const E3 = tire([3, 5, 6, 9, 12]), R3 = tire([1, 2.2, 4.7, 10, 22, 47]), i3 = E3 / R3;
+  const q3 = { id: 'rc2', type: 'num', q: <>Un condensateur initialement déchargé est relié, par un résistor de résistance <b>R = {d(R3)}{NB}kΩ</b>, à un générateur de tension <b>E = {E3}{NB}V</b>. À l’instant où l’on ferme l’interrupteur (t = 0), calculez l’intensité i(0) du courant (en mA, 2 chiffres significatifs).</>, unite: 'mA', vrai: i3, tolRel: 0.05, csMin: 2,
+    aide: 'À t = 0, u_C = 0 : toute la tension E est aux bornes du résistor. u_R = E = R × i donc i = E divisée par R (V divisés par kΩ donnent des mA).',
+    pieges: [[0, 'À t = 0, l’intensité n’est pas nulle : u_C = 0, donc toute la tension E est aux bornes du résistor.'], [E3 * R3, 'Il faut diviser E par R (loi d’Ohm : i = u_R divisée par R), pas les multiplier.'], [R3 / E3, 'Le rapport est inversé : i = E divisée par R.'], [i3 * 1000, 'Vous avez donné i en µA : V divisés par kΩ donnent directement des mA.']],
+    expl: <>À t = 0, u_C = 0, donc u_R = E : i(0) = {avecIndices('frac(E|R)')} = {avecIndices(`frac(${E3} V|${d(R3)} kΩ)`)} = <b>{nb(i3, 3)}{NB}mA</b>.</> };
+  const E4 = tire([3, 5, 6, 9, 12]), n4 = tire([1, 2, 3]), ch = tire(['charge', 'decharge']), u4 = ch === 'charge' ? E4 * (1 - Math.exp(-n4)) : E4 * Math.exp(-n4);
+  const R4 = tire([2.2, 4.7, 10, 22]), C4 = tire([1, 4.7, 10, 47]);
+  const q4 = { id: 'rc3', type: 'num', q: <>Un condensateur de capacité <b>C = {d(C4)}{NB}µF</b>, associé à un résistor de <b>R = {d(R4)}{NB}kΩ</b>, {ch === 'charge' ? <>est chargé sous <b>E = {E4}{NB}V</b> (il était déchargé à t = 0)</> : <>est déchargé (il était chargé sous <b>E = {E4}{NB}V</b> à t = 0)</>}. Calculez la tension u<sub>C</sub> à l’instant <b>t = {n4}{NB}τ</b> (en V, 2 chiffres significatifs).</>, unite: 'V', vrai: u4, tolRel: 0.05, csMin: 2,
+    aide: ch === 'charge' ? 'Charge : u_C = E × (1 − e⁻ⁿ), où n = frac(t|τ) (ici n est le nombre indiqué dans « t = n τ »).' : 'Décharge : u_C = E × e⁻ⁿ, où n = frac(t|τ) (ici n est le nombre indiqué dans « t = n τ »).',
+    pieges: [[ch === 'charge' ? E4 * Math.exp(-n4) : E4 * (1 - Math.exp(-n4)), ch === 'charge' ? 'Vous avez utilisé la formule de la décharge : en charge, u_C = E × (1 − e⁻ⁿ), avec n = frac(t|τ).' : 'Vous avez utilisé la formule de la charge : en décharge, u_C = E × e⁻ⁿ, avec n = frac(t|τ).'], [E4, 'u_C ne vaut E ni à t = 0 en charge ni plus tard en un temps fini : revoyez l’exponentielle.'], [E4 * n4 / 4, 'Revoyez la forme de la solution : elle fait intervenir l’exponentielle e⁻ⁿ, avec n = frac(t|τ).']],
+    expl: ch === 'charge' ? <>u<sub>C</sub> = E × (1 − e<sup>−{n4}</sup>) = {E4} × {nb(1 - Math.exp(-n4), 4)} = <b>{nb(u4, 3)}{NB}V</b>.</> : <>u<sub>C</sub> = E × e<sup>−{n4}</sup> = {E4} × {nb(Math.exp(-n4), 4)} = <b>{nb(u4, 3)}{NB}V</b>.</> };
+  const R5 = tire([1, 2.2, 4.7, 10, 22]), C5 = tire([1, 4.7, 10, 47, 100]), t5 = 5 * R5 * C5 / 1000;
+  const q5 = { id: 'rc4', type: 'num', q: <>Un condensateur de capacité <b>C = {d(C5)}{NB}µF</b> est chargé à travers un résistor de résistance <b>R = {d(R5)}{NB}kΩ</b>. On considère la charge pratiquement terminée au bout d’une durée égale à 5{NB}τ. Calculez cette durée (en s, 2 chiffres significatifs).</>, unite: 's', vrai: t5, tolRel: 0.05, csMin: 2,
+    aide: 'τ = R × C (kΩ × µF = ms) ; la durée vaut 5 τ ; puis convertissez les ms en s (1 s = 1 000 ms).',
+    pieges: [[t5 / 5, 'Vous avez calculé τ seul : la durée demandée est 5 τ.'], [t5 * 1000, 'Vous avez donné la durée en ms : la réponse est attendue en s.'], [t5 * 3 / 5, 'Vous avez pris 3 τ (95 % de E) : on demande 5 τ.'], [R5 * C5 * 5 * 1e-6, 'Vous avez converti R et C en unités SI de façon incohérente : kΩ × µF = ms.']],
+    expl: <>τ = R × C = {d(R5)}{NB}kΩ × {d(C5)}{NB}µF = {nb(R5 * C5, 3)}{NB}ms ; 5{NB}τ = {nb(5 * R5 * C5, 3)}{NB}ms = <b>{nb(t5, 3)}{NB}s</b>.</> };
+  void f;
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Circuit RC série : temps caractéristique, capacité, intensité initiale, tension à t = n τ et durée de la charge. Les valeurs de R et de C sont des valeurs usuelles de laboratoire ; le modèle suppose une source, un résistor et un condensateur idéaux.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Temps caractéristique : τ = R × C ; ohm × farad = seconde ; en pratique kΩ × µF = ms.', 'À t = 0 en charge (condensateur déchargé) : u_C = 0, u_R = E, donc i(0) = frac(E|R).', 'Avec n = frac(t|τ) : charge u_C = E × (1 − e⁻ⁿ) ; décharge u_C = E × e⁻ⁿ ; à t = τ : 63 % (charge) ou 37 % (décharge) de E.', 'Au bout de 5 τ, la charge ou la décharge est pratiquement terminée (99 % de E atteints, ou moins de 1 % restant).'] };
+}
+
 function genUvvTG() {
   // pièges conservés seulement s'ils restent hors de la tolérance de la bonne réponse (tolérance × 1,5, plancher 8 %)
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -2726,6 +2764,7 @@ export const FAMILLES = [
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },
   { id: 'uvv-calcul', groupe: 'Formules', titre: 'Spectrophotométrie : loi de Beer-Lambert, concentration, absorbance, dilution et concentration massique (TG)', gen: genUvvTG, domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert' },
   { id: 'irt-calcul', groupe: 'Formules', titre: 'Spectroscopie infrarouge : nombre d’onde, longueur d’onde et lignes d’un tableau de données (TG)', gen: genIrTabTG, domaine: 'Spectroscopie infrarouge : données tabulées' },
+  { id: 'rc-calcul', groupe: 'Formules', titre: 'Circuit RC : temps caractéristique, capacité, intensité initiale, tension à t = n τ et durée de la charge (TG)', gen: genRCTG, domaine: 'Circuit RC : charge et décharge d’un condensateur' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
