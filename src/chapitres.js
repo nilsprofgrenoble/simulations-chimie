@@ -2,7 +2,7 @@
 //  CHAPITRES PAR NIVEAU : source unique du menu, du « chapitre en cours » d'une classe et des devoirs.
 //
 //  Un chapitre = un groupe du menu (2GT, 1G, TG, TSTL, BTS) avec :
-//   • (facultatif) une « rubrique » : intitulé qui regroupe plusieurs chapitres dans le menu (ex. TSTL : « Systèmes et procédés », « Ondes ») ;
+//   • (facultatif) une « rubrique » : intitulé qui regroupe plusieurs chapitres dans le menu (ex. TSTL : « SPCL · Systèmes et procédés », « SPCL · Ondes », « PCM · Constitution de la matière ») ;
 //   • ses simulations (identifiants de src/App.jsx) ;
 //   • les thèmes de la banque d'exercices « Je m'entraîne » qui s'y rattachent (champ « domaine » des exercices).
 //  Hypothèses (discutables, modifiables ici) : la banque d'exercices n'a pas de niveau ; on rattache chaque thème au chapitre
@@ -45,18 +45,19 @@ export const CHAPITRES = [
   { id: 'tg-evolution-temporelle', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '⏱️ Modéliser l’évolution temporelle d’un système, siège d’une transformation', sims: [122, 123], domaines: ['Cinétique : vitesse volumique et ordre 1', 'Radioactivité : décroissance et demi-vie'] },
   { id: 'tg-etat-final', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '⚖️ Prévoir l’état final d’un système, siège d’une transformation chimique', sims: [125, 129, 130, 131, 132, 133, 134], domaines: ['Équilibre chimique : Qr, K et taux d’avancement', 'Force des acides et des bases : Ka et tampon', 'Acides α-aminés : forme selon le pH', 'Piles : fonctionnement et capacité', 'Électrolyse : forcer le sens d’évolution'] },
   { id: 'tg-ondes', niveau: 'TG', rubrique: 'Ondes et signaux', label: '🌊 Caractériser les phénomènes ondulatoires', sims: [116], domaines: ['Ondes'] },
-  { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
-  { id: 'tstl-mesure', niveau: 'TSTL', rubrique: 'Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
-  { id: 'tstl-regulation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
-  { id: 'tstl-controle', niveau: 'TSTL', rubrique: 'Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
-  { id: 'tstl-thermique', niveau: 'TSTL', rubrique: 'Systèmes et procédés', sousRubrique: 'Flux d’énergie : conversions et transferts', label: '🔥 Transferts thermiques', sims: [31, 32, 30, 89], domaines: ['Transferts thermiques', 'Machines thermiques'] },
-  { id: 'tstl-fluides', niveau: 'TSTL', rubrique: 'Systèmes et procédés', sousRubrique: 'Flux de matière : transport et transformation', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },
-  { id: 'tstl-cristallisation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', sousRubrique: 'Flux de matière : transport et transformation', label: '❄️ Évaporation et cristallisation', sims: [7], domaines: ['Évaporation et cristallisation'] },
-  { id: 'tstl-distillation', niveau: 'TSTL', rubrique: 'Systèmes et procédés', sousRubrique: 'Flux de matière : transport et transformation', label: '🧪 Distillation', sims: [42, 41, 43], domaines: ['Distillation'] },
-  { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'Ondes', label: '🌊 Ondes', sims: [83, 84, 87, 88, 91, 114], domaines: ['Ondes'] },
-  { id: 'tstl-ondes-observer', niveau: 'TSTL', rubrique: 'Ondes', label: '👁️ Des ondes pour observer : l’œil, la loupe, le microscope et la lunette', sims: [117, 118, 120], domaines: ['Œil et loupe', 'Microscope', 'Lunette astronomique'] },
-  { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '🧪 Acides et bases', sims: [85], domaines: ['Acides et bases'] },
-  { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'Chimie et développement durable', label: '⚗️ Synthèse organique : mécanismes et optimisation', sims: [86, 92, 90], domaines: ['Synthèse organique', 'Mécanismes réactionnels', 'Optimiser une synthèse'] },
+  { id: 'tstl-pcm-structure-spatiale', niveau: 'TSTL', rubrique: 'PCM · Constitution de la matière', label: '🫲 Structure spatiale des espèces chimiques', sims: [137], domaines: ['Chiralité et configuration R/S'] },
+  { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
+  { id: 'tstl-mesure', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
+  { id: 'tstl-regulation', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
+  { id: 'tstl-controle', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '🧲 Contrôle des systèmes', sims: [46, 44, 45], domaines: ['Contrôle des systèmes'] },
+  { id: 'tstl-thermique', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux d’énergie : conversions et transferts', label: '🔥 Transferts thermiques', sims: [31, 32, 30, 89], domaines: ['Transferts thermiques', 'Machines thermiques'] },
+  { id: 'tstl-fluides', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux de matière : transport et transformation', label: '💧 Transport des fluides', sims: [26, 27, 28, 17], domaines: ['Transport des fluides'] },
+  { id: 'tstl-cristallisation', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux de matière : transport et transformation', label: '❄️ Évaporation et cristallisation', sims: [7], domaines: ['Évaporation et cristallisation'] },
+  { id: 'tstl-distillation', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux de matière : transport et transformation', label: '🧪 Distillation', sims: [42, 41, 43], domaines: ['Distillation'] },
+  { id: 'tstl-ondes', niveau: 'TSTL', rubrique: 'SPCL · Ondes', label: '🌊 Ondes', sims: [83, 84, 87, 88, 91, 114], domaines: ['Ondes'] },
+  { id: 'tstl-ondes-observer', niveau: 'TSTL', rubrique: 'SPCL · Ondes', label: '👁️ Des ondes pour observer : l’œil, la loupe, le microscope et la lunette', sims: [117, 118, 120], domaines: ['Œil et loupe', 'Microscope', 'Lunette astronomique'] },
+  { id: 'tstl-acides-bases', niveau: 'TSTL', rubrique: 'SPCL · Chimie et développement durable', label: '🧪 Acides et bases', sims: [85], domaines: ['Acides et bases'] },
+  { id: 'tstl-synthese-organique', niveau: 'TSTL', rubrique: 'SPCL · Chimie et développement durable', label: '⚗️ Synthèse organique : mécanismes et optimisation', sims: [86, 92, 90], domaines: ['Synthèse organique', 'Mécanismes réactionnels', 'Optimiser une synthèse'] },
 
   // BTS : trois rubriques (Analyse, Synthèse, Formulation), chacune découpée en chapitres. Les anciens identifiants
   // « bts-analyse », « bts-organique », « bts-rmn », « bts-cristallo » et « bts-formulation » ont été retirés (ils restent

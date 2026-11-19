@@ -891,6 +891,50 @@ export const ENONCES = [
         manque: null, solution: { txt: 'θ₂ = G × θ₀ = (f₁′ / f₂′) × θ₀', val: th2 / 1000, u: 'rad' } };
     },
   },
+  // ───────────────────────────── 0 quinquies. Chiralité et configuration R/S (TSTL, PCM)
+  {
+    id: 'chir-halogenes', domaine: 'Chiralité et configuration R/S', titre: 'Classer les groupes d’un carbone asymétrique (halogènes)', noms: ['Priorité 1', 'Priorité 3'],
+    gen: () => { const at = [['F', 9], ['Cl', 17], ['Br', 35], ['I', 53]]; const L = [...at].sort(() => Math.random() - 0.5).slice(0, 3); return { L, M: tire([120, 165, 200, 255]), Teb: tire([40, 80, 110]) }; },
+    build: (p, q) => {
+      const tri = [...p.L].sort((a, b) => b[1] - a[1]);
+      const tokens = {
+        a: tok(`Z = ${p.L[0][1]}`, `Numéro atomique de ${p.L[0][0]}`, p.L[0][1], ''),
+        b: tok(`Z = ${p.L[1][1]}`, `Numéro atomique de ${p.L[1][0]}`, p.L[1][1], ''),
+        c: tok(`Z = ${p.L[2][1]}`, `Numéro atomique de ${p.L[2][0]}`, p.L[2][1], ''),
+        M: tok(`${p.M} g/mol`, 'Masse molaire de la molécule', p.M, 'g/mol'),
+        Teb: tok(`${p.Teb} °C`, 'Température d’ébullition', p.Teb, '°C'),
+      };
+      const debut = ['Un carbone asymétrique est lié à un atome d’hydrogène et à trois atomes d’halogène : ', p.L[0][0], ' (', T('a'), '), ', p.L[1][0], ' (', T('b'), ') et ', p.L[2][0], ' (', T('c'), '). La molécule a une masse molaire de ', T('M'), ' et bout à ', T('Teb'), '. On classe les quatre groupes avec les règles de Cahn, Ingold et Prelog. '];
+      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', Teb: 'La température d’ébullition ne sert pas à classer les groupes.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome de priorité 1 ?'], utiles: ['a', 'b', 'c'], raisons,
+        cherche: { bonne: 'Le numéro atomique Z de l’atome de priorité 1 (sans unité)', faux: ['La masse molaire de la molécule (en g/mol)', 'La somme des trois numéros atomiques (sans unité)', 'Le nombre de groupes différents autour du carbone (sans unité)'] },
+        manque: null, solution: { txt: 'priorité 1 = plus grand Z', val: tri[0][1], u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome de priorité 3 ?'], utiles: ['a', 'b', 'c'], raisons,
+        cherche: { bonne: 'Le numéro atomique Z de l’atome de priorité 3 (sans unité)', faux: ['La température d’ébullition de la molécule (en °C)', 'Le numéro atomique de l’atome de priorité 1 (sans unité)', 'Le numéro atomique de l’hydrogène (sans unité)'] },
+        manque: null, solution: { txt: 'priorité 3 = plus petit Z des trois (H est le n°4)', val: tri[2][1], u: '' } };
+    },
+  },
+  {
+    id: 'chir-heteroatomes', domaine: 'Chiralité et configuration R/S', titre: 'Classer les groupes d’un carbone asymétrique (O, N, C)', noms: ['Priorité 1', 'Priorité 3'],
+    gen: () => ({ M: tire([75, 89, 105, 119]), F: tire([150, 190, 230, 260]) }),
+    build: (p, q) => {
+      const tokens = {
+        o: tok('Z = 8', 'Numéro atomique de O', 8, ''),
+        n: tok('Z = 7', 'Numéro atomique de N', 7, ''),
+        c: tok('Z = 6', 'Numéro atomique de C', 6, ''),
+        M: tok(`${p.M} g/mol`, 'Masse molaire', p.M, 'g/mol'),
+        F: tok(`${p.F} °C`, 'Température de fusion', p.F, '°C'),
+      };
+      const debut = ['Dans une molécule de formule CH₃–CH(NH₂)–CH₂OH, le carbone asymétrique est lié à un groupe NH₂ (atome lié : N, ', T('n'), '), à un groupe CH₂OH (atome lié : C, ', T('c'), '), à un groupe CH₃ (atome lié : C) et à H. L’atome O a pour numéro atomique ', T('o'), '. La molécule a une masse molaire de ', T('M'), ' et fond à ', T('F'), '. '];
+      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', F: 'La température de fusion ne sert pas à classer les groupes.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome lié au C* du groupe de priorité 1 ?'], utiles: ['n', 'c'], raisons: { ...raisons, o: 'L’atome O n’est pas lié directement au C* : il est dans le groupe CH₂OH, au deuxième rang.' },
+        cherche: { bonne: 'Le numéro atomique Z de l’atome lié au C* dans le groupe de priorité 1 (sans unité)', faux: ['Le numéro atomique de l’atome O du groupe CH₂OH (sans unité)', 'La masse molaire de la molécule (en g/mol)', 'Le numéro atomique de H (sans unité)'] },
+        manque: null, solution: { txt: 'NH₂ : l’atome lié est N, Z = 7, le plus grand des atomes liés (N, C, C, H)', val: 7, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'CH₂OH et CH₃ sont tous deux liés par C : quel est le numéro atomique de l’atome commun qui les met à égalité ?'], utiles: ['c'], raisons: { ...raisons, n: 'N est l’atome lié de NH₂, groupe déjà classé 1er.', o: 'O est un voisin du carbone de CH₂OH : il sert au deuxième rang, pas à l’égalité.' },
+        cherche: { bonne: 'Le numéro atomique Z de l’atome lié qui est le même pour CH₂OH et CH₃ (sans unité)', faux: ['Le numéro atomique de l’atome O (sans unité)', 'Le numéro atomique de N (sans unité)', 'La température de fusion de la molécule (en °C)'] },
+        manque: null, solution: { txt: 'C : Z = 6, pour CH₂OH et CH₃ ; on compare ensuite leurs voisins', val: 6, u: '' } };
+    },
+  },
   // ───────────────────────────── 1. Mur (transferts thermiques)
   {
     id: 'paroi', domaine: 'Transferts thermiques', titre: 'Les pertes thermiques d’un mur', noms: ['Puissance perdue', 'Coût de l’énergie perdue'],

@@ -1177,6 +1177,50 @@ function genEtalonnageTG() {
     retenir: ['Constante de cellule : k = σ(étalon) / G(étalon), en m⁻¹ ; ensuite σ = k × G pour toute solution mesurée avec cette cellule.', 'Droite d’étalonnage : G = a × c, passant par l’origine ; c = G / a (G en mS, a en mS par mmol/L : c en mmol/L).', 'La droite n’est valable que pour une solution diluée (c inférieure à 10 mmol/L environ) : au-delà, on dilue.', 'Solution diluée F fois : c(S) = F × c(S′).'] };
 }
 
+// ───────── Chiralité et configuration R/S (TSTL, PCM) ─────────
+function genChiralitePriorites() {
+  const tous = [['F', 9], ['O', 8], ['N', 7], ['S', 16], ['Cl', 17], ['Br', 35]];
+  const L = [...tous].sort(() => Math.random() - 0.5).slice(0, 3), tri = [...L].sort((a, b) => b[1] - a[1]);
+  const lies = L.map(x => x[0]).join(', ');
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
+  const q1 = { id: 'cp0', type: 'num', q: <>Un carbone asymétrique est lié à H et à trois atomes : <b>{L.map(x => `${x[0]} (Z = ${x[1]})`).join(', ')}</b>. Quel est le numéro atomique Z de l’atome de <b>priorité 1</b> ?</>, unite: '', vrai: tri[0][1], tolRel: 0.05, csMin: String(tri[0][1]).length,
+    aide: 'Plus le numéro atomique Z est grand, plus l’atome est prioritaire : cherchez le plus grand Z.',
+    pieges: [[tri[2][1], 'Vous avez pris le plus petit Z : c’est le plus grand Z qui est prioritaire.'], [tri[1][1], 'C’est le Z de l’atome de priorité 2 : cherchez le plus grand.']],
+    expl: <>Les atomes liés sont {lies} : le plus grand Z est <b>{tri[0][1]}</b> ({tri[0][0]}), donc {tri[0][0]} est prioritaire.</> };
+  const q2 = { id: 'cp1', type: 'num', q: <>Pour le même carbone, quel est le numéro atomique de l’atome de <b>priorité 3</b> ? (L’hydrogène, Z = 1, est de priorité 4.)</>, unite: '', vrai: tri[2][1], tolRel: 0.05, csMin: String(tri[2][1]).length,
+    aide: 'Classez les trois atomes du plus grand Z au plus petit : le 3e est celui de priorité 3.',
+    pieges: [[tri[1][1], 'C’est le Z de l’atome de priorité 2 : le 3e est le plus petit des trois.'], [tri[0][1], 'C’est le Z de l’atome de priorité 1.'], [1, 'Z = 1 est celui de H, de priorité 4.']],
+    expl: <>Du plus grand au plus petit Z : {tri.map(x => `${x[0]} (${x[1]})`).join(' > ')} puis H. La priorité 3 : Z = <b>{tri[2][1]}</b> ({tri[2][0]}).</> };
+  const G = tire([['COOH', 3, 'la double liaison C=O compte pour 2 atomes O, et le groupe –OH en apporte 1'], ['CHO', 2, 'la double liaison C=O compte pour 2 atomes O (le troisième voisin est H)'], ['COCH₃', 2, 'la double liaison C=O compte pour 2 atomes O (le troisième voisin est C)']]);
+  const q3 = { id: 'cp2', type: 'num', q: <>Dans le groupe <b>{G[0]}</b> lié au C*, le carbone porte une double liaison C=O. Combien d’atomes <b>O</b> sont comptés parmi ses voisins (une double liaison compte deux fois) ?</>, unite: '', vrai: G[1], tolRel: 0.05, csMin: 1,
+    aide: 'Pour chaque liaison double, comptez l’atome du bout deux fois ; ajoutez les O liés par liaison simple.',
+    pieges: [[G[1] - 1, 'Il manque un O : une double liaison compte pour deux atomes.']],
+    expl: <>Voisins du carbone de {G[0]} : {G[2]}. Total : <b>{G[1]}</b> atomes O.</> };
+  [q1, q2, q3].forEach(tolOk);
+  return { intro: 'Règles de priorité de Cahn, Ingold et Prelog : numéros atomiques des atomes liés au carbone asymétrique et double liaison comptée deux fois.', questions: [q1, q2, q3],
+    retenir: ['Plus le numéro atomique Z de l’atome lié au C* est grand, plus le groupe est prioritaire ; H est toujours le dernier.', 'En cas d’égalité, on compare les atomes voisins, du plus grand Z au plus petit.', 'Une double liaison compte deux fois : le carbone de COOH a pour voisins (O, O, O).'] };
+}
+function genChiraliteConfig() {
+  const SETS = [
+    { g: ['CH₃', 'OH', 'COOH', 'H'], nom: 'de l’acide lactique' }, { g: ['CH₃', 'NH₂', 'COOH', 'H'], nom: 'de l’alanine' }, { g: ['CH₃', 'CH₃', 'OH', 'H'], nom: 'du propan-2-ol' },
+    { g: ['CH₂CH₃', 'CH₂CH₃', 'Cl', 'H'], nom: 'du 3-chloropentane' }, { g: ['CH₃', 'Cl', 'COOH', 'H'], nom: 'de l’acide 2-chloropropanoïque' }, { g: ['NH₂', 'H', 'H', 'COOH'], nom: 'de la glycine' },
+  ];
+  const S = tire(SETS), mel = [...S.g].sort(() => Math.random() - 0.5), nd = new Set(S.g).size, asym = nd === 4;
+  const q1 = { id: 'cc0', type: 'num', q: <>Un carbone est lié aux quatre groupes <b>{mel.join(', ')}</b> (carbone central {S.nom}). Combien de groupes <b>différents</b> y a-t-il ?</>, unite: '', vrai: nd, tolRel: 0.05, csMin: 1,
+    aide: 'Comparez les groupes deux à deux : deux groupes écrits pareil sont identiques et ne comptent qu’une fois.',
+    pieges: [[4, 'Deux de ces groupes sont identiques : ils ne comptent qu’une fois.'], [nd - 1, 'Recomptez : listez les groupes distincts un par un.']],
+    expl: <>Groupes distincts : <b>{nd}</b>.</> };
+  const opts = ['oui : quatre groupes différents, donc un carbone asymétrique', 'non : deux groupes identiques, donc pas de carbone asymétrique'];
+  const q2 = { id: 'cc1', type: 'qcm', q: <>Ce carbone est-il asymétrique ?</>, options: [asym ? opts[0] : opts[1], asym ? opts[1] : opts[0], 'on ne peut pas savoir sans connaître le numéro atomique de chaque groupe'], bonne: 0, aide: 'Un carbone est asymétrique seulement si ses quatre groupes sont tous différents.',
+    expl: <>{asym ? 'Quatre groupes différents : carbone asymétrique (C*).' : 'Deux groupes identiques : pas de carbone asymétrique.'}</> };
+  const conf = tire(['R', 'S']), inv = conf === 'R' ? 'S' : 'R', fac = tire(['on échange deux groupes de ce carbone', 'on dessine son image dans un miroir']);
+  const q3 = { id: 'cc2', type: 'qcm', q: <>Un carbone asymétrique a la configuration <b>{conf}</b>. Que devient-elle si <b>{fac}</b> ?</>, options: [`${inv} : la lettre s’inverse`, `${conf} : la lettre ne change pas`, 'ni R ni S : il n’y a plus de configuration'], bonne: 0, aide: 'Échanger deux groupes, ou passer à l’image dans un miroir, inverse le sens de rotation de 1 → 2 → 3.',
+    expl: <>Dans les deux cas le sens de 1 → 2 → 3 s’inverse : <b>{conf}</b> devient <b>{inv}</b>.</> };
+  [q1].forEach(q => { q.pieges = q.pieges.filter(([v2]) => Math.abs(v2 - q.vrai) > 0.5); });
+  return { intro: 'Carbone asymétrique, image dans un miroir et échange de groupes.', questions: [q1, q2, q3],
+    retenir: ['Un carbone asymétrique (C*) est lié à 4 atomes ou groupes tous différents.', 'L’image dans un miroir d’un C* de configuration R est S (et réciproquement).', 'Échanger deux groupes inverse la lettre R ou S.'] };
+}
+
 export const FAMILLES = [
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
@@ -1187,6 +1231,8 @@ export const FAMILLES = [
   { id: 'microsc-grossissement', groupe: 'Formules', titre: 'Le microscope : grandissement et grossissement (terminale STL)', gen: genMicroGrossissement, domaine: 'Microscope' },
   { id: 'lunet-grossissement', groupe: 'Formules', titre: 'La lunette astronomique : grossissement et distance entre les lentilles (terminale STL)', gen: genLunetteGrossissement, domaine: 'Lunette astronomique' },
   { id: 'lunet-image', groupe: 'Formules', titre: 'La lunette astronomique : image intermédiaire et œil myope (terminale STL)', gen: genLunetteImage, domaine: 'Lunette astronomique' },
+  { id: 'chir-priorites', groupe: 'Formules', titre: 'Règles de priorité CIP : numéro atomique et double liaison (terminale STL)', gen: genChiralitePriorites, domaine: 'Chiralité et configuration R/S' },
+  { id: 'chir-configuration', groupe: 'Formules', titre: 'Carbone asymétrique, miroir et configuration R/S (terminale STL)', gen: genChiraliteConfig, domaine: 'Chiralité et configuration R/S' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },
