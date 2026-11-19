@@ -83,6 +83,7 @@ export const EXOS_DE_SIM = {
   138: [/(^|\.)dissoc-/, /plausible\.dissoc-/],                                                                      // Acide faible : α, Ka, pKa (TSTL, PCM)
   139: [/(^|\.)predo-/, /plausible\.predo-/],                                                                      // pH, pKa et prédominance (TSTL, PCM)
   143: [/(^|\.)extrac-/, /plausible\.extrac-/],
+  144: [/(^|\.)stereo-/, /plausible\.stereo-/],
   142: [/(^|\.)co2dis-/, /plausible\.co2dis-/],
   141: [/(^|\.)tampstl-/, /plausible\.tampstl-/],                                                                  // Solution tampon : choix du couple et préparation (TSTL, PCM)
   120: [/lunet-/, /plausible\.lunet-/],                                                                              // La lunette astronomique (TSTL)

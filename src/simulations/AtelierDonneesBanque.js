@@ -522,6 +522,43 @@ export const ENONCES = [
         manque: null, solution: { txt: 'reste = (1 divisé par (1 + D × r)) au carré', val: 100 * EXT.resteApres(D, p.r, 2), u: '%' } };
     },
   },
+  {
+    id: 'stereo-compter', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'Compter les stéréoisomères d’une molécule', noms: ['Nombre de stéréoisomères', 'Nombre de diastéréoisomères'],
+    gen: () => ({ n: tire([2, 3, 4]), M: tire([105, 138, 152, 180, 210]) }),
+    build: (p, q) => {
+      const tokens = {
+        n: tok(`n = ${p.n}`, 'Nombre de carbones asymétriques', p.n, ''),
+        M: tok(`${p.M} g/mol`, 'Masse molaire de la molécule', p.M, 'g/mol'),
+      };
+      const debut = ['Une molécule possède ', T('n'), ' carbones asymétriques, tous de substituants différents : il n’y a pas de composé méso. Sa masse molaire est ', T('M'), '. '];
+      const raisons = { M: 'La masse molaire ne sert pas à compter les stéréoisomères.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien de stéréoisomères cette molécule possède-t-elle au maximum ?'], utiles: ['n'], raisons,
+        cherche: { bonne: 'Le nombre de stéréoisomères de configuration (sans unité)', faux: ['Le nombre de carbones asymétriques de la molécule (sans unité)', 'La masse molaire d’un stéréoisomère (en g/mol)', 'Le nombre d’énantiomères d’un seul stéréoisomère (sans unité)'] },
+        manque: null, solution: { txt: 'chaque carbone asymétrique a 2 configurations : 2 puissance n', val: 2 ** p.n, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Combien de diastéréoisomères l’un de ces stéréoisomères possède-t-il ?'], utiles: ['n'], raisons,
+        cherche: { bonne: 'Le nombre de diastéréoisomères d’un stéréoisomère donné (sans unité)', faux: ['Le nombre total de stéréoisomères de la molécule (sans unité)', 'La masse molaire d’un diastéréoisomère (en g/mol)', 'Le nombre de couples d’énantiomères de la molécule (sans unité)'] },
+        manque: null, solution: { txt: '2ⁿ stéréoisomères, moins lui-même et moins son énantiomère : 2ⁿ − 2', val: 2 ** p.n - 2, u: '' } };
+    },
+  },
+  {
+    id: 'stereo-biologique', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'Mélange racémique et énantiomère actif', noms: ['Masse d’énantiomère actif du lot', 'Masse de mélange à prélever'],
+    gen: () => ({ m: tire([120, 200, 250, 400]), d: tire([30, 50, 75, 100]), Tf: tire([88, 112, 134, 156]) }),
+    build: (p, q) => {
+      const tokens = {
+        m: tok(`${p.m} mg`, 'Masse du lot de mélange racémique', p.m, 'mg'),
+        d: tok(`${p.d} mg`, 'Masse d’énantiomère actif souhaitée', p.d, 'mg'),
+        Tf: tok(`${p.Tf} °C`, 'Température de fusion de chaque énantiomère', p.Tf, '°C'),
+      };
+      const debut = ['Une molécule fictive Q existe sous deux énantiomères, (R)-Q et (S)-Q ; seul (R)-Q agit sur l’organisme. Un lot de mélange racémique de Q (à parts égales des deux énantiomères) a une masse de ', T('m'), '. Chaque énantiomère fond à ', T('Tf'), '. Pour une étude, on veut disposer de ', T('d'), ' de (R)-Q. '];
+      const raisons = { Tf: 'La température de fusion ne sert pas à calculer des masses.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle masse de (R)-Q le lot contient-il ?'], utiles: ['m'], raisons: { ...raisons, d: 'Cette masse souhaitée sert à la question suivante, pas à connaître le contenu du lot.' },
+        cherche: { bonne: 'La masse de (R)-Q contenue dans le lot (en mg)', faux: ['La masse de mélange racémique à prélever pour l’étude (en mg)', 'La masse de (S)-Q multipliée par 2 (en mg)', 'La température de fusion de (R)-Q (en °C)'] },
+        manque: null, solution: { txt: 'racémique : 50 % de (R)-Q, soit la moitié de la masse du lot', val: p.m / 2, u: 'mg' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle masse de mélange racémique faut-il prélever pour obtenir cette masse de (R)-Q ?'], utiles: ['d'], raisons: { ...raisons, m: 'La masse du lot ne sert pas ici : on part de la masse de (R)-Q souhaitée.' },
+        cherche: { bonne: 'La masse de mélange racémique à prélever (en mg)', faux: ['La masse de (R)-Q contenue dans le lot (en mg)', 'La moitié de la masse souhaitée de (R)-Q (en mg)', 'La température de fusion du mélange (en °C)'] },
+        manque: null, solution: { txt: 'la moitié du mélange est (R)-Q : il en faut le double de la masse souhaitée', val: 2 * p.d, u: 'mg' } };
+    },
+  },
   // ───────────────────────────── Force des acides (TG) : K_A, pH, taux d'avancement
   {
     id: 'fab-sapp-ka', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Estimer la constante d’acidité d’un acide à partir du pH', noms: ['Constante d’acidité', 'Concentration en ions oxonium'],
