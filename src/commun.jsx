@@ -400,6 +400,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       {tache && tache.type === 'qcm' && (
         <div>
           <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
+          {tache.bloque && <div style={{ fontSize: 14, color: '#b45309', marginBottom: 6 }}>{tache.bloque}</div>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={i === tache.bonne ? 'true' : 'false'} onClick={() => setRep(i)}
               style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left',
