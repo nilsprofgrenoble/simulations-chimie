@@ -13,6 +13,7 @@ export const EXOS_DE_SIM = {
   127: [/pfac-/],
   128: [/pfac-parallele/, /pmel-ecart-milieu-sens/],     // introduction : seuls les exercices sur l’interaction
   100: [/^rheo-/],                                                                                                      // Épaississants associatifs
+  146: [/(^|\.)tens-/, /plausible\.tens-/],                                                                           // Tensioactifs : de la structure à la CMC
   101: [/for-lasure-/],                                                                                                 // Lasure alkyde
   // ── BTS · Synthèse organique (un thème d'exercices par simulation) ──
   93: [/^regio-/], 94: [/^cinet-/], 95: [/^sn-/], 96: [/^br-/], 97: [/^tr-/], 98: [/^se-/], 99: [/^ch-/],

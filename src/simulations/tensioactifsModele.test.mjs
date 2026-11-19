@@ -25,3 +25,10 @@ ok(Math.abs(M.xDeCurseur(0) - 0.001) < 1e-9 && Math.abs(M.xDeCurseur(100) - 10) 
 console.log(n, 'vérifications OK');
 ok(M.tensionRel(0.001) === 1 && M.tensionRel(1) === 0.5 && M.tensionRel(5) === 0.5 && M.tensionRel(0.1) > M.tensionRel(0.5));console.log('tension ok')
 ok(M.nomMolecule('sulfate', 12).includes('SDS') && M.nomMolecule('sulfobetaine', 10) === 'SB3-10 (sulfobétaïne)');console.log('noms ok')
+for (let k = 0; k < 300; k++) {
+  const t = M.tirageClasser(); ok(t.items.length === 3 && t.ordre.length === 3 && new Set(t.ordre).size === 3);
+  const c = t.ordre.map(l => t.items.find(i => i.l === l).cmc); ok(c[0] < c[1] && c[1] < c[2] && c[1] / c[0] >= 2 && c[2] / c[1] >= 2, 'classer');
+  const l = M.tirageLibres(); ok(l.c > l.cmc && l.engage > 0 && l.libres === l.cmc);
+  const q = M.tirageKlevens(); ok(q.n1 === q.n0 + q.d && q.vrai > 0 && q.F >= 1.9 && q.F <= 3.7 && q.vrai / q.modele < 1.6 && q.modele / q.vrai < 1.6, `klevens ${q.vrai} ${q.modele}`);
+}
+console.log('tirages ok');

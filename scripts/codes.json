@@ -1111,5 +1111,18 @@
  "37:prevoir:chir-ana-plan-symetrie": "ANA492",
  "77:plausible:chir-val-ethanol": "VAL269",
  "36:chir-reperer": "REA59",
- "36:chir-cram-bilan": "REA60"
+ "36:chir-cram-bilan": "REA60",
+ "34:tens-libres.0": "SAPP293",
+ "34:tens-libres.1": "SAPP294",
+ "34:tens-micelles.0": "SAPP295",
+ "34:tens-micelles.1": "SAPP296",
+ "37:prevoir:tens-ana-famille": "ANA493",
+ "37:prevoir:tens-ana-plateau": "ANA494",
+ "37:prevoir:tens-ana-conducti": "ANA495",
+ "37:prevoir:tens-ana-chaine": "ANA496",
+ "37:prevoir:tens-ana-tete": "ANA497",
+ "77:plausible:tens-val-monomeres": "VAL270",
+ "77:plausible:tens-val-micelles": "VAL271",
+ "36:tens-libres-micelles": "REA61",
+ "36:tens-klevens": "REA62"
 }

@@ -1,6 +1,6 @@
-import { useSignalerMode, modeOuverture } from "../suivi";
+import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, ARetenir, LigneMesure } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, ARetenir, LigneMesure, IndiceDefi, lireNombre, stylePetitBouton } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./tensioactifsModele";
@@ -9,6 +9,7 @@ import { SceneTensioactif, JaugeTension, CourbeTension, SvgFamilles, SvgStades, 
 import { teteDe } from "./tensioactifsCouleurs";
 
 const SIM_ID = 146, CLE_GUIDE = 'tensioactifs-guide-v1';
+declarerDefis(SIM_ID, [['classer', 'Classer des tensioactifs selon leur CMC'], ['libres', 'Monomères libres et micelles au-dessus de la CMC'], ['klevens', 'CMC et longueur de chaîne (prolongement)']]);
 
 // ====================================================
 //  SIM 146 — TENSIOACTIFS : DE LA STRUCTURE À LA CMC (BTS MDC, Formulation › Émulsions, tensioactifs)
@@ -54,7 +55,9 @@ export function SimulationTensioactifs() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [ti, setTi] = useState({ s: M.curseurDeX(0.02), fam: 'sulfate', n: 12 });
   const [ouv, setOuv] = useState({});
-  const enGuide = mode === 'guide', enExplore = mode === 'explore';
+  const [suiviC, noterC] = useCompteurDefi(), [suiviL, noterL] = useCompteurDefi(), [suiviK, noterK] = useCompteurDefi();
+  const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('classer');
+  const enGuide = mode === 'guide', enExplore = mode === 'explore', enDefi = mode === 'defi';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
   const xCur = M.xDeCurseur(ti.s);
 
@@ -166,6 +169,7 @@ export function SimulationTensioactifs() {
   const lignesGuide = enGuide ? (MES[idE] ?? []) : [];
   const legendeScene = enGuide ? (['interface', 'sature', 'cmc', 'libres'].includes(idE) ? LEGENDE[M.etatScene(xEff).stade] : null) : LEGENDE[e.stade];
 
+
   // ---------- hypothèses ----------
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
@@ -177,14 +181,77 @@ export function SimulationTensioactifs() {
       <li><strong>Incertitude</strong> : la fourchette affichée est × ou ÷{NB}2 autour de la valeur prédite ; sur les points d’ajustement, l’écart typique est d’environ ×{NB}1,1 et le pire cas ×{NB}1,5.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
-  const changerMode = md => { if (md === 'guide' && idE !== 'sature' && IDS[Math.min(guide.etape, IDS.length - 1)] === 'sature') basCurseur(); setMode(md); };
+  const nouveauDefi = type => {
+    if (type === 'classer') setDefi({ type, ...M.tirageClasser(), reps: ['', '', ''], verifie: false });
+    else if (type === 'libres') setDefi({ type, ...M.tirageLibres(), reps: { lib: '', eng: '' }, verifie: false });
+    else setDefi({ type, ...M.tirageKlevens(), reps: { c: '' }, verifie: false });
+  };
+  const changerMode = md => { if (md === 'guide' && idE !== 'sature' && IDS[Math.min(guide.etape, IDS.length - 1)] === 'sature') basCurseur(); if (md === 'defi' && !defi) nouveauDefi(typeDefi); setMode(md); };
+  const choisirDefi = tp => { setTypeDefi(tp); nouveauDefi(tp); };
+  const proche = (rep, vrai, tol = 0.05) => { const x = lireNombre(rep); return isFinite(x) && Math.abs(x - vrai) <= tol * Math.abs(vrai); };
+  const verifier = () => {
+    if (defi.type === 'classer') { const ok = defi.reps.every((r, i) => r === defi.ordre[i]); setDefi(d => ({ ...d, verifie: true, ok })); noterC(ok); }
+    else if (defi.type === 'libres') { const ok = proche(defi.reps.lib, defi.libres) && proche(defi.reps.eng, defi.engage); setDefi(d => ({ ...d, verifie: true, ok })); noterL(ok); }
+    else { const ok = proche(defi.reps.c, defi.vrai); setDefi(d => ({ ...d, verifie: true, ok })); noterK(ok); }
+  };
+  const selectStyle = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
+  const nbd = v => (Number.isInteger(v) ? String(v).replace('.', ',') : sig2(v));
+  const champ = (cle, aria) => (
+    <input value={defi.reps[cle]} aria-label={aria} inputMode="decimal" onKeyDown={ev => ev.key === 'Enter' && document.getElementById('ta-verif')?.click()}
+      onChange={ev => setDefi(d => ({ ...d, reps: { ...d.reps, [cle]: ev.target.value }, verifie: false }))}
+      style={{ width: 110, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${KIT.bord}`, fontSize: 14 }}/>);
+  const voletDefi = defi && (
+    <div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+        {[['classer', 'Classer'], ['libres', 'Monomères et micelles'], ['klevens', 'Chaîne et CMC (prolongement)']].map(([tp, l]) => <button key={tp} onClick={() => choisirDefi(tp)} aria-pressed={defi.type === tp} style={stylePetitBouton(defi.type === tp, '#0369a1')}>{l}</button>)}
+      </div>
+      {defi.type === 'classer' && <>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : classer ces trois tensioactifs</div>
+        <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 6 }}>Rangez-les de la <strong>CMC la plus faible</strong> à la <strong>CMC la plus élevée</strong>. {defi.mode === 'chaine' ? 'Ils ont la même tête et des chaînes de longueurs différentes.' : `Ils ont la même chaîne (${defi.items[0].n} carbones) et des têtes différentes.`}</div>
+        {defi.items.map(it => <SvgMolecule key={it.l} fam={it.fam} n={it.n} titre={`${it.l} : ${M.nomMolecule(it.fam, it.n)}`}/>)}
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', margin: '8px 0' }}>
+          {['CMC la plus faible', 'CMC intermédiaire', 'CMC la plus élevée'].map((nom, i) => (
+            <label key={nom} style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>{nom}<br/>
+              <select value={defi.reps[i]} onChange={ev => setDefi(d => ({ ...d, reps: d.reps.map((r, j) => (j === i ? ev.target.value : r)), verifie: false }))}
+                style={{ ...selectStyle, width: 110, border: `1.5px solid ${defi.verifie ? (defi.reps[i] === defi.ordre[i] ? '#15803d' : '#dc2626') : KIT.bord}` }}>
+                <option value="">Choisir…</option>{['A', 'B', 'C'].map(l => <option key={l} value={l}>{l}</option>)}</select></label>))}
+        </div>
+        <IndiceDefi cache={false}>Une chaîne plus longue est plus hydrophobe : la CMC diminue. À même chaîne, une tête non chargée donne une CMC plus faible qu’une tête chargée, dont les charges se repoussent dans la micelle.</IndiceDefi>
+      </>}
+      {defi.type === 'libres' && <>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : monomères libres et micelles</div>
+        <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 8 }}>Le tensioactif <strong>{defi.nom}</strong> a une CMC de <strong>{nbd(defi.cmc)}{U}</strong> (à 25{NB}°C, dans l’eau). On prépare une solution à <strong>{nbd(defi.c)}{U}</strong>. Donnez vos résultats en {U.trim()}, avec 2 chiffres significatifs.</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6, fontSize: 14 }}><span>Monomères libres :</span>{champ('lib', 'Concentration en monomères libres')}<span>{U}</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}><span>Tensioactif engagé dans les micelles :</span>{champ('eng', 'Concentration engagée dans les micelles')}<span>{U}</span></div>
+        <IndiceDefi cache={false}>Au-dessus de la CMC, les monomères libres restent à la concentration de la CMC. Le reste du tensioactif (concentration totale moins CMC) forme des micelles.</IndiceDefi>
+      </>}
+      {defi.type === 'klevens' && <>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : CMC et longueur de chaîne</div>
+        <div style={{ fontSize: 13.5, color: COL.orange, fontWeight: 700, marginBottom: 4 }}>Prolongement du programme (hors référentiel)</div>
+        <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>Dans la série « {M.famille(defi.fam).nom} », chaque carbone ajouté à la chaîne divise la CMC par <strong>{nbd(defi.F)}</strong>. Le tensioactif à <strong>{defi.n0} carbones</strong> a une CMC de <strong>{nbd(defi.c0)}{U}</strong>. Quelle est la CMC du tensioactif à <strong>{defi.n1} carbones</strong> (2 chiffres significatifs) ?</div>
+        <SvgMolecule fam={defi.fam} n={defi.n0} titre={`${defi.n0} carbones : CMC ${nbd(defi.c0)} mmol/L`}/><SvgMolecule fam={defi.fam} n={defi.n1} titre={`${defi.n1} carbones : CMC = ?`}/>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '8px 0', fontSize: 14 }}><span>CMC à {defi.n1} carbones :</span>{champ('c', 'CMC du tensioactif à plus longue chaîne')}<span>{U}</span></div>
+        <IndiceDefi cache={false}>On ajoute {defi.d} carbones : on divise {defi.d} fois de suite par {nbd(defi.F)}, soit une division par {nbd(defi.F)}<sup>{defi.d}</sup>.</IndiceDefi>
+      </>}
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
+        <button id="ta-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
+        <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
+      </div>
+      {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
+        {defi.ok ? '✓ Correct. ' : '✗ Pas tout à fait. '}
+        {defi.type === 'classer' && `Du plus faible au plus élevé : ${defi.ordre.map(l => { const it = defi.items.find(i => i.l === l); return `${l} (≈ ${sig2(it.cmc)}${U})`; }).join(' < ')}. ${defi.mode === 'chaine' ? 'Plus la chaîne est longue, plus la CMC est faible.' : 'Les têtes non chargées donnent des CMC plus faibles que les têtes chargées.'}`}
+        {defi.type === 'libres' && `Monomères libres : ${nbd(defi.libres)}${U} (la CMC). Dans les micelles : ${nbd(defi.c)} − ${nbd(defi.cmc)} = ${nbd(defi.engage)}${U}.`}
+        {defi.type === 'klevens' && `${nbd(defi.c0)} divisé par ${nbd(defi.F)}^${defi.d} (soit ${sig2(defi.F ** defi.d)}) donne ${sig2(defi.vrai)}${U}. Le modèle de l’exploration donne ${sig2(defi.modele)}${U}.`}
+      </div>}
+    </div>);
+
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
+      <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
 
   // ---------- réglages ----------
-  const selectStyle = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
   const libelle = { display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '0 0 3px' };
   const curseur = (
     <div style={{ marginBottom: 8 }}>
@@ -293,7 +360,7 @@ export function SimulationTensioactifs() {
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Tensioactifs : de la structure à la CMC</h2>
-        <BoutonsModes mode={mode} setMode={changerMode} modes={['guide', 'explore']}/>
+        <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un <strong>tensioactif</strong> se place à la surface de l’eau, puis s’assemble en <strong>micelles</strong> à partir de la <strong>concentration micellaire critique (CMC)</strong>. On observe ce qui se passe quand on en ajoute, puis on relie la CMC à la structure de la molécule.</div>
       {enGuide && <div className="ta-l1 cote">
@@ -306,6 +373,7 @@ export function SimulationTensioactifs() {
           </div>
         </div>
       </div>}
+      {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'classer' ? suiviC : defi.type === 'libres' ? suiviL : suiviK}/></div>}
       {enExplore && <>
         <div className="ta-ex">
           {scene}
@@ -318,7 +386,7 @@ export function SimulationTensioactifs() {
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
-      {(enExplore || (enGuide && idE === 'bilan')) && <div style={{ marginTop: 4 }}>{panneauHypo}</div>}
+      {(enExplore || enDefi || (enGuide && idE === 'bilan')) && <div style={{ marginTop: 4 }}>{panneauHypo}</div>}
     </div>
   );
 }

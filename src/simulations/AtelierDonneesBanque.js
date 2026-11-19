@@ -559,6 +559,42 @@ export const ENONCES = [
         manque: null, solution: { txt: 'la moitié du mélange est (R)-Q : il en faut le double de la masse souhaitée', val: 2 * p.d, u: 'mg' } };
     },
   },
+  {
+    id: 'tens-libres', domaine: 'Tensioactifs : de la structure à la CMC', titre: 'Tensioactif au-dessus de la CMC : monomères libres et micelles', noms: ['Concentration en monomères libres', 'Concentration engagée dans les micelles'],
+    gen: () => ({ cmc: tire([2, 4, 5, 8]), c: tire([20, 30, 40]), T: tire([20, 25]) }),
+    build: (p, q) => {
+      const tokens = {
+        cmc: tok(`CMC = ${p.cmc} mmol/L`, 'Concentration micellaire critique du tensioactif', p.cmc, 'mmol/L'),
+        c: tok(`${p.c} mmol/L`, 'Concentration totale de tensioactif dans la solution', p.c, 'mmol/L'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['Un tensioactif a une CMC de ', T('cmc'), ' à ', T('T'), '. On prépare dans l’eau une solution de concentration totale ', T('c'), ' en ce tensioactif. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration en molécules isolées (monomères libres) ?'], utiles: ['cmc'], raisons: { c: 'La concentration totale ne donne pas les monomères libres : au-dessus de la CMC, ils restent à la valeur de la CMC.', T: 'La température ne sert pas au calcul.' },
+        cherche: { bonne: 'La concentration en monomères libres (en mmol/L)', faux: ['La concentration de tensioactif engagé dans les micelles (en mmol/L)', 'La concentration totale de tensioactif (en mmol/L)', 'Le nombre de molécules par micelle (sans unité)'] },
+        manque: null, solution: { txt: 'au-dessus de la CMC, les monomères libres restent à la concentration de la CMC', val: p.cmc, u: 'mmol/L' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle concentration de tensioactif est engagée dans les micelles ?'], utiles: ['c', 'cmc'], raisons: { T: 'La température ne sert pas au calcul.' },
+        cherche: { bonne: 'La concentration de tensioactif engagé dans les micelles (en mmol/L)', faux: ['La concentration en monomères libres (en mmol/L)', 'La concentration totale de tensioactif (en mmol/L)', 'Le nombre de micelles par litre (sans unité)'] },
+        manque: null, solution: { txt: 'concentration totale moins monomères libres (égaux à la CMC)', val: p.c - p.cmc, u: 'mmol/L' } };
+    },
+  },
+  {
+    id: 'tens-micelles', domaine: 'Tensioactifs : de la structure à la CMC', titre: 'Part du tensioactif sous forme de monomères et concentration en micelles', noms: ['Part de monomères libres', 'Concentration en micelles'],
+    gen: () => ({ cmc: tire([4, 8, 10]), c: tire([40, 60, 80]), N: tire([40, 50, 80]) }),
+    build: (p, q) => {
+      const tokens = {
+        cmc: tok(`CMC = ${p.cmc} mmol/L`, 'Concentration micellaire critique du tensioactif', p.cmc, 'mmol/L'),
+        c: tok(`${p.c} mmol/L`, 'Concentration totale de tensioactif', p.c, 'mmol/L'),
+        N: tok(`${p.N} molécules`, 'Nombre de molécules par micelle (nombre d’agrégation)', p.N, ''),
+      };
+      const debut = ['Un tensioactif a une CMC de ', T('cmc'), '. Une solution contient ', T('c'), ' de ce tensioactif au total ; chaque micelle réunit ', T('N'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel pourcentage du tensioactif est sous forme de monomères libres ?'], utiles: ['c', 'cmc'], raisons: { N: 'Le nombre d’agrégation ne sert pas à comparer monomères et total.' },
+        cherche: { bonne: 'La part de tensioactif sous forme de monomères libres (en %)', faux: ['La part de tensioactif engagée dans les micelles (en %)', 'La concentration en monomères libres (en mmol/L)', 'Le nombre de micelles par litre (sans unité)'] },
+        manque: null, solution: { txt: 'monomères libres = CMC ; part = CMC divisée par la concentration totale', val: 100 * p.cmc / p.c, u: '%' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration en micelles (en mmol/L) ?'], utiles: ['c', 'cmc', 'N'], raisons: {},
+        cherche: { bonne: 'La concentration en micelles (en mmol/L)', faux: ['La concentration de tensioactif engagé dans les micelles (en mmol/L)', 'La concentration en monomères libres (en mmol/L)', 'Le nombre de molécules par micelle (sans unité)'] },
+        manque: null, solution: { txt: '(concentration totale − CMC) divisée par le nombre de molécules par micelle', val: (p.c - p.cmc) / p.N, u: 'mmol/L' } };
+    },
+  },
   // ───────────────────────────── Force des acides (TG) : K_A, pH, taux d'avancement
   {
     id: 'fab-sapp-ka', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Estimer la constante d’acidité d’un acide à partir du pH', noms: ['Constante d’acidité', 'Concentration en ions oxonium'],
