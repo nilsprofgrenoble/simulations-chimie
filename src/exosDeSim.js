@@ -79,7 +79,8 @@ export const EXOS_DE_SIM = {
   108: [/mec-pointage/, /plausible\.mec-pointage/],
   117: [/oeil-/, /plausible\.oeil-/],                                                                                // L'œil et la loupe (TSTL)
   118: [/microsc-/, /plausible\.microsc-/],                                                                              // Le microscope (TSTL)
-  137: [/(^|\.)chir-/, /plausible\.chir-/],                                                                           // Chiralité et configuration R/S (TSTL, PCM)
+  137: [/(^|\.)chir-(asym|pas-asym|val-pentane|val-ethanol|ana-|miroir-distance|cram-liaisons|reperer|cram-bilan)/, /plausible\.chir-(val-pentane|val-ethanol)/],   // Chiralité et carbone asymétrique (TSTL, PCM)
+  145: [/(^|\.)chir-(priorit|voisins|h-devant|miroir-R|halogenes|heteroatomes|configuration)/, /plausible\.chir-(val-h-devant|val-serine)/],   // Configuration absolue R/S (TSTL, PCM)
   138: [/(^|\.)dissoc-/, /plausible\.dissoc-/],                                                                      // Acide faible : α, Ka, pKa (TSTL, PCM)
   139: [/(^|\.)predo-/, /plausible\.predo-/],                                                                      // pH, pKa et prédominance (TSTL, PCM)
   143: [/(^|\.)extrac-/, /plausible\.extrac-/],

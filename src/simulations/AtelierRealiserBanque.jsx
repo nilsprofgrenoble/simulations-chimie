@@ -1536,7 +1536,43 @@ function genEtalonnageTG() {
     retenir: ['Constante de cellule : k = σ(étalon) / G(étalon), en m⁻¹ ; ensuite σ = k × G pour toute solution mesurée avec cette cellule.', 'Droite d’étalonnage : G = a × c, passant par l’origine ; c = G / a (G en mS, a en mS par mmol/L : c en mmol/L).', 'La droite n’est valable que pour une solution diluée (c inférieure à 10 mmol/L environ) : au-delà, on dilue.', 'Solution diluée F fois : c(S) = F × c(S′).'] };
 }
 
-// ───────── Chiralité et configuration R/S (TSTL, PCM) ─────────
+// ───────── Chiralité et carbone asymétrique (TSTL, PCM) ─────────
+function genChiraliteReperer() {
+  const MOLS = [
+    { f: 'CH₃–CH(OH)–COOH', nom: 'de l’acide lactique', n: 1 }, { f: 'CH₃–CH₂–OH', nom: 'de l’éthanol', n: 0 }, { f: 'CH₃–CH(NH₂)–COOH', nom: 'de l’alanine', n: 1 },
+    { f: 'CH₃–CH(Cl)–CH₃', nom: 'du 2-chloropropane', n: 0 }, { f: 'H₂N–CH₂–COOH', nom: 'de la glycine', n: 0 }, { f: 'CH₃–CH(Br)–CH₂–CH₂–CH₃', nom: 'du 2-bromopentane', n: 1 },
+  ];
+  const S = tire(MOLS), chirale = S.n > 0;
+  const q1 = { id: 'cr0', type: 'num', q: <>On étudie la molécule <b>{S.f}</b> ({S.nom.replace(/^de l’|^du |^de la /, '')}). Combien de carbones asymétriques (C*) possède-t-elle ?</>, unite: '', vrai: S.n, tolRel: 0.05, csMin: 1,
+    aide: 'Un C* est lié à 4 groupes tous différents (n’oubliez pas les atomes H). Un CH₃, un CH₂ ou un carbone lié à deux groupes identiques ne l’est pas.',
+    pieges: [[S.n + 1, 'Recomptez : un carbone CH₃ ou CH₂ n’est jamais asymétrique, car il porte au moins deux H identiques.']],
+    expl: <>{S.n ? <>Un seul carbone est lié à 4 groupes différents : il y a <b>1</b> C*.</> : <>Aucun carbone n’est lié à 4 groupes différents : il y a <b>0</b> C*.</>}</> };
+  const opts = ['oui : un C* et aucun axe, plan ou centre de symétrie', 'non : il n’y a aucun carbone asymétrique'];
+  const q2 = { id: 'cr1', type: 'qcm', q: <>La molécule <b>{S.f}</b> est-elle chirale (on admet qu’elle n’a ni axe, ni plan, ni centre de symétrie quand elle a un C*) ?</>, options: [chirale ? opts[0] : opts[1], chirale ? opts[1] : opts[0], 'on ne peut pas savoir sans connaître les numéros atomiques'], bonne: 0, aide: 'Une molécule est chirale si elle possède au moins un C* et aucun élément de symétrie.',
+    expl: <>{chirale ? 'Elle a un C* et aucun élément de symétrie : elle est chirale.' : 'Elle n’a pas de C* : elle n’est pas chirale.'}</> };
+  [q1].forEach(q => { q.pieges = q.pieges.filter(([v2]) => Math.abs(v2 - q.vrai) > 0.5); });
+  return { intro: 'Repérer un carbone asymétrique et décider si une molécule est chirale.', questions: [q1, q2],
+    retenir: ['Un carbone asymétrique (C*) est lié à 4 atomes ou groupes tous différents.', 'Une molécule est chirale si elle a au moins un C* et aucun axe, plan ou centre de symétrie.', 'Un CH₂ ou un CH₃ n’est jamais asymétrique.'] };
+}
+function genChiraliteCram() {
+  const [t, c, d] = tire([[2, 1, 1], [1, 2, 1], [1, 1, 2], [0, 2, 2]]);
+  const q1 = { id: 'cm0', type: 'num', q: <>Sur le dessin de Cram d’un carbone asymétrique, on compte <b>{t}</b> trait(s) plein(s), <b>{c}</b> coin(s) plein(s) et <b>{d}</b> groupe(s) en tirets. Combien de liaisons le carbone porte-t-il en tout ?</>, unite: '', vrai: t + c + d, tolRel: 0.05, csMin: 1,
+    aide: 'Additionnez les traits pleins, les coins pleins et les tirets.',
+    pieges: [[c + d, 'Vous avez oublié les traits pleins, qui sont dans le plan de la feuille.']],
+    expl: <>{t} + {c} + {d} = <b>{t + c + d}</b> liaisons : un carbone en porte toujours 4.</> };
+  q1.pieges = q1.pieges.filter(([v2]) => Math.abs(v2 - q1.vrai) > 0.5);
+  const q2 = { id: 'cm1', type: 'num', q: <>Combien de liaisons de ce carbone sortent du plan de la feuille (coins pleins et tirets) ?</>, unite: '', vrai: c + d, tolRel: 0.05, csMin: 1,
+    aide: 'Les traits pleins sont dans le plan ; seuls les coins pleins (devant) et les tirets (derrière) en sortent.',
+    pieges: [[t, 'C’est le nombre de traits pleins, dans le plan de la feuille.'], [t + c + d, 'Vous avez compté les traits pleins : ils sont dans le plan.']],
+    expl: <>{c} coin(s) plein(s) + {d} tiret(s) = <b>{c + d}</b>.</> };
+  q2.pieges = q2.pieges.filter(([v2]) => Math.abs(v2 - q2.vrai) > 0.5);
+  const q3 = { id: 'cm2', type: 'qcm', q: <>Une molécule chirale et son image dans un miroir sont-elles superposables ?</>, options: ['non : ce sont deux molécules différentes, des énantiomères', 'oui : on peut les superposer en les tournant dans l’espace', 'oui, mais seulement si on échange deux groupes de la molécule'], bonne: 0, aide: 'Pensez à vos deux mains : l’une est l’image de l’autre dans un miroir, et on ne peut pas les superposer.',
+    expl: <>Une molécule chirale n’est pas superposable à son image dans un miroir : les deux sont des énantiomères.</> };
+  return { intro: 'Représentation de Cram : liaisons dans le plan, devant et derrière, et image dans un miroir.', questions: [q1, q2, q3],
+    retenir: ['Un carbone porte toujours 4 liaisons, y compris vers H.', 'Trait plein : dans le plan ; coin plein : devant ; tirets : derrière.', 'Une molécule chirale n’est pas superposable à son image dans un miroir.'] };
+}
+
+// ───────── Configuration absolue R/S (TSTL, PCM) ─────────
 function genChiralitePriorites() {
   const tous = [['F', 9], ['O', 8], ['N', 7], ['S', 16], ['Cl', 17], ['Br', 35]];
   const L = [...tous].sort(() => Math.random() - 0.5).slice(0, 3), tri = [...L].sort((a, b) => b[1] - a[1]);
@@ -1669,8 +1705,10 @@ export const FAMILLES = [
   { id: 'microsc-grossissement', groupe: 'Formules', titre: 'Le microscope : grandissement et grossissement (terminale STL)', gen: genMicroGrossissement, domaine: 'Microscope' },
   { id: 'lunet-grossissement', groupe: 'Formules', titre: 'La lunette astronomique : grossissement et distance entre les lentilles (terminale STL)', gen: genLunetteGrossissement, domaine: 'Lunette astronomique' },
   { id: 'lunet-image', groupe: 'Formules', titre: 'La lunette astronomique : image intermédiaire et œil myope (terminale STL)', gen: genLunetteImage, domaine: 'Lunette astronomique' },
-  { id: 'chir-priorites', groupe: 'Formules', titre: 'Règles de priorité CIP : numéro atomique et double liaison (terminale STL)', gen: genChiralitePriorites, domaine: 'Chiralité et configuration R/S' },
-  { id: 'chir-configuration', groupe: 'Formules', titre: 'Carbone asymétrique, miroir et configuration R/S (terminale STL)', gen: genChiraliteConfig, domaine: 'Chiralité et configuration R/S' },
+  { id: 'chir-reperer', groupe: 'Formules', titre: 'Repérer un carbone asymétrique et une molécule chirale (terminale STL)', gen: genChiraliteReperer, domaine: 'Chiralité et carbone asymétrique' },
+  { id: 'chir-cram-bilan', groupe: 'Formules', titre: 'Dessin de Cram et image dans un miroir (terminale STL)', gen: genChiraliteCram, domaine: 'Chiralité et carbone asymétrique' },
+  { id: 'chir-priorites', groupe: 'Formules', titre: 'Règles de priorité CIP : numéro atomique et double liaison (terminale STL)', gen: genChiralitePriorites, domaine: 'Configuration absolue R/S' },
+  { id: 'chir-configuration', groupe: 'Formules', titre: 'Carbone asymétrique, miroir et configuration R/S (terminale STL)', gen: genChiraliteConfig, domaine: 'Configuration absolue R/S' },
   { id: 'dissoc-alpha', groupe: 'Formules', titre: 'Acide faible : conservation de la matière et coefficient de dissociation (terminale STL)', gen: genDissocAlpha, domaine: 'Acide faible, coefficient de dissociation et Ka' },
   { id: 'dissoc-ka', groupe: 'Formules', titre: 'Constante d’acidité, pKa et dilution d’un acide faible (terminale STL)', gen: genDissocKa, domaine: 'Acide faible, coefficient de dissociation et Ka' },
   { id: 'predo-rapport', groupe: 'Formules', titre: 'pH, pKa et rapport des concentrations d’un couple acide-base (terminale STL)', gen: genPredoRapport, domaine: 'pH, pKa et diagramme de prédominance' },

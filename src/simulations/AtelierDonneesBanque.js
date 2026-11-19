@@ -1179,7 +1179,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── 0 quinquies. Chiralité et configuration R/S (TSTL, PCM)
   {
-    id: 'chir-halogenes', domaine: 'Chiralité et configuration R/S', titre: 'Classer les groupes d’un carbone asymétrique (halogènes)', noms: ['Priorité 1', 'Priorité 3'],
+    id: 'chir-halogenes', domaine: 'Configuration absolue R/S', titre: 'Classer les groupes d’un carbone asymétrique (halogènes)', noms: ['Priorité 1', 'Priorité 3'],
     gen: () => { const at = [['F', 9], ['Cl', 17], ['Br', 35], ['I', 53]]; const L = [...at].sort(() => Math.random() - 0.5).slice(0, 3); return { L, M: tire([120, 165, 200, 255]), Teb: tire([40, 80, 110]) }; },
     build: (p, q) => {
       const tri = [...p.L].sort((a, b) => b[1] - a[1]);
@@ -1201,7 +1201,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'chir-heteroatomes', domaine: 'Chiralité et configuration R/S', titre: 'Classer les groupes d’un carbone asymétrique (O, N, C)', noms: ['Priorité 1', 'Priorité 3'],
+    id: 'chir-heteroatomes', domaine: 'Configuration absolue R/S', titre: 'Classer les groupes d’un carbone asymétrique (O, N, C)', noms: ['Priorité 1', 'Priorité 3'],
     gen: () => ({ M: tire([75, 89, 105, 119]), F: tire([150, 190, 230, 260]) }),
     build: (p, q) => {
       const tokens = {
@@ -1219,6 +1219,44 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'CH₂OH et CH₃ sont tous deux liés par C : quel est le numéro atomique de l’atome commun qui les met à égalité ?'], utiles: ['c'], raisons: { ...raisons, n: 'N est l’atome lié de NH₂, groupe déjà classé 1er.', o: 'O est un voisin du carbone de CH₂OH : il sert au deuxième rang, pas à l’égalité.' },
         cherche: { bonne: 'Le numéro atomique Z de l’atome lié qui est le même pour CH₂OH et CH₃ (sans unité)', faux: ['Le numéro atomique de l’atome O (sans unité)', 'Le numéro atomique de N (sans unité)', 'La température de fusion de la molécule (en °C)'] },
         manque: null, solution: { txt: 'C : Z = 6, pour CH₂OH et CH₃ ; on compare ensuite leurs voisins', val: 6, u: '' } };
+    },
+  },
+  {
+    id: 'chir-miroir-distance', domaine: 'Chiralité et carbone asymétrique', titre: 'Une molécule chirale devant un miroir plan', noms: ['Distance de l’image au miroir', 'Distance molécule – image'],
+    gen: () => ({ d: tire([10, 15, 20, 25, 30]), M: tire([75, 89, 105, 119]) }),
+    build: (p, q) => {
+      const tokens = {
+        d: tok(`${p.d} cm`, 'Distance de la molécule au miroir', p.d, 'cm'),
+        M: tok(`${p.M} g/mol`, 'Masse molaire', p.M, 'g/mol'),
+      };
+      const debut = ['On place le modèle moléculaire d’une molécule chirale à ', T('d'), ' d’un miroir plan. La molécule a une masse molaire de ', T('M'), '. L’image se forme symétriquement, de l’autre côté du miroir. '];
+      const raisons = { M: 'La masse molaire ne sert pas à trouver une distance.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'À quelle distance du miroir se trouve l’image ?'], utiles: ['d'], raisons,
+        cherche: { bonne: 'La distance de l’image au miroir (en cm)', faux: ['La distance entre la molécule et son image (en cm)', 'La masse molaire de la molécule (en g/mol)', 'Le nombre d’images formées (sans unité)'] },
+        manque: null, solution: { txt: 'l’image est à la même distance du miroir que la molécule', val: p.d, u: 'cm' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle distance sépare la molécule de son image ?'], utiles: ['d'], raisons,
+        cherche: { bonne: 'La distance entre la molécule et son image (en cm)', faux: ['La distance de la molécule au miroir (en cm)', 'La masse molaire de la molécule (en g/mol)', 'La moitié de la distance au miroir (en cm)'] },
+        manque: null, solution: { txt: 'molécule – miroir puis miroir – image : 2 × distance', val: 2 * p.d, u: 'cm' } };
+    },
+  },
+  {
+    id: 'chir-cram-liaisons', domaine: 'Chiralité et carbone asymétrique', titre: 'Compter les liaisons d’un carbone en représentation de Cram', noms: ['Liaisons au total', 'Liaisons hors du plan'],
+    gen: () => { const [t, c, d] = tire([[2, 1, 1], [1, 2, 1], [1, 1, 2], [0, 2, 2]]); return { t, c, d, Teb: tire([60, 80, 110]) }; },
+    build: (p, q) => {
+      const tokens = {
+        t: tok(`${p.t}`, 'Traits pleins (dans le plan)', p.t, ''),
+        c: tok(`${p.c}`, 'Coins pleins (devant)', p.c, ''),
+        d: tok(`${p.d}`, 'Tirets (derrière)', p.d, ''),
+        Teb: tok(`${p.Teb} °C`, 'Température d’ébullition', p.Teb, '°C'),
+      };
+      const debut = ['Sur le dessin de Cram d’un carbone asymétrique, on compte ', T('t'), ' trait(s) plein(s) dans le plan de la feuille, ', T('c'), ' coin(s) plein(s) vers l’observateur et ', T('d'), ' groupe(s) en tirets vers l’arrière. La molécule bout à ', T('Teb'), '. '];
+      const raisons = { Teb: 'La température d’ébullition ne sert pas à compter des liaisons.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien de liaisons ce carbone porte-t-il en tout ?'], utiles: ['t', 'c', 'd'], raisons,
+        cherche: { bonne: 'Le nombre total de liaisons du carbone (sans unité)', faux: ['Le nombre de liaisons dans le plan seulement (sans unité)', 'La température d’ébullition (en °C)', 'Le nombre de groupes en tirets (sans unité)'] },
+        manque: null, solution: { txt: 'traits + coins + tirets', val: p.t + p.c + p.d, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Combien de liaisons sortent du plan de la feuille (devant ou derrière) ?'], utiles: ['c', 'd'], raisons: { ...raisons, t: 'Les traits pleins sont dans le plan de la feuille : ils ne sortent pas du plan.' },
+        cherche: { bonne: 'Le nombre de liaisons hors du plan : coins pleins et tirets (sans unité)', faux: ['Le nombre total de liaisons du carbone (sans unité)', 'Le nombre de liaisons dans le plan (sans unité)', 'La température d’ébullition (en °C)'] },
+        manque: null, solution: { txt: 'coins pleins + tirets', val: p.c + p.d, u: '' } };
     },
   },
   // ───────────────────────────── 1. Mur (transferts thermiques)

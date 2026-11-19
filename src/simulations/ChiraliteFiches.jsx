@@ -14,6 +14,20 @@ const jOf = (m, aff, etiq) => M.EMPLACEMENTS.map(e => aff[e]).find(j => M.etique
 const coulLac = Object.fromEntries(['OH', 'COOH', 'CH₃', 'H'].map((e, k) => [jOf(lac, affLac, e), COUL_GROUPE[k]]));
 const coulPro = { [affPro.A]: '#0f766e', [affPro.B]: '#0f766e', [affPro.W]: '#6d28d9', [affPro.D]: '#475569' };
 
+// ───── 0. Objet chiral et image dans un miroir ─────
+function CarteMiroir() {
+  const lettre = (x, y, l, miroir) => <text x={0} y={0} textAnchor="middle" fontSize="70" fontWeight="800" fill="#0f172a" transform={`translate(${x},${y}) scale(${miroir ? -1 : 1},1)`}>{l}</text>;
+  return (
+    <svg viewBox="0 0 400 250" role="img" aria-label="Une lettre F et son image dans un miroir ne sont pas superposables : l’objet est chiral. Une lettre A et son image sont identiques : l’objet est achiral." style={svgStyle}>
+      <line x1="200" y1="28" x2="200" y2="100" stroke="#0369a1" strokeWidth="3" strokeDasharray="8 6"/>
+      <line x1="200" y1="134" x2="200" y2="200" stroke="#0369a1" strokeWidth="3" strokeDasharray="8 6"/>
+      {T(200, 20, 'miroir', '#0369a1', 'middle', 16)}
+      {lettre(120, 90, 'F', false)}{lettre(280, 90, 'F', true)}
+      {T(200, 124, 'F ≠ son image : chiral', '#b91c1c', 'middle', 19)}
+      {lettre(120, 190, 'A', false)}{lettre(280, 190, 'A', true)}
+      {T(200, 226, 'A = son image : achiral', '#15803d', 'middle', 19)}
+    </svg>);
+}
 // ───── 1. Carbone asymétrique et molécule chirale ─────
 function CarteAsym() {
   return (
@@ -113,6 +127,10 @@ function CarteBilan() {
 }
 
 export const FICHES = {
+  miroir: <><CarteMiroir/>
+    {puces(<>Un objet est <strong>chiral</strong> s’il n’est <strong>pas superposable à son image</strong> dans un miroir ; s’il l’est, il est <strong>achiral</strong>.</>,
+      <>Exemples : une main (chirale), un ballon ou un verre (achiraux). Pour une molécule, on compare le dessin à son image dans un miroir.</>,
+      <><strong>Mémo</strong> : « main droite et main gauche : images l’une de l’autre, jamais superposables ».</>)}</>,
   asym: <><CarteAsym/>
     {puces(<>Un <strong>carbone asymétrique</strong> (noté C*) est lié à <strong>4 atomes ou groupes tous différents</strong>.</>,
       <>Une molécule est <strong>chirale</strong> si elle a au moins un C* et aucun axe, plan ou centre de symétrie : un seul C* suffit.</>,
