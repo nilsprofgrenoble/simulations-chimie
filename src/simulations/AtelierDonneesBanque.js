@@ -115,6 +115,38 @@ export const ENONCES = [
         manque: null, solution: { txt: 'c = d ÷ Δt', val: c, u: 'm·s⁻¹' } };
     },
   },
+  // ───────────────────────────── 1G : ondes mécaniques périodiques, une onde sur une corde
+  {
+    id: 'ond1g-periode-corde', domaine: 'Ondes mécaniques périodiques', titre: 'Une onde sur une corde', noms: ['Longueur d’onde de l’onde', 'Célérité de l’onde'],
+    gen: () => { const [c, f] = tire([[2, 4], [2, 5], [2.5, 5], [4, 5], [3, 5], [2, 2], [1, 2]]); return { c, f, A: tire([1.5, 2, 3]), Lc: tire([2.5, 3, 4]), m: tire([120, 200, 250]) }; },
+    build: (p, q) => {
+      const lam = p.c / p.f, Tp = 1 / p.f;
+      const tokens = {
+        L: tok(`${nb(p.Lc, 1)} m`, 'Longueur de la corde', p.Lc, 'm'),
+        A: tok(`${nb(p.A, 1)} cm`, 'Amplitude du mouvement de la main', p.A / 100, 'm'),
+        m: tok(`${p.m} g`, 'Masse de la corde', p.m / 1000, 'kg'),
+      };
+      if (q === 0) {
+        tokens.f = tok(`${p.f} Hz`, 'Fréquence de la source (la main)', p.f, 'Hz');
+        tokens.c = tok(`${nb(p.c, 1)} m/s`, 'Célérité de l’onde le long de la corde', p.c, 'm·s⁻¹');
+        return { tokens, derivees: [],
+          texte: ['Un élève secoue l’extrémité d’une corde de longueur ', T('L'), ' et de masse ', T('m'), ', avec une amplitude de ', T('A'), ', à la fréquence de ', T('f'), '. Une onde sinusoïdale se propage le long de la corde avec la célérité ', T('c'), '. Quelle est sa longueur d’onde ?'],
+          utiles: ['f', 'c'],
+          raisons: { L: 'La longueur de la corde ne fixe pas la longueur d’onde : celle-ci dépend de la célérité et de la fréquence.', m: 'La masse de la corde intervient dans la célérité, déjà donnée ici : elle ne sert pas pour trouver λ.', A: 'L’amplitude règle la hauteur de l’onde, pas la distance entre deux crêtes.' },
+          cherche: { bonne: 'La longueur d’onde λ (en m)', faux: ['La période T de l’onde (en s)', 'La célérité de l’onde (en m/s)', 'L’amplitude de l’onde (en cm)'] },
+          manque: null, solution: { txt: 'λ = c ÷ f (soit λ = c × T)', val: lam, u: 'm' } };
+      }
+      tokens.lam = tok(`${nb(lam * 100)} cm`, 'Distance entre deux crêtes voisines sur la photo de la corde (longueur d’onde)', lam, 'm');
+      delete tokens.m;
+      tokens.T = tok(`${nb(Tp)} s`, 'Durée entre deux sommets successifs sur l’enregistrement d’un point (période)', Tp, 's');
+      return { tokens, derivees: [],
+        texte: ['Sur une corde de longueur ', T('L'), ', une onde sinusoïdale de ', T('A'), ' d’amplitude se propage. Sur la photo de la corde, deux crêtes voisines sont distantes de ', T('lam'), '. Sur l’enregistrement du mouvement d’un point, deux sommets successifs sont séparés de ', T('T'), '. Quelle est la célérité de l’onde ?'],
+        utiles: ['lam', 'T'],
+        raisons: { L: 'La longueur de la corde ne fixe pas la célérité de l’onde.', A: 'L’amplitude ne change ni la période ni la longueur d’onde, donc pas la célérité.' },
+        cherche: { bonne: 'La célérité c de l’onde (en m/s)', faux: ['La fréquence f de l’onde (en Hz)', 'La longueur d’onde λ de l’onde (en m)', 'La durée de propagation sur toute la corde (en s)'] },
+        manque: null, solution: { txt: 'c = λ ÷ T', val: lam / Tp, u: 'm·s⁻¹' } };
+    },
+  },
   // ───────────────────────────── Effet Doppler (TSTL) : un chariot sur un rail
   {
     id: 'dop-chariot', domaine: 'Ondes', titre: 'Un chariot sur un rail', noms: ['Vitesse du chariot', 'Décalage Doppler prévu'],
