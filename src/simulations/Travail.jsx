@@ -5,6 +5,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./travailModele";
+import { SEc, SMoteur, SAngle, SPoids, STheoreme, SFrott } from "./TravailSchemas";
 
 const SIM_ID = 106;
 declarerDefis(SIM_ID, [['frott', 'Trouver la force de frottement'], ['arret', 'Prévoir la distance d’arrêt']]);
@@ -129,59 +130,6 @@ export const TL = ({ x, y, s = 12, w = 700, c = NOIR, segs }) => { let cur = x;
     if (typeof g === 'string') { cur += g.length * s * 0.56; return <text key={i} x={px} y={y} fontSize={s} fontWeight={w} fill={c} xmlSpace="preserve" style={{ whiteSpace: 'pre' }}>{g}</text>; }
     cur += s * 0.66; return <TV key={i} x={px} y={y} s={s} w={w} c={g.c || c}>{g.v}</TV>; })}</g>; };
 
-const SchemaEc = () => (
-  <Schema aria="Deux chariots : le premier roule à la vitesse v, le second à la vitesse 2v ; la barre d'énergie cinétique du second est quatre fois plus haute" h={150}>
-    <line x1="10" y1="120" x2="350" y2="120" stroke={GRIS} strokeWidth="2"/>
-    <rect x="30" y="94" width="50" height="22" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><Fl x1={32} y1={86} x2={62} y2={86} c={VERT}/><TV x={34} y={78} c={VERT} s={13}>v</TV>
-    <rect x="30" y="127" width="0" height="0"/>
-    <rect x="200" y="94" width="50" height="22" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><Fl x1={202} y1={86} x2={262} y2={86} c={VERT}/><text x={206} y={78} fontSize="13" fontWeight="700" fill={VERT}>2</text><TV x={216} y={78} c={VERT} s={13}>v</TV>
-    <rect x="94" y="102" width="14" height="14" fill={BLEU}/><T x={92} y={134} c={BLEU} w={700}>E c</T>
-    <rect x="270" y="74" width="56" height="42" fill={BLEU} opacity="0.85"/><T x={298} y={134} c={BLEU} w={700} a="middle">4 E c</T>
-    <T x={10} y={16} s={13} w={700}>v × 2  ⇒  E c × 4</T><T x={10} y={34} s={12} c={GRIS} w={500}>l’énergie dépend du carré de la vitesse</T>
-  </Schema>);
-const SchemaMoteur = () => (
-  <Schema aria="Un chariot est poussé par une force dans le sens du déplacement : le travail est positif et l'énergie cinétique augmente de A à B" h={150}>
-    <line x1="10" y1="108" x2="350" y2="108" stroke={GRIS} strokeWidth="2"/>
-    <rect x="30" y="80" width="50" height="22" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
-    <Fl x1={40} y1={70} x2={90} y2={70} c={ROUGE}/><TV x={66} y={64} c={ROUGE}>F</TV>
-    <T x={42} y={126} w={700}>A</T><T x={300} y={126} w={700}>B</T>
-    <rect x="270" y="80" width="50" height="22" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><Fl x1={272} y1={70} x2={322} y2={70} c={ROUGE}/>
-    <Fl x1={55} y1={92} x2={96} y2={92} c={VERT}/><TV x={100} y={100} c={VERT} s={13}>v</TV><Fl x1={295} y1={92} x2={345} y2={92} c={VERT}/><TV x={330} y={80} c={VERT} s={13}>v</TV>
-    <TL x={10} y={22} s={13} segs={[{v:'F'},' dans le sens du mouvement']}/><T x={10} y={138} s={12} c={VERT} w={700}>W &gt; 0  ⇒  E c augmente</T>
-  </Schema>);
-const SchemaAngle = () => (
-  <Schema aria="Trois cas : force dans le sens du déplacement, force perpendiculaire, force opposée ; le travail est positif, nul ou négatif" h={150}>
-    {[[10, 0, VERT, 'θ = 0°', 'W = + F·AB', 'moteur'], [130, 90, GRIS, 'θ = 90°', 'W = 0', 'nul'], [250, 180, ROUGE, 'θ = 180°', 'W = − F·AB', 'résistant']].map(([x, th, c, a, w, n]) => {
-      const r = th * M.RAD, fx = 36 * Math.cos(r), fy = -36 * Math.sin(r);
-      return <g key={n}><rect x={x + 18} y="86" width="50" height="22" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/><line x1={x + 10} y1="112" x2={x + 100} y2="112" stroke={GRIS} strokeWidth="2"/>
-        <Fl x1={x + 43} y1={80} x2={x + 43 + fx} y2={80 + fy} c={c}/><TV x={x + 43 + fx / 2 + (th === 180 ? -2 : 8)} y={80 + fy / 2 - (th === 90 ? 0 : 8) + (th === 90 ? 4 : 0)} c={c} s={13} halo>F</TV><Fl x1={x + 18} y1={122} x2={x + 68} y2={122} c={BLEU} w={2}/>
-        <T x={x + 4} y={20} c={c} w={700}>{a}</T><T x={x + 4} y={138} c={c} w={700}>{w}</T></g>; })}
-    <T x={4} y={140} s={0}> </T>
-  </Schema>);
-const SchemaPoids = () => (
-  <Schema aria="Deux trajets différents entre E et F, l'un droit, l'autre courbe : le travail du poids est le même car la différence d'altitude est la même" h={160}>
-    <line x1="30" y1="30" x2="330" y2="30" stroke="#94a3b8" strokeDasharray="4 4"/><line x1="30" y1="130" x2="330" y2="130" stroke="#94a3b8" strokeDasharray="4 4"/>
-    <circle cx="60" cy="30" r="7" fill={ORANGE}/><T x={44} y={22} c={ORANGE} w={700}>E</T><circle cx="300" cy="130" r="7" fill={ORANGE}/><T x={306} y={150} c={ORANGE} w={700}>F</T>
-    <line x1="60" y1="30" x2="300" y2="130" stroke={BLEU} strokeWidth="3"/><path d="M60,30 C60,120 160,135 300,130" fill="none" stroke={ROUGE} strokeWidth="3"/>
-    <Fl x1={330} y1={30} x2={330} y2={130} c={NOIR} w={2}/><T x={246} y={86} s={11}>h = z</T><T x={270} y={90} s={9}>E</T><T x={278} y={86} s={11}> − z</T><T x={300} y={90} s={9}>F</T>
-    <TL x={8} y={156} s={11.5} segs={['W(',{v:'P'},') = m g (z E − z F) : même valeur, quel que soit le trajet']}/>
-  </Schema>);
-const SchemaTheoreme = () => (
-  <Schema aria="Bilan : l'énergie cinétique en F est égale à l'énergie cinétique en E plus la somme des travaux des forces entre E et F" h={150}>
-    <Barre x={30} h={30} c={BLEU} nom="E c (E)"/><T x={92} y={72} s={20} w={700}>+</T>
-    <Barre x={120} h={70} c={VERT} nom=""/><TL x={124} y={134} s={11.5} segs={['W(',{v:'P'},')']}/><Barre x={172} h={22} c={ROUGE} nom=""/><TL x={178} y={134} s={11.5} segs={['W(',{v:'f'},')']}/><T x={238} y={72} s={20} w={700}>=</T>
-    <Barre x={266} h={78} c={BLEU} nom="E c (F)"/>
-    <TL x={10} y={22} s={12.5} segs={['ΔE c = ΣW = W(',{v:'P'},') + W(',{v:'R'},') + W(',{v:'f'},')']}/><TL x={10} y={42} s={12} w={500} c={GRIS} segs={['W(',{v:'R'},') = 0 : ',{v:'R'},' ⟂ déplacement']}/>
-  </Schema>);
-const SchemaFrott = () => (
-  <Schema aria="Frottement : la force est opposée au déplacement, son travail est négatif et vaut moins f fois la longueur" h={144}>
-    <line x1="10" y1="100" x2="350" y2="100" stroke={GRIS} strokeWidth="2"/>
-    <rect x="130" y="72" width="60" height="24" rx="3" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
-    <Fl x1={200} y1={60} x2={260} y2={60} c={VERT}/><T x={266} y={64} c={VERT} w={700}>mouvement</T>
-    <Fl x1={125} y1={84} x2={70} y2={84} c={ORANGE}/><TV x={72} y={78} c={ORANGE}>f</TV>
-    <TL x={10} y={22} s={12.5} segs={['W(',{v:'f'},') = − f × L  (f constante, trajet rectiligne)']}/>
-    <T x={10} y={118} s={11.5} c={ORANGE} w={700}>Idée fausse : « un frottement ne travaille pas ».</T><T x={10} y={134} s={11.5} c={ORANGE} w={700}>Vrai : il enlève de l’énergie cinétique.</T>
-  </Schema>);
 export const puces = (...l) => <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>{l.map((x, i) => <li key={i}>{x}</li>)}</ul>;
 
 // ---------- tâches factorisées ----------
@@ -191,7 +139,11 @@ export function SimulationTravail() {
   const [mode, setMode] = useState(() => modeOuverture('travail-guide-v1'));
   useSignalerMode(mode);
   const [suiviFrott, noterFrott] = useCompteurDefi(), [suiviArret, noterArret] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('travail-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('travail-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('travail-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('travail-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 2 ? g2 : g1, setGuide = parc === 2 ? setG2 : setG1;
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('frott');
   const [hypoOuv, setHypoOuv] = useState(false);
   const [scene, setScene] = useState('tire');
@@ -225,7 +177,7 @@ export function SimulationTravail() {
   const hPlan = Number(nbf(mp0.h, 3).replace(',', '.'));
   const WP = M_PLAN * M.G * hPlan;
 
-  const ETAPES = [
+  const TOUTES = [
     { id: 'ec', titre: 'L’énergie du mouvement', focus: ['scene'],
       texte: <>Un chariot de masse <em>m</em> = 2,0{NB}kg roule à la vitesse <em>v</em> = 3,0{NB}m/s. Son <strong>énergie cinétique</strong> est l’énergie qu’il possède du fait de son mouvement : <strong><Ind b="E" i="c"/> = ½·m·v²</strong> (avec <em>m</em> en kg et <em>v</em> en m/s, <Ind b="E" i="c"/> est en joules).</>,
       tache: { type: 'num', q: 'Énergie cinétique du chariot', unite: 'J', vrai: Ec_9, tol: 0.02, affiche: v => nbf(v, 1), cs: 2,
@@ -233,12 +185,12 @@ export function SimulationTravail() {
         pieges: [[M.ecin(2, 3) * 2, 'Vous avez oublié le facteur ½.'], [0.5 * 2 * 3, 'Vous avez oublié de mettre la vitesse au carré.'], [(0.5 * 2 * 3) ** 2, 'Le carré ne porte que sur la vitesse, pas sur ½ m v.']],
         expl: '½ × 2,0 × 3,0² = 9,0 J.', indice: 'E_c = ½ × m × v² : calculez d’abord v², puis multipliez par m et par ½.' } },
     { id: 'ec2', titre: 'Si la vitesse double', focus: ['scene'],
-      retenirTitre: 'À RETENIR : L’ÉNERGIE CINÉTIQUE',
-      retenir: <><SchemaEc/>{FEc}{puces(<>Une phrase-clé : <strong>vitesse × 2 ⇒ énergie × 4</strong> (la vitesse est au carré) ; masse × 2 ⇒ énergie × 2.</>, <>Exemple : 2,0 kg à 3,0 m/s → 9,0 J ; à 6,0 m/s → 36 J.</>, <><strong>Idée fausse</strong> : « deux fois plus vite = deux fois plus d’énergie ». <strong>Vrai</strong> : quatre fois plus (c’est pourquoi la distance de freinage augmente si vite).</>, <>Unités : <em>m</em> en kg, <em>v</em> en m/s, <Ind b="E" i="c"/> en J. L’énergie cinétique dépend du référentiel (comme la vitesse).</>)}</>,
       texte: <>Le chariot roule maintenant deux fois plus vite : <em>v</em> = 6,0{NB}m/s, sa masse ne change pas.</>,
       tache: { type: 'qcm', q: 'Son énergie cinétique est…', options: ['multipliée par 4', 'multipliée par 2', 'inchangée'], bonne: 0,
         expl: '<E_c> est proportionnelle à v² : (2v)² = 4v², donc l’énergie est multipliée par 4 (36 J au lieu de 9,0 J).'.replace('<E_c>', 'E_c'), indice: 'Dans ½ m v², la vitesse est au carré : que devient (2v)² ?' } },
     { id: 'moteur', titre: 'Une force dans le sens du mouvement', focus: ['scene', 'mesures'],
+      retenirTitre: 'À RETENIR : L’ÉNERGIE CINÉTIQUE',
+      retenir: <><SEc/>{FEc}{puces(<>Une phrase-clé : <strong>vitesse × 2 ⇒ énergie × 4</strong> (la vitesse est au carré) ; masse × 2 ⇒ énergie × 2.</>, <>Exemple : 2,0 kg à 3,0 m/s → 9,0 J ; à 6,0 m/s → 36 J.</>, <><strong>Idée fausse</strong> : « deux fois plus vite = deux fois plus d’énergie ». <strong>Vrai</strong> : quatre fois plus (c’est pourquoi la distance de freinage augmente si vite).</>, <>Unités : <em>m</em> en kg, <em>v</em> en m/s, <Ind b="E" i="c"/> en J. L’énergie cinétique dépend du référentiel (comme la vitesse).</>)}</>,
       texte: <>Le chariot est maintenant lâché sans vitesse initiale en A. Une force constante <strong>vec(F)</strong> = 10{NB}N le pousse dans le sens du déplacement, sur la distance AB = 2,0{NB}m. Appliquez la force puis lancez le chariot.</>,
       tache: { type: 'action', ok: est({ F: 10, theta: 0, vA: 0 }), label: 'Appliquer la force F', faire: () => fixT({ F: 10, theta: 0, vA: 0 }), consigne: 'Force F = 10 N dans le sens du mouvement, vitesse initiale nulle' } },
     { id: 'effet', titre: 'L’effet de cette force', focus: ['scene'],
@@ -253,8 +205,6 @@ export function SimulationTravail() {
         pieges: [[10 / 2, 'Vous avez divisé au lieu de multiplier.']],
         expl: 'W = 10 × 2,0 = 20 J : un travail positif (travail moteur).', indice: 'W = F × AB, les deux grandeurs étant en unités SI (N et m).' } },
     { id: 'dec', titre: 'Le travail change l’énergie', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : LE TRAVAIL MOTEUR',
-      retenir: <><SchemaMoteur/>{puces(<>Une force <strong>dans le sens du déplacement</strong> fournit un travail <strong>positif</strong> : W = + F × AB.</>, <>Ce travail <strong>augmente</strong> l’énergie cinétique : ΔE<sub>c</sub> = E<sub>c</sub>(B) − E<sub>c</sub>(A) = W (si c’est la seule force qui travaille).</>, <>Exemple : F = 10 N sur 2,0 m ⇒ W = 20 J ⇒ un chariot de 2,0 kg lâché sans vitesse atteint 4,5 m/s.</>, <><strong>Idée fausse</strong> : « le travail, c’est l’effort ressenti ». <strong>Vrai</strong> : en physique, W est un transfert d’énergie par une force qui se déplace.</>)}</>,
       texte: <>Le chariot est lâché sans vitesse en A (<Ind b="E" i="c"/>(A) = 0) et arrive en B à la vitesse <em>v</em><sub>B</sub> = {nbf(cMot.vB, 2)}{NB}m/s (lue dans « Mesures »). Calculez la variation d’énergie cinétique <strong>ΔE<sub>c</sub> = <Ind b="E" i="c"/>(B) − <Ind b="E" i="c"/>(A)</strong>.</>,
       tache: { type: 'num', q: 'Variation d’énergie cinétique ΔE_c du chariot entre A et B', unite: 'J', vrai: M.ecin(2, Number(nbf(cMot.vB, 2).replace(',', '.'))), tol: 0.02, affiche: v => nbf(v, 1), cs: 3,
         bloque: bloqueSi(est({ F: 10, theta: 0, vA: 0 }), 'Remettez d’abord la situation (bouton « Rétablir ») : force de 10 N, vitesse initiale nulle.'),
@@ -262,6 +212,8 @@ export function SimulationTravail() {
         pieges: [[0.5 * 2 * cMot.vB, 'Vous avez oublié de mettre la vitesse au carré.'], [2 * cMot.vB * cMot.vB, 'Vous avez oublié le facteur ½.']],
         expl: 'ΔE_c = ½ × 2,0 × 4,47² ≈ 20 J = W : la variation d’énergie cinétique est égale au travail de la force.', indice: 'ΔE_c = E_c(B) − E_c(A), avec E_c = ½ m v² et E_c(A) = 0.' } },
     { id: 'resist', titre: 'Une force qui freine', focus: ['scene', 'mesures'],
+      retenirTitre: 'À RETENIR : LE TRAVAIL MOTEUR',
+      retenir: <><SMoteur/>{puces(<>Une force <strong>dans le sens du déplacement</strong> fournit un travail <strong>positif</strong> : W = + F × AB.</>, <>Ce travail <strong>augmente</strong> l’énergie cinétique : ΔE<sub>c</sub> = E<sub>c</sub>(B) − E<sub>c</sub>(A) = W (si c’est la seule force qui travaille).</>, <>Exemple : F = 6,0 N sur 3,0 m ⇒ W = 18 J ⇒ un chariot de 2,0 kg lâché sans vitesse atteint 4,2 m/s.</>, <><strong>Idée fausse</strong> : « le travail, c’est l’effort ressenti ». <strong>Vrai</strong> : en physique, W est un transfert d’énergie par une force qui se déplace.</>)}</>,
       texte: <>Le chariot part de A à <em>v</em><sub>A</sub> = 4,0{NB}m/s. Une force <strong>vec(F)</strong> = 5,0{NB}N s’exerce maintenant <strong>en sens opposé</strong> au déplacement (θ = 180°) sur AB = 2,0{NB}m. Appliquez-la puis lancez le chariot.</>,
       tache: { type: 'action', ok: est({ F: 5, theta: 180, vA: 4 }), label: 'Appliquer la force opposée', faire: () => fixT({ F: 5, theta: 180, vA: 4 }), consigne: 'Force F = 5,0 N opposée au mouvement, vitesse initiale 4,0 m/s' } },
     { id: 'resistw', titre: 'Le travail résistant', focus: ['mesures'],
@@ -282,14 +234,16 @@ export function SimulationTravail() {
       texte: <>Dans le cas général, la force fait un angle <strong>θ</strong> avec le déplacement : <strong>W = F × AB × cos θ</strong>. Appliquez F = 10{NB}N avec θ = 60°, AB = 2,0{NB}m, vitesse initiale nulle.</>,
       tache: { type: 'action', ok: est({ F: 10, theta: 60, vA: 0 }), label: 'Force à 60°', faire: () => fixT({ F: 10, theta: 60, vA: 0 }), consigne: 'F = 10 N, θ = 60°, vitesse initiale nulle' } },
     { id: 'cos', titre: 'Le travail dans le cas général', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : TRAVAIL D’UNE FORCE CONSTANTE',
-      retenir: <><SchemaAngle/>{FWab}{puces(<>θ est l’angle entre la force et le déplacement : θ aigu ⇒ W &gt; 0 (moteur) ; θ = 90° ⇒ W = 0 ; θ obtus ⇒ W &lt; 0 (résistant).</>, <>Exemple : F = 10 N, AB = 2,0 m, θ = 60° ⇒ W = 10 × 2,0 × 0,5 = 10 J.</>, <><strong>Piège</strong> : calculatrice en <strong>degrés</strong> pour cos θ.</>)}</>,
       texte: <>Calculez le travail de la force <strong>vec(F)</strong> = 10{NB}N (θ = 60°) sur AB = 2,0{NB}m : <strong>W = F × AB × cos θ</strong>.</>,
       tache: { type: 'num', q: 'Travail W de vec(F) (oblique, θ = 60°)', unite: 'J', vrai: 10, tol: 0.02, affiche: v => nbf(v, 0), cs: 2,
         bloque: bloqueSi(est({ F: 10, theta: 60, vA: 0 }), 'Appliquez d’abord la force oblique (étape précédente).'),
         calcul: () => ['W = F × AB × cos θ = 10 × 2,0 × cos 60° = 10 × 2,0 × 0,50 = 10 J.', 'Calculatrice en degrés : cos 60° = 0,50.'],
         pieges: [[20, 'Vous avez oublié le facteur cos θ : seule la composante de F le long du déplacement travaille.'], [10 * 2 * Math.cos(60), 'Votre calculatrice est en radians : l’angle est en degrés.']],
         expl: 'W = 10 × 2,0 × 0,50 = 10 J.', indice: 'W = F × AB × cos θ ; réglez la calculatrice en degrés (cos 60° = 0,5).' } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : TRAVAIL D’UNE FORCE CONSTANTE',
+      retenir: <><SAngle/>{FWab}{puces(<>θ est l’angle entre la force et le déplacement : θ aigu ⇒ W &gt; 0 (moteur) ; θ = 90° ⇒ W = 0 ; θ obtus ⇒ W &lt; 0 (résistant).</>, <>Exemple : F = 20 N, AB = 3,0 m, θ = 60° ⇒ W = 20 × 3,0 × 0,5 = 30 J.</>, <><strong>Piège</strong> : calculatrice en <strong>degrés</strong> pour cos θ.</>)}</>,
+      texte: <>Vous savez calculer l’énergie cinétique et le travail d’une force constante, quel que soit l’angle avec le déplacement. Passez au parcours 2 pour le plan incliné et le théorème de l’énergie cinétique, ou explorez librement.</>, tache: null },
     { id: 'plan', titre: 'Un mobile sur un plan incliné', focus: ['scene'],
       texte: <>On modélise une situation concrète (comme dans l’activité expérimentale) : un mobile de masse <em>m</em> = 0,200{NB}kg, lâché sans vitesse, glisse sur un plan incliné de <strong>15°</strong>, <strong>sans frottement</strong>. Deux <strong>barrières lumineuses</strong> E et F, distantes de 1,00{NB}m, mesurent la vitesse. Forces : le <strong>poids</strong> <strong>vec(P)</strong> et la <strong>réaction</strong> <strong>vec(R)</strong> du support.</>,
       tache: { type: 'action', ok: estP({ alpha: 15, f: 0 }), label: 'Passer au plan incliné', faire: () => fixP({ alpha: 15, f: 0 }), consigne: 'Plan incliné de 15°, sans frottement' } },
@@ -298,8 +252,6 @@ export function SimulationTravail() {
       tache: { type: 'qcm', q: 'Le travail de la réaction R du support entre E et F est…', options: ['nul, car R est perpendiculaire au déplacement', 'positif, car R pousse le mobile', 'négatif, car R freine le mobile'], bonne: 0,
         expl: 'R est perpendiculaire au déplacement (θ = 90°, cos θ = 0) : son travail est nul. Seul le poids travaille ici (pas de frottement).', indice: 'Quel est l’angle entre R et le déplacement ? Que vaut cos 90° ?' } },
     { id: 'poids', titre: 'Le travail du poids', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : LE TRAVAIL DU POIDS',
-      retenir: <><SchemaPoids/>{puces(<>Pour un déplacement de E à F : <strong>W(vec(P)) = m·g·(z<sub>E</sub> − z<sub>F</sub>)</strong> ; il ne dépend <strong>que de la différence d’altitude</strong>, pas du trajet.</>, <>Descente (z<sub>E</sub> &gt; z<sub>F</sub>) : W(vec(P)) &gt; 0 ; montée : W(vec(P)) &lt; 0 ; même niveau : W(vec(P)) = 0.</>, <>Exemple : 0,200 kg qui descend de 0,259 m ⇒ W(vec(P)) = 0,200 × 9,8 × 0,259 ≈ 0,51 J.</>, <><strong>Piège</strong> : on utilise le <strong>dénivelé</strong>, pas la longueur du trajet.</>)}</>,
       texte: <>Le <strong>travail du poids</strong> entre E et F vaut <strong>W(vec(P)) = m·g·(z<sub>E</sub> − z<sub>F</sub>)</strong>, avec <em>g</em> = 9,8{NB}N/kg. Le dénivelé z<sub>E</sub> − z<sub>F</sub> est donné dans « Mesures ».</>,
       tache: { type: 'num', q: 'Travail W(vec(P)) du poids entre E et F', unite: 'J', vrai: WP, tol: 0.03, affiche: v => nbf(v, 2), cs: 2,
         bloque: bloqueSi(estP({ alpha: 15, f: 0 }), 'Revenez d’abord au plan incliné de 15° sans frottement (bouton « Rétablir »).'),
@@ -311,6 +263,8 @@ export function SimulationTravail() {
       tache: { type: 'qcm', q: 'Le travail du poids est…', options: ['le même : il ne dépend que de la différence d’altitude', 'plus grand, car le trajet est plus long', 'plus petit, car le trajet est courbe'], bonne: 0,
         expl: 'Le travail du poids ne dépend pas du chemin suivi, seulement de z_E − z_F. C’est un cas particulier : le travail du frottement, lui, dépend du chemin.', indice: 'Dans W(vec(P)) = m g (z_E − z_F), la longueur du trajet apparaît-elle ?' } },
     { id: 'barriere', titre: 'Mesurer une vitesse', focus: ['scene', 'mesures'],
+      retenirTitre: 'À RETENIR : LE TRAVAIL DU POIDS',
+      retenir: <><SPoids/>{puces(<>Pour un déplacement de E à F : <strong>W(vec(P)) = m·g·(z<sub>E</sub> − z<sub>F</sub>)</strong> ; il ne dépend <strong>que de la différence d’altitude</strong>, pas du trajet.</>, <>Descente (z<sub>E</sub> &gt; z<sub>F</sub>) : W(vec(P)) &gt; 0 ; montée : W(vec(P)) &lt; 0 ; même niveau : W(vec(P)) = 0.</>, <>Exemple : 0,500 kg qui descend de 0,40 m ⇒ W(vec(P)) = 0,500 × 9,8 × 0,40 ≈ 2,0 J.</>, <><strong>Piège</strong> : on utilise le <strong>dénivelé</strong>, pas la longueur du trajet.</>)}</>,
       texte: <>Une languette de largeur <em>ℓ</em> = 1,0{NB}cm, fixée sur le mobile, coupe le faisceau de chaque barrière pendant la durée <em>Δt</em>. Pendant ce temps, le mobile avance de <em>ℓ</em> : <strong>v = ℓ / Δt</strong>. Lancez le mobile et lisez <em>Δt</em><sub>F</sub> dans « Mesures ».</>,
       tache: { type: 'num', q: 'Vitesse v_F du mobile en F', unite: 'm/s', vrai: vF0, tol: 0.02, affiche: v => nbf(v, 2), cs: 3,
         bloque: bloqueSi(estP({ alpha: 15, f: 0 }), 'Revenez d’abord au plan incliné de 15° sans frottement (bouton « Rétablir »).'),
@@ -325,17 +279,15 @@ export function SimulationTravail() {
         pieges: [[M.ecin(M_PLAN, vF0a - vE0a), 'On retranche les énergies, pas les vitesses : E_c(F) − E_c(E) ≠ ½ m (v_F − v_E)².'], [M.ecin(M_PLAN, vF0a), 'Vous avez donné E_c(F) seulement : il faut retrancher E_c(E) (le mobile n’est pas lâché en E).']],
         expl: `ΔE_c ≈ ${nbf(dEc0, 2)} J.`, indice: 'Calculez E_c(E) et E_c(F) séparément avec ½ m v², puis faites la différence.' } },
     { id: 'theoreme', titre: 'Comparer à ΣW', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : LE THÉORÈME DE L’ÉNERGIE CINÉTIQUE',
-      retenir: <><SchemaTheoreme/>{FTheo}{puces(<>Entre deux positions, la <strong>variation d’énergie cinétique</strong> est égale à la <strong>somme des travaux de toutes les forces</strong> qui s’exercent sur le système.</>, <>Ici (sans frottement) : ΔE<sub>c</sub> = W(vec(P)) + W(vec(R)) = W(vec(P)) + 0.</>, <>Méthode en 5 gestes : choisir les deux positions, faire le bilan des forces, écrire chaque travail, appliquer ΔE<sub>c</sub> = ΣW, résoudre.</>, <>Un petit écart entre ΔE<sub>c</sub> et ΣW vient des mesures (v = ℓ/Δt, arrondis), pas d’une force oubliée, tant que ΣW est complet.</>)}</>,
       texte: <>Vous avez trouvé ΔE<sub>c</sub> ≈ {nbf(dEc0, 2)}{NB}J et W(vec(P)) ≈ {nbf(WP, 2)}{NB}J. La réaction travaille 0 J.</>,
       tache: { type: 'qcm', q: 'Que peut-on conclure ?', options: ['ΔE_c = W(vec(P)) + W(vec(R)) : la variation d’énergie cinétique est égale à la somme des travaux des forces', 'ΔE_c = W(vec(P)) seulement par hasard', 'l’énergie cinétique ne dépend pas des forces'], bonne: 0,
         expl: 'C’est le théorème de l’énergie cinétique : ΔE_c = ΣW. Le léger écart éventuel vient des mesures (ℓ/Δt, arrondis).', indice: 'Comparez ΔE_c et W(vec(P)) : sont-ils égaux, aux arrondis près ?' } },
     { id: 'frott', titre: 'Ajoutons un frottement', focus: ['scene', 'mesures'],
+      retenirTitre: 'À RETENIR : LE THÉORÈME DE L’ÉNERGIE CINÉTIQUE',
+      retenir: <><STheoreme/>{FTheo}{puces(<>Entre deux positions, la <strong>variation d’énergie cinétique</strong> est égale à la <strong>somme des travaux de toutes les forces</strong> qui s’exercent sur le système.</>, <>Ici (sans frottement) : ΔE<sub>c</sub> = W(vec(P)) + W(vec(R)) = W(vec(P)) + 0.</>, <>Méthode en 5 gestes : choisir les deux positions, faire le bilan des forces, écrire chaque travail, appliquer ΔE<sub>c</sub> = ΣW, résoudre.</>, <>Un petit écart entre ΔE<sub>c</sub> et ΣW vient des mesures (v = ℓ/Δt, arrondis), pas d’une force oubliée, tant que ΣW est complet.</>)}</>,
       texte: <>Le plan n’est plus parfaitement lisse : une force de <strong>frottement</strong> <strong>vec(f)</strong> = 0,20{NB}N, d’intensité constante, s’oppose au mouvement. Activez-la et lancez le mobile : les durées <em>Δt</em> changent.</>,
       tache: { type: 'action', ok: estP({ alpha: 15, f: 0.2 }), label: 'Activer le frottement', faire: () => fixP({ alpha: 15, f: 0.2 }), consigne: 'Plan de 15° avec un frottement de 0,20 N' } },
     { id: 'wf', titre: 'Le travail du frottement', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : LE FROTTEMENT',
-      retenir: <><SchemaFrott/>{puces(<>Une force de frottement d’intensité constante, opposée au mouvement, sur une trajectoire rectiligne : <strong>W(vec(f)) = − f × L</strong> (toujours négatif).</>, <>Il <strong>retire</strong> de l’énergie cinétique ; contrairement au poids, son travail <strong>dépend du chemin</strong> parcouru.</>, <>Exemple : f = 0,20 N sur L = 1,00 m ⇒ W(vec(f)) = − 0,20 J.</>)}</>,
       texte: <>La force de frottement est de même direction que le déplacement mais de sens opposé : <strong>W(vec(f)) = − f × L</strong> (L = EF = 1,00{NB}m).</>,
       tache: { type: 'num', q: 'Travail W(vec(f)) du frottement entre E et F', unite: 'J', vrai: -0.2, tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
         bloque: bloqueSi(estP({ alpha: 15, f: 0.2 }), 'Activez d’abord le frottement (étape précédente).'),
@@ -343,6 +295,8 @@ export function SimulationTravail() {
         pieges: [[0.2, 'Le signe : le frottement s’oppose au mouvement, son travail est négatif.']],
         expl: 'W(vec(f)) = − 0,20 J.', indice: 'W(vec(f)) = − f × L, avec f en N et L en m.' } },
     { id: 'bilan', titre: 'Le bilan avec frottement', focus: ['mesures'],
+      retenirTitre: 'À RETENIR : LE FROTTEMENT',
+      retenir: <><SFrott/>{puces(<>Une force de frottement d’intensité constante, opposée au mouvement, sur une trajectoire rectiligne : <strong>W(vec(f)) = − f × L</strong> (toujours négatif).</>, <>Il <strong>retire</strong> de l’énergie cinétique ; contrairement au poids, son travail <strong>dépend du chemin</strong> parcouru.</>, <>Exemple : f = 0,50 N sur L = 0,80 m ⇒ W(vec(f)) = − 0,40 J.</>)}</>,
       texte: <>Avec frottement, on mesure <em>v</em><sub>E</sub> = {nbf(vE1a, 2)}{NB}m/s et <em>v</em><sub>F</sub> = {nbf(vF1a, 2)}{NB}m/s. Calculez la nouvelle variation d’énergie cinétique ΔE<sub>c</sub> entre E et F.</>,
       tache: { type: 'num', q: 'Variation d’énergie cinétique ΔE_c entre E et F (avec frottement)', unite: 'J', vrai: dEc1, tol: 0.03, affiche: v => nbf(v, 2), cs: 2,
         bloque: bloqueSi(estP({ alpha: 15, f: 0.2 }), 'Activez d’abord le frottement avec le bouton « Rétablir ».'),
@@ -355,16 +309,19 @@ export function SimulationTravail() {
         calcul: () => [`ΣW = W(vec(P)) + W(vec(R)) + W(vec(f)) = ${nbf(WP, 2)} + 0 + (− 0,20) = ${nbf(WP - 0.2, 2)} J.`, `On retrouve ΔE_c ≈ ${nbf(dEc1, 2)} J : le théorème de l’énergie cinétique est vérifié.`],
         pieges: [[WP + 0.2, 'Le travail du frottement est négatif : il se retranche.']],
         expl: `ΣW ≈ ${nbf(WP - 0.2, 2)} J, égale à ΔE_c ≈ ${nbf(dEc1, 2)} J : le théorème est vérifié, y compris avec frottement.`, indice: 'Additionnez les travaux en gardant leur signe : W(vec(P)) positif, W(vec(f)) négatif, W(vec(R)) nul.' } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>{FTheo}{puces(<><strong>Énergie cinétique</strong> : E<sub>c</sub> = ½ m v² ; vitesse × 2 ⇒ E<sub>c</sub> × 4.</>, <><strong>Travail</strong> d’une force constante : W = F·AB·cos θ ; positif, nul ou négatif selon l’angle.</>, <><strong>Poids</strong> : W(vec(P)) = m g (z<sub>E</sub> − z<sub>F</sub>), indépendant du trajet ; <strong>frottement</strong> : W(vec(f)) = − f L.</>, <><strong>Théorème</strong> : ΔE<sub>c</sub> = ΣW (toutes les forces).</>)}</>,
+    { id: 'bravo', titre: 'Le bilan', focus: [],
       texte: <>Vous savez calculer l’énergie cinétique, le travail d’une force constante (poids, frottement) et appliquer le théorème de l’énergie cinétique. Essayez maintenant l’exploration, puis les défis.</>, tache: null },
   ];
+  const ORDRE_PARC = [['ec', 'ec2', 'moteur', 'effet', 'wmot', 'dec', 'resist', 'resistw', 'perp', 'perpq', 'angle', 'cos', 'bilan1'],
+    ['plan', 'reaction', 'poids', 'chemin', 'barriere', 'ecplan', 'theoreme', 'frott', 'wf', 'bilan', 'verif', 'bravo']];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(e => e.id === id));
   const IDS = ETAPES.map(e => e.id), idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
-  const apres = id => !enGuide || etape > IDS.indexOf(id), depuis = id => !enGuide || etape >= IDS.indexOf(id);
+  // étapes de l'autre parcours : déjà passées (parcours 2) ou pas encore atteintes (parcours 1)
+  const iEt = id => { const k = IDS.indexOf(id); return k >= 0 ? k : (ORDRE_PARC[0].includes(id) ? -1 : Infinity); };
+  const apres = id => !enGuide || etape > iEt(id), depuis = id => !enGuide || etape >= iEt(id);
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
-  const etapeTire = enGuide && IDS.indexOf(idE) <= IDS.indexOf('cos'), etapePlan = enGuide && !etapeTire;
+  const etapeTire = enGuide && parc === 1, etapePlan = enGuide && !etapeTire;
   const sceneGuide = etapeTire ? 'tire' : 'plan';
   const sceneAff = enGuide ? sceneGuide : sceneEff;
 
@@ -438,6 +395,7 @@ export function SimulationTravail() {
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : plan incliné et théorème</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -543,7 +501,12 @@ export function SimulationTravail() {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une force qui travaille <strong>transfère de l’énergie</strong> : le <strong>théorème de l’énergie cinétique</strong> relie la variation d’énergie cinétique d’un système à la somme des travaux des forces qu’il subit.</div>
       <div className={`tr-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {enGuide ? <div className="tr-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="tr-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="tr-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {[[1, '1. Le travail d’une force'], [2, '2. Plan incliné et théorème']].map(([k, l]) => <button key={k} onClick={() => setParc(k)} aria-pressed={parc === k} style={{ ...styleBouton(parc === k, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="tr-carte">{panneauHypo}</div> : null}
         <div className="tr-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'frott' ? suiviFrott : suiviArret}/></div>}
           <div className={`tr-pri${mode !== 'explore' ? ' pile' : ''}`}>
