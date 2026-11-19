@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { nbf, tire, Schema, T, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
 import * as C from "./ccmModele";
+import { SchemaRf, SchemaComparer, SchemaEluant, SchemaTfCompat } from "./TpChaloneSchemas";
 
 export const SIM_ID = 109;
 declarerDefis(SIM_ID, [['rf', 'Identifier une impureté par son Rf']]);
@@ -61,42 +62,6 @@ export function Kofler({ tf, largeur = 0 }) {
 }
 
 // ---------- schémas des cartes ----------
-const SchemaRf = () => (
-  <Schema aria="Une plaque de CCM : le Rf est la distance parcourue par la tache divisée par la distance parcourue par le front de l'éluant" h={170}>
-    <rect x="30" y="20" width="110" height="140" fill="#ecfccb" stroke={GRIS} strokeWidth="2"/>
-    <line x1="30" y1="140" x2="140" y2="140" stroke={NOIR} strokeDasharray="4 3"/><line x1="30" y1="40" x2="140" y2="40" stroke={ROUGE} strokeWidth="2"/>
-    <ellipse cx="85" cy="90" rx="10" ry="5.5" fill="#4c1d95"/>
-    <line x1="152" y1="140" x2="152" y2="90" stroke={ORANGE} strokeWidth="2.5"/><line x1="170" y1="140" x2="170" y2="40" stroke={ROUGE} strokeWidth="2.5"/>
-    <T x={146} y={154} s={11.5} c={ORANGE} w={700}>d</T><T x={168} y={154} s={11.5} c={ROUGE} w={700}>D</T>
-    <T x={186} y={62} s={12.5} w={700}>Rf = d ÷ D</T><T x={186} y={82} s={11.5}>d : tache depuis la ligne</T><T x={186} y={98} s={11.5}>D : front depuis la ligne</T>
-    <T x={186} y={122} s={11.5} c={VERT} w={700}>Rf est compris entre 0 et 1</T><T x={186} y={138} s={11.5} c={GRIS}>sans unité</T>
-    <T x={6} y={14} s={12.5} w={700}>Un Rf = un rapport de distances</T>
-  </Schema>);
-const SchemaComparer = () => (
-  <Schema aria="Comparer les taches du produit avec les références : une tache à la hauteur de la chalcone identifie la chalcone ; une seconde tache à la hauteur d'un réactif montre une impureté" h={170}>
-    <rect x="30" y="20" width="200" height="140" fill="#ecfccb" stroke={GRIS} strokeWidth="2"/><line x1="30" y1="140" x2="230" y2="140" stroke={NOIR} strokeDasharray="4 3"/>
-    {[60, 110, 160, 205].map((x, i) => <text key={i} x={x} y="154" textAnchor="middle" fontSize="11" fontWeight="700">{i + 1}</text>)}
-    <ellipse cx="60" cy="100" rx="9" ry="5" fill="#4c1d95"/><ellipse cx="60" cy="82" rx="9" ry="5" fill="#4c1d95" opacity="0.45"/>
-    <ellipse cx="110" cy="100" rx="9" ry="5" fill="#4c1d95"/><ellipse cx="160" cy="82" rx="9" ry="5" fill="#4c1d95"/><ellipse cx="205" cy="68" rx="9" ry="5" fill="#4c1d95"/>
-    <line x1="30" y1="100" x2="230" y2="100" stroke={VERT} strokeDasharray="3 3"/><line x1="30" y1="82" x2="230" y2="82" stroke={ROUGE} strokeDasharray="3 3"/>
-    <T x={238} y={90} s={11.5} c={VERT} w={700}>même hauteur :</T><T x={238} y={104} s={11.5} c={VERT} w={700}>chalcone</T><T x={238} y={74} s={11.5} c={ROUGE} w={700}>impureté</T>
-    <T x={6} y={14} s={12.5} w={700}>Même hauteur = même espèce (a priori)</T>
-  </Schema>);
-const SchemaEluant = () => (
-  <Schema aria="Avec un éluant plus polaire, les taches montent plus haut : le Rf augmente" h={170}>
-    {[[40, 0.45], [150, 0.7]].map(([x, r], i) => <g key={i}><rect x={x} y="24" width="90" height="130" fill="#ecfccb" stroke={GRIS} strokeWidth="2"/><line x1={x} y1="130" x2={x + 90} y2="130" stroke={NOIR} strokeDasharray="4 3"/><line x1={x} y1="44" x2={x + 90} y2="44" stroke={ROUGE}/>
-      <ellipse cx={x + 45} cy={130 - r * 86} rx="10" ry="5.5" fill="#4c1d95"/></g>)}
-    <T x={40} y={166} s={11.5}>éluant peu polaire</T><T x={150} y={166} s={11.5}>éluant plus polaire</T><T x={262} y={92} s={11.5} c={ORANGE} w={700}>Rf plus grand</T>
-    <T x={262} y={110} s={11} c={GRIS}>l’éluant entraîne</T><T x={262} y={124} s={11} c={GRIS}>mieux l’espèce</T><T x={6} y={14} s={12.5} w={700}>Éluant plus polaire ⇒ taches plus hautes</T>
-  </Schema>);
-const SchemaTfCompat = () => (
-  <Schema aria="La température de fusion mesurée avec son incertitude est comparée à celle de la littérature : si l'intervalle contient la valeur de la littérature, les valeurs sont compatibles" h={150}>
-    <line x1="30" y1="96" x2="340" y2="96" stroke={GRIS}/>
-    <line x1="150" y1="60" x2="150" y2="104" stroke={VERT} strokeWidth="3"/><T x={150} y={120} a="middle" s={11.5} c={VERT} w={700}>littérature : 98 °C</T>
-    <line x1="116" y1="78" x2="164" y2="78" stroke={BLEU} strokeWidth="4"/><line x1="116" y1="70" x2="116" y2="86" stroke={BLEU} strokeWidth="3"/><line x1="164" y1="70" x2="164" y2="86" stroke={BLEU} strokeWidth="3"/><circle cx="140" cy="78" r="4.5" fill={BLEU}/>
-    <T x={100} y={58} s={11.5} c={BLEU} w={700}>mesure 97 ± 2 °C</T><T x={6} y={14} s={12.5} w={700}>|Tf mesurée − Tf littérature| ≤ u : compatibles</T>
-    <T x={6} y={140} s={11.5} c={GRIS}>fusion nette + valeur compatible ⇒ produit sans doute pur</T><T x={196} y={78} s={11.5}>l’intervalle contient 98 °C</T>
-  </Schema>);
 
 export function SimulationCcm({ integre = false, modeExt, setModeExt, suite } = {}) {
   const [modeLoc, setModeLoc] = useState(() => modeOuverture('ccm-guide-v1'));
@@ -133,34 +98,34 @@ export function SimulationCcm({ integre = false, modeExt, setModeExt, suite } = 
       tache: { type: 'qcm', q: 'Que faut-il faire tout de suite ?', options: ['retirer la plaque et tracer au crayon la ligne du front de l’éluant, avant qu’il ne s’évapore', 'laisser la plaque dans la cuve jusqu’à ce que l’éluant atteigne le bord supérieur', 'sécher la plaque puis chercher où se trouvait le front'], bonne: 0,
         expl: 'Le front de l’éluant (sa hauteur maximale) s’efface en séchant : on le marque tout de suite au crayon. Ensuite on sèche sous la hotte et on révèle les taches à la lampe UV en les entourant.', indice: 'Que devient le front quand la plaque sèche ?' } },
     { id: 'rf1', titre: 'Le rapport frontal de la chalcone', focus: ['plaque', 'mesures'],
-      retenirTitre: 'À RETENIR : LE RAPPORT FRONTAL Rf',
-      retenir: <><SchemaRf/>{puces(<><strong>Rf = d ÷ D</strong> : distance parcourue par la tache divisée par celle du front, toutes deux mesurées <strong>depuis la ligne de dépôt</strong>.</>, <>Exemple : tache à 2,0 cm, front à 5,0 cm ⇒ Rf = 0,40.</>, <>Un Rf est <strong>sans unité</strong> et toujours compris entre <strong>0 et 1</strong>.</>, <><strong>Idée fausse</strong> : « le Rf est la hauteur de la tache ». <strong>Vrai</strong> : c’est un rapport, il ne dépend pas de la taille de la plaque.</>)}</>,
       texte: <>On mesure depuis la ligne de dépôt : le front est à {nbf(FRONT, 1)}{NB}cm et la tache de la chalcone de référence est à {nbf(dCh, 1)}{NB}cm.</>,
       tache: { type: 'num', q: 'Rf de la chalcone', unite: '', vrai: rfCh, tol: 0.03, affiche: v => nbf(v, 2), cs: 2,
         calcul: () => [`Rf = d ÷ D = ${nbf(dCh, 1)} ÷ ${nbf(FRONT, 1)} = ${nbf(rfCh, 2)}.`], pieges: [[FRONT / dCh, 'Vous avez inversé : Rf = distance de la tache ÷ distance du front (inférieur à 1).'], [dCh, 'Il faut diviser par la distance du front : un Rf est sans unité.']],
         expl: `Rf = ${nbf(dCh, 1)} / ${nbf(FRONT, 1)} = ${nbf(rfCh, 2)}.`, indice: 'Rf = d ÷ D, avec d la distance de la tache et D celle du front, depuis la ligne de dépôt.' } },
     { id: 'rf2', titre: 'Le Rf de l’anisaldéhyde', focus: ['plaque', 'mesures'],
+      retenirTitre: 'À RETENIR : LE RAPPORT FRONTAL Rf',
+      retenir: <><SchemaRf/>{puces(<><strong>Rf = d ÷ D</strong> : distance parcourue par la tache divisée par celle du front, toutes deux mesurées <strong>depuis la ligne de dépôt</strong>.</>, <>Exemple : tache à 2,0 cm, front à 5,0 cm ⇒ Rf = 0,40.</>, <>Un Rf est <strong>sans unité</strong> et toujours compris entre <strong>0 et 1</strong>.</>, <><strong>Idée fausse</strong> : « le Rf est la hauteur de la tache ». <strong>Vrai</strong> : c’est un rapport, il ne dépend pas de la taille de la plaque.</>)}</>,
       texte: <>La tache de l’anisaldéhyde (voie 3) est à {nbf(dAn, 1)}{NB}cm de la ligne de dépôt. Le front est à {nbf(FRONT, 1)}{NB}cm.</>,
       tache: { type: 'num', q: 'Rf de l’anisaldéhyde', unite: '', vrai: rfAn, tol: 0.03, affiche: v => nbf(v, 2), cs: 2,
         calcul: () => [`Rf = ${nbf(dAn, 1)} ÷ ${nbf(FRONT, 1)} = ${nbf(rfAn, 2)}.`], pieges: [[FRONT / dAn, 'Vous avez inversé le rapport : le Rf est inférieur à 1.']],
         expl: `Rf = ${nbf(dAn, 1)} / ${nbf(FRONT, 1)} = ${nbf(rfAn, 2)}.`, indice: 'Rf = distance de la tache ÷ distance du front.' } },
     { id: 'brut', titre: 'Le produit brut est-il pur ?', focus: ['plaque'],
-      retenirTitre: 'À RETENIR : COMPARER LES TACHES',
-      retenir: <><SchemaComparer/>{puces(<>On <strong>compare</strong> la voie du produit aux voies de référence : même hauteur (même Rf) ⇒ même espèce, <strong>a priori</strong>.</>, <>Une tache à la hauteur de la chalcone confirme sa présence ; une <strong>seconde tache</strong> à la hauteur d’un réactif révèle une <strong>impureté</strong>.</>, <>Exemple : tache en plus à la hauteur de l’anisaldéhyde ⇒ il en reste dans le produit.</>, <><strong>Idée fausse</strong> : « une seule tache prouve que c’est pur ». <strong>Vrai</strong> : c’est un bon indice, pour cet éluant seulement.</>)}</>,
       texte: <>Sur la plaque, la voie 1 (produit brut) montre <strong>deux taches</strong> : l’une à {nbf(dCh, 1)}{NB}cm, l’autre, plus pâle, à {nbf(dAn, 1)}{NB}cm.</>,
       tache: { type: 'qcm', q: 'Que conclure pour le produit brut ?', options: ['il contient de la chalcone, mais aussi de l’anisaldéhyde non consommé', 'il ne contient pas de chalcone', 'il contient de la 4’-méthylacétophénone seulement'], bonne: 0,
         expl: `La grande tache est à ${nbf(dCh, 1)} cm, comme la chalcone de référence (Rf ${nbf(rfCh, 2)}). La tache pâle est à ${nbf(dAn, 1)} cm, comme l’anisaldéhyde : il en reste un peu dans le produit brut, c’est une impureté.`, indice: 'Comparez la hauteur de chaque tache de la voie 1 avec celle des voies 2, 3 et 4.' } },
     { id: 'recris', titre: 'Après la recristallisation', focus: ['plaque2'],
+      retenirTitre: 'À RETENIR : COMPARER LES TACHES',
+      retenir: <><SchemaComparer/>{puces(<>On <strong>compare</strong> la voie du produit aux voies de référence : même hauteur (même Rf) ⇒ même espèce, <strong>a priori</strong>.</>, <>Une tache à la hauteur de la chalcone confirme sa présence ; une <strong>seconde tache</strong> à la hauteur d’un réactif révèle une <strong>impureté</strong>.</>, <>Exemple : tache en plus à la hauteur de l’anisaldéhyde ⇒ il en reste dans le produit.</>, <><strong>Idée fausse</strong> : « une seule tache prouve que c’est pur ». <strong>Vrai</strong> : c’est un bon indice, pour cet éluant seulement.</>)}</>,
       texte: <>On recommence la CCM avec le produit recristallisé : il ne montre plus qu’une seule tache, à la hauteur de la chalcone de référence.</>,
       tache: { type: 'qcm', q: 'Que peut-on conclure ?', options: ['la recristallisation a éliminé l’anisaldéhyde : le produit semble pur dans cet éluant', 'le produit est certainement pur, quel que soit l’éluant utilisé', 'la recristallisation a détruit la chalcone'], bonne: 0,
         expl: 'La tache d’anisaldéhyde a disparu : l’impureté a été éliminée à la précision de la CCM. Une seule tache est un bon indice de pureté mais ne le prouve pas : une autre impureté pourrait migrer comme la chalcone dans cet éluant. Mesurer la température de fusion complète le contrôle.', indice: 'Que dit la présence ou l’absence de la tache d’anisaldéhyde ? Une seule CCM suffit-elle à prouver la pureté ?' } },
     { id: 'eluant', titre: 'Changer d’éluant', focus: [],
-      retenirTitre: 'À RETENIR : L’ÉLUANT ET LE Rf',
-      retenir: <><SchemaEluant/>{puces(<>La silice (phase fixe) est <strong>polaire</strong> : elle retient les espèces polaires. L’éluant (phase mobile) les entraîne d’autant mieux qu’il est <strong>polaire</strong> lui aussi.</>, <>Plus d’éther éthylique (plus polaire) dans le pentane ⇒ <strong>Rf plus grands</strong>.</>, <>Exemple : 0,45 avec un éluant, environ 0,70 avec un éluant plus polaire.</>, <>On compare toujours des Rf obtenus <strong>sur la même plaque, avec le même éluant</strong>.</>)}</>,
       texte: <>Un élève refait la plaque en ajoutant davantage d’éther éthylique, un solvant plus polaire que le pentane.</>,
       tache: { type: 'qcm', q: 'Comment évoluent les taches ?', options: ['elles montent plus haut : les Rf augmentent', 'elles restent à la même hauteur : le Rf ne dépend pas de l’éluant', 'elles descendent : les Rf diminuent'], bonne: 0,
         expl: 'Un éluant plus polaire entraîne mieux les espèces et fait monter les taches : les Rf augmentent. Le Rf dépend donc de l’éluant, et on ne compare que des taches d’une même plaque.', indice: 'Plus l’éluant ressemble aux espèces en polarité, plus il les entraîne.' } },
     { id: 'gants', titre: 'Mesurer la température de fusion', focus: [],
+      retenirTitre: 'À RETENIR : L’ÉLUANT ET LE Rf',
+      retenir: <><SchemaEluant/>{puces(<>La silice (phase fixe) est <strong>polaire</strong> : elle retient les espèces polaires. L’éluant (phase mobile) les entraîne d’autant mieux qu’il est <strong>polaire</strong> lui aussi.</>, <>Plus d’éther éthylique (plus polaire) dans le pentane ⇒ <strong>Rf plus grands</strong>.</>, <>Exemple : 0,45 avec un éluant, environ 0,70 avec un éluant plus polaire.</>, <>On compare toujours des Rf obtenus <strong>sur la même plaque, avec le même éluant</strong>.</>)}</>,
       texte: <>On dépose quelques cristaux de chalcone recristallisée sur le <strong>banc Kofler</strong>, plaque chauffante graduée en température. Le TP précise : « NE PAS PORTER DE GANTS ».</>,
       tache: { type: 'qcm', q: 'Pourquoi retirer ses gants près du banc Kofler ?', options: ['un gant en contact avec la plaque chaude peut fondre et coller à la peau : risque de brûlure', 'les gants empêchent de lire la graduation', 'les gants font fondre les cristaux trop vite'], bonne: 0,
         expl: 'Le banc atteint plusieurs centaines de degrés à une extrémité : un gant en matière plastique peut fondre au contact et brûler. On garde les lunettes, on éloigne les substances inflammables, et on évite tout contact avec la plaque.', indice: 'Que devient un gant en plastique sur une surface très chaude ?' } },
@@ -170,12 +135,12 @@ export function SimulationCcm({ integre = false, modeExt, setModeExt, suite } = 
         calcul: () => ['Le curseur est entre les graduations 95 et 100 °C, au niveau de 97 °C.', 'Lecture : 97 °C (à ± 2 °C près environ).'], pieges: [],
         expl: 'La limite entre cristaux solides et fondus est à 97 °C.', indice: 'Repérez les deux graduations (en °C) qui encadrent le curseur rouge.' } },
     { id: 'tfcompat', titre: 'Le produit est-il pur ?', focus: ['kofler'],
-      retenirTitre: 'À RETENIR : COMPARER À LA LITTÉRATURE',
-      retenir: <><SchemaTfCompat/>{puces(<>On compare la Tf <strong>mesurée</strong> à la valeur de la <strong>littérature</strong> en tenant compte de l’<strong>incertitude</strong> de lecture.</>, <>Ici u ≈ 2 °C (valeur de travail, de type B). Exemple : 97 ± 2 °C contient 98 °C ⇒ compatible.</>, <>Un produit pur : fusion <strong>nette</strong> et Tf compatible. Impur : Tf <strong>abaissée</strong> et fusion <strong>étalée</strong>.</>, <>La CCM <strong>identifie</strong> ; la Tf juge la <strong>pureté</strong>.</>)}</>,
       texte: <>Vous avez lu {nbf(TF_MES, 0)}{NB}°C. La littérature indique 98{NB}°C pour la chalcone. Le banc est étalonné et la lecture a une incertitude d’environ 2{NB}°C (hypothèse de travail). La fusion s’est faite sur moins de 1{NB}°C.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['valeurs compatibles et fusion nette : le produit est sans doute pur', 'le produit est impur, car 97 est différent de 98', 'ce n’est pas de la chalcone, car la valeur n’est pas exactement 98 °C'], bonne: 0,
         expl: '|97 − 98| = 1 °C est inférieur à l’incertitude de 2 °C : les valeurs sont compatibles. Une fusion nette (moins de 1 °C) va dans le sens d’un produit pur. Une mesure n’est jamais exactement égale à la valeur de la littérature.', indice: 'Comparez l’écart |Tf mesurée − Tf littérature| à l’incertitude u = 2 °C.' } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : COMPARER À LA LITTÉRATURE',
+      retenir: <><SchemaTfCompat/>{puces(<>On compare la Tf <strong>mesurée</strong> à la valeur de la <strong>littérature</strong> en tenant compte de l’<strong>incertitude</strong> de lecture.</>, <>Ici u ≈ 2 °C (valeur de travail, de type B). Exemple : 97 ± 2 °C contient 98 °C ⇒ compatible.</>, <>Un produit pur : fusion <strong>nette</strong> et Tf compatible. Impur : Tf <strong>abaissée</strong> et fusion <strong>étalée</strong>.</>, <>La CCM <strong>identifie</strong> ; la Tf juge la <strong>pureté</strong>.</>)}</>,
       texte: <>Vous savez lire une CCM (Rf, comparaison avec les références) et une température de fusion. En exploration, changez l’éluant, l’échantillon et le taux d’impuretés ; en défi, identifiez une impureté par son Rf.</>, tache: null },
   ];
   const IDS = ETAPES.map(e => e.id), idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
