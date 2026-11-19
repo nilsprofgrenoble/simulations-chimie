@@ -14,6 +14,7 @@
 
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_IONS } from "./conductimetrieModele";
+import * as ACF from "./acideFaibleModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -271,6 +272,52 @@ export const ENONCES = [
         utiles: ['ai', 'bi', 'ci', 'di'], raisons: { T: 'La température est constante : elle n’intervient pas dans le calcul de Qr.', af: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', bf: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', cf: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', df: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.' },
         cherche: { bonne: 'Le quotient de réaction Qr du mélange de départ (sans unité)', faux: ['La constante d’équilibre K', 'Le quotient de réaction à l’état final', 'Le taux d’avancement final'] },
         manque: null, solution: { txt: 'Qr = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻]), concentrations initiales', val: (c0 * d0) / (a0 * b0), u: '' } };
+    },
+  },
+  // ───────────────────────────── Acide faible (TSTL, PCM) : coefficient de dissociation, conservation de la matière, Ka, pKa
+  {
+    id: 'dissoc-sapp-alpha', domaine: 'Acide faible, coefficient de dissociation et Ka', titre: 'Coefficient de dissociation d’un acide faible', noms: ['Coefficient de dissociation', 'Concentration en acide restant'],
+    gen: () => { const c = tire(ACF.CANDIDATS.filter(x => ACF.mesure(x.id, x.C).alpha >= 0.08)); return { C: c.C, pH: ACF.mesure(c.id, c.C).pH, V: tire([100, 200, 250]), T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const tokens = {
+        C: tok(`${nb(p.C, 3)} mol/L`, 'Concentration en soluté apporté de l’acide', p.C, 'mol/L'),
+        pH: tok(`${nb(p.pH, 2)}`, 'pH de la solution mesuré avec un pH-mètre', p.pH, ''),
+        V: tok(`${p.V} mL`, 'Volume de la solution préparée', p.V, 'mL'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['On prépare ', T('V'), ' d’une solution d’un acide faible AH, de concentration en soluté apporté ', T('C'), ', à ', T('T'), '. Le pH-mètre indique ', T('pH'), '. '];
+      const h = 10 ** -p.pH;
+      if (q === 0) return { tokens, derivees: ['[A⁻] = [H₃O⁺] = 10^(−pH)'], texte: [...debut, 'Quel est le coefficient de dissociation α de cet acide ?'],
+        utiles: ['C', 'pH'], raisons: { V: 'Le volume ne change pas les concentrations : il n’intervient pas dans le calcul de α.', T: 'La température est constante : elle n’intervient pas dans le calcul de α.' },
+        cherche: { bonne: 'Le coefficient de dissociation α de l’acide (sans unité)', faux: ['La constante d’acidité Ka de l’acide (sans unité)', 'Le pKa de l’acide (sans unité)', 'La concentration en ions oxonium [H₃O⁺] (en mol/L)'] },
+        manque: null, solution: { txt: 'α = [A⁻] divisé par C₀, avec [A⁻] = [H₃O⁺] = 10^(−pH)', val: h / p.C, u: '' } };
+      return { tokens, derivees: ['[A⁻] = [H₃O⁺] = 10^(−pH)'], texte: [...debut, 'Quelle est la concentration en acide AH restant dans la solution ?'],
+        utiles: ['C', 'pH'], raisons: { V: 'Le volume ne change pas les concentrations : il n’intervient pas.', T: 'La température est constante : elle n’intervient pas dans la conservation de la matière.' },
+        cherche: { bonne: 'La concentration en acide restant [AH] (en mol/L)', faux: ['La concentration en base conjuguée [A⁻] (en mol/L)', 'La concentration en soluté apporté C₀ (en mol/L)', 'Le coefficient de dissociation α (sans unité)'] },
+        manque: null, solution: { txt: '[AH] = C₀ − [A⁻] (conservation de la matière)', val: p.C - h, u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'dissoc-sapp-ka', domaine: 'Acide faible, coefficient de dissociation et Ka', titre: 'Constante d’acidité et pKa d’un couple acide-base', noms: ['Constante d’acidité', 'pKa'],
+    gen: () => { const c = tire(ACF.CANDIDATS), m = ACF.mesure(c.id, c.C); return { C: c.C, pH: m.pH, M: tire([46, 60, 74, 122]), T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const tokens = {
+        C: tok(`${nb(p.C, 3)} mol/L`, 'Concentration en soluté apporté de l’acide', p.C, 'mol/L'),
+        pH: tok(`${nb(p.pH, 2)}`, 'pH de la solution mesuré avec un pH-mètre', p.pH, ''),
+        M: tok(`${p.M} g/mol`, 'Masse molaire de l’acide', p.M, 'g/mol'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['Un acide faible AH, de masse molaire ', T('M'), ', est dissous dans l’eau à ', T('T'), ' avec une concentration en soluté apporté de ', T('C'), '. Le pH-mètre indique ', T('pH'), '. '];
+      const h = 10 ** -p.pH, Ka = h * h / (p.C - h);
+      const raisons = { M: 'La masse molaire sert à convertir une masse en quantité de matière : ici la concentration est déjà donnée.', T: 'La température est constante : elle n’intervient pas dans le calcul, elle indique seulement que Ka garde sa valeur.' };
+      if (q === 0) return { tokens, derivees: ['[A⁻] = [H₃O⁺] = 10^(−pH) ; [AH] = C₀ − [H₃O⁺]'], texte: [...debut, 'Quelle est la constante d’acidité Ka du couple AH / A⁻ ?'],
+        utiles: ['C', 'pH'], raisons,
+        cherche: { bonne: 'La constante d’acidité Ka (sans unité)', faux: ['Le coefficient de dissociation α (sans unité)', 'Le pKa du couple (sans unité)', 'La concentration en acide restant [AH] (en mol/L)'] },
+        manque: null, solution: { txt: 'Ka = [H₃O⁺]² divisé par (C₀ − [H₃O⁺]), avec [H₃O⁺] = 10^(−pH)', val: Ka, u: '' } };
+      return { tokens, derivees: ['[A⁻] = [H₃O⁺] = 10^(−pH) ; [AH] = C₀ − [H₃O⁺] ; Ka'], texte: [...debut, 'Quel est le pKa du couple AH / A⁻ ?'],
+        utiles: ['C', 'pH'], raisons,
+        cherche: { bonne: 'Le pKa du couple, pKa = −log Ka (sans unité)', faux: ['La constante d’acidité Ka du couple (sans unité)', 'Le pH de la solution (sans unité)', 'Le coefficient de dissociation α (sans unité)'] },
+        manque: null, solution: { txt: 'pKa = −log Ka, après calcul de Ka = [H₃O⁺]² divisé par (C₀ − [H₃O⁺])', val: -Math.log10(Ka), u: '' } };
     },
   },
   // ───────────────────────────── Force des acides (TG) : K_A, pH, taux d'avancement

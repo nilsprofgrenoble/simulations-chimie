@@ -119,6 +119,7 @@ const SimulationOeilLoupe = paresseux(() => import("./simulations/OeilLoupe"), "
 const SimulationMicroscope = paresseux(() => import("./simulations/Microscope"), "SimulationMicroscope");
 const SimulationLunette = paresseux(() => import("./simulations/Lunette"), "SimulationLunette");
 const SimulationChiralite = paresseux(() => import("./simulations/Chiralite"), "SimulationChiralite");
+const SimulationAcideFaible = paresseux(() => import("./simulations/AcideFaible"), "SimulationAcideFaible");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -254,6 +255,8 @@ const SIMULATIONS = [
     component: SimulationLunette },
   { id:137, label:"Chiralité et configuration absolue R/S : carbone asymétrique, Cram, règles CIP", niveau:"TSTL", icon:"🫲", color:"#0f766e",
     component: SimulationChiralite },
+  { id:138, label:"Acide faible : coefficient de dissociation, constante d’acidité Ka et pKa", niveau:"TSTL", icon:"🧫", color:"#b45309",
+    component: SimulationAcideFaible },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
