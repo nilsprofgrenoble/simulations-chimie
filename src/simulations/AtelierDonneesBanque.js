@@ -1199,6 +1199,53 @@ export const ENONCES = [
         manque: null, solution: { txt: 'a_t = frac(dv|dt) ; a_n = frac(v²|R) ; a = √(a_t² + a_n²)', val: Math.hypot(p.at, p.v * p.v / p.R), u: 'm/s²' } };
     },
   },
+  // ───────────────────────────── Deuxième loi de Newton (TG, sim 168) : somme des forces, accélération du centre de masse
+  {
+    id: 'nwt-sapp-chariot', domaine: 'Deuxième loi de Newton', titre: 'Chariot tiré par un fil', noms: ['Somme des forces sur l’axe du rail', 'Accélération du chariot'],
+    gen: () => ({ m: tire([1.5, 2.0, 2.5, 3.0]), T: tire([6.0, 7.0, 8.0, 9.0]), f: tire([1.0, 1.5, 2.0]), L: tire([1.2, 1.5, 2.0]), v0: tire([0.40, 0.60, 0.80]) }),
+    build: (p, q) => {
+      const tokens = {
+        m: tok(`${nb(p.m, 1)} kg`, 'Masse du chariot', p.m, 'kg'),
+        T: tok(`${nb(p.T, 1)} N`, 'Tension du fil (horizontal, vers l’avant)', p.T, 'N'),
+        f: tok(`${nb(p.f, 1)} N`, 'Intensité des frottements (opposés au mouvement)', p.f, 'N'),
+        L: tok(`${nb(p.L, 1)} m`, 'Longueur du rail', p.L, 'm'),
+        v0: tok(`${nb(p.v0, 2)} m/s`, 'Vitesse du chariot au début de l’étude', p.v0, 'm/s'),
+      };
+      const debut = ['Un chariot de masse ', T('m'), ' roule vers l’avant sur un rail horizontal de longueur ', T('L'), '. Il est tiré par un fil horizontal de tension ', T('T'), ' et subit des frottements ', T('f'), ' ; sa vitesse initiale est ', T('v0'), '. Les forces sont constantes ; on prend un axe orienté vers l’avant. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la composante de la somme des forces sur cet axe ?'],
+        utiles: ['T', 'f'], raisons: { m: 'La masse ne sert pas pour additionner les forces : elle interviendra quand on passera à l’accélération.', L: 'La longueur du rail n’influence pas la somme des forces.', v0: 'La vitesse ne change pas les forces ici : on ne l’utilise pas pour faire le bilan.' },
+        cherche: { bonne: 'La composante ΣF_x de la somme des forces (en N)', faux: ['La composante a_x de l’accélération (en m/s²)', 'Le poids du chariot (en N)', 'La variation de vitesse sur la longueur du rail (en m/s)'] },
+        manque: null, solution: { txt: 'ΣF_x = T − f (la tension est vers l’avant : +, les frottements vers l’arrière : −)', val: p.T - p.f, u: 'N' } };
+      return { tokens, derivees: [{ id: 'S', nom: 'Composante de la somme des forces', expr: 'ΣF_x = T − f', val: p.T - p.f, u: 'N' }], texte: [...debut, 'Quelle est la composante de l’accélération de son centre de masse sur cet axe ?'],
+        utiles: ['m', 'T', 'f'], raisons: { L: 'La longueur du rail ne sert pas : les forces étant constantes, l’accélération ne dépend pas de la position.', v0: 'Une vitesse initiale ne change pas l’accélération, qui est fixée par la somme des forces.' },
+        cherche: { bonne: 'La composante a_x de l’accélération (en m/s²)', faux: ['La composante ΣF_x de la somme des forces (en N)', 'La vitesse atteinte au bout du rail (en m/s)', 'La durée de parcours du rail (en s)'] },
+        manque: null, solution: { txt: 'a_x = frac(ΣF_x|m), avec ΣF_x = T − f', val: (p.T - p.f) / p.m, u: 'm/s²' } };
+    },
+  },
+  {
+    id: 'nwt-sapp-cabine', domaine: 'Deuxième loi de Newton', titre: 'Une cabine d’ascenseur qui démarre', noms: ['Accélération de la cabine', 'Tension du câble'],
+    gen: () => ({ m: tire([600, 800, 1000]), v2: tire([1.2, 1.6, 2.0]), dt: tire([2.0, 2.5, 4.0]), H: tire([18, 24, 30]) }),
+    build: (p, q) => {
+      const tokens = {
+        m: tok(`${p.m} kg`, 'Masse de la cabine et de ses occupants', p.m, 'kg'),
+        v1: tok('0 m/s', 'Vitesse de la cabine à l’instant initial (elle part de l’arrêt)', 0, 'm/s'),
+        v2: tok(`${nb(p.v2, 1)} m/s`, 'Vitesse de la cabine à la fin de la phase de démarrage', p.v2, 'm/s'),
+        dt: tok(`${nb(p.dt, 1)} s`, 'Durée de la phase de démarrage', p.dt, 's'),
+        H: tok(`${p.H} m`, 'Hauteur de la cage d’ascenseur', p.H, 'm'),
+        g: tok('9,8 m/s²', 'Intensité de la pesanteur', 9.8, 'm/s²'),
+      };
+      const a = p.v2 / p.dt;
+      const debut = ['Une cabine de masse ', T('m'), ' part de l’arrêt (', T('v1'), ') et monte dans une cage de hauteur ', T('H'), '. Sa vitesse atteint ', T('v2'), ' au bout de ', T('dt'), ', avec des forces constantes. On prend g = ', T('g'), ' et un axe vertical orienté vers le haut. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la composante de l’accélération de la cabine ?'],
+        utiles: ['v1', 'v2', 'dt'], raisons: { m: 'La masse ne sert pas pour calculer une accélération à partir de la vitesse : elle servira pour passer aux forces.', H: 'La hauteur de la cage ne donne pas l’accélération.', g: 'Les frottements et le poids n’interviennent pas dans le calcul de a à partir du mouvement.' },
+        cherche: { bonne: 'La composante a_y de l’accélération (en m/s²)', faux: ['La tension T du câble (en N)', 'La distance parcourue pendant le démarrage (en m)', 'Le poids de la cabine (en N)'] },
+        manque: null, solution: { txt: 'a_y = frac(v₂ − v₁|Δt)', val: a, u: 'm/s²' } };
+      return { tokens, derivees: [{ id: 'a', nom: 'Composante de l’accélération de la cabine', expr: 'a_y = frac(v₂ − v₁|Δt)', val: a, u: 'm/s²' }], texte: [...debut, 'Quelle est l’intensité de la tension du câble ?'],
+        utiles: ['m', 'v1', 'v2', 'dt', 'g'], raisons: { H: 'La hauteur de la cage ne sert pas à trouver la tension du câble.' },
+        cherche: { bonne: 'La tension T du câble (en N)', faux: ['La composante a_y de l’accélération (en m/s²)', 'La somme des forces ΣF_y (en N)', 'Le poids P de la cabine (en N)'] },
+        manque: null, solution: { txt: 'T − P = m × a_y, donc T = m × (g + a_y)', val: p.m * (9.8 + a), u: 'N' } };
+    },
+  },
   // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
   {
     id: 'pil-sapp-capacite', domaine: 'Piles : fonctionnement et capacité', titre: 'Capacité d’une pile zinc-cuivre', noms: ['Quantité d’ions cuivre initiale', 'Capacité électrique de la pile'],

@@ -94,6 +94,7 @@ const SimulationAminoAcides = paresseux(() => import("./simulations/AminoAcides"
 const SimulationConductimetrie = paresseux(() => import("./simulations/Conductimetrie"), "SimulationConductimetrie");
 const SimulationEtalonnage = paresseux(() => import("./simulations/Etalonnage"), "SimulationEtalonnage");
 const SimulationFrenet = paresseux(() => import("./simulations/Frenet"), "SimulationFrenet");
+const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationPhAcide = paresseux(() => import("./simulations/AcidesBases"), "SimulationPhAcide");
 const SimulationPredominancePka = paresseux(() => import("./simulations/AcidesBases"), "SimulationPredominancePka");
@@ -264,6 +265,7 @@ const SIMULATIONS = [
   { id:135, label:"Conductimétrie : conductivité d’une solution et titrage conductimétrique", niveau:"TG", icon:"🔌", color:"#0369a1", component: SimulationConductimetrie },
   { id:136, label:"Dosage conductimétrique par étalonnage : conductance, constante de cellule et courbe d’étalonnage", niveau:"TG", icon:"📈", color:"#0369a1", component: SimulationEtalonnage },
   { id:167, label:"Mouvement circulaire : le repère de Frenet, vitesse et accélération", niveau:"TG", icon:"🎡", color:"#b91c1c", component: SimulationFrenet },
+  { id:168, label:"Deuxième loi de Newton : de la somme des forces à l’accélération du centre de masse", niveau:"TG", icon:"🛗", color:"#3f6212", component: SimulationNewton },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

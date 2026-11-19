@@ -1195,5 +1195,15 @@
  "77:plausible:fre-val-nulle": "VAL288",
  "77:plausible:fre-val-conversion": "VAL289",
  "77:plausible:fre-val-ok": "VAL290",
- "36:fre-calcul": "REA72"
+ "36:fre-calcul": "REA72",
+ "34:nwt-sapp-chariot.0": "SAPP319",
+ "34:nwt-sapp-chariot.1": "SAPP320",
+ "34:nwt-sapp-cabine.0": "SAPP321",
+ "34:nwt-sapp-cabine.1": "SAPP322",
+ "37:prevoir:nwt-ana-balance": "ANA518",
+ "37:prevoir:nwt-ana-masse": "ANA519",
+ "37:prevoir:nwt-ana-galileen": "ANA520",
+ "77:plausible:nwt-val-somme": "VAL291",
+ "77:plausible:nwt-val-caisse": "VAL292",
+ "36:nwt-calcul": "REA73"
 }
