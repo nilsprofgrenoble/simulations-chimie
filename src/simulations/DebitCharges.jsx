@@ -26,43 +26,54 @@ const NA = 6.022e23;
 const sci = (x, d = 2) => { if (!(x > 0)) return '0'; const e = Math.floor(Math.log10(x)), m = x / Math.pow(10, e); return `${m.toFixed(d).replace('.', ',')}·10${String(e).replace(/\d/g, c => '⁰¹²³⁴⁵⁶⁷⁸⁹'[+c]).replace('-', '⁻')}`; };
 
 // ---------- fil de cuivre ----------
+// L'épaisseur du fil suit la section S ; la densité d'électrons reste la même (plus de rangées quand S augmente).
 function Fil3D({ I, sens, ph, section }) {
-  const v = 18 + 38 * I, dirE = -sens, W = 480, x0 = 40;
-  const e = [];
-  for (let r = 0; r < 4; r++) for (let k = 0; k < 8; k++) {
-    const base = k * 60 + (r % 2) * 30 + r * 11, x = x0 + ((((base + dirE * v * ph) % W) + W) % W), y = 92 + r * 30 + 3 * Math.sin(ph * 6 + k * 2 + r);
+  const S = section == null ? 1.5 : section, h = 34 + 16 * S, W = 480, x0 = 40, yc = 136, y0 = yc - h / 2;
+  const v = Math.min(200, 12 + 42 * I / S), dirE = -sens;       // vitesse de dessin indicative : ∝ I / S
+  const lignes = Math.max(1, Math.floor((h - 8) / 22)), yr = r => yc + (r - (lignes - 1) / 2) * 22;
+  const e = [], ions = [];
+  for (let r = 0; r < lignes; r++) for (let k = 0; k < 9; k++) {
+    const base = k * 53 + (r % 2) * 26 + r * 11, x = x0 + ((((base + dirE * v * ph) % W) + W) % W), y = yr(r) + 3 * Math.sin(ph * 6 + k * 2 + r);
     e.push(<circle key={r + '-' + k} cx={x} cy={y} r="4.5" fill={BLEU} stroke="#fff" strokeWidth="1"/>);
   }
-  const ions = [];
-  for (let r = 0; r < 4; r++) for (let k = 0; k < 14; k++) ions.push(<text key={r + '_' + k} x={x0 + 18 + k * 34 + (r % 2) * 17} y={96 + r * 30} fontSize="13" fontWeight="800" textAnchor="middle" fill="#94a3b8">+</text>);
+  for (let r = 0; r < lignes; r++) for (let k = 0; k < 14; k++) ions.push(<text key={r + '_' + k} x={x0 + 18 + k * 34 + (r % 2) * 17} y={yr(r) + 5} fontSize="13" fontWeight="800" textAnchor="middle" fill="#94a3b8">+</text>);
   const fl = (x1, x2, y, c) => <g stroke={c} fill={c}><line x1={x1} y1={y} x2={x2} y2={y} strokeWidth="3"/><polygon points={`${x2},${y} ${x2 - (x2 > x1 ? 12 : -12)},${y - 6} ${x2 - (x2 > x1 ? 12 : -12)},${y + 6}`}/></g>;
   return (
-    <svg viewBox="0 0 560 296" width="100%" role="img" aria-label="Fil de cuivre : ions fixes et électrons libres en mouvement" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
-      <rect x={x0} y="72" width={W} height="128" rx="14" fill="#f1f5f9" stroke="#64748b" strokeWidth="2.5"/>
+    <svg viewBox="0 0 560 296" width="100%" role="img" aria-label={`Fil de cuivre de section ${section == null ? '' : fr(section, 1) + ' mm²'} : ions fixes et électrons libres en mouvement`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
+      <rect x={x0} y={y0} width={W} height={h} rx="14" fill="#f1f5f9" stroke="#64748b" strokeWidth="2.5"/>
       {ions}{e}
-      <line x1="280" y1="62" x2="280" y2="210" stroke={VERMILLON} strokeWidth="3" strokeDasharray="7 5"/>
-      <text x="288" y="60" fontSize="18" fontWeight="800" fill={VERMILLON}>section S</text>
+      <line x1="280" y1={y0 - 10} x2="280" y2={y0 + h + 10} stroke={VERMILLON} strokeWidth="3" strokeDasharray="7 5"/>
+      <text x="288" y={y0 - 14} fontSize="18" fontWeight="800" fill={VERMILLON}>section S</text>
       {sens > 0 ? fl(120, 250, 30, VERMILLON) : fl(440, 310, 30, VERMILLON)}
       <text x="280" y="22" fontSize="19" fontWeight="800" textAnchor="middle" fill={VERMILLON}>sens conventionnel du courant</text>
       {sens > 0 ? fl(440, 310, 246, BLEU) : fl(120, 250, 246, BLEU)}
       <text x="280" y="282" fontSize="19" fontWeight="800" textAnchor="middle" fill={BLEU}>sens de déplacement des électrons</text>
       <g fontSize="17" fontWeight="700"><circle cx="52" cy="226" r="5.5" fill={BLEU}/><text x="64" y="232" fill="#0f172a">électron libre (−e)</text>
         <text x="290" y="232" fill="#94a3b8" fontWeight="800" fontSize="20">+</text><text x="306" y="232" fill="#0f172a">ion cuivre fixe</text></g>
-      {section != null && <text x="530" y="62" fontSize="17" fontWeight="700" textAnchor="end" fill={GRIS}>S = {fr(section, 1)} mm²</text>}
+      {section != null && <text x="530" y={y0 - 14} fontSize="17" fontWeight="700" textAnchor="end" fill={GRIS}>S = {fr(section, 1)} mm²</text>}
     </svg>);
 }
 
 // ---------- solution ionique ----------
-function Electrolyte({ actif, ph }) {
-  const v = actif ? 34 : 0, span = 220, ions = [];
-  for (let r = 0; r < 2; r++) for (let k = 0; k < 5; k++) {
-    const jit = actif ? 0 : 5 * Math.sin(ph * 3 + k * 1.7 + r * 2.3);
-    const xc = 175 + ((((k * 44 + r * 22 - v * ph) % span) + span) % span) + jit, xa = 175 + ((((k * 44 + r * 22 + 22 + v * ph) % span) + span) % span) - jit;
-    ions.push(<g key={`c${r}${k}`}><circle cx={xc} cy={188 + r * 22} r="9" fill="#fff" stroke={VERMILLON} strokeWidth="2.5"/><text x={xc} y={192.5 + r * 22} fontSize="13" fontWeight="800" textAnchor="middle" fill={VERMILLON}>+</text></g>);
-    ions.push(<g key={`a${r}${k}`}><circle cx={xa} cy={232 + r * 21} r="9" fill="#fff" stroke={BLEU} strokeWidth="2.5"/><text x={xa} y={236.5 + r * 21} fontSize="14" fontWeight="800" textAnchor="middle" fill={BLEU}>−</text></g>);
+// Ions répartis au hasard (positions fixes, tirage reproductible) : sans générateur ils s'agitent ; avec, ils dérivent ensemble vers l'électrode de signe opposé.
+const IONS_SOL = (() => {
+  let s = 7; const rnd = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  const pts = [];
+  while (pts.length < 16) {
+    const p = { x: 172 + rnd() * 216, y: 168 + rnd() * 100 };
+    if (pts.every(q => Math.hypot(q.x - p.x, q.y - p.y) > 27)) pts.push(p);
   }
+  return pts.map((p, k) => ({ ...p, cation: k % 2 === 0, ph0: rnd() * 6 }));
+})();
+function Electrolyte({ actif, ph }) {
+  const v = actif ? 34 : 0, span = 216, ions = IONS_SOL.map((o, k) => {
+    const jx = actif ? 0 : 6 * Math.sin(ph * 2.6 + o.ph0), jy = (actif ? 2.5 : 6) * Math.cos(ph * 3.1 + o.ph0 * 1.7);
+    const dep = o.cation ? -v * ph : v * ph, x = 172 + ((((o.x - 172 + dep) % span) + span) % span) + jx;
+    const c = o.cation ? VERMILLON : BLEU;
+    return <g key={k}><circle cx={x} cy={o.y + jy} r="9" fill="#fff" stroke={c} strokeWidth="2.5"/><text x={x} y={o.y + jy + 4.5} fontSize="14" fontWeight="800" textAnchor="middle" fill={c}>{o.cation ? '+' : '−'}</text></g>;
+  });
   return (
-    <svg viewBox="0 0 560 320" width="100%" role="img" aria-label="Solution ionique entre deux électrodes reliées à un générateur" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
+    <svg viewBox="0 0 560 340" width="100%" role="img" aria-label="Solution ionique entre deux électrodes reliées à un générateur : cations et anions répartis au hasard" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
       <rect x="110" y="150" width="340" height="135" fill="#e0f2fe" stroke="#475569" strokeWidth="3"/>
       <rect x="150" y="125" width="12" height="150" fill="#64748b"/><rect x="398" y="125" width="12" height="150" fill="#64748b"/>
       <rect x="225" y="20" width="110" height="40" rx="6" fill="#fff" stroke="#0f172a" strokeWidth="3"/>
@@ -75,7 +86,32 @@ function Electrolyte({ actif, ph }) {
       {ions}
       <text x="156" y="308" fontSize="16" fontWeight="700" textAnchor="middle" fill={BLEU}>électrode (borne −)</text>
       <text x="404" y="308" fontSize="16" fontWeight="700" textAnchor="middle" fill={VERMILLON}>électrode (borne +)</text>
-      {actif && <g fontSize="16" fontWeight="700"><text x="280" y="172" textAnchor="middle" fill={VERMILLON}>← cations (+) vers la borne −</text><text x="280" y="279" textAnchor="middle" fill={BLEU}>anions (−) vers la borne + →</text></g>}
+      {actif && <text x="280" y="332" fontSize="14" fontWeight="700" textAnchor="middle"><tspan fill={VERMILLON}>← cations (+) vers la borne −</tspan><tspan fill={GRIS}>  ·  </tspan><tspan fill={BLEU}>anions (−) vers la borne + →</tspan></text>}
+    </svg>);
+}
+
+// ---------- batterie ----------
+function Batterie({ cap, I, ph, details }) {
+  const v = 18 + 20 * Math.log10(Math.max(I, 5) / 5);
+  const pts = [[64, 152], [64, 178], [337, 178], [337, 26], [64, 26], [64, 40]];
+  return (
+    <svg viewBox="0 0 400 216" width="100%" role="img" aria-label={`Une batterie de ${cap} mA·h alimente un appareil : les électrons circulent dans le circuit`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 460 }}>
+      <Fil pts={pts} v={v * 0.7} ph={ph} rayon={4} couleur={BLEU} esp={22}/>
+      <rect x="54" y="32" width="20" height="10" rx="3" fill="#475569"/>
+      <rect x="36" y="40" width="56" height="112" rx="10" fill="#ecfdf5" stroke="#15803d" strokeWidth="3.5"/>
+      <rect x="42" y="46" width="44" height="100" rx="6" fill="#86efac"/>
+      <text x="64" y="66" fontSize="16" fontWeight="800" textAnchor="middle" fill="#14532d">+</text>
+      <text x="64" y="138" fontSize="18" fontWeight="800" textAnchor="middle" fill="#14532d">−</text>
+      <text x="64" y="96" fontSize="14" fontWeight="800" textAnchor="middle" fill="#14532d">{cap}</text>
+      <text x="64" y="113" fontSize="12.5" fontWeight="800" textAnchor="middle" fill="#14532d">mA·h</text>
+      <rect x="304" y="58" width="66" height="84" rx="10" fill="#0f172a"/>
+      <rect x="309" y="64" width="56" height="72" rx="4" fill="#e0f2fe"/>
+      <text x="337" y="94" fontSize="12.5" fontWeight="800" textAnchor="middle" fill="#0369a1">appareil</text>
+      <text x="337" y="114" fontSize="13" fontWeight="700" textAnchor="middle" fill="#0f172a">{I} mA</text>
+      <text x="200" y="88" fontSize="15" fontWeight="800" textAnchor="middle" fill="#14532d">batterie :</text>
+      <text x="200" y="106" fontSize="15" fontWeight="800" textAnchor="middle" fill="#14532d">réserve de charge</text>
+      <text x="200" y="130" fontSize="14.5" fontWeight="700" textAnchor="middle" fill={BLEU}>I = {I} mA</text>
+      {details && <text x="200" y="208" fontSize="13.5" fontWeight="700" textAnchor="middle" fill={GRIS}>Plus I est grand, plus la batterie se vide vite.</text>}
     </svg>);
 }
 
@@ -125,7 +161,7 @@ export function SimulationDebitCharges() {
 
   const ETAPES = [
     { id: 'porteurs', titre: 'Qu’est-ce qui circule dans un fil ?', depart: () => voir('fil', { I: 1, sens: 1 }),
-      texte: <>Un métal est un empilement ordonné d’<strong>ions positifs</strong> (en gris) baignant dans un « gaz » d’<strong>électrons libres</strong> (en bleu) : c’est le <strong>modèle de Drude</strong>. Chaque électron libre n’est lié à aucun ion en particulier. Sans générateur, ils bougent dans tous les sens ; avec un générateur, ils se déplacent <strong>ensemble dans le même sens</strong> : c’est le courant électrique.
+      texte: <>Un métal est un empilement ordonné d’<strong>ions positifs</strong> (en gris) baignant dans un « gaz » d’<strong>électrons libres</strong> (en bleu). Chaque électron libre n’est lié à aucun ion en particulier. Sans générateur, ils bougent dans tous les sens ; avec un générateur, ils se déplacent <strong>ensemble dans le même sens</strong> : c’est le courant électrique.
         <ExempleResolu>Le courant électrique est un <strong>déplacement ordonné de charges électriques</strong>. Ces charges sont portées par des <strong>porteurs de charge</strong> : les électrons libres dans les métaux, les <strong>ions</strong> dans les solutions.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Dans un fil de cuivre, quels sont les porteurs de charge mobiles ?', options: ['Les électrons libres', 'Les ions cuivre', 'Les atomes de cuivre', 'Les protons'], bonne: 0, expl: 'Dans un métal, ce sont les électrons libres qui se déplacent ; les ions positifs restent à leur place.', indice: "Dans un métal, certains électrons ne sont plus liés à un atome en particulier. Que sont ces porteurs de charge ?" } },
     { id: 'sens', titre: 'Sens conventionnel et sens des électrons', depart: () => { voir('fil', { sens: 1 }); },
@@ -199,7 +235,7 @@ export function SimulationDebitCharges() {
 
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
-      <li><strong>Modèle de Drude</strong> (1900) : un métal = ions positifs fixes + « gaz » d’électrons libres. Pour le cuivre, on compte <strong>1 électron libre par atome</strong> : n = 8,5·10²⁸ électrons par m³.</li>
+      <li><strong>Modèle du gaz d’électrons libres</strong> (modèle de Drude, 1900) : un métal = ions positifs fixes + « gaz » d’électrons libres. Pour le cuivre, on compte <strong>1 électron libre par atome</strong> : n = 8,5·10²⁸ électrons par m³.</li>
       <li><strong>Régime permanent</strong> : l’intensité est la même dans toutes les sections du fil, et ne varie pas dans le temps. Charge élémentaire <strong>e = 1,602·10⁻¹⁹ C</strong>.</li>
       <li><strong>Dessin non à l’échelle</strong> : les électrons sont bien plus petits et bien moins nombreux sur le dessin qu’en réalité ; leur vitesse à l’écran est seulement <strong>indicative</strong> (elle augmente avec I). L’agitation désordonnée est suggérée par un léger tremblement.</li>
       <li><strong>Solution ionique</strong> : seuls les déplacements des ions sont représentés. Les réactions aux électrodes (électrolyse) ne sont pas modélisées, et tous les ions ont ici la même vitesse.</li>
@@ -231,16 +267,17 @@ export function SimulationDebitCharges() {
     </div>);
   const atelierBat = (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 }}>
+      <Batterie cap={P.cap} I={ap('autonomie') ? P.I : 20} ph={ph} details={ap('autonomie')}/>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Capacité de la batterie" val={P.cap} min={500} max={5000} pas={100} set={v => setP(p => ({ ...p, cap: v }))} unite=" mA·h"/>
         {ap('autonomie') && <Curseur nom="Courant moyen consommé I" val={P.I} min={5} max={500} pas={5} set={v => setP(p => ({ ...p, I: v }))} unite=" mA"/>}</div>
-      <div style={{ marginTop: 10, background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: '8px 10px', fontSize: 14.5, color: KIT.txt, lineHeight: 1.8 }}>
-        Charge contenue : Q = {P.cap} × 3,6 = <strong>{Math.round(QpC)} C</strong><br/>
-        {ap('autonomie') && <>Autonomie : Δt = Q / I = {P.cap} / {P.I} = <strong>{fr(TP, TP < 10 ? 1 : 0)} h</strong> {TP >= 48 ? `(≈ ${fr(TP / 24, 1)} jours)` : ''}<br/></>}
-        {!enGuide && <>Nombre d’électrons qui traversent le circuit : N = Q / e = <strong>{sci(Np)}</strong>, soit N / N<sub>A</sub> = <strong>{fr(Np / NA, 3)} mol</strong> d’électrons</>}</div>
-      {ap('autonomie') && <><div style={{ marginTop: 8, height: 26, background: '#e2e8f0', borderRadius: 13, overflow: 'hidden', maxWidth: 560 }}>
-        <div style={{ width: `${Math.min(100, (TP / 200) * 100)}%`, height: '100%', background: '#0072b2' }}/></div>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 2 }}>Barre : autonomie (pleine = 200 h)</div></>}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8, marginTop: 10 }}>
+        <div style={{ background: '#ecfdf5', border: '1.5px solid #86efac', borderRadius: 10, padding: '8px 10px' }}><div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>Charge contenue</div><div style={{ fontSize: 13.5, color: KIT.txt }}>Q = {P.cap} × 3,6</div><div style={{ fontSize: 19, fontWeight: 800, color: '#15803d' }}>{Math.round(QpC)} C</div></div>
+        {ap('autonomie') && <div style={{ background: '#eff6ff', border: '1.5px solid #93c5fd', borderRadius: 10, padding: '8px 10px' }}><div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>Autonomie</div><div style={{ fontSize: 13.5, color: KIT.txt }}>Δt = {P.cap} / {P.I}</div><div style={{ fontSize: 19, fontWeight: 800, color: '#1d4ed8' }}>{fr(TP, TP < 10 ? 1 : 0)} h{TP >= 48 ? ` (≈ ${fr(TP / 24, 1)} j)` : ''}</div></div>}
+        {!enGuide && <div style={{ background: '#fff7ed', border: '1.5px solid #fdba74', borderRadius: 10, padding: '8px 10px' }}><div style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 700 }}>Électrons qui traversent le circuit</div><div style={{ fontSize: 13.5, color: KIT.txt }}>N = Q / e</div><div style={{ fontSize: 19, fontWeight: 800, color: '#b45309' }}>{sci(Np)}</div><div style={{ fontSize: 12.5, color: KIT.txt2 }}>soit {fr(Np / NA, 3)} mol</div></div>}</div>
+      {ap('autonomie') && <><div style={{ marginTop: 10, height: 26, background: '#e2e8f0', borderRadius: 13, overflow: 'hidden', maxWidth: 560 }}>
+        <div style={{ width: `${Math.min(100, (TP / 200) * 100)}%`, height: '100%', background: 'linear-gradient(90deg,#16a34a,#0072b2)' }}/></div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 2 }}>Jauge d’autonomie (pleine = 200 h)</div></>}
     </div>);
   const planche = (
     <div style={styleBoite}>
