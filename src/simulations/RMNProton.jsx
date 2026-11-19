@@ -4,6 +4,8 @@ import { Formule as FormuleMath, cardStyle, CarteParcours, useEtatPersistant, KI
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
 import { NU0, MOLECULES, MOL, FAMILLES, NOM_COMPLET, plat, visibles, yRef, spectre, courbeGroupe, courbeZoom, limitesPremierOrdre, hauteurMm } from "./rmnModele";
 import { fr } from "./elecModele";
+import { puces } from "./Travail";
+import { FDeplacement, FIntegration, FCouplage, FChamp, FMethode, FBilanRmn } from "./RmnSchemas";
 import { BLEU, VERMILLON, VIOLET, GRIS, VERT, alea } from "./elecOutils";
 import { VoletDefiGen } from "./elecCommun";
 import { Pic } from "../Pictos";
@@ -233,20 +235,9 @@ export function SimulationRMN() {
     { id: 'principe', titre: 'Du signal radio au déplacement chimique', depart: () => voir({ mol: 'neopentyl', corrige: false }),
       retenirTitre: 'À RETENIR : LE DÉPLACEMENT CHIMIQUE',
       retenir: <>
-        <svg viewBox="0 0 360 170" role="img" aria-label="Axe d’un spectre de RMN du proton : le déplacement chimique δ en ppm décroît de la gauche vers la droite ; le TMS est à 0 à droite ; les protons déblindés, proches d’un atome électronégatif, sont à gauche à δ élevé ; les protons blindés sont à droite à δ faible" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="30" y1="110" x2="320" y2="110" stroke="#334155" strokeWidth="2" /><line x1="40" y1="110" x2="40" y2="118" stroke="#334155" strokeWidth="1.5" /><text x="40" y="132" textAnchor="middle" fontSize="12" fill="#334155">10</text><line x1="94" y1="110" x2="94" y2="118" stroke="#334155" strokeWidth="1.5" /><text x="94" y="132" textAnchor="middle" fontSize="12" fill="#334155">8</text><line x1="148" y1="110" x2="148" y2="118" stroke="#334155" strokeWidth="1.5" /><text x="148" y="132" textAnchor="middle" fontSize="12" fill="#334155">6</text><line x1="202" y1="110" x2="202" y2="118" stroke="#334155" strokeWidth="1.5" /><text x="202" y="132" textAnchor="middle" fontSize="12" fill="#334155">4</text><line x1="256" y1="110" x2="256" y2="118" stroke="#334155" strokeWidth="1.5" /><text x="256" y="132" textAnchor="middle" fontSize="12" fill="#334155">2</text><line x1="310" y1="110" x2="310" y2="118" stroke="#334155" strokeWidth="1.5" /><text x="310" y="132" textAnchor="middle" fontSize="12" fill="#334155">0</text>
-          <text x="180" y="156" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">δ (ppm)</text>
-          <line x1="94" y1="110" x2="94" y2="58" stroke="#0072b2" strokeWidth="3" /><line x1="202" y1="110" x2="202" y2="78" stroke="#0072b2" strokeWidth="3" /><line x1="256" y1="110" x2="256" y2="40" stroke="#0072b2" strokeWidth="3" /><line x1="310" y1="110" x2="310" y2="92" stroke="#d55e00" strokeWidth="3" />
-          <text x="310" y="86" textAnchor="middle" fontSize="11" fontWeight="700" fill="#d55e00">TMS</text>
-          <path d="M 250 22 L 60 22" stroke="#334155" strokeWidth="1.6" fill="none" /><polygon points="60,18 52,22 60,26" fill="#334155" />
-          <text x="40" y="14" fontSize="11" fill="#334155">déblindé : δ ↑</text><text x="330" y="14" textAnchor="end" fontSize="11" fill="#334155">blindé : δ ↓</text>
-        </svg>
-        <FormuleMath><mi>δ</mi><mo>=</mo><mfrac><mrow><mi>f</mi><mo>−</mo><msub><mi>f</mi><mn>0</mn></msub></mrow><msub><mi>f</mi><mn>0</mn></msub></mfrac><mspace width="1.2em"/><mtext>(en ppm, 1 ppm = 10⁻⁶)</mtext><mspace width="1.5em"/><mi>Δf</mi><mo>=</mo><mi>Δδ</mi><mo>×</mo><msub><mi>ν</mi><mn>0</mn></msub></FormuleMath>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Un signal par groupe de protons équivalents</strong> (même environnement chimique, par exemple par symétrie).</li>
-          <li>Un atome électronégatif (O, N, Cl, Br…) <strong>déblinde</strong> les protons proches : δ plus élevé, signal plus à gauche. L’effet s’atténue avec la distance.</li>
-          <li>Cycle benzénique : groupe donneur (+M, NH₂) → H voisins blindés ; groupe attracteur (−M, NO₂, C=O) → H déblindés.</li>
-        </ul>
+        <FDeplacement/>
+        <FormuleMath><mi>δ</mi><mo>=</mo><mfrac><mrow><mi>f</mi><mo>−</mo><msub><mi>f</mi><mn>0</mn></msub></mrow><msub><mi>f</mi><mn>0</mn></msub></mfrac><mspace width="1.2em"/><mtext>(en ppm)</mtext></FormuleMath>
+        {puces(<>1 ppm = 10⁻⁶ : un écart de fréquence Δf = Δδ × ν₀ (ν₀ : fréquence du spectromètre).</>, <><strong>Un signal par groupe de protons équivalents</strong> (même environnement chimique, par exemple par symétrie).</>, <>Un atome électronégatif (O, N, Cl, Br…) <strong>déblinde</strong> les protons proches : δ plus élevé, signal plus à gauche. L’effet s’atténue avec la distance.</>, <>Cycle benzénique : groupe donneur (+M, NH₂) → H voisins blindés ; attracteur (−M, NO₂, C=O) → H déblindés.</>)}
       </>,
       texte: <>Un échantillon placé dans un champ magnétique intense B₀ absorbe des ondes radio pour certaines fréquences : c’est la <strong>résonance</strong> des noyaux d’hydrogène (protons). Chaque groupe de protons équivalents absorbe à sa propre fréquence f, et donne un <strong>signal</strong> sur le spectre. On repère f par rapport à celle du TMS, tétraméthylsilane (δ = 0), grâce au <strong>déplacement chimique</strong> :
         <div style={{ textAlign: 'center', fontSize: 16, margin: '6px 0' }}><strong>δ = (f − f₀) / f₀</strong> (en ppm, 1 ppm = 10⁻⁶)</div>
@@ -266,11 +257,9 @@ export function SimulationRMN() {
     { id: 'integration', titre: 'L’intégration : combien de H par signal ?', depart: () => voir({ mol: 'neopentyl', mesures: true, corrige: false }),
       retenirTitre: 'À RETENIR : L’INTÉGRATION',
       retenir: <>
+        <FIntegration/>
         <FormuleMath><mtext>nombre de H</mtext><mo>=</mo><mi>N</mi><mo>×</mo><mfrac><mi>h</mi><mi>H</mi></mfrac></FormuleMath>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>L’aire d’un signal est proportionnelle au nombre de protons du groupe ; h : hauteur du palier de la courbe d’intégration, H : hauteur totale, N : nombre total de protons de la molécule (lu sur la formule brute).</li>
-          <li>Exemple : paliers de 45 mm et 10 mm pour C₅H₁₁Br (N = 11) : H = 55 mm, donc 9 H et 2 H.</li>
-        </ul>
+        {puces(<>L’aire d’un signal est proportionnelle au nombre de protons du groupe : h est la hauteur du palier, H la hauteur totale, N le nombre total de protons (lu sur la formule brute).</>, <>Exemple : paliers de 20 mm et 30 mm pour N = 10 : H = 50 mm, donc 4 H et 6 H.</>)}
       </>,
       texte: <>L’aire d’un signal est proportionnelle au nombre de protons du groupe. La <strong>courbe d’intégration</strong> (en rouge) monte d’un palier à chaque signal : la hauteur h du palier est proportionnelle au nombre de H. Avec H la hauteur totale et N le nombre total de protons de la molécule : <strong>nombre de H = N × h / H</strong>.
         <ExempleResolu>Sur le spectre du 1-bromo-2,2-diméthylpropane (C₅H₁₁Br, N = 11), les paliers mesurent 45 mm (δ = 1,05 ppm) et 10 mm (δ = 3,30 ppm) : H = 55 mm.</ExempleResolu></>,
@@ -284,20 +273,8 @@ export function SimulationRMN() {
     { id: 'couplage', titre: 'Le couplage entre protons voisins', depart: () => voir({ mol: 'ethoxyethane', sel: 'ch2', corrige: false }),
       retenirTitre: 'À RETENIR : COUPLAGE ET MULTIPLETS',
       retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Voisins n</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Multiplet (n + 1 raies)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Intensités (Pascal)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>singulet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>doublet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 : 1</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>triplet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 : 2 : 1</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>quadruplet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 : 3 : 3 : 1</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>quintuplet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 : 4 : 6 : 4 : 1</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Voisins : protons <strong>non équivalents</strong> à au plus 3 liaisons simples ; les protons équivalents ne se couplent pas entre eux.</li>
-          <li>Les H labiles (OH, NH₂, COOH) ne se couplent pas : singulet élargi, qui <strong>disparaît avec D₂O</strong>.</li>
-        </ul>
+        <FCouplage/>
+        {puces(<><strong>Voisins</strong> : protons <strong>non équivalents</strong> à au plus 3 liaisons simples ; les protons équivalents ne se couplent pas entre eux.</>, <>Les H labiles (OH, NH₂, COOH) ne se couplent pas : singulet élargi, qui <strong>disparaît avec D₂O</strong>.</>)}
       </>,
       texte: <>Deux protons <strong>voisins non équivalents</strong> (au plus 3 liaisons simples entre eux) interagissent : c’est le <strong>couplage</strong>. Le signal n’est plus un pic unique mais un groupe de raies. <strong>Règle des n + 1</strong> : un groupe de protons ayant <strong>n</strong> protons voisins équivalents donne un signal de <strong>n + 1</strong> raies. Les protons équivalents ne se couplent pas entre eux. Ici, le CH₂ de l’éthoxyéthane est un quadruplet.</>,
       tache: { type: 'qcm', q: 'Pourquoi le signal du CH₂ de l’éthoxyéthane est-il un quadruplet ?', options: ['il a 3 H voisins (ceux du CH₃) : n + 1 = 4', 'il contient 4 H', 'il est lié à un atome d’oxygène', 'il a 4 H voisins'], bonne: 0, expl: 'Chaque H du CH₂ « voit » les 3 H du CH₃ voisin : n = 3, donc n + 1 = 4 raies. (Les 4 H du CH₂ ne se couplent pas entre eux.)', indice: "Règle des (n + 1) : n est le nombre de H portés par les carbones voisins. Combien de H voisins a ce CH₂ ?" } },
@@ -314,50 +291,34 @@ export function SimulationRMN() {
       texte: <>Un spectromètre de fréquence ν₀ plus faible disperse moins les signaux. Utilisez les boutons de fréquence sous la molécule : réglez <strong>60 MHz</strong> et observez les multiplets.</>,
       tache: { type: 'action', ok: enGuide && nu0 <= 90, consigne: 'Réglez le spectromètre sur 60 MHz (ou 90 MHz).' } },
     { id: 'champ2', titre: 'Pourquoi des champs de plus en plus intenses ?', depart: () => voir({ mol: 'bromobutane', nu0: 60, corrige: false }),
-      retenirTitre: 'À RETENIR : J ET CHAMP B₀',
-      retenir: <>
-        <FormuleMath><mi>J</mi><mo>(</mo><mtext>ppm</mtext><mo>)</mo><mo>=</mo><mfrac><mrow><mi>J</mi><mo>(</mo><mtext>Hz</mtext><mo>)</mo></mrow><mrow><msub><mi>ν</mi><mn>0</mn></msub><mo>(</mo><mtext>MHz</mtext><mo>)</mo></mrow></mfrac></FormuleMath>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Expression</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Effet de B₀</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>J</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Hz (0 à 20 Hz)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ne dépend pas de B₀</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>écart entre signaux</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Δf = Δδ × ν₀ en Hz</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>augmente avec ν₀</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>J = 7 Hz</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7 / 60 = 0,12 ppm à 60 MHz</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7 / 400 = 0,0175 ppm à 400 MHz</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Champ plus intense : multiplets plus étroits en ppm, signaux mieux séparés, moins de chevauchements.</li>
-          <li>Quand l’écart entre deux signaux couplés devient comparable à J, la règle des n + 1 n’est plus rigoureuse.</li>
-        </ul>
-      </>,
       texte: <>À 60 MHz, les multiplets sont <strong>plus larges en ppm</strong> : J = 7 Hz représente 7/60 = 0,12 ppm contre 0,0175 ppm à 400 MHz. Les signaux se chevauchent. Les écarts entre signaux, eux, augmentent en Hz proportionnellement à ν₀ (Δf = Δδ × ν₀). Remarquez aussi l’avertissement sous le spectre : quand l’écart entre deux signaux couplés devient comparable à J, la règle des n + 1 n’est plus rigoureuse.</>,
       tache: { type: 'qcm', q: 'Quand ν₀ augmente, que se passe-t-il ?', options: ['δ (ppm) et J (Hz) ne changent pas, mais les signaux et multiplets sont mieux séparés', 'J (Hz) augmente comme ν₀', 'δ (ppm) augmente comme ν₀', 'le nombre de raies d’un multiplet augmente'], bonne: 0, expl: 'δ et J sont des grandeurs intrinsèques de la molécule. En revanche les écarts en Hz entre signaux croissent avec ν₀ alors que J ne bouge pas : les multiplets sont plus étroits en ppm et se chevauchent moins.', indice: "δ en ppm et J en Hz ne dépendent pas du champ, mais l’écart en Hz entre deux signaux vaut Δδ × ν₀. Que devient la séparation quand ν₀ augmente ?" } },
     { id: 'labiles', titre: 'Les protons labiles et l’eau lourde', depart: () => voir({ mol: 'ethanol', corrige: false }),
+      retenirTitre: 'À RETENIR : J, CHAMP B₀ ET H LABILES',
+      retenir: <>
+        <FChamp/>
+        <FormuleMath><mi>J</mi><mo>(</mo><mtext>ppm</mtext><mo>)</mo><mo>=</mo><mfrac><mrow><mi>J</mi><mo>(</mo><mtext>Hz</mtext><mo>)</mo></mrow><mrow><msub><mi>ν</mi><mn>0</mn></msub><mo>(</mo><mtext>MHz</mtext><mo>)</mo></mrow></mfrac></FormuleMath>
+        {puces(<>Champ plus intense : multiplets plus étroits en ppm, signaux mieux séparés, moins de chevauchements.</>, <>Quand l’écart entre deux signaux couplés devient comparable à J, la règle des n + 1 n’est plus rigoureuse.</>, <>Les H labiles (OH, NH₂, COOH) donnent un singulet qui <strong>disparaît avec D₂O</strong>.</>)}
+      </>,
       texte: <>Les H des groupes <strong>OH, NH₂, COOH</strong> sont <strong>labiles</strong> : ils s’échangent rapidement avec ceux d’autres molécules. Ils ne se couplent pas (signal singulet élargi) et leur δ varie avec la concentration. Si l’on ajoute de l’eau lourde D₂O, ils sont remplacés par du deutérium, invisible en RMN ¹H : <strong>le signal disparaît</strong>. Dans l’éthanol, cliquez sur « Ajouter D₂O ».</>,
       tache: { type: 'action', ok: enGuide && molId === 'ethanol' && d2o, consigne: 'Ajoutez D₂O à l’éthanol et observez quel signal disparaît.' } },
     { id: 'methode', titre: 'La méthode d’analyse d’un spectre', depart: () => voir({ mol: 'acetateethyle', corrige: true }),
       retenirTitre: 'À RETENIR : ANALYSER UN SPECTRE',
       retenir: <>
-        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-          <li><strong>Compter les signaux</strong> : un par groupe de H équivalents.</li>
-          <li><strong>Intégration</strong> : nombre de H par signal.</li>
-          <li><strong>Multiplicité</strong> : n voisins équivalents → n + 1 raies.</li>
-          <li><strong>Déplacement chimique</strong> : confirmer avec les tables (électronégativité, cycle, C=O).</li>
-          <li>Proposer la structure, puis vérifier signal par signal.</li>
-        </ol>
+        <FMethode/>
+        {puces(<>On vérifie chaque signal : position, intégration et multiplicité doivent tous être cohérents avec la structure proposée.</>)}
       </>,
       texte: <>Méthode : <strong>1.</strong> compter les signaux (groupes de H équivalents) ; <strong>2.</strong> utiliser l’intégration (nombre de H par signal) ; <strong>3.</strong> analyser la multiplicité (nombre de voisins n) ; <strong>4.</strong> utiliser les tables de δ pour confirmer. Le tableau d’analyse reprend ces étapes pour l’éthanoate d’éthyle (cliquez sur une ligne pour repérer le signal).</>,
       tache: { type: 'qcm', q: 'Dans l’éthanoate d’éthyle, pourquoi le CH₂ est-il le groupe le plus déblindé (δ ≈ 4,1 ppm) ?', options: ['il est lié à l’atome d’oxygène de l’ester', 'il est le plus riche en H', 'il est un quadruplet', 'il est loin des atomes électronégatifs'], bonne: 0, expl: 'L’oxygène, très électronégatif, appauvrit en électrons les H du CH₂ qui lui est lié. Que ce soit un quadruplet est une conséquence des 3 H voisins, pas une cause du déblindage.', indice: "Quel est l’effet d’un atome électronégatif (O) lié à un groupe sur la densité électronique autour de ses H ?" } },
     { id: 'aromatique', titre: 'Effet mésomère : nitro ou amino ?', depart: () => voir({ mol: 'aminobenzoate', corrige: true }),
       texte: <>Sur un cycle benzénique, un groupe <strong>donneur</strong> (+M, comme NH₂) enrichit le cycle en électrons et <strong>blinde</strong> les H voisins ; un groupe <strong>attracteur</strong> (−M, comme NO₂ ou C=O) l’appauvrit et les <strong>déblinde</strong>. Comparez avec le 4-nitrobenzoate d’éthyle (changez de molécule).</>,
       tache: { type: 'qcm', q: 'Pourquoi les H aromatiques ortho à NH₂ sont-ils à 6,63 ppm, bien plus blindés que ceux ortho à NO₂ (8,29 ppm) ?', options: ['NH₂ est donneur (+M) et NO₂ attracteur (−M)', 'NH₂ est plus électronégatif que NO₂', 'NO₂ est labile', 'les H ortho à NH₂ sont plus nombreux'], bonne: 0, expl: 'Le doublet de l’azote de NH₂ se délocalise dans le cycle (effet mésomère donneur) et augmente la densité électronique autour des H ortho : blindage. NO₂ attire les électrons : déblindage.', indice: "Compare l’effet de NH₂ (groupe donneur) et de NO₂ (groupe attracteur) sur la densité électronique du cycle, donc sur le blindage des H en ortho." } },
-    { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li><strong>Nombre de signaux</strong> = nombre de groupes de H équivalents.</li>
-        <li><strong>δ</strong> = (f − f₀) / f₀ : plus un proton est déblindé, plus δ est grand.</li>
-        <li><strong>Intégration</strong> : nombre de H = N × h / H.</li>
-        <li><strong>Multiplicité</strong> : n voisins équivalents → n + 1 raies (Pascal). J en Hz, indépendante de B₀.</li>
-        <li>H labiles (OH, NH, COOH) : singulet, disparaissent avec D₂O.</li></ul></ARetenir>, tache: null },
+    { id: 'fin', titre: 'Le bilan', depart: null,
+      retenirTitre: 'À RETENIR : LE BILAN DE LA RMN DU PROTON',
+      retenir: <>
+        <FBilanRmn/>
+      </>,
+      texte: <>Vous savez lire un spectre de RMN du proton : nombre de signaux, déplacement chimique, intégration et multiplicité. Essayez maintenant les défis.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
