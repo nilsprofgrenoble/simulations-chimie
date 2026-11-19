@@ -6,6 +6,7 @@ import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
 import * as QM from "./quantiteMatiereModele";
+import * as CD from "./concentrationModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -948,6 +949,45 @@ function genQuantiteMatiere1G() {
   [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Quantité de matière : masse molaire d’une espèce, puis n à partir d’une masse, du volume d’un gaz (volume molaire) ou du volume d’un liquide (masse volumique), puis composition d’un mélange.', questions: [q1, q2, q3, q4, q5, q6],
     retenir: ['M = somme des masses molaires atomiques, chacune multipliée par son indice ; n = m / M (m en g, M en g/mol).', 'Gaz : n = V / V_m, avec V_m (en L/mol) donné pour une température et une pression ; liquide : n = ρ·V / M.', 'Mélange : un calcul de n par constituant ; la part en nombre de molécules se compare avec n, pas avec la masse.', 'Convertir avant de calculer : mg → g, mL → L.'] };
+}
+
+// ───────────── Concentration en quantité de matière (1G) : concentration, masse à peser, prélèvement, dilution ─────────────
+function genConcentration1G() {
+  const sols = CD.SOLUTES.filter(x => x.id !== 'nahco3');
+  const choisir = cMax => { for (let i = 0; i < 200; i++) { const s = tire(sols), M = CD.masseMolaireSoluteDe(s); if (M * cMax <= 0.3 * s.solub) return [s, M]; } return [sols[0], CD.masseMolaireSoluteDe(sols[0])]; };
+  const [s1, M1] = choisir(0.5), V1 = tire([100, 250, 500]), c1v = tire([0.050, 0.100, 0.200, 0.500]), m1 = Number((c1v * V1 / 1000 * M1).toPrecision(3)), n1 = m1 / M1, c1 = n1 / (V1 / 1000);
+  const q1 = { id: 'c0', type: 'num', q: <>On dissout <b>{nb(m1, 3)}{NB}g</b> de {s1.nom} {CD.formuleSolute(s1)} (M = {nb(M1, 3)}{NB}g/mol) dans une fiole jaugée de <b>{V1}{NB}mL</b>, complétée jusqu’au trait de jauge. Calculez la concentration en quantité de matière de la solution, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: c1, csMin: 3, tolRel: 0.01,
+    aide: 'Calculez d’abord n = m / M, puis c = n / V avec V en litres (1 L = 1000 mL).',
+    pieges: [[n1 / V1, 'Vous n’avez pas converti les mL en L : V = ' + nb(V1 / 1000, 3) + ' L.'], [m1 / (V1 / 1000), 'C’est la concentration en masse Cm (en g/L) : pour obtenir c en mol/L, il faut diviser la masse par M.'], [(V1 / 1000) / n1, 'Le rapport est inversé : c = n / V.']],
+    expl: <>n = m / M = {nb(m1, 3)} / {nb(M1, 3)} = {nb(n1, 3)}{NB}mol ; V = {V1}{NB}mL = {nb(V1 / 1000, 3)}{NB}L ; c = n / V = <b>{avecU(c1, 'mol/L', 3)}</b>.</> };
+  const [s2, M2] = choisir(1.0), V2 = tire([100, 250, 500, 1000]), c2 = tire([0.050, 0.100, 0.200, 0.250, 0.500, 1.00].filter(c => c * M2 <= 0.3 * s2.solub)), m2 = c2 * V2 / 1000 * M2;
+  const q2 = { id: 'c1', type: 'num', q: <>On veut préparer <b>{V2}{NB}mL</b> d’une solution de {s2.nom} {CD.formuleSolute(s2)} de concentration <b>{nb(c2, 3)}{NB}mol/L</b> (M = {nb(M2, 3)}{NB}g/mol), par dissolution du solide. Calculez la masse à peser, en <b>g</b>.</>, unite: 'g', vrai: m2, csMin: 3, tolRel: 0.01,
+    aide: 'n = c × V avec V en litres, puis m = n × M.',
+    pieges: [[c2 * V2 * M2, 'Vous n’avez pas converti les mL en L : V = ' + nb(V2 / 1000, 3) + ' L.'], [c2 * (V2 / 1000) / M2, 'On multiplie n par M pour obtenir la masse, on ne divise pas : m = n × M.'], [c2 * M2, 'C’est la masse par litre (Cm en g/L) : il reste à multiplier par le volume en litres.']],
+    expl: <>V = {nb(V2 / 1000, 3)}{NB}L ; n = c × V = {nb(c2, 3)} × {nb(V2 / 1000, 3)} = {nb(c2 * V2 / 1000, 3)}{NB}mol ; m = n × M = {nb(c2 * V2 / 1000, 3)} × {nb(M2, 3)} = <b>{avecU(m2, 'g', 3)}</b>.</> };
+  const c3 = tire([0.050, 0.100, 0.200, 0.500, 1.00]), V3 = tire([10.0, 20.0, 25.0, 50.0]), n3 = c3 * V3 / 1000;
+  const q3 = { id: 'c2', type: 'num', q: <>Une solution a pour concentration <b>{nb(c3, 3)}{NB}mol/L</b>. On en prélève <b>{nb(V3, 3)}{NB}mL</b>. Calculez la quantité de matière de soluté dans ce prélèvement, en <b>mol</b>.</>, unite: 'mol', vrai: n3, csMin: 3, tolRel: 0.01,
+    aide: 'n = c × V avec V en litres (1 mL = 10⁻³ L).',
+    pieges: [[c3 * V3, 'Vous n’avez pas converti les mL en L : V = ' + nb(V3 / 1000, 3) + ' L.'], [c3 / (V3 / 1000), 'On multiplie c par V, on ne les divise pas : n = c × V.'], [(V3 / 1000) / c3, 'Le rapport est inversé : n = c × V.']],
+    expl: <>V = {nb(V3, 3)}{NB}mL = {nb(V3 / 1000, 3)}{NB}L ; n = c × V = {nb(c3, 3)} × {nb(V3 / 1000, 3)} = <b>{avecU(n3, 'mol', 3)}</b>.</> };
+  const [s4, M4] = choisir(0.5), Cm4 = Number((tire([0.050, 0.100, 0.200, 0.500]) * M4).toPrecision(3)), c4 = Cm4 / M4;
+  const q4 = { id: 'c3', type: 'num', q: <>Une solution de {s4.nom} {CD.formuleSolute(s4)} (M = {nb(M4, 3)}{NB}g/mol) a une concentration en masse <b>C<sub>m</sub> = {nb(Cm4, 3)}{NB}g/L</b>. Calculez sa concentration en quantité de matière, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: c4, csMin: 3, tolRel: 0.01,
+    aide: 'Un litre de solution contient C_m grammes de soluté : à combien de moles correspondent-ils ? (c = C_m / M)',
+    pieges: [[Cm4 * M4, 'On divise C_m par M, on ne les multiplie pas : g/L ÷ g/mol = mol/L.'], [M4 / Cm4, 'Le rapport est inversé : c = C_m / M.'], [c4 / 1000, 'Aucune conversion de volume n’est nécessaire : C_m est déjà « par litre ».']],
+    expl: <>c = C<sub>m</sub> / M = {nb(Cm4, 3)} / {nb(M4, 3)} = <b>{avecU(c4, 'mol/L', 3)}</b>.</> };
+  const d5 = tire(CD.dilutionsPossibles()), [s5] = choisir(d5.c0);
+  const q5 = { id: 'c4', type: 'num', q: <>On prépare <b>{d5.V1}{NB}mL</b> de solution fille de {s5.nom} {CD.formuleSolute(s5)} à <b>{nb(d5.c1, 3)}{NB}mol/L</b>, par dilution d’une solution mère à <b>{nb(d5.c0, 3)}{NB}mol/L</b>. Calculez le volume de solution mère à prélever, en <b>mL</b>.</>, unite: 'mL', vrai: d5.V0, csMin: 3, tolRel: 0.01,
+    aide: 'La quantité de soluté se conserve : c_mère × V_mère = c_fille × V_fille. Isolez V_mère (les mL peuvent rester en mL).',
+    pieges: [[d5.c0 * d5.V1 / d5.c1, 'Le rapport est inversé : V_mère = c_fille × V_fille / c_mère (la mère, plus concentrée, a le plus petit volume).'], [d5.V1 - d5.V0, 'C’est à peu près le volume d’eau à ajouter, pas le volume de solution mère.'], [d5.V0 / 1000, 'Le résultat est demandé en mL : ne le convertissez pas en litres.']],
+    expl: <>V<sub>mère</sub> = c<sub>fille</sub> × V<sub>fille</sub> / c<sub>mère</sub> = {nb(d5.c1, 3)} × {d5.V1} / {nb(d5.c0, 3)} = <b>{avecU(d5.V0, 'mL', 3)}</b> (F = {d5.F} : {d5.V1} / {d5.F} = {nb(d5.V0, 3)}{NB}mL).</> };
+  const d6 = tire(CD.dilutionsPossibles());
+  const q6 = { id: 'c5', type: 'num', q: <>On prélève <b>{d6.V0}{NB}mL</b> d’une solution mère à <b>{nb(d6.c0, 3)}{NB}mol/L</b> et on les verse dans une fiole jaugée de <b>{d6.V1}{NB}mL</b>, complétée jusqu’au trait de jauge. Calculez la concentration de la solution fille, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: d6.c1, csMin: 3, tolRel: 0.01,
+    aide: 'La quantité de soluté prélevée est conservée : c_fille = c_mère × V_mère / V_fille. Vous pouvez aussi passer par le facteur de dilution F = V_fille / V_mère.',
+    pieges: [[d6.c0 * d6.V1 / d6.V0, 'Le rapport est inversé : la fille est moins concentrée que la mère, c_fille = c_mère × V_mère / V_fille.'], [d6.c0 * d6.V0 / 1000, 'Il manque la division par le volume de la fiole : c = n / V_fille.'], [d6.V1 / d6.V0, 'C’est le facteur de dilution F (sans unité) : il faut ensuite diviser c_mère par F.']],
+    expl: <>F = V<sub>fille</sub> / V<sub>mère</sub> = {d6.V1} / {d6.V0} = {nb(d6.F, 3)} ; c<sub>fille</sub> = c<sub>mère</sub> / F = {nb(d6.c0, 3)} / {nb(d6.F, 3)} = <b>{avecU(d6.c1, 'mol/L', 3)}</b>.</> };
+  [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Concentration en quantité de matière : concentration d’une solution préparée par dissolution, masse à peser, quantité de soluté dans un prélèvement, lien avec la concentration en masse, volume de solution mère et concentration de la fille dans une dilution.', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['c = n / V (V en litres) et n = c × V ; C_m = c × M (g/L) ; dissolution : m = c × V × M.', 'Dilution : la quantité de soluté se conserve, c_mère × V_mère = c_fille × V_fille ; F = c_mère / c_fille = V_fille / V_mère (F > 1, sans unité).', 'Volume précis : fiole jaugée pour le volume final, pipette jaugée pour le prélèvement ; on complète jusqu’au trait de jauge.'] };
 }
 
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
@@ -2129,6 +2169,7 @@ export const FAMILLES = [
   { id: 'cinv-calcul', groupe: 'Formules', titre: 'Cinétique : vitesse volumique, demi-réactions et constante d’ordre 1 (TG)', gen: genCinetiqueTG, domaine: 'Cinétique : vitesse volumique et ordre 1' },
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
   { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
+  { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },
