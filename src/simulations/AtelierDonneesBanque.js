@@ -21,6 +21,7 @@ import * as TMP from "./tamponTstlModele";
 import * as CO2 from "./co2DissousModele";
 import * as EXT from "./extractionAcideBaseModele";
 import * as QM from "./quantiteMatiereModele";
+import * as CD from "./concentrationModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -33,6 +34,8 @@ const sg = x => (x < 0 ? '−' + nb(Math.abs(x)) : nb(x));          // nombre av
 const T = id => ({ t: id });
 const sciR = x => { const [m, e] = Number(x).toExponential(1).split('e'); return `${m.replace('.', ',')} × 10${[...String(Number(e))].map(c => SUP[c]).join('')}`; };   // 2 chiffres significatifs, notation scientifique
 const tok = (aff, quoi, val, u) => ({ aff: NB(aff), quoi, use: { val, u } });
+// ne garde que les données citées dans l'énoncé de la question posée (une donnée absente du texte ne s'afficherait pas)
+const epure = f => (p, q) => { const b = f(p, q); return { ...b, tokens: Object.fromEntries(Object.entries(b.tokens).filter(([k]) => b.texte.some(t => t && t.t === k))) }; };
 
 export const ENONCES = [
   // ───────────────────────────── 0. Projecteur de diapositives (1G : lentille mince)
@@ -363,6 +366,63 @@ export const ENONCES = [
         cherche: { bonne: 'La masse m de gaz dans le ballon (en g)', faux: ['La masse totale du ballon rempli de gaz (en g)', 'La quantité de matière de gaz (en mol)', 'La masse volumique du gaz (en g/L)'] },
         manque: null, solution: { txt: 'm = n × M, avec n = V / V_m', val: n * M, u: 'g' } };
     },
+  },
+  // ───────────────────────────── Concentration en quantité de matière (1G) : dissolution et dilution
+  {
+    id: 'mol1g-conc-dissol', domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Une solution à préparer par dissolution', noms: ['Concentration de la solution préparée', 'Masse de solide à peser'],
+    gen: () => {
+      const s = tire(CD.SOLUTES.filter(x => x.id !== 'nahco3')), M = CD.masseMolaireSoluteDe(s), V = tire([100, 250, 500]);
+      const c = tire([0.050, 0.100, 0.200, 0.500].filter(x => x * M <= 0.3 * s.solub));
+      return { id: s.id, V, c, m: Number((c * V / 1000 * M).toPrecision(3)), th: tire([20, 25]), mF: tire([62.4, 78.4, 85.3]) };
+    },
+    build: epure((p, q) => {
+      const s = CD.soluteDe(p.id), M = CD.masseMolaireSoluteDe(s), f = CD.formuleSolute(s);
+      const tokens = {
+        m: tok(`${nb(p.m)} g`, `Masse de ${s.nom} pesée`, p.m, 'g'),
+        M: tok(`${nb(M, 1)} g/mol`, `Masse molaire du ${s.nom}`, M, 'g/mol'),
+        V: tok(`${p.V} mL`, 'Volume de la fiole jaugée, donc volume de la solution', p.V / 1000, 'L'),
+        c: tok(`${nb(p.c, 3)} mol/L`, 'Concentration voulue de la solution', p.c, 'mol/L'),
+        th: tok(`${p.th} °C`, 'Température du laboratoire', p.th, '°C'),
+        mF: tok(`${nb(p.mF, 1)} g`, 'Masse de la fiole jaugée vide', p.mF, 'g'),
+      };
+      const raisons = { th: 'La température ne change pas la quantité de matière de soluté à dissoudre dans ce modèle de solution idéale.', mF: 'La masse de la fiole vide ne sert pas : seule la masse de soluté compte.' };
+      if (q === 0) return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = m / M', val: p.m / M, u: 'mol' }],
+        texte: ['Pour préparer une solution aqueuse de ', s.nom, ' ', f, ', on pèse ', T('m'), ' de solide ; sa masse molaire est ', T('M'), '. Le solide est dissous dans une fiole jaugée de ', T('V'), ', complétée jusqu’au trait de jauge. La fiole vide pèse ', T('mF'), ' et le laboratoire est à ', T('th'), '. Quelle est la concentration de la solution préparée ?'],
+        utiles: ['m', 'M', 'V'], raisons,
+        cherche: { bonne: 'La concentration c de la solution (en mol/L)', faux: ['La masse molaire du soluté (en g/mol)', 'La masse volumique de la solution (en g/L)', 'La quantité de matière d’eau dans la fiole (en mol)'] },
+        manque: null, solution: { txt: 'c = n / V, avec n = m / M et V converti en litres', val: p.m / M / (p.V / 1000), u: 'mol/L' } };
+      return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000'],
+        texte: ['On veut préparer une solution aqueuse de ', s.nom, ' ', f, ' de concentration ', T('c'), ' dans une fiole jaugée de ', T('V'), '. La masse molaire du soluté est ', T('M'), ' ; la fiole vide pèse ', T('mF'), ' et le laboratoire est à ', T('th'), '. Quelle masse de solide faut-il peser ?'],
+        utiles: ['c', 'V', 'M'], raisons,
+        cherche: { bonne: 'La masse m de solide à peser (en g)', faux: ['Le volume d’eau à ajouter dans la fiole (en mL)', 'La masse totale de la fiole remplie de solution (en g)', 'La masse volumique de la solution (en g/L)'] },
+        manque: null, solution: { txt: 'm = n × M, avec n = c × V (V en litres)', val: p.c * (p.V / 1000) * M, u: 'g' } };
+    }),
+  },
+  {
+    id: 'mol1g-conc-dilution', domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Une solution à préparer par dilution', noms: ['Concentration de la solution fille', 'Volume de solution mère à prélever'],
+    gen: () => { const d = tire(CD.dilutionsPossibles()); return { ...d, id: tire(['nacl', 'glucose', 'saccharose', 'cacl2']), b: tire([50, 100, 150]), th: tire([20, 25]) }; },
+    build: epure((p, q) => {
+      const s = CD.soluteDe(p.id), f = CD.formuleSolute(s);
+      const tokens = {
+        c0: tok(`${nb(p.c0, 3)} mol/L`, 'Concentration de la solution mère', p.c0, 'mol/L'),
+        V0: tok(`${p.V0} mL`, 'Volume de solution mère prélevé à la pipette jaugée', p.V0, 'mL'),
+        V1: tok(`${p.V1} mL`, 'Volume de la fiole jaugée, donc de la solution fille', p.V1, 'mL'),
+        c1: tok(`${nb(p.c1, 3)} mol/L`, 'Concentration voulue de la solution fille', p.c1, 'mol/L'),
+        b: tok(`${p.b} mL`, 'Volume de solution mère versé dans le bécher de prélèvement', p.b, 'mL'),
+        th: tok(`${p.th} °C`, 'Température du laboratoire', p.th, '°C'),
+      };
+      const raisons = { b: 'Le bécher de prélèvement sert à puiser la solution mère : son volume ne dit rien sur la quantité de soluté prélevée.', th: 'La température ne change pas la quantité de soluté conservée dans la dilution.' };
+      if (q === 0) return { tokens, derivees: [{ id: 'n', nom: 'Quantité de soluté prélevée', expr: 'n = c_mère × V_mère', val: p.c0 * p.V0 / 1000, u: 'mol' }],
+        texte: ['Une solution mère de ', s.nom, ' ', f, ' a pour concentration ', T('c0'), '. On en verse ', T('b'), ' dans un bécher, on y prélève ', T('V0'), ' à la pipette jaugée et on les place dans une fiole jaugée de ', T('V1'), ', complétée jusqu’au trait de jauge à ', T('th'), '. Quelle est la concentration de la solution fille ?'],
+        utiles: ['c0', 'V0', 'V1'], raisons,
+        cherche: { bonne: 'La concentration c de la solution fille (en mol/L)', faux: ['Le facteur de dilution (sans unité)', 'La concentration en masse de la solution mère (en g/L)', 'Le volume d’eau à ajouter (en mL)'] },
+        manque: null, solution: { txt: 'c_fille = c_mère × V_mère / V_fille (la quantité de soluté se conserve)', val: p.c0 * p.V0 / p.V1, u: 'mol/L' } };
+      return { tokens, derivees: ['les volumes peuvent rester en mL : ils se simplifient dans le rapport'],
+        texte: ['À partir d’une solution mère de ', s.nom, ' ', f, ' de concentration ', T('c0'), ', on veut préparer ', T('V1'), ' de solution fille de concentration ', T('c1'), ', dans une fiole jaugée, à ', T('th'), '. On dispose d’un bécher contenant ', T('b'), ' de solution mère. Quel volume de solution mère faut-il prélever ?'],
+        utiles: ['c0', 'c1', 'V1'], raisons,
+        cherche: { bonne: 'Le volume de solution mère à prélever (en mL)', faux: ['Le volume d’eau distillée à ajouter (en mL)', 'La quantité de matière d’eau dans la fiole (en mol)', 'Le facteur de dilution (sans unité)'] },
+        manque: null, solution: { txt: 'V_mère = c_fille × V_fille / c_mère', val: p.c1 * p.V1 / p.c0, u: 'mL' } };
+    }),
   },
   // ───────────────────────────── Équilibre chimique (TG) : Qr, K, taux d'avancement final
   {

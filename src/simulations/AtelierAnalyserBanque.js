@@ -4420,6 +4420,41 @@ export const PREVOIR = [
       F('aucun : les volumes étant égaux, les nombres de molécules le sont aussi', 'Pour des liquides, le volume ne fixe pas n : il faut passer par la masse (ρ·V) puis par M.'),
       F('l’éthanol : sa masse molaire est la plus grande', 'Une grande masse molaire diminue n = m / M ; ici l’éthanol a à la fois une masse plus petite (7,9 g contre 10 g) et une masse molaire plus grande.'),
     ] },
+  { id: 'mol1g-conc-volume-double', domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Même quantité de glucose, deux volumes',
+    enonce: 'On dissout 0,10 mol de glucose dans de l’eau pour obtenir 500 mL de solution (solution 1). On dissout la même quantité de glucose pour obtenir 1,0 L de solution (solution 2). On rappelle c = n / V.', q: 'La concentration de la solution 2, par rapport à celle de la solution 1, est…', options: [
+      V('deux fois plus petite : le même glucose est réparti dans un volume doublé', 'c = n / V : n est inchangée et V double, donc c est divisée par 2 (0,20 mol/L pour la solution 1, 0,10 mol/L pour la solution 2).'),
+      F('deux fois plus grande : la solution 2 contient un volume deux fois plus grand', 'Un volume plus grand ne donne pas une concentration plus grande : à n égale, c = n / V diminue quand V augmente.'),
+      F('la même : la quantité de glucose dissous est la même dans les deux cas', 'La quantité de matière est la même, mais c = n / V dépend aussi du volume de solution, qui double ici.'),
+      F('un peu plus petite : le glucose se dissout moins bien dans un grand volume', 'La dissolution est totale dans les deux cas : la concentration est exactement divisée par 2, et non « un peu » moins grande.'),
+    ] },
+  { id: 'mol1g-conc-masse-egale', domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Même masse dissoute, même concentration ?',
+    enonce: 'On dissout 10 g de chlorure de sodium (M = 58,5 g/mol) dans une fiole jaugée de 250 mL, et 10 g de saccharose (M = 342 g/mol) dans une autre fiole jaugée de 250 mL, complétées jusqu’au trait de jauge. On rappelle n = m / M et c = n / V.', q: 'La solution qui a la plus grande concentration en quantité de matière est celle de…', options: [
+      V('chlorure de sodium : sa masse molaire est plus faible, donc plus de moles', 'n(NaCl) = 10 / 58,5 ≈ 0,17 mol et n(saccharose) = 10 / 342 ≈ 0,029 mol, pour un même volume : c(NaCl) ≈ 0,68 mol/L contre 0,12 mol/L.'),
+      F('saccharose : sa masse molaire est plus grande, donc il apporte plus de moles', 'Pour une même masse, une plus grande masse molaire donne moins de moles : n = m / M diminue quand M augmente.'),
+      F('aucune : la même masse dans le même volume donne la même concentration', 'C’est vrai pour la concentration en masse (40 g/L dans les deux cas), mais pas pour la concentration en quantité de matière : c = Cm / M dépend de M.'),
+      F('on ne peut pas savoir : il faudrait connaître la température de la salle', 'La température ne change pas le résultat dans le modèle d’une solution idéale : les masses molaires suffisent pour comparer.'),
+    ] },
+  { id: 'mol1g-conc-prelevement-double', domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Prélever deux fois plus de solution mère',
+    enonce: 'Dans une fiole jaugée de 100,0 mL, on verse 10,0 mL de solution mère à 0,50 mol/L, puis on complète jusqu’au trait avec de l’eau distillée. On recommence, avec une autre fiole jaugée de 100,0 mL, en prélevant 20,0 mL de la même solution mère.', q: 'La concentration de la nouvelle solution fille, par rapport à la première, est…', options: [
+      V('deux fois plus grande : le prélèvement apporte deux fois plus de soluté', 'n double (c × V de la mère double) et V reste 100,0 mL : c passe de 0,050 mol/L à 0,10 mol/L.'),
+      F('la même : le volume final reste égal à 100,0 mL dans les deux cas', 'Le volume final est le même, mais la quantité de soluté apportée a doublé : c = n / V double aussi.'),
+      F('deux fois plus petite : il y a deux fois plus de solution mère à diluer', 'Plus de solution mère apporte plus de soluté, donc une solution fille plus concentrée, pas moins.'),
+      F('quatre fois plus grande : le volume prélevé et la quantité de soluté doublent', 'Une seule grandeur double ici : la quantité de soluté (le volume final est fixe). Il ne faut pas compter deux fois le même doublement.'),
+    ] },
+  { id: 'mol1g-conc-facteur-volume', domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Diluer 20 fois',
+    enonce: 'Une solution mère a pour concentration 1,0 mol/L. On la dilue 20 fois : le volume de solution est multiplié par 20, sans ajouter de soluté.', q: 'La concentration de la solution fille est…', options: [
+      V('divisée par 20 : le même soluté est dans un volume 20 fois plus grand', 'La quantité de matière se conserve et V est multiplié par 20 : c est divisée par 20, soit 0,050 mol/L.'),
+      F('multipliée par 20 : le volume de la solution est multiplié par 20', 'Si V augmente à quantité de soluté constante, c = n / V diminue : une dilution ne concentre pas.'),
+      F('inchangée : on ajoute seulement de l’eau et pas de soluté à la solution', 'La quantité de soluté est inchangée, mais la concentration compare cette quantité au volume : elle diminue.'),
+      F('diminuée de 20 mol/L : on retire le facteur de dilution à la concentration', 'Le facteur de dilution est un rapport, pas une différence : on divise la concentration par F, on ne retire pas F.'),
+    ] },
+  { id: 'mol1g-conc-verre-precision', domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Éprouvette ou fiole jaugée ?',
+    enonce: 'Anaïs et Bastien veulent préparer 100 mL d’une solution de concentration connue avec précision, avec la même masse de sel pesée. Anaïs dissout le sel dans une éprouvette graduée de 100 mL et complète à la graduation 100 mL ; Bastien le dissout dans une fiole jaugée de 100 mL et complète jusqu’au trait de jauge.', q: 'La concentration connue le plus précisément est celle de la solution de…', options: [
+      V('Bastien : la fiole jaugée fixe un volume plus précis que l’éprouvette', 'Le volume final intervient dans c = n / V : mieux il est connu, mieux la concentration l’est. (Le calcul des incertitudes relève de la partie « Mesure ».)'),
+      F('Anaïs : l’éprouvette graduée permet de lire n’importe quel volume voulu', 'Pouvoir lire des volumes variés n’en fait pas un verre précis : ses graduations donnent un volume approché, contrairement au trait d’une fiole jaugée.'),
+      F('les deux : la masse de sel pesée et le volume nominal sont les mêmes', 'La masse et le volume affiché sont les mêmes, mais pas la précision avec laquelle le volume réel est obtenu : elle dépend du verre.'),
+      F('aucun des deux : seule une pipette jaugée donne un volume précis ici', 'La pipette jaugée sert à prélever un volume précis ; pour le volume final d’une solution, c’est la fiole jaugée qui convient.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

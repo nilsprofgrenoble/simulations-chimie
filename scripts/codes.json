@@ -1213,5 +1213,20 @@
  "37:mouvement:vac-ana-deux": "ANA523",
  "77:plausible:vac-val-signe": "VAL293",
  "77:plausible:vac-val-ordre": "VAL294",
- "36:vac-calcul": "REA74"
+ "36:vac-calcul": "REA74",
+ "34:mol1g-conc-dissol.0": "SAPP325",
+ "34:mol1g-conc-dissol.1": "SAPP326",
+ "34:mol1g-conc-dilution.0": "SAPP327",
+ "34:mol1g-conc-dilution.1": "SAPP328",
+ "37:prevoir:mol1g-conc-volume-double": "ANA524",
+ "37:prevoir:mol1g-conc-masse-egale": "ANA525",
+ "37:prevoir:mol1g-conc-prelevement-double": "ANA526",
+ "37:prevoir:mol1g-conc-facteur-volume": "ANA527",
+ "37:prevoir:mol1g-conc-verre-precision": "ANA528",
+ "77:plausible:mol1g-conc-val-ml": "VAL295",
+ "77:plausible:mol1g-conc-val-sel": "VAL296",
+ "77:plausible:mol1g-conc-val-prelevement": "VAL297",
+ "77:plausible:mol1g-conc-val-facteur": "VAL298",
+ "77:plausible:mol1g-conc-val-masse": "VAL299",
+ "36:mol1g-conc-calcul": "REA75"
 }

@@ -59,6 +59,7 @@ const TACHES_FAMILLE = {
   '36:tmp-calcul': () => ['solution tampon', 'couple acide-base'],
   '36:pil-calcul': () => ['pile', 'capacité électrique', 'réactif limitant'],
   '36:ely-calcul': () => ['électrolyse', 'charge électrique', 'quantité d’électrons'],
+  '36:mol1g-conc-calcul': () => ['concentration d’une solution', 'quantités de matière', 'dilution', 'masse molaire', 'conversion d’unités'],
   '36:mol1g-qte-calcul': () => ['masse molaire', 'quantités de matière', 'volume molaire d’un gaz', 'masse volumique', 'conversion d’unités'],
   '36:rad-calcul': () => ['constante radioactive', 'décroissance radioactive', 'activité', 'datation', 'conversion d’unités'],
   '36:titrage-direct': () => ['quantité de matière versée', 'relation à l’équivalence', 'concentration d’une solution', 'masse dans un volume'],
