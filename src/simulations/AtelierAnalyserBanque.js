@@ -3375,6 +3375,27 @@ export const PREVOIR = [
       F('le chlorure de sodium n’est plus dissocié à 100 mmol/L', 'NaCl reste totalement dissocié à cette concentration : l’écart vient des interactions entre ions, pas d’une dissociation incomplète.'),
       F('la conductance diminue toujours quand c augmente', 'En solution diluée, G augmente avec c ; à forte concentration elle augmente moins vite que c, mais elle ne diminue pas.'),
     ] },
+  { id: 'fre-ana-uniforme', domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Un enfant sur un manège',
+    enonce: 'Un enfant est assis sur un manège qui tourne à vitesse constante : son mouvement est circulaire uniforme, de centre l’axe du manège.', q: 'Que peut-on dire de l’accélération de l’enfant ?', options: [
+      V('non nulle, dirigée vers l’axe central du manège', 'a = frac(v²|R), dirigée vers le centre : la direction de la vitesse change même si sa norme est constante.'),
+      F('nulle, car la norme de sa vitesse est constante', 'La norme de la vitesse est constante mais le vecteur vitesse change de direction : l’accélération n’est pas nulle.'),
+      F('non nulle, dirigée dans le sens de son mouvement', 'Une accélération tangente changerait la norme de la vitesse : ce n’est pas le cas ici (frac(dv|dt) = 0).'),
+      F('non nulle, dirigée vers l’extérieur du manège', 'Pour un mouvement circulaire, la coordonnée normale a_n = frac(v²|R) est positive : elle pointe vers le centre, pas vers l’extérieur.'),
+    ] },
+  { id: 'fre-ana-rayon', domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Deux cercles, une même vitesse',
+    enonce: 'Deux points décrivent chacun un cercle à vitesse de norme constante, avec la même valeur de v. Le premier tourne sur un cercle de rayon R, le second sur un cercle de rayon 2R.', q: 'Comment se comparent les normes de leurs accélérations ?', options: [
+      V('celle du second est deux fois plus petite', 'a = frac(v²|R) : à v identique, doubler R divise a par deux.'),
+      F('celle du second est deux fois plus grande', 'R est au dénominateur dans a = frac(v²|R) : un rayon plus grand donne une accélération plus petite.'),
+      F('celle du second est quatre fois plus petite', 'a varie comme frac(1|R), pas comme frac(1|R²) : doubler R divise a par 2 seulement.'),
+      F('elles sont égales : a ne dépend que de v', 'a = frac(v²|R) dépend aussi du rayon : à même vitesse, l’accélération est plus grande dans un virage serré.'),
+    ] },
+  { id: 'fre-ana-freinage', domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Une voiture qui freine dans un virage',
+    enonce: 'Une voiture parcourt un virage circulaire en freinant : la norme de sa vitesse diminue régulièrement. On décrit son accélération dans le repère de Frenet.', q: 'Quelle description du vecteur accélération est correcte ?', options: [
+      V('une coordonnée tangentielle négative et une normale dirigée vers le centre', 'a_t = frac(dv|dt) < 0 (sens opposé au mouvement) ; a_n = frac(v²|R) > 0, dirigée vers le centre tant que v n’est pas nulle.'),
+      F('seulement une coordonnée tangentielle, dans le sens opposé au mouvement', 'La direction de la vitesse change aussi (virage) : a_n = frac(v²|R) n’est pas nulle, il y a une coordonnée vers le centre.'),
+      F('seulement une coordonnée normale, vers le centre, comme à vitesse constante', 'La norme de la vitesse diminue : a_t = frac(dv|dt) n’est pas nulle, il y a aussi une coordonnée tangentielle.'),
+      F('une coordonnée tangentielle négative et une normale vers l’extérieur du virage', 'La coordonnée normale a_n = frac(v²|R) est positive : dirigée vers le centre du cercle, jamais vers l’extérieur.'),
+    ] },
   { id: 'pil-ana-pont', domaine: 'Piles : fonctionnement et capacité', titre: 'On retire le pont salin',
     enonce: 'Une pile zinc-cuivre alimente une petite lampe. On retire le pont salin qui relie les deux solutions, sans toucher aux fils.', q: 'Que se passe-t-il ?', options: [
       V('la lampe s’éteint : le circuit est ouvert', 'Sans pont salin, aucun ion ne circule entre les deux solutions : le circuit est ouvert et le courant s’arrête aussitôt.'),

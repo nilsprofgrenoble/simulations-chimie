@@ -1186,5 +1186,14 @@
  "77:plausible:mol1g-qte-val-gaz": "VAL285",
  "77:plausible:mol1g-qte-val-masse": "VAL286",
  "77:plausible:mol1g-qte-val-eau": "VAL287",
- "36:mol1g-qte-calcul": "REA71"
+ "36:mol1g-qte-calcul": "REA71",
+ "34:fre-sapp-circ.0": "SAPP317",
+ "34:fre-sapp-circ.1": "SAPP318",
+ "37:prevoir:fre-ana-uniforme": "ANA515",
+ "37:prevoir:fre-ana-rayon": "ANA516",
+ "37:prevoir:fre-ana-freinage": "ANA517",
+ "77:plausible:fre-val-nulle": "VAL288",
+ "77:plausible:fre-val-conversion": "VAL289",
+ "77:plausible:fre-val-ok": "VAL290",
+ "36:fre-calcul": "REA72"
 }

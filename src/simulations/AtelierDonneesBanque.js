@@ -1170,6 +1170,35 @@ export const ENONCES = [
         manque: null, solution: { txt: 'c(S) = F × G / a, en mmol/L, puis ÷ 1 000 pour obtenir des mol/L', val: p.F * p.G / p.a / 1000, u: 'mol/L' } };
     },
   },
+  // ───────────────────────────── Mouvement circulaire (TG, sim 167) : repère de Frenet, accélération
+  {
+    id: 'fre-sapp-circ', domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Accélération d’un point en mouvement circulaire', noms: ['Accélération d’un point en mouvement circulaire uniforme', 'Norme de l’accélération en mouvement circulaire non uniforme'],
+    gen: () => {
+      // on écarte les tirages où a_n seule, a_t seule ou leur somme donnerait la norme à 8 % près (réponse fausse acceptée par la tolérance)
+      const MV = [2.0, 3.0, 4.0, 5.0], MR = [1.5, 2.0, 2.5, 4.0], MA = [1.5, 2.0, 3.0], ok = [];
+      MV.forEach(v => MR.forEach(R => MA.forEach(at => { const an = v * v / R, a = Math.hypot(at, an); if ([an, at, at + an].every(x => Math.abs(x - a) > 0.08 * a)) ok.push([v, R, at]); })));
+      const [v, R, at] = tire(ok);
+      return { v, R, at, m: tire([0.20, 0.50, 1.5]), t: tire([10, 20, 30]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        v: tok(`${nb(p.v, 2)} m/s`, 'Norme de la vitesse du point à l’instant étudié', p.v, 'm/s'),
+        R: tok(`${nb(p.R, 2)} m`, 'Rayon du cercle décrit par le point', p.R, 'm'),
+        at: tok(`${nb(p.at, 2)} m/s²`, 'Variation de la norme de la vitesse par seconde (le point accélère)', p.at, 'm/s²'),
+        m: tok(`${nb(p.m, 2)} kg`, 'Masse du point', p.m, 'kg'),
+        t: tok(`${p.t} s`, 'Durée totale de l’enregistrement du mouvement', p.t, 's'),
+      };
+      const debut = ['Un point matériel décrit un cercle. On étudie son accélération dans le repère de Frenet. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Le point tourne à vitesse de norme constante ', T('v'), ' sur un cercle de rayon ', T('R'), '. Sa masse est ', T('m'), ' ; le mouvement a été enregistré pendant ', T('t'), '. Quelle est la norme de son accélération ?'],
+        utiles: ['v', 'R'], raisons: { m: 'La masse n’intervient pas dans la description du mouvement (cinématique) : elle ne sert pas à calculer l’accélération.', t: 'La durée de l’enregistrement ne change ni la vitesse ni le rayon : elle ne sert pas ici.' },
+        cherche: { bonne: 'La norme de l’accélération a (en m/s²)', faux: ['La variation de la vitesse frac(dv|dt) (en m/s²)', 'La durée d’un tour (en s)', 'La force exercée sur le point (en N)'] },
+        manque: null, solution: { txt: 'frac(dv|dt) = 0 : a = a_n = frac(v²|R) (v en m/s, R en m)', val: p.v * p.v / p.R, u: 'm/s²' } };
+      return { tokens, derivees: [{ id: 'an', nom: 'Coordonnée normale de l’accélération', expr: 'a_n = frac(v²|R)', val: p.v * p.v / p.R, u: 'm/s²' }], texte: [...debut, 'À l’instant étudié, le point accélère : sa vitesse vaut ', T('v'), ', et la variation de sa vitesse par unité de temps vaut ', T('at'), ', sur un cercle de rayon ', T('R'), '. Sa masse est ', T('m'), '. Quelle est la norme de son accélération ?'],
+        utiles: ['v', 'R', 'at'], raisons: { m: 'La masse n’intervient pas dans les coordonnées de l’accélération.' },
+        cherche: { bonne: 'La norme de l’accélération a (en m/s²)', faux: ['La coordonnée normale a_n seule (en m/s²)', 'La coordonnée tangentielle a_t seule (en m/s²)', 'La vitesse angulaire (en rad/s)'] },
+        manque: null, solution: { txt: 'a_t = frac(dv|dt) ; a_n = frac(v²|R) ; a = √(a_t² + a_n²)', val: Math.hypot(p.at, p.v * p.v / p.R), u: 'm/s²' } };
+    },
+  },
   // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
   {
     id: 'pil-sapp-capacite', domaine: 'Piles : fonctionnement et capacité', titre: 'Capacité d’une pile zinc-cuivre', noms: ['Quantité d’ions cuivre initiale', 'Capacité électrique de la pile'],
