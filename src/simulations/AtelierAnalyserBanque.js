@@ -4808,6 +4808,35 @@ export const PREVOIR = [
       F('deux isomères de position : le groupe méthyle change de carbone', 'Pour qu’il y ait isomérie de position, il faut que le squelette reste le même et que la position change réellement. Ici, la position est la même : 2 dans les deux cas une fois bien numérotée.'),
       F('deux molécules de formules brutes différentes', 'Les deux comptent 5 carbones et 12 hydrogènes (C₅H₁₂) : les formules brutes sont les mêmes.'),
     ] },
+  // ───────────────────────────── Familles fonctionnelles et polymères (TG, sim 173)
+  { id: 'pol-ana-meme-brute', domaine: 'Familles fonctionnelles et polymères', titre: 'Même formule brute, mêmes groupes ?',
+    enonce: 'L’acide éthanoïque, CH₃–COOH, et le méthanoate de méthyle, H–CO–O–CH₃, ont la même formule brute, C₂H₄O₂.', q: 'Que peut-on dire de leurs groupes caractéristiques ?', options: [
+      V('l’un porte –COOH, l’autre –COO– : familles différentes', 'Dans l’acide, l’oxygène simple porte un atome d’hydrogène (liaison O–H) ; dans l’ester, il est relié à un second carbone. La formule brute ne suffit pas à connaître la famille.'),
+      F('ils portent le même groupe, puisque la formule brute est la même', 'Deux molécules de même formule brute peuvent avoir des enchaînements d’atomes différents, donc des groupes différents : ici un acide et un ester.'),
+      F('les deux sont des esters : chacune contient un C=O et des oxygènes', 'Un ester a un oxygène simple relié à deux carbones. Dans CH₃–COOH, cet oxygène est relié à un hydrogène : c’est un acide carboxylique.'),
+      F('les deux sont des acides carboxyliques, car elles contiennent –COO', 'Seule une des deux a une liaison O–H ; l’autre, où l’oxygène est relié à un second carbone, est un ester.'),
+    ] },
+  { id: 'pol-ana-classe-amine', domaine: 'Familles fonctionnelles et polymères', titre: 'Greffer des groupes méthyle sur l’azote',
+    enonce: 'On part de la méthanamine, CH₃–NH₂. On remplace un atome d’hydrogène lié à l’azote par un groupe méthyle CH₃–, puis on recommence une seconde fois avec un atome d’hydrogène de l’azote.', q: 'Quelles amines obtient-on, dans l’ordre ?', options: [
+      V('secondaire (N-méthylméthanamine), puis tertiaire (N,N-diméthylméthanamine)', 'Chaque groupe méthyle ajouté sur N augmente d’une unité le nombre de carbones liés à l’azote : 2, puis 3, soit les classes secondaire puis tertiaire.'),
+      F('primaire, puis secondaire : seul le deuxième groupe méthyle ajouté change la classe', 'Dès le premier groupe méthyle, l’azote est lié à deux carbones : l’amine est déjà secondaire, puis tertiaire au second ajout.'),
+      F('secondaire, puis secondaire : la classe ne dépend que du premier groupe méthyle ajouté', 'La classe se compte avec tous les carbones liés à N : le second groupe méthyle en ajoute un, l’amine devient tertiaire.'),
+      F('tertiaire dès le départ, puis tertiaire : N est déjà lié à trois atomes avant tout ajout', 'Les atomes d’hydrogène liés à N ne comptent pas dans la classe : seuls comptent les carbones liés à N (1 au départ, donc primaire).'),
+    ] },
+  { id: 'pol-ana-nom-amide', domaine: 'Familles fonctionnelles et polymères', titre: 'Prévoir le nom d’un amide',
+    enonce: 'Le propanamide a pour formule CH₃–CH₂–CO–NH₂. On remplace un atome d’hydrogène lié à l’azote par un groupe éthyle –CH₂–CH₃. Règle fournie : le carbone du C=O est le carbone n° 1 de la chaîne ; un groupe alkyle fixé sur N s’écrit « N-alkyl » devant le nom.', q: 'Quel est le nom du nouvel amide ?', options: [
+      V('N-éthylpropanamide (3 C côté du C=O)', 'La chaîne qui porte le C=O compte 3 carbones : propanamide. Le groupe éthyle est lié à N : « N-éthyl » devant, d’où N-éthylpropanamide.'),
+      F('N-propyléthanamide (propyle sur N)', 'Ce nom décrirait un amide dont la chaîne du C=O compte 2 carbones et dont le groupe sur N en compte 3 : c’est l’inverse de la molécule décrite.'),
+      F('N-éthylpropanamine (terminaison amine)', 'La terminaison « amine » est celle des amines : ici le C=O est conservé, c’est un amide, donc « amide ».'),
+      F('éthylpropanamide (sans préfixe N-)', 'Le groupe fixé sur l’azote s’écrit avec le préfixe « N- » : sans lui, on ne sait pas s’il est sur N ou sur la chaîne.'),
+    ] },
+  { id: 'pol-ana-motif-cl', domaine: 'Familles fonctionnelles et polymères', titre: 'Remplacer un groupe dans le motif',
+    enonce: 'Le polypropylène a pour motif –CH₂–CH(CH₃)–. Dans un autre polymère, le groupe CH₃ du motif est remplacé par un atome de chlore, le reste du motif étant inchangé.', q: 'Quel est le motif du nouveau polymère ?', options: [
+      V('–CH₂–CHCl–, celui du PVC', 'Le chlore remplace le groupe –CH₃ sur le carbone du milieu : le motif devient –CH₂–CHCl–, celui du poly(chlorure de vinyle).'),
+      F('–CH₂–CH(CH₃)Cl– : on ajoute Cl', 'Le chlore remplace CH₃, il ne s’y ajoute pas : le carbone ne peut faire que 4 liaisons.'),
+      F('–CH₂–CCl₂– : deux atomes de chlore', 'Le groupe CH₃ est remplacé par un seul atome de chlore, et le groupe –CH₂– n’est pas modifié.'),
+      F('–CHCl–CHCl– : un chlore sur chaque C', 'Il n’y a qu’un seul atome de chlore, qui remplace le groupe CH₃ : le –CH₂– du motif reste inchangé.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

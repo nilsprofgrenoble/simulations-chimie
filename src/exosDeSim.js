@@ -83,6 +83,7 @@ export const EXOS_DE_SIM = {
   135: [/(^|\.)cdt-/, /plausible\.cdt-/],
   136: [/(^|\.)etl-/, /plausible\.etl-/],
   170: [/(^|\.)irt-/, /plausible\.irt-/],
+  173: [/(^|\.)pol-/, /plausible\.pol-/],
   167: [/(^|\.)fre-/, /plausible\.fre-/],
   171: [/(^|\.)lun-/, /plausible\.lun-/],                                                                           // Lunette afocale : schéma, faisceau, grossissement (TG)
   172: [/(^|\.)top-/, /plausible\.top-/],                                                                        // Formules topologiques et isomérie de constitution (TG)

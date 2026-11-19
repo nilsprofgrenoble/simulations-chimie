@@ -2337,6 +2337,50 @@ function genLunetteTG() {
     retenir: ['Lunette afocale : F′obj et Foc confondus, O₁O₂ = f′_obj + f′_oc, faisceau émergent parallèle.', <>Petits angles : θ ≈ <Frac haut="A₁B₁" bas={FO}/> et θ′ ≈ <Frac haut="A₁B₁" bas={FC}/>, donc G = <Frac haut="θ′" bas="θ"/> = <Frac haut={FO} bas={FC}/> (sans unité, supérieur à 1).</>, 'Fiche « D/f′ » : diamètre puis distance focale de l’objectif ; le diamètre n’intervient pas dans G.'] };
 }
 
+// ──────────────────────── Famille « Polymères » (TG, sim 173) ────────────────────────
+// Motifs idéalisés : formule brute du motif, nombre de C et masse molaire (C 12,0 ; H 1,0 ; Cl 35,5 g/mol, données de l'énoncé)
+const POL_MOTIFS = [
+  { nom: 'polyéthylène', motif: '–CH₂–CH₂–', brute: 'C₂H₄', nC: 2, nH: 4, nCl: 0 },
+  { nom: 'poly(chlorure de vinyle)', motif: '–CH₂–CHCl–', brute: 'C₂H₃Cl', nC: 2, nH: 3, nCl: 1 },
+  { nom: 'polypropylène', motif: '–CH₂–CH(CH₃)–', brute: 'C₃H₆', nC: 3, nH: 6, nCl: 0 },
+  { nom: 'polystyrène', motif: '–CH₂–CH(C₆H₅)–', brute: 'C₈H₈', nC: 8, nH: 8, nCl: 0 },
+];
+// segments de trois motifs (le polyéthylène est exclu : –CH₂–CH₂–CH₂–… ne permet pas de distinguer un motif de deux carbones d'un motif d'un seul)
+const POL_SEGMENTS = [
+  { nom: 'poly(chlorure de vinyle)', seg: '–CH₂–CHCl–CH₂–CHCl–CH₂–CHCl–', nC: 2 },
+  { nom: 'polypropylène', seg: '–CH₂–CH(CH₃)–CH₂–CH(CH₃)–CH₂–CH(CH₃)–', nC: 3 },
+  { nom: 'polystyrène', seg: '–CH₂–CH(C₆H₅)–CH₂–CH(C₆H₅)–CH₂–CH(C₆H₅)–', nC: 8 },
+];
+function genPolymeresTG() {
+  const tolOk = q => { const seuil = Math.max(1.5 * q.tolRel, 0.02); q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > seuil * Math.abs(q.vrai)); };
+  // nb() prend des chiffres SIGNIFICATIFS : les nombres s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const milliers = x => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  const S = tire(POL_SEGMENTS);
+  const q1 = { id: 'po0', type: 'num', q: <>Voici un segment de chaîne de {S.nom} : <b>{S.seg}</b>. Un même motif s’y répète (on néglige les extrémités de la chaîne). Combien d’atomes de carbone ce motif contient-il ? (nombre entier)</>, unite: 'atomes de carbone', vrai: S.nC, tolRel: 0.006, csMin: 1,
+    aide: 'Cherchez le plus petit groupe d’atomes qui, répété bout à bout, redonne tout le segment, puis comptez ses atomes de carbone (y compris ceux portés par la chaîne).',
+    pieges: [[3 * S.nC, 'Vous avez compté les atomes de carbone des trois motifs du segment : il faut ceux d’un seul motif.'], [S.nC + 1, 'Recomptez les atomes de carbone du motif, un par un : vous en avez compté un de trop.'], [S.nC > 2 ? 2 : 1, 'Le motif contient aussi les atomes de carbone portés par la chaîne principale : recomptez-les.'], [2 * S.nC, 'Vous avez compté deux motifs : il en faut un seul.']],
+    expl: <>Le groupe qui se répète est {S.nC === 2 ? '–CH₂–CHCl–' : S.nC === 3 ? '–CH₂–CH(CH₃)–' : '–CH₂–CH(C₆H₅)–'} : il contient <b>{S.nC}</b> atomes de carbone.</> };
+  const P = tire(POL_MOTIFS), n1 = tire([200, 500, 800, 1000, 2000, 5000]);
+  const q2 = { id: 'po1', type: 'num', q: <>Le {P.nom} a pour motif <b>{P.motif}</b> (formule brute {P.brute}). Une chaîne compte <b>n = {milliers(n1)}</b> motifs ; on néglige les extrémités de la chaîne. Combien d’atomes de carbone cette chaîne contient-elle ? (nombre entier)</>, unite: 'atomes de carbone', vrai: n1 * P.nC, tolRel: 0.006, csMin: 1,
+    aide: 'Comptez les atomes de carbone d’un seul motif (y compris ceux portés par la chaîne), puis multipliez par n.',
+    pieges: [[n1, 'C’est le nombre de motifs : chaque motif contient plusieurs atomes de carbone dans le cas général.'], [n1 * (P.nC + 1), 'Vous avez compté un atome de carbone de trop dans le motif : recomptez sur la formule du motif.'], [n1 * (P.nC > 2 ? P.nC - 1 : 4), 'Recomptez les atomes de carbone du motif, un par un, sur sa formule brute.'], [n1 / P.nC, 'Il faut multiplier le nombre de motifs par le nombre de C d’un motif, pas le diviser.']],
+    expl: <>Un motif compte {P.nC} atomes de carbone ({P.brute}) : {P.nC} × {milliers(n1)} = <b>{milliers(n1 * P.nC)}</b> atomes de carbone.</> };
+  const P3 = tire(POL_MOTIFS), M3 = 12.0 * P3.nC + 1.0 * P3.nH + 35.5 * P3.nCl, n3 = tire([1000, 2000, 4000, 5000, 10000]);
+  const q3 = { id: 'po2', type: 'num', q: <>Pour aller plus loin. Le motif du {P3.nom} a une masse molaire de <b>{d(M3, 1)}{NB}g·mol⁻¹</b>. Une chaîne compte <b>n = {milliers(n3)}</b> motifs ; on néglige les extrémités de la chaîne. Quelle est sa masse molaire ? (en g·mol⁻¹, 2 chiffres significatifs)</>, unite: 'g·mol⁻¹', vrai: M3 * n3, tolRel: 0.05, csMin: 2,
+    aide: 'M (chaîne) = n × M (motif) : la masse molaire d’un ensemble de n motifs identiques.',
+    pieges: [[M3, 'C’est la masse molaire d’un seul motif : la chaîne en contient n.'], [M3 + n3, 'Il faut multiplier, pas additionner : n motifs identiques.'], [n3 / M3, 'Il faut multiplier n par la masse molaire du motif, pas diviser.'], [M3 * n3 / 1000, 'Facteur 1 000 : la masse molaire demandée est en g·mol⁻¹, ne la convertissez pas en kg·mol⁻¹.']],
+    expl: <>M = n × M (motif) = {milliers(n3)} × {d(M3, 1)} = <b>{milliers(n3 * M3)}{NB}g·mol⁻¹</b>.</> };
+  const P4 = tire(POL_MOTIFS), M4 = 12.0 * P4.nC + 1.0 * P4.nH + 35.5 * P4.nCl, n4 = tire([400, 800, 1600, 2500, 4000]);
+  const q4 = { id: 'po3', type: 'num', q: <>Pour aller plus loin. Un échantillon de {P4.nom} (motif {P4.brute}, masse molaire du motif <b>{d(M4, 1)}{NB}g·mol⁻¹</b>) a une masse molaire moyenne de chaîne de <b>{milliers(n4 * M4)}{NB}g·mol⁻¹</b> ; on néglige les extrémités de la chaîne. Quel est le nombre moyen n de motifs par chaîne ? (valeur entière)</>, unite: 'motifs', vrai: n4, tolRel: 0.05, csMin: 2,
+    aide: 'M (chaîne) = n × M (motif) : isolez n, qui vaut M (chaîne) divisée par M (motif).',
+    pieges: [[n4 * M4 * M4, 'Il faut diviser la masse molaire de la chaîne par celle du motif, pas la multiplier.'], [M4 / n4, 'Le rapport est inversé : n = M (chaîne) divisée par M (motif).'], [n4 * M4 - M4, 'Il faut diviser, pas retrancher : n est le rapport des deux masses molaires.'], [n4 * 2, 'Vérifiez la division : une erreur de facteur 2 donne ce résultat.']],
+    expl: <>n = <Frac haut="M (chaîne)" bas="M (motif)"/> = <Frac haut={milliers(n4 * M4)} bas={d(M4, 1)}/> = <b>{milliers(n4)}</b> motifs.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Polymères : identifier le motif d’une chaîne, compter ses atomes de carbone (questions 1 et 2), puis, pour aller plus loin, calculer des masses molaires.', questions: [q1, q2, q3, q4],
+    retenir: ['Un polymère est une chaîne de n motifs identiques : [motif]ₙ, avec n le nombre de motifs ; on repère le motif comme le plus petit groupe qui, répété, redonne la chaîne.', 'Atomes d’un élément dans la chaîne = (atomes de cet élément par motif) × n.', 'Pour aller plus loin : M (chaîne) = n × M (motif) ; M (motif) se calcule avec la formule brute du motif et les masses molaires atomiques.'] };
+}
+
 function genNewtonTG() {
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
   // nb() prend des chiffres SIGNIFICATIFS (nb(1,5 ; 1) donnerait « 2 ») : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
@@ -2683,6 +2727,7 @@ export const FAMILLES = [
   { id: 'uvv-calcul', groupe: 'Formules', titre: 'Spectrophotométrie : loi de Beer-Lambert, concentration, absorbance, dilution et concentration massique (TG)', gen: genUvvTG, domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert' },
   { id: 'irt-calcul', groupe: 'Formules', titre: 'Spectroscopie infrarouge : nombre d’onde, longueur d’onde et lignes d’un tableau de données (TG)', gen: genIrTabTG, domaine: 'Spectroscopie infrarouge : données tabulées' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
+  { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
