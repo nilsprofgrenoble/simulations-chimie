@@ -3467,6 +3467,27 @@ export const PREVOIR = [
       F('celui de la 70/700 est plus grand', 'Le diamètre n’intervient pas dans G, ni dans un sens ni dans l’autre.'),
       F('on ne peut pas comparer sans les angles', 'G est le rapport de f′_obj à f′_oc : les distances focales suffisent, aucune mesure d’angle n’est nécessaire.'),
     ] },
+  { id: 'rc-ana-resistance', domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'On double la résistance',
+    enonce: 'Un condensateur initialement déchargé est chargé par un générateur de tension E à travers un résistor de résistance R. On remplace le résistor par un autre, de résistance 2R, sans rien changer d’autre (même E, même condensateur).', q: 'Que deviennent le temps caractéristique et la tension finale aux bornes du condensateur ?', options: [
+      V('τ double ; la tension finale reste égale à E', 'τ = R × C est proportionnel à R : il double, la charge est deux fois plus lente. En régime stationnaire, u_C = E quelle que soit la valeur de R.'),
+      F('τ est divisé par deux ; la tension finale reste égale à E', 'τ = R × C augmente avec R : une plus grande résistance freine l’arrivée des charges, la charge est plus lente.'),
+      F('τ ne change pas ; la tension finale double', 'τ dépend de R, et la tension finale vaut E quel que soit R : le résistor ne fixe que la durée de la charge.'),
+      F('τ double ; la tension finale est divisée par deux', 'La tension finale est toujours E : en régime stationnaire, il n’y a plus de courant, donc plus de tension aux bornes du résistor.'),
+    ] },
+  { id: 'rc-ana-stationnaire', domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Longtemps après la fermeture',
+    enonce: 'Un condensateur initialement déchargé est relié à un générateur de tension E par un résistor R. L’interrupteur reste fermé très longtemps (plus de dix fois le temps caractéristique).', q: 'Quelles valeurs prennent alors la tension aux bornes du condensateur et l’intensité du courant ?', options: [
+      V('u_C = E et i = 0 : régime stationnaire', 'Quand u_C ne varie plus, i = C × frac(du|dt) = 0, donc u_R = R × i = 0 et la loi des mailles E = u_R + u_C donne u_C = E.'),
+      F('u_C = 0 et i = frac(E|R), comme au début de la charge', 'C’est la situation à t = 0 : après plusieurs fois τ, le condensateur est chargé et le courant a disparu.'),
+      F('u_C = E et i = frac(E|R), car le générateur impose E', 'Si i valait encore frac(E|R), la tension u_R = R × i serait égale à E et u_C serait nulle : les deux ne sont pas compatibles avec E = u_R + u_C.'),
+      F('u_C = frac(E|2) et i = frac(E|2R), à mi-chemin', 'Ces valeurs correspondent à un instant de la charge (vers 0,7 τ), pas au régime stationnaire atteint après dix τ.'),
+    ] },
+  { id: 'rc-ana-signe', domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Le signe de l’intensité en décharge',
+    enonce: 'Dans un circuit RC, l’intensité i est fléchée vers l’armature A du condensateur (convention récepteur), comme pour la charge. Le condensateur, chargé sous la tension E, est maintenant déchargé à travers le résistor, sans générateur.', q: 'Que peut-on dire de i pendant la décharge ?', options: [
+      V('i est négative : le courant réel quitte l’armature A', 'Pendant la décharge, l’armature A, positive, perd des charges : le courant réel circule en sens contraire de la flèche de i, donc i = C × frac(du|dt) est négative.'),
+      F('i est positive, comme en charge, car la flèche n’a pas changé', 'La flèche est un choix d’orientation ; le signe de i dit si le courant réel va dans ce sens. En décharge u_C diminue, donc i = C × frac(du|dt) est négative.'),
+      F('i est nulle, car il n’y a plus de générateur', 'Le condensateur chargé joue le rôle de générateur et fait circuler un courant dans R : i n’est pas nulle, elle décroît vers 0.'),
+      F('i est constante, égale à frac(E|R) en valeur absolue', 'L’intensité diminue avec u_C : elle vaut frac(E|R) en valeur absolue seulement au début de la décharge, puis tend vers 0.'),
+    ] },
   { id: 'nwt-ana-balance', domaine: 'Deuxième loi de Newton', titre: 'Une balance dans la cabine',
     enonce: 'Un voyageur de masse 70 kg est debout sur une balance posée sur le sol d’une cabine d’ascenseur. La cabine démarre vers le haut. Le voyageur est soumis à son poids vec(P) et à la réaction vec(R) de la balance ; la balance indique la norme R.', q: 'Pendant le démarrage, comment se comparent R et P ?', options: [
       V('R est plus grande que P : la somme des forces est vers le haut', 'Le voyageur accélère vers le haut avec la cabine : vec(a)_G est vers le haut, donc Σ vec(F) aussi. Avec un axe vers le haut, R − P > 0 : R est plus grande que P, et la balance indique plus que d’habitude.'),

@@ -1377,5 +1377,14 @@
  "37:prevoir:pol-ana-motif-cl": "ANA581",
  "77:plausible:pol-val-nom-inverse": "VAL354",
  "77:plausible:pol-val-naturel": "VAL355",
- "36:pol-calcul": "REA88"
+ "36:pol-calcul": "REA88",
+ "34:rc-sapp-circuit.0": "SAPP356",
+ "34:rc-sapp-circuit.1": "SAPP357",
+ "37:prevoir:rc-ana-resistance": "ANA582",
+ "37:prevoir:rc-ana-stationnaire": "ANA583",
+ "37:prevoir:rc-ana-signe": "ANA584",
+ "77:plausible:rc-val-unite-tau": "VAL356",
+ "77:plausible:rc-val-capacite": "VAL357",
+ "77:plausible:rc-val-63": "VAL358",
+ "36:rc-calcul": "REA89"
 }

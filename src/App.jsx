@@ -108,6 +108,7 @@ const SimulationFrenet = paresseux(() => import("./simulations/Frenet"), "Simula
 const SimulationLunetteTG = paresseux(() => import("./simulations/LunetteTG"), "SimulationLunetteTG");
 const SimulationFormulesTopologiques = paresseux(() => import("./simulations/FormulesTopologiques"), "SimulationFormulesTopologiques");
 const SimulationPolymeres = paresseux(() => import("./simulations/Polymeres"), "SimulationPolymeres");
+const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "SimulationCircuitRC");
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationVecteursVA = paresseux(() => import("./simulations/VecteursVitesseAcceleration"), "SimulationVecteursVA");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
@@ -287,6 +288,7 @@ const SIMULATIONS = [
   { id:171, label:"Lunette afocale : schéma, faisceau émergent, grossissement", niveau:"TG", icon:"🔭", color:"#1d4ed8", component: SimulationLunetteTG },
   { id:172, label:"Formules topologiques et isomérie de constitution", niveau:"TG", icon:"🧫", color:"#0f766e", component: SimulationFormulesTopologiques },
   { id:173, label:"Familles fonctionnelles et polymères", niveau:"TG", icon:"🧬", color:"#7c3aed", component: SimulationPolymeres },
+  { id:174, label:"Circuit RC : charge et décharge d’un condensateur", niveau:"TG", icon:"🔌", color:"#0e7490", component: SimulationCircuitRC },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",
