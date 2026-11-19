@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { nbf, tire, Schema, T as Tx, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
 import * as I from "./irModele";
+import { FPrincipe, FAxes, FOH, FCO, FReaction, FIdent } from "./IrSchemas";
 
 const SIM_ID = 111;
 declarerDefis(SIM_ID, [['sigma', 'Lire le nombre d’onde d’une bande']]);
@@ -56,40 +57,6 @@ const TableBandes = () => (
       <tbody>{I.TABLE_1G.map((r, i) => <tr key={i}>{r.map((c, k) => <td key={k} style={{ ...cel(), textAlign: k === 1 ? 'left' : 'center' }}>{k === 2 ? (r[0] === 'C=O' ? 'autour de 1700' : String(c)) : c}</td>)}</tr>)}</tbody></table></div>
   </div>);
 
-// ---------- schémas des cartes ----------
-const SchemaAxes = () => (
-  <Schema aria="Un spectre infrarouge : la transmittance en pourcentage en fonction du nombre d'onde en cm moins un, orienté de la droite vers la gauche ; une bande est un creux vers le bas" h={170}>
-    <line x1="30" y1="130" x2="340" y2="130" stroke={GRIS}/><line x1="30" y1="20" x2="30" y2="130" stroke={GRIS}/>
-    <polyline fill="none" stroke={BLEU} strokeWidth="2.5" points="30,30 90,32 130,34 160,90 175,40 220,38 250,36 280,34 340,35"/>
-    <Tx x={150} y={108} s={11.5} c={ROUGE} w={700}>bande</Tx><Tx x={36} y={146} s={11} c={GRIS}>σ (cm⁻¹) : 4000 ← ← ← ← 500</Tx><Tx x={36} y={16} s={11} c={GRIS}>T (%)</Tx>
-    <Tx x={196} y={72} s={11.5} w={700}>σ = 1 ÷ λ (λ en cm)</Tx><Tx x={196} y={90} s={11.5}>λ petit ⇔ σ grand</Tx><Tx x={196} y={106} s={11.5}>σ en cm⁻¹ (inverse d’une longueur)</Tx>
-  </Schema>);
-const SchemaOH = () => (
-  <Schema aria="Trois bandes O–H : alcool libre vers 3600 étroite, alcool lié vers 3300 large et forte, acide carboxylique vers 2900 très large" h={170}>
-    <line x1="20" y1="120" x2="344" y2="120" stroke={GRIS}/>
-    <path d="M34,40 h40 q8,0 8,0 v60 q-4,0 -8,0 h-6 v-60" fill="none" stroke="none"/>
-    <path d="M30,36 L66,36 L70,100 L74,36 L120,36 C130,36 138,60 150,70 C160,80 170,60 182,40 L190,36 L344,36" fill="none" stroke={BLEU} strokeWidth="2.5"/>
-    <Tx x={44} y={136} a="middle" s={11} c={BLEU} w={700}>libre</Tx><Tx x={44} y={148} a="middle" s={10.5} c={GRIS}>3600, étroite</Tx>
-    <Tx x={150} y={136} a="middle" s={11} c={ROUGE} w={700}>lié</Tx><Tx x={150} y={148} a="middle" s={10.5} c={GRIS}>3300, large, forte</Tx>
-    <Tx x={250} y={136} a="middle" s={11} c={ORANGE} w={700}>acide</Tx><Tx x={250} y={148} a="middle" s={10.5} c={GRIS}>2900, très large</Tx>
-    <Tx x={6} y={14} s={12.5} w={700}>O–H : liaisons hydrogène ⇒ bande large</Tx>
-  </Schema>);
-const SchemaCO = () => (
-  <Schema aria="La bande C=O est étroite et forte, vers 1700 cm moins un, présente dans les aldéhydes, les cétones et les acides carboxyliques" h={150}>
-    <line x1="20" y1="110" x2="344" y2="110" stroke={GRIS}/>
-    <path d="M30,30 L170,30 L174,30 L180,100 L186,30 L344,30" fill="none" stroke={BLEU} strokeWidth="2.5"/>
-    <Tx x={180} y={124} a="middle" s={12} c={ROUGE} w={800}>C=O ≈ 1700 cm⁻¹</Tx><Tx x={196} y={72} s={11.5} c={GRIS}>étroite, forte</Tx>
-    <Tx x={6} y={14} s={12.5} w={700}>C=O : bande fine et profonde vers 1700</Tx><Tx x={6} y={142} s={11} c={GRIS}>aldéhyde · cétone · acide carboxylique (avec O–H large en plus)</Tx>
-  </Schema>);
-const SchemaReaction = () => (
-  <Schema aria="Avant la réaction l'alcool montre une bande large O–H vers 3300 ; après l'oxydation en cétone, cette bande a disparu et une bande fine C=O apparaît vers 1700" h={170}>
-    <Tx x={6} y={14} s={12.5} w={700}>Alcool → cétone : une bande part, une autre arrive</Tx>
-    <line x1="14" y1="70" x2="160" y2="70" stroke={GRIS}/><path d="M16,30 L40,30 C50,30 60,48 80,62 C95,52 110,34 130,30 L160,30" fill="none" stroke={BLEU} strokeWidth="2.5"/><Tx x={14} y={86} s={11.5} c={BLEU} w={700}>menthol : O–H</Tx>
-    <line x1="196" y1="70" x2="342" y2="70" stroke={GRIS}/><path d="M198,30 L290,30 L296,64 L302,30 L342,30" fill="none" stroke={ROUGE} strokeWidth="2.5"/><Tx x={196} y={86} s={11.5} c={ROUGE} w={700}>menthone : C=O</Tx>
-    <path d="M166,50 h22" stroke={GRIS} strokeWidth="2"/><path d="M188,50 l-7,-4 v8 z" fill={GRIS}/>
-    <Tx x={6} y={116} s={11.5} c={VERT} w={700}>O–H disparu + C=O apparu ⇒ réaction réussie</Tx><Tx x={6} y={134} s={11.5} c={VERT} w={700}>plus de O–H ⇒ plus de menthol (sans doute)</Tx><Tx x={6} y={154} s={11} c={GRIS}>au 1G : on cherche O–H et C=O ; l’empreinte sert à comparer</Tx>
-  </Schema>);
-
 export function SimulationIr() {
   const [mode, setMode] = useState(() => modeOuverture('ir-guide-v1'));
   useSignalerMode(mode);
@@ -102,8 +69,6 @@ export function SimulationIr() {
 
   const ETAPES = [
     { id: 'lambda', titre: 'De la longueur d’onde au nombre d’onde', focus: ['principe'],
-      retenirTitre: 'À RETENIR : LIRE UN SPECTRE IR',
-      retenir: <><SchemaAxes/>{puces(<>Le <strong>nombre d’onde</strong> σ = 1 ÷ λ s’exprime en <strong>cm⁻¹</strong> (λ converti en cm). Plus λ est petit, plus σ est grand.</>, <>Un spectre trace la <strong>transmittance T = I ÷ I₀</strong> en fonction de σ (axe orienté de droite à gauche).</>, <>Une <strong>bande d’absorption</strong> est un <strong>creux</strong> : plus il est profond, plus l’absorption est forte.</>, <><strong>Idée fausse</strong> : « une bande est un pic vers le haut ». <strong>Vrai</strong> : la lumière transmise diminue, donc un creux.</>)}</>,
       texte: <>En spectroscopie infrarouge, on envoie un faisceau sur l’échantillon et on mesure ce qui ressort. On caractérise la radiation par son <strong>nombre d’onde</strong> σ = 1 ÷ λ, avec λ en cm. Une radiation a une longueur d’onde de 2,5{NB}µm (1{NB}µm = 10<sup>−4</sup>{NB}cm).</>,
       tache: { type: 'num', q: 'Nombre d’onde de la radiation de longueur d’onde 2,5 µm', unite: 'cm⁻¹', vrai: I.nombreOnde(2.5), tol: 0.03, affiche: v => nbf(v, 0), cs: 3,
         calcul: () => ['λ = 2,5 µm = 2,5 × 10⁻⁴ cm.', 'σ = 1 ÷ λ = 1 ÷ (2,5 × 10⁻⁴) = 4000 cm⁻¹.'], pieges: [[0.4, 'Vous n’avez pas converti λ en cm : 2,5 µm = 2,5 × 10⁻⁴ cm.'], [4e5, 'Vous avez obtenu des m⁻¹ : le nombre d’onde s’exprime ici en cm⁻¹ (divisez par 100).']],
@@ -119,45 +84,51 @@ export function SimulationIr() {
         calcul: () => ['Absorbé = 100 % − T = 100 − 40 = 60 %.'], pieges: [[40, 'C’est le pourcentage transmis (T) : il faut prendre le complément à 100 %.']],
         expl: 'Part absorbée = 100 % − T = 60 %.', indice: 'Ce qui n’est pas transmis est absorbé : 100 % − T.' } },
     { id: 'creux', titre: 'Lire un spectre', focus: ['spectre'],
+      retenirTitre: 'À RETENIR : T ET NOMBRE D’ONDE',
+      retenir: <><FPrincipe/>{puces(<>Le <strong>nombre d’onde</strong> σ = 1 ÷ λ s’exprime en <strong>cm⁻¹</strong> (λ converti en cm) : plus λ est petit, plus σ est grand.</>, <>La <strong>transmittance T = I ÷ I₀</strong> est la part transmise ; la part absorbée vaut 100 % − T.</>)}</>,
       texte: <>Voici le spectre infrarouge du propan-1-ol (CH<sub>3</sub>–CH<sub>2</sub>–CH<sub>2</sub>–OH). Il présente un grand creux vers 3300{NB}cm⁻¹.</>,
       tache: { type: 'qcm', q: 'Que représente ce creux ?', options: ['une bande d’absorption : l’échantillon absorbe fortement vers 3300 cm⁻¹', 'un pic de transmission : l’échantillon laisse tout passer', 'une erreur de mesure du spectromètre'], bonne: 0,
         expl: 'La transmittance chute : une grande part du rayonnement est absorbée à ce nombre d’onde. C’est une bande d’absorption, liée à la vibration d’une liaison de la molécule.', indice: 'Plus la transmittance est basse, plus l’échantillon absorbe.' } },
     { id: 'ohlie', titre: 'La bande O–H d’un alcool', focus: ['spectre', 'table'],
+      retenirTitre: 'À RETENIR : LIRE UN SPECTRE IR',
+      retenir: <><FAxes/>{puces(<>Un spectre trace T en fonction de σ, l’axe étant orienté de <strong>droite à gauche</strong>.</>, <>Une <strong>bande d’absorption</strong> est un <strong>creux</strong> : plus il est profond, plus l’absorption est forte.</>, <><strong>Idée fausse</strong> : « une bande est un pic vers le haut ». <strong>Vrai</strong> : la lumière transmise diminue, donc un creux.</>)}</>,
       texte: <>La bande vers 3300{NB}cm⁻¹ est <strong>large</strong> et <strong>forte</strong>. Elle est due à la vibration d’allongement d’une liaison de la molécule de propan-1-ol. Aidez-vous du tableau des bandes de référence.</>,
       tache: { type: 'qcm', q: 'À quelle liaison correspond cette bande ?', options: ['O–H d’un alcool (molécules liées par liaisons hydrogène)', 'C=O d’une cétone', 'O–H d’un acide carboxylique'], bonne: 0,
         expl: 'Une bande large et forte vers 3300 cm⁻¹ est la signature de la liaison O–H d’un alcool lié. Le propan-1-ol n’a pas de C=O, et la bande O–H d’un acide serait plus basse (vers 2900 cm⁻¹).', indice: 'Cherchez dans le tableau une bande à 3300 cm⁻¹, large et forte.' } },
     { id: 'libre', titre: 'O–H libre ou lié', focus: ['spectre'],
-      retenirTitre: 'À RETENIR : LES BANDES O–H',
-      retenir: <><SchemaOH/>{puces(<><strong>Alcool lié</strong> (liaisons hydrogène entre molécules, liquide pur) : bande <strong>large</strong> et forte vers <strong>3300 cm⁻¹</strong>.</>, <><strong>Alcool libre</strong> (molécules éloignées : gaz, solution diluée) : bande <strong>étroite</strong> vers <strong>3600 cm⁻¹</strong>.</>, <><strong>Acide carboxylique</strong> : bande O–H <strong>très large</strong> vers <strong>2900 cm⁻¹</strong>.</>, <>Mnémo : <strong>les liaisons hydrogène élargissent la bande et la décalent vers les petits σ</strong>.</>)}</>,
       texte: <>On compare le spectre du propan-1-ol pur (bleu) et celui de l’éthanol <strong>dilué</strong> dans un solvant (rouge) : les molécules d’éthanol y sont éloignées les unes des autres. La bande O–H est maintenant <strong>étroite</strong>, vers 3600{NB}cm⁻¹.</>,
       tache: { type: 'qcm', q: 'Pourquoi la bande O–H est-elle étroite et déplacée vers 3600 cm⁻¹ ?', options: ['les molécules sont libres : il n’y a plus de liaisons hydrogène entre elles', 'l’éthanol ne contient pas de liaison O–H', 'le solvant absorbe tout le rayonnement'], bonne: 0,
         expl: 'Dans une solution diluée, les molécules ne peuvent plus former de liaisons hydrogène entre elles : la liaison O–H est « libre », sa bande devient fine et se place vers 3600 cm⁻¹. Dans le liquide pur, ces liaisons élargissent la bande et la décalent vers 3300 cm⁻¹.', indice: 'Que font les molécules d’alcool quand elles sont éloignées les unes des autres ?' } },
     { id: 'colire', titre: 'Lire la bande C=O', focus: ['spectre'],
+      retenirTitre: 'À RETENIR : LES BANDES O–H',
+      retenir: <><FOH/>{puces(<><strong>Alcool lié</strong> (liaisons hydrogène, liquide pur) : bande <strong>large</strong> et forte vers <strong>3300 cm⁻¹</strong>.</>, <><strong>Alcool libre</strong> (gaz, solution diluée) : bande <strong>étroite</strong> vers <strong>3600 cm⁻¹</strong>.</>, <><strong>Acide carboxylique</strong> : bande O–H <strong>très large</strong> vers <strong>2900 cm⁻¹</strong>.</>, <>Mnémo : <strong>les liaisons hydrogène élargissent la bande et la décalent vers les petits σ</strong>.</>)}</>,
       texte: <>Voici le spectre de la propanone (CH<sub>3</sub>–CO–CH<sub>3</sub>), une cétone. Il présente une bande <strong>étroite</strong> et <strong>forte</strong> vers 1700{NB}cm⁻¹. Lisez sur l’axe le nombre d’onde du minimum de cette bande (une petite graduation vaut 100{NB}cm⁻¹).</>,
       tache: { type: 'num', q: 'Nombre d’onde de la bande C=O de la propanone', unite: 'cm⁻¹', vrai: 1715, tol: 0.03, affiche: v => nbf(v, 0), cs: 3,
         calcul: () => ['Le minimum de la bande se situe entre les graduations 1700 et 1800, tout près de 1700 : σ ≈ 1715 cm⁻¹.', 'Au programme : « autour de 1700 cm⁻¹ » pour C=O.'], pieges: [],
         expl: 'La bande C=O est à σ ≈ 1715 cm⁻¹, soit autour de 1700 cm⁻¹.', indice: 'Repérez le creux étroit et lisez la graduation en dessous, entre 1500 et 2000.' } },
     { id: 'acide', titre: 'Deux bandes : un acide carboxylique', focus: ['spectre'],
-      retenirTitre: 'À RETENIR : LA BANDE C=O',
-      retenir: <><SchemaCO/>{puces(<>Aldéhydes, cétones et acides carboxyliques ont une bande <strong>C=O fine et forte vers 1700 cm⁻¹</strong>.</>, <>Un <strong>acide carboxylique</strong> a <strong>en plus</strong> une bande O–H très large vers 2900 cm⁻¹ : deux bandes caractéristiques.</>, <>Exemple : alcool = O–H seul ; cétone = C=O seul ; acide = les deux.</>, <><strong>Idée fausse</strong> : « C=O dit si c’est une cétone ». <strong>Vrai</strong> : C=O existe dans plusieurs familles ; on regarde aussi les autres bandes.</>)}</>,
       texte: <>Le spectre de l’acide éthanoïque (CH<sub>3</sub>–COOH) présente une bande fine et forte vers 1700{NB}cm⁻¹ <strong>et</strong> une bande très large vers 2900{NB}cm⁻¹.</>,
       tache: { type: 'qcm', q: 'Quelles liaisons ces deux bandes indiquent-elles ?', options: ['C=O (bande fine vers 1700) et O–H d’un acide carboxylique (bande très large vers 2900)', 'deux liaisons C=O', 'O–H d’un alcool lié et C=O d’un aldéhyde'], bonne: 0,
         expl: 'La bande fine vers 1700 cm⁻¹ est celle de C=O ; la bande très large vers 2900 cm⁻¹ est celle de O–H d’un acide carboxylique. Avoir les deux signale un acide.', indice: 'Cherchez dans le tableau une bande à 2900 cm⁻¹ très large et une bande autour de 1700 cm⁻¹.' } },
     { id: 'attendu', titre: 'Prévoir : menthol et menthone', focus: ['spectre'],
+      retenirTitre: 'À RETENIR : LA BANDE C=O',
+      retenir: <><FCO/>{puces(<>Aldéhydes, cétones et acides carboxyliques ont une bande <strong>C=O fine et forte vers 1700 cm⁻¹</strong>.</>, <>Un <strong>acide carboxylique</strong> a <strong>en plus</strong> une bande O–H très large vers 2900 cm⁻¹.</>, <>Alcool = O–H seul ; cétone = C=O seul ; acide = les deux.</>, <><strong>Idée fausse</strong> : « C=O dit si c’est une cétone ». <strong>Vrai</strong> : C=O existe dans plusieurs familles ; on regarde aussi les autres bandes.</>)}</>,
       texte: <>On oxyde le menthol (alcool, C<sub>9</sub>H<sub>18</sub>CHOH) en menthone (cétone, C<sub>9</sub>H<sub>18</sub>CO). Voici le spectre du menthol, réactif de départ.</>,
       tache: { type: 'qcm', q: 'Quelle bande doit apparaître sur le spectre de la menthone, et laquelle disparaître ?', options: ['apparition de la bande C=O vers 1700 cm⁻¹ ; disparition de la bande O–H large vers 3300 cm⁻¹', 'apparition de la bande O–H ; disparition de la bande C=O', 'aucune différence entre les deux spectres'], bonne: 0,
         expl: 'Le menthol (alcool) porte une liaison O–H ; la menthone (cétone) porte une liaison C=O. L’oxydation fait disparaître O–H et apparaître C=O.', indice: 'Quelle liaison caractéristique a un alcool ? une cétone ?' } },
     { id: 'ds', titre: 'Comparer le produit au réactif', focus: ['spectre'],
-      retenirTitre: 'À RETENIR : COMPARER DEUX SPECTRES',
-      retenir: <><SchemaReaction/>{puces(<>On compare le spectre du <strong>produit</strong> à celui du <strong>réactif</strong> : bande qui <strong>disparaît</strong> = groupe consommé ; bande qui <strong>apparaît</strong> = groupe formé.</>, <>Exemple : menthol → menthone : O–H disparaît, C=O apparaît.</>, <>Plus aucune trace de la bande du réactif ⇒ il n’en reste sans doute plus : produit <strong>probablement pur</strong> (à la sensibilité de la mesure).</>, <><strong>Piège</strong> : si deux espèces ont le même groupe (deux C=O), l’IR seul ne les distingue pas bien.</>)}</>,
       texte: <>Voici le spectre du menthol (bleu) et celui du composé synthétisé (rouge). Le composé synthétisé n’a plus de bande large vers 3300{NB}cm⁻¹ mais une bande fine et forte vers 1700{NB}cm⁻¹.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['la synthèse a réussi : le groupe hydroxyle a disparu, un groupe carbonyle est apparu, et il ne reste sans doute pas de menthol', 'le composé synthétisé est du menthol non transformé', 'on ne peut rien conclure avec un spectre IR'], bonne: 0,
         expl: 'La bande O–H du menthol n’existe plus : l’alcool a été consommé. La bande C=O à 1700 cm⁻¹ est cohérente avec une cétone, la menthone. L’absence de bande O–H suggère aussi qu’il ne reste plus de menthol, à la sensibilité de la mesure près.', indice: 'Comparez les deux spectres : quelles bandes ont disparu ? Lesquelles sont apparues ?' } },
     { id: 'chalcone', titre: 'Identifier la chalcone', focus: ['spectre'],
+      retenirTitre: 'À RETENIR : COMPARER DEUX SPECTRES',
+      retenir: <><FReaction/>{puces(<>On compare le spectre du <strong>produit</strong> à celui du <strong>réactif</strong> : bande qui <strong>disparaît</strong> = groupe consommé ; bande qui <strong>apparaît</strong> = groupe formé.</>, <>Exemple : menthol → menthone : O–H disparaît, C=O apparaît. Plus de bande du réactif : produit <strong>probablement pur</strong> (à la sensibilité de la mesure).</>, <><strong>Piège</strong> : si deux espèces ont le même groupe (deux C=O), l’IR seul ne les distingue pas bien.</>)}</>,
       texte: <>Pour le TP de la chalcone, on enregistre le spectre du produit synthétisé (bleu) et celui de la chalcone de référence (rouge). Les deux ont une bande C=O et pas de bande O–H ; <strong>les deux courbes se superposent</strong>, y compris dans la région de l’empreinte digitale.</>,
       tache: { type: 'qcm', q: 'Que peut-on conclure ?', options: ['les deux spectres sont identiques : on a bien obtenu la chalcone', 'on a seulement prouvé que le produit contient un groupe C=O', 'le produit n’est pas de la chalcone car il contient C=O'], bonne: 0,
         expl: 'L’absence de O–H et la présence de C=O ne suffisent pas (les réactifs ont aussi un C=O). C’est la superposition complète avec le spectre de référence, empreinte comprise, qui indique qu’il s’agit bien de la chalcone.', indice: 'Les réactifs de la synthèse ont-ils aussi une liaison C=O ? Que dit la comparaison de toute la courbe avec la référence ?' } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : IDENTIFIER ET BILAN',
+      retenir: <><FIdent/>{puces(<>Pour <strong>identifier</strong> un composé, on superpose son spectre à celui d’une référence, <strong>empreinte digitale comprise</strong> : la présence de C=O seule ne suffit pas.</>, <>Bilan : σ = 1 ÷ λ ; creux = bande ; O–H lié ≈ 3300 (large), libre ≈ 3600 (étroite), acide ≈ 2900 ; C=O ≈ 1700 (fine) ; comparer réactif et produit.</>)}</>,
       texte: <>Vous savez lire un spectre IR : nombre d’onde, transmittance, bandes O–H (libre, lié, acide) et C=O, comparaison avec un réactif ou une référence. En exploration, comparez les spectres de vos choix ; en défi, lisez le nombre d’onde d’une bande.</>, tache: null },
   ];
   const IDS = ETAPES.map(e => e.id), idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
