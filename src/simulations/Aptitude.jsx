@@ -1,8 +1,10 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo } from "react";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, IndiceDefi, OngletExercices } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, IndiceDefi, OngletExercices, Formule, FormuleEnLigne } from "../commun";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { FZ, FNormale, FMasque, FBorne, FIso, FBilanApt } from "./AptitudeSchemas";
 
 const SIM_ID = 16;
 declarerDefis(SIM_ID, [['principal', 'Calculer des z-scores et classer les laboratoires']]);
@@ -84,6 +86,8 @@ export function categorie(z) {
 
 // ── Les jeux de données ──
 // Campagne du parcours : 10 laboratoires dosent les ions nitrate d'une eau ; un matériau de référence certifié donne x_pt = 24,0 mg/L
+const FZi = <Formule><msub><mi>z</mi><mi>i</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><mover><mi>x</mi><mo>¯</mo></mover></mrow><mi>s</mi></mfrac></Formule>;
+const FZpt = <Formule><mi>z</mi><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mi>i</mi></msub><mo>−</mo><msub><mi>x</mi><mi>pt</mi></msub></mrow><msub><mi>σ</mi><mi>pt</mi></msub></mfrac></Formule>;
 const PARCOURS = { v: [24.3, 23.8, 24.6, 25.1, 23.6, 24.0, 24.4, 23.9, 24.2, 30.5], unite: 'mg/L', xpt: 24.0, sigmaPt: 1.2, dec: 1,
   nom: 'Un laboratoire nettement aberrant : dosage des ions nitrate d’une eau (10 laboratoires)' };
 // Exemple des « Repères pour la formation » (BTS) : teneur en soufre de feuilles de frêne, 14 laboratoires, moyenne de 4 essais chacun
@@ -336,7 +340,7 @@ export function SimulationAptitude() {
       texte: <>Cliquez sur « Recevoir les résultats » sous le graphique.</>,
       tache: { type: 'action', ok: tous, consigne: tous ? null : `Résultats reçus : ${arrives} / ${v.length}` } },
     { id: 'moyenne', titre: 'La formule du référentiel', focus: [],
-      texte: <>Le référentiel et les « Repères pour la formation » utilisent z<sub>i</sub> = (x<sub>i</sub> − x̄) / s, où x̄ et s sont la moyenne et
+      texte: <>Le référentiel et les « Repères pour la formation » utilisent{FZi}où x̄ et s sont la moyenne et
         l'écart-type expérimental des résultats de <strong>tous</strong> les laboratoires. Les résultats (mg/L) : {P.map(x => fmt(x, 1)).join(' ; ')}.</>,
       tache: { type: 'num', q: 'Moyenne x̄', unite: 'mg/L', vrai: mP, tol: 0.002, affiche: x => fmt(x, 2),
         calcul: () => ['Moyenne : x̄ = (somme des résultats) / (nombre de laboratoires N).',
@@ -367,18 +371,16 @@ export function SimulationAptitude() {
           ...piegesLoin([[P[iLab] - mP, 'Il manque la division par s : z est un écart exprimé en nombre d’écarts-types.'],
             [(P[iLab] - mP) / sP ** 2, 'On divise par l’écart-type s, pas par sa variance s².']], zRef[iLab])], indice: "Le z-score exprime l’écart du résultat du laboratoire à la référence, en nombre d’écarts-types." } },
     { id: 'classer', titre: 'Classer les laboratoires', focus: [],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>z = (x − x̄) / s : un écart exprimé en <strong>nombre d’écarts-types</strong>, sans unité.</li>
-          <li>|z| ≤ 2 : satisfaisant ; 2 &lt; |z| &lt; 3 : discutable ; |z| ≥ 3 : non satisfaisant.</li>
-          <li>Ces seuils supposent une loi normale : environ 95 % des laboratoires compétents ont |z| ≤ 2, 99,7 % ont |z| ≤ 3.</li>
-        </ul>),
+      retenirTitre: 'Le z-score',
+      retenir: <><FZ/>{puces(<>z est un écart exprimé en <strong>nombre d’écarts-types</strong>, sans unité.</>, <>|z| ≤ 2 : satisfaisant ; 2 &lt; |z| &lt; 3 : discutable ; |z| ≥ 3 : non satisfaisant.</>, <>Le signe de z dit dans quel sens est l’écart.</>)}</>,
       texte: <>Classez chaque laboratoire dans le tableau : |z| ≤ 2 satisfaisant ; 2 &lt; |z| &lt; 3 discutable ; |z| ≥ 3 non satisfaisant.</>,
       tache: { type: 'action', ok: classesVerif && classesOk, consigne: classesVerif && classesOk ? null : 'Classez les 10 laboratoires, puis vérifiez.' } },
     { id: 'hypotheses', titre: 'Sur quoi reposent ces seuils ?', focus: ['hypo'],
       texte: <>Lisez l'encadré « Hypothèses de travail » : toute l'interprétation en dépend.</>,
       tache: { type: 'qcm', q: 'D’où viennent les seuils |z| = 2 et |z| = 3 ?', options: ['De la loi normale : un laboratoire compétent a environ 95 % de chances d’avoir |z| ≤ 2, et 99,7 % d’avoir |z| ≤ 3', 'Ce sont des valeurs choisies au hasard', 'Du nombre de laboratoires'], bonne: 0, indice: "Pour une loi normale, quelle proportion des valeurs est à moins de 2 écarts-types ? à moins de 3 ?" } },
     { id: 'henry', titre: 'Vérifier la normalité', focus: ['alertes'],
+      retenirTitre: 'Les seuils 2 et 3',
+      retenir: <><FNormale/>{puces(<>Les seuils supposent une loi normale : à vérifier (droite de Henry).</>, <>Sans cette hypothèse, 95 % et 99,7 % n’ont plus de sens.</>)}</>,
       texte: <>Passez à la vue « Droite de Henry » : on y range les résultats et on les compare aux valeurs attendues pour une loi normale. S'ils
         s'alignent, l'hypothèse est plausible.</>,
       tache: { type: 'qcm', q: 'Que montre la droite de Henry ?', options: ['Les points s’alignent, sauf un : le laboratoire 10 s’écarte de la loi normale des autres', 'Tous les points sont parfaitement alignés', 'On ne peut rien en dire'], bonne: 0, indice: "Sur une droite de Henry, des points alignés suivent une loi normale. Cherchez le point écarté." } },
@@ -387,6 +389,8 @@ export function SimulationAptitude() {
         que {fmt(zRef[9], 2)}.</>,
       tache: { type: 'qcm', q: 'Pourquoi n’est-il que « discutable » ?', options: [`Il entre dans le calcul de x̄ et de s : il tire la moyenne vers lui, et gonfle s de ${fmt(sSans10, 2)} à ${fmt(sP, 2)}`, 'Son erreur est faible', 'Les autres laboratoires se trompent'], bonne: 0, indice: "Ce laboratoire participe lui-même au calcul de x̄ et de s. Qu’est-ce que cela provoque ?" } },
     { id: 'choisirExclu', titre: 'Changer de formule', focus: ['formule'],
+      retenirTitre: 'Un aberrant se masque',
+      retenir: <><FMasque/>{puces(<>Un laboratoire aberrant entre dans x̄ et dans s : il tire x̄ vers lui et gonfle s.</>, <>Remèdes : l’exclure du calcul, ou médiane et MAD (s* = 1,483 × MAD).</>)}</>,
       texte: <>Le sélecteur de formule est apparu au-dessus du graphique. Choisissez « Labo évalué exclu » : pour chaque laboratoire, x̄ et s sont calculés
         <strong> sans lui</strong>.</>,
       tache: { type: 'action', ok: formule === 'exclu', consigne: formule === 'exclu' ? null : 'Choisissez la formule « Labo évalué exclu ».' } },
@@ -395,15 +399,12 @@ export function SimulationAptitude() {
       tache: { type: 'qcm', q: 'Avec cette formule, le laboratoire 10 est…', options: ['non satisfaisant', 'discutable', 'satisfaisant'], bonne: 0,
         expl: `Son z passe de ${fmt(zRef[9], 2)} à ${fmt(tousZ.exclu && PARCOURS.v === v ? tousZ.exclu[9] : NaN, 1)} : la même mesure, un tout autre verdict. Le choix de la formule n’est pas un détail.`, indice: "Recalculez z avec la référence et l’écart-type imposés par la formule, puis comparez à 2 et à 3." } },
     { id: 'borne', titre: 'Une limite mathématique', focus: ['alertes'],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Si x̄ et s sont calculés avec les résultats évalués, |z| ≤ (p − 1) / √p : avec p = 10 laboratoires, |z| ne dépasse jamais 2,85.</li>
-          <li>Un laboratoire aberrant gonfle s et tire x̄ : il <strong>se masque lui-même</strong>. Remède : l’exclure du calcul, ou utiliser médiane et MAD (s* = 1,483 × MAD).</li>
-        </ul>),
       texte: <>Revenez à la formule du référentiel et lisez la première alerte. Avec p laboratoires, cette formule ne peut jamais donner |z| &gt; (p − 1) / √p.</>,
       tache: { type: 'qcm', q: 'Avec 10 laboratoires, quelle catégorie est impossible à atteindre ?', options: ['non satisfaisant : |z| ne peut pas dépasser 2,85', 'discutable', 'aucune'], bonne: 0,
         expl: 'Avec 9 laboratoires, la borne tombe à 2,67 ; avec 5, à 1,79 : même « discutable » devient impossible. Il faut le savoir avant d’interpréter un essai à peu de participants.', indice: "Quand x̄ et s viennent des mêmes résultats, |z| est limité à (n − 1)/√n. Comparez ce maximum à 2 et à 3." } },
     { id: 'robuste', titre: 'Des statistiques robustes', focus: ['formule'],
+      retenirTitre: 'Une limite mathématique',
+      retenir: <><FBorne/>{puces(<>Si x̄ et s incluent le laboratoire évalué, |z| ne peut pas dépasser (p − 1) ÷ √p.</>, <>Avec peu de participants, certaines catégories sont impossibles à atteindre.</>)}</>,
       texte: <>Choisissez « Médiane et MAD (robuste) » : la médiane remplace la moyenne, et s* = 1,483 × MAD remplace s (la MAD est la médiane des écarts absolus à la médiane). Une valeur aberrante les déplace très peu. Les résultats (mg/L) : {P.map(x => fmt(x, 1)).join(' ; ')}.</>,
       tache: { type: 'num', q: 'Médiane des 10 résultats', unite: 'mg/L', vrai: medP, tol: 0.001, affiche: x => fmt(x, 2),
         calcul: () => { const t = [...P].sort((a, b) => a - b), n = t.length;
@@ -412,7 +413,7 @@ export function SimulationAptitude() {
             `Médiane = (${fmt(t[n / 2 - 1], 1)} + ${fmt(t[n / 2], 1)}) / 2 = ${fmt(medP, 2)} mg/L.`]; },
         pieges: [[mP, 'C’est la moyenne : rangez les valeurs et prenez celle du milieu (ici la moyenne des deux du milieu).']], indice: "Rangez les 10 résultats par ordre croissant. Avec n pair, faites la moyenne des deux valeurs centrales." } },
     { id: 'iso', titre: 'La norme ISO 13528', focus: ['formule'],
-      texte: <>Les professionnels utilisent z = (x<sub>i</sub> − x<sub>pt</sub>) / σ<sub>pt</sub>. Ici, l'organisateur a utilisé un <strong>matériau de
+      texte: <>Les professionnels utilisent{FZpt}Ici, l'organisateur a utilisé un <strong>matériau de
         référence certifié</strong> : x<sub>pt</sub> = 24,0 mg/L ; et il a fixé, d'après l'exigence de la méthode, σ<sub>pt</sub> = 1,2 mg/L. Le laboratoire 10 a trouvé {fmt(P[9], 1)} mg/L. Choisissez « Norme ISO 13528 ».</>,
       tache: { type: 'num', q: 'z-score du laboratoire 10 avec cette formule', unite: '', vrai: (P[9] - 24) / 1.2, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: () => ['z = (x − x_pt) / σ_pt. Hypothèses : x_pt = 24,0 mg/L (valeur de référence du matériau certifié, supposée exacte) et σ_pt = 1,2 mg/L (fixé à l’avance, indépendant des résultats des laboratoires).',
@@ -422,17 +423,13 @@ export function SimulationAptitude() {
           [P[9] - 24, 'Il manque la division par σ_pt (1,2 mg/L) : z est un écart en nombre d’écarts-types.'],
           [(P[9] - 24) * 1.2, 'On divise par σ_pt, on ne multiplie pas.']], (P[9] - 24) / 1.2), indice: "Remplacez x par le résultat du laboratoire 10, puis x_pt et σ_pt par les valeurs de la formule." } },
     { id: 'pourquoiSigma', titre: 'Pourquoi un σ_pt fixé ?', focus: [],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>ISO 13528 : z = (x − x<sub>pt</sub>) / σ<sub>pt</sub>, avec une valeur assignée x<sub>pt</sub> et un σ<sub>pt</sub> <strong>fixés à l’avance</strong>.</li>
-          <li>σ<sub>pt</sub> indépendant des résultats : ni un laboratoire aberrant ni une campagne dispersée ne peuvent le modifier.</li>
-          <li>Le signe de z indique le sens de l’écart : z &lt; 0, le laboratoire sous-estime.</li>
-        </ul>),
       texte: <>La norme accepte plusieurs façons de fixer σ<sub>pt</sub> : l'exigence de la méthode, les campagnes précédentes, une étude de fidélité, ou
         un écart-type robuste des participants.</>,
       tache: { type: 'qcm', q: 'Quel est l’avantage d’un σ_pt fixé à l’avance, d’après l’exigence de la méthode ?',
         options: ['Il ne dépend pas des résultats évalués : ni un laboratoire aberrant, ni une campagne où tous travaillent mal ne peuvent le modifier', 'Il est toujours plus petit que s', 'Il rend tous les laboratoires satisfaisants'], bonne: 0, indice: "Si σ_pt est fixé par l’exigence de la méthode, il ne dépend plus de la dispersion des participants." } },
     { id: 'reperes', titre: 'Des laboratoires très dispersés', focus: ['jeu'],
+      retenirTitre: 'La norme ISO 13528',
+      retenir: <><FIso/>{puces(<>Un σ<sub>pt</sub> fixé d’après l’exigence de la méthode ne dépend pas de la dispersion des participants.</>, <>Une campagne où tous travaillent mal ne peut pas le modifier.</>)}</>,
       texte: <>Choisissez le jeu de données « Des laboratoires très dispersés » (14 laboratoires, teneur en soufre de feuilles de frêne, d'après un exemple des « Repères pour la formation »), avec la formule du référentiel.
         Le laboratoire 1 trouve {fmt(R[0], 2)} quand les autres trouvent entre 2,10 et 2,83 ; son z vaut {fmt(zR1, 2)}. Essayez aussi la formule robuste : {fmt(zR1rob, 2)}.</>,
       tache: { type: 'qcm', q: 'Pourquoi la formule robuste ne change-t-elle presque rien ici ?',
@@ -446,7 +443,9 @@ export function SimulationAptitude() {
       texte: <>Le graphique sous les alertes montre les z-scores d'un même laboratoire sur six campagnes successives.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['Il reste satisfaisant, mais il dérive : une erreur systématique s’installe, à corriger avant qu’elle ne devienne un problème', 'Tout va bien', 'Il est non satisfaisant'], bonne: 0,
         expl: 'Sous l’hypothèse de la loi normale, six z-scores positifs et croissants d’affilée ont très peu de chances d’arriver par hasard.', indice: "Regardez l’évolution des z-scores d’une campagne à l’autre, pas seulement le dernier." } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Bilan : essais d’aptitude',
+      retenir: <><FBilanApt/></>,
       texte: <>Vous savez appliquer la formule du référentiel, et surtout dans quelles conditions elle a un sens : un laboratoire aberrant peut s'y cacher,
         le seuil 3 peut être inatteignable, et toute interprétation suppose une loi normale à vérifier. En exploration libre, comparez les formules sur
         d'autres campagnes, ou sur les résultats de vos apprentis.</>, tache: null },
