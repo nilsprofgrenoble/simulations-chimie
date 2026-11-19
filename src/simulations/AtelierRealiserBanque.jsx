@@ -1886,6 +1886,41 @@ function genNewtonTG() {
     retenir: ['Deuxième loi de Newton : Σ vec(F) = m × vec(a)_G ; vec(a)_G a la même direction et le même sens que Σ vec(F).', 'Projection sur un axe : une force vers l’axe compte +, contre l’axe −. Pour un fil incliné de α : T × cos α sur Ox.', 'Mouvement connu : on calcule d’abord vec(a)_G à partir de la variation Δvec(v) de la vitesse pendant la durée Δt, puis Σ vec(F) = m × vec(a)_G ; pour une cabine, T = m × (g + a_y) (axe vers le haut).', 'Σ vec(F) nulle : vec(a)_G nul, vitesse constante ou repos (principe d’inertie).'] };
 }
 
+
+// ───────── Vecteurs vitesse et accélération (TG, sim 166) ─────────
+function genVecteursVATG() {
+  const sg = (x, cs = 3) => (x < 0 ? '−' + nb(-x, cs) : nb(x, cs));
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
+  const tau = tire([0.2, 0.5, 1.0]);
+  // 1. vitesse à partir de deux positions : v_x(i) ≈ (x_{i+1} − x_{i−1}) / (2τ)
+  const v = tire([1.5, 2.0, 2.5, 3.0, 4.0, 5.0]), xa = tire([1.0, 2.0, 3.5, 5.0]), xb = Number((xa + 2 * tau * v).toFixed(3));
+  const q1 = { id: 'va0', type: 'num', q: <>Sur une chronophotographie prise toutes les τ = <b>{nb(tau, 2)}{NB}s</b>, un mobile se trouve en <b>x = {nb(xa, 3)}{NB}m</b> au point M<sub>3</sub> et en <b>x = {nb(xb, 3)}{NB}m</b> au point M<sub>5</sub>. Estimez la coordonnée v<sub>x</sub> du vecteur vitesse au point M<sub>4</sub> (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: v, tolRel: 0.05, csMin: 2,
+    aide: 'v_x(4) ≈ frac(x_5 − x_3|2τ) : M_3 et M_5 sont séparés de deux intervalles de temps.',
+    pieges: [[2 * v, 'Il manque le facteur 2 : de M_3 à M_5, il s’écoule 2τ, pas τ.'], [v * 4 * tau * tau, 'Il faut diviser par 2τ, pas multiplier.'], [xb / (2 * tau), 'Il faut la variation de position x_5 − x_3, pas la position x_5 seule.']],
+    expl: <>v<sub>x</sub>(4) ≈ {avecIndices(`frac(x_5 − x_3|2τ)`)} = {avecIndices(`frac(${nb(xb, 3)} − ${nb(xa, 3)}|2 × ${nb(tau, 2)})`)} = <b>{nb(v, 3)}{NB}m/s</b>.</> };
+  // 2. accélération (avec son signe) à partir de deux vitesses
+  const a = tire([0.5, 1.0, 1.5, 2.0, 2.5]) * tire([1, -1]), va = tire([6.0, 7.0, 8.0, 10.0]), vb = Number((va + 2 * tau * a).toFixed(3));
+  const q2 = { id: 'va1', type: 'num', q: <>Au point M<sub>4</sub>, on a estimé v<sub>x</sub>(3) = <b>{nb(va, 3)}{NB}m/s</b> et v<sub>x</sub>(5) = <b>{nb(vb, 3)}{NB}m/s</b> (τ = {nb(tau, 2)}{NB}s). Calculez la coordonnée a<sub>x</sub> du vecteur accélération au point M<sub>4</sub> (en m/s², avec son signe, 2 chiffres significatifs).</>, unite: 'm/s²', vrai: a, tolRel: 0.05, csMin: 2,
+    aide: 'a_x(4) ≈ frac(v_x(5) − v_x(3)|2τ) : gardez le signe de la différence (vitesse après moins vitesse avant).',
+    pieges: [[-a, 'Vérifiez le signe : a_x = frac(vitesse après − vitesse avant|2τ), dans cet ordre.'], [2 * a, 'Il manque le facteur 2 : v_x(5) et v_x(3) sont séparées de 2τ.'], [a * 4 * tau * tau, 'Il faut diviser par 2τ, pas multiplier.']],
+    expl: <>a<sub>x</sub>(4) ≈ {avecIndices(`frac(v_x(5) − v_x(3)|2τ)`)} = {avecIndices(`frac(${sg(vb)} − ${sg(va)}|2 × ${nb(tau, 2)})`)} = <b>{sg(a)}{NB}m/s²</b>{a < 0 ? ' : le signe négatif traduit un vecteur accélération de sens opposé à l’axe Ox (la vitesse diminue).' : ' : la vitesse augmente.'}</> };
+  // 3. de x(t) à v_x(t) : dérivée
+  const A = tire([0.5, 1.0, 1.5, 2.0, 2.5]), B = tire([1.0, 2.0, 3.0, 4.0]), t1 = tire([1.0, 2.0, 3.0]), vt = 2 * A * t1 + B;
+  const q3 = { id: 'va2', type: 'num', q: <>La position d’un mobile sur l’axe Ox est x(t) = <b>{nb(A, 2)}{NB}t² + {nb(B, 2)}{NB}t</b> (x en m, t en s). Calculez la coordonnée v<sub>x</sub> de son vecteur vitesse à la date <b>t = {nb(t1, 2)}{NB}s</b> (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: vt, tolRel: 0.05, csMin: 2,
+    aide: 'v_x(t) = frac(dx|dt) : la dérivée de a t² est 2 a t, celle de b t est b. Remplacez ensuite t.',
+    pieges: [[A * t1 + B, 'Vous trouvez A t + B : soit vous avez dérivé A t² en A t, soit vous avez calculé la vitesse moyenne depuis le départ. La dérivée de A t² est 2 A t.'], [2 * A * t1, 'Il manque le terme B : la dérivée de B t est B.'], [A * t1 * t1 + B * t1, 'Vous avez calculé la position x(t) au lieu de sa dérivée.']],
+    expl: <>v<sub>x</sub>(t) = {avecIndices(`frac(dx|dt)`)} = 2 × {nb(A, 2)} t + {nb(B, 2)}, donc v<sub>x</sub>({nb(t1, 2)} s) = 2 × {nb(A, 2)} × {nb(t1, 2)} + {nb(B, 2)} = <b>{nb(vt, 3)}{NB}m/s</b>.</> };
+  // 4. date de l'arrêt : v_x = 0
+  const A2 = tire([0.5, 1.0, 2.0]), t0 = tire([1.0, 1.5, 2.0, 2.5, 4.0]), B2 = Number((-2 * A2 * t0).toFixed(3)), C2 = tire([0, 1.0, 2.0, 5.0]);
+  const q4 = { id: 'va3', type: 'num', q: <>Un chariot suit la loi x(t) = <b>{nb(A2, 2)}{NB}t² − {nb(-B2, 2)}{NB}t{C2 ? ` + ${nb(C2, 2)}` : ''}</b> (x en m, t en s). À quelle date <b>t<sub>0</sub></b> le chariot s’arrête-t-il un instant (v<sub>x</sub> = 0) ? Répondez en s, avec 2 chiffres significatifs.</>, unite: 's', vrai: t0, tolRel: 0.05, csMin: 2,
+    aide: 'Dérivez x(t) pour obtenir v_x(t), puis résolvez v_x(t) = 0.',
+    pieges: [[2 * t0, 'Il manque le facteur 2 de la dérivée : v_x(t) = 2 A t + B, donc t_0 = frac(−B|2A).'], [t0 / 2, 'Vous avez divisé deux fois par 2 : v_x(t) = 2 A t + B, donc t_0 = frac(−B|2A), et non frac(−B|4A).'], [4 * t0, 'Vous avez multiplié par 2 au lieu de diviser par 2 : t_0 = frac(−B|2A).'], [-t0, 'Vérifiez le signe : B est négatif, donc frac(−B|2A) est positif.']],
+    expl: <>v<sub>x</sub>(t) = 2 × {nb(A2, 2)} t − {nb(-B2, 2)} ; v<sub>x</sub> = 0 pour t<sub>0</sub> = {avecIndices(`frac(${nb(-B2, 2)}|2 × ${nb(A2, 2)})`)} = <b>{nb(t0, 3)}{NB}s</b>.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Du vecteur position au vecteur vitesse puis au vecteur accélération : coordonnées approchées sur une chronophotographie et dérivées de x(t).', questions: [q1, q2, q3, q4],
+    retenir: ['Sur une chronophotographie : v_x(i) ≈ frac(x(i+1) − x(i−1)|2τ) et a_x(i) ≈ frac(v_x(i+1) − v_x(i−1)|2τ).', 'a_x se calcule avec son signe : frac(vitesse après − vitesse avant|2τ). a_x négative : le vecteur accélération est de sens opposé à l’axe Ox.', 'En coordonnées : v_x = frac(dx|dt) et a_x = frac(dv_x|dt) ; la dérivée de a t² est 2 a t et celle de b t est b.', 'Le mobile s’arrête un instant quand v_x = 0, mais son accélération n’est pas nulle pour autant.'] };
+}
+
 // ───────── Chiralité et carbone asymétrique (TSTL, PCM) ─────────
 function genChiraliteReperer() {
   const MOLS = [
@@ -2103,6 +2138,7 @@ export const FAMILLES = [
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
+  { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
