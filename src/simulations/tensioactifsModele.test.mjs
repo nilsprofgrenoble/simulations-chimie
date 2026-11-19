@@ -24,3 +24,4 @@ ok(M.etatScene(0.3).nSurf <= M.etatScene(0.5).nSurf);
 ok(Math.abs(M.xDeCurseur(0) - 0.001) < 1e-9 && Math.abs(M.xDeCurseur(100) - 10) < 1e-6 && M.curseurDeX(M.xDeCurseur(60)) === 60);
 console.log(n, 'vérifications OK');
 ok(M.tensionRel(0.001) === 1 && M.tensionRel(1) === 0.5 && M.tensionRel(5) === 0.5 && M.tensionRel(0.1) > M.tensionRel(0.5));console.log('tension ok')
+ok(M.nomMolecule('sulfate', 12).includes('SDS') && M.nomMolecule('sulfobetaine', 10) === 'SB3-10 (sulfobétaïne)');console.log('noms ok')

@@ -172,28 +172,58 @@ export function SvgEmulsion() {
 }
 
 // schéma d'une molécule étiquetée (étape 1)
-export function SvgAmphiphile({ nom = 'dodécylsulfate de sodium (SDS)' }) {
-  return svgBase(150, 'Une molécule de tensioactif : une tête hydrophile et une queue hydrophobe', <>
-    <circle cx="70" cy="75" r="18" fill="#b91c1c"/><text x="70" y="80" fontSize="14" fontWeight="700" textAnchor="middle" fill="white">−</text>
-    <path d="M88 75 l16 -10 l16 10 l16 -10 l16 10 l16 -10 l16 10 l16 -10 l16 10 l16 -10 l16 10 l16 -10" fill="none" stroke={COUL.queue} strokeWidth="3" strokeLinecap="round"/>
-    {T(62, 112, 'tête hydrophile', { gras: true, fill: '#b91c1c', size: 13 })}{T(62, 128, '(aime l’eau)', { size: 12, fill: COUL.gris })}
-    {T(270, 112, 'queue hydrophobe', { gras: true, fill: COUL.queue, size: 13 })}{T(270, 128, '(chaîne carbonée, fuit l’eau)', { size: 12, fill: COUL.gris })}
-    {T(210, 22, nom, { gras: true })}
-  </>);
-}
 
-// scène de l'étape « longueur de chaîne » : deux tensioactifs de même tête, chaînes différentes
-export function SvgChaines() {
-  const ch = (y, n, nom) => <g><circle cx="70" cy={y} r="12" fill={COUL.tete}/><path d={`M82 ${y} ${Array.from({ length: n }, (_, k) => `l11 ${k % 2 ? 6 : -6}`).join(' ')}`} fill="none" stroke={COUL.queue} strokeWidth="3" strokeLinecap="round"/>{T(20, y + 5, nom, { size: 14, gras: true, ancre: 'start' })}</g>;
-  return svgBase(150, 'Deux tensioactifs de même tête, avec 10 et 14 carbones', <>
-    {ch(45, 10, '10 C')}{ch(110, 14, '14 C')}{T(300, 20, 'même tête, chaîne plus ou moins longue', { size: 12, fill: COUL.gris })}
-  </>);
-}
-// scène de l'étape « nature de la tête » : SDS (tête chargée) et maltoside (tête non chargée)
-export function SvgTetes() {
-  const ch = (y, tete, nom, signe, rayon) => <g><circle cx="150" cy={y} r={rayon} fill={tete}/>{signe && <text x="150" y={y + 5} fontSize="15" fontWeight="700" textAnchor="middle" fill="white">{signe}</text>}
-    <path d={`M${150 + rayon + 2} ${y} ${Array.from({ length: 12 }, (_, k) => `l10 ${k % 2 ? 5 : -5}`).join(' ')}`} fill="none" stroke={COUL.queue} strokeWidth="3" strokeLinecap="round"/>{T(8, y + 5, nom, { size: 13, gras: true, ancre: 'start' })}</g>;
-  return svgBase(150, 'Un tensioactif anionique et un tensioactif non ionique de même chaîne', <>
-    {ch(45, '#b91c1c', 'SDS (12 C)', '−', 14)}{ch(110, '#15803d', 'maltoside (12 C)', '', 17)}
-  </>);
+// ====================================================
+//  Structure de la molécule (formule topologique simplifiée) : chaîne de n carbones + tête de la famille choisie
+//  Chaque sommet de la ligne brisée est un carbone (les H sont sous-entendus). Schéma simplifié : charges et groupes polaires dessinés, pas les liaisons O–H des sucres.
+// ====================================================
+export function SvgMolecule({ fam, n, titre, annoter = false }) {
+  const dx = Math.min(20, 230 / (n - 1)), ye = 64, X0 = 14;
+  const pts = Array.from({ length: n }, (_, k) => [X0 + k * dx, ye - ((n - 1 - k) % 2) * 10]);
+  const [xe] = pts[n - 1], B = COUL.tete, E = { stroke: B, strokeWidth: 2, strokeLinecap: 'round' };
+  const L = (x1, y1, x2, y2, c = B) => <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={c} strokeWidth="2" strokeLinecap="round"/>;
+  const D = (x1, y1, x2, y2) => { const a = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2, ox = Math.cos(a) * 2.2, oy = Math.sin(a) * 2.2; return <g>{L(x1 + ox, y1 + oy, x2 + ox, y2 + oy)}{L(x1 - ox, y1 - oy, x2 - ox, y2 - oy)}</g>; };
+  const A = (x, y, s, c = B) => <g><circle cx={x} cy={y} r="8.5" fill="white"/><text x={x} y={y + 4.5} fontSize="13" fontWeight="700" textAnchor="middle" fill={c}>{s}</text></g>;
+  const Tx = (x, y, s, anc = 'start') => <text x={x} y={y} fontSize="12" fill={B} textAnchor={anc}>{s}</text>;
+  const ox = xe, oy = ye;                        // dernier carbone : la tête part vers le haut puis le bas, en zigzag
+  let tete = null, largeur = 60;
+  if (fam === 'sulfate') {
+    largeur = 105;
+    tete = <g>{L(ox, oy, ox + 17, oy - 10)}{L(ox + 17, oy - 10, ox + 34, oy)}{D(ox + 34, oy, ox + 34, oy - 22)}{D(ox + 34, oy, ox + 34, oy + 22)}{L(ox + 34, oy, ox + 51, oy - 10)}
+      {A(ox + 17, oy - 10, 'O')}{A(ox + 34, oy, 'S')}{A(ox + 34, oy - 24, 'O')}{A(ox + 34, oy + 24, 'O')}{A(ox + 53, oy - 10, 'O⁻', '#b91c1c')}{Tx(ox + 66, oy - 6, 'Na⁺')}</g>;
+  } else if (fam === 'ammonium') {
+    largeur = 110;
+    tete = <g>{L(ox, oy, ox + 17, oy - 10)}{L(ox + 17, oy - 10, ox + 17, oy - 32)}{L(ox + 17, oy - 10, ox + 40, oy - 10)}{L(ox + 17, oy - 10, ox + 17, oy + 12)}
+      {A(ox + 17, oy - 10, 'N⁺', '#0369a1')}{Tx(ox + 17, oy - 36, 'CH₃', 'middle')}<text x={ox + 44} y={oy - 6} fontSize="12" fill={B}>CH₃</text>{Tx(ox + 17, oy + 25, 'CH₃', 'middle')}{Tx(ox + 76, oy + 25, 'Br⁻')}</g>;
+  } else if (fam === 'phosphine') {
+    largeur = 80;
+    tete = <g>{L(ox, oy, ox + 17, oy - 10)}{D(ox + 17, oy - 10, ox + 17, oy - 32)}{L(ox + 17, oy - 10, ox + 40, oy - 10)}{L(ox + 17, oy - 10, ox + 17, oy + 12)}
+      {A(ox + 17, oy - 10, 'P')}{A(ox + 17, oy - 34, 'O')}<text x={ox + 44} y={oy - 6} fontSize="12" fill={B}>CH₃</text>{Tx(ox + 17, oy + 25, 'CH₃', 'middle')}</g>;
+  } else if (fam === 'sulfobetaine') {
+    largeur = 125;
+    tete = <g>{L(ox, oy, ox + 17, oy - 10)}{L(ox + 17, oy - 10, ox + 17, oy - 32)}{L(ox + 17, oy - 10, ox + 17, oy + 12)}{L(ox + 17, oy - 10, ox + 34, oy)}{L(ox + 34, oy, ox + 51, oy - 10)}{L(ox + 51, oy - 10, ox + 68, oy)}{L(ox + 68, oy, ox + 85, oy - 10)}
+      {D(ox + 85, oy - 10, ox + 85, oy - 32)}{D(ox + 85, oy - 10, ox + 85, oy + 12)}{L(ox + 85, oy - 10, ox + 102, oy)}
+      {A(ox + 17, oy - 10, 'N⁺')}{Tx(ox + 17, oy - 36, 'CH₃', 'middle')}{Tx(ox + 17, oy + 25, 'CH₃', 'middle')}{A(ox + 85, oy - 10, 'S')}{A(ox + 85, oy - 34, 'O')}{A(ox + 85, oy + 14, 'O')}{A(ox + 104, oy, 'O⁻', '#b91c1c')}</g>;
+  } else if (fam === 'glucamide') {
+    largeur = 150;
+    tete = <g>{D(ox, oy, ox, oy - 22)}{L(ox, oy, ox + 17, oy - 10)}{A(ox, oy - 24, 'O')}{L(ox + 17, oy - 10, ox + 17, oy + 12)}{L(ox + 17, oy - 10, ox + 34, oy)}
+      {A(ox + 17, oy - 10, 'N')}{Tx(ox + 17, oy + 25, 'CH₃', 'middle')}<text x={ox + 38} y={oy + 4} fontSize="12" fill={B}>CH₂(CHOH)₄CH₂OH</text></g>;
+  } else {                                          // maltoside : deux unités glucose (hexagones)
+    largeur = 125;
+    const hex = cx => Array.from({ length: 6 }, (_, k) => `${(cx + 14 * Math.cos(k * Math.PI / 3)).toFixed(1)},${(oy - 10 + 14 * Math.sin(k * Math.PI / 3)).toFixed(1)}`).join(' ');
+    tete = <g>{L(ox, oy, ox + 17, oy - 10)}{A(ox + 17, oy - 10, 'O')}{L(ox + 25, oy - 10, ox + 31, oy - 10)}
+      <polygon points={hex(ox + 45)} fill="#f0f9ff" {...E}/>{A(ox + 45 + 7, oy - 10 - 12, 'O')}{L(ox + 59, oy - 10, ox + 68, oy - 10)}{A(ox + 68, oy - 10, 'O')}
+      <polygon points={hex(ox + 91)} fill="#f0f9ff" {...E}/>{A(ox + 91 + 7, oy - 10 - 12, 'O')}{Tx(ox + 45, oy + 20, 'OH', 'middle')}{Tx(ox + 91, oy + 20, 'OH', 'middle')}</g>;
+  }
+  const W2 = Math.max(420, xe + largeur + 40);
+  return (
+    <svg viewBox={`0 0 ${W2} ${annoter ? 142 : 118}`} width="100%" role="img" aria-label={`Formule simplifiée : ${titre ?? ''}`} style={{ display: 'block', maxWidth: 480, margin: '0 auto' }}>
+      {titre && <text x="8" y="16" fontSize="13" fontWeight="700" fill={COUL.txt}>{titre}</text>}
+      <polyline points={pts.map(p => p.join(',')).join(' ')} fill="none" stroke={COUL.queue} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/>
+      {tete}
+      {annoter ? <>
+        <line x1={X0} y1="100" x2={xe} y2="100" stroke={COUL.queue} strokeWidth="2"/><text x={(X0 + xe) / 2} y="117" fontSize="13" fontWeight="700" textAnchor="middle" fill={COUL.queue}>queue hydrophobe</text><text x={(X0 + xe) / 2} y="133" fontSize="12" textAnchor="middle" fill={COUL.queue}>({n} carbones)</text>
+        <line x1={xe + 8} y1="100" x2={xe + largeur} y2="100" stroke="#b91c1c" strokeWidth="2"/><text x={xe + 8 + (largeur - 8) / 2} y="117" fontSize="13" fontWeight="700" textAnchor="middle" fill="#b91c1c">tête hydrophile</text>
+      </> : <text x={(X0 + xe) / 2} y="106" fontSize="12" textAnchor="middle" fill={COUL.gris}>chaîne de {n} carbones (un sommet = un carbone)</text>}
+    </svg>);
 }

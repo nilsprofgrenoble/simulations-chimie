@@ -5,7 +5,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./tensioactifsModele";
 import { QCM } from "./tensioactifsQcm";
-import { SceneTensioactif, JaugeTension, CourbeTension, SvgFamilles, SvgStades, SvgMesureCMC, SvgStructureCMC, SvgEmulsion, SvgAmphiphile, SvgChaines, SvgTetes } from "./TensioactifsSchemas";
+import { SceneTensioactif, JaugeTension, CourbeTension, SvgFamilles, SvgStades, SvgMesureCMC, SvgStructureCMC, SvgEmulsion, SvgMolecule } from "./TensioactifsSchemas";
 import { teteDe } from "./tensioactifsCouleurs";
 
 const SIM_ID = 146, CLE_GUIDE = 'tensioactifs-guide-v1';
@@ -33,6 +33,20 @@ const LEGENDE = {
 };
 const X_FIXE = { interface: 0.02, emulsion: 0.3 };
 const ORDRE_CURSEUR = ['sature', 'cmc', 'libres', 'tension', 'conducti'];
+
+// ligne de mesure avec un bouton « ? » qui ouvre un encadré d’explication
+function LigneInfo({ cle, ouv, bascule, nom, valeur, couleur, texte }) {
+  const k = `i-${cle}`, ouvert = !!ouv[k];
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ flex: 1, minWidth: 0 }}><LigneMesure nom={nom} valeur={valeur} couleur={couleur}/></div>
+        <button onClick={() => bascule(k)} aria-expanded={ouvert} aria-label={`Explication : ${nom}`} title="Que veut dire cette ligne ?"
+          style={{ flex: '0 0 auto', width: 30, height: 30, borderRadius: '50%', border: `1.5px solid ${ouvert ? '#0369a1' : KIT.bord}`, background: ouvert ? '#e0f2fe' : 'white', color: '#0369a1', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>?</button>
+      </div>
+      {ouvert && <div role="note" style={{ margin: '2px 0 8px', padding: '8px 10px', borderRadius: 8, background: '#f0f9ff', border: '1px solid #bae6fd', fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>{texte}</div>}
+    </div>);
+}
 
 export function SimulationTensioactifs() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
@@ -101,7 +115,7 @@ export function SimulationTensioactifs() {
       tache: { type: 'qcm', q: 'Peut-on mesurer la CMC d’un tensioactif non ionique par conductimétrie ?', ...QCM.conducti,
         expl: 'Un tensioactif non ionique ne libère pas d’ions : la conductivité n’a pas de rupture de pente. On utilise la tensiométrie, valable pour tous les tensioactifs.', indice: 'La conductivité dépend des ions présents : un tensioactif non ionique en fournit-il ?' } },
     { id: 'chaine', titre: 'Longueur de la chaîne', focus: ['scene'],
-      texte: <>La CMC dépend de la structure. On compare deux tensioactifs de <strong>même tête</strong>, l’un avec une chaîne de <strong>10 carbones</strong>, l’autre de <strong>14 carbones</strong>. Une chaîne plus longue est plus hydrophobe : elle « veut » davantage quitter l’eau.</>,
+      texte: <>La CMC dépend de la structure. On compare deux sulfobétaïnes, de <strong>même tête</strong> : SB3-10, avec une chaîne de <strong>10 carbones</strong>, et SB3-14, avec une chaîne de <strong>14 carbones</strong> (un sommet de la ligne brisée = un carbone). Une chaîne plus longue est plus hydrophobe : elle « veut » davantage quitter l’eau.</>,
       tache: { type: 'qcm', q: 'Quand la chaîne passe de 10 à 14 carbones, la CMC…', ...QCM.chaine,
         expl: 'Plus la chaîne est longue, plus les molécules s’associent facilement : la CMC diminue. Pour les sulfobétaïnes du tableau, SB3-10 a une CMC de 25 à 40 mmol/L, SB3-14 de 0,1 à 0,4 mmol/L : environ 100 fois plus faible.', indice: 'Une chaîne plus hydrophobe s’associe-t-elle plus ou moins facilement en micelles ?' } },
     { id: 'tete', titre: 'Nature de la tête', focus: ['scene'],
@@ -112,7 +126,7 @@ export function SimulationTensioactifs() {
           <li>Têtes chargées : elles se repoussent dans la micelle, donc la CMC est plus élevée qu’avec une tête non chargée.</li>
           <li>Moyen de s’en souvenir : <strong>« queue longue, CMC basse ; tête chargée, CMC haute »</strong>.</li>
         </ul></>,
-      texte: <>Deux tensioactifs ont la <strong>même chaîne de 12 carbones</strong> : le SDS, de tête chargée (anionique), et un maltoside, de tête <strong>non chargée</strong> (non ionique). Dans une micelle de SDS, les têtes chargées sont proches les unes des autres.</>,
+      texte: <>Deux tensioactifs ont la <strong>même chaîne de 12 carbones</strong> : le SDS, de tête chargée (anionique : sulfate −), et le dodécylmaltoside, de tête <strong>non chargée</strong> (non ionique : deux unités de sucre). Dans une micelle de SDS, les têtes chargées sont proches les unes des autres.</>,
       tache: { type: 'qcm', q: 'Lequel a la CMC la plus faible ?', ...QCM.tete,
         expl: 'Les têtes chargées du SDS se repoussent dans la micelle, ce qui rend l’association moins favorable : sa CMC est plus élevée (environ 8 mmol/L). Le maltoside non ionique n’a pas cette répulsion (CMC d’environ 0,15 mmol/L, tableau).', indice: 'Deux charges de même signe, proches l’une de l’autre, s’attirent ou se repoussent ?' } },
     { id: 'emulsion', titre: 'Dans une émulsion', focus: ['scene'],
@@ -138,15 +152,17 @@ export function SimulationTensioactifs() {
   const e = M.etatScene(xEff);
   const fam = M.famille(ti.fam), cm = M.cmc(ti.fam, ti.n), bd = M.bande(ti.fam, ti.n), na = M.nAgg(ti.fam, ti.n), ref = M.reference(ti.fam, ti.n), ec = M.ecartFacteur(ti.fam, ti.n);
   const teteX = enGuide ? teteDe('anionique') : teteDe(fam.classe);
+  const PARAM_B = M.PARAM[ti.fam].B;
   const libellesX = x => (x >= 1 ? `${sig2(x)} × CMC` : `${sig2(x)} × CMC`);
 
   // ---------- scènes ----------
   const sceneGuide = {
-    amphi: () => <SvgAmphiphile/>, familles: () => <SvgAmphiphile/>,
+    amphi: () => <SvgMolecule fam="sulfate" n={12} titre={M.nomMolecule('sulfate', 12)} annoter/>, familles: () => <SvgMolecule fam="sulfate" n={12} titre={M.nomMolecule('sulfate', 12)} annoter/>,
     interface: () => <SceneTensioactif x={X_FIXE.interface} tete={teteX}/>,
     sature: () => <SceneTensioactif x={xCur} tete={teteX}/>, cmc: () => <SceneTensioactif x={xCur} tete={teteX}/>, libres: () => <SceneTensioactif x={xCur} tete={teteX}/>,
     tension: () => <CourbeTension x={xCur}/>, conducti: () => <CourbeTension x={xCur}/>,
-    chaine: () => <SvgChaines/>, tete: () => <SvgTetes/>,
+    chaine: () => <div className="ta-col"><SvgMolecule fam="sulfobetaine" n={10} titre={M.nomMolecule('sulfobetaine', 10)}/><SvgMolecule fam="sulfobetaine" n={14} titre={M.nomMolecule('sulfobetaine', 14)}/></div>,
+    tete: () => <div className="ta-col"><SvgMolecule fam="sulfate" n={12} titre={M.nomMolecule('sulfate', 12)}/><SvgMolecule fam="maltoside" n={12} titre={M.nomMolecule('maltoside', 12)}/></div>,
     emulsion: () => <SceneTensioactif x={X_FIXE.emulsion} interf="huile" tete={teteX}/>,
   }[idE]?.() ?? null;
   const MES = {
@@ -199,7 +215,7 @@ export function SimulationTensioactifs() {
         <select id="ta-n" value={ti.n} onChange={ev => setTi(s => ({ ...s, n: Number(ev.target.value) }))} style={{ ...selectStyle, marginBottom: 4 }}>
           {Array.from({ length: fam.dom[1] - fam.dom[0] + 1 }, (_, k) => fam.dom[0] + k).map(n => <option key={n} value={n}>{n}</option>)}
         </select>
-        <div style={{ fontSize: 13, color: KIT.txt2 }}>Une longueur de chaîne et une famille : le modèle donne la CMC (hors référentiel).</div>
+        <div style={{ fontSize: 13, color: KIT.txt2 }}>Une longueur de chaîne et une famille : le modèle en déduit la CMC (prolongement du programme).</div>
       </Section>
       <Section titre={`Interface : ${ti.interf === 'air' ? 'eau-air' : 'huile-eau'}`} ouvert={!!ouv.interf} onBascule={() => bascule('interf')}>
         <label htmlFor="ta-i" style={libelle}>Interface</label>
@@ -220,15 +236,30 @@ export function SimulationTensioactifs() {
     <div style={{ ...styleBoite }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? 'Mesures' : 'Données'}</div>
       {enGuide ? lignesGuide.map(([n, v, col]) => <LigneMesure key={n} nom={n} valeur={v} couleur={col}/>) : <>
-        <LigneMesure nom="Concentration ajoutée" valeur={libellesX(xCur)} couleur={COL.orange}/>
-        <LigneMesure nom="Stade" valeur={STADES[e.stade]}/>
-        <LigneMesure nom="Monomères libres" valeur={xCur >= 1 ? '= CMC' : `${sig2(xCur)} × CMC`}/>
-        <LigneMesure nom="CMC prédite (hors référentiel)" valeur={`${sig2(cm)}${U}`} couleur={COL.vert}/>
-        <LigneMesure nom="Fourchette (× ou ÷ 2)" valeur={`${sig2(bd[0])} à ${sig2(bd[1])}${U}`}/>
-        <LigneMesure nom="Concentration réelle" valeur={`${sig2(xCur * cm)}${U}`} couleur={COL.orange}/>
-        {na != null && <LigneMesure nom="Nombre d’agrégation (tableau)" valeur={`${na}`}/>}
-        <LigneMesure nom="Énergie par CH₂ ajouté" valeur={`${sig2(M.kJParCH2(ti.fam))}${NB}kJ·mol⁻¹`}/>
+        <LigneInfo cle="conc" ouv={ouv} bascule={bascule} nom="Concentration ajoutée" valeur={libellesX(xCur)} couleur={COL.orange}
+          texte="Quantité de tensioactif ajoutée à l’eau, exprimée en multiples de la CMC : « 2,5 × CMC » veut dire 2,5 fois la concentration à partir de laquelle les micelles se forment."/>
+        <LigneInfo cle="stade" ouv={ouv} bascule={bascule} nom="Stade" valeur={STADES[e.stade]}
+          texte="Ce que l’on voit dans la scène : les molécules s’adsorbent d’abord à la surface, puis la surface se remplit, puis les micelles se forment dans l’eau."/>
+        <LigneInfo cle="libres" ouv={ouv} bascule={bascule} nom="Monomères libres" valeur={xCur >= 1 ? '= CMC' : `${sig2(xCur)} × CMC`}
+          texte="Les monomères libres sont les molécules isolées dans l’eau (ni à la surface, ni dans une micelle). Au-delà de la CMC, leur concentration ne monte plus : elle reste égale à la CMC, tout le reste du tensioactif forme des micelles."/>
+        <div style={{ margin: '10px 0 2px', fontSize: 13.5, fontWeight: 700, color: COL.vert }}>Prévision de la CMC par un modèle simple</div>
+        <LigneInfo cle="cmc" ouv={ouv} bascule={bascule} nom="CMC prévue" valeur={`${sig2(cm)}${U}`} couleur={COL.vert}
+          texte={`CMC calculée par un modèle à partir de la structure de la molécule (famille de la tête et nombre de carbones de la chaîne). Le programme de BTS demande de savoir mesurer la CMC (tensiométrie, conductimétrie) ; la prévoir à partir de la structure va au-delà : c’est un prolongement, pas une exigence du référentiel.`}/>
+        <LigneInfo cle="fourchette" ouv={ouv} bascule={bascule} nom="CMC probablement entre" valeur={`${sig2(bd[0])} et ${sig2(bd[1])}${U}`}
+          texte={`Le modèle n’est pas exact. Cette fourchette donne la moitié et le double de la valeur prévue : la vraie CMC a de bonnes chances de s’y trouver. Sur les tensioactifs du tableau, l’écart typique est d’environ ×${NB}1,1 et le pire cas ×${NB}1,5.`}/>
+        <LigneInfo cle="reelle" ouv={ouv} bascule={bascule} nom="Concentration réelle ajoutée" valeur={`${sig2(xCur * cm)}${U}`} couleur={COL.orange}
+          texte="Concentration en tensioactif correspondant à la position du curseur : curseur × CMC prévue."/>
+        {na != null && <LigneInfo cle="agg" ouv={ouv} bascule={bascule} nom="Molécules par micelle" valeur={`${na}`}
+          texte="Nombre d’agrégation : nombre moyen de molécules de tensioactif réunies dans une micelle (valeur du tableau fourni)."/>}
+        <LigneInfo cle="ch2" ouv={ouv} bascule={bascule} nom="Effet d’un carbone de plus" valeur={`CMC ÷${NB}${sig2(10 ** PARAM_B)}`}
+          texte={`Chaque carbone ajouté à la chaîne divise la CMC par environ ${sig2(10 ** PARAM_B)} (famille : ${fam.nom}). C’est un gain d’énergie d’environ ${sig2(M.kJParCH2(ti.fam))}${NB}kJ·mol⁻¹ par carbone : une chaîne plus hydrophobe s’assemble plus facilement en micelles.`}/>
       </>}
+    </div>);
+  const structure = enExplore && (
+    <div style={styleBoite}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Structure de la molécule</div>
+      <SvgMolecule fam={ti.fam} n={ti.n} titre={M.nomMolecule(ti.fam, ti.n)} annoter/>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Formule simplifiée : un sommet de la ligne brisée est un carbone (les hydrogènes sont sous-entendus). La CMC prévue dépend de la longueur de la queue et de la nature de la tête.</div>
     </div>);
   const courbe = enExplore && (
     <div style={styleBoite}>
@@ -270,7 +301,7 @@ export function SimulationTensioactifs() {
           .ta-l1.cote .ta-carte { order: 2; } .ta-l1.cote .ta-main { order: 1; }
           .ta-ex { grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); }
           .ta-ex > * { grid-column: 1; }
-          .ta-ex > .ta-reg { grid-column: 2; grid-row: 1 / span 4; }
+          .ta-ex > .ta-reg { grid-column: 2; grid-row: 1 / span 5; }
         }
         @media (max-width: 900px) { .ta-l1.cote { grid-template-columns: minmax(0, 1fr); } }
         @media (prefers-reduced-motion: no-preference) { .ta-in { animation: ta-fondu 0.35s ease-out; } @keyframes ta-fondu { from { opacity: 0; } to { opacity: 1; } } }
@@ -294,6 +325,7 @@ export function SimulationTensioactifs() {
         <div className="ta-ex">
           {scene}
           <div className="ta-reg">{reglages}</div>
+          {structure}
           {mesures}
           {courbe}
         </div>
