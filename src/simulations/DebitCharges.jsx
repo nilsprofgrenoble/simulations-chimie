@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
+  BoutonsModes, ARetenir, FormuleEnLigne, ExempleResolu, lireNombre, proche } from "../commun";
 import { fr, E_CHARGE, N_CUIVRE, deriveVitesse } from "./elecModele";
 import { BLEU, VERMILLON, GRIS, alea, usePhase } from "./elecOutils";
 import { Curseur, VoletDefiGen, Fil, Mesure } from "./elecCommun";
 import { Pic } from "../Pictos";
+import { FicheMetal, FicheSolution, FicheDebit, FicheElectrons, FicheBatterie, FicheVitesse } from "./DebitChargesFiches";
 
 // ====================================================
 //  SIM 70 — COURANT ÉLECTRIQUE ET DÉBIT DE CHARGES (1G spé PC, « Aspects énergétiques des phénomènes électriques »)
@@ -36,18 +37,18 @@ function Fil3D({ I, sens, ph, section }) {
   for (let r = 0; r < 4; r++) for (let k = 0; k < 14; k++) ions.push(<text key={r + '_' + k} x={x0 + 18 + k * 34 + (r % 2) * 17} y={96 + r * 30} fontSize="13" fontWeight="800" textAnchor="middle" fill="#94a3b8">+</text>);
   const fl = (x1, x2, y, c) => <g stroke={c} fill={c}><line x1={x1} y1={y} x2={x2} y2={y} strokeWidth="3"/><polygon points={`${x2},${y} ${x2 - (x2 > x1 ? 12 : -12)},${y - 6} ${x2 - (x2 > x1 ? 12 : -12)},${y + 6}`}/></g>;
   return (
-    <svg viewBox="0 0 560 290" width="100%" role="img" aria-label="Fil de cuivre : ions fixes et électrons libres en mouvement" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
+    <svg viewBox="0 0 560 296" width="100%" role="img" aria-label="Fil de cuivre : ions fixes et électrons libres en mouvement" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
       <rect x={x0} y="72" width={W} height="128" rx="14" fill="#f1f5f9" stroke="#64748b" strokeWidth="2.5"/>
       {ions}{e}
       <line x1="280" y1="62" x2="280" y2="210" stroke={VERMILLON} strokeWidth="3" strokeDasharray="7 5"/>
-      <text x="286" y="58" fontSize="13.5" fontWeight="800" fill={VERMILLON}>section S</text>
+      <text x="288" y="60" fontSize="18" fontWeight="800" fill={VERMILLON}>section S</text>
       {sens > 0 ? fl(120, 250, 30, VERMILLON) : fl(440, 310, 30, VERMILLON)}
-      <text x="280" y="22" fontSize="13.5" fontWeight="800" textAnchor="middle" fill={VERMILLON}>sens conventionnel du courant</text>
+      <text x="280" y="22" fontSize="19" fontWeight="800" textAnchor="middle" fill={VERMILLON}>sens conventionnel du courant</text>
       {sens > 0 ? fl(440, 310, 246, BLEU) : fl(120, 250, 246, BLEU)}
-      <text x="280" y="272" fontSize="13.5" fontWeight="800" textAnchor="middle" fill={BLEU}>sens de déplacement des électrons</text>
-      <g fontSize="12.5" fontWeight="700"><circle cx="52" cy="226" r="4.5" fill={BLEU}/><text x="62" y="230" fill="#0f172a">électron libre (charge −e)</text>
-        <text x="236" y="230" fill="#94a3b8" fontWeight="800">+</text><text x="248" y="230" fill="#0f172a">ion cuivre fixe</text></g>
-      {section != null && <text x="530" y="62" fontSize="12.5" fontWeight="700" textAnchor="end" fill={GRIS}>S = {fr(section, 1)} mm²</text>}
+      <text x="280" y="282" fontSize="19" fontWeight="800" textAnchor="middle" fill={BLEU}>sens de déplacement des électrons</text>
+      <g fontSize="17" fontWeight="700"><circle cx="52" cy="226" r="5.5" fill={BLEU}/><text x="64" y="232" fill="#0f172a">électron libre (−e)</text>
+        <text x="290" y="232" fill="#94a3b8" fontWeight="800" fontSize="20">+</text><text x="306" y="232" fill="#0f172a">ion cuivre fixe</text></g>
+      {section != null && <text x="530" y="62" fontSize="17" fontWeight="700" textAnchor="end" fill={GRIS}>S = {fr(section, 1)} mm²</text>}
     </svg>);
 }
 
@@ -72,9 +73,9 @@ function Electrolyte({ actif, ph }) {
         <Fil pts={[[404, 130], [404, 40], [335, 40]]} v={40} ph={ph} rayon={4} couleur={BLEU} esp={22}/></> :
         <><polyline points="225,40 156,40 156,130" fill="none" stroke="#0f172a" strokeWidth="3"/><polyline points="404,130 404,40 335,40" fill="none" stroke="#0f172a" strokeWidth="3"/></>}
       {ions}
-      <text x="156" y="306" fontSize="12.5" fontWeight="700" textAnchor="middle" fill={BLEU}>électrode reliée à la borne −</text>
-      <text x="404" y="306" fontSize="12.5" fontWeight="700" textAnchor="middle" fill={VERMILLON}>électrode reliée à la borne +</text>
-      {actif && <g fontSize="12.5" fontWeight="700"><text x="280" y="170" textAnchor="middle" fill={VERMILLON}>← cations (+) vers la borne −</text><text x="280" y="279" textAnchor="middle" fill={BLEU}>anions (−) vers la borne + →</text></g>}
+      <text x="156" y="308" fontSize="16" fontWeight="700" textAnchor="middle" fill={BLEU}>électrode (borne −)</text>
+      <text x="404" y="308" fontSize="16" fontWeight="700" textAnchor="middle" fill={VERMILLON}>électrode (borne +)</text>
+      {actif && <g fontSize="16" fontWeight="700"><text x="280" y="172" textAnchor="middle" fill={VERMILLON}>← cations (+) vers la borne −</text><text x="280" y="279" textAnchor="middle" fill={BLEU}>anions (−) vers la borne + →</text></g>}
     </svg>);
 }
 
@@ -124,78 +125,41 @@ export function SimulationDebitCharges() {
 
   const ETAPES = [
     { id: 'porteurs', titre: 'Qu’est-ce qui circule dans un fil ?', depart: () => voir('fil', { I: 1, sens: 1 }),
-      retenirTitre: 'À RETENIR : PORTEURS DE CHARGE ET SENS DU COURANT',
-      retenir: <>
-        <svg viewBox="0 0 300 150" role="img" aria-label="Modèle d’un fil métallique : des ions positifs fixes et des électrons libres mobiles ; les électrons se déplacent vers la gauche, le courant conventionnel vers la droite" style={{ width: '100%', maxWidth: 340, height: 'auto', display: 'block', margin: '6px auto' }}>
-          <rect x="18" y="18" width="264" height="92" rx="10" fill="#f1f5f9" stroke="#475569" strokeWidth="2" />
-          <circle cx="40" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="40" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="40" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="40" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="70" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="70" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="70" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="70" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="100" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="100" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="100" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="100" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="130" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="130" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="130" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="130" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="160" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="160" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="160" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="160" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="190" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="190" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="190" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="190" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="220" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="220" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="220" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="220" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="250" cy="38" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="250" y="42" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="250" cy="86" r="9" fill="#cbd5e1" stroke="#64748b" strokeWidth="1.4" /><text x="250" y="90" fontSize="12" textAnchor="middle" fill="#334155" fontWeight="700">+</text><circle cx="55" cy="62" r="5" fill="#2563eb" /><text x="55" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="85" cy="62" r="5" fill="#2563eb" /><text x="85" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="115" cy="62" r="5" fill="#2563eb" /><text x="115" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="145" cy="62" r="5" fill="#2563eb" /><text x="145" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="175" cy="62" r="5" fill="#2563eb" /><text x="175" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="205" cy="62" r="5" fill="#2563eb" /><text x="205" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text><circle cx="235" cy="62" r="5" fill="#2563eb" /><text x="235" y="65" fontSize="9" textAnchor="middle" fill="#fff" fontWeight="700">−</text>
-          <line x1="250" y1="126" x2="130" y2="126" stroke="#2563eb" strokeWidth="2.4" /><polygon points="126,126 138,120 138,132" fill="#2563eb" /><text x="124" y="130" fontSize="10.5" textAnchor="end" fill="#1d4ed8" fontWeight="700">électrons</text>
-          <line x1="20" y1="142" x2="106" y2="142" stroke="#d55e00" strokeWidth="2.4" /><polygon points="110,142 98,136 98,148" fill="#d55e00" /><text x="116" y="146" fontSize="10.5" fill="#c2410c" fontWeight="700">sens conventionnel de I</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le <strong>courant électrique</strong> est un <strong>déplacement ordonné de charges</strong> portées par des <strong>porteurs de charge</strong>.</li>
-          <li><strong>Métal</strong> (<strong>modèle de Drude</strong>) : des <strong>ions positifs</strong> fixes baignent dans un « gaz » d’<strong>électrons libres</strong> ; sans générateur ils bougent dans tous les sens, avec un générateur ils dérivent <strong>ensemble</strong> dans le même sens.</li>
-          <li><strong>Sens conventionnel</strong> : de la borne <strong>+</strong> vers la borne <strong>−</strong> à l’extérieur du générateur. Les <strong>électrons</strong> (charge négative) se déplacent en <strong>sens inverse</strong>.</li>
-        </ul>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Où ?</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Porteurs</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Déplacement</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>fil métallique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>électrons libres</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sens inverse de I</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>solution : cations (+)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ions positifs</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>vers l’électrode reliée à la borne −</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>solution : anions (−)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ions négatifs</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>vers l’électrode reliée à la borne +</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Inverser le générateur inverse <strong>à la fois</strong> le sens conventionnel et le sens des électrons.</li>
-        </ul>
-      </>,
       texte: <>Un métal est un empilement ordonné d’<strong>ions positifs</strong> (en gris) baignant dans un « gaz » d’<strong>électrons libres</strong> (en bleu) : c’est le <strong>modèle de Drude</strong>. Chaque électron libre n’est lié à aucun ion en particulier. Sans générateur, ils bougent dans tous les sens ; avec un générateur, ils se déplacent <strong>ensemble dans le même sens</strong> : c’est le courant électrique.
         <ExempleResolu>Le courant électrique est un <strong>déplacement ordonné de charges électriques</strong>. Ces charges sont portées par des <strong>porteurs de charge</strong> : les électrons libres dans les métaux, les <strong>ions</strong> dans les solutions.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Dans un fil de cuivre, quels sont les porteurs de charge mobiles ?', options: ['Les électrons libres', 'Les ions cuivre', 'Les atomes de cuivre', 'Les protons'], bonne: 0, expl: 'Dans un métal, ce sont les électrons libres qui se déplacent ; les ions positifs restent à leur place.', indice: "Dans un métal, certains électrons ne sont plus liés à un atome en particulier. Que sont ces porteurs de charge ?" } },
     { id: 'sens', titre: 'Sens conventionnel et sens des électrons', depart: () => { voir('fil', { sens: 1 }); },
+      retenirTitre: 'À RETENIR : PORTEURS DE CHARGE ET SENS DU COURANT',
+      retenir: <FicheMetal/>,
       texte: <>Par convention, le courant circule de la borne <strong>+</strong> vers la borne <strong>−</strong> à l’extérieur du générateur : c’est le <strong>sens conventionnel</strong> (flèche orange). Mais les électrons, de charge négative, se déplacent <strong>en sens inverse</strong> (flèche bleue). Cliquez sur « Inverser le générateur » : les deux flèches changent ensemble.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'fil' && vu.sens, consigne: 'Cliquez sur « Inverser le générateur » pour voir les deux sens changer.' } },
     { id: 'ions', titre: 'Dans une solution : ce sont des ions', depart: () => setAtelier('solution'),
       texte: <>Dans une solution ionique, les porteurs de charge sont des <strong>ions</strong>. Cliquez sur « Brancher le générateur » : les <strong>cations</strong> (+) vont vers l’électrode reliée à la borne <strong>−</strong>, les <strong>anions</strong> (−) vers l’électrode reliée à la borne <strong>+</strong>. Dans les fils, ce sont encore des électrons.</>,
       tache: { type: 'qcm', q: 'Dans la solution, les anions (charge négative) se dirigent vers…', options: ['l’électrode reliée à la borne +', 'l’électrode reliée à la borne −', 'le fond du bécher', 'ils ne bougent pas'], bonne: 0, expl: 'Charges opposées s’attirent : les anions (−) sont attirés par la borne +, les cations (+) par la borne −.', indice: "Un anion est un ion négatif. Il est attiré par une électrode de signe opposé. Laquelle ?" } },
     { id: 'debit', titre: 'L’intensité : un débit de charges', depart: () => voir('fil', { I: 1, dt: 1 }),
-      retenirTitre: 'À RETENIR : L’INTENSITÉ, UN DÉBIT DE CHARGES',
-      retenir: <>
-        <Formule><mi>I</mi><mo>=</mo><mfrac><mi>Q</mi><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac><mspace width="1.5em"/><mi>Q</mi><mo>=</mo><mi>I</mi><mo>×</mo><mi>Δ</mi><mi>t</mi><mspace width="1.5em"/><mtext>I en A ; Q en C ; Δt en s</mtext></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>L’<strong>intensité I</strong> est la charge Q (en valeur absolue) qui traverse une section du conducteur <strong>par seconde</strong> : 1 A = 1 C·s⁻¹.</li>
-          <li><strong>Exemple 1 :</strong> Q = 3 C en Δt = 2 s : I = 3 / 2 = <strong>1,5 A</strong>.</li>
-          <li><strong>Exemple 2 :</strong> I = 2,0 A pendant Δt = 5,0 s : Q = 2,0 × 5,0 = <strong>10 C</strong>.</li>
-          <li><strong>Piège :</strong> Q se calcule en <strong>multipliant</strong> I par Δt ; convertir Δt en secondes avant de calculer.</li>
-        </ul>
-      </>,
-      texte: <>L’<strong>intensité I</strong> du courant est le <strong>débit de charges</strong> : la charge Q (en valeur absolue) qui traverse une section du conducteur pendant une durée Δt. <strong>I = Q / Δt</strong>, donc <strong>Q = I × Δt</strong> (I en A, Q en C, Δt en s). 1 A = 1 C·s⁻¹.
-        <ExempleResolu>Une charge Q = 3 C traverse une section en Δt = 2 s : I = Q / Δt = 3 / 2 = <strong>1,5 A</strong>.</ExempleResolu></>,
+      retenirTitre: 'À RETENIR : LES IONS DANS UNE SOLUTION',
+      retenir: <FicheSolution/>,
+      texte: <>L’<strong>intensité I</strong> du courant est le <strong>débit de charges</strong> : la charge Q (en valeur absolue) qui traverse une section du conducteur pendant une durée Δt. <strong><FormuleEnLigne><mi>I</mi><mo>=</mo><mfrac><mrow><mi>Q</mi></mrow><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></FormuleEnLigne></strong>, donc <strong>Q = I × Δt</strong> (I en A, Q en C, Δt en s). 1 A = 1 C·s⁻¹.
+        <ExempleResolu>Une charge Q = 3 C traverse une section en Δt = 2 s : <FormuleEnLigne><mi>I</mi><mo>=</mo><mfrac><mrow><mi>Q</mi></mrow><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>3</mn></mrow><mrow><mn>2</mn></mrow></mfrac></FormuleEnLigne> = <strong>1,5 A</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Un courant de 2,0 A circule pendant 5,0 s. Quelle charge Q (en C) traverse une section du fil ?', unite: 'C', vrai: 10, tol: 0.02, affiche: x => String(x), pieges: [[0.4, 'Tu as divisé : Q = I × Δt (on multiplie l’intensité par la durée).'], [2.5, 'Tu as divisé la durée par l’intensité. La charge est Q = I × Δt : on multiplie.'], [7, 'Tu as additionné I et Δt. La charge est Q = I × Δt : on multiplie.']],
         calcul: () => [
-          'L’intensité est un débit de charges : I = Q / Δt, donc Q = I × Δt (I en A, Δt en s, Q en C).',
+          'L’intensité est un débit de charges : I = frac(Q|Δt), donc Q = I × Δt (I en A, Δt en s, Q en C).',
           'Données : I = 2,0 A et Δt = 5,0 s (déjà en unités SI, pas de conversion).',
           'Q = 2,0 × 5,0 = 10 C.'], expl: 'Q = I × Δt = 2,0 × 5,0 = 10 C.', indice: "Charge qui traverse une section : Q = I × Δt, avec I en ampères et Δt en secondes (le résultat est en coulombs)." } },
     { id: 'electrons', titre: 'Combien d’électrons ?', depart: () => voir('fil', { I: 1, dt: 1 }),
-      retenirTitre: 'À RETENIR : COMPTER LES ÉLECTRONS',
-      retenir: <>
-        <Formule><mi>N</mi><mo>=</mo><mfrac><mi>Q</mi><mi>e</mi></mfrac><mspace width="1.5em"/><mi>e</mi><mo>=</mo><mn>1,602</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>19</mn></mrow></msup><mtext> C</mtext></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Chaque électron porte la charge <strong>−e</strong> ; la charge Q correspond à <strong>N = Q / e</strong> électrons (on divise la charge totale par la charge d’un électron).</li>
-          <li><strong>Exemple :</strong> Q = 2,0 C : N = 2,0 / 1,602×10⁻¹⁹ ≈ <strong>1,2×10¹⁹</strong> électrons (2 chiffres significatifs comme Q).</li>
-          <li><strong>Ordre de grandeur :</strong> 1 A pendant 1 s = 1 C ≈ 6,24×10¹⁸ électrons.</li>
-          <li><strong>Piège :</strong> ne pas inverser le rapport (N = e / Q) ; écrire le résultat en notation scientifique.</li>
-        </ul>
-      </>,
-      texte: <>Chaque électron porte une charge −e, avec <strong>e = 1,602·10⁻¹⁹ C</strong>. Pour une charge Q, il faut donc <strong>N = Q / e</strong> électrons. Lancez le chrono et regardez la charge qui s’accumule. Pour 1 A pendant 1 s : 1 C, soit environ <strong>6,24·10¹⁸ électrons</strong> !
-        <ExempleResolu>Q = 3,0 C : N = 3,0 / 1,602·10⁻¹⁹ = <strong>1,9·10¹⁹ électrons</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Combien d’électrons correspondent à une charge Q = 2,0 C ? (écris par exemple 1,9e19)', unite: '', vrai: 1.248e19, tol: 0.04, affiche: () => '1,25·10¹⁹', pieges: [[3.2e-19, 'Tu as multiplié : N = Q / e (on divise la charge totale par la charge d’un électron).'], [1.602e-19 / 2, 'Tu as inversé : N = Q / e (la charge totale Q au numérateur).']],
+      retenirTitre: 'À RETENIR : L’INTENSITÉ, UN DÉBIT DE CHARGES',
+      retenir: <FicheDebit/>,
+      texte: <>Chaque électron porte une charge −e, avec <strong>e = 1,602·10⁻¹⁹ C</strong>. Pour une charge Q, il faut donc <strong><FormuleEnLigne><mi>N</mi><mo>=</mo><mfrac><mrow><mi>Q</mi></mrow><mrow><mi>e</mi></mrow></mfrac></FormuleEnLigne></strong> électrons. Lancez le chrono et regardez la charge qui s’accumule. Pour 1 A pendant 1 s : 1 C, soit environ <strong>6,24·10¹⁸ électrons</strong> !
+        <ExempleResolu>Q = 3,0 C : <FormuleEnLigne><mi>N</mi><mo>=</mo><mfrac><mrow><mn>3,0</mn></mrow><mrow><mn>1,602</mn><mo>×</mo><msup><mn>10</mn><mn>−19</mn></msup></mrow></mfrac></FormuleEnLigne> = <strong>1,9·10¹⁹ électrons</strong>.</ExempleResolu></>,
+      tache: { type: 'num', q: 'Combien d’électrons correspondent à une charge Q = 2,0 C ? (écris par exemple 1,9e19)', unite: '', vrai: 1.248e19, tol: 0.04, affiche: () => '1,25·10¹⁹', pieges: [[3.2e-19, 'Tu as multiplié : N = frac(Q|e) (on divise la charge totale par la charge d’un électron).'], [1.602e-19 / 2, 'Tu as inversé : N = frac(Q|e) (la charge totale Q au numérateur).']],
         calcul: () => [
-          'Chaque électron porte la charge e = 1,602·10⁻¹⁹ C (en valeur absolue). Pour la charge totale Q, le nombre d’électrons est N = Q / e.',
+          'Chaque électron porte la charge e = 1,602·10⁻¹⁹ C (en valeur absolue). Pour la charge totale Q, le nombre d’électrons est N = frac(Q|e).',
           'Données : Q = 2,0 C ; e = 1,602·10⁻¹⁹ C.',
-          `N = 2,0 / (1,602·10⁻¹⁹) = ${sci(2 / E_CHARGE, 3)} électrons.`,
-          `Arrondi à 3 chiffres significatifs : N ≈ ${sci(2 / E_CHARGE, 2)} électrons.`], expl: 'N = Q / e = 2,0 / 1,602·10⁻¹⁹ = 1,25·10¹⁹.', indice: "N = Q / e, avec e = 1,6 × 10⁻¹⁹ C la charge d’un électron (en valeur absolue)." } },
+          `N = frac(2,0|1,602·10⁻¹⁹) = ${sci(2 / E_CHARGE, 3)} électrons.`,
+          `Arrondi à 3 chiffres significatifs : N ≈ ${sci(2 / E_CHARGE, 2)} électrons.`], expl: 'N = frac(Q|e) = frac(2,0|1,602·10⁻¹⁹) = 1,25·10¹⁹.', indice: "N = frac(Q|e), avec e = 1,6 × 10⁻¹⁹ C la charge d’un électron (en valeur absolue)." } },
     { id: 'ah', titre: 'Autre unité : l’ampère-heure', depart: () => setAtelier('batterie'),
+      retenirTitre: 'À RETENIR : COMPTER LES ÉLECTRONS',
+      retenir: <FicheElectrons/>,
       texte: <>Les fabricants indiquent la <strong>capacité</strong> d’une batterie en <strong>mA·h</strong> : c’est une charge ! Comme 1 A·h = 1 A × 3600 s, on a <strong>1 A·h = 3600 C</strong>, soit <strong>1 mA·h = 3,6 C</strong>.
         <ExempleResolu>Une batterie de 2000 mA·h contient Q = 2000 × 3,6 = <strong>7200 C</strong>.</ExempleResolu></>,
       tache: { type: 'num', q: 'Une batterie a une capacité de 3000 mA·h. Quelle charge (en C) contient-elle ?', unite: 'C', vrai: 10800, tol: 0.02, affiche: x => String(x), pieges: [[3000, 'N’oublie pas de convertir : 1 mA·h = 3,6 C.'], [3, 'Tu as converti en A·h mais pas en coulombs : 1 A·h = 3600 C.'], [3000 * 3600, 'C’est 1 A·h qui vaut 3600 C. Ici, l’unité est le mA·h : 1 mA·h = 3,6 C.'], [3000 / 3.6, 'Tu as divisé. Pour passer des mA·h aux coulombs, on multiplie par 3,6.']],
@@ -204,56 +168,25 @@ export function SimulationDebitCharges() {
           'Conversion : 1 mA = 10⁻³ A et 1 h = 3600 s, donc 1 mA·h = 10⁻³ × 3600 = 3,6 C.',
           'Q = 3000 × 3,6 = 10 800 C.'], expl: 'Q = 3000 × 3,6 = 10 800 C.', indice: "Une capacité en mA·h est une charge : 1 mA·h = 0,001 A × 3600 s. Convertis en coulombs." } },
     { id: 'autonomie', titre: 'Autonomie d’une batterie', depart: () => { setAtelier('batterie'); setP({ cap: 2000, I: 20 }); },
-      retenirTitre: 'À RETENIR : BATTERIE, A·h ET AUTONOMIE',
-      retenir: <>
-        <Formule><mn>1</mn><mtext> mA·h</mtext><mo>=</mo><mn>3,6</mn><mtext> C</mtext><mspace width="1.5em"/><mn>1</mn><mtext> A·h</mtext><mo>=</mo><mn>3600</mn><mtext> C</mtext><mspace width="1.5em"/><mi>Δ</mi><mi>t</mi><mo>=</mo><mfrac><mi>Q</mi><mi>I</mi></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>La <strong>capacité</strong> d’une batterie (mA·h) est une <strong>charge</strong> : 1 mA·h = 10⁻³ A × 3600 s = 3,6 C.</li>
-          <li><strong>Exemples :</strong> 3000 mA·h = 3000 × 3,6 = <strong>10 800 C</strong> ; 2000 mA·h = 7200 C.</li>
-          <li><strong>Autonomie</strong> : Δt = Q / I. Avec Q en mA·h et I en mA (unités « milli » cohérentes), Δt sort <strong>directement en heures</strong> : 4000 / 250 = <strong>16 h</strong> ; 2000 / 20 = <strong>100 h</strong>.</li>
-          <li><strong>Hypothèse :</strong> courant moyen constant, batterie entièrement utilisée.</li>
-        </ul>
-      </>,
-      texte: <>Un appareil qui consomme un courant moyen I vide une batterie de capacité Q en <strong>Δt = Q / I</strong>. Avec Q en mA·h et I en mA, la durée sort directement en <strong>heures</strong>.
-        <ExempleResolu>Téléphone en veille : 2000 mA·h et I = 20 mA : Δt = 2000 / 20 = <strong>100 h</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Une batterie de 4000 mA·h alimente un appareil qui consomme 250 mA. Combien de temps tient-elle (en h) ?', unite: 'h', vrai: 16, tol: 0.02, affiche: x => String(x), pieges: [[0.0625, 'Tu as inversé : Δt = Q / I.'], [4000 / 0.25, 'Les unités ne sont pas cohérentes : Q est en mA·h donc I doit être en mA (250 mA, pas 0,25 A).'], [16 * 3600, 'La durée est demandée en heures, pas en secondes : avec Q en mA·h et I en mA, le résultat est directement en h.']],
+      retenirTitre: 'À RETENIR : BATTERIE, mA·h ET AUTONOMIE',
+      retenir: <FicheBatterie/>,
+      texte: <>Un appareil qui consomme un courant moyen I vide une batterie de capacité Q en <strong><FormuleEnLigne><mi>Δ</mi><mi>t</mi><mo>=</mo><mfrac><mrow><mi>Q</mi></mrow><mrow><mi>I</mi></mrow></mfrac></FormuleEnLigne></strong>. Avec Q en mA·h et I en mA, la durée sort directement en <strong>heures</strong>.
+        <ExempleResolu>Téléphone en veille : 2000 mA·h et I = 20 mA : <FormuleEnLigne><mi>Δ</mi><mi>t</mi><mo>=</mo><mfrac><mrow><mn>2000</mn></mrow><mrow><mn>20</mn></mrow></mfrac></FormuleEnLigne> = <strong>100 h</strong>.</ExempleResolu></>,
+      tache: { type: 'num', q: 'Une batterie de 4000 mA·h alimente un appareil qui consomme 250 mA. Combien de temps tient-elle (en h) ?', unite: 'h', vrai: 16, tol: 0.02, affiche: x => String(x), pieges: [[0.0625, 'Tu as inversé : Δt = frac(Q|I).'], [4000 / 0.25, 'Les unités ne sont pas cohérentes : Q est en mA·h donc I doit être en mA (250 mA, pas 0,25 A).'], [16 * 3600, 'La durée est demandée en heures, pas en secondes : avec Q en mA·h et I en mA, le résultat est directement en h.']],
         calcul: () => [
-          'Une batterie de charge Q fournit un courant I pendant Δt = Q / I (courant supposé constant, batterie vidée complètement).',
+          'Une batterie de charge Q fournit un courant I pendant Δt = frac(Q|I) (courant supposé constant, batterie vidée complètement).',
           'Unités cohérentes : Q = 4000 mA·h et I = 250 mA (tous deux en « milli »). Le résultat sort alors directement en heures.',
-          'Δt = 4000 / 250 = 16 h.'], expl: 'Δt = 4000 / 250 = 16 h.', indice: "Autonomie : Δt = Q / I. Garde des unités cohérentes : des mA·h divisés par des mA donnent des heures." } },
+          'Δt = frac(4000|250) = 16 h.'], expl: 'Δt = frac(4000|250) = 16 h.', indice: "Autonomie : Δt = frac(Q|I). Garde des unités cohérentes : des mA·h divisés par des mA donnent des heures." } },
     { id: 'vitesse', titre: '★ À quelle vitesse vont les électrons ?', depart: () => voir('fil', { I: 1, dt: 1, S: 1.5 }),
-      retenirTitre: 'À RETENIR : VITESSE DES ÉLECTRONS ET SIGNAL',
-      retenir: <>
-        <Formule><mi>v</mi><mo>=</mo><mfrac><mi>I</mi><mrow><mi>n</mi><mo>×</mo><mi>S</mi><mo>×</mo><mi>e</mi></mrow></mfrac><mspace width="1.5em"/><mi>n</mi><mo>=</mo><mn>8,5</mn><mo>×</mo><msup><mn>10</mn><mn>28</mn></msup><msup><mtext> m</mtext><mrow><mo>−</mo><mn>3</mn></mrow></msup></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Exemple :</strong> cuivre, S = 1,5 mm², I = 1 A : v ≈ <strong>0,05 mm·s⁻¹</strong> (5×10⁻⁵ m·s⁻¹) : les électrons avancent très lentement.</li>
-          <li>Pourtant la lampe s’allume presque instantanément : les électrons libres sont <strong>déjà présents dans tout le fil</strong>. Ce qui se propage vite (≈ 2×10⁸ m·s⁻¹) est la <strong>perturbation</strong> (le signal), pas les électrons. Image : un tuyau déjà plein d’eau.</li>
-          <li><strong>Hypothèses :</strong> modèle de Drude, un électron libre par atome de cuivre (n = 8,5×10²⁸ m⁻³), régime permanent.</li>
-        </ul>
-      </>,
-      texte: <>Dans un fil de cuivre de section S = 1,5 mm² parcouru par 1 A, la vitesse moyenne des électrons est de <strong>environ 0,05 mm par seconde seulement</strong> (calcul : v = I / (n·S·e), avec n = 8,5·10²⁸ électrons libres par m³). Pourtant la lampe s’allume <strong>tout de suite</strong> : c’est la <strong>perturbation</strong> (le signal) qui se propage à environ 2·10⁸ m/s, pas les électrons. Comme un long tuyau déjà plein d’eau : on ouvre le robinet, l’eau sort aussitôt à l’autre bout.</>,
+      texte: <>Dans un fil de cuivre de section S = 1,5 mm² parcouru par 1 A, la vitesse moyenne des électrons est de <strong>environ 0,05 mm par seconde seulement</strong> (calcul : <FormuleEnLigne><mi>v</mi><mo>=</mo><mfrac><mrow><mi>I</mi></mrow><mrow><mi>n</mi><mo>·</mo><mi>S</mi><mo>·</mo><mi>e</mi></mrow></mfrac></FormuleEnLigne>, avec n = 8,5·10²⁸ électrons libres par m³). Pourtant la lampe s’allume <strong>tout de suite</strong> : c’est la <strong>perturbation</strong> (le signal) qui se propage à environ 2·10⁸ m/s, pas les électrons. Comme un long tuyau déjà plein d’eau : on ouvre le robinet, l’eau sort aussitôt à l’autre bout.</>,
       tache: { type: 'qcm', q: 'Pourquoi la lampe s’allume-t-elle presque instantanément alors que les électrons avancent très lentement ?', options: ['Les électrons sont déjà présents dans tout le fil : tous se mettent en mouvement presque en même temps', 'Les électrons vont à la vitesse de la lumière', 'Les électrons sont créés par l’interrupteur', 'Les ions du métal transportent le courant'], bonne: 0, expl: 'Les électrons libres occupent tout le circuit : le signal se propage vite, chaque électron avance lentement.', indice: "Les électrons libres sont déjà présents dans tout le fil. Qu’est-ce qui se propage très vite : les électrons eux-mêmes ou la mise en mouvement de tous les électrons ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Relation</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Unité</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>intensité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>I = Q / Δt</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>A</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>charge</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Q = I × Δt</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>C</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>nombre d’électrons</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>N = Q / e</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sans unité</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>capacité de batterie</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 mA·h = 3,6 C</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>C</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>autonomie</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>Δt = Q / I</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>h si Q en mA·h et I en mA</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Porteurs de charge : <strong>électrons libres</strong> (métaux), <strong>ions</strong> (solutions). Sens conventionnel de + vers − ; électrons en sens inverse.</li>
-          <li><strong>Méthode :</strong> convertir (min, h, mA·h en s, C…), choisir la relation, calculer, donner le résultat avec le bon nombre de chiffres significatifs et l’unité.</li>
-          <li><strong>Hypothèses :</strong> modèle de Drude, e = 1,602×10⁻¹⁹ C, régime permanent, courant constant.</li>
-        </ul>
-      </>,
-      texte: <>Bravo : vous savez relier intensité, charge, nombre d’électrons et autonomie. Voici le bilan à garder.</>, tache: null },
+      retenirTitre: 'À RETENIR : VITESSE DES ÉLECTRONS ET SIGNAL',
+      retenir: <FicheVitesse/>,
+      texte: <>Bravo : vous savez relier intensité, charge, nombre d’électrons et autonomie. Dernière fiche à garder : la vitesse des électrons et celle du signal.</>, tache: null },
   ];
+  const iEt = Math.min(guide.etape, ETAPES.length - 1);
+  const ap = id => !enGuide || iEt >= ETAPES.findIndex(e => e.id === id);   // guide : un élément apparaît à l'étape qui l'introduit
   useEffect(() => {
     if (mode !== 'guide') return;
     const dep = ETAPES[Math.min(guide.etape, ETAPES.length - 1)].depart;
@@ -276,18 +209,18 @@ export function SimulationDebitCharges() {
   const atelierFil = (
     <div>
       <Fil3D I={F.I} sens={F.sens} ph={ph} section={F.S}/>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 }}>
+      {ap('debit') && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Intensité I" val={F.I} min={0.1} max={5} pas={0.1} set={v => setF(f => ({ ...f, I: v }))} unite=" A"/>
         <Curseur nom="Durée Δt" val={F.dt} min={1} max={10} pas={1} set={v => { setF(f => ({ ...f, dt: v })); setChrono(null); }} unite=" s"/>
-        <Curseur nom="Section du fil S" val={F.S} min={0.5} max={6} pas={0.5} set={v => setF(f => ({ ...f, S: v }))} unite=" mm²"/></div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-        <button onClick={() => { setF(f => ({ ...f, sens: -f.sens })); setVu(v => ({ ...v, sens: true })); }} style={styleBouton(false)}><Pic n="refresh"/>Inverser le générateur</button>
-        <button onClick={() => setChrono({ start: ph })} style={styleBouton(true, '#16a34a')}><Pic n="stopwatch"/>Lancer le chrono</button>
-        {chrono && <button onClick={() => setChrono(null)} style={styleBouton(false)}>↺ Remettre à zéro</button>}</div>
-      <div style={{ marginTop: 8, fontSize: 14.5, color: KIT.txt, lineHeight: 1.7 }}>
-        Chrono : t = <strong>{fr(dtCh, 1)} s</strong> sur {F.dt} s → charge passée Q = I × t = <strong>{fr(Qch, 2)} C</strong><br/>
-        Sur Δt = {F.dt} s : Q = {fr(F.I, 1)} × {F.dt} = <strong>{fr(Qtot, 1)} C</strong>, soit N = Q / e = <strong>{sci(N)} électrons</strong>.<br/>
-        <span style={{ color: KIT.txt2 }}><Pic n="star"/>Vitesse moyenne des électrons : v = I / (n·S·e) = <strong>{fr(vd * 1000, vd * 1000 < 0.1 ? 3 : 2)} mm/s</strong>, soit {fr(vd * 3600, 2)} m par heure.</span></div>
+        {ap('vitesse') && <Curseur nom="Section du fil S" val={F.S} min={0.5} max={6} pas={0.5} set={v => setF(f => ({ ...f, S: v }))} unite=" mm²"/>}</div>}
+      {(ap('sens') || ap('electrons')) && <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+        {ap('sens') && <button onClick={() => { setF(f => ({ ...f, sens: -f.sens })); setVu(v => ({ ...v, sens: true })); }} style={styleBouton(false)}><Pic n="refresh"/>Inverser le générateur</button>}
+        {ap('electrons') && <button onClick={() => setChrono({ start: ph })} style={styleBouton(true, '#16a34a')}><Pic n="stopwatch"/>Lancer le chrono</button>}
+        {chrono && <button onClick={() => setChrono(null)} style={styleBouton(false)}>↺ Remettre à zéro</button>}</div>}
+      {ap('debit') && <div style={{ marginTop: 8, fontSize: 14.5, color: KIT.txt, lineHeight: 1.7 }}>
+        {ap('electrons') && <>Chrono : t = <strong>{fr(dtCh, 1)} s</strong> sur {F.dt} s → charge passée Q = I × t = <strong>{fr(Qch, 2)} C</strong><br/></>}
+        Sur Δt = {F.dt} s : Q = {fr(F.I, 1)} × {F.dt} = <strong>{fr(Qtot, 1)} C</strong>{ap('electrons') && <>, soit N = Q / e = <strong>{sci(N)} électrons</strong></>}.<br/>
+        {ap('vitesse') && <span style={{ color: KIT.txt2 }}><Pic n="star"/>Vitesse moyenne des électrons : v = I / (n·S·e) = <strong>{fr(vd * 1000, vd * 1000 < 0.1 ? 3 : 2)} mm/s</strong>, soit {fr(vd * 3600, 2)} m par heure.</span>}</div>}
     </div>);
   const atelierSol = (
     <div>
@@ -300,20 +233,20 @@ export function SimulationDebitCharges() {
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 }}>
         <Curseur nom="Capacité de la batterie" val={P.cap} min={500} max={5000} pas={100} set={v => setP(p => ({ ...p, cap: v }))} unite=" mA·h"/>
-        <Curseur nom="Courant moyen consommé I" val={P.I} min={5} max={500} pas={5} set={v => setP(p => ({ ...p, I: v }))} unite=" mA"/></div>
+        {ap('autonomie') && <Curseur nom="Courant moyen consommé I" val={P.I} min={5} max={500} pas={5} set={v => setP(p => ({ ...p, I: v }))} unite=" mA"/>}</div>
       <div style={{ marginTop: 10, background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 8, padding: '8px 10px', fontSize: 14.5, color: KIT.txt, lineHeight: 1.8 }}>
         Charge contenue : Q = {P.cap} × 3,6 = <strong>{Math.round(QpC)} C</strong><br/>
-        Autonomie : Δt = Q / I = {P.cap} / {P.I} = <strong>{fr(TP, TP < 10 ? 1 : 0)} h</strong> {TP >= 48 ? `(≈ ${fr(TP / 24, 1)} jours)` : ''}<br/>
-        Nombre d’électrons qui traversent le circuit : N = Q / e = <strong>{sci(Np)}</strong>, soit n = N / N<sub>A</sub> = <strong>{fr(Np / NA, 3)} mol</strong></div>
-      <div style={{ marginTop: 8, height: 26, background: '#e2e8f0', borderRadius: 13, overflow: 'hidden', maxWidth: 560 }}>
+        {ap('autonomie') && <>Autonomie : Δt = Q / I = {P.cap} / {P.I} = <strong>{fr(TP, TP < 10 ? 1 : 0)} h</strong> {TP >= 48 ? `(≈ ${fr(TP / 24, 1)} jours)` : ''}<br/></>}
+        {!enGuide && <>Nombre d’électrons qui traversent le circuit : N = Q / e = <strong>{sci(Np)}</strong>, soit N / N<sub>A</sub> = <strong>{fr(Np / NA, 3)} mol</strong> d’électrons</>}</div>
+      {ap('autonomie') && <><div style={{ marginTop: 8, height: 26, background: '#e2e8f0', borderRadius: 13, overflow: 'hidden', maxWidth: 560 }}>
         <div style={{ width: `${Math.min(100, (TP / 200) * 100)}%`, height: '100%', background: '#0072b2' }}/></div>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 2 }}>Barre : autonomie (pleine = 200 h)</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 2 }}>Barre : autonomie (pleine = 200 h)</div></>}
     </div>);
   const planche = (
     <div style={styleBoite}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
+      {!enGuide && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Atelier :</span>
-        {[['fil', '🧵 Un fil de cuivre'], ['solution', '🧪 Une solution ionique'], ['batterie', '🔋 Une batterie']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>
+        {[['fil', '🧵 Un fil de cuivre'], ['solution', '🧪 Une solution ionique'], ['batterie', '🔋 Une batterie']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>}
       {atelier === 'fil' && atelierFil}{atelier === 'solution' && atelierSol}{atelier === 'batterie' && atelierBat}
     </div>);
   const aEssayer = (
@@ -348,7 +281,7 @@ export function SimulationDebitCharges() {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div style={{ fontSize: 14, color: KIT.txt2, marginBottom: 10, lineHeight: 1.55 }}>
-        Qu’est-ce qui circule vraiment dans un fil ou dans une solution ? Découvrez les <strong>porteurs de charge</strong>, le <strong>sens du courant</strong> et le lien entre l’<strong>intensité</strong> et le <strong>débit de charges</strong> : I = Q / Δt.</div>
+        Qu’est-ce qui circule vraiment dans un fil ou dans une solution ? Découvrez les <strong>porteurs de charge</strong>, le <strong>sens du courant</strong> et le lien entre l’<strong>intensité</strong> et le <strong>débit de charges</strong> : <FormuleEnLigne><mi>I</mi><mo>=</mo><mfrac><mrow><mi>Q</mi></mrow><mrow><mi>Δ</mi><mi>t</mi></mrow></mfrac></FormuleEnLigne>.</div>
       <div className={`dc-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {enDefi && <div style={styleBoite}><VoletDefiGen SIM={SIM} titres={TITRES} defi={defi} setDefi={setDefi} changerType={lancer} evaluer={evaluer} enonce={enonce} solution={solution} indice={indiceDefi}/></div>}
@@ -356,7 +289,7 @@ export function SimulationDebitCharges() {
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
       </div>
-      {!enDefi && <div className="dc-l2">{panneauHypo}</div>}
+      {!enDefi && ap('vitesse') && <div className="dc-l2">{panneauHypo}</div>}
       {enExplore && <div className="dc-l2">{aEssayer}{retenir}</div>}
     </div>
   );
