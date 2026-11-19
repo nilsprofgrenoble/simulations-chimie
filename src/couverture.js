@@ -101,7 +101,7 @@ export const COUVERTURE = [
     { th: OND, t: 'Diffraction d’une onde', e: 'avenir' },
     { th: OND, t: 'Interférences de deux ondes', e: 'avenir' },
     { th: OND, t: 'Effet Doppler', e: 'ok', chap: 'tg-ondes' },
-    { th: OND, t: 'Lunette astronomique afocale', e: 'avenir' },
+    { th: OND, t: 'Lunette astronomique afocale', e: 'ok', chap: 'tg-images-photons' },
     { th: OND, t: 'Photons : effet photoélectrique, cellule photovoltaïque', e: 'avenir' },
     { th: OND, t: 'Dynamique d’un circuit RC', e: 'avenir' },
   ] },

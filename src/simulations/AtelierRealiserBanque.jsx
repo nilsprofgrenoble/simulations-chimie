@@ -2167,6 +2167,41 @@ function genIrTabTG() {
     retenir: ['σ = frac(1|λ), avec λ en cm ; avec λ en µm, σ (cm⁻¹) = frac(10 000|λ).', 'Les tableaux de données donnent des intervalles typiques de nombres d’onde : une valeur peut tomber dans plusieurs lignes.', 'Avant de comparer une bande au tableau, vérifier que les deux sont dans la même grandeur et la même unité (cm⁻¹).'] };
 }
 
+// ──────────────────────── Famille « Lunette afocale » (TG, sim 171) ────────────────────────
+function genLunetteTG() {
+  // un piège doit rester hors de la tolérance de la bonne réponse (tolRel × 1,5, plancher à 2 %)
+  const tolOk = q => { const seuil = Math.max(1.5 * q.tolRel, 0.02); q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > seuil * Math.abs(q.vrai)); };
+  // nb() prend des chiffres SIGNIFICATIFS : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const dG = G => d(G, Number.isInteger(G) ? 0 : 1);
+  const FO = avecIndices('f′_obj'), FC = avecIndices('f′_oc');
+  const f1 = tire([400, 600, 700, 900, 1000]), f2 = tire([10, 20, 25, 40, 50]), G = f1 / f2;
+  const q1 = { id: 'lu0', type: 'num', q: <>Une lunette afocale a un objectif de distance focale {FO} = <b>{d(f1, 0)}{NB}mm</b> et un oculaire de distance focale {FC} = <b>{d(f2, 0)}{NB}mm</b>. Calculez son grossissement (sans unité ; donnez la valeur, éventuellement arrondie à 2 chiffres significatifs).</>, unite: '', vrai: G, tolRel: 0.05, csMin: 2,
+    aide: 'G est le rapport de la distance focale de l’objectif (f′_obj) à celle de l’oculaire (f′_oc), dans la même unité.',
+    pieges: [[f2 / f1, 'Vous avez inversé le rapport : l’objectif a la plus grande focale, donc G est supérieur à 1.'], [f1 * f2, 'G est un rapport, pas un produit des distances focales.'], [f1 + f2, 'Vous avez additionné : f′_obj + f′_oc est la distance O₁O₂, pas le grossissement.'], [f1 - f2, 'Vous avez soustrait : G est le rapport des distances focales.']],
+    expl: <>G = <Frac haut={FO} bas={FC}/> = <Frac haut={d(f1, 0)} bas={d(f2, 0)}/> = <b>{dG(G)}</b>.</> };
+  const g2 = tire([[400, 50], [600, 40], [700, 25], [900, 40], [1000, 25], [800, 20], [1200, 30]]), a = g2[0], b = g2[1];
+  const q2 = { id: 'lu1', type: 'num', q: <>Pour qu’une lunette soit afocale, le foyer image de l’objectif doit coïncider avec le foyer objet de l’oculaire. Quelle distance O₁O₂ doit séparer l’objectif ({FO} = <b>{d(a, 0)}{NB}mm</b>) et l’oculaire ({FC} = <b>{d(b, 0)}{NB}mm</b>) ? (en mm, avec au moins 3 chiffres significatifs)</>, unite: 'mm', vrai: a + b, tolRel: 0.01, csMin: 3,
+    aide: 'F′obj et Foc sont confondus : O₁O₂ = O₁F′obj + FocO₂ = f′_obj + f′_oc.',
+    pieges: [[a - b, 'Vous avez soustrait : F′obj est entre O₁ et O₂, la distance est la somme des deux distances focales.'], [a, 'Vous avez oublié f′_oc : O₁O₂ = f′_obj + f′_oc.'], [a / b, 'Vous avez divisé : le rapport est le grossissement, pas la distance entre les lentilles.'], [a * b, 'Une distance entre lentilles s’obtient en additionnant les distances focales.']],
+    expl: <>O₁O₂ = {FO} + {FC} = {d(a, 0)} + {d(b, 0)} = <b>{d(a + b, 0)}{NB}mm</b>.</> };
+  const C3 = []; [600, 700, 800, 900, 1000].forEach(F1 => [8, 10, 12, 15, 20, 25, 30, 40].forEach(F2 => { const g = F1 / F2; if (Number.isInteger(g) && g >= 15 && g <= 100 && Math.abs(g - F2) / F2 > 0.1) C3.push([F1, F2, g]); }));
+  const [f13, f23, G3] = tire(C3);
+  const q3 = { id: 'lu2', type: 'num', q: <>L’objectif d’une lunette afocale a pour distance focale {FO} = <b>{d(f13, 0)}{NB}mm</b>. On veut un grossissement <b>G = {d(G3, 0)}</b>. Quelle distance focale {FC} doit avoir l’oculaire ? (en mm, 2 chiffres significatifs)</>, unite: 'mm', vrai: f23, tolRel: 0.05, csMin: 2,
+    aide: 'G est le rapport f′_obj sur f′_oc : isolez f′_oc, qui vaut f′_obj divisée par G (f′_obj en mm).',
+    pieges: [[G3 / f13, 'Vous avez inversé le rapport : f′_oc est f′_obj divisée par G.'], [f13 * G3, 'Vous avez multiplié : f′_oc est f′_obj divisée par G.'], [f13 - G3, 'Vous avez soustrait : G est un rapport, pas une différence.'], [G3, 'C’est le grossissement demandé, pas la distance focale de l’oculaire.']],
+    expl: <>{FC} = <Frac haut={FO} bas="G"/> = <Frac haut={d(f13, 0)} bas={d(G3, 0)}/> = <b>{d(f23, 0)}{NB}mm</b>.</> };
+  const C4 = []; [[400, 50], [600, 40], [700, 50], [800, 40], [1000, 50], [400, 25], [600, 25], [800, 50]].forEach(([F1, F2]) => [0.20, 0.25, 0.30, 0.40, 0.50, 0.60].forEach(t => { const g = F1 / F2, tp = t * g; if (tp <= 18) C4.push([F1, F2, t]); }));
+  const [f14, f24, t4] = tire(C4), G4 = f14 / f24, tp4 = t4 * G4;
+  const q4 = { id: 'lu3', type: 'num', q: <>Une lunette afocale a un objectif de distance focale {FO} = <b>{d(f14, 0)}{NB}mm</b> et un oculaire de distance focale {FC} = <b>{d(f24, 0)}{NB}mm</b>. À l’œil nu, on voit un astre sous l’angle <b>θ = {d(t4, 2)}°</b>. Sous quel angle θ′ voit-on le faisceau émergent ? (en degrés, 2 chiffres significatifs)</>, unite: '°', vrai: tp4, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez d’abord G, rapport de f′_obj à f′_oc, puis utilisez G = θ′ sur θ : θ′ = G × θ (petits angles ; le résultat s’exprime dans la même unité que θ).',
+    pieges: [[t4 / G4, 'Vous avez divisé θ par G : la lunette agrandit l’angle, θ′ = G × θ.'], [t4 + G4, 'Vous avez additionné : θ′ = G × θ.'], [tp4 * Math.PI / 180, 'Valeur de θ′ en radian : la question demande des degrés.'], [t4, 'C’est l’angle à l’œil nu θ : le faisceau émergent est incliné de θ′ = G × θ.']],
+    expl: <>G = <Frac haut={d(f14, 0)} bas={d(f24, 0)}/> = {dG(G4)} ; θ′ = G × θ = {dG(G4)} × {d(t4, 2)}° = <b>{d(tp4, 1)}°</b>.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Lunette afocale : grossissement, distance entre les lentilles, choix de l’oculaire et angle du faisceau émergent.', questions: [q1, q2, q3, q4],
+    retenir: ['Lunette afocale : F′obj et Foc confondus, O₁O₂ = f′_obj + f′_oc, faisceau émergent parallèle.', <>Petits angles : θ ≈ <Frac haut="A₁B₁" bas={FO}/> et θ′ ≈ <Frac haut="A₁B₁" bas={FC}/>, donc G = <Frac haut="θ′" bas="θ"/> = <Frac haut={FO} bas={FC}/> (sans unité, supérieur à 1).</>, 'Fiche « D/f′ » : diamètre puis distance focale de l’objectif ; le diamètre n’intervient pas dans G.'] };
+}
+
 function genNewtonTG() {
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
   // nb() prend des chiffres SIGNIFICATIFS (nb(1,5 ; 1) donnerait « 2 ») : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
@@ -2456,6 +2491,7 @@ export const FAMILLES = [
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'uvv-calcul', groupe: 'Formules', titre: 'Spectrophotométrie : loi de Beer-Lambert, concentration, absorbance, dilution et concentration massique (TG)', gen: genUvvTG, domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert' },
   { id: 'irt-calcul', groupe: 'Formules', titre: 'Spectroscopie infrarouge : nombre d’onde, longueur d’onde et lignes d’un tableau de données (TG)', gen: genIrTabTG, domaine: 'Spectroscopie infrarouge : données tabulées' },
+  { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
