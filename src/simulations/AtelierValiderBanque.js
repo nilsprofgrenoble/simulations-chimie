@@ -1161,7 +1161,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'cdt-val-spectateurs', domaine: 'Conductimétrie : conductivité et titrage', niveau: 2, titre: 'À l’équivalence, la conductivité est-elle nulle ?', plausible: false,
     enonce: 'Lors du titrage de l’acide chlorhydrique par la soude, un élève écrit : « à l’équivalence, il n’y a plus ni H₃O⁺ ni HO⁻ : la solution ne contient plus d’ions, donc σ = 0 ».',
-    reperes: [['Équation de titrage', 'H₃O⁺ + HO⁻ → 2 H₂O'], ['Ions spectateurs', 'Cl⁻ (de l’acide) et Na⁺ (de la soude) ne réagissent pas'], ['À l’équivalence', 'σ passe par un minimum, non nul']],
+    reperes: [['Équation de titrage', 'H₃O⁺\u00a0+\u00a0HO⁻\u00a0→\u00a02\u00a0H₂O'], ['Ions spectateurs', 'Cl⁻ (de l’acide) et Na⁺ (de la soude) ne réagissent pas'], ['À l’équivalence', 'σ passe par un minimum, non nul']],
     ver: 'À l’équivalence, H₃O⁺ et HO⁻ ont été consommés, mais les ions spectateurs Na⁺ et Cl⁻ restent en solution : σ = λ(Na⁺) × [Na⁺] + λ(Cl⁻) × [Cl⁻], qui est positive (environ 60 mS·m⁻¹ dans les conditions de la simulation).',
     q2: 'Que penser de cette affirmation ?',
     options: [
@@ -1181,7 +1181,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'cdt-val-faible', domaine: 'Conductimétrie : conductivité et titrage', niveau: 2, titre: 'Titrage d’un acide faible : la courbe monte', plausible: true,
     enonce: 'Pour le titrage de l’acide éthanoïque par la soude, un élève écrit : « au départ, σ est faible car la solution contient surtout des molécules CH₃COOH et peu d’ions ; pendant le titrage, σ augmente, car la réaction fabrique des ions CH₃COO⁻ et Na⁺ ».',
-    reperes: [['Équation de titrage', 'CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O'], ['Acide faible', 'très peu d’ions H₃O⁺ au départ'], ['Ions apparus', 'CH₃COO⁻ (λ = 4,1) et Na⁺ (λ = 5,0) à chaque HO⁻ versé']],
+    reperes: [['Équation de titrage', 'CH₃COOH\u00a0+\u00a0HO⁻\u00a0→\u00a0CH₃COO⁻\u00a0+\u00a0H₂O'], ['Acide faible', 'très peu d’ions H₃O⁺ au départ'], ['Ions apparus', 'CH₃COO⁻ (λ = 4,1) et Na⁺ (λ = 5,0) à chaque HO⁻ versé']],
     ver: 'L’acide éthanoïque est un acide faible : peu d’ions au départ, donc σ faible. Chaque HO⁻ versé transforme une molécule en un ion CH₃COO⁻ et amène un ion Na⁺ : le nombre d’ions augmente, donc σ aussi, d’abord lentement, puis plus vite après l’équivalence (HO⁻ s’accumule).',
     q2: 'Que penser de ce raisonnement ?',
     options: [

@@ -37,13 +37,12 @@ const FKohl = <Formule><mi>σ</mi><mo>=</mo><munder><mo>∑</mo><mi>i</mi></mund
 const FConc = <Formule><msub><mi>c</mi><mi mathvariant="normal">A</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>c</mi><mi mathvariant="normal">B</mi></msub><mo>×</mo><msub><mi>V</mi><mi mathvariant="normal">E</mi></msub></mrow><mrow><msub><mi>V</mi><mi mathvariant="normal">A</mi></msub></mrow></mfrac></Formule>;
 const Ul = ({ children }) => <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>{children}</ul>;
 
-// équation de titrage : blocs insécables par terme pour passer à la ligne sur téléphone
-const Equation = ({ analyte }) => {
-  const b = t => <span style={{ whiteSpace: 'nowrap' }}>{t}</span>;
-  const eth = analyte === 'eth';
-  return <span style={{ fontSize: 17, fontWeight: 700, color: KIT.txt, lineHeight: 1.6 }}>
-    {eth ? <>{b('CH₃COOH')} {b('+ HO⁻')} {b('→ CH₃COO⁻')} {b('+ H₂O')}</> : <>{b('H₃O⁺')} {b('+ HO⁻')} {b('→ 2 H₂O')}</>}</span>;
-};
+// équation de titrage : une seule ligne, jamais coupée (la police se réduit sur téléphone) ; l'intitulé passe au-dessus si la place manque
+const Equation = ({ analyte }) => (
+  <span style={{ display: 'inline-block', whiteSpace: 'nowrap', fontSize: 'clamp(12px, 3.9vw, 17px)', fontWeight: 700, color: KIT.txt, lineHeight: 1.6 }}>
+    {analyte === 'eth' ? 'CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O' : 'H₃O⁺\u00a0+\u00a0HO⁻\u00a0→\u00a02\u00a0H₂O'}</span>);
+const LigneEquation = ({ analyte }) => (
+  <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '0 8px' }}><span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Réaction de titrage :</span><Equation analyte={analyte}/></div>);
 
 // ====================================================
 export function SimulationConductimetrie() {
@@ -88,18 +87,18 @@ export function SimulationConductimetrie() {
         expl: 'Dans une solution, le courant est un déplacement d’ions : les cations et les anions se déplacent en sens contraires et transportent la charge. L’eau sucrée ne contient presque pas d’ions, ses molécules sont neutres.',
         indice: 'Dans un fil métallique, le courant est un déplacement d’électrons. Quelles entités chargées se déplacent dans une solution ?' } },
     { id: 'lambda', titre: 'Tous les ions ne conduisent pas pareil', focus: ['donnees'],
-      texte: <>À même concentration, deux ions n’ont pas la même efficacité pour conduire le courant. On la mesure par la <strong>conductivité ionique molaire λ</strong>, en mS·m²·mol⁻¹ (à 25 °C). Le tableau de données donne par exemple λ(H₃O⁺) = 35,0 ; λ(Na⁺) = 5,0 ; λ(Cl⁻) = 7,6 ; λ(HO⁻) = 19,9.</>,
+      texte: <>À même concentration, deux ions n’ont pas la même efficacité pour conduire le courant. On la mesure par la <strong>conductivité ionique molaire λ</strong>, en mS·m²·mol⁻¹ (à 25 °C). Le tableau de données donne par exemple λ(H₃O⁺)&nbsp;=&nbsp;35,0 ; λ(Na⁺)&nbsp;=&nbsp;5,0 ; λ(Cl⁻)&nbsp;=&nbsp;7,6 ; λ(HO⁻)&nbsp;=&nbsp;19,9.</>,
       tache: { type: 'qcm', q: 'Que peut-on dire de H₃O⁺ et de Na⁺ ?', ...Q.lambda,
         expl: 'À concentration égale, la contribution d’un ion à σ est proportionnelle à son λ : H₃O⁺ (35,0) conduit 7 fois mieux que Na⁺ (5,0). λ dépend de l’ion lui-même (H₃O⁺ est très mobile dans l’eau), pas seulement de sa charge.',
         indice: 'Comparez 35,0 et 5,0 : plus λ est grand, plus l’ion contribue à la conductivité quand les concentrations sont égales.' } },
     { id: 'kohl', titre: 'La loi de Kohlrausch', focus: ['scene', 'donnees'],
-      texte: <>La conductivité σ d’une solution diluée est la somme des contributions de chaque ion : {FKohl}avec c en mol·m⁻³ (attention : 1 mol/L = 1 000 mol·m⁻³). On prépare une solution de chlorure de sodium de concentration c = 1,0×10⁻² mol/L ; NaCl est totalement dissocié en Na⁺ et Cl⁻. On donne λ(Na⁺) = 5,0 et λ(Cl⁻) = 7,6 mS·m²·mol⁻¹. L’affichage du conductimètre est masqué : prévoyez sa valeur.</>,
+      texte: <>La conductivité σ d’une solution diluée est la somme des contributions de chaque ion : {FKohl}avec c en mol·m⁻³ (attention : 1 mol/L = 1 000 mol·m⁻³). On prépare une solution de chlorure de sodium de concentration c = 1,0×10⁻² mol/L ; NaCl est totalement dissocié en Na⁺ et Cl⁻. On donne λ(Na⁺)&nbsp;=&nbsp;5,0 et λ(Cl⁻)&nbsp;=&nbsp;7,6 mS·m²·mol⁻¹. L’affichage du conductimètre est masqué : prévoyez sa valeur.</>,
       tache: { type: 'num', q: 'Conductivité σ de la solution de chlorure de sodium', unite: 'mS·m⁻¹', vrai: 126, tol: 0.05, affiche: v => nbf(v, 0), cs: 2,
-        calcul: () => ['c = 1,0×10⁻² mol/L = 10 mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³).', 'NaCl → Na⁺ + Cl⁻ : [Na⁺] = [Cl⁻] = c = 10 mol·m⁻³.', 'σ = λ(Na⁺) × [Na⁺] + λ(Cl⁻) × [Cl⁻] = 5,0 × 10 + 7,6 × 10 = 50 + 76 = 126 mS·m⁻¹.'],
+        calcul: () => ['c = 1,0×10⁻² mol/L = 10 mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³).', 'NaCl\u00a0→\u00a0Na⁺\u00a0+\u00a0Cl⁻ : [Na⁺] = [Cl⁻] = c = 10 mol·m⁻³.', 'σ = λ(Na⁺) × [Na⁺] + λ(Cl⁻) × [Cl⁻] = 5,0 × 10 + 7,6 × 10 = 50 + 76 = 126 mS·m⁻¹.'],
         pieges: [[0.126, 'Vous avez gardé c en mol/L : convertissez-la en mol·m⁻³ (× 1 000) avant d’appliquer la loi.'], [50, 'Il manque la contribution de Cl⁻ : les deux ions contribuent à σ.'], [76, 'Il manque la contribution de Na⁺ : les deux ions contribuent à σ.'], [12.6, 'Il faut c en mol·m⁻³ : 1,0×10⁻² mol/L = 10 mol·m⁻³, pas 1,0 mol·m⁻³.']],
         expl: 'σ = (5,0 + 7,6) × 10 = 126 mS·m⁻¹.', indice: 'Convertissez d’abord c en mol·m⁻³. Les deux ions ont la même concentration c : additionnez λ × c pour Na⁺ et λ × c pour Cl⁻.' } },
     { id: 'acide', titre: 'Un acide fort conduit mieux qu’un sel', focus: ['scene'],
-      texte: <>Même concentration, c = 1,0×10⁻² mol/L, mais avec de l’acide chlorhydrique (H₃O⁺, Cl⁻), totalement dissocié. On donne λ(H₃O⁺) = 35,0 et λ(Cl⁻) = 7,6 mS·m²·mol⁻¹. Le conductimètre reste masqué : calculez σ.</>,
+      texte: <>Même concentration, c = 1,0×10⁻² mol/L, mais avec de l’acide chlorhydrique (H₃O⁺, Cl⁻), totalement dissocié. On donne λ(H₃O⁺)&nbsp;=&nbsp;35,0 et λ(Cl⁻)&nbsp;=&nbsp;7,6 mS·m²·mol⁻¹. Le conductimètre reste masqué : calculez σ.</>,
       tache: { type: 'num', q: 'Conductivité σ de la solution d’acide chlorhydrique', unite: 'mS·m⁻¹', vrai: 426, tol: 0.05, affiche: v => nbf(v, 0), cs: 2,
         calcul: () => ['c = 1,0×10⁻² mol/L = 10 mol·m⁻³ ; [H₃O⁺] = [Cl⁻] = 10 mol·m⁻³ (acide fort, totalement dissocié).', 'σ = 35,0 × 10 + 7,6 × 10 = 350 + 76 = 426 mS·m⁻¹.', 'Soit environ 3,4 fois la valeur du chlorure de sodium : c’est l’ion H₃O⁺ qui domine.'],
         pieges: [[0.426, 'Vous avez gardé c en mol/L : convertissez-la en mol·m⁻³ (× 1 000).'], [350, 'Il manque la contribution de Cl⁻ : les deux ions contribuent à σ.'], [76, 'Il manque la contribution de H₃O⁺, de loin la plus grande.'], [126, 'Vous avez utilisé λ(Na⁺) : l’acide chlorhydrique contient H₃O⁺ et Cl⁻, pas Na⁺.']],
@@ -111,12 +110,12 @@ export function SimulationConductimetrie() {
         <SvgKohlrauschCarte/>
         <Ul>
           <li>La conductivité d’une solution diluée est la <strong>somme des contributions de chaque ion</strong> : {FKohl} avec c en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³).</li>
-          <li>Exemple de la simulation : à la même concentration, NaCl donne 126 mS·m⁻¹ et HCl 426 mS·m⁻¹, car λ(H₃O⁺) = 35,0 est bien plus grand que λ(Na⁺) = 5,0.</li>
+          <li>Exemple de la simulation : à la même concentration, NaCl donne 126 mS·m⁻¹ et HCl 426 mS·m⁻¹, car λ(H₃O⁺)&nbsp;=&nbsp;35,0 est bien plus grand que λ(Na⁺)&nbsp;=&nbsp;5,0.</li>
           <li>Moyen de s’en souvenir : <strong>« chaque ion pèse selon son λ »</strong>, et H₃O⁺ et HO⁻ sont les champions. Idée fausse : « tous les ions conduisent pareil ». Vrai : cela dépend de la nature de chaque ion.</li>
         </Ul></>,
       texte: <>On titre 20,0 mL d’une solution d’acide chlorhydrique de concentration c<sub>A</sub> <strong>inconnue</strong>, diluée dans 180 mL d’eau, par une solution d’hydroxyde de sodium (Na⁺, HO⁻) de concentration c<sub>B</sub> = 0,100 mol/L. La réaction de titrage s’écrit en haut de l’écran. Le conductimètre mesure σ pendant que l’on verse la soude : son affichage est maintenant visible.</>,
       tache: { type: 'qcm', q: 'Quels ions ne participent pas à la réaction de titrage (ions spectateurs) ?', ...Q.reaction,
-        expl: 'La réaction H₃O⁺ + HO⁻ → 2 H₂O consomme seulement H₃O⁺ et HO⁻. Les ions Cl⁻ (de l’acide) et Na⁺ (de la soude) ne réagissent pas : ils restent en solution, mais leur quantité ou leur concentration change à cause de l’ajout de soude.',
+        expl: 'La réaction H₃O⁺\u00a0+\u00a0HO⁻\u00a0→\u00a02\u00a0H₂O consomme seulement H₃O⁺ et HO⁻. Les ions Cl⁻ (de l’acide) et Na⁺ (de la soude) ne réagissent pas : ils restent en solution, mais leur quantité ou leur concentration change à cause de l’ajout de soude.',
         indice: 'Lisez l’équation de la réaction : quels ions y figurent ? Ceux qui n’y figurent pas sont spectateurs.' } },
     { id: 'avant', titre: 'Avant l’équivalence : σ diminue', focus: ['graphique', 'contrib'],
       texte: <>On a versé 5,0 mL de soude (point rouge). Le graphique trace σ en fonction du volume de soude versé, depuis le début ; les barres montrent la part de chaque ion dans σ.</>,
@@ -126,10 +125,10 @@ export function SimulationConductimetrie() {
     { id: 'apres', titre: 'Après l’équivalence : σ remonte', focus: ['graphique', 'contrib'],
       texte: <>On a versé 15,0 mL de soude. La courbe est passée par un minimum, puis elle remonte : il n’y a plus d’ions H₃O⁺ à consommer.</>,
       tache: { type: 'qcm', q: 'Après l’équivalence, pourquoi σ augmente-t-il de nouveau ?', ...Q.apres,
-        expl: 'Quand tout H₃O⁺ a été consommé, les ions HO⁻ versés n’ont plus rien à faire réagir : ils restent en solution avec les ions Na⁺ qui les accompagnent. Ces deux ions s’accumulent et σ augmente (λ(HO⁻) = 19,9 ; λ(Na⁺) = 5,0).',
+        expl: 'Quand tout H₃O⁺ a été consommé, les ions HO⁻ versés n’ont plus rien à faire réagir : ils restent en solution avec les ions Na⁺ qui les accompagnent. Ces deux ions s’accumulent et σ augmente (λ(HO⁻)\u00a0=\u00a019,9 ; λ(Na⁺)\u00a0=\u00a05,0).',
         indice: 'Après l’équivalence, que devient chaque ion HO⁻ que l’on verse ? Peut-il encore réagir ?' } },
     { id: 'pente', titre: 'Une pente plus forte avant qu’après', focus: ['graphique'],
-      texte: <>Le graphique est maintenant tracé jusqu’à 20 mL : la courbe descend plus vite qu’elle ne remonte. Rappel des conductivités ioniques molaires : λ(H₃O⁺) = 35,0 ; λ(Na⁺) = 5,0 ; λ(HO⁻) = 19,9 mS·m²·mol⁻¹.</>,
+      texte: <>Le graphique est maintenant tracé jusqu’à 20 mL : la courbe descend plus vite qu’elle ne remonte. Rappel des conductivités ioniques molaires : λ(H₃O⁺)&nbsp;=&nbsp;35,0 ; λ(Na⁺)&nbsp;=&nbsp;5,0 ; λ(HO⁻)&nbsp;=&nbsp;19,9 mS·m²·mol⁻¹.</>,
       tache: { type: 'qcm', q: 'Quelle comparaison explique cette différence de pente ?', ...Q.pente,
         expl: 'Avant l’équivalence, chaque mole de HO⁻ versée fait disparaître un H₃O⁺ (35,0) et apparaître un Na⁺ (5,0) : variation de 5,0 − 35,0 = −30,0. Après, chaque mole versée ajoute HO⁻ (19,9) et Na⁺ (5,0) : variation de +24,9. Comme 30,0 > 24,9, la courbe descend plus vite qu’elle ne remonte.',
         indice: 'Pour chaque mole de soude versée, additionnez les λ des ions qui apparaissent et retranchez ceux des ions qui disparaissent, avant puis après l’équivalence.' } },
@@ -176,7 +175,7 @@ export function SimulationConductimetrie() {
         pieges: [[1.5, 'C’est la quantité de HO⁻ versée : une partie a réagi avec H₃O⁺.'], [1.0, 'C’est la quantité d’ions H₃O⁺ du départ ; il faut la retrancher à la quantité de HO⁻ versée.'], [2.5, 'Il faut retrancher la quantité d’ions H₃O⁺ consommés, pas l’ajouter.']],
         expl: 'n(HO⁻) restant = 0,100 × 15,0 − 0,0500 × 20,0 = 1,50 − 1,00 = 0,50 mmol.', indice: 'Comparez la quantité de HO⁻ versée (c_B × V_B) à celle de H₃O⁺ du départ (c_A × V_A) : la réaction les consomme à parts égales, un pour un.' } },
     { id: 'faible', titre: 'Et avec un acide faible ?', focus: ['graphique', 'scene'],
-      texte: <>On recommence avec 20,0 mL d’acide éthanoïque CH₃COOH (acide faible), même concentration, titré par la même soude. La réaction s’écrit en haut de l’écran. L’acide faible est surtout sous forme de molécules (rectangles gris) ; on donne λ(CH₃COO⁻) = 4,1 mS·m²·mol⁻¹.</>,
+      texte: <>On recommence avec 20,0 mL d’acide éthanoïque CH₃COOH (acide faible), même concentration, titré par la même soude. La réaction s’écrit en haut de l’écran. L’acide faible est surtout sous forme de molécules (rectangles gris) ; on donne λ(CH₃COO⁻)&nbsp;=&nbsp;4,1 mS·m²·mol⁻¹.</>,
       tache: { type: 'qcm', q: 'Pourquoi σ augmente-t-il dès le début, alors qu’il diminuait avec l’acide chlorhydrique ?', ...Q.faible,
         expl: 'L’acide éthanoïque est surtout en molécules : il y a très peu d’ions H₃O⁺ à consommer. Chaque ion HO⁻ versé transforme une molécule en un ion CH₃COO⁻ (λ = 4,1) et amène un ion Na⁺ (λ = 5,0) : le nombre d’ions augmente, donc σ aussi. Après l’équivalence, HO⁻ (19,9) s’accumule : la pente augmente nettement.',
         indice: 'Combien d’ions H₃O⁺ y a-t-il au départ dans une solution d’acide faible ? Quels ions apparaissent quand HO⁻ réagit avec CH₃COOH ?' } },
@@ -186,7 +185,7 @@ export function SimulationConductimetrie() {
         <SvgFaibleCarte/>
         <Ul>
           <li><strong>Acide fort</strong> : la courbe est en V (σ baisse puis monte). <strong>Acide faible</strong> : σ monte dès le début, avec une pente plus forte après l’équivalence. Dans les deux cas, la rupture de pente repère V<sub>E</sub>.</li>
-          <li>Exemple de la simulation : CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O fabrique des ions CH₃COO⁻ (4,1) et Na⁺ (5,0) sans consommer de H₃O⁺ en quantité notable.</li>
+          <li>Exemple de la simulation : <span style={{ whiteSpace: 'nowrap' }}>CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O</span> fabrique des ions CH₃COO⁻ (4,1) et Na⁺ (5,0) sans consommer de H₃O⁺ en quantité notable.</li>
           <li>Moyen de s’en souvenir : <strong>« acide faible : peu d’ions au départ, on en fabrique »</strong>. Idée fausse : « un acide faible conduit mieux qu’un acide fort ». Vrai : il contient peu d’ions H₃O⁺, donc σ est faible au départ.</li>
         </Ul></>,
       texte: <>Vous savez prévoir la conductivité d’une solution avec la loi de Kohlrausch, justifier l’allure d’une courbe de titrage conductimétrique avec les conductivités ioniques molaires, repérer le volume équivalent par la rupture de pente et en déduire une concentration. Passez à l’exploration (trois acides, cinq concentrations, volume d’eau) ou tentez les deux défis.</>, tache: null },
@@ -250,7 +249,7 @@ export function SimulationConductimetrie() {
       <li><strong>Titrage rapide et idéal</strong> : réaction de titrage supposée totale dans le parcours (programme). Pour dessiner la courbe, la composition est calculée exactement (conservation de la charge, pK<sub>A</sub>(CH₃COOH / CH₃COO⁻) = 4,8, K<sub>e</sub> = 10⁻¹⁴) : H₃O⁺ et HO⁻ sont comptés, ce qui arrondit un peu la courbe autour de l’équivalence, surtout pour l’acide faible.</li>
       <li><strong>Acide titré par la soude</strong> à 0,100 mol/L, prise d’essai de 20,0 mL ; trois acides (chlorhydrique, nitrique, éthanoïque) ; les ions du sel (Na⁺ et l’anion de l’acide) sont des ions spectateurs.</li>
       <li><strong>Conductimètre idéal</strong> : la cellule est étalonnée, elle affiche directement σ en mS·m⁻¹ (1 mS·cm⁻¹ = 100 mS·m⁻¹) ; mesures sans bruit.</li>
-      <li><strong>Schéma des ions</strong> : un point représente une même quantité de matière ; le dessin n’est pas à l’échelle et ne montre pas l’agitation des ions.</li>
+      <li><strong>Schéma des ions</strong> : un point représente une même quantité de matière ; les tailles sont symboliques (Na⁺ est dessiné plus petit que H₃O⁺, les anions plus gros) pour distinguer les ions sans compter sur la couleur ; le dessin n’est pas à l’échelle et ne montre pas l’agitation des ions.</li>
       <li><strong>Limites</strong> : pas de courbe d’étalonnage (mesure d’une conductance et constante de cellule), pas de précipité ni de titrage redox, pas de variation de la température pendant le titrage.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
@@ -274,7 +273,7 @@ export function SimulationConductimetrie() {
   const montrerCell = !enGuide || deja('kohl');
   const boxScene = !dd && (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      {!enSel && <div style={{ marginBottom: 6, ...cadre('equation') }}><span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Réaction de titrage : </span><Equation analyte={analyte}/></div>}
+      {!enSel && <div style={{ marginBottom: 6, ...cadre('equation') }}><LigneEquation analyte={analyte}/></div>}
       {enExplore && <div style={aide}>Le bécher contient l’acide ; on y verse la soude de la burette. Les points sont des ions (un point = une même quantité de matière) ; le conductimètre donne σ.</div>}
       <SceneConductimetrie points={enSel ? ptsSel : pointsTit} anionId={enSel ? 'Cl' : an.anion} lecture={lectureCond} cellule={montrerCell} burette={enSel ? null : { VB }} titre={titreScene}
         legende={enSel ? (nacl ? ['Na', 'anion'] : ['H3O', 'anion']) : analyte === 'eth' ? ['acide', 'H3O', 'Na', 'HO', 'anion'] : ['H3O', 'HO', 'Na', 'anion']}
@@ -337,7 +336,7 @@ export function SimulationConductimetrie() {
       </Section>
     </div>);
   const boxDefiEq = dd && (
-    <div style={styleBoite}><span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Réaction de titrage : </span><Equation analyte={dd.analyte}/></div>);
+    <div style={styleBoite}><LigneEquation analyte={dd.analyte}/></div>);
   const boxDefiDonnees = dd && dd.type === 'sigma' && tableLambda;
 
   // ---------- réglages (exploration) ----------
