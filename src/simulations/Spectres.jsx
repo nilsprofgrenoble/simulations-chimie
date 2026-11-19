@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
 import { fr, courbeCorps, intensiteCorps, lambdaMax, tempDepuisLmax, rgbLambda, css, couleurCorps, couleurVue, courbeCorpsTerre, ETOILES, GAZ, gaz, couleurLampe, raieProche } from "./spectresModele";
 import { Pic } from "../Pictos";
+import { FicheSpectre, FicheCorps, FicheWien, FicheRaies, FicheIdentifier, FicheBilanSpec } from "./SpectresFiches";
 
 // ====================================================
 //  SIM 66 — SPECTRES D'ÉMISSION (2GT, « Ondes et signaux »)
@@ -165,55 +166,23 @@ export function SimulationSpectres() {
   const voirE = (id, c = 550) => { setAtelier('etoiles'); setEt(id); setCur(c); };
   const ETAPES = [
     { id: 'spectre', titre: 'La lumière blanche est un mélange', depart: () => voirC(3000),
-      retenirTitre: 'À RETENIR : SPECTRE ET LONGUEUR D’ONDE',
-      retenir: <>
-        <svg viewBox="0 0 360 120" role="img" aria-label="Échelle des longueurs d’onde : ultraviolet en dessous de 400 nm, domaine visible de 400 nm (violet) à 800 nm (rouge), infrarouge au-dessus de 800 nm" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <rect x="10" y="30" width="90" height="34" fill="#ede9fe" stroke="#6d28d9" /><rect x="100" y="30" width="10.5" height="34" fill="#7c3aed" /><rect x="110" y="30" width="10.5" height="34" fill="#5b4bf0" /><rect x="120" y="30" width="10.5" height="34" fill="#2563eb" /><rect x="130" y="30" width="10.5" height="34" fill="#0891b2" /><rect x="140" y="30" width="10.5" height="34" fill="#06b6d4" /><rect x="150" y="30" width="10.5" height="34" fill="#10b981" /><rect x="160" y="30" width="10.5" height="34" fill="#22c55e" /><rect x="170" y="30" width="10.5" height="34" fill="#84cc16" /><rect x="180" y="30" width="10.5" height="34" fill="#eab308" /><rect x="190" y="30" width="10.5" height="34" fill="#f59e0b" /><rect x="200" y="30" width="10.5" height="34" fill="#f97316" /><rect x="210" y="30" width="10.5" height="34" fill="#ef4444" /><rect x="220" y="30" width="10.5" height="34" fill="#dc2626" /><rect x="230" y="30" width="10.5" height="34" fill="#b91c1c" /><rect x="240" y="30" width="10.5" height="34" fill="#991b1b" /><rect x="250" y="30" width="10.5" height="34" fill="#7f1d1d" /><rect x="260" y="30" width="90" height="34" fill="#fee2e2" stroke="#b91c1c" />
-          <text x="55" y="52" textAnchor="middle" fontSize="12" fontWeight="700" fill="#6d28d9">UV</text><text x="305" y="52" textAnchor="middle" fontSize="12" fontWeight="700" fill="#b91c1c">IR</text>
-          <text x="180" y="22" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">visible</text>
-          <line x1="100" y1="64" x2="100" y2="72" stroke="#0f172a" /><line x1="260" y1="64" x2="260" y2="72" stroke="#0f172a" />
-          <text x="100" y="86" textAnchor="middle" fontSize="11.5" fill="#0f172a">400 nm</text><text x="260" y="86" textAnchor="middle" fontSize="11.5" fill="#0f172a">800 nm</text>
-          <text x="100" y="100" textAnchor="middle" fontSize="10.5" fill="#475569">violet</text><text x="260" y="100" textAnchor="middle" fontSize="10.5" fill="#475569">rouge</text>
-          <text x="8" y="114" fontSize="10.5" fill="#475569">← λ plus petite</text><text x="352" y="114" textAnchor="end" fontSize="10.5" fill="#475569">λ plus grande →</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un <strong>prisme</strong> ou un <strong>réseau</strong> disperse la lumière : on obtient un <strong>spectre</strong>. Chaque couleur pure est une <strong>radiation</strong>, repérée par sa <strong>longueur d’onde λ</strong> (en nm).</li>
-          <li>Le domaine <strong>visible</strong> va de <strong>400 nm</strong> (violet) à <strong>800 nm</strong> (rouge). Au-dessous : <strong>ultraviolet</strong> ; au-dessus : <strong>infrarouge</strong>, invisibles à l’œil.</li>
-          <li><strong>Exemple :</strong> 550 nm est visible (vert) ; 200 nm est dans l’UV ; 1 000 nm dans l’IR.</li>
-        </ul>
-      </>,
       texte: <>Un <strong>prisme</strong> ou un <strong>réseau</strong> permet de séparer les couleurs d’une lumière : c’est la <strong>dispersion</strong>. Ce que l’on obtient s’appelle un <strong>spectre</strong>. Chaque couleur pure est une <strong>radiation</strong>, repérée par sa <strong>longueur d’onde λ</strong> en nanomètres (nm). Le bandeau noir montre ce que l’on voit sur l’écran.
         <ExempleResolu>L’œil ne voit que de <strong>400 nm</strong> (violet) à <strong>800 nm</strong> (rouge). Au-dessous de 400 nm : <strong>ultraviolet</strong> (UV). Au-dessus de 800 nm : <strong>infrarouge</strong> (IR). On ne les voit pas.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Quelle longueur d’onde correspond à une radiation visible ?', options: ['550 nm', '200 nm', '1 000 nm', '2 000 nm'], bonne: 0, expl: '550 nm est entre 400 et 800 nm : c’est une radiation visible (verte). 200 nm est dans l’UV, 1 000 nm dans l’IR.', indice: "Le domaine visible est une plage assez étroite de longueurs d’onde : repère-la sur l’échelle des spectres de la simulation." } },
     { id: 'froid', titre: 'Un corps un peu chaud', depart: () => voirC(700),
+      retenirTitre: 'À RETENIR : SPECTRE ET LONGUEUR D’ONDE',
+      retenir: <FicheSpectre/>,
       texte: <>Tout objet <strong>dense</strong> (solide, liquide) assez chaud émet de la lumière : par exemple le filament d’une lampe ou un fer chauffé. Réglez la température avec le curseur, comme avec le <strong>rhéostat</strong> du TP. Ici : 700 °C. Son spectre est <strong>continu</strong> : toutes les couleurs sont présentes, mais pas avec la même intensité.</>,
       tache: { type: 'qcm', q: 'À 700 °C, de quelle couleur est la lumière perçue ?', options: ['Rouge sombre', 'Bleue', 'Blanche', 'Verte'], bonne: 0, expl: 'À basse température, le spectre est surtout fait de radiations rouges (et infrarouges) : la lumière est rouge sombre.', indice: "La couleur de la lumière émise dépend de la température. Règle la simulation sur 700 °C et observe la couleur du corps." } },
     { id: 'chaud', titre: 'En chauffant davantage', depart: () => voirC(1500),
       texte: <>Augmentez la température petit à petit jusqu’à <strong>8 000 °C</strong>. Regardez la couleur de la lampe et le spectre.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'chaud' && T >= 7500, consigne: 'Réglez une température d’au moins 7 500 °C.' } },
     { id: 'chaud2', titre: 'Plus chaud, plus de violet', depart: null,
-      retenirTitre: 'À RETENIR : LE SPECTRE D’UN CORPS CHAUD',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Température de surface</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Couleur perçue depuis la Terre</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>700 °C</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>rouge sombre</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>3 000 °C (Bételgeuse)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>rouge</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>5 700 °C (Soleil)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>jaune</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>8 000 °C (Sirius)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>blanche</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>10 000 °C (Rigel)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bleue</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un corps <strong>dense</strong> (solide, liquide) chaud émet un spectre <strong>continu</strong> : toutes les radiations, avec des intensités différentes.</li>
-          <li>Plus la température augmente, plus le <strong>maximum</strong> du spectre se déplace vers le <strong>violet</strong> (λ plus petite) : rouge → jaune → blanc → bleu.</li>
-          <li>Vers 300 °C, le maximum est dans l’<strong>infrarouge</strong> : l’œil ne voit rien (il faut environ 500 °C pour une lueur rouge sombre), mais une caméra IR le détecte.</li>
-          <li><strong>Hypothèses :</strong> modèle du corps noir ; couleurs vues depuis la Terre (l’atmosphère diffuse le bleu : vu de l’espace, le Soleil est blanc).</li>
-        </ul>
-      </>,
       texte: <>Quand la température monte, le spectre <strong>s’enrichit en radiations vers le violet</strong> et la couleur perçue passe du <strong>rouge</strong> au <strong>jaune</strong>, puis au <strong>blanc</strong>, puis au <strong>bleu</strong> pour les étoiles les plus chaudes. Le <strong>maximum</strong> de la courbe se déplace vers les petites longueurs d’onde.</>,
       tache: { type: 'qcm', q: 'Un corps devient plus chaud. Le maximum de son spectre se déplace…', options: ['vers le violet (λ plus petite)', 'vers le rouge (λ plus grande)', 'il ne bouge pas', 'il disparaît'], bonne: 0, expl: 'Plus T augmente, plus le maximum se déplace vers le violet : λ du maximum diminue.', indice: "Augmente la température dans la simulation et observe le pic du spectre : vers quelles longueurs d’onde, petites ou grandes, se déplace-t-il ?" } },
     { id: 'ir', titre: 'Un objet « froid » brille quand même', depart: () => voirC(300),
+      retenirTitre: 'À RETENIR : LE SPECTRE D’UN CORPS CHAUD',
+      retenir: <FicheCorps/>,
       texte: <>À <strong>300 °C</strong>, un objet n’est plus visible dans le noir… pourtant il émet : le maximum de son spectre est dans l’<strong>infrarouge</strong> (au-delà de 800 nm). Une caméra infrarouge le voit. Il faut environ <strong>500 °C</strong> pour que l’œil perçoive une lueur rouge sombre.</>,
       tache: { type: 'qcm', q: 'Pourquoi un objet à 300 °C n’émet-il pas de lumière visible ?', options: ['Ses radiations sont dans l’infrarouge (> 800 nm)', 'Il n’émet rien du tout', 'Ses radiations sont dans l’ultraviolet', 'Il est trop petit'], bonne: 0, expl: 'Il émet, mais dans l’infrarouge, que l’œil ne voit pas.', indice: "Où se trouve le maximum du spectre à 300 °C ? Compare cette position avec le domaine visible (environ de 400 à 800 nm)." } },
     { id: 'etoile', titre: 'La couleur d’une étoile', depart: () => voirE('betel'),
@@ -224,80 +193,37 @@ export function SimulationSpectres() {
         <ExempleResolu>Plus le Soleil est bas sur l’horizon, plus il traverse d’atmosphère : il devient orange puis rouge au coucher.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Pourquoi le Soleil paraît-il jaune depuis le sol ?', options: ['L’atmosphère diffuse surtout les radiations bleues', 'Le Soleil change de température', 'L’atmosphère émet de la lumière jaune', 'Le Soleil est vraiment jaune'], bonne: 0, expl: 'L’atmosphère retire du bleu à la lumière du Soleil : elle paraît plus jaune. Vu de l’espace, le Soleil est blanc.', indice: "Compare la lumière du Soleil dans l’espace et celle qui arrive au sol : qu’a pu lui retirer l’atmosphère en la traversant ?" } },
     { id: 'lmax', titre: 'Lire la température d’une étoile', depart: () => voirE('soleil', 485),
-      retenirTitre: 'À RETENIR : LIRE UNE TEMPÉRATURE',
-      retenir: <>
-        <Formule><msub><mi>λ</mi><mtext>max</mtext></msub><mo>×</mo><mi>T</mi><mo>≈</mo><mn>2,898</mn><mo>×</mo><msup><mn>10</mn><mn>6</mn></msup><mtext> nm·K</mtext><mspace width="1.5em"/><mi>T</mi><mtext> (K) = </mtext><mi>θ</mi><mtext> (°C) + 273</mtext></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Méthode (lecture graphique) :</strong> repérer λ du maximum sur l’axe horizontal, monter jusqu’à la courbe température/longueur d’onde, lire θ sur l’axe vertical, <strong>en °C</strong>.</li>
-          <li><strong>Exemple :</strong> maximum à 885 nm : T = 2,898 × 10⁶ / 885 ≈ 3 275 K, soit ≈ 3 000 °C (type Bételgeuse).</li>
-          <li><strong>Piège :</strong> confondre λ (en nm) et température ; oublier de convertir K et °C (écart de 273).</li>
-          <li>Lecture graphique avec une marge d’environ 8 %.</li>
-        </ul>
-      </>,
       texte: <>Le <strong>maximum</strong> du spectre du Soleil est à environ <strong>485 nm</strong> (curseur orange). Sur la <strong>courbe verte</strong> (dessinée dans l’atelier « Étoiles »), on lit la température qui correspond : on part de λ sur l’axe horizontal, on monte jusqu’à la courbe, puis on lit la température sur l’axe vertical.</>,
       tache: { type: 'num', q: 'Pour λ du maximum = 485 nm, quelle est la température de surface (en °C) ?', unite: '°C', vrai: 5700, tol: 0.08, affiche: x => String(x),
         aide: 'Lecture graphique : pars de 485 nm sur l’axe horizontal, monte jusqu’à la courbe verte, puis lis la température sur l’axe vertical (en °C).',
         pieges: [[485, 'C’est la longueur d’onde ! Il faut lire la température sur l’axe vertical.']], expl: 'On lit environ 5 700 °C : c’est bien la température de surface du Soleil.', indice: "C’est une lecture graphique, avec 8 % de marge. Attention à l’unité de température demandée : des °C, pas des kelvins." } },
     { id: 'raies', titre: 'Un gaz chaud et dilué : des raies', depart: () => voirG('mercure', 546.1),
-      retenirTitre: 'À RETENIR : SPECTRE DE RAIES',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Source</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Spectre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Aspect</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Exemple</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>corps dense chaud</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>continu</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>toutes les couleurs</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>filament, étoile</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gaz sous faible pression excité</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>de raies</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>quelques radiations sur fond noir</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>lampe au mercure, au sodium</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Une lampe à décharge n’émet que quelques <strong>radiations</strong> : des <strong>raies colorées</strong> sur fond noir.</li>
-          <li><strong>Monochromatique</strong> : une seule radiation (sodium, raie à 589 nm). <strong>Polychromatique</strong> : plusieurs radiations (mercure).</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : LIRE UNE TEMPÉRATURE',
+      retenir: <FicheWien/>,
       texte: <>Un <strong>gaz sous faible pression</strong> excité par une décharge électrique (lampe à décharge) n’émet pas un spectre continu : son spectre est fait de <strong>raies colorées</strong> bien séparées sur fond noir. Ici : une lampe au <strong>mercure</strong>.</>,
       tache: { type: 'qcm', q: 'Le spectre d’une lampe à décharge est…', options: ['un spectre de raies, avec seulement quelques radiations', 'un spectre continu', 'un spectre sans aucune radiation', 'toujours blanc'], bonne: 0, expl: 'Le gaz n’émet que quelques radiations bien précises : un spectre de raies (discontinu).', indice: "Observe le spectre d’une lampe à décharge dans la simulation : est-il un fond coloré continu ou fait de traits séparés ?" } },
     { id: 'mono', titre: 'Une seule radiation', depart: () => voirG('sodium', 589.3),
       texte: <>La lampe au <strong>sodium</strong> (éclairage de certaines rues) n’a qu’<strong>une raie</strong> jaune. On dit que sa lumière est <strong>monochromatique</strong> (une seule radiation). La lumière de la lampe au mercure, avec plusieurs raies, est <strong>polychromatique</strong>.</>,
       tache: { type: 'qcm', q: 'La lumière du sodium (une seule raie) est…', options: ['monochromatique', 'polychromatique', 'blanche', 'un spectre continu'], bonne: 0, expl: 'Une seule radiation : monochromatique.', indice: "Le préfixe « mono » signifie « un seul ». Combien de radiations la lampe au sodium émet-elle ?" } },
     { id: 'lecture', titre: 'Lire la longueur d’onde d’une raie', depart: () => voirG('sodium', 560),
+      retenirTitre: 'À RETENIR : SPECTRE CONTINU OU DE RAIES',
+      retenir: <FicheRaies/>,
       texte: <>Avec le curseur orange, placez le trait sur la raie : l’appareil vous indique sa longueur d’onde. Pour un spectrogramme papier, on lit sur l’axe horizontal.</>,
       tache: { type: 'num', q: 'Quelle est la longueur d’onde (en nm) de la raie du sodium ?', unite: 'nm', vrai: 589, tol: 0.01, affiche: x => String(x),
         aide: 'Place le curseur orange exactement sur la raie jaune : la longueur d’onde s’affiche (en nm).',
         pieges: [], expl: 'La raie du sodium est à 589 nm (jaune).', indice: "Utilise le curseur pour le repérage, en ajustant jusqu’à ce qu’il soit exactement sur la raie, puis lis la valeur affichée en nm." } },
     { id: 'identite', titre: 'Chaque gaz a ses raies', depart: () => voirG('cadmium', 480),
-      retenirTitre: 'À RETENIR : IDENTIFIER UN GAZ',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Gaz</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Raies principales (nm)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>hélium</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>448 ; 502 ; 588 ; 667 ; 708</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>sodium</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>589</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>cadmium</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>468 ; 480 ; 508 ; 643</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>mercure</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>405 ; 436 ; 546 ; 577 ; 579</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Les raies sont la <strong>carte d’identité</strong> de l’élément chimique : même gaz, mêmes raies.</li>
-          <li><strong>Méthode :</strong> relever les longueurs d’onde des raies (curseur ou axe horizontal), les comparer au tableau des spectres, retenir le gaz dont <strong>toutes</strong> les raies coïncident.</li>
-          <li><strong>Piège :</strong> se contenter d’une seule raie : deux gaz peuvent en avoir une proche (des raies voisines de 468 nm, par exemple).</li>
-        </ul>
-      </>,
       texte: <>Chaque élément chimique possède <strong>son propre spectre de raies</strong> : c’est sa « carte d’identité ». Comparez les gaz du <strong>tableau des spectres</strong> (en bas). Ici : le <strong>cadmium</strong> (raies à 468, 480, 508 et 643 nm).</>,
       tache: { type: 'qcm', q: 'Que permet un spectre de raies ?', options: ['Identifier l’élément chimique présent dans la lampe', 'Mesurer la température de la lampe', 'Savoir si la lampe est chaude', 'Voir la forme de l’atome'], bonne: 0, expl: 'Les raies sont caractéristiques de l’élément : on identifie un gaz en comparant ses raies à celles d’un tableau.', indice: "Chaque élément chimique émet ses propres raies, comme une signature. À quoi peut servir cette signature ?" } },
     { id: 'mystere', titre: 'À vous : quel est ce gaz ?', depart: () => { setAtelier('decharge'); setG('zinc'); setCur(500); setBlanche(false); },
+      retenirTitre: 'À RETENIR : IDENTIFIER UN GAZ',
+      retenir: <FicheIdentifier/>,
       texte: <>Un gaz mystère donne le spectre ci-dessous. Relevez ses raies (curseur) et comparez avec le tableau des spectres.</>,
       tache: { type: 'qcm', q: 'Les raies sont à 468, 472, 481 et 637 nm. Quel est le gaz ?', options: ['Zinc', 'Cadmium', 'Hélium', 'Sodium'], bonne: 0, expl: 'Ce sont les raies du zinc (468 ; 472 ; 481 ; 637 nm). Le cadmium a des raies à 468, 480, 508 et 643 nm.', indice: "Compare ces longueurs d’onde aux raies des spectres de référence de chaque gaz : un seul d’entre eux possède ces quatre raies." } },
-    { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
+    { id: 'fin', titre: 'Le bilan', depart: null,
       retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Visible : <strong>400 à 800 nm</strong> (violet → rouge) ; UV en dessous, IR au-dessus.</li>
-          <li><strong>Corps chaud</strong> : spectre <strong>continu</strong> ; plus il est chaud, plus le maximum va vers le violet (rouge → jaune → blanc → bleu) ; λ<sub>max</sub> × T ≈ 2,898 × 10⁶ nm·K (T en K).</li>
-          <li><strong>Gaz sous faible pression</strong> : spectre de <strong>raies</strong>, propre à chaque élément ; on l’identifie en comparant les raies à un tableau.</li>
-          <li><strong>Méthode :</strong> lire les longueurs d’onde en nm, comparer, conclure ; en °C ou en K selon la question.</li>
-          <li><strong>Pièges :</strong> croire qu’un objet « froid » n’émet rien (il émet en IR) ; confondre spectre continu et spectre de raies.</li>
-        </ul>
-      </>,
-      texte: <>Bravo : vous savez lire un spectre. Voici le bilan à garder.</>, tache: null },
+      retenir: <FicheBilanSpec/>,
+      texte: <>Vous savez lire un spectre. Voici le bilan à garder.</>, tache: null },
   ];
   useEffect(() => {
     if (mode !== 'guide') return;
