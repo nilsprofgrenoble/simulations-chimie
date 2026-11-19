@@ -1,0 +1,26 @@
+/* Couverture des programmes (accueil) : hérite la couleur du texte et le fond de la carte du niveau (--ab-ink, --ab-fond). */
+.cv { display: flex; flex-direction: column; gap: 10px; margin: 0 0 14px; }
+.cv-prog { display: flex; flex-direction: column; gap: 5px; }
+.cv-ligne { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 700 14px Inter, system-ui, sans-serif; }
+.cv-pct { font: 800 22px Outfit, Inter, sans-serif; letter-spacing: -.02em; }
+.cv-piste { display: flex; height: 14px; border: 2px solid currentColor; border-radius: 999px; overflow: hidden; box-sizing: border-box; background: transparent; }
+.cv-plein { display: block; height: 100%; background: currentColor; }
+.cv-hachure { display: block; height: 100%; background: repeating-linear-gradient(135deg, currentColor 0 3px, transparent 3px 6px); }
+.cv-detail { font: 600 13px/1.35 Inter, system-ui, sans-serif; opacity: .92; }
+.cv-note { margin: 0; font: 500 12.5px/1.4 Inter, system-ui, sans-serif; opacity: .85; }
+
+.cv-reste { margin-top: 14px; border-top: 1px solid currentColor; padding-top: 10px; }
+.cv-reste > summary { cursor: pointer; font: 800 14px Inter, system-ui, sans-serif; list-style: none; padding: 6px 0; min-height: 32px; display: flex; align-items: center; gap: 8px; }
+.cv-reste > summary::-webkit-details-marker { display: none; }
+.cv-reste > summary::before { content: '▸'; display: inline-block; transition: transform .15s ease; }
+.cv-reste[open] > summary::before { transform: rotate(90deg); }
+.cv-reste > summary:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; border-radius: 6px; }
+.cv-prog-titre { margin: 10px 0 2px; font: 800 13.5px Inter, system-ui, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+.cv-liste { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.cv-theme { display: block; margin: 8px 0 3px; font: 800 12px Inter, system-ui, sans-serif; letter-spacing: .05em; text-transform: uppercase; opacity: .85; }
+.cv-item { font: 500 13.5px/1.4 Inter, system-ui, sans-serif; }
+.cv-intitule { display: block; padding: 6px 11px; border: 1.5px dashed currentColor; border-radius: 12px; opacity: .8; cursor: default; }
+.cv-partiel .cv-intitule { border-style: solid; opacity: .9; }
+.cv-etat { display: inline-block; margin-right: 8px; padding: 0 7px; border: 1.5px solid currentColor; border-radius: 999px; font: 800 11px/1.5 Inter, system-ui, sans-serif; letter-spacing: .03em; text-transform: uppercase; vertical-align: 1px; }
+.cv-partiel .cv-etat { background: var(--ab-ink); border-color: var(--ab-ink); color: var(--ab-fond); }
+.cv-manque { display: block; margin-top: 3px; opacity: .9; }
