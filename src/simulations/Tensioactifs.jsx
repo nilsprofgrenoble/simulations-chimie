@@ -5,7 +5,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./tensioactifsModele";
 import { QCM } from "./tensioactifsQcm";
-import { SceneTensioactif, JaugeTension, CourbeTension, SvgFamilles, SvgStades, SvgMesureCMC, SvgStructureCMC, SvgEmulsion, SvgMolecule } from "./TensioactifsSchemas";
+import { SceneTensioactif, JaugeTension, CourbeTension, SvgFamilles, SvgStades, SvgMesureCMC, SvgStructureCMC, SvgMolecule } from "./TensioactifsSchemas";
 import { teteDe } from "./tensioactifsCouleurs";
 
 const SIM_ID = 146, CLE_GUIDE = 'tensioactifs-guide-v1';
@@ -31,7 +31,7 @@ const LEGENDE = {
   saturation: 'La surface est presque pleine : elle ne peut plus accueillir beaucoup de molécules.',
   micelles: 'Surface saturée : les molécules ajoutées s’associent en micelles. Les monomères libres restent à la concentration de la CMC.',
 };
-const X_FIXE = { interface: 0.02, emulsion: 0.3 };
+const X_FIXE = { interface: 0.02 };
 const ORDRE_CURSEUR = ['sature', 'cmc', 'libres', 'tension', 'conducti'];
 
 // ligne de mesure avec un bouton « ? » qui ouvre un encadré d’explication
@@ -52,7 +52,7 @@ export function SimulationTensioactifs() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
-  const [ti, setTi] = useState({ s: M.curseurDeX(0.02), fam: 'sulfate', n: 12, interf: 'air' });
+  const [ti, setTi] = useState({ s: M.curseurDeX(0.02), fam: 'sulfate', n: 12 });
   const [ouv, setOuv] = useState({});
   const enGuide = mode === 'guide', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
@@ -70,7 +70,7 @@ export function SimulationTensioactifs() {
         <SvgFamilles/>
         <ul style={puces}>
           <li>On classe les tensioactifs selon la <strong>charge de leur tête</strong> : anionique (−), cationique (+), amphotère (+ et −) ou non ionique (0).</li>
-          <li>Moyen de s’en souvenir : <strong>« la famille, c’est la charge de la tête »</strong>.</li>
+          <li>Moyen de s’en souvenir : <strong>« anionique : anion, charge − ; cationique : cation, charge + »</strong> (les amphotères portent les deux, les non ioniques aucune).</li>
         </ul></>,
       texte: <>Les têtes hydrophiles n’ont pas toutes la même charge. On distingue les tensioactifs <strong>anioniques</strong> (tête chargée −), <strong>cationiques</strong> (+), <strong>amphotères</strong> (une charge + et une charge −, donc globalement neutre) et <strong>non ioniques</strong> (aucune charge). La tête du SDS porte une charge négative.</>,
       tache: { type: 'qcm', q: 'À quelle famille appartient le SDS ?', ...QCM.famille,
@@ -129,22 +129,14 @@ export function SimulationTensioactifs() {
       texte: <>Deux tensioactifs ont la <strong>même chaîne de 12 carbones</strong> : le SDS, de tête chargée (anionique : sulfate −), et le dodécylmaltoside, de tête <strong>non chargée</strong> (non ionique : deux unités de sucre). Dans une micelle de SDS, les têtes chargées sont proches les unes des autres.</>,
       tache: { type: 'qcm', q: 'Lequel a la CMC la plus faible ?', ...QCM.tete,
         expl: 'Les têtes chargées du SDS se repoussent dans la micelle, ce qui rend l’association moins favorable : sa CMC est plus élevée (environ 8 mmol/L). Le maltoside non ionique n’a pas cette répulsion (CMC d’environ 0,15 mmol/L, tableau).', indice: 'Deux charges de même signe, proches l’une de l’autre, s’attirent ou se repoussent ?' } },
-    { id: 'emulsion', titre: 'Dans une émulsion', focus: ['scene'],
-      retenirTitre: 'À RETENIR : LE RÔLE ÉMULSIFIANT', retenir: <>
-        <SvgEmulsion/>
-        <ul style={puces}>
-          <li>À l’interface huile-eau, la <strong>tête</strong> est dans l’eau et la <strong>queue</strong> dans l’huile : la tension interfaciale baisse et les gouttes sont entourées de tensioactif.</li>
-          <li>Moyen de s’en souvenir : <strong>« tête dans l’eau, queue dans l’huile »</strong>.</li>
-        </ul></>,
-      texte: <>Ici, l’interface n’est plus eau-air mais <strong>huile-eau</strong>. Le tensioactif s’y place de la même façon : sa queue hydrophobe plonge dans l’huile.</>,
-      tache: { type: 'qcm', q: 'Comment un tensioactif aide-t-il à stabiliser une émulsion ?', ...QCM.emulsion,
-        expl: 'Il s’adsorbe à l’interface huile-eau : il abaisse la tension interfaciale et entoure chaque goutte, ce qui limite leur réunion (coalescence). C’est son rôle d’émulsifiant.', indice: 'Où se place la molécule, entre l’huile et l’eau, pour avoir chaque partie dans son milieu préféré ?' } },
     { id: 'bilan', titre: 'Bilan', focus: [],
       texte: <>Vous savez décrire un tensioactif, citer ses familles, expliquer l’adsorption à l’interface puis la formation des micelles à la CMC, lire la CMC sur une courbe, et relier la CMC à la chaîne et à la tête. En exploration, vous pouvez comparer des tensioactifs et voir comment un modèle simple prévoit leur CMC.</> },
   ];
   const IDS = ETAPES.map(e => e.id), etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? IDS[etape] : null;
   const hl = id => enGuide && ETAPES[etape].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
+  const basCurseur = () => setTi(s => ({ ...s, s: M.curseurDeX(0.02) }));   // l’étape « On ajoute du tensioactif » commence surface presque vide
+  const setEtatGuide = v => { const nv = typeof v === 'function' ? v(guide) : v; if (IDS[Math.min(nv.etape, IDS.length - 1)] === 'sature' && nv.etape !== guide.etape) basCurseur(); setGuide(nv); };
   const curseurVisible = enExplore || (enGuide && ORDRE_CURSEUR.includes(idE));
 
   // ---------- grandeurs affichées ----------
@@ -163,7 +155,6 @@ export function SimulationTensioactifs() {
     tension: () => <CourbeTension x={xCur}/>, conducti: () => <CourbeTension x={xCur}/>,
     chaine: () => <div className="ta-col"><SvgMolecule fam="sulfobetaine" n={10} titre={M.nomMolecule('sulfobetaine', 10)}/><SvgMolecule fam="sulfobetaine" n={14} titre={M.nomMolecule('sulfobetaine', 14)}/></div>,
     tete: () => <div className="ta-col"><SvgMolecule fam="sulfate" n={12} titre={M.nomMolecule('sulfate', 12)}/><SvgMolecule fam="maltoside" n={12} titre={M.nomMolecule('maltoside', 12)}/></div>,
-    emulsion: () => <SceneTensioactif x={X_FIXE.emulsion} interf="huile" tete={teteX}/>,
   }[idE]?.() ?? null;
   const MES = {
     sature: [['Concentration', libellesX(xCur), COL.orange]],
@@ -173,7 +164,7 @@ export function SimulationTensioactifs() {
     conducti: [['Concentration', libellesX(xCur), COL.orange]],
   };
   const lignesGuide = enGuide ? (MES[idE] ?? []) : [];
-  const legendeScene = enGuide ? (['interface', 'sature', 'cmc', 'libres'].includes(idE) ? LEGENDE[M.etatScene(xEff).stade] : idE === 'emulsion' ? 'Les têtes restent dans l’eau, les queues dans l’huile.' : null) : LEGENDE[e.stade];
+  const legendeScene = enGuide ? (['interface', 'sature', 'cmc', 'libres'].includes(idE) ? LEGENDE[M.etatScene(xEff).stade] : null) : LEGENDE[e.stade];
 
   // ---------- hypothèses ----------
   const hypotheses = (
@@ -186,7 +177,7 @@ export function SimulationTensioactifs() {
       <li><strong>Incertitude</strong> : la fourchette affichée est × ou ÷{NB}2 autour de la valeur prédite ; sur les points d’ajustement, l’écart typique est d’environ ×{NB}1,1 et le pire cas ×{NB}1,5.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
-  const changerMode = md => setMode(md);
+  const changerMode = md => { if (md === 'guide' && idE !== 'sature' && IDS[Math.min(guide.etape, IDS.length - 1)] === 'sature') basCurseur(); setMode(md); };
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
@@ -217,19 +208,13 @@ export function SimulationTensioactifs() {
         </select>
         <div style={{ fontSize: 13, color: KIT.txt2 }}>Une longueur de chaîne et une famille : le modèle en déduit la CMC (prolongement du programme).</div>
       </Section>
-      <Section titre={`Interface : ${ti.interf === 'air' ? 'eau-air' : 'huile-eau'}`} ouvert={!!ouv.interf} onBascule={() => bascule('interf')}>
-        <label htmlFor="ta-i" style={libelle}>Interface</label>
-        <select id="ta-i" value={ti.interf} onChange={ev => setTi(s => ({ ...s, interf: ev.target.value }))} style={selectStyle}>
-          <option value="air">eau-air (tension superficielle)</option><option value="huile">huile-eau (émulsion)</option>
-        </select>
-      </Section>
     </div>);
 
   // ---------- scène (cadre) ----------
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {enExplore && <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Ce qui se passe quand on ajoute du tensioactif</div>}
-      {enGuide ? sceneGuide : <SceneTensioactif x={xCur} interf={ti.interf} tete={teteX}/>}
+      {enGuide ? sceneGuide : <SceneTensioactif x={xCur} tete={teteX}/>}
       {legendeScene && <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>{legendeScene}</div>}
     </div>);
   const mesures = (enExplore || (enGuide && lignesGuide.length > 0)) && (
@@ -263,7 +248,7 @@ export function SimulationTensioactifs() {
     </div>);
   const courbe = enExplore && (
     <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Tension {ti.interf === 'air' ? 'superficielle' : 'interfaciale'} (forme seulement)</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Tension superficielle (forme seulement)</div>
       <CourbeTension x={xCur}/><div style={{ marginTop: 6 }}><JaugeTension x={xCur}/></div>
     </div>);
   const comparaison = enExplore && (
@@ -278,7 +263,7 @@ export function SimulationTensioactifs() {
       <li>Montez le curseur de 0,001 à 10 fois la CMC : à quel moment la surface est-elle pleine ? Les micelles apparaissent-elles avant ou après ?</li>
       <li>Passez de la famille « sulfate » à « maltoside » avec la même chaîne de 12 carbones : que devient la CMC ?</li>
       <li>Avec les sulfobétaïnes, augmentez n de 8 à 16 : de quel facteur la CMC change-t-elle à chaque carbone ajouté ?</li>
-      <li>Choisissez l’interface huile-eau : où sont maintenant les queues des molécules ?</li>
+      <li>Choisissez le maltoside, de tête non chargée : sa CMC est-elle plus haute ou plus basse que celle du sulfate de même longueur de chaîne ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -310,9 +295,9 @@ export function SimulationTensioactifs() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Tensioactifs : de la structure à la CMC</h2>
         <BoutonsModes mode={mode} setMode={changerMode} modes={['guide', 'explore']}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un <strong>tensioactif</strong> se place aux interfaces, puis s’assemble en <strong>micelles</strong> à partir de la <strong>concentration micellaire critique (CMC)</strong>. On observe ce qui se passe quand on en ajoute, puis on relie la CMC à la structure de la molécule.</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un <strong>tensioactif</strong> se place à la surface de l’eau, puis s’assemble en <strong>micelles</strong> à partir de la <strong>concentration micellaire critique (CMC)</strong>. On observe ce qui se passe quand on en ajoute, puis on relie la CMC à la structure de la molécule.</div>
       {enGuide && <div className="ta-l1 cote">
-        <div className="ta-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
+        <div className="ta-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setEtatGuide} fin={finParcours}/></div>
         <div className="ta-main">
           <div className="ta-col">
             {sceneGuide && <div className="ta-in">{scene}</div>}
