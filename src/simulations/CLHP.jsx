@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
+import { FicheChaine, FichePhaseInverse, FicheResolution, FicheGradient, FicheDebit, FichePannes } from "./CLHPFiches";
 import { Formule, Field, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Frac, Curseur, lireProgression, IndiceDefi } from "../commun";
 import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, analyse, colonne, signal, bruitLigne, positionBande, phiEntree } from "./clhpModele";
@@ -467,7 +468,10 @@ const TITRES = { ordre: 'Ordre d’élution', identifier: 'Identifier des pics',
 export function SimulationCLHP() {
   const [mode, setMode] = useState(() => modeOuverture('clhp-guide-v3'));
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('clhp-guide-v3', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [parc, setParc] = useEtatPersistant('clhp-parcours-choix', 1);
+  const [g1, setG1] = useEtatPersistant('clhp-guide-v3', VIDE), [g2, setG2] = useEtatPersistant('clhp-guide-p2', VIDE);
+  const guide = parc === 1 ? g1 : g2, setGuide = parc === 1 ? setG1 : setG2;
   const [defi, setDefi] = useState(null);
   const [p, setP] = useState({ ...PARAMS_DEFAUT });
   const maj = (k, x) => setP(q => ({ ...q, [k]: x }));
@@ -529,48 +533,16 @@ export function SimulationCLHP() {
   const th = { padding: '3px 8px', borderBottom: '1px solid #cbd5e1', textAlign: 'left', fontSize: 13 }, td = { padding: '3px 8px', fontSize: 13.5 };
   const TROIS = [CAFEINE, PHENOL, BZP], QUATRE = [CAFEINE, PARACETAMOL, BZP, TPC];
   const ref0 = colonne({ ...PARAMS_DEFAUT }).dP;
-  const ETAPES = [
+  const TOUTES = [
     { id: 'appareil', titre: 'Le chemin de l’échantillon', focus: ['appareil'],
-      retenirTitre: 'À RETENIR : LA CHAÎNE DE LA CLHP',
-      retenir: <>
-        <svg viewBox="0 0 400 130" role="img" aria-label="Chaîne d’une CLHP : l’éluant est mis sous pression par la pompe, un manomètre mesure la pression, l’injecteur introduit l’échantillon, la colonne dans son four sépare les composés, le détecteur UV les repère et trace le chromatogramme" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-<rect x="6" y="30" width="68" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="40.0" y="56.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Éluant</text><rect x="82" y="30" width="68" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="116.0" y="56.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Pompe</text><rect x="158" y="30" width="68" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="192.0" y="56.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Injecteur</text><rect x="234" y="30" width="68" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="268.0" y="50.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Colonne</text><text x="268.0" y="63.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">(four)</text><rect x="310" y="30" width="68" height="44" rx="6" fill="#e8f1fa" stroke="#0072b2" strokeWidth="1.8" /><text x="344.0" y="50.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">Détecteur</text><text x="344.0" y="63.0" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">UV</text><line x1="74" y1="52" x2="82" y2="52" stroke="#334155" strokeWidth="2" /><polygon points="82,48 86,52 82,56" fill="#334155" /><line x1="150" y1="52" x2="158" y2="52" stroke="#334155" strokeWidth="2" /><polygon points="158,48 162,52 158,56" fill="#334155" /><line x1="226" y1="52" x2="234" y2="52" stroke="#334155" strokeWidth="2" /><polygon points="234,48 238,52 234,56" fill="#334155" /><line x1="302" y1="52" x2="310" y2="52" stroke="#334155" strokeWidth="2" /><polygon points="310,48 314,52 310,56" fill="#334155" /><line x1="116" y1="74" x2="116" y2="96" stroke="#d55e00" strokeWidth="1.8" strokeDasharray="4 3" /><rect x="76" y="96" width="80" height="24" rx="6" fill="#fff4ea" stroke="#d55e00" strokeWidth="1.8" /><text x="116" y="112" textAnchor="middle" fontSize="11" fontWeight="700" fill="#d55e00">manomètre</text><line x1="192" y1="74" x2="192" y2="96" stroke="#334155" strokeWidth="1.8" /><text x="192" y="110" textAnchor="middle" fontSize="11" fill="#334155">échantillon</text><text x="6" y="18" fontSize="11" fill="#334155">débit imposé par la pompe</text><text x="394" y="18" textAnchor="end" fontSize="11" fill="#334155">→ chromatogramme</text>
-        </svg>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Élément</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rôle</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>À retenir</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>pompe</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>impose le débit</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pression = proportionnelle au débit</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>injecteur</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>introduit l’échantillon juste avant la colonne</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>volume injecté petit et reproductible</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>colonne (four)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sépare les composés</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>phase stationnaire C18 apolaire, température constante</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>détecteur UV</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>repère les composés à la sortie</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>hauteur ou aire du pic ↔ quantité</td></tr>
-          </tbody>
-        </table>
-      </>,
       texte: <>Un chromatographe liquide est une chaîne d’éléments traversés par l’éluant. La <strong>pompe</strong> impose le débit ; le <strong>manomètre</strong> indique la pression ; l’<strong>injecteur</strong> introduit l’échantillon dans le flux ; dans la <strong>colonne</strong> (thermostatée dans un four) les composés se séparent ; le <strong>détecteur UV</strong> les repère à la sortie. Cliquez sur chaque élément du schéma pour lire son rôle et ce qu’on y contrôle.</>,
       tache: { type: 'qcm', q: 'Dans quel ordre le liquide traverse-t-il ces éléments ?', options: ['pompe → injecteur → colonne → détecteur', 'injecteur → pompe → colonne → détecteur', 'pompe → colonne → injecteur → détecteur', 'pompe → injecteur → détecteur → colonne'], bonne: 0,
         expl: 'La pompe pousse l’éluant ; l’échantillon est injecté juste avant la colonne (sinon il ne serait pas séparé) ; le détecteur est placé à la sortie de la colonne.', indice: "Suivez le trajet de l’éluant : d’abord ce qui le met sous pression, puis ce qui introduit l’échantillon." } },
     { id: 'inj', titre: 'Injecter et regarder', focus: ['viz'],
+      retenirTitre: 'À RETENIR : LA CHAÎNE DE LA CLHP', retenir: <FicheChaine/>,
       texte: <>On injecte un mélange de <strong>caféine</strong>, de <strong>phénol</strong> et de <strong>benzophénone</strong>, avec un éluant à 50 % d’acétonitrile. Les bandes avancent dans la colonne, passent devant le détecteur, et le chromatogramme se trace. En phase inverse, <strong>plus un composé est apolaire, plus il est retenu</strong> par la phase C18 : il sort plus tard.</>,
       tache: { type: 'action', ok: lancement > 0 && memeMelange(TROIS), label: '▶ Mettre le mélange et injecter', faire: () => mettre(TROIS), consigne: 'Observez l’ordre de sortie des trois pics.' } },
     { id: 'ordre', titre: 'Prévoir l’ordre de sortie', focus: ['viz'],
-      retenirTitre: 'À RETENIR : PHASE INVERSE ET RÉTENTION',
-      retenir: <>
-        <Formule><msup><mi>k</mi><mo>′</mo></msup><mo>=</mo><mfrac><mrow><msub><mi>t</mi><mtext>R</mtext></msub><mo>−</mo><msub><mi>t</mi><mn>0</mn></msub></mrow><msub><mi>t</mi><mn>0</mn></msub></mfrac></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Élément</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Nature</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Conséquence</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>phase stationnaire C18</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>apolaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>retient les composés apolaires</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>éluant eau / acétonitrile</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>plus polaire que la phase</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>l’acétonitrile « décroche » les composés</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>logP élevé</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>composé apolaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>très retenu : t<sub>R</sub> grand</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>logP faible</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>composé polaire</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>peu retenu : sort tôt</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>+ d’acétonitrile</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>éluant plus fort</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>k′ plus petit, tout sort plus vite</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>t₀ est le temps mort (un composé non retenu) ; k′ = 0 pour un composé non retenu.</li>
-          <li>Dans ce modèle seul le logP classe les composés ; en réalité, liaisons hydrogène et ionisation peuvent inverser deux composés aux logP voisins.</li>
-        </ul>
-      </>,
       texte: <>En phase inverse la phase C18 est apolaire : <strong>plus un composé est apolaire (logP élevé), plus il est retenu</strong>. On peut donc prévoir l’ordre de sortie avant de simuler.
         <ExempleResolu>Le mélange précédent, éluant à 50 % d’acétonitrile.<br/>
           1. On relève les logP : caféine −0,13 ; phénol 1,48 ; benzophénone 3,18.<br/>
@@ -581,6 +553,7 @@ export function SimulationCLHP() {
         indice: 'Classez d’abord les trois logP du plus petit au plus grand : le plus petit sort en premier.',
         expl: 'logP : 0,34 < 1,63 < 2,99, donc paracétamol, puis phénacétine, puis 1,3-diphénylacétone. Dans ce modèle seul le logP compte ; dans la réalité, d’autres interactions (liaisons hydrogène, ionisation) peuvent inverser deux composés aux logP voisins.' } },
     { id: 'ident', titre: 'Identifier un pic par son temps de rétention', focus: ['viz', 'resultats'],
+      retenirTitre: 'À RETENIR : PHASE INVERSE ET RÉTENTION', retenir: <FichePhaseInverse/>,
       texte: <>En routine, on <strong>reconnaît</strong> un composé à son temps de rétention t<Ind>R</Ind>, mesuré <strong>dans les mêmes conditions</strong> (même éluant, même débit, même température, même colonne) sur un étalon injecté seul. Étalons purs à 50 % d’acétonitrile : caféine {v(trSeul(CAFEINE))} min, phénol {v(trSeul(PHENOL))} min, benzophénone {v(trSeul(BZP))} min.</>,
       tache: { type: 'qcm', q: `Dans l’échantillon inconnu, un pic sort à ${v(trSeul(BZP))} min (mêmes conditions). De quel composé s’agit-il ?`, options: ['la benzophénone', 'le phénol', 'la caféine'], bonne: 0,
         expl: 'Même t_R que l’étalon dans les mêmes conditions : c’est probablement la benzophénone. Ce n’est qu’un indice : deux composés peuvent avoir le même t_R, d’où l’intérêt de confirmer (autre éluant, détecteur à barrette de diodes ou spectromètre de masse).' } },
@@ -595,22 +568,6 @@ export function SimulationCLHP() {
         indice: 'Associez chaque pic à l’étalon de même t_R ; celui qui reste sans pic est absent.',
         expl: `Les pics correspondent au paracétamol (${v(trSeul(PARACETAMOL))} min), à la 1,3-diphénylacétone (${v(trSeul(DPA))} min) et au triphénylcarbinol (${v(trSeul(TPC))} min). Le phénol (${v(trSeul(PHENOL))} min) n’a pas de pic : il est absent. C’est exactement la démarche du défi « Identifier des pics ».` } },
     { id: 'rs', titre: 'Calculer une résolution', focus: ['resultats'],
-      retenirTitre: 'À RETENIR : LA RÉSOLUTION',
-      retenir: <>
-        <Formule><msub><mi>R</mi><mtext>s</mtext></msub><mo>=</mo><mn>1,18</mn><mo>×</mo><mfrac><mrow><msub><mi>t</mi><mtext>R2</mtext></msub><mo>−</mo><msub><mi>t</mi><mtext>R1</mtext></msub></mrow><mrow><msub><mi>W</mi><mtext>½,1</mtext></msub><mo>+</mo><msub><mi>W</mi><mtext>½,2</mtext></msub></mrow></mfrac></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Résolution</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Séparation</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>R<sub>s</sub> &lt; 1,0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pics superposés</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>1,0 ≤ R<sub>s</sub> &lt; 1,5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pics partiellement séparés</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>R<sub>s</sub> ≥ 1,5</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pics séparés</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>W<sub>½</sub> est la largeur à mi-hauteur ; le facteur 1,18 vient de pics gaussiens (W<sub>½</sub> = 2,35 σ). Résultat sans unité ; t<sub>R</sub> et W<sub>½</sub> dans la même unité (min).</li>
-          <li>Pour améliorer R<sub>s</sub> : diminuer le % d’acétonitrile (pics plus écartés) tant que le dernier pic sort dans un temps raisonnable.</li>
-        </ul>
-      </>,
       texte: <>Deux pics sont <strong>séparés</strong> quand leur résolution R<Ind>s</Ind> est au moins égale à 1,5. Le tableau des résultats la donne, mais il faut savoir la retrouver à partir du chromatogramme.
         <ExempleResolu>Caféine et paracétamol à 50 % d’acétonitrile : t<Ind>R1</Ind> = {v(exA.tr, 3)} min, t<Ind>R2</Ind> = {v(exB.tr, 3)} min, W<Ind>½,1</Ind> = {v(exA.W, 3)} min, W<Ind>½,2</Ind> = {v(exB.W, 3)} min.<br/>
           Expression littérale : R<Ind>s</Ind> = 1,18 × <Frac haut={<>t<Ind>R2</Ind> − t<Ind>R1</Ind></>} bas={<>W<Ind>½,1</Ind> + W<Ind>½,2</Ind></>}/><br/>
@@ -628,6 +585,7 @@ export function SimulationCLHP() {
           [-rsExercice, 'Signe négatif : le pic 2 sort après le pic 1, donc t_R2 − t_R1 est positif.']],
         expl: `R_s = 1,18 × (${v(moB.tr, 3)} − ${v(moA.tr, 3)}) / (${v(moA.W, 3)} + ${v(moB.W, 3)}) ≈ ${v(rsExercice)}. Comme R_s ≥ 1,5, les deux pics sont séparés. Vérifiez dans le tableau en mettant ces deux composés dans le simulateur.`, indice: "Au numérateur, la différence des temps de rétention ; au dénominateur, la somme des largeurs à mi-hauteur." } },
     { id: 'separer2', titre: 'Séparer deux composés proches', focus: ['eluant', 'viz', 'resultats'],
+      retenirTitre: 'À RETENIR : LA RÉSOLUTION', retenir: <FicheResolution/>,
       texte: <>Le réglage le plus efficace est la <strong>composition de l’éluant</strong> : moins il y a d’acétonitrile, plus les composés sont retenus (k’ plus grand) et plus leurs pics s’écartent, mais plus ils sortent tard.
         <ExempleResolu>Caféine et paracétamol sortent presque ensemble à 50 %. On essaie plusieurs compositions et on relève R<Ind>s</Ind> et le t<Ind>R</Ind> du dernier pic :
           <table style={{ borderCollapse: 'collapse', margin: '4px 0' }}><thead><tr><th style={th}>% ACN</th><th style={th}>R<Ind>s</Ind></th><th style={th}>dernier t<Ind>R</Ind> (min)</th></tr></thead>
@@ -641,44 +599,14 @@ export function SimulationCLHP() {
       tache: { type: 'qcm', q: 'En élution isocratique (composition constante), peut-on séparer les 4 pics (Rs ≥ 1,5) en moins de 10 min ?', options: ['non : ce qui sépare les premiers retarde trop les derniers', 'oui, vers 50 % d’acétonitrile', 'oui, en diminuant le débit'], bonne: 0,
         expl: 'À 36 % d’acétonitrile les deux premiers pics sont tout juste séparés, mais le dernier sort après 13 min ; à 50 % tout sort vite mais caféine et paracétamol se chevauchent. Un compromis unique n’existe pas : c’est le cas typique où l’on passe en gradient.', indice: "Ce qui sépare les premiers pics retarde-t-il aussi les derniers ?" } },
     { id: 'grad', titre: 'Passer en gradient', focus: ['eluant', 'viz', 'resultats'],
-      retenirTitre: 'À RETENIR : ISOCRATIQUE OU GRADIENT',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Mode</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Éluant</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Adapté à</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Idée</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>isocratique</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>composition constante</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>mélange aux polarités voisines</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un compromis unique : séparer les premiers retarde trop les derniers</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gradient</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>% d’acétonitrile qui augmente (départ, fin, durée)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>polarités très étalées</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>premiers pics séparés dans un éluant faible, derniers décrochés par un éluant fort</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Critère de réussite : R<sub>s</sub> ≥ 1,5 pour <strong>toutes</strong> les paires <em>et</em> un dernier pic sorti dans un temps raisonnable.</li>
-        </ul>
-      </>,
       texte: <>En <strong>gradient d’élution</strong>, la pompe augmente progressivement la proportion d’acétonitrile : les premiers composés sont séparés dans un éluant faible, les derniers sont décrochés par un éluant fort. Choisissez « gradient » et réglez le départ, la fin et la durée. Objectif (comme à l’étape précédente) : Rs ≥ 1,5 pour toutes les paires et un dernier pic avant 10 min, avec les 4 composés.</>,
       tache: { type: 'action', ok: p.grad && memeMelange(QUATRE) && rsMin >= SEUIL_RS[1] && dernierTr <= 10, label: null, consigne: memeMelange(QUATRE) ? `Rs minimal : ${v(rsMin ?? 0)} · dernier pic à ${v(dernierTr)} min${p.grad ? '' : ' · passez en gradient'}` : 'Remettez les 4 composés à l’étape précédente.' } },
     { id: 'debit', titre: 'Débit et pression', focus: ['appareil', 'eluant'],
+      retenirTitre: 'À RETENIR : ISOCRATIQUE OU GRADIENT', retenir: <FicheGradient/>,
       texte: <>Retour à l’isocratique. {bouton('Mettre le mélange de 3 composés (50 %, débit habituel)', () => mettre(TROIS))} Le <strong>manomètre</strong> lit la pression nécessaire pour faire passer l’éluant dans la colonne : ici ≈ {Math.round(ref0)} bar. Changez le débit et lisez la pression ; regardez aussi ce qui arrive aux temps de rétention.</>,
       tache: { type: 'qcm', q: 'On double le débit. Que devient la pression lue au manomètre ?', options: ['elle double à peu près', 'elle est divisée par 2', 'elle ne change pas'], bonne: 0,
         expl: 'La pression est proportionnelle au débit (loi de Darcy). C’est pourquoi on note la pression de référence de la méthode : un écart à débit identique signale un problème. Doubler le débit divise aussi les temps de rétention par 2 ; au-delà de la limite de pression de l’appareil, la pompe s’arrête.', indice: "Pour un liquide qui traverse une colonne, la pression est proportionnelle au débit." } },
     { id: 'methode', titre: 'Diagnostiquer : la méthode', focus: ['controle'],
-      retenirTitre: 'À RETENIR : DIAGNOSTIQUER UNE PANNE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Panne</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Pression</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>t<sub>R</sub></th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Pics</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>encrassement</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>↑↑</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>inchangés</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>inchangés</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>fuite</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>↓</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>tous ↑</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>R<sub>s</sub> inchangé</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>éluant mal préparé</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>décalés, surtout les derniers</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>—</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>colonne vieillie</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>=</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un peu ↓</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pics larges, R<sub>s</sub> ↓</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>bulle d’air</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>oscille</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>corrects en moyenne</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>ligne de base ondulée, pics irréguliers</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>lampe</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>=</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>corrects</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>pics petits, bruit ↑</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Ordre de lecture : <strong>pression</strong>, puis <strong>t<sub>R</sub></strong>, puis <strong>forme des pics et R<sub>s</sub></strong>, puis hauteur et bruit.</li>
-          <li>On compare toujours à la <strong>méthode validée</strong> (valeurs de référence), on ne devine pas.</li>
-        </ul>
-      </>,
       texte: <>Face à une analyse anormale, on <strong>compare la journée à la méthode validée</strong>, indicateur par indicateur, plutôt que de deviner. Le tableau « Contrôle de routine » du simulateur donne ces écarts.
         <ExempleResolu titre="Grille de lecture">
           <ul style={{ margin: '4px 0', paddingLeft: 18 }}>
@@ -716,16 +644,17 @@ export function SimulationCLHP() {
       texte: <>{bouton('Charger la situation', () => situation(TROIS, 'eluant'))} Les t<Ind>R</Ind> ont augmenté, surtout ceux des derniers pics : la benzophénone sort à {v(pEluant[2].tr)} min au lieu de {v(pRef[2].tr)} min, la caféine à peine décalée ({v(pEluant[0].tr)} au lieu de {v(pRef[0].tr)} min). La pression est presque inchangée ({Math.round(cEluant.dP)} bar au lieu de {Math.round(ref0)} bar) et les pics restent bien séparés.</>,
       tache: { type: 'qcm', q: 'Quelle est la cause la plus probable ?', options: [PANNES.eluant.nom, PANNES.fuite.nom, PANNES.vieille.nom], bonne: 0,
         expl: `Un éluant trop pauvre en acétonitrile retient davantage les composés apolaires, donc les derniers pics sont les plus retardés. Avec une fuite, tous les t_R seraient multipliés par le même facteur et la pression baisserait. Geste : ${PANNES.eluant.geste}`, indice: "Tous les t_R sont décalés mais la pression change peu : l’écoulement est normal. Que reste-t-il à incriminer ?" } },
-    { id: 'fin', titre: 'À retenir', focus: [],
-      texte: <ARetenir><ul style={{ margin: 0, paddingLeft: 18 }}>
-        <li>Chaîne : <strong>pompe → injecteur → colonne (four) → détecteur</strong>. Le manomètre donne la santé du circuit.</li>
-        <li>On <strong>identifie</strong> par t<Ind>R</Ind> (comparaison à un étalon dans les mêmes conditions) et on vérifie par une autre méthode.</li>
-        <li>Phase inverse : plus un composé est apolaire (logP élevé), plus il est retenu. Plus il y a d’acétonitrile, plus tout sort vite.</li>
-        <li>Résolution : R<Ind>s</Ind> = 1,18 (t<Ind>R2</Ind> − t<Ind>R1</Ind>) / (W<Ind>½,1</Ind> + W<Ind>½,2</Ind>) ; séparés si R<Ind>s</Ind> ≥ 1,5. Pour séparer deux composés proches, on diminue le % d’acétonitrile, tant que le dernier pic sort dans un temps raisonnable.</li>
-        <li>Un mélange aux polarités très étalées se sépare mieux en <strong>gradient</strong>.</li>
-        <li><strong>Diagnostic</strong> : comparer pression, t<Ind>R</Ind>, forme et hauteur des pics, ligne de base à la méthode validée. Pression ↑ : encrassement. Pression ↓ et t<Ind>R</Ind> ↑ : fuite. Pics larges et Rs ↓ : colonne usée. Pics petits, bruit ↑ : lampe. Pression qui oscille : bulle d’air. t<Ind>R</Ind> décalés (surtout les derniers) avec pression normale : éluant mal préparé.</li></ul></ARetenir>,
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : DÉBIT, PRESSION ET TEMPS DE RÉTENTION', retenir: <FicheDebit/>,
+      texte: <>Vous savez suivre le trajet de l’échantillon, identifier un pic par son t<Ind>R</Ind>, calculer et améliorer une résolution, choisir entre isocratique et gradient. Parcours suivant : « Diagnostiquer une panne ». Pour identifier de façon sûre, on vérifie toujours par une autre méthode (autre éluant, détecteur à barrette de diodes ou spectromètre de masse).</>,
+      tache: null },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : DIAGNOSTIQUER UNE PANNE', retenir: <FichePannes/>,
+      texte: <>Vous savez comparer une analyse à la méthode validée et remonter à la cause d’une panne. En exploration, provoquez les pannes une à une ; en défi, identifiez des pics, séparez deux composés ou diagnostiquez une situation.</>,
       tache: null },
   ];
+  const ORDRE = [['appareil', 'inj', 'ordre', 'ident', 'ident3', 'rs', 'separer2', 'iso', 'grad', 'debit', 'bilan1'], ['methode', 'bouchee', 'fuite', 'vieille', 'lampe', 'bulle', 'eluant', 'bilan2']];
+  const ETAPES = ORDRE[parc - 1].map(id => TOUTES.find(e => e.id === id));
 
   // ════════════════ DÉFIS ════════════════
   function lancer(type) { const d = nouveauDefi(type); setDefi(d); setP({ ...PARAMS_DEFAUT, pct: d.pct }); setHover(null); }
@@ -1006,7 +935,12 @@ export function SimulationCLHP() {
           {melange}
           {resultats}
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? hypotheses : null}
+        {enGuide ? <div>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+            <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Parcours :</span>
+            {[[1, '1. Séparer un mélange'], [2, '2. Diagnostiquer une panne']].map(([k, n]) => <button key={k} onClick={() => setParc(k)} style={styleBouton(parc === k, ORANGE_GUIDE)}>{n}{[g1, g2][k - 1].etape > 0 ? ` (étape ${[g1, g2][k - 1].etape + 1})` : ''}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? hypotheses : null}
       </div>
       {!enDefi && <div style={{ marginBottom: 12 }}>{hypotheses}</div>}
       {mode === 'explore' && <div className="cl-l2">{aEssayer}{retenir}</div>}
