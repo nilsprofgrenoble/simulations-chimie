@@ -15,6 +15,7 @@
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_IONS } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
+import * as PRE from "./predoTstlModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -318,6 +319,56 @@ export const ENONCES = [
         utiles: ['C', 'pH'], raisons,
         cherche: { bonne: 'Le pKa du couple, pKa = −log Ka (sans unité)', faux: ['La constante d’acidité Ka du couple (sans unité)', 'Le pH de la solution (sans unité)', 'Le coefficient de dissociation α (sans unité)'] },
         manque: null, solution: { txt: 'pKa = −log Ka, après calcul de Ka = [H₃O⁺]² divisé par (C₀ − [H₃O⁺])', val: -Math.log10(Ka), u: '' } };
+    },
+  },
+  // ───────────────────────────── pH, pKa et prédominance (TSTL, PCM) : rapport des concentrations, indicateur coloré, Beer-Lambert
+  {
+    id: 'predo-sapp-rapport', domaine: 'pH, pKa et diagramme de prédominance', titre: 'Rapport des concentrations d’un couple acide-base', noms: ['Rapport des concentrations', 'Concentration de la base'],
+    gen: () => { const c = tire(PRE.CANDIDATS_RATIO); return { id: c.id, C: c.C, pH: c.pH, V: tire([50, 100, 250]), T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const cp = PRE.COUPLES[p.id];
+      const tokens = {
+        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple AH / A⁻', cp.pKa, ''),
+        pH: tok(`${nb(p.pH, 2)}`, 'pH de la solution (imposé par un tampon)', p.pH, ''),
+        C: tok(`${nb(p.C, 3)} mol/L`, 'Concentration totale du couple [AH] + [A⁻]', p.C, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de la solution', p.V, 'mL'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+      };
+      const debut = ['Une solution de volume ', T('V'), ', à ', T('T'), ', contient un couple acide/base AH / A⁻ de pKa ', T('pKa'), ', avec une concentration totale ', T('C'), '. Son pH est imposé à ', T('pH'), '. '];
+      const r = 10 ** (p.pH - cp.pKa), A = p.C * r / (1 + r);
+      const raisons = { V: 'Le volume ne change pas les concentrations : il n’intervient pas dans le calcul.', T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le rapport [A⁻] sur [AH] des concentrations des deux formes ?'],
+        utiles: ['pKa', 'pH'], raisons: { ...raisons, C: 'La concentration totale ne change pas le rapport des deux formes : seuls le pH et le pKa le fixent.' },
+        cherche: { bonne: 'Le rapport [A⁻] sur [AH] (sans unité)', faux: ['Le pKa du couple (sans unité)', 'La concentration totale C du couple (en mol/L)', 'Le pH de la solution (sans unité)'] },
+        manque: null, solution: { txt: '[A⁻] sur [AH] = 10^(pH − pKa)', val: r, u: '' } };
+      return { tokens, derivees: ['rapport [A⁻] sur [AH] = 10^(pH − pKa)'], texte: [...debut, 'Quelle est la concentration de la forme basique A⁻ ?'],
+        utiles: ['pKa', 'pH', 'C'], raisons,
+        cherche: { bonne: 'La concentration de la base [A⁻] (en mol/L)', faux: ['La concentration de l’acide [AH] (en mol/L)', 'La concentration totale C du couple (en mol/L)', 'Le rapport [A⁻] sur [AH] (sans unité)'] },
+        manque: null, solution: { txt: '[A⁻] = C × r divisée par (1 + r), avec r = 10^(pH − pKa)', val: A, u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'predo-sapp-beer', domaine: 'pH, pKa et diagramme de prédominance', titre: 'Spectrophotométrie d’un indicateur coloré', noms: ['Concentration de la forme basique', 'pKa de l’indicateur'],
+    gen: () => { const u = PRE.tirageIndicateur(); return { ...u, lam: tire([520, 560, 590, 620]) }; },
+    build: (p, q) => {
+      const tokens = {
+        C: tok(`${nb(p.C)} mol/L`, 'Concentration totale de l’indicateur HInd + Ind⁻', p.C, 'mol/L'),
+        eps: tok(`${nb(p.eps)} L·mol⁻¹·cm⁻¹`, 'Coefficient d’absorption molaire ε de Ind⁻', p.eps, 'L/(mol·cm)'),
+        l: tok(`${nb(p.l, 2)} cm`, 'Longueur de la cuve ℓ', p.l, 'cm'),
+        lam: tok(`${p.lam} nm`, 'Longueur d’onde de mesure (seule Ind⁻ absorbe)', p.lam, 'nm'),
+        pH: tok(`${nb(p.pH, 2)}`, 'pH de la solution mesuré avec un pH-mètre', p.pH, ''),
+        A: tok(`${nb(p.abs, 3)}`, 'Absorbance A mesurée', p.abs, ''),
+      };
+      const debut = ['Une solution d’indicateur coloré HInd / Ind⁻ de concentration totale ', T('C'), ' est étudiée à la longueur d’onde ', T('lam'), ', où seule la forme basique Ind⁻ absorbe, dans une cuve de longueur ', T('l'), ' ; ε vaut ', T('eps'), '. Le pH-mètre indique ', T('pH'), ' et l’absorbance mesurée est ', T('A'), '. '];
+      const Ind = p.abs / (p.eps * p.l), r = Ind / (p.C - Ind);
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration de la forme basique [Ind⁻] ?'],
+        utiles: ['A', 'eps', 'l'], raisons: { C: 'La concentration totale n’est pas nécessaire pour appliquer la loi de Beer-Lambert à Ind⁻ seule.', lam: 'La longueur d’onde est déjà choisie : elle ne se calcule pas, elle sert seulement à savoir que Ind⁻ est seule à absorber.', pH: 'Le pH ne sert pas à convertir une absorbance en concentration.' },
+        cherche: { bonne: 'La concentration de la forme basique [Ind⁻] (en mol/L)', faux: ['La concentration totale C de l’indicateur (en mol/L)', 'Le coefficient d’absorption molaire ε (en L/(mol·cm))', 'Le pKa de l’indicateur (sans unité)'] },
+        manque: null, solution: { txt: '[Ind⁻] = A divisée par (ε × ℓ)', val: Ind, u: 'mol/L' } };
+      return { tokens, derivees: ['[Ind⁻] = A divisée par (ε × ℓ) ; [HInd] = C − [Ind⁻]'], texte: [...debut, 'Quel est le pKa de l’indicateur ?'],
+        utiles: ['C', 'eps', 'l', 'pH', 'A'], raisons: { lam: 'La longueur d’onde sert seulement à savoir que Ind⁻ absorbe seule : elle n’intervient pas dans le calcul.' },
+        cherche: { bonne: 'Le pKa du couple HInd / Ind⁻, pKa = pH − log(r), avec r = [Ind⁻] sur [HInd] (sans unité)', faux: ['La concentration de la forme basique [Ind⁻] (en mol/L)', 'Le pH de la solution (sans unité)', 'Le rapport [Ind⁻] sur [HInd] (sans unité)'] },
+        manque: null, solution: { txt: 'pKa = pH − log(r) où r = [Ind⁻] sur [HInd], avec [Ind⁻] = A divisée par (ε × ℓ) et [HInd] = C − [Ind⁻]', val: p.pH - Math.log10(r), u: '' } };
     },
   },
   // ───────────────────────────── Force des acides (TG) : K_A, pH, taux d'avancement

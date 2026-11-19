@@ -5,6 +5,7 @@ import { genTrace, genPont, genTemps } from "./RealiserC1";
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
+import * as PRE from "./predoTstlModele";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
@@ -926,10 +927,10 @@ function genDissocAlpha() {
     expl: <>[AH] = {Cs} − {sciF(m.h)} = <b>{sciF(m.AH)}{NB}mol/L</b>.</> };
   const q3 = { id: 'd2', type: 'num', q: <>Calculez le coefficient de dissociation <b>α</b> de l’acide (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: m.alpha, tolRel: 0.06, csMin: 2,
     aide: 'α = frac([A⁻]|C₀) : part de l’acide introduit qui a réagi avec l’eau, comprise entre 0 et 1.',
-    pieges: [[C / m.h, 'Le rapport est inversé : α = [A⁻] / C₀ est inférieur à 1.'], [m.alpha * 100, 'α est sans unité, entre 0 et 1 : un pourcentage s’écrit en divisant par 100.'], [1 - m.alpha, 'C’est la part d’acide qui n’a pas réagi ; α est la part qui a réagi.'], [m.h, 'C’est [A⁻] en mol/L : il faut encore le diviser par C₀.']],
+    pieges: [[C / m.h, 'Le rapport est inversé : α = frac([A⁻]|C₀) est inférieur à 1.'], [m.alpha * 100, 'α est sans unité, entre 0 et 1 : un pourcentage s’écrit en divisant par 100.'], [1 - m.alpha, 'C’est la part d’acide qui n’a pas réagi ; α est la part qui a réagi.'], [m.h, 'C’est [A⁻] en mol/L : il faut encore le diviser par C₀.']],
     expl: <>α = {avecIndices(`frac(${sciF(m.h)}|${Cs})`)} = <b>{nbF(ACF.arrondiCS(m.alpha, 2), m.alpha < 0.1 ? 3 : 2)}</b>.</> };
   const q4 = { id: 'd3', type: 'num', q: <>Sur 100 molécules d’acide introduites, combien ont réagi avec l’eau ? Exprimez le <b>pourcentage</b> α × 100 (en %, 2 chiffres significatifs).</>, unite: '%', vrai: 100 * m.alpha, tolRel: 0.06, csMin: 2,
-    aide: 'Pourcentage = α × 100, avec α = [A⁻] / C₀.',
+    aide: 'Pourcentage = α × 100, avec α = frac([A⁻]|C₀).',
     pieges: [[100 * (1 - m.alpha), 'C’est le pourcentage de molécules restées sous forme AH.'], [m.alpha, 'C’est α sans unité : multipliez par 100 pour avoir un pourcentage.'], [1000 * m.alpha, 'α × 100, pas α × 1 000.']],
     expl: <>α × 100 = <b>{nbF(100 * m.alpha, 1)}{NB}%</b> : environ {Math.round(100 * m.alpha)} molécules sur 100 ont réagi.</> };
   filtrer([q1, q2, q3, q4]);
@@ -950,7 +951,7 @@ function genDissocKa() {
     expl: <>pKa = −log({sciF(Ka1)}) = <b>{nbF(-Math.log10(Ka1), 2)}</b>.</> };
   const q3 = { id: 'k2', type: 'num', q: <>Pour la solution diluée (C₂ = {C2s}{NB}mol/L, pH = {nbF(m2.pH, 2)}), calculez le coefficient de dissociation <b>α</b> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: m2.alpha, tolRel: 0.06, csMin: 2,
     aide: 'α = frac([A⁻]|C₂) avec [A⁻] = [H₃O⁺] = 10^(−pH).',
-    pieges: [[m2.h, 'C’est [A⁻] en mol/L : il faut encore le diviser par C₂.'], [x.b.C / m2.h, 'Le rapport est inversé : α = [A⁻] / C₂ est inférieur à 1.'], [1 - m2.alpha, 'C’est la part d’acide qui n’a pas réagi.']],
+    pieges: [[m2.h, 'C’est [A⁻] en mol/L : il faut encore le diviser par C₂.'], [x.b.C / m2.h, 'Le rapport est inversé : α = frac([A⁻]|C₂) est inférieur à 1.'], [1 - m2.alpha, 'C’est la part d’acide qui n’a pas réagi.']],
     expl: <>[A⁻] = {sciF(m2.h)}{NB}mol/L ; α = {avecIndices(`frac(${sciF(m2.h)}|${C2s})`)} = <b>{nbF(ACF.arrondiCS(m2.alpha, 2), 2)}</b>, à comparer à {nbF(ACF.arrondiCS(m1.alpha, 2), m1.alpha < 0.1 ? 3 : 2)} avant la dilution : α a augmenté.</> };
   const q4 = { id: 'k3', type: 'num', q: <>Calculez la constante d’acidité <b>Ka</b> à partir de la solution diluée (sans unité, 2 chiffres significatifs). Que remarquez-vous par rapport à la solution initiale ?</>, unite: '', vrai: m2.Ka, tolRel: 0.10, csMin: 2,
     aide: '[A⁻] = [H₃O⁺] = 10^(−pH), [AH] = C₂ − [A⁻], puis Ka = frac([A⁻] × [H₃O⁺]|[AH]).',
@@ -959,6 +960,63 @@ function genDissocKa() {
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Ka = frac([A⁻] × [H₃O⁺]|[AH]) ; avec le pH : [A⁻] = [H₃O⁺] = 10^(−pH), [AH] = C₀ − [A⁻].', 'pKa = −log Ka.', 'Dilution : α augmente, Ka reste constant (propriété du couple).'] };
+}
+
+// ---------- pH, pKa et prédominance (TSTL, PCM) ----------
+// Tirages exploitables : la concentration de la base, retrouvée avec les valeurs arrondies de l'énoncé (C − [AH]), reste à 3 % de la valeur exacte
+const CAND_PREDO = PRE.CANDIDATS_RATIO.filter(({ id, C, pH }) => {
+  const r = 10 ** (pH - PRE.COUPLES[id].pKa), r2 = PRE.arrondiCS(r, 2), A = C * r / (1 + r), A2 = C - PRE.arrondiCS(C / (1 + r2), 2);
+  return A2 > 0 && Math.abs(A2 - A) / A <= 0.03;
+});
+function genPredoRapport() {
+  const { id, C, pH } = tire(CAND_PREDO), cp = PRE.COUPLES[id], pHs = nbF(pH, 2), Cs = nb(C, 2), pK = nbF(cp.pKa, 1);
+  const r = 10 ** (pH - cp.pKa), r2 = PRE.arrondiCS(r, 2), AH2 = PRE.arrondiCS(C / (1 + r2), 2), A2 = PRE.arrondiCS(C - AH2, 2), pb = 100 * r / (1 + r);
+  const rs = r2 >= 100 || r2 < 0.01 ? sciF(r2) : nbF(r2, r2 >= 10 ? 0 : r2 >= 1 ? 1 : 2);
+  const intro = `Une solution contient le couple ${cp.AH} / ${cp.A} de pKa = ${pK}, à 25${NB}°C ; sa concentration totale est C = [AH] + [A⁻] = ${Cs}${NB}mol/L et son pH est imposé à ${pHs}.`;
+  const q1 = { id: 'p0', type: 'num', q: <>Calculez le rapport <b>{avecIndices('frac([A⁻]|[AH])')}</b> des concentrations des deux formes (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: r2, tolRel: 0.05, csMin: 2,
+    aide: 'pH = pKa + log(frac([A⁻]|[AH])) donc frac([A⁻]|[AH]) = 10^(pH − pKa) (touche 10ˣ).',
+    pieges: [[pH - cp.pKa, 'C’est la différence pH − pKa, donc le logarithme du rapport : il faut prendre 10 puissance cette valeur.'], [1 / r, 'Le rapport est inversé : on demande frac([A⁻]|[AH]), base sur acide.']],
+    expl: <>{avecIndices('frac([A⁻]|[AH])')} = 10<sup>{pHs} − {pK}</sup> = 10<sup>{nbF(pH - cp.pKa, 2)}</sup> = <b>{rs}</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>On prend un rapport {avecIndices('frac([A⁻]|[AH])')} = {rs}. Avec la conservation de la matière C = [AH] + [A⁻], calculez la concentration de l’acide <b>[AH]</b> (mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: AH2, tolRel: 0.05, csMin: 2,
+    aide: 'Si r = frac([A⁻]|[AH]), alors C = [AH] × (1 + r) donc [AH] = frac(C|1 + r).',
+    pieges: [[C * r2, 'C’est C × r : le total ne peut pas dépasser C. Utilisez [AH] = C divisée par (1 + r).'], [C / r2, 'Il faut tenir compte de l’acide : le total est [AH] + [A⁻] = C, donc [AH] = C divisée par (1 + r).'], [C, 'C’est la concentration totale du couple : l’acide n’en est qu’une partie.']],
+    expl: <>[AH] = {avecIndices(`frac(${Cs}|1 + ${rs})`)} = <b>{sciF(AH2)}{NB}mol/L</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Avec [AH] = {sciF(AH2)}{NB}mol/L, calculez la concentration de la base <b>[A⁻]</b> (mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: A2, tolRel: 0.05, csMin: 2,
+    aide: 'Conservation de la matière : [A⁻] = C − [AH].',
+    pieges: [[AH2, 'C’est la concentration de l’acide [AH] ; on demande la base, [A⁻] = C − [AH].'], [C + AH2, 'Il faut soustraire [AH] à C, pas l’ajouter.'], [C * r2, 'C’est C × r, qui dépasse C ; [A⁻] est C − [AH].']],
+    expl: <>[A⁻] = {Cs} − {sciF(AH2)} = <b>{sciF(A2)}{NB}mol/L</b>.</> };
+  const q4 = { id: 'p3', type: 'num', q: <>Quel pourcentage de l’ensemble du couple est sous forme basique A⁻ ? Calculez {avecIndices('100 × frac([A⁻]|C)')} (en %, 2 chiffres significatifs, avec [A⁻] = {sciF(A2)}{NB}mol/L).</>, unite: '%', vrai: 100 * A2 / C, tolRel: 0.05, csMin: 2,
+    aide: 'Pourcentage = 100 × frac([A⁻]|C).',
+    pieges: [[100 * AH2 / C, 'C’est le pourcentage de la forme acide AH ; on demande celui de la base.'], [A2 / C, 'C’est une fraction : multipliez par 100 pour obtenir un pourcentage.'], [100 * A2, 'Il faut diviser [A⁻] par C avant de multiplier par 100.'], [100 * r2, 'C’est le rapport multiplié par 100 ; la part de la base se calcule dans l’ensemble du couple : 100 × frac([A⁻]|C).']],
+    expl: <>{avecIndices(`100 × frac(${sciF(A2)}|${Cs})`)} = <b>{nbF(100 * A2 / C, pb > 10 && pb < 90 ? 0 : 1)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['frac([A⁻]|[AH]) = 10^(pH − pKa).', 'Conservation de la matière : C = [AH] + [A⁻], donc [AH] = frac(C|1 + r).', 'À pH = pKa ± 1 : un facteur 10 entre les deux formes.'] };
+}
+function genPredoBeer() {
+  const u = PRE.tirageIndicateur(), Cs = sciF(u.C), eps = sciF(u.eps), ls = nbF(u.l, 2), pHs = nbF(u.pH, 2), As = nbF(u.abs, 3);
+  const Ind = u.abs / (u.eps * u.l), Ind2 = PRE.arrondiCS(Ind, 2), HInd2 = PRE.arrondiCS(u.C - Ind2, 2), r2 = PRE.arrondiCS(Ind2 / HInd2, 2), pKa2 = u.pH - Math.log10(r2);
+  const rs = r2 >= 10 ? nbF(r2, 0) : nbF(r2, r2 >= 1 ? 1 : 2);
+  const intro = `Un indicateur coloré HInd / Ind⁻ de concentration totale C = ${Cs}${NB}mol/L est étudié à 25${NB}°C dans une cuve de longueur ℓ = ${ls}${NB}cm, à la longueur d’onde où seule Ind⁻ absorbe (ε = ${eps}${NB}L·mol⁻¹·cm⁻¹). À pH = ${pHs}, l’absorbance mesurée est A = ${As}.`;
+  const q1 = { id: 'b0', type: 'num', q: <>Avec la loi de Beer-Lambert A = ε · ℓ · [Ind⁻], calculez <b>[Ind⁻]</b> (mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: Ind2, tolRel: 0.05, csMin: 2,
+    aide: '[Ind⁻] = A divisée par (ε × ℓ), avec ℓ en cm et ε en L·mol⁻¹·cm⁻¹ : le résultat est en mol/L.',
+    pieges: [[u.abs * u.eps * u.l, 'Il faut diviser A par ε × ℓ, pas les multiplier.'], [u.abs / u.eps, 'Il manque la longueur de cuve : [Ind⁻] = A divisée par (ε × ℓ).'], [u.eps * u.l / u.abs, 'Le rapport est inversé : [Ind⁻] = A divisée par (ε × ℓ).']],
+    expl: <>[Ind⁻] = {avecIndices(`frac(${As}|${eps} × ${ls})`)} = <b>{sciF(Ind2)}{NB}mol/L</b>.</> };
+  const q2 = { id: 'b1', type: 'num', q: <>Avec [Ind⁻] = {sciF(Ind2)}{NB}mol/L, calculez la concentration de la forme acide <b>[HInd]</b> (mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: HInd2, tolRel: 0.08, csMin: 2,
+    aide: 'Conservation de la matière : C = [HInd] + [Ind⁻], donc [HInd] = C − [Ind⁻].',
+    pieges: [[u.C, 'C’est la concentration totale C : il faut retrancher [Ind⁻].'], [Ind2, 'C’est [Ind⁻] ; on demande la forme acide, [HInd] = C − [Ind⁻].'], [u.C + Ind2, 'Il faut soustraire [Ind⁻] à C, pas l’ajouter.']],
+    expl: <>[HInd] = {Cs} − {sciF(Ind2)} = <b>{sciF(HInd2)}{NB}mol/L</b>.</> };
+  const q3 = { id: 'b2', type: 'num', q: <>Calculez le rapport <b>{avecIndices('frac([Ind⁻]|[HInd])')}</b> (sans unité, 2 chiffres significatifs) avec [Ind⁻] = {sciF(Ind2)}{NB}mol/L et [HInd] = {sciF(HInd2)}{NB}mol/L.</>, unite: '', vrai: r2, tolRel: 0.05, csMin: 2,
+    aide: 'Divisez la concentration de la forme basique par celle de la forme acide.',
+    pieges: [[HInd2 / Ind2, 'Le rapport est inversé : on demande frac([Ind⁻]|[HInd]), base sur acide.'], [Ind2 - HInd2, 'Un rapport est un quotient, pas une différence.'], [Ind2 / u.C, 'Au dénominateur, c’est [HInd], pas la concentration totale C.']],
+    expl: <>{avecIndices('frac([Ind⁻]|[HInd])')} = {avecIndices(`frac(${sciF(Ind2)}|${sciF(HInd2)})`)} = <b>{rs}</b>.</> };
+  const q4 = { id: 'b3', type: 'num', q: <>Avec pH = {pHs} et le rapport {avecIndices('frac([Ind⁻]|[HInd])')} = {rs}, calculez le <b>pKa</b> de l’indicateur (sans unité, 3 chiffres significatifs).</>, unite: '', vrai: pKa2, tolRel: 0.02, csMin: 2,
+    aide: 'pH = pKa + log(frac([Ind⁻]|[HInd])) donc pKa = pH − log(frac([Ind⁻]|[HInd])).',
+    pieges: [[u.pH + Math.log10(r2), 'Le signe est inversé : pKa = pH − log(frac([Ind⁻]|[HInd])).'], [u.pH, 'Vous avez oublié le terme log : le pKa n’est égal au pH que si [Ind⁻] = [HInd].'], [u.pH - r2, 'Il faut le logarithme décimal du rapport, pas le rapport lui-même.']],
+    expl: <>pKa = {pHs} − log({rs}) = <b>{nbF(pKa2, 2)}</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Beer-Lambert : A = ε · ℓ · [Ind⁻], donc [Ind⁻] = A divisée par (ε × ℓ).', 'Conservation de la matière : [HInd] = C − [Ind⁻].', 'pKa = pH − log(frac([Ind⁻]|[HInd])).'] };
 }
 
 // ───────────── Couples acide-base (TG) : rapport des formes, pourcentage, concentration, pH pour une proportion donnée ─────────────
@@ -1290,6 +1348,8 @@ export const FAMILLES = [
   { id: 'chir-configuration', groupe: 'Formules', titre: 'Carbone asymétrique, miroir et configuration R/S (terminale STL)', gen: genChiraliteConfig, domaine: 'Chiralité et configuration R/S' },
   { id: 'dissoc-alpha', groupe: 'Formules', titre: 'Acide faible : conservation de la matière et coefficient de dissociation (terminale STL)', gen: genDissocAlpha, domaine: 'Acide faible, coefficient de dissociation et Ka' },
   { id: 'dissoc-ka', groupe: 'Formules', titre: 'Constante d’acidité, pKa et dilution d’un acide faible (terminale STL)', gen: genDissocKa, domaine: 'Acide faible, coefficient de dissociation et Ka' },
+  { id: 'predo-rapport', groupe: 'Formules', titre: 'pH, pKa et rapport des concentrations d’un couple acide-base (terminale STL)', gen: genPredoRapport, domaine: 'pH, pKa et diagramme de prédominance' },
+  { id: 'predo-beer', groupe: 'Formules', titre: 'Indicateur coloré : spectrophotométrie et pKa (terminale STL)', gen: genPredoBeer, domaine: 'pH, pKa et diagramme de prédominance' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },
