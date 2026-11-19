@@ -113,3 +113,13 @@ export function etatScene(x) {
 // curseur 0..100 → c / CMC (échelle logarithmique de 0,001 à 10)
 export const xDeCurseur = s => 10 ** (-3 + 4 * s / 100);
 export const curseurDeX = x => Math.round((Math.log10(x) + 3) / 4 * 100);
+
+// nom de la molécule choisie (famille + nombre de carbones de la chaîne)
+const PREF = { 8: 'octyl', 9: 'nonyl', 10: 'décyl', 11: 'undécyl', 12: 'dodécyl', 13: 'tridécyl', 14: 'tétradécyl', 15: 'pentadécyl', 16: 'hexadécyl' };
+export function nomMolecule(id, n) {
+  const p = PREF[n] ?? `${n} C`;
+  return ({
+    sulfate: `${p}sulfate de sodium${n === 12 ? ' (SDS)' : ''}`, ammonium: `bromure de ${p}triméthylammonium`, maltoside: `${p}-β-D-maltoside`,
+    glucamide: `MEGA-${n} (N-méthylglucamide)`, phosphine: `APO-${n} (oxyde de ${p}diméthylphosphine)`, sulfobetaine: `SB3-${n} (sulfobétaïne)`,
+  })[id];
+}
