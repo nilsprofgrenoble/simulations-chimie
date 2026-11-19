@@ -4,6 +4,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi } from "../commun";
 import { G, ASTRES, astre, gravite, forceGrav, fr, sci, PX_CM, ECHELLES, caracteristiques, conforme } from "./forcesModele";
 import { Pic } from "../Pictos";
+import { Schema, Fl, T, TV, TL, GRIS, BLEU, NOIR } from "./Travail";
 
 // ====================================================
 //  SIM 59 — MODÉLISER UNE ACTION MÉCANIQUE PAR UNE FORCE (2GT, « Mouvement et interactions »)
@@ -26,6 +27,9 @@ const alea = l => l[Math.floor(Math.random() * l.length)];
 const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 // vecteur : lettre surmontée d'une flèche (le caractère « F⃗ » combiné n'existe pas dans toutes les polices)
 const Vec = ({ c = 'F' }) => <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic' }}>{c}<span aria-hidden="true" style={{ position: 'absolute', left: '0.1em', top: '-0.5em', fontSize: '0.8em', fontStyle: 'normal', lineHeight: 1 }}>→</span><span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}> (vecteur)</span></span>;
+// étiquette SVG « F⃗ auteur/receveur » (lettre-vecteur + indice) ; fin = le texte se termine en x
+const EtqF = ({ x, y, c, ind, s = 20, fin = false, suite = '' }) => { const w = 15 + ind.length * 9.6, x0 = fin ? x - w : x;
+  return <g><TV x={x0} y={y} c={c} s={s} halo>F</TV><text x={x0 + 14} y={y + 6} fontSize="17" fontWeight="700" fill={c}>{ind}</text>{suite && <text x={x0 + w} y={y} fontSize="18" fontWeight="800" fill={c}>{suite}</text>}</g>; };
 const Fn = ({ a, r, vec = false }) => <span style={{ fontStyle: 'italic' }}>{vec ? <Vec/> : 'F'}<sub>{a}/{r}</sub></span>;
 
 // ---------- scènes du vecteur force ----------
@@ -61,7 +65,7 @@ function Fleche({ x, y, dx, dy, couleur = FORCE, ep = 5 }) {
 }
 
 // plan d'une scène avec grille en cm et vecteur (modifiable à la souris ou fixe)
-function PlancheForce({ scene, vec, setVec, editable, echelle, fantome }) {
+function PlancheForce({ scene, vec, setVec, editable, echelle, fantome, aide = true }) {
   const sc = SCENES[scene], svg = useRef(null), drag = useRef(false), pt = sc.point;
   const { dx, dy } = dxdy(vec.L, vec.ang);
   const pos = e => { const r = svg.current.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; };
@@ -80,91 +84,97 @@ function PlancheForce({ scene, vec, setVec, editable, echelle, fantome }) {
       onPointerMove={e => { if (drag.current && editable) mettre(e); }} onPointerUp={() => { drag.current = false; }} onPointerCancel={() => { drag.current = false; }}>
       {lignes}
       <Decor id={scene}/>
-      <text x="10" y="18" fontSize="13" fontWeight="700" fill="#334155">Échelle : 1 cm ↔ {echelle} N</text>
-      <g stroke="#334155" strokeWidth="2"><line x1="10" y1="28" x2={10 + PX_CM} y2="28"/><line x1="10" y1="23" x2="10" y2="33"/><line x1={10 + PX_CM} y1="23" x2={10 + PX_CM} y2="33"/></g>
-      <text x={10 + PX_CM + 6} y="33" fontSize="12" fill="#334155">1 cm</text>
+      <text x="10" y="20" fontSize="18" fontWeight="700" fill="#334155">Échelle : 1 cm ↔ {echelle} N</text>
+      <g stroke="#334155" strokeWidth="2"><line x1="10" y1="34" x2={10 + PX_CM} y2="34"/><line x1="10" y1="29" x2="10" y2="39"/><line x1={10 + PX_CM} y1="29" x2={10 + PX_CM} y2="39"/></g>
+      <text x={10 + PX_CM + 6} y="40" fontSize="16" fill="#334155">1 cm</text>
       {vec.L > 0 && <g><Fleche x={pt.x} y={pt.y} dx={dx} dy={dy}/>
-        <text x={pt.x + dx + (dx >= 0 ? 8 : -8)} y={pt.y + dy + (dy > 0 ? 18 : -8)} textAnchor={dx >= 0 ? 'start' : 'end'} fontSize="15" fontWeight="800" fill={FORCE}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="11">{sc.auteur}/{sc.receveur}</tspan></text></g>}
+        <EtqF x={clamp(dx >= 0 ? pt.x + dx + (editable ? 20 : 8) : pt.x + dx - 8 - (15 + (sc.auteur.length + sc.receveur.length + 1) * 8.6), 6, W - 150)} y={clamp(dy > 0 ? pt.y + dy + 22 : pt.y + dy - 10, 62, H - 10)} c={FORCE} ind={`${sc.auteur}/${sc.receveur}`}/></g>}
       {fantome && <g opacity="0.5"><Fleche x={pt.x} y={pt.y} dx={dxdy(fantome.L, fantome.ang).dx} dy={dxdy(fantome.L, fantome.ang).dy} couleur="#15803d" ep={7}/></g>}
       <circle cx={pt.x} cy={pt.y} r="5" fill="#0f172a"/>
       {editable && <circle cx={pt.x + dx} cy={pt.y + dy} r="13" fill="#fff" fillOpacity="0.35" stroke={FORCE} strokeWidth="2.5" strokeDasharray="4 3" style={{ cursor: 'grab' }}
         onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); drag.current = true; }}/>}
-      {F === 0 && <text x={W / 2} y={H - 12} textAnchor="middle" fontSize="13" fill="#64748b">Glissez la pointe de la flèche (ou utilisez les curseurs) pour tracer la force.</text>}
+      {F === 0 && aide && <text x={W / 2} y={H - 12} textAnchor="middle" fontSize="17" fill="#64748b">Glissez la pointe de la flèche pour tracer la force.</text>}
     </svg>);
 }
 
 // ---------- actions réciproques ----------
 // Les deux forces ont le même point de contact (le crochet entre A et B, ou les mains des patineurs) et des sens opposés.
-function Reciproques({ scene, F, mA, mB, montrer }) {
+// montrer : false (aucune), 'une' (seulement la force que l'énoncé cite en premier) ou true (les deux forces)
+function Reciproques({ scene, F, mA, mB, montrer, masqueA = false }) {
+  const une = montrer === true || montrer === 'une', deux = montrer === true;
   if (scene === 'dyno') {
     const L = F * 10, cx = 193, cy = 100;
     return (
-      <svg viewBox={`0 0 ${W} 220`} width="100%" role="img" aria-label={`Deux dynamomètres accrochés, tirés avec ${F} N`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-        <rect x="10" y="50" width="16" height="100" fill="#94a3b8" stroke="#475569" strokeWidth="2"/><text x="8" y="168" fontSize="12" fill="#334155">support fixe</text>
+      <svg viewBox={`0 0 ${W} 232`} width="100%" role="img" aria-label={`Deux dynamomètres accrochés, tirés vers la droite par une main${masqueA ? '' : ` avec ${F} N`}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+        <rect x="10" y="50" width="16" height="100" fill="#94a3b8" stroke="#475569" strokeWidth="2"/><text x="8" y="176" fontSize="16" fill="#334155">support fixe</text>
         {[['A', 26], ['B', 200]].map(([n, x0]) => <g key={n}>
           <rect x={x0} y="88" width="160" height="24" rx="6" fill="#f1f5f9" stroke="#334155" strokeWidth="2.5"/>
-          <rect x={x0 + 96} y="56" width="56" height="26" rx="4" fill="#fff" stroke="#334155" strokeWidth="1.5"/><text x={x0 + 124} y="75" textAnchor="middle" fontSize="14" fontWeight="800" fill="#0f172a">{fr(F, 1)} N</text>
-          <text x={x0 + 30} y="75" textAnchor="middle" fontSize="20" fontWeight="800" fill="#0f172a">{n}</text></g>)}
+          <rect x={x0 + 84} y="52" width="74" height="30" rx="4" fill="#fff" stroke="#334155" strokeWidth="1.5"/><text x={x0 + 121} y="74" textAnchor="middle" fontSize="19" fontWeight="800" fill="#0f172a">{n === 'A' && masqueA ? '?' : `${fr(F, 1)} N`}</text>
+          <text x={x0 + 30} y="76" textAnchor="middle" fontSize="24" fontWeight="800" fill="#0f172a">{n}</text></g>)}
         <circle cx={cx} cy={cy} r="7" fill="#fff" stroke="#334155" strokeWidth="2.5"/>
-        <line x1="360" y1="100" x2="420" y2="100" stroke="#334155" strokeWidth="3"/><circle cx="436" cy="100" r="16" fill="#fde2d4" stroke="#334155" strokeWidth="2"/><text x="436" y="105" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">main</text>
-        {montrer && <g>
-          <Fleche x={cx} y={cy} dx={L} dy={0} couleur={FORCE} ep={4.5}/>
-          <text x={cx + L + 8} y={cy - 12} fontSize="14" fontWeight="800" fill={FORCE}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">B/A</tspan></text>
-          <Fleche x={cx} y={cy} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/>
-          <text x={cx - L - 8} y={cy + 30} textAnchor="end" fontSize="14" fontWeight="800" fill={FORCE2}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">A/B</tspan></text>
-          <text x="10" y="205" fontSize="12.5" fill="#334155">Échelle : 1 cm ↔ 4 N. F<tspan fontSize="9" dy="3">B/A</tspan><tspan dy="-3"> s’applique sur A, F</tspan><tspan fontSize="9" dy="3">A/B</tspan><tspan dy="-3"> sur B : au crochet qui les relie.</tspan></text></g>}
+        <line x1="360" y1="100" x2="410" y2="100" stroke="#334155" strokeWidth="3"/><circle cx="440" cy="100" r="28" fill="#fde2d4" stroke="#334155" strokeWidth="2"/><text x="440" y="106" textAnchor="middle" fontSize="16" fontWeight="700" fill="#334155">main</text>
+        {une && <g><Fleche x={cx} y={cy} dx={L} dy={0} couleur={FORCE} ep={4.5}/><EtqF x={cx + 8} y={cy + 52} c={FORCE} ind="B/A"/></g>}
+        {deux && <g><Fleche x={cx} y={cy} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/><EtqF x={cx - 8} y={cy + 52} c={FORCE2} ind="A/B" fin/></g>}
+        {une && <text x="10" y="222" fontSize="16" fill="#334155">Échelle : 1 cm ↔ 4 N</text>}
       </svg>);
   }
-  const C = { x: 280, y: 112 }, L = F / 80 * PX_CM;
+  const C = { x: 280, y: 124 }, L = F / 80 * PX_CM;
   const sA = 0.85 + (mA - 40) / 200, sB = 0.85 + (mB - 40) / 200;
-  const bonhomme = (x, s, nom, m) => {            
-    const sol = 190, ph = sol - 50 * s, ts = sol - 95 * s;   // hanches, épaules
+  const bonhomme = (x, s, nom, m) => {
+    const sol = 200, ph = sol - 50 * s, ts = sol - 95 * s;   // hanches, épaules
     return <g {...TRAIT}><circle cx={x} cy={ts - 16 * s} r={13 * s} fill="#fde68a"/><line x1={x} y1={ts - 3 * s} x2={x} y2={ph}/>
       <line x1={x} y1={ph} x2={x - 16 * s} y2={sol}/><line x1={x} y1={ph} x2={x + 16 * s} y2={sol}/><line x1={x} y1={ts + 2} x2={C.x} y2={C.y}/>
-      <text x={x} y={sol + 18} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f172a" stroke="none">{nom} ({m} kg)</text></g>;
+      <text x={x} y={sol + 22} textAnchor="middle" fontSize="17" fontWeight="700" fill="#0f172a" stroke="none">{nom} ({m} kg)</text></g>;
   };
   return (
-    <svg viewBox={`0 0 ${W} 220`} width="100%" role="img" aria-label="Deux patineurs en contact : A pousse B" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-      <line x1="10" y1="190" x2="550" y2="190" stroke="#94a3b8" strokeWidth="3"/>
+    <svg viewBox={`0 0 ${W} 232`} width="100%" role="img" aria-label="Deux patineurs en contact : A pousse B" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+      <line x1="10" y1="200" x2="550" y2="200" stroke="#94a3b8" strokeWidth="3"/>
       {bonhomme(205, sA, "A", mA)}{bonhomme(355, sB, "B", mB)}
       <circle cx={C.x} cy={C.y} r="5" fill="#0f172a"/>
-      {montrer && <g>
-        <Fleche x={C.x} y={C.y} dx={L} dy={0} couleur={FORCE} ep={4.5}/><text x={C.x + 8} y={52} fontSize="14" fontWeight="800" fill={FORCE}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">A/B</tspan> = {fr(F, 0)} N</text>
-        <Fleche x={C.x} y={C.y} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/><text x={C.x - 8} y={52} textAnchor="end" fontSize="14" fontWeight="800" fill={FORCE2}>{fr(F, 0)} N = F<tspan dx="-9" dy="-9" fontSize="10">→</tspan><tspan dx="0" dy="13" fontSize="10">B/A</tspan></text></g>}
-      <text x="10" y="18" fontSize="12.5" fill="#334155">A pousse B : leurs mains se touchent au point noir. Échelle : 1 cm ↔ 80 N.</text>
+      {une && <EtqF x={C.x + 8} y={70} c={FORCE} ind="A/B" suite={` = ${fr(F, 0)} N`}/>}
+      {deux && <EtqF x={C.x - 192} y={70} c={FORCE2} ind="B/A" suite={` = ${fr(F, 0)} N`}/>}
+      {une && <Fleche x={C.x} y={C.y} dx={L} dy={0} couleur={FORCE} ep={4.5}/>}
+      {deux && <Fleche x={C.x} y={C.y} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/>}
+      <text x="10" y="20" fontSize="16" fill="#334155">A pousse B : leurs mains se touchent au point noir.</text>
+      <text x="10" y="40" fontSize="16" fill="#334155">Échelle : 1 cm ↔ 80 N</text>
     </svg>);
 }
 
 // ---------- poids et gravitation ----------
-const nicesc = F => { const L = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]; return L.find(s => F / s <= 4) || 10000; };
-function PanneauPoids({ pw, setPw, verrouAstre }) {
-  const masque = verrouAstre;          // en défi : on cache les valeurs calculées (elles donneraient la réponse)
+const nicesc = F => { const L = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000]; return L.find(s => F / s <= 2.5) || 10000; };
+function PanneauPoids({ pw, setPw, verrouAstre, mode = 'explore', etape = '' }) {
+  const enDefi = verrouAstre, enExplore = mode === 'explore', enGuide = mode === 'guide';
+  const suiteGuide = ['grav', 'iss'].includes(etape);          // on ne dévoile le calcul qu'à partir de l'étape où il sert de mesure
+  const montreCalcul = !enDefi && (enExplore || suiteGuide), montreAlt = !enDefi && (enExplore || suiteGuide), montreMasse = !enDefi && enExplore;
   const a = astre(pw.astre), h = pw.h * 1000, g0 = gravite(a), g = gravite(a, h), F = forceGrav(a, pw.m, h);
-  const E = nicesc(F), L = Math.min(4.2, F / E);
+  const E = nicesc(F), L = Math.min(2.6, F / E);
+  const donnees = [[`Masse de ${a.nom}`, `${sci(a.M)} kg`], [`Rayon de ${a.nom}`, `${sci(a.R)} m`], ['Constante de gravitation G', `${sci(G)} N·m²·kg⁻²`]];
   return (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Poids et attraction gravitationnelle</div>
-      {!verrouAstre && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>{ASTRES.map(x => <button key={x.id} onClick={() => setPw(s => ({ ...s, astre: x.id }))} style={stylePetitBouton(pw.astre === x.id, '#0b4f94')}>{x.Nom}</button>)}</div>}
+      {enExplore && <label style={{ display: 'block', fontSize: 13.5, fontWeight: 600, marginBottom: 8 }}>Astre
+        <span style={{ display: 'block', fontSize: 12.5, color: KIT.txt2, fontWeight: 400 }}>L’astre qui attire l’objet : sa masse et son rayon fixent g.</span>
+        <select value={pw.astre} onChange={e => setPw(x => ({ ...x, astre: e.target.value }))} aria-label="Astre" style={{ width: '100%', minHeight: 42, padding: '6px 8px', fontSize: 14.5, borderRadius: 8, border: `1.5px solid ${KIT.bord}`, background: '#fff' }}>
+          {ASTRES.map(x => <option key={x.id} value={x.id}>{x.Nom}</option>)}</select></label>}
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 220px' }}>
           <svg viewBox="0 0 220 250" width="100%" style={{ maxWidth: 260, display: 'block', margin: '0 auto', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }} role="img" aria-label={`Un objet de ${fr(pw.m, 1)} kg attiré par ${a.nom}`}>
             <ellipse cx="110" cy="330" rx="200" ry="150" fill={a.id === 'terre' ? '#bfdbfe' : a.id === 'lune' ? '#e2e8f0' : '#fecaca'} stroke="#475569" strokeWidth="2"/>
             <text x="110" y="205" textAnchor="middle" fontSize="14" fontWeight="700" fill="#334155">{a.Nom}</text>
-            <circle cx="110" cy="70" r="12" fill="#fde68a" stroke="#92400e" strokeWidth="2"/><text x="110" y="50" textAnchor="middle" fontSize="12" fill="#334155">objet : {fr(pw.m, 1)} kg</text>
+            <circle cx="110" cy="70" r="12" fill="#fde68a" stroke="#92400e" strokeWidth="2"/><text x="110" y="46" textAnchor="middle" fontSize="13" fill="#334155">objet : {fr(pw.m, 1)} kg</text>
             <Fleche x={110} y={70} dx={0} dy={L * PX_CM} couleur={FORCE} ep={4.5}/>
-            <text x="128" y={70 + L * PX_CM * 0.6} fontSize="13" fontWeight="800" fill={FORCE}>F<tspan dx="-9" dy="-9" fontSize="10">→</tspan></text>
-            {!masque && <text x="8" y="240" fontSize="11.5" fill="#334155">Échelle : 1 cm ↔ {fr(E, E < 1 ? 1 : 0)} N</text>}</svg>
+            <TV x={128} y={70 + L * PX_CM * 0.6} c={FORCE} s={16}>{pw.h === 0 ? 'P' : 'F'}</TV>
+            {!enDefi && <text x="8" y="240" fontSize="12" fill="#334155">Échelle : 1 cm ↔ {fr(E, E < 1 ? 1 : 0)} N</text>}</svg>
         </div>
         <div style={{ flex: '1 1 260px', fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-          {!masque && <label style={{ display: 'block', fontWeight: 600 }}>Masse de l’objet : <strong>{fr(pw.m, 1)} kg</strong>
-            <input type="range" min="0.1" max="100" step="0.1" value={pw.m} aria-label="Masse de l’objet en kilogrammes" onChange={e => setPw(s => ({ ...s, m: +e.target.value }))} style={{ width: '100%' }}/></label>}
-          {!masque && <label style={{ display: 'block', fontWeight: 600 }}>Altitude : <strong>{pw.h} km</strong>
-            <input type="range" min="0" max="3000" step="50" value={pw.h} aria-label="Altitude en kilomètres" onChange={e => setPw(s => ({ ...s, h: +e.target.value }))} style={{ width: '100%' }}/></label>}
-          <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%', marginTop: 6 }}><tbody>
-            {[[`Masse de ${a.nom}`, `${sci(a.M)} kg`], [`Rayon de ${a.nom}`, `${sci(a.R)} m`], ['Constante de gravitation G', `${sci(G)} N·m²·kg⁻²`],
-              ...(masque ? [] : [[`Intensité de la pesanteur à la surface g₀ = G·M/R²`, `${fr(g0, 2)} N/kg`],
-              [`À l’altitude ${pw.h} km : g = G·M/(R + h)²`, `${fr(g, 2)} N/kg`]])].map(([l, v]) => <tr key={l} style={{ borderTop: '1px solid #e2e8f0' }}><td style={{ padding: '3px 6px 3px 0', color: KIT.txt2 }}>{l}</td><td style={{ fontWeight: 700 }}>{v}</td></tr>)}</tbody></table>
-          {!masque && <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, background: '#f0fdfa', border: '1.5px solid #5eead4' }}>
+          {montreMasse && <label style={{ display: 'block', fontWeight: 600 }}>Masse de l’objet : <strong>{fr(pw.m, 1)} kg</strong>
+            <input type="range" min="0.1" max="100" step="0.1" value={pw.m} aria-label="Masse de l’objet en kilogrammes" onChange={e => setPw(x => ({ ...x, m: +e.target.value }))} style={{ width: '100%' }}/></label>}
+          {montreAlt && <label style={{ display: 'block', fontWeight: 600 }}>Altitude : <strong>{pw.h} km</strong>
+            <input type="range" min="0" max="3000" step="50" value={pw.h} aria-label="Altitude en kilomètres" onChange={e => setPw(x => ({ ...x, h: +e.target.value }))} style={{ width: '100%' }}/></label>}
+          {(!enGuide || suiteGuide) && <table style={{ borderCollapse: 'collapse', fontSize: 13.5, width: '100%', marginTop: 6 }}><tbody>
+            {[...donnees, ...(montreCalcul ? [[`Intensité de la pesanteur à la surface g₀ = G·M/R²`, `${fr(g0, 2)} N/kg`],
+              [`À l’altitude ${pw.h} km : g = G·M/(R + h)²`, `${fr(g, 2)} N/kg`]] : [])].map(([l, v]) => <tr key={l} style={{ borderTop: '1px solid #e2e8f0' }}><td style={{ padding: '3px 6px 3px 0', color: KIT.txt2 }}>{l}</td><td style={{ fontWeight: 700 }}>{v}</td></tr>)}</tbody></table>}
+          {montreCalcul && <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, background: '#f0fdfa', border: '1.5px solid #5eead4' }}>
             Force exercée par {a.nom} sur l’objet : <strong>F = {fr(F, F < 10 ? 2 : 1)} N</strong><br/>
             <span style={{ fontSize: 13, color: KIT.txt2 }}>F = G × M × m / (R + h)² = {fr(pw.m * g, F < 10 ? 2 : 1)} N, soit m × g.{pw.h === 0 ? ' À la surface, c’est le poids de l’objet.' : ' Elle diminue quand l’altitude augmente, mais ne disparaît pas.'}</span></div>}
         </div>
@@ -192,7 +202,7 @@ function nouveauDefi(type, prec) {
   let a, m; do { a = alea(ASTRES); m = alea([0.5, 1, 2, 5, 10, 20, 50]); } while (prec && prec.type === 'poids' && prec.astre === a.id && prec.m === m);
   return { ...base, astre: a.id, m, variante: alea(['g', 'grav']) };
 }
-const attendu = d => (d.type === 'poids' ? forceGrav(astre(d.astre), d.m) : d.F);
+const attendu = d => (d.type === 'poids' ? (d.variante === 'g' ? d.m * Math.round(gravite(astre(d.astre)) * 10) / 10 : forceGrav(astre(d.astre), d.m)) : d.F);
 function evaluerDefi(d, vec) {
   if (d.type === 'tracer') {
     const { dx, dy } = dxdy(vec.L, vec.ang), r = conforme({ F: d.F, angle: d.ang, echelle: d.echelle }, dx, dy);
@@ -263,12 +273,12 @@ export function SimulationForcesVecteurs() {
   const pwEff = enDefi && defi.type === 'poids' ? { ...pw, astre: defi.astre, m: defi.m, h: 0 } : pw;
 
   const voirVec = (scene, echelle, L = 0, ang = 0, lecture = false) => { setAtelier('vecteur'); setVec({ scene, echelle, L, ang, lecture, verrou: true }); };
-  const voirRecip = (scene, F = 4) => { setAtelier('recip'); setRecip(r => ({ ...r, scene, F, montrer: true })); };
   const voirPoids = (a, m = 1, h = 0) => { setAtelier('poids'); setPw({ astre: a, m, h }); };
   const sc = SCENES[vecEff.scene];
   const car = caracteristiques(...Object.values(dxdy(vecEff.L, vecEff.ang)), vecEff.echelle);
   const bon = (scene, echelle, F, ang) => atelier === 'vecteur' && vec.scene === scene && vec.echelle === echelle && conforme({ F, angle: ang, echelle }, ...Object.values(dxdy(vec.L, vec.ang))).okL && conforme({ F, angle: ang, echelle }, ...Object.values(dxdy(vec.L, vec.ang))).okAng;
 
+  const Cle = ({ children }) => <div style={{ margin: '8px 0', padding: '6px 10px', background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: 8, fontWeight: 700, fontSize: 14.5, lineHeight: 1.45 }}>Phrase-clé : {children}</div>;
   const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, '#4338ca'), margin: '6px 0' }}>{label}</button>;
   const ETAPES = [
     { id: 'action', titre: 'Une action mécanique', depart: () => voirVec('ballon', 100, 0, 0),
@@ -276,33 +286,37 @@ export function SimulationForcesVecteurs() {
         <ExempleResolu>Le pied du footballeur frappe le ballon : l’auteur est le <strong>pied</strong>, le receveur est le <strong>ballon</strong>. L’action modifie la trajectoire et la vitesse du ballon.</ExempleResolu>
         À vous : une main pousse une porte.</>,
       tache: { type: 'qcm', q: 'Une main pousse une porte. Quel est le receveur de l’action ?', options: ['la porte', 'la main', 'la Terre', 'le sol'], bonne: 0, expl: 'La main est l’auteur (elle crée l’action) ; la porte est le receveur (elle la subit).', indice: "L’auteur crée l’action, le receveur la subit. Sur quel objet la main agit-elle ?" } },
+    { id: 'types', titre: 'Contact ou à distance ?', depart: () => voirVec('caisse', 100, 3, 0),
+      texte: <>Une action mécanique peut s’exercer <strong>par contact</strong> (la main touche la caisse, le sol soutient la caisse, un fil tire un objet) ou <strong>à distance</strong> (la Terre attire une pomme sans la toucher, un aimant attire un clou).
+        <ExempleResolu>Un livre est posé sur une table. La <strong>table</strong> exerce sur lui une action <strong>de contact</strong> (le support le pousse vers le haut). La <strong>Terre</strong> exerce sur lui une action <strong>à distance</strong> (son poids, vers le bas). Un seau suspendu à une corde : la corde le tire (contact), la Terre l’attire (à distance).</ExempleResolu>
+        À vous : un aimant attire une bille d’acier posée à 5 cm de lui.</>,
+      tache: { type: 'qcm', q: 'L’action de l’aimant sur la bille d’acier est une action…', options: ['à distance', 'de contact', 'nulle', 'de contact, car la bille est posée sur la table'], bonne: 0, expl: 'L’aimant ne touche pas la bille : c’est une action à distance, comme l’attraction de la Terre sur une pomme.', indice: 'L’aimant touche-t-il la bille ? Compare avec la Terre, qui attire une pomme sans la toucher.' } },
     { id: 'force', titre: 'On modélise l’action par une force', depart: () => voirVec('caisse', 100, 3, 0),
-      retenirTitre: 'À RETENIR : LE VECTEUR FORCE',
-      retenir: <>
-        <svg viewBox="0 0 360 160" role="img" aria-label="Un homme pousse une caisse : le vecteur force part du point d’application sur la caisse, est horizontal, dirigé vers la droite, et sa longueur de 3 cm représente 300 N avec l’échelle 1 cm pour 100 N" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="10" y1="120" x2="350" y2="120" stroke="#334155" strokeWidth="2" />
-          <rect x="180" y="72" width="50" height="48" fill="#fde68a" stroke="#92400e" strokeWidth="2" />
-          <circle cx="140" cy="62" r="8" fill="#fff" stroke="#334155" strokeWidth="2" />
-          <path d="M 140 70 L 140 98 M 140 98 L 130 120 M 140 98 L 150 120 M 140 80 L 180 96" stroke="#334155" strokeWidth="2" fill="none" />
-          <line x1="180" y1="96" x2="280" y2="96" stroke="#c2410c" strokeWidth="3" /><polygon points="290,96 278,90 278,102" fill="#c2410c" />
-          <circle cx="180" cy="96" r="4" fill="#c2410c" />
-          <text x="150" y="42" fontSize="11" fontWeight="700" fill="#c2410c">point d’application</text><line x1="196" y1="46" x2="182" y2="92" stroke="#c2410c" strokeWidth="1.2" />
-          <text x="240" y="84" fontSize="12" fontWeight="700" fill="#c2410c">F</text>
-          <text x="180" y="138" textAnchor="middle" fontSize="11" fill="#334155">direction : horizontale · sens : vers la droite</text>
-          <text x="180" y="153" textAnchor="middle" fontSize="11" fill="#334155">intensité 300 N : flèche de 3 cm (échelle 1 cm ↔ 100 N)</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Une <strong>action mécanique</strong> (de l’<strong>auteur</strong> sur le <strong>receveur</strong>) se modélise par une <strong>force</strong>, représentée par un <strong>vecteur</strong>.</li>
-          <li><strong>4 caractéristiques :</strong> point d’application, direction, sens, intensité (en newtons, N).</li>
-          <li><strong>Exemple :</strong> un homme pousse une caisse avec 300 N, horizontalement vers la droite ; avec 1 cm ↔ 100 N, la flèche mesure 300 / 100 = <strong>3 cm</strong>.</li>
-        </ul>
-      </>,
       texte: <>En physique, on <strong>modélise</strong> une action mécanique par une <strong>force</strong>, représentée par un <strong>vecteur</strong> (une flèche). Une force est caractérisée par <strong>4 informations</strong> : son <strong>point d’application</strong>, sa <strong>direction</strong>, son <strong>sens</strong>, son <strong>intensité</strong> (en newtons, N). La <strong>longueur</strong> de la flèche est proportionnelle à l’intensité : il faut une <strong>échelle</strong>.
         <ExempleResolu>Un homme pousse une caisse avec une force de 300 N, horizontale, vers la droite. Échelle : <strong>1 cm ↔ 100 N</strong>. Longueur de la flèche : 300 / 100 = <strong>3 cm</strong>. La flèche part du point de contact.
           {bouton('Voir cet exemple', () => voirVec('caisse', 100, 3, 0))}</ExempleResolu>
         À vous : l’homme <strong>tire</strong> maintenant la caisse <strong>vers la gauche</strong> avec 200 N (même échelle).</>,
       tache: { type: 'action', ok: bon('caisse', 100, 200, 180), consigne: 'Tracez le vecteur force : 200 N, horizontale, vers la gauche, à l’échelle 1 cm ↔ 100 N (glissez la pointe de la flèche ou utilisez les curseurs).' } },
     { id: 'lire', titre: 'Lire une intensité sur un dessin', depart: () => voirVec('ballon', 40, 2.5, 0, true),
+      retenirTitre: 'À RETENIR : LE VECTEUR FORCE',
+      retenir: <>
+        <Schema aria="Un homme pousse une caisse : le vecteur force part du point d’application sur la caisse, il est horizontal, dirigé vers la droite, et mesure 3 cm avec l’échelle 1 cm pour 100 N" h={176}>
+          <line x1="10" y1="124" x2="350" y2="124" stroke={GRIS} strokeWidth="2"/>
+          <rect x="170" y="76" width="60" height="48" fill="#fde68a" stroke="#92400e" strokeWidth="2"/>
+          <circle cx="110" cy="64" r="8" fill="#fff" stroke={NOIR} strokeWidth="2"/>
+          <path d="M 110 72 L 110 100 M 110 100 L 100 124 M 110 100 L 120 124 M 110 84 L 170 100" stroke={NOIR} strokeWidth="2" fill="none"/>
+          <Fl x1={170} y1={100} x2={290} y2={100} c="#c2410c" w={4}/><circle cx="170" cy="100" r="4" fill="#c2410c"/>
+          <TV x={236} y={90} c="#c2410c" s={17}>F</TV>
+          <T x={10} y={30} s={15} c="#c2410c" w={700}>point d’application</T><line x1="70" y1="38" x2="166" y2="96" stroke="#c2410c" strokeWidth="1.5"/>
+          <T x={180} y={150} a="middle" s={15}>direction horizontale · sens vers la droite</T>
+          <T x={180} y={170} a="middle" s={15} c="#c2410c" w={700}>3 cm avec 1 cm ↔ 100 N : 300 N</T>
+        </Schema>
+        <Cle>Une force : un point, une direction, un sens, une intensité.</Cle>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une <strong>action mécanique</strong> (de l’<strong>auteur</strong> sur le <strong>receveur</strong>) se modélise par une <strong>force</strong>, dessinée par un <strong>vecteur</strong>.</li>
+          <li><strong>4 caractéristiques :</strong> point d’application, direction, sens, intensité (en newtons, N).</li>
+        </ul>
+      </>,
       texte: <>Inversement, on peut <strong>retrouver l’intensité</strong> d’une force à partir de la longueur de sa flèche : intensité = longueur (en cm) × valeur d’1 cm.
         <ExempleResolu>Avec l’échelle 1 cm ↔ 100 N, une flèche de 3 cm représente 3 × 100 = 300 N.</ExempleResolu>
         À vous : utilisez la grille (1 carreau = 1 cm) pour mesurer la flèche du tir. Échelle : <strong>1 cm ↔ 40 N</strong>.</>,
@@ -325,7 +339,18 @@ export function SimulationForcesVecteurs() {
     { id: 'retenir1', titre: 'À retenir : la force', depart: null,
       retenirTitre: 'À RETENIR : ÉCHELLE ET NOTATIONS',
       retenir: <>
-        <Formule><mi>L</mi><mtext> (cm) = </mtext><mfrac><mi>F</mi><mtext>échelle</mtext></mfrac><mspace width="1.5em"/><mi>F</mi><mtext> (N) = </mtext><mi>L</mi><mo>×</mo><mtext>échelle (N par cm)</mtext></Formule>
+        <Schema aria="Échelle : une flèche de 4 cm avec l’échelle 1 cm pour 20 N représente une force de 80 N" h={176}>
+          <T x={10} y={26} s={15} w={700}>échelle : 1 cm ↔ 20 N</T>
+          <Fl x1={40} y1={70} x2={200} y2={70} c="#c2410c" w={4}/><circle cx="40" cy="70" r="4" fill="#c2410c"/><TV x={110} y={60} c="#c2410c" s={17}>F</TV>
+          <line x1="40" y1="92" x2="200" y2="92" stroke={NOIR} strokeWidth="1.5"/>
+          {[0, 1, 2, 3, 4].map(k => <g key={k}><line x1={40 + 40 * k} y1="86" x2={40 + 40 * k} y2="98" stroke={NOIR} strokeWidth="1.5"/><T x={40 + 40 * k} y={118} a="middle" s={15}>{k}</T></g>)}
+          <T x={216} y={124} s={15}>cm</T>
+          <T x={180} y={152} a="middle" s={16} c="#c2410c" w={700}>4 cm ⇒ F = 4 × 20 = 80 N</T>
+          <T x={180} y={172} a="middle" s={15} c={GRIS} w={500}>(on multiplie la longueur par l’échelle)</T>
+        </Schema>
+        <Cle>Longueur × échelle = intensité ; intensité ÷ échelle = longueur.</Cle>
+        <Formule><mi>L</mi><mtext> (cm) = </mtext><mfrac><mi>F</mi><mtext>échelle</mtext></mfrac></Formule>
+        <Formule><mi>F</mi><mtext> (N) = </mtext><mi>L</mi><mo>×</mo><mtext>échelle</mtext></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
           <li>La <strong>longueur</strong> de la flèche est proportionnelle à l’<strong>intensité</strong> : on précise toujours l’<strong>échelle</strong> (par exemple 1 cm ↔ 50 N).</li>
           <li><strong>Exemple :</strong> flèche de 4 cm avec 1 cm ↔ 20 N : F = 4 × 20 = 80 N. Tir de 150 N à 30° avec 1 cm ↔ 50 N : flèche de 3 cm, inclinée de 30° sur l’horizontale.</li>
@@ -334,42 +359,38 @@ export function SimulationForcesVecteurs() {
         </ul>
       </>,
       texte: <>Voici ce qu’il faut retenir sur la force et sa représentation.</>, tache: null },
-    { id: 'recip1', titre: 'Deux dynamomètres accrochés', depart: () => voirRecip('dyno', 4),
-      retenirTitre: 'À RETENIR : ACTIONS RÉCIPROQUES',
-      retenir: <>
-        <svg viewBox="0 0 360 130" role="img" aria-label="Deux dynamomètres A et B accrochés l’un à l’autre : B exerce sur A une force vers la droite, A exerce sur B une force de même intensité vers la gauche" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="22" y1="34" x2="22" y2="86" stroke="#334155" strokeWidth="3" /><path d="M 22 40 L 12 50 M 22 54 L 12 64 M 22 68 L 12 78" stroke="#334155" strokeWidth="1.5" />
-          <line x1="22" y1="60" x2="40" y2="60" stroke="#334155" strokeWidth="2" />
-          <rect x="40" y="44" width="90" height="32" fill="#e0f2fe" stroke="#334155" strokeWidth="2" /><text x="85" y="66" textAnchor="middle" fontSize="14" fontWeight="700">A</text>
-          <line x1="130" y1="60" x2="160" y2="60" stroke="#334155" strokeWidth="2" />
-          <rect x="160" y="44" width="90" height="32" fill="#fef3c7" stroke="#334155" strokeWidth="2" /><text x="205" y="66" textAnchor="middle" fontSize="14" fontWeight="700">B</text>
-          <line x1="250" y1="60" x2="320" y2="60" stroke="#334155" strokeWidth="2" /><text x="338" y="64" textAnchor="middle" fontSize="11" fill="#334155">main</text>
-          <line x1="112" y1="28" x2="170" y2="28" stroke="#0072b2" strokeWidth="3" /><polygon points="180,28 168,22 168,34" fill="#0072b2" />
-          <text x="146" y="18" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0072b2">F<tspan fontSize="9" dy="3">B/A</tspan></text>
-          <line x1="178" y1="96" x2="120" y2="96" stroke="#d55e00" strokeWidth="3" /><polygon points="110,96 122,90 122,102" fill="#d55e00" />
-          <text x="146" y="118" textAnchor="middle" fontSize="12" fontWeight="700" fill="#d55e00">F<tspan fontSize="9" dy="3">A/B</tspan></text>
-        </svg>
-        <div style={{ textAlign: 'center', margin: '8px 0', fontSize: 17 }}><Fn a="A" r="B" vec/> = − <Fn a="B" r="A" vec/></div>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Principe des actions réciproques :</strong> si A agit sur B, alors B agit sur A. Les deux forces ont <strong>même direction</strong>, <strong>sens opposés</strong> et <strong>même intensité</strong>.</li>
-          <li>Cette égalité vaut quelles que soient les masses : deux patineurs (80 kg et 45 kg) se repoussent avec des forces de même intensité ; seul l’<strong>effet</strong> diffère (le plus léger recule plus vite).</li>
-          <li><strong>Piège :</strong> ces deux forces s’exercent sur deux objets <strong>différents</strong> ; elles ne se compensent pas.</li>
-        </ul>
-      </>,
-      texte: <>Deux dynamomètres A et B sont accrochés l’un à l’autre. Le premier est fixé à un support. On tire sur B. Comme B tire sur A, <strong>A tire aussi sur B</strong> : si A agit sur B, alors B agit sur A. C’est le <strong>principe des actions réciproques</strong>.
-        <ExempleResolu>B tire A vers la droite avec F<sub>B/A</sub>. A tire B vers la gauche avec F<sub>A/B</sub>. Ces deux forces ont même direction, <strong>sens opposés</strong> et <strong>même intensité</strong>.</ExempleResolu>
-        À vous : modifiez la force de la main avec le curseur.</>,
+    { id: 'recip1', titre: 'Deux dynamomètres accrochés', depart: () => { setAtelier('recip'); setRecip({ scene: 'dyno', F: 4, mA: 60, mB: 60, montrer: 'une' }); },
+      texte: <>Deux dynamomètres A et B sont accrochés l’un à l’autre. Le premier est fixé à un support. On tire sur B. Comme B tire sur A, <strong>A tire aussi sur B</strong> : si A agit sur B, alors B agit sur A. C’est le <strong>principe des actions réciproques</strong>. Sur le schéma, la flèche montre la force de B sur A.
+        <ExempleResolu>B tire A vers la droite avec <Fn a="B" r="A" vec/>. A tire B vers la gauche avec <Fn a="A" r="B" vec/>. Ces deux forces ont même direction, <strong>sens opposés</strong> et <strong>même intensité</strong>.</ExempleResolu>
+        À vous : B indique 4 N.</>,
       tache: { type: 'num', q: 'Le dynamomètre B indique 4 N. Que lit-on sur le dynamomètre A ?', unite: 'N', vrai: 4, tol: 0.01, affiche: x => String(x), pieges: [[2, 'Pourquoi la moitié ? Les deux dynamomètres subissent des forces de même intensité.'], [8, 'Les forces ne s’additionnent pas : elles ont la même intensité.']],
         calcul: () => [
           'Principe des actions réciproques : si B agit sur A, A agit sur B avec une force de même intensité (et de sens opposé).',
           'Donc F(A/B) = F(B/A). Ici, B indique 4 N : l’intensité de la force est 4 N.',
           'Le dynamomètre A indique donc aussi 4 N.'],
         expl: 'Les forces réciproques ont la même intensité : A lit aussi 4 N.', indice: "Principe des actions réciproques : que peut-on dire de l’intensité des deux forces que A et B exercent l’une sur l’autre ?" } },
-    { id: 'recip2', titre: 'Deux patineurs', depart: () => { setAtelier('recip'); setRecip({ scene: 'patin', F: 60, mA: 80, mB: 45, montrer: true }); },
+    { id: 'recip2', titre: 'Deux patineurs', depart: () => { setAtelier('recip'); setRecip({ scene: 'patin', F: 60, mA: 80, mB: 45, montrer: 'une' }); },
       texte: <>On pourrait croire que le plus lourd pousse plus fort. Faux ! Quand A pousse B, <strong>B pousse A autant</strong>, quelle que soit leur masse. Ce qui change, c’est l’<strong>effet</strong> : le plus léger recule plus vite.
-        <ExempleResolu>Si A (80 kg) pousse B (45 kg) avec 60 N, alors B pousse A avec 60 N dans l’autre sens.</ExempleResolu></>,
+        <ExempleResolu>Si A (80 kg) pousse B (45 kg) avec 20 N, alors B pousse A avec 20 N dans l’autre sens.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'A pousse B avec une force de 60 N. Que dit le principe des actions réciproques ?', options: ['B exerce sur A une force de 60 N, de sens opposé', 'B exerce sur A une force de 60 N, de même sens', 'B exerce sur A une force plus petite car B est plus léger', 'B n’exerce aucune force sur A'], bonne: 0, expl: 'Les deux forces ont même intensité (60 N) et des sens opposés.', indice: "Principe des actions réciproques : compare l’intensité, la direction et le sens des deux forces, sans te soucier de la masse des objets." } },
     { id: 'poids1', titre: 'Le poids : une action à distance', depart: () => voirPoids('terre', 0.5, 0),
+      retenirTitre: 'À RETENIR : ACTIONS RÉCIPROQUES',
+      retenir: <>
+        <Schema aria="Deux objets A et B en contact : A exerce sur B une force vers la droite, B exerce sur A une force de même intensité vers la gauche" h={176}>
+          <rect x="30" y="64" width="110" height="44" rx="6" fill="#e0f2fe" stroke={NOIR} strokeWidth="2"/><T x={85} y={94} a="middle" s={20} w={800}>A</T>
+          <rect x="220" y="64" width="110" height="44" rx="6" fill="#fef3c7" stroke={NOIR} strokeWidth="2"/><T x={275} y={94} a="middle" s={20} w={800}>B</T>
+          <line x1="140" y1="86" x2="220" y2="86" stroke={NOIR} strokeWidth="2"/><circle cx="180" cy="86" r="4" fill={NOIR}/>
+          <Fl x1={180} y1={86} x2={262} y2={86} c="#c2410c" w={4}/><Fl x1={180} y1={86} x2={98} y2={86} c="#0072b2" w={4}/>
+          <TV x={214} y={54} c="#c2410c" s={17}>F</TV><T x={228} y={60} s={15} c="#c2410c" w={700}>A/B</T>
+          <TV x={104} y={54} c="#0072b2" s={17}>F</TV><T x={118} y={60} s={15} c="#0072b2" w={700}>B/A</T>
+          <TV x={64} y={150} s={17}>F</TV><T x={78} y={156} s={15} w={700}>A/B</T><T x={112} y={150} s={17} w={700}>= −</T><TV x={144} y={150} s={17}>F</TV><T x={158} y={156} s={15} w={700}>B/A</T>
+        </Schema>
+        <Cle>Si A agit sur B, B agit sur A : même intensité, sens opposés.</Cle>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>Principe des actions réciproques :</strong> les deux forces ont <strong>même direction</strong>, <strong>sens opposés</strong> et <strong>même intensité</strong>, quelles que soient les masses. Deux patineurs de 80 kg et 45 kg se repoussent avec des forces égales ; seul l’<strong>effet</strong> diffère (le plus léger recule plus vite).</li>
+          <li><strong>Piège :</strong> ces deux forces s’exercent sur deux objets <strong>différents</strong> ; elles ne se compensent pas.</li>
+        </ul>
+      </>,
       texte: <>La Terre attire tous les objets, <strong>sans les toucher</strong> : c’est une action <strong>à distance</strong>. La force correspondante est le <strong>poids</strong> de l’objet : P = m × g, avec m en kg et g l’intensité de la pesanteur (en N/kg). Sur Terre, g ≈ 9,8 N/kg.
         <ExempleResolu>Un objet de 0,2 kg a un poids P = 0,2 × 9,8 ≈ <strong>1,96 N</strong> (environ 2 N).
           {bouton('Voir sur la Terre', () => voirPoids('terre', 0.2, 0))}</ExempleResolu>
@@ -381,23 +402,6 @@ export function SimulationForcesVecteurs() {
           'P = 0,5 × 9,8 = 4,9 N.'],
         expl: 'P = m × g = 0,5 × 9,8 = 4,9 N.', indice: "Formule du poids : P = m × g, avec m en kg et g en N/kg." } },
     { id: 'poids2', titre: 'Le poids dépend de l’astre', depart: () => voirPoids('lune', 1, 0),
-      retenirTitre: 'À RETENIR : LE POIDS SELON L’ASTRE',
-      retenir: <>
-        <Formule><mi>P</mi><mo>=</mo><mi>m</mi><mo>×</mo><mi>g</mi><mspace width="1.5em"/><mi>g</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><msup><mi>R</mi><mn>2</mn></msup></mfrac></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Astre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>g (N·kg⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>P d’un objet de 2,0 kg (N)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Terre</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>9,8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>19,6</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Mars</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>3,7</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7,4</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>Lune</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,6</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>3,2</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le <strong>poids</strong> est la force d’attraction de l’astre sur l’objet : <strong>P = m × g</strong>, m en kg, g en N·kg⁻¹.</li>
-          <li>La <strong>masse</strong> est la même partout ; le <strong>poids</strong> change avec g, donc avec l’astre.</li>
-          <li><strong>Hypothèses :</strong> astre sphérique ; on ne distingue pas poids et attraction gravitationnelle (rotation de l’astre négligée).</li>
-        </ul>
-      </>,
       texte: <>La masse (en kg) ne change pas d’un astre à l’autre, mais le <strong>poids</strong> change car g change : sur la Lune g ≈ 1,6 N/kg, sur Mars g ≈ 3,7 N/kg.
         <ExempleResolu>Sur Mars, un objet de 1 kg pèse 1 × 3,7 = 3,7 N.</ExempleResolu>
         À vous : la Lune.</>,
@@ -409,24 +413,24 @@ export function SimulationForcesVecteurs() {
           'P = 1 × 1,6 = 1,6 N.'],
         expl: 'P = 1 × 1,6 ≈ 1,6 N : six fois moins que sur Terre.', indice: "Même formule du poids, P = m × g, mais avec la valeur de g de la Lune donnée dans l’énoncé." } },
     { id: 'grav', titre: 'L’interaction gravitationnelle', depart: () => voirPoids('terre', 1, 0),
-      retenirTitre: 'À RETENIR : LA GRAVITATION',
+      retenirTitre: 'À RETENIR : LE POIDS SELON L’ASTRE',
       retenir: <>
-        <Formule><mi>F</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><msub><mi>m</mi><mtext>A</mtext></msub><mo>×</mo><msub><mi>m</mi><mtext>B</mtext></msub></mrow><msup><mi>d</mi><mn>2</mn></msup></mfrac><mspace width="1.5em"/><mi>G</mi><mo>=</mo><mn>6,67</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>11</mn></mrow></msup><mtext> N·m²·kg⁻²</mtext></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Variation de la distance</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Effet sur la force</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>d multipliée par 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F divisée par 4</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>d multipliée par 10</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F divisée par 100</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>d divisée par 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>F multipliée par 4</td></tr>
-          </tbody>
-        </table>
+        <Schema aria="Un même objet de 2 kg sur la Terre, sur Mars et sur la Lune : la flèche du poids est la plus longue sur la Terre (19,6 newtons), plus courte sur Mars (7,4 newtons), très courte sur la Lune (3,2 newtons)" h={208}>
+          <T x={180} y={22} a="middle" s={15} w={700}>même objet de 2,0 kg</T>
+          {[[60, 'Terre', 98, '19,6 N'], [180, 'Mars', 37, '7,4 N'], [300, 'Lune', 16, '3,2 N']].map(([x, n, L, v]) => <g key={n}>
+            <circle cx={x} cy="44" r="8" fill="#fde68a" stroke="#92400e" strokeWidth="2"/>
+            <Fl x1={x} y1={52} x2={x} y2={52 + L} c="#c2410c" w={4}/><TV x={x + 10} y={52 + L / 2 + 6} c="#c2410c" s={16}>P</TV>
+            <T x={x} y={172} a="middle" s={15} w={700}>{n}</T><T x={x} y={192} a="middle" s={15} c="#c2410c" w={700}>{v}</T></g>)}
+          <line x1="10" y1="152" x2="350" y2="152" stroke={GRIS} strokeWidth="2" strokeDasharray="5 4"/>
+        </Schema>
+        <Cle>Même masse partout, poids différent : le poids dépend de g.</Cle>
+        <Formule><mi>P</mi><mo>=</mo><mi>m</mi><mo>×</mo><mi>g</mi><mspace width="1.5em"/><mi>g</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><msup><mi>R</mi><mn>2</mn></msup></mfrac></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Deux objets s’attirent avec des forces de <strong>même intensité</strong> (actions réciproques) ; d est la distance entre leurs <strong>centres</strong>, en <strong>mètres</strong>.</li>
-          <li><strong>Méthode :</strong> convertir (km → m, masses en kg), calculer d², puis G × m<sub>A</sub> × m<sub>B</sub> / d².</li>
-          <li>À l’altitude h : g = G × M / (R + h)² ; à 400 km, g ≈ 8,7 N·kg⁻¹ (contre 9,8 au sol) : la gravité n’a pas disparu.</li>
+          <li>Le <strong>poids</strong> est la force d’attraction de l’astre sur l’objet : <strong>P = m × g</strong> (m en kg, g en N·kg⁻¹ : 9,8 sur Terre, 3,7 sur Mars, 1,6 sur la Lune).</li>
+          <li>La <strong>masse</strong> est la même partout ; le <strong>poids</strong> change avec l’astre. <strong>Hypothèses :</strong> astre sphérique, rotation négligée.</li>
         </ul>
       </>,
-      texte: <>Deux objets de masses m<sub>A</sub> et m<sub>B</sub>, dont les centres sont distants de d, s’attirent avec des forces de même intensité : <strong>F = G × m<sub>A</sub> × m<sub>B</sub> / d²</strong>, avec G = {sci(G)} N·m²·kg⁻². Le poids est cette force pour un objet proche de la surface d’un astre.
+      texte: <>Deux objets de masses m<sub>A</sub> et m<sub>B</sub>, dont les centres sont distants de d, s’attirent avec des forces de même intensité : <strong>F = G × m<sub>A</sub> × m<sub>B</sub> / d²</strong>, avec G = {sci(G)} N·m²·kg⁻². Le poids est cette force pour un objet proche de la surface d’un astre. En <strong>vecteurs</strong>, la force exercée par A sur B est dirigée vers A : <Fn a="A" r="B" vec/> = − (G × m<sub>A</sub> × m<sub>B</sub> / d²) <Vec c="u"/>, avec <Vec c="u"/> le vecteur de longueur 1 dirigé de A vers B.
         <ExempleResolu>Si la distance d <strong>double</strong>, d² est multiplié par 4 : la force est <strong>divisée par 4</strong>. Regardez la valeur de g quand vous augmentez l’altitude.</ExempleResolu></>,
       tache: { type: 'qcm', q: 'Si la distance entre deux astres est multipliée par 3, la force gravitationnelle…', options: ['est divisée par 9', 'est divisée par 3', 'est multipliée par 3', 'ne change pas'], bonne: 0, expl: 'F est proportionnelle à 1/d² : d × 3 donne F / 9.', indice: "La force gravitationnelle est F = G × M × m / d². Essaie avec une distance d, puis avec 3 d : que devient le dénominateur ?" } },
     { id: 'iss', titre: '★ La Station spatiale : le poids disparaît-il ?', depart: () => voirPoids('terre', 1, 400),
@@ -445,18 +449,29 @@ export function SimulationForcesVecteurs() {
         },
         expl: 'F = G M m / (R + h)² ≈ 8,7 N : presque autant qu’au sol (9,8 N). L’impesanteur vient de la chute libre.', indice: "Cette force est le poids de l’objet : P = m × g. Lis la valeur de g à 400 km dans la simulation (curseur d’altitude)." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      retenirTitre: 'À RETENIR : LE BILAN',
+      retenirTitre: 'À RETENIR : LA GRAVITATION',
       retenir: <>
+        <Schema aria="Deux astres A et B s’attirent avec deux forces de même intensité, de sens opposés, dirigées l’une vers l’autre ; d est la distance entre leurs centres" h={190}>
+          <circle cx="66" cy="64" r="30" fill="#bfdbfe" stroke={NOIR} strokeWidth="2"/><T x={66} y={70} a="middle" s={18} w={800}>A</T>
+          <circle cx="296" cy="64" r="20" fill="#fecaca" stroke={NOIR} strokeWidth="2"/><T x={296} y={70} a="middle" s={18} w={800}>B</T>
+          <Fl x1={96} y1={64} x2={166} y2={64} c="#c2410c" w={4}/><Fl x1={276} y1={64} x2={206} y2={64} c="#0072b2" w={4}/>
+          <TV x={110} y={50} c="#c2410c" s={16}>F</TV><T x={123} y={55} s={15} c="#c2410c" w={700}>B/A</T>
+          <TV x={226} y={50} c="#0072b2" s={16}>F</TV><T x={239} y={55} s={15} c="#0072b2" w={700}>A/B</T>
+          <line x1="66" y1="118" x2="296" y2="118" stroke={NOIR} strokeWidth="1.5"/><line x1="66" y1="110" x2="66" y2="126" stroke={NOIR} strokeWidth="1.5"/><line x1="296" y1="110" x2="296" y2="126" stroke={NOIR} strokeWidth="1.5"/>
+          <T x={181} y={112} a="middle" s={16} w={700}>d (centre à centre)</T>
+          <T x={180} y={156} a="middle" s={15} c="#b91c1c" w={700}>d × 2 ⇒ F ÷ 4</T><T x={180} y={178} a="middle" s={15} c="#b91c1c" w={700}>d × 10 ⇒ F ÷ 100</T>
+        </Schema>
+        <Cle>Plus c’est loin, moins ça attire : F est divisée par d².</Cle>
+        <Formule><mi>F</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><msub><mi>m</mi><mtext>A</mtext></msub><mo>×</mo><msub><mi>m</mi><mtext>B</mtext></msub></mrow><msup><mi>d</mi><mn>2</mn></msup></mfrac></Formule>
+        <Formule><mi>G</mi><mo>=</mo><mn>6,67</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>11</mn></mrow></msup><mtext> N·m²·kg⁻²</mtext></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Action mécanique → <strong>force</strong> (vecteur) : point d’application, direction, sens, intensité (N) ; F = L × échelle.</li>
-          <li><strong>Actions réciproques</strong> : <Fn a="A" r="B" vec/> = −<Fn a="B" r="A" vec/> (même intensité, sens opposés).</li>
-          <li><strong>Poids</strong> : P = m × g (g ≈ 9,8 N·kg⁻¹ sur Terre, 1,6 sur la Lune, 3,7 sur Mars) ; <strong>gravitation</strong> : F = G × m<sub>A</sub> × m<sub>B</sub> / d².</li>
-          <li><strong>Méthode :</strong> identifier auteur et receveur, choisir l’échelle, calculer, vérifier l’unité (N).</li>
-          <li><strong>Pièges :</strong> masse ≠ poids ; intensité ≠ vecteur ; distance en m entre les centres.</li>
+          <li><strong>En vecteurs :</strong> <Fn a="A" r="B" vec/> = − (G × m<sub>A</sub> × m<sub>B</sub> / d²) <Vec c="u"/>, où <Vec c="u"/> est le vecteur de longueur 1 dirigé de A vers B : la force sur B est dirigée vers A.</li>
+          <li>d est la distance entre les <strong>centres</strong>, en <strong>mètres</strong>. À 400 km d’altitude, g ≈ 8,7 N·kg⁻¹ (contre 9,8 au sol) : la gravité n’a pas disparu.</li>
         </ul>
       </>,
       texte: <>Bravo : vous savez modéliser une action par une force. Voici le bilan à garder.</>, tache: null },
   ];
+  const etapeCourante = ETAPES[Math.min(guide.etape, ETAPES.length - 1)];
   useEffect(() => {
     if (mode !== 'guide') return;
     const d = ETAPES[Math.min(guide.etape, ETAPES.length - 1)].depart;
@@ -472,24 +487,29 @@ export function SimulationForcesVecteurs() {
 
   // ════════════════ PANNEAUX ════════════════
   const lectureSeule = !!vecEff.lecture;
+  const commandesVec = !enGuide || ['force', 'oblique'].includes(etapeCourante.id);   // au parcours guidé, curseurs et tableau n'arrivent qu'avec l'étape qui les utilise
   const maxL = maxLongueur(sc.point, vecEff.ang);
   const planche = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{sc.titre}</div>
-      {!enDefi && !vecEff.verrou && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6, alignItems: 'center' }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Scène :</span>
-        {Object.entries(SCENES).map(([k, s]) => <button key={k} onClick={() => setVec(v => ({ ...v, scene: k, L: Math.min(v.L, maxLongueur(SCENES[k].point, v.ang)), lecture: null }))} style={stylePetitBouton(vec.scene === k, '#0b4f94')}>{s.auteur} → {s.receveur}</button>)}
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 6 }}>Échelle (1 cm ↔) :</span>
-        {ECHELLES.map(e => <button key={e} onClick={() => setVec(v => ({ ...v, echelle: e }))} style={stylePetitBouton(vec.echelle === e, '#0b4f94')}>{e} N</button>)}</div>}
+      {enExplore && !vecEff.verrou && <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
+        <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>Scène
+          <span style={{ display: 'block', fontSize: 12.5, color: KIT.txt2, fontWeight: 400 }}>Qui agit sur quoi : l’auteur et le receveur.</span>
+          <select value={vec.scene} onChange={e => { const k = e.target.value; setVec(v => ({ ...v, scene: k, L: Math.min(v.L, maxLongueur(SCENES[k].point, v.ang)), lecture: null })); }} aria-label="Scène" style={{ width: '100%', minHeight: 42, padding: '6px 8px', fontSize: 14.5, borderRadius: 8, border: `1.5px solid ${KIT.bord}`, background: '#fff' }}>
+            {Object.entries(SCENES).map(([k, x]) => <option key={k} value={k}>{x.auteur} → {x.receveur}</option>)}</select></label>
+        <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>Échelle
+          <span style={{ display: 'block', fontSize: 12.5, color: KIT.txt2, fontWeight: 400 }}>Le nombre de newtons que représente 1 cm de flèche.</span>
+          <select value={vec.echelle} onChange={e => setVec(v => ({ ...v, echelle: +e.target.value }))} aria-label="Échelle en newtons pour 1 centimètre" style={{ width: '100%', minHeight: 42, padding: '6px 8px', fontSize: 14.5, borderRadius: 8, border: `1.5px solid ${KIT.bord}`, background: '#fff' }}>
+            {ECHELLES.map(e => <option key={e} value={e}>1 cm ↔ {e} N</option>)}</select></label></div>}
       <PlancheForce scene={vecEff.scene} vec={vecEff} setVec={setVec} editable={!lectureSeule && !enDefi ? true : enDefi && defi.type === 'tracer'} echelle={vecEff.echelle}
-        fantome={enDefi && defi.type === 'tracer' && defi.solution ? { L: defi.F / defi.echelle, ang: defi.ang } : null}/>
+        aide={commandesVec} fantome={enDefi && defi.type === 'tracer' && defi.solution ? { L: defi.F / defi.echelle, ang: defi.ang } : null}/>
       {enDefi && defi.type === 'tracer' && defi.solution && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>La flèche verte transparente montre la solution : longueur {fr(defi.F / defi.echelle, 1)} cm, angle {defi.ang}°.</div>}
-      {!lectureSeule && <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
+      {!lectureSeule && commandesVec && <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
         <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>Longueur : <strong>{fr(vecEff.L, 2)} cm</strong>
           <input type="range" min="0" max={maxL} step="0.25" value={Math.min(vecEff.L, maxL)} aria-label="Longueur de la flèche en centimètres" onChange={e => setVec(v => ({ ...v, L: +e.target.value }))} style={{ width: '100%' }}/></label>
         <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>Angle avec l’horizontale : <strong>{vecEff.ang}°</strong>
           <input type="range" min="-180" max="180" step="5" value={vecEff.ang} aria-label="Angle de la flèche en degrés" onChange={e => { const a = +e.target.value; setVec(v => ({ ...v, ang: a, L: Math.min(v.L, maxLongueur(SCENES[v.scene].point, a)) })); }} style={{ width: '100%' }}/></label></div>}
-      {(!enDefi || defi.type === 'tracer') && !lectureSeule && <table style={{ borderCollapse: 'collapse', fontSize: 14, width: '100%', marginTop: 8 }}><tbody>
+      {(!enDefi || defi.type === 'tracer') && !lectureSeule && commandesVec && <table style={{ borderCollapse: 'collapse', fontSize: 14, width: '100%', marginTop: 8 }}><tbody>
         {[['Notation', <Fn a={sc.auteur} r={sc.receveur} vec key="n"/>], ['Point d’application', sc.pointTxt], ['Direction', car.direction], ['Sens', car.sens],
           ...(enDefi ? [] : [['Intensité', <span key="i"><strong>{fr(car.F, 0)} N</strong> ({fr(car.L, 2)} cm × {vecEff.echelle} N/cm)</span>]])].map(([l, v], k) => (
           <tr key={k} style={{ borderTop: '1px solid #e2e8f0' }}><td style={{ padding: '3px 6px 3px 0', color: KIT.txt2, fontWeight: 600 }}>{l}</td><td style={{ padding: '3px 0', fontWeight: 700 }}>{v}</td></tr>))}</tbody></table>}
@@ -498,21 +518,23 @@ export function SimulationForcesVecteurs() {
   const panneauRecip = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Actions réciproques</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-        <button onClick={() => setRecip(r => ({ ...r, scene: 'dyno', F: 4 }))} style={stylePetitBouton(recip.scene === 'dyno', '#0b4f94')}>Deux dynamomètres</button>
-        <button onClick={() => setRecip(r => ({ ...r, scene: 'patin', F: 60 }))} style={stylePetitBouton(recip.scene === 'patin', '#0b4f94')}>Deux patineurs</button>
-        <label style={{ fontSize: 13.5, display: 'inline-flex', alignItems: 'center', gap: 4 }}><input type="checkbox" checked={recip.montrer} onChange={e => setRecip(r => ({ ...r, montrer: e.target.checked }))}/> Afficher les deux forces</label></div>
-      <Reciproques scene={recip.scene} F={recip.F} mA={recip.mA} mB={recip.mB} montrer={recip.montrer}/>
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
+      {enExplore && <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 8, alignItems: 'flex-end' }}>
+        <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>Situation
+          <span style={{ display: 'block', fontSize: 12.5, color: KIT.txt2, fontWeight: 400 }}>Deux objets en interaction : chacun agit sur l’autre.</span>
+          <select value={recip.scene} onChange={e => { const k = e.target.value; setRecip(r => ({ ...r, scene: k, F: k === 'dyno' ? 4 : 60 })); }} aria-label="Situation" style={{ width: '100%', minHeight: 42, padding: '6px 8px', fontSize: 14.5, borderRadius: 8, border: `1.5px solid ${KIT.bord}`, background: '#fff' }}>
+            <option value="dyno">Deux dynamomètres</option><option value="patin">Deux patineurs</option></select></label>
+        <label style={{ fontSize: 13.5, display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 42 }}><input type="checkbox" checked={recip.montrer === true} onChange={e => setRecip(r => ({ ...r, montrer: e.target.checked }))}/> Afficher les deux forces</label></div>}
+      <Reciproques scene={recip.scene} F={recip.F} mA={recip.mA} mB={recip.mB} montrer={recip.montrer} masqueA={enGuide && etapeCourante.id === 'recip1' && !(guide.reussies || {})[guide.etape]}/>
+      {enExplore && <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
         <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>{recip.scene === 'dyno' ? 'Force de la main sur B' : 'Force de A sur B'} : <strong>{fr(recip.F, recip.scene === 'dyno' ? 1 : 0)} N</strong>
           <input type="range" min={recip.scene === 'dyno' ? 0 : 10} max={recip.scene === 'dyno' ? 10 : 160} step={recip.scene === 'dyno' ? 0.5 : 10} value={recip.F} aria-label="Intensité de la force" onChange={e => setRecip(r => ({ ...r, F: +e.target.value }))} style={{ width: '100%' }}/></label>
         {recip.scene === 'patin' && <>
           <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 160px' }}>Masse de A : <strong>{recip.mA} kg</strong><input type="range" min="40" max="100" step="5" value={recip.mA} aria-label="Masse de A" onChange={e => setRecip(r => ({ ...r, mA: +e.target.value }))} style={{ width: '100%' }}/></label>
           <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 160px' }}>Masse de B : <strong>{recip.mB} kg</strong><input type="range" min="40" max="100" step="5" value={recip.mB} aria-label="Masse de B" onChange={e => setRecip(r => ({ ...r, mB: +e.target.value }))} style={{ width: '100%' }}/></label></>}
-      </div>
-      <div style={{ marginTop: 8, fontSize: 14.5, color: KIT.txt, padding: '6px 10px', background: '#f0fdfa', border: '1.5px solid #5eead4', borderRadius: 8, lineHeight: 1.55 }}>
-        {recip.scene === 'dyno' ? <>Le dynamomètre A indique <strong>{fr(recip.F, 1)} N</strong> et le dynamomètre B aussi : F<sub>A/B</sub> = F<sub>B/A</sub> = {fr(recip.F, 1)} N.</>
-          : <>F<sub>A/B</sub> = F<sub>B/A</sub> = <strong>{fr(recip.F, 0)} N</strong>, quelles que soient les masses. {recip.mA === recip.mB ? 'Avec des masses égales, les deux patineurs reculent de la même façon.' : `Le plus léger (${recip.mA < recip.mB ? 'A' : 'B'}) recule plus vite : l’effet de la force dépend de la masse, pas son intensité.`}</>}</div>
+      </div>}
+      {enExplore && <div style={{ marginTop: 8, fontSize: 14.5, color: KIT.txt, padding: '6px 10px', background: '#f0fdfa', border: '1.5px solid #5eead4', borderRadius: 8, lineHeight: 1.55 }}>
+        {recip.scene === 'dyno' ? <>Le dynamomètre A indique <strong>{fr(recip.F, 1)} N</strong> et le dynamomètre B aussi : <Fn a="A" r="B"/> = <Fn a="B" r="A"/> = {fr(recip.F, 1)} N. <Fn a="B" r="A" vec/> s’applique sur A et <Fn a="A" r="B" vec/> sur B : au crochet qui les relie.</>
+          : <><Fn a="A" r="B"/> = <Fn a="B" r="A"/> = <strong>{fr(recip.F, 0)} N</strong>, quelles que soient les masses. {recip.mA === recip.mB ? 'Avec des masses égales, les deux patineurs reculent de la même façon.' : `Le plus léger (${recip.mA < recip.mB ? 'A' : 'B'}) recule plus vite : l’effet de la force dépend de la masse, pas son intensité.`}</>}</div>}
     </div>);
 
   const hypotheses = (
@@ -545,7 +567,7 @@ export function SimulationForcesVecteurs() {
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
-  const ateliers = (enExplore || enGuide) && (
+  const ateliers = enExplore && (
     <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
       <span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700 }}>Atelier :</span>
       {[['vecteur', '➡️ Le vecteur force'], ['recip', '🔁 Actions réciproques'], ['poids', '🌍 Poids et gravitation']].map(([k, l]) =>
@@ -572,7 +594,7 @@ export function SimulationForcesVecteurs() {
           {enDefi && <div style={styleBoite}><VoletDefi defi={defi} setDefi={setDefi} vec={vec} changerType={t => lancer(t, defi)}/></div>}
           {atelierEff === 'vecteur' && planche}
           {atelierEff === 'recip' && !enDefi && panneauRecip}
-          {atelierEff === 'poids' && <PanneauPoids pw={pwEff} setPw={setPw} verrouAstre={enDefi}/>}
+          {atelierEff === 'poids' && <PanneauPoids pw={pwEff} setPw={setPw} verrouAstre={enDefi} mode={mode} etape={etapeCourante.id}/>}
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
       </div>
