@@ -4423,6 +4423,7 @@ export const PREVOIR = [
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
+import { VAC_ANA } from './AtelierVecteursVABanque.jsx';
 import { CHAMPS } from './AtelierChampBanque.jsx';
 
 // ─────────────── Compléter un algorithme (seuils, états) — chapitre « Transmission de signaux numériques » ───────────────
@@ -4490,7 +4491,7 @@ export const FAMILLES = [
     aide: 'Raisonner sur la relation (proportionnalité, carré, racine) sans faire le calcul.' },
   { id: 'champ', titre: 'Reconnaître un champ sur un schéma', liste: CHAMPS,
     aide: 'Lire des lignes de champ (ou des vecteurs) et en déduire la nature, le sens et l’intensité du champ ou de la force.' },
-  { id: 'mouvement', titre: 'Reconnaître un mouvement sur un schéma', liste: MOUVEMENTS,
+  { id: 'mouvement', titre: 'Reconnaître un mouvement sur un schéma', liste: [...MOUVEMENTS, ...VAC_ANA],
     aide: 'Lire une chronophotographie ou des trajectoires dessinées, et choisir la bonne description du mouvement (dans un référentiel donné).' },
   { id: 'algorithme', titre: 'Compléter un algorithme (seuils, états)', liste: ALGORITHMES,
     aide: 'Un système automatique compare une mesure à des seuils et commande une sortie : à vous de compléter les tests et de prévoir ce que fait le programme.' },

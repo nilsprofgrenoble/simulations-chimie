@@ -1246,6 +1246,38 @@ export const ENONCES = [
         manque: null, solution: { txt: 'T − P = m × a_y, donc T = m × (g + a_y)', val: p.m * (9.8 + a), u: 'N' } };
     },
   },
+  // ───────────────────────────── Vecteurs vitesse et accélération (TG, sim 166) : exploiter une chronophotographie
+  {
+    id: 'vac-sapp-chrono', domaine: 'Vecteurs vitesse et accélération', titre: 'Exploiter une chronophotographie', noms: ['Vitesse au point M4', 'Accélération au point M4'],
+    gen: () => {
+      const tau = tire([0.20, 0.50, 1.0]), v = tire([2.0, 3.0, 4.0, 5.0]), a = tire([0.5, 1.0, 1.5, -0.5, -1.0, -1.5]), xa = tire([1.0, 2.0, 4.0]);
+      const xb = Number((xa + 2 * tau * v).toFixed(3)), x4 = Number(((xa + xb) / 2 - a * tau * tau / 2).toFixed(3));
+      return { tau, v, a, xa, xb, x4, m: tire([800, 1200, 1500]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        tau: tok(`${nb(p.tau, 2)} s`, 'Durée entre deux photographies successives', p.tau, 's'),
+        m: tok(`${p.m} kg`, 'Masse du mobile', p.m, 'kg'),
+      };
+      const debut = ['Un mobile de masse ', T('m'), ' se déplace sur l’axe Ox ; on le photographie toutes les ', T('tau'), ' (chronophotographie). '];
+      if (q === 0) {
+        tokens.x3 = tok(`${nb(p.xa, 2)} m`, 'Position (abscisse) du point M3', p.xa, 'm');
+        tokens.x4 = tok(`${nb(p.x4, 3)} m`, 'Position (abscisse) du point M4', p.x4, 'm');
+        tokens.x5 = tok(`${nb(p.xb, 2)} m`, 'Position (abscisse) du point M5', p.xb, 'm');
+        return { tokens, derivees: [], texte: [...debut, 'Le point M3 est à ', T('x3'), ' de l’origine, le point M4 à ', T('x4'), ' et le point M5 à ', T('x5'), '. Quelle est la vitesse du mobile au point M4 ?'],
+          utiles: ['x3', 'x5', 'tau'], raisons: { x4: 'La position du point M4 lui-même ne sert pas : la vitesse s’obtient avec la variation de position entre le point précédent (M3) et le point suivant (M5).', m: 'La masse ne joue aucun rôle dans la description du mouvement (la cinématique décrit le mouvement sans en chercher la cause).' },
+          cherche: { bonne: 'La coordonnée v_x du vecteur vitesse en M4 (en m/s)', faux: ['La coordonnée a_x du vecteur accélération en M4 (en m/s²)', 'La distance parcourue entre M3 et M5 (en m)', 'La durée du trajet entre M3 et M5 (en s)'] },
+          manque: null, solution: { txt: 'v_x(4) ≈ frac(x_5 − x_3|2τ) (des m divisés par des s donnent des m/s)', val: p.v, u: 'm/s' } };
+      }
+      tokens.x3 = tok(`${nb(p.xa, 2)} m`, 'Position (abscisse) du point M3', p.xa, 'm');
+      tokens.v3 = tok(`${nb(p.v - p.a * p.tau, 3)} m/s`, 'Coordonnée de la vitesse au point M3 (déjà estimée)', p.v - p.a * p.tau, 'm/s');
+      tokens.v5 = tok(`${nb(p.v + p.a * p.tau, 3)} m/s`, 'Coordonnée de la vitesse au point M5 (déjà estimée)', p.v + p.a * p.tau, 'm/s');
+      return { tokens, derivees: [], texte: [...debut, 'Le point M3 est à ', T('x3'), ' de l’origine. On a déjà estimé la vitesse en M3 : ', T('v3'), ', puis en M5 : ', T('v5'), '. Quelle est l’accélération du mobile au point M4 ?'],
+        utiles: ['v3', 'v5', 'tau'], raisons: { x3: 'Les positions ont déjà servi à estimer les vitesses : pour l’accélération, on utilise ces vitesses.', m: 'La masse ne joue aucun rôle dans la description du mouvement (la cinématique décrit le mouvement sans en chercher la cause).' },
+        cherche: { bonne: 'La coordonnée a_x de l’accélération en M4 (m/s²)', faux: ['La coordonnée v_x du vecteur vitesse en M4 (en m/s)', 'La variation de vitesse entre M3 et M5 (en m/s)', 'La force exercée sur le mobile (en N)'] },
+        manque: null, solution: { txt: 'a_x(4) ≈ frac(v_x(5) − v_x(3)|2τ) (des m/s divisés par des s donnent des m/s²)', val: p.a, u: 'm/s²' } };
+    },
+  },
   // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
   {
     id: 'pil-sapp-capacite', domaine: 'Piles : fonctionnement et capacité', titre: 'Capacité d’une pile zinc-cuivre', noms: ['Quantité d’ions cuivre initiale', 'Capacité électrique de la pile'],

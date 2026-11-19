@@ -1205,5 +1205,13 @@
  "37:prevoir:nwt-ana-galileen": "ANA520",
  "77:plausible:nwt-val-somme": "VAL291",
  "77:plausible:nwt-val-caisse": "VAL292",
- "36:nwt-calcul": "REA73"
+ "36:nwt-calcul": "REA73",
+ "34:vac-sapp-chrono.0": "SAPP323",
+ "34:vac-sapp-chrono.1": "SAPP324",
+ "37:mouvement:vac-ana-freinage": "ANA521",
+ "37:mouvement:vac-ana-sommet": "ANA522",
+ "37:mouvement:vac-ana-deux": "ANA523",
+ "77:plausible:vac-val-signe": "VAL293",
+ "77:plausible:vac-val-ordre": "VAL294",
+ "36:vac-calcul": "REA74"
 }
