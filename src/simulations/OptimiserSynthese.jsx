@@ -34,8 +34,9 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, LigneMesure, ORANGE_GUIDE, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, FormuleEnLigne, LigneMesure, ORANGE_GUIDE, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
+import { FicheCourbe, FicheLeviers, FicheCatalyseur, FicheRendement, FicheEquilibre } from "./OptimiserSyntheseFiches";
 
 const SIM_ID = 90;
 declarerDefis(SIM_ID, [['principal', 'Optimiser une synthèse']]);
@@ -167,55 +168,14 @@ function etapesGuide() {
         expl: <>La courbe démarre fort puis s'aplatit : la vitesse décroît au fur et à mesure que les réactifs sont consommés, jusqu'à s'annuler à l'équilibre.</> } },
 
     { titre: "Le temps de demi-réaction",
-      retenirTitre: 'À RETENIR : COURBE x(t) ET TEMPS DE DEMI-RÉACTION',
-      retenir: <>
-        <Formule><mi>x</mi><mo>(</mo><mi>t</mi><mo>)</mo><mo>=</mo><msub><mi>x</mi><mtext>éq</mtext></msub><mo>(</mo><mn>1</mn><mo>−</mo><msup><mi>e</mi><mrow><mo>−</mo><mi>k</mi><mi>t</mi></mrow></msup><mo>)</mo><mspace width="1.5em"/><msub><mi>t</mi><mrow><mn>1</mn><mo>/</mo><mn>2</mn></mrow></msub><mo>=</mo><mfrac><mrow><mi>ln</mi><mo>(</mo><mn>2</mn><mo>)</mo></mrow><mi>k</mi></mfrac></Formule>
-        <svg viewBox="0 0 300 156" role="img" aria-label="Courbe d’avancement x(t) : elle monte puis se stabilise sur le palier x éq = 2/3 mol ; le temps de demi-réaction t 1/2 est atteint pour la moitié de ce palier, soit environ 30 minutes" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '6px auto' }}>
-          <line x1="40" y1="125" x2="285" y2="125" stroke="#334155" strokeWidth="1.5" /><line x1="40" y1="125" x2="40" y2="14" stroke="#334155" strokeWidth="1.5" />
-          <line x1="40" y1="58.3" x2="280" y2="58.3" stroke="#16a34a" strokeWidth="1.2" strokeDasharray="5 3" />
-          <line x1="40" y1="91.7" x2="100.2" y2="91.7" stroke="#64748b" strokeWidth="1.2" strokeDasharray="3 3" /><line x1="100.2" y1="91.7" x2="100.2" y2="125" stroke="#64748b" strokeWidth="1.2" strokeDasharray="3 3" />
-          <polyline fill="none" stroke="#1d4ed8" strokeWidth="2.6" points="40.0,125.0 52.0,116.4 64.0,108.9 76.0,102.4 88.0,96.7 100.0,91.8 112.0,87.5 124.0,83.7 136.0,80.4 148.0,77.6 160.0,75.1 172.0,72.9 184.0,71.1 196.0,69.4 208.0,68.0 220.0,66.7 232.0,65.7 244.0,64.7 256.0,63.9 268.0,63.2 280.0,62.6" />
-          <circle cx="100.2" cy="91.7" r="3.5" fill="#1d4ed8" />
-          <text x="278" y="52" fontSize="11" textAnchor="end" fill="#15803d" fontWeight="700">x éq = 2/3 mol (palier)</text>
-          <text x="36" y="95" fontSize="10.5" textAnchor="end" fill="#475569">x éq/2</text>
-          <text x="104" y="118" fontSize="11" fill="#475569" fontWeight="700">t½ ≈ 30 min</text>
-          <text x="283" y="150" fontSize="10.5" textAnchor="end" fill="#334155">t (min)</text>
-          <text x="46" y="22" fontSize="10.5" fill="#334155">x (mol)</text>
-          <text x="40" y="138" fontSize="10" textAnchor="middle" fill="#475569">0</text><text x="280" y="138" fontSize="10" textAnchor="middle" fill="#475569">120</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>L’<strong>avancement</strong> x(t) est la quantité d’ester formé (en mol, pour 1 mol d’acide). La <strong>vitesse</strong> est la <strong>pente</strong> de la courbe : elle est maximale au début, puis <strong>diminue</strong> et s’annule à l’équilibre.</li>
-          <li>Le <strong>temps de demi-réaction</strong> t<sub>1/2</sub> est la durée pour atteindre <strong>la moitié de l’avancement final</strong> x<sub>éq</sub>/2. Il se lit sur la courbe et se calcule avec k (en min⁻¹, t<sub>1/2</sub> en min).</li>
-          <li><strong>Exemple :</strong> k = 0,023 min⁻¹ (40 °C, sans catalyseur) : t<sub>1/2</sub> = 0,693 / 0,023 ≈ <strong>30 min</strong>.</li>
-          <li>k et t<sub>1/2</sub> varient en sens <strong>inverse</strong> : k plus grand, réaction plus rapide, t<sub>1/2</sub> plus court.</li>
-          <li><strong>Hypothèse :</strong> modèle d’ordre 1 fourni par la simulation, k constant à température et composition données.</li>
-        </ul>
-      </>,
       texte: <>Le <strong>temps de demi-réaction</strong> t<sub>1/2</sub> est la durée nécessaire pour atteindre la moitié de l'avancement final. C'est l'indicateur de durée utilisé par les industriels pour planifier un « batch ».</>,
-      tache: { type: 'num', q: `Protocole de référence : à 40 °C, sans catalyseur, la constante de vitesse vaut k = ${fmt(g.k, 3)} min⁻¹. Calculez le temps de demi-réaction t_1/2 = ln(2)/k (en minutes).`, unite: 'min', vrai: g.t12, tol: 0.02, cs: 2, detail: true,
-        calcul: () => [`t_1/2 = ln(2)/k.`, `Application : t_1/2 = 0,693/${fmt(g.k, 3)} = ${fmt(g.t12, 1)} min.`],
-        pieges: [[1 / g.k, 'Vous avez divisé par ln(2) au lieu de multiplier par ln(2) : pour un modèle d\'ordre 1, t_1/2 = ln(2)/k.']],
-        indice: 'Avec k en min⁻¹, ln(2)/k est en minutes. Gardez deux chiffres significatifs.' } },
+      tache: { type: 'num', q: `Protocole de référence : à 40 °C, sans catalyseur, la constante de vitesse vaut k = ${fmt(g.k, 3)} min⁻¹. Calculez le temps de demi-réaction t_1/2 = frac(ln(2)|k) (en minutes).`, unite: 'min', vrai: g.t12, tol: 0.02, cs: 2, detail: true,
+        calcul: () => [`t_1/2 = frac(ln(2)|k).`, `Application : t_1/2 = frac(0,693|${fmt(g.k, 3)}) = ${fmt(g.t12, 1)} min.`],
+        pieges: [[1 / g.k, 'Vous avez divisé par ln(2) au lieu de multiplier par ln(2) : pour un modèle d\'ordre 1, t_1/2 = frac(ln(2)|k).']],
+        indice: 'Avec k en min⁻¹, frac(ln(2)|k) est en minutes. Gardez deux chiffres significatifs.' } },
 
     { titre: "Facteur cinétique n° 1 : la température",
-      retenirTitre: 'À RETENIR : LES LEVIERS DE VITESSE',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Levier</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Action</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Effet sur k</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Explication</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>température</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>+ 10 °C</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>k × 2 (règle simplifiée)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>chocs plus fréquents et plus énergétiques</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>concentration</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>solution plus concentrée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>k plus grand (facteur borné entre 0,5 et 2)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>entités plus proches, plus de chocs</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>catalyseur</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>présent</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>k × 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>chemin à col plus bas</td></tr>
-          </tbody>
-        </table>
-        <Formule><mfrac><mi>k</mi><msub><mi>k</mi><mn>0</mn></msub></mfrac><mo>=</mo><msup><mn>2</mn><mfrac><mrow><mi>T</mi><mo>−</mo><mn>40</mn></mrow><mn>10</mn></mfrac></msup><mspace width="1.5em"/><mtext>(T en °C)</mtext></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Exemple :</strong> de 40 °C à 60 °C, deux paliers de 10 °C : k est multipliée par 2² = <strong>4</strong> (0,023 → 0,092 min⁻¹) et t<sub>1/2</sub> passe de 30 min à 7,5 min.</li>
-          <li>Une transformation résulte de <strong>chocs efficaces</strong> : assez énergétiques et bien orientés. Chauffer augmente l’agitation donc l’énergie des chocs ; <strong>diluer</strong> les raréfie et ralentit la réaction.</li>
-          <li><strong>Piège :</strong> de 40 à 60 °C, il y a <strong>deux</strong> paliers, pas un.</li>
-          <li><strong>Hypothèse :</strong> la règle « × 2 tous les 10 °C » est une simplification d’Arrhenius, valable dans la plage étudiée.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : COURBE x(t) ET TEMPS DE DEMI-RÉACTION', retenir: <FicheCourbe/>,
       texte: <>Premier levier : <strong>chauffer</strong>. Dans la plage étudiée, la règle simplifiée est : la vitesse double tous les 10 °C. En laboratoire, chauffer à reflux permet d'accélérer sans perdre de matière.</>,
       tache: { type: 'num', q: `On chauffe maintenant à 60 °C (au lieu de 40 °C), autres conditions identiques. Par quel facteur la constante de vitesse est-elle multipliée ?`, unite: '', vrai: 4, tol: 0.02, cs: 1, detail: true,
         calcul: () => [`Facteur = 2^(ΔT/10 °C) avec ΔT = 60 − 40 = 20 °C.`, `Facteur = 2² = 4.`],
@@ -229,12 +189,6 @@ function etapesGuide() {
         expl: <>Plus chaud = plus d'agitation = plus de chocs par seconde, et surtout des chocs qui dépassent plus souvent l'énergie d'activation. Attention : la température peut aussi déplacer l'équilibre, mais ici l'estérification est traitée athermique.</> } },
 
     { titre: "Facteur cinétique n° 2 : la concentration",
-      retenirTitre: 'À RETENIR : LA CONCENTRATION',
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-        <li>Une solution <strong>plus concentrée</strong> contient plus d’entités réactives par litre : elles se rencontrent plus souvent, la réaction est <strong>plus rapide</strong> (dans le modèle, k plus grand, facteur borné entre 0,5 et 2).</li>
-        <li>Diluer fait l’inverse : moins de chocs par litre et par seconde, réaction plus lente.</li>
-        <li>Travailler concentré accélère et réduit la quantité de solvant à traiter (point positif pour la chimie verte) ; la limite pratique est la solubilité et l’évacuation de la chaleur.</li>
-      </ul>,
       texte: <>Deuxième levier : la <strong>concentration</strong> des réactifs. Plus les entités sont proches les unes des autres, plus les rencontres sont fréquentes.</>,
       tache: { type: 'qcm', q: 'On dilue le mélange réactionnel avec du solvant. Que devient la vitesse de réaction ?',
         options: ['Elle augmente : il y a plus de liquide', 'Elle diminue : les entités réactives sont moins nombreuses par litre, les chocs se raréfient', 'Elle ne change pas : la quantité de matière est la même'],
@@ -242,35 +196,14 @@ function etapesGuide() {
         expl: <>Diluer écarte les réactifs : moins de chocs par litre et par seconde, réaction plus lente. À l'inverse, travailler concentré accélère (et diminue la quantité de solvant à traiter : bon point pour la chimie verte).</> } },
 
     { titre: "Facteur cinétique n° 3 : le catalyseur",
-      retenirTitre: 'À RETENIR : LE CATALYSEUR',
-      retenir: <>
-        <svg viewBox="0 0 300 170" role="img" aria-label="Profil réactionnel : sans catalyseur le col d’énergie d’activation est haut, avec catalyseur il est plus bas ; l’énergie des réactifs et celle des produits sont inchangées" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '6px auto' }}>
-          <line x1="30" y1="125" x2="285" y2="125" stroke="#334155" strokeWidth="1.5" /><line x1="30" y1="125" x2="30" y2="12" stroke="#334155" strokeWidth="1.5" />
-          <path d="M 34 100 C 80 100, 95 28, 150 28 S 220 104, 270 104" fill="none" stroke="#ea580c" strokeWidth="2.6" />
-          <path d="M 34 100 C 80 100, 95 62, 150 62 S 220 104, 270 104" fill="none" stroke="#1d4ed8" strokeWidth="2.6" />
-          <line x1="150" y1="100" x2="150" y2="30" stroke="#ea580c" strokeWidth="1.4" strokeDasharray="4 3" />
-          <line x1="126" y1="100" x2="126" y2="64" stroke="#1d4ed8" strokeWidth="1.4" strokeDasharray="4 3" />
-          <text x="156" y="48" fontSize="11" fill="#c2410c" fontWeight="700">Eₐ</text>
-          <text x="122" y="84" fontSize="11" fill="#1d4ed8" fontWeight="700" textAnchor="end">Eₐ’</text>
-          <text x="34" y="116" fontSize="10.5" fill="#475569">réactifs</text><text x="268" y="119" fontSize="10.5" fill="#475569" textAnchor="end">produits</text>
-          <text x="38" y="20" fontSize="10.5" fill="#334155">énergie</text><text x="283" y="140" fontSize="10.5" fill="#334155" textAnchor="end">avancement</text>
-          <line x1="40" y1="156" x2="62" y2="156" stroke="#ea580c" strokeWidth="2.6" /><text x="66" y="160" fontSize="11" fill="#c2410c" fontWeight="700">sans catalyseur</text><line x1="170" y1="156" x2="192" y2="156" stroke="#1d4ed8" strokeWidth="2.6" /><text x="196" y="160" fontSize="11" fill="#1d4ed8" fontWeight="700">avec catalyseur</text>
-        </svg>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un <strong>catalyseur</strong> accélère une réaction ; il est <strong>consommé puis régénéré</strong> : sa quantité est la même au début et à la fin.</li>
-          <li>Il offre un chemin avec une <strong>énergie d’activation plus basse</strong> (Eₐ’ &lt; Eₐ) : plus de chocs franchissent le col.</li>
-          <li><strong>Il ne modifie ni les réactifs, ni les produits, ni K</strong> : l’état d’équilibre est inchangé. Il fait gagner du <strong>temps</strong>, jamais du <strong>rendement</strong>.</li>
-          <li><strong>Catalyse homogène</strong> : même phase que les réactifs (acide dissous). <strong>Hétérogène</strong> : phase différente (résine solide), récupérée par filtration.</li>
-          <li><strong>Exemple :</strong> catalyseur acide, k × 4 : t<sub>1/2</sub> = 30 / 4 ≈ 7,5 min.</li>
-        </ul>
-      </>,
       texte: <>Troisième levier : le <strong>catalyseur</strong> (ici, un acide). Définition : une espèce qui accélère une réaction ; elle est consommée puis régénérée, sa quantité est la même au début et à la fin.</>,
       tache: { type: 'num', q: `Avec le catalyseur, k est multipliée par 4 : elle vaut maintenant ${fmt(4 * g.k, 3)} min⁻¹. Calculez le nouveau temps de demi-réaction (en minutes).`, unite: 'min', vrai: g.t12 / 4, tol: 0.02, cs: 2, detail: true,
-        calcul: () => [`t_1/2 = ln(2)/k = 0,693/${fmt(4 * g.k, 3)}.`, `t_1/2 = ${fmt(g.t12 / 4, 1)} min : le catalyseur a divisé la durée par 4.`],
+        calcul: () => [`t_1/2 = frac(ln(2)|k) = frac(0,693|${fmt(4 * g.k, 3)}).`, `t_1/2 = ${fmt(g.t12 / 4, 1)} min : le catalyseur a divisé la durée par 4.`],
         pieges: [[g.t12 * 4, 'Vous avez multiplié au lieu de diviser : si k augmente, t_1/2 diminue.']],
         indice: 't_1/2 et k varient en sens inverse.' } },
 
-    { titre: "Catalyse homogène ou hétérogène", texte: <>Le catalyseur peut être dans la même phase que les réactifs (catalyse <strong>homogène</strong>, ici l'acide dissous) ou dans une phase différente (catalyse <strong>hétérogène</strong>, par exemple une résine solide). </>,
+    { titre: "Catalyse homogène ou hétérogène", retenirTitre: 'À RETENIR : LES TROIS LEVIERS DE VITESSE', retenir: <FicheLeviers/>,
+      texte: <>Le catalyseur peut être dans la même phase que les réactifs (catalyse <strong>homogène</strong>, ici l'acide dissous) ou dans une phase différente (catalyse <strong>hétérogène</strong>, par exemple une résine solide). </>,
       tache: { type: 'qcm', q: 'Un solide catalytique est plongé dans la solution réactionnelle. De quel type de catalyse s\'agit-il ?',
         options: ['Homogène : tout est mélangé dans le même récipient', 'Hétérogène : le catalyseur solide et les réactifs liquides sont dans des phases différentes', 'Ce n\'est pas une catalyse : un solide ne peut pas catalyser'],
         bonne: 1, indice: 'Le critère est la phase (état physique), pas le récipient.',
@@ -288,10 +221,11 @@ function etapesGuide() {
         bonne: 1, indice: 'Le catalyseur est régénéré : il ne peut pas « consommer » du rendement. Sur le profil réactionnel, quels points n\'ont pas bougé ?',
         expl: <>LE piège du chapitre : le catalyseur fait gagner du <em>temps</em>, jamais du <em>rendement</em>. Accélérer (constante de vitesse k) et optimiser (avancement à l'équilibre) sont deux problèmes distincts, avec deux familles de leviers.</> } },
 
-    { titre: "Le rendement d'une synthèse", texte: <>Le <strong>rendement</strong> compare ce qu'on obtient (n<sub>obtenu</sub>) à ce qu'on obtiendrait si la réaction était totale (n<sub>max</sub>) : R = n<sub>obtenu</sub>/n<sub>max</sub> × 100. </>,
+    { titre: "Le rendement d'une synthèse", retenirTitre: 'À RETENIR : LE CATALYSEUR', retenir: <FicheCatalyseur/>,
+      texte: <>Le <strong>rendement</strong> compare ce qu'on obtient (n<sub>obtenu</sub>) à ce qu'on obtiendrait si la réaction était totale (n<sub>max</sub>) : R = frac(n_obtenu|n_max) × 100. </>,
       tache: { type: 'num', q: `Un essai fournit ${fmt(0.62, 2)} mol d'ester alors qu'on en espérait au maximum ${fmt(1.00, 2)} mol. Calculez le rendement (en %).`, unite: '%', vrai: 62, tol: 0.02, cs: 2, detail: true,
-        calcul: () => [`R = n_obtenu/n_max × 100.`, `R = ${fmt(0.62, 2)}/${fmt(1.00, 2)} × 100 = ${fmt(62, 0)} %.`],
-        pieges: [[100 / 0.62, 'Vous avez inversé le rapport : le rendement est obtenu/max, pas l\'inverse.']],
+        calcul: () => [`R = frac(n_obtenu|n_max) × 100.`, `R = frac(${fmt(0.62, 2)}|${fmt(1.00, 2)}) × 100 = ${fmt(62, 0)} %.`],
+        pieges: [[100 / 0.62, 'Vous avez inversé le rapport : le rendement est frac(obtenu|max), pas l\'inverse.']],
         indice: 'Le rendement est toujours inférieur ou égal à 100 %.' } },
 
     { titre: "Rendement d'une synthèse en plusieurs étapes", texte: <>Une synthèse industrielle enchaîne rarement une seule réaction. Les pertes se multiplient d'étape en étape : le rendement global est le <strong>produit</strong> des rendements de chaque étape.</>,
@@ -301,51 +235,15 @@ function etapesGuide() {
         indice: 'Convertissez en décimaux et multipliez : 0,92 × 0,85 × 0,88.' } },
 
     { titre: "Pourquoi 67 % et pas 100 % ?",
-      retenirTitre: 'À RETENIR : ÉQUILIBRE ET RENDEMENT MAXIMAL',
-      retenir: <>
-        <Formule><mi>K</mi><mo>=</mo><mfrac><msup><mi>x</mi><mn>2</mn></msup><mrow><mo>(</mo><mn>1</mn><mo>−</mo><mi>x</mi><mo>)</mo><mo>(</mo><mi>r</mi><mo>−</mo><mi>x</mi><mo>)</mo></mrow></mfrac><mo>=</mo><mn>4</mn><mspace width="1.5em"/><msub><mi>x</mi><mtext>éq</mtext></msub><mo>=</mo><mfrac><mn>2</mn><mn>3</mn></mfrac><mo>[</mo><mo>(</mo><mn>1</mn><mo>+</mo><mi>r</mi><mo>)</mo><mo>−</mo><msqrt><msup><mi>r</mi><mn>2</mn></msup><mo>−</mo><mi>r</mi><mo>+</mo><mn>1</mn></msqrt><mo>]</mo></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Protocole</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>x éq (mol)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Rendement maximal</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>mélange équimolaire (r = 1)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,67</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>67 %</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>excès d’éthanol (r = 5)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,945</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>94,5 %</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>eau éliminée (r = 1)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,97</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 97 %</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>anhydride d’acide</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,98</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>≈ 98 %</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>L’estérification est <strong>renversable</strong> : à l’équilibre il reste des réactifs, le rendement plafonne à x<sub>éq</sub>.</li>
-          <li>Pour <strong>déplacer l’équilibre</strong> vers l’ester : excès d’un réactif (le moins cher, l’éthanol), élimination de l’eau, ou dérivé plus réactif (anhydride).</li>
-          <li>Piège central : x<sub>éq</sub> est <strong>indépendant de k</strong> et donc du catalyseur et de la température dans ce modèle ; <strong>vitesse et rendement sont deux problèmes distincts</strong>.</li>
-          <li><strong>Hypothèses :</strong> K = 4 (valeur didactique) ; réaction athermique ; 0,97 et 0,98 sont des valeurs « quasi totales » imposées par la simulation.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : LE RENDEMENT', retenir: <FicheRendement/>,
       texte: <>L'estérification est <strong>renversable</strong> : à l'équilibre, il reste des réactifs. Ici, avec un mélange équimolaire, l'avancement à l'équilibre vaut x<sub>éq</sub> = 2/3, soit 67 % : le rendement plafonne. </>,
-      tache: { type: 'num', q: `On utilise maintenant un excès d'éthanol : rapport molaire alcool/acide r = 5. L'avancement à l'équilibre devient x_eq = (2/3) × (6 − √21) ≈ ${fmt(0.945, 3)}. Quel rendement maximal (en %) peut-on espérer ?`, unite: '%', vrai: 94.5, tol: 0.02, cs: 2, detail: true,
+      tache: { type: 'num', q: `On utilise maintenant un excès d'éthanol : rapport molaire alcool/acide r = 5. L'avancement à l'équilibre devient x_eq = frac(2|3) × (6 − √21) ≈ ${fmt(0.945, 3)}. Quel rendement maximal (en %) peut-on espérer ?`, unite: '%', vrai: 94.5, tol: 0.02, cs: 2, detail: true,
         calcul: () => [`Avec un excès d'un réactif, l'équilibre est déplacé dans le sens direct.`, `R_max = x_eq × 100 = ${fmt(94.5, 1)} %.`],
         pieges: [[67, 'Vous avez répondu le rendement du mélange équimolaire : l\'excès d\'éthanol déplace l\'équilibre vers l\'ester.']],
         indice: 'L\'acide reste le réactif limitant : le rendement maximal est x_eq × 100.' } },
 
     { titre: "Chimie verte : choisir le protocole",
-      retenirTitre: 'À RETENIR : COMPARER LES PROTOCOLES',
-      retenir: <>
-        <Formule><mi>R</mi><mo>=</mo><mfrac><msub><mi>n</mi><mtext>obtenu</mtext></msub><msub><mi>n</mi><mtext>max</mtext></msub></mfrac><mo>×</mo><mn>100</mn><mspace width="1.5em"/><msub><mi>R</mi><mtext>global</mtext></msub><mo>=</mo><msub><mi>R</mi><mn>1</mn></msub><mo>×</mo><msub><mi>R</mi><mn>2</mn></msub><mo>×</mo><msub><mi>R</mi><mn>3</mn></msub></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Protocole</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>x éq</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>t½ (min)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Coût (fictif)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Score vert</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>référence (40 °C, r = 1)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,67</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>30</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>90</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>excès d’éthanol (r = 5)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,945</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>30</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>74</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>60 °C + catalyseur + excès (r = 5)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,945</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1,9</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,1</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>64</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>anhydride + catalyseur à 60 °C</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,98</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0,09</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>2,9</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>65</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le <strong>rendement</strong> (R ≤ 100 %) est obtenu / maximal, jamais l’inverse. En plusieurs étapes, les rendements se <strong>multiplient</strong> : 0,92 × 0,85 × 0,88 ≈ <strong>68,8 %</strong> (pas la moyenne !).</li>
-          <li><strong>Méthode :</strong> pour chaque critère du cahier des charges (rendement, durée, coût, impact), repérer le levier qui agit dessus, puis <strong>combiner</strong> les leviers indépendants : excès d’éthanol pour le rendement, catalyseur et chauffage pour la vitesse.</li>
-          <li>Il n’y a pas de protocole parfait : on <strong>arbitre</strong>. Ici, excès + catalyseur + 60 °C respecte rendement &gt; 90 % et t<sub>1/2</sub> &lt; 10 min pour un coût moindre que l’anhydride.</li>
-          <li><strong>Hypothèse :</strong> coûts et scores sont des unités fictives, utiles pour comparer, pas pour chiffrer.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : ÉQUILIBRE ET RENDEMENT MAXIMAL', retenir: <FicheEquilibre/>,
       texte: <>Plusieurs voies existent : (a) excès d'éthanol (réactif bon marché) pour le rendement, (b) catalyseur et chauffage pour la vitesse, (c) élimination de l'eau, (d) anhydride d'acide, dérivé plus réactif, quasi total mais plus cher et plus « chargé » côté sécurité. Les leviers de vitesse et de rendement sont indépendants : on peut les combiner.</>,
       tache: { type: 'qcm', q: `Cahier des charges : rendement supérieur à 90 %, temps de demi-réaction inférieur à 10 min, coût minimal. Quel protocole retenez-vous ?`,
         options: [`Excès d'éthanol seul (r = 5, 40 °C, sans catalyseur) : rendement ${fmt(pA.xeq * 100, 0)} %, mais t½ = ${fmt(pA.t12, 0)} min : trop lent`,
@@ -361,7 +259,7 @@ function etapesGuide() {
 function tirerDefi() {
   const t0 = [20, 30, 40][Math.floor(Math.random() * 3)];
   const cible = Math.round((0.70 + Math.random() * 0.20) * 100) / 100;  // mol d'ester visées
-  const k0 = kApparent({ t: t0, catalyseur: false, fconc: 1, reactif: "acide" });
+  const k0 = Number(kApparent({ t: t0, catalyseur: false, fconc: 1, reactif: "acide" }).toPrecision(2));   // k tel qu'affiché (2 chiffres significatifs) : le corrigé part de cette valeur
   return { t0, cible, k0 };
 }
 function defi() {
@@ -370,19 +268,19 @@ function defi() {
   const mEster = Math.round(gagnant.xeq * 116 * 10) / 10;
   return {
     t0: d.t0, verifie: false, reps: {},
-    consigne: `Le service production commande un essai à ${d.t0} °C, sans catalyseur (k = ${fmt(d.k0, 3)} min⁻¹, avancement à l'équilibre x_éq = ${fmt(2 / 3, 2)} mol pour 1,0 mol d'acide). Répondez aux cinq questions ; l'écran Exploration peut vous aider.`,
-    rappels: 'Rappels : t_1/2 = ln(2)/k ; la vitesse double tous les 10 °C ; catalyseur : k ×4, x_éq inchangé ; rendement = n_obtenu/n_max × 100. Donnez 2 chiffres significatifs.',
+    consigne: `Le service production commande un essai à ${d.t0} °C, sans catalyseur (k = ${String(d.k0).replace('.', ',')} min⁻¹, avancement à l'équilibre x_éq = ${fmt(2 / 3, 2)} mol pour 1,0 mol d'acide). Répondez aux cinq questions ; l'écran Exploration peut vous aider.`,
+    rappels: 'Rappels : t_1/2 = frac(ln(2)|k) ; la vitesse double tous les 10 °C ; catalyseur : k ×4, x_éq inchangé ; rendement = frac(n_obtenu|n_max) × 100. Donnez 2 chiffres significatifs.',
     Q: [
-      { id: 'q1', type: 'num', unite: 'min', vrai: tempsDemi(d.k0), tol: 0.03,
-        q: `Temps de demi-réaction de l'essai à ${d.t0} °C : t_1/2 = ln(2)/k.`,
-        detail: 't_1/2 = ln(2)/k.' },
+      { id: 'q1', type: 'num', unite: 'min', vrai: tempsDemi(d.k0), tol: 0.05,
+        q: `Temps de demi-réaction de l'essai à ${d.t0} °C : t_1/2 = frac(ln(2)|k).`,
+        detail: 't_1/2 = frac(ln(2)|k).' },
       { id: 'q2', type: 'num', unite: '', vrai: 4, tol: 0.02,
         q: `On chauffe à ${d.t0 + 20} °C : par quel facteur la constante de vitesse k est-elle multipliée ?`,
         detail: '+20 °C = deux fois +10 °C, donc 2 × 2 = 4.' },
       { id: 'q3', type: 'num', unite: '%', vrai: 67, tol: 0.02,
         q: "Rendement maximal de l'essai (mélange équimolaire), en % ?",
         detail: "x_éq = 2/3 mol pour 1 mol au maximum, soit 67 %." },
-      { id: 'q4', type: 'num', unite: 'g', vrai: mEster, tol: 0.03,
+      { id: 'q4', type: 'num', unite: 'g', vrai: mEster, tol: 0.05,
         q: `Le protocole « gagnant » (60 °C, catalyseur, excès r = 5) atteint x_éq ≈ ${fmt(gagnant.xeq, 2)} mol. Quelle masse d'ester (M = 116 g/mol) obtient-on pour 1,0 mol d'acide, la réaction étant menée à son terme ?`,
         detail: 'm = x_éq × M.' },
       { id: 'q5', type: 'qcm', bonne: 1,
@@ -393,9 +291,9 @@ function defi() {
   };
 }
 const INDICE_Q = {
-  q1: "Formule : t_1/2 = ln(2)/k, avec k en min⁻¹ : le résultat est en minutes.",
+  q1: "Formule : t_1/2 = frac(ln(2)|k), avec k en min⁻¹ : le résultat est en minutes.",
   q2: "Chaque tranche de 10 °C multiplie la vitesse par 2. Combien de tranches dans +20 °C ?",
-  q3: "Rendement = quantité obtenue / quantité maximale. Que vaut x_éq pour un mélange équimolaire ?",
+  q3: "Rendement = frac(quantité obtenue|quantité maximale). Que vaut x_éq pour un mélange équimolaire ?",
   q4: "Masse = quantité de matière × masse molaire. La quantité d'ester vaut x_éq.",
   q5: "Le catalyseur modifie-t-il l'état final d'équilibre, ou seulement le chemin pour y arriver ?",
 };
@@ -711,7 +609,7 @@ function EcranExploration({ expl, maj }) {
     </div>
     <div style={{ flex: "1 1 340px", minWidth: 300 }}>
       <div style={styleBoite}>
-        <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
           {[["micro", "Microscopique"], ["courbe", "Courbe x(t)"], ["profil", "Profil énergétique"]].map(([v, l]) => (
             <button key={v} style={stylePetitBouton(vue === v, KIT.accent)}
               onClick={() => setVue(v)}>{l}</button>
@@ -833,7 +731,7 @@ export function SimulationOptimiserSynthese() {
       <CarteParcours etapes={etapes} etat={guide} setEtat={setGuide} fin={finParcours} />
       {finParcours && <ARetenir titre="À RETENIR">
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Trois <strong>facteurs cinétiques</strong> : température, concentration des réactifs, catalyseur. Ils agissent sur la constante de vitesse k, donc sur le temps de demi-réaction t<sub>1/2</sub> = ln(2)/k.</li>
+          <li>Trois <strong>facteurs cinétiques</strong> : température, concentration des réactifs, catalyseur. Ils agissent sur la constante de vitesse k, donc sur le temps de demi-réaction <FormuleEnLigne><msub><mi>t</mi><mrow><mn>1</mn><mo>/</mo><mn>2</mn></mrow></msub><mo>=</mo><mfrac><mrow><mi>ln</mi><mo>(</mo><mn>2</mn><mo>)</mo></mrow><mrow><mi>k</mi></mrow></mfrac></FormuleEnLigne>.</li>
           <li>À l'échelle microscopique : la réaction nécessite des <strong>chocs efficaces</strong> (énergétiques et bien orientés) ; le catalyseur abaisse l'énergie d'activation.</li>
           <li><strong>Le catalyseur n'augmente pas le rendement</strong> : il accélère, l'état d'équilibre ne change pas.</li>
           <li>Le rendement se pilote par <strong>l'équilibre</strong> : excès d'un réactif, élimination d'un produit, dérivé plus réactif.</li>
