@@ -49,7 +49,16 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   const [mode, setMode] = useState(() => modeOuverture('fluides-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('fluides-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('fluides-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('fluides-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('fluides-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 2 ? g2 : g1, setGuide = parc === 2 ? setG2 : setG1;
+  const ORDRE_PARC = [['objectif', 'patm', 'unites', 'plonger', 'delta', 'mesures', 'allure', 'modele', 'pente', 'rho', 'ordonnee', 'bilan1'],
+    ['prepa2', 'inconnu', 'placer', 'lireP', 'H', 'hypotheses', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const [defi, setDefi] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
   const [recipOuv, setRecipOuv] = useState(false);
@@ -79,7 +88,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   }, [mesures]);
   const fit = fit1;
   // En parcours guidé, le modèle linéaire apparaît après l’étape où l’élève choisit le modèle (étape n° 8)
-  const mod = enGuide ? (guide.etape > 7 ? 1 : 0) : modele;
+  const mod = enGuide ? (guide.etape > iEt('modele') ? 1 : 0) : modele;
   const a1 = fit1 ? fit1.coeffs[1] : NaN, b1 = fit1 ? fit1.coeffs[0] : NaN;
   const profEstimee = fit1 && pLueInc * 100 > b1 ? (pLueInc * 100 - b1) / a1 * 100 : null;   // cm, par la droite d'étalonnage
 
@@ -109,7 +118,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       margin: { t: 14, b: 50, l: 80, r: 14 }, paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: '#fafcff',
       legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(255,255,255,0.8)' }, showlegend: true, hovermode: 'closest', autosize: true,
     }, { displayModeBar: false, responsive: true });
-  }, [plotlyReady, mode, mesures, mod, fit, guide.etape]); // eslint-disable-line
+  }, [plotlyReady, mode, mesures, mod, fit, guide.etape, parc]); // eslint-disable-line
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const etape = guide.etape;
@@ -117,7 +126,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
   const P0 = affichage(pressionPa(1013, 1000, 0)), P15 = affichage(pressionPa(1013, 1000, 0.15));
   const PincGuide = affichage(pressionPa(1013, 1000, H_GUIDE));
   const HfitGuide = fit1 && mod === 1 ? (PincGuide * 100 - b1) / a1 * 100 : NaN;
-  const ETAPES = [
+  const TOUTES = [
     { id: 'objectif', titre: 'Que cherche-t-on ?', focus: ['manip'],
       texte: <>On plonge l'embout d'un <strong>manomètre</strong> dans une éprouvette d'eau, à des profondeurs h croissantes, pour établir la relation entre la <strong>pression</strong> de l'eau et la <strong>profondeur</strong>. Le manomètre indique la pression <strong>absolue</strong>.</>,
       tache: { type: 'qcm', indice: 'Au niveau de la surface, y a-t-il déjà de l’eau au-dessus de l’embout ? Et au-dessus de l’eau, qu’y a-t-il ?', q: 'Quelle pression indique le manomètre quand l’embout est à la surface de l’eau (h = 0) ?', options: ['La pression atmosphérique', '0 Pa', 'La pression due à l’eau seule'], bonne: 0,
@@ -180,6 +189,11 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       texte: <>La loi de la statique des fluides s’écrit <strong>P = Patm + ρ·g·h</strong>. Elle a la même forme que votre modèle <strong>P = a·h + b</strong>. Comparez b avec la pression atmosphérique que vous avez relevée au début, à l’étape 2 (embout à h = 0 : {P0} hPa).</>,
       tache: { type: 'qcm', indice: 'Dans P = Patm + ρ·g·h, que vaut P quand h = 0 ? C’est la valeur de b dans P = a·h + b.', q: 'Que représente l’ordonnée à l’origine b ?', options: ['La pression atmosphérique (pression à h = 0)', 'La pression au fond de l’éprouvette', 'La masse volumique de l’eau'], bonne: 0,
         expl: `b ≈ ${fmt(b1, 0)} Pa, soit ${fmt(b1 / 100, 0)} hPa : c'est la pression atmosphérique relevée à l'étape 2.` } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez relever des pressions à plusieurs profondeurs, tracer P = f(h), choisir le modèle linéaire et interpréter sa pente et son ordonnée à l’origine. Le parcours 2 utilise cette droite d’étalonnage pour trouver la hauteur d’eau d’un récipient opaque.</>, tache: null },
+    { id: 'prepa2', titre: 'La droite d’étalonnage', focus: ['mesures', 'courbe'],
+      texte: <>Pour ce parcours, on part d’une série de 10 mesures de la pression de l’eau à des profondeurs de 0 à 27 cm, déjà relevées et ajustées par une droite P = a·h + b (comme à la fin du parcours 1).</>,
+      tache: { type: 'action', ok: mesures.length >= 3 && fluide === 'eau' && patm === 1013, label: 'Charger les mesures', faire: () => { setFluide('eau'); setPatm(1013); mesuresAuto(); }, consigne: 'Chargez la série de mesures' } },
     { id: 'inconnu', titre: 'Un récipient inconnu', focus: ['cuve'],
       retenirTitre: 'Lire la droite d’étalonnage',
       retenir: <><FPenteB/><Formule><mi>P</mi><mo>=</mo><mi>a</mi><mo>·</mo><mi>h</mi><mo>+</mo><mi>b</mi><mspace width="1em"/><mo>↔</mo><mspace width="1em"/><mi>P</mi><mo>=</mo><mi>ρ</mi><mo>·</mo><mi>g</mi><mo>·</mo><mi>h</mi><mo>+</mo><msub><mi>P</mi><mtext>atm</mtext></msub></Formule>{puces(<>La droite mesurée et la loi de la statique des fluides ont la même forme : on <strong>identifie</strong> terme à terme.</>, <>Le manomètre est arrondi à 1 hPa (≈ 1 cm d’eau) : on trouve ρ à quelques % près.</>)}</>,
@@ -220,7 +234,8 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       retenir: <><FVases/>{puces(<>Liquide <strong>au repos</strong> : deux points à la même profondeur ont la même pression.</>, <>Liquides non miscibles superposés : on additionne les termes ρ·g·h de chaque couche. Valable si le liquide est incompressible et g uniforme.</>)}</>,
       texte: <>Vous avez établi la loi de la statique des fluides à partir de mesures, identifié la pente (ρ·g) et l'ordonnée à l'origine (Patm), puis utilisé le modèle pour trouver la hauteur d'eau d'un récipient opaque. En exploration libre, changez de liquide : que deviennent la pente et l'ordonnée à l'origine ?</>, tache: null },
   ];
-  const idx = id => ETAPES.findIndex(e => e.id === id);
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
+  const idx = iEt;
   const passe = id => !enGuide || etape > idx(id);
   const vu = id => !enGuide || etape >= idx(id);           // élément introduit à l'étape id (puis conservé jusqu'à la fin)
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
@@ -307,8 +322,10 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       <Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section>
     </div>
   );
+  const NOMS_PARC = ['1. Pression et profondeur : établir la relation', '2. Mesurer la hauteur d’eau d’un récipient opaque'];
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : {NOMS_PARC[1].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
@@ -505,7 +522,12 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       </div>
       <div className={`sf-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : exploration}
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: TXT2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
           : mode === 'defi' ? panneauHypo
             : null}
       </div>
