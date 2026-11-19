@@ -9,6 +9,8 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, Curseur, LigneMesure, ARetenir, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { FGantsCrochets, FViscosite, FEcoulement, F3ITT, FASE, FCombinaison } from "./EpaissSchemas";
 import { SceneMoleculaire, ProfilVitesse, LegendeScene, IconeGant, IconeCrochet, IconeParticule } from "./EpaisseursScene";
 import {
   PARAMS, ZONES, zoneDeGradient,
@@ -894,28 +896,6 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Gants et crochets",
-      retenirTitre: "À RETENIR : GANTS ET CROCHETS",
-      retenir: <>
-        <svg viewBox="0 0 400 164" role="img" aria-label="Convention de dessin du TP : un gant de baseball peut attraper une particule de TiO2, liaison associative forte, ou un autre gant, liaison auto-associante lâche ; un crochet ne s’accroche qu’à un autre crochet, liaison auto-associante lâche, et n’a aucune prise sur une particule" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <text x="100" y="16" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">liaison associative</text><text x="300" y="16" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">liaison auto-associante</text>
-          <line x1="200" y1="24" x2="200" y2="118" stroke="#cbd5e1" strokeWidth="1.5" />
-          <circle cx="56" cy="72" r="22" fill="#cbd5e1" stroke="#334155" strokeWidth="2" /><text x="56" y="76" textAnchor="middle" fontSize="11" fontWeight="700" fill="#334155">TiO₂</text>
-          <path d="M 96 52 Q 96 44 104 44 L 140 44 Q 156 44 156 60 L 156 84 Q 156 100 140 100 L 104 100 Q 96 100 96 92 Z" fill="#fde68a" stroke="#b45309" strokeWidth="2.2" /><ellipse cx="118" cy="40" rx="8" ry="6" fill="#fde68a" stroke="#b45309" strokeWidth="2" /><text x="128" y="76" textAnchor="middle" fontSize="11" fontWeight="700" fill="#b45309">gant</text>
-          <line x1="78" y1="72" x2="96" y2="72" stroke="#16a34a" strokeWidth="4" />
-          <path d="M 236 52 L 236 84 Q 236 100 252 100 Q 268 100 268 84" fill="none" stroke="#1d4ed8" strokeWidth="3" strokeLinecap="round" /><path d="M 296 52 L 296 84 Q 296 100 312 100 Q 328 100 328 84" fill="none" stroke="#1d4ed8" strokeWidth="3" strokeLinecap="round" transform="translate(0,0)" />
-          <text x="252" y="124" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1d4ed8">crochet</text><text x="312" y="124" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1d4ed8">crochet</text>
-          <line x1="268" y1="76" x2="296" y2="76" stroke="#16a34a" strokeWidth="2" strokeDasharray="4 4" />
-          <text x="100" y="140" textAnchor="middle" fontSize="11" fill="#334155">gant + particule :</text><text x="100" y="154" textAnchor="middle" fontSize="11" fill="#334155">forte, difficile à défaire</text><text x="300" y="140" textAnchor="middle" fontSize="11" fill="#334155">crochet + crochet, gant + gant :</text><text x="300" y="154" textAnchor="middle" fontSize="11" fill="#334155">lâche, facile à défaire</text>
-        </svg>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Motif hydrophobe</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Peut s’accrocher à</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>gant</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>une particule (associative, forte) ou un autre gant (auto-associante, lâche)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>crochet</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un autre crochet seulement (auto-associante, lâche)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>particule</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>un gant seulement</td></tr>
-          </tbody>
-        </table>
-      </>,
       texte: "Les modifications hydrophobes sont dessinées de deux façons dans le TP : comme des gants de baseball " +
         "ou comme des crochets. Touche chacun dans le panneau pour voir avec quoi il peut interagir, puis réponds.",
       tache: {
@@ -930,6 +910,11 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Monter le gradient",
+      retenirTitre: "À RETENIR : GANTS ET CROCHETS",
+      retenir: <>
+        <FGantsCrochets/>
+        {puces(<>Un <strong>gant</strong> (modification hydrophobe) peut attraper une <strong>particule de TiO₂</strong> : liaison <strong>associative</strong>, forte.</>, <>Gants et crochets peuvent aussi s’accrocher <strong>entre eux</strong> : liaisons <strong>auto-associantes</strong>, lâches et faciles à défaire.</>, <>Un crochet n’a <strong>aucune prise</strong> sur une particule.</>)}
+      </>,
       texte: "Voici un zoom sur la peinture. Le Thixol 53 L (HASE) est dessiné avec des crochets : deux crochets s’accrochent comme deux maillons. " +
         "Le Coapur 3025 (HEUR) est dessiné avec des gants : un gant tient une particule comme un gant de baseball tient une balle. " +
         "Le compteur sous le dessin donne le nombre de liaisons en place. Clique sur « À l’application » (ou monte le curseur au-delà de 1 000 s⁻¹) et regarde ce qui se passe pour chaque produit.",
@@ -973,22 +958,10 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Courbe d’écoulement",
-      retenirTitre: "À RETENIR : LA COURBE DE VISCOSITÉ η(γ̇)",
+      retenirTitre: "À RETENIR : LA VISCOSITÉ SELON LE GRADIENT",
       retenir: <>
-        <svg viewBox="0 0 400 190" role="img" aria-label="Allure qualitative de la viscosité η en fonction du gradient de vitesse γ̇, en échelles logarithmiques : le Thixol 53 L, un HASE, a une viscosité forte à bas gradient qui s’effondre à haut gradient ; le Coapur 3025, un HEUR, a une viscosité quasi constante" style={{ width: '100%', maxWidth: 400, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="50" y1="20" x2="50" y2="150" stroke="#334155" strokeWidth="2" /><line x1="50" y1="150" x2="380" y2="150" stroke="#334155" strokeWidth="2" />
-          <text x="10" y="30" fontSize="12" fontWeight="700" fill="#334155">η</text><text x="46" y="14" fontSize="11" fill="#334155">(échelle log)</text><text x="380" y="176" textAnchor="end" fontSize="12" fontWeight="700" fill="#334155">γ̇ (s⁻¹, échelle log)</text>
-          <path d="M 50 38 L 120 40 Q 190 48 240 90 Q 275 118 380 126" fill="none" stroke="#1d4ed8" strokeWidth="3.2" />
-          <line x1="50" y1="108" x2="380" y2="106" stroke="#b45309" strokeWidth="3.2" />
-          <text x="62" y="30" fontSize="12" fontWeight="700" fill="#1d4ed8">Thixol 53 L (HASE) : η qui s’effondre</text>
-          <text x="62" y="126" fontSize="12" fontWeight="700" fill="#b45309">Coapur 3025 (HEUR) : η quasi constante</text>
-          
-        </svg>
-        <Formule><mi>τ</mi><mo>=</mo><mi>η</mi><mo>×</mo><mover><mi>γ</mi><mo>˙</mo></mover></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Thixol 53 L (HASE) : η forte à bas gradient, effondrée à haut gradient (rhéofluidifiant). Coapur 3025 (HEUR) : η quasi constante (fluide newtonien : τ(γ̇) est une droite).</li>
-          <li>La pente de la courbe d’écoulement τ(γ̇) est la viscosité.</li>
-        </ul>
+        <FViscosite/>
+        {puces(<>Le <strong>HASE</strong> (Thixol) : forte viscosité à <strong>bas gradient</strong> (pot, mur frais), effondrée à haut gradient : il est <strong>rhéofluidifiant</strong>.</>, <>Le <strong>HEUR</strong> (Coapur) : viscosité quasi constante, ajustée à <strong>haut gradient</strong> (application au rouleau).</>)}
       </>,
       texte: "Le programme demande d’identifier un comportement sur deux courbes : la courbe de viscosité η(γ̇), que tu viens d’utiliser, " +
         "et la courbe d’écoulement τ(γ̇), où τ = η × γ̇ est la contrainte de cisaillement. La deuxième apparaît sous la première, avec les deux produits. " +
@@ -1010,6 +983,12 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Qui est thixotrope ?",
+      retenirTitre: "À RETENIR : LA COURBE D’ÉCOULEMENT",
+      retenir: <>
+        <FEcoulement/>
+        <Formule><mi>τ</mi><mo>=</mo><mi>η</mi><mo>×</mo><mover><mi>γ</mi><mo>˙</mo></mover></Formule>
+        {puces(<><strong>Fluide newtonien</strong> : τ(γ̇) est une droite passant par l’origine, de pente η constante.</>, <><strong>Fluide rhéofluidifiant</strong> : la courbe s’incurve, la pente (donc η) diminue quand γ̇ augmente.</>)}
+      </>,
       texte: "Thixotrope, c’est une viscosité qui met du temps à revenir après un cisaillement. " +
         "Lance la rampe aller-retour pour chaque produit : on monte γ̇, puis on le redescend. " +
         "Regarde la valeur de λ, la part de liaisons en place, et compare la montée et la descente.",
@@ -1050,6 +1029,12 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Pour aller plus loin : le HEUR à forte dose",
+      retenirTitre: "À RETENIR : THIXOTROPIE ET RÉGÉNÉRATION",
+      retenir: <>
+        <F3ITT/>
+        <Formule><msub><mi>M</mi><mn>1</mn></msub><mo>=</mo><mfrac><mrow><mi>η</mi><mtext> finale</mtext></mrow><mrow><mi>η</mi><mtext> initiale</mtext></mrow></mfrac><mo>×</mo><mn>100</mn></Formule>
+        {puces(<>La <strong>thixotropie</strong> : après un fort cisaillement, la viscosité ne revient que <strong>lentement</strong>, car les liaisons auto-associantes se reforment lentement.</>, <>Le test en trois intervalles (3ITT) mesure la <strong>régénération</strong> M<sub>1</sub> : plus elle est faible après 80 s, plus le produit est lent à se reconstruire.</>)}
+      </>,
       texte: "Le Coapur 3025 n’est pas thixotrope à dose normale. Mais utilisé à forte concentration, " +
         "des gants de molécules voisines peuvent s’attraper entre eux. Sélectionne le Coapur (HEUR), " +
         "active « Dose forte » : beaucoup plus de chaînes apparaissent, alors que le nombre de particules ne change pas. Regarde ce que font les gants en trop, puis lance la rampe aller-retour.",
@@ -1089,6 +1074,11 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Le formulateur",
+      retenirTitre: "À RETENIR : L’ASE : ÉPAISSISSANT NON ASSOCIATIF",
+      retenir: <>
+        <FASE/>
+        {puces(<>Pas de modification hydrophobe : <strong>aucune liaison associative</strong>.</>, <>Livré à pH acide, il épaissit par <strong>neutralisation</strong> : –COOH devient –COO⁻, les charges se repoussent, la chaîne <strong>se déploie</strong> et gonfle.</>)}
+      </>,
       texte: "Un formulateur veut une peinture mate : une tenue en pot sans sédimentation, " +
         "pas d’affaissement sur le mur, mais aussi zéro éclaboussure au rouleau et un film bien garni.",
       tache: {
@@ -1103,6 +1093,11 @@ export function SimulationEpaisseursAssociatifs() {
     },
     {
       titre: "Régler les doses",
+      retenirTitre: "À RETENIR : COMBINER HASE ET HEUR",
+      retenir: <>
+        <FCombinaison/>
+        {puces(<>Le <strong>HASE</strong> couvre le <strong>bas gradient</strong> (tenue en pot, pas d’affaissement), le <strong>HEUR</strong> le <strong>haut gradient</strong> (éclaboussures, film garni, nivellement).</>, <>Une peinture mate demande les deux, dosés pour respecter les quatre critères.</>)}
+      </>,
       texte: "À toi de formuler : règle la dose de Thixol 53 L et celle de Coapur 3025 pour respecter les quatre critères du cahier des charges d’une peinture mate. " +
         "Les valeurs de viscosité et la courbe se mettent à jour quand tu bouges les curseurs.",
       tache: {
