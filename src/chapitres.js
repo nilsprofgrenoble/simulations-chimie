@@ -2,7 +2,7 @@
 //  CHAPITRES PAR NIVEAU : source unique du menu, du « chapitre en cours » d'une classe et des devoirs.
 //
 //  Un chapitre = un groupe du menu (2GT, 1G, TG, TSTL, BTS) avec :
-//   • (facultatif) une « rubrique » : intitulé qui regroupe plusieurs chapitres dans le menu (ex. TSTL : « SPCL · Systèmes et procédés », « SPCL · Ondes », « PCM · Constitution de la matière ») ;
+//   • (facultatif) une « rubrique » : intitulé qui regroupe plusieurs chapitres dans le menu (ex. TSTL : « SPCL · Systèmes et procédés », « SPCL · Ondes », « PCM ») ;
 //   • ses simulations (identifiants de src/App.jsx) ;
 //   • les thèmes de la banque d'exercices « Je m'entraîne » qui s'y rattachent (champ « domaine » des exercices).
 //  Hypothèses (discutables, modifiables ici) : la banque d'exercices n'a pas de niveau ; on rattache chaque thème au chapitre
@@ -45,8 +45,8 @@ export const CHAPITRES = [
   { id: 'tg-evolution-temporelle', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '⏱️ Modéliser l’évolution temporelle d’un système, siège d’une transformation', sims: [122, 123], domaines: ['Cinétique : vitesse volumique et ordre 1', 'Radioactivité : décroissance et demi-vie'] },
   { id: 'tg-etat-final', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '⚖️ Prévoir l’état final d’un système, siège d’une transformation chimique', sims: [125, 129, 130, 131, 132, 133, 134], domaines: ['Équilibre chimique : Qr, K et taux d’avancement', 'Force des acides et des bases : Ka et tampon', 'Acides α-aminés : forme selon le pH', 'Piles : fonctionnement et capacité', 'Électrolyse : forcer le sens d’évolution'] },
   { id: 'tg-ondes', niveau: 'TG', rubrique: 'Ondes et signaux', label: '🌊 Caractériser les phénomènes ondulatoires', sims: [116], domaines: ['Ondes'] },
-  { id: 'tstl-pcm-structure-spatiale', niveau: 'TSTL', rubrique: 'PCM · Constitution de la matière', label: '🫲 Structure spatiale des espèces chimiques', sims: [137, 145, 144], domaines: ['Chiralité et carbone asymétrique', 'Configuration absolue R/S', 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E'] },
-  { id: 'tstl-pcm-reactions-acido-basiques', niveau: 'TSTL', rubrique: 'PCM · Transformation de la matière', label: '🧫 Réactions acido-basiques en solution aqueuse', sims: [138, 139, 141, 142, 143], domaines: ['Acide faible, coefficient de dissociation et Ka', 'pH, pKa et diagramme de prédominance', 'Solution tampon : choix du couple et préparation', 'CO₂ dissous : couples et solubilité', 'Extraction acide-base : choix du pH'] },
+  { id: 'tstl-pcm-structure-spatiale', niveau: 'TSTL', rubrique: 'PCM', label: '🫲 Structure spatiale des espèces chimiques', sims: [137, 145, 144], domaines: ['Chiralité et carbone asymétrique', 'Configuration absolue R/S', 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E'] },
+  { id: 'tstl-pcm-reactions-acido-basiques', niveau: 'TSTL', rubrique: 'PCM', label: '🧫 Réactions acido-basiques en solution aqueuse', sims: [138, 139, 141, 142, 143], domaines: ['Acide faible, coefficient de dissociation et Ka', 'pH, pKa et diagramme de prédominance', 'Solution tampon : choix du couple et préparation', 'CO₂ dissous : couples et solubilité', 'Extraction acide-base : choix du pH'] },
   { id: 'tstl-signaux', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '📡 Transmission de signaux numériques', sims: [8, 15, 33], domaines: ['Transmission de signaux numériques'] },
   { id: 'tstl-mesure', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '📏 Mesure et incertitudes', sims: [78], domaines: ['Mesure et incertitudes'] },
   { id: 'tstl-regulation', niveau: 'TSTL', rubrique: 'SPCL · Systèmes et procédés', sousRubrique: 'Flux d’information : analyse et contrôle', label: '⚙️ Régulation', sims: [5, 6], domaines: ['Régulation'] },
