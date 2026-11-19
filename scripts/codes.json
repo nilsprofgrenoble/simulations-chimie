@@ -1041,5 +1041,17 @@
  "77:plausible:predo-val-rapport-impossible": "VAL259",
  "77:plausible:predo-val-pka-indicateur": "VAL260",
  "36:predo-rapport": "REA46",
- "36:predo-beer": "REA47"
+ "36:predo-beer": "REA47",
+ "34:tampstl-sapp-prepa.0": "SAPP271",
+ "34:tampstl-sapp-prepa.1": "SAPP272",
+ "34:tampstl-sapp-ajout.0": "SAPP273",
+ "34:tampstl-sapp-ajout.1": "SAPP274",
+ "37:prevoir:tampstl-ana-couple": "ANA467",
+ "37:prevoir:tampstl-ana-ajout": "ANA468",
+ "37:prevoir:tampstl-ana-dilution": "ANA469",
+ "37:prevoir:tampstl-ana-melange": "ANA470",
+ "77:plausible:tampstl-val-egal": "VAL261",
+ "77:plausible:tampstl-val-prepa": "VAL262",
+ "36:tampstl-prepa": "REA48",
+ "36:tampstl-ajout": "REA49"
 }

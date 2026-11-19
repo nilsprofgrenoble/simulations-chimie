@@ -6,6 +6,7 @@ import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
 import * as PRE from "./predoTstlModele";
+import * as TMP from "./tamponTstlModele";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
@@ -993,6 +994,73 @@ function genPredoRapport() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['frac([A⁻]|[AH]) = 10^(pH − pKa).', 'Conservation de la matière : C = [AH] + [A⁻], donc [AH] = frac(C|1 + r).', 'À pH = pKa ± 1 : un facteur 10 entre les deux formes.'] };
 }
+// ---------- Solution tampon (TSTL, PCM) ----------
+function tirageTampstlPrepa() {
+  for (let k = 0; k < 500; k++) {
+    const t = TMP.tiragePrep(), cp = TMP.COUPLES[t.coupleId], r2 = PRE.arrondiCS(10 ** (t.pH - cp.pKa), 2);
+    const vb2 = PRE.arrondiCS(TMP.volumeBase(r2, t.V), 2), va2 = PRE.arrondiCS(t.V - vb2, 2), nb2 = PRE.arrondiCS(t.C * vb2, 2), v = [r2, vb2, va2, nb2];
+    if (v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(x, y)))) return { t, cp, r2, vb2, va2, nb2 };
+  }
+  throw new Error('tirage tampstl-prepa impossible');
+}
+function genTampstlPrepa() {
+  const { t, cp, r2, vb2, va2, nb2 } = tirageTampstlPrepa(), pHs = nbF(t.pH, 1), pK = nbF(cp.pKa, 1), Cs = nbF(t.C, 2);
+  const rs = r2 >= 10 ? nbF(r2, 0) : nbF(r2, r2 >= 1 ? 1 : 2);
+  const vbs = nbF(vb2, vb2 >= 10 ? 0 : 1), vas = nbF(va2, va2 >= 10 ? 0 : 1);
+  const intro = `On veut préparer ${t.V}${NB}mL de solution tampon de pH ${pHs}, à 25${NB}°C, avec le couple ${cp.AH} / ${cp.A} de pKa = ${pK}. On dispose d’une solution de ${cp.AH} et d’une solution de ${cp.A} (sel de sodium), toutes deux de concentration ${Cs}${NB}mol/L.`;
+  const q1 = { id: 't0', type: 'num', q: <>Calculez le rapport <b>{avecIndices(`frac(n(${cp.A})|n(${cp.AH}))`)}</b> des quantités de matière à mélanger (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: r2, tolRel: 0.05, csMin: 2,
+    aide: 'pH = pKa + log(rapport) donc rapport = 10^(pH − pKa) (touche 10ˣ).',
+    pieges: [[t.pH - cp.pKa, 'C’est la différence pH − pKa, donc le logarithme du rapport : il faut prendre 10 puissance cette valeur.'], [1 / r2, 'Le rapport est inversé : on demande la base sur l’acide.'], [t.pH / cp.pKa, 'Il faut calculer 10^(pH − pKa), pas le quotient du pH par le pKa.']],
+    expl: <>Rapport = 10<sup>{pHs} − {pK}</sup> = 10<sup>{nbF(t.pH - cp.pKa, 2)}</sup> = <b>{rs}</b>.</> };
+  const q2 = { id: 't1', type: 'num', q: <>Les deux solutions ont la même concentration : le rapport des quantités est le rapport des volumes. Avec un rapport de {rs} et V(base) + V(acide) = {t.V}{NB}mL, calculez le volume de solution de <b>{cp.A}</b> à prélever (en mL, 2 chiffres significatifs).</>, unite: 'mL', vrai: vb2, tolRel: 0.05, csMin: 2,
+    aide: 'V(base) = r × V(acide) et V(base) + V(acide) = V donc V(base) = frac(V × r|1 + r).',
+    pieges: [[t.V * r2, 'C’est V × r : le total ne peut pas dépasser le volume à préparer. Utilisez V(base) = frac(V × r|1 + r).'], [t.V / (1 + r2), 'C’est le volume de la solution d’acide ; on demande celui de la base.'], [t.V / 2, 'Deux volumes égaux donneraient un rapport de 1, donc pH = pKa.']],
+    expl: <>V({cp.A}) = {avecIndices(`frac(${t.V} × ${rs}|1 + ${rs})`)} = <b>{vbs}{NB}mL</b>.</> };
+  const q3 = { id: 't2', type: 'num', q: <>On prélève {vbs}{NB}mL de solution de {cp.A}. Calculez le volume de solution de <b>{cp.AH}</b> à ajouter pour obtenir {t.V}{NB}mL au total (en mL, 2 chiffres significatifs).</>, unite: 'mL', vrai: va2, tolRel: 0.05, csMin: 2,
+    aide: 'Les volumes s’additionnent : V(acide) = V − V(base).',
+    pieges: [[vb2, 'C’est le volume de la solution de base, déjà prélevé : on demande celui de la solution d’acide.'], [t.V + vb2, 'Il faut soustraire V(base) du volume total, pas l’ajouter.'], [t.V * va2 / vb2, 'Les volumes s’additionnent : V(acide) = V − V(base).']],
+    expl: <>V({cp.AH}) = {t.V} − {vbs} = <b>{vas}{NB}mL</b>.</> };
+  const q4 = { id: 't3', type: 'num', q: <>Quelle quantité de matière de <b>{cp.A}</b> contient le volume de {vbs}{NB}mL de la solution à {Cs}{NB}mol/L ? (en mmol, 2 chiffres significatifs ; 1{NB}mol/L = 1{NB}mmol/mL)</>, unite: 'mmol', vrai: nb2, tolRel: 0.05, csMin: 2,
+    aide: 'n = C × V : avec C en mol/L et V en mL, n est en mmol.',
+    pieges: [[t.C * vb2 / 1000, 'La quantité est en mmol : C en mol/L multipliée par V en mL donne directement des mmol, sans diviser par 1 000.'], [vb2 / t.C, 'Il faut multiplier le volume par la concentration, pas les diviser.'], [t.C * va2, 'C’est la quantité de l’acide ; on demande celle de la base.']],
+    expl: <>n({cp.A}) = {Cs} × {vbs} = <b>{nbF(nb2, nb2 >= 10 ? 0 : 1)}{NB}mmol</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Rapport des quantités = 10^(pH − pKa), égal au rapport des volumes si les concentrations sont égales.', 'V(base) = frac(V × r|1 + r) et V(acide) = V − V(base).', 'On choisit un couple de pKa proche du pH visé (à ± 1).'] };
+}
+// Tirage dont les quatre réponses (n(A⁻), n(AH), rapport, pH) sont deux à deux différentes de plus de 10 %
+function tirageTampstlAjout() {
+  for (let k = 0; k < 500; k++) {
+    const a = TMP.tirageAjout(), cp = TMP.COUPLES[a.coupleId], r2 = PRE.arrondiCS(a.nA2 / a.nAH2, 2), v = [a.nA2, a.nAH2, r2, cp.pKa + Math.log10(r2)];
+    if (v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(x, y)))) return { a, cp, r2 };
+  }
+  throw new Error('tirage tampstl-ajout impossible');
+}
+function genTampstlAjout() {
+  const { a, cp, r2 } = tirageTampstlAjout(), pK = nbF(cp.pKa, 1), acide = a.sens === 'acide';
+  const nA2 = a.nA2, nAH2 = a.nAH2, rs = r2 >= 10 ? nbF(r2, 0) : nbF(r2, r2 >= 1 ? 1 : 2), pH2 = cp.pKa + Math.log10(r2), pH0 = a.pH0;
+  const ion = acide ? 'H₃O⁺' : 'HO⁻', reac = acide ? `${ion} + ${cp.A} → ${cp.AH} + H₂O` : `${ion} + ${cp.AH} → ${cp.A} + H₂O`;
+  const intro = `Un tampon du couple ${cp.AH} / ${cp.A} (pKa = ${pK}, à 25${NB}°C) contient ${nbF(a.nA, 1)}${NB}mmol de ${cp.A} et ${nbF(a.nAH, 1)}${NB}mmol de ${cp.AH}. On y ajoute ${nbF(a.x, 1)}${NB}mmol d’ions ${ion} (${acide ? 'acide fort' : 'base forte'}), qui réagissent totalement : ${reac}.`;
+  const q1 = { id: 'j0', type: 'num', q: <>Calculez la quantité de <b>{cp.A}</b> après la réaction (en mmol, 2 chiffres significatifs).</>, unite: 'mmol', vrai: nA2, tolRel: 0.05, csMin: 2,
+    aide: acide ? `Les ions ${ion} consomment la base : n(${cp.A}) final = n(${cp.A}) initial − quantité ajoutée.` : `Les ions ${ion} consomment l’acide et forment la base : n(${cp.A}) final = n(${cp.A}) initial + quantité ajoutée.`,
+    pieges: [[acide ? a.nA + a.x : a.nA - a.x, 'Le sens est inversé : ' + (acide ? 'un acide consomme la base, n(A⁻) diminue.' : 'une base forme la base conjuguée, n(A⁻) augmente.')], [a.nA, 'La quantité a changé : la réaction consomme ou forme la quantité ajoutée.'], [nAH2, `C’est la quantité de ${cp.AH} ; on demande celle de ${cp.A}.`]],
+    expl: <>n({cp.A}) = {nbF(a.nA, 1)} {acide ? '−' : '+'} {nbF(a.x, 1)} = <b>{nbF(nA2, 1)}{NB}mmol</b>.</> };
+  const q2 = { id: 'j1', type: 'num', q: <>Calculez la quantité de <b>{cp.AH}</b> après la réaction (en mmol, 2 chiffres significatifs).</>, unite: 'mmol', vrai: nAH2, tolRel: 0.05, csMin: 2,
+    aide: acide ? `L’acide se forme : n(${cp.AH}) final = n(${cp.AH}) initial + quantité ajoutée.` : `L’acide est consommé : n(${cp.AH}) final = n(${cp.AH}) initial − quantité ajoutée.`,
+    pieges: [[acide ? a.nAH - a.x : a.nAH + a.x, 'Le sens est inversé : ' + (acide ? 'l’acide AH est formé, il augmente.' : 'l’acide AH est consommé, il diminue.')], [a.nAH, 'La quantité a changé : la réaction consomme ou forme la quantité ajoutée.'], [nA2, `C’est la quantité de ${cp.A} ; on demande celle de ${cp.AH}.`]],
+    expl: <>n({cp.AH}) = {nbF(a.nAH, 1)} {acide ? '+' : '−'} {nbF(a.x, 1)} = <b>{nbF(nAH2, 1)}{NB}mmol</b>.</> };
+  const q3 = { id: 'j2', type: 'num', q: <>Calculez le rapport <b>{avecIndices(`frac(n(${cp.A})|n(${cp.AH}))`)}</b> après l’ajout (sans unité, 2 chiffres significatifs), avec n({cp.A}) = {nbF(nA2, 1)}{NB}mmol et n({cp.AH}) = {nbF(nAH2, 1)}{NB}mmol.</>, unite: '', vrai: r2, tolRel: 0.05, csMin: 2,
+    aide: 'Divisez la quantité de la base par celle de l’acide.',
+    pieges: [[1 / r2, 'Le rapport est inversé : on demande la base sur l’acide.'], [nA2 - nAH2, 'Un rapport est un quotient, pas une différence.'], [a.nA / a.nAH, 'C’est le rapport avant l’ajout : utilisez les quantités après la réaction.']],
+    expl: <>{avecIndices(`frac(${nbF(nA2, 1)}|${nbF(nAH2, 1)})`)} = <b>{rs}</b>.</> };
+  const q4 = { id: 'j3', type: 'num', q: <>Avec pKa = {pK} et le rapport {rs}, calculez le <b>pH</b> du tampon après l’ajout (sans unité, 3 chiffres significatifs).</>, unite: '', vrai: pH2, tolRel: 0.01, csMin: 2,
+    aide: 'pH = pKa + log(rapport) (touche log).',
+    pieges: [[cp.pKa, 'Vous avez oublié le terme log : le pH n’est égal au pKa que si le rapport vaut 1.'], [cp.pKa - Math.log10(r2), 'Le signe est inversé : pH = pKa + log(rapport).'], [pH0, 'C’est le pH avant l’ajout : utilisez le rapport après la réaction.'], [cp.pKa + r2, 'Il faut le logarithme décimal du rapport, pas le rapport lui-même.']],
+    expl: <>pH = {pK} + log({rs}) = <b>{nbF(pH2, 2)}</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Un acide fort consomme la base A⁻ et forme AH ; une base forte consomme AH et forme A⁻ (réactions quasi totales).', 'pH = pKa + log(frac(n(A⁻)|n(AH))) avec les quantités après la réaction.', 'Le tampon est épuisé si l’ajout dépasse la quantité du réactif.'] };
+}
 function genPredoBeer() {
   const u = PRE.tirageIndicateur(), Cs = sciF(u.C), eps = sciF(u.eps), ls = nbF(u.l, 2), pHs = nbF(u.pH, 2), As = nbF(u.abs, 3);
   const Ind = u.abs / (u.eps * u.l), Ind2 = PRE.arrondiCS(Ind, 2), HInd2 = PRE.arrondiCS(u.C - Ind2, 2), r2 = PRE.arrondiCS(Ind2 / HInd2, 2), pKa2 = u.pH - Math.log10(r2);
@@ -1350,6 +1418,8 @@ export const FAMILLES = [
   { id: 'dissoc-ka', groupe: 'Formules', titre: 'Constante d’acidité, pKa et dilution d’un acide faible (terminale STL)', gen: genDissocKa, domaine: 'Acide faible, coefficient de dissociation et Ka' },
   { id: 'predo-rapport', groupe: 'Formules', titre: 'pH, pKa et rapport des concentrations d’un couple acide-base (terminale STL)', gen: genPredoRapport, domaine: 'pH, pKa et diagramme de prédominance' },
   { id: 'predo-beer', groupe: 'Formules', titre: 'Indicateur coloré : spectrophotométrie et pKa (terminale STL)', gen: genPredoBeer, domaine: 'pH, pKa et diagramme de prédominance' },
+  { id: 'tampstl-prepa', groupe: 'Formules', titre: 'Préparer une solution tampon de pH donné (terminale STL)', gen: genTampstlPrepa, domaine: 'Solution tampon : choix du couple et préparation' },
+  { id: 'tampstl-ajout', groupe: 'Formules', titre: 'pH d’un tampon après un ajout d’acide ou de base (terminale STL)', gen: genTampstlAjout, domaine: 'Solution tampon : choix du couple et préparation' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },

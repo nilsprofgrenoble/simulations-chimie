@@ -16,6 +16,7 @@ import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_IONS } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
 import * as PRE from "./predoTstlModele";
+import * as TMP from "./tamponTstlModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -369,6 +370,55 @@ export const ENONCES = [
         utiles: ['C', 'eps', 'l', 'pH', 'A'], raisons: { lam: 'La longueur d’onde sert seulement à savoir que Ind⁻ absorbe seule : elle n’intervient pas dans le calcul.' },
         cherche: { bonne: 'Le pKa du couple HInd / Ind⁻, pKa = pH − log(r), avec r = [Ind⁻] sur [HInd] (sans unité)', faux: ['La concentration de la forme basique [Ind⁻] (en mol/L)', 'Le pH de la solution (sans unité)', 'Le rapport [Ind⁻] sur [HInd] (sans unité)'] },
         manque: null, solution: { txt: 'pKa = pH − log(r) où r = [Ind⁻] sur [HInd], avec [Ind⁻] = A divisée par (ε × ℓ) et [HInd] = C − [Ind⁻]', val: p.pH - Math.log10(r), u: '' } };
+    },
+  },
+  // ───────────────────────────── Solution tampon (TSTL, PCM) : choix du couple, préparation, ajout d'acide ou de base
+  {
+    id: 'tampstl-sapp-prepa', domaine: 'Solution tampon : choix du couple et préparation', titre: 'Préparer une solution tampon de pH donné', noms: ['Rapport des quantités base sur acide', 'Volume de solution de base conjuguée'],
+    gen: () => { const t = TMP.tiragePrep(); return { id: t.coupleId, pH: t.pH, V: t.V, C: t.C, T: tire([20, 25, 30]) }; },
+    build: (p, q) => {
+      const cp = TMP.COUPLES[p.id], r = 10 ** (p.pH - cp.pKa);
+      const tokens = {
+        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple AH / A⁻', cp.pKa, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH visé pour le tampon', p.pH, ''),
+        V: tok(`${p.V} mL`, 'Volume de tampon à préparer', p.V, 'mL'),
+        C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration commune des deux solutions de départ', p.C, 'mol/L'),
+        T: tok(`${p.T} °C`, 'Température de travail', p.T, '°C'),
+      };
+      const debut = ['On veut préparer un volume ', T('V'), ' de solution tampon de pH ', T('pH'), ', à ', T('T'), ', avec le couple acide/base AH / A⁻ de pKa ', T('pKa'), ', en mélangeant une solution de AH et une solution de A⁻ (sel de sodium), toutes deux de même concentration ', T('C'), '. '];
+      const raisons = { T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.', C: 'Les deux solutions ont la même concentration : le rapport des quantités est le rapport des volumes, la valeur de la concentration ne sert pas.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel doit être le rapport n(A⁻) sur n(AH) des quantités de matière à mélanger ?'],
+        utiles: ['pKa', 'pH'], raisons: { ...raisons, V: 'Le volume ne change pas le rapport des quantités : il intervient seulement pour répartir les volumes.' },
+        cherche: { bonne: 'Le rapport n(A⁻) sur n(AH) (sans unité)', faux: ['Le volume de solution de A⁻ à prélever (en mL)', 'Le pKa du couple (sans unité)', 'La concentration commune des solutions (en mol/L)'] },
+        manque: null, solution: { txt: 'n(A⁻) sur n(AH) = 10^(pH − pKa)', val: r, u: '' } };
+      return { tokens, derivees: ['rapport n(A⁻) sur n(AH) = 10^(pH − pKa) = rapport des volumes'], texte: [...debut, 'Quel volume de la solution de A⁻ faut-il prélever ?'],
+        utiles: ['pKa', 'pH', 'V'], raisons,
+        cherche: { bonne: 'Le volume de la solution de A⁻ à prélever (en mL)', faux: ['Le volume de la solution de AH à prélever (en mL)', 'Le rapport n(A⁻) sur n(AH) (sans unité)', 'La quantité de matière de A⁻ (en mmol)'] },
+        manque: null, solution: { txt: 'V(A⁻) = V × r divisé par (1 + r), avec r = 10^(pH − pKa)', val: p.V * r / (1 + r), u: 'mL' } };
+    },
+  },
+  {
+    id: 'tampstl-sapp-ajout', domaine: 'Solution tampon : choix du couple et préparation', titre: 'pH d’un tampon après l’ajout d’un acide ou d’une base fort', noms: ['Quantité de base après réaction', 'pH du tampon après l’ajout'],
+    gen: () => { const a = TMP.tirageAjout(); return { id: a.coupleId, nA: a.nA, nAH: a.nAH, x: a.x, sens: a.sens, V: tire([50, 100, 200]) }; },
+    build: (p, q) => {
+      const cp = TMP.COUPLES[p.id], b = TMP.bilan({ nA: p.nA, nAH: p.nAH, nAcide: p.sens === 'acide' ? p.x : 0, nBase: p.sens === 'base' ? p.x : 0 });
+      const tokens = {
+        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple AH / A⁻', cp.pKa, ''),
+        nA: tok(`${nb(p.nA, 1)} mmol`, 'Quantité de base A⁻ dans le tampon', p.nA, 'mmol'),
+        nAH: tok(`${nb(p.nAH, 1)} mmol`, 'Quantité d’acide AH dans le tampon', p.nAH, 'mmol'),
+        x: tok(`${nb(p.x, 1)} mmol`, p.sens === 'acide' ? 'Quantité d’ions H₃O⁺ ajoutée (acide fort)' : 'Quantité d’ions HO⁻ ajoutée (base forte)', p.x, 'mmol'),
+        V: tok(`${p.V} mL`, 'Volume du tampon', p.V, 'mL'),
+      };
+      const debut = ['Un tampon de volume ', T('V'), ' contient ', T('nA'), ' de base A⁻ et ', T('nAH'), ' d’acide AH, avec un pKa de ', T('pKa'), '. On y ajoute ', T('x'), p.sens === 'acide' ? ' d’ions H₃O⁺, qui réagissent totalement sur A⁻. ' : ' d’ions HO⁻, qui réagissent totalement sur AH. '];
+      const raisons = { V: 'Le volume se simplifie dans le rapport des quantités de matière : il ne sert pas ici.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de base A⁻ reste-t-il après la réaction ?'],
+        utiles: ['nA', 'x'], raisons: { ...raisons, pKa: 'Le pKa ne sert pas pour un bilan de matière.', nAH: p.sens === 'acide' ? 'L’acide AH n’est pas consommé par un acide fort : il en est formé.' : 'L’acide AH est consommé, mais la quantité de A⁻ ne dépend que de ce qui est formé.' },
+        cherche: { bonne: 'La quantité de A⁻ après la réaction (en mmol)', faux: ['La quantité d’acide AH après la réaction (en mmol)', 'Le pH du tampon après la réaction (sans unité)', 'Le rapport n(A⁻) sur n(AH) (sans unité)'] },
+        manque: null, solution: { txt: p.sens === 'acide' ? 'n(A⁻) final = n(A⁻) − quantité d’ions H₃O⁺ ajoutée' : 'n(A⁻) final = n(A⁻) + quantité d’ions HO⁻ ajoutée', val: b.nA, u: 'mmol' } };
+      return { tokens, derivees: ['bilan de matière : n(A⁻) et n(AH) après la réaction'], texte: [...debut, 'Quel est le pH du tampon après l’ajout ?'],
+        utiles: ['pKa', 'nA', 'nAH', 'x'], raisons,
+        cherche: { bonne: 'Le pH du tampon après l’ajout (sans unité)', faux: ['La quantité de A⁻ après la réaction (en mmol)', 'Le rapport n(A⁻) sur n(AH) après la réaction (sans unité)', 'Le pH initial du tampon (sans unité)'] },
+        manque: null, solution: { txt: 'pH = pKa + log(n(A⁻) sur n(AH)), avec les quantités après la réaction', val: cp.pKa + Math.log10(b.nA / b.nAH), u: '' } };
     },
   },
   // ───────────────────────────── Force des acides (TG) : K_A, pH, taux d'avancement
