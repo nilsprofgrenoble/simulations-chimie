@@ -442,8 +442,9 @@ const MENUS_ENTETE = [
 // Tant que les jeux ne sont pas aboutis, seul l'administrateur (professeur admin) les voit : menu, cartes, liens directs. Les autres ne voient rien.
 import { JEUX_VISIBLES, JEUX_PUBLICS } from "./simulations/jeuxVisibles";
 const JEUX_IDS = [79, 80, 81, 113];   // jeux : affichage immersif (sans en-tête ni pied de page)
-// Outils en préparation : visibles seulement du professeur administrateur (menu « Outils » et lien direct). 124 : Grapheur de mesures.
-const OUTILS_ADMIN_IDS = [124];
+// Outils en préparation : visibles seulement du professeur administrateur (menu « Outils » et lien direct). Liste dans src/brouillons.js (124 : Grapheur de mesures).
+import { OUTILS_BROUILLON } from "./brouillons";
+const OUTILS_ADMIN_IDS = OUTILS_BROUILLON;
 const FONDS_JEUX = {
   79: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 55%, #03060f 100%)",
   80: "linear-gradient(180deg, #0b3b5e 0%, #082a45 50%, #04182a 100%)",

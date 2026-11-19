@@ -12,6 +12,7 @@
 //   • description : une à deux phrases tirées de l'énoncé ; titre : unique parmi les exercices (le script échoue sinon).
 import { createServer } from 'vite'
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { SIMS_BROUILLON } from '../src/brouillons.js'
 
 // Codes courts des exercices (ex. ANA23, SAPP4, VAL12) imprimés sur les fiches de remédiation et saisis par l'élève sur le site.
 // Attribués UNE SEULE FOIS et jamais modifiés : scripts/codes.json mémorise « clé d'exercice → code ». Un nouvel exercice reçoit le numéro suivant ;
@@ -94,7 +95,7 @@ try {
 
   const app = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8')
   const sims = [...app.matchAll(/\{\s*id:\s*(\d+),\s*label:\s*"([^"]+)"[\s\S]{0,160}?niveau:\s*"([A-Z0-9]+)"/g)]
-    .map(m => ({ id: Number(m[1]), label: m[2], niveau: m[3] })).filter(s => ![39, 40, 47, 79, 80, 81, 82].includes(s.id))  // pages de compte, à propos et jeux : sans intérêt pour la remédiation
+    .map(m => ({ id: Number(m[1]), label: m[2], niveau: m[3] })).filter(s => ![39, 40, 47, 82, ...SIMS_BROUILLON].includes(s.id))  // pages de compte, à propos : sans intérêt pour la remédiation ; jeux et outils en préparation : ne doivent pas apparaître dans ce fichier public (src/brouillons.js)
 
   const COMP = { "S'APP": "S'approprier", ANA: 'Analyser', REA: 'Réaliser', VAL: 'Valider' }
   const NOM_NIVEAU = { COMP: 'Compétences' }

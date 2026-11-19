@@ -3,9 +3,12 @@
 // (vite.config.js) et par le test src/slugs.test.mjs. Le numéro de la simulation fait foi ; le texte qui le suit n'est là que pour
 // le référencement et la lecture : une simulation renommée garde son numéro, donc son adresse reste valable (elle est réécrite vers le nouveau texte).
 
+import { SIMS_BROUILLON } from './brouillons.js';
+
 // Simulations SANS adresse propre : elles restent sur « ?sim=N » (pages de compte, du professeur, ou qui ne montrent rien sans paramètre).
 // 39 Mon compte, 40 Suivi professeur, 82 Page d'un chapitre (&chap=…), 103 Mes fiches. Toutes sont en « noindex ».
-export const SANS_ADRESSE_PROPRE = new Set([39, 40, 82, 103, 79, 80, 81, 113, 124]);   // 79, 80, 81, 113 : jeux non publics (voir src/simulations/jeuxVisibles.js) ; 124 : grapheur, hors menu en attendant la relecture
+// 113 : jeu Percutaféine (accès par code ou lien direct, voir src/simulations/jeuxVisibles.js) ; jeux et outils en préparation : voir src/brouillons.js.
+export const SANS_ADRESSE_PROPRE = new Set([39, 40, 82, 103, 113, ...SIMS_BROUILLON]);
 
 export const aAdressePropre = id => Number.isInteger(id) && id > 0 && !SANS_ADRESSE_PROPRE.has(id);
 
