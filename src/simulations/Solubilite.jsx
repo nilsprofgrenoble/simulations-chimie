@@ -166,7 +166,11 @@ function VoletDefi({ defi, setDefi, changerType }) {
 export function SimulationSolubilite() {
   const [mode, setMode] = useState(() => modeOuverture('solubilite-guide-v4'));
   useSignalerMode(mode);
-  const [guide, setGuide] = useEtatPersistant('solubilite-guide-v4', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('solubilite-guide-v4', VIDE), [g2, setG2] = useEtatPersistant('solubilite-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('solubilite-guide-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('solubilite-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [defi, setDefi] = useState(null);
   const [sel, setSel] = useState({ solv: 'eau', sol: 'ethanol' });
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -195,7 +199,7 @@ export function SimulationSolubilite() {
   const etape = guide.etape;
   const est = (a, e) => sel.solv === a && sel.sol === e;
   const bw = (s, e) => bilan(s, e);
-  const ETAPES = [
+  const TOUTES = [
     { id: 'intro', titre: 'Deux états à comparer', focus: ['choix'],
       texte: <>Pour savoir si <strong>deux liquides se mélangent</strong> ou si <strong>un solide se dissout</strong>, on compare deux états : l’<strong>état initial</strong> (chaque espèce seule : interactions A…A et B…B) et l’<strong>état final</strong> envisagé (les deux espèces mélangées : interactions A…B). Si l’on y perd beaucoup de stabilité, le mélange ne se fait pas.</>,
       tache: { type: 'qcm', q: 'Dans l’état initial (eau pure et éthanol pur séparés), quelle est la plus forte interaction entre molécules d’eau ?', options: ['la liaison hydrogène', 'la dispersion (dipôles instantanés)', 'l’interaction ion–ion'], bonne: 0,
@@ -206,7 +210,7 @@ export function SimulationSolubilite() {
       tache: { type: 'qcm', q: 'On verse de l’huile dans du vinaigre (de l’eau) : deux phases apparaissent. On dit que…', options: ['l’huile et l’eau sont non miscibles', 'l’huile est le soluté et l’eau le solvant, car l’eau est en plus grande quantité', 'l’huile est un soluté saturé'], bonne: 0,
         expl: 'Ce sont deux liquides : on parle de miscibilité. Le même raisonnement (comparer état initial et état final) vaut pour la miscibilité de deux liquides et pour la solubilité d’un solide.', indice: "Que dit-on de deux liquides qui forment deux phases séparées ? Ne confonds pas ce mot avec « soluté » et « solvant »." } },
     { id: 'ee', titre: 'Eau et éthanol', focus: ['paires', 'bilan'],
-      retenirTitre: 'À RETENIR : VOCABULAIRE ET MÉTHODE',
+      retenirTitre: 'Vocabulaire et méthode',
       retenir: <FicheVocab/>,
       texte: <>Choisissez l’<strong>eau</strong> (liquide A) et l’<strong>éthanol</strong> (liquide B), puis dépliez « Interactions possibles ». L’eau et l’éthanol ont tous les deux des H liés à O et des O porteurs de doublets non liants : la liaison H se fait entre un H lié à O et un doublet non liant d’un O voisin, dans l’alignement de la liaison O–H.</>,
       tache: { type: 'action', ok: est('eau', 'ethanol'), label: 'Eau + éthanol', faire: () => setSel({ solv: 'eau', sol: 'ethanol' }), consigne: 'A : eau ; B : éthanol' } },
@@ -222,7 +226,7 @@ export function SimulationSolubilite() {
       tache: { type: 'qcm', q: 'Quelle interaction est responsable de la grosse perte de stabilité ?', options: ['la liaison hydrogène eau…eau, perdue et non remplacée', 'la dispersion, qui devient plus forte', 'les interactions ioniques'], bonne: 0,
         expl: 'Les liaisons H eau…eau (état initial) ne sont remplacées que par de faibles interactions de Van der Waals eau…hexane. La perte est énorme : l’eau et l’hexane ne sont pas miscibles.', indice: "Quelles interactions existaient entre molécules d’eau avant le mélange, et lesquelles ne sont pas remplacées après ? Repère la plus grosse perte dans le tableau." } },
     { id: 'ehn', titre: 'Un ordre de grandeur', focus: ['bilan'],
-      retenirTitre: 'À RETENIR : LES TROIS INTERACTIONS',
+      retenirTitre: 'Les trois interactions',
       retenir: <FicheInteractions/>,
       texte: <>Gardez le couple eau–hexane de l’étape précédente. Survolez (ou touchez) les deux barres de la liaison hydrogène : celle de gauche (état initial) et celle de droite (état final). Les valeurs sont en kJ pour 1 L de mélange (0,5 L d’eau + 0,5 L d’hexane). La perte est la différence entre les deux : c’est le pointillé rouge.</>,
       tache: { type: 'num', q: 'Perte liée à la liaison hydrogène (initial − final, en kJ par litre)', unite: 'kJ/L', vrai: bw('eau', 'hexane').types[2].perte, tol: 0.06, affiche: v => nb(v), cs: 2,
@@ -242,12 +246,14 @@ export function SimulationSolubilite() {
       texte: <>Les deux liquides n’ont que des interactions de dispersion, de même ordre de grandeur.</>,
       tache: { type: 'qcm', q: 'Hexane et cyclohexane sont…', options: ['miscibles : les interactions A…B sont comparables aux interactions A…A et B…B', 'non miscibles', 'miscibles grâce aux liaisons hydrogène'], bonne: 0,
         expl: 'Le bilan est pratiquement nul : on remplace des interactions de dispersion par des interactions de dispersion équivalentes.', indice: "Compare les interactions entre les deux liquides (A…B) à celles de chaque liquide avec lui-même (A…A et B…B) : sont-elles du même ordre de grandeur ?" } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez comparer l’état initial et l’état final pour décider si deux liquides sont miscibles : eau et éthanol oui, eau et hexane non, hexane et cyclohexane oui. Le parcours 2 montre que la polarité est une échelle continue.</>, tache: null },
     { id: 'cont', titre: 'Une échelle continue de polarité', focus: ['echelle'],
       texte: <>Une molécule n’est pas « polaire » ou « apolaire » : sa cohésion se répartit entre dispersion, dipôles permanents et liaisons H. L’échelle place chaque espèce selon la <strong>part polaire de sa cohésion</strong> (dipôles + liaisons H), de 0 % (hexane) à près de 90 % (eau).</>,
       tache: { type: 'qcm', q: 'Où se place l’éthanol sur cette échelle ?', options: ['entre les deux : environ deux tiers de sa cohésion sont polaires (groupe OH), le reste vient de la chaîne C₂H₅', 'tout à gauche, avec l’hexane', 'tout à droite, au-delà de l’eau'], bonne: 0,
         expl: 'Le groupe OH apporte liaisons H et dipôle ; la chaîne éthyle n’apporte que de la dispersion. L’éthanol est intermédiaire : c’est pour cela qu’il se mélange à l’eau et, en partie, aux solvants apolaires.', indice: "Compare la part polaire (groupe OH) et la part apolaire (chaîne carbonée) dans la cohésion de l’éthanol, puis place-le entre l’eau et l’hexane." } },
     { id: 'alc', titre: 'Allonger la chaîne carbonée', focus: ['choix', 'echelle', 'bilan'],
-      retenirTitre: 'À RETENIR : UNE ÉCHELLE CONTINUE DE POLARITÉ',
+      retenirTitre: 'Une échelle continue de polarité',
       retenir: <FichePolarite/>,
       texte: <>Gardez l’<strong>eau</strong> en A et essayez successivement en B le méthanol, l’éthanol, le propan-1-ol, le butan-1-ol, le pentan-1-ol, puis l’<strong>octan-1-ol</strong>. Tous ont un seul groupe OH.</>,
       tache: { type: 'action', ok: est('eau', 'octanol'), label: 'Eau + octan-1-ol', faire: () => setSel({ solv: 'eau', sol: 'octanol' }), consigne: 'A : eau ; B : octan-1-ol' } },
@@ -283,6 +289,8 @@ export function SimulationSolubilite() {
       texte: <>Le modèle répond « peu soluble » dans l’eau. Essayez aussi l’éthanol et l’huile.</>,
       tache: { type: 'qcm', q: 'Que retenir pour l’acide carminique ?', options: ['ses nombreux OH le rendent soluble dans l’éthanol et assez soluble dans l’eau pour la colorer intensément, mais il est insoluble dans l’huile', 'il est soluble dans l’huile car il est aromatique', 'il est insoluble partout'], bonne: 0,
         expl: 'Sa partie aromatique (lipophile) et sa partie sucre + OH (hydrophile) se font concurrence : environ 60 % de sa cohésion est polaire. Sa solubilité dans l’eau est de l’ordre du gramme par litre (valeur approximative de la littérature) : c’est « peu soluble » au sens du chimiste, mais largement assez pour une couleur rouge intense. L’éthanol, intermédiaire, lui convient très bien. Dans l’huile, ses OH ne trouvent pas de partenaires : insoluble.', indice: "Compte les groupes OH de l’acide carminique : avec quels solvants peut-il établir des liaisons hydrogène ?" } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez placer une espèce sur l’échelle de polarité, prévoir l’effet d’une chaîne carbonée plus longue et traiter les cas limites ou les molécules à la fois polaires et apolaires. Le parcours 3 traite la dissolution des solides ioniques et l’extraction.</>, tache: null },
     { id: 'nacl', titre: 'Le sel : NaCl dans l’eau', focus: ['choix', 'paires'],
       texte: <>Dans un cristal de sel, chaque ion Na⁺ est entouré d’ions Cl⁻ et inversement : l’interaction ion–ion est très forte. Pour dissoudre le sel, il faut défaire le cristal (état initial) ; en échange, chaque ion s’entoure de molécules de solvant (état final). Choisissez l’<strong>eau</strong> et le <strong>chlorure de sodium</strong>, puis regardez le bloc 3.</>,
       tache: { type: 'action', ok: est('eau', 'nacl'), label: 'NaCl dans l’eau', faire: () => setSel({ solv: 'eau', sol: 'nacl' }), consigne: 'Solvant A : eau ; soluté B : chlorure de sodium' } },
@@ -303,22 +311,29 @@ export function SimulationSolubilite() {
       tache: { type: 'qcm', q: 'Pourquoi NaCl est-il pratiquement insoluble dans l’acétone ?', options: ['l’acétone ne peut pas faire de liaison H avec l’ion Cl⁻, qui est mal entouré', 'l’acétone est apolaire', 'l’acétone réagit avec le sel'], bonne: 0,
         expl: 'Na⁺ est entouré par les O de l’acétone, mais Cl⁻ n’a pas de H (δ+) à attirer : il n’est retenu que par des interactions plus faibles. Le solde passe en zone rouge (mesure : 0,0004 g/kg).', indice: "Pour dissoudre un cristal ionique, il faut bien entourer ses ions. Quelles interactions l’acétone peut-elle établir avec l’ion Cl⁻ (pense aux liaisons hydrogène) ?" } },
     { id: 'extr', titre: 'Application : l’extraction', focus: [],
-      retenirTitre: 'À RETENIR : DISSOUDRE UN SOLIDE IONIQUE (NaCl)',
+      retenirTitre: 'Dissoudre un solide ionique (NaCl)',
       retenir: <FicheNaCl/>,
       texte: <>Extraire une espèce d’une solution aqueuse, c’est la transférer dans un second solvant. Il faut qu’elle y soit très soluble (bilan faible) et que ce solvant ne se mélange pas à l’eau (grosse perte eau…solvant).</>,
       tache: { type: 'qcm', q: 'Pour extraire le diiode d’une solution aqueuse, on choisit…', options: ['le cyclohexane : non miscible avec l’eau, et dissout bien le diiode', 'l’éthanol : il dissout le diiode', 'l’acétone : miscible à l’eau'], bonne: 0,
         expl: 'L’éthanol et l’acétone sont miscibles à l’eau : il n’y aurait qu’une seule phase, donc pas d’extraction possible.', indice: "Le solvant extracteur doit dissoudre le diiode et ne pas se mélanger à l’eau. Vérifie ces deux critères pour chaque solvant proposé." } },
     { id: 'limites', titre: 'Les limites du modèle', focus: [],
-      retenirTitre: 'À RETENIR : L’EXTRACTION',
+      retenirTitre: 'L’extraction',
       retenir: <FicheExtraction/>,
       texte: <>Le bilan d’énergie est un outil puissant, mais il ne dit pas tout. Il ne traite l’<strong>entropie</strong> que très grossièrement : l’agitation thermique favorise le mélange, d’environ RT·ln 2 ≈ 1,7 kJ/mol à 25 °C. Il se trompe aussi sur certains couples : par exemple il annonce un « cas limite » pour l’eau et l’acétone, qui sont miscibles. Les seuils utilisés ici sont réglés sur des cas connus : ce sont des repères, pas des lois.</>,
       tache: { type: 'qcm', q: 'Un résultat « cas limite » signifie…', options: ['que le mélange peut se produire ou non selon la température et les proportions', 'que le modèle a fait une erreur de calcul', 'que les liquides sont non miscibles'], bonne: 0,
         expl: 'Quand la perte est de l’ordre de grandeur de l’énergie thermique disponible, les deux issues sont possibles : seule l’expérience (ou un calcul plus complet) tranche.', indice: "Le modèle compare des énergies de cohésion. Que signifie un bilan très proche de l’équilibre ?" } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LE BILAN',
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Le bilan',
       retenir: <FicheBilan/>,
       texte: <>Vous savez prévoir solubilité et miscibilité en comparant les interactions avant et après. Passez aux défis !</>, tache: null },
   ];
+  const ORDRE_PARC = [['intro', 'vocab', 'ee', 'eeq', 'eh', 'ehq', 'ehn', 'hc', 'hcq', 'bilan1'],
+    ['cont', 'alc', 'alcq', 'lim', 'limq', 'i2', 'i2q', 'soudan', 'soudanq', 'carmin', 'carminq', 'bilan2'],
+    ['nacl', 'naclo', 'nacln', 'naclq', 'naclac', 'extr', 'limites', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const cadre = id => enGuide && (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []).includes(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   function lancer(type) { setDefi(nouveauDefi(type)); }
   function changerMode(md) { setMode(md); if (md === 'defi') lancer(defi ? defi.type : 'verdict'); }
@@ -361,8 +376,8 @@ export function SimulationSolubilite() {
   const focusGuide = enGuide ? (ETAPES[Math.min(etape, ETAPES.length - 1)].focus || []) : [];
   const idxEtape = Math.min(etape, ETAPES.length - 1);
   // guide : un panneau n'apparaît qu'à l'étape qui l'introduit, puis reste affiché
-  const vuG = k => !enGuide || ETAPES.slice(0, idxEtape + 1).some(e => (e.focus || []).includes(k));
-  const apresEtape = id => !enGuide || idxEtape >= ETAPES.findIndex(e => e.id === id);
+  const vuG = k => !enGuide || [...ORDRE_PARC.slice(0, parc - 1).flat(), ...IDS.slice(0, idxEtape + 1)].some(id => (TOUTES.find(e => e.id === id).focus || []).includes(k));
+  const apresEtape = id => !enGuide || idxEtape >= iEt(id);
   const estOuvert = k => enDefi || (enGuide ? vuG(k) : !!ouv[k]) || focusGuide.includes(k);
   const bloc = (k, contenu) => {
     const i = BLOCS.findIndex(x => x[0] === k), o = estOuvert(k), suiv = BLOCS[i + 1];
@@ -587,8 +602,10 @@ export function SimulationSolubilite() {
         <li>extraction : soluté très soluble dans l’extracteur, extracteur non miscible à l’eau</li>
       </ul>
     </ARetenir>);
+  const NOMS_PARC = ['1. Miscibilité de deux liquides', '2. Une échelle continue de polarité', '3. Solides ioniques et extraction'];
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
@@ -620,7 +637,12 @@ export function SimulationSolubilite() {
           {!(enDefi && defi.type === 'extraction') && (solv === sol ? <div style={styleBoite}>Choisissez deux espèces différentes.</div> : <>
             {vuG('notion') && notion}{vuG('cartes') && bloc('cartes', cartes)}{vuG('echelle') && bloc('echelle', echelle)}{vuG('paires') && bloc('paires', ion ? pairesIon : paires)}{vuG('bilan') && bloc('bilan', bilanPanneau)}</>)}
         </div>
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? panneauHypo : null}
       </div>
       {apresEtape('limites') && <div style={{ marginBottom: 12 }}>{limites}</div>}
       {!enDefi && apresEtape('ehn') && <div className="sl-l2">{panneauHypo}</div>}
