@@ -1202,7 +1202,7 @@ function genChiralitePriorites() {
 }
 function genChiraliteConfig() {
   const SETS = [
-    { g: ['CH₃', 'OH', 'COOH', 'H'], nom: 'de l’acide lactique' }, { g: ['CH₃', 'NH₂', 'COOH', 'H'], nom: 'de l’alanine' }, { g: ['CH₃', 'CH₃', 'OH', 'H'], nom: 'du propan-2-ol' },
+    { g: ['CH₃', 'OH', 'COOH', 'H'], nom: 'de l’acide lactique' }, { g: ['CH₂CH₃', 'NH₂', 'COOH', 'H'], nom: 'de l’acide 2-aminobutanoïque' }, { g: ['CH₃', 'CH₃', 'OH', 'H'], nom: 'du propan-2-ol' },
     { g: ['CH₂CH₃', 'CH₂CH₃', 'Cl', 'H'], nom: 'du 3-chloropentane' }, { g: ['CH₃', 'Cl', 'COOH', 'H'], nom: 'de l’acide 2-chloropropanoïque' }, { g: ['NH₂', 'H', 'H', 'COOH'], nom: 'de la glycine' },
   ];
   const S = tire(SETS), mel = [...S.g].sort(() => Math.random() - 0.5), nd = new Set(S.g).size, asym = nd === 4;
