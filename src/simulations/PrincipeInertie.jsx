@@ -74,7 +74,7 @@ function Scene({ P, sim, t, vis = TOUT, contact = false }) {
     return { e, x0, y0, dx, dy, lx, ly };
   });
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Caisse de ${P.m} kg à la date ${fr(t, 1)} s, vitesse ${fr(v, 2)} m/s`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label={`Caisse de ${P.m} kg à la date ${fr(t, 1)} s, vitesse ${fr(v, 2)} m/s`} style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="10" y1={BAS} x2={W - 10} y2={BAS} stroke="#64748b" strokeWidth="3"/>
       {ticks.map(m => Math.abs(px(m) - cx) < 24 ? null : <g key={m}><line x1={px(m)} y1={BAS} x2={px(m)} y2={BAS + 8} stroke="#64748b" strokeWidth="2"/><text x={px(m)} y={BAS + 24} textAnchor="middle" fontSize="13" fill="#475569">{m} m</text></g>)}
       {points.map(p => <circle key={p.s} cx={px(p.x)} cy={BAS + 105} r={p.s <= t + 1e-9 ? 4.5 : 2.5} fill={p.s <= t + 1e-9 ? '#0f172a' : '#cbd5e1'}/>)}
@@ -97,7 +97,7 @@ function Graphe({ sim, t }) {
   const vmin = Math.min(0, ...sim.v), vmax = Math.max(0.5, ...sim.v), gx = s => 50 + s / T_MAX * 350, gy = v => 100 - (v - vmin) / (vmax - vmin) * 74;
   const i = clamp(Math.round(t / 0.1), 0, sim.t.length - 1);
   return (
-    <svg viewBox="0 0 420 140" width="100%" role="img" aria-label="Graphique de la vitesse en fonction du temps" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+    <svg viewBox="0 0 420 140" width="100%" role="img" aria-label="Graphique de la vitesse en fonction du temps" style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="50" y1={gy(0)} x2="410" y2={gy(0)} stroke="#94a3b8" strokeWidth="1.5"/><line x1="50" y1="16" x2="50" y2="112" stroke="#94a3b8" strokeWidth="1.5"/>
       <polyline fill="none" stroke="#0f766e" strokeWidth="3" points={sim.t.map((s, j) => `${gx(s)},${gy(sim.v[j])}`).join(' ')}/>
       <circle cx={gx(sim.t[i])} cy={gy(sim.v[i])} r="6" fill="#0f172a" stroke="#fff" strokeWidth="1.5"/>
@@ -107,7 +107,7 @@ function Graphe({ sim, t }) {
 
 // ---------- schémas des situations du parcours (étapes 8 à 11) : ce qu'on SAIT, jamais la réponse ----------
 function SchemaCas({ cas }) {
-  const cadre = { display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 };
+  const cadre = { maxWidth: 480, margin: '0 auto', display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 };
   if (cas === 'voiture') return (
     <svg viewBox="0 0 420 230" width="100%" role="img" aria-label="Chronophotographie d’une voiture sur une route droite : quatre positions régulièrement espacées, le vecteur vitesse garde la même longueur" style={cadre}>
       <line x1="10" y1="140" x2="410" y2="140" stroke="#64748b" strokeWidth="3"/>

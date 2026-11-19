@@ -37,7 +37,7 @@ function Orbite({ h, v, etat, trace, etatAff, valeurs = true }) {
     return <g><line x1={x} y1={y} x2={x + dx} y2={y + dy} stroke={c} strokeWidth="3.5"/><polygon points={`${x + dx},${y + dy} ${x + dx - ux * 10 - uy * 5},${y + dy - uy * 10 + ux * 5} ${x + dx - ux * 10 + uy * 5},${y + dy - uy * 10 - ux * 5}`} fill={c}/>
       <TV x={x + dx + off[0]} y={y + dy + off[1]} c={c} s={26} halo>{lettre}</TV><text x={x + dx + off[0] + 17} y={y + dy + off[1]} fontSize="22" fontWeight="800" fill={c} stroke="#0b1630" strokeWidth="4" paintOrder="stroke">{valeurs ? `: ${val}` : ''}</text></g>; };
   return (
-    <svg viewBox="0 0 700 390" width="100%" role="img" aria-label="La Terre vue de loin, avec la trajectoire de la station spatiale" style={{ display: 'block', background: '#0b1630', borderRadius: 10 }}>
+    <svg viewBox="0 0 700 390" width="100%" role="img" aria-label="La Terre vue de loin, avec la trajectoire de la station spatiale" style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#0b1630', borderRadius: 10 }}>
       <circle cx={CX} cy={CY} r={R_KM * s} fill="#2563eb"/><circle cx={CX} cy={CY} r={R_KM * s} fill="none" stroke="#93c5fd" strokeWidth="2"/>
       <path d={`M ${CX - 40} ${CY - 30} q 30 -40 70 -10 q 20 20 -10 40 q -50 10 -60 -30 Z`} fill="#16a34a" opacity="0.8"/><path d={`M ${CX + 30} ${CY + 50} q 40 -10 50 20 q -10 30 -50 10 Z`} fill="#16a34a" opacity="0.8"/>
       <text x={CX} y={CY + 8} textAnchor="middle" fontSize="24" fontWeight="800" fill="#fff">Terre</text>
@@ -93,7 +93,7 @@ function Cabine({ c, t, vueCabine }) {
   const yc = vueCabine ? bas : haut(e.alt);
   const reps = []; for (let m = 0; m <= HAUT_M; m += 10) reps.push(m);
   return (
-    <svg viewBox="0 0 520 400" width="100%" role="img" aria-label="Une cabine tombe avec une personne et une balle à l’intérieur" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+    <svg viewBox="0 0 520 400" width="100%" role="img" aria-label="Une cabine tombe avec une personne et une balle à l’intérieur" style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <rect x="0" y="0" width="520" height="400" fill="#eff6ff"/>
       <g transform="translate(0 50)">
         <rect x="0" y={Math.min(fond, 350)} width="520" height={Math.max(0, 350 - fond)} fill="#a16207" opacity="0.55"/><line x1="0" y1={fond} x2="520" y2={fond} stroke="#422006" strokeWidth="4"/>
