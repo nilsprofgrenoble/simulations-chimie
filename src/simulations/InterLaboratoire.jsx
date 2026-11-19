@@ -1217,11 +1217,15 @@ const Jeton = ({ v }) => (/^[0-9][0-9 ,.]*$/.test(String(v)) ? <mn>{v}</mn> : <m
 const Fraction = ({ haut, bas }) => <mfrac><Jeton v={haut}/><Jeton v={bas}/></mfrac>;
 
 function ParcoursInterlabo({ changerMode }) {
-  const [guide, setGuide] = useEtatPersistant('interlabo-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('interlabo-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('interlabo-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('interlabo-guide-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('interlabo-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [clicEcarte, setClicEcarte] = useState(false);
   const etape = guide.etape;
   const { m, s, c8, c7, g7, g8, f } = PG;
-  const ETAPES = [
+  const TOUTES = [
     { id: 'principe', titre: 'Une étude interlaboratoire', focus: [],
       texte: <>Un organisateur envoie un <strong>même échantillon</strong> (ici, une solution à 10,00 mmol/L) à 8 laboratoires. Chacun réalise <strong>4 essais</strong> avec la même méthode d’analyse. On veut savoir si la méthode donne partout des résultats voisins.</>,
       tache: { type: 'qcm', q: 'Que cherche-t-on à évaluer avec la norme ISO 5725 ?', options: ['La fidélité de la méthode : sa répétabilité et sa reproductibilité', 'La compétence de chaque laboratoire (c’est le rôle d’un essai d’aptitude)', 'La valeur exacte de la concentration de l’échantillon'], bonne: 0, indice: "La norme ISO 5725 s’intéresse à la méthode d’analyse, pas au niveau de chaque laboratoire." } },
@@ -1252,6 +1256,8 @@ function ParcoursInterlabo({ changerMode }) {
       texte: <>Les lignes ȳ_i et s_i du tableau sont maintenant calculées pour tous les laboratoires, et le graphique montre chaque essai. Chaque point est un essai, le trait est la moyenne.</>,
       tache: { type: 'qcm', q: 'Quel laboratoire a les essais les plus dispersés ?', options: ['Le laboratoire 3', 'Le laboratoire 6', 'Le laboratoire 1'], bonne: 0,
         expl: 'Le laboratoire 6, lui, a des essais groupés mais une moyenne plus haute que les autres : c’est Grubbs qui s’en occupera.', indice: "Comparez les écarts-types s_i du tableau et cherchez le plus grand." } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez calculer la moyenne et l’écart-type de chaque laboratoire et regarder les résultats en images. Le parcours 2 apprend à repérer les laboratoires aberrants (tests de Cochran et de Grubbs).</>, tache: null },
     { id: 'cochranF', titre: 'Le test de Cochran', focus: [],
       texte: <>Le test compare la plus grande variance à la somme des variances, sur les 8 laboratoires :<Formule><FormuleCochran/></Formule>Si un laboratoire est bien plus dispersé que les autres, C est proche de 1 ; si tous se ressemblent, C vaut environ <FormuleEnLigne><Fraction haut="1" bas="p"/></FormuleEnLigne>.</>,
       tache: { type: 'num', q: 'Statistique de Cochran C (8 laboratoires)', unite: '', vrai: c8.C, tol: 0.01, affiche: x => fmt(x, 3),
@@ -1321,8 +1327,10 @@ function ParcoursInterlabo({ changerMode }) {
       texte: <>Le laboratoire 6 trouve des résultats groupés (bonne répétabilité) mais une moyenne plus haute que les autres.</>,
       tache: { type: 'qcm', q: 'Quelle est la règle de la norme ?', options: ['On le conserve en le signalant, sauf si une cause technique est identifiée', 'On l’écarte toujours', 'On l’ignore sans en parler'], bonne: 0,
         expl: 'Un test statistique suspecte, il ne prouve pas. La cause (étalonnage, préparation, appareil…) se cherche auprès du laboratoire.', indice: "Un laboratoire douteux n’est pas écarté automatiquement : que faut-il pour justifier son exclusion ?" } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez appliquer les tests de Cochran (dispersion des essais) et de Grubbs (dispersion des moyennes), lire leurs tables critiques et décider quoi faire d’un laboratoire suspect. Le parcours 3 utilise les résultats de l’étude pour exprimer un résultat de mesure avec son incertitude.</>, tache: null },
     { id: 'resultatEtude', titre: 'Les résultats de l’étude', focus: [],
-      texte: <>Avec les 7 laboratoires conservés, la norme donne : s<sub>r</sub>² = Σ s<sub>i</sub>² / p (répétabilité) ; s<sub>L</sub>² = s²(ȳ) − s<sub>r</sub>² / n (effet laboratoire) ; s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>² (reproductibilité). On obtient s<sub>r</sub> = {fmt(SRG.sr, 3)} ; s<sub>L</sub> = {fmt(SRG.sL, 3)} ; s<sub>R</sub> = {fmt(SRG.sR, 3)} mmol/L.</>,
+      texte: <>Rappel du parcours 2 : le laboratoire 3 a été écarté (test de Cochran) et le laboratoire 6 conservé (test de Grubbs). Avec les 7 laboratoires conservés, la norme donne : s<sub>r</sub>² = Σ s<sub>i</sub>² / p (répétabilité) ; s<sub>L</sub>² = s²(ȳ) − s<sub>r</sub>² / n (effet laboratoire) ; s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>² (reproductibilité). On obtient s<sub>r</sub> = {fmt(SRG.sr, 3)} ; s<sub>L</sub> = {fmt(SRG.sL, 3)} ; s<sub>R</sub> = {fmt(SRG.sR, 3)} mmol/L.</>,
       tache: { type: 'qcm', q: 'Pourquoi s_R est-il supérieur à s_r ?', options: ['Entre laboratoires, s’ajoute à la dispersion des essais d’un même laboratoire un effet propre à chaque laboratoire', 'Parce que le laboratoire 3 a été écarté', 'Parce que la méthode est fausse'], bonne: 0, indice: "s_R contient s_r plus un effet propre au changement de laboratoire. Lequel ?" } },
     { id: 'limiteR', titre: 'Utiliser la méthode : deux essais', focus: ['mesurage'],
       texte: <>Votre laboratoire applique maintenant la méthode à un échantillon de teneur voisine : <strong>2 essais</strong>, en conditions de répétabilité, donnent y<sub>1</sub> = {fmt(Y_G[0], 2)} et y<sub>2</sub> = {fmt(Y_G[1], 2)} mmol/L. Avant de les moyenner, on vérifie qu’ils sont compatibles : leur écart ne doit pas dépasser la <strong>limite de répétabilité</strong> r = 2,8 × s<sub>r</sub>. (2,8 ≈ 1,96 × √2 : seuil à 95 %, si les essais suivent une loi normale d’écart-type s<sub>r</sub>.)</>,
@@ -1368,19 +1376,27 @@ function ParcoursInterlabo({ changerMode }) {
     { id: 'limites', titre: 'Ce que l’étude ne dit pas', focus: ['hypo'],
       texte: <>Les 7 moyennes tournent autour de {fmt(f.ybar, 3)} mmol/L, pour une valeur de référence de 10,00 mmol/L.</>,
       tache: { type: 'qcm', q: 'Cette étude prouve-t-elle que la méthode est juste ?', options: ['Non : elle mesure la fidélité (la dispersion). La justesse demande de comparer à une valeur de référence, avec son incertitude', 'Oui, car s_R est petit', 'Oui, car on a écarté le laboratoire 3'], bonne: 0, indice: "Fidélité = dispersion ; justesse = proximité d’une valeur de référence. Que mesure l’étude ?" } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
       retenirTitre: 'À RETENIR : FIDÉLITÉ ET JUSTESSE',
       retenir: <FicheJustesse/>,
       texte: <>Vous savez mener une étude de fidélité : Cochran (dispersions), puis Grubbs (moyennes), puis s<sub>r</sub>, s<sub>L</sub> et s<sub>R</sub> — en gardant en tête les hypothèses qui donnent un sens aux seuils. En exploration libre, générez vos propres campagnes ; dans le défi, un jeu de données inconnu vous attend.</>, tache: null },
   ];
-  const idx = id => ETAPES.findIndex(e => e.id === id);
+  const ORDRE_PARC = [['principe', 'modele', 'hypotheses', 'moyenneLab', 'ecartLab', 'apercu', 'bilan1'],
+    ['cochranF', 'cochranT', 'cochranV', 'ecarter', 'cochran2', 'grubbsF', 'grubbsS', 'grubbsG', 'grubbsT', 'grubbsV', 'isole', 'bilan2'],
+    ['resultatEtude', 'limiteR', 'compat', 'moyenneRes', 'quelSigma', 'U', 'ecriture', 'usage', 'incompat', 'limites', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const idx = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const vu = id => etape >= idx(id), passe = id => etape > idx(id);
   const hl = id => et.focus.includes(id);
   const ecarte = clicEcarte || passe('ecarter');
   const ecartes = ecarte ? [2] : [], isoles = passe('grubbsV') ? [5] : [];
+  const NOMS_PARC = ['1. Les données de l’étude', '2. Repérer les laboratoires aberrants', '3. Exprimer un résultat avec son incertitude'];
   const fin = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
       <OngletExercices />
@@ -1406,7 +1422,12 @@ function ParcoursInterlabo({ changerMode }) {
         {(vu('cochranT')) && <TablesCritiques pMin={5} pMax={10} nMin={2} nMax={6} surligne={hl('tables')}/>}
         <HypothesesInterlabo defaut={hl('hypo')} focus={hl('hypo')} key={hl('hypo') ? 'h1' : 'h0'}/>
       </div>
-      <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={fin}/>
+      <div style={{ minWidth: 0 }}>
+        <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+          <span style={{ color: KIT.txt2 }}>Parcours :</span>
+          {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+        </div>
+        <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={fin}/></div>
     </div>
   );
 }
