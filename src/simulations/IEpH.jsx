@@ -1,7 +1,8 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { TabBtn, cardStyle, KIT, Section, styleBoite, CarteParcours, useEtatPersistant, styleBouton, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche, IndiceDefi, OngletExercices } from "../commun";
+import { Formule, TabBtn, cardStyle, KIT, Section, styleBoite, CarteParcours, useEtatPersistant, styleBouton, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
+import { SchemaMurs, SchemaSurtension, SchemaTranslation, SchemaSansH, SchemaPrecip, SchemaPentes, SchemaRupture, SchemaCinetique } from "./IEpHSchemas";
 
 const SIM_ID = 29;
 declarerDefis(SIM_ID, [['principal', 'Lire les courbes i-E']]);
@@ -256,14 +257,15 @@ function ExplorationIEpH({ plotlyReady }) {
 // ════════════════════════════════════════════════════════════════
 //  PARCOURS GUIDÉ
 // ════════════════════════════════════════════════════════════════
-function ParcoursIEpH({ plotlyReady, changerMode }) {
-  const [guide, setGuide] = useEtatPersistant("iepH-guide-v1", { etape: 0, reps: {}, verifs: {}, reussies: {} });
+function ParcoursIEpHInterne({ plotlyReady, changerMode, parc }) {
+  const [g1, setG1] = useEtatPersistant("iepH-guide-v1", { etape: 0, reps: {}, verifs: {}, reussies: {} }), [g2, setG2] = useEtatPersistant("iepH-guide-p2", { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const guide = parc === 1 ? g1 : g2, setGuide = parc === 1 ? setG1 : setG2;
   const [e, setE] = useState(ETAT0);
   const set = f => setE(x => ({ ...x, ...f }));
   const etape = guide.etape;
   const pres = (v, c, t = 0.3) => Math.abs(v - c) <= t;
   const V = { reglages: true, choixCouple: false, choixVue: false, g3d: false, diag: false, valeurs: false };
-  const ETAPES = [
+  const TOUTES = [
     { id: "coupe", titre: "Le courant à un pH donné", focus: ["coupe"], vue: { reglages: false },
       texte: <>Le graphique montre le courant i traversant une électrode de platine plongée dans une solution aqueuse, en fonction de son potentiel E (V/ESH). Ici, il n’y a <strong>aucune espèce dissoute</strong> : seul le solvant, l’eau, réagit. Le courant est en unités arbitraires.</>,
       tache: { type: "qcm", q: "Que représente la zone verte (où le courant est nul) ?", options: ["Le domaine d’inertie électrochimique de l’eau : aucune réaction du solvant", "Le domaine où l’électrode est détériorée", "Le domaine où l’on observe le fer"], bonne: 0,
@@ -271,11 +273,19 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
     { id: "ph", titre: "Faire varier le pH", focus: ["ph", "coupe"], vue: V,
       texte: <>Un curseur de pH apparaît. Réglez-le à <strong>pH = 7</strong> et observez le déplacement de la zone verte par rapport à pH = 0.</>,
       tache: { type: "action", ok: pres(e.pH, 7), label: "Placer pH = 7", faire: () => set({ pH: 7 }), consigne: "Placez le pH à 7 (à 0,3 près)." } },
-    { id: "mur1", titre: "Le mur de la réduction de l’eau", focus: ["coupe"], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>les murs de l’eau sont deux droites du diagramme E-pH : réduction 2 H⁺ + 2 e⁻ = H₂, E = −0,059·pH ; oxydation O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O, E = 1,23 − 0,059·pH (V/ESH)</li><li>entre les deux murs, le courant est nul : c’est le domaine d’inertie électrochimique de l’eau</li><li>sur platine, l’oxydation de l’eau est lente : le mur observé est décalé d’environ 0,8 V vers le haut (surtension)</li></ul>, retenirTitre: 'LES MURS DE L’EAU', vue: V,
+    { id: "mur1", titre: "Le mur de la réduction de l’eau", focus: ["coupe"], vue: V,
       texte: <>La limite inférieure correspond à la réduction des ions H⁺ en dihydrogène : 2 H⁺ + 2 e⁻ = H₂. Avec p(H₂) = 1 bar, la loi de Nernst donne E = E° + 0,059·log[H⁺] = <strong>−0,059·pH</strong> (E° = 0 V/ESH).</>,
       tache: { type: "num", q: "Potentiel de ce mur à pH = 7", unite: "V/ESH", vrai: -0.414, tol: 0.03, affiche: v => fmt(v, 2),
         aide: "E = −0,059 × pH.", pieges: [[0.414, "Le signe : plus le pH augmente, plus le potentiel diminue."]], indice: "Le mur du bas est celui du couple H⁺/H₂ (E° = 0 V) : appliquez la formule avec pH = 7." } },
     { id: "hypo", titre: "Le mur de l’oxydation de l’eau", focus: ["hypo", "coupe"], vue: V,
+      retenirTitre: 'LES MURS DE L’EAU',
+      retenir: <>
+        <SchemaMurs/>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Réduction : 2 H⁺ + 2 e⁻ = H₂, E = −0,059·pH (V/ESH). Oxydation : O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O, E = 1,23 − 0,059·pH.</li>
+          <li>Entre les deux murs, le courant est nul : c’est le <strong>domaine d’inertie électrochimique</strong> de l’eau.</li>
+        </ul>
+      </>,
       texte: <>La limite supérieure correspond à O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O, de potentiel E = 1,23 − 0,059·pH. Lisez l’encadré « Hypothèses de travail » : sur platine, l’oxydation de l’eau est <strong>lente</strong>.</>,
       tache: { type: "qcm", q: "Pourquoi le mur observé est-il situé environ 0,8 V plus haut que le potentiel thermodynamique ?", options: ["L’oxydation de l’eau est lente sur platine : il faut une surtension pour que le courant apparaisse", "Le platine réagit avec l’eau", "La loi de Nernst n’est pas valable pour l’oxygène"], bonne: 0,
         expl: "C’est la surtension de l’oxydation de l’eau. Dans ce modèle, elle est choisie de façon qualitative (0,8 V).", indice: "Pensez à la cinétique : une réaction possible thermodynamiquement peut être très lente sur certaines électrodes." } },
@@ -283,7 +293,7 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
       texte: <>Le mur supérieur observé est à E = 1,23 + 0,8 − 0,059·pH ; le mur inférieur est à E = −0,059·pH. Calculez la largeur du domaine entre les deux murs.</>,
       tache: { type: "num", q: "Largeur du domaine d’inertie à pH = 7", unite: "V", vrai: 2.03, tol: 0.02, affiche: v => fmt(v, 2),
         aide: "Mur supérieur − mur inférieur.", pieges: [[1.23, "Il faut tenir compte de la surtension de 0,8 V."]], indice: "Calculez le potentiel de chaque mur à pH = 7 (2,03 − 0,059·pH pour le mur du haut), puis leur différence." } },
-    { id: "largeur2", titre: "Et à un autre pH ?", focus: ["coupe", "ph"], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>les deux murs ont la même pente, −0,059 V par unité de pH : le domaine d’inertie se translate sans changer de largeur</li><li>largeur observée : 1,23 + 0,8 = 2,03 V, quel que soit le pH</li></ul>, vue: V,
+    { id: "largeur2", titre: "Et à un autre pH ?", focus: ["coupe", "ph"], vue: V,
       texte: <>Déplacez le curseur de pH et observez la zone verte.</>,
       tache: { type: "qcm", q: "Quand le pH varie, la largeur du domaine d’inertie…", options: ["reste la même : les deux murs se décalent de la même valeur", "augmente avec le pH", "diminue avec le pH"], bonne: 0,
         expl: "Les deux murs ont la même pente (−0,059 V par unité de pH) : le domaine se translate sans changer de largeur (2,03 V).", indice: "Les deux murs ont la même pente en fonction du pH. Que devient leur écart ?" } },
@@ -291,10 +301,27 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
       texte: <>Voici maintenant une vue en 3D : chaque courbe i = f(E) correspond à un pH différent (de 0 à 14, couleur selon le pH). Faites tourner la figure avec la souris. La courbe rouge épaisse est celle du pH choisi.</>,
       tache: { type: "qcm", q: "Comment évolue l’ensemble du domaine d’inertie quand le pH augmente ?", options: ["Il se décale en bloc vers les potentiels plus faibles", "Il se décale vers les potentiels plus élevés", "Il ne bouge pas"], bonne: 0, indice: "Chaque mur suit une droite de pente négative en fonction du pH." } },
     { id: "diag", titre: "Le diagramme E-pH", focus: ["diag"], vue: { ...V, g3d: true, diag: true },
+      retenirTitre: 'SURTENSION ET LARGEUR',
+      retenir: <>
+        <SchemaSurtension/>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Sur platine, l’oxydation de l’eau est <strong>lente</strong> : le mur observé est décalé d’environ <strong>0,8 V</strong> vers le haut (surtension).</li>
+          <li>Largeur observée du domaine : 1,23 + 0,8 = 2,03 V.</li>
+          <li><strong>Thermodynamiquement possible ne veut pas dire observé.</strong></li>
+        </ul>
+      </>,
       texte: <>Un graphique apparaît : on y reporte, en fonction du pH, les potentiels des murs. C’est la vue de dessus de la figure 3D.</>,
       tache: { type: "qcm", q: "Que représentent les deux droites parallèles en traits pleins ou pointillés rouges et bleus ?", options: ["Les limites du domaine d’inertie de l’eau, qui se déplacent avec le pH", "Les potentiels de l’électrode de référence", "Les concentrations en H⁺ et en OH⁻"], bonne: 0,
         expl: "Le diagramme E-pH de l’eau est ainsi la trace, sur le plan (pH, E), des murs du solvant.", indice: "Ces droites varient avec le pH et encadrent la zone où le courant est nul." } },
     { id: "surface", titre: "Une surface", focus: ["vue3d", "g3d"], vue: { ...V, g3d: true, diag: true, choixVue: true },
+      retenirTitre: 'LE DOMAINE SE TRANSLATE',
+      retenir: <>
+        <SchemaTranslation/>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les deux murs ont la <strong>même pente</strong> (−0,059 V par unité de pH) : le domaine d’inertie se <strong>translate</strong> sans changer de largeur.</li>
+          <li>Le diagramme E-pH est la vue de dessus des courbes i = f(E) tracées à tous les pH.</li>
+        </ul>
+      </>,
       texte: <>Choisissez la vue « Surface » : toutes les courbes sont reliées en une surface i(E, pH). Les plateaux représentent les zones sans réaction, les montées brutales les murs de l’eau.</>,
       tache: { type: "action", ok: e.vue3d !== "faisceau", label: "Afficher la surface", faire: () => set({ vue3d: "surface" }), consigne: "Choisissez « Surface » ou « Les deux »." } },
     { id: "fe", titre: "Un couple sans H⁺ : Fe³⁺/Fe²⁺", focus: ["couple", "diag"], vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, couplesDispo: ["aucun", "fe"] },
@@ -305,27 +332,81 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
       tache: { type: "qcm", q: "Que fait la vague de Fe³⁺/Fe²⁺ quand le pH augmente de 0 à 2 ?", options: ["Elle ne bouge pas : le potentiel du couple ne dépend pas du pH", "Elle se décale vers les potentiels plus faibles, comme les murs de l’eau", "Elle disparaît"], bonne: 0,
         expl: "Le potentiel d’un couple dont la demi-équation ne contient pas H⁺ est indépendant du pH : droite horizontale dans le diagramme E-pH.", indice: "Dans la demi-équation Fe³⁺ + e⁻ = Fe²⁺, des ions H⁺ interviennent-ils ? Le potentiel dépend-il alors du pH ?" } },
     { id: "feLim", titre: "Pourquoi s’arrêter à pH 2 ?", focus: ["diag"], vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, couplesDispo: ["aucun", "fe"], valeurs: true },
+      retenirTitre: 'COUPLE SANS H⁺',
+      retenir: <>
+        <SchemaSansH/>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Si H⁺ n’intervient pas dans la demi-équation (m = 0), le potentiel <strong>ne dépend pas du pH</strong> : droite horizontale (Fe³⁺ + e⁻ = Fe²⁺, E° = 0,77 V/ESH).</li>
+          <li>Les murs de l’eau, eux, descendent avec le pH.</li>
+        </ul>
+      </>,
       texte: <>Réglez le pH au-dessus de 2 : la vague n’est plus tracée et une zone grisée apparaît dans le diagramme.</>,
       tache: { type: "qcm", q: "Pourquoi la vague du fer n’est-elle plus tracée au-delà de pH 2 ?", options: ["Fe(III) précipite en hydroxyde Fe(OH)₃ : le modèle de vagues d’espèces dissoutes n’est plus valable", "Le fer est réduit par l’eau", "Le courant devient infini"], bonne: 0,
         expl: "Un solide ne diffuse pas vers l’électrode : la concentration en fer dissous devient très faible et le palier de courant s’effondre. Il faudrait alors un autre modèle.", indice: "Que devient Fe³⁺ quand le milieu devient moins acide ?" } },
     { id: "q", titre: "Un couple avec H⁺ : benzoquinone / hydroquinone", focus: ["couple", "coupe", "diag"], vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, valeurs: true },
+      retenirTitre: 'LIMITE : LA PRÉCIPITATION',
+      retenir: <>
+        <SchemaPrecip/>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Au-delà de pH 2, Fe(III) précipite en Fe(OH)₃ : la concentration en fer dissous s’effondre.</li>
+          <li>Le modèle de vagues d’espèces <strong>dissoutes</strong> n’est plus valable : il faut un autre modèle.</li>
+        </ul>
+      </>,
       texte: <>La demi-équation est Q + 2 H⁺ + 2 e⁻ = QH₂ (E° = 0,70 V/ESH à pH 0). Cette fois, H⁺ intervient. Choisissez ce couple et un pH de 5.</>,
       tache: { type: "action", ok: e.couple === "q" && pres(e.pH, 5, 0.5), label: "Benzoquinone, pH = 5", faire: () => set({ couple: "q", pH: 5 }), consigne: "Choisissez Benzoquinone / hydroquinone avec un pH entre 4,5 et 5,5." } },
-    { id: "pente", titre: "La pente de la droite", focus: ["diag"], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>Ox + m H⁺ + n e⁻ = Red : E = E° − (0,059·m/n)·pH, une droite de pente −0,059·m/n dans le diagramme E-pH</li><li>si H⁺ n’intervient pas (m = 0), le potentiel ne dépend pas du pH : droite horizontale (Fe³⁺/Fe²⁺)</li><li>Q/QH₂ : m = n = 2, pente −0,059 V par unité de pH, comme les murs de l’eau</li></ul>, retenirTitre: 'POTENTIEL ET pH', vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, valeurs: true },
+    { id: "pente", titre: "La pente de la droite", focus: ["diag"], vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, valeurs: true },
       texte: <>Pour une demi-équation Ox + m H⁺ + n e⁻ = Red, la loi de Nernst donne E = E° − (0,059·m/n)·pH. Ici m = 2 et n = 2.</>,
       tache: { type: "num", q: "Pente de la droite E = f(pH) du couple Q/QH₂ (en V par unité de pH)", unite: "V/pH", vrai: -0.059, tol: 0.03, affiche: v => fmt(v, 3),
         aide: "−0,059 × m / n.", pieges: [[-0.118, "Il faut diviser par n, le nombre d’électrons échangés."], [-0.0295, "m vaut 2 et n vaut 2."]], indice: "Écrivez la demi-équation Q + m H⁺ + n e⁻ = QH₂ et relevez m (ions H⁺) et n (électrons)." } },
-    { id: "rupture", titre: "Une rupture de pente", focus: ["diag"], retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}><li>une rupture de pente dans un diagramme E-pH signale un changement d’espèce prédominante, ici au pKa du couple acide-base (QH₂ : pKa = 9,9)</li><li>thermodynamiquement possible ne veut pas dire observé : une réaction lente (oxydation de l’eau sur platine) peut ne pas avoir lieu</li></ul>, vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, valeurs: true },
+    { id: "rupture", titre: "Une rupture de pente", focus: ["diag"], vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, valeurs: true },
+      retenirTitre: 'POTENTIEL ET pH',
+      retenir: <>
+        <SchemaPentes/>
+        <Formule><mi>E</mi><mo>=</mo><msup><mi>E</mi><mo>°</mo></msup><mo>−</mo><mfrac><mrow><mn>0,059</mn><mo>×</mo><mi>m</mi></mrow><mi>n</mi></mfrac><mo>×</mo><mi>pH</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Pour Ox + m H⁺ + n e⁻ = Red, la droite E = f(pH) a pour pente −0,059·m/n.</li>
+          <li>m = 0 : horizontale (Fe³⁺/Fe²⁺) ; Q/QH₂ : m = n = 2, pente −0,059 V par unité de pH, comme les murs de l’eau.</li>
+        </ul>
+      </>,
       texte: <>Augmentez le pH jusqu’à 12 : la droite du couple Q/QH₂ change de pente vers pH 10.</>,
       tache: { type: "qcm", q: "Quelle est l’origine de cette rupture de pente ?", options: ["L’hydroquinone est une espèce acide (pKa = 9,9) : au-delà, sa forme basique devient majoritaire et la demi-équation fait intervenir moins de H⁺", "L’électrode se détériore", "La benzoquinone précipite"], bonne: 0,
         expl: "Une rupture de pente dans un diagramme E-pH signale un changement d’espèce prédominante : ici, un couple acide-base.", indice: "Une rupture de pente apparaît quand une espèce change de forme acido-basique : comparez le pH au pKa." } },
     { id: "prevoir", titre: "Thermodynamique et cinétique", focus: [], vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, valeurs: true },
+      retenirTitre: 'RUPTURE DE PENTE',
+      retenir: <>
+        <SchemaRupture/>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Une <strong>rupture de pente</strong> dans un diagramme E-pH signale un changement d’espèce prédominante.</li>
+          <li>Ici, au pK<sub>a</sub> du couple acide-base (QH₂ : pK<sub>a</sub> = 9,9).</li>
+        </ul>
+      </>,
       texte: <>À pH 0, le couple MnO₄⁻/Mn²⁺ a un potentiel de 1,51 V/ESH, supérieur à celui du couple O₂/H₂O (1,23 V à pH 0). Pourtant, les solutions de permanganate acidifiées se conservent plusieurs jours.</>,
       tache: { type: "qcm", q: "Comment l’expliquer ?", options: ["Thermodynamiquement, MnO₄⁻ peut oxyder l’eau, mais la réaction est cinétiquement très lente", "MnO₄⁻ est moins oxydant que O₂", "L’eau ne peut jamais être oxydée"], bonne: 0,
         expl: "Même raison que le mur de l’eau, décalé de 0,8 V : l’oxydation de l’eau est lente. Un couple situé entre le potentiel thermodynamique et le mur observé ne l’oxyde pas en pratique.", indice: "La thermodynamique dit si une réaction est possible, pas à quelle vitesse elle a lieu." } },
-    { id: "bravo", titre: "Bravo !", focus: [],
+    { id: "bilan1", titre: "Le bilan", focus: [], vue: { ...V, g3d: true, diag: true, choixVue: true },
+      retenirTitre: 'À RETENIR : LE DIAGRAMME E-pH DE L’EAU',
+      retenir: <>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Les murs de l’eau sont deux droites parallèles de pente −0,059 V par unité de pH ; entre elles, le courant est nul.</li>
+          <li>Surtension sur platine : domaine observé de 2,03 V de large, translaté en bloc quand le pH varie.</li>
+          <li>Le diagramme E-pH est la vue de dessus des courbes i = f(E) à tous les pH.</li>
+        </ul>
+      </>,
+      texte: <>Vous savez relier les courbes i = f(E) au diagramme E-pH de l’eau. Le parcours 2 ajoute des couples dissous (fer, benzoquinone) ; vous pouvez aussi explorer librement ou tenter le défi.</>, tache: null },
+    { id: "bilan2", titre: "Le bilan", focus: [], vue: { ...V, g3d: true, diag: true, choixVue: true, choixCouple: true, valeurs: true },
+      retenirTitre: 'THERMODYNAMIQUE ET CINÉTIQUE',
+      retenir: <>
+        <SchemaCinetique/>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>Un couple situé entre le potentiel thermodynamique de l’eau et le mur observé ne l’oxyde <strong>pas en pratique</strong> : la réaction est lente.</li>
+          <li>Bilan : murs de l’eau et couples avec H⁺ se décalent avec le pH ; les couples sans H⁺ non ; une rupture de pente signale un changement d’espèce.</li>
+        </ul>
+      </>,
       texte: <>Vous savez relier les courbes i = f(E) au diagramme E-pH : les murs de l’eau et les couples avec H⁺ se décalent avec le pH, les couples sans H⁺ non, et une rupture de pente signale un changement d’espèce. En exploration libre, jouez avec la surface ; dans le défi, un couple inconnu vous attend.</>, tache: null },
   ];
+  const ORDRE_PARC = [['coupe', 'ph', 'mur1', 'hypo', 'largeur', 'largeur2', 'faisceau', 'diag', 'surface', 'bilan1'],
+    ['fe', 'feq', 'feLim', 'q', 'pente', 'rupture', 'prevoir', 'bilan2']];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(x => x.id === id));
   const idx = id => ETAPES.findIndex(s => s.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const vue = { ...V, ...(et.vue || {}) };
@@ -343,6 +424,20 @@ function ParcoursIEpH({ plotlyReady, changerMode }) {
         {etape >= idx("hypo") && <HypothesesIEpH defaut={et.focus.includes("hypo")} focus={et.focus.includes("hypo")} key={String(et.focus.includes("hypo"))}/>}
       </div>
       <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={fin}/>
+    </div>
+  );
+}
+
+function ParcoursIEpH({ plotlyReady, changerMode }) {
+  const [parcBrut, setParc] = useEtatPersistant("iepH-parcours-choix", 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  return (
+    <div style={{ minWidth: 0 }}>
+      <div role="group" aria-label="Choix du parcours" style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Parcours :</span>
+        {[[1, "1. Les murs de l’eau"], [2, "2. Couples et diagramme E-pH"]].map(([k, nom]) => <button key={k} aria-pressed={parc === k} onClick={() => setParc(k)} style={styleBouton(parc === k, ORANGE_GUIDE)}>{nom}</button>)}
+      </div>
+      <ParcoursIEpHInterne key={parc} plotlyReady={plotlyReady} changerMode={changerMode} parc={parc}/>
     </div>
   );
 }
