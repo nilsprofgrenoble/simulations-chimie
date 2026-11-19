@@ -154,7 +154,11 @@ export function SimulationTitragePH() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
   const [suiviC, noterC] = useCompteurDefi(), [suiviI, noterI] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant(CLE_GUIDE, VIDE), [g2, setG2] = useEtatPersistant(CLE_GUIDE + '-p2', VIDE), [g3, setG3] = useEtatPersistant(CLE_GUIDE + '-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant(CLE_GUIDE + '-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('conc');
   const [hypoOuv, setHypoOuv] = useState(false), [revoirScene, setRevoirScene] = useState(false);
   const [ti, setTi] = useState(PRESET);
@@ -164,9 +168,14 @@ export function SimulationTitragePH() {
   const setV = v => setT({ Vb: Math.max(0, Math.min(VMAX, Math.round(v * 10) / 10)) });
 
   // ---------- étapes du parcours ----------
-  const IDS = ['montage', 'verser', 'nhoh', 'limitant', 'compo', 'exces', 'equiv', 'courbe', 'derivee', 'ca', 'phe', 'predom', 'fort', 'fortph', 'indic', 'bbtfort', 'bbtfaible', 'choix', 'bravo'];
+  const ORDRE_PARC = [['montage', 'verser', 'nhoh', 'limitant', 'compo', 'exces', 'equiv', 'bilan1'],
+    ['courbe', 'derivee', 'ca', 'phe', 'predom', 'bilan2'],
+    ['fort', 'fortph', 'indic', 'bbtfort', 'bbtfaible', 'choix', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const etape = guide.etape, idE = enGuide ? IDS[Math.min(etape, IDS.length - 1)] : null;
-  const apres = id => !enGuide || etape > IDS.indexOf(id), deja = id => !enGuide || etape >= IDS.indexOf(id);
+  const apres = id => !enGuide || etape > iEt(id), deja = id => !enGuide || etape >= iEt(id);
 
   // ---------- grandeurs effectives ----------
   const P = dd ? { acide: dd.acide, C0: dd.C0, V0: 20.0, Cb: 0.100 } : { acide: ti.acide, C0: ti.C0, V0: ti.V0, Cb: ti.Cb };
@@ -182,17 +191,17 @@ export function SimulationTitragePH() {
   // ---------- états attendus (rétablissements du parcours) ----------
   const attendu = {
     nhoh: { V: 4 }, limitant: { V: 4 }, compo: { V: 4 }, exces: { V: 22 },
-    phe: { acide: 'etha', V: 16 }, predom: { acide: 'etha', V: 16 }, fortph: { acide: 'hcl', V: 16 },
+    courbe: { acide: 'etha' }, derivee: { acide: 'etha' }, ca: { acide: 'etha' }, phe: { acide: 'etha', V: 16 }, predom: { acide: 'etha', V: 16 }, fortph: { acide: 'hcl', V: 16 },
     bbtfort: { acide: 'hcl', ind: 'bbt', V: 16 }, bbtfaible: { acide: 'etha', ind: 'bbt', V: 16 }, choix: { acide: 'etha', V: 16 },
   }[idE] || null;
   const conforme = !attendu || ((attendu.V == null || Math.abs(Vb - attendu.V) < 0.05) && (!attendu.acide || ti.acide === attendu.acide) && (!attendu.ind || ti.ind === attendu.ind));
   const bloque = conforme ? null : 'Rétablissez d’abord le montage avec le bouton au-dessus du schéma.';
   const retablir = () => setT({ ...(attendu.V != null ? { Vb: attendu.V } : {}), ...(attendu.acide ? { acide: attendu.acide } : {}), ...(attendu.ind ? { ind: attendu.ind } : {}) });
-  const libelleRetablir = attendu && `Rétablir : ${attendu.acide === 'hcl' ? 'acide chlorhydrique, ' : attendu.acide === 'etha' ? 'acide éthanoïque, ' : ''}${attendu.ind ? 'BBT, ' : ''}${nbf(attendu.V, 1)} mL de soude versés`;
+  const libelleRetablir = attendu && `Rétablir : ${[attendu.acide === 'hcl' ? 'acide chlorhydrique' : attendu.acide === 'etha' ? 'acide éthanoïque' : null, attendu.ind ? 'BBT' : null, attendu.V != null ? `${nbf(attendu.V, 1)} mL de soude versés` : null].filter(Boolean).join(', ')}`;
 
   const vir = M.virage(IND('bbt'), { acide: 'etha', C0: 0.080, V0: 20.0, Cb: 0.100 }), virBth = M.virage(IND('bth'), { acide: 'etha', C0: 0.080, V0: 20.0, Cb: 0.100 });
 
-  const ETAPES = [
+  const TOUTES = [
     { id: 'montage', titre: 'Le montage du titrage', focus: ['scene'],
       texte: <>Vous contrôlez une solution d’acide éthanoïque CH₃COOH dont l’étiquette annonce <em>C</em><sub>A</sub> = 0,080{NB}mol·L⁻¹. On en place <em>V</em><sub>A</sub> = 20,0{NB}mL dans l’erlenmeyer et on la <strong>titre</strong> avec une solution d’hydroxyde de sodium (Na⁺ + HO⁻) de concentration <em>C</em><sub>B</sub> = 0,100{NB}mol·L⁻¹, versée avec la burette. Un pH-mètre suit le pH de la solution.</>,
       tache: { type: 'qcm', q: 'Quelle équation modélise la réaction support du titrage ?', options: ['CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O', 'CH₃COOH + H₂O → CH₃COO⁻ + H₃O⁺', 'H₃O⁺ + HO⁻ → 2 H₂O'], bonne: 0,
@@ -209,7 +218,7 @@ export function SimulationTitragePH() {
         pieges: [[4.0e-4, 'Le résultat est demandé en millimoles (1 mmol = 10⁻³ mol) : 4,0 × 10⁻⁴ mol = 0,40 mmol.'], [0.025, 'Le rapport est inversé : n_B = C_B × V_B, pas V_B / C_B.']],
         expl: 'n_B = 0,100 × 4,0 = 0,40 mmol d’ions HO⁻.', indice: 'n = C × V : avec C en mol·L⁻¹ et V en mL, on obtient des millimoles.' } },
     { id: 'limitant', titre: 'Une transformation totale', focus: ['scene'],
-      retenirTitre: 'À RETENIR : LA RÉACTION SUPPORT DU TITRAGE',
+      retenirTitre: 'La réaction support du titrage',
       retenir: <>
         <SvgReaction/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -235,7 +244,7 @@ export function SimulationTitragePH() {
         pieges: [[2.20, '2,20 mmol est la quantité versée : 1,60 mmol ont réagi avec l’acide.'], [3.80, 'Il faut soustraire la quantité d’acide, qui a réagi.'], [1.60, '1,60 mmol est la quantité d’ions HO⁻ qui a réagi, pas celle qui reste.']],
         expl: 'n(HO⁻) en excès = 2,20 − 1,60 = 0,60 mmol.', indice: 'Excès = quantité versée − quantité qui a réagi avec l’acide.' } },
     { id: 'equiv', titre: 'L’équivalence', focus: ['scene'],
-      retenirTitre: 'À RETENIR : COMPOSITION ET ÉQUIVALENCE',
+      retenirTitre: 'Composition et équivalence',
       retenir: <>
         <SvgComposition/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -247,6 +256,8 @@ export function SimulationTitragePH() {
       texte: <>Le tableau de composition donne, à chaque volume versé, les quantités des espèces (transformation totale). Déplacez le curseur de 0 à 22{NB}mL. Il existe un volume <em>V</em><sub>E</sub> pour lequel l’acide et les ions HO⁻ ont tous deux disparu : c’est l’<strong>équivalence</strong>.</>,
       tache: { type: 'qcm', q: 'À l’équivalence…', options: ['l’acide et les ions HO⁻ sont dans les proportions stœchiométriques : ils sont tous deux entièrement consommés', 'le pH de la solution vaut forcément 7', 'il reste autant d’acide que d’ions HO⁻'], bonne: 0,
         expl: 'À l’équivalence, n(HO⁻) versé = n(acide) initial : ni l’un ni l’autre ne reste (transformation totale). Rien n’impose que le pH vaille 7 : on le verra plus loin.', indice: 'Dans le tableau, cherchez le volume où les lignes « acide » et « HO⁻ » valent toutes deux 0.' } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez établir la composition du système au cours d’un titrage et définir l’équivalence. Le parcours 2 repère l’équivalence sur la courbe, en déduit la concentration et le pH à l’équivalence.</>, tache: null },
     { id: 'courbe', titre: 'Repérer l’équivalence par le pH', focus: ['scene'],
       texte: <>En pratique, on ne voit pas les quantités de matière : on mesure le <strong>pH</strong>. La courbe pH = f(<em>V</em><sub>B</sub>) apparaît ; le point orange suit le curseur. Déplacez le curseur de volume jusqu’à l’endroit où le pH <strong>augmente le plus vite</strong> : c’est le <strong>saut de pH</strong>.</>,
       tache: { type: 'action', ok: Math.abs(Vb - 16) <= 0.5, label: 'Aller au saut de pH', faire: () => setV(16), consigne: 'Placez le curseur au milieu du saut de pH' } },
@@ -257,7 +268,7 @@ export function SimulationTitragePH() {
         pieges: [[8.0, '8,0 mL est la moitié de V_E : il n’y a pas de saut à cet endroit, cherchez le maximum de la dérivée.']],
         expl: 'Le maximum de dpH/dV_B se situe à V_E = 16,0 mL : c’est aussi le milieu du saut de pH.', indice: 'V_E est l’abscisse du sommet de la courbe verte (maximum de dpH/dV_B).' } },
     { id: 'ca', titre: 'En déduire la concentration', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : REPÉRER L’ÉQUIVALENCE ET EN DÉDUIRE LA CONCENTRATION',
+      retenirTitre: 'Repérer l’équivalence et en déduire la concentration',
       retenir: <>
         <SvgRepererVE/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -281,11 +292,13 @@ export function SimulationTitragePH() {
       texte: <>À l’équivalence, il ne reste plus d’acide CH₃COOH : l’erlenmeyer contient surtout des ions éthanoate CH₃COO⁻ (formés) et des ions Na⁺ (spectateurs). Le <strong>diagramme de prédominance</strong> du couple CH₃COOH / CH₃COO⁻ indique quelle forme domine selon le pH : l’acide si pH &lt; p<em>K</em><sub>A</sub>, la base si pH &gt; p<em>K</em><sub>A</sub> (p<em>K</em><sub>A</sub> = −log <em>K</em><sub>A</sub> = 4,8 pour ce couple). Il place le pH lu : pH<sub>E</sub> ≈ 8,7.</>,
       tache: { type: 'qcm', q: 'Au pH de l’équivalence (≈ 8,7), l’espèce qui prédomine dans le couple est…', options: ['CH₃COO⁻, car pH > pKA', 'CH₃COOH, car pH > pKA', 'les deux à égalité, car pH = pKA'], bonne: 0, bloque,
         expl: 'pH > pK_A : la base CH₃COO⁻ prédomine. C’est une base faible : elle réagit un peu avec l’eau (CH₃COO⁻ + H₂O ⇌ CH₃COOH + HO⁻), ce qui rend la solution basique : pH_E > 7.', indice: 'Pour pH > pKA, l’espèce basique du couple prédomine ; pour pH < pKA, c’est l’espèce acide.' } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez repérer l’équivalence avec la dérivée du pH, en déduire la concentration de l’acide et expliquer un pH à l’équivalence supérieur à 7. Le parcours 3 compare avec un acide fort et traite le choix d’un indicateur coloré.</>, tache: null },
     { id: 'fort', titre: 'Et avec un acide fort ?', focus: ['reglages'],
       texte: <>Les boutons « Acide titré » apparaissent dans les réglages. Choisissez l’<strong>acide chlorhydrique</strong> (H₃O⁺ + Cl⁻), de même concentration et de même volume : <em>V</em><sub>E</sub> reste 16,0{NB}mL. La réaction support est alors H₃O⁺ + HO⁻ → 2 H₂O.</>,
       tache: { type: 'action', ok: ti.acide === 'hcl', label: 'Choisir l’acide chlorhydrique', faire: () => setT({ acide: 'hcl' }), consigne: 'Choisissez « acide chlorhydrique » dans les réglages' } },
     { id: 'fortph', titre: 'pH à l’équivalence : acide fort', focus: ['scene', 'mesures'],
-      retenirTitre: 'À RETENIR : LE pH À L’ÉQUIVALENCE N’EST PAS TOUJOURS 7',
+      retenirTitre: 'Le pH à l’équivalence n’est pas toujours 7',
       retenir: <>
         <SvgPhEquivalence/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -308,7 +321,7 @@ export function SimulationTitragePH() {
       tache: { type: 'qcm', q: 'Pour le titrage de l’acide éthanoïque, le BBT…', options: ['est mal adapté : pH_E = 8,7 n’est pas dans sa zone de virage (6,0 – 7,6) et sa teinte change progressivement avant V_E', 'convient aussi : un indicateur convient toujours s’il vire autour de pH = 7', 'convient, car la zone de virage n’a aucune importance'], bonne: 0, bloque,
         expl: `pH_E = 8,7 est hors de la zone du BBT. Le BBT commence à virer dès ${nbf(vir.v1, 2)} mL (${nbf(16 - vir.v1, 2)} mL avant V_E) et n’est franchement bleu qu’à ${nbf(vir.v2, 2)} mL : le changement de couleur est progressif, on ne repère pas nettement V_E.`, indice: 'Comparez pH_E = 8,7 avec la zone de virage 6,0 – 7,6 : le contient-elle ?' } },
     { id: 'choix', titre: 'Choisir le bon indicateur', focus: ['reglages', 'scene'],
-      retenirTitre: 'À RETENIR : CHOISIR L’INDICATEUR COLORÉ',
+      retenirTitre: 'Choisir l’indicateur coloré',
       retenir: <>
         <SvgIndicateur/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -319,14 +332,15 @@ export function SimulationTitragePH() {
       texte: <>Pour l’acide éthanoïque, <em>V</em><sub>E</sub> = 16,0{NB}mL et pH<sub>E</sub> ≈ 8,7. Essayez les indicateurs dans les réglages, puis choisissez celui dont la zone de virage <strong>contient</strong> pH<sub>E</sub>.</>,
       tache: { type: 'qcm', q: 'Quel indicateur choisir pour titrer l’acide éthanoïque ?', options: ['le bleu de thymol (zone 8,0 – 9,6)', 'le jaune de méthyle (zone 2,9 – 4,0)', 'le bleu de bromothymol (zone 6,0 – 7,6)', 'le jaune d’alizarine R (zone 10,1 – 12,0)'], bonne: 0, bloque,
         expl: `La zone du bleu de thymol (8,0 – 9,6) contient pH_E = 8,7. Il change de couleur entre ${nbf(virBth.v1, 2)} mL et ${nbf(virBth.v2, 2)} mL, c’est-à-dire d’un coup à V_E = 16,0 mL. Les autres zones ne contiennent pas pH_E.`, indice: 'Cherchez la zone de virage qui contient 8,7.' } },
-    { id: 'bravo', titre: 'Bilan', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
       texte: <>Vous savez établir la composition du système au cours d’un titrage, repérer l’équivalence, en déduire une concentration, prévoir le pH à l’équivalence et choisir un indicateur coloré. Passez à l’exploration (autres acides, autres concentrations, comparaison de courbes) ou tentez les deux défis.</>, tache: null },
   ];
   // Une carte « À retenir » ne doit pas donner la réponse de l'étape qu'elle conclut : elle s'affiche à l'étape suivante.
-  [['limitant', 'compo'], ['equiv', 'courbe'], ['ca', 'phe'], ['fortph', 'indic'], ['choix', 'bravo']].forEach(([de, vers]) => {
-    const a = ETAPES.find(e => e.id === de), b = ETAPES.find(e => e.id === vers);
+  [['limitant', 'compo'], ['equiv', 'bilan1'], ['ca', 'phe'], ['fortph', 'indic'], ['choix', 'bravo']].forEach(([de, vers]) => {
+    const a = TOUTES.find(e => e.id === de), b = TOUTES.find(e => e.id === vers);
     b.retenir = a.retenir; b.retenirTitre = a.retenirTitre; delete a.retenir; delete a.retenirTitre;
   });
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
@@ -405,8 +419,10 @@ export function SimulationTitragePH() {
       <li><strong>Notations</strong> : E = équivalence (<em>V</em><sub>E</sub>, pH<sub>E</sub>) ; éq = équilibre. Ne pas confondre les grandeurs à l’équivalence et à l’équilibre.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
+  const NOMS_PARC = ['1. Composition du système et équivalence', '2. Concentration et pH à l’équivalence', '3. Acide fort et indicateur coloré'];
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -414,11 +430,11 @@ export function SimulationTitragePH() {
   // ---------- schéma du montage ----------
   const boutonRetablir = (txt, f) => <button onClick={f} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>{txt}</button>;
   // Le schéma du montage n'est utile qu'aux deux premières étapes et à celles où l'on regarde la couleur de l'indicateur : ailleurs il est replié (il séparait la consigne des graphiques).
-  const sceneRepliee = enGuide && etape > 1 && !(etape >= IDS.indexOf('indic') && etape <= IDS.indexOf('choix')) && !revoirScene;
+  const sceneRepliee = enGuide && etape > iEt('verser') && !(etape >= iEt('indic') && etape <= iEt('choix')) && !revoirScene;
   const sceneBox = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {enGuide && attendu && !conforme && boutonRetablir(libelleRetablir, retablir)}
-      {enGuide && etape > 1 && <button onClick={() => setRevoirScene(r => !r)} aria-expanded={!sceneRepliee} style={{ ...styleBouton(false), marginBottom: sceneRepliee ? 0 : 8 }}>{sceneRepliee ? 'Revoir le schéma du montage' : 'Masquer le schéma'}</button>}
+      {enGuide && etape > iEt('verser') && <button onClick={() => setRevoirScene(r => !r)} aria-expanded={!sceneRepliee} style={{ ...styleBouton(false), marginBottom: sceneRepliee ? 0 : 8 }}>{sceneRepliee ? 'Revoir le schéma du montage' : 'Masquer le schéma'}</button>}
       {!sceneRepliee && <><div style={{ maxWidth: 560, margin: '0 auto' }}>
         <SchemaBurette V2={Vb} ouvert={false} coul={coulSol} indicateur={indEff ? indEff.nom : null} reperes={false} legendeCouleur={false} sonde={{ valeur: nbf(ph, 2) }}
           etiquetteBurette={<><strong>Burette : soude</strong><br/>C<sub>B</sub> = {nbf(P.Cb, 3)} mol·L⁻¹</>}
@@ -539,7 +555,12 @@ export function SimulationTitragePH() {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Un <strong>titrage</strong> acide-base suivi au pH-mètre permet de trouver la concentration d’un acide : on repère l’<strong>équivalence</strong>, on prévoit le pH à ce moment et on choisit un indicateur coloré adapté.</div>
       <div className={`tph-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {enGuide ? <div className="tph-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="tph-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="tph-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="tph-carte">{panneauHypo}</div> : null}
         <div className="tph-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'conc' ? suiviC : suiviI}/></div>}
           <div className={`tph-pri${mode !== 'explore' ? ' pile' : ''}`}>
