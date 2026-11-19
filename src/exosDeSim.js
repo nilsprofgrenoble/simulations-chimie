@@ -87,6 +87,11 @@ export const EXOS_DE_SIM = {
   143: [/(^|\.)extrac-/, /plausible\.extrac-/],
   144: [/(^|\.)stereo-/, /plausible\.stereo-/],
   142: [/(^|\.)co2dis-/, /plausible\.co2dis-/],
+  // ── TSTL · Acides et bases (ancienne simulation 85 découpée en quatre, 19/11/2026)
+  147: [/ab-(rel-ph-acide-faible|hyp-ph-acide-faible|dilution-acide-faible|acide-fort-faible-meme-c|ph-formule-base)/, /ab-acf-/],
+  148: [/ab-(predominance-ph-pka|citrique-ph4)/, /relation\.diacide/, /ab-pred-/],
+  149: [/ab-(rel-henderson|hyp-henderson|tampon-meme-ajout)/, /^abTampon/, /ab-tamp-/],
+  85: [/ab-(choix-indicateur-acide-faible|demi-equivalence|pka-demi-equivalence|ph-equivalence-ok)/, /^titrage/, /hypothese\.titrage/, /^titrage-direct/, /ab-titr-/],
   141: [/(^|\.)tampstl-/, /plausible\.tampstl-/],                                                                  // Solution tampon : choix du couple et préparation (TSTL, PCM)
   120: [/lunet-/, /plausible\.lunet-/],                                                                              // La lunette astronomique (TSTL)
   115: [/lum1-/, /plausible\.lum1-/],                                                                                  // Lentille mince (1G)
