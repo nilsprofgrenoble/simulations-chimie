@@ -115,6 +115,8 @@ export const EXOS_DE_SIM = {
   91: [/e2d-/],
   86: [/^estRendement|est-/],
   92: [/^meca-/],
+  // ── TSTL · Évaporation et cristallisation ──
+  7: [/^cristal\.|crist-evaporateur|^solubilite$|cristaux-masse|plausible\.cristaux|relation\.solubilite-masse|rendement-crist|crist-evap-isotherme|crist-rendement-max|crist-bilan|crist-hyp-interpolation|crist-eau|crist-froid|crist-nacl-refroidir|crist-sursaturation-ok/],
 };
 export const aDesExosPropres = simId => (EXOS_DE_SIM[simId] || []).length > 0;
 // Thèmes d'un autre chapitre qui concernent aussi la simulation (ex. temps de réponse d'un capteur : exercices de « Régulation »)
