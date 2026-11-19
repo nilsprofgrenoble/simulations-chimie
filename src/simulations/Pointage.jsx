@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { nbf, tire, Schema, Fl, T, TV, TL, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
 import * as M from "./pointageModele";
+import { FEchelle, FVitesse, FEnergies, FBilanP, FCompat, FChaine } from "./PointageSchemas";
 
 const SIM_ID = 108;
 declarerDefis(SIM_ID, [['perte', 'Mesurer la perte d’énergie mécanique']]);
@@ -77,37 +78,6 @@ function Courbes({ B }) {
     </svg>);
 }
 
-// ---------- schémas des cartes ----------
-const SchemaEchelle = () => (
-  <Schema aria="Un étalon de 0,50 mètre mesure 200 pixels sur l'image : un pixel vaut 0,0025 mètre ; une distance de 100 pixels vaut 0,25 mètre" h={150}>
-    <line x1="30" y1="60" x2="230" y2="60" stroke={ORANGE} strokeWidth="5"/><line x1="30" y1="48" x2="30" y2="72" stroke={ORANGE} strokeWidth="3"/><line x1="230" y1="48" x2="230" y2="72" stroke={ORANGE} strokeWidth="3"/>
-    <T x={40} y={44} c={ORANGE} w={700} s={12.5}>étalon : 200 px = 0,50 m</T>
-    <T x={10} y={104} s={13} w={700}>échelle = 0,50 m ÷ 200 px = 0,0025 m/px</T><T x={10} y={126} s={12} c={GRIS} w={500}>distance en m = distance en px × échelle</T>
-    <T x={10} y={20} s={12.5} w={700}>Pointer = relever des coordonnées, puis convertir</T>
-  </Schema>);
-const SchemaVitesse = () => (
-  <Schema aria="Trois positions successives de la bille M(i-1), M(i), M(i+1) ; la vitesse au point M(i) est la distance M(i-1)M(i+1) divisée par deux fois la durée entre deux images" h={150}>
-    <path d="M30,110 Q180,10 330,110" fill="none" stroke="#94a3b8" strokeDasharray="4 4"/>
-    {[[70, 80], [180, 52], [290, 80]].map(([x, y], k) => <circle key={k} cx={x} cy={y} r="7" fill={k === 1 ? ORANGE : '#fde68a'} stroke={NOIR} strokeWidth="2"/>)}
-    <line x1="70" y1="80" x2="290" y2="80" stroke={BLEU} strokeWidth="2.5"/>
-    <T x={36} y={104} s={11.5} w={700}>M(i−1)</T><T x={156} y={44} s={11.5} w={700} c={ORANGE}>M(i)</T><T x={262} y={104} s={11.5} w={700}>M(i+1)</T>
-    <TL x={10} y={20} s={12.5} segs={[{ v: 'v' }, ' en M(i) ≈ M(i−1)M(i+1) ÷ (2τ)']}/><T x={10} y={140} s={11.5} c={GRIS} w={500}>deux intervalles de temps : 2τ (τ = 0,033 s)</T>
-  </Schema>);
-const SchemaBilanP = () => (
-  <Schema aria="Trois barres au même instant : énergie potentielle, énergie cinétique, et leur somme l'énergie mécanique avec une barre d'incertitude" h={150}>
-    <rect x="40" y="50" width="50" height="70" fill={VERT} opacity="0.85"/><rect x="140" y="95" width="50" height="25" fill={BLEU} opacity="0.85"/><rect x="240" y="40" width="50" height="80" fill="#475569" opacity="0.85"/>
-    <line x1="265" y1="26" x2="265" y2="54" stroke={NOIR} strokeWidth="2.5"/><line x1="258" y1="26" x2="272" y2="26" stroke={NOIR} strokeWidth="2.5"/><line x1="258" y1="54" x2="272" y2="54" stroke={NOIR} strokeWidth="2.5"/>
-    <T x={44} y={138} w={700} c={VERT} s={12}>E pp = m g y</T><T x={140} y={138} w={700} c={BLEU} s={12}>E c = ½ m v²</T><T x={236} y={138} w={700} s={12}>E m ± u(E m)</T>
-    <T x={4} y={14} s={12.5} w={700}>E m = E c + E pp ; u(E m) = 7 % de E m</T>
-  </Schema>);
-const SchemaCompat = () => (
-  <Schema aria="Deux mesures d'énergie mécanique avec leurs barres d'incertitude qui se recouvrent : elles sont compatibles, l'énergie mécanique est conservée à l'incertitude près" h={150}>
-    <line x1="60" y1="120" x2="330" y2="120" stroke={GRIS}/>
-    {[[110, 70, 'E m (1)'], [250, 78, 'E m (2)']].map(([x, y, n]) => <g key={n}><line x1={x} y1={y - 26} x2={x} y2={y + 26} stroke="#334155" strokeWidth="3"/><circle cx={x} cy={y} r="5" fill="#334155"/><T x={x - 22} y={138} s={12} w={700}>{n}</T></g>)}
-    <line x1="40" y1="52" x2="340" y2="52" stroke={VERT} strokeDasharray="4 4"/>
-    <T x={6} y={16} s={12.5} w={700}>|écart| ≤ √(u₁² + u₂²) ⇒ compatibles</T><T x={6} y={34} s={11.5} c={GRIS} w={500}>conservation vérifiée à l’incertitude près</T>
-  </Schema>);
-
 export function SimulationPointage() {
   const [mode, setMode] = useState(() => modeOuverture('pointage-guide-v1'));
   useSignalerMode(mode);
@@ -154,32 +124,34 @@ export function SimulationPointage() {
       tache: { type: 'action', ok: nbPointes >= 4, label: 'Pointer 4 images pour moi (démonstration)', faire: () => { const b = REF_FILM.slice(0, 4).map(f => ({ px: PX.pivot[0] + f.x / ECH, py: PX.bas[1] - f.y / ECH })); setPoints(b); setImg(4); }, consigne: `${nbPointes} image(s) pointée(s) sur 4 demandées` } },
     { id: 'echelle', titre: 'Des pixels aux mètres', focus: ['scene'],
       retenirTitre: 'À RETENIR : POINTER ET CONVERTIR',
-      retenir: <><SchemaEchelle/>{puces(<>Le pointage donne des <strong>pixels</strong>. Un <strong>étalon</strong> (objet de longueur connue filmé dans le même plan) donne l’<strong>échelle</strong> : mètres par pixel.</>, <>Exemple : 0,50 m ↔ 200 px ⇒ 0,0025 m/px ; 100 px ↔ 0,25 m.</>, <>Il faut aussi choisir une <strong>origine</strong> et l’axe y <strong>vers le haut</strong> pour que E<sub>pp</sub> = m g y ait un sens.</>, <><strong>Piège</strong> : l’étalon doit être dans le plan du mouvement, sinon l’échelle est fausse.</>)}</>,
+      retenir: <><FEchelle/>{puces(<>Le pointage donne des <strong>pixels</strong>. Un <strong>étalon</strong> (objet de longueur connue filmé dans le même plan) donne l’<strong>échelle</strong> : mètres par pixel.</>, <>Exemple : étalon de 0,30 m = 150 px ⇒ 0,0020 m par pixel ; 100 px ↔ 0,20 m.</>, <>Il faut aussi choisir une <strong>origine</strong> et l’axe y <strong>vers le haut</strong> pour que E<sub>pp</sub> = m g y ait un sens.</>, <><strong>Piège</strong> : l’étalon doit être dans le plan du mouvement, sinon l’échelle est fausse.</>)}</>,
       texte: <>Sur l’image, l’étalon orange mesure 200 pixels et représente 0,50{NB}m.</>,
       tache: { type: 'num', q: 'Échelle : nombre de mètres par pixel', unite: 'm/px', vrai: ECH, tol: 0.02, affiche: v => nbf(v, 4), cs: 2,
         calcul: () => ['échelle = longueur réelle ÷ longueur en pixels = 0,50 ÷ 200 = 0,0025 m/px.'], pieges: [[200 / 0.5, 'Vous avez inversé : on cherche des mètres par pixel.']],
-        expl: 'échelle = 0,50 / 200 = 0,0025 m/px (soit 2,5 mm par pixel).', indice: 'échelle = longueur réelle (m) ÷ longueur en pixels.' } },
+        expl: 'échelle = 0,50 ÷ 200 = 0,0025 m/px (soit 2,5 mm par pixel).', indice: 'échelle = longueur réelle (m) ÷ longueur en pixels.' } },
     { id: 'vit', titre: 'La vitesse à partir des positions', focus: ['table'],
       retenirTitre: 'À RETENIR : LA VITESSE PAR DIFFÉRENCE CENTRÉE',
-      retenir: <><SchemaVitesse/>{puces(<>Pas de capteur de vitesse : on la <strong>calcule</strong> à partir des positions successives.</>, <>En M<sub>i</sub> : <strong>v ≈ M<sub>i−1</sub>M<sub>i+1</sub> ÷ (2τ)</strong>, avec τ la durée entre deux images.</>, <>Exemple : 0,60 m parcourus en 2 intervalles de 0,033 s ⇒ v ≈ 9,1 m/s.</>, <><strong>Idée fausse</strong> : « diviser par τ ». <strong>Vrai</strong> : M<sub>i−1</sub>M<sub>i+1</sub> couvre <strong>deux</strong> intervalles : on divise par 2τ.</>)}</>,
+      retenir: <><FVitesse/>{puces(<>Pas de capteur de vitesse : on la <strong>calcule</strong> à partir des positions successives.</>, <>En M<sub>i</sub> : <strong>v ≈ M<sub>i−1</sub>M<sub>i+1</sub> ÷ (2τ)</strong>, avec τ la durée entre deux images.</>, <>Exemple : 0,60 m parcourus en 2 intervalles de 0,033 s ⇒ v ≈ 9,1 m/s.</>, <><strong>Idée fausse</strong> : « diviser par τ ». <strong>Vrai</strong> : M<sub>i−1</sub>M<sub>i+1</sub> couvre <strong>deux</strong> intervalles : on divise par 2τ.</>)}</>,
       texte: <>Voici 3 images consécutives (τ = 0,033{NB}s) :{tabLignes([[I1, rA], [I1 + 1, rB], [I1 + 2, rC]])}Calculez la norme <em>v</em> de la vitesse <strong>vec(v)</strong> à l’image {I1 + 1} avec <strong>v ≈ M<sub>i−1</sub>M<sub>i+1</sub> ÷ (2τ)</strong>, où M<sub>i−1</sub>M<sub>i+1</sub> = √[(x<sub>i+1</sub> − x<sub>i−1</sub>)² + (y<sub>i+1</sub> − y<sub>i−1</sub>)²].</>,
       tache: { type: 'num', q: `Vitesse v à l’image ${I1 + 1}`, unite: 'm/s', vrai: v1, tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
         calcul: () => [`Δx = ${nbf(rC.x, 3)} − ${nbf(rA.x, 3)} = ${nbf(rC.x - rA.x, 3)} m ; Δy = ${nbf(rC.y, 3)} − ${nbf(rA.y, 3)} = ${nbf(rC.y - rA.y, 3)} m.`, `M(i−1)M(i+1) = √(Δx² + Δy²) = ${nbf(Math.hypot(rC.x - rA.x, rC.y - rA.y), 4)} m.`, `v = ${nbf(Math.hypot(rC.x - rA.x, rC.y - rA.y), 4)} ÷ (2 × 0,033) = ${nbf(v1, 3)} m/s.`],
         pieges: [[Math.hypot(rC.x - rA.x, rC.y - rA.y) / TAU, 'Vous avez divisé par τ : la distance M(i−1)M(i+1) correspond à deux intervalles, donc 2τ.'], [Math.hypot(rC.x - rB.x, rC.y - rB.y) / TAU, 'Vous avez utilisé deux positions voisines : prenez M(i−1) et M(i+1), de part et d’autre.']],
-        expl: `v = M(i−1)M(i+1) / (2τ) = ${nbf(v1, 3)} m/s.`, indice: 'v = √(Δx² + Δy²) ÷ (2τ), avec Δx = x(i+1) − x(i−1) et τ = 0,033 s.' } },
+        expl: `v = M(i−1)M(i+1) ÷ (2τ) = ${nbf(v1, 3)} m/s.`, indice: 'v = √(Δx² + Δy²) ÷ (2τ), avec Δx = x(i+1) − x(i−1) et τ = 0,033 s.' } },
     { id: 'ec', titre: 'L’énergie cinétique', focus: ['table'],
       texte: <>À l’image {I1 + 1}, la masse de la boule est <em>m</em> = 0,020{NB}kg et <em>v</em> = {nbf(v1, 3)}{NB}m/s.</>,
       tache: { type: 'num', q: `Énergie cinétique à l’image ${I1 + 1}`, unite: 'J', vrai: Ec1, tol: 0.03, affiche: v => nbf(v, 4), cs: 2,
         calcul: () => [`E_c = ½ m v² = ½ × 0,020 × ${nbf(tel(v1, 3), 3)}² = ${nbf(Ec1, 4)} J.`], pieges: [[0.020 * tel(v1, 3), 'Vous avez oublié de mettre la vitesse au carré (et le facteur ½).']],
         expl: `E_c = ½ m v² = ${nbf(Ec1, 4)} J.`, indice: 'E_c = ½ × m × v², avec m en kg et v en m/s.' } },
     { id: 'epp', titre: 'L’énergie potentielle', focus: ['table'],
+      retenirTitre: 'À RETENIR : ÉNERGIES CINÉTIQUE ET POTENTIELLE',
+      retenir: <><FEnergies/>{puces(<><strong>E<sub>c</sub> = ½ m v²</strong> : la vitesse est <strong>au carré</strong> ; v doublée ⇒ E<sub>c</sub> multipliée par 4.</>, <><strong>E<sub>pp</sub> = m g y</strong> : proportionnelle à l’altitude y, mesurée depuis l’origine choisie, vers le haut.</>, <>Unités SI : m en kg, v en m/s, y en m, g = 9,8 N/kg ⇒ énergies en <strong>joules</strong>.</>, <><strong>Idée fausse</strong> : « 2 fois plus vite, 2 fois plus d’énergie ». <strong>Vrai</strong> : 4 fois plus.</>)}</>,
       texte: <>À l’image {I1 + 1}, la boule est à y = {nbf(rB.y, 3)}{NB}m au-dessus de l’origine (point le plus bas). Avec <em>g</em> = 9,8{NB}N/kg et <em>m</em> = 0,020{NB}kg :</>,
       tache: { type: 'num', q: `Énergie potentielle de pesanteur à l’image ${I1 + 1}`, unite: 'J', vrai: Epp1, tol: 0.03, affiche: v => nbf(v, 4), cs: 2,
         calcul: () => [`E_pp = m g y = 0,020 × 9,8 × ${nbf(rB.y, 3)} = ${nbf(Epp1, 4)} J.`], pieges: [[0.020 * rB.y, 'Vous avez oublié g.']],
         expl: `E_pp = m g y = ${nbf(Epp1, 4)} J.`, indice: 'E_pp = m × g × y (y est mesuré à partir de l’origine, vers le haut).' } },
     { id: 'em', titre: 'L’énergie mécanique et son incertitude', focus: ['table'],
       retenirTitre: 'À RETENIR : ÉNERGIE MÉCANIQUE ET INCERTITUDE',
-      retenir: <><SchemaBilanP/>{puces(<><strong>E<sub>m</sub> = E<sub>c</sub> + E<sub>pp</sub></strong> : on la calcule image par image.</>, <>Une mesure s’écrit avec son <strong>incertitude</strong> : ici u(E<sub>m</sub>) = 7 % de E<sub>m</sub> (hypothèse de l’activité, voir « Hypothèses »).</>, <>Exemple : E<sub>m</sub> = 21 mJ ⇒ u ≈ 1,5 mJ.</>, <><strong>Idée fausse</strong> : « deux valeurs différentes d’E<sub>m</sub> prouvent qu’elle n’est pas conservée ». <strong>Vrai</strong> : il faut comparer l’écart à l’incertitude.</>)}</>,
+      retenir: <><FBilanP/>{puces(<><strong>E<sub>m</sub> = E<sub>c</sub> + E<sub>pp</sub></strong> : on la calcule image par image.</>, <>Une mesure s’écrit avec son <strong>incertitude</strong> : ici u(E<sub>m</sub>) = 7 % de E<sub>m</sub> (hypothèse de l’activité, voir « Hypothèses »).</>, <>Exemple : E<sub>m</sub> = 30 mJ ⇒ u = 2,1 mJ.</>, <><strong>Idée fausse</strong> : « deux valeurs différentes d’E<sub>m</sub> prouvent qu’elle n’est pas conservée ». <strong>Vrai</strong> : il faut comparer l’écart à l’incertitude.</>)}</>,
       texte: <>À l’image {I1 + 1} : <Ind b="E" i="c"/> = {nbf(Ec1, 4)}{NB}J et <Ind b="E" i="pp"/> = {nbf(Epp1, 4)}{NB}J.</>,
       tache: { type: 'num', q: `Énergie mécanique à l’image ${I1 + 1}`, unite: 'J', vrai: Em1, tol: 0.03, affiche: v => nbf(v, 4), cs: 2,
         calcul: () => [`E_m = E_c + E_pp = ${nbf(Ec1, 4)} + ${nbf(Epp1, 4)} = ${nbf(Em1, 4)} J.`], pieges: [],
@@ -191,7 +163,7 @@ export function SimulationPointage() {
         expl: `u(E_m) = 0,07 × E_m = ${nbf(uEm1, 5)} J.`, indice: 'u(E_m) = 0,07 × E_m.' } },
     { id: 'compat', titre: 'L’énergie mécanique se conserve-t-elle ?', focus: ['courbes'],
       retenirTitre: 'À RETENIR : COMPATIBILITÉ',
-      retenir: <><SchemaCompat/>{puces(<>Deux valeurs sont <strong>compatibles</strong> si leur écart est inférieur à l’incertitude composée : <strong>|E<sub>m1</sub> − E<sub>m2</sub>| ≤ √(u₁² + u₂²)</strong> (incertitudes supposées indépendantes).</>, <>Compatibles ⇒ on ne peut pas dire que E<sub>m</sub> a changé : <strong>conservation à l’incertitude près</strong>.</>, <>Exemple : écart 0,3 mJ, incertitude composée 2 mJ ⇒ compatibles.</>)}</>,
+      retenir: <><FCompat/>{puces(<>Deux valeurs sont <strong>compatibles</strong> si leur écart est inférieur à l’incertitude composée : <strong>|E<sub>m1</sub> − E<sub>m2</sub>| ≤ √(u₁² + u₂²)</strong> (incertitudes supposées indépendantes).</>, <>Compatibles ⇒ on ne peut pas dire que E<sub>m</sub> a changé : <strong>conservation à l’incertitude près</strong>.</>, <>Exemple : écart 5 mJ pour une incertitude composée de 2 mJ ⇒ <strong>incompatibles</strong> : E<sub>m</sub> a vraiment changé.</>)}</>,
       texte: <>À l’image {I2 + 1}, <Ind b="E" i="m"/> = {nbf(Em2, 4)}{NB}J, avec u = {nbf(uEm2, 5)}{NB}J. À l’image {I1 + 1} : <Ind b="E" i="m"/> = {nbf(Em1, 4)}{NB}J, u = {nbf(uEm1, 5)}{NB}J. L’écart vaut {nbf(ecart, 5)}{NB}J et l’incertitude composée √(u₁² + u₂²) = {nbf(seuil, 5)}{NB}J.</>,
       tache: { type: 'qcm', q: 'Les deux valeurs d’énergie mécanique sont…', options: ['compatibles : E_m est conservée à l’incertitude près', 'incompatibles : E_m a diminué', 'impossibles à comparer'], bonne: 0,
         expl: `L’écart (${nbf(ecart, 5)} J) est inférieur à l’incertitude composée (${nbf(seuil, 5)} J) : compatibles. Le pendule, très peu amorti sur un tour, conserve son énergie mécanique à l’incertitude près.`, indice: 'Comparez l’écart |E_m1 − E_m2| à √(u₁² + u₂²).' } },
@@ -207,9 +179,9 @@ export function SimulationPointage() {
       texte: <>Dans la boucle du script, <code>i</code> ne prend pas toutes les valeurs de 0 à len(x) − 1.</>,
       tache: { type: 'qcm', q: 'Pourquoi la boucle commence-t-elle à 1 et s’arrête avant la dernière image ?', options: ['la différence centrée a besoin de l’image précédente et de l’image suivante', 'la première et la dernière image ne sont pas pointées', 'pour aller plus vite'], bonne: 0,
         expl: 'v(i) utilise x[i−1] et x[i+1] : il faut une image avant et une image après, donc on perd la première et la dernière.', indice: 'Quelles positions utilise la formule de v(i) ?' } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
       retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>{puces(<><strong>Pointer</strong> (pixels) ⇒ <strong>échelle</strong> (m/px) ⇒ x, y en mètres.</>, <><strong>v ≈ M<sub>i−1</sub>M<sub>i+1</sub> ÷ 2τ</strong>, puis E<sub>c</sub> = ½ m v², E<sub>pp</sub> = m g y, E<sub>m</sub> = E<sub>c</sub> + E<sub>pp</sub>.</>, <>Toujours donner l’<strong>incertitude</strong> et <strong>comparer</strong> les écarts à celle-ci.</>, <>Un tableur ou Python font les mêmes calculs, image par image.</>)}</>,
+      retenir: <><FChaine/>{puces(<><strong>Pointer</strong> (pixels) ⇒ <strong>échelle</strong> (m/px) ⇒ x, y en mètres.</>, <><strong>v ≈ M<sub>i−1</sub>M<sub>i+1</sub> ÷ 2τ</strong>, puis E<sub>c</sub> = ½ m v², E<sub>pp</sub> = m g y, E<sub>m</sub> = E<sub>c</sub> + E<sub>pp</sub>.</>, <>Toujours donner l’<strong>incertitude</strong> et <strong>comparer</strong> les écarts à celle-ci.</>, <>Un tableur ou Python font les mêmes calculs, image par image.</>)}</>,
       texte: <>Vous savez exploiter un pointage pour un bilan énergétique. En exploration, pointez vous-même le film, importez un fichier CSV ou chargez votre propre vidéo.</>, tache: null },
   ];
   const IDS = ETAPES.map(e => e.id), idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
