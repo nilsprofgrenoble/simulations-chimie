@@ -381,7 +381,11 @@ export function SimulationBouilloire() {
   const [mode, setMode] = useState(() => modeOuverture('bouilloire-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('bouilloire-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('bouilloire-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('bouilloire-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('bouilloire-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 2 ? g2 : g1, setGuide = parc === 2 ? setG2 : setG1;
   const [rg, setRg] = useEtatPersistant('bouilloire-guide-reglage-v1', { reel: false });
   const [ux, setUx] = useState({ ...BASE, eff: { ...TOUS } });
   const [run, setRun] = useState({ cle: '', t: 0, marche: false });
@@ -393,8 +397,11 @@ export function SimulationBouilloire() {
   useEffect(() => { if (guide.etape === 0) setRg({ reel: false }); }, [guide.etape, setRg]);
 
   // ── Parcours guidé : phase « monde idéal » puis « bouilloire réelle » ──
-  const IDS = ['intro', 'energie', 'go', 'meau', 'deuxDT', 'Q', 'phi', 'chemin', 'S', 'dTm', 'lambda', 'verdict', 'reel', 'lambdaReel', 'flux', 'film', 'effets', 'conclusion', 'bravo'];
-  const iEt = id => IDS.indexOf(id);
+  const ORDRE_PARC = [['intro', 'energie', 'go', 'meau', 'deuxDT', 'Q', 'phi', 'chemin', 'S', 'dTm', 'lambda', 'verdict', 'bilan1'],
+    ['reel', 'lambdaReel', 'flux', 'film', 'effets', 'conclusion', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const etape = guide.etape, enGuide = mode === 'guide';
   const vu = id => etape >= iEt(id);
   const phaseReel = etape > iEt('reel') || (etape === iEt('reel') && rg.reel);
@@ -434,7 +441,7 @@ export function SimulationBouilloire() {
     return { m, Q, dt, dtR, phi: -Q / dt, S, dTm, e, lam: (-Q / dt) * e / (S * dTm), lamR: (-Q / dtR) * e / (S * dTm),
       partLat: Math.round(100 * sRe.flux.lat / tot), Tse: sRe.Tse, dTabs: sRe.Tsi - sRe.Tse, eff: Object.fromEntries(eff.map(l => [l.id, l.ecart])) };
   })();
-  const ETAPES = [
+  const TOUTES = [
     { id: 'intro', titre: 'La bouilloire vient de s’arrêter', focus: ['schema'],
       texte: <>L’eau vient de bouillir : la bouilloire s’arrête, l’eau est à <strong>θ₁′ = 100,0 °C</strong>. L’air autour, renouvelé par un ventilateur, est à <strong>T<Sub c="ext"/> = 21,0 °C</strong>.</>,
       tache: { type: 'qcm', q: 'Que va faire la température de l’eau ?', options: ['Elle va baisser : l’eau cède de l’énergie à l’air, plus froid', 'Elle va rester à 100 °C', 'Elle va monter'], bonne: 0,
@@ -518,10 +525,12 @@ export function SimulationBouilloire() {
       texte: <>La simulation utilisait une paroi en ABS, de conductivité <strong>λ = 0,16 W·m⁻¹·K⁻¹</strong>, dans un monde où <strong>toutes les hypothèses du TP sont exactement vraies</strong>.</>,
       tache: { type: 'qcm', q: 'Que montre votre résultat ?', options: ['Quand les hypothèses sont vraies, la méthode du TP retrouve la bonne valeur de λ', 'La méthode du TP donne toujours la bonne valeur, même dans une vraie bouilloire', 'La méthode du TP est fausse'], bonne: 0,
         expl: 'Dans ce monde « idéal », vous retrouvez 0,16. Pourtant, en TP, on trouve plutôt 0,13 : regardons une bouilloire plus réaliste.', indice: "Comparez la valeur de λ trouvée à celle du matériau." } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez mesurer λ avec la méthode du TP, dans un monde où toutes ses hypothèses sont vraies. Le parcours 2 passe à une bouilloire plus réaliste, et montre pourquoi la valeur mesurée en TP est plus faible.</>, tache: null },
     { id: 'reel', titre: 'Une bouilloire plus réaliste', focus: ['schema'],
       retenirTitre: 'La méthode du TP',
       retenir: <><FMethode/></>,
-      texte: <>Même bouilloire, même eau, même ABS (λ = 0,16). Mais la simulation tient compte cette fois de ce que le modèle du TP néglige : les <strong>films d’eau et d’air</strong> contre la paroi, les pertes par le <strong>couvercle et le fond</strong>, l’<strong>évaporation</strong> et la <strong>capacité thermique de la bouilloire</strong>.</>,
+      texte: <>Rappel : dans le monde idéal du parcours 1, où toutes les hypothèses du TP sont vraies, la méthode retrouve la conductivité de l’ABS, λ = 0,16 W·m⁻¹·K⁻¹. Même bouilloire, même eau, même ABS (λ = 0,16). Mais la simulation tient compte cette fois de ce que le modèle du TP néglige : les <strong>films d’eau et d’air</strong> contre la paroi, les pertes par le <strong>couvercle et le fond</strong>, l’<strong>évaporation</strong> et la <strong>capacité thermique de la bouilloire</strong>.</>,
       tache: { type: 'action', ok: phaseReel && fini, label: rg.reel ? null : 'Passer à la bouilloire réaliste', faire: () => setRg(x => ({ ...x, reel: true })),
         attente: enMarche ? 'Expérience en cours…' : null, consigne: phaseReel && fini ? null : rg.reel ? 'Relancez l’expérience avec « ▶ Lancer » (au-dessus de la bouilloire)' : 'Cliquez, puis relancez l’expérience' } },
     { id: 'lambdaReel', titre: 'Refaire le calcul', focus: ['releve'],
@@ -554,6 +563,7 @@ export function SimulationBouilloire() {
       retenir: <><FEcartTP/>{puces(<>Le TP donne une conductivité « apparente ».</>, <>Une valeur proche de la référence ne prouve pas que les hypothèses soient vraies.</>)}</>,
       texte: <>Vous savez distinguer la <strong>baisse de température de l’eau</strong> (pour Q = m·C·ΔT) de l’<strong>écart entre l’eau et l’air</strong> (pour la paroi, φ = λ·S·ΔT<Sub c="m"/>/e), relier les deux par la puissance φ = |Q|/Δt, et critiquer les hypothèses du modèle. En exploration libre, changez le matériau (verre, inox), arrêtez le ventilateur, ou désactivez les effets un par un.</>, tache: null },
   ];
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const hl = id => enGuide && et.focus.includes(id);
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {});
@@ -776,8 +786,10 @@ export function SimulationBouilloire() {
       <Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section>
     </div>
   );
+  const NOMS_PARC = ['1. Mesurer λ : la méthode du TP', '2. Une bouilloire plus réaliste'];
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : {NOMS_PARC[1].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
@@ -798,7 +810,12 @@ export function SimulationBouilloire() {
       </div>
       <div className={`bo-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : vue}
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
           : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
             : null}
       </div>
