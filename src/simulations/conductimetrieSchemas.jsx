@@ -205,3 +205,32 @@ export function SvgFaibleCarte() {
       <text x="14" y="284" fontSize="16" fill={COL.txt}>dans les deux cas, la rupture repère l’équivalence</text>
     </svg>);
 }
+
+// ---------- encart : mécanisme de transfert de la charge + (Grotthuss), schéma simplifié ----------
+//  Trois instants : les molécules d'eau (O) restent en place, seul le H⁺ en trop « saute » vers la voisine : la charge + avance de proche en proche.
+export function SvgGrotthuss() {
+  const cx = [70, 200, 330], ys = [78, 198, 318];
+  const legendes = ['instant 1 : H₃O⁺ est à gauche', 'instant 2 : H₃O⁺ est au milieu', 'instant 3 : H₃O⁺ est à droite'];
+  const molecule = (i, k) => {
+    const x = cx[i], y = ys[k], plus = i === k;
+    return (
+      <g key={`${k}-${i}`}>
+        {plus && <rect x={x - 36} y={y - 26} width="86" height="68" rx="12" fill="#fef2f2" stroke={COL.rouge} strokeWidth="3"/>}
+        {plus && i < 2 && <line x1={x + 41} y1={y - 2} x2={cx[i + 1] - 17} y2={y - 2} stroke={COL.rouge} strokeWidth="2.5" strokeDasharray="5 5"/>}
+        <line x1={x} y1={y} x2={x - 18} y2={y + 26} stroke={COL.gris} strokeWidth="3"/><line x1={x} y1={y} x2={x + 18} y2={y + 26} stroke={COL.gris} strokeWidth="3"/>
+        {plus && <line x1={x + 15} y1={y - 2} x2={x + 34} y2={y - 2} stroke={COL.gris} strokeWidth="3"/>}
+        <circle cx={x - 18} cy={y + 26} r="7" fill="#fff" stroke={COL.gris} strokeWidth="2"/><circle cx={x + 18} cy={y + 26} r="7" fill="#fff" stroke={COL.gris} strokeWidth="2"/>
+        {plus && <circle cx={x + 34} cy={y - 2} r="7" fill="#fff" stroke={COL.rouge} strokeWidth="2.5"/>}
+        <circle cx={x} cy={y} r="15" fill="#dbeafe" stroke={COL.bleu} strokeWidth="2.5"/>
+        <text x={x} y={y + 6} fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.txt}>O</text>
+        {plus && <g><circle cx={x - 25} cy={y - 14} r="9" fill={COL.rouge} stroke="#fff" strokeWidth="1"/><line x1={x - 30} y1={y - 14} x2={x - 20} y2={y - 14} stroke="#fff" strokeWidth="2.6"/><line x1={x - 25} y1={y - 19} x2={x - 25} y2={y - 9} stroke="#fff" strokeWidth="2.6"/></g>}
+      </g>);
+  };
+  return (
+    <svg viewBox="0 0 400 450" style={stl} role="img" aria-label="Trois instants successifs : trois molécules d’eau alignées restent en place. À l’instant 1 la charge plus est sur la molécule de gauche (H3O+), à l’instant 2 sur celle du milieu, à l’instant 3 sur celle de droite. Un atome H en trop saute de molécule en molécule, la charge plus avance, mais aucune molécule ne se déplace.">
+      {ys.map((y, k) => <g key={k}><text x="8" y={y - 52} fontSize="16" fontWeight="700" fill={COL.txt}>{legendes[k]}</text>{cx.map((_, i) => molecule(i, k))}</g>)}
+      <text x="200" y="376" fontSize="15" textAnchor="middle" fill={COL.txt}>pointillés : liaison faible avec la voisine</text>
+      <text x="200" y="398" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.txt}>les molécules restent en place :</text>
+      <text x="200" y="420" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.rouge}>seule la charge + avance</text>
+    </svg>);
+}
