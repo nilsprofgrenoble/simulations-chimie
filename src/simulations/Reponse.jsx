@@ -256,7 +256,11 @@ export function SimulationReponse() {
   const [mode, setMode] = useState(() => modeOuverture('reponse-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('reponse-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('reponse-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('reponse-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('reponse-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 2 ? g2 : g1, setGuide = parc === 2 ? setG2 : setG1;
   const [rg, setRg] = useEtatPersistant('reponse-guide-reglage-v1', { tau: 3 });
   const [ck, setCk] = useState('ctn');
   const [P, setP] = useState(() => paramsDe('ctn'));
@@ -269,8 +273,11 @@ export function SimulationReponse() {
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const aC = analyse(CTN), aB = analyse(BAIN);
-  const IDS = ['intro', 'niveaux', 'seuil', 'bande', 'tR', 'modele', 'troisTau', 'compare', 'sondes', 'choix', 'osc', 'oscBande', 'oscTR', 'osc3tau', 'oscDep', 'hypo', 'bravo'];
-  const iEt = id => IDS.indexOf(id);
+  const ORDRE_PARC = [['intro', 'niveaux', 'seuil', 'bande', 'tR', 'modele', 'troisTau', 'compare', 'sondes', 'choix', 'bilan1'],
+    ['osc', 'oscBande', 'oscTR', 'osc3tau', 'oscDep', 'hypo', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const etape = guide.etape;
   const vu = id => etape >= iEt(id);
   const apres = id => etape > iEt(id) || (etape === iEt(id) && !!(guide.reussies && guide.reussies[etape]));   // l'étape est passée ou vient d'être réussie
@@ -278,7 +285,7 @@ export function SimulationReponse() {
   const gSys = partie2 ? BAIN : CTN, gAn = partie2 ? aB : aC, gCtx = partie2 ? CTX.bain : CTX.ctn;
   const tauOk = Math.abs(rg.tau - CTN.tau) <= 0.06 * CTN.tau;
   const dB = BAIN.fin - BAIN.ini;
-  const ETAPES = [
+  const TOUTES = [
     { id: 'intro', titre: 'Un capteur n’est pas instantané', focus: ['graphe'],
       texte: <>Une sonde de température CTN est placée dans l’<strong>eau chaude</strong>. À l’instant t<Sub c="0"/>, on la plonge dans de l’<strong>eau froide</strong> (un « échelon » de température). Le graphique montre la tension V aux bornes du conducteur ohmique placé en série avec la CTN. Quand la sonde se refroidit, la résistance de la CTN augmente, le courant diminue : la tension V aux bornes du conducteur ohmique <strong>diminue</strong>. Passez la souris sur la courbe pour lire des valeurs.</>,
       tache: { type: 'qcm', q: 'Pourquoi la tension ne passe-t-elle pas instantanément de sa valeur initiale à sa valeur finale ?',
@@ -358,6 +365,8 @@ export function SimulationReponse() {
         indice: 'Le critère est la rapidité : comparez les deux temps de réponse t_R. Demandez-vous quelle conséquence un t_R plus long a sur le moment où le chauffage est coupé.',
         options: ['La sonde CTN (t_R ≈ 5 s) : elle réagit plus vite', 'La Pt100 (t_R ≈ 18 s) : sa constante de temps est plus grande', 'Peu importe'], bonne: 0,
         expl: 'Plus t_R est court, plus tôt le chauffage est coupé. Réserve : t_R dépend aussi des conditions (fluide, agitation, gaine), donc la comparaison n’est rigoureuse que si les deux valeurs sont obtenues dans les mêmes conditions.' } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez mesurer le temps de réponse à 5 % d’un capteur sur sa courbe, le relier à la constante de temps τ (t<Sub c="R"/> = 3τ) et comparer deux sondes. Le parcours 2 traite le cas où la grandeur mesurée oscille autour de sa valeur finale.</>, tache: null },
     { id: 'osc', titre: 'Quand la grandeur oscille', focus: ['graphe'],
       retenirTitre: 'Comparer deux capteurs',
       retenir: <><FSondes/>{puces(<>Plus t<sub>R</sub> est petit, plus le capteur est rapide ; rapport de rapidité : t<sub>R,2</sub> ÷ t<sub>R,1</sub> = τ₂ ÷ τ₁.</>, <>Comparaison rigoureuse seulement dans les <strong>mêmes conditions</strong> (fluide, agitation, gaine).</>, <>Le temps de réponse n’est qu’un critère : plage de mesure, justesse et coût comptent aussi.</>)}</>,
@@ -417,6 +426,7 @@ export function SimulationReponse() {
       retenir: <><FBilanRep/>{puces(<>t<sub>R</sub> est une <strong>durée</strong> à partir de l’échelon.</>, <>Pièges : t₁ au lieu de t<sub>R</sub> ; première entrée dans la bande pour une courbe qui oscille ; 3τ pour une courbe qui oscille.</>)}</>,
       texte: <>Vous savez mesurer un temps de réponse à 5 % : relever V<Sub c="ini"/>, V<Sub c="fin"/>, t<Sub c="0"/>, tracer la bande de ±5 %ΔV et lire t<Sub c="R"/> = t<Sub c="1"/> − t<Sub c="0"/> ; l’obtenir aussi par un modèle exponentiel (t<Sub c="R"/> = 3τ) ; et vous savez que pour une grandeur qui oscille, seule la dernière sortie de la bande compte. En exploration libre, essayez d’autres situations, changez l’amortissement, ajoutez du bruit.</>, tache: null },
   ];
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const enGuide = mode === 'guide';
   const hl = id => enGuide && et.focus.includes(id);
@@ -567,8 +577,10 @@ export function SimulationReponse() {
       <Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section>
     </div>
   );
+  const NOMS_PARC = ['1. Temps de réponse et constante de temps', '2. Quand la grandeur oscille'];
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : {NOMS_PARC[1].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
@@ -616,7 +628,12 @@ export function SimulationReponse() {
       </div>
       <div className={`rep-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : enGuide ? vueGuide : vueExplore}
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
           : mode === 'defi' ? panneauHypo
             : null}
       </div>
