@@ -3,6 +3,9 @@ import { useState, useEffect } from "react";
 import { Formule, cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
+import { FicheCouleurs, FicheDroite, FicheLineaire, FicheEtalonnage, FichePurete, FicheBilan } from "./BeerLambert1GFiches";
+import { L_CUVE, M_CUSO4, LAMBDA_MIN, LAMBDA_MAX, ESPECES, epsilon, absorbance, couleurCuve, regression } from "./beerLambert1GModele";
+export { epsilon };
 
 const SIM_ID = 10;
 declarerDefis(SIM_ID, [['principal', 'Déterminer la concentration d’une solution inconnue']]);
@@ -14,50 +17,6 @@ declarerDefis(SIM_ID, [['principal', 'Déterminer la concentration d’une solut
 // Loi de Beer-Lambert : A = ε(λ) × L × c, avec L = 1 cm ; au-delà de A ≈ 1,2, l'appareil s'écarte un peu de la droite.
 // ====================================================
 
-const L_CUVE = 1;                 // cm
-const M_CUSO4 = 249.68;           // g/mol (CuSO₄, 5 H₂O)
-const LAMBDA_MIN = 380, LAMBDA_MAX = 900;
-
-// Espèces colorées : ε(λ) en L·mol⁻¹·cm⁻¹, somme de bandes gaussiennes [centre, largeur, εmax]
-const ESPECES = {
-  cuivre: { nom: 'Ions cuivre(II) Cu²⁺ (sulfate de cuivre)', couleur: [37, 99, 235], bandes: [[810, 135, 12], [380, 40, 0.3]],
-    unite: 'mol/L', facteur: 1, gamme: [0.020, 0.040, 0.080, 0.120, 0.160], cMax: 0.2, pas: 0.005 },
-  permanganate: { nom: 'Ions permanganate MnO₄⁻', couleur: [190, 24, 150], bandes: [[525, 22, 2200], [547, 14, 1500], [507, 14, 1300], [311, 30, 1700]],
-    unite: 'mmol/L', facteur: 1e-3, gamme: [0.05, 0.10, 0.20, 0.30, 0.40], cMax: 0.5, pas: 0.01 },
-  e133: { nom: 'Bleu brillant E133 (colorant alimentaire)', couleur: [14, 116, 220], bandes: [[630, 38, 100000], [410, 30, 9000]],
-    unite: 'µmol/L', facteur: 1e-6, gamme: [2, 4, 6, 8, 10], cMax: 14, pas: 0.2 },
-  dichromate: { nom: 'Ions dichromate Cr₂O₇²⁻', couleur: [234, 120, 0], bandes: [[350, 45, 3100], [440, 40, 370]],
-    unite: 'mmol/L', facteur: 1e-3, gamme: [0.5, 1.0, 1.5, 2.0, 2.5], cMax: 3, pas: 0.05 },
-};
-export const epsilon = (esp, l) => ESPECES[esp].bandes.reduce((s, [c, w, e]) => s + e * Math.exp(-(((l - c) / w) ** 2)), 0);
-// Ligne de base avant calibration : la cuve et l'eau absorbent un peu (réflexions, eau), un peu plus aux grandes longueurs d'onde
-const ligneDeBase = l => 0.045 + 0.025 * (l - LAMBDA_MIN) / (LAMBDA_MAX - LAMBDA_MIN) + 0.03 * Math.exp(-(((l - 970) / 60) ** 2));
-// Ce qu'affiche l'appareil : légère saturation aux fortes absorbances
-const affiche = A => (A <= 1 ? A : A / (1 + 0.04 * (A - 1) ** 2));
-// Petit bruit reproductible pour chaque cuve
-const bruit = (graine, k) => { const x = Math.sin(graine * 12.9898 + k * 78.233) * 43758.5453; return (x - Math.floor(x) - 0.5) * 0.006; };
-function absorbance(esp, cMolL, l, blanc, graine = 1, k = 0) {
-  const A = epsilon(esp, l) * L_CUVE * cMolL;
-  return affiche(A) + (blanc ? 0 : ligneDeBase(l)) + bruit(graine, k);
-}
-// Couleur de la solution vue à l'œil : du blanc vers la couleur de l'espèce, selon l'absorbance au maximum
-function couleurCuve(esp, cMolL) {
-  if (!esp || cMolL <= 0) return 'rgb(248, 250, 252)';
-  const lmax = ESPECES[esp].bandes[0][0], A = epsilon(esp, Math.min(LAMBDA_MAX, lmax)) * cMolL;
-  const t = 1 - Math.pow(10, -0.85 * A), c = ESPECES[esp].couleur;
-  return `rgb(${Math.round(248 + (c[0] - 248) * t)}, ${Math.round(250 + (c[1] - 250) * t)}, ${Math.round(252 + (c[2] - 252) * t)})`;
-}
-// Régression linéaire (passant par l'origine, ou affine), avec R²
-function regression(xs, ys, origine) {
-  const n = xs.length; if (n < 2) return null;
-  const my = ys.reduce((a, b) => a + b, 0) / n, mx = xs.reduce((a, b) => a + b, 0) / n;
-  let a, b;
-  if (origine) { a = xs.reduce((s, x, i) => s + x * ys[i], 0) / xs.reduce((s, x) => s + x * x, 0); b = 0; }
-  else { const sxx = xs.reduce((s, x) => s + (x - mx) ** 2, 0); a = xs.reduce((s, x, i) => s + (x - mx) * (ys[i] - my), 0) / sxx; b = my - a * mx; }
-  const ssr = ys.reduce((s, y, i) => s + (y - (a * xs[i] + b)) ** 2, 0), sst = ys.reduce((s, y) => s + (y - my) ** 2, 0);
-  return { a, b, R2: sst > 0 ? 1 - ssr / sst : 1 };
-}
-// Pas de graduation « rond » (1, 2, 2,5 ou 5 × 10ⁿ) pour environ 5 intervalles
 const pasRond = max => { const brut = max / 5, p = Math.pow(10, Math.floor(Math.log10(brut))); const r = brut / p; return (r <= 1 ? 1 : r <= 2 ? 2 : r <= 2.5 ? 2.5 : r <= 5 ? 5 : 10) * p; };
 // Longueur d'onde → couleur (pour le faisceau et la bande du spectre)
 function couleurLambda(nm) {
@@ -206,7 +165,7 @@ function OutilEtalonnage() {
 }
 
 // ════════════════ SIMULATION ════════════════
-const INDICE_Q = {"c": "Mesure A pour X, puis c = A / k, avec k le coefficient directeur de la droite d’étalonnage obtenue par modélisation de la gamme.", "c05": "Isole c dans A = k × c, avec A = 0,50 : c = 0,50 / k."};
+const INDICE_Q = {"c": "Mesure A pour X, puis c = frac(A|k), avec k le coefficient directeur de la droite d’étalonnage obtenue par modélisation de la gamme.", "c05": "Isole c dans A = k × c, avec A = 0,50 : c = frac(0,50|k)."};
 export function BeerLambert1G() {
   const [mode, setMode] = useState(() => modeOuverture('beer1g-guide-v1'));
   useSignalerMode(mode);
@@ -322,24 +281,6 @@ export function BeerLambert1G() {
       texte: <>Placez la bouillie X dans l'appareil (cliquez sur sa cuve), puis mesurez son spectre.</>,
       tache: { type: 'action', ok: !!spectreVu.X && blanc, consigne: spectreVu.X ? null : 'Placez la cuve X, puis mesurez le spectre.' } },
     { id: 'lambda', titre: 'Choisir la longueur d’onde', focus: [],
-      retenirTitre: 'À RETENIR : LONGUEUR D’ONDE ET COULEUR',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Couleur absorbée</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Couleur perçue (complémentaire)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>violet (≈ 400 nm)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>jaune-vert</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>bleu (≈ 450 nm)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>jaune-orangé</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>vert (≈ 520 nm)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>magenta (pourpre)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>jaune (≈ 580 nm)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bleu-violet</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>orangé (≈ 600 nm)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bleu</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>rouge (≈ 700 nm)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>bleu-vert (cyan)</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Une solution paraît de la couleur de la lumière <strong>non absorbée</strong> : la bouillie bleue absorbe surtout dans le rouge-orangé.</li>
-          <li>On mesure A à la longueur d’onde du <strong>maximum d’absorption λ<sub>max</sub></strong> : c’est là que la mesure est la plus <strong>sensible</strong> (une petite variation de c donne la plus grande variation de A) et que le spectre est presque plat, donc peu sensible à une petite erreur sur λ.</li>
-        </ul>
-      </>,
       texte: <>Pour mesurer les absorbances avec la meilleure précision, choisissez une longueur d'onde en cliquant sur le spectre.</>,
       tache: { type: 'action', ok: prochesMax && !!spectreVu.X, consigne: prochesMax ? `✅ λ = ${lambda} nm` : `λ = ${lambda} nm : visez le maximum d’absorption.` } },
     { id: 'pourquoiMax', titre: 'Pourquoi au maximum ?', focus: [],
@@ -351,6 +292,8 @@ export function BeerLambert1G() {
       tache: { type: 'qcm', q: 'Pourquoi la solution est-elle bleue ?', options: ['Elle absorbe surtout le rouge-orangé : on voit la lumière qui n’est pas absorbée', 'Elle absorbe surtout le bleu', 'Elle émet de la lumière bleue'], bonne: 0,
         expl: 'La couleur perçue est (à peu près) la couleur complémentaire de celle qui est absorbée.', indice: "La couleur perçue est celle de la lumière non absorbée. Quelle couleur la solution absorbe-t-elle (couleur complémentaire) ?" } },
     { id: 'mesures', titre: 'Mesurer la gamme étalon', focus: [],
+      retenirTitre: 'À RETENIR : COULEUR ET LONGUEUR D’ONDE',
+      retenir: <FicheCouleurs/>,
       texte: <>À λ = {lambdaMesures ?? lambda} nm, placez chaque cuve dans l'appareil (l'eau, S1 à S5, puis X) et cliquez sur « Mesurer A ». Les valeurs
         s'inscrivent dans le tableau. Vérifiez au passage que l'eau donne bien A = 0.</>,
       tache: { type: 'action', ok: toutesMesurees, consigne: toutesMesurees ? null : `Mesurées : ${['eau', 'S1', 'S2', 'S3', 'S4', 'S5', 'X'].filter(n => mesures[n] != null).length} / 7` } },
@@ -366,62 +309,38 @@ export function BeerLambert1G() {
       tache: { type: 'qcm', q: 'Que penser de l’alignement ?', options: ['R² est excellent, mais S5 est un peu sous la droite : aux fortes absorbances, l’appareil sort de son domaine de linéarité et la pente est légèrement sous-estimée', 'La droite convient parfaitement : R² est proche de 1, donc tous les points sont sur la droite', 'Les points sont dispersés au hasard : il faut tout refaire'], bonne: 0,
         expl: 'Un R² proche de 1 ne garantit pas que le modèle convient : ici S5 s’écarte systématiquement de la droite. La loi de Beer-Lambert n’est vérifiée que pour des absorbances pas trop grandes. On peut retirer S5 de l’ajustement ou diluer pour rester dans le domaine de linéarité ; sinon la concentration de X est un peu surestimée (la pente est un peu trop petite).', indice: "Regarde R² et la position de chaque point par rapport à la droite, surtout ceux de forte absorbance." } },
     { id: 'epsilon', titre: 'La loi de Beer-Lambert', focus: [],
-      retenirTitre: 'À RETENIR : LA LOI DE BEER-LAMBERT',
-      retenir: <>
-        <Formule><mi>A</mi><mo>=</mo><mi>ε</mi><mo>×</mo><mi>ℓ</mi><mo>×</mo><mi>c</mi><mo>=</mo><mi>k</mi><mo>×</mo><mi>c</mi><mspace width="1.5em"/><mi>k</mi><mo>=</mo><mi>ε</mi><mo>×</mo><mi>ℓ</mi></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Signification</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Unité</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>A</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>absorbance</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>sans unité</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ε</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>coefficient d’absorption molaire (dépend de l’espèce et de λ)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>L·mol⁻¹·cm⁻¹</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ℓ</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>largeur de la cuve</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>cm</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>c</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>concentration de l’espèce colorée</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>mol·L⁻¹</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>k</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>coefficient directeur de la droite A = f(c)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>L·mol⁻¹</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>A est <strong>proportionnelle à c</strong> : la courbe d’étalonnage est une droite qui passe par l’origine.</li>
-          <li><strong>Domaine de validité</strong> : solutions diluées, A pas trop grande (A ≲ 1 à 2) ; au-delà, les points s’écartent de la droite. Un R² proche de 1 ne suffit pas : on regarde aussi l’écart de chaque point.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : LE DOMAINE DE LINÉARITÉ',
+      retenir: <FicheLineaire/>,
       texte: <>La loi s'écrit A = ε × L × c : k = ε × L, où ε est le coefficient d'absorption molaire de l'espèce (il dépend de λ) et L = 1 cm la
         largeur de la cuve. Ici, k = {fmt(k, 2)} L/mol (droite modélisée à l’étape précédente).</>,
       tache: { type: 'num', q: 'Coefficient d’absorption molaire ε à cette longueur d’onde', unite: 'L·mol⁻¹·cm⁻¹', vrai: k / L_CUVE, tol: 0.02, affiche: v => fmt(v, 1),
         calcul: () => [`Beer-Lambert : A = ε × L × c. La droite modélisée est A = k × c (elle passe par l’origine, grâce au blanc), donc k = ε × L.`,
-          `ε = k / L, avec k = ${fmt(k, 2)} L/mol et L = ${L_CUVE} cm (largeur de la cuve).`,
-          `ε = ${fmt(k, 2)} / ${L_CUVE} = ${fmt(k / L_CUVE, 1)} L·mol⁻¹·cm⁻¹.`],
-        pieges: [[k * 100, 'L = 1 cm : il ne faut pas convertir en mètres ici.']], indice: "A = ε × ℓ × c : le coefficient directeur k de la droite vaut ε × ℓ, donc ε = k / ℓ (ℓ en cm)." } },
+          `ε = frac(k|L), avec k = ${fmt(k, 2)} L/mol et L = ${L_CUVE} cm (largeur de la cuve).`,
+          `ε = frac(${fmt(k, 2)}|${L_CUVE}) = ${fmt(k / L_CUVE, 1)} L·mol⁻¹·cm⁻¹.`],
+        pieges: [[k * 100, 'L = 1 cm : il ne faut pas convertir en mètres ici.']], indice: "A = ε × ℓ × c : le coefficient directeur k de la droite vaut ε × ℓ, donc ε = frac(k|ℓ) (ℓ en cm)." } },
     { id: 'methode', titre: 'Trouver c_X', focus: [],
+      retenirTitre: 'À RETENIR : LA LOI DE BEER-LAMBERT',
+      retenir: <FicheDroite/>,
       texte: <>Vous avez mesuré A<sub>X</sub> = {fmt(AX, 3)} pour la bouillie.</>,
-      tache: { type: 'qcm', q: 'Comment obtenir la concentration c_X de la bouillie ?', options: ['Par le calcul c_X = A_X / k, ou par lecture graphique sur la droite', 'c_X = k × A_X', 'En prenant la concentration de S3'], bonne: 0, indice: "Utilise la droite d’étalonnage A = k × c : isole c, puis remplace A par la valeur mesurée pour X (ou lis-la sur le graphique)." } },
+      tache: { type: 'qcm', q: 'Comment obtenir la concentration c_X de la bouillie ?', options: ['Par le calcul c_X = frac(A_X|k), ou par lecture graphique sur la droite', 'c_X = k × A_X', 'En prenant la concentration de S3'], bonne: 0, indice: "Utilise la droite d’étalonnage A = k × c : isole c, puis remplace A par la valeur mesurée pour X (ou lis-la sur le graphique)." } },
     { id: 'cX', titre: 'La concentration de la bouillie', focus: [],
-      retenirTitre: 'À RETENIR : DOSAGE PAR ÉTALONNAGE',
-      retenir: <>
-        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-          <li>Préparer une <strong>gamme étalon</strong> de concentrations connues.</li>
-          <li>Faire le <strong>blanc</strong>, choisir λ<sub>max</sub> et mesurer A de chaque solution.</li>
-          <li>Tracer A = f(c) et <strong>modéliser</strong> : droite A = k × c.</li>
-          <li>Mesurer A<sub>X</sub> de la solution inconnue (dans le domaine de la gamme) et en déduire c<sub>X</sub>.</li>
-        </ol>
-        <Formule><msub><mi>c</mi><mi>X</mi></msub><mo>=</mo><mfrac><msub><mi>A</mi><mi>X</mi></msub><mi>k</mi></mfrac><mspace width="1.5em"/><msub><mi>c</mi><mi>m</mi></msub><mo>=</mo><mi>c</mi><mo>×</mo><mi>M</mi></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>c en mol·L⁻¹, M en g·mol⁻¹ → c<sub>m</sub> en g·L⁻¹. Ici M(CuSO₄, 5 H₂O) = 249,68 g·mol⁻¹.</li>
-          <li>Garder le même nombre de chiffres significatifs que les mesures de A.</li>
-        </ul>
-      </>,
       texte: <>Avec k = {fmt(k, 2)} L/mol et A<sub>X</sub> = {fmt(AX, 3)}.</>,
       tache: { type: 'num', q: 'Concentration c_X des ions cuivre(II)', unite: 'mol/L', vrai: cXcalc, tol: 0.02, affiche: v => fmt(v, 4),
         calcul: () => [`On suppose la loi de Beer-Lambert vérifiée (A proportionnelle à c, droite passant par l’origine) et A_X dans le domaine de la gamme étalon.`,
-          `A = k × c, donc c_X = A_X / k.`,
+          `A = k × c, donc c_X = frac(A_X|k).`,
           `c_X = ${fmt(AX, 3)} / ${fmt(k, 2)} = ${fmt(Number(AX.toFixed(3)) / Number(k.toFixed(2)), 4)} mol/L.`],
-        pieges: [[AX * k, 'C’est A_X / k, et non A_X × k.'], [k / AX, 'Formule à l’envers : A = k × c donne c = A_X / k (et non k / A_X).']], indice: "c_X = A_X / k, avec k le coefficient directeur de la droite d’étalonnage (unités cohérentes)." } },
+        pieges: [[AX * k, 'C’est frac(A_X|k), et non A_X × k.'], [k / AX, 'Formule à l’envers : A = k × c donne c = frac(A_X|k) (et non frac(k|A_X)).']], indice: "c_X = frac(A_X|k), avec k le coefficient directeur de la droite d’étalonnage (unités cohérentes)." } },
     { id: 'cm', titre: 'La concentration en masse', focus: [],
+      retenirTitre: 'À RETENIR : DOSAGE PAR ÉTALONNAGE',
+      retenir: <FicheEtalonnage/>,
       texte: <>On a c<sub>m</sub> = c × M, avec c = c<sub>X</sub> (concentration trouvée à l’étape précédente) et M(CuSO₄, 5 H₂O) = 249,68 g/mol.</>,
       tache: { type: 'num', q: 'Concentration en masse c_m de la bouillie', unite: 'g/L', vrai: cmX, tol: 0.02, affiche: v => fmt(v, 1),
         calcul: () => [`Formule : c_m = c × M. Le solide est du sulfate de cuivre pentahydraté, donc M = ${fmt(M_CUSO4, 2)} g/mol, et on suppose c(CuSO₄, 5 H₂O) = c_X (une mole de solide libère une mole d’ions Cu²⁺).`,
           `c_m = ${fmt(Number((Number(AX.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)), 4)} × ${fmt(M_CUSO4, 2)} = ${fmt(Number((Number(AX.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)) * M_CUSO4, 1)} g/L.`],
-        pieges: [[cXcalc / M_CUSO4, 'C’est c × M, et non c / M.']], indice: "c_m = c × M, avec M la masse molaire de l’espèce (en g/mol)." } },
+        pieges: [[cXcalc / M_CUSO4, 'C’est c × M, et non frac(c|M).']], indice: "c_m = c × M, avec M la masse molaire de l’espèce (en g/mol)." } },
     { id: 'conclusion', titre: 'Conclusion', focus: [],
+      retenirTitre: 'À RETENIR : VÉRIFIER UNE PURETÉ',
+      retenir: <FichePurete/>,
       texte: <>Vous trouvez {fmt(cmX, 1)} g/L, soit un écart de {fmt(Math.abs(cmX - 15) / 15 * 100, 1)} % avec l'indication.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['La mesure est en accord avec l’indication « de l’ordre de 15 g/L »', 'L’étiquette est fausse'], bonne: 0, indice: "Compare ta valeur à celle de l’étiquette (« de l’ordre de 15 g/L ») en tenant compte des incertitudes de mesure." } },
     { id: 'masse', titre: 'Pour aller plus loin : la pureté', focus: [],
@@ -433,35 +352,18 @@ export function BeerLambert1G() {
         pieges: [[0.080 * M_CUSO4, 'Pour 100 mL = 0,100 L, et non 1 L.'], [0.080 * 0.100, 'Vous avez calculé la quantité de matière n = c × V. Il reste à la convertir en masse : m = n × M.'],
           [0.080 * 100 * M_CUSO4, 'Le volume doit être en litres : 100 mL = 0,100 L.']], indice: "Quantité à préparer : n = c × V (V en litres), puis m = n × M, avec M la masse molaire du sulfate de cuivre." } },
     { id: 'purete', titre: 'La pureté du solide', focus: [],
-      retenirTitre: 'À RETENIR : PRÉPARER UNE SOLUTION ET VÉRIFIER UNE PURETÉ',
-      retenir: <>
-        <Formule><mi>n</mi><mo>=</mo><mi>c</mi><mo>×</mo><mi>V</mi><mspace width="1.2em"/><mi>m</mi><mo>=</mo><mi>n</mi><mo>×</mo><mi>M</mi><mspace width="1.2em"/><mtext>pureté</mtext><mo>=</mo><mfrac><msub><mi>c</mi><mtext>mesurée</mtext></msub><msub><mi>c</mi><mtext>attendue</mtext></msub></mfrac><mo>×</mo><mn>100</mn></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Convertir le volume en <strong>litres</strong> (100 mL = 0,100 L) avant de calculer n.</li>
-          <li>Si le solide est pur, la concentration obtenue est la concentration attendue ; une concentration mesurée plus faible révèle des impuretés.</li>
-          <li>c<sub>mesurée</sub> se déduit de A par c = A / k.</li>
-        </ul>
-      </>,
       texte: <>On a pesé 2,00 g et préparé la solution P. Cliquez sur « Préparer la solution P », placez sa cuve dans l'appareil et mesurez son
         absorbance{AP != null ? ` : A_P = ${fmt(AP, 3)}` : ''}. La pureté est le rapport entre la concentration réelle et 0,080 mol/L.</>,
       tache: { type: 'num', q: 'Pureté du sulfate de cuivre', unite: '%', vrai: pureteCalc ?? 0, tol: 0.012, affiche: v => fmt(v, 1),
-        calcul: () => AP == null ? [] : [`On suppose Beer-Lambert vérifiée : la concentration réelle de P est c_P = A_P / k = ${fmt(AP, 3)} / ${fmt(k, 2)} = ${fmt(Number(AP.toFixed(3)) / Number(k.toFixed(2)), 4)} mol/L.`,
+        calcul: () => AP == null ? [] : [`On suppose Beer-Lambert vérifiée : la concentration réelle de P est c_P = frac(A_P|k) = frac(${fmt(AP, 3)}|${fmt(k, 2)}) = ${fmt(Number(AP.toFixed(3)) / Number(k.toFixed(2)), 4)} mol/L.`,
           `Si le solide était pur, 2,00 g dans 100 mL donneraient 0,080 mol/L (valeur de référence supposée exacte).`,
-          `Pureté = c_P / 0,080 × 100 = ${fmt(Number((Number(AP.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)), 4)} / 0,080 × 100 = ${fmt(Number((Number(AP.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)) / 0.080 * 100, 1)} %.`],
+          `Pureté = frac(c_P|0,080) × 100 = frac(${fmt(Number((Number(AP.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)), 4)}|0,080) × 100 = ${fmt(Number((Number(AP.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)) / 0.080 * 100, 1)} %.`],
         pieges: AP == null ? [] : [[AP / k, 'C’est la concentration c_P (en mol/L). La pureté la compare à 0,080 mol/L : divisez par 0,080, puis multipliez par 100.'],
-          [AP / k / 0.080, 'Vous avez le bon rapport c_P / 0,080, mais une pureté s’exprime en pourcentage : multipliez par 100.']],
+          [AP / k / 0.080, 'Vous avez le bon rapport frac(c_P|0,080), mais une pureté s’exprime en pourcentage : multipliez par 100.']],
         bloque: AP == null ? 'Préparez la solution P et mesurez son absorbance.' : null, indice: "Pureté = masse effective de sulfate de cuivre ÷ masse pesée × 100. La masse effective se déduit de la concentration mesurée." } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Principe</strong> : une solution colorée absorbe la lumière ; A = log(I₀ / I), sans unité.</li>
-          <li><strong>Loi de Beer-Lambert</strong> : A = ε × ℓ × c, valable pour des solutions diluées ; A proportionnelle à c.</li>
-          <li><strong>Méthode</strong> : blanc → λ<sub>max</sub> → gamme étalon → droite A = k × c → c<sub>X</sub> = A<sub>X</sub> / k → c<sub>m</sub> = c × M.</li>
-          <li>Vérifier l’alignement (R² <em>et</em> écarts) : aux fortes absorbances, la droite sous-estime la pente.</li>
-          <li>La couleur perçue est la complémentaire de la couleur absorbée.</li>
-        </ul>
-      </>,
+      retenirTitre: 'À RETENIR : LA MÉTHODE EN SIX TEMPS',
+      retenir: <FicheBilan/>,
       texte: <>Vous avez réalisé un dosage par étalonnage complet. En exploration libre, testez d'autres espèces colorées (permanganate, colorant
         E133…), et traitez vos propres mesures avec l'outil de courbe d'étalonnage. Le défi vous propose une solution inconnue.</>, tache: null },
   ];
@@ -507,9 +409,9 @@ export function BeerLambert1G() {
       <Curseur nom="Longueur d'onde λ (ou cliquez sur le spectre)" valeur={lambda} onChange={mode === 'explore' ? setLambda : changerLambda} min={LAMBDA_MIN} max={LAMBDA_MAX} pas={1} unite="nm" couleur="#c2410c"/>
       {mode === 'explore' && <>
         <div style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700, margin: '6px 0 4px' }}>Espèce colorée</div>
-        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginBottom: 8 }}>
-          {Object.entries(ESPECES).map(([kk, e]) => <button key={kk} onClick={() => setEspExp(kk)} style={stylePetitBouton(espExp === kk, '#1a7abf')}>{e.nom}</button>)}
-        </div>
+        <select value={espExp} aria-label="Espèce colorée" onChange={e => setEspExp(e.target.value)} style={{ width: '100%', minHeight: 42, fontSize: 14, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, marginBottom: 8 }}>
+          {Object.entries(ESPECES).map(([kk, e]) => <option key={kk} value={kk}>{e.nom}</option>)}
+        </select>
         <Curseur nom="Concentration" valeur={cExp} onChange={setCExp} min={0} max={Eexp.cMax} pas={Eexp.pas} unite={Eexp.unite} decimales={Eexp.pas < 0.01 ? 3 : 2} couleur="#1a7abf"/>
         <LigneMesure nom={`ε à ${lambda} nm`} valeur={`${fmt(epsilon(espExp, lambda), epsilon(espExp, lambda) < 100 ? 1 : 0)} L·mol⁻¹·cm⁻¹`}/>
         <LigneMesure nom="A = ε × L × c (théorie)" valeur={fmt(epsilon(espExp, lambda) * cExpMol, 3)}/>
@@ -565,7 +467,7 @@ export function BeerLambert1G() {
         </div>
         {!prochesMax && spectreVu.X && <div style={{ fontSize: 13, color: '#b45309' }}>Votre longueur d'onde n'est pas au maximum d'absorption : la mesure sera moins précise.</div>}
         {Q.map((q, kk) => {
-          const ok = q.vrai != null && proche(lireNombre(defi.reps[q.id] || ''), q.vrai, 0.03);
+          const ok = q.vrai != null && proche(lireNombre(defi.reps[q.id] || ''), q.vrai, 0.05);
           return (
             <div key={q.id} style={{ borderLeft: `3px solid ${defi.verifie ? (ok ? '#16a34a' : '#dc2626') : KIT.bord}`, paddingLeft: 8 }}>
               <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{kk + 1}. {avecIndices(q.q)}</div>
@@ -580,7 +482,7 @@ export function BeerLambert1G() {
           );
         })}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => { noterDefi(Q.every(q => q.vrai != null && proche(lireNombre(defi.reps[q.id] || ''), q.vrai, 0.03))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
+          <button onClick={() => { noterDefi(Q.every(q => q.vrai != null && proche(lireNombre(defi.reps[q.id] || ''), q.vrai, 0.05))); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
           <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouvelle solution</button>
         </div>
         {defi.verifie && <div style={{ fontSize: 13, color: KIT.txt2 }}>Valeur réelle : c = {fmt(defi.cX, 3)} {E.unite}.</div>}
@@ -655,11 +557,11 @@ export function BeerLambert1G() {
               </div>}
         </div>
         <div className="bl-l2">
-          <div data-apparait={`${idx('eau')} ${idx('mesures')} ${idx('purete')}`}>
+          {(!enGuide || vu('eau')) && <div data-apparait={`${idx('eau')} ${idx('mesures')} ${idx('purete')}`}>
             <Section titre="Commandes du spectrophotomètre" ouvert={ouverts.commandes} onBascule={() => setOuverts(o => ({ ...o, commandes: !o.commandes }))}>
-              {enGuide && !vu('eau') ? <div style={{ fontSize: 13, color: KIT.txt2 }}>Les commandes apparaîtront au fil du parcours.</div> : commandes}
+              {commandes}
             </Section>
-          </div>
+          </div>}
           {mode !== 'explore' && vu('mesures') && <div data-apparait={`${idx('mesures')} ${idx('trace')}`}>
             <Section titre="Mesures et courbe d'étalonnage" ouvert={ouverts.tableau} onBascule={() => setOuverts(o => ({ ...o, tableau: !o.tableau }))}>
               {tableau}
@@ -668,13 +570,13 @@ export function BeerLambert1G() {
           </div>}
         </div>
       </>}
-      <PanneauHypotheses>
+      {(!enGuide || vu('bravo')) && <PanneauHypotheses>
         <li><strong>Loi de Beer-Lambert</strong> : A = ε × ℓ × c, avec ℓ = 1 cm. Elle suppose une solution diluée, une seule espèce qui absorbe à la longueur d’onde choisie, une lumière monochromatique et une solution limpide (pas de diffusion).</li>
         <li><strong>Limite de l’appareil</strong> : à forte absorbance (au-delà de A ≈ 1), le spectrophotomètre s’écarte un peu de la droite. L’étalonnage doit rester dans la zone où A est proportionnelle à c.</li>
         <li><strong>Blanc</strong> : la cuve remplie d’eau sert de référence (A = 0). Sans ce réglage, la cuve et l’eau ajoutent une absorbance parasite à toutes les mesures.</li>
         <li><strong>Étalons</strong> : les concentrations des solutions étalon sont supposées exactes (fioles jaugées, dilutions soignées). L’incertitude vient surtout de la lecture de A (quelques millièmes d’absorbance).</li>
         <li><strong>Modèle de la courbe</strong> : on ajuste une droite A = k × c. Un coefficient R² proche de 1 ne prouve pas à lui seul que le modèle convient : regardez aussi si les points s’écartent de la droite de façon systématique (par exemple le plus concentré).</li>
-      </PanneauHypotheses>
+      </PanneauHypotheses>}
     </div>
   );
 }
