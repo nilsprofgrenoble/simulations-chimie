@@ -5,6 +5,9 @@ import { SchemasFilmSec } from "./peintureSchema";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
   stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
+import { puces } from "./Travail";
+import { Formule } from "../commun";
+import { FLambda, FCPVC, FFicheMesure, FMemeVolume, FDispersion, FTMFF, FCoalescent } from "./PeintureSchemas";
 
 const SIM_ID = 14;
 declarerDefis(SIM_ID, [['principal', 'Formuler une base blanche (cahier des charges)']]);
@@ -228,15 +231,15 @@ export function SimulationPeinture({ plotlyReady }) {
         calcul: () => calculCPVC(refFiche),
         pieges: piegesLoin([[refMes.CPVC, 'Ce sont les prises d’huile mesurées. Ici, utilisez celles des fiches techniques (20 g et 14 g pour 100 g).']], refFiche.CPVC), indice: "La CPVC est la valeur du CPV pour laquelle le liant remplit juste les espaces entre les pulvérulents : elle se calcule à partir des prises d’huile des fiches." } },
     { id: 'prevision', titre: 'L’aspect prévu', focus: ['resultats'],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>CPV = V(pulvérulents) / [V(pulvérulents) + V(liant sec)] ; CPVC = V(pulvérulents) / [V(pulvérulents) + V(huile)].</li>
-          <li>λ = CPV / CPVC, sans unité : brillant si λ &lt; 0,5 ; satiné ; mat si 0,8 ≤ λ ≤ 1 ; film poreux si λ &gt; 1 (seuils indicatifs).</li>
-          <li>Les volumes viennent des masses et des masses volumiques vraies ; la CPVC dépend de la prise d’huile <strong>mesurée</strong>.</li>
-        </ul>),
       texte: <>λ = CPV / CPVC = {fmt(refFiche.lambda, 2)}.</>,
       tache: { type: 'qcm', q: 'D’après les fiches techniques, la peinture devrait être…', options: ['satinée (λ < 0,8), donc non conforme au cahier des charges', 'mate', 'poreuse'], bonne: 0, indice: "Calcule λ = CPV / CPVC avec les valeurs précédentes, puis compare-le à 0,8 et à 1 (cahier des charges)." } },
     { id: 'surprise', titre: 'On fabrique, on applique… elle est mate !', focus: [],
+      retenirTitre: 'À RETENIR : L’ASPECT D’UNE PEINTURE : λ',
+      retenir: <>
+        <FLambda/>
+        <Formule><mi>λ</mi><mo>=</mo><mfrac><mtext>CPV</mtext><mtext>CPVC</mtext></mfrac></Formule>
+        {puces(<>λ = CPV par rapport à CPVC, sans unité : brillant si λ &lt; 0,5 ; satiné ; <strong>mat si 0,8 ≤ λ ≤ 1</strong> ; film poreux si λ &gt; 1 (seuils indicatifs).</>, <>Plus λ est grand, moins il y a de liant par rapport aux pigments.</>)}
+      </>,
       texte: <>La peinture fabriquée et appliquée est pourtant bien <strong>mate</strong>. La CPV est sûre : elle ne dépend que des masses et des masses volumiques.</>,
       tache: { type: 'qcm', q: 'Que soupçonner ?', options: ['Les prises d’huile réelles de nos poudres sont plus grandes que celles des fiches : la CPVC réelle est plus basse', 'La CPV est fausse', 'L’applicateur s’est trompé'], bonne: 0,
         expl: 'Une fiche technique décrit un produit type, parfois un autre grade ; un lot réel peut être très différent. Il faut le mesurer.', indice: "Si les prises d’huile réelles sont plus grandes que celles des fiches, la CPVC réelle augmente-t-elle ou diminue-t-elle ?" } },
@@ -253,6 +256,12 @@ export function SimulationPeinture({ plotlyReady }) {
         calcul: () => calculCPVC(refEleve),
         pieges: piegesLoin([[refFiche.CPVC, 'C’est la CPVC calculée avec les prises d’huile des fiches techniques. Utilisez vos prises d’huile mesurées.']], refEleve.CPVC), indice: "Même calcul de la CPVC que précédemment, mais avec les prises d’huile mesurées à la place de celles des fiches." } },
     { id: 'lambdaReel', titre: 'L’aspect réel', focus: ['resultats'],
+      retenirTitre: 'À RETENIR : LA CPVC ET LA PRISE D’HUILE',
+      retenir: <>
+        <FCPVC/>
+        <Formule><mtext>CPVC</mtext><mo>=</mo><mfrac><mrow><mi>V</mi><mtext>(pulv.)</mtext></mrow><mrow><mi>V</mi><mtext>(pulv.)</mtext><mo>+</mo><mi>V</mi><mtext>(huile)</mtext></mrow></mfrac></Formule>
+        {puces(<>La CPVC ne dépend que des <strong>pulvérulents</strong> : leurs volumes et leurs prises d’huile, pas de la résine.</>, <>Le calcul suppose que le liant se comporte comme l’huile de lin vis-à-vis des poudres : c’est une <strong>hypothèse</strong> du modèle.</>)}
+      </>,
       texte: <>Avec la vraie CPVC (étape précédente) et la CPV de la formule de référence ({fmt(refEleve.CPV, 1)} %, étape « La CPV »).</>,
       tache: { type: 'num', q: 'λ = CPV / CPVC', unite: '', vrai: refEleve.lambda, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: () => [`λ = CPV / CPVC, avec CPV = ${fmt(refEleve.CPV, 1)} % (calculée à l’étape précédente) et CPVC = ${fmt(refEleve.CPVC, 1)} % (prises d’huile mesurées).`,
@@ -279,14 +288,15 @@ export function SimulationPeinture({ plotlyReady }) {
             `Sans eau, les autres matières pèsent ${fmt(sansEau, 1)} g : eau = ${fmt(mTotCible, 1)} − ${fmt(sansEau, 1)} = ${fmt(eauOrgal, 1)} g.`]; },
         pieges: piegesLoin([[mTotCible, 'C’est la masse totale visée. L’eau est la différence avec la masse des autres matières premières.'], [mSecOrgal, 'C’est la masse sèche. Divisez-la par ES pour obtenir la masse totale, puis soustrayez les autres matières.']], eauOrgal), indice: "Fais le bilan de l’eau : celle qu’apporte la nouvelle résine (selon son extrait sec) et celle à ajouter pour retrouver la formule visée." } },
     { id: 'cpvcInchangee', titre: 'Et la CPVC ?', focus: ['resultats'],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Même volume de liant sec ⇒ même CPV ; même extrait sec ⇒ même masse totale.</li>
-          <li>La CPVC ne dépend que des <strong>pulvérulents</strong> (volumes et prises d’huile), pas de la résine.</li>
-        </ul>),
       texte: <>La nouvelle formule s'affiche dans le cadre « Formule ».</>,
       tache: { type: 'qcm', q: 'Pourquoi la CPVC ne change-t-elle pas avec la nouvelle résine ?', options: ['Elle ne dépend que des pulvérulents (leurs volumes et leurs prises d’huile)', 'Parce que la résine est la même', 'Elle change'], bonne: 0, indice: "De quoi dépend la CPVC : de la nature de la résine, ou des pulvérulents et de leurs prises d’huile ?" } },
     { id: 'coadisDiag', titre: 'Le problème de dispersion', focus: ['formule'],
+      retenirTitre: 'À RETENIR : CHANGER DE RÉSINE À CPV CONSTANTE',
+      retenir: <>
+        <FMemeVolume/>
+        <Formule><mtext>CPV</mtext><mo>=</mo><mfrac><mrow><mi>V</mi><mtext>(pulv.)</mtext></mrow><mrow><mi>V</mi><mtext>(pulv.)</mtext><mo>+</mo><mi>V</mi><mtext>(liant sec)</mtext></mrow></mfrac></Formule>
+        {puces(<>Même <strong>volume de liant sec</strong> ⇒ même CPV ; même <strong>extrait sec</strong> ⇒ même masse totale.</>, <>L’Orgal (50 % d’extrait sec) demande une masse plus grande que la Vinnapas (60 %) pour le même volume de liant sec.</>)}
+      </>,
       texte: <>Les opérateurs voient se former des amas de poudre pendant la dispersion. La fiche du Coadis BR3 recommande 0,15 à 0,20 % de <strong>matière active</strong>
         (son extrait sec : 40 %) rapportée à la masse des pigments. On le rapporte ici aux 108 g de pulvérulents. La formule de référence contient 0,18 g de Coadis.</>,
       tache: { type: 'num', q: 'Teneur actuelle en matière active de Coadis, en % des pulvérulents', unite: '%', vrai: 0.18 * 0.4 / 108 * 100, tol: 0.03, affiche: x => fmt(x, 3),
@@ -310,16 +320,21 @@ export function SimulationPeinture({ plotlyReady }) {
         coalescent ») et lancez le séchage.</>,
       tache: { type: 'qcm', q: 'Avec l’Orgal, sans coalescent, appliqué à 10 °C…', options: ['le film se fissure ou reste poudreux : les particules ne fusionnent pas', 'le film est parfait', 'la peinture devient brillante'], bonne: 0, indice: "La température minimale de formation du film (TMFF) de l’Orgal est-elle supérieure ou inférieure à 10 °C ? Que devient le film si les particules de liant ne fusionnent pas ?" } },
     { id: 'coalescent', titre: 'Le rôle de l’agent de coalescence', focus: ['sechage'],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un latex forme un film continu seulement si T &gt; TMFF : Vinnapas ≈ 2 °C, Orgal ≈ 20 °C.</li>
-          <li>L’agent de coalescence (DPnB) ramollit les particules, abaisse la TMFF, puis s’évapore ; il est volatil donc ne compte pas dans l’extrait sec.</li>
-        </ul>),
+      retenirTitre: 'À RETENIR : LA TEMPÉRATURE MINIMALE DE FORMATION DE FILM',
+      retenir: <>
+        <FTMFF/>
+        {puces(<>Un latex ne forme un film continu que si <strong>T &gt; TMFF</strong> : Vinnapas ≈ 2 °C ; Orgal ≈ 20 °C.</>, <>En dessous, les particules ne fusionnent pas : le film est <strong>poudreux ou fissuré</strong>.</>)}
+      </>,
       texte: <>Le DPnB ramollit temporairement les particules de liant : il abaisse la TMFF, puis s'évapore lentement. La fiche de la Vinnapas précise qu'elle « n'a besoin
         d'aucun agent de coalescence » (TMFF ≈ 2 °C).</>,
       tache: { type: 'qcm', q: 'Que conclure pour la formule ?', options: ['Avec l’Orgal, le coalescent devient nécessaire ; avec la Vinnapas, il était superflu', 'Le coalescent est inutile dans les deux cas', 'Il faut le remplacer par de l’eau'], bonne: 0,
         expl: 'Le coalescent a un prix : c’est un COV. Il faut en mettre assez pour former le film à la température d’application la plus basse prévue, mais pas plus.', indice: "Compare la TMFF de chaque résine à la température d’application, avec et sans coalescent." } },
     { id: 'cov', titre: 'Les COV', focus: ['resultats'],
+      retenirTitre: 'À RETENIR : L’AGENT DE COALESCENCE',
+      retenir: <>
+        <FCoalescent/>
+        {puces(<>Le <strong>DPnB</strong> ramollit les particules, abaisse la TMFF, puis s’évapore.</>, <>C’est un <strong>COV</strong> (composé organique volatil) : il compte dans la teneur en COV (limite 30 g/L) mais pas dans l’extrait sec ; on en met assez, pas plus.</>)}
+      </>,
       texte: <>La teneur en COV est la masse de composés organiques volatils par litre de peinture. Ici, seul le DPnB est un COV. La densité de la peinture vaut environ
         {' '}{fmt(pOrgal.densite, 2)}, et sa masse totale {fmt(pOrgal.mTot, 1)} g.</>,
       tache: { type: 'num', q: 'Teneur en COV de la nouvelle formule', unite: 'g/L', vrai: pOrgal.COV, tol: 0.04, affiche: x => fmt(x, 0),
@@ -333,20 +348,30 @@ export function SimulationPeinture({ plotlyReady }) {
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
       tache: { type: 'qcm', q: 'Laquelle de ces affirmations est une hypothèse du calcul de la CPVC ?', options: ['Le liant se comporte comme l’huile de lin vis-à-vis des poudres', 'La CPVC est mesurée directement', 'Les additifs sont des pigments'], bonne: 0,
         expl: 'D’où l’importance de vérifier l’aspect sur la peinture réelle : le calcul n’est qu’une prévision.', indice: "Une hypothèse est une simplification admise pour pouvoir calculer. Laquelle de ces affirmations est supposée plutôt que mesurée ?" } },
-    { id: 'bravo1', titre: 'Bravo !', focus: [],
+    { id: 'bravo1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : FICHE TECHNIQUE ET MESURE',
+      retenir: <>
+        <FFicheMesure/>
+        {puces(<>Une fiche décrit un produit <strong>type</strong>, parfois un autre grade ; un lot réel peut différer beaucoup.</>, <>Des prises d’huile <strong>mesurées</strong> plus grandes donnent une CPVC plus basse et un λ plus grand : la peinture réelle est mate alors que la fiche la prévoyait satinée.</>)}
+      </>,
       texte: <>Vous savez prévoir l'aspect d'une peinture, et vous savez qu'une fiche technique ne remplace pas une mesure sur les matières premières réellement
         utilisées. Parcours suivant : « Changer de résine ».</>, tache: null },
     { id: 'intro2', titre: 'Changer de résine', focus: ['formule'],
       texte: <>La base de référence (résine Vinnapas EP 3360) est mate : ES = {fmt(refMes.ES, 1)} %, CPV = {fmt(refMes.CPV, 1)} %, CPVC = {fmt(refMes.CPVC, 1)} % avec les prises
         d'huile mesurées. Il faut la reformuler avec l'<strong>Orgal PST 50A</strong>, en gardant le même extrait sec, la même CPV et la même CPVC. On en profite
         pour corriger un défaut de dispersion signalé par les opérateurs.</>, tache: null },
-    { id: 'bravo2', titre: 'Bravo !', focus: [],
+    { id: 'bravo2', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : LE DOSAGE DU DISPERSANT',
+      retenir: <>
+        <FDispersion/>
+        {puces(<>Seule compte la <strong>matière active</strong> du dispersant (son extrait sec), rapportée à la masse des <strong>pulvérulents</strong>.</>, <>Trop peu de dispersant : les poudres restent en <strong>amas</strong> ; on vise le milieu de la fourchette de la fiche technique.</>)}
+      </>,
       texte: <>La nouvelle formule a le même extrait sec, la même CPV et la même CPVC que la référence, et un dispersant correctement dosé. Parcours suivant :
         « Former le film », pour vérifier qu'elle séchera correctement.</>, tache: null },
     { id: 'intro3', titre: 'Former le film', focus: ['sechage'],
       texte: <>La nouvelle base est formulée avec l'Orgal PST 50A. Reste à vérifier qu'une fois appliquée, elle formera bien un film continu, et qu'elle respecte
         la limite de COV (&lt; 30 g/L).</>, tache: null },
-    { id: 'bravo3', titre: 'Bravo !', focus: [],
+    { id: 'bravo3', titre: 'Le bilan', focus: [],
       texte: <>Vous avez relié la TMFF de la résine, le rôle de l'agent de coalescence et la teneur en COV. En exploration libre, modifiez librement la formule ;
         le défi vous demande de respecter tout le cahier des charges.</>, tache: null },
   ];
