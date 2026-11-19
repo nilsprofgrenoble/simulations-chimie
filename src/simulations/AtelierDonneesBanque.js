@@ -20,6 +20,7 @@ import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
 import * as CO2 from "./co2DissousModele";
 import * as EXT from "./extractionAcideBaseModele";
+import * as QM from "./quantiteMatiereModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -311,6 +312,56 @@ export const ENONCES = [
         utiles: ['th', 'f'], raisons,
         cherche: { bonne: 'L’âge de l’échantillon (en années)', faux: ['La constante radioactive λ (en s⁻¹)', 'L’activité de l’échantillon (en Bq)', 'Le nombre de noyaux disparus (en nombre de noyaux)'] },
         manque: null, solution: { txt: 't = (t½ / ln 2) × ln(N₀ / N)', val: (5730 / Math.LN2) * Math.log(100 / p.f), u: 'ans' } };
+    },
+  },
+  // ───────────────────────────── Quantité de matière (1G) : masse molaire, volume molaire
+  {
+    id: 'mol1g-qte-solide', domaine: 'Quantité de matière : masse molaire et volume molaire', titre: 'Un comprimé de paracétamol', noms: ['Quantité de matière dans le comprimé', 'Nombre de molécules dans le comprimé'],
+    gen: () => { const m = tire([300, 500, 650, 1000]); return { m, mTot: tire([0.9, 1.2, 1.5, 2.0].filter(t => t >= 1.3 * m / 1000)), verre: tire([100, 150, 200]) }; },   // la masse du comprimé dépasse toujours celle de la substance active (excipients)
+    build: (p, q) => {
+      const e = QM.espece('paracetamol'), M = QM.masseMolaire(e), n = p.m / 1000 / M;
+      const tokens = {
+        m: tok(`${p.m} mg`, 'Masse de paracétamol contenue dans le comprimé', p.m / 1000, 'g'),
+        M: tok(`${nb(M, 1)} g/mol`, 'Masse molaire du paracétamol', M, 'g/mol'),
+        mTot: tok(`${nb(p.mTot, 1)} g`, 'Masse totale du comprimé (paracétamol et excipients)', p.mTot, 'g'),
+        verre: tok(`${p.verre} mL`, 'Volume d’eau du verre dans lequel on dissout le comprimé', p.verre, 'mL'),
+      };
+      const raisons = { mTot: 'La masse totale du comprimé contient aussi des excipients : seule la masse de paracétamol compte.', verre: 'Le volume d’eau du verre ne sert pas à calculer la quantité de matière de paracétamol.' };
+      const debut = ['Un comprimé de masse totale ', T('mTot'), ' contient ', T('m'), ' de paracétamol ', QM.formuleTexte(e), ' (masse molaire ', T('M'), '). On le dissout dans un verre de ', T('verre'), ' d’eau. '];
+      if (q === 0) return { tokens, derivees: ['masse en grammes : m (mg) ÷ 1000'], texte: [...debut, 'Quelle est la quantité de matière de paracétamol dans le comprimé ?'],
+        utiles: ['m', 'M'], raisons,
+        cherche: { bonne: 'La quantité de matière n de paracétamol (en mol)', faux: ['La masse molaire du paracétamol (en g/mol)', 'La concentration du paracétamol dans le verre (en mol/L)', 'Le nombre de molécules de paracétamol, sans passer par n'] },
+        manque: null, solution: { txt: 'n = m / M, avec m converti en grammes', val: n, u: 'mol' } };
+      tokens.NA = tok('6,02 × 10²³ mol⁻¹', 'Constante d’Avogadro', QM.NA, 'mol⁻¹');
+      return { tokens, derivees: ['masse en grammes : m (mg) ÷ 1000', { id: 'n', nom: 'Quantité de matière de paracétamol', expr: 'n = m / M', val: n, u: 'mol' }],
+        texte: [...debut, 'On donne la constante d’Avogadro ', T('NA'), '. Combien de molécules de paracétamol le comprimé contient-il ?'],
+        utiles: ['m', 'M', 'NA'], raisons,
+        cherche: { bonne: 'Le nombre N de molécules de paracétamol', faux: ['La quantité de matière n de paracétamol (en mol)', 'La masse d’une seule molécule de paracétamol (en g)', 'La masse molaire du paracétamol (en g/mol)'] },
+        manque: null, solution: { txt: 'N = n × N_A, avec n = m / M', val: n * QM.NA, u: 'molécules' } };
+    },
+  },
+  {
+    id: 'mol1g-qte-gaz', domaine: 'Quantité de matière : masse molaire et volume molaire', titre: 'Un ballon de gaz', noms: ['Quantité de matière de gaz', 'Masse de gaz'],
+    gen: () => { const theta = tire([0, 20, 25]); return { e: tire(['o2', 'n2', 'co2', 'ch4']), theta, Vm: QM.VM_USUEL[theta], V: tire([250, 500, 750, 1000]), mB: tire([35, 48, 62]) }; },
+    build: (p, q) => {
+      const e = QM.espece(p.e), M = QM.masseMolaire(e), n = p.V / 1000 / p.Vm;
+      const tokens = {
+        V: tok(`${p.V} mL`, 'Volume du ballon, entièrement rempli de gaz', p.V / 1000, 'L'),
+        Vm: tok(`${nb(p.Vm, 1)} L/mol`, `Volume molaire d’un gaz à ${p.theta} °C et 1013 hPa`, p.Vm, 'L/mol'),
+        mB: tok(`${p.mB} g`, 'Masse du ballon vide', p.mB, 'g'),
+        th: tok(`${p.theta} °C`, 'Température du gaz', p.theta, '°C'),
+      };
+      const debut = ['Un ballon de volume ', T('V'), ' est rempli de ', e.nom, ' ', QM.formuleTexte(e), ' à ', T('th'), ' et 1013 hPa ; dans ces conditions, le volume molaire des gaz est ', T('Vm'), '. Le ballon vide pèse ', T('mB'), '. '];
+      if (q === 0) return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000'], texte: [...debut, 'Quelle est la quantité de matière de gaz dans le ballon ?'],
+        utiles: ['V', 'Vm'], raisons: { mB: 'La masse du ballon vide ne dit rien sur la quantité de gaz qu’il contient.', th: 'La température est déjà prise en compte dans la valeur de V_m donnée.' },
+        cherche: { bonne: 'La quantité de matière n de gaz (en mol)', faux: ['La masse molaire du gaz (en g/mol)', 'La masse totale du ballon rempli (en g)', 'La masse volumique du gaz (en g/L)'] },
+        manque: null, solution: { txt: 'n = V / V_m, avec V converti en litres', val: n, u: 'mol' } };
+      tokens.M = tok(`${nb(M, 1)} g/mol`, `Masse molaire du ${e.nom}`, M, 'g/mol');
+      return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de gaz', expr: 'n = V / V_m', val: n, u: 'mol' }],
+        texte: [...debut, 'La masse molaire du ', e.nom, ' est ', T('M'), '. Quelle est la masse de gaz contenue dans le ballon (sans le ballon) ?'],
+        utiles: ['V', 'Vm', 'M'], raisons: { mB: 'On demande la masse du gaz seul : la masse du ballon vide ne sert pas.', th: 'La température est déjà prise en compte dans la valeur de V_m donnée.' },
+        cherche: { bonne: 'La masse m de gaz dans le ballon (en g)', faux: ['La masse totale du ballon rempli de gaz (en g)', 'La quantité de matière de gaz (en mol)', 'La masse volumique du gaz (en g/L)'] },
+        manque: null, solution: { txt: 'm = n × M, avec n = V / V_m', val: n * M, u: 'g' } };
     },
   },
   // ───────────────────────────── Équilibre chimique (TG) : Qr, K, taux d'avancement final

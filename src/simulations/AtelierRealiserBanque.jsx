@@ -5,6 +5,7 @@ import { genTrace, genPont, genTemps } from "./RealiserC1";
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
+import * as QM from "./quantiteMatiereModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -907,6 +908,46 @@ function genRadioactiviteTG() {
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Radioactivité : constante radioactive, noyaux restants, activité (avec conversion jour → seconde) et datation au carbone 14.', questions: [q1, q2, q3, q4],
     retenir: ['λ = ln 2 / t½ et N(t) = N₀·e^(−λt) ; après n demi-vies, N = N₀ / 2ⁿ.', 'A = λ·N en becquerels : λ en s⁻¹ (1 j = 86 400 s).', 'Datation : t = (t½ / ln 2) × ln(N₀ / N) ; plus de 50 % restant ⇒ âge inférieur à t½.'] };
+}
+
+// ───────────── Quantité de matière (1G) : masse molaire, masse, volume d’un gaz, volume d’un liquide ─────────────
+function genQuantiteMatiere1G() {
+  const atomes = e => e.f.map(([a]) => `M(${a}) = ${nb(QM.MM_ATOME[a], 3)}${NB}g/mol`).join(' ; ');
+  const eM = QM.espece(tire(['glucose', 'saccharose', 'caco3', 'nahco3', 'paracetamol', 'cacl2', 'vitc'])), MM = QM.masseMolaire(eM);
+  const somme = eM.f.reduce((t, [a]) => t + QM.MM_ATOME[a], 0), nAt = eM.f.reduce((t, [, k]) => t + k, 0);
+  const q1 = { id: 'm0', type: 'num', q: <>Calculez la masse molaire du composé <b>{eM.nom} {QM.formuleTexte(eM)}</b>, en <b>g/mol</b>. Masses molaires atomiques : {atomes(eM)}.</>, unite: 'g/mol', vrai: MM, csMin: 3, tolRel: 0.005,
+    aide: 'Additionnez les masses molaires atomiques, chacune multipliée par le nombre d’atomes de cet élément (l’indice dans la formule).',
+    pieges: [[somme, 'Il faut multiplier chaque masse molaire atomique par l’indice : le nombre d’atomes de chaque élément compte.'], [nAt, 'Vous avez compté les atomes : il faut additionner leurs masses molaires, pas leur nombre.']],
+    expl: <>M = {QM.lignesMasseMolaire(eM).map(([, k, ma]) => `${k} × ${nb(ma, 3)}`).join(' + ')} = <b>{avecU(MM, 'g/mol', 4)}</b>.</> };
+  const e2 = QM.espece(tire(['paracetamol', 'caco3', 'vitc', 'nahco3', 'glucose'])), M2 = QM.masseMolaire(e2), m2 = tire([250, 300, 400, 500, 650, 800]), n2 = m2 / 1000 / M2;
+  const q2 = { id: 'm1', type: 'num', q: <>Un comprimé contient <b>{m2}{NB}mg</b> de {e2.nom} {QM.formuleTexte(e2)} (M = {nb(M2, 4)}{NB}g/mol). Calculez la quantité de matière de {e2.nom} qu’il contient, en <b>mol</b>.</>, unite: 'mol', vrai: n2, csMin: 3, tolRel: 0.01,
+    aide: 'Convertissez d’abord la masse en grammes (1 g = 1000 mg), puis n = m / M.',
+    pieges: [[m2 / M2, 'Vous n’avez pas converti les milligrammes en grammes : m = ' + nb(m2 / 1000, 3) + ' g.'], [M2 / (m2 / 1000), 'Le rapport est inversé : n = m / M (la masse en haut).'], [m2 * M2 / 1000, 'On divise la masse par M, on ne la multiplie pas : n = m / M.']],
+    expl: <>m = {m2}{NB}mg = {nb(m2 / 1000, 3)}{NB}g ; n = {nb(m2 / 1000, 3)} / {nb(M2, 4)} = <b>{avecU(n2, 'mol', 3)}</b>.</> };
+  const e3 = QM.espece(tire(['nacl', 'glucose', 'saccharose', 'caco3', 'cacl2'])), M3 = QM.masseMolaire(e3), n3 = tire([0.0250, 0.0500, 0.100, 0.200, 0.250, 0.500]), m3 = n3 * M3;
+  const q3 = { id: 'm2', type: 'num', q: <>Pour une expérience, il faut <b>{nb(n3, 3)}{NB}mol</b> de {e3.nom} {QM.formuleTexte(e3)} (M = {nb(M3, 4)}{NB}g/mol). Calculez la masse à peser, en <b>g</b>.</>, unite: 'g', vrai: m3, csMin: 3, tolRel: 0.01,
+    aide: 'De n = m / M, on tire m = n × M.',
+    pieges: [[n3 / M3, 'Vous avez divisé n par M : m = n × M.'], [M3 / n3, 'Vous avez divisé M par n : m = n × M.'], [m3 * 1000, 'Le résultat est demandé en grammes : ne le convertissez pas en milligrammes.']],
+    expl: <>m = n × M = {nb(n3, 3)} × {nb(M3, 4)} = <b>{avecU(m3, 'g', 3)}</b>.</> };
+  const e4 = QM.espece(tire(['o2', 'n2', 'co2', 'ch4', 'nh3'])), th4 = tire([0, 20, 25]), Vm4 = QM.VM_USUEL[th4], V4 = tire([250, 400, 500, 600, 750, 800]), n4 = V4 / 1000 / Vm4;
+  const q4 = { id: 'm3', type: 'num', q: <>Un flacon de <b>{V4}{NB}mL</b> contient du {e4.nom} {QM.formuleTexte(e4)} à {th4}{NB}°C et 1013{NB}hPa, où le volume molaire vaut <b>{nb(Vm4, 3)}{NB}L/mol</b>. Calculez la quantité de matière de gaz, en <b>mol</b>.</>, unite: 'mol', vrai: n4, csMin: 3, tolRel: 0.01,
+    aide: 'Convertissez le volume en litres (1 L = 1000 mL), puis n = V / V_m.',
+    pieges: [[V4 / Vm4, 'Vous n’avez pas converti les mL en L : V = ' + nb(V4 / 1000, 3) + ' L.'], [Vm4 / (V4 / 1000), 'Le rapport est inversé : n = V / V_m.'], [V4 / 1000 * Vm4, 'On divise le volume par V_m, on ne les multiplie pas : n = V / V_m.']],
+    expl: <>V = {V4}{NB}mL = {nb(V4 / 1000, 3)}{NB}L ; n = {nb(V4 / 1000, 3)} / {nb(Vm4, 3)} = <b>{avecU(n4, 'mol', 3)}</b>.</> };
+  const e5 = QM.espece(tire(['ethanol', 'acetone', 'cyclohexane', 'acideEthanoique'])), M5 = QM.masseMolaire(e5), V5 = tire([10.0, 20.0, 25.0, 50.0]), m5 = e5.rho * V5, n5 = m5 / M5;
+  const q5 = { id: 'm4', type: 'num', q: <>On prélève <b>{nb(V5, 3)}{NB}mL</b> de {e5.nom} {QM.formuleTexte(e5)}, de masse volumique <b>ρ = {nb(e5.rho, 3)}{NB}g/mL</b> et de masse molaire M = {nb(M5, 3)}{NB}g/mol. Calculez la quantité de matière prélevée, en <b>mol</b>.</>, unite: 'mol', vrai: n5, csMin: 3, tolRel: 0.01,
+    aide: 'La masse se déduit du volume : m = ρ × V (en g). Puis n = m / M.',
+    pieges: [[m5, 'C’est la masse m = ρ × V : il reste à la diviser par M pour obtenir n.'], [V5 / M5, 'Il manque la masse volumique : il faut passer du volume à la masse, m = ρ × V.'], [e5.rho * M5 / V5, 'La relation est n = ρ × V ÷ M, pas ρ × M ÷ V.']],
+    expl: <>m = ρ × V = {nb(e5.rho, 3)} × {nb(V5, 3)} = {nb(m5, 3)}{NB}g ; n = {nb(m5, 3)} / {nb(M5, 3)} = <b>{avecU(n5, 'mol', 3)}</b>.</> };
+  const e6 = QM.espece(tire(['ethanol', 'acetone', 'acideEthanoique', 'cyclohexane'])), M6 = QM.masseMolaire(e6), Me6 = QM.masseMolaire(QM.espece('eau')), ma6 = tire([9.0, 18.0, 27.0, 36.0]), mb6 = tire([10.0, 20.0, 23.0, 30.0]);
+  const na6 = ma6 / Me6, nb6 = mb6 / M6, x6 = 100 * na6 / (na6 + nb6);
+  const q6 = { id: 'm5', type: 'num', q: <>Un mélange liquide contient <b>{nb(ma6, 3)}{NB}g d’eau</b> (M = {nb(Me6, 3)}{NB}g/mol) et <b>{nb(mb6, 3)}{NB}g de {e6.nom}</b> {QM.formuleTexte(e6)} (M = {nb(M6, 3)}{NB}g/mol). Calculez le pourcentage de molécules d’eau parmi toutes les molécules du mélange (part en nombre de molécules), en <b>%</b>.</>, unite: '%', vrai: x6, csMin: 2, tolRel: 0.01,
+    aide: 'Calculez n pour chaque constituant (n = m / M), puis la part de l’eau : n(eau) ÷ (n(eau) + n({e6.nom})). Le nombre de molécules est proportionnel à n.'.replace('{e6.nom}', e6.nom),
+    pieges: [[100 * ma6 / (ma6 + mb6), 'C’est la part en masse : le nombre de molécules est proportionnel à la quantité de matière n = m / M, pas à la masse.'], [100 * na6 / nb6, 'Vous avez comparé n(eau) à n(' + e6.nom + ') : il faut la part de l’eau dans le total, n(eau) ÷ (n(eau) + n(' + e6.nom + ')).'], [100 * na6 / (na6 + nb6) / 100, 'Le résultat est demandé en pourcentage : multipliez la fraction par 100.']],
+    expl: <>n(eau) = {nb(ma6, 3)} / {nb(Me6, 3)} = {nb(na6, 3)}{NB}mol ; n({e6.nom}) = {nb(mb6, 3)} / {nb(M6, 3)} = {nb(nb6, 3)}{NB}mol ; part de l’eau = {nb(na6, 3)} / ({nb(na6, 3)} + {nb(nb6, 3)}) = <b>{avecU(x6, '%', 3)}</b>.</> };
+  [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Quantité de matière : masse molaire d’une espèce, puis n à partir d’une masse, du volume d’un gaz (volume molaire) ou du volume d’un liquide (masse volumique), puis composition d’un mélange.', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['M = somme des masses molaires atomiques, chacune multipliée par son indice ; n = m / M (m en g, M en g/mol).', 'Gaz : n = V / V_m, avec V_m (en L/mol) donné pour une température et une pression ; liquide : n = ρ·V / M.', 'Mélange : un calcul de n par constituant ; la part en nombre de molécules se compare avec n, pas avec la masse.', 'Convertir avant de calculer : mg → g, mL → L.'] };
 }
 
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
@@ -1986,6 +2027,7 @@ export const FAMILLES = [
   { id: 'phc-calcul', groupe: 'Formules', titre: 'pH et concentration en ions oxonium : relation et dilution (TG)', gen: genPhConcTG, domaine: 'pH et concentration en ions oxonium' },
   { id: 'cinv-calcul', groupe: 'Formules', titre: 'Cinétique : vitesse volumique, demi-réactions et constante d’ordre 1 (TG)', gen: genCinetiqueTG, domaine: 'Cinétique : vitesse volumique et ordre 1' },
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
+  { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },
