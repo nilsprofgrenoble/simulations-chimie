@@ -98,6 +98,9 @@ export function SimulationPlanMelange() {
   useSignalerMode(mode);
   const [niveau, setNiveau] = useEtatPersistant('plan-melange-niveau-v1', 'deb');
   const [gDeb, setGDeb] = useEtatPersistant('plan-melange-guide-deb-v1', ETAT0);
+  const [gDeb2, setGDeb2] = useEtatPersistant('plan-melange-guide-deb2-v1', ETAT0);
+  const [parcDebBrut, setParcDeb] = useEtatPersistant('plan-melange-parcours-deb', 1);
+  const parcDeb = parcDebBrut === 2 ? 2 : 1;
   const [gConf, setGConf] = useEtatPersistant('plan-melange-guide-conf-v1', ETAT0);
   const [gExp, setGExp] = useEtatPersistant('plan-melange-guide-exp-v1', ETAT0);
   const [pt, setPt] = useState(P0);
@@ -107,8 +110,8 @@ export function SimulationPlanMelange() {
   const [sL, noterL] = useCompteurDefi(), [sC, noterC] = useCompteurDefi(), [sB, noterB] = useCompteurDefi();
   const [hypoOuv, setHypoOuv] = useState(false), [plusOuv, setPlusOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplo = mode === 'explore';
-  const guide = niveau === 'conf' ? gConf : niveau === 'exp' ? gExp : gDeb;
-  const setGuide = niveau === 'conf' ? setGConf : niveau === 'exp' ? setGExp : setGDeb;
+  const guide = niveau === 'conf' ? gConf : niveau === 'exp' ? gExp : parcDeb === 2 ? gDeb2 : gDeb;
+  const setGuide = niveau === 'conf' ? setGConf : niveau === 'exp' ? setGExp : parcDeb === 2 ? setGDeb2 : setGDeb;
   const setE = f => setExplo(e => ({ ...e, ...f }));
 
   // ---------- modèle utilisé ----------
@@ -123,11 +126,18 @@ export function SimulationPlanMelange() {
     return M.ajuste(Z, Y, explo.degre);
   }, [explo.controle, explo.degre, rep, sigma, repNote]);
   // ---------- étapes (listes définies plus bas ; ici seulement leurs identifiants pour la progressivité) ----------
-  const IDS_DEB = ['sommets', 'lireC', 'deduireB', 'placer', 'ref', 'placerRef', 'domaine', 'essais', 'compo', 'mesures', 'moyenne', 'ecart', 'iso', 'choix', 'valider', 'verdict', 'bilan'];
+  const ORDRE_DEB = [['sommets', 'lireC', 'deduireB', 'placer', 'ref', 'placerRef', 'domaine', 'essais', 'compo', 'bilan1'],
+    ['mesures', 'moyenne', 'ecart', 'iso', 'choix', 'valider', 'verdict', 'bilan']];
+  const IDS_DEB = ORDRE_DEB[parcDeb - 1];
   const IDS_CONF = ['min', 'cote', 'bornes', 'sommets', 'pseudo', 'plan', 'beta12', 'beta13', 'signes', 'prevoir', 'beta123', 'exact', 'maximum', 'bilan'];
   const IDS_EXP = ['region', 'essaisRegion', 'ddl', 'repeter', 'ecartType', 'manque', 'cout', 'optimum', 'note', 'hypotheses', 'bilan'];
   const IDS = niveau === 'conf' ? IDS_CONF : niveau === 'exp' ? IDS_EXP : IDS_DEB;
-  const idx = id => IDS.indexOf(id);
+  const idx = id => {
+    const k = IDS.indexOf(id);
+    if (k >= 0 || niveau !== 'deb') return k;
+    const o = ORDRE_DEB.findIndex(l => l.includes(id));
+    return o < 0 ? -1 : o < parcDeb - 1 ? -1 : Infinity;   // étape d’un autre parcours : déjà passée ou pas encore atteinte
+  };
   const des = id => !enGuide || idx(id) < 0 || etape >= idx(id);             // visible dès l'étape qui l'introduit
   const apres = id => !enGuide || idx(id) < 0 || etape > idx(id);            // visible une fois l'étape passée (grandeur à calculer)
   const dev = niveau === 'deb', conf = niveau === 'conf', exp = niveau === 'exp';
@@ -150,7 +160,7 @@ export function SimulationPlanMelange() {
   const vPseudo = !enGuide || !dev;
   const vCompo = !enGuide || !dev || apres('deduireB');
   const vSliders = !enGuide || (dev ? des('placer') : conf ? des('plan') : des('cout'));
-  const vMes = !enGuide || (dev ? etape >= 1 : conf ? des('plan') : des('cout'));
+  const vMes = !enGuide || (dev ? (parcDeb > 1 || etape >= 1) : conf ? des('plan') : des('cout'));
   const vGuides = enGuide && dev && des('placer') && !des('ref');
   const interactif = enDefi ? defi?.type === 'cible' : (!enGuide || vSliders);
   const vFermIso = enGuide ? (dev ? des('iso') : conf ? des('maximum') : !des('cout')) : (rk === 'fermete' && explo.iso);
@@ -245,7 +255,7 @@ export function SimulationPlanMelange() {
         pieges: [[80, 'C’est la somme candelilla + cire d’abeille (50 + 30). Retranchez-la de 100 %.']],
         expl: '100 − 50 − 30 = 20 %. On peut le vérifier sur l’échelle verte de la base.', indice: 'Huile de ricin = 100 % − candelilla − cire d’abeille.' } },
     { id: 'placer', titre: 'Placer un mélange', focus: ['scene', 'reglages'],
-      retenirTitre: 'À RETENIR : LIRE UN DIAGRAMME TERNAIRE', retenir: <><CarteLire/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>sommet = constituant seul (100 %) ; côté opposé = constituant absent (0 %)</li><li>chaque proportion se lit sur <strong>son</strong> échelle, le long de la ligne parallèle au côté opposé</li><li>la somme des trois proportions fait toujours 100 %</li></ul></>,
+      retenirTitre: 'Lire un diagramme ternaire', retenir: <><CarteLire/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>sommet = constituant seul (100 %) ; côté opposé = constituant absent (0 %)</li><li>chaque proportion se lit sur <strong>son</strong> échelle, le long de la ligne parallèle au côté opposé</li><li>la somme des trois proportions fait toujours 100 %</li></ul></>,
       texte: <>À vous : placez le point sur le mélange <strong>20{NB}% de candelilla, 50{NB}% d’huile de ricin et 30{NB}% de cire d’abeille</strong>. Faites-le glisser avec la souris ou le doigt, ou utilisez les curseurs. Les lignes pointillées montrent comment lire chaque proportion.</>,
       tache: { type: 'action', ok: Math.abs(pt[0] - 0.2) <= 0.03 && Math.abs(pt[1] - 0.5) <= 0.03 && Math.abs(pt[2] - 0.3) <= 0.03, label: 'Placer le point pour moi', faire: () => setPt([0.2, 0.5, 0.3]), consigne: 'Placez le point sur 20 % / 50 % / 30 %' } },
     { id: 'ref', titre: 'La formule de départ', focus: ['scene'],
@@ -266,12 +276,14 @@ export function SimulationPlanMelange() {
       tache: { type: 'qcm', q: 'Quel essai correspond à la formule de départ Fref ?', options: ['l’essai 7 (le centre)', 'l’essai 1 (un sommet)', 'l’essai 5 (un milieu de côté)'], bonne: 0,
         expl: 'Fref est le centre du domaine : c’est l’essai 7. Il existe donc déjà dans le plan.', indice: 'Fref est au centre du domaine d’étude.' } },
     { id: 'compo', titre: 'Composition d’un essai', focus: ['table'],
-      retenirTitre: 'À RETENIR : LE PLAN À 7 ESSAIS', retenir: <><CartePlan/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>un essai au milieu d’un côté a la <strong>moyenne</strong> des compositions des deux sommets</li><li>le centre du plan est la formule de départ</li></ul></>,
+      retenirTitre: 'Le plan à 7 essais', retenir: <><CartePlan/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>un essai au milieu d’un côté a la <strong>moyenne</strong> des compositions des deux sommets</li><li>le centre du plan est la formule de départ</li></ul></>,
       texte: <>L’essai 4 est au <strong>milieu du côté</strong> qui relie le sommet 1 au sommet 2. Sa composition est la moyenne de celles de ces deux sommets (huile de ricin : 0{NB}% au sommet 1 et 66{NB}% au sommet 2).</>,
       tache: { type: 'num', q: 'Pourcentage d’huile de ricin dans l’essai 4', unite: '%', vrai: ESSAI4_B, tol: 0.03, affiche: v => nbf(v, 0),
         calcul: () => ['Huile de ricin : sommet 1 → 0 %, sommet 2 → 66 %.', 'Au milieu : (0 + 66) / 2 = 33 %.'],
         pieges: [[66, 'C’est la valeur du sommet 2. L’essai 4 est au milieu : faites la moyenne.']],
         expl: '(0 + 66) / 2 = 33 %, comme dans le tableau.', indice: 'Au milieu d’un côté : moyenne des deux sommets.' } },
+    { id: 'bilan1', titre: 'Le bilan', focus: ['scene'],
+      texte: <>Vous savez lire et placer un mélange dans un diagramme ternaire et vous connaissez le plan de mélange à 7 essais : trois sommets, trois milieux de côtés et un centre. Le parcours 2 exploite les mesures de ce plan : synergie ou antagonisme, courbes isoréponses, choix d’une formule et contrôle du modèle.</>, tache: null },
     { id: 'mesures', titre: 'La fermeté de chaque essai', focus: ['table'],
       texte: <>Les formules ont été fabriquées, une par essai. On a mesuré la <strong>fermeté</strong> de chaque rouge à lèvres avec un texturomètre : c’est le premier pic de force (en grammes) mesuré quand une lame pénètre dans le bâton : plus c’est élevé, plus c’est ferme. Les essais 1 à 6 sont dans le tableau ; l’<strong>essai 7 est gardé de côté</strong> : il servira à contrôler le modèle.</>,
       tache: { type: 'qcm', q: 'Parmi les essais 2, 5 et 6, lequel est le plus ferme ?', options: ['l’essai 2', 'l’essai 5', 'l’essai 6'], bonne: 1,
@@ -287,7 +299,7 @@ export function SimulationPlanMelange() {
       tache: { type: 'qcm', q: 'Que peut-on en conclure ?', options: ['Antagonisme : mélange moins ferme que la moyenne', 'Synergie : mélange bien plus ferme que la moyenne', 'Pas d’interaction : les effets s’additionnent'], bonne: 0,
         expl: 'Le mélange est nettement moins ferme que la moyenne : on parle d’antagonisme (l’huile de ricin, liquide, y est sans doute pour quelque chose). Avec une seule mesure par essai, on ne peut pas exclure une erreur, mais un écart de près de 90 g est peu vraisemblable pour une simple dispersion de mesure.', indice: 'Comparez 154 g à la moyenne attendue de 246 g.' } },
     { id: 'iso', titre: 'Courbes isoréponses', focus: ['scene', 'mesures'],
-      retenirTitre: 'À RETENIR : S’ÉCARTER DE LA MOYENNE', retenir: <><CarteEcart/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>comparer la mesure au milieu d’un côté à la <strong>moyenne</strong> des deux sommets</li><li>beaucoup plus haut : synergie ; beaucoup plus bas : antagonisme</li></ul></>,
+      retenirTitre: 'S’écarter de la moyenne', retenir: <><CarteEcart/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>comparer la mesure au milieu d’un côté à la <strong>moyenne</strong> des deux sommets</li><li>beaucoup plus haut : synergie ; beaucoup plus bas : antagonisme</li></ul></>,
       texte: <>Un logiciel a construit un <strong>modèle</strong> à partir des essais 1 à 6 : il prévoit la fermeté en tout point du domaine. Les <strong>courbes isoréponses</strong> (en bleu) relient les mélanges de même fermeté prévue, indiquée en g. Placez le point <strong>sur la courbe 500{NB}g</strong> ; la fermeté prévue s’affiche dans « Mesures ».</>,
       tache: { type: 'action', ok: pNum != null && Math.abs(pNum - 500) <= 15, label: 'Placer le point pour moi', faire: () => setPt(pointSurNiveau(500)), consigne: 'Placez le point sur la courbe 500 g (domaine orange)' } },
     { id: 'choix', titre: 'Choisir une formule', focus: ['scene', 'mesures'],
@@ -303,7 +315,7 @@ export function SimulationPlanMelange() {
       texte: <>La dispersion habituelle des mesures du texturomètre est d’environ <strong>5{NB}%</strong> (valeur choisie pour cet exercice : elle n’a pas été mesurée sur ce TP). L’écart observé, d’environ 5{NB}%, est du même ordre.</>,
       tache: { type: 'qcm', q: 'Que conclure sur le modèle construit avec 6 essais ?', options: ['Il convient au centre : écart de l’ordre de la dispersion', 'Il est faux : un écart non nul suffit à le rejeter', 'Il est valable partout : un seul essai de contrôle le prouve'], bonne: 0,
         expl: 'Un modèle est acceptable si l’écart entre prévu et mesuré reste de l’ordre de la dispersion des mesures : ici 5 % pour 5 %. Un seul essai de contrôle ne prouve pas pour autant qu’il est valable ailleurs dans le domaine.', indice: 'Comparez l’écart (5 %) à la dispersion des mesures (5 %).' } },
-    { id: 'bilan', titre: 'Bilan', focus: ['scene'],
+    { id: 'bilan', titre: 'Le bilan', focus: ['scene'],
       texte: <>Vous savez lire et placer un mélange dans un diagramme ternaire, construire et exploiter un plan de mélange, repérer une synergie, utiliser des courbes isoréponses pour choisir une formule et contrôler un modèle avec un essai supplémentaire. Le niveau <strong>confirmé</strong> vous apprend à concevoir le plan vous-même et à calculer les coefficients.</>, tache: null },
   ];
   function pointSurNiveau(niv) {
@@ -339,7 +351,7 @@ export function SimulationPlanMelange() {
         pieges: [[100 * FREF[0], 'C’est la proportion dans Fref. Retranchez s/3.']],
         expl: `${pc1(FREF[0])} − ${pc1(m)} = ${f1(100 * L0)} %.`, indice: 'L = x − s/3.' } },
     { id: 'sommets', titre: 'Les sommets du domaine', focus: ['scene'],
-      retenirTitre: 'À RETENIR : LE PLUS GRAND DOMAINE CENTRÉ SUR FREF', retenir: <><CarteDomaine/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>au sommet i : <em>L</em><sub>i</sub> + <em>s</em> pour le constituant i, <em>L</em> pour les deux autres</li><li>le constituant le moins abondant dans Fref limite la taille du domaine</li></ul></>,
+      retenirTitre: 'Le plus grand domaine centré sur Fref', retenir: <><CarteDomaine/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>au sommet i : <em>L</em><sub>i</sub> + <em>s</em> pour le constituant i, <em>L</em> pour les deux autres</li><li>le constituant le moins abondant dans Fref limite la taille du domaine</li></ul></>,
       texte: <>Aux sommets du domaine, deux constituants sont à leur minimum <em>L</em><sub>i</sub> et le troisième vaut <em>L</em><sub>i</sub> + <em>s</em>. Au sommet 1 (candelilla maximale) : <em>L</em> = {f1(100 * L0)}{NB}% et <em>s</em> = {f1(100 * s)}{NB}%.</>,
       tache: { type: 'num', q: 'Proportion de candelilla au sommet 1', unite: '%', vrai: 100 * S1A, tol: 0.01, affiche: f1, cs: 3,
         calcul: () => [`L + s = ${f1(100 * L0)} + ${f1(100 * s)} = ${f1(100 * S1A)} %.`],
@@ -362,7 +374,7 @@ export function SimulationPlanMelange() {
         pieges: [[443 - (752 + 146) / 2, 'C’est l’écart au milieu y₁₂ − (y₁ + y₂)/2. Le coefficient β₁₂ en est le quadruple.']],
         expl: 'β₁₂ = 1772 − 1504 − 292 = −24 g.', indice: 'β₁₂ = 4 y₁₂ − 2 y₁ − 2 y₂, avec y₁ = 752 g, y₂ = 146 g et y₁₂ = 443 g.' } },
     { id: 'beta13', titre: 'Un deuxième coefficient', focus: ['table'],
-      retenirTitre: 'À RETENIR : LE COEFFICIENT D’INTERACTION', retenir: <><CarteBeta/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li><strong>β<sub>i</sub> = valeur au sommet i</strong> (le constituant seul du domaine)</li><li>β<sub>ij</sub> = 4 × (mesure au milieu − moyenne des sommets)</li></ul></>,
+      retenirTitre: 'Le coefficient d’interaction', retenir: <><CarteBeta/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li><strong>β<sub>i</sub> = valeur au sommet i</strong> (le constituant seul du domaine)</li><li>β<sub>ij</sub> = 4 × (mesure au milieu − moyenne des sommets)</li></ul></>,
       texte: <>Même méthode pour les constituants 1 et 3 (candelilla et cire d’abeille) : <em>y</em><sub>1</sub> = 752{NB}g, <em>y</em><sub>3</sub> = 346{NB}g et <em>y</em><sub>13</sub> = 536{NB}g (essai 5).</>,
       tache: { type: 'num', q: 'Coefficient β₁₃', unite: 'g', vrai: b13, tol: 0.01, affiche: v => nbf(v, 0), cs: 3,
         calcul: () => ['β₁₃ = 4 × 536 − 2 × 752 − 2 × 346.', '= 2144 − 1504 − 692 = −52 g.'],
@@ -389,10 +401,10 @@ export function SimulationPlanMelange() {
       tache: { type: 'qcm', q: 'Peut-on dire que ce modèle est validé ?', options: ['Non : il ne reste aucun degré de liberté pour tester', 'Oui : un modèle qui passe par tous les points est parfait', 'Oui : son R² vaut 1, donc il est validé'], bonne: 0,
         expl: 'Degrés de liberté = essais − coefficients = 7 − 7 = 0. Passer par tous les points est automatique avec autant de coefficients que d’essais : il faut des essais supplémentaires (contrôle, répétitions) pour valider.', indice: 'Combien de degrés de liberté reste-t-il avec 7 essais et 7 coefficients ?' } },
     { id: 'maximum', titre: 'Utiliser le modèle', focus: ['scene', 'mesures'],
-      retenirTitre: 'À RETENIR : UN MODÈLE EXACT N’EST PAS UN MODÈLE VALIDÉ', retenir: <><CarteDdl/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>degrés de liberté = nombre d’essais − nombre de coefficients</li><li>0 ddl : aucun test possible, il faut contrôler ou répéter</li></ul></>,
+      retenirTitre: 'Un modèle exact n’est pas un modèle validé', retenir: <><CarteDdl/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>degrés de liberté = nombre d’essais − nombre de coefficients</li><li>0 ddl : aucun test possible, il faut contrôler ou répéter</li></ul></>,
       texte: <>Les courbes isoréponses du modèle complet s’affichent. Où se trouve la formule <strong>la plus ferme</strong> du domaine ? Placez le point sur le maximum.</>,
       tache: { type: 'action', ok: pNum != null && pNum >= 0.96 * MAXIMUM.y, label: 'Placer le point pour moi', faire: () => setPt(M.pseudoVersReel(MAXIMUM.z, DOM)), consigne: 'Placez le point sur le maximum de fermeté (dans le domaine)' } },
-    { id: 'bilan', titre: 'Bilan', focus: ['scene'],
+    { id: 'bilan', titre: 'Le bilan', focus: ['scene'],
       texte: <>Vous savez construire le plus grand domaine centré sur une formule de référence, passer des pseudo-composants aux proportions, calculer les coefficients de Scheffé à la main et expliquer pourquoi un modèle exact n’est pas validé. Le niveau <strong>expert</strong> ajoute une contrainte, des répétitions et un second critère : le coût.</>, tache: null },
   ];
 
@@ -416,7 +428,7 @@ export function SimulationPlanMelange() {
       tache: { type: 'qcm', q: 'Peut-on affirmer que β₁₂ est différent de zéro ?', options: ['Non : l’intervalle de confiance contient 0', 'Oui : β₁₂ est négatif, donc significatif', 'Oui : le modèle passe presque par tous les points'], bonne: 0,
         expl: `L’intervalle ${nbf(Q7.coefs[3] - demi, 0)} à ${nbf(Q7.coefs[3] + demi, 0)} g contient 0. Avec 1 seul degré de liberté, l’incertitude est énorme : aucun coefficient ne peut être testé. Ce calcul suppose des erreurs indépendantes, de même écart-type et de loi normale.`, indice: 'Un intervalle de confiance qui contient 0 ne permet pas de conclure que le coefficient est non nul.' } },
     { id: 'repeter', titre: 'Répéter l’essai au centre', focus: ['scene', 'table'],
-      retenirTitre: 'À RETENIR : LES DEGRÉS DE LIBERTÉ', retenir: <><CarteDdl/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>ddl = essais − coefficients</li><li>répéter un essai donne la dispersion pure des mesures</li></ul></>,
+      retenirTitre: 'Les degrés de liberté', retenir: <><CarteDdl/><ul style={{ margin: '4px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>ddl = essais − coefficients</li><li>répéter un essai donne la dispersion pure des mesures</li></ul></>,
       texte: <>Pour estimer la dispersion des mesures, on <strong>répète 3 fois l’essai central</strong>. Les valeurs sont <strong>simulées</strong> : on suppose des mesures indépendantes, de loi normale, d’écart-type σ = {SIGMA0}{NB}g (environ 5{NB}% de 348{NB}g, hypothèse de l’exercice). Elles s’ajoutent à la mesure initiale.</>,
       tache: { type: 'action', ok: rep >= 3, label: 'Ajouter 3 répétitions', faire: () => { setSigma(SIGMA0); setRep(3); }, consigne: 'Ajoutez 3 répétitions de l’essai central' } },
     { id: 'ecartType', titre: 'L’écart-type expérimental', focus: ['table'],
@@ -446,11 +458,11 @@ export function SimulationPlanMelange() {
       texte: <>Dans le TP, la note sensorielle est donnée par un jury : le rouge à lèvres le <strong>moins apprécié</strong> du lot reçoit 0 et le <strong>plus apprécié</strong> reçoit 10, quels que soient les produits présentés.</>,
       tache: { type: 'qcm', q: 'Peut-on traiter cette note comme une mesure à erreur normale, d’écart-type constant ?', options: ['Non : échelle relative et bornée, hypothèses douteuses', 'Oui : c’est un nombre, donc une mesure comme une autre', 'Oui : la moyenne du jury garantit la normalité des notes'], bonne: 0,
         expl: 'Les notes dépendent du lot présenté et de chaque juge, et sont bornées : l’écart-type n’est pas constant ni l’erreur normale. Les tests du modèle sont alors à interpréter avec prudence (classement, médiane, ou plan d’analyse sensorielle adapté).', indice: 'Que valent la note du plus mauvais et celle du meilleur, quels que soient les essais ?' } },
-    { id: 'bilan', titre: 'Bilan', focus: ['scene'],
+    { id: 'bilan', titre: 'Le bilan', focus: ['scene'],
       texte: <>Vous savez travailler sous contrainte, compter les degrés de liberté, estimer une dispersion par répétition, tester le manque d’ajustement avec la loi de Student, croiser trois réponses (fermeté, coût, note du jury) et discuter les hypothèses d’un modèle.</>, tache: null },
   ];
 
-  const ETAPES = niveau === 'conf' ? ETAPES_CONF : niveau === 'exp' ? ETAPES_EXP : ETAPES_DEB;
+  const ETAPES = niveau === 'conf' ? ETAPES_CONF : niveau === 'exp' ? ETAPES_EXP : IDS_DEB.map(id => ETAPES_DEB.find(e => e.id === id));
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {});
 
@@ -514,7 +526,8 @@ export function SimulationPlanMelange() {
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {niveau !== 'exp' && <button onClick={() => { setNiveau(niveau === 'deb' ? 'conf' : 'exp'); setPt(P0); }} style={styleBouton(true, ORANGE_GUIDE)}>Niveau suivant</button>}
+      {niveau === 'deb' && parcDeb === 1 && <button onClick={() => { setParcDeb(2); setPt(P0); }} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : exploiter les mesures</button>}
+      {niveau !== 'exp' && !(niveau === 'deb' && parcDeb === 1) && <button onClick={() => { setNiveau(niveau === 'deb' ? 'conf' : 'exp'); setPt(P0); }} style={styleBouton(true, ORANGE_GUIDE)}>Niveau suivant</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -611,6 +624,10 @@ export function SimulationPlanMelange() {
         {[['deb', 'Débutant'], ['conf', 'Confirmé'], ['exp', 'Expert']].map(([k, l]) => <button key={k} onClick={() => { setNiveau(k); setPt(P0); }} aria-pressed={niveau === k} style={stylePetitBouton(niveau === k, ORANGE_GUIDE)}>{l}</button>)}
       </div>
       <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.4 }}>{descNiveau[niveau]}</div>
+      {niveau === 'deb' && <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginTop: 6, fontSize: 13.5 }}>
+        <span style={{ color: KIT.txt2 }}>Parcours :</span>
+        {['1. Lire un diagramme et construire le plan', '2. Exploiter les mesures'].map((l, i) => <button key={i} onClick={() => { setParcDeb(i + 1); setPt(P0); }} aria-pressed={parcDeb === i + 1} style={{ ...stylePetitBouton(parcDeb === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+      </div>}
     </div>);
 
   return (
@@ -631,7 +648,7 @@ export function SimulationPlanMelange() {
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Quand on formule un mélange de trois constituants (ici, trois corps gras d’un rouge à lèvres), leurs proportions ont pour somme <strong>100 %</strong> : on les place sur un <strong>diagramme ternaire</strong> et on teste quelques formules bien choisies (un <strong>plan de mélange</strong>) pour prévoir la propriété partout ailleurs.</div>
       {choixNiveau}
       <div className={`pm-l1${!enExplo ? ' cote' : ''}`}>
-        {enGuide ? <div className="pm-carte"><CarteParcours key={niveau} etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="pm-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="pm-carte"><CarteParcours key={niveau + parcDeb} etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="pm-carte">{panneauHypo}</div> : null}
         <div className="pm-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'lire' ? sL : defi.type === 'cible' ? sC : sB}/></div>}
           <div className={enExplo ? 'pm-pri' : ''}>
