@@ -8,6 +8,7 @@ import * as ACF from "./acideFaibleModele";
 import * as QM from "./quantiteMatiereModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
+import * as SV from "./savonModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -1018,6 +1019,35 @@ function genLewis1G() {
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
   return { intro: 'Schéma de Lewis : nombre total d’électrons de valence, nombre de doublets, doublets non liants et charge portée par un atome.', questions: [q1, q2, q3, q4],
     retenir: ['n_T = somme des électrons de valence des atomes seuls − charge de l’entité ; n_D = n_T ÷ 2.', 'Doublets non liants = n_D − doublets liants (une liaison double compte pour 2, une triple pour 3).', 'Charge d’un atome = électrons de valence seul − (liaisons + 2 × doublets non liants).'] };
+}
+
+// ───────────── Savons et amphiphilie (1G) : atomes de l'ion carboxylate, masse molaire du savon, quantité de matière ─────────────
+function genSavon1G() {
+  const sub = n => String(n).split('').map(d => '₀₁₂₃₄₅₆₇₈₉'[+d]).join('');
+  const [n1, nom1] = tire(SV.SERIE), a1 = SV.carboxylate(n1);
+  const ion = n => <>CH₃–(CH₂)<sub>{n}</sub>–COO⁻</>;
+  const q1 = { id: 'sv0', type: 'num', q: <>L’ion {nom1} a pour formule semi-développée <b>{ion(n1)}</b>. Combien d’atomes de <b>carbone</b> compte-t-il ?</>, unite: 'atomes', vrai: a1.C, csMin: String(a1.C).length, tolRel: 0,
+    aide: 'Compte 1 carbone pour CH₃, 1 carbone par groupe CH₂ (il y en a autant que l’indice) et 1 carbone pour le groupe COO⁻.',
+    pieges: [[a1.C - 1, 'Tu as oublié le carbone du groupe COO⁻ : il fait partie de la formule.'], [n1, 'Tu n’as compté que les groupes CH₂ : il faut aussi le carbone de CH₃ et celui de COO⁻.'], [2 * n1 + 2, 'Chaque groupe CH₂ ne contient qu’un atome de carbone (et deux atomes d’hydrogène) : 2 × n + 2 est un nombre d’atomes d’hydrogène.']],
+    expl: <>1 (CH₃) + {n1} (CH₂) + 1 (COO⁻) = <b>{a1.C}</b> atomes de carbone.</> };
+  const [n2, nom2] = tire(SV.SERIE.filter(s => s[0] !== n1)), a2 = SV.carboxylate(n2);
+  const q2 = { id: 'sv1', type: 'num', q: <>L’ion {nom2} a pour formule semi-développée <b>{ion(n2)}</b>. Combien d’atomes d’<b>hydrogène</b> compte-t-il ?</>, unite: 'atomes', vrai: a2.H, csMin: String(a2.H).length, tolRel: 0,
+    aide: 'CH₃ porte 3 atomes d’hydrogène, chaque groupe CH₂ en porte 2 ; le groupe COO⁻ n’en porte aucun.',
+    pieges: [[2 * n2, 'Tu n’as compté que les groupes CH₂ : il faut aussi les 3 hydrogènes de CH₃.'], [2 * n2 + 1, 'Le groupe CH₃ porte 3 atomes d’hydrogène, pas un seul.'], [2 * n2 + 2, 'Le groupe CH₃ porte 3 atomes d’hydrogène, pas 2 : il faut 3 + 2 × n.']],
+    expl: <>3 (CH₃) + 2 × {n2} (CH₂) = <b>{a2.H}</b> atomes d’hydrogène.</> };
+  const [n3, nom3] = tire(SV.SERIE), a3 = SV.carboxylate(n3), M3 = a3.M;
+  const q3 = { id: 'sv2', type: 'num', q: <>Le savon est le sel de sodium de l’ion {nom3} <b>{ion(n3)}</b> (formule brute C<sub>{a3.C}</sub>H<sub>{a3.H}</sub>O<sub>2</sub>Na). Données : M(C) = 12,0 g/mol ; M(H) = 1,0 g/mol ; M(O) = 16,0 g/mol ; M(Na) = 23,0 g/mol. Calculez sa masse molaire, en <b>g/mol</b>.</>, unite: 'g/mol', vrai: M3, csMin: 3, tolRel: 0.005,
+    aide: 'M = (nombre de C) × M(C) + (nombre de H) × M(H) + 2 × M(O) + M(Na) : n’oublie pas l’ion sodium.',
+    pieges: [[a3.Manion, 'Tu as oublié l’ion sodium : le savon est un sel, M(Na) = 23,0 g/mol s’ajoute.'], [a3.C * 12.0 + 2 * 16.0 + 23.0, 'Tu as oublié les atomes d’hydrogène : chacun compte pour 1,0 g/mol.'], [a3.C * 12.0 + a3.H * 1.0 + 16.0 + 23.0, 'Le groupe COO⁻ contient deux atomes d’oxygène, pas un seul.']],
+    expl: <>M = {a3.C} × 12,0 + {a3.H} × 1,0 + 2 × 16,0 + 23,0 = <b>{avecU(M3, 'g/mol', 3)}</b>.</> };
+  const [n4, nom4] = tire(SV.SERIE), a4 = SV.carboxylate(n4), m4 = tire([10.0, 20.0, 25.0, 50.0, 100.0]), nq = m4 / a4.M;
+  const q4 = { id: 'sv3', type: 'num', q: <>Un pain de savon pur est du sel de sodium de l’ion {nom4} (formule brute C<sub>{a4.C}</sub>H<sub>{a4.H}</sub>O<sub>2</sub>Na, M = {nb(a4.M, 3)}{NB}g/mol). Il pèse <b>{nb(m4, 3)}{NB}g</b>. Calculez la quantité de matière de savon qu’il contient, en <b>mol</b>.</>, unite: 'mol', vrai: nq, csMin: 3, tolRel: 0.01,
+    aide: 'n = m / M, avec m en g et M en g/mol.',
+    pieges: [[a4.M / m4, 'Le rapport est inversé : n = m / M.'], [m4 * a4.M, 'On divise la masse par la masse molaire, on ne la multiplie pas : n = m / M.'], [m4 / a4.Manion, 'Tu as pris la masse molaire de l’ion seul : le savon est un sel de sodium, M = ' + nb(a4.M, 3) + ' g/mol.']],
+    expl: <>n = m / M = {nb(m4, 3)} / {nb(a4.M, 3)} = <b>{avecU(nq, 'mol', 3)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai && Math.abs(x - q.vrai) > Math.max(q.tolRel * 1.5, 0.02) * Math.abs(q.vrai)); });
+  return { intro: 'Savons : atomes de l’ion carboxylate, masse molaire du sel de sodium et quantité de matière de savon.', questions: [q1, q2, q3, q4],
+    retenir: ['Ion carboxylate CH₃–(CH₂)ₙ–COO⁻ : n + 2 atomes de carbone et 2n + 3 atomes d’hydrogène.', 'Masse molaire du savon (sel de sodium) : on additionne les masses molaires atomiques de tous les atomes, ion Na⁺ compris.', 'Quantité de matière : n = m / M (m en g, M en g/mol).'] };
 }
 
 // ───────────── Concentration en quantité de matière (1G) : concentration, masse à peser, prélèvement, dilution ─────────────
@@ -2240,6 +2270,7 @@ export const FAMILLES = [
   { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
+  { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'geo1g-calcul', groupe: 'Formules', titre: 'Géométrie, électronégativité et polarité : écart Δχ, doublets, angle idéal, liaisons polarisées (1G)', gen: genGeoPolarite, domaine: 'Géométrie et polarité des entités' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },

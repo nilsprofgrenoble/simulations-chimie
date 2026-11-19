@@ -87,6 +87,7 @@ const SimulationQuantiteMatiere = paresseux(() => import("./simulations/Quantite
 const SimulationConcentrationDilution = paresseux(() => import("./simulations/ConcentrationDilution"), "SimulationConcentrationDilution");
 const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
 const SimulationGeometriePolarite = paresseux(() => import("./simulations/GeometriePolarite"), "SimulationGeometriePolarite");
+const SimulationSavonAmphiphile = paresseux(() => import("./simulations/SavonAmphiphile"), "SimulationSavonAmphiphile");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
 const SimulationPredominance = paresseux(() => import("./simulations/Predominance"), "SimulationPredominance");
@@ -350,6 +351,7 @@ const SIMULATIONS = [
   { id:153, label:"Concentration en quantité de matière : dissolution et dilution", niveau:"1G", icon:"🧪", color:"#0369a1", component: SimulationConcentrationDilution },
   { id:154, label:"Schéma de Lewis : établir celui d’une molécule ou d’un ion", niveau:"1G", icon:"🧩", color:"#0f766e", component: SimulationLewis },
   { id:155, label:"Géométrie, électronégativité et polarité d’une entité", niveau:"1G", icon:"🧊", color:"#7c3aed", component: SimulationGeometriePolarite },
+  { id:158, label:"Savons et amphiphilie : pourquoi un savon lave", niveau:"1G", icon:"🧼", color:"#0e7490", component: SimulationSavonAmphiphile },
   { id:115, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
     component: SimulationLentilleMince },
   { id:150, label:"Ondes mécaniques : célérité et retard", niveau:"1G", icon:"🌊", color:"#0369a1",

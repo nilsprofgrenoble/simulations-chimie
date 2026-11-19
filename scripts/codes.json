@@ -1253,5 +1253,17 @@
  "77:plausible:geo1g-val-delta-oh": "VAL307",
  "77:plausible:geo1g-val-delta-ch": "VAL308",
  "77:plausible:geo1g-val-ccl4": "VAL309",
- "36:geo1g-calcul": "REA77"
+ "36:geo1g-calcul": "REA77",
+ "34:savon1g-pain.0": "SAPP333",
+ "34:savon1g-pain.1": "SAPP334",
+ "37:prevoir:savon1g-ana-chaine-courte": "ANA538",
+ "37:prevoir:savon1g-ana-interface-huile": "ANA539",
+ "37:prevoir:savon1g-ana-micelle-huile": "ANA540",
+ "37:prevoir:savon1g-ana-acide-gras": "ANA541",
+ "77:plausible:savon1g-val-acetate": "VAL310",
+ "77:plausible:savon1g-val-micelle": "VAL311",
+ "77:plausible:savon1g-val-lavage": "VAL312",
+ "77:plausible:savon1g-val-carbones": "VAL313",
+ "77:plausible:savon1g-val-masse": "VAL314",
+ "36:savon1g-calcul": "REA78"
 }

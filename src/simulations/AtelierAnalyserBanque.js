@@ -4484,6 +4484,35 @@ export const PREVOIR = [
       F('O²⁻ : 6, autant que O seul ; Na⁺ : 1, autant que Na seul', 'La charge change le nombre d’électrons : 2 de plus pour 2−, 1 de moins pour +.'),
       F('O²⁻ : 7, un électron de plus ; Na⁺ : 0, un de moins', 'La charge 2− correspond à deux électrons gagnés, pas un seul : n_T = 6 + 2 = 8.'),
     ] },
+  // ───────────────────────────── Savons et amphiphilie (1G) : tête polaire, chaîne apolaire, micelles
+  { id: 'savon1g-ana-chaine-courte', domaine: 'Savons et amphiphilie', titre: 'Trois ions carboxylate, une seule tête',
+    enonce: 'Trois ions ont la même tête COO⁻ : l’ion éthanoate CH₃–COO⁻, l’ion laurate CH₃–(CH₂)₁₀–COO⁻ et l’ion stéarate CH₃–(CH₂)₁₆–COO⁻. On les place un à un dans de l’eau surmontée d’une couche d’huile.', q: 'Quels ions s’accrochent à l’huile et se rassemblent en micelles ?', options: [
+      V('le laurate et le stéarate : chaîne apolaire longue, tête polaire chargée', 'Ces deux ions ont une tête chargée, qui reste dans l’eau, et une longue chaîne apolaire, qui s’insère dans l’huile : ils sont amphiphiles.'),
+      F('les trois ions : leur tête COO⁻ est la même, donc leur effet aussi', 'La tête ne suffit pas : l’ion éthanoate n’a qu’un carbone dans sa chaîne, trop court pour être lipophile ; il reste dissous dans l’eau.'),
+      F('l’éthanoate seul : sa petite chaîne se glisse plus facilement dans l’huile', 'Une chaîne d’un seul carbone n’est pas lipophile : elle ne retient pas l’ion dans l’huile et ne permet pas de former des micelles.'),
+      F('le stéarate seul : l’ion laurate a une chaîne trop courte pour agir', 'Avec 11 atomes de carbone dans sa chaîne, l’ion laurate est bien lipophile : il est même utilisé dans de nombreux produits lavants.'),
+    ] },
+  { id: 'savon1g-ana-interface-huile', domaine: 'Savons et amphiphilie', titre: 'Un savon à l’interface eau-huile',
+    enonce: 'Dans un tube, de l’eau est surmontée d’une couche d’huile. On y ajoute du stéarate de sodium. Les ions stéarate se placent à l’interface entre l’eau et l’huile.', q: 'Comment les ions s’y orientent-ils ?', options: [
+      F('têtes dans l’huile, chaînes dans l’eau : chaque partie va avec l’autre milieu', 'Ce serait l’inverse de l’attirance : une tête polaire est attirée par l’eau (polaire), une chaîne apolaire par l’huile (apolaire).'),
+      F('ions à plat sur l’interface : ni la tête ni la chaîne ne plonge nulle part', 'Les deux parties n’ont pas les mêmes affinités : chacune cherche le milieu qui lui ressemble, donc les ions ne restent pas à plat.'),
+      V('têtes dans l’eau, chaînes dans l’huile : chacune dans son propre milieu', 'La tête COO⁻, polaire, est entourée de molécules d’eau ; la chaîne apolaire s’insère dans l’huile, apolaire : « qui se ressemble s’assemble ».'),
+      F('ions entièrement dans l’eau : leur charge les empêche de quitter l’eau', 'Une partie de l’ion, la chaîne, est apolaire : elle est mieux dans l’huile que dans l’eau, ce qui place les ions à l’interface.'),
+    ] },
+  { id: 'savon1g-ana-micelle-huile', domaine: 'Savons et amphiphilie', titre: 'Où est la salissure dans une micelle ?',
+    enonce: 'Un savon a décroché une tache d’huile : la goutte d’huile se trouve maintenant dans une micelle d’ions carboxylate, dispersée dans l’eau.', q: 'Comment la goutte et les ions sont-ils placés ?', options: [
+      F('goutte à l’extérieur, collée aux têtes polaires, dans l’eau', 'La goutte est apolaire : elle ne peut pas rester au contact des têtes polaires et de l’eau, elle est entourée de chaînes apolaires.'),
+      V('goutte au centre, entourée des chaînes apolaires ; têtes côté eau', 'La goutte apolaire est à l’abri de l’eau parmi les chaînes apolaires, et les têtes polaires, au contact de l’eau, rendent l’ensemble dispersible.'),
+      F('goutte au centre, entourée des têtes polaires ; chaînes côté eau', 'Les chaînes apolaires ne peuvent pas être au contact de l’eau : ce sont les têtes qui sont à l’extérieur de la micelle.'),
+      F('goutte dissoute entre les ions : l’huile a été détruite par le savon', 'L’huile n’est pas détruite : ses molécules restent intactes, simplement entourées par les ions et emportées avec l’eau.'),
+    ] },
+  { id: 'savon1g-ana-acide-gras', domaine: 'Savons et amphiphilie', titre: 'L’acide stéarique n’est pas un savon',
+    enonce: 'L’acide stéarique CH₃–(CH₂)₁₆–COOH possède la même chaîne que l’ion stéarate CH₃–(CH₂)₁₆–COO⁻. Pourtant, il se dissout très peu dans l’eau et ne lave pas comme un savon.', q: 'Quelle différence l’explique le mieux ?', options: [
+      F('il contient plus d’atomes d’hydrogène : il est donc beaucoup plus lipophile', 'Les deux entités ont exactement la même chaîne de 17 atomes de carbone : le groupe COOH ne change pas le caractère de la chaîne, la différence est ailleurs.'),
+      V('sa tête COOH n’est pas chargée : elle attire bien moins l’eau que COO⁻', 'Sans charge, la tête est peu hydrophile : l’acide stéarique reste presque insoluble dans l’eau, alors que l’ion stéarate, chargé, y est dispersé.'),
+      F('sa chaîne est polaire : les liaisons C–H y sont davantage polarisées', 'Les liaisons C–H restent apolaires : la chaîne est apolaire dans les deux entités, et c’est la tête qui change.'),
+      F('il n’a pas de contre-ion Na⁺ : seul un sel de sodium peut vraiment laver', 'Le contre-ion ne lave pas : l’ion Na⁺ n’intervient pas dans l’action lavante, c’est la charge de la tête COO⁻ qui compte.'),
+    ] },
   // ───────────────────────────── Géométrie, électronégativité et polarité (1G)
   { id: 'geo1g-ana-ccl4', domaine: 'Géométrie et polarité des entités', titre: 'Liaisons polarisées, molécule apolaire',
     enonce: 'Dans la molécule de tétrachlorométhane CCl₄, quatre liaisons C–Cl identiques sont réparties autour de l’atome de carbone dans une géométrie tétraédrique. Chaque liaison C–Cl est polarisée (Δχ = 0,5 > 0,4).', q: 'La molécule CCl₄ est…', options: [

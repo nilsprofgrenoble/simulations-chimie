@@ -54,7 +54,7 @@ export const COUVERTURE = [
     { th: CTM, t: 'Évolution d’un système : avancement et tableau d’avancement', e: 'ok', chap: '1g-evolution' },
     { th: CTM, t: 'Titrage avec repérage de l’équivalence', e: 'ok', chap: '1g-evolution' },
     { th: CTM, t: 'Structure des entités : schéma de Lewis, géométrie, électronégativité, polarité', e: 'ok', chap: 'structure-entites' },
-    { th: CTM, t: 'Cohésion, dissolution, solubilité et miscibilité', e: 'partiel', chap: '1g-cohesion', reste: 'dissolution d’un solide ionique (équation, concentration des ions), savons et amphiphilie' },
+    { th: CTM, t: 'Cohésion, dissolution, solubilité et miscibilité', e: 'partiel', chap: '1g-cohesion', reste: 'dissolution d’un solide ionique (équation, concentration des ions)' },
     { th: CTM, t: 'Chimie organique : groupes caractéristiques, nomenclature, spectroscopie infrarouge', e: 'ok', chap: '1g-organique' },
     { th: CTM, t: 'Synthèse organique : protocole, rendement, contrôle', e: 'ok', chap: '1g-synthese' },
     { th: CTM, t: 'Combustions : énergie molaire de réaction et énergie de liaison', e: 'avenir' },
