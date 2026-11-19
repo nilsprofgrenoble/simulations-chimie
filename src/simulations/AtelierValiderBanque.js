@@ -2532,6 +2532,46 @@ export const PLAUSIBLES = [
       F('Pas plausible : une onde ne peut pas parcourir 48 km en 8,0 s', 'Ce n’est pas impossible : à 6,0 km/s, une onde parcourt 48 km en 8,0 s.'),
     ] }),
 
+  P({ id: 'mol1g-qte-val-mg', domaine: 'Quantité de matière : masse molaire et volume molaire', niveau: 1, titre: 'Quantité de matière de calcaire dans 250 mg', plausible: false,
+    enonce: 'Un élève veut connaître la quantité de matière de carbonate de calcium CaCO₃ (M = 100,1 g/mol) dans un échantillon de 250 mg. Il calcule n = 250 / 100,1 = 2,5 et annonce : « l’échantillon contient 2,5 mol de carbonate de calcium ».',
+    reperes: [['Une mole de CaCO₃', 'pèse environ 100 g'], ['Conversion', '1 g = 1000 mg'], ['Relation', 'n = m / M avec m en g et M en g/mol']],
+    ver: 'Une mole de CaCO₃ pèse environ 100 g, alors que l’échantillon ne pèse que 0,250 g : il contient bien moins d’une mole. L’élève a divisé 250 mg par M sans convertir en grammes ; n = 0,250 / 100,1 = 2,50 × 10⁻³ mol.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a oublié de convertir 250 mg en grammes', 'Sans conversion, le résultat est 1000 fois trop grand. Avec m = 0,250 g : n = 0,250 / 100,1 = 2,50 × 10⁻³ mol, soit 2,5 mmol.'),
+      F('il a pris la masse molaire du calcium seul (40,1 g/mol)', 'Avec 40,1 g/mol, il aurait trouvé 250 / 40,1 ≈ 6,2 : l’élève a bien divisé par M = 100,1 g/mol ; c’est l’unité de la masse (mg) qui est en cause.'),
+      F('il aurait dû multiplier la masse par la masse molaire', 'Multiplier m par M n’a pas de sens : n = m / M, et m = n × M donne une masse.'),
+    ] }),
+  P({ id: 'mol1g-qte-val-gaz', domaine: 'Quantité de matière : masse molaire et volume molaire', niveau: 1, titre: 'Quantité de matière de dioxygène dans 600 mL', plausible: false,
+    enonce: 'Un flacon de 600 mL contient du dioxygène à 20 °C et 1013 hPa, où le volume molaire vaut 24,0 L/mol. Un élève calcule n = V / V_m = 600 / 24,0 = 25 et annonce : « le flacon contient 25 mol de dioxygène ».',
+    reperes: [['Volume molaire', '24,0 L/mol : une mole de gaz occupe environ 24 L'], ['Conversion', '1 L = 1000 mL'], ['Relation', 'n = V / V_m avec V et V_m dans la même unité de volume']],
+    ver: 'Une mole de gaz occupe environ 24 L : un flacon de 0,6 L ne peut en contenir que quelques centièmes de mole. L’élève a divisé 600 mL par 24,0 L/mol sans convertir ; n = 0,600 / 24,0 = 0,0250 mol.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a oublié de convertir 600 mL en litres', 'Sans conversion, le résultat est 1000 fois trop grand. Avec V = 0,600 L : n = 0,600 / 24,0 = 0,0250 mol.'),
+      F('il a confondu V_m avec la masse molaire du dioxygène (32,0 g/mol)', 'Avec 32,0, il aurait trouvé 600 / 32,0 ≈ 19 : l’élève a bien divisé par V_m = 24,0 L/mol, et la masse molaire n’intervient pas dans n = V / V_m ; c’est l’unité de V (mL) qui est en cause.'),
+      F('il a oublié de multiplier par la masse molaire du dioxygène', 'n = V / V_m est déjà la quantité de matière : multiplier par M donnerait une masse.'),
+    ] }),
+  P({ id: 'mol1g-qte-val-masse', domaine: 'Quantité de matière : masse molaire et volume molaire', niveau: 2, titre: 'Masse de sel pour 0,10 mol de chlorure de sodium', plausible: false,
+    enonce: 'On veut 0,10 mol de chlorure de sodium NaCl (M = 58,5 g/mol). Un élève calcule m = n / M = 0,10 / 58,5 = 0,0017 et annonce : « il faut peser 0,0017 g de sel ».',
+    reperes: [['Une mole de NaCl', 'pèse 58,5 g'], ['0,10 mol', 'c’est le dixième d’une mole'], ['Relation', 'm = n × M, en g avec M en g/mol']],
+    ver: '0,10 mol est le dixième d’une mole : il faut environ 5,9 g de sel, et non quelques milligrammes. L’élève a divisé n par M au lieu de les multiplier ; m = n × M = 0,10 × 58,5 = 5,9 g.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a divisé n par M au lieu de les multiplier', 'De n = m / M on tire m = n × M = 0,10 × 58,5 ≈ 5,9 g.'),
+      F('il a oublié de convertir des grammes en milligrammes', 'La masse molaire est en g/mol et le résultat attendu en g : aucune conversion n’est nécessaire ici.'),
+      F('il a pris la masse molaire de l’ion sodium seul', 'M(Na⁺) = 23,0 g/mol changerait le résultat d’un facteur 2,5 environ, pas d’un facteur supérieur à 3 000.'),
+    ] }),
+  P({ id: 'mol1g-qte-val-eau', domaine: 'Quantité de matière : masse molaire et volume molaire', niveau: 2, titre: 'Nombre de molécules dans 18 g d’eau', plausible: true,
+    enonce: 'Un élève pèse 18,0 g d’eau (M = 18,0 g/mol) et annonce : « cet échantillon contient 1,00 mol d’eau, soit 6,02 × 10²³ molécules ».',
+    reperes: [['Relation', 'n = m / M'], ['Constante d’Avogadro', 'N_A = 6,02 × 10²³ mol⁻¹'], ['Une mole', 'contient N_A entités']],
+    ver: 'n = 18,0 / 18,0 = 1,00 mol : l’échantillon est exactement une mole d’eau, donc 6,02 × 10²³ molécules. Le résultat est cohérent.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Cohérent : n = 18,0 / 18,0 = 1,00 mol, donc N = 1,00 × N_A', 'Une mole contient N_A = 6,02 × 10²³ entités.'),
+      F('Pas cohérent : 18,0 g d’eau correspondent à 18,0 mol, soit 18,0 × N_A molécules', 'La quantité de matière n’est pas égale à la masse en grammes : n = m / M = 18,0 / 18,0 = 1,00 mol, et non 18,0 mol.'),
+      F('Pas cohérent : il faudrait multiplier 18,0 g par N_A pour obtenir le nombre de molécules', 'On multiplie la quantité de matière n (en mol) par N_A, pas la masse : N = n × N_A.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

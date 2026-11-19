@@ -83,6 +83,7 @@ const SimulationPlanMelange = paresseux(() => import("./simulations/PlanMelange"
 const SimulationPlanFactoriel = paresseux(() => import("./simulations/PlanFactoriel"), "SimulationPlanFactoriel");
 const SimulationInteractions = paresseux(() => import("./simulations/Interactions"), "SimulationInteractions");
 const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactivite"), "SimulationRadioactivite");
+const SimulationQuantiteMatiere = paresseux(() => import("./simulations/QuantiteMatiere"), "SimulationQuantiteMatiere");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
 const SimulationPredominance = paresseux(() => import("./simulations/Predominance"), "SimulationPredominance");
@@ -336,6 +337,7 @@ const SIMULATIONS = [
     component: SimulationIr },
   { id:112, label:"Ampoule à décanter : extraction liquide-liquide", niveau:"1G", icon:"⚗️", color:"#0369a1",
     component: SimulationExtraction },
+  { id:152, label:"Quantité de matière : masse molaire, volume molaire", niveau:"1G", icon:"⚖️", color:"#0f766e", component: SimulationQuantiteMatiere },
   { id:115, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
     component: SimulationLentilleMince },
   { id:150, label:"Ondes mécaniques : célérité et retard", niveau:"1G", icon:"🌊", color:"#0369a1",

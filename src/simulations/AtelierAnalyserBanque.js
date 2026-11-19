@@ -4350,6 +4350,34 @@ export const PREVOIR = [
       F('elle augmente un peu, car la corde est plus déformée', 'Une bosse plus haute ne rend pas la corde plus lente : la célérité dépend de la corde et de sa tension, pas de la hauteur de la bosse.'),
     ] },
 
+  { id: 'mol1g-qte-masse-egale', domaine: 'Quantité de matière : masse molaire et volume molaire', titre: 'Même masse, même nombre de molécules ?',
+    enonce: 'On pèse 36 g d’eau (H₂O, M = 18 g/mol) et 36 g de glucose (C₆H₁₂O₆, M = 180 g/mol). On rappelle n = m / M et N = n × N_A.', q: 'Le nombre de molécules est…', options: [
+      V('10 fois plus grand dans l’eau : sa masse molaire est 10 fois plus petite', 'n(eau) = 36 / 18 = 2,0 mol et n(glucose) = 36 / 180 = 0,20 mol : à masse égale, la substance de plus petite masse molaire contient le plus de molécules.'),
+      F('le même : les deux masses sont égales', 'Des masses égales ne donnent pas des quantités de matière égales : n = m / M dépend aussi de la masse molaire de chaque espèce.'),
+      F('10 fois plus grand dans le glucose : sa masse molaire est 10 fois plus grande', 'C’est l’inverse : la molécule de glucose est plus lourde, donc il en faut moins pour atteindre 36 g (n = m / M diminue quand M augmente).'),
+      F('le même : une mole contient toujours 6,02 × 10²³ molécules', 'C’est vrai pour une mole, mais les deux échantillons n’ont pas la même quantité de matière : n(eau) = 2,0 mol et n(glucose) = 0,20 mol.'),
+    ] },
+  { id: 'mol1g-qte-gaz-temperature', domaine: 'Quantité de matière : masse molaire et volume molaire', titre: 'Même ballon, deux températures',
+    enonce: 'Deux ballons identiques, de même volume, sont remplis de dioxygène à la pression atmosphérique : l’un à 0 °C (V_m = 22,4 L/mol), l’autre à 20 °C (V_m = 24,0 L/mol). On rappelle n = V / V_m.', q: 'Le ballon à 20 °C contient…', options: [
+      V('un peu moins de molécules que celui à 0 °C : V_m est plus grand à 20 °C', 'V est le même mais V_m est plus grand à 20 °C : n = V / V_m est plus petit (rapport 22,4 / 24,0 ≈ 0,93).'),
+      F('un peu plus de molécules que celui à 0 °C : l’agitation des molécules augmente', 'L’agitation augmente le volume occupé par une mole, donc V_m ; à volume égal, il y a moins de molécules.'),
+      F('autant de molécules que celui à 0 °C : les deux ballons ont le même volume', 'À volume égal, n = V / V_m ne reste le même que si V_m est le même ; or V_m dépend de la température.'),
+      F('autant de molécules que celui à 0 °C : c’est le même gaz, seule la température change', 'Le gaz est le même, mais le volume molaire change avec la température : le nombre de molécules dans un volume donné aussi.'),
+    ] },
+  { id: 'mol1g-qte-gaz-nature', domaine: 'Quantité de matière : masse molaire et volume molaire', titre: 'Deux gaz dans deux flacons identiques',
+    enonce: 'Un flacon de 1,0 L contient du dihydrogène H₂ (M = 2,0 g/mol) et un autre, identique, du dioxyde de carbone CO₂ (M = 44,0 g/mol), à la même température et à la même pression.', q: 'La masse de gaz est…', options: [
+      V('22 fois plus grande pour CO₂ : même n, mais M plus grande', 'Le volume molaire est le même pour les deux gaz : n = V / V_m est identique. m = n × M donc m(CO₂) / m(H₂) = 44,0 / 2,0 = 22.'),
+      F('la même : le volume est le même', 'Le nombre de moles est le même, mais la masse d’une mole ne l’est pas : m = n × M.'),
+      F('22 fois plus grande dans le flacon de H₂ : H₂ est plus léger', 'Un gaz léger a une petite masse molaire : à n égal, sa masse est plus petite.'),
+      F('44 fois plus grande pour CO₂ : la masse molaire de H₂ est négligeable', 'M(H₂) = 2,0 g/mol n’est pas négligeable : le rapport des masses vaut 44,0 / 2,0 = 22, et non 44.'),
+    ] },
+  { id: 'mol1g-qte-liquide-volume', domaine: 'Quantité de matière : masse molaire et volume molaire', titre: 'Même volume d’eau et d’éthanol',
+    enonce: 'On prélève 10 mL d’eau (ρ = 1,0 g/mL ; M = 18,0 g/mol) et 10 mL d’éthanol (ρ = 0,79 g/mL ; M = 46,0 g/mol). On rappelle n = ρ·V / M.', q: 'Le liquide qui contient le plus de molécules est…', options: [
+      V('l’eau : environ 3 fois plus de molécules que l’éthanol', 'n(eau) = 1,0 × 10 / 18,0 = 0,56 mol et n(éthanol) = 0,79 × 10 / 46,0 = 0,17 mol : le rapport vaut environ 3,2.'),
+      F('l’éthanol : sa molécule est plus lourde', 'Une molécule plus lourde implique moins de molécules pour une même masse ; l’éthanol a de plus une masse volumique plus faible que l’eau.'),
+      F('aucun : les volumes étant égaux, les nombres de molécules le sont aussi', 'Pour des liquides, le volume ne fixe pas n : il faut passer par la masse (ρ·V) puis par M.'),
+      F('l’éthanol : sa masse molaire est la plus grande', 'Une grande masse molaire diminue n = m / M ; ici l’éthanol a à la fois une masse plus petite (7,9 g contre 10 g) et une masse molaire plus grande.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

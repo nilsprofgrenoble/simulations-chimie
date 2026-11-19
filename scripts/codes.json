@@ -1173,5 +1173,18 @@
  "77:plausible:ond1g-periode-val-periode": "VAL281",
  "77:plausible:ond1g-periode-val-son": "VAL282",
  "77:plausible:ond1g-periode-val-celerite": "VAL283",
- "36:ond1g-periode": "REA70"
+ "36:ond1g-periode": "REA70",
+ "34:mol1g-qte-solide.0": "SAPP313",
+ "34:mol1g-qte-solide.1": "SAPP314",
+ "34:mol1g-qte-gaz.0": "SAPP315",
+ "34:mol1g-qte-gaz.1": "SAPP316",
+ "37:prevoir:mol1g-qte-masse-egale": "ANA511",
+ "37:prevoir:mol1g-qte-gaz-temperature": "ANA512",
+ "37:prevoir:mol1g-qte-gaz-nature": "ANA513",
+ "37:prevoir:mol1g-qte-liquide-volume": "ANA514",
+ "77:plausible:mol1g-qte-val-mg": "VAL284",
+ "77:plausible:mol1g-qte-val-gaz": "VAL285",
+ "77:plausible:mol1g-qte-val-masse": "VAL286",
+ "77:plausible:mol1g-qte-val-eau": "VAL287",
+ "36:mol1g-qte-calcul": "REA71"
 }
