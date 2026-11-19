@@ -406,8 +406,7 @@ const SIMULATIONS = [
   { id:113, label:"Contre-typage de la Percutaféine (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧴", color:"#0f766e", component: SimulationHistoirePercutafeine },
   // Grapheur (tableau → nuage de points → modèle → écarts → hypothèses) : outil hors menu, ouvert par son lien (?sim=124), en attendant la relecture de Nils
   { id:124, label:"Grapheur de mesures", niveau:"COMPTE", icon:"📈", color:"#1d4ed8", component: SimulationGrapheur },
-  // Tensioactifs (BTS, Formulation) : version de travail, ouverte par son lien (?sim=146) et réservée à l'administrateur en attendant la relecture de Nils
-  { id:146, label:"Tensioactifs : de la structure à la CMC", niveau:"COMPTE", icon:"🫧", color:"#0369a1", component: SimulationTensioactifs },
+  { id:146, label:"Tensioactifs : de la structure à la CMC", niveau:"BTS", icon:"🫧", color:"#0369a1", component: SimulationTensioactifs },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
@@ -425,8 +424,8 @@ const MENUS_ENTETE = [
 // Tant que les jeux ne sont pas aboutis, seul l'administrateur (professeur admin) les voit : menu, cartes, liens directs. Les autres ne voient rien.
 import { JEUX_VISIBLES, JEUX_PUBLICS } from "./simulations/jeuxVisibles";
 const JEUX_IDS = [79, 80, 81, 113];   // jeux : affichage immersif (sans en-tête ni pied de page)
-// Outils en préparation : visibles seulement du professeur administrateur (menu « Outils » et lien direct). 124 : Grapheur de mesures ; 146 : Tensioactifs (BTS).
-const OUTILS_ADMIN_IDS = [124, 146];
+// Outils en préparation : visibles seulement du professeur administrateur (menu « Outils » et lien direct). 124 : Grapheur de mesures.
+const OUTILS_ADMIN_IDS = [124];
 const FONDS_JEUX = {
   79: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 55%, #03060f 100%)",
   80: "linear-gradient(180deg, #0b3b5e 0%, #082a45 50%, #04182a 100%)",
