@@ -1,5 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
+import { FicheDispersion, FicheSeuils, FicheCompat, FicheEcriture, FicheJustesse } from "./InterLaboratoireFiches";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, Formule, FormuleEnLigne, OngletExercices } from "../commun";
 const vf = x => String(x).replace('.', ',');
 import { Pic } from "../Pictos";
@@ -1046,7 +1047,7 @@ function HypothesesInterlabo({ defaut = true, focus = false }) {
         <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
           {li('Un échantillon homogène et stable,', 'envoyé à tous les laboratoires : les différences observées viennent de la méthode et des laboratoires, pas de l’échantillon.')}
           {li('Le modèle de la norme :', <>y<sub>ij</sub> = m + B<sub>i</sub> + e<sub>ij</sub>. Le résultat de l’essai j du laboratoire i est la valeur moyenne m, plus un écart propre au laboratoire B<sub>i</sub> (variance σ<sub>L</sub>²), plus un écart aléatoire e<sub>ij</sub> (variance σ<sub>r</sub>²).</>)}
-          {li('Les écarts aléatoires suivent une loi normale, de même variance σ_r² dans tous les laboratoires.', 'C’est exactement ce que le test de Cochran vérifie : un laboratoire plus dispersé que les autres est suspect.')}
+          {li(<>Les écarts aléatoires suivent une loi normale, de même variance σ<sub>r</sub>² dans tous les laboratoires.</>, 'C’est exactement ce que le test de Cochran vérifie : un laboratoire plus dispersé que les autres est suspect.')}
           {li('Les moyennes des laboratoires suivent une loi normale.', 'Le test de Grubbs repère une moyenne trop éloignée des autres.')}
           {li('Des essais indépendants,', 'réalisés dans des conditions de répétabilité (même opérateur, même appareil, court intervalle de temps), et le même nombre n d’essais dans chaque laboratoire.')}
           {li('Au moins 8 laboratoires', 'sont recommandés par la norme ; les tests de Cochran et de Grubbs utilisent les tables de valeurs critiques de la norme (ici n ≤ 6 essais, p ≤ 20 laboratoires).')}
@@ -1225,15 +1226,11 @@ function ParcoursInterlabo({ changerMode }) {
       texte: <>Un organisateur envoie un <strong>même échantillon</strong> (ici, une solution à 10,00 mmol/L) à 8 laboratoires. Chacun réalise <strong>4 essais</strong> avec la même méthode d’analyse. On veut savoir si la méthode donne partout des résultats voisins.</>,
       tache: { type: 'qcm', q: 'Que cherche-t-on à évaluer avec la norme ISO 5725 ?', options: ['La fidélité de la méthode : sa répétabilité et sa reproductibilité', 'La compétence de chaque laboratoire (c’est le rôle d’un essai d’aptitude)', 'La valeur exacte de la concentration de l’échantillon'], bonne: 0, indice: "La norme ISO 5725 s’intéresse à la méthode d’analyse, pas au niveau de chaque laboratoire." } },
     { id: 'modele', titre: 'Deux sources de dispersion', focus: [],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Répétabilité s<sub>r</sub> : même laboratoire, mêmes conditions. Effet laboratoire s<sub>L</sub> : dispersion des moyennes.</li>
-          <li>Reproductibilité : s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>², donc s<sub>R</sub> ≥ s<sub>r</sub>.</li>
-          <li>Cochran contrôle l’égalité des variances de répétabilité ; Grubbs repère une moyenne de laboratoire isolée.</li>
-        </ul>),
       texte: <>Les résultats d’un même laboratoire varient un peu d’un essai à l’autre (<strong>répétabilité</strong>). Les moyennes des laboratoires diffèrent aussi entre elles (<strong>effet laboratoire</strong>). La <strong>reproductibilité</strong> cumule les deux : s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>².</>,
       tache: { type: 'qcm', q: 'Quel écart-type décrit la dispersion des essais d’un même laboratoire, dans les mêmes conditions ?', options: ['L’écart-type de répétabilité s_r', 'L’écart-type de reproductibilité s_R', 'L’écart-type interlaboratoires s_L'], bonne: 0, indice: "Même laboratoire et mêmes conditions : c’est la plus petite dispersion possible." } },
     { id: 'hypotheses', titre: 'Sur quoi reposent les calculs ?', focus: ['hypo'],
+      retenirTitre: 'À RETENIR : DEUX SOURCES DE DISPERSION',
+      retenir: <FicheDispersion/>,
       texte: <>Lisez l’encadré « Hypothèses de travail ». Deux tests vont servir à repérer les laboratoires anormaux : Cochran, puis Grubbs.</>,
       tache: { type: 'qcm', q: 'Quelle hypothèse le test de Cochran contrôle-t-il ?', options: ['Tous les laboratoires ont la même dispersion d’essais (même variance de répétabilité)', 'Les moyennes des laboratoires suivent une loi normale', 'L’échantillon est homogène'], bonne: 0,
         expl: 'Les moyennes, elles, sont contrôlées par le test de Grubbs.', indice: "Le test de Cochran compare des variances, donc des dispersions d’essais." } },
@@ -1277,6 +1274,8 @@ function ParcoursInterlabo({ changerMode }) {
       texte: <>Le laboratoire de plus grande variance, le laboratoire 3, est aberrant : il est écarté (après vérification qu’aucune erreur de saisie n’explique ses résultats). Il ne compte plus ni pour la suite des tests, ni pour le calcul final.</>,
       tache: { type: 'action', ok: clicEcarte || etape > 9, label: 'Écarter ce laboratoire', faire: () => setClicEcarte(true) } },
     { id: 'cochran2', titre: 'On recommence avec 7 laboratoires', focus: ['tables'],
+      retenirTitre: 'À RETENIR : DEUX SEUILS, TROIS VERDICTS',
+      retenir: <FicheSeuils/>,
       texte: <>La norme demande de répéter le test tant qu’un laboratoire est aberrant. Recalculez C sans le laboratoire écarté (p = 7).</>,
       tache: { type: 'num', q: 'Statistique de Cochran C (7 laboratoires)', unite: '', vrai: c7.C, tol: 0.02, affiche: x => fmt(x, 3),
         calcul: () => { const act = s.map((_, i) => i).filter(i => i !== 2), v = act.map(i => s[i] ** 2), tot = v.reduce((a, b) => a + b, 0), k = v.indexOf(Math.max(...v));
@@ -1333,14 +1332,11 @@ function ParcoursInterlabo({ changerMode }) {
         pieges: [[SRG.sr, 'C’est s_r : il faut le multiplier par 2,8.'], [2.8 * SRG.sR, 'Vous avez pris s_R : pour des essais en conditions de répétabilité, c’est s_r.'],
           [1.96 * SRG.sr, 'Il manque le facteur √2 : l’écart de deux essais a pour écart-type √2 × s_r, d’où 1,96 × √2 ≈ 2,8.']], indice: "Multipliez s_r par le facteur 2,8 de la norme." } },
     { id: 'compat', titre: 'Les essais sont-ils compatibles ?', focus: ['mesurage'],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Limite de répétabilité : r = 2,8 × s<sub>r</sub> (≈ 1,96 × √2 × s<sub>r</sub>, seuil à 95 %).</li>
-          <li>|y<sub>1</sub> − y<sub>2</sub>| ≤ r : essais compatibles, on prend leur moyenne. Sinon, on cherche la cause et on refait des essais.</li>
-        </ul>),
       texte: <>Comparez |y<sub>1</sub> − y<sub>2</sub>| à r = {fmt(2.8 * SRG.sr, 3)} mmol/L.</>,
       tache: { type: 'qcm', q: 'Peut-on faire la moyenne des deux essais ?', options: [`Oui : |y₁ − y₂| = ${fmt(Math.abs(Y_G[0] - Y_G[1]), 2)} est inférieur à r`, 'Non : il faut refaire des essais', 'On ne peut pas savoir sans connaître s_R'], bonne: 0, indice: "Comparez l’écart entre les deux essais à la limite de répétabilité r." } },
     { id: 'moyenneRes', titre: 'Le résultat du mesurage', focus: ['mesurage'],
+      retenirTitre: 'À RETENIR : ESSAIS COMPATIBLES OU NON',
+      retenir: <FicheCompat/>,
       texte: <>Les essais (y<sub>1</sub> = {fmt(Y_G[0], 2)} et y<sub>2</sub> = {fmt(Y_G[1], 2)} mmol/L) sont compatibles : le résultat du mesurage est leur moyenne.</>,
       tache: { type: 'num', q: 'Moyenne ȳ des deux essais', unite: 'mmol/L', vrai: (Y_G[0] + Y_G[1]) / 2, tol: 0.0007, affiche: x => fmt(x, 2),
         calcul: () => [`ȳ = (y_1 + y_2) / 2 = (${fmt(Y_G[0], 2)} + ${fmt(Y_G[1], 2)}) / 2.`,
@@ -1357,16 +1353,12 @@ function ParcoursInterlabo({ changerMode }) {
           `U = 2 × ${fmt(SRG.sR, 3)} = ${fmt(2 * SRG.sR, 3)} mmol/L.`],
         pieges: [[SRG.sR, 'Deux erreurs possibles ici : oublier le facteur k = 2 (U = k × u, avec u = s_R), ou prendre s_r à la place de s_R (seul s_R contient l’effet laboratoire).'], [2 * SRG.sr, 'Vous avez pris s_r : il faut s_R, qui contient l’effet laboratoire.']], indice: "U = k × s_R avec k = 2 (niveau de confiance d’environ 95 %)." } },
     { id: 'ecriture', titre: 'Écrire le résultat', focus: [],
-      retenir: (
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Incertitude-type u = s<sub>R</sub> (elle contient l’effet laboratoire) ; incertitude élargie U = k × u, avec k = 2 (≈ 95 %).</li>
-          <li>U avec 1 ou 2 chiffres significatifs (arrondi par excès), résultat arrondi à la même décimale : ȳ ± U, unité, k = 2.</li>
-          <li>Valable si votre laboratoire est représentatif de ceux de l’étude.</li>
-        </ul>),
       texte: <>Règle d’écriture : on donne U avec 2 chiffres significatifs au plus (arrondi par excès), et le résultat avec le même nombre de décimales. On précise k et l’unité.</>,
       tache: { type: 'qcm', q: 'Quelle écriture est correcte ?', options: [`${ECR_G.m} ± ${ECR_G.U} mmol/L (k = 2)`, '10,275 ± 0,1700 mmol/L (k = 2)', `${ECR_G.m} ± ${fmt(2 * SRG.sr, 3)} mmol/L (k = 2)`], bonne: 0,
         expl: 'La deuxième écriture annonce des chiffres que l’incertitude ne permet pas de garantir ; la troisième utilise s_r à la place de s_R.', indice: "On garde 1 ou 2 chiffres significatifs pour U, puis on arrondit le résultat à la même décimale." } },
     { id: 'usage', titre: 'Cette incertitude vaut pour qui ?', focus: ['hypo'],
+      retenirTitre: 'À RETENIR : ÉCRIRE LE RÉSULTAT',
+      retenir: <FicheEcriture/>,
       texte: <>On a attribué à votre laboratoire une incertitude calculée sur d’autres laboratoires.</>,
       tache: { type: 'qcm', q: 'Que suppose-t-on pour le faire ?', options: ['Que votre laboratoire est représentatif de ceux de l’étude : même méthode appliquée de la même façon, échantillon de même nature et de teneur voisine, biais du même ordre', 'Que votre laboratoire est le meilleur de l’étude', 'Rien : s_R est une constante de la méthode, valable partout'], bonne: 0, indice: "On applique à un laboratoire les caractéristiques d’une étude collective : à quelle condition est-ce légitime ?" } },
     { id: 'incompat', titre: 'Et si les essais ne sont pas compatibles ?', focus: [],
@@ -1377,6 +1369,8 @@ function ParcoursInterlabo({ changerMode }) {
       texte: <>Les 7 moyennes tournent autour de {fmt(f.ybar, 3)} mmol/L, pour une valeur de référence de 10,00 mmol/L.</>,
       tache: { type: 'qcm', q: 'Cette étude prouve-t-elle que la méthode est juste ?', options: ['Non : elle mesure la fidélité (la dispersion). La justesse demande de comparer à une valeur de référence, avec son incertitude', 'Oui, car s_R est petit', 'Oui, car on a écarté le laboratoire 3'], bonne: 0, indice: "Fidélité = dispersion ; justesse = proximité d’une valeur de référence. Que mesure l’étude ?" } },
     { id: 'bravo', titre: 'Bravo !', focus: [],
+      retenirTitre: 'À RETENIR : FIDÉLITÉ ET JUSTESSE',
+      retenir: <FicheJustesse/>,
       texte: <>Vous savez mener une étude de fidélité : Cochran (dispersions), puis Grubbs (moyennes), puis s<sub>r</sub>, s<sub>L</sub> et s<sub>R</sub> — en gardant en tête les hypothèses qui donnent un sens aux seuils. En exploration libre, générez vos propres campagnes ; dans le défi, un jeu de données inconnu vous attend.</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
