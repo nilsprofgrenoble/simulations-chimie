@@ -5,6 +5,7 @@ import { genTrace, genPont, genTemps } from "./RealiserC1";
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
+import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
 import * as CO2 from "./co2DissousModele";
@@ -1063,6 +1064,155 @@ function genTampstlAjout() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Un acide fort consomme la base A⁻ et forme AH ; une base forte consomme AH et forme A⁻ (réactions quasi totales).', 'pH = pKa + log(frac(n(A⁻)|n(AH))) avec les quantités après la réaction.', 'Le tampon est épuisé si l’ajout dépasse la quantité du réactif.'] };
 }
+// ---------- Acides et bases (CDD) : pH d'un acide, pKa et prédominance, tampon ----------
+const dist10 = v => v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(Math.abs(x), Math.abs(y))));
+const cs2 = x => PRE.arrondiCS(x, 2);
+const sig2 = x => { const s = Number(x).toPrecision(2); return String(Number(s)).replace('.', ','); };
+const CD_ACID_PKA = [3.8, 4.2, 4.7, 4.9];
+function genAbAcfPh() {
+  let pKa, C, pf, pw, tau;
+  for (let k = 0; ; k++) {
+    pKa = tire(CD_ACID_PKA); C = tire([0.01, 0.02, 0.05, 0.1]);
+    pf = Math.round(-Math.log10(C) * 100) / 100; pw = Math.round(0.5 * (pKa - Math.log10(C)) * 100) / 100; tau = cs2(10 ** -pw / C);
+    if (Math.abs(0.5 * (pKa - Math.log10(C)) - AB.pH({ C, pKas: [pKa] })) < 0.02 && dist10([pf, pw, tau, C]) || k > 500) break;
+  }
+  const Cs = nbF(C, 2), pK = nbF(pKa, 1);
+  const intro = `Une solution d’acide fort HX et une solution d’acide faible AH (pKa = ${pK}) ont la même concentration C = ${Cs}${NB}mol/L, à 25${NB}°C.`;
+  const q1 = { id: 'a0', type: 'num', q: <>Calculez le pH de la solution d’acide <b>fort</b> (2 chiffres significatifs).</>, unite: '', vrai: pf, tolRel: 0.012, csMin: 2,
+    aide: 'Un acide fort réagit totalement : [H₃O⁺] = C, donc pH = −log C.',
+    pieges: [[C, 'C’est la concentration : le pH est −log C.'], [pw, 'C’est la formule de l’acide faible ; ici l’acide est fort : pH = −log C.'], [10 ** -pf, 'C’est [H₃O⁺] ; on demande le pH.']],
+    expl: <>pH = −log({Cs}) = <b>{nbF(pf, 2)}</b>.</> };
+  const q2 = { id: 'a1', type: 'num', q: <>Calculez le pH de la solution d’acide <b>faible</b> (pKa = {pK}, 2 chiffres significatifs).</>, unite: '', vrai: pw, tolRel: 0.012, csMin: 2,
+    aide: 'Acide faible : pH = ½ × (pKa − log C).',
+    pieges: [[pf, 'C’est le pH de l’acide fort de même concentration ; l’acide faible est moins dissocié, son pH est plus élevé.'], [pKa - Math.log10(C), 'Il manque le facteur ½ : pH = ½ × (pKa − log C).'], [0.5 * (pKa + Math.log10(C)), 'Le signe de log C est inversé : pH = ½ × (pKa − log C).']],
+    expl: <>pH = ½ × ({pK} − log {Cs}) = <b>{nbF(pw, 2)}</b>.</> };
+  const q3 = { id: 'a2', type: 'num', q: <>Avec un pH de {nbF(pw, 2)}, calculez le taux d’avancement <b>τ</b> de la réaction de l’acide faible avec l’eau (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: tau, tolRel: 0.05, csMin: 2,
+    aide: <>[H₃O⁺] = 10<sup>−pH</sup> puis τ = {avecIndices('frac([H₃O⁺]|C)')}.</>,
+    pieges: [[10 ** -pw, 'C’est [H₃O⁺] ; il faut la diviser par C.'], [tau * 100, 'C’est un pourcentage : on demande τ sans unité (0,0xx).'], [C / 10 ** -pw, 'Le quotient est inversé : τ = [H₃O⁺] divisé par C.']],
+    expl: <>[H₃O⁺] = 10<sup>−{nbF(pw, 2)}</sup> ; τ = {avecIndices(`frac(10^(−${nbF(pw, 2)})|${Cs})`)} = <b>{sig2(tau)}</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Acide fort : pH = −log C. Acide faible : pH = ½ × (pKa − log C).', 'À même concentration, l’acide faible a un pH plus élevé que l’acide fort.', 'τ = frac([H₃O⁺]|C) est petit pour un acide faible.'] };
+}
+function genAbAcfDilution() {
+  let pKa, C0, f, pw0, pw1, C1;
+  for (let k = 0; ; k++) {
+    pKa = tire([4.2, 4.7, 4.9]); C0 = tire([0.1, 0.2, 0.05]); f = tire([10, 100]); C1 = C0 / f;
+    pw0 = Math.round(0.5 * (pKa - Math.log10(C0)) * 100) / 100; pw1 = Math.round(0.5 * (pKa - Math.log10(C1)) * 100) / 100;
+    if (C1 >= 0.0005 && Math.abs(0.5 * (pKa - Math.log10(C1)) - AB.pH({ C: C1, pKas: [pKa] })) < 0.05 && dist10([pw0, pw1, C1, C0]) || k > 500) break;
+  }
+  const C0s = nbF(C0, 2), C1s = sig2(C1), pK = nbF(pKa, 1);
+  const intro = `Une solution d’acide faible AH (pKa = ${pK}) de concentration ${C0s}${NB}mol/L est diluée ${f} fois avec de l’eau distillée, à 25${NB}°C.`;
+  const q1 = { id: 'd0', type: 'num', q: <>Calculez le pH de la solution <b>avant</b> dilution (2 chiffres significatifs).</>, unite: '', vrai: pw0, tolRel: 0.012, csMin: 2,
+    aide: 'Acide faible : pH = ½ × (pKa − log C).',
+    pieges: [[-Math.log10(C0), 'C’est la formule de l’acide fort : pH = −log C. Pour un acide faible : ½ × (pKa − log C).'], [pKa - Math.log10(C0), 'Il manque le facteur ½.']],
+    expl: <>pH = ½ × ({pK} − log {C0s}) = <b>{nbF(pw0, 2)}</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>Quelle est la concentration de la solution <b>diluée</b> (en mol/L, 2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: C1, tolRel: 0.05, csMin: 2,
+    aide: 'Dilution f fois : la concentration est divisée par f.',
+    pieges: [[C0 * f, 'La concentration diminue quand on dilue : on divise par le facteur.'], [C0 - f, 'On divise la concentration par le facteur de dilution, on ne soustrait pas.']],
+    expl: <>C′ = {C0s} / {f} = <b>{C1s}{NB}mol/L</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>Calculez le pH de la solution diluée, de concentration {C1s}{NB}mol/L (2 chiffres significatifs).</>, unite: '', vrai: pw1, tolRel: 0.012, csMin: 2,
+    aide: 'Même formule : pH = ½ × (pKa − log C′).',
+    pieges: [[pw0 + Math.log10(f), 'C’est la règle d’un acide fort (pH augmente de log f). Pour un acide faible, il augmente de moitié.'], [pw0, 'Le pH change : la concentration a diminué, le pH augmente.']],
+    expl: <>pH = ½ × ({pK} − log {C1s}) = <b>{nbF(pw1, 2)}</b> : il a augmenté de {nbF(pw1 - pw0, 2)}.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Diluer f fois divise la concentration par f.', 'Acide fort : le pH augmente de log f. Acide faible : de ½ log f seulement.', 'Plus on dilue un acide faible, plus il est dissocié (τ augmente).'] };
+}
+function genAbPredRapport() {
+  let pKa, pH, C, r, cA, cAH;
+  for (let k = 0; ; k++) {
+    pKa = tire([3.8, 4.2, 4.9, 7.5]); pH = Math.round((pKa + tire([-1.4, -1, -0.6, 0.6, 1, 1.4])) * 10) / 10; C = tire([0.01, 0.02, 0.05, 0.1]);
+    r = cs2(10 ** (pH - pKa)); cA = cs2(C * r / (1 + r)); cAH = cs2(C / (1 + r));
+    if (dist10([r, cA, cAH]) || k > 500) break;
+  }
+  const rs = sig2(r), pK = nbF(pKa, 1), pHs = nbF(pH, 1), Cs = nbF(C, 2);
+  const intro = `Une solution de pH ${pHs} contient le couple AH / A⁻ (pKa = ${pK}) à la concentration totale [AH] + [A⁻] = ${Cs}${NB}mol/L, à 25${NB}°C.`;
+  const q1 = { id: 'r0', type: 'num', q: <>Calculez le rapport <b>{avecIndices('frac([A⁻]|[AH])')}</b> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: r, tolRel: 0.05, csMin: 2,
+    aide: 'Rapport = 10^(pH − pKa) (touche 10ˣ).',
+    pieges: [[pH - pKa, 'C’est pH − pKa, le logarithme du rapport : il faut prendre 10 puissance cette valeur.'], [1 / r, 'Le rapport est inversé : on demande la base sur l’acide.']],
+    expl: <>Rapport = 10<sup>{pHs} − {pK}</sup> = 10<sup>{nbF(pH - pKa, 1)}</sup> = <b>{rs}</b>.</> };
+  const q2 = { id: 'r1', type: 'num', q: <>Avec un rapport de {rs} et [AH] + [A⁻] = {Cs}{NB}mol/L, calculez la concentration de <b>A⁻</b> (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: cA, tolRel: 0.05, csMin: 2,
+    aide: '[A⁻] = r × [AH] et [A⁻] + [AH] = C, donc [A⁻] = frac(C × r|1 + r).',
+    pieges: [[cAH, 'C’est la concentration de AH ; on demande celle de A⁻.'], [C * r, 'C × r dépasse la concentration totale : utilisez frac(C × r|1 + r).']],
+    expl: <>[A⁻] = {avecIndices(`frac(${Cs} × ${rs}|1 + ${rs})`)} = <b>{sig2(cA)}{NB}mol/L</b>.</> };
+  const q3 = { id: 'r2', type: 'num', q: <>Calculez la concentration de <b>AH</b> (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: cAH, tolRel: 0.05, csMin: 2,
+    aide: '[AH] = C − [A⁻], ou [AH] = frac(C|1 + r).',
+    pieges: [[cA, 'C’est la concentration de A⁻ ; on demande celle de AH.'], [C / r, 'Utilisez [AH] = frac(C|1 + r).']],
+    expl: <>[AH] = {avecIndices(`frac(${Cs}|1 + ${rs})`)} = <b>{sig2(cAH)}{NB}mol/L</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Rapport frac([A⁻]|[AH]) = 10^(pH − pKa).', 'Si pH > pKa, A⁻ prédomine ; si pH < pKa, AH prédomine ; si pH = pKa, les deux sont égales.', '[AH] + [A⁻] = C : la matière se conserve.'] };
+}
+function genAbPredPka() {
+  let pKa, r, pH, lr;
+  for (let k = 0; ; k++) {
+    pKa = tire([3.8, 4.2, 4.9, 7.5, 9.2]); r = tire([0.1, 0.25, 0.5, 2, 4, 10]); pH = Math.round((pKa + Math.log10(r)) * 100) / 100; lr = Math.round(Math.log10(r) * 100) / 100;
+    const pk2 = pH - Math.log10(r);
+    if (dist10([lr, pk2, pk2 + 2]) || k > 500) break;
+  }
+  const pk = pH - Math.log10(r), pHs = nbF(pH, 2), rs = sig2(r);
+  const intro = `Dans une solution de pH ${pHs}, on mesure le rapport ${rs} entre la concentration de A⁻ et celle de AH (couple AH / A⁻, à 25${NB}°C).`;
+  const q1 = { id: 'p0', type: 'num', q: <>Calculez <b>log</b> du rapport {rs} (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: lr, tolRel: 0.05, csMin: 2,
+    aide: 'Touche log de la calculatrice : log(r).',
+    pieges: [[r, 'C’est le rapport lui-même ; il faut en prendre le logarithme.'], [-lr, 'Le signe est inversé : log d’un nombre inférieur à 1 est négatif.']],
+    expl: <>log({rs}) = <b>{nbF(lr, 2)}</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>En déduire le <b>pKa</b> du couple, sachant que pH = pKa + log(rapport) (2 chiffres significatifs).</>, unite: '', vrai: pk, tolRel: 0.012, csMin: 2,
+    aide: 'pKa = pH − log(rapport).',
+    pieges: [[pH + Math.log10(r), 'Le signe est inversé : pKa = pH − log(rapport).'], [pH - r, 'On soustrait le logarithme du rapport, pas le rapport lui-même.']],
+    expl: <>pKa = {pHs} − ({nbF(lr, 2)}) = <b>{nbF(pk, 2)}</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>À quel pH le rapport {avecIndices('frac([A⁻]|[AH])')} serait-il égal à 100 ? (2 chiffres significatifs)</>, unite: '', vrai: pk + 2, tolRel: 0.012, csMin: 2,
+    aide: 'pH = pKa + log 100 = pKa + 2.',
+    pieges: [[pk, 'À pH = pKa le rapport vaut 1, pas 100.'], [pk - 2, 'Le signe est inversé : A⁻ prédomine à pH supérieur au pKa.']],
+    expl: <>pH = {nbF(pk, 2)} + log 100 = <b>{nbF(pk + 2, 2)}</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['pKa = pH − log frac([A⁻]|[AH]).', 'À pH = pKa, les deux formes sont en quantités égales.', 'Un écart d’une unité de pH change le rapport d’un facteur 10.'] };
+}
+function genAbTampMelange() {
+  let pKa, C1, V1, C2, V2, nAH, nA, r;
+  for (let k = 0; ; k++) {
+    pKa = tire([4.2, 4.9, 7.5]); C1 = tire([0.1, 0.2]); V1 = tire([20, 40, 50]); C2 = tire([0.1, 0.2]); V2 = tire([20, 30, 60]);
+    nAH = C1 * V1; nA = C2 * V2; r = cs2(nA / nAH);
+    if ((r > 0.2 && r < 5 && Math.abs(r - 1) > 0.1 && dist10([nAH, nA, r, pKa + Math.log10(r)])) || k > 500) break;
+  }
+  const pK = nbF(pKa, 1), pH = pKa + Math.log10(r), rs = sig2(r);
+  const intro = `On mélange ${V1}${NB}mL d’une solution de AH à ${nbF(C1, 2)}${NB}mol/L et ${V2}${NB}mL d’une solution de A⁻ (sel de sodium) à ${nbF(C2, 2)}${NB}mol/L. Le pKa du couple AH / A⁻ vaut ${pK} (25${NB}°C).`;
+  const q1 = { id: 'm0', type: 'num', q: <>Quelle quantité de matière de <b>AH</b> introduit-on ? (en mmol, 2 chiffres significatifs ; 1{NB}mol/L × 1{NB}mL = 1{NB}mmol)</>, unite: 'mmol', vrai: nAH, tolRel: 0.05, csMin: 2,
+    aide: 'n = C × V : avec C en mol/L et V en mL, n est en mmol.',
+    pieges: [[nA, 'C’est la quantité de A⁻ ; on demande celle de AH.'], [nAH / 1000, 'C en mol/L × V en mL donne directement des mmol : pas de division par 1 000.']],
+    expl: <>n(AH) = {nbF(C1, 2)} × {V1} = <b>{sig2(nAH)}{NB}mmol</b>.</> };
+  const q2 = { id: 'm1', type: 'num', q: <>Calculez le rapport <b>{avecIndices('frac(n(A⁻)|n(AH))')}</b> du mélange (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: r, tolRel: 0.05, csMin: 2,
+    aide: 'n(A⁻) = C₂ × V₂ ; rapport = n(A⁻) divisé par n(AH).',
+    pieges: [[1 / r, 'Le rapport est inversé : on demande la base sur l’acide.'], [nA - nAH, 'Un rapport est un quotient, pas une différence.']],
+    expl: <>n(A⁻) = {sig2(nA)} mmol ; rapport = {avecIndices(`frac(${sig2(nA)}|${sig2(nAH)})`)} = <b>{rs}</b>.</> };
+  const q3 = { id: 'm2', type: 'num', q: <>Avec pKa = {pK} et un rapport de {rs}, calculez le <b>pH</b> du mélange (2 chiffres significatifs).</>, unite: '', vrai: pH, tolRel: 0.012, csMin: 2,
+    aide: 'pH = pKa + log(rapport).',
+    pieges: [[pKa, 'Il manque le terme log : le pH n’est égal au pKa que si le rapport vaut 1.'], [pKa - Math.log10(r), 'Le signe est inversé : pH = pKa + log(rapport).']],
+    expl: <>pH = {pK} + log({rs}) = <b>{nbF(pH, 2)}</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Les quantités de matière se calculent par n = C × V.', 'pH = pKa + log frac(n(A⁻)|n(AH)).', 'Le mélange est un tampon si le rapport reste entre 0,1 et 10.'] };
+}
+function genAbTampAjout() {
+  let pKa, nAH, nA, x, acide, nA2, nAH2, r2;
+  for (let k = 0; ; k++) {
+    pKa = tire([4.2, 4.9, 7.5]); nAH = tire([4, 5, 6, 8]); nA = tire([4, 6, 8, 10]); x = tire([0.5, 1, 1.5, 2]); acide = tire([true, false]);
+    nA2 = acide ? nA - x : nA + x; nAH2 = acide ? nAH + x : nAH - x; r2 = cs2(nA2 / nAH2);
+    if ((Math.abs(r2 - 1) > 0.1 && dist10([nA2, nAH2, r2, pKa + Math.log10(r2), nA, nAH])) || k > 800) break;
+  }
+  const pK = nbF(pKa, 1), pH = pKa + Math.log10(r2), pH0 = pKa + Math.log10(nA / nAH), rs = sig2(r2), ion = acide ? 'H₃O⁺' : 'HO⁻';
+  const intro = `Un tampon du couple AH / A⁻ (pKa = ${pK}, à 25${NB}°C) contient ${nbF(nA, 1)}${NB}mmol de A⁻ et ${nbF(nAH, 1)}${NB}mmol de AH. On y ajoute ${nbF(x, 1)}${NB}mmol d’ions ${ion} (${acide ? 'acide fort' : 'base forte'}), qui réagissent totalement.`;
+  const q1 = { id: 'e0', type: 'num', q: <>Calculez la quantité de <b>A⁻</b> après la réaction (en mmol, 2 chiffres significatifs).</>, unite: 'mmol', vrai: nA2, tolRel: 0.05, csMin: 2,
+    aide: acide ? 'H₃O⁺ consomme A⁻ : n(A⁻) final = n(A⁻) − quantité ajoutée.' : 'HO⁻ forme A⁻ à partir de AH : n(A⁻) final = n(A⁻) + quantité ajoutée.',
+    pieges: [[acide ? nA + x : nA - x, 'Le sens est inversé : ' + (acide ? 'un acide consomme la base A⁻.' : 'une base forme A⁻.')], [nA, 'La quantité de A⁻ a changé.']],
+    expl: <>n(A⁻) = {nbF(nA, 1)} {acide ? '−' : '+'} {nbF(x, 1)} = <b>{nbF(nA2, 1)}{NB}mmol</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>Calculez la quantité de <b>AH</b> après la réaction (en mmol, 2 chiffres significatifs).</>, unite: 'mmol', vrai: nAH2, tolRel: 0.05, csMin: 2,
+    aide: acide ? 'AH se forme : n(AH) final = n(AH) + quantité ajoutée.' : 'AH est consommé : n(AH) final = n(AH) − quantité ajoutée.',
+    pieges: [[acide ? nAH - x : nAH + x, 'Le sens est inversé : ' + (acide ? 'AH est formé, il augmente.' : 'AH est consommé, il diminue.')], [nAH, 'La quantité de AH a changé.']],
+    expl: <>n(AH) = {nbF(nAH, 1)} {acide ? '+' : '−'} {nbF(x, 1)} = <b>{nbF(nAH2, 1)}{NB}mmol</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>Avec n(A⁻) = {nbF(nA2, 1)} mmol et n(AH) = {nbF(nAH2, 1)} mmol (rapport {rs}), calculez le <b>pH</b> après l’ajout (2 chiffres significatifs).</>, unite: '', vrai: pH, tolRel: 0.012, csMin: 2,
+    aide: 'pH = pKa + log(rapport) avec le rapport après l’ajout.',
+    pieges: [[pH0, 'C’est le pH avant l’ajout : utilisez les quantités après la réaction.'], [pKa - Math.log10(r2), 'Le signe est inversé : pH = pKa + log(rapport).']],
+    expl: <>pH = {pK} + log({rs}) = <b>{nbF(pH, 2)}</b> (avant l’ajout : {nbF(pH0, 2)}).</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Un acide fort consomme A⁻ et forme AH ; une base forte consomme AH et forme A⁻.', 'Le pH varie peu : seul le rapport des quantités change un peu.', 'Un tampon est limité par la quantité de A⁻ (pour un acide) ou de AH (pour une base).'] };
+}
 // ---------- CO₂ dissous (TSTL, PCM) ----------
 const fmv = x => (x < 0.001 || x >= 1e5) ? sciF(x) : String(Number(Number(x).toPrecision(2))).replace('.', ',');
 function tirageCo2Eau() {
@@ -1752,6 +1902,12 @@ export const FAMILLES = [
   { id: 'predo-beer', groupe: 'Formules', titre: 'Indicateur coloré : spectrophotométrie et pKa (terminale STL)', gen: genPredoBeer, domaine: 'pH, pKa et diagramme de prédominance' },
   { id: 'tampstl-prepa', groupe: 'Formules', titre: 'Préparer une solution tampon de pH donné (terminale STL)', gen: genTampstlPrepa, domaine: 'Solution tampon : choix du couple et préparation' },
   { id: 'tampstl-ajout', groupe: 'Formules', titre: 'pH d’un tampon après un ajout d’acide ou de base (terminale STL)', gen: genTampstlAjout, domaine: 'Solution tampon : choix du couple et préparation' },
+  { id: 'ab-acf-rea-ph', groupe: 'Formules', titre: 'pH d’un acide fort et d’un acide faible', gen: genAbAcfPh, domaine: 'Acides et bases' },
+  { id: 'ab-acf-rea-dilution', groupe: 'Formules', titre: 'Diluer un acide faible : pH avant et après', gen: genAbAcfDilution, domaine: 'Acides et bases' },
+  { id: 'ab-pred-rea-rapport', groupe: 'Formules', titre: 'Concentrations des deux formes d’un couple selon le pH', gen: genAbPredRapport, domaine: 'Acides et bases' },
+  { id: 'ab-pred-rea-pka', groupe: 'Formules', titre: 'Retrouver un pKa à partir du pH et d’un rapport', gen: genAbPredPka, domaine: 'Acides et bases' },
+  { id: 'ab-tamp-rea-melange', groupe: 'Formules', titre: 'pH d’un tampon préparé par mélange', gen: genAbTampMelange, domaine: 'Acides et bases' },
+  { id: 'ab-tamp-rea-ajout', groupe: 'Formules', titre: 'pH d’un tampon après un ajout d’acide ou de base fort', gen: genAbTampAjout, domaine: 'Acides et bases' },
   { id: 'co2dis-henry', groupe: 'Formules', titre: 'CO₂ dissous : eau en équilibre avec un gaz (terminale STL)', gen: genCo2Eau, domaine: 'CO₂ dissous : couples et solubilité' },
   { id: 'co2dis-milieu', groupe: 'Formules', titre: 'CO₂ dissous : milieu de pH imposé (terminale STL)', gen: genCo2Milieu, domaine: 'CO₂ dissous : couples et solubilité' },
   { id: 'crist-refroidissement', groupe: 'Formules', titre: 'Cristallisation par refroidissement : sel dissous, cristaux et rendement (terminale STL)', gen: genCristRefroidissement, domaine: 'Évaporation et cristallisation' },
