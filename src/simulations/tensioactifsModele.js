@@ -123,3 +123,44 @@ export function nomMolecule(id, n) {
     glucamide: `MEGA-${n} (N-méthylglucamide)`, phosphine: `APO-${n} (oxyde de ${p}diméthylphosphine)`, sulfobetaine: `SB3-${n} (sulfobétaïne)`,
   })[id];
 }
+
+// ---------- tirages des défis ----------
+const alea = t => t[Math.floor(Math.random() * t.length)];
+const arrondiCS = (v, cs = 2) => Number(Number(v).toPrecision(cs));
+export const arrondiCS2 = v => arrondiCS(v, 2);
+const melange = t => { const a = [...t]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const ecartMin = items => { const c = items.map(i => i.cmc).sort((a, b) => a - b); return Math.min(c[1] / c[0], c[2] / c[1]); };
+
+// défi « classer » : trois tensioactifs à ranger par CMC croissante (même tête et chaînes différentes, ou même chaîne et têtes différentes)
+export function tirageClasser() {
+  for (let k = 0; k < 500; k++) {
+    const mode = alea(['chaine', 'tete']); let items;
+    if (mode === 'chaine') {
+      const f = alea(FAMILLES), ns = melange(Array.from({ length: f.dom[1] - f.dom[0] + 1 }, (_, i) => f.dom[0] + i)).slice(0, 3);
+      if (ns.length < 3) continue; items = ns.map(n => ({ fam: f.id, n, cmc: cmc(f.id, n) }));
+    } else {
+      const n = alea([9, 10, 10, 11]), fs = melange(FAMILLES.filter(f => dansDomaine(f.id, n))).slice(0, 3);
+      if (fs.length < 3) continue; items = fs.map(f => ({ fam: f.id, n, cmc: cmc(f.id, n) }));
+    }
+    if (ecartMin(items) < 2) continue;
+    const lettres = ['A', 'B', 'C'].map((l, i) => ({ ...items[i], l }));
+    const ordre = [...lettres].sort((a, b) => a.cmc - b.cmc).map(x => x.l);   // du plus faible au plus élevé
+    return { mode, items: lettres, ordre };
+  }
+  throw new Error('tirage classer impossible');
+}
+// défi « libres » : un tensioactif réel du tableau, une concentration totale au-dessus de la CMC
+export function tirageLibres() {
+  const P = POINTS.filter(p => !p.hi && p.lo >= 0.5 && p.lo <= 100), p = alea(P), cmcA = arrondiCS(p.lo), k = alea([2, 3, 4, 5]), c = arrondiCS(k * cmcA);
+  return { nom: p.nom, fam: p.fam, n: p.n, cmc: cmcA, c, libres: cmcA, engage: c - cmcA };
+}
+// défi « klevens » (prolongement) : à partir d'une CMC et d'un facteur par carbone, CMC d'une chaîne plus longue
+export function tirageKlevens() {
+  for (let k = 0; k < 200; k++) {
+    const f = alea(FAMILLES), d = alea([2, 3, 4]), n0 = f.dom[0] + alea([0, 1]), n1 = n0 + d;
+    if (!dansDomaine(f.id, n1)) continue;
+    const c0 = arrondiCS(cmc(f.id, n0)), F = Math.round(10 ** PARAM[f.id].B * 10) / 10, vrai = c0 / F ** d;
+    return { fam: f.id, n0, n1, d, c0, F, vrai, modele: cmc(f.id, n1) };
+  }
+  throw new Error('tirage klevens impossible');
+}

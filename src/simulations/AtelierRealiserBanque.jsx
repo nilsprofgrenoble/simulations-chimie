@@ -1239,6 +1239,43 @@ function genStereoRacemique() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['Mélange racémique : 50 % de chaque énantiomère, en masse comme en quantité de matière.', 'Seul l’énantiomère actif compte pour l’effet : prendre la moitié de la masse du mélange.', 'Un nombre de comprimés = masse demandée divisée par la masse d’énantiomère actif d’un comprimé.'] };
 }
+function genTensLibres() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const cmc = tire([2, 4, 5, 8, 10]), k = tire([3, 4, 5, 6]), c = k * cmc, lib = cmc, mic = c - cmc, pct = 100 * mic / c;
+  const intro = `Un tensioactif a une CMC de ${cmc}${NB}mmol/L. On prépare une solution aqueuse de ce tensioactif à ${c}${NB}mmol/L, donc au-dessus de la CMC.`;
+  const q1 = { id: 'l0', type: 'num', q: <>Quelle est la concentration en <b>monomères libres</b> (molécules isolées), en mmol/L ?</>, unite: 'mmol/L', vrai: lib, tolRel: 0.02, csMin: 1,
+    aide: 'Au-dessus de la CMC, la concentration en monomères libres ne varie plus.',
+    pieges: [[c, 'C’est la concentration totale : au-dessus de la CMC, le tensioactif en excès forme des micelles.'], [mic, 'C’est la concentration engagée dans les micelles, pas celle des monomères libres.']],
+    expl: <>Au-dessus de la CMC, les monomères libres restent à la concentration de la CMC : <b>{cmc}{NB}mmol/L</b>.</> };
+  const q2 = { id: 'l1', type: 'num', q: <>Quelle concentration de tensioactif est <b>engagée dans les micelles</b> (mmol/L) ?</>, unite: 'mmol/L', vrai: mic, tolRel: 0.02, csMin: 1,
+    aide: 'Concentration totale moins concentration des monomères libres.',
+    pieges: [[c, 'C’est la concentration totale : il faut retirer les monomères libres.'], [cmc, 'C’est la concentration en monomères libres, pas celle des micelles.'], [c + cmc, 'Les monomères libres font partie de la concentration totale : il faut les soustraire, non les ajouter.']],
+    expl: <>{c} − {cmc} = <b>{mic}{NB}mmol/L</b> sont dans les micelles.</> };
+  const q3 = { id: 'l2', type: 'num', q: <>Quel pourcentage du tensioactif total est engagé dans les micelles (2 chiffres significatifs) ?</>, unite: '%', vrai: pct, tolRel: 0.05, csMin: 2,
+    aide: 'Concentration dans les micelles divisée par la concentration totale, fois 100.',
+    pieges: [[100 * cmc / c, 'C’est la part de monomères libres : on demande la part dans les micelles.'], [mic, 'C’est une concentration en mmol/L : il faut la rapporter à la concentration totale, en pourcentage.']],
+    expl: <>{mic} divisé par {c}, soit <b>{nbF(pct, 0)}{NB}%</b> du tensioactif.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Au-dessus de la CMC, les monomères libres restent à la concentration de la CMC.', 'Le reste du tensioactif (concentration totale − CMC) forme des micelles.', 'Plus on ajoute de tensioactif, plus la part dans les micelles augmente.'] };
+}
+function genTensKlevens() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const ion = tire([true, false]), F = ion ? 2 : 3.5, n0 = tire([8, 9, 10]), d = tire([2, 3, 4]), n1 = n0 + d, c0 = tire([40, 60, 100]);
+  const fac = F ** d, c1 = c0 / fac, Fs = nbF(F, F % 1 ? 1 : 0);
+  const intro = `Prolongement du programme : pour une série de tensioactifs de même tête (${ion ? 'ionique' : 'non ionique'}), on constate que chaque carbone ajouté à la chaîne divise la CMC par ${Fs}. Le tensioactif à ${n0} carbones a une CMC de ${c0}${NB}mmol/L ; on étudie celui à ${n1} carbones.`;
+  const q1 = { id: 'k0', type: 'num', q: <>De quel facteur la CMC est-elle divisée quand on passe de {n0} à {n1} carbones (2 chiffres significatifs) ?</>, unite: '', vrai: fac, tolRel: 0.05, csMin: 2,
+    aide: `On ajoute ${d} carbones : on divise ${d} fois de suite par ${Fs}.`,
+    pieges: [[F * d, `Les divisions successives se multiplient : ${Fs} puissance ${d}, pas ${Fs} fois ${d}.`], [F, 'C’est le facteur pour un seul carbone : ici on en ajoute plusieurs.']],
+    expl: <>{d} carbones de plus : {Fs}<sup>{d}</sup> = <b>{nbF(fac, fac >= 10 ? 0 : 1)}</b>.</> };
+  const q2 = { id: 'k1', type: 'num', q: <>Quelle est la CMC du tensioactif à {n1} carbones (mmol/L, 2 chiffres significatifs) ?</>, unite: 'mmol/L', vrai: c1, tolRel: 0.05, csMin: 2,
+    aide: 'CMC du tensioactif à plus longue chaîne = CMC de départ divisée par le facteur trouvé.',
+    pieges: [[c0 * fac, 'La chaîne plus longue abaisse la CMC : il faut diviser, non multiplier.'], [c0 / (F * d), `Le facteur total est ${Fs} puissance ${d}, pas ${Fs} fois ${d}.`]],
+    expl: <>{c0} divisé par {nbF(fac, fac >= 10 ? 0 : 1)} = <b>{nbF(c1, c1 >= 10 ? 0 : c1 >= 1 ? 1 : 2)}{NB}mmol/L</b>.</> };
+  filtrer([q1, q2]);
+  return { intro, questions: [q1, q2],
+    retenir: ['Chaque carbone ajouté à la chaîne divise la CMC par un facteur à peu près constant (environ 2 pour un ionique, 3 à 4 pour un non ionique).', 'Pour plusieurs carbones, les facteurs se multiplient : facteur puissance nombre de carbones ajoutés.'] };
+}
 function genPredoBeer() {
   const u = PRE.tirageIndicateur(), Cs = sciF(u.C), eps = sciF(u.eps), ls = nbF(u.l, 2), pHs = nbF(u.pH, 2), As = nbF(u.abs, 3);
   const Ind = u.abs / (u.eps * u.l), Ind2 = PRE.arrondiCS(Ind, 2), HInd2 = PRE.arrondiCS(u.C - Ind2, 2), r2 = PRE.arrondiCS(Ind2 / HInd2, 2), pKa2 = u.pH - Math.log10(r2);
@@ -1723,6 +1760,8 @@ export const FAMILLES = [
   { id: 'extrac-passes', groupe: 'Formules', titre: 'Extraction acide-base : extractions successives (terminale STL)', gen: genExtracPasses, domaine: 'Extraction acide-base : choix du pH' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
+  { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
+  { id: 'tens-klevens', groupe: 'Formules', titre: 'CMC et longueur de la chaîne : prolongement du programme (BTS)', gen: genTensKlevens, domaine: 'Tensioactifs : de la structure à la CMC' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },

@@ -160,53 +160,53 @@ export function SvgStructureCMC() {
 }
 
 export function SvgMolecule({ fam, n, titre, annoter = false }) {
-  const dx = Math.min(20, 230 / (n - 1)), ye = 64, X0 = 14;
+  const dx = Math.min(20, 230 / (n - 1)), ye = 98, X0 = 14;
   const pts = Array.from({ length: n }, (_, k) => [X0 + k * dx, ye - ((n - 1 - k) % 2) * 10]);
   const [xe] = pts[n - 1], B = COUL.tete, E = { stroke: B, strokeWidth: 2, strokeLinecap: 'round' };
   const L = (x1, y1, x2, y2, c = B) => <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={c} strokeWidth="2" strokeLinecap="round"/>;
   const D = (x1, y1, x2, y2) => { const a = Math.atan2(y2 - y1, x2 - x1) + Math.PI / 2, ox = Math.cos(a) * 2.2, oy = Math.sin(a) * 2.2; return <g>{L(x1 + ox, y1 + oy, x2 + ox, y2 + oy)}{L(x1 - ox, y1 - oy, x2 - ox, y2 - oy)}</g>; };
-  const A = (x, y, s, c = B) => <g><circle cx={x} cy={y} r="7.5" fill="white"/><text x={x} y={y + 4.5} fontSize="13" fontWeight="700" textAnchor="middle" fill={c}>{s}</text></g>;
-  const Tx = (x, y, s, anc = 'start') => <text x={x} y={y} fontSize="12" fill={B} textAnchor={anc}>{s}</text>;
+  const A = (x, y, s, c = B) => <g><circle cx={x} cy={y} r="9" fill="white"/><text x={x} y={y + 5.5} fontSize="16" fontWeight="700" textAnchor="middle" fill={c}>{s}</text></g>;
+  const Tx = (x, y, s, anc = 'start') => <text x={x} y={y} fontSize="15" fill={B} textAnchor={anc}>{s}</text>;
   const ox = xe, oy = ye;                        // dernier carbone : la tête part vers le haut puis le bas, en zigzag
-  let tete = null, largeur = 78;
+  let tete = null, largeur = 90;
   if (fam === 'sulfate') {
-    largeur = 136;
-    tete = <g>{L(ox, oy, ox + 22, oy - 13)}{L(ox + 22, oy - 13, ox + 44, oy)}{D(ox + 44, oy, ox + 44, oy - 29)}{D(ox + 44, oy, ox + 44, oy + 29)}{L(ox + 44, oy, ox + 66, oy - 13)}
-      {A(ox + 22, oy - 13, 'O')}{A(ox + 44, oy, 'S')}{A(ox + 44, oy - 31, 'O')}{A(ox + 44, oy + 31, 'O')}{A(ox + 69, oy - 13, 'O⁻', '#b91c1c')}{Tx(ox + 86, oy - 8, 'Na⁺')}</g>;
+    largeur = 156;
+    tete = <g>{L(ox, oy, ox + 25, oy - 15)}{L(ox + 25, oy - 15, ox + 51, oy)}{D(ox + 51, oy, ox + 51, oy - 33)}{D(ox + 51, oy, ox + 51, oy + 33)}{L(ox + 51, oy, ox + 76, oy - 15)}
+      {A(ox + 25, oy - 15, 'O')}{A(ox + 51, oy, 'S')}{A(ox + 51, oy - 36, 'O')}{A(ox + 51, oy + 36, 'O')}{A(ox + 79, oy - 15, 'O⁻', '#b91c1c')}{Tx(ox + 99, oy - 9, 'Na⁺')}</g>;
   } else if (fam === 'ammonium') {
-    largeur = 143;
-    tete = <g>{L(ox, oy, ox + 22, oy - 13)}{L(ox + 22, oy - 13, ox + 22, oy - 42)}{L(ox + 22, oy - 13, ox + 52, oy - 13)}{L(ox + 22, oy - 13, ox + 22, oy + 16)}
-      {A(ox + 22, oy - 13, 'N⁺', '#0369a1')}{Tx(ox + 22, oy - 47, 'CH₃', 'middle')}<text x={ox + 57} y={oy - 8} fontSize="12" fill={B}>CH₃</text>{Tx(ox + 22, oy + 32, 'CH₃', 'middle')}{Tx(ox + 99, oy + 32, 'Br⁻')}</g>;
+    largeur = 164;
+    tete = <g>{L(ox, oy, ox + 25, oy - 15)}{L(ox + 25, oy - 15, ox + 25, oy - 48)}{L(ox + 25, oy - 15, ox + 60, oy - 15)}{L(ox + 25, oy - 15, ox + 25, oy + 18)}
+      {A(ox + 25, oy - 15, 'N⁺', '#0369a1')}{Tx(ox + 25, oy - 54, 'CH₃', 'middle')}<text x={ox + 66} y={oy - 9} fontSize="15" fill={B}>CH₃</text>{Tx(ox + 25, oy + 37, 'CH₃', 'middle')}{Tx(ox + 114, oy + 37, 'Br⁻')}</g>;
   } else if (fam === 'phosphine') {
-    largeur = 104;
-    tete = <g>{L(ox, oy, ox + 22, oy - 13)}{D(ox + 22, oy - 13, ox + 22, oy - 42)}{L(ox + 22, oy - 13, ox + 52, oy - 13)}{L(ox + 22, oy - 13, ox + 22, oy + 16)}
-      {A(ox + 22, oy - 13, 'P')}{A(ox + 22, oy - 44, 'O')}<text x={ox + 57} y={oy - 8} fontSize="12" fill={B}>CH₃</text>{Tx(ox + 22, oy + 32, 'CH₃', 'middle')}</g>;
+    largeur = 120;
+    tete = <g>{L(ox, oy, ox + 25, oy - 15)}{D(ox + 25, oy - 15, ox + 25, oy - 48)}{L(ox + 25, oy - 15, ox + 60, oy - 15)}{L(ox + 25, oy - 15, ox + 25, oy + 18)}
+      {A(ox + 25, oy - 15, 'P')}{A(ox + 25, oy - 51, 'O')}<text x={ox + 66} y={oy - 9} fontSize="15" fill={B}>CH₃</text>{Tx(ox + 25, oy + 37, 'CH₃', 'middle')}</g>;
   } else if (fam === 'sulfobetaine') {
-    largeur = 162;
-    tete = <g>{L(ox, oy, ox + 22, oy - 13)}{L(ox + 22, oy - 13, ox + 22, oy - 42)}{L(ox + 22, oy - 13, ox + 22, oy + 16)}{L(ox + 22, oy - 13, ox + 44, oy)}{L(ox + 44, oy, ox + 66, oy - 13)}{L(ox + 66, oy - 13, ox + 88, oy)}{L(ox + 88, oy, ox + 110, oy - 13)}
-      {D(ox + 110, oy - 13, ox + 110, oy - 42)}{D(ox + 110, oy - 13, ox + 110, oy + 16)}{L(ox + 110, oy - 13, ox + 133, oy)}
-      {A(ox + 22, oy - 13, 'N⁺')}{Tx(ox + 22, oy - 47, 'CH₃', 'middle')}{Tx(ox + 22, oy + 32, 'CH₃', 'middle')}{A(ox + 110, oy - 13, 'S')}{A(ox + 110, oy - 44, 'O')}{A(ox + 110, oy + 18, 'O')}{A(ox + 135, oy, 'O⁻', '#b91c1c')}</g>;
+    largeur = 186;
+    tete = <g>{L(ox, oy, ox + 25, oy - 15)}{L(ox + 25, oy - 15, ox + 25, oy - 48)}{L(ox + 25, oy - 15, ox + 25, oy + 18)}{L(ox + 25, oy - 15, ox + 51, oy)}{L(ox + 51, oy, ox + 76, oy - 15)}{L(ox + 76, oy - 15, ox + 101, oy)}{L(ox + 101, oy, ox + 126, oy - 15)}
+      {D(ox + 126, oy - 15, ox + 126, oy - 48)}{D(ox + 126, oy - 15, ox + 126, oy + 18)}{L(ox + 126, oy - 15, ox + 153, oy)}
+      {A(ox + 25, oy - 15, 'N⁺')}{Tx(ox + 25, oy - 54, 'CH₃', 'middle')}{Tx(ox + 25, oy + 37, 'CH₃', 'middle')}{A(ox + 126, oy - 15, 'S')}{A(ox + 126, oy - 51, 'O')}{A(ox + 126, oy + 21, 'O')}{A(ox + 155, oy, 'O⁻', '#b91c1c')}</g>;
   } else if (fam === 'glucamide') {
-    largeur = 195;
-    tete = <g>{D(ox, oy, ox, oy - 29)}{L(ox, oy, ox + 22, oy - 13)}{A(ox, oy - 31, 'O')}{L(ox + 22, oy - 13, ox + 22, oy + 16)}{L(ox + 22, oy - 13, ox + 44, oy)}
-      {A(ox + 22, oy - 13, 'N')}{Tx(ox + 22, oy + 32, 'CH₃', 'middle')}<text x={ox + 49} y={oy + 5} fontSize="12" fill={B}>CH₂(CHOH)₄CH₂OH</text></g>;
+    largeur = 224;
+    tete = <g>{D(ox, oy, ox, oy - 33)}{L(ox, oy, ox + 25, oy - 15)}{A(ox, oy - 36, 'O')}{L(ox + 25, oy - 15, ox + 25, oy + 18)}{L(ox + 25, oy - 15, ox + 51, oy)}
+      {A(ox + 25, oy - 15, 'N')}{Tx(ox + 25, oy + 37, 'CH₃', 'middle')}<text x={ox + 56} y={oy + 6} fontSize="15" fill={B}>CH₂(CHOH)₄CH₂OH</text></g>;
   } else {                                          // maltoside : deux unités glucose (hexagones plats)
-    const R = 18, o1 = ox + 22, c1 = o1 + 15 + R, o2 = c1 + R + 15, c2 = o2 + 15 + R;
-    const hex = cx => Array.from({ length: 6 }, (_, k) => `${(cx + R * Math.cos(k * Math.PI / 3)).toFixed(1)},${(oy - 13 + R * Math.sin(k * Math.PI / 3)).toFixed(1)}`).join(' ');
-    const oh = cx => <g>{L(cx - R / 2, oy - 13 + 0.866 * R, cx - R / 2, oy - 13 + 0.866 * R + 9)}{Tx(cx - R / 2, oy - 13 + 0.866 * R + 22, 'OH', 'middle')}</g>;
+    const R = 21, o1 = ox + 26, c1 = o1 + 17 + R, o2 = c1 + R + 17, c2 = o2 + 17 + R;
+    const hex = cx => Array.from({ length: 6 }, (_, k) => `${(cx + R * Math.cos(k * Math.PI / 3)).toFixed(1)},${(oy - 15 + R * Math.sin(k * Math.PI / 3)).toFixed(1)}`).join(' ');
+    const oh = cx => <g>{L(cx - R / 2, oy - 15 + 0.866 * R, cx - R / 2, oy - 15 + 0.866 * R + 10)}{Tx(cx - R / 2, oy - 15 + 0.866 * R + 26, 'OH', 'middle')}</g>;
     largeur = c2 + R + 4 - ox;
-    tete = <g>{L(ox, oy, o1, oy - 13)}{L(o1, oy - 13, c1 - R, oy - 13)}<polygon points={hex(c1)} fill="#f0f9ff" {...E}/>{L(c1 + R, oy - 13, o2, oy - 13)}{L(o2, oy - 13, c2 - R, oy - 13)}<polygon points={hex(c2)} fill="#f0f9ff" {...E}/>
-      {A(o1, oy - 13, 'O')}{A(o2, oy - 13, 'O')}{A(c1 + R / 2, oy - 13 - 0.866 * R, 'O')}{A(c2 + R / 2, oy - 13 - 0.866 * R, 'O')}{oh(c1)}{oh(c2)}</g>;
+    tete = <g>{L(ox, oy, o1, oy - 15)}{L(o1, oy - 15, c1 - R, oy - 15)}<polygon points={hex(c1)} fill="#f0f9ff" {...E}/>{L(c1 + R, oy - 15, o2, oy - 15)}{L(o2, oy - 15, c2 - R, oy - 15)}<polygon points={hex(c2)} fill="#f0f9ff" {...E}/>
+      {A(o1, oy - 15, 'O')}{A(o2, oy - 15, 'O')}{A(c1 + R / 2, oy - 15 - 0.866 * R, 'O')}{A(c2 + R / 2, oy - 15 - 0.866 * R, 'O')}{oh(c1)}{oh(c2)}</g>;
   }
-  const W2 = Math.max(420, xe + largeur + 40);
+  const W2 = Math.max(350, xe + largeur + 16);
   return (
-    <svg viewBox={`0 0 ${W2} ${annoter ? 150 : 124}`} width="100%" role="img" aria-label={`Formule simplifiée : ${titre ?? ''}`} style={{ display: 'block', maxWidth: 480, margin: '0 auto' }}>
-      {titre && <text x="8" y="16" fontSize="13" fontWeight="700" fill={COUL.txt}>{titre}</text>}
+    <svg viewBox={`0 0 ${W2} ${annoter ? 198 : 166}`} width="100%" role="img" aria-label={`Formule simplifiée : ${titre ?? ''}`} style={{ display: 'block', maxWidth: 480, margin: '0 auto' }}>
+      {titre && <text x="8" y="18" fontSize="16" fontWeight="700" fill={COUL.txt}>{titre}</text>}
       <polyline points={pts.map(p => p.join(',')).join(' ')} fill="none" stroke={COUL.queue} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/>
       {tete}
       {annoter ? <>
-        <line x1={X0} y1="108" x2={xe} y2="108" stroke={COUL.queue} strokeWidth="2"/><text x={(X0 + xe) / 2} y="125" fontSize="13" fontWeight="700" textAnchor="middle" fill={COUL.queue}>queue hydrophobe</text><text x={(X0 + xe) / 2} y="141" fontSize="12" textAnchor="middle" fill={COUL.queue}>({n} carbones)</text>
-        <line x1={xe + 8} y1="108" x2={xe + largeur} y2="108" stroke="#b91c1c" strokeWidth="2"/><text x={xe + 8 + (largeur - 8) / 2} y="125" fontSize="13" fontWeight="700" textAnchor="middle" fill="#b91c1c">tête hydrophile</text>
-      </> : <text x={(X0 + xe) / 2} y="112" fontSize="12" textAnchor="middle" fill={COUL.gris}>chaîne de {n} carbones (un sommet = un carbone)</text>}
+        <line x1={X0} y1="150" x2={xe} y2="150" stroke={COUL.queue} strokeWidth="2"/><text x={(X0 + xe) / 2} y="170" fontSize="16" fontWeight="700" textAnchor="middle" fill={COUL.queue}>queue hydrophobe</text><text x={(X0 + xe) / 2} y="188" fontSize="15" textAnchor="middle" fill={COUL.queue}>({n} carbones)</text>
+        <line x1={xe + 8} y1="150" x2={xe + largeur} y2="150" stroke="#b91c1c" strokeWidth="2"/><text x={xe + 8 + (largeur - 8) / 2} y="170" fontSize="16" fontWeight="700" textAnchor="middle" fill="#b91c1c">tête hydrophile</text>
+      </> : <text x={(X0 + xe) / 2} y="158" fontSize="15" textAnchor="middle" fill={COUL.gris}>chaîne de {n} carbones (un sommet = un carbone)</text>}
     </svg>);
 }
