@@ -232,7 +232,11 @@ export function SimulationDoppler({ naviguer, tg = false }) {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
   const [suiviEm, noterEm] = useCompteurDefi(), [suiviEc, noterEc] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant(CLE_GUIDE, VIDE), [g2, setG2] = useEtatPersistant(CLE_GUIDE.replace('-v1', '-p2'), VIDE), [g3, setG3] = useEtatPersistant(CLE_GUIDE.replace('-v1', '-p3'), VIDE);
+  const [parcBrut, setParc] = useEtatPersistant(CLE_GUIDE.replace('-guide-v1', '-parcours-choix'), 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('emetteur');
   const [hypoOuv, setHypoOuv] = useState(false);
   const [scene, setScene] = useState('fronts');
@@ -271,12 +275,19 @@ export function SimulationDoppler({ naviguer, tg = false }) {
   const dd = enDefi && defi ? defi : null;
 
   // ════════════════ PARCOURS : étapes (les identifiants servent à faire apparaître les éléments au fur et à mesure) ════════════════
-  const IDS = tg
-    ? ['fixe', 'mobile', 'devant', 'derriere', 'frequence', 'etablir1', 'etablir2', 'rapport', 'etablir3', 'rail', 'deplace', 'decale', 'pointer', 'decalage', 'vitesse', 'validite', 'em', 'eloigne', 'sensinverse', 'duree', 'resolution', 'separer', 'bravo']
-    : ['fixe', 'mobile', 'devant', 'derriere', 'frequence', 'rapport', 'rail', 'deplace', 'decale', 'pointer', 'decalage', 'vitesse', 'validite', 'eloigne', 'sensinverse', 'duree', 'resolution', 'separer', 'bravo'];
+  const ORDRE_PARC = tg
+    ? [['fixe', 'mobile', 'devant', 'derriere', 'frequence', 'etablir1', 'etablir2', 'rapport', 'etablir3', 'bilan1'],
+      ['rail', 'deplace', 'decale', 'pointer', 'decalage', 'vitesse', 'validite', 'em', 'bilan2'],
+      ['eloigne', 'sensinverse', 'duree', 'resolution', 'separer', 'bravo']]
+    : [['fixe', 'mobile', 'devant', 'derriere', 'frequence', 'rapport', 'bilan1'],
+      ['rail', 'deplace', 'decale', 'pointer', 'decalage', 'vitesse', 'validite', 'bilan2'],
+      ['eloigne', 'sensinverse', 'duree', 'resolution', 'separer', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const etape = guide.etape, idE = enGuide ? IDS[Math.min(etape, IDS.length - 1)] : null;
-  const apres = id => !enGuide || etape > IDS.indexOf(id), deja = id => !enGuide || etape >= IDS.indexOf(id);
-  const sceneEff = dd ? 'mesure' : enGuide ? (etape >= IDS.indexOf('rail') ? 'mesure' : 'fronts') : scene;
+  const apres = id => !enGuide || etape > iEt(id), deja = id => !enGuide || etape >= iEt(id);
+  const sceneEff = dd ? 'mesure' : enGuide ? (etape >= iEt('rail') ? 'mesure' : 'fronts') : scene;
 
   // ---------- grandeurs effectives ----------
   const m = dd ? { montage: dd.type, sens: dd.sens, v: dd.v, fe: dd.fe, T: 1 } : mes;
@@ -284,7 +295,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
   const vEff = enGuide && idE === 'rail' ? 0 : m.v;
   const betaEff = enGuide && idE === 'fixe' ? 0 : beta;
   refAudio.current.ratio = ratioEcoute(ecoute, betaEff); refAudio.current.beta = betaEff;
-  useEffect(() => { if (mode !== 'explore' && !(enGuide && etape >= IDS.indexOf('rapport'))) setEcoute(null); }, [mode, etape]);   // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (mode !== 'explore' && !(enGuide && etape >= iEt('rapport'))) setEcoute(null); }, [mode, etape]);   // eslint-disable-line react-hooks/exhaustive-deps
   const fr = vEff === 0 ? fe : echo ? D.frequenceEcho(fe, vEff, C, sg) : D.frequenceRecue(fe, vEff, C, sg);
   const W0 = echo ? 400 : 200;
   const fen = zoomC != null ? [zoomC - 30, zoomC + 30] : [fe - W0, fe + W0];
@@ -299,7 +310,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
   const lamAv = D.lambdaAvant(1, betaEff), lamAr = D.lambdaArriere(1, betaEff);
   const dfMesBase = Math.round(cur - 40000);
 
-  const ETAPES = [
+  const TOUTES = [
     { id: 'fixe', titre: 'Un émetteur immobile', focus: ['scene'],
       texte: <>Un <strong>émetteur ultrasonore</strong> immobile émet une onde sonore de période <em>T</em>. Les cercles sont les <strong>fronts d’onde</strong> (les crêtes de l’onde), vues de dessus. Deux récepteurs fixes, A et B, sont placés de part et d’autre.</>,
       tache: { type: 'qcm', q: 'La distance entre deux fronts d’onde consécutifs est…', options: ['la longueur d’onde λ', 'la période T', 'la célérité c'], bonne: 0,
@@ -335,7 +346,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         expl: 'Le 1er front est à c × T_e de la 1re position ; le 2e part de v × T_e plus loin : l’écart vaut c × T_e − v × T_e = (c − v) × T_e. Derrière l’émetteur, il part dans l’autre sens : (c + v) × T_e. Ensuite f = c / λ donne f_A = c / ((c − v) T_e) = f_e / (1 − v / c).', indice: 'Les deux distances sont mesurées dans le même sens : on soustrait. Faites un schéma avec les positions d’émission.' } },
     ] : []),
     { id: 'rapport', titre: 'Le rapport des fréquences', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : L’ÉMETTEUR MOBILE DÉCALE LA FRÉQUENCE REÇUE',
+      retenirTitre: 'L’émetteur mobile décale la fréquence reçue',
       retenir: <>
         <SvgFronts/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -356,6 +367,8 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       tache: { type: 'qcm', q: 'Pour v très inférieure à c, le décalage Doppler vaut environ…', options: ['f_e × v / c', 'f_e × c / v', 'f_e × (c − v) / c'], bonne: 0,
         expl: 'Si v ≪ c, alors c − v ≈ c et δf = f_e v / (c − v) ≈ f_e × v / c. Le décalage est proportionnel à v, comme le montrera la mesure.', indice: 'Dans δf = f_e × v / (c − v), que devient c − v quand v est négligeable devant c ?' } },
     ] : []),
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez que le mouvement relatif d’un émetteur et d’un récepteur décale la fréquence reçue : plus grande en rapprochement, plus petite en éloignement. Le parcours 2 mesure ce décalage sur un montage de laboratoire pour en déduire une vitesse.</>, tache: null },
     { id: 'rail', titre: 'Un montage de mesure', focus: ['scene'],
       texte: <>Passons à un vrai dispositif de laboratoire. Un <strong>chariot</strong> roule sur un rail et porte un émetteur ultrasonore de fréquence <em>f</em><sub>e</sub> = 40{NB}000{NB}Hz. Un récepteur est fixé au bout du rail. Le spectre du signal reçu est tracé ci-dessous ; le chariot est <strong>arrêté</strong>. La célérité du son dans l’air du laboratoire est <em>c</em> = 340{NB}m/s.</>,
       tache: { type: 'qcm', q: 'Chariot arrêté, le spectre du signal reçu présente un pic à…', options: ['la fréquence émise f_e', 'une fréquence plus grande que f_e', 'une fréquence plus petite que f_e'], bonne: 0,
@@ -393,7 +406,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         expl: 'L’approximation est valable quand v ≪ c : c’est le cas d’un chariot de laboratoire (0,5 m/s contre 340 m/s). Pour une vitesse comparable à celle du son, il faudrait la relation exacte. Le décalage reste proportionnel à f_e : un émetteur de 25 kHz donnerait un décalage 1,6 fois plus petit.', indice: 'On a remplacé un quotient exact par une expression plus simple : elle est bonne quand v / c est petit.' } },
     ...(tg ? [
     { id: 'em', titre: 'Et pour une onde lumineuse ?', focus: ['mesures'],
-      retenirTitre: 'À RETENIR : ÉTABLIR ET EXPLOITER LE DÉCALAGE DOPPLER',
+      retenirTitre: 'Établir et exploiter le décalage doppler',
       retenir: <>
         <SvgEtablir/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -407,8 +420,8 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         pieges: [[4.74e14 * 0.5 / 3e8, 'Le résultat est à donner en mégahertz : 1 MHz = 10⁶ Hz.']],
         expl: 'δf ≈ 0,79 MHz, soit un décalage relatif de 1,7 × 10⁻⁹ seulement.', indice: 'δf = f_e × v / c ; calculez en hertz puis convertissez en MHz.' } },
     ] : []),
-    { id: 'eloigne', titre: 'Le chariot s’éloigne', focus: ['reglages', 'scene'],
-      retenirTitre: 'À RETENIR : MESURER UNE VITESSE PAR LE DÉCALAGE',
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Mesurer une vitesse par le décalage',
       retenir: <>
         <SvgDecalage/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -417,7 +430,9 @@ export function SimulationDoppler({ naviguer, tg = false }) {
           <li>Exemple de la simulation : <em>δf</em> ≈ 59 Hz pour <em>f</em><sub>e</sub> = 40 000 Hz et <em>v</em> = 0,50 m/s, donc <em>δf</em> / <em>f</em><sub>e</sub> ≈ 1,5 × 10⁻³.</li>
           <li><strong>Hypothèse</strong> : <em>v</em> ≪ <em>c</em>. La formule exacte et la formule approchée diffèrent ici de moins de 0,2 %.</li>
         </ul></>,
-      texte: <>Faites rouler le chariot en sens inverse, à la même vitesse : il <strong>s’éloigne</strong> du récepteur. Le bouton de sens apparaît dans les réglages.</>,
+      texte: <>Vous savez lire la fréquence reçue, calculer le décalage δf, en déduire la vitesse et dire quand la formule est valable. Le parcours 3 compare les deux sens de déplacement et étudie la durée d’enregistrement et la résolution.</>, tache: null },
+    { id: 'eloigne', titre: 'Le chariot s’éloigne', focus: ['reglages', 'scene'],
+      texte: <>Rappel du parcours 2 : pour v = 0,50{NB}m/s vers le récepteur, le décalage vaut δf ≈ 59{NB}Hz. Faites maintenant rouler le chariot en sens inverse, à la même vitesse : il <strong>s’éloigne</strong> du récepteur. Le bouton de sens apparaît dans les réglages.</>,
       tache: { type: 'action', ok: mes.montage === 'emetteur' && mes.fe === 40000 && mes.T === 1 && Math.abs(mes.v - 0.5) < 1e-9 && mes.sens === 'eloigne', label: 'Chariot qui s’éloigne', faire: () => { setScene('mesure'); setMes({ ...BASE_MES, sens: 'eloigne' }); setZoomC(null); }, consigne: 'Choisissez « s’éloigne du récepteur »' } },
     { id: 'sensinverse', titre: 'Comparer les deux sens', focus: ['scene'],
       texte: <>Le pic bleu est maintenant du côté des fréquences plus petites que <em>f</em><sub>e</sub>. Comparez le décalage avec celui du chariot qui se rapprochait (même vitesse).</>,
@@ -425,7 +440,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         bloque: mes.montage === 'emetteur' && mes.fe === 40000 && mes.T === 1 && Math.abs(mes.v - 0.5) < 1e-9 && mes.sens === 'eloigne' ? null : 'Rétablissez d’abord le chariot qui s’éloigne avec le bouton au-dessus du spectre.',
         expl: 'Pour v ≪ c, le décalage est le même dans les deux sens (≈ 59 Hz) ; seul le côté change : f_r > f_e quand l’émetteur se rapproche, f_r < f_e quand il s’éloigne. C’est pourquoi on définit δf comme une valeur absolue.', indice: 'δf = |f_r − f_e| ne dépend que de v (et de f_e, c) tant que v ≪ c ; le signe de f_r − f_e dépend du sens.' } },
     { id: 'duree', titre: 'Une vitesse très petite', focus: ['reglages', 'scene'],
-      retenirTitre: 'À RETENIR : LES DEUX SENS ET LE SIGNE DU DÉCALAGE',
+      retenirTitre: 'Les deux sens et le signe du décalage',
       retenir: <>
         <SvgSens/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -435,7 +450,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       texte: <>Faisons rouler le chariot très lentement : <em>v</em> = 0,02{NB}m/s. Le décalage devient minuscule. Réglez aussi la durée d’enregistrement du signal sur 0,5{NB}s (curseur « durée »). Regardez ce que deviennent les deux pics.</>,
       tache: { type: 'action', ok: mes.montage === 'emetteur' && mes.fe === 40000 && Math.abs(mes.v - 0.02) < 1e-9 && mes.T === 0.5, label: 'v = 0,02 m/s, durée 0,5 s', faire: () => { setScene('mesure'); setMes({ ...BASE_MES, v: 0.02, T: 0.5 }); setZoomC(null); }, consigne: 'Réglez v = 0,02 m/s et la durée sur 0,5 s' } },
     { id: 'resolution', titre: 'Allonger l’enregistrement', focus: ['reglages', 'scene'],
-      retenirTitre: 'À RETENIR : LA DURÉE D’ENREGISTREMENT LIMITE LA PRÉCISION',
+      retenirTitre: 'La durée d’enregistrement limite la précision',
       retenir: <>
         <SvgResolution/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -450,8 +465,8 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       tache: { type: 'qcm', q: 'Pour mieux séparer le pic décalé du pic de f_e quand δf est très petit, on…', options: ['allonge la durée d’enregistrement : les pics sont plus fins', 'raccourcit la durée d’enregistrement : les pics sont plus fins', 'augmente la célérité du son c'], bonne: 0,
         bloque: mes.montage === 'emetteur' && mes.fe === 40000 && Math.abs(mes.v - 0.02) < 1e-9 ? null : 'Rétablissez d’abord v = 0,02 m/s avec le bouton au-dessus du spectre.',
         expl: 'La largeur d’un pic est environ 1 / T : avec T = 0,5 s elle vaut 2 Hz (les deux pics, distants de 2,4 Hz, se chevauchent) ; avec T = 2 s elle vaut 0,5 Hz (ils sont bien séparés). La célérité du son ne change pas la largeur des pics.', indice: 'Un enregistrement plus long permet de mieux distinguer deux fréquences voisines : la largeur du pic est 1 / T.' } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LA CHAÎNE DE MESURE',
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'La chaîne de mesure',
       retenir: <>
         <SvgChaine/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -469,6 +484,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
   const rendreBaseMes = enGuide && etapesMesBase.includes(idE) && (!mesBase || (['decalage', 'vitesse'].includes(idE) && !pointeOk));
   const rendreBaseEl = enGuide && ['sensinverse'].includes(idE) && !(mes.montage === 'emetteur' && mes.fe === 40000 && mes.T === 1 && Math.abs(mes.v - 0.5) < 1e-9 && mes.sens === 'eloigne');
   const rendreBaseDuree = enGuide && ['resolution', 'separer'].includes(idE) && !(mes.montage === 'emetteur' && mes.fe === 40000 && Math.abs(mes.v - 0.02) < 1e-9);
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
@@ -532,8 +548,11 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       <li><strong>Incertitudes</strong> (type B, loi rectangulaire, <em>u</em> = demi-étendue / √3, sources indépendantes) : pointé du sommet du pic à ± 0,5 Hz (ou 1 / 4T si c’est plus grand), <em>f</em><sub>e</sub> et <em>f</em><sub>r</sub> lues avec le même instrument donc <em>u</em>(<em>δf</em>) = √2 <em>u</em>(<em>f</em>), et <em>c</em> à ± 3 m/s. L’incertitude sur <em>f</em><sub>e</sub> seule est négligée devant celle de <em>δf</em>.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
+  const NOMS_PARC = tg ? ['1. Établir l’expression du décalage', '2. Mesurer une vitesse par le décalage', '3. Sens, durée et résolution'] : ['1. Mouvement relatif et fréquence reçue', '2. Mesurer une vitesse par le décalage', '3. Sens, durée et résolution'];
+  const allerParc = n => { setParc(n); setMes(REPOS_MES); setCurBrut(40000); setZoomC(null); };
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => allerParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -727,7 +746,12 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Quand un émetteur et un récepteur sont en <strong>mouvement relatif</strong>, la fréquence reçue n’est pas la fréquence émise. Ce décalage est proportionnel à la vitesse : il permet de la mesurer.</div>
       <div className={`dop-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {enGuide ? <div className="dop-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="dop-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="dop-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => allerParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="dop-carte">{panneauHypo}</div> : null}
         <div className="dop-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM}:defi.${defi.type}`} etat={defi.type === 'emetteur' ? suiviEm : suiviEc}/></div>}
           <div className={`dop-pri${mode !== 'explore' ? ' pile' : ''}`}>
