@@ -1856,6 +1856,36 @@ function genFrenetTG() {
     retenir: ['Repère de Frenet : vec(u)_t tangent (sens du mouvement), vec(u)_n normal (vers le centre). Vitesse : vec(v) = v × vec(u)_t.', 'Accélération : a_t = frac(dv|dt) (sur vec(u)_t) et a_n = frac(v²|R) (sur vec(u)_n), v en m/s, R en m.', 'Mouvement circulaire uniforme : a_t = 0 mais a n’est pas nulle : a = frac(v²|R), vers le centre.', 'La norme est la racine de la somme des carrés de a_t et de a_n ; a_t > 0 si le point accélère, a_t < 0 s’il ralentit.'] };
 }
 
+function genNewtonTG() {
+  const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
+  // nb() prend des chiffres SIGNIFICATIFS (nb(1,5 ; 1) donnerait « 2 ») : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const milliers = x => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  const m = tire([1.5, 2.0, 2.5, 3.0]), T = tire([6.0, 7.0, 8.0, 9.0]), alpha = tire([0, 20, 30]), f = tire([1.0, 1.5, 2.0]);
+  const c = Math.cos(alpha * Math.PI / 180), Sx = Number((T * c - f).toFixed(2));
+  const q1 = { id: 'n0', type: 'num', q: <>Un chariot de masse <b>{d(m, 1)}{NB}kg</b> roule vers la droite sur un rail horizontal. Le fil exerce une tension <b>{d(T, 1)}{NB}N</b>{alpha ? <>, inclinée de <b>{alpha}°</b> au-dessus de l’horizontale</> : ', horizontale'} ; les frottements valent <b>{d(f, 1)}{NB}N</b> (axe Ox vers la droite). Calculez la composante {avecIndices('ΣF_x')} de la somme des forces (en N, 2 chiffres significatifs).</>, unite: 'N', vrai: T * c - f, tolRel: 0.05, csMin: 2,
+    aide: 'Projetez sur Ox avec les signes : la tension compte +T cos α, les frottements −f ; le poids et la réaction sont verticaux.',
+    pieges: [[T * c + f, 'Les frottements sont vers la gauche : leur composante est négative, il faut les retrancher.'], [T - f, 'Pour un fil incliné, seule la composante horizontale de la tension compte : T × cos α.'], [T * c, 'Vous avez oublié les frottements.']],
+    expl: <>{avecIndices('ΣF_x')} = T × cos α − f = {d(T, 1)} × cos {alpha}° − {d(f, 1)} = <b>{d(T * c - f, 2)}{NB}N</b>.</> };
+  const q2 = { id: 'n1', type: 'num', q: <>Pour ce chariot de masse <b>{d(m, 1)}{NB}kg</b>, la somme des forces a pour composante {avecIndices('ΣF_x')} = <b>{d(Sx, 2)}{NB}N</b>. Calculez la composante {avecIndices('a_x')} de l’accélération du centre de masse (en m/s², 2 chiffres significatifs).</>, unite: 'm/s²', vrai: Sx / m, tolRel: 0.05, csMin: 2,
+    aide: 'Deuxième loi projetée sur Ox : ΣF_x = m × a_x, donc a_x = frac(ΣF_x|m) (des N divisés par des kg donnent des m/s²).',
+    pieges: [[Sx * m, 'Il faut diviser par la masse, pas multiplier : a_x = frac(ΣF_x|m).'], [Sx, 'Vous avez oublié de diviser par la masse m.'], [m / Sx, 'Le rapport est inversé : a_x est ΣF_x divisée par m.']],
+    expl: <>{avecIndices('a_x')} = {avecIndices('frac(ΣF_x|m)')} = {avecIndices(`frac(${d(Sx, 2)}|${d(m, 1)})`)} = <b>{d(Sx / m, 2)}{NB}m/s²</b>.</> };
+  const mc = tire([600, 800, 1000, 1200]), v1 = tire([0, 0.5]), v2 = Number((v1 + tire([1.8, 2.0, 2.2, 2.4])).toFixed(1)), a = (v2 - v1) / 2.0, Tc = mc * (9.8 + a);
+  const q3 = { id: 'n2', type: 'num', q: <>Une cabine de masse <b>{mc}{NB}kg</b> monte : sa vitesse passe de <b>{d(v1, 1)}{NB}m/s</b> à <b>{d(v2, 1)}{NB}m/s</b> en <b>2,0{NB}s</b>, avec des forces constantes (g = 9,8{NB}m/s²). Calculez la tension du câble (en N, 2 chiffres significatifs).</>, unite: 'N', vrai: Tc, tolRel: 0.05, csMin: 2,
+    aide: 'a_y = frac(v₂ − v₁|Δt), puis T − P = m × a_y (axe vers le haut) : T = m × (g + a_y).',
+    pieges: [[mc * a, 'C’est ΣF_y = m × a_y : il faut y ajouter le poids, T = P + m × a_y.'], [mc * 9.8, 'C’est le poids seul : la cabine accélère vers le haut, donc T est plus grande que P.'], [mc * (9.8 - a), 'Le signe est inversé : a_y est vers le haut, donc T = m × (g + a_y).']],
+    expl: <>{avecIndices('a_y')} = {avecIndices(`frac(${d(v2, 1)} − ${d(v1, 1)}|2,0)`)} = {d(a, 2)}{NB}m/s² ; T = m × (g + {avecIndices('a_y')}) = {mc} × (9,8 + {d(a, 2)}) = <b>{milliers(Tc)}{NB}N</b>.</> };
+  const mp = tire([60, 70, 80, 90]);
+  const q4 = { id: 'n3', type: 'num', q: <>Un parachutiste de masse <b>{mp}{NB}kg</b> (équipement compris) descend en ligne droite à <b>vitesse constante</b>, sous son poids et le frottement de l’air (g = 9,8{NB}m/s²). Calculez l’intensité du frottement (en N, 2 chiffres significatifs).</>, unite: 'N', vrai: mp * 9.8, tolRel: 0.05, csMin: 2,
+    aide: 'Vitesse constante : vec(a)_G est nul, donc Σ vec(F) est nulle : le frottement compense le poids.',
+    pieges: [[mp, 'C’est la masse en kg : il faut calculer le poids P = m × g, en newtons.'], [mp / 9.8, 'Il faut multiplier la masse par g, pas la diviser.'], [0, 'À vitesse constante, la somme des forces est nulle : le frottement compense le poids.']],
+    expl: <>{avecIndices('Σ vec(F) nulle')} donne f = P = m × g = {mp} × 9,8 = <b>{d(mp * 9.8, 0)}{NB}N</b>.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Deuxième loi de Newton : composantes de la somme des forces, accélération du centre de masse, force inconnue à partir du mouvement et équilibre.', questions: [q1, q2, q3, q4],
+    retenir: ['Deuxième loi de Newton : Σ vec(F) = m × vec(a)_G ; vec(a)_G a la même direction et le même sens que Σ vec(F).', 'Projection sur un axe : une force vers l’axe compte +, contre l’axe −. Pour un fil incliné de α : T × cos α sur Ox.', 'Mouvement connu : on calcule d’abord vec(a)_G à partir de la variation Δvec(v) de la vitesse pendant la durée Δt, puis Σ vec(F) = m × vec(a)_G ; pour une cabine, T = m × (g + a_y) (axe vers le haut).', 'Σ vec(F) nulle : vec(a)_G nul, vitesse constante ou repos (principe d’inertie).'] };
+}
+
 // ───────── Chiralité et carbone asymétrique (TSTL, PCM) ─────────
 function genChiraliteReperer() {
   const MOLS = [
@@ -2072,6 +2102,7 @@ export const FAMILLES = [
   { id: 'cdt-calcul', groupe: 'Formules', titre: 'Conductimétrie : loi de Kohlrausch, concentration, volume équivalent et bilan après l’équivalence (TG)', gen: genConductimetrieTG, domaine: 'Conductimétrie : conductivité et titrage' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
+  { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },

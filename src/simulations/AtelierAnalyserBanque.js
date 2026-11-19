@@ -3396,6 +3396,27 @@ export const PREVOIR = [
       F('seulement une coordonnée normale, vers le centre, comme à vitesse constante', 'La norme de la vitesse diminue : a_t = frac(dv|dt) n’est pas nulle, il y a aussi une coordonnée tangentielle.'),
       F('une coordonnée tangentielle négative et une normale vers l’extérieur du virage', 'La coordonnée normale a_n = frac(v²|R) est positive : dirigée vers le centre du cercle, jamais vers l’extérieur.'),
     ] },
+  { id: 'nwt-ana-balance', domaine: 'Deuxième loi de Newton', titre: 'Une balance dans la cabine',
+    enonce: 'Un voyageur de masse 70 kg est debout sur une balance posée sur le sol d’une cabine d’ascenseur. La cabine démarre vers le haut. Le voyageur est soumis à son poids vec(P) et à la réaction vec(R) de la balance ; la balance indique la norme R.', q: 'Pendant le démarrage, comment se comparent R et P ?', options: [
+      V('R est plus grande que P : la somme des forces est vers le haut', 'Le voyageur accélère vers le haut avec la cabine : vec(a)_G est vers le haut, donc Σ vec(F) aussi. Avec un axe vers le haut, R − P > 0 : R est plus grande que P, et la balance indique plus que d’habitude.'),
+      F('R est égale à P, puisque le voyageur reste immobile dans la cabine', 'Le voyageur est immobile par rapport à la cabine, mais la cabine accélère par rapport au sol : il accélère aussi, donc Σ vec(F) n’est pas nulle et R n’est pas égale à P.'),
+      F('R est plus petite que P, car la cabine s’éloigne du sol', 'Ce n’est pas le mouvement qui décide, mais le sens de l’accélération : ici vers le haut, donc R est plus grande que P. R serait plus petite si l’accélération était vers le bas.'),
+      F('R est nulle : le voyageur est porté par la cabine', 'Le voyageur s’appuie bien sur la balance : R n’est pas nulle. Elle ne serait nulle qu’en chute libre, quand le sol cède sous les pieds.'),
+    ] },
+  { id: 'nwt-ana-masse', domaine: 'Deuxième loi de Newton', titre: 'Un chariot deux fois plus lourd',
+    enonce: 'Un chariot de masse m est tiré par un fil horizontal de tension constante T, sans frottement ; son centre de masse a une accélération de norme a. On ajoute une charge qui double la masse du chariot, et la tension T reste la même.', q: 'Que devient la norme de l’accélération du centre de masse ?', options: [
+      V('elle est divisée par 2', 'Σ vec(F) = m vec(a)_G : à somme des forces constante, la norme a de l’accélération est inversement proportionnelle à m. Une masse doublée donne une accélération moitié.'),
+      F('elle est multipliée par 2', 'Plus de masse rend le chariot plus difficile à accélérer : l’accélération est la somme des forces divisée par m, elle diminue quand m augmente.'),
+      F('elle ne change pas, car la force est la même', 'La force est la même, mais l’accélération dépend aussi de la masse : c’est la somme des forces divisée par m.'),
+      F('elle est divisée par 4', 'Le facteur 4 apparaîtrait pour l’énergie cinétique (proportionnelle à v²), pas ici : a est inversement proportionnelle à m, donc divisée par 2.'),
+    ] },
+  { id: 'nwt-ana-galileen', domaine: 'Deuxième loi de Newton', titre: 'Un tramway qui démarre',
+    enonce: 'Dans un tramway qui démarre brusquement, un voyageur debout, qui ne se tient pas, bascule vers l’arrière. Un élève affirme : « aucune force ne le tire vers l’arrière, donc la deuxième loi de Newton est fausse ».', q: 'Quelle est la bonne analyse ?', options: [
+      V('le référentiel du tramway n’est pas galiléen', 'La deuxième loi ne s’applique que dans un référentiel galiléen. Dans le référentiel de la rue (terrestre, supposé galiléen), le voyageur tend à garder sa vitesse alors que le tramway accélère sous lui.'),
+      F('la deuxième loi ne vaut pas pour les êtres vivants', 'La loi s’applique à tout système, vivant ou non, dans un référentiel galiléen : seul le choix du référentiel pose problème ici.'),
+      F('une force invisible le tire vers l’arrière', 'Aucune action ne tire le voyageur vers l’arrière : l’effet vient du référentiel accéléré, pas d’une force réelle.'),
+      F('la loi n’est valable que pour des vitesses constantes', 'C’est l’inverse : elle relie justement la variation de vitesse à la somme des forces ; elle s’applique à un système qui accélère, dans un référentiel galiléen.'),
+    ] },
   { id: 'pil-ana-pont', domaine: 'Piles : fonctionnement et capacité', titre: 'On retire le pont salin',
     enonce: 'Une pile zinc-cuivre alimente une petite lampe. On retire le pont salin qui relie les deux solutions, sans toucher aux fils.', q: 'Que se passe-t-il ?', options: [
       V('la lampe s’éteint : le circuit est ouvert', 'Sans pont salin, aucun ion ne circule entre les deux solutions : le circuit est ouvert et le courant s’arrête aussitôt.'),
