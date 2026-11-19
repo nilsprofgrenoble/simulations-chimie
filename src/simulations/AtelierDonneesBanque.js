@@ -18,6 +18,7 @@ import * as ACF from "./acideFaibleModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
 import * as CO2 from "./co2DissousModele";
+import * as EXT from "./extractionAcideBaseModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
@@ -471,6 +472,54 @@ export const ENONCES = [
         utiles: ['pH', 'pKa1', 'pKa2'], raisons: { ...raisons, a: 'La valeur de a et la pression se simplifient dans le rapport C_T sur [CO₂] : elles ne servent pas.', P: 'La valeur de a et la pression se simplifient dans le rapport C_T sur [CO₂] : elles ne servent pas.' },
         cherche: { bonne: 'Le rapport C_T sur [CO₂] (sans unité)', faux: ['Le carbone dissous total C_T (en mmol/L)', 'Le rapport [HCO₃⁻] sur [CO₂] (sans unité)', 'La concentration en CO₂ dissous (en mmol/L)'] },
         manque: null, solution: { txt: 'C_T sur [CO₂] = 1 + 10^(pH − pKa1) + 10^(2 pH − pKa1 − pKa2)', val: m.solub, u: '' } };
+    },
+  },
+  // ───────────────────────────── Extraction acide-base (TSTL, PCM) : forme neutre, rapport de distribution, part extraite
+  {
+    id: 'extrac-sapp-distrib', domaine: 'Extraction acide-base : choix du pH', titre: 'Part de forme neutre et rapport de distribution', noms: ['Fraction de forme neutre', 'Rapport de distribution'],
+    gen: () => { const t = EXT.tirageExtraction(); return { e: t.e.id, pH: t.pH, r: t.r, Ve: tire([50, 100, 200]) }; },
+    build: (p, q) => {
+      const e = EXT.ESPECES[p.e], acide = e.type === 'acide', al = EXT.alpha(e, p.pH), D = e.K * al, Vo = p.r * p.Ve;
+      const tokens = {
+        K: tok(`${e.K}`, 'Coefficient de partage de la forme neutre', e.K, ''),
+        pKa: tok(`${nb(e.pKa, 1)}`, acide ? 'pKa du couple HA / A⁻' : 'pKa du couple BH⁺ / B', e.pKa, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH de la phase aqueuse', p.pH, ''),
+        Ve: tok(`${p.Ve} mL`, 'Volume de phase aqueuse', p.Ve, 'mL'),
+        Vo: tok(`${Vo} mL`, 'Volume de solvant organique', Vo, 'mL'),
+      };
+      const debut = [acide ? 'L’acide ' : 'La base ', e.nom, ' (', acide ? 'couple HA / A⁻' : 'couple BH⁺ / B', ', pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' d’un solvant organique non miscible. Le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
+      const raisons = { Ve: 'Les volumes ne servent que pour la part extraite : ils n’interviennent pas dans α.', Vo: 'Les volumes ne servent que pour la part extraite : ils n’interviennent pas dans α.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle fraction du composé est sous forme neutre dans la phase aqueuse ?'],
+        utiles: ['pKa', 'pH'], raisons: { ...raisons, K: 'Le coefficient de partage K intervient pour D, pas pour la fraction α.' },
+        cherche: { bonne: 'La fraction α de forme neutre (sans unité)', faux: ['Le rapport de distribution D (sans unité)', 'La part extraite dans l’organique (en %)', 'Le volume de solvant à utiliser (en mL)'] },
+        manque: null, solution: { txt: acide ? 'α = 1 divisé par (1 + 10^(pH − pKa))' : 'α = 1 divisé par (1 + 10^(pKa − pH))', val: al, u: '' } };
+      return { tokens, derivees: [acide ? 'α = 1 divisé par (1 + 10^(pH − pKa))' : 'α = 1 divisé par (1 + 10^(pKa − pH))'], texte: [...debut, 'Quel est le rapport de distribution D du composé ?'],
+        utiles: ['K', 'pKa', 'pH'], raisons,
+        cherche: { bonne: 'Le rapport de distribution D (sans unité)', faux: ['La fraction α de forme neutre (sans unité)', 'La part extraite dans l’organique (en %)', 'Le coefficient de partage K (sans unité)'] },
+        manque: null, solution: { txt: 'D = K × α', val: D, u: '' } };
+    },
+  },
+  {
+    id: 'extrac-sapp-passes', domaine: 'Extraction acide-base : choix du pH', titre: 'Part extraite et extractions successives', noms: ['Part extraite en un contact', 'Reste après deux extractions'],
+    gen: () => { const t = EXT.tirageExtraction(); return { e: t.e.id, pH: t.pH, r: t.r, Ve: tire([50, 100, 200]) }; },
+    build: (p, q) => {
+      const e = EXT.ESPECES[p.e], acide = e.type === 'acide', D = e.K * EXT.alpha(e, p.pH), Vo = p.r * p.Ve;
+      const tokens = {
+        K: tok(`${e.K}`, 'Coefficient de partage de la forme neutre', e.K, ''),
+        pKa: tok(`${nb(e.pKa, 1)}`, acide ? 'pKa du couple HA / A⁻' : 'pKa du couple BH⁺ / B', e.pKa, ''),
+        pH: tok(`${nb(p.pH, 1)}`, 'pH de la phase aqueuse', p.pH, ''),
+        Ve: tok(`${p.Ve} mL`, 'Volume de phase aqueuse', p.Ve, 'mL'),
+        Vo: tok(`${Vo} mL`, 'Volume de solvant organique à chaque contact', Vo, 'mL'),
+      };
+      const debut = [acide ? 'L’acide ' : 'La base ', e.nom, ' (pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' de solvant organique ; le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
+      if (q === 0) return { tokens, derivees: ['D = K × α, avec α la fraction de forme neutre', 'r = Vorg divisé par Veau'], texte: [...debut, 'Quelle part du composé est extraite en un seul contact ?'],
+        utiles: ['K', 'pKa', 'pH', 'Ve', 'Vo'], raisons: {},
+        cherche: { bonne: 'La part extraite en un contact (en %)', faux: ['Le rapport de distribution D (sans unité)', 'La part restant dans l’eau (en %)', 'La fraction α de forme neutre (sans unité)'] },
+        manque: null, solution: { txt: 'extrait = D × r divisé par (1 + D × r)', val: 100 * EXT.fractionExtraite(D, p.r), u: '%' } };
+      return { tokens, derivees: ['D = K × α, avec α la fraction de forme neutre', 'r = Vorg divisé par Veau'], texte: [...debut, 'On recommence deux fois avec du solvant neuf. Quelle part reste dans l’eau ?'],
+        utiles: ['K', 'pKa', 'pH', 'Ve', 'Vo'], raisons: {},
+        cherche: { bonne: 'La part restant dans l’eau après deux extractions (en %)', faux: ['La part extraite au total (en %)', 'La part restant dans l’eau après une seule extraction (en %)', 'Le rapport de distribution D (sans unité)'] },
+        manque: null, solution: { txt: 'reste = (1 divisé par (1 + D × r)) au carré', val: 100 * EXT.resteApres(D, p.r, 2), u: '%' } };
     },
   },
   // ───────────────────────────── Force des acides (TG) : K_A, pH, taux d'avancement

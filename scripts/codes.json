@@ -1074,6 +1074,18 @@
  "77:plausible:co2dis-val-milieu": "VAL264",
  "36:co2dis-henry": "REA50",
  "36:co2dis-milieu": "REA51",
- "36:crist-refroidissement": "REA52",
- "36:crist-evaporation": "REA53"
+ "34:extrac-sapp-distrib.0": "SAPP281",
+ "34:extrac-sapp-distrib.1": "SAPP282",
+ "34:extrac-sapp-passes.0": "SAPP283",
+ "34:extrac-sapp-passes.1": "SAPP284",
+ "37:prevoir:extrac-ana-acide": "ANA481",
+ "37:prevoir:extrac-ana-base": "ANA482",
+ "37:prevoir:extrac-ana-passes": "ANA483",
+ "37:prevoir:extrac-ana-melange": "ANA484",
+ "77:plausible:extrac-val-pH": "VAL265",
+ "77:plausible:extrac-val-passes": "VAL266",
+ "36:extrac-partage": "REA52",
+ "36:extrac-passes": "REA53",
+ "36:crist-refroidissement": "REA54",
+ "36:crist-evaporation": "REA55"
 }

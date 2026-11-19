@@ -8,6 +8,7 @@ import * as ACF from "./acideFaibleModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
 import * as CO2 from "./co2DissousModele";
+import * as EXT from "./extractionAcideBaseModele";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
@@ -1124,6 +1125,73 @@ function genCo2Milieu() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['[CO₂] = a × P(CO₂) ; frac([HCO₃⁻]|[CO₂]) = 10^(pH − pKa1) ; frac([CO₃²⁻]|[HCO₃⁻]) = 10^(pH − pKa2).', 'C_T = [CO₂] + [HCO₃⁻] + [CO₃²⁻] augmente avec le pH du milieu.'] };
 }
+// ---------- Extraction acide-base (TSTL, PCM) ----------
+function tirageExtracPartage() {
+  for (let k = 0; k < 800; k++) {
+    const t = EXT.tirageExtraction(), e = t.e, acide = e.type === 'acide', x = acide ? t.pH - e.pKa : e.pKa - t.pH;
+    const r1 = PRE.arrondiCS(10 ** x, 2), a2 = PRE.arrondiCS(1 / (1 + r1), 2), D2 = PRE.arrondiCS(e.K * a2, 2), E2 = PRE.arrondiCS(100 * EXT.fractionExtraite(D2, t.r), 2), v = [r1, a2, D2, E2];
+    if (v.every((y, i) => v.every((z, j) => i === j || Math.abs(y - z) > 0.1 * Math.max(y, z)))) return { t, acide, x, r1, a2, D2, E2 };
+  }
+  throw new Error('tirage extrac-partage impossible');
+}
+function genExtracPartage() {
+  const { t, acide, x, r1, a2, D2, E2 } = tirageExtracPartage(), e = t.e, pHs = nbF(t.pH, 1), pKs = nbF(e.pKa, 1), rs = t.r === 1 ? 'le même volume' : t.r === 2 ? 'un volume double' : 'la moitié du volume', nI = acide ? 'A⁻' : 'BH⁺', nN = acide ? 'HA' : 'B';
+  const intro = `${acide ? 'L’acide' : 'La base'} ${e.nom} (couple ${acide ? 'HA / A⁻' : 'BH⁺ / B'}, pKa = ${pKs}) est dans une phase aqueuse dont le pH est maintenu à ${pHs}. On l’extrait avec ${rs} de solvant organique non miscible. Le coefficient de partage de sa forme neutre ${nN} vaut K = ${e.K}.`;
+  const q1 = { id: 'p0', type: 'num', q: <>Calculez le rapport <b>{avecIndices(`frac([${nI}]|[${nN}])`)}</b> = 10<sup>{acide ? `pH − pKa` : `pKa − pH`}</sup> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: r1, tolRel: 0.05, csMin: 2,
+    aide: acide ? 'Pour un acide, rapport ion sur neutre = 10 puissance (pH − pKa).' : 'Pour une base, rapport ion BH⁺ sur neutre B = 10 puissance (pKa − pH).',
+    pieges: [[1 / r1, 'Le rapport est inversé : on demande l’ion sur la forme neutre.'], [x, `C’est ${acide ? 'pH − pKa' : 'pKa − pH'}, le logarithme du rapport : il faut calculer 10 puissance cette valeur.`], [r1 * 10, 'Il faut prendre 10 puissance l’écart exact, sans multiplier le résultat par 10.']],
+    expl: <>{acide ? 'pH − pKa' : 'pKa − pH'} = {nbF(x, 1)}, donc le rapport vaut 10<sup>{nbF(x, 1)}</sup> = <b>{r1 >= 10 ? nbF(r1, 0) : nbF(r1, r1 >= 1 ? 1 : 2)}</b>.</> };
+  const fr = v => (v >= 10 ? nbF(v, 0) : v >= 1 ? nbF(v, 1) : nbF(v, v < 0.1 ? 3 : 2));
+  const q2 = { id: 'p1', type: 'num', q: <>Avec un rapport {avecIndices(`frac([${nI}]|[${nN}])`)} de {fr(r1)}, calculez la fraction <b>α</b> de forme neutre {nN} = 1 divisé par (1 + rapport) (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: a2, tolRel: 0.05, csMin: 2,
+    aide: 'α = 1 divisé par (1 + rapport ion sur neutre).',
+    pieges: [[1 - a2, `C’est la part de la forme ionique ${nI}, pas celle de ${nN}.`], [1 / r1, 'Il manque « 1 + » : α = 1 divisé par (1 + rapport).'], [r1 / (1 + r1), `C’est la part de la forme ionique ${nI} : α est celle de la forme neutre.`]],
+    expl: <>α = 1 divisé par (1 + {fr(r1)}) = <b>{nbF(a2, a2 < 0.1 ? 3 : 2)}</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Avec α = {nbF(a2, a2 < 0.1 ? 3 : 2)} et K = {e.K}, calculez le rapport de distribution <b>D = K × α</b> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: D2, tolRel: 0.05, csMin: 2,
+    aide: 'D = K × α : multipliez le coefficient de partage par la fraction de forme neutre.',
+    pieges: [[e.K / a2, 'Il faut multiplier K par α, pas les diviser.'], [e.K - a2, 'Il faut multiplier K par α, pas les soustraire.'], [a2, 'C’est α seule : D = K × α.']],
+    expl: <>D = {e.K} × {nbF(a2, a2 < 0.1 ? 3 : 2)} = <b>{fr(D2)}</b>.</> };
+  const q4 = { id: 'p3', type: 'num', q: <>Avec D = {fr(D2)} et {rs} de solvant (r = {nbF(t.r, 1)}), calculez le <b>pourcentage extrait</b> en un contact : 100 × D × r divisé par (1 + D × r) (en %, 2 chiffres significatifs).</>, unite: '%', vrai: E2, tolRel: 0.05, csMin: 2,
+    aide: 'Fraction extraite = D × r divisé par (1 + D × r), à multiplier par 100.',
+    pieges: [[E2 / 100, 'C’est la fraction ; le pourcentage est cette valeur multipliée par 100.'], [100 - E2, 'C’est la part qui reste dans l’eau : on demande la part extraite.'], [100 * D2 * t.r / (D2 * t.r - 1), 'Le dénominateur est 1 + D × r, pas D × r − 1.']],
+    expl: <>E = {fr(D2)} × {nbF(t.r, 1)} divisé par (1 + {fr(D2)} × {nbF(t.r, 1)}) = <b>{fr(E2)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Rapport ion sur neutre : 10^(pH − pKa) pour un acide, 10^(pKa − pH) pour une base.', 'α = 1 divisé par (1 + rapport) ; D = K × α.', 'Part extraite en un contact (en %) = 100 × D × r divisé par (1 + D × r).'] };
+}
+function tirageExtracPasses() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  for (let k = 0; k < 800; k++) {
+    const D = tire([3, 4, 5, 6, 8, 10, 12, 15, 20]), r = tire([0.5, 1, 2]), n = tire([2, 3]), Dr = D * r, f = 1 / (1 + Dr);
+    if (Dr < 2.5) continue;
+    const u = PRE.arrondiCS(100 * f, 2), rn = PRE.arrondiCS(100 * f ** n, 2), tot = PRE.arrondiCS(100 - rn, 3), nmin = Math.ceil(Math.log(0.01) / Math.log(f) - 1e-9), v = [u, rn, tot, nmin];
+    if (v.every((y, i) => v.every((z, j) => i === j || Math.abs(y - z) > 0.1 * Math.max(y, z))) && nmin >= 2 && nmin <= 6 && nmin !== n) return { D, r, n, f, u, rn, tot, nmin };
+  }
+  throw new Error('tirage extrac-passes impossible');
+}
+function genExtracPasses() {
+  const { D, r, n, f, u, rn, tot, nmin } = tirageExtracPasses(), rs = r === 1 ? 'le même volume' : r === 2 ? 'un volume double' : 'la moitié du volume';
+  const fr = v => (v >= 10 ? nbF(v, 0) : v >= 1 ? nbF(v, 1) : nbF(v, v < 0.1 ? 3 : 2));
+  const intro = `À un pH donné, le rapport de distribution d’une espèce acide ou basique entre le solvant organique et l’eau vaut D = ${D}. À chaque contact, on utilise du solvant organique neuf, de ${rs} de celui de l’eau (r = ${nbF(r, 1)}), et le pH de l’eau ne change pas.`;
+  const q1 = { id: 'e0', type: 'num', q: <>Calculez le pourcentage restant dans l’eau après <b>un</b> contact : 100 divisé par (1 + D × r) (en %, 2 chiffres significatifs).</>, unite: '%', vrai: u, tolRel: 0.05, csMin: 2,
+    aide: 'Reste après un contact = 1 divisé par (1 + D × r), à multiplier par 100.',
+    pieges: [[100 - u, 'C’est la part extraite : on demande ce qui reste dans l’eau.'], [100 / (1 + D), 'Il faut tenir compte du rapport de volumes : 1 + D × r au dénominateur.'], [100 * D * r / (1 + D * r), 'C’est la part extraite : on demande la part restante.']],
+    expl: <>Reste = 100 divisé par (1 + {D} × {nbF(r, 1)}) = 100 divisé par {fr(1 + D * r)} = <b>{fr(u)}{NB}%</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>On recommence avec du solvant neuf, au total <b>{n}</b> contacts. Calculez le pourcentage restant dans l’eau : 100 × (1 divisé par (1 + D × r)) puissance {n} (en %, 2 chiffres significatifs).</>, unite: '%', vrai: rn, tolRel: 0.1, csMin: 2,
+    aide: `Élevez la fraction 1 divisé par (1 + D × r) = ${nbF(f, 3)} à la puissance ${n}, puis multipliez par 100.`,
+    pieges: [[u * n, 'Le reste est multiplié à chaque contact, pas additionné : il faut élever la fraction à la puissance n.'], [u, 'C’est le reste après un seul contact : élevez la fraction à la puissance n.'], [100 * f ** (n - 1), `C’est le reste après ${n - 1} contact${n - 1 > 1 ? 's' : ''} : il faut ${n} contacts.`]],
+    expl: <>Reste = 100 × {nbF(f, 3)}<sup>{n}</sup> = <b>{fr(rn)}{NB}%</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>Après ces {n} contacts, quel pourcentage a été <b>extrait au total</b> ? (en %, 3 chiffres significatifs)</>, unite: '%', vrai: tot, tolRel: 0.05, csMin: 2,
+    aide: 'Part extraite = 100 % moins la part restante dans l’eau.',
+    pieges: [[rn, 'C’est la part qui reste dans l’eau : on demande la part extraite.'], [100 - u, `C’est la part extraite après un seul contact, pas après ${n}.`]],
+    expl: <>Extrait = 100 − {fr(rn)} = <b>{fr(tot)}{NB}%</b>.</> };
+  const q4 = { id: 'e3', type: 'num', q: <>Combien de contacts faut-il au minimum pour qu’il reste <b>moins de 1 %</b> dans l’eau ? (nombre entier)</>, unite: '', vrai: nmin, tolRel: 0.05, csMin: 1,
+    aide: `Cherchez le plus petit entier n tel que ${nbF(f, 3)} puissance n est inférieur à 0,01.`,
+    pieges: [[nmin - 1, 'Avec un contact de moins, il reste encore plus de 1 % dans l’eau.'], [nmin + 1, 'Un contact de moins suffit déjà : cherchez le plus petit entier.']],
+    expl: <>{nbF(f, 3)}<sup>{nmin - 1}</sup> = {fr(100 * f ** (nmin - 1))} % dépasse 1 % ; {nbF(f, 3)}<sup>{nmin}</sup> = {fr(100 * f ** nmin)} % est inférieur à 1 % : il faut <b>{nmin} contacts</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Reste après un contact = 1 divisé par (1 + D × r) ; après n contacts avec du solvant neuf : cette fraction à la puissance n.', 'Plusieurs petites extractions valent mieux qu’une seule grande.'] };
+}
 function genPredoBeer() {
   const u = PRE.tirageIndicateur(), Cs = sciF(u.C), eps = sciF(u.eps), ls = nbF(u.l, 2), pHs = nbF(u.pH, 2), As = nbF(u.abs, 3);
   const Ind = u.abs / (u.eps * u.l), Ind2 = PRE.arrondiCS(Ind, 2), HInd2 = PRE.arrondiCS(u.C - Ind2, 2), r2 = PRE.arrondiCS(Ind2 / HInd2, 2), pKa2 = u.pH - Math.log10(r2);
@@ -1539,6 +1607,8 @@ export const FAMILLES = [
   { id: 'co2dis-milieu', groupe: 'Formules', titre: 'CO₂ dissous : milieu de pH imposé (terminale STL)', gen: genCo2Milieu, domaine: 'CO₂ dissous : couples et solubilité' },
   { id: 'crist-refroidissement', groupe: 'Formules', titre: 'Cristallisation par refroidissement : sel dissous, cristaux et rendement (terminale STL)', gen: genCristRefroidissement, domaine: 'Évaporation et cristallisation' },
   { id: 'crist-evaporation', groupe: 'Formules', titre: 'Cristallisation par évaporation : eau à saturation et masse de cristaux (terminale STL)', gen: genCristEvaporation, domaine: 'Évaporation et cristallisation' },
+  { id: 'extrac-partage', groupe: 'Formules', titre: 'Extraction acide-base : fraction extraite selon le pH (terminale STL)', gen: genExtracPartage, domaine: 'Extraction acide-base : choix du pH' },
+  { id: 'extrac-passes', groupe: 'Formules', titre: 'Extraction acide-base : extractions successives (terminale STL)', gen: genExtracPasses, domaine: 'Extraction acide-base : choix du pH' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },
