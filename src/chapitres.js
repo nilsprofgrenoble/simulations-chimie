@@ -34,6 +34,7 @@ export const CHAPITRES = [
   { id: '1g-champ', niveau: '1G', label: '🌍 Interactions fondamentales et notion de champ', sims: [51, 48, 49, 50], domaines: ['Interactions et champs'] },
   { id: 'structure-entites', niveau: '1G', label: '🧩 De la structure à la polarité d’une entité', sims: [154, 155], domaines: ['Schéma de Lewis des molécules et des ions', 'Géométrie et polarité des entités'] },
   { id: '1g-cohesion', niveau: '1G', label: '🧪 Cohésion, solubilité et miscibilité', sims: [53, 158, 157], domaines: ['Cohésion et solubilité', 'Savons et amphiphilie', 'Dissolution d’un solide ionique : équation et concentration des ions'] },
+  { id: '1g-combustions', niveau: '1G', label: '🔥 Combustions : énergie de réaction et énergies de liaison', sims: [159], domaines: ['Combustions : énergie de réaction et énergies de liaison'] },
   { id: '1g-organique', niveau: '1G', label: '🧬 La chimie organique', sims: [102, 111], domaines: ['Chimie organique'] },
   { id: '1g-synthese', niveau: '1G', label: '🧫 Synthèse organique : protocole, rendement et contrôle', sims: [109, 112], domaines: ['Synthèse et rendement'] },
   { id: '1g-electricite', niveau: '1G', label: '⚡ Aspects énergétiques des phénomènes électriques', sims: [70, 71, 72], domaines: ['Énergie électrique'] },

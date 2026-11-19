@@ -25,6 +25,7 @@ import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
+import * as CMB from "./combustionModele";
 import * as RX from "./redoxModele";
 import * as CL from "./couleursModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
@@ -3484,6 +3485,41 @@ export const ENONCES = [
         cherche: { bonne: 'Le nombre de radiations absorbées en lumière blanche (3 moins celles qu’il diffuse)', faux: ['Le nombre de radiations que l’objet diffuse en lumière blanche', 'Le nombre de radiations que la lampe colorée envoie', 'La durée nécessaire pour absorber la lumière (en min)'] },
         manque: null,
         solution: { txt: 'radiations absorbées = 3 − radiations diffusées', val: 3 - nObj, u: 'radiations' } };
+    }),
+  },
+  // ───────────────────────────── Combustions (1G) : énergie molaire de réaction et pouvoir calorifique
+  {
+    id: 'comb1g-sapp-combustion', domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Un combustible à étudier', noms: ['Énergie molaire de réaction estimée', 'Pouvoir calorifique estimé'],
+    gen: () => {
+      const c = tire(CMB.COMBUSTIBLES);
+      return { id: c.id, th: tire([15, 20, 25]), P: tire([1.0, 1.2]), m: tire([10, 25, 50]) };
+    },
+    build: epure((p, q) => {
+      const c = CMB.combustible(p.id), M = CMB.masseMolaire(c), D = CMB.D_LIAISON;
+      const tokens = {
+        CH: tok(`${D.CH} kJ/mol`, 'Énergie de la liaison C–H', D.CH, 'kJ/mol'), CC: tok(`${D.CC} kJ/mol`, 'Énergie de la liaison C–C', D.CC, 'kJ/mol'),
+        CO: tok(`${D.CO} kJ/mol`, 'Énergie de la liaison C–O', D.CO, 'kJ/mol'), OH: tok(`${D.OH} kJ/mol`, 'Énergie de la liaison O–H', D.OH, 'kJ/mol'),
+        OO: tok(`${D.OO} kJ/mol`, 'Énergie de la liaison O=O', D.OO, 'kJ/mol'), CdO: tok(`${D.CdO} kJ/mol`, 'Énergie de la liaison C=O de CO₂', D.CdO, 'kJ/mol'),
+        M: tok(`${nb(M, 1)} g/mol`, `Masse molaire du ${c.nom}`, M, 'g/mol'),
+        th: tok(`${p.th} °C`, 'Température du local', p.th, '°C'), P: tok(`${nb(p.P, 2)} bar`, 'Pression dans le local', p.P, 'bar'), m: tok(`${p.m} g`, 'Masse de combustible dans le réservoir', p.m, 'g'),
+      };
+      const presentes = Object.keys({ ...CMB.liaisonsRompues(c), ...CMB.liaisonsFormees(c) });
+      const raisons = { th: 'La température n’intervient pas dans l’estimation avec les énergies de liaison moyennes.', P: 'La pression n’intervient pas : on raisonne sur une mole de combustible, tous les corps gazeux.', m: 'La masse du réservoir ne sert pas pour une énergie par mole ou par kilogramme de combustible.' };
+      ['CH', 'CC', 'CO', 'OH', 'OO', 'CdO'].filter(t => !presentes.includes(t)).forEach(t => { raisons[t] = `Aucune liaison ${CMB.NOM_LIAISON[t]} n’est rompue ni formée dans cette combustion : cette énergie ne sert pas.`; });
+      const utilesLiaisons = presentes;
+      const lis = L => Object.entries(L).map(([t, n]) => `${n} × ${CMB.NOM_LIAISON[t]}`).join(' + ');
+      const debut = ['On étudie la combustion complète du ', c.nom, ' ', c.f, ' (', c.usage, ') ; hypothèse du modèle : tous les corps pris à l’état gazeux. Équation : ', CMB.equation(c), '. Données de liaison : C–H ', T('CH'), ' ; C–C ', T('CC'), ' ; C–O ', T('CO'), ' ; O–H ', T('OH'), ' ; O=O ', T('OO'), ' ; C=O ', T('CdO'), '. Le local est à ', T('th'), ', sous ', T('P'), ', et le réservoir contient ', T('m'), ' de combustible. Masse molaire : ', T('M'), '. '];
+      const derivees = [{ id: 'R', nom: 'Énergie pour rompre les liaisons des réactifs', expr: `Σ D(rompues) = ${lis(CMB.liaisonsRompues(c))} (avec leurs D)`, val: CMB.energieRompue(c), u: 'kJ/mol' },
+        { id: 'F', nom: 'Énergie libérée par la formation des liaisons des produits', expr: `Σ D(formées) = ${lis(CMB.liaisonsFormees(c))} (avec leurs D)`, val: CMB.energieFormee(c), u: 'kJ/mol' }];
+      if (q === 0) return { tokens, derivees: derivees.slice(0, 2), texte: [...debut, 'Quelle est l’énergie molaire de réaction estimée E_r de cette combustion ?'],
+        utiles: utilesLiaisons, raisons: { ...raisons, M: 'La masse molaire sert pour le pouvoir calorifique (énergie par kilogramme), pas pour l’énergie par mole de combustible.' },
+        cherche: { bonne: 'L’énergie molaire de réaction E_r (en kJ/mol)', faux: ['L’énergie de liaison moyenne d’une liaison du combustible (en kJ/mol)', 'L’énergie libérée par la combustion de tout le réservoir (en kJ)', 'Le pouvoir calorifique du combustible (en MJ/kg)'] },
+        manque: null, solution: { txt: 'E_r = Σ D(rompues) − Σ D(formées)', val: CMB.energieReaction(c), u: 'kJ/mol' } };
+      return { tokens, derivees: [...derivees, { id: 'Er', nom: 'Énergie molaire de réaction estimée', expr: 'E_r = Σ D(rompues) − Σ D(formées)', val: CMB.energieReaction(c), u: 'kJ/mol' }],
+        texte: [...debut, 'Quel est le pouvoir calorifique estimé de ce combustible ?'],
+        utiles: [...utilesLiaisons, 'M'], raisons,
+        cherche: { bonne: 'Le pouvoir calorifique PC (en MJ/kg)', faux: ['L’énergie molaire de réaction E_r (en kJ/mol)', 'La quantité de matière de combustible dans le réservoir (en mol)', 'L’énergie libérée par la combustion de tout le réservoir (en kJ)'] },
+        manque: null, solution: { txt: 'PC = |E_r| ÷ M, avec E_r = Σ D(rompues) − Σ D(formées)', val: CMB.pouvoirCalorifique(c), u: 'MJ/kg' } };
     }),
   },
 ];

@@ -57,7 +57,7 @@ export const COUVERTURE = [
     { th: CTM, t: 'Cohésion, dissolution, solubilité et miscibilité', e: 'ok', chap: '1g-cohesion' },
     { th: CTM, t: 'Chimie organique : groupes caractéristiques, nomenclature, spectroscopie infrarouge', e: 'ok', chap: '1g-organique' },
     { th: CTM, t: 'Synthèse organique : protocole, rendement, contrôle', e: 'ok', chap: '1g-synthese' },
-    { th: CTM, t: 'Combustions : énergie molaire de réaction et énergie de liaison', e: 'avenir' },
+    { th: CTM, t: 'Combustions : énergie molaire de réaction et énergie de liaison', e: 'ok', chap: '1g-combustions' },
     { th: MVT, t: 'Interactions fondamentales et notion de champ', e: 'ok', chap: '1g-champ' },
     { th: MVT, t: 'Fluide au repos : pression, loi de Mariotte, statique des fluides', e: 'avenir' },
     { th: MVT, t: 'Mouvement d’un système : variation de vitesse et forces', e: 'ok', chap: '1g-mouvement' },

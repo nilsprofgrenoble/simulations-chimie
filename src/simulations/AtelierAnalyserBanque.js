@@ -4748,6 +4748,42 @@ export const PREVOIR = [
       F('aucun des deux : les encres sont des objets, ni des lumières ni des filtres', 'Les encres agissent comme des filtres posés sur le papier : le modèle soustractif s’applique aussi aux objets colorés.'),
       V('la synthèse soustractive : les encres absorbent une partie de la lumière', 'Chaque encre absorbe une partie de la lumière blanche que le papier diffuse : c’est le principe de l’impression en couleurs.'),
     ] },
+  // ───────────────────────────── Combustions (1G) : équation, liaisons, énergie de réaction
+  { id: 'comb1g-ana-o2-alcool', domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Dioxygène consommé : alcool et alcane',
+    enonce: 'On brûle complètement 1 mol d’éthanol C₂H₅OH et, dans un autre essai, 1 mol d’éthane C₂H₆ (même nombre d’atomes de carbone). Les produits sont CO₂ et H₂O dans les deux cas.', q: 'La quantité de dioxygène consommée par l’éthanol, par rapport à celle consommée par l’éthane, est…', options: [
+      V('plus petite : la molécule d’éthanol contient déjà un atome d’oxygène', 'Il y a 2 CO₂ dans les deux cas, mais 3 H₂O pour l’éthanol et 3 H₂O pour l’éthane : le bilan d’atomes O à droite est le même (7), or l’éthanol en apporte 1 : il reste moins d’oxygène à fournir (3 O₂ pour l’éthanol, 3½ O₂ pour l’éthane).'),
+      F('la même : les deux molécules ont le même nombre d’atomes de carbone', 'Les deux combustibles donnent 2 CO₂, mais pas la même quantité d’eau ni le même oxygène déjà présent : l’alcool en apporte un atome dans sa molécule, ce qui diminue le dioxygène nécessaire.'),
+      F('plus grande : le groupe –OH de l’éthanol réagit aussi avec le dioxygène', 'Le groupe –OH contient de l’oxygène : il en apporte, il n’en consomme pas. L’alcool a besoin de moins de dioxygène à fournir qu’un alcane de même longueur.'),
+      F('nulle : l’éthanol contient déjà tout l’oxygène dont sa combustion a besoin', 'La molécule d’éthanol ne contient qu’un atome d’oxygène, alors que 7 atomes O se retrouvent dans CO₂ et H₂O : il en manque 6, apportés par 3 O₂.'),
+    ] },
+  { id: 'comb1g-ana-signe-liaisons', domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Combustion exothermique et énergies de liaison',
+    enonce: 'Pour une combustion en phase gazeuse, on estime l’énergie molaire de réaction par E_r = Σ D(liaisons rompues) − Σ D(liaisons formées). On sait que la combustion est exothermique.', q: 'Que peut-on en déduire ?', options: [
+      V('la somme des énergies des liaisons formées dépasse celle des liaisons rompues', 'Exothermique signifie E_r < 0, donc Σ D(rompues) − Σ D(formées) < 0 : l’énergie libérée en formant les liaisons des produits est supérieure à l’énergie fournie pour rompre celles des réactifs.'),
+      F('la somme des énergies des liaisons rompues dépasse celle des liaisons formées', 'Ce serait E_r > 0 : on fournirait plus d’énergie qu’on n’en libère, la réaction serait endothermique.'),
+      F('les deux sommes sont égales : l’énergie est conservée dans la réaction', 'L’énergie totale se conserve, mais les deux sommes ne sont égales que si E_r = 0, ce qui n’est pas le cas ici : la différence est l’énergie transférée à l’extérieur.'),
+      F('les énergies de liaison des produits sont négatives, celles des réactifs positives', 'Toutes les énergies de liaison D sont positives : c’est la différence de deux sommes positives qui donne le signe de E_r.'),
+    ] },
+  { id: 'comb1g-ana-taille-molecule', domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Méthane ou propane : énergie par mole',
+    enonce: 'On brûle complètement 1 mol de méthane CH₄ et, dans un autre essai, 1 mol de propane C₃H₈, en phase gazeuse. L’énergie molaire de réaction est estimée avec les énergies de liaison.', q: 'L’énergie libérée par mole de combustible est…', options: [
+      V('plus grande pour le propane : ses produits contiennent bien plus de liaisons formées', 'Le propane donne 3 CO₂ et 4 H₂O contre 1 CO₂ et 2 H₂O pour le méthane : il se forme beaucoup plus de liaisons C=O et O–H, donc plus d’énergie libérée par mole de combustible (environ 2 040 kJ contre 800 kJ).'),
+      F('la même : les deux sont des alcanes, donc ils libèrent la même énergie par mole de combustible', 'Les deux sont des alcanes, mais la quantité de liaisons formées dépend du nombre d’atomes de carbone et d’hydrogène de la molécule : une grosse molécule libère plus par mole.'),
+      F('plus grande pour le méthane : sa molécule a moins de liaisons à rompre que l’autre', 'Il faut aussi regarder les liaisons formées : le propane en forme beaucoup plus. Moins de liaisons à rompre ne suffit pas à décider.'),
+      F('plus petite pour le propane : sa molécule a plus de liaisons à rompre que l’autre', 'Rompre davantage de liaisons coûte plus d’énergie, mais il se forme aussi bien plus de liaisons dans CO₂ et H₂O : le bilan libère plus d’énergie pour le propane.'),
+    ] },
+  { id: 'comb1g-ana-incomplete-energie', domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Combustion incomplète et énergie libérée (pour aller plus loin)',
+    enonce: 'Question pour aller plus loin, hors capacités exigibles. Un même combustible brûle une première fois avec du dioxygène en excès (combustion complète, CO₂ et H₂O), puis avec un manque de dioxygène (combustion incomplète, avec du CO et de la suie C parmi les produits). On brûle la même quantité de combustible.', q: 'L’énergie libérée par la combustion incomplète est…', options: [
+      V('plus petite : le carbone n’est pas entièrement oxydé, moins de liaisons C=O se forment', 'Le CO₂ contient deux liaisons C=O qui libèrent beaucoup d’énergie en se formant ; avec du CO ou du carbone C, ces liaisons se forment moins : l’énergie libérée est plus faible.'),
+      F('plus grande : la flamme jaune est plus lumineuse, donc elle libère plus d’énergie', 'La flamme jaune est lumineuse à cause de la suie incandescente, mais cela ne prouve pas que plus d’énergie est libérée ; le bilan des liaisons montre le contraire.'),
+      F('la même : le combustible et sa quantité de matière sont identiques dans les deux essais', 'La quantité de combustible est la même, mais pas les produits : un produit différent, c’est un bilan de liaisons différent, donc une autre énergie libérée.'),
+      F('plus grande : le monoxyde de carbone brûle ensuite et libère de l’énergie en plus', 'Le CO peut ensuite brûler, mais cette combustion supplémentaire s’ajoute alors à la combustion complète : le total est celui de la combustion complète, pas davantage.'),
+    ] },
+  { id: 'comb1g-ana-quantite-energie', domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Doubler la quantité de combustible',
+    enonce: 'On brûle complètement 1,0 mol de butane, qui libère une certaine énergie, puis 2,0 mol de butane dans les mêmes conditions (dioxygène en excès, phase gazeuse). L’énergie molaire de réaction est E_r.', q: 'Quelle affirmation est correcte ?', options: [
+      V('l’énergie libérée double, alors que l’énergie molaire E_r reste la même', 'E_r est une énergie par mole de combustible : elle ne dépend pas de la quantité brûlée. L’énergie libérée est n × |E_r|, donc elle double quand n double.'),
+      F('l’énergie libérée double, et l’énergie molaire E_r double elle aussi', 'E_r est ramenée à une mole de combustible : elle ne change pas quand on brûle plus de combustible ; seule l’énergie totale libérée est proportionnelle à n.'),
+      F('l’énergie libérée reste la même, car la réaction chimique est la même', 'La réaction est la même, donc E_r aussi, mais deux fois plus de molécules brûlent : l’énergie totale libérée est doublée.'),
+      F('l’énergie libérée quadruple : deux fois plus de molécules et de liaisons', 'Le nombre de liaisons rompues et formées est proportionnel à la quantité de combustible : doubler n double l’énergie, il ne la multiplie pas par quatre.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

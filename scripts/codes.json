@@ -1345,5 +1345,19 @@
  "77:plausible:coul1g-val-cyan-magenta": "VAL342",
  "77:plausible:coul1g-val-feuille-verte": "VAL343",
  "77:plausible:coul1g-val-noir-imprimante": "VAL344",
- "36:coul1g-calcul": "REA85"
+ "36:coul1g-calcul": "REA85",
+ "34:comb1g-sapp-combustion.0": "SAPP350",
+ "34:comb1g-sapp-combustion.1": "SAPP351",
+ "37:prevoir:comb1g-ana-o2-alcool": "ANA570",
+ "37:prevoir:comb1g-ana-signe-liaisons": "ANA571",
+ "37:prevoir:comb1g-ana-taille-molecule": "ANA572",
+ "37:prevoir:comb1g-ana-incomplete-energie": "ANA573",
+ "37:prevoir:comb1g-ana-quantite-energie": "ANA574",
+ "77:plausible:comb1g-val-signe-methane": "VAL345",
+ "77:plausible:comb1g-val-equation-propane": "VAL346",
+ "77:plausible:comb1g-val-pc-ethanol": "VAL347",
+ "77:plausible:comb1g-val-ecart-methanol": "VAL348",
+ "77:plausible:comb1g-val-liaisons-ch4": "VAL349",
+ "77:plausible:comb1g-val-eau-liquide": "VAL350",
+ "36:comb1g-calcul": "REA86"
 }
