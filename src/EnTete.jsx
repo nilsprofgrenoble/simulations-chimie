@@ -17,6 +17,7 @@ const TXT = TEXTE, TXT2 = TEXTE2, BORD = BORDURE, VERT = ACCENT;
 export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, session }) {
   const [ouvert, setOuvert] = useState(null);        // clé du menu déroulé (grand écran) ou 'mobile'
   const [accordeon, setAccordeon] = useState(null);  // niveau déplié dans le menu mobile
+  const [rubriquesOuvertes, setRubriquesOuvertes] = useState({});  // « niveau|rubrique » → true/false (choix de l'utilisateur) ; sinon dépliée seulement si elle contient la simulation affichée
   const [large, setLarge] = useState(() => window.innerWidth >= 1000);
   const ref = useRef(null);
   const [cache, setCache] = useState(false);   // l'en-tête se range quand on descend dans la page et revient quand on remonte
@@ -68,14 +69,42 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
       {s.id === activeId && <span aria-hidden="true">●</span>}
     </button>
   );
-  const groupe = (g, k) => g.entete ? (
-    <div key={k} role="heading" aria-level={3} style={{ gridColumn: '1 / -1', fontSize: 13, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', color: TXT2, borderBottom: `2px solid ${BORD}`, paddingBottom: 3, marginTop: k ? 8 : 0 }}>{g.entete}</div>
+  const groupe = (g, k) => g.sousEntete ? (
+    <div key={k} role="heading" aria-level={4} style={{ gridColumn: '1 / -1', fontSize: 12.5, fontWeight: 800, color: VERT, paddingLeft: 2, marginTop: 4 }}>{g.sousEntete}</div>
   ) : (
     <div key={k} style={{ minWidth: 0 }}>
       {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/>{g.chap && <button data-page-chapitre-lien={g.chap} onClick={() => allerChap(g.chap)} title="Simulations et exercices d’entraînement de ce chapitre" style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12.5, fontFamily: 'inherit', textDecoration: 'underline' }}>📚 Page du chapitre : simulations + exercices ▶</button>}</div>}
       {g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>}
     </div>
   );
+  // Les rubriques (intitulés « entete ») se replient : on découpe la liste à plat en sections « intitulé + chapitres qui suivent »
+  const groupesRepliables = m => {
+    const sections = [];
+    m.groupes.forEach(g => {
+      if (g.entete) sections.push({ entete: g.entete, groupes: [] });
+      else if (sections.length) sections[sections.length - 1].groupes.push(g);
+      else sections.push({ entete: null, groupes: [g] });
+    });
+    return sections.flatMap((sec, i) => {
+      if (!sec.entete) return sec.groupes.map((g, k) => groupe(g, `${m.key}-${i}-${k}`));
+      const cle = `${m.key}|${sec.entete}`;
+      const nbSims = sec.groupes.reduce((n, g) => n + (g.sims?.length || 0), 0);
+      const contientActif = sec.groupes.some(g => g.sims?.some(x => x.id === activeId));
+      const deplie = rubriquesOuvertes[cle] ?? contientActif;
+      return [
+        <div key={`${cle}-t`} role="heading" aria-level={3} style={{ gridColumn: '1 / -1', borderBottom: `2px solid ${BORD}`, marginTop: i ? 8 : 0 }}>
+          <button onClick={() => setRubriquesOuvertes(o => ({ ...o, [cle]: !deplie }))} aria-expanded={deplie}
+            style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 8, padding: '4px 2px', border: 'none', background: 'transparent', cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+              fontSize: 13, fontWeight: 800, letterSpacing: 0.6, textTransform: 'uppercase', color: TXT2 }}>
+            <span aria-hidden="true" style={{ fontSize: 10, width: 12 }}>{deplie ? '▼' : '▶'}</span>
+            <span style={{ flex: 1 }}>{sec.entete}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0, textTransform: 'none' }}>{nbSims} simulation{nbSims > 1 ? 's' : ''}</span>
+          </button>
+        </div>,
+        ...(deplie ? sec.groupes.map((g, k) => groupe(g, `${cle}-${k}`)) : []),
+      ];
+    });
+  };
 
   const bouton = (actif, ouvertM) => ({
     display: 'inline-flex', alignItems: 'center', gap: 5, padding: '8px 12px', border: 'none', background: ouvertM ? '#f1f5f9' : 'transparent',
@@ -137,7 +166,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
         <div style={panneau} role="region" aria-label={menuOuvert.label}>
           <div style={{ maxWidth: 1280, margin: '0 auto', padding: '14px 16px 18px', boxSizing: 'border-box' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px 22px' }}>
-              {menuOuvert.groupes.map(groupe)}
+              {groupesRepliables(menuOuvert)}
             </div>
           </div>
         </div>
@@ -165,7 +194,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
                     textDecoration: niveauActif === m.key ? 'underline' : 'none', textDecorationThickness: 3, textUnderlineOffset: 4 }}>
                   {m.label}<span aria-hidden="true">{accordeon === m.key ? '▲' : '▼'}</span>
                 </button>
-                {accordeon === m.key && <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 8 }}>{m.groupes.map(groupe)}</div>}
+                {accordeon === m.key && <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 8 }}>{groupesRepliables(m)}</div>}
               </div>
             ))}
           </div>

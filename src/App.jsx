@@ -414,10 +414,12 @@ function construireMenus() {
       return { ...m, groupes: [{ sims }] };
     }
     const groupes = [];
-    let rubrique = null;
+    let rubrique = null, sousRubrique = null;
     chapitresDuNiveau(m.key).forEach(c => {
-      if (c.rubrique && c.rubrique !== rubrique) groupes.push({ entete: c.rubrique, sims: [] });   // intitulé de rubrique, sur toute la largeur du menu
+      if (c.rubrique && c.rubrique !== rubrique) { groupes.push({ entete: c.rubrique, sims: [] }); sousRubrique = null; }   // intitulé de rubrique (repliable), sur toute la largeur du menu
       rubrique = c.rubrique || rubrique;
+      if (c.sousRubrique && c.sousRubrique !== sousRubrique) groupes.push({ sousEntete: c.sousRubrique, sims: [] });   // intertitre léger sous la rubrique
+      sousRubrique = c.sousRubrique || sousRubrique;
       { const sims = c.sims.filter(id => !SIMS_HORS_MENU.has(id)).map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche); if (sims.length) groupes.push({ label: c.label, chap: c.id, sims }); }
     });
     return { ...m, groupes };
