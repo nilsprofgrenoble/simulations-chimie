@@ -30,13 +30,13 @@ const A_BCFM = dispo('bcfm', { A: 'Cl', B: 'F', W: 'Br', D: 'H' });
 const A_BCE = dispo('bromochloroethane', { A: 'CH₃', B: 'Cl', W: 'H', D: 'Br' });
 const A_BCP = dispo('bromochloropropane', { A: 'Br', B: 'CH₃', W: 'H', D: 'CH₂Cl' });
 const A_AMP = dispo('aminopropanol', { A: 'CH₃', B: 'NH₂', W: 'CH₂OH', D: 'H' });
-const A_ALA = avecConf('alanine', 'R');
-const A_ALA2 = avecConf('alanine', 'S');
+const A_ALA = avecConf('aminobutanoique', 'R');
+const A_ALA2 = avecConf('aminobutanoique', 'S');
 const A_CLP = avecConf('chloropropanoique', 'R');
 const A_DIR = avecConf('aminopropanol', 'S', { dernier: 'D' });
 const A_DEV = avecConf('bromochloropropane', 'R', { dernier: 'W' });
 const A_SER = dispo('serine', { A: 'COOH', B: 'NH₂', W: 'CH₂OH', D: 'H' });
-const CONF_ALA = confDe('alanine', A_ALA), CONF_ALA2 = confDe('alanine', A_ALA2), CONF_CLP = confDe('chloropropanoique', A_CLP), CONF_DIR = confDe('aminopropanol', A_DIR), CONF_DEV = confDe('bromochloropropane', A_DEV);
+const CONF_ALA = confDe('aminobutanoique', A_ALA), CONF_ALA2 = confDe('aminobutanoique', A_ALA2), CONF_CLP = confDe('chloropropanoique', A_CLP), CONF_DIR = confDe('aminopropanol', A_DIR), CONF_DEV = confDe('bromochloropropane', A_DEV);
 const THR = MO('threonine');
 const CIBLE_THR = ['S', 'R'];                                   // (2S,3R) demandé à l’étape des deux carbones
 const FLIPS_DEPART = [[false, false], [false, true], [true, false], [true, true]].find(f => M.descripteurs(THR, M.affChaine(THR, f)).join() === CIBLE_THR.map(M.inverse).join());
@@ -143,7 +143,7 @@ export function SimulationChiralite() {
     { id: 'miroir-q', titre: 'Superposables ou non ?', sc: 'miroir', focus: ['scene'], depart: dep({ id: 'lactique', aff: A_LAC, miroir: true }),
       texte: <>On ne peut pas superposer les deux dessins : en tournant la molécule de gauche, on ne retrouve jamais celle de droite, comme pour les deux ressorts. Une molécule qui n’est pas superposable à son image dans un miroir a un nom.</>,
       tache: { type: 'qcm', q: 'Comment appelle-t-on une molécule non superposable à son image dans un miroir ?', options: ['une molécule chirale', 'une molécule achirale', 'une molécule asymétrique', 'une molécule symétrique'], bonne: 0,
-        indice: 'On a utilisé ce mot pour la main droite et la main gauche.', expl: 'Une molécule non superposable à son image est chirale. Une molécule qui possède un seul carbone asymétrique est chirale.' } },
+        indice: 'On a utilisé ce mot pour la main droite et la main gauche.', expl: 'Une molécule non superposable à son image est chirale. Une molécule qui possède un seul carbone asymétrique est chirale. La relation entre une molécule chirale et son image dans un miroir s’appelle l’énantiomérie : ces deux molécules sont des énantiomères.' } },
     { id: 'z', titre: 'Classer les atomes : le numéro atomique', sc: 'z', focus: ['scene'], depart: null,
       retenirTitre: 'À RETENIR : C* ET MOLÉCULE CHIRALE', retenir: FICHES.asym,
       texte: <>Pour <strong>décrire</strong> une molécule chirale, on classe ses 4 groupes de <strong>1</strong> (prioritaire) à <strong>4</strong> (le moins prioritaire). Ce sont les <strong>règles de Cahn, Ingold et Prelog</strong> (CIP). Première règle : on regarde l’atome lié au carbone C* ; <strong>plus son numéro atomique Z est grand, plus il est prioritaire</strong>. Voici quelques valeurs de Z.</>,
@@ -172,22 +172,22 @@ export function SimulationChiralite() {
       tache: { type: 'num', q: 'Combien d’atomes O sont comptés comme voisins du carbone de COOH ?', unite: '', vrai: 3, tol: 0, affiche: v => `${v}`, carnet: false,
         calcul: () => ['C=O compte 2 fois : 2 atomes O.', '–OH : 1 atome O.', 'Total : 2 + 1 = 3. Les voisins sont (O, O, O).'], pieges: [[2, 'Il manque un O : la double liaison C=O compte pour 2, et –OH ajoute 1.'], [1, 'Une double liaison compte pour 2 atomes, pas pour 1.']],
         expl: 'Les voisins du carbone de COOH sont (O, O, O) : la double liaison C=O compte deux fois, plus l’oxygène de –OH.', indice: 'C=O compte pour deux O. Ajoutez celui de –OH.' } },
-    { id: 'cip2-eleve', titre: 'À vous : l’alanine', sc: 'cram', focus: ['scene'], depart: dep({ id: 'alanine', aff: A_ALA }),
-      texte: <>Classez les groupes du C* de l’<strong>alanine</strong>, CH₃–CH(NH₂)–COOH. Cliquez sur le n°1, puis le n°2, puis le n°3. Pour départager <strong>COOH</strong> (O, O, O) et <strong>CH₃</strong> (H, H, H), comparez leurs voisins.</>,
+    { id: 'cip2-eleve', titre: 'À vous : un acide aminé', sc: 'cram', focus: ['scene'], depart: dep({ id: 'aminobutanoique', aff: A_ALA }),
+      texte: <>Classez les groupes du C* de l’<strong>acide 2-aminobutanoïque</strong>, CH₃CH₂–CH(NH₂)–COOH. Cliquez sur le n°1, puis le n°2, puis le n°3. Pour départager <strong>COOH</strong> (O, O, O) et <strong>CH₂CH₃</strong> (C, H, H), comparez leurs voisins.</>,
       tache: { type: 'action', ok: enGuide && P.clics.length >= 3, consigne: 'Cliquez sur les groupes dans l’ordre de priorité : 1, 2, 3.' } },
     { id: 'cip3-eleve', titre: 'À vous : la sérine', sc: 'cram', focus: ['scene'], depart: dep({ id: 'serine', aff: A_SER }),
       retenirTitre: 'À RETENIR : LA DOUBLE LIAISON', retenir: FICHES.double,
       texte: <>Dernier classement, la <strong>sérine</strong> : HOCH₂–CH(NH₂)–COOH. Trois groupes sont liés par un carbone ou un azote : cherchez celui qui commence par l’atome de plus grand Z, puis départagez <strong>COOH</strong> (O, O, O) et <strong>CH₂OH</strong> (O, H, H) en comparant leurs voisins un à un.</>,
       tache: { type: 'action', ok: enGuide && P.clics.length >= 3, consigne: 'Cliquez sur les groupes dans l’ordre de priorité : 1, 2, 3.' } },
-    { id: 'axe', titre: 'Regarder depuis l’axe C → 4', sc: 'axe', focus: ['scene', 'reglages'], depart: dep({ id: 'alanine', aff: A_ALA, rangs: true }),
+    { id: 'axe', titre: 'Regarder depuis l’axe C → 4', sc: 'axe', focus: ['scene', 'reglages'], depart: dep({ id: 'aminobutanoique', aff: A_ALA, rangs: true }),
       texte: <>Pour trouver R ou S, on regarde la molécule <strong>depuis le côté opposé au groupe n°4</strong> : le groupe n°4 doit être <strong>derrière</strong> le carbone, loin de vous. Faites glisser le curseur « Tourner la molécule » jusqu’à 100 %. À la fin, le groupe n°4 est caché derrière le carbone et on voit les groupes 1, 2 et 3 autour de lui.</>,
       tache: { type: 'action', ok: enGuide && P.t >= 0.99, consigne: 'Amenez le curseur « Tourner la molécule » à 100 %.' } },
-    { id: 'sens', titre: 'Le sens de rotation 1 → 2 → 3', sc: 'axe', focus: ['scene'], depart: dep({ id: 'alanine', aff: A_ALA, rangs: true, t: 1, fleche: true }),
-      texte: <>La flèche relie 1 → 2 → 3 : elle tourne dans le sens {M.sensDansLAxe(MO('alanine').g, cen(MO('alanine')), A_ALA) === 'horaire' ? 'des aiguilles d’une montre (horaire)' : 'inverse des aiguilles d’une montre (antihoraire)'}. Règle : sens <strong>horaire</strong> ⇒ configuration <strong>R</strong> (du latin rectus, « droit ») ; sens <strong>antihoraire</strong> ⇒ configuration <strong>S</strong> (sinister, « gauche »).</>,
-      tache: { type: 'qcm', q: 'Quelle est la configuration de cette molécule d’alanine ?', options: CONF_ALA === 'R' ? ['R : sens horaire', 'S : la flèche tourne dans le sens horaire', 'S : la flèche tourne dans le sens inverse', 'on ne peut pas le dire sans calcul'] : ['S : sens inverse', 'R : la flèche tourne dans le sens inverse', 'R : la flèche tourne dans le sens horaire', 'on ne peut pas le dire sans calcul'], bonne: 0,
+    { id: 'sens', titre: 'Le sens de rotation 1 → 2 → 3', sc: 'axe', focus: ['scene'], depart: dep({ id: 'aminobutanoique', aff: A_ALA, rangs: true, t: 1, fleche: true }),
+      texte: <>La flèche relie 1 → 2 → 3 : elle tourne dans le sens {M.sensDansLAxe(MO('aminobutanoique').g, cen(MO('aminobutanoique')), A_ALA) === 'horaire' ? 'des aiguilles d’une montre (horaire)' : 'inverse des aiguilles d’une montre (antihoraire)'}. Règle : sens <strong>horaire</strong> ⇒ configuration <strong>R</strong> (du latin rectus, « droit ») ; sens <strong>antihoraire</strong> ⇒ configuration <strong>S</strong> (sinister, « gauche »).</>,
+      tache: { type: 'qcm', q: 'Quelle est la configuration de cette molécule d’acide 2-aminobutanoïque ?', options: CONF_ALA === 'R' ? ['R : sens horaire', 'S : la flèche tourne dans le sens horaire', 'S : la flèche tourne dans le sens inverse', 'on ne peut pas le dire sans calcul'] : ['S : sens inverse', 'R : la flèche tourne dans le sens inverse', 'R : la flèche tourne dans le sens horaire', 'on ne peut pas le dire sans calcul'], bonne: 0,
         indice: 'Horaire = R ; antihoraire = S. Regardez le sens dans lequel la flèche tourne.', expl: `Sens ${CONF_ALA === 'R' ? 'horaire' : 'antihoraire'} avec le groupe 4 derrière : configuration ${CONF_ALA}.` } },
-    { id: 'lire1', titre: 'À vous : lire la configuration', sc: 'axe', focus: ['scene'], depart: dep({ id: 'alanine', aff: A_ALA2, rangs: true, t: 1 }),
-      texte: <>Autre molécule d’alanine, vue directement depuis l’axe C → 4 (le groupe 4 est caché derrière). Suivez 1 → 2 → 3 avec votre doigt.</>,
+    { id: 'lire1', titre: 'À vous : lire la configuration', sc: 'axe', focus: ['scene'], depart: dep({ id: 'aminobutanoique', aff: A_ALA2, rangs: true, t: 1 }),
+      texte: <>Autre molécule d’acide 2-aminobutanoïque, vue directement depuis l’axe C → 4 (le groupe 4 est caché derrière). Suivez 1 → 2 → 3 avec votre doigt.</>,
       tache: { type: 'qcm', q: 'Quelle est la configuration de cette molécule ?', ...qcmRS(CONF_ALA2),
         indice: 'Partez de la pastille 1, allez à la 2, puis à la 3 : tournez-vous comme une aiguille de montre ?', expl: `1 → 2 → 3 tourne dans le sens ${CONF_ALA2 === 'R' ? 'horaire : R' : 'antihoraire : S'}.` } },
     { id: 'lire2', titre: 'Encore un exemple', sc: 'axe', focus: ['scene'], depart: dep({ id: 'chloropropanoique', aff: A_CLP, rangs: true, t: 1 }),

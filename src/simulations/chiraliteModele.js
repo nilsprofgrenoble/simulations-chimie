@@ -258,7 +258,6 @@ const M = (o) => ({ ...o, g: graphe(o.smiles) });
 export const CATALOGUE = [
   // — une seule asymétrie —
   M({ id: 'lactique', nom: 'acide 2-hydroxypropanoïque (acide lactique)', semi: 'CH₃–CH(OH)–COOH', smiles: 'CC(O)C(=O)O', centres: [1], groupes: { 0: 'CH₃', 2: 'OH', 3: 'COOH' } }),
-  M({ id: 'alanine', nom: 'acide 2-aminopropanoïque (alanine)', semi: 'CH₃–CH(NH₂)–COOH', smiles: 'CC(N)C(=O)O', centres: [1], groupes: { 0: 'CH₃', 2: 'NH₂', 3: 'COOH' } }),
   M({ id: 'chloropropanoique', nom: 'acide 2-chloropropanoïque', semi: 'CH₃–CHCl–COOH', smiles: 'CC(Cl)C(=O)O', centres: [1], groupes: { 0: 'CH₃', 2: 'Cl', 3: 'COOH' } }),
   M({ id: 'bcfm', nom: 'bromochlorofluorométhane', semi: 'CHFClBr', smiles: 'C(F)(Cl)Br', centres: [0], groupes: { 1: 'F', 2: 'Cl', 3: 'Br' } }),
   M({ id: 'bromochloroethane', nom: '1-bromo-1-chloroéthane', semi: 'CH₃–CHBrCl', smiles: 'CC(Cl)Br', centres: [1], groupes: { 0: 'CH₃', 2: 'Cl', 3: 'Br' } }),

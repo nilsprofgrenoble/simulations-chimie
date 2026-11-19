@@ -8,7 +8,7 @@ const egal = (a, b, msg) => { nTests++; assert.deepStrictEqual(a, b, msg); };
 
 // ───────── 1. Graphes : formules brutes et écriture semi-développée cohérentes avec le SMILES ─────────
 const compter = g => { const c = {}; g.el.forEach(e => { c[e] = (c[e] || 0) + 1; }); return c; };
-const FORMULES = { lactique: { C: 3, H: 6, O: 3 }, alanine: { C: 3, H: 7, N: 1, O: 2 }, chloropropanoique: { C: 3, H: 5, Cl: 1, O: 2 }, bromochloroethane: { C: 2, H: 4, Br: 1, Cl: 1 }, bcfm: { C: 1, H: 1, Br: 1, Cl: 1, F: 1 },
+const FORMULES = { lactique: { C: 3, H: 6, O: 3 }, chloropropanoique: { C: 3, H: 5, Cl: 1, O: 2 }, bromochloroethane: { C: 2, H: 4, Br: 1, Cl: 1 }, bcfm: { C: 1, H: 1, Br: 1, Cl: 1, F: 1 },
   methylhexane: { C: 7, H: 16 }, serine: { C: 3, H: 7, N: 1, O: 3 }, cysteine: { C: 3, H: 7, N: 1, O: 2, S: 1 }, hydroxybutanal: { C: 4, H: 8, O: 2 }, aminopropanol: { C: 3, H: 9, N: 1, O: 1 },
   bromochloropropane: { C: 3, H: 6, Br: 1, Cl: 1 }, glyceraldehyde: { C: 3, H: 6, O: 3 }, malique: { C: 4, H: 6, O: 5 }, aminobutanoique: { C: 4, H: 9, N: 1, O: 2 },
   threonine: { C: 4, H: 9, N: 1, O: 3 }, isoleucine: { C: 6, H: 13, N: 1, O: 2 }, propan2ol: { C: 3, H: 8, O: 1 }, glycine: { C: 2, H: 5, N: 1, O: 2 }, chloropentane: { C: 5, H: 11, Cl: 1 },
@@ -39,7 +39,7 @@ for (const m of M.CATALOGUE) for (const c of m.centres) {
 
 // ───────── 3. Priorités CIP (rangs attendus écrits à la main, avec les règles du cours) ─────────
 const ATTENDU = {
-  lactique: { 1: ['OH', 'COOH', 'CH₃', 'H'] }, alanine: { 1: ['NH₂', 'COOH', 'CH₃', 'H'] }, chloropropanoique: { 1: ['Cl', 'COOH', 'CH₃', 'H'] }, bromochloroethane: { 1: ['Br', 'Cl', 'CH₃', 'H'] }, bcfm: { 0: ['Br', 'Cl', 'F', 'H'] },
+  lactique: { 1: ['OH', 'COOH', 'CH₃', 'H'] }, chloropropanoique: { 1: ['Cl', 'COOH', 'CH₃', 'H'] }, bromochloroethane: { 1: ['Br', 'Cl', 'CH₃', 'H'] }, bcfm: { 0: ['Br', 'Cl', 'F', 'H'] },
   methylhexane: { 2: ['CH₂CH₂CH₃', 'CH₂CH₃', 'CH₃', 'H'] }, serine: { 2: ['NH₂', 'COOH', 'CH₂OH', 'H'] }, cysteine: { 2: ['NH₂', 'CH₂SH', 'COOH', 'H'] },
   hydroxybutanal: { 2: ['OH', 'CHO', 'CH₂CH₃', 'H'] }, aminopropanol: { 1: ['NH₂', 'CH₂OH', 'CH₃', 'H'] }, bromochloropropane: { 1: ['Br', 'CH₂Cl', 'CH₃', 'H'] },
   glyceraldehyde: { 2: ['OH', 'CHO', 'CH₂OH', 'H'] }, malique: { 3: ['OH', 'COOH', 'CH₂COOH', 'H'] }, aminobutanoique: { 2: ['NH₂', 'COOH', 'CH₂CH₃', 'H'] },
@@ -85,7 +85,7 @@ function configFischer(m, c, placement) {          // placement : { haut:'COOH',
   return M.dot(a, M.cross(b, d)) < 0 ? 'R' : 'S';
 }
 const lm = id => M.parId(id);
-egal(configFischer(lm('alanine'), 1, { haut: 'COOH', bas: 'CH₃', gauche: 'NH₂', droite: 'H' }), 'S', 'L-alanine = (S)');
+egal(configFischer(lm('aminobutanoique'), 2, { haut: 'COOH', bas: 'CH₂CH₃', gauche: 'NH₂', droite: 'H' }), 'S', 'L-acide 2-aminobutanoïque = (S)');
 egal(configFischer(lm('serine'), 2, { haut: 'COOH', bas: 'CH₂OH', gauche: 'NH₂', droite: 'H' }), 'S', 'L-sérine = (S)');
 egal(configFischer(lm('cysteine'), 2, { haut: 'COOH', bas: 'CH₂SH', gauche: 'NH₂', droite: 'H' }), 'R', 'L-cystéine = (R) (S passe avant O)');
 egal(configFischer(lm('glyceraldehyde'), 2, { haut: 'CHO', bas: 'CH₂OH', droite: 'OH', gauche: 'H' }), 'R', 'D-glycéraldéhyde = (R)');

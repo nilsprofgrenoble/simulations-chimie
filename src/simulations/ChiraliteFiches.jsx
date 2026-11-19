@@ -115,7 +115,7 @@ function CarteBilan() {
 export const FICHES = {
   asym: <><CarteAsym/>
     {puces(<>Un <strong>carbone asymétrique</strong> (noté C*) est lié à <strong>4 atomes ou groupes tous différents</strong>.</>,
-      <>Une molécule avec un seul C* est <strong>chirale</strong> : on ne peut pas la superposer à son image dans un miroir.</>,
+      <>Une molécule est <strong>chirale</strong> si elle a au moins un C* et aucun axe, plan ou centre de symétrie : un seul C* suffit.</>,
       <><strong>Mémo</strong> : « 4 groupes différents = C* ; 2 groupes pareils = pas de C* ».</>)}</>,
   cram: <><CarteCram/>
     {puces(<>Le carbone est <strong>au centre</strong> : il a toujours <strong>4 liaisons</strong>, y compris vers H.</>,
@@ -126,7 +126,7 @@ export const FICHES = {
       <>On regarde <strong>l’atome lié au carbone C*</strong> : plus son Z est grand, plus le groupe est prioritaire.</>,
       <>Même atome lié ? On compare les <strong>voisins</strong> de cet atome, du plus grand Z au plus petit.</>)}</>,
   double: <><CarteDouble/>
-    {puces(<>Une <strong>double liaison</strong> compte <strong>pour deux</strong> : l’atome au bout est écrit deux fois.</>,
+    {puces(<>Une <strong>double liaison</strong> équivaut à <strong>deux liaisons simples</strong> : l’atome au bout est écrit deux fois.</>,
       <>Dans <strong>COOH</strong>, le carbone a pour voisins <strong>O, O, O</strong> (le O de C=O compte 2 fois).</>,
       <><strong>Exemple</strong> : COOH (O, O, O) passe avant CH₂OH (O, H, H).</>)}</>,
   lire: <><CarteLire/>
