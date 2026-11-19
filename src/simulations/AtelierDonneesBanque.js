@@ -1382,6 +1382,28 @@ export const ENONCES = [
         manque: null, solution: { txt: 'c = F × c′, avec c′ = frac(A|ε × l) (en mol/L, puis × 10⁶ pour des µmol/L)', val: c0, u: 'µmol/L' } };
     },
   },
+  // ───────────────────────────── Spectroscopie infrarouge (TG, sim 170) : lire une bande pour la comparer au tableau de données
+  {
+    id: 'irt-sapp-bande', domaine: 'Spectroscopie infrarouge : données tabulées', titre: 'Lire une bande d’un spectre infrarouge', noms: ['Nombre d’onde à comparer au tableau', 'Part du rayonnement absorbée par la bande'],
+    gen: () => ({ lam: tire([2.90, 3.00, 3.30, 5.75, 5.85, 5.95]), T: tire([12, 18, 25, 35]), e: tire([25, 50, 100]) }),
+    build: (p, q) => {
+      const tokens = {
+        lam: tok(`${nb(p.lam, 2)} µm`, 'Longueur d’onde du minimum de la bande, lue sur le spectre', p.lam * 1e-4, 'cm'),
+        T: tok(`${p.T} %`, 'Transmittance au minimum de la bande', p.T, '%'),
+        e: tok(`${p.e} µm`, 'Épaisseur du film de liquide traversé par le faisceau', p.e * 1e-4, 'cm'),
+        res: tok('4 cm⁻¹', 'Résolution du spectromètre (plus petit écart de nombre d’onde distingué)', 4, 'cm⁻¹'),
+      };
+      const debut = ['Un spectromètre infrarouge enregistre le spectre d’un film de liquide pur d’épaisseur ', T('e'), '. Une bande d’absorption a son minimum à la longueur d’onde ', T('lam'), ', où la transmittance vaut ', T('T'), ' ; la résolution de l’appareil est ', T('res'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'On veut comparer cette bande aux intervalles d’un tableau de données donnés en cm⁻¹ : quelle grandeur faut-il calculer ?'],
+        utiles: ['lam'], raisons: { T: 'La transmittance renseigne sur l’intensité de la bande, pas sur sa position.', e: 'L’épaisseur du film règle la profondeur des bandes, pas leur position.', res: 'La résolution est la précision de l’appareil : elle ne sert pas à convertir λ en σ.' },
+        cherche: { bonne: 'Le nombre d’onde σ de la bande (en cm⁻¹)', faux: ['La fréquence ν de la bande (en Hz)', 'L’énergie du photon absorbé par la bande (en J)', 'La largeur de la bande à mi-hauteur (en cm⁻¹)'] },
+        manque: null, solution: { txt: 'σ = frac(1|λ) (λ converti en cm)', val: 1 / (p.lam * 1e-4), u: 'cm⁻¹' } };
+      return { tokens, derivees: [], texte: [...debut, 'Pour en classer l’intensité (forte, moyenne ou faible, comme dans la colonne du tableau), quelle part du rayonnement la bande absorbe-t-elle à son minimum ?'],
+        utiles: ['T'], raisons: { lam: 'La position de la bande ne dit rien sur la part de rayonnement absorbée.', e: 'L’épaisseur est déjà « comptée » dans la transmittance mesurée : on n’en a pas besoin pour le pourcentage absorbé.', res: 'La résolution n’intervient pas dans une transmittance.' },
+        cherche: { bonne: 'Le pourcentage du rayonnement absorbé (en %)', faux: ['Le nombre d’onde σ du minimum de la bande (en cm⁻¹)', 'La largeur de la bande à mi-hauteur (en cm⁻¹)', 'La concentration de l’échantillon en mol/L'] },
+        manque: null, solution: { txt: 'absorbé = 100 % − T', val: 100 - p.T, u: '%' } };
+    },
+  },
   // ───────────────────────────── Deuxième loi de Newton (TG, sim 168) : somme des forces, accélération du centre de masse
   {
     id: 'nwt-sapp-chariot', domaine: 'Deuxième loi de Newton', titre: 'Chariot tiré par un fil', noms: ['Somme des forces sur l’axe du rail', 'Accélération du chariot'],

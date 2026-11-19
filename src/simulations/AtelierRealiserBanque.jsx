@@ -2122,6 +2122,50 @@ function genUvvTG() {
     retenir: ['Loi de Beer-Lambert : A = ε × l × c ; c = A divisée par (ε × l), avec ε en L·mol⁻¹·cm⁻¹, l en cm, c en mol/L.', 'Conversions : 1 µmol/L = 10⁻⁶ mol/L ; 1 mmol/L = 10⁻³ mol/L ; concentration massique = c × M.', 'Solution diluée F fois : c(initiale) = F × c′ (c′ = concentration de la solution diluée, mesurée).', 'Domaine de validité : solution diluée, lumière monochromatique, A ≲ 1,5 à 2 ; au-delà, on dilue. On travaille au maximum d’absorption λ_max.'] };
 }
 const mol5 = x => { const e = Math.floor(Math.log10(x)); return `${(x / Math.pow(10, e)).toFixed(1).replace('.', ',')}×10${sup(e)}`; };
+// Spectroscopie infrarouge (TG, sim 170) : λ ↔ σ et lecture des lignes d'un tableau de données tabulées.
+// Les nombres sont écrits en décimales fixes (d), exactement comme l'élève les lira ; nb() prend des chiffres significatifs et n'est pas utilisé pour les données.
+const IRT_LIGNES = [['C=O d’un ester', 1735, 1750], ['C=O d’un aldéhyde ou d’une cétone', 1705, 1740], ['C=O d’un acide carboxylique', 1700, 1725], ['C=O d’un amide', 1650, 1700], ['C=C d’un alcène', 1625, 1685]];
+const irtCompte = s => IRT_LIGNES.filter(([, a, b]) => s >= a && s <= b).length;
+// longueurs d'onde (µm) dont le nombre d'onde est à plus de 8 cm⁻¹ de toute borne, y compris une fois arrondi à 3 chiffres significatifs ou à l'entier : le comptage des lignes ne dépend pas de l'arrondi de l'élève
+export const IRT_LAM = (() => {
+  const res = [];
+  for (let l = 555; l <= 620; l++) {
+    const lam = l / 100, s = 1e4 / lam, marge = Math.min(...IRT_LIGNES.flatMap(([, a, b]) => [Math.abs(s - a), Math.abs(s - b)]));
+    const arr3 = Number(s.toPrecision(3)), arr0 = Math.round(s);
+    if (marge >= 8 && irtCompte(s) === irtCompte(arr3) && irtCompte(s) === irtCompte(arr0) && irtCompte(s) >= 1) res.push(lam);
+  }
+  return res;
+})();
+function genIrTabTG() {
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  // 4 chiffres : sans séparateur (1715) ; espace insécable à partir de 5 chiffres
+  const mil = x => { const t = String(Math.round(x)); return t.length >= 5 ? t.replace(/\B(?=(\d{3})+(?!\d))/g, NB) : t; };
+  const lam1 = tire([2.90, 3.00, 3.10, 3.30, 5.75, 5.85, 5.95, 6.10]), s1 = 1e4 / lam1;
+  const q1 = { id: 'irt0', type: 'num', q: <>Un spectromètre infrarouge indique une bande d’absorption à la longueur d’onde <b>{d(lam1, 2)}{NB}µm</b>. Les tableaux de données donnent les bandes en nombre d’onde. Calculez le nombre d’onde σ de cette bande (en cm⁻¹, 3 chiffres significatifs).</>, unite: 'cm⁻¹', vrai: s1, tolRel: 0.05, csMin: 3,
+    aide: 'σ = frac(1|λ) avec λ en cm : 1 µm = 10⁻⁴ cm.',
+    pieges: [[1 / lam1, 'Vous avez calculé frac(1|λ) avec λ en µm : convertissez d’abord λ en cm (1 µm = 10⁻⁴ cm).'], [1e6 / lam1, 'Ce résultat est en m⁻¹ : le nombre d’onde se donne en cm⁻¹, divisez par 100.'], [lam1 * 1e4, 'Vous avez multiplié λ par 10⁴ au lieu de calculer son inverse : σ = frac(1|λ).']],
+    expl: <>λ = {d(lam1, 2)}{NB}µm = {d(lam1, 2)} × 10⁻⁴{NB}cm ; σ = {avecIndices('frac(1|λ)')} = {avecIndices(`frac(1|${d(lam1, 2)} × 10⁻⁴)`)} = <b>{mil(s1)}{NB}cm⁻¹</b>.</> };
+  const lam2 = tire(IRT_LAM), s2 = 1e4 / lam2, n2 = irtCompte(s2);
+  const q2 = { id: 'irt1', type: 'num', q: <>Une bande est lue à la longueur d’onde <b>{d(lam2, 2)}{NB}µm</b>. Intervalles tabulés (en cm⁻¹) : {IRT_LIGNES.map(([nom, a, b], i) => <span key={nom}>{i ? ' ; ' : ''}{nom} {a}{NB}–{NB}{b}</span>)}. Après conversion en nombre d’onde, combien de lignes de ce tableau contiennent la valeur obtenue ?</>, unite: 'lignes', vrai: n2, tolRel: 0.006, csMin: 1,
+    aide: 'Calculez σ = frac(1|λ) (λ en cm), puis comptez les intervalles dont les deux bornes encadrent σ.',
+    pieges: [[0, 'Vous avez comparé λ en µm aux intervalles en cm⁻¹ : aucune ligne ne convient. Convertissez d’abord λ en nombre d’onde.'], [n2 === 1 ? 2 : 1, 'Revérifiez les bornes de chaque intervalle : σ est-il bien compris entre la borne basse et la borne haute ?']],
+    expl: <>σ = {avecIndices(`frac(1|${d(lam2, 2)} × 10⁻⁴)`)}{NB}cm⁻¹ = {mil(s2)}{NB}cm⁻¹. Lignes dont l’intervalle contient cette valeur : {IRT_LIGNES.filter(([, a, b]) => s2 >= a && s2 <= b).map(([nom]) => nom).join(' ; ')}, soit <b>{n2}</b>.</> };
+  // q3 : deux bandes lues en µm ; combien tombent dans l'intervalle C=O aldéhyde/cétone (1705–1740 cm⁻¹ ; valeurs choisies à plus de 8 cm⁻¹ des bornes) ?
+  const dedans = [5.78, 5.80, 5.82], dehors = [5.60, 5.70, 5.90, 6.00, 3.10, 6.10];
+  const n3 = tire([1, 2]);
+  const a3 = tire(dedans);
+  const b3 = n3 === 2 ? tire(dedans.filter(x => x !== a3)) : tire(dehors);
+  const lamA = tire([a3, b3]), lamB = lamA === a3 ? b3 : a3;
+  const sA = 1e4 / lamA, sB = 1e4 / lamB;
+  const q3 = { id: 'irt2', type: 'num', q: <>Deux bandes sont lues aux longueurs d’onde <b>{d(lamA, 2)}{NB}µm</b> et <b>{d(lamB, 2)}{NB}µm</b>. Le tableau donne, pour C=O d’un aldéhyde ou d’une cétone, l’intervalle <b>1705{NB}–{NB}1740{NB}cm⁻¹</b>. Combien de ces deux bandes ont un nombre d’onde dans cet intervalle ?</>, unite: 'bandes', vrai: n3, tolRel: 0.006, csMin: 1,
+    aide: 'Convertissez chaque longueur d’onde en nombre d’onde, σ = frac(1|λ) avec λ en cm, puis comparez aux bornes 1705 et 1740 cm⁻¹.',
+    pieges: [[n3 === 1 ? 2 : 1, 'Revérifiez chaque bande : après conversion en cm⁻¹, est-elle comprise entre 1705 et 1740 ?'], [0, 'Comparer des µm à des cm⁻¹ ne marche pas : convertissez d’abord chaque λ en nombre d’onde.']],
+    expl: <>{d(lamA, 2)}{NB}µm donne σ = {avecIndices(`frac(1|${d(lamA, 2)} × 10⁻⁴)`)} = {mil(sA)}{NB}cm⁻¹ ({sA >= 1705 && sA <= 1740 ? 'dans' : 'hors de'} l’intervalle) ; {d(lamB, 2)}{NB}µm donne σ = {avecIndices(`frac(1|${d(lamB, 2)} × 10⁻⁴)`)} = {mil(sB)}{NB}cm⁻¹ ({sB >= 1705 && sB <= 1740 ? 'dans' : 'hors de'} l’intervalle). Soit <b>{n3}</b> bande{n3 > 1 ? 's' : ''} dans l’intervalle.</> };
+  [q1, q2, q3].forEach(tolOk);
+  return { intro: 'Spectroscopie infrarouge : passer de la longueur d’onde au nombre d’onde et situer une bande dans un tableau de données.', questions: [q1, q2, q3],
+    retenir: ['σ = frac(1|λ), avec λ en cm ; avec λ en µm, σ (cm⁻¹) = frac(10 000|λ).', 'Les tableaux de données donnent des intervalles typiques de nombres d’onde : une valeur peut tomber dans plusieurs lignes.', 'Avant de comparer une bande au tableau, vérifier que les deux sont dans la même grandeur et la même unité (cm⁻¹).'] };
+}
 
 function genNewtonTG() {
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
@@ -2411,6 +2455,7 @@ export const FAMILLES = [
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'uvv-calcul', groupe: 'Formules', titre: 'Spectrophotométrie : loi de Beer-Lambert, concentration, absorbance, dilution et concentration massique (TG)', gen: genUvvTG, domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert' },
+  { id: 'irt-calcul', groupe: 'Formules', titre: 'Spectroscopie infrarouge : nombre d’onde, longueur d’onde et lignes d’un tableau de données (TG)', gen: genIrTabTG, domaine: 'Spectroscopie infrarouge : données tabulées' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },

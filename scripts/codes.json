@@ -1300,5 +1300,14 @@
  "37:prevoir:uvv-ana-limite": "ANA552",
  "77:plausible:uvv-val-conversion": "VAL328",
  "77:plausible:uvv-val-ok": "VAL329",
- "36:uvv-calcul": "REA81"
+ "36:uvv-calcul": "REA81",
+ "34:irt-sapp-bande.0": "SAPP341",
+ "34:irt-sapp-bande.1": "SAPP342",
+ "37:prevoir:irt-ana-esterification": "ANA553",
+ "37:prevoir:irt-ana-oh-nh": "ANA554",
+ "37:prevoir:irt-ana-empreinte": "ANA555",
+ "77:plausible:irt-val-conversion": "VAL330",
+ "77:plausible:irt-val-cetone": "VAL331",
+ "77:plausible:irt-val-ester": "VAL332",
+ "36:irt-calcul": "REA82"
 }
