@@ -3396,6 +3396,27 @@ export const PREVOIR = [
       F('seulement une coordonnée normale, vers le centre, comme à vitesse constante', 'La norme de la vitesse diminue : a_t = frac(dv|dt) n’est pas nulle, il y a aussi une coordonnée tangentielle.'),
       F('une coordonnée tangentielle négative et une normale vers l’extérieur du virage', 'La coordonnée normale a_n = frac(v²|R) est positive : dirigée vers le centre du cercle, jamais vers l’extérieur.'),
     ] },
+  { id: 'uvv-ana-couleur', domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert', titre: 'Une solution orange et son spectre',
+    enonce: 'Une solution de colorant alimentaire paraît orange. On trace son spectre d’absorption dans le domaine visible, de 400 à 750 nm.', q: 'Où se situe le maximum d’absorption de cette solution ?', options: [
+      V('dans le bleu, couleur complémentaire de l’orange', 'La solution absorbe la couleur complémentaire de celle qu’on voit : orange vu, bleu absorbé (vers 450 à 490 nm).'),
+      F('dans l’orange, couleur qu’on voit dans la cuve', 'On voit les couleurs qui ne sont pas absorbées : une solution orange n’absorbe pas surtout l’orange.'),
+      F('dans le rouge, couleur voisine de l’orange', 'Le rouge est voisin de l’orange, pas complémentaire : la solution le laisse en grande partie passer.'),
+      F('nulle part : une solution colorée n’absorbe aucune lumière', 'Une solution colorée absorbe une partie de la lumière blanche : c’est ce qui lui donne sa couleur.'),
+    ] },
+  { id: 'uvv-ana-identifier', domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert', titre: 'Deux colorants de couleurs voisines',
+    enonce: 'Deux solutions A et B, l’une jaune et l’autre jaune-orangé, contiennent chacune un seul colorant. Le maximum d’absorption de A est à 427 nm, celui de B à 482 nm. Les valeurs tabulées sont : tartrazine 427 nm ; jaune orangé S 482 nm.', q: 'Que peut-on conclure ?', options: [
+      V('A est la tartrazine, B le jaune orangé S, car leurs λ_max diffèrent', 'Chaque espèce a son λ_max : les valeurs lues sont celles des valeurs tabulées, ce qui identifie les deux espèces.'),
+      F('A et B contiennent la même espèce, car leurs couleurs sont voisines', 'Des couleurs voisines n’impliquent pas la même espèce : les λ_max, ici différents, les distinguent.'),
+      F('B est plus concentrée que A, car son maximum est à une plus grande λ', 'λ_max ne dépend pas de la concentration : une concentration plus grande ferait monter le spectre, pas déplacer son maximum.'),
+      F('on ne peut rien conclure sans connaître les deux concentrations', 'La concentration modifie la hauteur du spectre, pas la position de λ_max : la comparaison aux valeurs tabulées suffit.'),
+    ] },
+  { id: 'uvv-ana-limite', domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert', titre: 'Un dosage à forte absorbance',
+    enonce: 'Pour doser un colorant, un élève mesure A = 2,8 à λ_max sur une boisson non diluée. Il calcule c à partir de A = ε × l × c, avec la valeur tabulée de ε.', q: 'Que penser de la valeur de c obtenue ?', options: [
+      V('trop faible : A est hors du domaine, donc sous-estimée', 'Pour A ≳ 2, la mesure s’écarte de la droite A = ε·l·c et sous-estime A : il fallait diluer la solution.'),
+      F('correcte : la loi s’applique quelle que soit la valeur de A', 'La loi de Beer-Lambert n’est valable que pour une solution diluée, soit A ≲ 1,5 à 2.'),
+      F('trop grande : à forte absorbance, l’appareil surestime A', 'C’est l’inverse : la courbe mesurée passe sous la droite, A est sous-estimée, donc c aussi.'),
+      F('correcte, à condition d’utiliser une cuve plus longue', 'Une cuve plus longue ferait encore augmenter A : il faudrait au contraire diluer (ou raccourcir la cuve).'),
+    ] },
   { id: 'nwt-ana-balance', domaine: 'Deuxième loi de Newton', titre: 'Une balance dans la cabine',
     enonce: 'Un voyageur de masse 70 kg est debout sur une balance posée sur le sol d’une cabine d’ascenseur. La cabine démarre vers le haut. Le voyageur est soumis à son poids vec(P) et à la réaction vec(R) de la balance ; la balance indique la norme R.', q: 'Pendant le démarrage, comment se comparent R et P ?', options: [
       V('R est plus grande que P : la somme des forces est vers le haut', 'Le voyageur accélère vers le haut avec la cabine : vec(a)_G est vers le haut, donc Σ vec(F) aussi. Avec un axe vers le haut, R − P > 0 : R est plus grande que P, et la balance indique plus que d’habitude.'),

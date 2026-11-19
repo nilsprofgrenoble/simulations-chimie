@@ -51,6 +51,7 @@ const TACHES_FAMILLE = {
   '36:ab-tamp-rea-melange': () => ['solution tampon', 'quantité de matière versée', 'pKa'], '36:ab-tamp-rea-ajout': () => ['solution tampon', 'conservation de la matière', 'pKa'],
   '36:pdi-calcul': () => ['couple acide-base', 'prédominance', 'distribution', 'forme basique'],
   '36:cdt-calcul': () => ['loi de Kohlrausch', 'conductivité d’une solution', 'titrage conductimétrique', 'volume équivalent'],
+  '36:uvv-calcul': () => ['loi de Beer-Lambert', 'concentration d’une solution', 'dilution', 'conversion d’unités', 'masse molaire'],
   '36:fre-calcul': () => ['accélération normale', 'isoler une grandeur', 'variation de vitesse', 'norme du vecteur accélération', 'conversion d’unités'],
   '36:etl-calcul': () => ['constante de cellule', 'conductance et conductivité', 'courbe d’étalonnage', 'dilution'],
   '36:nwt-calcul': () => ['somme des forces', 'accélération du centre de masse', 'tension et mouvement', 'équilibre'],

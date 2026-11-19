@@ -1350,6 +1350,38 @@ export const ENONCES = [
         manque: null, solution: { txt: 'a_t = frac(dv|dt) ; a_n = frac(v²|R) ; a = √(a_t² + a_n²)', val: Math.hypot(p.at, p.v * p.v / p.R), u: 'm/s²' } };
     },
   },
+  // ───────────────────────────── Spectroscopie UV-visible (TG, sim 169) : dosage d'un colorant par la loi de Beer-Lambert
+  {
+    id: 'uvv-sapp-dosage', domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert', titre: 'Dosage d’un colorant par spectrophotométrie', noms: ['Concentration de la solution diluée', 'Concentration de la boisson initiale'],
+    gen: () => {
+      // ε typiques (L·mol⁻¹·cm⁻¹) : A reste ≤ 1 (domaine de validité de la loi de Beer-Lambert)
+      const C = [{ art: 'de la', nom: 'tartrazine', lam: 427, eps: 2.7e4 }, { art: 'du', nom: 'rouge cochenille A', lam: 507, eps: 2.5e4 }, { art: 'du', nom: 'bleu patenté V', lam: 638, eps: 1.0e5 }];
+      const col = tire(C), A = tire([0.35, 0.52, 0.74, 0.96]), l = tire([1.00, 2.00]), F = tire([5, 10]);
+      return { col, A, l, F, V: tire([2.5, 3.0]), T: tire([20, 25]) };
+    },
+    build: (p, q) => {
+      const cp = p.A / (p.col.eps * p.l) * 1e6, c0 = cp * p.F;                  // µmol/L
+      const tokens = {
+        A: tok(`${nb(p.A, 2)}`, 'Absorbance mesurée au maximum d’absorption de la solution diluée (sans unité)', p.A, ''),
+        eps: tok(`${sciR(p.col.eps)} L·mol⁻¹·cm⁻¹`, `Coefficient d’absorption molaire du ${p.col.nom} à ${p.col.lam} nm (valeur tabulée)`, p.col.eps, 'L·mol⁻¹·cm⁻¹'),
+        l: tok(`${nb(p.l, 2)} cm`, 'Longueur de la cuve traversée par la lumière', p.l, 'cm'),
+        lam: tok(`${p.col.lam} nm`, 'Longueur d’onde de la mesure (λ_max)', p.col.lam, 'nm'),
+        V: tok(`${nb(p.V, 1)} mL`, 'Volume de solution contenu dans la cuve', p.V, 'mL'),
+        T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
+        F: tok(`${p.F}`, 'Facteur de dilution (la boisson a été diluée F fois)', p.F, ''),
+      };
+      const debut = ['Une boisson contient ', `${p.col.art} ${p.col.nom}`, '. On en dilue un échantillon ', T('F'), ' fois, puis on mesure l’absorbance de la solution diluée au maximum d’absorption, à ', T('lam'), ' : ', T('A'), ' dans une cuve de longueur ', T('l'), ' contenant ', T('V'), ' de solution à ', T('T'), '. La valeur tabulée de ε à cette longueur d’onde est ', T('eps'), '. '];
+      const rLam = 'La longueur d’onde est déjà prise en compte par la valeur de ε, donnée à cette longueur d’onde : elle ne sert pas dans le calcul.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration de la solution diluée ?'],
+        utiles: ['A', 'eps', 'l'], raisons: { lam: rLam, V: 'Le volume dans la cuve ne change pas l’absorbance : A dépend de la longueur traversée et de la concentration, pas du volume.', T: 'La température est supposée constante (ε tabulée à 25 °C) : elle n’intervient pas dans le calcul.', F: 'Le facteur de dilution sert à remonter à la boisson initiale, pas à la concentration de la solution diluée.' },
+        cherche: { bonne: 'La concentration c′ de la solution diluée (en µmol/L)', faux: ['La concentration c de la boisson initiale (en µmol/L)', 'Le coefficient ε à une autre longueur d’onde (en L·mol⁻¹·cm⁻¹)', 'L’absorbance de la boisson initiale (sans unité)'] },
+        manque: null, solution: { txt: 'c′ = frac(A|ε × l) en mol/L, puis × 10⁶ pour obtenir des µmol/L', val: cp, u: 'µmol/L' } };
+      return { tokens, derivees: [{ id: 'cd', nom: 'Concentration de la solution diluée', expr: 'c′ = frac(A|ε × l)', val: cp, u: 'µmol/L' }], texte: [...debut, 'Quelle est la concentration de la boisson initiale ?'],
+        utiles: ['A', 'eps', 'l', 'F'], raisons: { lam: rLam, V: 'Le volume dans la cuve ne change pas l’absorbance : il ne sert pas.', T: 'La température est supposée constante : elle n’intervient pas dans le calcul.' },
+        cherche: { bonne: 'La concentration c de la boisson initiale (en µmol/L)', faux: ['La concentration c′ de la solution diluée, mesurée (en µmol/L)', 'L’absorbance de la boisson initiale (sans unité)', 'La quantité de colorant dans la cuve (en µmol)'] },
+        manque: null, solution: { txt: 'c = F × c′, avec c′ = frac(A|ε × l) (en mol/L, puis × 10⁶ pour des µmol/L)', val: c0, u: 'µmol/L' } };
+    },
+  },
   // ───────────────────────────── Deuxième loi de Newton (TG, sim 168) : somme des forces, accélération du centre de masse
   {
     id: 'nwt-sapp-chariot', domaine: 'Deuxième loi de Newton', titre: 'Chariot tiré par un fil', noms: ['Somme des forces sur l’axe du rail', 'Accélération du chariot'],

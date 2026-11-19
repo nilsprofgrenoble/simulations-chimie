@@ -2083,6 +2083,46 @@ function genFrenetTG() {
     retenir: ['Repère de Frenet : vec(u)_t tangent (sens du mouvement), vec(u)_n normal (vers le centre). Vitesse : vec(v) = v × vec(u)_t.', 'Accélération : a_t = frac(dv|dt) (sur vec(u)_t) et a_n = frac(v²|R) (sur vec(u)_n), v en m/s, R en m.', 'Mouvement circulaire uniforme : a_t = 0 mais a n’est pas nulle : a = frac(v²|R), vers le centre.', 'La norme est la racine de la somme des carrés de a_t et de a_n ; a_t > 0 si le point accélère, a_t < 0 s’il ralentit.'] };
 }
 
+function genUvvTG() {
+  // pièges conservés seulement s'ils restent hors de la tolérance de la bonne réponse (tolérance × 1,5, plancher 8 %)
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  // nb() prend des chiffres SIGNIFICATIFS : les données s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const epsT = e => { const [m, ex] = Number(e).toExponential(1).split('e'); return `${m.replace('.', ',')}×10${sup(Number(ex))}`; };
+  const EPS = [2.3e4, 2.5e4, 2.7e4, 1.0e5], AS = [0.312, 0.428, 0.556, 0.684, 0.815, 1.046];
+  const e1 = tire(EPS), A1 = tire(AS), l1 = tire([0.50, 2.00]), c1 = A1 / (e1 * l1) * 1e6;
+  const q1 = { id: 'uv0', type: 'num', q: <>Un colorant est placé dans une cuve de longueur <b>{d(l1, 2)}{NB}cm</b>. Au maximum d’absorption, son absorbance vaut <b>A = {d(A1, 3)}</b> et son coefficient d’absorption molaire <b>ε = {epsT(e1)}{NB}L·mol⁻¹·cm⁻¹</b>. Calculez sa concentration c (en µmol/L, 2 chiffres significatifs).</>, unite: 'µmol/L', vrai: c1, tolRel: 0.05, csMin: 2,
+    aide: 'Loi de Beer-Lambert : A = ε × l × c, donc c = A divisée par (ε × l), en mol/L si ε est en L·mol⁻¹·cm⁻¹ et l en cm ; puis × 10⁶ pour des µmol/L.',
+    pieges: [[c1 * 1e-6, 'Vous avez donné c en mol/L : convertissez en µmol/L (multipliez par 10⁶).'], [A1 / e1 * 1e6, 'Vous avez oublié la longueur de la cuve l : c = A divisée par (ε × l).'], [A1 * e1 * l1, 'Vous avez multiplié A par ε et l : il faut diviser A par (ε × l).'], [c1 * 1e-3, 'Vous avez donné c en mmol/L : 1 mmol/L = 1 000 µmol/L.']],
+    expl: <>c = {avecIndices('frac(A|ε × l)')} = {avecIndices(`frac(${d(A1, 3)}|${epsT(e1)} × ${d(l1, 2)})`)} = <b>{d(c1, 1)}{NB}µmol/L</b>.</> };
+  const e2 = tire(EPS), A2t = tire([0.30, 0.50, 0.70, 0.90, 1.10]), l2 = tire([0.50, 2.00]), c2 = Number((A2t / (e2 * l2) * 1e6).toPrecision(2)), A2 = e2 * l2 * c2 * 1e-6;
+  const q2 = { id: 'uv1', type: 'num', q: <>Une solution d’un colorant a une concentration <b>c = {d(c2, c2 < 10 ? 2 : 1)}{NB}µmol/L</b>. Sa cuve a une longueur de <b>{d(l2, 2)}{NB}cm</b> et ε = <b>{epsT(e2)}{NB}L·mol⁻¹·cm⁻¹</b>. Calculez son absorbance A au maximum d’absorption (2 chiffres significatifs).</>, unite: '', vrai: A2, tolRel: 0.05, csMin: 2,
+    aide: 'A = ε × l × c, avec c en mol/L : convertissez d’abord les µmol/L (1 µmol/L = 10⁻⁶ mol/L).',
+    pieges: [[A2 * 1e6, 'Vous n’avez pas converti c en mol/L : c = valeur × 10⁻⁶ mol/L.'], [e2 * c2 * 1e-6, 'Vous avez oublié la longueur de la cuve l : A = ε × l × c.'], [A2 * 1e-3, 'Vous avez converti c comme si les µmol/L étaient des mmol/L (10⁻³ au lieu de 10⁻⁶) : revoyez la conversion.'], [A2 / (e2 * l2 * 1e-6) / 1e6, 'Vous avez divisé au lieu de multiplier : A = ε × l × c.']],
+    expl: <>A = ε × l × c = {epsT(e2)} × {d(l2, 2)} × {d(c2, c2 < 10 ? 2 : 1)}×10⁻⁶ = <b>{d(A2, 2)}</b> (sans unité).</> };
+  const e3 = tire(EPS), A3 = tire(AS), l3 = 1.00, F3 = tire([5, 10]), cd3 = A3 / (e3 * l3) * 1e6, c3 = cd3 * F3;
+  const q3 = { id: 'uv2', type: 'num', q: <>Une boisson colorée est diluée <b>{F3}{NB}fois</b>. La solution diluée, dans une cuve de <b>{d(l3, 2)}{NB}cm</b>, a une absorbance <b>A = {d(A3, 3)}</b> au maximum d’absorption (ε = <b>{epsT(e3)}{NB}L·mol⁻¹·cm⁻¹</b>). Calculez la concentration du colorant dans la boisson initiale (en µmol/L, 2 chiffres significatifs).</>, unite: 'µmol/L', vrai: c3, tolRel: 0.08, csMin: 2,
+    aide: 'D’abord c′ = A divisée par (ε × l) pour la solution diluée, puis la boisson initiale est F fois plus concentrée : c = F × c′.',
+    pieges: [[cd3, 'Vous avez donné la concentration de la solution diluée : multipliez par le facteur de dilution.'], [cd3 / F3, 'Il faut multiplier par F (pas diviser) : la boisson initiale est plus concentrée que la solution diluée.'], [c3 * 1e-6, 'Vous avez donné c en mol/L : convertissez en µmol/L (multipliez par 10⁶).'], [cd3 * F3 * F3, 'Le facteur de dilution s’applique une seule fois : c = F × c′.']],
+    expl: <>c′ = {avecIndices('frac(A|ε × l)')} = {avecIndices(`frac(${d(A3, 3)}|${epsT(e3)} × ${d(l3, 2)})`)} = {d(cd3, 1)}{NB}µmol/L ; c = {F3} × c′ = <b>{d(c3, 0)}{NB}µmol/L</b>.</> };
+  // couples (ε, l, c) donnant une absorbance dans le domaine de validité (0,1 ≤ A ≤ 1,2)
+  const C4 = []; EPS.forEach(ee => [0.50, 1.00, 2.00].forEach(ll => [6.0, 8.0, 10.0, 12.0, 15.0].forEach(cc => { const a = ee * ll * cc * 1e-6; if (a >= 0.1 && a <= 1.2) C4.push([ee, ll, cc]); })));
+  const [e4t, l4, c4] = tire(C4), A4 = Number((e4t * l4 * c4 * 1e-6).toFixed(3)), e4 = A4 / (l4 * c4 * 1e-6);
+  const q4 = { id: 'uv3', type: 'num', q: <>Pour déterminer le coefficient d’absorption molaire ε d’un colorant, on mesure l’absorbance au maximum d’absorption d’une solution de concentration <b>c = {d(c4, 1)}{NB}µmol/L</b> dans une cuve de <b>{d(l4, 2)}{NB}cm</b> : <b>A = {d(A4, 3)}</b>. Calculez ε (en L·mol⁻¹·cm⁻¹, 2 chiffres significatifs).</>, unite: 'L·mol⁻¹·cm⁻¹', vrai: e4, tolRel: 0.05, csMin: 2,
+    aide: 'A = ε × l × c, donc ε = A divisée par (l × c), avec c en mol/L (1 µmol/L = 10⁻⁶ mol/L) et l en cm.',
+    pieges: [[e4 * 1e-6, 'Vous n’avez pas converti c en mol/L : c = valeur × 10⁻⁶ mol/L.'], [A4 / (c4 * 1e-6), 'Vous avez oublié la longueur de la cuve l : ε = A divisée par (l × c).'], [A4 * l4 * c4 * 1e-6, 'Il faut diviser A par l × c, pas multiplier.'], [e4 * 1e-3, 'Vous avez converti c comme si les µmol/L étaient des mmol/L : 1 µmol/L = 10⁻⁶ mol/L.']],
+    expl: <>ε = {avecIndices('frac(A|l × c)')} = {avecIndices(`frac(${d(A4, 3)}|${d(l4, 2)} × ${d(c4, 1)}×10⁻⁶)`)} = <b>{epsT(e4)}{NB}L·mol⁻¹·cm⁻¹</b>.</> };
+  const A5 = tire([0.312, 0.428, 0.556, 0.684, 0.815]), F5 = tire([5, 10]), M5 = 194, cd5 = A5 / (9.8e3 * 1.00), c5 = cd5 * F5 * M5 * 1e3;       // mg/L
+  const q5 = { id: 'uv4', type: 'num', q: <>On dose la caféine (ε = <b>{epsT(9.8e3)}{NB}L·mol⁻¹·cm⁻¹</b> à 273{NB}nm, masse molaire <b>M = {M5}{NB}g/mol</b>) d’une boisson diluée <b>{F5}{NB}fois</b>, dans une cuve de <b>1,00{NB}cm</b> : <b>A = {d(A5, 3)}</b>. Calculez la concentration massique de la boisson initiale (en mg/L, 2 chiffres significatifs).</>, unite: 'mg/L', vrai: c5, tolRel: 0.08, csMin: 2,
+    aide: 'c′ = A divisée par (ε × l) en mol/L ; boisson initiale : c = F × c′ ; puis concentration massique = c × M, en g/L, à convertir en mg/L (1 g = 1 000 mg).',
+    pieges: [[c5 / 1000, 'Vous avez donné le résultat en g/L : 1 g/L = 1 000 mg/L.'], [c5 / F5, 'Vous avez oublié le facteur de dilution : la boisson initiale est F fois plus concentrée.'], [cd5 * F5 * 1e6, 'Vous avez donné la concentration molaire en µmol/L : il faut la multiplier par la masse molaire M (en g/mol).'], [c5 / M5, 'Il faut multiplier la concentration molaire par M (pas diviser) pour obtenir une concentration massique.']],
+    expl: <>c′ = {avecIndices('frac(A|ε × l)')} = {avecIndices(`frac(${d(A5, 3)}|${epsT(9.8e3)} × 1,00)`)} = {mol5(cd5)} mol/L ; c = {F5} × c′ ; concentration massique = c × M = <b>{d(c5, 0)}{NB}mg/L</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Spectrophotométrie UV-visible : loi de Beer-Lambert, concentration, absorbance, dilution et concentration massique. Les valeurs de ε sont des ordres de grandeur typiques ; la loi n’est valable que pour A ≲ 1,5 à 2.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Loi de Beer-Lambert : A = ε × l × c ; c = A divisée par (ε × l), avec ε en L·mol⁻¹·cm⁻¹, l en cm, c en mol/L.', 'Conversions : 1 µmol/L = 10⁻⁶ mol/L ; 1 mmol/L = 10⁻³ mol/L ; concentration massique = c × M.', 'Solution diluée F fois : c(initiale) = F × c′ (c′ = concentration de la solution diluée, mesurée).', 'Domaine de validité : solution diluée, lumière monochromatique, A ≲ 1,5 à 2 ; au-delà, on dilue. On travaille au maximum d’absorption λ_max.'] };
+}
+const mol5 = x => { const e = Math.floor(Math.log10(x)); return `${(x / Math.pow(10, e)).toFixed(1).replace('.', ',')}×10${sup(e)}`; };
+
 function genNewtonTG() {
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
   // nb() prend des chiffres SIGNIFICATIFS (nb(1,5 ; 1) donnerait « 2 ») : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
@@ -2370,6 +2410,7 @@ export const FAMILLES = [
   { id: 'cdt-calcul', groupe: 'Formules', titre: 'Conductimétrie : loi de Kohlrausch, concentration, volume équivalent et bilan après l’équivalence (TG)', gen: genConductimetrieTG, domaine: 'Conductimétrie : conductivité et titrage' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
+  { id: 'uvv-calcul', groupe: 'Formules', titre: 'Spectrophotométrie : loi de Beer-Lambert, concentration, absorbance, dilution et concentration massique (TG)', gen: genUvvTG, domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },

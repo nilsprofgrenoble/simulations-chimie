@@ -1,0 +1,13 @@
+// QCM du parcours guidé de la simulation 169 (fichier séparé pour contrôler par script la longueur des options :
+// la bonne réponse, en tête ici, n'est ni la plus longue ni systématiquement la plus courte ; l'ordre affiché est mélangé par le composant).
+// Les textes passent par avecIndices : λ_max s'affiche avec un indice.
+export const QCM_PARCOURS = {
+  spectre: { options: ['la quantité de lumière absorbée : plus A est grande, plus la solution absorbe', 'la quantité de lumière transmise : plus A est grande, plus la solution est transparente', 'la concentration de la solution, qui change avec la longueur d’onde', 'la couleur de la solution à cette longueur d’onde précise'], bonne: 0 },
+  couleur: { options: ['le violet-bleu : la couleur complémentaire du jaune vu', 'le jaune : on voit la couleur que la solution absorbe', 'le rouge : c’est la couleur opposée au jaune dans l’arc-en-ciel', 'aucune couleur : une solution colorée n’absorbe pas la lumière'], bonne: 0 },
+  identifier: { options: ['la tartrazine (E102)', 'le jaune orangé S (E110)', 'le rouge cochenille A (E124)', 'le bleu patenté V (E131)'], bonne: 0 },
+  incolore: { options: ['le paracétamol : son maximum est situé dans l’ultraviolet', 'la caféine, dont le maximum est lui aussi dans l’UV', 'aucune espèce : une solution incolore n’absorbe aucune lumière', 'le complexe tétraamminecuivre(II), qui absorbe dans le visible'], bonne: 0 },
+  lambdaTravail: { options: ['à λ_max : A y est maximale, donc elle varie le plus quand c change', 'à une longueur d’onde où A est presque nulle, pour ne pas perturber l’échantillon', 'à la longueur d’onde de la couleur vue, le jaune, vers 580 nm', 'à n’importe quelle longueur d’onde : A ne dépend pas de λ'], bonne: 0 },
+  doubler: { options: ['A double à chaque longueur d’onde ; le maximum reste à la même λ', 'A double, et le maximum se déplace vers les grandes longueurs d’onde', 'A reste la même ; seule la couleur de la solution devient plus foncée', 'A est divisée par deux, car la solution est plus concentrée'], bonne: 0 },
+  limite: { options: ['vers A = 1,5 à 2 : au-delà, la courbe s’écarte nettement de la droite', 'dès A = 0,3 : la courbe est une droite seulement pour les très faibles absorbances', 'vers A = 3 seulement : en dessous, la droite est valable partout', 'jamais : la courbe est une droite quelle que soit la valeur de A'], bonne: 0 },
+  quefaire: { options: ['diluer d’un facteur connu, mesurer A, puis tenir compte de la dilution', 'garder A = 2,4 : la loi de Beer-Lambert reste valable quelle que soit A', 'prendre une cuve plus longue, pour obtenir une absorbance plus grande', 'se placer à une longueur d’onde où A est encore plus grande, pour mieux mesurer'], bonne: 0 },
+};

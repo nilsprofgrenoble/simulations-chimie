@@ -1292,5 +1292,13 @@
  "77:plausible:redox1g-val-al-cu": "VAL325",
  "77:plausible:redox1g-val-permanganate": "VAL326",
  "77:plausible:redox1g-val-iode": "VAL327",
- "36:redox1g-calcul": "REA80"
+ "36:redox1g-calcul": "REA80",
+ "34:uvv-sapp-dosage.0": "SAPP339",
+ "34:uvv-sapp-dosage.1": "SAPP340",
+ "37:prevoir:uvv-ana-couleur": "ANA550",
+ "37:prevoir:uvv-ana-identifier": "ANA551",
+ "37:prevoir:uvv-ana-limite": "ANA552",
+ "77:plausible:uvv-val-conversion": "VAL328",
+ "77:plausible:uvv-val-ok": "VAL329",
+ "36:uvv-calcul": "REA81"
 }

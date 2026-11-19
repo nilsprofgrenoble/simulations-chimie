@@ -75,7 +75,7 @@ export const COUVERTURE = [
     { th: CTM, t: 'Transferts d’ion hydrogène : couples acide-base, équation de réaction', e: 'partiel', chap: 'tg-etat-final', reste: 'formules des acides carboxyliques, carboxylates, amines et ammonium' },
     { th: CTM, t: 'pH et concentration en ions oxonium', e: 'ok', chap: 'tg-composition' },
     { th: CTM, t: 'Conductimétrie : loi de Kohlrausch et dosage par étalonnage', e: 'ok', chap: 'tg-composition' },
-    { th: CTM, t: 'Spectroscopies infrarouge et UV-visible', e: 'avenir' },
+    { th: CTM, t: 'Spectroscopies infrarouge et UV-visible', e: 'partiel', chap: 'tg-composition', reste: 'spectroscopie infrarouge (bandes caractéristiques)' },
     { th: CTM, t: 'Titrages avec suivi pH-métrique et conductimétrique', e: 'ok', chap: 'tg-composition' },
     { th: CTM, t: 'Cinétique : vitesse volumique, temps de demi-réaction, loi d’ordre 1', e: 'partiel', chap: 'tg-evolution-temporelle', reste: 'facteurs cinétiques, catalyse, choix d’un capteur de suivi' },
     { th: CTM, t: 'Mécanismes réactionnels : acte élémentaire, intermédiaire, flèches courbes', e: 'avenir' },
