@@ -106,7 +106,11 @@ export function SimulationRadioactivite() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
   const [suiviT, noterT] = useCompteurDefi(), [suiviA, noterA] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant(CLE_GUIDE, VIDE), [g2, setG2] = useEtatPersistant(CLE_GUIDE + '-p2', VIDE), [g3, setG3] = useEtatPersistant(CLE_GUIDE + '-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant(CLE_GUIDE + '-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('th');
   const [hypoOuv, setHypoOuv] = useState(false);
   const [ti, setTi] = useState(PRESET);
@@ -115,9 +119,14 @@ export function SimulationRadioactivite() {
   const setT = f => setTi(s => ({ ...s, ...f }));
 
   // ---------- étapes du parcours ----------
-  const IDS = ['hasard', 'essai', 'repetes', 'grands', 'equation', 'solution', 'demi', 'lambda', 'nrest', 'lambdas', 'a0', 'at', 'mesure', 'compter', 'datprinc', 'dat3', 'datln', 'limites', 'bravo'];
+  const ORDRE_PARC = [['hasard', 'essai', 'repetes', 'grands', 'equation', 'solution', 'demi', 'lambda', 'nrest', 'bilan1'],
+    ['lambdas', 'a0', 'at', 'mesure', 'compter', 'bilan2'],
+    ['datprinc', 'dat3', 'datln', 'limites', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const etape = guide.etape, idE = enGuide ? IDS[Math.min(etape, IDS.length - 1)] : null;
-  const apres = id => !enGuide || etape > IDS.indexOf(id), deja = id => !enGuide || etape >= IDS.indexOf(id);
+  const apres = id => !enGuide || etape > iEt(id), deja = id => !enGuide || etape >= iEt(id);
 
   // ---------- grandeurs effectives ----------
   const ctx = dd ? (dd.type === 'age' ? 'dat' : 'ech') : enGuide ? (deja('datprinc') ? 'dat' : 'ech') : ti.ctx;
@@ -157,7 +166,7 @@ export function SimulationRadioactivite() {
   const bloqueRepetes = ti.graines.length >= 3 ? null : 'Cliquez d’abord sur « Nouvel essai » pour avoir au moins trois résultats dans le tableau.';
   const bloqueGrands = ti.graines.some(e => e.n > 100) ? null : 'Choisissez 10 000 noyaux, puis cliquez sur « Nouvel essai » pour obtenir un résultat.';
 
-  const ETAPES = [
+  const TOUTES = [
     { id: 'hasard', titre: 'Des noyaux qui se désintègrent', focus: ['scene'],
       texte: <>Voici un petit échantillon de <strong>100 noyaux d’iode 131</strong>, tous identiques et intacts (ronds gris). Un noyau radioactif peut se <strong>désintégrer</strong> : le rond devient orange.</>,
       tache: { type: 'qcm', q: 'Peut-on prévoir lequel de ces 100 noyaux se désintégrera en premier ?', options: ['non : chaque noyau se désintègre au hasard', 'oui : le noyau le plus ancien se désintègre toujours le premier', 'oui : les noyaux du centre partent avant ceux du bord'], bonne: 0,
@@ -177,7 +186,7 @@ export function SimulationRadioactivite() {
       texte: <>Pour un grand nombre de noyaux, on décrit la <strong>valeur moyenne</strong>. Pendant une courte durée d<em>t</em>, chaque noyau a la même probabilité λ·d<em>t</em> de se désintégrer (λ : <strong>constante radioactive</strong>, en j⁻¹). Parmi les <em>N</em> noyaux présents, il s’en désintègre en moyenne λ·<em>N</em>·d<em>t</em> : le nombre de noyaux varie de d<em>N</em> = −λ·<em>N</em>·d<em>t</em>.</>,
       tache: { type: 'qcm', q: 'Quelle équation différentielle vérifie le nombre N(t) de noyaux restants ?', options: ['dN/dt = −λ·N : proportionnelle au nombre de noyaux', 'dN/dt = −λ : le même nombre de noyaux se désintègre à chaque instant', 'dN/dt = +λ·N : le nombre de noyaux augmente', 'dN/dt = −λ/N : il se désintègre moins de noyaux quand il y en a beaucoup'], bonne: 0,
         expl: 'Chaque noyau a la même probabilité de se désintégrer : plus il y a de noyaux, plus il y a de désintégrations par unité de temps, d’où dN/dt proportionnel à N. Le signe moins traduit que N diminue.', indice: 'Combien de noyaux se désintègrent pendant dt ? Chaque noyau a une probabilité λ·dt.' },
-      retenirTitre: 'À RETENIR : HASARD POUR UN NOYAU, LOI POUR UN GRAND NOMBRE',
+      retenirTitre: 'Hasard pour un noyau, loi pour un grand nombre',
       retenir: <>
         <SvgGrandsNombres/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -199,7 +208,7 @@ export function SimulationRadioactivite() {
         calcul: () => ['λ = ln 2 / t½ avec ln 2 ≈ 0,693 et t½ = 8,0 j.', 'λ = 0,693 / 8,0 = 0,0866 j⁻¹ (l’unité est l’inverse d’un temps).'],
         pieges: [[0.125, 'Il manque ln 2 : t½ = ln 2 / λ, donc λ = ln 2 / t½ et pas 1 / t½.'], [11.54, 'Le rapport est inversé : λ = ln 2 / t½.'], [0.0625, 'Le facteur est ln 2 ≈ 0,693, pas 0,5.']],
         expl: 'λ = ln 2 / t½ = 0,693 / 8,0 = 0,0866 j⁻¹.', indice: 'λ = ln 2 / t½, avec ln 2 ≈ 0,693 ; le résultat est l’inverse d’un temps (ici j⁻¹).' },
-      retenirTitre: 'À RETENIR : LA LOI DE DÉCROISSANCE ET LA DEMI-VIE',
+      retenirTitre: 'La loi de décroissance et la demi-vie',
       retenir: <>
         <SvgLoi/>
         {FloiN}
@@ -214,6 +223,8 @@ export function SimulationRadioactivite() {
         calcul: () => ['λ·t = 0,0866 × 20 = 1,73 (sans unité : j⁻¹ × j).', 'N = N₀·e^(−λt) = 40 × e^(−1,73) = 40 × 0,177 = 7,1 millions de noyaux (7,07 avec les valeurs non arrondies).'],
         pieges: [[226, 'Le signe de l’exponentielle est faux : N décroît, donc N = N₀·e^(−λt), avec un signe moins.'], [36.7, 'Il manque le facteur t dans l’exponentielle : c’est e^(−λ·t) avec t = 20 j, pas e^(−λ).'], [38.3, 'Ce n’est pas une décroissance linéaire (N₀ − λ·t) : la loi est exponentielle.']],
         expl: 'N = 40 × e^(−0,0866 × 20) ≈ 7,1 millions de noyaux : environ 18 % de N₀ ; cela correspond à 2,5 demi-vies (20 / 8,0).', indice: 'Calculez d’abord l’exposant λ·t (sans unité), puis N = N₀·e^(−λt) avec N₀ = 40 millions.' } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez que la désintégration d’un noyau est aléatoire, que le nombre de noyaux restants suit une loi exponentielle et vous savez utiliser la demi-vie et la constante radioactive λ. Le parcours 2 traite l’activité d’un échantillon et sa mesure.</>, tache: null },
     { id: 'lambdas', titre: 'λ en s⁻¹ pour calculer une activité', focus: ['mesures'],
       texte: <>L’<strong>activité</strong> <em>A</em> d’un échantillon est le nombre moyen de désintégrations par <strong>seconde</strong> : on l’exprime en becquerel (1{NB}Bq = 1 désintégration par seconde). Pour la calculer, λ doit donc être en s⁻¹. Rappel : 1{NB}j = 86 400{NB}s et <em>t</em><sub>½</sub> = 8,0{NB}j.</>,
       tache: { type: 'num', q: 'Constante radioactive λ de l’iode 131, en s⁻¹', unite: '× 10⁻⁶ s⁻¹', vrai: 1.00, tol: 0.02, affiche: v => nbf(v, 1), cs: 2,
@@ -236,7 +247,7 @@ export function SimulationRadioactivite() {
       texte: <>En pratique, un compteur détecte les désintégrations : on compte le nombre <em>n</em> de désintégrations pendant une durée Δ<em>t</em> (ici 10{NB}s) et on calcule <em>A</em> ≈ <em>n</em> / Δ<em>t</em>. Des mesures faites tous les 2{NB}jours sont tracées en violet. Les points ne sont pas exactement sur la courbe en pointillés.</>,
       tache: { type: 'qcm', q: 'Pourquoi les points mesurés s’écartent-ils de la courbe ?', options: ['le comptage fluctue au hasard autour de sa valeur moyenne', 'la loi de décroissance exponentielle est fausse ici', 'l’échantillon reçoit de nouveaux noyaux au cours du temps'], bonne: 0,
         expl: 'La désintégration est un phénomène aléatoire : le nombre n compté pendant 10 s n’est pas toujours le même, même avec le même échantillon. La courbe donne la valeur moyenne ; les points fluctuent autour d’elle.', indice: 'Rappelez-vous les essais des noyaux : le nombre de noyaux restants était-il toujours le même ?' },
-      retenirTitre: 'À RETENIR : L’ACTIVITÉ',
+      retenirTitre: 'L’activité',
       retenir: <>
         <SvgActivite/>
         {FactA}
@@ -249,11 +260,13 @@ export function SimulationRadioactivite() {
       texte: <>Les boutons « Durée de comptage Δ<em>t</em> » (sous le graphique) permettent de compter pendant 1{NB}s, 10{NB}s ou 60{NB}s. Essayez les trois valeurs et regardez l’écart des points avec la courbe. Pour <em>n</em> désintégrations comptées, l’incertitude-type est de l’ordre de √<em>n</em>, soit une incertitude relative de l’ordre de 1/√<em>n</em> (ordre de grandeur donné).</>,
       tache: { type: 'qcm', q: 'Comment diminuer l’écart relatif entre l’activité mesurée et l’activité moyenne ?', options: ['compter plus longtemps : n est plus grand, donc 1/√n est plus petit', 'compter moins longtemps, pour que l’échantillon ait moins de temps de décroître', 'rien n’y fait : la fluctuation relative est toujours la même'], bonne: 0,
         expl: 'Avec A ≈ 40 Bq : Δt = 1 s donne n ≈ 40 (écart relatif ≈ 16 %), Δt = 10 s donne n ≈ 400 (≈ 5 %), Δt = 60 s donne n ≈ 2 400 (≈ 2 %). Il faut cependant que A reste à peu près constante pendant le comptage (Δt petit devant t½).', indice: 'Regardez la dispersion des points pour Δt = 1 s puis pour Δt = 60 s.' } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez calculer l’activité A = λ·N en becquerels, la suivre dans le temps et savez que sa mesure fluctue : on réduit les fluctuations en comptant plus longtemps. Le parcours 3 utilise la décroissance pour dater.</>, tache: null },
     { id: 'datprinc', titre: 'Dater avec un noyau radioactif', focus: ['courbe'],
       texte: <>Un organisme vivant échange du carbone avec son milieu : sa teneur en <strong>carbone 14</strong> (noyau radioactif, <em>t</em><sub>½</sub> = 5 730{NB}ans) reste constante. À sa mort, les échanges cessent et le carbone 14 se désintègre selon la loi vue plus haut. Le graphique montre la fraction de carbone 14 restante depuis la mort (100 % au départ).</>,
       tache: { type: 'qcm', q: 'Quelle mesure permet de dater la mort d’un organisme ?', options: ['la fraction de carbone 14 restante', 'la masse totale de l’échantillon', 'la quantité de carbone 12, qui diminue'], bonne: 0,
         expl: 'La décroissance du carbone 14 sert d’horloge : la fraction restante N/N₀ donne la durée écoulée depuis la mort, à condition de connaître la teneur de départ N₀. Le carbone 12 est stable : sa quantité ne varie pas avec le temps.', indice: 'Quel noyau décroît selon la loi N₀·e^(−λt) ?' },
-      retenirTitre: 'À RETENIR : MESURER UNE ACTIVITÉ (COMPTAGE)',
+      retenirTitre: 'Mesurer une activité (comptage)',
       retenir: <>
         <SvgComptage/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
@@ -277,7 +290,7 @@ export function SimulationRadioactivite() {
       texte: <>Un laboratoire annonce « 4 200{NB}ans ± 150{NB}ans » pour l’os précédent. La datation suppose que la teneur initiale en carbone 14 était la même que celle d’un organisme vivant actuel et qu’aucun échange n’a eu lieu après la mort.</>,
       tache: { type: 'qcm', q: 'D’où vient en partie l’incertitude de ± 150 ans ?', options: ['du comptage aléatoire et de la teneur initiale incertaine', 'de la demi-vie du carbone 14, qui augmente avec le temps', 'du fait qu’un âge ne peut pas se calculer avec une exponentielle'], bonne: 0,
         expl: 'Le carbone 14 restant est faible et se mesure par comptage : par hasard, n fluctue (incertitude relative ≈ 1/√n). La teneur initiale supposée constante est aussi connue avec une incertitude. La demi-vie, elle, ne change pas.', indice: 'Pensez aux fluctuations de comptage vues plus haut, et à l’hypothèse sur la teneur initiale.' },
-      retenirTitre: 'À RETENIR : LA DATATION',
+      retenirTitre: 'La datation',
       retenir: <>
         <SvgDatation/>
         {FageT}
@@ -286,9 +299,10 @@ export function SimulationRadioactivite() {
           <li>Exemple de la simulation : 50 % ↔ 1 t½, 25 % ↔ 2 t½, 12,5 % ↔ 3 t½ ; pour 60 %, moins d’une demi-vie.</li>
           <li><strong>Hypothèses</strong> : teneur initiale connue, pas d’échange après la mort. Un âge s’annonce avec son incertitude.</li>
         </ul></> },
-    { id: 'bravo', titre: 'Bilan', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
       texte: <>Vous savez établir la loi de décroissance radioactive, l’exploiter sur une courbe (demi-vie, constante λ, activité), évaluer une incertitude de comptage et dater un événement avec un noyau radioactif. Passez à l’exploration (autres demi-vies, autres échantillons, mesures bruitées, datation) ou tentez les deux défis.</>, tache: null },
   ];
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
 
@@ -360,8 +374,10 @@ export function SimulationRadioactivite() {
       <li><strong>Datation</strong> : teneur initiale en carbone 14 supposée connue et constante, aucun échange avec l’extérieur après la mort ; en pratique, la teneur varie au cours du temps (étalonnage nécessaire) et la méthode ne s’applique qu’à quelques dizaines de milliers d’années au plus, car il reste trop peu de carbone 14 ensuite.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
+  const NOMS_PARC = ['1. La loi de décroissance radioactive', '2. L’activité et sa mesure', '3. Dater avec un noyau radioactif'];
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -507,7 +523,12 @@ export function SimulationRadioactivite() {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une désintégration est <strong>aléatoire</strong>, mais pour un grand nombre de noyaux le nombre de noyaux restants suit une <strong>loi de décroissance</strong> : on en tire la <strong>demi-vie</strong>, l’<strong>activité</strong> et un principe de <strong>datation</strong>.</div>
       <div className={`ra-l1${!enExplore ? ' cote' : ''}`}>
-        {enGuide ? <div className="ra-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="ra-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="ra-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="ra-carte">{panneauHypo}</div> : null}
         <div className="ra-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'th' ? suiviT : suiviA}/></div>}
           {!dd && !enExplore && ctx === 'ech' && <div className="ra-in" style={{ marginBottom: 12 }}>{sceneBox}</div>}
