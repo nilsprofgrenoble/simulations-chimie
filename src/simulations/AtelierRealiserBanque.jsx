@@ -952,6 +952,39 @@ function genQuantiteMatiere1G() {
     retenir: ['M = somme des masses molaires atomiques, chacune multipliée par son indice ; n = m / M (m en g, M en g/mol).', 'Gaz : n = V / V_m, avec V_m (en L/mol) donné pour une température et une pression ; liquide : n = ρ·V / M.', 'Mélange : un calcul de n par constituant ; la part en nombre de molécules se compare avec n, pas avec la masse.', 'Convertir avant de calculer : mg → g, mL → L.'] };
 }
 
+// ───────────── Géométrie, électronégativité et polarité (1G) : Δχ, doublets, angle idéal, liaisons polarisées ─────────────
+function genGeoPolarite() {
+  const CHI = { H: 2.2, C: 2.5, N: 3.0, O: 3.5, Cl: 3.0 };
+  const [a, b] = tire([['H', 'Cl'], ['H', 'O'], ['H', 'N'], ['C', 'H'], ['C', 'O'], ['C', 'Cl'], ['N', 'O'], ['O', 'Cl']]);
+  const d = Math.round(Math.abs(CHI[a] - CHI[b]) * 10) / 10;
+  const q1 = { id: 'g0', type: 'num', q: <>Dans l’échelle de Pauling, χ({a}) = <b>{nb(CHI[a], 2)}</b> et χ({b}) = <b>{nb(CHI[b], 2)}</b>. Calculez l’écart d’électronégativité Δχ de la liaison {a}–{b} (sans unité).</>, unite: '', vrai: d, csMin: 1, tolRel: 0.01,
+    aide: 'Δχ est la différence entre la plus grande et la plus petite des deux électronégativités : une valeur positive.',
+    pieges: [[CHI[a] + CHI[b], 'Il faut soustraire les électronégativités et non les additionner : Δχ est un écart.'], [CHI[a] / CHI[b], 'Un écart est une différence, pas un quotient.'], [-(CHI[a] - CHI[b]), 'Δχ est une valeur absolue : un écart n’est jamais négatif.']],
+    expl: <>Δχ = |{nb(CHI[a], 2)} − {nb(CHI[b], 2)}| = <b>{nb(d, 2)}</b>.</> };
+  const [n2, m2] = tire([[2, 0], [3, 0], [4, 0], [2, 2], [3, 1]]), nm = n2 + m2;
+  const q2 = { id: 'g1', type: 'num', q: <>Autour de l’atome central d’une molécule, on compte <b>{n2} atomes liés</b> et <b>{m2} doublet{m2 > 1 ? 's' : ''} non liant{m2 > 1 ? 's' : ''}</b>. Combien de doublets (liants et non liants) entourent cet atome ?</>, unite: 'doublets', vrai: nm, tolRel: 0,
+    aide: 'Chaque atome lié apporte un doublet liant (une liaison, simple ou double, compte pour une direction) : additionnez-les aux doublets non liants.',
+    pieges: [[n2, 'Vous n’avez compté que les doublets liants : il faut ajouter les doublets non liants.'], [2 * (n2 + m2), 'Vous avez compté les électrons : un doublet est un groupe de deux électrons.'], [n2 * m2 + 1, 'Il faut additionner les doublets liants et non liants, pas les multiplier.']].concat(m2 > 0 ? [[m2, 'Vous n’avez compté que les doublets non liants : ajoutez les doublets liants.']] : []),
+    expl: <>{n2} doublets liants + {m2} non liant{m2 > 1 ? 's' : ''} = <b>{nm} doublets</b>.</> };
+  const ang = nm === 2 ? 180 : nm === 3 ? 120 : 109.5;
+  const q3 = { id: 'g2', type: 'num', q: <>Dans le modèle VSEPR, <b>{nm} doublets</b> entourent l’atome central et s’écartent au maximum les uns des autres. Quel est l’angle idéal entre deux doublets voisins, en <b>degrés</b> ?</>, unite: '°', vrai: ang, csMin: 3, tolRel: 0.005,
+    aide: 'Digonal : 2 doublets, 180° ; trigonal : 3 doublets, 120° ; tétragonal : 4 doublets, 109,5°.',
+    pieges: [[360 / nm, 'Vous avez divisé 360° par le nombre de doublets : cela ne vaut que dans un plan, et les doublets se répartissent dans l’espace.'], [180 / (nm - 1), 'Cette formule ne s’applique pas : retenez les trois arrangements du cours (180°, 120°, 109,5°).'], [90, 'Un angle droit ne correspond à aucun arrangement de 2, 3 ou 4 doublets.']],
+    expl: <>{nm} doublets : arrangement {nm === 2 ? 'digonal' : nm === 3 ? 'trigonal' : 'tétragonal'}, angle idéal <b>{avecU(ang, '°', 4)}</b>.</> };
+  const [nom, f, x, y, nl, nat, ntot] = tire([['H₂O', 'H₂O', 'O', 'H', 2, 3, 2], ['NH₃', 'NH₃', 'N', 'H', 3, 4, 3], ['CCl₄', 'CCl₄', 'C', 'Cl', 4, 5, 4], ['CO₂', 'CO₂', 'C', 'O', 2, 3, 2], ['CH₃Cl', 'CH₃Cl', 'C', 'Cl', 1, 5, 4]]);
+  const poly = f === 'CH₃Cl' ? 1 : nl;
+  const q4 = { id: 'g3', type: 'num', q: f === 'CH₃Cl'
+      ? <>La molécule de chlorométhane CH₃Cl contient 3 liaisons C–H et 1 liaison C–Cl. Électronégativités : χ(H) = <b>2,2</b>, χ(C) = <b>2,5</b>, χ(Cl) = <b>3,0</b>. Par convention, une liaison est considérée comme non polarisée si Δχ ≤ 0,4. Combien de liaisons polarisées contient la molécule ?</>
+      : <>La molécule {f} contient <b>{nl} liaisons</b> {x}{f === 'CO₂' ? '=' : '–'}{y} identiques. Électronégativités : χ({x}) = <b>{nb(CHI[x], 2)}</b> et χ({y}) = <b>{nb(CHI[y], 2)}</b>. Par convention, une liaison est considérée comme non polarisée si Δχ ≤ 0,4. Combien de liaisons polarisées contient la molécule ?</>,
+    unite: 'liaisons', vrai: poly, tolRel: 0,
+    aide: 'Calculez Δχ pour chaque type de liaison, puis comparez-le à 0,4. Comptez ensuite les liaisons concernées.',
+    pieges: [[nat, 'Vous avez compté les atomes de la molécule : on demande le nombre de liaisons polarisées.'], [ntot, 'Vous avez compté toutes les liaisons : celles dont Δχ ≤ 0,4 ne sont pas polarisées.']],
+    expl: f === 'CH₃Cl' ? <>Δχ(C–H) = 0,3 ≤ 0,4 : non polarisée ; Δχ(C–Cl) = 0,5 &gt; 0,4 : polarisée. Il y a donc <b>1 liaison polarisée</b>.</> : <>Δχ({x}–{y}) = {nb(Math.round(Math.abs(CHI[x] - CHI[y]) * 10) / 10, 2)} &gt; 0,4 : chacune des {nl} liaisons est polarisée, soit <b>{nl} liaisons polarisées</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([z]) => isFinite(z) && Math.abs(z - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Géométrie, électronégativité et polarité : écart Δχ d’une liaison, doublets autour d’un atome, angle idéal et nombre de liaisons polarisées.', questions: [q1, q2, q3, q4],
+    retenir: ['Δχ = |χ(A) − χ(B)|, sans unité ; par convention de cours, liaison non polarisée si Δχ ≤ 0,4.', 'Nombre de doublets autour de l’atome central = atomes liés + doublets non liants ; 2 : 180°, 3 : 120°, 4 : 109,5°.', 'Des liaisons polarisées ne suffisent pas à rendre une molécule polaire : la géométrie décide si les effets se compensent.'] };
+}
+
 // ───────────── Schéma de Lewis (1G) : électrons de valence, doublets, doublets non liants, charge d’un atome ─────────────
 function genLewis1G() {
   const ZTxt = e => [...new Set(e.atomes)].map(a => `Z(${a}) = ${LW.ZAtome(a)}`).join(', ');
@@ -2207,6 +2240,7 @@ export const FAMILLES = [
   { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
+  { id: 'geo1g-calcul', groupe: 'Formules', titre: 'Géométrie, électronégativité et polarité : écart Δχ, doublets, angle idéal, liaisons polarisées (1G)', gen: genGeoPolarite, domaine: 'Géométrie et polarité des entités' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
   { id: 'fab-calcul', groupe: 'Formules', titre: 'Force des acides : pH, constante d’acidité, ions hydroxyde et équation du second degré (TG)', gen: genForceAcidesTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'pdi-calcul', groupe: 'Formules', titre: 'Couples acide-base : rapport des formes, pourcentage, concentration et pH (TG)', gen: genPredominanceTG, domaine: 'Force des acides et des bases : Ka et tampon' },

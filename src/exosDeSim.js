@@ -68,6 +68,7 @@ export const EXOS_DE_SIM = {
   152: [/(^|\.)mol1g-qte-/, /plausible\.mol1g-qte-/],
   153: [/(^|\.)mol1g-conc-/, /plausible\.mol1g-conc-/],
   154: [/(^|\.)lewis1g-/, /plausible\.lewis1g-/],                                                              // Schéma de Lewis : établir celui d’une molécule ou d’un ion
+  155: [/(^|\.)geo1g-/, /plausible\.geo1g-/],
   125: [/(^|\.)equ-/, /plausible\.equ-/],
   129: [/(^|\.)fab-/, /plausible\.fab-/],
   130: [/(^|\.)pdi-/, /plausible\.pdi-/],

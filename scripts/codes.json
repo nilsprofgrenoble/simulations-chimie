@@ -1239,5 +1239,19 @@
  "77:plausible:lewis1g-val-diazote": "VAL301",
  "77:plausible:lewis1g-val-eau": "VAL302",
  "77:plausible:lewis1g-val-hydroxyde": "VAL303",
- "36:lewis1g-calcul": "REA76"
+ "36:lewis1g-calcul": "REA76",
+ "34:geo1g-sapp-liaison.0": "SAPP331",
+ "34:geo1g-sapp-liaison.1": "SAPP332",
+ "37:prevoir:geo1g-ana-ccl4": "ANA533",
+ "37:prevoir:geo1g-ana-forme-eau-nh3": "ANA534",
+ "37:prevoir:geo1g-ana-hcl-polaire": "ANA535",
+ "37:prevoir:geo1g-ana-ch4-apolaire": "ANA536",
+ "37:prevoir:geo1g-ana-co2-lineaire": "ANA537",
+ "77:plausible:geo1g-val-co2": "VAL304",
+ "77:plausible:geo1g-val-eau-lineaire": "VAL305",
+ "77:plausible:geo1g-val-nh3-plan": "VAL306",
+ "77:plausible:geo1g-val-delta-oh": "VAL307",
+ "77:plausible:geo1g-val-delta-ch": "VAL308",
+ "77:plausible:geo1g-val-ccl4": "VAL309",
+ "36:geo1g-calcul": "REA77"
 }
