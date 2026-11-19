@@ -1368,5 +1368,14 @@
  "77:plausible:top-val-cyclobutane": "VAL351",
  "77:plausible:top-val-nombre": "VAL352",
  "77:plausible:top-val-ok-penetene": "VAL353",
- "36:top-calcul": "REA87"
+ "36:top-calcul": "REA87",
+ "34:pol-sapp-pvc.0": "SAPP354",
+ "34:pol-sapp-pvc.1": "SAPP355",
+ "37:prevoir:pol-ana-meme-brute": "ANA578",
+ "37:prevoir:pol-ana-classe-amine": "ANA579",
+ "37:prevoir:pol-ana-nom-amide": "ANA580",
+ "37:prevoir:pol-ana-motif-cl": "ANA581",
+ "77:plausible:pol-val-nom-inverse": "VAL354",
+ "77:plausible:pol-val-naturel": "VAL355",
+ "36:pol-calcul": "REA88"
 }

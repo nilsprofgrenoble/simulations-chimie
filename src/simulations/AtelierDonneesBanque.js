@@ -3543,6 +3543,33 @@ export const ENONCES = [
         utiles: ['n'], raisons, cherche, manque: null, solution: { txt: 'le groupe –OH remplace un H de la chaîne saturée (2n + 2 H) et en apporte un : 2n + 2 H au total', val: 2 * p.n + 2, u: 'atomes d’hydrogène' } };
     },
   },
+  // ───────────────────────────── Familles fonctionnelles et polymères (TG, sim 173) : masse molaire du motif, nombre de motifs d'une chaîne de PVC
+  {
+    id: 'pol-sapp-pvc', domaine: 'Familles fonctionnelles et polymères', titre: 'Une chaîne de PVC dans un tuyau', noms: ['Masse molaire du motif', 'Nombre de motifs d’une chaîne'],
+    gen: () => ({ n: tire([800, 1000, 1600, 2000, 3200]), d: tire([32, 40, 50]), L: tire([1.0, 2.0, 3.0]), prix: tire([4, 6, 9]) }),
+    build: (p, q) => {
+      const M = p.n * 62.5;
+      const tokens = {
+        M: tok(`${nb(M)} g·mol⁻¹`, 'Masse molaire moyenne d’une chaîne de polymère', M, 'g·mol⁻¹'),
+        mC: tok('12,0 g·mol⁻¹', 'Masse molaire atomique du carbone', 12.0, 'g·mol⁻¹'),
+        mH: tok('1,0 g·mol⁻¹', 'Masse molaire atomique de l’hydrogène', 1.0, 'g·mol⁻¹'),
+        mCl: tok('35,5 g·mol⁻¹', 'Masse molaire atomique du chlore', 35.5, 'g·mol⁻¹'),
+        d: tok(`${p.d} mm`, 'Diamètre extérieur du tuyau', p.d, 'mm'),
+        L: tok(`${nb(p.L, 1)} m`, 'Longueur du tuyau', p.L, 'm'),
+        prix: tok(`${p.prix} €`, 'Prix du tuyau', p.prix, '€'),
+      };
+      const debut = ['Un tuyau de ', T('L'), ' de long et de ', T('d'), ' de diamètre, vendu ', T('prix'), ', est en poly(chlorure de vinyle) (PVC), de motif –CH₂–CHCl– (formule brute C₂H₃Cl). Une chaîne de polymère a une masse molaire moyenne de ', T('M'), '. On donne les masses molaires atomiques : C ', T('mC'), ', H ', T('mH'), ', Cl ', T('mCl'), '. '];
+      const raisonsComm = { d: 'Le diamètre du tuyau n’a aucun lien avec la masse molaire d’un motif ou d’une chaîne.', L: 'La longueur du tuyau ne change pas la composition d’une chaîne.', prix: 'Le prix n’a aucun lien avec la chimie du polymère.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la masse molaire du motif ?'], utiles: ['mC', 'mH', 'mCl'],
+        raisons: { ...raisonsComm, M: 'La masse molaire de la chaîne entière est celle de n motifs : elle ne sert pas à trouver celle d’un seul motif à partir de sa formule.' },
+        cherche: { bonne: 'La masse molaire du motif C₂H₃Cl (g·mol⁻¹)', faux: ['Le nombre de motifs d’une chaîne (sans unité)', 'La masse d’un atome de carbone (en g)', 'La masse du tuyau (en kg)'] },
+        manque: null, solution: { txt: 'M(motif) = 2 × M(C) + 3 × M(H) + M(Cl)', val: 62.5, u: 'g·mol⁻¹' } };
+      return { tokens, derivees: [{ id: 'Mm', nom: 'Masse molaire du motif C₂H₃Cl', expr: 'M(motif) = 2 × M(C) + 3 × M(H) + M(Cl)', val: 62.5, u: 'g·mol⁻¹' }], texte: [...debut, 'Combien de motifs une chaîne contient-elle ?'], utiles: ['M', 'mC', 'mH', 'mCl'],
+        raisons: raisonsComm,
+        cherche: { bonne: 'Le nombre n de motifs d’une chaîne (sans unité)', faux: ['La masse molaire du motif (g·mol⁻¹)', 'Le nombre d’atomes de carbone dans tout le tuyau', 'La longueur d’une chaîne (en m)'] },
+        manque: null, solution: { txt: 'n = frac(M(chaîne)|M(motif)), avec M(motif) = 2 × M(C) + 3 × M(H) + M(Cl)', val: p.n, u: '' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

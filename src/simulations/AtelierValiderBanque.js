@@ -3244,6 +3244,27 @@ export const PLAUSIBLES = [
       F('incohérent : un cycle et une double liaison n’ont pas la même formule', 'Dans les deux cas, 2 H manquent par rapport à la chaîne saturée : les formules brutes sont identiques.'),
       F('incohérent : le cyclopentane doit avoir 12 H, comme la chaîne saturée', 'Fermer la chaîne en cycle enlève 2 H : le cyclopentane compte 10 H, pas 12.'),
     ] }),
+  // ── Familles fonctionnelles et polymères (TG, sim 173) ──
+  P({ id: 'pol-val-nom-inverse', domaine: 'Familles fonctionnelles et polymères', niveau: 2, titre: 'Nom d’un ester lu à l’envers', plausible: false,
+    enonce: 'Un élève nomme l’ester de formule semi-développée CH₃–CH₂–CH₂–CO–O–CH₃ « méthanoate de butyle ».',
+    reperes: [['Ester R–CO–O–R′', 'alcanoate d’alkyle'], ['Première partie', 'la chaîne qui porte le C=O, carbone du C=O compris'], ['Groupes alkyle', 'méthyle 1 C, éthyle 2 C, propyle 3 C, butyle 4 C'], ['Alcanes', 'méthane 1 C, éthane 2 C, propane 3 C, butane 4 C']],
+    ver: 'Du côté du C=O, la chaîne compte 4 carbones (CH₃–CH₂–CH₂–CO) : butanoate ; le groupe lié à l’oxygène simple est un seul carbone : méthyle. Le nom correct est « butanoate de méthyle ». « Méthanoate de butyle » désignerait H–CO–O–CH₂–CH₂–CH₂–CH₃ : les deux parties sont échangées.',
+    q2: 'Quelle est l’erreur la plus probable ?',
+    options: [
+      V('les deux parties du nom ont été échangées', 'Le côté du C=O (4 C) donne « butanoate » et le côté de l’oxygène simple (1 C) donne « méthyle » ; l’élève a écrit l’inverse.'),
+      F('il fallait écrire « N- » devant le nom', 'Le préfixe « N- » s’utilise pour les groupes fixés sur l’azote d’une amine ou d’un amide : il n’y a pas d’azote ici.'),
+      F('le nom est correct, l’alkyle se lit toujours en premier', 'Dans le nom d’un ester, la partie « alcanoate » (côté C=O) vient en premier, puis « d’alkyle » ou « de méthyle ».'),
+    ] }),
+  P({ id: 'pol-val-naturel', domaine: 'Familles fonctionnelles et polymères', niveau: 1, titre: 'Polymères naturels et synthétiques', plausible: true,
+    enonce: 'Un élève écrit : « La cellulose du coton et l’ADN sont des polymères naturels ; le PVC des tuyaux est un polymère synthétique. »',
+    reperes: [['Polymère', 'chaîne dans laquelle un même motif se répète'], ['Polymères naturels', 'cellulose, amidon, protéines, ADN, caoutchouc naturel'], ['Polymères synthétiques', 'PE, PVC, PP, PS, nylon']],
+    ver: 'La cellulose (motifs glucose) et l’ADN (nucléotides) sont produits par des êtres vivants : polymères naturels. Le PVC est fabriqué par l’industrie et sert aux tuyaux : polymère synthétique. L’affirmation est correcte.',
+    q2: 'Que penser de cette affirmation ?',
+    options: [
+      V('correcte : origine vivante pour deux, industrielle pour le PVC', 'La cellulose et l’ADN viennent d’êtres vivants ; le PVC est fabriqué par l’industrie : classement exact.'),
+      F('fausse : l’ADN n’est pas un polymère, ce n’est pas un plastique', 'Un polymère est une chaîne de motifs répétés, naturelle ou synthétique : l’ADN (nucléotides) en est un. Polymère et plastique ne sont pas synonymes.'),
+      F('fausse : la cellulose est un polymère synthétique, comme le PVC', 'La cellulose est produite par les plantes (bois, coton) : c’est un polymère naturel.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────
