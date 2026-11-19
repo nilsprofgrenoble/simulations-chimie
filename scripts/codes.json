@@ -1309,5 +1309,14 @@
  "77:plausible:irt-val-conversion": "VAL330",
  "77:plausible:irt-val-cetone": "VAL331",
  "77:plausible:irt-val-ester": "VAL332",
- "36:irt-calcul": "REA82"
+ "36:irt-calcul": "REA82",
+ "34:lun-sapp-fiche.0": "SAPP343",
+ "34:lun-sapp-fiche.1": "SAPP344",
+ "37:prevoir:lun-ana-hors-axe": "ANA556",
+ "37:prevoir:lun-ana-oculaire-court": "ANA557",
+ "37:prevoir:lun-ana-emergent": "ANA558",
+ "37:prevoir:lun-ana-diametre": "ANA559",
+ "77:plausible:lun-val-g-inverse": "VAL333",
+ "77:plausible:lun-val-fiche-ok": "VAL334",
+ "36:lun-calcul": "REA83"
 }

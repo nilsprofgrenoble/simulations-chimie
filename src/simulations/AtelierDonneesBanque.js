@@ -1404,6 +1404,28 @@ export const ENONCES = [
         manque: null, solution: { txt: 'absorbé = 100 % − T', val: 100 - p.T, u: '%' } };
     },
   },
+  // ───────────────────────────── Lunette afocale (TG, sim 171)
+  {
+    id: 'lun-sapp-fiche', domaine: 'Lunette afocale : schéma, faisceau et grossissement', titre: 'Une lunette achetée en ligne', noms: ['Grossissement avec l’oculaire livré', 'Distance entre l’objectif et l’oculaire'],
+    gen: () => { const [D, f1] = tire([[60, 700], [70, 700], [70, 900], [80, 400], [80, 900], [90, 1000], [102, 900]]); return { D, f1, f2: tire([10, 20, 25, 40]), m: tire([2.4, 3.5, 4.8]), prix: tire([149, 229, 319]) }; },
+    build: (p, q) => {
+      const tokens = {
+        D: tok(`${p.D} mm`, 'Diamètre de l’objectif', p.D / 1000, 'm'),
+        f1: tok(`${p.f1} mm`, 'Distance focale de l’objectif', p.f1 / 1000, 'm'),
+        f2: tok(`${p.f2} mm`, 'Distance focale de l’oculaire livré avec la lunette', p.f2 / 1000, 'm'),
+        m: tok(`${nb(p.m, 1)} kg`, 'Masse de la lunette', p.m, 'kg'),
+        prix: tok(`${p.prix} €`, 'Prix de la lunette', p.prix, '€'),
+      };
+      const debut = ['Une lunette astronomique vendue en ligne a un objectif de diamètre ', T('D'), ' et de distance focale ', T('f1'), '. Elle est livrée avec un oculaire de distance focale ', T('f2'), ', pèse ', T('m'), ' et coûte ', T('prix'), '. On la règle pour qu’elle soit afocale. '];
+      const raisons = { D: 'Le diamètre de l’objectif règle la lumière recueillie, pas le grossissement ni les distances entre les lentilles.', m: 'La masse de la lunette ne joue aucun rôle dans ce calcul.', prix: 'Le prix n’a aucun lien avec les grandeurs optiques.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est son grossissement ?'], utiles: ['f1', 'f2'], raisons,
+        cherche: { bonne: 'Le grossissement G de la lunette (sans unité)', faux: ['La distance O₁O₂ entre l’objectif et l’oculaire (en m)', 'Le diamètre apparent de l’astre (en rad)', 'L’angle θ′ du faisceau émergent (en °)'] },
+        manque: null, solution: { txt: 'G = rapport des distances focales, f′obj sur f′oc', val: p.f1 / p.f2, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle distance doit séparer l’objectif et l’oculaire ?'], utiles: ['f1', 'f2'], raisons,
+        cherche: { bonne: 'La distance O₁O₂ entre l’objectif et l’oculaire (en m)', faux: ['Le grossissement G de la lunette (sans unité)', 'La taille A₁B₁ de l’image intermédiaire (en m)', 'L’angle θ′ du faisceau émergent (en °)'] },
+        manque: null, solution: { txt: 'O₁O₂ = f′obj + f′oc (foyers F′obj et Foc confondus)', val: (p.f1 + p.f2) / 1000, u: 'm' } };
+    },
+  },
   // ───────────────────────────── Deuxième loi de Newton (TG, sim 168) : somme des forces, accélération du centre de masse
   {
     id: 'nwt-sapp-chariot', domaine: 'Deuxième loi de Newton', titre: 'Chariot tiré par un fil', noms: ['Somme des forces sur l’axe du rail', 'Accélération du chariot'],
