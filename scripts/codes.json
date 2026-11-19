@@ -1115,5 +1115,18 @@
  "77:plausible:ab-acf-ph-trop-bas": "VAL270",
  "77:plausible:ab-pred-rapport-ok": "VAL271",
  "77:plausible:ab-pred-rapport-inverse": "VAL272",
- "77:plausible:ab-tamp-ajout-acide": "VAL273"
+ "77:plausible:ab-tamp-ajout-acide": "VAL273",
+ "34:tens-libres.0": "SAPP293",
+ "34:tens-libres.1": "SAPP294",
+ "34:tens-micelles.0": "SAPP295",
+ "34:tens-micelles.1": "SAPP296",
+ "37:prevoir:tens-ana-famille": "ANA493",
+ "37:prevoir:tens-ana-plateau": "ANA494",
+ "37:prevoir:tens-ana-conducti": "ANA495",
+ "37:prevoir:tens-ana-chaine": "ANA496",
+ "37:prevoir:tens-ana-tete": "ANA497",
+ "77:plausible:tens-val-monomeres": "VAL274",
+ "77:plausible:tens-val-micelles": "VAL275",
+ "36:tens-libres-micelles": "REA61",
+ "36:tens-klevens": "REA62"
 }
