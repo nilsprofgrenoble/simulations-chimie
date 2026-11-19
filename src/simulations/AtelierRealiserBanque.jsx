@@ -4,6 +4,7 @@ import { FigureVecteurs, Vec } from "./FigureVecteurs";
 import { genTrace, genPont, genTemps } from "./RealiserC1";
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_I } from "./conductimetrieModele";
+import * as ACF from "./acideFaibleModele";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
@@ -906,6 +907,60 @@ function genForceAcidesTG() {
     retenir: ['Acide fort : [H₃O⁺] = C et pH = −log C ; acide faible : pH > −log C.', 'K_A = [A⁻]·[H₃O⁺] / [AH] = [H₃O⁺]² / (C − [H₃O⁺]) ; K_e = [H₃O⁺]·[HO⁻] = 1,0 × 10⁻¹⁴ à 25 °C.', 'Acide faible : x² + K_A·x − K_A·C = 0 avec x = [H₃O⁺] ; on garde la racine positive.'] };
 }
 
+// ───────────── Acide faible (terminale STL, PCM) : conservation de la matière, coefficient de dissociation, Ka, pKa, dilution ─────────────
+const sciF = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => SUP[c]).join('')}`; };
+const nbF = (x, d) => Number(x).toFixed(d).replace('.', ',');
+const CAND_ALPHA = ACF.CANDIDATS.filter(c => ACF.mesure(c.id, c.C).alpha >= 0.08);      // α assez grand pour que « C − [A⁻] » diffère de C d'au moins 8 %
+const PAIRES_DIL = ACF.PAIRES.filter(x => x.meme && Math.abs(x.a.C / x.b.C - 10) < 1e-9);   // même acide, dilution par 10
+const filtrer = qs => qs.forEach(q => { q.pieges = q.pieges.filter(([y]) => isFinite(y) && Math.abs(y - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+function genDissocAlpha() {
+  const { id, C } = tire(CAND_ALPHA), m = ACF.mesure(id, C), pHs = nbF(m.pH, 2), Cs = nb(C, 2);
+  const intro = `On dissout un acide faible AH dans l’eau à 25${NB}°C : concentration en soluté apporté C₀ = ${Cs}${NB}mol/L ; un pH-mètre indique pH = ${pHs}. On suppose [A⁻] = [H₃O⁺] et on applique la conservation de la matière.`;
+  const q1 = { id: 'd0', type: 'num', q: <>Calculez la concentration en ions oxonium <b>[H₃O⁺]</b> de cette solution (pH = {pHs}), en mol/L, avec 2 chiffres significatifs.</>, unite: 'mol/L', vrai: m.h, tolRel: 0.05, csMin: 2,
+    aide: '[H₃O⁺] = 10^(−pH) avec la touche 10ˣ de la calculatrice (c° = 1 mol/L).',
+    pieges: [[10 ** m.pH, 'Le signe de l’exposant est oublié : [H₃O⁺] = 10^(−pH), un nombre inférieur à 1.'], [m.pH, 'C’est le pH : on demande la concentration en ions oxonium.'], [Math.exp(-m.pH), 'Vous avez utilisé eˣ : pour un pH, c’est la touche 10ˣ.']],
+    expl: <>[H₃O⁺] = 10<sup>−{pHs}</sup> = <b>{sciF(m.h)}{NB}mol/L</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>En utilisant la conservation de la matière, calculez la concentration en acide restant <b>[AH]</b> (mol/L, 2 chiffres significatifs). On rappelle [A⁻] = [H₃O⁺] = {sciF(m.h)}{NB}mol/L.</>, unite: 'mol/L', vrai: m.AH, tolRel: 0.05, csMin: 2,
+    aide: 'C₀ = [AH] + [A⁻], donc [AH] = C₀ − [A⁻].',
+    pieges: [[C, 'C’est C₀ : il faut retrancher la quantité d’acide transformée en A⁻.'], [m.h, 'C’est [A⁻] ; on demande l’acide qui reste, [AH] = C₀ − [A⁻].'], [C + m.h, 'Il faut soustraire [A⁻] à C₀, pas l’ajouter.']],
+    expl: <>[AH] = {Cs} − {sciF(m.h)} = <b>{sciF(m.AH)}{NB}mol/L</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>Calculez le coefficient de dissociation <b>α</b> de l’acide (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: m.alpha, tolRel: 0.06, csMin: 2,
+    aide: 'α = frac([A⁻]|C₀) : part de l’acide introduit qui a réagi avec l’eau, comprise entre 0 et 1.',
+    pieges: [[C / m.h, 'Le rapport est inversé : α = [A⁻] / C₀ est inférieur à 1.'], [m.alpha * 100, 'α est sans unité, entre 0 et 1 : un pourcentage s’écrit en divisant par 100.'], [1 - m.alpha, 'C’est la part d’acide qui n’a pas réagi ; α est la part qui a réagi.'], [m.h, 'C’est [A⁻] en mol/L : il faut encore le diviser par C₀.']],
+    expl: <>α = {avecIndices(`frac(${sciF(m.h)}|${Cs})`)} = <b>{nbF(ACF.arrondiCS(m.alpha, 2), m.alpha < 0.1 ? 3 : 2)}</b>.</> };
+  const q4 = { id: 'd3', type: 'num', q: <>Sur 100 molécules d’acide introduites, combien ont réagi avec l’eau ? Exprimez le <b>pourcentage</b> α × 100 (en %, 2 chiffres significatifs).</>, unite: '%', vrai: 100 * m.alpha, tolRel: 0.06, csMin: 2,
+    aide: 'Pourcentage = α × 100, avec α = [A⁻] / C₀.',
+    pieges: [[100 * (1 - m.alpha), 'C’est le pourcentage de molécules restées sous forme AH.'], [m.alpha, 'C’est α sans unité : multipliez par 100 pour avoir un pourcentage.'], [1000 * m.alpha, 'α × 100, pas α × 1 000.']],
+    expl: <>α × 100 = <b>{nbF(100 * m.alpha, 1)}{NB}%</b> : environ {Math.round(100 * m.alpha)} molécules sur 100 ont réagi.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['[H₃O⁺] = 10^(−pH) ; pour un acide faible [A⁻] = [H₃O⁺].', 'Conservation de la matière : C₀ = [AH] + [A⁻].', 'α = frac([A⁻]|C₀), sans unité, α < 1 pour un acide faible.'] };
+}
+function genDissocKa() {
+  const x = tire(PAIRES_DIL), m1 = ACF.mesure(x.a.id, x.a.C), m2 = ACF.mesure(x.b.id, x.b.C), C1s = nb(x.a.C, 2), C2s = nb(x.b.C, 2);
+  const Ka1 = ACF.arrondiCS(m1.Ka, 2);
+  const intro = `Une solution d’un acide faible AH, de concentration en soluté apporté C₁ = ${C1s}${NB}mol/L, a un pH égal à ${nbF(m1.pH, 2)} à 25${NB}°C. On la dilue ensuite 10 fois : C₂ = ${C2s}${NB}mol/L, pH = ${nbF(m2.pH, 2)}.`;
+  const q1 = { id: 'k0', type: 'num', q: <>Calculez la constante d’acidité <b>Ka</b> du couple AH / A⁻ à partir de la solution initiale (pH = {nbF(m1.pH, 2)}), sans unité, avec 2 chiffres significatifs.</>, unite: '', vrai: m1.Ka, tolRel: 0.10, csMin: 2,
+    aide: '[A⁻] = [H₃O⁺] = 10^(−pH) et [AH] = C₁ − [H₃O⁺] ; Ka = frac([A⁻] × [H₃O⁺]|[AH]). Gardez un chiffre de plus pendant le calcul.',
+    pieges: [[m1.h * m1.h, 'Il faut diviser par [AH] : Ka = frac([A⁻] × [H₃O⁺]|[AH]).'], [m1.h / m1.AH, 'Il manque un facteur [H₃O⁺] au numérateur : les deux produits sont au numérateur.'], [m1.AH / (m1.h * m1.h), 'Le rapport est inversé : les produits sont au numérateur.'], [m1.h * m1.h / x.a.C, 'Au dénominateur, c’est [AH] = C₁ − [A⁻], pas C₁.', 0.04]],
+    expl: <>[H₃O⁺] = [A⁻] = {sciF(m1.h, 3)}{NB}mol/L ; [AH] = {C1s} − {sciF(m1.h, 3)} = {sciF(m1.AH, 3)}{NB}mol/L ; Ka = <b>{sciF(m1.Ka)}</b>.</> };
+  const q2 = { id: 'k1', type: 'num', q: <>On retient Ka = {sciF(Ka1)}. Calculez le <b>pKa</b> du couple (sans unité, 3 chiffres significatifs).</>, unite: '', vrai: -Math.log10(Ka1), tolRel: 0.02, csMin: 3,
+    aide: 'pKa = −log Ka, avec la touche log de la calculatrice.',
+    pieges: [[Math.log10(Ka1), 'Le signe est inversé : Ka < 1, donc log Ka est négatif et le pKa est positif.'], [Ka1, 'C’est Ka lui-même : le pKa est −log Ka.'], [-Math.log(Ka1), 'Vous avez utilisé ln au lieu de log (logarithme décimal).']],
+    expl: <>pKa = −log({sciF(Ka1)}) = <b>{nbF(-Math.log10(Ka1), 2)}</b>.</> };
+  const q3 = { id: 'k2', type: 'num', q: <>Pour la solution diluée (C₂ = {C2s}{NB}mol/L, pH = {nbF(m2.pH, 2)}), calculez le coefficient de dissociation <b>α</b> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: m2.alpha, tolRel: 0.06, csMin: 2,
+    aide: 'α = frac([A⁻]|C₂) avec [A⁻] = [H₃O⁺] = 10^(−pH).',
+    pieges: [[m2.h, 'C’est [A⁻] en mol/L : il faut encore le diviser par C₂.'], [x.b.C / m2.h, 'Le rapport est inversé : α = [A⁻] / C₂ est inférieur à 1.'], [1 - m2.alpha, 'C’est la part d’acide qui n’a pas réagi.']],
+    expl: <>[A⁻] = {sciF(m2.h)}{NB}mol/L ; α = {avecIndices(`frac(${sciF(m2.h)}|${C2s})`)} = <b>{nbF(ACF.arrondiCS(m2.alpha, 2), 2)}</b>, à comparer à {nbF(ACF.arrondiCS(m1.alpha, 2), m1.alpha < 0.1 ? 3 : 2)} avant la dilution : α a augmenté.</> };
+  const q4 = { id: 'k3', type: 'num', q: <>Calculez la constante d’acidité <b>Ka</b> à partir de la solution diluée (sans unité, 2 chiffres significatifs). Que remarquez-vous par rapport à la solution initiale ?</>, unite: '', vrai: m2.Ka, tolRel: 0.10, csMin: 2,
+    aide: '[A⁻] = [H₃O⁺] = 10^(−pH), [AH] = C₂ − [A⁻], puis Ka = frac([A⁻] × [H₃O⁺]|[AH]).',
+    pieges: [[m2.h * m2.h, 'Il faut diviser par [AH] : Ka = frac([A⁻] × [H₃O⁺]|[AH]).'], [m2.h * m2.h / x.b.C, 'Au dénominateur, c’est [AH] = C₂ − [A⁻], pas C₂ : à cette dilution la différence compte.', 0.04], [m2.AH / (m2.h * m2.h), 'Le rapport est inversé : les produits sont au numérateur.']],
+    expl: <>Ka = {avecIndices(`frac((${sciF(m2.h, 3)})²|${sciF(m2.AH, 3)})`)} = <b>{sciF(m2.Ka)}</b> : même valeur que pour la solution initiale ({sciF(m1.Ka)}) aux incertitudes près. Ka ne dépend pas de la concentration, alors que α augmente quand on dilue.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Ka = frac([A⁻] × [H₃O⁺]|[AH]) ; avec le pH : [A⁻] = [H₃O⁺] = 10^(−pH), [AH] = C₀ − [A⁻].', 'pKa = −log Ka.', 'Dilution : α augmente, Ka reste constant (propriété du couple).'] };
+}
+
 // ───────────── Couples acide-base (TG) : rapport des formes, pourcentage, concentration, pH pour une proportion donnée ─────────────
 function genPredominanceTG() {
   const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' })[c]).join('')}`; };
@@ -1233,6 +1288,8 @@ export const FAMILLES = [
   { id: 'lunet-image', groupe: 'Formules', titre: 'La lunette astronomique : image intermédiaire et œil myope (terminale STL)', gen: genLunetteImage, domaine: 'Lunette astronomique' },
   { id: 'chir-priorites', groupe: 'Formules', titre: 'Règles de priorité CIP : numéro atomique et double liaison (terminale STL)', gen: genChiralitePriorites, domaine: 'Chiralité et configuration R/S' },
   { id: 'chir-configuration', groupe: 'Formules', titre: 'Carbone asymétrique, miroir et configuration R/S (terminale STL)', gen: genChiraliteConfig, domaine: 'Chiralité et configuration R/S' },
+  { id: 'dissoc-alpha', groupe: 'Formules', titre: 'Acide faible : conservation de la matière et coefficient de dissociation (terminale STL)', gen: genDissocAlpha, domaine: 'Acide faible, coefficient de dissociation et Ka' },
+  { id: 'dissoc-ka', groupe: 'Formules', titre: 'Constante d’acidité, pKa et dilution d’un acide faible (terminale STL)', gen: genDissocKa, domaine: 'Acide faible, coefficient de dissociation et Ka' },
   { id: 'microsc-mise-au-point', groupe: 'Formules', titre: 'Le microscope mis au point : positions et taille de l’image intermédiaire (terminale STL)', gen: genMicroMiseAuPoint, domaine: 'Microscope' },
   { id: 'lum1-conjugaison', groupe: 'Formules', titre: 'Lentille mince : conjugaison et grandissement (1re spé)', gen: genLentille, domaine: 'Lentille mince' },
   { id: 'pmel-calcul', groupe: 'Formules', titre: 'Plan de mélange : fractions, écart au milieu, coefficient binaire et prévision (BTS)', gen: genPlanMelange, domaine: 'Plans' },
