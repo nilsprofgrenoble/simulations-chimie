@@ -9,6 +9,7 @@ export const IMG = ST.find(s => M.relation(A.desc, s.desc) === 'enantiomeres');
 export const AUTRE = ST.find(s => M.relation(A.desc, s.desc) === 'diastereoisomeres' && s.desc[0] === A.desc[0]);       // seul C3 inversé
 export const AUTRE2 = ST.find(s => M.relation(A.desc, s.desc) === 'diastereoisomeres' && s.desc[0] !== A.desc[0]);      // seul C2 inversé
 export const nom = s => M.nomDesc(MOL, s.desc);
+export const MESO = M.DIBROMOBUTANE, MESO_RS = M.stereoisomeres(MESO).find(s => s.id === 'RS');
 const [nA, nI, nT, nT2] = [nom(A), nom(IMG), nom(AUTRE), nom(AUTRE2)];
 
 export const QCM = {
@@ -35,5 +36,17 @@ export const QCM = {
     bonne: 0 },
   relZE: {
     options: ['diastéréoisomères : stéréoisomères non images l’un de l’autre', 'énantiomères : l’un est l’image de l’autre dans un miroir, comme pour un carbone asymétrique', 'identiques : on passe de l’un à l’autre en tournant la molécule autour de C=C', 'isomères de constitution : les atomes ne sont pas liés dans le même ordre'],
+    bonne: 0 },
+  proprietes: {
+    options: ['seul le signe du pouvoir rotatoire (+21° et −21°)', 'la température de fusion, 112 °C pour l’un et une autre valeur pour l’autre', 'la densité et la solubilité dans l’eau, toutes deux différentes pour l’un et pour l’autre', 'toutes les propriétés physiques et chimiques, comme pour des diastéréoisomères'],
+    bonne: 0 },
+  meso: {
+    options: ['identiques : la molécule a un plan de symétrie, c’est un composé méso', 'énantiomères : l’une est l’image de l’autre dans un miroir, elles ne se superposent pas', 'diastéréoisomères : un seul des deux carbones asymétriques est inversé', 'isomères de constitution : les atomes ne sont pas liés dans le même ordre'],
+    bonne: 0 },
+  eutomere: {
+    options: ['eutomère (R)-M, distomère (S)-M', 'eutomère (S)-M, distomère (R)-M, car le S est toujours le moins actif', 'eutomère (R)-M et (S)-M à la fois, car ils ont la même formule', 'ni eutomère ni distomère : ces mots ne servent que pour des diastéréoisomères'],
+    bonne: 0 },
+  synthese: {
+    options: ['une synthèse asymétrique, avec un catalyseur chiral qui favorise un seul énantiomère', 'chauffer le mélange racémique jusqu’à ce que l’énantiomère inutile (S)-M disparaisse', 'distiller le mélange : les deux énantiomères ont des températures d’ébullition différentes', 'ajouter un réactif achiral qui reconnaît (R)-M et laisse (S)-M de côté, pour le séparer'],
     bonne: 0 },
 };

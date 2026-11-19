@@ -1100,5 +1100,7 @@
  "77:plausible:stereo-val-meme-cote": "VAL267",
  "77:plausible:stereo-val-racemique": "VAL268",
  "36:stereo-nombre": "REA57",
- "36:stereo-racemique": "REA58"
+ "36:stereo-racemique": "REA58",
+ "37:prevoir:stereo-ana-proprietes": "ANA489",
+ "37:prevoir:stereo-ana-meso": "ANA490"
 }
