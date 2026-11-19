@@ -90,6 +90,7 @@ const SimulationPile = paresseux(() => import("./simulations/Pile"), "Simulation
 const SimulationElectrolyse = paresseux(() => import("./simulations/Electrolyse"), "SimulationElectrolyse");
 const SimulationAminoAcides = paresseux(() => import("./simulations/AminoAcides"), "SimulationAminoAcides");
 const SimulationConductimetrie = paresseux(() => import("./simulations/Conductimetrie"), "SimulationConductimetrie");
+const SimulationEtalonnage = paresseux(() => import("./simulations/Etalonnage"), "SimulationEtalonnage");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationEsterification = paresseux(() => import("./simulations/Esterification"), "SimulationEsterification");
 const SimulationChampForce = paresseux(() => import("./simulations/ChampForce"), "SimulationChampForce");
@@ -243,6 +244,7 @@ const SIMULATIONS = [
   { id:133, label:"Électrolyse et accumulateur : forcer le sens d’évolution d’un système", niveau:"TG", icon:"⚡", color:"#b45309", component: SimulationElectrolyse },
   { id:134, label:"Acides α-aminés : forme selon le pH", niveau:"TG", icon:"🧬", color:"#0f766e", component: SimulationAminoAcides },
   { id:135, label:"Conductimétrie : conductivité d’une solution et titrage conductimétrique", niveau:"TG", icon:"🔌", color:"#0369a1", component: SimulationConductimetrie },
+  { id:136, label:"Dosage conductimétrique par étalonnage : conductance, constante de cellule et courbe d’étalonnage", niveau:"TG", icon:"📈", color:"#0369a1", component: SimulationEtalonnage },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

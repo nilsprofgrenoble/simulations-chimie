@@ -992,5 +992,15 @@
  "77:plausible:cdt-val-spectateurs": "VAL249",
  "77:plausible:cdt-val-conc": "VAL250",
  "77:plausible:cdt-val-faible": "VAL251",
- "36:cdt-calcul": "REA40"
+ "36:cdt-calcul": "REA40",
+ "34:etl-sapp-cellule.0": "SAPP255",
+ "34:etl-sapp-cellule.1": "SAPP256",
+ "34:etl-sapp-droite.0": "SAPP257",
+ "34:etl-sapp-droite.1": "SAPP258",
+ "37:prevoir:etl-ana-cellule": "ANA450",
+ "37:prevoir:etl-ana-conditions": "ANA451",
+ "37:prevoir:etl-ana-limite": "ANA452",
+ "77:plausible:etl-val-gsigma": "VAL252",
+ "77:plausible:etl-val-prolonge": "VAL253",
+ "36:etl-calcul": "REA41"
 }
