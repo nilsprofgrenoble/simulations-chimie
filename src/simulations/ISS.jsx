@@ -4,6 +4,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
 import { fr, R_KM, gAlt, G0, vOrb, periode, typeOrbite, depart, pas, trajectoire } from "./issModele";
 import { Pic } from "../Pictos";
+import { Schema, Fl, T, TV, TL, GRIS, BLEU, NOIR } from "./Travail";
 
 // ====================================================
 //  SIM 67 — L'ISS EN CHUTE LIBRE (2GT, « Mouvement et interactions »)
@@ -21,33 +22,37 @@ declarerDefis(SIM, [
 const TITRES = { poids: 'Poids en altitude', cabine: 'La balle flotte-t-elle ?', orbite: 'Régler l’orbite' };
 const VERT = '#15803d', ORANGE = '#b45309', C_P = '#c2410c', C_V = '#0072b2';
 const alea = l => l[Math.floor(Math.random() * l.length)];
+// vecteur : lettre surmontée d'une flèche
+const Vec = ({ c = 'F' }) => <span style={{ position: 'relative', display: 'inline-block', fontStyle: 'italic' }}>{c}<span aria-hidden="true" style={{ position: 'absolute', left: '0.1em', top: '-0.5em', fontSize: '0.8em', fontStyle: 'normal', lineHeight: 1 }}>→</span></span>;
 const km = x => `${fr(x, 2)} km/s`;
 
 // ---------- atelier orbite ----------
-function Orbite({ h, v, etat, trace, etatAff }) {
+function Orbite({ h, v, etat, trace, etatAff, valeurs = true }) {
   const r0 = R_KM + h, s = 190 / (1.55 * r0), CX = 350, CY = 200, X = x => CX + x * s, Y = y => CY - y * s;
   const pred = trajectoire(h, v, periode(h) * 1.15, 12).pts;
   const cur = etat || depart(h, v), gx = -cur.x, gy = -cur.y, gl = Math.hypot(gx, gy);
   const vl = Math.hypot(cur.vx, cur.vy), ech = 34 / vOrb(h);
   const ang = Math.atan2(-cur.y, cur.x) * 180 / Math.PI;      // rotation de l'icône (dans le repère écran)
-  const arrow = (x, y, dx, dy, c, label, off = [8, -6]) => { const l = Math.hypot(dx, dy); if (l < 3) return null; const ux = dx / l, uy = dy / l;
+  const arrow = (x, y, dx, dy, c, lettre, val, off = [8, -6]) => { const l = Math.hypot(dx, dy); if (l < 3) return null; const ux = dx / l, uy = dy / l;
     return <g><line x1={x} y1={y} x2={x + dx} y2={y + dy} stroke={c} strokeWidth="3.5"/><polygon points={`${x + dx},${y + dy} ${x + dx - ux * 10 - uy * 5},${y + dy - uy * 10 + ux * 5} ${x + dx - ux * 10 + uy * 5},${y + dy - uy * 10 - ux * 5}`} fill={c}/>
-      <text x={x + dx + off[0]} y={y + dy + off[1]} fontSize="12.5" fontWeight="800" fill={c} stroke="#fff" strokeWidth="3" paintOrder="stroke">{label}</text></g>; };
+      <TV x={x + dx + off[0]} y={y + dy + off[1]} c={c} s={26} halo>{lettre}</TV><text x={x + dx + off[0] + 17} y={y + dy + off[1]} fontSize="22" fontWeight="800" fill={c} stroke="#0b1630" strokeWidth="4" paintOrder="stroke">{valeurs ? `: ${val}` : ''}</text></g>; };
   return (
     <svg viewBox="0 0 700 390" width="100%" role="img" aria-label="La Terre vue de loin, avec la trajectoire de la station spatiale" style={{ display: 'block', background: '#0b1630', borderRadius: 10 }}>
       <circle cx={CX} cy={CY} r={R_KM * s} fill="#2563eb"/><circle cx={CX} cy={CY} r={R_KM * s} fill="none" stroke="#93c5fd" strokeWidth="2"/>
       <path d={`M ${CX - 40} ${CY - 30} q 30 -40 70 -10 q 20 20 -10 40 q -50 10 -60 -30 Z`} fill="#16a34a" opacity="0.8"/><path d={`M ${CX + 30} ${CY + 50} q 40 -10 50 20 q -10 30 -50 10 Z`} fill="#16a34a" opacity="0.8"/>
-      <text x={CX} y={CY + 8} textAnchor="middle" fontSize="14" fontWeight="800" fill="#fff">Terre</text>
+      <text x={CX} y={CY + 8} textAnchor="middle" fontSize="24" fontWeight="800" fill="#fff">Terre</text>
       <polyline points={pred.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ')} fill="none" stroke="#fde68a" strokeWidth="1.8" strokeDasharray="5 5" opacity="0.8"/>
       {trace && trace.length > 1 && <polyline points={trace.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ')} fill="none" stroke="#fef08a" strokeWidth="3"/>}
-      {etatAff === 'impact' && <g><circle cx={X(cur.x)} cy={Y(cur.y)} r="9" fill="#ef4444"/><text x={X(cur.x) + 12} y={Y(cur.y) - 8} fontSize="14" fontWeight="800" fill="#fecaca">Impact sur la Terre !</text></g>}
+      {etatAff === 'impact' && <g><circle cx={X(cur.x)} cy={Y(cur.y)} r="9" fill="#ef4444"/><text x={X(cur.x) + 12} y={Y(cur.y) - 8} fontSize="24" fontWeight="800" fill="#fecaca">Impact sur la Terre !</text></g>}
       {etatAff !== 'impact' && <g transform={`translate(${X(cur.x)} ${Y(cur.y)}) rotate(${-ang + 90}) scale(1.8)`}>
         <rect x="-5" y="-4" width="10" height="8" fill="#e2e8f0" stroke="#fff" strokeWidth="1"/><rect x="-22" y="-2" width="14" height="4" fill="#fbbf24"/><rect x="8" y="-2" width="14" height="4" fill="#fbbf24"/><circle cx="0" cy="0" r="2.2" fill="#ef4444"/></g>}
-      {etatAff !== 'impact' && <g>{arrow(X(cur.x), Y(cur.y), gx / gl * 36, -(gy / gl) * 36, '#fca5a5', `g = ${fr(gAlt(h), 1)} N/kg`, [-4, 22])}
-        {arrow(X(cur.x), Y(cur.y), cur.vx / (vl || 1) * Math.min(60, vl * ech), -cur.vy / (vl || 1) * Math.min(60, vl * ech), '#7dd3fc', `v = ${fr(vl, 2)} km/s`, [6, -8])}</g>}
-      <text x="12" y="22" fontSize="13" fontWeight="700" fill="#e2e8f0">Altitude : {fr(h, 0)} km · Terre à l’échelle, station dessinée trop grande</text>
-      <text x="12" y="40" fontSize="12.5" fill="#cbd5e1">Rouge : force de la Terre par kg (même chose pour la station et son contenu) · bleu : vitesse</text>
-      <text x="688" y="378" textAnchor="end" fontSize="12" fill="#94a3b8">pointillés : trajectoire prévue · trait jaune : trajet parcouru</text>
+      {etatAff !== 'impact' && <g>{arrow(X(cur.x), Y(cur.y), gx / gl * 36, -(gy / gl) * 36, '#fca5a5', 'g', `${fr(gAlt(h), 1)} N/kg`, [-6, 34])}
+        {arrow(X(cur.x), Y(cur.y), cur.vx / (vl || 1) * Math.min(60, vl * ech), -cur.vy / (vl || 1) * Math.min(60, vl * ech), '#7dd3fc', 'v', `${fr(vl, 2)} km/s`, [8, -10])}</g>}
+      <text x="12" y="28" fontSize="24" fontWeight="700" fill="#e2e8f0">Altitude : {fr(h, 0)} km</text>
+      <text x="12" y="56" fontSize="20" fill="#cbd5e1">rouge : gravité · bleu : vitesse</text>
+      <text x="12" y="378" fontSize="20" fill="#94a3b8">Terre à l’échelle ; station trop grande</text>
+      <text x="688" y="350" textAnchor="end" fontSize="20" fill="#94a3b8">pointillés : trajectoire prévue</text>
+      <text x="688" y="378" textAnchor="end" fontSize="20" fill="#94a3b8">trait jaune : trajet parcouru</text>
     </svg>);
 }
 
@@ -63,12 +68,12 @@ function etatCabine(c, t) {
 }
 function Cabine({ c, t, vueCabine }) {
   const e = etatCabine(c, t), PXC = 36;                          // px par mètre dans la cabine
-  const CX = 350, SOL = 335, haut = h => SOL - h * PXM;           // ordonnée écran de l'altitude h (vue sol)
+  const CX = 260, SOL = 335, haut = h => SOL - h * PXM;           // ordonnée écran de l'altitude h (vue sol)
   const bas = vueCabine ? 215 : haut(e.alt), fond = vueCabine ? bas + e.alt * PXM : SOL;   // ordonnée du plancher de la cabine / du sol
   const tombe = c.tombe, flotte = tombe;
-  const fleche = (x, y, dy, col, label, gauche) => <g><line x1={x} y1={y} x2={x} y2={y + dy} stroke={col} strokeWidth="4"/>
+  const fleche = (x, y, dy, col, lettre, gauche) => <g><line x1={x} y1={y} x2={x} y2={y + dy} stroke={col} strokeWidth="4"/>
     <polygon points={`${x},${y + dy} ${x - 5},${y + dy - Math.sign(dy) * 9} ${x + 5},${y + dy - Math.sign(dy) * 9}`} fill={col}/>
-    <text x={x + (gauche ? -6 : 6)} y={y + dy / 2 + 4} textAnchor={gauche ? 'end' : 'start'} fontSize="19" fontWeight="800" fill={col} stroke="#fff" strokeWidth="3" paintOrder="stroke">{label}</text></g>;
+    <TV x={x + (gauche ? -22 : 10)} y={y + dy / 2 + 10} c={col} s={28} halo>{lettre}</TV></g>;
   const cab = (dy, op, plein, key) => {
     const x0 = CX - W_C / 2, y1 = dy;
     const bxs = x0 + (1.5 + (c.lance ? 0.8 * key : 0)) * PXC, bys = y1 - Math.max(0.1, 1.2 - (tombe ? 0 : 0.5 * G_C * key * key)) * PXC;
@@ -80,7 +85,7 @@ function Cabine({ c, t, vueCabine }) {
         {flotte ? <><line x1={ax} y1={ay - 46} x2={ax - 17} y2={ay - 32}/><line x1={ax} y1={ay - 46} x2={ax + 17} y2={ay - 32}/><line x1={ax} y1={ay - 26} x2={ax - 11} y2={ay - 4}/><line x1={ax} y1={ay - 26} x2={ax + 11} y2={ay - 4}/></>
           : <><line x1={ax} y1={ay - 46} x2={ax - 13} y2={ay - 30}/><line x1={ax} y1={ay - 46} x2={ax + 13} y2={ay - 30}/><line x1={ax} y1={ay - 26} x2={ax - 8} y2={ay - 2}/><line x1={ax} y1={ay - 26} x2={ax + 8} y2={ay - 2}/></>}</g>
       <circle cx={bxs} cy={bys} r="6.5" fill="#dc2626" stroke="#0f172a" strokeWidth={plein ? 2 : 1.2}/>
-      {plein && <>{fleche(ax - 22, ay - 36, 24, C_P, 'P', true)}{fleche(bxs + 12, bys - 2, 22, C_P, 'P', false)}{!tombe && fleche(ax + 22, ay - 2, -24, C_V, 'sol', false)}</>}
+      {plein && <>{fleche(ax - 22, ay - 36, 24, C_P, 'P', true)}{fleche(bxs + 12, bys - 2, 22, C_P, 'P', false)}{!tombe && fleche(ax + 22, ay - 2, -24, C_V, 'N', false)}</>}
     </g>;
   };
   // images successives (chronophotographie) toutes les 0,5 s, vue depuis le sol seulement
@@ -88,17 +93,20 @@ function Cabine({ c, t, vueCabine }) {
   const yc = vueCabine ? bas : haut(e.alt);
   const reps = []; for (let m = 0; m <= HAUT_M; m += 10) reps.push(m);
   return (
-    <svg viewBox="0 0 700 350" width="100%" role="img" aria-label="Une cabine tombe avec une personne et une balle à l’intérieur" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-      <rect x="0" y="0" width="700" height="350" fill="#eff6ff"/>
-      <rect x="0" y={Math.min(fond, 350)} width="700" height={Math.max(0, 350 - fond)} fill="#a16207" opacity="0.55"/><line x1="0" y1={fond} x2="700" y2={fond} stroke="#422006" strokeWidth="4"/>
-      <text x="600" y={Math.min(fond + 18, 346)} fontSize="13" fontWeight="800" fill="#422006">sol</text>
-      {reps.map(m => { const y = vueCabine ? fond - m * PXM : haut(m); return y > 8 && y < 342 ? <g key={m}><line x1="30" y1={y} x2="50" y2={y} stroke="#475569" strokeWidth="2"/><text x="54" y={y + 4} fontSize="11.5" fill="#475569">{m} m</text></g> : null; })}
-      <line x1="30" y1={Math.max(8, vueCabine ? fond - HAUT_M * PXM : haut(HAUT_M))} x2="30" y2={fond} stroke="#475569" strokeWidth="2"/>
-      {images}
-      <g>{cab(yc, 1, true, t)}</g>
-      <text x={CX} y="22" textAnchor="middle" fontSize="13.5" fontWeight="800" fill="#0f172a">{vueCabine ? 'Vue depuis la cabine (la cabine est immobile : c’est le sol qui monte)' : 'Vue depuis le sol (la cabine est en mouvement)'}</text>
-      <text x="690" y="44" textAnchor="end" fontSize="13" fontWeight="700" fill={tombe ? C_V : '#334155'}>{tombe ? `cabine en chute libre · vitesse : ${fr(e.v, 1)} m/s (${fr(e.v * 3.6, 0)} km/h)` : 'cabine immobile (câble tenu)'}</text>
-      {e.fini && <text x={CX} y="68" textAnchor="middle" fontSize="13" fontWeight="800" fill={ORANGE}>La cabine arrive au sol.</text>}
+    <svg viewBox="0 0 520 400" width="100%" role="img" aria-label="Une cabine tombe avec une personne et une balle à l’intérieur" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+      <rect x="0" y="0" width="520" height="400" fill="#eff6ff"/>
+      <g transform="translate(0 50)">
+        <rect x="0" y={Math.min(fond, 350)} width="520" height={Math.max(0, 350 - fond)} fill="#a16207" opacity="0.55"/><line x1="0" y1={fond} x2="520" y2={fond} stroke="#422006" strokeWidth="4"/>
+        <text x="440" y={Math.min(fond + 26, 346)} fontSize="22" fontWeight="800" fill="#422006">sol</text>
+        {reps.map(m => { const y = vueCabine ? fond - m * PXM : haut(m); return y > 8 && y < 342 ? <g key={m}><line x1="30" y1={y} x2="50" y2={y} stroke="#475569" strokeWidth="2"/><text x="54" y={y + 7} fontSize="20" fill="#475569">{m} m</text></g> : null; })}
+        <line x1="30" y1={Math.max(8, vueCabine ? fond - HAUT_M * PXM : haut(HAUT_M))} x2="30" y2={fond} stroke="#475569" strokeWidth="2"/>
+        {images}
+        <g>{cab(yc, 1, true, t)}</g>
+      </g>
+      <text x={CX} y="26" textAnchor="middle" fontSize="22" fontWeight="800" fill="#0f172a">{vueCabine ? 'Vue depuis la cabine' : 'Vue depuis le sol'}</text>
+      <text x={CX} y="50" textAnchor="middle" fontSize="20" fill="#334155">{vueCabine ? 'la cabine est immobile : c’est le sol qui monte' : 'la cabine est en mouvement'}</text>
+      <text x="512" y="78" textAnchor="end" fontSize="20" fontWeight="700" fill={tombe ? C_V : '#334155'}>{tombe ? `chute libre · v = ${fr(e.v, 1)} m/s` : 'cabine immobile (câble tenu)'}</text>
+      {e.fini && <text x={CX} y="104" textAnchor="middle" fontSize="22" fontWeight="800" fill={ORANGE}>La cabine arrive au sol.</text>}
     </svg>);
 }
 
@@ -128,7 +136,8 @@ function VoletDefi({ defi, setDefi, changerType, v }) {
       {defi.type === 'poids' && <><div style={txt}><Pic n="target"/>Un astronaute de <strong>{defi.m} kg</strong> est à l’altitude de <strong>{defi.h} km</strong>. Lisez la valeur de <strong>g</strong> à cette altitude dans la simulation, puis calculez son <strong>poids</strong> (la force exercée par la Terre).</div>
         <label style={{ fontSize: 14, fontWeight: 600 }}>P = <input value={defi.reps.v || ''} onChange={e => rep('v', e.target.value)} inputMode="decimal" aria-label="Votre réponse" style={{ width: 90, padding: '5px 8px', fontSize: 15, border: `1.5px solid ${KIT.bord}`, borderRadius: 6 }}/> N</label></>}
       {defi.type === 'cabine' && <><div style={txt}><Pic n="target"/>On lâche une balle, sans lui donner de vitesse, <strong>{TXT_CTX[defi.c]}</strong>. Par rapport à la cabine, la balle…</div>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{[['tombe', 'tombe vers le plancher'], ['flotte', 'reste là où on l’a lâchée'], ['monte', 'monte vers le plafond']].map(([k, l]) => <button key={k} onClick={() => rep('d', k)} style={stylePetitBouton(defi.reps.d === k, '#0ea5e9')}>{l}</button>)}</div></>}
+        <select value={defi.reps.d || ''} onChange={e => rep('d', e.target.value)} aria-label="Votre réponse" style={{ width: '100%', minHeight: 42, padding: '6px 8px', fontSize: 14.5, borderRadius: 8, border: `1.5px solid ${KIT.bord}`, background: '#fff' }}>
+          <option value="" disabled>Choisissez une réponse</option><option value="tombe">tombe vers le plancher</option><option value="flotte">reste là où on l’a lâchée</option><option value="monte">monte vers le plafond</option></select></>}
       {defi.type === 'orbite' && <div style={txt}><Pic n="target"/>La station est lancée <strong>horizontalement</strong> à l’altitude de <strong>{defi.h} km</strong>. Réglez sa <strong>vitesse</strong> (curseur) pour qu’elle reste à <strong>altitude constante</strong> : orbite circulaire. Puis cliquez sur « Vérifier ».</div>}
       <IndiceDefi cache={reussi}>{defi.type === 'poids' ? <>Lis g à l’altitude demandée dans la simulation, puis P = m × g (m en kg, g en N/kg).</>
         : defi.type === 'cabine' ? <>Compare le mouvement de la balle à celui de la cabine : tombent-ils de la même façon ? Repère aussi dans quelle situation on lâche la balle.</>
@@ -210,29 +219,12 @@ export function SimulationISS() {
   const choisirTombe = tb => setCab({ tombe: tb, lance: cab.lance, t: 0, enCours: false });
   const voirO = (hh = 400, vv = 7.7) => { setAtelier('orbite'); setH(hh); setV(vv); arreter(); };
   const voirC = (tombe, lance = false) => { setAtelier('cabine'); setCab({ tombe, lance, t: 0, enCours: false }); };
+  const Cle = ({ children }) => <div style={{ margin: '8px 0', padding: '6px 10px', background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: 8, fontWeight: 700, fontSize: 14.5, lineHeight: 1.45 }}>Phrase-clé : {children}</div>;
   const ETAPES = [
     { id: 'question', titre: 'Pourquoi les astronautes flottent-ils ?', depart: () => voirO(400, 7.7),
       texte: <>À bord de la Station spatiale internationale (<strong>ISS</strong>), à <strong>400 km</strong> d’altitude, les astronautes <strong>flottent</strong>. On dit qu’ils sont en <strong>apesanteur</strong>. Beaucoup pensent qu’à cette altitude « il n’y a plus de gravité ». Vérifions !</>,
       tache: { type: 'qcm', q: 'À ton avis, pourquoi les astronautes flottent-ils dans la station ?', options: ['La station et eux tombent ensemble autour de la Terre', 'Il n’y a plus de gravité à 400 km d’altitude', 'Il n’y a pas d’air dans l’espace', 'La station tourne si vite qu’ils sont plaqués au plafond'], bonne: 0, expl: 'Ils flottent parce que la station et les astronautes sont en chute libre ensemble. La gravité est toujours là (près de 90 % de celle du sol) : c’est elle qui les fait tourner autour de la Terre.', indice: "Compare g à 400 km avec g au sol dans la simulation : la gravité a-t-elle disparu ? Puis imagine ce qui arrive à une cabine et à tout ce qu’elle contient quand ils tombent ensemble." } },
     { id: 'gravite', titre: 'Y a-t-il encore de la gravité à 400 km ?', depart: () => voirO(400, 7.7),
-      retenirTitre: 'À RETENIR : LA GRAVITÉ EN ALTITUDE',
-      retenir: <>
-        <Formule><mi>g</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><msup><mrow><mo>(</mo><mi>R</mi><mo>+</mo><mi>h</mi><mo>)</mo></mrow><mn>2</mn></msup></mfrac><mspace width="1.5em"/><mi>P</mi><mo>=</mo><mi>m</mi><mo>×</mo><mi>g</mi></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Lieu</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Altitude h (km)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>g (N·kg⁻¹)</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>g / g(sol)</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>sol</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>0</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>9,8</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>100 %</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>ISS</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>400</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>8,7</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>89 %</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>satellite</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>1 000</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>7,3</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>75 %</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>La gravité <strong>diminue lentement</strong> avec l’altitude : à 400 km, il en reste près de <strong>90 %</strong> (R<sub>Terre</sub> = 6 378 km).</li>
-          <li>La <strong>masse</strong> ne change pas avec l’altitude ; le <strong>poids</strong> P = m × g, si.</li>
-          <li><strong>Exemple :</strong> 60 kg à 1 000 km : P = 60 × 7,3 ≈ 440 N (au sol : 60 × 9,8 ≈ 590 N).</li>
-          <li><strong>Hypothèses :</strong> Terre sphérique et homogène, seule la Terre attire (M = 5,98 × 10²⁴ kg, G = 6,67 × 10⁻¹¹ N·m²·kg⁻²).</li>
-        </ul>
-      </>,
       texte: <>Regardez la flèche rouge : à 400 km, la Terre attire <strong>chaque kilogramme</strong> avec une force de <strong>8,7 N</strong> (g = 8,7 N/kg). Au sol, c’est 9,8 N/kg. La Terre est grande : monter de 400 km, c’est peu par rapport à son rayon de 6 378 km.
         <ExempleResolu>Un objet de <strong>10 kg</strong> : au sol P = 10 × 9,8 = 98 N ; à 400 km P = 10 × 8,7 = <strong>87 N</strong>. Presque pareil !</ExempleResolu></>,
       tache: { type: 'num', q: 'Quel est le poids d’un astronaute de 70 kg à 400 km d’altitude ? (P = m × g)', unite: 'N', vrai: 608, tol: 0.02, affiche: x => String(x), pieges: [[686, 'C’est son poids au sol (70 × 9,8). À 400 km, g vaut 8,7 N/kg.'], [0, 'Le poids n’est pas nul : la Terre attire toujours l’astronaute.'], [8.7, 'C’est g (le poids d’1 kg). Pour 70 kg, multipliez par la masse : P = m × g.'], [70 / 8.7, 'On multiplie : P = m × g (on ne divise pas la masse par g).']],
@@ -242,7 +234,25 @@ export function SimulationISS() {
           `P = 70 × ${fr(gAlt(400), 1)} = ${fr(70 * Math.round(gAlt(400) * 10) / 10, 0)} N. Avec la valeur plus précise g = ${fr(gAlt(400), 2)} N/kg, on trouve ${fr(70 * gAlt(400), 0)} N : la petite différence vient seulement de l’arrondi de g.`,
           `P ≈ ${fr(70 * gAlt(400), 0)} N.`], expl: 'P = 70 × 8,7 ≈ 608 N : environ 89 % de son poids au sol. Il n’a pas du tout « perdu » son poids.', indice: "Formule : P = m × g. Lis la valeur de g à 400 km dans la simulation (altitude réglée sur 400 km), sans reprendre celle du sol." } },
     { id: 'sol', titre: 'Une cabine immobile', depart: () => voirC(false),
-      texte: <>Voici une <strong>cabine</strong> suspendue à un câble, avec une <strong>personne</strong> et une <strong>balle</strong> à l’intérieur. Le câble tient : la cabine est <strong>immobile</strong>. Cliquez sur « Lancer l’expérience » : on lâche la balle. Elle <strong>tombe</strong> vers le plancher (poids <strong>P</strong>). La personne, elle, est soutenue par le plancher (flèche bleue).</>,
+      retenirTitre: 'À RETENIR : LA GRAVITÉ EN ALTITUDE',
+      retenir: <>
+        <Schema aria="Un même objet au sol, à 400 km et à 1 000 km d’altitude : la flèche de la gravité est un peu plus courte quand on monte, 9,8 newtons par kilogramme au sol, 8,7 à 400 km, 7,3 à 1 000 km" h={216}>
+          <T x={180} y={22} a="middle" s={15} w={700}>même objet : g diminue lentement</T>
+          {[[60, 'sol', 88, '9,8 N/kg', '100 %'], [180, '400 km', 78, '8,7 N/kg', '89 %'], [300, '1 000 km', 66, '7,3 N/kg', '75 %']].map(([x, n, L, v, pc]) => <g key={n}>
+            <circle cx={x} cy="44" r="8" fill="#fde68a" stroke="#92400e" strokeWidth="2"/>
+            <Fl x1={x} y1={52} x2={x} y2={52 + L} c="#c2410c" w={4}/><TV x={x + 10} y={52 + L / 2 + 6} c="#c2410c" s={16}>g</TV>
+            <T x={x} y={160} a="middle" s={15} w={700}>{n}</T><T x={x} y={180} a="middle" s={15} c="#c2410c" w={700}>{v}</T><T x={x} y={198} a="middle" s={15} c={GRIS} w={500}>{pc}</T></g>)}
+        </Schema>
+        <Cle>À 400 km, il reste près de 90 % de la gravité du sol.</Cle>
+        <Formule><mi>g</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><msup><mrow><mo>(</mo><mi>R</mi><mo>+</mo><mi>h</mi><mo>)</mo></mrow><mn>2</mn></msup></mfrac></Formule>
+        <Formule><mi>P</mi><mo>=</mo><mi>m</mi><mo>×</mo><mi>g</mi></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li>La <strong>masse</strong> ne change pas avec l’altitude ; le <strong>poids</strong> P = m × g, si.</li>
+          <li><strong>Exemple :</strong> 60 kg à 1 000 km : P = 60 × 7,3 ≈ 440 N (au sol : 60 × 9,8 ≈ 590 N).</li>
+          <li><strong>Hypothèses :</strong> Terre sphérique et homogène, seule la Terre attire (M = 5,98 × 10²⁴ kg, G = 6,67 × 10⁻¹¹ N·m²·kg⁻²).</li>
+        </ul>
+      </>,
+      texte: <>Voici une <strong>cabine</strong> suspendue à un câble, avec une <strong>personne</strong> et une <strong>balle</strong> à l’intérieur. Le câble tient : la cabine est <strong>immobile</strong>. Cliquez sur « Lancer l’expérience » : on lâche la balle. Elle <strong>tombe</strong> vers le plancher (poids <Vec c="P"/>). La personne, elle, est soutenue par le plancher (force <Vec c="N"/>, flèche bleue).</>,
       tache: { type: 'action', ok: enGuide && fait.sol, consigne: 'Lancez l’expérience avec le câble tenu.' } },
     { id: 'chute', titre: 'On coupe le câble !', depart: () => voirC(true),
       texte: <>Maintenant, <strong>le câble est coupé</strong> : la cabine tombe, avec la personne et la balle <strong>qui tombent aussi</strong>. Cliquez sur « Lancer l’expérience ». Regardez les images successives (toutes les 0,5 s) : la cabine, la personne et la balle <strong>descendent ensemble</strong>, de plus en plus vite.
@@ -252,106 +262,99 @@ export function SimulationISS() {
       texte: <>Cochez <strong>« vue depuis la cabine »</strong> : on se place dans le <strong>référentiel de la cabine</strong>. La cabine devient immobile sur l’écran, et c’est le <strong>sol qui monte</strong> vers elle. Relancez l’expérience : la personne et la balle <strong>ne bougent pas</strong>, comme s’il n’y avait plus de gravité (alors que la gravité est toujours là : la cabine et la personne tombent ensemble). C’est ce que ressentent les astronautes.</>,
       tache: { type: 'action', ok: enGuide && fait.vue, consigne: 'Cochez « vue depuis la cabine ».' } },
     { id: 'balance', titre: 'La force de la Terre existe toujours', depart: () => voirC(true),
+      texte: <>Regardez les flèches <Vec c="P"/> (poids) : elles sont toujours là, sur la personne comme sur la balle. La Terre attire toujours. Mais le plancher de la cabine <strong>tombe aussi</strong> : il ne pousse plus la personne vers le haut (plus de flèche bleue <Vec c="N"/>). Elle ne sent plus son poids.</>,
+      tache: { type: 'qcm', q: 'Dans la cabine qui tombe, la personne a-t-elle encore un poids ?', options: ['Oui : la Terre l’attire, mais rien ne la soutient', 'Non : la Terre n’attire plus une cabine qui tombe', 'Oui, mais la cabine annule son poids pendant la chute', 'Non, la cabine est trop petite pour être attirée'], bonne: 0, expl: 'La force de la Terre (le poids) existe toujours. Ce qui disparaît, c’est la sensation de poids : personne ne pousse l’astronaute, le sol de la cabine tombe avec lui.', indice: "Le poids est la force exercée par la Terre. Cette force disparaît-elle quand on tombe ? Ne confonds pas le poids avec la sensation de poids (ce qui te soutient ou te pousse)." } },
+    { id: 'lancer', titre: 'Lançons la balle !', depart: () => voirC(true, true),
       retenirTitre: 'À RETENIR : POIDS ET APESANTEUR',
       retenir: <>
-        <svg viewBox="0 0 370 160" role="img" aria-label="Deux cabines. À gauche, câble tenu : la personne subit son poids P vers le bas et la force N du plancher vers le haut, qui se compensent. À droite, câble coupé : seul le poids P agit, la cabine tombe avec la personne, qui flotte" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <text x="90" y="14" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">câble tenu</text><text x="280" y="14" textAnchor="middle" fontSize="12" fontWeight="700" fill="#334155">câble coupé</text>
-          <rect x="10" y="22" width="160" height="100" fill="#f8fafc" stroke="#334155" strokeWidth="2" /><rect x="200" y="22" width="160" height="100" fill="#f8fafc" stroke="#334155" strokeWidth="2" />
-          <line x1="10" y1="114" x2="170" y2="114" stroke="#334155" strokeWidth="3" /><line x1="200" y1="114" x2="360" y2="114" stroke="#334155" strokeWidth="3" />
-          <circle cx="90" cy="36" r="9" fill="#fde68a" stroke="#334155" strokeWidth="1.6" /><path d="M 90 45 L 90 72 M 90 72 L 80 92 M 90 72 L 100 92 M 78 54 L 102 54" stroke="#334155" strokeWidth="2" fill="none" />
-          <line x1="66" y1="60" x2="66.0" y2="96.0" stroke="#c2410c" strokeWidth="2.4" /><polygon points="66,104 62.0,96.0 70.0,96.0" fill="#c2410c" /><text x="52" y="86" fontSize="12" fontWeight="700" fill="#c2410c">P</text>
-          <line x1="114" y1="112" x2="114.0" y2="74.0" stroke="#0072b2" strokeWidth="2.4" /><polygon points="114,66 118.0,74.0 110.0,74.0" fill="#0072b2" /><text x="120" y="92" fontSize="12" fontWeight="700" fill="#0072b2">N</text>
-          <circle cx="280" cy="30" r="9" fill="#fde68a" stroke="#334155" strokeWidth="1.6" /><path d="M 280 39 L 280 66 M 280 66 L 270 86 M 280 66 L 290 86 M 268 48 L 292 48" stroke="#334155" strokeWidth="2" fill="none" />
-          <line x1="256" y1="54" x2="256.0" y2="84.0" stroke="#c2410c" strokeWidth="2.4" /><polygon points="256,92 252.0,84.0 260.0,84.0" fill="#c2410c" /><text x="242" y="76" fontSize="12" fontWeight="700" fill="#c2410c">P</text>
-          <text x="90" y="138" textAnchor="middle" fontSize="11" fill="#334155">P et N se compensent</text><text x="90" y="152" textAnchor="middle" fontSize="11" fill="#334155">on sent son poids</text>
-          <text x="280" y="138" textAnchor="middle" fontSize="11" fill="#334155">seul P agit : tout tombe ensemble</text><text x="280" y="152" textAnchor="middle" fontSize="11" fill="#334155">apesanteur</text>
-        </svg>
+        <Schema aria="Deux cabines. À gauche, câble tenu : la personne subit son poids vers le bas et la force du plancher vers le haut, qui se compensent. À droite, câble coupé : seul le poids agit, la cabine tombe avec la personne, qui flotte" h={196}>
+          <T x={85} y={18} a="middle" s={15} w={700}>câble tenu</T><T x={275} y={18} a="middle" s={15} w={700}>câble coupé</T>
+          <rect x="10" y="28" width="150" height="104" fill="#f8fafc" stroke={NOIR} strokeWidth="2"/><rect x="200" y="28" width="150" height="104" fill="#f8fafc" stroke={NOIR} strokeWidth="2"/>
+          <line x1="10" y1="124" x2="160" y2="124" stroke={NOIR} strokeWidth="3"/><line x1="200" y1="124" x2="350" y2="124" stroke={NOIR} strokeWidth="3"/>
+          <circle cx="85" cy="48" r="9" fill="#fde68a" stroke={NOIR} strokeWidth="1.6"/><path d="M 85 57 L 85 86 M 85 86 L 75 108 M 85 86 L 95 108 M 73 68 L 97 68" stroke={NOIR} strokeWidth="2" fill="none"/>
+          <Fl x1={118} y1={70} x2={118} y2={112} c="#c2410c" w={3}/><TV x={126} y={96} c="#c2410c" s={16}>P</TV>
+          <Fl x1={48} y1={118} x2={48} y2={76} c="#0072b2" w={3}/><TV x={22} y={92} c="#0072b2" s={16}>N</TV>
+          <circle cx="275" cy="44" r="9" fill="#fde68a" stroke={NOIR} strokeWidth="1.6"/><path d="M 275 53 L 275 82 M 275 82 L 265 104 M 275 82 L 285 104 M 263 64 L 287 64" stroke={NOIR} strokeWidth="2" fill="none"/>
+          <Fl x1={308} y1={64} x2={308} y2={106} c="#c2410c" w={3}/><TV x={316} y={92} c="#c2410c" s={16}>P</TV>
+          <TL x={14} y={158} s={15} segs={['Σ', { v: 'F' }, ' = ', { v: '0' }]}/><T x={14} y={178} s={15} c={GRIS} w={500}>on sent son poids</T>
+          <TL x={204} y={158} s={15} segs={['Σ', { v: 'F' }, ' = ', { v: 'P' }]}/><T x={204} y={178} s={15} c={GRIS} w={500}>apesanteur</T>
+        </Schema>
+        <Cle>Apesanteur = rien ne nous soutient, pas « plus de gravité ».</Cle>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le <strong>poids P</strong> existe toujours : la Terre attire toujours. On « sent » son poids grâce à la <strong>force N du support</strong> (plancher).</li>
-          <li>Dans une cabine en <strong>chute libre</strong>, le plancher tombe aussi : plus de N, la personne flotte. L’<strong>apesanteur</strong> est une absence de <strong>support</strong>, pas une absence de gravité.</li>
-          <li><strong>Piège :</strong> croire qu’« il n’y a plus de gravité » dans l’espace (à 400 km, g ≈ 8,7 N·kg⁻¹).</li>
-        </ul>
-      </>,
-      texte: <>Regardez les flèches <strong>P</strong> (poids) : elles sont toujours là, sur la personne comme sur la balle. La Terre attire toujours. Mais le plancher de la cabine <strong>tombe aussi</strong> : il ne pousse plus la personne vers le haut (plus de flèche bleue). Elle ne sent plus son poids.</>,
-      tache: { type: 'qcm', q: 'Dans la cabine qui tombe, la personne a-t-elle encore un poids ?', options: ['Oui : la Terre l’attire toujours, mais rien ne la soutient', 'Non : il n’y a plus d’attraction', 'Oui, mais la cabine le supprime', 'Non, la cabine est trop petite'], bonne: 0, expl: 'La force de la Terre (le poids) existe toujours. Ce qui disparaît, c’est la sensation de poids : personne ne pousse l’astronaute, le sol de la cabine tombe avec lui.', indice: "Le poids est la force exercée par la Terre. Cette force disparaît-elle quand on tombe ? Ne confonds pas le poids avec la sensation de poids (ce qui te soutient ou te pousse)." } },
-    { id: 'lancer', titre: 'Lançons la balle !', depart: () => voirC(true, true),
-      retenirTitre: 'À RETENIR : CHANGER DE RÉFÉRENTIEL',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Référentiel</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Cabine</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Balle lancée</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>la Terre (le sol)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>tombe de plus en plus vite</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>courbe (elle tombe en avançant)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>la cabine</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>immobile</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>droite, à vitesse constante</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le <strong>mouvement dépend du référentiel</strong> : il se décrit toujours par rapport à un objet de référence.</li>
-          <li>Cabine et balle subissent la <strong>même chute</strong> : par rapport à la cabine, la balle part en ligne droite. Son poids n’a pas disparu : la cabine « tombe » comme elle.</li>
-          <li><strong>Hypothèses :</strong> g constant sur la hauteur de la cabine, pas de frottements.</li>
+          <li>Le <strong>poids</strong> <Vec c="P"/> existe toujours : la Terre attire toujours. On « sent » son poids grâce à la <strong>force</strong> <Vec c="N"/> <strong>du support</strong> (plancher).</li>
+          <li>En <strong>chute libre</strong>, le plancher tombe aussi : plus de <Vec c="N"/>, la personne flotte. <strong>Piège :</strong> croire qu’« il n’y a plus de gravité » dans l’espace (à 400 km, g ≈ 8,7 N·kg⁻¹).</li>
         </ul>
       </>,
       texte: <>On <strong>lance</strong> maintenant la balle vers la droite, la cabine étant en chute libre. Vue depuis le <strong>sol</strong>, elle décrit une <strong>courbe</strong> (elle tombe en avançant). Cochez « vue depuis la cabine » : la balle part <strong>tout droit</strong>, à <strong>vitesse constante</strong>, car la cabine tombe exactement comme elle. Attention : la balle a toujours son <strong>poids</strong>, non compensé (elle accélère vers la Terre, comme on le voit depuis le sol). Dans la cabine, on voit seulement son mouvement <strong>par rapport à la cabine</strong>.</>,
       tache: { type: 'action', ok: enGuide && fait.lance, consigne: 'Lancez la balle (« lancée vers la droite ») avec le câble coupé.' } },
     { id: 'orbite', titre: 'Une chute… sans fin', depart: () => voirO(400, 3),
-      retenirTitre: 'À RETENIR : LE CANON DE NEWTON',
+      retenirTitre: 'À RETENIR : CHANGER DE RÉFÉRENTIEL',
       retenir: <>
-        <svg viewBox="0 60 360 145" role="img" aria-label="Canon de Newton : plus la vitesse horizontale est grande, plus le projectile tombe loin ; à la bonne vitesse, il tombe sans jamais toucher la Terre et suit une orbite circulaire" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <circle cx="180" cy="320" r="150" fill="#bae6fd" stroke="#0369a1" strokeWidth="2" />
-          <circle cx="180" cy="320" r="162" fill="none" stroke="#15803d" strokeWidth="2" strokeDasharray="6 4" />
-          <rect x="176" y="156" width="8" height="14" fill="#475569" /><circle cx="180" cy="153" r="5" fill="#334155" />
-          <path d="M 180 153 Q 212 153 235 180" fill="none" stroke="#b45309" strokeWidth="2.4" />
-          <path d="M 180 153 Q 245 153 268 198" fill="none" stroke="#c2410c" strokeWidth="2.4" />
-          <text x="180" y="196" textAnchor="middle" fontSize="12" fill="#0369a1" fontWeight="700">Terre</text>
-          <text x="8" y="76" fontSize="11" fill="#b45309" fontWeight="700">v faible : retombe tout près</text>
-          <text x="8" y="91" fontSize="11" fill="#c2410c" fontWeight="700">v plus grande : retombe plus loin</text>
-          <text x="8" y="106" fontSize="11" fill="#15803d" fontWeight="700">v ≈ 7,7 km/s : orbite (chute sans fin)</text>
-          <text x="8" y="121" fontSize="10" fill="#475569">schéma : altitude exagérée, échelle non respectée</text>
-        </svg>
+        <Schema aria="Une balle lancée dans une cabine en chute libre : vue depuis le sol, sa trajectoire est une courbe ; vue depuis la cabine, c’est une droite parcourue à vitesse constante" h={186}>
+          <rect x="8" y="30" width="164" height="110" rx="6" fill="#f8fafc" stroke={NOIR} strokeWidth="2"/><rect x="188" y="30" width="164" height="110" rx="6" fill="#f8fafc" stroke={NOIR} strokeWidth="2"/>
+          <T x={90} y={22} a="middle" s={15} w={700}>vu du sol</T><T x={270} y={22} a="middle" s={15} w={700}>vu de la cabine</T>
+          <path d="M 28 52 Q 100 52 150 124" fill="none" stroke="#c2410c" strokeWidth="3"/><circle cx="28" cy="52" r="5" fill="#dc2626"/><Fl x1={140} y1={110} x2={150} y2={124} c="#c2410c" w={3}/>
+          <line x1="208" y1="76" x2="326" y2="76" stroke="#0072b2" strokeWidth="3"/><circle cx="208" cy="76" r="5" fill="#dc2626"/><Fl x1={310} y1={76} x2={334} y2={76} c="#0072b2" w={3}/>
+          <T x={90} y={162} a="middle" s={15} c="#c2410c" w={700}>trajectoire courbe</T><T x={270} y={162} a="middle" s={15} c="#0072b2" w={700}>trajectoire droite</T>
+          <T x={180} y={182} a="middle" s={15} c={GRIS} w={500}>même balle, deux points de vue</T>
+        </Schema>
+        <Cle>Le mouvement dépend de celui qui regarde : il faut un référentiel.</Cle>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un objet lancé <strong>horizontalement</strong> tombe vers la Terre ; plus sa vitesse est grande, plus il retombe loin.</li>
-          <li>À la bonne vitesse, la Terre étant ronde, le sol « se dérobe » : l’objet <strong>tombe sans fin</strong> autour de la Terre. C’est une <strong>orbite</strong>.</li>
+          <li>Le <strong>mouvement dépend du référentiel</strong> : il se décrit toujours par rapport à un objet de référence (le sol, la cabine).</li>
+          <li>Cabine et balle subissent la <strong>même chute</strong> : par rapport à la cabine, la balle part en ligne droite, à vitesse constante. Son poids n’a pas disparu : la cabine « tombe » comme elle. <strong>Hypothèses :</strong> g constant sur la hauteur de la cabine, pas de frottements.</li>
         </ul>
       </>,
       texte: <>Comment la station peut-elle « tomber » sans jamais toucher la Terre ? Imaginez un canon qui tire <strong>horizontalement</strong> (idée de Newton). Plus la vitesse est grande, plus l’objet va loin avant de toucher le sol. Avec <strong>assez de vitesse</strong>, la Terre étant ronde, le sol « se dérobe » sous lui : il tombe… sans jamais arriver !
         <ExempleResolu>À <strong>400 km</strong>, la vitesse qu’il faut est d’environ <strong>7,7 km/s</strong> : près de 28 000 km/h. Réglez le curseur « vitesse » sur 7,7 km/s puis cliquez sur « Lancer ».</ExempleResolu></>,
       tache: { type: 'action', ok: enGuide && fait.orbite, consigne: 'Réglez la vitesse à 7,7 km/s (entre 7,65 et 7,70) puis lancez, et attendez un tour complet.' } },
     { id: 'pourquoi', titre: 'Pourquoi ne tombe-t-elle pas sur la Terre ?', depart: null,
-      retenirTitre: 'À RETENIR : VITESSE ET ORBITE',
+      texte: <>Essayez aussi une vitesse plus faible (5 km/s) : la station <strong>retombe</strong> sur la Terre. Et plus grande (8 km/s) : l’orbite devient plus allongée.</>,
+      tache: { type: 'qcm', q: 'Pourquoi la station ne tombe-t-elle pas sur la Terre ?', options: ['Elle tombe sans cesse mais avance assez vite pour manquer la Terre', 'La Terre ne l’attire plus à cette altitude, car l’espace est vide', 'Elle est repoussée par l’espace, qui exerce une force vers le haut', 'Elle est trop légère pour que la Terre exerce une force sur elle'], bonne: 0, expl: 'La station subit toujours l’attraction de la Terre. Sa vitesse horizontale est telle qu’elle « manque » la Terre : elle tombe en tournant.', indice: "La Terre attire-t-elle encore la station à cette altitude ? Observe la trajectoire dans la simulation : que devient la chute si la vitesse horizontale est grande ?" } },
+    { id: 'marteau', titre: 'Même chute pour tout le monde', depart: () => voirO(400, 7.7),
+      retenirTitre: 'À RETENIR : LE CANON DE NEWTON',
       retenir: <>
-        <Formule><mi>v</mi><mo>=</mo><msqrt><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><mrow><mi>R</mi><mo>+</mo><mi>h</mi></mrow></mfrac></msqrt><mspace width="1.5em"/><mi>T</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>π</mi><mo>(</mo><mi>R</mi><mo>+</mo><mi>h</mi><mo>)</mo></mrow><mi>v</mi></mfrac></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Vitesse de lancement à 400 km</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Trajectoire</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>5 km/s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>la station retombe sur la Terre</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>7,7 km/s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>orbite circulaire, T ≈ 92 min</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>8 km/s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>orbite allongée (ellipse)</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>≥ 10,8 km/s</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>l’objet quitte la Terre</td></tr>
-          </tbody>
-        </table>
+        <Schema aria="Canon de Newton : plus la vitesse horizontale est grande, plus le projectile retombe loin ; à la bonne vitesse, il tombe sans jamais toucher la Terre et suit une orbite circulaire" h={206}>
+          <T x={8} y={20} s={15} c="#b45309" w={700}>v faible : retombe tout près</T>
+          <T x={8} y={40} s={15} c="#c2410c" w={700}>v plus grande : retombe plus loin</T>
+          <T x={8} y={60} s={15} c="#15803d" w={700}>v ≈ 7,7 km/s : orbite (chute sans fin)</T>
+          <circle cx="180" cy="290" r="150" fill="#bae6fd" stroke="#0369a1" strokeWidth="2"/>
+          <circle cx="180" cy="290" r="162" fill="none" stroke="#15803d" strokeWidth="2" strokeDasharray="6 4"/>
+          <rect x="176" y="124" width="8" height="14" fill="#475569"/><circle cx="180" cy="121" r="5" fill="#334155"/>
+          <path d="M 180 121 Q 212 121 235 148" fill="none" stroke="#b45309" strokeWidth="2.6"/>
+          <path d="M 180 121 Q 245 121 268 166" fill="none" stroke="#c2410c" strokeWidth="2.6"/>
+          <T x={180} y={170} a="middle" s={15} c="#0369a1" w={700}>Terre</T>
+          <T x={180} y={200} a="middle" s={15} c={GRIS} w={500}>schéma : échelle non respectée</T>
+        </Schema>
+        <Cle>Une orbite, c’est une chute qui rate toujours la Terre.</Cle>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>À 400 km : v ≈ <strong>7,7 km/s</strong> (environ 28 000 km/h) et une période d’environ <strong>92 min</strong> par tour.</li>
-          <li>La station subit <strong>toujours</strong> l’attraction de la Terre : elle <strong>tombe en permanence</strong> mais avance assez vite pour la manquer.</li>
-          <li><strong>Hypothèses :</strong> lancement horizontal, trajectoire dans un plan, pas d’atmosphère, Terre sphérique homogène.</li>
+          <li>Un objet lancé <strong>horizontalement</strong> tombe vers la Terre ; plus sa vitesse est grande, plus il retombe loin.</li>
+          <li>À la bonne vitesse, la Terre étant ronde, le sol « se dérobe » : l’objet <strong>tombe sans fin</strong> autour de la Terre. C’est une <strong>orbite</strong>. Astronautes, marteau et station tombent <strong>pareil</strong>.</li>
         </ul>
       </>,
-      texte: <>Essayez aussi une vitesse plus faible (5 km/s) : la station <strong>retombe</strong> sur la Terre. Et plus grande (8 km/s) : l’orbite devient plus allongée.</>,
-      tache: { type: 'qcm', q: 'Pourquoi la station ne tombe-t-elle pas sur la Terre ?', options: ['Elle tombe en permanence, mais elle avance assez vite pour que la Terre se dérobe', 'La Terre ne l’attire plus à cette altitude', 'Elle est repoussée par l’espace', 'Elle est trop légère'], bonne: 0, expl: 'La station subit toujours l’attraction de la Terre. Sa vitesse horizontale est telle qu’elle « manque » la Terre : elle tombe en tournant.', indice: "La Terre attire-t-elle encore la station à cette altitude ? Observe la trajectoire dans la simulation : que devient la chute si la vitesse horizontale est grande ?" } },
-    { id: 'marteau', titre: 'Même chute pour tout le monde', depart: () => voirO(400, 7.7),
       texte: <>La flèche rouge (force par kilogramme) est <strong>la même</strong> pour la station et pour tout ce qu’elle contient : l’astronaute, un marteau, une balle… Tous ont la <strong>même chute</strong> : ils suivent la <strong>même trajectoire</strong> autour de la Terre.</>,
-      tache: { type: 'qcm', q: 'Un astronaute lâche son marteau dans la station. Pourquoi reste-t-il à côté de lui ?', options: ['Marteau, astronaute et station tombent de la même façon autour de la Terre', 'Le marteau n’est plus attiré par la Terre', 'Le marteau est plus léger que l’air', 'Le marteau est attiré par l’astronaute'], bonne: 0, expl: 'Tout ce qui est dans la station subit la même attraction par kilogramme, donc tombe pareil : il n’y a aucun mouvement relatif.', indice: "Compare la façon dont tombent le marteau, l’astronaute et la station. La chute dépend-elle de la masse de l’objet ?" } },
+      tache: { type: 'qcm', q: 'Un astronaute lâche son marteau dans la station. Pourquoi reste-t-il à côté de lui ?', options: ['Marteau, astronaute et station tombent pareil autour de la Terre', 'Le marteau n’est plus attiré par la Terre car il est dans l’espace', 'Le marteau est plus léger que l’air qui remplit la station', 'Le marteau est attiré par l’astronaute plus que par la Terre'], bonne: 0, expl: 'Tout ce qui est dans la station subit la même attraction par kilogramme, donc tombe pareil : il n’y a aucun mouvement relatif.', indice: "Compare la façon dont tombent le marteau, l’astronaute et la station. La chute dépend-elle de la masse de l’objet ?" } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
-      retenirTitre: 'À RETENIR : LE BILAN',
+      retenirTitre: 'À RETENIR : VITESSE ET ORBITE',
       retenir: <>
+        <Schema aria="Selon la vitesse de lancement à 400 km : 5 km/s la station retombe sur la Terre, 7,7 km/s orbite circulaire, 8 km/s orbite en ellipse" h={190}>
+          <circle cx="100" cy="100" r="36" fill="#bae6fd" stroke="#0369a1" strokeWidth="2"/><T x={100} y={106} a="middle" s={15} c="#0369a1" w={700}>Terre</T>
+          <circle cx="100" cy="100" r="58" fill="none" stroke="#15803d" strokeWidth="3"/>
+          <ellipse cx="118" cy="100" rx="76" ry="62" fill="none" stroke="#b45309" strokeWidth="2.5" strokeDasharray="6 4"/>
+          <path d="M 100 42 Q 140 44 134 86" fill="none" stroke="#c2410c" strokeWidth="3"/>
+          <T x={206} y={62} s={15} c="#c2410c" w={700}>5 km/s : retombe</T><T x={206} y={102} s={15} c="#15803d" w={700}>7,7 km/s : cercle</T><T x={206} y={142} s={15} c="#b45309" w={700}>8 km/s : ellipse</T>
+          <T x={180} y={184} a="middle" s={15} c={GRIS} w={500}>vitesses de lancement à 400 km</T>
+        </Schema>
+        <Cle>Même altitude : la vitesse de lancement décide de la trajectoire.</Cle>
+        <Formule><mi>v</mi><mo>=</mo><msqrt><mfrac><mrow><mi>G</mi><mo>×</mo><mi>M</mi></mrow><mrow><mi>R</mi><mo>+</mo><mi>h</mi></mrow></mfrac></msqrt></Formule>
+        <Formule><mi>T</mi><mo>=</mo><mfrac><mrow><mn>2</mn><mi>π</mi><mo>(</mo><mi>R</mi><mo>+</mo><mi>h</mi><mo>)</mo></mrow><mi>v</mi></mfrac></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>À 400 km, g ≈ 8,7 N·kg⁻¹ : environ <strong>90 %</strong> de la gravité au sol ; P = m × g.</li>
-          <li>L’ISS est en <strong>chute libre</strong> autour de la Terre (v ≈ 7,7 km/s, T ≈ 92 min) : elle tombe sans cesse sans toucher la Terre.</li>
-          <li>Astronautes, marteau, station tombent <strong>pareil</strong> : <strong>apesanteur = absence de support</strong>, pas absence de gravité.</li>
-          <li><strong>Méthode :</strong> pour expliquer « ça flotte », comparer les forces (P, N) et se placer dans le bon référentiel.</li>
-          <li><strong>Pièges :</strong> confondre masse et poids ; croire qu’il n’y a plus de gravité à 400 km.</li>
+          <li>À 400 km : v ≈ <strong>7,7 km/s</strong> (environ 28 000 km/h) et une période d’environ <strong>92 min</strong> par tour. À partir de 10,8 km/s, l’objet quitte la Terre.</li>
+          <li>La station subit <strong>toujours</strong> l’attraction de la Terre : elle <strong>tombe en permanence</strong> mais avance assez vite pour la manquer. <strong>Hypothèses :</strong> lancement horizontal, plan, pas d’atmosphère, Terre sphérique homogène.</li>
         </ul>
       </>,
       texte: <>Bravo : vous savez expliquer l’apesanteur. Voici le bilan à garder.</>, tache: null },
   ];
+  const etapeId = ETAPES[Math.min(guide.etape, ETAPES.length - 1)].id;
   useEffect(() => {
     if (mode !== 'guide') return;
     const dep = ETAPES[Math.min(guide.etape, ETAPES.length - 1)].depart;
@@ -381,40 +384,45 @@ export function SimulationISS() {
   const verrouH = enDefi && (defi.type === 'poids' || defi.type === 'orbite');
   const vMax = Math.ceil(1.1 * vOrb(h) * 10) / 10;
   const etatAff = oc.etat && oc.etat.fini ? 'impact' : null;
+  // au parcours guidé, chaque commande n'arrive qu'avec l'étape qui s'en sert
+  const etOrb = ['orbite', 'pourquoi'].includes(etapeId);
+  const montreAlt = !enGuide, montreVit = !enGuide || etOrb, montreLancer = !enGuide || etOrb, montreRes = !enGuide || etapeId === 'pourquoi';
+  const montreVue = !enGuide || ['ref', 'balance', 'lancer'].includes(etapeId);
+  const sel = { width: '100%', minHeight: 42, padding: '6px 8px', fontSize: 14.5, borderRadius: 8, border: `1.5px solid ${KIT.bord}`, background: '#fff' };
   const OrbitePanel = (
     <div>
-      <Orbite h={h} v={v} etat={oc.etat} trace={oc.trace} etatAff={etatAff}/>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginTop: 8 }}>
-        <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Altitude : <strong>{h} km</strong>
-          <input type="range" min="200" max="1500" step="50" value={h} disabled={verrouH} aria-label="Altitude" onChange={e => { setH(+e.target.value); arreter(); }} style={{ width: '100%' }}/></label>
-        <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Vitesse de lancement : <strong>{fr(v, 2)} km/s</strong>
-          <input type="range" min="0" max={vMax} step="0.01" value={Math.min(v, vMax)} aria-label="Vitesse" onChange={e => { setV(+e.target.value); arreter(); }} style={{ width: '100%' }}/></label></div>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
+      <Orbite h={h} v={v} etat={oc.etat} trace={oc.trace} etatAff={etatAff} valeurs={!enGuide || etapeId !== 'question'}/>
+      {(montreAlt || montreVit) && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginTop: 8 }}>
+        {montreAlt && <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Altitude : <strong>{h} km</strong>
+          <input type="range" min="200" max="1500" step="50" value={h} disabled={verrouH} aria-label="Altitude" onChange={e => { setH(+e.target.value); arreter(); }} style={{ width: '100%' }}/></label>}
+        {montreVit && <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Vitesse de lancement : <strong>{fr(v, 2)} km/s</strong>
+          <input type="range" min="0" max={vMax} step="0.01" value={Math.min(v, vMax)} aria-label="Vitesse" onChange={e => { setV(+e.target.value); arreter(); }} style={{ width: '100%' }}/></label>}</div>}
+      {montreLancer && <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
         <button onClick={lancer} style={styleBouton(true, '#16a34a')}>▶ Lancer</button><button onClick={arreter} style={styleBouton(false)}>⏹ Remettre</button>
-        <span style={{ fontSize: 14, color: KIT.txt }}>{enDefi && defi.type === 'orbite' ? '' : <>Résultat : <strong>{tyo.type === 'circulaire' ? 'orbite circulaire' : tyo.type === 'impact' ? 'retombe sur la Terre' : tyo.type === 'ellipse' ? 'orbite allongée (ellipse)' : 'quitte la Terre'}</strong></>}</span></div>
-      <div style={{ marginTop: 4, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>À {h} km : g = <strong>{fr(gAlt(h), 2)} N/kg</strong> (au sol {fr(G0, 2)} N/kg)
-        {!(enDefi && defi.type === 'orbite') && <> · vitesse d’une orbite circulaire : <strong>{km(vOrb(h))}</strong> · un tour : <strong>{fr(periode(h) / 60, 0)} min</strong></>}</div>
+        <span style={{ fontSize: 14, color: KIT.txt }}>{enDefi && defi.type === 'orbite' ? '' : montreRes && <>Résultat : <strong>{tyo.type === 'circulaire' ? 'orbite circulaire' : tyo.type === 'impact' ? 'retombe sur la Terre' : tyo.type === 'ellipse' ? 'orbite allongée (ellipse)' : 'quitte la Terre'}</strong></>}</span></div>}
+      {(!enGuide || etapeId !== 'question') && <div style={{ marginTop: 4, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>À {h} km : g = <strong>{fr(gAlt(h), 2)} N/kg</strong> (au sol {fr(G0, 2)} N/kg)
+        {!enGuide && !(enDefi && defi.type === 'orbite') && <> · vitesse d’une orbite circulaire : <strong>{km(vOrb(h))}</strong> · un tour : <strong>{fr(periode(h) / 60, 0)} min</strong></>}</div>}
     </div>);
   const CabinePanel = (
     <div>
       <Cabine c={cab} t={cab.t} vueCabine={vueCabine}/>
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>Cabine dessinée beaucoup trop grande · <strong style={{ color: C_P }}>P</strong> : poids (force de la Terre) · flèche bleue : force du plancher sur la personne.</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Câble :</span>
-        <button onClick={() => choisirTombe(false)} style={stylePetitBouton(!cab.tombe, '#0b4f94')}>tenu (cabine immobile)</button>
-        <button onClick={() => choisirTombe(true)} style={stylePetitBouton(cab.tombe, '#0b4f94')}>coupé (chute libre)</button>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 6 }}>Balle :</span>
-        <button onClick={() => setCab(c => ({ ...c, lance: false, t: 0, enCours: false }))} style={stylePetitBouton(!cab.lance, '#0369a1')}>lâchée</button>
-        <button onClick={() => setCab(c => ({ ...c, lance: true, t: 0, enCours: false }))} style={stylePetitBouton(cab.lance, '#0369a1')}>lancée vers la droite</button></div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>Cabine dessinée beaucoup trop grande · <span style={{ color: C_P, fontWeight: 700 }}><Vec c="P"/></span> : poids (force de la Terre){montreVue || !enGuide ? <> · <span style={{ color: C_V, fontWeight: 700 }}><Vec c="N"/></span> : force du plancher sur la personne (flèche bleue)</> : ''}.</div>
+      {!enGuide && <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
+        <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>Câble
+          <span style={{ display: 'block', fontSize: 12.5, color: KIT.txt2, fontWeight: 400 }}>Coupé : la cabine tombe avec tout ce qu’elle contient.</span>
+          <select value={cab.tombe ? 'coupe' : 'tenu'} onChange={e => choisirTombe(e.target.value === 'coupe')} aria-label="Câble" style={sel}><option value="tenu">tenu (cabine immobile)</option><option value="coupe">coupé (chute libre)</option></select></label>
+        <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>Balle
+          <span style={{ display: 'block', fontSize: 12.5, color: KIT.txt2, fontWeight: 400 }}>Lâchée sans vitesse, ou lancée vers la droite.</span>
+          <select value={cab.lance ? 'lancee' : 'lachee'} onChange={e => setCab(c => ({ ...c, lance: e.target.value === 'lancee', t: 0, enCours: false }))} aria-label="Balle" style={sel}><option value="lachee">lâchée</option><option value="lancee">lancée vers la droite</option></select></label></div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}>
         <button onClick={experience} style={styleBouton(true, '#16a34a')}>▶ Lancer l’expérience</button><button onClick={remettre} style={styleBouton(false)}>↺ Remettre</button>
-        <button onClick={() => { setVueCabine(v => !v); marque('vue'); }} style={stylePetitBouton(vueCabine, '#7c3aed')}>{vueCabine ? '☑' : '☐'} vue depuis la cabine (référentiel de la cabine)</button></div>
+        {montreVue && <button onClick={() => { setVueCabine(v => !v); marque('vue'); }} style={stylePetitBouton(vueCabine, '#7c3aed')}>{vueCabine ? '☑' : '☐'} vue depuis la cabine (référentiel de la cabine)</button>}</div>
     </div>);
   const planche = (
     <div style={styleBoite}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
+      {enExplore && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Atelier :</span>
-        {[['orbite', '🌍 L’orbite (canon de Newton)'], ['cabine', '🧑‍🚀 Dans la cabine']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>
+        {[['orbite', '🌍 L’orbite (canon de Newton)'], ['cabine', '🧑‍🚀 Dans la cabine']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>}
       {atelier === 'orbite' ? OrbitePanel : CabinePanel}
     </div>);
   const aEssayer = (
