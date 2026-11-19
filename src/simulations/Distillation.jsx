@@ -1,3 +1,4 @@
+import { SchemaMontage, SchemaMassique, SchemaDiagramme, SchemaSimple, SchemaEscalier, SchemaTete } from "./DistillationSchemas";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
@@ -310,48 +311,17 @@ export function SimulationDistillation({ naviguer }) {
     { id: 'regler', titre: 'Régler le vin', focus: ['reglages'],
       retenirTitre: 'À RETENIR : PRINCIPE DE LA DISTILLATION',
       retenir: <>
-        <svg viewBox="0 0 310 160" style={{ width: '100%', maxWidth: 360, display: 'block', margin: '4px auto' }} role="img" aria-label="Montage de distillation : ballon chauffé, colonne à plateaux, condenseur et récepteur du distillat">
-          <circle cx="62" cy="112" r="28" fill="rgba(147,197,253,0.35)" stroke="#475569" strokeWidth="2.5"/>
-          <rect x="52" y="30" width="20" height="58" fill="#fff" stroke="#475569" strokeWidth="2.5"/>
-          <path d="M52,44 H72 M52,58 H72 M52,72 H72" stroke="#7c3aed" strokeWidth="2"/>
-          <path d="M72,36 H92" stroke="#475569" strokeWidth="2.5"/>
-          <path d="M92,36 L192,84" stroke="#475569" strokeWidth="14" strokeLinecap="butt"/>
-          <path d="M92,36 L192,84" stroke="#bfdbfe" strokeWidth="9"/>
-          <path d="M196,86 V104 M188,104 H204" stroke="#475569" strokeWidth="2.5" fill="none"/>
-          <path d="M184,106 L224,106 L232,150 L176,150 Z" fill="rgba(252,165,165,0.4)" stroke="#475569" strokeWidth="2.5"/>
-          <rect x="28" y="145" width="68" height="8" rx="2" fill="#f59e0b" stroke="#b45309"/>
-          <path d="M62,28 V12" stroke="#334155" strokeWidth="2.5"/><circle cx="62" cy="10" r="3" fill="#dc2626"/>
-          <text x="70" y="10" fontSize="8.5" fill="#334155">T<tspan dy="2" fontSize="6.5">tête</tspan></text>
-          <text x="10" y="118" fontSize="8.5" fill="#1d4ed8" textAnchor="start">ballon</text>
-          <text x="82" y="62" fontSize="8.5" fill="#6d28d9">plateaux</text>
-          <text x="148" y="42" fontSize="8.5" fill="#1d4ed8">condenseur</text>
-          <text x="204" y="146" fontSize="8.5" fill="#b91c1c" textAnchor="middle">distillat</text>
-          <text x="62" y="158" fontSize="8" fill="#b45309" textAnchor="middle"> </text>
-        </svg>
+        <SchemaMontage/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>La distillation <strong>sépare les constituants d’un mélange liquide</strong> en exploitant leur <strong>différence de volatilité</strong> : le plus volatil (éthanol, T<sub>éb</sub> = 78 °C ; l’eau bout à 100 °C) passe plus facilement en vapeur.</li>
-          <li><strong>Montage</strong> : le <strong>ballon</strong> (bouilleur) chauffé contient le liquide ; la vapeur monte (éventuellement dans une <strong>colonne</strong> à plateaux), se <strong>condense</strong> dans le condenseur, et le liquide recueilli est le <strong>distillat</strong>. Ce qui reste dans le ballon est le résidu.</li>
-          <li><strong>Distillation simple</strong> : un seul équilibre liquide-vapeur (une marche). <strong>Distillation fractionnée</strong> : une colonne multiplie les équilibres (une marche par plateau).</li>
-          <li>Le mélange n’est pas un corps pur : il bout sur un <strong>intervalle</strong> de température et la vapeur n’a <strong>pas la même composition</strong> que le liquide.</li>
-          <li>Notation : A = composé le plus volatil (éthanol), B = l’autre (eau) ; x (ou x<sup>L</sup>) pour le liquide, y (ou x<sup>V</sup>) pour la vapeur.</li>
+          <li>La distillation <strong>sépare les constituants d’un mélange liquide</strong> grâce à leur <strong>différence de volatilité</strong> : le plus volatil (éthanol, T<sub>éb</sub> = 78 °C ; l’eau bout à 100 °C) passe plus facilement en vapeur.</li>
+          <li><strong>Montage</strong> : le ballon chauffé, éventuellement une colonne à plateaux, le condenseur, puis le <strong>distillat</strong> recueilli.</li>
+          <li>Un mélange bout sur un <strong>intervalle</strong> de température et la vapeur n’a <strong>pas la même composition</strong> que le liquide.</li>
+          <li>Notation : A = composé le plus volatil (éthanol), B = l’autre (eau) ; x pour le liquide, y pour la vapeur.</li>
         </ul>
       </>,
       texte: <>Un vin à 12° a pour fraction molaire en éthanol <strong><Xi e="L"/> = 0,040</strong>. On commence par une <strong>distillation simple</strong> (aucun plateau, N = 0).</>,
       tache: { type: 'action', ok: reglageEW && N === 0 && f === 0, label: 'Régler le vin, distillation simple', faire: () => regler('ew', 0.04, 0), consigne: reglageEW && N === 0 && f === 0 ? null : 'Cliquez pour régler le mélange eau – éthanol, x = 0,040 et N = 0' } },
     { id: 'massique', titre: 'Fraction molaire ou fraction massique ?', focus: [],
-      retenirTitre: 'À RETENIR : FRACTION MOLAIRE ET FRACTION MASSIQUE',
-      retenir: <>
-        <Formule><msub><mi>w</mi><mi>A</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mi>A</mi></msub><mo>×</mo><msub><mi>M</mi><mi>A</mi></msub></mrow><mrow><msub><mi>x</mi><mi>A</mi></msub><mo>×</mo><msub><mi>M</mi><mi>A</mi></msub><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><msub><mi>x</mi><mi>A</mi></msub><mo>)</mo><mo>×</mo><msub><mi>M</mi><mi>B</mi></msub></mrow></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>x</strong> compte des <strong>molécules</strong> (fraction molaire) ; <strong>w</strong> compte des <strong>masses</strong> (fraction massique). Les deux sont sans unité, entre 0 et 1.</li>
-          <li><strong>Méthode :</strong> raisonner sur 1 mol de mélange : masse de A = x × M<sub>A</sub> ; masse de B = (1 − x) × M<sub>B</sub> ; w<sub>A</sub> = masse de A / masse totale.</li>
-          <li>M<sub>A</sub> = 46 g·mol⁻¹ (éthanol) ; M<sub>B</sub> = 18 g·mol⁻¹ (eau).</li>
-          <li><strong>Exemple :</strong> x<sub>A</sub> = 0,10 : 0,10 × 46 = 4,6 g d’éthanol ; 0,90 × 18 = 16,2 g d’eau ; w<sub>A</sub> = 4,6 / 20,8 ≈ 0,22.</li>
-          <li>L’éthanol est plus lourd que l’eau : w<sub>A</sub> &gt; x<sub>A</sub>. <strong>Ne pas confondre w et x.</strong></li>
-          <li>Le <strong>degré alcoolique</strong> d’une boisson est une troisième grandeur : c’est un pourcentage en <strong>volume</strong>, ni x ni w.</li>
-          <li><strong>Pièges :</strong> garder la fraction molaire ; inverser M<sub>A</sub> et M<sub>B</sub> ; oublier de diviser par la masse totale.</li>
-        </ul>
-      </>,
       texte: <>
         <p style={{ margin: '0 0 8px' }}><Xi e="L"/> = 0,040 est une fraction <strong>molaire</strong> : 4 molécules d’éthanol pour 100 molécules. Mais l’éthanol (M<sub>A</sub> = 46 g·mol⁻¹) est plus lourd que l’eau (M<sub>B</sub> = 18 g·mol⁻¹). La fraction <strong>massique</strong> est donc plus grande :</p>
         <div style={{ textAlign: 'center', fontSize: 16, margin: '4px 0 8px' }}>w<sub>A</sub> = <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', verticalAlign: 'middle' }}><span style={{ borderBottom: '1.5px solid #0f172a', padding: '0 4px' }}>x<sub>A</sub> × M<sub>A</sub></span><span style={{ padding: '0 4px' }}>x<sub>A</sub> × M<sub>A</sub> + (1 − x<sub>A</sub>) × M<sub>B</sub></span></span></div>
@@ -370,6 +340,16 @@ export function SimulationDistillation({ naviguer }) {
           [wDe({ MA: MELANGES.ew.MB, MB: MELANGES.ew.MA }, G.x), 'Masses molaires inversées : M_A = 46 g·mol⁻¹ est celle de l’éthanol (A), M_B = 18 g·mol⁻¹ celle de l’eau (B).']],
         expl: <>w<sub>A</sub> = 1,84 / (1,84 + 17,28) ≈ 0,0962 : environ 9,6 % de la masse du vin est de l’éthanol. Ne pas confondre w et x !</> } },
     { id: 'ebullition', titre: 'La température d’ébullition du mélange', focus: ['diagramme'],
+      retenirTitre: 'À RETENIR : FRACTION MOLAIRE ET MASSIQUE',
+      retenir: <>
+        <SchemaMassique/>
+        <Formule><msub><mi>w</mi><mi>A</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mi>A</mi></msub><mo>×</mo><msub><mi>M</mi><mi>A</mi></msub></mrow><mrow><msub><mi>x</mi><mi>A</mi></msub><mo>×</mo><msub><mi>M</mi><mi>A</mi></msub><mo>+</mo><mo stretchy="false">(</mo><mn>1</mn><mo>−</mo><msub><mi>x</mi><mi>A</mi></msub><mo stretchy="false">)</mo><mo>×</mo><msub><mi>M</mi><mi>B</mi></msub></mrow></mfrac></Formule>
+        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+          <li><strong>x</strong> compte des molécules, <strong>w</strong> compte des masses. M<sub>A</sub> = 46 g·mol⁻¹ (éthanol), M<sub>B</sub> = 18 g·mol⁻¹ (eau).</li>
+          <li><strong>Exemple</strong> : x<sub>A</sub> = 0,10 : 4,6 g d’éthanol et 16,2 g d’eau ; w<sub>A</sub> = 4,6 / 20,8 ≈ 0,22.</li>
+          <li>Le <strong>degré alcoolique</strong> est une troisième grandeur : un pourcentage en <strong>volume</strong>.</li>
+        </ul>
+      </>,
       texte: <>Le diagramme donne la température en fonction de la composition. La <strong style={{ color: '#2563eb' }}>courbe d’ébullition</strong> (bleue) donne la température à laquelle un <strong>liquide</strong> de composition x commence à bouillir. Le point bleu, c’est le liquide du ballon (x = 0,040). Lisez sa température.</>,
       tache: { type: 'num', q: 'Température d’ébullition commençante du vin', unite: '°C', vrai: G.Teb, tol: 0.02, affiche: x => nf(x, 1),
         bloque: reglageEW && f === 0 ? null : 'Réglez d’abord le vin (étape précédente).',
@@ -388,15 +368,12 @@ export function SimulationDistillation({ naviguer }) {
       tache: { type: 'qcm', q: 'La vapeur formée est…', options: ['plus riche en composé le plus volatil que le liquide', 'de même composition que le liquide', 'plus riche en eau que le liquide'], bonne: 0,
         expl: 'La vapeur est enrichie en composé volatil. Si on la condense, on obtient un liquide plus riche en éthanol que le vin de départ. Mais pas de l’éthanol pur !', indice: "Comparez les abscisses des deux courbes à une même température." } },
     { id: 'chauffer', titre: 'Chauffer : distillation simple', focus: ['reglages', 'courbes'],
-      retenirTitre: 'À RETENIR : LA DISTILLATION SIMPLE',
+      retenirTitre: 'À RETENIR : LIRE LE DIAGRAMME',
       retenir: <>
+        <SchemaDiagramme/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Lecture sur le diagramme</strong> : la température d’ébullition commençante du liquide se lit sur la <strong>courbe d’ébullition</strong> ; la composition de la première vapeur se lit <strong>à l’horizontale</strong>, sur la <strong>courbe de rosée</strong>. La vapeur est plus riche en éthanol que le liquide.</li>
-          <li>La vapeur est <strong>enrichie</strong> en éthanol, mais <strong>jamais pure</strong> : une seule marche de l’escalier.</li>
-          <li>En chauffant, on prélève surtout de l’éthanol : le ballon <strong>s’appauvrit en éthanol</strong>, donc sa <strong>température d’ébullition monte</strong> vers celle de l’eau.</li>
-          <li>Le <strong>distillat instantané</strong> (vapeur de tête) s’appauvrit lui aussi au fil de la distillation ; le <strong>distillat cumulé</strong> est un mélange de tout ce qui a été recueilli.</li>
-          <li>Les courbes d’évolution sont tracées en fonction de la <strong>fraction de matière distillée</strong>, pas du temps (le temps dépend de la puissance de chauffe).</li>
-          <li><strong>Hypothèses :</strong> pression constante de 1,013 bar ; mélange binaire (sucres et arômes négligés) ; composition du ballon uniforme ; petit débit de distillat.</li>
+          <li>La température d’ébullition commençante du liquide se lit sur la <strong>courbe d’ébullition</strong>.</li>
+          <li>La composition de la première vapeur se lit <strong>à l’horizontale</strong>, sur la <strong>courbe de rosée</strong> : plus riche en éthanol que le liquide, mais <strong>jamais pure</strong>.</li>
         </ul>
       </>,
       texte: <>On chauffe jusqu’à avoir distillé 10 % de la quantité de matière. Appuyez sur « ▶ Chauffer » dans le panneau de réglages, ou cliquez ci-dessous. Surveillez la température du ballon et la composition du distillat instantané.</>,
@@ -406,14 +383,14 @@ export function SimulationDistillation({ naviguer }) {
       tache: { type: 'qcm', q: 'Au cours d’une distillation simple…', options: ['la température du ballon augmente et le distillat s’appauvrit en éthanol', 'la température du ballon reste constante et le distillat reste identique', 'la température du ballon diminue et le distillat devient pur'], bonne: 0,
         expl: 'Le liquide s’appauvrit en composé volatil, donc sa température d’ébullition monte vers celle de l’eau. La vapeur (donc le distillat) contient de moins en moins d’éthanol. Le composé volatil pur n’est jamais obtenu en distillation simple.', indice: "Le liquide s’appauvrit en composé volatil : que devient alors sa température d’ébullition ?" } },
     { id: 'plateaux', titre: 'Ajouter une colonne : 2 plateaux', focus: ['reglages', 'appareil'],
-      retenirTitre: 'À RETENIR : LA DISTILLATION FRACTIONNÉE',
+      retenirTitre: 'À RETENIR : LA DISTILLATION SIMPLE',
       retenir: <>
+        <SchemaSimple/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>À chaque plateau</strong>, la vapeur <strong>se condense</strong> (le liquide a la composition de la vapeur), puis ce liquide <strong>se revaporise</strong> en donnant une vapeur <strong>plus riche</strong> en éthanol. Chaque plateau = une marche de l’escalier.</li>
-          <li>Avec N plateaux, la vapeur de tête est de plus en plus riche : plus N est grand, meilleure est la séparation.</li>
-          <li><strong>Limite : l’azéotrope.</strong> Avec N = ∞, l’escalier s’arrête au point où les deux courbes se touchent : la vapeur a la même composition que le liquide, plus aucun enrichissement n’est possible.</li>
-          <li><strong>Eau – éthanol</strong> : l’azéotrope est vers x = 0,90 (environ 95° en degré alcoolique). On n’obtient pas d’éthanol pur par distillation à pression atmosphérique.</li>
-          <li><strong>Hypothèses :</strong> plateaux <strong>théoriques</strong> (l’équilibre liquide-vapeur est atteint à chaque étage), reflux total, rétention de liquide négligeable. Une vraie colonne dépend de son garnissage, de sa hauteur et du chauffage ; trop chauffer détruit l’équilibre.</li>
+          <li>Une seule « marche » : le distillat est enrichi en éthanol, mais jamais pur.</li>
+          <li>En chauffant, le ballon <strong>s’appauvrit en éthanol</strong> : sa <strong>température d’ébullition monte</strong> vers celle de l’eau, et le distillat s’appauvrit lui aussi.</li>
+          <li>Courbes tracées en fonction de la <strong>fraction de matière distillée</strong>, pas du temps.</li>
+          <li><strong>Hypothèses</strong> : pression constante (1,013 bar), mélange binaire, composition du ballon uniforme, petit débit de distillat.</li>
         </ul>
       </>,
       texte: <>Dans une <strong>distillation fractionnée</strong>, la vapeur monte dans une colonne. À chaque plateau elle <strong>se condense</strong> (le liquide a la composition de la vapeur), puis ce liquide <strong>se revaporise</strong> en donnant une vapeur encore plus riche. Chaque plateau est une marche de l’escalier violet. Réglez N = 2 plateaux, sans chauffer (quantité distillée nulle).</>,
@@ -435,33 +412,28 @@ export function SimulationDistillation({ naviguer }) {
           [G.y2, 'C’est la valeur pour N = 2 plateaux. Avec une colonne infiniment haute, l’escalier monte jusqu’à l’azéotrope.']],
         expl: 'x_A^V ≈ 0,90 (soit environ 95° en degré alcoolique) : on ne dépasse pas l’azéotrope. Une distillation fractionnée à pression atmosphérique ne donne pas d’éthanol pur à partir d’un mélange eau – éthanol.', indice: "Avec une infinité de marches, l’enrichissement s’arrête en un point particulier du diagramme." } },
     { id: 'tete75', titre: 'Contrôler le distillat par la température de tête', focus: ['diagramme'],
-      retenirTitre: 'À RETENIR : CONTRÔLER LE DISTILLAT',
+      retenirTitre: 'À RETENIR : COLONNE ET AZÉOTROPE',
       retenir: <>
+        <SchemaEscalier/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>En tête de colonne, la vapeur a la composition y du distillat. Sa <strong>température</strong> se lit sur la <strong>courbe de rosée</strong>, à cette composition.</li>
-          <li>Le thermomètre de tête sert donc à <strong>contrôler la qualité du distillat</strong> : si T<sub>tête</sub> dépasse la valeur correspondant à la composition visée, la vapeur est moins riche en éthanol et le distillat est trop dilué.</li>
-          <li>Passer du <strong>degré alcoolique</strong> visé à la fraction molaire demande une conversion (volume → masse → mole) ; la simulation donne la correspondance.</li>
-          <li><strong>Limites du modèle :</strong> courbes ajustées sur des mesures de la littérature (précision environ 1 °C et 0,01 en fraction molaire pour eau – éthanol). Une lecture graphique a une incertitude de cet ordre.</li>
-          <li>En pratique, même sans colonne, la tête est plus froide que le ballon ; ici, sans pertes thermiques, T<sub>tête</sub> = T<sub>ballon</sub> en distillation simple.</li>
+          <li><strong>À chaque plateau</strong>, la vapeur se condense puis se revaporise en donnant une vapeur <strong>plus riche</strong> en éthanol : un plateau = une marche de l’escalier. Plus N est grand, meilleure est la séparation.</li>
+          <li><strong>Limite : l’azéotrope</strong>, où les deux courbes se touchent : la vapeur a la même composition que le liquide. Eau – éthanol : x ≈ 0,90, environ 95° en degré alcoolique : pas d’éthanol pur à pression atmosphérique.</li>
+          <li><strong>Hypothèses</strong> : plateaux théoriques, reflux total ; une vraie colonne dépend de son garnissage et de son chauffage.</li>
         </ul>
       </>,
       texte: <>Pour un distillat d’au moins 75° (environ <Xi e="V"/> = 0,48 en éthanol), quelle température ne faut-il pas dépasser en tête de colonne ? Lisez-la sur la <strong>courbe de rosée</strong>, pour <Xi e="V"/> = 0,48.</>,
       tache: { type: 'num', q: 'Température maximale en tête de colonne', unite: '°C', vrai: G.T75, tol: 0.012, affiche: x => nf(x, 1),
         pieges: [[91.7, 'C’est la température du liquide dans le ballon. On cherche la température en tête, pour une vapeur à 48 %.']],
         expl: 'Environ 85 °C. Si le thermomètre de tête dépasse cette valeur, les vapeurs qui arrivent sont moins riches en éthanol que 48 % : le distillat est trop dilué.', indice: "En tête, la vapeur a la composition limite : lisez sa température sur la courbe d’ébullition." } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'À RETENIR : CONTRÔLER LE DISTILLAT ET BILAN',
       retenir: <>
-        <ol style={{ margin: 0, paddingLeft: 20, lineHeight: 1.6 }}>
-          <li><strong>Repérer</strong> le composé le plus volatil (A) et la composition du ballon.</li>
-          <li><strong>Lire</strong> sur le diagramme : T d’ébullition (courbe d’ébullition), y à l’horizontale (courbe de rosée).</li>
-          <li><strong>Distillation simple</strong> : une marche, distillat enrichi mais jamais pur ; le ballon s’appauvrit et sa T monte.</li>
-          <li><strong>Distillation fractionnée</strong> : une marche par plateau ; limite = azéotrope (eau – éthanol : x ≈ 0,90).</li>
-          <li><strong>Convertir</strong> au besoin : w = x·M<sub>A</sub> / (x·M<sub>A</sub> + (1 − x)·M<sub>B</sub>).</li>
-        </ol>
+        <SchemaTete/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Liquide et vapeur n’ont pas la même composition (x ≠ y) ; la vapeur est plus riche en composé volatil.</li>
-          <li><strong>Hypothèses :</strong> pression constante, mélange binaire, plateaux théoriques, reflux total.</li>
-          <li><strong>Pièges :</strong> x confondu avec w ; courbes d’ébullition et de rosée échangées ; croire qu’avec assez de plateaux on obtient de l’éthanol pur.</li>
+          <li>En tête de colonne, la <strong>température</strong> se lit sur la courbe de rosée à la composition du distillat : le thermomètre de tête <strong>contrôle la qualité du distillat</strong>.</li>
+          <li>Bilan : repérer le composé volatil A ; lire T d’ébullition (courbe d’ébullition) et y à l’horizontale (courbe de rosée) ; simple = une marche, fractionnée = une marche par plateau, limite = azéotrope.</li>
+          <li><strong>Pièges</strong> : confondre x et w ; échanger les deux courbes ; croire qu’avec assez de plateaux on obtient de l’éthanol pur.</li>
+          <li>Courbes ajustées sur des mesures de la littérature : précision environ 1 °C et 0,01 en fraction molaire.</li>
         </ul>
       </>,
       texte: <>Vous savez lire un diagramme binaire isobare, distinguer liquide et vapeur, fractions molaires et massiques, et expliquer la différence entre distillation simple et fractionnée. En exploration libre, essayez le mélange benzène – toluène (sans azéotrope) et chloroforme – acétone (azéotrope à maximum).</>, tache: null },
