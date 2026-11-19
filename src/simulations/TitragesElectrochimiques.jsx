@@ -2,6 +2,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { useState, useEffect, useRef, useMemo } from "react";
 import { TabBtn, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, fmt, lireNombre, proche, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
+import { FicheCourbeIE, FicheNernst, FicheSaut, FicheCourantImpose, FicheBiamperometrie, FicheCoupleLent, FicheChoixMethode } from "./TitragesElectrochimiquesFiches";
 
 const SIM_ID = 3;
 declarerDefis(SIM_ID, [['principal', 'Lire les courbes et choisir la méthode']]);
@@ -631,14 +632,14 @@ function ExplorationElectro({ plotlyReady }) {
 // ════════════════════════════════════════════════════════════════
 //  PARCOURS GUIDÉ
 // ════════════════════════════════════════════════════════════════
-function ParcoursElectro({ plotlyReady, changerMode }) {
-  const [guide, setGuide] = useEtatPersistant("electro-guide-v1", { etape: 0, reps: {}, verifs: {}, reussies: {} });
-  const [e, setE] = useState(ETAT_VUE);
+function ParcoursElectroInterne({ plotlyReady, changerMode, parc }) {
+  const [guide, setGuide] = useEtatPersistant(parc === 1 ? "electro-guide-v1" : "electro-guide-p2", { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const [e, setE] = useState(parc === 2 ? { ...ETAT_VUE, showReactions: true } : ETAT_VUE);
   const set = f => setE(s => ({ ...s, ...f }));
   const etape = guide.etape;
   const pres = (v, c, t = 0.03) => Math.abs(v - c) <= t;
   const placer = (c, lib) => ({ label: `Placer x = ${lib}`, faire: () => set({ x: c }) });
-  const ETAPES = [
+  const TOUTES = [
     { id: "principe", titre: "Le titrage étudié", focus: [],
       texte: <>On titre des ions Fe²⁺ (dans le bécher) par une solution d’ions Ce⁴⁺ (dans la burette). L’avancement <strong>x</strong> du titrage est la quantité de Ce⁴⁺ versée rapportée à la quantité initiale de Fe²⁺ : x = 0 au départ, x = 1 à l’équivalence, x &gt; 1 après. Ici, on suit le titrage grâce aux <strong>courbes courant-potentiel</strong> i = f(E).</>,
       tache: { type: "qcm", q: "Quelle est la réaction support du titrage ?", options: ["Fe²⁺ + Ce⁴⁺ → Fe³⁺ + Ce³⁺", "Fe³⁺ + Ce³⁺ → Fe²⁺ + Ce⁴⁺", "Fe²⁺ + Ce³⁺ → Fe³⁺ + Ce²⁺"], bonne: 0,
@@ -648,7 +649,6 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
       tache: { type: "qcm", q: "Un point de la courbe situé au-dessous de l’axe (i < 0) correspond à…", options: ["une réduction à l’électrode", "une oxydation à l’électrode", "l’absence de réaction"], bonne: 0,
         expl: "Par convention, un courant anodique (i > 0) correspond à une oxydation, un courant cathodique (i < 0) à une réduction.", indice: "Par convention, un courant positif correspond à une oxydation à l’électrode. Que correspond alors un courant négatif ?" } },
     { id: "solvant", titre: "Le domaine d’inertie électrochimique", focus: ["ie"],
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>i &gt; 0 : <strong>oxydation</strong> (courant anodique) ; i &lt; 0 : <strong>réduction</strong> (courant cathodique)</li><li>entre les deux « murs » du solvant (eau), on observe les espèces dissoutes : domaine d’inertie électrochimique</li><li>chaque couple donne une <strong>vague</strong> terminée par un <strong>palier</strong> de diffusion, proportionnel à la concentration</li></ul>,
       texte: <>Aux potentiels très faibles (vers 0 V/ESH) et très élevés (vers 1,7 V/ESH), le courant augmente brutalement même sans espèce dissoute supplémentaire.</>,
       tache: { type: "qcm", q: "À quoi sont dues ces deux montées de courant ?", options: ["À la réduction (vers 0 V) et à l’oxydation (vers 1,7 V) du solvant, l’eau", "À la présence d’ions Ce⁴⁺", "À un défaut de l’électrode"], bonne: 0,
         expl: "Entre ces deux « murs », le solvant est électrochimiquement inerte : c’est le domaine de potentiel où l’on peut observer les espèces dissoutes.", indice: "Quelle espèce est présente en très grande quantité dans la solution et peut être oxydée ou réduite aux potentiels extrêmes ?" } },
@@ -656,6 +656,7 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
       texte: <>Lisez l’encadré « Hypothèses de travail ». Les courbes sont constituées de <strong>vagues</strong> qui se terminent par un <strong>palier</strong> : le courant limite de diffusion.</>,
       tache: { type: "qcm", q: "Pourquoi le courant atteint-il un palier ?", options: ["Le courant est limité par l’arrivée de l’espèce à l’électrode, par diffusion ; il est proportionnel à sa concentration", "L’électrode est saturée de platine", "Le générateur ne peut pas fournir plus de courant"], bonne: 0, indice: "Quand l’électrode consomme l’espèce plus vite qu’elle n’arrive, qu’est-ce qui limite le courant ?" } },
     { id: "x0", titre: "Au départ : x = 0", focus: ["ie", "x"], vue: { slider: true },
+      retenirTitre: "À RETENIR : LIRE UNE COURBE i = f(E)", retenir: <FicheCourbeIE/>,
       texte: <>Le curseur de <strong>x</strong> apparaît. À x = 0, le bécher ne contient que des ions Fe²⁺.</>,
       tache: { type: "qcm", q: "Que représente la vague (montée de courant positif) vers 0,68 V ?", options: ["L’oxydation de Fe²⁺ en Fe³⁺", "La réduction de Fe³⁺ en Fe²⁺", "L’oxydation de l’eau"], bonne: 0,
         expl: "Elle est centrée sur le potentiel standard apparent du couple Fe³⁺/Fe²⁺ (0,68 V/ESH). Il n’y a pas de vague de réduction : il n’y a pas encore de Fe³⁺.", indice: "Courant positif = oxydation. Quelle espèce du couple Fe³⁺/Fe²⁺ peut être oxydée ?" } },
@@ -679,11 +680,11 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
       texte: <>En potentiométrie à <strong>i = 0</strong>, une électrode de platine et une électrode de référence, reliées à un voltmètre de très grande résistance, ne laissent passer aucun courant. Le potentiel mesuré est celui pour lequel la courbe i = f(E) coupe l’axe i = 0 (point noir). Observez comment il évolue avec x (courbe E = f(x) en dessous). Placez x = 0,75.</>,
       tache: { type: "action", ok: pres(e.x, 0.75), ...placer(0.75, "0,75"), consigne: "Placez x à 0,75 (à 0,03 près)." } },
     { id: "pot0q", titre: "Évolution du potentiel", focus: ["suivi", "ie"], vue: { slider: true, reactions: true, suivi: true },
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>loi de Nernst : E = E°′ + (0,06 / n) · log([Ox]/[Red]) (en V, à 25 °C ; n = nombre d’électrons échangés)</li><li>à i = 0, le potentiel mesuré est celui du couple présent ; il augmente avec [Ox]/[Red]</li></ul>,
       texte: <>Le potentiel d’équilibre d’un couple dépend du rapport [Ox]/[Red] (loi de Nernst).</>,
       tache: { type: "qcm", q: "Quand x passe de 0,25 à 0,75, le potentiel mesuré (point noir sur l’axe i = 0)…", options: ["augmente", "diminue", "reste constant"], bonne: 0,
         expl: "Le rapport [Fe³⁺]/[Fe²⁺] augmente, donc E = E°′ + 0,06·log([Fe³⁺]/[Fe²⁺]) augmente.", indice: "Pensez à la relation de Nernst : le potentiel dépend du rapport [oxydant]/[réducteur] du couple du fer. Que devient ce rapport quand on verse du Ce⁴⁺ ?" } },
     { id: "equiv", titre: "À l’équivalence", focus: ["x", "ie"], vue: { slider: true, reactions: true, suivi: true },
+      retenirTitre: "À RETENIR : LE POTENTIEL À COURANT NUL", retenir: <FicheNernst/>,
       texte: <>Amenez x au voisinage de 1. Tout le Fe²⁺ a été oxydé en Fe³⁺, et tout le Ce⁴⁺ versé a été réduit en Ce³⁺.</>,
       tache: { type: "action", ok: pres(e.x, 1, 0.02), ...placer(1, "1"), consigne: "Placez x entre 0,98 et 1,02." } },
     { id: "especes", titre: "Que reste-t-il ?", focus: ["ie"], vue: { slider: true, reactions: true, suivi: true },
@@ -691,7 +692,6 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
       tache: { type: "qcm", q: "Quelles espèces électroactives sont présentes à l’équivalence ?", options: ["Fe³⁺ (réductible) et Ce³⁺ (oxydable)", "Fe²⁺ et Ce⁴⁺", "Fe²⁺ et Fe³⁺"], bonne: 0,
         expl: "La réaction du titrage est quasi totale : il ne reste ni titré (Fe²⁺) ni titrant (Ce⁴⁺), seulement les produits Fe³⁺ et Ce³⁺. Entre les deux vagues, le courant est presque nul sur une large plage de potentiels.", indice: "À l’équivalence, les deux réactifs ont été consommés. Quelles espèces se sont formées ?" } },
     { id: "saut", titre: "Le saut de potentiel", focus: ["suivi"], vue: { slider: true, reactions: true, suivi: true },
-      retenir: <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>à l’équivalence de la potentiométrie à i = 0 : <strong>saut de potentiel</strong> ; l’équivalence est le milieu du saut (tangentes)</li><li>à l’équivalence : il ne reste que des traces de Fe²⁺ et de Ce⁴⁺ ; les espèces présentes sont essentiellement Fe³⁺ et Ce³⁺</li></ul>,
       texte: <>Faites varier x un peu avant puis un peu après l’équivalence (par exemple de 0,98 à 1,02) en regardant la courbe E = f(x) et le point noir.</>,
       tache: { type: "qcm", q: "Comment repère-t-on l’équivalence sur la courbe E = f(x) ?", options: ["Par un saut brusque de potentiel de plusieurs centaines de mV", "Par un minimum du potentiel", "Par un palier horizontal"], bonne: 0,
         expl: "Le potentiel passe d’une valeur imposée par le couple Fe³⁺/Fe²⁺ à une valeur imposée par Ce⁴⁺/Ce³⁺. L’équivalence est le milieu du saut (méthode des tangentes ou dérivée).", indice: "Regardez comment varie E autour de x = 1 : lentement, ou très brutalement ?" } },
@@ -706,6 +706,7 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
       tache: { type: "qcm", q: "Pourquoi ΔE devient-elle très grande à l’équivalence ?", options: ["Il ne reste plus de couple dont les deux formes sont présentes : l’anode et la cathode utilisent deux couples différents (ou le solvant), à des potentiels éloignés", "Le courant imposé augmente", "Les électrodes se polarisent à cause du dépôt de platine"], bonne: 0,
         expl: "À l’équivalence, il faut oxyder Ce³⁺ (vers 1,4 V) à l’anode et réduire Fe³⁺ (vers 0,7 V) à la cathode : ΔE saute de quelques mV à plusieurs centaines de mV.", indice: "À l’équivalence, plus aucun couple n’a ses deux formes présentes : anode et cathode doivent utiliser deux couples différents." } },
     { id: "ampero", titre: "Ampérométrie à tension imposée", focus: ["modes", "delta"], vue: { slider: true, reactions: true, suivi: true, modes: true, schema: true },
+      retenirTitre: "À RETENIR : LE COURANT IMPOSÉ", retenir: <FicheCourantImpose/>,
       texte: <>Troisième méthode (biampérométrie) : on impose cette fois une <strong>petite tension ΔE</strong> (100 mV) entre deux électrodes identiques et on mesure le <strong>courant</strong>. Choisissez ce mode, avec ΔE = 100 mV et x = 0,5.</>,
       tache: { type: "action", ok: e.mode === "ampero" && e.deltaEmV === 100 && pres(e.x, 0.5, 0.1), label: "Mode ampérométrie, x = 0,5", faire: () => set({ mode: "ampero", deltaEmV: 100, x: 0.5 }), consigne: "Choisissez « Ampérométrie », ΔE = 100 mV, x entre 0,4 et 0,6." } },
     { id: "amperoAvant", titre: "Un courant circule", focus: ["ie"], vue: { slider: true, reactions: true, suivi: true, modes: true, schema: true },
@@ -720,6 +721,7 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
       tache: { type: "qcm", q: "Quelle est l’allure de la courbe i = f(x) ?", options: ["Elle monte, puis diminue jusqu’à zéro à x = 1, puis remonte", "Elle augmente puis reste constante", "Elle présente un saut brusque à x = 1"], bonne: 0,
         expl: "Avant l’équivalence, le courant est limité par l’espèce la moins concentrée du couple Fe (Fe²⁺ puis Fe³⁺) ; après, par celle du couple Ce. Il est nul quand aucun couple n’a ses deux formes.", indice: "Le courant est limité par la plus petite des deux quantités (forme oxydée ou réduite) : suivez-la avant, à, puis après x = 1." } },
     { id: "deltaTrop", titre: "Choisir ΔE", focus: ["delta", "ie"], vue: { slider: true, reactions: true, suivi: true, modes: true, schema: true },
+      retenirTitre: "À RETENIR : LA BIAMPÉROMÉTRIE", retenir: <FicheBiamperometrie/>,
       texte: <>Que se passe-t-il si l’on impose une tension plus grande ? Placez ΔE à 800 mV et x à 1.</>,
       tache: { type: "action", ok: e.mode === "ampero" && e.deltaEmV >= 700 && pres(e.x, 1, 0.02), label: "ΔE = 800 mV, x = 1", faire: () => set({ mode: "ampero", deltaEmV: 800, x: 1 }), consigne: "Choisissez ΔE ≥ 700 mV et x entre 0,98 et 1,02." } },
     { id: "deltaTropQ", titre: "Une tension trop grande", focus: ["ie", "suivi"], vue: { slider: true, reactions: true, suivi: true, modes: true, schema: true },
@@ -734,6 +736,7 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
       tache: { type: "qcm", q: "Comment se déforment les vagues d’un couple lent ?", options: ["Elles s’écartent : l’oxydation a lieu à un potentiel plus élevé que E°′ et la réduction à un potentiel plus bas, et elles s’étalent", "Elles se rapprochent de E°′", "Leur palier devient plus haut"], bonne: 0,
         expl: "Le courant limite (hauteur du palier) ne change pas, mais il faut une surtension η pour l’atteindre. Avec ΔE = 100 mV < 2η, les deux électrodes ne peuvent pas atteindre simultanément les vagues d’oxydation et de réduction : le courant est quasi nul.", indice: "Un couple lent a besoin d’un excès de potentiel (surtension) pour réagir, dans chaque sens." } },
     { id: "lent3", titre: "Potentiométrie avec un couple lent", focus: ["suivi", "schema"], vue: { slider: true, reactions: true, suivi: true, modes: true, schema: true, lent: true, lentChoix: ["fe"], etaSlider: false },
+      retenirTitre: "À RETENIR : UN COUPLE LENT", retenir: <FicheCoupleLent/>,
       texte: <>Passez en mode « Potentiométrie i = 0 », avec x = 0,5, et observez la courbe E = f(x) : une plage orangée apparaît.</>,
       tache: { type: "action", ok: e.lent === "fe" && e.mode === "pot0" && pres(e.x, 0.5, 0.1), label: "Mode i = 0, x = 0,5", faire: () => set({ mode: "pot0", x: 0.5 }), consigne: "Mode « Potentiométrie i = 0 », x entre 0,4 et 0,6, couple Fe lent." } },
     { id: "lent3q", titre: "Un potentiel mal défini", focus: ["suivi", "ie"], vue: { slider: true, reactions: true, suivi: true, modes: true, schema: true, lent: true, lentChoix: ["fe"], etaSlider: false },
@@ -744,13 +747,18 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
       texte: <>Vous devez titrer un réducteur dont le couple est <strong>lent</strong> avec un titrant dont le couple est rapide. Les courbes i = f(E) montrent que ce couple ne donne du courant que si l’on impose une surtension.</>,
       tache: { type: "qcm", q: "Quelle méthode est la moins adaptée ?", options: ["La potentiométrie à courant nul", "La potentiométrie à courant imposé", "L’ampérométrie à tension imposée, avec ΔE supérieure à l’écart entre les vagues du couple lent"], bonne: 0,
         expl: "En imposant un courant ou une tension suffisante, on force le passage du courant malgré la lenteur du couple. À i = 0, aucune de ces contraintes ne s’exerce.", indice: "Éliminez la méthode qui a besoin d’un potentiel bien défini à courant nul alors que le couple est lent." } },
-    { id: "bravo", titre: "Bravo !", focus: [],
+    { id: "bilan1", titre: "Le bilan", focus: [], retenirTitre: "À RETENIR : LE SAUT DE POTENTIEL", retenir: <FicheSaut/>,
+      texte: <>Vous savez lire une courbe i = f(E) et repérer l’équivalence par le saut de potentiel à courant nul. Le deuxième parcours traite le courant imposé, la tension imposée et les couples lents.</>, tache: null },
+    { id: "bilan2", titre: "Le bilan", focus: [], retenirTitre: "À RETENIR : CHOISIR LA MÉTHODE", retenir: <FicheChoixMethode/>,
       texte: <>Vous savez relier les courbes i = f(E) aux trois méthodes de titrage, et justifier le choix d’un courant ou d’une tension imposés. Retournez en exploration libre pour tester les deux couples lents et toutes les valeurs de ΔE, ou relevez le défi.</>, tache: null },
   ];
+  const ORDRE = [["principe", "axe", "solvant", "hypo", "x0", "x25", "ratio", "reactions", "lecture", "pot0", "pot0q", "equiv", "especes", "saut", "bilan1"],
+    ["courant", "courantAvant", "courantEq", "ampero", "amperoAvant", "amperoEq", "forme", "deltaTrop", "deltaTropQ", "lent1", "lent2", "lent3", "lent3q", "choix", "bilan2"]];
+  const ETAPES = ORDRE[parc - 1].map(id => TOUTES.find(x => x.id === id));
   const idx = id => ETAPES.findIndex(s => s.id === id);
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   // les éléments de l'interface apparaissent au fur et à mesure du parcours
-  const vue = { slider: false, reactions: false, suivi: false, modes: false, schema: false, lent: false, points: etape >= idx("pot0"), ...(et.vue || {}) };
+  const vue = { slider: false, reactions: false, suivi: false, modes: false, schema: false, lent: false, points: parc === 2 || etape >= idx("pot0"), ...(et.vue || {}) };
   const fin = (
     <span style={{ display: "flex", gap: 6 }}>
       <button onClick={() => changerMode("explore")} style={styleBouton(true, "#334155")}><Pic n="search"/>Explorer</button>
@@ -762,9 +770,24 @@ function ParcoursElectro({ plotlyReady, changerMode }) {
     <div className="el-l1">
       <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
         <VueElectro plotlyReady={plotlyReady} e={e} set={set} opts={vue} focus={et.focus}/>
-        {etape >= idx("hypo") && <HypothesesElectro defaut={et.focus.includes("hypo")} focus={et.focus.includes("hypo")} key={String(et.focus.includes("hypo"))}/>}
+        {(parc === 2 || etape >= idx("hypo")) && <HypothesesElectro defaut={et.focus.includes("hypo")} focus={et.focus.includes("hypo")} key={String(et.focus.includes("hypo"))}/>}
       </div>
       <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={fin}/>
+    </div>
+  );
+}
+
+function ParcoursElectro({ plotlyReady, changerMode }) {
+  const [parc, setParc] = useEtatPersistant("electro-parcours-choix", 1);
+  const p = parc === 2 ? 2 : 1;
+  return (
+    <div>
+      <div role="group" aria-label="Choix du parcours" style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Parcours :</span>
+        <button onClick={() => setParc(1)} aria-pressed={p === 1} style={styleBouton(p === 1, ORANGE_GUIDE)}>1. Courbes i = f(E) et courant nul</button>
+        <button onClick={() => setParc(2)} aria-pressed={p === 2} style={styleBouton(p === 2, ORANGE_GUIDE)}>2. Courant imposé, tension imposée, couple lent</button>
+      </div>
+      <ParcoursElectroInterne key={p} plotlyReady={plotlyReady} changerMode={changerMode} parc={p}/>
     </div>
   );
 }
