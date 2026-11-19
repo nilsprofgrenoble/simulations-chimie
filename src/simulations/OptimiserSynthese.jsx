@@ -566,9 +566,25 @@ function ProfilReactionnel({ catalyseur }) {
 // ── Écran Exploration ─────────────────────────────────────────────────────
 const M = { t: [20, 80, 5], rapport: [1, 5, 0.5], fconc: [0.5, 2, 0.25] };
 
+// Ligne du bilan : un clic ouvre un encadré qui explique la grandeur (utile pour qui arrive directement en exploration).
+function LigneBilan({ nom, valeur, couleur, id, ouvert, bascule, children }) {
+  const o = ouvert === id;
+  return (
+    <div style={{ borderBottom: `1px dashed ${KIT.bord}` }}>
+      <button type="button" onClick={() => bascule(o ? null : id)} aria-expanded={o} aria-label={`Que signifie ${nom} ?`}
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, width: "100%", minHeight: 40, padding: "4px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", fontSize: 14, textAlign: "left" }}>
+        <span style={{ color: KIT.txt2, fontWeight: 600 }}>{avecIndices(nom)} <span aria-hidden="true" style={{ display: "inline-block", width: 18, height: 18, lineHeight: "16px", textAlign: "center", borderRadius: 9, border: `1.5px solid ${KIT.accent}`, color: KIT.accent, fontSize: 12, fontWeight: 800, marginLeft: 4 }}>{o ? "×" : "i"}</span></span>
+        <span style={{ color: couleur || KIT.txt, fontWeight: 700, fontFamily: "monospace", whiteSpace: "nowrap" }}>{valeur}</span>
+      </button>
+      {o && <div role="note" style={{ background: "#eff6ff", border: "1.5px solid #93c5fd", borderRadius: 8, padding: "8px 10px", margin: "2px 0 8px", fontSize: 13.5, lineHeight: 1.55, color: KIT.txt }}>{children}</div>}
+    </div>
+  );
+}
+
 function EcranExploration({ expl, maj }) {
   const b = bilanProtocole(expl);
   const [vue, setVue] = useState("micro");
+  const [info, setInfo] = useState(null);
   const rang = (nom, val, lib, unit, min, max, pas, aide) => (
     <div key={nom} style={{ marginBottom: 8 }}>
       <div style={{ fontSize: 13, color: KIT.txt, display: "flex", justifyContent: "space-between" }}>
@@ -598,11 +614,17 @@ function EcranExploration({ expl, maj }) {
       </div>
       <div style={styleBoite}>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Bilan du protocole</div>
-        <LigneMesure nom="t½ (min)" valeur={fmt(b.t12, 1)} couleur={ORANGE_GUIDE} />
-        <LigneMesure nom="xéq (rendement maximal)" valeur={fmt(b.xeq * 100, 0) + " %"} couleur={ORANGE_GUIDE} />
-        <LigneMesure nom="Rendement à 120 min" valeur={fmt(b.rendement * 100, 0) + " %"} couleur={ORANGE_GUIDE} />
-        <LigneMesure nom="Coût (u.)" valeur={fmt(b.cout, 2)} couleur={KIT.txt2} />
-        <LigneMesure nom="Chimie verte (0-100)" valeur={fmt(b.vert, 0)} couleur={KIT.txt2} />
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginBottom: 2 }}>Touchez une ligne pour savoir ce qu’elle signifie.</div>
+        <LigneBilan id="t12" nom="t½ (min)" valeur={fmt(b.t12, 1)} couleur={ORANGE_GUIDE} ouvert={info} bascule={setInfo}>
+          <b>Temps de demi-réaction</b> : durée au bout de laquelle l’avancement a atteint la moitié de sa valeur finale. Plus t<sub>½</sub> est petit, plus la réaction est <b>rapide</b>. Il dépend de la température, de la concentration et du catalyseur.</LigneBilan>
+        <LigneBilan id="xeq" nom="xéq (rendement maximal)" valeur={fmt(b.xeq * 100, 0) + " %"} couleur={ORANGE_GUIDE} ouvert={info} bascule={setInfo}>
+          Réaction limitée : elle s’arrête à l’<b>équilibre</b>. x<sub>éq</sub> est la part de la quantité maximale d’ester qu’on obtiendrait si on attendait assez longtemps. Elle ne dépend <b>ni du catalyseur ni de la température</b> dans ce modèle ; l’excès d’éthanol, l’élimination de l’eau ou l’emploi de l’anhydride la font monter.</LigneBilan>
+        <LigneBilan id="rdt" nom="Rendement à 120 min" valeur={fmt(b.rendement * 100, 0) + " %"} couleur={ORANGE_GUIDE} ouvert={info} bascule={setInfo}>
+          Rendement réellement obtenu après 120 min : quantité d’ester formée divisée par la quantité maximale possible. Il est <b>inférieur</b> à x<sub>éq</sub> si la réaction est encore trop lente pour avoir atteint l’équilibre.</LigneBilan>
+        <LigneBilan id="cout" nom="Coût (u.)" valeur={fmt(b.cout, 2)} couleur={KIT.txt2} ouvert={info} bascule={setInfo}>
+          <b>Unité fictive</b> (pas un prix réel), pour comparer des protocoles. Base : 1,00 pour acide + éthanol à 20 °C sans catalyseur. On ajoute : 0,15 par unité d’excès d’éthanol (r − 1) ; 0,10 pour le catalyseur ; 0,01 par °C au-dessus de 20 °C (chauffage) ; 0,30 pour éliminer l’eau ; 1,40 pour l’anhydride (réactif plus cher).</LigneBilan>
+        <LigneBilan id="vert" nom="Chimie verte (0-100)" valeur={fmt(b.vert, 0)} couleur={KIT.txt2} ouvert={info} bascule={setInfo}>
+          <b>Score fictif</b> de respect de l’environnement : 100 = protocole le plus sobre. On retire : 0,5 point par °C au-dessus de 20 °C (énergie) ; 4 points par unité d’excès d’éthanol (séparation et traitement en aval) ; 15 points pour l’anhydride (sous-produit acide) ; 5 points pour éliminer l’eau (solvant entraîneur). Il sert à <b>comparer</b> des protocoles, pas à mesurer un impact réel.</LigneBilan>
         {expl.catalyseur && <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>
           Catalyseur actif : k ×4… mais x<sub>éq</sub> n'a pas bougé. Vérifiez pourquoi dans « Profil réactionnel ».</div>}
       </div>
