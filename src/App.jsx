@@ -123,6 +123,7 @@ const SimulationAcideFaible = paresseux(() => import("./simulations/AcideFaible"
 const SimulationPredoTstl = paresseux(() => import("./simulations/PredoTstl"), "SimulationPredoTstl");
 const SimulationTamponTstl = paresseux(() => import("./simulations/TamponTstl"), "SimulationTamponTstl");
 const SimulationCo2Dissous = paresseux(() => import("./simulations/Co2Dissous"), "SimulationCo2Dissous");
+const SimulationExtractionAcideBase = paresseux(() => import("./simulations/ExtractionAcideBase"), "SimulationExtractionAcideBase");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -267,6 +268,8 @@ const SIMULATIONS = [
     component: SimulationTamponTstl },
   { id:142, label:"CO₂ dissous : couples, répartition des espèces et solubilité", niveau:"TSTL", icon:"🫧", color:"#0e7490",
     component: SimulationCo2Dissous },
+  { id:143, label:"Extraction acide-base : le pH décide où va le composé", niveau:"TSTL", icon:"⚗️", color:"#b45309",
+    component: SimulationExtractionAcideBase },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
