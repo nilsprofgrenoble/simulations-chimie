@@ -62,6 +62,59 @@ export const ENONCES = [
         manque: null, solution: { txt: 'A′B′ = γ × AB avec γ = OA′ / OA', val: gam * AB, u: 'm' } };
     },
   },
+  // ───────────────────────────── Ondes mécaniques (1G) : le sondeur d'un bateau (écho)
+  {
+    id: 'ond1g-celerite-sonar', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Le sondeur d’un bateau', noms: ['Profondeur de la mer', 'Célérité du son dans l’eau'],
+    gen: () => { const dt = tire([40, 60, 80, 100, 120, 160, 200]); return { dt, f: tire([40, 50, 200]), L: tire([8, 12, 15, 20]) }; },
+    build: (p, q) => {
+      const c = 1500, dt = p.dt / 1000, H = c * dt / 2;
+      const tokens = {
+        dt: tok(`${p.dt} ms`, 'Durée entre l’émission du signal et le retour de l’écho', dt, 's'),
+        f: tok(`${p.f} kHz`, 'Fréquence du signal émis', p.f * 1000, 'Hz'),
+        L: tok(`${p.L} m`, 'Longueur du bateau', p.L, 'm'),
+      };
+      const raisons = { f: 'La fréquence du signal ne change pas la célérité du son dans l’eau : elle ne sert pas à calculer une distance.', L: 'La longueur du bateau n’intervient pas dans le trajet du signal vers le fond.' };
+      if (q === 0) {
+        tokens.c = tok('1 500 m/s', 'Célérité du son dans l’eau', c, 'm·s⁻¹');
+        return { tokens, derivees: [{ id: 'dAR', nom: 'Distance parcourue par le signal (aller-retour)', expr: 'd = c × Δt', val: c * dt, u: 'm' }],
+          texte: ['Le sondeur d’un bateau de ', T('L'), ' de long émet vers le fond un signal sonore de fréquence ', T('f'), '. L’écho revient ', T('dt'), ' après l’émission. La célérité du son dans l’eau est ', T('c'), '. Quelle est la profondeur de la mer ?'],
+          utiles: ['dt', 'c'], raisons,
+          cherche: { bonne: 'La profondeur de la mer (en m)', faux: ['La longueur de l’onde sonore (en m)', 'La fréquence de l’écho (en Hz)', 'La durée de l’aller seul (en ms)'] },
+          manque: null, solution: { txt: 'profondeur = c × Δt ÷ 2 (le signal fait un aller-retour)', val: H, u: 'm' } };
+      }
+      tokens.H = tok(`${nb(H, 0)} m`, 'Profondeur de la mer sous le bateau', H, 'm');
+      return { tokens, derivees: [{ id: 'dAR', nom: 'Distance parcourue par le signal (aller-retour)', expr: 'd = 2 × H', val: 2 * H, u: 'm' }],
+        texte: ['Pour étalonner son sondeur, un bateau de ', T('L'), ' de long émet un signal de fréquence ', T('f'), ' au-dessus d’un fond situé à ', T('H'), ' de profondeur. L’écho revient ', T('dt'), ' après l’émission. Quelle est la célérité du son dans l’eau ?'],
+        utiles: ['H', 'dt'], raisons,
+        cherche: { bonne: 'La célérité du son dans l’eau (en m/s)', faux: ['La profondeur de la mer (en m)', 'La longueur d’onde du signal (en m)', 'La durée de l’aller seul (en s)'] },
+        manque: null, solution: { txt: 'c = 2 × H ÷ Δt (le signal fait un aller-retour)', val: c, u: 'm·s⁻¹' } };
+    },
+  },
+  // ───────────────────────────── Ondes mécaniques (1G) : une station sismique
+  {
+    id: 'ond1g-celerite-station', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Une station sismique', noms: ['Distance station – foyer du séisme', 'Célérité des ondes sismiques'],
+    gen: () => ({ c: tire([5.5, 6.0, 6.5, 7.0]), dt: tire([6, 8, 10, 12, 15, 20]), M: tire([4.2, 5.0, 5.8, 6.3]) }),
+    build: (p, q) => {
+      const c = p.c * 1000, dt = p.dt, d = c * dt;
+      const tokens = {
+        dt: tok(`${p.dt} s`, 'Durée entre le séisme et l’arrivée de l’onde à la station', dt, 's'),
+        M: tok(`${nb(p.M, 1)}`, 'Magnitude du séisme', p.M, ''),
+      };
+      const raisons = { M: 'La magnitude mesure l’énergie libérée par le séisme : elle n’intervient pas dans la durée de propagation.' };
+      if (q === 0) {
+        tokens.c = tok(`${nb(p.c, 1)} km/s`, 'Célérité des ondes sismiques P dans la croûte', c, 'm·s⁻¹');
+        return { tokens, derivees: [], texte: ['Un séisme de magnitude ', T('M'), ' se produit près de la surface (séisme superficiel : on assimile le foyer à l’épicentre). Les ondes P, de célérité ', T('c'), ', atteignent une station sismique ', T('dt'), ' après le séisme (on suppose l’instant du séisme connu). Quelle est la distance entre la station et le foyer du séisme ?'],
+          utiles: ['dt', 'c'], raisons,
+          cherche: { bonne: 'La distance station – foyer (en m)', faux: ['La magnitude du séisme', 'La durée de l’onde réfléchie (en s)', 'L’énergie libérée par le séisme (en J)'] },
+          manque: null, solution: { txt: 'd = c × Δt', val: d, u: 'm' } };
+      }
+      tokens.d = tok(`${nb(d / 1000)} km`, 'Distance entre la station et le foyer du séisme', d, 'm');
+      return { tokens, derivees: [], texte: ['Un séisme de magnitude ', T('M'), ' superficiel est enregistré à ', T('d'), ' de la station (on assimile le foyer à l’épicentre). L’onde P arrive à la station ', T('dt'), ' après le séisme (on suppose l’instant du séisme connu). Quelle est la célérité de l’onde ?'],
+        utiles: ['d', 'dt'], raisons,
+        cherche: { bonne: 'La célérité de l’onde P (en m/s)', faux: ['La distance station – foyer (en m)', 'La durée de propagation (en s)', 'La magnitude du séisme'] },
+        manque: null, solution: { txt: 'c = d ÷ Δt', val: c, u: 'm·s⁻¹' } };
+    },
+  },
   // ───────────────────────────── Effet Doppler (TSTL) : un chariot sur un rail
   {
     id: 'dop-chariot', domaine: 'Ondes', titre: 'Un chariot sur un rail', noms: ['Vitesse du chariot', 'Décalage Doppler prévu'],

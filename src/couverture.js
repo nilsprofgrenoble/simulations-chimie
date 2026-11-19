@@ -63,7 +63,7 @@ export const COUVERTURE = [
     { th: MVT, t: 'Mouvement d’un système : variation de vitesse et forces', e: 'ok', chap: '1g-mouvement' },
     { th: NRJ, t: 'Aspects énergétiques des phénomènes électriques', e: 'ok', chap: '1g-electricite' },
     { th: NRJ, t: 'Aspects énergétiques des phénomènes mécaniques', e: 'ok', chap: '1g-energie-meca' },
-    { th: OND, t: 'Ondes mécaniques : célérité, retard, période, longueur d’onde', e: 'avenir' },
+    { th: OND, t: 'Ondes mécaniques : célérité, retard, période, longueur d’onde', e: 'partiel', chap: 'ondes-meca', reste: 'période, longueur d’onde et relation λ = c·T' },
     { th: OND, t: 'Image donnée par une lentille mince', e: 'ok', chap: '1g-lentille' },
     { th: OND, t: 'Couleurs : synthèse additive et soustractive', e: 'avenir' },
     { th: OND, t: 'Modèles ondulatoire et particulaire de la lumière : photon, niveaux d’énergie', e: 'avenir' },
