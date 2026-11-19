@@ -5,7 +5,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./tensioactifsModele";
 import { QCM } from "./tensioactifsQcm";
-import { SceneTensioactif, JaugeTension, CourbeTension, SvgFamilles, SvgStades, SvgMesureCMC, SvgStructureCMC, SvgMolecule } from "./TensioactifsSchemas";
+import { SceneTensioactif, JaugeTension, CourbeTension, SvgFamilles, SvgStades, SvgMesureCMC, SvgStructureCMC, SvgMolecule, SvgInterface, SvgComparer } from "./TensioactifsSchemas";
 import { teteDe } from "./tensioactifsCouleurs";
 
 const SIM_ID = 146, CLE_GUIDE = 'tensioactifs-guide-v1';
@@ -79,6 +79,13 @@ export function SimulationTensioactifs() {
       tache: { type: 'qcm', q: 'À quelle famille appartient le SDS ?', ...QCM.famille,
         expl: 'La tête sulfate du SDS porte une charge négative : c’est un tensioactif anionique (le contre-ion est Na⁺). Le CTAB, à tête ammonium (+), est cationique.', indice: 'Regardez la charge de la tête du schéma de la première étape.' } },
     { id: 'interface', titre: 'À la surface de l’eau', focus: ['scene'],
+      retenirTitre: 'À RETENIR : À LA SURFACE', retenir: <>
+        <SvgInterface/>
+        <ul style={puces}>
+          <li>Un tensioactif <strong>s’adsorbe à l’interface</strong> : la tête reste dans l’eau, la queue sort vers l’air.</li>
+          <li>Cela fait <strong>baisser la tension superficielle</strong> de l’eau.</li>
+          <li>Moyen de s’en souvenir : <strong>« la tête reste au bain, la queue prend l’air »</strong>.</li>
+        </ul></>,
       texte: <>On ajoute très peu de SDS dans l’eau. Les molécules ne restent pas au hasard dans l’eau : elles gagnent la <strong>surface</strong> (l’interface eau-air). Regardez leur orientation.</>,
       tache: { type: 'qcm', q: 'Où vont en premier les molécules de tensioactif, et dans quelle position ?', ...QCM.interface,
         expl: 'La tête hydrophile reste dans l’eau, la queue hydrophobe sort vers l’air : les molécules s’adsorbent à l’interface. C’est ce qui abaisse la tension superficielle de l’eau.', indice: 'Quelle partie veut rester dans l’eau, et laquelle veut en sortir ?' } },
@@ -96,6 +103,7 @@ export function SimulationTensioactifs() {
           <li>Avant la CMC, le tensioactif <strong>s’adsorbe à l’interface</strong> et la tension superficielle diminue.</li>
           <li>À la CMC, l’interface est saturée : au-delà, le tensioactif ajouté forme des <strong>micelles</strong> et la concentration en monomères libres reste égale à la CMC.</li>
           <li>Moyen de s’en souvenir : <strong>« la CMC, c’est le plafond des molécules isolées »</strong>.</li>
+          <li><strong>Idée fausse :</strong> « au-dessus de la CMC, il y a plus de molécules isolées ». <strong>Vrai :</strong> les molécules en plus forment des micelles ; exemple SDS à 20 mmol/L (CMC ≈ 8) : 8 libres, 12 en micelles.</li>
         </ul></>,
       texte: <>La CMC du SDS vaut environ <strong>{cmcSDS}{U}</strong> (le tableau donne 7 à 10{U}). On prépare une solution de SDS à <strong>20{U}</strong>, donc au-dessus de la CMC.</>,
       tache: { type: 'num', q: 'Quelle est, en gros, la concentration en molécules isolées (monomères) dans cette solution ?', unite: 'mmol·L⁻¹', vrai: cmcSDS, tol: 0.1, affiche: v => String(v).replace('.', ','), carnet: false, cs: 1,
@@ -128,11 +136,19 @@ export function SimulationTensioactifs() {
           <li>Chaîne plus longue : <strong>CMC plus faible</strong> (environ ÷ 100 pour 4 carbones de plus, à tête non ionique ; moins fortement pour un ionique).</li>
           <li>Têtes chargées : elles se repoussent dans la micelle, donc la CMC est plus élevée qu’avec une tête non chargée.</li>
           <li>Moyen de s’en souvenir : <strong>« queue longue, CMC basse ; tête chargée, CMC haute »</strong>.</li>
+          <li><strong>Idée fausse :</strong> « une tête chargée aide à former des micelles ». <strong>Vrai :</strong> les charges de même signe se repoussent, donc la CMC est plus haute.</li>
         </ul></>,
       texte: <>Deux tensioactifs ont la <strong>même chaîne de 12 carbones</strong> : le SDS, de tête chargée (anionique : sulfate −), et le dodécylmaltoside, de tête <strong>non chargée</strong> (non ionique : deux unités de sucre). Dans une micelle de SDS, les têtes chargées sont proches les unes des autres.</>,
       tache: { type: 'qcm', q: 'Lequel a la CMC la plus faible ?', ...QCM.tete,
         expl: 'Les têtes chargées du SDS se repoussent dans la micelle, ce qui rend l’association moins favorable : sa CMC est plus élevée (environ 8 mmol/L). Le maltoside non ionique n’a pas cette répulsion (CMC d’environ 0,15 mmol/L, tableau).', indice: 'Deux charges de même signe, proches l’une de l’autre, s’attirent ou se repoussent ?' } },
     { id: 'bilan', titre: 'Bilan', focus: [],
+      retenirTitre: 'À RETENIR : COMPARER DEUX TENSIOACTIFS', retenir: <>
+        <SvgComparer/>
+        <ul style={puces}>
+          <li>Même tête : la chaîne <strong>la plus longue</strong> a la CMC la plus basse (SB3-14 plutôt que SB3-10).</li>
+          <li>Même chaîne : la tête <strong>non chargée</strong> donne la CMC la plus basse (maltoside plutôt que SDS).</li>
+          <li>Moyen de s’en souvenir : <strong>« plus c’est hydrophobe, plus la CMC est basse »</strong>.</li>
+        </ul></>,
       texte: <>Vous savez décrire un tensioactif, citer ses familles, expliquer l’adsorption à l’interface puis la formation des micelles à la CMC, lire la CMC sur une courbe, et relier la CMC à la chaîne et à la tête. En exploration, vous pouvez comparer des tensioactifs et voir comment un modèle simple prévoit leur CMC.</> },
   ];
   const IDS = ETAPES.map(e => e.id), etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? IDS[etape] : null;

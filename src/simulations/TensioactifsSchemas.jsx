@@ -210,3 +210,29 @@ export function SvgMolecule({ fam, n, titre, annoter = false }) {
       </> : <text x={(X0 + xe) / 2} y="158" fontSize="15" textAnchor="middle" fill={COUL.gris}>chaîne de {n} carbones (un sommet = un carbone)</text>}
     </svg>);
 }
+
+export function SvgInterface() {
+  const xs = [70, 110, 150, 190, 230];
+  return svgBase(190, 'Molécules de tensioactif à la surface de l’eau : têtes dans l’eau, queues vers l’air', <>
+    <rect x="20" y="20" width="300" height="55" fill={COUL.air}/><rect x="20" y="75" width="300" height="80" fill={COUL.eau}/><line x1="20" y1="75" x2="320" y2="75" stroke="#0369a1" strokeWidth="3"/>
+    {xs.map(x => <g key={x} transform={`translate(${x},80) scale(1.5)`}><Mono tete={COUL.tete} long={26}/></g>)}
+    {T(272, 50, 'air', { size: 13, fill: COUL.gris })}{T(272, 120, 'eau', { size: 13, fill: COUL.gris })}
+    {T(330, 40, 'queues', { ancre: 'start', size: 12, fill: COUL.queue, gras: true })}{T(330, 56, 'vers l’air', { ancre: 'start', size: 12, fill: COUL.queue })}
+    {T(330, 100, 'têtes', { ancre: 'start', size: 12, fill: COUL.tete, gras: true })}{T(330, 116, 'dans l’eau', { ancre: 'start', size: 12, fill: COUL.tete })}
+    {T(210, 178, 'plus il y a de molécules en surface, plus γ diminue', { fill: COUL.gris })}
+  </>);
+}
+
+export function SvgComparer() {
+  const ch = (x, y, n, fill) => <g transform={`translate(${x},${y})`}><path d={`M0 0 ${Array.from({ length: n }, (_, k) => `l8 ${k % 2 ? 5 : -5}`).join(' ')}`} fill="none" stroke={COUL.queue} strokeWidth="2.4" strokeLinecap="round"/><circle cx="-8" cy="0" r="6" fill={fill} stroke="white" strokeWidth="1"/></g>;
+  return svgBase(215, 'Comparer deux tensioactifs : regarder d’abord la chaîne, puis la tête', <>
+    {T(210, 16, 'Lequel a la CMC la plus basse ?', { gras: true, size: 14 })}
+    {T(105, 44, '① même tête', { gras: true, fill: '#0369a1' })}{T(105, 62, 'on compare les chaînes', { size: 12 })}
+    {ch(40, 92, 5, COUL.tete)}{T(100, 112, 'courte', { size: 12, fill: COUL.gris })}
+    {ch(40, 138, 11, COUL.tete)}{T(115, 158, 'longue → CMC plus basse', { size: 12, fill: '#15803d', gras: true })}
+    {T(315, 44, '② même chaîne', { gras: true, fill: '#0369a1' })}{T(315, 62, 'on compare les têtes', { size: 12 })}
+    {ch(250, 92, 8, '#b91c1c')}{T(315, 112, 'tête chargée', { size: 12, fill: COUL.gris })}
+    {ch(250, 138, 8, '#64748b')}{T(325, 158, 'non chargée → CMC plus basse', { size: 12, fill: '#15803d', gras: true })}
+    {T(210, 200, 'on change un seul critère à la fois', { fill: COUL.gris })}
+  </>);
+}
