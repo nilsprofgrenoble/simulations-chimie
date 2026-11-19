@@ -132,6 +132,7 @@ const SimulationRMNC2D = paresseux(() => import("./simulations/RMNCarbone2D"), "
 const SimulationPuissanceJoule = paresseux(() => import("./simulations/PuissanceJoule"), "SimulationPuissanceJoule");
 const SimulationCaracPile = paresseux(() => import("./simulations/CaracPile"), "SimulationCaracPile");
 const SimulationISS = paresseux(() => import("./simulations/ISS"), "SimulationISS");
+const SimulationChuteLibre = paresseux(() => import("./simulations/ChuteLibre"), "SimulationChuteLibre");
 const SimulationSolubilite = paresseux(() => import("./simulations/Solubilite"), "SimulationSolubilite");
 const SimulationAPropos = paresseux(() => import("./simulations/APropos"), "SimulationAPropos");
 const SimulationPourEnseignants = paresseux(() => import("./simulations/PourEnseignants"), "SimulationPourEnseignants");
@@ -333,6 +334,8 @@ const SIMULATIONS = [
     component: SimulationSpectres },
   { id:67, label:"L’ISS en chute libre : pourquoi les astronautes flottent", niveau:"2GT", icon:"🛰️", color:"#4338ca",
     component: SimulationISS },
+  { id:140, label:"Chute libre : la variation de vitesse et la force", niveau:"2GT", icon:"🍎", color:"#b45309",
+    component: SimulationChuteLibre },
   { id:68, label:"Circuits électriques : intensité et tension", niveau:"2GT", icon:"🔌", color:"#1d4ed8",
     component: SimulationCircuits },
   { id:69, label:"Loi d’Ohm, caractéristique et capteur résistif", niveau:"2GT", icon:"🌡️", color:"#0369a1",
