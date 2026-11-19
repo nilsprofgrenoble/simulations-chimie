@@ -1585,7 +1585,34 @@ function genCristEvaporation() {
     retenir: ['Évaporer : le sel ne part pas, seule l’eau diminue, la solution se concentre.', 'À saturation : m(eau) = m(sel) × 100 / solubilité.', 'Au-delà : m(cristaux) = m(sel) − solubilité × m(eau restante) / 100.'] };
 }
 
+function genTitrageDirect() {
+  let cB, VA, Ve, t;
+  for (let k = 0; k < 300; k++) {
+    cB = tire([0.020, 0.050, 0.100]); VA = tire([10, 20]); t = tire([0.8, 0.9, 1.1, 1.2, 1.3]);
+    Ve = Math.round(2 * (t * 10 / 253.8) * VA / 1000 / cB * 1000 / 0.05) * 0.05;   // lu à une graduation (0,05 mL)
+    Ve = Math.round(Ve * 100) / 100;
+    if (Ve >= 6 && Ve <= 24) break;
+  }
+  const nT = cB * Ve / 1000, nI = nT / 2, cA = nI / (VA / 1000), m = cA * 0.100 * 253.8;
+  const q1 = { id: 'td0', type: 'num', q: <>On dose le diiode I₂ d’un Lugol par une solution de thiosulfate de sodium (2{NB}S₂O₃²⁻ + I₂ → S₄O₆²⁻ + 2{NB}I⁻), de concentration <b>{nb(cB * 1000, 3)}{NB}mmol/L</b>. Le volume équivalent lu sur la burette est <b>V<sub>B,e</sub> = {nb(Ve, 4)}{NB}mL</b>. Quelle quantité de thiosulfate a-t-on versée à l’équivalence ? En <b>mol</b>.</>, unite: 'mol', vrai: nT, csMin: 3,
+    aide: 'n = c × V, avec V converti en litres.',
+    pieges: [[nT * 1000, 'Le volume doit être en litres : 1 mL = 0,001 L.'], [cB / (Ve / 1000), 'Une quantité de matière se calcule par n = c × V, et non par c divisée par V.']],
+    expl: <>n(S₂O₃²⁻) = c<sub>B</sub> × V<sub>B,e</sub> = {nb(cB, 3)} × {nb(Ve / 1000, 4)} = <b>{avecU(nT, 'mol', 3)}</b>.</> };
+  const q2 = { id: 'td1', type: 'num', q: <>Le volume de Lugol dosé est <b>V<sub>A</sub> = {VA}{NB}mL</b>. Quelle est la concentration en diiode c<sub>A</sub> du Lugol ? En <b>mol/L</b>.</>, unite: 'mol/L', vrai: cA, csMin: 3,
+    aide: 'À l’équivalence, n(I₂) = n(S₂O₃²⁻) / 2 (coefficients de l’équation). Puis c = n / V, avec V en litres.',
+    pieges: [[nT / (VA / 1000), 'Il faut diviser par 2 : 2 ions S₂O₃²⁻ réagissent avec 1 molécule I₂.'], [nI / VA, 'Le volume doit être en litres.'], [nT * 2 / (VA / 1000), 'C’est n(S₂O₃²⁻) divisée par 2, et non multipliée par 2.']],
+    expl: <>n(I₂) = {avecU(nT, 'mol', 3)} / 2 = {avecU(nI, 'mol', 3)} ; c<sub>A</sub> = n(I₂) / V<sub>A</sub> = <b>{avecU(cA, 'mol/L', 3)}</b>.</> };
+  const q3 = { id: 'td2', type: 'num', q: <>Le flacon annonce <b>1,00{NB}g</b> de diiode pour 100{NB}mL (M(I₂) = 253,8{NB}g/mol). Quelle masse de diiode contiennent 100{NB}mL de ce Lugol ? En <b>g</b>.</>, unite: 'g', vrai: m, csMin: 3,
+    aide: 'Dans 100 mL = 0,100 L : n = c<sub>A</sub> × V, puis m = n × M.',
+    pieges: [[cA * 253.8, 'C’est la masse dans 1 L : prenez 100 mL.'], [cA * 0.1, 'C’est la quantité de matière : multipliez par M pour obtenir la masse.']],
+    expl: <>m = c<sub>A</sub> × V × M = {nb(cA, 3)} × 0,100 × 253,8 = <b>{avecU(m, 'g', 3)}</b>.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
+  return { intro: 'Titrage direct du diiode du Lugol par le thiosulfate : quantité versée, concentration, masse.', questions: [q1, q2, q3],
+    retenir: ['À l’équivalence, les réactifs sont dans les proportions de l’équation : n(I₂)/1 = n(S₂O₃²⁻)/2.', 'n = c × V, avec V en litres.', 'La concentration cherchée se déduit de n(I₂) et du volume dosé V_A.'] };
+}
+
 export const FAMILLES = [
+  { id: 'titrage-direct', groupe: 'Formules', titre: 'Titrage direct du diiode par le thiosulfate : équivalence, concentration, masse (1re spé)', gen: genTitrageDirect, domaine: 'Titrage direct' },
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
   { id: 'vecteur-difference', groupe: 'Vecteurs', titre: 'Différence de deux vecteurs (variation de vitesse)', gen: genDifference },
   { id: 'interactions', groupe: 'Unités', titre: 'Forces et champs : Coulomb, gravitation (1re spé)', gen: genInteractions, domaine: 'Interactions et champs' },

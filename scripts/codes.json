@@ -1087,5 +1087,6 @@
  "36:extrac-partage": "REA52",
  "36:extrac-passes": "REA53",
  "36:crist-refroidissement": "REA54",
- "36:crist-evaporation": "REA55"
+ "36:crist-evaporation": "REA55",
+ "36:titrage-direct": "REA56"
 }
