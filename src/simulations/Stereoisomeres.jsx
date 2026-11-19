@@ -5,7 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./stereoisomeresModele";
-import { QCM, MOL, A, IMG, AUTRE, AUTRE2, nom } from "./stereoisomeresQcm";
+import { QCM, MOL, A, IMG, AUTRE, AUTRE2, nom, MESO, MESO_RS } from "./stereoisomeresQcm";
 import { CoupleCram, SceneAlcene, SvgNombre, SvgRelations, SvgBio, SvgZE, SvgArbre } from "./StereoisomeresSchemas";
 
 const SIM_ID = 144, CLE_GUIDE = 'stereoisomeres-guide-v1';
@@ -14,8 +14,8 @@ declarerDefis(SIM_ID, [['relation', 'Relation entre deux stéréoisomères'], ['
 // ====================================================
 //  SIM 144 — STÉRÉOISOMÈRES : ÉNANTIOMÈRES, DIASTÉRÉOISOMÈRES, ISOMÉRIE Z/E (TSTL, enseignement PCM, Constitution de la matière › Structure spatiale)
 //  Une seule idée : deux stéréoisomères ont le même enchaînement d’atomes ; on les distingue par leur arrangement dans l’espace.
-//  Notions : nombre de stéréoisomères (2ⁿ), énantiomères (image dans un miroir : tous les carbones inversés), diastéréoisomères (les autres), propriétés biologiques, isomérie Z/E d’un alcène.
-//  Aucune situation du Moodle : acide 2-chloro-3-hydroxybutanoïque, acide 3-chloroprop-2-énoïque, 1-bromo-2-chloroéthène, une molécule fictive M pour l’exemple biologique.
+//  Notions : nombre de stéréoisomères (2ⁿ), composé méso, propriétés physiques et pouvoir rotatoire, eutomère et distomère, synthèse asymétrique, énantiomères (image dans un miroir : tous les carbones inversés), diastéréoisomères (les autres), propriétés biologiques, isomérie Z/E d’un alcène.
+//  Notions de la séquence 1 du Moodle (PDF lus le 19/11/2026), sans reprendre leurs molécules ni leurs valeurs : acide 2-chloro-3-hydroxybutanoïque, acide 3-chloroprop-2-énoïque, 1-bromo-2-chloroéthène, une molécule fictive M pour l’exemple biologique.
 //  Capacités visées (jamais affichées à l’élève) : représenter des énantiomères ou des diastéréoisomères ; identifier des couples d’énantiomères et des diastéréoisomères ; extraire et exploiter des informations sur les propriétés biologiques de stéréoisomères ; isomérie Z et E.
 //  Modèle : stereoisomeresModele.js (réutilise chiraliteModele.js de la sim 137). Schémas : StereoisomeresSchemas.jsx. QCM : stereoisomeresQcm.js.
 // ====================================================
@@ -34,6 +34,7 @@ const MASSE = 250, ACTIF = MASSE / 2;
 const LETTRES = [['A', A], ['B', IMG], ['C', AUTRE], ['D', AUTRE2]];
 
 // ---------- scènes ----------
+const sCram2 = (mol, items, aria) => <CoupleCram mol={mol} items={items} ariaLabel={aria}/>;
 const sCram = (items, aria) => <CoupleCram mol={MOL} items={items} ariaLabel={aria}/>;
 function Chips({ items, surligne }) {
   return (
@@ -67,7 +68,7 @@ export function SimulationStereoisomeres() {
       retenirTitre: 'À RETENIR : COMBIEN DE STÉRÉOISOMÈRES ?', retenir: <>
         <SvgNombre/>
         <ul style={puces}>
-          <li>Chaque carbone asymétrique a <strong>deux configurations</strong>, R ou S : avec n carbones asymétriques, il y a au plus <strong>2ⁿ stéréoisomères</strong> (sans composé méso).</li>
+          <li>Chaque carbone asymétrique a <strong>deux configurations</strong>, R ou S : avec n carbones asymétriques, il y a au plus <strong>2ⁿ stéréoisomères</strong> (si les carbones asymétriques ont des substituants différents ; sinon il peut y en avoir moins, voir le composé méso).</li>
           <li>Exemple : 2 carbones asymétriques, 4 stéréoisomères ; 3 carbones, 8.</li>
           <li>Moyen de s’en souvenir : <strong>« chaque carbone asymétrique double le nombre de possibilités »</strong>.</li>
         </ul></>,
@@ -88,27 +89,43 @@ export function SimulationStereoisomeres() {
         calcul: () => ['B : tous les carbones inversés, c’est l’énantiomère de A.', 'C : seul C3 est inversé, c’est un diastéréoisomère.', 'D : seul C2 est inversé, c’est un diastéréoisomère.', 'Total : 2 diastéréoisomères.'],
         pieges: [[1, 'Il y en a un de plus : C et D diffèrent de A par un seul carbone, tous deux sont des diastéréoisomères.'], [3, 'B est l’énantiomère de A, il n’est pas compté : il reste C et D.']],
         expl: 'B est l’unique énantiomère de A. Les deux autres, C et D, sont des diastéréoisomères de A : 2 diastéréoisomères.', indice: 'Pour chacune des trois autres molécules, comparez les lettres C2 et C3 à celles de A : tout inversé = énantiomère, sinon diastéréoisomère.' } },
-    { id: 'bio', titre: 'Des effets différents sur le vivant', focus: [],
+    { id: 'proprietes', titre: 'Mêmes propriétés ou non ?', focus: ['scene'],
+      texte: <>On a mesuré les propriétés de trois stéréoisomères de la molécule (<strong>données fictives</strong>) : A, <strong>{nom(A)}</strong>, son énantiomère B, <strong>{nom(IMG)}</strong>, et le diastéréoisomère C, <strong>{nom(AUTRE)}</strong>. Le pouvoir rotatoire mesure de combien la substance fait tourner le plan de la lumière polarisée.</>,
+      tache: { type: 'qcm', q: 'Qu’est-ce qui distingue A de son énantiomère B ?', ...QCM.proprietes,
+        expl: 'Deux énantiomères ont les mêmes propriétés physiques (température de fusion, densité, solubilité) et chimiques : seul le signe du pouvoir rotatoire change. Un diastéréoisomère, comme C, a des propriétés physiques différentes (ici 134 °C au lieu de 112 °C).', indice: 'Comparez les valeurs de A et de B dans le tableau de données : lesquelles sont identiques, laquelle change ?' } },
+    { id: 'meso', titre: 'Deux carbones identiques : le composé méso', focus: ['scene'],
       retenirTitre: 'À RETENIR : ÉNANTIOMÈRES ET DIASTÉRÉOISOMÈRES', retenir: <>
         <SvgRelations/>
         <ul style={puces}>
           <li>Les <strong>stéréoisomères</strong> ont le même enchaînement d’atomes. <strong>Énantiomères</strong> : images l’un de l’autre dans un miroir, non superposables (tous les C* inversés). <strong>Diastéréoisomères</strong> : stéréoisomères qui ne sont pas image l’un de l’autre.</li>
-          <li>Exemple : avec 2 C*, chaque stéréoisomère a 1 énantiomère et 2 diastéréoisomères.</li>
-          <li>Moyen de s’en souvenir : <strong>« énantiomères : tout inversé ; diastéréoisomères : une partie seulement »</strong>.</li>
+          <li><strong>Énantiomères</strong> : mêmes propriétés physiques et chimiques, seul le signe du pouvoir rotatoire change. <strong>Diastéréoisomères</strong> : propriétés différentes (fusion, solubilité, pKa…).</li>
+          <li>Moyen de s’en souvenir : <strong>« énantiomères : tout inversé, tout pareil sauf le sens de rotation ; diastéréoisomères : une partie inversée, propriétés différentes »</strong>.</li>
         </ul></>,
+      texte: <>Le <strong>{MESO.nom}</strong>, {MESO.semi}, a deux carbones asymétriques C2 et C3 qui portent <strong>les mêmes groupes</strong> (Br, CH₃, H et l’autre carbone). Le dessin montre la forme <strong>{M.nomDesc(MESO, MESO_RS.desc)}</strong> et, à droite, son image dans un miroir. Une molécule qui possède un plan de symétrie est superposable à son image.</>,
+      tache: { type: 'qcm', q: 'Quelle est la relation entre la forme dessinée et son image dans le miroir ?', ...QCM.meso,
+        expl: 'Les deux carbones portent les mêmes groupes : la molécule a un plan de symétrie au milieu de la liaison C2–C3, elle est superposable à son image. Les formes (2R,3S) et (2S,3R) sont la même molécule, achirale : un composé méso. Il n’y a donc que 3 stéréoisomères : (R,R), (S,S) et la forme méso.', indice: 'Une molécule avec un plan de symétrie interne se superpose à son image dans un miroir : sont-elles alors énantiomères ?' } },
+    { id: 'bio', titre: 'Des effets différents sur le vivant', focus: [],
       texte: <>Les deux énantiomères d’une molécule ont les mêmes propriétés physiques, mais ils peuvent agir différemment sur le vivant, car les récepteurs de l’organisme sont eux-mêmes chiraux. Exemple fictif : une molécule <strong>M</strong> existe sous deux énantiomères, (R)-M et (S)-M. Les essais montrent que <strong>seul (R)-M agit</strong> ; (S)-M est sans effet. Un laboratoire prépare <strong>{MASSE}{NB}mg</strong> d’un <strong>mélange racémique</strong> de M, c’est-à-dire à parts égales de (R)-M et de (S)-M.</>,
       tache: { type: 'num', q: 'Quelle masse de (R)-M, l’énantiomère actif, contient ce mélange (en mg) ?', unite: 'mg', vrai: ACTIF, tol: 0.05, affiche: v => nbf(v, 0), cs: 3,
         calcul: () => [`Mélange racémique : 50 % de (R)-M et 50 % de (S)-M.`, `m((R)-M) = ${MASSE} × 0,50 = ${ACTIF} mg.`],
         pieges: [[MASSE, 'C’est la masse totale du mélange : seule la moitié est (R)-M, l’énantiomère actif.'], [MASSE / 4, 'Un racémique contient 50 % de chaque énantiomère, pas 25 %.'], [2 * MASSE, 'La masse de (R)-M ne peut pas dépasser la masse du mélange : il faut en prendre la moitié.']],
         expl: `Un mélange racémique contient 50 % de chaque énantiomère : ${MASSE} × 0,50 = ${ACTIF} mg de (R)-M. L’autre moitié, (S)-M, est sans effet.`, indice: 'Un mélange racémique contient autant de chaque énantiomère : quelle fraction de la masse est (R)-M ?' } },
-    { id: 'alcene', titre: 'Une autre isomérie : la double liaison', focus: [],
+    { id: 'eutomere', titre: 'Eutomère et distomère', focus: [],
+      texte: <>Parmi les deux énantiomères d’un médicament, celui qui a l’<strong>activité recherchée</strong> s’appelle l’<strong>eutomère</strong> ; l’autre est le <strong>distomère</strong> (inactif, moins actif, ou d’activité différente, parfois toxique). Pour la molécule fictive M, seul (R)-M agit ; (S)-M est sans effet.</>,
+      tache: { type: 'qcm', q: 'Quel est l’eutomère de M, et quel est son distomère ?', ...QCM.eutomere,
+        expl: 'L’eutomère est l’énantiomère qui a l’activité recherchée : (R)-M. Le distomère est l’autre énantiomère : (S)-M. Le nom ne dépend pas de la lettre R ou S mais de l’activité.', indice: 'L’eutomère est celui qui a l’activité recherchée : lequel agit ici ?' } },
+    { id: 'synthese', titre: 'Fabriquer un seul énantiomère', focus: [],
       retenirTitre: 'À RETENIR : LE VIVANT ET LA CHIRALITÉ', retenir: <>
         <SvgBio/>
         <ul style={puces}>
-          <li>Un récepteur du vivant est <strong>chiral</strong> : il reconnaît un énantiomère et pas son image. Deux énantiomères ont les mêmes propriétés physiques mais peuvent avoir des effets biologiques différents.</li>
+          <li>Un récepteur du vivant est <strong>chiral</strong> : il reconnaît un énantiomère et pas son image. L’<strong>eutomère</strong> a l’activité recherchée ; le <strong>distomère</strong> est inactif, moins actif ou d’activité différente.</li>
           <li>Un <strong>mélange racémique</strong> contient 50 % de chaque énantiomère.</li>
           <li>Moyen de s’en souvenir : <strong>« un récepteur est comme une main : il choisit un seul énantiomère »</strong>.</li>
         </ul></>,
+      texte: <>Une synthèse classique, à partir de réactifs non chiraux, donne un <strong>mélange racémique</strong> de M : la moitié du produit est du distomère inutile. Les deux énantiomères ont les mêmes propriétés physiques, ce qui les rend difficiles à séparer.</>,
+      tache: { type: 'qcm', q: 'Comment obtenir uniquement l’énantiomère (R)-M ?', ...QCM.synthese,
+        expl: 'La synthèse asymétrique prépare un seul énantiomère à partir d’une matière première non chirale, avec l’aide d’un catalyseur ou d’un auxiliaire chiral. Elle évite de gaspiller la moitié du produit : elle respecte des principes de la chimie verte (économie d’atomes, moins de déchets).', indice: 'Les énantiomères ont les mêmes propriétés physiques : une séparation par chauffage ou distillation est-elle possible ? Il faut plutôt n’en fabriquer qu’un.' } },
+    { id: 'alcene', titre: 'Une autre isomérie : la double liaison', focus: [],
       texte: <>Autour d’une liaison simple C–C, les atomes tournent librement. Autour d’une <strong>double liaison C=C</strong>, la rotation est <strong>bloquée</strong> : les quatre groupes liés aux deux carbones restent dans un même plan, et leur arrangement compte. Il peut alors exister deux stéréoisomères, notés Z et E.</>,
       tache: { type: 'qcm', q: 'Laquelle de ces molécules peut exister sous deux formes Z et E ?', ...QCM.alcene,
         expl: 'Il faut que chaque carbone de la double liaison porte deux groupes différents. CH₃–CH=CH–CH₂CH₃ convient ; dans les trois autres, un carbone porte deux groupes identiques (H, H ; CH₃, CH₃ ou Cl, Cl).', indice: 'Regardez séparément les deux groupes liés à chacun des deux carbones de C=C : sont-ils différents ?' } },
@@ -157,6 +174,8 @@ export function SimulationStereoisomeres() {
     enantio: () => sCram([{ affs: A.affs, legende: `A : ${nom(A)}` }, { affs: IMG.affs, legende: `B : ${nom(IMG)}` }], 'Les molécules A et B'),
     diast: () => sCram([{ affs: A.affs, legende: `A : ${nom(A)}` }, { affs: AUTRE.affs, legende: `C : ${nom(AUTRE)}` }], 'Les molécules A et C'),
     compte: () => <Chips items={LETTRES} surligne="A"/>,
+    proprietes: () => <Chips items={LETTRES.slice(0, 3)} surligne="A"/>,
+    meso: () => sCram2(MESO, [{ affs: MESO_RS.affs, legende: `Forme ${M.nomDesc(MESO, MESO_RS.desc)}` }, { affs: MESO_RS.affs, miroir: true, legende: `Son image dans un miroir ${M.nomDesc(MESO, MESO_RS.desc.map(d => (d === 'R' ? 'S' : 'R')))}`, pointille: true }], 'Le 2,3-dibromobutane et son image dans un miroir'),
     prio: () => paire(H_PREM, PAL, false, null, false),
     ze: () => paire(H_PREM, PAL, true, null, false),
     ze2: () => paire(H_ZE2, BCE, true, null, false),
@@ -168,6 +187,8 @@ export function SimulationStereoisomeres() {
     enantio: [['A', nom(A), COL.orange], ['B', nom(IMG), COL.bleu]],
     diast: [['A', nom(A), COL.orange], ['C', nom(AUTRE), COL.bleu]],
     compte: [['A', nom(A), COL.orange]],
+    proprietes: [['Fusion de A et de B', `112${NB}°C`], ['Fusion de C', `134${NB}°C`, COL.rouge], ['Pouvoir rotatoire de A, B, C', `+21° ; −21° ; +6°`, COL.orange]],
+    meso: [['Forme dessinée', M.nomDesc(MESO, MESO_RS.desc), COL.orange]],
     bio: [['Masse du mélange', `${MASSE}${NB}mg`], ['Énantiomère actif', '(R)-M', COL.orange]],
     prio: [['Règle de priorité', 'numéro atomique le plus grand']],
     ze: [['Priorité 1', 'Cl et COOH', COL.rouge]],
@@ -245,7 +266,7 @@ export function SimulationStereoisomeres() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Molécules sans cycle</strong>, à deux carbones asymétriques voisins (4 stéréoisomères) ou à une seule double liaison C=C. La rotation autour d’une liaison simple est libre ; elle est bloquée autour d’une double liaison.</li>
-      <li><strong>Aucun composé méso</strong> : les deux carbones asymétriques ont des substituants différents, donc 2ⁿ stéréoisomères distincts. Avec des carbones identiques, il y en aurait moins.</li>
+      <li><strong>Composé méso</strong> : traité à une étape (deux carbones identiquement substitués : 3 stéréoisomères seulement). Ailleurs, les carbones asymétriques ont des substituants différents, donc 2ⁿ stéréoisomères distincts.</li>
       <li><strong>Les priorités suivent les règles CIP du programme</strong> (numéro atomique, puis atomes suivants), comme pour la configuration R ou S. Les perspectives de Cram sont des représentations conventionnelles.</li>
       <li><strong>Les données biologiques sont fictives</strong> (molécule M) : elles illustrent une idée, elles ne décrivent pas un médicament réel.</li>
     </ul>);

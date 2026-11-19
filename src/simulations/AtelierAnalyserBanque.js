@@ -2581,6 +2581,20 @@ export const PREVOIR = [
       F('E : le brome est plus gros que le méthyle, donc E quel que soit le dessin', 'La taille n’intervient pas : seule compte la position relative des groupes prioritaires.'),
       F('on ne peut pas conclure : il manque la température d’ébullition de la molécule', 'La configuration se lit sur le dessin avec les priorités, sans aucune donnée thermique.'),
     ] },
+  { id: 'stereo-ana-proprietes', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'Énantiomères ou diastéréoisomères : mêmes propriétés ?',
+    enonce: 'On dispose de trois stéréoisomères d’une même molécule : A et B sont énantiomères, A et C sont diastéréoisomères. On mesure leur température de fusion et leur pouvoir rotatoire.', q: 'Que peut-on prévoir sans faire de mesure ?', options: [
+      V('A et B ont la même température de fusion ; A et C en ont deux différentes', 'Deux énantiomères ont les mêmes propriétés physiques ; deux diastéréoisomères ont des propriétés physiques différentes.'),
+      F('A et C ont la même température de fusion, comme A et B, car ce sont tous des stéréoisomères', 'Seuls les énantiomères ont les mêmes propriétés physiques : les diastéréoisomères ont des températures de fusion différentes.'),
+      F('A et B ont des pouvoirs rotatoires identiques, car ils ont les mêmes propriétés physiques', 'Le pouvoir rotatoire est la seule propriété qui distingue deux énantiomères : il est de signe opposé.'),
+      F('A et B ont des températures de fusion différentes, car ils ne se superposent pas', 'Ne pas se superposer n’entraîne pas des propriétés physiques différentes : pour des énantiomères, elles sont identiques.'),
+    ] },
+  { id: 'stereo-ana-meso', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'Deux carbones asymétriques identiques',
+    enonce: 'Le 2,3-dichlorobutane, CH₃–CHCl–CHCl–CH₃, a deux carbones asymétriques C2 et C3 qui portent les mêmes groupes (Cl, CH₃, H et l’autre carbone). La forme (2R,3S) possède un plan de symétrie.', q: 'Combien de stéréoisomères de configuration cette molécule possède-t-elle ?', options: [
+      V('3 : (R,R), (S,S) et la forme méso (R,S) = (S,R)', '(2R,3S) et (2S,3R) sont la même molécule achirale (composé méso) : seules 3 formes différentes existent.'),
+      F('4 : chacun des deux carbones asymétriques peut être R ou S, soit 2 × 2', 'Avec deux carbones identiquement substitués, (R,S) et (S,R) sont superposables : on ne compte que 3 formes distinctes.'),
+      F('2 : une forme et son énantiomère, comme pour une molécule à un seul C*', 'Il y a (R,R), (S,S) et la forme méso : 3 stéréoisomères au total.'),
+      F('1 : la molécule a un plan de symétrie, donc une seule forme existe', 'Seule la forme (R,S) est achirale ; (R,R) et (S,S) sont chirales, ce qui fait 3 formes au total.'),
+    ] },
   { id: 'lum-spectre-sodium', domaine: 'Lumière', titre: 'Lampe à vapeur de sodium',
     enonce: 'On observe, à travers un spectroscope, la lumière d’une lampe spectrale à vapeur de sodium (basse pression).', q: 'Le spectre observé est…', options: [
       V('un spectre de raies : une raie jaune très fine sur fond noir', 'Un gaz chaud sous faible pression émet seulement certaines longueurs d’onde : un spectre de raies, propre à l’élément (jaune pour le sodium ; en réalité un doublet de deux raies très proches).'),

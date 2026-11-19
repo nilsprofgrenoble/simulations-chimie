@@ -39,4 +39,11 @@ const ca = M.parIdAlc('chloropropenoique'); ok(M.etiqAlc(ca, ca.subs[0][0]) === 
 const bc = M.parIdAlc('bromochloroethene'); ok(M.etiqAlc(bc, bc.subs[0][0]) === 'Br' && M.etiqAlc(bc, bc.subs[1][0]) === 'Cl', 'Br > Cl');
 for (let k = 0; k < 5000; k++) { const t = M.tirageRelation(), z = M.tirageZE(); ok(t.rel === M.relation(t.a.desc, t.b.desc) && t.n >= 3 && t.n <= 5, 'tirage relation'); ok(z.m.ze && (z.rel === 'identiques') === M.memeGeometrie(z.h1, z.h2), 'tirage ZE'); }
 const rel = new Set(Array.from({ length: 400 }, () => M.tirageRelation().rel)); ok(rel.size === 3, 'les 3 relations sont tirées');
+// composé méso : 2,3-dibromobutane
+{ const m = M.DIBROMOBUTANE, st = M.stereoisomeres(m); ok(C.centresAsym(m).length === 2, 'meso : 2 C*'); ok(st.length === 4 && new Set(st.map(s => s.id)).size === 4, 'meso : 4 combinaisons de lettres');
+  const u = M.stereoisomeresMeso(m); ok(u.length === 3 && u.filter(x => x.meso).length === 1, 'meso : 3 stéréoisomères dont 1 méso');
+  ok(st.some(s => s.id === 'RS') && st.some(s => s.id === 'SR'), 'RS et SR présents');
+  ok(M.relationMeso(['R', 'S'], ['S', 'R']) === 'identiques', 'RS = SR'); ok(M.relationMeso(['R', 'R'], ['S', 'S']) === 'enantiomeres', 'RR / SS'); ok(M.relationMeso(['R', 'R'], ['R', 'S']) === 'diastereoisomeres', 'RR / méso'); ok(M.relationMeso(['S', 'S'], ['S', 'R']) === 'diastereoisomeres', 'SS / méso');
+  // l'image miroir de la forme méso est elle-même
+  const f = st.find(s => s.id === 'RS'); const im = M.miroirDe(f); const g = st.find(s => s.flips.join() === im.join()); ok(M.cleMeso(g.desc) === 'RS', 'image miroir de méso = méso'); }
 console.log(`${n} vérifications, ${ko} échec(s).`); process.exit(ko ? 1 : 0);

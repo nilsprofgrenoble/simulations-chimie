@@ -14,6 +14,13 @@ export const CHLOROHYDROXY = MOL({ id: 'chlorohydroxy', nom: 'acide 2-chloro-3-h
 export const AMINOCHLORO = MOL({ id: 'aminochloro', nom: 'acide 2-amino-3-chlorobutanoïque', semi: 'CH₃–CHCl–CH(NH₂)–COOH', smiles: 'CC(Cl)C(N)C(=O)O', centres: [3, 1],
   groupes: { 4: 'NH₂', 5: 'COOH', 0: 'CH₃', 2: 'Cl' }, chaine: { gauche: 5, c1: 3, c2: 1, droite: 0 }, nomsCentres: ['C2', 'C3'], numeros: [2, 3], etiqCentre: { 1: 'CHClCH₃', 3: 'CH(NH₂)COOH' } });
 export const POOL2 = [CHLOROHYDROXY, AMINOCHLORO, THR, ISO];
+// Deux carbones asymétriques identiquement substitués : (R,S) et (S,R) sont la même molécule (composé méso, achirale) → 3 stéréoisomères seulement
+export const DIBROMOBUTANE = MOL({ id: 'dibromobutane', nom: '2,3-dibromobutane', semi: 'CH₃–CHBr–CHBr–CH₃', smiles: 'CC(Br)C(Br)C', centres: [1, 3],
+  groupes: { 0: 'CH₃', 2: 'Br', 4: 'Br', 5: 'CH₃' }, chaine: { gauche: 0, c1: 1, c2: 3, droite: 5 }, nomsCentres: ['C2', 'C3'], numeros: [2, 3], etiqCentre: { 1: 'CHBrCH₃', 3: 'CHBrCH₃' } });
+export const cleMeso = desc => (desc[0] === desc[1] ? desc.join('') : 'RS');            // (R,S) et (S,R) : une seule molécule
+export const stereoisomeresMeso = m => { const vus = new Map(); stereoisomeres(m).forEach(s => { const k = cleMeso(s.desc); if (!vus.has(k)) vus.set(k, { ...s, cle: k, meso: k === 'RS' }); }); return [...vus.values()]; };
+export const relationMeso = (d1, d2) => (cleMeso(d1) === cleMeso(d2) ? 'identiques' : (d1[0] === d1[1] && d2[0] === d2[1] ? 'enantiomeres' : 'diastereoisomeres'));
+
 export const parId2 = id => POOL2.find(m => m.id === id);
 
 // ---------- les 4 stéréoisomères d'une molécule à deux carbones asymétriques ----------
