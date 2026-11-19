@@ -171,7 +171,11 @@ export function BeerLambert1G() {
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
   const [onglet, setOnglet] = useState('spectro');
-  const [guide, setGuide] = useEtatPersistant('beer1g-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('beer1g-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('beer1g-guide-p2', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('beer1g-parcours-choix', 1);
+  const parc = parcBrut === 2 ? 2 : 1;
+  const guide = parc === 2 ? g2 : g1, setGuide = parc === 2 ? setG2 : setG1;
   // L'échantillon de l'élève : bouillie bordelaise un peu différente de 15 g/L, et une pureté du solide du lycée
   const [ech] = useEtatPersistant('beer1g-echantillon-v1', (() => {
     const r = Math.random(), r2 = Math.random();
@@ -238,7 +242,7 @@ export function BeerLambert1G() {
   const prochesMax = Math.abs(lambda - lmaxEsp) <= 30;
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
-  const ETAPES = [
+  const TOUTES = [
     { id: 'contexte', titre: 'La bouillie bordelaise', focus: [],
       texte: <>La bouillie bordelaise est un fongicide utilisé au jardin. Sa couleur bleue vient des ions cuivre(II) Cu²⁺. Le fabricant
         annonce environ <strong>15 g/L de sulfate de cuivre pentahydraté</strong> CuSO₄, 5 H₂O (M = 249,68 g/mol). Pour le vérifier, on va
@@ -257,7 +261,7 @@ export function BeerLambert1G() {
       texte: <>L'eau est incolore, et pourtant son absorbance n'est pas nulle.</>,
       tache: { type: 'qcm', q: 'Pourquoi faut-il calibrer (faire le « blanc ») ?', options: ['La cuve et l’eau absorbent ou réfléchissent un peu la lumière : on les prend comme référence A = 0, pour ne mesurer que l’espèce colorée', 'Pour chauffer la lampe', 'Pour choisir la longueur d’onde'], bonne: 0, indice: "Le blanc fixe la référence A = 0. Que mesurerait-on sans lui (cuve, solvant) ?" } },
     { id: 'calibrer', titre: 'Faire le blanc', focus: [],
-      retenirTitre: 'À RETENIR : LE SPECTROPHOTOMÈTRE ET LE BLANC',
+      retenirTitre: 'Le spectrophotomètre et le blanc',
       retenir: <>
         <svg viewBox="0 0 360 120" role="img" aria-label="Schéma d’un spectrophotomètre : une lampe émet de la lumière blanche, un monochromateur sélectionne la longueur d’onde λ, le faisceau d’intensité I0 traverse la cuve de largeur 1 cm contenant la solution, puis le détecteur mesure l’intensité transmise I plus faible ; l’absorbance est A = log(I0 / I)" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
           <rect x="8" y="42" width="44" height="36" rx="6" fill="#fef3c7" stroke="#b45309" strokeWidth="2" /><text x="30" y="64" textAnchor="middle" fontSize="11" fontWeight="700" fill="#92400e">lampe</text>
@@ -291,9 +295,14 @@ export function BeerLambert1G() {
       texte: <>La bouillie est bleue. Regardez où se trouve le maximum d'absorption sur la bande de couleurs du spectre.</>,
       tache: { type: 'qcm', q: 'Pourquoi la solution est-elle bleue ?', options: ['Elle absorbe surtout le rouge-orangé : on voit la lumière qui n’est pas absorbée', 'Elle absorbe surtout le bleu', 'Elle émet de la lumière bleue'], bonne: 0,
         expl: 'La couleur perçue est (à peu près) la couleur complémentaire de celle qui est absorbée.', indice: "La couleur perçue est celle de la lumière non absorbée. Quelle couleur la solution absorbe-t-elle (couleur complémentaire) ?" } },
-    { id: 'mesures', titre: 'Mesurer la gamme étalon', focus: [],
-      retenirTitre: 'À RETENIR : COULEUR ET LONGUEUR D’ONDE',
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Couleur et longueur d’onde',
       retenir: <FicheCouleurs/>,
+      texte: <>Vous savez faire le blanc, choisir la longueur d’onde au maximum d’absorption et relier la couleur d’une solution à ce qu’elle absorbe. Passez au parcours 2 : le dosage par étalonnage.</>, tache: null },
+    { id: 'prepa2', titre: 'Préparer la mesure', focus: [],
+      texte: <>Pour ce parcours, l’appareil est préparé comme à la fin du parcours 1 : blanc fait avec l’eau, spectre de la bouillie X enregistré, longueur d’onde réglée au maximum d’absorption.</>,
+      tache: { type: 'action', ok: blanc && !!spectreVu.X && prochesMax, label: 'Préparer l’appareil', faire: () => { setBlanc(true); setSpectreVu({ eau: true, eauBlanc: true, X: true }); setLambda(Math.round(lmaxEsp)); }, consigne: 'Préparez l’appareil (blanc, spectre de X, λ au maximum)' } },
+    { id: 'mesures', titre: 'Mesurer la gamme étalon', focus: [],
       texte: <>À λ = {lambdaMesures ?? lambda} nm, placez chaque cuve dans l'appareil (l'eau, S1 à S5, puis X) et cliquez sur « Mesurer A ». Les valeurs
         s'inscrivent dans le tableau. Vérifiez au passage que l'eau donne bien A = 0.</>,
       tache: { type: 'action', ok: toutesMesurees, consigne: toutesMesurees ? null : `Mesurées : ${['eau', 'S1', 'S2', 'S3', 'S4', 'S5', 'X'].filter(n => mesures[n] != null).length} / 7` } },
@@ -309,7 +318,7 @@ export function BeerLambert1G() {
       tache: { type: 'qcm', q: 'Que penser de l’alignement ?', options: ['R² est excellent, mais S5 est un peu sous la droite : aux fortes absorbances, l’appareil sort de son domaine de linéarité et la pente est légèrement sous-estimée', 'La droite convient parfaitement : R² est proche de 1, donc tous les points sont sur la droite', 'Les points sont dispersés au hasard : il faut tout refaire'], bonne: 0,
         expl: 'Un R² proche de 1 ne garantit pas que le modèle convient : ici S5 s’écarte systématiquement de la droite. La loi de Beer-Lambert n’est vérifiée que pour des absorbances pas trop grandes. On peut retirer S5 de l’ajustement ou diluer pour rester dans le domaine de linéarité ; sinon la concentration de X est un peu surestimée (la pente est un peu trop petite).', indice: "Regarde R² et la position de chaque point par rapport à la droite, surtout ceux de forte absorbance." } },
     { id: 'epsilon', titre: 'La loi de Beer-Lambert', focus: [],
-      retenirTitre: 'À RETENIR : LE DOMAINE DE LINÉARITÉ',
+      retenirTitre: 'Le domaine de linéarité',
       retenir: <FicheLineaire/>,
       texte: <>La loi s'écrit A = ε × L × c : k = ε × L, où ε est le coefficient d'absorption molaire de l'espèce (il dépend de λ) et L = 1 cm la
         largeur de la cuve. Ici, k = {fmt(k, 2)} L/mol (droite modélisée à l’étape précédente).</>,
@@ -319,7 +328,7 @@ export function BeerLambert1G() {
           `ε = frac(${fmt(k, 2)}|${L_CUVE}) = ${fmt(k / L_CUVE, 1)} L·mol⁻¹·cm⁻¹.`],
         pieges: [[k * 100, 'L = 1 cm : il ne faut pas convertir en mètres ici.']], indice: "A = ε × ℓ × c : le coefficient directeur k de la droite vaut ε × ℓ, donc ε = frac(k|ℓ) (ℓ en cm)." } },
     { id: 'methode', titre: 'Trouver c_X', focus: [],
-      retenirTitre: 'À RETENIR : LA LOI DE BEER-LAMBERT',
+      retenirTitre: 'La loi de Beer-Lambert',
       retenir: <FicheDroite/>,
       texte: <>Vous avez mesuré A<sub>X</sub> = {fmt(AX, 3)} pour la bouillie.</>,
       tache: { type: 'qcm', q: 'Comment obtenir la concentration c_X de la bouillie ?', options: ['Par le calcul c_X = frac(A_X|k), ou par lecture graphique sur la droite', 'c_X = k × A_X', 'En prenant la concentration de S3'], bonne: 0, indice: "Utilise la droite d’étalonnage A = k × c : isole c, puis remplace A par la valeur mesurée pour X (ou lis-la sur le graphique)." } },
@@ -331,7 +340,7 @@ export function BeerLambert1G() {
           `c_X = ${fmt(AX, 3)} / ${fmt(k, 2)} = ${fmt(Number(AX.toFixed(3)) / Number(k.toFixed(2)), 4)} mol/L.`],
         pieges: [[AX * k, 'C’est frac(A_X|k), et non A_X × k.'], [k / AX, 'Formule à l’envers : A = k × c donne c = frac(A_X|k) (et non frac(k|A_X)).']], indice: "c_X = frac(A_X|k), avec k le coefficient directeur de la droite d’étalonnage (unités cohérentes)." } },
     { id: 'cm', titre: 'La concentration en masse', focus: [],
-      retenirTitre: 'À RETENIR : DOSAGE PAR ÉTALONNAGE',
+      retenirTitre: 'Dosage par étalonnage',
       retenir: <FicheEtalonnage/>,
       texte: <>On a c<sub>m</sub> = c × M, avec c = c<sub>X</sub> (concentration trouvée à l’étape précédente) et M(CuSO₄, 5 H₂O) = 249,68 g/mol.</>,
       tache: { type: 'num', q: 'Concentration en masse c_m de la bouillie', unite: 'g/L', vrai: cmX, tol: 0.02, affiche: v => fmt(v, 1),
@@ -339,7 +348,7 @@ export function BeerLambert1G() {
           `c_m = ${fmt(Number((Number(AX.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)), 4)} × ${fmt(M_CUSO4, 2)} = ${fmt(Number((Number(AX.toFixed(3)) / Number(k.toFixed(2))).toFixed(4)) * M_CUSO4, 1)} g/L.`],
         pieges: [[cXcalc / M_CUSO4, 'C’est c × M, et non frac(c|M).']], indice: "c_m = c × M, avec M la masse molaire de l’espèce (en g/mol)." } },
     { id: 'conclusion', titre: 'Conclusion', focus: [],
-      retenirTitre: 'À RETENIR : VÉRIFIER UNE PURETÉ',
+      retenirTitre: 'Vérifier une pureté',
       retenir: <FichePurete/>,
       texte: <>Vous trouvez {fmt(cmX, 1)} g/L, soit un écart de {fmt(Math.abs(cmX - 15) / 15 * 100, 1)} % avec l'indication.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['La mesure est en accord avec l’indication « de l’ordre de 15 g/L »', 'L’étiquette est fausse'], bonne: 0, indice: "Compare ta valeur à celle de l’étiquette (« de l’ordre de 15 g/L ») en tenant compte des incertitudes de mesure." } },
@@ -361,13 +370,17 @@ export function BeerLambert1G() {
         pieges: AP == null ? [] : [[AP / k, 'C’est la concentration c_P (en mol/L). La pureté la compare à 0,080 mol/L : divisez par 0,080, puis multipliez par 100.'],
           [AP / k / 0.080, 'Vous avez le bon rapport frac(c_P|0,080), mais une pureté s’exprime en pourcentage : multipliez par 100.']],
         bloque: AP == null ? 'Préparez la solution P et mesurez son absorbance.' : null, indice: "Pureté = masse effective de sulfate de cuivre ÷ masse pesée × 100. La masse effective se déduit de la concentration mesurée." } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      retenirTitre: 'À RETENIR : LA MÉTHODE EN SIX TEMPS',
+    { id: 'bravo', titre: 'Le bilan', focus: [],
+      retenirTitre: 'La méthode en six temps',
       retenir: <FicheBilan/>,
       texte: <>Vous avez réalisé un dosage par étalonnage complet. En exploration libre, testez d'autres espèces colorées (permanganate, colorant
         E133…), et traitez vos propres mesures avec l'outil de courbe d'étalonnage. Le défi vous propose une solution inconnue.</>, tache: null },
   ];
-  const idx = id => ETAPES.findIndex(e => e.id === id);
+  const ORDRE_PARC = [['contexte', 'oeil', 'principe', 'eau', 'pourquoiBlanc', 'calibrer', 'spectreX', 'lambda', 'pourquoiMax', 'couleur', 'bilan1'],
+    ['prepa2', 'mesures', 'trace', 'modele', 'R2', 'epsilon', 'methode', 'cX', 'cm', 'conclusion', 'masse', 'purete', 'bravo']];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(e => e.id === id));
+  // étapes des autres parcours : déjà passées (parcours précédent) ou pas encore atteintes (parcours suivant)
+  const idx = id => { const k = ETAPES.findIndex(e => e.id === id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const vu = id => !enGuide || etape >= idx(id);
 
   // ════════════════ BLOCS D'AFFICHAGE ════════════════
@@ -492,8 +505,10 @@ export function BeerLambert1G() {
 
   // ════════════════ MISE EN PAGE ════════════════
   function changerMode(m) { setMode(m); if (m === 'defi' && !defi) nouveauDefi(); }
+  const NOMS_PARC = ['1. Conditions de mesure', '2. Dosage par étalonnage'];
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc === 1 && <button onClick={() => setParc(2)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours 2 : dosage par étalonnage</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
       <OngletExercices />
@@ -544,7 +559,12 @@ export function BeerLambert1G() {
               <span style={{ color: KIT.txt2 }}> — ε : coefficient d'absorption molaire (dépend de l'espèce et de λ) ; L : largeur de la cuve ; c : concentration.</span>
             </div>}
           </div>
-          {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+          {enGuide ? <>
+            <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+              <span style={{ color: KIT.txt2 }}>Parcours :</span>
+              {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+            </div>
+            <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></>
             : enDefi ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div>
               : <div style={styleBoite}>
                 <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
