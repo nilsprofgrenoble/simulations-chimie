@@ -269,7 +269,11 @@ export function SimulationParoi() {
   const [mode, setMode] = useState(() => modeOuverture('paroi-guide-v1'));
   useSignalerMode(mode);
   const [suiviDefi, noterDefi] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('paroi-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('paroi-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('paroi-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('paroi-guide-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('paroi-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [rg, setRg] = useEtatPersistant('paroi-guide-reglage-v1', { ajout: false, inv: false, ep: 100 });
   const [couches, setCouches] = useState(PRESETS.mur.couches.map(c => ({ ...c })));
   const [S, setS] = useState(PRESETS.mur.S);
@@ -291,8 +295,12 @@ export function SimulationParoi() {
   const s1 = modeleParoi({ couches: gBrique, ...G }), s2 = modeleParoi({ couches: mk(100, false), ...G });
   const A = { Rb: s1.Rtot, P1: s1.P, Rl: s2.L[1].R, Rp: s2.L[0].R, Rt: s2.Rtot, P2: s2.P, dTl: s2.P * s2.L[1].R,
     emin: (4 - s2.L[0].R - s2.L[2].R) * 0.036 * 100 };
-  const IDS = ['intro', 'lambda', 'Rb', 'P1', 'profil1', 'ajout', 'Rl', 'serie', 'P2', 'dTl', 'part', 'ordre', 'ordreQ', 'conception', 'verif', 'hypo', 'bravo'];
-  const iEt = id => IDS.indexOf(id);
+  const ORDRE_PARC = [['intro', 'lambda', 'Rb', 'P1', 'profil1', 'bilan1'],
+    ['ajout', 'Rl', 'serie', 'P2', 'dTl', 'part', 'bilan2'],
+    ['ordre', 'ordreQ', 'conception', 'verif', 'hypo', 'bravo']];
+  const IDS = ORDRE_PARC[parc - 1];
+  // étape d’un autre parcours : déjà passée (parcours précédent) ou pas encore atteinte (parcours suivant)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
   const etape = guide.etape;
   const vu = id => etape >= iEt(id);
   const apresAjout = etape > iEt('ajout') || (etape === iEt('ajout') && rg.ajout);
@@ -302,7 +310,7 @@ export function SimulationParoi() {
   const gSol = modeleParoi({ couches: gCouches, ...G });
   const partEp = Math.round(100 * 100 / 313), partR = Math.round(100 * A.Rl / A.Rt);
   const rEp = modeleParoi({ couches: mk(rg.ep, false), ...G }).Rtot;
-  const ETAPES = [
+  const TOUTES = [
     { id: 'intro', titre: 'Un mur entre l’intérieur et l’extérieur', focus: ['schema'],
       texte: <>Une paroi sépare l’intérieur d’une maison, à <strong>20 °C</strong>, de l’extérieur, à <strong>0 °C</strong>. Ici : un mur de brique de 20 cm d’épaisseur et de 1 m² de surface. On ne s’intéresse qu’à la conduction thermique à travers la paroi (ni fenêtre, ni vent).</>,
       tache: { type: 'qcm', q: 'Dans quel sens l’énergie thermique traverse-t-elle le mur ?',
@@ -334,6 +342,8 @@ export function SimulationParoi() {
       texte: <>Le graphique montre la température en chaque point de l’épaisseur du mur, de l’intérieur (à gauche) vers l’extérieur (à droite).</>,
       tache: { type: 'qcm', q: 'Comment varie la température dans une couche homogène ?', options: ['Linéairement : une droite, la température baisse de façon régulière', 'Brutalement au milieu de la couche', 'Elle reste égale à celle de l’intérieur'], bonne: 0,
         expl: 'En régime stationnaire, la même puissance P traverse chaque tranche du mur : l’écart de température par millimètre est constant dans un matériau homogène. Le profil est donc une droite, d’autant plus inclinée que λ est faible.', indice: "Dans un matériau homogène, la puissance est la même en tout point. Que dit cela du profil de température ?" } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez calculer la résistance thermique d’une couche, puis la puissance thermique qui traverse un mur de brique, et lire le profil de température. Le parcours 2 ajoute de l’isolant et étudie des couches en série.</>, tache: null },
     { id: 'ajout', titre: 'Isoler le mur', focus: ['schema', 'donnees'],
       texte: <>On ajoute du côté intérieur <strong>10 cm de laine de bois</strong> (λ = 0,036 W·m⁻¹·K⁻¹) et une <strong>plaque de plâtre de 13 mm</strong> (λ = 0,33 W·m⁻¹·K⁻¹). Même surface, mêmes températures.</>,
       tache: { type: 'action', ok: apresAjout, label: 'Isoler le mur', faire: () => setRg(x => ({ ...x, ajout: true })), consigne: apresAjout ? null : 'Cliquez pour ajouter la laine de bois et le plâtre' } },
@@ -376,8 +386,10 @@ export function SimulationParoi() {
       tache: { type: 'qcm', q: 'La brique est la couche la plus épaisse. Laquelle prend pourtant la plus grande part de l’écart de température ?',
         options: ['La laine de bois, car sa résistance thermique est la plus grande', 'La brique, car elle est la plus épaisse', 'Chaque couche en prend le même tiers'], bonne: 0,
         expl: `Ce n’est pas l’épaisseur seule qui compte, mais R_th = e / (λ·S) : un isolant (λ faible) même peu épais a une grande résistance. Ici la laine de bois fait ${partEp} % de l’épaisseur du mur mais ${partR} % de sa résistance.`, indice: "La part de l’écart de température dépend de la résistance de la couche, pas de son épaisseur seule." } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      texte: <>Vous savez additionner les résistances de couches en série, calculer la puissance après isolation et repérer la couche où tombe l’essentiel de l’écart de température. Le parcours 3 étudie l’ordre des couches et le dimensionnement de l’isolant.</>, tache: null },
     { id: 'ordre', titre: 'Changer l’ordre des couches', focus: ['schema', 'graphe'],
-      texte: <>Mettons maintenant la brique côté intérieur et le plâtre côté extérieur : les couches dans l’ordre inverse.</>,
+      texte: <>Le mur isolé du parcours 2 comporte la brique, la laine de bois et le plâtre. Mettons maintenant la brique côté intérieur et le plâtre côté extérieur : les couches dans l’ordre inverse.</>,
       tache: { type: 'action', ok: rg.inv, label: 'Inverser l’ordre des couches', faire: () => setRg(x => ({ ...x, inv: true })), consigne: rg.inv ? null : 'Cliquez pour inverser l’ordre' } },
     { id: 'ordreQ', titre: 'L’ordre change-t-il la puissance ?', focus: ['graphe'],
       texte: <>Comparez le graphique avec le précédent : les températures aux interfaces ne sont plus les mêmes.</>,
@@ -407,6 +419,7 @@ export function SimulationParoi() {
       retenir: <><FBilanParoi/></>,
       texte: <>Vous savez calculer la résistance thermique d’une couche (R<Sub c="th"/> = e / (λ·S)), additionner les résistances de couches superposées, en déduire la puissance P = ΔT / R<Sub c="th"/> et l’écart de température aux bornes de chaque couche, et dimensionner une épaisseur d’isolant. En exploration libre, chargez le simple et le double vitrage (exercice 2 du TD), ajoutez les films d’air et comparez les matériaux.</>, tache: null },
   ];
+  const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
   const enGuide = mode === 'guide';
   const hl = id => enGuide && et.focus.includes(id);
@@ -615,8 +628,10 @@ export function SimulationParoi() {
       <Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section>
     </div>
   );
+  const NOMS_PARC = ['1. Résistance et puissance thermiques d’un mur', '2. Isoler le mur : résistances en série', '3. Ordre des couches et dimensionnement'];
   const finParcours = (
-    <span style={{ display: 'flex', gap: 6 }}>
+    <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défi</button>
     </span>
@@ -637,7 +652,12 @@ export function SimulationParoi() {
       </div>
       <div className={`par-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {mode === 'defi' ? <div style={styleBoite}><>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.principal`} etat={suiviDefi} /></></div> : vue}
-        {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/>
+        {enGuide ? <div>
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
           : mode === 'defi' ? <div style={styleBoite}><div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>Hypothèses de travail</div>{hypotheses}</div>
             : null}
       </div>
