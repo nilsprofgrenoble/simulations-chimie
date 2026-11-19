@@ -5,6 +5,8 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./sonModele";
+import { puces } from "./Travail";
+import { FPeriode, FHarmo, FHauteur, FTimbre, FMoyenne, FNonPer, FAmpPuiss, FSphere, FEchelleDb, FDistanceDb, FDeuxSources } from "./SonSchemas";
 
 const SIM_ID = 87;
 declarerDefis(SIM_ID, [['freq', 'Quelle est la fréquence fondamentale du son ?'], ['timbre', 'Quel son a la même hauteur mais un autre timbre ?'], ['niveau', 'Quel niveau sonore dans une autre situation ?']]);
@@ -165,7 +167,11 @@ export function SimulationSon() {
   const [mode, setMode] = useState(() => modeOuverture('son-guide-v1'));
   useSignalerMode(mode);
   const [suiviFreq, noterFreq] = useCompteurDefi(), [suiviTimbre, noterTimbre] = useCompteurDefi(), [suiviNiv, noterNiv] = useCompteurDefi();
-  const [guide, setGuide] = useEtatPersistant('son-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
+  const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
+  const [g1, setG1] = useEtatPersistant('son-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('son-guide-p2', VIDE), [g3, setG3] = useEtatPersistant('son-guide-p3', VIDE);
+  const [parcBrut, setParc] = useEtatPersistant('son-parcours-choix', 1);
+  const parc = [1, 2, 3].includes(parcBrut) ? parcBrut : 1;
+  const guide = [g1, g2, g3][parc - 1], setGuide = [setG1, setG2, setG3][parc - 1];
   const [defi, setDefi] = useState(null);
   const [typeDefi, setTypeDefi] = useState('freq');
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -199,7 +205,7 @@ export function SimulationSon() {
   const ampOk = synthe && M.typeDe(sy.preset) === 'periodique' && sy.f1 === 500 && sy.u0 === 0 && Math.abs(sy.a[0] - 0.5) < 0.01 && sy.a.slice(1).every(x => x === 0);
   const bloqueRepere = pointe ? null : 'Placez d’abord les repères (étape « Mesurer trois périodes »), ou utilisez le bouton « Rétablir ».';
   const IIe = M.intensite(1e-3, 1), LL = M.niveauSource(1e-3, 1), L2 = M.niveauSource(1e-3, 2), Ln = M.niveauSource(1e-3, 1, 2);
-  const ETAPES = [
+  const TOUTES = [
     { id: 'pur', titre: 'Un son pur', focus: ['temps', 'spectre'], cible: cible.pur,
       texte: <>Un diapason émet un son très proche d’un <strong>son pur</strong> : la pression de l’air varie de façon <strong>sinusoïdale</strong>. Ici, on affiche (en unités arbitraires) la tension <em>u</em> qui commande un haut-parleur : en haut en fonction du temps, en bas son <strong>spectre</strong>, c’est-à-dire l’amplitude de chacune de ses composantes sinusoïdales selon leur fréquence.</>,
       tache: { type: 'qcm', q: 'Que montre le spectre d’un son pur ?', options: ['une seule raie, à la fréquence du son', 'une raie à la fréquence du son et une raie à chacun de ses multiples', 'une multitude de raies sans lien entre elles'], bonne: 0,
@@ -220,16 +226,8 @@ export function SimulationSon() {
         pieges: [[1 / (d / 3), 'T est en millisecondes : convertissez-la en secondes avant de calculer 1 / T.'], [1 / (d / 3) * 1000 * 1000, 'Vérifiez la conversion : 1 ms = 10⁻³ s.']],
         expl: 'f = 1 / T = 500 Hz. Le spectre confirme : la raie est à 500 Hz.', indice: "f = 1 ÷ T, avec T en secondes." } },
     { id: 'violon', titre: 'Un son complexe', focus: ['reglages', 'temps', 'spectre'],
-      retenirTitre: 'À RETENIR : SON PUR, PÉRIODE ET FRÉQUENCE',
-      retenir: <>
-        <Formule><mi>f</mi><mo>=</mo><mfrac><mn>1</mn><mi>T</mi></mfrac><mspace width="1.5em"/><mi>T</mi><mo>=</mo><mfrac><mi>d</mi><mi>n</mi></mfrac></Formule>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Un <strong>son pur</strong> est sinusoïdal ; son <strong>spectre</strong> ne comporte qu’<strong>une raie</strong>, à la fréquence f.</li>
-          <li>La <strong>période T</strong> est la durée d’un motif complet ; la <strong>fréquence f</strong> est le nombre de périodes par seconde (Hz, avec T en s).</li>
-          <li>Pour mesurer T précisément, on mesure la durée d de <strong>n périodes</strong> (ici 3) : T = d / n ; convertir ms → s avant de calculer f.</li>
-          <li>Un son complexe périodique se répète : sa période est celle de son <strong>fondamental</strong>.</li>
-        </ul>
-      </>,
+      retenirTitre: 'Période et fréquence',
+      retenir: <><FPeriode/><Formule><mi>f</mi><mo>=</mo><mfrac><mn>1</mn><mi>T</mi></mfrac><mspace width="1.5em"/><mi>T</mi><mo>=</mo><mfrac><mi>d</mi><mi>n</mi></mfrac></Formule>{puces(<>Un son pur est une sinusoïde : son spectre ne comporte qu’<strong>une raie</strong>, à la fréquence f.</>, <>Convertir les ms en s avant de calculer f = 1 ÷ T.</>)}</>,
       texte: <>Un instrument réel n’émet pas un son pur. Affichez le son d’un <strong>violon</strong>, joué avec le même fondamental (500{NB}Hz) : la courbe n’est plus sinusoïdale et le spectre comporte plusieurs raies. Vous pouvez aussi l’<strong>écouter</strong> avec la barre « Écouter » en bas de l’écran.</>,
       tache: { type: 'action', ok: synthe && sy.preset === 'violon' && sy.f1 === 500, label: 'Jouer le violon', consigne: 'Choisissez le timbre « Violon » à 500 Hz', faire: () => { setScene('synthe'); setSy(syDe('violon', 500, T_PLACE)); } } },
     { id: 'periodeC', titre: 'La période d’un son complexe', focus: ['temps'], cible: cible.vio,
@@ -242,6 +240,8 @@ export function SimulationSon() {
         calcul: () => ['f₃ = 3 × f₁ = 3 × 500 = 1 500 Hz.'], pieges: [[1000, '1 000 Hz est l’harmonique de rang 2 : le rang 3 correspond à 3 × f₁.'], [2000, '2 000 Hz est l’harmonique de rang 4.']],
         expl: 'f₃ = 3 × 500 = 1 500 Hz : on la lit sur le spectre, troisième raie.', indice: "L’harmonique de rang n a pour fréquence n × f₁." } },
     { id: 'hauteur', titre: 'Monter le fondamental', focus: ['reglages', 'spectre'],
+      retenirTitre: 'Fondamental et harmoniques',
+      retenir: <><FHarmo/>{puces(<>Un son périodique a pour période celle de son <strong>fondamental</strong> ; ses harmoniques ont des fréquences multiples.</>, <>La hauteur du son est donnée par la fréquence du fondamental.</>)}</>,
       texte: <>Réglez le fondamental sur <strong>1 000{NB}Hz</strong> avec le curseur, en gardant le timbre « Violon ».</>,
       tache: { type: 'action', ok: synthe && sy.preset === 'violon' && sy.f1 >= 950, label: 'Régler f₁ = 1 000 Hz', consigne: 'Fondamental à 1 000 Hz, timbre Violon', faire: () => { setScene('synthe'); setSy(syDe('violon', 1000, T_PLACE)); } } },
     { id: 'hauteur2', titre: 'La hauteur', focus: ['spectre', 'temps'], cible: cible.vio1000,
@@ -249,28 +249,18 @@ export function SimulationSon() {
       tache: { type: 'qcm', q: 'Quand le fondamental passe de 500 à 1 000 Hz, le son est perçu…', options: ['plus aigu, avec le même timbre', 'plus grave, avec le même timbre', 'plus aigu, avec un timbre différent'], bonne: 0,
         expl: 'La hauteur d’un son est modélisée par la fréquence de son fondamental : plus elle est élevée, plus le son est aigu. Les amplitudes relatives des harmoniques n’ont pas changé, donc le timbre non plus.', indice: "La hauteur dépend du fondamental ; le timbre, de la répartition des amplitudes." } },
     { id: 'clarinette', titre: 'Même note, autre instrument', focus: ['reglages', 'spectre'],
+      retenirTitre: 'La hauteur',
+      retenir: <><FHauteur/>{puces(<>Le fondamental passe de 500 à 1 000 Hz : le son est plus <strong>aigu</strong>, et la période est divisée par deux.</>, <>Le timbre ne change pas : les amplitudes relatives restent les mêmes.</>)}</>,
       texte: <>Passez à la <strong>clarinette</strong>, toujours à 1 000{NB}Hz : même note que le violon, instrument différent.</>,
       tache: { type: 'action', ok: synthe && sy.preset === 'clarinette' && sy.f1 === 1000, label: 'Jouer la clarinette', consigne: 'Timbre « Clarinette » à 1 000 Hz', faire: () => { setScene('synthe'); setSy(syDe('clarinette', 1000, T_PLACE)); } } },
     { id: 'timbre', titre: 'Le timbre', focus: ['spectre', 'temps'],
-      retenirTitre: 'À RETENIR : HAUTEUR, TIMBRE ET HARMONIQUES',
-      retenir: <>
-        <svg viewBox="0 0 380 140" role="img" aria-label="Deux spectres schématiques de sons de même hauteur : le violon présente le fondamental et plusieurs harmoniques ; la clarinette ne présente que les harmoniques impairs, f1, 3 f1 et 5 f1 ; les amplitudes relatives des raies différencient les timbres, la hauteur est donnée par la fréquence du fondamental" style={{ width: '100%', maxWidth: 380, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <line x1="16" y1="110" x2="170" y2="110" stroke="#334155" strokeWidth="1.5" /><line x1="214" y1="110" x2="368" y2="110" stroke="#334155" strokeWidth="1.5" />
-          <rect x="24" y="30" width="8" height="80" fill="#0072b2" /><text x="28" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">1f₁</text><rect x="54" y="60" width="8" height="50" fill="#0072b2" /><text x="58" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">2f₁</text><rect x="84" y="72" width="8" height="38" fill="#0072b2" /><text x="88" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">3f₁</text><rect x="114" y="86" width="8" height="24" fill="#0072b2" /><text x="118" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">4f₁</text><rect x="144" y="96" width="8" height="14" fill="#0072b2" /><text x="148" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">5f₁</text><rect x="222" y="30" width="8" height="80" fill="#d55e00" /><text x="226" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">1f₁</text><text x="256" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">2f₁</text><rect x="282" y="66" width="8" height="44" fill="#d55e00" /><text x="286" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">3f₁</text><text x="316" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">4f₁</text><rect x="342" y="86" width="8" height="24" fill="#d55e00" /><text x="346" y="124" textAnchor="middle" fontSize="9.5" fill="#475569">5f₁</text>
-          <text x="93" y="16" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0072b2">violon (schéma)</text><text x="291" y="16" textAnchor="middle" fontSize="12" fontWeight="700" fill="#d55e00">clarinette (impairs seulement)</text>
-        </svg>
-        <Formule><msub><mi>f</mi><mi>n</mi></msub><mo>=</mo><mi>n</mi><mo>×</mo><msub><mi>f</mi><mn>1</mn></msub><mspace width="1.5em"/><mtext>(n = 2, 3, 4…)</mtext></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur perçue</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Ce que l’on lit sur le spectre</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Remarque</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>hauteur</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>fréquence du fondamental f₁</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>plus f₁ est grande, plus le son est aigu</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>timbre</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>amplitudes relatives des harmoniques</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>permet de distinguer deux instruments jouant la même note</td></tr>
-          </tbody>
-        </table>
-      </>,
       texte: <>Comparez le spectre de la clarinette à celui du violon : le fondamental est au même endroit, mais les raies suivantes n’ont pas les mêmes amplitudes (ici, seuls les harmoniques impairs sont présents).</>,
       tache: { type: 'qcm', q: 'Deux instruments jouent la même note. Qu’est-ce qui distingue leurs spectres ?', options: ['les amplitudes des harmoniques : c’est le timbre', 'la fréquence du fondamental : c’est la hauteur', 'la durée de la période'], bonne: 0,
         expl: 'Même hauteur : même fondamental, donc même période. Le timbre est lié à la forme du signal, c’est-à-dire aux amplitudes relatives des harmoniques.', indice: "Même note, donc même fondamental : qu’est-ce qui reste différent ?" } },
+    { id: 'bilan1', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Hauteur et timbre',
+      retenir: <><FTimbre/>{puces(<>Même note : même fondamental, donc même hauteur et même période.</>, <>Le <strong>timbre</strong> vient des amplitudes relatives des harmoniques : il distingue deux instruments.</>)}</>,
+      texte: <>Vous savez lire la période et la fréquence d’un son, repérer ses harmoniques et distinguer hauteur et timbre. Passez au parcours 2 : composante continue et sons non périodiques.</>, tache: null },
     { id: 'continue', titre: 'La raie à 0 Hz', focus: ['reglages', 'spectre'],
       texte: <>Ajoutez une <strong>composante continue</strong> <em>u</em><sub>0</sub> = 1 avec le curseur : le signal est décalé vers le haut. Une nouvelle raie apparaît à 0{NB}Hz.</>,
       tache: { type: 'action', ok: synthe && sy.u0 >= 0.5, label: 'Ajouter u₀ = 1', consigne: 'Composante continue u₀ = 1', faire: () => { setScene('synthe'); setSy(s => ({ ...s, u0: 1 })); } } },
@@ -279,20 +269,18 @@ export function SimulationSon() {
       tache: { type: 'qcm', q: 'Que représente la raie à 0 Hz ?', options: ['la valeur moyenne du signal (composante continue), qui ne produit pas de son (seules les variations de pression sont perçues)', 'un harmonique très grave', 'une erreur de mesure'], bonne: 0,
         expl: 'Une composante de fréquence nulle ne varie pas : c’est la valeur moyenne du signal. Elle ne fait pas vibrer l’air : seules les variations de pression sont perçues, donc cette composante ne s’entend pas et n’apporte aucune puissance acoustique.', indice: "Une fréquence nulle correspond à un signal qui ne varie pas." } },
     { id: 'nonper', titre: 'Un son non périodique', focus: ['reglages', 'spectre', 'temps'],
+      retenirTitre: 'La raie à 0 Hz',
+      retenir: <><FMoyenne/>{puces(<>La raie à <strong>0 Hz</strong> représente la valeur moyenne du signal (composante continue u₀).</>, <>Elle ne produit pas de son : seules les <strong>variations</strong> de pression sont perçues.</>)}</>,
       texte: <>Affichez maintenant un <strong>son non périodique</strong> : ses composantes ont des fréquences sans rapport simple entre elles.</>,
       tache: { type: 'action', ok: synthe && sy.preset === 'nonper', label: 'Afficher le son non périodique', consigne: 'Timbre « Son non périodique »', faire: () => { setScene('synthe'); setSy(syDe('nonper', 500, T_PLACE)); } } },
     { id: 'nonper2', titre: 'Pas de motif qui se répète', focus: ['spectre', 'temps'],
-      retenirTitre: 'À RETENIR : COMPOSANTE CONTINUE ET SON NON PÉRIODIQUE',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>La raie à <strong>0 Hz</strong> représente la <strong>valeur moyenne</strong> du signal (composante continue u₀) ; elle ne produit pas de son : seules les <strong>variations</strong> de pression sont perçues.</li>
-          <li>Un son <strong>périodique</strong> a des raies aux multiples d’une même fréquence (fondamental + harmoniques).</li>
-          <li>Un son <strong>non périodique</strong> n’a pas de motif qui se répète : ses raies ne sont pas aux multiples d’une même fréquence ; il n’a pas de hauteur bien définie (la frontière n’est pas nette : une cloche reste musicale).</li>
-        </ul>
-      </>,
       texte: <>Cherchez un motif qui se répète exactement dans la courbe : il n’y en a pas. Dans le spectre, les raies ne sont pas aux multiples d’une même fréquence.</>,
       tache: { type: 'qcm', q: 'Un signal dont le spectre n’est pas formé de multiples d’une même fréquence est…', options: ['non périodique : sans hauteur bien définie (une cloche, très inharmonique, reste pourtant musicale : la frontière n’est pas nette)', 'périodique, de période 2 ms', 'un son pur'], bonne: 0,
         expl: 'Une onde périodique donne une hauteur bien définie : son spectre est fait d’un fondamental et de ses harmoniques. Ici ce n’est pas le cas : on perçoit un son sans hauteur précise. Certains sons presque non périodiques, comme celui d’une cloche, restent musicaux, mais leur hauteur est moins nette.', indice: "Un signal périodique a un spectre formé de multiples de son fondamental." } },
+    { id: 'bilan2', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Périodique ou non ?',
+      retenir: <><FNonPer/>{puces(<>Un son périodique a des raies aux multiples d’une même fréquence ; un son non périodique n’a pas de motif qui se répète.</>, <>La frontière n’est pas nette : une cloche, presque non périodique, reste musicale.</>)}</>,
+      texte: <>Vous savez interpréter la raie à 0 Hz et reconnaître un son non périodique. Passez au parcours 3 : le niveau sonore.</>, tache: null },
     { id: 'amplitude', titre: 'Diviser l’amplitude par 2', focus: ['reglages', 'mesures'],
       texte: <>Revenez au son pur de 500{NB}Hz et réglez son amplitude <em>a</em><sub>1</sub> sur 0,5 (au lieu de 1). La puissance acoustique moyenne relative P<sub>rel</sub> = Σ <em>a</em>²/2 apparaît dans « Mesures » : pour <em>a</em><sub>1</sub> = 1, elle vaut 0,50.</>,
       tache: { type: 'action', ok: ampOk, label: 'Régler a₁ = 0,5', consigne: 'Son pur de 500 Hz, amplitude a₁ = 0,5', faire: () => { setScene('synthe'); setSy({ ...BASE_SY, ...T_PLACE, a: [0.5, 0, 0, 0, 0, 0] }); } } },
@@ -303,24 +291,8 @@ export function SimulationSon() {
         pieges: [[0.5, 'La puissance moyenne est proportionnelle au carré de l’amplitude : (0,5)² = 0,25, et non 0,5.']],
         expl: 'P est proportionnelle à A² : en multipliant A par 0,5, on multiplie P par 0,5² = 0,25. La puissance est divisée par 4 : elle ne varie pas proportionnellement à l’amplitude.', indice: "La puissance est proportionnelle au carré de l’amplitude." } },
     { id: 'niveau', titre: 'Le niveau d’intensité sonore', focus: ['scene'],
-      retenirTitre: 'À RETENIR : INTENSITÉ ET NIVEAU SONORE',
-      retenir: <>
-        <Formule><mi>I</mi><mo>=</mo><mfrac><mi>P</mi><mrow><mn>4</mn><mi>π</mi><msup><mi>r</mi><mn>2</mn></msup></mrow></mfrac><mspace width="1.5em"/><mi>L</mi><mo>=</mo><mn>10</mn><mo>×</mo><mi>log</mi><mfrac><mi>I</mi><msub><mi>I</mi><mn>0</mn></msub></mfrac></Formule>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Grandeur</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Signification</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Unité</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>P</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>puissance de la source</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>W</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>S = 4π r²</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>aire de la sphère de rayon r</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>m²</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>I</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>intensité sonore (puissance par unité de surface)</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>W·m⁻²</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>I₀</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>seuil de référence : 1,0 × 10⁻¹²</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>W·m⁻²</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>L</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>niveau d’intensité sonore</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>dB</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Puissance moyenne relative : P<sub>rel</sub> = Σ a² / 2 : elle est proportionnelle à l’<strong>amplitude au carré</strong> (amplitude × 2 : puissance × 4, soit + 6 dB).</li>
-          <li>log est le logarithme décimal (touche « log » de la calculatrice).</li>
-        </ul>
-      </>,
+      retenirTitre: 'Amplitude et puissance',
+      retenir: <><FAmpPuiss/>{puces(<>La puissance acoustique est proportionnelle au <strong>carré de l’amplitude</strong>.</>, <>Amplitude × 2 : puissance × 4, soit + 6 dB.</>)}</>,
       texte: <>L’oreille n’est pas proportionnelle à la puissance reçue : on décrit le « volume sonore » par le <strong>niveau d’intensité sonore</strong> <em>L</em>, en décibels : <em>L</em> = 10 × log(<em>I</em> / <em>I</em><sub>0</sub>), avec <em>I</em><sub>0</sub> = 1,0 × 10⁻¹²{NB}W·m⁻². L’<strong>intensité</strong> <em>I</em> est la puissance reçue par unité de surface : <em>I</em> = <em>P</em> / <em>S</em>. Hypothèse : source ponctuelle qui émet de la même façon dans toutes les directions, en champ libre (sans sol ni mur réfléchissant), donc <em>S</em> = 4π<em>r</em>². La source émet <em>P</em> = 1,0{NB}mW.</>,
       tache: { type: 'action', ok: scene === 'niveau' && memeNv(nv, NV_BASE), label: 'Afficher la source (1 mW, à 1 m)', consigne: 'Source de 1,0 mW, sonomètre à 1,0 m', faire: () => { setScene('niveau'); setNv(NV_BASE); } } },
     { id: 'surface', titre: 'La surface de la sphère', focus: ['scene'], cible: cible.nv,
@@ -329,6 +301,8 @@ export function SimulationSon() {
         calcul: () => ['S = 4π r² = 4 × π × (1,00)² = 12,57 m².'], pieges: [[Math.PI, 'Le disque a pour aire πr² ; la sphère a pour aire 4πr².']],
         expl: 'S = 4π r² ≈ 12,57 m².', indice: "S = 4πr², avec r la distance à la source." } },
     { id: 'I', titre: 'L’intensité sonore', focus: ['scene'], cible: cible.nv,
+      retenirTitre: 'Intensité sonore',
+      retenir: <><FSphere/><Formule><mi>I</mi><mo>=</mo><mfrac><mi>P</mi><mrow><mn>4</mn><mi>π</mi><msup><mi>r</mi><mn>2</mn></msup></mrow></mfrac></Formule>{puces(<>Une source ponctuelle rayonne dans toutes les directions : en champ libre, la puissance se répartit sur une sphère.</>)}</>,
       texte: <>Calculez l’intensité <em>I</em> = <em>P</em> / <em>S</em> à 1,00{NB}m, avec <em>P</em> = 1,0 × 10⁻³{NB}W et <em>S</em> = 12,57{NB}m² (étape précédente).</>,
       tache: { type: 'num', q: 'Intensité I', unite: 'W·m⁻²', vrai: IIe, tol: 0.01, affiche: v => sci(v, 3), cs: 3, aide: 'Écrivez par exemple 7,96e-5 pour 7,96 × 10⁻⁵.', bloque: okCible(cible.nv) ? null : 'Affichez d’abord la source de 1 mW à 1 m (bouton « Rétablir »).',
         calcul: () => ['I = P / S = 1,0 × 10⁻³ / 12,57 = 7,96 × 10⁻⁵ W·m⁻².'], pieges: [[1e-3, 'Vous avez donné la puissance : l’intensité est une puissance par unité de surface, divisez par S.']],
@@ -340,6 +314,8 @@ export function SimulationSon() {
         pieges: [[10 * Math.log10(IIe), 'Vous avez oublié de diviser par I₀ avant de prendre le logarithme.'], [Math.log10(IIe / M.I0), 'Il manque le facteur 10 : L = 10 × log(I / I₀).']],
         expl: 'L = 10 × log(I / I₀) ≈ 79,0 dB.', indice: "L = 10·log(I ÷ I₀), avec I₀ = 10⁻¹² W·m⁻²." } },
     { id: 'dist', titre: 'Doubler la distance', focus: ['reglages', 'scene'],
+      retenirTitre: 'Le niveau en décibels',
+      retenir: <><FEchelleDb/><Formule><mi>L</mi><mo>=</mo><mn>10</mn><mo>×</mo><mi>log</mi><mfrac><mi>I</mi><msub><mi>I</mi><mn>0</mn></msub></mfrac></Formule>{puces(<>I₀ = 1,0 × 10⁻¹² W·m⁻² est le seuil de référence ; log est le logarithme décimal.</>)}</>,
       texte: <>Placez maintenant le sonomètre à <strong>2,0{NB}m</strong> de la source. Pensez à ce que devient la surface sur laquelle la puissance se répartit.</>,
       tache: { type: 'action', ok: scene === 'niveau' && memeNv(nv, { ...NV_BASE, r: 2 }), label: 'Placer le sonomètre à 2 m', consigne: 'Distance r = 2,0 m, une seule source de 1 mW', faire: () => { setScene('niveau'); setNv({ ...NV_BASE, r: 2 }); } } },
     { id: 'L2', titre: 'Le niveau à 2 m', focus: ['scene'],
@@ -353,43 +329,29 @@ export function SimulationSon() {
       tache: { type: 'qcm', q: 'Quand on double la distance à une source ponctuelle (champ libre), le niveau…', options: ['diminue d’environ 6 dB', 'est divisé par 2', 'diminue d’environ 3 dB'], bonne: 0,
         expl: 'I est divisée par 4, donc L diminue de 10 × log(4) ≈ 6,0 dB, quelle que soit la distance de départ.', indice: "Doubler la distance multiplie S par 4, donc divise I par 4. De combien baisse L = 10·log(I ÷ I₀) ?" } },
     { id: 'sources', titre: 'Deux sources identiques', focus: ['reglages', 'scene'],
+      retenirTitre: 'Distance et niveau',
+      retenir: <><FDistanceDb/>{puces(<>Doubler la distance : surface × 4, intensité ÷ 4, niveau − 6 dB.</>, <>En champ libre, I diminue comme 1 ÷ r².</>)}</>,
       texte: <>Revenez à 1,0{NB}m et ajoutez une deuxième source identique, au même endroit. Les deux sources sont indépendantes : leurs <strong>puissances s’ajoutent</strong>.</>,
       tache: { type: 'action', ok: scene === 'niveau' && memeNv(nv, { k: -3, r: 1, n: 2 }), label: 'Mettre deux sources', consigne: 'Deux sources de 1 mW, sonomètre à 1,0 m', faire: () => { setScene('niveau'); setNv({ k: -3, r: 1, n: 2 }); } } },
     { id: 'Ln', titre: 'Le niveau de deux sources', focus: ['scene'],
-      retenirTitre: 'À RETENIR : DISTANCE ET NOMBRE DE SOURCES',
-      retenir: <>
-                <table style={{ borderCollapse: 'collapse', margin: '6px 0 2px', fontSize: 13.5 }}>
-          <thead><tr><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Changement</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Surface / puissance</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Intensité</th><th style={{ padding: '2px 8px', whiteSpace: 'nowrap', textAlign: 'left', borderBottom: '1px solid #7aa6d6' }}>Niveau</th></tr></thead>
-          <tbody>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>distance × 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>S × 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>I ÷ 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>− 6 dB</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>2 sources identiques</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>P × 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>I × 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>+ 3 dB</td></tr>
-            <tr><td style={{ padding: '2px 8px', verticalAlign: 'top', whiteSpace: 'nowrap' }}>amplitude × 2</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>P × 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>I × 4</td><td style={{ padding: '2px 8px', verticalAlign: 'top' }}>+ 6 dB</td></tr>
-          </tbody>
-        </table>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Pour deux sources indépendantes, les <strong>intensités s’ajoutent</strong>, pas les niveaux : L = 10 log((I₁ + I₂) / I₀).</li>
-          <li>En champ libre, une source ponctuelle rayonne sur une sphère : I diminue en 1/r².</li>
-        </ul>
-      </>,
       texte: <>La puissance totale est doublée. À 1,0{NB}m, une seule source donnait <em>I</em> = 7,96 × 10⁻⁵{NB}W·m⁻² et <em>L</em> = 79,0{NB}dB. Calculez le niveau avec les deux sources (on additionne les <em>intensités</em>, pas les niveaux).</>,
       tache: { type: 'num', q: 'Niveau L pour deux sources', unite: 'dB', vrai: Ln, tol: 0.004, affiche: v => nbf(v, 1), cs: 2, bloque: scene === 'niveau' && memeNv(nv, { k: -3, r: 1, n: 2 }) ? null : 'Mettez d’abord deux sources à 1 m (étape précédente, bouton « Rétablir »).',
         calcul: () => ['I totale = 2 × 7,96 × 10⁻⁵ = 1,59 × 10⁻⁴ W·m⁻².', 'L = 10 × log(1,59 × 10⁻⁴ / 1,0 × 10⁻¹²) = 10 × log(1,59 × 10⁸) = 82,0 dB.'],
         pieges: [[2 * LL, 'On n’additionne pas les niveaux en décibels : on additionne les intensités, puis on calcule le niveau.'], [LL, 'Il faut tenir compte de la deuxième source : la puissance totale est doublée.']],
         expl: 'L = 10 × log(2I / I₀) = 79,0 + 10 × log 2 ≈ 82,0 dB : deux sources identiques ajoutent environ 3 dB.', indice: "Deux sources identiques doublent l’intensité (et non le niveau)." } },
-    { id: 'bilan', titre: 'Bilan', focus: [],
-      retenirTitre: 'À RETENIR',
-      retenirTitre: 'À RETENIR : LE BILAN',
-      retenir: <>
-        <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Son pur</strong> : sinusoïde, une seule raie ; f = 1 / T.</li>
-          <li><strong>Son musical</strong> : onde périodique ; spectre = fondamental f₁ + harmoniques n × f₁. <strong>Hauteur</strong> = f₁ ; <strong>timbre</strong> = amplitudes relatives des harmoniques.</li>
-          <li>Puissance ∝ amplitude² ; I = P / 4π r² ; L = 10 log(I / I₀).</li>
-          <li>Distance × 2 : − 6 dB ; deux sources identiques : + 3 dB (on additionne les intensités).</li>
-        </ul>
-      </>,
+    { id: 'bilan', titre: 'Le bilan', focus: [],
+      retenirTitre: 'Deux sources',
+      retenir: <><FDeuxSources/>{puces(<>Deux sources identiques indépendantes : les <strong>intensités</strong> s’ajoutent, pas les niveaux : L = 10 × log((I₁ + I₂) ÷ I₀).</>)}</>,
       texte: <>Vous savez lire un son sur sa courbe et sur son spectre, distinguer hauteur et timbre, et calculer un niveau sonore. Essayez maintenant les défis.</>, tache: null },
   ];
-  const IDS = ETAPES.map(e => e.id), apres = id => !enGuide || etape > IDS.indexOf(id), depuis = id => !enGuide || etape >= IDS.indexOf(id);
+  const ORDRE_PARC = [['pur', 'repere', 'mesureT', 'freq', 'violon', 'periodeC', 'harm3', 'hauteur', 'hauteur2', 'clarinette', 'timbre', 'bilan1'],
+    ['continue', 'continue2', 'nonper', 'nonper2', 'bilan2'],
+    ['amplitude', 'puissance', 'niveau', 'surface', 'I', 'L', 'dist', 'L2', 'dist3', 'sources', 'Ln', 'bilan']];
+  const ETAPES = ORDRE_PARC[parc - 1].map(id => TOUTES.find(e => e.id === id));
+  const IDS = ETAPES.map(e => e.id);
+  // étapes des autres parcours : déjà passées (parcours précédents) ou pas encore atteintes (parcours suivants)
+  const iEt = id => { const k = IDS.indexOf(id); if (k >= 0) return k; return ORDRE_PARC.findIndex(o => o.includes(id)) < parc - 1 ? -1 : Infinity; };
+  const apres = id => !enGuide || etape > iEt(id), depuis = id => !enGuide || etape >= iEt(id);
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
   const cibleEtape = enGuide ? ETAPES[Math.min(etape, ETAPES.length - 1)].cible : null;
@@ -397,7 +359,7 @@ export function SimulationSon() {
   const rendreBase = () => { if (cibleEtape.scene) setScene(cibleEtape.scene); if (cibleEtape.sy) setSy(cibleEtape.sy); if (cibleEtape.nv) setNv(cibleEtape.nv); };
   // en parcours guidé, le niveau et l’intensité ne sont affichés qu’une fois les calculs faits par l’élève
   const afficheL = !enGuide || (etape > IDS.indexOf('Ln'));
-  const afficheI = !enGuide || etape > IDS.indexOf('Ln');
+  const afficheI = !enGuide || etape > iEt('Ln');
   const idE = ETAPES[Math.min(etape, ETAPES.length - 1)].id;
 
   // ════════════════ DÉFIS ════════════════
@@ -477,8 +439,10 @@ export function SimulationSon() {
       <li><strong>Écoute</strong> : le « bruit » entendu est un bruit blanc (spectre continu), alors que l’écran montre 60 raies. Le volume réel dépend de votre appareil ; il est plafonné ici. L’amplitude à l’écran n’est pas étalonnée en décibels, et on ne tient pas compte de la sensibilité de l’oreille selon la fréquence.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
+  const NOMS_PARC = ['1. Spectre, hauteur et timbre', '2. Composante continue et sons non périodiques', '3. Niveau sonore'];
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+      {parc < 3 && <button onClick={() => setParc(parc + 1)} style={styleBouton(true, ORANGE_GUIDE)}>Parcours {parc + 1} : {NOMS_PARC[parc].slice(3).toLowerCase()}</button>}
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0369a1')}><Pic n="target"/>Défis</button>
     </span>);
@@ -663,7 +627,12 @@ export function SimulationSon() {
         {[['synthe', 'Spectre et timbre'], ['niveau', 'Niveau sonore']].map(([k, l]) => <button key={k} onClick={() => { setScene(k); audio.arreter(); }} aria-pressed={scene === k} style={stylePetitBouton(scene === k, COUL)}>{l}</button>)}
       </div>}
       <div className={`so-l1${mode !== 'explore' ? ' cote' : ''}`}>
-        {enGuide ? <div className="so-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="so-carte">{panneauHypo}</div> : null}
+        {enGuide ? <div className="so-carte">
+          <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>
+            <span style={{ color: KIT.txt2 }}>Parcours :</span>
+            {NOMS_PARC.map((l, i) => <button key={i} onClick={() => setParc(i + 1)} aria-pressed={parc === i + 1} style={{ ...styleBouton(parc === i + 1, ORANGE_GUIDE), fontSize: 13 }}>{l}</button>)}
+          </div>
+          <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="so-carte">{panneauHypo}</div> : null}
         <div className="so-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'freq' ? suiviFreq : defi.type === 'timbre' ? suiviTimbre : suiviNiv}/></div>}
           <div className={`so-pri${mode !== 'explore' || !colDroite ? ' pile' : ''}`}>
