@@ -1,4 +1,5 @@
 import { presenter } from './presenter.js';
+import { OEIL2GT_VAL } from './oeilReduit2gtExos.js';
 // ====================================================
 //  BANQUE DE L'ATELIER « VALIDER » (compétence VAL : juger la vraisemblance d'un résultat, le comparer à une référence)
 // ====================================================
@@ -3841,6 +3842,7 @@ export const PLAUSIBLES = [
       F('« le colorant est un mélange, car une CCM en montre toujours plusieurs »', 'Un corps pur ne donne qu’une tache : rien ne dit ici qu’il s’agit d’un mélange.'),
       F('« le colorant est un corps pur, car il est coloré »', 'La couleur ne dit rien de la pureté : un mélange de colorants est coloré lui aussi.'),
     ] }),
+  ...OEIL2GT_VAL,
   // ───────────────────────────── Changement d'état (2GT, sim 195)
   P({ id: 'etat2gt-val-glacon-grammes', domaine: 'Changement d’état (2GT)', niveau: 1, titre: 'Fondre un glaçon de 20 g', plausible: false,
     enonce: 'Un élève calcule l’énergie pour faire fondre un glaçon de 20 g, avec L = 334 kJ/kg : « E = 20 × 334 = 6 680 kJ ».',

@@ -1581,6 +1581,69 @@ function genPur2GT() {
     retenir: ['Un corps pur a un palier (température constante pendant l’ébullition) ; un mélange n’en a pas, ou bout à une température qui n’est pas celle de la référence.', 'Valeur lue ± précision : la vraie température est dans cette zone.', 'Une valeur lue est compatible avec une référence si l’écart est inférieur à la précision ; on identifie un liquide en gardant les références compatibles.'] };
 }
 
+// ───────────── L’œil réduit (2GT) : hauteur de l’image par Thalès, hauteur de l’objet, distance, proportionnalité, image nette ou floue, accommodation ─────────────
+const OEIL2GT_OBJETS = [
+  { art: 'un arbre', sit: 'situé', de: 'd’un arbre', AB: [4.0, 5.0, 6.0, 8.0, 10.0], D: [30, 40, 50, 60, 80, 100] },
+  { art: 'un poteau', sit: 'situé', de: 'd’un poteau', AB: [3.0, 4.0, 5.0, 6.0], D: [20, 30, 40, 60] },
+  { art: 'un clocher', sit: 'situé', de: 'd’un clocher', AB: [15, 20, 25, 30], D: [100, 150, 200, 300] },
+  { art: 'une personne', sit: 'située', de: 'd’une personne', AB: [1.6, 1.7, 1.8], D: [10, 12, 15, 20, 25] },
+];
+// couple (AB, D) tiré avec des rayons peu inclinés : AB ÷ OA ≤ 0,16 (hypothèse de la simulation) ; AB et D en m
+export const oeil2gtPaire = o => { for (let k = 0; k < 500; k++) { const AB = tire(o.AB), D = tire(o.D); if (AB / D <= 0.16) return [AB, D]; } return [o.AB[0], o.D[o.D.length - 1]]; };
+const oeil2gtDist = x => Number(x).toLocaleString('fr-FR', { maximumFractionDigits: 0 }).replace(/\s/g, NB);       // distances entières, espace insécable à partir de 1 000
+// Options d'une question : la bonne réponse n'est jamais la plus longue
+const oeil2gtOptions = (bonne, faux) => {
+  for (let k = 0; k < 200; k++) { const o = melange([bonne, ...faux]), L = o.map(x => x.length); if (L[o.indexOf(bonne)] < Math.max(...L)) return o; }
+  return melange([bonne, ...faux]);
+};
+function genOeil2GT() {
+  const OAP = 17;
+  const o0 = tire(OEIL2GT_OBJETS), [AB0, D0] = oeil2gtPaire(o0), v0 = AB0 * OAP / D0;
+  const q0 = { id: 'g0', type: 'num', q: <>Un œil normal (la rétine est à <b>OA′ = 17{NB}mm</b> de la lentille) regarde {o0.art} de <b>AB = {nb(AB0, 2)}{NB}m</b> {o0.sit} à <b>OA = {oeil2gtDist(D0)}{NB}m</b>. L’image est nette sur la rétine. Quelle est la hauteur A′B′ de l’image ? Donnez le résultat en <b>mm</b>.</>,
+    unite: 'mm', vrai: v0, csMin: 2, tolRel: 0.06,
+    aide: 'Thalès : A′B′ = AB × OA′ ÷ OA. Mettez AB et OA dans la même unité (1 m = 1 000 mm) ; OA′ est en mm.',
+    pieges: [[v0 * 1000, 'Facteur 1 000 : AB et OA doivent être dans la même unité, et OA′ est en mm.'], [v0 / 1000, 'Le résultat est 1 000 fois trop petit : tout est en mètres, sauf OA′ qui est en mm.'], [OAP, 'C’est OA′, la distance lentille-rétine. La hauteur de l’image se calcule avec Thalès.'], [AB0 * D0 / OAP, 'On multiplie par OA′ et on divise par OA : l’image est plus petite que l’objet.']],
+    expl: <>A′B′ = AB × OA′ ÷ OA = {nb(AB0, 2)} × 17 ÷ {oeil2gtDist(D0)} = <b>{avecU(v0, 'mm', 2)}</b> (le rapport AB ÷ OA ne dépend pas de l’unité si AB et OA sont dans la même).</> };
+  const o1 = tire(OEIL2GT_OBJETS), [AB1, D1] = oeil2gtPaire(o1), Ap1 = Number((AB1 * OAP / D1).toPrecision(2)), v1 = Ap1 * D1 / OAP;
+  const q1 = { id: 'g1', type: 'num', q: <>Un œil normal (<b>OA′ = 17{NB}mm</b>) regarde {o1.art} {o1.sit} à <b>OA = {oeil2gtDist(D1)}{NB}m</b>. L’image sur la rétine mesure <b>A′B′ = {nb(Ap1, 2)}{NB}mm</b>. Quelle est la hauteur AB de l’objet ? Donnez le résultat en <b>m</b>.</>,
+    unite: 'm', vrai: v1, csMin: 2, tolRel: 0.06,
+    aide: 'A′B′ ÷ AB = OA′ ÷ OA, donc AB = A′B′ × OA ÷ OA′ : calculez avec A′B′ et OA′ en mm, OA en m, le résultat sort en m.',
+    pieges: [[Ap1, 'C’est la hauteur de l’image, pas celle de l’objet : l’objet est beaucoup plus grand.'], [Ap1 * OAP / D1, 'On multiplie par OA et on divise par OA′ : l’objet est plus grand que son image.'], [v1 * 1000, 'Facteur 1 000 : A′B′ et OA′ sont en mm, OA en m, et le résultat est en m.']],
+    expl: <>AB = A′B′ × OA ÷ OA′ = {nb(Ap1, 2)} × {oeil2gtDist(D1)} ÷ 17 = <b>{avecU(v1, 'm', 2)}</b> (A′B′ et OA′ en mm se simplifient, OA reste en m).</> };
+  const o2 = tire(OEIL2GT_OBJETS), [AB2, D2] = oeil2gtPaire(o2), Ap2 = Number((AB2 * OAP / D2).toPrecision(2)), v2 = AB2 * OAP / Ap2;
+  const q2 = { id: 'g2', type: 'num', q: <>Un œil normal (<b>OA′ = 17{NB}mm</b>) regarde {o2.art} de <b>AB = {nb(AB2, 2)}{NB}m</b>. L’image nette sur la rétine mesure <b>A′B′ = {nb(Ap2, 2)}{NB}mm</b>. À quelle distance OA de l’œil se trouve l’objet ? Donnez le résultat en <b>m</b>.</>,
+    unite: 'm', vrai: v2, csMin: 2, tolRel: 0.06,
+    aide: 'A′B′ ÷ AB = OA′ ÷ OA, donc OA = AB × OA′ ÷ A′B′ : AB en m, OA′ et A′B′ en mm, le résultat sort en m.',
+    pieges: [[AB2 * Ap2 / OAP, 'Le rapport est à l’envers : OA = AB × OA′ ÷ A′B′ (l’objet est loin, la distance est grande).'], [AB2, 'C’est la hauteur de l’objet, pas sa distance.'], [v2 * 1000, 'Facteur 1 000 : OA′ et A′B′ sont en mm, AB en m, et le résultat est en m.']],
+    expl: <>OA = AB × OA′ ÷ A′B′ = {nb(AB2, 2)} × 17 ÷ {nb(Ap2, 2)} = <b>{avecU(v2, 'm', 2)}</b>.</> };
+  const o3 = tire(OEIL2GT_OBJETS), [AB3, D3] = oeil2gtPaire(o3), k3 = tire([2, 3, 4, 5]), Ap3 = Number((AB3 * OAP / D3).toPrecision(2)), v3 = Ap3 / k3;
+  const q3 = { id: 'g3', type: 'num', q: <>À <b>{oeil2gtDist(D3)}{NB}m</b> de l’œil, l’image nette {o3.de} sur la rétine mesure <b>{nb(Ap3, 2)}{NB}mm</b>. Quelle est la hauteur de l’image du même objet quand il est à <b>{oeil2gtDist(D3 * k3)}{NB}m</b> ? Donnez le résultat en <b>mm</b>.</>,
+    unite: 'mm', vrai: v3, csMin: 2, tolRel: 0.06,
+    aide: 'OA′ et AB ne changent pas : si OA est multiplié par un nombre, A′B′ est divisé par ce nombre.',
+    pieges: [[Ap3, 'C’est l’image de l’objet à la première distance : plus loin, l’image est plus petite.'], [Ap3 * k3, 'Plus l’objet est loin, plus l’image est petite : on divise, on ne multiplie pas.'], [Ap3 / (k3 * k3), 'La hauteur de l’image est divisée par le même nombre que la distance est multipliée, pas par son carré.']],
+    expl: <>La distance est multipliée par {k3} : l’image est {k3} fois plus petite, {nb(Ap3, 2)} ÷ {k3} = <b>{avecU(v3, 'mm', 2)}</b>.</> };
+  // q4 : image nette ou floue (œil normal au repos : f′ = 17,0 mm)
+  // objets proches : une bougie de 4,0 cm ; objets lointains : une bougie à 6 m ou 10 m, ou un arbre de 6,0 m à 50, 100 ou 200 m (rayons peu inclinés : AB ÷ OA ≤ 0,16)
+  const proche = tire([true, false]), S4 = proche ? { obj: 'la bougie', D: tire([250, 300, 400, 600, 1000]) } : tire([{ obj: 'la bougie', D: 6000 }, { obj: 'la bougie', D: 10000 }, { obj: 'l’arbre', D: 50000 }, { obj: 'l’arbre', D: 100000 }, { obj: 'l’arbre', D: 200000 }]), D4 = S4.D;
+  const txtD4 = D4 >= 1000 ? `${nb(D4 / 1000, 2)}${NB}m` : `${nb(D4 / 10, 2)}${NB}cm`;
+  const bonne4 = proche ? 'floue : formée derrière la rétine' : 'nette : formée sur la rétine';
+  const faux4 = proche ? ['nette : formée sur la rétine, comme pour l’arbre', 'floue : formée devant la rétine', 'nette, mais plus petite qu’un objet lointain'] : ['floue : formée derrière la rétine', 'floue : formée devant la rétine', 'aucune image ne se forme'];
+  const opts4 = oeil2gtOptions(bonne4, faux4);
+  const q4 = { id: 'g4', type: 'qcm', q: <>Un œil normal dont le cristallin est <b>au repos</b> (f′ = 17,0{NB}mm, rétine à 17{NB}mm) regarde {S4.obj === 'la bougie' ? 'une bougie de 4,0 cm' : 'un arbre de 6,0 m'} à <b>{txtD4}</b>. Que dire de l’image sur la rétine ?</>, options: opts4, bonne: opts4.indexOf(bonne4),
+    aide: 'Au repos, les rayons venant d’un objet très loin se coupent en F′, sur la rétine. Pour un objet proche, ils se coupent plus loin derrière.',
+    expl: <>{proche ? 'L’objet est proche : les rayons se coupent derrière la rétine. Sur la rétine, ils font une tache : l’image est floue.' : 'L’objet est très loin : les rayons arrivent presque parallèles et se coupent au foyer F′, sur la rétine : l’image est nette.'} Réponse : <b>{bonne4}</b>.</> };
+  // q5 : accommodation, sens de f′
+  const plusPres = tire([true, false]), paires = [[100, 40], [60, 30], [40, 25], [80, 25]], pr = tire(paires), d1 = plusPres ? pr[0] : pr[1], d2 = plusPres ? pr[1] : pr[0];
+  const bonne5 = plusPres ? 'f′ diminue : le cristallin se bombe' : 'f′ augmente : le cristallin s’aplatit';
+  const faux5 = [plusPres ? 'f′ augmente : le cristallin s’aplatit' : 'f′ diminue : le cristallin se bombe', 'f′ ne change pas : seule la distance à la rétine varie', 'f′ vaut toujours 17,0 mm, quelle que soit la distance'];
+  const opts5 = oeil2gtOptions(bonne5, faux5);
+  const q5 = { id: 'g5', type: 'qcm', q: <>Un élève regarde d’abord une bougie à <b>{d1}{NB}cm</b>, puis à <b>{d2}{NB}cm</b>, en gardant l’image nette sur la rétine. Que fait le cristallin ?</>, options: opts5, bonne: opts5.indexOf(bonne5),
+    aide: 'Plus l’objet est près, plus le cristallin se bombe ; un cristallin plus bombé a une distance focale f′ plus courte. La rétine ne bouge pas.',
+    expl: <>La bougie se {plusPres ? 'rapproche' : 'éloigne'} : le cristallin {plusPres ? 'se bombe davantage, donc f′ diminue' : 'se relâche, donc f′ augmente'}. La rétine reste à 17{NB}mm. Réponse : <b>{bonne5}</b>.</> };
+  [q0, q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'L’œil réduit (lentille convergente et écran à 17 mm) : hauteur de l’image par Thalès, hauteur de l’objet, distance, proportionnalité, image nette ou floue et accommodation.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['Œil réduit : une lentille convergente et un écran (la rétine) à OA′ = 17 mm ; l’image est réelle et renversée.', 'Thalès : A′B′ ÷ AB = OA′ ÷ OA, avec des longueurs dans la même unité ; deux fois plus loin, une image deux fois plus petite.', 'Cristallin au repos (f′ = 17,0 mm) : objet loin net, objet proche flou ; en accommodant, le cristallin se bombe et f′ diminue.'] };
+}
 // ───────────── Changement d’état (2GT) : équation, sens du transfert, E = m × L, masse, grammes et kilogrammes, proportionnalité ─────────────
 const M_ETAT = ETM.NOM_ETAT;
 const ETAT2GT_MASSES = [0.20, 0.30, 0.40, 0.50, 0.60, 0.80, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0];     // kg, 2 chiffres significatifs ; pas de 1,0 (valeur de L recopiée)
@@ -4161,6 +4224,7 @@ export const FAMILLES = [
   { id: 'comb1g-calcul', groupe: 'Formules', titre: 'Combustions : équation, énergie des liaisons, énergie molaire de réaction, écart avec la référence et pouvoir calorifique (1G)', gen: genCombustion1G, domaine: 'Combustions : énergie de réaction et énergies de liaison' },
   { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
   { id: 'pur2gt-calcul', groupe: 'Formules', titre: 'Corps pur ou mélange : palier, température d’ébullition lue, écart avec la référence, compatibilité et identification d’un liquide (2GT)', gen: genPur2GT, domaine: 'Corps purs et mélanges (2GT)' },
+  { id: 'oeil2gt-calcul', groupe: 'Formules', titre: 'L’œil réduit : hauteur de l’image (Thalès), hauteur de l’objet, distance, proportionnalité, image nette ou floue et accommodation (2GT)', gen: genOeil2GT, domaine: 'L’œil réduit (2GT)' },
   { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
   { id: 'img2gt-calcul', groupe: 'Formules', titre: 'Image par une lentille : rayon particulier, hauteur de l’image, grandissement par les tailles et par Thalès, conversion cm–m (2GT)', gen: genImage2GT, domaine: 'Image par une lentille (2GT)' },
   { id: 'test2gt-calcul', groupe: 'Formules', titre: 'Tests chimiques : réactif et observation, lecture d’une observation, nombre de tests pour identifier un gaz, durée et deux espèces à la fois (2GT)', gen: genTests2GT, domaine: 'Tests chimiques (2GT)' },
