@@ -5086,6 +5086,49 @@ export const PREVOIR = [
       F('nettement plus grande : l’ion est chargé, donc plus lourd', 'La charge électrique n’ajoute pas de masse : l’ion a même plutôt un électron de moins, de masse négligeable.'),
       F('deux fois plus petite : il a perdu une particule sur deux', 'Il reste 11 protons, 12 neutrons et 10 électrons : une seule particule très légère a disparu.'),
     ] },
+  // ───────────── Signal sonore (2GT) : période, fréquence, hauteur, timbre, amplitude
+  { id: 'son2gt-per-ana-periode-double', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'Une période deux fois plus longue',
+    enonce: 'Un son a une période de 2 ms. On règle le générateur pour que sa période devienne 4 ms. On rappelle f = 1 ÷ T.', q: 'La fréquence du nouveau signal est…', options: [
+      V('deux fois plus petite : T et f sont inverses', 'f = 1 ÷ T : si T double, f est divisée par 2 (de 500 Hz à 250 Hz).'),
+      F('deux fois plus grande, puisque T a doublé aussi', 'T et f varient en sens contraire : une période plus longue veut dire moins de motifs par seconde.'),
+      F('la même : seule la forme du signal a changé ici', 'La fréquence dépend uniquement de la période : si T change, f change.'),
+      F('plus petite de 2 Hz, car la période a augmenté de 2 ms', 'On ne retranche pas : f = 1 ÷ T est une relation d’inverse, pas de différence.'),
+    ] },
+  { id: 'son2gt-per-ana-aigu-grave', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'Quel son est le plus aigu ?',
+    enonce: 'Deux sons sont enregistrés. Le son A a une période de 2 ms et le son B une période de 5 ms.', q: 'Le son le plus aigu est…', options: [
+      V('le son A : sa période est plus courte', 'Plus la fréquence est grande, plus le son est aigu. A : f = 500 Hz ; B : f = 200 Hz.'),
+      F('le son B : sa période est la plus longue des deux', 'Une période plus longue veut dire une fréquence plus petite, donc un son plus grave.'),
+      F('les deux : la hauteur ne dépend pas de la période', 'La hauteur dépend de la fréquence, donc de la période (f = 1 ÷ T).'),
+      F('le son B : 5 est plus grand que 2, donc plus aigu', 'Une grande valeur de T donne une petite fréquence : le son est plus grave, pas plus aigu.'),
+    ] },
+  { id: 'son2gt-per-ana-timbre', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'La même note, deux instruments',
+    enonce: 'Une flûte et un violon jouent la même note. On enregistre les deux sons avec un micro et on les compare sur l’écran d’un oscilloscope.', q: 'Sur les deux oscillogrammes…', options: [
+      V('même période, mais forme du motif différente', 'Même note : même hauteur, donc même période. La forme du motif donne le timbre, qui distingue les deux instruments.'),
+      F('période différente, mais forme du motif identique', 'C’est l’inverse : la même note a la même période, et deux instruments ont des timbres, donc des formes, différentes.'),
+      F('période et forme du motif toutes deux identiques', 'Si la forme était la même, on ne pourrait pas distinguer les instruments : le timbre vient de la forme.'),
+      F('période et forme du motif toutes deux différentes', 'Une même note a la même période : seule la forme change d’un instrument à l’autre.'),
+    ] },
+  { id: 'son2gt-per-ana-amplitude', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'Jouer plus fort la même note',
+    enonce: 'Un musicien joue une note, puis la rejoue plus fort, sans changer de note. On enregistre les deux sons avec le même micro.', q: 'Entre les deux oscillogrammes, ce qui change surtout est…', options: [
+      V('l’amplitude, plus grande pour le son fort', 'Plus l’amplitude est grande, plus le son est fort. La note est la même : la période reste identique.'),
+      F('la période : elle est plus courte pour le son fort', 'La période donne la hauteur. La note n’a pas changé : la période est la même.'),
+      F('la forme du motif : le son fort a un autre timbre', 'Le timbre dépend de l’instrument, pas du volume : la forme du motif est la même.'),
+      F('la fréquence : le son fort est plus aigu aussi', 'Fort et aigu sont deux choses différentes : la fréquence ne change pas avec le volume.'),
+    ] },
+  { id: 'son2gt-per-ana-ultrason', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'La période d’un ultrason',
+    enonce: 'Un ultrason a une fréquence supérieure à 20 kHz. On rappelle f = 1 ÷ T, et un son audible a une fréquence comprise entre 20 Hz et 20 kHz.', q: 'Comparée à celle d’un son audible, la période d’un ultrason est…', options: [
+      V('plus courte : T est l’inverse de f, et f est grande', 'Une fréquence supérieure à 20 000 Hz donne une période inférieure à 1 ÷ 20 000 = 0,05 ms, plus courte que celle des sons audibles.'),
+      F('plus longue : un ultrason a une grande fréquence', 'Grande fréquence veut dire beaucoup de motifs par seconde, donc des motifs très courts.'),
+      F('la même : seule l’amplitude change', 'Un ultrason ne se distingue pas par l’amplitude mais par la fréquence, donc par la période.'),
+      F('impossible à comparer : un ultrason n’a pas de période', 'Un ultrason est un signal périodique comme les autres : il a une période, très courte.'),
+    ] },
+  { id: 'son2gt-per-ana-motifs-ecran', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'Combien de motifs à l’écran ?',
+    enonce: 'Sur un oscilloscope réglé sur une durée d’écran de 10 ms, un signal montre 3 motifs. On remplace le signal par un son de fréquence deux fois plus grande, sans toucher au réglage.', q: 'Le nombre de motifs à l’écran devient…', options: [
+      V('6 : deux fois plus de motifs dans la même durée', 'Fréquence deux fois plus grande, c’est deux fois plus de motifs par seconde : donc 6 motifs dans les mêmes 10 ms.'),
+      F('1,5 : la fréquence a doublé, donc le nombre est divisé par 2', 'Une fréquence plus grande veut dire plus de motifs par seconde, pas moins.'),
+      F('3 : le réglage de l’écran n’a pas changé', 'Le réglage est le même, mais le signal a changé : il répète son motif deux fois plus souvent.'),
+      F('5 : 3 + 2', 'Doubler la fréquence multiplie le nombre de motifs par 2 ; on n’ajoute pas.'),
+    ] },
   // ───────────────────────────── Équation de réaction (2GT, sim 179) : indices, charge, proportions, spectatrices, énergie
   { id: 'eq2gt-ana-indice', domaine: 'Équation de réaction (2GT)', titre: 'Ajuster sans changer l’indice',
     enonce: 'Pour ajuster H₂ + O₂ → H₂O, un élève écrit H₂ + O₂ → H₂O₂ : « comme ça, il y a 2 atomes O des deux côtés ». H₂O₂ est l’eau oxygénée, un autre corps que l’eau.', q: 'Que penser de sa méthode ?', options: [

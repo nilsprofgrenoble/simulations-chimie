@@ -85,6 +85,7 @@ const SimulationInteractions = paresseux(() => import("./simulations/Interaction
 const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactivite"), "SimulationRadioactivite");
 const SimulationQuantiteMatiere = paresseux(() => import("./simulations/QuantiteMatiere"), "SimulationQuantiteMatiere");
 const SimulationQuantiteMatiere2gt = paresseux(() => import("./simulations/QuantiteMatiere2gt"), "SimulationQuantiteMatiere2gt");
+const SimulationSignalSonore2gt = paresseux(() => import("./simulations/SignalSonore2gt"), "SimulationSignalSonore2gt");
 const SimulationConcentrationDilution = paresseux(() => import("./simulations/ConcentrationDilution"), "SimulationConcentrationDilution");
 const SimulationMesureIncertitudes = paresseux(() => import("./simulations/MesureIncertitudes"), "SimulationMesureIncertitudes");
 const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
@@ -430,6 +431,8 @@ const SIMULATIONS = [
     component: SimulationLentille },
   { id:66, label:"Spectres d’émission : corps chauds et lampes à décharge", niveau:"2GT", icon:"🌈", color:"#b45309",
     component: SimulationSpectres },
+  { id:190, label:"Signal sonore : période et fréquence", niveau:"2GT", icon:"🎼", color:"#0f766e",
+    component: SimulationSignalSonore2gt },
   { id:67, label:"L’ISS en chute libre : pourquoi les astronautes flottent", niveau:"2GT", icon:"🛰️", color:"#4338ca",
     component: SimulationISS },
   { id:140, label:"Chute libre : la variation de vitesse et la force", niveau:"2GT", icon:"🍎", color:"#b45309",

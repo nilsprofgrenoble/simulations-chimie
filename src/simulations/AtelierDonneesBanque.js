@@ -22,6 +22,7 @@ import * as CO2 from "./co2DissousModele";
 import * as EXT from "./extractionAcideBaseModele";
 import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
+import * as SS2 from "./signalSonore2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as EQM from "./equationReactionModele";
@@ -3903,6 +3904,51 @@ export const ENONCES = [
         manque: null, solution: { txt: 'n = N ÷ N_A, avec N = m ÷ m_entité', val: n, u: 'mol' } };
     },
   },
+  // ───────────────────────────── Signal sonore (2GT) : période et fréquence
+  {
+    id: 'son2gt-per-sapp-note', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'Une note enregistrée avec un micro', noms: ['Période T du son', 'Fréquence f du son'],
+    gen: () => ({ n: tire([4, 5, 8, 10]), T: tire([0.5, 1, 2, 2.5, 4, 5]), A: tire([0.4, 0.6, 0.8]), prix: tire([15, 25, 40]) }),
+    build: (p, q) => {
+      const dt = Math.round(p.n * p.T * 1e6) / 1e6, Tp = p.T;
+      const tokens = {
+        dt: tok(`${nb(dt)} ms`, 'Durée des motifs comptés', dt, 'ms'),
+        n: tok(`${p.n} motifs`, 'Nombre de motifs complets comptés', p.n, 'motifs'),
+        A: tok(`${nb(p.A, 1)} V`, 'Amplitude du signal', p.A, 'V'),
+        prix: tok(`${p.prix} €`, 'Prix du micro', p.prix, '€'),
+      };
+      const raisons = { A: 'L’amplitude donne la force du son, pas sa période ni sa fréquence.', prix: 'Le prix du micro ne dit rien sur le signal enregistré.' };
+      const debut = ['Un micro enregistre une note de musique tenue ; son oscillogramme est périodique. Sur l’écran, ', T('n'), ' durent ', T('dt'), '. L’amplitude du signal est ', T('A'), ' et le micro a coûté ', T('prix'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la période du son ?'], utiles: ['dt', 'n'], raisons,
+        cherche: { bonne: 'La période T du son (durée d’un motif)', faux: ['La fréquence f du son (en Hz)', 'La durée totale de l’enregistrement', 'L’amplitude du signal (en V)'] },
+        manque: null, solution: { txt: 'T = Δt ÷ N : durée des motifs comptés divisée par leur nombre', val: Tp, u: 'ms' } };
+      return { tokens, derivees: [{ id: 'T', nom: 'Période du son', expr: 'T = Δt ÷ N', val: Tp, u: 'ms' }, 'période en secondes : T (ms) ÷ 1 000'],
+        texte: [...debut, 'Quelle est la fréquence du son ?'], utiles: ['dt', 'n'], raisons,
+        cherche: { bonne: 'La fréquence f du son (en Hz)', faux: ['La période T du son (en ms)', 'L’amplitude du signal (en V)', 'Le nombre de motifs par minute'] },
+        manque: null, solution: { txt: 'f = 1 ÷ T, avec T = Δt ÷ N en secondes', val: SS2.frequenceHz(Tp), u: 'Hz' } };
+    },
+  },
+  {
+    id: 'son2gt-per-sapp-ecran', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'Lire l’écran d’un oscilloscope', noms: ['Période T du signal', 'Fréquence f du signal'],
+    gen: () => ({ base: tire([0.2, 0.5, 1, 2, 5]), k: tire([2, 4, 5]), sens: tire([0.5, 1, 2]), h: tire([2, 3]) }),
+    build: (p, q) => {
+      const Tp = Math.round(p.base * p.k * 1e6) / 1e6;
+      const tokens = {
+        base: tok(`${nb(p.base)} ms par carreau`, 'Durée d’un carreau (base de temps)', p.base, 'ms'),
+        k: tok(`${p.k} carreaux`, 'Nombre de carreaux occupés par un motif', p.k, 'carreaux'),
+        sens: tok(`${nb(p.sens)} V par carreau`, 'Sensibilité verticale', p.sens, 'V'),
+        h: tok(`${p.h} carreaux`, 'Hauteur du sommet au-dessus de la ligne du milieu', p.h, 'carreaux'),
+      };
+      const raisons = { sens: 'La sensibilité verticale sert à lire une tension, pas une durée.', h: 'La hauteur du signal donne son amplitude, pas sa période.' };
+      const debut = ['Sur l’écran d’un oscilloscope, la base de temps est réglée sur ', T('base'), '. Un motif du signal occupe ', T('k'), ' en largeur. La sensibilité verticale est ', T('sens'), ' et les sommets montent à ', T('h'), ' au-dessus de la ligne du milieu. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la période du signal ?'], utiles: ['base', 'k'], raisons,
+        cherche: { bonne: 'La période T du signal (en ms)', faux: ['La fréquence f du signal (en Hz)', 'L’amplitude du signal (en V)', 'Le nombre de motifs à l’écran'] },
+        manque: null, solution: { txt: 'T = nombre de carreaux d’un motif × durée d’un carreau', val: Tp, u: 'ms' } };
+      return { tokens, derivees: [{ id: 'T', nom: 'Période du signal', expr: 'T = carreaux × durée d’un carreau', val: Tp, u: 'ms' }, 'période en secondes : T (ms) ÷ 1 000'],
+        texte: [...debut, 'Quelle est la fréquence du signal ?'], utiles: ['base', 'k'], raisons,
+        cherche: { bonne: 'La fréquence f du signal (en Hz)', faux: ['La période T du signal (en ms)', 'L’amplitude du signal (en V)', 'La durée de tout l’écran'] },
+        manque: null, solution: { txt: 'f = 1 ÷ T, avec T en secondes', val: SS2.frequenceHz(Tp), u: 'Hz' } };
+    },
+  },
   // ───────────────────────────── Équation de réaction (2GT, sim 179) : lire les coefficients, repérer les données utiles
   {
     id: 'eq2gt-sapp-metal', domaine: 'Équation de réaction (2GT)', titre: 'Un métal dans l’acide chlorhydrique', noms: ['Ions H⁺ consommés', 'Molécules H₂ formées'],
@@ -4156,6 +4202,8 @@ const SYMBOLES = {
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
   'phot1g-sapp-photon': { lam: 'λ', c: 'c', h: 'h', P: 'P', d: 'd', t: 'Δt' },
   'you-sapp-young': { lam: 'λ', a: 'a', D: 'D', P: 'P', w: '', d: 'd', N: 'N' },
+  'son2gt-per-sapp-note': { dt: 'Δt', n: 'N', A: 'A', prix: '' },
+  'son2gt-per-sapp-ecran': { base: '', k: '', sens: '', h: '' },
   'niv1g-sapp-transition': { Ei: 'E_i', Ef: 'E_f', h: 'h', c: 'c', ev: '1 eV', P: 'P', U: 'U', t: 'Δt' },
 };
 export function nouvelEnonce(id, q, forceParams) {
