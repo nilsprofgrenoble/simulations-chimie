@@ -1578,5 +1578,21 @@
  "77:plausible:son2gt-niv-val-smartphone": "VAL416",
  "77:plausible:son2gt-niv-val-concert-duree": "VAL417",
  "77:plausible:son2gt-niv-val-casque-court": "VAL418",
- "36:son2gt-niv-calcul": "REA106"
+ "36:son2gt-niv-calcul": "REA106",
+ "34:son2gt-emis-sapp-orage.0": "SAPP404",
+ "34:son2gt-emis-sapp-orage.1": "SAPP405",
+ "34:son2gt-emis-sapp-micros.0": "SAPP406",
+ "34:son2gt-emis-sapp-micros.1": "SAPP407",
+ "37:prevoir:son2gt-emis-ana-sable": "ANA654",
+ "37:prevoir:son2gt-emis-ana-diapason-table": "ANA655",
+ "37:prevoir:son2gt-emis-ana-espace": "ANA656",
+ "37:prevoir:son2gt-emis-ana-bougie": "ANA657",
+ "37:prevoir:son2gt-emis-ana-retard-double": "ANA658",
+ "37:prevoir:son2gt-emis-ana-eclairs": "ANA659",
+ "77:plausible:son2gt-emis-val-tonnerre": "VAL419",
+ "77:plausible:son2gt-emis-val-kmh": "VAL420",
+ "77:plausible:son2gt-emis-val-micros-inverse": "VAL421",
+ "77:plausible:son2gt-emis-val-avion": "VAL422",
+ "77:plausible:son2gt-emis-val-film-espace": "VAL423",
+ "36:son2gt-emis-calcul": "REA107"
 }

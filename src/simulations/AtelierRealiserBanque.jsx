@@ -10,6 +10,7 @@ import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
 import * as SS2 from "./signalSonore2gtModele";
 import * as SN from "./niveauSonore2gtModele";
+import * as SON2 from "./sonEmission2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
@@ -3294,6 +3295,60 @@ function genSon2GT() {
     retenir: ['T = Δt ÷ N : durée de plusieurs motifs divisée par leur nombre.', '1 ms = 0,001 s ; 1 kHz = 1 000 Hz.', 'f = 1 ÷ T (T en s, f en Hz) et T = 1 ÷ f ; avec T en ms, f (Hz) = 1 000 ÷ T et f (kHz) = 1 ÷ T.', 'Audible : de 20 Hz à 20 kHz ; infrason en dessous, ultrason au-dessus.'] };
 }
 
+// ───────────── Le son : émission et propagation (2GT) : vitesse = distance ÷ retard, distance, retard, conversions m/s ↔ km/h ─────────────
+function genSonEmission2GT() {
+  const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
+  const TOL = 0.05;                                                  // 2 chiffres significatifs : un arrondi correct reste accepté
+  // q1 : vitesse du son d'après d et Δt (Δt affiché avec 2 chiffres significatifs, vrai calculé avec la donnée affichée)
+  // tolérance 2 % (un arrondi à 2 chiffres significatifs reste accepté) : la valeur connue 340 m/s ne doit pas passer, on écarte les tirages trop proches de 340
+  let d1, v0, dt1, v1;
+  do { d1 = tire([17, 34, 51, 68, 85, 102]); v0 = tire([300, 310, 320, 360, 370, 380]); dt1 = SON2.arrondiSig(d1 / v0, 2); v1 = d1 / dt1; } while (Math.abs(v1 - 340) / v1 < 0.04);
+  const q1 = filtre({ id: 's0', type: 'num', q: <>Deux micros sont distants de <b>{d1}{NB}m</b>. Un chronomètre affiche <b>{nb(dt1, 2)}{NB}s</b> entre le passage du son devant le premier micro puis devant le second. Quelle est la vitesse du son ?</>, unite: 'm/s', vrai: v1, csMin: 2, tolRel: 0.02,
+    aide: 'v = d ÷ Δt, avec d en mètres et Δt en secondes. Donnez le résultat avec 2 chiffres significatifs.',
+    pieges: [[340, 'Vous avez recopié 340 m/s, la valeur connue de la vitesse du son dans l’air. Calculez avec les données de cet énoncé : v = d ÷ Δt.'], [dt1 / d1, 'La division est à l’envers : on divise la distance par la durée.'], [d1 * dt1, 'Vous avez multiplié : une vitesse est une distance divisée par une durée.']],
+    expl: <>v = d ÷ Δt = {d1} ÷ {nb(dt1, 2)} ≈ <b>{avecU(v1, 'm/s', 2)}</b>.</> });
+  // q2 : distance parcourue par le son (v = 340 m/s), en mètres
+  const dt2 = tire([0.50, 1.5, 2.0, 3.5, 4.0]), d2 = SON2.V_AIR * dt2;
+  const q2 = filtre({ id: 's1', type: 'num', q: <>Dans l’air, le son va à <b>340{NB}m/s</b>. Quelle distance parcourt-il en <b>{nb(dt2, 2)}{NB}s</b> ? Répondez en mètres.</>, unite: 'm', vrai: d2, csMin: 2, tolRel: TOL,
+    aide: 'd = v × Δt : multipliez la vitesse du son par la durée.',
+    pieges: [[SON2.V_AIR / dt2, 'Vous avez divisé la vitesse par la durée. Pour trouver une distance, on multiplie la vitesse par la durée.'], [dt2 / SON2.V_AIR, 'Vous avez divisé la durée par la vitesse. Pour trouver une distance, on multiplie.']],
+    expl: <>d = v × Δt = 340 × {nb(dt2, 2)} = <b>{avecU(d2, 'm', 2)}</b>.</> });
+  // q3 : orage, distance en km
+  const dt3 = tire([2.5, 4.0, 6.5, 9.0, 11]), d3 = SON2.V_AIR * dt3 / 1000;
+  const q3 = filtre({ id: 's2', type: 'num', q: <>Pendant un orage, le tonnerre arrive <b>{nb(dt3, 2)}{NB}s</b> après l’éclair. On prend <b>340{NB}m/s</b> pour le son ; la lumière arrive tout de suite. À quelle distance l’éclair est-il tombé ? Répondez en <b>kilomètres</b>.</>, unite: 'km', vrai: d3, csMin: 2, tolRel: TOL,
+    aide: 'd = v × Δt donne des mètres (340 m/s × la durée en s). Divisez ensuite par 1 000 pour obtenir des kilomètres.',
+    pieges: [[d3 * 1000, 'Vous avez donné la distance en mètres : on demande des kilomètres (1 km = 1 000 m).'], [dt3 / SON2.V_AIR, 'Vous avez divisé la durée par la vitesse : pour trouver une distance, on multiplie.']],
+    expl: <>d = 340 × {nb(dt3, 2)} = {nb(d3 * 1000, 3)} m = <b>{avecU(d3, 'km', 2)}</b>.</> });
+  // q4 : retard du bruit d'un feu d'artifice
+  const dk4 = tire([0.68, 1.02, 1.7, 2.5, 3.4]), t4 = dk4 * 1000 / SON2.V_AIR;
+  const q4 = filtre({ id: 's3', type: 'num', q: <>Un feu d’artifice explose à <b>{nb(dk4, 2)}{NB}km</b> de vous. Le son va à <b>340{NB}m/s</b> ; la lumière arrive tout de suite. Au bout de combien de temps entendez-vous le bruit ? Répondez en secondes.</>, unite: 's', vrai: t4, csMin: 2, tolRel: TOL,
+    aide: 'Δt = d ÷ v. Convertissez d en mètres (1 km = 1 000 m), puis divisez par 340 m/s.',
+    pieges: [[dk4 / SON2.V_AIR, 'Vous avez oublié de convertir les kilomètres en mètres : 1 km = 1 000 m.'], [dk4 * 1000 * SON2.V_AIR, 'Vous avez multiplié : pour trouver une durée, on divise la distance par la vitesse.']],
+    expl: <>Δt = d ÷ v = {nb(dk4 * 1000, 3)} ÷ 340 = <b>{avecU(t4, 's', 2)}</b>.</> });
+  // q5 : m/s → km/h
+  const v5 = tire([5, 12, 25, 83, 250, 340]), k5 = SON2.kmhDepuisMs(v5);
+  const q5 = filtre({ id: 's4', type: 'num', q: <>Une vitesse vaut <b>{v5}{NB}m/s</b>. Exprimez-la en km/h.</>, unite: 'km/h', vrai: k5, csMin: 2, tolRel: TOL,
+    aide: 'De m/s à km/h, on multiplie par 3,6 (1 km = 1 000 m et 1 h = 3 600 s).',
+    pieges: [[v5 / 3.6, 'Vous avez divisé par 3,6. De m/s à km/h, on multiplie : le nombre de km/h est plus grand que le nombre de m/s.']],
+    expl: <>{v5} × 3,6 = <b>{avecU(k5, 'km/h', 2)}</b>.</> });
+  // q6 : km/h → m/s
+  const k6 = tire([36, 72, 130, 300, 900]), v6 = SON2.msDepuisKmh(k6);
+  const q6 = filtre({ id: 's5', type: 'num', q: <>Une vitesse vaut <b>{k6}{NB}km/h</b>. Exprimez-la en m/s.</>, unite: 'm/s', vrai: v6, csMin: 2, tolRel: TOL,
+    aide: 'De km/h à m/s, on divise par 3,6 (1 km/h = 1 000 m ÷ 3 600 s).',
+    pieges: [[k6 * 3.6, 'Vous avez multiplié par 3,6. De km/h à m/s, on divise : le nombre de m/s est plus petit que le nombre de km/h.']],
+    expl: <>{k6} ÷ 3,6 = <b>{avecU(v6, 'm/s', 2)}</b>.</> });
+  // q7 : un véhicule va-t-il plus vite que le son ?
+  const cas = tire([[900, 'km/h', false], [1500, 'km/h', true], [250, 'm/s', false], [400, 'm/s', true], [2400, 'km/h', true], [300, 'km/h', false]]);
+  const [vv, uu, plusVite] = cas, bonne7 = plusVite ? 'oui : il va plus vite que le son' : 'non : il va moins vite que le son';
+  const opts7 = melange([bonne7, plusVite ? 'non : il va moins vite que le son' : 'oui : il va plus vite que le son', 'on ne peut pas comparer deux vitesses données dans des unités différentes', 'oui : il va exactement à la vitesse du son']);
+  const ms7 = uu === 'm/s' ? vv : SON2.msDepuisKmh(vv);
+  const q7 = { id: 's6', type: 'qcm', q: <>Un avion vole à <b>{vv}{NB}{uu}</b>. Dans l’air, le son va à <b>340{NB}m/s</b>, soit environ 1 200{NB}km/h. L’avion va-t-il plus vite que le son ?</>, options: opts7, bonne: opts7.indexOf(bonne7),
+    aide: 'Écrivez les deux vitesses dans la même unité : soit en m/s (km/h ÷ 3,6), soit en km/h (m/s × 3,6).',
+    expl: <>{uu === 'km/h' ? <>{vv} km/h ÷ 3,6 ≈ {nb(ms7, 2)} m/s</> : <>{vv} m/s × 3,6 = {nb(SON2.kmhDepuisMs(vv), 2)} km/h</>}, à comparer à 340 m/s ≈ 1 200 km/h : l’avion va {plusVite ? 'plus' : 'moins'} vite que le son.</> };
+  return { intro: 'Le son : vitesse = distance ÷ durée, distance et retard, conversions entre m/s et km/h. Écrivez toujours les unités : d en m, Δt en s, v en m/s.', questions: [q1, q2, q3, q4, q5, q6, q7],
+    retenir: ['Vitesse du son dans l’air : environ 340 m/s à 20 °C ; v = d ÷ Δt, d = v × Δt, Δt = d ÷ v (d en m, Δt en s).', 'Éclair et tonnerre : la lumière arrive tout de suite, le retard vient du son (3 s ≈ 1 km).', 'm/s → km/h : × 3,6 ; km/h → m/s : ÷ 3,6. Pour comparer deux vitesses, même unité.'] };
+}
+
 // ───────────── Puissances de 10 et écriture scientifique (2GT) ─────────────
 function genPuissances2GT() {
   const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
@@ -3497,6 +3552,7 @@ export const FAMILLES = [
   { id: 'mol2gt-calcul', groupe: 'Formules', titre: 'Quantité de matière : compter les entités, la mole, atomes et molécules (2GT)', gen: genQuantiteMatiere2GT, domaine: 'Quantité de matière (2GT)' },
   { id: 'mol2gt-puissances', groupe: 'Formules', titre: 'Puissances de 10 et écriture scientifique : conversions, quotients et sommes (2GT)', gen: genPuissances2GT, domaine: 'Quantité de matière (2GT)' },
   { id: 'son2gt-per-calcul', groupe: 'Formules', titre: 'Signal sonore : période, fréquence, conversions et domaines (2GT)', gen: genSon2GT, domaine: 'Signal sonore : période et fréquence (2GT)' },
+  { id: 'son2gt-emis-calcul', groupe: 'Formules', titre: 'Le son : vitesse, distance et retard, éclair et tonnerre, conversions m/s et km/h (2GT)', gen: genSonEmission2GT, domaine: 'Son : émission et propagation (2GT)' },
   { id: 'fl1g-statique-calcul', groupe: 'Formules', titre: 'Statique des fluides : différence de pression, pression absolue, profondeur, force sur un bouchon et masse volumique (1G)', gen: genStatique1G, domaine: 'Statique des fluides : pression et profondeur' },
   { id: 'mes1g-calcul', groupe: 'Formules', titre: 'Mesure et incertitudes : moyenne, incertitude-type de type A et de type B, arrondi et comparaison à une référence (1G)', gen: genMesure1G, domaine: 'Mesure et incertitudes (1G)' },
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },

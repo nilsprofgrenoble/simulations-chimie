@@ -5315,6 +5315,49 @@ export const PREVOIR = [
       F('une fréquence double, avec la même amplitude, en opposition de phase', 'Pour que les deux signaux se compensent à chaque instant, ils doivent avoir la même fréquence : avec une fréquence double, la somme n’est jamais nulle sur toute une période.'),
       F('un son de même fréquence mais d’amplitude double, en phase', 'En phase, les signaux s’ajoutent : l’amplitude serait triple (3A). Pour annuler, il faut l’opposition de phase et la même amplitude.'),
     ] },
+  // ───────────── Le son : émission et propagation (2GT)
+  { id: 'son2gt-emis-ana-sable', domaine: 'Son : émission et propagation (2GT)', titre: 'Du sable sur un haut-parleur',
+    enonce: 'On pose un peu de sable fin sur la membrane d’un haut-parleur tourné vers le haut, puis on lui fait jouer un son.', q: 'Que voit-on ?', options: [
+      V('le sable saute et frémit : la membrane vibre', 'Un haut-parleur émet un son parce que sa membrane vibre, c’est-à-dire va et vient très vite : elle secoue le sable posé dessus.'),
+      F('le sable reste immobile : un son n’est pas un mouvement', 'Un son est produit par une vibration : la membrane bouge, même si l’on voit mal son mouvement sans le sable.'),
+      F('le sable glisse vers le bord et s’y arrête', 'La membrane va et vient sur place : elle secoue le sable, elle ne le pousse pas dans une seule direction.'),
+      F('le sable s’éloigne en voyageant avec le son', 'Le son ne transporte pas de matière : seule la vibration avance. Le sable ne part pas avec lui.'),
+    ] },
+  { id: 'son2gt-emis-ana-diapason-table', domaine: 'Son : émission et propagation (2GT)', titre: 'Un diapason posé sur une table',
+    enonce: 'Un diapason qui vibre, tenu en l’air, s’entend à peine. On pose son pied sur une table en bois : le son devient beaucoup plus fort.', q: 'Pourquoi ?', options: [
+      V('la table vibre aussi et met beaucoup d’air en mouvement', 'La table se comporte comme la caisse de résonance d’une guitare : sa grande surface vibre avec le diapason et met beaucoup d’air en mouvement.'),
+      F('la table fabrique du son sans avoir besoin de vibrer', 'Il n’y a pas de son sans vibration : la table fait du bruit parce qu’elle vibre à son tour.'),
+      F('la table chauffe le diapason, qui vibre alors plus vite', 'Ce n’est pas une question de chaleur : c’est la grande surface de la table qui vibre qui rend le son plus fort.'),
+      F('la table garde le son prisonnier dans le bois', 'Le son est au contraire mieux envoyé dans l’air : la table vibre et pousse l’air autour d’elle.'),
+    ] },
+  { id: 'son2gt-emis-ana-espace', domaine: 'Son : émission et propagation (2GT)', titre: 'Une explosion dans l’espace',
+    enonce: 'Un astronaute flotte dans le vide de l’espace. À quelques kilomètres, un satellite explose ; il voit la lumière de l’explosion.', q: 'Entend-il le bruit de l’explosion par l’espace ?', options: [
+      V('non : le vide ne transmet aucune vibration jusqu’à lui', 'Le son se propage de proche en proche dans un milieu matériel. Dans le vide, il n’y a pas de particules pour transmettre la vibration.'),
+      F('oui, avec un simple retard de quelques secondes, comme sur Terre', 'Un retard suppose que le son se propage ; or sans matière, il ne se propage pas du tout.'),
+      F('oui, et même très fort, car rien ne le freine', 'Rien ne peut le « freiner », mais il ne peut pas non plus avancer : il lui faut des particules pour se transmettre.'),
+      F('oui, mais plus lentement que dans l’air libre', 'Dans le vide, il n’y a pas de propagation : il n’y a donc pas de vitesse du son à comparer.'),
+    ] },
+  { id: 'son2gt-emis-ana-bougie', domaine: 'Son : émission et propagation (2GT)', titre: 'Une bougie devant une enceinte',
+    enonce: 'Une grosse enceinte joue de la musique. On place une bougie à 2 m de l’enceinte : sa flamme ne bouge presque pas, alors qu’on entend très bien la musique.', q: 'Que peut-on en conclure ?', options: [
+      V('le son avance sans que l’air soit transporté jusqu’à nous', 'Les particules d’air vont et viennent autour de leur place : elles transmettent la vibration sans voyager, donc sans souffler la flamme.'),
+      F('l’air ne vibre pas du tout : le son passe autrement', 'L’air vibre bel et bien : c’est ce qui transmet le son de proche en proche jusqu’à l’oreille.'),
+      F('l’air de l’enceinte arrive jusqu’à nous, mais trop doucement', 'Aucune matière ne voyage de l’enceinte à l’oreille : seule la vibration se déplace.'),
+      F('la flamme est trop petite pour réagir au son', 'Ce n’est pas la taille de la flamme : l’air ne se déplace pas d’un bout à l’autre de la pièce.'),
+    ] },
+  { id: 'son2gt-emis-ana-retard-double', domaine: 'Son : émission et propagation (2GT)', titre: 'Deux spectateurs d’un feu d’artifice',
+    enonce: 'Deux spectateurs regardent le même feu d’artifice. A est à 340 m et B est à 680 m. On rappelle que dans l’air le son va à environ 340 m/s et que la lumière arrive tout de suite.', q: 'Comparé au retard du bruit pour A, le retard pour B est…', options: [
+      V('deux fois plus grand : 2,0 s pour B contre 1,0 s pour A, car d est doublée', 'B est deux fois plus loin et le son va à la même vitesse : il met deux fois plus de temps (Δt = d ÷ v : 680 ÷ 340 = 2,0 s).'),
+      F('le même : 1,0 s pour A comme pour B', 'La vitesse est la même, mais la distance à parcourir n’est pas la même : le retard dépend de la distance.'),
+      F('deux fois plus petit : 0,50 s pour B contre 1,0 s pour A, car B est plus loin', 'Plus on est loin, plus le son a de chemin à faire : le retard augmente.'),
+      F('quatre fois plus grand : 4,0 s pour B contre 1,0 s pour A', 'Le retard est proportionnel à la distance (Δt = d ÷ v) : doubler d double Δt, pas plus.'),
+    ] },
+  { id: 'son2gt-emis-ana-eclairs', domaine: 'Son : émission et propagation (2GT)', titre: 'Deux éclairs pendant un orage',
+    enonce: 'Pendant un orage, un premier éclair est suivi du tonnerre 3,0 s plus tard. Quelques minutes après, un second éclair est suivi du tonnerre 9,0 s plus tard. On rappelle que dans l’air le son va à environ 340 m/s et que la lumière arrive tout de suite.', q: 'Par rapport au premier éclair, le second a frappé…', options: [
+      V('trois fois plus loin : environ 3 km contre environ 1 km', 'La distance est proportionnelle au retard (d = v × Δt) : 9,0 s font trois fois 3,0 s, donc l’éclair est trois fois plus loin : 340 × 9,0 ≈ 3 100 m contre 340 × 3,0 ≈ 1 000 m.'),
+      F('neuf fois plus loin : environ 9 km, car le retard est de 9,0 s', 'Le retard est de 9,0 s, mais la distance est d = v × Δt = 340 × 9,0 ≈ 3 100 m : 9 secondes ne font pas 9 kilomètres.'),
+      F('à la même distance : la lumière arrive tout de suite', 'La lumière arrive tout de suite dans les deux cas, mais le tonnerre met plus de temps la seconde fois : le son a eu plus de chemin à faire.'),
+      F('trois fois plus près : environ 0,3 km contre environ 1 km', 'Un retard plus long veut dire que le son a parcouru plus de chemin : l’éclair est plus loin, pas plus près.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

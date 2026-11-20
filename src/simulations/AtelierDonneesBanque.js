@@ -24,6 +24,7 @@ import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
 import * as SS2 from "./signalSonore2gtModele";
 import * as SN from "./niveauSonore2gtModele";
+import * as SON2 from "./sonEmission2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as EQM from "./equationReactionModele";
@@ -4205,6 +4206,55 @@ export const ENONCES = [
         cherche: { bonne: 'Le rapport durée passée ÷ durée repère (sans unité)', faux: ['La différence entre les deux durées (en min)', 'Le niveau sonore à ne pas dépasser (en dB)', 'Le nombre de concerts par an'] },
         manque: null, solution: { txt: 'rapport = durée passée ÷ durée repère, les deux durées étant dans la même unité', val: T1 / D, u: 'fois' } };
     },
+  },
+  // ───────────────────────────── Seconde : le son, émission et propagation (vitesse du son)
+  {
+    id: 'son2gt-emis-sapp-orage', domaine: 'Son : émission et propagation (2GT)', titre: 'Un orage au loin : distance et retard du tonnerre', noms: ['Distance du premier éclair', 'Retard du tonnerre du deuxième éclair'],
+    gen: () => ({ dt: tire([2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10]), dkm: tire([0.85, 1.2, 1.7, 2.5]), duree: tire([20, 30, 45]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        dt: tok(`${nb(p.dt, 1)} s`, 'Retard du tonnerre sur le premier éclair', p.dt, 's'),
+        v: tok('340 m/s', 'Vitesse du son dans l’air', SON2.V_AIR, 'm/s'),
+        c: tok('3,0 × 10⁸ m/s', 'Vitesse de la lumière', SON2.V_LUMIERE, 'm/s'),
+        dkm: tok(`${nb(p.dkm, 2)} km`, 'Distance du deuxième éclair', p.dkm, 'km'),
+        duree: tok(`${p.duree} min`, 'Durée de l’orage', p.duree, 'min'),
+      };
+      const debut = ['Pendant un orage, un observateur voit un éclair, puis entend le tonnerre ', T('dt'), ' plus tard. Dans l’air, le son va à ', T('v'), ' et la lumière à ', T('c'),
+        '. L’orage dure ', T('duree'), '. Un deuxième éclair tombe ensuite à ', T('dkm'), ' de l’observateur. '];
+      const commun = { c: 'La lumière arrive presque instantanément : seul le trajet du son compte dans le retard.', duree: 'La durée de l’orage ne change ni la vitesse du son ni la distance d’un éclair.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'À quelle distance de l’observateur le premier éclair est-il tombé ?'],
+        utiles: ['dt', 'v'], raisons: { ...commun, dkm: 'Cette distance concerne le deuxième éclair, pas le premier.' },
+        cherche: { bonne: 'La distance d du premier éclair (en m ou en km)', faux: ['La vitesse du son dans l’air (en m/s)', 'La durée de l’orage (en min)', 'Le temps mis par la lumière pour arriver (en s)'] },
+        manque: null, solution: { txt: 'd = v × Δt, avec v = 340 m/s et Δt en secondes', val: SON2.V_AIR * p.dt, u: 'm' } };
+      return { tokens, derivees: [{ id: 'dm', nom: 'Distance du deuxième éclair, en mètres', expr: 'd = d_km × 1 000', val: p.dkm * 1000, u: 'm' }], texte: [...debut, 'Au bout de combien de temps entend-il le tonnerre du deuxième éclair ?'],
+        utiles: ['dkm', 'v'], raisons: { ...commun, dt: 'Ce retard concerne le premier éclair, pas le deuxième.' },
+        cherche: { bonne: 'Le retard Δt du tonnerre du deuxième éclair (en s)', faux: ['La distance du premier éclair (en km)', 'La vitesse du son pour le deuxième éclair (en m/s)', 'La durée totale de l’orage (en min)'] },
+        manque: null, solution: { txt: 'Δt = d ÷ v, avec d en mètres et v = 340 m/s', val: p.dkm * 1000 / SON2.V_AIR, u: 's' } };
+    }),
+  },
+  {
+    id: 'son2gt-emis-sapp-micros', domaine: 'Son : émission et propagation (2GT)', titre: 'Mesurer la vitesse du son avec deux micros', noms: ['Vitesse du son mesurée', 'Distance parcourue par le son pendant une durée donnée'],
+    gen: () => { const d = tire([34, 51, 68, 85, 102]), v0 = tire([325, 335, 345, 355]); return { d, dt: SON2.arrondiSig(d / v0, 2), P: tire([20, 50, 100]), T: tire([15, 20, 25]), dt2: tire([2.0, 3.0, 5.0]) }; },
+    build: epure((p, q) => {
+      const v = p.d / p.dt;
+      const tokens = {
+        d: tok(`${p.d} m`, 'Distance entre les deux micros', p.d, 'm'),
+        dt: tok(`${nb(p.dt, 2)} s`, 'Retard lu sur le chronomètre entre les deux micros', p.dt, 's'),
+        P: tok(`${p.P} W`, 'Puissance électrique de l’amplificateur du haut-parleur', p.P, 'W'),
+        T: tok(`${p.T} °C`, 'Température de l’air', p.T, '°C'),
+        dt2: tok(`${nb(p.dt2, 1)} s`, 'Durée de propagation du son pendant une expérience plus longue', p.dt2, 's'),
+      };
+      const debut = ['Un haut-parleur, branché sur un amplificateur de ', T('P'), ', émet un son bref dans l’air à ', T('T'), '. Deux micros, distants de ', T('d'), ', sont reliés à un chronomètre qui affiche ', T('dt'), ' entre leurs deux déclenchements (mesures fictives). '];
+      const raisons = { P: 'La puissance de l’amplificateur change le volume du son, pas sa vitesse : elle ne sert pas dans le calcul.', T: 'La température explique de petites variations de la vitesse du son, mais la mesure se fait avec d et Δt seulement.', dt2: 'Cette durée ne concerne que la deuxième question : elle ne sert pas à mesurer la vitesse.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la vitesse du son ainsi mesurée ?'],
+        utiles: ['d', 'dt'], raisons,
+        cherche: { bonne: 'La vitesse v du son (en m/s)', faux: ['La puissance de l’amplificateur (en W)', 'Le retard entre les deux micros (en s)', 'La température de l’air (en °C)'] },
+        manque: null, solution: { txt: 'v = d ÷ Δt, avec d en mètres et Δt en secondes', val: v, u: 'm/s' } };
+      return { tokens, derivees: [{ id: 'v', nom: 'Vitesse du son mesurée', expr: 'v = d ÷ Δt', val: v, u: 'm/s' }], texte: [...debut, 'Avec cette vitesse, quelle distance le son parcourt-il pendant ', T('dt2'), ' ?'],
+        utiles: ['d', 'dt', 'dt2'], raisons: { P: raisons.P, T: raisons.T },
+        cherche: { bonne: 'La distance parcourue par le son pendant la durée donnée (en m)', faux: ['La vitesse du son (en m/s)', 'La puissance de l’amplificateur (en W)', 'La distance entre les deux micros (en m)'] },
+        manque: null, solution: { txt: 'd′ = v × Δt′, avec v = d ÷ Δt calculée avant', val: v * p.dt2, u: 'm' } };
+    }),
   },
 ];
 

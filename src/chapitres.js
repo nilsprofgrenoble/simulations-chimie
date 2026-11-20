@@ -29,7 +29,7 @@ export const CHAPITRES = [
   { id: '2gt-forces', niveau: '2GT', rubrique: 'Mouvement et interactions', label: '➡️ Modéliser une action par une force', sims: [59, 60, 140, 67], domaines: ['Forces et principe d’inertie'] },
   { id: '2gt-mouvement', niveau: '2GT', rubrique: 'Mouvement et interactions', label: '🚃 Décrire un mouvement', sims: [56], domaines: ['Mouvement et vitesse'] },
   { id: '2gt-lumiere', niveau: '2GT', rubrique: 'Ondes et signaux', label: '🔦 Lumière : réfraction, lentilles et spectres', sims: [64, 65, 66], domaines: ['Lumière'] },
-  { id: '2gt-son', niveau: '2GT', rubrique: 'Ondes et signaux', label: '🔊 Émettre et percevoir un son', sims: [190, 192], domaines: ['Signal sonore : période et fréquence (2GT)', 'Niveau sonore (2GT)'] },
+  { id: '2gt-son', niveau: '2GT', rubrique: 'Ondes et signaux', label: '🔊 Émettre et percevoir un son', sims: [190, 191, 192], domaines: ['Signal sonore : période et fréquence (2GT)', 'Niveau sonore (2GT)', 'Son : émission et propagation (2GT)'] },
   { id: '2gt-circuits', niveau: '2GT', rubrique: 'Ondes et signaux', label: '🔌 Circuits électriques, loi d’Ohm et capteurs', sims: [68, 69], domaines: ['Circuits électriques'] },
 
   { id: '1g-evolution', niveau: '1G', rubrique: 'Constitution et transformations de la matière', label: '⚗️ Suivi de l’évolution d’un système, siège d’une transformation', sims: [152, 153, 156, 1, 2, 25, 10], domaines: ['Chimie', 'Titrage direct', 'Oxydo-réduction : couples, demi-équations et équation de réaction', 'Quantité de matière : masse molaire et volume molaire', 'Concentration en quantité de matière : dissolution et dilution'] },
