@@ -26,6 +26,7 @@ import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as EQM from "./equationReactionModele";
 import * as SV from "./savonModele";
+import * as RL from "./reactifLimitantModele";
 import * as DM from "./dissolutionModele";
 import * as CMB from "./combustionModele";
 import * as RX from "./redoxModele";
@@ -3964,6 +3965,40 @@ export const ENONCES = [
         cherche: { bonne: 'Le nombre de molécules d’eau formées', faux: ['Le nombre de molécules de dibenzalacétone formées', 'Le volume d’eau formé (en mL)', 'Le nombre de molécules de benzaldéhyde consommées'] },
         manque: null, solution: { txt: 'l’équation donne 2 H₂O pour 1 C₃H₆O : on multiplie par le nombre de molécules de propanone', val: c[3] * p.N, u: 'molécules H₂O' } };
     }),
+  },
+  // ───────────────────────────── Seconde : réactif limitant
+  {
+    id: 'rl2gt-donnees', domaine: 'Réactif limitant (2GT)', titre: 'Un mélange de réactifs : quelles données pour trouver le limitant ?', noms: ['Réactif limitant', 'Quantité de réactif en excès'],
+    gen: () => ({ rId: tire(['methane', 'calcaire', 'dba']), iLim: tire([0, 1]), m: tire([1, 2, 3]), e: tire([1, 2]), T: tire([20, 25, 30]), V: tire([250, 500, 1000]) }),
+    build: (p, q) => {
+      const r = RL.reactionDe(p.rId), n = RL.melangeAvecLimitant(r, p.iLim, p.m, p.e), b = RL.bilan(r, n), iEx = 1 - p.iLim, dec = r.dec;
+      const intro = { methane: 'On fait brûler du méthane dans du dioxygène. ', calcaire: 'On verse de l’acide sur du calcaire. ', dba: 'On réalise la synthèse de la DBA. ' }[p.rId];
+      const GN = { methane: ['de méthane CH₄', 'de dioxygène O₂'], calcaire: ['de calcaire CaCO₃', 'd’ions H⁺ (l’acide)'], dba: ['de benzaldéhyde C₇H₆O', 'd’acétone C₃H₆O'] }[p.rId];
+      const cR = r.reactifs.findIndex(e => e.coef > 1), cP = r.produits.findIndex(e => e.coef > 1);
+      // gaz (méthane) : 1 mol occupe environ 24 L, donc le récipient se compte en litres (jusqu'à 11 mol ≈ 270 L) ; solides et liquides : en mL
+      const gaz = p.rId === 'methane', uV = gaz ? 'L' : 'mL', Vr = gaz ? ({ 250: 300, 500: 500, 1000: 1000 }[p.V]) : p.V;
+      const tokens = {
+        nA: tok(`${RL.fr(n[0], dec)} mol`, `Quantité de matière initiale ${GN[0]}`, n[0], 'mol'),
+        nB: tok(`${RL.fr(n[1], dec)} mol`, `Quantité de matière initiale ${GN[1]}`, n[1], 'mol'),
+        c: tok(String(r.reactifs[cR].coef), `Coefficient de ${r.reactifs[cR].f} dans l’équation`, r.reactifs[cR].coef, ''),
+        T: tok(`${p.T} °C`, 'Température du mélange', p.T, '°C'),
+        V: tok(`${Vr} ${uV}`, 'Volume du récipient', Vr, uV),
+        ...(cP >= 0 ? { cp: tok(String(r.produits[cP].coef), `Coefficient de ${r.produits[cP].f} dans l’équation`, r.produits[cP].coef, '') } : {}),
+      };
+      const terme = (e, id) => (e.coef > 1 ? [T(id), ` ${e.f}`] : [e.f]);
+      const eq = [...terme(r.reactifs[0], 'c'), ' + ', ...terme(r.reactifs[1], 'c'), ' → ', ...r.produits.flatMap((e, j) => [...(j ? [' + '] : []), ...terme(e, 'cp')])];
+      const texte = [intro + 'On mélange ', T('nA'), ` ${GN[0]} et `, T('nB'), ` ${GN[1]}, selon l’équation `, ...eq,
+        '. La transformation est totale ; elle a lieu à ', T('T'), ' dans un récipient de ', T('V'), q === 0 ? '. Quel est le réactif limitant ?' : '. Quelle quantité de matière du réactif en excès reste-t-il à la fin ?'];
+      const raisons = { T: 'La température n’intervient pas : la transformation est supposée totale et rapide.', V: 'Le volume du récipient ne change pas le réactif limitant ni ce qui reste : seules les quantités de matière et les coefficients comptent.',
+        cp: 'Ce coefficient concerne un produit : il ne sert pas à trouver le réactif limitant ni la quantité de réactif qui reste.' };
+      const derivees = r.reactifs.map((e, i) => ({ id: `r${i}`, nom: `Nombre de recettes permises par ${e.nom} (quantité ÷ coefficient)`, expr: `${RL.fr(n[i], dec)} ÷ ${e.coef}`, val: b.rec[i], u: 'recettes' }));
+      if (q === 0) return { tokens, derivees, texte, utiles: ['nA', 'nB', 'c'], raisons,
+        cherche: { bonne: 'Le réactif limitant', faux: ['La quantité de produit formée (en mol)', 'La masse totale du mélange de départ (en g)', 'Le réactif dont il restera le plus à la fin'] },
+        manque: null, solution: { txt: 'on compare quantité ÷ coefficient pour chaque réactif : le plus petit résultat désigne le réactif limitant', val: b.rmin, u: 'recettes' } };
+      return { tokens, derivees, texte, utiles: ['nA', 'nB', 'c'], raisons,
+        cherche: { bonne: 'La quantité du réactif en excès qui reste (mol)', faux: ['La quantité de matière du réactif limitant qui reste (en mol)', 'La quantité de produit formée (en mol)', 'Le réactif limitant'] },
+        manque: null, solution: { txt: `reste de ${r.reactifs[iEx].nom} = quantité de départ − coefficient × nombre de recettes`, val: b.restes[iEx], u: 'mol' } };
+    },
   },
 ];
 
