@@ -34,7 +34,7 @@ export const COUVERTURE = [
     { th: CTM, t: 'Atomes, ions, molécules, familles chimiques et schémas de Lewis', e: 'ok', chap: '2gt-microscopique' },
     { th: CTM, t: 'Quantité de matière et mole', e: 'ok', chap: '2gt-microscopique' },
     { th: CTM, t: 'Transformation physique : changement d’état et énergie', e: 'avenir' },
-    { th: CTM, t: 'Transformation chimique : équation de réaction, réactif limitant', e: 'partiel', chap: '2gt-transformation-chimique', reste: 'réactif limitant' },
+    { th: CTM, t: 'Transformation chimique : équation de réaction, réactif limitant', e: 'ok', chap: '2gt-transformation-chimique' },
     { th: CTM, t: 'Synthèse d’une espèce chimique : reflux et chromatographie', e: 'avenir' },
     { th: CTM, t: 'Transformation nucléaire : isotopes, Soleil et centrales', e: 'avenir' },
     { th: MVT, t: 'Décrire un mouvement : référentiel, trajectoire, vecteur vitesse', e: 'ok', chap: '2gt-mouvement' },

@@ -1505,5 +1505,21 @@
  "77:plausible:eq2gt-val-proportions-methane": "VAL395",
  "77:plausible:eq2gt-val-spectatrices-ok": "VAL396",
  "77:plausible:eq2gt-val-dba": "VAL397",
- "36:eq2gt-calcul": "REA99"
+ "36:eq2gt-calcul": "REA99",
+ "34:rl2gt-donnees.0": "SAPP386",
+ "34:rl2gt-donnees.1": "SAPP387",
+ "37:prevoir:rl2gt-double-methane": "ANA627",
+ "37:prevoir:rl2gt-exces-energie": "ANA628",
+ "37:prevoir:rl2gt-etat-final-lire": "ANA629",
+ "37:prevoir:rl2gt-proportions-exactes": "ANA630",
+ "37:prevoir:rl2gt-plus-petit": "ANA631",
+ "37:prevoir:rl2gt-double-limitant": "ANA632",
+ "37:prevoir:rl2gt-calcaire-ajout": "ANA633",
+ "77:plausible:rl2gt-reste-impossible": "VAL398",
+ "77:plausible:rl2gt-produit-trop": "VAL399",
+ "77:plausible:rl2gt-reste-plausible": "VAL400",
+ "77:plausible:rl2gt-energie-triple": "VAL401",
+ "77:plausible:rl2gt-dba-reste": "VAL402",
+ "36:rl2gt-calcul": "REA100",
+ "36:rl2gt-masse": "REA101"
 }

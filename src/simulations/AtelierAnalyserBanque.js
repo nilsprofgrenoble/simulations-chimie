@@ -5122,6 +5122,56 @@ export const PREVOIR = [
       F('elle est exothermique : le milieu a perdu de l’énergie', 'Le milieu a bien perdu de l’énergie, mais c’est la transformation qui l’a prise : elle est endothermique.'),
       F('on ne peut rien dire sans connaître les réactifs', 'Le sens de variation de la température suffit, qualitativement : elle baisse, donc la transformation est endothermique.'),
     ] },
+  // ── Seconde : réactif limitant ──
+  { id: 'rl2gt-double-methane', domaine: 'Réactif limitant (2GT)', titre: 'On double la quantité de méthane',
+    enonce: 'Dans l’équation CH₄ + 2 O₂ → CO₂ + 2 H₂O, on part de 1 mol de méthane et de 2 mol de dioxygène : ce sont exactement les proportions de la recette. On double la quantité de méthane (2 mol) sans changer celle du dioxygène (2 mol).', q: 'Quel est maintenant le réactif limitant ?', options: [
+      V('le dioxygène O₂', 'Avec 2 mol de méthane, il faudrait 4 mol de dioxygène pour réaliser 2 recettes. Il n’y en a que 2 mol : le dioxygène manque en premier (1 recette seulement).'),
+      F('le méthane CH₄', 'On en a plus qu’avant : il est devenu en excès (2 mol pour 1 recette). Ajouter un réactif ne peut pas le rendre limitant.'),
+      F('les deux, comme avant', 'Avant, les proportions étaient exactes. Ce n’est plus le cas : un seul des deux réactifs limite maintenant.'),
+      F('aucun : la réaction est impossible', 'La réaction est possible : elle s’arrête quand le réactif limitant est épuisé.'),
+    ] },
+  { id: 'rl2gt-exces-energie', domaine: 'Réactif limitant (2GT)', titre: 'Plus de dioxygène : plus d’énergie ?',
+    enonce: 'Dans un brûleur, le méthane est le réactif limitant : le dioxygène est en excès. On augmente la quantité de dioxygène, sans toucher à la quantité de méthane.', q: 'Que devient l’énergie libérée par la combustion ?', options: [
+      V('elle ne change pas', 'L’énergie dépend du nombre de recettes réalisées, donc de la quantité de réactif limitant. Le méthane reste limitant : rien ne change.'),
+      F('elle augmente, car il y a plus de réactif', 'Seul le réactif limitant compte. Le dioxygène supplémentaire reste inutilisé : il ne réagit pas.'),
+      F('elle diminue, car le mélange est plus dilué', 'On suppose la transformation totale et rapide : un excès de réactif ne la freine pas.'),
+      F('elle est multipliée par le coefficient du dioxygène', 'Les coefficients donnent les proportions de la recette, pas un facteur d’énergie.'),
+    ] },
+  { id: 'rl2gt-etat-final-lire', domaine: 'Réactif limitant (2GT)', titre: 'Lire l’état final d’une transformation',
+    enonce: 'Une transformation totale entre un réactif A et un réactif B est terminée. Dans le mélange final, on trouve encore du réactif A, mais plus aucune trace de réactif B.', q: 'Que peut-on conclure ?', options: [
+      V('B était le réactif limitant, A était en excès', 'Le réactif qui a disparu complètement est celui qui a manqué en premier : B est limitant. Il reste de A : il est en excès.'),
+      F('A était le réactif limitant, B était en excès', 'C’est l’inverse : le réactif en excès est celui dont il reste à la fin.'),
+      F('A et B étaient en proportions exactes', 'Dans ce cas, plus aucun des deux ne resterait à la fin.'),
+      F('on ne peut rien conclure sans connaître les quantités', 'Pas besoin de calcul : ce qu’il reste dans l’état final suffit à trouver le réactif limitant.'),
+    ] },
+  { id: 'rl2gt-proportions-exactes', domaine: 'Réactif limitant (2GT)', titre: 'Les proportions exactes de la recette',
+    enonce: 'On mélange 3 mol de méthane et 6 mol de dioxygène. L’équation est CH₄ + 2 O₂ → CO₂ + 2 H₂O. La transformation est totale.', q: 'Que reste-t-il de réactifs à la fin ?', options: [
+      V('plus rien : les deux sont épuisés', '3 mol de CH₄ permettent 3 recettes ; 6 mol de O₂ aussi (6 ÷ 2) : les deux réactifs sont limitants, ils disparaissent ensemble.'),
+      F('du méthane, car il y en a le moins', 'Le nombre de moles ne suffit pas : il faut diviser par le coefficient. Ici, les deux permettent 3 recettes.'),
+      F('du dioxygène, car il y en a le plus', 'Les 6 mol de dioxygène sont exactement ce qu’il faut pour 3 mol de méthane (2 × 3).'),
+      F('3 mol de dioxygène', 'Pour 3 recettes, il faut 2 × 3 = 6 mol de dioxygène : tout est consommé.'),
+    ] },
+  { id: 'rl2gt-plus-petit', domaine: 'Réactif limitant (2GT)', titre: 'Le réactif dont on a le moins est-il limitant ?',
+    enonce: 'Pour la recette 2 A + B → C, on mélange 4 mol de A et 3 mol de B. Un élève affirme : « B est le réactif limitant, car il y en a le moins (3 mol < 4 mol). »', q: 'Que penser de cette affirmation ?', options: [
+      V('Elle est fausse : A permet 2 recettes, B en permet 3', 'On divise chaque quantité par son coefficient : A : 4 ÷ 2 = 2 recettes ; B : 3 ÷ 1 = 3 recettes. Le plus petit est 2 : A est limitant, bien qu’il y en ait plus de moles.'),
+      F('Elle est juste : 3 mol < 4 mol, donc B est limitant', 'Ce raccourci est faux : le coefficient dans l’équation compte.'),
+      F('Elle est fausse : le limitant est celui dont on a le plus (4 mol)', 'Ce n’est pas non plus une règle : on compare quantité ÷ coefficient pour chaque réactif.'),
+      F('Elle est juste, car B a le plus petit coefficient (1 < 2)', 'On ne compare pas les coefficients : on divise chaque quantité par son coefficient.'),
+    ] },
+  { id: 'rl2gt-double-limitant', domaine: 'Réactif limitant (2GT)', titre: 'On double le réactif limitant',
+    enonce: 'Dans la synthèse de la DBA, le benzaldéhyde est le réactif limitant et l’acétone est en excès. On double la quantité de benzaldéhyde ; il reste assez d’acétone pour que le benzaldéhyde reste limitant.', q: 'Que devient la quantité de DBA formée ?', options: [
+      V('elle est multipliée par 2', 'La quantité de produit est proportionnelle à la quantité de réactif limitant : deux fois plus de réactif limitant, deux fois plus de recettes, deux fois plus de DBA.'),
+      F('elle ne change pas', 'Elle ne resterait la même que si on changeait seulement le réactif en excès. Ici, on change le réactif limitant : le produit change.'),
+      F('elle est multipliée par 4', 'Doubler le réactif limitant double le nombre de recettes, pas plus.'),
+      F('elle est divisée par 2', 'Plus de réactif limitant donne plus de produit, jamais moins.'),
+    ] },
+  { id: 'rl2gt-calcaire-ajout', domaine: 'Réactif limitant (2GT)', titre: 'Les bulles se sont arrêtées : on ajoute de l’acide',
+    enonce: 'De l’acide attaque du calcaire : les bulles de gaz se sont arrêtées, mais il reste du solide blanc au fond du bécher. On ajoute alors de l’acide (des ions H⁺) dans le bécher.', q: 'Que va-t-il se passer ?', options: [
+      V('des bulles reprennent : de l’acide est de nouveau disponible', 'Les bulles s’étaient arrêtées faute d’acide (le réactif limitant) alors qu’il restait du calcaire (en excès). Avec de l’acide frais, la réaction repart tant qu’il reste du calcaire.'),
+      F('rien ne se passe : la transformation est terminée', 'Elle s’était arrêtée parce que l’acide était épuisé, pas le calcaire : en ajoutant de l’acide, on relance la réaction.'),
+      F('le solide disparaît sans qu’il y ait de bulles', 'Le calcaire ne disparaît que par la réaction, qui forme du gaz CO₂ : on verrait des bulles.'),
+      F('des bulles reprennent seulement si on ajoute aussi du calcaire', 'Il reste déjà du calcaire (il était en excès) : il n’est pas nécessaire d’en ajouter.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

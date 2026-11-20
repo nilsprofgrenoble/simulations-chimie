@@ -16,6 +16,7 @@ import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
 import * as EQM from "./equationReactionModele";
 import * as RX from "./redoxModele";
+import * as RL from "./reactifLimitantModele";
 import * as KEP from "./satellitesModele";
 import * as CL from "./couleursModele";
 import * as PH from "./photonModele";
@@ -3149,6 +3150,84 @@ function genPuissances2GT() {
     retenir: ['Écriture scientifique : un nombre entre 1 et 10, multiplié par une puissance de 10 (négative pour un petit nombre).', 'Multiplier : on additionne les nombres écrits en haut du 10 ; diviser : on les soustrait.', 'Additionner : il faut d’abord la même puissance de 10.', '1 g = 10⁻³ kg.'] };
 }
 
+// ───────────── Réactif limitant (2GT) : nombre de recettes (quantité ÷ coefficient), quantité restante, quantité formée ─────────────
+const RL_NOMS = { CH4: 'le méthane', O2: 'le dioxygène', CaCO3: 'le calcaire', 'H+': 'les ions H⁺', benzald: 'le benzaldéhyde', acetone: 'l’acétone', DBA: 'la DBA', 'Ca2+': 'les ions calcium', CO2: 'le dioxyde de carbone', H2O: 'l’eau' };
+const RL_DE = { CH4: 'de méthane', O2: 'de dioxygène', CaCO3: 'de calcaire', 'H+': 'd’ions H⁺', benzald: 'de benzaldéhyde', acetone: 'd’acétone', DBA: 'de DBA', 'Ca2+': 'd’ions calcium', CO2: 'de dioxyde de carbone', H2O: 'd’eau' };
+const fm = x => (x >= 10 ? String(Math.round(x)) : nb(x, Math.round(x * 100) % 10 !== 0 ? 3 : 2));   // masse en g : 3 chiffres significatifs si besoin (3,18 g)
+const rlLoin = (x, v) => isFinite(x) && x >= 0 && Math.abs(x - v) > 0.02 * Math.abs(v) + 1e-12;
+const rlPieges = (v, liste) => { const vus = new Set(); return liste.filter(([x]) => rlLoin(x, v) && !vus.has(x) && vus.add(x)); };
+const rlDistincts = vals => vals.every((x, i) => vals.every((y, j) => i === j || Math.abs(x - y) > 0.06 * Math.max(Math.abs(x), Math.abs(y))));
+function rlTirage(masse) {
+  for (let essai = 0; essai < 400; essai++) {
+    const r = RL.reactionDe(tire(['methane', 'calcaire', 'dba'])), iLim = tire([0, 1]), m = tire([1, 2, 3]), e = tire([1, 2]), j = tire([0, 1]);
+    if (r.produits.length <= j) continue;
+    const n = RL.melangeAvecLimitant(r, iLim, m, e);
+    if (n.some((x, i) => x / r.jeton > r.reactifs[i].max + 1e-9)) continue;
+    const b = RL.bilan(r, n), iEx = 1 - iLim, vals = [b.rmin, b.restes[iEx]];
+    // un produit de coefficient 1 se forme en quantité égale au nombre de recettes (c'est le cas du calcaire et du CO₂) : on ne l'exige pas distinct de rmin
+    if (r.produits[j].coef > 1) vals.push(b.produits[j]);
+    if (masse) vals.push(n[0]);
+    if (!rlDistincts(vals)) continue;
+    return { r, n, b, iLim, iEx, j };
+  }
+  const r = RL.reactionDe('methane'), n = [3, 4], b = RL.bilan(r, n);
+  return { r, n, b, iLim: 1, iEx: 0, j: 0 };
+}
+const rlEquation = r => <b>{RL.equationTexte(r)}</b>;
+function rlQcmLimitant(t, id, enonce) {
+  const { r, iLim } = t, nomsR = r.reactifs.map(e => RL_NOMS[e.id]);
+  const liste = [nomsR[iLim], nomsR[1 - iLim], 'les deux à la fois', 'aucun des deux : tout est consommé'], bonne = liste[0], opts = melange(liste);
+  const b = t.b;
+  return { id, type: 'qcm', q: enonce, options: opts, bonne: opts.indexOf(bonne),
+    aide: 'Pour chaque réactif, divisez la quantité de matière par son coefficient dans l’équation : le plus petit résultat désigne le réactif limitant.',
+    expl: <>{r.reactifs.map((e, i) => <span key={i}>{RL_NOMS[e.id]} : {nb(t.n[i], 2)}{NB}÷{NB}{e.coef} = {nb(b.rec[i], 2)}{NB}recette{b.rec[i] > 1 ? 's' : ''}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est {nb(b.rmin, 2)} : {nomsR[iLim]} est le réactif limitant.</> };
+}
+function genReactifLimitant2GT() {
+  const t = rlTirage(false), { r, n, b, iLim, iEx, j } = t;
+  const cEx = r.reactifs[iEx].coef, pr = r.produits[j];
+  const contexte = <>On fait réagir <b>{nb(n[0], 2)}{NB}mol</b> {RL_DE[r.reactifs[0].id]} et <b>{nb(n[1], 2)}{NB}mol</b> {RL_DE[r.reactifs[1].id]}, selon l’équation {rlEquation(r)}. La transformation est totale.</>;
+  const q1 = rlQcmLimitant(t, 'rl0', <>{contexte} Quel est le réactif limitant ?</>);
+  const q2 = { id: 'rl1', type: 'num', q: <>Même mélange : {nb(n[0], 2)}{NB}mol {RL_DE[r.reactifs[0].id]} et {nb(n[1], 2)}{NB}mol {RL_DE[r.reactifs[1].id]}. Pour chaque réactif, divisez la quantité de matière par son coefficient. Quel est le <b>nombre de recettes réalisées</b> par la transformation (le plus petit des deux résultats) ?</>, unite: 'recettes', vrai: b.rmin, csMin: 2, tolRel: 0.01,
+    aide: `Divisez chaque quantité de matière par son coefficient dans l’équation ${RL.equationTexte(r)} : le plus petit résultat est le nombre de recettes réalisées.`,
+    pieges: rlPieges(b.rmin, [[b.rec[iEx], 'C’est le nombre de recettes permises par le réactif en excès : le réactif limitant en permet moins, et c’est lui qui décide.'], [n[iLim], 'Vous avez gardé la quantité de matière du limitant sans la diviser par son coefficient.'], [n[iEx], 'C’est la quantité de matière de l’autre réactif : il faut diviser chaque quantité par son coefficient et garder le plus petit résultat.']]),
+    expl: <>{r.reactifs.map((e, i) => <span key={i}>{nb(n[i], 2)}{NB}÷{NB}{e.coef} = {nb(b.rec[i], 2)}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est <b>{nb(b.rmin, 2)}{NB}recette{b.rmin > 1 ? 's' : ''}</b>.</> };
+  const q3 = { id: 'rl2', type: 'num', q: <>Même mélange, avec {nb(b.rmin, 2)} recette{b.rmin > 1 ? 's' : ''} réalisée{b.rmin > 1 ? 's' : ''}. Quelle quantité de matière {RL_DE[r.reactifs[iEx].id]} (réactif en excès) reste-t-il à la fin, en <b>mol</b> ?</>, unite: 'mol', vrai: b.restes[iEx], csMin: 2, tolRel: 0.01,
+    aide: `Le réactif en excès perd (coefficient × nombre de recettes). Calculez ce qui est consommé, puis retirez-le de la quantité de départ.`,
+    pieges: rlPieges(b.restes[iEx], [[n[iEx], 'C’est la quantité de départ : une partie du réactif a été consommée.'], [n[iEx] - b.rmin, cEx > 1 ? 'Vous avez retiré le nombre de recettes sans le multiplier par le coefficient : il faut retirer (coefficient × nombre de recettes).' : 'Vérifiez la soustraction : quantité de départ − coefficient × nombre de recettes.'], [cEx * b.rmin, 'C’est la quantité consommée, pas celle qui reste : il faut la retirer de la quantité de départ.'], [b.rmin, 'C’est le nombre de recettes : il faut le multiplier par le coefficient, puis le retirer de la quantité de départ.']]),
+    expl: <>Consommé : {cEx}{NB}×{NB}{nb(b.rmin, 2)} = {nb(cEx * b.rmin, 2)}{NB}mol. Reste : {nb(n[iEx], 2)} − {nb(cEx * b.rmin, 2)} = <b>{avecU(b.restes[iEx], 'mol', 2)}</b>.</> };
+  const q4 = { id: 'rl3', type: 'num', q: <>Même transformation ({nb(b.rmin, 2)} recette{b.rmin > 1 ? 's' : ''}). Quelle quantité de matière {RL_DE[pr.id]} se forme-t-il ? Réponse en <b>mol</b>.</>, unite: 'mol', vrai: b.produits[j], csMin: 2, tolRel: 0.01,
+    aide: `La quantité de produit formée vaut (coefficient du produit dans l’équation) × (nombre de recettes réalisées).`,
+    pieges: rlPieges(b.produits[j], [[b.rmin, pr.coef > 1 ? 'C’est le nombre de recettes : il faut le multiplier par le coefficient du produit.' : 'Vérifiez le coefficient du produit dans l’équation.'], [n[iLim], 'C’est la quantité de matière du réactif limitant au départ : on cherche la quantité de produit formée.'], [b.restes[iEx], 'C’est la quantité de réactif en excès qui reste, pas la quantité de produit formée.']]),
+    expl: <>{pr.coef}{NB}×{NB}{nb(b.rmin, 2)} = <b>{avecU(b.produits[j], 'mol', 2)}</b> {RL_DE[pr.id]}.</> };
+  [q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
+  return { intro: 'Réactif limitant : nombre de recettes, quantité de réactif restante et quantité de produit formée (transformation totale).', questions: [q1, q2, q3, q4],
+    retenir: ['Pour chaque réactif : quantité ÷ coefficient = nombre de recettes ; le plus petit résultat désigne le réactif limitant.', 'Quantité restante d’un réactif = quantité de départ − coefficient × nombre de recettes (nulle pour le limitant).', 'Quantité de produit formée = coefficient du produit × nombre de recettes.'] };
+}
+
+// Variante : la quantité de matière d'un réactif est d'abord à calculer à partir de sa masse (n = m ÷ M, masse molaire donnée)
+const RL_M = { methane: 16, calcaire: 100, dba: 106 };
+function genMasseReactifLimitant2GT() {
+  const t = rlTirage(true), { r, n, b, iLim, iEx } = t, M = RL_M[r.id], m = Number((n[0] * M).toPrecision(3)), cEx = r.reactifs[iEx].coef;
+  const nomA = r.reactifs[0], nomB = r.reactifs[1];
+  const donnees = <>On fait réagir <b>{fm(m)}{NB}g</b> {RL_DE[nomA.id]} (masse molaire : <b>M{NB}={NB}{M}{NB}g·mol⁻¹</b>) et <b>{nb(n[1], 2)}{NB}mol</b> {RL_DE[nomB.id]}, selon l’équation {rlEquation(r)}. La transformation est totale.</>;
+  const q1 = { id: 'rm0', type: 'num', q: <>{donnees} Calculez la quantité de matière {RL_DE[nomA.id]} au départ (n = m ÷ M), en <b>mol</b>.</>, unite: 'mol', vrai: n[0], csMin: 2, tolRel: 0.01,
+    aide: 'La quantité de matière est la masse divisée par la masse molaire : n = m ÷ M (m en g, M en g/mol).',
+    pieges: rlPieges(n[0], [[m * M, 'Vous avez multiplié la masse par la masse molaire : il faut la diviser (n = m ÷ M).'], [M / m, 'Vous avez divisé la masse molaire par la masse : c’est n = m ÷ M.'], [m, 'C’est la masse en grammes : il faut la diviser par la masse molaire pour obtenir une quantité de matière.']]),
+    expl: <>n = {fm(m)}{NB}g ÷ {M}{NB}g·mol⁻¹ = <b>{avecU(n[0], 'mol', 2)}</b>.</> };
+  const opts = (() => { const noms = r.reactifs.map(e => RL_NOMS[e.id]), liste = [noms[iLim], noms[1 - iLim], 'les deux à la fois', 'aucun des deux : tout est consommé']; return { liste, bonne: noms[iLim] }; })();
+  const o2 = melange(opts.liste);
+  const q2 = { id: 'rm1', type: 'qcm', q: <>La quantité de matière {RL_DE[nomA.id]} est donc {nb(n[0], 2)}{NB}mol ; il y a aussi {nb(n[1], 2)}{NB}mol {RL_DE[nomB.id]}. Quel est le réactif limitant ?</>, options: o2, bonne: o2.indexOf(opts.bonne),
+    aide: 'Pour chaque réactif, divisez la quantité de matière par son coefficient dans l’équation : le plus petit résultat désigne le réactif limitant.',
+    expl: <>{r.reactifs.map((e, i) => <span key={i}>{RL_NOMS[e.id]} : {nb(n[i], 2)}{NB}÷{NB}{e.coef} = {nb(b.rec[i], 2)}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est {nb(b.rmin, 2)} : {RL_NOMS[r.reactifs[iLim].id]} est limitant.</> };
+  const q3 = { id: 'rm2', type: 'num', q: <>{nb(b.rmin, 2)} recette{b.rmin > 1 ? 's' : ''} sont réalisées. Quelle quantité de matière {RL_DE[r.reactifs[iEx].id]} (réactif en excès) reste-t-il à la fin, en <b>mol</b> ?</>, unite: 'mol', vrai: b.restes[iEx], csMin: 2, tolRel: 0.01,
+    aide: 'Quantité restante = quantité de départ − coefficient × nombre de recettes.',
+    pieges: rlPieges(b.restes[iEx], [[n[iEx], 'C’est la quantité de départ : une partie du réactif a été consommée.'], [n[iEx] - b.rmin, cEx > 1 ? 'Il faut retirer (coefficient × nombre de recettes), pas seulement le nombre de recettes.' : 'Vérifiez la soustraction.'], [cEx * b.rmin, 'C’est la quantité consommée, pas celle qui reste.']]),
+    expl: <>{nb(n[iEx], 2)} − {cEx}{NB}×{NB}{nb(b.rmin, 2)} = <b>{avecU(b.restes[iEx], 'mol', 2)}</b>.</> };
+  [q1, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
+  return { intro: 'Réactif limitant avec une masse : n = m ÷ M, puis quantité ÷ coefficient et quantité restante (transformation totale).', questions: [q1, q2, q3],
+    retenir: ['n = m ÷ M : on convertit d’abord la masse en quantité de matière.', 'Pour chaque réactif : quantité ÷ coefficient ; le plus petit résultat désigne le limitant.', 'Reste du réactif en excès = quantité de départ − coefficient × nombre de recettes.'] };
+}
+
 export const FAMILLES = [
   { id: 'titrage-direct', groupe: 'Formules', titre: 'Titrage direct du diiode par le thiosulfate : équivalence, concentration, masse (1re spé)', gen: genTitrageDirect, domaine: 'Titrage direct' },
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
@@ -3234,6 +3313,8 @@ export const FAMILLES = [
   { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },
   { id: 'kep-calcul', groupe: 'Formules', titre: 'Satellites et lois de Kepler : accélération, vitesse, période, masse de l’astre et orbite stationnaire (TG)', gen: genKeplerTG, domaine: 'Satellites et lois de Kepler' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
+  { id: 'rl2gt-calcul', groupe: 'Formules', titre: 'Réactif limitant : nombre de recettes, quantité restante et quantité formée (2GT)', gen: genReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
+  { id: 'rl2gt-masse', groupe: 'Formules', titre: 'Réactif limitant avec une masse : n = m ÷ M, limitant et quantité restante (2GT)', gen: genMasseReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },

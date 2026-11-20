@@ -137,6 +137,7 @@ const SimulationEnergieMeca = paresseux(() => import("./simulations/EnergieMeca"
 const SimulationTravail = paresseux(() => import("./simulations/Travail"), "SimulationTravail");
 const SimulationMouvementSysteme = paresseux(() => import("./simulations/MouvementSysteme"), "SimulationMouvementSysteme");
 const SimulationMouvementReferentiel = paresseux(() => import("./simulations/MouvementReferentiel"), "SimulationMouvementReferentiel");
+const SimulationReactifLimitant = paresseux(() => import("./simulations/ReactifLimitant"), "SimulationReactifLimitant");
 const SimulationAtomesMolecules = paresseux(() => import("./simulations/AtomesMolecules"), "SimulationAtomesMolecules");
 const SimulationFamillesChimiques = paresseux(() => import("./simulations/FamillesChimiques"), "SimulationFamillesChimiques");
 const SimulationForcesVecteurs = paresseux(() => import("./simulations/ForcesVecteurs"), "SimulationForcesVecteurs");
@@ -398,6 +399,8 @@ const SIMULATIONS = [
     component: SimulationOndesPeriode },
   { id:56, label:"Référentiel et mouvement : décrire un mouvement", niveau:"2GT", icon:"🚃", color:"#4338ca",
     component: SimulationMouvementReferentiel },
+  { id:180, label:"Réactif limitant", niveau:"2GT", icon:"🧪", color:"#c2410c",
+    component: SimulationReactifLimitant },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",
     component: SimulationAtomesMolecules },
   { id:178, label:"Quantité de matière : compter les entités et la mole", niveau:"2GT", icon:"🥚", color:"#0f766e",
