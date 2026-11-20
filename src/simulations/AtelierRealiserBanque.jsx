@@ -8,6 +8,7 @@ import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
 import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
+import * as SS2 from "./signalSonore2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
@@ -3239,6 +3240,59 @@ function genQuantiteMatiere2GT() {
     retenir: ['Objets identiques : N = m ÷ masse d’un objet (même unité pour les deux masses).', 'N = n × N_A et n = N ÷ N_A, avec N_A = 6,02 × 10²³ mol⁻¹.', 'Masse d’une entité = somme des masses de ses atomes (mêmes puissances de 10 pour additionner).', 'Échantillon : masse en kg, puis N = m ÷ masse d’une entité, puis n = N ÷ N_A.'] };
 }
 
+// ───────────── Signal sonore (2GT) : période, fréquence, conversions ms ↔ s, domaines ─────────────
+function genSon2GT() {
+  const filtre = q => {
+    q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.01)) * Math.abs(q.vrai));
+    // décalages de virgule (×10, ÷10, ×1 000, ÷1 000…) : message simple, sans vocabulaire de puissances de 10
+    for (const k of [1, 2, 3, 4, 5, 6]) for (const sg of [1, -1]) {
+      const v = q.vrai * Math.pow(10, sg * k);
+      if (!q.pieges.some(([x]) => Math.abs(x - v) <= Math.abs(v) * 0.01)) q.pieges.push([v, 'Votre résultat est décalé de plusieurs rangs (virgule mal placée) : revoyez la conversion des unités (1 ms = 0,001 s ; 1 kHz = 1 000 Hz).']);
+    }
+    return q;
+  };
+  const L = SS2.nbLisible;
+  // q1 : période à partir de la durée de N motifs
+  const N1 = tire([4, 5, 8, 10]), T1 = tire([0.5, 1, 2, 2.5, 4, 5]), dt1 = Math.round(N1 * T1 * 1e6) / 1e6;
+  const q1 = filtre({ id: 'p0', type: 'num', q: <>Sur l’écran d’un oscilloscope, <b>{N1} motifs</b> d’un signal périodique durent <b>{L(dt1)}{NB}ms</b>. Quelle est la période <i>T</i> du signal, en <b>ms</b> ?</>, unite: 'ms', vrai: T1, csMin: 1, tolRel: 0.01,
+    aide: 'La période est la durée d’un seul motif : divisez la durée totale par le nombre de motifs.',
+    pieges: [[dt1 * N1, 'Vous avez multiplié : la période est la durée divisée par le nombre de motifs.'], [dt1, 'C’est la durée de tous les motifs : divisez par leur nombre.']],
+    expl: <>T = Δt ÷ N = {L(dt1)} ÷ {N1} = <b>{L(T1)}{NB}ms</b>.</> });
+  // q2 : ms → s
+  const T2 = tire([3, 6, 8, 12, 15, 25, 40]), s2 = T2 / 1000;
+  const q2 = filtre({ id: 'p1', type: 'num', q: <>Une période vaut <b><i>T</i> = {T2}{NB}ms</b>. Exprimez-la en <b>secondes</b>.</>, unite: 's', vrai: s2, csMin: 1, tolRel: 0.01,
+    aide: '1 ms = 0,001 s : on divise par 1 000 (la virgule recule de trois rangs).',
+    pieges: [[T2 * 1000, 'Vous avez multiplié par 1 000 : une milliseconde est plus petite qu’une seconde, on divise.'], [T2 / 100, 'La virgule doit reculer de trois rangs (÷ 1 000), pas de deux.'], [T2 / 10000, 'La virgule recule de trois rangs (÷ 1 000), pas de quatre.']],
+    expl: <>{T2} ms = {T2} ÷ 1 000 = <b>{L(s2)}{NB}s</b>.</> });
+  // q3 : f à partir de T en s
+  const T3 = tire([0.002, 0.004, 0.005, 0.008, 0.01, 0.02, 0.0025, 0.0004]), f3 = 1 / T3;
+  const q3 = filtre({ id: 'p2', type: 'num', q: <>Un son a une période <b><i>T</i> = {L(T3)}{NB}s</b>. Quelle est sa fréquence <i>f</i>, en <b>Hz</b> ?</>, unite: 'Hz', vrai: f3, csMin: 1, tolRel: 0.01,
+    aide: 'f = 1 ÷ T, avec T en secondes : combien de fois T « rentre » dans 1 s ?',
+    pieges: [[T3, 'Vous avez recopié T : la fréquence est son inverse, f = 1 ÷ T.'], [f3 / 1000, 'Vérifiez : T est déjà en secondes, pas en millisecondes.']],
+    expl: <>f = 1 ÷ T = 1 ÷ {L(T3)} = <b>{L(f3)}{NB}Hz</b>.</> });
+  // q4 : T à partir de f
+  const f4 = tire([100, 125, 200, 250, 400, 500, 1000, 2000]), T4 = 1000 / f4;
+  const q4 = filtre({ id: 'p3', type: 'num', q: <>Un son a une fréquence <b><i>f</i> = {L(f4)}{NB}Hz</b>. Quelle est sa période <i>T</i>, en <b>ms</b> ?</>, unite: 'ms', vrai: T4, csMin: 1, tolRel: 0.01,
+    aide: 'T = 1 ÷ f donne T en secondes : multipliez par 1 000 pour avoir des ms.',
+    pieges: [[1 / f4, 'C’est la période en secondes : demandée en ms, multipliez par 1 000.'], [f4 / 1000, 'Diviser f par 1 000 ne donne pas la période : T est l’inverse de f, T = 1 ÷ f (en secondes, puis × 1 000 pour les ms).']],
+    expl: <>T = 1 ÷ {L(f4)} = {L(1 / f4)} s = <b>{L(T4)}{NB}ms</b>.</> });
+  // q5 : f en kHz à partir de T en ms
+  const T5 = tire([0.02, 0.025, 0.04, 0.05, 0.1, 0.2, 0.5]), f5 = 1 / T5;
+  const q5 = filtre({ id: 'p4', type: 'num', q: <>Un signal a une période <b><i>T</i> = {L(T5)}{NB}ms</b>. Quelle est sa fréquence <i>f</i>, en <b>kHz</b> ? (1{NB}kHz = 1 000{NB}Hz)</>, unite: 'kHz', vrai: f5, csMin: 1, tolRel: 0.01,
+    aide: 'Passez T en secondes (÷ 1 000), calculez f = 1 ÷ T en Hz, puis divisez par 1 000 pour avoir des kHz. Astuce : 1 ÷ (T en ms) donne directement des kHz.',
+    pieges: [[f5 * 1000, 'C’est la fréquence en Hz : demandée en kHz, divisez par 1 000.'], [1 / (T5 / 1000) / 1e6, 'Vérifiez la conversion de T en secondes (÷ 1 000) avant de calculer 1 ÷ T.']],
+    expl: <>T = {L(T5)} ms = {L(T5 / 1000)} s ; f = 1 ÷ {L(T5 / 1000)} = {L(f5 * 1000)} Hz = <b>{L(f5)}{NB}kHz</b>.</> });
+  // q6 : domaine
+  const T6 = tire([100, 200, 0.02, 0.025, 1, 5, 0.5]), f6 = 1000 / T6, d6 = SS2.domaine(f6);
+  const bonne6 = { infrason: 'un infrason (inaudible)', audible: 'un son audible', ultrason: 'un ultrason (inaudible)' }[d6];
+  const opts6 = melange(['un infrason (inaudible)', 'un son audible', 'un ultrason (inaudible)', 'un son impossible à classer']);
+  const q6 = { id: 'p5', type: 'qcm', q: <>Un son a une période <b><i>T</i> = {L(T6)}{NB}ms</b>. Sachant que l’oreille entend de 20{NB}Hz à 20{NB}kHz, ce son est…</>, options: opts6, bonne: opts6.indexOf(bonne6),
+    aide: 'Calculez f = 1 000 ÷ T (T en ms, f en Hz), puis comparez à 20 Hz et à 20 000 Hz.',
+    expl: <>f = 1 000 ÷ {L(T6)} = {L(f6)} Hz : {d6 === 'audible' ? 'entre 20 Hz et 20 000 Hz, le son est audible' : d6 === 'infrason' ? 'en dessous de 20 Hz, c’est un infrason' : 'au-dessus de 20 000 Hz, c’est un ultrason'}.</> };
+  return { intro: 'Période et fréquence d’un son : lire une période sur plusieurs motifs, convertir les ms en s, passer de T à f et de f à T, puis reconnaître un son audible, un infrason ou un ultrason.', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['T = Δt ÷ N : durée de plusieurs motifs divisée par leur nombre.', '1 ms = 0,001 s ; 1 kHz = 1 000 Hz.', 'f = 1 ÷ T (T en s, f en Hz) et T = 1 ÷ f ; avec T en ms, f (Hz) = 1 000 ÷ T et f (kHz) = 1 ÷ T.', 'Audible : de 20 Hz à 20 kHz ; infrason en dessous, ultrason au-dessus.'] };
+}
+
 // ───────────── Puissances de 10 et écriture scientifique (2GT) ─────────────
 function genPuissances2GT() {
   const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
@@ -3402,6 +3456,7 @@ export const FAMILLES = [
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
   { id: 'mol2gt-calcul', groupe: 'Formules', titre: 'Quantité de matière : compter les entités, la mole, atomes et molécules (2GT)', gen: genQuantiteMatiere2GT, domaine: 'Quantité de matière (2GT)' },
   { id: 'mol2gt-puissances', groupe: 'Formules', titre: 'Puissances de 10 et écriture scientifique : conversions, quotients et sommes (2GT)', gen: genPuissances2GT, domaine: 'Quantité de matière (2GT)' },
+  { id: 'son2gt-per-calcul', groupe: 'Formules', titre: 'Signal sonore : période, fréquence, conversions et domaines (2GT)', gen: genSon2GT, domaine: 'Signal sonore : période et fréquence (2GT)' },
   { id: 'fl1g-statique-calcul', groupe: 'Formules', titre: 'Statique des fluides : différence de pression, pression absolue, profondeur, force sur un bouchon et masse volumique (1G)', gen: genStatique1G, domaine: 'Statique des fluides : pression et profondeur' },
   { id: 'mes1g-calcul', groupe: 'Formules', titre: 'Mesure et incertitudes : moyenne, incertitude-type de type A et de type B, arrondi et comparaison à une référence (1G)', gen: genMesure1G, domaine: 'Mesure et incertitudes (1G)' },
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },

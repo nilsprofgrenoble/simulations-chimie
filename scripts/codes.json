@@ -1546,5 +1546,21 @@
  "37:prevoir:itf-ana-casque": "ANA641",
  "77:plausible:itf-val-delta": "VAL407",
  "77:plausible:itf-val-silence": "VAL408",
- "36:itf-calcul": "REA104"
+ "36:itf-calcul": "REA104",
+ "34:son2gt-per-sapp-note.0": "SAPP396",
+ "34:son2gt-per-sapp-note.1": "SAPP397",
+ "34:son2gt-per-sapp-ecran.0": "SAPP398",
+ "34:son2gt-per-sapp-ecran.1": "SAPP399",
+ "37:prevoir:son2gt-per-ana-periode-double": "ANA642",
+ "37:prevoir:son2gt-per-ana-aigu-grave": "ANA643",
+ "37:prevoir:son2gt-per-ana-timbre": "ANA644",
+ "37:prevoir:son2gt-per-ana-amplitude": "ANA645",
+ "37:prevoir:son2gt-per-ana-ultrason": "ANA646",
+ "37:prevoir:son2gt-per-ana-motifs-ecran": "ANA647",
+ "77:plausible:son2gt-per-val-oubli-ms": "VAL409",
+ "77:plausible:son2gt-per-val-voix": "VAL410",
+ "77:plausible:son2gt-per-val-cinq-motifs": "VAL411",
+ "77:plausible:son2gt-per-val-diapason": "VAL412",
+ "77:plausible:son2gt-per-val-limite": "VAL413",
+ "36:son2gt-per-calcul": "REA105"
 }
