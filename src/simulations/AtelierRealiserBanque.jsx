@@ -1,4 +1,4 @@
-import { Frac, avecIndices, lireNombre, nbCS } from "../commun";
+import { Frac, FormuleEnLigne, avecIndices, lireNombre, nbCS } from "../commun";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
 import { indice as indiceTopo } from "./topoModele";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
@@ -2632,6 +2632,55 @@ function genPesanteurTG() {
 }
 
 
+// ───────── Particule chargée dans un condensateur plan (TG, sim 176) ─────────
+function genCondensateurTG() {
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
+  // nb() prend des chiffres SIGNIFICATIFS : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d1 = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const sci = (x, k = 2) => { let e = Math.floor(Math.log10(Math.abs(x))), m = Math.abs(x) / 10 ** e; if (Number(m.toFixed(k - 1)) >= 10) { m /= 10; e += 1; } return `${m.toFixed(k - 1).replace('.', ',')}${NB}×${NB}${p10(e)}`; };
+  const E_CH = 1.60e-19, L = 0.060;
+  const PART = { electron: { nom: 'électron', z: -1, m: 9.11e-31 }, proton: { nom: 'proton', z: 1, m: 1.67e-27 }, sodium: { nom: 'ion sodium Na⁺', z: 1, m: 3.82e-26 } };
+  const chq = p => (PART[p].z < 0 ? '−e' : 'e');
+  // 1. champ
+  const U1 = tire([100, 200, 300, 400, 500, 800, 1000, 2000, 5000]), d1c = tire([1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]), E1 = U1 / (d1c / 100);
+  const q1 = { id: 'cp0', type: 'num', q: <>Deux plaques parallèles, distantes de <b>{d1(d1c, 1)}{NB}cm</b>, sont soumises à la tension <b>{U1}{NB}V</b>. Calculez la norme E du champ électrique entre les plaques (en V/m, 2 chiffres significatifs).</>, unite: 'V/m', vrai: E1, tolRel: 0.05, csMin: 2,
+    aide: 'E = frac(U|d) : la distance d doit être convertie en mètres avant de diviser.',
+    pieges: [[E1 / 100, 'La distance doit être en mètres : 1 cm = 10⁻² m (avec d en cm, on trouve des V/cm).'], [U1 * d1c / 100, 'Le champ est le quotient de la tension par la distance, pas leur produit.'], [d1c / 100 / U1, 'Le rapport est inversé : E = frac(U|d).']],
+    expl: <>E = {avecIndices('frac(U|d)')} = {avecIndices(`frac(${U1}|${d1(d1c / 100, 3)})`)} = <b>{sci(E1)}{NB}V/m</b>.</> };
+  // 2. accélération
+  const pa = tire(['electron', 'proton', 'sodium']), E2 = tire([1.0, 2.0, 5.0, 8.0]) * tire([1e3, 1e4, 1e5]), a2 = E_CH * E2 / PART[pa].m;
+  const q2 = { id: 'cp1', type: 'num', q: <>Un <b>{PART[pa].nom}</b> (charge q = {chq(pa)} avec e = 1,60{NB}×{NB}10⁻¹⁹{NB}C, masse m = <b>{sci(PART[pa].m, 3)}{NB}kg</b>) est placé dans un champ électrique uniforme de norme <b>E = {sci(E2)}{NB}V/m</b>. Le poids est négligé. Calculez la norme a de son accélération (en m/s², 2 chiffres significatifs).</>, unite: 'm/s²', vrai: a2, tolRel: 0.05, csMin: 2,
+    aide: 'Deuxième loi de Newton : m × a = |q| × E, donc a = frac(|q| × E|m).',
+    pieges: [[E_CH * E2, 'Vous avez oublié de diviser par la masse : a = frac(|q| × E|m).'], [E2 / PART[pa].m, 'Il manque la charge : la force est F = |q| × E.'], [E_CH * E2 * PART[pa].m, 'Il faut diviser par la masse, pas multiplier.']],
+    expl: <>a = {avecIndices('frac(|q| × E|m)')} = {avecIndices(`frac(1,60 × 10⁻¹⁹ × ${sci(E2).replace(/[  ]/g, ' ')}|${sci(PART[pa].m, 3).replace(/[  ]/g, ' ')})`)} = <b>{sci(a2)}{NB}m/s²</b>.</> };
+  // 3. déviation à la sortie (électron ; la particule sort : |y_S| < d/2)
+  let U3, d3, v3, yS3;
+  for (;;) {
+    U3 = tire([100, 200, 300, 400, 500]); d3 = tire([1.0, 1.5, 2.0]); v3 = tire([1.0e7, 2.0e7, 3.0e7]);
+    yS3 = (E_CH * U3 / (9.11e-31 * d3 / 100)) * L * L / (2 * v3 * v3) * 1000;
+    if (yS3 >= 1.0 && yS3 <= 0.85 * d3 * 5) break;
+  }
+  const q3 = { id: 'cp2', type: 'num', q: <>Un électron entre au milieu de deux plaques de longueur <b>L = 6,0{NB}cm</b>, distantes de <b>d = {d1(d3, 1)}{NB}cm</b> et soumises à la tension <b>U = {U3}{NB}V</b>, avec la vitesse <b>v₀ = {sci(v3, 2)}{NB}m/s</b> perpendiculaire au champ (e = 1,60{NB}×{NB}10⁻¹⁹{NB}C ; m = 9,11{NB}×{NB}10⁻³¹{NB}kg ; poids négligé). Calculez la déviation {avecIndices("y_S")} de l’électron à la sortie des plaques (en mm, 2 chiffres significatifs).</>, unite: 'mm', vrai: yS3, tolRel: 0.05, csMin: 2,
+    aide: 'a = frac(e × U|m × d), puis y_S = frac(a × L²|2 × v₀²) ; L et d en mètres. Le résultat est en mètres : convertissez-le en millimètres.',
+    pieges: [[yS3 / 1000, 'Le résultat est demandé en millimètres : 1 m = 10³ mm.'], [2 * yS3, 'Il manque le facteur 2 : y_S = frac(a × L²|2 × v₀²).'], [yS3 * 100, 'Les distances doivent être en mètres : L = 6,0 cm = 6,0 × 10⁻² m et d en m.']],
+    expl: <>a = {avecIndices(`frac(e × U|m × d)`)} = {sci(E_CH * U3 / (9.11e-31 * d3 / 100))}{NB}m/s² ; {avecIndices(`y_S = frac(a × L²|2 × v_0²)`)} = <b>{d1(yS3, 1)}{NB}mm</b>.</> };
+  // 4. vitesse après accélération (départ au repos) ; électron limité à 500 V (v < 0,1 c)
+  const p4 = tire(['electron', 'proton', 'sodium']), U4 = p4 === 'electron' ? tire([100, 200, 250, 400, 500]) : tire([100, 250, 500, 1000, 2000]), v4 = Math.sqrt(2 * E_CH * U4 / PART[p4].m);
+  const q4 = { id: 'cp3', type: 'num', q: <>Un <b>{PART[p4].nom}</b> (charge {chq(p4)} avec e = 1,60{NB}×{NB}10⁻¹⁹{NB}C ; masse m = <b>{sci(PART[p4].m, 3)}{NB}kg</b>) part du repos et est accéléré dans le vide par la tension <b>U = {U4}{NB}V</b>. Calculez sa vitesse à la fin de l’accélération (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: v4, tolRel: 0.05, csMin: 2,
+    aide: 'Théorème de l’énergie cinétique, départ au repos : frac(1|2) × m × v² = |q| × U, donc v² = frac(2 × |q| × U|m).',
+    pieges: [[v4 * v4, 'Il manque la racine carrée : le calcul donne v², pas v.'], [v4 / Math.SQRT2, 'Il manque le facteur 2 : v² = frac(2 × |q| × U|m).'], [Math.sqrt(2 * E_CH * U4 * PART[p4].m), 'Il faut diviser par la masse, pas multiplier.']],
+    expl: <>frac(1|2) × m × v² = |q| × U donne v = <FormuleEnLigne><msqrt><mfrac><mrow><mtext>2 × |q| × U</mtext></mrow><mrow><mtext>m</mtext></mrow></mfrac></msqrt></FormuleEnLigne> = <b>{sci(v4)}{NB}m/s</b>.</> };
+  // 5. durée de traversée
+  const v5 = tire([1.0e7, 1.5e7, 2.0e7, 2.5e7, 3.0e7]), t5 = L / v5 * 1e9;
+  const q5 = { id: 'cp4', type: 'num', q: <>Un électron pénètre entre deux plaques de longueur <b>L = 6,0{NB}cm</b> avec la vitesse <b>v₀ = {sci(v5, 2)}{NB}m/s</b>, parallèle aux plaques. Sa vitesse selon l’axe Ox reste égale à v₀. Calculez la durée de la traversée des plaques (en ns, 2 chiffres significatifs).</>, unite: 'ns', vrai: t5, tolRel: 0.05, csMin: 2,
+    aide: 'x(t) = v₀ × t : la durée est t = frac(L|v₀), avec L en mètres. Le résultat est en secondes : 1 ns = 10⁻⁹ s.',
+    pieges: [[t5 / 1e9, 'Le résultat est demandé en nanosecondes : 1 s = 10⁹ ns.'], [t5 * 100, 'La longueur doit être en mètres : 6,0 cm = 6,0 × 10⁻² m.'], [1 / t5, 'Le rapport est inversé : t = frac(L|v₀).']],
+    expl: <>t = {avecIndices('frac(L|v_0)')} = {avecIndices(`frac(6,0 × 10⁻²|${sci(v5, 2).replace(/[  ]/g, ' ')})`)} = <b>{d1(t5, 1)}{NB}ns</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Particule chargée dans un condensateur plan : champ uniforme, accélération, déviation à la sortie, vitesse après accélération et durée de traversée.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Champ d’un condensateur plan : E = frac(U|d), avec d en mètres ; vec(F) = q × vec(E), de sens opposé à vec(E) si q < 0.', 'Entrée perpendiculaire au champ, poids négligé : a_y = frac(q × E_y|m) constante ; x(t) = v₀ × t et y(t) = frac(1|2) × a_y × t², soit une parabole y = frac(a_y|2 × v₀²) × x².', 'La particule sort des plaques si |y_S| < frac(d|2) ; sinon elle heurte une plaque.', 'Théorème de l’énergie cinétique, départ au repos : frac(1|2) × m × v² = |q| × U, donc v² = frac(2 × |q| × U|m) : v est la racine carrée de ce quotient.'] };
+}
+
 // ───────── Vecteurs vitesse et accélération (TG, sim 166) ─────────
 function genVecteursVATG() {
   const sg = (x, cs = 3) => (x < 0 ? '−' + nb(-x, cs) : nb(x, cs));
@@ -2954,6 +3003,7 @@ export const FAMILLES = [
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'pes-calcul', groupe: 'Formules', titre: 'Champ de pesanteur uniforme : vitesse, position, portée et théorème de l’énergie cinétique (TG)', gen: genPesanteurTG, domaine: 'Mouvement dans un champ de pesanteur uniforme' },
+  { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },

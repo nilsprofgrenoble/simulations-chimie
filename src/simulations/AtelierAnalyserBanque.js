@@ -3530,6 +3530,27 @@ export const PREVOIR = [
       F('elle ne change pas, car v_0 et α ne changent pas', 'v_0 et α sont les mêmes, mais g n’est pas le même : il figure dans l’expression de P, et la portée dépend de la valeur du champ de pesanteur.'),
       F('elle est environ 36 fois plus grande, car g est élevé au carré', 'g n’est pas élevé au carré dans P : il apparaît à la puissance 1, au dénominateur. Le rapport des portées est celui des valeurs de g, soit environ 6.'),
     ] },
+  { id: 'cpl-ana-sens', domaine: 'Particule chargée dans un condensateur plan', titre: 'Un proton et un électron dans le même condensateur',
+    enonce: 'Dans le vide, la plaque du haut d’un condensateur plan est positive et celle du bas négative. Un proton, puis un électron, entrent successivement au milieu des plaques avec la même vitesse horizontale vec(v)₀, perpendiculaire aux lignes de champ.', q: 'Que peut-on dire de leurs trajectoires dans le condensateur ?', options: [
+      V('déviées en sens opposés : le proton vers le bas, l’électron vers le haut', 'Le champ vec(E) est dirigé vers le bas. La force vec(F) = q vec(E) est vers le bas pour le proton (q > 0) et vers le haut pour l’électron (q < 0) : les déviations sont de sens opposés.'),
+      F('déviées vers le haut toutes les deux, car la plaque du haut est positive', 'La plaque positive attire l’électron (q < 0) mais repousse le proton (q > 0) : le proton est dévié vers la plaque négative, vers le bas.'),
+      F('déviées vers le bas toutes les deux, car le champ est dirigé vers le bas', 'Le champ est vers le bas, mais la force a le sens de vec(E) seulement pour une charge positive : pour l’électron, vec(F) est de sens opposé à vec(E).'),
+      F('non déviées : leurs charges sont opposées et leurs effets se compensent', 'Les deux particules ne sont jamais dans le condensateur en même temps ici : chacune subit sa propre force, non nulle, et chacune est déviée.'),
+    ] },
+  { id: 'cpl-ana-vitesse', domaine: 'Particule chargée dans un condensateur plan', titre: 'On double la vitesse d’entrée',
+    enonce: 'Une particule chargée entre au milieu d’un condensateur plan avec la vitesse v₀ et sort des plaques avec une déviation y_S. Sans rien changer d’autre (même tension, mêmes plaques, même particule), on double la vitesse d’entrée.', q: 'Que devient la déviation à la sortie ?', options: [
+      V('elle est divisée par 4', 'y_S = frac(a_y × L²|2 × v₀²) : à a_y et L constants, y_S est inversement proportionnelle à v₀². Doubler v₀ divise y_S par 4 : la particule traverse deux fois plus vite, donc la force agit deux fois moins longtemps.'),
+      F('elle est divisée par 2', 'La durée de traversée est divisée par 2, mais y_S dépend du carré de cette durée : y_S est divisée par 2² = 4, pas par 2.'),
+      F('elle est doublée, car la particule va plus vite', 'Une vitesse plus grande donne moins de temps à la force pour agir : la déviation diminue.'),
+      F('elle ne change pas, car la force ne dépend pas de v₀', 'La force est bien indépendante de v₀, mais la durée de traversée en dépend, et c’est elle qui fixe la déviation.'),
+    ] },
+  { id: 'cpl-ana-tubes', domaine: 'Particule chargée dans un condensateur plan', titre: 'À l’intérieur d’un tube de l’accélérateur',
+    enonce: 'Dans un accélérateur linéaire, une particule positive traverse une suite de tubes métalliques alignés, reliés alternativement aux deux bornes d’un générateur de tension alternative. Elle se trouve à l’intérieur d’un des tubes.', q: 'Quel est son mouvement à l’intérieur de ce tube ?', options: [
+      V('rectiligne et uniforme : il n’y a pas de champ dans le tube', 'Dans un tube métallique, le champ est nul : aucune force électrique ne s’exerce, le vecteur vitesse est constant. L’accélération a lieu dans les intervalles entre les tubes.'),
+      F('rectiligne accéléré : le champ y est plus intense que dans les intervalles', 'C’est l’inverse : le champ est nul dans le tube, et la particule est accélérée dans les intervalles entre deux tubes.'),
+      F('rectiligne ralenti, car la tension change de signe', 'La tension s’inverse pendant que la particule est dans un tube, ce qui prépare l’accélération à l’intervalle suivant, mais aucune force ne s’exerce dans le tube : elle ne ralentit pas.'),
+      F('circulaire, car la particule est guidée par le tube', 'Le tube ne dévie pas la particule : sans champ ni force, la trajectoire reste une droite.'),
+    ] },
   { id: 'pil-ana-pont', domaine: 'Piles : fonctionnement et capacité', titre: 'On retire le pont salin',
     enonce: 'Une pile zinc-cuivre alimente une petite lampe. On retire le pont salin qui relie les deux solutions, sans toucher aux fils.', q: 'Que se passe-t-il ?', options: [
       V('la lampe s’éteint : le circuit est ouvert', 'Sans pont salin, aucun ion ne circule entre les deux solutions : le circuit est ouvert et le courant s’arrête aussitôt.'),

@@ -1439,5 +1439,15 @@
  "77:plausible:pes-val-signe": "VAL374",
  "77:plausible:pes-val-portee": "VAL375",
  "77:plausible:pes-val-ok": "VAL376",
- "36:pes-calcul": "REA93"
+ "36:pes-calcul": "REA93",
+ "34:cpl-sapp-particule.0": "SAPP370",
+ "34:cpl-sapp-particule.1": "SAPP371",
+ "37:prevoir:cpl-ana-sens": "ANA604",
+ "37:prevoir:cpl-ana-vitesse": "ANA605",
+ "37:prevoir:cpl-ana-tubes": "ANA606",
+ "77:plausible:cpl-val-champ": "VAL377",
+ "77:plausible:cpl-val-vitesse": "VAL378",
+ "77:plausible:cpl-val-poids": "VAL379",
+ "77:plausible:cpl-val-proton": "VAL380",
+ "36:cpl-calcul": "REA94"
 }
