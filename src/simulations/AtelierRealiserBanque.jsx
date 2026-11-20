@@ -2951,6 +2951,47 @@ function genPesanteurTG() {
 }
 
 
+// ───────── Optimisation d'une étape de synthèse : vitesse et rendement (TG, sim 189) ─────────
+function genOptimisationTG() {
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
+  // nb() prend des chiffres SIGNIFICATIFS : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const K = 4;
+  // 1. rendement d'une synthèse : réactif limitant, quantité obtenue
+  let a1, b1, o1, mn1;
+  do { a1 = tire([0.10, 0.20, 0.25, 0.40, 0.50]); b1 = tire([0.15, 0.30, 0.50, 0.60, 0.80]); mn1 = Math.min(a1, b1); } while (Math.max(a1, b1) / mn1 < 1.25);
+  o1 = Number((tire([0.55, 0.60, 0.65, 0.70, 0.75, 0.80]) * mn1).toFixed(3));
+  const eta1 = 100 * o1 / mn1, mx1 = Math.max(a1, b1);
+  const q1 = { id: 'op0', type: 'num', q: <>On chauffe à reflux un mélange de <b>{d(a1, 2)}{NB}mol</b> d’acide éthanoïque et de <b>{d(b1, 2)}{NB}mol</b> d’éthanol, avec de l’acide sulfurique concentré, puis on isole <b>{d(o1, 3)}{NB}mol</b> d’éthanoate d’éthyle. Tous les coefficients de l’équation valent 1. Calculez le rendement de la synthèse (en %, 2 chiffres significatifs).</>, unite: '%', vrai: eta1, tolRel: 0.05, csMin: 2,
+    aide: 'Le rendement compare la quantité obtenue à la quantité maximale n_max ; n_max est celle du réactif limitant, c’est-à-dire du réactif dont la quantité est la plus faible. Gardez 3 chiffres significatifs dans les calculs intermédiaires.',
+    pieges: [[100 * o1 / mx1, 'Vous avez divisé par la quantité du réactif en excès : n_max se calcule avec le réactif limitant, celui dont la quantité est la plus faible.'], [100 * o1 / (a1 + b1), 'Vous avez divisé par la somme des quantités de réactifs : n_max est la quantité du seul réactif limitant.'], [eta1 / 100, 'Un rendement s’exprime en pourcentage : multipliez le rapport par 100.']],
+    expl: <>Le réactif limitant est celui de plus petite quantité : {d(mn1, 2)} mol, donc {avecIndices("n_max")} = {d(mn1, 2)} mol ; η = {avecIndices(`frac(${d(o1, 3)}|${d(mn1, 2)})`)} × 100 = <b>{d(eta1, 1)}{NB}%</b>.</> };
+  // 2. quotient de réaction d'un mélange (K = 4 pour comparer)
+  let A2, B2, E2, W2, Qr2;
+  do { A2 = tire([0.20, 0.30, 0.40, 0.50]); B2 = tire([0.20, 0.30, 0.40, 0.60]); E2 = tire([0.20, 0.30, 0.50, 0.60]); W2 = tire([0.20, 0.30, 0.50, 0.60]); Qr2 = E2 * W2 / (A2 * B2); } while (Qr2 < 0.3 || Qr2 > 3.5 || Math.abs(Qr2 - 1) < 0.25 || Math.abs(Qr2 - K) < 0.5);
+  const sens2 = Qr2 < K ? 'inférieur' : 'supérieur';
+  const q2 = { id: 'op1', type: 'num', q: <>Dans une estérification (K = {K}), un mélange en cours de transformation contient <b>{d(A2, 2)}{NB}mol</b> d’acide éthanoïque, <b>{d(B2, 2)}{NB}mol</b> d’éthanol, <b>{d(E2, 2)}{NB}mol</b> d’éthanoate d’éthyle et <b>{d(W2, 2)}{NB}mol</b> d’eau. Calculez le quotient de réaction Qr (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: Qr2, tolRel: 0.05, csMin: 2,
+    aide: <>Les coefficients valent tous 1 : {avecIndices('Qr = frac(n(ester) × n(eau)|n(acide) × n(éthanol))')}. Gardez 3 chiffres significatifs dans les calculs intermédiaires.</>,
+    pieges: [[1 / Qr2, 'Le rapport est inversé : les produits (ester et eau) sont au numérateur, les réactifs au dénominateur.'], [(E2 + W2) / (A2 + B2), 'Vous avez additionné les quantités : Qr multiplie les quantités des produits d’une part, des réactifs d’autre part.'], [Qr2 / K, 'Vous avez calculé le rapport de Qr à K : Qr est le quotient lui-même.']],
+    expl: <>Qr = {avecIndices(`frac(${d(E2, 2)} × ${d(W2, 2)}|${d(A2, 2)} × ${d(B2, 2)})`)} = <b>{d(Qr2, 2)}</b>, {sens2} à K = {K} : le système évolue dans le sens {Qr2 < K ? 'direct' : 'inverse'}.</> };
+  // 3. Qr juste après le retrait d'une partie de l'eau, à partir d'un équilibre équimolaire (nA = n/3, nE = 2n/3)
+  const n3 = tire([0.30, 0.60, 0.90]), f3 = tire([0.5, 1, 1.5]), nA3 = Number((n3 / 3).toFixed(2)), nE3 = Number((2 * n3 / 3).toFixed(2)), w3 = Number((f3 * nA3).toFixed(2)), Qr3 = nE3 * (nE3 - w3) / (nA3 * nA3);
+  const q3 = { id: 'op2', type: 'num', q: <>Un mélange équimolaire d’acide éthanoïque et d’éthanol a atteint l’équilibre (K = {K}) : il contient <b>{d(nA3, 2)}{NB}mol</b> d’acide, <b>{d(nA3, 2)}{NB}mol</b> d’éthanol, <b>{d(nE3, 2)}{NB}mol</b> d’ester et <b>{d(nE3, 2)}{NB}mol</b> d’eau. On retire du milieu <b>{d(w3, 2)}{NB}mol</b> d’eau (montage de Dean-Stark simplifié : l’eau est retirée sans toucher aux autres espèces). Calculez Qr juste après le retrait, avant toute évolution (2 chiffres significatifs).</>, unite: '', vrai: Qr3, tolRel: 0.05, csMin: 2,
+    aide: 'Seule la quantité d’eau change : n(eau) = quantité à l’équilibre − quantité retirée. Recalculez Qr avec les quatre quantités.',
+    pieges: [[K, 'Vous avez gardé les quantités d’avant le retrait : Qr = K à l’équilibre. Le retrait a changé n(eau), donc Qr.'], [1 / Qr3, 'Le rapport est inversé : les produits (ester et eau) sont au numérateur, les réactifs au dénominateur.'], [nE3 * (nE3 + w3) / (nA3 * nA3), 'Vous avez ajouté l’eau au lieu de la retirer : le retrait diminue n(eau).']],
+    expl: <>n(eau) = {d(nE3, 2)} − {d(w3, 2)} = {d(nE3 - w3, 2)} mol ; Qr = {avecIndices(`frac(${d(nE3, 2)} × ${d(nE3 - w3, 2)}|${d(nA3, 2)} × ${d(nA3, 2)})`)} = <b>{d(Qr3, 2)}</b>, inférieur à K = {K} : la transformation reprend dans le sens direct, vers plus d’ester.</> };
+  // 4. Qr juste après l'ajout d'éthanol à un équilibre équimolaire (nA = n/3, nE = 2n/3)
+  const n4 = tire([0.30, 0.60, 0.90]), k4 = tire([1, 2, 3]), nA4 = Number((n4 / 3).toFixed(2)), nE4 = Number((2 * n4 / 3).toFixed(2)), aj4 = Number((k4 * n4 / 3).toFixed(2)), Qr4 = nE4 * nE4 / (nA4 * (nA4 + aj4));
+  const q4 = { id: 'op3', type: 'num', q: <>Un mélange équimolaire d’acide éthanoïque et d’éthanol a atteint l’équilibre (K = {K}) : il contient <b>{d(nA4, 2)}{NB}mol</b> d’acide, <b>{d(nA4, 2)}{NB}mol</b> d’éthanol, <b>{d(nE4, 2)}{NB}mol</b> d’ester et <b>{d(nE4, 2)}{NB}mol</b> d’eau. On ajoute <b>{d(aj4, 2)}{NB}mol</b> d’éthanol. Calculez Qr juste après l’ajout, avant toute évolution (2 chiffres significatifs).</>, unite: '', vrai: Qr4, tolRel: 0.05, csMin: 2,
+    aide: 'Seule la quantité d’éthanol change : n(éthanol) = quantité à l’équilibre + quantité ajoutée. Recalculez Qr avec les quatre quantités.',
+    pieges: [[K, 'Vous avez gardé les quantités d’avant l’ajout : Qr = K à l’équilibre. L’ajout a changé n(éthanol), donc Qr.'], [nE4 * nE4 / (nA4 * aj4), 'Vous avez utilisé la seule quantité ajoutée pour n(éthanol) : il faut y ajouter celle déjà présente à l’équilibre.']],
+    expl: <>n(éthanol) = {d(nA4, 2)} + {d(aj4, 2)} = {d(nA4 + aj4, 2)} mol ; Qr = {avecIndices(`frac(${d(nE4, 2)} × ${d(nE4, 2)}|${d(nA4, 2)} × ${d(nA4 + aj4, 2)})`)} = <b>{d(Qr4, 2)}</b>, inférieur à K = {K} : la transformation reprend dans le sens direct, vers plus d’ester.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Optimiser une étape de synthèse (estérification, K = 4) : rendement et réactif limitant, quotient de réaction, effet du retrait d’un produit et d’un ajout de réactif sur Qr.', questions: [q1, q2, q3, q4],
+    retenir: ['Rendement : η = frac(n(obtenue)|n(max)) × 100 ; n(max) est fixée par le réactif limitant.', 'Qr = frac(n(ester) × n(eau)|n(acide) × n(éthanol)) pour l’estérification ; Qr < K : sens direct ; Qr > K : sens inverse ; Qr = K : équilibre.', 'Un excès d’un réactif, ou l’élimination d’un produit, place Qr au-dessous de K : la transformation avance et le rendement augmente.', 'Température, catalyseur et concentration accélèrent la formation du produit sans changer K ni le rendement à l’équilibre.'] };
+}
+
+
 // ───────── Incertitudes-types composées et comparaison à une valeur de référence (TG, sim 185) ─────────
 function genIncertitudesTG() {
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-12, 0.08 * Math.abs(q.vrai))); };
@@ -3897,6 +3938,7 @@ export const FAMILLES = [
   { id: 'mes2gt-var-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, effectif d’une classe, 10 intervalles ÷ 10, rapport de dispersions, valeur manquante (2GT)', gen: genMesureVar2GT, domaine: 'Variabilité de la mesure (2GT)' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
+  { id: 'opt-calcul', groupe: 'Formules', titre: 'Optimiser une synthèse : rendement, quotient de réaction Qr, retrait d’un produit et ajout de réactif (TG)', gen: genOptimisationTG, domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement' },
   { id: 'mrx-calcul', groupe: 'Formules', titre: 'Mécanismes réactionnels : atomes d’un acte, chocs efficaces, part efficace et bilan d’un mécanisme (TG)', gen: genMecanismesTG, domaine: 'Mécanismes réactionnels et flèches courbes' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },

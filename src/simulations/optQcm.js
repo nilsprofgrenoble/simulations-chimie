@@ -1,0 +1,10 @@
+// QCM du parcours guidé de la simulation 189 (fichier séparé pour contrôler par script la longueur des options : la bonne réponse, en tête ici, n'est jamais la plus longue ;
+// l'affichage mélange l'ordre des choix).
+export const QCM_PARCOURS = {
+  limite: { options: ['la transformation est limitée : l’équilibre est atteint, avec réactifs et produits', 'le catalyseur est épuisé : il faut en rajouter pour que l’ester recommence à se former', 'la réaction est très lente : en attendant plusieurs jours, on obtiendrait n_max', 'le catalyseur détruit l’ester au fur et à mesure de sa formation'], bonne: 0 },
+  protocole: { options: ['l’acide sulfurique (ligne 2) et le chauffage à reflux (ligne 4)', 'les quantités de réactifs (ligne 1) et la pierre ponce (ligne 3)', 'le lavage (ligne 5) et le séchage (ligne 6)', 'le refroidissement (ligne 5) et l’identification (ligne 7)'], bonne: 0 },
+  palier: { options: ['les deux atteignent le même palier : seule la durée pour l’atteindre diffère', 'le palier de l’essai à 75 °C est plus haut, car la réaction y est plus rapide', 'l’essai à 45 °C n’atteindra jamais le palier de l’autre : il est trop lent', 'le palier de l’essai à 45 °C est plus haut, car les réactifs y sont consommés moins vite'], bonne: 0 },
+  sens: { options: ['Qr < K : le système évolue dans le sens direct, le rendement augmente', 'Qr < K : le système évolue dans le sens inverse, une partie de l’ester est consommée', 'Qr ≠ K, mais la composition ne change pas : ajouter un réactif n’a aucun effet sur le rendement', 'Qr redevient égal à K sans que la quantité d’ester change : seule la quantité d’éthanol varie'], bonne: 0 },
+  rapports: { options: ['rapport 1 : 3 (3 mol d’éthanol)', 'rapport 1 : 1 (aucun excès)', 'rapport 1 : 2 (2 mol d’éthanol)', 'rapport 1 : 5 (gros excès, 5 mol d’éthanol)'], bonne: 0 },
+  variante: { options: ['le piégeage de l’eau dans le tube gradué (ligne 3)', 'l’acide sulfurique concentré ajouté à la ligne 1', 'le chauffage à reflux maintenu pendant toute la durée (ligne 3)', 'le choix de quantités égales d’acide et d’éthanol (ligne 1)'], bonne: 0 },
+};

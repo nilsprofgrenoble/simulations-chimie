@@ -4543,6 +4543,65 @@ export const ENONCES = [
         manque: null, solution: { txt: 'part = (effectif de la classe centrale ÷ nombre total de mesures) × 100', val: e3 / 25 * 100, u: '%' } };
     },
   },
+  // ───────────────────────────── Optimisation d'une étape de synthèse : vitesse et rendement (TG, sim 189)
+  {
+    id: 'opt-sapp-rendement', domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement', titre: 'Rendement d’une synthèse d’ester : quelles données utiliser ?', noms: ['Quantité maximale d’ester', 'Rendement de la synthèse'],
+    gen: () => {
+      const a = tire([0.10, 0.20, 0.25, 0.40]), b = tire([0.15, 0.30, 0.50, 0.60].filter(x => x !== a && Math.max(a, x) / Math.min(a, x) >= 1.25)), mn = Math.min(a, b);
+      return { a, b, ob: Number((tire([0.55, 0.60, 0.65, 0.70, 0.75, 0.80]) * mn).toFixed(3)), T: tire([70, 75, 78]), d: tire([1, 2]) };
+    },
+    build: epure((p, q) => {
+      const mn = Math.min(p.a, p.b);
+      const tokens = {
+        a: tok(`${nb(p.a, 2)} mol`, 'Quantité d’acide éthanoïque introduit', p.a, 'mol'),
+        b: tok(`${nb(p.b, 2)} mol`, 'Quantité d’éthanol introduit', p.b, 'mol'),
+        ob: tok(`${nb(p.ob, 3)} mol`, 'Quantité d’ester isolée à la fin', p.ob, 'mol'),
+        T: tok(`${p.T} °C`, 'Température du chauffage à reflux', p.T, '°C'),
+        d: tok(`${p.d} h`, 'Durée du chauffage', p.d, 'h'),
+      };
+      const debut = ['On chauffe à reflux pendant ', T('d'), ', à ', T('T'), ', un mélange de ', T('a'), ' d’acide éthanoïque et de ', T('b'), ' d’éthanol, avec quelques gouttes d’acide sulfurique concentré. On isole ensuite ', T('ob'), ' d’éthanoate d’éthyle. Dans l’équation de la réaction, tous les coefficients valent 1. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité maximale d’ester aurait-on pu obtenir si la transformation avait été totale ?'],
+        utiles: ['a', 'b'], raisons: { ob: 'La quantité isolée est ce qu’on a obtenu, pas le maximum possible.', T: 'La température du chauffage agit sur la vitesse de la réaction, pas sur la quantité maximale.', d: 'La durée du chauffage ne fixe pas la quantité maximale d’ester.' },
+        cherche: { bonne: 'La quantité maximale n_max d’ester (en mol)', faux: ['Le rendement de la synthèse (en %)', 'La quantité d’ester à l’équilibre (en mol)', 'La quantité d’éthanol restante à la fin (en mol)'] },
+        manque: null, solution: { txt: 'n_max est la quantité du réactif limitant, celui dont la quantité est la plus faible (coefficients égaux à 1)', val: mn, u: 'mol' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le rendement de cette synthèse ?'],
+        utiles: ['a', 'b', 'ob'], raisons: { T: 'La température du chauffage n’intervient pas dans le calcul du rendement.', d: 'La durée du chauffage n’intervient pas dans le calcul du rendement.' },
+        cherche: { bonne: 'Le rendement η de la synthèse (en %)', faux: ['La quantité maximale d’ester (en mol)', 'La constante d’équilibre de la réaction (sans unité)', 'Le temps de demi-réaction (en min)'] },
+        manque: null, solution: { txt: 'η = frac(ester obtenu|n_max) × 100, avec n_max donnée par le réactif limitant', val: 100 * p.ob / mn, u: '%' } };
+    }),
+  },
+  {
+    id: 'opt-sapp-exces', domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement', titre: 'Ajout d’éthanol à l’équilibre : quelles données utiliser ?', noms: ['Quotient de réaction après l’ajout', 'Rendement à l’équilibre avant l’ajout'],
+    gen: () => {
+      // départ : n mol d'acide et r × n mol d'éthanol ; à l'équilibre (K = 4) l'avancement vaut 2n/3 (r = 1) ou 0,845 n (r = 2)
+      const n = tire([0.40, 0.60, 0.80]), r = tire([1, 2]), x = Number(((r === 1 ? 2 / 3 : 0.845) * n).toFixed(3));
+      return { n, r, m: Number((r * n).toFixed(3)), nA: Number((n - x).toFixed(3)), nB: Number((r * n - x).toFixed(3)), nE: x, aj: Number((tire([1, 2, 3]) * n / 2).toFixed(3)), T: tire([70, 75, 78]), d: tire([2, 3]) };
+    },
+    build: epure((p, q) => {
+      const d3 = x => Number(x).toFixed(3).replace('.', ',');
+      const tokens = {
+        nA: tok(`${d3(p.nA)} mol`, 'Quantité d’acide à l’équilibre', p.nA, 'mol'),
+        nB: tok(`${d3(p.nB)} mol`, 'Quantité d’éthanol à l’équilibre', p.nB, 'mol'),
+        nE: tok(`${d3(p.nE)} mol`, 'Quantité d’ester à l’équilibre (idem pour l’eau)', p.nE, 'mol'),
+        aj: tok(`${d3(p.aj)} mol`, 'Quantité d’éthanol ajoutée', p.aj, 'mol'),
+        n: tok(`${d3(p.n)} mol`, 'Quantité initiale d’acide', p.n, 'mol'),
+        m: tok(`${d3(p.m)} mol`, 'Quantité initiale d’éthanol', p.m, 'mol'),
+        K: tok('K = 4', 'Constante d’équilibre de l’estérification', 4, ''),
+        T: tok(`${p.T} °C`, 'Température du chauffage à reflux', p.T, '°C'),
+        d: tok(`${p.d} h`, 'Durée du chauffage avant l’ajout', p.d, 'h'),
+      };
+      const Qr = (p.nE * p.nE) / (p.nA * (p.nB + p.aj));
+      const debut = ['Une estérification (', T('K'), ') est menée à reflux, à ', T('T'), ', pendant ', T('d'), ', à partir de ', T('n'), ' d’acide et de ', T('m'), ' d’éthanol. À l’équilibre, le mélange contient ', T('nA'), ' d’acide, ', T('nB'), ' d’éthanol, et ', T('nE'), ' d’ester et d’eau. On ajoute alors ', T('aj'), ' d’éthanol. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le quotient de réaction Qr juste après l’ajout, avant toute évolution ?'],
+        utiles: ['nA', 'nB', 'nE', 'aj'], raisons: { n: 'La quantité initiale a déjà servi à trouver la composition à l’équilibre : on utilise cette composition.', m: 'La quantité initiale d’éthanol a déjà servi à trouver la composition à l’équilibre : on utilise cette composition.', K: 'K sert à comparer Qr, pas à le calculer.', T: 'La température n’intervient pas dans le calcul de Qr.', d: 'La durée du chauffage n’intervient pas dans le calcul de Qr.' },
+        cherche: { bonne: 'Le quotient Qr après l’ajout (sans unité)', faux: ['La constante d’équilibre K du mélange (sans unité)', 'Le rendement à l’équilibre (en %)', 'La quantité d’éthanol restante à la fin (en mol)'] },
+        manque: null, solution: { txt: 'Qr = frac(n(ester) × n(eau)|n(acide) × n(éthanol)), avec n(éthanol) = quantité à l’équilibre + quantité ajoutée', val: Qr, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel était le rendement de la synthèse à l’équilibre, avant l’ajout ?'],
+        utiles: ['nE', 'n'], raisons: { nA: 'La quantité d’acide restante ne donne pas directement le rendement : on compare l’ester formé à la quantité maximale.', nB: 'La quantité d’éthanol restante ne sert pas à calculer le rendement.', m: 'L’éthanol n’est pas le réactif limitant : la quantité maximale d’ester est fixée par l’acide.', aj: 'L’ajout d’éthanol a lieu après : il ne change pas le rendement avant l’ajout.', K: 'K a servi à établir la composition à l’équilibre, déjà donnée.', T: 'La température n’intervient pas dans le calcul du rendement.', d: 'La durée du chauffage n’intervient pas dans le calcul du rendement.' },
+        cherche: { bonne: 'Le rendement à l’équilibre avant l’ajout (en %)', faux: ['Le rendement après l’ajout d’éthanol (en %)', 'Le quotient de réaction à l’équilibre (sans unité)', 'La quantité d’ester formée par l’ajout (en mol)'] },
+        manque: null, solution: { txt: 'η = frac(n(ester)|n_max) × 100, avec n_max égale à la quantité initiale d’acide (réactif limitant)', val: 100 * p.nE / p.n, u: '%' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

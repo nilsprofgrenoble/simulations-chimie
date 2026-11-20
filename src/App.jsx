@@ -126,6 +126,7 @@ const SimulationNewton = paresseux(() => import("./simulations/Newton"), "Simula
 const SimulationDiffractionOnde = paresseux(() => import("./simulations/DiffractionOnde"), "SimulationDiffractionOnde");
 const SimulationMecanismesTG = paresseux(() => import("./simulations/MecanismesTG"), "SimulationMecanismesTG");
 const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
+const SimulationOptimisationRendement = paresseux(() => import("./simulations/OptimisationRendement"), "SimulationOptimisationRendement");
 const SimulationIncertitudesComposees = paresseux(() => import("./simulations/IncertitudesComposees"), "SimulationIncertitudesComposees");
 const SimulationEquationsDesintegration = paresseux(() => import("./simulations/EquationsDesintegration"), "SimulationEquationsDesintegration");
 const SimulationInterfTG = paresseux(() => import("./simulations/InterfTG"), "SimulationInterfTG");
@@ -314,6 +315,7 @@ const SIMULATIONS = [
   { id:173, label:"Familles fonctionnelles et polymères", niveau:"TG", icon:"🧬", color:"#7c3aed", component: SimulationPolymeres },
   { id:174, label:"Circuit RC : charge et décharge d’un condensateur", niveau:"TG", icon:"🔌", color:"#0e7490", component: SimulationCircuitRC },
   { id:175, label:"Mouvement dans un champ de pesanteur uniforme : équations horaires et trajectoire", niveau:"TG", icon:"🏀", color:"#c2410c", component: SimulationPesanteur },
+  { id:189, label:"Optimiser une synthèse : vitesse et rendement", niveau:"TG", icon:"⚗️", color:"#0f766e", component: SimulationOptimisationRendement },
   { id:186, label:"Mécanismes réactionnels et flèches courbes", niveau:"TG", icon:"🏹", color:"#7c3aed", component: SimulationMecanismesTG },
   { id:176, label:"Particule chargée dans un condensateur plan et accélérateur linéaire", niveau:"TG", icon:"⚡", color:"#7c2d12", component: SimulationParticuleCondensateur },
   { id:185, label:"Incertitudes composées et valeur de référence", niveau:"TG", icon:"📏", color:"#0f766e", component: SimulationIncertitudesComposees },

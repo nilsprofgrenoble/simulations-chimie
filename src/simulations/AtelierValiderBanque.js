@@ -4227,6 +4227,36 @@ export const PLAUSIBLES = [
       F('pas cohérent : u devrait être égale à s', 'u ne vaut s que pour une seule mesure ; avec 16 mesures, la moyenne est mieux connue.'),
       F('pas cohérent : il fallait diviser s par n = 16 et non par la racine carrée de n', 'La règle divise par √n, la racine carrée du nombre de mesures : diviser par 16 donnerait 0,0125 cm, trop petit.'),
     ] }),
+  P({ id: 'opt-val-nmax', domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement', niveau: 2, titre: 'Rendement calculé avec le mauvais réactif', plausible: false,
+    enonce: 'Un élève mélange 0,20 mol d’acide éthanoïque et 0,50 mol d’éthanol, puis isole 0,27 mol d’éthanoate d’éthyle. Il calcule η = frac(0,27|0,50) × 100 = 54 % et écrit que le rendement est correct.',
+    reperes: [['Réactif limitant', 'l’acide : 0,20 mol, contre 0,50 mol d’éthanol'], ['Quantité maximale d’ester', '0,20 mol (1 mol d’ester pour 1 mol d’acide)'], ['Un rendement', 'est toujours compris entre 0 et 100 %']],
+    ver: 'Le réactif limitant est l’acide (0,20 mol < 0,50 mol) : la quantité maximale d’ester est 0,20 mol, et l’on ne peut pas en isoler davantage. Obtenir 0,27 mol correspondrait à frac(0,27|0,20) × 100 = 135 % : c’est impossible. L’élève a divisé par la quantité d’éthanol, réactif en excès.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il a divisé par la quantité d’éthanol, en excès, et non par celle du limitant', 'La quantité maximale se calcule avec le réactif limitant, ici l’acide (0,20 mol). Avec 0,27 mol isolées, le rendement dépasserait 100 % : le résultat annoncé est invraisemblable.'),
+      F('il a oublié d’utiliser K = 4 pour calculer la quantité maximale d’ester', 'La quantité maximale est celle d’une transformation totale : K ne sert pas à la définir. Il intervient seulement pour le rendement à l’équilibre.'),
+      F('il a bien calculé : un rendement de 54 % est plausible pour une estérification', 'Le calcul est faux, et surtout 0,27 mol d’ester dépasse la quantité maximale possible (0,20 mol) : le rendement réel serait de 135 %, impossible.'),
+    ] }),
+  P({ id: 'opt-val-ok', domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement', niveau: 2, titre: 'Rendement à l’équilibre avec un excès d’éthanol', plausible: true,
+    enonce: 'On chauffe 1,00 mol d’acide éthanoïque et 2,00 mol d’éthanol (K = 4) jusqu’à l’équilibre. Un élève mesure 0,845 mol d’ester, en déduit un rendement de 84,5 %, supérieur aux 66,7 % du mélange équimolaire, et vérifie que Qr = frac(0,845 × 0,845|0,155 × 1,155) = 3,99, soit environ K.',
+    reperes: [['À l’équilibre', 'Qr = K'], ['Quantité maximale d’ester', '1,00 mol (l’acide est le réactif limitant)'], ['Effet d’un excès', 'rendement plus grand que 66,7 %, mais inférieur à 100 %']],
+    ver: 'Les quantités à l’équilibre sont 0,155 mol d’acide, 1,155 mol d’éthanol, 0,845 mol d’ester et 0,845 mol d’eau : Qr = frac(0,845 × 0,845|0,155 × 1,155) = 3,99, soit K à l’arrondi près. Le rendement, calculé avec n_max = 1,00 mol, vaut 84,5 %, supérieur à 66,7 % et inférieur à 100 % : l’excès d’éthanol place Qr au-dessous de K au départ et fait avancer la transformation.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('plausible : Qr ≈ K à l’équilibre, et l’excès d’éthanol fait monter le rendement', 'À l’équilibre Qr = K, ce que la mesure vérifie (3,99). Le rendement de 84,5 %, calculé par rapport à l’acide limitant, dépasse celui du mélange équimolaire (66,7 %) sans atteindre 100 % : le résultat est cohérent.'),
+      F('pas plausible : à l’équilibre Qr devrait valoir 1', 'À l’équilibre Qr est égal à K, c’est-à-dire 4 ici, et non à 1 : la valeur 3,99 trouvée par l’élève est bien celle attendue.'),
+      F('pas plausible : le rendement doit se calculer par rapport à l’éthanol en excès, soit 42 %', 'Le rendement se calcule avec le réactif limitant, ici l’acide (1,00 mol) : n_max = 1,00 mol, donc 84,5 %. Diviser par 2,00 mol d’éthanol donnerait un résultat sans signification.'),
+    ] }),
+  P({ id: 'opt-val-catalyseur', domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement', niveau: 2, titre: 'Le catalyseur augmente-t-il le rendement ?', plausible: false,
+    enonce: 'Un élève compare deux synthèses de l’éthanoate d’éthyle menées à l’équilibre, avec 1,0 mol d’acide et 1,0 mol d’éthanol, l’une sans catalyseur et l’autre avec de l’acide sulfurique. Il annonce : « le rendement passe de 67 % à 90 % avec le catalyseur, car la réaction est devenue beaucoup plus rapide ».',
+    reperes: [['Rendement à l’équilibre pour 1,0 mol et 1,0 mol', '67 % avec K = 4'], ['Un catalyseur', 'n’apparaît pas dans l’équation et ne modifie pas K'], ['Rendement 90 %', 'demanderait de changer la composition de l’état d’équilibre']],
+    ver: 'À l’équilibre, la composition ne dépend que de K et des quantités de départ : avec 1,0 mol et 1,0 mol, le rendement est de 67 % avec ou sans catalyseur. Le catalyseur accélère les deux sens et fait atteindre le même équilibre plus tôt ; la valeur de 90 % est donc invraisemblable.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il confond vitesse et rendement : le catalyseur ne change pas l’équilibre', 'Le catalyseur modifie la durée pour atteindre l’équilibre, pas K : le rendement à l’équilibre reste 67 %. Pour dépasser 67 %, il faut un excès d’un réactif ou retirer un produit.'),
+      F('il aurait dû trouver un rendement plus faible, car le catalyseur est consommé', 'Le catalyseur n’est pas consommé : il est régénéré et ne change ni la composition finale ni le rendement à l’équilibre.'),
+      F('il a raison : plus une réaction est rapide, plus elle va loin avant de s’arrêter', 'La rapidité décrit la durée, pas la position de l’équilibre : une réaction plus rapide atteint seulement plus tôt le même état final.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────
