@@ -4186,6 +4186,51 @@ export const ENONCES = [
         manque: null, solution: { txt: 'même L que pour la vaporisation ; E = m × L, avec la masse convertie en kg', val: (p.m / 1000) * Lv, u: 'kJ' } };
     }),
   },
+  // ───────────────────────────── Image réelle et grandissement avec une lentille convergente (2GT, sim 199)
+  {
+    id: 'img2gt-sapp-bougie', domaine: 'Image par une lentille (2GT)', titre: 'Une bougie, une lentille et un écran', noms: ['Hauteur de l’image de la bougie', 'Grandissement du montage'],
+    gen: () => ({ AB: tire([2, 3, 4, 5, 6]), ...tire([{ f: 4, OA: 6, OAp: 12 }, { f: 4, OA: 12, OAp: 6 }, { f: 6, OA: 9, OAp: 18 }, { f: 6, OA: 18, OAp: 9 }, { f: 3, OA: 9, OAp: 4.5 }, { f: 2, OA: 3, OAp: 6 }, { f: 2, OA: 6, OAp: 3 }, { f: 8, OA: 12, OAp: 24 }, { f: 8, OA: 24, OAp: 12 }, { f: 10, OA: 15, OAp: 30 }, { f: 10, OA: 30, OAp: 15 }]), th: tire([20, 22, 25]) }),   // (f′, OA, OAp) cohérents : la distance focale est celle qui donne bien cette image
+    build: epure((p, q) => {
+      const tokens = {
+        AB: tok(`${p.AB}\u00a0cm`, 'Hauteur de la bougie', p.AB, 'cm'),
+        OA: tok(`${p.OA}\u00a0cm`, 'Distance de la bougie à la lentille', p.OA, 'cm'),
+        OAp: tok(`${nb(p.OAp)}\u00a0cm`, 'Distance de l’écran à la lentille (image nette)', p.OAp, 'cm'),
+        f: tok(`${p.f}\u00a0cm`, 'Distance focale de la lentille', p.f, 'cm'),
+        th: tok(`${p.th} °C`, 'Température de la salle', p.th, '°C'),
+      };
+      const raisons = { f: 'La distance focale ne sert pas ici : on connaît déjà la position de l’objet et celle de l’image, et le grandissement se calcule avec ces deux distances.', th: 'La température de la salle ne change pas la taille de l’image.', AB: 'Pour le grandissement, seules comptent les distances OA et OA′ : la hauteur de la bougie est inutile.' };
+      const debut = ['Une lentille convergente de distance focale ', T('f'), ' est dans une salle à ', T('th'), '. Une bougie est placée à ', T('OA'), ' de la lentille et son image est nette sur un écran à ', T('OAp'), ' de la lentille. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'La bougie mesure ', T('AB'), ' de haut. Quelle est la hauteur de l’image ?'], utiles: ['AB', 'OA', 'OAp'], raisons: { f: raisons.f, th: raisons.th },
+        cherche: { bonne: 'La hauteur de l’image de la bougie (en cm)', faux: ['La distance entre la bougie et son image (en cm)', 'La température de l’écran (en °C)', 'Le temps de pose de l’image (en s)'] },
+        manque: null, solution: { txt: 'A′B′ = AB × OA′ ÷ OA', val: p.AB * p.OAp / p.OA, u: 'cm' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le grandissement du montage (sans unité) ?'], utiles: ['OA', 'OAp'], raisons: { f: raisons.f, th: raisons.th },
+        cherche: { bonne: 'Le grandissement du montage (sans unité)', faux: ['La hauteur de la flamme (en cm)', 'La distance focale de la lentille (en cm)', 'La durée de combustion de la bougie (en min)'] },
+        manque: null, solution: { txt: 'grandissement = OA′ ÷ OA', val: p.OAp / p.OA, u: '' } };
+    }),
+  },
+  {
+    id: 'img2gt-sapp-projecteur', domaine: 'Image par une lentille (2GT)', titre: 'Un projecteur de diapositives', noms: ['Hauteur de l’image sur l’écran', 'Grandissement du projecteur'],
+    gen: () => ({ AB: tire([24, 36]), OA: tire([51, 52, 55, 60, 75]), f: 50, V: tire([60, 80, 100]) }),
+    build: epure((p, q) => {
+      const OAp = Math.round(p.OA * p.f / (p.OA - p.f));                 // en mm : image nette d'une diapositive (valeur choisie, cohérente avec la lentille de 50 mm)
+      const OApm = OAp / 1000;
+      const tokens = {
+        AB: tok(`${p.AB}\u00a0mm`, 'Hauteur de la diapositive', p.AB / 1000, 'm'),
+        OA: tok(`${p.OA}\u00a0mm`, 'Distance de la diapositive à la lentille', p.OA / 1000, 'm'),
+        OAp: tok(`${nb(OApm)}\u00a0m`, 'Distance de l’écran à la lentille (image nette)', OApm, 'm'),
+        f: tok(`${p.f}\u00a0mm`, 'Distance focale de la lentille', p.f / 1000, 'm'),
+        V: tok(`${p.V} W`, 'Puissance de la lampe', p.V, 'W'),
+      };
+      const raisons = { f: 'La distance focale ne sert pas ici : l’énoncé donne déjà les positions de la diapositive et de l’écran.', V: 'La puissance de la lampe change la luminosité de l’image, pas sa taille.', AB: 'Pour le grandissement, seules comptent les distances OA et OA′.' };
+      const debut = ['Un projecteur contient une lentille de distance focale ', T('f'), ' et une lampe de ', T('V'), '. La diapositive est à ', T('OA'), ' de la lentille ; l’image est nette sur un écran à ', T('OAp'), ' de la lentille. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'La diapositive mesure ', T('AB'), ' de haut. Quelle est la hauteur de l’image sur l’écran ?'], utiles: ['AB', 'OA', 'OAp'], raisons: { f: raisons.f, V: raisons.V },
+        cherche: { bonne: 'La hauteur de l’image sur l’écran (en m)', faux: ['La luminosité de l’image (en lux)', 'La distance entre la lampe et l’écran (en m)', 'La durée de projection (en min)'] },
+        manque: null, solution: { txt: 'A′B′ = AB × OA′ ÷ OA, avec les distances dans la même unité (en m)', val: (p.AB / 1000) * OApm / (p.OA / 1000), u: 'm' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le grandissement du projecteur (sans unité) ?'], utiles: ['OA', 'OAp'], raisons: { f: raisons.f, V: raisons.V, AB: raisons.AB },
+        cherche: { bonne: 'Le grandissement du projecteur (sans unité)', faux: ['La hauteur de la diapositive (en mm)', 'La distance focale de la lentille (en mm)', 'La consommation électrique de la lampe (en kWh)'] },
+        manque: null, solution: { txt: 'grandissement = OA′ ÷ OA, avec les distances dans la même unité', val: OApm / (p.OA / 1000), u: '' } };
+    }),
+  },
   // ───────────────────────────── Tests chimiques (2GT, sim 198) : combien de tests pour identifier un gaz, essais avec la poudre blanche
   {
     id: 'test2gt-sapp-gaz-inconnu', domaine: 'Tests chimiques (2GT)', titre: 'Un gaz inconnu dans un tube', noms: ['Durée maximale des tests pour un tube', 'Durée maximale des tests pour plusieurs tubes'],

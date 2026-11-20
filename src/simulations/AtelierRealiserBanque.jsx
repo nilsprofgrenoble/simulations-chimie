@@ -1639,6 +1639,65 @@ function genEtat2GT() {
   return { intro: 'Changement d’état : équation, sens du transfert thermique, énergie E = m × L, masse qui change d’état, conversion des grammes en kilogrammes et proportionnalité.', questions: [q0, q1, q2, q3, q4, q5],
     retenir: ['Équation d’un changement d’état : même formule des deux côtés, état de départ (s, l ou g) avant la flèche, état d’arrivée après.', 'Endothermique : le système reçoit de l’énergie (fusion, vaporisation, sublimation) ; exothermique : il en cède (solidification, liquéfaction, condensation solide).', 'E = m × L, avec E en kJ, m en kg et L en kJ/kg ; convertir les grammes en kilogrammes ; l’énergie est proportionnelle à la masse.'] };
 }
+// ───────────── Image par une lentille (2GT) : trois rayons particuliers, hauteur de l’image, grandissement, conversion cm–m, position de l’image, hauteur de l’objet ─────────────
+const IMG2GT_RAYONS = [
+  { id: 'par', debut: 'arrive sur la lentille parallèlement à l’axe optique', bon: 'il ressort en passant par le foyer image F′', faux: ['il ressort en passant par le foyer objet F de la lentille', 'il traverse la lentille sans être dévié', 'il ressort parallèlement à l’axe optique'] },
+  { id: 'centre', debut: 'passe par le centre optique O de la lentille', bon: 'il traverse la lentille sans être dévié', faux: ['il ressort en passant par le foyer image F′', 'il ressort parallèlement à l’axe optique', 'il est dévié vers le haut, loin de l’axe'] },
+  { id: 'foyer', debut: 'passe par le foyer objet F avant d’arriver sur la lentille', bon: 'il ressort parallèlement à l’axe optique', faux: ['il ressort en passant par le foyer image F′', 'il traverse la lentille sans être dévié', 'il revient en arrière vers l’objet'] },
+];
+// QCM dont la bonne réponse n'est jamais strictement la plus longue : on mélange jusqu'à ce que ce soit vrai
+const img2gtOptions = (bonne, faux) => {
+  for (let k = 0; k < 200; k++) { const o = melange([bonne, ...faux]), L = o.map(x => x.length), b = L[o.indexOf(bonne)]; if (b < Math.max(...L) || new Set(L).size === 1) return o; }
+  return [bonne, ...faux];
+};
+// Tire des données jusqu'à ce qu'aucune valeur donnée (ni piège) ne soit proche de la bonne réponse (une valeur recopiée ne doit jamais être acceptée)
+const img2gtTirer = (f, tol = 0.06) => { for (let k = 0; k < 500; k++) { const d = f(); if (d.donnees.every(x => Math.abs(Number(x.toPrecision(2)) - x) < 1e-12 && Math.abs(x - d.vrai) > 1.6 * tol * Math.abs(d.vrai)) && d.pieges.every(([x]) => isFinite(x) && Math.abs(x - d.vrai) > Math.max(0.02, 1.5 * tol) * Math.abs(d.vrai))) return d; } return f(); };
+function genImage2GT() {
+  const tol = 0.06;
+  // q0 : le rayon particulier
+  const r0 = tire(IMG2GT_RAYONS), opts0 = img2gtOptions(r0.bon, r0.faux);
+  const q0 = { id: 'g0', type: 'qcm', q: <>Un rayon lumineux issu du sommet B d’un objet <b>{r0.debut}</b>. Que fait ce rayon après la lentille convergente ?</>, options: opts0, bonne: opts0.indexOf(r0.bon),
+    aide: 'Il y a trois rayons particuliers : parallèle à l’axe, par le centre O, par le foyer F. Repérez lequel est décrit ici, puis rappelez-vous son trajet après la lentille.',
+    expl: <>{r0.id === 'par' ? 'Un rayon parallèle à l’axe ressort en passant par le foyer image F′.' : r0.id === 'centre' ? 'Au centre, la lentille est très mince : le rayon n’est pas dévié.' : 'Un rayon qui passe par le foyer objet F ressort parallèlement à l’axe.'} Réponse : <b>{r0.bon}</b>.</> };
+  // q1 : hauteur de l'image, A′B′ = AB × OA′ ÷ OA
+  const d1 = img2gtTirer(() => { const AB = tire([1.5, 2, 3, 4, 5]), OA = tire([8, 10, 12, 15, 20, 24, 30]), OAp = tire([6, 8, 10, 12, 15, 18, 20]), v = AB * OAp / OA;
+    return { AB, OA, OAp, vrai: v, donnees: [AB, OA, OAp], pieges: [[AB, 'C’est la hauteur de l’objet. L’image n’a pas la même taille : multipliez par OA′ ÷ OA.'], [AB * OA / OAp, 'Vous avez divisé à l’envers : c’est OA′ (l’image) divisé par OA (l’objet).'], [OAp / OA, 'C’est le grandissement, sans unité. Multipliez-le par la hauteur AB de l’objet pour obtenir A′B′.']] }; }, tol);
+  const q1 = { id: 'g1', type: 'num', q: <>Un objet AB de <b>{nb(d1.AB, 2)}{NB}cm</b> de haut est à <b>OA{NB}={NB}{nb(d1.OA, 2)}{NB}cm</b> d’une lentille convergente. Son image se forme, nette, sur un écran à <b>OA′{NB}={NB}{nb(d1.OAp, 2)}{NB}cm</b> de la lentille. Quelle est la hauteur A′B′ de l’image ? Donnez le résultat en <b>cm</b>.</>,
+    unite: 'cm', vrai: d1.vrai, csMin: 2, tolRel: tol, donnees: d1.donnees,
+    aide: 'Grandissement = OA′ ÷ OA (théorème de Thalès). Hauteur de l’image = grandissement × hauteur de l’objet.',
+    pieges: d1.pieges, expl: <>Grandissement = OA′ ÷ OA = {nb(d1.OAp, 2)} ÷ {nb(d1.OA, 2)} = {nb(d1.OAp / d1.OA, 3)}. A′B′ = {nb(d1.OAp / d1.OA, 3)} × {nb(d1.AB, 2)} = <b>{avecU(d1.vrai, 'cm', 2)}</b>.</> };
+  // q2 : grandissement à partir des hauteurs
+  const d2 = img2gtTirer(() => { const AB = tire([2, 3, 4, 5]), g = tire([0.25, 0.4, 0.5, 0.6, 1.5, 2, 2.5, 3, 4]), Ai = AB * g;
+    return { AB, Ai, vrai: g, donnees: [AB, Ai], pieges: [[AB / Ai, 'Vous avez divisé à l’envers : le grandissement est la taille de l’image divisée par la taille de l’objet.'], [Ai, 'C’est la hauteur de l’image. Il faut la diviser par la hauteur de l’objet.'], [AB * Ai, 'On divise, on ne multiplie pas : grandissement = A′B′ ÷ AB.']] }; }, tol);
+  const q2 = { id: 'g2', type: 'num', q: <>Un objet AB de <b>{nb(d2.AB, 2)}{NB}cm</b> de haut donne, sur un écran, une image A′B′ de <b>{nb(d2.Ai, 2)}{NB}cm</b>. Quel est le grandissement ? (sans unité)</>,
+    unite: '', vrai: d2.vrai, csMin: 2, tolRel: tol, donnees: d2.donnees,
+    aide: 'Grandissement = taille de l’image ÷ taille de l’objet = A′B′ ÷ AB. Il n’a pas d’unité.',
+    pieges: d2.pieges, expl: <>Grandissement = A′B′ ÷ AB = {nb(d2.Ai, 2)} ÷ {nb(d2.AB, 2)} = <b>{nb(d2.vrai, 2)}</b> : l’image est {d2.vrai < 1 ? 'plus petite' : 'plus grande'} que l’objet.</> };
+  // q3 : distances en cm et en m, grandissement
+  const d3 = img2gtTirer(() => { const OA = tire([10, 12, 15, 20, 25]), m = tire([0.5, 0.6, 0.8, 1.2, 1.5, 2.0]), v = m * 100 / OA;
+    return { OA, m, vrai: v, donnees: [OA, m], pieges: [[m / OA, 'Les deux distances ne sont pas dans la même unité : 1\u00a0m = 100\u00a0cm. Convertissez avant de diviser.'], [m * 1000 / OA, 'Facteur 10 de trop : 1\u00a0m = 100\u00a0cm (pas 1 000).'], [OA / (m * 100), 'Vous avez divisé à l’envers : c’est OA′ (l’image) divisé par OA (l’objet).']] }; }, tol);
+  const q3 = { id: 'g3', type: 'num', q: <>Une lentille convergente forme sur un écran l’image d’un objet placé à <b>OA{NB}={NB}{nb(d3.OA, 2)}{NB}cm</b>. L’écran est à <b>OA′{NB}={NB}{nb(d3.m, 2)}{NB}m</b> de la lentille. Quel est le grandissement ? (sans unité)</>,
+    unite: '', vrai: d3.vrai, csMin: 2, tolRel: tol, donnees: d3.donnees,
+    aide: 'Convertissez d’abord OA′ en centimètres (1\u00a0m = 100\u00a0cm), puis divisez OA′ par OA.',
+    pieges: d3.pieges, expl: <>OA′ = {nb(d3.m, 2)}&nbsp;m = {nb(d3.m * 100, 3)}&nbsp;cm. Grandissement = OA′ ÷ OA = {nb(d3.m * 100, 3)} ÷ {nb(d3.OA, 2)} = <b>{nb(d3.vrai, 2)}</b>.</> };
+  // q4 : position de l'image à partir du grandissement
+  const d4 = img2gtTirer(() => { const g = tire([0.25, 0.5, 1.5, 2, 3, 4]), OA = tire([8, 10, 12, 15, 20, 24]), v = g * OA;
+    return { g, OA, vrai: v, donnees: [g, OA], pieges: [[OA / g, 'On multiplie le grandissement par OA, on ne divise pas : OA′ = grandissement × OA.'], [OA, 'C’est la distance de l’objet. L’image n’est pas à la même distance (le grandissement n’est pas 1).'], [g, 'C’est le grandissement, sans unité. Multipliez-le par OA pour avoir OA′ en cm.']] }; }, tol);
+  const q4 = { id: 'g4', type: 'num', q: <>L’image mesure <b>{nb(d4.g, 2)} fois</b> la taille de l’objet : le grandissement vaut <b>{nb(d4.g, 2)}</b>. L’objet est à <b>OA{NB}={NB}{nb(d4.OA, 2)}{NB}cm</b> de la lentille. À quelle distance OA′ de la lentille se forme l’image ? Donnez le résultat en <b>cm</b>.</>,
+    unite: 'cm', vrai: d4.vrai, csMin: 2, tolRel: tol, donnees: d4.donnees,
+    aide: 'Grandissement = OA′ ÷ OA, donc OA′ = grandissement × OA.',
+    pieges: d4.pieges, expl: <>Grandissement = OA′ ÷ OA, donc OA′ = {nb(d4.g, 2)} × {nb(d4.OA, 2)} = <b>{avecU(d4.vrai, 'cm', 2)}</b>.</> };
+  // q5 : hauteur de l'objet à partir de l'image et du grandissement
+  const d5 = img2gtTirer(() => { const AB = tire([2, 3, 4, 5, 6]), g = tire([0.25, 0.4, 0.5, 2, 2.5, 4]), Ai = AB * g;
+    return { AB, g, Ai, vrai: AB, donnees: [g, Ai], pieges: [[Ai * g, 'On divise la hauteur de l’image par le grandissement, on ne les multiplie pas.'], [Ai, 'C’est la hauteur de l’image. Divisez-la par le grandissement pour avoir celle de l’objet.'], [g, 'C’est le grandissement, sans unité : divisez la hauteur de l’image par ce nombre.']] }; }, tol);
+  const q5 = { id: 'g5', type: 'num', q: <>Sur un écran, une image de <b>{nb(d5.Ai, 2)}{NB}cm</b> de haut a été formée. Le grandissement vaut <b>{nb(d5.g, 2)}</b>. Quelle est la hauteur AB de l’objet ? Donnez le résultat en <b>cm</b>.</>,
+    unite: 'cm', vrai: d5.vrai, csMin: 2, tolRel: tol, donnees: d5.donnees,
+    aide: 'Grandissement = A′B′ ÷ AB, donc AB = A′B′ ÷ grandissement.',
+    pieges: d5.pieges, expl: <>AB = A′B′ ÷ grandissement = {nb(d5.Ai, 2)} ÷ {nb(d5.g, 2)} = <b>{avecU(d5.vrai, 'cm', 2)}</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * tol) * Math.abs(q.vrai)); });
+  return { intro: 'Image par une lentille convergente : trois rayons particuliers, hauteur de l’image, grandissement par les tailles et par les distances (Thalès), conversion des centimètres et des mètres.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['Trois rayons particuliers : parallèle à l’axe (il ressort par F′), par le centre O (il n’est pas dévié), par le foyer F (il ressort parallèle à l’axe).', 'Grandissement = A′B′ ÷ AB = OA′ ÷ OA (théorème de Thalès) : sans unité ; moins de 1, image plus petite ; plus de 1, image plus grande.', 'Les deux distances doivent être dans la même unité avant de diviser.'] };
+}
 // ───────────── Tests chimiques (2GT) : réactif et observation d’un test, lecture d’une observation, nombre de tests, durée des tests, deux espèces en même temps ─────────────
 const TEST2GT_REACTIF = { eau: 'sulfate de cuivre anhydre', co2: 'eau de chaux', o2: 'une braise', h2: 'une flamme' };
 const TEST2GT_OBS = { eau: 'la poudre devient bleue', co2: 'l’eau de chaux se trouble', o2: 'la braise se rallume', h2: 'un petit « pop »' };
@@ -4103,6 +4162,7 @@ export const FAMILLES = [
   { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
   { id: 'pur2gt-calcul', groupe: 'Formules', titre: 'Corps pur ou mélange : palier, température d’ébullition lue, écart avec la référence, compatibilité et identification d’un liquide (2GT)', gen: genPur2GT, domaine: 'Corps purs et mélanges (2GT)' },
   { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
+  { id: 'img2gt-calcul', groupe: 'Formules', titre: 'Image par une lentille : rayon particulier, hauteur de l’image, grandissement par les tailles et par Thalès, conversion cm–m (2GT)', gen: genImage2GT, domaine: 'Image par une lentille (2GT)' },
   { id: 'test2gt-calcul', groupe: 'Formules', titre: 'Tests chimiques : réactif et observation, lecture d’une observation, nombre de tests pour identifier un gaz, durée et deux espèces à la fois (2GT)', gen: genTests2GT, domaine: 'Tests chimiques (2GT)' },
   { id: 'ccm2gt-calcul', groupe: 'Formules', titre: 'Chromatographie sur couche mince : rapport frontal, distance parcourue, conversions et comparaison de hauteurs (2GT)', gen: genCcm2GT, domaine: 'Chromatographie sur couche mince (2GT)' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
