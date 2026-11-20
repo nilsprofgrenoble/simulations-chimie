@@ -1782,5 +1782,14 @@
  "77:plausible:oeil2gt-val-bougie-taille": "VAL477",
  "77:plausible:oeil2gt-val-focale-proche": "VAL478",
  "77:plausible:oeil2gt-val-nette-loin": "VAL479",
- "36:oeil2gt-calcul": "REA122"
+ "36:oeil2gt-calcul": "REA122",
+ "34:thm-sapp-tasse.0": "SAPP461",
+ "34:thm-sapp-tasse.1": "SAPP462",
+ "37:prevoir:thm-ana-masse": "ANA724",
+ "37:prevoir:thm-ana-pieces": "ANA725",
+ "37:prevoir:thm-ana-flux": "ANA726",
+ "77:plausible:thm-val-fin": "VAL480",
+ "77:plausible:thm-val-unite": "VAL481",
+ "77:plausible:thm-val-chauffage": "VAL482",
+ "36:thm-calcul": "REA123"
 }

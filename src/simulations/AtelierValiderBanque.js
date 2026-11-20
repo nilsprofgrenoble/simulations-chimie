@@ -4485,6 +4485,36 @@ export const PLAUSIBLES = [
       F('il croit qu’un liquide jaune est toujours hétérogène', 'Il pense l’inverse : il juge l’huile pure. Son erreur porte sur le passage de l’aspect à la composition.'),
       F('il oublie que l’huile est un solide à température ambiante', 'L’huile de tournesol est liquide à température ambiante : ce n’est pas ce qui fait l’erreur.'),
     ] }),
+  P({ id: 'thm-val-fin', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', niveau: 2, titre: 'Un café revenu à la température de la pièce ?', plausible: false,
+    enonce: 'Un café à 80 °C est posé dans une pièce à 20 °C ; son temps caractéristique est τ = 31 min. Un élève affirme : « Au bout d’une heure, le café est revenu à 20,0 °C. »',
+    reperes: [['Écart initial', 'T_0 − T_ext = 60 K'], ['À t = τ', 'il reste 37 % de l’écart initial'], ['Équilibre pratiquement atteint', 'vers 5 τ']],
+    ver: 'Une heure vaut environ 2 τ (60 min pour τ = 31 min) : il reste environ 14 % de l’écart initial, soit 8,6 K, donc T ≈ 28,6 °C et non 20,0 °C. L’équilibre n’est pratiquement atteint qu’après 5 τ ≈ 2,6 h, et T_ext n’est jamais atteinte exactement.',
+    q2: 'Que penser de cette affirmation ?',
+    options: [
+      V('fausse : le café est encore à environ 29 °C', 'À t = 60 min ≈ 1,9 τ, il reste environ 14 % de l’écart (e à la puissance −1,94 ≈ 0,14) : T − T_ext ≈ 60 × 0,14 ≈ 8,6 K, donc T ≈ 29 °C.'),
+      F('plausible : une heure dépasse largement τ', 'Dépasser τ ne suffit pas : à t = τ, il reste 37 % de l’écart ; il faut environ 5 τ pour atteindre l’équilibre pratique.'),
+      F('fausse : le café devrait être passé sous 20 °C', 'T tend vers T_ext sans la dépasser : le café ne peut pas descendre sous la température de la pièce.'),
+    ] }),
+  P({ id: 'thm-val-unite', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', niveau: 2, titre: 'Temps caractéristique d’une tasse', plausible: false,
+    enonce: 'Pour 0,20 kg de café (C = 836 J·K⁻¹) dans une tasse dont le produit h × S vaut 0,45 W·K⁻¹, un élève calcule : « τ = frac(836|0,45) = 1 858 min » et en déduit que le café met plus de 9 000 minutes à se refroidir (environ 5 τ).',
+    reperes: [['Unités', 'des J·K⁻¹ divisés par des W·K⁻¹ donnent des secondes'], ['Café dans une tasse', 'τ de l’ordre de la demi-heure'], ['Équilibre pratique', 'environ 5 τ']],
+    ver: '836 divisés par 0,45 donnent 1 858 secondes, soit 31 minutes (et non 1 858 minutes) : l’élève a pris des secondes pour des minutes. La durée de refroidissement vaut alors environ 5 τ ≈ 2,6 heures, ce qui correspond à l’expérience courante.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il a lu en minutes un résultat en secondes', 'J·K⁻¹ divisés par W·K⁻¹ = J divisés par W = s : le quotient vaut 1 858 s, soit 31 min.'),
+      F('il a utilisé la mauvaise formule : τ = frac(h × S|C)', 'La formule τ = frac(C|h × S) est correcte : c’est l’unité du résultat qui est mal interprétée.'),
+      F('il aurait dû multiplier C par h × S', 'Le produit C × h × S n’est pas homogène à une durée : le temps caractéristique est le quotient de C par h × S.'),
+    ] }),
+  P({ id: 'thm-val-chauffage', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', niveau: 1, titre: 'Un liquide froid dans une pièce chaude', plausible: true,
+    enonce: 'On verse de l’eau à 4 °C dans une tasse posée dans une pièce à 20 °C ; le temps caractéristique est τ = 31 min. Un élève lit sur la courbe : « au bout de 31 min, T = 14 °C ».',
+    reperes: [['Écart initial', 'T_ext − T_0 = 16 K'], ['À t = τ', 'il reste 37 % de l’écart initial'], ['Sens de l’évolution', 'T tend vers T_ext']],
+    ver: 'À t = τ, il reste 37 % de l’écart de 16 K, soit 5,9 K : T = 20 − 5,9 = 14,1 °C. La lecture de l’élève est cohérente avec le modèle.',
+    q2: 'Que penser de cette lecture ?',
+    options: [
+      V('cohérente : il reste 37 % de l’écart de 16 K', 'À t = τ, T = 20 − 0,37 × 16 = 14,1 °C : la valeur lue correspond au modèle.'),
+      F('incohérente : T devrait valoir 20 °C', 'T n’atteint jamais T_ext en un temps fini : à t = τ, il reste 37 % de l’écart.'),
+      F('incohérente : T devrait être passée sous 4 °C', 'Le liquide est plus froid que la pièce : il reçoit de l’énergie, sa température monte vers 20 °C.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

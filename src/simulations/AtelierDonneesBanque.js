@@ -4872,6 +4872,30 @@ export const ENONCES = [
     }),
   },
   ...OEIL2GT_SAPP,
+  // ───────────────────────────── Loi de Newton et thermostat (TG, sim 212) : temps caractéristique et flux thermique initial
+  {
+    id: 'thm-sapp-tasse', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', titre: 'Une tasse de café qui refroidit', noms: ['Temps caractéristique de la tasse', 'Flux thermique initial'],
+    gen: () => ({ m: tire([0.15, 0.20, 0.25, 0.30]), hS: tire([0.30, 0.45, 0.60]), T0: tire([70, 80, 90]), Te: tire([18, 20, 22]), P: tire([800, 1000, 2000]), g: tire([8, 10, 12]) }),
+    build: (p, q) => {
+      const tokens = {
+        m: tok(`${nb(p.m, 2)} kg`, 'Masse de café dans la tasse', p.m, 'kg'),
+        c: tok('4 180 J·kg⁻¹·K⁻¹', 'Capacité thermique massique du café (assimilé à de l’eau)', 4180, 'J·kg⁻¹·K⁻¹'),
+        hS: tok(`${nb(p.hS, 2)} W·K⁻¹`, 'Produit h × S de la loi de Newton pour cette tasse', p.hS, 'W·K⁻¹'),
+        T0: tok(`${p.T0} °C`, 'Température du café à l’instant initial', p.T0, '°C'),
+        Te: tok(`${p.Te} °C`, 'Température de la pièce (thermostat)', p.Te, '°C'),
+        P: tok(`${p.P} W`, 'Puissance de la bouilloire qui a chauffé l’eau', p.P, 'W'),
+        g: tok(`${p.g} g`, 'Masse de café moulu utilisée', p.g, 'g'),
+      };
+      const debut = ['Pour préparer un café, on a chauffé de l’eau avec une bouilloire de puissance ', T('P'), ' et utilisé ', T('g'), ' de café moulu. La tasse contient ', T('m'), ' de café à ', T('T0'), ', assimilé à de l’eau (capacité thermique massique ', T('c'), '). Elle est posée dans une pièce à ', T('Te'), ' ; la loi de Newton est appliquée avec h × S = ', T('hS'), '. '];
+      const raisonsComm = { P: 'La puissance de la bouilloire a servi à chauffer l’eau avant : elle n’intervient pas dans le refroidissement de la tasse.', g: 'La masse de café moulu est une donnée de préparation : le café est assimilé à de l’eau, de masse m.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le temps caractéristique du refroidissement ?'], utiles: ['m', 'c', 'hS'], raisons: { ...raisonsComm, T0: 'Le temps caractéristique τ = frac(C|h × S) ne dépend pas de la température initiale.', Te: 'Le temps caractéristique ne dépend pas de la température de la pièce : elle fixe seulement la température finale.' },
+        cherche: { bonne: 'Le temps caractéristique τ du refroidissement (en min)', faux: ['Le flux thermique initial reçu par le café (en W)', 'La variation de température pendant la première seconde (en K)', 'La température du café au bout d’une heure (en °C)'] },
+        manque: null, solution: { txt: 'τ = frac(C|h × S) avec C = m × c, converti en minutes', val: p.m * 4180 / p.hS / 60, u: 'min' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le flux thermique reçu par le café à l’instant initial ?'], utiles: ['hS', 'T0', 'Te'], raisons: { ...raisonsComm, m: 'La masse et la capacité thermique fixent C, donc τ, mais le flux φ = h × S × (T_ext − T) n’en dépend pas.', c: 'La capacité thermique massique sert à calculer C ; elle n’intervient pas dans l’expression du flux thermique.' },
+        cherche: { bonne: 'Le flux thermique φ reçu à t = 0 (en W)', faux: ['Le temps caractéristique τ de la tasse (en min)', 'La capacité thermique C du café (en J·K⁻¹)', 'La température finale du café (en °C)'] },
+        manque: null, solution: { txt: 'φ = h × S × (T_ext − T) avec T = T_0 : négatif, le café cède de l’énergie', val: p.hS * (p.Te - p.T0), u: 'W' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

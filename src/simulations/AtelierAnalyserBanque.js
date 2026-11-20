@@ -5783,6 +5783,29 @@ export const PREVOIR = [
       F('un corps pur, car l’or est le constituant principal', 'Un constituant principal ne suffit pas : le cuivre et l’argent sont aussi présents, donc ce n’est pas un corps pur.'),
       F('un mélange hétérogène, car il contient plusieurs métaux', 'Hétérogène veut dire qu’on distingue plusieurs matières à l’œil nu. Ici, l’alliage paraît uniforme : il est homogène.'),
     ] },
+  // ───────────────────────────── Loi de Newton et thermostat (TG, sim 212) : prévoir l'effet de la masse, des températures, du flux
+  { id: 'thm-ana-masse', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', titre: 'Deux tasses plus ou moins remplies',
+    enonce: 'Deux tasses identiques, avec la même isolation (même produit h × S), sont posées dans la même pièce. L’une contient 0,15 kg de café, l’autre 0,30 kg, les deux à 80 °C au départ. Le café est assimilé à de l’eau.', q: 'Comment se comparent leurs temps caractéristiques τ et leurs températures finales ?', options: [
+      V('τ double pour la tasse pleine ; même température finale', 'τ = frac(C|h × S) : C est proportionnelle à la masse, donc τ double quand la masse double. La température finale est celle du thermostat, T_ext, pour les deux tasses.'),
+      F('τ identique ; la tasse pleine finit plus chaude', 'τ dépend de la capacité thermique C : plus de liquide, plus d’énergie à évacuer, donc τ plus grand. Et les deux tasses finissent à T_ext, la température de la pièce.'),
+      F('τ double ; la tasse pleine finit plus chaude', 'Le doublement de τ est juste, mais la température finale n’est pas liée à la masse : elle tend vers T_ext pour les deux tasses.'),
+      F('τ est divisé par 2 pour la tasse pleine ; même température finale', 'Plus de liquide veut dire C plus grande, donc τ = frac(C|h × S) plus grand : la tasse pleine refroidit plus lentement, pas plus vite.'),
+    ] },
+  { id: 'thm-ana-pieces', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', titre: 'Une pièce et une cave',
+    enonce: 'Deux tasses identiques, contenant chacune 0,20 kg de café à 80 °C, sont posées l’une dans une pièce à 20 °C, l’autre dans une cave à 10 °C. On suppose h × S identique dans les deux cas.', q: 'Comment se comparent leur temps caractéristique τ et leur température finale ?', options: [
+      V('même τ ; la tasse de la cave finit plus froide', 'τ = frac(C|h × S) ne dépend que de la tasse (C et h × S), pas des températures. La température finale est T_ext : 10 °C dans la cave, 20 °C dans la pièce.'),
+      F('τ plus petit ; la tasse de la cave finit plus froide', 'La température finale est juste, mais τ ne dépend pas de l’écart de température : à t = τ, il reste toujours 37 % de l’écart initial, quel qu’il soit. Un écart plus grand rend le flux plus fort au départ, pas τ plus petit.'),
+      F('même τ ; même température finale', 'Le système est identique, donc τ aussi, mais la température finale est celle du thermostat : 10 °C dans la cave, 20 °C dans la pièce.'),
+      F('τ plus grand ; la tasse de la cave finit plus chaude', 'τ ne dépend pas des températures, et la cave, plus froide, amène le café à une température finale plus basse, pas plus haute : le café tend vers T_ext.'),
+    ] },
+  { id: 'thm-ana-flux', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', titre: 'Le flux thermique d’un café qui refroidit',
+    enonce: 'Un café refroidit dans une pièce à température constante, sans autre transfert d’énergie que le transfert thermique. On note φ = h × S × (T_ext − T) le flux thermique reçu par le café (négatif tant que le café cède de l’énergie).', q: 'Comment évolue la valeur absolue de φ pendant le refroidissement ?', options: [
+      V('elle diminue au cours du temps et tend vers 0', 'φ est proportionnel à l’écart T_ext − T, qui diminue quand T se rapproche de T_ext : la valeur absolue de φ est maximale à t = 0, divisée par e à t = τ, et tend vers 0.'),
+      F('elle reste constante, égale à sa valeur initiale', 'φ = h × S × (T_ext − T) dépend de T : si le flux restait constant, la température baisserait linéairement et passerait sous T_ext, ce qui est impossible.'),
+      F('elle augmente au cours du temps', 'C’est l’inverse : le flux diminue avec l’écart de température ; le refroidissement ralentit justement parce que le flux diminue, pas parce qu’il augmente.'),
+      F('elle diminue puis change de signe quand T passe sous T_ext', 'T tend vers T_ext sans jamais passer en dessous : φ tend vers 0 par valeurs négatives et ne change jamais de signe.'),
+    ] },
+
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
