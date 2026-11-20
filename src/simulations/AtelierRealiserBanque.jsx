@@ -15,6 +15,7 @@ import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
+import { tirageCalcul as tirageMecanismesTG } from "./mrxExos";
 import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
 import * as EQM from "./equationReactionModele";
@@ -2783,6 +2784,9 @@ function genNewtonTG() {
 }
 
 
+// ───────── Mécanismes réactionnels (TG, sim 186) : tirage pur dans mrxExos.js (testé par mrxExos.test.mjs) ─────────
+function genMecanismesTG() { const e = tirageMecanismesTG(tire); e.questions.forEach(q => { q.expl = <>{avecIndices(q.expl)}</>; }); return e; }
+
 // ───────── Mouvement dans un champ de pesanteur uniforme (TG, sim 175) ─────────
 function genPesanteurTG() {
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
@@ -3641,6 +3645,7 @@ export const FAMILLES = [
   { id: 'son2gt-niv-calcul', groupe: 'Formules', titre: 'Niveau sonore : écart en dB, facteurs ×10 et ×2, durée repère d’exposition (2GT)', gen: genNiveauSonore2GT, domaine: 'Niveau sonore (2GT)' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
+  { id: 'mrx-calcul', groupe: 'Formules', titre: 'Mécanismes réactionnels : atomes d’un acte, chocs efficaces, part efficace et bilan d’un mécanisme (TG)', gen: genMecanismesTG, domaine: 'Mécanismes réactionnels et flèches courbes' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
   { id: 'prefixes', groupe: 'Unités', titre: 'Préfixes et puissances de 10', gen: genPrefixes },

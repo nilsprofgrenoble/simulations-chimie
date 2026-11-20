@@ -5400,6 +5400,27 @@ export const PREVOIR = [
       F('à la même distance : la lumière arrive tout de suite', 'La lumière arrive tout de suite dans les deux cas, mais le tonnerre met plus de temps la seconde fois : le son a eu plus de chemin à faire.'),
       F('trois fois plus près : environ 0,3 km contre environ 1 km', 'Un retard plus long veut dire que le son a parcouru plus de chemin : l’éclair est plus loin, pas plus près.'),
     ] },
+  { id: 'mrx-ana-fleches', domaine: 'Mécanismes réactionnels et flèches courbes', titre: 'Les flèches courbes de la substitution',
+    enonce: 'Dans l’acte élémentaire HO⁻ + CH₃Br → CH₃OH + Br⁻ (mécanisme fourni), l’ion hydroxyde forme une liaison avec l’atome de carbone, et l’atome de brome, plus électronégatif que le carbone, part en emportant le doublet de la liaison C–Br.', q: 'Comment représenter cet acte avec des flèches courbes ?', options: [
+      V('une flèche du doublet de O vers C, une flèche de la liaison C–Br vers Br', 'Une flèche part toujours d’un doublet (non liant ou de liaison) et arrive sur l’atome qui le reçoit : le doublet de O forme la liaison O–C, et le doublet de la liaison C–Br reste sur le brome, qui devient Br⁻.'),
+      F('une flèche de C vers O, une flèche de Br vers la liaison C–Br, comme les atomes', 'Une flèche courbe ne suit pas les atomes mais les doublets d’électrons : elle ne part pas d’un atome, et ici les électrons vont de O vers C, puis de la liaison C–Br vers Br.'),
+      F('une flèche du doublet de O vers C, une flèche du doublet non liant de Br vers C', 'Le brome ne donne pas de doublet non liant : c’est le doublet de la liaison C–Br qui se déplace, vers Br. Une flèche vers C aurait pour effet de donner à C cinq liaisons.'),
+      F('une seule flèche, de la liaison C–Br vers O, car O attire les électrons', 'O est chargé négativement et riche en électrons : il donne un doublet, il n’en reçoit pas. De plus, les deux doublets se déplacent dans cet acte : il faut deux flèches.'),
+    ] },
+  { id: 'mrx-ana-temperature', domaine: 'Mécanismes réactionnels et flèches courbes', titre: 'Chauffer pour accélérer un acte élémentaire',
+    enonce: 'Deux entités A et B réagissent lors d’un acte élémentaire. Un élève chauffe le milieu réactionnel en gardant les mêmes concentrations, et constate que la transformation est plus rapide.', q: 'Comment interpréter cette observation à l’échelle des entités ?', options: [
+      V('l’agitation augmente : chocs plus fréquents et plus souvent assez énergétiques', 'Une température plus élevée correspond à une agitation plus grande : les rencontres sont un peu plus fréquentes, et surtout une plus grande proportion de chocs a l’énergie suffisante. Il y a donc plus de chocs efficaces par seconde.'),
+      F('les chocs sont plus fréquents mais la proportion de chocs efficaces ne change pas', 'Si la proportion de chocs efficaces ne changeait pas, la vitesse n’augmenterait que légèrement : l’effet principal de la température porte sur la part de chocs assez énergétiques.'),
+      F('les chocs sont moins fréquents, mais chaque choc devient forcément efficace', 'Chauffer ne réduit pas la fréquence des chocs, et tous les chocs ne deviennent pas efficaces : il faut aussi une orientation favorable.'),
+      F('la température ne change que la quantité de réactifs, pas les chocs entre entités', 'Chauffer ne crée pas de réactifs : les concentrations sont inchangées. C’est l’agitation des entités, donc les chocs, qui est modifiée.'),
+    ] },
+  { id: 'mrx-ana-catalyseur', domaine: 'Mécanismes réactionnels et flèches courbes', titre: 'Un catalyseur change le mécanisme',
+    enonce: 'La décomposition de l’eau oxygénée est lente. En présence d’ions iodure, elle est rapide, selon le mécanisme fourni : acte 1, H₂O₂ + I⁻ → H₂O + IO⁻ ; acte 2, H₂O₂ + IO⁻ → H₂O + O₂ + I⁻.', q: 'Quelle espèce joue le rôle de catalyseur dans ce mécanisme ?', options: [
+      V('les ions iodure I⁻', 'I⁻ est consommé à l’acte 1 puis régénéré à l’acte 2 : il est présent au début et à la fin, donc absent de l’équation de la réaction 2 H₂O₂ → 2 H₂O + O₂. Il ouvre un autre chemin, plus rapide.'),
+      F('les ions hypoiodite IO⁻', 'IO⁻ est formé à l’acte 1 puis consommé à l’acte 2 : c’est un intermédiaire réactionnel, qui n’existe qu’entre les deux actes. Il n’était pas présent au départ.'),
+      F('l’eau oxygénée H₂O₂', 'H₂O₂ est consommée aux deux actes et jamais régénérée : c’est le réactif. Elle figure dans l’équation de la réaction.'),
+      F('le dioxygène O₂', 'O₂ est formé à l’acte 2 et n’est consommé par aucun acte : c’est un produit de la réaction, pas un catalyseur.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
