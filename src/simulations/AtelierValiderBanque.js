@@ -3408,6 +3408,47 @@ export const PLAUSIBLES = [
       F('les nombres se multiplient sans conversion : 3,0 × 3,14 ≈ 9,4 N, très faible', 'Ce produit est en bar·cm², pas en newtons : avec P en Pa et S en m², F ≈ 94 N.'),
       F('la force est la même que celle exercée par l’air extérieur sur le piston', 'L’air extérieur, à environ 1 bar, exerce une force trois fois plus petite : environ 31 N.'),
     ] }),
+
+  P({ id: 'fl1g-statique-val-ordre', domaine: 'Statique des fluides : pression et profondeur', niveau: 1, titre: 'Pression absolue d’un plongeur à 20 m', plausible: true,
+    enonce: 'Un plongeur est à 20 m de profondeur dans un lac d’eau douce. Il annonce : « la pression absolue que je subis est d’environ 3 bar ».',
+    reperes: [['Pression atmosphérique', '1 bar = 10⁵ Pa'], ['Eau', 'environ 1 bar de plus tous les 10 m'], ['ρ·g·h à 20 m', '1,0 × 10³ × 9,81 × 20 ≈ 2,0 × 10⁵ Pa']],
+    ver: 'La partie due à l’eau vaut ρ·g·h ≈ 2,0 × 10⁵ Pa, soit environ 2 bar. En ajoutant la pression de l’atmosphère (environ 1 bar), on trouve environ 3 bar : l’annonce du plongeur est cohérente.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Plausible : environ 1 bar de l’atmosphère et 2 bar pour 20 m d’eau', 'À raison d’environ 1 bar pour 10 m d’eau, 20 m ajoutent 2 bar aux 1 bar de l’atmosphère : 3 bar au total.'),
+      F('Pas plausible : 20 m d’eau donnent environ 20 bar au total', 'Il faut environ 10 m d’eau pour 1 bar, et non 1 m : 20 m d’eau donnent environ 2 bar (en plus de l’atmosphère).'),
+      F('Pas plausible : à 20 m, la pression absolue est de 2 bar seulement', 'Les 2 bar sont la partie due à l’eau : il faut y ajouter 1 bar d’atmosphère, car le manomètre mesure la pression absolue.'),
+    ] }),
+  P({ id: 'fl1g-statique-val-signe', domaine: 'Statique des fluides : pression et profondeur', niveau: 2, titre: 'Signe d’une différence de pression dans l’eau', plausible: false,
+    enonce: 'Dans l’eau d’un lac au repos, l’axe z est orienté vers le haut. Le point A est à la surface (z_A = 0), le point B est 3,0 m plus bas (z_B = −3,0 m). Un élève applique P_B − P_A = ρ·g·(z_A − z_B) et trouve P_B − P_A = −2,9 × 10⁴ Pa.',
+    reperes: [['Profondeur', 'B est plus bas que A'], ['Variation de pression avec la profondeur', 'la pression augmente quand on descend'], ['Ordre de grandeur', '3 m d’eau ≈ 0,3 bar ≈ 3 × 10⁴ Pa']],
+    ver: 'La valeur absolue (2,9 × 10⁴ Pa) est correcte, mais le signe ne l’est pas : B est plus bas que A, donc la pression y est plus grande. z_A − z_B = 0 − (−3,0) = +3,0 m donne P_B − P_A = +2,9 × 10⁴ Pa.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a calculé z_B − z_A au lieu de z_A − z_B', 'z_B − z_A = −3,0 − 0 = −3,0 m donne −2,9 × 10⁴ Pa : l’ordre des termes dans la parenthèse fixe le signe.'),
+      F('il a oublié d’ajouter la pression atmosphérique', 'P_atm disparaît dans la différence P_B − P_A : elle ne change ni la valeur ni le signe du résultat.'),
+      F('il a utilisé une masse volumique négative pour l’eau', 'Une masse volumique est toujours positive : c’est l’ordre des termes dans la parenthèse qui a donné le signe moins.'),
+    ] }),
+  P({ id: 'fl1g-statique-val-unite', domaine: 'Statique des fluides : pression et profondeur', niveau: 2, titre: 'Pression due à 5,0 m d’eau', plausible: false,
+    enonce: 'Un élève calcule la pression due à l’eau à 5,0 m de profondeur : ρ·g·h = 1,0 × 10³ × 9,81 × 5,0 = 4,9 × 10⁴. Il annonce : « la pression due à l’eau est de 4,9 × 10⁴ hPa ».',
+    reperes: [['Pression atmosphérique', '1 013 hPa'], ['Eau', 'environ 100 hPa de plus par mètre'], ['Conversion', '1 hPa = 100 Pa']],
+    ver: 'Le calcul donne bien 4,9 × 10⁴ Pa, mais pas 4,9 × 10⁴ hPa : cela ferait 49 bar, soit environ 490 m d’eau. On attend environ 500 hPa pour 5 m. L’élève n’a pas converti : 4,9 × 10⁴ Pa = 4,9 × 10² hPa = 490 hPa.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a écrit hPa pour un résultat qui est en Pa', 'ρ·g·h est en pascals ; pour l’exprimer en hPa, on divise par 100 : 4,9 × 10⁴ Pa = 490 hPa.'),
+      F('il a pris h = 50 m au lieu de 5,0 m dans le calcul', 'Avec 50 m on trouverait 4,9 × 10⁵ Pa : le calcul de l’élève correspond bien à 5,0 m, c’est l’unité qui est fausse.'),
+      F('il a oublié d’ajouter la pression atmosphérique', 'L’énoncé demande seulement la pression due à l’eau : ajouter P_atm ne change pas l’ordre de grandeur de ce résultat en Pa.'),
+    ] }),
+  P({ id: 'fl1g-statique-val-profondeur', domaine: 'Statique des fluides : pression et profondeur', niveau: 2, titre: 'Profondeur déduite d’une pression absolue', plausible: true,
+    enonce: 'Un plongeur lit 1 700 hPa sur son manomètre (pression absolue) dans un lac d’eau douce, où P_atm = 1 013 hPa. Il en déduit : « je suis à environ 7 m de profondeur ».',
+    reperes: [['Pression atmosphérique', '1 013 hPa'], ['Eau', 'environ 1 bar (1 000 hPa) de plus tous les 10 m'], ['Relation', 'h = (P − P_atm) / (ρ·g)']],
+    ver: 'La partie due à l’eau vaut 1 700 − 1 013 = 687 hPa ≈ 0,69 bar, soit environ 7 m d’eau (1 bar pour 10 m). Avec la relation : h = 68 700 / (1,0 × 10³ × 9,81) ≈ 7,0 m. L’annonce est cohérente.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Plausible : on retranche l’atmosphère, 687 hPa correspondent à environ 7 m', 'Le manomètre donne la pression absolue : seule la différence avec P_atm est due à l’eau, soit environ 0,69 bar, donc environ 7 m.'),
+      F('Pas plausible : 1 700 hPa correspondent à 17 m d’eau', 'On oublie de retrancher la pression atmosphérique : seuls 687 hPa sont dus à l’eau, soit environ 7 m et non 17 m.'),
+      F('Pas plausible : à 7 m, la pression due à l’eau vaut 7 bar', 'Il faut environ 10 m d’eau pour 1 bar : 7 m d’eau donnent environ 0,7 bar, cohérent avec les 687 hPa.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

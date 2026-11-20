@@ -3677,6 +3677,42 @@ export const ENONCES = [
         manque: null, solution: { txt: 'V₂ = frac(P₁ × V₁|P₂), à température et quantité de gaz constantes', val: p.V2, u: 'mL' } };
     }),
   },
+  // ───────────────────────────── Statique des fluides : pression et profondeur (1G)
+  {
+    id: 'fl1g-statique-sapp-piscine', domaine: 'Statique des fluides : pression et profondeur', titre: 'Un manomètre dans une piscine', noms: ['Pression absolue au fond', 'Profondeur du manomètre'],
+    gen: () => {
+      const h = tire([2.0, 2.5, 3.0, 3.5, 4.0, 5.0]), Patm = tire([1008, 1013, 1020]);
+      const S = tire([20, 30, 50, 60]), D = h + tire([1.0, 1.5, 2.0]);   // profondeur de la piscine > profondeur du manomètre ; V = S × D
+      return { h, Patm, P: Math.round((Patm * 100 + 1000 * 9.81 * h) / 100), V: Math.round(S * D), S, th: tire([20, 24, 26, 28]) };
+    },
+    build: epure((p, q) => {
+      const tokens = {
+        rho: tok('1,00 × 10³ kg·m⁻³', 'Masse volumique de l’eau', 1000, 'kg·m⁻³'),
+        g: tok('9,81 N·kg⁻¹', 'Intensité de la pesanteur', 9.81, 'N·kg⁻¹'),
+        Patm: tok(`${nb(p.Patm)} hPa`, 'Pression atmosphérique, qui règne à la surface de l’eau', p.Patm * 100, 'Pa'),
+        h: tok(`${nb(p.h, 1)} m`, 'Profondeur du manomètre sous la surface', p.h, 'm'),
+        P: tok(`${nb(p.P)} hPa`, 'Pression absolue indiquée par le manomètre', p.P * 100, 'Pa'),
+        V: tok(`${p.V} m³`, 'Volume d’eau de la piscine', p.V, 'm³'),
+        S: tok(`${p.S} m²`, 'Superficie de la surface de l’eau', p.S, 'm²'),
+        th: tok(`${p.th} °C`, 'Température de l’eau', p.th, '°C'),
+      };
+      const raisons = {
+        V: 'La pression à une profondeur donnée ne dépend pas de la quantité d’eau de la piscine, mais seulement de la profondeur.',
+        S: 'La pression à une profondeur donnée ne dépend pas de la superficie de la piscine ni de la forme du récipient.',
+        th: 'Dans ce modèle, la masse volumique de l’eau est supposée constante : la température ne change pas le calcul.',
+      };
+      if (q === 0) return { tokens, derivees: ['conversion : 1 hPa = 100 Pa'],
+        texte: ['Une piscine d’eau douce, de masse volumique ', T('rho'), ', contient un volume ', T('V'), ' d’eau à ', T('th'), ' ; la surface de l’eau mesure ', T('S'), '. Un manomètre est posé à ', T('h'), ' sous la surface. À la surface, la pression est ', T('Patm'), ' et l’intensité de la pesanteur vaut ', T('g'), '. Quelle pression absolue le manomètre indique-t-il ?'],
+        utiles: ['rho', 'g', 'h', 'Patm'], raisons,
+        cherche: { bonne: 'La pression absolue P au niveau du manomètre (en hPa)', faux: ['La force pressante sur le fond de la piscine (en N)', 'La masse d’eau de la piscine (en kg)', 'La profondeur de la piscine (en m)'] },
+        manque: null, solution: { txt: 'P = P_atm + ρ·g·h', val: p.Patm * 100 + 1000 * 9.81 * p.h, u: 'Pa' } };
+      return { tokens, derivees: ['conversion : 1 hPa = 100 Pa'],
+        texte: ['Une piscine d’eau douce, de masse volumique ', T('rho'), ', contient un volume ', T('V'), ' d’eau à ', T('th'), ' ; la surface de l’eau mesure ', T('S'), '. Un manomètre posé sous la surface indique la pression absolue ', T('P'), '. À la surface, la pression est ', T('Patm'), ' et l’intensité de la pesanteur vaut ', T('g'), '. À quelle profondeur se trouve-t-il ?'],
+        utiles: ['rho', 'g', 'P', 'Patm'], raisons,
+        cherche: { bonne: 'La profondeur h du manomètre (en m)', faux: ['La pression relative en surface (en hPa)', 'Le volume d’eau situé au-dessus du manomètre (en m³)', 'La masse volumique de l’eau (en kg·m⁻³)'] },
+        manque: null, solution: { txt: 'h = (P − P_atm) / (ρ·g)', val: (p.P - p.Patm) * 100 / (1000 * 9.81), u: 'm' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

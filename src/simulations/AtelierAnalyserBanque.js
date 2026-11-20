@@ -4995,6 +4995,41 @@ export const ALGORITHMES = [
       F('La DEL est allumée de façon stable', 'Elle ne serait stable que si un seul test était vrai : ici, les deux le sont.'),
       F('La DEL est éteinte de façon stable', 'Elle ne serait stable que si un seul test était vrai : ici, les deux le sont.'),
     ] },
+  { id: 'fl1g-statique-profondeur-double', domaine: 'Statique des fluides : pression et profondeur', titre: 'Un plongeur descend deux fois plus bas',
+    enonce: 'Un plongeur descend de 5 m à 10 m de profondeur dans un lac d’eau douce. On rappelle que la pression absolue à la profondeur h est P = P_atm + ρ·g·h, avec P_atm ≈ 1,0 bar.', q: 'Quand la profondeur double, la pression absolue qu’il subit…', options: [
+      V('est multipliée par moins de 2 : seule la partie due à l’eau double', 'P_atm ne change pas : à 5 m, P ≈ 1,0 + 0,5 = 1,5 bar ; à 10 m, P ≈ 1,0 + 1,0 = 2,0 bar. Le terme ρ·g·h double, pas la somme.'),
+      F('est multipliée par 2 : la pression est proportionnelle à la profondeur', 'La proportionnalité concerne la partie due à l’eau, ρ·g·h : à la surface (h = 0), la pression absolue vaut déjà P_atm, pas zéro.'),
+      F('reste la même : l’atmosphère impose la pression partout', 'L’atmosphère fixe la pression à la surface seulement : plus on descend, plus le poids de l’eau au-dessus ajoute de la pression.'),
+      F('est multipliée par 4 : la pression varie comme le carré de la profondeur', 'La relation de la statique est affine en h : doubler h double ρ·g·h, et ne le multiplie pas par 4.'),
+    ] },
+  { id: 'fl1g-statique-forme-bidon', domaine: 'Statique des fluides : pression et profondeur', titre: 'Un bidon étroit et une grande piscine',
+    enonce: 'On remplit d’eau un bidon étroit et une grande piscine, jusqu’à 2,0 m de hauteur dans chacun. Une sonde est posée au fond de chaque récipient. On rappelle P_B − P_A = ρ·g·(z_A − z_B).', q: 'La pression au fond du bidon, par rapport à celle au fond de la piscine, est…', options: [
+      V('la même : seule la profondeur de 2,0 m compte dans la relation', 'La relation ne contient ni la forme du récipient ni la quantité d’eau : z_A − z_B = 2,0 m dans les deux cas, donc la même pression.'),
+      F('plus petite : le bidon contient beaucoup moins d’eau que la piscine', 'La quantité d’eau n’intervient pas : ce qui compte est la hauteur d’eau au-dessus de la sonde, la même dans les deux récipients.'),
+      F('plus grande : la pression se concentre dans un récipient étroit', 'On confond avec la force sur une petite surface. La pression à une profondeur donnée ne dépend pas de la largeur du récipient.'),
+      F('plus grande : l’eau est plus haute dans le bidon étroit', 'Le niveau d’eau est le même, 2,0 m, dans les deux récipients : une colonne plus étroite ne monte pas plus haut, et la hauteur d’eau au-dessus de la sonde est identique.'),
+    ] },
+  { id: 'fl1g-statique-mercure', domaine: 'Statique des fluides : pression et profondeur', titre: 'Eau ou mercure à la même profondeur',
+    enonce: 'À 0,50 m de profondeur, on mesure la pression due au liquide, ρ·g·h, dans de l’eau (ρ = 1,0 × 10³ kg·m⁻³) puis dans du mercure (ρ = 1,36 × 10⁴ kg·m⁻³), avec le même g.', q: 'La pression due au liquide dans le mercure est, par rapport à celle dans l’eau…', options: [
+      V('environ 14 fois plus grande : elle est proportionnelle à ρ', 'ρ·g·h est proportionnelle à ρ, à g et h identiques : 1,36 × 10⁴ / 1,0 × 10³ ≈ 14. Environ 0,67 bar dans le mercure contre 0,049 bar dans l’eau.'),
+      F('la même : les deux liquides sont à la même profondeur', 'La profondeur est la même, mais ρ·g·h dépend aussi de la masse volumique du liquide : un liquide plus dense pèse plus.'),
+      F('environ 14 fois plus petite : un liquide dense se comprime moins', 'Un liquide dense exerce une pression plus grande, pas plus petite : ρ est au numérateur dans ρ·g·h.'),
+      F('environ 1,6 fois plus grande : les pressions absolues sont voisines', 'En ajoutant P_atm ≈ 1 bar dans les deux cas, le rapport des pressions absolues vaut environ 1,6 (1,68 bar contre 1,06 bar), mais l’énoncé compare les pressions dues au liquide.'),
+    ] },
+  { id: 'fl1g-statique-axe-signe', domaine: 'Statique des fluides : pression et profondeur', titre: 'Un point B plus haut qu’un point A',
+    enonce: 'Dans un liquide au repos, l’axe vertical z est orienté vers le haut. Le point B est situé au-dessus du point A. On rappelle P_B − P_A = ρ·g·(z_A − z_B).', q: 'Le signe de la différence P_B − P_A est…', options: [
+      V('négatif : z_A − z_B est négatif, car A est plus bas que B', 'B est plus haut que A donc z_B > z_A et z_A − z_B < 0. La pression est plus faible en B, plus haut, qu’en A.'),
+      F('positif : la pression augmente quand on s’éloigne du fond', 'C’est l’inverse : la pression augmente quand on descend, avec la profondeur.'),
+      F('nul : les deux points sont dans le même liquide au repos', 'La pression est la même seulement à la même hauteur : ici z_A ≠ z_B, donc P_B ≠ P_A.'),
+      F('impossible à donner : il faudrait connaître la valeur de ρ', 'ρ est positive : le signe de P_B − P_A est celui de z_A − z_B, quelle que soit la valeur de ρ.'),
+    ] },
+  { id: 'fl1g-statique-relative-surface', domaine: 'Statique des fluides : pression et profondeur', titre: 'Un manomètre en pression relative',
+    enonce: 'Un manomètre mesure la pression relative P − P_atm (écart avec la pression atmosphérique). On le plonge d’abord à la surface d’un lac, puis à 10 m de profondeur.', q: 'À la surface du lac, ce manomètre indique…', options: [
+      V('0 : à la surface, la pression absolue est égale à P_atm', 'Pression relative = P − P_atm. À la surface, P = P_atm, donc la pression relative est nulle. À 10 m, elle vaut environ 1 bar.'),
+      F('1 bar : c’est la valeur de la pression atmosphérique', '1 bar est la pression absolue à la surface. Un manomètre relatif retranche P_atm : il indique 0 à la surface.'),
+      F('la même valeur qu’à 10 m : le manomètre ne mesure pas la profondeur', 'La pression due à l’eau augmente avec la profondeur : à 10 m, la pression relative vaut environ 1 bar, pas 0.'),
+      F('une valeur négative : la sonde est au-dessus de l’eau', 'La sonde est à la surface, donc dans l’eau : la pression relative est nulle, pas négative.'),
+    ] },
 ];
 
 export const FAMILLES = [

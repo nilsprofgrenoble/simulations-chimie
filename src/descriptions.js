@@ -1,5 +1,6 @@
 // Courtes descriptions des simulations, affichées en infobulle dans le menu de l'en-tête (clé : titre de la simulation).
 export const DESCRIPTIONS = {
+  "Statique des fluides : pression et profondeur": "Dans un liquide au repos, la pression augmente avec la profondeur : P_B − P_A = ρ·g·(z_A − z_B), pression absolue, ordre de grandeur, force sur une paroi, droite P(h).",
   "Mesure et incertitudes : variabilité, types A et B": "Une mesure varie : histogramme, moyenne, écart-type ; incertitude-type de type A (s/√N) et de type B (a/√3) ; écrire le résultat et le comparer à une référence.",
   "Couleurs : lumières, filtres et couleur des objets": "Synthèse additive (lampes R, V, B) et soustractive (filtres) ; couleurs complémentaires ; couleur d’un objet selon la lumière : absorption, diffusion, transmission. Modèle à trois bandes.",
   "Lumière : domaines spectraux et énergie d’un photon": "Du radio au gamma : échelle logarithmique, passage de λ à ν (λ = c/ν), énergie d’un photon E = h·ν en joules et en eV. Parcours guidé, exploration et défis.",

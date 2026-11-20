@@ -1416,5 +1416,17 @@
  "77:plausible:fl1g-pression-val-produit-pv": "VAL367",
  "77:plausible:fl1g-pression-val-ballon": "VAL368",
  "77:plausible:fl1g-pression-val-force-pompe": "VAL369",
- "36:fl1g-pression-calcul": "REA91"
+ "36:fl1g-pression-calcul": "REA91",
+ "34:fl1g-statique-sapp-piscine.0": "SAPP364",
+ "34:fl1g-statique-sapp-piscine.1": "SAPP365",
+ "37:algorithme:fl1g-statique-profondeur-double": "ANA596",
+ "37:algorithme:fl1g-statique-forme-bidon": "ANA597",
+ "37:algorithme:fl1g-statique-mercure": "ANA598",
+ "37:algorithme:fl1g-statique-axe-signe": "ANA599",
+ "37:algorithme:fl1g-statique-relative-surface": "ANA600",
+ "77:plausible:fl1g-statique-val-ordre": "VAL370",
+ "77:plausible:fl1g-statique-val-signe": "VAL371",
+ "77:plausible:fl1g-statique-val-unite": "VAL372",
+ "77:plausible:fl1g-statique-val-profondeur": "VAL373",
+ "36:fl1g-statique-calcul": "REA92"
 }
