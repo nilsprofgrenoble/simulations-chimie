@@ -5879,6 +5879,29 @@ export const PREVOIR = [
       F('elle ne dépend pas de la température', 'ρ dépend de T : à pression constante, le volume occupé par une même quantité de gaz augmente avec T, donc la masse volumique diminue.'),
       F('elle est proportionnelle à T', 'ρ est inversement proportionnelle à T (T est au dénominateur dans ρ = frac(P × M|R × T)), pas proportionnelle.'),
     ] },
+  // ───────────────────────────── Écoulement d'un fluide (TG, sim 214) : prévoir l'effet d'un rétrécissement, d'un col plus étroit, de la masse volumique
+  { id: 'ber-ana-section', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Un tuyau d’eau qui se rétrécit',
+    enonce: 'Un tuyau d’eau de diamètre 30 mm se raccorde à un tuyau horizontal de diamètre 15 mm. L’écoulement est permanent et l’eau est supposée sans viscosité.', q: 'Comment se comparent la vitesse et la pression de l’eau dans le tuyau de 15 mm, par rapport au tuyau de 30 mm ?', options: [
+      V('vitesse 4 fois plus grande, pression plus faible', 'Le diamètre est divisé par 2, donc la section par 4 : S × v est constant, la vitesse est multipliée par 4. En conduite horizontale, P + ½ρv² est constant : la pression est plus faible là où la vitesse est plus grande.'),
+      F('vitesse 2 fois plus grande, pression plus faible', 'La vitesse varie comme l’inverse de la section, et la section comme le carré du diamètre : diamètre divisé par 2, vitesse multipliée par 4. Le sens de variation de la pression est correct.'),
+      F('vitesse 4 fois plus grande, pression plus forte', 'La vitesse est bien multipliée par 4, mais la relation de Bernoulli en conduite horizontale relie une vitesse plus grande à une pression plus petite : P + ½ρv² reste constant.'),
+      F('vitesse et pression inchangées, le débit étant conservé', 'C’est le débit Q = S × v qui est conservé, pas la vitesse : la section diminue, donc la vitesse augmente, et la pression change avec elle d’après la relation de Bernoulli.'),
+    ] },
+  { id: 'ber-ana-venturi', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Un col plus étroit dans un tube de Venturi',
+    enonce: 'Dans un tube de Venturi horizontal, des tubes manométriques ouverts à l’air libre sont placés en A (entrée) et en B (col). On remplace le col de 12 mm par un col plus étroit, de 8 mm, sans changer le débit ni la pression à l’entrée.', q: 'Que deviennent la colonne en B et l’écart Δh entre les colonnes A et B ?', options: [
+      V('la colonne en B baisse et Δh augmente', 'Un col plus étroit augmente la vitesse au col : la pression y est plus petite d’après la relation de Bernoulli, donc la colonne baisse. P_A − P_B = ρ g Δh augmente, alors que la colonne en A ne change pas.'),
+      F('la colonne en B monte et Δh diminue', 'C’est le contraire : un col plus étroit accélère l’eau, donc la pression au col diminue encore et la colonne baisse. Δh augmente.'),
+      F('la colonne en B et Δh ne changent pas, le débit étant le même', 'Le débit est le même, mais la vitesse au col change, car la section change : v_B = Q divisé par S_B augmente, donc la pression au col diminue.'),
+      F('la colonne en B baisse et Δh diminue', 'La colonne en B baisse bien, mais elle s’éloigne alors de celle de A, qui ne change pas : l’écart Δh augmente.'),
+    ] },
+  { id: 'ber-ana-torricelli', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Eau ou huile dans un réservoir',
+    enonce: 'Deux grands réservoirs ouverts à l’air libre se vident par des petits orifices identiques, percés à la même profondeur h = 1,0 m sous la surface libre. L’un contient de l’eau (ρ = 1000 kg·m⁻³), l’autre de l’huile (ρ = 900 kg·m⁻³). On applique la relation de Bernoulli (fluide sans viscosité).', q: 'Comment se comparent les vitesses de sortie ?', options: [
+      V('elles sont égales pour l’eau et pour l’huile', 'Dans ρ g h = ½ρ v², la masse volumique ρ se simplifie : v = racine de (2 g h) ne dépend que de g et de h. Un liquide plus dense n’a pas une vitesse de sortie plus grande.'),
+      F('elle est plus grande pour l’huile, moins dense', 'ρ apparaît des deux côtés de ρ g h = ½ρ v² et se simplifie : la vitesse de sortie ne dépend pas de la masse volumique.'),
+      F('elle est plus grande pour l’eau, plus dense', 'Le liquide plus dense a une pression de pesanteur ρ g h plus grande, mais aussi une pression cinétique ½ρ v² plus grande pour la même vitesse : ρ se simplifie.'),
+      F('on ne peut pas comparer sans le diamètre des orifices', 'La vitesse de sortie ne dépend pas du diamètre de l’orifice tant que la surface libre descend lentement (grand réservoir) : elle vaut racine de (2 g h).'),
+    ] },
+
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

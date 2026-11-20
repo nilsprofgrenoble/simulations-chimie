@@ -2991,6 +2991,51 @@ function genGazParfaitTG() {
   return { intro: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température d’après P V = n R T. Le gaz est supposé parfait, sa quantité de matière constante dans une même transformation ; R = 8,314 J·K⁻¹·mol⁻¹.', questions: [q1, q2, q3, q4, q5],
     retenir: ['Équation d’état : P × V = n × R × T, avec P en Pa (1 bar = 10⁵ Pa), V en m³ (1 L = 10⁻³ m³), T en K (T = θ + 273,15).', 'Deux états d’une même quantité de gaz : frac(P₁ × V₁|T₁) = frac(P₂ × V₂|T₂), avec T en kelvins.', 'Masse volumique : ρ = frac(P × M|R × T), avec M en kg·mol⁻¹.', 'À volume constant, P est proportionnelle à T ; à température constante, P est inversement proportionnelle à V.'] };
 }
+function genEcoulementTG() {
+  // Écoulement d'un fluide (TG, sim 214). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const S = d => Math.PI * (d / 1000) ** 2 / 4;                                   // section (m²) d'un tuyau de diamètre d (mm)
+  const rho = 1000, g = 9.81;
+  // q1 : Q = S v, en L/min
+  const d1 = tire([16, 20, 25, 32, 40]), v1 = tire([0.8, 1.0, 1.2, 1.5, 2.0, 2.5]), Q1 = S(d1) * v1 * 60000;
+  const q1 = { id: 'ber0', type: 'num', q: <>De l’eau circule à la vitesse moyenne <b>v = {f(v1, 1)}{NB}m·s⁻¹</b> dans un tuyau de diamètre intérieur <b>d = {d1}{NB}mm</b>. Calculez le débit volumique Q (en L·min⁻¹, 2 chiffres significatifs).</>, unite: 'L·min⁻¹', vrai: Q1, tolRel: 0.05, csMin: 2,
+    aide: 'Q = S × v avec S = π × d² divisé par 4 (d en mètres) : le résultat est en m³·s⁻¹ ; 1 m³ = 1000 L et 1 min = 60 s.',
+    pieges: [[Q1 / 60000, 'Vous avez donné le débit en m³·s⁻¹ : la réponse est attendue en L·min⁻¹ (1 m³·s⁻¹ = 60 000 L·min⁻¹).'], [Q1 * 4, 'Vous avez pris S = π × d² : il manque la division par 4 (S = π × d² divisé par 4).'], [Q1 / 60, 'Vous avez donné le débit en L·s⁻¹ : la réponse est attendue en L·min⁻¹ (multipliez par 60).'], [Q1 * 1000, 'Vérifiez la conversion du diamètre : d est donné en millimètres, il faut le convertir en mètres.']],
+    expl: <>S = {avecIndices('frac(π × d²|4)')} = {avecIndices(`frac(π × (${f(d1 / 1000, 3)} m)²|4)`)} = {nb(S(d1), 3)}{NB}m² ; Q = S × v = {nb(S(d1) * v1, 3)}{NB}m³·s⁻¹ = <b>{nb(Q1, 3)}{NB}L·min⁻¹</b>.</> };
+  // q2 : conservation du débit, v_B = v_A (d_A/d_B)²
+  let dA2 = 32, dB2 = 16, vA2 = 1.0;
+  for (let k = 0; k < 200; k++) { [dA2, dB2] = tire([[25, 12], [25, 16], [32, 16], [32, 20], [40, 20], [40, 25], [32, 12]]); vA2 = tire([0.5, 0.8, 1.0, 1.2, 1.5]); if (vA2 * (dA2 / dB2) ** 2 <= 6) break; }
+  const vB2 = vA2 * (dA2 / dB2) ** 2;
+  const q2 = { id: 'ber1', type: 'num', q: <>Un tuyau d’eau de diamètre <b>{dA2}{NB}mm</b>, où l’eau circule à <b>{f(vA2, 1)}{NB}m·s⁻¹</b>, se rétrécit en un col de diamètre <b>{dB2}{NB}mm</b>. Calculez la vitesse de l’eau dans le col (en m·s⁻¹, 2 chiffres significatifs).</>, unite: 'm·s⁻¹', vrai: vB2, tolRel: 0.05, csMin: 2,
+    aide: 'Conservation du débit : S_A × v_A = S_B × v_B, avec S proportionnelle à d² : v_B = v_A × (d_A divisé par d_B)².',
+    pieges: [[vA2 * dA2 / dB2, 'Vous avez utilisé le rapport des diamètres : le débit fait intervenir les sections, proportionnelles au carré du diamètre.'], [vA2 * (dB2 / dA2) ** 2, 'Le rapport est inversé : la vitesse augmente quand la section diminue.'], [vA2 * dB2 / dA2, 'Le rapport des diamètres est inversé et non élevé au carré : S_A × v_A = S_B × v_B.'], [vA2 * (dA2 / dB2) ** 4, 'Vous avez élevé le rapport des diamètres à la puissance 4 : les sections varient comme d², donc le rapport des vitesses comme (d_A divisé par d_B)².']],
+    expl: <>v<sub>B</sub> = v<sub>A</sub> × {avecIndices('frac(S_A|S_B)')} = v<sub>A</sub> × {avecIndices('frac(d_A²|d_B²)')} = {f(vA2, 1)} × {avecIndices(`frac(${dA2}²|${dB2}²)`)} = <b>{nb(vB2, 3)}{NB}m·s⁻¹</b>.</> };
+  // q3 : P_A − P_B = ½ρ(v_B² − v_A²), conduite horizontale
+  const vA3 = tire([0.8, 1.0, 1.2, 1.5]), vB3 = tire([2.5, 3.0, 3.5, 4.0, 4.5]), dP3 = 0.5 * rho * (vB3 ** 2 - vA3 ** 2) / 1000;
+  const q3 = { id: 'ber2', type: 'num', q: <>Dans une conduite horizontale, l’eau (ρ = 1000{NB}kg·m⁻³) passe de la vitesse <b>v<sub>A</sub> = {f(vA3, 1)}{NB}m·s⁻¹</b> à la vitesse <b>v<sub>B</sub> = {f(vB3, 1)}{NB}m·s⁻¹</b> dans un col. Calculez la différence de pression P<sub>A</sub> − P<sub>B</sub> (en kPa, 2 chiffres significatifs), avec la relation de Bernoulli.</>, unite: 'kPa', vrai: dP3, tolRel: 0.05, csMin: 2,
+    aide: 'Altitudes égales : P_A − P_B = ½ρ(v_B² − v_A²), avec ρ en kg·m⁻³ et v en m·s⁻¹ : le résultat est en pascals.',
+    pieges: [[dP3 * 1000, 'Vous avez donné le résultat en pascals : la réponse est attendue en kilopascals.'], [dP3 * 2, 'Vous avez oublié le facteur ½ de la pression cinétique.'], [0.5 * rho * (vB3 - vA3) ** 2 / 1000, 'Vous avez élevé l’écart des vitesses au carré : il faut l’écart des carrés, v_B² − v_A².'], [0.5 * rho * vB3 ** 2 / 1000, 'Vous avez oublié de retrancher la pression cinétique en A : il faut ½ρ(v_B² − v_A²).']],
+    expl: <>P<sub>A</sub> − P<sub>B</sub> = {avecIndices('½ρ(v_B² − v_A²)')} = 0,5 × 1000 × ({f(vB3, 1)}² − {f(vA3, 1)}²) = <b>{nb(dP3 * 1000, 3)}{NB}Pa</b> = <b>{nb(dP3, 3)}{NB}kPa</b>.</> };
+  // q4 : Torricelli
+  const h4 = tire([0.6, 0.9, 1.2, 1.5, 2.0, 2.5, 3.0]), v4 = Math.sqrt(2 * g * h4);
+  const q4 = { id: 'ber3', type: 'num', q: <>Un réservoir ouvert, large, se vide par un petit orifice percé à <b>h = {f(h4, 1)}{NB}m</b> sous la surface libre (g = 9,81{NB}N·kg⁻¹). Calculez la vitesse de sortie de l’eau (en m·s⁻¹, 2 chiffres significatifs), en négligeant la vitesse de la surface libre.</>, unite: 'm·s⁻¹', vrai: v4, tolRel: 0.05, csMin: 2,
+    aide: 'Bernoulli entre la surface (P_atm, vitesse négligée) et l’orifice (P_atm) : ρ g h = ½ρ v² ; ρ se simplifie.',
+    pieges: [[2 * g * h4, 'Vous n’avez pas pris la racine carrée : on obtient v² = 2 g h, pas v.'], [Math.sqrt(g * h4), 'Vous avez oublié le facteur 2 : v² = 2 g h.'], [g * h4, 'Il faut le facteur 2 et la racine carrée : v = racine de (2 g h).'], [Math.sqrt(2 * g * h4) * 3.6, 'Vous avez donné la vitesse en km·h⁻¹ : la réponse est attendue en m·s⁻¹.']],
+    expl: <>ρ g h = ½ρ v² donne v² = 2 g h, soit v = <FormuleEnLigne><msqrt><mn>2</mn><mo>×</mo><mn>9,81</mn><mo>×</mo><mn>{f(h4, 1)}</mn></msqrt></FormuleEnLigne> = <b>{nb(v4, 3)}{NB}m·s⁻¹</b>, indépendante de ρ.</> };
+  // q5 : Venturi, écart de hauteur entre les colonnes
+  let dA5 = 40, dB5 = 20, vA5 = 0.5, dh5 = 0;
+  for (let k = 0; k < 200; k++) { [dA5, dB5] = tire([[40, 25], [40, 20], [32, 16], [25, 16], [32, 20], [25, 12]]); vA5 = tire([0.4, 0.5, 0.6, 0.8]); dh5 = vA5 ** 2 * ((dA5 / dB5) ** 4 - 1) / (2 * g) * 100; if (dh5 >= 8 && dh5 <= 60) break; }
+  const vB5 = vA5 * (dA5 / dB5) ** 2;
+  const q5 = { id: 'ber4', type: 'num', q: <>Dans un tube de Venturi horizontal, l’eau entre dans un tuyau de diamètre <b>d<sub>A</sub> = {dA5}{NB}mm</b> à la vitesse <b>v<sub>A</sub> = {f(vA5, 1)}{NB}m·s⁻¹</b> et traverse un col de diamètre <b>d<sub>B</sub> = {dB5}{NB}mm</b>. Des tubes manométriques ouverts sont placés en A et en B. Calculez l’écart Δh entre les deux colonnes (en cm, 2 chiffres significatifs ; ρ = 1000{NB}kg·m⁻³, g = 9,81{NB}N·kg⁻¹).</>, unite: 'cm', vrai: dh5, tolRel: 0.10, csMin: 2,
+    aide: 'v_B = v_A × (d_A divisé par d_B)² ; P_A − P_B = ½ρ(v_B² − v_A²) = ρ g Δh : Δh en mètres, à convertir en centimètres.',
+    pieges: [[dh5 / 100, 'Vous avez donné Δh en mètres : la réponse est attendue en centimètres.'], [vA5 ** 2 * ((dA5 / dB5) ** 2 - 1) / (2 * g) * 100, 'Vous avez pris v_B = v_A × (d_A divisé par d_B) : c’est le rapport des SECTIONS, donc (d_A divisé par d_B)², qui donne v_B.'], [vA5 ** 2 * ((dA5 / dB5) ** 4 - 1) / g * 100, 'Vous avez oublié le facteur ½ de la pression cinétique (Δh = (v_B² − v_A²) divisé par 2 g).'], [vB5 ** 2 / (2 * g) * 100, 'Vous avez oublié de retrancher la contribution de l’entrée : Δh = (v_B² − v_A²) divisé par 2 g.']],
+    expl: <>v<sub>B</sub> = v<sub>A</sub> × {avecIndices('frac(d_A²|d_B²)')} = {f(vA5, 1)} × {avecIndices(`frac(${dA5}²|${dB5}²)`)} = {nb(vB5, 3)}{NB}m·s⁻¹ ; P<sub>A</sub> − P<sub>B</sub> = ½ρ(v<sub>B</sub>² − v<sub>A</sub>²) = {nb(0.5 * rho * (vB5 ** 2 - vA5 ** 2), 3)}{NB}Pa ; Δh = {avecIndices('frac(P_A − P_B|ρ g)')} = <b>{nb(dh5, 3)}{NB}cm</b>.</> };
+  const qs = [q1, q2, q3, q4, q5];
+  qs.forEach(tolOk);
+  return { intro: 'Écoulement d’un fluide : débit volumique, conservation du débit, différence de pression avec la relation de Bernoulli (fournie), vitesse de vidange d’un réservoir et écart de colonnes dans un tube de Venturi. L’eau est supposée incompressible, l’écoulement permanent et sans viscosité (pas de pertes de charge) : ce sont des hypothèses du modèle.', questions: qs,
+    retenir: ['Débit volumique : Q = S × v (m³·s⁻¹) avec S = frac(π × d²|4) ; conservation : S_A × v_A = S_B × v_B, donc la vitesse varie comme l’inverse de d².', 'Relation de Bernoulli (fournie) : P + ½ρv² + ρgz = constante le long d’une ligne de courant ; en conduite horizontale, P_A − P_B = ½ρ(v_B² − v_A²).', 'Tube de Venturi : P_A − P_B = ρ g Δh ; au col, la vitesse est plus grande et la pression plus petite.', 'Vidange d’un réservoir ouvert : v² = 2 g h (v est la racine carrée de 2 g h), indépendante de ρ.'] };
+}
 
 function genYoungTG() {
   // Trous d'Young (TG, sim 182). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
@@ -4386,6 +4431,7 @@ export const FAMILLES = [
   { id: 'rc-calcul', groupe: 'Formules', titre: 'Circuit RC : temps caractéristique, capacité, intensité initiale, tension à t = n τ et durée de la charge (TG)', gen: genRCTG, domaine: 'Circuit RC : charge et décharge d’un condensateur' },
   { id: 'thm-calcul', groupe: 'Formules', titre: 'Loi de Newton et thermostat : temps caractéristique, flux thermique, variation et évolution de la température, durée pour atteindre une température (TG)', gen: genThermostatTG, domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps' },
   { id: 'gpf-calcul', groupe: 'Formules', titre: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température (TG)', gen: genGazParfaitTG, domaine: 'Gaz parfait : équation d’état et limites du modèle' },
+  { id: 'ber-calcul', groupe: 'Formules', titre: 'Écoulement d’un fluide : débit volumique, vitesse dans un col, différence de pression, vitesse de vidange et colonnes d’un Venturi (TG)', gen: genEcoulementTG, domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
