@@ -4329,6 +4329,31 @@ export const ENONCES = [
         manque: null, solution: { txt: 'd′ = v × Δt′, avec v = d ÷ Δt calculée avant', val: v * p.dt2, u: 'm' } };
     }),
   },
+  {
+    id: 'mrx-sapp-chocs', domaine: 'Mécanismes réactionnels et flèches courbes', titre: 'Compter les chocs dans une boîte : quelles données utiliser ?', noms: ['Nombre de chocs efficaces par seconde', 'Part des chocs qui sont efficaces'],
+    gen: () => {
+      const N = tire([200, 400, 500]), pc = tire([5, 10, 12, 20, 25]);
+      return { N, E: N * pc / 100, D: tire([20, 40, 50, 60]), nB: tire([4, 10, 20]), th: tire([['basse', 1], ['moyenne', 2], ['élevée', 3]]) };      // E est un nombre entier de chocs
+    },
+    build: epure((p, q) => {
+      const tokens = {
+        D: tok(`${p.D} s`, 'Durée du comptage', p.D, 's'),
+        N: tok(`${p.N} chocs`, 'Nombre total de chocs entre A et B comptés', p.N, 'chocs'),
+        E: tok(`${p.E} chocs efficaces`, 'Nombre de chocs efficaces', p.E, 'chocs'),
+        nB: tok(`${p.nB} entités B`, 'Nombre d’entités B dans la boîte', p.nB, 'entités'),
+        th: tok(`${p.th[0]}`, 'Niveau de température du milieu (échelle relative du modèle : basse, moyenne, élevée)', p.th[1], ''),
+      };
+      const debut = ['Dans une boîte plane contenant des entités A et ', T('nB'), ', agitées à une température ', T('th'), ', on compte pendant ', T('D'), ' : ', T('N'), ' entre A et B, dont ', T('E'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien de chocs efficaces y a-t-il par seconde ?'],
+        utiles: ['E', 'D'], raisons: { N: 'Le nombre total de chocs ne sert pas : on ne cherche que les chocs efficaces, rapportés à la durée.', nB: 'Le nombre d’entités B explique la fréquence des chocs, mais il est déjà pris en compte dans les chocs comptés.', th: 'La température explique l’efficacité des chocs, mais elle est déjà prise en compte dans le comptage.' },
+        cherche: { bonne: 'Les chocs efficaces par seconde (en s⁻¹)', faux: ['La part des chocs efficaces (en %)', 'La durée d’un choc (en s)', 'Le nombre total de chocs par seconde (en s⁻¹)'] },
+        manque: null, solution: { txt: 'frac(E|D)', val: p.E / p.D, u: 's⁻¹' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle part des chocs est efficace ?'],
+        utiles: ['E', 'N'], raisons: { D: 'La durée du comptage ne change pas le rapport entre chocs efficaces et chocs totaux.', nB: 'Le nombre d’entités B n’intervient pas : la part se calcule avec les chocs comptés.', th: 'La température explique la valeur de la part efficace, mais on la calcule avec les chocs comptés.' },
+        cherche: { bonne: 'La proportion de chocs efficaces parmi les chocs (en %)', faux: ['Le nombre de chocs efficaces par seconde (en s⁻¹)', 'La probabilité qu’une entité B soit présente (en %)', 'La température à laquelle les chocs deviennent efficaces (en °C)'] },
+        manque: null, solution: { txt: 'frac(E|N) × 100', val: 100 * p.E / p.N, u: '%' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

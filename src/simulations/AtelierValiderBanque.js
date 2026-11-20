@@ -4003,6 +4003,26 @@ export const PLAUSIBLES = [
       F('l’explosion est trop loin : le son est trop faible pour être entendu', 'Éloigner la source affaiblit le son, mais le vrai problème est qu’il n’y a aucun milieu matériel pour le transporter.'),
       F('le son se propage mais plus lentement que la lumière', 'Dans le vide, le son ne se propage pas du tout : il n’y a pas de vitesse à comparer.'),
     ] }),
+  P({ id: 'mrx-val-acte', domaine: 'Mécanismes réactionnels et flèches courbes', niveau: 1, titre: 'Un acte élémentaire où la charge n’est pas conservée', plausible: false,
+    enonce: 'Pour la réaction de l’ion hydroxyde HO⁻ avec le bromométhane CH₃Br, un élève propose l’acte élémentaire HO⁻ + CH₃Br → CH₃OH + Br, et le justifie : « tous les atomes sont conservés ».',
+    reperes: [['Conservation des atomes', 'mêmes atomes de chaque élément à gauche et à droite'], ['Conservation de la charge', 'charge totale à gauche = charge totale à droite'], ['Atome de brome qui part avec le doublet de la liaison C–Br', 'ion bromure Br⁻, de charge −1']],
+    ver: 'Les atomes sont bien conservés, mais pas la charge : à gauche HO⁻ + CH₃Br porte la charge −1, à droite CH₃OH + Br porte 0. Le brome part avec le doublet de la liaison C–Br : c’est un ion bromure Br⁻.',
+    q2: 'Que penser de cet acte ?',
+    options: [
+      V('pas plausible : la charge totale passe de −1 à 0, elle n’est pas conservée', 'La charge totale doit être la même des deux côtés de l’équation d’un acte : −1 à gauche impose −1 à droite, ce qui conduit à écrire Br⁻.'),
+      F('plausible : les atomes sont conservés, donc l’équation de l’acte est correcte', 'La conservation des atomes ne suffit pas : il faut aussi conserver la charge. Ici elle passe de −1 à 0.'),
+      F('pas plausible : un acte élémentaire ne peut pas avoir deux produits distincts', 'Un acte élémentaire peut avoir plusieurs produits : c’est la conservation de la charge qui est ici en défaut.'),
+    ] }),
+  P({ id: 'mrx-val-bilan', domaine: 'Mécanismes réactionnels et flèches courbes', niveau: 1, titre: 'Le catalyseur dans le bilan d’un mécanisme', plausible: true,
+    enonce: 'Un élève additionne les trois actes du mécanisme de l’hydratation de l’éthène (acte 1 : H₃O⁺ + C₂H₄ → H₂O + C₂H₅⁺ ; acte 2 : C₂H₅⁺ + H₂O → C₂H₅OH₂⁺ ; acte 3 : C₂H₅OH₂⁺ + H₂O → C₂H₅OH + H₃O⁺). Il écrit le bilan C₂H₄ + H₂O → C₂H₅OH et remarque que H₃O⁺ n’y figure pas.',
+    reperes: [['Bilan d’un mécanisme', 'somme des actes, puis simplification des espèces présentes des deux côtés'], ['Intermédiaire', 'formé puis consommé : absent du bilan'], ['Catalyseur', 'consommé puis régénéré : absent du bilan']],
+    ver: 'H₃O⁺ est consommé à l’acte 1 puis régénéré à l’acte 3 : il disparaît à la simplification, comme les intermédiaires C₂H₅⁺ et C₂H₅OH₂⁺. Le bilan C₂H₄ + H₂O → C₂H₅OH conserve les atomes et la charge : c’est le bon.',
+    q2: 'Que penser de ce bilan ?',
+    options: [
+      V('plausible : H₃O⁺ est consommé puis régénéré, donc il disparaît du bilan', 'Le catalyseur H₃O⁺ est présent au début et à la fin : il ne figure ni parmi les réactifs ni parmi les produits de l’équation de la réaction.'),
+      F('pas plausible : tout ce qui sert dans un acte doit être dans le bilan', 'Les espèces qui interviennent dans les actes ne sont pas toutes dans le bilan : les intermédiaires et le catalyseur y disparaissent.'),
+      F('pas plausible : H₃O⁺ doit figurer parmi les réactifs, car il est consommé', 'H₃O⁺ est bien consommé à l’acte 1, mais il est régénéré à l’acte 3 : sa quantité finale est égale à sa quantité initiale.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

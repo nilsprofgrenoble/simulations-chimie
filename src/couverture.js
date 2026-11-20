@@ -78,7 +78,7 @@ export const COUVERTURE = [
     { th: CTM, t: 'Spectroscopies infrarouge et UV-visible', e: 'ok', chap: 'tg-composition' },
     { th: CTM, t: 'Titrages avec suivi pH-métrique et conductimétrique', e: 'ok', chap: 'tg-composition' },
     { th: CTM, t: 'Cinétique : vitesse volumique, temps de demi-réaction, loi d’ordre 1', e: 'partiel', chap: 'tg-evolution-temporelle', reste: 'facteurs cinétiques, catalyse, choix d’un capteur de suivi' },
-    { th: CTM, t: 'Mécanismes réactionnels : acte élémentaire, intermédiaire, flèches courbes', e: 'avenir' },
+    { th: CTM, t: 'Mécanismes réactionnels : acte élémentaire, intermédiaire, flèches courbes', e: 'ok', chap: 'tg-evolution-temporelle' },
     { th: CTM, t: 'Radioactivité : diagramme (N, Z) et équations de désintégration', e: 'ok', chap: 'tg-evolution-temporelle' },
     { th: CTM, t: 'Radioactivité : loi de décroissance, demi-vie, activité, datation', e: 'ok', chap: 'tg-evolution-temporelle' },
     { th: CTM, t: 'Équilibre chimique : quotient de réaction, constante d’équilibre, sens d’évolution', e: 'ok', chap: 'tg-etat-final' },

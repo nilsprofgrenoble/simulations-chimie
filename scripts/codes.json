@@ -1611,5 +1611,13 @@
  "37:prevoir:rda-ana-conservation": "ANA665",
  "77:plausible:rda-val-beta-plus": "VAL426",
  "77:plausible:rda-val-ok": "VAL427",
- "36:rda-calcul": "REA109"
+ "36:rda-calcul": "REA109",
+ "34:mrx-sapp-chocs.0": "SAPP413",
+ "34:mrx-sapp-chocs.1": "SAPP414",
+ "37:prevoir:mrx-ana-fleches": "ANA666",
+ "37:prevoir:mrx-ana-temperature": "ANA667",
+ "37:prevoir:mrx-ana-catalyseur": "ANA668",
+ "77:plausible:mrx-val-acte": "VAL428",
+ "77:plausible:mrx-val-bilan": "VAL429",
+ "36:mrx-calcul": "REA110"
 }
