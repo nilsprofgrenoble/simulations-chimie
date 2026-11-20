@@ -4354,6 +4354,53 @@ export const ENONCES = [
         manque: null, solution: { txt: 'frac(E|N) × 100', val: 100 * p.E / p.N, u: '%' } };
     }),
   },
+  // ───────────────────────────── Mesure : variabilité, histogramme, moyenne et écart-type (2GT, sim 193) : repérer les données utiles
+  {
+    id: 'mes2gt-var-sapp-moyenne', domaine: 'Variabilité de la mesure (2GT)', titre: 'Cinq chutes de bille chronométrées : moyenne et écart à la moyenne', noms: ['Moyenne de la série de durées', 'Écart entre la plus grande durée et la moyenne'],
+    gen: () => {
+      for (let essai = 0; essai < 200; essai++) {
+        const centre = tire([0.55, 0.6, 0.65]), v = Array.from({ length: 5 }, () => Math.round((centre + (Math.random() - 0.5) * 0.16) * 100) / 100);
+        const m = v.reduce((a, b) => a + b, 0) / 5;
+        if (new Set(v).size === 5 && v.every(x => Math.abs(x - m) > 0.004)) return { v, H: tire([1.2, 1.5, 1.8, 2]), prix: tire([8, 12, 15]) };
+      }
+      return { v: [0.58, 0.64, 0.61, 0.55, 0.66], H: 1.8, prix: 12 };
+    },
+    build: (p, q) => {
+      const m = p.v.reduce((a, b) => a + b, 0) / 5, max = Math.max(...p.v);
+      const tokens = {
+        H: tok(`${nb(p.H, 2)}\u00a0m`, 'Hauteur de chute de la bille', p.H, 'm'),
+        prix: tok(`${p.prix}\u00a0€`, 'Prix du chronomètre', p.prix, '€'),
+        ...Object.fromEntries(p.v.map((x, i) => [`t${i + 1}`, tok(`${nb(x, 2)}\u00a0s`, `Durée de chute n° ${i + 1}`, x, 's')])),
+      };
+      const debut = ['Un élève lâche une bille de ', T('H'), ' de haut et chronomètre cinq fois sa chute, avec un chronomètre à ', T('prix'), ' : ', T('t1'), ' ; ', T('t2'), ' ; ', T('t3'), ' ; ', T('t4'), ' ; ', T('t5'), '. '];
+      const raisons = { H: 'La hauteur sert à calculer la durée théorique de la chute, pas à résumer les cinq mesures.', prix: 'Le prix de l’appareil ne change pas les valeurs mesurées.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la durée moyenne de chute ?'], utiles: ['t1', 't2', 't3', 't4', 't5'], raisons,
+        cherche: { bonne: 'La moyenne des cinq durées mesurées (en s)', faux: ['Le nombre de mesures de la série (sans unité)', 'La plus grande durée de la série (en s)', 'Le prix d’une mesure (en €)'] },
+        manque: null, solution: { txt: 'moyenne = (somme des cinq durées) ÷ 5', val: m, u: 's' } };
+      return { tokens, derivees: [{ id: 'moy', nom: 'Moyenne des cinq durées', expr: '(somme des durées) ÷ 5', val: m, u: 's' }], texte: [...debut, 'De combien la plus grande durée dépasse-t-elle la moyenne des cinq durées ?'], utiles: ['t1', 't2', 't3', 't4', 't5'], raisons,
+        cherche: { bonne: 'L’écart entre la plus grande durée et la moyenne (en s)', faux: ['La différence entre la plus grande et la plus petite durée (en s)', 'La moyenne des cinq durées (en s)', 'Le rapport entre la plus grande durée et la hauteur (en s/m)'] },
+        manque: null, solution: { txt: 'écart = plus grande durée − moyenne', val: max - m, u: 's' } };
+    },
+  },
+  {
+    id: 'mes2gt-var-sapp-histo', domaine: 'Variabilité de la mesure (2GT)', titre: 'Un histogramme de gouttes : lire les effectifs', noms: ['Nombre de mesures dans deux classes voisines', 'Part des mesures dans la classe centrale'],
+    gen: () => ({ e: tire([[2, 5, 9, 6, 3], [1, 4, 10, 7, 3], [3, 6, 8, 5, 3], [2, 6, 8, 5, 4]]), prix: tire([5, 9, 14]) }),
+    build: (p, q) => {
+      const [, e2, e3] = p.e, bornes = ['1,10', '1,15', '1,20', '1,25', '1,30', '1,35'];
+      const tokens = { N: tok('25 mesures', 'Nombre total de mesures', 25, ''), prix: tok(`${p.prix}\u00a0€`, 'Prix du chronomètre', p.prix, '€'),
+        ...Object.fromEntries(p.e.map((x, i) => [`e${i + 1}`, tok(`${x} mesures`, `Mesures de ${bornes[i]}\u00a0s à ${bornes[i + 1]}\u00a0s`, x, '')])) };
+      const debut = ['Un élève chronomètre ', T('N'), ' la durée entre deux gouttes d’un robinet (chronomètre à ', T('prix'), ') et les range dans un histogramme, par classes de 0,05 s. De 1,10 s à 1,15 s : ', T('e1'), ' ; de 1,15 s à 1,20 s : ', T('e2'), ' ; de 1,20 s à 1,25 s : ', T('e3'), ' ; de 1,25 s à 1,30 s : ', T('e4'), ' ; de 1,30 s à 1,35 s : ', T('e5'), '. '];
+      const pasClasse = 'Cette classe ne fait pas partie de la zone demandée.';
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien de mesures sont comprises entre 1,15 s et 1,25 s ?'], utiles: ['e2', 'e3'],
+        raisons: { N: 'Le nombre total n’est pas nécessaire pour additionner deux barres voisines.', prix: 'Le prix de l’appareil ne dit rien sur les mesures.', e1: pasClasse, e4: pasClasse, e5: pasClasse },
+        cherche: { bonne: 'Le nombre de mesures dans les classes de 1,15 s à 1,25 s (sans unité)', faux: ['Le nombre de mesures dans la classe la plus haute seulement', 'La durée moyenne entre deux gouttes (en s)', 'Le nombre de classes de l’histogramme'] },
+        manque: null, solution: { txt: 'effectif de la classe de 1,15 à 1,20 + effectif de la classe de 1,20 à 1,25', val: e2 + e3, u: 'mesures' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle part des mesures (en %) se trouve dans la classe centrale, de 1,20 s à 1,25 s ?'], utiles: ['e3', 'N'],
+        raisons: { prix: 'Le prix de l’appareil ne dit rien sur la répartition des mesures.', e1: 'Cette classe n’est pas la classe centrale.', e2: 'Cette classe n’est pas la classe centrale.', e4: 'Cette classe n’est pas la classe centrale.', e5: 'Cette classe n’est pas la classe centrale.' },
+        cherche: { bonne: 'La part des mesures de la classe centrale (en %)', faux: ['Le nombre de mesures de la classe centrale (sans unité)', 'La largeur d’une classe (en s)', 'La durée moyenne entre deux gouttes (en s)'] },
+        manque: null, solution: { txt: 'part = (effectif de la classe centrale ÷ nombre total de mesures) × 100', val: e3 / 25 * 100, u: '%' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
