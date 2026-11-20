@@ -5857,6 +5857,28 @@ export const PREVOIR = [
       F('elle diminue puis change de signe quand T passe sous T_ext', 'T tend vers T_ext sans jamais passer en dessous : φ tend vers 0 par valeurs négatives et ne change jamais de signe.'),
     ] },
 
+  // ───────────────────────────── Gaz parfait (TG, sim 215) : prévoir sans calculer
+  { id: 'gpf-ana-chauffage', domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'Une bouteille fermée que l’on chauffe',
+    enonce: 'Une bouteille rigide et fermée contient un gaz, assimilé à un gaz parfait, à la température de 27 °C. On la chauffe jusqu’à 327 °C.', q: 'Que devient la pression du gaz ?', options: [
+      V('elle est multipliée par 2', 'Le volume et la quantité de gaz sont constants : P est proportionnelle à T en kelvins. De 27 °C = 300 K à 327 °C = 600 K, T double, donc P double.'),
+      F('elle est multipliée par 12', 'Vous avez utilisé les températures en °C (327 divisé par 27 ≈ 12) : la proportionnalité n’est valable qu’avec T en kelvins (300 K et 600 K).'),
+      F('elle reste la même : le volume est fixe', 'À volume fixe, la pression change tout de même : plus T est grande, plus les molécules sont agitées, plus les chocs sur les parois sont nombreux et violents.'),
+      F('elle est divisée par 2', 'La pression augmente quand on chauffe à volume constant : P est proportionnelle à T (en kelvins), pas inversement proportionnelle.'),
+    ] },
+  { id: 'gpf-ana-piston', domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'Un gaz comprimé sous un piston',
+    enonce: 'Un gaz enfermé sous un piston est comprimé lentement, à température constante : son volume passe de 6,0 L à 2,0 L. On suppose le gaz parfait.', q: 'Que devient la pression du gaz ?', options: [
+      V('elle est multipliée par 3', 'À T et n constants, P × V est constant (loi de Mariotte) : V est divisé par 3, donc P est multipliée par 3.'),
+      F('elle est divisée par 3', 'C’est l’inverse : quand le volume diminue, les molécules sont plus rapprochées et frappent la paroi plus souvent ; la pression augmente.'),
+      F('elle ne change pas, la température est constante', 'La température constante n’empêche pas P de varier : c’est le produit P × V qui reste constant, pas P.'),
+      F('elle est multipliée par 9', 'Le volume est divisé par 3 et P est inversement proportionnelle à V : le facteur est 3, pas 3 × 3.'),
+    ] },
+  { id: 'gpf-ana-ballon', domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'De l’air chauffé dans un ballon ouvert',
+    enonce: 'De l’air est chauffé dans un ballon ouvert par le bas : la pression reste égale à la pression atmosphérique. On suppose l’air parfait, de masse molaire constante.', q: 'Comment évolue la masse volumique de l’air du ballon quand T augmente ?', options: [
+      V('elle diminue quand T augmente', 'ρ = frac(P × M|R × T) : à P et M constantes, ρ est inversement proportionnelle à T. L’air chaud est plus dilué, donc moins dense que l’air froid.'),
+      F('elle augmente quand T augmente', 'ρ = frac(P × M|R × T) diminue quand T augmente ; l’agitation plus grande éloigne les molécules, elle ne les rapproche pas.'),
+      F('elle ne dépend pas de la température', 'ρ dépend de T : à pression constante, le volume occupé par une même quantité de gaz augmente avec T, donc la masse volumique diminue.'),
+      F('elle est proportionnelle à T', 'ρ est inversement proportionnelle à T (T est au dénominateur dans ρ = frac(P × M|R × T)), pas proportionnelle.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

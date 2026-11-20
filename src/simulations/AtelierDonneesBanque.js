@@ -4991,6 +4991,26 @@ export const ENONCES = [
         manque: null, solution: { txt: 'φ = h × S × (T_ext − T) avec T = T_0 : négatif, le café cède de l’énergie', val: p.hS * (p.Te - p.T0), u: 'W' } };
     },
   },
+  // ───────────────────────────── Gaz parfait (TG, sim 215) : pression d'un gaz enfermé, masse volumique
+  {
+    id: 'gpf-sapp-ballon', domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'Un récipient de gaz de laboratoire', noms: ['Pression du gaz', 'Masse volumique du gaz'],
+    gen: () => ({ n: tire([0.20, 0.50, 1.00, 2.00]), V: tire([5, 10, 20]), th: tire([17, 20, 27]), g: tire([{ nom: 'dioxygène', M: 32.0 }, { nom: 'diazote', M: 28.0 }, { nom: 'dioxyde de carbone', M: 44.0 }]), mR: tire([0.35, 0.50, 0.80]), P: tire([1.0, 2.0, 3.0, 5.0]), prix: tire([12, 18, 25]) }),
+    build: (p, q) => {
+      const Mtok = tok(`${nb(p.g.M, 1)} g·mol⁻¹`, `Masse molaire du ${p.g.nom}`, p.g.M, 'g·mol⁻¹'), THtok = tok(`${p.th} °C`, 'Température du gaz', p.th, '°C');
+      if (q === 0) {
+        const tokens = { n: tok(`${nb(p.n, 2)} mol`, 'Quantité de matière de gaz', p.n, 'mol'), V: tok(`${p.V} L`, 'Volume du récipient rigide', p.V, 'L'), th: THtok, M: Mtok, mR: tok(`${nb(p.mR, 2)} kg`, 'Masse du récipient vide', p.mR, 'kg') };
+        return { tokens, derivees: [], texte: ['Un récipient rigide de ', T('V'), ' et de masse ', T('mR'), ' à vide contient ', T('n'), ' de ', p.g.nom, ' (masse molaire ', T('M'), ') à ', T('th'), '. Quelle est la pression du gaz ?'], utiles: ['n', 'V', 'th'],
+          raisons: { M: 'La masse molaire sert à passer de la quantité de matière à la masse : elle n’intervient pas dans P × V = n × R × T.', mR: 'La masse du récipient vide ne dit rien sur le gaz qu’il contient : elle n’intervient pas dans le calcul de la pression.' },
+          cherche: { bonne: 'La pression P du gaz piégé (en bar)', faux: ['La masse volumique du gaz (en kg·m⁻³)', 'La masse de gaz (en g)', 'Le volume molaire du gaz (en L·mol⁻¹)'] },
+          manque: null, solution: { txt: 'P = n × R × T divisé par V, en unités SI, puis converti en bar', val: p.n * 8.314 * (p.th + 273.15) / (p.V * 1e-3) / 1e5, u: 'bar' } };
+      }
+      const tokens = { P: tok(`${nb(p.P, 1)} bar`, 'Pression du gaz', p.P, 'bar'), th: THtok, M: Mtok, V: tok(`${p.V} L`, 'Volume du récipient', p.V, 'L'), prix: tok(`${p.prix} €`, 'Prix de la recharge de gaz', p.prix, '€') };
+      return { tokens, derivees: [], texte: ['Une recharge de ', p.g.nom, ' (masse molaire ', T('M'), ') coûte ', T('prix'), '. Le gaz, à ', T('th'), ' sous ', T('P'), ', occupe un récipient de ', T('V'), '. Quelle est la masse volumique du gaz ?'], utiles: ['P', 'th', 'M'],
+        raisons: { V: 'La masse volumique d’un gaz parfait, ρ = P × M divisé par R × T, ne dépend pas de la taille du récipient.', prix: 'Le prix de la recharge n’a aucun rapport avec les propriétés physiques du gaz.' },
+        cherche: { bonne: 'La masse volumique ρ du gaz (en kg·m⁻³)', faux: ['La quantité de matière de gaz (en mol)', 'La masse de gaz contenue dans le récipient (en g)', 'Le volume molaire du gaz (en L·mol⁻¹)'] },
+        manque: null, solution: { txt: 'ρ = P × M divisé par R × T, avec P en Pa, M en kg·mol⁻¹, T en K', val: p.P * 1e5 * p.g.M * 1e-3 / (8.314 * (p.th + 273.15)), u: 'kg·m⁻³' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
