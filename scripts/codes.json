@@ -1843,5 +1843,20 @@
  "77:plausible:arc-val-poids": "VAL497",
  "77:plausible:arc-val-iceberg": "VAL498",
  "77:plausible:arc-val-unite": "VAL499",
- "36:arc-calcul": "REA128"
+ "36:arc-calcul": "REA128",
+ "34:noy2gt-sapp-compo.0": "SAPP477",
+ "34:noy2gt-sapp-compo.1": "SAPP478",
+ "34:noy2gt-sapp-echelle.0": "SAPP479",
+ "34:noy2gt-sapp-echelle.1": "SAPP480",
+ "37:prevoir:noy2gt-ana-masse": "ANA743",
+ "37:prevoir:noy2gt-ana-charge": "ANA744",
+ "37:prevoir:noy2gt-ana-echelle": "ANA745",
+ "37:prevoir:noy2gt-ana-element": "ANA746",
+ "37:prevoir:noy2gt-ana-ecriture": "ANA747",
+ "77:plausible:noy2gt-val-taille-noyau": "VAL500",
+ "77:plausible:noy2gt-val-rapport-masses": "VAL501",
+ "77:plausible:noy2gt-val-neutrons-sodium": "VAL502",
+ "77:plausible:noy2gt-val-charge-helium": "VAL503",
+ "77:plausible:noy2gt-val-masse-oxygene": "VAL504",
+ "36:noy2gt-calcul": "REA129"
 }
