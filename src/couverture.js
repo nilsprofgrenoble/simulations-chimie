@@ -96,7 +96,7 @@ export const COUVERTURE = [
     { th: NRJ, t: 'Gaz parfait', e: 'avenir' },
     { th: NRJ, t: 'Premier principe de la thermodynamique, transferts thermiques', e: 'avenir' },
     { th: NRJ, t: 'Bilan thermique du système Terre-atmosphère, effet de serre', e: 'avenir' },
-    { th: NRJ, t: 'Loi de Newton : évolution de la température d’un système au contact d’un thermostat', e: 'avenir' },
+    { th: NRJ, t: 'Loi de Newton : évolution de la température d’un système au contact d’un thermostat', e: 'ok', chap: 'tg-bilans-energie' },
     { th: OND, t: 'Intensité sonore, niveau d’intensité et atténuation', e: 'ok', chap: 'tg-ondes' },
     { th: OND, t: 'Diffraction d’une onde', e: 'ok', chap: 'tg-ondes' },
     { th: OND, t: 'Interférences de deux ondes', e: 'ok', chap: 'tg-ondes' },

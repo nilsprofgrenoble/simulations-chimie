@@ -128,6 +128,7 @@ const SimulationFormulesTopologiques = paresseux(() => import("./simulations/For
 const SimulationPolymeres = paresseux(() => import("./simulations/Polymeres"), "SimulationPolymeres");
 const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "SimulationCircuitRC");
 const SimulationIntensiteSonore = paresseux(() => import("./simulations/IntensiteSonore"), "SimulationIntensiteSonore");
+const SimulationLoiNewtonThermostat = paresseux(() => import("./simulations/LoiNewtonThermostat"), "SimulationLoiNewtonThermostat");
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationDiffractionOnde = paresseux(() => import("./simulations/DiffractionOnde"), "SimulationDiffractionOnde");
 const SimulationMecanismesTG = paresseux(() => import("./simulations/MecanismesTG"), "SimulationMecanismesTG");
@@ -322,6 +323,7 @@ const SIMULATIONS = [
   { id:172, label:"Formules topologiques et isomérie de constitution", niveau:"TG", icon:"🧫", color:"#0f766e", component: SimulationFormulesTopologiques },
   { id:173, label:"Familles fonctionnelles et polymères", niveau:"TG", icon:"🧬", color:"#7c3aed", component: SimulationPolymeres },
   { id:174, label:"Circuit RC : charge et décharge d’un condensateur", niveau:"TG", icon:"🔌", color:"#0e7490", component: SimulationCircuitRC },
+  { id:212, label:"Loi de Newton et thermostat : T(t)", niveau:"TG", icon:"🔥", color:"#c2410c", component: SimulationLoiNewtonThermostat },
   { id:175, label:"Mouvement dans un champ de pesanteur uniforme : équations horaires et trajectoire", niveau:"TG", icon:"🏀", color:"#c2410c", component: SimulationPesanteur },
   { id:189, label:"Optimiser une synthèse : vitesse et rendement", niveau:"TG", icon:"⚗️", color:"#0f766e", component: SimulationOptimisationRendement },
   { id:186, label:"Mécanismes réactionnels et flèches courbes", niveau:"TG", icon:"🏹", color:"#7c3aed", component: SimulationMecanismesTG },
