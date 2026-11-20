@@ -40,6 +40,7 @@ export const EXOS_DE_SIM = {
   179: [/(^|\.)eq2gt-/, /plausible\.eq2gt-/],                                                                      // Équation de réaction (2GT) : ajuster, états, charge, spectatrices, proportions
   61: [/^(rho|conc)2/, /sol-(masse-double|volume-double|masse-conservee|saturation)/, /sol-masse-volumique-unite/],
   180: [/rl2gt-/],
+  191: [/(^|\.)son2gt-emis-/, /plausible\.son2gt-emis-/],                                                    // Le son (2GT) : émission et propagation, vitesse du son
   62: [/^conc2/, /sol-(dilution|dilutions|echelle)/],
   63: [/^rho2/, /sol-(huile-eau|saturation|masse-volumique)/],
   64: [/^(indice|snell)2/, /lum-(reflexion|air-eau|incidence|verre-air|indice-inverse|angle-refracte)/],

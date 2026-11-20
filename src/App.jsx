@@ -87,6 +87,7 @@ const SimulationQuantiteMatiere = paresseux(() => import("./simulations/Quantite
 const SimulationQuantiteMatiere2gt = paresseux(() => import("./simulations/QuantiteMatiere2gt"), "SimulationQuantiteMatiere2gt");
 const SimulationSignalSonore2gt = paresseux(() => import("./simulations/SignalSonore2gt"), "SimulationSignalSonore2gt");
 const SimulationNiveauSonore2gt = paresseux(() => import("./simulations/NiveauSonore2gt"), "SimulationNiveauSonore2gt");
+const SimulationSonEmission2gt = paresseux(() => import("./simulations/SonEmission2gt"), "SimulationSonEmission2gt");
 const SimulationConcentrationDilution = paresseux(() => import("./simulations/ConcentrationDilution"), "SimulationConcentrationDilution");
 const SimulationMesureIncertitudes = paresseux(() => import("./simulations/MesureIncertitudes"), "SimulationMesureIncertitudes");
 const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
@@ -409,6 +410,8 @@ const SIMULATIONS = [
     component: SimulationMouvementReferentiel },
   { id:180, label:"Réactif limitant", niveau:"2GT", icon:"🧪", color:"#c2410c",
     component: SimulationReactifLimitant },
+  { id:191, label:"Le son : émission et propagation", niveau:"2GT", icon:"🔔", color:"#0e7490",
+    component: SimulationSonEmission2gt },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",
     component: SimulationAtomesMolecules },
   { id:178, label:"Quantité de matière : compter les entités et la mole", niveau:"2GT", icon:"🥚", color:"#0f766e",
