@@ -41,7 +41,7 @@ export const COUVERTURE = [
     { th: MVT, t: 'Modéliser une action par une force', e: 'ok', chap: '2gt-forces' },
     { th: MVT, t: 'Principe d’inertie et chute libre', e: 'ok', chap: '2gt-forces' },
     { th: OND, t: 'Émission et perception d’un son', e: 'ok', chap: '2gt-son' },
-    { th: OND, t: 'Vision et image : réfraction, lentille convergente, spectres', e: 'partiel', chap: '2gt-lumiere', reste: 'image et grandissement, œil réduit, dispersion par un prisme' },
+    { th: OND, t: 'Vision et image : réfraction, lentille convergente, spectres', e: 'ok', chap: '2gt-lumiere' },
     { th: OND, t: 'Signaux électriques : lois des nœuds et des mailles, loi d’Ohm, capteurs', e: 'ok', chap: '2gt-circuits' },
   ] },
 
