@@ -1650,5 +1650,21 @@
  "77:plausible:mes2gt-inc-val-n-divise": "VAL437",
  "77:plausible:mes2gt-inc-val-systematique": "VAL438",
  "77:plausible:mes2gt-inc-val-calcul-ok": "VAL439",
- "36:mes2gt-inc-calcul": "REA112"
+ "36:mes2gt-inc-calcul": "REA112",
+ "34:etat2gt-sapp-glacon.0": "SAPP423",
+ "34:etat2gt-sapp-glacon.1": "SAPP424",
+ "34:etat2gt-sapp-ethanol.0": "SAPP425",
+ "34:etat2gt-sapp-ethanol.1": "SAPP426",
+ "37:prevoir:etat2gt-ana-dissolution": "ANA680",
+ "37:prevoir:etat2gt-ana-masse": "ANA681",
+ "37:prevoir:etat2gt-ana-peau": "ANA682",
+ "37:prevoir:etat2gt-ana-palier": "ANA683",
+ "37:prevoir:etat2gt-ana-sublimation": "ANA684",
+ "37:prevoir:etat2gt-ana-corps": "ANA685",
+ "77:plausible:etat2gt-val-glacon-grammes": "VAL440",
+ "77:plausible:etat2gt-val-vapeur-moins": "VAL441",
+ "77:plausible:etat2gt-val-sublimation-sens": "VAL442",
+ "77:plausible:etat2gt-val-solidification-ok": "VAL443",
+ "77:plausible:etat2gt-val-sel-fusion": "VAL444",
+ "36:etat2gt-calcul": "REA113"
 }

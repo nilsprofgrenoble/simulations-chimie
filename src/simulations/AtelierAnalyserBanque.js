@@ -1889,11 +1889,11 @@ export const PREVOIR = [
       F('nulle, la Lune étant seulement attirée par la Terre', 'Toute masse attire toute autre masse : la Lune exerce sur la Terre une force de même valeur que celle que la Terre exerce sur elle.'),
     ] },
   { id: 'ch-masse-poids', domaine: 'Interactions et champs', titre: 'Un astronaute sur Mars',
-    enonce: 'Un astronaute emporte son équipement sur Mars, où le champ de gravitation est environ 2,6 fois plus faible que sur Terre.', q: 'Par rapport à la Terre, sa masse et son poids sont…', options: [
+    enonce: 'Un astronaute emporte son équipement sur Mars, où le champ de gravitation est environ 2,7 fois plus faible que sur Terre.', q: 'Par rapport à la Terre, sa masse et son poids sont…', options: [
       F('masse et poids inchangés', 'Le poids P = m·g dépend de g, qui est différent sur Mars : il change même si la masse est la même.'),
-      F('masse et poids environ 2,6 fois plus petits', 'Masse et poids sont deux grandeurs distinctes : la masse ne dépend pas du lieu.'),
-      V('masse inchangée, poids environ 2,6 fois plus petit', 'La masse mesure la quantité de matière et ne change pas ; le poids P = m·g est divisé par 2,6 car g est 2,6 fois plus faible.'),
-      F('masse environ 2,6 fois plus petite, poids inchangé', 'C’est l’inverse : la masse ne dépend pas du lieu, le poids oui.'),
+      F('masse et poids environ 2,7 fois plus petits', 'Masse et poids sont deux grandeurs distinctes : la masse ne dépend pas du lieu.'),
+      V('masse inchangée, poids environ 2,7 fois plus petit', 'La masse mesure la quantité de matière et ne change pas ; le poids P = m·g est divisé par 2,6 car g est 2,7 fois plus faible.'),
+      F('masse environ 2,7 fois plus petite, poids inchangé', 'C’est l’inverse : la masse ne dépend pas du lieu, le poids oui.'),
     ] },
   { id: 'ch-signes', domaine: 'Interactions et champs', titre: 'Deux charges de même signe',
     enonce: 'Deux petites boules portent chacune une charge positive.', q: 'La force électrostatique entre elles est…', options: [
@@ -5206,6 +5206,49 @@ export const PREVOIR = [
       F('elle est exothermique : elle libère de l’énergie vers le milieu', 'Une transformation exothermique réchauffe le milieu. Ici la température baisse : c’est l’inverse.'),
       F('elle est exothermique : le milieu a perdu de l’énergie', 'Le milieu a bien perdu de l’énergie, mais c’est la transformation qui l’a prise : elle est endothermique.'),
       F('on ne peut rien dire sans connaître les réactifs', 'Le sens de variation de la température suffit, qualitativement : elle baisse, donc la transformation est endothermique.'),
+    ] },
+  // ───────────────────────────── Changement d'état (2GT, sim 195) : fusion ou dissolution, proportionnalité, sens du transfert, palier, équation, comparaison de L
+  { id: 'etat2gt-ana-dissolution', domaine: 'Changement d’état (2GT)', titre: 'Le sucre dans le thé : fusion ou dissolution ?',
+    enonce: 'Un élève met un morceau de sucre dans un thé chaud. Le sucre « disparaît ». Il affirme : « le sucre a fondu, c’est une fusion : H₂O(s) → H₂O(l) ».', q: 'Que penser de son affirmation ?', options: [
+      V('fausse : le sucre se mélange à l’eau, qui reste liquide', 'Le sucre est dispersé dans l’eau liquide : c’est une dissolution, on change de mélange. L’équation H₂O(s) → H₂O(l) décrit la fusion de la glace, pas ce qui se passe ici.'),
+      F('vraie : le sucre devient liquide en disparaissant dans le thé', 'Le sucre ne devient pas liquide : ses entités se séparent et se mêlent à l’eau, qui reste liquide du début à la fin.'),
+      F('fausse : c’est la liquéfaction du sucre, pas sa fusion', 'La liquéfaction est le passage d’un gaz à un liquide. Il n’y a ici aucun changement d’état : c’est une dissolution.'),
+      F('vraie : la chaleur du thé fait fondre le sucre, comme un glaçon', 'Un glaçon est un seul corps qui change d’état. Ici deux corps sont mélangés : le sucre se dissout dans l’eau, il ne fond pas.'),
+    ] },
+  { id: 'etat2gt-ana-masse', domaine: 'Changement d’état (2GT)', titre: 'Faire fondre trois fois plus de glace',
+    enonce: 'On fait fondre 0,30 kg de glace à 0 °C, puis, dans un second essai, 0,90 kg de glace à 0 °C. Dans les deux cas, toute la glace fond.', q: 'L’énergie à fournir lors du second essai, comparée à celle du premier, est…', options: [
+      V('trois fois plus grande, comme la masse', 'L’énergie est proportionnelle à la masse (E = m × L) : 0,90 kg = 3 × 0,30 kg, donc l’énergie est multipliée par 3.'),
+      F('la même, car la glace est à la même température', 'La température est la même, mais la masse change : plus il y a de glace à faire fondre, plus il faut d’énergie.'),
+      F('neuf fois plus grande, car 0,90 vaut 9 fois 0,10', 'On compare 0,90 kg à 0,30 kg : le rapport est 3, pas 9.'),
+      F('trois fois plus petite, car il y a plus de glace', 'Plus de glace demande plus d’énergie, pas moins : l’énergie est multipliée par 3.'),
+    ] },
+  { id: 'etat2gt-ana-peau', domaine: 'Changement d’état (2GT)', titre: 'L’éthanol qui refroidit la peau',
+    enonce: 'On frotte de l’éthanol sur la peau : le liquide s’évapore et la peau paraît froide.', q: 'Que peut-on dire de la vaporisation de l’éthanol ?', options: [
+      V('elle est endothermique : l’éthanol prend l’énergie à la peau', 'En se vaporisant, l’éthanol reçoit de l’énergie de son milieu, la peau, qui se refroidit : le système reçoit de l’énergie, c’est endothermique.'),
+      F('elle est exothermique : l’éthanol cède de l’énergie à la peau', 'Si l’éthanol cédait de l’énergie, la peau se réchaufferait. Elle se refroidit : c’est donc la peau qui cède de l’énergie.'),
+      F('elle est exothermique : la peau prend de l’énergie à l’éthanol', 'C’est l’inverse : la peau cède de l’énergie à l’éthanol qui se vaporise. Le système (l’éthanol) la reçoit : endothermique.'),
+      F('elle ne change rien à l’énergie : l’éthanol reste le même corps', 'L’éthanol reste le même corps, mais tout changement d’état échange de l’énergie avec le milieu.'),
+    ] },
+  { id: 'etat2gt-ana-palier', domaine: 'Changement d’état (2GT)', titre: 'Un thermomètre dans l’eau qui bout',
+    enonce: 'De l’eau pure bout dans une casserole à la pression atmosphérique normale. Un thermomètre indique 100 °C. On continue de chauffer, sans changer le réglage, pendant que l’eau liquide se vaporise.', q: 'Que va indiquer le thermomètre tant qu’il reste de l’eau liquide ?', options: [
+      V('toujours 100 °C : la température reste constante', 'Pendant le changement d’état d’un corps pur, la température reste constante : c’est le palier. L’énergie sert à vaporiser l’eau, pas à la chauffer.'),
+      F('une température qui monte peu à peu au-dessus de 100 °C', 'La température ne monte pas tant qu’il reste du liquide : l’énergie reçue sert à changer l’état, pas à augmenter la température.'),
+      F('une température qui baisse, car l’eau s’évapore', 'L’énergie apportée par le réchaud compense celle que prend la vaporisation : la température reste à 100 °C.'),
+      F('100 °C puis une baisse quand la vapeur se forme', 'Il n’y a pas de baisse : tant qu’il reste du liquide, l’énergie reçue sert à vaporiser l’eau et la température reste à 100 °C.'),
+    ] },
+  { id: 'etat2gt-ana-sublimation', domaine: 'Changement d’état (2GT)', titre: 'La sublimation du diiode',
+    enonce: 'Quand on chauffe doucement des cristaux de diiode I₂, ils se transforment en vapeur violette sans passer par un liquide.', q: 'Quelle équation décrit ce changement d’état ?', options: [
+      V('I₂(s) → I₂(g) : la sublimation', 'Le solide passe directement à l’état gazeux : c’est la sublimation. La formule I₂ ne change pas, seul l’état change.'),
+      F('I₂(g) → I₂(s) : la sublimation', 'La flèche est dans le mauvais sens : ici le solide devient un gaz. L’équation écrite correspond à la condensation solide.'),
+      F('I₂(s) → I₂(l) : la sublimation', 'Cette équation décrit la fusion : elle passe par l’état liquide, qui n’apparaît pas dans l’expérience.'),
+      F('I₂(s) → 2 I(g) : la sublimation', 'On casserait les molécules I₂ en atomes : ce serait une transformation chimique. Dans un changement d’état, les molécules ne changent pas.'),
+    ] },
+  { id: 'etat2gt-ana-corps', domaine: 'Changement d’état (2GT)', titre: 'Vaporiser de l’eau ou de l’éthanol',
+    enonce: 'On vaporise la même masse d’eau, puis d’éthanol. L’énergie massique de vaporisation de l’eau est 2 260 kJ/kg ; celle de l’éthanol est 840 kJ/kg.', q: 'Quelle comparaison des énergies est correcte ?', options: [
+      V('l’eau demande environ 2,7 fois plus d’énergie que l’éthanol', 'À masse égale, E = m × L : le rapport des énergies est celui des L, 2 260 ÷ 840 ≈ 2,7. L’eau demande plus d’énergie.'),
+      F('l’éthanol demande environ 2,7 fois plus d’énergie que l’eau', 'Le rapport est inversé : c’est l’eau qui a la plus grande valeur de L, donc qui demande plus d’énergie.'),
+      F('les deux demandent la même énergie, car la masse est la même', 'À masse égale, l’énergie dépend encore du corps par L : les valeurs de L sont différentes, les énergies aussi.'),
+      F('l’eau demande 2 260 fois plus d’énergie que l’éthanol', 'Ce sont les valeurs de L qu’on compare : leur rapport est 2 260 ÷ 840, soit environ 2,7, pas 2 260.'),
     ] },
   // ── Seconde : réactif limitant ──
   { id: 'rl2gt-double-methane', domaine: 'Réactif limitant (2GT)', titre: 'On double la quantité de méthane',

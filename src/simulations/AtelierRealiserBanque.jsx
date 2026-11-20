@@ -20,6 +20,7 @@ import { tirageCalcul as tirageMecanismesTG } from "./mrxExos";
 import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
 import * as EQM from "./equationReactionModele";
+import * as ETM from "./changementEtat2gtModele";
 import * as RX from "./redoxModele";
 import * as RL from "./reactifLimitantModele";
 import * as KEP from "./satellitesModele";
@@ -1521,6 +1522,64 @@ function genEquation2GT() {
     retenir: ['Ajuster : coefficients devant les formules (jamais les indices), dans l’ordre C, H, O, puis la charge ; on prend les plus petits entiers.', 'Les coefficients sont des proportions : on multiplie tous les nombres de l’équation par le même nombre.', 'n formules contiennent n × (indice) atomes ; la charge totale est la même avant et après.'] };
 }
 
+// ───────────── Changement d’état (2GT) : équation, sens du transfert, E = m × L, masse, grammes et kilogrammes, proportionnalité ─────────────
+const M_ETAT = ETM.NOM_ETAT;
+const ETAT2GT_MASSES = [0.20, 0.30, 0.40, 0.50, 0.60, 0.80, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0];     // kg, 2 chiffres significatifs ; pas de 1,0 (valeur de L recopiée)
+const ETAT2GT_GRAMMES = [20, 30, 50, 80, 150, 250, 400];
+const ETAT2GT_PHRASE = { fusion: 'fondent', solidification: 'se solidifient', vaporisation: 'se vaporisent', liquefaction: 'se liquéfient' };
+function genEtat2GT() {
+  const NOMS = ['eau', 'eau', 'ethanol', 'diazote'], CH4 = ['fusion', 'solidification', 'vaporisation', 'liquefaction'], CH6 = ETM.CHANGEMENTS.map(c => c.id);
+  const verbe = chid => (ETM.sens(chid) === 'endo' ? 'à fournir' : 'cédée');
+  const lesDeux = chid => (chid === 'fusion' || chid === 'solidification' ? 'la fusion et la solidification' : 'la vaporisation et la liquéfaction');
+  // q0 : équation d'un changement d'état (parmi quatre écritures)
+  const c0 = ETM.corps(tire(NOMS)), ch0 = ETM.changement(tire(CH6));
+  const bonne0 = ETM.equation(c0.id, ch0.id);
+  const memeDepart = ETM.CHANGEMENTS.find(c => c.id !== ch0.id && c.de === ch0.de && c.vers !== ch0.vers), memeArrivee = ETM.CHANGEMENTS.find(c => c.id !== ch0.id && c.vers === ch0.vers && c.de !== ch0.de);
+  const faux0 = [ETM.equationInverse(c0.id, ch0.id), ETM.equation(c0.id, memeDepart.id), ETM.equation(c0.id, memeArrivee.id)];
+  const opts0 = melange([bonne0, ...faux0]);
+  const q0 = { id: 'g0', type: 'qcm', q: <>Quelle est l’équation de la <b>{ch0.nom}</b> {c0.du} ?</>, options: opts0, bonne: opts0.indexOf(bonne0),
+    aide: 'On écrit la formule avec l’état de départ avant la flèche et l’état d’arrivée après : (s) solide, (l) liquide, (g) gaz. La formule ne change pas.',
+    expl: <>La {ch0.nom} va de l’état {M_ETAT[ch0.de]} à l’état {M_ETAT[ch0.vers]} : <b>{bonne0}</b>. La formule est la même des deux côtés, seul l’état change.</> };
+  // q1 : énergie E = m × L
+  const c1 = tire(NOMS), ch1 = tire(CH4), L1 = ETM.L(c1, ch1), m1 = tire(ETAT2GT_MASSES), E1 = ETM.energie(m1, L1), nom1 = ETM.corps(c1);
+  const q1 = { id: 'g1', type: 'num', q: <>Pour {nom1.art} (corps pur, pression atmosphérique), l’énergie massique de changement d’état pour {lesDeux(ch1)} est <b>L = {nb(L1, 3)}{NB}kJ/kg</b>. Quelle énergie est {verbe(ch1)} pour <b>{nb(m1, 2)}{NB}kg</b> {nom1.du} qui {ETAT2GT_PHRASE[ch1]} ? Donnez le résultat en <b>kJ</b>.</>,
+    unite: 'kJ', vrai: E1, csMin: 2, tolRel: 0.06,
+    aide: 'E = m × L, avec E en kJ, m en kg et L en kJ/kg : multipliez la masse par L.',
+    pieges: [[L1, 'C’est la valeur de L, l’énergie pour 1 kg. Il faut la multiplier par la masse.'], [L1 / m1, 'On multiplie la masse par L, on ne divise pas.'], [E1 * 1000, 'Facteur 1 000 : m est en kilogrammes, L en kJ/kg, E en kJ.']],
+    expl: <>E = m × L = {nb(m1, 2)} × {nb(L1, 3)} = <b>{avecU(E1, 'kJ', 2)}</b>.</> };
+  // q2 : masse à partir de l'énergie
+  const c2 = tire(NOMS), ch2 = tire(CH4), L2 = ETM.L(c2, ch2), m2 = tire(ETAT2GT_MASSES), E2 = ETM.arrondiSig(ETM.energie(m2, L2), 2), v2 = E2 / L2, nom2 = ETM.corps(c2);
+  const q2 = { id: 'g2', type: 'num', q: <>Un échantillon {nom2.du} (corps pur) échange <b>{nb(E2, 2)}{NB}kJ</b> lors de la {ETM.changement(ch2).nom}. L’énergie massique de changement d’état est <b>L = {nb(L2, 3)}{NB}kJ/kg</b>. Quelle masse {nom2.du} change d’état ? Donnez le résultat en <b>kg</b>.</>,
+    unite: 'kg', vrai: v2, csMin: 2, tolRel: 0.06,
+    aide: 'E = m × L, donc m = E ÷ L : divisez l’énergie (kJ) par L (kJ/kg) pour obtenir des kg.',
+    pieges: [[E2, 'C’est l’énergie, pas la masse : divisez-la par L.'], [E2 * L2, 'On divise l’énergie par L, on ne multiplie pas.'], [L2, 'C’est la valeur de L : la masse se calcule avec l’énergie échangée.']],
+    expl: <>m = E ÷ L = {nb(E2, 2)} ÷ {nb(L2, 3)} = <b>{avecU(v2, 'kg', 2)}</b>.</> };
+  // q3 : masse en grammes à convertir
+  const c3 = tire(NOMS), ch3 = tire(CH4), L3 = ETM.L(c3, ch3), g3 = tire(ETAT2GT_GRAMMES), E3 = g3 / 1000 * L3, nom3 = ETM.corps(c3);
+  const q3 = { id: 'g3', type: 'num', q: <>L’énergie massique de changement d’état {nom3.de} pour {lesDeux(ch3)} est <b>L = {nb(L3, 3)}{NB}kJ/kg</b>. Quelle énergie est {verbe(ch3)} pour <b>{g3}{NB}g</b> {nom3.du} qui {ETAT2GT_PHRASE[ch3]} ? Donnez le résultat en <b>kJ</b>.</>,
+    unite: 'kJ', vrai: E3, csMin: 2, tolRel: 0.06,
+    aide: 'Convertissez d’abord la masse en kilogrammes (1 kg = 1 000 g), puis E = m × L.',
+    pieges: [[g3 * L3, 'La masse n’est pas convertie : en kg, 1 g = 0,001 kg.'], [L3, 'C’est la valeur de L, pour 1 kg. Ici la masse est donnée en grammes.'], [g3 / 1000 / L3, 'On multiplie la masse (en kg) par L, on ne divise pas.']],
+    expl: <>{g3} g = {nb(g3 / 1000, 3)} kg ; E = m × L = {nb(g3 / 1000, 3)} × {nb(L3, 3)} = <b>{avecU(E3, 'kJ', 2)}</b>.</> };
+  // q4 : sens du transfert et nom
+  const c4 = tire(NOMS), ch4 = ETM.changement(tire(CH6)), s4 = ETM.sens(ch4.id), recoit = s4 === 'endo';
+  const T4 = ['le système reçoit de l’énergie du milieu : endothermique', 'le système cède de l’énergie au milieu : exothermique', 'le système reçoit de l’énergie du milieu : exothermique', 'le système cède de l’énergie au milieu : endothermique'];
+  const bonne4 = recoit ? T4[0] : T4[1];
+  const opts4 = melange(T4);
+  const q4 = { id: 'g4', type: 'qcm', q: <>{ETM.corps(c4).art[0].toUpperCase() + ETM.corps(c4).art.slice(1)} subit une <b>{ch4.nom}</b>. Quelle phrase est correcte pour ce changement d’état ?</>, options: opts4, bonne: opts4.indexOf(bonne4),
+    aide: 'Quand les entités se libèrent (solide vers liquide, liquide vers gaz), le système reçoit de l’énergie ; dans l’autre sens il en cède. Endothermique : l’énergie entre ; exothermique : elle sort.',
+    expl: <>La {ch4.nom} {recoit ? 'libère les entités : le système reçoit de l’énergie' : 'rassemble les entités : le système cède de l’énergie'} : <b>{bonne4}</b>.</> };
+  // q5 : proportionnalité (même corps, même changement)
+  const c5 = tire(NOMS), ch5 = tire(CH4), L5 = ETM.L(c5, ch5), m5a = tire([0.20, 0.30, 0.40, 0.50]), k5 = tire([2, 3, 4, 5]), m5b = Number((m5a * k5).toPrecision(2)), E5a = ETM.arrondiSig(ETM.energie(m5a, L5), 3), v5 = E5a * m5b / m5a, nom5 = ETM.corps(c5);
+  const q5 = { id: 'g5', type: 'num', q: <>Pour {nom5.art} (corps pur) lors de la {ETM.changement(ch5).nom}, <b>{nb(m5a, 2)}{NB}kg</b> échangent <b>{nb(E5a, 3)}{NB}kJ</b>. Quelle énergie échangent <b>{nb(m5b, 2)}{NB}kg</b> {nom5.du} lors du même changement d’état ? Donnez le résultat en <b>kJ</b>.</>,
+    unite: 'kJ', vrai: v5, csMin: 2, tolRel: 0.06,
+    aide: 'L’énergie est proportionnelle à la masse : combien de fois la nouvelle masse est-elle plus grande que la première ? Multipliez l’énergie par ce nombre.',
+    pieges: [[E5a, 'C’est l’énergie pour la première masse. La nouvelle masse est plus grande : l’énergie aussi.'], [E5a + m5b - m5a, 'On ne les additionne pas : on multiplie par le nombre de fois que la masse est plus grande.'], [E5a / k5, 'Plus de masse demande plus d’énergie : on multiplie, on ne divise pas.']],
+    expl: <>{nb(m5b, 2)} ÷ {nb(m5a, 2)} = {k5} : la masse est {k5} fois plus grande, donc l’énergie aussi : {k5} × {nb(E5a, 3)} = <b>{avecU(v5, 'kJ', 2)}</b>.</> };
+  [q1, q2, q3, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Changement d’état : équation, sens du transfert thermique, énergie E = m × L, masse qui change d’état, conversion des grammes en kilogrammes et proportionnalité.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['Équation d’un changement d’état : même formule des deux côtés, état de départ (s, l ou g) avant la flèche, état d’arrivée après.', 'Endothermique : le système reçoit de l’énergie (fusion, vaporisation, sublimation) ; exothermique : il en cède (solidification, liquéfaction, condensation solide).', 'E = m × L, avec E en kJ, m en kg et L en kJ/kg ; convertir les grammes en kilogrammes ; l’énergie est proportionnelle à la masse.'] };
+}
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
 function genEquilibreTG() {
   const v = [0.050, 0.10, 0.20, 0.40];
@@ -3735,6 +3794,7 @@ export const FAMILLES = [
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
   { id: 'comb1g-calcul', groupe: 'Formules', titre: 'Combustions : équation, énergie des liaisons, énergie molaire de réaction, écart avec la référence et pouvoir calorifique (1G)', gen: genCombustion1G, domaine: 'Combustions : énergie de réaction et énergies de liaison' },
   { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
+  { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
