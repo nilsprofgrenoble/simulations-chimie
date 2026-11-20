@@ -69,6 +69,7 @@ const TACHES_FAMILLE = {
   '36:opt-calcul': () => ['bilan et rendement', 'quotient de réaction', 'constante d’équilibre', 'sens d’évolution'],
   '36:cpl-calcul': () => ['champ électrique uniforme', 'accélération du centre de masse', 'déviation d’une particule chargée', 'théorème de l’énergie cinétique', 'conversion d’unités'],
   '36:vac-calcul': () => ['vecteur vitesse', 'vecteur accélération', 'dérivée d’une fonction du temps'],
+  '36:brn-calcul': () => ['électrons de valence', 'nombre de doublets', 'doublets non liants', 'charge totale des produits'],
   '36:aam-calcul': () => ['couple acide-base', 'prédominance', 'distribution', 'forme basique'],
   '36:tmp-calcul': () => ['solution tampon', 'couple acide-base'],
   '36:pil-calcul': () => ['pile', 'capacité électrique', 'réactif limitant'],

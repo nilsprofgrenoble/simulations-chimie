@@ -5550,6 +5550,28 @@ export const PREVOIR = [
       F('l’eau oxygénée H₂O₂', 'H₂O₂ est consommée aux deux actes et jamais régénérée : c’est le réactif. Elle figure dans l’équation de la réaction.'),
       F('le dioxygène O₂', 'O₂ est formé à l’acte 2 et n’est consommé par aucun acte : c’est un produit de la réaction, pas un catalyseur.'),
     ] },
+  // ───────────────────────────── Transferts de H⁺ : acides carboxyliques, amines (TG, sim 188)
+  { id: 'brn-ana-conjuguee', domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées', titre: 'La base conjuguée de l’acide propanoïque',
+    enonce: 'L’acide propanoïque CH₃CH₂COOH est un acide carboxylique : il possède le groupe carboxyle –COOH. Il cède un ion H⁺ pour donner sa base conjuguée.', q: 'Quelle est cette base conjuguée ?', options: [
+      V('l’ion propanoate CH₃CH₂COO⁻', 'L’acide perd H⁺, celui du groupe carboxyle (liaison O–H) : il reste CH₃CH₂COO⁻, avec 5 atomes d’hydrogène et la charge −1. Le couple est CH₃CH₂COOH / CH₃CH₂COO⁻.'),
+      F('CH₃CH₂COO, sans charge', 'Quand H⁺ part, il emporte la charge + mais pas les électrons : l’espèce qui reste est chargée −. CH₃CH₂COO sans charge ne conserve pas la charge.'),
+      F('CH₃CHCOOH⁻, formé en retirant un H d’un carbone', 'Le H⁺ cédé est celui de la liaison O–H du groupe carboxyle : les liaisons C–H ne se rompent pas dans ce transfert. L’atome qui perd H⁺ est l’oxygène du groupe –COOH.'),
+      F('CH₃CH₂COOH₂⁺, formé en ajoutant H⁺', 'On obtient la base conjuguée en retirant H⁺ à l’acide, pas en lui en ajoutant : CH₃CH₂COOH₂⁺ aurait un H de plus et la charge +.'),
+    ] },
+  { id: 'brn-ana-amphotere', domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées', titre: 'Quelle espèce est amphotère ?',
+    enonce: 'On donne quatre couples acide-base : H₃O⁺ / H₂O ; H₂O / HO⁻ ; NH₄⁺ / NH₃ ; CH₃COOH / CH₃COO⁻. Une espèce est amphotère si elle est l’acide d’un couple et la base d’un autre.', q: 'Parmi ces espèces, laquelle est amphotère ?', options: [
+      V('l’eau H₂O', 'H₂O est la base du couple H₃O⁺ / H₂O (elle capte H⁺ pour donner H₃O⁺) et l’acide du couple H₂O / HO⁻ (elle cède H⁺ pour donner HO⁻) : deux couples, deux rôles.'),
+      F('l’ion ammonium NH₄⁺', 'Dans cette liste, NH₄⁺ n’apparaît que dans le couple NH₄⁺ / NH₃, où il est l’acide : un seul rôle, il n’est pas amphotère.'),
+      F('l’ion HO⁻', 'HO⁻ n’apparaît que dans le couple H₂O / HO⁻, où il est la base : un seul rôle.'),
+      F('l’ion oxonium H₃O⁺', 'H₃O⁺ n’apparaît que dans le couple H₃O⁺ / H₂O, où il est l’acide : un seul rôle.'),
+    ] },
+  { id: 'brn-ana-soude', domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées', titre: 'Acide éthanoïque et soude',
+    enonce: 'On mélange une solution d’acide éthanoïque CH₃COOH et une solution d’hydroxyde de sodium (soude), qui contient des ions Na⁺ et HO⁻. Couples en jeu : CH₃COOH / CH₃COO⁻ et H₂O / HO⁻. Les ions Na⁺ ne participent pas au transfert de H⁺.', q: 'Quelle est l’équation de la réaction acide-base ?', options: [
+      V('CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O', 'L’acide CH₃COOH cède H⁺ à la base HO⁻ : on obtient la base conjuguée CH₃COO⁻ et l’acide conjugué H₂O. Les 5 atomes d’hydrogène et la charge −1 sont conservés.'),
+      F('CH₃COOH + HO⁻ → CH₃COO⁻ + H₃O⁺', 'Les atomes d’hydrogène ne sont pas conservés (5 à gauche, 6 à droite), ni la charge (−1 à gauche, 0 à droite) : l’acide conjugué de HO⁻ est H₂O, pas H₃O⁺.'),
+      F('CH₃COO⁻ + H₂O → CH₃COOH + HO⁻', 'Cette équation est écrite dans le sens inverse, avec d’autres réactifs : on a mélangé CH₃COOH et HO⁻, pas CH₃COO⁻ et H₂O.'),
+      F('CH₃COOH + HO⁻ → CH₃COOH₂⁺ + O²⁻', 'Les rôles sont inversés : l’acide capterait H⁺ et la base le céderait. Dans les couples donnés, c’est CH₃COOH qui cède H⁺ et HO⁻ qui le capte.'),
+    ] },
   // ───────────────────────────── Mesure : incertitude-type et résultat (2GT, sim 194)
   { id: 'mes2gt-inc-ana-plus-de-mesures', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Une bille chronométrée : combien de mesures pour u trois fois plus petite ?',
     enonce: 'Un élève chronomètre 4 fois la chute d’une bille et obtient u = 0,06 s. Il voudrait u = 0,02 s, soit 3 fois plus petite, avec le même chronomètre et la même méthode. Rappel : u = s ÷ √n.', q: 'Combien de mesures doit-il faire en tout ?', options: [

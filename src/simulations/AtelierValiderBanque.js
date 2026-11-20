@@ -4176,6 +4176,27 @@ export const PLAUSIBLES = [
       F('pas plausible : tout ce qui sert dans un acte doit être dans le bilan', 'Les espèces qui interviennent dans les actes ne sont pas toutes dans le bilan : les intermédiaires et le catalyseur y disparaissent.'),
       F('pas plausible : H₃O⁺ doit figurer parmi les réactifs, car il est consommé', 'H₃O⁺ est bien consommé à l’acte 1, mais il est régénéré à l’acte 3 : sa quantité finale est égale à sa quantité initiale.'),
     ] }),
+  // ───────────── Transferts de H⁺ : acides carboxyliques, amines (TG, sim 188)
+  P({ id: 'brn-val-equation', domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées', niveau: 1, titre: 'Une équation acide-base dont la charge n’est pas conservée', plausible: false,
+    enonce: 'Pour la réaction de l’ammoniac NH₃ avec les ions oxonium H₃O⁺ d’une solution d’acide chlorhydrique, un élève écrit : « NH₃ + H₃O⁺ → NH₄ + H₂O », et le justifie : « tous les atomes sont conservés ».',
+    reperes: [['Conservation des atomes', 'mêmes atomes de chaque élément à gauche et à droite'], ['Conservation de la charge', 'charge totale des réactifs = charge totale des produits'], ['Acide conjugué de NH₃', 'NH₃ capte H⁺ et donne l’ion ammonium, chargé +']],
+    ver: 'Les atomes sont conservés (1 N, 6 H et 1 O de chaque côté), mais pas la charge : à gauche NH₃ + H₃O⁺ porte la charge +1, à droite NH₄ + H₂O porte 0. En captant H⁺, NH₃ devient l’ion ammonium NH₄⁺, de charge +1.',
+    q2: 'Que penser de cette équation ?',
+    options: [
+      V('pas plausible : la charge n’est pas conservée, il faut écrire NH₄⁺', 'La charge totale doit être la même des deux côtés : +1 à gauche impose +1 à droite, ce qui conduit à écrire l’ion ammonium NH₄⁺.'),
+      F('plausible : les atomes sont conservés, donc l’équation est correcte', 'La conservation des atomes ne suffit pas : il faut aussi conserver la charge. Ici elle passe de +1 à 0.'),
+      F('pas plausible : H₃O⁺ ne peut pas être un réactif d’une réaction acide-base', 'H₃O⁺ est l’acide du couple H₃O⁺ / H₂O : il cède H⁺ à NH₃. C’est bien un réactif possible ; l’erreur porte sur la charge de l’ion ammonium.'),
+    ] }),
+  P({ id: 'brn-val-lewis', domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées', niveau: 2, titre: 'Le schéma de Lewis de l’ion éthanoate', plausible: true,
+    enonce: 'Pour l’ion éthanoate CH₃COO⁻, un élève dessine : le carbone du groupe méthyle lié à trois H et à l’autre carbone ; ce carbone est lié par une liaison double à un oxygène, qui porte 2 doublets non liants, et par une liaison simple à l’autre oxygène, qui porte 3 doublets non liants et la charge −.',
+    reperes: [['Électrons de valence', 'H 1 ; C 4 ; O 6 ; charge −1 : un électron de plus'], ['Octet', '8 électrons autour de C, N, O ; 2 autour de H'], ['Charge d’un atome', 'électrons de valence de l’atome seul − (liaisons + 2 × doublets non liants)']],
+    ver: 'Électrons de valence : 2 × 4 + 3 × 1 + 2 × 6 + 1 = 24, soit 12 doublets. Le schéma compte 7 doublets liants (3 C–H, 1 C–C, 2 C=O, 1 C–O) et 5 doublets non liants (2 + 3) : 12 en tout. Chaque carbone a 4 liaisons, chaque oxygène 8 électrons ; l’oxygène simplement lié a 6 − (1 + 6) = −1 et l’autre 6 − (2 + 4) = 0.',
+    q2: 'Que penser de ce schéma ?',
+    options: [
+      V('plausible : 12 doublets, octets respectés, charge − cohérente', 'Le nombre de doublets (12) correspond à n_T = 24 électrons, les octets sont respectés et la charge est cohérente avec le décompte des électrons.'),
+      F('pas plausible : l’oxygène simplement lié devrait porter la charge +', 'Cet oxygène possède 7 électrons (1 liaison et 3 doublets non liants), un de plus que l’atome O seul (6) : sa charge est −, pas +.'),
+      F('pas plausible : il y a un doublet non liant de trop sur l’oxygène double', 'L’oxygène double a 2 liaisons et 2 doublets non liants : 4 + 4 = 8 électrons, l’octet est respecté. Un doublet de moins ferait 6 électrons seulement.'),
+    ] }),
   // ───────────── Mesure : incertitude-type et résultat (2GT, sim 194)
   P({ id: 'mes2gt-inc-val-trop-de-chiffres', domaine: 'Incertitude-type et résultat (2GT)', niveau: 1, titre: 'Une durée écrite avec trop de chiffres', plausible: false,
     enonce: 'Un élève chronomètre à la main la durée d’un tour d’un petit train électrique sur son circuit et trouve une incertitude-type u = 0,05 s. Il écrit le résultat : t = (12,3846 ± 0,05) s.',
