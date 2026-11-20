@@ -3037,6 +3037,53 @@ function genEcoulementTG() {
     retenir: ['Débit volumique : Q = S × v (m³·s⁻¹) avec S = frac(π × d²|4) ; conservation : S_A × v_A = S_B × v_B, donc la vitesse varie comme l’inverse de d².', 'Relation de Bernoulli (fournie) : P + ½ρv² + ρgz = constante le long d’une ligne de courant ; en conduite horizontale, P_A − P_B = ½ρ(v_B² − v_A²).', 'Tube de Venturi : P_A − P_B = ρ g Δh ; au col, la vitesse est plus grande et la pression plus petite.', 'Vidange d’un réservoir ouvert : v² = 2 g h (v est la racine carrée de 2 g h), indépendante de ρ.'] };
 }
 
+function genArchimedeTG() {
+  // Poussée d'Archimède (TG, sim 213). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const mil = x => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  const G9 = 9.8, lec = x => Math.round(x * 10) / 10;
+  const FLUIDES = [['de l’huile', 900], ['de l’eau douce', 1000], ['de l’eau de mer', 1030], ['de l’eau très salée', 1200]];
+  const vPi = <Vec n="Π"/>;
+  // q1 : Π = ρ V g, V en cm³
+  const [nf1, rf1] = tire(FLUIDES), V1 = tire([150, 250, 400, 600, 800]), Pi1 = rf1 * V1 * 1e-6 * G9;
+  const q1 = { id: 'arc0', type: 'num', q: <>Un solide de volume <b>V = {V1}{NB}cm³</b> est totalement immergé dans {nf1} (masse volumique <b>ρ<sub>fluide</sub> = {mil(rf1)}{NB}kg·m⁻³</b>). Prenez g = 9,8{NB}N·kg⁻¹. Calculez la norme Π de la poussée d’Archimède {vPi} (en N, 2 chiffres significatifs).</>, unite: 'N', vrai: Pi1, tolRel: 0.05, csMin: 2,
+    aide: 'Π = ρ_fluide × V_immergé × g, avec V en m³ (1 cm³ = 10⁻⁶ m³) ; le solide est totalement immergé : V_immergé = V.',
+    pieges: [[rf1 * V1 * G9, 'Vous avez gardé V en cm³ : 1 cm³ vaut 10⁻⁶ m³.'], [rf1 * V1 * 1e-3 * G9, 'Vous avez converti les cm³ en dm³ et non en m³ : 1 cm³ vaut 10⁻⁶ m³.'], [rf1 * V1 * 1e-6, 'Il manque le facteur g = 9,8 N·kg⁻¹ : ρ × V est une masse (en kg), pas une force.'], [V1 * 1e-6 * G9, 'Il manque la masse volumique du fluide : Π = ρ_fluide × V_immergé × g.']],
+    expl: <>V = {V1}{NB}cm³ = {nb(V1 * 1e-6, 3)}{NB}m³ ; Π = ρ<sub>fluide</sub> × V<sub>immergé</sub> × g = {mil(rf1)} × {nb(V1 * 1e-6, 3)} × 9,8 = <b>{nb(Pi1, 3)}{NB}N</b>.</> };
+  // q2 : poids apparent F = P − Π
+  const ob2 = tire([2700, 7800]), V2 = tire([150, 250, 400, 600]), [nf2, rf2] = tire(FLUIDES), P2 = lec(ob2 * V2 * 1e-6 * G9), Pi2 = rf2 * V2 * 1e-6 * G9, F2 = P2 - Pi2;
+  const q2 = { id: 'arc1', type: 'num', q: <>Un cube de volume <b>V = {V2}{NB}cm³</b>, suspendu à un dynamomètre, indique <b>P = {f(P2, 1)}{NB}N</b> dans l’air. On le plonge entièrement dans {nf2} (<b>ρ<sub>fluide</sub> = {mil(rf2)}{NB}kg·m⁻³</b>), puis on le laisse immobile. Prenez g = 9,8{NB}N·kg⁻¹. Quelle indication F le dynamomètre donne-t-il (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: F2, tolRel: 0.06, csMin: 2,
+    aide: 'Poussée : Π = ρ_fluide × V × g (V en m³). Cube immobile : le fil retient P − Π, donc F = P − Π.',
+    pieges: [[P2 + Pi2, 'Vous avez additionné P et Π : la poussée est dirigée vers le haut et diminue l’effort du fil.'], [Pi2, 'C’est la poussée Π seule : le dynamomètre indique P − Π.'], [P2, 'C’est l’indication dans l’air : le fluide pousse le cube vers le haut, donc l’indication diminue.']],
+    expl: <>Π = {mil(rf2)} × {nb(V2 * 1e-6, 3)} × 9,8 = {nb(Pi2, 3)}{NB}N ; F = P − Π = {f(P2, 1)} − {nb(Pi2, 3)} = <b>{nb(F2, 3)}{NB}N</b> (le poids P ne change pas : c’est le poids apparent qui diminue).</> };
+  // q3 : fraction immergée d'un flotteur
+  const ob3 = tire([240, 500, 750, 920]), [nf3, rf3] = tire(FLUIDES.filter(([, r]) => r > 1000)), fr3 = 100 * ob3 / rf3;
+  const q3 = { id: 'arc2', type: 'num', q: <>Un cube de masse volumique <b>ρ<sub>objet</sub> = {mil(ob3)}{NB}kg·m⁻³</b> flotte, immobile, à la surface {nf3} (<b>ρ<sub>fluide</sub> = {mil(rf3)}{NB}kg·m⁻³</b>). Quelle fraction de son volume est immergée (en %, 2 chiffres significatifs) ?</>, unite: '%', vrai: fr3, tolRel: 0.05, csMin: 2,
+    aide: 'À l’équilibre, le poids est égal à la poussée : ρ_objet × V × g = ρ_fluide × V_immergé × g ; la fraction immergée est V_immergé divisé par V.',
+    pieges: [[100 * rf3 / ob3, 'Le rapport est inversé : un flotteur est moins dense que le fluide, sa fraction immergée est inférieure à 100 %.'], [100 - fr3, 'C’est la fraction qui dépasse de la surface (émergée) ; on demande la fraction immergée.'], [ob3 / rf3, 'Vous avez donné la fraction sans la convertir en pourcentage : multipliez par 100.'], [100 * ob3 / 1000, 'Vous avez pris 1 000 kg·m⁻³ (eau douce) pour le fluide : utilisez la masse volumique du fluide indiquée dans l’énoncé.']],
+    expl: <>À l’équilibre, P = Π, donc la fraction immergée vaut {avecIndices('frac(ρ objet|ρ fluide)')} = {avecIndices(`frac(${mil(ob3)}|${mil(rf3)})`)} = {nb(ob3 / rf3, 3)}, soit <b>{nb(fr3, 3)}{NB}%</b>.</> };
+  // q4 : masse maximale posée sur un flotteur
+  let ob4, nf4, rf4, V4;
+  const arr2 = x => Number(Number(x).toPrecision(2));
+  do { ob4 = tire([240, 500, 750]); [nf4, rf4] = tire(FLUIDES.filter(([, r]) => r >= 1000)); V4 = tire([500, 800, 1000, 1500]); }
+  while (Math.abs(arr2(rf4 * V4 * 1e-3) - arr2(ob4 * V4 * 1e-3) - (rf4 - ob4) * V4 * 1e-3) / ((rf4 - ob4) * V4 * 1e-3) > 0.07);   // écarte les tirages où arrondir les deux masses à 2 chiffres avant de soustraire sortirait de la tolérance
+  const m4 = (rf4 - ob4) * V4 * 1e-6 * 1000;
+  const q4 = { id: 'arc3', type: 'num', q: <>Un cube de volume <b>V = {mil(V4)}{NB}cm³</b> et de masse volumique <b>ρ<sub>objet</sub> = {mil(ob4)}{NB}kg·m⁻³</b> flotte à la surface {nf4} (<b>ρ<sub>fluide</sub> = {mil(rf4)}{NB}kg·m⁻³</b>). On pose dessus une masse m jusqu’à ce que le cube soit à la limite d’être totalement immergé. Calculez m (en g, 2 chiffres significatifs).</>, unite: 'g', vrai: m4, tolRel: 0.08, csMin: 2,
+    aide: 'À la limite, le cube chargé est totalement immergé et les poids (cube et masse m) sont égaux à la poussée totale : (ρ_objet × V + m) × g = ρ_fluide × V × g. Gardez un chiffre de plus dans les calculs intermédiaires.',
+    pieges: [[rf4 * V4 * 1e-6 * 1000, 'C’est la masse du fluide de même volume que le cube : il faut en soustraire la masse du cube.'], [ob4 * V4 * 1e-6 * 1000, 'C’est la masse du cube lui-même : la masse supplémentaire est la différence avec la masse de fluide déplacé.'], [m4 / 1000, 'Vous avez donné la masse en kg : la réponse est attendue en g.'], [(rf4 - ob4) * V4 * 1e-6 * 1000 * G9, 'Vous avez multiplié par g : on demande une masse (en g), pas un poids.']],
+    expl: <>Limite : (ρ<sub>objet</sub> × V + m) × g = ρ<sub>fluide</sub> × V × g, donc m = (ρ<sub>fluide</sub> − ρ<sub>objet</sub>) × V = ({mil(rf4)} − {mil(ob4)}) × {nb(V4 * 1e-6, 3)} = {nb(m4 / 1000, 3)}{NB}kg = <b>{nb(m4, 3)}{NB}g</b>.</> };
+  // q5 : masse volumique d'un liquide inconnu (valeurs LUES à 0,1 N près)
+  const ob5 = tire([2700, 7800]), V5 = tire([500, 1000]), rho5 = tire([800, 850, 900, 1100, 1200, 1300]), P5 = lec(ob5 * V5 * 1e-6 * G9), F5 = lec(P5 - rho5 * V5 * 1e-6 * G9), r5 = (P5 - F5) / (V5 * 1e-6 * G9);
+  const q5 = { id: 'arc4', type: 'num', q: <>Un cube de volume <b>V = {V5}{NB}cm³</b> indique <b>P = {f(P5, 1)}{NB}N</b> dans l’air et <b>F = {f(F5, 1)}{NB}N</b> une fois entièrement plongé dans un liquide inconnu (lectures à 0,1{NB}N près). Prenez g = 9,8{NB}N·kg⁻¹. Calculez la masse volumique du liquide (en kg·m⁻³, 2 chiffres significatifs).</>, unite: 'kg·m⁻³', vrai: r5, tolRel: 0.08, csMin: 2,
+    aide: 'La poussée vaut Π = P − F ; or Π = ρ_liquide × V × g : isolez ρ_liquide (V en m³).',
+    pieges: [[(P5 + F5) / (V5 * 1e-6 * G9), 'Vous avez additionné P et F : la poussée est la différence P − F.'], [P5 / (V5 * 1e-6 * G9), 'Vous avez utilisé le poids P : c’est la masse volumique du cube, pas celle du liquide.'], [r5 * 1000, 'Vous avez gardé V en cm³ : 1 cm³ vaut 10⁻⁶ m³.'], [r5 / G9, 'Vous avez oublié g dans le calcul : ρ = Π divisée par (V × g).']],
+    expl: <>Π = P − F = {f(P5, 1)} − {f(F5, 1)} = {f(P5 - F5, 1)}{NB}N ; ρ = {avecIndices('frac(Π|V × g)')} = {avecIndices(`frac(${f(P5 - F5, 1)} N|${nb(V5 * 1e-6, 3)} m³ × 9,8 N·kg⁻¹)`)} = <b>{nb(r5, 3)}{NB}kg·m⁻³</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Poussée d’Archimède : norme de la poussée, poids apparent au dynamomètre, fraction immergée d’un flotteur, masse posée sur un flotteur et masse volumique d’un liquide inconnu. Le fluide est au repos et incompressible, g = 9,8 N·kg⁻¹ ; les masses volumiques sont des valeurs usuelles arrondies.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Poussée d’Archimède : vecteur vertical dirigé vers le haut, de norme Π = ρ_fluide × V_immergé × g (ρ en kg·m⁻³, V en m³, Π en N) : c’est le poids du fluide déplacé.', 'Poids apparent au dynamomètre : F = P − Π ; le poids P ne change pas quand on immerge le solide.', 'Flotteur à l’équilibre (P = Π) : fraction immergée = frac(ρ objet|ρ fluide) ; il flotte si ρ_objet est inférieure à ρ_fluide.', 'Un liquide inconnu se repère par la poussée mesurée : ρ_liquide = frac(P − F|V × g).'] };
+}
+
 function genYoungTG() {
   // Trous d'Young (TG, sim 182). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -4432,6 +4479,7 @@ export const FAMILLES = [
   { id: 'thm-calcul', groupe: 'Formules', titre: 'Loi de Newton et thermostat : temps caractéristique, flux thermique, variation et évolution de la température, durée pour atteindre une température (TG)', gen: genThermostatTG, domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps' },
   { id: 'gpf-calcul', groupe: 'Formules', titre: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température (TG)', gen: genGazParfaitTG, domaine: 'Gaz parfait : équation d’état et limites du modèle' },
   { id: 'ber-calcul', groupe: 'Formules', titre: 'Écoulement d’un fluide : débit volumique, vitesse dans un col, différence de pression, vitesse de vidange et colonnes d’un Venturi (TG)', gen: genEcoulementTG, domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi' },
+  { id: 'arc-calcul', groupe: 'Formules', titre: 'Poussée d’Archimède : poussée, poids apparent, fraction immergée, masse posée sur un flotteur et masse volumique d’un liquide (TG)', gen: genArchimedeTG, domaine: 'Poussée d’Archimède : origine, expression et flottaison' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },

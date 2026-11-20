@@ -5902,6 +5902,28 @@ export const PREVOIR = [
       F('on ne peut pas comparer sans le diamètre des orifices', 'La vitesse de sortie ne dépend pas du diamètre de l’orifice tant que la surface libre descend lentement (grand réservoir) : elle vaut racine de (2 g h).'),
     ] },
 
+  // ───────────────────────────── Poussée d'Archimède (TG, sim 213) : prévoir sans calculer
+  { id: 'arc-ana-masse', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Deux cubes de même volume, deux matériaux',
+    enonce: 'Deux cubes de même volume, l’un en aluminium, l’autre en acier (plus dense), sont plongés entièrement dans l’eau douce et suspendus chacun à un dynamomètre. Dans l’air, le dynamomètre de l’acier indique davantage.', q: 'Comment se comparent les poussées d’Archimède exercées sur les deux cubes et les indications des dynamomètres dans l’eau ?', options: [
+      V('poussées égales ; indication plus grande pour l’acier', 'La poussée vaut ρ_fluide × V_immergé × g : même fluide, même volume immergé, donc même poussée. Le poids de l’acier est plus grand, donc F = P − Π aussi.'),
+      F('poussée plus grande pour l’acier ; indication plus grande pour l’acier', 'La poussée ne dépend ni de la masse ni de la nature du solide, seulement du fluide et du volume immergé : elle est la même pour les deux cubes.'),
+      F('poussées égales ; indications égales', 'Les poussées sont égales, mais pas les poids : F = P − Π reste plus grande pour le cube le plus lourd, l’acier.'),
+      F('poussée plus petite pour l’acier ; indication plus petite pour l’acier', 'Rien dans l’expression de la poussée ne fait intervenir la nature du solide : les poussées sont égales, et l’indication de l’acier reste la plus grande puisque son poids est plus grand.'),
+    ] },
+  { id: 'arc-ana-fluide', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Un flotteur passe de l’eau douce à l’eau de mer',
+    enonce: 'Un cube de bois flotte, immobile, dans de l’eau douce. On le transfère dans de l’eau de mer, un peu plus dense, où il flotte aussi, immobile.', q: 'Comment évoluent son volume immergé et la poussée d’Archimède qui s’exerce sur lui ?', options: [
+      V('volume immergé plus petit ; poussée inchangée', 'À l’équilibre, la poussée est égale au poids du cube, qui ne change pas. Comme Π = ρ_fluide × V_immergé × g et que ρ_fluide augmente, V_immergé diminue pour que Π reste la même.'),
+      F('volume immergé identique ; poussée plus grande', 'Si le volume immergé ne changeait pas, la poussée augmenterait avec ρ_fluide et dépasserait le poids : le cube remonterait jusqu’à un nouvel équilibre, avec un volume immergé plus petit.'),
+      F('volume immergé plus petit ; poussée plus petite', 'Si la poussée devenait plus petite que le poids, le cube coulerait un peu : à l’équilibre, la poussée reste égale au poids.'),
+      F('volume immergé accru ; poussée inchangée', 'La poussée est inchangée (égale au poids), mais le fluide plus dense « porte » mieux : pour la même poussée, il faut un volume immergé plus petit, pas plus grand.'),
+    ] },
+  { id: 'arc-ana-profondeur', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Un cube immergé que l’on descend plus profond',
+    enonce: 'Un cube, totalement immergé dans de l’eau douce (fluide au repos, incompressible), est retenu par un fil. On le descend plus profondément, sans le tourner. Les forces pressantes sur ses faces augmentent avec la profondeur.', q: 'Comment évolue la poussée d’Archimède exercée sur le cube ?', options: [
+      V('elle reste inchangée', 'Π = ρ_fluide × V_immergé × g : ni ρ_fluide ni V_immergé ne changent. Toutes les forces pressantes augmentent, mais la différence entre la face du bas et la face du haut reste égale à ρ g × (hauteur du cube) × (aire), donc la résultante est inchangée.'),
+      F('elle augmente avec la profondeur', 'Les forces pressantes augmentent sur chaque face, mais c’est leur différence entre le bas et le haut qui donne la poussée, et elle ne dépend pas de la profondeur du cube.'),
+      F('elle diminue avec la profondeur', 'Rien dans l’expression de la poussée n’en fait diminuer la valeur : ρ_fluide, V_immergé et g sont inchangés.'),
+      F('elle devient nulle', 'La poussée ne s’annule que si le fluide n’est plus en contact avec la face du bas du solide ; ici le cube reste entouré d’eau, donc la poussée est inchangée.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
