@@ -107,11 +107,11 @@ export function SimulationMecanismesTG() {
   // ---------- parcours guidé ----------
   const ETAPES = [
     { id: 'sites', titre: 'Les deux espèces qui se rencontrent',
-      texte: <>On étudie la réaction de l’ion hydroxyde HO⁻ avec le bromométhane CH₃Br : HO⁻ + CH₃Br → CH₃OH + Br⁻. Les points du schéma sont des <strong>doublets non liants</strong> ; le signe ⊖ est une charge formelle. Électronégativités (échelle de Pauling) : χ(H){NB}={NB}2,20 ; χ(C){NB}={NB}2,55 ; χ(Br){NB}={NB}2,96.</>,
+      texte: <>On étudie la réaction de l’ion hydroxyde HO⁻ avec le bromométhane CH₃Br : HO⁻ + CH₃Br → CH₃OH + Br⁻. Les petits traits autour des atomes sont des <strong>doublets non liants</strong> ; le signe ⊖ est une charge formelle. Électronégativités (échelle de Pauling) : χ(H){NB}={NB}2,20 ; χ(C){NB}={NB}2,55 ; χ(Br){NB}={NB}2,96.</>,
       tache: { type: 'qcm', q: Q.sites.q, options: Q.sites.options, bonne: Q.sites.bonne, indice: Q.sites.indice, expl: Q.sites.expl } },
     { id: 'fleches', titre: 'Un acte élémentaire : les flèches courbes',
       texte: <>La transformation se fait en <strong>un seul acte élémentaire</strong> : un choc, une seule étape. L’équation de l’acte est : {eqSubst}. Une <strong>flèche courbe</strong> représente le déplacement d’un doublet d’électrons ; ici, deux doublets se déplacent en même temps. Les polarisations de la liaison C–Br sont indiquées sur le schéma.
-        <IndiceDefi cache={okActe('subst')}>Une flèche part d’un doublet (deux points) ou d’une liaison, et pointe vers l’atome qui reçoit ce doublet. Un atome de carbone ne peut pas dépasser quatre liaisons.</IndiceDefi></>,
+        <IndiceDefi cache={okActe('subst')}>Une flèche part d’un doublet (petit trait) ou d’une liaison, et pointe vers l’atome qui reçoit ce doublet. Un atome de carbone ne peut pas dépasser quatre liaisons.</IndiceDefi></>,
       tache: { type: 'action', ok: okActe('subst'), label: 'Le faire pour moi', faire: faire('subst'), consigne: consigneFl(2) } },
     { id: 'sens', titre: 'Justifier le sens des flèches',
       texte: <>Voici les deux flèches de l’acte (flèche 1 : doublet de HO⁻ ; flèche 2 : liaison C–Br).</>,
@@ -346,7 +346,7 @@ export function SimulationMecanismesTG() {
   const sceneExplore = (
     <div style={styleBoite}>
       <div style={titreCarte}>{acteEx.titre}{NB}: {eqActe(acteEx)}</div>
-      <div style={aide}>Schéma de Lewis des espèces avant l’acte (les points sont des doublets non liants), puis après l’acte. Les flèches rouges numérotées montrent le déplacement des doublets.</div>
+      <div style={aide}>Schéma de Lewis des espèces avant l’acte (les petits traits autour des atomes sont des doublets non liants), puis après l’acte. Les flèches rouges numérotées montrent le déplacement des doublets.</div>
       <SceneActe etat={acteEx.avant} fleches={ex.fleches ? acteEx.fleches : []} delta plage={M.plageX(acteEx)} aria="Schéma de Lewis avant l’acte avec ses flèches courbes"/>
       <div style={{ ...titreCarte, marginTop: 8 }}>Après l’acte</div>
       <SceneActe etat={acteEx.apres} plage={M.plageX(acteEx)} aria="Schéma de Lewis après l’acte"/>
