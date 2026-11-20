@@ -41,6 +41,7 @@ import * as EXT from "./extractionAcideBaseModele";
 import { genRDA as genEquationsDesintegrationTG } from "./rdaRealiser";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 import * as PRISME2GT from "./prisme2gtModele";
+import * as NOYAU2GT from "./noyauAtome2gtModele";
 
 // ====================================================
 //  BANQUE DE L'ATELIER « RÉALISER » (compétence S'APP : réaliser)
@@ -1687,6 +1688,48 @@ function genOeil2GT() {
   [q0, q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'L’œil réduit (lentille convergente et écran à 17 mm) : hauteur de l’image par Thalès, hauteur de l’objet, distance, proportionnalité, image nette ou floue et accommodation.', questions: [q0, q1, q2, q3, q4, q5],
     retenir: ['Œil réduit : une lentille convergente et un écran (la rétine) à OA′ = 17 mm ; l’image est réelle et renversée.', 'Thalès : A′B′ ÷ AB = OA′ ÷ OA, avec des longueurs dans la même unité ; deux fois plus loin, une image deux fois plus petite.', 'Cristallin au repos (f′ = 17,0 mm) : objet loin net, objet proche flou ; en accommodant, le cristallin se bombe et f′ diminue.'] };
+}
+// ───────────── Le noyau de l’atome (2GT) : neutrons d’après ZAX, nombre de masse, charge du noyau, masse du noyau, atome agrandi, écriture ZAX ─────────────
+const NOY2GT_SANS_EGAL = NOYAU2GT.ELEMENTS.filter(e => e.Z >= 3 && e.N !== e.Z);        // q0 : jamais autant de neutrons que de protons (une valeur recopiée de l'écriture serait juste par hasard)
+const NOY2GT_TOUS = NOYAU2GT.ELEMENTS.filter(e => e.Z >= 2);
+const NOY2GT_D = [50, 100, 200, 500];                                                    // m : taille de l'atome agrandi
+const noy2gtOptions = (bonne, faux) => melange([bonne, ...faux]);
+function genNoyau2GT() {
+  const Ne = NOYAU2GT.NB, ZAX = e => NOYAU2GT.zaxTexte(e);
+  const filtrer = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
+  const e0 = tire(NOY2GT_SANS_EGAL);
+  const q0 = filtrer({ id: 'g0', type: 'num', q: <>Le noyau d’un atome s’écrit <b>{ZAX(e0)}</b>. Combien de neutrons contient-il ?</>, unite: 'neutrons', vrai: e0.A - e0.Z, tolRel: 1e-9,
+    aide: 'Le nombre du haut est A (les nucléons), le nombre du bas est Z (les protons). Neutrons = A − Z.',
+    pieges: [[e0.A, 'C’est A, le nombre de nucléons : il compte aussi les protons. Il faut retirer Z.'], [e0.Z, 'C’est Z, le nombre de protons. Les neutrons sont A − Z.'], [e0.A + e0.Z, 'On soustrait Z à A, on ne les additionne pas.']],
+    expl: <>Neutrons = A − Z = {e0.A} − {e0.Z} = <b>{e0.A - e0.Z}</b>.</> });
+  const e1 = tire(NOY2GT_TOUS);
+  const q1 = filtrer({ id: 'g1', type: 'num', q: <>Un noyau {e1.deNom} contient <b>{e1.Z} protons</b> et <b>{e1.N} neutrons</b>. Quel est son nombre de masse A ?</>, unite: 'nucléons', vrai: e1.A, tolRel: 1e-9,
+    aide: 'A est le nombre total de nucléons : protons et neutrons.',
+    pieges: [[e1.N, 'C’est le nombre de neutrons seulement : A compte aussi les protons.'], [e1.Z, 'C’est le nombre de protons seulement : A compte aussi les neutrons.'], [Math.abs(e1.N - e1.Z), 'On additionne les protons et les neutrons, on ne les soustrait pas.']],
+    expl: <>A = {e1.Z} + {e1.N} = <b>{e1.A}</b>.</> });
+  const e2 = tire(NOY2GT_TOUS), v2 = e2.Z * 1.6;
+  const q2 = filtrer({ id: 'g2', type: 'num', q: <>La charge élémentaire est <b>e = 1,60{Ne}×{Ne}10⁻¹⁹{Ne}C</b>. Un noyau contient <b>{e2.Z} protons</b> et <b>{e2.N} neutrons</b>. Quelle est sa charge ? Écrivez le nombre qui multiplie 10⁻¹⁹{Ne}C.</>, unite: `×${Ne}10⁻¹⁹${Ne}C`, vrai: v2, tolRel: 0.06, csMin: 2,
+    aide: 'Seuls les protons portent une charge (+e chacun). Les neutrons n’en ont pas.',
+    pieges: [[e2.A * 1.6, 'Vous avez compté tous les nucléons : les neutrons n’ont pas de charge.'], [1.6, 'C’est la charge d’un seul proton : il faut multiplier par le nombre de protons.'], [e2.N * 1.6, 'Vous avez compté les neutrons au lieu des protons : seuls les protons portent une charge.']],
+    expl: <>Charge = {e2.Z} × 1,60 × 10⁻¹⁹ = <b>{nb(v2, 3)}{Ne}×{Ne}10⁻¹⁹{Ne}C</b>.</> });
+  const e3 = tire(NOY2GT_TOUS), v3 = e3.A * 1.67 / 10;
+  const q3 = filtrer({ id: 'g3', type: 'num', q: <>Un noyau contient <b>{e3.A} nucléons</b>, de masse <b>1,67{Ne}×{Ne}10⁻²⁷{Ne}kg</b> chacun. Quelle est la masse du noyau ? Écrivez le nombre qui multiplie 10⁻²⁶{Ne}kg.</>, unite: `×${Ne}10⁻²⁶${Ne}kg`, vrai: v3, tolRel: 0.06, csMin: 2,
+    aide: 'Masse du noyau = nombre de nucléons × masse d’un nucléon. Écrivez le résultat avec 10⁻²⁶ : 10 × 10⁻²⁷ = 1 × 10⁻²⁶.',
+    pieges: [[e3.A, 'Il manque la masse d’un nucléon : multipliez le nombre de nucléons par 1,67.'], [e3.A * 1.67, 'Ce résultat est exprimé avec 10⁻²⁷ : pour l’écrire avec 10⁻²⁶, divisez-le par 10.'], [e3.Z * 1.67 / 10, 'Vous avez compté les protons seulement : tous les nucléons, protons et neutrons, ont cette masse.']],
+    expl: <>m = {e3.A} × 1,67 × 10⁻²⁷ = {nb(e3.A * 1.67, 3)} × 10⁻²⁷ = <b>{nb(v3, 3)}{Ne}×{Ne}10⁻²⁶{Ne}kg</b>.</> });
+  const D4 = tire(NOY2GT_D), v4 = D4 * 1e-2;
+  const q4 = filtrer({ id: 'g4', type: 'num', q: <>Un atome mesure environ <b>10⁻¹⁰{Ne}m</b> et son noyau <b>10⁻¹⁵{Ne}m</b>. On agrandit les deux avec le même facteur jusqu’à ce que l’atome mesure <b>{D4}{Ne}m</b>. Quelle est alors la taille du noyau ? Donnez le résultat en <b>mm</b>.</>, unite: 'mm', vrai: v4, tolRel: 0.06, csMin: 1,
+    aide: 'L’atome est 100\u00a0000 fois plus large que son noyau : divisez la taille agrandie de l’atome par 100\u00a0000, puis convertissez en mm (1\u00a0m = 1\u00a0000\u00a0mm).',
+    pieges: [[D4, 'Vous n’avez pas divisé : le noyau est 100\u00a0000 fois plus petit que l’atome.'], [D4 * 1e-5, 'Ce résultat est en mètres : multipliez par 1\u00a0000 pour l’écrire en millimètres.'], [D4 * 1e-3, 'Ce résultat est en centimètres : 1\u00a0cm = 10\u00a0mm.']],
+    expl: <>Noyau = {D4}{Ne}m ÷ 100{Ne}000 = {nb(D4 * 1e-5, 3)}{Ne}m = <b>{nb(v4, 2)}{Ne}mm</b>.</> });
+  const e5 = tire(NOY2GT_TOUS.filter(e => e.Z <= 17)), mauvais = NOYAU2GT.element(e5.Z + 1);
+  const bonne5 = ZAX(e5), faux5 = [`${NOYAU2GT.sup(e5.Z)}${NOYAU2GT.sub(e5.A)}${e5.s}`, `${NOYAU2GT.sup(e5.Z)}${NOYAU2GT.sub(e5.Z)}${e5.s}`, `${NOYAU2GT.sup(e5.A)}${NOYAU2GT.sub(mauvais.Z)}${mauvais.s}`];
+  const opts5 = noy2gtOptions(bonne5, faux5);
+  const q5 = { id: 'g5', type: 'qcm', q: <>Un noyau {e5.deNom} contient <b>{e5.Z} protons</b> et <b>{e5.N} neutrons</b>. Quelle est son écriture conventionnelle ?</>, options: opts5, bonne: opts5.indexOf(bonne5),
+    aide: 'A (protons + neutrons) s’écrit en haut à gauche du symbole, Z (protons) en bas à gauche. Le symbole se lit dans le tableau périodique.',
+    expl: <>A = {e5.Z} + {e5.N} = {e5.A} en haut, Z = {e5.Z} en bas, symbole {e5.s} ({e5.nom}) : <b>{bonne5}</b>.</> };
+  return { intro: 'Le noyau de l’atome : neutrons d’après l’écriture ZAX, nombre de masse, charge et masse du noyau, atome agrandi et écriture conventionnelle.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['Z compte les protons, A compte tous les nucléons (protons et neutrons) : neutrons = A − Z ; l’atome neutre a Z électrons.', 'Seuls les protons portent une charge (+e = 1,60 × 10⁻¹⁹\u00a0C) ; la masse du noyau est environ A × 1,67 × 10⁻²⁷\u00a0kg ; les électrons ne comptent presque pas dans la masse.', 'Le noyau est 100\u00a0000 fois plus petit que l’atome (10⁻¹⁵\u00a0m et 10⁻¹⁰\u00a0m) ; l’écriture est ᴬ_Z X avec A au-dessus de Z.'] };
 }
 // ───────────── Changement d’état (2GT) : équation, sens du transfert, E = m × L, masse, grammes et kilogrammes, proportionnalité ─────────────
 const M_ETAT = ETM.NOM_ETAT;
@@ -4451,6 +4494,7 @@ export const FAMILLES = [
   { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
   { id: 'pur2gt-calcul', groupe: 'Formules', titre: 'Corps pur ou mélange : palier, température d’ébullition lue, écart avec la référence, compatibilité et identification d’un liquide (2GT)', gen: genPur2GT, domaine: 'Corps purs et mélanges (2GT)' },
   { id: 'oeil2gt-calcul', groupe: 'Formules', titre: 'L’œil réduit : hauteur de l’image (Thalès), hauteur de l’objet, distance, proportionnalité, image nette ou floue et accommodation (2GT)', gen: genOeil2GT, domaine: 'L’œil réduit (2GT)' },
+  { id: 'noy2gt-calcul', groupe: 'Formules', titre: 'Le noyau de l’atome : neutrons d’après ZAX, nombre de masse, charge et masse du noyau, atome agrandi et écriture conventionnelle (2GT)', gen: genNoyau2GT, domaine: 'Noyau de l’atome (2GT)' },
   { id: 'prisme2gt-calcul', groupe: 'Formules', titre: 'Dispersion par un prisme : angle dans le verre, angle de sortie, écart de déviation, laser le plus dévié, indice d’une couleur (2GT)', gen: genPrisme2GT, domaine: 'Dispersion de la lumière (2GT)' },
   { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
   { id: 'img2gt-calcul', groupe: 'Formules', titre: 'Image par une lentille : rayon particulier, hauteur de l’image, grandissement par les tailles et par Thalès, conversion cm–m (2GT)', gen: genImage2GT, domaine: 'Image par une lentille (2GT)' },

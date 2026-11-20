@@ -110,6 +110,7 @@ const SimulationTestsChimiques2gt = paresseux(() => import("./simulations/TestsC
 const SimulationImageLentille2gt = paresseux(() => import("./simulations/ImageLentille2gt"), "SimulationImageLentille");
 const SimulationCorpsPur2gt = paresseux(() => import("./simulations/CorpsPur2gt"), "SimulationCorpsPur");
 const SimulationPrisme2gt = paresseux(() => import("./simulations/Prisme2gt"), "SimulationPrisme");
+const SimulationNoyauAtome2gt = paresseux(() => import("./simulations/NoyauAtome2gt"), "SimulationNoyauAtome");
 const SimulationCombustions = paresseux(() => import("./simulations/Combustions"), "SimulationCombustions");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
@@ -469,6 +470,7 @@ const SIMULATIONS = [
   { id:196, label:"Corps pur ou mélange ?", niveau:"2GT", icon:"🌡️", color:"#0369a1", component: SimulationCorpsPur2gt },
   { id:199, label:"Image réelle et grandissement avec une lentille convergente", niveau:"2GT", icon:"🕯️", color:"#0369a1", component: SimulationImageLentille2gt },
   { id:201, label:"Dispersion par un prisme", niveau:"2GT", icon:"🔺", color:"#7c3aed", component: SimulationPrisme2gt },
+  { id:202, label:"Le noyau de l’atome : taille, masse et écriture ZAX", niveau:"2GT", icon:"🔵", color:"#1d4ed8", component: SimulationNoyauAtome2gt },
   { id:64, label:"Réfraction de la lumière : lois de Snell-Descartes", niveau:"2GT", icon:"🔦", color:"#0369a1",
     component: SimulationRefraction },
   { id:65, label:"Lentille convergente : trajet de la lumière et foyer", niveau:"2GT", icon:"🔍", color:"#0e7490",

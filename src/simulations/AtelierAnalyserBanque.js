@@ -7,6 +7,7 @@
 
 import { presenter } from './presenter.js';
 import { OEIL2GT_ANA } from './oeilReduit2gtExos.js';
+import { NOY2GT_ANA } from './noyauAtome2gtExos.js';
 import { figureTopo } from './topoFigure.js';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -5252,6 +5253,7 @@ export const PREVOIR = [
       F('les taches des échantillons changent de couleur', 'Les espèces gardent leur couleur : ce sont des taches supplémentaires, venues de l’encre, qui apparaissent.'),
     ] },
   ...OEIL2GT_ANA,
+  ...NOY2GT_ANA,
   // ───────────────────────────── Changement d'état (2GT, sim 195) : fusion ou dissolution, proportionnalité, sens du transfert, palier, équation, comparaison de L
   { id: 'etat2gt-ana-dissolution', domaine: 'Changement d’état (2GT)', titre: 'Le sucre dans le thé : fusion ou dissolution ?',
     enonce: 'Un élève met un morceau de sucre dans un thé chaud. Le sucre « disparaît ». Il affirme : « le sucre a fondu, c’est une fusion : H₂O(s) → H₂O(l) ».', q: 'Que penser de son affirmation ?', options: [

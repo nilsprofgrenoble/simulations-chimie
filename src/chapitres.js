@@ -23,7 +23,7 @@ export const NIVEAUX_CHAPITRES = [
 export const SIMS_HORS_MENU = new Set([]);
 
 export const CHAPITRES = [
-  { id: '2gt-microscopique', niveau: '2GT', rubrique: 'Constitution et transformations de la matière', label: '⚛️ Modéliser la matière à l’échelle microscopique', sims: [57, 58, 178], domaines: ['Matière à l’échelle microscopique', 'Quantité de matière (2GT)'] },
+  { id: '2gt-microscopique', niveau: '2GT', rubrique: 'Constitution et transformations de la matière', label: '⚛️ Modéliser la matière à l’échelle microscopique', sims: [57, 58, 178, 202], domaines: ['Matière à l’échelle microscopique', 'Quantité de matière (2GT)', 'Noyau de l’atome (2GT)'] },
   { id: '2gt-solutions', niveau: '2GT', rubrique: 'Constitution et transformations de la matière', label: '🧂 Solutions, dilution et mélanges', sims: [61, 62, 63, 196, 197, 198], domaines: ['Solutions et concentration', 'Corps purs et mélanges (2GT)', 'Chromatographie sur couche mince (2GT)', 'Tests chimiques (2GT)'] },
   { id: '2gt-transformation-chimique', niveau: '2GT', rubrique: 'Constitution et transformations de la matière', label: '🔥 Modéliser une transformation chimique par une réaction', sims: [179, 180], domaines: ['Équation de réaction (2GT)', 'Réactif limitant (2GT)'] },
   { id: '2gt-forces', niveau: '2GT', rubrique: 'Mouvement et interactions', label: '➡️ Modéliser une action par une force', sims: [59, 60, 140, 67], domaines: ['Forces et principe d’inertie'] },
