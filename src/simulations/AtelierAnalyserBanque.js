@@ -4858,6 +4858,42 @@ export const PREVOIR = [
       F('–CH₂–CCl₂– : deux atomes de chlore', 'Le groupe CH₃ est remplacé par un seul atome de chlore, et le groupe –CH₂– n’est pas modifié.'),
       F('–CHCl–CHCl– : un chlore sur chaque C', 'Il n’y a qu’un seul atome de chlore, qui remplace le groupe CH₃ : le –CH₂– du motif reste inchangé.'),
     ] },
+  // ───────────────────────────── Lumière (1G) : domaines spectraux et énergie d'un photon (sim 164)
+  { id: 'phot1g-ana-lambda-nu', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Une fréquence dix fois plus grande',
+    enonce: 'Une onde électromagnétique se propage dans le vide. On la remplace par une autre onde dont la fréquence est dix fois plus grande.', q: 'Que devient la longueur d’onde ?', options: [
+      F('elle est multipliée par 10 : une fréquence plus grande donne une longueur d’onde plus grande', 'C’est l’inverse : λ = c ÷ ν. Comme c ne change pas dans le vide, quand ν est multipliée par 10, λ est divisée par 10.'),
+      F('elle ne change pas : les deux ondes se propagent à la même célérité', 'La célérité c est la même, mais λ = c ÷ ν dépend de la fréquence : si ν change, λ change aussi.'),
+      V('elle est divisée par 10 : la célérité c ne change pas, donc λ = c ÷ ν diminue', 'c reste égale à 3,00 × 10⁸ m·s⁻¹ dans le vide : pour ν multipliée par 10, λ = c ÷ ν est divisée par 10.'),
+      F('elle est divisée par 100 : la longueur d’onde varie comme le carré de la fréquence', 'Il n’y a pas de carré : λ = c ÷ ν est inversement proportionnelle à ν, donc divisée par 10 seulement.'),
+    ] },
+  { id: 'phot1g-ana-photon-uv', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Un photon ultraviolet et un photon rouge',
+    enonce: 'On compare un photon ultraviolet (λ = 300 nm) et un photon rouge (λ = 700 nm), émis dans le vide.', q: 'Que peut-on dire de leurs énergies ?', options: [
+      V('le photon ultraviolet a l’énergie la plus grande : sa fréquence est plus élevée', 'E = h·ν = h·c ÷ λ : à la plus petite longueur d’onde correspond la plus grande fréquence, donc la plus grande énergie.'),
+      F('le photon rouge a l’énergie la plus grande : sa longueur d’onde est la plus grande', 'C’est l’inverse : E = h·c ÷ λ diminue quand λ augmente.'),
+      F('leurs énergies sont égales : tous les photons de lumière portent la même énergie', 'Un photon porte l’énergie h·ν : elle dépend de la fréquence, donc de la couleur du rayonnement.'),
+      F('on ne peut pas comparer : l’énergie ne dépend que de la puissance de la source', 'La puissance change le nombre de photons émis chaque seconde, pas l’énergie d’un seul photon.'),
+    ] },
+  { id: 'phot1g-ana-puissance-photon', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Deux lasers verts de puissances différentes',
+    enonce: 'Deux pointeurs laser émettent la même lumière verte (532 nm). Le laser B est deux fois plus puissant que le laser A.', q: 'Comment se comparent l’énergie d’un photon émis par A et celle d’un photon émis par B ?', options: [
+      F('celle d’un photon de B est deux fois plus grande, car B est plus puissant', 'La puissance dépend du nombre de photons émis chaque seconde. L’énergie d’un photon, E = h·ν, ne dépend que de la fréquence, ici la même.'),
+      V('elles sont égales : les deux photons ont la même longueur d’onde, donc la même fréquence', 'E = h·ν = h·c ÷ λ : même longueur d’onde, donc même énergie par photon. Le laser B émet simplement plus de photons chaque seconde.'),
+      F('celle d’un photon de B est deux fois plus petite : l’énergie se partage entre plus de photons', 'L’énergie d’un photon est fixée par sa fréquence ; elle ne se « partage » pas quand les photons sont plus nombreux.'),
+      F('on ne peut pas les comparer : il faudrait connaître la durée d’émission', 'La durée n’intervient pas : l’énergie d’un photon ne dépend que de sa fréquence.'),
+    ] },
+  { id: 'phot1g-ana-ordre-longueurs', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Radio FM, wifi et télécommande',
+    enonce: 'On compare trois ondes de la vie courante : la radio FM (100 MHz), le wifi (2,4 GHz) et la télécommande d’un téléviseur (infrarouge, environ 3 × 10¹⁴ Hz).', q: 'Dans quel ordre se classent-elles, de la plus grande à la plus petite longueur d’onde ?', options: [
+      F('télécommande, wifi, radio FM : plus la fréquence est grande, plus λ est grande', 'C’est l’ordre inverse : λ = c ÷ ν diminue quand ν augmente.'),
+      F('wifi, radio FM, télécommande : le wifi est une onde plus « large » que la radio', 'Le wifi a une fréquence plus grande que la radio FM, donc une longueur d’onde plus petite : environ 12 cm contre environ 3 m.'),
+      F('radio FM, télécommande, wifi : l’infrarouge est une onde « longue », comme la chaleur', 'L’infrarouge de la télécommande a une fréquence bien plus grande que le wifi, donc une longueur d’onde plus petite (environ 1 µm).'),
+      V('radio FM, wifi, télécommande : les fréquences augmentent, donc λ = c ÷ ν diminue', 'Les fréquences vérifient 100 MHz < 2,4 GHz < 3 × 10¹⁴ Hz, donc λ ≈ 3 m > 12 cm > 1 µm.'),
+    ] },
+  { id: 'phot1g-ana-echelle-log', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Deux distances sur une échelle logarithmique',
+    enonce: 'Sur l’échelle logarithmique du spectre, on mesure la distance entre les graduations « 1 mm » et « 1 µm », puis la distance entre « 1 µm » et « 1 nm ».', q: 'Comment se comparent ces deux distances ?', options: [
+      F('la première est 1 000 fois plus grande : 1 mm vaut 1 000 µm', 'Sur une échelle logarithmique, ce sont les facteurs qui comptent : dans les deux cas, on divise la valeur par 1 000.'),
+      V('elles sont égales : dans les deux cas, on divise la longueur d’onde par 1 000', 'Un pas régulier correspond à un facteur constant : de 1 mm à 1 µm, comme de 1 µm à 1 nm, on divise par 1 000.'),
+      F('la seconde est plus grande : 1 nm est plus petit que 1 µm, donc plus éloigné', 'La distance ne dépend pas de la taille des valeurs, mais du facteur entre elles : ici, le même facteur 1 000.'),
+      F('la seconde est 1 000 fois plus petite : 1 nm est 1 000 fois plus petit que 1 µm', 'Le rapport des valeurs vaut 1 000 dans les deux cas : sur l’axe, les distances sont égales, pas dans un rapport 1 000.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

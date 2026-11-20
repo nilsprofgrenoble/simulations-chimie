@@ -15,6 +15,7 @@ import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
 import * as RX from "./redoxModele";
 import * as CL from "./couleursModele";
+import * as PH from "./photonModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -1097,6 +1098,46 @@ function genSavon1G() {
 }
 
 // ───────────── Couleurs (1G) : mélange de lumières, filtres, couleur d'un objet éclairé, radiations absorbées, sous-pixels ─────────────
+// ──────────────────────── Famille « Lumière : domaines spectraux et énergie d'un photon » (1G, sim 164) ────────────────────────
+function genPhoton1G() {
+  const C = 3.00e8, H = 6.63e-34, EV = 1.60e-19;
+  const lamNm = tire([405, 450, 532, 589, 633, 650]), nuTHz = C / (lamNm * 1e-9) / 1e12;
+  const q1 = { id: 'ph0', type: 'num', q: <>Une lumière de longueur d’onde <b>λ = {lamNm}{NB}nm</b> se propage dans le vide (c = 3,00{NB}×{NB}10⁸{NB}m·s⁻¹). Calculez sa fréquence ν, en <b>THz</b> (1 THz = 10¹² Hz).</>, unite: 'THz', vrai: nuTHz, tolRel: 0.01, csMin: 3,
+    aide: 'Convertissez λ en mètres (1 nm = 10⁻⁹ m), calculez ν = c ÷ λ en hertz, puis convertissez en THz (÷ 10¹²).',
+    pieges: [[nuTHz * 1e12, 'Votre résultat est en hertz : la réponse est demandée en THz (1 THz = 10¹² Hz).'], [nuTHz * 1e3, 'Votre résultat est en GHz : 1 THz = 1 000 GHz.'], [C / lamNm / 1e12, 'La longueur d’onde n’a pas été convertie en mètres (1 nm = 10⁻⁹ m).'], [(lamNm * 1e-9 / C) / 1e12, 'Vous avez calculé λ ÷ c : la fréquence est c ÷ λ.']],
+    expl: <>λ = {lamNm} nm = {nb(lamNm * 1e-9, 3)} m ; ν = c ÷ λ = 3,00 × 10⁸ ÷ {nb(lamNm * 1e-9, 3)} = {nb(C / (lamNm * 1e-9), 3)} Hz = <b>{avecU(nuTHz, 'THz', 3)}</b>.</> };
+  const nuGHz = tire([1.5, 2.0, 3.0, 5.0, 6.0, 10, 12, 30]), lamCm = C / (nuGHz * 1e9) * 100;
+  const q2 = { id: 'ph1', type: 'num', q: <>Un émetteur envoie une onde de fréquence <b>ν = {nb(nuGHz, 2)}{NB}GHz</b> dans le vide. Calculez sa longueur d’onde λ, en <b>cm</b>.</>, unite: 'cm', vrai: lamCm, tolRel: 0.01, csMin: 2,
+    aide: 'Convertissez ν en hertz (1 GHz = 10⁹ Hz), calculez λ = c ÷ ν en mètres, puis convertissez en centimètres (× 100).',
+    pieges: [[lamCm / 100, 'Votre résultat est en mètres : la réponse est demandée en centimètres (1 m = 100 cm).'], [C / nuGHz * 100, 'La fréquence n’a pas été convertie en hertz (1 GHz = 10⁹ Hz).'], [nuGHz * 1e9 / C * 100, 'Vous avez calculé ν ÷ c : la longueur d’onde est c ÷ ν.'], [lamCm * 10, 'Vérifiez la conversion de mètres en centimètres : 1 m = 100 cm.']],
+    expl: <>ν = {nb(nuGHz, 2)} GHz = {nb(nuGHz * 1e9, 2)} Hz ; λ = c ÷ ν = 3,00 × 10⁸ ÷ {nb(nuGHz * 1e9, 2)} = {nb(lamCm / 100, 2)} m = <b>{avecU(lamCm, 'cm', 2)}</b>.</> };
+  const nuT3 = tire([430, 500, 564, 650, 750]), E3 = H * nuT3 * 1e12;
+  const q3 = { id: 'ph2', type: 'num', q: <>Un photon a pour fréquence <b>ν = {nuT3}{NB}THz</b>. Calculez son énergie E = h·ν, en <b>joules</b> (h = 6,63{NB}×{NB}10⁻³⁴{NB}J·s ; 1 THz = 10¹² Hz).</>, unite: 'J', vrai: E3, tolRel: 0.01, csMin: 3,
+    aide: 'Convertissez ν en hertz (× 10¹²), puis multipliez par h. Écrivez le résultat en notation scientifique (par exemple 4,5e-8).',
+    pieges: [[E3 / 1e12, 'La fréquence n’a pas été convertie en hertz : 1 THz = 10¹² Hz.'], [nuT3 * 1e12 / H, 'Vous avez divisé ν par h : l’énergie est le produit h × ν.'], [E3 / EV, 'Votre résultat est en électronvolts : la réponse est demandée en joules (1 eV = 1,60 × 10⁻¹⁹ J).']],
+    expl: <>ν = {nuT3} THz = {nb(nuT3 * 1e12, 3)} Hz ; E = h × ν = 6,63 × 10⁻³⁴ × {nb(nuT3 * 1e12, 3)} = <b>{avecU(E3, 'J', 3)}</b>.</> };
+  const eJ = tire([2.40, 3.05, 3.74, 4.20, 4.96]), eV4 = eJ / 1.60;
+  const q4 = { id: 'ph3', type: 'num', q: <>Un photon a une énergie <b>E = {nb(eJ, 3)} × 10⁻¹⁹{NB}J</b>. Exprimez cette énergie en <b>électronvolts</b> (1 eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'eV', vrai: eV4, tolRel: 0.01, csMin: 3,
+    aide: 'Pour passer des joules aux électronvolts, divisez par 1,60 × 10⁻¹⁹.',
+    pieges: [[eJ * 1e-19, 'Vous avez gardé l’énergie en joules : divisez par 1,60 × 10⁻¹⁹ J/eV pour obtenir des eV.'], [eJ * 1.60 * 1e-38, 'Vous avez multiplié au lieu de diviser : un photon vaut quelques eV, pas 10⁻³⁸.'], [1.60 / eJ, 'Vous avez divisé 1,60 par l’énergie : c’est l’énergie qu’on divise par 1,60 × 10⁻¹⁹.']],
+    expl: <>E(eV) = E(J) ÷ 1,60 × 10⁻¹⁹ = {nb(eJ, 3)} × 10⁻¹⁹ ÷ 1,60 × 10⁻¹⁹ = <b>{avecU(eV4, 'eV', 3)}</b>.</> };
+  const eV5 = tire([1.65, 1.90, 2.10, 2.50, 3.10, 3.50]), lam5 = H * C / (eV5 * EV) * 1e9;
+  const q5 = { id: 'ph4', type: 'num', q: <>Un photon a une énergie <b>E = {nb(eV5, 3)}{NB}eV</b>. Calculez sa longueur d’onde λ dans le vide, en <b>nm</b> (h = 6,63{NB}×{NB}10⁻³⁴{NB}J·s ; c = 3,00{NB}×{NB}10⁸{NB}m·s⁻¹ ; 1 eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'nm', vrai: lam5, tolRel: 0.01, csMin: 3,
+    aide: 'Convertissez E en joules (× 1,60 × 10⁻¹⁹), calculez λ = h × c ÷ E en mètres, puis convertissez en nm (× 10⁹).',
+    pieges: [[lam5 * 1e-9, 'Votre résultat est en mètres : la réponse est demandée en nanomètres (1 m = 10⁹ nm).'], [H * C / eV5 * 1e9, 'L’énergie n’a pas été convertie en joules (E = ' + nb(eV5, 3) + ' eV = ' + nb(eV5 * EV, 3) + ' J).'], [eV5 * EV / (H * C) * 1e9, 'Vous avez inversé la relation : λ = h × c ÷ E.']],
+    expl: <>E = {nb(eV5, 3)} eV = {nb(eV5 * EV, 3)} J ; λ = h × c ÷ E = 6,63 × 10⁻³⁴ × 3,00 × 10⁸ ÷ {nb(eV5 * EV, 3)} = {nb(lam5 * 1e-9, 3)} m = <b>{avecU(lam5, 'nm', 3)}</b>.</> };
+  const it = PH.tirerDomaine(Math.random), idx = PH.DOMAINES.findIndex(d => d.id === it.dom);
+  const voisins = PH.DOMAINES.map((d, i) => ({ d, i })).filter(x => x.i !== idx).sort((a, b) => Math.abs(a.i - idx) - Math.abs(b.i - idx)).slice(0, 3).map(x => x.d.nom);
+  const opts = melange([PH.domaine(it.dom).nom, ...voisins]);
+  const bornesTxt = 'radio : λ > 30 cm ; micro-ondes : 1 mm à 30 cm ; infrarouge : 780 nm à 1 mm ; visible : 400 à 780 nm ; ultraviolet : 10 à 400 nm ; rayons X : 10 pm à 10 nm ; rayons gamma : λ < 10 pm';
+  const q6 = { id: 'ph5', type: 'qcm', q: <>Une onde électromagnétique dans le vide a pour caractéristique <b>{it.txt}</b>. Dans quel domaine du spectre se trouve-t-elle ? (Repères conventionnels : {bornesTxt}. Pour une fréquence, calculez d’abord λ = c ÷ ν.)</>, options: opts, bonne: opts.indexOf(PH.domaine(it.dom).nom),
+    aide: 'Convertissez en mètres (ou calculez λ = c ÷ ν si on donne la fréquence), puis comparez aux bornes des domaines.',
+    expl: <>Ici, λ ≈ {PH.lambdaTexte(it.lam, 2)} : {PH.domaine(it.dom).borne}, c’est le domaine <b>{PH.domaine(it.dom).nom}</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 0.03 * Math.abs(q.vrai)); });
+  return { intro: 'Lumière : domaine d’une onde, longueur d’onde et fréquence (λ = c ÷ ν), énergie d’un photon E = h·ν, joules et électronvolts (dans le vide).', questions: [q6, q1, q2, q3, q4, q5],
+    retenir: ['Domaines : radio, micro-ondes, infrarouge, visible (400 à 780 nm), ultraviolet, X, gamma, du plus grand λ au plus petit (bornes conventionnelles).', 'Dans le vide : λ = c ÷ ν avec c = 3,00 × 10⁸ m·s⁻¹ ; convertir AVANT de calculer (nm → m : × 10⁻⁹ ; GHz → Hz : × 10⁹).', 'Énergie d’un photon : E = h·ν = h·c ÷ λ, avec h = 6,63 × 10⁻³⁴ J·s.', 'Joules et électronvolts : E(J) = E(eV) × 1,60 × 10⁻¹⁹ ; plus ν est grande (λ petite), plus E est grande.'] };
+}
+
 function genCouleurs1G() {
   const NOMS = ['noir', 'rouge', 'vert', 'bleu', 'jaune', 'cyan', 'magenta', 'blanc'];
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -2751,6 +2792,7 @@ export const FAMILLES = [
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
+  { id: 'phot1g-calcul', groupe: 'Formules', titre: 'Lumière : domaine d’une onde, longueur d’onde, fréquence, énergie d’un photon, joules et électronvolts (1G)', gen: genPhoton1G, domaine: 'Domaines spectraux et énergie d’un photon' },
   { id: 'redox1g-calcul', groupe: 'Formules', titre: 'Oxydo-réduction : électrons échangés, coefficients de l’équation, quantités de réactifs et de produits (1G)', gen: genRedox1G, domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction' },
   { id: 'geo1g-calcul', groupe: 'Formules', titre: 'Géométrie, électronégativité et polarité : écart Δχ, doublets, angle idéal, liaisons polarisées (1G)', gen: genGeoPolarite, domaine: 'Géométrie et polarité des entités' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
