@@ -1603,5 +1603,13 @@
  "37:prevoir:icc-ana-seuil": "ANA662",
  "77:plausible:icc-val-somme": "VAL424",
  "77:plausible:icc-val-compat": "VAL425",
- "36:icc-calcul": "REA108"
+ "36:icc-calcul": "REA108",
+ "34:rda-sapp-fils.0": "SAPP411",
+ "34:rda-sapp-fils.1": "SAPP412",
+ "37:prevoir:rda-ana-isotopes": "ANA663",
+ "37:prevoir:rda-ana-position": "ANA664",
+ "37:prevoir:rda-ana-conservation": "ANA665",
+ "77:plausible:rda-val-beta-plus": "VAL426",
+ "77:plausible:rda-val-ok": "VAL427",
+ "36:rda-calcul": "REA109"
 }

@@ -122,6 +122,7 @@ const SimulationNewton = paresseux(() => import("./simulations/Newton"), "Simula
 const SimulationDiffractionOnde = paresseux(() => import("./simulations/DiffractionOnde"), "SimulationDiffractionOnde");
 const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
 const SimulationIncertitudesComposees = paresseux(() => import("./simulations/IncertitudesComposees"), "SimulationIncertitudesComposees");
+const SimulationEquationsDesintegration = paresseux(() => import("./simulations/EquationsDesintegration"), "SimulationEquationsDesintegration");
 const SimulationInterfTG = paresseux(() => import("./simulations/InterfTG"), "SimulationInterfTG");
 const SimulationParticuleCondensateur = paresseux(() => import("./simulations/ParticuleCondensateur"), "SimulationParticuleCondensateur");
 const SimulationSatellites = paresseux(() => import("./simulations/Satellites"), "SimulationSatellites");
@@ -286,6 +287,7 @@ const SIMULATIONS = [
     component: SimulationInteractions },
   { id:123, label:"Radioactivité : loi de décroissance, demi-vie et activité", niveau:"TG", icon:"☢️", color:"#0f766e",
     component: SimulationRadioactivite },
+  { id:184, label:"Radioactivité : diagramme (N, Z) et équations", niveau:"TG", icon:"⚛️", color:"#7b2d8e", component: SimulationEquationsDesintegration },
   { id:125, label:"Équilibre chimique : quotient de réaction Qr, constante K et taux d’avancement final", niveau:"TG", icon:"⚖️", color:"#0f766e",
     component: SimulationEquilibre },
   { id:129, label:"Force des acides : constante d’acidité KA, pKA et produit ionique Ke", niveau:"TG", icon:"🧪", color:"#0f766e",
