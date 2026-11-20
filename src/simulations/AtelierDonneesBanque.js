@@ -3617,6 +3617,66 @@ export const ENONCES = [
         manque: null, solution: { txt: 'E = h × ν = h × c ÷ λ', val: E, u: 'J' } };
     }),
   },
+  // ───────────────────────────── Fluide au repos : pression, force pressante et loi de Mariotte (1G)
+  {
+    id: 'fl1g-pression-sapp-piston', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Un gaz qui pousse sur un piston', noms: ['Force pressante exercée par le gaz sur le piston', 'Pression du gaz enfermé'],
+    gen: () => ({ P: tire([1.2, 1.5, 2.0, 2.5]), S: tire([2.0, 4.0, 5.0, 6.0, 8.0]), V: tire([20, 30, 40, 50]), th: tire([18, 20, 22]), m: tire([8, 12, 15]) }),
+    build: epure((p, q) => {
+      const F = p.P * p.S * 10;
+      const tokens = {
+        P: tok(`${nb(p.P, 1)} bar`, 'Pression du gaz', p.P * 1e5, 'Pa'),
+        S: tok(`${nb(p.S, 1)} cm²`, 'Surface de la face du piston', p.S * 1e-4, 'm²'),
+        V: tok(`${p.V} mL`, 'Volume de gaz enfermé', p.V * 1e-6, 'm³'),
+        th: tok(`${p.th} °C`, 'Température de la salle', p.th, '°C'),
+        m: tok(`${p.m} g`, 'Masse du piston', p.m / 1000, 'kg'),
+        F: tok(`${nb(F, 0)} N`, 'Norme de la force pressante exercée par le gaz sur le piston', F, 'N'),
+      };
+      const raisons = { V: 'Le volume du gaz ne sert pas à calculer la force pressante : celle-ci dépend de la pression et de la surface.', th: 'La température n’intervient pas ici : la pression du gaz est déjà donnée.', m: 'La masse du piston n’est pas la force pressante du gaz : elle ne sert pas à calculer F = P × S.' };
+      if (q === 0) return { tokens, derivees: ['P en pascals : 1 bar = 10⁵ Pa', 'S en mètres carrés : 1 cm² = 10⁻⁴ m²'],
+        texte: ['Dans une seringue bouchée, un gaz de volume ', T('V'), ' est à la température ', T('th'), ' et à la pression ', T('P'), '. Le piston, de masse ', T('m'), ', a une face de surface ', T('S'), '. Quelle est la norme de la force pressante exercée par le gaz sur le piston ?'],
+        utiles: ['P', 'S'], raisons,
+        cherche: { bonne: 'La norme de la force pressante exercée par le gaz sur le piston (en N)', faux: ['La pression de l’air extérieur (en Pa)', 'Le poids du piston (en N)', 'Le volume du gaz après compression (en mL)'] },
+        manque: null, solution: { txt: 'F = P × S, avec P en Pa et S en m²', val: F, u: 'N' } };
+      return { tokens, derivees: ['S en mètres carrés : 1 cm² = 10⁻⁴ m²'],
+        texte: ['Le gaz d’une seringue (volume ', T('V'), ', salle à ', T('th'), ') exerce sur la face du piston, de surface ', T('S'), ', une force pressante de norme ', T('F'), '. Quelle est la pression du gaz ?'],
+        utiles: ['F', 'S'], raisons: { V: raisons.V, th: 'La température n’intervient pas ici : on connaît directement la force et la surface.' },
+        cherche: { bonne: 'La pression du gaz enfermé (en Pa)', faux: ['La surface du piston (en m²)', 'La force de l’air extérieur sur le piston (en N)', 'Le volume du gaz (en mL)'] },
+        manque: null, solution: { txt: 'P = frac(F|S), avec F en N et S en m²', val: p.P * 1e5, u: 'Pa' } };
+    }),
+  },
+  {
+    id: 'fl1g-pression-sapp-mariotte', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Une seringue bouchée que l’on comprime', noms: ['Pression finale du gaz', 'Volume final du gaz'],
+    gen: () => {
+      for (let i = 0; i < 200; i++) {
+        const P1 = tire([1.0, 1.5, 2.0, 2.5]), V1 = tire([60, 80, 100]), V2 = tire([20, 25, 40, 50]), P2 = P1 * V1 / V2;
+        if (V2 < V1 && P2 <= 5 && Math.abs(Number(P2.toPrecision(3)) - P2) < 1e-9) return { P1, V1, V2, P2, S: tire([2.0, 4.0, 6.0]), dt: tire([2, 5, 10]), th: tire([20, 22]) };
+      }
+      return { P1: 1.5, V1: 60, V2: 25, P2: 3.6, S: 6.0, dt: 5, th: 20 };
+    },
+    build: epure((p, q) => {
+      const tokens = {
+        P1: tok(`${nb(p.P1, 1)} bar`, 'Pression initiale du gaz', p.P1, 'bar'),
+        V1: tok(`${p.V1} mL`, 'Volume initial du gaz', p.V1, 'mL'),
+        V2: tok(`${p.V2} mL`, 'Volume final du gaz', p.V2, 'mL'),
+        P2: tok(`${nb(p.P2)} bar`, 'Pression finale du gaz', p.P2, 'bar'),
+        S: tok(`${nb(p.S, 1)} cm²`, 'Surface de la face du piston', p.S, 'cm²'),
+        dt: tok(`${p.dt} s`, 'Durée de la compression', p.dt, 's'),
+        th: tok(`${p.th} °C`, 'Température du gaz, constante pendant l’expérience', p.th, '°C'),
+      };
+      const raisons = { S: 'La surface du piston ne sert pas dans la loi de Mariotte : elle relie la pression à la force, pas la pression au volume.', dt: 'La durée de la compression n’intervient pas : on compare l’état initial et l’état final, à température constante.', th: 'La température est constante : elle garantit que la loi de Mariotte s’applique, mais sa valeur ne sert pas au calcul.' };
+      const debut = ['Une seringue bouchée contient du gaz à la température constante ', T('th'), ', à la pression ', T('P1'), ' pour un volume ', T('V1'), '. On pousse le piston pendant ', T('dt'), ' ; la face du piston a pour surface ', T('S'), '. '];
+      if (q === 0) return { tokens, derivees: ['les volumes restent en mL, les pressions en bar : aucune conversion'],
+        texte: [...debut, 'Le volume final est ', T('V2'), '. Quelle est la pression finale du gaz ?'],
+        utiles: ['P1', 'V1', 'V2'], raisons,
+        cherche: { bonne: 'La pression finale du gaz (en bar)', faux: ['La force pressante sur le piston (en N)', 'La quantité de matière de gaz (en mol)', 'Le volume final du gaz (en mL)'] },
+        manque: null, solution: { txt: 'P₂ = frac(P₁ × V₁|V₂), à température et quantité de gaz constantes', val: p.P2, u: 'bar' } };
+      return { tokens, derivees: ['les volumes restent en mL, les pressions en bar : aucune conversion'],
+        texte: [...debut, 'On s’arrête quand la pression atteint ', T('P2'), '. Quel est alors le volume du gaz ?'],
+        utiles: ['P1', 'V1', 'P2'], raisons,
+        cherche: { bonne: 'Le volume final du gaz (en mL)', faux: ['La pression finale du gaz (en bar)', 'La force pressante sur le piston (en N)', 'La surface du piston (en m²)'] },
+        manque: null, solution: { txt: 'V₂ = frac(P₁ × V₁|P₂), à température et quantité de gaz constantes', val: p.V2, u: 'mL' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

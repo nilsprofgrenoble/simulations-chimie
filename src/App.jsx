@@ -88,6 +88,7 @@ const SimulationConcentrationDilution = paresseux(() => import("./simulations/Co
 const SimulationMesureIncertitudes = paresseux(() => import("./simulations/MesureIncertitudes"), "SimulationMesureIncertitudes");
 const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
 const SimulationOxydoReduction = paresseux(() => import("./simulations/OxydoReduction"), "SimulationOxydoReduction");
+const SimulationPressionMariotte = paresseux(() => import("./simulations/PressionMariotte"), "SimulationPressionMariotte");
 const SimulationGeometriePolarite = paresseux(() => import("./simulations/GeometriePolarite"), "SimulationGeometriePolarite");
 const SimulationSavonAmphiphile = paresseux(() => import("./simulations/SavonAmphiphile"), "SimulationSavonAmphiphile");
 const SimulationDissolutionIonique = paresseux(() => import("./simulations/DissolutionIonique"), "SimulationDissolutionIonique");
@@ -376,6 +377,7 @@ const SIMULATIONS = [
   { id:164, label:"Lumière : domaines spectraux et énergie d’un photon", niveau:"1G", icon:"🌈", color:"#7c3aed", component: SimulationPhoton },
   { id:159, label:"Combustions : énergie libérée et énergies de liaison", niveau:"1G", icon:"🔥", color:"#b45309", component: SimulationCombustions },
   { id:156, label:"Oxydo-réduction : couples, demi-équations et équation de réaction", niveau:"1G", icon:"🔋", color:"#be123c", component: SimulationOxydoReduction },
+  { id:162, label:"Fluide au repos : pression, force pressante et loi de Mariotte", niveau:"1G", icon:"💉", color:"#0369a1", component: SimulationPressionMariotte },
   { id:115, label:"Lentille mince : image, conjugaison et grandissement", niveau:"1G", icon:"🔍", color:"#0e7490",
     component: SimulationLentilleMince },
   { id:150, label:"Ondes mécaniques : célérité et retard", niveau:"1G", icon:"🌊", color:"#0369a1",

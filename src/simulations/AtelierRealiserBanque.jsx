@@ -16,6 +16,7 @@ import * as CM from "./combustionModele";
 import * as RX from "./redoxModele";
 import * as CL from "./couleursModele";
 import * as PH from "./photonModele";
+import * as PM from "./pressionModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -1095,6 +1096,55 @@ function genSavon1G() {
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai && Math.abs(x - q.vrai) > Math.max(q.tolRel * 1.5, 0.02) * Math.abs(q.vrai)); });
   return { intro: 'Savons : atomes de l’ion carboxylate, masse molaire du sel de sodium et quantité de matière de savon.', questions: [q1, q2, q3, q4],
     retenir: ['Ion carboxylate CH₃–(CH₂)ₙ–COO⁻ : n + 2 atomes de carbone et 2n + 3 atomes d’hydrogène.', 'Masse molaire du savon (sel de sodium) : on additionne les masses molaires atomiques de tous les atomes, ion Na⁺ compris.', 'Quantité de matière : n = m / M (m en g, M en g/mol).'] };
+}
+
+// ───────────── Fluide au repos (1G) : force pressante F = P·S, pression, loi de Mariotte, ballon en altitude, test de la loi ─────────────
+function genPressionMariotte1G() {
+  const pInv = (x, y) => Math.abs(x - y) > 0;
+  // q1 : force pressante, avec conversions (P en bar ou en hPa, S en cm²)
+  const enBar = Math.random() < 0.5, P1 = tire(enBar ? [1.20, 1.50, 1.80, 2.00, 2.50, 3.00, 4.00] : [1200, 1500, 1800, 2000, 2500, 3000]), S1 = tire([2.0, 4.0, 5.0, 8.0, 12.0, 20.0, 25.0]);
+  const P1Pa = enBar ? PM.bar_Pa(P1) : PM.hPa_Pa(P1), F1 = PM.forcePressante(P1Pa, PM.cm2_m2(S1));
+  const uP1 = enBar ? 'bar' : 'hPa';
+  const q1 = { id: 'fl0', type: 'num', q: <>Un gaz enfermé est à la pression <b>{avecU(P1, uP1, 3)}</b>. Il exerce une force pressante sur un piston plan de surface <b>{avecU(S1, 'cm²', 3)}</b>. Calculez la norme de cette force, en <b>N</b>.</>, unite: 'N', vrai: F1, csMin: 3, tolRel: 0.01,
+    aide: 'F = P × S, avec P en pascals (1 bar = 10⁵ Pa ; 1 hPa = 100 Pa) et S en mètres carrés (1 cm² = 10⁻⁴ m²).',
+    pieges: [[P1Pa * S1, 'La surface est restée en cm² : S = ' + nb(S1, 3) + ' cm² = ' + nb(S1 * 1e-4, 3) + ' m².'], [P1 * S1 * 1e-4, 'La pression est restée en ' + uP1 + ' : il faut la convertir en pascals.'], [P1Pa * S1 * 1e-2, 'Attention : 1 cm² = 10⁻⁴ m² (et non 10⁻² m²).'], [P1Pa / PM.cm2_m2(S1), 'On multiplie P et S, on ne les divise pas : F = P × S.']],
+    expl: <>P = {nb(P1Pa, 3)}{NB}Pa ; S = {nb(S1, 3)}{NB}cm² = {nb(PM.cm2_m2(S1), 3)}{NB}m² ; F = P × S = <b>{avecU(F1, 'N', 3)}</b>. La force est perpendiculaire à la surface, dirigée du gaz vers le piston.</> };
+  // q2 : pression à partir de la force et de la surface (résultat en hPa)
+  const Ph2 = tire([1000, 1200, 1500, 2000, 2500, 3000]), S2 = tire([2.0, 4.0, 5.0, 8.0, 10.0, 20.0, 25.0]), F2 = PM.forcePressante(PM.hPa_Pa(Ph2), PM.cm2_m2(S2));
+  const q2 = { id: 'fl1', type: 'num', q: <>Un gaz exerce sur une paroi plane de surface <b>{avecU(S2, 'cm²', 3)}</b> une force pressante de norme <b>{avecU(F2, 'N', 3)}</b>. Calculez la pression du gaz, en <b>hPa</b>.</>, unite: 'hPa', vrai: Ph2, csMin: 3, tolRel: 0.01,
+    aide: 'P = F / S avec F en newtons et S en mètres carrés : le résultat est en pascals (1 hPa = 100 Pa).',
+    pieges: [[F2 / S2, 'La surface est restée en cm² : S = ' + nb(S2, 3) + ' cm² = ' + nb(S2 * 1e-4, 3) + ' m².'], [F2 / PM.cm2_m2(S2), 'Ce résultat est en pascals : le résultat est demandé en hPa (1 hPa = 100 Pa).'], [F2 * PM.cm2_m2(S2) / 100, 'On divise la force par la surface, on ne les multiplie pas : P = F / S.']],
+    expl: <>S = {nb(S2, 3)}{NB}cm² = {nb(PM.cm2_m2(S2), 3)}{NB}m² ; P = F / S = {nb(F2, 3)} / {nb(PM.cm2_m2(S2), 3)} = {nb(PM.hPa_Pa(Ph2), 3)}{NB}Pa = <b>{avecU(Ph2, 'hPa', 3)}</b>.</> };
+  // q3 : loi de Mariotte, pression finale
+  let P3 = 1.50, V3 = 80.0, W3 = 25.0;
+  for (let i = 0; i < 100; i++) { P3 = tire([1.00, 1.20, 1.50, 2.00, 2.50]); V3 = tire([60.0, 80.0, 100.0]); W3 = tire([20.0, 25.0, 30.0, 40.0, 50.0]); if (W3 < V3 && P3 * V3 / W3 <= 5) break; }
+  const R3 = PM.pressionFinale(P3, V3, W3);
+  const q3 = { id: 'fl2', type: 'num', q: <>De l’air enfermé dans une seringue bouchée occupe <b>{avecU(V3, 'mL', 3)}</b> à la pression <b>{avecU(P3, 'bar', 3)}</b>. On enfonce le piston jusqu’à <b>{avecU(W3, 'mL', 3)}</b>, sans changer la température ni la quantité d’air. Calculez la pression finale, en <b>bar</b>.</>, unite: 'bar', vrai: R3, csMin: 3, tolRel: 0.01,
+    aide: 'Loi de Mariotte : P₁ × V₁ = P₂ × V₂. Isolez P₂ ; les volumes peuvent rester en mL et les pressions en bar.',
+    pieges: [[P3 * W3 / V3, 'Le rapport est inversé : P₂ = P₁ × V₁ / V₂. Quand le volume diminue, la pression augmente.'], [P3 + V3 - W3, 'On ne soustrait pas les volumes : c’est le produit P × V qui est constant.'], [R3 * 1e5, 'Le résultat est demandé en bar : P₂ = P₁ × V₁ / V₂ reste dans l’unité de P₁.']],
+    expl: <>P₁ × V₁ = P₂ × V₂ donc P₂ = P₁ × V₁ / V₂ = {nb(P3, 3)} × {nb(V3, 3)} / {nb(W3, 3)} = <b>{avecU(R3, 'bar', 3)}</b>.</> };
+  // q4 : ballon de baudruche en altitude (pression de l'air du ballon = pression extérieure, température et quantité d'air constantes)
+  const V4 = tire([1.00, 1.50, 2.00, 2.50, 3.00]), Pa4 = tire([700, 750, 800, 850, 900, 950]), R4 = PM.volumeFinal(PM.P_ATM, V4, Pa4);
+  const q4 = { id: 'fl3', type: 'num', q: <>Un ballon de baudruche de <b>{avecU(V4, 'L', 3)}</b> est gonflé au niveau de la mer, où la pression de l’air est de <b>1013{NB}hPa</b>. En montagne, la pression de l’air est de <b>{avecU(Pa4, 'hPa', 3)}</b>. On suppose que la température et la quantité d’air du ballon sont constantes, et que l’air du ballon est à la pression de l’air extérieur. Calculez le volume du ballon en montagne, en <b>L</b>.</>, unite: 'L', vrai: R4, csMin: 3, tolRel: 0.01,
+    aide: 'Loi de Mariotte : P₁ × V₁ = P₂ × V₂, avec les deux pressions dans la même unité (ici hPa) et les deux volumes dans la même unité.',
+    pieges: [[V4 * Pa4 / PM.P_ATM, 'Le rapport est inversé : V₂ = V₁ × P₁ / P₂. Quand la pression extérieure diminue, le volume du ballon augmente.'], [V4 + PM.P_ATM - Pa4, 'On ne soustrait pas les pressions : c’est le produit P × V qui est constant.'], [R4 * 1000, 'Le résultat est demandé en litres : V₂ garde l’unité de V₁.']],
+    expl: <>P₁ × V₁ = P₂ × V₂ donc V₂ = P₁ × V₁ / P₂ = 1013 × {nb(V4, 3)} / {nb(Pa4, 3)} = <b>{avecU(R4, 'L', 3)}</b> : la pression diminue, le volume augmente.</> };
+  // q5 et q6 : tester la loi avec deux mesures (écart relatif entre P × V, puis conclusion avec une incertitude de 2 %)
+  const compatible = Math.random() < 0.5, Va = 60, Vb = tire([20, 30, 40]), Pa = tire([1008, 1011, 1013, 1016, 1020]);
+  const eps = compatible ? tire([-0.007, -0.004, 0.003, 0.006, 0.009]) : tire([-0.09, -0.065, 0.055, 0.08]);
+  const Pb = Math.round(Pa * Va / Vb * (1 + eps)), ecart = Math.abs(Pb * Vb - Pa * Va) / (Pa * Va) * 100, concl = ecart < 2;
+  const q5 = { id: 'fl4', type: 'num', q: <>On mesure la pression d’un gaz enfermé à température constante : <b>{avecU(Pa, 'hPa', 3)}</b> pour <b>{Va}{NB}mL</b>, puis <b>{avecU(Pb, 'hPa', 3)}</b> pour <b>{Vb}{NB}mL</b>. Calculez l’écart relatif entre les deux produits P × V, par rapport au premier, en <b>%</b>.</>, unite: '%', vrai: ecart, csMin: 2, tolRel: 0.06,
+    aide: 'Calculez P₁ × V₁ et P₂ × V₂ (en hPa·mL), puis |P₂V₂ − P₁V₁| / (P₁V₁) × 100.',
+    pieges: [[Pb * Vb / (Pa * Va) * 100, 'Ce rapport vaut environ 100 % : l’écart relatif est la différence des produits divisée par le premier produit.'], [Math.abs(Pb * Vb - Pa * Va), 'Ce nombre est un écart absolu en hPa·mL : divisez-le par P₁ × V₁ puis multipliez par 100 pour un pourcentage.']],
+    expl: <>P₁V₁ = {nb(Pa * Va, 4)} ; P₂V₂ = {nb(Pb * Vb, 4)} ; écart relatif = |{nb(Pb * Vb, 4)} − {nb(Pa * Va, 4)}| / {nb(Pa * Va, 4)} × 100 = <b>{avecU(ecart, '%', 2)}</b>.</> };
+  const bon6 = concl ? 'compatibles : l’écart est inférieur à 2 %' : 'incompatibles : l’écart est supérieur à 2 %';
+  const opts6 = melange([bon6, concl ? 'incompatibles : l’écart est supérieur à 2 %' : 'compatibles : l’écart est inférieur à 2 %', concl ? 'incompatibles : les produits ne sont pas rigoureusement égaux' : 'compatibles : un écart de quelques pour cent est toujours acceptable', 'on ne peut pas conclure : il faut connaître la température exacte']);
+  const q6 = { id: 'fl5', type: 'qcm', q: <>On convient que deux produits P × V sont compatibles si leur écart relatif est inférieur à <b>2 %</b> (valeur donnée par l’énoncé, qui tient compte de la lecture du volume et du capteur). Les deux mesures sont-elles compatibles avec la loi de Mariotte ?</>, options: opts6, bonne: opts6.indexOf(bon6),
+    aide: 'Comparez l’écart relatif entre les produits (question précédente) à la valeur de 2 % donnée.',
+    expl: <>L’écart relatif est de {nb(ecart, 2)} %, {concl ? 'inférieur' : 'supérieur'} à 2 % : les mesures sont {concl ? 'compatibles' : 'incompatibles'} avec P × V = constante{concl ? '' : ' (cherchez une cause : température ou quantité de gaz qui change, fuite, volume du tuyau oublié)'}.</> };
+  [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && pInv(x, q.vrai) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Fluide au repos : force pressante F = P × S avec conversions, pression d’un gaz, loi de Mariotte (pression finale), ballon en altitude, test de la loi avec une incertitude donnée.', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['Force pressante : F = P × S, avec P en Pa (1 bar = 10⁵ Pa ; 1 hPa = 100 Pa) et S en m² (1 cm² = 10⁻⁴ m²) ; vec(F) est perpendiculaire à la surface, dirigée vers la paroi.', 'Loi de Mariotte (température et quantité de gaz constantes) : P₁ × V₁ = P₂ × V₂ ; si le volume diminue, la pression augmente.', 'Tester la loi : calculer P × V pour plusieurs mesures ; des mesures sont compatibles avec la loi si l’écart relatif entre les produits est inférieur à l’incertitude donnée (ici 2 %).'] };
 }
 
 // ───────────── Couleurs (1G) : mélange de lumières, filtres, couleur d'un objet éclairé, radiations absorbées, sous-pixels ─────────────
@@ -2793,6 +2843,7 @@ export const FAMILLES = [
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
   { id: 'phot1g-calcul', groupe: 'Formules', titre: 'Lumière : domaine d’une onde, longueur d’onde, fréquence, énergie d’un photon, joules et électronvolts (1G)', gen: genPhoton1G, domaine: 'Domaines spectraux et énergie d’un photon' },
+  { id: 'fl1g-pression-calcul', groupe: 'Formules', titre: 'Fluide au repos : force pressante F = P × S, pression d’un gaz, loi de Mariotte, ballon en altitude et test de la loi (1G)', gen: genPressionMariotte1G, domaine: 'Fluide au repos : pression et loi de Mariotte' },
   { id: 'redox1g-calcul', groupe: 'Formules', titre: 'Oxydo-réduction : électrons échangés, coefficients de l’équation, quantités de réactifs et de produits (1G)', gen: genRedox1G, domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction' },
   { id: 'geo1g-calcul', groupe: 'Formules', titre: 'Géométrie, électronégativité et polarité : écart Δχ, doublets, angle idéal, liaisons polarisées (1G)', gen: genGeoPolarite, domaine: 'Géométrie et polarité des entités' },
   { id: 'equ-calcul', groupe: 'Formules', titre: 'Équilibre chimique : Qr, K, taux d’avancement final et ajout d’un réactif (TG)', gen: genEquilibreTG, domaine: 'Équilibre chimique : Qr, K et taux d’avancement' },
