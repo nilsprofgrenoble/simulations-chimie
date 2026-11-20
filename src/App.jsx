@@ -124,6 +124,7 @@ const SimulationLunetteTG = paresseux(() => import("./simulations/LunetteTG"), "
 const SimulationFormulesTopologiques = paresseux(() => import("./simulations/FormulesTopologiques"), "SimulationFormulesTopologiques");
 const SimulationPolymeres = paresseux(() => import("./simulations/Polymeres"), "SimulationPolymeres");
 const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "SimulationCircuitRC");
+const SimulationIntensiteSonore = paresseux(() => import("./simulations/IntensiteSonore"), "SimulationIntensiteSonore");
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationDiffractionOnde = paresseux(() => import("./simulations/DiffractionOnde"), "SimulationDiffractionOnde");
 const SimulationMecanismesTG = paresseux(() => import("./simulations/MecanismesTG"), "SimulationMecanismesTG");
@@ -329,6 +330,7 @@ const SIMULATIONS = [
   { id:181, label:"Diffraction : angle caractéristique", niveau:"TG", icon:"🌊", color:"#0e7490", component: SimulationDiffractionOnde },
   { id:182, label:"Trous d’Young et interfrange", niveau:"TG", icon:"🌈", color:"#be185d", component: SimulationYoung },
   { id:183, label:"Interférences de deux ondes", niveau:"TG", icon:"〰️", color:"#0e7490", component: SimulationInterfTG },
+  { id:211, label:"Intensité sonore, niveau et atténuation", niveau:"TG", icon:"🔊", color:"#0e7490", component: SimulationIntensiteSonore },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

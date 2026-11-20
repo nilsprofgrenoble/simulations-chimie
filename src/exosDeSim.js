@@ -109,6 +109,7 @@ export const EXOS_DE_SIM = {
   175: [/(^|\.)pes-/, /plausible\.pes-/],                                                                           // Mouvement dans un champ de pesanteur uniforme (TG)
   185: [/(^|\.)icc-/, /plausible\.icc-/],                                                                           // Incertitudes-types composées et comparaison à une valeur de référence (TG)
   186: [/(^|\.)mrx-/, /plausible\.mrx-/],  // Mécanismes réactionnels et flèches courbes (TG)
+  211: [/(^|\.)isn-/, /plausible\.isn-/],                                                                              // Intensité sonore, niveau d’intensité et atténuation (TG)
   189: [/(^|\.)opt-/, /plausible\.opt-/],                                                                           // Optimiser une étape de synthèse : vitesse et rendement (TG)
   188: [/(^|\.)brn-/, /plausible\.brn-/],   // Transferts de H⁺ : acides carboxyliques, amines (TG)
   186: [/(^|\.)mrx-/, /plausible\.mrx-/],   // Mécanismes réactionnels et flèches courbes (TG)

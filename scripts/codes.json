@@ -1743,5 +1743,14 @@
  "77:plausible:pur2gt-val-acetone-ok": "VAL464",
  "77:plausible:pur2gt-val-saumure-pur": "VAL465",
  "77:plausible:pur2gt-val-huile-pure": "VAL466",
- "36:pur2gt-calcul": "REA119"
+ "36:pur2gt-calcul": "REA119",
+ "34:isn-sapp-niveau.0": "SAPP451",
+ "34:isn-sapp-niveau.1": "SAPP452",
+ "37:prevoir:isn-ana-distance": "ANA711",
+ "37:prevoir:isn-ana-facteur": "ANA712",
+ "37:prevoir:isn-ana-champ-libre": "ANA713",
+ "77:plausible:isn-val-somme": "VAL467",
+ "77:plausible:isn-val-niveau": "VAL468",
+ "77:plausible:isn-val-distance": "VAL469",
+ "36:isn-calcul": "REA120"
 }
