@@ -1834,5 +1834,14 @@
  "77:plausible:ber-val-debit": "VAL494",
  "77:plausible:ber-val-venturi": "VAL495",
  "77:plausible:ber-val-torricelli": "VAL496",
- "36:ber-calcul": "REA127"
+ "36:ber-calcul": "REA127",
+ "34:arc-sapp-flotteur.0": "SAPP475",
+ "34:arc-sapp-flotteur.1": "SAPP476",
+ "37:prevoir:arc-ana-masse": "ANA740",
+ "37:prevoir:arc-ana-fluide": "ANA741",
+ "37:prevoir:arc-ana-profondeur": "ANA742",
+ "77:plausible:arc-val-poids": "VAL497",
+ "77:plausible:arc-val-iceberg": "VAL498",
+ "77:plausible:arc-val-unite": "VAL499",
+ "36:arc-calcul": "REA128"
 }
