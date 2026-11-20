@@ -24,6 +24,7 @@ import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
+import * as EQM from "./equationReactionModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
 import * as CMB from "./combustionModele";
@@ -3900,6 +3901,69 @@ export const ENONCES = [
         cherche: { bonne: 'La quantité de matière n de l’échantillon (en mol)', faux: ['Le nombre N d’entités, sans passer par n', 'La masse d’une mole de cette entité (en g)', 'La masse de l’échantillon, en kg'] },
         manque: null, solution: { txt: 'n = N ÷ N_A, avec N = m ÷ m_entité', val: n, u: 'mol' } };
     },
+  },
+  // ───────────────────────────── Équation de réaction (2GT, sim 179) : lire les coefficients, repérer les données utiles
+  {
+    id: 'eq2gt-sapp-metal', domaine: 'Équation de réaction (2GT)', titre: 'Un métal dans l’acide chlorhydrique', noms: ['Ions H⁺ consommés', 'Molécules H₂ formées'],
+    gen: () => { const m = tire(['zinc', 'fer', 'magnesium', 'aluminium']), c = EQM.coefsAjustes(EQM.reaction(m)); return { m, N: c[0] * tire([2, 3, 4, 5]), th: tire([18, 20, 22]), V: tire([50, 100, 200]) }; },
+    build: epure((p, q) => {
+      const r = EQM.reaction(p.m), c = EQM.coefsAjustes(r), met = EQM.ESPECES[r.reactifs[0]], k = p.N / c[0];
+      const voy = /^[aeiouyéèh]/i.test(met.nom), de = voy ? `d’${met.nom}` : `de ${met.nom}`, du = voy ? `de l’${met.nom}` : `du ${met.nom}`;
+      const tokens = {
+        N: tok(`${p.N} atomes`, `Nombre d’atomes ${de} qui réagissent`, p.N, ''),
+        th: tok(`${p.th} °C`, 'Température de la solution', p.th, '°C'),
+        V: tok(`${p.V} mL`, 'Volume d’acide chlorhydrique', p.V / 1000, 'L'),
+      };
+      const raisons = { th: 'La température ne change pas les proportions entre les atomes, molécules et ions : elle ne sert pas à lire l’équation.', V: 'Le volume de solution ne donne pas le nombre de particules qui réagissent : on le lit sur l’équation et sur le nombre d’atomes de métal.' };
+      const debut = [`On plonge ${du} (${met.f}) dans de l’acide chlorhydrique de volume `, T('V'), ', à ', T('th'), '. L’équation de réaction est : ', EQM.equationAttendue(r), '. ', T('N'), ` ${de} réagissent, et l’on suppose que tout le métal est consommé. `];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien d’ions H⁺ sont consommés ?'], utiles: ['N'], raisons,
+        cherche: { bonne: 'Le nombre d’ions H⁺ consommés', faux: ['Le nombre d’atomes de métal qui réagissent', 'La charge électrique totale de la solution (en coulombs)', 'Le volume de gaz formé (en mL)'] },
+        manque: null, solution: { txt: `l’équation donne ${c[1]} H⁺ pour ${c[0]} ${met.f} : on multiplie par ${k}`, val: c[1] * k, u: 'ions H⁺' } };
+      return { tokens, derivees: [], texte: [...debut, 'Combien de molécules de dihydrogène H₂ se forment ?'], utiles: ['N'], raisons,
+        cherche: { bonne: 'Le nombre de molécules de dihydrogène H₂ formées', faux: ['Le nombre d’ions H⁺ consommés', 'Le nombre d’atomes de métal qui réagissent', 'La masse de dihydrogène formée (en g)'] },
+        manque: null, solution: { txt: `l’équation donne ${c[3]} H₂ pour ${c[0]} ${met.f} : on multiplie par ${k}`, val: c[3] * k, u: 'molécules H₂' } };
+    }),
+  },
+  {
+    id: 'eq2gt-sapp-methane', domaine: 'Équation de réaction (2GT)', titre: 'Brûler du méthane dans une cuisine', noms: ['Molécules O₂ consommées', 'Molécules CO₂ formées'],
+    gen: () => ({ N: tire([3, 4, 5, 6, 7]), th: tire([18, 20, 22]) }),
+    build: epure((p, q) => {
+      const r = EQM.reaction('methane'), c = EQM.coefsAjustes(r);
+      const tokens = {
+        N: tok(`${p.N} molécules`, 'Nombre de molécules de méthane qui brûlent', p.N, ''),
+        th: tok(`${p.th} °C`, 'Température de la cuisine', p.th, '°C'),
+      };
+      const raisons = { th: 'La température de la cuisine ne dit rien sur les proportions de la réaction.' };
+      const debut = ['Dans une cuisine à ', T('th'), ', ', T('N'), ' de méthane CH₄ brûlent complètement. Équation de réaction : ', EQM.equationAttendue(r), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien de molécules de dioxygène O₂ sont consommées ?'], utiles: ['N'], raisons,
+        cherche: { bonne: 'Le nombre de molécules de dioxygène consommées', faux: ['Le nombre de molécules de méthane qui brûlent', 'Le volume de dioxygène de la pièce (en m³)', 'Le nombre de molécules d’eau formées'] },
+        manque: null, solution: { txt: 'l’équation donne 2 O₂ pour 1 CH₄ : on multiplie par le nombre de molécules de méthane', val: c[1] * p.N, u: 'molécules O₂' } };
+      return { tokens, derivees: [], texte: [...debut, 'Combien de molécules de dioxyde de carbone CO₂ se forment ?'], utiles: ['N'], raisons,
+        cherche: { bonne: 'Le nombre de molécules de dioxyde de carbone formées', faux: ['Le nombre de molécules de dioxygène consommées', 'La masse de dioxyde de carbone formée (en g)', 'Le nombre de molécules d’eau formées'] },
+        manque: null, solution: { txt: 'l’équation donne 1 CO₂ pour 1 CH₄ : même nombre', val: c[2] * p.N, u: 'molécules CO₂' } };
+    }),
+  },
+  {
+    id: 'eq2gt-sapp-dba', domaine: 'Équation de réaction (2GT)', titre: 'Fabriquer un solide jaune en TP', noms: ['Molécules de benzaldéhyde consommées', 'Molécules d’eau formées'],
+    // Situation inspirée d’une activité de synthèse : énoncés réécrits ; 2 C₇H₆O + C₃H₆O → C₁₇H₁₄O + 2 H₂O
+    gen: () => ({ N: tire([2, 3, 4, 5, 6]), th: tire([20, 25, 30]), t: tire([15, 20, 30]), V: tire([5, 10, 20]) }),
+    build: epure((p, q) => {
+      const r = EQM.reaction('dba'), c = EQM.coefsAjustes(r);
+      const tokens = {
+        N: tok(`${p.N} molécules`, 'Nombre de molécules de propanone qui réagissent', p.N, ''),
+        th: tok(`${p.th} °C`, 'Température du mélange', p.th, '°C'),
+        t: tok(`${p.t} min`, 'Durée d’agitation', p.t * 60, 's'),
+        V: tok(`${p.V} mL`, 'Volume de solution de soude ajoutée', p.V / 1000, 'L'),
+      };
+      const raisons = { th: 'La température du mélange ne change pas les proportions de l’équation.', t: 'La durée d’agitation ne donne pas le nombre de molécules qui réagissent.', V: 'La soude aide la réaction mais n’est pas consommée : on ne l’écrit pas dans l’équation et son volume ne sert pas.' };
+      const debut = ['En TP, on prépare un solide jaune, la dibenzalacétone, à partir de benzaldéhyde (C₇H₆O) et de propanone (C₃H₆O), avec ', T('V'), ' de soude, à ', T('th'), ', en agitant ', T('t'), '. Équation de réaction : ', EQM.equationAttendue(r), '. ', T('N'), ' de propanone réagissent, avec tout le benzaldéhyde nécessaire. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien de molécules de benzaldéhyde C₇H₆O sont consommées ?'], utiles: ['N'], raisons,
+        cherche: { bonne: 'Le nombre de molécules de benzaldéhyde consommées', faux: ['Le nombre de molécules de propanone qui réagissent', 'La masse de benzaldéhyde consommée (en g)', 'Le nombre de molécules d’eau formées'] },
+        manque: null, solution: { txt: 'l’équation donne 2 C₇H₆O pour 1 C₃H₆O : on multiplie par le nombre de molécules de propanone', val: c[0] * p.N, u: 'molécules C₇H₆O' } };
+      return { tokens, derivees: [], texte: [...debut, 'Combien de molécules d’eau H₂O se forment ?'], utiles: ['N'], raisons,
+        cherche: { bonne: 'Le nombre de molécules d’eau formées', faux: ['Le nombre de molécules de dibenzalacétone formées', 'Le volume d’eau formé (en mL)', 'Le nombre de molécules de benzaldéhyde consommées'] },
+        manque: null, solution: { txt: 'l’équation donne 2 H₂O pour 1 C₃H₆O : on multiplie par le nombre de molécules de propanone', val: c[3] * p.N, u: 'molécules H₂O' } };
+    }),
   },
 ];
 

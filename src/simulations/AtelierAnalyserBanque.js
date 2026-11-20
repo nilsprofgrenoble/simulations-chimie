@@ -5086,6 +5086,42 @@ export const PREVOIR = [
       F('nettement plus grande : l’ion est chargé, donc plus lourd', 'La charge électrique n’ajoute pas de masse : l’ion a même plutôt un électron de moins, de masse négligeable.'),
       F('deux fois plus petite : il a perdu une particule sur deux', 'Il reste 11 protons, 12 neutrons et 10 électrons : une seule particule très légère a disparu.'),
     ] },
+  // ───────────────────────────── Équation de réaction (2GT, sim 179) : indices, charge, proportions, spectatrices, énergie
+  { id: 'eq2gt-ana-indice', domaine: 'Équation de réaction (2GT)', titre: 'Ajuster sans changer l’indice',
+    enonce: 'Pour ajuster H₂ + O₂ → H₂O, un élève écrit H₂ + O₂ → H₂O₂ : « comme ça, il y a 2 atomes O des deux côtés ». H₂O₂ est l’eau oxygénée, un autre corps que l’eau.', q: 'Que penser de sa méthode ?', options: [
+      V('les atomes sont égaux, mais ce n’est plus de l’eau', 'En changeant l’indice, on écrit une autre molécule (l’eau oxygénée) : l’équation décrit une autre transformation. Pour ajuster, on écrit des coefficients devant les formules : 2 H₂ + O₂ → 2 H₂O.'),
+      F('elle est correcte : O est en même nombre des deux côtés', 'Les atomes sont bien en même nombre, mais le produit formé n’est plus de l’eau : un indice ne se change jamais pour ajuster.'),
+      F('elle est incorrecte : il faudrait aussi changer H₂ en H₄', 'Changer un indice change la molécule (H₄ n’existe pas). On ne touche jamais aux indices : on place des coefficients devant les formules.'),
+      F('elle est incorrecte : il y a plus d’atomes O à droite', 'Avec H₂O₂ il y a 2 atomes O à droite et 2 à gauche : pas de différence. Le défaut de la méthode est que la molécule a changé.'),
+    ] },
+  { id: 'eq2gt-ana-charge', domaine: 'Équation de réaction (2GT)', titre: 'Les ions H⁺ pour le magnésium',
+    enonce: 'Le magnésium réagit avec l’acide chlorhydrique : Mg + … H⁺ → Mg²⁺ + H₂. L’ion Mg²⁺ porte deux charges positives et la molécule H₂ est neutre.', q: 'Combien d’ions H⁺ faut-il à gauche ?', options: [
+      V('2 : il faut 2 atomes H et la charge +2', 'H₂ contient 2 atomes H, donc il faut 2 ions H⁺ ; leur charge totale vaut alors 2 × (+1) = +2, comme celle de Mg²⁺ : atomes et charge sont conservés.'),
+      F('1 : un seul ion H⁺ suffit, le métal est neutre', 'Avec 1 seul H⁺, il y a 1 atome H à gauche pour 2 dans H₂, et une charge de +1 contre +2 à droite.'),
+      F('4 : deux H⁺ pour chaque charge de l’ion Mg²⁺', 'Avec 4 H⁺, la charge à gauche serait +4 pour +2 à droite, et il y aurait 4 atomes H pour 2 dans H₂.'),
+      F('3 : un H⁺ de plus que les charges de Mg²⁺', 'Avec 3 H⁺, la charge à gauche serait +3 pour +2 à droite : la charge n’est pas conservée.'),
+    ] },
+  { id: 'eq2gt-ana-proportions', domaine: 'Équation de réaction (2GT)', titre: 'Brûler trois fois plus de méthane',
+    enonce: 'On brûle complètement 5 molécules de méthane, puis, dans un second essai, 15 molécules. L’équation est CH₄ + 2 O₂ → CO₂ + 2 H₂O.', q: 'Le nombre de molécules d’eau formées au second essai, comparé au premier, est…', options: [
+      V('trois fois plus grand, comme celui du méthane', 'Les coefficients sont des proportions : 15 = 3 × 5, donc tous les nombres sont multipliés par 3. Il se forme 10 molécules d’eau au premier essai, 30 au second.'),
+      F('le même, car l’équation ne change pas', 'L’équation est la même, mais la réaction se produit 3 fois plus de fois : les nombres de molécules sont multipliés par 3.'),
+      F('quinze fois plus grand, comme le nombre de molécules', 'Ce n’est pas 15 qui multiplie : on passe de 5 à 15 molécules de méthane, c’est-à-dire 3 fois plus. Le nombre d’eau est multiplié par 3.'),
+      F('trois fois plus petit, car il reste moins de méthane', 'Il y a plus de méthane au second essai, donc plus de réactions et plus d’eau formée : la quantité d’eau est multipliée par 3.'),
+    ] },
+  { id: 'eq2gt-ana-spectatrices', domaine: 'Équation de réaction (2GT)', titre: 'Soude ou potasse : l’équation simplifiée',
+    enonce: 'On mélange de l’acide chlorhydrique (ions H⁺ et Cl⁻) et une solution de potasse (ions K⁺ et HO⁻). Comme avec la soude, H⁺ et HO⁻ réagissent pour former de l’eau.', q: 'Quelle est l’équation de réaction simplifiée ?', options: [
+      V('H⁺(aq) + HO⁻(aq) → H₂O(l), K⁺ et Cl⁻ spectateurs', 'K⁺ et Cl⁻ sont présents avant et après, sans changer : ils sont spectateurs et n’apparaissent pas. Seuls H⁺ et HO⁻ réagissent : la même équation que pour la soude.'),
+      F('H⁺(aq) + HO⁻(aq) + K⁺(aq) → H₂O(l) + K⁺(aq)', 'K⁺ est bien spectateur, mais on ne l’écrit pas dans l’équation simplifiée : on la simplifie en retirant tous les spectateurs.'),
+      F('K⁺(aq) + Cl⁻(aq) → KCl(s) : le sel se forme', 'Les ions K⁺ et Cl⁻ restent dissous : ils ne participent pas à la transformation. Ce sont H⁺ et HO⁻ qui réagissent.'),
+      F('aucune : sans ions Na⁺, il n’y a pas de transformation', 'Les ions Na⁺ ne sont pas nécessaires : ils sont spectateurs. La transformation entre H⁺ et HO⁻ a lieu avec n’importe quel spectateur.'),
+    ] },
+  { id: 'eq2gt-ana-endothermique', domaine: 'Équation de réaction (2GT)', titre: 'Une température qui baisse',
+    enonce: 'On mélange deux solutions dans un récipient isolé. Un thermomètre indique 20,0 °C avant la transformation chimique et 14,0 °C une fois qu’elle est terminée.', q: 'Que peut-on dire de cette transformation ?', options: [
+      V('elle est endothermique : elle prend de l’énergie au milieu', 'La température du milieu baisse : le milieu a cédé de l’énergie à la transformation, qui est donc endothermique.'),
+      F('elle est exothermique : elle libère de l’énergie vers le milieu', 'Une transformation exothermique réchauffe le milieu. Ici la température baisse : c’est l’inverse.'),
+      F('elle est exothermique : le milieu a perdu de l’énergie', 'Le milieu a bien perdu de l’énergie, mais c’est la transformation qui l’a prise : elle est endothermique.'),
+      F('on ne peut rien dire sans connaître les réactifs', 'Le sens de variation de la température suffit, qualitativement : elle baisse, donc la transformation est endothermique.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

@@ -1488,5 +1488,22 @@
  "77:plausible:mol2gt-val-n-goutte": "VAL391",
  "77:plausible:mol2gt-val-paquet": "VAL392",
  "36:mol2gt-calcul": "REA97",
- "36:mol2gt-puissances": "REA98"
+ "36:mol2gt-puissances": "REA98",
+ "34:eq2gt-sapp-metal.0": "SAPP380",
+ "34:eq2gt-sapp-metal.1": "SAPP381",
+ "34:eq2gt-sapp-methane.0": "SAPP382",
+ "34:eq2gt-sapp-methane.1": "SAPP383",
+ "34:eq2gt-sapp-dba.0": "SAPP384",
+ "34:eq2gt-sapp-dba.1": "SAPP385",
+ "37:prevoir:eq2gt-ana-indice": "ANA622",
+ "37:prevoir:eq2gt-ana-charge": "ANA623",
+ "37:prevoir:eq2gt-ana-proportions": "ANA624",
+ "37:prevoir:eq2gt-ana-spectatrices": "ANA625",
+ "37:prevoir:eq2gt-ana-endothermique": "ANA626",
+ "77:plausible:eq2gt-val-oxygene": "VAL393",
+ "77:plausible:eq2gt-val-charge-atomes": "VAL394",
+ "77:plausible:eq2gt-val-proportions-methane": "VAL395",
+ "77:plausible:eq2gt-val-spectatrices-ok": "VAL396",
+ "77:plausible:eq2gt-val-dba": "VAL397",
+ "36:eq2gt-calcul": "REA99"
 }
