@@ -5529,6 +5529,28 @@ export const PREVOIR = [
       F('une fréquence double, avec la même amplitude, en opposition de phase', 'Pour que les deux signaux se compensent à chaque instant, ils doivent avoir la même fréquence : avec une fréquence double, la somme n’est jamais nulle sur toute une période.'),
       F('un son de même fréquence mais d’amplitude double, en phase', 'En phase, les signaux s’ajoutent : l’amplitude serait triple (3A). Pour annuler, il faut l’opposition de phase et la même amplitude.'),
     ] },
+  // ───────────── Intensité sonore, niveau d'intensité et atténuation (TG)
+  { id: 'isn-ana-distance', domaine: 'Intensité sonore, niveau d’intensité et atténuation', titre: 'On éloigne le sonomètre d’une enceinte',
+    enonce: 'Un sonomètre placé à 2,0 m d’une enceinte, en plein air (champ libre, source assimilée à un point), indique 72 dB. On l’éloigne à 8,0 m de l’enceinte, sans toucher au réglage de l’enceinte.', q: 'Quel niveau peut-on prévoir à 8,0 m ?', options: [
+      V('à peu près 60 dB', 'De 2 m à 8 m, la distance est multipliée par 4 : elle double deux fois. Chaque doublement retire 6 dB (l’intensité est divisée par 4), donc 72 − 2 × 6 = 60 dB (intensité divisée par 16).'),
+      F('environ 66 dB', 'Un seul doublement de la distance retirerait 6 dB : de 2 m à 8 m, la distance double deux fois, donc la baisse est de 12 dB.'),
+      F('un peu moins de 18 dB', 'Le niveau n’est pas divisé par 4 : c’est l’intensité qui est divisée par 16. Le niveau diminue de 6 dB à chaque doublement de la distance.'),
+      F('presque inchangé, 69 dB', 'Une baisse de 3 dB correspond à une intensité divisée par 2 ; ici la distance est multipliée par 4, l’intensité divisée par 16 : la baisse est de 12 dB.'),
+    ] },
+  { id: 'isn-ana-facteur', domaine: 'Intensité sonore, niveau d’intensité et atténuation', titre: 'De 90 dB à 100 dB',
+    enonce: 'Le niveau d’intensité sonore dans une salle de concert passe de 90 dB à 100 dB lorsque les musiciens jouent plus fort.', q: 'Par quel facteur l’intensité sonore a-t-elle été multipliée ?', options: [
+      V('multipliée par 10', 'L’échelle des décibels est logarithmique : 10 dB de plus correspondent à une intensité multipliée par 10, car 10 × log 10 = 10 dB.'),
+      F('multipliée par 100', 'Un facteur 100 correspondrait à 20 dB de plus (10 × log 100 = 20 dB), pas à 10 dB.'),
+      F('multipliée par 2', 'Un facteur 2 correspond à environ 3 dB de plus (10 × log 2 = 3,0 dB), pas à 10 dB.'),
+      F('multipliée par 1,1 environ', 'Le niveau en dB n’est pas proportionnel à l’intensité : 100 dB n’est pas 1,1 fois 90 dB en intensité. Comme L = 10 × log(frac(I|I₀)), 10 dB de plus signifient intensité × 10.'),
+    ] },
+  { id: 'isn-ana-champ-libre', domaine: 'Intensité sonore, niveau d’intensité et atténuation', titre: 'Un couloir étroit aux murs lisses',
+    enonce: 'Pour prévoir le niveau sonore à 10 m d’une enceinte, un élève utilise le modèle de la source ponctuelle isotrope en champ libre. Il fait ensuite la mesure dans un long couloir étroit, aux murs lisses : le niveau mesuré est nettement plus élevé que celui qui est prévu.', q: 'Quelle hypothèse du modèle n’est pas vérifiée dans le couloir ?', options: [
+      V('le champ libre n’est pas réalisé', 'Dans un couloir, les murs réfléchissent le son : la puissance n’est plus répartie sur une sphère entière et le son se répète, ce qui augmente le niveau par rapport au champ libre.'),
+      F('la source n’est plus isotrope', 'L’enceinte est la même dans le couloir et en plein air : ce qui change, c’est l’environnement (les murs), pas la façon dont la source émet.'),
+      F('l’intensité de référence I₀ a changé', 'I₀ = 1,0×10⁻¹² W·m⁻² est une convention (seuil d’audibilité) : elle ne dépend pas de la salle.'),
+      F('la fonction logarithme décimal ne s’applique plus', 'Le logarithme est une définition mathématique du niveau en dB : elle reste valable partout ; seul le calcul de l’intensité I est modifié par les réflexions.'),
+    ] },
   // ───────────── Le son : émission et propagation (2GT)
   { id: 'son2gt-emis-ana-sable', domaine: 'Son : émission et propagation (2GT)', titre: 'Du sable sur un haut-parleur',
     enonce: 'On pose un peu de sable fin sur la membrane d’un haut-parleur tourné vers le haut, puis on lui fait jouer un son.', q: 'Que voit-on ?', options: [

@@ -23,6 +23,7 @@ import * as CM from "./combustionModele";
 import * as EQM from "./equationReactionModele";
 import * as ETM from "./changementEtat2gtModele";
 import * as M_TEST from "./testsChimiques2gtModele";
+import * as ISN from "./isnModele";
 import * as CPM from "./corpsPur2gtModele";
 import * as RX from "./redoxModele";
 import * as RL from "./reactifLimitantModele";
@@ -3267,6 +3268,54 @@ function genInterfTG() {
 }
 
 
+// ───────── Intensité sonore, niveau d'intensité et atténuation (TG, sim 211) ─────────
+function genIntensiteSonoreTG() {
+  // Données écrites en décimales fixes ou en écriture scientifique exacte (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const sc = (x, k = 1) => ISN.sci(x, k);
+  const d1 = (x, k = 1) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const pw = e => <FormuleEnLigne><msup><mn>10</mn><mn>{e}</mn></msup></FormuleEnLigne>;
+  const FLf = <FormuleEnLigne><mi>L</mi><mo>=</mo><mn>10</mn><mo>×</mo><mi>log</mi><mo>(</mo><mfrac><mi>I</mi><msub><mi>I</mi><mn>0</mn></msub></mfrac><mo>)</mo></FormuleEnLigne>;
+  const FIf = <FormuleEnLigne><mi>I</mi><mo>=</mo><msub><mi>I</mi><mn>0</mn></msub><mo>×</mo><msup><mn>10</mn><mfrac style={{ mathDepth: 1, mathStyle: 'normal' }}><mi>L</mi><mn>10</mn></mfrac></msup></FormuleEnLigne>;
+  // 1. I = P / S
+  const P1 = tire([2e-6, 5e-6, 1e-5, 2e-5, 5e-5, 1e-4]), S1 = tire([0.25, 0.5, 1, 2, 5]), I1 = ISN.intensiteSurface(P1, S1);
+  const q1 = { id: 'is0', type: 'num', q: <>Une source sonore émet une puissance acoustique <b>P = {sc(P1)}{NB}W</b> qui traverse perpendiculairement une surface <b>S = {d1(S1, 2)}{NB}m²</b>. Calculez l’intensité sonore I (en W·m⁻², 2 chiffres significatifs ; l’écriture 3e-5 est acceptée).</>, unite: 'W·m⁻²', vrai: I1, tolRel: 0.05, csMin: 2,
+    aide: 'I = P divisée par S : P en W et S en m² donnent I en W·m⁻².',
+    pieges: [[P1 * S1, 'Vous avez multiplié P par S : l’intensité est la puissance divisée par la surface.'], [S1 / P1, 'Le rapport est inversé : I = frac(P|S), la puissance divisée par la surface.'], [P1 / (4 * Math.PI * S1), 'La surface S est donnée : il ne faut pas ajouter le facteur 4π, réservé à la sphère d’une source ponctuelle.']],
+    expl: <>I = {avecIndices('frac(P|S)')} = {avecIndices(`frac(${sc(P1)} W|${d1(S1, 2)} m²)`)} = <b>{sc(I1, 1)}{NB}W·m⁻²</b>.</> };
+  // 2. L à partir de I
+  const I2 = tire([1, 2, 3, 5, 8]) * Math.pow(10, tire([-9, -8, -7, -6, -5, -4, -3])), L2 = ISN.niveau(I2);
+  const q2 = { id: 'is1', type: 'num', q: <>L’intensité sonore en un point vaut <b>I = {sc(I2)}{NB}W·m⁻²</b>. Calculez le niveau d’intensité sonore L correspondant (en dB, 2 chiffres significatifs), avec I₀ = 1,0×10⁻¹²{NB}W·m⁻².</>, unite: 'dB', vrai: L2, tolRel: 0.05, csMin: 2,
+    aide: 'L = 10 × log(frac(I|I₀)) : calculez d’abord le rapport frac(I|I₀), puis son logarithme décimal (touche log), puis multipliez par 10.',
+    pieges: [[10 * Math.log10(I2), 'Vous avez oublié de diviser I par I₀ : on prend le logarithme du rapport frac(I|I₀).'], [Math.log10(I2 / ISN.I0), 'Vous avez oublié le facteur 10 devant le logarithme.'], [20 * Math.log10(I2 / ISN.I0), 'Pour une intensité, le facteur est 10, pas 20.'], [10 * Math.log(I2 / ISN.I0), 'Vous avez utilisé le logarithme népérien (touche ln) : ici log est le logarithme décimal.']],
+    expl: <>L = 10 × log(frac(I|I₀)) = 10 × log({avecIndices(`frac(${sc(I2)}|1,0×10⁻¹²)`)}) = 10 × log({sc(I2 / ISN.I0, 1)}) = <b>{d1(L2, 1)}{NB}dB</b>.</> };
+  // 3. I à partir de L (fonction réciproque)
+  const L3 = tire([35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95]), I3 = ISN.intensiteDepuisNiveau(L3);
+  const q3 = { id: 'is2', type: 'num', q: <>Un sonomètre indique un niveau d’intensité sonore <b>L = {L3}{NB}dB</b>. Calculez l’intensité sonore I correspondante (en W·m⁻², 2 chiffres significatifs ; écriture scientifique acceptée), avec I₀ = 1,0×10⁻¹²{NB}W·m⁻².</>, unite: 'W·m⁻²', vrai: I3, tolRel: 0.07, csMin: 2,
+    aide: 'Fonction réciproque du logarithme : I = I₀ × 10 puissance (frac(L|10)).',
+    pieges: [[L3 * ISN.I0, 'Vous avez multiplié I₀ par L : il faut I₀ × 10 puissance frac(L|10).'], [ISN.I0 * Math.pow(10, L3 / 20), 'L’exposant est frac(L|10) pour une intensité, pas frac(L|20).'], [Math.pow(10, L3 / 10), 'Vous avez oublié de multiplier par I₀ : 10 puissance frac(L|10) est le rapport frac(I|I₀), pas I.'], [ISN.I0 * Math.pow(10, L3), 'L’exposant est frac(L|10) : vous avez oublié de diviser L par 10.']],
+    expl: <>I = I₀ × {pw(d1(L3 / 10, 1))} : avec L = {L3}{NB}dB, l’exposant vaut frac(L|10) = {d1(L3 / 10, 1)} et I = 1,0×10⁻¹² × {pw(d1(L3 / 10, 1))} = <b>{sc(I3, 1)}{NB}W·m⁻²</b>.</> };
+  // 4. niveau derrière une paroi (atténuation géométrique + absorption)
+  let P4, d4, A4, L4s, L4;
+  for (;;) { P4 = tire([1, 2, 5]) * Math.pow(10, tire([-6, -5, -4, -3])); d4 = tire([2, 3, 4, 5, 8, 10]); A4 = tire([25, 35, 50]); L4s = ISN.niveauSource(P4, d4); L4 = L4s - A4; if (L4 >= 10 && L4s <= 75) break; }
+  const q4 = { id: 'is3', type: 'num', q: <>Une source ponctuelle de puissance acoustique <b>P = {sc(P4)}{NB}W</b> émet en champ libre. Une paroi d’atténuation <b>A = {A4}{NB}dB</b> (donnée fictive) est placée entre la source et un sonomètre situé à <b>d = {d4}{NB}m</b> de la source. Calculez le niveau d’intensité sonore L indiqué par le sonomètre (en dB, 2 chiffres significatifs), avec I₀ = 1,0×10⁻¹²{NB}W·m⁻².</>, unite: 'dB', vrai: L4, tolRel: 0.05, csMin: 2,
+    aide: 'Surface de la sphère 4π d² : I = frac(P|4π d²), puis L = 10 × log(frac(I|I₀)) sans paroi ; la paroi retire ensuite A dB (en dB, les atténuations s’ajoutent).',
+    pieges: [[L4s, 'Vous avez oublié la paroi : elle retire encore A dB au niveau calculé sans paroi.'], [L4s + A4, 'La paroi atténue : on retire A au niveau, on ne l’ajoute pas.'], [ISN.niveau(P4 / (4 * Math.PI * d4)) - A4, 'La surface de la sphère varie comme d², pas comme d.'], [ISN.niveau(P4 / (d4 * d4)) - A4, 'Vous avez oublié le facteur 4π : la surface de la sphère est 4π d².']],
+    expl: <>I = {avecIndices('frac(P|4π d²)')} = {avecIndices(`frac(${sc(P4)}|4π × ${d4}²)`)} = {sc(ISN.intensiteSphere(P4, d4), 2)} W·m⁻², donc sans paroi L = 10 × log(frac(I|I₀)) = {d1(L4s, 1)} dB. Avec la paroi : L = {d1(L4s, 1)} − {A4} = <b>{d1(L4, 1)}{NB}dB</b>.</> };
+  // 5. distance où le niveau atteint un seuil
+  let P5, Ls5, d5;
+  for (;;) { P5 = tire([1, 2, 5]) * Math.pow(10, tire([-3, -2, -1, 0])); Ls5 = tire([60, 65, 70, 75, 80, 85]); d5 = ISN.distanceSeuil(P5, Ls5); if (ISN.niveauSource(P5, 1) >= Ls5 + 10 && d5 <= 150) break; }
+  const I5 = ISN.intensiteDepuisNiveau(Ls5);
+  const q5 = { id: 'is4', type: 'num', q: <>Une source ponctuelle de puissance acoustique <b>P = {sc(P5)}{NB}W</b> émet en champ libre, sans paroi. À quelle distance d de la source le niveau d’intensité sonore vaut-il <b>L = {Ls5}{NB}dB</b> ? (en m, 2 chiffres significatifs ; I₀ = 1,0×10⁻¹²{NB}W·m⁻²)</>, unite: 'm', vrai: d5, tolRel: 0.08, csMin: 2,
+    aide: 'Passez par l’intensité : I = I₀ × 10 puissance (frac(L|10)), puis d² = frac(P|4π I) et d = √(d²).',
+    pieges: [[P5 / (4 * Math.PI * I5), 'Vous avez oublié la racine carrée : le calcul donne d², la distance est d = √(d²).'], [Math.pow(10, (ISN.niveauSource(P5, 1) - Ls5) / 10), 'Le niveau varie comme 20 × log d (et non 10 × log d) quand on s’éloigne d’une source ponctuelle.'], [Math.sqrt(P5 / (2 * Math.PI * I5)), 'La surface de la sphère est 4π d², pas 2π d².'], [P5 / I5, 'Vous avez oublié le facteur 4π et la racine carrée : d² = frac(P|4π I).']],
+    expl: <>I = I₀ × {pw(d1(Ls5 / 10, 1))} = {sc(I5, 2)} W·m⁻² ; d² = {avecIndices('frac(P|4π I)')} = {avecIndices(`frac(${sc(P5)}|4π × ${sc(I5, 2)})`)} = {d1(P5 / (4 * Math.PI * I5), 1)} m² ; d = √({d1(P5 / (4 * Math.PI * I5), 1)}) = <b>{nb(d5, 3)}{NB}m</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Intensité sonore et niveau d’intensité sonore : I = frac(P|S), L = 10 × log(frac(I|I₀)) et sa réciproque, atténuation géométrique d’une source ponctuelle (champ libre) et atténuation par absorption d’une paroi. Les valeurs sont des ordres de grandeur ; l’atténuation d’une paroi est une donnée fictive.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Intensité sonore : I = frac(P|S) en W·m⁻² ; source ponctuelle isotrope à la distance d : I = frac(P|4π d²).', <>Niveau : {FLf} avec I₀ = 1,0×10⁻¹² W·m⁻² ; réciproque : {FIf}.</>, 'Intensité × 2 : + 3 dB ; intensité × 10 : + 10 dB ; distance × 2 : − 6 dB (champ libre).', 'En dB, les atténuations s’additionnent : atténuation géométrique + atténuation par absorption.'] };
+}
+
+
 // ───────── Particule chargée dans un condensateur plan (TG, sim 176) ─────────
 function genCondensateurTG() {
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
@@ -4085,6 +4134,7 @@ export const FAMILLES = [
   { id: 'rda-calcul', groupe: 'Formules', titre: 'Équations de désintégration : A et Z du noyau fils ou père, chaîne de désintégrations α et β⁻ (TG)', gen: genEquationsDesintegrationTG, domaine: 'Radioactivité : diagramme (N, Z) et équations de désintégration' },
   { id: 'dif-calcul', groupe: 'Formules', titre: 'Diffraction d’une onde : angle caractéristique, largeur de la tache centrale et largeur de la fente (TG)', gen: genDiffractionTG, domaine: 'Diffraction d’une onde : angle caractéristique' },
   { id: 'itf-calcul', groupe: 'Formules', titre: 'Interférences de deux ondes : retard, déphasage, nombre de lignes constructives et points de silence (TG)', gen: genInterfTG, domaine: 'Interférences de deux ondes : conditions constructives et destructives' },
+  { id: 'isn-calcul', groupe: 'Formules', titre: 'Intensité sonore et niveau d’intensité : calculs, réciproque, atténuation par la distance et par une paroi (TG)', gen: genIntensiteSonoreTG, domaine: 'Intensité sonore, niveau d’intensité et atténuation' },
   { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },
   { id: 'kep-calcul', groupe: 'Formules', titre: 'Satellites et lois de Kepler : accélération, vitesse, période, masse de l’astre et orbite stationnaire (TG)', gen: genKeplerTG, domaine: 'Satellites et lois de Kepler' },
   { id: 'you-calcul', groupe: 'Formules', titre: 'Trous d’Young : différence de chemin, interfrange, distance entre les trous, longueur d’onde et position des franges (TG)', gen: genYoungTG, domaine: 'Trous d’Young et interfrange' },

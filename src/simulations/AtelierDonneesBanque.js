@@ -39,6 +39,7 @@ import * as CL from "./couleursModele";
 import * as KEP from "./satellitesModele";
 import * as BRN from "./brnModele";
 import * as PUR from "./corpsPur2gtModele";
+import * as M_ISN from "./isnModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -4373,6 +4374,33 @@ export const ENONCES = [
         cherche: { bonne: 'Le nombre de longueurs d’onde dans δ (sans unité)', faux: ['Le niveau d’intensité sonore reçu en P (en dB)', 'La période T du son, calculée à partir de f (en s)', 'Le déphasage exprimé en degrés (sans conversion)'] },
         manque: null, solution: { txt: 'frac(δ|λ), avec δ = d₂ − d₁ et λ = frac(v|f) : entier, constructive ; demi-entier, destructive', val: ratio, u: '' } };
     },
+  },
+  // ───────────────────────────── Intensité sonore, niveau d'intensité et atténuation (TG, sim 211) : repérer les données utiles
+  {
+    id: 'isn-sapp-niveau', domaine: 'Intensité sonore, niveau d’intensité et atténuation', titre: 'Un concert en plein air', noms: ['Niveau sonore à la distance d', 'Niveau sonore derrière la paroi'],
+    gen: () => ({ P: tire([2e-5, 5e-5, 1e-4, 2e-4, 5e-4, 1e-3]), d: tire([2, 4, 5, 8, 10]), f: tire([250, 500, 1000, 2000]), m: tire([8, 12, 20]), T: tire([18, 20, 22]), L1: tire([70, 75, 80, 85]), A: tire([25, 35, 50]), e: tire([6, 10, 20]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        P: tok(`${sciR(p.P)} W`, 'Puissance acoustique émise par la source', p.P, 'W'),
+        d: tok(`${p.d} m`, 'Distance entre la source et le sonomètre', p.d, 'm'),
+        I0: tok('1,0 × 10⁻¹² W·m⁻²', 'Intensité sonore de référence (seuil d’audibilité)', 1e-12, 'W·m⁻²'),
+        f: tok(`${p.f} Hz`, 'Fréquence du son émis', p.f, 'Hz'),
+        m: tok(`${p.m} kg`, 'Masse de l’enceinte', p.m, 'kg'),
+        T: tok(`${p.T} °C`, 'Température de l’air', p.T, '°C'),
+        L1: tok(`${p.L1} dB`, 'Niveau mesuré juste avant la paroi', p.L1, 'dB'),
+        A: tok(`${p.A} dB`, 'Atténuation par absorption de la paroi', p.A, 'dB'),
+        e: tok(`${p.e} cm`, 'Épaisseur de la paroi', p.e, 'cm'),
+      };
+      const debut0 = ['Une enceinte de masse ', T('m'), ', assimilée à une source ponctuelle isotrope, émet en champ libre, à la fréquence ', T('f'), ', une puissance acoustique ', T('P'), '. L’air est à ', T('T'), ' et l’intensité de référence vaut ', T('I0'), '. Un sonomètre est placé à ', T('d'), ' de la source. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut0, 'Quel est le niveau d’intensité sonore indiqué par le sonomètre ?'], utiles: ['P', 'd', 'I0'],
+        raisons: { f: 'La fréquence n’intervient ni dans I = frac(P|4π d²) ni dans L = 10 × log(frac(I|I₀)) : le modèle étudié ici est sans pondération.', m: 'La masse de l’enceinte n’a aucun rôle dans la propagation du son dans l’air.', T: 'La température de l’air n’intervient pas dans le modèle du champ libre (pas d’absorption par l’air).' },
+        cherche: { bonne: 'Le niveau sonore L au sonomètre (en dB)', faux: ['La puissance électrique de l’enceinte (en W)', 'La longueur d’onde du son émis (en m)', 'La durée d’exposition admissible (en min)'] },
+        manque: null, solution: { txt: 'L = 10 × log(frac(I|I₀)) avec I = frac(P|4π d²)', val: M_ISN.niveauSource(p.P, p.d), u: 'dB' } };
+      return { tokens, derivees: [], texte: ['Un sonomètre placé juste avant une paroi de ', T('e'), ' d’épaisseur indique ', T('L1'), '. L’atténuation par absorption de cette paroi vaut ', T('A'), '. Un second sonomètre est placé juste après la paroi. Quel niveau indique-t-il ?'], utiles: ['L1', 'A'],
+        raisons: { e: 'L’épaisseur est déjà prise en compte dans l’atténuation A fournie : on ne s’en sert pas pour calculer le niveau.' },
+        cherche: { bonne: 'Le niveau L derrière la paroi (en dB)', faux: ['La puissance acoustique de la source (en W)', 'L’intensité sonore avant la paroi (en W·m⁻²)', 'La fréquence du son transmis (en Hz)'] },
+        manque: null, solution: { txt: 'L(sortie) = L(entrée) − A', val: p.L1 - p.A, u: 'dB' } };
+    }),
   },
   // ───────────────────────────── Niveau sonore et dangers de l'exposition (2GT, sim 192) : repérer les données utiles
   {
