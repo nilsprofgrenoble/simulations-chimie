@@ -1537,5 +1537,14 @@
  "37:prevoir:you-ana-sombre": "ANA639",
  "77:plausible:you-val-unite": "VAL405",
  "77:plausible:you-val-pointe": "VAL406",
- "36:you-calcul": "REA103"
+ "36:you-calcul": "REA103",
+ "34:itf-sapp-cuve.0": "SAPP392",
+ "34:itf-sapp-cuve.1": "SAPP393",
+ "34:itf-sapp-hp.0": "SAPP394",
+ "34:itf-sapp-hp.1": "SAPP395",
+ "37:prevoir:itf-ana-source": "ANA640",
+ "37:prevoir:itf-ana-casque": "ANA641",
+ "77:plausible:itf-val-delta": "VAL407",
+ "77:plausible:itf-val-silence": "VAL408",
+ "36:itf-calcul": "REA104"
 }

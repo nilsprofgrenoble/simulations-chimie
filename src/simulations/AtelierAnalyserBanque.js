@@ -5215,6 +5215,20 @@ export const PREVOIR = [
       F('en O : le centre de la figure est à la fois brillant et sombre', 'En O, δ = 0 : l’interférence est constructive, la frange centrale est brillante et il n’y a pas de frange sombre.'),
       F('à 2 i : il faut deux interfranges pour passer au sombre', 'Deux interfranges séparent deux franges brillantes (k = 0 et k = 2) : le centre de la frange brillante k = 2 est à 2 i.'),
     ] },
+  { id: 'itf-ana-source', domaine: 'Interférences de deux ondes : conditions constructives et destructives', titre: 'Deux haut-parleurs reliés à deux lecteurs différents',
+    enonce: 'Dans une salle, deux haut-parleurs identiques, chacun relié à son propre lecteur audio, jouent la même note de fréquence nominale 440 Hz. On cherche, en se promenant devant eux, les zones de silence que l’on obtiendrait avec un seul générateur : on n’en trouve pas de stable.', q: 'Pourquoi ne trouve-t-on pas de zones de silence stables ?', options: [
+      V('les sons ne sont pas synchrones : leur déphasage varie sans cesse', 'Deux lecteurs indépendants ne jouent jamais exactement la même fréquence : le déphasage entre les deux ondes dérive, et les endroits de silence se déplacent au cours du temps. Il faut un même générateur pour imposer un déphasage constant.'),
+      F('les ondes sonores, contrairement à la lumière, ne peuvent pas interférer', 'Les ondes sonores interfèrent comme toutes les ondes progressives : c’est la condition de synchronisation, pas le type d’onde, qui manque ici.'),
+      F('les deux fréquences sont exactement égales, donc rien ne se passe', 'Si les fréquences étaient exactement égales et le déphasage constant, on aurait au contraire des zones de silence stables : c’est ce que donne un même générateur.'),
+      F('les haut-parleurs sont trop éloignés de l’auditeur pour que le son interfère', 'La distance ne supprime pas l’interférence : elle change seulement l’amplitude de chaque onde. L’absence de figure stable vient du déphasage qui varie.'),
+    ] },
+  { id: 'itf-ana-casque', domaine: 'Interférences de deux ondes : conditions constructives et destructives', titre: 'Un casque à réduction de bruit',
+    enonce: 'Un casque à réduction de bruit capte un bruit sinusoïdal de fréquence 100 Hz et d’amplitude A, puis émet lui-même un son dans l’oreille de l’utilisateur pour que le bruit soit presque inaudible.', q: 'Quel son le casque doit-il émettre ?', options: [
+      V('même fréquence et même amplitude, en opposition de phase (Δφ = π)', 'La somme de deux signaux de même fréquence et de même amplitude A, déphasés de π, est nulle : c’est une interférence destructive. Le casque ne supprime pas le bruit, il en ajoute un second qui l’annule.'),
+      F('même fréquence et même amplitude, en phase (Δφ = 0)', 'Deux signaux en phase s’ajoutent : l’amplitude serait doublée (2A), le bruit serait plus fort et non plus faible.'),
+      F('une fréquence double, avec la même amplitude, en opposition de phase', 'Pour que les deux signaux se compensent à chaque instant, ils doivent avoir la même fréquence : avec une fréquence double, la somme n’est jamais nulle sur toute une période.'),
+      F('un son de même fréquence mais d’amplitude double, en phase', 'En phase, les signaux s’ajoutent : l’amplitude serait triple (3A). Pour annuler, il faut l’opposition de phase et la même amplitude.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

@@ -2858,6 +2858,43 @@ function genDiffractionTG() {
     retenir: ['Angle caractéristique : θ ≈ frac(λ|a), en radians, avec λ et a dans la même unité et λ ≪ a ; sinon sin θ = frac(λ|a).', 'Fente éclairée par un laser : la tache centrale a pour largeur L = frac(2 λ D|a) ; on en déduit a = frac(2 λ D|L) ou λ.', 'Conversions : 1 nm = 10⁻⁹ m ; 1 µm = 10⁻⁶ m ; 1 mm = 10⁻³ m. Pour le son, λ = frac(v|f) avec v = 340 m/s.', 'Plus a est petite devant λ, plus la diffraction est marquée : on entend derrière une porte, on ne voit pas.'] };
 }
 
+// ───────── Interférences de deux ondes (TG, sim 183) ─────────
+function genInterfTG() {
+  const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
+  // nb() prend des chiffres SIGNIFICATIFS : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  // 1. retard de l'onde la plus lointaine dans la cuve (v = 0,40 m/s)
+  const r1 = tire([12.5, 13.0, 14.5, 15.0, 16.5, 17.5, 18.0]), dl = tire([1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0]), r2 = Number((r1 + dl).toFixed(1)), tau = dl * 1e-2 / 0.40 * 1e3;
+  const q1 = { id: 'it0', type: 'num', q: <>Dans une cuve à ondes, deux vibreurs synchrones créent des ondes qui se propagent à <b>v = 0,40{NB}m/s</b>. Un point M est à <b>r₁ = {d(r1, 1)}{NB}cm</b> du premier vibreur et à <b>r₂ = {d(r2, 1)}{NB}cm</b> du second. Calculez le retard τ de l’onde du second vibreur sur celle du premier (en ms, 2 chiffres significatifs).</>, unite: 'ms', vrai: tau, tolRel: 0.05, csMin: 2,
+    aide: 'δ = r₂ − r₁, puis τ = frac(δ|v) : convertissez δ en mètres avant de diviser par v en m/s, puis passez des secondes aux millisecondes.',
+    pieges: [[tau / 1000, 'Vous avez donné τ en secondes : l’unité demandée est la milliseconde.'], [dl / 0.40, 'Convertissez δ en mètres (centimètres divisés par 100) avant de diviser par v en m/s.'], [(r1 + r2) * 1e-2 / 0.40 * 1e3, 'Vous avez additionné r₁ et r₂ : la différence de chemin est r₂ − r₁.'], [dl * 1e-2 * 0.40 * 1e3, 'Vous avez multiplié δ par v : le retard est le quotient frac(δ|v).']],
+    expl: <>δ = r₂ − r₁ = {d(r2, 1)} − {d(r1, 1)} = {d(dl, 1)} cm = {d(dl * 1e-2, 3)} m ; τ = {avecIndices(`frac(δ|v)`)} = {avecIndices(`frac(${d(dl * 1e-2, 3)}|0,40)`)} = {d(tau / 1000, 4)} s = <b>{d(tau, 1)}{NB}ms</b>.</> };
+  // 2. déphasage en radians
+  const lam2 = tire([1.6, 2.0, 2.5, 4.0]), dl2 = tire([1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0]), dphi = 2 * Math.PI * dl2 / lam2;
+  const q2 = { id: 'it1', type: 'num', q: <>En un point d’une cuve à ondes, la différence de chemin entre les ondes de deux sources en phase est <b>δ = {d(dl2, 1)}{NB}cm</b> et la longueur d’onde est <b>λ = {d(lam2, 1)}{NB}cm</b>. Calculez le déphasage Δφ entre les deux ondes (en radians, 2 chiffres significatifs).</>, unite: 'rad', vrai: dphi, tolRel: 0.05, csMin: 2,
+    aide: 'Δφ = 2π × frac(δ|λ) : δ et λ sont dans la même unité, le rapport n’a pas d’unité ; calculatrice en radians.',
+    pieges: [[dl2 / lam2, 'C’est le nombre de longueurs d’onde frac(δ|λ) ; il faut le multiplier par 2π pour obtenir le déphasage en radians.'], [Math.PI * dl2 / lam2, 'Vous avez oublié le facteur 2 : un déphasage de 2π radians correspond à une longueur d’onde entière.'], [360 * dl2 / lam2, 'Vous avez donné le déphasage en degrés : l’unité demandée est le radian.']],
+    expl: <>Δφ = 2π × {avecIndices(`frac(δ|λ)`)} = 2π × {avecIndices(`frac(${d(dl2, 1)}|${d(lam2, 1)})`)} = 2π × {d(dl2 / lam2, 3)} = <b>{d(dphi, 2)}{NB}rad</b>.</> };
+  // 3. nombre de lignes constructives (s et λ tels que s / λ ne soit pas proche d'un entier)
+  const couples = [];
+  for (const s of [4, 5, 6, 8, 10, 12]) for (const l of [1.0, 1.5, 2.0, 2.5, 3.0, 4.0]) { const r = s / l, fr = r - Math.floor(r); if (r > 1.2 && r < 5 && fr > 0.15 && fr < 0.85) couples.push([s, l]); }
+  const [s3, l3] = tire(couples), kmax = Math.ceil(s3 / l3 - 1e-9) - 1, n3 = 2 * kmax + 1, nDest = 2 * Math.max(0, Math.ceil(s3 / l3 - 0.5 - 1e-9));
+  const q3 = { id: 'it2', type: 'num', q: <>Deux vibreurs synchrones et en phase, distants de <b>s = {d(s3, 0)}{NB}cm</b>, créent dans une cuve des ondes de longueur d’onde <b>λ = {d(l3, 1)}{NB}cm</b>. Combien de lignes d’interférence <b>constructives</b> (franges agitées) observe-t-on, en comptant la ligne centrale ?</>, unite: 'lignes', vrai: n3, tolRel: 0.01, csMin: 1,
+    aide: 'Une ligne constructive correspond à δ = kλ, k entier relatif, avec |δ| < s : comptez les valeurs de k, sans oublier k = 0.',
+    pieges: [[kmax, 'Vous avez donné la plus grande valeur de k : il faut compter toutes les lignes, avec les valeurs de k négatives et k = 0 (ligne centrale).'], [nDest, 'Vous avez compté les lignes destructives (δ = (k + ½)λ) : on demande les constructives (δ = kλ).'], [2 * kmax, 'Vous avez oublié la ligne centrale (k = 0, sur l’axe de symétrie).'], [2 * kmax + 3, 'Vous avez compté une valeur de k de trop de chaque côté : il faut |kλ| < s strictement.']],
+    expl: <>|δ| &lt; s donne |k| &lt; {avecIndices(`frac(s|λ)`)} = {avecIndices(`frac(${d(s3, 0)}|${d(l3, 1)})`)} = {d(s3 / l3, 2)} : k va de −{kmax} à +{kmax}, soit 2 × {kmax} + 1 = <b>{n3}</b> lignes constructives.</> };
+  // 4. différence de chemin du n-ième point de silence entre deux haut-parleurs
+  const f4 = tire([340, 425, 500, 680, 850]), n4 = tire([1, 2, 3]), lam4 = 340 / f4, d4 = (n4 - 0.5) * lam4, a4 = Math.ceil((d4 + 0.4) * 2) / 2;
+  const ord = n4 === 1 ? '1ᵉʳ' : `${n4}ᵉ`;
+  const q4 = { id: 'it3', type: 'num', q: <>Deux haut-parleurs en phase émettent un son pur de fréquence <b>{f4}{NB}Hz</b> (célérité du son : 340{NB}m/s) ; ils sont distants de <b>a = {d(a4, 1)}{NB}m</b>. En partant de l’axe de symétrie, on rencontre des points de silence (la différence de chemin reste inférieure à a). Quelle est la différence de chemin δ du <b>{ord} point de silence</b> (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: d4, tolRel: 0.05, csMin: 2,
+    aide: 'Silence : interférence destructive, δ = (k + ½)λ avec k entier ; le premier point de silence correspond à k = 0. Calculez d’abord λ = frac(v|f).',
+    pieges: [[n4 * lam4, 'Vous avez pris un nombre entier de longueurs d’onde : c’est la condition constructive (son fort).'], [lam4 / 2, 'Vous avez pris le premier silence quel que soit le rang demandé : δ = (k + ½)λ avec k = n − 1.'], [(n4 + 0.5) * lam4, 'Vous avez pris k = n : le premier point de silence correspond à k = 0, donc δ = (n − ½)λ pour le n-ième.'], [lam4, 'Vous avez oublié le demi : le silence correspond à un nombre demi-entier de longueurs d’onde.']],
+    expl: <>λ = {avecIndices(`frac(v|f)`)} = {avecIndices(`frac(340|${f4})`)} = {d(lam4, 3)} m ; k = {n4 - 1}, donc δ = ({n4 - 1} + ½) × λ = {d(n4 - 0.5, 1)} × {d(lam4, 3)} = <b>{d(d4, 3)}{NB}m</b> (bien inférieure à a = {d(a4, 1)} m).</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Interférences de deux ondes synchrones et en phase : retard, déphasage, nombre de lignes constructives et points de silence.', questions: [q1, q2, q3, q4],
+    retenir: ['Différence de chemin δ = |r₂ − r₁| ; retard τ = frac(δ|v) ; déphasage Δφ = 2π × frac(δ|λ).', 'Constructive : Δφ = 2kπ, donc δ = kλ. Destructive : Δφ = (2k + 1)π, donc δ = (k + ½)λ (k entier).', 'Les lignes vérifient |δ| < s : on compte les valeurs de k possibles (k = 0 : ligne centrale).', 'Pour le son : λ = frac(v|f) ; le n-ième point de silence est à δ = (n − ½)λ.'] };
+}
+
 
 // ───────── Particule chargée dans un condensateur plan (TG, sim 176) ─────────
 function genCondensateurTG() {
@@ -3395,6 +3432,7 @@ export const FAMILLES = [
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'pes-calcul', groupe: 'Formules', titre: 'Champ de pesanteur uniforme : vitesse, position, portée et théorème de l’énergie cinétique (TG)', gen: genPesanteurTG, domaine: 'Mouvement dans un champ de pesanteur uniforme' },
   { id: 'dif-calcul', groupe: 'Formules', titre: 'Diffraction d’une onde : angle caractéristique, largeur de la tache centrale et largeur de la fente (TG)', gen: genDiffractionTG, domaine: 'Diffraction d’une onde : angle caractéristique' },
+  { id: 'itf-calcul', groupe: 'Formules', titre: 'Interférences de deux ondes : retard, déphasage, nombre de lignes constructives et points de silence (TG)', gen: genInterfTG, domaine: 'Interférences de deux ondes : conditions constructives et destructives' },
   { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },
   { id: 'kep-calcul', groupe: 'Formules', titre: 'Satellites et lois de Kepler : accélération, vitesse, période, masse de l’astre et orbite stationnaire (TG)', gen: genKeplerTG, domaine: 'Satellites et lois de Kepler' },
   { id: 'you-calcul', groupe: 'Formules', titre: 'Trous d’Young : différence de chemin, interfrange, distance entre les trous, longueur d’onde et position des franges (TG)', gen: genYoungTG, domaine: 'Trous d’Young et interfrange' },

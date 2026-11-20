@@ -118,6 +118,7 @@ const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationDiffractionOnde = paresseux(() => import("./simulations/DiffractionOnde"), "SimulationDiffractionOnde");
 const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
+const SimulationInterfTG = paresseux(() => import("./simulations/InterfTG"), "SimulationInterfTG");
 const SimulationParticuleCondensateur = paresseux(() => import("./simulations/ParticuleCondensateur"), "SimulationParticuleCondensateur");
 const SimulationSatellites = paresseux(() => import("./simulations/Satellites"), "SimulationSatellites");
 const SimulationYoung = paresseux(() => import("./simulations/Young"), "SimulationYoung");
@@ -306,6 +307,7 @@ const SIMULATIONS = [
   { id:177, label:"Satellites et lois de Kepler", niveau:"TG", icon:"🛰️", color:"#4338ca", component: SimulationSatellites },
   { id:181, label:"Diffraction : angle caractéristique", niveau:"TG", icon:"🌊", color:"#0e7490", component: SimulationDiffractionOnde },
   { id:182, label:"Trous d’Young et interfrange", niveau:"TG", icon:"🌈", color:"#be185d", component: SimulationYoung },
+  { id:183, label:"Interférences de deux ondes", niveau:"TG", icon:"〰️", color:"#0e7490", component: SimulationInterfTG },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",
