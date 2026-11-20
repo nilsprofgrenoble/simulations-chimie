@@ -71,6 +71,7 @@ export const EXOS_DE_SIM = {
   121: [/(^|\.)phc-/, /plausible\.phc-/],
   122: [/(^|\.)cinv-/, /plausible\.cinv-/],
   123: [/(^|\.)rad-/, /plausible\.rad-/],
+  184: [/(^|\.)rda-/, /plausible\.rda-/],                                                                           // Radioactivité : diagramme (N, Z) et équations de désintégration (TG)
   152: [/(^|\.)mol1g-qte-/, /plausible\.mol1g-qte-/],
   153: [/(^|\.)mol1g-conc-/, /plausible\.mol1g-conc-/],
   154: [/(^|\.)lewis1g-/, /plausible\.lewis1g-/],                                                              // Schéma de Lewis : établir celui d’une molécule ou d’un ion

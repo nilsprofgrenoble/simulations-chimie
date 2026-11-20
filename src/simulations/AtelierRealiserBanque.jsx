@@ -30,6 +30,7 @@ import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
 import * as CO2 from "./co2DissousModele";
 import * as EXT from "./extractionAcideBaseModele";
+import { genRDA as genEquationsDesintegrationTG } from "./rdaRealiser";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
 
 // ====================================================
@@ -3628,6 +3629,7 @@ export const FAMILLES = [
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'pes-calcul', groupe: 'Formules', titre: 'Champ de pesanteur uniforme : vitesse, position, portée et théorème de l’énergie cinétique (TG)', gen: genPesanteurTG, domaine: 'Mouvement dans un champ de pesanteur uniforme' },
   { id: 'icc-calcul', groupe: 'Formules', titre: 'Incertitudes-types composées : somme, quotient, produit avec exposant et quotient de comparaison à une référence (TG)', gen: genIncertitudesTG, domaine: 'Incertitudes-types composées et comparaison à une valeur de référence' },
+  { id: 'rda-calcul', groupe: 'Formules', titre: 'Équations de désintégration : A et Z du noyau fils ou père, chaîne de désintégrations α et β⁻ (TG)', gen: genEquationsDesintegrationTG, domaine: 'Radioactivité : diagramme (N, Z) et équations de désintégration' },
   { id: 'dif-calcul', groupe: 'Formules', titre: 'Diffraction d’une onde : angle caractéristique, largeur de la tache centrale et largeur de la fente (TG)', gen: genDiffractionTG, domaine: 'Diffraction d’une onde : angle caractéristique' },
   { id: 'itf-calcul', groupe: 'Formules', titre: 'Interférences de deux ondes : retard, déphasage, nombre de lignes constructives et points de silence (TG)', gen: genInterfTG, domaine: 'Interférences de deux ondes : conditions constructives et destructives' },
   { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },

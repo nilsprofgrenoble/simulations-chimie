@@ -3551,6 +3551,27 @@ export const PREVOIR = [
       F('le second prouve que la mesure est fausse, le premier qu’elle est juste', 'Aucun des deux ne « prouve » quoi que ce soit : le seuil est une convention, et un z proche de 2 impose de discuter, pas de condamner ou de valider.'),
       F('les deux sont incompatibles, puisque z n’est pas nul', 'Un z nul serait un cas exceptionnel : deux valeurs mesurées sont rarement identiques. Un z inférieur à 2 est, par convention, considéré comme compatible.'),
     ] },
+  { id: 'rda-ana-isotopes', domaine: 'Radioactivité : diagramme (N, Z) et équations de désintégration', titre: 'Carbone 12, carbone 14 et azote 14',
+    enonce: 'Dans un diagramme (N, Z), on repère trois noyaux : le carbone 12 (N = 6, Z = 6), le carbone 14 (N = 8, Z = 6) et l’azote 14 (N = 7, Z = 7).', q: 'Que peut-on dire de ces noyaux ?', options: [
+      V('le carbone 12 et le carbone 14 sont isotopes : même Z, donc même ligne horizontale', 'Des isotopes ont le même nombre de protons Z (même élément) et des nombres de neutrons N différents : le carbone 12 et le carbone 14 (Z = 6) sont sur la même ligne horizontale du diagramme.'),
+      F('le carbone 14 et l’azote 14 sont isotopes : ils ont le même nombre de nucléons, A = 14', 'Le même nombre de nucléons A ne suffit pas : l’azote (Z = 7) est un autre élément que le carbone (Z = 6). Ces deux noyaux sont sur une même diagonale descendante, pas sur la même ligne horizontale.'),
+      F('le carbone 12 et l’azote 14 sont isotopes, car leurs nombres de neutrons sont voisins', 'Deux noyaux sont isotopes quand ils ont le même Z, pas des N voisins : Z vaut 6 pour le carbone et 7 pour l’azote, donc ce sont deux éléments différents.'),
+      F('aucun couple n’est isotope : les trois noyaux ont des nombres de neutrons différents', 'Avoir des N différents est nécessaire pour être isotopes, mais pas suffisant : il faut aussi le même Z. Le carbone 12 et le carbone 14 (Z = 6) sont isotopes.'),
+    ] },
+  { id: 'rda-ana-position', domaine: 'Radioactivité : diagramme (N, Z) et équations de désintégration', titre: 'Un noyau radioactif dans le diagramme',
+    enonce: 'Dans le diagramme (N, Z), un noyau radioactif léger se trouve à droite de la zone des noyaux stables : il a plus de neutrons que les noyaux stables de même nombre de protons Z.', q: 'Quel type de radioactivité va-t-il le plus probablement présenter ?', options: [
+      V('β⁻ : un neutron se transforme en proton, ce qui réduit l’excès de neutrons', 'En radioactivité β⁻, un neutron devient un proton (et émet un électron) : N diminue de 1 et Z augmente de 1, le noyau se rapproche de la zone des noyaux stables.'),
+      F('β⁺ : un proton se transforme en neutron, ce qui rapproche le noyau de la zone stable', 'La radioactivité β⁺ transforme un proton en neutron : elle augmente l’excès de neutrons. Elle convient aux noyaux qui ont trop de protons.'),
+      F('α : le noyau perd des neutrons en émettant un noyau d’hélium', 'Une particule α emporte 2 neutrons et 2 protons : l’écart entre N et Z ne change pas. La radioactivité α concerne surtout les noyaux lourds, pas l’excès de neutrons d’un noyau léger.'),
+      F('aucun : un excès de neutrons ne rend jamais un noyau instable', 'Un noyau qui s’écarte de la zone des noyaux stables est instable : s’il a trop de neutrons, il se désintègre pour s’en rapprocher.'),
+    ] },
+  { id: 'rda-ana-conservation', domaine: 'Radioactivité : diagramme (N, Z) et équations de désintégration', titre: 'Une équation de désintégration fausse',
+    enonce: 'Un élève écrit que le cobalt 60 (A = 60, Z = 27), radioactif β⁻, se désintègre en un noyau de fer (A = 60, Z = 26) en émettant un électron (A = 0, Z = −1).', q: 'Quelle est l’erreur de cette équation ?', options: [
+      V('la charge n’est pas conservée : 27 ≠ 26 + (−1), il faut Z = 28', 'À droite, la somme des Z est 26 + (−1) = 25, alors que le noyau père a Z = 27. En β⁻, Z augmente de 1 : le noyau fils a Z = 28 (nickel 60).'),
+      F('le nombre de nucléons n’est pas conservé : 60 ≠ 60 + 0 ; il faut A = 59', 'Le nombre de nucléons est bien conservé : 60 = 60 + 0, donc A = 60 convient. L’erreur porte sur la charge, c’est-à-dire sur Z.'),
+      F('un électron est un nucléon : il a pour nombre de nucléons A = 1, pas 0', 'L’électron n’est pas un nucléon : sa notation est ⁰₋₁e, avec A = 0 et Z = −1. Cette partie de l’équation est correcte.'),
+      F('le noyau fils ne peut pas avoir le même A que le noyau père', 'En radioactivité β, le nombre de nucléons A ne change pas : un neutron devient un proton. Seul Z change.'),
+    ] },
   { id: 'cpl-ana-sens', domaine: 'Particule chargée dans un condensateur plan', titre: 'Un proton et un électron dans le même condensateur',
     enonce: 'Dans le vide, la plaque du haut d’un condensateur plan est positive et celle du bas négative. Un proton, puis un électron, entrent successivement au milieu des plaques avec la même vitesse horizontale vec(v)₀, perpendiculaire aux lignes de champ.', q: 'Que peut-on dire de leurs trajectoires dans le condensateur ?', options: [
       V('déviées en sens opposés : le proton vers le bas, l’électron vers le haut', 'Le champ vec(E) est dirigé vers le bas. La force vec(F) = q vec(E) est vers le bas pour le proton (q > 0) et vers le haut pour l’électron (q < 0) : les déviations sont de sens opposés.'),

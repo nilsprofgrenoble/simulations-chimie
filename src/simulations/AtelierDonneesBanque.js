@@ -1530,6 +1530,36 @@ export const ENONCES = [
     },
   },
   {
+    id: 'rda-sapp-fils', domaine: 'Radioactivité : diagramme (N, Z) et équations de désintégration', titre: 'Noyau père, particule émise et noyau fils', noms: ['Nombre de nucléons du noyau fils', 'Nombre de protons du noyau fils'],
+    gen: () => {
+      // noyaux réels, mode principal et demi-vie (AIEA) : demi-vie en unité d'énoncé, arrondie à 2 chiffres significatifs
+      const L = [{ n: 'radium 226', Z: 88, A: 226, mode: 'a', T: [1600, 'ans'] }, { n: 'américium 241', Z: 95, A: 241, mode: 'a', T: [433, 'ans'] }, { n: 'polonium 210', Z: 84, A: 210, mode: 'a', T: [138, 'jours'] }, { n: 'radon 222', Z: 86, A: 222, mode: 'a', T: [3.8, 'jours'] },
+        { n: 'cobalt 60', Z: 27, A: 60, mode: 'b-', T: [5.3, 'ans'] }, { n: 'iode 131', Z: 53, A: 131, mode: 'b-', T: [8.0, 'jours'] }, { n: 'césium 137', Z: 55, A: 137, mode: 'b-', T: [30, 'ans'] }, { n: 'strontium 90', Z: 38, A: 90, mode: 'b-', T: [29, 'ans'] },
+        { n: 'fluor 18', Z: 9, A: 18, mode: 'b+', T: [110, 'minutes'] }, { n: 'carbone 11', Z: 6, A: 11, mode: 'b+', T: [20, 'minutes'] }, { n: 'sodium 22', Z: 11, A: 22, mode: 'b+', T: [2.6, 'ans'] }];
+      return tire(L);
+    },
+    build: (p, q) => {
+      const part = { a: { A: 4, Z: 2, txt: 'une particule α' }, 'b-': { A: 0, Z: -1, txt: 'un électron' }, 'b+': { A: 0, Z: 1, txt: 'un positon' } }[p.mode];
+      const NOM = { a: 'α', 'b-': 'β⁻', 'b+': 'β⁺' }[p.mode];
+      const tokens = {
+        A: tok(`A = ${p.A}`, 'Nombre de nucléons du noyau père', p.A, ''),
+        Z: tok(`Z = ${p.Z}`, 'Nombre de protons du noyau père', p.Z, ''),
+        Ap: tok(`A = ${part.A}`, 'Nombre de nucléons de la particule émise', part.A, ''),
+        Zp: tok(`Z = ${sg(part.Z)}`, 'Charge (nombre de charges élémentaires) de la particule émise', part.Z, ''),
+        T: tok(`${nb(p.T[0], Number.isInteger(p.T[0]) ? 0 : 1)} ${p.T[1]}`, 'Demi-vie du noyau père', p.T[0], p.T[1]),
+      };
+      const debut = [`Un échantillon ${/^[aeiouyhéèâî]/i.test(p.n) ? 'd’' : 'de '}${p.n} (noyau père : `, T('A'), ', ', T('Z'), `) est radioactif ${NOM}. Sa demi-vie est de `, T('T'), `. Chaque noyau se désintègre en émettant ${part.txt} (`, T('Ap'), ', ', T('Zp'), '). '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le nombre de nucléons du noyau fils ?'],
+        utiles: ['A', 'Ap'], raisons: { Z: 'Z du père sert à la charge, pas au nombre de nucléons.', Zp: 'La charge de la particule sert à calculer Z du noyau fils, pas son nombre de nucléons.', T: 'La demi-vie décrit la rapidité de la décroissance : elle ne joue aucun rôle dans l’équation de désintégration.' },
+        cherche: { bonne: 'Le nombre de nucléons A du noyau fils', faux: ['Le nombre de protons Z du noyau fils', 'Le nombre de noyaux restant dans l’échantillon', 'La durée avant la désintégration d’un noyau donné'] },
+        manque: null, solution: { txt: 'Conservation de A : A du fils = A du père − A de la particule', val: p.A - part.A, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le nombre de protons Z du noyau fils ?'],
+        utiles: ['Z', 'Zp'], raisons: { A: 'Le nombre de nucléons sert à calculer A du noyau fils, pas Z.', Ap: 'Le nombre de nucléons de la particule sert à calculer A du noyau fils, pas Z.', T: 'La demi-vie ne joue aucun rôle dans l’équation de désintégration.' },
+        cherche: { bonne: 'Le nombre de protons Z du noyau fils', faux: ['Le nombre de nucléons A du noyau fils', 'L’activité de l’échantillon après une demi-vie', 'Le nombre de neutrons du noyau père'] },
+        manque: null, solution: { txt: 'Conservation de la charge : Z du fils = Z du père − Z de la particule', val: p.Z - part.Z, u: '' } };
+    },
+  },
+  {
     id: 'pes-sapp-energie', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Vitesse d’arrivée d’un projectile', noms: ['Variation d’énergie cinétique', 'Vitesse à l’arrivée au sol'],
     gen: () => {
       // la durée du vol affichée est celle du modèle (racine positive de y(t) = 0), arrondie au dixième : les données sont cohérentes entre elles
