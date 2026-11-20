@@ -45,7 +45,7 @@ export const CHAPITRES = [
   { id: '1g-couleurs', niveau: '1G', rubrique: 'Ondes et signaux', label: '🎨 Couleurs : lumières, filtres et couleur des objets', sims: [160], domaines: ['Couleurs : synthèses additive et soustractive, couleur des objets'] },
   { id: '1g-lentille', niveau: '1G', rubrique: 'Ondes et signaux', label: '🔍 Image donnée par une lentille mince', sims: [115], domaines: ['Lentille mince'] },
   { id: '1g-mesure', niveau: '1G', rubrique: 'Mesure et incertitudes', label: '📏 Mesure et incertitudes', sims: [161], domaines: ['Mesure et incertitudes (1G)'] },
-  { id: '1g-lumiere', niveau: '1G', rubrique: 'Ondes et signaux', label: '🌈 Modèles de la lumière', sims: [164], domaines: ['Domaines spectraux et énergie d’un photon'] },
+  { id: '1g-lumiere', niveau: '1G', rubrique: 'Ondes et signaux', label: '🌈 Modèles de la lumière', sims: [164, 165], domaines: ['Domaines spectraux et énergie d’un photon', 'Niveaux d’énergie : absorption, émission et spectres de raies'] },
 
   // TG : un chapitre = une partie numérotée du programme de terminale (la rubrique est le thème du programme) ; plusieurs simulations par chapitre.
   { id: 'tg-composition', niveau: 'TG', rubrique: 'Constitution et transformations de la matière', label: '🧪 Déterminer la composition d’un système par des méthodes physiques et chimiques', sims: [121, 119, 135, 136, 169, 170], domaines: ['pH et concentration en ions oxonium', 'Titrage pH-métrique', 'Conductimétrie : conductivité et titrage', 'Conductimétrie : étalonnage et conductance', 'Spectroscopie UV-visible et loi de Beer-Lambert', 'Spectroscopie infrarouge : données tabulées'] },

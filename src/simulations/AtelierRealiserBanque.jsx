@@ -1190,6 +1190,53 @@ function genPhoton1G() {
     retenir: ['Domaines : radio, micro-ondes, infrarouge, visible (400 à 780 nm), ultraviolet, X, gamma, du plus grand λ au plus petit (bornes conventionnelles).', 'Dans le vide : λ = c ÷ ν avec c = 3,00 × 10⁸ m·s⁻¹ ; convertir AVANT de calculer (nm → m : × 10⁻⁹ ; GHz → Hz : × 10⁹).', 'Énergie d’un photon : E = h·ν = h·c ÷ λ, avec h = 6,63 × 10⁻³⁴ J·s.', 'Joules et électronvolts : E(J) = E(eV) × 1,60 × 10⁻¹⁹ ; plus ν est grande (λ petite), plus E est grande.'] };
 }
 
+// ──────────────────────── Famille « Niveaux d'énergie : absorption, émission et spectres de raies » (1G, sim 165) ────────────────────────
+function genNiveaux1G() {
+  const C = 3.00e8, H = 6.63e-34, EV = 1.60e-19, sg = x => nb(x, 3).replace('-', '−');
+  // q1 : écart d'énergie entre deux niveaux (énergies négatives ou non : seul l'écart compte)
+  const Ea = tire([-9.00, -7.80, -6.50, -5.20, -3.90, 0]), g1 = tire([1.30, 1.70, 2.20, 2.80, 3.40]), Eb = Math.round((Ea + g1) * 100) / 100, sens = tire(['absorbe', 'émet']);
+  const q1 = { id: 'nv0', type: 'num', q: <>Deux niveaux d’un atome fictif ont pour énergies <b>E₁ = {sg(Ea)}{NB}eV</b> et <b>E₂ = {sg(Eb)}{NB}eV</b>. L’atome {sens === 'absorbe' ? 'passe de E₁ à E₂ en absorbant' : 'passe de E₂ à E₁ en émettant'} un photon. Calculez l’énergie ΔE de ce photon, en <b>eV</b>.</>, unite: 'eV', vrai: g1, tolRel: 0.02, csMin: 3,
+    aide: 'ΔE est l’écart entre les deux niveaux, toujours positif : ΔE = |E_f − E_i|. Écrivez le résultat avec une virgule ou un point, par exemple 7,77.',
+    pieges: [[Math.abs(Ea + Eb), 'Vous avez additionné les énergies des deux niveaux : l’énergie du photon est la différence.'], [Math.abs(Eb), 'C’est l’énergie du niveau E₂, pas l’écart entre les deux niveaux.'], [Math.abs(Ea), 'C’est l’énergie du niveau E₁, pas l’écart entre les deux niveaux.'], [-g1, 'Une énergie de photon est positive : c’est la valeur absolue de l’écart.']],
+    expl: <>ΔE = |E₂ − E₁| = |{sg(Eb)} − ({sg(Ea)})| = <b>{avecU(g1, 'eV', 3)}</b>. Seul l’écart compte, pas le zéro choisi pour l’énergie.</> };
+  // q2 : énergie du photon en joules (conversion eV → J)
+  const g2 = tire([1.50, 1.90, 2.30, 2.80, 3.40, 4.20]), E2j = g2 * EV;
+  const q2 = { id: 'nv1', type: 'num', q: <>Un atome passe d’un niveau à un autre en échangeant un photon d’énergie <b>ΔE = {nb(g2, 3)}{NB}eV</b>. Exprimez cette énergie en <b>joules</b> (1{NB}eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'J', vrai: E2j, tolRel: 0.02, csMin: 3,
+    aide: 'Pour passer des eV aux joules, multipliez par 1,60 × 10⁻¹⁹. Écrivez le résultat en notation scientifique, par exemple 4,5e-8.',
+    pieges: [[g2, 'Le résultat est resté en eV : multipliez par 1,60 × 10⁻¹⁹ pour obtenir des joules.'], [g2 / EV, 'Vous avez divisé par 1,60 × 10⁻¹⁹ : pour passer des eV aux J, on multiplie.'], [g2 * 1.60e-9, 'Vérifiez l’exposant : 1 eV = 1,60 × 10⁻¹⁹ J.']],
+    expl: <>ΔE = {nb(g2, 3)} × 1,60 × 10⁻¹⁹ = <b>{avecU(E2j, 'J', 3)}</b>.</> };
+  // q3 : longueur d'onde du photon absorbé ou émis
+  const g3 = tire([0.80, 1.20, 1.55, 1.90, 2.30, 2.80, 3.40, 4.50, 6.20, 8.00, 10.2]), lam3 = H * C / (g3 * EV) * 1e9;
+  const q3 = { id: 'nv2', type: 'num', q: <>L’écart entre deux niveaux d’un atome vaut <b>ΔE = {nb(g3, 3)}{NB}eV</b>. Calculez la longueur d’onde λ du photon absorbé ou émis lors de cette transition, en <b>nm</b> (h = 6,63{NB}×{NB}10⁻³⁴{NB}J·s ; c = 3,00{NB}×{NB}10⁸{NB}m·s⁻¹ ; 1{NB}eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'nm', vrai: lam3, tolRel: 0.02, csMin: 3,
+    aide: 'Convertissez ΔE en joules (× 1,60 × 10⁻¹⁹), calculez λ = h × c ÷ ΔE en mètres, puis convertissez en nm (× 10⁹).',
+    pieges: [[lam3 * 1e-9, 'Votre résultat est en mètres : la réponse est demandée en nanomètres (1 m = 10⁹ nm).'], [H * C / g3 * 1e9, 'L’énergie n’a pas été convertie en joules (ΔE = ' + nb(g3 * EV, 3) + ' J).'], [g3 * EV / (H * C) * 1e9, 'Vous avez inversé la relation : λ = h × c ÷ ΔE.']],
+    expl: <>ΔE = {nb(g3, 3)} eV = {nb(g3 * EV, 3)} J ; λ = h × c ÷ ΔE = 6,63 × 10⁻³⁴ × 3,00 × 10⁸ ÷ {nb(g3 * EV, 3)} = {nb(lam3 * 1e-9, 3)} m = <b>{avecU(lam3, 'nm', 3)}</b>.</> };
+  // q4 : niveau d'arrivée après absorption d'un photon de longueur d'onde donnée
+  const Ei = tire([0, 1.20, 2.10, 3.00]), lam4 = tire([650, 500, 420, 365, 300]), dE4 = H * C / (lam4 * 1e-9) / EV, Ef = Ei + dE4;
+  const q4 = { id: 'nv3', type: 'num', q: <>Un atome au niveau d’énergie <b>E<sub>i</sub> = {nb(Ei, 3)}{NB}eV</b> absorbe un photon de longueur d’onde <b>{lam4}{NB}nm</b>. Calculez l’énergie E<sub>f</sub> du niveau atteint, en <b>eV</b> (h = 6,63{NB}×{NB}10⁻³⁴{NB}J·s ; c = 3,00{NB}×{NB}10⁸{NB}m·s⁻¹ ; 1{NB}eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'eV', vrai: Ef, tolRel: 0.02, csMin: 3,
+    aide: 'Calculez d’abord l’énergie du photon : ΔE = h × c ÷ λ en joules, puis en eV. L’atome gagne cette énergie : E_f = E_i + ΔE.',
+    pieges: [[Ei - dE4, 'Le photon est absorbé : l’énergie de l’atome augmente, E_f = E_i + ΔE (et non E_i − ΔE).'], [dE4, 'C’est l’énergie du photon : il faut ensuite l’ajouter à l’énergie du niveau de départ.'], [Ef * EV, 'Votre résultat est en joules : la réponse est demandée en eV.']],
+    expl: <>ΔE = h × c ÷ λ = {nb(dE4 * EV, 3)} J = {nb(dE4, 3)} eV ; E<sub>f</sub> = E<sub>i</sub> + ΔE = {nb(Ei, 3)} + {nb(dE4, 3)} = <b>{avecU(Ef, 'eV', 3)}</b>.</> };
+  // q5 : nombre de raies d'émission d'un gaz dont les atomes sont excités au plus haut niveau (toutes les transitions entre niveaux comptées)
+  const n5 = tire([3, 4, 5]), nr = n5 * (n5 - 1) / 2;
+  const q5 = { id: 'nv4', type: 'num', q: <>Les atomes d’un gaz ont <b>{n5} niveaux d’énergie</b> (E₀ fondamental, puis {n5 - 1} niveaux excités). On excite des atomes jusqu’au niveau le plus haut et on compte toutes les transitions possibles entre ces niveaux, sans tenir compte de l’intensité. Combien de raies d’émission différentes le gaz peut-il émettre ?</>, unite: 'raies', vrai: nr, tolRel: 0, csMin: 1,
+    aide: 'Comptez les descentes possibles depuis le niveau le plus haut, puis depuis le suivant, et ainsi de suite.',
+    pieges: [[n5, 'Vous avez compté les niveaux : il faut compter les transitions (paires de niveaux).'], [n5 - 1, 'Vous n’avez compté que les transitions qui partent du niveau le plus haut : les atomes peuvent aussi s’arrêter en route.'], [2 * nr, 'Vous avez compté chaque transition deux fois : une raie d’émission correspond à une descente seulement.']],
+    expl: <>Descentes possibles : {Array.from({ length: n5 - 1 }, (_, k) => n5 - 1 - k).join(' + ')} = <b>{nr} raies</b> d’émission.</> };
+  // q6 : domaine du photon (QCM)
+  const g6 = tire([0.80, 1.20, 1.90, 2.30, 2.60, 3.80, 5.00, 8.00, 12.0]), lam6 = H * C / (g6 * EV), d6 = PH.domaineDeLambda(lam6), idx = PH.DOMAINES.findIndex(d => d.id === d6.id);
+  const voisins = PH.DOMAINES.map((d, i) => ({ d, i })).filter(x => x.i !== idx).sort((a, b) => Math.abs(a.i - idx) - Math.abs(b.i - idx)).slice(0, 3).map(x => x.d.nom);
+  const opts = melange([d6.nom, ...voisins]);
+  const bornesTxt = 'infrarouge : 780 nm à 1 mm ; visible : 400 à 780 nm ; ultraviolet : 10 à 400 nm ; rayons X : 10 pm à 10 nm ; micro-ondes : 1 mm à 30 cm';
+  const q6 = { id: 'nv5', type: 'qcm', q: <>Un atome émet un photon d’énergie <b>ΔE = {nb(g6, 3)}{NB}eV</b>. Dans quel domaine du spectre se trouve-t-il ? (Repères conventionnels : {bornesTxt}. Calculez d’abord λ = h × c ÷ ΔE.)</>, options: opts, bonne: opts.indexOf(d6.nom),
+    aide: 'Convertissez ΔE en joules, calculez λ = h × c ÷ ΔE, puis comparez λ aux bornes des domaines.',
+    expl: <>λ = h × c ÷ ΔE ≈ {PH.lambdaTexte(lam6, 3)} : {d6.borne}, c’est le domaine <b>{d6.nom}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 0.04 * Math.abs(q.vrai)); });
+  q5.pieges = q5.pieges.filter(([x]) => x !== nr);
+  return { intro: 'Niveaux d’énergie : écart entre deux niveaux, ΔE = h·ν = h·c ÷ λ, joules et électronvolts, niveau atteint, nombre de raies d’émission, domaine d’un photon (atome isolé, diagrammes simplifiés).', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['Un atome isolé n’a que des énergies bien précises (niveaux) ; la valeur du zéro est un choix, seuls les écarts comptent.', 'Photon absorbé ou émis : ΔE = |E_f − E_i| = h·ν = h·c ÷ λ, avec ΔE en joules (1 eV = 1,60 × 10⁻¹⁹ J) et λ en mètres, puis en nm.', 'Absorption : E_f = E_i + ΔE. Émission : E_f = E_i − ΔE.', 'Avec n niveaux, toutes les transitions entre niveaux donnent n(n − 1)/2 raies d’émission ; l’absorption d’un gaz froid ne part que du fondamental.'] };
+}
+
 function genCouleurs1G() {
   const NOMS = ['noir', 'rouge', 'vert', 'bleu', 'jaune', 'cyan', 'magenta', 'blanc'];
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -3029,6 +3076,7 @@ export const FAMILLES = [
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
   { id: 'phot1g-calcul', groupe: 'Formules', titre: 'Lumière : domaine d’une onde, longueur d’onde, fréquence, énergie d’un photon, joules et électronvolts (1G)', gen: genPhoton1G, domaine: 'Domaines spectraux et énergie d’un photon' },
+  { id: 'niv1g-calcul', groupe: 'Formules', titre: 'Niveaux d’énergie : écart entre niveaux, longueur d’onde d’un photon, niveau atteint, nombre de raies et domaine (1G)', gen: genNiveaux1G, domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies' },
   { id: 'fl1g-pression-calcul', groupe: 'Formules', titre: 'Fluide au repos : force pressante F = P × S, pression d’un gaz, loi de Mariotte, ballon en altitude et test de la loi (1G)', gen: genPressionMariotte1G, domaine: 'Fluide au repos : pression et loi de Mariotte' },
   { id: 'redox1g-calcul', groupe: 'Formules', titre: 'Oxydo-réduction : électrons échangés, coefficients de l’équation, quantités de réactifs et de produits (1G)', gen: genRedox1G, domaine: 'Oxydo-réduction : couples, demi-équations et équation de réaction' },
   { id: 'geo1g-calcul', groupe: 'Formules', titre: 'Géométrie, électronégativité et polarité : écart Δχ, doublets, angle idéal, liaisons polarisées (1G)', gen: genGeoPolarite, domaine: 'Géométrie et polarité des entités' },

@@ -76,6 +76,7 @@ export const EXOS_DE_SIM = {
   163: [/(^|\.)fl1g-statique-/, /plausible\.fl1g-statique-/],                                                                // Statique des fluides : pression et profondeur
   161: [/(^|\.)mes1g-/, /plausible\.mes1g-/],                                                                  // Mesure et incertitudes : variabilité, types A et B
   164: [/(^|\.)phot1g-/, /plausible\.phot1g-/],                                                                  // Lumière : domaines spectraux et énergie d’un photon
+  165: [/(^|\.)niv1g-/, /plausible\.niv1g-/],                                                                  // Niveaux d’énergie : absorption, émission et spectres de raies
   162: [/(^|\.)fl1g-pression-/, /plausible\.fl1g-pression-/],                                                  // Fluide au repos : pression, force pressante et loi de Mariotte
   159: [/(^|\.)comb1g-/, /plausible\.comb1g-/],                                                              // Combustions : équation, énergies de liaison, énergie de réaction, pouvoir calorifique
   125: [/(^|\.)equ-/, /plausible\.equ-/],

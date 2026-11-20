@@ -3820,6 +3820,34 @@ export const ENONCES = [
         manque: null, solution: { txt: 'v = frac(2π r|T), avec r = R + h (distance au centre de la Terre)', val: vq, u: 'km/s' } };
     },
   },
+  // ───────────────────────────── Niveaux d'énergie (1G) : absorption d'un photon par un atome fictif (sim 165) : écart d'énergie et longueur d'onde
+  {
+    id: 'niv1g-sapp-transition', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Un atome qui absorbe un photon', noms: ['Énergie du photon absorbé', 'Longueur d’onde du photon absorbé'],
+    gen: () => ({ Ei: tire([-9.0, -7.5, -6.0]), g: tire([1.8, 2.4, 3.0]), P: tire([5, 10, 20]), U: tire([1.2, 1.5, 2.0]), t: tire([10, 20, 30]) }),
+    build: epure((p, q) => {
+      const d1 = x => (x < 0 ? '−' : '') + Math.abs(x).toFixed(1).replace('.', ',');
+      const Ef = Math.round((p.Ei + p.g) * 10) / 10, dE = Ef - p.Ei, lam = 6.63e-34 * 3.00e8 / (dE * 1.60e-19);
+      const tokens = {
+        Ei: tok(`${d1(p.Ei)} eV`, 'Énergie du niveau de départ E_i', p.Ei, 'eV'),
+        Ef: tok(`${d1(Ef)} eV`, 'Énergie du niveau d’arrivée E_f', Ef, 'eV'),
+        h: tok('6,63 × 10⁻³⁴ J·s', 'Constante de Planck', 6.63e-34, 'J·s'),
+        c: tok('3,00 × 10⁸ m·s⁻¹', 'Célérité de la lumière dans le vide', 3.00e8, 'm·s⁻¹'),
+        ev: tok('1 eV = 1,60 × 10⁻¹⁹ J', 'Conversion de l’électronvolt en joule', 1.60e-19, 'J/eV'),
+        P: tok(`${p.P} Pa`, 'Pression du gaz', p.P, 'Pa'),
+        U: tok(`${nb(p.U, 1)} kV`, 'Tension appliquée au tube', p.U * 1000, 'V'),
+        t: tok(`${p.t} min`, 'Durée de fonctionnement du tube', p.t * 60, 's'),
+      };
+      const raisons = { P: 'Le gaz est supposé à basse pression : les atomes sont isolés et la pression ne change pas l’écart entre deux niveaux.', U: 'La tension sert à exciter le gaz ; elle ne change pas les niveaux d’énergie de l’atome ni l’énergie du photon.', t: 'La durée de fonctionnement ne change ni les niveaux de l’atome ni l’énergie du photon.' };
+      const debut = ['Un tube contient un gaz d’atomes fictifs sous une pression ', T('P'), ', soumis à une tension ', T('U'), ' pendant ', T('t'), '. Un atome passe du niveau d’énergie ', T('Ei'), ' au niveau ', T('Ef'), ' en absorbant un photon. On donne h = ', T('h'), ', c = ', T('c'), ' et ', T('ev'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’énergie de ce photon ?'], utiles: ['Ei', 'Ef'],
+        raisons: { ...raisons, h: 'La constante de Planck servirait à relier l’énergie à la fréquence ou à la longueur d’onde, pas à l’écart d’énergie lui-même.', c: 'La célérité servirait à calculer une longueur d’onde, pas l’énergie du photon.', ev: 'La conversion en joules n’est utile que si l’on veut l’énergie en J ou calculer une longueur d’onde.' },
+        cherche: { bonne: 'L’écart d’énergie ΔE entre les deux niveaux (en eV)', faux: ['La fréquence du photon (en Hz)', 'L’énergie de l’atome après absorption (en eV)', 'La longueur d’onde du photon (en nm)'] },
+        manque: null, solution: { txt: 'ΔE = |E_f − E_i|', val: dE, u: 'eV' } };
+      return { tokens, derivees: ['écart d’énergie : ΔE = |E_f − E_i|', 'conversion : ΔE en joules (× 1,60 × 10⁻¹⁹)'], texte: [...debut, 'Quelle est la longueur d’onde de ce photon dans le vide ?'], utiles: ['Ei', 'Ef', 'h', 'c', 'ev'], raisons,
+        cherche: { bonne: 'La longueur d’onde λ du photon (en m ou en nm)', faux: ['L’énergie du photon (en eV)', 'La fréquence ν du photon (en Hz)', 'L’énergie du niveau d’arrivée (en eV)'] },
+        manque: null, solution: { txt: 'λ = frac(h × c|ΔE), avec ΔE = |E_f − E_i| en joules', val: lam, u: 'm' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -3864,6 +3892,7 @@ const SYMBOLES = {
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
   'phot1g-sapp-photon': { lam: 'λ', c: 'c', h: 'h', P: 'P', d: 'd', t: 'Δt' },
+  'niv1g-sapp-transition': { Ei: 'E_i', Ef: 'E_f', h: 'h', c: 'c', ev: '1 eV', P: 'P', U: 'U', t: 'Δt' },
 };
 export function nouvelEnonce(id, q, forceParams) {
   const def = ENONCES.find(e => e.id === id);
