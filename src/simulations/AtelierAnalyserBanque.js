@@ -3551,6 +3551,27 @@ export const PREVOIR = [
       F('rectiligne ralenti, car la tension change de signe', 'La tension s’inverse pendant que la particule est dans un tube, ce qui prépare l’accélération à l’intervalle suivant, mais aucune force ne s’exerce dans le tube : elle ne ralentit pas.'),
       F('circulaire, car la particule est guidée par le tube', 'Le tube ne dévie pas la particule : sans champ ni force, la trajectoire reste une droite.'),
     ] },
+  { id: 'kep-ana-masse', domaine: 'Satellites et lois de Kepler', titre: 'Deux satellites sur la même orbite',
+    enonce: 'Deux satellites, l’un de masse 500 kg et l’autre de masse 2 000 kg, décrivent la même orbite circulaire autour de la Terre. Seule la gravitation exercée par la Terre s’applique à chacun d’eux.', q: 'Comment se comparent leurs vitesses v et leurs périodes de révolution T ?', options: [
+      V('les deux satellites ont la même vitesse et la même période de révolution', 'Pour une orbite de rayon r autour d’un astre de masse M : v² = frac(G M|r) et T = frac(2π r|v). La masse m du satellite ne figure dans aucune de ces relations : elle se simplifie dans la deuxième loi de Newton.'),
+      F('le satellite le plus lourd a une vitesse plus petite et une période plus grande', 'Le satellite lourd subit une force plus grande, mais son inertie l’est aussi : m × a = F donne a = frac(G M|r²), indépendante de m. Sa vitesse et sa période sont donc les mêmes.'),
+      F('le satellite le plus lourd a une vitesse plus grande et une période plus petite', 'La force gravitationnelle est proportionnelle à m, mais l’accélération est F divisée par m : la masse se simplifie, et ni v ni T ne changent.'),
+      F('les deux ont la même période, mais le plus lourd va plus vite', 'T = frac(2π r|v) : à r fixé, si v différait, T différerait aussi. En réalité ni v ni T ne dépendent de la masse du satellite.'),
+    ] },
+  { id: 'kep-ana-rayon', domaine: 'Satellites et lois de Kepler', titre: 'Un satellite sur une orbite plus haute',
+    enonce: 'Un satellite décrit une orbite circulaire autour de la Terre. Grâce à un moteur, on le fait passer sur une autre orbite circulaire de plus grand rayon.', q: 'Comment évoluent la valeur v de sa vitesse et sa période de révolution T ?', options: [
+      V('v diminue et T augmente', 'v² = frac(G M|r) diminue quand r augmente. La période T = frac(2π r|v) augmente doublement : le tour est plus long et le satellite est plus lent (de façon équivalente, T² est proportionnel à r³).'),
+      F('v augmente et T augmente', 'v² = frac(G M|r) diminue quand r augmente : plus un satellite est haut, plus il va lentement. Seule T augmente.'),
+      F('v diminue et T diminue', 'Le chemin à parcourir (2π r) est plus long et la vitesse plus petite : la durée d’un tour augmente. La troisième loi donne T² proportionnel à r³.'),
+      F('v reste la même, car la masse du satellite ne change pas', 'v ne dépend pas de m, mais elle dépend de r : v² = frac(G M|r). Si r change, v change.'),
+    ] },
+  { id: 'kep-ana-geo', domaine: 'Satellites et lois de Kepler', titre: 'Reconnaître un satellite géostationnaire',
+    enonce: 'Quatre satellites décrivent des orbites circulaires autour de la Terre. La période de rotation de la Terre sur elle-même est le jour sidéral, 23 h 56 min.', q: 'Lequel peut être géostationnaire ?', options: [
+      V('celui dont l’orbite est dans le plan de l’équateur, dans le sens de rotation de la Terre, avec T = 23 h 56 min', 'Il remplit les trois conditions : plan de l’équateur, même sens que la Terre, période égale au jour sidéral. Il reste alors à la verticale d’un même point de l’équateur.'),
+      F('celui dont l’orbite polaire passe par les deux pôles de la Terre, avec T = 23 h 56 min', 'Avec la bonne période, il survole pourtant tour à tour des points différents : une orbite polaire n’est pas dans le plan de l’équateur, il ne reste pas à la verticale d’un même point.'),
+      F('celui dont l’orbite est dans le plan de l’équateur, mais dans le sens contraire de la rotation de la Terre, avec T = 23 h 56 min', 'Dans le sens contraire, il croise le point du sol à chaque passage : il se déplace par rapport au sol, il n’est pas immobile dans le ciel.'),
+      F('celui dont l’orbite est dans le plan de l’équateur, dans le sens de la Terre, avec T = 90 min', 'Avec T = 90 min, il tourne bien plus vite que la Terre : il fait seize tours pendant un tour de la Terre, il n’est pas immobile par rapport au sol.'),
+    ] },
   { id: 'pil-ana-pont', domaine: 'Piles : fonctionnement et capacité', titre: 'On retire le pont salin',
     enonce: 'Une pile zinc-cuivre alimente une petite lampe. On retire le pont salin qui relie les deux solutions, sans toucher aux fils.', q: 'Que se passe-t-il ?', options: [
       V('la lampe s’éteint : le circuit est ouvert', 'Sans pont salin, aucun ion ne circule entre les deux solutions : le circuit est ouvert et le courant s’arrête aussitôt.'),

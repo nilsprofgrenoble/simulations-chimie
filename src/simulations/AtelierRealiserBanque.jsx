@@ -14,6 +14,7 @@ import * as DM from "./dissolutionModele";
 import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
 import * as RX from "./redoxModele";
+import * as KEP from "./satellitesModele";
 import * as CL from "./couleursModele";
 import * as PH from "./photonModele";
 import * as PM from "./pressionModele";
@@ -2396,6 +2397,50 @@ function genRCTG() {
     retenir: ['Temps caractéristique : τ = R × C ; ohm × farad = seconde ; en pratique kΩ × µF = ms.', 'À t = 0 en charge (condensateur déchargé) : u_C = 0, u_R = E, donc i(0) = frac(E|R).', 'Avec n = frac(t|τ) : charge u_C = E × (1 − e⁻ⁿ) ; décharge u_C = E × e⁻ⁿ ; à t = τ : 63 % (charge) ou 37 % (décharge) de E.', 'Au bout de 5 τ, la charge ou la décharge est pratiquement terminée (99 % de E atteints, ou moins de 1 % restant).'] };
 }
 
+function genKeplerTG() {
+  // Satellites et lois de Kepler (TG, sim 177). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const ent = x => String(Math.round(x)).replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  const G = KEP.G, UN = { terre: [5.97e24, 6.37e6, 86164], mars: [6.42e23, 3.39e6, 88642], jupiter: [1.90e27, 7.15e7, 35730] };
+  const sci = (x, k = 2) => { const [m, e] = Number(x).toExponential(k).split('e'); return `${m.replace('.', ',')}${NB}×${NB}10${sup(Number(e))}`; };
+  const rac = (...c) => <math style={{ whiteSpace: 'nowrap', fontSize: '1.05em' }}><msqrt>{c}</msqrt></math>;
+  // 1 : accélération à l'altitude h autour de la Terre
+  const h1 = tire([400, 800, 1200, 2000, 5000]), r1 = UN.terre[1] + h1 * 1e3, a1 = KEP.acceleration(UN.terre[0], r1);
+  const q1 = { id: 'kep0', type: 'num', q: <>Un satellite décrit une orbite circulaire à l’altitude <b>h = {ent(h1)}{NB}km</b> autour de la Terre. Calculez la norme a de son accélération (en m/s², 2 chiffres significatifs).</>, unite: 'm/s²', vrai: a1, tolRel: 0.05, csMin: 2,
+    aide: 'a = frac(G M|r²), avec r la distance au centre de la Terre : r = R_T + h, en mètres.',
+    pieges: [[KEP.acceleration(UN.terre[0], h1 * 1e3), 'Vous avez utilisé l’altitude h à la place de la distance r au centre de la Terre : r = R_T + h.'], [KEP.acceleration(UN.terre[0], r1 / 1e3), 'r doit être en mètres, pas en kilomètres.'], [KEP.acceleration(UN.terre[0], UN.terre[1]), 'Vous avez utilisé le rayon de la Terre : la distance à prendre est r = R_T + h.'], [G * UN.terre[0] / r1, 'Dans a = frac(G M|r²), la distance r est élevée au carré.']],
+    expl: <>r = R_T + h = {f(UN.terre[1] / 1e6, 2)}×10⁶{NB}m + {f(h1 / 1e3, 1)}×10⁶{NB}m = {f(r1 / 1e6, 2)}×10⁶{NB}m ; a = {avecIndices('frac(G M|r²)')} = <b>{f(a1, 2)}{NB}m/s²</b>.</> };
+  // 2 : vitesse autour de Mars, à la distance r du centre
+  const r2k = tire([3800, 4200, 5000, 6500, 9380, 23460]), v2 = KEP.vitesse(UN.mars[0], r2k * 1e3) / 1e3;
+  const q2 = { id: 'kep1', type: 'num', q: <>Une sonde décrit une orbite circulaire autour de Mars (masse <b>M = {sci(UN.mars[0])}{NB}kg</b>), à la distance <b>r = {ent(r2k)}{NB}km</b> du centre de la planète. Calculez la valeur v de sa vitesse (en km/s, 2 chiffres significatifs).</>, unite: 'km/s', vrai: v2, tolRel: 0.05, csMin: 2,
+    aide: 'Orbite circulaire : v² = frac(G M|r), avec r en mètres et M en kg ; v sort en m/s, à convertir en km/s.',
+    pieges: [[G * UN.mars[0] / (r2k * 1e3) / 1e3, 'Vous avez oublié la racine carrée : v² = frac(G M|r), donc v est la racine carrée de ce résultat.'], [Math.sqrt(G * UN.mars[0] / r2k) / 1e3, 'r doit être en mètres, pas en kilomètres.'], [Math.sqrt(G * UN.mars[0] / (r2k * 1e3) / 1e3), 'Vous avez pris la racine carrée de G M / r puis divisé encore par 1 000 : convertissez seulement le résultat final (m/s en km/s).'], [KEP.vitesse(UN.mars[0], r2k * 1e3 * 1e3) / 1e3, 'Vérifiez la conversion de r en mètres : 1 km = 1 000 m.']],
+    expl: <>{rac(avecIndices(`frac(G M|r)`))} : v = {rac(<math style={{ whiteSpace: 'nowrap' }}><mfrac><mrow><mn>{f(G * 1e11, 2)}</mn><mo>×</mo><mn>10⁻¹¹</mn><mo>×</mo><mn>{f(UN.mars[0] / 1e23, 2)}</mn><mo>×</mo><mn>10²³</mn></mrow><mrow><mn>{f(r2k / 1e3, 3)}</mn><mo>×</mo><mn>10⁶</mn></mrow></mfrac></math>)} = <b>{f(v2, 2)}{NB}km/s</b>.</> };
+  // 3 : période d'un satellite de Jupiter
+  const r3k = tire([422, 671, 1070, 1880]), T3 = KEP.periode(UN.jupiter[0], r3k * 1e6) / KEP.JOUR;
+  const q3 = { id: 'kep2', type: 'num', q: <>Un satellite de Jupiter (masse <b>M = {sci(UN.jupiter[0])}{NB}kg</b>) décrit une orbite circulaire de rayon <b>r = {ent(r3k)}{NB}×{NB}10³{NB}km</b>. Calculez sa période de révolution T (en jours, 2 chiffres significatifs).</>, unite: 'jours', vrai: T3, tolRel: 0.05, csMin: 2,
+    aide: 'Troisième loi : T² = frac(4π² r³|G M), avec r en mètres : T sort en secondes (1 jour = 86 400 s).',
+    pieges: [[T3 * KEP.JOUR, 'Vous avez donné T en secondes : on demande des jours (1 jour = 86 400 s).'], [T3 * 24, 'Vous avez donné T en heures : on demande des jours.'], [Math.sqrt(4 * Math.PI * Math.PI * Math.pow(r3k * 1e3, 3) / (G * UN.jupiter[0])) / KEP.JOUR, 'r doit être en mètres : 1 km = 1 000 m.'], [Math.sqrt(Math.pow(r3k * 1e6, 3) / (G * UN.jupiter[0])) / KEP.JOUR, 'Il manque le facteur 4π² sous la racine carrée.']],
+    expl: <>T² = {avecIndices('frac(4π² r³|G M)')}, donc T = {f(T3 * KEP.JOUR, 0)}{NB}s = <b>{f(T3, 2)}{NB}jours</b>.</> };
+  // 4 : masse de l'astre central d'après r et T (données arrondies à 2 chiffres significatifs AVANT le calcul)
+  const sats = [[9380, 0.319, 'Phobos'], [23460, 1.263, 'Deimos']], [r4k, T4b] = tire(sats), T4 = Number(T4b.toPrecision(3)), M4 = KEP.masseDepuis(r4k * 1e3, T4 * KEP.JOUR) / 1e23;
+  const q4 = { id: 'kep3', type: 'num', q: <>Un satellite décrit une orbite circulaire de rayon <b>r = {ent(r4k)}{NB}km</b> autour d’une planète, avec une période <b>T = {f(T4, T4 < 1 ? 3 : 2)}{NB}jours</b>. Calculez la masse M de la planète (en 10²³ kg, 2 chiffres significatifs).</>, unite: '× 10²³ kg', vrai: M4, tolRel: 0.05, csMin: 2,
+    aide: 'Troisième loi : frac(T²|r³) = frac(4π²|G M), donc M = frac(4π² r³|G T²), avec r en mètres et T en secondes.',
+    pieges: [[M4 * 1e3, 'Vérifiez les puissances de 10 : la réponse est demandée en 10²³ kg.'], [M4 / (4 * Math.PI * Math.PI), 'Vous avez oublié le facteur 4π² dans l’expression de la masse.'], [M4 * Math.pow(KEP.JOUR, 2), 'Vous avez gardé T en jours : T doit être en secondes (1 jour = 86 400 s).'], [KEP.masseDepuis(r4k * 1e3, T4 * KEP.JOUR) / 1e23 / 1e9, 'Vous avez gardé r en kilomètres : r doit être en mètres.']],
+    expl: <>M = {avecIndices('frac(4π² r³|G T²)')} = <b>{f(M4, 1)}{NB}×{NB}10²³{NB}kg</b> (r = {f(r4k * 1e3 / 1e6, 2)}×10⁶{NB}m, T = {ent(T4 * KEP.JOUR)}{NB}s).</> };
+  // 5 : altitude de l'orbite stationnaire (Terre, Mars ou Jupiter)
+  const nom5 = tire(['terre', 'mars', 'jupiter']), [M5, R5, Ts5] = UN[nom5], rs = KEP.rayonDepuis(M5, Ts5), h5 = (rs - R5) / 1e3;
+  const NOMS = { terre: 'la Terre', mars: 'Mars', jupiter: 'Jupiter' };
+  const q5 = { id: 'kep4', type: 'num', q: <>On veut placer un satellite sur une orbite stationnaire autour de {NOMS[nom5]} (masse <b>M = {sci(M5)}{NB}kg</b>, rayon <b>R = {ent(R5 / 1e3)}{NB}km</b>, période de rotation <b>T = {ent(Ts5)}{NB}s</b>). Calculez son altitude h (en km, 3 chiffres significatifs).</>, unite: 'km', vrai: h5, tolRel: 0.05, csMin: 3,
+    aide: 'Troisième loi : r³ = frac(G M T²|4π²), r en mètres ; puis h = r − R.',
+    pieges: [[rs / 1e3, 'Vous avez donné la distance r au centre de l’astre : l’altitude est r − R.'], [(rs + R5) / 1e3, 'Il faut retrancher le rayon de l’astre à r, pas l’ajouter.'], [(G * M5 * Ts5 * Ts5 / (4 * Math.PI * Math.PI)) / 1e3, 'r³ = frac(G M T²|4π²) : il faut encore prendre la racine cubique pour obtenir r.'], [KEP.rayonDepuis(M5, Ts5 / 3600) / 1e3 - R5 / 1e3, 'T doit être en secondes, pas en heures.']],
+    expl: <>r³ = {avecIndices('frac(G M T²|4π²)')}, donc r = {f(rs / 1e6, 2)}×10⁶{NB}m ; h = r − R = <b>{ent(h5)}{NB}km</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Satellites et lois de Kepler : accélération, vitesse, période, masse de l’astre et orbite stationnaire. Constante de gravitation G = 6,67 × 10⁻¹¹ N·m²·kg⁻² ; la masse de la Terre vaut 5,97 × 10²⁴ kg et son rayon 6,37 × 10³ km. Les orbites sont supposées circulaires ; l’astre est à symétrie sphérique et la masse du satellite est négligeable devant la sienne.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Orbite circulaire : a = frac(G M|r²) ; v² = frac(G M|r) ; T = frac(2π r|v) ; r est la distance au centre de l’astre (r = R + h).', 'Troisième loi de Kepler : frac(T²|r³) = frac(4π²|G M), avec r en mètres et T en secondes : on peut en déduire T, r ou M.', 'Satellite géostationnaire : plan de l’équateur, sens de rotation de la Terre, T = jour sidéral (86 164 s) ; altitude ≈ 3,6×10⁴ km.', 'La masse du satellite n’intervient jamais dans a, v et T.'] };
+}
+
 function genUvvTG() {
   // pièges conservés seulement s'ils restent hors de la tolérance de la bonne réponse (tolérance × 1,5, plancher 8 %)
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -3004,6 +3049,7 @@ export const FAMILLES = [
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'pes-calcul', groupe: 'Formules', titre: 'Champ de pesanteur uniforme : vitesse, position, portée et théorème de l’énergie cinétique (TG)', gen: genPesanteurTG, domaine: 'Mouvement dans un champ de pesanteur uniforme' },
   { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },
+  { id: 'kep-calcul', groupe: 'Formules', titre: 'Satellites et lois de Kepler : accélération, vitesse, période, masse de l’astre et orbite stationnaire (TG)', gen: genKeplerTG, domaine: 'Satellites et lois de Kepler' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
