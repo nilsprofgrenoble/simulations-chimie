@@ -2775,6 +2775,44 @@ function genPesanteurTG() {
 }
 
 
+// ───────── Diffraction d'une onde : angle caractéristique (TG, sim 181) ─────────
+function genDiffractionTG() {
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-12, 0.08 * Math.abs(q.vrai))); };
+  // nb() prend des chiffres SIGNIFICATIFS : les données s'écrivent ici en décimales fixes ou en entiers, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const frs = t => avecIndices(t);
+  // 1. angle caractéristique pour un laser et une fente (conversions nm et µm)
+  const l1 = tire([405, 473, 532, 594, 635, 650]), a1 = tire([20, 25, 40, 50, 80, 100, 120, 150, 200]), th1 = l1 * 1e-9 / (a1 * 1e-6);
+  const q1 = { id: 'di0', type: 'num', q: <>Un laser de longueur d’onde <b>λ = {l1}{NB}nm</b> éclaire une fente de largeur <b>a = {a1}{NB}µm</b>. Calculez l’angle caractéristique de diffraction θ ≈ {frs('frac(λ|a)')} (en rad, 2 chiffres significatifs ; notation scientifique acceptée, par exemple 2,5e-3).</>, unite: 'rad', vrai: th1, tolRel: 0.06, csMin: 2,
+    aide: 'Mettez λ et a dans la même unité (le mètre) : 1 nm = 10⁻⁹ m et 1 µm = 10⁻⁶ m. Gardez 3 chiffres significatifs dans les calculs intermédiaires.',
+    pieges: [[l1 / a1, 'λ est en nm et a en µm : convertissez-les dans la même unité avant de diviser (1 µm = 1 000 nm).'], [a1 / l1, 'Division à l’envers : θ ≈ frac(λ|a), pas frac(a|λ).'], [th1 * 180 / Math.PI, 'θ = frac(λ|a) est un angle en radians : ne le convertissez pas en degrés.']],
+    expl: <>θ ≈ {frs(`frac(λ|a) = frac(${l1} × 10⁻⁹|${a1} × 10⁻⁶)`)} = <b>{nb(th1, 3)}{NB}rad</b> (petit angle, en radians).</> };
+  // 2. largeur de la tache centrale (mm)
+  let l2, a2, D2, L2; do { l2 = tire([405, 473, 532, 594, 635, 650]); a2 = tire([40, 50, 60, 80, 100, 120, 150]); D2 = tire([1.0, 1.5, 2.0, 2.5, 3.0]); L2 = 2 * l2 * D2 / a2; } while (L2 > 80);   // tache de 5 à 80 mm
+  const q2 = { id: 'di1', type: 'num', q: <>Le même laser (<b>λ = {l2}{NB}nm</b>) éclaire une fente de largeur <b>a = {a2}{NB}µm</b> ; l’écran est à <b>D = {d(D2, 1)}{NB}m</b> de la fente. Calculez la largeur L de la tache centrale, L = {frs('frac(2 λ D|a)')} (en mm, 2 chiffres significatifs).</>, unite: 'mm', vrai: L2, tolRel: 0.06, csMin: 2,
+    aide: 'Convertissez λ et a en mètres avant de calculer, puis exprimez le résultat en millimètres (1 m = 1 000 mm).',
+    pieges: [[L2 / 2, 'Il manque le facteur 2 : L = frac(2 λ D|a), la tache est limitée par deux extinctions de part et d’autre de l’axe.'], [L2 / 1000, 'Vérifiez l’unité : le résultat est demandé en millimètres, pas en mètres.'], [L2 * 2, 'Un facteur 2 en trop : L = frac(2 λ D|a).']],
+    expl: <>L = {frs(`frac(2 λ D|a) = frac(2 × ${l2} × 10⁻⁹ × ${d(D2, 1)}|${a2} × 10⁻⁶)`)} = <b>{nb(L2 * 1e-3, 3)}{NB}m</b> = <b>{nb(L2, 3)}{NB}mm</b>.</> };
+  // 3. largeur de la fente à partir de L
+  let l3, D3, a3, L3; do { l3 = tire([405, 473, 532, 594, 635, 650]); D3 = tire([1.0, 1.5, 2.0, 2.5, 3.0]); a3 = tire([30, 40, 50, 60, 80, 100, 120]); L3 = Number((2 * l3 * D3 / a3).toFixed(1)); } while (L3 > 80);
+  const aRep = 2 * l3 * D3 / L3;
+  const q3 = { id: 'di2', type: 'num', q: <>Un laser (<b>λ = {l3}{NB}nm</b>) éclaire une fente ; sur un écran placé à <b>D = {d(D3, 1)}{NB}m</b>, on mesure une tache centrale de largeur <b>L = {d(L3, 1)}{NB}mm</b> entre les deux premières extinctions. Calculez la largeur a de la fente (en µm, 2 chiffres significatifs).</>, unite: 'µm', vrai: aRep, tolRel: 0.06, csMin: 2,
+    aide: 'Isolez a dans L = frac(2 λ D|a), puis convertissez λ et L en mètres ; exprimez a en micromètres (1 m = 10⁶ µm).',
+    pieges: [[aRep / 2, 'Il manque le facteur 2 : L = frac(2 λ D|a), donc a = frac(2 λ D|L).'], [aRep * 2, 'Un facteur 2 en trop : a = frac(2 λ D|L).'], [aRep * 1e-6, 'Vérifiez l’unité : le résultat est demandé en micromètres (1 µm = 10⁻⁶ m).'], [aRep * 1e-3, 'Vérifiez la conversion de L : 1 mm = 10⁻³ m, à faire avant de calculer.']],
+    expl: <>a = {frs(`frac(2 λ D|L) = frac(2 × ${l3} × 10⁻⁹ × ${d(D3, 1)}|${d(L3, 1)} × 10⁻³)`)} = <b>{nb(aRep * 1e-6, 3)}{NB}m</b> = <b>{nb(aRep, 3)}{NB}µm</b>.</> };
+  // 4. son : une porte ouverte (λ = v / f, puis θ ≈ λ / a), avec λ / a ≤ 0,3
+  const couples = []; for (const f of [1000, 1360, 1700, 2000, 3400]) for (const a of [0.40, 0.50, 0.80, 1.00]) if (340 / f / a <= 0.3) couples.push([f, a]);
+  const [f4, a4] = tire(couples), lam4 = 340 / f4, th4 = lam4 / a4;
+  const q4 = { id: 'di3', type: 'num', q: <>Un haut-parleur émet un son de fréquence <b>f = {f4}{NB}Hz</b> face à une porte ouverte de largeur <b>a = {d(a4, 2)}{NB}m</b>. La célérité du son dans l’air est v = 340{NB}m/s (valeur de référence). Calculez l’angle caractéristique de diffraction θ ≈ {frs('frac(λ|a)')}, avec λ = {frs('frac(v|f)')} (en rad, 2 chiffres significatifs).</>, unite: 'rad', vrai: th4, tolRel: 0.06, csMin: 2,
+    aide: 'Calculez d’abord la longueur d’onde λ en mètres, puis le rapport frac(λ|a) avec a en mètres. Gardez 3 chiffres significatifs dans les calculs intermédiaires.',
+    pieges: [[(f4 / 340) / a4, 'La longueur d’onde est λ = frac(v|f), pas frac(f|v).'], [lam4, 'Vous avez donné λ : il faut encore diviser par la largeur a de la porte pour obtenir θ.'], [th4 * 180 / Math.PI, 'θ ≈ frac(λ|a) est un angle en radians : ne le convertissez pas en degrés.'], [a4 / lam4, 'Division à l’envers : θ ≈ frac(λ|a), pas frac(a|λ).']],
+    expl: <>λ = {frs(`frac(v|f) = frac(340|${f4})`)} = {nb(lam4, 3)}{NB}m ; θ ≈ {frs(`frac(λ|a) = frac(${nb(lam4, 3)}|${d(a4, 2)})`)} = <b>{nb(th4, 3)}{NB}rad</b>.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Diffraction d’une onde : angle caractéristique θ ≈ frac(λ|a) (en radians), largeur de la tache centrale d’une fente éclairée par un laser, et diffraction du son par une porte.', questions: [q1, q2, q3, q4],
+    retenir: ['Angle caractéristique : θ ≈ frac(λ|a), en radians, avec λ et a dans la même unité et λ ≪ a ; sinon sin θ = frac(λ|a).', 'Fente éclairée par un laser : la tache centrale a pour largeur L = frac(2 λ D|a) ; on en déduit a = frac(2 λ D|L) ou λ.', 'Conversions : 1 nm = 10⁻⁹ m ; 1 µm = 10⁻⁶ m ; 1 mm = 10⁻³ m. Pour le son, λ = frac(v|f) avec v = 340 m/s.', 'Plus a est petite devant λ, plus la diffraction est marquée : on entend derrière une porte, on ne voit pas.'] };
+}
+
+
 // ───────── Particule chargée dans un condensateur plan (TG, sim 176) ─────────
 function genCondensateurTG() {
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
@@ -3310,6 +3348,7 @@ export const FAMILLES = [
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'pes-calcul', groupe: 'Formules', titre: 'Champ de pesanteur uniforme : vitesse, position, portée et théorème de l’énergie cinétique (TG)', gen: genPesanteurTG, domaine: 'Mouvement dans un champ de pesanteur uniforme' },
+  { id: 'dif-calcul', groupe: 'Formules', titre: 'Diffraction d’une onde : angle caractéristique, largeur de la tache centrale et largeur de la fente (TG)', gen: genDiffractionTG, domaine: 'Diffraction d’une onde : angle caractéristique' },
   { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },
   { id: 'kep-calcul', groupe: 'Formules', titre: 'Satellites et lois de Kepler : accélération, vitesse, période, masse de l’astre et orbite stationnaire (TG)', gen: genKeplerTG, domaine: 'Satellites et lois de Kepler' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },

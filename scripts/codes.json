@@ -1521,5 +1521,13 @@
  "77:plausible:rl2gt-energie-triple": "VAL401",
  "77:plausible:rl2gt-dba-reste": "VAL402",
  "36:rl2gt-calcul": "REA100",
- "36:rl2gt-masse": "REA101"
+ "36:rl2gt-masse": "REA101",
+ "34:dif-sapp-fente.0": "SAPP388",
+ "34:dif-sapp-fente.1": "SAPP389",
+ "37:prevoir:dif-ana-fente": "ANA634",
+ "37:prevoir:dif-ana-couleur": "ANA635",
+ "37:prevoir:dif-ana-porte": "ANA636",
+ "77:plausible:dif-val-degres": "VAL403",
+ "77:plausible:dif-val-tache": "VAL404",
+ "36:dif-calcul": "REA102"
 }

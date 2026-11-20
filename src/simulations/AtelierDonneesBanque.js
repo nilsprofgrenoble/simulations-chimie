@@ -4000,6 +4000,29 @@ export const ENONCES = [
         manque: null, solution: { txt: `reste de ${r.reactifs[iEx].nom} = quantité de départ − coefficient × nombre de recettes`, val: b.restes[iEx], u: 'mol' } };
     },
   },
+  // ───────────────────────────── Diffraction d'une onde : angle caractéristique (TG, sim 181)
+  {
+    id: 'dif-sapp-fente', domaine: 'Diffraction d’une onde : angle caractéristique', titre: 'Un laser éclaire une fente fine', noms: ['Angle caractéristique de diffraction', 'Largeur de la tache centrale'],
+    gen: () => ({ lam: tire([405, 532, 633, 650]), a: tire([50, 80, 100, 150]), D: tire([1.5, 2.0, 3.0]), P: tire([1, 5, 30]), d: tire([20, 30, 50]) }),
+    build: (p, q) => {
+      const tokens = {
+        lam: tok(`${p.lam} nm`, 'Longueur d’onde du laser', p.lam, 'nm'),
+        a: tok(`${p.a} µm`, 'Largeur de la fente', p.a, 'µm'),
+        D: tok(`${nb(p.D, 2)} m`, 'Distance entre la fente et l’écran', p.D, 'm'),
+        P: tok(`${p.P} mW`, 'Puissance du laser', p.P, 'mW'),
+        d: tok(`${p.d} cm`, 'Distance entre le laser et la fente', p.d, 'cm'),
+      };
+      const debut = ['Un laser de longueur d’onde ', T('lam'), ' et de puissance ', T('P'), ', placé à ', T('d'), ' d’une fente verticale de largeur ', T('a'), ', éclaire un écran situé à ', T('D'), ' de la fente. On observe la figure de diffraction. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’angle caractéristique de diffraction (en radians) ?'],
+        utiles: ['lam', 'a'], raisons: { D: 'La distance à l’écran n’intervient pas dans l’angle θ : elle sert à passer de θ à la largeur de la tache sur l’écran.', P: 'La puissance du laser change la luminosité de la figure, pas l’étalement de la lumière.', d: 'La distance entre le laser et la fente ne change pas l’angle de diffraction.' },
+        cherche: { bonne: 'L’angle caractéristique θ de diffraction (en rad)', faux: ['La largeur de la tache centrale sur l’écran (en mm)', 'La puissance reçue par l’écran (en mW)', 'La fréquence de la lumière du laser (en Hz)'] },
+        manque: null, solution: { txt: 'θ ≈ frac(λ|a)', val: p.lam * 1e-9 / (p.a * 1e-6), u: 'rad' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la largeur de la tache centrale sur l’écran ?'],
+        utiles: ['lam', 'a', 'D'], raisons: { P: 'La puissance du laser change la luminosité de la figure, pas sa largeur.', d: 'La distance entre le laser et la fente ne change pas la largeur de la tache sur l’écran.' },
+        cherche: { bonne: 'La largeur L de la tache centrale (en mm)', faux: ['L’angle caractéristique θ de diffraction (en rad)', 'La largeur a de la fente (en µm)', 'La puissance reçue par l’écran (en mW)'] },
+        manque: null, solution: { txt: 'L = frac(2 λ D|a)', val: 2 * p.lam * p.D / p.a, u: 'mm' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
