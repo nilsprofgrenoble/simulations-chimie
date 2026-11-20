@@ -1449,5 +1449,13 @@
  "77:plausible:cpl-val-vitesse": "VAL378",
  "77:plausible:cpl-val-poids": "VAL379",
  "77:plausible:cpl-val-proton": "VAL380",
- "36:cpl-calcul": "REA94"
+ "36:cpl-calcul": "REA94",
+ "34:kep-sapp-satellite.0": "SAPP372",
+ "34:kep-sapp-satellite.1": "SAPP373",
+ "37:prevoir:kep-ana-masse": "ANA607",
+ "37:prevoir:kep-ana-rayon": "ANA608",
+ "37:prevoir:kep-ana-geo": "ANA609",
+ "77:plausible:kep-val-vitesse": "VAL381",
+ "77:plausible:kep-val-kepler": "VAL382",
+ "36:kep-calcul": "REA95"
 }

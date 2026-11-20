@@ -91,7 +91,7 @@ export const COUVERTURE = [
     { th: MVT, t: 'Décrire un mouvement : vecteurs position, vitesse, accélération, repère de Frenet', e: 'ok', chap: 'tg-decrire-mouvement' },
     { th: MVT, t: 'Deuxième loi de Newton', e: 'ok', chap: 'tg-newton' },
     { th: MVT, t: 'Mouvement dans un champ uniforme (pesanteur, condensateur plan)', e: 'ok', chap: 'tg-newton' },
-    { th: MVT, t: 'Mouvement dans un champ de gravitation : satellites, lois de Kepler', e: 'avenir' },
+    { th: MVT, t: 'Mouvement dans un champ de gravitation : satellites, lois de Kepler', e: 'ok', chap: 'tg-newton' },
     { th: MVT, t: 'Écoulement d’un fluide : poussée d’Archimède, relation de Bernoulli', e: 'avenir' },
     { th: NRJ, t: 'Gaz parfait', e: 'avenir' },
     { th: NRJ, t: 'Premier principe de la thermodynamique, transferts thermiques', e: 'avenir' },

@@ -115,6 +115,7 @@ const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
 const SimulationParticuleCondensateur = paresseux(() => import("./simulations/ParticuleCondensateur"), "SimulationParticuleCondensateur");
+const SimulationSatellites = paresseux(() => import("./simulations/Satellites"), "SimulationSatellites");
 const SimulationVecteursVA = paresseux(() => import("./simulations/VecteursVitesseAcceleration"), "SimulationVecteursVA");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationPhAcide = paresseux(() => import("./simulations/AcidesBases"), "SimulationPhAcide");
@@ -296,6 +297,7 @@ const SIMULATIONS = [
   { id:174, label:"Circuit RC : charge et décharge d’un condensateur", niveau:"TG", icon:"🔌", color:"#0e7490", component: SimulationCircuitRC },
   { id:175, label:"Mouvement dans un champ de pesanteur uniforme : équations horaires et trajectoire", niveau:"TG", icon:"🏀", color:"#c2410c", component: SimulationPesanteur },
   { id:176, label:"Particule chargée dans un condensateur plan et accélérateur linéaire", niveau:"TG", icon:"⚡", color:"#7c2d12", component: SimulationParticuleCondensateur },
+  { id:177, label:"Satellites et lois de Kepler", niveau:"TG", icon:"🛰️", color:"#4338ca", component: SimulationSatellites },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

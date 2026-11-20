@@ -28,6 +28,7 @@ import * as DM from "./dissolutionModele";
 import * as CMB from "./combustionModele";
 import * as RX from "./redoxModele";
 import * as CL from "./couleursModele";
+import * as KEP from "./satellitesModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -3793,6 +3794,31 @@ export const ENONCES = [
         cherche: { bonne: 'La profondeur h du manomètre (en m)', faux: ['La pression relative en surface (en hPa)', 'Le volume d’eau situé au-dessus du manomètre (en m³)', 'La masse volumique de l’eau (en kg·m⁻³)'] },
         manque: null, solution: { txt: 'h = (P − P_atm) / (ρ·g)', val: (p.P - p.Patm) * 100 / (1000 * 9.81), u: 'm' } };
     }),
+  },
+  // ───────────────────────────── Satellites et lois de Kepler (TG, sim 177) : période et vitesse d'un satellite en orbite circulaire
+  {
+    id: 'kep-sapp-satellite', domaine: 'Satellites et lois de Kepler', titre: 'Un satellite d’observation en orbite autour de la Terre', noms: ['Période de révolution du satellite', 'Vitesse du satellite'],
+    gen: () => ({ h: tire([400, 600, 800, 1200]), m: tire([800, 1500, 2500]), P: tire([2.0, 3.5, 5.0]) }),
+    build: (p, q) => {
+      const esp = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0'), r = 6.37e6 + p.h * 1e3, Tmin = Math.round(KEP.periode(5.97e24, r) / 60), vq = 2 * Math.PI * r / (Tmin * 60) / 1000;
+      const tokens = {
+        h: tok(`${esp(p.h)}\u00a0km`, 'Altitude du satellite au-dessus de la surface de la Terre', p.h, 'km'),
+        R: tok('6,37 × 10³ km', 'Rayon de la Terre', 6370, 'km'),
+        M: tok('5,97 × 10²⁴ kg', 'Masse de la Terre', 5.97e24, 'kg'),
+        G: tok('6,67 × 10⁻¹¹ N·m²·kg⁻²', 'Constante de gravitation', 6.67e-11, 'N·m²·kg⁻²'),
+        m: tok(`${esp(p.m)}\u00a0kg`, 'Masse du satellite', p.m, 'kg'),
+        P: tok(`${nb(p.P, 1)} kW`, 'Puissance électrique des panneaux solaires', p.P, 'kW'),
+        ...(q === 1 ? { T: tok(`${Tmin} min`, 'Période de révolution du satellite', Tmin, 'min') } : {}),
+      };
+      const debut = ['Un satellite d’observation de masse ', T('m'), ' décrit une orbite circulaire à l’altitude ', T('h'), ' autour de la Terre ; ses panneaux solaires fournissent ', T('P'), '. On donne le rayon de la Terre ', T('R'), ', sa masse ', T('M'), ' et la constante de gravitation ', T('G'), '. '];
+      const raisonsComm = { P: 'La puissance électrique des panneaux n’a aucun rapport avec le mouvement orbital du satellite.', m: 'La masse du satellite se simplifie dans la deuxième loi de Newton : la période et la vitesse n’en dépendent pas.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la période de révolution du satellite ?'], utiles: ['h', 'R', 'M', 'G'], raisons: raisonsComm,
+        cherche: { bonne: 'La période de révolution T du satellite (en min)', faux: ['La force F exercée par la Terre sur le satellite (en N)', 'L’accélération a du satellite, en m/s²', 'L’énergie fournie par les panneaux en un tour (en kWh)'] },
+        manque: null, solution: { txt: 'T² = frac(4π² r³|G M), avec r = R + h (distance au centre de la Terre)', val: KEP.periode(5.97e24, r) / 60, u: 'min' } };
+      return { tokens, derivees: [], texte: [...debut, 'La période de révolution du satellite est ', T('T'), '. Quelle est la valeur de sa vitesse ?'], utiles: ['h', 'R', 'T'], raisons: { ...raisonsComm, M: 'La période est donnée : la vitesse se calcule avec la longueur d’un tour et la durée d’un tour, sans connaître la masse de la Terre.', G: 'La période est donnée : v = frac(2π r|T), sans la constante de gravitation.' },
+        cherche: { bonne: 'La valeur v de la vitesse du satellite (en km/s)', faux: ['La distance r du satellite au centre de la Terre (en km)', 'La période T du satellite, exprimée en heures', 'La puissance reçue du Soleil par les panneaux (en kW)'] },
+        manque: null, solution: { txt: 'v = frac(2π r|T), avec r = R + h (distance au centre de la Terre)', val: vq, u: 'km/s' } };
+    },
   },
 ];
 
