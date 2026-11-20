@@ -92,6 +92,7 @@ export const EXOS_DE_SIM = {
   172: [/(^|\.)top-/, /plausible\.top-/],                                                                        // Formules topologiques et isomérie de constitution (TG)
   174: [/(^|\.)rc-/, /plausible\.rc-/],                                                                              // Circuit RC : charge et décharge d’un condensateur (TG)
   168: [/(^|\.)nwt-/, /plausible\.nwt-/],
+  175: [/(^|\.)pes-/, /plausible\.pes-/],                                                                           // Mouvement dans un champ de pesanteur uniforme (TG)
   166: [/(^|\.)vac-/, /plausible\.vac-/],
   169: [/(^|\.)uvv-/, /plausible\.uvv-/],
   132: [/(^|\.)pil-/, /plausible\.pil-/],

@@ -1,0 +1,12 @@
+// QCM du parcours guidé de la simulation 175 (fichier séparé pour contrôler par script la longueur des options : la bonne réponse, en tête ici,
+// n'est jamais la plus longue, égalité comprise ; l'affichage mélange l'ordre des choix).
+export const QCM_PARCOURS = {
+  forces: { options: ['le poids seul : on néglige l’action de l’air', 'le poids et la force du lancer, dans le sens du mouvement', 'le poids et une force vers le haut, qui la soutient', 'le poids et la réaction de l’air, qui la porte'], bonne: 0 },
+  accel: { options: ['celui de vec(g) : vertical, vers le bas, à tout instant', 'celui de vec(v) : tangent à la trajectoire, vers l’avant', 'vers le haut à la montée, vers le bas à la descente', 'nul au sommet, où la balle s’arrête de monter'], bonne: 0 },
+  plan: { options: ['vec(a) est vertical : la vitesse ne change que dans ce plan', 'la vitesse initiale garde sa direction, donc rien ne la fait sortir du plan', 'la force du lancer, dirigée dans ce plan, continue de pousser la balle', 'la masse de la balle est trop faible pour qu’elle dévie'], bonne: 0 },
+  vitesse: { options: ['v_x = v_0 cos α et v_y = −g t + v_0 sin α', 'v_x = v_0 cos α et v_y = g t + v_0 sin α', 'v_x = v_0 cos α − g t et v_y = −g t + v_0 sin α', 'v_x = v_0 cos α et v_y = −½ g t² + v_0 sin α t'], bonne: 0 },
+  position: { options: ['x = v_0 cos α × t et y = −½ g t² + v_0 sin α × t + h', 'x = v_0 cos α × t et y = −g t² + v_0 sin α × t + h', 'x = v_0 cos α × t et y = −½ g t² + v_0 sin α × t', 'x = ½ v_0 cos α × t² et y = −½ g t² + v_0 sin α × t + h'], bonne: 0 },
+  trajectoire: { options: ['un polynôme du second degré : une parabole', 'une fonction affine de x : une droite inclinée', 'une fonction inverse de x : une hyperbole', 'une expression en x² + y² : un cercle'], bonne: 0 },
+  energies: { options: ['elle reste constante : seul le poids agit, il ne fait que convertir E_c en E_pp', 'elle diminue peu à peu, car la balle perd de la vitesse en montant', 'elle augmente jusqu’au sommet, puis diminue jusqu’au sol, comme l’altitude de la balle pendant tout le vol', 'elle est nulle au sommet, où la balle ne monte plus et où toute l’énergie cinétique a disparu'], bonne: 0 },
+  limite: { options: ['le ballon : le frottement vaut à peu près le poids', 'la boule : son frottement est le plus grand des deux', 'les deux, de la même façon : l’air compte toujours', 'aucun des deux : l’air est toujours négligeable en physique'], bonne: 0 },
+};

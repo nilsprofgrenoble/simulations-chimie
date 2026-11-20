@@ -1428,5 +1428,16 @@
  "77:plausible:fl1g-statique-val-signe": "VAL371",
  "77:plausible:fl1g-statique-val-unite": "VAL372",
  "77:plausible:fl1g-statique-val-profondeur": "VAL373",
- "36:fl1g-statique-calcul": "REA92"
+ "36:fl1g-statique-calcul": "REA92",
+ "34:pes-sapp-lancer.0": "SAPP366",
+ "34:pes-sapp-lancer.1": "SAPP367",
+ "34:pes-sapp-energie.0": "SAPP368",
+ "34:pes-sapp-energie.1": "SAPP369",
+ "37:prevoir:pes-ana-masse": "ANA601",
+ "37:prevoir:pes-ana-sommet": "ANA602",
+ "37:prevoir:pes-ana-lune": "ANA603",
+ "77:plausible:pes-val-signe": "VAL374",
+ "77:plausible:pes-val-portee": "VAL375",
+ "77:plausible:pes-val-ok": "VAL376",
+ "36:pes-calcul": "REA93"
 }
