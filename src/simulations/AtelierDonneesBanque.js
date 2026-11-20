@@ -29,6 +29,7 @@ import * as SON2 from "./sonEmission2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as EQM from "./equationReactionModele";
+import * as ETM from "./changementEtat2gtModele";
 import * as SV from "./savonModele";
 import * as RL from "./reactifLimitantModele";
 import * as DM from "./dissolutionModele";
@@ -4086,6 +4087,51 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'Combien de molécules d’eau H₂O se forment ?'], utiles: ['N'], raisons,
         cherche: { bonne: 'Le nombre de molécules d’eau formées', faux: ['Le nombre de molécules de dibenzalacétone formées', 'Le volume d’eau formé (en mL)', 'Le nombre de molécules de benzaldéhyde consommées'] },
         manque: null, solution: { txt: 'l’équation donne 2 H₂O pour 1 C₃H₆O : on multiplie par le nombre de molécules de propanone', val: c[3] * p.N, u: 'molécules H₂O' } };
+    }),
+  },
+  // ───────────────────────────── Changement d'état (2GT, sim 195) : E = m × L, repérer les données utiles, convertir les grammes en kilogrammes
+  {
+    id: 'etat2gt-sapp-glacon', domaine: 'Changement d’état (2GT)', titre: 'Refroidir une boisson avec de la glace', noms: ['Énergie pour faire fondre la glace', 'Masse de glace qui fond'],
+    gen: () => ({ m: tire([150, 200, 250, 300, 400, 500]), E: tire([40, 60, 80, 100, 120]), th: tire([20, 22, 25]), V: tire([200, 250, 330]) }),
+    build: epure((p, q) => {
+      const L = ETM.L('eau', 'fusion');
+      const tokens = {
+        m: tok(`${p.m} g`, 'Masse de glace, à 0 °C', p.m / 1000, 'kg'),
+        E: tok(`${p.E} kJ`, 'Énergie reçue par la glace', p.E, 'kJ'),
+        L: tok(`${L} kJ/kg`, 'Énergie massique de fusion de l’eau', L, 'kJ/kg'),
+        th: tok(`${p.th} °C`, 'Température de la pièce', p.th, '°C'),
+        V: tok(`${p.V} mL`, 'Volume de la boisson', p.V / 1000, 'L'),
+      };
+      const raisons = { th: 'La température de la pièce ne change pas l’énergie nécessaire pour faire fondre la glace : seule la masse qui fond et L comptent.', V: 'Le volume de la boisson ne dit pas combien de glace fond : on utilise la masse de glace (ou l’énergie reçue) et L.' };
+      const debut = ['Dans une pièce à ', T('th'), ', on refroidit une boisson de ', T('V'), ' avec de la glace à 0 °C. L’énergie massique de fusion de l’eau est ', T('L'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'On met ', T('m'), ' de glace, qui fond entièrement. Quelle énergie la glace reçoit-elle de la boisson ?'], utiles: ['m', 'L'], raisons,
+        cherche: { bonne: 'L’énergie reçue par la glace (en kJ)', faux: ['La température finale de la boisson (en °C)', 'La masse de la boisson (en kg)', 'La durée de la fonte de la glace (en min)'] },
+        manque: null, solution: { txt: 'E = m × L, avec la masse convertie en kg', val: (p.m / 1000) * L, u: 'kJ' } };
+      return { tokens, derivees: [], texte: [...debut, 'La glace reçoit ', T('E'), ' de la boisson et fond. Quelle masse de glace a fondu ?'], utiles: ['E', 'L'], raisons,
+        cherche: { bonne: 'La masse de glace fondue (en kg)', faux: ['L’énergie qu’il faut encore fournir (en kJ)', 'Le volume de la boisson refroidie (en L)', 'La température de la glace (en °C)'] },
+        manque: null, solution: { txt: 'm = E ÷ L', val: p.E / L, u: 'kg' } };
+    }),
+  },
+  {
+    id: 'etat2gt-sapp-ethanol', domaine: 'Changement d’état (2GT)', titre: 'Un flacon d’éthanol qui se vaporise', noms: ['Énergie pour vaporiser l’éthanol', 'Énergie cédée par la vapeur qui se liquéfie'],
+    gen: () => ({ m: tire([20, 40, 50, 80, 120, 150]), th: tire([18, 20, 22]), t: tire([10, 15, 30]) }),
+    build: epure((p, q) => {
+      const c = ETM.corps('ethanol'), Lv = c.Lvap, Lf = c.Lfus;
+      const tokens = {
+        m: tok(`${p.m} g`, 'Masse d’éthanol', p.m / 1000, 'kg'),
+        Lv: tok(`${Lv} kJ/kg`, 'Énergie massique de vaporisation de l’éthanol', Lv, 'kJ/kg'),
+        Lf: tok(`${Lf} kJ/kg`, 'Énergie massique de fusion de l’éthanol', Lf, 'kJ/kg'),
+        th: tok(`${p.th} °C`, 'Température de la pièce', p.th, '°C'),
+        t: tok(`${p.t} min`, 'Durée de l’expérience', p.t * 60, 's'),
+      };
+      const raisons = { Lf: 'L de fusion sert pour le passage solide-liquide ; ici l’éthanol passe du liquide au gaz (ou du gaz au liquide) : il faut L de vaporisation.', th: 'La température de la pièce n’intervient pas dans E = m × L.', t: 'La durée de l’expérience ne donne pas l’énergie échangée : E = m × L ne dépend pas du temps.' };
+      const debut = ['Dans une pièce à ', T('th'), ', une expérience dure ', T('t'), '. Pour l’éthanol, L de fusion vaut ', T('Lf'), ' et L de vaporisation vaut ', T('Lv'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'On vaporise entièrement ', T('m'), ' d’éthanol liquide. Quelle énergie faut-il lui fournir ?'], utiles: ['m', 'Lv'], raisons,
+        cherche: { bonne: 'L’énergie à fournir à l’éthanol (en kJ)', faux: ['La température d’ébullition de l’éthanol (en °C)', 'La masse d’éthanol restante (en kg)', 'La puissance du réchaud (en W)'] },
+        manque: null, solution: { txt: 'E = m × L(vaporisation), avec la masse convertie en kg', val: (p.m / 1000) * Lv, u: 'kJ' } };
+      return { tokens, derivees: [], texte: [...debut, 'Ensuite, ', T('m'), ' de vapeur d’éthanol se liquéfient. Quelle énergie la vapeur cède-t-elle au milieu ?'], utiles: ['m', 'Lv'], raisons,
+        cherche: { bonne: 'L’énergie cédée par la vapeur (en kJ)', faux: ['L’énergie qu’il faut fournir pour fondre l’éthanol (en kJ)', 'La masse de liquide qui s’évapore (en kg)', 'La durée de la liquéfaction (en min)'] },
+        manque: null, solution: { txt: 'même L que pour la vaporisation ; E = m × L, avec la masse convertie en kg', val: (p.m / 1000) * Lv, u: 'kJ' } };
     }),
   },
   // ───────────────────────────── Seconde : réactif limitant
