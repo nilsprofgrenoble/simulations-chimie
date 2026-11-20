@@ -1643,6 +1643,65 @@ function genTests2GT() {
   return { intro: 'Tests chimiques : réactif et observation de chaque test, lecture d’une observation (cas pièges), nombre de tests pour identifier un gaz, durée des tests et deux espèces à la fois.', questions: [q0, q1, q2, q3, q4],
     retenir: ['Eau : poudre blanche qui devient bleue ; CO₂ : eau de chaux qui se trouble ; O₂ : braise qui se rallume ; H₂ : « pop » à la flamme (par le professeur).', 'Parmi n gaz possibles, n − 1 tests suffisent : le dernier gaz se déduit par élimination.', 'Un test négatif ne prouve pas à lui seul l’absence ; une flamme éteinte n’est pas un test ; plusieurs tests positifs : un mélange.'] };
 }
+
+// ───────────── Chromatographie sur couche mince (2GT) : rapport frontal (complément), distance parcourue, conversions et comparaison de hauteurs ─────────────
+const CCM2GT_FRONTS = [5.0, 5.5, 6.0, 6.5, 7.0];                 // cm : distance parcourue par le front
+const CCM2GT_RF = [0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75];
+const CCM2GT_ECARTS = [0.3, 0.5, 0.8, 1.2, 1.5];                  // cm : écarts de hauteur nettement supérieurs à la précision de lecture (1 mm)
+const CCM2GT_SITU = [
+  { de: 'un colorant d’enrobage de bonbon', refs: 'la référence du colorant rouge E129' },
+  { de: 'un pigment d’extrait de feuilles', refs: 'la référence de la chlorophylle a' },
+  { de: 'un arôme extrait d’une gousse de vanille', refs: 'la référence de la vanilline' },
+];
+function genCcm2GT() {
+  const nbc = (x, cs = 2) => nb(x, cs);
+  const dist1 = (F, rf) => Math.round(rf * F * 10) / 10;           // distance de la tache lue à 1 mm près (cm)
+  // q0 : rapport frontal d'une tache (distances en cm)
+  const F0 = tire(CCM2GT_FRONTS), d0 = dist1(F0, tire(CCM2GT_RF)), r0 = d0 / F0, s0 = tire(CCM2GT_SITU);
+  const q0 = { id: 'c0', type: 'num', q: <>Sur une plaque de CCM, la tache {s0.de} a parcouru <b>{nbc(d0)}{NB}cm</b> depuis la ligne de dépôt. Le front de l’éluant a parcouru <b>{nbc(F0)}{NB}cm</b> depuis la même ligne. Calculez le rapport frontal R<sub>f</sub> de cette tache (sans unité).</>,
+    unite: '', vrai: r0, csMin: 2, tolRel: 0.06,
+    aide: 'Rf = distance parcourue par la tache ÷ distance parcourue par le front, toutes deux mesurées depuis la ligne de dépôt. Le résultat est entre 0 et 1, sans unité.',
+    pieges: [[d0 * F0, 'On divise les deux distances, on ne les multiplie pas.'], [F0 / d0, 'Le rapport est inversé : la distance de la tache est au numérateur, celle du front au dénominateur.'], [d0, 'C’est la distance de la tache, pas le rapport : divisez-la par celle du front.']],
+    expl: <>R<sub>f</sub> = {nbc(d0)} ÷ {nbc(F0)} = <b>{nb(r0, 2)}</b>. Une tache ne dépasse jamais le front : R<sub>f</sub> est toujours inférieur à 1.</> };
+  // q1 : distance parcourue par la tache à partir de Rf
+  const F1 = tire(CCM2GT_FRONTS), r1 = tire(CCM2GT_RF), v1 = r1 * F1, s1 = tire(CCM2GT_SITU);
+  const q1 = { id: 'c1', type: 'num', q: <>Sur une plaque, {s1.de} a un rapport frontal R<sub>f</sub> = <b>{nbc(r1)}</b>. Le front de l’éluant a parcouru <b>{nbc(F1)}{NB}cm</b> depuis la ligne de dépôt. Quelle distance la tache a-t-elle parcourue ? Donnez le résultat en <b>cm</b>.</>,
+    unite: 'cm', vrai: v1, csMin: 2, tolRel: 0.06,
+    aide: 'Rf = distance de la tache ÷ distance du front, donc distance de la tache = Rf × distance du front.',
+    pieges: [[r1 / F1, 'On multiplie Rf par la distance du front, on ne divise pas.'], [F1 / r1, 'Vous avez divisé la distance du front par Rf : la distance de la tache est plus petite que celle du front.'], [F1, 'C’est la distance parcourue par le front : la tache est restée en arrière, d’un facteur Rf.']],
+    expl: <>Distance de la tache = R<sub>f</sub> × distance du front = {nbc(r1)} × {nbc(F1)} = <b>{avecU(v1, 'cm', 2)}</b>.</> };
+  // q2 : tache lue en millimètres, front en centimètres
+  const F2 = tire(CCM2GT_FRONTS), d2mm = Math.round(tire(CCM2GT_RF) * F2 * 10), r2 = (d2mm / 10) / F2;
+  const q2 = { id: 'c2', type: 'num', q: <>Sur une règle, on lit que la tache est à <b>{d2mm}{NB}mm</b> de la ligne de dépôt. Le front de l’éluant est à <b>{nbc(F2)}{NB}cm</b> de cette ligne. Calculez le rapport frontal R<sub>f</sub> (sans unité).</>,
+    unite: '', vrai: r2, csMin: 2, tolRel: 0.06,
+    aide: 'Les deux distances doivent être dans la même unité : convertissez les millimètres en centimètres (10\u00a0mm = 1\u00a0cm), puis divisez.',
+    pieges: [[d2mm / F2, 'Les distances ne sont pas dans la même unité : 1\u00a0cm = 10\u00a0mm, convertissez la distance de la tache en cm.'], [(d2mm / 10) * F2, 'On divise la distance de la tache par celle du front, on ne les multiplie pas.'], [F2 / (d2mm / 10), 'Le rapport est inversé : la distance de la tache est au numérateur.']],
+    expl: <>{d2mm}{NB}mm = {nbc(d2mm / 10)}{NB}cm ; R<sub>f</sub> = {nbc(d2mm / 10)} ÷ {nbc(F2)} = <b>{nb(r2, 2)}</b>.</> };
+  // q3 : distance du front à partir de Rf et de la distance de la tache
+  const F3 = tire(CCM2GT_FRONTS), r3 = tire(CCM2GT_RF), d3 = dist1(F3, r3), v3 = d3 / r3, s3 = tire(CCM2GT_SITU);
+  const q3 = { id: 'c3', type: 'num', q: <>Pour {s3.de}, on sait que R<sub>f</sub> = <b>{nbc(r3)}</b> avec l’éluant utilisé. Sur une nouvelle plaque, la tache de cette espèce est à <b>{nbc(d3)}{NB}cm</b> de la ligne de dépôt. Quelle distance le front a-t-il parcourue ? Donnez le résultat en <b>cm</b>.</>,
+    unite: 'cm', vrai: v3, csMin: 2, tolRel: 0.07,
+    aide: 'distance de la tache = Rf × distance du front, donc distance du front = distance de la tache ÷ Rf.',
+    pieges: [[d3 * r3, 'On divise la distance de la tache par Rf, on ne les multiplie pas.'], [r3 / d3, 'Le rapport est inversé : distance du front = distance de la tache ÷ Rf.'], [d3, 'C’est la distance de la tache : le front est plus haut, puisque Rf est inférieur à 1.']],
+    expl: <>Distance du front = {nbc(d3)} ÷ {nbc(r3)} = <b>{avecU(v3, 'cm', 2)}</b>.</> };
+  // q4 : écart de hauteur en millimètres entre deux taches lues en centimètres
+  const h4 = tire([2.4, 2.7, 3.1, 3.6, 4.2, 4.8]), e4 = tire(CCM2GT_ECARTS), h4b = Math.round((h4 + e4) * 10) / 10, v4 = Math.round(e4 * 10);
+  const q4 = { id: 'c4', type: 'num', q: <>Sur une même plaque, la tache d’un échantillon est à <b>{nbc(h4)}{NB}cm</b> de la ligne de dépôt et celle d’une référence à <b>{nbc(h4b)}{NB}cm</b>. Quel est l’écart de hauteur entre les deux taches ? Donnez le résultat en <b>mm</b>.</>,
+    unite: 'mm', vrai: v4, csMin: 1, tolRel: 0.001,
+    aide: 'Calculez la différence des deux hauteurs en cm, puis convertissez en mm (1\u00a0cm = 10\u00a0mm).',
+    pieges: [[e4, 'Le résultat est en cm : 1\u00a0cm = 10\u00a0mm, multipliez par 10 pour l’avoir en mm.'], [h4b + h4, 'On soustrait les deux hauteurs pour obtenir un écart, on ne les additionne pas.'], [e4 / 10, 'Vous avez converti dans le mauvais sens : pour passer des cm aux mm, on multiplie par 10.']],
+    expl: <>Écart = {nbc(h4b)} − {nbc(h4)} = {nbc(e4)}{NB}cm = <b>{v4}{NB}mm</b>.</> };
+  // q5 : conclusion d'une comparaison
+  const h5 = tire([2.4, 2.7, 3.1, 3.6, 4.2, 4.8]), e5 = tire([0, 0, 0.5, 0.8, 1.2]), h5b = Math.round((h5 + e5) * 10) / 10, mem = e5 === 0;
+  const T5 = ['elles sont peut-être la même espèce, mais ce n’est pas prouvé', 'elles sont la même espèce : c’est maintenant prouvé', 'ce sont deux espèces différentes, car les hauteurs diffèrent nettement', 'on ne peut rien conclure tant qu’on n’a pas calculé les rapports frontaux Rf'];
+  const bonne5 = mem ? T5[0] : T5[2], opts5 = melange(T5);
+  const q5 = { id: 'c5', type: 'qcm', q: <>Un échantillon et une référence ont migré sur la même plaque, avec le même éluant. La tache de l’échantillon est à <b>{nbc(h5)}{NB}cm</b> de la ligne de dépôt, celle de la référence à <b>{nbc(h5b)}{NB}cm</b> (lecture à 1{NB}mm près). Que peut-on dire ?</>, options: opts5, bonne: opts5.indexOf(bonne5),
+    aide: 'Comparez les deux hauteurs avec la précision de lecture (1\u00a0mm). Même hauteur : compatible, pas prouvé. Hauteurs différentes : espèces différentes.',
+    expl: <>{mem ? 'Les deux taches sont à la même hauteur : c’est compatible avec la même espèce, mais deux espèces différentes peuvent migrer pareil dans un éluant. Pour confirmer, on change d’éluant.' : `L’écart est de ${Math.round(e5 * 10)}\u00a0mm, bien plus que la précision de lecture (1\u00a0mm) : les hauteurs diffèrent, donc les espèces sont différentes.`}</> };
+  [q0, q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Chromatographie sur couche mince : rapport frontal (complément), distance parcourue par une tache ou par le front, conversion des millimètres en centimètres, écart de hauteur et conclusion d’une comparaison.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['Rf = distance parcourue par la tache ÷ distance parcourue par le front, depuis la ligne de dépôt : entre 0 et 1, sans unité (complément, non exigé en Seconde).', 'Mettre les deux distances dans la même unité avant de diviser (1\u00a0cm = 10\u00a0mm).', 'Même hauteur : compatible avec la même espèce, sans preuve ; hauteurs différentes : espèces différentes.'] };
+}
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
 function genEquilibreTG() {
   const v = [0.050, 0.10, 0.20, 0.40];
@@ -3903,6 +3962,7 @@ export const FAMILLES = [
   { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
   { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
   { id: 'test2gt-calcul', groupe: 'Formules', titre: 'Tests chimiques : réactif et observation, lecture d’une observation, nombre de tests pour identifier un gaz, durée et deux espèces à la fois (2GT)', gen: genTests2GT, domaine: 'Tests chimiques (2GT)' },
+  { id: 'ccm2gt-calcul', groupe: 'Formules', titre: 'Chromatographie sur couche mince : rapport frontal, distance parcourue, conversions et comparaison de hauteurs (2GT)', gen: genCcm2GT, domaine: 'Chromatographie sur couche mince (2GT)' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },

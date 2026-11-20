@@ -1702,5 +1702,21 @@
  "37:prevoir:brn-ana-soude": "ANA696",
  "77:plausible:brn-val-equation": "VAL453",
  "77:plausible:brn-val-lewis": "VAL454",
- "36:brn-calcul": "REA116"
+ "36:brn-calcul": "REA116",
+ "34:ccm2gt-sapp-comparer.0": "SAPP439",
+ "34:ccm2gt-sapp-comparer.1": "SAPP440",
+ "34:ccm2gt-sapp-colorant.0": "SAPP441",
+ "34:ccm2gt-sapp-colorant.1": "SAPP442",
+ "37:prevoir:ccm2gt-ana-une-tache": "ANA697",
+ "37:prevoir:ccm2gt-ana-inconnue": "ANA698",
+ "37:prevoir:ccm2gt-ana-niveau": "ANA699",
+ "37:prevoir:ccm2gt-ana-concentre": "ANA700",
+ "37:prevoir:ccm2gt-ana-suite": "ANA701",
+ "37:prevoir:ccm2gt-ana-crayon": "ANA702",
+ "77:plausible:ccm2gt-val-rf-sup1": "VAL455",
+ "77:plausible:ccm2gt-val-rf-ok": "VAL456",
+ "77:plausible:ccm2gt-val-prouve": "VAL457",
+ "77:plausible:ccm2gt-val-differentes": "VAL458",
+ "77:plausible:ccm2gt-val-pur-sur": "VAL459",
+ "36:ccm2gt-calcul": "REA117"
 }
