@@ -6,8 +6,10 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./optModele";
 import { QCM_PARCOURS as Q } from "./optQcm";
-import { GrapheEssais, SvgDeanStark, SvgCarteRendement, SvgCarteMemePalier, SvgCarteQrK, SvgCarteExces, SvgCarteBilan } from "./optSchemas";
+import { GrapheEssais, SvgCarteRendement, SvgCarteMemePalier, SvgCarteQrK, SvgCarteExces, SvgCarteBilan } from "./optSchemas";
 import { COL } from "./optOutils";
+import { MontageBloc, MontageGuide } from "./optMontage";
+import { useGouttes, PALIERS_CHAUFFE, MSG_RETOUR } from "./optMontageModele";
 
 const SIM_ID = 189, CLE_GUIDE = 'optimisation-rendement-tg-guide-v2';
 declarerDefis(SIM_ID, [['rendement', 'Atteindre le rendement visé'], ['protocole', 'Analyser un protocole']]);
@@ -79,12 +81,13 @@ export function SimulationOptimisationRendement() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('rendement');
   const [hypoOuv, setHypoOuv] = useState(false);
-  const [ouv, setOuv] = useState({ aff: false, mes: false, essayer: false, retenir: false });
+  const [ouv, setOuv] = useState({ reg: true, aff: false, mes: false, essayer: false, retenir: false });
+  const [goutte, lancerGo] = useGouttes(), [msgRetour, setMsgRetour] = useState(null);
   const [ex, setEx] = useState({ ...REF, horizon: M.DUREE, mode: 'n', comp: false });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const etape = guide.etape, idEtape = IDS[Math.min(etape, IDS.length - 1)];
   const pE = { r: ex.r, T: ex.T, cat: ex.cat, eau: ex.eau && M.retraitPossible(ex.T) };
-  const setE = f => setEx(s => { const n = { ...s, ...f }; if (!M.retraitPossible(n.T)) n.eau = false; return n; });
+  const setE = f => { if (f.T !== undefined && f.T < M.T_REFLUX && ex.eau && ex.T >= M.T_REFLUX) setMsgRetour(MSG_RETOUR); else if (f.eau !== undefined || f.T >= M.T_REFLUX) setMsgRetour(null); if (f.r !== undefined && f.r > ex.r) lancerGo('eth'); if (f.cat === true && !ex.cat) lancerGo('cat'); setEx(s => { const n = { ...s, ...f }; if (!M.retraitPossible(n.T)) n.eau = false; return n; }); };
   const cE = M.simuler(pE, M.DUREE, 60), finE = cE[cE.length - 1], tdE = pE.eau ? null : M.tDemi(pE);
 
   // ---------- étapes du parcours ----------
@@ -200,15 +203,15 @@ export function SimulationOptimisationRendement() {
     switch (idEtape) {
       case 'limite': return <><Equation/><GrapheEssais courbes={[COURBE_REF]} horizon={M.DUREE} ticksY="aucun" aria="Graphique : la quantité d’ester formé monte pendant la première heure puis reste sur un palier, sous le trait en pointillés n_max."/></>;
       case 'rendement': return <><Equation/><Tab premiere="Essai" lignes={[{ nom: 'au départ', v: ['0,60 mol', '0,80 mol', '0', '0'] }, { nom: 'à la fin', v: ['', '', '0,45 mol', ''] }]}/><div style={sceneNote}>Les quantités sans valeur ne sont pas données.</div></>;
-      case 'protocole': return <><Equation/><Protocole titre="Synthèse de l’éthanoate d’éthyle" lignes={PROTO_A}/></>;
+      case 'protocole': return <><Equation/><MontageGuide init={{ T: 75, nA: 0.5, nB: 1, cat: false, ds: false }} commandes={['acide']} goutteInit="cat" reserve={0.2}/><div style={{ height: 10 }}/><Protocole titre="Synthèse de l’éthanoate d’éthyle" lignes={PROTO_A}/></>;
       case 'palier': return <><Equation/><GrapheEssais courbes={[{ p: { ...REF, T: 75 }, nom: '75 °C', c: COL.bleu, etiq: { t: 540, dx: 0, dy: -10, a: 'start' } }, { p: { ...REF, T: 45 }, nom: '45 °C', c: COL.vert, dash: '10 6', etiq: { t: 300, dx: 8, dy: 28, a: 'start' } }]} horizon={900} ticksY="std" nmax={false}/></>;
       case 'qr': return <><Equation/><Tab premiere="Mélange" lignes={[{ nom: 'en cours', v: ['0,40 mol', '0,40 mol', '0,60 mol', '0,60 mol'] }]}/></>;
       case 'eqr1': return <><Equation/><Tab premiere="Mélange" lignes={[{ nom: 'au départ', v: ['1,00', '1,00', '0', '0'] }, { nom: 'à l’équilibre', v: [<>1,00 − {X}</>, <>1,00 − {X}</>, X, X] }]}/><div style={sceneNote}>Quantités en mol.</div></>;
-      case 'ajout': return <><Equation/><Tab premiere="Mélange" lignes={[{ nom: 'à l’équilibre', v: ['0,333', '0,333', '0,667', '0,667'] }, { nom: 'on ajoute', v: ['', '1,00', '', ''] }]}/><div style={sceneNote}>Quantités en mol ; K = 4.</div></>;
+      case 'ajout': return <><Equation/><Tab premiere="Mélange" lignes={[{ nom: 'à l’équilibre', v: ['0,333', '0,333', '0,667', '0,667'] }, { nom: 'on ajoute', v: ['', '1,00', '', ''] }]}/><div style={sceneNote}>Quantités en mol ; K = 4.</div><div style={{ height: 10 }}/><MontageGuide init={{ T: 75, nA: 1, nB: 1, cat: true, ds: false }} commandes={['ajout']}/></>;
       case 'sens': return <><Equation/><Tab premiere="Mélange" lignes={[{ nom: 'juste après l’ajout', v: ['0,333', '1,333', '0,667', '0,667'] }]}/><div style={sceneNote}>Quantités en mol ; K = 4.</div></>;
-      case 'rapports': return <><Equation/><TabRendements/><div style={sceneNote}>Valeurs calculées avec K = 4, sans élimination de produit.</div></>;
-      case 'retrait': return <><SvgDeanStark/></>;
-      case 'variante': return <><Equation/><Protocole titre="Variante du protocole" lignes={PROTO_B}/></>;
+      case 'rapports': return <><Equation/><TabRendements/><div style={sceneNote}>Valeurs calculées avec K = 4, sans élimination de produit.</div><div style={{ height: 10 }}/><MontageGuide init={{ T: 75, nA: 1, nB: 1, cat: true, ds: false }} commandes={['rapports']}/></>;
+      case 'retrait': return <><Equation/><MontageGuide init={{ T: 75, nA: 1, nB: 1, cat: true, ds: true }} commandes={['bascule']} eauMl={0.333 * 18.015}/></>;
+      case 'variante': return <><Equation/><Protocole titre="Variante du protocole" lignes={PROTO_B}/><div style={{ height: 10 }}/><MontageGuide init={{ T: 75, nA: 0.5, nB: 0.5, cat: true, ds: true }} commandes={['bascule']}/></>;
       default: return null;
     }
   };
@@ -299,6 +302,10 @@ export function SimulationOptimisationRendement() {
       <li><strong>Vitesse</strong> : la vitesse d’évolution est proportionnelle à la différence entre ce que forme la réaction directe et ce que détruit la réaction inverse ; elle s’annule exactement quand Qr = K. La température (vitesse multipliée par 2 pour 10 °C) et le catalyseur (facteur 50) ne modifient que cette vitesse, jamais K. Ces facteurs sont des ordres de grandeur qualitatifs, pas des données mesurées.</li>
       <li><strong>Élimination de l’eau</strong> : idéalisée (quantité retirée proportionnelle à l’eau présente) et possible seulement à reflux ; avec elle, le rendement tend vers 100 % (transformation quasi totale). En pratique, un montage de Dean-Stark exige un solvant entraîneur et les azéotropes compliquent la séparation.</li>
       <li><strong>Rendement</strong> : quantité d’ester formée divisée par n<sub>max</sub> = 1,00 mol (l’acide est le réactif limitant) ; l’excès concerne l’éthanol. Un essai dure 3 h. Le temps de demi-réaction est la date où l’ester atteint la moitié de sa valeur à l’équilibre ; il n’est pas affiché avec élimination de l’eau, car l’état final visé change.</li>
+      <li><strong>Montage (schéma)</strong> : schéma simplifié, non à l’échelle ; seuls les niveaux de liquide sont à l’échelle (volumes calculés avec n × M ÷ ρ : éthanol 46,07 g/mol et 0,789 g/mL, acide éthanoïque 60,05 g/mol et 1,05 g/mL ; volume du mélange supposé constant au cours de la transformation, ballon de 750 mL). Le sommet du réfrigérant est ouvert à l’air : un montage chauffé n’est jamais fermé.</li>
+      <li><strong>Température et reflux</strong> : à reflux, la température est limitée par l’ébullition du mélange (vers 75 à 85 °C à la pression atmosphérique) ; les bulles et les gouttes de reflux sont qualitatives (absentes sous 75 °C : à 60 °C le mélange est chaud mais ne bout pas ; elles n’apparaissent qu’à 75 °C, à l’ébullition). Le menu de chauffage et le bouton du chauffe-ballon règlent la même grandeur.</li>
+      <li><strong>Solvant entraîneur</strong> : avec l’éthanol seul, l’eau et l’éthanol forment un azéotrope et le piège de Dean-Stark ne sépare rien ; on ajoute un solvant entraîneur non miscible à l’eau (ici le cyclohexane, volume indicatif de 60 mL). Avec lui, l’eau formée est retirée du ballon au fur et à mesure : on admet ici que l’élimination est totale et immédiate (idéalisation du modèle).</li>
+      <li><strong>Catalyseur</strong> : les étincelles sont un symbole (nombre constant : le catalyseur n’est pas consommé), pas une réaction ni des molécules.</li>
       <li><strong>Notations</strong> : Qr s’écrit sans indice ; η désigne le rendement ; les valeurs numériques sont arrondies à 3 chiffres significatifs.</li>
       <li><strong>Hors programme, non traité</strong> : coût, impact environnemental, loi de Le Chatelier, loi d’Arrhenius chiffrée, synthèses en plusieurs étapes.</li>
     </ul>);
@@ -313,26 +320,50 @@ export function SimulationOptimisationRendement() {
   const resume = `${nbf(ex.r, 2)} mol d’éthanol · ${ex.T} °C · ${ex.cat ? 'avec' : 'sans'} catalyseur · eau ${pE.eau ? 'retirée' : 'non retirée'}`;
   const courbesE = [{ p: pE, c: COL.bleu, w: 3 }, ...(ex.comp ? [{ p: REF, c: COL.gris, dash: '9 6', w: 2.6 }] : [])];
   const horizons = [[180, '3 h'], [720, '12 h'], [2880, '48 h']];
-  const boxExplore = (
+  const eauRetiree = pE.eau ? (finE.x - finE.nW) * 18.015 : 0;   // mL d'eau recueillis à la fin de l'essai (ρ = 1,00 g/mL)
+  const iT = PALIERS_CHAUFFE.indexOf(ex.T);
+  const btnS = { ...stylePetitBouton(false, '#0369a1'), minHeight: 44, minWidth: 48, fontSize: 18 };
+  const stepperT = (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '4px 0 6px' }}>
+      <span style={{ fontSize: 14, color: KIT.txt }}>Température :</span>
+      <button type="button" aria-label="Baisser le chauffage" disabled={iT <= 0} onClick={() => setE({ T: PALIERS_CHAUFFE[iT - 1] })} style={btnS}>−</button>
+      <strong style={{ fontSize: 16, minWidth: 56, textAlign: 'center', color: KIT.txt }}>{ex.T}{NB}°C</strong>
+      <button type="button" aria-label="Augmenter le chauffage" disabled={iT >= PALIERS_CHAUFFE.length - 1} onClick={() => setE({ T: PALIERS_CHAUFFE[iT + 1] })} style={btnS}>+</button></div>);
+  const boxMontage = (
     <div style={styleBoite}>
       <Equation/>
+      <div style={aide}>Le schéma suit vos réglages (à droite sur ordinateur, dessous sur téléphone) : essayez le bouton à deux positions et la température.</div>
+      <MontageBloc etat={{ T: ex.T, nA: 1, nB: ex.r, cat: ex.cat, ds: pE.eau }} goutte={goutte} eauMl={eauRetiree}
+        onBascule={ds => setE(ds ? { eau: true, T: M.T_REFLUX } : { eau: false })} noteEau message={msgRetour} sousBascule={stepperT}/>
+      {ex.T < M.T_REFLUX && <div style={{ ...aide, marginTop: 6 }}>Le montage de Dean-Stark ne fonctionne qu’à reflux : le choisir règle le chauffage sur {M.T_REFLUX} °C.</div>}
+    </div>);
+  const boxExplore = (
+    <div style={styleBoite}>
+      <div style={titreCarte}>Courbe de l’essai</div>
       <div style={aide}>Courbe de la quantité d’ester formé (mol) pour 1,00 mol d’acide ; le trait en pointillés <Nmax/> est la quantité maximale. Les pointillés mixtes orange marquent le palier de l’équilibre sans élimination.</div>
       <GrapheEssais courbes={courbesE} horizon={ex.horizon} mode={ex.mode} limite={ex.mode === 'n' && !pE.eau}/>
       <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.6 }}>Trait plein bleu : essai choisi{ex.comp ? ' · tirets gris : protocole de référence (1,00 mol d’éthanol, 75 °C, catalyseur, eau non retirée)' : ''}.</div>
     </div>);
+  const iR = M.RAPPORTS.indexOf(ex.r);
   const reglages = (
     <div style={styleBoite} className="opt-ctrl">
       <div style={titreCarte}>Réglages du protocole</div>
-      <div style={aide}>Chaque menu modifie un seul levier : la courbe, les mesures et le rendement se mettent à jour.</div>
-      <label style={lbSel}>Quantité d’éthanol pour 1,00 mol d’acide (excès éventuel)
-        <select value={ex.r} onChange={e => setE({ r: +e.target.value })} style={{ ...menu, marginTop: 2 }}>{M.RAPPORTS.map(r => <option key={r} value={r}>{nbf(r, 2)} mol{r === 1 ? ' (aucun excès)' : ''}</option>)}</select></label>
-      <label style={lbSel}>Température
-        <select value={ex.T} onChange={e => setE({ T: +e.target.value })} style={{ ...menu, marginTop: 2 }}>{M.TEMPS.map(T => <option key={T} value={T}>{T} °C{T === M.T_REFLUX ? ' (reflux)' : ''}</option>)}</select></label>
-      <label style={lbSel}>Catalyseur (acide sulfurique concentré)
-        <select value={ex.cat ? 'oui' : 'non'} onChange={e => setE({ cat: e.target.value === 'oui' })} style={{ ...menu, marginTop: 2 }}><option value="oui">avec catalyseur</option><option value="non">sans catalyseur</option></select></label>
-      <label style={lbSel}>Eau formée (montage de Dean-Stark)
-        <select value={pE.eau ? 'oui' : 'non'} onChange={e => setE({ eau: e.target.value === 'oui' })} disabled={!M.retraitPossible(ex.T)} style={{ ...menu, marginTop: 2 }}><option value="non">laissée dans le ballon</option><option value="oui">retirée au fur et à mesure</option></select></label>
-      {!M.retraitPossible(ex.T) && <div style={aide}>Retirer l’eau suppose de chauffer à reflux (75 °C).</div>}
+      <div style={aide}>Chaque réglage modifie un seul levier : le schéma, la courbe et les mesures se mettent à jour.</div>
+      <Section titre={`Réglages : ${resume}`} ouvert={ouv.reg} onBascule={() => setOuv(o => ({ ...o, reg: !o.reg }))}>
+        <div style={{ ...lbSel }}>Température du mélange (réglée par le bouton du chauffe-ballon)
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, flexWrap: 'wrap' }}>
+            <select value={ex.T} aria-label="Température du mélange" onChange={e => setE({ T: +e.target.value })} style={{ ...menu, width: 'auto', flex: '1 1 140px' }}>{PALIERS_CHAUFFE.map(T => <option key={T} value={T}>{T} °C{T === M.T_REFLUX ? ' (reflux)' : T === 60 ? ' (chaud, ne bout pas)' : ''}</option>)}</select>
+            <button type="button" onClick={() => setE({ T: M.T_REFLUX })} style={{ ...stylePetitBouton(false), minHeight: 44 }}><Pic n="refresh"/>Rétablir</button></div>
+          <div style={{ ...aide, marginTop: 4 }}>La température du menu est celle du bouton du chauffe-ballon. À reflux, elle est limitée par l’ébullition du mélange.</div></div>
+        <label style={lbSel}>Quantité d’éthanol pour 1,00 mol d’acide (le niveau du ballon monte quand on en ajoute)
+          <select value={ex.r} onChange={e => setE({ r: +e.target.value })} style={{ ...menu, marginTop: 2 }}>{M.RAPPORTS.map(r => <option key={r} value={r}>{nbf(r, 2)} mol{r === 1 ? ' (aucun excès)' : ''}</option>)}</select></label>
+        <div style={{ marginBottom: 8 }}><button type="button" disabled={iR >= M.RAPPORTS.length - 1} onClick={() => setE({ r: M.RAPPORTS[iR + 1] })} style={{ ...styleBouton(true, '#15803d'), minHeight: 44 }}>{iR < M.RAPPORTS.length - 1 ? `Ajouter ${nbf(M.RAPPORTS[iR + 1] - ex.r, 2)} mol d’éthanol (ampoule de coulée)` : 'Excès maximal atteint'}</button></div>
+        <label style={lbSel}>Catalyseur (quelques gouttes d’acide sulfurique concentré : des étincelles apparaissent dans le ballon)
+          <select value={ex.cat ? 'oui' : 'non'} onChange={e => setE({ cat: e.target.value === 'oui' })} style={{ ...menu, marginTop: 2 }}><option value="oui">avec catalyseur</option><option value="non">sans catalyseur</option></select></label>
+        <label style={lbSel}>Eau formée (montage de Dean-Stark avec cyclohexane comme entraîneur)
+          <select value={pE.eau ? 'oui' : 'non'} onChange={e => setE({ eau: e.target.value === 'oui' })} disabled={!M.retraitPossible(ex.T)} style={{ ...menu, marginTop: 2 }}><option value="non">laissée dans le ballon (montage à reflux)</option><option value="oui">retirée au fur et à mesure (Dean-Stark)</option></select></label>
+        {!M.retraitPossible(ex.T) && <div style={aide}>Retirer l’eau suppose de chauffer à reflux (75 °C).</div>}
+      </Section>
       <Section titre="Affichage : grandeur tracée, durée, comparaison" ouvert={ouv.aff} onBascule={() => setOuv(o => ({ ...o, aff: !o.aff }))}>
         <label style={lbSel}>Grandeur tracée
           <select value={ex.mode} onChange={e => setE({ mode: e.target.value })} style={{ ...menu, marginTop: 2 }}><option value="n">quantité d’ester formé</option><option value="qr">quotient de réaction Qr, comparé à K</option></select></label>
@@ -393,8 +424,8 @@ export function SimulationOptimisationRendement() {
           .opt-df-volet { grid-column: 2; grid-row: 1; } .opt-df-hypo { grid-column: 2; grid-row: 2; } }
         .opt-ex { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
         @media (min-width: 901px) { .opt-l1.cote .opt-carte { order: 2; } .opt-l1.cote .opt-main { order: 1; }
-          .opt-ex { grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); } .opt-ex > * { grid-column: 1; } .opt-ex > .opt-ctrl { grid-column: 2; grid-row: 1 / span 5; } }
-        @media (max-width: 900px) { .opt-l1.cote { grid-template-columns: minmax(0, 1fr); } }
+          .opt-ex { grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); } .opt-ex > * { grid-column: 1; } .opt-ex > .opt-ctrl { grid-column: 2; grid-row: 1 / span 6; } .opt-o1 { order: 1; } .opt-o2 { order: 2; } .opt-o3 { order: 3; } .opt-o4 { order: 4; } .opt-o5 { order: 5; } }
+        @media (max-width: 900px) { .opt-l1.cote { grid-template-columns: minmax(0, 1fr); } .opt-l1.cote.mt .opt-main { order: -1; } }
         @media (prefers-reduced-motion: no-preference) { .opt-in { animation: opt-fondu 0.35s ease-out; } @keyframes opt-fondu { from { opacity: 0; } to { opacity: 1; } } }
       `}</style>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 6 }}>
@@ -402,7 +433,7 @@ export function SimulationOptimisationRendement() {
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Estérification de l’acide éthanoïque par l’éthanol : quelles opérations d’un protocole accélèrent la formation de l’ester, lesquelles augmentent le rendement, et comment le justifier avec Qr et K.</div>
-      {enGuide && <div className="opt-l1 cote">
+      {enGuide && <div className={'opt-l1 cote' + (['protocole', 'ajout', 'rapports', 'retrait', 'variante'].includes(idEtape) ? ' mt' : '')}>
         <div className="opt-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div>
         <div className="opt-main"><div className="opt-col">
           {idEtape !== 'bilan' && <div className="opt-in" key={'s-' + idEtape}><div style={styleBoite}>{sceneGuide()}</div></div>}
@@ -423,12 +454,13 @@ export function SimulationOptimisationRendement() {
         <div className="opt-df-hypo">{panneauHypo}</div>
       </div>}
       {enExplore && <div className="opt-ex">
-        <div>{boxExplore}</div>
+        <div className="opt-o0">{boxMontage}</div>
         <div className="opt-ctrl">{reglages}</div>
-        <div>{mesures}</div>
-        <div>{aEssayer}</div>
-        <div>{retenirExplore}</div>
-        <div>{panneauHypo}</div>
+        <div className="opt-o2">{mesures}</div>
+        <div className="opt-o1">{boxExplore}</div>
+        <div className="opt-o3">{aEssayer}</div>
+        <div className="opt-o4">{retenirExplore}</div>
+        <div className="opt-o5">{panneauHypo}</div>
       </div>}
       {enGuide && idEtape === 'bilan' && <div style={{ marginBottom: 12 }}>{panneauHypo}</div>}
     </div>
