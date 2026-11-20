@@ -164,7 +164,7 @@ export function SceneEllipse({ e, secteurs = [], fSat = null, aria }) {
   };
   const sat = fSat != null ? positionEllipse(e, fSat) : null;
   return (
-    <svg viewBox="0 0 400 346" style={stl} role="img" aria-label={aria}>
+    <svg viewBox="0 0 400 360" style={stl} role="img" aria-label={aria}>
       <defs>
         <pattern id="kep-hach" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="#e0f2fe"/><line x1="0" y1="0" x2="0" y2="7" stroke={COL.bleu} strokeWidth="1.6"/></pattern>
         <pattern id="kep-pts" width="8" height="8" patternUnits="userSpaceOnUse"><rect width="8" height="8" fill="#ffedd5"/><circle cx="4" cy="4" r="1.6" fill={COL.orange}/></pattern>
@@ -173,11 +173,23 @@ export function SceneEllipse({ e, secteurs = [], fSat = null, aria }) {
       {secteurs.map(sect)}
       <circle cx={X(0)} cy={Y(0)} r="9" fill={COL.astre} stroke={COL.gris} strokeWidth="2"/><circle cx={X(0)} cy={Y(0)} r="2.4" fill={COL.txt}/>
       {sat && <circle cx={X(sat.x)} cy={Y(sat.y)} r="4.5" fill={COL.txt} stroke="#fff" strokeWidth="1.5"/>}
+      {/* noms directement sur le dessin : astre central et trajectoire du satellite, du côté où il n'y a pas de secteur */}
+      {(() => {
+        const dirs = secteurs.map(q => { const m = positionEllipse(e, (q.f1 + q.f2) / 2); return Math.atan2(m.y, m.x); });   // directions (repère mathématique) des secteurs vus du foyer
+        const occupe = a => dirs.some(d => Math.abs(Math.atan2(Math.sin(d - a), Math.cos(d - a))) < 0.6);
+        const bas = !occupe(-Math.PI / 2), b = Math.sqrt(1 - e * e), haut = !occupe(Math.PI / 2) || occupe(-Math.PI / 2);
+        const yTraj = haut ? oy - SE * b - 8 : oy + SE * b + 20;
+        return <g>
+          <Tx x={X(0)} y={bas ? Y(0) + 30 : Y(0) - 18} s={16} a="middle" c={COL.txt}>astre</Tx>
+          <Tx x={200} y={Math.min(244, Math.max(20, yTraj))} s={15} w={600} a="middle" c={COL.gris}>trajectoire du satellite</Tx>
+        </g>;
+      })()}
       <line x1="0" y1="250" x2="400" y2="250" stroke={COL.clair} strokeWidth="1.5"/>
-      <rect x="0" y="251" width="400" height="95" fill="#f8fafc"/>
-      <circle cx="22" cy="270" r="9" fill={COL.astre} stroke={COL.gris} strokeWidth="2"/><Tx x={40} y={277} s={18} w={600} halo={false}>astre, au foyer de l’ellipse</Tx>
-      <rect x="14" y="286" width="16" height="12" fill="url(#kep-hach)" stroke={COL.bleu} strokeWidth="1.5"/><Tx x={40} y={300} s={18} w={600} halo={false}>A₁ : aire balayée (durée choisie)</Tx>
-      <rect x="14" y="310" width="16" height="12" fill="url(#kep-pts)" stroke={COL.orange} strokeWidth="1.5" strokeDasharray="4 2"/><Tx x={40} y={324} s={18} w={600} halo={false}>A₂ : aire balayée (même durée)</Tx>
+      <rect x="0" y="251" width="400" height="109" fill="#f8fafc"/>
+      <circle cx="22" cy="270" r="9" fill={COL.astre} stroke={COL.gris} strokeWidth="2"/><Tx x={40} y={277} s={18} w={600} halo={false}>astre central, au foyer de l’ellipse</Tx>
+      <line x1="10" y1="297" x2="34" y2="297" stroke={COL.gris} strokeWidth="1.8" strokeDasharray="5 5"/><Tx x={40} y={301} s={18} w={600} halo={false}>trajectoire du satellite (ellipse)</Tx>
+      <rect x="14" y="310" width="16" height="12" fill="url(#kep-hach)" stroke={COL.bleu} strokeWidth="1.5"/><Tx x={40} y={324} s={18} w={600} halo={false}>A₁ : aire balayée (durée choisie)</Tx>
+      <rect x="14" y="334" width="16" height="12" fill="url(#kep-pts)" stroke={COL.orange} strokeWidth="1.5" strokeDasharray="4 2"/><Tx x={40} y={348} s={18} w={600} halo={false}>A₂ : aire balayée (même durée)</Tx>
     </svg>);
 }
 

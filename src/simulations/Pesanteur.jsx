@@ -84,7 +84,7 @@ export function SimulationPesanteur() {
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('cible');
   const [hypoOuv, setHypoOuv] = useState(false);
   const [ouv, setOuv] = useState({ regl: false, mes: false, courbes: false, essayer: false, retenir: false });
-  const [ex, setEx] = useState({ corps: 'terre', v0: 10, alpha: 30, h: 2, t: 0.5, vecs: 'va', courbe: 'xy' });
+  const [ex, setEx] = useState({ corps: 'terre', v0: 10, alpha: 30, h: 2, t: 0, vecs: 'va', courbe: 'xy' });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const etape = guide.etape, idEtape = IDS[Math.min(etape, IDS.length - 1)];
 

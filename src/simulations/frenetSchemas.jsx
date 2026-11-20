@@ -23,8 +23,9 @@ const Fleche = ({ x1, y1, x2, y2, c = COL.txt, w = 3, tirets = false, tete = 11 
 };
 // lettre-vecteur avec indice éventuel : flèche au-dessus de la lettre, indice = petit texte séparé (jamais de tspan)
 const largeur = (s, i, l = 'x') => s * 0.62 * String(l).length + (i ? String(i).length * s * 0.52 : 0);
-export const TVi = ({ x, y, l, i, c = COL.txt, s = 16, w = 700, ancre = 'start', halo = true }) => {
-  const W = largeur(s, i, l), x0 = ancre === 'end' ? x - W : ancre === 'middle' ? x - W / 2 : x, lw = s * 0.62 * String(l).length, yy = y - s * 0.9;
+export const TVi = ({ x, y, l, i, c = COL.txt, s = 16, w = 700, ancre = 'start', frac, halo = true }) => {
+  // frac (0 = texte qui commence en x, 1 = qui finit en x) : ancrage continu, pour que l'étiquette ne saute pas pendant l'animation
+  const W = largeur(s, i, l), f = frac !== undefined ? frac : ancre === 'end' ? 1 : ancre === 'middle' ? 0.5 : 0, x0 = x - W * f, lw = s * 0.62 * String(l).length, yy = y - s * 0.9;
   const ha = halo ? { stroke: '#fff', strokeWidth: 3.5, paintOrder: 'stroke' } : {};
   return (
     <g>
@@ -41,9 +42,10 @@ const Tx = ({ x, y, children, c = COL.txt, s = 15, w = 700, ancre = 'start', hal
 const Etiq = ({ bx, by, dx, dy, l, i, c, s = 16, decal = 13, lat = 0 }) => {
   const n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n, px = -uy, py = ux;
   const X = bx + ux * decal + px * lat, Y = by + uy * decal + py * lat;
-  const ancre = ux > 0.35 ? 'start' : ux < -0.35 ? 'end' : 'middle';
-  const yy = uy > 0.35 ? Y + s * 0.8 : uy < -0.35 ? Y - 2 : Y + s * 0.35;
-  return <TVi x={X} y={yy} l={l} i={i} c={c} s={s} ancre={ancre}/>;
+  // ancrage continu (pas de seuils) : l'étiquette glisse en douceur quand la direction tourne
+  const borne = t => Math.max(-1, Math.min(1, t / 0.8));
+  const yy = Y + s * 0.35 + borne(uy) * s * 0.45;
+  return <TVi x={X} y={yy} l={l} i={i} c={c} s={s} frac={0.5 - 0.5 * borne(ux)}/>;
 };
 // repère de Frenet en M : ut et un unitaires du dessin (coordonnées SVG : y vers le bas)
 const dirsSvg = theta => { const { ut, un } = repere(theta); return { ut: [ut[0], -ut[1]], un: [un[0], -un[1]] }; };
@@ -99,7 +101,7 @@ export function SceneFrenet({ theta, v, R, at, montre, echV = 26, echA = 14, ari
         <Etiq bx={Mx + aVec[0] * echA} by={My + aVec[1] * echA} dx={aVec[0]} dy={aVec[1]} l="a" c={COL.rouge} s={23} decal={26} lat={montre.comp ? 8 : 0}/>
       </g>}
       <circle cx={Mx} cy={My} r="7" fill={COL.txt} stroke="#fff" strokeWidth="2"/>
-      <Tx x={Mx + c * 24 - (c < -0.3 ? 12 : c > 0.3 ? 0 : 6)} y={My - s * 24 + 8} s={23}>M</Tx>
+      <Tx x={Mx + c * 24 - (6 - 6 * Math.max(-1, Math.min(1, c / 0.3)))} y={My - s * 24 + 8} s={23}>M</Tx>
       {/* légendes : rayon, échelles */}
       <Tx x={388} y={28} s={21} w={700} ancre="end" halo={false}>{legende || `R = ${String(R.toFixed(1)).replace('.', ',')} m`}</Tx>
       {lignes.map(([, bar, col, txt], k) => <g key={txt}><Fleche x1={16} y1={296 + k * 26 - (lignes.length === 1 ? -24 : 0)} x2={16 + bar} y2={296 + k * 26 - (lignes.length === 1 ? -24 : 0)} c={col} w={4} tete={8}/><Tx x={26 + bar} y={302 + k * 26 - (lignes.length === 1 ? -24 : 0)} s={17} w={600} halo={false}>{txt}</Tx></g>)}
