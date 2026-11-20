@@ -1457,5 +1457,19 @@
  "37:prevoir:kep-ana-geo": "ANA609",
  "77:plausible:kep-val-vitesse": "VAL381",
  "77:plausible:kep-val-kepler": "VAL382",
- "36:kep-calcul": "REA95"
+ "36:kep-calcul": "REA95",
+ "34:niv1g-sapp-transition.0": "SAPP374",
+ "34:niv1g-sapp-transition.1": "SAPP375",
+ "37:prevoir:niv1g-ana-ecart-lambda": "ANA610",
+ "37:prevoir:niv1g-ana-emission-absorption": "ANA611",
+ "37:prevoir:niv1g-ana-raies-noires": "ANA612",
+ "37:prevoir:niv1g-ana-cascade": "ANA613",
+ "37:prevoir:niv1g-ana-intensite": "ANA614",
+ "37:prevoir:niv1g-ana-niveaux-negatifs": "ANA615",
+ "77:plausible:niv1g-val-superieur": "VAL383",
+ "77:plausible:niv1g-val-unite-lambda": "VAL384",
+ "77:plausible:niv1g-val-raies-absorption": "VAL385",
+ "77:plausible:niv1g-val-sodium-raie": "VAL386",
+ "77:plausible:niv1g-val-hydrogene-uv": "VAL387",
+ "36:niv1g-calcul": "REA96"
 }

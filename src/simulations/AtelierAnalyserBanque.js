@@ -5000,6 +5000,49 @@ export const PREVOIR = [
       F('plus petite : l’air chaud se dilate et occupe alors plus de place', 'Le volume du pneu change très peu : l’air ne peut pas occuper plus de place. Il pousse donc davantage sur la paroi.'),
       F('plus grande : de l’air supplémentaire est entré dans le pneu pendant le trajet', 'L’énoncé précise qu’aucun air n’est ajouté. L’augmentation de pression vient de l’agitation plus grande de l’air déjà présent.'),
     ] },
+  // ───────────────────────────── Niveaux d'énergie : absorption, émission et spectres de raies (1G, sim 165)
+  { id: 'niv1g-ana-ecart-lambda', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Deux transitions, deux longueurs d’onde',
+    enonce: 'Dans le diagramme d’un atome, la transition A relie deux niveaux séparés de 3,0 eV et la transition B deux niveaux séparés de 1,0 eV. Un atome effectue chaque transition en émettant un photon.', q: 'Que peut-on dire des longueurs d’onde des deux photons ?', options: [
+      F('celle de A est plus grande, car son écart d’énergie est plus grand', 'C’est l’inverse : λ = h·c ÷ ΔE, donc plus l’écart d’énergie est grand, plus la longueur d’onde est petite.'),
+      F('elles sont égales, car les deux photons se propagent à la même célérité', 'La célérité est la même, mais λ = c ÷ ν dépend de la fréquence, donc de l’énergie ΔE = h·ν du photon.'),
+      F('celle de A est trois fois plus grande, car 3,0 eV est trois fois 1,0 eV', 'Il ne s’agit pas d’une proportionnalité directe : λ est inversement proportionnelle à ΔE.'),
+      V('celle de A est trois fois plus petite : λ varie en sens inverse de ΔE', 'λ = h·c ÷ ΔE : un écart trois fois plus grand donne une longueur d’onde trois fois plus petite.'),
+    ] },
+  { id: 'niv1g-ana-emission-absorption', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Aller, puis revenir',
+    enonce: 'Un atome au niveau fondamental absorbe un photon de longueur d’onde 450 nm et passe au niveau E₂. Il revient ensuite directement au fondamental en émettant un photon.', q: 'Quelle est la longueur d’onde du photon émis ?', options: [
+      V('égale à 450 nm : l’écart E₂ − E₀ est le même à l’aller et au retour', 'ΔE = |E₂ − E₀| est le même à l’aller et au retour, donc λ = h·c ÷ ΔE aussi : c’est la raison pour laquelle les raies noires et colorées coïncident.'),
+      F('plus grande que 450 nm : une partie de l’énergie a été perdue en route', 'Dans ce modèle, l’atome revient au même niveau : l’écart d’énergie est identique, donc le photon émis a la même énergie.'),
+      F('plus petite que 450 nm : l’atome excité est plus énergétique', 'L’atome retrouve exactement son énergie de départ : il ne peut pas émettre plus que ce qu’il a absorbé.'),
+      F('impossible à dire : il faudrait connaître la durée passée au niveau E₂', 'La durée dans l’état excité n’intervient pas dans l’énergie du photon émis, qui ne dépend que des deux niveaux.'),
+    ] },
+  { id: 'niv1g-ana-raies-noires', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Compter les raies noires',
+    enonce: 'Un atome possède quatre niveaux, E₀ (fondamental), E₁, E₂ et E₃. Son spectre d’émission montre six raies colorées. On envoie de la lumière blanche à travers un gaz froid de cet atome, dont tous les atomes sont au niveau fondamental.', q: 'Que voit-on dans le spectre de la lumière transmise ?', options: [
+      F('six raies noires, une pour chaque raie colorée du spectre d’émission', 'Pour être absorbé, un photon doit faire partir l’atome d’un niveau où il se trouve : au fondamental, seules les transitions qui partent de E₀ sont possibles.'),
+      V('trois raies noires, aux λ des raies d’émission qui arrivent en E₀', 'Depuis E₀, on peut atteindre E₁, E₂ ou E₃ : trois raies noires, situées aux mêmes longueurs d’onde que trois raies d’émission.'),
+      F('une seule raie noire, celle de plus grande longueur d’onde', 'L’atome peut aller de E₀ vers chacun des trois niveaux excités : trois photons différents peuvent être absorbés.'),
+      F('aucune raie noire, car un gaz froid n’absorbe pas la lumière visible', 'Le gaz absorbe les photons dont l’énergie est un écart depuis E₀ ; qu’il soit froid ou non ne change pas cela.'),
+    ] },
+  { id: 'niv1g-ana-cascade', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Compter les raies d’émission',
+    enonce: 'Un gaz est formé d’atomes à quatre niveaux E₀, E₁, E₂ et E₃. Une décharge électrique amène des atomes jusqu’au niveau E₃. On compte toutes les transitions possibles entre les quatre niveaux, sans tenir compte de l’intensité.', q: 'Combien de raies d’émission différentes le gaz peut-il émettre ?', options: [
+      F('quatre : une raie pour chacun des niveaux du diagramme de l’atome', 'On compte des transitions, c’est-à-dire des paires de niveaux, et non des niveaux.'),
+      F('douze : chaque paire de niveaux compte à l’aller et au retour', 'Une raie d’émission correspond à une descente ; l’aller (montée) ne donne pas de raie d’émission.'),
+      V('six : trois depuis E₃, deux depuis E₂, une depuis E₁', 'On compte les descentes possibles : 3 + 2 + 1 = 6 transitions différentes, donc 6 raies d’émission.'),
+      F('trois : celles qui partent du niveau E₃ où les atomes sont excités', 'Un atome peut aussi s’arrêter en E₂ ou en E₁ avant de redescendre : ces transitions donnent d’autres raies.'),
+    ] },
+  { id: 'niv1g-ana-intensite', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Une raie plus brillante que les autres',
+    enonce: 'Dans le spectre d’émission d’un gaz, la raie rouge (650 nm) est beaucoup plus brillante que la raie bleue (450 nm).', q: 'Que peut-on dire de l’énergie d’un photon de chacune de ces raies ?', options: [
+      F('les deux photons ont la même énergie, car les deux raies viennent du même gaz', 'L’énergie d’un photon dépend de sa fréquence : 450 nm et 650 nm ne donnent pas la même énergie.'),
+      F('le photon rouge a la plus grande énergie, car sa raie est plus brillante', 'La brillance renseigne sur le nombre de photons reçus, pas sur l’énergie de chacun.'),
+      F('on ne peut rien dire, car la brillance change l’énergie de chaque photon', 'L’énergie de chaque photon est fixée par λ, que la raie soit brillante ou faible.'),
+      V('le photon bleu a la plus grande énergie : λ plus petite, donc ΔE plus grande', 'ΔE = h·c ÷ λ : la plus petite longueur d’onde correspond au photon le plus énergétique. La brillance dépend du nombre de photons.'),
+    ] },
+  { id: 'niv1g-ana-niveaux-negatifs', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Des énergies négatives dans un diagramme',
+    enonce: 'Le diagramme de l’atome d’hydrogène donne les énergies −13,6 eV, −3,40 eV, −1,51 eV, … Dans ce diagramme, le zéro de l’énergie correspond à l’ionisation de l’atome. Un atome passe du niveau −13,6 eV au niveau −3,40 eV.', q: 'Que se passe-t-il ?', options: [
+      V('il absorbe un photon de 10,2 eV : l’énergie de l’atome monte d’autant', 'L’énergie de l’atome passe de −13,6 à −3,40 eV : elle augmente de 10,2 eV, donc un photon de 10,2 eV est absorbé.'),
+      F('il absorbe un photon de −10,2 eV : l’énergie du photon est négative', 'L’énergie d’un photon est toujours positive : c’est la valeur absolue de l’écart, ΔE = 10,2 eV.'),
+      F('il émet un photon de 10,2 eV : l’atome passe à un niveau plus énergétique', 'Passer à un niveau plus haut demande de l’énergie : l’atome absorbe un photon, il n’en émet pas.'),
+      F('il émet un photon de 3,40 eV : c’est l’énergie du niveau d’arrivée', 'L’énergie d’un niveau n’est pas l’énergie du photon : seul l’écart entre les deux niveaux compte.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

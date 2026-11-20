@@ -94,6 +94,7 @@ const SimulationSavonAmphiphile = paresseux(() => import("./simulations/SavonAmp
 const SimulationDissolutionIonique = paresseux(() => import("./simulations/DissolutionIonique"), "SimulationDissolutionIonique");
 const SimulationCouleurs = paresseux(() => import("./simulations/Couleurs"), "SimulationCouleurs");
 const SimulationPhoton = paresseux(() => import("./simulations/Photon"), "SimulationPhoton");
+const SimulationNiveaux = paresseux(() => import("./simulations/Niveaux"), "SimulationNiveaux");
 const SimulationStatiqueFluides1G = paresseux(() => import("./simulations/StatiqueFluides1G"), "SimulationStatiqueFluides1G");
 const SimulationCombustions = paresseux(() => import("./simulations/Combustions"), "SimulationCombustions");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
@@ -383,6 +384,7 @@ const SIMULATIONS = [
   { id:157, label:"Dissolution d’un solide ionique dans l’eau : équation et concentration des ions", niveau:"1G", icon:"🧂", color:"#0e7490", component: SimulationDissolutionIonique },
   { id:160, label:"Couleurs : lumières, filtres et couleur des objets", niveau:"1G", icon:"🎨", color:"#c026d3", component: SimulationCouleurs },
   { id:164, label:"Lumière : domaines spectraux et énergie d’un photon", niveau:"1G", icon:"🌈", color:"#7c3aed", component: SimulationPhoton },
+  { id:165, label:"Niveaux d’énergie : absorption, émission et spectres de raies", niveau:"1G", icon:"⚛️", color:"#4338ca", component: SimulationNiveaux },
   { id:159, label:"Combustions : énergie libérée et énergies de liaison", niveau:"1G", icon:"🔥", color:"#b45309", component: SimulationCombustions },
   { id:156, label:"Oxydo-réduction : couples, demi-équations et équation de réaction", niveau:"1G", icon:"🔋", color:"#be123c", component: SimulationOxydoReduction },
   { id:162, label:"Fluide au repos : pression, force pressante et loi de Mariotte", niveau:"1G", icon:"💉", color:"#0369a1", component: SimulationPressionMariotte },
