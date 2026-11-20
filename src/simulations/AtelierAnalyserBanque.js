@@ -5665,6 +5665,28 @@ export const PREVOIR = [
       F('il diminue, car l’éthanol en excès dilue l’acide et ralentit la réaction', 'Les coefficients de l’équation valent tous 1 : le volume se simplifie dans Qr et seul le rapport des quantités compte. L’excès de réactif favorise le sens direct.'),
       F('il augmente uniquement parce que la réaction devient plus rapide', 'La rapidité n’agit pas sur la composition de l’état d’équilibre : le gain de rendement vient du déplacement de l’état final (Qr < K au départ), pas de la vitesse.'),
     ] },
+  // ───────────────────────────── Facteurs cinétiques, catalyse et choix d’un capteur (TG, sim 187)
+  { id: 'cin-ana-facteur', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Une comparaison où deux paramètres changent',
+    enonce: 'Pour étudier l’effet de la température, un élève réalise une expérience à 20 °C avec une solution d’iodure à 0,050 mol/L, puis une expérience à 40 °C avec une solution d’iodure à 0,10 mol/L (même réaction, même volume, sans catalyseur). La seconde est plus rapide. Il conclut : « c’est la température qui accélère la transformation ».', q: 'Que penser de cette conclusion ?', options: [
+      V('elle n’est pas justifiée : deux paramètres ont changé en même temps', 'Pour attribuer l’écart à un facteur, un seul paramètre doit changer. Ici la température et la concentration diffèrent : on ne peut pas dire laquelle des deux, ou les deux, explique la rapidité de la seconde expérience.'),
+      F('elle est justifiée : la température est le facteur le plus important', 'Aucun facteur n’est « le plus important » par principe : il faut les comparer un à un. Avec deux paramètres modifiés, l’écart ne peut être attribué ni à l’un ni à l’autre.'),
+      F('elle est justifiée, car l’expérience la plus chaude est la plus rapide', 'Une expérience à la fois plus chaude et plus concentrée est plus rapide pour les deux raisons : le résultat ne permet pas de les séparer.'),
+      F('elle est fausse : la température n’a aucun effet sur la rapidité', 'La température est bien un facteur cinétique : une transformation est plus rapide à température plus élevée. Le défaut est la méthode, pas le facteur : deux paramètres ont été modifiés ensemble.'),
+    ] },
+  { id: 'cin-ana-catalyseur', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Ce que change un catalyseur',
+    enonce: 'On ajoute des ions fer(III) à un mélange d’ions iodure et d’ions peroxodisulfate. La coloration du diiode apparaît beaucoup plus vite, et la quantité finale de diiode est la même que sans les ions fer(III). Dosés à la fin, les ions fer(III) sont retrouvés en même quantité qu’au départ. Un élève affirme : « les ions fer(III) sont un réactif supplémentaire ».', q: 'Quelle est la bonne analyse ?', options: [
+      V('ce sont des catalyseurs : ils accélèrent la transformation sans être consommés', 'Un réactif est consommé, figure dans l’équation et fixe l’état final. Les ions fer(III) sont retrouvés intacts et la quantité de diiode ne change pas : ils jouent le rôle d’un catalyseur.'),
+      F('ce sont des réactifs : ils accélèrent la transformation, donc ils y participent', 'Accélérer ne suffit pas à faire un réactif : un réactif est consommé. Ici, la quantité d’ions fer(III) est la même avant et après.'),
+      F('ce sont des produits : ils se forment pendant la transformation', 'Un produit apparaît au cours de la transformation. La quantité d’ions fer(III) ne varie pas : ils n’apparaissent pas, ils ne disparaissent pas.'),
+      F('ce sont des catalyseurs : ils augmentent la quantité finale de diiode', 'Un catalyseur change la rapidité, pas l’état final : la quantité finale de diiode est la même avec et sans catalyseur.'),
+    ] },
+  { id: 'cin-ana-capteur', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Suivre la décomposition de l’eau oxygénée',
+    enonce: 'La décomposition de l’eau oxygénée, d’équation 2 H₂O₂ → 2 H₂O + O₂, est lente en l’absence de catalyseur. Les solutions d’eau oxygénée, l’eau et le dioxygène dissous sont incolores. L’équation ne fait intervenir aucun ion. On veut suivre la transformation au cours du temps, dans un récipient fermé.', q: 'Quel capteur de suivi est adapté ?', options: [
+      V('un capteur de pression : un gaz, le dioxygène, se forme', 'La pression du gaz augmente à mesure que le dioxygène se forme : c’est une grandeur mesurable qui suit l’avancement de la transformation.'),
+      F('un spectrophotomètre : toutes les solutions sont colorées', 'Aucune espèce de l’équation n’est colorée : l’absorbance ne varierait pas, elle ne permettrait pas de suivre la transformation.'),
+      F('un conductimètre : les ions de la solution varient', 'L’équation ne fait intervenir aucun ion : la conductivité reste pratiquement constante.'),
+      F('un pH-mètre : l’eau oxygénée est consommée donc le pH change', 'Les ions oxonium et hydroxyde n’interviennent pas dans l’équation : le pH n’est pas lié à l’avancement de cette transformation.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

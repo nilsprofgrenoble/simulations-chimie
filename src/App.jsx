@@ -126,6 +126,7 @@ const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationDiffractionOnde = paresseux(() => import("./simulations/DiffractionOnde"), "SimulationDiffractionOnde");
 const SimulationMecanismesTG = paresseux(() => import("./simulations/MecanismesTG"), "SimulationMecanismesTG");
+const SimulationFacteursCinetiques = paresseux(() => import("./simulations/FacteursCinetiques"), "SimulationFacteursCinetiques");
 const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
 const SimulationOptimisationRendement = paresseux(() => import("./simulations/OptimisationRendement"), "SimulationOptimisationRendement");
 const SimulationTransfertsH = paresseux(() => import("./simulations/TransfertsH"), "SimulationTransfertsH");
@@ -319,6 +320,7 @@ const SIMULATIONS = [
   { id:175, label:"Mouvement dans un champ de pesanteur uniforme : équations horaires et trajectoire", niveau:"TG", icon:"🏀", color:"#c2410c", component: SimulationPesanteur },
   { id:189, label:"Optimiser une synthèse : vitesse et rendement", niveau:"TG", icon:"⚗️", color:"#0f766e", component: SimulationOptimisationRendement },
   { id:186, label:"Mécanismes réactionnels et flèches courbes", niveau:"TG", icon:"🏹", color:"#7c3aed", component: SimulationMecanismesTG },
+  { id:187, label:"Facteurs cinétiques, catalyse et capteurs", niveau:"TG", icon:"🧪", color:"#0f766e", component: SimulationFacteursCinetiques },
   { id:188, label:"Transferts de H⁺ : acides, amines, Lewis", niveau:"TG", icon:"🍋", color:"#0e7490", component: SimulationTransfertsH },
   { id:176, label:"Particule chargée dans un condensateur plan et accélérateur linéaire", niveau:"TG", icon:"⚡", color:"#7c2d12", component: SimulationParticuleCondensateur },
   { id:185, label:"Incertitudes composées et valeur de référence", niveau:"TG", icon:"📏", color:"#0f766e", component: SimulationIncertitudesComposees },
