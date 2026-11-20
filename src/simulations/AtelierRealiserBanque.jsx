@@ -9,6 +9,7 @@ import * as ACF from "./acideFaibleModele";
 import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
 import * as SS2 from "./signalSonore2gtModele";
+import * as SN from "./niveauSonore2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
@@ -3403,6 +3404,45 @@ function genMasseReactifLimitant2GT() {
     retenir: ['n = m ÷ M : on convertit d’abord la masse en quantité de matière.', 'Pour chaque réactif : quantité ÷ coefficient ; le plus petit résultat désigne le limitant.', 'Reste du réactif en excès = quantité de départ − coefficient × nombre de recettes.'] };
 }
 
+// ───────────── Niveau sonore et dangers de l'exposition (2GT, sim 192) : écarts en dB, facteurs ×10 et ×2, durées repères ─────────────
+const SONS_REA = ['chuchote', 'biblio', 'conv', 'aspi', 'rue', 'tondeuse', 'casque'];
+function genNiveauSonore2GT() {
+  const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
+  let a, b;
+  do { a = SN.son(tire(SONS_REA)); b = SN.son(tire(SONS_REA)); } while (b.db - a.db < 20 || b.db - a.db > 60);
+  const delta = b.db - a.db, fois = SN.facteurIntensite(delta);
+  // q1 : écart de niveau
+  const q1 = filtre({ id: 'k0', type: 'num', q: <>Un sonomètre affiche <b>{a.db}{NB}dB</b> près d’un son A ({a.court}) et <b>{b.db}{NB}dB</b> près d’un son B ({b.court}). Quel est l’écart de niveau entre B et A, en dB ?</>, unite: 'dB', vrai: delta, csMin: 1, tolRel: 0.01,
+    aide: 'L’écart est la différence entre les deux niveaux : le plus grand moins le plus petit.',
+    pieges: [[a.db + b.db, 'Vous avez additionné les deux niveaux : un écart est une différence (le plus grand moins le plus petit).']],
+    expl: <>{b.db} − {a.db} = <b>{delta}{NB}dB</b>.</> });
+  // q2 : combien de fois plus intense
+  const q2 = filtre({ id: 'k1', type: 'num', q: <>Avec les mêmes sons A ({a.db}{NB}dB) et B ({b.db}{NB}dB) : combien de fois le son B est-il plus intense que le son A ? Repère : + 10{NB}dB correspond à une intensité environ 10 fois plus grande.</>, unite: 'fois', vrai: fois, csMin: 1, tolRel: 0.01,
+    aide: 'Calculez l’écart en dB, comptez le nombre de tranches de 10 dB, puis multipliez par 10 pour chaque tranche (10 × 10 × …).',
+    pieges: [[delta, 'Vous avez pris l’écart en dB (' + delta + ') pour un nombre de fois. Chaque tranche de 10 dB multiplie l’intensité par 10.'], [delta / 10, 'Vous avez compté les tranches de 10 dB (' + delta / 10 + '), mais chacune multiplie l’intensité par 10 : il faut calculer 10 × 10 × …'], [b.db / a.db, 'Vous avez divisé les deux niveaux. On ne divise pas des niveaux en dB : on compte les tranches de 10 dB.']],
+    expl: <>{b.db} − {a.db} = {delta}{NB}dB = {delta / 10} tranches de 10{NB}dB ; intensité × 10<sup>{delta / 10}</sup> = <b>× {nb(fois, 6)}</b>.</> });
+  // q3 : plusieurs sources identiques
+  const L3 = tire([60, 70, 80, 90]), k3 = tire([2, 4]), v3 = L3 + 3 * Math.log2(k3);
+  const q3 = filtre({ id: 'k2', type: 'num', q: <>Une machine produit <b>{L3}{NB}dB</b> en un point. On place <b>{k3} machines identiques</b> au même endroit, qui fonctionnent en même temps. Repère : une intensité × 2 correspond à environ + 3{NB}dB. Quel est le niveau, environ, en ce point ?</>, unite: 'dB', vrai: v3, csMin: 2, tolRel: 0.015,
+    aide: k3 === 2 ? 'Deux machines identiques : l’intensité est multipliée par 2, donc le niveau augmente d’environ 3 dB.' : 'Quatre machines : 4 = 2 × 2, donc l’intensité est multipliée par 2 deux fois, et le niveau augmente de 3 dB deux fois.',
+    pieges: [[L3 * k3, 'Vous avez multiplié le niveau par le nombre de machines. On multiplie les intensités, jamais les niveaux : × 2 correspond à + 3 dB.'], ...(k3 === 4 ? [[L3 + 3, 'Vous n’avez compté qu’un seul doublement : 4 machines, c’est 2 × 2, donc deux fois + 3 dB.'], [L3 + 9, 'Vous avez ajouté 3 dB par machine supplémentaire. Le doublement de l’intensité se compte par paliers de × 2 : 4 = 2 × 2, soit deux fois + 3 dB.']] : [[L3 + 10, 'Vous avez ajouté 10 dB : + 10 dB correspond à une intensité × 10 (dix machines). Pour deux machines, c’est × 2, soit environ + 3 dB.']])],
+    expl: <>{k3 === 2 ? <>Deux machines : intensité × 2, donc + 3{NB}dB.</> : <>Quatre machines : 4 = 2 × 2, donc + 3{NB}dB deux fois, soit + 6{NB}dB.</>} Niveau ≈ {L3} + {k3 === 2 ? 3 : 6} = <b>{L3 + (k3 === 2 ? 3 : 6)}{NB}dB</b>.</> });
+  // q4 : durée repère lue dans le tableau (en minutes)
+  const L4 = tire([85, 88, 91, 94, 97, 100]), D4 = SN.dureeRepere(L4);
+  const q4 = filtre({ id: 'k3', type: 'num', q: <>Repères indicatifs de durée d’exposition : 85{NB}dB, 8{NB}h ; 88{NB}dB, 4{NB}h ; 91{NB}dB, 2{NB}h ; 94{NB}dB, 1{NB}h ; 97{NB}dB, 30{NB}min ; 100{NB}dB, 15{NB}min. Quelle est la durée repère à <b>{L4}{NB}dB</b>, en <b>minutes</b> ?</>, unite: 'min', vrai: D4, csMin: 1, tolRel: 0.01,
+    aide: 'Lisez la ligne du niveau demandé. Si la durée est en heures, convertissez-la en minutes (1 h = 60 min).',
+    pieges: [[D4 / 60, 'Vous avez donné la durée en heures : la question demande des minutes (1 h = 60 min).'], [D4 * 60, 'Vous avez converti en secondes : la question demande des minutes.']],
+    expl: <>Au niveau de {L4}{NB}dB, la durée repère est de {SN.formatDuree(D4)}, soit <b>{nb(D4, 3)}{NB}min</b>.</> });
+  // q5 : combien de fois la durée repère
+  const L5 = tire([91, 94, 97, 100]), D5 = SN.dureeRepere(L5), k5 = tire([0.5, 2, 3, 4]), T5 = k5 * D5;
+  const q5 = filtre({ id: 'k4', type: 'num', q: <>Un élève passe <b>{SN.formatDuree(T5)}</b> dans une salle où le niveau est de <b>{L5}{NB}dB</b>. À ce niveau, la durée repère est de <b>{SN.formatDuree(D5)}</b>. La durée passée dans la salle représente combien de fois la durée repère ?</>, unite: 'fois', vrai: k5, csMin: 1, tolRel: 0.01,
+    aide: 'Divisez la durée passée dans la salle par la durée repère (même unité pour les deux). Un résultat plus grand que 1 veut dire que le repère est dépassé.',
+    pieges: [[1 / k5, 'La division est à l’envers : on divise la durée passée par la durée repère.'], [T5 - D5, 'Vous avez fait une différence (en minutes). On cherche un rapport : durée passée ÷ durée repère.']],
+    expl: <>{nb(T5, 3)}{NB}min ÷ {nb(D5, 3)}{NB}min = <b>{nb(k5, 2)}</b>. {k5 > 1 ? 'Le repère est dépassé.' : 'On reste dans la durée repère.'}</> });
+  return { intro: 'Niveau sonore : écarts en dB, facteurs d’intensité (× 10 pour + 10 dB, × 2 pour + 3 dB) et durées repères d’exposition. Les règles sont des repères d’ordre de grandeur, pas des formules exactes.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Un écart de niveau se calcule par une différence ; + 10 dB correspond à une intensité environ 10 fois plus grande (on multiplie les intensités, jamais les niveaux).', 'Deux sources identiques : intensité × 2, soit environ + 3 dB ; quatre sources : environ + 6 dB.', 'À partir de 85 dB, on compare la durée d’exposition à la durée repère du niveau (repères indicatifs de prévention, pas des seuils médicaux exacts).'] };
+}
+
 export const FAMILLES = [
   { id: 'titrage-direct', groupe: 'Formules', titre: 'Titrage direct du diiode par le thiosulfate : équivalence, concentration, masse (1re spé)', gen: genTitrageDirect, domaine: 'Titrage direct' },
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
@@ -3494,6 +3534,7 @@ export const FAMILLES = [
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'rl2gt-calcul', groupe: 'Formules', titre: 'Réactif limitant : nombre de recettes, quantité restante et quantité formée (2GT)', gen: genReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
   { id: 'rl2gt-masse', groupe: 'Formules', titre: 'Réactif limitant avec une masse : n = m ÷ M, limitant et quantité restante (2GT)', gen: genMasseReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
+  { id: 'son2gt-niv-calcul', groupe: 'Formules', titre: 'Niveau sonore : écart en dB, facteurs ×10 et ×2, durée repère d’exposition (2GT)', gen: genNiveauSonore2GT, domaine: 'Niveau sonore (2GT)' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },

@@ -5215,6 +5215,49 @@ export const PREVOIR = [
       F('le solide disparaît sans qu’il y ait de bulles', 'Le calcaire ne disparaît que par la réaction, qui forme du gaz CO₂ : on verrait des bulles.'),
       F('des bulles reprennent seulement si on ajoute aussi du calcaire', 'Il reste déjà du calcaire (il était en excès) : il n’est pas nécessaire d’en ajouter.'),
     ] },
+  // ───────────────────────────── Niveau sonore et dangers de l'exposition (2GT, sim 192)
+  { id: 'son2gt-niv-ana-amplitude', domaine: 'Niveau sonore (2GT)', titre: 'On tourne le bouton du volume',
+    enonce: 'Un même haut-parleur joue la même note, à la même distance d’un sonomètre. On tourne le bouton du volume : l’amplitude de la vibration devient trois fois plus grande.', q: 'Le niveau affiché par le sonomètre…', options: [
+      V('augmente', 'Une amplitude plus grande donne un son plus intense, donc un niveau en dB plus élevé. (Il n’est pas pour autant multiplié par 3 : l’échelle des dB n’est pas proportionnelle.)'),
+      F('diminue, car le son devient plus aigu', 'Le volume change la force du son, pas sa note : un son plus fort n’est pas plus aigu.'),
+      F('reste le même, car la note n’a pas changé', 'La note ne change pas, mais le niveau dépend de l’amplitude, pas de la note : il augmente.'),
+      F('est multiplié par 3', 'L’échelle des dB n’est pas proportionnelle à l’amplitude : le niveau augmente, mais il n’est pas multiplié par 3.'),
+    ] },
+  { id: 'son2gt-niv-ana-plus-10', domaine: 'Niveau sonore (2GT)', titre: '50 dB, puis 60 dB',
+    enonce: 'Un sonomètre indique 50 dB dans une pièce, puis 60 dB dans la pièce voisine. Repère : + 10 dB correspond à une intensité environ 10 fois plus grande.', q: 'L’intensité du son dans la pièce voisine est…', options: [
+      V('environ 10 fois plus grande', 'Un écart de 10 dB correspond à une intensité environ 10 fois plus grande : l’échelle des dB « multiplie ».'),
+      F('environ 10 % plus grande, comme + 10 dB', 'Confusion fréquente : + 10 dB ne veut pas dire + 10 %. Chaque tranche de 10 dB multiplie l’intensité par 10.'),
+      F('environ 1,2 fois plus grande, car 60 ÷ 50 = 1,2', 'On ne divise pas les niveaux en dB : on compte les tranches de 10 dB, chacune multipliant l’intensité par 10.'),
+      F('la même : seuls les dB affichés changent', 'Un niveau plus élevé correspond toujours à une intensité plus grande.'),
+    ] },
+  { id: 'son2gt-niv-ana-deux-sources', domaine: 'Niveau sonore (2GT)', titre: 'Une seconde perceuse',
+    enonce: 'Une perceuse seule produit 90 dB à 1 m. Un collègue allume une seconde perceuse identique, au même endroit. Repère : une intensité × 2 correspond à environ + 3 dB.', q: 'Le niveau devient environ…', options: [
+      V('93 dB', 'Deux perceuses identiques apportent deux fois plus d’intensité : environ + 3 dB, soit 90 + 3 = 93 dB.'),
+      F('180 dB, le double de 90 dB', 'On n’additionne pas les niveaux : 180 dB serait un son insupportable. C’est l’intensité qui double (+ 3 dB).'),
+      F('100 dB, soit 10 dB de plus', '+ 10 dB correspondrait à une intensité × 10, donc à dix perceuses, pas deux.'),
+      F('90 dB : le niveau ne change pas', 'Deux sources apportent plus d’intensité qu’une seule : le niveau augmente de 3 dB environ.'),
+    ] },
+  { id: 'son2gt-niv-ana-distance', domaine: 'Niveau sonore (2GT)', titre: 'Reculer devant une enceinte',
+    enonce: 'Un élève mesure le niveau sonore d’une enceinte à 1 m : 85 dB. Il recule de 3 m (il est maintenant à 4 m), sans toucher au volume.', q: 'À 4 m, le niveau mesuré sera…', options: [
+      V('plus faible qu’à 1 m', 'Le son s’affaiblit quand on s’éloigne de la source : le niveau mesuré diminue.'),
+      F('plus fort qu’à 1 m, car il y a plus d’air entre eux', 'Plus d’air ne renforce pas le son : l’énergie se répartit sur une zone plus grande, le niveau baisse.'),
+      F('le même, car le volume de l’enceinte est inchangé', 'L’enceinte n’a pas changé, mais le niveau mesuré dépend aussi de la distance à la source : il diminue.'),
+      F('nul : on n’entend plus rien à 4 m', 'Le niveau diminue, mais un son à 85 dB à 1 m reste très audible à 4 m.'),
+    ] },
+  { id: 'son2gt-niv-ana-duree-baisse', domaine: 'Niveau sonore (2GT)', titre: 'Baisser le volume du casque',
+    enonce: 'Repères de durée d’exposition : 94 dB, 1 h ; 91 dB, 2 h ; 88 dB, 4 h. Un élève écoute de la musique au casque à 94 dB. Il baisse le volume pour passer à 88 dB.', q: 'Pour rester dans les repères, il peut maintenant écouter…', options: [
+      V('environ 4 fois plus longtemps', 'À 88 dB, la durée repère est de 4 h au lieu de 1 h : baisser le niveau de 6 dB permet d’écouter 4 fois plus longtemps.'),
+      F('environ 6 fois plus longtemps : 94 − 88 = 6', 'L’écart de 6 dB n’est pas un nombre de fois : on lit les durées dans le tableau (1 h puis 4 h).'),
+      F('la même durée : seule la musique compte', 'Le niveau compte : plus il est bas, plus la durée repère est longue.'),
+      F('moins longtemps : un volume plus bas est plus risqué', 'C’est l’inverse : un niveau plus bas est moins dangereux, la durée repère augmente.'),
+    ] },
+  { id: 'son2gt-niv-ana-zero-db', domaine: 'Niveau sonore (2GT)', titre: 'Le seuil d’audition : 0 dB',
+    enonce: 'D’après un livre de physique, le seuil d’audition vaut 0 dB (pour un son de 1 000 Hz).', q: 'Que signifie ce 0 dB ?', options: [
+      V('le son le plus faible audible', '0 dB est le niveau du son le plus faible que l’oreille puisse entendre : ce n’est pas l’absence de tout son.'),
+      F('il n’y a aucun son, c’est le silence absolu', 'Zéro dB n’est pas l’absence de son : c’est le niveau du plus faible son audible, une référence de l’échelle.'),
+      F('le son est dangereux pour l’oreille à ce niveau', 'Le danger apparaît pour des niveaux élevés (à partir de 85 dB environ), pas pour 0 dB.'),
+      F('le livre se trompe : un son ne peut pas valoir 0', 'L’échelle commence à 0 dB, le seuil d’audition : le livre est correct.'),
+    ] },
   // ───────────────────────────── Diffraction d'une onde : angle caractéristique (TG, sim 181)
   { id: 'dif-ana-fente', domaine: 'Diffraction d’une onde : angle caractéristique', titre: 'Une fente deux fois plus fine',
     enonce: 'Un laser éclaire une fente verticale de largeur a ; l’écran est à D = 2,00 m. On remplace la fente par une autre, deux fois plus fine (largeur frac(a|2)), sans rien changer d’autre. La largeur de la tache centrale vaut L = frac(2 λ D|a).', q: 'Que devient la largeur L de la tache centrale ?', options: [
