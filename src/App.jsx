@@ -97,6 +97,7 @@ const SimulationCouleurs = paresseux(() => import("./simulations/Couleurs"), "Si
 const SimulationPhoton = paresseux(() => import("./simulations/Photon"), "SimulationPhoton");
 const SimulationNiveaux = paresseux(() => import("./simulations/Niveaux"), "SimulationNiveaux");
 const SimulationStatiqueFluides1G = paresseux(() => import("./simulations/StatiqueFluides1G"), "SimulationStatiqueFluides1G");
+const SimulationEquationReaction = paresseux(() => import("./simulations/EquationReaction"), "SimulationEquationReaction");
 const SimulationCombustions = paresseux(() => import("./simulations/Combustions"), "SimulationCombustions");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
@@ -403,6 +404,7 @@ const SIMULATIONS = [
     component: SimulationQuantiteMatiere2gt },
   { id:58, label:"Familles chimiques : même colonne, mêmes comportements", niveau:"2GT", icon:"🧩", color:"#b45309",
     component: SimulationFamillesChimiques },
+  { id:179, label:"Équation de réaction : écrire et ajuster", niveau:"2GT", icon:"⚗️", color:"#0f766e", component: SimulationEquationReaction },
   { id:59, label:"Les forces : modéliser une action mécanique", niveau:"2GT", icon:"➡️", color:"#0f766e",
     component: SimulationForcesVecteurs },
   { id:60, label:"Principe d’inertie : forces et mouvement", niveau:"2GT", icon:"⚖️", color:"#7c3aed",

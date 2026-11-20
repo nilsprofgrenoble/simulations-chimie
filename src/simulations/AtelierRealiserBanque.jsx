@@ -14,6 +14,7 @@ import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
 import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
+import * as EQM from "./equationReactionModele";
 import * as RX from "./redoxModele";
 import * as KEP from "./satellitesModele";
 import * as CL from "./couleursModele";
@@ -1463,6 +1464,54 @@ function genCombustion1G() {
   [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Combustions : équation équilibrée, énergie de rupture et de formation des liaisons, énergie molaire de réaction estimée, écart avec la référence, énergie libérée et pouvoir calorifique.', questions: [q0, q1, q2, q3, q4, q5, q6],
     retenir: ['Équilibrer dans l’ordre C, H, O ; un alcool apporte déjà un atome O.', 'E_r ≈ Σ D(rompues) − Σ D(formées) ; E_r < 0 : exothermique ; estimation avec des énergies moyennes, en phase gazeuse.', 'Pouvoir calorifique : PC = |E_r| ÷ M, en kJ/g = MJ/kg ; énergie libérée par une masse m : (m / M) × |E_r|.'] };
+}
+
+// ───────────── Équation de réaction (2GT) : équation ajustée, proportions, atomes dans « n formules », charge des produits ─────────────
+function genEquation2GT() {
+  const eq = (r, c) => EQM.equationTexte(r, c);
+  const ids = r => EQM.especesDe(r);
+  // q0 : équation ajustée (parmi quatre écritures)
+  const r0 = EQM.reaction(tire(['methane', 'zinc', 'fer', 'magnesium', 'aluminium', 'calcaire'])), c0 = EQM.coefsAjustes(r0), n0 = c0.length;
+  const bonne0 = eq(r0, c0);
+  const tous1 = c0.map(() => 1), double = EQM.fois(c0, 2);
+  const muter = k => c0.map((v, i) => (i === k ? Math.max(1, v + (v > 1 ? -1 : 1)) : v));
+  const poolFaux = [eq(r0, tous1), eq(r0, double), eq(r0, muter(tire(c0.map((_, i) => i)))), eq(r0, muter(n0 - 1)), eq(r0, muter(0)), eq(r0, muter(1))].filter((x, i, t) => x !== bonne0 && t.indexOf(x) === i);
+  const faux0 = melange(poolFaux).slice(0, 3);
+  const opts0 = melange([bonne0, ...faux0]);
+  const q0 = { id: 'e0', type: 'qcm', q: <>Quelle est l’équation ajustée de la transformation « {r0.titre.toLowerCase()} », avec les plus petits coefficients entiers ?</>, options: opts0, bonne: opts0.indexOf(bonne0),
+    aide: 'Comptez les atomes de chaque élément avant et après (et la charge s’il y a des ions). On n’écrit que des coefficients devant les formules, jamais de nouveaux indices.',
+    expl: <>Atomes et charge sont conservés avec : <b>{bonne0}</b>. {faux0.length ? 'Les autres écritures ne conservent pas tous les atomes ou la charge, ou ne sont pas écrites avec les plus petits coefficients entiers (par exemple en doublant tous les coefficients).' : ''}</> };
+  // q1 : proportions (N entités d'un réactif, combien d'entités d'un produit ?)
+  let r1, c1, i1, j1, k1, N1, vrai1;
+  do {
+    r1 = EQM.reaction(tire(['methane', 'aluminium', 'calcaire', 'zinc', 'fer', 'magnesium']));
+    c1 = EQM.coefsAjustes(r1); i1 = tire(r1.reactifs.map((_, k) => k)); j1 = r1.reactifs.length + tire(r1.produits.map((_, k) => k));
+    k1 = tire([2, 3, 4, 5, 6, 7]); N1 = c1[i1] * k1; vrai1 = c1[j1] * k1;
+  } while (vrai1 % 10 === 0 && vrai1 >= 10);
+  const e1 = EQM.ESPECES[ids(r1)[i1]], f1 = EQM.ESPECES[ids(r1)[j1]];
+  const q1 = { id: 'e1', type: 'num', q: <>La transformation « {r1.titre.toLowerCase()} » a pour équation ajustée <b>{eq(r1, c1)}</b>. On fait réagir <b>{N1} {EQM.nomEntites(ids(r1)[i1])}</b> {e1.f}, et l’on suppose que tout réagit. Combien de <b>{EQM.nomEntites(ids(r1)[j1])}</b> {f1.f} se forment ?{EQM.ESPECES[ids(r1)[i1]].id === 'CaCO3' ? ' (CaCO₃ est un solide ionique : sa formule donne l’unité qui se répète.)' : ''}</>, unite: EQM.nomEntites(ids(r1)[j1]), vrai: vrai1, csMin: String(vrai1).length, tolRel: 0,
+    aide: 'Les coefficients sont des proportions : cherchez par quel nombre il faut multiplier la réaction (N ÷ coefficient du réactif), puis multipliez le coefficient de l’espèce demandée.',
+    pieges: [[N1, 'C’est le nombre de départ : il faut utiliser les coefficients de l’équation pour passer d’une espèce à l’autre.'], [k1, 'C’est le nombre de fois que la réaction se produit : multipliez-le par le coefficient de l’espèce demandée.'], [N1 + c1[j1], 'Les proportions se multiplient, elles ne s’additionnent pas.'], [c1[j1], 'C’est le coefficient de l’équation, pour une seule réaction : la réaction se produit plusieurs fois.']],
+    expl: <>La réaction se produit {N1} ÷ {c1[i1]} = {k1} fois ; l’équation donne {c1[j1]} {f1.f} par réaction : {k1} × {c1[j1]} = <b>{vrai1}</b> {EQM.nomEntites(ids(r1)[j1])}.</> };
+  // q2 : atomes dans « n formules »
+  const cand = [['CO2', 'O'], ['H2O_l', 'H'], ['CH4', 'H'], ['O2', 'O'], ['CaCO3', 'O'], ['H2', 'H']];
+  let id2, el2, n2, a2;
+  do { [id2, el2] = tire(cand); n2 = tire([2, 3, 4, 5, 6, 7]); a2 = EQM.ESPECES[id2].atomes[el2]; } while (a2 * n2 % 10 === 0 && a2 * n2 >= 10);
+  const sp2 = EQM.ESPECES[id2], nom2 = { H: 'hydrogène', O: 'oxygène' }[el2];
+  const q2 = { id: 'e2', type: 'num', q: <>Combien d’atomes d’{nom2} y a-t-il dans <b>{n2} {sp2.f}</b> ?</>, unite: 'atomes', vrai: a2 * n2, csMin: String(a2 * n2).length, tolRel: 0,
+    aide: 'Le coefficient donne le nombre de molécules (ou d’unités, pour CaCO₃, un solide ionique) ; l’indice donne le nombre d’atomes dans UNE molécule (ou une unité). Multipliez les deux.',
+    pieges: [[n2, 'C’est le coefficient seul : chaque molécule contient plusieurs atomes de cet élément.'], [a2, 'C’est l’indice seul, pour une seule molécule ou unité : il y en a plusieurs.'], [n2 + a2, 'On multiplie le coefficient par l’indice, on ne les additionne pas.']],
+    expl: <>{n2} {EQM.nomEntites(id2)} × {a2} atome{a2 > 1 ? 's' : ''} {el2} par {id2 === 'CaCO3' ? 'unité' : 'molécule'} = <b>{a2 * n2}</b> atomes d’{nom2}.</> };
+  // q3 : charge totale des produits de l'équation ajustée
+  const r3 = EQM.reaction(tire(['zinc', 'fer', 'magnesium', 'aluminium', 'calcaire'])), c3 = EQM.coefsAjustes(r3), nr3 = r3.reactifs.length;
+  const ionP = r3.produits.map((id, k) => [id, c3[nr3 + k]]).find(([id]) => EQM.ESPECES[id].charge > 0), q3v = EQM.ESPECES[ionP[0]].charge * ionP[1];
+  const q3 = { id: 'e3', type: 'num', q: <>L’équation ajustée de la transformation « {r3.titre.toLowerCase()} » est <b>{eq(r3, c3)}</b>. Quelle est la charge électrique totale, en unités de charge élémentaire e, de l’ensemble des <b>produits</b> (écrivez un nombre positif) ?</>, unite: 'e', vrai: q3v, csMin: String(q3v).length, tolRel: 0,
+    aide: 'Charge totale = somme, pour chaque produit, de (coefficient × charge d’une entité). Une molécule neutre comme H₂ ou CO₂ compte 0.',
+    pieges: [[EQM.ESPECES[ionP[0]].charge, 'C’est la charge d’un seul ion : multipliez par son coefficient dans l’équation.'], [-q3v, 'La charge des produits est positive ici : les ions formés sont des ions positifs.']].filter(([x]) => x !== q3v),
+    expl: <>Produits : {ionP[1]} × {EQM.ESPECES[ionP[0]].f} (charge +{EQM.ESPECES[ionP[0]].charge} chacun) et des corps neutres : {ionP[1]} × {EQM.ESPECES[ionP[0]].charge} = <b>+{q3v}</b>. C’est aussi la charge totale des réactifs : la charge se conserve.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
+  return { intro: 'Équation de réaction : équation ajustée, proportions entre molécules, atomes et ions, atomes dans « n formules » et charge totale des produits.', questions: [q0, q1, q2, q3],
+    retenir: ['Ajuster : coefficients devant les formules (jamais les indices), dans l’ordre C, H, O, puis la charge ; on prend les plus petits entiers.', 'Les coefficients sont des proportions : on multiplie tous les nombres de l’équation par le même nombre.', 'n formules contiennent n × (indice) atomes ; la charge totale est la même avant et après.'] };
 }
 
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
@@ -3157,6 +3206,7 @@ export const FAMILLES = [
   { id: 'mes1g-calcul', groupe: 'Formules', titre: 'Mesure et incertitudes : moyenne, incertitude-type de type A et de type B, arrondi et comparaison à une référence (1G)', gen: genMesure1G, domaine: 'Mesure et incertitudes (1G)' },
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
   { id: 'comb1g-calcul', groupe: 'Formules', titre: 'Combustions : équation, énergie des liaisons, énergie molaire de réaction, écart avec la référence et pouvoir calorifique (1G)', gen: genCombustion1G, domaine: 'Combustions : énergie de réaction et énergies de liaison' },
+  { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
