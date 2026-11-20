@@ -2495,6 +2495,52 @@ function genRCTG() {
     retenir: ['Temps caractéristique : τ = R × C ; ohm × farad = seconde ; en pratique kΩ × µF = ms.', 'À t = 0 en charge (condensateur déchargé) : u_C = 0, u_R = E, donc i(0) = frac(E|R).', 'Avec n = frac(t|τ) : charge u_C = E × (1 − e⁻ⁿ) ; décharge u_C = E × e⁻ⁿ ; à t = τ : 63 % (charge) ou 37 % (décharge) de E.', 'Au bout de 5 τ, la charge ou la décharge est pratiquement terminée (99 % de E atteints, ou moins de 1 % restant).'] };
 }
 
+function genYoungTG() {
+  // Trous d'Young (TG, sim 182). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',');
+  const iMm = (lam, a, D) => lam * 1e-9 * D / (a * 1e-3) * 1e3;                          // interfrange (mm) ; λ en nm, a en mm, D en m
+  const jeu = () => { for (let k = 0; k < 80; k++) { const lam = tire([405, 450, 532, 589, 633, 650]), a = tire([0.20, 0.30, 0.40, 0.50, 0.60, 0.80]), D = tire([1.5, 2.0, 2.5, 3.0]), i = iMm(lam, a, D); if (i >= 1.0 && i <= 8.0) return { lam, a, D, i }; } return { lam: 650, a: 0.5, D: 2.5, i: 3.25 }; };
+  // q1 : δ = a x / D
+  const a1 = tire([0.20, 0.30, 0.40, 0.50, 0.60, 0.80]), x1 = tire([0.5, 1.0, 1.5, 2.0, 2.5, 3.0]), D1 = tire([1.5, 2.0, 2.5, 3.0]), d1 = a1 * x1 / D1 * 1000;
+  const q1 = { id: 'you0', type: 'num', q: <>Deux trous distants de <b>a = {f(a1, 2)}{NB}mm</b> sont éclairés par un laser. L’écran est à <b>D = {f(D1, 2)}{NB}m</b> de la plaque. Calculez la différence de chemin δ au point M de l’écran situé à <b>x = {f(x1, 1)}{NB}mm</b> du centre O (en nm, 2 chiffres significatifs), avec δ = {avecIndices('frac(a × x|D)')}.</>, unite: 'nm', vrai: d1, tolRel: 0.05, csMin: 2,
+    aide: 'Convertissez a et x en mètres (1 mm = 10⁻³ m), appliquez δ = frac(a × x|D), puis convertissez en nanomètres (1 nm = 10⁻⁹ m).',
+    pieges: [[d1 / 1000, 'Vous avez donné δ en micromètres : 1 µm = 1 000 nm.'], [d1 * 1e-9, 'Vous avez donné δ en mètres : la réponse est attendue en nanomètres.'], [a1 * x1 * D1 * 1000, 'Il faut diviser par D (δ = frac(a × x|D)), pas multiplier.'], [d1 * 1000, 'Vérifiez les conversions : a et x sont en millimètres, D en mètres.']],
+    expl: <>δ = {avecIndices('frac(a × x|D)')} = {avecIndices(`frac(${f(a1, 2)} × 10⁻³ × ${f(x1, 1)} × 10⁻³|${f(D1, 2)})`)} = <b>{nb(d1, 3)}{NB}nm</b> ({nb(d1 * 1e-9, 3)}{NB}m).</> };
+  // q2 : i = λ D / a
+  const g2 = jeu();
+  const q2 = { id: 'you1', type: 'num', q: <>Un laser de longueur d’onde <b>λ = {g2.lam}{NB}nm</b> éclaire deux trous distants de <b>a = {f(g2.a, 2)}{NB}mm</b>. L’écran est à <b>D = {f(g2.D, 2)}{NB}m</b>. Calculez l’interfrange i (en mm, 2 chiffres significatifs).</>, unite: 'mm', vrai: g2.i, tolRel: 0.05, csMin: 2,
+    aide: 'i = frac(λ × D|a) : convertissez λ (nm) et a (mm) en mètres, calculez i en mètres, puis exprimez-la en millimètres.',
+    pieges: [[g2.i * 1e-3, 'Vous avez donné i en mètres : la réponse est attendue en millimètres.'], [g2.i * 1e3, 'Vous n’avez pas converti λ en mètres : 1 nm = 10⁻⁹ m.'], [g2.lam * 1e-9 * g2.a * 1e-3 / g2.D * 1e3, 'Les grandeurs λ, D et a sont placées à l’envers : i = frac(λ × D|a).'], [g2.i * 1e-6, 'Vérifiez la conversion de a (mm) en mètres.']],
+    expl: <>i = {avecIndices('frac(λ × D|a)')} = {avecIndices(`frac(${g2.lam} × 10⁻⁹ × ${f(g2.D, 2)}|${f(g2.a, 2)} × 10⁻³)`)} = <b>{nb(g2.i, 3)}{NB}mm</b>.</> };
+  // q3 : a à partir de l'interfrange mesurée
+  const g3 = jeu(), i3 = Number(g3.i.toFixed(2)), a3 = g3.lam * 1e-9 * g3.D / (i3 * 1e-3) * 1e3;
+  const q3 = { id: 'you2', type: 'num', q: <>Un laser de longueur d’onde <b>λ = {g3.lam}{NB}nm</b> éclaire deux trous ; l’écran est à <b>D = {f(g3.D, 2)}{NB}m</b>. On mesure une interfrange <b>i = {f(i3, 2)}{NB}mm</b>. Calculez la distance a entre les trous (en mm, 2 chiffres significatifs).</>, unite: 'mm', vrai: a3, tolRel: 0.05, csMin: 2,
+    aide: 'Isolez a dans i = frac(λ × D|a) : a = frac(λ × D|i), avec λ et i en mètres.',
+    pieges: [[a3 * 1e-3, 'Vous avez donné a en mètres : la réponse est attendue en millimètres.'], [a3 * 1e3, 'Vous n’avez pas converti λ en mètres : 1 nm = 10⁻⁹ m.'], [i3 * 1e-3 * g3.lam * 1e-9 / g3.D * 1e3, 'Vous avez isolé a à l’envers : a = frac(λ × D|i).'], [a3 * 1e-6, 'Vérifiez la conversion de i (mm) en mètres.']],
+    expl: <>a = {avecIndices('frac(λ × D|i)')} = {avecIndices(`frac(${g3.lam} × 10⁻⁹ × ${f(g3.D, 2)}|${f(i3, 2)} × 10⁻³)`)} = <b>{nb(a3, 3)}{NB}mm</b>.</> };
+  // q4 : λ à partir de d (N interfranges), a et D
+  const g4 = jeu(), N4 = tire([4, 5, 6, 8, 10].filter(n => n * g4.i <= 36));                // la fenêtre de l'écran de la simulation est de 40 mm
+  const d4 = Math.round(N4 * g4.i * 10) / 10;
+  const lam4 = d4 / N4 * g4.a / g4.D * 1000;
+  const q4 = { id: 'you3', type: 'num', q: <>Sur un écran placé à <b>D = {f(g4.D, 2)}{NB}m</b> de deux trous distants de <b>a = {f(g4.a, 2)}{NB}mm</b>, on mesure la distance <b>d = {f(d4, 1)}{NB}mm</b> entre deux franges brillantes séparées par <b>N = {N4}</b> interfranges. Calculez la longueur d’onde λ du laser (en nm, 2 chiffres significatifs).</>, unite: 'nm', vrai: lam4, tolRel: 0.06, csMin: 2,
+    aide: 'i = frac(d|N) (en mm), puis λ = frac(i × a|D) avec i et a en mètres ; exprimez λ en nanomètres.',
+    pieges: [[lam4 * N4 / (N4 + 1), 'Entre deux franges séparées par N interfranges, il y a N interfranges (pas N + 1) : i = frac(d|N).'], [lam4 * N4, 'Vous avez oublié de diviser d par N : l’interfrange est i = frac(d|N).'], [lam4 * 1e-9, 'Vous avez donné λ en mètres : la réponse est attendue en nanomètres.'], [lam4 * 1e3, 'Vous n’avez pas converti i et a en mètres : λ doit rester dans le domaine visible.']],
+    expl: <>i = {avecIndices(`frac(${f(d4, 1)} mm|${N4})`)} = {nb(d4 / N4, 3)}{NB}mm ; λ = {avecIndices('frac(i × a|D)')} = {avecIndices(`frac(${nb(d4 / N4, 3)} × 10⁻³ × ${f(g4.a, 2)} × 10⁻³|${f(g4.D, 2)})`)} = <b>{nb(lam4, 3)}{NB}nm</b>.</> };
+  // q5 : abscisse de la k-ième frange brillante ou sombre
+  const g5 = jeu(), br = tire([true, false]), k5 = br ? tire([2, 3, 4]) : tire([1, 2, 3]), x5 = (br ? k5 : k5 + 0.5) * g5.i;
+  const piegesX = br ? [[(k5 + 0.5) * g5.i, 'Une frange brillante correspond à δ = kλ (k entier), pas à δ = (k + ½)λ : x_k = k × i.'], [(k5 + 1) * g5.i, 'La frange brillante d’ordre k est à k × i du centre : la frange centrale est d’ordre 0.'], [g5.i, 'Vous avez donné l’interfrange : il faut la multiplier par l’ordre k de la frange.']]
+    : [[k5 * g5.i, 'Une frange sombre correspond à δ = (k + ½)λ : elle est à (k + ½) × i du centre, entre deux franges brillantes.'], [(k5 + 1) * g5.i, 'La frange sombre d’ordre k est entre les franges brillantes k et k + 1, à (k + ½) × i du centre.'], [g5.i / 2, 'Vous avez donné la première frange sombre (k = 0) : multipliez par (k + ½).']];
+  const q5 = { id: 'you4', type: 'num', q: <>Un laser de longueur d’onde <b>λ = {g5.lam}{NB}nm</b> éclaire deux trous distants de <b>a = {f(g5.a, 2)}{NB}mm</b> ; l’écran est à <b>D = {f(g5.D, 2)}{NB}m</b>. La frange centrale (k = 0) est brillante. À quelle distance du centre O se trouve {br ? <>la frange <b>brillante d’ordre k = {k5}</b></> : <>la frange <b>sombre d’ordre k = {k5}</b>, située entre les franges brillantes k = {k5} et k = {k5 + 1}</>} ? (en mm, 2 chiffres significatifs)</>, unite: 'mm', vrai: x5, tolRel: 0.06, csMin: 2,
+    aide: br ? 'Frange brillante : δ = kλ, donc x_k = k × i avec i = frac(λ × D|a).' : 'Frange sombre : δ = (k + ½)λ, donc x = (k + ½) × i avec i = frac(λ × D|a).',
+    pieges: piegesX,
+    expl: br ? <>i = {avecIndices('frac(λ × D|a)')} = {nb(g5.i, 3)}{NB}mm ; x<sub>{k5}</sub> = {k5} × i = <b>{nb(x5, 3)}{NB}mm</b>.</> : <>i = {avecIndices('frac(λ × D|a)')} = {nb(g5.i, 3)}{NB}mm ; x = ({k5} + ½) × i = <b>{nb(x5, 3)}{NB}mm</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Trous d’Young : différence de chemin, interfrange, distance entre les trous, longueur d’onde et position des franges. Les valeurs de λ, a et D sont des valeurs usuelles de laboratoire ; le modèle suppose des trous ponctuels, une onde monochromatique, D très grande devant a et x très petit devant D.',
+    questions: [q1, q2, q3, q4, q5],
+    retenir: ['Différence de chemin (D ≫ a et x ≪ D) : δ = frac(a × x|D) ; frange brillante si δ = kλ, sombre si δ = (k + ½)λ.', 'Interfrange : i = frac(λ × D|a), la même pour toutes les franges ; x_k = k × i (brillantes), (k + ½) × i (sombres).', 'Mesure : i = frac(d|N) avec N interfranges entre deux franges brillantes ; puis λ = frac(i × a|D) ou a = frac(λ × D|i).', 'Unités : convertir nm, mm et µm en mètres avant de calculer, puis exprimer le résultat dans l’unité demandée.'] };
+}
+
 function genKeplerTG() {
   // Satellites et lois de Kepler (TG, sim 177). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -3351,6 +3397,7 @@ export const FAMILLES = [
   { id: 'dif-calcul', groupe: 'Formules', titre: 'Diffraction d’une onde : angle caractéristique, largeur de la tache centrale et largeur de la fente (TG)', gen: genDiffractionTG, domaine: 'Diffraction d’une onde : angle caractéristique' },
   { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },
   { id: 'kep-calcul', groupe: 'Formules', titre: 'Satellites et lois de Kepler : accélération, vitesse, période, masse de l’astre et orbite stationnaire (TG)', gen: genKeplerTG, domaine: 'Satellites et lois de Kepler' },
+  { id: 'you-calcul', groupe: 'Formules', titre: 'Trous d’Young : différence de chemin, interfrange, distance entre les trous, longueur d’onde et position des franges (TG)', gen: genYoungTG, domaine: 'Trous d’Young et interfrange' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'rl2gt-calcul', groupe: 'Formules', titre: 'Réactif limitant : nombre de recettes, quantité restante et quantité formée (2GT)', gen: genReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
   { id: 'rl2gt-masse', groupe: 'Formules', titre: 'Réactif limitant avec une masse : n = m ÷ M, limitant et quantité restante (2GT)', gen: genMasseReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },

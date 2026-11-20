@@ -100,6 +100,7 @@ export const EXOS_DE_SIM = {
   176: [/(^|\.)cpl-/, /plausible\.cpl-/],                                                                           // Particule chargée dans un condensateur plan (TG)
   177: [/(^|\.)kep-/, /plausible\.kep-/],    // Satellites et lois de Kepler (TG)
   181: [/(^|\.)dif-/, /plausible\.dif-/],                                                                           // Diffraction d’une onde : angle caractéristique (TG)                                                                              // Satellites et lois de Kepler (TG)
+  182: [/(^|\.)you-/, /plausible\.you-/],                                                                           // Trous d’Young et interfrange (TG)
   166: [/(^|\.)vac-/, /plausible\.vac-/],
   169: [/(^|\.)uvv-/, /plausible\.uvv-/],
   132: [/(^|\.)pil-/, /plausible\.pil-/],

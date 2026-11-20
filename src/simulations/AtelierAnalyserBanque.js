@@ -5194,6 +5194,27 @@ export const PREVOIR = [
       F('les deux de la même façon : la diffraction ne dépend pas de la fréquence', 'La diffraction dépend de frac(λ|a), et λ dépend de la fréquence : les deux sons ne sont pas diffractés de la même façon.'),
       F('aucun des deux : un son ne peut jamais contourner une porte', 'Un son contourne bien une porte quand λ est comparable à a ou plus grande : c’est justement ce qui permet d’entendre sans voir.'),
     ] },
+  { id: 'you-ana-trous', domaine: 'Trous d’Young et interfrange', titre: 'On rapproche les deux trous',
+    enonce: 'Un laser éclaire deux trous très fins distants de a ; on observe des franges d’interférences sur un écran placé à la distance D. On remplace la plaque par une autre dont les trous sont deux fois plus rapprochés (a est divisée par 2), sans rien changer d’autre (même laser, même D).', q: 'Que devient l’interfrange i ?', options: [
+      V('i est multipliée par 2 : les franges sont plus écartées', 'L’interfrange i = frac(λ × D|a) est inversement proportionnelle à a : si a est divisée par 2, i est multipliée par 2.'),
+      F('i est divisée par 2 : les franges se resserrent autour du centre', 'C’est le sens inverse : i = frac(λ × D|a) augmente quand a diminue (trous rapprochés, franges écartées).'),
+      F('i ne change pas : seul l’éclat des franges est modifié', 'La position des franges dépend de la différence de chemin δ = frac(a × x|D), donc de a : l’interfrange change.'),
+      F('i est multipliée par 4 : elle varie avec l’inverse du carré de a', 'i est inversement proportionnelle à a, pas à son carré : diviser a par 2 multiplie i par 2.'),
+    ] },
+  { id: 'you-ana-couleur', domaine: 'Trous d’Young et interfrange', titre: 'Du laser rouge au laser bleu',
+    enonce: 'Un laser rouge (λ = 650 nm) éclaire deux trous fins ; on observe sur l’écran des franges d’interférences. On le remplace par un laser bleu (λ = 450 nm), sans toucher à la plaque ni à l’écran.', q: 'Que devient la figure ?', options: [
+      V('les franges se resserrent : i est proportionnelle à λ, donc plus petite', 'i = frac(λ × D|a) est proportionnelle à λ : avec une longueur d’onde plus petite, les franges brillantes sont plus rapprochées.'),
+      F('les franges s’écartent : la lumière bleue est plus énergique', 'L’énergie des photons n’intervient pas ici : c’est la longueur d’onde qui fixe l’interfrange, et 450 nm est plus petit que 650 nm.'),
+      F('la figure ne change pas : seuls les trous fixent la position des franges', 'La position des franges dépend de λ : δ = kλ donne x_k = k × frac(λ × D|a), qui varie avec λ.'),
+      F('les franges disparaissent : le bleu n’interfère pas avec lui-même', 'Toutes les ondes lumineuses synchrones interfèrent, quelle que soit leur couleur : seules la couleur et l’interfrange changent.'),
+    ] },
+  { id: 'you-ana-sombre', domaine: 'Trous d’Young et interfrange', titre: 'La première frange sombre',
+    enonce: 'Sur l’écran d’un dispositif de trous d’Young, la frange centrale (en O) est brillante et l’interfrange vaut i. On cherche la première frange sombre située à côté de la frange centrale.', q: 'À quelle distance du centre O se trouve-t-elle ?', options: [
+      V('à frac(i|2) : elle est au milieu entre deux franges brillantes', 'Une frange sombre exige δ = (k + ½)λ ; pour k = 0, δ = frac(λ|2) donne x = frac(i|2), exactement entre deux franges brillantes.'),
+      F('à i : la frange suivante est toujours sombre', 'À la distance i se trouve la première frange brillante (δ = λ) : les franges brillantes et sombres alternent, avec un écart de frac(i|2).'),
+      F('en O : le centre de la figure est à la fois brillant et sombre', 'En O, δ = 0 : l’interférence est constructive, la frange centrale est brillante et il n’y a pas de frange sombre.'),
+      F('à 2 i : il faut deux interfranges pour passer au sombre', 'Deux interfranges séparent deux franges brillantes (k = 0 et k = 2) : le centre de la frange brillante k = 2 est à 2 i.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

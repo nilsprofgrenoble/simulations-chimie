@@ -3770,6 +3770,26 @@ export const PLAUSIBLES = [
       F('pas plausible : plus la fente est large, plus la tache est large, donc 21 mm est trop peu', 'C’est l’inverse : L = frac(2 λ D|a) est inversement proportionnelle à a, donc une fente fine (0,10 mm) donne une tache large. 21 mm est cohérent.'),
       F('plausible, mais seulement si l’écran est placé à 20 m', 'L est proportionnelle à D : à 2,0 m, L = 21 mm. Il n’est pas nécessaire d’éloigner l’écran de dix fois pour obtenir ce résultat.'),
     ] }),
+  P({ id: 'you-val-unite', domaine: 'Trous d’Young et interfrange', niveau: 2, titre: 'Interfrange d’un laser rouge', plausible: false,
+    enonce: 'Un laser de longueur d’onde λ = 650 nm éclaire deux trous distants de a = 0,50 mm ; l’écran est à D = 2,50 m. Un élève calcule : « i = frac(λ × D|a) = frac(650 × 2,50|0,50) = 3 250 mm » et en conclut que les franges brillantes sont espacées de plus de 3 m.',
+    reperes: [['Interfrange typique en TP', 'de 1 à 10 mm'], ['Dimension d’un écran de projection', 'quelques dizaines de centimètres'], ['Unités', 'convertir λ (nm) et a (mm) en mètres avant de calculer']],
+    ver: 'Avec λ = 650 × 10⁻⁹ m et a = 0,50 × 10⁻³ m : i = frac(650 × 10⁻⁹ × 2,50|0,50 × 10⁻³) = 3,25 × 10⁻³ m = 3,25 mm. L’élève n’a pas converti les unités : 3 250 mm dépasserait la taille de l’écran lui-même.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il n’a pas converti λ et a en mètres avant de calculer', 'nm et mm ne se combinent pas directement : en mètres, i = 3,25 × 10⁻³ m = 3,25 mm, valeur usuelle en travaux pratiques.'),
+      F('il a utilisé une mauvaise formule, car i vaudrait frac(a × D|λ)', 'La formule i = frac(λ × D|a) est la bonne ; seule la conversion des unités est en cause.'),
+      F('il a multiplié par D alors qu’il fallait diviser par D', 'i est proportionnelle à D (écran plus loin, franges plus écartées) : il faut bien multiplier par D.'),
+    ] }),
+  P({ id: 'you-val-pointe', domaine: 'Trous d’Young et interfrange', niveau: 2, titre: 'Distance entre les trous déduite d’une mesure', plausible: true,
+    enonce: 'Un élève pointe deux franges brillantes séparées par 6 interfranges et lit d = 15,6 mm sur l’image. Il écrit : « i = frac(d|6) = 2,6 mm ». Avec un laser de longueur d’onde λ = 650 nm et un écran à D = 2,50 m, il calcule : « a = frac(λ × D|i) = frac(650 × 10⁻⁹ × 2,50|2,6 × 10⁻³) = 0,63 mm ».',
+    reperes: [['Distance usuelle entre deux trous', 'de 0,1 à 1 mm'], ['Interfranges entre deux franges brillantes', 'une de moins que le nombre de franges comptées, extrémités comprises'], ['Relation', 'i = frac(λ × D|a)']],
+    ver: 'Entre deux franges brillantes séparées par 6 interfranges, d = 6 i donc i = 2,6 mm. Alors a = frac(λ × D|i) = 6,25 × 10⁻⁴ m ≈ 0,63 mm, valeur usuelle entre deux trous : le résultat est vraisemblable.',
+    q2: 'Que penser de ce résultat ?',
+    options: [
+      V('plausible : 0,63 mm est une distance usuelle entre deux trous', 'i = 2,6 mm et i = frac(λ × D|a) donnent a = frac(650 × 10⁻⁹ × 2,50|2,6 × 10⁻³) ≈ 6,3 × 10⁻⁴ m, soit 0,63 mm : valeur courante en travaux pratiques.'),
+      F('incohérent : a devrait être égale à l’interfrange mesurée', 'Les grandeurs a et i sont liées par i = frac(λ × D|a), mais n’ont pas de raison d’être égales : a est la distance entre les trous, i celle entre les franges.'),
+      F('incohérent : il fallait diviser d par 7, car il y a 7 franges sur l’écran', 'Sept franges brillantes consécutives (extrémités comprises) sont séparées par 6 interfranges : diviser par 6 est correct.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────
