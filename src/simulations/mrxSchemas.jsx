@@ -135,7 +135,7 @@ export function SceneActe({ etat, fleches = [], delta = false, mode = null, sele
       {/* doublets non liants */}
       {Object.entries(etat.atomes).map(([id, a]) => a.lp.map((ang, k) => {
         const [dx, dy] = dir(ang), cx = a.x + DIST_LP * dx, cy = a.y + DIST_LP * dy, px = -dy, py = dx;
-        return <g key={id + k}><circle cx={arr(cx + px * 3.6)} cy={arr(cy + py * 3.6)} r={2.5} fill={ENCRE}/><circle cx={arr(cx - px * 3.6)} cy={arr(cy - py * 3.6)} r={2.5} fill={ENCRE}/></g>;
+        return <line key={id + k} x1={arr(cx + px * 5.2)} y1={arr(cy + py * 5.2)} x2={arr(cx - px * 5.2)} y2={arr(cy - py * 5.2)} stroke={ENCRE} strokeWidth={2.6} strokeLinecap="round"/>;
       }))}
       {/* lacunes */}
       {(etat.lacunes || []).map(l => { const a = etat.atomes[l.atome], [dx, dy] = dir(l.ang); return <rect key={l.atome} x={arr(a.x + 22 * dx - 7)} y={arr(a.y + 22 * dy - 7)} width={14} height={14} rx={2} fill="none" stroke={BLEU} strokeWidth={2} strokeDasharray="3.5 2.5"/>; })}
@@ -195,7 +195,7 @@ export function AtelierFleches({ acte, tracees, setTracees, bloque = false, reto
   const choix = c => {
     if (bloque) return;
     if (!orig) {
-      if (c.type === 'atome') { setMsg('Une flèche courbe part d\'un doublet (deux points) ou d\'une liaison, jamais d\'un atome. Touche d\'abord le début de la flèche.'); return; }
+      if (c.type === 'atome') { setMsg('Une flèche courbe part d\'un doublet (un petit trait) ou d\'une liaison, jamais d\'un atome. Touche d\'abord le début de la flèche.'); return; }
       setOrig(c); setMsg(''); return;
     }
     if (c.type !== 'atome') {
@@ -261,7 +261,7 @@ export function SceneChocs({ boite, anneaux, eff = true }) {
 //  CARTES « À RETENIR » (viewBox 320, textes de 14 minimum)
 // ====================================================
 const Tc = ({ x, y, children, s = 16, w = 700, c = ENCRE, a = 'start' }) => <text x={x} y={y} fontSize={s} fontWeight={w} fill={c} textAnchor={a}>{children}</text>;
-const Doublet = ({ x, y, ang = 0 }) => { const [dx, dy] = dir(ang), px = -dy, py = dx; return <g><circle cx={arr(x + px * 3.6)} cy={arr(y + py * 3.6)} r={2.6} fill={ENCRE}/><circle cx={arr(x - px * 3.6)} cy={arr(y - py * 3.6)} r={2.6} fill={ENCRE}/></g>; };
+const Doublet = ({ x, y, ang = 0 }) => { const [dx, dy] = dir(ang), px = -dy, py = dx; return <line x1={arr(x + px * 5.2)} y1={arr(y + py * 5.2)} x2={arr(x - px * 5.2)} y2={arr(y - py * 5.2)} stroke={ENCRE} strokeWidth={2.6} strokeLinecap="round"/>; };
 
 export function CarteFleche() {
   return (
