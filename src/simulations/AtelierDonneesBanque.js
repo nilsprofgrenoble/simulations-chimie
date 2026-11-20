@@ -24,6 +24,7 @@ import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
 import * as SS2 from "./signalSonore2gtModele";
 import * as SN from "./niveauSonore2gtModele";
+import * as MI2 from "./mesureIncertitude2gtModele";
 import * as SON2 from "./sonEmission2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
@@ -4280,6 +4281,57 @@ export const ENONCES = [
         manque: null, solution: { txt: 'rapport = durée passée ÷ durée repère, les deux durées étant dans la même unité', val: T1 / D, u: 'fois' } };
     },
   },
+  // ───────────────────────────── Mesure : incertitude-type et résultat (2GT, sim 194) : repérer les données utiles
+  {
+    id: 'mes2gt-inc-sapp-incertitude', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Une série de pesées : incertitude-type et nombre de mesures', noms: ['Incertitude-type de la moyenne', 'Nombre de mesures pour diviser u par 2'],
+    gen: () => { const id = tire(['piece', 'chute', 'concentration', 'longueur']), ss = { piece: [0.08, 0.1, 0.12, 0.15], chute: [0.05, 0.06, 0.08], concentration: [0.2, 0.25, 0.3], longueur: [0.2, 0.25, 0.3] };
+      return { id, s: tire(ss[id]), n: tire([4, 9, 16, 25, 36]), prix: tire([12, 25, 40]), duree: tire([15, 20, 30]) }; },
+    build: (p, q) => {
+      const sit = MI2.SITUATIONS[p.id], un = sit.unite, u = p.s / Math.sqrt(p.n), m = sit.ref + 0.01;
+      const tokens = {
+        n: tok(`${p.n} fois`, 'Nombre de mesures de la série', p.n, ''),
+        s: tok(`${nb(p.s, 2)} ${un}`, 'Écart-type s de la série', p.s, un),
+        m: tok(`${nb(m, 2)} ${un}`, 'Moyenne de la série', m, un),
+        prix: tok(`${p.prix} €`, 'Prix de l’instrument', p.prix, '€'),
+        d: tok(`${p.duree} min`, 'Durée de l’expérience', p.duree, 'min'),
+      };
+      const raisons = { m: 'La moyenne donne la valeur centrale ; elle ne sert pas à calculer l’incertitude-type.', prix: 'Le prix de l’instrument ne dit rien sur la dispersion des mesures.', d: 'La durée de l’expérience ne change pas le calcul de u.' };
+      const debut = ['Un élève répète ', T('n'), ' la mesure de ' + sit.mesurande + '. Il a payé son instrument ', T('prix'), '. La moyenne de la série est ', T('m'), ' et son écart-type est ', T('s'), '. L’expérience a duré ', T('d'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’incertitude-type u de la moyenne ?'],
+        utiles: ['s', 'n'], raisons,
+        cherche: { bonne: 'L’incertitude-type u de la moyenne (dans l’unité de la mesure)', faux: ['L’écart entre la moyenne et la valeur de référence', 'Le nombre de mesures à ajouter', 'Le prix d’une mesure (en €)'] },
+        manque: null, solution: { txt: 'u = frac(s|√n)', val: u, u: un } };
+      return { tokens, derivees: [{ id: 'u', nom: 'Incertitude-type actuelle', expr: 'u = frac(s|√n)', val: u, u: un }], texte: [...debut, 'Combien de mesures faudrait-il faire en tout pour que u soit deux fois plus petite, avec le même instrument et le même protocole ?'],
+        utiles: ['n'], raisons: { ...raisons, s: 'Déjà utilisé pour calculer u : pour la diviser par 2, il suffit de savoir que cela demande 4 fois plus de mesures.' },
+        cherche: { bonne: 'Le nombre total de mesures à faire (sans unité)', faux: ['Le nombre de mesures à ajouter à la série', 'La nouvelle incertitude-type (dans l’unité de la mesure)', 'Le temps nécessaire pour refaire l’expérience (en min)'] },
+        manque: null, solution: { txt: 'diviser u par 2 demande 4 fois plus de mesures : n × 4', val: 4 * p.n, u: 'mesures' } };
+    },
+  },
+  {
+    id: 'mes2gt-inc-sapp-reference', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Un résultat et une valeur de référence : la zone des valeurs', noms: ['Écart entre la valeur mesurée et la référence', 'Plus grande valeur de la zone [m − u ; m + u]'],
+    gen: () => { const id = tire(['piece', 'chute', 'concentration', 'longueur']), sit = MI2.SITUATIONS[id], dm = { piece: [-0.04, -0.02, 0.03, 0.05], chute: [-0.04, -0.02, 0.02, 0.05], concentration: [-0.15, -0.08, 0.07, 0.15], longueur: [-0.18, -0.07, 0.08, 0.16] }, uu = { piece: [0.02, 0.03, 0.04], chute: [0.02, 0.03], concentration: [0.05, 0.08], longueur: [0.05, 0.08] };
+      return { id, m: Number((sit.ref + tire(dm[id])).toFixed(2)), u: tire(uu[id]), n: tire([9, 16, 25]), an: tire([2024, 2025]) }; },
+    build: (p, q) => {
+      const sit = MI2.SITUATIONS[p.id], un = sit.unite, ref = sit.ref, ecart = Number(Math.abs(p.m - ref).toFixed(4)), haut = Number((p.m + p.u).toFixed(4));
+      const tokens = {
+        m: tok(`${nb(p.m, 2)} ${un}`, 'Valeur mesurée (moyenne)', p.m, un),
+        u: tok(`${nb(p.u, 2)} ${un}`, 'Incertitude-type u', p.u, un),
+        ref: tok(`${nb(ref, 2)} ${un}`, 'Valeur de référence', ref, un),
+        n: tok(`${p.n} mesures`, 'Nombre de mesures de la série', p.n, ''),
+        an: tok(`${p.an}`, 'Année de la mesure', p.an, ''),
+      };
+      const raisons = { n: 'Le nombre de mesures a déjà servi à calculer u : il ne sert plus ici.', an: 'L’année de la mesure n’intervient pas dans la comparaison.' };
+      const debut = ['En ', T('an'), ', une série de ', T('n'), ' donne pour ' + sit.mesurande + ' une moyenne de ', T('m'), ', avec une incertitude-type ', T('u'), '. La valeur de référence est ', T('ref'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’écart entre la valeur mesurée et la valeur de référence ?'],
+        utiles: ['m', 'ref'], raisons: { ...raisons, u: 'L’incertitude-type sert ensuite à juger si l’écart est grand ou petit ; elle ne sert pas à calculer l’écart.' },
+        cherche: { bonne: 'L’écart |m − référence| (dans l’unité de la mesure)', faux: ['La plus grande valeur de la zone de valeurs raisonnables', 'Le nombre de mesures à ajouter', 'L’incertitude-type de la référence'] },
+        manque: null, solution: { txt: 'écart = |m − valeur de référence|', val: ecart, u: un } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la plus grande valeur de la zone des valeurs raisonnables ?'],
+        utiles: ['m', 'u'], raisons: { ...raisons, ref: 'La référence sert à comparer avec la zone, pas à la calculer.' },
+        cherche: { bonne: 'La borne supérieure m + u de la zone (dans l’unité de la mesure)', faux: ['L’écart entre la valeur mesurée et la référence', 'La borne inférieure m − u de la zone', 'Le nombre de mesures à ajouter'] },
+        manque: null, solution: { txt: 'borne supérieure = m + u', val: haut, u: un } };
+    },
+  },
   // ───────────────────────────── Seconde : le son, émission et propagation (vitesse du son)
   {
     id: 'son2gt-emis-sapp-orage', domaine: 'Son : émission et propagation (2GT)', titre: 'Un orage au loin : distance et retard du tonnerre', noms: ['Distance du premier éclair', 'Retard du tonnerre du deuxième éclair'],
@@ -4447,6 +4499,8 @@ const SYMBOLES = {
   'phot1g-sapp-photon': { lam: 'λ', c: 'c', h: 'h', P: 'P', d: 'd', t: 'Δt' },
   'you-sapp-young': { lam: 'λ', a: 'a', D: 'D', P: 'P', w: '', d: 'd', N: 'N' },
   'son2gt-per-sapp-note': { dt: 'Δt', n: 'N', A: 'A', prix: '' },
+  'mes2gt-inc-sapp-incertitude': { n: 'n', s: 's', m: 'm', prix: '', d: 'Δt' },
+  'mes2gt-inc-sapp-reference': { m: 'm', u: 'u', ref: 'm_réf', n: 'n', an: '' },
   'son2gt-per-sapp-ecran': { base: '', k: '', sens: '', h: '' },
   'niv1g-sapp-transition': { Ei: 'E_i', Ef: 'E_f', h: 'h', c: 'c', ev: '1 eV', P: 'P', U: 'U', t: 'Δt' },
 };

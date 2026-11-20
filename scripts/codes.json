@@ -1635,5 +1635,20 @@
  "77:plausible:mes2gt-var-val-cent-mesures": "VAL432",
  "77:plausible:mes2gt-var-val-moyenne-hors": "VAL433",
  "77:plausible:mes2gt-var-val-largeur-ecart-type": "VAL434",
- "36:mes2gt-var-calcul": "REA111"
+ "36:mes2gt-var-calcul": "REA111",
+ "34:mes2gt-inc-sapp-incertitude.0": "SAPP419",
+ "34:mes2gt-inc-sapp-incertitude.1": "SAPP420",
+ "34:mes2gt-inc-sapp-reference.0": "SAPP421",
+ "34:mes2gt-inc-sapp-reference.1": "SAPP422",
+ "37:prevoir:mes2gt-inc-ana-plus-de-mesures": "ANA675",
+ "37:prevoir:mes2gt-inc-ana-meilleur-instrument": "ANA676",
+ "37:prevoir:mes2gt-inc-ana-decalage": "ANA677",
+ "37:prevoir:mes2gt-inc-ana-moins-de-mesures": "ANA678",
+ "37:prevoir:mes2gt-inc-ana-conclusion-change": "ANA679",
+ "77:plausible:mes2gt-inc-val-trop-de-chiffres": "VAL435",
+ "77:plausible:mes2gt-inc-val-compatible-faux": "VAL436",
+ "77:plausible:mes2gt-inc-val-n-divise": "VAL437",
+ "77:plausible:mes2gt-inc-val-systematique": "VAL438",
+ "77:plausible:mes2gt-inc-val-calcul-ok": "VAL439",
+ "36:mes2gt-inc-calcul": "REA112"
 }

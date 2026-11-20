@@ -28,7 +28,7 @@ const OND = 'Ondes et signaux';
 export const COUVERTURE = [
   // ───────────────────────────── Seconde ─────────────────────────────
   { id: '2GT', niveau: '2GT', label: 'Seconde', parties: [
-    { th: MESURE, t: 'Variabilité de la mesure, écart-type et incertitude-type', e: 'partiel', chap: '2gt-mesure', reste: 'incertitude-type, écriture du résultat et comparaison à une valeur de référence' },
+    { th: MESURE, t: 'Variabilité de la mesure, écart-type et incertitude-type', e: 'ok', chap: '2gt-mesure' },
     { th: CTM, t: 'Corps purs, mélanges et identification d’espèces chimiques', e: 'partiel', chap: '2gt-solutions', reste: 'températures de changement d’état, chromatographie, tests chimiques' },
     { th: CTM, t: 'Solutions : concentration en masse, dilution, dosage par étalonnage', e: 'ok', chap: '2gt-solutions' },
     { th: CTM, t: 'Atomes, ions, molécules, familles chimiques et schémas de Lewis', e: 'ok', chap: '2gt-microscopique' },
