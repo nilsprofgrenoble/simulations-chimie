@@ -4597,6 +4597,37 @@ export const PLAUSIBLES = [
       F('incohérente : T devrait valoir 20 °C', 'T n’atteint jamais T_ext en un temps fini : à t = τ, il reste 37 % de l’écart.'),
       F('incohérente : T devrait être passée sous 4 °C', 'Le liquide est plus froid que la pièce : il reçoit de l’énergie, sa température monte vers 20 °C.'),
     ] }),
+  // ───────────────────────────── Gaz parfait (TG, sim 215) : plausible ou non
+  P({ id: 'gpf-val-volume', domaine: 'Gaz parfait : équation d’état et limites du modèle', niveau: 2, titre: 'Le volume d’une mole de gaz', plausible: false,
+    enonce: 'Un élève calcule le volume occupé par 1,00 mol de gaz parfait à 20 °C sous 1,013 bar : « V = frac(1,00 × 8,314 × 293|1,013) = 2,4 × 10³ m³ ».',
+    reperes: [['Volume molaire usuel', 'de l’ordre de 24 L par mole à 20 °C et 1 bar'], ['Pression', '1,013 bar = 1,013 × 10⁵ Pa'], ['Un ballon de baudruche', 'quelques litres']],
+    ver: 'La pression n’a pas été convertie en pascals : avec P = 1,013 × 10⁵ Pa, V = frac(1,00 × 8,314 × 293|1,013 × 10⁵) = 2,4 × 10⁻² m³ = 24 L. Un volume de 2,4 × 10³ m³ (une salle de sport) pour une mole de gaz n’est pas plausible.',
+    q2: 'Que penser de ce résultat ?',
+    options: [
+      V('invraisemblable : P non convertie en pascals', 'En unités du système international, P = 1,013 × 10⁵ Pa : le résultat vaut 2,4 × 10⁻² m³, soit 24 L, valeur usuelle du volume molaire d’un gaz.'),
+      F('plausible : un gaz est très peu dense', 'Un gaz occupe un grand volume comparé à un liquide, mais 1 mol de gaz à 20 °C et 1 bar occupe environ 24 L, pas 2 400 m³.'),
+      F('invraisemblable : la constante R est mal choisie', 'R = 8,314 J·K⁻¹·mol⁻¹ est correcte : c’est la conversion de la pression en pascals qui manque.'),
+    ] }),
+  P({ id: 'gpf-val-masse-volumique', domaine: 'Gaz parfait : équation d’état et limites du modèle', niveau: 2, titre: 'La masse volumique de l’air', plausible: false,
+    enonce: 'Un élève calcule la masse volumique de l’air (M = 29,0 g·mol⁻¹) à 20 °C sous 1,013 bar avec ρ = frac(P × M|R × T), en prenant M = 29,0 : « ρ = 1,2 × 10³ kg·m⁻³ ».',
+    reperes: [['Masse volumique de l’eau liquide', 'environ 1 000 kg·m⁻³'], ['Un gaz comparé à un liquide', 'environ 1 000 fois moins dense'], ['Unité de M dans la formule', 'kg·mol⁻¹']],
+    ver: 'M doit être en kg·mol⁻¹ (0,0290) et non en g·mol⁻¹ : ρ = frac(1,013 × 10⁵ × 0,0290|8,314 × 293,15) = 1,2 kg·m⁻³. Une masse volumique de 1,2 × 10³ kg·m⁻³ serait celle d’un liquide, pas celle de l’air.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('M a été prise en g·mol⁻¹, pas en kg·mol⁻¹', 'En g·mol⁻¹, M est 1 000 fois trop grande ; avec M = 0,0290 kg·mol⁻¹, ρ = 1,2 kg·m⁻³.'),
+      F('T aurait dû rester en degrés Celsius', 'T doit être en kelvins dans la formule : 293,15 K, et non 20 °C.'),
+      F('la formule est fausse : P et T sont échangés', 'La formule ρ = frac(P × M|R × T) est correcte ; c’est l’unité de M qui est mal utilisée.'),
+    ] }),
+  P({ id: 'gpf-val-bouteille', domaine: 'Gaz parfait : équation d’état et limites du modèle', niveau: 1, titre: 'Une bouteille de gaz à 25 °C', plausible: true,
+    enonce: 'Une bouteille rigide de 10,0 L contient 2,00 mol de gaz parfait à 25 °C. Un élève calcule la pression : « P = 4,96 bar ».',
+    reperes: [['Pression atmosphérique', 'environ 1 bar'], ['Quantité de gaz', 'environ 0,4 mol à 1 bar dans 10 L'], ['Pression, V et T fixés', 'proportionnelle à n']],
+    ver: 'P = frac(n × R × T|V) = frac(2,00 × 8,314 × 298,15|10,0 × 10⁻³) = 4,96 × 10⁵ Pa = 4,96 bar : le résultat est correct. Il est de l’ordre de 5 fois la pression atmosphérique, ce qui est cohérent avec une quantité de gaz de 2,00 mol, 5 fois plus grande que celle de 10 L d’air à 1 bar (environ 0,4 mol).',
+    q2: 'Que penser de ce résultat ?',
+    options: [
+      V('cohérent : environ 5 fois la pression ambiante', 'P = frac(2,00 × 8,314 × 298,15|10,0 × 10⁻³) = 4,96 × 10⁵ Pa : la valeur est correcte et son ordre de grandeur est plausible.'),
+      F('incohérent : 5 bar est impossible', 'Des pressions de quelques bar sont courantes (pneu de voiture, bouteille de gaz de laboratoire) et bien décrites par le gaz parfait.'),
+      F('incohérent : P devrait rester inférieure à 1 bar', 'Avec 2,00 mol dans 10,0 L, le gaz est plus concentré que l’air à 1 bar (environ 0,4 mol dans 10 L) : la pression est plus grande, pas plus petite.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

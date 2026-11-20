@@ -1816,5 +1816,14 @@
  "77:plausible:str-val-sequence": "VAL488",
  "77:plausible:str-val-rendement": "VAL489",
  "77:plausible:str-val-global-ok": "VAL490",
- "36:str-calcul": "REA125"
+ "36:str-calcul": "REA125",
+ "34:gpf-sapp-ballon.0": "SAPP471",
+ "34:gpf-sapp-ballon.1": "SAPP472",
+ "37:prevoir:gpf-ana-chauffage": "ANA734",
+ "37:prevoir:gpf-ana-piston": "ANA735",
+ "37:prevoir:gpf-ana-ballon": "ANA736",
+ "77:plausible:gpf-val-volume": "VAL491",
+ "77:plausible:gpf-val-masse-volumique": "VAL492",
+ "77:plausible:gpf-val-bouteille": "VAL493",
+ "36:gpf-calcul": "REA126"
 }

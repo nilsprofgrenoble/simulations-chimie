@@ -2948,6 +2948,50 @@ function genThermostatTG() {
     retenir: ['Temps caractéristique : τ = frac(C|h × S) avec C = m × c ; des J·K⁻¹ divisés par des W·K⁻¹ donnent des secondes.', 'Loi de Newton : φ = h × S × (T_ext − T), flux reçu par le système (négatif s’il cède de l’énergie).', 'Bilan d’énergie d’un système incompressible : C × ΔT = φ × Δt.', 'Solution : T(t) = T_ext + (T_0 − T_ext) × e⁻ⁿ avec n = frac(t|τ) ; durée pour atteindre T : t = τ × ln du rapport (T_0 − T_ext) à (T − T_ext).'] };
 }
 
+function genGazParfaitTG() {
+  // Gaz parfait (TG, sim 215). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const R = 8.314, K = th => th + 273.15;
+  const T1s = <>T<sub>1</sub></>, T2s = <>T<sub>2</sub></>, P1s = <>P<sub>1</sub></>, P2s = <>P<sub>2</sub></>, V1s = <>V<sub>1</sub></>, V2s = <>V<sub>2</sub></>;
+  // q1 : n = P V / (R T)
+  const P1 = tire([1.0, 2.0, 3.0, 5.0]), V1 = tire([2.0, 5.0, 10.0, 12.0, 20.0]), th1 = tire([10, 17, 20, 25, 37]), n1 = P1 * 1e5 * V1 * 1e-3 / (R * K(th1));
+  const q1 = { id: 'gpf0', type: 'num', q: <>Une bouteille de <b>V = {f(V1, 1)}{NB}L</b> contient un gaz, assimilé à un gaz parfait, sous la pression <b>P = {f(P1, 1)}{NB}bar</b> à <b>θ = {th1}{NB}°C</b>. Calculez la quantité de matière n de gaz (en mol, 2 chiffres significatifs ; R = 8,314{NB}J·K⁻¹·mol⁻¹).</>, unite: 'mol', vrai: n1, tolRel: 0.06, csMin: 2,
+    aide: 'n = frac(P × V|R × T) : P en pascals (1 bar = 10⁵ Pa), V en m³ (1 L = 10⁻³ m³), T en kelvins (θ + 273,15).',
+    pieges: [[n1 * 1000, 'Le volume n’a pas été converti en m³ : 1 L = 10⁻³ m³.'], [n1 / 1e5, 'La pression n’a pas été convertie en pascals : 1 bar = 10⁵ Pa.'], [n1 * K(th1) / th1, 'La température n’a pas été convertie en kelvins : T = θ + 273,15.'], [R * K(th1) / (P1 * 1e5 * V1 * 1e-3), 'Le rapport est inversé : n = P × V divisé par R × T.']],
+    expl: <>T = {th1} + 273,15 = {f(K(th1), 2)}{NB}K ; n = {avecIndices('frac(P × V|R × T)')} = {avecIndices(`frac(${f(P1, 1)} × 10⁵ × ${f(V1, 1)} × 10⁻³|8,314 × ${f(K(th1), 2)})`)} = <b>{f(n1, 3)}{NB}mol</b>.</> };
+  // q2 : P = n R T / V, en bar
+  let n2, V2, th2, P2;
+  for (;;) { n2 = tire([0.20, 0.50, 1.00, 2.00]); V2 = tire([5.0, 10.0, 20.0]); th2 = tire([17, 27, 57, 127]); P2 = n2 * R * K(th2) / (V2 * 1e-3) / 1e5; if (P2 >= 0.5 && P2 <= 10) break; }
+  const q2 = { id: 'gpf1', type: 'num', q: <>Une enceinte rigide de <b>V = {f(V2, 1)}{NB}L</b> contient <b>n = {f(n2, 2)}{NB}mol</b> de gaz parfait à <b>θ = {th2}{NB}°C</b>. Calculez la pression P du gaz (en bar, 2 chiffres significatifs).</>, unite: 'bar', vrai: P2, tolRel: 0.06, csMin: 2,
+    aide: 'P = frac(n × R × T|V) : T en kelvins, V en m³ ; le résultat est en pascals : divisez par 10⁵ pour des bar.',
+    pieges: [[P2 * 1e5, 'Vous avez donné P en pascals : la réponse est attendue en bar (1 bar = 10⁵ Pa).'], [P2 * 1000, 'Le volume n’a pas été converti en m³ : 1 L = 10⁻³ m³ (et la réponse est en bar).'], [P2 * th2 / K(th2), 'La température n’a pas été convertie en kelvins : T = θ + 273,15.'], [P2 / 1000, 'Le volume a été multiplié par 1000 au lieu d’être divisé : 1 L = 10⁻³ m³.']],
+    expl: <>T = {th2} + 273,15 = {f(K(th2), 2)}{NB}K ; P = {avecIndices('frac(n × R × T|V)')} = {avecIndices(`frac(${f(n2, 2)} × 8,314 × ${f(K(th2), 2)}|${f(V2, 1)} × 10⁻³)`)} = {f(P2 * 1e5, 0)}{NB}Pa = <b>{f(P2, 2)}{NB}bar</b>.</> };
+  // q3 : deux états, P2 = P1 V1 T2 / (T1 V2)
+  let Pa, Va, tha, Vb, thb, Pb;
+  for (;;) { Pa = tire([1.0, 1.5, 2.0, 3.0]); Va = tire([4.0, 6.0, 8.0, 10.0]); tha = tire([7, 17, 27]); Vb = tire([2.0, 3.0, 5.0, 12.0, 15.0]); thb = tire([47, 77, 107, 127]); Pb = Pa * Va * K(thb) / (K(tha) * Vb); if (Vb !== Va && Pb >= 0.8 && Pb <= 10) break; }
+  const q3 = { id: 'gpf2', type: 'num', q: <>Une quantité fixe de gaz passe de l’état 1 (<b>{P1s} = {f(Pa, 1)}{NB}bar</b>, <b>{V1s} = {f(Va, 1)}{NB}L</b>, <b>θ<sub>1</sub> = {tha}{NB}°C</b>) à l’état 2 (<b>{V2s} = {f(Vb, 1)}{NB}L</b>, <b>θ<sub>2</sub> = {thb}{NB}°C</b>). Calculez la pression {P2s} de l’état 2 (en bar, 2 chiffres significatifs).</>, unite: 'bar', vrai: Pb, tolRel: 0.06, csMin: 2,
+    aide: <>À n constant : {avecIndices('frac(P₁ × V₁|T₁)')} = {avecIndices('frac(P₂ × V₂|T₂)')}, avec T en kelvins ; bar et L peuvent rester tels quels.</>,
+    pieges: [[Pa * Va / Vb, 'Vous n’avez pas tenu compte du changement de température : ici T₂ ≠ T₁.'], [Pa * Va * K(tha) / (K(thb) * Vb), 'Le rapport des températures est inversé : P₂ est proportionnelle à T₂.'], [Pa * Va * thb / (tha * Vb), 'Les températures sont restées en °C : il faut les convertir en kelvins.'], [Pa * Vb * K(thb) / (K(tha) * Va), 'Le rapport des volumes est inversé : P₂ est inversement proportionnelle à V₂.']],
+    expl: <>{avecIndices('P₂ = frac(P₁ × V₁ × T₂|T₁ × V₂)')} = {avecIndices(`frac(${f(Pa, 1)} × ${f(Va, 1)} × ${f(K(thb), 2)}|${f(K(tha), 2)} × ${f(Vb, 1)})`)} = <b>{f(Pb, 2)}{NB}bar</b> (T₁ = {f(K(tha), 2)} K, T₂ = {f(K(thb), 2)} K).</> };
+  // q4 : ρ = P M / (R T)
+  const g4 = tire([{ nom: 'le dioxygène', M: 32.0 }, { nom: 'le diazote', M: 28.0 }, { nom: 'l’hélium', M: 4.0 }, { nom: 'le dioxyde de carbone', M: 44.0 }, { nom: 'l’air (mélange traité comme un gaz)', M: 29.0 }]), P4 = tire([1.0, 2.0, 5.0]), th4 = tire([0, 20, 25, 50]), rho4 = P4 * 1e5 * g4.M * 1e-3 / (R * K(th4));
+  const q4 = { id: 'gpf3', type: 'num', q: <>Calculez la masse volumique ρ de {g4.nom} (masse molaire <b>M = {f(g4.M, 1)}{NB}g·mol⁻¹</b>), supposé parfait, sous <b>P = {f(P4, 1)}{NB}bar</b> à <b>θ = {th4}{NB}°C</b> (en kg·m⁻³, 2 chiffres significatifs).</>, unite: 'kg·m⁻³', vrai: rho4, tolRel: 0.06, csMin: 2,
+    aide: 'ρ = frac(P × M|R × T) : P en pascals, M en kg·mol⁻¹ (1 g·mol⁻¹ = 10⁻³ kg·mol⁻¹), T en kelvins.',
+    pieges: [[rho4 * 1000, 'La masse molaire doit être en kg·mol⁻¹ : le résultat serait 1000 fois trop grand avec des g·mol⁻¹.'], [rho4 / 1e5, 'La pression n’a pas été convertie en pascals : 1 bar = 10⁵ Pa.'], [rho4 * K(th4) / th4, 'La température n’a pas été convertie en kelvins : T = θ + 273,15.'], [R * K(th4) / (P4 * 1e5 * g4.M * 1e-3), 'Le rapport est inversé : ρ = P × M divisé par R × T.']],
+    expl: <>T = {th4} + 273,15 = {f(K(th4), 2)}{NB}K ; ρ = {avecIndices('frac(P × M|R × T)')} = {avecIndices(`frac(${f(P4, 1)} × 10⁵ × ${f(g4.M * 1e-3, 4)}|8,314 × ${f(K(th4), 2)})`)} = <b>{f(rho4, 3)}{NB}kg·m⁻³</b>.</> };
+  // q5 : T2 = T1 P2 / P1 à volume constant
+  let Pc1, Pc2, th5, T5;
+  for (;;) { Pc1 = tire([1.0, 1.5, 2.0, 3.0]); Pc2 = tire([1.5, 2.5, 3.0, 4.0, 5.0, 6.0]); th5 = tire([7, 17, 27, 37]); T5 = K(th5) * Pc2 / Pc1; if (Pc2 > Pc1 * 1.2 && T5 > 330 && T5 < 900) break; }
+  const q5 = { id: 'gpf4', type: 'num', q: <>Un gaz parfait est enfermé dans une enceinte rigide (volume constant) à <b>θ<sub>1</sub> = {th5}{NB}°C</b>, sous <b>{P1s} = {f(Pc1, 1)}{NB}bar</b>. On le chauffe jusqu’à ce que la pression atteigne <b>{P2s} = {f(Pc2, 1)}{NB}bar</b>. Calculez la température {T2s} atteinte (en K, 2 chiffres significatifs).</>, unite: 'K', vrai: T5, tolRel: 0.06, csMin: 2,
+    aide: <>À V et n constants : {avecIndices('frac(P₁|T₁)')} = {avecIndices('frac(P₂|T₂)')}, avec T en kelvins (T₁ = θ₁ + 273,15).</>,
+    pieges: [[(th5) * Pc2 / Pc1, 'Vous avez travaillé avec θ₁ en °C : il faut T₁ en kelvins (θ₁ + 273,15).'], [K(th5) * Pc1 / Pc2, 'Le rapport des pressions est inversé : à volume constant, T₂ est proportionnelle à P₂.'], [K(th5) * Pc2 / Pc1 - 273.15, 'Vous avez retranché 273,15 : la question demande T₂ en kelvins, pas en °C.'], [K(th5) + (Pc2 - Pc1), 'T n’est pas obtenue en ajoutant l’écart de pression : T₂ est proportionnelle à P₂.']],
+    expl: <>{avecIndices('T₂ = frac(T₁ × P₂|P₁)')} = {avecIndices(`frac(${f(K(th5), 2)} × ${f(Pc2, 1)}|${f(Pc1, 1)})`)} = <b>{f(T5, 1)}{NB}K</b> (T₁ = {th5} + 273,15 = {f(K(th5), 2)} K).</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température d’après P V = n R T. Le gaz est supposé parfait, sa quantité de matière constante dans une même transformation ; R = 8,314 J·K⁻¹·mol⁻¹.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Équation d’état : P × V = n × R × T, avec P en Pa (1 bar = 10⁵ Pa), V en m³ (1 L = 10⁻³ m³), T en K (T = θ + 273,15).', 'Deux états d’une même quantité de gaz : frac(P₁ × V₁|T₁) = frac(P₂ × V₂|T₂), avec T en kelvins.', 'Masse volumique : ρ = frac(P × M|R × T), avec M en kg·mol⁻¹.', 'À volume constant, P est proportionnelle à T ; à température constante, P est inversement proportionnelle à V.'] };
+}
+
 function genYoungTG() {
   // Trous d'Young (TG, sim 182). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -4341,6 +4385,7 @@ export const FAMILLES = [
   { id: 'irt-calcul', groupe: 'Formules', titre: 'Spectroscopie infrarouge : nombre d’onde, longueur d’onde et lignes d’un tableau de données (TG)', gen: genIrTabTG, domaine: 'Spectroscopie infrarouge : données tabulées' },
   { id: 'rc-calcul', groupe: 'Formules', titre: 'Circuit RC : temps caractéristique, capacité, intensité initiale, tension à t = n τ et durée de la charge (TG)', gen: genRCTG, domaine: 'Circuit RC : charge et décharge d’un condensateur' },
   { id: 'thm-calcul', groupe: 'Formules', titre: 'Loi de Newton et thermostat : temps caractéristique, flux thermique, variation et évolution de la température, durée pour atteindre une température (TG)', gen: genThermostatTG, domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps' },
+  { id: 'gpf-calcul', groupe: 'Formules', titre: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température (TG)', gen: genGazParfaitTG, domaine: 'Gaz parfait : équation d’état et limites du modèle' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },

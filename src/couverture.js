@@ -93,7 +93,7 @@ export const COUVERTURE = [
     { th: MVT, t: 'Mouvement dans un champ uniforme (pesanteur, condensateur plan)', e: 'ok', chap: 'tg-newton' },
     { th: MVT, t: 'Mouvement dans un champ de gravitation : satellites, lois de Kepler', e: 'ok', chap: 'tg-newton' },
     { th: MVT, t: 'Écoulement d’un fluide : poussée d’Archimède, relation de Bernoulli', e: 'avenir' },
-    { th: NRJ, t: 'Gaz parfait', e: 'avenir' },
+    { th: NRJ, t: 'Gaz parfait', e: 'ok', chap: 'tg-gaz-parfait' },
     { th: NRJ, t: 'Premier principe de la thermodynamique, transferts thermiques', e: 'avenir' },
     { th: NRJ, t: 'Bilan thermique du système Terre-atmosphère, effet de serre', e: 'avenir' },
     { th: NRJ, t: 'Loi de Newton : évolution de la température d’un système au contact d’un thermostat', e: 'ok', chap: 'tg-bilans-energie' },
