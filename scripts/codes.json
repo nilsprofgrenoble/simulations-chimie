@@ -1562,5 +1562,14 @@
  "77:plausible:son2gt-per-val-cinq-motifs": "VAL411",
  "77:plausible:son2gt-per-val-diapason": "VAL412",
  "77:plausible:son2gt-per-val-limite": "VAL413",
- "36:son2gt-per-calcul": "REA105"
+ "36:son2gt-per-calcul": "REA105",
+ "34:icc-sapp-resistance.0": "SAPP400",
+ "34:icc-sapp-resistance.1": "SAPP401",
+ "34:icc-sapp-reference.0": "SAPP402",
+ "37:prevoir:icc-ana-dominante": "ANA648",
+ "37:prevoir:icc-ana-tirages": "ANA649",
+ "37:prevoir:icc-ana-seuil": "ANA650",
+ "77:plausible:icc-val-somme": "VAL414",
+ "77:plausible:icc-val-compat": "VAL415",
+ "36:icc-calcul": "REA106"
 }
