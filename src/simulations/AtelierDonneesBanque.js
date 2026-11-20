@@ -37,6 +37,7 @@ import * as CMB from "./combustionModele";
 import * as RX from "./redoxModele";
 import * as CL from "./couleursModele";
 import * as KEP from "./satellitesModele";
+import * as BRN from "./brnModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -52,6 +53,9 @@ const sciR = x => { const [m, e] = Number(x).toExponential(1).split('e'); return
 const tok = (aff, quoi, val, u) => ({ aff: NB(aff), quoi, use: { val, u } });
 // ne garde que les données citées dans l'énoncé de la question posée (une donnée absente du texte ne s'afficherait pas)
 const epure = f => (p, q) => { const b = f(p, q); return { ...b, tokens: Object.fromEntries(Object.entries(b.tokens).filter(([k]) => b.texte.some(t => t && t.t === k))) }; };
+
+const lNom = nom => (/^[aeiouyhéèêâîôû]/i.test(nom) ? 'l’' : 'la ') + nom;       // « l’eau », « la méthylamine »
+const dNom = nom => (/^[aeiouyhéèêâîôû]/i.test(nom) ? 'd’' : 'de ') + nom;      // « d’eau », « de méthylamine »
 
 export const ENONCES = [
   // ───────────────────────────── 0. Projecteur de diapositives (1G : lentille mince)
@@ -4495,6 +4499,58 @@ export const ENONCES = [
         cherche: { bonne: 'La proportion de chocs efficaces parmi les chocs (en %)', faux: ['Le nombre de chocs efficaces par seconde (en s⁻¹)', 'La probabilité qu’une entité B soit présente (en %)', 'La température à laquelle les chocs deviennent efficaces (en °C)'] },
         manque: null, solution: { txt: 'frac(E|N) × 100', val: 100 * p.E / p.N, u: '%' } };
     }),
+  },
+  // ───────────────────────────── Transferts de H⁺ : acides carboxyliques, amines (TG, sim 188)
+  {
+    id: 'brn-sapp-lewis', domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées', titre: 'Schéma de Lewis d’un ion ou d’une molécule : quelles données utiliser ?', noms: ['Nombre total d’électrons de valence', 'Nombre de doublets à répartir'],
+    gen: () => ({ e: tire(BRN.TOUTES_ESPECES.filter(x => x.graphe)).id, C: tire([0.10, 0.20, 0.50]) }),
+    build: (p, q) => {
+      const e = BRN.espece(p.e), VAL = BRN.VALENCE, MM = { C: 12.0, H: 1.0, N: 14.0, O: 16.0 }, NOM = { C: 'carbone', H: 'hydrogène', N: 'azote', O: 'oxygène' };
+      const els = Object.keys(e.atomes).sort(), M = els.reduce((t, el) => t + e.atomes[el] * MM[el], 0), S = els.reduce((t, el) => t + e.atomes[el] * VAL[el], 0), nT = S - e.charge;
+      const tokens = { M: tok(`${nb(M, 1)} g/mol`, 'Masse molaire de l’espèce', M, 'g/mol'), C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration de la solution', p.C, 'mol/L') };
+      const de = el => dNom(NOM[el]);
+      els.forEach(el => { tokens['n' + el] = tok(`${e.atomes[el]} atome${e.atomes[el] > 1 ? 's' : ''} ${de(el)}`, `Nombre d’atomes ${de(el)} dans l’espèce`, e.atomes[el], '');
+        tokens['v' + el] = tok(`${VAL[el]} électron${VAL[el] > 1 ? 's' : ''} de valence`, `Électrons de valence d’un atome ${de(el)} seul`, VAL[el], ''); });
+      if (e.charge !== 0) tokens.q = tok(`${e.charge > 0 ? '+' : '−'}${Math.abs(e.charge)}`, 'Charge de l’espèce, en unités de charge élémentaire', e.charge, '');
+      const liste = ids => ids.reduce((a, id, k) => [...a, ...(k === 0 ? [] : [k === ids.length - 1 ? ' et ' : ', ']), T(id)], []);
+      const debut = [`On veut établir le schéma de Lewis de ${lNom(e.nom)} ${e.formule}. Cette espèce contient `, ...liste(els.map(el => 'n' + el)), '. ',
+        ...els.reduce((a2, el, k) => [...a2, `${k === 0 ? 'Un' : ' ; un'} atome ${de(el)} seul possède `, T('v' + el)], []), '. ',
+        ...(e.charge !== 0 ? ['La charge de l’espèce est ', T('q'), '. '] : ['L’espèce est neutre. ']), 'Sa masse molaire est ', T('M'), ' et on la dissout à la concentration ', T('C'), '. '];
+      const utiles = [...els.map(el => 'n' + el), ...els.map(el => 'v' + el), ...(e.charge !== 0 ? ['q'] : [])];
+      const raisons = { M: 'La masse molaire sert à passer d’une masse à une quantité de matière : elle n’intervient pas dans le comptage des électrons.', C: 'La concentration de la solution ne change pas le schéma de Lewis d’une entité.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le nombre total d’électrons de valence à répartir dans le schéma ?'], utiles, raisons,
+        cherche: { bonne: 'Le nombre total n_T d’électrons de valence (sans unité)', faux: ['Le nombre de doublets non liants (sans unité)', 'La charge de l’espèce (en e)', 'Le nombre de liaisons du schéma (sans unité)'] },
+        manque: null, solution: { txt: 'n_T = somme des électrons de valence des atomes seuls − charge de l’espèce', val: nT, u: '' } };
+      return { tokens, derivees: [{ id: 'nT', nom: 'Nombre total n_T d’électrons de valence', expr: 'n_T = somme des électrons de valence des atomes seuls − charge', val: nT, u: '' }], texte: [...debut, 'Combien de doublets d’électrons faut-il répartir dans le schéma ?'], utiles, raisons,
+        cherche: { bonne: 'Le nombre n_D de doublets à répartir (sans unité)', faux: ['Le nombre total d’électrons de valence (sans unité)', 'Le nombre de doublets liants seulement (sans unité)', 'La charge de l’espèce (en e)'] },
+        manque: null, solution: { txt: 'n_D = frac(n_T|2)', val: nT / 2, u: '' } };
+    },
+  },
+  {
+    id: 'brn-sapp-melange', domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées', titre: 'Réaction d’un acide avec une base : quelles données utiliser ?', noms: ['Quantité d’ion carboxylate formé', 'Masse de l’ion ammonium formé'],
+    gen: () => ({ ac: tire(['CH3COOH', 'HCOOH']), ba: tire(['NH3', 'CH3NH2']), C: tire([0.10, 0.20, 0.50]), V: tire([10, 20, 25, 40, 50]), Vb: tire([50, 100]), th: tire([20, 25]) }),
+    build: (p, q) => {
+      const MM = { C: 12.0, H: 1.0, N: 14.0, O: 16.0 }, mm = id => Object.entries(BRN.espece(id).atomes).reduce((t, [el, k]) => t + k * MM[el], 0);
+      const cpl = BRN.COUPLES.find(c => c.acide === p.ac), cb = BRN.COUPLES.find(c => c.base === p.ba), carbox = BRN.espece(cpl.base), amm = BRN.espece(cb.acide);
+      const n = p.C * p.V, m = n * mm(amm.id);
+      const tokens = {
+        C: tok(`${nb(p.C, 2)} mol/L`, `Concentration de la solution d’${BRN.espece(p.ac).nom}`, p.C, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de la solution d’acide versé', p.V, 'mL'),
+        Vb: tok(`${p.Vb} mL`, 'Volume de la solution de base, en excès', p.Vb, 'mL'),
+        th: tok(`${p.th} °C`, 'Température du mélange', p.th, '°C'),
+        Ma: tok(`${nb(mm(p.ac), 1)} g/mol`, `Masse molaire ${dNom(BRN.espece(p.ac).nom)}`, mm(p.ac), 'g/mol'),
+        Mb: tok(`${nb(mm(amm.id), 1)} g/mol`, `Masse molaire ${dNom(amm.nom)}`, mm(amm.id), 'g/mol'),
+      };
+      const debut = [`On verse `, T('V'), ` d’une solution d’${BRN.espece(p.ac).nom} ${BRN.espece(p.ac).formule} de concentration `, T('C'), ` dans `, T('Vb'), ` d’une solution ${dNom(BRN.espece(p.ba).nom)} ${BRN.espece(p.ba).formule}, en excès, à `, T('th'), `. L’acide cède un ion H⁺ à la base, ce qui forme ${lNom(carbox.nom)} ${carbox.formule} et ${lNom(amm.nom)} ${amm.formule} (équation : 1 mole d’acide donne 1 mole de chaque produit ; la transformation est supposée totale). Masses molaires : `, T('Ma'), ` pour l’acide, `, T('Mb'), ` pour ${lNom(amm.nom)}. `];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, `Quelle quantité de matière d’${carbox.nom} se forme ?`], utiles: ['C', 'V'],
+        raisons: { Vb: 'La base est en excès : l’acide est le réactif limitant, la quantité formée ne dépend pas du volume de base.', th: 'La température ne change pas la quantité formée quand la transformation est totale pour le réactif limitant.', Ma: 'La masse molaire sert à passer d’une masse à une quantité de matière : on part ici d’une concentration et d’un volume.', Mb: 'La masse molaire de l’ion ammonium servirait à calculer sa masse, pas la quantité d’ion carboxylate.' },
+        cherche: { bonne: `La quantité n d’${carbox.nom} formé (en mmol)`, faux: [`La masse d’${carbox.nom} formé (en mg)`, 'La concentration de la solution de base (en mol/L)', 'Le volume de base nécessaire (en mL)'] },
+        manque: null, solution: { txt: 'n = C × V (coefficients 1 pour 1 dans l’équation)', val: n, u: 'mmol' } };
+      return { tokens, derivees: [{ id: 'n', nom: `Quantité d’${carbox.nom} formé (= quantité d’acide consommé)`, expr: 'n = C × V', val: n, u: 'mmol' }], texte: [...debut, `Quelle masse d’${amm.nom} se forme ?`], utiles: ['C', 'V', 'Mb'],
+        raisons: { Vb: 'La base est en excès : le volume de base n’intervient pas dans la quantité formée.', th: 'La température ne change pas la masse formée ici : on la calcule avec la quantité de matière et la masse molaire.', Ma: 'La masse molaire de l’acide ne sert pas : on cherche la masse de l’ion ammonium, pas celle de l’acide.' },
+        cherche: { bonne: `La masse m d’${amm.nom} formé (en mg)`, faux: [`La quantité d’${amm.nom} formé (en mmol)`, 'La masse d’acide consommé (en mg)', 'La concentration finale en ions (en mol/L)'] },
+        manque: null, solution: { txt: 'm = n × M, avec n = C × V (1 mole d’acide donne 1 mole d’ion)', val: m, u: 'mg' } };
+    },
   },
   // ───────────────────────────── Mesure : variabilité, histogramme, moyenne et écart-type (2GT, sim 193) : repérer les données utiles
   {

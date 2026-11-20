@@ -1692,5 +1692,15 @@
  "77:plausible:opt-val-nmax": "VAL450",
  "77:plausible:opt-val-ok": "VAL451",
  "77:plausible:opt-val-catalyseur": "VAL452",
- "36:opt-calcul": "REA115"
+ "36:opt-calcul": "REA115",
+ "34:brn-sapp-lewis.0": "SAPP435",
+ "34:brn-sapp-lewis.1": "SAPP436",
+ "34:brn-sapp-melange.0": "SAPP437",
+ "34:brn-sapp-melange.1": "SAPP438",
+ "37:prevoir:brn-ana-conjuguee": "ANA694",
+ "37:prevoir:brn-ana-amphotere": "ANA695",
+ "37:prevoir:brn-ana-soude": "ANA696",
+ "77:plausible:brn-val-equation": "VAL453",
+ "77:plausible:brn-val-lewis": "VAL454",
+ "36:brn-calcul": "REA116"
 }

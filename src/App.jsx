@@ -127,6 +127,7 @@ const SimulationDiffractionOnde = paresseux(() => import("./simulations/Diffract
 const SimulationMecanismesTG = paresseux(() => import("./simulations/MecanismesTG"), "SimulationMecanismesTG");
 const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
 const SimulationOptimisationRendement = paresseux(() => import("./simulations/OptimisationRendement"), "SimulationOptimisationRendement");
+const SimulationTransfertsH = paresseux(() => import("./simulations/TransfertsH"), "SimulationTransfertsH");
 const SimulationIncertitudesComposees = paresseux(() => import("./simulations/IncertitudesComposees"), "SimulationIncertitudesComposees");
 const SimulationEquationsDesintegration = paresseux(() => import("./simulations/EquationsDesintegration"), "SimulationEquationsDesintegration");
 const SimulationInterfTG = paresseux(() => import("./simulations/InterfTG"), "SimulationInterfTG");
@@ -317,6 +318,7 @@ const SIMULATIONS = [
   { id:175, label:"Mouvement dans un champ de pesanteur uniforme : équations horaires et trajectoire", niveau:"TG", icon:"🏀", color:"#c2410c", component: SimulationPesanteur },
   { id:189, label:"Optimiser une synthèse : vitesse et rendement", niveau:"TG", icon:"⚗️", color:"#0f766e", component: SimulationOptimisationRendement },
   { id:186, label:"Mécanismes réactionnels et flèches courbes", niveau:"TG", icon:"🏹", color:"#7c3aed", component: SimulationMecanismesTG },
+  { id:188, label:"Transferts de H⁺ : acides, amines, Lewis", niveau:"TG", icon:"🍋", color:"#0e7490", component: SimulationTransfertsH },
   { id:176, label:"Particule chargée dans un condensateur plan et accélérateur linéaire", niveau:"TG", icon:"⚡", color:"#7c2d12", component: SimulationParticuleCondensateur },
   { id:185, label:"Incertitudes composées et valeur de référence", niveau:"TG", icon:"📏", color:"#0f766e", component: SimulationIncertitudesComposees },
   { id:177, label:"Satellites et lois de Kepler", niveau:"TG", icon:"🛰️", color:"#4338ca", component: SimulationSatellites },
