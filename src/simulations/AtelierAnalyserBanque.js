@@ -5207,6 +5207,49 @@ export const PREVOIR = [
       F('elle est exothermique : le milieu a perdu de l’énergie', 'Le milieu a bien perdu de l’énergie, mais c’est la transformation qui l’a prise : elle est endothermique.'),
       F('on ne peut rien dire sans connaître les réactifs', 'Le sens de variation de la température suffit, qualitativement : elle baisse, donc la transformation est endothermique.'),
     ] },
+  // ───────────────────────────── Chromatographie sur couche mince (2GT, sim 197) : une tache, alignement, niveau de l’éluant, dépôt concentré, même hauteur, crayon
+  { id: 'ccm2gt-ana-une-tache', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'Une seule tache sur la plaque',
+    enonce: 'On fait la CCM de l’encre verte d’un feutre, avec un seul éluant. Après la migration, la plaque ne montre qu’une seule tache verte. Une élève affirme : « l’encre ne contient qu’un seul colorant, c’est sûr ».', q: 'Que penser de son affirmation ?', options: [
+      V('elle est trop sûre : probable, mais pas certain', 'Une seule tache : on ne voit qu’une espèce, donc un corps pur est probable. Mais deux espèces peuvent migrer à la même hauteur dans un éluant : on ne peut pas en être certain avec un seul éluant.'),
+      F('elle est juste : une seule tache prouve qu’il n’y a qu’une espèce', 'Une seule tache ne le prouve pas : deux espèces différentes peuvent monter exactement à la même hauteur et ne former qu’une tache.'),
+      F('elle est fausse : une encre verte est toujours un mélange', 'Rien n’interdit à une encre de ne contenir qu’un colorant. Ici, la plaque ne montre qu’une tache : un corps pur est même probable.'),
+      F('elle est fausse : une CCM réussie donne toujours deux taches', 'Une CCM réussie donne autant de taches que d’espèces visibles : une seule tache pour un corps pur est tout à fait normal.'),
+    ] },
+  { id: 'ccm2gt-ana-inconnue', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'Une tache qui n’est alignée avec aucune référence',
+    enonce: 'Un échantillon de colorant est déposé à côté de trois références : jaune, rouge et bleu. Après la migration avec le même éluant, le colorant donne deux taches : l’une à la hauteur de la référence jaune, l’autre entre les références rouge et bleue, alignée avec aucune d’elles.', q: 'Que peut-on dire de l’échantillon ?', options: [
+      V('il contient probablement du jaune et une espèce non référencée', 'La tache alignée avec le jaune est compatible avec ce colorant. L’autre tache n’est à la hauteur d’aucune référence : c’est une espèce qui n’est pas parmi les références déposées.'),
+      F('il contient le rouge et le bleu, car la tache est entre les deux', 'Une tache située entre deux références ne correspond à aucune des deux : il faut une tache à la même hauteur qu’une référence.'),
+      F('il ne contient que du jaune, car une seule tache est alignée', 'Il a deux taches : la deuxième n’est alignée avec aucune référence, mais elle existe et correspond à une espèce.'),
+      F('il contient du jaune, du rouge et du bleu', 'Seule la tache jaune est alignée avec une référence. Le rouge et le bleu n’ont pas de tache de l’échantillon à leur hauteur.'),
+    ] },
+  { id: 'ccm2gt-ana-niveau', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'Un éluant qui monte trop haut dans la cuve',
+    enonce: 'Pour gagner du temps, un élève verse tant d’éluant dans la cuve que le niveau dépasse la ligne de dépôt de la plaque. Il referme la cuve et attend la fin de la migration.', q: 'Que va-t-il observer ?', options: [
+      V('aucune tache : les dépôts se sont dissous dans la cuve', 'Les dépôts plongent dans l’éluant : ils se dissolvent dans la cuve au lieu de monter sur la plaque. Le niveau de l’éluant doit rester sous la ligne de dépôt.'),
+      F('des taches bien plus nettes, car les dépôts sont mieux mouillés', 'C’est l’inverse : les dépôts ne doivent pas être recouverts, sinon ils passent dans l’éluant de la cuve.'),
+      F('les mêmes taches, mais la migration est plus rapide', 'La vitesse n’est pas le problème : les dépôts, recouverts par l’éluant, quittent la plaque.'),
+      F('des taches de couleurs différentes de celles attendues', 'Les espèces ne changent pas de couleur : elles sont simplement dissoutes dans la cuve, et la plaque reste vide.'),
+    ] },
+  { id: 'ccm2gt-ana-concentre', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'Un dépôt beaucoup trop concentré',
+    enonce: 'Pour bien voir les taches, un élève dépose une grosse goutte très concentrée de chaque échantillon. Après la migration, les taches sont grandes, étalées vers le bas, et deux voisines se touchent.', q: 'Quelle est la conséquence principale ?', options: [
+      V('les hauteurs ne se lisent plus bien et se comparent mal', 'Des taches étalées et qui se touchent n’ont plus de centre net : la lecture des hauteurs est imprécise et la comparaison avec les références devient peu fiable. Il faut diluer et déposer une très petite goutte.'),
+      F('les espèces sont mieux séparées, car il y en a davantage', 'Plus de produit n’améliore pas la séparation : il étale les taches, qui se mélangent.'),
+      F('les espèces se sont transformées en d’autres espèces', 'La CCM ne transforme pas les espèces : le trop-plein de produit étale seulement les taches.'),
+      F('la hauteur du front est modifiée, donc plus petite', 'Le front dépend de l’éluant et de la durée de migration, pas de la quantité déposée.'),
+    ] },
+  { id: 'ccm2gt-ana-suite', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'Même hauteur avec un seul éluant : et maintenant ?',
+    enonce: 'Un laboratoire compare un arôme de synthèse et un arôme extrait de la nature, sur la même plaque, avec un seul éluant. Les deux taches sont à la même hauteur, à 1\u00a0mm près.', q: 'Quelle est la meilleure suite pour confirmer l’identité ?', options: [
+      V('refaire la CCM avec un autre éluant, puis comparer', 'Deux espèces différentes peuvent migrer pareil dans un éluant : un second éluant peut les séparer. Des hauteurs encore identiques renforceraient la conclusion, sans la prouver absolument.'),
+      F('conclure que les arômes sont identiques, c’est prouvé', 'Des taches alignées avec un seul éluant sont compatibles avec la même espèce : cela ne le prouve pas.'),
+      F('recommencer exactement la même CCM pour vérifier', 'Avec le même éluant, on retrouvera les mêmes hauteurs : cela ne lève pas le doute. Il faut changer d’éluant.'),
+      F('mesurer la couleur des deux taches à l’œil nu', 'Les arômes sont incolores : leurs taches ne se voient pas à l’œil nu. Un autre éluant donne bien plus d’informations.'),
+    ] },
+  { id: 'ccm2gt-ana-crayon', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'La ligne de dépôt au stylo',
+    enonce: 'Un élève trace la ligne de dépôt avec un stylo à bille noir, au lieu d’un crayon à papier. Il dépose ses échantillons et lance la migration.', q: 'Que risque-t-il de se passer ?', options: [
+      V('l’encre migre aussi et forme des taches parasites', 'L’encre est un mélange de colorants que l’éluant entraîne : elle monte sur la plaque et ajoute des taches qui se mêlent à celles de l’échantillon. Le graphite d’un crayon, lui, ne migre pas.'),
+      F('rien : la ligne est seulement un repère, quel que soit le crayon', 'Un repère au stylo n’est pas neutre : son encre peut migrer avec l’éluant. On utilise un crayon à papier.'),
+      F('les échantillons ne montent plus, car l’encre bloque l’éluant', 'L’éluant monte quand même ; ce qui pose problème, c’est que l’encre elle-même est entraînée.'),
+      F('les taches des échantillons changent de couleur', 'Les espèces gardent leur couleur : ce sont des taches supplémentaires, venues de l’encre, qui apparaissent.'),
+    ] },
   // ───────────────────────────── Changement d'état (2GT, sim 195) : fusion ou dissolution, proportionnalité, sens du transfert, palier, équation, comparaison de L
   { id: 'etat2gt-ana-dissolution', domaine: 'Changement d’état (2GT)', titre: 'Le sucre dans le thé : fusion ou dissolution ?',
     enonce: 'Un élève met un morceau de sucre dans un thé chaud. Le sucre « disparaît ». Il affirme : « le sucre a fondu, c’est une fusion : H₂O(s) → H₂O(l) ».', q: 'Que penser de son affirmation ?', options: [

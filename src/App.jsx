@@ -103,6 +103,7 @@ const SimulationPhoton = paresseux(() => import("./simulations/Photon"), "Simula
 const SimulationNiveaux = paresseux(() => import("./simulations/Niveaux"), "SimulationNiveaux");
 const SimulationStatiqueFluides1G = paresseux(() => import("./simulations/StatiqueFluides1G"), "SimulationStatiqueFluides1G");
 const SimulationEquationReaction = paresseux(() => import("./simulations/EquationReaction"), "SimulationEquationReaction");
+const SimulationCcm2gt = paresseux(() => import("./simulations/Ccm2gt"), "SimulationCcm");
 const SimulationChangementEtat2gt = paresseux(() => import("./simulations/ChangementEtat2gt"), "SimulationChangementEtat");
 const SimulationTestsChimiques2gt = paresseux(() => import("./simulations/TestsChimiques2gt"), "SimulationTestsChimiques");
 const SimulationCombustions = paresseux(() => import("./simulations/Combustions"), "SimulationCombustions");
@@ -434,6 +435,7 @@ const SIMULATIONS = [
     component: SimulationFamillesChimiques },
   { id:179, label:"Équation de réaction : écrire et ajuster", niveau:"2GT", icon:"⚗️", color:"#0f766e", component: SimulationEquationReaction },
   { id:195, label:"Changement d’état et énergie", niveau:"2GT", icon:"🧊", color:"#0369a1", component: SimulationChangementEtat2gt },
+  { id:197, label:"Chromatographie sur couche mince", niveau:"2GT", icon:"🧪", color:"#0f766e", component: SimulationCcm2gt },
   { id:59, label:"Les forces : modéliser une action mécanique", niveau:"2GT", icon:"➡️", color:"#0f766e",
     component: SimulationForcesVecteurs },
   { id:60, label:"Principe d’inertie : forces et mouvement", niveau:"2GT", icon:"⚖️", color:"#7c3aed",

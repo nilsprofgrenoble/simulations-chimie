@@ -4093,6 +4093,52 @@ export const ENONCES = [
         manque: null, solution: { txt: 'l’équation donne 2 H₂O pour 1 C₃H₆O : on multiplie par le nombre de molécules de propanone', val: c[3] * p.N, u: 'molécules H₂O' } };
     }),
   },
+  // ───────────────────────────── Chromatographie sur couche mince (2GT, sim 197) : écart de hauteur, rapport frontal, données utiles
+  {
+    id: 'ccm2gt-sapp-comparer', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'Comparer un arôme de synthèse et un arôme naturel', noms: ['Écart de hauteur entre les deux taches', 'Rapport frontal de la tache naturelle'],
+    gen: () => { const h1 = tire([2.4, 2.7, 3.1, 3.6, 4.2]); return { h1, h2: Math.round((h1 + tire([0.3, 0.5, 0.8, 1.2])) * 10) / 10, F: tire([5.5, 6.0, 6.5, 7.0]), t: tire([12, 15, 20, 25]), V: tire([8, 10, 12]) }; },
+    build: epure((p, q) => {
+      const tokens = {
+        h1: tok(`${nb(p.h1, 2)}\u00a0cm`, 'Hauteur de la tache de l’arôme de synthèse', p.h1, 'cm'),
+        h2: tok(`${nb(p.h2, 2)}\u00a0cm`, 'Hauteur de la tache de l’arôme naturel', p.h2, 'cm'),
+        F: tok(`${nb(p.F, 2)}\u00a0cm`, 'Distance parcourue par le front de l’éluant', p.F, 'cm'),
+        t: tok(`${p.t}\u00a0min`, 'Durée de la migration', p.t, 'min'),
+        V: tok(`${p.V} mL`, 'Volume d’éluant dans la cuve', p.V, 'mL'),
+      };
+      const raisons = { t: 'La durée de la migration ne dit rien sur les hauteurs déjà mesurées sur la plaque.', V: 'Le volume d’éluant ne change pas la comparaison des hauteurs ni le rapport frontal.', F: 'La distance du front ne sert pas à comparer deux hauteurs entre elles : il suffit de leur différence.', h1: 'La tache de synthèse ne sert pas pour le rapport frontal de la tache naturelle.' };
+      const debut = ['On compare par CCM un arôme de synthèse et un arôme extrait d’une gousse de vanille, sur la même plaque avec le même éluant (', T('V'), ' dans la cuve, migration de ', T('t'), '). Sous lampe UV, on mesure depuis la ligne de dépôt : la tache de synthèse est à ', T('h1'), ', la tache naturelle à ', T('h2'), ' et le front à ', T('F'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’écart de hauteur entre les deux taches ?'], utiles: ['h1', 'h2'], raisons,
+        cherche: { bonne: 'L’écart de hauteur entre les deux taches (en mm)', faux: ['La durée de migration de chaque tache (en min)', 'Le rapport entre le volume d’éluant et la hauteur', 'La masse d’arôme déposée sur la plaque (en mg)'] },
+        manque: null, solution: { txt: 'écart = |h₂ − h₁|, converti en mm (1\u00a0cm = 10\u00a0mm)', val: Math.round(Math.abs(p.h2 - p.h1) * 10), u: 'mm' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le rapport frontal Rf de la tache naturelle ?'], utiles: ['h2', 'F'], raisons,
+        cherche: { bonne: 'Le rapport frontal Rf de la tache naturelle (sans unité)', faux: ['La vitesse de la tache naturelle (en cm/min)', 'L’écart entre la tache naturelle et la ligne de dépôt (en mm)', 'La proportion d’éluant restant dans la cuve'] },
+        manque: null, solution: { txt: 'Rf = distance de la tache ÷ distance du front', val: p.h2 / p.F, u: '' } };
+    }),
+  },
+  {
+    id: 'ccm2gt-sapp-colorant', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'Un colorant de bonbon sur une plaque de CCM', noms: ['Rapport frontal de la tache', 'Distance parcourue par la tache sur une autre plaque'],
+    gen: () => { const F = tire([5.5, 6.0, 6.5, 7.0]); return { d: Math.round(tire([0.25, 0.35, 0.45, 0.55, 0.65, 0.75]) * F * 10) / 10, F, F2: tire([5.0, 6.0, 7.0]), t: tire([12, 15, 20, 25]), V: tire([8, 10, 12]) }; },
+    build: epure((p, q) => {
+      const R = Number((p.d / p.F).toPrecision(2));
+      const tokens = {
+        d: tok(`${nb(p.d, 2)}\u00a0cm`, 'Distance parcourue par la tache depuis la ligne de dépôt', p.d, 'cm'),
+        F: tok(`${nb(p.F, 2)}\u00a0cm`, 'Distance parcourue par le front depuis la ligne de dépôt', p.F, 'cm'),
+        R: tok(`${nb(R, 2)}`, 'Rapport frontal du colorant avec cet éluant', R, ''),
+        F2: tok(`${nb(p.F2, 2)}\u00a0cm`, 'Distance parcourue par le front sur la deuxième plaque', p.F2, 'cm'),
+        t: tok(`${p.t}\u00a0min`, 'Durée de la migration', p.t, 'min'),
+        V: tok(`${p.V} mL`, 'Volume d’éluant dans la cuve', p.V, 'mL'),
+        b: tok('1,0\u00a0cm', 'Hauteur de la ligne de dépôt au-dessus du bas de la plaque', 1.0, 'cm'),
+      };
+      const raisons = { t: 'La durée de la migration n’intervient pas : on compare des distances.', V: 'Le volume d’éluant ne change pas les distances lues sur la plaque.', b: 'Les distances sont déjà mesurées depuis la ligne de dépôt : sa hauteur par rapport au bas de la plaque n’intervient pas.', d: 'Cette distance a déjà servi à trouver le rapport frontal : pour la deuxième plaque, on utilise ce rapport.', F: 'Le front de la première plaque a déjà servi à trouver le rapport frontal : pour la deuxième plaque, on utilise celui de la deuxième.' };
+      const debut = ['On étudie un colorant de bonbon par CCM (', T('V'), ' d’éluant, migration de ', T('t'), ', ligne de dépôt à ', T('b'), ' du bas de la plaque). '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Sur une plaque, la tache du colorant est à ', T('d'), ' de la ligne de dépôt et le front à ', T('F'), ' de la même ligne. Quel est le rapport frontal Rf de la tache ?'], utiles: ['d', 'F'], raisons,
+        cherche: { bonne: 'Le rapport frontal Rf de la tache (sans unité)', faux: ['La vitesse de migration de la tache (en cm/min)', 'La hauteur de la ligne de dépôt (en cm)', 'La différence entre les distances du front et de la tache (en cm)'] },
+        manque: null, solution: { txt: 'Rf = distance de la tache ÷ distance du front', val: p.d / p.F, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Avec le même éluant, le rapport frontal du colorant est ', T('R'), '. Sur une deuxième plaque, le front est à ', T('F2'), ' de la ligne de dépôt. À quelle distance de la ligne de dépôt sera la tache ?'], utiles: ['R', 'F2'], raisons,
+        cherche: { bonne: 'La distance de la tache sur la deuxième plaque (en cm)', faux: ['Le rapport frontal sur la deuxième plaque (sans unité)', 'La durée de migration nécessaire (en min)', 'La distance entre la tache et le front (en cm)'] },
+        manque: null, solution: { txt: 'distance de la tache = Rf × distance du front', val: R * p.F2, u: 'cm' } };
+    }),
+  },
   // ───────────────────────────── Changement d'état (2GT, sim 195) : E = m × L, repérer les données utiles, convertir les grammes en kilogrammes
   {
     id: 'etat2gt-sapp-glacon', domaine: 'Changement d’état (2GT)', titre: 'Refroidir une boisson avec de la glace', noms: ['Énergie pour faire fondre la glace', 'Masse de glace qui fond'],
