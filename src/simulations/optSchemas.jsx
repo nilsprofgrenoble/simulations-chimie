@@ -58,53 +58,6 @@ export function GrapheEssais({ courbes, horizon = M.DUREE, mode = 'n', ticksY = 
 }
 
 // ====================================================
-//  MONTAGE DE DEAN-STARK (principe) : ballon chauffé, tube collecteur gradué, réfrigérant ; non à l'échelle
-// ====================================================
-export function SvgDeanStark() {
-  return (
-    <svg viewBox="0 0 400 374" style={{ ...stl, maxWidth: 420 }} role="img" aria-label="Schéma d’un montage de Dean-Stark : un ballon chauffé, surmonté d’un tube collecteur gradué où l’eau formée est recueillie, puis d’un réfrigérant parcouru par de l’eau froide.">
-      <defs><clipPath id="opt-ballon"><circle cx="130" cy="274" r="50"/></clipPath><clipPath id="opt-coll"><rect x="170" y="132" width="22" height="86" rx="3"/></clipPath></defs>
-      {/* chauffe-ballon */}
-      <path d="M 68 284 Q 68 340 130 340 Q 192 340 192 284" fill="#e2e8f0" stroke={COL.verre} strokeWidth="5" strokeLinecap="round"/>
-      {/* ballon */}
-      <g clipPath="url(#opt-ballon)"><rect x="70" y="262" width="120" height="70" fill="#dbeafe"/></g>
-      <circle cx="130" cy="274" r="50" fill="none" stroke={COL.verre} strokeWidth="3"/>
-      <path d="M 118 228 L 118 188 M 142 228 L 142 188" stroke={COL.verre} strokeWidth="3" fill="none" strokeLinecap="round"/>
-      <line x1="84" y1="262" x2="176" y2="262" stroke="#60a5fa" strokeWidth="2"/>
-      {/* tube central du Dean-Stark et joint rodé */}
-      <rect x="113" y="184" width="34" height="12" rx="2" fill="#f1f5f9" stroke={COL.verre} strokeWidth="2.4"/>
-      <path d="M 118 184 L 118 124 M 142 184 L 142 124" stroke={COL.verre} strokeWidth="3" fill="none" strokeLinecap="round"/>
-      <rect x="113" y="112" width="34" height="12" rx="2" fill="#f1f5f9" stroke={COL.verre} strokeWidth="2.4"/>
-      {/* bras vers le tube collecteur (haut) et retour (bas) */}
-      <path d="M 142 134 L 170 142" stroke={COL.verre} strokeWidth="3" fill="none" strokeLinecap="round"/>
-      <path d="M 142 152 L 170 148" stroke="none" fill="none"/>
-      <path d="M 170 166 L 142 176" stroke={COL.verre} strokeWidth="3" fill="none" strokeLinecap="round"/>
-      {/* tube collecteur gradué */}
-      <g clipPath="url(#opt-coll)"><rect x="170" y="132" width="22" height="86" fill="#fef9c3"/><rect x="170" y="184" width="22" height="34" fill={COL.eau}/></g>
-      <rect x="170" y="132" width="22" height="86" rx="3" fill="none" stroke={COL.verre} strokeWidth="3"/>
-      {[192, 200, 208].map(y => <line key={y} x1="170" y1={y} x2="178" y2={y} stroke={COL.verre} strokeWidth="1.8"/>)}
-      <line x1="170" y1="184" x2="192" y2="184" stroke="#2563eb" strokeWidth="1.6"/>
-      {/* réfrigérant */}
-      <rect x="121" y="20" width="18" height="92" fill="white" stroke={COL.verre} strokeWidth="3"/>
-      <rect x="106" y="40" width="48" height="58" fill="#dbeafe" stroke={COL.verre} strokeWidth="3"/>
-      <rect x="121" y="40" width="18" height="58" fill="white" stroke={COL.verre} strokeWidth="2.4"/>
-      <path d="M 154 52 L 170 52 M 154 90 L 170 90" stroke={COL.verre} strokeWidth="3" strokeLinecap="round"/>
-      <Fl x1={166} y1={90} x2={166} y2={78} c={COL.bleu} w={2.4}/>
-      <Fl x1={166} y1={52} x2={166} y2={40} c={COL.bleu} w={2.4}/>
-      {/* légendes */}
-      <Tx s={17.5} x={176} y={32} a="start">sortie de l’eau</Tx>
-      <Tx s={17.5} x={176} y={104} a="start">entrée d’eau froide</Tx>
-      <Tx s={17.5} x={100} y={72} a="end">réfrigérant</Tx>
-      <Tx s={17.5} x={206} y={160} a="start">tube collecteur</Tx>
-      <Tx s={17.5} x={206} y={180} a="start">gradué</Tx>
-      <Tx s={17.5} x={206} y={208} a="start" c={COL.bleu}>eau recueillie</Tx>
-      <Tx s={17.5} x={64} y={282} a="end">ballon</Tx>
-      <Tx s={17.5} x={198} y={334} a="start">chauffe-ballon</Tx>
-      <Tx x={392} y={368} a="end" c={COL.gris} w={600} s={17.5} halo={false}>schéma non à l’échelle</Tx>
-    </svg>);
-}
-
-// ====================================================
 //  CARTES « À RETENIR » (viewBox 320, textes ≥ 15,5)
 // ====================================================
 // 1. rendement : n_obtenue et n_max sur la courbe
