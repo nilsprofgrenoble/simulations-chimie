@@ -5034,6 +5034,30 @@ export const ENONCES = [
         manque: null, solution: { txt: 'P_A − P_B = ½ρ(v_B² − v_A²), avec v_B = v_A × frac(d_A²|d_B²)', val: 0.5 * 1000 * (vB ** 2 - p.vA ** 2) / 1000, u: 'kPa' } };
     },
   },
+  // ───────────────────────────── Poussée d'Archimède (TG, sim 213) : poussée sur un flotteur à l'équilibre ou sur un cube maintenu immergé
+  {
+    id: 'arc-sapp-flotteur', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Un cube de bois dans un bassin', noms: ['Poussée sur le cube qui flotte', 'Poussée sur le cube maintenu immergé'],
+    gen: () => ({ rhoB: tire([500, 600, 700, 750]), V: tire([200, 500, 800, 1000]), rhoE: tire([1000, 1030]), th: tire([12, 15, 18, 22]), h: tire([40, 50, 60, 80]) }),
+    build: (p, q) => {
+      const tokens = {
+        rhoB: tok(`${nb(p.rhoB, 0)} kg·m⁻³`, 'Masse volumique du bois du cube', p.rhoB, 'kg·m⁻³'),
+        V: tok(`${nb(p.V, 0)} cm³`, 'Volume du cube', p.V, 'cm³'),
+        rhoE: tok(`${nb(p.rhoE, 0)} kg·m⁻³`, 'Masse volumique de l’eau du bassin', p.rhoE, 'kg·m⁻³'),
+        g: tok('9,8 N·kg⁻¹', 'Intensité de la pesanteur', 9.8, 'N·kg⁻¹'),
+        th: tok(`${p.th} °C`, 'Température de l’eau du bassin', p.th, '°C'),
+        h: tok(`${p.h} cm`, 'Profondeur du bassin', p.h, 'cm'),
+      };
+      const debut = ['Un cube de bois, de volume ', T('V'), ' et de masse volumique ', T('rhoB'), ', est lâché dans un bassin d’eau de masse volumique ', T('rhoE'), '. L’eau est à ', T('th'), ' et le bassin a une profondeur de ', T('h'), '. On prend g = ', T('g'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Le cube flotte, immobile. Quelle est la norme de la poussée d’Archimède exercée par l’eau sur lui ?'], utiles: ['rhoB', 'V', 'g'], raisons: {
+          rhoE: 'À l’équilibre, la poussée est égale au poids du cube : la masse volumique de l’eau fixe le volume immergé, mais pas la valeur de la poussée.', th: 'La température de l’eau n’intervient pas dans le calcul de la poussée : seule compte sa masse volumique, déjà donnée.', h: 'La profondeur du bassin ne change pas la poussée sur un flotteur ni sur un solide immergé.' },
+        cherche: { bonne: 'La poussée d’Archimède Π (en N)', faux: ['Le volume immergé du cube (en cm³)', 'La masse du cube (en g)', 'La pression au fond du bassin (en Pa)'] },
+        manque: null, solution: { txt: 'À l’équilibre Π = P = ρ_bois × V × g, avec V converti en m³', val: p.rhoB * p.V * 1e-6 * 9.8, u: 'N' } };
+      return { tokens, derivees: [], texte: [...debut, 'On maintient maintenant le cube totalement immergé. Quelle est la norme de la poussée d’Archimède exercée par l’eau sur lui ?'], utiles: ['rhoE', 'V', 'g'], raisons: {
+          rhoB: 'La masse volumique du bois fixe le poids du cube, mais pas la poussée : Π = ρ_fluide × V_immergé × g ne dépend pas de la nature du solide.', th: 'La température de l’eau n’intervient pas dans l’expression de la poussée (la masse volumique de l’eau est donnée).', h: 'La poussée ne dépend pas de la profondeur du bassin ni de celle du cube.' },
+        cherche: { bonne: 'La poussée d’Archimède Π (en N)', faux: ['Le poids du cube (en N)', 'La force à exercer pour le maintenir immergé (en N)', 'Le volume d’eau déplacé (en L)'] },
+        manque: null, solution: { txt: 'Π = ρ_eau × V × g, avec V converti en m³ (cube totalement immergé)', val: p.rhoE * p.V * 1e-6 * 9.8, u: 'N' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

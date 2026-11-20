@@ -4659,6 +4659,37 @@ export const PLAUSIBLES = [
       F('incohérente : elle devrait dépendre de la masse volumique', 'ρ se simplifie dans ρ g h = ½ρ v² : la vitesse de sortie n’en dépend pas.'),
     ] }),
 
+  // ───────────────────────────── Poussée d'Archimède (TG, sim 213) : plausible ?
+  P({ id: 'arc-val-poids', domaine: 'Poussée d’Archimède : origine, expression et flottaison', niveau: 2, titre: 'Un dynamomètre qui indique plus dans l’eau', plausible: false,
+    enonce: 'Un cube suspendu à un dynamomètre indique 12,0 N dans l’air. Un élève le plonge entièrement dans l’eau douce, sans le toucher, et lit 15,0 N. Il affirme : « L’eau alourdit le cube, c’est normal. »',
+    reperes: [['Dans l’air', 'poids P = 12,0 N'], ['Dans l’eau', 'la poussée est dirigée vers le haut'], ['Indication immergé', 'F = P − Π']],
+    ver: 'L’eau exerce sur le cube une poussée vers le haut : le fil retient moins, F = P − Π est inférieure à P. Une indication de 15,0 N est impossible ; pour un cube de 12,0 N, F est inférieure à 12,0 N.',
+    q2: 'Que penser de cette lecture ?',
+    options: [
+      V('impossible : F doit être inférieure à 12,0 N', 'La poussée d’Archimède est vers le haut, comme la tension du fil : F = P − Π est plus petite que le poids P = 12,0 N.'),
+      F('plausible : l’eau ajoute son poids à celui du cube', 'L’eau ne s’ajoute pas au cube : elle exerce sur lui une force vers le haut, qui diminue l’indication. Le poids du cube lui-même reste égal à 12,0 N.'),
+      F('plausible si le cube est très profond', 'La poussée ne dépend pas de la profondeur du cube (fluide incompressible) et reste vers le haut : l’indication ne peut pas dépasser le poids dans l’air.'),
+    ] }),
+  P({ id: 'arc-val-iceberg', domaine: 'Poussée d’Archimède : origine, expression et flottaison', niveau: 1, titre: 'La part immergée d’un iceberg', plausible: true,
+    enonce: 'La glace a une masse volumique de 920 kg·m⁻³ ; l’eau de mer, de 1 030 kg·m⁻³. Un élève affirme qu’un iceberg flottant, immobile, a environ 89 % de son volume sous la surface.',
+    reperes: [['Équilibre d’un flotteur', 'poids = poussée'], ['Fraction immergée', 'rapport des masses volumiques'], ['Masses volumiques', '920 et 1 030 kg·m⁻³']],
+    ver: 'À l’équilibre P = Π donne frac(V immergé|V) = frac(ρ glace|ρ eau de mer) = frac(920|1 030) = 0,89 : environ 89 % du volume est immergé. L’affirmation est cohérente avec le modèle.',
+    q2: 'Que penser de cette affirmation ?',
+    options: [
+      V('cohérente : le rapport 920 sur 1 030 vaut environ 0,89', 'À l’équilibre, le poids de l’iceberg égale la poussée : la fraction immergée est le rapport des masses volumiques, ici 0,89.'),
+      F('incohérente : la moitié du volume devrait être immergée', 'La fraction immergée dépend du rapport des masses volumiques : elle n’est de 50 % que si la glace avait la moitié de la masse volumique de l’eau.'),
+      F('incohérente : il devrait être totalement immergé', 'Un iceberg flotte parce que sa masse volumique est inférieure à celle de l’eau de mer : il n’est donc pas totalement immergé.'),
+    ] }),
+  P({ id: 'arc-val-unite', domaine: 'Poussée d’Archimède : origine, expression et flottaison', niveau: 2, titre: 'Poussée sur un cube d’un litre', plausible: false,
+    enonce: 'Un cube de volume 1,0 L est totalement immergé dans l’eau douce (1 000 kg·m⁻³). Un élève calcule : « Π = 1 000 × 1,0 × 9,8 = 9 800 N, soit le poids d’une tonne. »',
+    reperes: [['Ordre de grandeur', '1 L d’eau a une masse de 1 kg'], ['Unités', '1 L = 10⁻³ m³'], ['Poids de 1 kg', 'environ 10 N']],
+    ver: 'Le volume doit être en m³ : 1,0 L = 1,0 × 10⁻³ m³, donc Π = 1 000 × 1,0 × 10⁻³ × 9,8 = 9,8 N, soit le poids de 1 L d’eau (1 kg). Le résultat de l’élève est 1 000 fois trop grand.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il a utilisé 1,0 L sans le convertir en m³', 'Dans l’expression de Π, V doit être en m³ si ρ est en kg·m⁻³ : 1,0 L = 1,0 × 10⁻³ m³, ce qui donne Π = 9,8 N.'),
+      F('il a utilisé la mauvaise masse volumique pour l’eau', 'La masse volumique de l’eau, 1 000 kg·m⁻³, est correcte ; c’est l’unité du volume qui est fausse.'),
+      F('il a oublié de multiplier par la masse', 'La masse du cube n’intervient pas dans la poussée : Π = ρ_fluide × V_immergé × g.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

@@ -111,6 +111,7 @@ export const EXOS_DE_SIM = {
   215: [/(^|\.)gpf-/, /plausible\.gpf-/],                                                                           // Gaz parfait : équation d’état et limites du modèle (TG)
   212: [/(^|\.)thm-/, /plausible\.thm-/],                                                                           // Loi de Newton et thermostat : température d’un système au cours du temps (TG)
   214: [/(^|\.)ber-/, /plausible\.ber-/],                                                                           // Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi (TG)
+  213: [/(^|\.)arc-/, /plausible\.arc-/],                                                                           // Poussée d’Archimède : origine, expression et flottaison (TG)
   168: [/(^|\.)nwt-/, /plausible\.nwt-/],
   175: [/(^|\.)pes-/, /plausible\.pes-/],                                                                           // Mouvement dans un champ de pesanteur uniforme (TG)
   185: [/(^|\.)icc-/, /plausible\.icc-/],                                                                           // Incertitudes-types composées et comparaison à une valeur de référence (TG)
