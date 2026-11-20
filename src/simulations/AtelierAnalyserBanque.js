@@ -5172,6 +5172,28 @@ export const PREVOIR = [
       F('le solide disparaît sans qu’il y ait de bulles', 'Le calcaire ne disparaît que par la réaction, qui forme du gaz CO₂ : on verrait des bulles.'),
       F('des bulles reprennent seulement si on ajoute aussi du calcaire', 'Il reste déjà du calcaire (il était en excès) : il n’est pas nécessaire d’en ajouter.'),
     ] },
+  // ───────────────────────────── Diffraction d'une onde : angle caractéristique (TG, sim 181)
+  { id: 'dif-ana-fente', domaine: 'Diffraction d’une onde : angle caractéristique', titre: 'Une fente deux fois plus fine',
+    enonce: 'Un laser éclaire une fente verticale de largeur a ; l’écran est à D = 2,00 m. On remplace la fente par une autre, deux fois plus fine (largeur frac(a|2)), sans rien changer d’autre. La largeur de la tache centrale vaut L = frac(2 λ D|a).', q: 'Que devient la largeur L de la tache centrale ?', options: [
+      V('elle est multipliée par 2 : la lumière s’étale plus', 'L est inversement proportionnelle à a : si a est divisée par 2, L est multipliée par 2. Plus la fente est fine, plus la lumière s’étale.'),
+      F('elle est divisée par 2, comme la largeur de la fente', 'La tache ne rétrécit pas avec la fente : au contraire, plus la fente est fine, plus la diffraction est marquée. L varie en sens inverse de a.'),
+      F('elle ne change pas, car λ et D restent les mêmes', 'λ et D inchangées ne suffisent pas : a figure au dénominateur de L = frac(2 λ D|a), donc L change quand a change.'),
+      F('elle est multipliée par 4, car L dépend de a au carré', 'a intervient à la puissance 1, pas au carré : diviser a par 2 multiplie L par 2, pas par 4.'),
+    ] },
+  { id: 'dif-ana-couleur', domaine: 'Diffraction d’une onde : angle caractéristique', titre: 'Du laser rouge au laser vert',
+    enonce: 'Une fente de largeur a fixée est éclairée successivement par un laser rouge (650 nm), puis par un laser vert (532 nm). L’écran reste à la même distance de la fente. On rappelle que θ ≈ frac(λ|a).', q: 'Comment évolue la largeur de la tache centrale quand on passe du rouge au vert ?', options: [
+      V('elle diminue : L est proportionnelle à λ, plus petite pour le vert', 'L = frac(2 λ D|a) est proportionnelle à λ : 532 nm étant plus petit que 650 nm, la tache est environ 18 % moins large avec le vert.'),
+      F('elle augmente, car les photons de la lumière verte sont plus énergétiques', 'L’énergie des photons n’intervient pas ici : seule compte la longueur d’onde, et elle est plus petite pour le vert, donc la diffraction est moins marquée.'),
+      F('elle ne change pas : seule la largeur de la fente compte', 'La diffraction dépend du rapport frac(λ|a) : à a fixée, changer λ change θ, donc la largeur de la tache.'),
+      F('elle disparaît : la lumière verte ne se diffracte pas', 'Toutes les ondes se diffractent. Avec λ = 532 nm et a fixée, la diffraction est seulement un peu moins marquée qu’avec 650 nm.'),
+    ] },
+  { id: 'dif-ana-porte', domaine: 'Diffraction d’une onde : angle caractéristique', titre: 'Un haut-parleur derrière une porte',
+    enonce: 'Dans un couloir, un haut-parleur émet face à une porte ouverte de largeur 0,80 m, d’abord un son aigu de 3 400 Hz, puis un son grave de 340 Hz. Vous écoutez depuis une pièce voisine, hors de l’axe de la porte. Célérité du son dans l’air (valeur de référence) : 340 m/s.', q: 'Quel son entend-on le mieux hors de l’axe de la porte ?', options: [
+      V('le grave : λ = 1,0 m dépasse a, il se diffracte davantage', 'λ = frac(v|f) = 1,0 m pour 340 Hz et 0,10 m pour 3 400 Hz. Le grave a le plus grand rapport frac(λ|a) : il s’étale dans toutes les directions, alors que l’aigu reste plus concentré dans l’axe.'),
+      F('l’aigu, car sa fréquence plus élevée le fait mieux contourner la porte', 'Une fréquence élevée signifie une longueur d’onde courte (λ = frac(v|f)) donc moins de diffraction : l’aigu est plus concentré dans l’axe.'),
+      F('les deux de la même façon : la diffraction ne dépend pas de la fréquence', 'La diffraction dépend de frac(λ|a), et λ dépend de la fréquence : les deux sons ne sont pas diffractés de la même façon.'),
+      F('aucun des deux : un son ne peut jamais contourner une porte', 'Un son contourne bien une porte quand λ est comparable à a ou plus grande : c’est justement ce qui permet d’entendre sans voir.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

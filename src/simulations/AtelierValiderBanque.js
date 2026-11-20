@@ -3750,6 +3750,26 @@ export const PLAUSIBLES = [
       F('il a pris la quantité d’acétone consommée : 0,020 mol', 'L’acétone consommée vaut 1 × 0,030 = 0,030 mol, pas 0,020 mol.'),
       F('il a divisé 0,060 par 2 sans retirer ce qui est consommé', 'Il aurait alors annoncé 0,030, pas 0,020.'),
     ] }),
+  P({ id: 'dif-val-degres', domaine: 'Diffraction d’une onde : angle caractéristique', niveau: 2, titre: 'Angle de diffraction : radians ou degrés ?', plausible: false,
+    enonce: 'Un laser de longueur d’onde 650 nm éclaire une fente de largeur 0,10 mm. Un élève calcule θ = frac(λ|a) = frac(650 × 10⁻⁹|0,10 × 10⁻³) = 6,5 × 10⁻³ et conclut : « l’angle caractéristique est θ = 0,0065° ».',
+    reperes: [['Unité de θ dans θ = frac(λ|a)', 'le radian'], ['Conversion', '1 rad ≈ 57,3°'], ['Ordre de grandeur', 'quelques dixièmes de degré pour un laser et une fente de 0,1 mm']],
+    ver: 'Le quotient frac(λ|a) est un angle en radians : θ = 6,5 × 10⁻³ rad, soit 6,5 × 10⁻³ × 57,3 ≈ 0,37°. L’élève a lu le nombre comme des degrés : son résultat est environ 57 fois trop petit.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il a pris des radians pour des degrés', 'Le calcul numérique est juste, mais θ = frac(λ|a) est en radians : 6,5 × 10⁻³ rad ≈ 0,37°.'),
+      F('il a mal converti la longueur d’onde en mètres', '650 nm = 650 × 10⁻⁹ m et 0,10 mm = 0,10 × 10⁻³ m : les conversions sont correctes, le quotient 6,5 × 10⁻³ aussi.'),
+      F('il aurait dû diviser a par λ au lieu de λ par a', 'La relation est bien θ = frac(λ|a) : en inversant, on trouverait un nombre très grand (plus de 150), et non un angle.'),
+    ] }),
+  P({ id: 'dif-val-tache', domaine: 'Diffraction d’une onde : angle caractéristique', niveau: 1, titre: 'Largeur de la tache centrale d’un laser vert', plausible: true,
+    enonce: 'Un laser vert (λ = 532 nm) éclaire une fente de largeur 0,10 mm ; l’écran est à 2,0 m de la fente. Un élève calcule L = frac(2 λ D|a) et trouve une tache centrale de 21 mm de large.',
+    reperes: [['Relation', 'L = frac(2 λ D|a), toutes les longueurs en mètres'], ['Conversions', '532 nm = 5,32 × 10⁻⁷ m ; 0,10 mm = 1,0 × 10⁻⁴ m'], ['Ordre de grandeur', 'quelques millimètres à quelques centimètres sur un écran à 2 m']],
+    ver: 'L = frac(2 × 5,32 × 10⁻⁷ × 2,0|1,0 × 10⁻⁴) = 2,1 × 10⁻² m = 21 mm : une tache de l’ordre de 2 cm sur un écran à 2 m est cohérente avec ce que l’on observe pour une fente de 0,1 mm.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('plausible : L = frac(2 λ D|a) ≈ 21 mm, de l’ordre du centimètre', 'Avec des longueurs en mètres, 2 × 5,32 × 10⁻⁷ × 2,0 divisé par 1,0 × 10⁻⁴ donne 2,1 × 10⁻² m : le résultat est juste et réaliste.'),
+      F('pas plausible : plus la fente est large, plus la tache est large, donc 21 mm est trop peu', 'C’est l’inverse : L = frac(2 λ D|a) est inversement proportionnelle à a, donc une fente fine (0,10 mm) donne une tache large. 21 mm est cohérent.'),
+      F('plausible, mais seulement si l’écran est placé à 20 m', 'L est proportionnelle à D : à 2,0 m, L = 21 mm. Il n’est pas nécessaire d’éloigner l’écran de dix fois pour obtenir ce résultat.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────
