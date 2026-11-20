@@ -1529,5 +1529,13 @@
  "37:prevoir:dif-ana-porte": "ANA636",
  "77:plausible:dif-val-degres": "VAL403",
  "77:plausible:dif-val-tache": "VAL404",
- "36:dif-calcul": "REA102"
+ "36:dif-calcul": "REA102",
+ "34:you-sapp-young.0": "SAPP390",
+ "34:you-sapp-young.1": "SAPP391",
+ "37:prevoir:you-ana-trous": "ANA637",
+ "37:prevoir:you-ana-couleur": "ANA638",
+ "37:prevoir:you-ana-sombre": "ANA639",
+ "77:plausible:you-val-unite": "VAL405",
+ "77:plausible:you-val-pointe": "VAL406",
+ "36:you-calcul": "REA103"
 }

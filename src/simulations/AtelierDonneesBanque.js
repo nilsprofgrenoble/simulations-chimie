@@ -4023,6 +4023,38 @@ export const ENONCES = [
         manque: null, solution: { txt: 'L = frac(2 λ D|a)', val: 2 * p.lam * p.D / p.a, u: 'mm' } };
     },
   },
+  // ───────────────────────────── Trous d’Young (TG, sim 182) : interfrange, distance entre les trous
+  {
+    id: 'you-sapp-young', domaine: 'Trous d’Young et interfrange', titre: 'Un laser et deux trous', noms: ['Interfrange sur l’écran', 'Distance entre les trous'],
+    gen: () => {
+      let c = null;
+      for (let k = 0; k < 60 && !c; k++) {
+        const lam = tire([405, 450, 532, 633, 650]), a = tire([0.20, 0.30, 0.40, 0.50, 0.60, 0.80]), D = tire([1.5, 2.0, 2.5, 3.0]), i = lam * 1e-9 * D / (a * 1e-3) * 1e3;
+        if (i >= 1.0 && i <= 8.0) c = { lam, a, D, i };
+      }
+      c = c || { lam: 650, a: 0.50, D: 2.5, i: 3.25 };
+      const N = tire([4, 5, 6, 8]);
+      return { ...c, N, d: Math.round(N * c.i * 10) / 10, P: tire([1, 3, 5]), w: tire([20, 30, 50]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        lam: tok(`${p.lam} nm`, 'Longueur d’onde du laser', p.lam, 'nm'),
+        D: tok(`${nb(p.D, 2)} m`, 'Distance entre la plaque et l’écran', p.D, 'm'),
+        P: tok(`${p.P} mW`, 'Puissance du laser', p.P, 'mW'),
+        w: tok(`${p.w} µm`, 'Diamètre de chaque trou', p.w, 'µm'),
+        ...(q === 0 ? { a: tok(`${nb(p.a, 2)} mm`, 'Distance entre les deux trous', p.a, 'mm') }
+          : { d: tok(`${nb(p.d, 1)} mm`, 'Distance mesurée entre deux franges brillantes', p.d, 'mm'), N: tok(`${p.N}`, 'Nombre d’interfranges entre ces deux franges', p.N, '') }),
+      };
+      const debut = ['Un laser de longueur d’onde ', T('lam'), ' et de puissance ', T('P'), ' éclaire une plaque opaque percée de deux trous très fins, de diamètre ', T('w'), ' chacun. Un écran est placé à la distance ', T('D'), ' de la plaque : on y observe des franges brillantes et sombres régulièrement espacées. '];
+      const raisons = { P: 'La puissance du laser règle l’éclat des franges, pas leur position : elle n’intervient pas dans l’interfrange.', w: 'Le diamètre des trous ne change pas la position des franges (il règle seulement l’étendue de la figure) : l’interfrange ne dépend que de λ, D et de la distance entre les trous.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Les deux trous sont distants de ', T('a'), '. Quelle est l’interfrange sur l’écran ?'], utiles: ['lam', 'a', 'D'], raisons,
+        cherche: { bonne: 'L’interfrange i entre deux franges brillantes (en mm)', faux: ['La différence de chemin δ au point central de l’écran (en nm)', 'La largeur totale de la figure visible sur l’écran (en mm)', 'La période de l’onde lumineuse du laser (en fs)'] },
+        manque: null, solution: { txt: 'i = frac(λ × D|a), avec λ et a convertis en mètres', val: p.i, u: 'mm' } };
+      return { tokens, derivees: ['interfrange mesurée : i = frac(d|N)'], texte: [...debut, 'On mesure sur l’écran la distance ', T('d'), ' entre deux franges brillantes séparées par ', T('N'), ' interfranges. Quelle est la distance a entre les deux trous ?'], utiles: ['lam', 'D', 'd', 'N'], raisons,
+        cherche: { bonne: 'La distance a entre les deux trous (en mm)', faux: ['L’interfrange i sur l’écran (en mm)', 'La différence de chemin δ au point mesuré (en nm)', 'La longueur d’onde du laser (en nm)'] },
+        manque: null, solution: { txt: 'i = frac(d|N), puis a = frac(λ × D|i)', val: p.a, u: 'mm' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -4067,6 +4099,7 @@ const SYMBOLES = {
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
   'phot1g-sapp-photon': { lam: 'λ', c: 'c', h: 'h', P: 'P', d: 'd', t: 'Δt' },
+  'you-sapp-young': { lam: 'λ', a: 'a', D: 'D', P: 'P', w: '', d: 'd', N: 'N' },
   'niv1g-sapp-transition': { Ei: 'E_i', Ef: 'E_f', h: 'h', c: 'c', ev: '1 eV', P: 'P', U: 'U', t: 'Δt' },
 };
 export function nouvelEnonce(id, q, forceParams) {
