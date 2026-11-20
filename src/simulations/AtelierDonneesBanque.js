@@ -4099,6 +4099,50 @@ export const ENONCES = [
         manque: null, solution: { txt: 'l’équation donne 2 H₂O pour 1 C₃H₆O : on multiplie par le nombre de molécules de propanone', val: c[3] * p.N, u: 'molécules H₂O' } };
     }),
   },
+  // ───────────────────────────── Synthèse et reflux (2GT, sim 204) : lire un protocole de synthèse (volumes, capacité du ballon, durées)
+  {
+    id: 'syn2gt-sapp-ballon', domaine: 'Synthèse et reflux (2GT)', titre: 'Choisir le ballon pour la synthèse de l’arôme de banane', noms: ['Volume du mélange réactionnel', 'Capacité minimale du ballon'],
+    gen: () => ({ Va: tire([10, 12, 15, 20]), Vb: tire([8, 10, 12, 15]), t: tire([30, 45, 60, 90]), T: tire([90, 100, 110]), ng: tire([3, 4, 5]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        Va: tok(`${p.Va}\u00a0mL`, 'Volume d’alcool isoamylique du protocole', p.Va, 'mL'),
+        Vb: tok(`${p.Vb}\u00a0mL`, 'Volume d’acide éthanoïque du protocole', p.Vb, 'mL'),
+        r: tok('la moitié', 'Fraction maximale du ballon occupée par le liquide', 0.5, ''),
+        t: tok(`${p.t}\u00a0min`, 'Durée du chauffage à reflux', p.t, 'min'),
+        T: tok(`${p.T}\u00a0°C`, 'Température du chauffe-ballon', p.T, '°C'),
+        ng: tok(`${p.ng} grains`, 'Nombre de grains de pierre ponce', p.ng, ''),
+      };
+      const raisons = { t: 'La durée du chauffage ne change ni le volume du mélange ni la capacité du ballon.', T: 'La température du chauffe-ballon n’intervient pas dans le choix du ballon.', ng: 'Quelques grains de pierre ponce ont un volume négligeable : ils ne changent pas le choix du ballon.', r: 'La règle sur la moitié du ballon sert au choix de la capacité, pas au volume du mélange.' };
+      const debut = ['Un protocole de synthèse de l’arôme de banane indique : introduire ', T('Va'), ' d’alcool isoamylique et ', T('Vb'), ' d’acide éthanoïque dans le ballon, ajouter ', T('ng'), ' de pierre ponce et quelques gouttes de catalyseur (volume négligeable), puis chauffer à reflux pendant ', T('t'), ' avec le chauffe-ballon réglé à ', T('T'), '. Le protocole précise que le liquide ne doit pas occuper plus de ', T('r'), ' du ballon. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le volume du mélange réactionnel ?'], utiles: ['Va', 'Vb'], raisons: { ...raisons, r: 'La règle sur la moitié ne sert pas encore : on cherche d’abord le volume du mélange.' },
+        cherche: { bonne: 'Le volume du mélange (en mL)', faux: ['La durée totale de la synthèse (en min)', 'La masse de pierre ponce ajoutée (en g)', 'La température d’ébullition du mélange (en °C)'] },
+        manque: null, solution: { txt: 'volume du mélange = volume d’alcool + volume d’acide (le catalyseur est négligeable)', val: p.Va + p.Vb, u: 'mL' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle capacité minimale doit avoir le ballon ?'], utiles: ['Va', 'Vb', 'r'], raisons,
+        cherche: { bonne: 'La capacité minimale du ballon (en mL)', faux: ['Le volume de liquide à introduire (en mL)', 'La durée de chauffage du ballon (en min)', 'La quantité de pierre ponce nécessaire (en grains)'] },
+        manque: null, solution: { txt: 'le liquide occupe au plus la moitié du ballon : capacité minimale = 2 × (volume d’alcool + volume d’acide)', val: 2 * (p.Va + p.Vb), u: 'mL' } };
+    }),
+  },
+  {
+    id: 'syn2gt-sapp-duree', domaine: 'Synthèse et reflux (2GT)', titre: 'Les durées d’un chauffage à reflux', noms: ['Durée totale de la manipulation', 'Durée de refroidissement et de chauffage en heures'],
+    gen: () => ({ tp: tire([20, 30, 40]), tc: tire([30, 45, 60, 90]), tr: tire([15, 30]), V: tire([10, 15, 20]), T: tire([90, 100, 110]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        tp: tok(`${p.tp}\u00a0min`, 'Durée du montage et de la préparation', p.tp, 'min'),
+        tc: tok(`${p.tc}\u00a0min`, 'Durée du chauffage à reflux', p.tc, 'min'),
+        tr: tok(`${p.tr}\u00a0min`, 'Durée du refroidissement du ballon', p.tr, 'min'),
+        V: tok(`${p.V}\u00a0mL`, 'Volume d’alcool isoamylique du protocole', p.V, 'mL'),
+        T: tok(`${p.T}\u00a0°C`, 'Température du chauffe-ballon', p.T, '°C'),
+      };
+      const raisons = { V: 'Le volume de liquide n’intervient pas dans le calcul des durées.', T: 'La température du chauffe-ballon n’intervient pas dans le calcul des durées.', tp: 'La préparation du montage a lieu avant le chauffage : elle ne compte pas dans la durée de chauffage et de refroidissement.' };
+      const debut = ['Un protocole de synthèse prévoit : montage et préparation en ', T('tp'), ', puis chauffage à reflux pendant ', T('tc'), ' (chauffe-ballon à ', T('T'), ', ', T('V'), ' d’alcool isoamylique), puis refroidissement du ballon pendant ', T('tr'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la durée totale de la manipulation ?'], utiles: ['tp', 'tc', 'tr'], raisons: { V: raisons.V, T: raisons.T },
+        cherche: { bonne: 'La durée totale (en min)', faux: ['La durée de chauffage seule (en min)', 'Le volume de liquide chauffé (en mL)', 'La température finale du ballon (en °C)'] },
+        manque: null, solution: { txt: 'durée totale = préparation + chauffage + refroidissement', val: p.tp + p.tc + p.tr, u: 'min' } };
+      return { tokens, derivees: [], texte: [...debut, 'L’eau du réfrigérant circule pendant le chauffage et le refroidissement. Pendant combien d’heures circule-t-elle ?'], utiles: ['tc', 'tr'], raisons,
+        cherche: { bonne: 'La durée de circulation de l’eau (en h)', faux: ['Le volume d’eau consommé (en L)', 'La durée totale de la manipulation (en min)', 'La température de l’eau du réfrigérant (en °C)'] },
+        manque: null, solution: { txt: 'durée = chauffage + refroidissement, convertie en heures (60\u00a0min = 1\u00a0h)', val: (p.tc + p.tr) / 60, u: 'h' } };
+    }),
+  },
   // ───────────────────────────── Chromatographie sur couche mince (2GT, sim 197) : écart de hauteur, rapport frontal, données utiles
   {
     id: 'ccm2gt-sapp-comparer', domaine: 'Chromatographie sur couche mince (2GT)', titre: 'Comparer un arôme de synthèse et un arôme naturel', noms: ['Écart de hauteur entre les deux taches', 'Rapport frontal de la tache naturelle'],
