@@ -1728,5 +1728,20 @@
  "37:prevoir:cin-ana-capteur": "ANA705",
  "77:plausible:cin-val-temperature": "VAL460",
  "77:plausible:cin-val-catalyseur": "VAL461",
- "36:cin-calcul": "REA118"
+ "36:cin-calcul": "REA118",
+ "34:pur2gt-sapp-flacon.0": "SAPP447",
+ "34:pur2gt-sapp-flacon.1": "SAPP448",
+ "34:pur2gt-sapp-saumure.0": "SAPP449",
+ "34:pur2gt-sapp-saumure.1": "SAPP450",
+ "37:prevoir:pur2gt-ana-minerale": "ANA706",
+ "37:prevoir:pur2gt-ana-courbe-melange": "ANA707",
+ "37:prevoir:pur2gt-ana-limite": "ANA708",
+ "37:prevoir:pur2gt-ana-cire": "ANA709",
+ "37:prevoir:pur2gt-ana-or18": "ANA710",
+ "77:plausible:pur2gt-val-air-pur": "VAL462",
+ "77:plausible:pur2gt-val-ecart-precision": "VAL463",
+ "77:plausible:pur2gt-val-acetone-ok": "VAL464",
+ "77:plausible:pur2gt-val-saumure-pur": "VAL465",
+ "77:plausible:pur2gt-val-huile-pure": "VAL466",
+ "36:pur2gt-calcul": "REA119"
 }

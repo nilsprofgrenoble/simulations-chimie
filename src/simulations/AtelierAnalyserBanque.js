@@ -5687,6 +5687,42 @@ export const PREVOIR = [
       F('un conductimètre : les ions de la solution varient', 'L’équation ne fait intervenir aucun ion : la conductivité reste pratiquement constante.'),
       F('un pH-mètre : l’eau oxygénée est consommée donc le pH change', 'Les ions oxonium et hydroxyde n’interviennent pas dans l’équation : le pH n’est pas lié à l’avancement de cette transformation.'),
     ] },
+  // ───────────────────────────── Corps pur ou mélange (2GT, sim 196) : homogène ≠ pur, courbe d'un mélange, compatibilité et limites du thermomètre, plage de fusion, alliage
+  { id: 'pur2gt-ana-minerale', domaine: 'Corps purs et mélanges (2GT)', titre: 'Une eau minérale est-elle un corps pur ?',
+    enonce: 'Sur l’étiquette d’une eau minérale plate, on lit : calcium 78 mg/L, magnésium 24 mg/L, sodium 5 mg/L, bicarbonates 357 mg/L. Un élève affirme : « elle est transparente et on ne voit qu’un liquide, c’est donc un corps pur ».', q: 'Que penser de cette eau minérale ?', options: [
+      V('c’est un mélange homogène : de l’eau et des sels dissous', 'L’étiquette liste plusieurs espèces chimiques dissoutes dans l’eau : c’est un mélange. On n’y voit qu’un liquide, donc il est homogène.'),
+      F('c’est un corps pur, car on ne voit qu’un liquide transparent', 'Voir un seul liquide prouve seulement que le mélange est homogène. Un corps pur ne contient qu’une espèce chimique ; or l’étiquette en cite plusieurs.'),
+      F('c’est un mélange hétérogène, car il contient plusieurs espèces chimiques', 'Hétérogène veut dire qu’on distingue plusieurs matières à l’œil nu. Ici les sels sont dissous : on ne les voit pas, le mélange est homogène.'),
+      F('c’est un corps pur, car l’eau est l’espèce chimique la plus abondante', 'L’espèce la plus abondante ne suffit pas : dès qu’il y a une autre espèce chimique, même en petite quantité, c’est un mélange.'),
+    ] },
+  { id: 'pur2gt-ana-courbe-melange', domaine: 'Corps purs et mélanges (2GT)', titre: 'Une température qui ne cesse de monter',
+    enonce: 'On chauffe un liquide à la pression atmosphérique. Dès qu’il bout, un thermomètre précis à ± 0,5 °C indique 83 °C ; cinq minutes plus tard, il indique 88 °C, et la température a augmenté régulièrement entre les deux.', q: 'Que peut-on dire de ce liquide ?', options: [
+      V('c’est un mélange : la température n’est pas constante', 'Un corps pur aurait un palier : sa température resterait constante tant qu’il bout. Ici elle augmente de 5 °C, bien plus que la précision de 0,5 °C : c’est un mélange.'),
+      F('c’est un corps pur qui bout entre 83 °C et 88 °C', 'Un corps pur bout à une seule température, pas sur un intervalle. Une température qui monte pendant l’ébullition indique un mélange.'),
+      F('c’est un corps pur dont le thermomètre se dérègle en chauffant', 'Rien ne permet de supposer une panne : l’écart de 5 °C est dix fois plus grand que la précision. La courbe montre un mélange.'),
+      F('on ne peut rien dire sans connaître le nom du liquide', 'La forme de la courbe suffit déjà : sans palier, c’est un mélange, même sans connaître les liquides qui le composent.'),
+    ] },
+  { id: 'pur2gt-ana-limite', domaine: 'Corps purs et mélanges (2GT)', titre: 'Éthanol ou cyclohexane : un thermomètre trop grossier',
+    enonce: 'Un liquide pur bout à 79,5 °C, lus sur un thermomètre précis à ± 2 °C. Les valeurs de référence sont : éthanol 78 °C ; cyclohexane 81 °C ; acétone 56 °C ; eau 100 °C.', q: 'Que peut-on conclure ?', options: [
+      V('on ne peut pas trancher : deux liquides sont compatibles', 'Les écarts avec l’éthanol (1,5 °C) et avec le cyclohexane (1,5 °C) sont tous deux inférieurs à 2 °C. Il faut un thermomètre plus précis, ou une autre mesure, par exemple la masse volumique.'),
+      F('c’est de l’éthanol, car sa référence est la plus proche', 'Les deux références sont à 1,5 °C de la valeur lue : aucune n’est plus proche. Les deux liquides sont compatibles.'),
+      F('c’est du cyclohexane, car sa référence est la plus grande', 'La grandeur de la référence ne décide rien : il faut comparer l’écart à la précision, et l’éthanol est aussi compatible.'),
+      F('aucun des quatre liquides, car 79,5 °C n’est dans aucun cas', 'La valeur lue n’a pas à être égale à une référence : elle doit en être compatible, c’est-à-dire à moins de 2 °C ici.'),
+    ] },
+  { id: 'pur2gt-ana-cire', domaine: 'Corps purs et mélanges (2GT)', titre: 'Une bougie qui fond sans température précise',
+    enonce: 'On chauffe doucement un morceau de bougie. Il ramollit vers 54 °C, devient pâteux, puis est entièrement liquide vers 62 °C. On ne peut pas dire à quelle température précise il « fond ».', q: 'Que suggère l’absence de température de fusion précise ?', options: [
+      V('la cire est un mélange de plusieurs espèces chimiques', 'Un corps pur fond à une température précise, avec un palier. Une fusion qui s’étale sur plusieurs degrés est la signature d’un mélange.'),
+      F('la cire est un corps pur dont la fusion est lente', 'Un corps pur fond à une température bien déterminée, même si la fusion est lente : il y a un palier. Ici la température change.'),
+      F('la cire est un mélange hétérogène, car on voit du solide et du liquide', 'Voir du solide et du liquide pendant la fusion se produit aussi avec un corps pur. Ce n’est pas ce qui compte : c’est l’absence de palier.'),
+      F('le thermomètre est défectueux, car il ne montre pas une valeur fixe', 'Rien n’indique une panne : une température qui évolue pendant la fusion est justement ce que montre un mélange.'),
+    ] },
+  { id: 'pur2gt-ana-or18', domaine: 'Corps purs et mélanges (2GT)', titre: 'Une bague en or 18 carats',
+    enonce: 'Une bague est en « or 18 carats » : elle contient 75 % d’or en masse ; le reste est du cuivre et de l’argent. Elle paraît faite d’un seul métal jaune, sans zone distincte.', q: 'Comment classer le matériau de cette bague ?', options: [
+      V('un mélange homogène : un alliage de plusieurs métaux', 'Le matériau contient plusieurs espèces chimiques (or, cuivre, argent) : c’est un mélange. On n’y distingue qu’une seule matière : il est homogène.'),
+      F('un corps pur, car il paraît fait d’un seul métal', 'L’aspect d’un seul métal ne prouve pas qu’il n’y a qu’une espèce chimique. La composition (75 % d’or seulement) montre un mélange.'),
+      F('un corps pur, car l’or est le constituant principal', 'Un constituant principal ne suffit pas : le cuivre et l’argent sont aussi présents, donc ce n’est pas un corps pur.'),
+      F('un mélange hétérogène, car il contient plusieurs métaux', 'Hétérogène veut dire qu’on distingue plusieurs matières à l’œil nu. Ici, l’alliage paraît uniforme : il est homogène.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
