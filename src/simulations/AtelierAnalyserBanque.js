@@ -5725,6 +5725,21 @@ export const PREVOIR = [
       F('il diminue, car l’éthanol en excès dilue l’acide et ralentit la réaction', 'Les coefficients de l’équation valent tous 1 : le volume se simplifie dans Qr et seul le rapport des quantités compte. L’excès de réactif favorise le sens direct.'),
       F('il augmente uniquement parce que la réaction devient plus rapide', 'La rapidité n’agit pas sur la composition de l’état d’équilibre : le gain de rendement vient du déplacement de l’état final (Qr < K au départ), pas de la vitesse.'),
     ] },
+  // ───────────────────────────── Stratégie de synthèse multi-étapes et synthèses écoresponsables (TG, sim 210)
+  { id: 'str-ana-types', domaine: 'Stratégie de synthèse multi-étapes et synthèses écoresponsables', titre: 'Un même réactif, un type de réaction',
+    enonce: 'On fait réagir le bromoéthane avec des ions hydroxyde HO⁻ en solution aqueuse : CH₃CH₂Br + HO⁻ → CH₃CH₂OH + Br⁻. L’éthanol se forme et des ions bromure sont libérés.', q: 'De quel type est cette réaction ?', options: [
+      V('une substitution : –OH remplace l’atome Br', 'Un groupe (–OH) prend la place d’un atome (Br) sur la même chaîne carbonée : c’est une substitution. L’ion HO⁻ est une base, mais il ne capte pas ici d’ion H⁺ : le réactif seul ne suffit pas à choisir le type.'),
+      F('une réaction acide-base, car HO⁻ est une base', 'Une réaction acide-base est un échange d’ion H⁺. Ici HO⁻ ne capte pas un H⁺ de la molécule organique : il remplace l’atome Br.'),
+      F('une addition : HO⁻ se fixe sur une double liaison C=C', 'Le bromoéthane n’a pas de double liaison C=C et aucune n’est consommée : ce n’est pas une addition.'),
+      F('une élimination : une double liaison C=C se forme', 'Une élimination forme une double liaison C=C en retirant une petite molécule. Ici le produit est l’éthanol, qui n’en possède pas.'),
+    ] },
+  { id: 'str-ana-protection', domaine: 'Stratégie de synthèse multi-étapes et synthèses écoresponsables', titre: 'Réduire un ester sans toucher à une cétone',
+    enonce: 'Une molécule porte un groupe ester et un groupe cétone. On veut transformer l’ester en alcool avec LiAlH₄, qui réduit les esters mais aussi les cétones, et conserver la cétone dans le produit final.', q: 'Quelle stratégie permet d’y parvenir ?', options: [
+      V('protéger la cétone en acétal, réduire l’ester, puis déprotéger', 'L’acétal ne réagit pas avec LiAlH₄ : la cétone est masquée pendant la réduction de l’ester, puis rétablie par hydrolyse en milieu acide. C’est l’intérêt d’une protection : rendre l’étape sélective.'),
+      F('augmenter la quantité de LiAlH₄ pour que l’ester réagisse en premier', 'LiAlH₄ ne choisit pas : un excès réduit aussi la cétone. La sélectivité ne vient pas de la quantité de réactif.'),
+      F('chauffer le mélange pour que seul l’ester soit réduit', 'Chauffer accélère les deux réactions et ne protège pas la cétone : elle serait elle aussi réduite.'),
+      F('réduire la molécule telle quelle : la cétone n’est jamais attaquée', 'C’est faux : LiAlH₄ réduit les cétones. Sans protection, on obtiendrait un diol et non le produit voulu.'),
+    ] },
   // ───────────────────────────── Facteurs cinétiques, catalyse et choix d’un capteur (TG, sim 187)
   { id: 'cin-ana-facteur', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Une comparaison où deux paramètres changent',
     enonce: 'Pour étudier l’effet de la température, un élève réalise une expérience à 20 °C avec une solution d’iodure à 0,050 mol/L, puis une expérience à 40 °C avec une solution d’iodure à 0,10 mol/L (même réaction, même volume, sans catalyseur). La seconde est plus rapide. Il conclut : « c’est la température qui accélère la transformation ».', q: 'Que penser de cette conclusion ?', options: [

@@ -1806,5 +1806,15 @@
  "77:plausible:thm-val-fin": "VAL485",
  "77:plausible:thm-val-unite": "VAL486",
  "77:plausible:thm-val-chauffage": "VAL487",
- "36:thm-calcul": "REA124"
+ "36:thm-calcul": "REA124",
+ "34:str-sapp-rendement.0": "SAPP467",
+ "34:str-sapp-rendement.1": "SAPP468",
+ "34:str-sapp-dechets.0": "SAPP469",
+ "34:str-sapp-dechets.1": "SAPP470",
+ "37:prevoir:str-ana-types": "ANA732",
+ "37:prevoir:str-ana-protection": "ANA733",
+ "77:plausible:str-val-sequence": "VAL488",
+ "77:plausible:str-val-rendement": "VAL489",
+ "77:plausible:str-val-global-ok": "VAL490",
+ "36:str-calcul": "REA125"
 }
