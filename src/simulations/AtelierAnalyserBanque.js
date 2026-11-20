@@ -4894,6 +4894,49 @@ export const PREVOIR = [
       F('la seconde est plus grande : 1 nm est plus petit que 1 µm, donc plus éloigné', 'La distance ne dépend pas de la taille des valeurs, mais du facteur entre elles : ici, le même facteur 1 000.'),
       F('la seconde est 1 000 fois plus petite : 1 nm est 1 000 fois plus petit que 1 µm', 'Le rapport des valeurs vaut 1 000 dans les deux cas : sur l’axe, les distances sont égales, pas dans un rapport 1 000.'),
     ] },
+  // ───────────────────────────── Fluide au repos : pression, force pressante et loi de Mariotte (1G)
+  { id: 'fl1g-pression-ana-chauffe', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Chauffer l’air d’une bouteille fermée',
+    enonce: 'Une bouteille rigide et fermée contient de l’air. On la place près d’un radiateur : l’air s’échauffe. On suppose qu’aucun gaz ne s’échappe.', q: 'Comment évolue la pression de l’air dans la bouteille ?', options: [
+      V('elle augmente : entités plus agitées, chocs plus fréquents et plus forts', 'À volume constant, une température plus élevée signifie une agitation plus grande : les chocs sur la paroi sont plus fréquents et plus violents, donc la pression augmente.'),
+      F('elle reste la même : le volume de la bouteille ne change pas, donc P non plus', 'Le volume est fixe, mais ce n’est pas la seule grandeur en jeu : l’agitation des entités augmente avec la température, donc la pression aussi.'),
+      F('elle diminue : le gaz chauffé s’échappe en occupant plus de place que avant', 'La bouteille est fermée et rigide : le gaz ne peut ni s’échapper ni occuper plus de place. Les entités plus agitées frappent davantage la paroi.'),
+      F('elle augmente : l’air chaud est plus lourd et il appuie sur le fond', 'La pression d’un gaz ne vient pas de son poids : elle vient des chocs des entités sur toutes les parois, et ces chocs augmentent avec l’agitation.'),
+    ] },
+  { id: 'fl1g-pression-ana-compresse', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Diviser par trois le volume d’une seringue',
+    enonce: 'De l’air est enfermé dans une seringue bouchée, à 20 °C. On enfonce lentement le piston pour diviser le volume de l’air par 3, puis on attend que la température revienne à 20 °C.', q: 'La pression de l’air est alors…', options: [
+      V('trois fois plus grande : P × V constant, donc P est multipliée par 3', 'À température et quantité de gaz constantes, P × V = constante : si V est divisé par 3, P est multipliée par 3.'),
+      F('trois fois plus petite : la pression varie dans le même sens que le volume', 'C’est l’inverse : comprimer rapproche les entités, qui frappent plus souvent la paroi. P augmente quand V diminue.'),
+      F('inchangée : ni la quantité d’air ni la température n’ont changé', 'Justement : à température et quantité de gaz constantes, c’est le volume qui fait varier la pression (P × V = constante).'),
+      F('augmentée de 3 bar : V est divisé par 3, donc on ajoute 3 à P', 'La loi de Mariotte porte sur un produit, pas sur une somme : P × V = constante, donc diviser V par 3 multiplie P par 3 (on ne lui ajoute rien).'),
+    ] },
+  { id: 'fl1g-pression-ana-surface', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Deux pistons, une même pression',
+    enonce: 'Un gaz exerce la même pression P sur deux pistons : le premier a une surface S, le second une surface 2 S.', q: 'Par rapport à la force pressante sur le premier piston, la force pressante sur le second est…', options: [
+      V('deux fois plus grande : F = P × S, avec S doublée et P identique, F double', 'La norme de la force pressante est F = P × S : à pression égale, une surface double reçoit une force double.'),
+      F('la même : la pression est la même sur les deux pistons, donc la force aussi', 'La pression est la même, mais la force dépend aussi de la surface : F = P × S. Une plus grande surface reçoit plus de force.'),
+      F('deux fois plus petite : une grande surface répartit la force sur plus de place', 'On confond force et pression : la pression est la force par unité de surface. À pression égale, la force est proportionnelle à la surface.'),
+      F('quatre fois plus grande : la surface compte au carré dans la formule', 'F = P × S est proportionnelle à S (et non à S²) : doubler la surface double la force.'),
+    ] },
+  { id: 'fl1g-pression-ana-laterale', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'La force du gaz sur la paroi du tube',
+    enonce: 'Un gaz est enfermé dans une seringue horizontale. Il exerce une force pressante sur la face du piston, et aussi sur la paroi latérale du tube (parallèle à l’axe de la seringue).', q: 'Quelle est la direction de la force pressante vec(F) exercée par le gaz sur la paroi latérale ?', options: [
+      V('perpendiculaire à l’axe, et dirigée vers l’extérieur du tube', 'La force pressante est toujours perpendiculaire à la surface sur laquelle elle s’exerce, dirigée du gaz vers la paroi : ici, perpendiculaire à l’axe.'),
+      F('parallèle à l’axe de la seringue, comme celle sur le piston', 'La force sur le piston est parallèle à l’axe parce que la face du piston est perpendiculaire à l’axe. La paroi latérale, elle, est parallèle à l’axe.'),
+      F('verticale, dirigée vers le bas comme le poids du gaz enfermé', 'La pression ne vient pas du poids du gaz : elle s’exerce dans toutes les directions, perpendiculairement à chaque paroi.'),
+      F('nulle : seule la face du piston subit une force pressante du gaz', 'Le gaz pousse sur toutes les parois qui le contiennent, pas seulement sur le piston ; les forces sur le tube se compensent de part et d’autre.'),
+    ] },
+  { id: 'fl1g-pression-ana-conditions', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Mariotte avec une seringue qui chauffe',
+    enonce: 'Un élève relève la pression d’un gaz dans une seringue pendant qu’il enfonce le piston. Ses mains chauffent la seringue : la température du gaz monte nettement entre la première et la dernière mesure.', q: 'Le produit P × V calculé pour ses mesures sera…', options: [
+      V('plus grand pour les petits volumes : la hausse de température s’y ajoute', 'La loi de Mariotte suppose une température constante. Ici la hausse de température ajoute de la pression à celle due à la compression : P × V augmente.'),
+      F('le même pour toutes les mesures : P × V = constante dans tous les cas, sans exception', 'P × V = constante n’est valable qu’à température et quantité de gaz constantes. Ici la température change : la loi ne s’applique pas.'),
+      F('plus petit pour les petits volumes : la chaleur fait diminuer la pression', 'Chauffer augmente l’agitation donc la pression, à volume donné. Le produit P × V ne peut donc pas diminuer à cause du chauffage.'),
+      F('plus grand pour les grands volumes : la chaleur gonfle beaucoup le gaz', 'Les plus grands volumes correspondent aux premières mesures, avant l’échauffement : c’est pour les derniers volumes, les plus petits, que l’effet se voit.'),
+    ] },
+  { id: 'fl1g-pression-ana-pneu', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Le pneu après un long trajet',
+    enonce: 'Le pneu d’une voiture est gonflé à 2,2 bar un matin frais. Après un long trajet, le pneu est chaud. Son volume change très peu et aucun air n’est ajouté ni perdu.', q: 'La pression mesurée dans le pneu chaud est…', options: [
+      V('plus grande : l’air est plus agité, donc ses chocs sont plus forts', 'À volume constant, l’air chaud est plus agité : chaque choc est plus violent et ils sont plus fréquents. La pression augmente (c’est pourquoi on contrôle les pneus à froid).'),
+      F('la même : la quantité d’air et le volume du pneu n’ont pas changé', 'Le volume et la quantité d’air sont constants, mais la température a changé : la pression dépend aussi de l’agitation des entités.'),
+      F('plus petite : l’air chaud se dilate et occupe alors plus de place', 'Le volume du pneu change très peu : l’air ne peut pas occuper plus de place. Il pousse donc davantage sur la paroi.'),
+      F('plus grande : de l’air supplémentaire est entré dans le pneu pendant le trajet', 'L’énoncé précise qu’aucun air n’est ajouté. L’augmentation de pression vient de l’agitation plus grande de l’air déjà présent.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

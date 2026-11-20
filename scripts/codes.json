@@ -1399,5 +1399,22 @@
  "77:plausible:phot1g-val-energie-x": "VAL361",
  "77:plausible:phot1g-val-ev-j": "VAL362",
  "77:plausible:phot1g-val-domaine-fm": "VAL363",
- "36:phot1g-calcul": "REA90"
+ "36:phot1g-calcul": "REA90",
+ "34:fl1g-pression-sapp-piston.0": "SAPP360",
+ "34:fl1g-pression-sapp-piston.1": "SAPP361",
+ "34:fl1g-pression-sapp-mariotte.0": "SAPP362",
+ "34:fl1g-pression-sapp-mariotte.1": "SAPP363",
+ "37:prevoir:fl1g-pression-ana-chauffe": "ANA590",
+ "37:prevoir:fl1g-pression-ana-compresse": "ANA591",
+ "37:prevoir:fl1g-pression-ana-surface": "ANA592",
+ "37:prevoir:fl1g-pression-ana-laterale": "ANA593",
+ "37:prevoir:fl1g-pression-ana-conditions": "ANA594",
+ "37:prevoir:fl1g-pression-ana-pneu": "ANA595",
+ "77:plausible:fl1g-pression-val-force-ongle": "VAL364",
+ "77:plausible:fl1g-pression-val-mariotte-inverse": "VAL365",
+ "77:plausible:fl1g-pression-val-pneu-vtt": "VAL366",
+ "77:plausible:fl1g-pression-val-produit-pv": "VAL367",
+ "77:plausible:fl1g-pression-val-ballon": "VAL368",
+ "77:plausible:fl1g-pression-val-force-pompe": "VAL369",
+ "36:fl1g-pression-calcul": "REA91"
 }
