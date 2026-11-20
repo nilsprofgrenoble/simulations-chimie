@@ -40,6 +40,7 @@ import * as KEP from "./satellitesModele";
 import * as BRN from "./brnModele";
 import * as PUR from "./corpsPur2gtModele";
 import * as M_ISN from "./isnModele";
+import * as PRISME2GT from "./prisme2gtModele";
 import { OEIL2GT_SAPP } from "./oeilReduit2gtExos.js";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4872,6 +4873,53 @@ export const ENONCES = [
     }),
   },
   ...OEIL2GT_SAPP,
+  // ───────────────────────────── Dispersion par un prisme (2GT, sim 201) : repérer les données utiles pour un angle de réfraction
+  {
+    id: 'prisme2gt-sapp-angle', domaine: 'Dispersion de la lumière (2GT)', titre: 'Un rayon de couleur dans un prisme', noms: ['Angle i₂ dans le verre', 'Angle i₄ dans l’air'],
+    gen: () => ({ nm: tire([400, 700]), i1: tire([50, 55, 60, 65, 70]), i3: tire([26, 28, 30, 32]), cote: tire([3, 4, 5]), dist: tire([40, 50, 60, 80]), puis: tire([1, 3, 5]) }),
+    build: epure((p, q) => {
+      const n = p.nm === 400 ? PRISME2GT.N_VIOLET : PRISME2GT.N_ROUGE, coul = p.nm === 400 ? 'violet' : 'rouge';
+      const tokens = {
+        i1: tok(`${p.i1} °`, 'Angle d’incidence sur la première face', p.i1, '°'),
+        i3: tok(`${p.i3} °`, 'Angle d’incidence sur la seconde face, dans le verre', p.i3, '°'),
+        n: tok(`${nb(n, 2)}`, `Indice du verre pour la couleur ${coul}`, n, ''),
+        nm: tok(`${p.nm} nm`, 'Longueur d’onde du rayon', p.nm, 'nm'),
+        cote: tok(`${p.cote} cm`, 'Côté du prisme', p.cote / 100, 'm'),
+        dist: tok(`${p.dist} cm`, 'Distance du prisme à l’écran', p.dist / 100, 'm'),
+        puis: tok(`${p.puis} mW`, 'Puissance du laser', p.puis / 1000, 'W'),
+      };
+      const raisons = { nm: 'La longueur d’onde sert à reconnaître la couleur ; le calcul de l’angle n’utilise que l’indice, déjà donné pour cette couleur.', cote: 'La taille du prisme ne change pas les angles : elle n’intervient pas ici.', dist: 'La distance à l’écran sert à placer la tache, pas à calculer un angle dans le prisme.', puis: 'La puissance du laser ne change pas les angles : elle n’intervient pas ici.', i1: 'L’angle d’incidence sur la première face est utilisé seulement pour l’angle i₂.', i3: 'L’angle d’incidence sur la seconde face est utilisé seulement pour l’angle i₄.' };
+      const debut = ['Un laser de ', T('puis'), ' et de longueur d’onde ', T('nm'), ' (couleur ', coul, ') éclaire un prisme de ', T('cote'), ' de côté, placé à ', T('dist'), ' d’un écran. L’indice du verre pour cette couleur est ', T('n'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Le rayon arrive sur la première face avec un angle d’incidence de ', T('i1'), '. Quel est l’angle i₂ du rayon dans le verre ?'], utiles: ['i1', 'n'], raisons: { nm: raisons.nm, cote: raisons.cote, dist: raisons.dist, puis: raisons.puis },
+        cherche: { bonne: 'L’angle i₂ du rayon dans le verre (en °)', faux: ['L’angle i₄ du rayon à la sortie du prisme (en °)', 'La distance entre la tache et le bord de l’écran (en cm)', 'La longueur d’onde du rayon après la traversée du verre (en nm)'] },
+        manque: null, solution: { txt: 'sin i₂ = sin i₁ ÷ n, puis sin⁻¹', val: PRISME2GT.angleRefracte(p.i1, n), u: '°' } };
+      return { tokens, derivees: [], texte: [...debut, 'Dans le verre, le rayon arrive sur la seconde face avec un angle de ', T('i3'), '. Quel est l’angle i₄ du rayon dans l’air ?'], utiles: ['i3', 'n'], raisons: { nm: raisons.nm, cote: raisons.cote, dist: raisons.dist, puis: raisons.puis, i1: raisons.i1 },
+        cherche: { bonne: 'L’angle i₄ du rayon dans l’air (en °)', faux: ['L’angle i₂ du rayon à l’entrée du prisme (en °)', 'La déviation du laser à cause du prisme (en cm)', 'La distance parcourue dans le verre par le rayon (en cm)'] },
+        manque: null, solution: { txt: 'sin i₄ = n × sin i₃, puis sin⁻¹', val: PRISME2GT.angleSortie(p.i3, n), u: '°' } };
+    }),
+  },
+  {
+    id: 'prisme2gt-sapp-ecart', domaine: 'Dispersion de la lumière (2GT)', titre: 'Deux couleurs, un prisme', noms: ['Écart d’indice', 'Angle i₂ du rouge'],
+    gen: () => ({ i1: tire([50, 55, 60, 65, 70]), dv: tire([57, 56, 55, 58]), puis: tire([2, 5, 10]), angle: tire([60]), lam: tire([40, 50]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        nv: tok(`${nb(PRISME2GT.N_VIOLET, 2)}`, 'Indice du verre pour le violet', PRISME2GT.N_VIOLET, ''),
+        nr: tok(`${nb(PRISME2GT.N_ROUGE, 2)}`, 'Indice du verre pour le rouge', PRISME2GT.N_ROUGE, ''),
+        i1: tok(`${p.i1} °`, 'Angle d’incidence sur la première face', p.i1, '°'),
+        a: tok(`${p.angle} °`, 'Angle au sommet du prisme', p.angle, '°'),
+        puis: tok(`${p.puis} W`, 'Puissance de la lampe', p.puis, 'W'),
+        dv: tok(`${p.dv} °`, 'Déviation du violet', p.dv, '°'),
+      };
+      const raisons = { a: 'L’angle au sommet ne sert pas à calculer l’angle dans le verre à la première face.', puis: 'La puissance de la lampe ne change ni les indices ni les angles.', dv: 'La déviation du violet est une grandeur à la sortie : elle n’intervient pas dans le calcul à la première face.', i1: 'L’angle d’incidence ne sert pas à calculer un écart d’indice.', nv: 'L’indice du violet ne sert pas à calculer l’angle i₂ du rouge.', nr: 'Pour un écart d’indice, il faut les deux indices : le rouge est utile.' };
+      const debut = ['Un prisme d’angle au sommet ', T('a'), ' est éclairé par une lampe de ', T('puis'), ' qui émet de la lumière blanche. L’indice du verre est ', T('nv'), ' pour le violet et ', T('nr'), ' pour le rouge. L’angle d’incidence est ', T('i1'), ' et le violet est dévié de ', T('dv'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la différence d’indice entre le violet et le rouge ?'], utiles: ['nv', 'nr'], raisons: { a: raisons.a, puis: raisons.puis, dv: raisons.dv, i1: raisons.i1 },
+        cherche: { bonne: 'La différence entre l’indice du violet et celui du rouge', faux: ['La différence entre les angles de déviation des deux couleurs (en °)', 'La puissance reçue par le violet par rapport au rouge (en W)', 'Le rapport entre les angles d’incidence des deux couleurs'] },
+        manque: null, solution: { txt: 'n(violet) − n(rouge)', val: PRISME2GT.N_VIOLET - PRISME2GT.N_ROUGE, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est l’angle i₂ du rayon rouge dans le verre ?'], utiles: ['i1', 'nr'], raisons: { a: raisons.a, puis: raisons.puis, dv: raisons.dv, nv: raisons.nv },
+        cherche: { bonne: 'L’angle i₂ du rayon rouge dans le verre (en °)', faux: ['L’angle de déviation du rayon rouge à la sortie (en °)', 'L’angle entre le rayon violet et le rayon rouge (en °)', 'La somme des angles i₂ du rouge et du violet (en °)'] },
+        manque: null, solution: { txt: 'sin i₂ = sin i₁ ÷ n, puis sin⁻¹', val: PRISME2GT.angleRefracte(p.i1, PRISME2GT.N_ROUGE), u: '°' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

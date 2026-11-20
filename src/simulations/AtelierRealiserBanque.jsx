@@ -39,6 +39,7 @@ import * as CO2 from "./co2DissousModele";
 import * as EXT from "./extractionAcideBaseModele";
 import { genRDA as genEquationsDesintegrationTG } from "./rdaRealiser";
 import { METAUX as PILE_M, PAIRES as PILE_PAIRES, poles as pilePoles, equationTexte as pileEquation, demiRed as pileRed, demiOx as pileOx } from "./pileModele";
+import * as PRISME2GT from "./prisme2gtModele";
 
 // ====================================================
 //  BANQUE DE L'ATELIER « RÉALISER » (compétence S'APP : réaliser)
@@ -1524,6 +1525,48 @@ function genEquation2GT() {
   [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
   return { intro: 'Équation de réaction : équation ajustée, proportions entre molécules, atomes et ions, atomes dans « n formules » et charge totale des produits.', questions: [q0, q1, q2, q3],
     retenir: ['Ajuster : coefficients devant les formules (jamais les indices), dans l’ordre C, H, O, puis la charge ; on prend les plus petits entiers.', 'Les coefficients sont des proportions : on multiplie tous les nombres de l’équation par le même nombre.', 'n formules contiennent n × (indice) atomes ; la charge totale est la même avant et après.'] };
+}
+
+// ───────────── Dispersion par un prisme (2GT) : angle dans le verre, angle de sortie, écart de déviation, laser le plus dévié, indice d'une couleur ─────────────
+const prismeFR = (x, d = 1) => PRISME2GT.nombreFR(x, d);
+function genPrisme2GT() {
+  const NV = PRISME2GT.N_VIOLET, NR = PRISME2GT.N_ROUGE;
+  // q0 : angle i₂ dans le verre (loi de Snell-Descartes, air → verre)
+  const nm0 = tire([400, 700]), n0 = nm0 === 400 ? NV : NR, c0 = nm0 === 400 ? 'violet' : 'rouge', i10 = tire([50, 55, 60, 65, 70, 75]), v0 = PRISME2GT.angleRefracte(i10, n0);
+  const q0 = { id: 'g0', type: 'num', q: <>Un rayon <b>{c0}</b> ({nm0}{NB}nm) arrive sur la première face d’un prisme avec un angle d’incidence <b>i₁{NB}={NB}{i10}{NB}°</b>. L’indice du verre pour cette couleur est <b>n{NB}={NB}{prismeFR(n0, 2)}</b>. Quel est l’angle <b>i₂</b> dans le verre ? Donnez le résultat en <b>°</b>.</>, unite: '°', vrai: v0, tolRel: PRISME2GT.TOL_ANGLE,
+    aide: 'Loi de Snell-Descartes, air vers verre : sin i₂ = sin i₁ ÷ n. Calculez sin i₁ (calculatrice en degrés), divisez par n, puis appliquez sin⁻¹.',
+    pieges: [[PRISME2GT.angleRefracte(i10, nm0 === 400 ? NR : NV), 'Vous avez pris l’indice de l’autre couleur : ici n est celui de la couleur indiquée.'], [i10 / n0, 'On ne divise pas les angles : ce sont les sinus qui sont reliés.'], [PRISME2GT.sinus(i10) / n0, 'C’est sin i₂ : il faut encore appliquer sin⁻¹ pour obtenir l’angle.']],
+    expl: <>sin i₂ = sin {i10}° ÷ {prismeFR(n0, 2)} = {prismeFR(PRISME2GT.sinus(i10) / n0, 3)}, donc i₂ = <b>{prismeFR(v0, 1)}{NB}°</b>.</> };
+  // q1 : angle i₄ dans l'air à la sortie
+  const nm1 = tire([400, 700]), n1 = nm1 === 400 ? NV : NR, c1 = nm1 === 400 ? 'violet' : 'rouge', i31 = tire([26, 28, 30, 32, 34]), v1 = PRISME2GT.angleSortie(i31, n1);
+  const q1 = { id: 'g1', type: 'num', q: <>Dans le verre du prisme, un rayon <b>{c1}</b> arrive sur la seconde face avec un angle <b>i₃{NB}={NB}{i31}{NB}°</b>. L’indice du verre pour cette couleur est <b>n{NB}={NB}{prismeFR(n1, 2)}</b> ; celui de l’air est 1,00. Quel est l’angle <b>i₄</b> dans l’air ? Donnez le résultat en <b>°</b>.</>, unite: '°', vrai: v1, tolRel: PRISME2GT.TOL_ANGLE,
+    aide: 'Loi de Snell-Descartes, verre vers air : sin i₄ = n × sin i₃. Calculez sin i₃, multipliez par n, puis appliquez sin⁻¹.',
+    pieges: [[PRISME2GT.angleSortie(i31, nm1 === 400 ? NR : NV), 'Vous avez pris l’indice de l’autre couleur : ici n est celui de la couleur indiquée.'], [PRISME2GT.arcsin(PRISME2GT.sinus(i31) / n1), 'Vous avez divisé par n : en sortant du verre, on multiplie sin i₃ par n.'], [i31 * n1, 'On ne multiplie pas les angles : ce sont les sinus qui sont reliés.']],
+    expl: <>sin i₄ = {prismeFR(n1, 2)} × sin {i31}° = {prismeFR(n1 * PRISME2GT.sinus(i31), 3)}, donc i₄ = <b>{prismeFR(v1, 1)}{NB}°</b>.</> };
+  // q2 : écart de déviation entre violet et rouge
+  const i12 = tire([50, 55, 60, 65]), Dv = Math.round(PRISME2GT.deviation(i12, 400) * 10) / 10, Dr = Math.round(PRISME2GT.deviation(i12, 700) * 10) / 10, ec2 = Dv - Dr;
+  const q2 = { id: 'g2', type: 'num', q: <>Avec un angle d’incidence de {i12}{NB}°, le prisme dévie le violet de <b>D{NB}={NB}{prismeFR(Dv, 1)}{NB}°</b> et le rouge de <b>D{NB}={NB}{prismeFR(Dr, 1)}{NB}°</b>. Quel est l’écart de déviation entre le violet et le rouge ? Donnez le résultat en <b>°</b>.</>, unite: '°', vrai: ec2, tolRel: 0.03,
+    aide: 'L’écart est la différence entre les deux déviations : la plus grande moins la plus petite.',
+    pieges: [[Dv, 'C’est la déviation du violet, pas l’écart : faites la différence avec celle du rouge.'], [Dr, 'C’est la déviation du rouge, pas l’écart : faites la différence avec celle du violet.'], [Dv + Dr, 'On ne les additionne pas : l’écart est une différence.']],
+    expl: <>Écart = {prismeFR(Dv, 1)} − {prismeFR(Dr, 1)} = <b>{prismeFR(ec2, 1)}{NB}°</b>.</> };
+  // q3 : quel laser est le plus dévié ?
+  const trio = tire([[405, 532, 650], [420, 532, 660], [405, 550, 700], [450, 532, 633]]), nbrs = trio.map(x => PRISME2GT.indiceTable(x));
+  const ord = tire([0, 1, 2, 3, 4, 5]), ordres = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]], perm = ordres[ord];
+  const lasers = perm.map(k => ({ nm: trio[k], n: nbrs[k] })), plus = lasers.reduce((a, b) => (b.n > a.n ? b : a));
+  const o3 = [...lasers.map(l => `le laser de ${l.nm}${NB}nm`), 'les trois sont déviés de la même façon'];
+  const m3 = melange(o3), b3 = `le laser de ${plus.nm}${NB}nm`;
+  const q3 = { id: 'g3', type: 'qcm', q: <>Trois lasers éclairent le même prisme avec le même angle d’incidence. Indice du verre : {lasers.map((l, k) => <span key={k}>{k ? ' ; ' : ''}{l.nm}{NB}nm : <b>{prismeFR(l.n, 2)}</b></span>)}. Lequel est le plus dévié ?</>, options: m3, bonne: m3.indexOf(b3),
+    aide: 'Plus l’indice du verre est grand, plus le rayon est dévié. Cherchez le laser dont l’indice est le plus grand.',
+    expl: <>L’indice le plus grand est {prismeFR(plus.n, 2)}, pour {plus.nm}{NB}nm : c’est le laser <b>le plus dévié</b>. Les courtes longueurs d’onde sont les plus déviées.</> };
+  // q4 : indice du verre pour une couleur, à partir de i₁ et i₂ mesurés
+  const nm4 = tire([400, 450, 550, 700]), n4 = PRISME2GT.indiceTable(nm4), i14 = tire([50, 60, 70]), i24 = Math.round(PRISME2GT.angleRefracte(i14, n4) * 10) / 10, v4 = PRISME2GT.sinus(i14) / PRISME2GT.sinus(i24);
+  const q4 = { id: 'g4', type: 'num', q: <>Un rayon de {nm4}{NB}nm arrive sur le prisme avec <b>i₁{NB}={NB}{i14}{NB}°</b> et se réfracte avec <b>i₂{NB}={NB}{prismeFR(i24, 1)}{NB}°</b>. Quel est l’indice <b>n</b> du verre pour cette couleur ? Donnez le résultat avec 3 chiffres significatifs.</>, vrai: v4, tolRel: 0.006, csMin: 3, unite: '',
+    aide: 'Loi de Snell-Descartes : n = sin i₁ ÷ sin i₂ (l’air a pour indice 1,00). Calculez les deux sinus séparément, puis divisez.',
+    pieges: [[i14 / i24, 'On ne divise pas les angles : il faut diviser les sinus.'], [PRISME2GT.sinus(i24) / PRISME2GT.sinus(i14), 'Vous avez inversé : n = sin i₁ ÷ sin i₂.']],
+    expl: <>n = sin {i14}° ÷ sin {prismeFR(i24, 1)}° = {prismeFR(PRISME2GT.sinus(i14), 3)} ÷ {prismeFR(PRISME2GT.sinus(i24), 3)} ≈ <b>{prismeFR(v4, 2)}</b>.</> };
+  [q0, q1, q2, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.03, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Dispersion par un prisme : angle dans le verre, angle de sortie, écart de déviation, laser le plus dévié, indice d’une couleur.', questions: [q0, q1, q2, q3, q4],
+    retenir: ['Air vers verre : sin i₂ = sin i₁ ÷ n ; verre vers air : sin i₄ = n × sin i₃ (on relie toujours les sinus, jamais les angles).', 'Plus l’indice du verre est grand, plus le rayon est dévié : le violet (indice le plus grand) est le plus dévié, le rouge le moins.', 'Un écart de déviation est une différence de deux angles ; l’indice se calcule avec n = sin i₁ ÷ sin i₂.'] };
 }
 
 // ───────────── Corps pur ou mélange (2GT) : palier ou non, lecture d'une température d'ébullition, écart, compatibilité, identification, zone de la vraie température ─────────────
@@ -4225,6 +4268,7 @@ export const FAMILLES = [
   { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
   { id: 'pur2gt-calcul', groupe: 'Formules', titre: 'Corps pur ou mélange : palier, température d’ébullition lue, écart avec la référence, compatibilité et identification d’un liquide (2GT)', gen: genPur2GT, domaine: 'Corps purs et mélanges (2GT)' },
   { id: 'oeil2gt-calcul', groupe: 'Formules', titre: 'L’œil réduit : hauteur de l’image (Thalès), hauteur de l’objet, distance, proportionnalité, image nette ou floue et accommodation (2GT)', gen: genOeil2GT, domaine: 'L’œil réduit (2GT)' },
+  { id: 'prisme2gt-calcul', groupe: 'Formules', titre: 'Dispersion par un prisme : angle dans le verre, angle de sortie, écart de déviation, laser le plus dévié, indice d’une couleur (2GT)', gen: genPrisme2GT, domaine: 'Dispersion de la lumière (2GT)' },
   { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
   { id: 'img2gt-calcul', groupe: 'Formules', titre: 'Image par une lentille : rayon particulier, hauteur de l’image, grandissement par les tailles et par Thalès, conversion cm–m (2GT)', gen: genImage2GT, domaine: 'Image par une lentille (2GT)' },
   { id: 'test2gt-calcul', groupe: 'Formules', titre: 'Tests chimiques : réactif et observation, lecture d’une observation, nombre de tests pour identifier un gaz, durée et deux espèces à la fois (2GT)', gen: genTests2GT, domaine: 'Tests chimiques (2GT)' },

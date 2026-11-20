@@ -41,6 +41,7 @@ export const EXOS_DE_SIM = {
   61: [/^(rho|conc)2/, /sol-(masse-double|volume-double|masse-conservee|saturation)/, /sol-masse-volumique-unite/],
   180: [/rl2gt-/],
   197: [/(^|\.)ccm2gt-/, /plausible\.ccm2gt-/],                                                                    // Chromatographie sur couche mince (2GT) : lire, comparer, rapport frontal, limites
+  201: [/(^|\.)prisme2gt-/, /plausible\.prisme2gt-/],                                                                // Dispersion de la lumière par un prisme (2GT)
   196: [/(^|\.)pur2gt-/, /plausible\.pur2gt-/],                                                                    // Corps pur ou mélange : température de changement d’état (2GT)
   200: [/(^|\.)oeil2gt-/, /plausible\.oeil2gt-/],                                                                    // L’œil réduit (2GT) : image réelle, Thalès, netteté, accommodation
   195: [/(^|\.)etat2gt-/, /plausible\.etat2gt-/],                                                                // Changement d’état (2GT) : équation, sens du transfert, E = m × L
