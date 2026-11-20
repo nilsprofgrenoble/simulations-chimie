@@ -1594,5 +1594,14 @@
  "77:plausible:son2gt-emis-val-micros-inverse": "VAL421",
  "77:plausible:son2gt-emis-val-avion": "VAL422",
  "77:plausible:son2gt-emis-val-film-espace": "VAL423",
- "36:son2gt-emis-calcul": "REA107"
+ "36:son2gt-emis-calcul": "REA107",
+ "34:icc-sapp-resistance.0": "SAPP408",
+ "34:icc-sapp-resistance.1": "SAPP409",
+ "34:icc-sapp-reference.0": "SAPP410",
+ "37:prevoir:icc-ana-dominante": "ANA660",
+ "37:prevoir:icc-ana-tirages": "ANA661",
+ "37:prevoir:icc-ana-seuil": "ANA662",
+ "77:plausible:icc-val-somme": "VAL424",
+ "77:plausible:icc-val-compat": "VAL425",
+ "36:icc-calcul": "REA108"
 }

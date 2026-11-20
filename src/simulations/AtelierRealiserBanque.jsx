@@ -2824,6 +2824,51 @@ function genPesanteurTG() {
 }
 
 
+// ───────── Incertitudes-types composées et comparaison à une valeur de référence (TG, sim 185) ─────────
+function genIncertitudesTG() {
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-12, 0.08 * Math.abs(q.vrai))); };
+  // nb() prend des chiffres SIGNIFICATIFS : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const frs = t => avecIndices(t);
+  // 1. masse obtenue par différence de deux pesées : u(m) = √(u1² + u2²)
+  const us = [0.02, 0.03, 0.04, 0.05, 0.06], u1 = tire(us); let u2; do { u2 = tire(us); } while (u2 === u1);
+  const m1 = tire([10.4, 12.4, 15.2, 18.6]), m2 = Number((m1 + tire([42.5, 56.8, 63.1, 77.9])).toFixed(1)), uD = Math.sqrt(u1 * u1 + u2 * u2);
+  const q1 = { id: 'ic0', type: 'num', q: <>On pèse une coupelle seule : <b>m₁ = {d(m1, 1)}{NB}g</b>, avec une incertitude-type <b>u(m₁) = {d(u1, 2)}{NB}g</b>. On la pèse ensuite avec un échantillon : <b>m₂ = {d(m2, 1)}{NB}g</b>, avec <b>u(m₂) = {d(u2, 2)}{NB}g</b>. La masse de l’échantillon est m = m₂ − m₁ ; les deux pesées sont indépendantes. Calculez l’incertitude-type u(m) avec la formule fournie u(m) = √(u(m₁)² + u(m₂)²) (en g, 2 chiffres significatifs).</>, unite: 'g', vrai: uD, tolRel: 0.05, csMin: 2,
+    aide: 'Pour une somme ou une différence de grandeurs indépendantes, on additionne les carrés des incertitudes-types, puis on prend la racine carrée.',
+    pieges: [[u1 + u2, 'Vous avez additionné les incertitudes : pour des grandeurs indépendantes, elles se composent en quadrature, avec la racine de la somme des carrés.'], [Math.max(u1, u2), 'Vous avez gardé la plus grande des deux : les deux pesées interviennent, u(m) est plus grande que chacune d’elles.'], [u1 * u1 + u2 * u2, 'Il manque la racine carrée : la somme des carrés est un carré d’incertitude.']],
+    expl: <>u(m) = √(u(m₁)² + u(m₂)²) = √({d(u1, 2)}² + {d(u2, 2)}²) = √{d(u1 * u1 + u2 * u2, 4)} = <b>{d(uD, 3)}{NB}g</b>, pour m = {d(m2 - m1, 1)}{NB}g (hypothèse : pesées indépendantes).</> };
+  // 2. résistance R = U/I : u(R) par la formule du quotient (U en V, I en mA : R en Ω)
+  let U2, I2, uU2, uI2, a2, b2;
+  do { U2 = tire([3.50, 4.58, 5.20, 6.30, 7.40, 9.10]); I2 = tire([25.0, 32.5, 45.1, 52.0, 68.4, 85.0]); uU2 = tire([0.02, 0.03, 0.05, 0.10]); uI2 = tire([0.3, 0.5, 0.8, 1.0]); a2 = uU2 / U2; b2 = uI2 / I2; } while (Math.min(a2, b2) / Math.max(a2, b2) < 0.4 || Math.max(a2, b2) > 0.05);
+  const R2 = 1000 * U2 / I2, rel2 = Math.sqrt(a2 * a2 + b2 * b2), uR = R2 * rel2;
+  const q2 = { id: 'ic1', type: 'num', q: <>Pour mesurer une résistance, on relève <b>U = {d(U2, 2)}{NB}V</b> avec <b>u(U) = {d(uU2, 2)}{NB}V</b> et <b>I = {d(I2, 1)}{NB}mA</b> avec <b>u(I) = {d(uI2, 1)}{NB}mA</b> ; les mesures sont indépendantes. On calcule R = {frs('frac(U|I)')}. Pour un quotient, la formule fournie est {frs('frac(u(R)|R) = √(frac(u(U)|U)² + frac(u(I)|I)²)')}. Calculez u(R), en Ω (2 chiffres significatifs).</>, unite: 'Ω', vrai: uR, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez les deux incertitudes relatives (u divisée par la valeur), composez-les en quadrature, puis multipliez par R. Convertissez I en A (ou U en mV) pour obtenir R en Ω.',
+    pieges: [[R2 * (a2 + b2), 'Vous avez additionné les incertitudes relatives : elles se composent en quadrature (racine de la somme des carrés).'], [R2 * Math.max(a2, b2), 'Vous n’avez gardé que la plus grande incertitude relative : les deux interviennent.'], [rel2, 'C’est l’incertitude relative : multipliez-la par R pour obtenir u(R) en Ω.']],
+    expl: <>R = {frs('frac(U|I)')} = {d(R2, 1)}{NB}Ω ; {frs('frac(u(U)|U)')} = {d(a2 * 100, 2)}{NB}% et {frs('frac(u(I)|I)')} = {d(b2 * 100, 2)}{NB}% ; {frs('frac(u(R)|R)')} = √({d(a2 * 100, 2)}² + {d(b2 * 100, 2)}²){NB}% = {d(rel2 * 100, 2)}{NB}% ; u(R) = {d(R2, 1)} × {d(rel2, 4)} = <b>{d(uR, 2)}{NB}Ω</b>.</> };
+  // 3. masse volumique d'un cylindre : exposant 2 sur le diamètre
+  let m3, d3, h3, um3, ud3, uh3, G3, uG3, rel3, ra, rb, rc;
+  do {
+    const rhoT = tire([2.70, 7.87, 8.96]); d3 = tire([1.50, 2.00, 2.50, 3.00]); h3 = tire([4.00, 5.00, 6.00, 8.00, 10.0]);
+    m3 = Number((rhoT * Math.PI * d3 * d3 * h3 / 4).toFixed(1)); um3 = tire([0.03, 0.05, 0.10]); ud3 = tire([0.01, 0.02, 0.03, 0.05]); uh3 = tire([0.01, 0.02, 0.03, 0.05]);
+    G3 = 4 * m3 / (Math.PI * d3 * d3 * h3); ra = um3 / m3; rb = 2 * ud3 / d3; rc = uh3 / h3; rel3 = Math.sqrt(ra * ra + rb * rb + rc * rc); uG3 = G3 * rel3;
+  } while (Math.max(ra, rb, rc) < 0.004 || Math.min(rb, rc) / Math.max(rb, rc) < 0.35 || rel3 > 0.05);
+  const q3 = { id: 'ic2', type: 'num', q: <>On mesure un cylindre : masse <b>m = {d(m3, 1)}{NB}g</b> (<b>u(m) = {d(um3, 2)}{NB}g</b>), diamètre <b>d = {d(d3, 2)}{NB}cm</b> (<b>u(d) = {d(ud3, 2)}{NB}cm</b>) et hauteur <b>h = {d(h3, 2)}{NB}cm</b> (<b>u(h) = {d(uh3, 2)}{NB}cm</b>), mesures indépendantes. Sa masse volumique est ρ = {frs('frac(4 m|π d² h)')}. La formule fournie est {frs('frac(u(ρ)|ρ) = √(frac(u(m)|m)² + (2 frac(u(d)|d))² + frac(u(h)|h)²)')} : le facteur 2 vient de l’exposant de d. Calculez u(ρ), en g/cm³ (2 chiffres significatifs).</>, unite: 'g/cm³', vrai: uG3, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez ρ, puis les trois termes : u(m) sur m, 2 u(d) sur d, u(h) sur h. Composez-les en quadrature et multipliez par ρ.',
+    pieges: [[G3 * Math.sqrt(ra * ra + (rb / 2) ** 2 + rc * rc), 'Vous avez oublié le facteur 2 : d est élevé au carré dans ρ, son incertitude relative compte deux fois.'], [G3 * (ra + rb + rc), 'Vous avez additionné les incertitudes relatives : elles se composent en quadrature.'], [rel3, 'C’est l’incertitude relative : multipliez-la par ρ pour obtenir u(ρ) en g/cm³.']],
+    expl: <>ρ = {frs('frac(4 m|π d² h)')} = {frs(`frac(4 × ${d(m3, 1)}|π × ${d(d3, 2)}² × ${d(h3, 2)})`)} = {d(G3, 3)}{NB}g/cm³ ; les trois termes valent {d(ra * 100, 2)}{NB}%, {d(rb * 100, 2)}{NB}% et {d(rc * 100, 2)}{NB}% ; {frs('frac(u(ρ)|ρ)')} = {d(rel3 * 100, 2)}{NB}% ; u(ρ) = {d(G3, 3)} × {d(rel3, 4)} = <b>{d(uG3, 3)}{NB}g/cm³</b> (hypothèses : mesures indépendantes, incertitudes relatives petites).</> };
+  // 4. quotient z de comparaison à une valeur de référence, calculé avec les nombres affichés
+  const ctx = tire([{ q: 'la fréquence d’un diapason', ref: 440.0, u: [1.0, 1.5, 2.0], dec: 1, unite: 'Hz', refTxt: 'valeur gravée sur le diapason' }, { q: 'la masse volumique d’une huile', ref: 0.92, u: [0.01, 0.02, 0.03], dec: 2, unite: 'g/cm³', refTxt: 'valeur donnée par la notice' }, { q: 'la concentration en masse d’un sirop', ref: 50.0, u: [0.4, 0.6, 0.8], dec: 1, unite: 'g/L', refTxt: 'valeur indiquée sur l’étiquette' }, { q: 'la résistance d’un conducteur ohmique', ref: 100.0, u: [1.0, 1.5, 2.0], dec: 1, unite: 'Ω', refTxt: 'valeur de la résistance étalon' }]);
+  let x4, u4, z4;
+  do { u4 = tire(ctx.u); const zc = tire([0.4, 0.8, 1.2, 1.6, 2.4, 3.0, 3.6, 4.4]), sg = tire([-1, 1]); x4 = Number((ctx.ref + sg * zc * u4).toFixed(ctx.dec)); z4 = Math.abs(x4 - ctx.ref) / u4; } while (!(z4 > 0.3 && z4 < 5));
+  const q4 = { id: 'ic3', type: 'num', q: <>Un élève mesure {ctx.q} : il trouve <b>{d(x4, ctx.dec)} ± {d(u4, ctx.dec)}{NB}{ctx.unite}</b> (résultat avec son incertitude-type u). La {ctx.refTxt} est <b>{d(ctx.ref, ctx.dec)}{NB}{ctx.unite}</b>, supposée connue sans incertitude. Calculez le quotient z = {frs('frac(écart|u)')}, où l’écart est {frs('|m_mes − m_ref|')} (valeur absolue de la différence entre le résultat et la référence), divisé par l’incertitude-type u (2 chiffres significatifs).</>, unite: '', vrai: z4, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez d’abord l’écart en valeur absolue entre le résultat et la référence, puis divisez-le par u. Le quotient n’a pas d’unité.',
+    pieges: [[Math.abs(x4 - ctx.ref), 'C’est l’écart seul : il faut le diviser par l’incertitude-type u.'], [u4 / Math.abs(x4 - ctx.ref), 'Le quotient est à l’envers : c’est l’écart divisé par u.'], [Math.abs(x4 - ctx.ref) / x4, 'On divise par l’incertitude-type u, pas par la valeur mesurée.']],
+    expl: <>Écart = |{d(x4, ctx.dec)} − {d(ctx.ref, ctx.dec)}| = {d(Math.abs(x4 - ctx.ref), ctx.dec)}{NB}{ctx.unite} ; z = {frs(`frac(${d(Math.abs(x4 - ctx.ref), ctx.dec)}|${d(u4, ctx.dec)})`)} = <b>{d(z4, 2)}</b>, {z4 < 2 ? 'inférieur au seuil usuel 2 : résultat compatible avec la référence (convention d’usage)' : 'supérieur au seuil usuel 2 : écart à discuter (le seuil est une convention)'}.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Incertitudes-types composées et comparaison à une valeur de référence : différence de deux pesées, quotient U/I, masse volumique d’un cylindre (exposant 2) et quotient z de comparaison.', questions: [q1, q2, q3, q4],
+    retenir: ['Somme ou différence de grandeurs indépendantes : u(G) = √(u(x)² + u(y)²) ; produit ou quotient : frac(u(G)|G) = √(frac(u(x)|x)² + frac(u(y)|y)²), un exposant p multipliant l’incertitude relative correspondante.', 'Les incertitudes se composent en quadrature, jamais en les additionnant ; le plus grand terme domine : c’est lui qu’il faut réduire pour améliorer le protocole.', 'Comparaison à une référence : z = frac(écart|u(m)), avec écart = |m_mes − m_ref| ; z < 2 : compatible, sinon à discuter. Le seuil 2 est une convention d’usage.'] };
+}
+
 // ───────── Diffraction d'une onde : angle caractéristique (TG, sim 181) ─────────
 function genDiffractionTG() {
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-12, 0.08 * Math.abs(q.vrai))); };
@@ -3582,6 +3627,7 @@ export const FAMILLES = [
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
   { id: 'pes-calcul', groupe: 'Formules', titre: 'Champ de pesanteur uniforme : vitesse, position, portée et théorème de l’énergie cinétique (TG)', gen: genPesanteurTG, domaine: 'Mouvement dans un champ de pesanteur uniforme' },
+  { id: 'icc-calcul', groupe: 'Formules', titre: 'Incertitudes-types composées : somme, quotient, produit avec exposant et quotient de comparaison à une référence (TG)', gen: genIncertitudesTG, domaine: 'Incertitudes-types composées et comparaison à une valeur de référence' },
   { id: 'dif-calcul', groupe: 'Formules', titre: 'Diffraction d’une onde : angle caractéristique, largeur de la tache centrale et largeur de la fente (TG)', gen: genDiffractionTG, domaine: 'Diffraction d’une onde : angle caractéristique' },
   { id: 'itf-calcul', groupe: 'Formules', titre: 'Interférences de deux ondes : retard, déphasage, nombre de lignes constructives et points de silence (TG)', gen: genInterfTG, domaine: 'Interférences de deux ondes : conditions constructives et destructives' },
   { id: 'cpl-calcul', groupe: 'Formules', titre: 'Particule chargée dans un condensateur plan : champ, accélération, déviation, vitesse après accélération et durée de traversée (TG)', gen: genCondensateurTG, domaine: 'Particule chargée dans un condensateur plan' },

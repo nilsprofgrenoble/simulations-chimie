@@ -100,6 +100,7 @@ export const EXOS_DE_SIM = {
   174: [/(^|\.)rc-/, /plausible\.rc-/],                                                                              // Circuit RC : charge et décharge d’un condensateur (TG)
   168: [/(^|\.)nwt-/, /plausible\.nwt-/],
   175: [/(^|\.)pes-/, /plausible\.pes-/],                                                                           // Mouvement dans un champ de pesanteur uniforme (TG)
+  185: [/(^|\.)icc-/, /plausible\.icc-/],                                                                           // Incertitudes-types composées et comparaison à une valeur de référence (TG)
   183: [/(^|\.)itf-/, /plausible\.itf-/],                                                                           // Interférences de deux ondes (TG)
   176: [/(^|\.)cpl-/, /plausible\.cpl-/],                                                                           // Particule chargée dans un condensateur plan (TG)
   177: [/(^|\.)kep-/, /plausible\.kep-/],    // Satellites et lois de Kepler (TG)
