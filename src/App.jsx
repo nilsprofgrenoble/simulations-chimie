@@ -94,6 +94,7 @@ const SimulationSavonAmphiphile = paresseux(() => import("./simulations/SavonAmp
 const SimulationDissolutionIonique = paresseux(() => import("./simulations/DissolutionIonique"), "SimulationDissolutionIonique");
 const SimulationCouleurs = paresseux(() => import("./simulations/Couleurs"), "SimulationCouleurs");
 const SimulationPhoton = paresseux(() => import("./simulations/Photon"), "SimulationPhoton");
+const SimulationStatiqueFluides1G = paresseux(() => import("./simulations/StatiqueFluides1G"), "SimulationStatiqueFluides1G");
 const SimulationCombustions = paresseux(() => import("./simulations/Combustions"), "SimulationCombustions");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
@@ -371,6 +372,7 @@ const SIMULATIONS = [
   { id:154, label:"Schéma de Lewis : établir celui d’une molécule ou d’un ion", niveau:"1G", icon:"🧩", color:"#0f766e", component: SimulationLewis },
   { id:155, label:"Géométrie, électronégativité et polarité d’une entité", niveau:"1G", icon:"🧊", color:"#7c3aed", component: SimulationGeometriePolarite },
   { id:158, label:"Savons et amphiphilie : pourquoi un savon lave", niveau:"1G", icon:"🧼", color:"#0e7490", component: SimulationSavonAmphiphile },
+  { id:163, label:"Statique des fluides : pression et profondeur", niveau:"1G", icon:"🤿", color:"#0369a1", component: SimulationStatiqueFluides1G },
   { id:161, label:"Mesure et incertitudes : variabilité, types A et B", niveau:"1G", icon:"📏", color:"#b45309", component: SimulationMesureIncertitudes },
   { id:157, label:"Dissolution d’un solide ionique dans l’eau : équation et concentration des ions", niveau:"1G", icon:"🧂", color:"#0e7490", component: SimulationDissolutionIonique },
   { id:160, label:"Couleurs : lumières, filtres et couleur des objets", niveau:"1G", icon:"🎨", color:"#c026d3", component: SimulationCouleurs },

@@ -17,6 +17,7 @@ import * as RX from "./redoxModele";
 import * as CL from "./couleursModele";
 import * as PH from "./photonModele";
 import * as PM from "./pressionModele";
+import * as SF from "./statiqueFluidesModele";
 import * as AB from "./acidesBasesModele";
 import * as PRE from "./predoTstlModele";
 import * as TMP from "./tamponTstlModele";
@@ -1262,6 +1263,54 @@ function genConcentration1G() {
   [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Concentration en quantité de matière : concentration d’une solution préparée par dissolution, masse à peser, quantité de soluté dans un prélèvement, lien avec la concentration en masse, volume de solution mère et concentration de la fille dans une dilution.', questions: [q1, q2, q3, q4, q5, q6],
     retenir: ['c = n / V (V en litres) et n = c × V ; C_m = c × M (g/L) ; dissolution : m = c × V × M.', 'Dilution : la quantité de soluté se conserve, c_mère × V_mère = c_fille × V_fille ; F = c_mère / c_fille = V_fille / V_mère (F > 1, sans unité).', 'Volume précis : fiole jaugée pour le volume final, pipette jaugée pour le prélèvement ; on complète jusqu’au trait de jauge.'] };
+}
+
+// ───────────── Statique des fluides (1G) : différence de pression, pression absolue, profondeur, force sur une paroi, masse volumique ─────────────
+function genStatique1G() {
+  const G9 = 9.81, liqs = SF.ORDRE_LIQUIDES.map(k => SF.LIQUIDES[k]);
+  const sc = x => (x < 0 ? '−' : '') + nb(Math.abs(x), 3);
+  // q0 : relation fournie, axe z vers le haut, signe compris
+  const l0 = tire(liqs), z0A = l0.id === 'mercure' ? -tire([0.10, 0.20, 0.30]) : -tire([1.0, 2.0, 3.0]), z0B = l0.id === 'mercure' ? -tire([0.40, 0.50, 0.60]) : -tire([5.0, 6.0, 8.0]);
+  const sens = Math.random() < 0.5, zA0 = sens ? z0A : z0B, zB0 = sens ? z0B : z0A, d0 = l0.rho * G9 * (zA0 - zB0) / 100;
+  const q0 = { id: 'f0', type: 'num', q: <>Un liquide au repos ({l0.nom.toLowerCase()}, ρ = {l0.aff}{NB}kg·m⁻³) est étudié avec un axe z orienté <b>vers le haut</b>, d’origine à la surface. Le point A est à z<sub>A</sub> = {sc(zA0)}{NB}m et le point B à z<sub>B</sub> = {sc(zB0)}{NB}m (g = 9,81{NB}N·kg⁻¹). Avec P<sub>B</sub> − P<sub>A</sub> = ρ·g·(z<sub>A</sub> − z<sub>B</sub>), calculez P<sub>B</sub> − P<sub>A</sub> en <b>hPa</b> (signe compris).</>, unite: 'hPa', vrai: d0, csMin: 3, tolRel: 0.01,
+    aide: 'Calculez d’abord z_A − z_B (en m, avec son signe), puis multipliez par ρ et g ; 1 hPa = 100 Pa.',
+    pieges: [[-d0, 'Le signe est inversé : la parenthèse est z_A − z_B (A moins B), pas z_B − z_A.'], [d0 * 100, 'Le résultat est demandé en hPa : 1 hPa = 100 Pa.'], [d0 / G9, 'Il manque g dans le calcul : ρ·g·(z_A − z_B).']],
+    expl: <>z<sub>A</sub> − z<sub>B</sub> = {sc(zA0)} − ({sc(zB0)}) = {sc(zA0 - zB0)}{NB}m ; P<sub>B</sub> − P<sub>A</sub> = ρ·g·(z<sub>A</sub> − z<sub>B</sub>) = {l0.aff} × 9,81 × {sc(zA0 - zB0)} = <b>{avecU(d0, 'hPa', 3)}</b> (1 hPa = 100 Pa).</> };
+  // q1 : pression absolue à la profondeur h
+  const l1 = tire(liqs), h1 = l1.id === 'mercure' ? tire([0.25, 0.40, 0.55, 0.70]) : tire([2.0, 3.5, 5.0, 7.5, 12.0, 18.0]), Pa1 = tire([1000, 1013, 1020]);
+  const P1 = Pa1 + l1.rho * G9 * h1 / 100;
+  const q1 = { id: 'f1', type: 'num', q: <>Un manomètre est plongé à <b>{nb(h1, 3)}{NB}m</b> de profondeur dans un liquide à l’air libre ({l1.nom.toLowerCase()}, ρ = {l1.aff}{NB}kg·m⁻³ ; g = 9,81{NB}N·kg⁻¹). La pression à la surface est P<sub>atm</sub> = {nb(Pa1, 4)}{NB}hPa. Quelle pression <b>absolue</b> indique-t-il, en <b>hPa</b> ?</>, unite: 'hPa', vrai: P1, csMin: 4, tolRel: 0.01,
+    aide: 'P = P_atm + ρ·g·h : calculez ρ·g·h en pascals, convertissez en hPa (÷ 100), puis ajoutez P_atm.',
+    pieges: [[l1.rho * G9 * h1 / 100, 'Vous avez calculé seulement la partie due au liquide : le manomètre mesure la pression absolue, il faut ajouter P_atm.'], [P1 * 100, 'Le résultat est demandé en hPa : 1 hPa = 100 Pa.'], [Pa1 + l1.rho * G9 * h1, 'Convertissez ρ·g·h de pascals en hPa (÷ 100) avant d’ajouter P_atm, donnée en hPa.']],
+    expl: <>ρ·g·h = {l1.aff} × 9,81 × {nb(h1, 3)} = {avecU(l1.rho * G9 * h1, 'Pa', 3)} = {avecU(l1.rho * G9 * h1 / 100, 'hPa', 3)} ; P = P<sub>atm</sub> + ρ·g·h = {nb(Pa1, 4)} + {nb(l1.rho * G9 * h1 / 100, 3)} = <b>{avecU(P1, 'hPa', 4)}</b>.</> };
+  // q2 : profondeur à partir d'une pression absolue lue (hPa entiers)
+  const l2 = tire(liqs), h2v = l2.id === 'mercure' ? tire([0.30, 0.50, 0.65]) : tire([3.0, 4.5, 6.0, 9.0, 15.0]), Pa2 = tire([1000, 1013, 1020]), P2 = Math.round(Pa2 + l2.rho * G9 * h2v / 100), h2 = (P2 - Pa2) * 100 / (l2.rho * G9);
+  const q2 = { id: 'f2', type: 'num', q: <>Dans un liquide à l’air libre ({l2.nom.toLowerCase()}, ρ = {l2.aff}{NB}kg·m⁻³ ; g = 9,81{NB}N·kg⁻¹), un manomètre indique la pression absolue <b>{nb(P2, 4)}{NB}hPa</b> ; à la surface, P<sub>atm</sub> = {nb(Pa2, 4)}{NB}hPa. À quelle profondeur est-il, en <b>m</b> ?</>, unite: 'm', vrai: h2, csMin: 3, tolRel: 0.01,
+    aide: 'Seule la différence P − P_atm est due au liquide : h = (P − P_atm) / (ρ·g), avec des pressions en pascals.',
+    pieges: [[P2 * 100 / (l2.rho * G9), 'Il faut retrancher P_atm : seule la différence P − P_atm est due au liquide.'], [h2 / 100, 'Convertissez les hPa en Pa (× 100) avant de diviser par ρ·g.'], [(P2 - Pa2) / (l2.rho * G9), 'Convertissez les hPa en Pa (× 100) avant de diviser par ρ·g.']],
+    expl: <>P − P<sub>atm</sub> = {nb(P2, 4)} − {nb(Pa2, 4)} = {nb(P2 - Pa2, 3)}{NB}hPa = {avecU((P2 - Pa2) * 100, 'Pa', 3)} ; h = (P − P<sub>atm</sub>) / (ρ·g) = {nb((P2 - Pa2) * 100, 3)} ÷ ({l2.aff} × 9,81) = <b>{avecU(h2, 'm', 3)}</b>.</> };
+  // q3 : force sur un bouchon (pression due au liquide seule)
+  const hb = tire([1.0, 1.5, 2.0, 2.5, 3.0, 4.0]), Sb = tire([10, 20, 25, 40, 50]), F3 = 1000 * G9 * hb * Sb * 1e-4;
+  const q3 = { id: 'f3', type: 'num', q: <>Un réservoir d’eau (ρ = 1,00{NB}×{NB}10³{NB}kg·m⁻³ ; g = 9,81{NB}N·kg⁻¹) est ouvert à l’air libre. Un bouchon de surface <b>S = {Sb}{NB}cm²</b> ferme un trou de la paroi, à <b>{nb(hb, 3)}{NB}m</b> sous la surface. Sur l’autre face, l’air pousse le bouchon avec P<sub>atm</sub> : la force nette est créée par la pression due à l’eau, P<sub>eau</sub> − P<sub>atm</sub> = ρ·g·h. Quelle est la norme de cette force nette, en <b>N</b> ?</>, unite: 'N', vrai: F3, csMin: 3, tolRel: 0.01,
+    aide: 'Pression due à l’eau : ρ·g·h (en Pa). Puis F = P × S avec S en m² (1 cm² = 10⁻⁴ m²).',
+    pieges: [[F3 * 1e4, 'Convertissez la surface en m² : 1 cm² = 10⁻⁴ m².'], [(1013e2 + 1000 * G9 * hb) * Sb * 1e-4, 'Vous avez utilisé la pression absolue : P_atm s’exerce aussi de l’autre côté, elle se retranche.'], [1000 * G9 * hb, 'C’est la pression due à l’eau en Pa : il reste à multiplier par S (en m²) pour obtenir une force en N.']],
+    expl: <>ρ·g·h = 1,00 × 10³ × 9,81 × {nb(hb, 3)} = {avecU(1000 * G9 * hb, 'Pa', 3)} ; S = {Sb}{NB}cm² = {nb(Sb * 1e-4, 3)}{NB}m² ; F = P × S = <b>{avecU(F3, 'N', 3)}</b>.</> };
+  // q4 : masse volumique à partir de deux relevés (hPa entiers)
+  const l4 = tire(liqs), hh1 = l4.id === 'mercure' ? tire([0.10, 0.20]) : tire([0.5, 1.0, 1.5]), hh2 = l4.id === 'mercure' ? tire([0.40, 0.50]) : tire([3.0, 4.0, 5.0, 6.0]);
+  const R1 = Math.round(1013 + l4.rho * G9 * hh1 / 100), R2 = Math.round(1013 + l4.rho * G9 * hh2 / 100), rho4 = (R2 - R1) * 100 / (G9 * (hh2 - hh1));
+  const q4 = { id: 'f4', type: 'num', q: <>Dans un liquide à l’air libre, un manomètre indique la pression absolue <b>{nb(R1, 4)}{NB}hPa</b> à la profondeur <b>{nb(hh1, 3)}{NB}m</b> puis <b>{nb(R2, 4)}{NB}hPa</b> à <b>{nb(hh2, 3)}{NB}m</b> (g = 9,81{NB}N·kg⁻¹). Calculez la masse volumique du liquide, en <b>kg·m⁻³</b>.</>, unite: 'kg·m⁻³', vrai: rho4, csMin: 3, tolRel: 0.03,
+    aide: 'Entre les deux relevés, P augmente de ΔP = ρ·g·Δh : calculez ΔP en Pa (1 hPa = 100 Pa) et Δh en m, puis ρ = ΔP / (g·Δh).',
+    pieges: [[(R2 - R1) / (G9 * (hh2 - hh1)), 'Convertissez les hPa en Pa (× 100) avant de diviser par g·Δh.'], [R2 * 100 / (G9 * hh2), 'Il faut l’écart ΔP entre les deux relevés, pas la pression P : elle comprend aussi l’atmosphère.'], [(R2 - R1) * 100 / (hh2 - hh1), 'C’est la pente ρ·g (en Pa·m⁻¹) : il reste à la diviser par g pour obtenir ρ.']],
+    expl: <>ΔP = {nb(R2, 4)} − {nb(R1, 4)} = {nb(R2 - R1, 3)}{NB}hPa = {avecU((R2 - R1) * 100, 'Pa', 3)} ; Δh = {nb(hh2 - hh1, 3)}{NB}m ; ρ = ΔP / (g·Δh) = <b>{avecU(rho4, 'kg·m⁻³', 3)}</b>.</> };
+  // q5 : pression absolue en bar à une profondeur donnée dans l'eau (ordre de grandeur)
+  const h5 = tire([10, 20, 30, 40, 50]), P5 = 1.013 + 1000 * G9 * h5 / 1e5;
+  const q5 = { id: 'f5', type: 'num', q: <>Un plongeur est à <b>{h5}{NB}m</b> de profondeur dans l’eau d’un lac (ρ = 1,00{NB}×{NB}10³{NB}kg·m⁻³ ; g = 9,81{NB}N·kg⁻¹ ; 1{NB}bar = 10⁵{NB}Pa). À la surface, P<sub>atm</sub> = 1,013{NB}bar. Quelle pression absolue subit-il, en <b>bar</b> ?</>, unite: 'bar', vrai: P5, csMin: 3, tolRel: 0.01,
+    aide: 'ρ·g·h en pascals, conversion en bar (÷ 10⁵), puis ajout de P_atm.',
+    pieges: [[1000 * G9 * h5 / 1e5, 'Vous avez calculé seulement la partie due à l’eau : le manomètre du plongeur mesure la pression absolue, il faut ajouter P_atm.'], [P5 * 1e5, 'Le résultat est demandé en bar : 1 bar = 10⁵ Pa.'], [1.013 + 1000 * G9 * h5 / 1e4, 'Convertissez correctement : 1 bar = 10⁵ Pa, donc on divise des pascals par 10⁵.']],
+    expl: <>ρ·g·h = 1,00 × 10³ × 9,81 × {h5} = {avecU(1000 * G9 * h5, 'Pa', 3)} = {nb(1000 * G9 * h5 / 1e5, 3)}{NB}bar ; P = 1,013 + {nb(1000 * G9 * h5 / 1e5, 3)} = <b>{avecU(P5, 'bar', 3)}</b>.</> };
+  [q0, q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Statique des fluides : différence de pression entre deux points (axe z vers le haut), pression absolue à une profondeur, profondeur déduite d’une pression, force sur un bouchon, masse volumique à partir de deux relevés, ordre de grandeur en bar.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['P_B − P_A = ρ·g·(z_A − z_B), axe z vers le haut : la pression augmente quand on descend ; à la profondeur h : P = P_atm + ρ·g·h (pression absolue).', 'Seule la profondeur compte : ni la forme du récipient ni la quantité de liquide ; dans l’eau, environ 1 bar de plus tous les 10 m.', 'Force sur une paroi : F = P × S, perpendiculaire à la paroi ; convertir hPa en Pa (× 100) et cm² en m² (× 10⁻⁴).'] };
 }
 
 // ───────────── Dissolution d'un solide ionique (1G) : équation, concentration en soluté apporté et concentration effective des ions ─────────────
@@ -2836,6 +2885,7 @@ export const FAMILLES = [
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
   { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
+  { id: 'fl1g-statique-calcul', groupe: 'Formules', titre: 'Statique des fluides : différence de pression, pression absolue, profondeur, force sur un bouchon et masse volumique (1G)', gen: genStatique1G, domaine: 'Statique des fluides : pression et profondeur' },
   { id: 'mes1g-calcul', groupe: 'Formules', titre: 'Mesure et incertitudes : moyenne, incertitude-type de type A et de type B, arrondi et comparaison à une référence (1G)', gen: genMesure1G, domaine: 'Mesure et incertitudes (1G)' },
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
   { id: 'comb1g-calcul', groupe: 'Formules', titre: 'Combustions : équation, énergie des liaisons, énergie molaire de réaction, écart avec la référence et pouvoir calorifique (1G)', gen: genCombustion1G, domaine: 'Combustions : énergie de réaction et énergies de liaison' },
