@@ -4329,6 +4329,27 @@ export const PLAUSIBLES = [
       F('il aurait dû trouver un rendement plus faible, car le catalyseur est consommé', 'Le catalyseur n’est pas consommé : il est régénéré et ne change ni la composition finale ni le rendement à l’équilibre.'),
       F('il a raison : plus une réaction est rapide, plus elle va loin avant de s’arrêter', 'La rapidité décrit la durée, pas la position de l’équilibre : une réaction plus rapide atteint seulement plus tôt le même état final.'),
     ] }),
+  // ───────────────────────────── Facteurs cinétiques, catalyse et choix d’un capteur (TG, sim 187)
+  P({ id: 'cin-val-temperature', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', niveau: 2, titre: 'Temps de demi-réaction à deux températures', plausible: false,
+    enonce: 'La même transformation lente est suivie à 20 °C, puis à 40 °C, avec les mêmes quantités de matière et sans catalyseur. Un élève annonce : « t½ = 18 min à 20 °C et t½ = 72 min à 40 °C : plus on chauffe, plus la transformation est lente ».',
+    reperes: [['Effet de la température', 'une température plus élevée accélère la transformation'], ['Temps de demi-réaction', 'plus la transformation est rapide, plus t½ est court'], ['Ordre de grandeur', 'pour 20 °C de plus, t½ est divisé par un facteur de l’ordre de 4']],
+    ver: 'À température plus élevée, la transformation est plus rapide et son temps de demi-réaction plus court : on attend environ 4 à 5 min à 40 °C, pas 72 min. Le résultat annoncé a le sens inverse de l’effet attendu : il est faux, ou une autre condition a changé sans qu’on l’ait noté.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il a inversé le sens de l’effet : chauffer raccourcit t½', 'Une température plus élevée augmente la rapidité : t½ diminue. Un t½ quatre fois plus grand à 40 °C est incohérent avec les autres conditions identiques.'),
+      F('il a oublié que la quantité finale de produit dépend de la température', 'La quantité finale ne dépend pas de la température : seule la rapidité change. L’erreur porte sur le sens de la variation de t½.'),
+      F('il a oublié que la température n’a aucun effet sur t½', 'La température est un facteur cinétique : elle change t½. L’erreur est le sens de ce changement.'),
+    ] }),
+  P({ id: 'cin-val-catalyseur', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', niveau: 1, titre: 'Un catalyseur et la quantité finale de diiode', plausible: true,
+    enonce: 'On réalise la même transformation à 20 °C, sans puis avec un catalyseur. Un élève relève : « t½ = 18 min sans catalyseur et 1,8 min avec ; la quantité finale de diiode vaut 2,0 mmol dans les deux cas ». Il conclut que ces résultats sont cohérents avec l’action d’un catalyseur.',
+    reperes: [['Rôle d’un catalyseur', 'il accélère la transformation'], ['État final', 'un catalyseur ne change pas la quantité finale'], ['Rapport des temps', 'frac(18|1,8) = 10']],
+    ver: 'Un catalyseur diminue le temps de demi-réaction (ici d’un facteur 10) sans modifier l’état final : la même quantité de diiode, 2,0 mmol, est atteinte plus vite. Les résultats sont cohérents.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('plausible : t½ diminue mais la quantité finale reste la même', 'Un catalyseur accélère la transformation sans changer l’état final : t½ plus court, même quantité de diiode à la fin.'),
+      F('pas plausible : avec un catalyseur, la quantité finale devrait augmenter', 'Un catalyseur ne fait pas former plus de produit : il fait atteindre plus vite le même état final.'),
+      F('pas plausible : un catalyseur ne peut pas modifier t½', 'C’est même sa propriété : un catalyseur raccourcit le temps de demi-réaction.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

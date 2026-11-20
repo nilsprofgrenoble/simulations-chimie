@@ -1718,5 +1718,15 @@
  "77:plausible:ccm2gt-val-prouve": "VAL457",
  "77:plausible:ccm2gt-val-differentes": "VAL458",
  "77:plausible:ccm2gt-val-pur-sur": "VAL459",
- "36:ccm2gt-calcul": "REA117"
+ "36:ccm2gt-calcul": "REA117",
+ "34:cin-sapp-temperature.0": "SAPP443",
+ "34:cin-sapp-temperature.1": "SAPP444",
+ "34:cin-sapp-catalyse.0": "SAPP445",
+ "34:cin-sapp-catalyse.1": "SAPP446",
+ "37:prevoir:cin-ana-facteur": "ANA703",
+ "37:prevoir:cin-ana-catalyseur": "ANA704",
+ "37:prevoir:cin-ana-capteur": "ANA705",
+ "77:plausible:cin-val-temperature": "VAL460",
+ "77:plausible:cin-val-catalyseur": "VAL461",
+ "36:cin-calcul": "REA118"
 }

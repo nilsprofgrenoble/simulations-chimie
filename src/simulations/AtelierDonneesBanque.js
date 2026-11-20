@@ -4704,6 +4704,54 @@ export const ENONCES = [
         manque: null, solution: { txt: 'η = frac(n(ester)|n_max) × 100, avec n_max égale à la quantité initiale d’acide (réactif limitant)', val: 100 * p.nE / p.n, u: '%' } };
     }),
   },
+  // ───────────────────────────── Facteurs cinétiques, catalyse et choix d’un capteur (TG, sim 187)
+  {
+    id: 'cin-sapp-temperature', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Deux expériences à deux températures', noms: ['Rapport des temps de demi-réaction', 'Durée gagnée pour atteindre la demi-réaction'],
+    gen: () => { const t1 = tire([12, 18, 24, 30, 40]), dT = tire([10, 20]), f = dT === 10 ? 2 : 4; return { T1: tire([20, 25]), dT, t1, t2: Number((t1 / f).toFixed(1)), c0: tire([0.050, 0.10, 0.20]), V: tire([50, 100, 200]) }; },
+    build: (p, q) => {
+      const tokens = {
+        T1: tok(`${p.T1} °C`, 'Température de l’expérience A', p.T1, '°C'),
+        T2: tok(`${p.T1 + p.dT} °C`, 'Température de l’expérience B', p.T1 + p.dT, '°C'),
+        t1: tok(`${nb(p.t1, 1)} min`, 'Temps de demi-réaction de l’expérience A', p.t1, 'min'),
+        t2: tok(`${nb(p.t2, 1)} min`, 'Temps de demi-réaction de l’expérience B', p.t2, 'min'),
+        c0: tok(`${nb(p.c0, 3)} mol/L`, 'Concentration initiale du réactif, la même dans les deux expériences', p.c0, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume du mélange, le même dans les deux expériences', p.V, 'mL'),
+      };
+      const debut = ['On suit la même transformation lente, sans catalyseur, dans deux expériences qui ne diffèrent que par la température : A à ', T('T1'), ' et B à ', T('T2'), '. Le mélange initial est le même (', T('c0'), ', ', T('V'), '). Les courbes donnent les temps de demi-réaction ', T('t1'), ' pour A et ', T('t2'), ' pour B. '];
+      const raisons = { T1: 'La température sert à comparer les conditions, pas à calculer une durée ou un rapport de durées.', T2: 'La température sert à comparer les conditions, pas à calculer une durée ou un rapport de durées.', c0: 'La concentration initiale est identique dans les deux expériences : elle n’intervient pas dans la comparaison des temps de demi-réaction.', V: 'Le volume du mélange est le même dans les deux expériences et ne sert pas ici.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De quel facteur l’expérience B est-elle plus rapide que l’expérience A ?'],
+        utiles: ['t1', 't2'], raisons,
+        cherche: { bonne: 'Le rapport t½(A) divisé par t½(B) (sans unité)', faux: ['La différence des températures (en °C)', 'La vitesse volumique moyenne de disparition du réactif (en mol/L/min)', 'La quantité de matière de réactif consommée (en mol)'] },
+        manque: null, solution: { txt: 'rapport = frac(t½(A)|t½(B)) : la transformation la plus rapide a le temps de demi-réaction le plus court', val: p.t1 / p.t2, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Combien de temps l’expérience B gagne-t-elle pour atteindre la demi-réaction ?'],
+        utiles: ['t1', 't2'], raisons,
+        cherche: { bonne: 'La différence t½(A) − t½(B) (en min)', faux: ['Le rapport des temps de demi-réaction (sans unité)', 'La durée totale de l’expérience B (en min)', 'La différence de température entre A et B (en °C)'] },
+        manque: null, solution: { txt: 'durée gagnée = t½(A) − t½(B)', val: p.t1 - p.t2, u: 'min' } };
+    },
+  },
+  {
+    id: 'cin-sapp-catalyse', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Un ajout qui accélère la transformation', noms: ['Facteur d’accélération', 'Quantité de catalyseur retrouvée à la fin'],
+    gen: () => { const nI = tire([1.0, 2.0, 5.0]), nFe = tire([0.010, 0.020, 0.050]), ts = tire([12, 18, 25]), f = tire([5, 8, 10, 12]); return { nI, nFe, ts, ta: Number((ts / f).toFixed(1)) }; },
+    build: (p, q) => {
+      const tokens = {
+        nI1: tok(`${nb(p.nI, 1)} mmol`, 'Quantité finale de produit formé sans l’ajout', p.nI, 'mmol'),
+        nI2: tok(`${nb(p.nI, 1)} mmol`, 'Quantité finale de produit formé avec l’ajout', p.nI, 'mmol'),
+        ts: tok(`${nb(p.ts, 1)} min`, 'Temps de demi-réaction sans l’ajout', p.ts, 'min'),
+        ta: tok(`${nb(p.ta, 1)} min`, 'Temps de demi-réaction avec l’ajout', p.ta, 'min'),
+        nA: tok(`${nb(p.nFe, 3)} mmol`, 'Quantité de l’espèce ajoutée, avant la transformation', p.nFe, 'mmol'),
+        nB: tok(`${nb(p.nFe, 3)} mmol`, 'Quantité de l’espèce ajoutée, après la transformation (dosage)', p.nFe, 'mmol'),
+      };
+      const debut = ['On réalise deux fois la même transformation, à la même température : sans, puis avec l’ajout d’une espèce qui n’apparaît pas dans l’équation de la réaction. Le produit formé atteint la même quantité finale dans les deux cas (', T('nI1'), ' sans l’ajout, ', T('nI2'), ' avec). Les temps de demi-réaction sont ', T('ts'), ' sans l’ajout et ', T('ta'), ' avec. L’espèce ajoutée vaut ', T('nA'), ' avant la transformation et ', T('nB'), ' après, d’après un dosage. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De quel facteur l’ajout accélère-t-il la transformation ?'],
+        utiles: ['ts', 'ta'], raisons: { nI1: 'La quantité finale de produit est la même avec et sans l’ajout : elle ne mesure pas la rapidité.', nI2: 'La quantité finale de produit est la même avec et sans l’ajout : elle ne mesure pas la rapidité.', nA: 'La quantité de l’espèce ajoutée ne renseigne pas sur la rapidité de la transformation.', nB: 'La quantité de l’espèce ajoutée ne renseigne pas sur la rapidité de la transformation.' },
+        cherche: { bonne: 'Le rapport t½(sans) divisé par t½(avec) (sans unité)', faux: ['La différence des quantités finales de produit (en mmol)', 'La quantité de l’espèce consommée (en mmol)', 'La durée totale de la transformation avec l’ajout (en min)'] },
+        manque: null, solution: { txt: 'facteur = frac(t½(sans)|t½(avec))', val: p.ts / p.ta, u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de l’espèce ajoutée retrouve-t-on à la fin de la transformation ?'],
+        utiles: ['nB'], raisons: { nI1: 'La quantité de produit ne dit rien sur la quantité de l’espèce ajoutée.', nI2: 'La quantité de produit ne dit rien sur la quantité de l’espèce ajoutée.', ts: 'Les temps de demi-réaction ne donnent pas une quantité de matière.', ta: 'Les temps de demi-réaction ne donnent pas une quantité de matière.', nA: 'C’est la quantité avant la transformation : la question porte sur la quantité retrouvée après.' },
+        cherche: { bonne: 'La quantité de l’espèce ajoutée à la fin (en mmol)', faux: ['La quantité de produit formé avec l’ajout (en mmol)', 'La quantité de l’espèce ajoutée qui a été consommée (en mmol)', 'La quantité de réactif restant à la fin (en mmol)'] },
+        manque: null, solution: { txt: 'quantité retrouvée = valeur du dosage après la transformation (identique à la quantité ajoutée : l’espèce est un catalyseur)', val: p.nFe, u: 'mmol' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
