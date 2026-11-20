@@ -21,6 +21,7 @@ import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
 import * as EQM from "./equationReactionModele";
 import * as ETM from "./changementEtat2gtModele";
+import * as M_TEST from "./testsChimiques2gtModele";
 import * as RX from "./redoxModele";
 import * as RL from "./reactifLimitantModele";
 import * as KEP from "./satellitesModele";
@@ -1579,6 +1580,67 @@ function genEtat2GT() {
   [q1, q2, q3, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Changement d’état : équation, sens du transfert thermique, énergie E = m × L, masse qui change d’état, conversion des grammes en kilogrammes et proportionnalité.', questions: [q0, q1, q2, q3, q4, q5],
     retenir: ['Équation d’un changement d’état : même formule des deux côtés, état de départ (s, l ou g) avant la flèche, état d’arrivée après.', 'Endothermique : le système reçoit de l’énergie (fusion, vaporisation, sublimation) ; exothermique : il en cède (solidification, liquéfaction, condensation solide).', 'E = m × L, avec E en kJ, m en kg et L en kJ/kg ; convertir les grammes en kilogrammes ; l’énergie est proportionnelle à la masse.'] };
+}
+// ───────────── Tests chimiques (2GT) : réactif et observation d’un test, lecture d’une observation, nombre de tests, durée des tests, deux espèces en même temps ─────────────
+const TEST2GT_REACTIF = { eau: 'sulfate de cuivre anhydre', co2: 'eau de chaux', o2: 'une braise', h2: 'une flamme' };
+const TEST2GT_OBS = { eau: 'la poudre devient bleue', co2: 'l’eau de chaux se trouble', o2: 'la braise se rallume', h2: 'un petit « pop »' };
+const TEST2GT_NOM = { eau: 'l’eau', co2: 'le dioxyde de carbone', o2: 'le dioxygène', h2: 'le dihydrogène' };
+const TEST2GT_GAZ = { h2: 'le dihydrogène H₂', o2: 'le dioxygène O₂', co2: 'le dioxyde de carbone CO₂', n2: 'le diazote N₂' };
+const TEST2GT_MELANGE = [
+  { e: true, c: false, t: 'eau détectée, pas de dioxyde de carbone détecté' },
+  { e: false, c: true, t: 'dioxyde de carbone détecté, pas d’eau détectée' },
+  { e: true, c: true, t: 'eau et dioxyde de carbone détectés tous les deux' },
+  { e: false, c: false, t: 'ni eau ni dioxyde de carbone détectés' },
+];
+// Une question QCM dont la bonne réponse n'est jamais strictement la plus longue : on retire les options jusqu'à ce que ce soit le cas
+const test2gtOptions = (bonne, faux) => {
+  for (let k = 0; k < 200; k++) {
+    const o = melange([bonne, ...faux]), L = o.map(x => x.length), b = L[o.indexOf(bonne)];
+    if (b < Math.max(...L) || new Set(L).size === 1) return o;
+  }
+  return melange([bonne, ...faux]);
+};
+function genTests2GT() {
+  const ESP = ['eau', 'co2', 'o2', 'h2'];
+  // q0 : réactif et observation d'une espèce (appariement)
+  let e0, bonne0, faux0, opts0;
+  for (let k = 0; k < 200; k++) {
+    e0 = tire(ESP);
+    const autres = melange(ESP.filter(x => x !== e0)), [x, y, z] = autres;
+    bonne0 = `${TEST2GT_REACTIF[e0]} : ${TEST2GT_OBS[e0]}`;
+    faux0 = [`${TEST2GT_REACTIF[e0]} : ${TEST2GT_OBS[x]}`, `${TEST2GT_REACTIF[y]} : ${TEST2GT_OBS[e0]}`, `${TEST2GT_REACTIF[y]} : ${TEST2GT_OBS[z]}`];
+    const L = [bonne0, ...faux0].map(s => s.length);
+    if (L[0] < Math.max(...L)) break;
+  }
+  opts0 = melange([bonne0, ...faux0]);
+  const q0 = { id: 't0', type: 'qcm', q: <>Quel réactif et quelle observation permettent de reconnaître <b>{TEST2GT_NOM[e0]}</b> ?</>, options: opts0, bonne: opts0.indexOf(bonne0),
+    aide: 'Chaque test a son réactif et son observation : sulfate de cuivre anhydre (blanc → bleu), eau de chaux (trouble), braise (se rallume), flamme (« pop »).',
+    expl: <>Pour reconnaître {TEST2GT_NOM[e0]} : <b>{bonne0}</b>. Chaque espèce a son réactif et son observation.</> };
+  // q1 : lire une observation (cas pièges compris)
+  const o1 = tire(M_TEST.OBSERVATIONS), opts1 = test2gtOptions(o1.bonne, o1.faux);
+  const q1 = { id: 't1', type: 'qcm', q: <>{o1.texte} {o1.q}</>, options: opts1, bonne: opts1.indexOf(o1.bonne), aide: o1.indice, expl: <>{o1.expl}</> };
+  // q2 : nombre maximal de tests pour n gaz possibles
+  const n2 = tire([2, 3, 4]), gaz2 = melange(['h2', 'o2', 'co2', 'n2']).slice(0, n2), v2 = M_TEST.testsNecessaires(n2);
+  const q2 = { id: 't2', type: 'num', q: <>Un tube contient un seul gaz pur, l’un de ces <b>{n2} gaz</b> : {gaz2.map(g => TEST2GT_GAZ[g]).join(', ')}. Chaque test est positif pour un seul de ces gaz, et le dernier gaz restant se déduit par élimination. Combien de tests faut-il faire, <b>au maximum</b>, pour identifier le gaz ?</>,
+    unite: 'tests', vrai: v2, tolRel: 0,
+    aide: 'Après chaque test négatif, un gaz est éliminé. Quand il n’en reste qu’un, on n’a pas besoin de le tester.',
+    pieges: [[n2, 'Le dernier gaz se déduit par élimination : on n’a pas besoin de le tester.'], [2 * n2, 'Chaque gaz n’a pas besoin d’être testé deux fois : un test négatif suffit pour l’éliminer.']],
+    expl: <>Avec {n2} gaz possibles, {n2 - 1} tests suffisent : le dernier gaz se déduit par élimination. Réponse : <b>{avecU(v2, 'tests', 1)}</b>.</> };
+  // q3 : durée maximale pour plusieurs tubes
+  const n3 = tire([3, 4]), t3 = tire([2, 3, 5]), m3 = tire([2, 3, 4]), v3 = m3 * (n3 - 1) * t3;
+  const q3 = { id: 't3', type: 'num', q: <>Un technicien doit identifier le gaz de <b>{m3} tubes</b>, un après l’autre. Chaque tube contient un seul gaz pur, l’un de <b>{n3} gaz possibles</b> (même règle : un test positif pour un seul gaz, le dernier se déduit). Chaque test dure <b>{t3}{NB}min</b>. Quelle durée maximale faut-il prévoir pour l’ensemble ?</>,
+    unite: 'min', vrai: v3, tolRel: 0,
+    aide: 'Pour un tube : (nombre de gaz − 1) tests. Multipliez par la durée d’un test, puis par le nombre de tubes.',
+    pieges: [[(n3 - 1) * t3, 'C’est la durée pour un seul tube : il y a ' + m3 + ' tubes.'], [m3 * n3 * t3, 'On n’a pas besoin de tester tous les gaz : le dernier se déduit par élimination.'], [m3 * (n3 - 1), 'Il faut multiplier par la durée d’un test, ' + t3 + ' min.']],
+    expl: <>Un tube : {n3 - 1} tests de {t3}{NB}min. Pour {m3} tubes : {m3} × {n3 - 1} × {t3} = <b>{avecU(v3, 'min', 2)}</b>.</> };
+  [q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
+  // q4 : deux espèces en même temps (la bonne réponse n'est jamais la plus longue)
+  const cand = TEST2GT_MELANGE.filter(c => c.t.length < Math.max(...TEST2GT_MELANGE.map(x => x.t.length))), c4 = tire(cand), opts4 = melange(TEST2GT_MELANGE.map(c => c.t));
+  const q4 = { id: 't4', type: 'qcm', q: <>Sur un même échantillon, le test de l’eau est <b>{c4.e ? 'positif' : 'négatif'}</b> et le test du dioxyde de carbone est <b>{c4.c ? 'positif' : 'négatif'}</b>. Quelle conclusion est justifiée ?</>, options: opts4, bonne: opts4.indexOf(c4.t),
+    aide: 'Chaque test met en évidence une seule espèce : un test positif signale sa présence, un test négatif signale seulement qu’elle n’est pas détectée.',
+    expl: <>Chaque test regarde son espèce : <b>{c4.t}</b>. Plusieurs tests peuvent être positifs dans un mélange.</> };
+  return { intro: 'Tests chimiques : réactif et observation de chaque test, lecture d’une observation (cas pièges), nombre de tests pour identifier un gaz, durée des tests et deux espèces à la fois.', questions: [q0, q1, q2, q3, q4],
+    retenir: ['Eau : poudre blanche qui devient bleue ; CO₂ : eau de chaux qui se trouble ; O₂ : braise qui se rallume ; H₂ : « pop » à la flamme (par le professeur).', 'Parmi n gaz possibles, n − 1 tests suffisent : le dernier gaz se déduit par élimination.', 'Un test négatif ne prouve pas à lui seul l’absence ; une flamme éteinte n’est pas un test ; plusieurs tests positifs : un mélange.'] };
 }
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
 function genEquilibreTG() {
@@ -3795,6 +3857,7 @@ export const FAMILLES = [
   { id: 'comb1g-calcul', groupe: 'Formules', titre: 'Combustions : équation, énergie des liaisons, énergie molaire de réaction, écart avec la référence et pouvoir calorifique (1G)', gen: genCombustion1G, domaine: 'Combustions : énergie de réaction et énergies de liaison' },
   { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
   { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
+  { id: 'test2gt-calcul', groupe: 'Formules', titre: 'Tests chimiques : réactif et observation, lecture d’une observation, nombre de tests pour identifier un gaz, durée et deux espèces à la fois (2GT)', gen: genTests2GT, domaine: 'Tests chimiques (2GT)' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },

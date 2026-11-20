@@ -104,6 +104,7 @@ const SimulationNiveaux = paresseux(() => import("./simulations/Niveaux"), "Simu
 const SimulationStatiqueFluides1G = paresseux(() => import("./simulations/StatiqueFluides1G"), "SimulationStatiqueFluides1G");
 const SimulationEquationReaction = paresseux(() => import("./simulations/EquationReaction"), "SimulationEquationReaction");
 const SimulationChangementEtat2gt = paresseux(() => import("./simulations/ChangementEtat2gt"), "SimulationChangementEtat");
+const SimulationTestsChimiques2gt = paresseux(() => import("./simulations/TestsChimiques2gt"), "SimulationTestsChimiques");
 const SimulationCombustions = paresseux(() => import("./simulations/Combustions"), "SimulationCombustions");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
@@ -439,6 +440,7 @@ const SIMULATIONS = [
     component: SimulationDilution },
   { id:63, label:"Mélanges : miscibilité, solubilité et densité", niveau:"2GT", icon:"🧴", color:"#b45309",
     component: SimulationMelanges },
+  { id:198, label:"Tests chimiques de gaz et d’eau", niveau:"2GT", icon:"🧫", color:"#0f766e", component: SimulationTestsChimiques2gt },
   { id:64, label:"Réfraction de la lumière : lois de Snell-Descartes", niveau:"2GT", icon:"🔦", color:"#0369a1",
     component: SimulationRefraction },
   { id:65, label:"Lentille convergente : trajet de la lumière et foyer", niveau:"2GT", icon:"🔍", color:"#0e7490",
