@@ -46,6 +46,7 @@ export const EXOS_DE_SIM = {
   64: [/^(indice|snell)2/, /lum-(reflexion|air-eau|incidence|verre-air|indice-inverse|angle-refracte)/],
   65: [/lum-(lentille|image-infini|vergence)/],
   66: [/lum-(spectre|etoile|longueur-onde)/],
+  193: [/(^|\.)mes2gt-var-/, /plausible\.mes2gt-var-/],                                                           // Mesure : variabilité, histogramme, moyenne et écart-type (2GT)
   192: [/(^|\.)son2gt-niv-/, /plausible\.son2gt-niv-/],                                                           // Niveau sonore et dangers de l'exposition (2GT)
   68: [/cir-(serie|derivation|voltmetre|tension-serie|resistance-derivation|puissance)/],
   69: [/^ohm2/, /cir-ohm/],

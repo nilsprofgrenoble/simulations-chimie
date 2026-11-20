@@ -1619,5 +1619,21 @@
  "37:prevoir:mrx-ana-catalyseur": "ANA668",
  "77:plausible:mrx-val-acte": "VAL428",
  "77:plausible:mrx-val-bilan": "VAL429",
- "36:mrx-calcul": "REA110"
+ "36:mrx-calcul": "REA110",
+ "34:mes2gt-var-sapp-moyenne.0": "SAPP415",
+ "34:mes2gt-var-sapp-moyenne.1": "SAPP416",
+ "34:mes2gt-var-sapp-histo.0": "SAPP417",
+ "34:mes2gt-var-sapp-histo.1": "SAPP418",
+ "37:prevoir:mes2gt-var-ana-instrument": "ANA669",
+ "37:prevoir:mes2gt-var-ana-protocole": "ANA670",
+ "37:prevoir:mes2gt-var-ana-plus-mesures": "ANA671",
+ "37:prevoir:mes2gt-var-ana-derive": "ANA672",
+ "37:prevoir:mes2gt-var-ana-deux-bosses": "ANA673",
+ "37:prevoir:mes2gt-var-ana-ecart-nul": "ANA674",
+ "77:plausible:mes2gt-var-val-ecart-type-grand": "VAL430",
+ "77:plausible:mes2gt-var-val-dix-intervalles": "VAL431",
+ "77:plausible:mes2gt-var-val-cent-mesures": "VAL432",
+ "77:plausible:mes2gt-var-val-moyenne-hors": "VAL433",
+ "77:plausible:mes2gt-var-val-largeur-ecart-type": "VAL434",
+ "36:mes2gt-var-calcul": "REA111"
 }

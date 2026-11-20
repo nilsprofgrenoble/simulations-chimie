@@ -3548,6 +3548,77 @@ function genNiveauSonore2GT() {
     retenir: ['Un écart de niveau se calcule par une différence ; + 10 dB correspond à une intensité environ 10 fois plus grande (on multiplie les intensités, jamais les niveaux).', 'Deux sources identiques : intensité × 2, soit environ + 3 dB ; quatre sources : environ + 6 dB.', 'À partir de 85 dB, on compare la durée d’exposition à la durée repère du niveau (repères indicatifs de prévention, pas des seuils médicaux exacts).'] };
 }
 
+// ───────────── Mesure : variabilité, histogramme, moyenne, écart-type (2GT, sim 193) : moyenne, effectif d'une classe, protocole 10 intervalles, rapport de dispersions, valeur manquante ─────────────
+const MV_SITS = [
+  { id: 'chute', mes: 'durées de chute d’une bille', u: 's', c: 0.6, res: 0.01, d: 2, kmin: 4, kmax: 9, w: 0.05, a0: 0.6, petit: [0.003, 0.004, 0.005, 0.006], gros: [8, 10, 12, 15], noms: ['chronomètre à main', 'cellules photoélectriques'] },
+  { id: 'gouttes', mes: 'durées entre deux gouttes', u: 's', c: 1.2, res: 0.01, d: 2, kmin: 4, kmax: 9, w: 0.05, a0: 1.2, petit: [0.005, 0.006, 0.008, 0.01], gros: [6, 8, 10, 12], noms: ['un seul intervalle chronométré', '10 intervalles chronométrés d’un coup, divisés par 10'] },
+  { id: 'eau', mes: 'masses d’eau délivrées par une éprouvette', u: 'g', c: 20.0, res: 0.01, d: 2, kmin: 12, kmax: 45, w: 0.25, a0: 20.0, petit: [0.02, 0.03, 0.04], gros: [8, 10, 12], noms: ['éprouvette graduée', 'pipette jaugée'] },
+];
+const mvFr = (x, d) => Number(x).toFixed(d).replace('.', ',');
+const mvSig = x => String(Number(Number(x).toPrecision(2))).replace('.', ',');
+const mvTolMoyenne = (S, m) => Math.max(0.004, 0.55 * S.res / m);
+const mvVal = S => Number((S.c + (Math.random() < 0.5 ? -1 : 1) * (S.kmin + Math.floor(Math.random() * (S.kmax - S.kmin + 1))) * S.res).toFixed(S.d));
+// série de n valeurs dont aucune n'est à moins de 1,8 fois la tolérance de la moyenne (une valeur recopiée de la liste est refusée)
+function mvSerie(S, n) {
+  for (let t = 0; t < 2000; t++) {
+    const v = Array.from({ length: n }, () => mvVal(S)), m = v.reduce((a, b) => a + b, 0) / n, tol = mvTolMoyenne(S, m);
+    if (new Set(v).size === n && v.every(x => Math.abs(x - m) > 1.8 * tol * m) && Math.max(...v) > m && Math.min(...v) < m) return { v, m, tol };
+  }
+  const v = [0.58, 0.64, 0.61, 0.55, 0.66, 0.60].map(x => x + S.c - 0.6); const m = v.reduce((a, b) => a + b, 0) / 6; return { v, m, tol: mvTolMoyenne(S, m) };
+}
+function genMesureVar2GT() {
+  const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
+  const liste = (v, d) => v.map(x => mvFr(x, d)).join(' ; ');
+  // q1 : moyenne de six valeurs
+  const S1 = tire(MV_SITS), { v: v1, m: m1, tol: tol1 } = mvSerie(S1, 6), som1 = v1.reduce((a, b) => a + b, 0);
+  const q1 = filtre({ id: 'k0', type: 'num', q: <>Six {S1.mes} (en {S1.u}) : <b>{liste(v1, S1.d)}</b>. Quelle est la moyenne de cette série, en {S1.u} ?</>, unite: S1.u, vrai: m1, csMin: Math.min(3, String(Math.round(m1 / S1.res)).length), tolRel: tol1,
+    aide: 'Additionnez les six valeurs, puis divisez la somme par le nombre de valeurs.',
+    pieges: [[som1, 'Vous avez additionné les six valeurs sans diviser : la moyenne est la somme divisée par le nombre de valeurs.'], [som1 / 5, 'Vous avez divisé par 5 : il y a six valeurs, il faut diviser par 6.'], [som1 / 7, 'Vous avez divisé par 7 : il y a six valeurs, il faut diviser par 6.']],
+    expl: <>Somme : {mvFr(som1, S1.d)} ; moyenne : {mvFr(som1, S1.d)} ÷ 6 = <b>{nb(m1, 4)}{NB}{S1.u}</b>.</> });
+  // q2 : effectif d'une classe (aucune valeur sur une borne)
+  const S2 = tire(MV_SITS);
+  let v2, a2, n2;
+  for (let t = 0; t < 2000; t++) {
+    v2 = Array.from({ length: 14 }, () => Number((S2.c + (Math.round((Math.random() + Math.random() + Math.random() - 1.5) * 2.2 * S2.w / S2.res)) * S2.res).toFixed(S2.d)));
+    a2 = S2.a0; n2 = v2.filter(x => x >= a2 - 1e-9 && x < a2 + S2.w - 1e-9).length;
+    if (v2.every(x => Math.abs(x / S2.w - Math.round(x / S2.w)) > 1e-6) && n2 >= 3 && n2 <= 7 && v2.filter(x => x >= a2 - S2.w && x < a2).length !== n2 && v2.filter(x => x >= a2 + S2.w && x < a2 + 2 * S2.w).length !== n2) break;
+  }
+  const g2 = v2.filter(x => x >= a2 - S2.w - 1e-9 && x < a2 - 1e-9).length, d2 = v2.filter(x => x >= a2 + S2.w - 1e-9 && x < a2 + 2 * S2.w - 1e-9).length;
+  const q2 = filtre({ id: 'k1', type: 'num', q: <>Quatorze {S2.mes} (en {S2.u}) : <b>{liste(v2, S2.d)}</b>. On range ces valeurs dans un histogramme dont les classes ont pour largeur {mvFr(S2.w, S2.w < 0.1 ? 2 : 2)}{NB}{S2.u}. Combien de valeurs sont dans la classe de <b>{mvFr(a2, 2)}{NB}{S2.u}</b> à <b>{mvFr(a2 + S2.w, 2)}{NB}{S2.u}</b> (borne de gauche incluse, borne de droite exclue) ?</>, unite: 'valeurs', vrai: n2, csMin: 1, tolRel: 0.001,
+    aide: 'Parcourez la liste une valeur après l’autre, et gardez celles qui sont supérieures ou égales à la borne de gauche et strictement inférieures à la borne de droite.',
+    pieges: [[14, 'Quatorze est le nombre total de valeurs : on demande celles d’une seule classe.'], [g2, 'Vous avez compté la classe située juste avant celle qui est demandée.'], [d2, 'Vous avez compté la classe située juste après celle qui est demandée.']],
+    expl: <>Valeurs de {mvFr(a2, 2)} (inclus) à {mvFr(a2 + S2.w, 2)} (exclu) : il y en a <b>{n2}</b>.</> });
+  // q3 : N intervalles chronométrés d'un coup
+  const N3 = tire([5, 10, 20]);
+  let T3, un3;
+  do { T3 = Math.round(N3 * (1.2 + (Math.random() - 0.5) * 0.1) * 10) / 10; un3 = T3 / N3; } while (Math.abs(un3 - 1.2) < 0.015 || Math.abs(un3 - T3) < 0.1);
+  const q3 = filtre({ id: 'k2', type: 'num', q: <>Pour mesurer la durée entre deux gouttes d’un robinet, une élève chronomètre <b>{N3} intervalles d’un coup</b> : le chronomètre indique <b>{mvFr(T3, 1)}{NB}s</b>. Quelle est la durée d’un intervalle, en s ?</>, unite: 's', vrai: un3, csMin: 3, tolRel: 0.006,
+    aide: 'Le total correspond à plusieurs intervalles : divisez-le par le nombre d’intervalles.',
+    pieges: [[T3, 'Vous avez recopié le total : c’est la durée de plusieurs intervalles, pas d’un seul.'], [T3 / (N3 - 1), 'Vous avez divisé par ' + (N3 - 1) + ' : on chronomètre ' + N3 + ' intervalles, il faut diviser par ' + N3 + '.'], [T3 / (N3 + 1), 'Vous avez divisé par ' + (N3 + 1) + ' : on chronomètre ' + N3 + ' intervalles, il faut diviser par ' + N3 + '.']],
+    expl: <>{mvFr(T3, 1)} ÷ {N3} = <b>{nb(un3, 3)}{NB}s</b>. Chronométrer plusieurs intervalles d’un coup partage le décalage dû à la main entre tous les intervalles.</> });
+  // q4 : rapport de deux écarts-types
+  const S4 = tire(MV_SITS), pet = tire(S4.petit), gro = Number((pet * tire(S4.gros)).toPrecision(2)), r4 = gro / pet;
+  const q4 = filtre({ id: 'k3', type: 'num', q: <>Pour mesurer les {S4.mes}, deux méthodes sont comparées sur une série de 20 mesures chacune : {S4.noms[0]} (écart-type <b>{mvSig(gro)}{NB}{S4.u}</b>) et {S4.noms[1]} (écart-type <b>{mvSig(pet)}{NB}{S4.u}</b>). Combien de fois la première série est-elle plus dispersée que la seconde ? (rapport des écarts-types)</>, unite: 'fois', vrai: r4, csMin: 2, tolRel: 0.01,
+    aide: 'Pour savoir combien de fois une grandeur est plus grande qu’une autre, on divise la plus grande par la plus petite.',
+    pieges: [[1 / r4, 'La division est à l’envers : on divise le plus grand écart-type par le plus petit.'], [gro - pet, 'Vous avez fait une différence. On cherche « combien de fois » : il faut diviser.']],
+    expl: <>{mvSig(gro)} ÷ {mvSig(pet)} = <b>{nb(r4, 3)}</b> : la première série est environ {nb(r4, 2)} fois plus dispersée.</> });
+  // q5 : valeur manquante connaissant la moyenne
+  const S5 = tire(MV_SITS);
+  let v5, m5, x5, tol5;
+  for (let t = 0; t < 3000; t++) {
+    v5 = Array.from({ length: 4 }, () => mvVal(S5)); m5 = Number((S5.c + (Math.random() - 0.5) * 6 * S5.kmax * S5.res / 3).toFixed(S5.d)); x5 = Number((5 * m5 - v5.reduce((a, b) => a + b, 0)).toFixed(S5.d));
+    tol5 = mvTolMoyenne(S5, x5);
+    if (x5 > 0 && Math.abs(x5 - S5.c) <= 1.5 * S5.kmax * S5.res && Math.abs(x5 - m5) > 1.8 * tol5 * x5 && Math.abs((4 * m5 - v5.reduce((a, b) => a + b, 0)) - x5) > 1.8 * tol5 * x5) break;
+  }
+  const som4 = v5.reduce((a, b) => a + b, 0);
+  const q5 = filtre({ id: 'k4', type: 'num', q: <>La moyenne de cinq {S5.mes} est <b>{mvFr(m5, S5.d)}{NB}{S5.u}</b>. Quatre des valeurs sont : <b>{liste(v5, S5.d)}</b> (en {S5.u}). Quelle est la cinquième valeur, en {S5.u} ?</>, unite: S5.u, vrai: x5, csMin: 3, tolRel: tol5,
+    aide: 'La somme des cinq valeurs vaut 5 fois la moyenne. Retirez ensuite la somme des quatre valeurs connues.',
+    pieges: [[m5, 'Vous avez recopié la moyenne : la cinquième valeur est celle qui complète la somme.'], [5 * m5, 'Vous avez calculé la somme des cinq valeurs : il faut en retirer les quatre valeurs connues.'], [4 * m5 - som4, 'Vous avez multiplié la moyenne par 4 : il y a cinq valeurs en tout, donc la somme vaut 5 fois la moyenne.']],
+    expl: <>Somme des cinq valeurs : 5 × {mvFr(m5, S5.d)} = {mvFr(5 * m5, S5.d)}. Somme des quatre valeurs connues : {mvFr(som4, S5.d)}. Cinquième valeur : {mvFr(5 * m5, S5.d)} − {mvFr(som4, S5.d)} = <b>{mvFr(x5, S5.d)}{NB}{S5.u}</b>.</> });
+  return { intro: 'Mesure : moyenne d’une série, effectif d’une classe d’histogramme, mesure de 10 intervalles d’un coup et comparaison de deux dispersions. Les valeurs sont fictives : les ordres de grandeur sont réalistes, pas les mesures.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Moyenne = somme des valeurs ÷ nombre de valeurs ; elle est toujours comprise entre la plus petite et la plus grande valeur.', 'Histogramme : la hauteur d’une barre est le nombre de valeurs de la classe ; la borne de gauche est incluse, celle de droite exclue.', 'Plusieurs intervalles chronométrés d’un coup, puis divisés, donnent une série moins dispersée ; l’écart-type mesure la largeur d’une série : le plus grand écart-type est celui de la série la plus étalée.'] };
+}
+
 export const FAMILLES = [
   { id: 'titrage-direct', groupe: 'Formules', titre: 'Titrage direct du diiode par le thiosulfate : équivalence, concentration, masse (1re spé)', gen: genTitrageDirect, domaine: 'Titrage direct' },
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
@@ -3643,6 +3714,7 @@ export const FAMILLES = [
   { id: 'rl2gt-calcul', groupe: 'Formules', titre: 'Réactif limitant : nombre de recettes, quantité restante et quantité formée (2GT)', gen: genReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
   { id: 'rl2gt-masse', groupe: 'Formules', titre: 'Réactif limitant avec une masse : n = m ÷ M, limitant et quantité restante (2GT)', gen: genMasseReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
   { id: 'son2gt-niv-calcul', groupe: 'Formules', titre: 'Niveau sonore : écart en dB, facteurs ×10 et ×2, durée repère d’exposition (2GT)', gen: genNiveauSonore2GT, domaine: 'Niveau sonore (2GT)' },
+  { id: 'mes2gt-var-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, effectif d’une classe, 10 intervalles ÷ 10, rapport de dispersions, valeur manquante (2GT)', gen: genMesureVar2GT, domaine: 'Variabilité de la mesure (2GT)' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'mrx-calcul', groupe: 'Formules', titre: 'Mécanismes réactionnels : atomes d’un acte, chocs efficaces, part efficace et bilan d’un mécanisme (TG)', gen: genMecanismesTG, domaine: 'Mécanismes réactionnels et flèches courbes' },

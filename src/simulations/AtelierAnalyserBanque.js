@@ -5300,6 +5300,49 @@ export const PREVOIR = [
       F('le son est dangereux pour l’oreille à ce niveau', 'Le danger apparaît pour des niveaux élevés (à partir de 85 dB environ), pas pour 0 dB.'),
       F('le livre se trompe : un son ne peut pas valoir 0', 'L’échelle commence à 0 dB, le seuil d’audition : le livre est correct.'),
     ] },
+  // ───────────────────────────── Mesure : variabilité, histogramme, moyenne et écart-type (2GT, sim 193)
+  { id: 'mes2gt-var-ana-instrument', domaine: 'Variabilité de la mesure (2GT)', titre: 'Règle ou pied à coulisse ?',
+    enonce: 'On mesure 20 fois la longueur d’un même crayon, d’abord avec une règle graduée en millimètres, puis avec un pied à coulisse. On trace l’histogramme de chaque série avec la même échelle horizontale.', q: 'Par rapport à celui de la règle, l’histogramme du pied à coulisse sera…', options: [
+      V('plus étroit : ses valeurs sont plus serrées', 'Le pied à coulisse est plus précis : ses valeurs sont plus serrées autour de la moyenne, la série est moins dispersée.'),
+      F('plus large, car il lit plus de décimales que la règle', 'Lire plus de décimales ne rend pas les valeurs plus dispersées : un instrument plus précis donne des valeurs plus serrées.'),
+      F('de même largeur : le crayon est le même', 'Le crayon est le même, mais l’instrument ne l’est pas : la dispersion dépend aussi de l’instrument de mesure.'),
+      F('de même largeur, mais décalé sur l’axe', 'Un décalage de tout l’histogramme serait une erreur systématique. Ici, c’est la largeur (la dispersion) qui change avec l’instrument.'),
+    ] },
+  { id: 'mes2gt-var-ana-protocole', domaine: 'Variabilité de la mesure (2GT)', titre: 'Dix oscillations d’un coup',
+    enonce: 'Pour mesurer la période d’un pendule, un élève chronomètre à la main une oscillation, 20 fois. Sa camarade chronomètre 10 oscillations d’un coup, 20 fois, et divise chaque résultat par 10. Les deux utilisent le même chronomètre.', q: 'L’écart-type de la série de la camarade sera…', options: [
+      V('plus petit, car le décalage est divisé par 10', 'Le décalage dû à la main est à peu près le même pour 1 ou pour 10 oscillations, mais il est ensuite divisé par 10 : la série est moins dispersée.'),
+      F('plus grand, car le total à chronométrer est plus long', 'Le total est plus long, mais le décalage dû à la main ne grandit pas avec la durée, et il est divisé par 10 ensuite.'),
+      F('le même, car le chronomètre est le même', 'Le chronomètre est le même, mais le protocole ne l’est pas : il influence aussi la dispersion.'),
+      F('nul, puisque l’on divise le total par 10', 'Diviser par 10 réduit la dispersion sans l’annuler : il reste une variabilité d’une mesure à l’autre.'),
+    ] },
+  { id: 'mes2gt-var-ana-plus-mesures', domaine: 'Variabilité de la mesure (2GT)', titre: 'Passer de 10 à 100 mesures',
+    enonce: 'Un élève mesure 10 fois la durée de chute d’une bille avec un chronomètre à main, puis refait 100 mesures dans les mêmes conditions (même chronomètre, même façon de faire).', q: 'L’écart-type de la série de 100 mesures sera, en général…', options: [
+      V('du même ordre que celui de la série de 10 mesures', 'La largeur du paquet dépend de l’instrument et du protocole, pas du nombre de mesures : avec plus de mesures, l’histogramme est seulement mieux dessiné.'),
+      F('environ 10 fois plus petit, car il y a 10 fois plus de mesures', 'Ajouter des mesures ne rétrécit pas le paquet : l’écart-type décrit la dispersion d’une mesure, qui reste la même.'),
+      F('environ 10 fois plus grand, car il y a plus de valeurs', 'Plus de valeurs ne veut pas dire plus de dispersion : la largeur du paquet ne change pas en moyenne.'),
+      F('presque nul, car les erreurs se compensent', 'Les erreurs se compensent dans la moyenne, pas dans la largeur du paquet : l’écart-type garde son ordre de grandeur.'),
+    ] },
+  { id: 'mes2gt-var-ana-derive', domaine: 'Variabilité de la mesure (2GT)', titre: 'Un plat qui refroidit',
+    enonce: 'Un élève mesure la température d’un plat qui refroidit, toutes les 2 minutes, 15 fois. Il calcule la moyenne et l’écart-type de ses 15 valeurs, puis trace l’histogramme.', q: 'Que penser de cette moyenne ?', options: [
+      V('elle n’a pas de sens : le mesurande change pendant la série', 'Les valeurs baissent à chaque mesure : les mesures ne sont pas indépendantes, ce n’est pas la même grandeur mesurée 15 fois.'),
+      F('elle a un sens, car une moyenne se calcule toujours, même quand les valeurs changent', 'On peut toujours faire le calcul, mais le résultat ne décrit pas une grandeur unique quand le mesurande change.'),
+      F('elle a un sens, mais seulement si l’élève ajoute encore beaucoup de valeurs', 'Ajouter des valeurs ne corrige pas le problème : la température continue de baisser.'),
+      F('elle est bonne, car l’écart-type de la série est grand', 'Un grand écart-type ne rend pas la moyenne valable : ici, il vient de la baisse de température et non de la variabilité de la mesure.'),
+    ] },
+  { id: 'mes2gt-var-ana-deux-bosses', domaine: 'Variabilité de la mesure (2GT)', titre: 'Deux sortes de billes',
+    enonce: 'Un élève pèse 40 billes prises dans un sac qui contient des billes de 10 g et des billes de 12 g, en nombre à peu près égal. Son histogramme montre deux groupes de barres, l’un autour de 10 g, l’autre autour de 12 g, avec presque rien entre les deux. Le tableur donne une moyenne de 11 g.', q: 'Que penser de cette moyenne de 11 g ?', options: [
+      V('elle résume mal : presque aucune bille ne pèse 11 g', 'L’histogramme a deux groupes séparés : la moyenne tombe là où il n’y a presque aucune mesure, elle ne décrit pas le centre de la série.'),
+      F('elle résume bien la série, car elle se trouve au milieu des deux groupes', 'Elle est au milieu, justement là où il n’y a presque aucune bille : elle ne décrit pas bien la série.'),
+      F('elle est fausse : le tableur s’est trompé', 'Le calcul est juste : c’est l’hypothèse d’une série regroupée autour d’un seul centre qui n’est pas vérifiée.'),
+      F('elle est juste, et l’écart-type est petit puisque la moyenne est au milieu', 'Au contraire : deux groupes écartés donnent un écart-type grand ; la position de la moyenne ne dit rien de la largeur.'),
+    ] },
+  { id: 'mes2gt-var-ana-ecart-nul', domaine: 'Variabilité de la mesure (2GT)', titre: 'Toujours 152 g',
+    enonce: 'Un élève pèse 20 fois la même pomme avec une balance qui n’affiche que des grammes entiers. Les 20 valeurs affichées sont toutes 152 g. Le tableur donne un écart-type de 0 g.', q: 'Peut-on en conclure que la masse de la pomme est mesurée sans aucune variabilité ?', options: [
+      V('non : l’instrument est trop grossier pour la voir', 'La balance arrondit au gramme : une variation plus petite que 1 g ne se voit pas. Un écart-type nul vient ici de la résolution de l’instrument.'),
+      F('oui : un écart-type nul prouve que la mesure n’a aucune variabilité', 'Un écart-type nul vient presque toujours d’un instrument qui n’affiche pas assez de décimales, pas d’une mesure parfaite.'),
+      F('oui, et on peut donc écrire la masse avec cinq chiffres', 'La balance n’affiche que trois chiffres significatifs : en écrire davantage n’aurait pas de sens.'),
+      F('non : le tableur s’est trompé, un écart-type ne peut pas être nul', 'Le tableur a bien calculé : 20 valeurs identiques donnent un écart-type nul. C’est la balance, qui arrondit au gramme, qui cache la variabilité.'),
+    ] },
   // ───────────────────────────── Diffraction d'une onde : angle caractéristique (TG, sim 181)
   { id: 'dif-ana-fente', domaine: 'Diffraction d’une onde : angle caractéristique', titre: 'Une fente deux fois plus fine',
     enonce: 'Un laser éclaire une fente verticale de largeur a ; l’écran est à D = 2,00 m. On remplace la fente par une autre, deux fois plus fine (largeur frac(a|2)), sans rien changer d’autre. La largeur de la tache centrale vaut L = frac(2 λ D|a).', q: 'Que devient la largeur L de la tache centrale ?', options: [
