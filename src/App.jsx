@@ -499,7 +499,12 @@ function construireMenus() {
     }
     const groupes = [];
     let rubrique = null, sousRubrique = null;
-    chapitresDuNiveau(m.key).forEach(c => {
+    // une rubrique n'apparaît qu'une fois : les chapitres de même rubrique sont regroupés (ordre d'origine conservé), même s'ils sont déclarés séparés dans chapitres.js
+    const chaps = chapitresDuNiveau(m.key), ordreRub = [];
+    chaps.forEach(c => { if (c.rubrique && !ordreRub.includes(c.rubrique)) ordreRub.push(c.rubrique); });
+    const rang = c => (c.rubrique ? ordreRub.indexOf(c.rubrique) : -1);
+    const chapsRanges = chaps.some(c => !c.rubrique) ? chaps : chaps.map((c, i) => [c, i]).sort((x, y) => rang(x[0]) - rang(y[0]) || x[1] - y[1]).map(x => x[0]);
+    chapsRanges.forEach(c => {
       if (c.rubrique && c.rubrique !== rubrique) { groupes.push({ entete: c.rubrique, sims: [] }); sousRubrique = null; }   // intitulé de rubrique (repliable), sur toute la largeur du menu
       rubrique = c.rubrique || rubrique;
       if (c.sousRubrique && c.sousRubrique !== sousRubrique) groupes.push({ sousEntete: c.sousRubrique, sims: [] });   // intertitre léger sous la rubrique
