@@ -4780,6 +4780,53 @@ export const ENONCES = [
         manque: null, solution: { txt: 'η = frac(n(ester)|n_max) × 100, avec n_max égale à la quantité initiale d’acide (réactif limitant)', val: 100 * p.nE / p.n, u: '%' } };
     }),
   },
+  // ───────────────────────────── Stratégie de synthèse multi-étapes et synthèses écoresponsables (TG, sim 210)
+  {
+    id: 'str-sapp-rendement', domaine: 'Stratégie de synthèse multi-étapes et synthèses écoresponsables', titre: 'Rendement global d’une synthèse en deux étapes : quelles données utiliser ?', noms: ['Rendement global de la synthèse', 'Quantité de produit final'],
+    gen: () => ({ e1: tire([70, 75, 80, 85, 90]), e2: tire([50, 60, 65, 70, 75]), n0: tire([0.20, 0.40, 0.50, 0.80]), T1: tire([60, 70, 80]), T2: tire([100, 110, 120]) }),
+    build: epure((p, q) => {
+      const d2 = x => Number(x).toFixed(2).replace('.', ',');
+      const tokens = {
+        e1: tok(`${p.e1} %`, 'Rendement de l’étape 1', p.e1, '%'),
+        e2: tok(`${p.e2} %`, 'Rendement de l’étape 2', p.e2, '%'),
+        n0: tok(`${d2(p.n0)} mol`, 'Quantité de réactif de départ', p.n0, 'mol'),
+        T1: tok(`${p.T1} °C`, 'Température de l’étape 1', p.T1, '°C'),
+        T2: tok(`${p.T2} °C`, 'Température de l’étape 2', p.T2, '°C'),
+      };
+      const debut = ['Une synthèse en deux étapes part de ', T('n0'), ' de réactif ; les coefficients stœchiométriques valent tous 1. L’étape 1, menée à ', T('T1'), ', a un rendement de ', T('e1'), ' ; l’étape 2, menée à ', T('T2'), ', a un rendement de ', T('e2'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le rendement global de la synthèse ?'],
+        utiles: ['e1', 'e2'], raisons: { n0: 'La quantité de départ sert à calculer une quantité de produit, pas un rendement.', T1: 'La température de l’étape n’intervient pas dans le calcul d’un rendement global.', T2: 'La température de l’étape n’intervient pas dans le calcul d’un rendement global.' },
+        cherche: { bonne: 'Le rendement global de la synthèse (en %)', faux: ['La quantité de produit final obtenue (en mol)', 'Le rendement moyen des deux étapes (en %)', 'La température moyenne de la synthèse (en °C)'] },
+        manque: null, solution: { txt: 'η global = η₁ × η₂, les rendements étant écrits comme des nombres compris entre 0 et 1', val: p.e1 * p.e2 / 100, u: '%' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de produit final obtient-on ?'],
+        utiles: ['n0', 'e1', 'e2'], raisons: { T1: 'La température de l’étape n’intervient pas dans le calcul d’une quantité de produit.', T2: 'La température de l’étape n’intervient pas dans le calcul d’une quantité de produit.' },
+        cherche: { bonne: 'La quantité de produit final (en mol)', faux: ['Le rendement global de la synthèse (en %)', 'La quantité de réactif restant à la fin (en mol)', 'La quantité obtenue à l’étape 1 seulement (en mol)'] },
+        manque: null, solution: { txt: 'n final = n départ × η₁ × η₂ (rendements écrits entre 0 et 1, coefficients égaux à 1)', val: p.n0 * p.e1 * p.e2 / 10000, u: 'mol' } };
+    }),
+  },
+  {
+    id: 'str-sapp-dechets', domaine: 'Stratégie de synthèse multi-étapes et synthèses écoresponsables', titre: 'Déchets d’une synthèse : quelles données utiliser ?', noms: ['Masse de déchets pour une préparation', 'Déchets par kilogramme de produit'],
+    gen: () => ({ k1: tire([1.5, 2.0, 2.5, 3.0]), k2: tire([1.0, 1.5, 2.0]), m: tire([100, 200, 250, 400]), eta: tire([57, 65, 70]), T: tire([100, 110]) }),
+    build: epure((p, q) => {
+      const d1 = x => Number(x).toFixed(1).replace('.', ',');
+      const tokens = {
+        k1: tok(`${d1(p.k1)} kg`, 'Déchets de l’étape 1, pour 1,0 kg de produit final', p.k1, 'kg'),
+        k2: tok(`${d1(p.k2)} kg`, 'Déchets de l’étape 2, pour 1,0 kg de produit final', p.k2, 'kg'),
+        m: tok(`${p.m} g`, 'Masse de produit final à préparer', p.m, 'g'),
+        eta: tok(`${p.eta} %`, 'Rendement global de la synthèse', p.eta, '%'),
+        T: tok(`${p.T} °C`, 'Température de l’étape 2', p.T, '°C'),
+      };
+      const debut = ['Une voie de synthèse en deux étapes produit ', T('k1'), ' de déchets à l’étape 1 et ', T('k2'), ' à l’étape 2, pour 1,0 kg de produit final obtenu. Son rendement global est de ', T('eta'), ' et l’étape 2 est menée à ', T('T'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, ['On veut préparer ', T('m'), ' de produit final. Quelle masse de déchets la synthèse produit-elle ?']].flat(),
+        utiles: ['k1', 'k2', 'm'], raisons: { eta: 'Le rendement global est déjà pris en compte dans les déchets donnés par kg de produit obtenu.', T: 'La température n’intervient pas dans le calcul d’une masse de déchets.' },
+        cherche: { bonne: 'La masse de déchets pour cette préparation (en g)', faux: ['La masse de déchets de l’étape 1 seulement (en kg)', 'Le rendement global de la synthèse (en %)', 'La masse de produit obtenue à l’étape 1 (en g)'] },
+        manque: null, solution: { txt: 'déchets = (déchets de l’étape 1 + déchets de l’étape 2, par kg de produit) × masse de produit en kg, puis conversion en g', val: (p.k1 + p.k2) * p.m, u: 'g' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quels sont les déchets totaux produits par la synthèse pour 1,0 kg de produit final ?'],
+        utiles: ['k1', 'k2'], raisons: { m: 'La masse à préparer ne sert pas quand on raisonne pour 1,0 kg de produit.', eta: 'Le rendement global est déjà pris en compte dans les déchets donnés par kg de produit obtenu.', T: 'La température n’intervient pas dans le calcul d’une masse de déchets.' },
+        cherche: { bonne: 'Les déchets totaux par kg de produit (en kg)', faux: ['La masse de déchets pour 100 g de produit (en g)', 'Le rendement global de la synthèse (en %)', 'Les déchets de l’étape 2 seulement (en kg)'] },
+        manque: null, solution: { txt: 'déchets totaux = déchets de l’étape 1 + déchets de l’étape 2', val: p.k1 + p.k2, u: 'kg' } };
+    }),
+  },
   // ───────────────────────────── Facteurs cinétiques, catalyse et choix d’un capteur (TG, sim 187)
   {
     id: 'cin-sapp-temperature', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Deux expériences à deux températures', noms: ['Rapport des temps de demi-réaction', 'Durée gagnée pour atteindre la demi-réaction'],

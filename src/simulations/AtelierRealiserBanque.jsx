@@ -17,6 +17,7 @@ import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
 import { tirageCalcul as tirageMecanismesTG } from "./mrxExos";
+import { tirageCalcul as tirageStrategieTG } from "./strExos";
 import { tirageCalcul as tirageTransfertsHTG } from "./brnExos";
 import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
@@ -3234,6 +3235,9 @@ function genNewtonTG() {
 // ───────── Mécanismes réactionnels (TG, sim 186) : tirage pur dans mrxExos.js (testé par mrxExos.test.mjs) ─────────
 function genMecanismesTG() { const e = tirageMecanismesTG(tire); e.questions.forEach(q => { q.expl = <>{avecIndices(q.expl)}</>; }); return e; }
 
+// ───────── Stratégie de synthèse (TG, sim 210) : tirage pur dans strExos.js (testé par strExos.test.mjs) ─────────
+function genStrategieTG() { const e = tirageStrategieTG(tire); e.questions.forEach(q => { q.expl = <>{avecIndices(q.expl)}</>; }); return e; }
+
 // ───────── Transferts de H⁺ (TG, sim 188) : tirage pur dans brnExos.js (testé par brnExos.test.mjs) ─────────
 function genTransfertsHTG() { const e = tirageTransfertsHTG(tire); e.questions.forEach(q => { q.expl = <>{avecIndices(q.expl)}</>; }); return e; }
 
@@ -4359,6 +4363,7 @@ export const FAMILLES = [
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'opt-calcul', groupe: 'Formules', titre: 'Optimiser une synthèse : rendement, quotient de réaction Qr, retrait d’un produit et ajout de réactif (TG)', gen: genOptimisationTG, domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement' },
+  { id: 'str-calcul', groupe: 'Formules', titre: 'Stratégie de synthèse : rendement global, quantité de produit final et déchets (TG)', gen: genStrategieTG, domaine: 'Stratégie de synthèse multi-étapes et synthèses écoresponsables' },
   { id: 'mrx-calcul', groupe: 'Formules', titre: 'Mécanismes réactionnels : atomes d’un acte, chocs efficaces, part efficace et bilan d’un mécanisme (TG)', gen: genMecanismesTG, domaine: 'Mécanismes réactionnels et flèches courbes' },
   { id: 'brn-calcul', groupe: 'Formules', titre: 'Transferts de H⁺ : électrons de valence, doublets, doublets non liants et charge dans une équation acide-base (TG)', gen: genTransfertsHTG, domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
