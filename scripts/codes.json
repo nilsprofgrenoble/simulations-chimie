@@ -1825,5 +1825,14 @@
  "77:plausible:gpf-val-volume": "VAL491",
  "77:plausible:gpf-val-masse-volumique": "VAL492",
  "77:plausible:gpf-val-bouteille": "VAL493",
- "36:gpf-calcul": "REA126"
+ "36:gpf-calcul": "REA126",
+ "34:ber-sapp-venturi.0": "SAPP473",
+ "34:ber-sapp-venturi.1": "SAPP474",
+ "37:prevoir:ber-ana-section": "ANA737",
+ "37:prevoir:ber-ana-venturi": "ANA738",
+ "37:prevoir:ber-ana-torricelli": "ANA739",
+ "77:plausible:ber-val-debit": "VAL494",
+ "77:plausible:ber-val-venturi": "VAL495",
+ "77:plausible:ber-val-torricelli": "VAL496",
+ "36:ber-calcul": "REA127"
 }

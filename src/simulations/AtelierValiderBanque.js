@@ -4628,6 +4628,37 @@ export const PLAUSIBLES = [
       F('incohérent : 5 bar est impossible', 'Des pressions de quelques bar sont courantes (pneu de voiture, bouteille de gaz de laboratoire) et bien décrites par le gaz parfait.'),
       F('incohérent : P devrait rester inférieure à 1 bar', 'Avec 2,00 mol dans 10,0 L, le gaz est plus concentré que l’air à 1 bar (environ 0,4 mol dans 10 L) : la pression est plus grande, pas plus petite.'),
     ] }),
+  P({ id: 'ber-val-debit', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', niveau: 2, titre: 'Vitesse de l’eau dans un tuyau domestique', plausible: false,
+    enonce: 'Un élève calcule la vitesse de l’eau dans un tuyau de diamètre intérieur 20 mm parcouru par un débit de 20 L·min⁻¹ et annonce : « v = 1 060 m·s⁻¹ ».',
+    reperes: [['Débit en SI', '20 L·min⁻¹ = 20 × 10⁻³ m³ pour 60 s'], ['Section', 'S = π × d² divisé par 4 ≈ 3,1 × 10⁻⁴ m²'], ['Tuyau d’eau domestique', 'vitesse de l’ordre de 1 à 3 m·s⁻¹']],
+    ver: 'Q = 20 L·min⁻¹ = 3,3 × 10⁻⁴ m³·s⁻¹ et S = 3,1 × 10⁻⁴ m², donc v = Q divisé par S ≈ 1,06 m·s⁻¹. La valeur de l’élève est 1 000 fois trop grande : il a utilisé 20 litres comme s’il s’agissait de mètres cubes, sans convertir 1 L = 10⁻³ m³.',
+    q2: 'Quelle est l’erreur la plus probable ?',
+    options: [
+      V('il n’a pas converti les litres en mètres cubes', 'Sans la conversion 1 L = 10⁻³ m³, le débit est 1 000 fois trop grand : 1,06 m·s⁻¹ devient 1 060 m·s⁻¹. Un tuyau d’eau ne dépasse pas quelques m·s⁻¹.'),
+      F('il n’a pas converti les minutes en secondes', 'Oublier la conversion des minutes en secondes donnerait un facteur 60, soit environ 64 m·s⁻¹, et non 1 000.'),
+      F('il a pris le rayon à la place du diamètre, dans S', 'Prendre le rayon à la place du diamètre multiplie la vitesse par 4 (environ 4,2 m·s⁻¹), pas par 1 000.'),
+    ] }),
+  P({ id: 'ber-val-venturi', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', niveau: 2, titre: 'Colonnes d’un tube de Venturi', plausible: false,
+    enonce: 'Dans un tube de Venturi horizontal dont le col est plus étroit que l’entrée, un élève lit sur les tubes manométriques ouverts : h_A = 0,40 m en A (entrée) et h_B = 0,55 m en B (col). Il en conclut que la pression est plus grande au col, « puisque l’eau y va plus vite ».',
+    reperes: [['Conservation du débit', 'section plus petite : vitesse plus grande au col'], ['Bernoulli (conduite horizontale)', 'P + ½ρv² constant : vitesse plus grande, pression plus petite'], ['Colonne d’un tube ouvert', 'P − P_atm = ρ g h']],
+    ver: 'Au col étroit, la vitesse est plus grande, donc la pression est plus petite d’après la relation de Bernoulli (conduite horizontale) : la colonne du col doit être plus BASSE que celle de l’entrée, soit h_B < h_A. Lire h_B = 0,55 m au-dessus de h_A = 0,40 m est incohérent avec le modèle.',
+    q2: 'Que penser de cette lecture ?',
+    options: [
+      V('incohérente : la colonne du col devrait être plus basse', 'Col étroit : v plus grande, donc P plus petite d’après la relation de Bernoulli, donc une colonne plus basse (P − P_atm = ρ g h).'),
+      F('cohérente : la pression augmente avec la vitesse', 'La relation de Bernoulli relie une vitesse plus grande à une pression plus petite en conduite horizontale, pas plus grande.'),
+      F('cohérente : la colonne indique la vitesse, pas la pression', 'La hauteur de la colonne mesure la pression (P − P_atm = ρ g h), pas directement la vitesse.'),
+    ] }),
+  P({ id: 'ber-val-torricelli', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', niveau: 1, titre: 'Vidange d’un réservoir d’eau', plausible: true,
+    enonce: 'Un grand réservoir d’eau ouvert se vide par un petit orifice situé 2,0 m sous la surface libre. Un élève annonce une vitesse de sortie de 6,3 m·s⁻¹.',
+    reperes: [['Relation de Torricelli', 'v = √(2 g h) pour un réservoir large, à l’air libre'], ['g', '9,81 N·kg⁻¹'], ['Comparaison', 'même vitesse qu’une chute libre de 2,0 m']],
+    ver: 'v = racine de (2 × 9,81 × 2,0) = racine de 39,2 ≈ 6,3 m·s⁻¹ (environ 23 km·h⁻¹) : la valeur annoncée est cohérente avec le modèle.',
+    q2: 'Que penser de cette valeur ?',
+    options: [
+      V('cohérente : elle correspond à une chute libre de 2,0 m', 'v = √(2 g h) = 6,3 m·s⁻¹ : c’est la vitesse acquise en tombant de 2,0 m, sans frottement.'),
+      F('incohérente : elle devrait valoir 39 m·s⁻¹', '39 est la valeur de 2 g h, avant d’avoir pris la racine carrée : la vitesse vaut racine de 39 ≈ 6,3 m·s⁻¹.'),
+      F('incohérente : elle devrait dépendre de la masse volumique', 'ρ se simplifie dans ρ g h = ½ρ v² : la vitesse de sortie n’en dépend pas.'),
+    ] }),
+
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────

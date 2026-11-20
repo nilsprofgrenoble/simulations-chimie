@@ -5011,6 +5011,29 @@ export const ENONCES = [
         manque: null, solution: { txt: 'ρ = P × M divisé par R × T, avec P en Pa, M en kg·mol⁻¹, T en K', val: p.P * 1e5 * p.g.M * 1e-3 / (8.314 * (p.th + 273.15)), u: 'kg·m⁻³' } };
     },
   },
+  {
+    id: 'ber-sapp-venturi', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'De l’eau dans un tuyau à col', noms: ['Vitesse dans le col', 'Différence de pression entre l’entrée et le col'],
+    gen: () => { const [dA, dB] = tire([[25, 12], [25, 16], [32, 16], [32, 20], [40, 20], [40, 25]]); return { dA, dB, vA: tire([0.5, 0.8, 1.0, 1.2]), L: tire([1.2, 1.5, 2.0]), th: tire([12, 15, 18]), PrA: tire([6, 8, 10]) }; },
+    build: (p, q) => {
+      const vB = p.vA * (p.dA / p.dB) ** 2;
+      const tokens = {
+        dA: tok(`${p.dA} mm`, 'Diamètre du tuyau à l’entrée', p.dA, 'mm'),
+        dB: tok(`${p.dB} mm`, 'Diamètre du col', p.dB, 'mm'),
+        vA: tok(`${nb(p.vA, 1)} m·s⁻¹`, 'Vitesse de l’eau à l’entrée', p.vA, 'm·s⁻¹'),
+        rho: tok('1000 kg·m⁻³', 'Masse volumique de l’eau', 1000, 'kg·m⁻³'),
+        L: tok(`${nb(p.L, 1)} m`, 'Longueur du tuyau', p.L, 'm'),
+        th: tok(`${p.th} °C`, 'Température de l’eau', p.th, '°C'),
+        P: tok(`${p.PrA} kPa`, 'Pression à l’entrée, au-dessus de la pression atmosphérique', p.PrA, 'kPa'),
+      };
+      const debut = ['De l’eau à ', T('th'), ' (masse volumique ', T('rho'), ') s’écoule dans un tuyau horizontal de longueur ', T('L'), '. Elle entre à la vitesse ', T('vA'), ' dans une section de diamètre ', T('dA'), ', avec une pression de ', T('P'), ' au-dessus de la pression atmosphérique, puis traverse un col de diamètre ', T('dB'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la vitesse de l’eau dans le col ?'], utiles: ['dA', 'vA', 'dB'], raisons: { rho: 'La conservation du débit d’un fluide incompressible ne fait pas intervenir sa masse volumique.', L: 'La longueur du tuyau n’intervient pas : sans pertes de charge, seule la variation de section compte.', th: 'La température de l’eau ne change pas la conservation du débit (masse volumique supposée constante).', P: 'La pression à l’entrée ne sert pas à calculer une vitesse : c’est la conservation du débit qui la donne.' },
+        cherche: { bonne: 'La vitesse de l’eau dans le col (en m·s⁻¹)', faux: ['Le débit volumique à l’entrée (en L·min⁻¹)', 'La pression de l’eau dans le col (en kPa)', 'L’écart de hauteur entre deux tubes manométriques (en cm)'] },
+        manque: null, solution: { txt: 'v_B = v_A × frac(d_A²|d_B²)', val: vB, u: 'm·s⁻¹' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la différence de pression entre l’entrée et le col ?'], utiles: ['dA', 'vA', 'dB', 'rho'], raisons: { L: 'La longueur du tuyau n’intervient pas : la relation de Bernoulli sans pertes de charge ne la contient pas.', th: 'La température de l’eau ne change pas ici : la masse volumique est donnée.', P: 'La pression à l’entrée ne sert pas à calculer l’écart de pression : seul l’écart des pressions cinétiques intervient (conduite horizontale).' },
+        cherche: { bonne: 'L’écart de pression entre l’entrée et le col (en kPa)', faux: ['La vitesse moyenne de l’eau dans le col (en m·s⁻¹)', 'La pression absolue de l’eau à la sortie du col (en kPa)', 'La hauteur de la colonne en B (en cm)'] },
+        manque: null, solution: { txt: 'P_A − P_B = ½ρ(v_B² − v_A²), avec v_B = v_A × frac(d_A²|d_B²)', val: 0.5 * 1000 * (vB ** 2 - p.vA ** 2) / 1000, u: 'kPa' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -5022,6 +5045,7 @@ export function melange(tab, graine) {
 
 // Symbole de chaque donnée tel qu'il apparaît dans la formule (affiché à côté du nom de la grandeur)
 const SYMBOLES = {
+  'ber-sapp-venturi': { dA: 'd_A', dB: 'd_B', vA: 'v_A', rho: 'ρ', L: 'L', th: 'θ', P: 'P_A − P_atm' },
   'flu-statique': { rho: 'ρ', g: 'g', P: 'P_rel', th: 'θ', Vc: 'V_cuve', Patm: 'P_atm', d: 'd', dh: 'Δh' },
   'flu-debit': { mv: 'm_fût', mt: 'm_balance', dt: 'Δt', V: 'V', Bmax: 'm_max', Pm: 'P_moteur', th: 'θ' },
   'flu-section': { D1: 'D₁', D2: 'D₂', v1: 'v₁', P1: 'P₁', L: 'L', th: 'θ', Vr: 'V_bassin' },
