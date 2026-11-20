@@ -105,6 +105,7 @@ const SimulationStatiqueFluides1G = paresseux(() => import("./simulations/Statiq
 const SimulationEquationReaction = paresseux(() => import("./simulations/EquationReaction"), "SimulationEquationReaction");
 const SimulationCcm2gt = paresseux(() => import("./simulations/Ccm2gt"), "SimulationCcm");
 const SimulationNucleaire2gt = paresseux(() => import("./simulations/Nucleaire2gt"), "SimulationNucleaire");
+const SimulationSyntheseReflux2gt = paresseux(() => import("./simulations/SyntheseReflux2gt"), "SimulationSyntheseReflux");
 const SimulationChangementEtat2gt = paresseux(() => import("./simulations/ChangementEtat2gt"), "SimulationChangementEtat");
 const SimulationOeilReduit2gt = paresseux(() => import("./simulations/OeilReduit2gt"), "SimulationOeilReduit");
 const SimulationTestsChimiques2gt = paresseux(() => import("./simulations/TestsChimiques2gt"), "SimulationTestsChimiques");
@@ -457,6 +458,7 @@ const SIMULATIONS = [
   { id:195, label:"Changement d’état et énergie", niveau:"2GT", icon:"🧊", color:"#0369a1", component: SimulationChangementEtat2gt },
   { id:200, label:"L’œil réduit : une lentille et un écran", niveau:"2GT", icon:"👁️", color:"#0e7490", component: SimulationOeilReduit2gt },
   { id:197, label:"Chromatographie sur couche mince", niveau:"2GT", icon:"🧪", color:"#0f766e", component: SimulationCcm2gt },
+  { id:204, label:"Synthèse d’une espèce naturelle : reflux et CCM", niveau:"2GT", icon:"🍌", color:"#b45309", component: SimulationSyntheseReflux2gt },
   { id:59, label:"Les forces : modéliser une action mécanique", niveau:"2GT", icon:"➡️", color:"#0f766e",
     component: SimulationForcesVecteurs },
   { id:60, label:"Principe d’inertie : forces et mouvement", niveau:"2GT", icon:"⚖️", color:"#7c3aed",

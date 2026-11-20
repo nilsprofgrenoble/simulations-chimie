@@ -1872,5 +1872,19 @@
  "77:plausible:nuc2gt-val-soleil": "VAL506",
  "77:plausible:nuc2gt-val-tritium": "VAL507",
  "77:plausible:nuc2gt-val-centrale": "VAL508",
- "36:nuc2gt-calcul": "REA130"
+ "36:nuc2gt-calcul": "REA130",
+ "34:syn2gt-sapp-ballon.0": "SAPP485",
+ "34:syn2gt-sapp-ballon.1": "SAPP486",
+ "34:syn2gt-sapp-duree.0": "SAPP487",
+ "34:syn2gt-sapp-duree.1": "SAPP488",
+ "37:prevoir:syn2gt-ana-sans-refrigerant": "ANA753",
+ "37:prevoir:syn2gt-ana-eau-haut": "ANA754",
+ "37:prevoir:syn2gt-ana-bouche": "ANA755",
+ "37:prevoir:syn2gt-ana-pierre": "ANA756",
+ "77:plausible:syn2gt-val-eau-bas": "VAL509",
+ "77:plausible:syn2gt-val-eau-haut": "VAL510",
+ "77:plausible:syn2gt-val-ferme": "VAL511",
+ "77:plausible:syn2gt-val-equation": "VAL512",
+ "77:plausible:syn2gt-val-chauffer": "VAL513",
+ "36:syn2gt-calcul": "REA131"
 }

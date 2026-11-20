@@ -42,6 +42,7 @@ export const EXOS_DE_SIM = {
   180: [/rl2gt-/],
   197: [/(^|\.)ccm2gt-/, /plausible\.ccm2gt-/],                                                                    // Chromatographie sur couche mince (2GT) : lire, comparer, rapport frontal, limites
   202: [/(^|\.)noy2gt-/, /plausible\.noy2gt-/],                                                                    // Le noyau de l’atome : taille, masse et écriture ZAX (2GT)
+  204: [/(^|\.)syn2gt-/, /plausible\.syn2gt-/],                                                                    // Synthèse et reflux (2GT) : montage à reflux, CCM de comparaison
   201: [/(^|\.)prisme2gt-/, /plausible\.prisme2gt-/],                                                                // Dispersion de la lumière par un prisme (2GT)
   196: [/(^|\.)pur2gt-/, /plausible\.pur2gt-/],                                                                    // Corps pur ou mélange : température de changement d’état (2GT)
   200: [/(^|\.)oeil2gt-/, /plausible\.oeil2gt-/],                                                                    // L’œil réduit (2GT) : image réelle, Thalès, netteté, accommodation

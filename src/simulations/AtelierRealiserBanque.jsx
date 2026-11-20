@@ -2029,6 +2029,56 @@ function genCcm2GT() {
   return { intro: 'Chromatographie sur couche mince : rapport frontal (complément), distance parcourue par une tache ou par le front, conversion des millimètres en centimètres, écart de hauteur et conclusion d’une comparaison.', questions: [q0, q1, q2, q3, q4, q5],
     retenir: ['Rf = distance parcourue par la tache ÷ distance parcourue par le front, depuis la ligne de dépôt : entre 0 et 1, sans unité (complément, non exigé en Seconde).', 'Mettre les deux distances dans la même unité avant de diviser (1\u00a0cm = 10\u00a0mm).', 'Même hauteur : compatible avec la même espèce, sans preuve ; hauteurs différentes : espèces différentes.'] };
 }
+// ───────────── Synthèse et reflux (2GT) : masse et volume d’un liquide (masse volumique), débit et durée de l’eau du réfrigérant ─────────────
+const SYN2GT_LIQ = [
+  { id: 'acide', nom: 'l’acide éthanoïque', n: 'd’acide éthanoïque', rho: 1.05 },
+  { id: 'alcool', nom: 'l’alcool isoamylique', n: 'd’alcool isoamylique', rho: 0.81 },
+  { id: 'ester', nom: 'l’acétate d’isoamyle', n: 'd’acétate d’isoamyle', rho: 0.88 },
+];
+function genSynthese2GT() {
+  // q0 et q1 : on exclut l’acide (ρ = 1,05) : recopier le volume ou la masse serait accepté à moins de 6 %
+  const nbc = (x, cs = 2) => nb(x, cs);
+  const RHO = l => `${nb(l.rho, 3)}`;
+  const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); };
+  // q0 : masse d'un volume de liquide
+  const l0 = tire(SYN2GT_LIQ.slice(1)), V0 = tire([10, 12, 15, 20, 25, 30]), m0 = l0.rho * V0;
+  const q0 = { id: 's0', type: 'num', q: <>Pour la synthèse de l’arôme de banane, on mesure <b>{V0}{NB}mL</b> {l0.n}, de masse volumique <b>ρ = {RHO(l0)}{NB}g/mL</b>. Quelle est la masse de ce liquide, en grammes ?</>,
+    unite: 'g', vrai: m0, csMin: 2, tolRel: 0.06,
+    aide: 'Masse = masse volumique × volume : ρ × V. La masse volumique dit combien pèse 1 mL de liquide.',
+    pieges: [[V0 / l0.rho, 'On multiplie la masse volumique par le volume, on ne divise pas : 1 mL pèse ρ grammes, donc V mL pèsent ρ × V.'], [V0, 'C’est le volume : 1 mL ne pèse pas 1 g, il pèse ρ grammes.'], [l0.rho, 'C’est la masse de 1 mL seulement : multipliez par le nombre de millilitres.']],
+    expl: <>m = ρ × V = {nb(l0.rho, 3)} × {V0} = <b>{avecU(m0, 'g', 2)}</b>.</> };
+  // q1 : volume pour une masse donnée
+  const l1 = tire(SYN2GT_LIQ.slice(1)), m1 = tire([8.1, 10, 12, 16, 20, 25]), V1 = m1 / l1.rho;
+  const q1 = { id: 's1', type: 'num', q: <>Pour la synthèse, il faut <b>{nbc(m1)}{NB}g</b> {l1.n} (<b>ρ = {RHO(l1)}{NB}g/mL</b>). Quel volume faut-il mesurer à l’éprouvette, en millilitres ?</>,
+    unite: 'mL', vrai: V1, csMin: 2, tolRel: 0.06,
+    aide: 'ρ = m ÷ V, donc V = m ÷ ρ : on cherche combien de millilitres pèsent cette masse.',
+    pieges: [[m1 * l1.rho, 'On divise la masse par la masse volumique, on ne la multiplie pas.'], [m1, 'C’est la masse en grammes : le volume en mL s’obtient en divisant par ρ.'], [l1.rho / m1, 'Le rapport est inversé : V = m ÷ ρ.']],
+    expl: <>V = m ÷ ρ = {nbc(m1)} ÷ {nb(l1.rho, 3)} = <b>{avecU(V1, 'mL', 2)}</b>.</> };
+  // q2 : lire le volume du mélange réactionnel dans un protocole, puis choisir la capacité du ballon
+  const Va = tire([10, 12, 15, 20]), Vb = tire([8, 10, 12, 15]), v2 = 2 * (Va + Vb);
+  const q2 = { id: 's2', type: 'num', q: <>Un protocole demande d’introduire <b>{Va}{NB}mL</b> d’alcool isoamylique et <b>{Vb}{NB}mL</b> d’acide éthanoïque dans le ballon, avec quelques gouttes de catalyseur (volume négligeable). Il précise que le ballon ne doit pas être rempli à plus de la moitié. Quelle capacité minimale doit avoir le ballon, en mL ?</>,
+    unite: 'mL', vrai: v2, csMin: 2, tolRel: 0.06,
+    aide: 'D’abord le volume total du mélange, puis la règle du protocole : le liquide occupe au plus la moitié du ballon, donc le ballon doit avoir une capacité au moins double.',
+    pieges: [[Va + Vb, 'C’est le volume du mélange : le ballon doit pouvoir le contenir sans être rempli à plus de la moitié, donc être deux fois plus grand.'], [3 * (Va + Vb), 'La règle est « au plus la moitié » : multipliez le volume du mélange par 2, pas par 3.'], [2 * Math.max(Va, Vb), 'Il faut le volume des deux liquides : additionnez-les avant d’appliquer la règle.']],
+    expl: <>Volume du mélange = {Va} + {Vb} = {Va + Vb}{NB}mL ; le liquide occupe au plus la moitié du ballon : capacité minimale = 2 × {Va + Vb} = <b>{avecU(v2, 'mL', 2)}</b>.</> };
+  // q3 : masse volumique à partir d'une masse et d'un volume
+  const l3 = tire(SYN2GT_LIQ), V3 = tire([10, 20, 25, 40, 50]), m3 = Math.round(l3.rho * V3 * 10) / 10, r3 = m3 / V3;
+  const q3 = { id: 's3', type: 'num', q: <>À l’éprouvette, on mesure <b>{V3}{NB}mL</b> d’un liquide incolore ; la balance indique <b>{nbc(m3, 3)}{NB}g</b> de liquide. Calculez sa masse volumique, en g/mL.</>,
+    unite: 'g/mL', vrai: r3, csMin: 2, tolRel: 0.06,
+    aide: 'ρ = masse ÷ volume : la masse de 1 mL de liquide.',
+    pieges: [[V3 / m3, 'Le rapport est inversé : ρ = masse ÷ volume.'], [m3 * V3, 'On divise la masse par le volume, on ne les multiplie pas.'], [m3, 'C’est la masse totale : divisez-la par le nombre de millilitres.']],
+    expl: <>ρ = m ÷ V = {nbc(m3, 3)} ÷ {V3} = <b>{avecU(r3, 'g/mL', 2)}</b>.</> };
+  // q4 : identification d'un liquide à partir de ρ (la bonne réponse n'est jamais l'option la plus longue : l'ester, nommé le plus longuement, n'est jamais la bonne réponse)
+  const LIQ4 = [['l’acide éthanoïque', 1.05], ['l’alcool isoamylique', 0.81], ['l’acétate d’isoamyle (l’arôme)', 0.88], ['le dichlorométhane', 1.33]];
+  const k4 = tire([0, 1, 3]), rho4 = LIQ4[k4][1], m4 = Math.round(rho4 * 20 * 10) / 10, noms4 = LIQ4.map(x => x[0]), opts4 = melange(noms4);
+  const q4 = { id: 's4', type: 'qcm', q: <>On mesure <b>20{NB}mL</b> d’un liquide incolore et on trouve une masse de <b>{nbc(m4, 3)}{NB}g</b>. Données : ρ(acide éthanoïque) = 1,05{NB}g/mL ; ρ(alcool isoamylique) = 0,81{NB}g/mL ; ρ(acétate d’isoamyle) = 0,88{NB}g/mL ; ρ(dichlorométhane) = 1,33{NB}g/mL. De quel liquide s’agit-il ?</>,
+    options: opts4, bonne: opts4.indexOf(noms4[k4]),
+    aide: 'Calculez ρ = m ÷ V pour ce liquide et comparez-la aux valeurs données.',
+    expl: <>ρ = {nbc(m4, 3)} ÷ 20 = {nb(m4 / 20, 3)}{NB}g/mL : c’est la masse volumique de {noms4[k4]}. Les masses volumiques données sont assez différentes pour choisir sans hésiter ici.</> };
+  [q0, q1, q2, q3].forEach(filtre);
+  return { intro: 'Synthèse et reflux : masse et volume d’un liquide à prélever (masse volumique), capacité du ballon d’après un protocole et identification d’un liquide.', questions: [q0, q1, q2, q3, q4],
+    retenir: ['Masse volumique : ρ = m ÷ V, en g/mL ; m = ρ × V et V = m ÷ ρ.', 'Pour choisir un ballon : volume total du mélange, puis la règle du protocole (au plus la moitié de la capacité).', 'Les valeurs de l’exercice sont fournies : aucune n’est à retenir par cœur.'] };
+}
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
 function genEquilibreTG() {
   const v = [0.050, 0.10, 0.20, 0.40];
@@ -4562,6 +4612,7 @@ export const FAMILLES = [
   { id: 'img2gt-calcul', groupe: 'Formules', titre: 'Image par une lentille : rayon particulier, hauteur de l’image, grandissement par les tailles et par Thalès, conversion cm–m (2GT)', gen: genImage2GT, domaine: 'Image par une lentille (2GT)' },
   { id: 'test2gt-calcul', groupe: 'Formules', titre: 'Tests chimiques : réactif et observation, lecture d’une observation, nombre de tests pour identifier un gaz, durée et deux espèces à la fois (2GT)', gen: genTests2GT, domaine: 'Tests chimiques (2GT)' },
   { id: 'ccm2gt-calcul', groupe: 'Formules', titre: 'Chromatographie sur couche mince : rapport frontal, distance parcourue, conversions et comparaison de hauteurs (2GT)', gen: genCcm2GT, domaine: 'Chromatographie sur couche mince (2GT)' },
+  { id: 'syn2gt-calcul', groupe: 'Formules', titre: 'Synthèse et reflux : quantités de liquides d’un protocole, masse volumique, capacité du ballon et identification d’un liquide (2GT)', gen: genSynthese2GT, domaine: 'Synthèse et reflux (2GT)' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
