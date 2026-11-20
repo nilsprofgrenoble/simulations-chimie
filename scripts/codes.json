@@ -1471,5 +1471,22 @@
  "77:plausible:niv1g-val-raies-absorption": "VAL385",
  "77:plausible:niv1g-val-sodium-raie": "VAL386",
  "77:plausible:niv1g-val-hydrogene-uv": "VAL387",
- "36:niv1g-calcul": "REA96"
+ "36:niv1g-calcul": "REA96",
+ "34:mol2gt-balance.0": "SAPP376",
+ "34:mol2gt-balance.1": "SAPP377",
+ "34:mol2gt-echantillon.0": "SAPP378",
+ "34:mol2gt-echantillon.1": "SAPP379",
+ "37:prevoir:mol2gt-masse-double": "ANA616",
+ "37:prevoir:mol2gt-objet-leger": "ANA617",
+ "37:prevoir:mol2gt-comparer-n": "ANA618",
+ "37:prevoir:mol2gt-meme-masse-atomes": "ANA619",
+ "37:prevoir:mol2gt-molecule-legere": "ANA620",
+ "37:prevoir:mol2gt-ion-electron": "ANA621",
+ "77:plausible:mol2gt-val-pates": "VAL388",
+ "77:plausible:mol2gt-val-puissance": "VAL389",
+ "77:plausible:mol2gt-val-masse-molecule": "VAL390",
+ "77:plausible:mol2gt-val-n-goutte": "VAL391",
+ "77:plausible:mol2gt-val-paquet": "VAL392",
+ "36:mol2gt-calcul": "REA97",
+ "36:mol2gt-puissances": "REA98"
 }
