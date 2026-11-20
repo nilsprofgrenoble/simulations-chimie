@@ -1578,5 +1578,14 @@
  "77:plausible:son2gt-niv-val-smartphone": "VAL416",
  "77:plausible:son2gt-niv-val-concert-duree": "VAL417",
  "77:plausible:son2gt-niv-val-casque-court": "VAL418",
- "36:son2gt-niv-calcul": "REA106"
+ "36:son2gt-niv-calcul": "REA106",
+ "34:icc-sapp-resistance.0": "SAPP404",
+ "34:icc-sapp-resistance.1": "SAPP405",
+ "34:icc-sapp-reference.0": "SAPP406",
+ "37:prevoir:icc-ana-dominante": "ANA654",
+ "37:prevoir:icc-ana-tirages": "ANA655",
+ "37:prevoir:icc-ana-seuil": "ANA656",
+ "77:plausible:icc-val-somme": "VAL419",
+ "77:plausible:icc-val-compat": "VAL420",
+ "36:icc-calcul": "REA107"
 }

@@ -1556,6 +1556,49 @@ export const ENONCES = [
         manque: null, solution: { txt: 'frac(1|2) m v_f² − frac(1|2) m v_0² = m g h, donc v_f = √(v_0² + 2 g h)', val: vf, u: 'm/s' } };
     },
   },
+  // ───────────────────────────── Incertitudes-types composées et comparaison à une référence (TG, sim 185)
+  {
+    id: 'icc-sapp-resistance', domaine: 'Incertitudes-types composées et comparaison à une valeur de référence', titre: 'Incertitude sur la résistance d’un conducteur ohmique', noms: ['Incertitude relative de la résistance', 'Incertitude-type de la résistance'],
+    gen: () => ({ U: tire([3.50, 4.58, 5.20, 6.30, 7.40, 9.10]), uU: tire([0.02, 0.03, 0.05, 0.10]), I: tire([25.0, 32.5, 45.1, 52.0, 68.4, 85.0]), uI: tire([0.3, 0.5, 0.8, 1.0]), th: tire([19, 21, 23]), L: tire([0.5, 1.0, 1.5]) }),
+    build: (p, q) => {
+      const R = 1000 * p.U / p.I, rel = Math.sqrt((p.uU / p.U) ** 2 + (p.uI / p.I) ** 2);
+      const tokens = {
+        U: tok(`${nb(p.U, 2)} V`, 'Tension mesurée aux bornes du conducteur', p.U, 'V'),
+        uU: tok(`${nb(p.uU, 2)} V`, 'Incertitude-type sur la tension', p.uU, 'V'),
+        I: tok(`${nb(p.I, 1)} mA`, 'Intensité mesurée', p.I / 1000, 'A'),
+        uI: tok(`${nb(p.uI, 1)} mA`, 'Incertitude-type sur l’intensité', p.uI / 1000, 'A'),
+        th: tok(`${p.th} °C`, 'Température de la salle', p.th, '°C'),
+        L: tok(`${nb(p.L, 1)} m`, 'Longueur des fils de connexion', p.L, 'm'),
+      };
+      const debut = ['Un élève mesure la tension ', T('U'), ' aux bornes d’un conducteur ohmique, avec une incertitude-type ', T('uU'), ', et l’intensité ', T('I'), ' qui le traverse, avec une incertitude-type ', T('uI'), '. La salle est à ', T('th'), ' et les fils de connexion mesurent ', T('L'), '. On suppose les deux mesures indépendantes. La résistance se calcule par R = frac(U|I). '];
+      const raisons = { th: 'La température de la salle n’intervient pas dans la composition des incertitudes-types.', L: 'La longueur des fils ne sert pas à composer les incertitudes de U et de I.' };
+      if (q === 0) return { tokens, derivees: ['frac(u(U)|U) et frac(u(I)|I) : incertitudes relatives de chaque grandeur'], texte: [...debut, 'Quelle est l’incertitude relative de la résistance, c’est-à-dire u(R) rapportée à R ?'],
+        utiles: ['U', 'uU', 'I', 'uI'], raisons,
+        cherche: { bonne: 'L’incertitude relative de R (en %)', faux: ['La résistance R du conducteur (en Ω)', 'L’incertitude relative sur la tension seule (en %)', 'La puissance dissipée dans le conducteur (en W)'] },
+        manque: null, solution: { txt: 'frac(u(R)|R) = √(frac(u(U)|U)² + frac(u(I)|I)²)', val: 100 * rel, u: '%' } };
+      return { tokens, derivees: ['R = frac(U|I) : valeur calculée de la résistance', 'frac(u(R)|R) : incertitude relative, composée avec la formule du quotient'], texte: [...debut, 'Quelle est l’incertitude-type u(R) de la résistance ?'],
+        utiles: ['U', 'uU', 'I', 'uI'], raisons,
+        cherche: { bonne: 'L’incertitude-type u(R) de R (en Ω)', faux: ['L’incertitude relative de la résistance (en %)', 'La résistance R du conducteur (en Ω)', 'L’incertitude-type u(I) de l’intensité (en A)'] },
+        manque: null, solution: { txt: 'u(R) = R × √(frac(u(U)|U)² + frac(u(I)|I)²)', val: R * rel, u: 'Ω' } };
+    },
+  },
+  {
+    id: 'icc-sapp-reference', domaine: 'Incertitudes-types composées et comparaison à une valeur de référence', titre: 'Un cylindre est-il en aluminium ?', noms: ['Quotient de comparaison à la valeur de référence'],
+    gen: () => ({ rho: tire([2.71, 2.74, 2.77, 2.82, 2.88, 2.95]), u: tire([0.02, 0.03, 0.05, 0.08]), m: tire([54.2, 63.8, 71.5]), th: tire([19, 21, 23]) }),
+    build: (p) => {
+      const tokens = {
+        rho: tok(`${nb(p.rho, 2)} g/cm³`, 'Masse volumique du cylindre, déduite des mesures', p.rho, 'g/cm³'),
+        u: tok(`${nb(p.u, 2)} g/cm³`, 'Incertitude-type de cette masse volumique', p.u, 'g/cm³'),
+        ref: tok('2,70 g/cm³', 'Valeur de référence de l’aluminium pur (table)', 2.70, 'g/cm³'),
+        m: tok(`${nb(p.m, 1)} g`, 'Masse du cylindre', p.m, 'g'),
+        th: tok(`${p.th} °C`, 'Température de la salle', p.th, '°C'),
+      };
+      return { tokens, derivees: ['l’écart entre le résultat et la référence, en valeur absolue'], texte: ['Un élève veut savoir si un cylindre est en aluminium. Il en déduit une masse volumique ', T('rho'), ' avec une incertitude-type ', T('u'), '. Le cylindre, de masse ', T('m'), ', est dans une salle à ', T('th'), '. La table donne pour l’aluminium pur ', T('ref'), ' (valeur de référence, supposée connue sans incertitude). On compare le résultat à la référence avec le quotient z. Que calcule-t-on ?'],
+        utiles: ['rho', 'u', 'ref'], raisons: { m: 'La masse a déjà servi à calculer la masse volumique : le quotient de comparaison n’en a plus besoin.', th: 'La température de la salle n’intervient pas dans le quotient de comparaison.' },
+        cherche: { bonne: 'Le quotient z : écart divisé par u (sans unité)', faux: ['L’incertitude-type u(ρ) du résultat (en g/cm³)', 'L’écart relatif à la valeur de référence (sans unité)', 'La masse volumique corrigée du cylindre (en g/cm³)'] },
+        manque: null, solution: { txt: 'z = frac(écart|u(ρ)), où écart = |ρ_mes − ρ_ref| (valeur absolue)', val: Math.abs(p.rho - 2.70) / p.u, u: '' } };
+    },
+  },
   // ───────────────────────────── Particule chargée dans un condensateur plan (TG, sim 176) : champ entre les plaques, accélération
   {
     id: 'cpl-sapp-particule', domaine: 'Particule chargée dans un condensateur plan', titre: 'Une particule entre dans un condensateur plan', noms: ['Champ électrique entre les plaques', 'Accélération de la particule'],

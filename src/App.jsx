@@ -120,6 +120,7 @@ const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
 const SimulationDiffractionOnde = paresseux(() => import("./simulations/DiffractionOnde"), "SimulationDiffractionOnde");
 const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
+const SimulationIncertitudesComposees = paresseux(() => import("./simulations/IncertitudesComposees"), "SimulationIncertitudesComposees");
 const SimulationInterfTG = paresseux(() => import("./simulations/InterfTG"), "SimulationInterfTG");
 const SimulationParticuleCondensateur = paresseux(() => import("./simulations/ParticuleCondensateur"), "SimulationParticuleCondensateur");
 const SimulationSatellites = paresseux(() => import("./simulations/Satellites"), "SimulationSatellites");
@@ -306,6 +307,7 @@ const SIMULATIONS = [
   { id:174, label:"Circuit RC : charge et décharge d’un condensateur", niveau:"TG", icon:"🔌", color:"#0e7490", component: SimulationCircuitRC },
   { id:175, label:"Mouvement dans un champ de pesanteur uniforme : équations horaires et trajectoire", niveau:"TG", icon:"🏀", color:"#c2410c", component: SimulationPesanteur },
   { id:176, label:"Particule chargée dans un condensateur plan et accélérateur linéaire", niveau:"TG", icon:"⚡", color:"#7c2d12", component: SimulationParticuleCondensateur },
+  { id:185, label:"Incertitudes composées et valeur de référence", niveau:"TG", icon:"📏", color:"#0f766e", component: SimulationIncertitudesComposees },
   { id:177, label:"Satellites et lois de Kepler", niveau:"TG", icon:"🛰️", color:"#4338ca", component: SimulationSatellites },
   { id:181, label:"Diffraction : angle caractéristique", niveau:"TG", icon:"🌊", color:"#0e7490", component: SimulationDiffractionOnde },
   { id:182, label:"Trous d’Young et interfrange", niveau:"TG", icon:"🌈", color:"#be185d", component: SimulationYoung },

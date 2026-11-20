@@ -71,7 +71,7 @@ export const COUVERTURE = [
 
   // ──────────────────────── Terminale spé PC ────────────────────────
   { id: 'TG', niveau: 'TG', label: 'Terminale spé PC', parties: [
-    { th: MESURE, t: 'Incertitudes-types composées et critère de comparaison à une valeur de référence', e: 'avenir' },
+    { th: MESURE, t: 'Incertitudes-types composées et critère de comparaison à une valeur de référence', e: 'ok', chap: 'tg-mesure' },
     { th: CTM, t: 'Transferts d’ion hydrogène : couples acide-base, équation de réaction', e: 'partiel', chap: 'tg-etat-final', reste: 'formules des acides carboxyliques, carboxylates, amines et ammonium' },
     { th: CTM, t: 'pH et concentration en ions oxonium', e: 'ok', chap: 'tg-composition' },
     { th: CTM, t: 'Conductimétrie : loi de Kohlrausch et dosage par étalonnage', e: 'ok', chap: 'tg-composition' },
