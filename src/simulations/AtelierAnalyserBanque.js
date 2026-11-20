@@ -3509,6 +3509,27 @@ export const PREVOIR = [
       F('une force invisible le tire vers l’arrière', 'Aucune action ne tire le voyageur vers l’arrière : l’effet vient du référentiel accéléré, pas d’une force réelle.'),
       F('la loi n’est valable que pour des vitesses constantes', 'C’est l’inverse : elle relie justement la variation de vitesse à la somme des forces ; elle s’applique à un système qui accélère, dans un référentiel galiléen.'),
     ] },
+  { id: 'pes-ana-masse', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Deux balles de masses différentes',
+    enonce: 'Dans la cour, deux balles de même taille, l’une de 50 g et l’autre de 200 g, sont lancées du même point avec la même vitesse initiale vec(v_0) (même norme, même direction). On néglige l’action de l’air.', q: 'Comment se comparent leurs trajectoires ?', options: [
+      V('elles sont identiques : la masse n’intervient pas ici', 'Avec le poids seul, Σ vec(F) = m vec(g) = m vec(a) : la masse se simplifie et vec(a) = vec(g) pour les deux balles. Mêmes équations horaires, donc même trajectoire.'),
+      F('la balle de 200 g va moins loin, car elle est plus lourde', 'Une balle plus lourde subit un poids plus grand, mais aussi une inertie plus grande : les deux effets se compensent, l’accélération est la même (vec(g)) et la portée aussi.'),
+      F('la balle de 50 g retombe plus vite, car elle est plus légère', 'Sans air, la durée de la chute ne dépend pas de la masse : à la même hauteur, les deux balles arrivent en même temps. Seul l’air peut les différencier.'),
+      F('la balle de 200 g monte plus haut, car son poids la propulse', 'Le poids ne propulse pas : il est dirigé vers le bas. Les deux balles montent à la même altitude maximale, fixée par v_0, α et g.'),
+    ] },
+  { id: 'pes-ana-sommet', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Un ballon au sommet de sa trajectoire',
+    enonce: 'Un ballon est lancé obliquement vers le haut, sous un angle de 40° au-dessus de l’horizontale. On néglige l’action de l’air. Au sommet de sa trajectoire, on s’intéresse à son vecteur vitesse vec(v) et à son vecteur accélération vec(a). L’axe Oy est vertical vers le haut.', q: 'Que valent vec(v) et vec(a) au sommet ?', options: [
+      V('vec(v) est horizontal, non nul ; vec(a) = vec(g), vers le bas', 'Au sommet, v_y = 0 mais v_x = v_0 cos α reste constante et non nulle : vec(v) est horizontal. L’accélération est vec(g) à tout instant, donc non nulle (a_y = −g).'),
+      F('vec(v) est nul ; vec(a) est nul : le ballon est un instant à l’équilibre', 'Seule la composante verticale de vec(v) s’annule ; la composante horizontale subsiste. Et vec(a) = vec(g) n’est jamais nul : le ballon n’est pas à l’équilibre (le poids n’est pas compensé).'),
+      F('vec(v) est nul ; vec(a) = vec(g), vertical vers le bas', 'Le vecteur accélération est bien vec(g), mais vec(v) n’est pas nul : sa composante horizontale v_0 cos α reste constante, aucune force horizontale ne la change.'),
+      F('vec(v) est horizontal ; vec(a) est nul, car la balle n’accélère plus', 'Au sommet, la composante verticale de la vitesse passe de positive à négative : elle varie encore, donc vec(a) = vec(g) n’est pas nul. Le poids n’est jamais compensé en vol.'),
+    ] },
+  { id: 'pes-ana-lune', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Le même lancer sur la Lune',
+    enonce: 'Sur Terre (g = 9,8 m/s²), un astronaute lance une balle depuis le sol avec une vitesse initiale de norme v_0 sous un angle α. Sur la Lune (g = 1,6 m/s², sans atmosphère), il refait exactement le même lancer (même v_0, même α). Pour un tir depuis le sol, la portée s’écrit P = frac(v_0² sin 2α|g).', q: 'Que devient la portée sur la Lune ?', options: [
+      V('elle est environ 6 fois plus grande', 'P = frac(v_0² sin 2α|g) : v_0 et α sont inchangés et g est divisé par environ 6 (9,8 divisé par 1,6), donc la portée est multipliée par environ 6.'),
+      F('elle est environ 6 fois plus petite', 'C’est l’inverse : g apparaît au dénominateur de P. Sur la Lune, la pesanteur est plus faible, la balle retombe moins vite et va plus loin.'),
+      F('elle ne change pas, car v_0 et α ne changent pas', 'v_0 et α sont les mêmes, mais g n’est pas le même : il figure dans l’expression de P, et la portée dépend de la valeur du champ de pesanteur.'),
+      F('elle est environ 36 fois plus grande, car g est élevé au carré', 'g n’est pas élevé au carré dans P : il apparaît à la puissance 1, au dénominateur. Le rapport des portées est celui des valeurs de g, soit environ 6.'),
+    ] },
   { id: 'pil-ana-pont', domaine: 'Piles : fonctionnement et capacité', titre: 'On retire le pont salin',
     enonce: 'Une pile zinc-cuivre alimente une petite lampe. On retire le pont salin qui relie les deux solutions, sans toucher aux fils.', q: 'Que se passe-t-il ?', options: [
       V('la lampe s’éteint : le circuit est ouvert', 'Sans pont salin, aucun ion ne circule entre les deux solutions : le circuit est ouvert et le courant s’arrête aussitôt.'),

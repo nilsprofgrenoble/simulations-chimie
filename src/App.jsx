@@ -113,6 +113,7 @@ const SimulationFormulesTopologiques = paresseux(() => import("./simulations/For
 const SimulationPolymeres = paresseux(() => import("./simulations/Polymeres"), "SimulationPolymeres");
 const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "SimulationCircuitRC");
 const SimulationNewton = paresseux(() => import("./simulations/Newton"), "SimulationNewton");
+const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
 const SimulationVecteursVA = paresseux(() => import("./simulations/VecteursVitesseAcceleration"), "SimulationVecteursVA");
 const SimulationAcidesBases = paresseux(() => import("./simulations/AcidesBases"), "SimulationAcidesBases");
 const SimulationPhAcide = paresseux(() => import("./simulations/AcidesBases"), "SimulationPhAcide");
@@ -292,6 +293,7 @@ const SIMULATIONS = [
   { id:172, label:"Formules topologiques et isomérie de constitution", niveau:"TG", icon:"🧫", color:"#0f766e", component: SimulationFormulesTopologiques },
   { id:173, label:"Familles fonctionnelles et polymères", niveau:"TG", icon:"🧬", color:"#7c3aed", component: SimulationPolymeres },
   { id:174, label:"Circuit RC : charge et décharge d’un condensateur", niveau:"TG", icon:"🔌", color:"#0e7490", component: SimulationCircuitRC },
+  { id:175, label:"Mouvement dans un champ de pesanteur uniforme : équations horaires et trajectoire", niveau:"TG", icon:"🏀", color:"#c2410c", component: SimulationPesanteur },
   { id:117, label:"L’œil et la loupe : accommodation, diamètre apparent, grossissement", niveau:"TSTL", icon:"👁️", color:"#0e7490",
     component: SimulationOeilLoupe },
   { id:118, label:"Le microscope : image intermédiaire, mise au point, grossissement", niveau:"TSTL", icon:"🔬", color:"#0e7490",

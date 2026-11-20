@@ -1498,6 +1498,58 @@ export const ENONCES = [
         manque: null, solution: { txt: 'T − P = m × a_y, donc T = m × (g + a_y)', val: p.m * (9.8 + a), u: 'N' } };
     },
   },
+  {
+    id: 'pes-sapp-lancer', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Balle lancée depuis une terrasse', noms: ['Composante verticale de la vitesse initiale', 'Date du sommet de la trajectoire'],
+    gen: () => ({ m: tire([0.45, 0.50, 0.60]), v0: tire([8, 10, 12, 15]), alpha: tire([30, 40, 50, 60]), h: tire([1.5, 2.0, 2.5]), d: tire([25, 30, 35, 40]) }),
+    build: (p, q) => {
+      const tokens = {
+        m: tok(`${nb(p.m, 2)} kg`, 'Masse de la balle', p.m, 'kg'),
+        v0: tok(`${p.v0} m/s`, 'Norme de la vitesse initiale', p.v0, 'm/s'),
+        alpha: tok(`${p.alpha}°`, 'Angle du lancer au-dessus de l’horizontale', p.alpha, '°'),
+        h: tok(`${nb(p.h, 1)} m`, 'Hauteur de la terrasse (altitude du point de lancer)', p.h, 'm'),
+        d: tok(`${p.d} m`, 'Distance entre le pied de la terrasse et un mur', p.d, 'm'),
+        g: tok('9,8 m/s²', 'Intensité de la pesanteur', 9.8, 'm/s²'),
+      };
+      const al = p.alpha * Math.PI / 180, vy0 = p.v0 * Math.sin(al);
+      const debut = ['Un joueur lance une balle de masse ', T('m'), ' depuis une terrasse située à ', T('h'), ' au-dessus du sol, avec une vitesse initiale de norme ', T('v0'), ' inclinée de ', T('alpha'), ' au-dessus de l’horizontale. Un mur se trouve à ', T('d'), ' du pied de la terrasse. L’air est négligé ; on prend g = ', T('g'), ' et un axe Oy vertical vers le haut. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la composante verticale de la vitesse initiale ?'],
+        utiles: ['v0', 'alpha'], raisons: { m: 'La masse ne joue aucun rôle dans la décomposition d’un vecteur vitesse.', h: 'La hauteur de la terrasse n’intervient pas dans la décomposition de la vitesse initiale.', d: 'La distance au mur ne sert pas à décomposer la vitesse.', g: 'La pesanteur n’intervient pas dans la décomposition de la vitesse initiale.' },
+        cherche: { bonne: 'La composante v_y(0) à t = 0 (en m/s)', faux: ['La composante horizontale v_x de la vitesse (en m/s)', 'La date du sommet de la trajectoire (en s)', 'L’altitude maximale atteinte par la balle (en m)'] },
+        manque: null, solution: { txt: 'v_y(0) = v_0 sin α', val: vy0, u: 'm/s' } };
+      return { tokens, derivees: [{ id: 'vy0', nom: 'Composante verticale de la vitesse initiale', expr: 'v_y(0) = v_0 sin α', val: vy0, u: 'm/s' }], texte: [...debut, 'Quelle est la date du sommet de la trajectoire ?'],
+        utiles: ['v0', 'alpha', 'g'], raisons: { m: 'La masse se simplifie dans la deuxième loi de Newton : la date du sommet n’en dépend pas.', h: 'La hauteur de la terrasse change l’altitude du sommet, pas sa date (v_y = 0).', d: 'La distance au mur ne détermine pas la date du sommet.' },
+        cherche: { bonne: 'La date t_s du sommet (en s)', faux: ['La durée du vol jusqu’au sol (en s)', 'L’altitude maximale atteinte (en m)', 'La portée au sol (en m)'] },
+        manque: null, solution: { txt: 'v_y(t_s) = 0 donne t_s = frac(v_0 sin α|g)', val: vy0 / 9.8, u: 's' } };
+    },
+  },
+  {
+    id: 'pes-sapp-energie', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Vitesse d’arrivée d’un projectile', noms: ['Variation d’énergie cinétique', 'Vitesse à l’arrivée au sol'],
+    gen: () => {
+      // la durée du vol affichée est celle du modèle (racine positive de y(t) = 0), arrondie au dixième : les données sont cohérentes entre elles
+      const v0 = tire([8, 10, 12, 15]), alpha = tire([30, 40, 50, 60]), h = tire([3.0, 5.0, 8.0, 12.0]), vy = v0 * Math.sin(alpha * Math.PI / 180);
+      return { m: tire([0.30, 0.45, 0.60, 2.0]), v0, alpha, h, tv: Math.round((vy + Math.sqrt(vy * vy + 2 * 9.8 * h)) / 9.8 * 10) / 10 };
+    },
+    build: (p, q) => {
+      const tokens = {
+        m: tok(`${nb(p.m, 2)} kg`, 'Masse du projectile', p.m, 'kg'),
+        v0: tok(`${p.v0} m/s`, 'Norme de la vitesse initiale', p.v0, 'm/s'),
+        alpha: tok(`${p.alpha}°`, 'Angle du lancer au-dessus de l’horizontale', p.alpha, '°'),
+        h: tok(`${nb(p.h, 1)} m`, 'Dénivelée entre le point de lancer et le sol', p.h, 'm'),
+        tv: tok(`${nb(p.tv, 1)} s`, 'Durée du vol mesurée à la vidéo', p.tv, 's'),
+        g: tok('9,8 m/s²', 'Intensité de la pesanteur', 9.8, 'm/s²'),
+      };
+      const dEc = p.m * 9.8 * p.h, vf = Math.sqrt(p.v0 * p.v0 + 2 * 9.8 * p.h);
+      const debut = ['Un projectile de masse ', T('m'), ' est lancé depuis un point situé à ', T('h'), ' au-dessus du sol, avec une vitesse initiale de norme ', T('v0'), ' inclinée de ', T('alpha'), ' au-dessus de l’horizontale. Sur la vidéo, la durée du vol est ', T('tv'), '. L’air est négligé ; g = ', T('g'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la variation d’énergie cinétique du projectile entre le lancer et l’arrivée au sol ?'],
+        utiles: ['m', 'h', 'g'], raisons: { v0: 'La vitesse initiale n’intervient pas : seul le travail du poids (m g h) fixe la variation d’énergie cinétique.', alpha: 'L’angle du lancer ne change pas le travail du poids, qui ne dépend que de la dénivelée.', tv: 'La durée du vol n’est pas nécessaire : le théorème de l’énergie cinétique se passe du temps.' },
+        cherche: { bonne: 'La variation ΔE_c d’énergie cinétique (en J)', faux: ['La norme de la vitesse à l’arrivée (en m/s)', 'L’énergie mécanique du projectile au lancer (en J)', 'La portée du lancer (en m)'] },
+        manque: null, solution: { txt: 'ΔE_c = W(vec(P)) = m g h', val: dEc, u: 'J' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la norme de la vitesse du projectile à l’arrivée au sol ?'],
+        utiles: ['v0', 'h', 'g'], raisons: { m: 'La masse se simplifie dans le théorème de l’énergie cinétique : la vitesse d’arrivée n’en dépend pas.', alpha: 'Le théorème de l’énergie cinétique ne dépend pas de la direction du lancer, seulement de v_0 et de la dénivelée.', tv: 'On n’a pas besoin de la durée du vol : le théorème de l’énergie cinétique relie directement les vitesses et la dénivelée.' },
+        cherche: { bonne: 'La norme v_f de la vitesse à l’arrivée (en m/s)', faux: ['La composante verticale de la vitesse initiale (en m/s)', 'La variation d’énergie cinétique (en J)', 'La vitesse moyenne du vol (en m/s)'] },
+        manque: null, solution: { txt: 'frac(1|2) m v_f² − frac(1|2) m v_0² = m g h, donc v_f = √(v_0² + 2 g h)', val: vf, u: 'm/s' } };
+    },
+  },
   // ───────────────────────────── Vecteurs vitesse et accélération (TG, sim 166) : exploiter une chronophotographie
   {
     id: 'vac-sapp-chrono', domaine: 'Vecteurs vitesse et accélération', titre: 'Exploiter une chronophotographie', noms: ['Vitesse au point M4', 'Accélération au point M4'],

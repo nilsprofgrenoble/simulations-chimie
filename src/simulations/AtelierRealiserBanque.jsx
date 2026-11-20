@@ -2590,6 +2590,48 @@ function genNewtonTG() {
 }
 
 
+// ───────── Mouvement dans un champ de pesanteur uniforme (TG, sim 175) ─────────
+function genPesanteurTG() {
+  const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.08 * Math.abs(q.vrai))); };
+  // nb() prend des chiffres SIGNIFICATIFS : les données et les corrections s'écrivent ici en décimales fixes, exactement comme l'élève les lira
+  const d = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const rad = x => x * Math.PI / 180;
+  const v0 = tire([8, 10, 12, 15, 18]), alpha = tire([30, 40, 50, 60]), vy0 = Number((v0 * Math.sin(rad(alpha))).toFixed(2));
+  // 1. composante verticale de la vitesse à une date donnée, avec son signe
+  const tVal = tire([0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.5, 1.8, 2.0].filter(t => Math.abs(vy0 - 9.8 * t) >= 2.0));
+  const vyt = vy0 - 9.8 * tVal;
+  const q1 = { id: 'pe0', type: 'num', q: <>Une balle est lancée depuis le sol avec une vitesse de norme <b>{v0}{NB}m/s</b>, inclinée de <b>{alpha}°</b> au-dessus de l’horizontale (g = 9,8{NB}m/s², air négligé, axe Oy vers le haut). Calculez la composante {avecIndices('v_y')} de sa vitesse à la date <b>t = {d(tVal, 1)}{NB}s</b> (en m/s, avec son signe, 2 chiffres significatifs).</>, unite: 'm/s', vrai: vyt, tolRel: 0.05, csMin: 2,
+    aide: 'v_y(t) = −g t + v_0 sin α : le signe est négatif quand la balle descend. Gardez 3 chiffres significatifs dans les calculs intermédiaires.',
+    pieges: [[vy0 + 9.8 * tVal, 'Le signe de g t est inversé : avec Oy vers le haut, a_y = −g, donc v_y(t) = −g t + v_0 sin α.'], [v0 - 9.8 * tVal, 'Vous avez oublié sin α : la vitesse verticale initiale est v_0 sin α, pas v_0.'], [-vyt, 'Vérifiez le signe : v_y est positive tant que la balle monte, négative quand elle descend.']],
+    expl: <>{avecIndices('v_y(t)')} = −g t + {avecIndices('v_0')} sin α = −9,8 × {d(tVal, 1)} + {v0} × sin {alpha}° = −{d(9.8 * tVal, 2)} + {d(vy0, 2)} = <b>{d(vyt, 2)}{NB}m/s</b>{vyt < 0 ? ' : négative, la balle descend.' : ' : positive, la balle monte encore.'}</> };
+  // 2. altitude à une date donnée (départ d'une hauteur h)
+  const couples2 = [];
+  for (const h of [1.0, 1.5, 2.0, 3.0]) for (const t of [0.4, 0.6, 0.8, 1.0, 1.2]) { const y = h + vy0 * t - 4.9 * t * t; if (y >= 2.0 && [h, 4.9 * t * t, (v0 - vy0) * t].every(e => e / y > 0.1)) couples2.push([h, t]); }
+  const [h2, t2] = couples2.length ? tire(couples2) : [2.0, 0.6];   // jeux de données où chaque piège reste nettement hors tolérance
+  const y2 = h2 + vy0 * t2 - 4.9 * t2 * t2;
+  const q2 = { id: 'pe1', type: 'num', q: <>La même balle est lancée d’une terrasse située à <b>h = {d(h2, 1)}{NB}m</b> au-dessus du sol (<b>{v0}{NB}m/s</b>, <b>{alpha}°</b>, g = 9,8{NB}m/s²). Calculez son altitude y à la date <b>t = {d(t2, 1)}{NB}s</b> (en m, 2 chiffres significatifs).</>, unite: 'm', vrai: y2, tolRel: 0.05, csMin: 2,
+    aide: 'y(t) = −½ g t² + v_0 sin α × t + h : la constante d’intégration est l’altitude initiale h. Gardez 3 chiffres significatifs dans les calculs intermédiaires.',
+    pieges: [[y2 - h2, 'Vous avez oublié la hauteur h : y(0) = h, l’altitude est comptée depuis le sol.'], [-9.8 * t2 * t2 + vy0 * t2 + h2, 'Vérifiez le facteur ½ : le terme de pesanteur est −½ g t², soit −4,9 t².'], [v0 * t2 - 4.9 * t2 * t2 + h2, 'Vous avez oublié sin α : seule la composante verticale v_0 sin α fait monter la balle.']],
+    expl: <>y(t) = −½ g t² + {avecIndices('v_0')} sin α × t + h = −4,9 × {d(t2, 1)}² + {d(vy0, 2)} × {d(t2, 1)} + {d(h2, 1)} = <b>{d(y2, 2)}{NB}m</b>.</> };
+  // 3. portée d'un tir depuis le sol sur la Terre, la Lune ou Mars
+  const C = tire([{ nom: 'la Terre', g: 9.8 }, { nom: 'la Lune', g: 1.6 }, { nom: 'Mars', g: 3.7 }]), v3 = tire([6, 8, 10, 12]), a3 = tire([30, 40, 50, 60]);
+  const tv3 = 2 * v3 * Math.sin(rad(a3)) / C.g, P3 = v3 * Math.cos(rad(a3)) * tv3;
+  const q3 = { id: 'pe2', type: 'num', q: <>Sur <b>{C.nom}</b> (g = {d(C.g, 1)}{NB}m/s², sans atmosphère), une balle est lancée depuis le sol avec <b>{v3}{NB}m/s</b> sous <b>{a3}°</b> au-dessus de l’horizontale. Calculez la portée, distance horizontale entre le point de lancer et le point d’arrivée au sol (en m, 2 chiffres significatifs).</>, unite: 'm', vrai: P3, tolRel: 0.05, csMin: 2,
+    aide: 'Durée du vol : y(t) = 0 donne t = frac(2 v_0 sin α|g) ; puis portée = v_0 cos α × durée. Gardez 3 chiffres significatifs dans les calculs intermédiaires.',
+    pieges: [[v3 * Math.cos(rad(a3)) * tv3 / 2, 'Vous avez pris la date du sommet : la balle continue jusqu’au sol, durée du vol = 2 fois cette date.'], [v3 * tv3, 'Vous avez oublié cos α : seule la composante horizontale v_0 cos α avance la balle.'], [v3 * Math.cos(rad(a3)) * 2 * v3 * Math.sin(rad(a3)) / 9.8, 'Vous avez pris g = 9,8 m/s² : utilisez la valeur de g de cet astre.']],
+    expl: <>Durée : t = {avecIndices(`frac(2 v_0 sin α|g)`)} = {avecIndices(`frac(2 × ${v3} × sin ${a3}°|${d(C.g, 1)})`)} = {d(tv3, 2)} s ; portée = {avecIndices('v_0')} cos α × t = {v3} × cos {a3}° × {d(tv3, 2)} = <b>{d(P3, P3 < 10 ? 2 : 1)}{NB}m</b>.</> };
+  // 4. vitesse à l'arrivée par le théorème de l'énergie cinétique
+  const v4 = tire([6, 8, 10, 12, 15]), h4 = tire([3, 5, 8, 12, 20]), a4 = tire([20, 40, 60]), vf = Math.sqrt(v4 * v4 + 2 * 9.8 * h4);
+  const q4 = { id: 'pe3', type: 'num', q: <>Une pierre est lancée depuis un pont situé à <b>{h4}{NB}m</b> au-dessus de l’eau, avec une vitesse de <b>{v4}{NB}m/s</b> inclinée de <b>{a4}°</b> au-dessus de l’horizontale (g = 9,8{NB}m/s², air négligé). Calculez la norme de sa vitesse à l’arrivée sur l’eau, sans calculer la durée du vol (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: vf, tolRel: 0.05, csMin: 2,
+    aide: 'Théorème de l’énergie cinétique : ½ m v_f² − ½ m v_0² = m g h. La masse se simplifie, l’angle ne compte pas.',
+    pieges: [[v4, 'Vous avez oublié le travail du poids : la pierre descend de h, elle gagne de l’énergie cinétique.'], [Math.sqrt(Math.max(0, v4 * v4 - 2 * 9.8 * h4)), 'Le signe est inversé : en descendant, l’énergie cinétique augmente (+ m g h).'], [v4 * v4 + 2 * 9.8 * h4, 'Vous avez oublié la racine carrée : c’est v_f² qui vaut v_0² + 2 g h.'], [v4 + Math.sqrt(2 * 9.8 * h4), 'Les vitesses ne s’additionnent pas ainsi : v_f² = v_0² + 2 g h.']],
+    expl: <>{avecIndices('v_f')} = √({avecIndices('v_0')}² + 2 g h) = √({v4}² + 2 × 9,8 × {h4}) = √{d(v4 * v4 + 2 * 9.8 * h4, 1)} = <b>{d(vf, 2)}{NB}m/s</b>, quel que soit l’angle {a4}°.</> };
+  [q1, q2, q3, q4].forEach(tolOk);
+  return { intro: 'Mouvement dans un champ de pesanteur uniforme : composantes de la vitesse et de la position avec leurs signes, portée sur différents astres et théorème de l’énergie cinétique.', questions: [q1, q2, q3, q4],
+    retenir: ['Poids seul, champ uniforme : vec(a) = vec(g). Avec Oy vers le haut : a_x = 0 et a_y = −g.', 'Vitesse : v_x = v_0 cos α ; v_y = −g t + v_0 sin α. Position : x = v_0 cos α × t ; y = −½ g t² + v_0 sin α × t + h. La trajectoire est une parabole.', 'Sommet : v_y = 0 ; sol : y = 0 donne la durée du vol ; portée = v_x × durée.', 'Théorème de l’énergie cinétique (poids seul) : v_f = √(v_0² + 2 g h) ; la masse et l’angle n’interviennent pas.'] };
+}
+
+
 // ───────── Vecteurs vitesse et accélération (TG, sim 166) ─────────
 function genVecteursVATG() {
   const sg = (x, cs = 3) => (x < 0 ? '−' + nb(-x, cs) : nb(x, cs));
@@ -2911,6 +2953,7 @@ export const FAMILLES = [
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
+  { id: 'pes-calcul', groupe: 'Formules', titre: 'Champ de pesanteur uniforme : vitesse, position, portée et théorème de l’énergie cinétique (TG)', gen: genPesanteurTG, domaine: 'Mouvement dans un champ de pesanteur uniforme' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
