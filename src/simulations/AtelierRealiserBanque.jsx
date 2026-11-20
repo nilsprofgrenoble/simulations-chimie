@@ -23,6 +23,7 @@ import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
 import * as EQM from "./equationReactionModele";
 import * as ETM from "./changementEtat2gtModele";
+import * as NUC from "./nucleaire2gtModele";
 import * as M_TEST from "./testsChimiques2gtModele";
 import * as ISN from "./isnModele";
 import * as CPM from "./corpsPur2gtModele";
@@ -1788,6 +1789,66 @@ function genEtat2GT() {
   [q1, q2, q3, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Changement d’état : équation, sens du transfert thermique, énergie E = m × L, masse qui change d’état, conversion des grammes en kilogrammes et proportionnalité.', questions: [q0, q1, q2, q3, q4, q5],
     retenir: ['Équation d’un changement d’état : même formule des deux côtés, état de départ (s, l ou g) avant la flèche, état d’arrivée après.', 'Endothermique : le système reçoit de l’énergie (fusion, vaporisation, sublimation) ; exothermique : il en cède (solidification, liquéfaction, condensation solide).', 'E = m × L, avec E en kJ, m en kg et L en kJ/kg ; convertir les grammes en kilogrammes ; l’énergie est proportionnelle à la masse.'] };
+}
+// ───────────── Transformation nucléaire (2GT) : isotopes dans une liste, nature d'une transformation d'après son écriture, vérification de A et Z en lecture, neutrons libérés, fusion ou fission ─────────────
+const NUC2GT_NATURE_TXT = { physique: 'physique : les molécules restent les mêmes', chimique: 'chimique : les atomes sont seulement réarrangés', nucleaire: 'nucléaire : les noyaux des atomes sont modifiés' };
+const NUC2GT_FAUX_NAT = 'chimique : les noyaux des atomes sont transformés';
+const nucSym = n => NUC.symbole(n);
+function genNucleaire2GT() {
+  // q0 : un isotope parmi quatre noyaux (un isotope, un noyau de même A, deux noyaux d'autres éléments)
+  let d0, opts0, bonne0;
+  for (let k = 0; k < 300; k++) {
+    d0 = NUC.tirerDefiIsotopes();
+    const iso = [...d0.bonnes][0], memeA = d0.candidats.find(n => n.A === d0.cible.A && n.Z !== d0.cible.Z), autres = d0.candidats.filter(n => NUC.cle(n) !== iso && n !== memeA && n.Z !== d0.cible.Z && n.A !== d0.cible.A);
+    const fx = [memeA, ...melange(autres)].filter(Boolean).slice(0, 3);
+    if (fx.length < 3) continue;
+    const isoN = d0.candidats.find(n => NUC.cle(n) === iso); bonne0 = `le noyau ${nucSym(isoN)}`;
+    const o = melange([bonne0, ...fx.map(n => `le noyau ${nucSym(n)}`)]);
+    if (new Set(o).size === 4 && o[o.indexOf(bonne0)].length < Math.max(...o.map(x => x.length))) { opts0 = o; break; }
+  }
+  const q0 = { id: 'g0', type: 'qcm', q: <>Un noyau de {NUC.nomEl(d0.cible.Z)} s’écrit <b>{nucSym(d0.cible)}</b>. Lequel de ces noyaux est un isotope de ce noyau ?</>, options: opts0, bonne: opts0.indexOf(bonne0),
+    aide: 'Des isotopes sont des noyaux du même élément : ils ont le même Z, le nombre écrit en bas à gauche du symbole, et des nombres de nucléons A différents.',
+    expl: <>Il faut le même Z ({d0.cible.Z}) et un A différent de {d0.cible.A} : <b>{bonne0}</b>. Un noyau qui a seulement le même A n’est pas un isotope : c’est un autre élément.</> };
+  // q1 : combien d'isotopes dans une liste de six noyaux
+  const d1 = NUC.tirerDefiIsotopes(), n1 = d1.bonnes.size, memeA1 = d1.candidats.filter(n => n.A === d1.cible.A && n.Z !== d1.cible.Z).length;
+  const q1 = { id: 'g1', type: 'num', q: <>Voici une liste de noyaux : <b>{d1.candidats.map(nucSym).join(' ; ')}</b>. Combien de ces noyaux sont des isotopes du noyau <b>{nucSym(d1.cible)}</b> ?</>,
+    unite: 'noyaux', vrai: n1, tolRel: 0.006,
+    aide: 'Pour chaque noyau de la liste, comparez son Z (en bas à gauche) à celui de la cible. Même Z : même élément, donc isotope si A est différent.',
+    pieges: [[n1 + memeA1, 'Vous avez compté des noyaux qui ont seulement le même nombre de nucléons A que la cible : ils ont un autre Z, donc ce sont d’autres éléments.'], [n1 + 1, 'Un noyau de trop : vérifiez que son Z est bien celui de la cible.'], [Math.max(0, n1 - 1), 'Il y a un isotope de plus : revérifiez les Z de toute la liste.']],
+    expl: <>Les isotopes de {nucSym(d1.cible)} ont Z = {d1.cible.Z} dans la liste : <b>{n1}{NB}noyau{n1 > 1 ? 'x' : ''}</b>.</> };
+  // q2 : nature d'une transformation d'après son écriture seule
+  let s2; do { s2 = NUC.tirerSituation(); } while (!(s2.ecriture || s2.reaction));
+  const bonne2 = NUC2GT_NATURE_TXT[s2.nature];
+  const faux2 = [...Object.keys(NUC2GT_NATURE_TXT).filter(k => k !== s2.nature).map(k => NUC2GT_NATURE_TXT[k]), NUC2GT_FAUX_NAT];
+  const opts2 = melange([bonne2, ...faux2]);
+  const ecr2 = s2.ecriture ? NUC.ecritureTexte(NUC.ECRITURES[s2.ecriture]) : NUC.reactionTexte(NUC.REACTIONS[s2.reaction]);
+  const q2 = { id: 'g2', type: 'qcm', q: <>Une transformation s’écrit : <b>{ecr2}</b>. Quelle est sa nature ?</>, options: opts2, bonne: opts2.indexOf(bonne2),
+    aide: 'Regardez ce que contient l’écriture : des états (s), (l), (g) avec la même formule, des formules de molécules qui changent, ou des symboles de noyaux avec A et Z.',
+    expl: <>{s2.pourquoi} Réponse : <b>{bonne2}</b>.</> };
+  // q3 : nombre de nucléons avant la flèche d'une réaction donnée (lecture ; la conservation est vérifiée par le modèle)
+  const r3 = NUC.REACTIONS[tire(Object.keys(NUC.REACTIONS))], b3 = NUC.bilan(r3), prem = r3.gauche[0].A;
+  const q3 = { id: 'g3', type: 'num', q: <>Une réaction s’écrit : <b>{NUC.reactionTexte(r3)}</b>. Combien de nucléons y a-t-il en tout <b>avant</b> la flèche ? (Le nombre écrit en haut de chaque symbole est son nombre de nucléons A.)</>,
+    unite: 'nucléons', vrai: b3.A[0], tolRel: 0.0001,
+    aide: 'Additionnez les nombres A (en haut) de tous les noyaux situés à gauche de la flèche, sans oublier le neutron.',
+    pieges: [[prem, 'Vous n’avez compté que le premier noyau : il faut aussi le noyau ou le neutron qui le suit à gauche de la flèche.'], [b3.Z[0], 'C’est le nombre de protons Z : on demande le nombre de nucléons A.'], [b3.A[0] - 1, 'Le neutron compte pour un nucléon : A = 1.']],
+    expl: <>On additionne les A à gauche de la flèche : <b>{b3.A[0]}{NB}nucléons</b>. Après la flèche on en trouve autant ({b3.A[1]}) : la simulation vérifie cette égalité, vous n’avez pas à la démontrer.</> };
+  // q4 : neutrons libérés par une fission écrite
+  const r4 = NUC.REACTIONS[tire(['fissionSr', 'fissionKr'])], n4 = NUC.neutronsProduits(r4);
+  const q4 = { id: 'g4', type: 'num', q: <>Une fission de l’uranium 235 s’écrit : <b>{NUC.reactionTexte(r4)}</b>. Combien de neutrons sont libérés (à droite de la flèche) ?</>,
+    unite: 'neutrons', vrai: n4, tolRel: 0.006,
+    aide: 'Cherchez le symbole du neutron après la flèche : le nombre écrit devant lui dit combien il y en a.',
+    pieges: [[1, 'C’est le neutron de gauche, celui qui arrive sur l’uranium : on demande ceux qui sont libérés.'], [n4 + 1, 'Vous avez compté le neutron de gauche en plus de ceux de droite.'], [0, 'Il y a bien des neutrons après la flèche : regardez le dernier terme.']],
+    expl: <>Après la flèche, le dernier terme est « {n4} » neutrons : <b>{n4}{NB}neutrons</b> sont libérés. Le neutron de gauche est celui qui déclenche la fission.</> };
+  // q5 : source d'énergie du Soleil ou d'une centrale
+  const soleil = tire([true, false]);
+  const OPT3 = { fusion: 'une fusion : des noyaux s’assemblent', fission: 'une fission : un noyau se casse', combustion: soleil ? 'une combustion : le Soleil brûle son hydrogène' : 'une combustion : l’uranium brûle dans l’air', meme: 'fusion et fission, c’est la même chose : l’une ou l’autre' };
+  const b3k = soleil ? 'fusion' : 'fission', opts5 = melange(Object.keys(OPT3)).map(k => OPT3[k]);
+  const q5 = { id: 'g5', type: 'qcm', q: <>{soleil ? 'Dans le cœur du Soleil, des noyaux d’hydrogène (Z = 1) sont transformés en noyaux d’hélium (Z = 2).' : 'Dans le réacteur d’une centrale nucléaire, un neutron frappe un noyau d’uranium 235, qui donne deux noyaux plus petits.'} Quelle transformation est à l’origine de l’énergie libérée ?</>, options: opts5, bonne: opts5.indexOf(OPT3[b3k]),
+    aide: soleil ? 'Des noyaux petits donnent un noyau plus gros : l’élément change.' : 'Un noyau très gros donne deux noyaux plus petits.',
+    expl: <>{soleil ? 'Des noyaux d’hydrogène s’assemblent en noyaux d’hélium : c’est une fusion.' : 'Un noyau d’uranium 235 se casse en deux noyaux plus petits : c’est une fission.'} Fusion et fission sont deux transformations nucléaires différentes. Réponse : <b>{OPT3[b3k]}</b>.</> };
+  [q1, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai && x > 0); });
+  return { intro: 'Transformation nucléaire : isotopes dans une liste, nature d’une transformation d’après son écriture, nombre de nucléons lu dans une réaction, neutrons libérés par une fission, fusion ou fission.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['Des isotopes ont le même Z (même élément) et des nombres de nucléons A différents ; un même A ne suffit pas.', 'Physique : les molécules restent les mêmes ; chimique : les atomes sont conservés ; nucléaire : les noyaux changent (symboles avec A et Z).', 'Fusion (étoiles) : des noyaux s’assemblent ; fission (centrales) : un gros noyau se casse.'] };
 }
 // ───────────── Image par une lentille (2GT) : trois rayons particuliers, hauteur de l’image, grandissement, conversion cm–m, position de l’image, hauteur de l’objet ─────────────
 const IMG2GT_RAYONS = [
@@ -4497,6 +4558,7 @@ export const FAMILLES = [
   { id: 'noy2gt-calcul', groupe: 'Formules', titre: 'Le noyau de l’atome : neutrons d’après ZAX, nombre de masse, charge et masse du noyau, atome agrandi et écriture conventionnelle (2GT)', gen: genNoyau2GT, domaine: 'Noyau de l’atome (2GT)' },
   { id: 'prisme2gt-calcul', groupe: 'Formules', titre: 'Dispersion par un prisme : angle dans le verre, angle de sortie, écart de déviation, laser le plus dévié, indice d’une couleur (2GT)', gen: genPrisme2GT, domaine: 'Dispersion de la lumière (2GT)' },
   { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
+  { id: 'nuc2gt-calcul', groupe: 'Formules', titre: 'Transformation nucléaire : neutrons et nucléons d’un noyau, nature d’une transformation, fusion ou fission, neutrons libérés, chaîne d’une centrale (2GT)', gen: genNucleaire2GT, domaine: 'Transformation nucléaire (2GT)' },
   { id: 'img2gt-calcul', groupe: 'Formules', titre: 'Image par une lentille : rayon particulier, hauteur de l’image, grandissement par les tailles et par Thalès, conversion cm–m (2GT)', gen: genImage2GT, domaine: 'Image par une lentille (2GT)' },
   { id: 'test2gt-calcul', groupe: 'Formules', titre: 'Tests chimiques : réactif et observation, lecture d’une observation, nombre de tests pour identifier un gaz, durée et deux espèces à la fois (2GT)', gen: genTests2GT, domaine: 'Tests chimiques (2GT)' },
   { id: 'ccm2gt-calcul', groupe: 'Formules', titre: 'Chromatographie sur couche mince : rapport frontal, distance parcourue, conversions et comparaison de hauteurs (2GT)', gen: genCcm2GT, domaine: 'Chromatographie sur couche mince (2GT)' },

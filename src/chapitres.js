@@ -31,6 +31,7 @@ export const CHAPITRES = [
   { id: '2gt-lumiere', niveau: '2GT', rubrique: 'Ondes et signaux', label: '🔦 Lumière : réfraction, lentilles et spectres', sims: [64, 65, 66, 199, 200, 201], domaines: ['Lumière', 'Image par une lentille (2GT)', 'L’œil réduit (2GT)', 'Dispersion de la lumière (2GT)'] },
   { id: '2gt-mesure', niveau: '2GT', rubrique: 'Mesure et incertitudes', label: '📏 Mesurer et exprimer un résultat', sims: [193, 194], domaines: ['Variabilité de la mesure (2GT)', 'Incertitude-type et résultat (2GT)'] },
   { id: '2gt-transformation-physique', niveau: '2GT', rubrique: 'Constitution et transformations de la matière', label: '🧊 Modéliser une transformation physique', sims: [195], domaines: ['Changement d’état (2GT)'] },
+  { id: '2gt-transformation-nucleaire', niveau: '2GT', rubrique: 'Constitution et transformations de la matière', label: '☢️ Transformation nucléaire : isotopes, Soleil et centrales', sims: [203], domaines: ['Transformation nucléaire (2GT)'] },
   { id: '2gt-son', niveau: '2GT', rubrique: 'Ondes et signaux', label: '🔊 Émettre et percevoir un son', sims: [190, 191, 192], domaines: ['Signal sonore : période et fréquence (2GT)', 'Niveau sonore (2GT)', 'Son : émission et propagation (2GT)'] },
   { id: '2gt-circuits', niveau: '2GT', rubrique: 'Ondes et signaux', label: '🔌 Circuits électriques, loi d’Ohm et capteurs', sims: [68, 69], domaines: ['Circuits électriques'] },
 
