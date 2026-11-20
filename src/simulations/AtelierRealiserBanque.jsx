@@ -2904,6 +2904,49 @@ function genRCTG() {
     retenir: ['Temps caractéristique : τ = R × C ; ohm × farad = seconde ; en pratique kΩ × µF = ms.', 'À t = 0 en charge (condensateur déchargé) : u_C = 0, u_R = E, donc i(0) = frac(E|R).', 'Avec n = frac(t|τ) : charge u_C = E × (1 − e⁻ⁿ) ; décharge u_C = E × e⁻ⁿ ; à t = τ : 63 % (charge) ou 37 % (décharge) de E.', 'Au bout de 5 τ, la charge ou la décharge est pratiquement terminée (99 % de E atteints, ou moins de 1 % restant).'] };
 }
 
+function genThermostatTG() {
+  // Loi de Newton et thermostat (TG, sim 212). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const T0s = <>T<sub>0</sub></>, Tex = <>T<sub>ext</sub></>;
+  // q1 : τ = m c / (h S), en minutes
+  const m1 = tire([0.10, 0.15, 0.20, 0.25, 0.30, 0.40]), hS1 = tire([0.12, 0.20, 0.30, 0.45, 0.60]), C1 = m1 * 4180, tau1 = C1 / hS1 / 60;
+  const q1 = { id: 'thm0', type: 'num', q: <>Un liquide de masse <b>m = {f(m1, 2)}{NB}kg</b> (capacité thermique massique <b>c = 4{NB}180{NB}J·kg⁻¹·K⁻¹</b>) est dans un récipient dont le produit h × S vaut <b>{f(hS1, 2)}{NB}W·K⁻¹</b>. Calculez le temps caractéristique τ de son refroidissement (en min, 2 chiffres significatifs).</>, unite: 'min', vrai: tau1, tolRel: 0.05, csMin: 2,
+    aide: 'C = m × c (en J·K⁻¹), puis τ = C divisée par (h × S) : le résultat est en secondes ; convertissez-le en minutes.',
+    pieges: [[tau1 * 60, 'Vous avez donné τ en secondes : la réponse est attendue en minutes (60 s = 1 min).'], [tau1 / 60, 'Vous avez donné τ en heures : la réponse est attendue en minutes.'], [C1, 'C’est la capacité thermique C en J·K⁻¹ : il faut encore la diviser par h × S.'], [hS1 / C1 * 60, 'Le rapport est inversé : τ = C divisée par (h × S).']],
+    expl: <>C = m × c = {f(m1, 2)} × 4180 = {nb(C1, 3)}{NB}J·K⁻¹ ; τ = {avecIndices('frac(C|h × S)')} = {avecIndices(`frac(${nb(C1, 3)} J·K⁻¹|${f(hS1, 2)} W·K⁻¹)`)} = {nb(C1 / hS1, 3)}{NB}s = <b>{nb(tau1, 3)}{NB}min</b>.</> };
+  // q2 : φ = h S (T_ext − T), signe compris
+  const chauffe2 = Math.random() < 0.3, hS2 = tire([0.12, 0.20, 0.30, 0.45, 0.60]), Te2 = tire([15, 18, 20, 22]), T2 = chauffe2 ? tire([4, 6, 8, 10]) : tire([35, 45, 55, 65, 75, 85]), phi2 = hS2 * (Te2 - T2);
+  const q2 = { id: 'thm1', type: 'num', q: <>Un récipient dont le produit h × S vaut <b>{f(hS2, 2)}{NB}W·K⁻¹</b> contient un liquide à la température <b>T = {T2}{NB}°C</b>, dans une pièce à <b>{Tex} = {Te2}{NB}°C</b>. Calculez le flux thermique φ reçu par le liquide (en W, signe compris, 2 chiffres significatifs).</>, unite: 'W', vrai: phi2, tolRel: 0.05, csMin: 2,
+    aide: 'Loi de Newton : φ = h × S × (T_ext − T). Le signe de φ indique si le liquide reçoit (positif) ou cède (négatif) de l’énergie.',
+    pieges: [[-phi2, 'Le signe est faux : φ est le flux REÇU par le liquide ; il est positif si le liquide est plus froid que la pièce, négatif s’il est plus chaud.'], [hS2 * T2, 'Vous avez utilisé T seule : c’est l’écart (T_ext − T) qui intervient.'], [hS2 * (Te2 + T2), 'Vous avez ajouté les températures : il faut leur écart (T_ext − T).'], [Te2 - T2, 'Vous avez oublié de multiplier par h × S.']],
+    expl: <>φ = h × S × ({Tex} − T) = {f(hS2, 2)} × ({Te2} − {T2}) = <b>{nb(phi2, 3)}{NB}W</b> : {phi2 < 0 ? 'le liquide, plus chaud que la pièce, cède de l’énergie' : 'le liquide, plus froid que la pièce, reçoit de l’énergie'}.</> };
+  // q3 : ΔT = φ Δt / C
+  const C3 = tire([418, 836, 1254, 1672]), phi3 = tire([-36, -27, -18, -12, 8, 15]), dt3 = tire([20, 30, 45, 60]), dT3 = phi3 * dt3 / C3;
+  const q3 = { id: 'thm2', type: 'num', q: <>Un liquide de capacité thermique <b>C = {C3}{NB}J·K⁻¹</b> reçoit un flux thermique supposé constant <b>φ = {f(phi3, 0)}{NB}W</b> pendant <b>Δt = {dt3}{NB}s</b>. Il n’échange pas d’autre énergie. Calculez sa variation de température ΔT (en K, signe compris, 2 chiffres significatifs).</>, unite: 'K', vrai: dT3, tolRel: 0.06, csMin: 2,
+    aide: 'Bilan d’énergie : C × ΔT = Q avec Q = φ × Δt (en joules, Δt en secondes).',
+    pieges: [[-dT3, 'Le signe est faux : un flux reçu positif fait monter la température, un flux négatif la fait baisser.'], [phi3 * dt3, 'C’est le transfert thermique Q en joules : il faut encore le diviser par la capacité thermique C.'], [phi3 / C3, 'Vous avez oublié de multiplier le flux par la durée Δt.'], [phi3 * dt3 / 60 / C3, 'La durée doit être en secondes (1 W = 1 J·s⁻¹) : ne la convertissez pas en minutes.']],
+    expl: <>Q = φ × Δt = {f(phi3, 0)} × {dt3} = {f(phi3 * dt3, 0)}{NB}J ; ΔT = {avecIndices('frac(Q|C)')} = {avecIndices(`frac(${f(phi3 * dt3, 0)} J|${C3} J·K⁻¹)`)} = <b>{nb(dT3, 3)}{NB}K</b>.</> };
+  // q4 : T(t) = T_ext + (T_0 − T_ext) exp(−t/τ)
+  const ch4 = Math.random() < 0.3, Te4 = ch4 ? tire([20, 22, 25]) : tire([15, 18, 20, 22]), T04 = ch4 ? tire([4, 5, 8]) : tire([60, 70, 80, 90]), tau4 = tire([15, 20, 25, 30, 40, 60]);
+  const t4 = tire([10, 15, 20, 30, 45, 60, 90].filter(t => t / tau4 >= 0.3 && t / tau4 <= 2.5)), T4 = Te4 + (T04 - Te4) * Math.exp(-t4 / tau4);
+  const q4 = { id: 'thm3', type: 'num', q: <>Un liquide initialement à <b>{T0s} = {T04}{NB}°C</b> est placé dans une pièce à <b>{Tex} = {Te4}{NB}°C</b>. Son temps caractéristique est <b>τ = {tau4}{NB}min</b>. Calculez sa température T à l’instant <b>t = {t4}{NB}min</b> (en °C, 2 chiffres significatifs).</>, unite: '°C', vrai: T4, tolRel: 0.06, csMin: 2,
+    aide: 'T(t) = T_ext + (T_0 − T_ext) × e⁻ⁿ, où n est le rapport de t à τ (même unité). Attention au signe de T_0 − T_ext.',
+    pieges: [[Te4 - (T04 - Te4) * Math.exp(-t4 / tau4), 'Le signe de l’écart T_0 − T_ext est mal pris en compte : la température reste du côté de T_0 par rapport à T_ext.'], [Te4 + (T04 - Te4) * (1 - Math.exp(-t4 / tau4)), 'Vous avez utilisé 1 − e⁻ⁿ : cette forme donne la fraction de l’écart déjà parcourue, pas la température.'], [T04, 'C’est la température initiale : au bout de ce temps, elle a déjà évolué.'], [Te4, 'T tend vers T_ext sans l’atteindre : à cet instant, il reste un écart.']],
+    expl: <>n = {avecIndices(`frac(t|τ)`)} = {avecIndices(`frac(${t4} min|${tau4} min)`)} = {nb(t4 / tau4, 3)} ; T = {Te4} + ({T04} − {Te4}) × e<sup>−{nb(t4 / tau4, 3)}</sup> = {Te4} + ({T04 - Te4}) × {nb(Math.exp(-t4 / tau4), 3)} = <b>{nb(T4, 3)}{NB}°C</b>.</> };
+  // q5 : durée pour atteindre une température
+  const ch5 = Math.random() < 0.3, Te5 = ch5 ? tire([20, 22, 25]) : tire([15, 18, 20, 22]), T05 = ch5 ? tire([4, 5, 8]) : tire([60, 70, 80, 90]), tau5 = tire([15, 20, 25, 30, 40, 60]), g5 = tire([0.5, 0.4, 0.3, 0.25]);
+  let Tc5 = Math.round(Te5 + g5 * (T05 - Te5)); if (Math.abs(Tc5 - Te5) < 4) Tc5 = Te5 + Math.sign(T05 - Te5) * 4;
+  const t5 = tau5 * Math.log((T05 - Te5) / (Tc5 - Te5));
+  const q5 = { id: 'thm4', type: 'num', q: <>Un liquide initialement à <b>{T0s} = {T05}{NB}°C</b> est placé dans une pièce à <b>{Tex} = {Te5}{NB}°C</b>. Son temps caractéristique est <b>τ = {tau5}{NB}min</b>. Calculez la durée au bout de laquelle sa température atteint <b>{Tc5}{NB}°C</b> (en min, 2 chiffres significatifs).</>, unite: 'min', vrai: t5, tolRel: 0.06, csMin: 2,
+    aide: 'On isole t dans T = T_ext + (T_0 − T_ext) × e⁻ⁿ : n est le logarithme népérien du rapport des écarts (T_0 − T_ext) à (T − T_ext), et t = n × τ.',
+    pieges: [[tau5 * Math.log((Tc5 - Te5) / (T05 - Te5)), 'Le rapport des écarts est inversé : il faut (T_0 − T_ext) divisé par (T − T_ext), qui est supérieur à 1.'], [tau5 * (T05 - Tc5) / (T05 - Te5), 'La température ne varie pas linéairement avec le temps : il faut utiliser le logarithme du rapport des écarts.'], [t5 / tau5, 'C’est le rapport t divisé par τ : il faut le multiplier par τ pour obtenir la durée en minutes.'], [tau5 * Math.log10((T05 - Te5) / (Tc5 - Te5)), 'Il faut le logarithme népérien (ln), pas le logarithme décimal.']],
+    expl: <>t = τ × ln({avecIndices(`frac(T₀ − Tₑₓₜ|T − Tₑₓₜ)`)}) = {tau5} × ln({avecIndices(`frac(${T05} − ${Te5}|${Tc5} − ${Te5})`)}) = {tau5} × {nb(Math.log((T05 - Te5) / (Tc5 - Te5)), 3)} = <b>{nb(t5, 3)}{NB}min</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Loi de Newton et thermostat : temps caractéristique, flux thermique, variation de température sur une courte durée, température au cours du temps et durée pour atteindre une température. Le liquide est supposé à température uniforme, h × S constant et la température de la pièce constante.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Temps caractéristique : τ = frac(C|h × S) avec C = m × c ; des J·K⁻¹ divisés par des W·K⁻¹ donnent des secondes.', 'Loi de Newton : φ = h × S × (T_ext − T), flux reçu par le système (négatif s’il cède de l’énergie).', 'Bilan d’énergie d’un système incompressible : C × ΔT = φ × Δt.', 'Solution : T(t) = T_ext + (T_0 − T_ext) × e⁻ⁿ avec n = frac(t|τ) ; durée pour atteindre T : t = τ × ln du rapport (T_0 − T_ext) à (T − T_ext).'] };
+}
+
 function genYoungTG() {
   // Trous d'Young (TG, sim 182). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -4293,6 +4336,7 @@ export const FAMILLES = [
   { id: 'uvv-calcul', groupe: 'Formules', titre: 'Spectrophotométrie : loi de Beer-Lambert, concentration, absorbance, dilution et concentration massique (TG)', gen: genUvvTG, domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert' },
   { id: 'irt-calcul', groupe: 'Formules', titre: 'Spectroscopie infrarouge : nombre d’onde, longueur d’onde et lignes d’un tableau de données (TG)', gen: genIrTabTG, domaine: 'Spectroscopie infrarouge : données tabulées' },
   { id: 'rc-calcul', groupe: 'Formules', titre: 'Circuit RC : temps caractéristique, capacité, intensité initiale, tension à t = n τ et durée de la charge (TG)', gen: genRCTG, domaine: 'Circuit RC : charge et décharge d’un condensateur' },
+  { id: 'thm-calcul', groupe: 'Formules', titre: 'Loi de Newton et thermostat : temps caractéristique, flux thermique, variation et évolution de la température, durée pour atteindre une température (TG)', gen: genThermostatTG, domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
   { id: 'pol-calcul', groupe: 'Formules', titre: 'Polymères : reconnaître le motif, atomes de carbone d’une chaîne et, pour aller plus loin, masse molaire (TG)', gen: genPolymeresTG, domaine: 'Familles fonctionnelles et polymères' },
   { id: 'nwt-calcul', groupe: 'Formules', titre: 'Deuxième loi de Newton : somme des forces, accélération, tension du câble et équilibre (TG)', gen: genNewtonTG, domaine: 'Deuxième loi de Newton' },
