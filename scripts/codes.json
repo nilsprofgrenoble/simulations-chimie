@@ -1858,5 +1858,19 @@
  "77:plausible:noy2gt-val-neutrons-sodium": "VAL502",
  "77:plausible:noy2gt-val-charge-helium": "VAL503",
  "77:plausible:noy2gt-val-masse-oxygene": "VAL504",
- "36:noy2gt-calcul": "REA129"
+ "36:noy2gt-calcul": "REA129",
+ "34:nuc2gt-sapp-liste.0": "SAPP481",
+ "34:nuc2gt-sapp-liste.1": "SAPP482",
+ "34:nuc2gt-sapp-fissions.0": "SAPP483",
+ "34:nuc2gt-sapp-fissions.1": "SAPP484",
+ "37:prevoir:nuc2gt-ana-iso-carbone": "ANA748",
+ "37:prevoir:nuc2gt-ana-meme-a": "ANA749",
+ "37:prevoir:nuc2gt-ana-charbon": "ANA750",
+ "37:prevoir:nuc2gt-ana-soleil": "ANA751",
+ "37:prevoir:nuc2gt-ana-chaine": "ANA752",
+ "77:plausible:nuc2gt-val-uranium": "VAL505",
+ "77:plausible:nuc2gt-val-soleil": "VAL506",
+ "77:plausible:nuc2gt-val-tritium": "VAL507",
+ "77:plausible:nuc2gt-val-centrale": "VAL508",
+ "36:nuc2gt-calcul": "REA130"
 }

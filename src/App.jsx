@@ -104,6 +104,7 @@ const SimulationNiveaux = paresseux(() => import("./simulations/Niveaux"), "Simu
 const SimulationStatiqueFluides1G = paresseux(() => import("./simulations/StatiqueFluides1G"), "SimulationStatiqueFluides1G");
 const SimulationEquationReaction = paresseux(() => import("./simulations/EquationReaction"), "SimulationEquationReaction");
 const SimulationCcm2gt = paresseux(() => import("./simulations/Ccm2gt"), "SimulationCcm");
+const SimulationNucleaire2gt = paresseux(() => import("./simulations/Nucleaire2gt"), "SimulationNucleaire");
 const SimulationChangementEtat2gt = paresseux(() => import("./simulations/ChangementEtat2gt"), "SimulationChangementEtat");
 const SimulationOeilReduit2gt = paresseux(() => import("./simulations/OeilReduit2gt"), "SimulationOeilReduit");
 const SimulationTestsChimiques2gt = paresseux(() => import("./simulations/TestsChimiques2gt"), "SimulationTestsChimiques");
@@ -469,6 +470,7 @@ const SIMULATIONS = [
   { id:198, label:"Tests chimiques de gaz et d’eau", niveau:"2GT", icon:"🧫", color:"#0f766e", component: SimulationTestsChimiques2gt },
   { id:196, label:"Corps pur ou mélange ?", niveau:"2GT", icon:"🌡️", color:"#0369a1", component: SimulationCorpsPur2gt },
   { id:199, label:"Image réelle et grandissement avec une lentille convergente", niveau:"2GT", icon:"🕯️", color:"#0369a1", component: SimulationImageLentille2gt },
+  { id:203, label:"Transformation nucléaire : isotopes, Soleil et centrales", niveau:"2GT", icon:"☢️", color:"#b45309", component: SimulationNucleaire2gt },
   { id:201, label:"Dispersion par un prisme", niveau:"2GT", icon:"🔺", color:"#7c3aed", component: SimulationPrisme2gt },
   { id:202, label:"Le noyau de l’atome : taille, masse et écriture ZAX", niveau:"2GT", icon:"🔵", color:"#1d4ed8", component: SimulationNoyauAtome2gt },
   { id:64, label:"Réfraction de la lumière : lois de Snell-Descartes", niveau:"2GT", icon:"🔦", color:"#0369a1",
