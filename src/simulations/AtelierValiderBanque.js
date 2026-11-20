@@ -4535,6 +4535,7 @@ export const PLAUSIBLES = [
       V('il divise l’angle par n au lieu de diviser les sinus', 'La loi relie sin i₁ et sin i₂ : sin i₂ = sin i₁ ÷ n. Diviser directement i₁ par n donne un résultat faux.'),
       F('il a pris l’indice du violet au lieu de l’indice du rouge', 'Il a bien utilisé 1,63, l’indice du rouge. L’erreur est dans la méthode de calcul.'),
       F('il aurait dû multiplier l’angle par l’indice 1,63', 'Multiplier l’angle par l’indice serait aussi faux, et donnerait un angle trop grand.'),
+    ] }),
   P({ id: 'thm-val-fin', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', niveau: 2, titre: 'Un café revenu à la température de la pièce ?', plausible: false,
     enonce: 'Un café à 80 °C est posé dans une pièce à 20 °C ; son temps caractéristique est τ = 31 min. Un élève affirme : « Au bout d’une heure, le café est revenu à 20,0 °C. »',
     reperes: [['Écart initial', 'T_0 − T_ext = 60 K'], ['À t = τ', 'il reste 37 % de l’écart initial'], ['Équilibre pratiquement atteint', 'vers 5 τ']],

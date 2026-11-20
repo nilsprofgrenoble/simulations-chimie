@@ -1797,5 +1797,14 @@
  "77:plausible:prisme2gt-val-laser-ok": "VAL482",
  "77:plausible:prisme2gt-val-visible": "VAL483",
  "77:plausible:prisme2gt-val-angle-divise": "VAL484",
- "36:prisme2gt-calcul": "REA123"
+ "36:prisme2gt-calcul": "REA123",
+ "34:thm-sapp-tasse.0": "SAPP465",
+ "34:thm-sapp-tasse.1": "SAPP466",
+ "37:prevoir:thm-ana-masse": "ANA729",
+ "37:prevoir:thm-ana-pieces": "ANA730",
+ "37:prevoir:thm-ana-flux": "ANA731",
+ "77:plausible:thm-val-fin": "VAL485",
+ "77:plausible:thm-val-unite": "VAL486",
+ "77:plausible:thm-val-chauffage": "VAL487",
+ "36:thm-calcul": "REA124"
 }
