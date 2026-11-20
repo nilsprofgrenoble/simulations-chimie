@@ -1752,5 +1752,20 @@
  "77:plausible:isn-val-somme": "VAL467",
  "77:plausible:isn-val-niveau": "VAL468",
  "77:plausible:isn-val-distance": "VAL469",
- "36:isn-calcul": "REA120"
+ "36:isn-calcul": "REA120",
+ "34:img2gt-sapp-bougie.0": "SAPP453",
+ "34:img2gt-sapp-bougie.1": "SAPP454",
+ "34:img2gt-sapp-projecteur.0": "SAPP455",
+ "34:img2gt-sapp-projecteur.1": "SAPP456",
+ "37:prevoir:img2gt-ana-rayon-parallele": "ANA714",
+ "37:prevoir:img2gt-ana-rayon-centre": "ANA715",
+ "37:prevoir:img2gt-ana-ecran": "ANA716",
+ "37:prevoir:img2gt-ana-rapproche": "ANA717",
+ "37:prevoir:img2gt-ana-grandissement": "ANA718",
+ "77:plausible:img2gt-val-rayon-foyer": "VAL470",
+ "77:plausible:img2gt-val-grandissement": "VAL471",
+ "77:plausible:img2gt-val-thales-ok": "VAL472",
+ "77:plausible:img2gt-val-image-droite": "VAL473",
+ "77:plausible:img2gt-val-objet-loin": "VAL474",
+ "36:img2gt-calcul": "REA121"
 }

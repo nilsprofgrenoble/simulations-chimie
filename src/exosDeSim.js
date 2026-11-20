@@ -43,6 +43,7 @@ export const EXOS_DE_SIM = {
   197: [/(^|\.)ccm2gt-/, /plausible\.ccm2gt-/],                                                                    // Chromatographie sur couche mince (2GT) : lire, comparer, rapport frontal, limites
   196: [/(^|\.)pur2gt-/, /plausible\.pur2gt-/],                                                                    // Corps pur ou mélange : température de changement d’état (2GT)
   195: [/(^|\.)etat2gt-/, /plausible\.etat2gt-/],                                                                // Changement d’état (2GT) : équation, sens du transfert, E = m × L
+  199: [/(^|\.)img2gt-/, /plausible\.img2gt-/],                                                                    // Image réelle et grandissement avec une lentille convergente (2GT) : trois rayons, image, grandissement par les tailles et par Thalès
   198: [/(^|\.)test2gt-/, /plausible\.test2gt-/],                                                              // Tests chimiques (2GT) : eau, H₂, O₂, CO₂, identifier un gaz inconnu
   191: [/(^|\.)son2gt-emis-/, /plausible\.son2gt-emis-/],                                                    // Le son (2GT) : émission et propagation, vitesse du son
   62: [/^conc2/, /sol-(dilution|dilutions|echelle)/],

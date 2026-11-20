@@ -5293,6 +5293,42 @@ export const PREVOIR = [
       F('les deux demandent la même énergie, car la masse est la même', 'À masse égale, l’énergie dépend encore du corps par L : les valeurs de L sont différentes, les énergies aussi.'),
       F('l’eau demande 2 260 fois plus d’énergie que l’éthanol', 'Ce sont les valeurs de L qu’on compare : leur rapport est 2 260 ÷ 840, soit environ 2,7, pas 2 260.'),
     ] },
+  // ───────────────────────────── Image réelle et grandissement avec une lentille convergente (2GT, sim 199)
+  { id: 'img2gt-ana-rayon-parallele', domaine: 'Image par une lentille (2GT)', titre: 'Le rayon parallèle à l’axe',
+    enonce: 'Un rayon lumineux issu du sommet B d’un objet arrive sur une lentille convergente parallèlement à l’axe optique. La distance focale de la lentille est f′ = 5\u00a0cm.', q: 'Après la lentille, ce rayon…', options: [
+      V('passe par le foyer image F′, à 5\u00a0cm de la lentille', 'Un rayon parallèle à l’axe ressort en passant par le foyer image F′ : c’est la définition du foyer image, à f′ = 5\u00a0cm du centre O.'),
+      F('continue parallèlement à l’axe, sans être dévié par la lentille', 'Une lentille convergente dévie les rayons : seul le rayon qui passe par le centre O n’est pas dévié.'),
+      F('passe par le foyer objet F, du côté de l’objet', 'Le rayon ressort de l’autre côté de la lentille : il ne peut pas passer par F, qui est du côté de l’objet.'),
+      F('passe par le centre O de la lentille', 'Le rayon est déjà passé de l’autre côté de la lentille, en un point à la hauteur de B. Il ne revient pas vers O.'),
+    ] },
+  { id: 'img2gt-ana-rayon-centre', domaine: 'Image par une lentille (2GT)', titre: 'Le rayon qui passe par le centre',
+    enonce: 'Un rayon lumineux issu du sommet B d’un objet passe exactement par le centre optique O d’une lentille mince convergente.', q: 'Que fait ce rayon ?', options: [
+      V('il traverse la lentille sans être dévié', 'Au centre, la lentille est très mince : le rayon n’est pas dévié, il continue en ligne droite.'),
+      F('il est dévié et ressort en passant par F′', 'Seul le rayon parallèle à l’axe ressort par F′. Le rayon qui passe par O n’est pas dévié.'),
+      F('il ressort parallèlement à l’axe optique', 'Le rayon qui ressort parallèle à l’axe est celui qui passe par le foyer objet F, pas celui qui passe par O.'),
+      F('il est dévié vers le haut, loin de l’axe', 'Aucun des trois rayons particuliers ne s’éloigne de l’axe de cette façon : celui qui passe par O continue tout droit.'),
+    ] },
+  { id: 'img2gt-ana-ecran', domaine: 'Image par une lentille (2GT)', titre: 'Rapprocher l’écran de la lentille',
+    enonce: 'Avec une lentille convergente, une bougie donne sur un écran une image nette. On rapproche ensuite l’écran de la lentille de 2\u00a0cm, sans toucher à la bougie ni à la lentille.', q: 'Que voit-on sur l’écran ?', options: [
+      V('une image floue, car les rayons ne se croisent plus sur l’écran', 'L’image réelle ne se forme qu’à l’endroit où les rayons se croisent. Ailleurs, la lumière est étalée : l’image est floue.'),
+      F('la même image nette, car la lentille n’a pas bougé', 'La lentille fixe l’endroit où se croisent les rayons, mais l’écran doit être placé exactement là pour que l’image soit nette.'),
+      F('l’image disparaît complètement, car il n’y a plus de lumière sur l’écran', 'La lumière arrive toujours sur l’écran, mais elle forme une tache floue et non une image nette.'),
+      F('une image nette, mais plus petite que la bougie', 'L’image reste de la même taille là où elle se forme : en déplaçant l’écran, on la rend seulement floue.'),
+    ] },
+  { id: 'img2gt-ana-rapproche', domaine: 'Image par une lentille (2GT)', titre: 'Rapprocher l’objet de la lentille',
+    enonce: 'Avec une lentille de distance focale 4\u00a0cm, un objet est placé à 20\u00a0cm de la lentille. On le rapproche à 12\u00a0cm de la lentille, et on déplace l’écran pour retrouver une image nette.', q: 'Par rapport à la première image, la nouvelle image est…', options: [
+      V('un peu plus loin de la lentille et plus grande', 'Quand l’objet se rapproche de la lentille, l’image s’éloigne d’elle et grandit (ici de 5\u00a0cm à 6\u00a0cm de la lentille ; de 0,50\u00a0cm à 1,0\u00a0cm de haut pour un objet de 2,0\u00a0cm).'),
+      F('plus près de la lentille et plus grande', 'Le sens de variation est mélangé : c’est quand l’objet se rapproche que l’image s’éloigne, elle ne se rapproche pas en même temps.'),
+      F('un peu plus loin de la lentille et un peu plus petite', 'Quand l’objet se rapproche, l’image grandit : plus petite serait le cas d’un objet qui s’éloigne.'),
+      F('au même endroit et de la même taille', 'Changer la position de l’objet change la position et la taille de l’image : les rayons n’arrivent plus sous les mêmes angles.'),
+    ] },
+  { id: 'img2gt-ana-grandissement', domaine: 'Image par une lentille (2GT)', titre: 'Une image deux fois plus loin que l’objet',
+    enonce: 'Un objet est à 12\u00a0cm d’une lentille convergente. Son image se forme sur un écran placé à 24\u00a0cm de la lentille.', q: 'Comparée à l’objet, l’image est…', options: [
+      V('deux fois plus grande et renversée', 'Le grandissement est OA′ ÷ OA = 24 ÷ 12 = 2 : l’image est deux fois plus grande. C’est une image réelle sur un écran, donc renversée.'),
+      F('deux fois plus petite et renversée', 'C’est l’inverse : OA′ est plus grand que OA, donc le grandissement OA′ ÷ OA est plus grand que 1 et l’image est plus grande.'),
+      F('deux fois plus grande et droite', 'La taille est bonne, mais une image réelle, qu’on reçoit sur un écran, est renversée.'),
+      F('de la même taille que l’objet et renversée', 'L’image n’a la même taille que l’objet que si OA′ est égal à OA, ce qui n’est pas le cas ici (24\u00a0cm et 12\u00a0cm).'),
+    ] },
   // ───────────────────────────── Tests chimiques (2GT, sim 198) : eau pure ou eau présente, flamme éteinte, nombre de tests, mélange, vérifier de l’eau, diazote par élimination
   { id: 'test2gt-ana-ethanol', domaine: 'Tests chimiques (2GT)', titre: 'L’éthanol du commerce fait bleuir la poudre',
     enonce: 'Inès verse quelques gouttes d’éthanol du commerce sur de la poudre blanche de sulfate de cuivre anhydre : la poudre devient bleue. Elle écrit : « c’est de l’eau pure ».', q: 'Que penser de sa conclusion ?', options: [
