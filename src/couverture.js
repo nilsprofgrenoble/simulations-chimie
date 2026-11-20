@@ -90,7 +90,7 @@ export const COUVERTURE = [
     { th: CTM, t: 'Synthèse organique : stratégie multi-étapes et synthèses écoresponsables', e: 'avenir' },
     { th: MVT, t: 'Décrire un mouvement : vecteurs position, vitesse, accélération, repère de Frenet', e: 'ok', chap: 'tg-decrire-mouvement' },
     { th: MVT, t: 'Deuxième loi de Newton', e: 'ok', chap: 'tg-newton' },
-    { th: MVT, t: 'Mouvement dans un champ uniforme (pesanteur, condensateur plan)', e: 'partiel', chap: 'tg-newton', reste: 'particule chargée dans un condensateur plan, accélérateur linéaire' },
+    { th: MVT, t: 'Mouvement dans un champ uniforme (pesanteur, condensateur plan)', e: 'ok', chap: 'tg-newton' },
     { th: MVT, t: 'Mouvement dans un champ de gravitation : satellites, lois de Kepler', e: 'avenir' },
     { th: MVT, t: 'Écoulement d’un fluide : poussée d’Archimède, relation de Bernoulli', e: 'avenir' },
     { th: NRJ, t: 'Gaz parfait', e: 'avenir' },

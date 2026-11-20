@@ -1550,6 +1550,35 @@ export const ENONCES = [
         manque: null, solution: { txt: 'frac(1|2) m v_f² − frac(1|2) m v_0² = m g h, donc v_f = √(v_0² + 2 g h)', val: vf, u: 'm/s' } };
     },
   },
+  // ───────────────────────────── Particule chargée dans un condensateur plan (TG, sim 176) : champ entre les plaques, accélération
+  {
+    id: 'cpl-sapp-particule', domaine: 'Particule chargée dans un condensateur plan', titre: 'Une particule entre dans un condensateur plan', noms: ['Champ électrique entre les plaques', 'Accélération de la particule'],
+    gen: () => {
+      const pa = tire([{ nom: 'un électron', z: -1, m: 9.11e-31, v: [1.0e7, 2.0e7, 3.0e7] }, { nom: 'un proton', z: 1, m: 1.67e-27, v: [2.0e5, 5.0e5, 1.0e6] }, { nom: 'un ion sodium Na⁺', z: 1, m: 3.82e-26, v: [5.0e4, 1.0e5, 2.0e5] }]);
+      return { pa, U: tire([200, 300, 400, 500, 800, 1000]), d: tire([1.0, 1.5, 2.0]), L: tire([4.0, 5.0, 6.0, 8.0]), v0: tire(pa.v), T: tire([19, 21, 23]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        U: tok(`${p.U} V`, 'Tension entre les plaques', p.U, 'V'),
+        d: tok(`${nb(p.d, 1)} cm`, 'Distance entre les plaques', p.d, 'cm'),
+        q: tok(`${p.pa.z < 0 ? '−' : ''}1,60 × 10⁻¹⁹ C`, 'Charge de la particule', Math.abs(p.pa.z) * 1.60e-19, 'C'),
+        m: tok(`${sci3(p.pa.m)} kg`, 'Masse de la particule', p.pa.m, 'kg'),
+        v0: tok(`${sciR(p.v0)} m/s`, 'Vitesse d’entrée de la particule', p.v0, 'm/s'),
+        L: tok(`${nb(p.L, 1)} cm`, 'Longueur des plaques', p.L, 'cm'),
+        T: tok(`${p.T} °C`, 'Température de la salle', p.T, '°C'),
+      };
+      const debut = ['Dans le vide, ', p.pa.nom, ' de charge ', T('q'), ' et de masse ', T('m'), ' entre avec la vitesse ', T('v0'), ' au milieu de deux plaques parallèles longues de ', T('L'), ', distantes de ', T('d'), ' et soumises à la tension ', T('U'), '. La salle est à ', T('T'), '. '];
+      const E = p.U / (p.d / 100);
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la norme du champ électrique entre les plaques ?'], utiles: ['U', 'd'],
+        raisons: { q: 'La charge de la particule ne change pas le champ créé par les plaques : elle intervient dans la force qu’elle subit.', m: 'La masse n’intervient ni dans le champ ni dans la force électrique, seulement dans l’accélération.', v0: 'Le champ est créé par les plaques : il ne dépend pas de la vitesse de la particule.', L: 'Le champ est uniforme : sa norme ne dépend pas de la longueur des plaques.', T: 'La température de la salle ne joue aucun rôle dans ce modèle.' },
+        cherche: { bonne: 'La norme E du champ (en V/m)', faux: ['La norme F de la force électrique (en N)', 'La déviation de la particule à la sortie (en mm)', 'La durée de la traversée des plaques (en ns)'] },
+        manque: null, solution: { txt: 'E = frac(U|d) (convertir d en mètres)', val: E, u: 'V/m' } };
+      return { tokens, derivees: [{ id: 'E', nom: 'Norme du champ électrique entre les plaques', expr: 'E = frac(U|d)', val: E, u: 'V/m' }], texte: [...debut, 'Quelle est la norme de l’accélération de la particule (poids négligé) ?'], utiles: ['U', 'd', 'q', 'm'],
+        raisons: { v0: 'L’accélération est fixée par la force électrique et la masse : elle ne dépend pas de la vitesse d’entrée.', L: 'La longueur des plaques intervient dans la déviation à la sortie, pas dans l’accélération.', T: 'La température de la salle ne joue aucun rôle dans ce modèle.' },
+        cherche: { bonne: 'La norme a de l’accélération (en m/s²)', faux: ['La norme E du champ électrique entre les plaques (en V/m)', 'La déviation de la particule à la sortie (en mm)', 'La vitesse de la particule à la sortie (en m/s)'] },
+        manque: null, solution: { txt: 'a = frac(|q| × E|m), avec E = frac(U|d)', val: Math.abs(p.pa.z) * 1.60e-19 * E / p.pa.m, u: 'm/s²' } };
+    },
+  },
   // ───────────────────────────── Vecteurs vitesse et accélération (TG, sim 166) : exploiter une chronophotographie
   {
     id: 'vac-sapp-chrono', domaine: 'Vecteurs vitesse et accélération', titre: 'Exploiter une chronophotographie', noms: ['Vitesse au point M4', 'Accélération au point M4'],
