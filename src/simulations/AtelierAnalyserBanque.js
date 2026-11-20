@@ -5464,6 +5464,42 @@ export const PREVOIR = [
       F('l’eau oxygénée H₂O₂', 'H₂O₂ est consommée aux deux actes et jamais régénérée : c’est le réactif. Elle figure dans l’équation de la réaction.'),
       F('le dioxygène O₂', 'O₂ est formé à l’acte 2 et n’est consommé par aucun acte : c’est un produit de la réaction, pas un catalyseur.'),
     ] },
+  // ───────────────────────────── Mesure : incertitude-type et résultat (2GT, sim 194)
+  { id: 'mes2gt-inc-ana-plus-de-mesures', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Une bille chronométrée : combien de mesures pour u trois fois plus petite ?',
+    enonce: 'Un élève chronomètre 4 fois la chute d’une bille et obtient u = 0,06 s. Il voudrait u = 0,02 s, soit 3 fois plus petite, avec le même chronomètre et la même méthode. Rappel : u = s ÷ √n.', q: 'Combien de mesures doit-il faire en tout ?', options: [
+      V('36 mesures', 'Pour diviser u par 3, il faut diviser √n par 3, donc multiplier n par 3 × 3 = 9 : 4 × 9 = 36. Vérification : √36 = 6, soit 3 fois √4 = 2.'),
+      F('12 mesures, 3 fois plus de mesures pour une incertitude 3 fois plus petite', 'Avec 12 mesures, √n est multiplié par √3 ≈ 1,7 seulement : u est divisée par 1,7, pas par 3.'),
+      F('16 mesures, 4 fois plus de mesures comme pour diviser par 2', 'Quatre fois plus de mesures divise u par 2, pas par 3.'),
+      F('8 mesures : il suffit de doubler le nombre de mesures', 'Doubler n divise u par √2 ≈ 1,4 seulement : c’est très loin de 3.'),
+    ] },
+  { id: 'mes2gt-inc-ana-meilleur-instrument', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Une balance plus précise',
+    enonce: 'On pèse 9 fois la même pièce avec une balance au dixième de gramme, puis 9 fois avec une balance au centième de gramme, dont les mesures sont plus resserrées autour de la moyenne.', q: 'Par rapport à la première série, l’incertitude-type u de la seconde est…', options: [
+      V('plus petite', 'Les mesures sont plus resserrées : l’écart-type s est plus petit. Avec le même nombre de mesures, u = s ÷ √n est plus petite.'),
+      F('la même, car le nombre de mesures est le même', 'u dépend de s autant que de n : si s diminue, u diminue aussi.'),
+      F('plus grande, car la balance affiche plus de chiffres', 'Afficher plus de chiffres ne rend pas u plus grande : ce qui compte est l’éparpillement des mesures, ici plus faible.'),
+      F('impossible à comparer, les deux balances donnent la même moyenne', 'On compare les éparpillements : une même moyenne n’empêche pas deux incertitudes-types différentes.'),
+    ] },
+  { id: 'mes2gt-inc-ana-decalage', domaine: 'Incertitude-type et résultat (2GT)', titre: 'La balance dont le zéro est décalé',
+    enonce: 'Une balance affiche toujours 0,15 g de trop, quelle que soit la pièce. On pèse 25 fois la même pièce avec elle.', q: 'Que peut-on prévoir pour cette série de mesures ?', options: [
+      V('des mesures groupées mais toutes trop grandes', 'Le décalage est le même à chaque pesée : les mesures restent proches les unes des autres (u petite) mais toutes trop grandes de 0,15 g.'),
+      F('des mesures très éparpillées, avec une grande incertitude-type', 'Un décalage constant ne change pas l’éparpillement des mesures : u n’augmente pas à cause de lui.'),
+      F('une moyenne exacte, car les erreurs se compensent quand on fait la moyenne', 'Les erreurs au hasard se compensent en partie, mais pas un décalage qui a toujours le même sens et la même valeur.'),
+      F('une incertitude-type de 0,15 g : u mesure le décalage', 'u mesure l’éparpillement des mesures, pas leur décalage : elle ne détecte pas un décalage constant.'),
+    ] },
+  { id: 'mes2gt-inc-ana-moins-de-mesures', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Cent mesures, puis vingt-cinq',
+    enonce: 'Une série de 100 mesures de masse donne u = 0,03 g. On refait une série avec le même instrument, mais seulement 25 mesures. Rappel : u = s ÷ √n.', q: 'La nouvelle incertitude-type u sera environ…', options: [
+      V('deux fois plus grande (0,06 g)', '4 fois moins de mesures : √n est divisé par 2 (√25 = 5 au lieu de √100 = 10), donc u est multipliée par 2.'),
+      F('quatre fois plus grande (0,12 g), comme le nombre de mesures divisé par 4', 'On multiplie u par 2 seulement (√4 = 2), pas par 4.'),
+      F('la même (0,03 g), car l’instrument est le même', 'Avec moins de mesures, la moyenne est moins bien connue : u augmente.'),
+      F('quatre fois plus petite (0,0075 g)', 'C’est le sens inverse : avec moins de mesures, u augmente.'),
+    ] },
+  { id: 'mes2gt-inc-ana-conclusion-change', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Plus de mesures, une autre conclusion',
+    enonce: 'Une première série donne (12,3 ± 0,5) s et la valeur de référence est 11,9 s : la référence est dans la zone, le résultat est compatible. On refait 25 fois plus de mesures avec le même chronomètre ; la moyenne reste 12,3 s. Rappel : u = s ÷ √n.', q: 'Avec la nouvelle série, la conclusion sera probablement…', options: [
+      V('pas compatible : la zone est devenue plus étroite', '25 fois plus de mesures : u est divisée par √25 = 5, soit 0,1 s. La zone va de 12,2 s à 12,4 s : la référence 11,9 s est maintenant loin en dehors. Si la référence reste hors de la zone malgré beaucoup de mesures, il faut penser à une erreur systématique (instrument décalé).'),
+      F('toujours compatible, car la moyenne n’a pas changé', 'La moyenne est la même, mais u a beaucoup diminué : la zone est plus étroite et la référence en sort.'),
+      F('impossible à dire : plus de mesures ne change jamais la zone des valeurs', 'Plus de mesures réduit u, donc la zone : la conclusion peut changer, c’est même l’intérêt de mesurer plus.'),
+      F('encore plus compatible, car u est plus petite', 'Une zone plus étroite est plus exigeante : il faut que la référence y soit, ce qui devient moins probable.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

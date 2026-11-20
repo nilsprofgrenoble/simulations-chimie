@@ -88,6 +88,7 @@ const SimulationQuantiteMatiere2gt = paresseux(() => import("./simulations/Quant
 const SimulationSignalSonore2gt = paresseux(() => import("./simulations/SignalSonore2gt"), "SimulationSignalSonore2gt");
 const SimulationNiveauSonore2gt = paresseux(() => import("./simulations/NiveauSonore2gt"), "SimulationNiveauSonore2gt");
 const SimulationMesureVariabilite2gt = paresseux(() => import("./simulations/MesureVariabilite2gt"), "SimulationMesureVariabilite2gt");
+const SimulationMesureIncertitude2gt = paresseux(() => import("./simulations/MesureIncertitude2gt"), "SimulationMesureIncertitude2gt");
 const SimulationSonEmission2gt = paresseux(() => import("./simulations/SonEmission2gt"), "SimulationSonEmission2gt");
 const SimulationConcentrationDilution = paresseux(() => import("./simulations/ConcentrationDilution"), "SimulationConcentrationDilution");
 const SimulationMesureIncertitudes = paresseux(() => import("./simulations/MesureIncertitudes"), "SimulationMesureIncertitudes");
@@ -448,6 +449,8 @@ const SIMULATIONS = [
     component: SimulationNiveauSonore2gt },
   { id:193, label:"Mesure : variabilité et écart-type", niveau:"2GT", icon:"📊", color:"#b45309",
     component: SimulationMesureVariabilite2gt },
+  { id:194, label:"Mesure : incertitude et résultat", niveau:"2GT", icon:"📐", color:"#0369a1",
+    component: SimulationMesureIncertitude2gt },
   { id:67, label:"L’ISS en chute libre : pourquoi les astronautes flottent", niveau:"2GT", icon:"🛰️", color:"#4338ca",
     component: SimulationISS },
   { id:140, label:"Chute libre : la variation de vitesse et la force", niveau:"2GT", icon:"🍎", color:"#b45309",

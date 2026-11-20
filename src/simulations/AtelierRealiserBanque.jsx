@@ -10,6 +10,7 @@ import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
 import * as SS2 from "./signalSonore2gtModele";
 import * as SN from "./niveauSonore2gtModele";
+import * as MI2 from "./mesureIncertitude2gtModele";
 import * as SON2 from "./sonEmission2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
@@ -3619,6 +3620,61 @@ function genMesureVar2GT() {
     retenir: ['Moyenne = somme des valeurs ÷ nombre de valeurs ; elle est toujours comprise entre la plus petite et la plus grande valeur.', 'Histogramme : la hauteur d’une barre est le nombre de valeurs de la classe ; la borne de gauche est incluse, celle de droite exclue.', 'Plusieurs intervalles chronométrés d’un coup, puis divisés, donnent une série moins dispersée ; l’écart-type mesure la largeur d’une série : le plus grand écart-type est celui de la série la plus étalée.'] };
 }
 
+// ───────────── Mesure : incertitude-type et résultat (2GT, sim 194) : moyenne, u = s ÷ √n, arrondis, nombre de mesures, compatibilité ─────────────
+function genMesureInc2GT() {
+  const filtre = q => { q.pieges = (q.pieges || []).filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
+  const premier = x => { const e = Math.floor(Math.log10(x) + 1e-12); return Math.floor(x / Math.pow(10, e) + 1e-9); };
+  const sit = MI2.SITUATIONS[tire(MI2.IDS_SITUATIONS)], instr = tire(sit.instruments), un = sit.unite;
+  const trois = x => MI2.fmt(x, Math.max(0, 2 - Math.floor(Math.log10(x) + 1e-12)));      // 3 chiffres significatifs, en décimal (jamais en notation scientifique)
+  // q1 : moyenne de 5 mesures (tolérance : un arrondi à la graduation de l'instrument reste accepté)
+  let v1, m1;
+  do { v1 = MI2.tirerSerie(sit, instr, 5, 1 + Math.floor(Math.random() * 1e9)); m1 = MI2.moyenne(v1); } while (new Set(v1).size < 3);
+  const som = v1.reduce((a, b) => a + b, 0);
+  const q1 = filtre({ id: 'm0', type: 'num', q: <>On mesure 5 fois {sit.mesurande} (instrument : {instr.nom}). Les mesures, en {un}, sont : <b>{v1.map(x => MI2.fmt(x, instr.dec)).join(' ; ')}</b>. Quelle est la moyenne ?</>, unite: un, vrai: m1, tolRel: 0.5 * instr.res / m1, csMin: nbCS(MI2.fmt(m1, instr.dec)),
+    aide: 'Additionnez les cinq mesures, puis divisez la somme par le nombre de mesures (5).',
+    pieges: [[som, 'C’est la somme des mesures : il faut la diviser par 5.'], [som / 4, 'Vous avez divisé par 4 : il y a cinq mesures.'], [v1[0], 'C’est seulement la première mesure : la moyenne tient compte des cinq.']],
+    expl: <>({v1.map(x => MI2.fmt(x, instr.dec)).join(' + ')}) ÷ 5 = {MI2.fmt(som, instr.dec + 2)} ÷ 5 = <b>{MI2.fmt(m1, instr.dec + 2)}{NB}{un}</b>.</> });
+  // q2 : u = s ÷ √n (s avec 2 chiffres significatifs, n dans une liste)
+  const s2 = Number((instr.sigma * tire([0.8, 1, 1.25, 1.6])).toPrecision(2)), n2 = tire([4, 9, 10, 16, 20, 25, 36, 50, 100]), u2 = s2 / Math.sqrt(n2);
+  const q2 = filtre({ id: 'm1', type: 'num', q: <>Une série de <b>{n2} mesures</b> de {sit.mesurande} a un écart-type <b>s = {MI2.fmt(s2, instr.dec + 1)}{NB}{un}</b>. Calculez l’incertitude-type u de la moyenne, en {un}, sans l’arrondir : gardez les chiffres de la calculatrice (au moins 3 chiffres significatifs).</>, unite: un, vrai: u2, tolRel: 0.05,
+    aide: 'u = s ÷ √n : calculez d’abord la racine carrée du nombre de mesures (touche √), puis divisez s par ce nombre.',
+    pieges: [[s2, 'C’est la valeur de s : il reste à la diviser par √n.'], [s2 / n2, 'Vous avez divisé par n au lieu de √n.'], [s2 * Math.sqrt(n2), 'Vous avez multiplié par √n au lieu de diviser.']],
+    expl: <>√{n2} = {nb(Math.sqrt(n2), 4)} ; u = s ÷ √n = {MI2.fmt(s2, instr.dec + 1)} ÷ {nb(Math.sqrt(n2), 4)} = <b>{trois(u2)}{NB}{un}</b> (calcul fait sans arrondir √n).</> });
+  // q3 : arrondir u (1 chiffre significatif, par excès ; 2 si le premier chiffre est 1)
+  let raw, ua, d3;
+  do { raw = Number((u2 * tire([1, 1, 1.7, 2.3, 0.62])).toPrecision(3)); ua = MI2.arrondiU(raw); d3 = MI2.decimalesU(raw); } while (!(raw > 0) || (premier(ua) === 1 && premier(raw) !== 1));
+  const uu = MI2.arrondiUUsuel(raw);
+  const csU = nbCS(MI2.fmt(ua, d3));
+  const q3 = filtre({ id: 'm2', type: 'num', q: <>La calculatrice donne u = <b>{trois(raw)}{NB}{un}</b>. Écrivez u avec la règle : 1 chiffre significatif, arrondi vers le haut (2 chiffres significatifs si le premier chiffre est 1).</>, unite: un, vrai: ua, tolRel: 1e-9, csExact: csU,
+    aide: 'Repérez le premier chiffre qui n’est pas zéro : c’est le seul que l’on garde (deux si c’est un 1). Puis arrondissez vers le haut.',
+    pieges: [[raw, 'Vous avez gardé tous les chiffres : u s’écrit avec 1 chiffre significatif (2 si le premier est 1).'], [uu, 'Vous avez arrondi au plus proche : la règle arrondit u vers le haut, par prudence.'], ...(premier(raw) === 1 ? [[Number(raw.toPrecision(1)) + 0, 'Quand le premier chiffre est 1, on garde deux chiffres significatifs.']] : [])],
+    expl: <>Le premier chiffre non nul est {premier(raw)} : on garde {csU} chiffre{csU > 1 ? 's' : ''} significatif{csU > 1 ? 's' : ''}, arrondi vers le haut : <b>{MI2.fmt(ua, d3)}{NB}{un}</b>.</> });
+  q3.pieges = q3.pieges.filter(([x]) => isFinite(x) && Math.abs(x - ua) > 0.02 * ua);
+  // q4 : arrondir la moyenne au même rang que u
+  let m4, ma4, frac;
+  do { m4 = Number((sit.ref + (Math.random() - 0.5) * 3 * u2).toFixed(instr.dec + 3)); ma4 = MI2.arrondiMoyenne(m4, raw); frac = (m4 / Math.pow(10, MI2.rangU(raw))) % 1; } while (Math.abs(frac - 0.5) < 0.1 || !(m4 > 0));
+  const csM = nbCS(MI2.fmt(ma4, d3));
+  const q4 = { id: 'm3', type: 'num', q: <>La moyenne d’une série est <b>{MI2.fmt(m4, instr.dec + 3)}{NB}{un}</b> et son incertitude-type, bien arrondie, est <b>u = {MI2.fmt(ua, d3)}{NB}{un}</b>. Quelle valeur écrit-on pour la moyenne dans le résultat ?</>, unite: un, vrai: ma4, tolRel: 1e-9, csExact: csM,
+    aide: 'La valeur s’arrête à la même décimale que u. Gardez le zéro final s’il y en a un.',
+    pieges: [[m4, 'Vous avez gardé tous les chiffres de la calculatrice : la valeur ne doit pas être plus précise que u.'], [Number(m4.toFixed(Math.max(0, d3 - 1))), 'Vous avez arrondi trop tôt : la valeur s’arrête à la même décimale que u, pas avant.']].filter(([x]) => Math.abs(x - ma4) > 1e-9),
+    expl: <>u s’arrête à la {d3 === 0 ? 'unité' : `${d3}${d3 === 1 ? 'ʳᵉ' : 'ᵉ'} décimale`} : la moyenne aussi. {MI2.fmt(m4, instr.dec + 3)} → <b>{MI2.fmt(ma4, d3)}{NB}{un}</b>. Résultat : {sit.sym} = {MI2.ecrireResultat(m4, raw, un).texte}.</> };
+  // q5 : nombre de mesures pour diviser u par k
+  const n5 = tire([4, 9, 16, 25]), k5 = tire([2, 3, 5]);
+  const q5 = { id: 'm4', type: 'num', q: <>Une série de <b>{n5} mesures</b> donne une incertitude-type u. On veut une incertitude <b>{k5} fois plus petite</b>, avec le même instrument et le même protocole. Combien de mesures faut-il faire en tout ?</>, unite: 'mesures', vrai: n5 * k5 * k5, tolRel: 0,
+    aide: 'u = s ÷ √n : pour diviser u par k, il faut diviser par k à √n, donc multiplier n par k × k.',
+    pieges: [[n5 * k5, `Vous avez multiplié n par ${k5} seulement : il faut le multiplier par ${k5} × ${k5} = ${k5 * k5}.`], [n5 / (k5 * k5), 'Avec moins de mesures, u augmenterait : il en faut plus.']],
+    expl: <>Diviser u par {k5} demande {k5 * k5} fois plus de mesures : {n5} × {k5 * k5} = <b>{n5 * k5 * k5}</b> mesures (vérification : √{n5 * k5 * k5} = {k5 * Math.sqrt(n5)}, soit {k5} fois √{n5}).</> };
+  // q6 : compatible ou pas ? (cas limites écartés)
+  const dc = MI2.tirerDefiCompare(null);
+  const opts6 = ['compatible : la référence est dans la zone', 'pas compatible : la référence est loin de la zone', 'on ne peut rien dire sans connaître la vraie valeur'];
+  const ordre6 = melange([0, 1, 2]), q6 = { id: 'm5', type: 'qcm', q: <>On a mesuré {dc.sit.mesurande} (instrument : {dc.instr.nom}) : <b>{dc.sit.sym} = {MI2.ecrireResultat(dc.m, dc.u, dc.sit.unite).texte}</b>. {dc.sit.refTxt.charAt(0).toUpperCase() + dc.sit.refTxt.slice(1)}. Que conclut-on ?</>,
+    options: ordre6.map(i => opts6[i]), bonne: ordre6.indexOf(dc.cas === 'compatible' ? 0 : 1),
+    aide: 'Calculez la zone de m − u à m + u : la référence est-elle dedans, ou nettement en dehors ?',
+    expl: <>La zone va de {MI2.fmt(dc.m - dc.u, dc.d)} à {MI2.fmt(dc.m + dc.u, dc.d)}{NB}{dc.sit.unite} ; la référence {MI2.fmt(dc.sit.ref, 2)}{NB}{dc.sit.unite} est {dc.cas === 'compatible' ? <b>dans la zone : compatible</b> : <b>loin en dehors : pas compatible</b>}.</> };
+  return { intro: 'Incertitude-type : moyenne, u = s ÷ √n, arrondi de u et de la valeur, nombre de mesures, compatibilité avec une référence. Valeurs simulées (fictives).', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['u = s ÷ √n : pour diviser u par 2, il faut 4 fois plus de mesures (par k : k × k fois plus).', 'Résultat : (valeur ± u) unité ; u sur 1 chiffre significatif, arrondie vers le haut (2 si le premier est 1) ; la valeur s’arrête à la même décimale.', 'Compatible : la référence est dans la zone de m − u à m + u ; nettement en dehors : pas compatible. u ne détecte pas un instrument décalé.'] };
+}
+
 export const FAMILLES = [
   { id: 'titrage-direct', groupe: 'Formules', titre: 'Titrage direct du diiode par le thiosulfate : équivalence, concentration, masse (1re spé)', gen: genTitrageDirect, domaine: 'Titrage direct' },
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
@@ -3713,6 +3769,7 @@ export const FAMILLES = [
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'rl2gt-calcul', groupe: 'Formules', titre: 'Réactif limitant : nombre de recettes, quantité restante et quantité formée (2GT)', gen: genReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
   { id: 'rl2gt-masse', groupe: 'Formules', titre: 'Réactif limitant avec une masse : n = m ÷ M, limitant et quantité restante (2GT)', gen: genMasseReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
+  { id: 'mes2gt-inc-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, incertitude-type u = s ÷ √n, arrondis, nombre de mesures et compatibilité avec une référence (2GT)', gen: genMesureInc2GT, domaine: 'Incertitude-type et résultat (2GT)' },
   { id: 'son2gt-niv-calcul', groupe: 'Formules', titre: 'Niveau sonore : écart en dB, facteurs ×10 et ×2, durée repère d’exposition (2GT)', gen: genNiveauSonore2GT, domaine: 'Niveau sonore (2GT)' },
   { id: 'mes2gt-var-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, effectif d’une classe, 10 intervalles ÷ 10, rapport de dispersions, valeur manquante (2GT)', gen: genMesureVar2GT, domaine: 'Variabilité de la mesure (2GT)' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
