@@ -23,25 +23,39 @@ export function Obj({ type = 'coq', x, y, s = 1, rot = 0 }) {
 }
 const TYPE_OBJ = { coquillette: 'coq', lentille: 'lentille', riz: 'riz', perle: 'perle', trombone: 'trombone', vis: 'vis', bille: 'bille' };
 const typeObjet = id => TYPE_OBJ[id] || 'bille';
-const tasDe = (cx, cy, k) => Array.from({ length: k }, (_, i) => ({ x: cx - 62 + alea(i) * 124, y: cy - 4 - alea(i + 211) * 36 + (alea(i) > 0.5 ? 0 : 6), r: alea(i + 91) * 180 }));
+
+// Tas posé dans un bol : rangées de bas en haut, d'abord à l'intérieur du bol (largeur qui s'évase), puis en dôme au-dessus du bord (y = 98).
+const tasBol = (cx, k) => {
+  const rangees = [[134, 30], [122, 46], [110, 58], [98, 64], [86, 50], [75, 32]];
+  const nb = k >= 28 ? 6 : k >= 16 ? 5 : 4, pts = []; let c = 0;
+  rangees.slice(0, nb).forEach(([y, demi]) => {
+    const n = Math.max(2, Math.round(demi * 2 / 17));
+    for (let i = 0; i < n; i++, c++) pts.push({ x: cx - demi + (i + 0.5) * (2 * demi / n) + (alea(c) - 0.5) * 4, y: y + (alea(c + 50) - 0.5) * 3, r: alea(c + 91) * 180 });
+  });
+  return pts;
+};
 
 // ---------- scène 1 : un objet seul puis le tas, chacun sur sa balance ----------
 export function SceneComptage({ id = 'coquillette', nom = 'coquillette', pluriel = 'coquillettes', mUne = '0,50 g', mTas = '45 g', nombreVisible = 28, tasInconnu = false }) {
   const t = typeObjet(id), k = Math.max(6, Math.min(40, nombreVisible));
   return (
     <svg viewBox="0 0 480 262" style={stl} role="img" aria-label={`Deux balances. À gauche, un seul objet (${nom}) : la balance affiche ${mUne}. À droite, le tas de ${pluriel} : la balance affiche ${tasInconnu ? 'une masse à lire' : mTas}. Le dessin ne montre que quelques objets du tas.`}>
+      {/* à gauche : UN objet posé sur le plateau de sa balance */}
       <rect x="40" y="150" width="170" height="36" rx="8" fill="#cbd5e1" stroke="#94a3b8"/>
       <rect x="86" y="158" width="78" height="20" rx="4" fill="#0f172a"/>
       <text x="125" y="174" fontSize="17" fontWeight="700" textAnchor="middle" fill="#86efac" style={{ fontFamily: 'monospace' }}>{mUne}</text>
-      <ellipse cx="125" cy="144" rx="62" ry="7" fill="#94a3b8"/>
-      <Obj type={t} x={125} y={124} s={2.6}/>
+      <ellipse cx="125" cy="146" rx="62" ry="6" fill="#94a3b8"/>
+      <Obj type={t} x={125} y={122} s={3.2}/>
       <text x="125" y="214" fontSize="17" fontWeight="700" textAnchor="middle" fill={COL.encre}>1 {nom}</text>
+      {/* à droite : un bol posé sur le plateau, rempli d'un tas qui déborde du bord */}
       <rect x="270" y="150" width="170" height="36" rx="8" fill="#cbd5e1" stroke="#94a3b8"/>
       <rect x="316" y="158" width="78" height="20" rx="4" fill="#0f172a"/>
       <text x="355" y="174" fontSize="17" fontWeight="700" textAnchor="middle" fill="#86efac" style={{ fontFamily: 'monospace' }}>{mTas}</text>
-      <ellipse cx="355" cy="144" rx="78" ry="7" fill="#94a3b8"/>
-      <path d="M287,104 Q355,176 423,104 Z" fill="#f1f5f9" stroke="#64748b" strokeWidth="2"/>
-      {tasDe(355, 126, k).map((p, i) => <Obj key={i} type={t} x={p.x} y={p.y} s={1.15} rot={p.r}/>)}
+      <ellipse cx="355" cy="146" rx="78" ry="6" fill="#94a3b8"/>
+      <path d="M283,98 L427,98 Q425,141 355,143 Q285,141 283,98 Z" fill="#e2e8f0"/>
+      {tasBol(355, k).map((p, i) => <Obj key={i} type={t} x={p.x} y={p.y} s={1.25} rot={p.r}/>)}
+      <path d="M283,98 L427,98 Q425,141 355,143 Q285,141 283,98" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinejoin="round"/>
+      <line x1="278" y1="98" x2="432" y2="98" stroke="#64748b" strokeWidth="3" strokeLinecap="round"/>
       <text x="355" y="214" fontSize="17" fontWeight="700" textAnchor="middle" fill={COL.encre}>le tas de {pluriel}</text>
       <text x="240" y="248" fontSize="16" textAnchor="middle" fill="#334155">(dessin : seulement quelques objets du tas)</text>
     </svg>);
