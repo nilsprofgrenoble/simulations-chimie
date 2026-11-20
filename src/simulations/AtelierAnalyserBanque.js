@@ -5250,6 +5250,49 @@ export const PREVOIR = [
       F('les deux demandent la même énergie, car la masse est la même', 'À masse égale, l’énergie dépend encore du corps par L : les valeurs de L sont différentes, les énergies aussi.'),
       F('l’eau demande 2 260 fois plus d’énergie que l’éthanol', 'Ce sont les valeurs de L qu’on compare : leur rapport est 2 260 ÷ 840, soit environ 2,7, pas 2 260.'),
     ] },
+  // ───────────────────────────── Tests chimiques (2GT, sim 198) : eau pure ou eau présente, flamme éteinte, nombre de tests, mélange, vérifier de l’eau, diazote par élimination
+  { id: 'test2gt-ana-ethanol', domaine: 'Tests chimiques (2GT)', titre: 'L’éthanol du commerce fait bleuir la poudre',
+    enonce: 'Inès verse quelques gouttes d’éthanol du commerce sur de la poudre blanche de sulfate de cuivre anhydre : la poudre devient bleue. Elle écrit : « c’est de l’eau pure ».', q: 'Que penser de sa conclusion ?', options: [
+      V('fausse : le test montre qu’il y a de l’eau, pas qu’elle est pure', 'La poudre bleue met en évidence de l’eau. L’éthanol du commerce en contient un peu : c’est un mélange d’éthanol et d’eau, pas de l’eau pure.'),
+      F('vraie : seul un liquide qui est de l’eau pure fait bleuir la poudre', 'Tout liquide qui contient de l’eau fait bleuir la poudre, même mêlée à autre chose, comme dans l’éthanol du commerce.'),
+      F('fausse : la poudre aurait dû devenir verte avec de l’eau', 'Avec de l’eau, la poudre blanche devient bleue : c’est bien l’observation attendue, mais elle ne dit pas que le liquide est pur.'),
+      F('fausse : le test de l’eau ne s’applique pas à un liquide', 'Le test de l’eau s’applique justement à un liquide ou à de la buée : il met en évidence la présence d’eau.'),
+    ] },
+  { id: 'test2gt-ana-allumette', domaine: 'Tests chimiques (2GT)', titre: 'Une allumette qui s’éteint',
+    enonce: 'Un élève plonge une allumette enflammée dans un tube qui contient un gaz pur : la flamme s’éteint aussitôt. Il affirme : « c’est du dioxyde de carbone ».', q: 'Que penser de cette affirmation ?', options: [
+      V('elle n’est pas sûre : le diazote éteint aussi la flamme', 'Une flamme s’éteint dans plusieurs gaz : ce n’est pas un test propre au dioxyde de carbone. Le test à faire est celui de l’eau de chaux.'),
+      F('elle est juste : seul ce gaz éteint une flamme', 'Le diazote éteint aussi une flamme : cette observation ne désigne pas un seul gaz.'),
+      F('elle est justifiée : la flamme éteinte est le test normalisé de ce gaz', 'Le test normalisé du dioxyde de carbone est l’eau de chaux qui se trouble, pas la flamme éteinte.'),
+      F('elle est fausse : un gaz qui éteint la flamme est forcément du dioxygène', 'Le dioxygène entretient la combustion : une flamme y brûle plus vivement, elle ne s’y éteint pas.'),
+    ] },
+  { id: 'test2gt-ana-un-test-de-plus', domaine: 'Tests chimiques (2GT)', titre: 'Un test négatif, et après ?',
+    enonce: 'Un tube contient un seul gaz : du dihydrogène, du dioxygène ou du dioxyde de carbone. Une braise plongée dans le tube s’éteint : le test du dioxygène est négatif.', q: 'Combien de tests faut-il encore faire, au plus, pour identifier le gaz ?', options: [
+      V('un seul : l’autre gaz se déduit par élimination', 'Il reste deux gaz possibles : le dihydrogène et le dioxyde de carbone. Un test (la flamme ou l’eau de chaux) départage les deux : s’il est négatif, c’est l’autre gaz.'),
+      F('deux : un test pour chacun des deux gaz qui restent', 'Un seul test suffit : un test positif désigne un gaz, un test négatif désigne l’autre.'),
+      F('aucun : la braise éteinte suffit à conclure', 'Une braise éteinte ne désigne aucun gaz : elle indique seulement que ce n’est pas du dioxygène.'),
+      F('trois : il faut refaire tous les tests depuis le début', 'Les résultats déjà obtenus restent valables : le test de la braise n’est pas à refaire.'),
+    ] },
+  { id: 'test2gt-ana-bougie', domaine: 'Tests chimiques (2GT)', titre: 'Deux tests positifs sous un flacon',
+    enonce: 'Un flacon est retourné sur une bougie allumée. De la buée apparaît sur la paroi : la poudre blanche de sulfate de cuivre anhydre, frottée sur la buée, devient bleue. L’eau de chaux versée dans le flacon se trouble.', q: 'Quelle conclusion est justifiée ?', options: [
+      V('de l’eau et du dioxyde de carbone se sont formés', 'Chaque test met en évidence son espèce : les deux sont positifs, donc il y a de l’eau et du dioxyde de carbone. L’échantillon est un mélange.'),
+      F('seule de l’eau s’est formée, car un seul test peut être positif', 'Dans un mélange, plusieurs tests peuvent être positifs : ici les deux le sont.'),
+      F('seul du dioxyde de carbone s’est formé : la buée n’est que de l’air humide', 'Le test de l’eau est positif sur la buée : elle contient de l’eau, formée par la combustion.'),
+      F('les deux tests se contredisent', 'Les deux tests ne se contredisent pas : ils concernent deux espèces différentes, présentes en même temps.'),
+    ] },
+  { id: 'test2gt-ana-pop-buee', domaine: 'Tests chimiques (2GT)', titre: 'Des gouttelettes après le « pop »',
+    enonce: 'Après un « pop » dans un petit tube bouché qui contenait du dihydrogène (test fait par le professeur), de fines gouttelettes d’un liquide incolore apparaissent sur la paroi du tube.', q: 'Quel test permet de vérifier que ce liquide contient de l’eau ?', options: [
+      V('le sulfate de cuivre anhydre : la poudre doit bleuir', 'C’est le test de l’eau : si la poudre blanche bleuit au contact des gouttelettes, de l’eau est présente (la combustion du dihydrogène en forme).'),
+      F('l’eau de chaux : elle doit se troubler, avec un précipité blanc', 'L’eau de chaux se trouble avec le dioxyde de carbone, pas avec l’eau.'),
+      F('une braise : elle doit se rallumer', 'La braise qui se rallume est le test du dioxygène, pas celui de l’eau.'),
+      F('une flamme : elle doit donner un « pop » à l’ouverture du tube', 'Le « pop » à la flamme est le test du dihydrogène, pas celui de l’eau.'),
+    ] },
+  { id: 'test2gt-ana-azote', domaine: 'Tests chimiques (2GT)', titre: 'Trois tests négatifs',
+    enonce: 'Un tube contient un seul gaz pur ; l’énoncé précise que c’est l’un de ces quatre : H₂, O₂, CO₂ ou N₂. La flamme ne donne pas de « pop », la braise s’éteint et l’eau de chaux reste limpide.', q: 'Quel est ce gaz ?', options: [
+      V('le diazote N₂, par élimination des trois autres gaz', 'Les trois tests sont négatifs : ni H₂, ni O₂, ni CO₂. Dans la liste donnée, il reste le diazote.'),
+      F('le dioxyde de carbone CO₂, car la flamme s’est éteinte', 'Le dioxyde de carbone aurait troublé l’eau de chaux : elle est restée limpide.'),
+      F('le dioxygène O₂, car la braise a d’abord été rouge', 'Avec du dioxygène, la braise se rallume avec une flamme vive : ici elle s’est éteinte.'),
+      F('on ne peut pas savoir : un test négatif ne prouve rien', 'Ici la liste des gaz est connue et chaque test est propre à un gaz : trois tests négatifs désignent le seul gaz qui reste.'),
+    ] },
   // ── Seconde : réactif limitant ──
   { id: 'rl2gt-double-methane', domaine: 'Réactif limitant (2GT)', titre: 'On double la quantité de méthane',
     enonce: 'Dans l’équation CH₄ + 2 O₂ → CO₂ + 2 H₂O, on part de 1 mol de méthane et de 2 mol de dioxygène : ce sont exactement les proportions de la recette. On double la quantité de méthane (2 mol) sans changer celle du dioxygène (2 mol).', q: 'Quel est maintenant le réactif limitant ?', options: [

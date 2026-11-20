@@ -4134,6 +4134,50 @@ export const ENONCES = [
         manque: null, solution: { txt: 'même L que pour la vaporisation ; E = m × L, avec la masse convertie en kg', val: (p.m / 1000) * Lv, u: 'kJ' } };
     }),
   },
+  // ───────────────────────────── Tests chimiques (2GT, sim 198) : combien de tests pour identifier un gaz, essais avec la poudre blanche
+  {
+    id: 'test2gt-sapp-gaz-inconnu', domaine: 'Tests chimiques (2GT)', titre: 'Un gaz inconnu dans un tube', noms: ['Durée maximale des tests pour un tube', 'Durée maximale des tests pour plusieurs tubes'],
+    gen: () => ({ n: tire([3, 4]), t: tire([2, 3, 5]), m: tire([2, 3, 4, 5]), V: tire([20, 50, 100]), th: tire([18, 20, 22]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        n: tok(`${p.n} gaz`, 'Nombre de gaz possibles dans le tube', p.n, ''),
+        t: tok(`${p.t} min`, 'Durée d’un test', p.t * 60, 's'),
+        m: tok(`${p.m} tubes`, 'Nombre de tubes à identifier', p.m, ''),
+        V: tok(`${p.V} mL`, 'Volume de gaz dans un tube', p.V / 1000, 'L'),
+        th: tok(`${p.th} °C`, 'Température de la salle', p.th, '°C'),
+      };
+      const raisons = { V: 'Le volume de gaz dans le tube ne change ni le nombre de tests ni leur durée.', th: 'La température de la salle n’intervient pas dans le nombre de tests à faire.' };
+      const debut = ['Dans une salle à ', T('th'), ', un élève doit identifier le gaz contenu dans un tube de ', T('V'), '. Ce gaz pur est l’un de ', T('n'), ' gaz possibles ; chaque test est positif pour un seul de ces gaz, et le dernier gaz restant se déduit par élimination. Chaque test dure ', T('t'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle durée maximale faut-il prévoir pour identifier le gaz d’un tube ?'], utiles: ['n', 't'], raisons,
+        cherche: { bonne: 'La durée maximale des tests pour un tube (en min)', faux: ['La durée du premier test seulement (en min)', 'La durée de tous les tests faits sur chacun des gaz possibles (en min)', 'Le nombre de gaz possibles dans le tube'] },
+        manque: null, solution: { txt: '(n − 1) tests × durée d’un test : le dernier gaz se déduit par élimination', val: (p.n - 1) * p.t, u: 'min' } };
+      return { tokens, derivees: [{ id: 'un', nom: 'Durée maximale pour un tube', expr: '(n − 1) × durée d’un test', val: (p.n - 1) * p.t, u: 'min' }],
+        texte: [...debut, 'Il doit identifier le gaz de ', T('m'), ' tubes, un après l’autre. Quelle durée maximale faut-il prévoir pour l’ensemble ?'], utiles: ['n', 't', 'm'], raisons,
+        cherche: { bonne: 'La durée maximale des tests pour l’ensemble des tubes (en min)', faux: ['La durée maximale des tests pour un seul tube (en min)', 'Le nombre total de tests faits sur tous les gaz possibles de chaque tube', 'Le volume total de gaz contenu dans les tubes (en mL)'] },
+        manque: null, solution: { txt: 'nombre de tubes × (n − 1) tests × durée d’un test', val: p.m * (p.n - 1) * p.t, u: 'min' } };
+    }),
+  },
+  {
+    id: 'test2gt-sapp-poudre', domaine: 'Tests chimiques (2GT)', titre: 'Tester des liquides avec la poudre blanche', noms: ['Masse de poudre pour une série d’essais', 'Nombre d’essais possibles avec un flacon'],
+    gen: () => ({ n: tire([4, 5, 6, 8]), m: tire([0.5, 1, 2]), M: tire([20, 30, 50]), V: tire([2, 5, 10]), th: tire([18, 20, 22]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        n: tok(`${p.n} liquides`, 'Nombre de liquides à tester', p.n, ''),
+        m: tok(`${nb(p.m, 1)} g`, 'Masse de poudre blanche utilisée pour un essai', p.m / 1000, 'kg'),
+        M: tok(`${p.M} g`, 'Masse de poudre blanche dans un flacon', p.M / 1000, 'kg'),
+        V: tok(`${p.V} mL`, 'Volume de chaque liquide', p.V / 1000, 'L'),
+        th: tok(`${p.th} °C`, 'Température de la salle', p.th, '°C'),
+      };
+      const raisons = { V: 'Le volume du liquide ne change pas la masse de poudre nécessaire pour un essai.', th: 'La température de la salle n’intervient pas dans la masse de poudre utilisée.' };
+      const debut = ['Dans une salle à ', T('th'), ', on veut savoir lesquels de plusieurs liquides contiennent de l’eau. Pour chaque essai, on met ', T('m'), ' de poudre blanche de sulfate de cuivre anhydre au contact d’un échantillon de ', T('V'), ' d’un liquide. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'On teste ', T('n'), ', un essai par liquide. Quelle masse de poudre faut-il en tout ?'], utiles: ['n', 'm'], raisons,
+        cherche: { bonne: 'La masse totale de poudre utilisée (en g)', faux: ['La masse de poudre d’un seul essai (en g)', 'Le nombre de liquides qui contiennent de l’eau', 'Le volume total de liquide testé (en mL)'] },
+        manque: null, solution: { txt: 'masse totale = nombre d’essais × masse par essai', val: p.n * p.m, u: 'g' } };
+      return { tokens, derivees: [], texte: [...debut, 'Un flacon contient ', T('M'), ' de poudre. Combien d’essais peut-on faire au maximum avec un flacon ?'], utiles: ['M', 'm'], raisons,
+        cherche: { bonne: 'Le nombre d’essais possibles avec un flacon', faux: ['La masse de poudre qui reste après un essai (en g)', 'Le nombre de liquides qui contiennent de l’eau', 'Le volume de liquide nécessaire pour tous les essais (en mL)'] },
+        manque: null, solution: { txt: 'nombre d’essais = masse du flacon ÷ masse par essai', val: p.M / p.m, u: 'essais' } };
+    }),
+  },
   // ───────────────────────────── Seconde : réactif limitant
   {
     id: 'rl2gt-donnees', domaine: 'Réactif limitant (2GT)', titre: 'Un mélange de réactifs : quelles données pour trouver le limitant ?', noms: ['Réactif limitant', 'Quantité de réactif en excès'],

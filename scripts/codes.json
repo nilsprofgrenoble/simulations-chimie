@@ -1666,5 +1666,21 @@
  "77:plausible:etat2gt-val-sublimation-sens": "VAL442",
  "77:plausible:etat2gt-val-solidification-ok": "VAL443",
  "77:plausible:etat2gt-val-sel-fusion": "VAL444",
- "36:etat2gt-calcul": "REA113"
+ "36:etat2gt-calcul": "REA113",
+ "34:test2gt-sapp-gaz-inconnu.0": "SAPP427",
+ "34:test2gt-sapp-gaz-inconnu.1": "SAPP428",
+ "34:test2gt-sapp-poudre.0": "SAPP429",
+ "34:test2gt-sapp-poudre.1": "SAPP430",
+ "37:prevoir:test2gt-ana-ethanol": "ANA686",
+ "37:prevoir:test2gt-ana-allumette": "ANA687",
+ "37:prevoir:test2gt-ana-un-test-de-plus": "ANA688",
+ "37:prevoir:test2gt-ana-bougie": "ANA689",
+ "37:prevoir:test2gt-ana-pop-buee": "ANA690",
+ "37:prevoir:test2gt-ana-azote": "ANA691",
+ "77:plausible:test2gt-val-eau-pure": "VAL445",
+ "77:plausible:test2gt-val-air-co2": "VAL446",
+ "77:plausible:test2gt-val-pop": "VAL447",
+ "77:plausible:test2gt-val-braise-co2": "VAL448",
+ "77:plausible:test2gt-val-bougie-deux": "VAL449",
+ "36:test2gt-calcul": "REA114"
 }

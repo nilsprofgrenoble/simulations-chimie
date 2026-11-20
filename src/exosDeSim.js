@@ -41,6 +41,7 @@ export const EXOS_DE_SIM = {
   61: [/^(rho|conc)2/, /sol-(masse-double|volume-double|masse-conservee|saturation)/, /sol-masse-volumique-unite/],
   180: [/rl2gt-/],
   195: [/(^|\.)etat2gt-/, /plausible\.etat2gt-/],                                                                // Changement d’état (2GT) : équation, sens du transfert, E = m × L
+  198: [/(^|\.)test2gt-/, /plausible\.test2gt-/],                                                              // Tests chimiques (2GT) : eau, H₂, O₂, CO₂, identifier un gaz inconnu
   191: [/(^|\.)son2gt-emis-/, /plausible\.son2gt-emis-/],                                                    // Le son (2GT) : émission et propagation, vitesse du son
   62: [/^conc2/, /sol-(dilution|dilutions|echelle)/],
   63: [/^rho2/, /sol-(huile-eau|saturation|masse-volumique)/],
