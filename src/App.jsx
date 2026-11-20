@@ -109,6 +109,7 @@ const SimulationOeilReduit2gt = paresseux(() => import("./simulations/OeilReduit
 const SimulationTestsChimiques2gt = paresseux(() => import("./simulations/TestsChimiques2gt"), "SimulationTestsChimiques");
 const SimulationImageLentille2gt = paresseux(() => import("./simulations/ImageLentille2gt"), "SimulationImageLentille");
 const SimulationCorpsPur2gt = paresseux(() => import("./simulations/CorpsPur2gt"), "SimulationCorpsPur");
+const SimulationPrisme2gt = paresseux(() => import("./simulations/Prisme2gt"), "SimulationPrisme");
 const SimulationCombustions = paresseux(() => import("./simulations/Combustions"), "SimulationCombustions");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
@@ -457,6 +458,7 @@ const SIMULATIONS = [
   { id:198, label:"Tests chimiques de gaz et d’eau", niveau:"2GT", icon:"🧫", color:"#0f766e", component: SimulationTestsChimiques2gt },
   { id:196, label:"Corps pur ou mélange ?", niveau:"2GT", icon:"🌡️", color:"#0369a1", component: SimulationCorpsPur2gt },
   { id:199, label:"Image réelle et grandissement avec une lentille convergente", niveau:"2GT", icon:"🕯️", color:"#0369a1", component: SimulationImageLentille2gt },
+  { id:201, label:"Dispersion par un prisme", niveau:"2GT", icon:"🔺", color:"#7c3aed", component: SimulationPrisme2gt },
   { id:64, label:"Réfraction de la lumière : lois de Snell-Descartes", niveau:"2GT", icon:"🔦", color:"#0369a1",
     component: SimulationRefraction },
   { id:65, label:"Lentille convergente : trajet de la lumière et foyer", niveau:"2GT", icon:"🔍", color:"#0e7490",

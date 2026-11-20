@@ -1782,5 +1782,20 @@
  "77:plausible:oeil2gt-val-bougie-taille": "VAL477",
  "77:plausible:oeil2gt-val-focale-proche": "VAL478",
  "77:plausible:oeil2gt-val-nette-loin": "VAL479",
- "36:oeil2gt-calcul": "REA122"
+ "36:oeil2gt-calcul": "REA122",
+ "34:prisme2gt-sapp-angle.0": "SAPP461",
+ "34:prisme2gt-sapp-angle.1": "SAPP462",
+ "34:prisme2gt-sapp-ecart.0": "SAPP463",
+ "34:prisme2gt-sapp-ecart.1": "SAPP464",
+ "37:prevoir:prisme2gt-ana-laser": "ANA724",
+ "37:prevoir:prisme2gt-ana-ordre": "ANA725",
+ "37:prevoir:prisme2gt-ana-sans-dispersion": "ANA726",
+ "37:prevoir:prisme2gt-ana-sodium": "ANA727",
+ "37:prevoir:prisme2gt-ana-sortie": "ANA728",
+ "77:plausible:prisme2gt-val-colore": "VAL480",
+ "77:plausible:prisme2gt-val-rouge-plus-devie": "VAL481",
+ "77:plausible:prisme2gt-val-laser-ok": "VAL482",
+ "77:plausible:prisme2gt-val-visible": "VAL483",
+ "77:plausible:prisme2gt-val-angle-divise": "VAL484",
+ "36:prisme2gt-calcul": "REA123"
 }

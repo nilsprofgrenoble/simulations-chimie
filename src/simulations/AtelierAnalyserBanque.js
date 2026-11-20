@@ -5783,6 +5783,42 @@ export const PREVOIR = [
       F('un corps pur, car l’or est le constituant principal', 'Un constituant principal ne suffit pas : le cuivre et l’argent sont aussi présents, donc ce n’est pas un corps pur.'),
       F('un mélange hétérogène, car il contient plusieurs métaux', 'Hétérogène veut dire qu’on distingue plusieurs matières à l’œil nu. Ici, l’alliage paraît uniforme : il est homogène.'),
     ] },
+  // ───────────────────────────── Dispersion par un prisme (2GT, sim 201) : laser, ordre des déviations, verre sans dispersion, lampe à vapeur, sortie du verre
+  { id: 'prisme2gt-ana-laser', domaine: 'Dispersion de la lumière (2GT)', titre: 'Un laser vert dans un prisme',
+    enonce: 'Un laser vert, de longueur d’onde 532 nm, éclaire un prisme de verre. Un écran est placé derrière le prisme. On a vu qu’un faisceau de lumière blanche donne sur l’écran une bande de toutes les couleurs.', q: 'Que voit-on sur l’écran avec le laser ?', options: [
+      V('une seule tache verte, déviée par le prisme', 'Le laser n’émet qu’une couleur : le prisme la dévie mais ne peut pas la séparer en plusieurs couleurs. On voit une seule tache, verte.'),
+      F('une bande de couleurs, du rouge au violet', 'Une bande de couleurs vient d’une lumière blanche, qui contient plusieurs couleurs. Un laser n’en contient qu’une.'),
+      F('une tache blanche, car le prisme mélange les couleurs', 'Le prisme ne mélange rien : il sépare. Et la couleur d’un laser ne devient pas blanche.'),
+      F('une tache verte non déviée, car il n’y a qu’une couleur', 'La lumière verte est déviée comme toute lumière qui traverse le prisme : une seule couleur ne veut pas dire pas de déviation.'),
+    ] },
+  { id: 'prisme2gt-ana-ordre', domaine: 'Dispersion de la lumière (2GT)', titre: 'Trois lasers, un prisme',
+    enonce: 'Trois lasers éclairent tour à tour le même prisme, avec le même angle d’incidence : un laser violet (405 nm, indice du verre 1,69), un laser vert (532 nm, indice 1,65) et un laser rouge (650 nm, indice 1,63).', q: 'Lequel des trois est le plus dévié ?', options: [
+      V('le laser violet', 'L’indice du verre est le plus grand pour le violet : il est plus près de la normale à chaque face, donc le plus dévié.'),
+      F('le laser rouge, car sa longueur d’onde est la plus grande', 'Une longueur d’onde plus grande correspond à un indice plus petit, donc à une déviation plus faible : le rouge est le moins dévié.'),
+      F('le laser vert, car il est au milieu du visible', 'Le vert est intermédiaire : il est plus dévié que le rouge, mais moins que le violet.'),
+      F('les trois sont déviés de la même façon par le prisme', 'Le verre a des indices différents pour les trois couleurs : les déviations sont différentes.'),
+    ] },
+  { id: 'prisme2gt-ana-sans-dispersion', domaine: 'Dispersion de la lumière (2GT)', titre: 'Un verre qui ne disperse pas',
+    enonce: 'Un physicien imagine un prisme dont le verre aurait exactement le même indice pour toutes les couleurs (ce verre n’existe pas). Il l’éclaire avec de la lumière blanche, avec un écran derrière.', q: 'Que verrait-on sur l’écran ?', options: [
+      V('une seule tache blanche, déviée mais pas étalée', 'Toutes les couleurs seraient déviées du même angle : elles resteraient superposées, donc la lumière resterait blanche.'),
+      F('la bande de couleurs habituelle, du rouge au violet', 'Cette bande existe parce que l’indice dépend de la couleur. Sans cela, les couleurs ne seraient pas séparées.'),
+      F('rien du tout, car la lumière ne traverserait pas le prisme', 'Le verre est transparent : la lumière le traverse. Seule la séparation des couleurs disparaîtrait.'),
+      F('une tache blanche non déviée, car il n’y a pas de dispersion', 'Sans dispersion, la lumière est quand même déviée à chaque face. Ce qui disparaît, c’est l’étalement des couleurs.'),
+    ] },
+  { id: 'prisme2gt-ana-sodium', domaine: 'Dispersion de la lumière (2GT)', titre: 'Une lampe à vapeur de sodium',
+    enonce: 'Une lampe à vapeur de sodium (lampes jaunes des tunnels) émet une seule radiation visible, de longueur d’onde 589 nm. Sa lumière traverse un prisme, avec un écran derrière.', q: 'Que voit-on sur l’écran ?', options: [
+      V('une seule raie jaune fine, sur un fond noir', 'Une seule radiation donne une seule raie : la couleur de 589 nm, jaune. Entre les raies d’un spectre de raies, il n’y a pas de lumière.'),
+      F('une bande continue du rouge au violet', 'Une bande continue demande toutes les couleurs, comme la lumière blanche. La lampe au sodium n’en émet qu’une seule.'),
+      F('deux raies : une jaune et une blanche, côte à côte', 'Il n’y a qu’une radiation : on ne voit qu’une raie. Une raie « blanche » n’aurait pas de sens ici.'),
+      F('une large tache jaune qui occupe tout l’écran', 'Le prisme ne peut pas étaler une radiation unique. La lumière forme une raie fine.'),
+    ] },
+  { id: 'prisme2gt-ana-sortie', domaine: 'Dispersion de la lumière (2GT)', titre: 'Le rayon qui quitte le verre',
+    enonce: 'Dans un prisme, un rayon rouge arrive sur la seconde face avec un angle de 32 ° par rapport à la normale. Le verre a un indice de 1,63 pour le rouge ; l’indice de l’air est 1,00.', q: 'Comment se compare l’angle du rayon dans l’air (angle de sortie) à 32 ° ?', options: [
+      V('plus grand que 32 ° : le rayon s’écarte de la normale', 'Le rayon passe d’un milieu d’indice 1,63 à un milieu d’indice 1,00 : l’indice diminue, donc l’angle augmente.'),
+      F('plus petit que 32 ° : le rayon se rapproche de la normale', 'Un rapprochement de la normale se produit quand l’indice augmente, par exemple de l’air vers le verre. Ici il diminue.'),
+      F('exactement 32 ° : un rayon qui sort ne change pas de direction', 'Le rayon change de direction à chaque passage entre deux milieux d’indices différents, sauf s’il arrive le long de la normale.'),
+      F('0 ° : le rayon sort toujours le long de la normale', 'Il ne sort le long de la normale que s’il y arrive le long de la normale. Ici l’angle d’incidence est de 32 °.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
