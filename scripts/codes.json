@@ -1386,5 +1386,18 @@
  "77:plausible:rc-val-unite-tau": "VAL356",
  "77:plausible:rc-val-capacite": "VAL357",
  "77:plausible:rc-val-63": "VAL358",
- "36:rc-calcul": "REA89"
+ "36:rc-calcul": "REA89",
+ "34:phot1g-sapp-photon.0": "SAPP358",
+ "34:phot1g-sapp-photon.1": "SAPP359",
+ "37:prevoir:phot1g-ana-lambda-nu": "ANA585",
+ "37:prevoir:phot1g-ana-photon-uv": "ANA586",
+ "37:prevoir:phot1g-ana-puissance-photon": "ANA587",
+ "37:prevoir:phot1g-ana-ordre-longueurs": "ANA588",
+ "37:prevoir:phot1g-ana-echelle-log": "ANA589",
+ "77:plausible:phot1g-val-wifi-nm": "VAL359",
+ "77:plausible:phot1g-val-energie-visible": "VAL360",
+ "77:plausible:phot1g-val-energie-x": "VAL361",
+ "77:plausible:phot1g-val-ev-j": "VAL362",
+ "77:plausible:phot1g-val-domaine-fm": "VAL363",
+ "36:phot1g-calcul": "REA90"
 }

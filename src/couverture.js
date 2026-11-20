@@ -15,7 +15,7 @@
 //  chap = chapitre du menu qui la traite (si ok ou partiel), reste = ce qui manque (si partiel).
 //  Le BTS n'a pas de barre : son référentiel n'est pas décliné ici au même niveau de détail.
 // ═══════════════════════════════════════════════════════════════════════════
-export const DATE_COUVERTURE = '19 novembre 2026';
+export const DATE_COUVERTURE = '20 novembre 2026';
 
 export const ETATS = { ok: 1, partiel: 0.5, avenir: 0 };
 
@@ -66,7 +66,7 @@ export const COUVERTURE = [
     { th: OND, t: 'Ondes mécaniques : célérité, retard, période, longueur d’onde', e: 'ok', chap: 'ondes-meca' },
     { th: OND, t: 'Image donnée par une lentille mince', e: 'ok', chap: '1g-lentille' },
     { th: OND, t: 'Couleurs : synthèse additive et soustractive', e: 'ok', chap: '1g-couleurs' },
-    { th: OND, t: 'Modèles ondulatoire et particulaire de la lumière : photon, niveaux d’énergie', e: 'avenir' },
+    { th: OND, t: 'Modèles ondulatoire et particulaire de la lumière : photon, niveaux d’énergie', e: 'partiel', chap: '1g-lumiere', reste: 'niveaux d’énergie : absorption, émission, spectres de raies' },
   ] },
 
   // ──────────────────────── Terminale spé PC ────────────────────────

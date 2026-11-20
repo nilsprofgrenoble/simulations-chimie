@@ -3592,6 +3592,31 @@ export const ENONCES = [
         manque: null, solution: { txt: 'n = frac(M(chaîne)|M(motif)), avec M(motif) = 2 × M(C) + 3 × M(H) + M(Cl)', val: p.n, u: '' } };
     },
   },
+  // ───────────────────────────── Lumière (1G) : domaines spectraux et énergie d'un photon (sim 164) : fréquence et énergie d'un photon d'un laser
+  {
+    id: 'phot1g-sapp-photon', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Un laser et ses photons', noms: ['Fréquence de la lumière du laser', 'Énergie d’un photon du laser'],
+    gen: () => ({ nm: tire([405, 450, 532, 590, 633, 650, 520]), P: tire([1.0, 2.0, 5.0]), d: tire([1.5, 2.0, 3.0]), t: tire([5, 10, 20]) }),
+    build: epure((p, q) => {
+      const lam = p.nm * 1e-9, nu = 3.00e8 / lam, E = 6.63e-34 * nu;
+      const tokens = {
+        lam: tok(`${p.nm} nm`, 'Longueur d’onde de la lumière dans le vide', lam, 'm'),
+        c: tok('3,00 × 10⁸ m·s⁻¹', 'Célérité de la lumière dans le vide', 3.00e8, 'm·s⁻¹'),
+        h: tok('6,63 × 10⁻³⁴ J·s', 'Constante de Planck', 6.63e-34, 'J·s'),
+        P: tok(`${nb(p.P, 1)} mW`, 'Puissance du laser', p.P * 1e-3, 'W'),
+        d: tok(`${nb(p.d, 1)} m`, 'Distance entre le laser et l’écran', p.d, 'm'),
+        t: tok(`${p.t} s`, 'Durée pendant laquelle le laser reste allumé', p.t, 's'),
+      };
+      const raisons = { P: 'La puissance du laser change le nombre de photons émis chaque seconde, pas la fréquence ni l’énergie d’un photon.', d: 'Dans le vide, la longueur d’onde et la fréquence ne dépendent pas de la distance parcourue.', t: 'La durée d’allumage ne change ni la fréquence ni l’énergie d’un photon.' };
+      const debut = ['Un laser émet dans le vide une lumière de longueur d’onde ', T('lam'), '. Sa puissance est ', T('P'), ' ; il éclaire un écran placé à ', T('d'), ' et reste allumé ', T('t'), '. On donne c = ', T('c'), ' et h = ', T('h'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la fréquence de cette lumière ?'], utiles: ['lam', 'c'],
+        raisons: { ...raisons, h: 'La constante de Planck sert à calculer l’énergie d’un photon, pas la fréquence.' },
+        cherche: { bonne: 'La fréquence ν de la lumière (en Hz)', faux: ['L’énergie d’un photon de cette lumière (en J)', 'La longueur d’onde de cette lumière dans l’eau (en m)', 'Le nombre de photons émis chaque seconde (en s⁻¹)'] },
+        manque: null, solution: { txt: 'ν = c ÷ λ', val: nu, u: 'Hz' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est l’énergie d’un photon de cette lumière ?'], utiles: ['lam', 'c', 'h'], raisons,
+        cherche: { bonne: 'L’énergie E d’un photon de cette lumière (en J)', faux: ['La puissance transportée par le faisceau (en W)', 'La fréquence de cette lumière (en Hz)', 'Le nombre de photons émis chaque seconde (en s⁻¹)'] },
+        manque: null, solution: { txt: 'E = h × ν = h × c ÷ λ', val: E, u: 'J' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -3635,6 +3660,7 @@ const SYMBOLES = {
   meca2: { m: 'm', v: 'v', L: 'ℓ', F: 'F', d: 'd', a: 'α', mt: 'm' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
+  'phot1g-sapp-photon': { lam: 'λ', c: 'c', h: 'h', P: 'P', d: 'd', t: 'Δt' },
 };
 export function nouvelEnonce(id, q, forceParams) {
   const def = ENONCES.find(e => e.id === id);
