@@ -4920,6 +4920,7 @@ export const ENONCES = [
         manque: null, solution: { txt: 'sin i₂ = sin i₁ ÷ n, puis sin⁻¹', val: PRISME2GT.angleRefracte(p.i1, PRISME2GT.N_ROUGE), u: '°' } };
     }),
   // ───────────────────────────── Loi de Newton et thermostat (TG, sim 212) : temps caractéristique et flux thermique initial
+  },
   {
     id: 'thm-sapp-tasse', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', titre: 'Une tasse de café qui refroidit', noms: ['Temps caractéristique de la tasse', 'Flux thermique initial'],
     gen: () => ({ m: tire([0.15, 0.20, 0.25, 0.30]), hS: tire([0.30, 0.45, 0.60]), T0: tire([70, 80, 90]), Te: tire([18, 20, 22]), P: tire([800, 1000, 2000]), g: tire([8, 10, 12]) }),
