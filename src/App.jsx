@@ -84,6 +84,7 @@ const SimulationPlanFactoriel = paresseux(() => import("./simulations/PlanFactor
 const SimulationInteractions = paresseux(() => import("./simulations/Interactions"), "SimulationInteractions");
 const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactivite"), "SimulationRadioactivite");
 const SimulationQuantiteMatiere = paresseux(() => import("./simulations/QuantiteMatiere"), "SimulationQuantiteMatiere");
+const SimulationQuantiteMatiere2gt = paresseux(() => import("./simulations/QuantiteMatiere2gt"), "SimulationQuantiteMatiere2gt");
 const SimulationConcentrationDilution = paresseux(() => import("./simulations/ConcentrationDilution"), "SimulationConcentrationDilution");
 const SimulationMesureIncertitudes = paresseux(() => import("./simulations/MesureIncertitudes"), "SimulationMesureIncertitudes");
 const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
@@ -398,6 +399,8 @@ const SIMULATIONS = [
     component: SimulationMouvementReferentiel },
   { id:57, label:"Atomes, ions et molécules : la quête de l’octet", niveau:"2GT", icon:"⚛️", color:"#16a34a",
     component: SimulationAtomesMolecules },
+  { id:178, label:"Quantité de matière : compter les entités et la mole", niveau:"2GT", icon:"🥚", color:"#0f766e",
+    component: SimulationQuantiteMatiere2gt },
   { id:58, label:"Familles chimiques : même colonne, mêmes comportements", niveau:"2GT", icon:"🧩", color:"#b45309",
     component: SimulationFamillesChimiques },
   { id:59, label:"Les forces : modéliser une action mécanique", niveau:"2GT", icon:"➡️", color:"#0f766e",

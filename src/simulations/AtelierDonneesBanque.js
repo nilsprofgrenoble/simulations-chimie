@@ -21,6 +21,7 @@ import * as TMP from "./tamponTstlModele";
 import * as CO2 from "./co2DissousModele";
 import * as EXT from "./extractionAcideBaseModele";
 import * as QM from "./quantiteMatiereModele";
+import * as QM2 from "./quantiteMatiere2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
@@ -3847,6 +3848,58 @@ export const ENONCES = [
         cherche: { bonne: 'La longueur d’onde λ du photon (en m ou en nm)', faux: ['L’énergie du photon (en eV)', 'La fréquence ν du photon (en Hz)', 'L’énergie du niveau d’arrivée (en eV)'] },
         manque: null, solution: { txt: 'λ = frac(h × c|ΔE), avec ΔE = |E_f − E_i| en joules', val: lam, u: 'm' } };
     }),
+  },
+  // ───────────────────────────── Quantité de matière (2GT) : compter les entités et la mole
+  {
+    id: 'mol2gt-balance', domaine: 'Quantité de matière (2GT)', titre: 'Un sac de petits objets à compter', noms: ['Nombre d’objets dans le sac', 'Nombre de paquets d’objets'],
+    gen: () => ({ o: tire(['lentille', 'riz', 'perle', 'coquillette']), N: tire([1000, 2000, 4000, 5000, 8000]), paquet: tire([100, 250, 500, 1000]), prix: tire([2.5, 3.2, 4.5]) }),
+    build: (p, q) => {
+      const o = QM2.objet(p.o), totG = Math.round(p.N * o.m * 1e6) / 1e6, aff = totG >= 1000 ? `${nb(totG / 1000)} kg` : `${nb(totG)} g`;
+      const tokens = {
+        mTot: tok(aff, 'Masse totale du sac', totG, 'g'),
+        mObj: tok(`${nb(o.m)} g`, `Masse d’${o.art === 'un' ? 'un' : 'une'} ${o.nom}`, o.m, 'g'),
+        prix: tok(`${nb(p.prix, 2)} €`, 'Prix du sac', p.prix, '€'),
+        paquet: tok(`${p.paquet} ${o.pluriel}`, 'Nombre d’objets dans un paquet', p.paquet, 'objets'),
+      };
+      const raisons = { prix: 'Le prix du sac ne dit rien sur le nombre d’objets qu’il contient.' };
+      const debut = ['Un sac contient des ', o.pluriel, '. Il pèse ', T('mTot'), ' et ', o.art === 'un' ? 'un ' : 'une ', o.nom, ' pèse ', T('mObj'), '. Le sac est vendu ', T('prix'), '. '];
+      const derivees = totG >= 1000 ? ['masse du sac en grammes : m (kg) × 1000'] : [];
+      if (q === 0) return { tokens, derivees, texte: [...debut, 'Combien d’objets le sac contient-il ?'],
+        utiles: ['mTot', 'mObj'], raisons,
+        cherche: { bonne: 'Le nombre N d’objets dans le sac', faux: ['La masse totale du sac, en kg', 'La masse d’un seul objet, en g', 'Le prix d’un seul objet, en €'] },
+        manque: null, solution: { txt: 'N = m ÷ m_entité, les deux masses étant dans la même unité (ici des grammes)', val: p.N, u: 'objets' } };
+      return { tokens, derivees: [...derivees, { id: 'N', nom: 'Nombre d’objets dans le sac', expr: 'N = m ÷ m_entité', val: p.N, u: 'objets' }],
+        texte: [...debut, 'On range les objets du sac en paquets de ', T('paquet'), '. Combien de paquets obtient-on ?'],
+        utiles: ['mTot', 'mObj', 'paquet'], raisons,
+        cherche: { bonne: 'Le nombre de paquets obtenus', faux: ['Le nombre d’objets dans le sac', 'La masse d’un paquet, en g', 'Le prix d’un paquet, en €'] },
+        manque: null, solution: { txt: 'nombre de paquets = N ÷ nombre d’objets par paquet, avec N = m ÷ m_entité', val: p.N / p.paquet, u: 'paquets' } };
+    },
+  },
+  {
+    id: 'mol2gt-echantillon', domaine: 'Quantité de matière (2GT)', titre: 'Un échantillon d’atomes ou de molécules', noms: ['Nombre d’entités dans l’échantillon', 'Quantité de matière de l’échantillon'],
+    gen: () => ({ e: tire(['al', 'cu', 'fe', 'h2o', 'co2']), m: tire([0.50, 1.0, 2.0, 5.0, 10]), th: tire([15, 20, 25]), V: tire([50, 100, 250]) }),
+    build: (p, q) => {
+      const e = QM2.entite(p.e), mEnt = QM2.masseEntite(e), N = p.m / 1000 / mEnt, n = N / QM2.NA, art = e.type === 'atome' ? 'un' : 'une';
+      const tokens = {
+        m: tok(`${nb(p.m, 2)} g`, 'Masse de l’échantillon', p.m / 1000, 'kg'),
+        mEnt: tok(QM2.sci(mEnt, 3) + ' kg', `Masse d’${art} ${e.nom}`, mEnt, 'kg'),
+        th: tok(`${p.th} °C`, 'Température de la pièce', p.th, '°C'),
+        V: tok(`${p.V} mL`, 'Volume du flacon qui contient l’échantillon', p.V, 'mL'),
+      };
+      const raisons = { th: 'La température de la pièce ne change ni la masse ni le nombre d’entités.', V: 'Le volume du flacon ne sert pas à compter les entités à partir de la masse.' };
+      const debut = ['Un échantillon pur pèse ', T('m'), ' ; chaque entité est ', art, ' ', e.nom, ' (', QM2.formuleTexte(e), '), de masse ', T('mEnt'), '. La pièce est à ', T('th'), ' et l’échantillon est dans un flacon de ', T('V'), '. '];
+      const derivees = ['masse en kilogrammes : m (g) × 10⁻³'];
+      if (q === 0) return { tokens, derivees, texte: [...debut, 'Combien d’entités l’échantillon contient-il ?'],
+        utiles: ['m', 'mEnt'], raisons,
+        cherche: { bonne: 'Le nombre N d’entités dans l’échantillon', faux: ['La quantité de matière n de l’échantillon (en mol)', 'La masse d’une seule entité (en kg)', 'Le volume occupé par une entité (en mL)'] },
+        manque: null, solution: { txt: 'N = m ÷ m_entité, avec m en kg', val: N, u: 'entités' } };
+      tokens.NA = tok('6,02 × 10²³ mol⁻¹', 'Constante d’Avogadro', QM2.NA, 'mol⁻¹');
+      return { tokens, derivees: [...derivees, { id: 'N', nom: 'Nombre d’entités', expr: 'N = m ÷ m_entité', val: N, u: 'entités' }],
+        texte: [...debut, 'On donne la constante d’Avogadro ', T('NA'), '. Quelle est la quantité de matière de l’échantillon ?'],
+        utiles: ['m', 'mEnt', 'NA'], raisons,
+        cherche: { bonne: 'La quantité de matière n de l’échantillon (en mol)', faux: ['Le nombre N d’entités, sans passer par n', 'La masse d’une mole de cette entité (en g)', 'La masse de l’échantillon, en kg'] },
+        manque: null, solution: { txt: 'n = N ÷ N_A, avec N = m ÷ m_entité', val: n, u: 'mol' } };
+    },
   },
 ];
 

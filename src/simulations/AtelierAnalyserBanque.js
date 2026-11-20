@@ -5043,6 +5043,49 @@ export const PREVOIR = [
       F('il émet un photon de 10,2 eV : l’atome passe à un niveau plus énergétique', 'Passer à un niveau plus haut demande de l’énergie : l’atome absorbe un photon, il n’en émet pas.'),
       F('il émet un photon de 3,40 eV : c’est l’énergie du niveau d’arrivée', 'L’énergie d’un niveau n’est pas l’énergie du photon : seul l’écart entre les deux niveaux compte.'),
     ] },
+  // ───────────── Quantité de matière (2GT) : compter les entités et la mole
+  { id: 'mol2gt-masse-double', domaine: 'Quantité de matière (2GT)', titre: 'Deux bols de lentilles',
+    enonce: 'Un bol A contient 30 g de lentilles et un bol B en contient 60 g. Toutes les lentilles sont identiques. On rappelle que le nombre d’objets est N = m ÷ m_entité.', q: 'Le bol B contient…', options: [
+      V('deux fois plus de lentilles que le bol A', 'La masse d’une lentille est la même : si la masse du tas double, le nombre de lentilles double (N = m ÷ m_entité).'),
+      F('le même nombre de lentilles que le bol A', 'Les deux bols n’ont pas la même masse de lentilles, donc pas le même nombre : N dépend de la masse m du tas.'),
+      F('deux fois moins de lentilles que le bol A', 'C’est l’inverse : une masse plus grande contient plus de lentilles (N est proportionnel à m).'),
+      F('trente lentilles de plus que le bol A : 60 − 30 = 30', 'La différence de masse (30 g) n’est pas un nombre de lentilles : il faut la diviser par la masse d’une lentille.'),
+    ] },
+  { id: 'mol2gt-objet-leger', domaine: 'Quantité de matière (2GT)', titre: 'Même masse, objets différents',
+    enonce: 'On pèse 100 g de lentilles (une lentille pèse 0,050 g) et 100 g de coquillettes (une coquillette pèse 0,50 g). On rappelle N = m ÷ m_entité.', q: 'Le tas qui contient le plus d’objets est…', options: [
+      V('celui de lentilles : environ 10 fois plus d’objets', 'N(lentilles) = 100 ÷ 0,050 = 2000 et N(coquillettes) = 100 ÷ 0,50 = 200. À masse égale, plus un objet est léger, plus il y en a.'),
+      F('celui de coquillettes : elles sont plus grosses', 'Une coquillette est plus grosse et plus lourde : il en faut moins pour atteindre 100 g.'),
+      F('aucun : les deux tas ont la même masse, donc le même nombre d’objets', 'Même masse ne veut pas dire même nombre d’objets : N = m ÷ m_entité dépend aussi de la masse d’un objet.'),
+      F('celui de lentilles, mais seulement 2 fois plus d’objets', 'Le rapport des masses d’un objet est 0,50 ÷ 0,050 = 10, pas 2 : il y a 10 fois plus de lentilles.'),
+    ] },
+  { id: 'mol2gt-comparer-n', domaine: 'Quantité de matière (2GT)', titre: 'Deux échantillons d’eau : quelle quantité de matière ?',
+    enonce: 'Un échantillon A contient 3,01 × 10²³ molécules d’eau ; un échantillon B en contient 1,204 × 10²⁴. On rappelle n = N ÷ N_A.', q: 'La quantité de matière de B est…', options: [
+      V('quatre fois celle de A', '1,204 × 10²⁴ = 12,04 × 10²³ : B contient 12,04 ÷ 3,01 = 4 fois plus de molécules que A, donc n est 4 fois plus grande (N_A est le même).'),
+      F('plus petite que celle de A, car 1,204 est plus petit que 3,01', 'Il faut aussi comparer les puissances de 10 : 10²⁴ est 10 fois plus grand que 10²³. Écrit avec 10²³, B vaut 12,04 × 10²³, bien plus que 3,01 × 10²³.'),
+      F('la même que celle de A, car ce sont toutes deux des molécules d’eau', 'La nature de l’entité ne fixe pas n : c’est le nombre N de molécules qui compte (n = N ÷ N_A), et B en contient plus que A.'),
+      F('dix fois celle de A, car 10²⁴ = 10 × 10²³', 'La puissance de 10 donne bien un facteur 10, mais il faut aussi comparer les nombres devant : 1,204 est 2,5 fois plus petit que 3,01. Au total : 10 ÷ 2,5 = 4.'),
+    ] },
+  { id: 'mol2gt-meme-masse-atomes', domaine: 'Quantité de matière (2GT)', titre: 'Aluminium ou cuivre ?',
+    enonce: 'On pèse 10 g d’aluminium et 10 g de cuivre. Un atome d’aluminium pèse 4,48 × 10⁻²⁶ kg et un atome de cuivre 1,06 × 10⁻²⁵ kg. On rappelle N = m ÷ m_entité.', q: 'Le morceau qui contient le plus d’atomes est…', options: [
+      V('l’aluminium : ses atomes sont plus légers', 'À masse égale, plus l’atome est léger, plus il y en a : le rapport est 1,06 × 10⁻²⁵ ÷ 4,48 × 10⁻²⁶ ≈ 2,4, soit environ 2,4 fois plus d’atomes d’aluminium.'),
+      F('le cuivre : ses atomes sont plus lourds, donc il y en a plus', 'C’est l’inverse : des atomes plus lourds sont moins nombreux pour une même masse (N = m ÷ m_entité).'),
+      F('aucun : 10 g contiennent toujours autant d’atomes, quel que soit le métal', 'C’est vrai pour une mole (6,02 × 10²³ atomes), pas pour une même masse : les atomes n’ont pas la même masse.'),
+      F('le cuivre : 10⁻²⁵ est plus grand que 10⁻²⁶, donc N est plus grand', 'Une masse d’atome plus grande donne un nombre d’atomes plus petit : la masse d’un atome est au dénominateur de N = m ÷ m_entité.'),
+    ] },
+  { id: 'mol2gt-molecule-legere', domaine: 'Quantité de matière (2GT)', titre: 'Dihydrogène ou dioxygène ?',
+    enonce: 'On pèse 2,0 g de dihydrogène H₂ et 2,0 g de dioxygène O₂. Une molécule de H₂ pèse 3,34 × 10⁻²⁷ kg et une molécule de O₂ pèse 5,32 × 10⁻²⁶ kg.', q: 'Le gaz qui contient le plus de molécules est…', options: [
+      V('le dihydrogène : environ 16 fois plus de molécules', 'Une molécule de H₂ est environ 16 fois plus légère (5,32 × 10⁻²⁶ ÷ 3,34 × 10⁻²⁷ ≈ 15,9) : pour une même masse, il y en a 16 fois plus.'),
+      F('le dioxygène : sa molécule est plus lourde', 'Une molécule plus lourde est moins nombreuse pour une même masse : N = m ÷ m_entité.'),
+      F('les deux autant : H₂ et O₂ ont chacune 2 atomes', 'Le nombre d’atomes par molécule ne suffit pas : c’est la masse d’une molécule qui compte, et celle de O₂ est bien plus grande.'),
+      F('le dihydrogène : environ 160 fois plus de molécules, car 10⁻²⁷ et 10⁻²⁶ sont différents', 'Il faut diviser aussi les nombres : (5,32 ÷ 3,34) × (10⁻²⁶ ÷ 10⁻²⁷) = 1,59 × 10 ≈ 16, et non 160.'),
+    ] },
+  { id: 'mol2gt-ion-electron', domaine: 'Quantité de matière (2GT)', titre: 'Un atome de sodium et son ion',
+    enonce: 'Un atome de sodium Na perd un électron et devient l’ion sodium Na⁺. La masse d’un électron est environ 1 800 fois plus petite que celle d’un proton.', q: 'La masse de l’ion Na⁺, comparée à celle de l’atome Na, est…', options: [
+      V('pratiquement la même : un électron pèse très peu', 'L’atome de sodium contient 11 protons, 12 neutrons et 11 électrons. Perdre un seul électron ne change presque pas la masse : on néglige la masse des électrons.'),
+      F('nettement plus petite : l’ion a perdu une partie de sa masse', 'Un électron est environ 1 800 fois plus léger qu’un proton : sa perte ne change presque pas la masse.'),
+      F('nettement plus grande : l’ion est chargé, donc plus lourd', 'La charge électrique n’ajoute pas de masse : l’ion a même plutôt un électron de moins, de masse négligeable.'),
+      F('deux fois plus petite : il a perdu une particule sur deux', 'Il reste 11 protons, 12 neutrons et 10 électrons : une seule particule très légère a disparu.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';

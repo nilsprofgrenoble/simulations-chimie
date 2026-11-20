@@ -7,6 +7,7 @@ import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
 import * as QM from "./quantiteMatiereModele";
+import * as QM2 from "./quantiteMatiere2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as SV from "./savonModele";
@@ -81,7 +82,7 @@ export function verifier(q, rep) {
     if (Math.abs(x / q.vrai - 60) < 1 || Math.abs(x / q.vrai - 1 / 60) < 0.001) return { ok: false, msg: 'Facteur 60 : minutes et secondes ?' };
     if (Math.abs(x / q.vrai - 3600) < 20 || Math.abs(x / q.vrai - 1 / 3600) < 0.0001) return { ok: false, msg: 'Facteur 3600 : heures et secondes ?' };
   }
-  return { ok: false, msg: '' };
+  return { ok: false, msg: q.refus || '' };
 }
 export const reponseAttendue = q => `${nb(q.vrai, q.csMin || q.csExact || 3)}${q.unite ? NB + q.unite : ''}`;
 
@@ -3017,6 +3018,88 @@ function genMesure1G() {
     retenir: ['Moyenne : x̄ = (x₁ + … + x_N) / N ; type A : u = s / √N, type B (loi uniforme sur ± a) : u = a / √3.', 'u s’écrit avec 1 chiffre significatif (2 si le premier est 1), arrondie par excès ; la valeur estimée est arrondie à la même décimale.', 'Comparer à une référence : écart de l’ordre de u ou plus petit, compatible ; nettement plus grand que u, à expliquer.'] };
 }
 
+// ───────────── Quantité de matière (2GT) : compter les entités, la mole, atomes et molécules ─────────────
+const OBJ2GT = { lentille: [20000, 24000, 30000, 40000], riz: [40000, 48000, 60000, 80000], perle: [5000, 6000, 7500, 10000], coquillette: [2000, 3000, 3600, 4000] };   // N tels que la masse du sac est exacte en kg (1,0 à 2,0 kg)
+function genQuantiteMatiere2GT() {
+  const ecr = (m, e) => `${nb(m, 3)}${NB}×${NB}10${sup(e)}`;
+  const dec = x => Math.floor(Math.log10(Math.abs(x)) + 1e-12);
+  const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
+  // q1 : compter par la masse (le sac est donné en kg, l'objet en g)
+  const o1 = QM2.objet(tire(Object.keys(OBJ2GT))), N1 = tire(OBJ2GT[o1.id]), kg1 = N1 * o1.m / 1000;
+  const q1 = filtre({ id: 'k0', type: 'num', q: <>Un sac contient <b>{nb(kg1, 2)}{NB}kg</b> de {o1.pluriel}. {o1.art === 'un' ? 'Un' : 'Une'} {o1.nom} pèse <b>{nb(o1.m, 2)}{NB}g</b>. Combien de {o1.pluriel} le sac contient-il ?</>, unite: o1.pluriel, vrai: N1, csMin: 1, tolRel: 0.01,
+    aide: 'Mettez d’abord la masse du sac en grammes (1 kg = 1000 g). Le nombre d’objets est la masse du sac divisée par la masse d’un objet.',
+    pieges: [[kg1 / o1.m, 'Vous n’avez pas converti les kilogrammes en grammes : 1 kg = 1000 g.'], [kg1 * 1000 * o1.m, 'Vous avez multiplié : pour compter des objets avec une balance, on divise la masse du sac par la masse d’un objet.']],
+    expl: <>{nb(kg1, 2)} kg = {nb(kg1 * 1000, 4)} g ; N = {nb(kg1 * 1000, 4)} ÷ {nb(o1.m, 2)} = <b>{avecU(N1, o1.pluriel, 4)}</b>.</> });
+  // q2 : de n à N
+  const a2 = QM2.entite(tire(['al', 'cu', 'fe'])), n2 = tire([0.50, 1.5, 2.0, 3.0, 4.0]), N2 = n2 * QM2.NA;
+  const q2 = filtre({ id: 'k1', type: 'num', q: <>On dispose de <b>{nb(n2, 2)}{NB}mol</b> d’atomes {a2.nom.replace(/^atome /, '')}. Combien d’atomes cela fait-il ? Écrivez le nombre qui multiplie 10²³. On donne N<sub>A</sub> = 6,02 × 10²³ mol⁻¹.</>, unite: '× 10²³ atomes', vrai: N2 / 1e23, csMin: 2, tolRel: 0.01,
+    aide: 'N = n × N_A : multipliez la quantité de matière par 6,02. La puissance 10²³ reste.',
+    pieges: [[6.02, 'Vous avez recopié N_A : il faut multiplier par n (' + nb(n2, 2) + ' mol).'], [6.02 / n2, 'Vous avez divisé : pour passer de n à N, on multiplie par N_A.'], [n2 / 6.02, 'Vous avez divisé n par N_A : on multiplie.']],
+    expl: <>N = n × N<sub>A</sub> = {nb(n2, 2)} × 6,02 × 10²³ = <b>{ecr(N2 / 1e23, 23)}</b> atomes.</> });
+  // q3 : de N à n (N est donné avec 10²³ ou 10²⁴)
+  const n3 = tire([0.25, 0.50, 1.5, 2.5, 3.0]), N3 = n3 * QM2.NA, e3 = dec(N3), a3 = Number((N3 / Math.pow(10, e3)).toPrecision(3)), N3a = a3 * Math.pow(10, e3), vrai3 = N3a / QM2.NA;
+  const q3 = filtre({ id: 'k2', type: 'num', q: <>Un échantillon contient <b>N = {ecr(a3, e3)}</b> entités. Quelle est sa quantité de matière, en <b>mol</b> ? (N<sub>A</sub> = 6,02 × 10²³ mol⁻¹)</>, unite: 'mol', vrai: vrai3, csMin: 2, tolRel: 0.01,
+    aide: 'n = N ÷ N_A. Si N est écrit avec 10²⁴, écrivez-le d’abord avec 10²³ (1 × 10²⁴ = 10 × 10²³) avant de diviser.',
+    pieges: [[a3 / 6.02, 'Vous avez divisé les nombres sans tenir compte de la différence des puissances de 10 (10²⁴ = 10 × 10²³).'], [a3 * 6.02, 'Vous avez multiplié : pour passer de N à n, on divise par N_A.']],
+    expl: <>N = {ecr(a3, e3)} = {nb(N3a / 1e23, 4)} × 10²³ ; n = N ÷ N<sub>A</sub> = {nb(N3a / 1e23, 4)} ÷ 6,02 = <b>{avecU(vrai3, 'mol', 3)}</b>.</> });
+  // q4 : masse d'une molécule
+  const e4 = QM2.entite(tire(['h2o', 'ch4', 'nh3', 'co2', 'ethanol'])), m4 = QM2.masseEntiteBrute(e4) / 1e-26;
+  const donnees4 = [...new Set(e4.f.map(([a]) => a))].map(a => `m(${a}) = ${ecr(QM2.MASSE_ATOME[a] / Math.pow(10, dec(QM2.MASSE_ATOME[a])), dec(QM2.MASSE_ATOME[a]))}${NB}kg`).join(' ; ');
+  const unefois4 = e4.f.reduce((t, [a]) => t + QM2.MASSE_ATOME[a], 0) / 1e-26, mantisses4 = e4.f.reduce((t, [a, k]) => t + k * QM2.MASSE_ATOME[a] / Math.pow(10, dec(QM2.MASSE_ATOME[a])), 0);
+  const q4 = filtre({ id: 'k3', type: 'num', q: <>La formule d’une {e4.nom} est <b>{QM2.formuleTexte(e4)}</b>. Données : {donnees4}. Calculez la masse d’une molécule. Écrivez le nombre qui multiplie 10⁻²⁶{NB}kg.</>, unite: '× 10⁻²⁶ kg', vrai: m4, csMin: 2, tolRel: 0.01,
+    aide: 'Multipliez la masse de chaque atome par son nombre d’atomes (l’indice dans la formule), puis additionnez. Pour additionner, mettez tous les termes avec la même puissance de 10 (par exemple 10⁻²⁶).',
+    pieges: [[unefois4, 'Vous avez compté chaque atome une seule fois : il faut multiplier par le nombre d’atomes de la formule.'], [mantisses4, 'Vous avez additionné les nombres sans tenir compte des puissances de 10 : 10⁻²⁷ et 10⁻²⁶ ne sont pas égales.']],
+    expl: <>{QM2.lignesMasse(e4).map(([, k, ma]) => `${k} × ${nb(ma / 1e-26, 3)} × 10⁻²⁶`).join(' + ')} = <b>{ecr(m4, -26)}{NB}kg</b>.</> });
+  // q5 : nombre d'entités dans un échantillon
+  const e5 = QM2.entite(tire(['al', 'cu', 'fe', 'h2o', 'co2'])), g5 = tire([0.50, 1.0, 2.0, 5.0, 10]), me5 = QM2.masseEntite(e5), N5 = g5 / 1000 / me5, x5 = dec(N5), nom5 = e5.type === 'atome' ? 'atomes' : 'molécules';
+  const q5 = filtre({ id: 'k4', type: 'num', q: <>Un échantillon pur pèse <b>{nb(g5, 2)}{NB}g</b> ; chaque entité est {e5.type === 'atome' ? 'un ' : 'une '}{e5.nom} ({QM2.formuleTexte(e5)}), qui pèse <b>{ecr(me5 / Math.pow(10, dec(me5)), dec(me5))}{NB}kg</b>. Combien {nom5 === 'atomes' ? 'd’atomes' : 'de molécules'} l’échantillon contient-il ? Écrivez le nombre qui multiplie 10{sup(x5)}.</>, unite: `× 10${sup(x5)} ${nom5}`, vrai: N5 / Math.pow(10, x5), csMin: 2, tolRel: 0.05,
+    refus: 'Pas tout à fait. Vérifiez : (1) la masse en kg (1 g = 10⁻³ kg) ; (2) la division des nombres ; (3) la soustraction des puissances de 10. Gardez 3 chiffres significatifs pendant le calcul.',
+    aide: 'Convertissez la masse de l’échantillon en kg (1 g = 10⁻³ kg), puis divisez-la par la masse d’une entité. Divisez les nombres, puis les puissances de 10 (on soustrait les nombres écrits en haut du 10).',
+    pieges: [[me5 / (g5 / 1000) / Math.pow(10, x5), 'La division est à l’envers : on divise la masse de l’échantillon par la masse d’une entité.'], [g5 * me5 / Math.pow(10, x5), 'Vous avez multiplié : pour compter les entités avec une balance, on divise.']],
+    expl: <>m = {nb(g5, 2)} g = {nb(g5 / 1000, 3)} kg ; N = {nb(g5 / 1000, 3)} ÷ {ecr(me5 / Math.pow(10, dec(me5)), dec(me5))} = <b>{ecr(N5 / Math.pow(10, x5), x5)}</b> {nom5}.</> });
+  // q6 : quantité de matière correspondante (N est redonné, arrondi à 3 chiffres significatifs)
+  const a6 = Number((N5 / Math.pow(10, x5)).toPrecision(3)), N6 = a6 * Math.pow(10, x5), n6 = N6 / QM2.NA, x6 = dec(n6);
+  const q6 = filtre({ id: 'k5', type: 'num', q: <>Ce même échantillon contient <b>N = {ecr(a6, x5)}</b> {nom5}. Quelle est sa quantité de matière, en mol ? Écrivez le nombre qui multiplie 10{sup(x6)}.</>, unite: `× 10${sup(x6)} mol`, vrai: n6 / Math.pow(10, x6), csMin: 2, tolRel: 0.05,
+    refus: 'Pas tout à fait. Vérifiez : n = N ÷ N_A ; divisez les nombres, puis soustrayez les puissances de 10 ; écrivez le résultat avec la puissance de 10 demandée.',
+    aide: 'n = N ÷ N_A avec N_A = 6,02 × 10²³ mol⁻¹. Divisez les nombres, puis les puissances de 10 (on soustrait les nombres écrits en haut du 10).',
+    pieges: [[a6 / 6.02, 'Vous avez divisé les nombres sans tenir compte de la différence des puissances de 10 : vérifiez 10' + sup(x5) + ' ÷ 10²³.'], [a6 * 6.02, 'Vous avez multiplié : pour passer de N à n, on divise par N_A.']],
+    expl: <>n = N ÷ N<sub>A</sub> = {ecr(a6, x5)} ÷ (6,02 × 10²³) = <b>{ecr(n6 / Math.pow(10, x6), x6)}{NB}mol</b>.</> });
+  return { intro: 'Compter des entités : avec une balance, avec la mole, puis pour des atomes et des molécules. Les calculs utilisent les puissances de 10 : écrivez toujours les unités.', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['Objets identiques : N = m ÷ masse d’un objet (même unité pour les deux masses).', 'N = n × N_A et n = N ÷ N_A, avec N_A = 6,02 × 10²³ mol⁻¹.', 'Masse d’une entité = somme des masses de ses atomes (mêmes puissances de 10 pour additionner).', 'Échantillon : masse en kg, puis N = m ÷ masse d’une entité, puis n = N ÷ N_A.'] };
+}
+
+// ───────────── Puissances de 10 et écriture scientifique (2GT) ─────────────
+function genPuissances2GT() {
+  const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
+  // s1 : écrire un petit nombre en écriture scientifique
+  const a1 = tire([1.5, 2.5, 3.2, 4.8, 6.4]), k1 = tire([3, 4, 5, 6]), chiffres = String(Math.round(a1 * 10)), decimales = '0'.repeat(k1 - 1) + chiffres;
+  const decTxt = `0,${(decimales.match(/.{1,3}/g) || []).join(NB)}`;
+  const mauvais = [-(k1 + 1), -(k1 - 1), k1], opts = melange([-k1, ...mauvais]);
+  const q1 = { id: 's0', type: 'qcm', q: <>Quelle est l’écriture scientifique de <b>{decTxt}</b> ?</>, options: opts.map(e => `${nb(a1, 2)}${NB}×${NB}10${sup(e)}`), bonne: opts.indexOf(-k1),
+    aide: 'Comptez de combien de rangs il faut décaler la virgule vers la droite pour obtenir un nombre entre 1 et 10 : c’est le nombre écrit en haut du 10, sans le signe moins (la puissance de 10 est négative pour un petit nombre).',
+    expl: <>Pour obtenir {nb(a1, 2)}, on décale la virgule de {k1} rangs vers la droite : {decTxt} = <b>{nb(a1, 2)} × 10{sup(-k1)}</b>.</> };
+  // s2 : exposant après une conversion g → kg
+  const a2 = tire([1.5, 4.5, 7.2]), p2 = tire([-4, -3, -2, -1, 1, 2]);
+  const q2 = filtre({ id: 's1', type: 'num', q: <>Complétez la puissance de 10 : {nb(a2, 2)} × 10{sup(p2)} g = {nb(a2, 2)} × 10<sup>…</sup> kg. Écrivez le nombre entier qui manque en haut du 10.</>, unite: '', vrai: p2 - 3, csMin: 1, tolRel: 0,
+    aide: '1 g = 10⁻³ kg. Quand on multiplie, les puissances de 10 s’additionnent : le nombre écrit en haut du 10 au départ, plus (−3).',
+    pieges: [[p2, 'Vous n’avez pas converti : 1 g = 10⁻³ kg, il faut ajouter −3 au nombre écrit en haut du 10.'], [p2 + 3, 'Vous avez ajouté +3 au lieu de −3 : 1 g = 10⁻³ kg (un gramme est plus petit qu’un kilogramme).']],
+    expl: <>{nb(a2, 2)} × 10{sup(p2)} g = {nb(a2, 2)} × 10{sup(p2)} × 10⁻³ kg = {nb(a2, 2)} × 10{sup(p2 - 3)} kg : la puissance de 10 est <b>10{sup(p2 - 3)}</b>, donc le nombre qui manque est <b>{p2 - 3}</b>.</> });
+  // s3 : diviser deux nombres en écriture scientifique
+  const [pp, qq] = tire([[-5, -26], [22, 23], [24, 23], [-4, -26], [-3, -26]]), a3 = tire([3.0, 6.0, 7.5, 9.0]), b3 = tire([2.0, 2.5, 3.0, 5.0]), r3 = a3 / b3;
+  const q3 = filtre({ id: 's2', type: 'num', q: <>Calculez {nb(a3, 2)} × 10{sup(pp)} ÷ ({nb(b3, 2)} × 10{sup(qq)}). Écrivez le nombre qui multiplie 10{sup(pp - qq)}.</>, unite: `× 10${sup(pp - qq)}`, vrai: r3, csMin: 2, tolRel: 0.01,
+    aide: 'On divise les nombres entre eux, et les puissances de 10 entre elles (on soustrait les nombres écrits en haut du 10).',
+    pieges: [[a3 * b3, 'Vous avez multiplié : ici on divise.'], [b3 / a3, 'La division est à l’envers : le premier nombre est au numérateur.']],
+    expl: <>({nb(a3, 2)} ÷ {nb(b3, 2)}) × 10{sup(pp)} ÷ 10{sup(qq)} = <b>{nb(r3, 3)} × 10{sup(pp - qq)}</b> (puissance de 10 : {pp} − ({qq}) = {pp - qq}).</> });
+  // s4 : additionner avec deux puissances de 10 différentes
+  const a4 = tire([3.34, 5.01, 6.68]), b4 = tire([2.66, 1.99, 2.33]), v4 = a4 / 10 + b4;
+  const q4 = filtre({ id: 's3', type: 'num', q: <>Une molécule contient des atomes dont les masses sont {nb(a4, 3)} × 10⁻²⁷{NB}kg et {nb(b4, 3)} × 10⁻²⁶{NB}kg. Calculez la somme des deux masses. Écrivez le nombre qui multiplie 10⁻²⁶{NB}kg.</>, unite: '× 10⁻²⁶ kg', vrai: v4, csMin: 2, tolRel: 0.01,
+    aide: 'Pour additionner, il faut la même puissance de 10 : a × 10⁻²⁷ = (a ÷ 10) × 10⁻²⁶. Additionnez ensuite les nombres.',
+    pieges: [[a4 + b4, 'Vous avez additionné les nombres sans tenir compte des puissances de 10 (10⁻²⁷ et 10⁻²⁶ sont différentes).'], [b4, 'Il manque la première masse : la somme comprend les deux termes.']],
+    expl: <>{nb(a4, 3)} × 10⁻²⁷ = {nb(a4 / 10, 3)} × 10⁻²⁶ ; {nb(a4 / 10, 3)} + {nb(b4, 3)} = <b>{nb(v4, 3)}</b>, soit {nb(v4, 3)} × 10⁻²⁶ kg.</> });
+  return { intro: 'Écriture scientifique et puissances de 10 : de petits calculs pour être à l’aise avec les masses d’atomes et le nombre d’Avogadro.', questions: [q1, q2, q3, q4],
+    retenir: ['Écriture scientifique : un nombre entre 1 et 10, multiplié par une puissance de 10 (négative pour un petit nombre).', 'Multiplier : on additionne les nombres écrits en haut du 10 ; diviser : on les soustrait.', 'Additionner : il faut d’abord la même puissance de 10.', '1 g = 10⁻³ kg.'] };
+}
+
 export const FAMILLES = [
   { id: 'titrage-direct', groupe: 'Formules', titre: 'Titrage direct du diiode par le thiosulfate : équivalence, concentration, masse (1re spé)', gen: genTitrageDirect, domaine: 'Titrage direct' },
   { id: 'vecteur-somme', groupe: 'Vecteurs', titre: 'Somme de deux vecteurs (forces)', gen: genSomme },
@@ -3068,6 +3151,8 @@ export const FAMILLES = [
   { id: 'rad-calcul', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants, activité et datation (TG)', gen: genRadioactiviteTG, domaine: 'Radioactivité : décroissance et demi-vie' },
   { id: 'mol1g-qte-calcul', groupe: 'Formules', titre: 'Quantité de matière : masse molaire, masse, volume d’un gaz, d’un liquide et composition d’un mélange (1G)', gen: genQuantiteMatiere1G, domaine: 'Quantité de matière : masse molaire et volume molaire' },
   { id: 'mol1g-conc-calcul', groupe: 'Formules', titre: 'Concentration en quantité de matière : dissolution, masse à peser, prélèvement et dilution (1G)', gen: genConcentration1G, domaine: 'Concentration en quantité de matière : dissolution et dilution' },
+  { id: 'mol2gt-calcul', groupe: 'Formules', titre: 'Quantité de matière : compter les entités, la mole, atomes et molécules (2GT)', gen: genQuantiteMatiere2GT, domaine: 'Quantité de matière (2GT)' },
+  { id: 'mol2gt-puissances', groupe: 'Formules', titre: 'Puissances de 10 et écriture scientifique : conversions, quotients et sommes (2GT)', gen: genPuissances2GT, domaine: 'Quantité de matière (2GT)' },
   { id: 'fl1g-statique-calcul', groupe: 'Formules', titre: 'Statique des fluides : différence de pression, pression absolue, profondeur, force sur un bouchon et masse volumique (1G)', gen: genStatique1G, domaine: 'Statique des fluides : pression et profondeur' },
   { id: 'mes1g-calcul', groupe: 'Formules', titre: 'Mesure et incertitudes : moyenne, incertitude-type de type A et de type B, arrondi et comparaison à une référence (1G)', gen: genMesure1G, domaine: 'Mesure et incertitudes (1G)' },
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },

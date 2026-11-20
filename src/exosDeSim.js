@@ -35,6 +35,7 @@ export const EXOS_DE_SIM = {
   // ── 2GT ──
   57: [/^noyau/, /mic-(electrons|ion-|octet|masse-noyau|taille|masse-carbone)/],
   58: [/mic-(famille|gaz-nobles|octet)/],
+  178: [/(^|\.)mol2gt-/, /plausible\.mol2gt-/],                                                                // Quantité de matière (2GT) : compter les entités et la mole
   61: [/^(rho|conc)2/, /sol-(masse-double|volume-double|masse-conservee|saturation)/, /sol-masse-volumique-unite/],
   62: [/^conc2/, /sol-(dilution|dilutions|echelle)/],
   63: [/^rho2/, /sol-(huile-eau|saturation|masse-volumique)/],
