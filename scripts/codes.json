@@ -1767,5 +1767,14 @@
  "77:plausible:img2gt-val-thales-ok": "VAL472",
  "77:plausible:img2gt-val-image-droite": "VAL473",
  "77:plausible:img2gt-val-objet-loin": "VAL474",
- "36:img2gt-calcul": "REA121"
+ "36:img2gt-calcul": "REA121",
+ "34:thm-sapp-tasse.0": "SAPP457",
+ "34:thm-sapp-tasse.1": "SAPP458",
+ "37:prevoir:thm-ana-masse": "ANA719",
+ "37:prevoir:thm-ana-pieces": "ANA720",
+ "37:prevoir:thm-ana-flux": "ANA721",
+ "77:plausible:thm-val-fin": "VAL475",
+ "77:plausible:thm-val-unite": "VAL476",
+ "77:plausible:thm-val-chauffage": "VAL477",
+ "36:thm-calcul": "REA122"
 }

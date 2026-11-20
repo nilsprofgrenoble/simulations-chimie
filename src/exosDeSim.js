@@ -106,6 +106,7 @@ export const EXOS_DE_SIM = {
   171: [/(^|\.)lun-/, /plausible\.lun-/],                                                                           // Lunette afocale : schéma, faisceau, grossissement (TG)
   172: [/(^|\.)top-/, /plausible\.top-/],                                                                        // Formules topologiques et isomérie de constitution (TG)
   174: [/(^|\.)rc-/, /plausible\.rc-/],                                                                              // Circuit RC : charge et décharge d’un condensateur (TG)
+  212: [/(^|\.)thm-/, /plausible\.thm-/],                                                                           // Loi de Newton et thermostat : température d’un système au cours du temps (TG)
   168: [/(^|\.)nwt-/, /plausible\.nwt-/],
   175: [/(^|\.)pes-/, /plausible\.pes-/],                                                                           // Mouvement dans un champ de pesanteur uniforme (TG)
   185: [/(^|\.)icc-/, /plausible\.icc-/],                                                                           // Incertitudes-types composées et comparaison à une valeur de référence (TG)
