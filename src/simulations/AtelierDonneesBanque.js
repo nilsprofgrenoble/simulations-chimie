@@ -40,6 +40,7 @@ import * as KEP from "./satellitesModele";
 import * as BRN from "./brnModele";
 import * as PUR from "./corpsPur2gtModele";
 import * as M_ISN from "./isnModele";
+import { OEIL2GT_SAPP } from "./oeilReduit2gtExos.js";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -4870,6 +4871,7 @@ export const ENONCES = [
         manque: null, solution: { txt: 'valeur lue − précision', val: p.lue - p.prec, u: '°C' } };
     }),
   },
+  ...OEIL2GT_SAPP,
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

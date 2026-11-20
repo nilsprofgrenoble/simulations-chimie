@@ -1767,5 +1767,20 @@
  "77:plausible:img2gt-val-thales-ok": "VAL472",
  "77:plausible:img2gt-val-image-droite": "VAL473",
  "77:plausible:img2gt-val-objet-loin": "VAL474",
- "36:img2gt-calcul": "REA121"
+ "36:img2gt-calcul": "REA121",
+ "34:oeil2gt-sapp-arbre.0": "SAPP457",
+ "34:oeil2gt-sapp-arbre.1": "SAPP458",
+ "34:oeil2gt-sapp-bougie.0": "SAPP459",
+ "34:oeil2gt-sapp-bougie.1": "SAPP460",
+ "37:prevoir:oeil2gt-ana-sens": "ANA719",
+ "37:prevoir:oeil2gt-ana-distance": "ANA720",
+ "37:prevoir:oeil2gt-ana-proche": "ANA721",
+ "37:prevoir:oeil2gt-ana-bombe": "ANA722",
+ "37:prevoir:oeil2gt-ana-deux-arbres": "ANA723",
+ "77:plausible:oeil2gt-val-image-arbre": "VAL475",
+ "77:plausible:oeil2gt-val-image-droite": "VAL476",
+ "77:plausible:oeil2gt-val-bougie-taille": "VAL477",
+ "77:plausible:oeil2gt-val-focale-proche": "VAL478",
+ "77:plausible:oeil2gt-val-nette-loin": "VAL479",
+ "36:oeil2gt-calcul": "REA122"
 }
