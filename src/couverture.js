@@ -29,13 +29,13 @@ export const COUVERTURE = [
   // ───────────────────────────── Seconde ─────────────────────────────
   { id: '2GT', niveau: '2GT', label: 'Seconde', parties: [
     { th: MESURE, t: 'Variabilité de la mesure, écart-type et incertitude-type', e: 'ok', chap: '2gt-mesure' },
-    { th: CTM, t: 'Corps purs, mélanges et identification d’espèces chimiques', e: 'partiel', chap: '2gt-solutions', reste: 'températures de changement d’état, chromatographie, tests chimiques' },
+    { th: CTM, t: 'Corps purs, mélanges et identification d’espèces chimiques', e: 'ok', chap: '2gt-solutions' },
     { th: CTM, t: 'Solutions : concentration en masse, dilution, dosage par étalonnage', e: 'ok', chap: '2gt-solutions' },
     { th: CTM, t: 'Atomes, ions, molécules, familles chimiques et schémas de Lewis', e: 'ok', chap: '2gt-microscopique' },
     { th: CTM, t: 'Quantité de matière et mole', e: 'ok', chap: '2gt-microscopique' },
     { th: CTM, t: 'Transformation physique : changement d’état et énergie', e: 'ok', chap: '2gt-transformation-physique' },
     { th: CTM, t: 'Transformation chimique : équation de réaction, réactif limitant', e: 'ok', chap: '2gt-transformation-chimique' },
-    { th: CTM, t: 'Synthèse d’une espèce chimique : reflux et chromatographie', e: 'avenir' },
+    { th: CTM, t: 'Synthèse d’une espèce chimique : reflux et chromatographie', e: 'partiel', chap: '2gt-solutions', reste: 'montage à reflux et synthèse (la chromatographie sur couche mince est couverte)' },
     { th: CTM, t: 'Transformation nucléaire : isotopes, Soleil et centrales', e: 'avenir' },
     { th: MVT, t: 'Décrire un mouvement : référentiel, trajectoire, vecteur vitesse', e: 'ok', chap: '2gt-mouvement' },
     { th: MVT, t: 'Modéliser une action par une force', e: 'ok', chap: '2gt-forces' },
