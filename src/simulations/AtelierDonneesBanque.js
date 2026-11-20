@@ -23,6 +23,7 @@ import * as EXT from "./extractionAcideBaseModele";
 import * as QM from "./quantiteMatiereModele";
 import * as QM2 from "./quantiteMatiere2gtModele";
 import * as SS2 from "./signalSonore2gtModele";
+import * as SN from "./niveauSonore2gtModele";
 import * as CD from "./concentrationModele";
 import * as LW from "./lewisModele";
 import * as EQM from "./equationReactionModele";
@@ -4155,6 +4156,54 @@ export const ENONCES = [
         utiles: ['d1', 'd2', 'v', 'f'], raisons: { a: 'La distance entre les haut-parleurs est déjà prise en compte dans d₁ et d₂ : elle ne sert plus.', W: 'La puissance ne décide pas de la nature de l’interférence.' },
         cherche: { bonne: 'Le nombre de longueurs d’onde dans δ (sans unité)', faux: ['Le niveau d’intensité sonore reçu en P (en dB)', 'La période T du son, calculée à partir de f (en s)', 'Le déphasage exprimé en degrés (sans conversion)'] },
         manque: null, solution: { txt: 'frac(δ|λ), avec δ = d₂ − d₁ et λ = frac(v|f) : entier, constructive ; demi-entier, destructive', val: ratio, u: '' } };
+    },
+  },
+  // ───────────────────────────── Niveau sonore et dangers de l'exposition (2GT, sim 192) : repérer les données utiles
+  {
+    id: 'son2gt-niv-sapp-ecart', domaine: 'Niveau sonore (2GT)', titre: 'Deux sons mesurés : combien de fois plus intense ?', noms: ['Écart de niveau entre les deux sons', 'Nombre de fois plus intense'],
+    gen: () => { const A = tire([30, 40, 50, 60]), delta = tire([20, 30, 40]); return { A, B: A + delta, delta, prix: tire([29, 39, 49]), t: tire([10, 20, 30]) }; },
+    build: (p, q) => {
+      const tokens = {
+        LA: tok(`${p.A} dB`, 'Niveau sonore du son A', p.A, 'dB'),
+        LB: tok(`${p.B} dB`, 'Niveau sonore du son B', p.B, 'dB'),
+        prix: tok(`${p.prix} €`, 'Prix du sonomètre', p.prix, '€'),
+        t: tok(`${p.t} s`, 'Durée de chaque enregistrement', p.t, 's'),
+      };
+      const raisons = { prix: 'Le prix de l’appareil ne dit rien sur la force des sons.', t: 'La durée de l’enregistrement ne change pas le niveau mesuré.' };
+      const debut = ['Un élève mesure deux sons avec un sonomètre acheté ', T('prix'), '. Le son A a un niveau de ', T('LA'), ' et le son B un niveau de ', T('LB'), '. Chaque mesure dure ', T('t'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De combien de dB le niveau du son B dépasse-t-il celui du son A ?'],
+        utiles: ['LA', 'LB'], raisons,
+        cherche: { bonne: 'L’écart de niveau entre le son B et le son A (en dB)', faux: ['Le nombre de fois que B est plus intense que A', 'Le niveau du son B seul (en dB)', 'Le prix d’un décibel (en €)'] },
+        manque: null, solution: { txt: 'écart = L_B − L_A', val: p.delta, u: 'dB' } };
+      return { tokens, derivees: [{ id: 'ecart', nom: 'Écart de niveau', expr: 'L_B − L_A', val: p.delta, u: 'dB' }],
+        texte: [...debut, 'Repère : + 10 dB correspond à une intensité environ 10 fois plus grande. Combien de fois le son B est-il plus intense que le son A ?'],
+        utiles: ['LA', 'LB'], raisons,
+        cherche: { bonne: 'Le nombre de fois que B est plus intense que A (sans unité)', faux: ['L’écart de niveau entre B et A (en dB)', 'Le rapport des deux niveaux B ÷ A', 'La durée pendant laquelle B est dangereux (en min)'] },
+        manque: null, solution: { txt: 'écart = L_B − L_A ; chaque tranche de 10 dB multiplie l’intensité par 10', val: SN.facteurIntensite(p.delta), u: 'fois' } };
+    },
+  },
+  {
+    id: 'son2gt-niv-sapp-duree', domaine: 'Niveau sonore (2GT)', titre: 'Une soirée bruyante : durée repère et durée passée', noms: ['Durée passée au-delà de la durée repère', 'Durée passée par rapport à la durée repère'],
+    gen: () => ({ L: tire([91, 94, 97, 100]), k: tire([2, 3, 4]), age: tire([15, 16, 17]), prix: tire([8, 10, 12]) }),
+    build: (p, q) => {
+      const D = SN.dureeRepere(p.L), T1 = Math.round(p.k * D * 10) / 10;
+      const tokens = {
+        L: tok(`${p.L} dB`, 'Niveau sonore dans la salle', p.L, 'dB'),
+        rep: tok(SN.formatDuree(D), 'Durée repère à ce niveau (tableau de prévention)', D, 'min'),
+        t: tok(SN.formatDuree(T1), 'Durée passée dans la salle', T1, 'min'),
+        age: tok(`${p.age} ans`, 'Âge de l’élève', p.age, 'ans'),
+        prix: tok(`${p.prix} €`, 'Prix de l’entrée', p.prix, '€'),
+      };
+      const debut = ['Un tableau de prévention indique qu’à ', T('L'), ' la durée repère d’exposition est de ', T('rep'), '. Un élève de ', T('age'), ' passe ', T('t'), ' dans une salle de concert à ce niveau (entrée : ', T('prix'), '). '];
+      const raisonsBase = { age: 'L’âge ne change pas la durée repère indiquée par le tableau.', prix: 'Le prix de l’entrée n’a aucun lien avec le niveau ni avec la durée.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien de temps l’élève a-t-il passé au-delà de la durée repère ?'],
+        utiles: ['t', 'rep'], raisons: { ...raisonsBase, L: 'Le niveau a déjà servi à lire la durée repère : une fois celle-ci connue, il ne sert plus au calcul.' },
+        cherche: { bonne: 'Le temps passé au-delà de la durée repère (en min)', faux: ['Le rapport entre les deux durées (sans unité)', 'Le niveau sonore à ne pas dépasser (en dB)', 'La durée de vie des oreilles (en années)'] },
+        manque: null, solution: { txt: 'temps au-delà du repère = durée passée − durée repère, les deux durées étant dans la même unité', val: T1 - D, u: 'min' } };
+      return { tokens, derivees: [], texte: [...debut, 'La durée passée dans la salle est-elle plus longue ou plus courte que la durée repère ? Combien de fois ?'],
+        utiles: ['t', 'rep'], raisons: { ...raisonsBase, L: 'Le niveau a déjà servi à lire la durée repère : une fois celle-ci connue, il ne sert plus au calcul.' },
+        cherche: { bonne: 'Le rapport durée passée ÷ durée repère (sans unité)', faux: ['La différence entre les deux durées (en min)', 'Le niveau sonore à ne pas dépasser (en dB)', 'Le nombre de concerts par an'] },
+        manque: null, solution: { txt: 'rapport = durée passée ÷ durée repère, les deux durées étant dans la même unité', val: T1 / D, u: 'fois' } };
     },
   },
 ];

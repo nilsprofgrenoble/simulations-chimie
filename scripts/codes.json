@@ -1562,5 +1562,21 @@
  "77:plausible:son2gt-per-val-cinq-motifs": "VAL411",
  "77:plausible:son2gt-per-val-diapason": "VAL412",
  "77:plausible:son2gt-per-val-limite": "VAL413",
- "36:son2gt-per-calcul": "REA105"
+ "36:son2gt-per-calcul": "REA105",
+ "34:son2gt-niv-sapp-ecart.0": "SAPP400",
+ "34:son2gt-niv-sapp-ecart.1": "SAPP401",
+ "34:son2gt-niv-sapp-duree.0": "SAPP402",
+ "34:son2gt-niv-sapp-duree.1": "SAPP403",
+ "37:prevoir:son2gt-niv-ana-amplitude": "ANA648",
+ "37:prevoir:son2gt-niv-ana-plus-10": "ANA649",
+ "37:prevoir:son2gt-niv-ana-deux-sources": "ANA650",
+ "37:prevoir:son2gt-niv-ana-distance": "ANA651",
+ "37:prevoir:son2gt-niv-ana-duree-baisse": "ANA652",
+ "37:prevoir:son2gt-niv-ana-zero-db": "ANA653",
+ "77:plausible:son2gt-niv-val-dix-pourcent": "VAL414",
+ "77:plausible:son2gt-niv-val-deux-enceintes": "VAL415",
+ "77:plausible:son2gt-niv-val-smartphone": "VAL416",
+ "77:plausible:son2gt-niv-val-concert-duree": "VAL417",
+ "77:plausible:son2gt-niv-val-casque-court": "VAL418",
+ "36:son2gt-niv-calcul": "REA106"
 }

@@ -86,6 +86,7 @@ const SimulationRadioactivite = paresseux(() => import("./simulations/Radioactiv
 const SimulationQuantiteMatiere = paresseux(() => import("./simulations/QuantiteMatiere"), "SimulationQuantiteMatiere");
 const SimulationQuantiteMatiere2gt = paresseux(() => import("./simulations/QuantiteMatiere2gt"), "SimulationQuantiteMatiere2gt");
 const SimulationSignalSonore2gt = paresseux(() => import("./simulations/SignalSonore2gt"), "SimulationSignalSonore2gt");
+const SimulationNiveauSonore2gt = paresseux(() => import("./simulations/NiveauSonore2gt"), "SimulationNiveauSonore2gt");
 const SimulationConcentrationDilution = paresseux(() => import("./simulations/ConcentrationDilution"), "SimulationConcentrationDilution");
 const SimulationMesureIncertitudes = paresseux(() => import("./simulations/MesureIncertitudes"), "SimulationMesureIncertitudes");
 const SimulationLewis = paresseux(() => import("./simulations/Lewis"), "SimulationLewis");
@@ -433,6 +434,8 @@ const SIMULATIONS = [
     component: SimulationSpectres },
   { id:190, label:"Signal sonore : période et fréquence", niveau:"2GT", icon:"🎼", color:"#0f766e",
     component: SimulationSignalSonore2gt },
+  { id:192, label:"Niveau sonore et dangers", niveau:"2GT", icon:"🎧", color:"#0369a1",
+    component: SimulationNiveauSonore2gt },
   { id:67, label:"L’ISS en chute libre : pourquoi les astronautes flottent", niveau:"2GT", icon:"🛰️", color:"#4338ca",
     component: SimulationISS },
   { id:140, label:"Chute libre : la variation de vitesse et la force", niveau:"2GT", icon:"🍎", color:"#b45309",
