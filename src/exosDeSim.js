@@ -106,7 +106,8 @@ export const EXOS_DE_SIM = {
   168: [/(^|\.)nwt-/, /plausible\.nwt-/],
   175: [/(^|\.)pes-/, /plausible\.pes-/],                                                                           // Mouvement dans un champ de pesanteur uniforme (TG)
   185: [/(^|\.)icc-/, /plausible\.icc-/],                                                                           // Incertitudes-types composées et comparaison à une valeur de référence (TG)
-  186: [/(^|\.)mrx-/, /plausible\.mrx-/],   // Mécanismes réactionnels et flèches courbes (TG)
+  186: [/(^|\.)mrx-/, /plausible\.mrx-/],  // Mécanismes réactionnels et flèches courbes (TG)
+  189: [/(^|\.)opt-/, /plausible\.opt-/],                                                                           // Optimiser une étape de synthèse : vitesse et rendement (TG)
   183: [/(^|\.)itf-/, /plausible\.itf-/],                                                                           // Interférences de deux ondes (TG)
   176: [/(^|\.)cpl-/, /plausible\.cpl-/],                                                                           // Particule chargée dans un condensateur plan (TG)
   177: [/(^|\.)kep-/, /plausible\.kep-/],    // Satellites et lois de Kepler (TG)

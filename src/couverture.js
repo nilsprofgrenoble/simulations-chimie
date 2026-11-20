@@ -86,7 +86,7 @@ export const COUVERTURE = [
     { th: CTM, t: 'Force des acides et des bases : Ka, diagrammes de prédominance, solution tampon', e: 'ok', chap: 'tg-etat-final' },
     { th: CTM, t: 'Électrolyse : forcer le sens d’évolution d’un système', e: 'ok', chap: 'tg-etat-final' },
     { th: CTM, t: 'Synthèse organique : formules topologiques, isomérie de constitution, polymères', e: 'ok', chap: 'tg-synthese' },
-    { th: CTM, t: 'Synthèse organique : optimisation d’une étape (vitesse, rendement)', e: 'avenir' },
+    { th: CTM, t: 'Synthèse organique : optimisation d’une étape (vitesse, rendement)', e: 'ok', chap: 'tg-synthese' },
     { th: CTM, t: 'Synthèse organique : stratégie multi-étapes et synthèses écoresponsables', e: 'avenir' },
     { th: MVT, t: 'Décrire un mouvement : vecteurs position, vitesse, accélération, repère de Frenet', e: 'ok', chap: 'tg-decrire-mouvement' },
     { th: MVT, t: 'Deuxième loi de Newton', e: 'ok', chap: 'tg-newton' },

@@ -1682,5 +1682,15 @@
  "77:plausible:test2gt-val-pop": "VAL447",
  "77:plausible:test2gt-val-braise-co2": "VAL448",
  "77:plausible:test2gt-val-bougie-deux": "VAL449",
- "36:test2gt-calcul": "REA114"
+ "36:test2gt-calcul": "REA114",
+ "34:opt-sapp-rendement.0": "SAPP431",
+ "34:opt-sapp-rendement.1": "SAPP432",
+ "34:opt-sapp-exces.0": "SAPP433",
+ "34:opt-sapp-exces.1": "SAPP434",
+ "37:prevoir:opt-ana-catalyseur": "ANA692",
+ "37:prevoir:opt-ana-exces": "ANA693",
+ "77:plausible:opt-val-nmax": "VAL450",
+ "77:plausible:opt-val-ok": "VAL451",
+ "77:plausible:opt-val-catalyseur": "VAL452",
+ "36:opt-calcul": "REA115"
 }

@@ -66,6 +66,7 @@ const TACHES_FAMILLE = {
   '36:itf-calcul': () => ['retard et déphasage', 'interférences constructives et destructives', 'nombre de lignes d’interférence', 'différence de chemin'],
   '36:rda-calcul': () => ['équation de désintégration', 'conservation de A et de Z', 'chaîne de désintégrations'],
   '36:pes-calcul': () => ['équations horaires', 'portée et durée du vol', 'théorème de l’énergie cinétique', 'isoler une grandeur'],
+  '36:opt-calcul': () => ['bilan et rendement', 'quotient de réaction', 'constante d’équilibre', 'sens d’évolution'],
   '36:cpl-calcul': () => ['champ électrique uniforme', 'accélération du centre de masse', 'déviation d’une particule chargée', 'théorème de l’énergie cinétique', 'conversion d’unités'],
   '36:vac-calcul': () => ['vecteur vitesse', 'vecteur accélération', 'dérivée d’une fonction du temps'],
   '36:aam-calcul': () => ['couple acide-base', 'prédominance', 'distribution', 'forme basique'],

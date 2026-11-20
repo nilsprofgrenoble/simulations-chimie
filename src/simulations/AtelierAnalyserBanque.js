@@ -5586,6 +5586,20 @@ export const PREVOIR = [
       F('impossible à dire : plus de mesures ne change jamais la zone des valeurs', 'Plus de mesures réduit u, donc la zone : la conclusion peut changer, c’est même l’intérêt de mesurer plus.'),
       F('encore plus compatible, car u est plus petite', 'Une zone plus étroite est plus exigeante : il faut que la référence y soit, ce qui devient moins probable.'),
     ] },
+  { id: 'opt-ana-catalyseur', domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement', titre: 'Un catalyseur dans une estérification',
+    enonce: 'On réalise deux essais d’estérification identiques : mêmes quantités d’acide éthanoïque et d’éthanol, même température, durée très longue. Dans le second, on ajoute quelques gouttes d’acide sulfurique concentré, qui joue le rôle de catalyseur.', q: 'Comment se comparent les deux mélanges une fois l’équilibre atteint dans chaque essai ?', options: [
+      V('même composition finale ; l’équilibre est atteint plus vite avec le catalyseur', 'Un catalyseur accélère l’évolution dans les deux sens sans modifier la constante d’équilibre K, donc sans changer la composition à l’équilibre. Il fait gagner du temps, pas du rendement.'),
+      F('le mélange catalysé contient plus d’ester, car la réaction va plus loin', 'Le catalyseur ne déplace pas l’équilibre : K, donc la composition finale, ne change pas. Il agit seulement sur la durée nécessaire pour l’atteindre.'),
+      F('le mélange catalysé contient moins d’ester, car le catalyseur participe à la réaction', 'Le catalyseur est régénéré : il n’apparaît pas dans l’équation de la réaction et ne modifie pas la composition de l’état final.'),
+      F('le mélange sans catalyseur ne peut jamais atteindre l’équilibre', 'Sans catalyseur, la transformation est très lente, mais elle tend vers le même état d’équilibre : seule la durée change.'),
+    ] },
+  { id: 'opt-ana-exces', domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement', titre: 'Un excès d’éthanol',
+    enonce: 'On réalise l’estérification de l’acide éthanoïque (1,0 mol) par l’éthanol, à une température donnée ; la constante d’équilibre K ne dépend que de la température. Dans un premier essai, on utilise 1,0 mol d’éthanol ; dans un second, 3,0 mol d’éthanol, tout le reste étant identique.', q: 'Que devient le rendement à l’équilibre, calculé par rapport à l’acide, dans le second essai ?', options: [
+      V('il augmente : l’excès place Qr sous K, le système évolue vers l’ester', 'Avec davantage d’éthanol, le quotient Qr du mélange est plus petit que K : le système évolue dans le sens direct jusqu’à ce que Qr rejoigne K, avec plus d’ester formé. Le rendement augmente.'),
+      F('il reste le même, car la constante K ne dépend pas des quantités', 'K est la même, mais la composition qui vérifie Qr = K dépend des quantités de départ : avec plus d’éthanol, il faut plus d’ester et d’eau pour que Qr atteigne K.'),
+      F('il diminue, car l’éthanol en excès dilue l’acide et ralentit la réaction', 'Les coefficients de l’équation valent tous 1 : le volume se simplifie dans Qr et seul le rapport des quantités compte. L’excès de réactif favorise le sens direct.'),
+      F('il augmente uniquement parce que la réaction devient plus rapide', 'La rapidité n’agit pas sur la composition de l’état d’équilibre : le gain de rendement vient du déplacement de l’état final (Qr < K au départ), pas de la vitesse.'),
+    ] },
 ];
 
 import { MOUVEMENTS } from './AtelierMouvementBanque.jsx';
