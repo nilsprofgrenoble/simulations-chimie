@@ -106,6 +106,7 @@ const SimulationEquationReaction = paresseux(() => import("./simulations/Equatio
 const SimulationCcm2gt = paresseux(() => import("./simulations/Ccm2gt"), "SimulationCcm");
 const SimulationChangementEtat2gt = paresseux(() => import("./simulations/ChangementEtat2gt"), "SimulationChangementEtat");
 const SimulationTestsChimiques2gt = paresseux(() => import("./simulations/TestsChimiques2gt"), "SimulationTestsChimiques");
+const SimulationCorpsPur2gt = paresseux(() => import("./simulations/CorpsPur2gt"), "SimulationCorpsPur");
 const SimulationCombustions = paresseux(() => import("./simulations/Combustions"), "SimulationCombustions");
 const SimulationEquilibre = paresseux(() => import("./simulations/Equilibre"), "SimulationEquilibre");
 const SimulationForceAcides = paresseux(() => import("./simulations/ForceAcides"), "SimulationForceAcides");
@@ -449,6 +450,7 @@ const SIMULATIONS = [
   { id:63, label:"Mélanges : miscibilité, solubilité et densité", niveau:"2GT", icon:"🧴", color:"#b45309",
     component: SimulationMelanges },
   { id:198, label:"Tests chimiques de gaz et d’eau", niveau:"2GT", icon:"🧫", color:"#0f766e", component: SimulationTestsChimiques2gt },
+  { id:196, label:"Corps pur ou mélange ?", niveau:"2GT", icon:"🌡️", color:"#0369a1", component: SimulationCorpsPur2gt },
   { id:64, label:"Réfraction de la lumière : lois de Snell-Descartes", niveau:"2GT", icon:"🔦", color:"#0369a1",
     component: SimulationRefraction },
   { id:65, label:"Lentille convergente : trajet de la lumière et foyer", niveau:"2GT", icon:"🔍", color:"#0e7490",

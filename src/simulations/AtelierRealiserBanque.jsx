@@ -23,6 +23,7 @@ import * as CM from "./combustionModele";
 import * as EQM from "./equationReactionModele";
 import * as ETM from "./changementEtat2gtModele";
 import * as M_TEST from "./testsChimiques2gtModele";
+import * as CPM from "./corpsPur2gtModele";
 import * as RX from "./redoxModele";
 import * as RL from "./reactifLimitantModele";
 import * as KEP from "./satellitesModele";
@@ -1522,6 +1523,61 @@ function genEquation2GT() {
   [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
   return { intro: 'Équation de réaction : équation ajustée, proportions entre molécules, atomes et ions, atomes dans « n formules » et charge totale des produits.', questions: [q0, q1, q2, q3],
     retenir: ['Ajuster : coefficients devant les formules (jamais les indices), dans l’ordre C, H, O, puis la charge ; on prend les plus petits entiers.', 'Les coefficients sont des proportions : on multiplie tous les nombres de l’équation par le même nombre.', 'n formules contiennent n × (indice) atomes ; la charge totale est la même avant et après.'] };
+}
+
+// ───────────── Corps pur ou mélange (2GT) : palier ou non, lecture d'une température d'ébullition, écart, compatibilité, identification, zone de la vraie température ─────────────
+const PUR2GT_REFS = CPM.LIQUIDES.map(id => `${CPM.CORPS[id].nom} ${CPM.CORPS[id].Tvap}${NB}°C`).join(', ');
+const pur2gtFR = (x, d = 1) => CPM.nombreFR(x, d);
+const pur2gtListe = t => t.map(x => pur2gtFR(x, 1)).join(' ; ');
+function genPur2GT() {
+  const LIQ = CPM.LIQUIDES;
+  // q0 : série de températures pendant l'ébullition : corps pur (palier) ou mélange (monte) ?
+  const pur0 = Math.random() < 0.5, id0 = tire(LIQ), pr0 = pur0 ? CPM.profil(id0) : CPM.profil('eau-ethanol', tire([20, 25, 30, 35, 40, 45, 50, 55, 60]));
+  const serie0 = [0, 1, 2, 3, 4].map(k => { const T = CPM.temperature(pr0, pr0.tDeb + 0.3 + k); return pur0 ? Math.round((T + tire([-0.1, 0, 0.1])) * 10) / 10 : Math.round(T * 10) / 10; });
+  const opts0 = ['un corps pur : température constante, à la précision près', 'un mélange : la température monte pendant l’ébullition', 'un corps pur : la température augmente régulièrement tout du long', 'un mélange : la température reste constante pendant l’ébullition'];
+  const bonne0 = pur0 ? opts0[0] : opts0[1];
+  const mel0 = melange(opts0);
+  const q0 = { id: 'g0', type: 'qcm', q: <>On chauffe un liquide à la pression atmosphérique. Pendant l’ébullition, un thermomètre précis à <b>±&nbsp;0,5{NB}°C</b> donne, chaque minute, les valeurs suivantes (en °C) : <b>{pur2gtListe(serie0)}</b>. Il s’agit…</>, options: mel0, bonne: mel0.indexOf(bonne0),
+    aide: 'Un corps pur a un palier : sa température reste constante pendant l’ébullition. Un mélange n’a pas de palier : sa température continue de monter. Comparez les variations des valeurs à la précision du thermomètre.',
+    expl: pur0 ? <>Les valeurs varient de moins de 0,5{NB}°C, la précision du thermomètre : c’est un palier, donc <b>un corps pur</b>.</> : <>Les valeurs augmentent de {pur2gtFR(serie0[4] - serie0[0], 1)}{NB}°C, bien plus que la précision de 0,5{NB}°C : pas de palier, donc <b>un mélange</b>.</> };
+  // q1 : lire la température d'ébullition dans une série (montée puis palier)
+  const id1 = tire(LIQ), pr1 = CPM.profil(id1), ref1 = CPM.CORPS[id1].Tvap, t01 = Math.max(0, Math.floor(pr1.tDeb) - 3);
+  const serie1 = [0, 1, 2, 3, 4, 5, 6, 7].map(k => { const t = t01 + k, T = CPM.temperature(pr1, t); return t >= pr1.tDeb ? Math.round((ref1 + tire([-0.1, 0, 0.1])) * 10) / 10 : Math.round(T * 10) / 10; });
+  const q1 = { id: 'g1', type: 'num', q: <>Un élève chauffe un liquide pur et relève sa température chaque minute (en °C) : <b>{pur2gtListe(serie1)}</b>. Quelle est la température d’ébullition de ce liquide ? Donnez le résultat en <b>°C</b>.</>, unite: '°C', vrai: ref1, tolRel: 0.01,
+    aide: 'La température d’ébullition est celle du palier : repérez les valeurs qui restent presque identiques minute après minute.',
+    pieges: [[serie1[0], 'C’est la première valeur du relevé : le liquide chauffe encore. Cherchez les valeurs qui restent constantes.'], [serie1.filter(x => x < ref1 - 0.5).slice(-1)[0], 'Cette valeur est encore dans la montée : le liquide n’a pas commencé à bouillir.'], [serie1.reduce((a, b) => a + b, 0) / serie1.length, 'Une moyenne de toutes les valeurs mélange la montée et le palier : lisez la valeur du palier.']],
+    expl: <>Les dernières valeurs restent autour de {pur2gtFR(ref1, 0)}{NB}°C : c’est le palier, donc la température d’ébullition est <b>{pur2gtFR(ref1, 0)}{NB}°C</b>.</> };
+  // q2 : écart avec la référence
+  const id2 = tire(LIQ), ref2 = CPM.CORPS[id2].Tvap, ec2 = tire([0.8, 1.2, 1.5, 2.5, 3.5, 4.5]) , sg2 = tire([-1, 1]), lue2 = Math.round((ref2 + sg2 * ec2) * 10) / 10;
+  const q2 = { id: 'g2', type: 'num', q: <>On lit <b>{pur2gtFR(lue2, 1)}{NB}°C</b> pendant l’ébullition d’un liquide pur. La valeur de référence {CPM.CORPS[id2].de} est <b>{ref2}{NB}°C</b>. Quel est l’écart entre la valeur lue et la référence ? Donnez le résultat en <b>°C</b>.</>, unite: '°C', vrai: ec2, tolRel: 0.03,
+    aide: 'L’écart est la différence entre les deux valeurs, toujours positive : soustrayez la plus petite à la plus grande.',
+    pieges: [[ref2, 'C’est la valeur de référence, pas l’écart : faites la différence avec la valeur lue.'], [lue2, 'C’est la valeur lue, pas l’écart : faites la différence avec la référence.'], [-ec2, 'Un écart est positif : soustrayez la plus petite valeur à la plus grande.']],
+    expl: <>Écart = |{pur2gtFR(lue2, 1)} − {ref2}| = <b>{pur2gtFR(ec2, 1)}{NB}°C</b>.</> };
+  // q3 : compatible ou non ?
+  const id3 = tire(LIQ), ref3 = CPM.CORPS[id3].Tvap, p3 = tire([0.5, 1, 2]), comp3 = Math.random() < 0.5, ec3 = Math.round(p3 * (comp3 ? tire([0.2, 0.4, 0.6]) : tire([1.5, 2, 3])) * 10) / 10, lue3 = Math.round((ref3 + tire([-1, 1]) * ec3) * 10) / 10;
+  const o3 = [`compatible : l’écart de ${pur2gtFR(ec3, 1)}${NB}°C est inférieur à ${pur2gtFR(p3, 1)}${NB}°C`, `pas compatible : l’écart de ${pur2gtFR(ec3, 1)}${NB}°C est supérieur à ${pur2gtFR(p3, 1)}${NB}°C`, `compatible : l’écart de ${pur2gtFR(ec3, 1)}${NB}°C est supérieur à ${pur2gtFR(p3, 1)}${NB}°C`, comp3 ? 'pas compatible : la valeur lue n’est pas exactement égale à la référence' : 'compatible : la valeur lue est suffisamment proche de la référence'];
+  const m3 = melange(o3), b3 = comp3 ? o3[0] : o3[1];
+  const q3 = { id: 'g3', type: 'qcm', q: <>Un thermomètre précis à <b>±&nbsp;{pur2gtFR(p3, 1)}{NB}°C</b> indique <b>{pur2gtFR(lue3, 1)}{NB}°C</b> pendant l’ébullition d’un liquide pur. La valeur de référence {CPM.CORPS[id3].de} est <b>{ref3}{NB}°C</b>. Que conclure ?</>, options: m3, bonne: m3.indexOf(b3),
+    aide: 'Calculez l’écart entre la valeur lue et la référence, puis comparez-le à la précision : compatible si l’écart est inférieur à la précision.',
+    expl: <>Écart = {pur2gtFR(ec3, 1)}{NB}°C, précision = {pur2gtFR(p3, 1)}{NB}°C : l’écart est {comp3 ? 'inférieur' : 'supérieur'} à la précision, donc <b>{comp3 ? 'compatible' : 'pas compatible'}</b>.</> };
+  // q4 : identifier le liquide (valeur de référence du liquide compatible)
+  let d4 = CPM.tirerDefiLiquide();
+  while (d4.lue === CPM.CORPS[d4.id].Tvap) d4 = CPM.tirerDefiLiquide();       // la valeur lue n'est jamais recopiable comme réponse
+  const c4 = CPM.CORPS[d4.id];
+  const q4 = { id: 'g4', type: 'num', q: <>Un liquide pur bout à <b>{pur2gtFR(d4.lue, 1)}{NB}°C</b> (thermomètre précis à <b>±&nbsp;{pur2gtFR(d4.prec, 1)}{NB}°C</b>). Valeurs de référence : {PUR2GT_REFS}. Quelle est la valeur de référence du seul liquide compatible ? Donnez le résultat en <b>°C</b>.</>, unite: '°C', vrai: c4.Tvap, tolRel: 0.0005,
+    aide: 'Calculez l’écart entre la valeur lue et chaque référence. Gardez celle dont l’écart est inférieur à la précision.',
+    pieges: CPM.LIQUIDES.filter(x => x !== d4.id).map(x => [CPM.CORPS[x].Tvap, `Cette valeur est celle ${CPM.CORPS[x].de} : l’écart avec la valeur lue est supérieur à la précision, ce liquide n’est pas compatible.`]),
+    expl: <>Écart avec {c4.art} : {pur2gtFR(Math.abs(d4.lue - c4.Tvap), 1)}{NB}°C, inférieur à {pur2gtFR(d4.prec, 1)}{NB}°C ; les autres écarts sont supérieurs à la précision. Le liquide est {c4.art}, de référence <b>{c4.Tvap}{NB}°C</b>.</> };
+  // q5 : zone de la vraie température
+  const id5 = tire(LIQ), p5 = tire([0.5, 1, 2]), lue5 = Math.round((CPM.CORPS[id5].Tvap + tire([-0.4, -0.2, 0.2, 0.4]) * p5) * 10) / 10, haut5 = Math.random() < 0.5;
+  const v5 = haut5 ? lue5 + p5 : lue5 - p5;
+  const q5 = { id: 'g5', type: 'num', q: <>Le thermomètre, précis à <b>±&nbsp;{pur2gtFR(p5, 1)}{NB}°C</b>, indique <b>{pur2gtFR(lue5, 1)}{NB}°C</b>. Quelle est la {haut5 ? 'plus haute' : 'plus basse'} valeur possible de la vraie température ? Donnez le résultat en <b>°C</b>.</>, unite: '°C', vrai: v5, tolRel: 0.003,
+    aide: `La vraie température est dans la zone « valeur lue ± précision » : ${haut5 ? 'ajoutez' : 'retirez'} la précision à la valeur lue.`,
+    pieges: [[lue5, 'C’est la valeur lue : la précision n’est pas prise en compte.'], [haut5 ? lue5 - p5 : lue5 + p5, `C’est l’autre bout de la zone : on cherche la valeur ${haut5 ? 'la plus haute' : 'la plus basse'}.`], [p5, 'C’est la précision : elle s’ajoute ou se retire de la valeur lue.']],
+    expl: <>{pur2gtFR(lue5, 1)} {haut5 ? '+' : '−'} {pur2gtFR(p5, 1)} = <b>{pur2gtFR(v5, 1)}{NB}°C</b>.</> };
+  [q1, q2, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
+  return { intro: 'Corps pur ou mélange : palier ou non, température d’ébullition lue, écart avec une valeur de référence, compatibilité avec la précision du thermomètre, identification d’un liquide.', questions: [q0, q1, q2, q3, q4, q5],
+    retenir: ['Un corps pur a un palier (température constante pendant l’ébullition) ; un mélange n’en a pas, ou bout à une température qui n’est pas celle de la référence.', 'Valeur lue ± précision : la vraie température est dans cette zone.', 'Une valeur lue est compatible avec une référence si l’écart est inférieur à la précision ; on identifie un liquide en gardant les références compatibles.'] };
 }
 
 // ───────────── Changement d’état (2GT) : équation, sens du transfert, E = m × L, masse, grammes et kilogrammes, proportionnalité ─────────────
@@ -3996,6 +4052,7 @@ export const FAMILLES = [
   { id: 'diss1g-calcul', groupe: 'Formules', titre: 'Dissolution d’un solide ionique : équation, concentration en soluté apporté et concentration effective des ions (1G)', gen: genDissolutionIonique1G, domaine: 'Dissolution d’un solide ionique : équation et concentration des ions' },
   { id: 'comb1g-calcul', groupe: 'Formules', titre: 'Combustions : équation, énergie des liaisons, énergie molaire de réaction, écart avec la référence et pouvoir calorifique (1G)', gen: genCombustion1G, domaine: 'Combustions : énergie de réaction et énergies de liaison' },
   { id: 'eq2gt-calcul', groupe: 'Formules', titre: 'Équation de réaction : écrire et ajuster, proportions entre molécules, atomes et ions, atomes dans n formules et charge des produits (2GT)', gen: genEquation2GT, domaine: 'Équation de réaction (2GT)' },
+  { id: 'pur2gt-calcul', groupe: 'Formules', titre: 'Corps pur ou mélange : palier, température d’ébullition lue, écart avec la référence, compatibilité et identification d’un liquide (2GT)', gen: genPur2GT, domaine: 'Corps purs et mélanges (2GT)' },
   { id: 'etat2gt-calcul', groupe: 'Formules', titre: 'Changement d’état : équation, sens du transfert, E = m × L, masse et conversion des grammes en kilogrammes (2GT)', gen: genEtat2GT, domaine: 'Changement d’état (2GT)' },
   { id: 'test2gt-calcul', groupe: 'Formules', titre: 'Tests chimiques : réactif et observation, lecture d’une observation, nombre de tests pour identifier un gaz, durée et deux espèces à la fois (2GT)', gen: genTests2GT, domaine: 'Tests chimiques (2GT)' },
   { id: 'ccm2gt-calcul', groupe: 'Formules', titre: 'Chromatographie sur couche mince : rapport frontal, distance parcourue, conversions et comparaison de hauteurs (2GT)', gen: genCcm2GT, domaine: 'Chromatographie sur couche mince (2GT)' },

@@ -38,6 +38,7 @@ import * as RX from "./redoxModele";
 import * as CL from "./couleursModele";
 import * as KEP from "./satellitesModele";
 import * as BRN from "./brnModele";
+import * as PUR from "./corpsPur2gtModele";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -4751,6 +4752,50 @@ export const ENONCES = [
         cherche: { bonne: 'La quantité de l’espèce ajoutée à la fin (en mmol)', faux: ['La quantité de produit formé avec l’ajout (en mmol)', 'La quantité de l’espèce ajoutée qui a été consommée (en mmol)', 'La quantité de réactif restant à la fin (en mmol)'] },
         manque: null, solution: { txt: 'quantité retrouvée = valeur du dosage après la transformation (identique à la quantité ajoutée : l’espèce est un catalyseur)', val: p.nFe, u: 'mmol' } };
     },
+  },
+  // ───────────────────────────── Corps pur ou mélange (2GT, sim 196) : écart avec une référence, zone de la vraie température
+  {
+    id: 'pur2gt-sapp-flacon', domaine: 'Corps purs et mélanges (2GT)', titre: 'Un flacon de solvant sans étiquette', noms: ['Écart avec la référence', 'Plus haute valeur possible de la température'],
+    gen: () => { const id = tire(['acetone', 'ethanol', 'cyclohexane', 'eau']), prec = tire([0.5, 1, 1, 2]), ref = PUR.CORPS[id].Tvap; return { id, prec, lue: Math.round((ref + tire([-0.6, -0.4, -0.2, 0.2, 0.4, 0.6]) * prec) * 10) / 10, m: tire([20, 30, 50, 80, 120]), v: tire([50, 100, 250]) }; },
+    build: epure((p, q) => {
+      const c = PUR.CORPS[p.id], ref = c.Tvap;
+      const tokens = {
+        lue: tok(`${nb(p.lue, 1)}\u00a0°C`, 'Température lue pendant l’ébullition', p.lue, '°C'),
+        ref: tok(`${ref}\u00a0°C`, `Température d’ébullition de référence ${c.de}`, ref, '°C'),
+        prec: tok(`± ${nb(p.prec, 1)}\u00a0°C`, 'Précision du thermomètre', p.prec, '°C'),
+        m: tok(`${p.m}\u00a0g`, 'Masse de liquide dans le flacon', p.m / 1000, 'kg'),
+        v: tok(`${p.v}\u00a0mL`, 'Volume du flacon', p.v / 1000, 'L'),
+      };
+      const raisons = { m: 'La masse de liquide ne change pas la température d’ébullition d’un corps pur : elle n’intervient pas ici.', v: 'Le volume du flacon ne change pas la température d’ébullition : il n’intervient pas ici.', prec: 'La précision sert à décider si deux valeurs sont compatibles ; pour calculer un simple écart, on ne l’utilise pas.', ref: 'La référence sert à comparer ; la zone de la vraie température ne dépend que de la valeur lue et de la précision.', lue: 'La valeur lue est utilisée dans tous les calculs de cet exercice.' };
+      const debut = ['On chauffe à la pression atmosphérique un flacon de ', T('v'), ' contenant ', T('m'), ' d’un liquide pur. Le thermomètre indique ', T('lue'), ' pendant l’ébullition, avec une précision de ', T('prec'), '. La température d’ébullition de référence ', c.de, ' est ', T('ref'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’écart entre la valeur lue et la valeur de référence ?'], utiles: ['lue', 'ref'], raisons: { m: raisons.m, v: raisons.v, prec: raisons.prec },
+        cherche: { bonne: 'L’écart entre la valeur lue et la référence (en °C)', faux: ['La masse de liquide qui s’est évaporée pendant l’ébullition (en g)', 'La durée du chauffage nécessaire pour atteindre l’ébullition (en min)', 'La quantité d’énergie reçue par le liquide pendant l’ébullition (en kJ)'] },
+        manque: null, solution: { txt: 'écart = |valeur lue − référence|', val: Math.abs(p.lue - ref), u: '°C' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la plus haute valeur que peut avoir la vraie température ?'], utiles: ['lue', 'prec'], raisons: { m: raisons.m, v: raisons.v, ref: raisons.ref },
+        cherche: { bonne: 'La plus haute valeur possible de la vraie température (en °C)', faux: ['La plus haute valeur possible de la masse de liquide dans le flacon (en g)', 'La température qu’atteindrait la vapeur si on continuait de chauffer (en °C)', 'La différence entre la plus haute et la plus basse valeur du tableau (en °C)'] },
+        manque: null, solution: { txt: 'valeur lue + précision', val: p.lue + p.prec, u: '°C' } };
+    }),
+  },
+  {
+    id: 'pur2gt-sapp-saumure', domaine: 'Corps purs et mélanges (2GT)', titre: 'Une eau qui bout trop haut', noms: ['Écart avec l’eau pure', 'Plus basse valeur possible de la température'],
+    gen: () => ({ lue: tire([101.5, 102, 102.5, 103]), prec: tire([0.5, 0.5, 1]), sel: tire([50, 100, 150]), V: tire([250, 500, 1000]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        lue: tok(`${nb(p.lue, 1)}\u00a0°C`, 'Température lue pendant l’ébullition', p.lue, '°C'),
+        ref: tok('100 °C', 'Température d’ébullition de référence de l’eau pure', 100, '°C'),
+        prec: tok(`± ${nb(p.prec, 1)}\u00a0°C`, 'Précision du thermomètre', p.prec, '°C'),
+        sel: tok(`${p.sel}\u00a0g`, 'Masse de sel dissous', p.sel / 1000, 'kg'),
+        V: tok(`${p.V}\u00a0mL`, 'Volume de liquide', p.V / 1000, 'L'),
+      };
+      const raisons = { sel: 'La masse de sel dissous n’entre pas dans le calcul d’un écart ou d’une zone de valeurs : on exploite seulement les températures.', V: 'Le volume de liquide ne change pas la température d’ébullition lue : il n’intervient pas ici.', prec: 'La précision sert à décider si la valeur est compatible ; pour calculer un simple écart, on ne l’utilise pas.', ref: 'La référence sert à comparer ; la plus basse valeur de la vraie température ne dépend que de la valeur lue et de la précision.' };
+      const debut = ['Dans un laboratoire, on fait bouillir ', T('V'), ' d’une eau dans laquelle on a dissous ', T('sel'), ' de sel. À la pression atmosphérique, le thermomètre indique ', T('lue'), ' pendant l’ébullition, avec une précision de ', T('prec'), '. La température d’ébullition de référence de l’eau pure est ', T('ref'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’écart entre la valeur lue et la référence de l’eau pure ?'], utiles: ['lue', 'ref'], raisons: { sel: raisons.sel, V: raisons.V, prec: raisons.prec },
+        cherche: { bonne: 'L’écart entre la valeur lue et 100 °C (en °C)', faux: ['L’énergie qu’il faut apporter pour vaporiser toute l’eau salée (en kJ)', 'La masse d’eau qui s’est évaporée depuis le début de l’ébullition (en g)', 'La température qu’aurait l’eau pure à la même pression (en °C)'] },
+        manque: null, solution: { txt: 'écart = valeur lue − référence', val: p.lue - 100, u: '°C' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la plus basse valeur que peut avoir la vraie température ?'], utiles: ['lue', 'prec'], raisons: { sel: raisons.sel, V: raisons.V, ref: raisons.ref },
+        cherche: { bonne: 'La plus basse valeur possible de la vraie température (en °C)', faux: ['La valeur de la température d’ébullition de l’eau pure donnée en référence (en °C)', 'La température du liquide avant de commencer à le chauffer (en °C)', 'La plus basse température qu’atteindra le liquide en refroidissant (en °C)'] },
+        manque: null, solution: { txt: 'valeur lue − précision', val: p.lue - p.prec, u: '°C' } };
+    }),
   },
 ];
 
