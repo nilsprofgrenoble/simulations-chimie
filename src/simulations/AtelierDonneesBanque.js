@@ -4055,6 +4055,62 @@ export const ENONCES = [
         manque: null, solution: { txt: 'i = frac(d|N), puis a = frac(λ × D|i)', val: p.a, u: 'mm' } };
     },
   },
+  // ───────────────────────────── Interférences de deux ondes (TG, sim 183) : cuve à ondes, haut-parleurs
+  {
+    id: 'itf-sapp-cuve', domaine: 'Interférences de deux ondes : conditions constructives et destructives', titre: 'Deux vibreurs dans une cuve à ondes', noms: ['Différence de chemin en un point M', 'Déphasage entre les deux ondes en M'],
+    gen: () => {
+      const s = tire([5, 6, 8]), f = tire([16, 20, 25]), r1 = tire([12.4, 14.0, 15.6, 17.2, 18.8]), dl = tire([1.5, 2.0, 2.5, 3.0, 3.5, 4.0]);
+      return { s, f, r1, r2: Math.round((r1 + dl) * 10) / 10, prof: tire([4, 5, 6]), amp: tire([1.0, 1.5, 2.0]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        s: tok(`${p.s} cm`, 'Distance entre les deux vibreurs', p.s, 'cm'),
+        f: tok(`${p.f} Hz`, 'Fréquence du générateur', p.f, 'Hz'),
+        v: tok('0,40 m/s', 'Célérité des ondes à la surface de l’eau', 0.4, 'm/s'),
+        r1: tok(`${nb(p.r1, 1)} cm`, 'Distance du point M au vibreur S₁', p.r1, 'cm'),
+        r2: tok(`${nb(p.r2, 1)} cm`, 'Distance du point M au vibreur S₂', p.r2, 'cm'),
+        prof: tok(`${p.prof} mm`, 'Profondeur de l’eau', p.prof, 'mm'),
+        amp: tok(`${nb(p.amp, 1)} mm`, 'Amplitude de chaque onde', p.amp, 'mm'),
+      };
+      const dl = p.r2 - p.r1, lam = 0.4 / p.f * 100, dphi = 2 * Math.PI * dl / lam;
+      const debut = ['Dans une cuve à ondes, deux vibreurs ponctuels S₁ et S₂, distants de ', T('s'), ', sont reliés au même générateur de fréquence ', T('f'), '. Les ondes se propagent à ', T('v'), ' dans une eau de profondeur ', T('prof'), ', avec une amplitude de ', T('amp'), ' chacune. Un point M est à ', T('r1'), ' de S₁ et à ', T('r2'), ' de S₂. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la différence de chemin δ au point M ?'],
+        utiles: ['r1', 'r2'], raisons: { s: 'L’écartement des vibreurs ne sert pas à calculer δ : il suffit des deux distances à M.', f: 'La fréquence n’intervient pas dans une différence de distances.', v: 'La célérité servirait à calculer un retard ou une longueur d’onde, pas une différence de distances.', prof: 'La profondeur de l’eau ne joue aucun rôle dans le calcul d’une différence de chemin.', amp: 'L’amplitude des ondes n’intervient pas dans une différence de distances.' },
+        cherche: { bonne: 'La différence de chemin δ = |r₂ − r₁| (en cm)', faux: ['Le retard τ de la deuxième onde (en ms)', 'La longueur d’onde λ (en cm)', 'La somme des deux distances parcourues (en cm)'] },
+        manque: null, solution: { txt: 'δ = |r₂ − r₁|', val: dl, u: 'cm' } };
+      return { tokens, derivees: [{ id: 'dl', nom: 'Différence de chemin au point M', expr: 'δ = |r₂ − r₁|', val: dl, u: 'cm' }, { id: 'lam', nom: 'Longueur d’onde des ondes', expr: 'λ = frac(v|f)', val: lam, u: 'cm' }], texte: [...debut, 'Quel est le déphasage Δφ entre les deux ondes en M ?'],
+        utiles: ['r1', 'r2', 'v', 'f'], raisons: { s: 'L’écartement des vibreurs n’intervient pas : les distances r₁ et r₂ à M sont déjà données.', prof: 'La célérité est donnée : la profondeur n’est pas nécessaire.', amp: 'Le déphasage ne dépend pas de l’amplitude des ondes.' },
+        cherche: { bonne: 'Le déphasage Δφ en M (en rad)', faux: ['L’amplitude de la somme des deux ondes (en mm)', 'La différence de chemin δ seule (en cm)', 'Le nombre de lignes d’interférence (sans unité)'] },
+        manque: null, solution: { txt: 'Δφ = 2π × frac(δ|λ), avec δ = |r₂ − r₁| et λ = frac(v|f)', val: dphi, u: 'rad' } };
+    },
+  },
+  {
+    id: 'itf-sapp-hp', domaine: 'Interférences de deux ondes : conditions constructives et destructives', titre: 'Deux haut-parleurs et un auditeur', noms: ['Longueur d’onde du son', 'Nature de l’interférence en P'],
+    gen: () => {
+      const f = tire([340, 425, 500, 680, 850]), lam = 340 / f, m = tire([2, 3, 4, 5]), d1 = tire([2.5, 3.0, 3.5, 4.0]);
+      return { f, a: tire([1.5, 2.0, 2.5, 3.0, 3.5].filter(x => x > m * lam / 2 + 0.3)), d1, d2: Math.round((d1 + m * lam / 2) * 100) / 100, W: tire([10, 20, 30]) };      // la différence de chemin reste inférieure à l’écartement des haut-parleurs
+    },
+    build: (p, q) => {
+      const tokens = {
+        f: tok(`${p.f} Hz`, 'Fréquence du son émis', p.f, 'Hz'),
+        v: tok('340 m/s', 'Célérité du son dans l’air', 340, 'm/s'),
+        a: tok(`${nb(p.a, 2)} m`, 'Distance entre les deux haut-parleurs', p.a, 'm'),
+        d1: tok(`${nb(p.d1, 2)} m`, 'Distance de l’auditeur au haut-parleur HP₁', p.d1, 'm'),
+        d2: tok(`${nb(p.d2, 2)} m`, 'Distance de l’auditeur au haut-parleur HP₂', p.d2, 'm'),
+        W: tok(`${p.W} W`, 'Puissance électrique de chaque haut-parleur', p.W, 'W'),
+      };
+      const lam = 340 / p.f, dl = p.d2 - p.d1, ratio = dl / lam;
+      const debut = ['Deux haut-parleurs identiques, de puissance ', T('W'), ' chacun et distants de ', T('a'), ', sont alimentés en phase par le même générateur et émettent un son pur de fréquence ', T('f'), ' ; la célérité du son est ', T('v'), '. Un auditeur est à ', T('d1'), ' de HP₁ et à ', T('d2'), ' de HP₂. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la longueur d’onde du son ?'],
+        utiles: ['v', 'f'], raisons: { a: 'La distance entre les haut-parleurs ne sert pas à calculer la longueur d’onde.', d1: 'Les distances de l’auditeur aux haut-parleurs ne servent pas à calculer λ.', d2: 'Les distances de l’auditeur aux haut-parleurs ne servent pas à calculer λ.', W: 'La puissance électrique n’intervient pas dans la longueur d’onde.' },
+        cherche: { bonne: 'La longueur d’onde λ du son (en m)', faux: ['La différence de chemin δ (en m)', 'La période T du son (en s)', 'Le nombre de lignes de silence (sans unité)'] },
+        manque: null, solution: { txt: 'λ = frac(v|f)', val: lam, u: 'm' } };
+      return { tokens, derivees: [{ id: 'lam', nom: 'Longueur d’onde du son', expr: 'λ = frac(v|f)', val: lam, u: 'm' }, { id: 'dl', nom: 'Différence de chemin en P', expr: 'δ = d₂ − d₁', val: dl, u: 'm' }], texte: [...debut, 'L’interférence en P est-elle constructive ou destructive ?'],
+        utiles: ['d1', 'd2', 'v', 'f'], raisons: { a: 'La distance entre les haut-parleurs est déjà prise en compte dans d₁ et d₂ : elle ne sert plus.', W: 'La puissance ne décide pas de la nature de l’interférence.' },
+        cherche: { bonne: 'Le nombre de longueurs d’onde dans δ (sans unité)', faux: ['Le niveau d’intensité sonore reçu en P (en dB)', 'La période T du son, calculée à partir de f (en s)', 'Le déphasage exprimé en degrés (sans conversion)'] },
+        manque: null, solution: { txt: 'frac(δ|λ), avec δ = d₂ − d₁ et λ = frac(v|f) : entier, constructive ; demi-entier, destructive', val: ratio, u: '' } };
+    },
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)

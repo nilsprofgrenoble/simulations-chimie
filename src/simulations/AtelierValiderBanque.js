@@ -3790,6 +3790,26 @@ export const PLAUSIBLES = [
       F('incohérent : a devrait être égale à l’interfrange mesurée', 'Les grandeurs a et i sont liées par i = frac(λ × D|a), mais n’ont pas de raison d’être égales : a est la distance entre les trous, i celle entre les franges.'),
       F('incohérent : il fallait diviser d par 7, car il y a 7 franges sur l’écran', 'Sept franges brillantes consécutives (extrémités comprises) sont séparées par 6 interfranges : diviser par 6 est correct.'),
     ] }),
+  P({ id: 'itf-val-delta', domaine: 'Interférences de deux ondes : conditions constructives et destructives', niveau: 2, titre: 'Une différence de chemin trop grande', plausible: false,
+    enonce: 'Dans une cuve à ondes, deux vibreurs sont distants de s = 6,0 cm. En un point M, un élève mesure r₁ = 14,2 cm et r₂ = 22,6 cm, puis calcule la différence de chemin δ = r₂ − r₁ = 8,4 cm.',
+    reperes: [['Différence de chemin', 'δ = |r₂ − r₁|'], ['Triangle S₁S₂M', 'un côté ne dépasse jamais la somme des deux autres : |r₂ − r₁| ≤ S₁S₂ = s'], ['Ordre de grandeur', 'δ est compris entre 0 et s (ici entre 0 et 6,0 cm)']],
+    ver: 'Dans le triangle S₁S₂M, la différence de deux côtés ne peut pas dépasser le troisième : δ ≤ s = 6,0 cm. Un résultat de 8,4 cm est impossible : une des deux distances est mal lue (ou un vibreur mal repéré).',
+    q2: 'Que penser de ces mesures ?',
+    options: [
+      V('impossibles : δ dépasse s, une distance est mal lue', 'Avec s = 6,0 cm, δ ne peut pas dépasser 6,0 cm quelle que soit la position de M. Il faut revérifier r₁ et r₂.'),
+      F('plausibles : r₂ peut être aussi grand que l’on veut, donc δ aussi', 'Si M s’éloigne, r₁ et r₂ augmentent ensemble : leur différence reste bornée par s.'),
+      F('plausibles : δ est de l’ordre de grandeur de r₁, donc cohérent', 'δ n’a pas l’ordre de grandeur de r₁ (14 cm) : c’est l’écart entre les deux trajets, borné par s.'),
+    ] }),
+  P({ id: 'itf-val-silence', domaine: 'Interférences de deux ondes : conditions constructives et destructives', niveau: 1, titre: 'Le premier point de silence entre deux haut-parleurs', plausible: true,
+    enonce: 'Deux haut-parleurs en phase émettent un son pur de fréquence 680 Hz (célérité du son : 340 m/s). Un élève cherche le premier point de silence en s’éloignant de l’axe de symétrie et trouve une différence de chemin δ = 0,25 m.',
+    reperes: [['Longueur d’onde', 'λ = frac(v|f)'], ['Silence : interférence destructive', 'δ = (k + ½)λ, avec k entier'], ['Premier silence depuis l’axe', 'k = 0']],
+    ver: 'λ = frac(340|680) = 0,50 m. Le premier silence (k = 0) correspond à δ = ½λ = 0,25 m : la valeur trouvée est exacte.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('plausible : λ = 0,50 m, premier silence à δ = λ/2 = 0,25 m', 'Avec λ = 0,50 m, la condition destructive δ = (k + ½)λ donne 0,25 m pour k = 0 : c’est le premier point de silence.'),
+      F('pas plausible : au silence, δ doit être un nombre entier de λ', 'Un nombre entier de λ donne une interférence constructive (son fort). Le silence correspond à un nombre demi-entier de λ.'),
+      F('pas plausible : au silence, il faut δ = 0', 'δ = 0 est l’axe de symétrie, où les deux sons arrivent en phase : c’est le maximum de son, pas un silence.'),
+    ] }),
 ];
 
 // ─────────────── 2. « Compatible avec la référence ? » ───────────────
