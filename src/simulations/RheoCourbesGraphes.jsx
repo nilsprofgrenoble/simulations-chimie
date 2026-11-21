@@ -155,9 +155,14 @@ export function FViscosimetre({ maxWidth = 320, rot = 0.3 }) {
       {/* plaque fixe */}
       <rect x="66" y="158" width="168" height="16" rx="2" fill="#cbd5e1" stroke="#475569" strokeWidth="1.6" />
       <text x="150" y="192" fontSize="14" textAnchor="middle" fill={NOIR}>plaque fixe</text>
-      {/* rotation */}
-      <path d="M118 84 Q150 62 182 84" fill="none" stroke={ORANGE} strokeWidth={ep} strokeLinecap="round" />
-      <polyline points="172,76 183,84 170,88" fill="none" stroke={ORANGE} strokeWidth={Math.max(2.4, ep * 0.8)} strokeLinecap="round" strokeLinejoin="round" />
+      {/* rotation : arc + pointe pleine alignée sur la tangente de l'arc */}
+      <path d="M118 84 Q150 62 178 80" fill="none" stroke={ORANGE} strokeWidth={ep} strokeLinecap="round" />
+      {(() => {
+        const tx = 28 / Math.hypot(28, 18), ty = 18 / Math.hypot(28, 18), k = Math.max(1, ep / 3.2);
+        const bx = 178 + (ep / 2 + 2) * tx, by = 80 + (ep / 2 + 2) * ty; // pointe, juste après la fin de l'arc
+        const cx = bx - 13 * k * tx, cy = by - 13 * k * ty, nx = -ty, ny = tx, w = 6.5 * k;
+        return <polygon points={`${bx.toFixed(1)},${by.toFixed(1)} ${(cx + w * nx).toFixed(1)},${(cy + w * ny).toFixed(1)} ${(cx - w * nx).toFixed(1)},${(cy - w * ny).toFixed(1)}`} fill={ORANGE} />;
+      })()}
       <text x="106" y="80" fontSize="15" fontWeight="800" fill={ORANGE}>N</text>
       {/* légende échantillon */}
       <rect x="40" y="206" width="14" height="14" fill="#fde68a" stroke="#475569" />
