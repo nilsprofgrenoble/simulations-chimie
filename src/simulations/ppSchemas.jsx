@@ -23,25 +23,25 @@ const epais = J => 3 + Math.min(5, Math.abs(J) / 8000);
 // Bécher (liquide ou solide) avec plaque chauffante, pale et thermomètre.
 // montre : { T, Q, W, noms } ; Q et W en joules (reçus : > 0), T en °C. Sans valeur donnée : flèches seulement si montre.Q / montre.W vrais.
 export function SceneSysteme({ nom = 'eau', T, Q = 0, W = 0, montre = {}, aria }) {
-  const liquide = nom !== 'cuivre' && nom !== 'aluminium';
+  const liquide = nom === 'eau' || nom === 'huile', nomAff = { eau: 'eau', huile: 'huile', alu: 'aluminium', cuivre: 'cuivre' }[nom] || nom;
   const fond = nom === 'eau' ? '#bae6fd' : nom === 'huile' ? '#fde68a' : '#fed7aa';
   const hT = T == null ? 0.5 : Math.max(0, Math.min(1, (T - 0) / 100));
   return (
-    <svg viewBox="0 0 420 300" role="img" aria-label={aria || `Un récipient contient ${nom}. Il repose sur une plaque chauffante qui peut transférer de l’énergie par chaleur Q ; une pale peut brasser et transférer de l’énergie par travail W. Un thermomètre indique la température${T != null ? ` : ${nbf(T, 1)} °C` : ''}.`} style={SVG_STYLE}>
+    <svg viewBox="0 0 420 300" role="img" aria-label={aria || `Le système est ${nomAff}. Il repose sur une plaque chauffante qui peut transférer de l’énergie par chaleur Q ; une pale peut brasser et transférer de l’énergie par travail W. Un thermomètre indique la température${T != null ? ` : ${nbf(T, 1)} °C` : ''}.`} style={SVG_STYLE}>
       <rect x={96} y={78} width={178} height={148} rx={10} fill="none" stroke={COL.bleu} strokeWidth={3} strokeDasharray="8 6"/>
-      <Tx x={104} y={72} s={17} c={COL.bleu}>système : {nom}</Tx>
+      <Tx x={104} y={72} s={17} c={COL.bleu}>système : {nomAff}</Tx>
       <rect x={110} y={100} width={150} height={118} fill={liquide ? fond : '#fdba74'} stroke={COL.paroi} strokeWidth={4}/>
       {liquide && <line x1={110} y1={100} x2={260} y2={100} stroke={COL.paroi} strokeWidth={3}/>}
       {montre.W && !liquide && <g>
-        <Fleche x1={334} y1={160} x2={266} y2={160} c={COL.vert} w={epais(W)} tete={14}/>
-        <Tx x={300} y={186} ancre="middle" c={COL.vert}>W{W !== 0 ? ` = ${kJ(W)}` : ''}</Tx>
+        <Fleche x1={266} y1={22} x2={266} y2={98} c={COL.vert} w={epais(W)} tete={16}/>
+        <Tx x={254} y={36} ancre="end" c={COL.vert}>W{W !== 0 ? ` = ${kJ(W)}` : ''}</Tx><Tx x={254} y={55} ancre="end" s={15} w={600} c={COL.vert}>(martelage)</Tx>
       </g>}
       {montre.W && liquide && <g>
-        <line x1={228} y1={34} x2={228} y2={192} stroke={COL.gris} strokeWidth={5}/>
-        <rect x={203} y={186} width={50} height={9} fill={COL.gris}/>
-        <path d="M 135 150 A 50 22 0 0 1 235 150" fill="none" stroke={COL.vert} strokeWidth={epais(W)}/>
-        <polygon points="235,150 223,140 225,156" fill={COL.vert}/>
-        <Tx x={180} y={122} ancre="middle" c={COL.vert}>W{W !== 0 ? ` = ${kJ(W)}` : ''}</Tx>
+        <line x1={244} y1={34} x2={244} y2={192} stroke={COL.gris} strokeWidth={5}/>
+        <rect x={219} y={186} width={50} height={9} fill={COL.gris}/>
+        <path d="M 128 152 A 40 20 0 0 1 202 150" fill="none" stroke={COL.vert} strokeWidth={epais(W)}/>
+        <polygon points="212,152 194,138 192,160" fill={COL.vert}/>
+        <Tx x={170} y={124} ancre="middle" c={COL.vert}>W{W !== 0 ? ` = ${kJ(W)}` : ''}</Tx>
       </g>}
       <rect x={84} y={226} width={202} height={22} fill="#64748b" stroke={COL.paroi} strokeWidth={3}/>
       <Tx x={185} y={243} ancre="middle" s={17} c="#fff" halo={false}>plaque chauffante</Tx>
