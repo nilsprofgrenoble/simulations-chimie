@@ -145,3 +145,28 @@ export const COULEURS = {
   glycerol: "#1d4ed8", shampooing: "#ea580c", fecule: "#15803d", boue: "#7c3aed", ketchup: "#dc2626", mystere: "#475569",
   A: "#1d4ed8", B: "#ea580c", modele: "#16a34a",
 };
+
+// ---------------------------------------------------------------------------
+// Données de rhéomètre SIMULÉES (très bas gradients) pour les peintures A et B.
+// Le viscosimètre de Nils ne descend pas sous 1 s⁻¹ : on complète par des points « comme le ferait un rhéomètre »,
+// construits à partir d'un modèle cohérent avec les mesures réelles à γ̇ ≥ 1 s⁻¹ (écart < 3 %) et d'un petit bruit.
+//   B : seuil d'écoulement (τ₀ = 13,5 Pa) → la contrainte tend vers un palier quand γ̇ → 0.
+//   A : pas de seuil → τ tend vers 0 (palier newtonien de viscosité η₀ aux très bas gradients).
+// ---------------------------------------------------------------------------
+export const GAMMAS_RHEO = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5];
+const BRUIT = [0.012, -0.015, 0.009, -0.011, 0.014, -0.008, 0.01, -0.012, 0.006];
+const PARAMS_RHEO = {
+  A: { tau0: 0, K: 18.43, n: 0.47, eta0: 400 }, // η₀ en Pa·s
+  B: { tau0: 13.5, K: 15.36, n: 0.47, eta0: null },
+};
+export function tauRheometre(cle) {
+  const { tau0, K, n, eta0 } = PARAMS_RHEO[cle];
+  return GAMMAS_RHEO.map((g, i) => {
+    const t = tauHB(g, { tau0, K, n });
+    const tc = eta0 ? t / (1 + t / g / eta0) : t;
+    return Number((tc * (1 + BRUIT[i])).toPrecision(3));
+  });
+}
+// Palier lu sur la courbe d'écoulement : moyenne des trois points aux plus bas gradients.
+export const palierLu = (cle) => { const t = tauRheometre(cle).slice(0, 3); return t.reduce((s, v) => s + v, 0) / t.length; };
+export const SEUIL_B_LU = Number(palierLu('B').toPrecision(3));

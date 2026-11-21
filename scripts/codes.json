@@ -1908,5 +1908,7 @@
  "77:plausible:rhc-val-conversion": "VAL517",
  "77:plausible:rhc-val-newtonienne": "VAL518",
  "77:plausible:rhc-val-thixo-ok": "VAL519",
- "36:rhc-calcul": "REA133"
+ "36:rhc-calcul": "REA133",
+ "37:prevoir:rhc-ana-palier": "ANA765",
+ "77:plausible:rhc-val-seuil-extrapole": "VAL520"
 }

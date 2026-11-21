@@ -9,9 +9,9 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
   BoutonsModes, LigneMesure, fmt, lireNombre, proche, IndiceDefi, avecIndices } from "../commun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
-import { Graphe, Legende, FCisaillement, FViscosimetre, FTroisComportements, FSeuil, FBoucle } from "./RheoCourbesGraphes";
+import { Graphe, Legende, FCisaillement, FViscosimetre, FTroisComportements, FSeuil, FSeuilBas, FBoucle } from "./RheoCourbesGraphes";
 import {
-  PRODUITS, COULEURS, GAMMAS_PEINTURES, PEINTURES_MESUREES, tauHB, etaHB, typeDe, nomDuType, TYPES, rampe, tauMesure,
+  PRODUITS, COULEURS, GAMMAS_PEINTURES, PEINTURES_MESUREES, tauHB, etaHB, typeDe, nomDuType, TYPES, rampe, tauMesure, tauRheometre, GAMMAS_RHEO, SEUIL_B_LU,
   ajusterHB, ecartRelatif, tirerFluideMystere, ordreOptions, gradientsLog,
 } from "./rheoCourbesModele";
 
@@ -22,15 +22,15 @@ const NB = " ";
 const GD = <mover><mi>γ</mi><mo>˙</mo></mover>;
 const FLUIDES = { ...PRODUITS, mystere: { nom: "Fluide X", tau0: 20, K: 1.5, n: 0.55, type: "plastique-non-ideal", thixo: 0 } };
 const GRILLE_LIN = Array.from({ length: 61 }, (_, i) => i * 5); // 0 … 300 s⁻¹
-const GRILLE_LOG = gradientsLog(0.1, 1000, 70);
+const GRILLE_LOG = gradientsLog(0.001, 1000, 90);
 const V = (s) => avecIndices(s);
 const sig3 = (x) => String(+x.toPrecision(3)).replace(".", ",");
 
 // ---------------------------------------------------------------------------
 // Courbes d'un fluide du modèle (contrainte en Pa, viscosité en mPa·s)
 // ---------------------------------------------------------------------------
-function courbesModele(p, log) {
-  const grille = log ? GRILLE_LOG : GRILLE_LIN;
+function courbesModele(p, log, bas = false) {
+  const grille = (log ? GRILLE_LOG : GRILLE_LIN).filter((g) => log && !bas ? g >= 0.1 : true);
   const tau = grille.map((g) => [g, tauHB(g, p)]);
   const eta = grille.filter((g) => g >= (log ? 0.1 : 1)).map((g) => [g, etaHB(g, p) * 1000]);
   return { tau, eta };
@@ -109,6 +109,37 @@ function SeriesPeintures(d, avecRetour) {
   return s;
 }
 
+
+// ---------------------------------------------------------------------------
+// Panneau « rhéomètre » : mesures réelles du viscosimètre (γ̇ ≥ 1 s⁻¹) + points SIMULÉS aux très bas gradients.
+// ---------------------------------------------------------------------------
+const TAU_RHEO = { A: tauRheometre("A"), B: tauRheometre("B") };
+const nombreFr = (x, d = 1) => x.toFixed(d).replace(".", ",");
+function PanneauRheometre({ avecA }) {
+  const cles = avecA ? ["A", "B"] : ["B"];
+  const sTau = [], sEta = [];
+  cles.forEach((k) => {
+    const reel = GAMMAS_PEINTURES.map((g, i) => [g, (PEINTURES_MESUREES[k].aller[i] / 1000) * g]);
+    const sim = GAMMAS_RHEO.map((g, i) => [g, TAU_RHEO[k][i]]);
+    sTau.push({ pts: reel, c: COULEURS[k], marq: true }, { pts: sim, c: COULEURS[k], marq: true, tirets: true });
+    sEta.push({ pts: reel.map(([g, t]) => [g, t / g]), c: COULEURS[k], marq: true }, { pts: sim.map(([g, t]) => [g, t / g]), c: COULEURS[k], marq: true, tirets: true });
+  });
+  return (
+    <div>
+      <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2, color: KIT.txt }}>Courbe d’écoulement aux très bas gradients (échelle logarithmique en γ̇)</div>
+      <Graphe aria="Courbe d'écoulement des peintures aux très bas gradients : contrainte en fonction du gradient, échelle logarithmique en gradient" series={sTau}
+        xLog x0={0.001} x1={10} y0={0} y1={60} xTitre="γ̇ (s⁻¹)" yTitre="τ (Pa)" />
+      <div style={{ fontWeight: 700, fontSize: 14, margin: "10px 0 2px", color: KIT.txt }}>Courbe de viscosité (échelles logarithmiques)</div>
+      <Graphe aria="Courbe de viscosité des peintures aux très bas gradients : viscosité en fonction du gradient, échelles logarithmiques" series={sEta}
+        xLog yLog x0={0.001} x1={1000} y0={0.1} y1={100000} xTitre="γ̇ (s⁻¹)" yTitre="η (Pa·s)" />
+      <Legende items={[
+        ...cles.map((k) => ({ c: COULEURS[k], nom: `Peinture ${k} : viscosimètre (mesures réelles)` })),
+        ...cles.map((k) => ({ c: COULEURS[k], nom: `Peinture ${k} : rhéomètre (points simulés)`, tirets: true })),
+      ]} />
+    </div>
+  );
+}
+
 function PanneauPeintures({ retour, logX, setLogX, logY, setLogY, avecLog }) {
   const dt = useMemo(() => donneesPeintures(retour).tau, [retour]);
   const de = useMemo(() => donneesPeintures(retour).eta, [retour]);
@@ -144,9 +175,10 @@ function Hypotheses() {
       {puces(
         <>Le modèle des courbes est celui de <strong>Herschel-Bulkley</strong> : τ = τ₀ + K·γ̇<sup>n</sup>. Il décrit les produits <em>stationnaires</em> (on attend que la mesure se stabilise à chaque palier). Les valeurs des produits (glycérol, shampooing, boue…) sont des ordres de grandeur illustratifs, pas des données de fabricant.</>,
         <>Écoulement <strong>laminaire et homogène</strong>, sans glissement sur les parois, <strong>température constante</strong> : la viscosité d’un produit réel dépend aussi de la température.</>,
-        <>Le <strong>seuil d’écoulement est apparent</strong> : un produit réel garde une viscosité très grande, mais finie, sous le seuil. Sa valeur dépend de la technique de mesure et des gradients atteints ; ici, elle est <strong>extrapolée</strong> vers γ̇ → 0, car le viscosimètre ne descend pas sous 1 s⁻¹.</>,
+        <>Le <strong>seuil d’écoulement est apparent</strong> : un produit réel garde une viscosité très grande, mais finie, sous le seuil. Sa valeur dépend de la technique de mesure et des gradients atteints ; avec le viscosimètre seul (pas sous 1 s⁻¹), elle ne peut être qu’<strong>extrapolée</strong> vers γ̇ → 0 ; aux très bas gradients, on la lit sur un <strong>palier</strong> de contrainte.</>,
         <>La <strong>thixotropie</strong> est décrite par un seul paramètre de structure (destruction proportionnelle à γ̇, reconstruction lente au repos) : une représentation simple, qui reproduit la boucle aller-retour sans prétendre décrire tous les produits.</>,
         <>Les mesures des peintures A et B sont <strong>réelles</strong> (viscosimètre Lamy RM 100+, mobile MSR3, température ambiante ≈ 22,5 °C), à raison d’une mesure par palier de 2 s : aucune incertitude n’est annoncée, les écarts de quelques pour cent ne sont pas interprétés.</>,
+        <>Les points de <strong>rhéomètre</strong> (γ̇ de 0,001 à 0,5 s⁻¹) sont <strong>simulés</strong> : inventés à partir d’un modèle cohérent avec les mesures réelles, avec un petit bruit. Ils illustrent ce que donnerait un rhéomètre ; ce ne sont pas des mesures.</>,
       )}
     </div>
   );
@@ -164,6 +196,7 @@ function Exploration() {
   const [logX, setLogX] = useState(false);
   const [logY, setLogY] = useState(false);
   const [gi, setGi] = useState(4);
+  const [rheo, setRheo] = useState(false);
   const [ouvReglages, setOuvReglages] = useState(false);
   const [ouvEssayer, setOuvEssayer] = useState(false);
   const [ouvRetenir, setOuvRetenir] = useState(false);
@@ -173,9 +206,11 @@ function Exploration() {
     setP(k === "A" || k === "B" ? { tau0: 0, K: 10, n: 0.8, thixo: 0 } : { ...PRODUITS[k] });
   };
   const g = GAMMAS_PEINTURES[gi];
-  const modele = useMemo(() => courbesModele(p, logX), [p, logX]);
+  const bas = mesure && rheo;
+  const logXe = logX || bas;
+  const modele = useMemo(() => courbesModele(p, logXe, bas), [p, logXe, bas]);
   const r = useMemo(() => rampe(p), [p]);
-  const xr = logX ? { x0: 0.1, x1: 1000 } : { x0: 0, x1: 300 };
+  const xr = logXe ? { x0: bas ? 0.001 : 0.1, x1: 1000 } : { x0: 0, x1: 300 };
   const col = mesure ? COULEURS[prod] : COULEURS[prod] || COULEURS.mystere;
 
   const sTau = [], sEta = [];
@@ -184,6 +219,11 @@ function Exploration() {
     sTau.push({ pts: d.tau[prod + "aller"], c: col, marq: true });
     sEta.push({ pts: d.eta[prod + "aller"], c: col, marq: true });
     if (boucle) { sTau.push({ pts: d.tau[prod + "retour"], c: col, marq: true, tirets: true }); sEta.push({ pts: d.eta[prod + "retour"], c: col, marq: true, tirets: true }); }
+    if (bas) {
+      const sim = GAMMAS_RHEO.map((gg, i) => [gg, TAU_RHEO[prod][i]]);
+      sTau.push({ pts: sim, c: "#0f172a", marq: true, tirets: true });
+      sEta.push({ pts: sim.map(([gg, t]) => [gg, (t / gg) * 1000]), c: "#0f172a", marq: true, tirets: true });
+    }
     sTau.push({ pts: modele.tau, c: COULEURS.modele, tirets: true, ep: 2.2 });
     sEta.push({ pts: modele.eta, c: COULEURS.modele, tirets: true, ep: 2.2 });
   } else {
@@ -195,8 +235,9 @@ function Exploration() {
       sEta.push({ pts: pt.map(([x, t]) => [x, (t / x) * 1000]), c: "#0f172a", marq: true, ep: 1.6 }, { pts: pr.map(([x, t]) => [x, (t / x) * 1000]), c: "#ea580c", marq: true, tirets: true, ep: 1.6 });
     }
   }
-  const aller = mesure ? tauMesure(prod, "aller") : null;
-  const ecart = mesure ? ecartRelatif(GAMMAS_PEINTURES, aller, p) : null;
+  const aller = mesure ? [...(bas ? TAU_RHEO[prod] : []), ...tauMesure(prod, "aller")] : null;
+  const gammasAj = bas ? [...GAMMAS_RHEO, ...GAMMAS_PEINTURES] : GAMMAS_PEINTURES;
+  const ecart = mesure ? ecartRelatif(gammasAj, aller, p) : null;
   const comportement = nomDuType(typeDe(p)) + (p.thixo > 0 && !mesure ? " · thixotrope" : "");
   const maj = (cle) => (v) => setP((q) => ({ ...q, [cle]: v }));
   const resume = `τ₀ = ${fmt(p.tau0, 1)} Pa · K = ${fmt(p.K, 2)} · n = ${fmt(p.n, 2)}${mesure ? "" : ` · thixotropie ${fmt(p.thixo, 2)}`}`;
@@ -219,11 +260,12 @@ function Exploration() {
       </label>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "6px 0" }}>
         <button type="button" style={stylePetitBouton(boucle, "#ea580c")} aria-pressed={boucle} onClick={() => setBoucle(!boucle)}>Montée puis descente de γ̇ (aller-retour)</button>
-        <button type="button" style={stylePetitBouton(logX, "#334155")} aria-pressed={logX} onClick={() => setLogX(!logX)}>γ̇ en échelle logarithmique</button>
+        <button type="button" style={stylePetitBouton(logXe, "#334155")} aria-pressed={logXe} onClick={() => setLogX(!logX)}>γ̇ en échelle logarithmique</button>
         <button type="button" style={stylePetitBouton(logY, "#334155")} aria-pressed={logY} onClick={() => setLogY(!logY)}>η en échelle logarithmique</button>
+        {mesure && <button type="button" style={stylePetitBouton(rheo, "#0f172a")} aria-pressed={rheo} onClick={() => setRheo(!rheo)}>Ajouter les points de rhéomètre (simulés)</button>}
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 4 }}>
-        {mesure ? "Points : mesures réelles. Tirets verts : le modèle de Herschel-Bulkley que vous réglez." : "Courbe : le modèle. Avec l’aller-retour : points noirs à la montée, points orange creux à la descente."}
+        {mesure ? (bas ? "Points colorés : mesures réelles du viscosimètre. Points noirs en tirets : rhéomètre, SIMULÉ (aux très bas gradients). Tirets verts : le modèle que vous réglez." : "Points : mesures réelles. Tirets verts : le modèle de Herschel-Bulkley que vous réglez.") : "Courbe : le modèle. Avec l’aller-retour : points noirs à la montée, points orange creux à la descente."}
       </div>
       <Graphe aria="Courbe d'écoulement : contrainte en fonction du gradient" series={sTau} xLog={logX} {...xr} xTitre="γ̇ (s⁻¹)" yTitre="τ (Pa)"
         reperes={mesure ? [] : [{ x: g, y: tauHB(g, p), c: col }]} />
@@ -244,7 +286,7 @@ function Exploration() {
         {curseur("Indice n (sans unité)", p.n, maj("n"), 0.3, 1.6, 0.01, "n = 1 : newtonien · n < 1 : rhéofluidifiant · n > 1 : rhéoépaississant.")}
         {!mesure && curseur("Thixotropie (0 = aucune)", p.thixo, maj("thixo"), 0, 0.6, 0.05, "Active l’aller-retour : plus la valeur est grande, plus le retour passe sous l’aller.")}
         {mesure && (
-          <button type="button" style={styleBouton(false, "#16a34a")} onClick={() => { const a = ajusterHB(GAMMAS_PEINTURES, aller); setP({ tau0: a.tau0, K: +a.K.toFixed(2), n: +a.n.toFixed(2), thixo: 0 }); }}>
+          <button type="button" style={styleBouton(false, "#16a34a")} onClick={() => { const a = ajusterHB(gammasAj, aller); setP({ tau0: a.tau0, K: +a.K.toFixed(2), n: +a.n.toFixed(2), thixo: 0 }); }}>
             Ajuster automatiquement (courbe aller)
           </button>
         )}
@@ -475,8 +517,36 @@ export function SimulationRheoCourbes() {
         type: "num", q: "Rapport η(1 s⁻¹) / η(300 s⁻¹) de la peinture B", unite: "(sans unité)", vrai: 28000 / 816, tol: 0.05, affiche: (v) => fmt(v, 1), cs: 2,
         calcul: () => ["Données lues : η(1 s⁻¹) = 28 000 mPa·s et η(300 s⁻¹) = 816 mPa·s (même unité, le rapport n’a pas d’unité).", `Rapport = 28 000 ÷ 816 ≈ ${fmt(28000 / 816, 1)}.`],
         pieges: [[816 / 28000, "Vous avez inversé le rapport : il faut η à 1 s⁻¹ divisée par η à 300 s⁻¹."]],
-        expl: <>La viscosité de la peinture B est divisée par environ 34 entre 1 et 300 s⁻¹ (pour la A, par environ 21) : les deux peintures sont <strong>rhéofluidifiantes</strong>. La courbe de B ne part pas de l’origine : un <em>seuil apparent</em> de l’ordre de 13 Pa (extrapolé, à confirmer au rhéomètre) en ferait un plastique non idéal, alors que celui de A est faible.</>,
+        expl: <>La viscosité de la peinture B est divisée par environ 34 entre 1 et 300 s⁻¹ (pour la A, par environ 21) : les deux peintures sont <strong>rhéofluidifiantes</strong>. La courbe de B ne part pas de l’origine : un <em>seuil apparent</em> de l’ordre de 13 Pa (extrapolé : à confirmer aux très bas gradients, à l’étape suivante) en ferait un plastique non idéal, alors que celui de A est faible.</>,
         indice: "Lis les deux viscosités dans l’énoncé : « η(1 s⁻¹) = 28 000 mPa·s et η(300 s⁻¹) = 816 mPa·s ». Un rapport de deux grandeurs de même unité n’a pas d’unité.",
+      },
+    },
+    {
+      titre: "Descendre sous 1 s⁻¹ : le rhéomètre",
+      texte: <>
+        Ton viscosimètre ne descend pas sous 1 s⁻¹, alors qu’un <strong>rhéomètre</strong> peut aller jusqu’à 0,001 s⁻¹. Pour voir ce qui se passe aux très bas gradients, on complète les mesures réelles par des points de rhéomètre <strong>simulés</strong> (inventés, en tirets), cohérents avec elles. Pour la peinture B, la contrainte vaut {nombreFr(TAU_RHEO.B[0])}{NB}Pa à 0,001{NB}s⁻¹, {nombreFr(TAU_RHEO.B[1])}{NB}Pa à 0,002{NB}s⁻¹ et {nombreFr(TAU_RHEO.B[2])}{NB}Pa à 0,005{NB}s⁻¹.
+      </>,
+      tache: {
+        type: "num", q: "Palier de contrainte de la peinture B quand γ̇ tend vers 0 (moyenne des trois valeurs données)", unite: "Pa", vrai: SEUIL_B_LU, tol: 0.06, affiche: (v) => fmt(v, 1), cs: 3,
+        calcul: () => [`Moyenne = (${nombreFr(TAU_RHEO.B[0])} + ${nombreFr(TAU_RHEO.B[1])} + ${nombreFr(TAU_RHEO.B[2])}) ÷ 3 = ${nombreFr(SEUIL_B_LU)} Pa.`, "Cette valeur est le seuil d’écoulement apparent τ₀ de la peinture B."],
+        pieges: [[TAU_RHEO.B[0] + TAU_RHEO.B[1] + TAU_RHEO.B[2], "Vous avez additionné les trois valeurs : divisez par 3 pour la moyenne."], [0, "La contrainte ne tend pas vers zéro : la courbe reste sur un palier."]],
+        expl: <>Aux très bas gradients, la contrainte de B ne tend <strong>pas vers 0</strong> : elle reste sur un <strong>palier d’environ {fmt(SEUIL_B_LU, 0)}{NB}Pa</strong>. C’est la <strong>contrainte seuil</strong> apparente τ₀ : en dessous, la peinture ne coule pas, ce qui l’empêche de couler sur le mur ou de sédimenter dans le pot. Avec le seul viscosimètre, on ne pouvait que l’<em>extrapoler</em> : des seuils de 10 à 15 Pa ajustent aussi bien les mesures à γ̇ ≥ 1 s⁻¹.</>,
+        indice: "Additionne les trois contraintes, puis divise par 3. Le résultat est en Pa.",
+      },
+    },
+    {
+      titre: "Seuil ou pas ?",
+      retenirTitre: "Lire un seuil d’écoulement",
+      retenir: <>
+        <FSeuilBas />
+        {puces(<>Un <strong>seuil</strong> se lit aux <strong>très bas gradients</strong> : la contrainte cesse de baisser et reste sur un <strong>palier τ₀</strong>.</>, <>Sans seuil, τ tend vers <strong>0</strong> quand γ̇ tend vers 0.</>, <>Un viscosimètre qui ne descend pas sous 1 s⁻¹ ne donne qu’un seuil <strong>extrapolé</strong> ; un rhéomètre le <strong>mesure</strong>.</>)}
+      </>,
+      texte: <>La peinture A est maintenant tracée aussi : ses points de rhéomètre sont inventés comme ceux de B. Aux très bas gradients, sa contrainte vaut {nombreFr(TAU_RHEO.A[0], 2)}{NB}Pa à 0,001{NB}s⁻¹, {nombreFr(TAU_RHEO.A[1], 2)}{NB}Pa à 0,002{NB}s⁻¹ et {nombreFr(TAU_RHEO.A[2], 2)}{NB}Pa à 0,005{NB}s⁻¹. Regarde aussi la courbe de viscosité.</>,
+      tache: {
+        type: "qcm", q: "Que peut-on dire de la peinture A aux très bas gradients ?",
+        options: ["Sa contrainte tend vers 0 : pas de seuil d’écoulement", "Sa contrainte garde un palier non nul : elle a un seuil de 15 Pa", "Sa viscosité reste constante sur toute la plage de γ̇ mesurée", "Elle a le même seuil que la peinture B, car les deux sont rhéofluidifiantes"], bonne: 0,
+        indice: "Compare la peinture A à la B : que vaut τ pour A quand γ̇ devient très petit ? Reste-t-elle sur un palier ?",
+        expl: <>Pour A, τ continue de diminuer avec γ̇ et tend vers <strong>0</strong> : pas de seuil, et sa viscosité tend vers un palier aux très bas gradients. Pour B, la viscosité <strong>augmente sans limite</strong> quand γ̇ diminue (courbe de pente −1 en échelles logarithmiques : η = τ₀ / γ̇) : c’est la signature d’un seuil.</>,
       },
     },
     {
@@ -512,6 +582,7 @@ export function SimulationRheoCourbes() {
         {puces(
           <>Sur la courbe d’écoulement : droite par l’origine, newtonien ; courbe qui s’incurve vers le bas, pseudoplastique ; vers le haut, rhéoépaississant.</>,
           <>Une courbe qui ne part pas de l’origine : fluide plastique (idéal si la courbe est droite, non idéal sinon).</>,
+          <>Aux très bas gradients, un seuil se lit sur un palier de contrainte (τ ne tend pas vers 0).</>,
           <>Aller et retour non superposés : thixotrope.</>,
         )}
         Passe à l’exploration pour ajuster un modèle sur les mesures des peintures, ou au défi pour identifier un fluide mystère.
@@ -544,7 +615,8 @@ export function SimulationRheoCourbes() {
       return <PanneauFluide ids={ids} sel={fluide} setSel={setFluide} gi={gi} setGi={setGi} viscosite={e >= 3} />;
     }
     if (e === 6) return <PanneauFluide ids={["mystere"]} sel="mystere" setSel={() => {}} gi={giX} setGi={setGiX} viscosite anonyme mesureEta={false} />;
-    return <PanneauPeintures retour={e >= 8} logX={logX} setLogX={setLogX} logY={logY} setLogY={setLogY} avecLog={e >= 7} />;
+    if (e === 8 || e === 9) return <PanneauRheometre avecA={e >= 9} />;
+    return <PanneauPeintures retour={e >= 10} logX={logX} setLogX={setLogX} logY={logY} setLogY={setLogY} avecLog={e >= 7} />;
   };
 
   return (

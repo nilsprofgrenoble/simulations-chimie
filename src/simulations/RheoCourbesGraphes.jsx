@@ -55,7 +55,7 @@ export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y
       {tx.map((v, i) => (
         <g key={"x" + i}>
           <line x1={fx(v)} y1={T} x2={fx(v)} y2={T + H} stroke="#e2e8f0" />
-          <text x={fx(v)} y={T + H + 19} fontSize="16" textAnchor="middle" fill={KIT.txt2}>{etiquette(v)}</text>
+          <text x={fx(v)} y={T + H + 19} fontSize="16" textAnchor={fx(v) > L + W - 14 ? "end" : "middle"} fill={KIT.txt2}>{etiquette(v)}</text>
         </g>
       ))}
       {ty.map((v, i) => (
@@ -208,6 +208,29 @@ export function FSeuil() {
       <text x="204" y="117" fontSize="14" fontWeight="800" fill="#7c3aed">idéal</text>
       <text x="204" y="150" fontSize="14" fontWeight="800" fill={GRIS}>newtonien</text>
       <text x="14" y="212" fontSize="13.5" fill={NOIR}>sous τ₀ : le produit ne s’écoule pas</text>
+    </Svg>
+  );
+}
+
+// Carte : lire un seuil d'écoulement aux très bas gradients (échelle logarithmique en γ̇).
+export function FSeuilBas() {
+  const gx = (k) => 50 + ((k + 3) / 4) * 210; // k = log10(γ̇) de -3 à 1
+  const gy = (t) => 170 - (t / 60) * 140;
+  const B = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10].map((g) => [gx(Math.log10(g)), gy(13.5 + 15.4 * Math.pow(g, 0.47))]);
+  const A = [0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1, 3, 10].map((g) => { const t = 18.4 * Math.pow(g, 0.47); return [gx(Math.log10(g)), gy(t / (1 + t / g / 400))]; });
+  const pts = (l) => l.map((q) => `${q[0].toFixed(1)},${q[1].toFixed(1)}`).join(" ");
+  return (
+    <Svg aria="Courbe d'écoulement aux très bas gradients, en échelle logarithmique : la contrainte du fluide à seuil tend vers un palier non nul, celle du fluide sans seuil tend vers zéro" vb="0 0 300 222" maxWidth={320}>
+      <polyline points="50,20 50,170 262,170" fill="none" stroke={NOIR} strokeWidth="1.6" />
+      <polyline points={pts(B)} fill="none" stroke="#dc2626" strokeWidth="3" />
+      <polyline points={pts(A)} fill="none" stroke="#0369a1" strokeWidth="3" />
+      <line x1="50" y1={gy(13.5)} x2="262" y2={gy(13.5)} stroke={GRIS} strokeWidth="1.3" strokeDasharray="5 4" />
+      <text x="8" y={gy(13.5) + 5} fontSize="15" fontWeight="800" fill={NOIR}>τ₀</text>
+      <text x="14" y="16" fontSize="13.5" fill={KIT.txt2}>τ ↑</text>
+      <text x="150" y="192" fontSize="13.5" fill={NOIR}>γ̇ (échelle log) →</text>
+      <text x="58" y="38" fontSize="14" fontWeight="800" fill="#dc2626">avec seuil : palier τ₀</text>
+      <text x="58" y="58" fontSize="14" fontWeight="800" fill="#0369a1">sans seuil : τ → 0</text>
+      <text x="14" y="208" fontSize="13.5" fill={NOIR}>le seuil se lit là où τ cesse de baisser</text>
     </Svg>
   );
 }
