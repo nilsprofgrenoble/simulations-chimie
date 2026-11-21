@@ -84,7 +84,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
                   ...(x.e === 'partiel' ? { background: '#64748b', color: 'white' } : {}) }}>{x.e === 'partiel' ? 'en partie' : 'à venir'}</span>
                 {x.t}
                 {x.e === 'partiel' && x.reste && <span style={{ display: 'block', marginTop: 2, fontSize: 12 }}>Manque : {x.reste}</span>}
-                {x.e === 'partiel' && x.chap && <button onClick={() => allerChap(x.chap)} style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12, fontFamily: 'inherit', textDecoration: 'underline' }}>Voir ce qui existe ▶</button>}
+                {x.e === 'partiel' && x.chap && <button onClick={() => allerChap(x.chap)} style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12, fontFamily: 'inherit', textDecoration: 'underline' }}>Voir ce qui existe <span aria-hidden="true">▶</span></button>}
               </div>
             </li>
           );
@@ -96,7 +96,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
     <div key={k} role="heading" aria-level={4} style={{ gridColumn: '1 / -1', fontSize: 12.5, fontWeight: 800, color: VERT, paddingLeft: 2, marginTop: 4 }}>{g.sousEntete}</div>
   ) : (
     <div key={k} style={{ minWidth: 0 }}>
-      {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/>{g.chap && <button data-page-chapitre-lien={g.chap} onClick={() => allerChap(g.chap)} title="Simulations et exercices d’entraînement de ce chapitre" style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12.5, fontFamily: 'inherit', textDecoration: 'underline' }}>📚 Page du chapitre : simulations + exercices ▶</button>}</div>}
+      {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/>{g.chap && <button data-page-chapitre-lien={g.chap} onClick={() => allerChap(g.chap)} title="Simulations et exercices d’entraînement de ce chapitre" style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12.5, fontFamily: 'inherit', textDecoration: 'underline' }}><span aria-hidden="true">📚</span> Page du chapitre : simulations + exercices <span aria-hidden="true">▶</span></button>}</div>}
       {g.avenirItems ? avenirListe(g) : g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>}
     </div>
   );
