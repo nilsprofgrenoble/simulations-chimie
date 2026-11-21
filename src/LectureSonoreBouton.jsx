@@ -82,7 +82,6 @@ export function LectureSonoreBouton({ racine, simId }) {
     else if (p.bloc) { p.bloc.dataset.fondAvant = p.bloc.style.backgroundColor || ''; p.bloc.style.backgroundColor = FOND; contexte.current.precedent = p.bloc; }
   };
 
-  const arreter = () => { if (lecteur.current) lecteur.current.arreter(); effacer(); setEtat('arret'); };
 
   // Arrêts automatiques : sortie de l'étape ou de la simulation (le parent remonte le composant à chaque étape), onglet masqué
   useEffect(() => {
@@ -124,21 +123,25 @@ export function LectureSonoreBouton({ racine, simId }) {
     setEtat('lecture');
   };
 
-  const bouton = (actif) => ({ padding: '5px 12px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 13,
-    border: `1.5px solid ${actif ? '#0284c7' : '#cbd5e1'}`, background: actif ? '#0284c7' : 'white', color: actif ? 'white' : '#334155' });
-  // Le nom du bouton change avec l'état (Écouter / Pause / Reprendre) : pas d'aria-pressed en plus, il dirait deux choses à la fois
+  const cycle = ['lent', 'normal', 'rapide'];
+  const etiquette = { lent: '0,8×', normal: '1×', rapide: '1,2×' };
+  const nomVitesse = { lent: 'lente', normal: 'normale', rapide: 'rapide' };
+  const nom = etat === 'lecture' ? 'Mettre la lecture en pause' : etat === 'pause' ? 'Reprendre la lecture' : 'Écouter cette étape';
+  // Discret : une pastille sur la ligne du titre ; la vitesse n'apparaît que pendant la lecture. Le nom du bouton suit l'état (pas d'aria-pressed en plus).
   return (
-    <div data-lecture-sonore="1" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-      <button type="button" onClick={cliquer} style={bouton(etat === 'lecture')}>
-        {etat === 'lecture' ? <><span aria-hidden="true">⏸</span> Pause</> : etat === 'pause' ? <><span aria-hidden="true">▶</span> Reprendre</> : <><span aria-hidden="true">🔊</span> Écouter</>}
+    <div data-lecture-sonore="1" style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+      {etat !== 'arret' && (
+        <button type="button" onClick={() => setVitesse(cycle[(cycle.indexOf(vitesse) + 1) % cycle.length])}
+          aria-label={`Vitesse ${nomVitesse[vitesse]} : changer la vitesse de lecture`} title="Changer la vitesse"
+          style={{ minWidth: 36, height: 28, padding: '0 6px', borderRadius: 14, border: '1px solid #cbd5e1', background: 'white', color: '#334155', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
+          {etiquette[vitesse]}
+        </button>
+      )}
+      <button type="button" onClick={cliquer} aria-label={nom} title={nom}
+        style={{ width: 36, height: 36, borderRadius: '50%', border: `1.5px solid ${etat === 'arret' ? '#cbd5e1' : '#0284c7'}`, background: etat === 'lecture' ? '#0284c7' : '#f0f9ff',
+          color: etat === 'lecture' ? 'white' : '#0369a1', fontSize: 16, lineHeight: 1, cursor: 'pointer', padding: 0 }}>
+        <span aria-hidden="true">{etat === 'lecture' ? '⏸' : etat === 'pause' ? '▶' : '🔊'}</span>
       </button>
-      {etat !== 'arret' && <button type="button" onClick={arreter} style={bouton(false)}>Arrêter</button>}
-      <span role="group" aria-label="Vitesse de lecture" style={{ display: 'inline-flex', gap: 4, marginLeft: 4 }}>
-        {[['lent', 'Lent'], ['normal', 'Normal'], ['rapide', 'Rapide']].map(([cle, nom]) => (
-          <button key={cle} type="button" aria-pressed={vitesse === cle} onClick={() => setVitesse(cle)}
-            style={{ ...bouton(vitesse === cle), padding: '3px 8px', fontSize: 12, fontWeight: 600 }}>{nom}</button>
-        ))}
-      </span>
     </div>
   );
 }

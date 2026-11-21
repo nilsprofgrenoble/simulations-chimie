@@ -89,6 +89,11 @@ const FORMULES_SANS_CHIFFRE = new Set(['HCl', 'NaOH', 'NaCl', 'KOH', 'KCl', 'HF'
 const FORMULES_UN_ELEMENT = /^(?:H|O|N|Cl|F|Br|I)(?:2|₂)$/;
 const RE_CANDIDAT_FORMULE = /(?<![\p{L}\d_])[A-Z][A-Za-z0-9()₀-₉⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]*/gu;
 
+// Les lettres des formules sont épelées à la française : un « H » collé à un chiffre serait lu « heures » (« C2H6 »)
+const NOM_LETTRE = { a: 'a', b: 'bé', c: 'cé', d: 'dé', e: 'e', f: 'effe', g: 'gé', h: 'ache', i: 'i', j: 'ji', k: 'ka', l: 'elle', m: 'emme', n: 'enne', o: 'o', p: 'pé',
+  q: 'ku', r: 'erre', s: 'esse', t: 'té', u: 'u', v: 'vé', w: 'double vé', x: 'ixe', y: 'i grec', z: 'zède' };
+const lettres = jeton => NOM_LETTRE[jeton.toLowerCase()] || jeton;
+
 function lireFormule(jeton) {
   const m = MOTIF_FORMULE.exec(jeton);
   if (!m) return null;
@@ -99,7 +104,7 @@ function lireFormule(jeton) {
   if (!ok) return null;
   // chaque symbole d'élément est épelé (« C₂H₅COOH » → « C 2 H 5 C O O H »), les indices deviennent des nombres
   let sortie = sub(corps).replace(/([A-Z][a-z]?)/g, ' $1 ').replace(/\(/g, ' ').replace(/\)/g, ' ').replace(/([A-Za-z])/g, ' $1 ');
-  sortie = sortie.replace(/\s+/g, ' ').trim();
+  sortie = sortie.replace(/\s+/g, ' ').trim().split(' ').map(m => (/^[A-Za-z]$/.test(m) ? lettres(m) : m)).join(' ');
   if (charge) {
     const signe = charge.endsWith('⁺') ? 'plus' : 'moins';
     const n = sup(charge.slice(0, -1));
@@ -146,8 +151,8 @@ export function prononcer(texteAffiche) {
   t = t.replace(/[₀-₉]+/g, m => ` ${sub(m)} `);
 
   // 4. Sigles et symboles
-  t = t.replace(/(?<![\p{L}\d])([pP]?)K([abse])(?![\p{L}\d])/gu, (_, p, l) => `${p ? 'p ' : ''}K ${l}`);
-  t = t.replace(/(?<![\p{L}\d])pH(?![\p{L}\d])/g, 'p H');
+  t = t.replace(/(?<![\p{L}\d])([pP]?)K([abse])(?![\p{L}\d])/gu, (_, p, l) => `${p ? 'pé ' : ''}ka ${lettres(l)}`);
+  t = t.replace(/(?<![\p{L}\d])pH(?![\p{L}\d])/g, 'pé ache');
   t = t.replace(/⟶|→|⟹/g, ' donne ').replace(/⇌|⇄|↔/g, ' en équilibre avec ');
   t = t.replace(/≈/g, ' environ ').replace(/≥/g, ' supérieur ou égal à ').replace(/≤/g, ' inférieur ou égal à ').replace(/≠/g, ' différent de ');
   t = t.replace(/Δ/g, 'delta ').replace(/×/g, ' fois ').replace(/·/g, ' ');
