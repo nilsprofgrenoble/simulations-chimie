@@ -6,7 +6,7 @@ import { tousLesExercices } from "./Entrainement";
 import { etiquettesDefis } from "../suivi";
 import { Etoiles } from "../commun";
 import { ACCENT } from "../theme";
-import { Pic } from "../Pictos";
+import { Pic, Emo } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  « MON CARNET » : l'espace élève (étoiles, niveau, compétences, badges, prochains objectifs).
@@ -115,16 +115,16 @@ export function Carnet({ lignes, naviguer, parties }) {
       {/* ── À revoir aujourd'hui (révision espacée, voir ../revision.js) ── */}
       {P.revoir && (P.revoirToujours || (!A.aucun && rev.suivis > 0)) && (
         <>
-          <h3 className="cn-h">🔁 À revoir <small>revoir au bon moment, c’est ce qui fait retenir longtemps</small></h3>
+          <h3 className="cn-h"><Pic n="refresh"/>À revoir <small>revoir au bon moment, c’est ce qui fait retenir longtemps</small></h3>
           {rev.liste.length === 0 ? (
             <div className="cn-carte" style={{ fontSize: 15, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 30 }} aria-hidden="true">🧊</span>
+              <Pic n="cube" t={34}/>
               <div style={{ flex: 1, minWidth: 200 }}>
                 <b>{rev.suivis > 0 ? 'Rien à revoir pour le moment : ta mémoire est au frais !' : 'Rien à revoir : tout va bien !'}</b>
                 <div style={{ fontSize: 13.5, color: '#475569', marginTop: 2 }}>
                   {rev.suivis === 0 && <>Les exercices que tu réussis reviendront ici au bon moment, pour que tu les retiennes longtemps.</>}
                   {rev.prochaine ? <>Prochaine révision conseillée : <b>{dansJours(rev.prochaine)}</b>. </> : null}
-                  {rev.solides > 0 && <>🧠 {rev.solides} exercice{rev.solides > 1 ? 's' : ''} déjà bien ancré{rev.solides > 1 ? 's' : ''} dans ta mémoire.</>}
+                  {rev.solides > 0 && <><Pic n="bulb"/>{rev.solides} exercice{rev.solides > 1 ? 's' : ''} déjà bien ancré{rev.solides > 1 ? 's' : ''} dans ta mémoire.</>}
                 </div>
               </div>
             </div>
@@ -134,7 +134,7 @@ export function Carnet({ lignes, naviguer, parties }) {
                 {rev.liste.slice(0, P.revoirMax).map(({ item, statut }) => { const comp = A.comps.find(c => c.code === item.comp);
                   return (
                     <div key={item.cle} className="cn-carte" style={{ borderTop: `4px solid ${comp.couleur}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontSize: 12.5, fontWeight: 800, color: comp.couleur, textTransform: 'uppercase', letterSpacing: 0.6 }}>🔁 À revoir</div>
+                      <div style={{ fontSize: 12.5, fontWeight: 800, color: comp.couleur, textTransform: 'uppercase', letterSpacing: 0.6 }}><Pic n="refresh"/>À revoir</div>
                       <div style={{ fontWeight: 700, fontSize: 14.5, color: '#0f172a', lineHeight: 1.35 }}><span style={{ color: comp.couleur }}>{item.comp === 'DÉFI' ? '' : `${item.comp} · `}</span>{item.titre}</div>
                       <div style={{ fontSize: 13.5, color: '#475569', flex: 1 }}>{raisonRevision(statut)}</div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -158,7 +158,7 @@ export function Carnet({ lignes, naviguer, parties }) {
               {obj.map(o => { const comp = A.comps.find(c => c.code === o.item.comp);
                 return (
                   <div key={o.item.cle} className="cn-carte" style={{ borderTop: `4px solid ${comp.couleur}`, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <div style={{ fontSize: 12.5, fontWeight: 800, color: comp.couleur, textTransform: 'uppercase', letterSpacing: 0.6 }}>{ICONES_OBJECTIF[o.type]} {TITRES_OBJECTIF[o.type]}</div>
+                    <div style={{ fontSize: 12.5, fontWeight: 800, color: comp.couleur, textTransform: 'uppercase', letterSpacing: 0.6 }}><Emo e={ICONES_OBJECTIF[o.type]}/>{TITRES_OBJECTIF[o.type]}</div>
                     <div style={{ fontWeight: 700, fontSize: 14.5, color: '#0f172a', lineHeight: 1.35 }}><span style={{ color: comp.couleur }}>{o.item.comp === 'DÉFI' ? '' : `${o.item.comp} · `}</span>{o.item.titre}</div>
                     <div style={{ fontSize: 13.5, color: '#475569', flex: 1 }}>{o.texte}</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
@@ -172,21 +172,21 @@ export function Carnet({ lignes, naviguer, parties }) {
 
       {/* ── Compétences ── */}
       {P.competences && <>
-      <h3 className="cn-h">🧗 Mes compétences <small>le palier dépend des étoiles gagnées</small></h3>
+      <h3 className="cn-h"><Pic n="rocket"/>Mes compétences <small>le palier dépend des étoiles gagnées</small></h3>
       <div className="cn-grille">
         {comps.map(c => {
           const p = c.palier;
           return (
             <div key={c.code} data-comp-carnet={c.code} className="cn-carte" style={{ opacity: c.bientot ? 0.7 : 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <div style={{ width: 42, height: 42, borderRadius: 16, background: c.clair, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>{c.icone}</div>
+                <div style={{ width: 42, height: 42, borderRadius: 16, background: c.clair, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}><Emo e={c.icone}/></div>
                 <div style={{ flex: '1 1 90px', minWidth: 0 }}>
                   <div style={{ fontWeight: 800, color: c.couleur, fontSize: 15 }}>{c.code === 'DÉFI' ? 'Défis' : c.code}</div>
                   <div style={{ fontSize: 13, color: '#475569' }}>{c.code === 'DÉFI' ? 'simulations' : c.nom}</div>
                 </div>
-                {!c.bientot && <span style={{ fontSize: 12, fontWeight: 800, color: c.couleur, background: c.clair, padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap' }}>{p.icone} {p.nom}</span>}
+                {!c.bientot && <span style={{ fontSize: 12, fontWeight: 800, color: c.couleur, background: c.clair, padding: '3px 9px', borderRadius: 999, whiteSpace: 'nowrap' }}><Emo e={p.icone}/>{p.nom}</span>}
               </div>
-              {c.bientot ? <div style={{ margin: '14px 0 4px', fontSize: 14, fontWeight: 700, color: '#64748b' }}>🚧 Bientôt disponible</div> : (
+              {c.bientot ? <div style={{ margin: '14px 0 4px', fontSize: 14, fontWeight: 700, color: '#64748b' }}><Pic n="warn"/>Bientôt disponible</div> : (
                 <>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', margin: '12px 0 5px', fontSize: 13.5, color: '#475569' }}>
                     <span><b style={{ color: '#0f172a', fontSize: 17 }}>{c.etoiles}</b> ★ gagnées</span>
@@ -197,7 +197,7 @@ export function Carnet({ lignes, naviguer, parties }) {
                     {[20, 45, 75].map(s => <span key={s} style={{ position: 'absolute', left: `${s}%`, top: 0, bottom: 0, width: 2, background: '#fff' }} />)}
                   </div>
                   <div style={{ fontSize: 12.5, color: '#64748b', marginTop: 6 }}>
-                    {p.suivant ? <>Encore <b>{p.reste} ★</b> pour le palier <b>{p.suivant.icone} {p.suivant.nom}</b></> : <b style={{ color: c.couleur }}>Palier maximum atteint !</b>}
+                    {p.suivant ? <>Encore <b>{p.reste} ★</b> pour le palier <b><Emo e={p.suivant.icone}/>{p.suivant.nom}</b></> : <b style={{ color: c.couleur }}>Palier maximum atteint !</b>}
                   </div>
                 </>)}
             </div>); })}
@@ -207,11 +207,11 @@ export function Carnet({ lignes, naviguer, parties }) {
 
       {/* ── Badges ── */}
       {P.badges && <details className="cn-repli" data-repli="badges">
-      <summary><Pic n="medal"/>Mes badges <small>{nbBadges} sur {badges.length}</small><span className="cn-mini" aria-hidden="true">{badges.filter(b => b.ok).map(b => <span key={b.id}>{b.icone}</span>)}</span></summary>
+      <summary><Pic n="medal"/>Mes badges <small>{nbBadges} sur {badges.length}</small><span className="cn-mini" aria-hidden="true">{badges.filter(b => b.ok).map(b => <span key={b.id}><Emo e={b.icone}/></span>)}</span></summary>
       <div className="cn-grille" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))' }}>
         {badges.map(b => (
           <div key={b.id} data-badge={b.id} data-ok={b.ok} className="cn-carte cn-badge" title={b.desc}>
-            <div className={`cn-medaille ${b.ok ? 'ok' : 'non'}`} aria-hidden="true">{b.icone}</div>
+            <div className={`cn-medaille ${b.ok ? 'ok' : 'non'}`} aria-hidden="true"><Emo e={b.icone}/></div>
             <div style={{ fontWeight: 800, fontSize: 14, color: b.ok ? '#0f172a' : '#64748b' }}>{b.nom}</div>
             <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.4, margin: '3px 0 6px' }}>{b.desc}</div>
             {b.ok ? <div style={{ fontSize: 12, fontWeight: 800, color: '#b45309' }}>Obtenu ✓</div> : (
@@ -225,7 +225,7 @@ export function Carnet({ lignes, naviguer, parties }) {
 
       {/* ── Régularité ── */}
       {P.regularite && <details className="cn-repli" data-repli="regularite">
-      <summary>📅 Ma régularité <small>{nbSem} semaine{nbSem > 1 ? 's' : ''} active{nbSem > 1 ? 's' : ''} sur 8</small></summary>
+      <summary><Pic n="calendar"/>Ma régularité <small>{nbSem} semaine{nbSem > 1 ? 's' : ''} active{nbSem > 1 ? 's' : ''} sur 8</small></summary>
       <div className="cn-carte" style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', gap: 6 }} role="img" aria-label={`${nbSem} semaine${nbSem > 1 ? 's' : ''} active${nbSem > 1 ? 's' : ''} sur 8`}>
           {semaines.map((s, k) => <div key={k} className={`cn-sem${s.actif ? ' on' : ''}`} title={`Semaine du ${s.debut.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' })}${s.actif ? ' : active' : ''}`} />)}

@@ -9,7 +9,7 @@ import { DevoirsEleve, useDevoirs } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";
 import { MonPseudo } from "./MonPseudo";
 import { ACCENT, ACCENT_CLAIR, FOND_BLOC, TEXTE, TEXTE2, BORDURE } from "../theme";
-import { Pic } from "../Pictos";
+import { Pic, Emo } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  L'ESPACE ÉLÈVE (« Mon profil »), par étapes : voir ../profil.js pour les règles.
@@ -83,17 +83,17 @@ function BlocProfil({ A, etape, naviguer, prochaine, prochaines = [], apercu }) 
   return (
     <section data-profil data-etape={etape} aria-label="Mon profil">
       {ruban && (
-        <div className="ee-ruban" role="status" data-ruban-palier><span aria-hidden="true" style={{ fontSize: 22 }}>🎉</span>
+        <div className="ee-ruban" role="status" data-ruban-palier><Pic n="party" t={24}/>
           <span style={{ flex: 1 }}>Nouveau palier : tu es maintenant <b>{niveau.titre}</b> !</span>
           <button className="ee-lien" onClick={fermerRuban}>Super</button></div>)}
       <div className="ee-profil">
         {etape === 0
           ? <div aria-hidden="true" style={{ width: 96, height: 96, borderRadius: '50%', background: 'rgba(255,255,255,.16)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
-              <span style={{ fontSize: 34 }}>🌠</span><span style={{ fontSize: 12, fontWeight: 800, color: '#fff' }}>Bienvenue</span></div>
+              <Pic n="star" t={36}/><span style={{ fontSize: 12, fontWeight: 800, color: '#fff' }}>Bienvenue</span></div>
           : <Anneau frac={niveau.frac} n={niveau.n} mont={mont} sombre />}
         <div style={{ flex: 1, minWidth: 230 }}>
           <div className="ee-etiq">Mon profil</div>
-          {etape > 0 && <div data-nom-niveau className="ee-nom"><span aria-hidden="true">{icone}</span> {nom}</div>}
+          {etape > 0 && <div data-nom-niveau className="ee-nom"><Emo e={icone}/> {nom}</div>}
           {etape === 0 && <div className="ee-nom" style={{ fontSize: 26 }}>Réalise tes exercices, franchis les paliers et augmente ton niveau !</div>}
           <div className="ee-barre" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(frac * 100)} aria-label="Progression vers le niveau suivant">
             <i style={{ width: mont ? `${frac ? Math.max(4, frac * 100) : 0}%` : '0%' }} /></div>
@@ -166,7 +166,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied, fiches, reglages }
       <div className="ee-onglets" role="tablist" aria-label="Mon espace" onKeyDown={clavier}>
         {onglets.map(o => (
           <button key={o.id} id={`ee-onglet-${o.id}`} type="button" role="tab" className="ee-onglet" aria-selected={actif === o.id} aria-controls={`ee-panneau-${o.id}`}
-            tabIndex={actif === o.id ? 0 : -1} onClick={() => setOnglet(o.id)}><span aria-hidden="true">{o.icone}</span>{o.label}</button>))}
+            tabIndex={actif === o.id ? 0 : -1} onClick={() => setOnglet(o.id)}><Emo e={o.icone}/>{o.label}</button>))}
       </div>
 
       <div className="ee-panneau" id={`ee-panneau-${actif}`} role="tabpanel" aria-labelledby={`ee-onglet-${actif}`}>

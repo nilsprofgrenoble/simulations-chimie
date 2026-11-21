@@ -1,3 +1,4 @@
+import { Pic } from "../Pictos";
 import { useState, useEffect } from "react";
 import { rest, useSession } from "../serveur";
 import { pseudo, pseudoValide, propositions } from "../classe";
@@ -93,14 +94,14 @@ export function MonPseudo({ naviguer, apercu = false, onChange }) {
       <div className="mp-idees">
         {idees.map(([a, n]) => { const p = pseudo(a, n); return <button key={`${a}-${n}`} type="button" className="mp-idee" disabled={occupe && !apercu} onClick={() => choisir(a, n)}><span aria-hidden="true">{p.icone}</span> {p.texte}</button>; })}
       </div>
-      <button type="button" className="mp-lien" onClick={() => setIdees(propositions(4, Math.random, [], domaine))}>🎲 D’autres idées</button>
+      <button type="button" className="mp-lien" onClick={() => setIdees(propositions(4, Math.random, [], domaine))}><Pic n="puzzle"/>D’autres idées</button>
       {monPseudo && <>{' · '}<button type="button" className="mp-lien" onClick={() => setChange(false)}>Garder mon pseudo</button></>}
     </>);
 
   return (
     <section className="mp" data-mon-pseudo aria-label="Mon pseudo">
       <style>{css}</style>
-      <h3>🎭 Mon pseudo</h3>
+      <h3><Pic n="user"/>Mon pseudo</h3>
       <p className="mp-sous">Un seul pseudo, pour ta classe et pour le classement public. Ton nom n’apparaît jamais.</p>
       {!monPseudo || change ? choixPseudo : (
         <>
