@@ -1910,5 +1910,17 @@
  "77:plausible:rhc-val-thixo-ok": "VAL519",
  "36:rhc-calcul": "REA133",
  "37:prevoir:rhc-ana-palier": "ANA765",
- "77:plausible:rhc-val-seuil-extrapole": "VAL520"
+ "77:plausible:rhc-val-seuil-extrapole": "VAL520",
+ "34:itt-sapp-m1.0": "SAPP495",
+ "34:itt-sapp-m1.1": "SAPP496",
+ "34:itt-sapp-pente.0": "SAPP497",
+ "34:itt-sapp-pente.1": "SAPP498",
+ "37:prevoir:itt-ana-court": "ANA766",
+ "37:prevoir:itt-ana-newton": "ANA767",
+ "37:prevoir:itt-ana-rapide": "ANA768",
+ "37:prevoir:itt-ana-lente": "ANA769",
+ "77:plausible:itt-val-pourcent": "VAL521",
+ "77:plausible:itt-val-temps": "VAL522",
+ "77:plausible:itt-val-pente": "VAL523",
+ "36:itt-calcul": "REA134"
 }

@@ -12,6 +12,7 @@ export const EXOS_DE_SIM = {
   126: [/pmel-/],
   127: [/pfac-/],
   128: [/pfac-parallele/, /pmel-ecart-milieu-sens/],     // introduction : seuls les exercices sur l’interaction
+  218: [/(^|\.)itt-/, /plausible\.itt-/],   // Thixotropie : le test 3ITT (BTS)
   217: [/(^|\.)rhc-/, /plausible\.rhc-/],   // Courbes d’écoulement et de viscosité : lire un rhéogramme (BTS)
   100: [/^rheo-/],                                                                                                      // Épaississants associatifs
   146: [/(^|\.)tens-/, /plausible\.tens-/],                                                                           // Tensioactifs : de la structure à la CMC

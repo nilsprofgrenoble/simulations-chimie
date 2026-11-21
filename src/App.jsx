@@ -68,6 +68,7 @@ const SimulationSyntheseStereo = paresseux(() => import("./simulations/SyntheseS
 const SimulationChimioselectivite = paresseux(() => import("./simulations/Chimioselectivite"), "SimulationChimioselectivite");
 const SimulationEpaisseursAssociatifs = paresseux(() => import("./simulations/EpaisseursAssociatifs"), "SimulationEpaisseursAssociatifs");
 const SimulationRheoCourbes = paresseux(() => import("./simulations/RheoCourbes"), "SimulationRheoCourbes");
+const SimulationITT3 = paresseux(() => import("./simulations/Itt3"), "SimulationITT3");
 const SimulationLasure = paresseux(() => import("./simulations/Lasure"), "SimulationLasure");
 const SimulationNomenclatureOrganique = paresseux(() => import("./simulations/NomenclatureOrganique"), "SimulationNomenclatureOrganique");
 const SimulationMecanismesReactionnels = paresseux(() => import("./simulations/MecanismesReactionnels"), "SimulationMecanismesReactionnels");
@@ -398,6 +399,7 @@ const SIMULATIONS = [
   { id:99, label:"Chimiosélectivité : quel groupe fonctionnel réagit ?", niveau:"BTS", icon:"🎯", color:"#7c3aed", component: SimulationChimioselectivite },
   { id:100, label:"Épaississants associatifs : ASE, HASE, HEUR", niveau:"BTS", icon:"🧴", color:"#1d4ed8", component: SimulationEpaisseursAssociatifs },
   { id:217, label:"Courbes d’écoulement et de viscosité : lire un rhéogramme", niveau:"BTS", icon:"📈", color:"#0f766e", component: SimulationRheoCourbes },
+  { id:218, label:"Thixotropie : le test 3ITT", niveau:"BTS", icon:"⏱️", color:"#7c3aed", component: SimulationITT3 },
   { id:101, label:"Lasure alkyde : séchage oxydant et peau en pot", niveau:"BTS", icon:"🪵", color:"#7c2d12", component: SimulationLasure },
   { id:102, label:"Nomenclature et groupes caractéristiques : nommer, identifier, dessiner", niveau:"1G", icon:"🧬", color:"#0f766e", component: SimulationNomenclatureOrganique },
   { id:86, label:"Synthèse organique : estérification, Dean-Stark et CCM", niveau:"TSTL", icon:"⚗️", color:"#9a3412",

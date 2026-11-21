@@ -35,9 +35,9 @@ const nice = (m) => { const p = Math.pow(10, Math.floor(Math.log10(m))); const f
  * Graphique générique. series : [{ pts: [[x, y], …], c, tirets, marq, ep }] ; reperes : [{ x, y, c }].
  * Les bornes absentes sont calculées d'après les données.
  */
-export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y1, xTitre, yTitre, reperes = [], maxWidth = 480 }) {
+export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y1, xTitre, yTitre, reperes = [], maxWidth = 480, vh = 290 }) {
   const idClip = useId().replace(/:/g, "");
-  const L = 74, R = 14, T = 12, B = 50, W = 480 - L - R, H = 290 - T - B;
+  const L = 74, R = 14, T = 12, B = 50, W = 480 - L - R, H = vh - T - B;
   const tous = series.flatMap((s) => s.pts);
   const xs = tous.map((p) => p[0]).filter((v) => v > 0 || !xLog);
   const ys = tous.map((p) => p[1]).filter((v) => isFinite(v) && (v > 0 || !yLog));
@@ -50,7 +50,7 @@ export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y
   const tx = xLog ? ticksLog(ax0, ax1) : ticksLin(ax0, ax1);
   const ty = yLog ? ticksLog(ay0, ay1) : ticksLin(ay0, ay1);
   return (
-    <svg viewBox="0 0 480 290" role="img" aria-label={aria} style={{ width: "100%", maxWidth, display: "block", margin: "0 auto", background: "#fff", borderRadius: 10 }}>
+    <svg viewBox={`0 0 480 ${vh}`} role="img" aria-label={aria} style={{ width: "100%", maxWidth, display: "block", margin: "0 auto", background: "#fff", borderRadius: 10 }}>
       <rect x={L} y={T} width={W} height={H} fill="#fff" stroke={KIT.bord} />
       {tx.map((v, i) => (
         <g key={"x" + i}>
@@ -64,7 +64,7 @@ export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y
           <text x={L - 6} y={fy(v) + 5} fontSize="16" textAnchor="end" fill={KIT.txt2}>{etiquette(v)}</text>
         </g>
       ))}
-      <text x={L + W / 2} y={286} fontSize="16" fontWeight="700" textAnchor="middle" fill={NOIR}>{xTitre}</text>
+      <text x={L + W / 2} y={vh - 4} fontSize="16" fontWeight="700" textAnchor="middle" fill={NOIR}>{xTitre}</text>
       <text transform={`translate(15 ${T + H / 2}) rotate(-90)`} fontSize="16" fontWeight="700" textAnchor="middle" fill={NOIR}>{yTitre}</text>
       <clipPath id={idClip}><rect x={L} y={T} width={W} height={H} /></clipPath>
       <g clipPath={`url(#${idClip})`}>
@@ -106,7 +106,7 @@ export function Legende({ items }) {
 // Schémas (parcours guidé et cartes « À retenir »)
 // ---------------------------------------------------------------------------
 
-const Svg = ({ aria, vb = "0 0 300 220", maxWidth = 320, children }) => (
+export const Svg = ({ aria, vb = "0 0 300 220", maxWidth = 320, children }) => (
   <svg viewBox={vb} role="img" aria-label={aria} style={{ width: "100%", maxWidth, display: "block", margin: "6px auto", background: "#fff", borderRadius: 10 }}>{children}</svg>
 );
 
@@ -155,9 +155,14 @@ export function FViscosimetre({ maxWidth = 320, rot = 0.3 }) {
       {/* plaque fixe */}
       <rect x="66" y="158" width="168" height="16" rx="2" fill="#cbd5e1" stroke="#475569" strokeWidth="1.6" />
       <text x="150" y="192" fontSize="14" textAnchor="middle" fill={NOIR}>plaque fixe</text>
-      {/* rotation */}
-      <path d="M118 84 Q150 62 182 84" fill="none" stroke={ORANGE} strokeWidth={ep} strokeLinecap="round" />
-      <polyline points="172,76 183,84 170,88" fill="none" stroke={ORANGE} strokeWidth={Math.max(2.4, ep * 0.8)} strokeLinecap="round" strokeLinejoin="round" />
+      {/* rotation : arc + pointe pleine alignée sur la tangente de l'arc */}
+      <path d="M118 84 Q150 62 178 80" fill="none" stroke={ORANGE} strokeWidth={ep} strokeLinecap="round" />
+      {(() => {
+        const tx = 28 / Math.hypot(28, 18), ty = 18 / Math.hypot(28, 18), k = Math.max(1, ep / 3.2);
+        const bx = 178 + (ep / 2 + 2) * tx, by = 80 + (ep / 2 + 2) * ty; // pointe, juste après la fin de l'arc
+        const cx = bx - 13 * k * tx, cy = by - 13 * k * ty, nx = -ty, ny = tx, w = 6.5 * k;
+        return <polygon points={`${bx.toFixed(1)},${by.toFixed(1)} ${(cx + w * nx).toFixed(1)},${(cy + w * ny).toFixed(1)} ${(cx - w * nx).toFixed(1)},${(cy - w * ny).toFixed(1)}`} fill={ORANGE} />;
+      })()}
       <text x="106" y="80" fontSize="15" fontWeight="800" fill={ORANGE}>N</text>
       {/* légende échantillon */}
       <rect x="40" y="206" width="14" height="14" fill="#fde68a" stroke="#475569" />
