@@ -290,6 +290,9 @@ function SimulationBase({ partie }) {
             style={{ width: 70, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${defi.verifie ? (defi.ok ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/>
         </div>)}
       {defi.type === 'rs' && <IndiceDefi cache={false}>Étapes : 1) classer les 4 groupes (Z de l’atome lié, puis les voisins) ; 2) placer le n°4 derrière : s’il est en coin plein, on inverse la lettre ; 3) sens de 1 → 2 → 3 : horaire = R, antihoraire = S.</IndiceDefi>}
+      {defi.type === 'rs' && (defi.rangs
+        ? <div style={{ fontSize: 13.5, color: KIT.txt, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px', marginTop: 4 }}><Pic n="bulb"/>Les priorités CIP sont affichées sur le schéma : 1 = la plus prioritaire, 4 = la moins prioritaire.</div>
+        : <button type="button" onClick={() => majDefi({ rangs: true })} style={{ fontSize: 13, padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700, marginTop: 4, border: '1.5px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}><Pic n="bulb"/>Indice : afficher les priorités</button>)}
       {defi.type === 'cram' && <IndiceDefi cache={false}>Chaque échange de deux groupes inverse la configuration. Déterminez d’abord la configuration actuelle (cochez « Afficher les priorités » si besoin).</IndiceDefi>}
       {defi.type === 'nasym' && <IndiceDefi cache={false}>Un C* est lié à 4 groupes tous différents. Un carbone CH₂, CH₃ ou lié à deux groupes identiques n’est pas asymétrique.</IndiceDefi>}
       {defi.type === 'chirale' && <IndiceDefi cache={false}>Cherchez un carbone lié à 4 groupes tous différents (H compris) : s’il y en a au moins un et qu’aucun élément de symétrie n’existe, la molécule est chirale.</IndiceDefi>}
@@ -430,7 +433,7 @@ function SimulationBase({ partie }) {
       {idE === 'axe' && <Curseur nom="Tourner la molécule" valeur={P.t * 100} onChange={v => maj({ t: v / 100 })} min={0} max={100} pas={1} unite="%" decimales={0} couleur="#0f172a"/>}
       {idE === 'deux-action' && boutonsEchange}
     </div>);
-  const reglagesDefi = defi && ['rs', 'cram'].includes(defi.type) && (
+  const reglagesDefi = defi && defi.type === 'cram' && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {caseA('Afficher les priorités (pastilles 1 à 4)', defi.rangs, v => majDefi({ rangs: v }))}

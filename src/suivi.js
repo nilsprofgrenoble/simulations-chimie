@@ -7,7 +7,7 @@
 //  Temps actif = onglet visible ET une action de l'élève (clic, frappe, défilement) dans la dernière minute.
 //  Un enseignant ou un visiteur non connecté n'envoie rien.
 // ════════════════════════════════════════════════════════════════════════════
-import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from 'react';
+import { useLayoutEffect, useEffect, useRef, useState, useCallback, useSyncExternalStore } from 'react';
 import { noterReussite } from './commun';
 import { annoncerReussite, etoilesReussite } from './carnet';
 import { DEFIS_DECLARES } from './defisDeclares.js';
@@ -219,7 +219,9 @@ export function useCompteurDefi() {
 export function SuiviDefi({ cle, etat }) {
   const s = useSuivi(cle, etat.reussi);
   const deja = useRef(etat.essais);
-  useEffect(() => { if (etat.essais > deja.current) s.essai(); deja.current = etat.essais; }, [etat.essais, s]);
+  // Effet « de mise en page » : la tentative doit être comptée AVANT l'effet de réussite de useSuivi (qui calcule les étoiles).
+  // Sinon la réponse juste donnée après une erreur n'était pas encore comptée et rapportait 3 étoiles au lieu de 2.
+  useLayoutEffect(() => { if (etat.essais > deja.current) s.essai(); deja.current = etat.essais; }, [etat.essais, s]);
   return null;
 }
 
