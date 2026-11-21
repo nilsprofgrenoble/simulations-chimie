@@ -35,9 +35,9 @@ const nice = (m) => { const p = Math.pow(10, Math.floor(Math.log10(m))); const f
  * Graphique générique. series : [{ pts: [[x, y], …], c, tirets, marq, ep }] ; reperes : [{ x, y, c }].
  * Les bornes absentes sont calculées d'après les données.
  */
-export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y1, xTitre, yTitre, reperes = [], maxWidth = 480 }) {
+export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y1, xTitre, yTitre, reperes = [], maxWidth = 480, vh = 290 }) {
   const idClip = useId().replace(/:/g, "");
-  const L = 74, R = 14, T = 12, B = 50, W = 480 - L - R, H = 290 - T - B;
+  const L = 74, R = 14, T = 12, B = 50, W = 480 - L - R, H = vh - T - B;
   const tous = series.flatMap((s) => s.pts);
   const xs = tous.map((p) => p[0]).filter((v) => v > 0 || !xLog);
   const ys = tous.map((p) => p[1]).filter((v) => isFinite(v) && (v > 0 || !yLog));
@@ -50,7 +50,7 @@ export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y
   const tx = xLog ? ticksLog(ax0, ax1) : ticksLin(ax0, ax1);
   const ty = yLog ? ticksLog(ay0, ay1) : ticksLin(ay0, ay1);
   return (
-    <svg viewBox="0 0 480 290" role="img" aria-label={aria} style={{ width: "100%", maxWidth, display: "block", margin: "0 auto", background: "#fff", borderRadius: 10 }}>
+    <svg viewBox={`0 0 480 ${vh}`} role="img" aria-label={aria} style={{ width: "100%", maxWidth, display: "block", margin: "0 auto", background: "#fff", borderRadius: 10 }}>
       <rect x={L} y={T} width={W} height={H} fill="#fff" stroke={KIT.bord} />
       {tx.map((v, i) => (
         <g key={"x" + i}>
@@ -64,7 +64,7 @@ export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y
           <text x={L - 6} y={fy(v) + 5} fontSize="16" textAnchor="end" fill={KIT.txt2}>{etiquette(v)}</text>
         </g>
       ))}
-      <text x={L + W / 2} y={286} fontSize="16" fontWeight="700" textAnchor="middle" fill={NOIR}>{xTitre}</text>
+      <text x={L + W / 2} y={vh - 4} fontSize="16" fontWeight="700" textAnchor="middle" fill={NOIR}>{xTitre}</text>
       <text transform={`translate(15 ${T + H / 2}) rotate(-90)`} fontSize="16" fontWeight="700" textAnchor="middle" fill={NOIR}>{yTitre}</text>
       <clipPath id={idClip}><rect x={L} y={T} width={W} height={H} /></clipPath>
       <g clipPath={`url(#${idClip})`}>
@@ -106,7 +106,7 @@ export function Legende({ items }) {
 // Schémas (parcours guidé et cartes « À retenir »)
 // ---------------------------------------------------------------------------
 
-const Svg = ({ aria, vb = "0 0 300 220", maxWidth = 320, children }) => (
+export const Svg = ({ aria, vb = "0 0 300 220", maxWidth = 320, children }) => (
   <svg viewBox={vb} role="img" aria-label={aria} style={{ width: "100%", maxWidth, display: "block", margin: "6px auto", background: "#fff", borderRadius: 10 }}>{children}</svg>
 );
 

@@ -4,6 +4,7 @@ import { indice as indiceTopo } from "./topoModele";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
 import { genTrace, genPont, genTemps } from "./RealiserC1";
 import { genRheoCourbesBTS } from "./RheoCourbesRealiser";
+import { genTroisITTBTS } from "./Itt3Realiser";
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_I } from "./conductimetrieModele";
 import * as ACF from "./acideFaibleModele";
@@ -4713,6 +4714,7 @@ export const FAMILLES = [
   { id: 'str-calcul', groupe: 'Formules', titre: 'Stratégie de synthèse : rendement global, quantité de produit final et déchets (TG)', gen: genStrategieTG, domaine: 'Stratégie de synthèse multi-étapes et synthèses écoresponsables' },
   { id: 'mrx-calcul', groupe: 'Formules', titre: 'Mécanismes réactionnels : atomes d’un acte, chocs efficaces, part efficace et bilan d’un mécanisme (TG)', gen: genMecanismesTG, domaine: 'Mécanismes réactionnels et flèches courbes' },
   { id: 'brn-calcul', groupe: 'Formules', titre: 'Transferts de H⁺ : électrons de valence, doublets, doublets non liants et charge dans une équation acide-base (TG)', gen: genTransfertsHTG, domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées' },
+  { id: 'itt-calcul', groupe: 'Formules', titre: 'Test 3ITT : régénération en % (M1), viscosité cible et temps de régénération (M2), pente de la viscosité (M3) (BTS)', gen: genTroisITTBTS, domaine: 'Rhéologie' },
   { id: 'rhc-calcul', groupe: 'Formules', titre: 'Rhéogramme : viscosité dynamique à partir de τ et γ̇, rapport de viscosités, perte de viscosité (thixotropie) et viscosité cinématique (BTS)', gen: genRheoCourbesBTS, domaine: 'Rhéologie' },
   { id: 'vitesses', groupe: 'Unités', titre: 'Vitesses : km·h⁻¹ et m·s⁻¹ (seconde)', gen: genVitesses, domaine: 'Mouvement et vitesse' },
   { id: 'simple', groupe: 'Unités', titre: 'Changement d’unité simple', gen: genSimple },
