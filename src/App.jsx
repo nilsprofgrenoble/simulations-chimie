@@ -530,7 +530,7 @@ const SIMULATIONS = [
     component: SimulationAtelierAnalyser },
   { id:77, label:"VAL : valider un résultat", niveau:"COMP", icon:"✅", color:"#5b4bdb",
     component: SimulationAtelierValider },
-  { id:38, label:"Je m'entraîne ! Travail par compétence", niveau:"COMP", icon:"🏋️", color:"#5b4bdb",
+  { id:38, label:"Je m'entraîne !", niveau:"COMP", icon:"🏋️", color:"#5b4bdb",
     component: SimulationEntrainement },
     // Pages hors menu (niveau « COMPTE ») : connexion et suivi, ouvertes par les boutons « Mon compte » et « Suivi professeur »
   { id:39, label:"Mon compte", niveau:"COMPTE", icon:"👧👦", color:"#25628f", component: SimulationCompte },
