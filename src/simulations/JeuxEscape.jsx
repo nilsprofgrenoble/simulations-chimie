@@ -42,7 +42,21 @@ function JeuxProfCartes({ naviguer, liste }) {
     </details>);
 }
 
-export function JeuxCode(props) { return JEUX_VISIBLES || JEUX_PUBLICS.length ? <JeuxCodeChamp {...props} /> : null; }
+export function JeuxCode(props) { const sess = useSession(); const tous = JEUX_VISIBLES || !!sess?.profil?.admin; return tous ? <JeuxCodeChamp {...props} /> : JEUX_PUBLICS.length ? <JeuxPublicsCartes {...props} /> : null; }
+// Jeux ouverts à tous : accès direct, sans code (les autres jeux, encore en préparation, restent masqués).
+function JeuxPublicsCartes({ naviguer }) {
+  return (
+    <div data-jeux-publics style={{ ...styleBoite, margin: '8px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {JEUX.filter(j => JEUX_PUBLICS.includes(j.id)).map(j => (
+        <div key={j.id} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
+          <div style={{ flex: '1 1 260px' }}>
+            <div style={{ fontWeight: 800 }}>🎮 {j.icone} {j.nom} <span style={{ fontWeight: 500, fontSize: 12, color: KIT.txt2 }}>· {j.niveau}</span></div>
+            <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>{j.texte}</div>
+          </div>
+          <button onClick={() => naviguer(j.id)} style={styleBouton(true, '#0b4f94')}>Jouer ▶</button>
+        </div>))}
+    </div>);
+}
 function JeuxCodeChamp({ naviguer }) {
   const sess = useSession(), tous = JEUX_VISIBLES || !!sess?.profil?.admin;
   const [saisie, setSaisie] = useState(''), [rate, setRate] = useState(false);
@@ -61,14 +75,15 @@ function JeuxCodeChamp({ naviguer }) {
     </form>);
 }
 
-// Contenu du menu « Jeux » de l'en-tête : le professeur voit les trois jeux, l'élève un champ pour son code.
+// Contenu du menu « Jeux » de l'en-tête : le professeur voit les jeux ouverts, l'élève un champ pour son code (ou directement les jeux ouverts à tous).
 export function JeuxMenu({ aller }) {
   const sess = useSession();
+  const tous = JEUX_VISIBLES || !!sess?.profil?.admin;
   if (estProf(sess)) return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {JEUX.map(j => (
+      {(tous ? JEUX : JEUX.filter(j => JEUX_PUBLICS.includes(j.id))).map(j => (
         <button key={j.id} onClick={() => aller(j.id)} style={{ display: 'block', textAlign: 'left', padding: '8px 10px', border: 'none', borderRadius: 8, background: 'transparent', cursor: 'pointer', font: 'inherit', fontSize: 14 }}>
-          <b>{j.icone} {j.nom}</b> <span style={{ color: KIT.txt2, fontSize: 12 }}>· {j.niveau} · code {j.code}</span>
+          <b>{j.icone} {j.nom}</b> <span style={{ color: KIT.txt2, fontSize: 12 }}>· {j.niveau}{tous ? ` · code ${j.code}` : ''}</span>
           <div style={{ color: KIT.txt2, fontSize: 12.5, lineHeight: 1.4 }}>{j.texte}</div>
         </button>))}
     </div>);

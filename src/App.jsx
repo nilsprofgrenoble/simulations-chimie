@@ -685,7 +685,7 @@ export default function App() {
   const jeuxOuverts = JEUX_VISIBLES || !!sessionSb?.profil?.admin;
   const adminConnecte = !!sessionSb?.profil?.admin;
   const activeId = (!jeuxOuverts && JEUX_IDS.includes(activeIdBrut) && !JEUX_PUBLICS.includes(activeIdBrut)) || (!adminConnecte && OUTILS_ADMIN_IDS.includes(activeIdBrut)) ? 0 : activeIdBrut;
-  const MENUS = menusVisibles(jeuxOuverts, adminConnecte);
+  const MENUS = menusVisibles(jeuxOuverts || JEUX_PUBLICS.length > 0, adminConnecte);   // le menu « Jeux » existe dès qu'un jeu est ouvert à tous (Percutaféine)
   useEffect(() => { restaurer(); }, []);
   // Un professeur connecté n'a pas d'écran « Mon compte » intermédiaire : on l'emmène directement au suivi
   const idAffiche = activeId === 39 && sessionSb?.profil?.role === 'prof' ? 40 : activeId;
