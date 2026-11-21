@@ -86,6 +86,14 @@ const ICONES = {
   plus: C('<path d="M12 5v14M5 12h14"/>'),
   eye: C('<path class="a" d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z" opacity=".6"/><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
   chevron: C('<path d="M6 9l6 6 6-6"/>'),
+  temple: C('<path class="a" d="M4 9l8-5 8 5z"/><path d="M4 9l8-5 8 5zM7 11v7M12 11v7M17 11v7M4 20h16"/>'),
+  telescope: C('<path class="a" d="M3 11l11-4 1.5 4L4.5 15z"/><path d="M3 11l11-4 1.5 4L4.5 15zM15 8.5l5-1.5M10 14l-2 7M10 14l3 7"/>'),
+  sprout: C('<path d="M12 21v-9"/><path class="a" d="M12 12C12 8 9 6 5 6c0 4 2 6 7 6z"/><path d="M12 12C12 8 9 6 5 6c0 4 2 6 7 6zM12 15c0-3 2-5 6-5 0 3-2 5-6 5z"/>'),
+  crown: C('<path class="a" d="M4 18l-1-10 5 4 4-7 4 7 5-4-1 10z"/><path d="M4 18l-1-10 5 4 4-7 4 7 5-4-1 10zM4 21h16"/>'),
+  calendar: C('<rect class="a" x="4" y="5" width="16" height="15" rx="2"/><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/>'),
+  cards: C('<rect class="a" x="4" y="9" width="16" height="11" rx="2"/><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M7 6h10M9 3h6"/>'),
+  pencil: C('<path class="a" d="M4 20l1-4 11-11 3 3L8 19z"/><path d="M4 20l1-4 11-11 3 3L8 19zM14 7l3 3"/>'),
+  empty: C('<circle cx="12" cy="12" r="9" opacity=".45"/>'),
 };
 // Emoji → pictogramme. Les emojis absents de cette table restent affichés tels quels (migration progressive).
 const EMOJIS = {
@@ -96,6 +104,9 @@ const EMOJIS = {
   '🧂': 'salt', '💧': 'drop', '🧴': 'bottle', '🔦': 'torch', '🔍': 'search', '🛰': 'satellite', '🔌': 'plug', '🌡': 'thermo', '🔋': 'battery',
   '🔷': 'diamond', '🧬': 'dna', '🧮': 'abacus', '🏋': 'dumbbell', '👧👦': 'users', 'ℹ': 'info', '📌': 'pin', '🔗': 'link', '🏠': 'home', '🔑': 'key',
   '🔒': 'lock', '📋': 'clipboard', '📘': 'book', '📚': 'book', '🏆': 'trophy', '✅': 'ok', '❌': 'ko', '⚠': 'warn', '🎉': 'party', '🔄': 'refresh',
+  '🥼': 'user', '🎚': 'gauge', '🎼': 'wave', '🏛': 'temple', '🔮': 'diamond', '🔭': 'telescope', '🌱': 'sprout', '🌿': 'sprout', '🌰': 'sprout', '🥇': 'medal',
+  '🐉': 'flame', '🦉': 'book', '👑': 'crown', '⏳': 'stopwatch', '⬆': 'chartup', '🧗': 'rocket', '🚧': 'warn', '📅': 'calendar', '🧠': 'bulb', '🔁': 'refresh',
+  '🪐': 'globe', '🎲': 'puzzle', '🎭': 'user', '✏': 'pencil', '🌟': 'star', '✨': 'star', '🌠': 'star', '💪': 'dumbbell', '💎': 'diamond', '📇': 'cards', '🔎': 'search', '⬜': 'empty', '👥': 'users',
   '🗑': 'trash', '➕': 'plus', '👁': 'eye', '🌳': 'tree', '🏅': 'medal', '👩‍🏫': 'board', '✉': 'mail', '🤝': 'users', '★': 'star',
 };
 const normaliser = (e) => String(e).replace(/️/g, '');

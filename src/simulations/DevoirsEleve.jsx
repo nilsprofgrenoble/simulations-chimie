@@ -22,7 +22,7 @@ const TONS = {
 // « Parcours guidé : 3 / 5 min · défi à réussir » : où en est l'élève sur une simulation du devoir
 function etatSim(lignes, cle, depuis) {
   const x = detailSim(lignes || [], cle, depuis), min = Math.floor(Math.min(x.guideS, SEUIL_GUIDE_S) / 60);
-  return `🧭 parcours guidé : ${x.guideOk ? 'fait' : `${min} / ${SEUIL_GUIDE_S / 60} min`}${x.defis.length ? ` · 🎯 défi : ${x.defiOk ? 'réussi' : 'à réussir'}` : ''}`;
+  return `Parcours guidé : ${x.guideOk ? 'fait' : `${min} / ${SEUIL_GUIDE_S / 60} min`}${x.defis.length ? ` · défi : ${x.defiOk ? 'réussi' : 'à réussir'}` : ''}`;
 }
 
 function CarteDevoir({ d, a, par, naviguer, maintenant, lignes }) {
@@ -32,7 +32,7 @@ function CarteDevoir({ d, a, par, naviguer, maintenant, lignes }) {
   return (
     <div className="dv-carte" style={{ borderLeft: `5px solid ${a.termine ? '#16a34a' : ton.bord}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <div style={{ fontWeight: 800, fontSize: 16, color: '#0f172a', flex: 1, minWidth: 160 }}>{a.termine ? '🎉' : '📌'} {d.titre}</div>
+        <div style={{ fontWeight: 800, fontSize: 16, color: '#0f172a', flex: 1, minWidth: 160 }}><Pic n={a.termine ? 'party' : 'pin'}/>{d.titre}</div>
         <span className="dv-puce" style={{ background: ton.fond, border: `1px solid ${ton.bord}`, color: ton.texte }}>
           {fin ? `${fin.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · ` : ''}{info.texte}</span>
       </div>
@@ -44,7 +44,7 @@ function CarteDevoir({ d, a, par, naviguer, maintenant, lignes }) {
         {/* Ordre d'affichage : d'abord les simulations (parcours guidé), puis les exercices et les défis, dans l'ordre choisi par le professeur */}
         {d.cles.map((cle, i) => ({ cle, i })).sort((x, y) => (estCleSim(y.cle) ? 1 : 0) - (estCleSim(x.cle) ? 1 : 0) || x.i - y.i).map(({ cle, i }) => { const it = par.get(cle), fait = a.faits[i]; return (
           <div key={cle} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, opacity: fait ? 0.7 : 1 }}>
-            <span aria-label={fait ? 'fait' : 'à faire'} style={{ fontSize: 17 }}>{fait ? '✅' : '⬜'}</span>
+            <span aria-label={fait ? 'fait' : 'à faire'} style={{ fontSize: 17 }}><Pic n={fait ? 'ok' : 'empty'}/></span>
             <span style={{ flex: 1, textDecoration: fait ? 'line-through' : 'none', color: '#1e293b' }}>
               {it ? <><b style={{ color: '#64748b' }}>{it.comp === 'DÉFI' ? 'Défi' : it.comp === 'SIM' ? 'Simulation' : it.comp} ·</b> {it.titre}</> : <i>Exercice introuvable (retiré du site ?)</i>}
               {it && estCleSim(cle) && !fait && <span data-etat-sim style={{ display: 'block', fontSize: 12.5, color: '#64748b', textDecoration: 'none' }}>{etatSim(lignes, cle, d.cree_le)}</span>}</span>
@@ -74,7 +74,7 @@ function CarteDevoirPasAPas({ d, a, par, naviguer, maintenant, lignes }) {
   return (
     <div className="dv-carte" data-pas-a-pas style={{ borderLeft: `5px solid ${a.termine ? '#16a34a' : ton.bord}` }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <div style={{ fontWeight: 800, fontSize: 16, color: '#0f172a', flex: 1, minWidth: 160 }}>{a.termine ? '🎉' : '📌'} {d.titre}</div>
+        <div style={{ fontWeight: 800, fontSize: 16, color: '#0f172a', flex: 1, minWidth: 160 }}><Pic n={a.termine ? 'party' : 'pin'}/>{d.titre}</div>
         <span className="dv-puce" style={{ background: ton.fond, border: `1px solid ${ton.bord}`, color: ton.texte }}>
           {fin ? `${fin.toLocaleDateString('fr-FR', { weekday: 'short', day: 'numeric', month: 'short' })} · ` : ''}{info.texte}</span>
       </div>
@@ -85,7 +85,7 @@ function CarteDevoirPasAPas({ d, a, par, naviguer, maintenant, lignes }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {visibles.map(e => (
           <div key={e.cle + e.type} data-etape-courante style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 14.5, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 16, padding: '10px 12px' }}>
-            <span aria-hidden="true" style={{ fontSize: 20 }}>{e.type === 'guide' ? '🧭' : e.type === 'defi' ? '🎯' : '✏️'}</span>
+            <span aria-hidden="true" style={{ fontSize: 20 }}><Pic n={e.type === 'guide' ? 'compass' : e.type === 'defi' ? 'target' : 'pencil'} t={22}/></span>
             <span style={{ flex: 1, color: '#1e293b' }}>{libelle(e)}</span>
             <button className="dv-btn" onClick={() => aller(e)}>{e.type === 'guide' ? (e.guideS > 0 ? 'Continuer ▶' : 'Commencer ▶') : 'Y aller ▶'}</button>
           </div>))}

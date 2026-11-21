@@ -123,7 +123,7 @@ export function MotDePasse() {
     <form onSubmit={envoyer} style={{ ...styleBoite, maxWidth: 380, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <input type="password" value={a} onChange={e => setA(e.target.value)} placeholder="Nouveau mot de passe (8 caractères minimum)" autoComplete="new-password" style={champ} aria-label="Nouveau mot de passe" />
       <input type="password" value={b} onChange={e => setB(e.target.value)} placeholder="Même mot de passe, encore une fois" autoComplete="new-password" style={champ} aria-label="Confirmation du mot de passe" />
-      {msg && <div role="status" style={{ color: msg.ok ? '#15803d' : '#b91c1c', fontSize: 14, fontWeight: 600 }}>{msg.ok ? '✅' : '❌'} {msg.t}</div>}
+      {msg && <div role="status" style={{ color: msg.ok ? '#15803d' : '#b91c1c', fontSize: 14, fontWeight: 600 }}><Pic n={msg.ok ? 'ok' : 'ko'}/>{msg.t}</div>}
       <button type="submit" style={styleBouton(true, '#475569')}>Enregistrer</button>
     </form>
   );
@@ -156,7 +156,7 @@ function MesResultats({ naviguer, reglages }) {
               <th style={{ padding: '4px 8px' }}>Corrections vues</th><th style={{ padding: '4px 8px' }}>Temps</th><th style={{ padding: '4px 8px' }}>Dernière fois</th></tr></thead>
             <tbody>{ag.sort((a, b) => (b.derniere || '').localeCompare(a.derniere || '')).map(a => (
               <tr key={a.cle} style={{ borderTop: `1px solid ${KIT.bord}` }}>
-                <td style={{ padding: '4px 8px' }}>{a.reussi ? '✅' : '⬜'}</td>
+                <td style={{ padding: '4px 8px' }}><Pic n={a.reussi ? 'ok' : 'empty'}/></td>
                 <td style={{ padding: '4px 8px' }}><b>{etq[a.cle]?.comp}</b> {etq[a.cle]?.titre || a.cle}</td>
                 <td style={{ padding: '4px 8px' }}>{a.essais}</td><td style={{ padding: '4px 8px' }}>{a.vues}</td>
                 <td style={{ padding: '4px 8px' }}>{formatDuree(a.duree)}</td><td style={{ padding: '4px 8px' }}>{formatDate(a.derniere)}</td>
@@ -196,7 +196,7 @@ function TuileFiches({ naviguer }) {
   return (
     <button data-tuile-fiches onClick={() => naviguer(103)} style={{ display: 'flex', alignItems: 'center', gap: 16, width: '100%', textAlign: 'left', margin: 0, padding: '20px 22px', borderRadius: 22,
       border: 0, background: '#2cc4ae', cursor: 'pointer', color: '#04352d' }}>
-      <span aria-hidden="true" style={{ fontSize: 42, lineHeight: 1 }}>📇</span>
+      <Pic n="cards" t={44} style={{ flex: 'none' }}/>
       <span style={{ flex: 1, minWidth: 0 }}>
         <b style={{ display: 'block', fontSize: 21, fontFamily: "'Outfit', sans-serif", color: '#04352d' }}>Mes fiches de révision{n ? ` · ${n} fiche${n > 1 ? 's' : ''}` : ''}</b>
         <span style={{ display: 'block', fontSize: 14.5, color: '#04352d', lineHeight: 1.45, marginTop: 2 }}>
@@ -214,7 +214,7 @@ function TuileFiches({ naviguer }) {
 function ReglagesEleve({ sess }) {
   return (
     <section data-reglages-eleve aria-label="Mon compte" style={{ background: '#fff', border: '1px solid #d5dfeb', borderRadius: 22, padding: 22, textAlign: 'left' }}>
-      <h3 style={{ margin: '0 0 10px', font: "800 22px Outfit, Inter, sans-serif", color: '#0c1a2e' }}>⚙️ Mon compte</h3>
+      <h3 style={{ margin: '0 0 10px', font: "800 22px Outfit, Inter, sans-serif", color: '#0c1a2e' }}><Pic n="gear"/>Mon compte</h3>
       <div style={{ fontSize: 15, color: KIT.txt2, lineHeight: 1.7 }}>
         Identifiant : <b style={{ color: KIT.txt }}>{sess.profil.identifiant}</b>
         {sess.profil.classe ? <><br />Classe : <b style={{ color: KIT.txt }}>{sess.profil.classe}</b></> : null}

@@ -83,23 +83,23 @@ export function VieDeClasse({ lignes, apercu, rafraichir = 0 }) {
         @media (prefers-reduced-motion: reduce) { .vc *, .vc *::before, .vc *::after { animation: none !important; transition: none !important; } }
       `}</style>
 
-      <h3>👥 Ma classe cette semaine</h3>
+      <h3><Pic n="users"/>Ma classe cette semaine</h3>
       <p className="vc-sous">Depuis le lundi {lundi}. Ici, personne n’est classé : on avance ensemble.</p>
 
       <div className="vc-objectif">
         <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1.5, opacity: .8 }}>OBJECTIF DE LA CLASSE</div>
         <div style={{ fontSize: 22, fontWeight: 800, margin: '2px 0' }}>
-          {atteint ? '🎉 Objectif atteint !' : <>Encore <span style={{ color: '#b45309' }}>{reste}</span> réussite{reste > 1 ? 's' : ''} à faire ensemble</>}
+          {atteint ? <><Pic n="party"/>Objectif atteint !</> : <>Encore <span style={{ color: '#b45309' }}>{reste}</span> réussite{reste > 1 ? 's' : ''} à faire ensemble</>}
         </div>
         <div className="vc-piste" role="progressbar" aria-valuemin={0} aria-valuemax={objectif} aria-valuenow={Math.min(reussites, objectif)} aria-label="Avancée de l’objectif de la classe">
           <i style={{ width: mont ? `${Math.max(3, frac * 100)}%` : '0%' }} />
-          <span className="vc-fusee" aria-hidden="true" style={{ left: mont ? `${Math.max(3, frac * 100)}%` : '0%' }}>🚀</span>
-          <span className="vc-fin" aria-hidden="true">{atteint ? '🏆' : '🪐'}</span>
+          <span className="vc-fusee" aria-hidden="true" style={{ left: mont ? `${Math.max(3, frac * 100)}%` : '0%' }}><Pic n="rocket" t={26}/></span>
+          <span className="vc-fin" aria-hidden="true">{atteint ? <Pic n="trophy" t={26}/> : <Pic n="globe" t={26}/>}</span>
         </div>
         <div style={{ fontSize: 14, opacity: .9 }}>
           <b>{Math.min(reussites, objectif)}</b> sur {objectif} exercices réussis par la classe ({effectif} élèves). Chacun compte pour {MAX_PAR_ELEVE} au plus :
           c’est l’effort de tous qui fait avancer la fusée.
-          {prog.reussis > 0 && <> Toi, cette semaine : <b>{Math.min(prog.reussis, MAX_PAR_ELEVE)}</b> 💪</>}
+          {prog.reussis > 0 && <> Toi, cette semaine : <b>{Math.min(prog.reussis, MAX_PAR_ELEVE)}</b> <Pic n="dumbbell"/></>}
         </div>
       </div>
 
@@ -117,7 +117,7 @@ export function VieDeClasse({ lignes, apercu, rafraichir = 0 }) {
                   <div style={{ fontWeight: 800, color: '#0f172a' }}>{p.titre}</div>
                   <div style={{ fontSize: 12.5, color: '#64748b' }}>{p.regle}</div>
                 </div>
-                {fait && <span title="Prouesse atteinte" style={{ fontSize: 20 }}>✅</span>}
+                {fait && <span title="Prouesse atteinte" style={{ fontSize: 20 }}><Pic n="ok"/></span>}
               </div>
               <div className="vc-mini" role="progressbar" aria-valuemin={0} aria-valuemax={p.cible} aria-valuenow={mien} aria-label={`Ta progression : ${p.titre}`}>
                 <i style={{ width: mont ? `${(mien / p.cible) * 100}%` : '0%' }} /></div>
