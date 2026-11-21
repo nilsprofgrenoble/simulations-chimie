@@ -23,7 +23,7 @@ const T = s => (typeof s === 'string'
 const melange = n => { const a = Array.from({ length: n }, (_, i) => i); for (let i = n - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const VERT = '#15803d', ROUGE = '#b91c1c';
 const Verdict = ({ ok, children }) => (
-  <div style={{ fontSize: 14, marginTop: 8, fontWeight: 700, color: ok ? VERT : ROUGE }}>{ok ? '✅ ' : '❌ '}{children}</div>
+  <div role="status" style={{ fontSize: 14, marginTop: 8, fontWeight: 700, color: ok ? VERT : ROUGE }}>{ok ? '✅ ' : '❌ '}{children}</div>
 );
 const Expl = ({ ok, children }) => (
   <div style={{ fontSize: 13.5, marginTop: 3, marginLeft: 4, color: ok == null ? KIT.txt : ok ? '#166534' : '#991b1b', lineHeight: 1.5 }}>{children}</div>

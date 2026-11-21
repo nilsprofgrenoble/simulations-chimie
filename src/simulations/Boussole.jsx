@@ -330,7 +330,7 @@ export function SimulationBoussole({ naviguer }) {
         <button onClick={() => { noterDefi(surAxe && calme && Math.abs(Math.abs(dev) - defi.X) <= 3 && proche(lireNombre(defi.reps.b) * 1e-6, defiVrai, 0.05)); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={nouveauDefi} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
-      {defiRes && <div style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
+      {defiRes && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
         <div style={{ color: defiRes.posOk ? '#16a34a' : '#dc2626' }}>{defiRes.posOk ? '✓ Position correcte.' : '✗ Position : placez la boussole sur l’axe horizontal et attendez que l’aiguille se stabilise à ' + defi.X + '° (±3°).'}</div>
         <div style={{ color: defiRes.valOk ? '#16a34a' : '#dc2626' }}>{defiRes.valOk ? '✓ Champ de l’aimant correct.' : `✗ Pensez à tan α = B aimant / B Terre : B aimant = 50 × tan ${defi.X}° ≈ ${nbf(defiVrai * 1e6, 0)}${NB}µT.`}</div>
       </div>}
