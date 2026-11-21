@@ -72,9 +72,9 @@ export function Graphe({ aria, series, xLog = false, yLog = false, x0, x1, y0, y
           const pts = s.pts.filter((p) => (!xLog || p[0] > 0) && (!yLog || p[1] > 0));
           return (
             <g key={k}>
-              <polyline points={pts.map((p) => `${fx(p[0]).toFixed(1)},${fy(p[1]).toFixed(1)}`).join(" ")} fill="none" stroke={s.c}
-                strokeWidth={s.ep || 2.6} strokeDasharray={s.tirets ? "7 5" : undefined} strokeLinejoin="round" />
-              {s.marq && pts.map((p, i) => <circle key={i} cx={fx(p[0])} cy={fy(p[1])} r="4" fill={s.tirets ? "#fff" : s.c} stroke={s.c} strokeWidth="2" />)}
+              {!s.pointsSeuls && <polyline points={pts.map((p) => `${fx(p[0]).toFixed(1)},${fy(p[1]).toFixed(1)}`).join(" ")} fill="none" stroke={s.c}
+                strokeWidth={s.ep || 2.6} strokeDasharray={s.tirets ? "7 5" : undefined} strokeLinejoin="round" />}
+              {s.marq && pts.map((p, i) => <circle key={i} cx={fx(p[0])} cy={fy(p[1])} r={s.pointsSeuls ? 5 : 4} fill={s.tirets ? "#fff" : s.c} stroke={s.c} strokeWidth="2" />)}
             </g>
           );
         })}
@@ -135,22 +135,33 @@ export function FCisaillement({ maxWidth = 320 }) {
   );
 }
 
-// Viscosimètre à cylindres coaxiaux : le moteur impose la rotation N, le capteur mesure le couple C.
-export function FViscosimetre({ maxWidth = 320 }) {
+// Rhéomètre rotatif, géométrie cône-plan : le moteur impose la rotation N du cône, le capteur mesure le couple C.
+// `rot` (0 à 1) épaissit la flèche de rotation quand on augmente la vitesse.
+export function FViscosimetre({ maxWidth = 320, rot = 0.3 }) {
+  const ep = 2 + rot * 4;
   return (
-    <Svg aria="Viscosimètre rotatif : un mobile cylindrique tourne dans l'échantillon ; le moteur impose la vitesse de rotation N, le capteur mesure le couple C" vb="0 0 300 240" maxWidth={maxWidth}>
-      <rect x="95" y="14" width="110" height="40" rx="6" fill="#e2e8f0" stroke="#475569" />
-      <text x="150" y="30" fontSize="13.5" fontWeight="700" textAnchor="middle" fill={NOIR}>moteur : impose N</text>
-      <text x="150" y="47" fontSize="13.5" textAnchor="middle" fill={NOIR}>capteur : mesure C</text>
-      <rect x="143" y="54" width="14" height="118" fill="#94a3b8" stroke="#475569" />
-      <path d="M90 100 L90 200 Q90 218 108 218 L192 218 Q210 218 210 200 L210 100" fill="#fef3c7" stroke="#475569" strokeWidth="2" />
-      <rect x="92" y="112" width="116" height="104" fill="#fde68a" opacity="0.6" />
-      <rect x="128" y="150" width="44" height="40" fill="#64748b" stroke="#334155" />
-      <text x="150" y="176" fontSize="14" fontWeight="700" textAnchor="middle" fill="#fff">mobile</text>
-      <path d="M232 92 A 26 26 0 1 1 214 70" fill="none" stroke={ORANGE} strokeWidth="3" />
-      <polyline points="208,66 214,70 211,77" fill="none" stroke={ORANGE} strokeWidth="3" />
-      <text x="244" y="92" fontSize="15" fontWeight="700" fill={ORANGE}>N</text>
-      <text x="150" y="236" fontSize="13.5" textAnchor="middle" fill={KIT.txt2}>échantillon</text>
+    <Svg aria="Rhéomètre rotatif à géométrie cône-plan : la tête contient le moteur, qui impose la vitesse de rotation N du cône, et le capteur, qui mesure le couple C ; l'échantillon forme une couche mince entre le cône mobile et la plaque fixe" vb="0 0 300 236" maxWidth={maxWidth}>
+      {/* tête de mesure */}
+      <rect x="96" y="10" width="108" height="46" rx="8" fill="#e2e8f0" stroke="#475569" strokeWidth="1.6" />
+      <text x="150" y="29" fontSize="14" fontWeight="700" textAnchor="middle" fill={NOIR}>moteur</text>
+      <text x="150" y="47" fontSize="14" fontWeight="700" textAnchor="middle" fill={NOIR}>capteur</text>
+      <text x="212" y="30" fontSize="14" fontWeight="800" fill={ORANGE}>impose N</text>
+      <text x="212" y="48" fontSize="14" fontWeight="800" fill={BLEU}>mesure C</text>
+      {/* axe et cône */}
+      <rect x="144" y="56" width="12" height="48" fill="#94a3b8" stroke="#475569" />
+      <rect x="86" y="140" width="128" height="18" fill="#fde68a" />
+      <polygon points="86,140 150,158 214,140 214,104 86,104" fill="#64748b" stroke="#334155" strokeWidth="1.6" strokeLinejoin="round" />
+      <text x="150" y="128" fontSize="14" fontWeight="700" textAnchor="middle" fill="#fff">cône mobile</text>
+      {/* plaque fixe */}
+      <rect x="66" y="158" width="168" height="16" rx="2" fill="#cbd5e1" stroke="#475569" strokeWidth="1.6" />
+      <text x="150" y="192" fontSize="14" textAnchor="middle" fill={NOIR}>plaque fixe</text>
+      {/* rotation */}
+      <path d="M118 84 Q150 62 182 84" fill="none" stroke={ORANGE} strokeWidth={ep} strokeLinecap="round" />
+      <polyline points="172,76 183,84 170,88" fill="none" stroke={ORANGE} strokeWidth={Math.max(2.4, ep * 0.8)} strokeLinecap="round" strokeLinejoin="round" />
+      <text x="106" y="80" fontSize="15" fontWeight="800" fill={ORANGE}>N</text>
+      {/* légende échantillon */}
+      <rect x="40" y="206" width="14" height="14" fill="#fde68a" stroke="#475569" />
+      <text x="62" y="218" fontSize="14" fill={NOIR}>échantillon : couche mince cisaillée</text>
     </Svg>
   );
 }

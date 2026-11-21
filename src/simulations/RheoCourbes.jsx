@@ -187,123 +187,159 @@ function Hypotheses() {
 // ---------------------------------------------------------------------------
 // Exploration libre : un produit du modèle ou une peinture mesurée, avec ses réglages repliés.
 // ---------------------------------------------------------------------------
-const NOMS_PRODUITS = { ...Object.fromEntries(Object.entries(PRODUITS).map(([k, v]) => [k, v.nom])), A: "Mesures : peinture A", B: "Mesures : peinture B" };
+const PRODUITS_EXPLO = { ...PRODUITS, creme: { nom: "Crème thixotrope (données simulées)", tau0: 8, K: 4, n: 0.5, thixo: 0.45 } };
+const NOMS_PRODUITS = { ...Object.fromEntries(Object.entries(PRODUITS_EXPLO).map(([k, v]) => [k, v.nom.includes("simulées") ? v.nom : v.nom + " (données simulées)"])), A: "Peinture A (mesures réelles)", B: "Peinture B (mesures réelles)" };
+const BRUIT_V = [0.008, -0.01, 0.006, -0.007, 0.01, -0.009, 0.005, -0.006, 0.007, -0.005];
+const BRUIT_R = [0.012, -0.015, 0.009, -0.011, 0.014, -0.008, 0.01, -0.012, 0.006];
+const MODELE_DEPART = { tau0: 0, K: 0.1, n: 1, thixo: 0 };
+
+// Points de mesure du produit choisi : mesures réelles (peintures) ou mesures simulées d'un produit modèle, avec un léger bruit.
+function mesuresExplo(prod, rheo) {
+  const peinture = prod === "A" || prod === "B";
+  let g = GAMMAS_PEINTURES, aller, retour;
+  if (peinture) {
+    aller = tauMesure(prod, "aller"); retour = tauMesure(prod, "retour");
+    if (rheo) { g = [...GAMMAS_RHEO, ...g]; aller = [...TAU_RHEO[prod], ...aller]; retour = [...GAMMAS_RHEO.map(() => null), ...retour]; }
+  } else {
+    const q = PRODUITS_EXPLO[prod];
+    const r = rampe(q);
+    aller = r.aller.map((t, i) => t * (1 + BRUIT_V[i]));
+    retour = r.retour.map((t, i) => t * (1 + BRUIT_V[(i + 4) % 10]));
+    if (rheo) { g = [...GAMMAS_RHEO, ...g]; aller = [...GAMMAS_RHEO.map((x, i) => tauHB(x, q) * (1 + BRUIT_R[i])), ...aller]; retour = [...GAMMAS_RHEO.map(() => null), ...retour]; }
+  }
+  return { g, aller, retour };
+}
 
 function Exploration() {
   const [prod, setProd] = useState("shampooing");
-  const [p, setP] = useState({ ...PRODUITS.shampooing });
+  const [pMod, setPMod] = useState({ ...MODELE_DEPART });
+  const [pts, setPts] = useState(true);
+  const [mod, setMod] = useState(false);
+  const [vue, setVue] = useState("tau");
   const [boucle, setBoucle] = useState(false);
+  const [rheo, setRheo] = useState(false);
   const [logX, setLogX] = useState(false);
   const [logY, setLogY] = useState(false);
   const [gi, setGi] = useState(4);
-  const [rheo, setRheo] = useState(false);
-  const [ouvReglages, setOuvReglages] = useState(false);
+  const [ouvOptions, setOuvOptions] = useState(false);
   const [ouvEssayer, setOuvEssayer] = useState(false);
   const [ouvRetenir, setOuvRetenir] = useState(false);
-  const mesure = prod === "A" || prod === "B";
-  const changer = (k) => {
-    setProd(k);
-    setP(k === "A" || k === "B" ? { tau0: 0, K: 10, n: 0.8, thixo: 0 } : { ...PRODUITS[k] });
-  };
-  const g = GAMMAS_PEINTURES[gi];
-  const bas = mesure && rheo;
-  const logXe = logX || bas;
-  const modele = useMemo(() => courbesModele(p, logXe, bas), [p, logXe, bas]);
-  const r = useMemo(() => rampe(p), [p]);
-  const xr = logXe ? { x0: bas ? 0.001 : 0.1, x1: 1000 } : { x0: 0, x1: 300 };
-  const col = mesure ? COULEURS[prod] : COULEURS[prod] || COULEURS.mystere;
+  const peinture = prod === "A" || prod === "B";
+  const aRetour = peinture || PRODUITS_EXPLO[prod].thixo > 0;
+  const changer = (k) => { setProd(k); setPMod({ ...MODELE_DEPART }); setGi(0); setBoucle(false); };
 
-  const sTau = [], sEta = [];
-  if (mesure) {
-    const d = donneesPeintures(boucle);
-    sTau.push({ pts: d.tau[prod + "aller"], c: col, marq: true });
-    sEta.push({ pts: d.eta[prod + "aller"], c: col, marq: true });
-    if (boucle) { sTau.push({ pts: d.tau[prod + "retour"], c: col, marq: true, tirets: true }); sEta.push({ pts: d.eta[prod + "retour"], c: col, marq: true, tirets: true }); }
-    if (bas) {
-      const sim = GAMMAS_RHEO.map((gg, i) => [gg, TAU_RHEO[prod][i]]);
-      sTau.push({ pts: sim, c: "#0f172a", marq: true, tirets: true });
-      sEta.push({ pts: sim.map(([gg, t]) => [gg, (t / gg) * 1000]), c: "#0f172a", marq: true, tirets: true });
-    }
-    sTau.push({ pts: modele.tau, c: COULEURS.modele, tirets: true, ep: 2.2 });
-    sEta.push({ pts: modele.eta, c: COULEURS.modele, tirets: true, ep: 2.2 });
-  } else {
-    sTau.push({ pts: modele.tau, c: col });
-    sEta.push({ pts: modele.eta, c: col });
-    if (boucle) {
-      const pt = r.gammas.map((x, i) => [x, r.aller[i]]), pr = r.gammas.map((x, i) => [x, r.retour[i]]);
-      sTau.push({ pts: pt, c: "#0f172a", marq: true, ep: 1.6 }, { pts: pr, c: "#ea580c", marq: true, tirets: true, ep: 1.6 });
-      sEta.push({ pts: pt.map(([x, t]) => [x, (t / x) * 1000]), c: "#0f172a", marq: true, ep: 1.6 }, { pts: pr.map(([x, t]) => [x, (t / x) * 1000]), c: "#ea580c", marq: true, tirets: true, ep: 1.6 });
-    }
+  const m = useMemo(() => mesuresExplo(prod, rheo), [prod, rheo]);
+  const i = Math.min(gi, m.g.length - 1);
+  const logXe = logX || rheo;
+  const logYe = logY || (rheo && vue === "eta");
+  const col = COULEURS[prod] || COULEURS.mystere;
+  const f = (t, x) => (vue === "tau" ? t : (t / x) * 1000);
+  const serie = (tab, extra) => ({ pts: m.g.map((x, k) => [x, tab[k]]).filter((q) => q[1] != null).map(([x, t]) => [x, f(t, x)]), pointsSeuls: true, marq: true, ...extra });
+  const series = [];
+  if (pts) {
+    series.push(serie(m.aller, { c: col }));
+    if (boucle && aRetour) series.push(serie(m.retour, { c: "#ea580c", tirets: true }));
   }
-  const aller = mesure ? [...(bas ? TAU_RHEO[prod] : []), ...tauMesure(prod, "aller")] : null;
-  const gammasAj = bas ? [...GAMMAS_RHEO, ...GAMMAS_PEINTURES] : GAMMAS_PEINTURES;
-  const ecart = mesure ? ecartRelatif(gammasAj, aller, p) : null;
-  const comportement = nomDuType(typeDe(p)) + (p.thixo > 0 && !mesure ? " · thixotrope" : "");
-  const maj = (cle) => (v) => setP((q) => ({ ...q, [cle]: v }));
-  const resume = `τ₀ = ${fmt(p.tau0, 1)} Pa · K = ${fmt(p.K, 2)} · n = ${fmt(p.n, 2)}${mesure ? "" : ` · thixotropie ${fmt(p.thixo, 2)}`}`;
-  const curseur = (nom, v, f, min, max, pas, aide) => (
+  const grille = logXe ? gradientsLog(rheo ? 0.001 : 0.1, 1000, 90) : GRILLE_LIN;
+  if (mod) series.push({ pts: grille.filter((x) => x > 0).map((x) => [x, f(tauHB(x, pMod), x)]), c: COULEURS.modele, tirets: true, ep: 2.6 });
+  // L'échelle verticale suit les POINTS mesurés : un modèle mal réglé sort du cadre au lieu d'écraser les points.
+  const vals = [];
+  m.g.forEach((x, k) => [m.aller[k], m.retour[k]].forEach((t) => { if (t != null && t > 0) vals.push(f(t, x)); }));
+  const vmax = Math.max(...vals), vmin = Math.min(...vals);
+  const yr = vue === "eta" && logYe ? { y0: Math.pow(10, Math.floor(Math.log10(vmin))), y1: Math.pow(10, Math.ceil(Math.log10(vmax))) } : { y0: 0, y1: vmax * 1.1 };
+  const xr = logXe ? { x0: rheo ? 0.001 : 0.1, x1: 1000 } : { x0: 0, x1: 300 };
+  const ecart = mod ? ecartRelatif(m.g, m.aller, pMod) : null;
+  const xi = m.g[i], ti = m.aller[i];
+  const repere = [{ x: xi, y: f(ti, xi), c: col }];
+  const maj = (cle) => (v) => setPMod((q) => ({ ...q, [cle]: v }));
+  const curseur = (nom, v, fn, min, max, pas, aide) => (
     <label style={{ display: "block", marginBottom: 8, fontSize: 14, color: KIT.txt2, fontWeight: 700 }}>
       {nom} <span style={{ color: KIT.txt }}>{fmt(v, pas < 0.1 ? 2 : 1)}</span>
-      <input type="range" min={min} max={max} step={pas} value={v} onChange={(e) => f(parseFloat(e.target.value))} aria-label={nom}
+      <input type="range" min={min} max={max} step={pas} value={v} onChange={(e) => fn(parseFloat(e.target.value))} aria-label={nom}
         style={{ width: "100%", display: "block", minHeight: 30, accentColor: "#0284c7" }} />
       <span style={{ fontWeight: 400, fontSize: 13 }}>{aide}</span>
     </label>
   );
+  const resumeOptions = [rheo ? "rhéomètre" : "viscosimètre", boucle ? "aller-retour" : "aller seul", logXe ? "γ̇ log" : "γ̇ linéaire"].join(" · ");
+  const etat = (actif) => ({ ...stylePetitBouton(actif, "#0f766e"), minHeight: 38 });
   return (
     <div style={{ marginTop: 10 }}>
-      <label style={{ display: "block", fontSize: 14, fontWeight: 700, color: KIT.txt2, marginBottom: 6 }}>
+      <label style={{ display: "block", fontSize: 14, fontWeight: 700, color: KIT.txt2, marginBottom: 8 }}>
         Produit étudié
         <select value={prod} onChange={(e) => changer(e.target.value)} aria-label="Produit étudié"
           style={{ display: "block", width: "100%", minHeight: 42, fontSize: 16, padding: "6px 8px", borderRadius: 10, border: `1px solid ${KIT.bord}`, marginTop: 2 }}>
           {Object.entries(NOMS_PRODUITS).map(([k, n]) => <option key={k} value={k}>{n}</option>)}
         </select>
       </label>
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", margin: "6px 0" }}>
-        <button type="button" style={stylePetitBouton(boucle, "#ea580c")} aria-pressed={boucle} onClick={() => setBoucle(!boucle)}>Montée puis descente de γ̇ (aller-retour)</button>
-        <button type="button" style={stylePetitBouton(logXe, "#334155")} aria-pressed={logXe} onClick={() => setLogX(!logX)}>γ̇ en échelle logarithmique</button>
-        <button type="button" style={stylePetitBouton(logY, "#334155")} aria-pressed={logY} onClick={() => setLogY(!logY)}>η en échelle logarithmique</button>
-        {mesure && <button type="button" style={stylePetitBouton(rheo, "#0f172a")} aria-pressed={rheo} onClick={() => setRheo(!rheo)}>Ajouter les points de rhéomètre (simulés)</button>}
+      <div role="group" aria-label="Courbe affichée" style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+        <button type="button" style={etat(vue === "tau")} aria-pressed={vue === "tau"} onClick={() => setVue("tau")}>Courbe d’écoulement : τ en fonction de γ̇</button>
+        <button type="button" style={etat(vue === "eta")} aria-pressed={vue === "eta"} onClick={() => setVue("eta")}>Courbe de viscosité : η en fonction de γ̇</button>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 4 }}>
-        {mesure ? (bas ? "Points colorés : mesures réelles du viscosimètre. Points noirs en tirets : rhéomètre, SIMULÉ (aux très bas gradients). Tirets verts : le modèle que vous réglez." : "Points : mesures réelles. Tirets verts : le modèle de Herschel-Bulkley que vous réglez.") : "Courbe : le modèle. Avec l’aller-retour : points noirs à la montée, points orange creux à la descente."}
+      <Graphe aria={vue === "tau" ? "Courbe d'écoulement : contrainte en fonction du gradient, points de mesure et modèle" : "Courbe de viscosité : viscosité en fonction du gradient, points de mesure et modèle"}
+        series={series} xLog={logXe} yLog={vue === "eta" && logYe} {...xr} {...yr} xTitre="γ̇ (s⁻¹)" yTitre={vue === "tau" ? "τ (Pa)" : "η (mPa·s)"} reperes={pts ? repere : []} />
+      <Legende items={[
+        ...(pts ? [{ c: col, nom: peinture ? "Points mesurés (aller)" : "Points mesurés (simulés)" }] : []),
+        ...(pts && boucle && aRetour ? [{ c: "#ea580c", nom: "Points au retour", tirets: true }] : []),
+        ...(mod ? [{ c: COULEURS.modele, nom: "Courbe du modèle", tirets: true }] : []),
+      ]} />
+      <div style={{ fontSize: 13.5, color: KIT.txt2, margin: "6px 0 4px" }}>
+        Un <strong>point</strong> est une mesure ; la <strong>courbe</strong> est un modèle qui essaie de passer au plus près des points.
       </div>
-      <Graphe aria="Courbe d'écoulement : contrainte en fonction du gradient" series={sTau} xLog={logX} {...xr} xTitre="γ̇ (s⁻¹)" yTitre="τ (Pa)"
-        reperes={mesure ? [] : [{ x: g, y: tauHB(g, p), c: col }]} />
-      <div style={{ height: 8 }} />
-      <Graphe aria="Courbe de viscosité : viscosité en fonction du gradient" series={sEta} xLog={logX} yLog={logY} {...xr} xTitre="γ̇ (s⁻¹)" yTitre="η (mPa·s)"
-        reperes={mesure ? [] : [{ x: g, y: etaHB(g, p) * 1000, c: col }]} />
-      {!mesure && <CurseurGradient i={gi} setI={setGi} />}
-      <div style={{ marginTop: 6 }}>
-        {!mesure && <LigneMesure nom="τ" valeur={`${fmt(tauHB(g, p), 1)}${NB}Pa`} couleur={col} />}
-        {!mesure && <LigneMesure nom="η" valeur={`${fmt(etaHB(g, p) * 1000, 0)}${NB}mPa·s`} couleur={col} />}
-        {!mesure && <LigneMesure nom="Comportement" valeur={comportement} />}
-        {mesure && <LigneMesure nom="Écart moyen modèle / mesures" valeur={`${fmt(ecart * 100, 1)}${NB}%`} couleur={ecart < 0.05 ? "#15803d" : "#b45309"} />}
+      <div role="group" aria-label="Éléments affichés" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        <button type="button" style={etat(pts)} aria-pressed={pts} onClick={() => setPts(!pts)}>Points de mesure</button>
+        <button type="button" style={etat(mod)} aria-pressed={mod} onClick={() => setMod(!mod)}>Courbe du modèle</button>
       </div>
-      <Section titre={`Régler le modèle · ${resume}`} ouvert={ouvReglages} onBascule={() => setOuvReglages((o) => !o)}>
-        <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 8 }}>Le modèle de Herschel-Bulkley : τ = τ₀ + K·γ̇<sup>n</sup>. Chaque réglage change la forme des courbes.</div>
-        {curseur("Seuil d’écoulement τ₀ (Pa)", p.tau0, maj("tau0"), 0, 40, 0.5, "Contrainte à dépasser pour que le produit coule. 0 : pas de seuil.")}
-        {curseur("Consistance K (Pa·sⁿ)", p.K, maj("K"), 0.02, 20, 0.02, "Plus K est grand, plus le produit est épais.")}
-        {curseur("Indice n (sans unité)", p.n, maj("n"), 0.3, 1.6, 0.01, "n = 1 : newtonien · n < 1 : rhéofluidifiant · n > 1 : rhéoépaississant.")}
-        {!mesure && curseur("Thixotropie (0 = aucune)", p.thixo, maj("thixo"), 0, 0.6, 0.05, "Active l’aller-retour : plus la valeur est grande, plus le retour passe sous l’aller.")}
-        {mesure && (
-          <button type="button" style={styleBouton(false, "#16a34a")} onClick={() => { const a = ajusterHB(gammasAj, aller); setP({ tau0: a.tau0, K: +a.K.toFixed(2), n: +a.n.toFixed(2), thixo: 0 }); }}>
-            Ajuster automatiquement (courbe aller)
+
+      {pts && (
+        <div style={{ marginTop: 8 }}>
+          <label style={{ display: "block", fontSize: 14, fontWeight: 700, color: KIT.txt2 }}>
+            Point mesuré n° {i + 1} sur {m.g.length} : γ̇ = <span style={{ color: KIT.txt }}>{String(+xi.toPrecision(3)).replace(".", ",")}{NB}s⁻¹</span>
+            <input type="range" min={0} max={m.g.length - 1} step={1} value={i} onChange={(e) => setGi(parseInt(e.target.value, 10))} aria-label="Choisir un point de mesure"
+              style={{ width: "100%", display: "block", minHeight: 30, accentColor: "#0284c7" }} />
+          </label>
+          <LigneMesure nom="τ mesurée" valeur={`${fmt(ti, ti < 10 ? 2 : 1)}${NB}Pa`} couleur={col} />
+          <LigneMesure nom="η = τ / γ̇" valeur={`${fmt((ti / xi) * 1000, 0)}${NB}mPa·s`} couleur={col} />
+          {mod && <LigneMesure nom="τ du modèle au même γ̇" valeur={`${fmt(tauHB(xi, pMod), tauHB(xi, pMod) < 10 ? 2 : 1)}${NB}Pa`} couleur={COULEURS.modele} />}
+        </div>
+      )}
+
+      {mod && (
+        <div style={{ ...styleBoite, marginTop: 10 }}>
+          <div style={{ fontWeight: 700, marginBottom: 2 }}>Régler le modèle : τ = τ₀ + K·γ̇<sup>n</sup></div>
+          <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 8 }}>Modifie les trois réglages jusqu’à ce que la courbe passe au plus près des points.</div>
+          {curseur("Seuil d’écoulement τ₀ (Pa)", pMod.tau0, maj("tau0"), 0, 40, 0.5, "Contrainte à dépasser pour que le produit coule. 0 : pas de seuil.")}
+          {curseur("Consistance K (Pa·sⁿ)", pMod.K, maj("K"), 0.02, 30, 0.02, "Plus K est grand, plus le produit est épais.")}
+          {curseur("Indice n (sans unité)", pMod.n, maj("n"), 0.3, 1.6, 0.01, "n = 1 : newtonien · n < 1 : rhéofluidifiant · n > 1 : rhéoépaississant.")}
+          <LigneMesure nom="Comportement du modèle" valeur={nomDuType(typeDe(pMod))} />
+          <LigneMesure nom="Écart moyen modèle / points" valeur={ecart > 1 ? "plus de 100 %" : `${fmt(ecart * 100, 1)}${NB}%`} couleur={ecart < 0.05 ? "#15803d" : "#b45309"} />
+          <button type="button" style={{ ...styleBouton(false, "#16a34a"), marginTop: 6 }} onClick={() => { const a = ajusterHB(m.g, m.aller); setPMod({ tau0: a.tau0, K: +a.K.toFixed(2), n: +a.n.toFixed(2), thixo: 0 }); }}>
+            Ajuster automatiquement
           </button>
-        )}
-        <div style={{ fontSize: 13, color: "#92400e", marginTop: 6 }}>Hors référentiel : l’ajustement d’un modèle sur des mesures (Herschel-Bulkley) prolonge le programme, qui demande d’identifier le comportement sur le rhéogramme.</div>
+          <div style={{ fontSize: 13, color: "#92400e", marginTop: 6 }}>Hors référentiel : l’ajustement d’un modèle sur des mesures (Herschel-Bulkley) prolonge le programme, qui demande d’identifier le comportement sur le rhéogramme.</div>
+        </div>
+      )}
+
+      <Section titre={`Options de mesure · ${resumeOptions}`} ouvert={ouvOptions} onBascule={() => setOuvOptions((o) => !o)}>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <button type="button" style={etat(rheo)} aria-pressed={rheo} onClick={() => { setRheo(!rheo); setGi(0); }}>Descendre à 0,001 s⁻¹ (rhéomètre, points simulés)</button>
+          {aRetour && <button type="button" style={etat(boucle)} aria-pressed={boucle} onClick={() => setBoucle(!boucle)}>Montée puis descente de γ̇ (aller-retour)</button>}
+          <button type="button" style={etat(logXe)} aria-pressed={logXe} onClick={() => setLogX(!logX)}>γ̇ en échelle logarithmique</button>
+          {vue === "eta" && <button type="button" style={etat(logYe)} aria-pressed={logYe} onClick={() => setLogY(!logY)}>η en échelle logarithmique</button>}
+        </div>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6 }}>Le rhéomètre descend aux très bas gradients, où le viscosimètre ne mesure pas : ces points sont <strong>simulés</strong>. L’aller-retour montre la thixotropie.</div>
       </Section>
       <Section titre="À essayer" ouvert={ouvEssayer} onBascule={() => setOuvEssayer((o) => !o)}>
         {puces(
-          "Sélectionne le glycérol, puis le shampooing : que devient la courbe de viscosité quand le comportement n’est plus newtonien ?",
-          "Pour la boue, passe γ̇ en échelle logarithmique : que devient η quand γ̇ devient très petit ? Pourquoi dit-on que le produit « ne s’écoule pas » sous le seuil ?",
-          "Choisis la peinture B et lance « Ajuster automatiquement » : quelle valeur de τ₀ obtiens-tu ? Et pour la peinture A ? Que conclus-tu sur leur comportement ?",
-          "Active l’aller-retour et augmente la thixotropie du shampooing : de quelle quantité la viscosité à 1 s⁻¹ baisse-t-elle au retour ?",
+          "Choisis le glycérol : place la courbe du modèle sur les points. Quelles valeurs de τ₀ et de n obtiens-tu ? Que conclus-tu ?",
+          "Pour la boue de forage, ouvre « Options de mesure » et descend à 0,001 s⁻¹ : que fait τ quand γ̇ devient très petit ? Que vaut le seuil ?",
+          "Choisis la peinture B puis « Ajuster automatiquement » : quelle valeur de τ₀ obtiens-tu avec, puis sans les points du rhéomètre ? Et pour la peinture A ?",
+          "Pour la crème thixotrope, active l’aller-retour : à γ̇ = 1 s⁻¹, de quel pourcentage la viscosité baisse-t-elle au retour ?",
         )}
       </Section>
       <Section titre="À retenir" ouvert={ouvRetenir} onBascule={() => setOuvRetenir((o) => !o)}>
         <FTroisComportements />
         {puces(
-          <>Un fluide <strong>newtonien</strong> a une viscosité constante ; un fluide <strong>plastique</strong> ne s’écoule qu’au-delà d’une <strong>contrainte seuil</strong> τ₀ ; un fluide <strong>thixotrope</strong> a une courbe retour sous la courbe aller.</>,
+          <>Un fluide <strong>newtonien</strong> a une viscosité constante ; un fluide <strong>plastique</strong> ne s’écoule qu’au-delà d’une <strong>contrainte seuil</strong> τ₀ ; un fluide <strong>pseudoplastique</strong> devient plus fluide quand γ̇ augmente ; un fluide <strong>thixotrope</strong> a une courbe retour sous la courbe aller.</>,
           <>η = τ / γ̇ : sur la courbe d’écoulement, c’est la pente de la droite qui joint l’origine au point.</>,
         )}
       </Section>
@@ -442,7 +478,7 @@ export function SimulationRheoCourbes() {
         </div>
         {puces(<>γ̇ en <strong>s⁻¹</strong>, τ en <strong>Pa</strong>, η en <strong>Pa·s</strong> (1 Pa·s = 1 000 mPa·s).</>, <>La <strong>viscosité cinématique</strong> ν = η / ρ s’exprime en m²·s⁻¹ (ρ : masse volumique).</>)}
       </>,
-      texte: "Dans un viscosimètre rotatif, le moteur impose la vitesse de rotation N du mobile : elle fixe le gradient γ̇ (pour ce mobile, γ̇ = 0,30 × N, avec N en tr/min). Le capteur mesure ce qu’il faut fournir pour maintenir cette rotation. Déplace le curseur de vitesse.",
+      texte: "Dans un viscosimètre ou un rhéomètre rotatif, le moteur impose la vitesse de rotation N : elle fixe le gradient γ̇ (pour le mobile MSR3 de ton viscosimètre, γ̇ = 0,30 × N, avec N en tr/min). Le capteur mesure ce qu’il faut fournir pour maintenir cette rotation. Déplace le curseur de vitesse.",
       tache: {
         type: "qcm", q: "Pour obtenir la contrainte τ, quelle grandeur le viscosimètre mesure-t-il ?",
         options: ["Le couple exercé sur le mobile", "La température de l’échantillon", "La masse volumique du fluide", "La durée d’un tour du mobile"], bonne: 0,
@@ -601,7 +637,7 @@ export function SimulationRheoCourbes() {
     if (e === 0) return <FCisaillement />;
     if (e === 1) return (
       <div>
-        <FViscosimetre />
+        <FViscosimetre rot={rpm / 1000} />
         <label style={{ display: "block", fontSize: 14, fontWeight: 700, color: KIT.txt2 }}>
           Vitesse de rotation N = <span style={{ color: KIT.txt }}>{rpm}{NB}tr/min</span>
           <input type="range" min={0} max={1000} step={10} value={rpm} onChange={(ev) => setRpm(parseInt(ev.target.value, 10))} aria-label="Vitesse de rotation"
