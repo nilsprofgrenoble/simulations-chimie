@@ -9,6 +9,7 @@ import { useSession, restaurer, estEleve, estProf } from "./serveur";
 import { chapitresDuNiveau, confierNavigation, SIMS_HORS_MENU } from "./chapitres";
 import { EN_RECOLTE, finRecolte, capturerFigure, envoyerFigure } from "./fiches";
 import { SuiviTemps, nomsSim, simsCachees } from "./suivi";
+import { niveauxSim } from "./lectureSonore";
 import { ModeParDefaut } from "./ModeParDefaut";
 import CadreMission from "./CadreMission";
 import { missionEnCours } from "./mission";
@@ -555,7 +556,7 @@ const SIMULATIONS = [
   { id:124, label:"Grapheur de mesures", niveau:"COMPTE", icon:"📈", color:"#1d4ed8", component: SimulationGrapheur },
   { id:146, label:"Tensioactifs : de la structure à la CMC", niveau:"BTS", icon:"🫧", color:"#0369a1", component: SimulationTensioactifs },
 ];
-SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
+SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
 // Menus de l'en-tête, de gauche à droite (les simulations de chaque niveau viennent de src/chapitres.js)
 const MENUS_ENTETE = [
