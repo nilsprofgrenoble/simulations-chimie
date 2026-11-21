@@ -292,6 +292,8 @@ function ordreOptions(n, graine) {
 }
 export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const { etape, reps, verifs } = etat;
+  // Compteur de clics sur « Vérifier » : il refait apparaître le verdict à chaque clic pour que le lecteur d'écran l'annonce à chaque fois
+  const [ticVerif, setTicVerif] = useState(0);
   const et = etapes[Math.min(etape, etapes.length - 1)];
   const tache = et.tache;
   const TXT = '#0f172a', TXT2 = '#334155', BORDER = '#cbd5e1';
@@ -301,6 +303,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const maj = f => setEtat(e => ({ ...e, ...f(e) }));
   const setRep = v => maj(e => ({ reps: { ...e.reps, [etape]: v }, verifs: { ...e.verifs, [etape]: false } }));
   const verifier = () => {
+    setTicVerif(t => t + 1);
     maj(e => ({ verifs: { ...e.verifs, [etape]: true } }));
     // Une étape numérique peut demander à garder la valeur trouvée par l'élève (par exemple un volume lu)
     if (tache && tache.type === 'num' && tache.surReussite) {
@@ -440,6 +443,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       {tache && tache.type !== 'action' && !tache.bloque && (
         <div>
           {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
+          <div role="status" aria-live="polite" aria-atomic="true">{verifie && <div key={ticVerif}>
           {verifie && juste && tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs && (
             <div style={{ fontSize: 14, color: '#b45309', fontWeight: 700, marginTop: 6 }}>
               ✔ Valeur juste, mais arrondie trop tôt : <span style={{ fontWeight: 400, color: TXT }}>gardez au moins {tache.cs} chiffres significatifs (vous en avez écrit {nbCS(reps[etape])}).
@@ -466,6 +470,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
               )}
             </div>
           )}
+          </div>}</div>
         </div>
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>

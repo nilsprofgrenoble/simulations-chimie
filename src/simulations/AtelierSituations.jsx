@@ -16,7 +16,7 @@ const NB = ' ';
 const T = s => (typeof s === 'string'
   ? avecIndices(s.replace(/(\d) (?=\d{3}(?!\d))/g, `$1${NB}`).replace(/(\d) (?=[A-Za-zµ°%€Ωθ²³]|h\b)/g, `$1${NB}`).replace(/ ([:;?!])/g, `${NB}$1`))
   : s);
-const Verdict = ({ ok, children }) => <div style={{ fontSize: 14, marginTop: 8, fontWeight: 700, color: ok ? VERT : ROUGE }}>{ok ? '✅ ' : '❌ '}{children}</div>;
+const Verdict = ({ ok, children }) => <div role="status" style={{ fontSize: 14, marginTop: 8, fontWeight: 700, color: ok ? VERT : ROUGE }}>{ok ? '✅ ' : '❌ '}{children}</div>;
 const Expl = ({ ok, children }) => <div style={{ fontSize: 13.5, marginTop: 3, marginLeft: 4, color: ok == null ? KIT.txt : ok ? '#166534' : '#991b1b', lineHeight: 1.5 }}>{children}</div>;
 const choix = etat => ({
   ...styleBouton(etat === 'sel', '#0ea5e9'), textAlign: 'left', padding: '6px 10px', fontWeight: 600, lineHeight: 1.45,
