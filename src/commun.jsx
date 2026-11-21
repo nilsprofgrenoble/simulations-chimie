@@ -1,4 +1,4 @@
-import { Children, Fragment, cloneElement, isValidElement, useState, useEffect, useLayoutEffect, useRef, useMemo } from "react";
+import { Children, Fragment, cloneElement, isValidElement, useId, useState, useEffect, useLayoutEffect, useRef, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { compter } from "./stats";
 import { Pic, Emo } from "./Pictos";
@@ -15,10 +15,12 @@ import { enregistrer, noterModification, surChangementServeur } from "./etatsPar
 // ============================================================
 
 export function Field({ label, value, onChange, step = 0.01, min = 0, width = 90, type = "number" }) {
+  const id = useId();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <label style={{ fontSize: 13, color: "#334155" }}>{label}</label>
+      <label htmlFor={id} style={{ fontSize: 13, color: "#334155" }}>{label}</label>
       <input
+        id={id}
         type={type}
         value={value}
         step={type === "number" ? step : undefined}
@@ -30,9 +32,9 @@ export function Field({ label, value, onChange, step = 0.01, min = 0, width = 90
   );
 }
 
-export function CoeffInput({ value, onChange }) {
+export function CoeffInput({ value, onChange, label = "Coefficient stœchiométrique" }) {
   return (
-    <input type="number" value={value} min="1" step="1"
+    <input type="number" value={value} min="1" step="1" aria-label={label}
       onChange={e => onChange(Math.max(1, parseInt(e.target.value) || 1))}
       style={{ width: 38, padding: "4px 2px", textAlign: "center", borderRadius: 6, border: "1px solid #dbeafc", fontSize: 13 }} />
   );
@@ -369,7 +371,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           {etape > 0 && <button onClick={() => setEtat({ etape: 0, reps: {}, verifs: {}, reussies: {}, carnet: {}, ...(etat.fini ? { fini: true } : {}) })} style={{ background: 'none', border: 'none', color: TXT2,
             cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>revenir au début</button>}
         </div>
-        <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, marginTop: 4 }}>
+        <div role="progressbar" aria-label="Progression du parcours" aria-valuemin={1} aria-valuenow={etape + 1} aria-valuemax={etapes.length} aria-valuetext={`Étape ${etape + 1} sur ${etapes.length}`} style={{ height: 6, background: '#e2e8f0', borderRadius: 3, marginTop: 4 }}>
           <div style={{ width: `${(etape + 1) / etapes.length * 100}%`, height: '100%', background: ORANGE_GUIDE, borderRadius: 3, transition: 'width 0.3s' }}/>
         </div>
       </div>
@@ -402,7 +404,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           {tache.bloque && <div style={{ fontSize: 14, color: '#b45309', marginBottom: 6 }}>{tache.bloque}</div>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={i === tache.bonne ? 'true' : 'false'} onClick={() => setRep(i)}
+            {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={i === tache.bonne ? 'true' : 'false'} onClick={() => setRep(i)} aria-pressed={reps[etape] === i}
               style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left',
                 ...(typeof tache.options[i] !== 'string' ? { background: reps[etape] === i ? '#e0f2fe' : 'white', color: TXT, borderWidth: 2 } : {}) }}>{avecIndices(tache.options[i])}</button>)}
           </div>
@@ -468,10 +470,10 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
         <button onClick={() => maj(e => ({ etape: Math.max(0, e.etape - 1) }))} disabled={etape === 0}
-          style={{ ...btn(false), opacity: etape === 0 ? 0.4 : 1 }}>◀ Précédent</button>
+          style={{ ...btn(false), opacity: etape === 0 ? 0.4 : 1 }}><span aria-hidden="true">◀</span> Précédent</button>
         {etape < etapes.length - 1 ? (
           <button onClick={() => maj(e => ({ etape: e.etape + 1 }))} disabled={!peutSuivre}
-            style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant ▶</button>
+            style={{ ...btn(peutSuivre, ORANGE_GUIDE), opacity: peutSuivre ? 1 : 0.45 }}>Suivant <span aria-hidden="true">▶</span></button>
         ) : fin}
       </div>
       {(etat.fini || EN_CONSULT || estTermine(simDeLUrl())) && (

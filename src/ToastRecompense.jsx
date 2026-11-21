@@ -42,8 +42,8 @@ export function ToastRecompense({ naviguer }) {
         </div>
       </div>
       <div style={{ marginTop: 8, fontSize: 12.5 }}>
-        {eleve ? <button onClick={() => { naviguer(39); setInfo(null); }} style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: 'none', borderRadius: 8, padding: '5px 10px', fontWeight: 700, cursor: 'pointer' }}>Voir mon carnet ▶</button>
-          : <button onClick={() => { naviguer(39); setInfo(null); }} style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: 'none', borderRadius: 8, padding: '5px 10px', fontWeight: 700, cursor: 'pointer' }}>Se connecter pour garder mes étoiles ▶</button>}
+        {eleve ? <button onClick={() => { naviguer(39); setInfo(null); }} style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: 'none', borderRadius: 8, padding: '5px 10px', fontWeight: 700, cursor: 'pointer' }}>Voir mon carnet <span aria-hidden="true">▶</span></button>
+          : <button onClick={() => { naviguer(39); setInfo(null); }} style={{ background: 'rgba(255,255,255,.15)', color: '#fff', border: 'none', borderRadius: 8, padding: '5px 10px', fontWeight: 700, cursor: 'pointer' }}>Se connecter pour garder mes étoiles <span aria-hidden="true">▶</span></button>}
       </div>
     </div>);
 }

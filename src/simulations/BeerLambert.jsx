@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { CoeffInput, Field, TabBtn, cardStyle } from "../commun";
+import { CoeffInput, Field, TabBtn, cardStyle, KIT } from "../commun";
 import { Pic } from "../Pictos";
 
 // ============================================================
@@ -274,7 +274,7 @@ export function SpectroSchema({ analyteName, lambdaNm, onLambdaChange, concRatio
       </svg>
 
       {/* ── Spectre UV-visible ── */}
-      <div style={{fontSize:13,color:'var(--color-text-secondary)',marginBottom:4}}>
+      <div style={{fontSize:13,color:KIT.txt2,marginBottom:4}}>
         Spectre d'absorption — cliquer pour choisir λ de travail
       </div>
       <svg width="100%" viewBox="0 0 680 115"
@@ -395,13 +395,13 @@ export function CalibrationPlot({ plotlyReady, xs, ys, xsScale, ysScale, mesuran
     }, {responsive:true, displayModeBar:false});
   }, [showResiduals, plotlyReady, xs, ys, reg]);
 
-  if (!reg) return <p style={{color:'var(--color-text-secondary)',padding:'1rem'}}>Données insuffisantes pour tracer la courbe.</p>;
+  if (!reg) return <p style={{color:KIT.txt2,padding:'1rem'}}>Données insuffisantes pour tracer la courbe.</p>;
 
   return (
     <div>
       {showResiduals && onNLevels && (
         <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:8,flexWrap:'wrap'}}>
-          <span style={{fontSize:13,color:'var(--color-text-secondary)'}}>Niveaux inclus :</span>
+          <span style={{fontSize:13,color:KIT.txt2}}>Niveaux inclus :</span>
           <input type="range" min={2} max={maxLevels} value={nLevels}
             onChange={e=>onNLevels(Number(e.target.value))} style={{width:160}}/>
           <span style={{fontSize:13,fontWeight:'500'}}>{nLevels} / {maxLevels}</span>
@@ -410,13 +410,13 @@ export function CalibrationPlot({ plotlyReady, xs, ys, xsScale, ysScale, mesuran
       <div ref={plotRef} className={calibClassName||''} style={{width:'100%',height:320}}/>
       {showResiduals && (
         <>
-          <div style={{fontSize:12,color:'var(--color-text-secondary)',margin:'8px 0 4px'}}>Graphique des résidus</div>
+          <div style={{fontSize:12,color:KIT.txt2,margin:'8px 0 4px'}}>Graphique des résidus</div>
           <div ref={residRef} className={residClassName||''} style={{width:'100%',height:220}}/>
         </>
       )}
       {/* Lecture Cech */}
       <div style={{display:'flex',alignItems:'center',gap:10,marginTop:10,flexWrap:'wrap'}}>
-        <label style={{fontSize:13,color:'var(--color-text-secondary)'}}>Absorbance de l'échantillon :</label>
+        <label style={{fontSize:13,color:KIT.txt2}}>Absorbance de l'échantillon :</label>
         <Field label="" value={aechValue} onChange={onAechChange} width={90} type="number" step="0.001" min="0"/>
         {Cech !== null && Cech >= 0 && (
           <span style={{fontSize:15,fontWeight:'500',color:'#16a34a'}}>
@@ -518,26 +518,26 @@ export function BeerLambert1G({ plotlyReady }) {
 
   return (
     <div style={cardStyle}>
-      <h2 style={{marginTop:0,fontSize:18,color:'var(--color-text-primary)'}}>Loi de Beer-Lambert — Niveau 1<sup>re</sup> générale</h2>
+      <h2 style={{marginTop:0,fontSize:18,color:KIT.txt}}>Loi de Beer-Lambert — Niveau 1<sup>re</sup> générale</h2>
 
       {/* Choix analyte */}
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:12,flexWrap:'wrap'}}>
-        <label style={{fontSize:13,color:'var(--color-text-secondary)'}}>Analyte :</label>
+        <label style={{fontSize:13,color:KIT.txt2}}>Analyte :</label>
         <select value={analyte} onChange={e=>{setAnalyte(e.target.value); if(tab==='exemple') setTab('manuel');}} style={{fontSize:13}}>
           {Object.entries(ANALYTES_BL).map(([k,v])=>(<option key={k} value={k}>{v.label}</option>))}
         </select>
       </div>
       {analyte === 'autre' && (
         <div style={{display:'flex',gap:10,flexWrap:'wrap',marginBottom:12,alignItems:'flex-end',
-          padding:'10px 14px',background:'var(--color-background-secondary)',borderRadius:8}}>
+          padding:'10px 14px',background:KIT.fond,borderRadius:8}}>
           <Field label="Nom de l'analyte" value={customNom} onChange={setCustomNom} width={160} type="text"/>
           <div>
-            <div style={{fontSize:12,color:'var(--color-text-secondary)',marginBottom:4}}>λ max (nm)</div>
+            <div style={{fontSize:12,color:KIT.txt2,marginBottom:4}}>λ max (nm)</div>
             <input type="number" value={customLambda} min={380} max={780}
               onChange={e=>{const v=Number(e.target.value); setCustomLambda(v); setLambdaNm(v);}}
               style={{width:80,fontSize:13,padding:'4px 6px'}}/>
           </div>
-          <div style={{fontSize:12,color:'var(--color-text-secondary)'}}>
+          <div style={{fontSize:12,color:KIT.txt2}}>
             Saisissez vos données via "Saisie manuelle" ou "Copier-coller tableur".
           </div>
         </div>
@@ -548,8 +548,8 @@ export function BeerLambert1G({ plotlyReady }) {
         <SpectroSchema analyteName={analyte} lambdaNm={lambdaNm} onLambdaChange={setLambdaNm}/>
       )}
       {analyte === 'autre' && (
-        <div style={{padding:'10px 14px',fontSize:13,color:'var(--color-text-secondary)',
-          background:'var(--color-background-secondary)',borderRadius:8,marginBottom:8}}>
+        <div style={{padding:'10px 14px',fontSize:13,color:KIT.txt2,
+          background:KIT.fond,borderRadius:8,marginBottom:8}}>
           λ de travail sélectionné : <strong>{customLambda} nm</strong>
           {' — '}couleur du faisceau :{' '}
           <span style={{display:'inline-block',width:18,height:10,borderRadius:3,
@@ -560,8 +560,8 @@ export function BeerLambert1G({ plotlyReady }) {
       {/* Barre de sensibilité — masquée pour "autre analyte" */}
       {analyte !== 'autre' && (
         <div style={{display:'flex',alignItems:'center',gap:10,margin:'8px 0 4px',flexWrap:'wrap'}}>
-          <span style={{fontSize:13,color:'var(--color-text-secondary)'}}>Sensibilité à {lambdaNm} nm :</span>
-          <div style={{flex:1,maxWidth:200,height:10,background:'var(--color-background-secondary)',borderRadius:5,overflow:'hidden'}}>
+          <span style={{fontSize:13,color:KIT.txt2}}>Sensibilité à {lambdaNm} nm :</span>
+          <div style={{flex:1,maxWidth:200,height:10,background:KIT.fond,borderRadius:5,overflow:'hidden'}}>
             <div style={{width:`${pct}%`,height:'100%',background:sensColor,borderRadius:5,transition:'width 0.3s,background 0.3s'}}/>
           </div>
           <span style={{fontSize:13,fontWeight:'500',color:sensColor}}>{pct}%</span>
@@ -569,14 +569,14 @@ export function BeerLambert1G({ plotlyReady }) {
         </div>
       )}
 
-      <hr style={{margin:'16px 0',borderColor:'var(--color-border-tertiary)'}}/>
+      <hr style={{margin:'16px 0',borderColor:KIT.bord}}/>
 
       {/* Titre section courbe étalonnage + onglets */}
       <div style={{marginBottom:10}}>
-        <div style={{fontSize:15,fontWeight:'500',marginBottom:10,color:'var(--color-text-primary)'}}>
+        <div style={{fontSize:15,fontWeight:'500',marginBottom:10,color:KIT.txt}}>
           Courbe d'étalonnage
         </div>
-        <div style={{fontSize:13,color:'var(--color-text-secondary)',marginBottom:10}}>
+        <div style={{fontSize:13,color:KIT.txt2,marginBottom:10}}>
           Choisissez une source de données pour afficher la courbe :
         </div>
         <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
@@ -590,7 +590,7 @@ export function BeerLambert1G({ plotlyReady }) {
 
       {/* Contenu onglet exemple */}
       {tab==='exemple' && (
-        <div style={{fontSize:13,color:'var(--color-text-secondary)',marginBottom:8}}>
+        <div style={{fontSize:13,color:KIT.txt2,marginBottom:8}}>
           {a && <>Étalonnage {a.exampleData.mesurande} — {a.exampleData.niveaux} niveaux × {a.exampleData.repetitions} répétitions.{' '}</>}
           <span style={{color:sensColor,fontWeight:'500'}}>
             Absorbances simulées à {lambdaNm} nm{a ? ` (${pct}% du max à ${a.peakNm} nm)` : ''}.
@@ -613,9 +613,9 @@ export function BeerLambert1G({ plotlyReady }) {
               <table style={{borderCollapse:'collapse',fontSize:12}}>
                 <thead>
                   <tr>
-                    <th style={{padding:'4px 8px',borderBottom:'1px solid var(--color-border-tertiary)'}}>{mesurande} ({unite})</th>
+                    <th style={{padding:'4px 8px',borderBottom:'1px solid '+KIT.bord}}>{mesurande} ({unite})</th>
                     {Array(nRep).fill(0).map((_,j)=>(
-                      <th key={j} style={{padding:'4px 8px',borderBottom:'1px solid var(--color-border-tertiary)'}}>A{j+1}</th>
+                      <th key={j} style={{padding:'4px 8px',borderBottom:'1px solid '+KIT.bord}}>A{j+1}</th>
                     ))}
                   </tr>
                 </thead>
@@ -645,7 +645,7 @@ export function BeerLambert1G({ plotlyReady }) {
       {/* Contenu onglet tableur */}
       {tab==='tableur' && (
         <div style={{marginBottom:12}}>
-          <p style={{fontSize:13,color:'var(--color-text-secondary)',marginTop:0}}>
+          <p style={{fontSize:13,color:KIT.txt2,marginTop:0}}>
             Collez vos données depuis un tableur (séparateur : tabulation, ; ou ,) :<br/>
             <code style={{fontSize:11}}>C{'\t'}A1{'\t'}A2{'\t'}A3</code>
           </p>
@@ -656,8 +656,8 @@ export function BeerLambert1G({ plotlyReady }) {
           <textarea value={pasteText} onChange={e=>setPasteText(e.target.value)}
             placeholder={"C\tA1\tA2\tA3\n0\t0.002\t0.001\t0.003\n2\t0.118\t0.120\t0.119"}
             style={{width:'100%',height:120,fontSize:12,fontFamily:'monospace',
-              padding:8,boxSizing:'border-box',border:'1px solid var(--color-border-tertiary)',
-              borderRadius:6,background:'var(--color-background-primary)',color:'var(--color-text-primary)'}}/>
+              padding:8,boxSizing:'border-box',border:'1px solid '+KIT.bord,
+              borderRadius:6,background:'#fff',color:KIT.txt}}/>
         </div>
       )}
 
@@ -671,8 +671,8 @@ export function BeerLambert1G({ plotlyReady }) {
               ['R²', reg.r2.toFixed(5)],
               
             ].filter(Boolean).map(([l,v])=>(
-              <div key={l} style={{background:'var(--color-background-secondary)',borderRadius:8,padding:'8px 14px',minWidth:110}}>
-                <div style={{fontSize:11,color:'var(--color-text-secondary)'}}>{l}</div>
+              <div key={l} style={{background:KIT.fond,borderRadius:8,padding:'8px 14px',minWidth:110}}>
+                <div style={{fontSize:11,color:KIT.txt2}}>{l}</div>
                 <div style={{fontSize:15,fontWeight:'500'}}>{v}</div>
               </div>
             ))}
@@ -689,7 +689,7 @@ export function BeerLambert1G({ plotlyReady }) {
       )}
 
       {tab && !reg && xs.length < 2 && (
-        <p style={{fontSize:13,color:'var(--color-text-secondary)'}}>
+        <p style={{fontSize:13,color:KIT.txt2}}>
           Saisissez au moins 2 niveaux de concentration pour afficher la courbe.
         </p>
       )}

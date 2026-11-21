@@ -55,11 +55,11 @@ export function ProchaineEtape({ simId, naviguer }) {
   const [icone, texte, action] = info.type === 'guide'
     ? [<Pic n="compass" t={24}/>, <><b>Parcours guidé</b> : {info.min} / {SEUIL_GUIDE_S / 60} min. Suis les étapes, ton avancement est enregistré.</>, null]
     : info.type === 'defi'
-      ? [<Pic n="ok" t={24}/>, <><b>Parcours guidé terminé, bravo !</b> Prochaine étape : réussir un défi.</>, <button style={btn} onClick={() => cliquerSur(/^\s*Défis?\s*$/)}>Aller au défi ▶</button>]
+      ? [<Pic n="ok" t={24}/>, <><b>Parcours guidé terminé, bravo !</b> Prochaine étape : réussir un défi.</>, <button style={btn} onClick={() => cliquerSur(/^\s*Défis?\s*$/)}>Aller au défi <span aria-hidden="true">▶</span></button>]
       : info.type === 'fini'
         ? [<Pic n="party" t={24}/>, <><b>Tout est fait ici !</b>{info.prochaine ? <> Prochaine simulation : <b>{nomsSim[info.prochaine.sim] || `n° ${info.prochaine.sim}`}</b>.</> : <> Ton devoir est à jour.</>}</>,
-          info.prochaine ? <button style={btn} onClick={() => naviguer(Number(info.prochaine.sim))}>Y aller ▶</button> : null]
-        : [<Pic n="ok" t={24}/>, <><b>Parcours guidé terminé !</b> Relève un défi, explore librement, ou retourne à ton profil.</>, <button style={btn} onClick={() => cliquerSur(/^\s*Défis?\s*$/)}>Voir les défis ▶</button>];
+          info.prochaine ? <button style={btn} onClick={() => naviguer(Number(info.prochaine.sim))}>Y aller <span aria-hidden="true">▶</span></button> : null]
+        : [<Pic n="ok" t={24}/>, <><b>Parcours guidé terminé !</b> Relève un défi, explore librement, ou retourne à ton profil.</>, <button style={btn} onClick={() => cliquerSur(/^\s*Défis?\s*$/)}>Voir les défis <span aria-hidden="true">▶</span></button>];
   return (
     <div role="status" data-prochaine-etape style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', margin: '0 0 12px', padding: '10px 14px', borderRadius: 14,
       background: ACCENT_CLAIR, border: '1px solid #b9cfe0', color: TEXTE, fontSize: 14.5, textAlign: 'left' }}>
