@@ -2,6 +2,7 @@ import { useState } from "react";
 import { KIT, styleBouton, styleBoite } from "../commun";
 import { useSession, estProf } from "../serveur";
 import { JEUX_VISIBLES, JEUX_PUBLICS } from "./jeuxVisibles";
+import { Emo } from "../Pictos";
 
 // Les trois jeux « hors menu » : escape games TSTL et histoire à choix BTS.
 // Côté professeur : cartes avec lien direct. Côté élève : champ « code du jeu » (le code est donné par le professeur).
@@ -46,15 +47,23 @@ export function JeuxCode(props) { const sess = useSession(); const tous = JEUX_V
 // Jeux ouverts à tous : accès direct, sans code (les autres jeux, encore en préparation, restent masqués).
 function JeuxPublicsCartes({ naviguer }) {
   return (
-    <div data-jeux-publics style={{ ...styleBoite, margin: '8px 0', display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div data-jeux-publics style={{ margin: '14px 0', display: 'flex', flexDirection: 'column', gap: 12 }}>
       {JEUX.filter(j => JEUX_PUBLICS.includes(j.id)).map(j => (
-        <div key={j.id} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-          <div style={{ flex: '1 1 260px' }}>
-            <div style={{ fontWeight: 800 }}>🎮 {j.icone} {j.nom} <span style={{ fontWeight: 500, fontSize: 12, color: KIT.txt2 }}>· {j.niveau}</span></div>
-            <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5 }}>{j.texte}</div>
+        <section key={j.id} aria-label={`Jeu : ${j.nom}`}
+          style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '18px 18px 16px', borderRadius: 24, color: '#fff',
+            background: 'linear-gradient(135deg, #0a3566 0%, #0b4f94 100%)', boxShadow: '0 6px 18px rgba(11,79,148,.28)' }}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
+            <span aria-hidden="true" style={{ flex: 'none', width: 56, height: 56, borderRadius: 18, background: '#ffc857', color: '#0a3566', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Emo e={j.icone} t={32} style={{ margin: 0 }} /></span>
+            <div style={{ minWidth: 0 }}>
+              <span style={{ display: 'inline-block', padding: '2px 10px', borderRadius: 999, background: '#f5a31a', color: '#1b2b3a', font: "800 11px Inter, system-ui, sans-serif", letterSpacing: '.06em', textTransform: 'uppercase' }}>Jeu · {j.niveau}</span>
+              <div style={{ margin: '4px 0 0', font: "800 20px/1.25 Outfit, Inter, sans-serif", color: '#fff' }}>{j.nom}</div>
+            </div>
           </div>
-          <button onClick={() => naviguer(j.id)} style={styleBouton(true, '#0b4f94')}>Jouer ▶</button>
-        </div>))}
+          <div style={{ fontSize: 14.5, lineHeight: 1.55, color: '#e6f0fb' }}>{j.texte}</div>
+          <button type="button" onClick={() => naviguer(j.id)}
+            style={{ minHeight: 50, padding: '0 22px', border: 'none', borderRadius: 999, background: '#f5a31a', color: '#1b2b3a', font: "800 16px Inter, system-ui, sans-serif", cursor: 'pointer', alignSelf: 'stretch' }}>Jouer ▶</button>
+        </section>))}
     </div>);
 }
 function JeuxCodeChamp({ naviguer }) {
