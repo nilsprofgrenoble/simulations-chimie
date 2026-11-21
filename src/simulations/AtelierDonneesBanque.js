@@ -5059,6 +5059,23 @@ export const ENONCES = [
         manque: null, solution: { txt: 'ρ = P × M divisé par R × T, avec P en Pa, M en kg·mol⁻¹, T en K', val: p.P * 1e5 * p.g.M * 1e-3 / (8.314 * (p.th + 273.15)), u: 'kg·m⁻³' } };
     },
   },
+  // ───────────────────────────── Premier principe (TG, sim 216) : variation d'énergie interne, température finale
+  {
+    id: 'pp1-sapp-bloc', domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie', titre: 'Un liquide chauffé et brassé', noms: ['Variation d’énergie interne', 'Température finale'],
+    gen: () => ({ m: tire([0.50, 1.00, 2.00]), g: tire([{ nom: 'eau', c: 4180 }, { nom: 'huile', c: 2000 }]), th: tire([15, 20, 25]), Q: tire([10, 20, 30]), W: tire([2, 5]), d: tire([3, 5, 8]) }),
+    build: (p, q) => {
+      const tokens = { m: tok(`${nb(p.m, 2)} kg`, 'Masse de liquide', p.m, 'kg'), c: tok(`${p.g.c} J·kg⁻¹·K⁻¹`, `Capacité thermique massique de ${p.g.nom === 'eau' ? 'l’eau' : 'l’huile'}`, p.g.c, 'J·kg⁻¹·K⁻¹'), th: tok(`${p.th} °C`, 'Température initiale', p.th, '°C'), Q: tok(`${p.Q} kJ`, 'Transfert thermique reçu', p.Q, 'kJ'), W: tok(`${p.W} kJ`, 'Travail reçu de la pale', p.W, 'kJ'), d: tok(`${p.d} min`, 'Durée du chauffage', p.d, 'min') };
+      const debut = ['Un récipient contient ', T('m'), ' d’', p.g.nom, ' (capacité thermique massique ', T('c'), ') à ', T('th'), '. Pendant ', T('d'), ', il reçoit de la plaque chauffante un transfert thermique ', T('Q'), ' et de la pale un travail ', T('W'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la variation d’énergie interne du liquide ? (pas de changement d’état)'], utiles: ['Q', 'W'],
+        raisons: { m: 'La masse sert à passer de ΔU à ΔT (C = m × c), pas à calculer ΔU = W + Q.', c: 'La capacité thermique massique sert à passer de ΔU à ΔT, pas à calculer ΔU = W + Q.', th: 'La température initiale ne sert pas à calculer la variation d’énergie interne ΔU = W + Q.', d: 'La durée n’intervient pas : les énergies reçues sont données directement.' },
+        cherche: { bonne: 'La variation d’énergie interne ΔU du liquide (en kJ)', faux: ['La variation de température ΔT du liquide (en K)', 'La capacité thermique C du liquide (en J·K⁻¹)', 'La température finale du liquide (en °C)'] },
+        manque: null, solution: { txt: 'ΔU = W + Q, énergies reçues', val: p.W + p.Q, u: 'kJ' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la température finale du liquide ? (pas de changement d’état)'], utiles: ['m', 'c', 'th', 'Q', 'W'],
+        raisons: { d: 'La durée ne sert pas : les énergies Q et W reçues sont données directement.' },
+        cherche: { bonne: 'La température finale du liquide (en °C)', faux: ['La variation de température ΔT du liquide (en K)', 'La variation d’énergie interne ΔU du liquide (en kJ)', 'La capacité thermique C du liquide (en J·K⁻¹)'] },
+        manque: null, solution: { txt: 'θ_f = θ_i + (W + Q) divisé par (m × c), énergies en J', val: p.th + (p.W + p.Q) * 1000 / (p.m * p.g.c), u: '°C' } };
+    },
+  },
   {
     id: 'ber-sapp-venturi', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'De l’eau dans un tuyau à col', noms: ['Vitesse dans le col', 'Différence de pression entre l’entrée et le col'],
     gen: () => { const [dA, dB] = tire([[25, 12], [25, 16], [32, 16], [32, 20], [40, 20], [40, 25]]); return { dA, dB, vA: tire([0.5, 0.8, 1.0, 1.2]), L: tire([1.2, 1.5, 2.0]), th: tire([12, 15, 18]), PrA: tire([6, 8, 10]) }; },

@@ -3145,6 +3145,55 @@ function genGazParfaitTG() {
   return { intro: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température d’après P V = n R T. Le gaz est supposé parfait, sa quantité de matière constante dans une même transformation ; R = 8,314 J·K⁻¹·mol⁻¹.', questions: [q1, q2, q3, q4, q5],
     retenir: ['Équation d’état : P × V = n × R × T, avec P en Pa (1 bar = 10⁵ Pa), V en m³ (1 L = 10⁻³ m³), T en K (T = θ + 273,15).', 'Deux états d’une même quantité de gaz : frac(P₁ × V₁|T₁) = frac(P₂ × V₂|T₂), avec T en kelvins.', 'Masse volumique : ρ = frac(P × M|R × T), avec M en kg·mol⁻¹.', 'À volume constant, P est proportionnelle à T ; à température constante, P est inversement proportionnelle à V.'] };
 }
+function genPremierPrincipeTG() {
+  // Premier principe (TG, sim 216). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const sg = x => `${x >= 0 ? '+' : '−'}${f(Math.abs(x), 0)}`;
+  const MAT = [{ nom: 'l’eau', c: 4180 }, { nom: 'l’huile alimentaire', c: 2000 }, { nom: 'l’aluminium', c: 900 }, { nom: 'le cuivre', c: 385 }];
+  const r2 = x => Number(x.toPrecision(2));
+  // q1 : ΔU = W + Q (signes)
+  let Q1, W1;
+  for (;;) { Q1 = tire([-3000, -1500, 2000, 4000, 6000]); W1 = tire([-800, -500, 500, 1200, 2500]); if (Math.abs(Q1 + W1) >= 700) break; }
+  const dU1 = Q1 + W1;
+  const q1 = { id: 'pp10', type: 'num', q: <>Un système reçoit un transfert thermique <b>Q = {sg(Q1)}{NB}J</b> et un travail <b>W = {sg(W1)}{NB}J</b> (énergies reçues : le signe − indique une énergie cédée). Calculez la variation d’énergie interne ΔU du système (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: dU1, tolRel: 0.06, csMin: 2,
+    aide: 'ΔU = W + Q, avec les signes : énergie reçue positive, énergie cédée négative.',
+    pieges: [[Q1 - W1, 'Le travail a été compté avec le mauvais signe : il faut additionner W avec son signe, ΔU = W + Q.'], [-dU1, 'Le signe du résultat est inversé : ΔU = W + Q avec les signes donnés.'], [Q1, 'Vous avez oublié le travail : ΔU = W + Q.'], [W1, 'Vous avez oublié le transfert thermique : ΔU = W + Q.']],
+    expl: <>ΔU = W + Q = ({sg(W1)}) + ({sg(Q1)}) = <b>{sg(dU1)}{NB}J</b>.</> };
+  // q2 : ΔU = m c (Tf − Ti)
+  let m2, M2, Ti2, Tf2, dU2;
+  for (;;) { m2 = tire([0.25, 0.50, 1.00, 2.00]); M2 = tire(MAT); Ti2 = tire([12, 15, 18, 20, 25]); Tf2 = tire([30, 35, 40, 50, 60, 70]); dU2 = m2 * M2.c * (Tf2 - Ti2) / 1000; if (dU2 >= 5 && dU2 <= 500 && Tf2 > Ti2 + 8) break; }
+  const q2 = { id: 'pp11', type: 'num', q: <>Calculez la variation d’énergie interne ΔU de <b>{f(m2, 2)}{NB}kg</b> de {M2.nom} (c = <b>{M2.c}{NB}J·kg⁻¹·K⁻¹</b>) dont la température passe de <b>{Ti2}{NB}°C</b> à <b>{Tf2}{NB}°C</b>, sans changement d’état (en kJ, 2 chiffres significatifs).</>, unite: 'kJ', vrai: dU2, tolRel: 0.06, csMin: 2,
+    aide: 'ΔU = C × ΔT avec C = m × c (en J·K⁻¹) et ΔT = température finale − température initiale ; le résultat est en joules : divisez par 1000 pour des kJ.',
+    pieges: [[dU2 * 1000, 'Vous avez donné ΔU en J : la réponse est attendue en kJ (1 kJ = 1000 J).'], [m2 * M2.c * Tf2 / 1000, 'Il faut l’écart ΔT = température finale − température initiale, pas la température finale.'], [M2.c * (Tf2 - Ti2) / 1000, 'Vous avez oublié la masse : C = m × c.'], [m2 * (Tf2 - Ti2), 'Vous avez oublié c : C = m × c.']],
+    expl: <>ΔT = {Tf2} − {Ti2} = {Tf2 - Ti2} K ; C = m × c = {f(m2, 2)} × {M2.c} = {f(m2 * M2.c, 0)} J·K⁻¹ ; ΔU = C × ΔT = {f(m2 * M2.c, 0)} × {Tf2 - Ti2} = {f(dU2 * 1000, 0)} J = <b>{f(dU2, 1)}{NB}kJ</b>.</> };
+  // q3 : C = m c (m en g)
+  let g3, M3;
+  for (;;) { g3 = tire([150, 250, 400, 500, 800]); M3 = tire(MAT); if (r2(g3 / 1000 * M3.c) > 0 && Math.abs(r2(g3 / 1000 * M3.c) - g3 / 1000 * M3.c) / (g3 / 1000 * M3.c) <= 0.03) break; }
+  const C3 = g3 / 1000 * M3.c;
+  const q3 = { id: 'pp12', type: 'num', q: <>Calculez la capacité thermique C d’un morceau de {M3.nom.replace('l’', '').replace('le ', '')} de <b>m = {g3}{NB}g</b> (capacité thermique massique <b>c = {M3.c}{NB}J·kg⁻¹·K⁻¹</b>), en J·K⁻¹ (2 chiffres significatifs).</>, unite: 'J·K⁻¹', vrai: C3, tolRel: 0.06, csMin: 2,
+    aide: 'C = m × c, avec m en kg (1 g = 10⁻³ kg) et c en J·kg⁻¹·K⁻¹.',
+    pieges: [[M3.c, 'Vous avez oublié la masse : C = m × c.'], [g3 * M3.c, 'La masse n’a pas été convertie en kg : 1 g = 10⁻³ kg (le résultat serait 1000 fois trop grand).']],
+    expl: <>m = {g3} g = {f(g3 / 1000, 3)} kg ; C = m × c = {f(g3 / 1000, 3)} × {M3.c} = <b>{f(C3, 1)}{NB}J·K⁻¹</b>.</> };
+  // q4 : θ_f = θ_i + P t / (m c)
+  let P4, t4, m4, M4, Ti4, Tf4;
+  for (;;) { P4 = tire([200, 300, 500, 800, 1000]); t4 = tire([1.0, 2.0, 3.0, 4.0, 5.0]); m4 = tire([0.20, 0.25, 0.40, 0.50, 0.80, 1.00]); M4 = tire(MAT.slice(0, 2)); Ti4 = tire([10, 15, 18, 20, 22]); const C = m4 * M4.c; Tf4 = Ti4 + P4 * t4 * 60 / C; if (Tf4 >= Ti4 + 8 && Tf4 <= 90 && Math.abs(r2(C) - C) / C <= 0.03) break; }
+  const q4 = { id: 'pp13', type: 'num', q: <>Une plaque chauffante fournit une puissance <b>P = {P4}{NB}W</b> pendant <b>{f(t4, 1)}{NB}min</b> à <b>{f(m4, 2)}{NB}kg</b> de {M4.nom} (c = <b>{M4.c}{NB}J·kg⁻¹·K⁻¹</b>) initialement à <b>{Ti4}{NB}°C</b>. Toute l’énergie est reçue par le liquide (pas de travail, pas de pertes). Calculez sa température finale (en °C, 2 chiffres significatifs ; gardez un chiffre de plus dans les calculs intermédiaires).</>, unite: '°C', vrai: Tf4, tolRel: 0.08, csMin: 2,
+    aide: 'Q = P × durée (durée en secondes) ; ΔU = Q car W = 0 ; ΔT = ΔU divisé par C avec C = m × c ; température finale = température initiale + ΔT.',
+    pieges: [[Ti4 + P4 * t4 / (m4 * M4.c), 'La durée n’a pas été convertie en secondes : 1 min = 60 s.'], [Ti4 + P4 * t4 * 60 / M4.c, 'Vous avez oublié la masse : C = m × c.'], [P4 * t4 * 60 / (m4 * M4.c), 'C’est l’échauffement ΔT : il faut l’ajouter à la température initiale.']],
+    expl: <>Q = P × durée = {P4} × {f(t4 * 60, 0)} = {f(P4 * t4 * 60, 0)} J ; C = m × c = {f(m4, 2)} × {M4.c} = {f(m4 * M4.c, 0)} J·K⁻¹ ; ΔT = {avecIndices(`frac(${f(P4 * t4 * 60, 0)}|${f(m4 * M4.c, 0)})`)} = {f(P4 * t4 * 60 / (m4 * M4.c), 2)} K ; θ_f = {Ti4} + {f(P4 * t4 * 60 / (m4 * M4.c), 2)} = <b>{f(Tf4, 1)}{NB}°C</b>.</> };
+  // q5 : durée pour atteindre une température : t = m c ΔT / P
+  let P5, m5, M5, Ti5, Tf5, t5;
+  for (;;) { P5 = tire([200, 300, 500, 800, 1000]); m5 = tire([0.20, 0.25, 0.40, 0.50, 0.80, 1.00]); M5 = tire(MAT.slice(0, 2)); Ti5 = tire([10, 15, 18, 20]); Tf5 = tire([40, 50, 60, 70, 80]); const C = m5 * M5.c; t5 = C * (Tf5 - Ti5) / P5 / 60; if (t5 >= 1 && t5 <= 30 && Math.abs(r2(C) - C) / C <= 0.03) break; }
+  const q5 = { id: 'pp14', type: 'num', q: <>Combien de temps faut-il à une plaque chauffante de puissance <b>P = {P5}{NB}W</b> pour chauffer <b>{f(m5, 2)}{NB}kg</b> de {M5.nom} (c = <b>{M5.c}{NB}J·kg⁻¹·K⁻¹</b>) de <b>{Ti5}{NB}°C</b> à <b>{Tf5}{NB}°C</b> ? Toute l’énergie est reçue par le liquide (pas de travail, pas de pertes). Donnez la durée en minutes (2 chiffres significatifs ; gardez un chiffre de plus dans les calculs intermédiaires).</>, unite: 'min', vrai: t5, tolRel: 0.08, csMin: 2,
+    aide: 'ΔU = C × ΔT avec C = m × c ; Q = ΔU puisque W = 0 ; la durée en secondes est Q divisé par P ; divisez par 60 pour des minutes.',
+    pieges: [[t5 * 60, 'Vous avez donné la durée en secondes : la réponse est attendue en minutes (1 min = 60 s).'], [M5.c * (Tf5 - Ti5) / P5 / 60, 'Vous avez oublié la masse : C = m × c.'], [m5 * M5.c * Tf5 / P5 / 60, 'Il faut l’écart ΔT = température finale − température initiale, pas la température finale.']],
+    expl: <>ΔT = {Tf5} − {Ti5} = {Tf5 - Ti5} K ; C = m × c = {f(m5, 2)} × {M5.c} = {f(m5 * M5.c, 0)} J·K⁻¹ ; Q = ΔU = C × ΔT = {f(m5 * M5.c * (Tf5 - Ti5), 0)} J ; durée = {avecIndices(`frac(${f(m5 * M5.c * (Tf5 - Ti5), 0)}|${P5})`)} = {f(t5 * 60, 0)} s = <b>{f(t5, 1)}{NB}min</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Premier principe : variation d’énergie interne d’après ΔU = W + Q, ΔU = C × ΔT avec C = m × c, capacité thermique, température finale et durée de chauffage. Le système est incompressible, sans changement d’état ; les pertes sont négligées.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Premier principe : ΔU = W + Q, avec W et Q les énergies reçues (positives si reçues, négatives si cédées).', 'Système incompressible, sans changement d’état : ΔU = C × ΔT avec C = m × c (C en J·K⁻¹, c en J·kg⁻¹·K⁻¹, m en kg).', 'Une puissance est une énergie par seconde : Q = P × durée, la durée étant en secondes.', 'Température finale : θ_f = θ_i + ΔT avec ΔT = frac(ΔU|C) ; un écart de 1 °C est un écart de 1 K.'] };
+}
+
 function genEcoulementTG() {
   // Écoulement d'un fluide (TG, sim 214). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -4635,6 +4684,7 @@ export const FAMILLES = [
   { id: 'rc-calcul', groupe: 'Formules', titre: 'Circuit RC : temps caractéristique, capacité, intensité initiale, tension à t = n τ et durée de la charge (TG)', gen: genRCTG, domaine: 'Circuit RC : charge et décharge d’un condensateur' },
   { id: 'thm-calcul', groupe: 'Formules', titre: 'Loi de Newton et thermostat : temps caractéristique, flux thermique, variation et évolution de la température, durée pour atteindre une température (TG)', gen: genThermostatTG, domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps' },
   { id: 'gpf-calcul', groupe: 'Formules', titre: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température (TG)', gen: genGazParfaitTG, domaine: 'Gaz parfait : équation d’état et limites du modèle' },
+  { id: 'pp1-calcul', groupe: 'Formules', titre: 'Premier principe : variation d’énergie interne, capacité thermique et température finale (TG)', gen: genPremierPrincipeTG, domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie' },
   { id: 'ber-calcul', groupe: 'Formules', titre: 'Écoulement d’un fluide : débit volumique, vitesse dans un col, différence de pression, vitesse de vidange et colonnes d’un Venturi (TG)', gen: genEcoulementTG, domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi' },
   { id: 'arc-calcul', groupe: 'Formules', titre: 'Poussée d’Archimède : poussée, poids apparent, fraction immergée, masse posée sur un flotteur et masse volumique d’un liquide (TG)', gen: genArchimedeTG, domaine: 'Poussée d’Archimède : origine, expression et flottaison' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
