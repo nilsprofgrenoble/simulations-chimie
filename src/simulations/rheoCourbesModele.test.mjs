@@ -59,3 +59,19 @@ for (let i = 0; i < 5000; i++) {
 TYPES.forEach((t) => assert.ok(cpt[t.id] > 700, `types équilibrés : ${t.id} ${cpt[t.id]}`));
 nb += 5000;
 console.log(`rheoCourbesModele : ${nb} vérifications OK`, cpt);
+
+// --- Données de rhéomètre simulées ---
+{
+  const { tauRheometre, palierLu, GAMMAS_RHEO, GAMMAS_PEINTURES: G, ajusterHB, tauMesure, tauHB: th } = await import('./rheoCourbesModele.js');
+  const tb = tauRheometre('B'), ta = tauRheometre('A');
+  const ok = (c, m) => { if (!c) { console.error('ÉCHEC', m); process.exit(1); } };
+  ok(tb.length === GAMMAS_RHEO.length && ta.length === tb.length, 'longueur');
+  ok(tb.every((v) => v > 13 && v < 26), 'B : palier ≥ 13 Pa et croissant doucement');
+  ok(Math.abs(palierLu('B') - 13.5) / 13.5 < 0.08, 'palier B proche de 13,5 Pa : ' + palierLu('B'));
+  ok(ta[0] < 0.6 && ta[0] < ta[4] && ta[4] < ta[8], 'A : tend vers 0');
+  ok(ta[0] / GAMMAS_RHEO[0] > 100 && ta[0] / GAMMAS_RHEO[0] < 600, 'A : palier newtonien η₀ ≈ 400 Pa·s');
+  // cohérence avec les mesures réelles : modèle de B à 1 s⁻¹ proche de la mesure (< 3 %)
+  const mB = tauMesure('B', 'aller');
+  ok(Math.abs(th(1, { tau0: 13.5, K: 15.36, n: 0.47 }) / mB[0] - 1) < 0.03, 'B cohérent à 1 s⁻¹');
+  console.log('rhéomètre simulé : OK, palier B =', palierLu('B').toFixed(2), 'Pa');
+}

@@ -51,6 +51,13 @@ export const RHC_ANA = [
       F('Plastique non idéal : la courbe devrait s’incurver après le seuil', 'Après le seuil, la droite signifie une viscosité constante. Un plastique non idéal s’incurverait.'),
       F('Pseudoplastique : un seuil de 20 Pa ne change pas ce comportement', 'Un pseudoplastique n’a pas de seuil : sa courbe part de l’origine et s’incurve.'),
     ] },
+  { id: 'rhc-ana-palier', domaine: DOM, titre: 'Contrainte aux très bas gradients',
+    enonce: 'Un rhéomètre mesure la contrainte d’une crème en diminuant le gradient de vitesse jusqu’à 0,001 s⁻¹. La contrainte baisse, puis reste sur un palier à 12 Pa sans descendre plus bas.', q: 'Que peut-on conclure ?', options: [
+      V('La crème a un seuil d’écoulement d’environ 12 Pa', 'Un palier de contrainte non nul aux très bas gradients est la signature d’un seuil : ici τ₀ ≈ 12 Pa.'),
+      F('La crème est newtonienne, de viscosité 12 Pa·s', 'Un newtonien aurait une contrainte proportionnelle à γ̇, qui tend vers 0 avec lui.'),
+      F('La mesure est fausse, car τ devrait tendre vers 0', 'C’est vrai seulement sans seuil. Un fluide à seuil garde une contrainte non nulle.'),
+      F('La crème est thixotrope, car la contrainte ne baisse plus', 'La thixotropie concerne l’effet du temps (aller-retour), pas un palier de contrainte.'),
+    ] },
 ];
 
 // ───────────── VAL : plausible ? ─────────────
@@ -84,6 +91,16 @@ export const RHC_VAL = [
       V('Cohérent : (18 290 − 15 110) / 18 290 ≈ 17 %, descente sous la montée', 'La perte relative se calcule par rapport à la valeur de départ ; une descente plus basse que la montée signifie thixotrope.'),
       F('Pas cohérent : la perte vaut 15 110 / 18 290 ≈ 83 % de la valeur de départ', 'Ce rapport est la part de viscosité conservée. La perte est le complément : 100 % − 83 % ≈ 17 %.'),
       F('Pas cohérent : une perte non nulle prouve que la peinture est newtonienne', 'Un newtonien aurait des courbes aller et retour superposées, donc aucune perte.'),
+    ] }),
+  P({ id: 'rhc-val-seuil-extrapole', domaine: DOM, niveau: 2, titre: 'Un seuil lu au viscosimètre', plausible: false,
+    enonce: 'Un technicien mesure une peinture au viscosimètre entre 1 et 300 s⁻¹ et ajuste un modèle : il annonce « seuil d’écoulement = 13,5 Pa, mesuré avec précision ». Avec le même ajustement, un autre technicien trouve 10 Pa ou 15 Pa, avec presque la même qualité d’ajustement.',
+    reperes: [['Plage du viscosimètre', 'γ̇ ≥ 1 s⁻¹'], ['Seuil', 'palier de τ quand γ̇ → 0'], ['Rhéomètre', 'peut descendre à 0,001 s⁻¹']],
+    ver: 'Sans mesure sous 1 s⁻¹, le seuil est seulement extrapolé : plusieurs valeurs ajustent aussi bien les données. Pour le mesurer, il faut descendre aux très bas gradients et lire le palier de contrainte.',
+    q2: 'Pourquoi l’annonce « mesuré avec précision » n’est-elle pas plausible ?',
+    options: [
+      V('Il est extrapolé : aucune mesure sous 1 s⁻¹', 'Le seuil se lit aux très bas gradients ; ici il est déduit d’un ajustement.'),
+      F('Un seuil ne peut jamais être mesuré, même avec un rhéomètre', 'Un rhéomètre le lit sur un palier de contrainte aux très bas gradients.'),
+      F('Un modèle ne peut pas décrire une peinture', 'Le modèle peut décrire la courbe ; le problème est le domaine de gradients.'),
     ] }),
 ];
 
