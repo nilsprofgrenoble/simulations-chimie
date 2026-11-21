@@ -30,6 +30,11 @@
   }
 }
 
+/* Lecture sonore : phrase en cours de lecture (fond doux, différent du guide orange et des indices jaunes) */
+::highlight(lecture-sonore) {
+  background-color: #dbeafe;
+}
+
 body {
   margin: 0;
   background: white;

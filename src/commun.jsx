@@ -8,6 +8,8 @@ import { OngletFiche } from "./FicheOnglet";
 import { noterFiche, EN_RECOLTE, EN_CONSULT, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
 import { nomsSim } from "./suivi";
 import { simDeLUrl } from "./slugs";
+import { LectureSonoreBouton } from "./LectureSonoreBouton";
+import { lectureActivee } from "./lectureSonore";
 import { enregistrer, noterModification, surChangementServeur } from "./etatsParcours";
 
 // ============================================================
@@ -294,6 +296,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   const { etape, reps, verifs } = etat;
   // Compteur de clics sur « Vérifier » : il refait apparaître le verdict à chaque clic pour que le lecteur d'écran l'annonce à chaque fois
   const [ticVerif, setTicVerif] = useState(0);
+  const carteRef = useRef(null);          // la lecture sonore lit les blocs marqués data-lecture de cette carte
   const et = etapes[Math.min(etape, etapes.length - 1)];
   const tache = et.tache;
   const TXT = '#0f172a', TXT2 = '#334155', BORDER = '#cbd5e1';
@@ -364,7 +367,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     return null;
   };
   return (
-    <div data-carte-parcours={etape} data-type-tache={tache ? tache.type : 'aucune'} style={{ background: 'white', borderRadius: 22, padding: '14px 16px', border: `2px solid ${ORANGE_GUIDE}`,
+    <div ref={carteRef} data-carte-parcours={etape} data-type-tache={tache ? tache.type : 'aucune'} style={{ background: 'white', borderRadius: 22, padding: '14px 16px', border: `2px solid ${ORANGE_GUIDE}`,
       display: 'flex', flexDirection: 'column', gap: 10,
       // La carte reste visible quand on fait défiler la page (dans une mise en page à deux colonnes)
       position: 'sticky', top: 'calc(var(--entete-h, 0px) + 8px)', maxHeight: 'calc(100vh - var(--entete-h, 0px) - 24px)', overflowY: 'auto', zIndex: 5 }}>
@@ -383,8 +386,9 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           Vous reprenez votre parcours là où vous l'aviez laissé. Si une mesure a disparu, revenez à l'étape où elle a été faite.
         </div>
       )}
-      <div data-titre-etape="1" style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
-      <div style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{indicesProfond(et.texte)}</div>
+      <div data-lecture="1" data-titre-etape="1" style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
+      <div data-lecture="1" style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{indicesProfond(et.texte)}</div>
+      {lectureActivee(simDeLUrl()) && <LectureSonoreBouton key={etape} racine={carteRef} simId={simDeLUrl()}/>}
       {valeursGardees.length > 0 && !derniere && (
         <details open data-carnet="1" style={{ fontSize: 13.5, color: TXT, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8, padding: '4px 8px' }}>
           <summary style={{ cursor: 'pointer', fontWeight: 700, color: TXT2 }}>Valeurs trouvées aux étapes précédentes ({valeursGardees.length})</summary>
@@ -397,14 +401,14 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
             : tache.label && !tache.ok && <button data-faire="1" onClick={tache.faire} disabled={!!tache.attente} style={btn(true)}>{tache.label}</button>}
-          {tache.consigne && <div style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{avecIndices(tache.consigne)}</div>}
+          {tache.consigne && <div data-lecture="1" style={{ fontSize: 14, fontWeight: 700, color: TXT, marginTop: 6, whiteSpace: 'pre-wrap' }}>{avecIndices(tache.consigne)}</div>}
           {tache.attente && <div style={{ fontSize: 14, color: TXT2, marginTop: 6 }}>{tache.attente}</div>}
           {tache.ok && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}><Pic n="ok"/>C'est fait !</div>}
         </div>
       )}
       {tache && tache.type === 'qcm' && (
         <div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
+          <div data-lecture="1" style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           {tache.bloque && <div style={{ fontSize: 14, color: '#b45309', marginBottom: 6 }}>{tache.bloque}</div>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={i === tache.bonne ? 'true' : 'false'} onClick={() => setRep(i)} aria-pressed={reps[etape] === i}
@@ -415,7 +419,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       )}
       {tache && tache.type === 'num' && (
         <div>
-          <div style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
+          <div data-lecture="1" style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div> : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <input value={reps[etape] ?? ''} placeholder="?" aria-label="Votre réponse" data-vrai={tache.vrai}
@@ -424,13 +428,13 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
               <span style={{ fontSize: 14, color: TXT2 }}>{tache.unite}</span>
             </div>
           )}
-          {tache.aide && !verifie && <div style={{ fontSize: 12.5, color: TXT2, marginTop: 4 }}>{avecIndices(tache.aide)}</div>}
+          {tache.aide && !verifie && <div data-lecture="1" style={{ fontSize: 12.5, color: TXT2, marginTop: 4 }}>{avecIndices(tache.aide)}</div>}
         </div>
       )}
       {tache && tache.indice && tache.type !== 'action' && !reussie && (
         <div>
           {reps[`ind${etape}`] ? (
-            <div style={{ fontSize: 13.5, color: TXT, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px' }}><Pic n="bulb"/>{indicesProfond(tache.indice)}</div>
+            <div data-lecture="1" style={{ fontSize: 13.5, color: TXT, background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '6px 8px' }}><Pic n="bulb"/>{indicesProfond(tache.indice)}</div>
           ) : (
             <button onClick={() => maj(e => ({ reps: { ...e.reps, [`ind${etape}`]: true } }))} style={{ fontSize: 13, padding: '4px 10px', borderRadius: 8, cursor: 'pointer', fontWeight: 700,
               border: '1.5px solid #fcd34d', background: '#fffbeb', color: '#92400e' }}><Pic n="bulb"/>Indice</button>
