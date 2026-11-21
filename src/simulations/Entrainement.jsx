@@ -110,7 +110,8 @@ function useProgressionEleve() {
   }, [classeId]);
   const chapActifs = useMemo(() => (classeId ? chapitres : []), [classeId, chapitres]);
   const chapsEnCours = useMemo(() => chapitresDe(chapActifs), [chapActifs]);
-  const prog = { ...progLocale, ...serveur };
+  // Élève connecté : seules comptent les réussites de SON compte (la mémoire de l'appareil appartient à celui qui s'en est servi avant, pas au compte)
+  const prog = eleve ? { ...serveur } : { ...progLocale, ...serveur };
   const etoilesDe = cle => etoilesSrv[cle] ?? (prog[cle] ? 3 : 0);
   const nbFaits = l => l.filter(e => prog[e.cle]).length;
   return { sess, eleve, prog, setProg, etoilesSrv, etoilesDe, nbFaits, chapsEnCours, idsEnCours: chapsEnCours.map(c => c.id) };
