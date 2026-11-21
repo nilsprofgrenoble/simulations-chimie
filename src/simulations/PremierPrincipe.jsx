@@ -68,7 +68,7 @@ export function SimulationPremierPrincipe() {
   const deja = id => !enGuide || etape >= IDS.indexOf(id);
 
   // ---------- état de l'exploration ----------
-  const matEx = M.matDe(ex.mat), Cex = M.capacite(ex.m, matEx.c), dUex = M.variationU(ex.W * 1000, ex.Q * 1000), dTex = M.variationT(dUex, Cex), Tfex = ex.Ti + dTex;
+  const matEx = M.matDe(ex.mat), solide = ex.mat === 'alu' || ex.mat === 'cuivre', Wex = solide ? 0 : ex.W, Cex = M.capacite(ex.m, matEx.c), dUex = M.variationU(Wex * 1000, ex.Q * 1000), dTex = M.variationT(dUex, Cex), Tfex = ex.Ti + dTex;
 
   // ---------- étapes du parcours ----------
   const ETAPES = [
@@ -217,7 +217,7 @@ export function SimulationPremierPrincipe() {
         {champ('θ_f', 's3', '°C')}
         <IndiceDefi cache={false}>W = 0 donc ΔU = Q, puis ΔT = {avecIndices('frac(ΔU|C)')} (en joules et J·K⁻¹) ; θ_f = θ_i + ΔT.</IndiceDefi>
       </> : <>
-        <div style={{ ...lbl, marginBottom: 8 }}>Un bloc de <strong>{nbf(defi.m, 2)}{NB}kg</strong> de {defi.mat.id === 'alu' ? 'aluminium' : 'cuivre'} (c = {defi.mat.c}{NB}J·kg⁻¹·K⁻¹) est à <strong>{defi.Ti}{NB}°C</strong>. Il reçoit un transfert thermique <strong>Q = {fJ(defi.Q).replace('-', '−')}{NB}J</strong> et un travail <strong>W = {fJ(defi.W)}{NB}J</strong> (énergies reçues : le signe − indique une énergie cédée). Le bloc ne change pas d’état. Donnez vos résultats avec 2 chiffres significatifs (marge acceptée : 6{NB}%, 8{NB}% pour les questions 2 et 3 ; gardez un chiffre de plus dans les calculs intermédiaires).</div>
+        <div style={{ ...lbl, marginBottom: 8 }}>Un bloc de <strong>{nbf(defi.m, 2)}{NB}kg</strong> de {defi.mat.id === 'alu' ? 'aluminium' : 'cuivre'} (c = {defi.mat.c}{NB}J·kg⁻¹·K⁻¹) est à <strong>{defi.Ti}{NB}°C</strong>. Posé sur une plaque chauffante et martelé par un marteau-pilon, il reçoit un transfert thermique <strong>Q = {fJ(defi.Q).replace('-', '−')}{NB}J</strong> et un travail (martelage) <strong>W = {fJ(defi.W)}{NB}J</strong> (énergies reçues : le signe − indique une énergie cédée). Le bloc ne change pas d’état. Donnez vos résultats avec 2 chiffres significatifs (marge acceptée : 6{NB}%, 8{NB}% pour les questions 2 et 3 ; gardez un chiffre de plus dans les calculs intermédiaires).</div>
         <div style={{ ...lbl, marginBottom: 2 }}><strong>1.</strong> Variation d’énergie interne ΔU du bloc, en J.</div>
         {champ('ΔU', 's1', 'J')}
         <IndiceDefi cache={false}>ΔU = W + Q, avec les signes : reçu positif, cédé négatif.</IndiceDefi>
@@ -245,7 +245,7 @@ export function SimulationPremierPrincipe() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Système</strong> : un corps (liquide ou solide) de masse m constante, à température <strong>uniforme</strong>, macroscopiquement immobile et à altitude constante : seule son énergie interne varie. Les énergies cinétique et potentielle macroscopiques n’interviennent pas.</li>
       <li><strong>Premier principe</strong> : ΔU = W + Q, W et Q étant les énergies <strong>reçues</strong> (positives si reçues, négatives si cédées).</li>
-      <li><strong>Système incompressible</strong> : volume constant, donc aucun travail des forces de pression ; seul le travail d’une pale (ou d’une force d’agitation) est envisagé. ΔU = C × ΔT avec C = m × c.</li>
+      <li><strong>Système incompressible</strong> : volume constant, donc aucun travail des forces de pression ; le travail envisagé est celui d’une pale qui brasse un liquide ; pour un bloc solide (défi), celui d’un martelage. ΔU = C × ΔT avec C = m × c.</li>
       <li><strong>Capacité thermique massique</strong> c supposée constante et donnée (eau 4180 ; huile alimentaire 2000 ; aluminium 900 ; cuivre 385 J·kg⁻¹·K⁻¹, valeurs usuelles arrondies). L’huile est un exemple d’ordre de grandeur.</li>
       <li><strong>Pas de changement d’état</strong> : l’eau reste liquide, les températures restent dans un domaine de 5 à 95 °C. Hors de ce domaine, le modèle n’est plus valable et la simulation le signale.</li>
       <li><strong>Pertes négligées</strong> : toute l’énergie fournie par la plaque chauffante est reçue par le système (en pratique, une partie est perdue vers l’air et le bécher). La capacité thermique du récipient est négligée.</li>
@@ -298,9 +298,11 @@ export function SimulationPremierPrincipe() {
   const reglagesEx = enExplore && (
     <div style={styleBoite}>
       <div style={titreCarte}>Réglages</div>
-      <div style={aide}>Réglez l’énergie reçue par transfert thermique Q (négative : le système en cède) et par travail W (pale), puis choisissez le matériau et la masse dans la rubrique ci-dessous.</div>
+      <div style={aide}>Réglez l’énergie reçue par transfert thermique Q (négative : le système en cède) et, pour un liquide, par travail W (pale), puis choisissez le matériau et la masse dans la rubrique ci-dessous.</div>
       <Controle nom="Transfert thermique Q" valeur={ex.Q} min={-30} max={60} pas={1} onChange={Q => setEx(s => ({ ...s, Q }))} texte={`Q = ${ex.Q >= 0 ? '+' : '−'}${nbf(Math.abs(ex.Q), 0)}${NB}kJ`} onRetablir={retablirEx} retablir="Tout rétablir"/>
-      <Controle nom="Travail W (pale)" valeur={ex.W} min={0} max={20} pas={1} onChange={W => setEx(s => ({ ...s, W }))} texte={`W = +${nbf(ex.W, 0)}${NB}kJ`} onRetablir={() => setEx(s => ({ ...s, W: 0 }))} retablir="Rétablir (0 kJ)"/>
+      {solide
+        ? <div style={{ ...aide, marginBottom: 10 }}>Travail W : une pale ne brasse pas un solide, donc W = 0 ici (dans le défi, un bloc peut recevoir un travail par martelage). Choisissez de l’eau ou de l’huile pour agiter avec la pale.</div>
+        : <Controle nom="Travail W (pale)" valeur={ex.W} min={0} max={20} pas={1} onChange={W => setEx(s => ({ ...s, W }))} texte={`W = +${nbf(ex.W, 0)}${NB}kJ`} onRetablir={() => setEx(s => ({ ...s, W: 0 }))} retablir="Rétablir (0 kJ)"/>}
       <Section titre={`Matériau : ${matEx.nom.toLowerCase()} · ${nbf(ex.m, 2)} kg · ${ex.Ti} °C`} ouvert={ouv.mat} onBascule={() => setOuv(o => ({ ...o, mat: !o.mat }))}>
         <div style={aide}>Le matériau fixe c ; avec la masse m, il fixe la capacité thermique C = m × c.</div>
         <label style={lblMenu}>Matériau<select value={ex.mat} onChange={e => setEx(s => ({ ...s, mat: e.target.value }))} style={{ ...menu, marginTop: 2 }}>{M.MATERIAUX.map(g => <option key={g.id} value={g.id}>{g.nom} (c = {g.c} J·kg⁻¹·K⁻¹)</option>)}</select></label>
@@ -311,13 +313,13 @@ export function SimulationPremierPrincipe() {
   const sceneEx = enExplore && (
     <div style={styleBoite}>
       <div style={aide}>Le matériau étudié est le système (trait bleu pointillé). La flèche rouge est le transfert thermique Q, la flèche verte le travail W : leur sens indique si le système reçoit ou cède de l’énergie.</div>
-      <SceneSysteme nom={ex.mat} T={Tfex} Q={ex.Q * 1000} W={ex.W * 1000} montre={{ T: true, Q: true, W: true }}/>
+      <SceneSysteme nom={ex.mat} T={Tfex} Q={ex.Q * 1000} W={Wex * 1000} montre={{ T: true, Q: true, W: true }}/>
     </div>);
   const grapheEx = enExplore && (
     <div style={styleBoite}>
       <div style={titreCarte}>Bilan d’énergie : ΔU = W + Q</div>
       <div style={aide}>Les énergies reçues sont positives (barres vers le haut), les énergies cédées négatives (vers le bas).</div>
-      <GrapheBilan W={ex.W * 1000} Q={ex.Q * 1000} dU={dUex}/>
+      <GrapheBilan W={Wex * 1000} Q={ex.Q * 1000} dU={dUex}/>
     </div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
@@ -332,7 +334,7 @@ export function SimulationPremierPrincipe() {
   const aEssayer = (
     <Section titre="À essayer (questions pour explorer)" ouvert={ouv.essayer} onBascule={() => setOuv(o => ({ ...o, essayer: !o.essayer }))}>
       {indicesProfond(<ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-        <li>Fixez Q = 0 et augmentez W (la pale) : la température monte-t-elle ? Qu’est-ce qui change dans le graphique du bilan ?</li>
+        <li>Avec de l’eau, fixez Q = 0 et augmentez W (la pale) : la température monte-t-elle ? Qu’est-ce qui change dans le graphique du bilan ?</li>
         <li>Mettez Q positif et W = 0, puis ajoutez un Q négatif : ΔU peut-il devenir négatif ? Que fait la température ?</li>
         <li>Gardez Q et W, mais passez de l’eau au cuivre : que devient ΔT ? Pourquoi ?</li>
         <li>Doublez la masse sans changer Q et W : que devient ΔT ? Et ΔU ?</li>
