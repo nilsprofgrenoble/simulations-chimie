@@ -5912,6 +5912,28 @@ export const PREVOIR = [
       F('elle ne dépend pas de la température', 'ρ dépend de T : à pression constante, le volume occupé par une même quantité de gaz augmente avec T, donc la masse volumique diminue.'),
       F('elle est proportionnelle à T', 'ρ est inversement proportionnelle à T (T est au dénominateur dans ρ = frac(P × M|R × T)), pas proportionnelle.'),
     ] },
+  // ───────────────────────────── Premier principe (TG, sim 216) : énergie interne, transferts, bilan d'énergie
+  { id: 'pp1-ana-sens', domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie', titre: 'Un bloc chaud plongé dans de l’eau froide',
+    enonce: 'Un bloc de fer à 100 °C est plongé dans de l’eau à 15 °C, dans un récipient isolé de l’extérieur. On attend que la température se stabilise.', q: 'Que deviennent les énergies internes du bloc et de l’eau ?', options: [
+      V('celle du bloc diminue, celle de l’eau augmente', 'Un transfert thermique se fait du corps chaud (le bloc) vers le corps froid (l’eau) : le bloc cède de l’énergie, donc son énergie interne diminue, et l’eau en reçoit, donc la sienne augmente.'),
+      F('celle du bloc augmente, celle de l’eau diminue', 'Le sens est inversé : le transfert thermique va spontanément du plus chaud vers le plus froid, donc l’énergie interne du bloc diminue.'),
+      F('aucune ne change, car l’ensemble est isolé', 'L’ensemble bloc + eau est isolé : la somme de ses énergies internes ne change pas, mais chaque partie échange de l’énergie avec l’autre, donc leurs énergies internes varient.'),
+      F('seule celle de l’eau change, car le fer est un solide', 'Le bloc se refroidit (sa température baisse, son agitation diminue) : son énergie interne diminue aussi, même s’il reste solide.'),
+    ] },
+  { id: 'pp1-ana-pale', domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie', titre: 'Un liquide brassé dans un récipient isolé',
+    enonce: 'Un liquide est brassé avec une pale dans un récipient parfaitement isolé thermiquement : aucun transfert thermique n’a lieu entre le liquide et l’extérieur.', q: 'Que devient la température du liquide ?', options: [
+      V('elle augmente : le travail reçu fait croître U', 'La pale exerce une force sur le liquide : il reçoit de l’énergie par travail (W > 0). Avec Q = 0, ΔU = W > 0 : l’énergie interne augmente, donc la température aussi.'),
+      F('elle ne change pas, car il n’y a pas de chaleur reçue', 'Il existe un autre mode de transfert que la chaleur : le travail. ΔU = W + Q = W > 0, donc l’énergie interne et la température augmentent.'),
+      F('elle diminue, car le liquide cède de l’énergie à la pale', 'C’est la pale qui exerce une force sur le liquide et lui transfère de l’énergie : le liquide reçoit du travail (W > 0), il ne le cède pas.'),
+      F('elle augmente, mais seulement si le récipient est chauffé', 'Chauffer n’est pas nécessaire : le travail de la pale suffit à augmenter l’énergie interne (ΔU = W + Q avec Q = 0).'),
+    ] },
+  { id: 'pp1-ana-masse', domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie', titre: 'Deux masses d’eau pour la même énergie',
+    enonce: 'Deux récipients contiennent de l’eau initialement à la même température : 1,0 kg dans l’un, 2,0 kg dans l’autre. Chacun reçoit le même transfert thermique Q, sans travail, sans pertes ni changement d’état.', q: 'Comparez les échauffements ΔT.', options: [
+      V('l’échauffement est deux fois plus petit dans le récipient de 2,0 kg', 'ΔU = Q = C × ΔT avec C = m × c : à Q égal, ΔT est inversement proportionnel à la masse. Avec une masse double, C est doublée et ΔT est divisé par 2.'),
+      F('l’échauffement est deux fois plus grand dans le récipient de 2,0 kg', 'C’est l’inverse : une masse plus grande a une capacité thermique C plus grande, donc il faut plus d’énergie par kelvin ; à Q égal, ΔT est plus petit.'),
+      F('les échauffements sont égaux, car Q est le même', 'À Q égal, ΔU est le même, mais ΔT = ΔU divisé par C dépend de la masse (C = m × c) : les échauffements ne sont pas égaux.'),
+      F('l’échauffement est quatre fois plus petit dans le récipient de 2,0 kg', 'ΔT est inversement proportionnel à m (C = m × c est proportionnelle à m) : doubler m divise ΔT par 2 et non par 4.'),
+    ] },
   // ───────────────────────────── Écoulement d'un fluide (TG, sim 214) : prévoir l'effet d'un rétrécissement, d'un col plus étroit, de la masse volumique
   { id: 'ber-ana-section', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Un tuyau d’eau qui se rétrécit',
     enonce: 'Un tuyau d’eau de diamètre 30 mm se raccorde à un tuyau horizontal de diamètre 15 mm. L’écoulement est permanent et l’eau est supposée sans viscosité.', q: 'Comment se comparent la vitesse et la pression de l’eau dans le tuyau de 15 mm, par rapport au tuyau de 30 mm ?', options: [

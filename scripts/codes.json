@@ -1886,5 +1886,14 @@
  "77:plausible:syn2gt-val-ferme": "VAL511",
  "77:plausible:syn2gt-val-equation": "VAL512",
  "77:plausible:syn2gt-val-chauffer": "VAL513",
- "36:syn2gt-calcul": "REA131"
+ "36:syn2gt-calcul": "REA131",
+ "34:pp1-sapp-bloc.0": "SAPP489",
+ "34:pp1-sapp-bloc.1": "SAPP490",
+ "37:prevoir:pp1-ana-sens": "ANA757",
+ "37:prevoir:pp1-ana-pale": "ANA758",
+ "37:prevoir:pp1-ana-masse": "ANA759",
+ "77:plausible:pp1-val-chauffage": "VAL514",
+ "77:plausible:pp1-val-signe": "VAL515",
+ "77:plausible:pp1-val-temperature": "VAL516",
+ "36:pp1-calcul": "REA132"
 }
