@@ -386,9 +386,11 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           Vous reprenez votre parcours là où vous l'aviez laissé. Si une mesure a disparu, revenez à l'étape où elle a été faite.
         </div>
       )}
-      <div data-lecture="1" data-titre-etape="1" style={{ fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+        <div data-lecture="1" data-titre-etape="1" style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
+        {lectureActivee(simDeLUrl()) && <LectureSonoreBouton key={etape} racine={carteRef} simId={simDeLUrl()}/>}
+      </div>
       <div data-lecture="1" style={{ fontSize: 15, color: TXT, lineHeight: 1.6 }}>{indicesProfond(et.texte)}</div>
-      {lectureActivee(simDeLUrl()) && <LectureSonoreBouton key={etape} racine={carteRef} simId={simDeLUrl()}/>}
       {valeursGardees.length > 0 && !derniere && (
         <details open data-carnet="1" style={{ fontSize: 13.5, color: TXT, background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: 8, padding: '4px 8px' }}>
           <summary style={{ cursor: 'pointer', fontWeight: 700, color: TXT2 }}>Valeurs trouvées aux étapes précédentes ({valeursGardees.length})</summary>

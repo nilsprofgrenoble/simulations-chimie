@@ -9,6 +9,7 @@ const verifier = (nom, obtenu, attendu) => {
 const contient = (nom, texte, morceau) => { if (!texte.includes(morceau)) { echecs++; console.log(`✗ ${nom}\n   « ${texte} » ne contient pas « ${morceau} »`); } };
 
 // Puissances de dix et unités
+verifier('éthane : le H collé à un chiffre n’est plus lu « heures »', prononcer('l’éthane C2H6 est un gaz'), "l'éthane cé 2 ache 6 est un gaz");
 contient('puissance de dix', prononcer('1,26 × 10⁻³ mol'), '1,26 fois dix puissance moins 3 mole');
 verifier('mol·L⁻¹', prononcer('0,10 mol·L⁻¹'), '0,10 mole par litre');
 verifier('g·mol⁻¹', prononcer('M = 249,68 g·mol⁻¹'), 'M égale 249,68 gramme par mole');
@@ -19,18 +20,18 @@ verifier('singulier sous 2', prononcer('on verse 1,0 mL'), 'on verse 1,0 millili
 verifier('°C et %', prononcer('à 25 °C, soit 12 %'), 'à 25 degrés Celsius, soit 12 pour cent');
 verifier('m/s', prononcer('v = 3 m/s'), 'v égale 3 mètre par seconde');
 // Formules
-verifier('H2O', prononcer('de l’eau H2O'), "de l'eau H 2 O");
-verifier('CO2', prononcer('le CO2 dissous'), 'le C O 2 dissous');
-verifier('H₃O⁺', prononcer('les ions H₃O⁺ réagissent'), 'les ions H 3 O plus réagissent');
-verifier('C₂H₅COOH', prononcer('l’acide C₂H₅COOH'), "l'acide C 2 H 5 C O O H");
-verifier('charge double', prononcer('SO₄²⁻'), 'S O 4 2 moins');
-verifier('Cu²⁺', prononcer('ions Cu²⁺ en solution'), 'ions C u 2 plus en solution');
-verifier('formule entre parenthèses', prononcer('n(C₂H₅COO⁻) = 4,0 mmol'), 'n, C 2 H 5 C O O moins, égale 4,0 millimoles');
-verifier('Ca(OH)₂', prononcer('Ca(OH)₂'), 'C a O H 2');
+verifier('H2O', prononcer('de l’eau H2O'), "de l'eau ache 2 o");
+verifier('CO2', prononcer('le CO2 dissous'), 'le cé o 2 dissous');
+verifier('H₃O⁺', prononcer('les ions H₃O⁺ réagissent'), 'les ions ache 3 o plus réagissent');
+verifier('C₂H₅COOH', prononcer('l’acide C₂H₅COOH'), "l'acide cé 2 ache 5 cé o o ache");
+verifier('charge double', prononcer('SO₄²⁻'), 'esse o 4 2 moins');
+verifier('Cu²⁺', prononcer('ions Cu²⁺ en solution'), 'ions cé u 2 plus en solution');
+verifier('formule entre parenthèses', prononcer('n(C₂H₅COO⁻) = 4,0 mmol'), 'n, cé 2 ache 5 cé o o moins, égale 4,0 millimoles');
+verifier('Ca(OH)₂', prononcer('Ca(OH)₂'), 'cé a o ache 2');
 verifier('mots ordinaires intacts', prononcer('Le tampon On ajoute Si possible'), 'Le tampon On ajoute Si possible');
-verifier('pH et pKa', prononcer('pH = 4,9 et pKa = 4,9'), 'p H égale 4,9 et p K a égale 4,9');
+verifier('pH et pKa', prononcer('pH = 4,9 et pKa = 4,9'), 'pé ache égale 4,9 et pé ka a égale 4,9');
 // Flèches de réaction
-verifier('flèche', prononcer('H₃O⁺ + C₂H₅COO⁻ → C₂H₅COOH + H₂O'), 'H 3 O plus plus C 2 H 5 C O O moins donne C 2 H 5 C O O H plus H 2 O');
+verifier('flèche', prononcer('H₃O⁺ + C₂H₅COO⁻ → C₂H₅COOH + H₂O'), 'ache 3 o plus plus cé 2 ache 5 cé o o moins donne cé 2 ache 5 cé o o ache plus ache 2 o');
 verifier('équilibre', prononcer('A ⇌ B'), 'A en équilibre avec B');
 // Formule MathML remplacée
 verifier('formule affichée', prononcer('On utilise \uE000 pour calculer.'), "On utilise formule affichée à l'écran pour calculer.");
