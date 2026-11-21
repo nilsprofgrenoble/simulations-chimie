@@ -1895,5 +1895,18 @@
  "77:plausible:pp1-val-chauffage": "VAL514",
  "77:plausible:pp1-val-signe": "VAL515",
  "77:plausible:pp1-val-temperature": "VAL516",
- "36:pp1-calcul": "REA132"
+ "36:pp1-calcul": "REA132",
+ "34:rhc-sapp-viscosimetre.0": "SAPP491",
+ "34:rhc-sapp-viscosimetre.1": "SAPP492",
+ "34:rhc-sapp-perte.0": "SAPP493",
+ "34:rhc-sapp-perte.1": "SAPP494",
+ "37:prevoir:rhc-ana-newton": "ANA760",
+ "37:prevoir:rhc-ana-pseudo": "ANA761",
+ "37:prevoir:rhc-ana-seuil": "ANA762",
+ "37:prevoir:rhc-ana-thixo": "ANA763",
+ "37:prevoir:rhc-ana-droite-seuil": "ANA764",
+ "77:plausible:rhc-val-conversion": "VAL517",
+ "77:plausible:rhc-val-newtonienne": "VAL518",
+ "77:plausible:rhc-val-thixo-ok": "VAL519",
+ "36:rhc-calcul": "REA133"
 }
