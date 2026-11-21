@@ -93,6 +93,7 @@ const ICONES = {
   calendar: C('<rect class="a" x="4" y="5" width="16" height="15" rx="2"/><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M8 3v4M16 3v4"/>'),
   cards: C('<rect class="a" x="4" y="9" width="16" height="11" rx="2"/><rect x="4" y="9" width="16" height="11" rx="2"/><path d="M7 6h10M9 3h6"/>'),
   pencil: C('<path class="a" d="M4 20l1-4 11-11 3 3L8 19z"/><path d="M4 20l1-4 11-11 3 3L8 19zM14 7l3 3"/>'),
+  petri: C('<ellipse class="a" cx="12" cy="14" rx="9" ry="4" opacity=".7"/><path d="M3 10v4c0 2.2 4 4 9 4s9-1.8 9-4v-4"/><ellipse cx="12" cy="10" rx="9" ry="4"/><circle cx="9" cy="14" r="1"/><circle cx="14" cy="15" r="1"/>'),
   empty: C('<circle cx="12" cy="12" r="9" opacity=".45"/>'),
 };
 // Emoji → pictogramme. Les emojis absents de cette table restent affichés tels quels (migration progressive).
@@ -106,7 +107,7 @@ const EMOJIS = {
   '🔒': 'lock', '📋': 'clipboard', '📘': 'book', '📚': 'book', '🏆': 'trophy', '✅': 'ok', '❌': 'ko', '⚠': 'warn', '🎉': 'party', '🔄': 'refresh',
   '🥼': 'user', '🎚': 'gauge', '🎼': 'wave', '🏛': 'temple', '🔮': 'diamond', '🔭': 'telescope', '🌱': 'sprout', '🌿': 'sprout', '🌰': 'sprout', '🥇': 'medal',
   '🐉': 'flame', '🦉': 'book', '👑': 'crown', '⏳': 'stopwatch', '⬆': 'chartup', '🧗': 'rocket', '🚧': 'warn', '📅': 'calendar', '🧠': 'bulb', '🔁': 'refresh',
-  '🪐': 'globe', '🎲': 'puzzle', '🎭': 'user', '✏': 'pencil', '🌟': 'star', '✨': 'star', '🌠': 'star', '💪': 'dumbbell', '💎': 'diamond', '📇': 'cards', '🔎': 'search', '⬜': 'empty', '👥': 'users',
+  '🪐': 'globe', '🫲': 'hand', '🫱': 'hand', '🤏': 'hand', '🧫': 'petri', '☢': 'atom', '🔊': 'wave', '🎢': 'chartup', '🎡': 'gear', '🛗': 'bars', '🎈': 'gauge', '🫧': 'drops', '🪞': 'diamond', '🎲': 'puzzle', '🎭': 'user', '✏': 'pencil', '🌟': 'star', '✨': 'star', '🌠': 'star', '💪': 'dumbbell', '💎': 'diamond', '📇': 'cards', '🔎': 'search', '⬜': 'empty', '👥': 'users',
   '🗑': 'trash', '➕': 'plus', '👁': 'eye', '🌳': 'tree', '🏅': 'medal', '👩‍🏫': 'board', '✉': 'mail', '🤝': 'users', '★': 'star',
 };
 const normaliser = (e) => String(e).replace(/️/g, '');

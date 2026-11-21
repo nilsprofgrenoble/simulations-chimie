@@ -4,6 +4,7 @@ import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2, BORDURE } from "./theme";
 import { Pic, Emo, AvecPicto } from "./Pictos";
 import { allerChapitre } from "./chapitres";
 import { SaisieCode } from "./SaisieCode";
+import { useSimsValidees, PastilleFaite } from "./simsValidees";
 
 // ============================================================
 //  EN-TÊTE DU SITE : toujours visible, même quand on fait défiler la page.
@@ -53,6 +54,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
     return () => { document.removeEventListener('mousedown', dehors); document.removeEventListener('touchstart', dehors); document.removeEventListener('keydown', echap); };
   }, [ouvert]);
 
+  const validees = useSimsValidees(`${activeId}|${ouvert}`);
   const profil = session?.profil;
   const aller = id => { setOuvert(null); naviguer(id); };
   const allerChap = id => { setOuvert(null); allerChapitre(naviguer, id); };
@@ -67,6 +69,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
       <span style={{ fontSize: 17, flexShrink: 0 }} aria-hidden="true"><Emo e={s.icon} t={18}/></span>
       <span style={{ flex: 1 }}>{s.label}</span>
       {s.id === activeId && <span aria-hidden="true">●</span>}
+      {validees.has(String(s.id)) && <PastilleFaite />}
     </button>
   );
   // Parties du programme sans simulation (ou couvertes en partie) : en grisé, non cliquables, avec l'état écrit en toutes lettres
