@@ -86,6 +86,7 @@ function Hypotheses() {
         <>La <strong>viscosité de référence</strong> ηref est celle du dernier point de l’intervalle 1. Les temps de régénération sont comptés <strong>depuis le début de l’intervalle 3</strong> (t = 40 s) et interpolés linéairement entre deux points de mesure (un point toutes les 3,8 s environ).</>,
         <>Le <strong>modèle</strong> décrit la structure de la peinture par un seul paramètre λ (1 : structure intacte, 0 : détruite) : le cisaillement la détruit, le repos la reconstruit. La structure ajoute une contrainte τs, qui pèse beaucoup à bas gradient et peu à fort gradient. Les paramètres sont choisis pour retrouver l’allure des mesures, ce n’est pas une identification rigoureuse.</>,
         <>Les repères « régénération trop rapide (t50 ≤ {SEUIL_RAPIDE}{NB}s) », « équilibrée » et « trop lente (t50 &gt; {SEUIL_LENT}{NB}s) » de l’exploration et du défi sont des <strong>ordres de grandeur pédagogiques</strong>, pas des normes : le bon compromis dépend de la peinture, de l’épaisseur appliquée et de l’outil.</>,
+        <>En industrie, le 3ITT se réalise surtout avec un <strong>rhéomètre rotatif</strong> (vitesses imposées, changements très rapides entre intervalles, température régulée) ; un viscosimètre rotatif à vitesse imposée peut aussi le réaliser. Les gradients et les durées varient d’un laboratoire à l’autre : <strong>on ne compare que des essais faits avec la même méthode</strong> (mêmes γ̇, mêmes durées, même température).</>,
         <>Température constante, échantillon homogène, pas de glissement à la paroi.</>,
       )}
     </div>
@@ -458,6 +459,7 @@ export function SimulationITT3() {
           <>Trois intervalles : repos (ηref), fort gradient (structure détruite), repos (régénération).</>,
           <>Régénération : <strong>M1</strong> (% de ηref à un instant), <strong>M2</strong> (temps pour 25 % ou 50 %), <strong>M3</strong> (pente de η(t)).</>,
           <>Un compromis : trop rapide, mauvais nivellement ; trop lente, affaissement.</>,
+          <>Industrie : surtout un rhéomètre rotatif ; on ne compare que des essais faits avec la même méthode (mêmes γ̇ et mêmes durées).</>,
         )}
         Passe à l’exploration pour tester un modèle sur les mesures, ou au défi pour analyser une peinture mystère.
       </>,
