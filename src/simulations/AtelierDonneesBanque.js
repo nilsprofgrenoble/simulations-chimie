@@ -44,6 +44,7 @@ import * as PRISME2GT from "./prisme2gtModele";
 import { OEIL2GT_SAPP } from "./oeilReduit2gtExos.js";
 import { NOY2GT_SAPP } from "./noyauAtome2gtExos.js";
 import { NUC2GT_SAPP } from "./nucleaire2gtExos.js";
+import { RHC_SAPP } from "./rheoCourbesExos.js";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -4968,6 +4969,7 @@ export const ENONCES = [
   ...OEIL2GT_SAPP,
   ...NOY2GT_SAPP,
   ...NUC2GT_SAPP,
+  ...RHC_SAPP,
   // ───────────────────────────── Dispersion par un prisme (2GT, sim 201) : repérer les données utiles pour un angle de réfraction
   {
     id: 'prisme2gt-sapp-angle', domaine: 'Dispersion de la lumière (2GT)', titre: 'Un rayon de couleur dans un prisme', noms: ['Angle i₂ dans le verre', 'Angle i₄ dans l’air'],
