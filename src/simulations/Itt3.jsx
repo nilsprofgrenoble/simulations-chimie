@@ -96,7 +96,7 @@ function Hypotheses() {
 // ---------------------------------------------------------------------------
 // Exploration libre : points mesurés d'abord, courbe du modèle en option.
 // ---------------------------------------------------------------------------
-const NOMS_SOURCES = { A: "Peinture A (mesures réelles)", B: "Peinture B (mesures réelles)", sim: "Peinture simulée (modèle seul)" };
+const NOMS_SOURCES = { A: "Peinture A (mesures réelles)", B: "Peinture B (mesures réelles)", AB: "Peinture A et B superposées (mesures)", sim: "Peinture simulée (modèle seul)" };
 const tregDe = (p) => 1 / (p.kr + p.kd);
 const paramsDe = (r, n) => ({ K: r.K, n, tauS: r.tauS, kr: 1 / (1.2 * r.treg), kd: 1 / (1.2 * r.treg) / 5 });
 const reglagesDe = (k) => (k === "sim" ? { K: 1, tauS: 18, treg: 20 } : { K: PARAMS_3ITT[k].K, tauS: PARAMS_3ITT[k].tauS, treg: Math.round(tregDe(PARAMS_3ITT[k])) });
@@ -115,22 +115,24 @@ function Exploration() {
   const [ouvEssayer, setOuvEssayer] = useState(false);
   const [ouvRetenir, setOuvRetenir] = useState(false);
   const reel = src !== "sim";
-  const n = reel ? PARAMS_3ITT[src].n : 0.95;
-  const changer = (k) => { setSrc(k); setReg(reglagesDe(k)); setPts(k !== "sim"); setMod(k === "sim"); };
+  const dbl = src === "AB";
+  const cles = dbl ? ["A", "B"] : reel ? [src] : [];
+  const n = reel && !dbl ? PARAMS_3ITT[src].n : 0.95;
+  const changer = (k) => { setSrc(k); setReg(reglagesDe(k === "AB" ? "A" : k)); setPts(k !== "sim"); setMod(k === "sim"); };
   const optsTest = reel ? {} : { g2: gh, d2 };
   const d2e = reel ? D2 : d2;
   const debut3 = D1 + d2e;
   const modele = useMemo(() => serieModele(paramsDe(reg, n), { pas: 0.5, ...optsTest }), [reg, n, gh, d2, reel]); // eslint-disable-line react-hooks/exhaustive-deps
-  const serie = reel ? DONNEES_3ITT[src] : modele; // série dont on lit M1, M2, M3
+  const serie = reel ? DONNEES_3ITT[dbl ? "A" : src] : modele; // série dont on lit M1, M2, M3
   const xMax = debut3 + D3;
-  const col = reel ? COULEURS[src] : COULEURS.modele;
+  const col = reel && !dbl ? COULEURS[src] : COULEURS.modele;
   const sEta = [];
-  if (reel && pts) sEta.push({ pts: DONNEES_3ITT[src], c: col, marq: true, pointsSeuls: true });
-  if (mod) sEta.push({ pts: modele, c: COULEURS.modele, tirets: true, ep: 2.6 });
+  if (reel && pts) cles.forEach((k) => sEta.push({ pts: DONNEES_3ITT[k], c: COULEURS[k], marq: true, pointsSeuls: true }));
+  if (mod && !dbl) sEta.push({ pts: modele, c: COULEURS.modele, tirets: true, ep: 2.6 });
   const grad = [[0, G_BAS], [D1, G_BAS], [D1, reel ? G_HAUT : gh], [debut3, reel ? G_HAUT : gh], [debut3, G_BAS], [xMax, G_BAS]];
   const ref = etaRef(serie, D1);
   const resultats = (s) => ({ ref: etaRef(s, D1), m1: regenPct(s, tM1, D1, d2e), t25: tempsRegen(s, 25, D1, d2e), t50: tempsRegen(s, 50, D1, d2e), pente: pente(s, 5, 25, D1, d2e) });
-  const rS = resultats(serie), rM = mod && reel ? resultats(modele) : null;
+  const rS = resultats(serie), rM = dbl ? resultats(DONNEES_3ITT.B) : mod && reel ? resultats(modele) : null;
   const maj = (cle) => (v) => setReg((q) => ({ ...q, [cle]: v }));
   const etat = (actif) => ({ ...stylePetitBouton(actif, "#0f766e"), minHeight: 38 });
   const curseur = (nom, v, f, min, max, pas, aide, unite = "") => (
@@ -145,7 +147,7 @@ function Exploration() {
     <tr key={nom}>
       <td style={{ padding: "3px 6px", color: KIT.txt2 }}>{nom}</td>
       <td style={{ padding: "3px 6px", fontWeight: 700, textAlign: "right", fontFamily: "monospace" }}>{a}{a !== "—" ? `${NB}${unite}` : ""}</td>
-      {rM && <td style={{ padding: "3px 6px", fontWeight: 700, textAlign: "right", fontFamily: "monospace", color: COULEURS.modele }}>{b}{b !== "—" ? `${NB}${unite}` : ""}</td>}
+      {rM && <td style={{ padding: "3px 6px", fontWeight: 700, textAlign: "right", fontFamily: "monospace", color: dbl ? COULEURS.B : COULEURS.modele }}>{b}{b !== "—" ? `${NB}${unite}` : ""}</td>}
     </tr>
   );
   return (
@@ -162,15 +164,15 @@ function Exploration() {
       <div style={{ fontWeight: 700, fontSize: 14, margin: "8px 0 2px", color: KIT.txt }}>Viscosité au cours du temps</div>
       <Graphe aria="Viscosité au cours du temps : points mesurés et modèle" series={sEta} x0={0} x1={xMax} yLog={logY} {...(logY ? { y0: 100, y1: 100000 } : { y0: 0, y1: 30000 })} xTitre="t (s)" yTitre="η (mPa·s)" />
       <Legende items={[
-        ...(reel && pts ? [{ c: col, nom: "Points mesurés" }] : []),
-        ...(mod ? [{ c: COULEURS.modele, nom: "Courbe du modèle", tirets: true }] : []),
+        ...(reel && pts ? cles.map((k) => ({ c: COULEURS[k], nom: dbl ? `Peinture ${k} (points)` : "Points mesurés" })) : []),
+        ...(mod && !dbl ? [{ c: COULEURS.modele, nom: "Courbe du modèle", tirets: true }] : []),
       ]} />
       <div style={{ fontSize: 13.5, color: KIT.txt2, margin: "6px 0 4px" }}>
         Un <strong>point</strong> est une mesure ; la <strong>courbe</strong> est un modèle qui essaie de passer au plus près des points.
       </div>
       <div role="group" aria-label="Éléments affichés" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         {reel && <button type="button" style={etat(pts)} aria-pressed={pts} onClick={() => setPts(!pts)}>Points de mesure</button>}
-        <button type="button" style={etat(mod)} aria-pressed={mod} onClick={() => setMod(!mod)}>Courbe du modèle</button>
+        {!dbl && <button type="button" style={etat(mod)} aria-pressed={mod} onClick={() => setMod(!mod)}>Courbe du modèle</button>}
         <button type="button" style={etat(logY)} aria-pressed={logY} onClick={() => setLogY(!logY)}>η en échelle logarithmique</button>
       </div>
 
@@ -183,7 +185,7 @@ function Exploration() {
         </label>
         <table style={{ width: "100%", fontSize: 14, borderCollapse: "collapse" }}>
           <tbody>
-            {rM && <tr><td /><td style={{ textAlign: "right", fontSize: 13, color: col, fontWeight: 700 }}>Mesures</td><td style={{ textAlign: "right", fontSize: 13, color: COULEURS.modele, fontWeight: 700 }}>Modèle</td></tr>}
+            {rM && <tr><td /><td style={{ textAlign: "right", fontSize: 13, color: dbl ? COULEURS.A : col, fontWeight: 700 }}>{dbl ? "Peinture A" : "Mesures"}</td><td style={{ textAlign: "right", fontSize: 13, color: dbl ? COULEURS.B : COULEURS.modele, fontWeight: 700 }}>{dbl ? "Peinture B" : "Modèle"}</td></tr>}
             {ligneRes("ηref (fin de l’intervalle 1)", milliers(rS.ref), rM ? milliers(rM.ref) : "—", "mPa·s")}
             {ligneRes("M1 : régénération à cet instant", nA(rS.m1, 0), rM ? nA(rM.m1, 0) : "—", "%")}
             {ligneRes("M2 : temps pour 25 %", nA(rS.t25), rM ? nA(rM.t25) : "—", "s")}
@@ -194,7 +196,7 @@ function Exploration() {
         {ref && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>Temps comptés depuis le début de l’intervalle 3 (t = {debut3}{NB}s), par interpolation entre deux points.</div>}
       </div>
 
-      {mod && (
+      {mod && !dbl && (
         <div style={{ ...styleBoite, marginTop: 10 }}>
           <div style={{ fontWeight: 700, marginBottom: 2 }}>Régler le modèle de structure</div>
           <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 8 }}>{reel ? "Modifie les réglages jusqu’à ce que la courbe passe au plus près des points." : "Modifie les réglages : le test se recalcule."}</div>
@@ -212,7 +214,7 @@ function Exploration() {
       )}
       <Section titre="À essayer" ouvert={ouvEssayer} onBascule={() => setOuvEssayer((o) => !o)}>
         {puces(
-          "Compare les peintures A et B : leurs M1 et leurs temps t25 et t50 sont proches. Qu’est-ce qui les distingue ? Regarde ηref et la pente M3.",
+          "Choisis « A et B superposées » : les deux séries sur le même graphique et leurs résultats côte à côte. Leurs M1 et leurs temps t25 et t50 sont proches. Qu’est-ce qui les distingue ? Regarde ηref et la pente M3.",
           "Choisis la peinture simulée : diminue le temps de régénération. Que deviennent t25 et t50 ? Quel défaut risque-t-on pour une peinture qui se régénère très vite ?",
           "Pour la peinture simulée, raccourcis l’intervalle 2 à 5 s : que devient la viscosité au début de l’intervalle 3 ? Que conclus-tu sur la destruction de la structure ?",
           "Pour la peinture A, active le modèle et augmente la structure τs : que deviennent ηref et la hauteur de la remontée ?",
