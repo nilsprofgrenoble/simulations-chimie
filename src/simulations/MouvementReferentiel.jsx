@@ -46,6 +46,17 @@ const AFF0 = { v: false, ve: false, dv: false, org: false, sys: true };
 const ICO_OBJ = { bille: '🔵', colis: '📦', avion: '✈️', A: '🚛', B: '🚗' };
 const ICO_FRAME = { wagon: { mobile: '🚃' }, avion: { mobile: '✈️' }, deux: { A: '🚛', B: '🚗' }, freinage: { mobile: '🚆' } };
 const icoF = (S, fid) => (ICO_FRAME[S.id] || {})[fid] ?? (fid === 'sol' ? '📍' : '');
+// Les émojis 🚛 et 🚗 regardent vers la gauche : on les retourne pour que l'avant soit à droite (sens de la marche, x croissant)
+const REGARDE_A_GAUCHE = ['🚛', '🚗'];
+function IcoSvg({ x, y, ico, size, anchor = 'middle' }) {
+  if (!ico) return null;
+  return REGARDE_A_GAUCHE.includes(ico)
+    ? <text transform={`translate(${x},${y}) scale(-1,1)`} textAnchor={anchor} fontSize={size}>{ico}</text>
+    : <text x={x} y={y} textAnchor={anchor} fontSize={size}>{ico}</text>;
+}
+function IcoTxt({ ico }) {
+  return REGARDE_A_GAUCHE.includes(ico) ? <span style={{ display: 'inline-block', transform: 'scaleX(-1)' }}>{ico}</span> : <>{ico}</>;
+}
 const maj1 = t => t.charAt(0).toUpperCase() + t.slice(1);
 const N_CORE = 7;      // les 7 premières étapes du parcours (affichage simple) ; les suivantes : « pour aller plus loin »
 const PLACE = { sol: { wagon: 'sur le quai', avion: 'au sol', deux: 'au bord de la route', baton: 'au sol', freinage: 'sur le quai' },
@@ -106,7 +117,7 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
         <circle cx={A.x} cy={A.y} r="2.8" fill="#dc2626"/><circle cx={B.x} cy={B.y} r="2.8" fill="#0369a1"/></g>; })}
       {orig.map((o, ko) => <g key={o.g.id}>
         {o.pts.map((q, j) => { const P = arrondi(q); return <circle key={j} cx={P.x} cy={P.y} r="2.2" fill="none" stroke={VIOLET} strokeWidth="1.2" opacity="0.7"/>; })}
-        {[0, i].map(j => { const P = arrondi(o.pts[j]); return <text key={j} x={P.x} y={P.y + 6} textAnchor="middle" fontSize="19">{icoF(S, o.g.id)}</text>; })}
+        {[0, i].map(j => { const P = arrondi(o.pts[j]); return <IcoSvg key={j} x={P.x} y={P.y + 6} size="19" ico={icoF(S, o.g.id)}/>; })}
         {(() => { const P = arrondi(o.pts[i]); const fin = P.x > PW * 0.6; return <text x={fin ? P.x - 14 : P.x + 14} y={Math.max(P.y - 4, 62) - ko * 13} textAnchor={fin ? 'end' : 'start'} fontSize="11.5" fill={VIOLET} fontWeight="700">{o.g.nom} (autre référentiel)</text>; })()}</g>)}
       {visObjs.map(o => { const E = data[o.id];
         return <g key={o.id}>
@@ -115,7 +126,7 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
             return <g key={j}>
               {estSel && <circle cx={P.x} cy={P.y} r="9" fill="none" stroke={NOIR} strokeWidth="1.6"/>}
               <circle cx={P.x} cy={P.y} r="3.8" fill={o.col}/>
-              {j === (jusqua < n ? jusqua : 0) && ICO_OBJ[o.id] && <text x={P.x} y={P.y - 9} textAnchor="middle" fontSize="20">{ICO_OBJ[o.id]}</text>}
+              {jusqua >= n && j === 0 && <IcoSvg x={P.x} y={P.y - 9} size="20" ico={ICO_OBJ[o.id]}/>}
               {aff.v && j < E.v.length && (j % pas === 0 || (o.id === sel && (j === i || j === i - 1))) && (() => { const v = E.v[j];
                 return <Fleche x1={P.x} y1={P.y} x2={P.x + v.x * sv} y2={P.y - v.y * sv} col={VERT} w={o.id === sel && j === i ? 3.2 : 2} op={o.id === sel && j === i - 1 ? 0.5 : 1} dash={o.id === sel && j === i - 1 ? '4 3' : undefined}/>; })()}
               {aff.ve && j < E.ve.length - 0 && (j % pas === 0) && (() => { const v = E.ve[j];
@@ -123,6 +134,9 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
               {o.id === sel && j === i && aff.dv && E.dv[i - 1] && (() => { const d = E.dv[i - 1];
                 return <Fleche x1={P.x} y1={P.y} x2={P.x + d.x * sv} y2={P.y - d.y * sv} col={ROUGE} w={3.6}/>; })()}
             </g>; })}
+          {jusqua < n && (() => {       // pendant « revoir le mouvement » : le mobile avance sans à-coups, la photo se « dépose » quand il passe
+            const t = jusqua * E.dt, g = o.pos(t), og = F.O(t), P = arrondi({ x: g.x - og.x, y: g.y - og.y }, o);
+            return <IcoSvg x={P.x} y={P.y - 9} size="20" ico={ICO_OBJ[o.id]}/>; })()}
           {(() => { const P = arrondi(E.p[i], o); return !simple && i <= jusqua && o.id === sel ? <text x={P.x + 11} y={P.y + 16} fontSize="12.5" fontWeight="800" fill={NOIR}>M<tspan fontSize="9" dy="3">{i}</tspan></text> : null; })()}
         </g>; })}
       {/* barre d'échelle des longueurs et des vitesses */}
@@ -271,7 +285,8 @@ export function SimulationMouvementReferentiel() {
   const [ex, setEx] = useState(() => ({ ...initScene('wagon'), aff: AFF0, bruit: false }));
   const [hypoOuv, setHypoOuv] = useState(false);
   const [simple, setSimple] = useState(true);       // affichage simple (par défaut) ou complet
-  const [anim, setAnim] = useState(null);           // « revoir le mouvement » : nombre de points déjà montrés
+  const [anim, setAnim] = useState(null);           // « revoir le mouvement » : avancement continu, en nombre de photos (0 … n, valeur décimale)
+  const [animKey, setAnimKey] = useState(0);        // relance l'animation si on rappuie sur le bouton
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
   const maj = patch => { setAnim(null); setEx(e => ({ ...e, ...patch })); };
   const go = (id, extra = {}, over = {}) => { setAnim(null); setEx(e => ({ ...e, ...initScene(id, extra), aff: AFF0, bruit: false, ...over })); };
@@ -291,11 +306,24 @@ export function SimulationMouvementReferentiel() {
   const compact = mode === 'explore' ? simple : (enGuide && guide.etape < N_CORE);
   const aff = compact ? { ...AFF0, v: eff.aff.v, sys: eff.aff.sys } : eff.aff;
   const jusqua = anim === null ? n : Math.min(anim, n);
+  const animEnCours = anim !== null;
   useEffect(() => {
-    if (anim === null) return undefined;
-    const t = setTimeout(() => setAnim(a => (a === null || a >= n ? null : a + 1)), anim >= n ? 1200 : 450);
-    return () => clearTimeout(t);
-  }, [anim, n]);
+    if (!animEnCours) return undefined;
+    // mouvement continu (une image par rafraîchissement d'écran) ; durée totale entre 3 et 6 s quel que soit Δt
+    const duree = Math.min(6000, Math.max(3000, n * 550));
+    const reduit = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let raf, fin, t0 = null;
+    const pas = ts => {
+      if (t0 === null) t0 = ts;
+      const u = Math.min(n, (ts - t0) / duree * n);
+      setAnim(u);
+      if (u < n) raf = requestAnimationFrame(pas);
+      else fin = setTimeout(() => setAnim(null), 1200);
+    };
+    if (reduit) { setAnim(n); fin = setTimeout(() => setAnim(null), 1200); }
+    else raf = requestAnimationFrame(pas);
+    return () => { cancelAnimationFrame(raf); clearTimeout(fin); };
+  }, [animEnCours, animKey, n]);
 
   // ════════════════ PARCOURS GUIDÉ ════════════════
   const etape = guide.etape;
@@ -471,10 +499,10 @@ export function SimulationMouvementReferentiel() {
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       <div style={{ background: '#eef2ff', border: '1px solid #c7d2fe', borderRadius: 8, padding: '8px 10px', marginBottom: 8, fontSize: 14.5, lineHeight: 1.55, color: KIT.txt }}>
         <strong>{S.icone} {S.titre}.</strong> {legende}
-        <div style={{ marginTop: 4 }}>On suit : {visObjs.map((o, k) => <span key={o.id} style={{ marginRight: 10, whiteSpace: 'nowrap' }}>{k > 0 && ' '}<span style={{ fontSize: 18, color: o.col }}>{ICO_OBJ[o.id] || '●'}</span> <strong>{o.nom}</strong></span>)}
+        <div style={{ marginTop: 4 }}>On suit : {visObjs.map((o, k) => <span key={o.id} style={{ marginRight: 10, whiteSpace: 'nowrap' }}>{k > 0 && ' '}<span style={{ fontSize: 18, color: o.col }}>{ICO_OBJ[o.id] ? <IcoTxt ico={ICO_OBJ[o.id]}/> : '●'}</span> <strong>{o.nom}</strong></span>)}
           {' '}· <span style={{ whiteSpace: 'nowrap' }}>{S.frames.length > 1 ? 'Référentiel affiché : ' : 'Référentiel : '}<strong>{frames.map(f => S.frames.find(x => x.id === f).nom).join(' et ')}</strong></span></div>
       </div>
-      <div style={{ marginBottom: 8 }}><button onClick={() => setAnim(0)} style={styleBouton(true, '#4338ca')}>▶ Revoir le mouvement, photo après photo</button></div>
+      <div style={{ marginBottom: 8 }}><button onClick={() => { setAnim(0); setAnimKey(k => k + 1); }} style={styleBouton(true, '#4338ca')}>▶ Revoir le mouvement, photo après photo</button></div>
       <div className="mr-pan">
         {frames.map((fid, k) => <div key={fid + k}>
           <Panneau S={S} fid={fid} data={data[k]} visObjs={visObjs} aff={aff} i={i} sv={sv} sel={sel} jusqua={jusqua} simple={compact} titre={`Vu depuis ${S.frames.find(f => f.id === fid).nom}`}/>
@@ -562,7 +590,7 @@ export function SimulationMouvementReferentiel() {
 
   // ── affichage simple : peu de choix, des mots du quotidien ──
   const choixPlace = (cle, courant) => <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>
-    {S.frames.map(f => <button key={f.id} onClick={() => maj({ [cle]: f.id })} style={stylePetitBouton(courant === f.id, '#0284c7')}>{icoF(S, f.id)} {maj1(place(S, f.id))}</button>)}</div>;
+    {S.frames.map(f => <button key={f.id} onClick={() => maj({ [cle]: f.id })} style={stylePetitBouton(courant === f.id, '#0284c7')}><IcoTxt ico={icoF(S, f.id)}/> {maj1(place(S, f.id))}</button>)}</div>;
   const etiq = t => <div style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700, marginBottom: 4 }}>{t}</div>;
   const reglagesSimples = (
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
@@ -580,7 +608,7 @@ export function SimulationMouvementReferentiel() {
         <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer', display: 'block', marginBottom: 10 }}><input type="checkbox" checked={ex.cmp} onChange={e => maj({ cmp: e.target.checked })} style={{ marginRight: 6 }}/>Comparer deux points de vue côte à côte</label></>}
       {S.objets.length > 1 && <>
         {etiq(S.id === 'baton' ? 'Points suivis' : 'Mobiles suivis')}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>{S.objets.map(o => <button key={o.id} onClick={() => setEx(e => { const v = e.vis.includes(o.id) ? e.vis.filter(x => x !== o.id) : [...e.vis, o.id]; return { ...e, vis: v.length ? v : e.vis, obj: v.includes(e.obj) ? e.obj : (v[0] || e.obj) }; })} style={stylePetitBouton(eff.vis.includes(o.id), o.col)}>{ICO_OBJ[o.id] || '●'} {o.court}</button>)}</div></>}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>{S.objets.map(o => <button key={o.id} onClick={() => setEx(e => { const v = e.vis.includes(o.id) ? e.vis.filter(x => x !== o.id) : [...e.vis, o.id]; return { ...e, vis: v.length ? v : e.vis, obj: v.includes(e.obj) ? e.obj : (v[0] || e.obj) }; })} style={stylePetitBouton(eff.vis.includes(o.id), o.col)}>{ICO_OBJ[o.id] ? <IcoTxt ico={ICO_OBJ[o.id]}/> : '●'} {o.court}</button>)}</div></>}
       <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer', display: 'block', marginBottom: 6 }}><input type="checkbox" checked={!!eff.aff.v} onChange={e => majAff({ v: e.target.checked })} style={{ marginRight: 6 }}/>Afficher la vitesse (une flèche verte pour chaque photo)</label>
       {S.id === 'baton' && <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer', display: 'block', marginBottom: 6 }}><input type="checkbox" checked={!!eff.aff.sys} onChange={e => majAff({ sys: e.target.checked })} style={{ marginRight: 6 }}/>Dessiner le bâton entier</label>}
     </div>);
