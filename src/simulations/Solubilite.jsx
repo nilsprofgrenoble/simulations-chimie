@@ -1,4 +1,5 @@
-import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
+import { useSignalerMode, useSuivi, declarerDefis, modeOuverture, nomsSim } from "../suivi";
+import { cheminSimulation } from "../slugs";
 import { useState, useRef } from "react";
 import { FicheVocab, FicheInteractions, FichePolarite, FicheNaCl, FicheExtraction, FicheBilan } from "./SolubiliteFiches";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
@@ -163,7 +164,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
 }
 
 // =====================================================================================================
-export function SimulationSolubilite() {
+export function SimulationSolubilite({ naviguer }) {
   const [mode, setMode] = useState(() => modeOuverture('solubilite-guide-v4'));
   useSignalerMode(mode);
   const VIDE = { etape: 0, reps: {}, verifs: {}, reussies: {} };
@@ -550,7 +551,7 @@ export function SimulationSolubilite() {
           </div>
           <p style={{ margin: '8px 0 4px' }}>Les seuils vert / orange / rouge ont été <strong>réglés sur des cas connus</strong> : ce sont des repères, pas des lois. Sur {BATTERIE.length} couples connus, le modèle donne la réponse attendue pour {BATTERIE.length - erreurs.length} d’entre eux. Il se trompe sur :</p>
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>{erreurs.map(([s2, e, r]) => <li key={s2 + e}>{nomEsp(s2).replace(/ \(.*\)/, '')} et {nomEsp(e).replace(/ \(.*\)/, '')} : en réalité <strong>{ETQ(r)}</strong>, le modèle dit « {ETQ(bilan(s2, e).classe)} »</li>)}</ul>
-          <p style={{ margin: '6px 0 0', fontSize: 12.5, color: KIT.txt2 }}>(« oui » : miscibles ou soluble ; « en partie » : partiellement miscibles ou peu soluble ; « non » : non miscibles ou insoluble.) Une bonne occasion de discuter des limites d’un modèle !</p>
+          <p style={{ margin: '6px 0 0', fontSize: 12.5, color: KIT.txt2 }}>(« oui » : miscibles ou soluble ; « en partie » : partiellement miscibles ou peu soluble ; « non » : non miscibles ou insoluble.) Une bonne occasion de discuter des limites d’un modèle ! Tous les couples testés et les équations : <a href={cheminSimulation(219, nomsSim[219] || '', import.meta.env.BASE_URL)} onClick={e => { if (naviguer) { e.preventDefault(); naviguer(219); } }} style={{ color: KIT.txt, fontWeight: 700 }}>le modèle en détail</a>.</p>
         </div>
       </Section>
       {!limOuv && <div style={{ fontSize: 13, color: KIT.txt2, padding: '0 12px 4px' }}>Un outil pour raisonner (comparer état initial et état final), pas pour calculer une solubilité. Dépliez pour voir ses limites et les cas où il se trompe.</div>}
@@ -575,7 +576,8 @@ export function SimulationSolubilite() {
       <li><strong>Acide carminique dans l’eau</strong> : le modèle ne tient pas compte de l’ionisation partielle du groupe COOH dans l’eau, qui augmente encore sa solubilité.</li>
       <li><strong>Température 25 °C, pression atmosphérique</strong>, espèces pures.</li>
       <li><strong>Cas connus mal rendus</strong> : {erreurs.length === 0 ? 'aucun sur la batterie de cas connus.' : erreurs.map(([s2, e, r]) => `${(ESPECES[s2]?.nom || s2).replace(/ \(.*\)/, '')} + ${(ESPECES[e]?.nom || e).replace(/ \(.*\)/, '')}`).join(' ; ') + '. Pour ces couples, le verdict du modèle diffère de l’expérience : ne le prenez pas pour une loi.'}</li>
-    </ul></details></>);
+    </ul></details>
+    <p style={{ margin: '10px 0 0', fontSize: 13.5, color: KIT.txt2 }}>Les équations, les valeurs utilisées et les couples testés sont réunis sur une page à part : <a href={cheminSimulation(219, nomsSim[219] || '', import.meta.env.BASE_URL)} onClick={e => { if (naviguer) { e.preventDefault(); naviguer(219); } }} style={{ color: KIT.txt, fontWeight: 700 }}>le modèle en détail</a>.</p></>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   const aEssayer = (
     <div style={styleBoite}>
