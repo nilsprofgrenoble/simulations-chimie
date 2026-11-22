@@ -7,7 +7,7 @@ import { Pic } from "../Pictos";
 import * as M from "./prisme2gtModele";
 import { QCM } from "./prisme2gtQcm";
 import { COL } from "./prisme2gtCouleurs";
-import { dispo, SCENES, cfgExploration, cfgDefiCouleur, cfgDefiEntree } from "./prisme2gtDispo";
+import { dispo, cfgExploration, cfgDefiCouleur, cfgDefiEntree } from "./prisme2gtDispo";
 import { ScenePrisme, DessinDispo, BarreSpectre, TableauIndices } from "./Prisme2gtScenes";
 import { FicheDispersion, FicheIndice, FicheDeuxFaces, FicheMonochrome, FicheSpectres } from "./Prisme2gtFiches";
 
