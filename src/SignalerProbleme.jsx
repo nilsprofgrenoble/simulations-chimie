@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { envoyerSignalement } from "./serveur";
 import { MOTIFS, NOMS_MODES, contexteActuel } from "./signalement";
 import { KIT, styleBouton } from "./commun";
+import { Pic } from "./Pictos";
 
 // ═════════════════════════════════════════════════════════════════
 //  « 🐞 UN PROBLÈME ? » : signaler un défaut en quelques secondes, sans compte ni nom.
@@ -52,7 +53,7 @@ export function SignalerProbleme({ activeId, titre }) {
         <button ref={boutonRef} type="button" data-signaler onClick={ouvrir} aria-haspopup="dialog"
           style={{ position: 'fixed', left: 10, bottom: 10, zIndex: 40, background: 'rgba(255,255,255,.95)', color: '#475569', border: '1px solid #cbd5e1', borderRadius: 999,
             padding: '7px 12px', font: '700 13px inherit', fontFamily: 'inherit', cursor: 'pointer', boxShadow: '0 1px 4px rgba(15,23,42,.15)' }}>
-          🐞 Un problème ?
+          <Pic n="flag"/>Un problème ?
         </button>)}
       {ouvert && (
         <div role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) fermer(); }}
@@ -67,7 +68,7 @@ export function SignalerProbleme({ activeId, titre }) {
               </>
             ) : (
               <>
-                <h2 style={{ margin: '0 0 4px', fontSize: 18 }}>🐞 Un problème ?</h2>
+                <h2 style={{ margin: '0 0 4px', fontSize: 18 }}><Pic n="flag"/>Un problème ?</h2>
                 <p style={{ margin: '0 0 10px', fontSize: 14, color: KIT.txt2 }}>Dis-nous ce qui ne va pas, ça prend 10 secondes.</p>
                 <div role="radiogroup" aria-label="Ce qui ne va pas" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {MOTIFS.map(([id, libelle]) => (
