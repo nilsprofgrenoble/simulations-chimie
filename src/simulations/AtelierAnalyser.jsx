@@ -1,7 +1,7 @@
 import CodeExo from '../CodeExo';
 import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam, venantDuDevoir } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam, venantDuDevoir, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { FAMILLES, METHODE } from "./AtelierAnalyserBanque";
@@ -62,7 +62,7 @@ function Qcm({ o, perm, val, set, chk, vu }) {
         const etat = (chk || vu) && val === i ? (o[i][1] ? 'bon' : 'faux') : vu && o[i][1] ? 'manque' : null;
         return (
           <div key={`${i}-${T(o[i][0])}`}>
-            <button data-ok={o[i][1] ? 'true' : 'false'} onClick={() => set(i)} style={{ ...choix(val === i && !etat, etat), width: '100%' }}>{T(o[i][0])}</button>
+            <button data-ok={attrTest(o[i][1] ? 'true' : 'false')} onClick={() => set(i)} style={{ ...choix(val === i && !etat, etat), width: '100%' }}>{T(o[i][0])}</button>
             {((chk && val === i) || vu) && <Expl ok={o[i][1]}>{o[i][1] ? '✔ ' : '✘ '}{T(o[i][2])}</Expl>}
           </div>);
       })}
@@ -76,7 +76,7 @@ function Multi({ o, perm, sel, toggle, chk, vu }) {
         const etat = vu ? (juste ? (s ? 'bon' : 'manque') : (s ? 'faux' : null)) : chk && s ? (juste ? 'bon' : 'faux') : null;
         return (
           <div key={`${i}-${T(o[i][0])}`}>
-            <button data-ok={juste ? 'true' : 'false'} aria-pressed={s} onClick={() => toggle(i)} style={{ ...choix(s && !etat, etat), width: '100%' }}>
+            <button data-ok={attrTest(juste ? 'true' : 'false')} aria-pressed={s} onClick={() => toggle(i)} style={{ ...choix(s && !etat, etat), width: '100%' }}>
               <span style={{ marginRight: 6 }}>{s ? '☑' : '☐'}</span>{T(o[i][0])}</button>
             {((chk && s) || vu) && <Expl ok={juste}>{juste ? '✔ Nécessaire : ' : '✘ Pas nécessaire : '}{T(o[i][2])}</Expl>}
           </div>);
@@ -93,7 +93,7 @@ function Tri({ d, rep, set, chk, vu }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span style={{ flex: '1 1 180px', fontSize: 14.5, color: KIT.txt }}>{T(t)}</span>
               {[[true, 'Utile'], [false, 'Inutile']].map(([v, l]) => (
-                <button key={l} data-ok={v === utile ? 'true' : 'false'} onClick={() => set(i, v)}
+                <button key={l} data-ok={attrTest(v === utile ? 'true' : 'false')} onClick={() => set(i, v)}
                   style={stylePetitBouton(rep[i] === v, v ? '#0f766e' : '#64748b')}>{l}</button>))}
             </div>
             {(faux || vu) && <Expl ok={!faux}>{utile ? 'Utile : ' : 'Inutile : '}{T(e)}</Expl>}

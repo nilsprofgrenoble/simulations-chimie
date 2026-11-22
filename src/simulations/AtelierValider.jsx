@@ -1,7 +1,7 @@
 import CodeExo from '../CodeExo';
 import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, ExempleResolu, avecIndices, exParam, venantDuDevoir, lireNombre, proche } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, ExempleResolu, avecIndices, exParam, venantDuDevoir, lireNombre, proche, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { Pic } from "../Pictos";
@@ -43,7 +43,7 @@ function Qcm({ o, perm, val, set, chk, vu }) {
         const etat = (chk || vu) && val === i ? (o[i][1] ? 'bon' : 'faux') : vu && o[i][1] ? 'manque' : null;
         return (
           <div key={`${i}-${o[i][0]}`}>
-            <button data-ok={o[i][1] ? 'true' : 'false'} onClick={() => set(i)} style={{ ...choix(val === i && !etat, etat), width: '100%' }}>{T(o[i][0])}</button>
+            <button data-ok={attrTest(o[i][1] ? 'true' : 'false')} onClick={() => set(i)} style={{ ...choix(val === i && !etat, etat), width: '100%' }}>{T(o[i][0])}</button>
             {((chk && val === i) || vu) && <Expl ok={o[i][1]}>{o[i][1] ? '✔ ' : '✘ '}{T(o[i][2])}</Expl>}
           </div>);
       })}

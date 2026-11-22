@@ -1,6 +1,6 @@
 import CodeExo from '../CodeExo';
 import { useMemo, useState } from "react";
-import { KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices } from "../commun";
+import { KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
 import { Pic } from "../Pictos";
 import { mel, champOk } from "./AtelierSituationsBanque";
@@ -96,7 +96,7 @@ export function SituationCarte({ def }) {
                   const etat = (corrigee || voir) && sel ? (e.o[k][1] ? 'bon' : 'faux') : voir && e.o[k][1] ? 'manque' : sel ? 'sel' : null;
                   return (
                     <div key={k}>
-                      <button data-ok={e.o[k][1] ? 'true' : 'false'} onClick={() => { setRep(r => ({ ...r, [e.id]: k })); setChk(c => ({ ...c, [e.id]: false })); }} style={choix(etat)}>{T(e.o[k][0])}</button>
+                      <button data-ok={attrTest(e.o[k][1] ? 'true' : 'false')} onClick={() => { setRep(r => ({ ...r, [e.id]: k })); setChk(c => ({ ...c, [e.id]: false })); }} style={choix(etat)}>{T(e.o[k][0])}</button>
                       {(corrigee || voir) && (sel || (voir && e.o[k][1])) && <Expl ok={e.o[k][1]}>{T(e.o[k][2])}</Expl>}
                     </div>);
                 })}
