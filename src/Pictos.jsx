@@ -80,6 +80,7 @@ const ICONES = {
   ok: C('<circle class="a" cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>'),
   ko: C('<circle class="a" cx="12" cy="12" r="9" opacity=".6"/><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>'),
   download: C('<path class="a" d="M4 15h16v4a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="M4 15v4a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-4M12 3.5v11M8 10.5l4 4 4-4"/>'),
+  calc: C('<rect class="a" x="5" y="3" width="14" height="18" rx="2.5"/><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7.5h8M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01"/>'),
   flag: C('<path class="a" d="M5 4.5c3-1.6 5 1.6 8 0s4-1 6 0v9c-2-1-3-1.4-6 0s-5-1.6-8 0z"/><path d="M5 4.5c3-1.6 5 1.6 8 0s4-1 6 0v9c-2-1-3-1.4-6 0s-5-1.6-8 0zM5 3v18"/>'),
   warn: C('<path class="a" d="M12 3.5L21.5 20h-19z"/><path d="M12 3.5L21.5 20h-19zM12 10v5"/><circle cx="12" cy="17.4" r=".6" fill="currentColor"/>'),
   party: C('<path class="a" d="M4 21l4-11 7 7z"/><path d="M4 21l4-11 7 7zM13 5v2M18 6l-1.5 1.5M20 12h-2M15 3l.5 1.5"/>'),

@@ -1,0 +1,21 @@
+import { calculer, formater } from './calculatrice.js';
+import assert from 'node:assert/strict';
+const ok = (e, v, o) => { const r = calculer(e, o); assert.ok(Math.abs(r - v) <= 1e-9 * Math.max(1, Math.abs(v)), `${e} = ${r}, attendu ${v}`); };
+const ko = (e, re) => assert.throws(() => calculer(e), re, e);
+ok('1+2×3', 7); ok('(1+2)×3', 9); ok('10÷4', 2.5); ok('2,5×2', 5); ok('-2^2', -4); ok('2^3^2', 512); ok('10^-3', 1e-3); ok('10^(−3)', 1e-3);
+ok('6,02×10^23', 6.02e23); ok('3×10^8×2', 6e8); ok('6,02E23', 6.02e23); ok('1,6e-19', 1.6e-19);
+ok('2π', 2 * Math.PI); ok('3(4+1)', 15); ok('2sin(30)', 1); ok('sin30', 0.5); ok('cos(60)', 0.5); ok('tan(45)', 1);
+ok('sin(π/6)', 0.5, { angle: 'rad' }); ok('asin(0,5)', 30); ok('atan(1)', 45); ok('acos(0)', 90); ok('atan(1)', Math.PI / 4, { angle: 'rad' });
+ok('ln(e)', 1); ok('log(1000)', 3); ok('exp(0)', 1); ok('√9', 3); ok('√(16)', 4); ok('sqrt(2)^2', 2); ok('5!', 120); ok('0!', 1);
+ok('(1+2', 3); ok('2²', 4); ok('2³', 8); ok('4⁻¹'.replace('⁻¹', '^(-1)'), 0.25); ok('Ans×2', 10, { ans: 5 }); ok('1/3+1/3+1/3', 1);
+ok('2 × 3', 6); ok('2×−3', -6); ok('3−1', 2); ok('1,5e3', 1500); ok('NA', 6.02214076e23); ok('h×c', 6.62607015e-34 * 2.99792458e8);
+ko('1/0', /zéro/); ko('√(-1)', /négatif/); ko('ln(0)', /strictement positif/); ko('1+', /incomplet/); ko('2)', /fermante/); ko('3 $ 4', /reconnu/); ko('abc', /comprends/); ko('(-8)^0,5', /impossible/); ko('', /Tapez/);
+ko('171!', /factorielle/); ko('1,5!', /factorielle/); ko('10^400', /trop grand/);
+const f = (x, cs) => formater(x, cs).texte;
+assert.equal(f(1234.5678), '1234,5678'); assert.equal(f(0.1 + 0.2), '0,3'); assert.equal(f(6.02e23), '6,02×10²³'); assert.equal(f(1.6e-19), '1,6×10⁻¹⁹');
+assert.equal(f(1 / 3), '0,3333333333'); assert.equal(f(1 / 3, 3), '0,333'); assert.equal(f(1234.5678, 3), '1230'); assert.equal(f(0.0004567, 2), '4,6×10⁻⁴');
+assert.equal(f(2.5, 3), '2,50'); assert.equal(f(100, 2), '100'); assert.equal(f(0), '0'); assert.equal(f(-0.00123, 2), '-0,0012'); assert.equal(f(1e6), '1×10⁶');
+assert.equal(formater(6.02e23).brut, '6,02×10^(23)'); assert.equal(formater(1.6e-19, 3).brut, '1,60×10^(-19)');
+// le « brut » doit pouvoir être recalculé
+ok(formater(1.6e-19).brut, 1.6e-19); ok(formater(-0.00123).brut, -0.00123);
+console.log('calculatrice : tous les tests passent');
