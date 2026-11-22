@@ -163,3 +163,37 @@ export function ClassesAdmin({ occupe, proteger, setMsg, onChange }) {
         </div>))}
     </details>);
 }
+
+// Signalements envoyés par le bouton « Un problème ? » (supabase/21-signalements.sql), réservés à l'administrateur.
+const MOTIFS_LIB = { reponse: 'Réponse fausse ?', enonce: 'Énoncé peu clair', bug: 'Bug / affichage', texte: 'Texte ou schéma', autre: 'Autre' };
+const STATUTS = [['nouveau', 'Nouveau'], ['en_cours', 'En cours'], ['corrige', 'Corrigé'], ['classe', 'Classé sans suite']];
+export function SignalementsAdmin({ occupe, proteger, setMsg }) {
+  const [ouvert, setOuvert] = useState(false), [liste, setListe] = useState(null), [tous, setTous] = useState(false);
+  const charger = useCallback(async () => { setListe(await rest('signalements?select=*&order=cree_le.desc&limit=300')); }, []);
+  useEffect(() => { if (ouvert && !liste) proteger(charger); }, [ouvert, liste, proteger, charger]);
+  const changer = (s, statut) => proteger(async () => {
+    await rest(`signalements?id=eq.${s.id}`, { method: 'PATCH', corps: { statut }, entetes: { Prefer: 'return=minimal' } });
+    setListe(l => l.map(x => (x.id === s.id ? { ...x, statut } : x)));
+    setMsg('Signalement mis à jour.');
+  });
+  const aTraiter = (liste || []).filter(s => s.statut === 'nouveau' || s.statut === 'en_cours');
+  const vus = tous ? liste : aTraiter;
+  return (
+    <details data-signalements-admin open={ouvert} onToggle={e => setOuvert(e.currentTarget.open)} style={{ ...styleBoite, margin: '8px 0' }}>
+      <summary style={{ cursor: 'pointer', fontWeight: 700, color: KIT.txt }}>🐞 Signalements des utilisateurs <span style={{ fontWeight: 500, color: KIT.txt2, fontSize: 13 }}>(administrateur){liste ? ` · ${aTraiter.length} à traiter` : ''}</span></summary>
+      {!liste && <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 8 }}>Chargement…</div>}
+      {liste && (
+        <label style={{ display: 'block', fontSize: 13.5, margin: '8px 0', cursor: 'pointer' }}><input type="checkbox" checked={tous} onChange={e => setTous(e.target.checked)} style={{ marginRight: 6 }} />Afficher aussi les signalements corrigés ou classés ({liste.length - aTraiter.length})</label>)}
+      {liste && !vus.length && <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Aucun signalement {tous ? '' : 'à traiter'} pour l’instant.</div>}
+      {(vus || []).map(s => (
+        <div key={s.id} data-signalement={s.id} style={{ fontSize: 13.5, padding: '8px 0', borderTop: `1px solid ${KIT.bord}`, lineHeight: 1.5 }}>
+          <div><b>{MOTIFS_LIB[s.motif] || s.motif}</b> <span style={{ color: KIT.txt2 }}>· {new Date(s.cree_le).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span></div>
+          <div style={{ color: KIT.txt2 }}>{[s.sim_titre && `${s.sim_titre} (sim ${s.sim_id})`, s.mode, s.etape, s.code_exo].filter(Boolean).join(' · ') || s.page}</div>
+          {s.message && <div style={{ margin: '2px 0', overflowWrap: 'anywhere' }}>« {s.message} »</div>}
+          <div style={{ fontSize: 12, color: KIT.txt2, overflowWrap: 'anywhere' }}>{s.appareil}</div>
+          <select value={s.statut} onChange={e => changer(s, e.target.value)} disabled={occupe} aria-label="Statut du signalement" style={{ ...champ, marginTop: 4, padding: '4px 6px', fontSize: 13 }}>
+            {STATUTS.map(([id, l]) => <option key={id} value={id}>{l}</option>)}
+          </select>
+        </div>))}
+    </details>);
+}
