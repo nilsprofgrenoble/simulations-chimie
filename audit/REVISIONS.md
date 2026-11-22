@@ -41,3 +41,4 @@ Statuts : ✅ audité et corrigé · 🟨 audité, corrections en attente · ⬜
 - 22/11/2026 : corrections SIM64 publiées (Refraction.jsx, RefractionFiches.jsx) ; défis rejoués à 390 px avec de mauvaises réponses : messages précis, aucune erreur console.
 - 22/11/2026 : ré-audit ciblé de SIM65–69 et SIM140 (défis, recalculs par script, rendu 390 px) ; scènes `entreeDeux` (SIM201) et question `fusionFission` (SIM203) jugées non nécessaires : laissées telles quelles.
 - 22/11/2026 : corrections SIM65–69 publiées (tailles de textes des schémas, kelvins refusés en SIM66, cabine SIM67, orbite plus jouable, messages de défis SIM67/68/69, tolérance du point de fonctionnement SIM69).
+- 22/11/2026 : le déploiement des corrections SIM65-69 avait échoué deux fois (incident GitHub, pas le code) ; relancé par ce petit commit.
