@@ -1,7 +1,7 @@
 import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, exParam } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, exParam, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
 import { SCENARIOS, COMPETENCES, nouveauGraphique, questions, verifierNum, nb, decimales, fmtAxe } from "./AtelierGraphiqueBanque";
@@ -108,12 +108,12 @@ export function SimulationAtelierGraphique() {
         {q.type === 'qcm' ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
             {q.options.map((o, k) => (
-              <button key={k} data-ok={k === q.bonne ? 'true' : 'false'} disabled={enDefi && defiFini} onClick={() => { setRep(r => ({ ...r, [q.id]: k })); setChk(c => ({ ...c, [q.id]: false })); }}
+              <button key={k} data-ok={attrTest(k === q.bonne ? 'true' : 'false')} disabled={enDefi && defiFini} onClick={() => { setRep(r => ({ ...r, [q.id]: k })); setChk(c => ({ ...c, [q.id]: false })); }}
                 style={{ ...styleBouton(rep[q.id] === k, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{o}</button>))}
           </div>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <input aria-label={`Réponse ${q.id}`} data-vrai={q.vrai} placeholder="?" value={rep[q.id] ?? ''} disabled={enDefi && defiFini}
+            <input aria-label={`Réponse ${q.id}`} data-vrai={attrTest(q.vrai)} placeholder="?" value={rep[q.id] ?? ''} disabled={enDefi && defiFini}
               onChange={e => { setRep(r => ({ ...r, [q.id]: e.target.value })); setChk(c => ({ ...c, [q.id]: false })); }}
               onKeyDown={e => { if (e.key === 'Enter' && !enDefi) corriger(q.id); }}
               style={{ fontSize: 15, padding: '4px 8px', border: `1.5px solid ${KIT.bord}`, borderRadius: 6, width: 130, color: KIT.txt }}/>

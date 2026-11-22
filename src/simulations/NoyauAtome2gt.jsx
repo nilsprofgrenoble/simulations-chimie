@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, IndiceDefi, ExempleResolu, OngletExercices, LigneMesure } from "../commun";
+  BoutonsModes, ARetenir, IndiceDefi, ExempleResolu, OngletExercices, LigneMesure, attrTest } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./noyauAtome2gtModele";
 import { QCM, ZAX_CHOIX } from "./noyauAtome2gtQcm";
@@ -60,7 +60,7 @@ export function SimulationNoyauAtome() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
         {ORDRE_ZAX.map(i => {
           const [A, Z, s] = ZAX_CHOIX[i], choisi = zaxChoix === i;
-          return <button key={i} onClick={() => setZaxChoix(i)} aria-pressed={choisi} aria-label={`Écriture : ${A} nucléons, ${Z} protons, symbole ${s}`} data-ok={i === 0 ? 'true' : 'false'}
+          return <button key={i} onClick={() => setZaxChoix(i)} aria-pressed={choisi} aria-label={`Écriture : ${A} nucléons, ${Z} protons, symbole ${s}`} data-ok={attrTest(i === 0 ? 'true' : 'false')}
             style={{ minHeight: 74, fontSize: 26, cursor: 'pointer', background: choisi ? (i === 0 ? '#f0fdf4' : '#fef2f2') : 'white', border: `2.5px solid ${choisi ? (i === 0 ? '#15803d' : '#dc2626') : KIT.bord}`, borderRadius: 12, color: KIT.txt }}><Zax A={A} Z={Z} s={s} grand /></button>;
         })}
       </div>

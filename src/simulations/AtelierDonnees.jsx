@@ -1,7 +1,7 @@
 import CodeExo from '../CodeExo';
 import { ChoixListe } from "../ChoixListe";
 import { useState } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, exParam, avecIndices } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, exParam, avecIndices, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
 import { ENONCES, nouvelEnonce, melange, nb } from "./AtelierDonneesBanque";
 import { SITUATIONS } from "./AtelierSituationsBanque";
@@ -161,7 +161,7 @@ function AtelierEnonces({ idDepart, onSituation }) {
         {titreEtape(i + 1, 'Que demande l’énoncé ?')}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {propositions(ex.b.cherche, ex.graine).map(o => (
-            <button key={o} data-ok={o === ex.b.cherche.bonne ? 'true' : 'false'} onClick={() => { setRep(r => ({ ...r, cherche: o })); setChk(c => ({ ...c, cherche: false })); }}
+            <button key={o} data-ok={attrTest(o === ex.b.cherche.bonne ? 'true' : 'false')} onClick={() => { setRep(r => ({ ...r, cherche: o })); setChk(c => ({ ...c, cherche: false })); }}
               style={{ ...styleBouton(rep.cherche === o, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{avecIndices(o)}</button>
           ))}
         </div>
@@ -238,7 +238,7 @@ function AtelierEnonces({ idDepart, onSituation }) {
         {titreEtape(i + 1, 'Que faut-il encore chercher ou calculer, qui n’est pas dans l’énoncé ?')}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {propositions(ex.b.manque, ex.graine + 7).map(o => (
-            <button key={o} data-ok={o === ex.b.manque.bonne ? 'true' : 'false'} onClick={() => { setRep(r => ({ ...r, manque: o })); setChk(c => ({ ...c, manque: false })); }}
+            <button key={o} data-ok={attrTest(o === ex.b.manque.bonne ? 'true' : 'false')} onClick={() => { setRep(r => ({ ...r, manque: o })); setChk(c => ({ ...c, manque: false })); }}
               style={{ ...styleBouton(rep.manque === o, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{o}</button>
           ))}
         </div>

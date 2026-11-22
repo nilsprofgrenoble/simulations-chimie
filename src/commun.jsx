@@ -285,6 +285,7 @@ export function IndiceDefi({ children, cache = false }) {
 
 // « voir la solution » d'un défi : lien discret à côté de « Vérifier » (masqué dès que la réponse est juste ou que la solution est ouverte),
 // puis encadré avec le corrigé chiffré du tirage en cours. À brancher sur noterVue (useCompteurDefi) ou suivi.vue() pour compter les corrections vues.
+export const attrTest = v => (typeof window !== 'undefined' && window.__PARCOURS_TEST__ ? v : undefined);
 export function VoirSolution({ visible, onClick }) {
   if (!visible) return null;
   return <button onClick={onClick} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: '8px 4px', fontSize: 13 }}>voir la solution</button>;
@@ -423,7 +424,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           <div data-lecture="1" style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           {tache.bloque && <div style={{ fontSize: 14, color: '#b45309', marginBottom: 6 }}>{tache.bloque}</div>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={i === tache.bonne ? 'true' : 'false'} onClick={() => setRep(i)} aria-pressed={reps[etape] === i}
+            {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={attrTest(i === tache.bonne ? 'true' : 'false')} onClick={() => setRep(i)} aria-pressed={reps[etape] === i}
               style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left',
                 ...(typeof tache.options[i] !== 'string' ? { background: reps[etape] === i ? '#e0f2fe' : 'white', color: TXT, borderWidth: 2 } : {}) }}>{avecIndices(tache.options[i])}</button>)}
           </div>
@@ -434,7 +435,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           <div data-lecture="1" style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div> : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <input value={reps[etape] ?? ''} placeholder="?" aria-label="Votre réponse" data-vrai={tache.vrai}
+              <input value={reps[etape] ?? ''} placeholder="?" aria-label="Votre réponse" data-vrai={attrTest(tache.vrai)}
                 onChange={x => setRep(x.target.value)} onKeyDown={x => { if (x.key === 'Enter') verifier(); }}
                 style={{ fontSize: 15, padding: '4px 8px', border: `1.5px solid ${BORDER}`, borderRadius: 6, width: 130, color: TXT }}/>
               <span style={{ fontSize: 14, color: TXT2 }}>{tache.unite}</span>
