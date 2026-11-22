@@ -213,17 +213,19 @@ export const etiquettesDefis = () => DEFIS.map(d => ({ ...d, titre: `${nomsSim[d
 //  Le défi est « réussi » quand une vérification trouve tout juste. Le composant n'existe qu'en mode défi : le temps compté
 //  est donc celui passé sur le défi, comme pour les exercices.
 export function useCompteurDefi() {
-  const [etat, setEtat] = useState({ essais: 0, reussi: false });
-  const noter = useCallback(ok => setEtat(x => ({ essais: x.essais + 1, reussi: x.reussi || !!ok })), []);
-  return [etat, noter];
+  const [etat, setEtat] = useState({ essais: 0, reussi: false, vues: 0 });
+  const noter = useCallback(ok => setEtat(x => ({ ...x, essais: x.essais + 1, reussi: x.reussi || !!ok })), []);
+  const noterVue = useCallback(() => setEtat(x => ({ ...x, vues: x.vues + 1 })), []);   // l'élève a ouvert « voir la solution »
+  return [etat, noter, noterVue];
 }
 
 export function SuiviDefi({ cle, etat }) {
   const s = useSuivi(cle, etat.reussi);
-  const deja = useRef(etat.essais);
+  const deja = useRef(etat.essais), dejaVues = useRef(etat.vues || 0);
   // Effet « de mise en page » : la tentative doit être comptée AVANT l'effet de réussite de useSuivi (qui calcule les étoiles).
   // Sinon la réponse juste donnée après une erreur n'était pas encore comptée et rapportait 3 étoiles au lieu de 2.
   useLayoutEffect(() => { if (etat.essais > deja.current) s.essai(); deja.current = etat.essais; }, [etat.essais, s]);
+  useLayoutEffect(() => { if ((etat.vues || 0) > dejaVues.current) s.vue(); dejaVues.current = etat.vues || 0; }, [etat.vues, s]);
   return null;
 }
 

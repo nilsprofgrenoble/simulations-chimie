@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, ExempleResolu } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, ExempleResolu, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./quantiteMatiere2gtModele";
 import { QCM } from "./quantiteMatiere2gtQcm";
@@ -9,7 +9,7 @@ import { FicheBalance, FicheMole, FicheSci, FicheNn, FicheMasseEntite, FicheChai
 import { SceneComptage, SceneBoites, ScenePaquet, ScenePaquets, SceneAtomes, SceneBalance, SceneChaine } from "./QuantiteMatiere2gtScenes";
 
 const SIM_ID = 178, CLE_GUIDE = 'quantite-matiere-2gt-guide-v1';
-declarerDefis(SIM_ID, [['balance', 'Combien d’objets dans le sac ?'], ['echantillon', 'Quelle quantité de matière dans l’échantillon ?']]);
+declarerDefis(SIM_ID, [['balance', 'Combien d’objets dans le tas ?'], ['echantillon', 'Quelle quantité de matière dans l’échantillon ?']]);
 
 // ====================================================
 //  SIM 178 — QUANTITÉ DE MATIÈRE : COMPTER LES ENTITÉS ET LA MOLE (2GT, thème « Constitution et transformations de la matière »,
@@ -65,7 +65,7 @@ const boite = (titre, corps, extra = {}) => (
 export function SimulationQuantiteMatiere2gt() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
-  const [suiviB, noterB] = useCompteurDefi(), [suiviE, noterE] = useCompteurDefi();
+  const [suiviB, noterB, vueB] = useCompteurDefi(), [suiviE, noterE, vueE] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('balance');
   const [ex, setEx] = useState({ objet: 'quotidien', obj: 'coquillette', mObj: 200, paquet: 12, ent: 'h2o', mEnt: 5.0, ouv: {} });
@@ -92,11 +92,11 @@ export function SimulationQuantiteMatiere2gt() {
         expl: '45 g ÷ 0,50 g = 90 coquillettes : on a compté sans compter.', indice: 'Deux coquillettes pèsent 1 g. Combien en faut-il pour faire 45 g ?' } },
     { id: 'memeunite', titre: 'Attention aux unités', focus: ['scene'],
       texte: <>Pour diviser deux masses, elles doivent être dans la <strong>même unité</strong>. Rappel : <strong>1{NB}kg = 1000{NB}g</strong>.
-        <ExempleResolu>Un sac contient 3{NB}kg de perles de verre ; une perle pèse 0,20{NB}g. On convertit : 3{NB}kg = 3000{NB}g. Puis 3000{NB}g ÷ 0,20{NB}g = <strong>15 000 perles</strong>.</ExempleResolu>
-        À vous : un sac contient <strong>1,2{NB}kg</strong> de lentilles ; une lentille pèse <strong>0,050{NB}g</strong>.</>,
-      tache: { type: 'num', q: 'Combien de lentilles contient le sac ?', carnet: 'Nombre de lentilles (1,2 kg)', unite: 'lentilles', vrai: 24000, tol: 0.01, affiche: v => M.entier(v),
+        <ExempleResolu>Un tas de perles de verre pèse 3{NB}kg ; une perle pèse 0,20{NB}g. On convertit : 3{NB}kg = 3000{NB}g. Puis 3000{NB}g ÷ 0,20{NB}g = <strong>15 000 perles</strong>.</ExempleResolu>
+        À vous : un tas de lentilles pèse <strong>1,2{NB}kg</strong> ; une lentille pèse <strong>0,050{NB}g</strong>.</>,
+      tache: { type: 'num', q: 'Combien de lentilles contient le tas ?', carnet: 'Nombre de lentilles (1,2 kg)', unite: 'lentilles', vrai: 24000, tol: 0.01, affiche: v => M.entier(v),
         calcul: () => ['1,2 kg = 1200 g (car 1 kg = 1000 g).', 'Nombre de lentilles = 1200 g ÷ 0,050 g = 24 000 lentilles.'],
-        pieges: [[24, 'Vous n’avez pas converti le sac en grammes : 1,2 kg = 1200 g. Les deux masses doivent avoir la même unité.'], [60, 'Vous avez multiplié (1200 × 0,050 = 60). Pour trouver un nombre d’objets, on divise.']],
+        pieges: [[24, 'Vous n’avez pas converti la masse du tas en grammes : 1,2 kg = 1200 g. Les deux masses doivent avoir la même unité.'], [60, 'Vous avez multiplié (1200 × 0,050 = 60). Pour trouver un nombre d’objets, on divise.']],
         expl: '1,2 kg = 1200 g ; 1200 g ÷ 0,050 g = 24 000 lentilles.', indice: 'Écrivez d’abord 1,2 kg en grammes. Puis divisez par la masse d’une lentille.' } },
     { id: 'paquets', titre: 'Compter par paquets', focus: ['scene'],
       retenirTitre: 'À retenir : compter avec une balance',
@@ -182,7 +182,7 @@ export function SimulationQuantiteMatiere2gt() {
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {});
 
   // ════════════════ DÉFIS ════════════════
-  const nouveauDefi = type => { setDefi({ ...(type === 'balance' ? { type, ...M.tirerDefiBalance(defi && defi.type === 'balance' ? defi : null) } : { type, ...M.tirerDefiEchantillon(defi && defi.type === 'echantillon' ? defi : null) }), reps: {}, verifie: false }); };
+  const nouveauDefi = type => { setDefi({ ...(type === 'balance' ? { type, ...M.tirerDefiBalance(defi && defi.type === 'balance' ? defi : null) } : { type, ...M.tirerDefiEchantillon(defi && defi.type === 'echantillon' ? defi : null) }), reps: {}, verifie: false, solution: false }); };
   function changerMode(md) {
     setMode(md);
     if (md === 'defi' && !defi) nouveauDefi(typeDefi);
@@ -205,11 +205,11 @@ export function SimulationQuantiteMatiere2gt() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {[['balance', 'Compter avec la balance'], ['echantillon', 'Masse, nombre et moles']].map(([t, l]) => <button key={t} onClick={() => choisirDefi(t)} aria-pressed={defi.type === t} style={stylePetitBouton(defi.type === t, '#0369a1')}>{l}</button>)}
       </div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defiBalance ? 'Défi : combien d’objets dans le sac ?' : 'Défi : quelle quantité de matière dans l’échantillon ?'}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defiBalance ? 'Défi : combien d’objets dans le tas ?' : 'Défi : quelle quantité de matière dans l’échantillon ?'}</div>
       {defiBalance ? <>
-        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.6 }}>Un sac contient <strong>{nb(defi.valeur, 3)}{NB}{defi.enKg ? 'kg' : 'g'}</strong> de {defi.o.pluriel}. {defi.o.art === 'un' ? 'Un' : 'Une'} {defi.o.nom} pèse <strong>{masseUneDefi}{NB}g</strong>. Combien de {defi.o.pluriel} y a-t-il dans le sac ? Donnez un nombre entier.</div>
+        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.6 }}>Un tas de {defi.o.pluriel} pèse <strong>{nb(defi.valeur, 3)}{NB}{defi.enKg ? 'kg' : 'g'}</strong>. {defi.o.art === 'un' ? 'Un' : 'Une'} {defi.o.nom} pèse <strong>{masseUneDefi}{NB}g</strong>. Combien de {defi.o.pluriel} y a-t-il dans le tas ? Donnez un nombre entier.</div>
         {champ(`Nombre de ${defi.o.pluriel}`, '')}
-        <IndiceDefi cache={false}>Le nombre d’objets est la masse du sac divisée par la masse d’un objet : N = frac(m|m_entité). Mettez d’abord les deux masses dans la même unité (1 kg = 1000 g) : les grammes se simplifient.</IndiceDefi>
+        <IndiceDefi cache={false}>Le nombre d’objets est la masse du tas divisée par la masse d’un objet : N = frac(m|m_entité). Mettez d’abord les deux masses dans la même unité (1 kg = 1000 g) : les grammes se simplifient.</IndiceDefi>
       </> : <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.6 }}>Un échantillon {de(defi.e.nom.replace(/^(atome|molécule|ion) (d’|de |du )?/, ''))}({M.formuleTexte(defi.e)}) pèse <strong>{nbf(defi.m, defi.m < 1 ? 2 : 1)}{NB}g</strong>. La masse d’{defi.e.type === 'molécule' ? 'une ' : 'un '}{defi.e.nom} est <strong>{sci(defi.mEnt, 3)}{NB}kg</strong>. Quelle est la quantité de matière <em>n</em> de l’échantillon ? On donne N<sub>A</sub> = 6,02 × 10²³ mol⁻¹. Donnez <em>n</em> en mol avec 2 chiffres significatifs (par exemple 0,019).</div>
         {champ('Quantité de matière n', 'mol')}
@@ -218,12 +218,16 @@ export function SimulationQuantiteMatiere2gt() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="qm2-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
+        <VoirSolution visible={!(defi.verifie && defi.ok) && !defi.solution} onClick={() => { (defiBalance ? vueB : vueE)(); setDefi(d => ({ ...d, solution: true })); }}/>
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defi.ok ? (defiBalance ? `✓ Correct : ${M.entier(defi.N)} ${defi.o.pluriel}.` : `✓ Correct : N = ${sci(defi.N, 3)} entités, puis n = ${nb(defi.n, 3)} mol (marge acceptée : ± 6 %).`)
-          : defiBalance ? '✗ Vérifiez : mettez la masse du sac et celle d’un objet dans la même unité, puis divisez la première par la seconde.'
+          : defiBalance ? '✗ Vérifiez : mettez la masse du tas et celle d’un objet dans la même unité, puis divisez la première par la seconde.'
             : '✗ Vérifiez : masse en kg (g × 10⁻³), puis N = m ÷ masse d’une entité, puis n = N ÷ N_A.'}
       </div>}
+      {defi.solution && <BoiteSolution>{defiBalance
+        ? <>Masse du tas : {nb(defi.valeur, 3)}{NB}{defi.enKg ? 'kg' : 'g'}{defi.enKg ? <> = {nb(defi.totG, 3)}{NB}g</> : null}. N = masse du tas ÷ masse d’un objet = {nb(defi.totG, 3)}{NB}g ÷ {masseUneDefi}{NB}g = <strong>{M.entier(defi.N)} {defi.o.pluriel}</strong>.</>
+        : <>(1) m = {nbf(defi.m, defi.m < 1 ? 2 : 1)}{NB}g = {nb(defi.m / 1000, 2)}{NB}kg. (2) N = m ÷ m<sub>entité</sub> = {nb(defi.m / 1000, 2)}{NB}kg ÷ {sci(defi.mEnt, 3)}{NB}kg = {sci(defi.N, 3)} entités. (3) n = N ÷ N<sub>A</sub> = {sci(defi.N, 3)} ÷ (6,02{NB}×{NB}10²³{NB}mol⁻¹) = <strong>{nb(defi.n, 3)}{NB}mol</strong> (réponse acceptée à ± 6 % près).</>}</BoiteSolution>}
     </div>);
 
   // ---------- hypothèses ----------
@@ -235,7 +239,7 @@ export function SimulationQuantiteMatiere2gt() {
       <li><strong>Masse d’un électron négligée</strong> : un électron est environ 1800 fois plus léger qu’un proton ; un ion a donc la même masse que l’atome dont il vient (m(Na⁺) = m(Na)).</li>
       <li><strong>Constante d’Avogadro</strong> : N<sub>A</sub> = 6,02 × 10²³ mol⁻¹, arrondi de la valeur exacte 6,022 140 76 × 10²³ mol⁻¹ (nombre exact, fixé par la définition de la mole).</li>
       <li><strong>Échantillon pur</strong> : une seule espèce chimique, sans impureté ni eau en plus.</li>
-      <li><strong>Arrondis et chiffres significatifs</strong> : un résultat n’a pas plus de chiffres significatifs que la donnée la moins précise. On garde un chiffre de plus dans les calculs intermédiaires et on arrondit à la fin ; les réponses sont acceptées avec une petite marge (1 à 2 % dans le parcours, 6 % dans les défis).</li>
+      <li><strong>Arrondis et chiffres significatifs</strong> : un résultat n’a pas plus de chiffres significatifs que la donnée la moins précise. On garde un chiffre de plus dans les calculs intermédiaires et on arrondit à la fin ; les réponses sont acceptées avec une petite marge : 0,5 à 2 % selon les questions du parcours ; ± 1 % pour le défi « tas sur la balance » ; ± 6 % pour le défi « masse, nombre et moles » (les arrondis intermédiaires s’y accumulent).</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ex.ouv.hypo} onBascule={() => setE({ ouv: { ...ex.ouv, hypo: !ex.ouv.hypo } })}>{hypotheses}</Section></div>);
   const finParcours = (
@@ -250,7 +254,7 @@ export function SimulationQuantiteMatiere2gt() {
   const sceneGuide = (() => {
     switch (idE) {
       case 'balance': return boite('Compter des coquillettes', <SceneComptage id="coquillette" nom="coquillette" pluriel="coquillettes" mUne="0,50 g" mTas="45 g" nombreVisible={26}/>, cadre('scene'));
-      case 'memeunite': return boite('Un sac de lentilles', <SceneComptage id="lentille" nom="lentille" pluriel="lentilles" mUne="0,050 g" mTas="1,2 kg" nombreVisible={34}/>, cadre('scene'));
+      case 'memeunite': return boite('Un tas de lentilles', <SceneComptage id="lentille" nom="lentille" pluriel="lentilles" mUne="0,050 g" mTas="1,2 kg" nombreVisible={34}/>, cadre('scene'));
       case 'paquets': return boite('Des paquets d’œufs', <SceneBoites boites={4} k={6}/>, cadre('scene'));
       case 'mole': return boite('Une entité, puis un paquet : la mole', <ScenePaquet/>, cadre('scene'));
       case 'nbentites': return boite('Des paquets', <ScenePaquets n={0.5} texte="n = 0,50 mol"/>, cadre('scene'));
@@ -333,7 +337,7 @@ export function SimulationQuantiteMatiere2gt() {
       <li>Atomes : comparez 10 g d’aluminium et 10 g de cuivre. Lequel contient le plus d’atomes ? Quel atome est le plus lourd ?</li>
       <li>Molécules : choisissez l’eau, puis le glucose. À masse égale, laquelle contient le plus de molécules ?</li>
       <li>Ouvrez « Un pas vers la Première », cliquez sur « Peser exactement 1 mol » pour trois entités : que vaut n ? Et le nombre d’entités ?</li>
-      <li>Ion sodium Na⁺ et atome de sodium : leurs masses sont-elles les mêmes ? Pourquoi peut-on négliger les électrons ?</li>
+      <li>Choisissez l’ion sodium Na⁺ : sa masse est celle de l’atome de sodium (3,82 × 10⁻²⁶ kg). Pourquoi peut-on négliger la masse des électrons ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir sansFiche>
@@ -383,7 +387,7 @@ export function SimulationQuantiteMatiere2gt() {
           {enGuide ? <div className="qm2-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="qm2-carte qm2-hypo-defi">{panneauHypo}</div> : null}
           <div className="qm2-main">
             {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defiBalance ? suiviB : suiviE}/></div>}
-            {enDefi && defi && <div className="qm2-in" key={defi.type}>{boite(defiBalance ? 'Le sac sur la balance' : 'De la masse à la quantité de matière',
+            {enDefi && defi && <div className="qm2-in" key={defi.type}>{boite(defiBalance ? 'Le tas sur la balance' : 'De la masse à la quantité de matière',
               defiBalance ? <SceneComptage id={defi.o.id} nom={defi.o.nom} pluriel={defi.o.pluriel} mUne={`${masseUneDefi} g`} mTas={`${nb(defi.valeur, 3)} ${defi.enKg ? 'kg' : 'g'}`} nombreVisible={30}/>
                 : <SceneChaine m={`${nbf(defi.m, defi.m < 1 ? 2 : 1)} g`} N={null} n={null} mEnt={`${sci(defi.mEnt, 3)} kg`} entiteNom={defi.e.type === 'molécule' ? 'molécule' : 'atome'}/>)}</div>}
             {enGuide && <div className="qm2-in" key={idE}>{sceneGuide}</div>}

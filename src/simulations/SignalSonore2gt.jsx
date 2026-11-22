@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, ExempleResolu } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, ExempleResolu, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./signalSonore2gtModele";
 import { QCM } from "./signalSonore2gtQcm";
@@ -94,7 +94,7 @@ function CurseurListe({ nom, valeurs, rang, onChange, texte, couleur = COL.orang
 export function SimulationSignalSonore2gt() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
-  const [suiviL, noterL] = useCompteurDefi(), [suiviR, noterR] = useCompteurDefi();
+  const [suiviL, noterL, vueL] = useCompteurDefi(), [suiviR, noterR, vueR] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('lire');
   const [ex, setEx] = useState({ forme: 'sinus', iT: M.PERIODES.indexOf(4), A: 0.8, base: 'auto', cache: false, curs: false, c1: 1, c2: 5, ouv: {} });
@@ -205,8 +205,8 @@ export function SimulationSignalSonore2gt() {
 
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => {
-    setDefi(type === 'lire' ? { type, ...M.tirerDefiLire(defi && defi.type === 'lire' ? defi : null), reps: {}, verifie: false }
-      : { type, ...M.tirerDefiRegler(defi && defi.type === 'regler' ? defi : null), Tc: M.T_DEPART, reps: {}, verifie: false });
+    setDefi(type === 'lire' ? { type, ...M.tirerDefiLire(defi && defi.type === 'lire' ? defi : null), reps: {}, verifie: false, solution: false }
+      : { type, ...M.tirerDefiRegler(defi && defi.type === 'regler' ? defi : null), Tc: M.T_DEPART, reps: {}, verifie: false, solution: false });
   };
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
@@ -247,6 +247,7 @@ export function SimulationSignalSonore2gt() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
         <button id="ss2-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
+        <VoirSolution visible={!(defi.verifie && defi.ok) && !defi.solution} onClick={() => { (defiLire ? vueL : vueR)(); setDefi(d => ({ ...d, solution: true })); }}/>
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defiLire
@@ -256,6 +257,9 @@ export function SimulationSignalSonore2gt() {
           : (defi.ok ? `✓ Réglé : T = ${nbl(defi.Tc)} ms donne f = ${M.fTexte(M.frequenceHz(defi.Tc))}, à moins de 5 % de la cible.`
             : defi.ecart > 0 ? '✗ Votre son est trop aigu : sa fréquence est trop grande. Allongez la période. Calculez T = 1 ÷ f.' : '✗ Votre son est trop grave : sa fréquence est trop petite. Raccourcissez la période. Calculez T = 1 ÷ f.')}
       </div>}
+      {defi.solution && <BoiteSolution>{defiLire
+        ? <>Un motif (entre deux points identiques qui se suivent) occupe {defi.k} carreaux de {nbl(defi.base)}{NB}ms : T = {defi.k} × {nbl(defi.base)}{NB}ms = <strong>{nbl(defi.T)}{NB}ms</strong>. Puis f = 1 ÷ T = 1 ÷ {nbl(defi.T / 1000)}{NB}s = <strong>{M.fTexte(defi.f)}</strong> (réponses acceptées à ± 5 % près).</>
+        : <>T = 1 ÷ f = 1 ÷ {M.fTexte(defi.f)} = {nbl(defi.Tvrai / 1000)}{NB}s = <strong>{nbl(defi.Tvrai)}{NB}ms</strong>. Placez le curseur sur cette valeur (à ± 5 % près sur la fréquence).</>}</BoiteSolution>}
     </div>);
   const sceneDefi = defi && (defiLire
     ? <Oscillogramme forme={defi.forme} T={defi.T} A={defi.A} dec={defi.dec} base={defi.base}
@@ -273,7 +277,7 @@ export function SimulationSignalSonore2gt() {
       <li><strong>Hauteur, timbre et force</strong> : les liens avec la fréquence, la forme et l’amplitude sont qualitatifs. L’oreille n’est pas aussi sensible à toutes les fréquences : à même amplitude, deux sons de hauteurs différentes ne semblent pas toujours aussi forts.</li>
       <li><strong>Domaines de fréquences</strong> : 20 Hz et 20 kHz sont des valeurs approchées, qui varient d’une personne à l’autre et diminuent avec l’âge (surtout vers les aigus).</li>
       <li><strong>Écoute</strong> : le son joué est un son de synthèse, au volume volontairement modéré. Le haut-parleur d’un appareil ne reproduit correctement que de 100{NB}Hz à 8{NB}kHz environ : hors de cette plage, le bouton est désactivé.</li>
-      <li><strong>Chiffres significatifs</strong> : les valeurs de l’écran sont lues au carreau près (2 ou 3 chiffres significatifs). Les réponses sont acceptées avec une petite marge (1 à 3 % dans le parcours, 5 % dans les défis).</li>
+      <li><strong>Chiffres significatifs</strong> : les valeurs de l’écran sont lues au carreau près (2 ou 3 chiffres significatifs). Les réponses sont acceptées avec une petite marge : de 0,1 % à 3 % selon les questions du parcours (plus étroite quand il suffit de calculer, plus large quand on lit l’écran), et ± 5 % dans les défis.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ex.ouv.hypo} onBascule={() => setE({ ouv: { ...ex.ouv, hypo: !ex.ouv.hypo } })}>{hypotheses}</Section></div>);
   const finParcours = (
