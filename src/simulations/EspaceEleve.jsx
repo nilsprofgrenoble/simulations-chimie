@@ -205,7 +205,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied, fiches, reglages }
 
         {actif === 'classe' && (
           <>
-            <MonPseudo naviguer={naviguer} apercu={apercu ? { moi: apercu.classe?.moi ?? null } : false} onChange={() => setVPseudo(v => v + 1)} />
+            <MonPseudo naviguer={naviguer} expliquerSiFerme apercu={apercu ? { moi: apercu.classe?.moi ?? null } : false} onChange={() => setVPseudo(v => v + 1)} />
             <VieDeClasse lignes={lignes} apercu={apercu?.classe} rafraichir={vPseudo} />
           </>)}
 
