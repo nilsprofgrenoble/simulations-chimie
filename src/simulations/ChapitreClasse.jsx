@@ -24,7 +24,7 @@ export function ChapitreClasse({ classe, dispo, occupe, onChoix }) {
   const bascule = id => onChoix(cur.includes(id) ? cur.filter(x => x !== id) : cur.length < MAX_CHAPITRES ? [...cur, id] : cur);
   return (
     <div style={{ ...styleBoite, margin: '0 0 10px', fontSize: 13.5 }}>
-      <div><b><Pic n="book"/>Chapitre en cours</b> pour « {classe.nom} » : les élèves connectés voient ces chapitres en premier dans « Je m’entraîne », avec leurs simulations et l’exercice conseillé (jusqu’à {MAX_CHAPITRES} chapitres). Le reste reste accessible, replié.</div>
+      <div>Les élèves de « {classe.nom} » voient ces chapitres en premier dans « Je m’entraîne », avec leurs simulations et l’exercice conseillé (jusqu’à {MAX_CHAPITRES} chapitres). Le reste reste accessible, replié.</div>
       {NIVEAUX_CHAPITRES.map(n => {
         const liste = chapitresDuNiveau(n.key), choisis = liste.filter(c => cur.includes(c.id));
         return (

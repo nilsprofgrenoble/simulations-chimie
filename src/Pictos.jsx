@@ -79,6 +79,7 @@ const ICONES = {
   trophy: C('<path class="a" d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 21h8"/>'),
   ok: C('<circle class="a" cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>'),
   ko: C('<circle class="a" cx="12" cy="12" r="9" opacity=".6"/><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>'),
+  download: C('<path class="a" d="M4 15h16v4a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 19z"/><path d="M4 15v4a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 19v-4M12 3.5v11M8 10.5l4 4 4-4"/>'),
   flag: C('<path class="a" d="M5 4.5c3-1.6 5 1.6 8 0s4-1 6 0v9c-2-1-3-1.4-6 0s-5-1.6-8 0z"/><path d="M5 4.5c3-1.6 5 1.6 8 0s4-1 6 0v9c-2-1-3-1.4-6 0s-5-1.6-8 0zM5 3v18"/>'),
   warn: C('<path class="a" d="M12 3.5L21.5 20h-19z"/><path d="M12 3.5L21.5 20h-19zM12 10v5"/><circle cx="12" cy="17.4" r=".6" fill="currentColor"/>'),
   party: C('<path class="a" d="M4 21l4-11 7 7z"/><path d="M4 21l4-11 7 7zM13 5v2M18 6l-1.5 1.5M20 12h-2M15 3l.5 1.5"/>'),
