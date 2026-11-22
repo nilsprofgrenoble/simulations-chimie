@@ -283,6 +283,16 @@ export function IndiceDefi({ children, cache = false }) {
   );
 }
 
+// « voir la solution » d'un défi : lien discret à côté de « Vérifier » (masqué dès que la réponse est juste ou que la solution est ouverte),
+// puis encadré avec le corrigé chiffré du tirage en cours. À brancher sur noterVue (useCompteurDefi) ou suivi.vue() pour compter les corrections vues.
+export function VoirSolution({ visible, onClick }) {
+  if (!visible) return null;
+  return <button onClick={onClick} style={{ background: 'none', border: 'none', color: KIT.txt2, textDecoration: 'underline', cursor: 'pointer', padding: '8px 4px', fontSize: 13 }}>voir la solution</button>;
+}
+export function BoiteSolution({ children }) {
+  return <div role="region" aria-label="Solution du défi" style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>{children}</div>;
+}
+
 // Ordre d'affichage des choix d'un QCM : mélangé, mais stable pour une étape donnée.
 // Les auteurs écrivent la bonne réponse en premier ; sans mélange, elle serait toujours en tête.
 function ordreOptions(n, graine) {

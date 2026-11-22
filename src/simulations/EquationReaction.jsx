@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, IndiceDefi, ExempleResolu, OngletExercices } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, IndiceDefi, ExempleResolu, OngletExercices, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./equationReactionModele";
 import { QCM } from "./equationReactionQcm";
@@ -55,7 +55,7 @@ const CH4 = R('methane');
 export function SimulationEquationReaction() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
-  const [suiviA, noterA] = useCompteurDefi(), [suiviQ, noterQ] = useCompteurDefi();
+  const [suiviA, noterA, vueA] = useCompteurDefi(), [suiviQ, noterQ, vueQ] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('ajuster');
   const [hypoOuv, setHypoOuv] = useState(() => mode === 'defi');
@@ -178,8 +178,8 @@ export function SimulationEquationReaction() {
   // ════════════════ DÉFIS ════════════════
   const initCoefs = r => M.especesDe(r).map(() => 1);
   const nouveauDefi = type => {
-    if (type === 'ajuster') { const d = M.tirerDefiAjuster(defi && defi.type === 'ajuster' ? defi.r.id : null); setDefi({ type, ...d, coefs: initCoefs(d.r), reps: {}, verifie: false }); }
-    else { const d = M.tirerDefiQuantite(); setDefi({ type, ...d, coefs: initCoefs(d.r), reps: {}, verifie: false }); }
+    if (type === 'ajuster') { const d = M.tirerDefiAjuster(defi && defi.type === 'ajuster' ? defi.r.id : null); setDefi({ type, ...d, coefs: initCoefs(d.r), reps: {}, verifie: false, solution: false }); }
+    else { const d = M.tirerDefiQuantite(); setDefi({ type, ...d, coefs: initCoefs(d.r), reps: {}, verifie: false, solution: false }); }
   };
   function changerMode(md) {
     setMode(md);
@@ -227,12 +227,16 @@ export function SimulationEquationReaction() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="eq-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh" />Nouveau défi</button>
+        <VoirSolution visible={!(defi.verifie && defi.ok) && !defi.solution} onClick={() => { (defi.type === 'ajuster' ? vueA : vueQ)(); setDefi(d => ({ ...d, solution: true })); }}/>
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defi.type === 'ajuster' ? messageAjuster(defi)
           : defi.ok ? `✓ Correct. Équation : ${M.equationAttendue(defi.r)} ; il faut ${defi.N / M.coefsAjustes(defi.r)[defi.i]} fois la réaction, soit ${defi.vrai} ${M.nomEntites(M.especesDe(defi.r)[defi.j])}.`
             : '✗ Vérifiez d’abord l’équation ajustée (tableau des coefficients), puis par quel nombre il faut multiplier la réaction, et enfin le coefficient de l’espèce demandée.'}
       </div>}
+      {defi.solution && <BoiteSolution>{defi.type === 'ajuster'
+        ? <>On ajuste un élément à la fois (en commençant par celui qui n’est que dans un seul corps de chaque côté){M.bilan(defi.r, M.coefsAjustes(defi.r)).charge.present ? ', puis on égalise la charge' : ''}. Équation ajustée avec les plus petits entiers : <strong>{M.equationAttendue(defi.r)}</strong>.</>
+        : <>Équation ajustée : <strong>{M.equationAttendue(defi.r)}</strong>. Les coefficients de {M.ESPECES[M.especesDe(defi.r)[defi.i]].f} et de {M.ESPECES[M.especesDe(defi.r)[defi.j]].f} sont {M.coefsAjustes(defi.r)[defi.i]} et {M.coefsAjustes(defi.r)[defi.j]}. Il réagit {defi.N} {M.nomEntites(M.especesDe(defi.r)[defi.i])}, soit {defi.N} ÷ {M.coefsAjustes(defi.r)[defi.i]} = {defi.N / M.coefsAjustes(defi.r)[defi.i]} fois la réaction : il se forme {defi.N / M.coefsAjustes(defi.r)[defi.i]} × {M.coefsAjustes(defi.r)[defi.j]} = <strong>{defi.vrai} {M.nomEntites(M.especesDe(defi.r)[defi.j])}</strong>.</>}</BoiteSolution>}
     </div>);
 
   // ---------- hypothèses ----------
