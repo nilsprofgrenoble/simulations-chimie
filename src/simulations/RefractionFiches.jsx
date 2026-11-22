@@ -77,7 +77,7 @@ export function FicheIndice() {
       <ul style={liste}>
         <li><em>Vers le milieu d’indice plus grand, le rayon se rapproche de la normale ; vers le plus petit, il s’écarte.</em></li>
         <li>L’indice n caractérise un milieu transparent : n ≥ 1, sans unité. Air : 1,00 ; eau : 1,33 ; plexiglas : 1,51 ; diamant : 2,42.</li>
-        <li>Plus l’indice du milieu 2 est grand, plus la déviation est importante.</li>
+        <li>À n₁ et i₁ fixés, plus l’indice n₂ est grand, plus le rayon se rapproche de la normale.</li>
       </ul>
     </div>
   );
@@ -107,7 +107,7 @@ export function FicheLoi() {
       <ul style={liste}>
         <li><em>Ce sont les sinus des angles qui sont proportionnels, pas les angles.</em></li>
         <li>Méthode du TP : milieu 1 = air (n₁ = 1,00), plusieurs couples (i₁ ; i₂), tracé de sin i₁ en fonction de sin i₂ : la pente est n₂.</li>
-        <li>Exemple : i₁ = 30° et i₂ = 19,5° donnent n = sin 30° / sin 19,5° ≈ 1,50. <strong>Piège</strong> : diviser les angles au lieu de leurs sinus.</li>
+        <li>Exemple : i₁ = 70° et i₂ = 38,5° donnent n = sin 70° / sin 38,5° ≈ 1,51. <strong>Piège</strong> : diviser les angles au lieu de leurs sinus.</li>
       </ul>
     </div>
   );

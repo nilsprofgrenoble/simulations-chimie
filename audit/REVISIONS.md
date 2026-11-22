@@ -17,7 +17,7 @@ Statuts : ✅ audité et corrigé · 🟨 audité, corrections en attente · ⬜
 | 194 | Mesure : incertitude (2GT) | ✅ | Bouton « voir la solution » (défi écrire ; défi compatible inchangé) | 22/11/2026 |
 | 195 | Changement d’état (2GT) | ✅ | Bouton « voir la solution » (deux défis) ; équation du défi situation révélée avec la solution | 22/11/2026 |
 | 56 à 63 | 2GT mécanique et solutions | 🟨 | Rapports sur l'ordinateur de Nils, à intégrer ; voir famille F-01 | — |
-| 64 | Réfraction : lois de Snell-Descartes (2GT) | 🟨 | Ré-audit fait le 22/11/2026 : 1 bloquant, 6 importants, 10 mineurs (rapport `audit/rapports/SIM64.md`). Corrections à faire | — |
+| 64 | Réfraction : lois de Snell-Descartes (2GT) | ✅ | Ré-audit 22/11/2026 (1 bloquant, 6 importants, 10 mineurs) puis corrections faites le même jour : tolérance et précision des réponses, messages d’erreur du défi, exemples distincts des questions, schémas lisibles à 390 px, légende du pêcheur. Non corrigé volontairement : indice du plexiglas (1,51), pas de « verre » | — |
 | 65 à 69, 140 | 2GT optique, électricité, chute libre | ⬜ | Rapports perdus, à refaire | — |
 | Autres | — | — | Non audités | — |
 
@@ -38,3 +38,4 @@ Statuts : ✅ audité et corrigé · 🟨 audité, corrections en attente · ⬜
 - 22/11/2026 : F-08 sur 193, 194, 195 ; C5 (marges des panneaux Hypothèses : 178, 190, 193).
 - 22/11/2026 : passe « mineurs » : F-05 (193, 196, 199, 202), F-07 (193), test de typographie du prisme (201) réparé, import inutile (201), attribut et commentaire en trop (202). Non traité : scène `entreeDeux` définie mais jamais affichée (201), à trancher avec Nils.
 - 22/11/2026 : ré-audit de la SIM64 (code + recalculs + rendu 390 px) : rapport `audit/rapports/SIM64.md`, scripts `audit/scripts/recalc-SIM64.mjs` et `rendu-SIM64.cjs`.
+- 22/11/2026 : corrections SIM64 publiées (Refraction.jsx, RefractionFiches.jsx) ; défis rejoués à 390 px avec de mauvaises réponses : messages précis, aucune erreur console.
