@@ -3,6 +3,7 @@ import { ecrireAuAuteur } from "./contact";
 import { TEXTE2, ACCENT } from "./theme";
 import { nomsSim } from "./suivi";
 import { cheminSimulation } from "./slugs";
+import { ouvrirSignalement } from "./signalement";
 
 // Pied de page : présent en bas de toutes les pages du site (compact, sur fond clair).
 const lien = { color: TEXTE2, textDecoration: 'none', background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit', fontSize: 13.5, fontWeight: 700 };
@@ -18,6 +19,7 @@ export function PiedDePage({ naviguer, energyUrl }) {
         <a href={`${import.meta.env.BASE_URL}trajectoire.html`} style={lien}>Trajectoire (correction)</a>
         <a href="?sim=47" onClick={aller(47)} style={lien}>À propos</a>
         <button type="button" onClick={() => ecrireAuAuteur('Paillasse virtuelle — message')} style={lien}>Contact</button>
+        <button type="button" onClick={ouvrirSignalement} style={lien}>🐞 Signaler un problème</button>
         <a href="?sim=38" onClick={aller(38)} style={lien}>Travail par compétence</a>
         <a href="?sim=104" onClick={aller(104)} style={lien}>🏅 Classement</a>
         <a href="?sim=39" onClick={aller(39)} style={lien}>Mon compte</a>

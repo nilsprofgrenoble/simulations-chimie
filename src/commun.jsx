@@ -367,7 +367,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     return null;
   };
   return (
-    <div ref={carteRef} data-carte-parcours={etape} data-type-tache={tache ? tache.type : 'aucune'} style={{ background: 'white', borderRadius: 22, padding: '14px 16px', border: `2px solid ${ORANGE_GUIDE}`,
+    <div ref={carteRef} data-carte-parcours={etape} data-etape-parcours={`Étape ${etape + 1} / ${etapes.length}${etapes[etape]?.titre ? ' : ' + etapes[etape].titre : ''}`.slice(0, 190)} data-type-tache={tache ? tache.type : 'aucune'} style={{ background: 'white', borderRadius: 22, padding: '14px 16px', border: `2px solid ${ORANGE_GUIDE}`,
       display: 'flex', flexDirection: 'column', gap: 10,
       // La carte reste visible quand on fait défiler la page (dans une mise en page à deux colonnes)
       position: 'sticky', top: 'calc(var(--entete-h, 0px) + 8px)', maxHeight: 'calc(100vh - var(--entete-h, 0px) - 24px)', overflowY: 'auto', zIndex: 5 }}>

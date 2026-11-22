@@ -156,6 +156,8 @@ function choisirMode(cleGuide) {
   return 'guide';
 }
 
+export const modeSimCourant = () => modeSim;   // « guide », « explore », « defi » ou null (lu par le bouton « Un problème ? »)
+
 export function useSignalerMode(mode) {
   const m = mode === 'exercice' ? 'defi' : (mode || 'explore');
   useEffect(() => { fixerMode(m); return () => fixerMode(null); }, [m]);

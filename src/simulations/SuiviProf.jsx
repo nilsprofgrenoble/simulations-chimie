@@ -15,7 +15,7 @@ import { ChapitreClasse } from "./ChapitreClasse";
 import { PartageClasse } from "./PartageClasse";
 import { EtablissementClasse } from "./EtablissementClasse";
 import { synchroniserClesValides } from "../syncCles";
-import { ComptesProf, ClassesAdmin } from "./ComptesProf";
+import { ComptesProf, ClassesAdmin, SignalementsAdmin } from "./ComptesProf";
 import { ApercuEleve } from "./ApercuEleve";
 import { GuideProf, GuideEleveProf, BoutonsGuideEleve } from "./GuideProf";
 import { Pic } from "../Pictos";
@@ -305,7 +305,7 @@ export function SimulationSuiviProf({ naviguer }) {
           <MotDePasse />
           <button onClick={deconnexion} style={{ ...styleBouton(false, '#475569'), fontSize: 14 }}>Se déconnecter</button>
         </div>
-        {sess.profil.admin && <div style={{ marginTop: 12 }}><ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} /><ClassesAdmin occupe={occupe} proteger={proteger} setMsg={setMsg} onChange={() => chargerClasses()} /></div>}
+        {sess.profil.admin && <div style={{ marginTop: 12 }}><ComptesProf occupe={occupe} proteger={proteger} setMsg={setMsg} /><ClassesAdmin occupe={occupe} proteger={proteger} setMsg={setMsg} onChange={() => chargerClasses()} /><SignalementsAdmin occupe={occupe} proteger={proteger} setMsg={setMsg} /></div>}
       </section>);
   const carteCompte = (
     <>
