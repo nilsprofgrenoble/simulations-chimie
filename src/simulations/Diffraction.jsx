@@ -176,6 +176,8 @@ function Montage({ objet, a, lam, D, gris }) {
 }
 
 // ---------- défis : données tirées au hasard ----------
+// tolérance sur la valeur mesurée : large (10 % au moins), car un pointé à l'écran reste approximatif ; au-delà, 3 fois l'incertitude relative
+const tolDefi = rel => Math.max(0.10, 3 * (rel || 0));
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const NOMINAUX = [150, 200, 250, 300];                    // µm : diamètres annoncés par le fabricant (fil)
 const nouveauFil = () => {
@@ -378,12 +380,12 @@ export function SimulationDiffraction({ naviguer }) {
     if (!defi || !defi.verifie) return null;
     const x = lireNombre(defi.reps.a), v = defi.reps.v;
     if (defi.type === 'fil') {
-      const u = defi.snapU, aOk = isFinite(x) && proche(x, defi.a, Math.max(0.04, 2 * (defi.snapRel || 0)));
+      const u = defi.snapU, aOk = isFinite(x) && proche(x, defi.a, tolDefi(defi.snapRel || 0));
       const attendu = aOk && u != null ? M.compatible(x * 1e-6, defi.nom * 1e-6, u) : null;     // verdict tiré de la mesure de l’élève et de l’incertitude affichée
       const vOk = attendu != null && ((v === 'oui') === attendu);
       return { aOk, vOk, ok: aOk && vOk, attendu, u };
     }
-    const lm = lireNombre(defi.reps.l), lOk = isFinite(lm) && proche(lm, defi.lam, Math.max(0.04, 2 * (defi.snapRel || 0))), cOk = lOk && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam));
+    const lm = lireNombre(defi.reps.l), lOk = isFinite(lm) && proche(lm, defi.lam, tolDefi(defi.snapRel || 0)), cOk = lOk && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam));
     return { lOk, cOk, ok: lOk && cOk };
   })();
   const voletDefi = defi && (
@@ -425,8 +427,8 @@ export function SimulationDiffraction({ naviguer }) {
       {defi.type === 'laser' && <IndiceDefi cache={false}>λ = a·L ÷ (2D). Puis associez λ à une couleur : violet vers 400 nm, rouge vers 700 nm.</IndiceDefi>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="df-verif" onClick={() => { setDefi(d => ({ ...d, verifie: true, snapU: inc ? inc.u : null, snapRel: inc ? inc.rel : 0, snapA: aCalc, snapL: Lmes, snapD: lz.D, corr: false })); const x = lireNombre(defi.reps.a), lm = lireNombre(defi.reps.l), v = defi.reps.v;
-          if (defi.type === 'fil') noterFil(isFinite(x) && proche(x, defi.a, Math.max(0.04, 2 * (inc ? inc.rel : 0))) && inc != null && (v === 'oui') === M.compatible(x * 1e-6, defi.nom * 1e-6, inc.u));
-          else noterLaser(isFinite(lm) && proche(lm, defi.lam, Math.max(0.04, 2 * (inc ? inc.rel : 0))) && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam))); }} style={styleBouton(true, '#15803d')}>Vérifier</button>
+          if (defi.type === 'fil') noterFil(isFinite(x) && proche(x, defi.a, tolDefi(inc ? inc.rel : 0)) && inc != null && (v === 'oui') === M.compatible(x * 1e-6, defi.nom * 1e-6, inc.u));
+          else noterLaser(isFinite(lm) && proche(lm, defi.lam, tolDefi(inc ? inc.rel : 0)) && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam))); }} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {dres && defi.type === 'fil' && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
