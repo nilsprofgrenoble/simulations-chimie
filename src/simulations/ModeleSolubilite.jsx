@@ -2,7 +2,7 @@ import { Formule } from "../commun";
 import { nomsSim } from "../suivi";
 import { cheminSimulation } from "../slugs";
 import { Pic } from "../Pictos";
-import { ESPECES, ORDRE_LIQ, ORDRE_SOL, BATTERIE, bilan, RHO_REF, SEUIL_LIQ, SEUIL_SOL, NACL, RT } from "./solubiliteModele";
+import { ESPECES, ORDRE_LIQ, ORDRE_SOL, BATTERIE, bilan, RHO_REF, SEUIL_LIQ, SEUIL_SOL, NACL, RT, SOL_NACL, densiteSites } from "./solubiliteModele";
 import "./APropos.css";
 import "./ModeleSolubilite.css";
 
@@ -35,12 +35,12 @@ const EQ_POIDS = <Formule><mi>w</mi><mo>=</mo><mi>min</mi><mo>(</mo><mn>1</mn><m
 const EQ_INI = <Formule><msub><mi>E</mi><mi>ini</mi></msub><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>(</mo><msub><mi>c</mi><mi>S</mi></msub><mo>+</mo><msub><mi>c</mi><mi>E</mi></msub><mo>)</mo></Formule>;
 const EQ_FIN = <Formule><msub><mi>E</mi><mi>fin</mi></msub><mo>=</mo><mfrac><mn>1</mn><mn>4</mn></mfrac><msub><mi>c</mi><mi>S</mi></msub><mo>+</mo><mfrac><mn>1</mn><mn>4</mn></mfrac><msub><mi>c</mi><mi>E</mi></msub><mo>+</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><msub><mi>c</mi><mrow><mi>S</mi><mi>E</mi></mrow></msub></Formule>;
 const EQ_PERTE = <Formule><mi>Perte</mi><mo>=</mo><munder><mo>∑</mo><mi>k</mi></munder><mi>max</mi><mo>(</mo><mn>0</mn><mo>,</mo><msub><mi>E</mi><mi>ini</mi></msub><mo>−</mo><msub><mi>E</mi><mi>fin</mi></msub><mo>)</mo></Formule>;
-const EQ_CRIT = <Formule><msub><mi>Perte</mi><mi>crit</mi></msub><mo>=</mo><mi>R</mi><mi>T</mi><mo>×</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><mo>×</mo>{carre(par(<mfrac><mn>1</mn><msqrt><msub><mi>V</mi><mi>A</mi></msub></msqrt></mfrac>, <mo>+</mo>, <mfrac><mn>1</mn><msqrt><msub><mi>V</mi><mi>B</mi></msub></msqrt></mfrac>))}</Formule>;
+const EQ_CRIT = <Formule><msub><mi>Perte</mi><mi>crit</mi></msub><mo>=</mo><mn>1000</mn><mfrac><mrow><mi>R</mi><mi>T</mi></mrow><mn>2</mn></mfrac>{carre(par(<mfrac><mn>1</mn><msqrt><msub><mi>V</mi><mi>A</mi></msub></msqrt></mfrac>, <mo>+</mo>, <mfrac><mn>1</mn><msqrt><msub><mi>V</mi><mi>B</mi></msub></msqrt></mfrac>))}</Formule>;
 const EQ_SOL_INI = <Formule><msub><mi>E</mi><mi>ini</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>V</mi><mi>E</mi></msub><mo>(</mo><msub><mi>c</mi><mi>E</mi></msub><mo>+</mo><msub><mi>c</mi><mi>S</mi></msub><mo>)</mo></mrow><mn>1000</mn></mfrac></Formule>;
 const EQ_SOL_FIN = <Formule><msub><mi>E</mi><mi>fin</mi></msub><mo>=</mo><mfrac><mrow><mn>2</mn><msub><mi>V</mi><mi>E</mi></msub><msub><mi>c</mi><mrow><mi>S</mi><mi>E</mi></mrow></msub></mrow><mn>1000</mn></mfrac></Formule>;
 const EQ_DISS = <Formule><msub><mi>ΔG</mi><mi>diss</mi></msub><mo>=</mo><msub><mi>ΔG</mi><mi>réseau</mi></msub><mo>−</mo><msub><mi>ΔG</mi><mi>Na⁺</mi></msub><mo>−</mo><msub><mi>ΔG</mi><mi>Cl⁻</mi></msub></Formule>;
 const EQ_BORN = <Formule><mi>Δ</mi><mo>=</mo><mfrac><mrow><msub><mi>N</mi><mi>A</mi></msub>{carre(<mi>e</mi>)}</mrow><mrow><mn>8</mn><mi>π</mi><msub><mi>ε</mi><mn>0</mn></msub></mrow></mfrac><mo>×</mo><mfrac><mn>1</mn><mi>r</mi></mfrac><mo>×</mo><mo>(</mo><mfrac><mn>1</mn><msub><mi>ε</mi><mi>S</mi></msub></mfrac><mo>−</mo><mfrac><mn>1</mn><msub><mi>ε</mi><mi>eau</mi></msub></mfrac><mo>)</mo></Formule>;
-const EQ_NACL = <Formule><mi>s</mi><mo>≈</mo><mn>58,44</mn><mo>×</mo><mi>exp</mi><mo>(</mo><mo>−</mo><mfrac><msub><mi>ΔG</mi><mi>diss</mi></msub><mrow><mn>2</mn><mi>R</mi><mi>T</mi></mrow></mfrac><mo>)</mo></Formule>;
+const EQ_NACL = <Formule><mi>s</mi><mo>≈</mo><mn>{nb(NACL.M, 2)}</mn><mo>×</mo><mi>exp</mi><mo>(</mo><mo>−</mo><mfrac><msub><mi>ΔG</mi><mi>diss</mi></msub><mrow><mn>2</mn><mi>R</mi><mi>T</mi></mrow></mfrac><mo>)</mo></Formule>;
 
 function Bloc({ titre, children }) {
   return <section className="ms-bloc"><h3>{titre}</h3>{children}</section>;
@@ -93,6 +93,9 @@ function TableauBatterie() {
 export function SimulationModeleSolubilite({ naviguer }) {
   const base = import.meta.env.BASE_URL;
   const lien = id => ({ href: cheminSimulation(id, nomsSim[id] || '', base), onClick: e => { e.preventDefault(); naviguer(id); } });
+  const riches = [...ORDRE_LIQ, ...ORDRE_SOL].filter(k => ESPECES[k].famille !== 'ion' && densiteSites(k) >= RHO_REF).map(nom).join(', ');
+  const nEst = BATTERIE.filter(([s, e]) => ESPECES[s].estime || ESPECES[e].estime).length;
+  const bEx = bilan('eau', 'ethanol');
   const total = BATTERIE.length, faux = BATTERIE.filter(([s, e, r]) => bilan(s, e).classe !== r).length;
   return (
     <div className="ap ms">
@@ -123,7 +126,7 @@ export function SimulationModeleSolubilite({ naviguer }) {
         {EQ_CROISEE_H}
         <p>g est la moyenne géométrique, m la moyenne arithmétique. Le poids w vaut 0 si l’une des espèces n’offre pas de H donneur (lié à O ou N) et l’autre pas d’accepteur (O, N). Sinon il vaut 1 quand les sites de liaison H sont assez nombreux par unité de volume dans <i>les deux</i> espèces, et il diminue quand ils sont dilués dans une grande partie apolaire (octanol, huile, rouge Soudan III).</p>
         {EQ_POIDS}
-        <p>où ρ est le nombre de sites libres (H donneurs et doublets accepteurs) par litre, ρ<sub>min</sub> la plus petite valeur des deux espèces, et ρ<sub>réf</sub> = {nb(RHO_REF * 1000, 0)} mol/L (proche de l’éthanol : 2 sites pour 58,5 cm³/mol).</p>
+        <p>où ρ est le nombre de sites libres (H donneurs et doublets accepteurs) par litre, ρ<sub>min</sub> la plus petite valeur des deux espèces, et ρ<sub>réf</sub> = {nb(RHO_REF * 1000, 0)} mol/L, un peu au-dessus de l’éthanol ({nb(densiteSites('ethanol') * 1000, 0)} mol/L : 2 sites pour {nb(ESPECES.ethanol.V, 1)} cm³/mol). Le poids w ne vaut 1 que si les deux espèces atteignent ρ<sub>réf</sub> : parmi les nôtres, seuls {riches} en sont capables.</p>
         <h4>Deux liquides, mélange 50/50 en volume (kJ pour 1 L de mélange)</h4>
         {EQ_INI}
         {EQ_FIN}
@@ -131,15 +134,19 @@ export function SimulationModeleSolubilite({ naviguer }) {
         <p>On ne compte que ce qui est perdu : une interaction croisée plus favorable que la moyenne n’est pas comptabilisée comme un gain (voir « limites »).</p>
         <h4>Ce que l’agitation thermique peut compenser (Flory–Huggins)</h4>
         {EQ_CRIT}
+        <p>V<sub>A</sub> et V<sub>B</sub> sont les volumes molaires en cm³/mol, RT = {nb(RT, 3)} kJ/mol à 298 K, et le facteur 1000 convertit des mol/cm³ en mol/L : Perte<sub>crit</sub> est en kJ/L, comme la perte. La dépendance en taille (le terme en 1/√V) vient de Flory–Huggins ; la constante est un choix du modèle, intégré au réglage des seuils.</p>
         <p>Le rapport r = Perte / Perte<sub>crit</sub> donne le verdict : r &lt; {nb(SEUIL_LIQ[0], 2)} → miscibles ; entre {nb(SEUIL_LIQ[0], 2)} et {nb(SEUIL_LIQ[1], 0)} → cas limite ; r &gt; {nb(SEUIL_LIQ[1], 0)} → non miscibles. La perte critique dépend de la taille des molécules : de grosses molécules « profitent » moins du désordre du mélange.</p>
+        <p>Exemple, eau + éthanol : perte = {nb(bEx.total, 0)} kJ/L, perte critique = {nb(bEx.crit, 0)} kJ/L, donc r = {nb(bEx.rapport, 2)} : miscibles.</p>
         <h4>Un solide moléculaire dans un solvant (kJ par mole de soluté)</h4>
+        <p>Comptabilité simplifiée, choisie pour retomber sur la formule classique V<sub>E</sub>(δ<sub>E</sub> − δ<sub>S</sub>)² pour chaque type d’interaction (V<sub>E</sub> en cm³/mol).</p>
         {EQ_SOL_INI}
         {EQ_SOL_FIN}
         <p>Verdict : perte &lt; {SEUIL_SOL[0]} kJ/mol (environ {nb(SEUIL_SOL[0] / RT, 0)} RT) → soluble ; entre {SEUIL_SOL[0]} et {SEUIL_SOL[1]} kJ/mol → peu soluble ; au-delà ({nb(SEUIL_SOL[1] / RT, 0)} RT environ) → insoluble.</p>
         <h4>Le chlorure de sodium : un bilan en énergies de Gibbs</h4>
-        <p>Pour des ions, l’organisation du solvant autour d’eux compte autant que l’énergie : avec les seules enthalpies, le méthanol semblerait mieux solvater que l’eau, alors que le sel y est environ 25 fois moins soluble. Le bilan est donc fait en énergies de Gibbs : où ΔG<sub>réseau</sub> ≈ {nb(NACL.reseau, 1)} kJ/mol est l’énergie du cristal, et ΔG<sub>Na⁺</sub> et ΔG<sub>Cl⁻</sub> les énergies de solvatation des ions, comptées positivement : dans l’eau, leur somme vaut environ {nb(NACL.hydNa + NACL.hydCl, 1)} kJ/mol (valeurs de tables arrondies, partagées entre les deux ions selon Marcus).</p>
+        <p>Pour des ions, l’organisation du solvant autour d’eux compte autant que l’énergie : avec les seules enthalpies, le méthanol semblerait mieux solvater que l’eau, alors que le sel y est environ 25 fois moins soluble. Le bilan est donc fait en énergies de Gibbs :</p>
         {EQ_DISS}
-        <p>Dans un autre solvant, l’énergie de solvatation de chaque ion est diminuée de Δ (formule de Born), avec r = {nb(NACL.rNa * 100, 0)} pm pour Na⁺ et {nb(NACL.rCl * 100, 0)} pm pour Cl⁻, puis Cl⁻ perd encore {NACL.aprotique} kJ/mol si le solvant n’a pas de H lié à O ou N (plus de liaisons H avec l’anion).</p>
+        <p>où ΔG<sub>réseau</sub> ≈ {nb(NACL.reseau, 1)} kJ/mol est l’énergie du cristal, et ΔG<sub>Na⁺</sub> et ΔG<sub>Cl⁻</sub> les énergies de solvatation des ions, comptées positivement : dans l’eau, leur somme vaut environ {nb(NACL.hydNa + NACL.hydCl, 1)} kJ/mol (valeurs de tables arrondies, partagées entre les deux ions selon Marcus).</p>
+        <p>Dans un autre solvant, l’énergie de solvatation de chaque ion est diminuée de Δ (formule de Born), avec les rayons ioniques cristallographiques r = {nb(NACL.rNa * 100, 0)} pm pour Na⁺ et {nb(NACL.rCl * 100, 0)} pm pour Cl⁻, puis Cl⁻ perd encore {NACL.aprotique} kJ/mol si le solvant n’a pas de H lié à O ou N (plus de liaisons H avec l’anion).</p>
         {EQ_BORN}
         <p>La solubilité estimée suit (solution idéale, d’où le 2RT pour deux ions) :</p>
         {EQ_NACL}
@@ -161,7 +168,7 @@ export function SimulationModeleSolubilite({ naviguer }) {
             <ul>
               <li>la décomposition de la cohésion en trois types d’interactions (Hildebrand, Hansen) ;</li>
               <li>la moyenne géométrique des cohésions pour l’interaction croisée ;</li>
-              <li>la perte critique de Flory–Huggins ;</li>
+              <li>la dépendance de la perte critique avec la taille des molécules (Flory–Huggins) ;</li>
               <li>la formule de Born pour NaCl dans d’autres solvants ;</li>
               <li>pour les colorants : la méthode de contributions de groupes de Hoftyzer et Van Krevelen.</li>
             </ul>
@@ -171,12 +178,13 @@ export function SimulationModeleSolubilite({ naviguer }) {
             <ul>
               <li>les deux seuils des liquides ({nb(SEUIL_LIQ[0], 2)} et {SEUIL_LIQ[1]}) et les deux des solides ({SEUIL_SOL[0]} et {SEUIL_SOL[1]} kJ/mol) ;</li>
               <li>la forme du poids w de la liaison H croisée et sa valeur de référence ρ<sub>réf</sub> (un choix de modélisation, absent de la théorie de Hansen) ;</li>
+              <li>l’échelle de la perte critique (le facteur 1000 : convention de volume de segment et mélange 50/50), qui ne se distingue pas des deux seuils des liquides ;</li>
               <li>la pénalité de {NACL.aprotique} kJ/mol pour Cl⁻ dans un solvant sans H lié à O ou N, réglée sur l’acétone ;</li>
               <li>les valeurs ★ estimées : δ de l’huile et du diiode, contributions du groupe azo et des OH engagés dans une liaison H interne des colorants.</li>
             </ul>
           </div>
         </div>
-        <p>Six nombres sont donc réglés (quatre seuils, ρ<sub>réf</sub> et la pénalité) sur {total} couples connus, chacun ayant trois issues possibles : ce n’est pas un ajustement libre, mais ce n’est pas non plus une validation indépendante. <b>Le fait que le modèle retrouve les couples sur lesquels on l’a réglé ne prouve pas qu’il prévoie bien les autres.</b></p>
+        <p>Six nombres sont donc réglés (quatre seuils, ρ<sub>réf</sub> et la pénalité), l’échelle de la perte critique étant liée aux seuils des liquides, sur {total} couples connus, chacun ayant trois issues possibles. De plus, {nEst} de ces couples font intervenir une espèce aux valeurs estimées (huile, diiode, colorants) : ce n’est pas un ajustement libre, mais ce n’est pas non plus une validation indépendante. <b>Le fait que le modèle retrouve les couples sur lesquels on l’a réglé ne prouve pas qu’il prévoie bien les autres.</b></p>
       </Bloc>
 
       <Bloc titre="4. Les valeurs utilisées">
@@ -194,7 +202,7 @@ export function SimulationModeleSolubilite({ naviguer }) {
 
       <Bloc titre="6. Ce que le modèle ne sait pas faire">
         <ul className="ms-liste">
-          <li><b>Une valeur de solubilité</b> : il répond « soluble », « peu soluble » ou « insoluble », sauf pour NaCl où il donne un ordre de grandeur.</li>
+          <li><b>Une valeur de solubilité</b> : il répond « soluble », « peu soluble » ou « insoluble », sauf pour NaCl où il donne un ordre de grandeur, moins fiable pour les alcools à longue chaîne (pentan-1-ol : {nb(bilan('pentanol', 'nacl').sEstime, 3)} g/kg estimé contre {nb(SOL_NACL.pentanol, 3)} mesuré).</li>
           <li><b>L’entropie</b> : le désordre du mélange n’est pas calculé, et l’effet hydrophobe, en grande partie d’origine entropique à 25 °C (organisation de l’eau autour des parties apolaires), n’est qu’approché par le bilan d’énergie.</li>
           <li><b>Un gain d’énergie au mélange</b> : avec la moyenne géométrique, la perte est toujours positive ou nulle. Un mélange dont les interactions croisées sont plus fortes que la moyenne des deux corps purs (certaines associations par liaison H, par exemple acétone et chloroforme) ne peut pas être prévu comme tel.</li>
           <li><b>La fusion du solide</b> : pour un solide moléculaire, la cohésion est traitée avec ses paramètres δ comme s’il était liquide ; l’enthalpie et la température de fusion, qui comptent dans la solubilité, ne sont pas prises en compte.</li>
