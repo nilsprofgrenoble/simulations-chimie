@@ -238,7 +238,3 @@ export function PlaqueBananeSvg({ voies, eluant = 1, avance = 1, revele = true, 
     </svg>);
 }
 
-// ============================================================================================
-//  ÉTAPE 7 : un montage bouché (scène neutre) — le montage est dessiné par MontageSvg ; ici seulement les scènes qui ne sont pas des montages
-// ============================================================================================
-export const montageSeul = (m, extra = {}) => ({ ...M.MONTAGE_VIDE, ...m, ...extra });
