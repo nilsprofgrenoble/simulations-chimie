@@ -32,7 +32,7 @@ const css = `
   .mp button:focus-visible, .mp input:focus-visible { outline: 3px solid #0b4f94; outline-offset: 2px; }
 `;
 
-export function MonPseudo({ naviguer, apercu = false, onChange }) {
+export function MonPseudo({ naviguer, apercu = false, onChange, expliquerSiFerme = false }) {
   const sess = useSession();
   const monId = sess?.user?.id, classeId = sess?.profil?.classe_id;
   const exemple = apercu ? { moi: apercu.moi ? { adj: apercu.moi.adj, nom: apercu.moi.nom, visible: !!apercu.moi.visible, classement: false } : null, etab: 'Ton établissement', classe: 'Ta classe', vie: true, exclu: false } : undefined;
@@ -61,7 +61,16 @@ export function MonPseudo({ naviguer, apercu = false, onChange }) {
 
   if (!etat) return null;
   const { moi, etab, classe, vie, exclu } = etat;
-  if (!vie && !etab && !apercu) return null;           // rien à décider tant que ni la vie de classe ni le classement ne sont ouverts
+  if (!vie && !etab && !apercu) {                       // rien à décider tant que ni la vie de classe ni le classement ne sont ouverts
+    // dans l'onglet « Ma classe », on explique pourquoi rien n'apparaît (sinon l'élève croit à une panne)
+    if (!expliquerSiFerme) return null;
+    return (
+      <section className="mp" data-mon-pseudo aria-label="Mon pseudo">
+        <style>{css}</style>
+        <h3><Pic n="user"/>Mon pseudo</h3>
+        <div className="mp-info">Ton professeur n’a pas encore ouvert les pseudos ni le classement pour ta classe. Dès qu’il l’aura fait, tu pourras choisir ton pseudo ici et décider si tu apparais dans ta classe et dans le classement. Rien à faire pour l’instant.</div>
+      </section>);
+  }
   const monPseudo = moi && pseudoValide(moi.adj, moi.nom) ? pseudo(moi.adj, moi.nom) : null;
   const apres = () => { setVersion(v => v + 1); onChange?.(); };
 
