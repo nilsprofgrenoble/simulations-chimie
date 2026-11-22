@@ -48,9 +48,9 @@ const ICO_FRAME = { wagon: { mobile: '🚃' }, avion: { mobile: '✈️' }, deux
 const icoF = (S, fid) => (ICO_FRAME[S.id] || {})[fid] ?? (fid === 'sol' ? '📍' : '');
 // Les émojis 🚛 et 🚗 regardent vers la gauche : on les retourne pour que l'avant soit à droite (sens de la marche, x croissant)
 const REGARDE_A_GAUCHE = ['🚛', '🚗'];
-function IcoSvg({ x, y, ico, size, anchor = 'middle' }) {
+function IcoSvg({ x, y, ico, size, anchor = 'middle', sens = 1 }) {      // sens : +1 le mobile va vers la droite, −1 vers la gauche
   if (!ico) return null;
-  return REGARDE_A_GAUCHE.includes(ico)
+  return REGARDE_A_GAUCHE.includes(ico) && sens >= 0
     ? <text transform={`translate(${x},${y}) scale(-1,1)`} textAnchor={anchor} fontSize={size}>{ico}</text>
     : <text x={x} y={y} textAnchor={anchor} fontSize={size}>{ico}</text>;
 }
@@ -120,10 +120,13 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
         const A = arrondi({ x: p.x - og.x + h * Math.cos(th), y: p.y - og.y + h * Math.sin(th) }), B = arrondi({ x: p.x - og.x - h * Math.cos(th), y: p.y - og.y - h * Math.sin(th) });
         return <g><line x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#64748b" strokeWidth="3.2" strokeLinecap="round"/>
           <circle cx={A.x} cy={A.y} r="4" fill="#dc2626"/><circle cx={B.x} cy={B.y} r="4" fill="#0369a1"/></g>; })()}
-      {orig.map((o, ko) => <g key={o.g.id}>
-        {o.pts.map((q, j) => { const P = arrondi(q); return <circle key={j} cx={P.x} cy={P.y} r="2.2" fill="none" stroke={VIOLET} strokeWidth="1.2" opacity="0.7"/>; })}
-        {[0, i].map(j => { const P = arrondi(o.pts[j]); return <IcoSvg key={j} x={P.x} y={P.y + 6} size="19" ico={icoF(S, o.g.id)}/>; })}
-        {(() => { const P = arrondi(o.pts[i]); const fin = P.x > PW * 0.6; return <text x={fin ? P.x - 14 : P.x + 14} y={Math.max(P.y - 4, 62) - ko * 13} textAnchor={fin ? 'end' : 'start'} fontSize="11.5" fill={VIOLET} fontWeight="700">{o.g.nom} (autre référentiel)</text>; })()}</g>)}
+      {orig.map((o, ko) => {
+        // deux voies : le repère de A (ou de B) est le véhicule lui-même ; on l'entoure sur sa propre voie, sans étiquette (la légende sous le schéma le nomme)
+        const veh = lanes ? S.objets.find(ob => ob.id === o.g.id) : undefined, vuIci = !!veh && visObjs.some(ob => ob.id === veh.id);
+        return <g key={o.g.id}>
+          {o.pts.map((q, j) => { const P = arrondi(q, veh); return <circle key={j} cx={P.x} cy={P.y} r={lanes ? 8 : 2.2} fill="none" stroke={VIOLET} strokeWidth={lanes ? 2 : 1.2} opacity={lanes ? 0.85 : 0.7}/>; })}
+          {!vuIci && [0, i].map(j => { const P = arrondi(o.pts[j], veh); return <IcoSvg key={j} x={P.x} y={P.y + 6} size="19" ico={icoF(S, o.g.id)}/>; })}
+          {!lanes && (() => { const P = arrondi(o.pts[i]); const fin = P.x > PW * 0.6; return <text x={fin ? P.x - 14 : P.x + 14} y={Math.max(P.y - 4, 62) - ko * 13} textAnchor={fin ? 'end' : 'start'} fontSize="11.5" fill={VIOLET} fontWeight="700">{o.g.nom}</text>; })()}</g>; })}
       {visObjs.map(o => { const E = data[o.id];
         return <g key={o.id}>
           {jusqua >= n && <polyline points={E.pv.map(q => { const P = arrondi(q, o); return `${P.x},${P.y}`; }).join(' ')} fill="none" stroke={o.col} strokeWidth="1" strokeDasharray="3 4" opacity="0.5"/>}
@@ -131,7 +134,7 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
             return <g key={j}>
               {estSel && <circle cx={P.x} cy={P.y} r="9" fill="none" stroke={NOIR} strokeWidth="1.6"/>}
               <circle cx={P.x} cy={P.y} r="3.8" fill={o.col}/>
-              {jusqua >= n && j === 0 && <IcoSvg x={P.x} y={P.y - 9} size="20" ico={ICO_OBJ[o.id]}/>}
+              {jusqua >= n && j === 0 && <IcoSvg x={P.x} y={P.y - 9} size="20" ico={ICO_OBJ[o.id]} sens={E.ve[0].x}/>}
               {aff.v && j < E.v.length && (j % pas === 0 || (o.id === sel && (j === i || j === i - 1))) && (() => { const v = E.v[j];
                 return <Fleche x1={P.x} y1={P.y} x2={P.x + v.x * sv} y2={P.y - v.y * sv} col={VERT} w={o.id === sel && j === i ? 3.2 : 2} op={o.id === sel && j === i - 1 ? 0.5 : 1} dash={o.id === sel && j === i - 1 ? '4 3' : undefined}/>; })()}
               {aff.ve && j < E.ve.length - 0 && (j % pas === 0) && (() => { const v = E.ve[j];
@@ -141,7 +144,7 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
             </g>; })}
           {jusqua < n && (() => {       // pendant « revoir le mouvement » : le mobile avance sans à-coups, la photo se « dépose » quand il passe
             const t = jusqua * E.dt, g = o.pos(t), og = F.O(t), P = arrondi({ x: g.x - og.x, y: g.y - og.y }, o);
-            return ICO_OBJ[o.id] ? <IcoSvg x={P.x} y={P.y - 9} size="20" ico={ICO_OBJ[o.id]}/>
+            return ICO_OBJ[o.id] ? <IcoSvg x={P.x} y={P.y - 9} size="20" ico={ICO_OBJ[o.id]} sens={E.ve[0].x}/>
               : <circle cx={P.x} cy={P.y} r="6" fill={o.col} stroke="#fff" strokeWidth="1.5"/>; })()}
           {(() => { const P = arrondi(E.p[i], o); return !simple && i <= jusqua && o.id === sel ? <text x={P.x + 11} y={P.y + 16} fontSize="12.5" fontWeight="800" fill={NOIR}>M<tspan fontSize="9" dy="3">{i}</tspan></text> : null; })()}
         </g>; })}
@@ -519,7 +522,7 @@ export function SimulationMouvementReferentiel() {
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>
         {aff.v && <><span style={{ color: VERT, fontWeight: 700 }}>→</span> vitesse approchée v<Ind>i</Ind> ≈ M<Ind>i</Ind>M<Ind>i+1</Ind>/Δt · </>}
         {aff.dv && <><span style={{ color: ROUGE, fontWeight: 700 }}>→</span> variation Δv<Ind>i</Ind> · </>}
-        {aff.org && <><span style={{ color: VIOLET, fontWeight: 700 }}>○</span> positions successives de l’autre référentiel · </>}
+        {aff.org && <><span style={{ color: VIOLET, fontWeight: 700 }}>○</span> autre point de vue ({S.frames.filter(f => !frames.includes(f.id)).map(f => f.nom).join(' et ')}), position à chaque image · </>}
         {compact ? `Une photo toutes les ${vir(dt)} s (${n + 1} photos). Positions calculées par un modèle, pas une vraie vidéo.` : `Positions fournies par un modèle, une image toutes les Δt = ${vir(dt)} s (${n + 1} images).`}
         {!compact && n + 1 < 5 && <strong style={{ color: '#b91c1c' }}> Trop peu d’images pour voir la forme de la trajectoire.</strong>}
       </div>
@@ -589,7 +592,7 @@ export function SimulationMouvementReferentiel() {
       <Curseur nom="Point étudié M_i" valeur={i} onChange={x => maj({ i: x })} min={1} max={Math.max(1, n - 1)} pas={1} couleur="#0284c7"/>
       <div style={{ fontSize: 13, color: KIT.txt2, fontWeight: 700, margin: '4px 0' }}>Afficher</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 8 }}>
-        {[['v', 'vecteurs vitesse v'], ['dv', 'variation Δv (et sa construction)'], ['org', 'où est l’autre référentiel (icône) à chaque image'], ...(S.id === 'baton' ? [['sys', 'le bâton entier (système réel)']] : []), ['ve', 'vitesses exactes du modèle et écarts']].map(([c, l]) =>
+        {[['v', 'vecteurs vitesse v'], ['dv', 'variation Δv (et sa construction)'], ['org', 'marquer (○ violet) où se trouve l’autre point de vue à chaque image'], ...(S.id === 'baton' ? [['sys', 'le bâton entier (système réel)']] : []), ['ve', 'vitesses exactes du modèle et écarts']].map(([c, l]) =>
           <label key={c} style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer' }}><input type="checkbox" checked={!!aff[c]} disabled={enDefi && defi.type === 'dt' && c === 've'} onChange={e => majAff({ [c]: e.target.checked })} style={{ marginRight: 6 }}/>{l}</label>)}
         {!enDefi && <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer' }}><input type="checkbox" checked={ex.bruit} onChange={e => maj({ bruit: e.target.checked })} style={{ marginRight: 6 }}/>erreur de pointage (± {S.uniteSigma}, comme sur une vraie vidéo)</label>}
       </div>
