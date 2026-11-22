@@ -421,13 +421,21 @@ export function SimulationDiffraction({ naviguer }) {
       {defi.type === 'fil' && <IndiceDefi cache={false}>a = 2λD ÷ L, avec L la largeur de la tache centrale. Comparez ensuite l’écart avec l’annonce à l’incertitude-type u.</IndiceDefi>}
       {defi.type === 'laser' && <IndiceDefi cache={false}>λ = a·L ÷ (2D). Puis associez λ à une couleur : violet vers 400 nm, rouge vers 700 nm.</IndiceDefi>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <button id="df-verif" onClick={() => { setDefi(d => ({ ...d, verifie: true, snapU: inc ? inc.u : null, snapRel: inc ? inc.rel : 0 })); const x = lireNombre(defi.reps.a), lm = lireNombre(defi.reps.l), v = defi.reps.v;
+        <button id="df-verif" onClick={() => { setDefi(d => ({ ...d, verifie: true, snapU: inc ? inc.u : null, snapRel: inc ? inc.rel : 0, snapA: aCalc, snapL: Lmes, snapD: lz.D, corr: false })); const x = lireNombre(defi.reps.a), lm = lireNombre(defi.reps.l), v = defi.reps.v;
           if (defi.type === 'fil') noterFil(isFinite(x) && proche(x, defi.a, Math.max(0.04, 2 * (inc ? inc.rel : 0))) && inc != null && (v === 'oui') === M.compatible(x * 1e-6, defi.nom * 1e-6, inc.u));
           else noterLaser(isFinite(lm) && proche(lm, defi.lam, Math.max(0.04, 2 * (inc ? inc.rel : 0))) && (v === M.nomCouleur(lm) || v === M.nomCouleur(defi.lam))); }} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
       </div>
       {dres && defi.type === 'fil' && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5 }}>
-        <div style={{ color: dres.aOk ? '#15803d' : '#dc2626' }}>{dres.aOk ? '✓ Diamètre mesuré correct.' : '✗ Diamètre : revoyez le pointé de L (centres des extinctions) et la relation a = 2λD / L. Vérifiez les unités.'}</div>
+        <div style={{ color: dres.aOk ? '#15803d' : '#dc2626' }}>{dres.aOk ? '✓ Diamètre mesuré correct.'
+          : !isFinite(lireNombre(defi.reps.a)) ? '✗ Entrez un nombre (en µm) pour le diamètre.'
+          : proche(lireNombre(defi.reps.a), defi.snapA, 0.03)
+            ? `✗ Votre calcul est juste pour L = ${nbf(defi.snapL, 1)} mm, mais ce L est trop ${defi.snapL < Lp ? 'petit' : 'grand'} : le pointé est éloigné des centres des extinctions. Repointez, avec un zoom plus fort si besoin.`
+            : `✗ Cette valeur ne correspond pas à votre mesure : avec L = ${nbf(defi.snapL, 1)} mm, D = ${nbf(defi.snapD, 2)} m et λ = ${defi.lam} nm, la relation a = 2λD / L donne ${nbf(defi.snapA, 0)} µm. Vérifiez le calcul et les unités.`}</div>
+        {!dres.aOk && !defi.corr && <button onClick={() => setDefi(d => ({ ...d, corr: true }))} style={{ ...stylePetitBouton(false, '#475569'), marginTop: 6 }}>Voir la correction</button>}
+        {!dres.aOk && defi.corr && <div style={{ ...styleBoite, marginTop: 6, fontWeight: 400, color: KIT.txt }}>
+          <b>Correction.</b> Le diamètre réel du fil est <b>{nbf(defi.a, 0)} µm</b> (annonce : {defi.nom} µm). Pour D = {nbf(defi.snapD, 2)} m et λ = {defi.lam} nm, la tache centrale mesure L = 2λD / a ≈ <b>{nbf(M.largeurTache('fil', defi.a * 1e-6, defi.lam * 1e-9, defi.snapD) * 1e3, 1)} mm</b> ; vous avez pointé {nbf(defi.snapL, 1)} mm. Avec votre pointé, a = 2λD / L = {nbf(defi.snapA, 0)} µm. Un pointé précis (centres des extinctions, zoom plus fort ou écran plus éloigné) donne un résultat plus proche de la valeur réelle.
+        </div>}
         {dres.aOk && <div style={{ color: dres.vOk ? '#15803d' : '#dc2626' }}>{dres.vOk ? '✓ Conclusion cohérente avec le critère 2 u(a).' : `✗ Conclusion : comparez |a mesuré − ${defi.nom}| à 2 u(a) = ${dres.u != null ? nbf(2 * dres.u * 1e6, 1) : '?'} µm (panneau « Incertitude »).`}</div>}
         {dres.ok && <div style={{ color: KIT.txt2, fontWeight: 400 }}>Diamètre réel du fil dans la simulation : {nbf(defi.a, 1)} µm (annonce : {defi.nom} µm). {Math.abs(defi.a - defi.nom) < 0.2
           ? (dres.attendu ? 'Le fil est conforme à l’annonce.' : 'Le fil est en réalité conforme à l’annonce : l’écart que vous avez trouvé vient d’un pointé imprécis.')
