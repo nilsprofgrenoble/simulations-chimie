@@ -1,3 +1,4 @@
+import { Pic } from "../Pictos";
 import { useState, useEffect, useCallback } from "react";
 import { KIT, styleBouton, styleBoite } from "../commun";
 import { rest, fonctionComptes } from "../serveur";
@@ -18,7 +19,7 @@ export function PartageClasse({ classe, proprio, occupe, proteger, onQuitte, set
 
   if (!dispo) return (
     <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
-      👥 <b>Partager la classe avec un collègue</b> : disponible après avoir exécuté <code>supabase/09-partage-classe.sql</code> dans Supabase (SQL Editor → Run).
+      <Pic n="users"/><b>Partager la classe avec un collègue</b> : disponible après avoir exécuté <code>supabase/09-partage-classe.sql</code> dans Supabase (SQL Editor → Run).
     </div>);
 
   const partager = e => {
@@ -36,7 +37,7 @@ export function PartageClasse({ classe, proprio, occupe, proteger, onQuitte, set
 
   return (
     <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }} data-partage>
-      <div style={{ fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>👥 Professeurs de la classe</div>
+      <div style={{ fontWeight: 700, color: KIT.txt, marginBottom: 4 }}><Pic n="users"/>Professeurs de la classe</div>
       {!profs && <span style={{ color: KIT.txt2 }}>Chargement…</span>}
       {profs && <ul style={{ margin: '0 0 6px', paddingLeft: 18, lineHeight: 1.7 }}>
         {profs.map(p => <li key={p.prof_id}>

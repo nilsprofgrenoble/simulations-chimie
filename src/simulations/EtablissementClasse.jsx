@@ -13,7 +13,7 @@ export function EtablissementClasse({ classe, dispo, occupe, onEnregistrer }) {
   if (!dispo) {
     return (
       <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
-        <b>🏫 Établissement</b> (pour le classement public) : disponible après avoir exécuté <code>supabase/13-classement.sql</code> dans Supabase (SQL Editor → Run).
+        <b>Établissement</b> (pour le classement public) : disponible après avoir exécuté <code>supabase/13-classement.sql</code> dans Supabase (SQL Editor → Run).
       </div>);
   }
   const propre = saisie.trim().replace(/\s+/g, ' ');
@@ -21,7 +21,7 @@ export function EtablissementClasse({ classe, dispo, occupe, onEnregistrer }) {
   return (
     <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }} data-etablissement>
       <form onSubmit={e => { e.preventDefault(); if (valide && propre !== actuel) onEnregistrer(propre); }} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-        <label style={{ fontWeight: 700 }} htmlFor="etab-classe">🏫 Établissement</label>
+        <label style={{ fontWeight: 700 }} htmlFor="etab-classe">Établissement</label>
         <input id="etab-classe" value={saisie} maxLength={60} onChange={e => setSaisie(e.target.value)} placeholder="Lycée Argouges"
           style={{ padding: '7px 9px', fontSize: 14, borderRadius: 12, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box', minWidth: 220 }} />
         <button type="submit" style={styleBouton(false, '#475569')} disabled={occupe || !valide || propre === actuel}>Enregistrer</button>

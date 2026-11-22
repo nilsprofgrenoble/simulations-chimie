@@ -110,6 +110,35 @@ const css = `
   .sp-carte > h3 { margin: 0 0 4px; font: 800 20px Outfit, Inter, sans-serif; color: #0c1a2e; }
   .sp-carte > .sp-sous { margin: 0 0 12px; color: #3d4d63; font-size: 14px; }
   .sp-danger { border-color: #fecaca; }
+  .sp-tete { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 12px; }
+  .sp-tete h3 { margin: 0 0 2px; font: 800 20px Outfit, Inter, sans-serif; color: #0c1a2e; }
+  .sp-tete .sp-sous { margin: 0; color: #3d4d63; font-size: 14px; line-height: 1.45; }
+  .sp-puce { flex: none; width: 42px; height: 42px; border-radius: 13px; background: #e8f1fb; color: #0b4f94; display: flex; align-items: center; justify-content: center; }
+  .sp-puce .ic { width: 24px; height: 24px; margin: 0; }
+  .sp-danger .sp-puce { background: #fee2e2; color: #b91c1c; }
+  .sp-resume { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 0 0 14px; }
+  .sp-past { display: flex; gap: 10px; align-items: flex-start; text-align: left; border: 1px solid #d5dfeb; background: #fff; border-radius: 18px; padding: 12px 14px; cursor: pointer; font-family: inherit; color: #0c1a2e; }
+  .sp-past:hover { border-color: #0b4f94; }
+  .sp-past:focus-visible { outline: 3px solid #0b4f94; outline-offset: 2px; }
+  .sp-past .ic { width: 22px; height: 22px; margin: 1px 0 0; color: #0b4f94; }
+  .sp-past small { display: block; font: 700 12px Inter, system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; color: #3d4d63; }
+  .sp-past b { display: block; font: 800 15px Inter, system-ui, sans-serif; margin-top: 1px; overflow-wrap: anywhere; }
+  .sp-past.ok { background: #ecf8f1; border-color: #a7dcc0; }
+  .sp-past.ok .ic { color: #15803d; }
+  .sp-past.att { background: #fffbeb; border-color: #fcd9a0; }
+  .sp-past.att .ic { color: #b45309; }
+  .sp-bloc { padding: 14px 0 0; margin-top: 14px; border-top: 1px solid #e3eaf3; }
+  .sp-bloc:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+  .sp-bloc > h4 { margin: 0 0 4px; display: flex; align-items: center; gap: 8px; font: 800 16px Outfit, Inter, sans-serif; color: #0c1a2e; }
+  .sp-bloc > h4 .ic { width: 20px; height: 20px; margin: 0; color: #0b4f94; }
+  .sp-bloc > .sp-sous { margin: 0 0 10px; color: #3d4d63; font-size: 13.5px; line-height: 1.5; }
+  .sp-opt { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 16px; background: #f1f5f9; cursor: pointer; margin-bottom: 8px; }
+  .sp-opt:has(input:checked) { background: #e0f2ef; }
+  .sp-opt input { margin-top: 3px; width: 20px; height: 20px; accent-color: #0b4f94; flex: none; }
+  .sp-opt b { display: block; font-size: 14.5px; color: #0c1a2e; }
+  .sp-opt small { display: block; color: #3d4d63; font-size: 13.5px; margin-top: 2px; line-height: 1.45; }
+  .sp-opt.desactive { opacity: .6; cursor: default; }
+  .sp-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   @media (max-width: 480px) { .sp-hero { border-radius: 22px; padding: 20px; } .sp-onglet { padding: 8px 13px; font-size: 14px; } }
 `;
 
@@ -280,12 +309,12 @@ export function SimulationSuiviProf({ naviguer }) {
   });
 
   const ongletsListe = [
-    { id: 'synthese', label: 'Vue d’ensemble', icone: '🏠' },
-    { id: 'devoirs', label: 'Devoirs', icone: '📌' },
-    { id: 'eleves', label: `Élèves (${eleves.length})`, icone: '👥' },
-    { id: 'stats', label: 'Statistiques', icone: '📈' },
-    { id: 'reglages', label: 'Réglages de la classe', icone: '⚙️' },
-    { id: 'compte', label: 'Mon compte', icone: '👤' },
+    { id: 'synthese', label: 'Vue d’ensemble', icone: 'home' },
+    { id: 'devoirs', label: 'Devoirs', icone: 'pin' },
+    { id: 'eleves', label: `Élèves (${eleves.length})`, icone: 'users' },
+    { id: 'stats', label: 'Statistiques', icone: 'chartup' },
+    { id: 'reglages', label: 'Réglages de la classe', icone: 'gear' },
+    { id: 'compte', label: 'Mon compte', icone: 'user' },
   ];
   const actif = DETAILS.includes(onglet) ? 'stats' : onglet === 'reprendre' ? 'synthese' : onglet;
   const choisirOnglet = id => ouvrir(id === 'stats' ? (DETAILS.includes(onglet) ? onglet : 'exos') : id);
@@ -370,7 +399,7 @@ export function SimulationSuiviProf({ naviguer }) {
           <div className="sp-onglets" role="tablist" aria-label="Suivi de la classe" onKeyDown={clavier}>
             {ongletsListe.map(o => (
               <button key={o.id} id={`sp-onglet-${o.id}`} type="button" role="tab" className="sp-onglet" aria-selected={actif === o.id} aria-controls="sp-panneau"
-                tabIndex={actif === o.id ? 0 : -1} onClick={() => choisirOnglet(o.id)}><span aria-hidden="true">{o.icone}</span>{o.label}</button>))}
+                tabIndex={actif === o.id ? 0 : -1} onClick={() => choisirOnglet(o.id)}><Pic n={o.icone}/>{o.label}</button>))}
           </div>
           <p className="sp-aide">{AIDES[onglet === 'reprendre' ? 'reprendre' : actif]}</p>
           {onglet === 'reprendre' && <p style={{ margin: '0 2px 12px' }}><button onClick={() => ouvrir('synthese')} style={{ background: 'none', border: 0, padding: 0, color: '#0b4f94', fontWeight: 800, fontSize: 15, cursor: 'pointer', textDecoration: 'underline' }}>← Retour à la vue d’ensemble</button></p>}
@@ -390,59 +419,97 @@ export function SimulationSuiviProf({ naviguer }) {
 
           {onglet === 'reglages' && (
             <div data-reglages>
-              <section className="sp-carte">
-                <h3>👥 Élèves et comptes</h3>
-                <p className="sp-sous">{invite ? 'Téléchargez les résultats de la classe. Pour ajouter un élève, demandez à l’administrateur du site.' : 'Ajoutez des comptes si un élève arrive en cours d’année, ou téléchargez les résultats de la classe.'}</p>
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              {(() => {
+                const nbChap = (classe.chapitres || []).length, etab = (classe.etablissement || '').trim();
+                const site = classe.site === 'energy' ? 'Energy@School' : classe.site === 'deux' ? 'Les deux sites' : 'Paillasse virtuelle';
+                const aller = id => () => document.getElementById(id)?.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+                const past = (id, icone, titre, valeur, etat) => <button key={id} type="button" className={`sp-past${etat ? ` ${etat}` : ''}`} onClick={aller(id)}><Pic n={icone}/><span><small>{titre}</small><b>{valeur}</b></span></button>;
+                return (
+                  <div className="sp-resume" data-reglages-resume role="group" aria-label="État des réglages de la classe">
+                    {past('sp-eleves', 'users', 'Comptes élèves', `${eleves.length} élève${eleves.length > 1 ? 's' : ''}`)}
+                    {chapDispo && past('sp-chapitres', 'book', 'Chapitre en cours', nbChap ? `${nbChap} choisi${nbChap > 1 ? 's' : ''}` : 'Aucun : liste complète', nbChap ? 'ok' : '')}
+                    {vieDispo && past('sp-vie', 'trophy', 'Vie de classe', classe.vie_classe ? 'Activée' : 'Désactivée', classe.vie_classe ? 'ok' : '')}
+                    {etabDispo && past('sp-etab', 'medal', 'Classement public', etab ? `Ouvert · ${etab}` : 'Fermé : établissement à indiquer', etab ? 'ok' : 'att')}
+                    {siteDispo && (energy || (classe.site && classe.site !== 'paillasse')) && past('sp-site', 'globe', 'Site des élèves', site)}
+                    {past('sp-partage', 'link', 'Partage', 'Collègues de la classe')}
+                  </div>);
+              })()}
+
+              <section className="sp-carte" id="sp-eleves">
+                <div className="sp-tete"><span className="sp-puce"><Pic n="users"/></span><div>
+                  <h3>Élèves et comptes</h3>
+                  <p className="sp-sous">{invite ? 'Téléchargez les résultats de la classe. Pour ajouter un élève, demandez à l’administrateur du site.' : 'Ajoutez des comptes si un élève arrive en cours d’année, ou téléchargez les résultats de la classe.'}</p>
+                </div></div>
+                <div className="sp-actions">
                   {!invite && <label style={{ fontSize: 14, color: KIT.txt2 }}>Nombre de nouveaux élèves :{' '}
                     <input type="number" min={1} max={40} value={ajout} onChange={e => setAjout(e.target.value)} style={{ ...champ, width: 64 }} aria-label="Nombre d’élèves à ajouter" /></label>}
-                  {!invite && <button onClick={ajouter} style={styleBouton(true, '#16a34a')} disabled={occupe || !(Number(ajout) >= 1)}>＋ Créer {Number(ajout) >= 1 ? Number(ajout) : ''} compte{Number(ajout) > 1 ? 's' : ''} élève</button>}
-                  <button onClick={exporter} style={styleBouton(false, '#475569')}>⬇️ Télécharger les résultats (CSV)</button>
+                  {!invite && <button onClick={ajouter} style={styleBouton(true, '#16a34a')} disabled={occupe || !(Number(ajout) >= 1)}><Pic n="plus"/>Créer {Number(ajout) >= 1 ? Number(ajout) : ''} compte{Number(ajout) > 1 ? 's' : ''} élève</button>}
+                  <button onClick={exporter} style={styleBouton(false, '#475569')}><Pic n="download"/>Télécharger les résultats (CSV)</button>
                 </div>
-                <div style={{ marginTop: 12, paddingTop: 10, borderTop: `1px solid ${KIT.bord}` }}>
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid #e3eaf3' }}>
                   <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="book"/>Guide de prise en main à donner aux élèves</div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}><BoutonsGuideEleve /></div>
                 </div>
               </section>
+
               <section className="sp-carte">
-                <h3>📚 Ce que voient les élèves de « {classe.nom} »</h3>
-                <p className="sp-sous">Ces réglages sont modifiables à tout moment, sans effet sur les résultats.</p>
-                <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
-        <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
-          {vieDispo ? (
-            <label style={{ display: 'flex', gap: 8, alignItems: 'flex-start', cursor: 'pointer' }}>
-              <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} style={{ marginTop: 3, accentColor: '#0b4f94' }} />
-              <span><b><Pic n="trophy"/>Vie de classe</b> (désactivée par défaut) : les élèves de « {classe.nom} » voient un objectif collectif de la semaine et des « prouesses »
-                (pas de classement). Les pseudos sont tirés d’une liste fixe, et chaque élève décide s’il apparaît.</span>
-            </label>
-          ) : (
-            <span><Pic n="trophy"/><b>Vie de classe</b> : disponible après avoir exécuté <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</span>
-          )}
-        </div>
-                <EtablissementClasse key={`${classe.id}|${classe.etablissement || ''}`} classe={classe} dispo={etabDispo} occupe={occupe} onEnregistrer={enregistrerEtab} />
+                <div className="sp-tete"><span className="sp-puce"><Pic n="eye"/></span><div>
+                  <h3>Ce que voient les élèves de « {classe.nom} »</h3>
+                  <p className="sp-sous">Ces réglages sont modifiables à tout moment, sans effet sur les résultats.</p>
+                </div></div>
+
+                <div className="sp-bloc" id="sp-chapitres">
+                  <h4><Pic n="book"/>Chapitre en cours</h4>
+                  <ChapitreClasse classe={classe} dispo={chapDispo} occupe={occupe} onChoix={choisirChapitres} />
+                </div>
+
+                <div className="sp-bloc" id="sp-vie">
+                  <h4><Pic n="trophy"/>Vie de classe</h4>
+                  <p className="sp-sous">Un objectif collectif de la semaine et des « prouesses », sans classement. Les pseudos viennent d’une liste fixe, et chaque élève décide s’il apparaît.</p>
+                  {vieDispo ? (
+                    <label className="sp-opt">
+                      <input type="checkbox" checked={!!classe.vie_classe} disabled={occupe} onChange={e => basculerVie(e.target.checked)} />
+                      <span><b>{classe.vie_classe ? 'Vie de classe activée' : 'Activer la vie de classe'}</b><small>Désactivée par défaut. Les élèves de « {classe.nom} » la voient dans l’onglet « Ma classe ».</small></span>
+                    </label>
+                  ) : (
+                    <div className="sp-opt desactive"><span><b>Pas encore disponible</b><small>À activer en exécutant <code>supabase/05-vie-de-classe.sql</code> dans Supabase (SQL Editor → Run).</small></span></div>
+                  )}
+                </div>
+
+                <div className="sp-bloc" id="sp-etab">
+                  <h4><Pic n="medal"/>Établissement et classement public</h4>
+                  <EtablissementClasse key={`${classe.id}|${classe.etablissement || ''}`} classe={classe} dispo={etabDispo} occupe={occupe} onEnregistrer={enregistrerEtab} />
+                </div>
               </section>
+
               {siteDispo && (energy || (classe.site && classe.site !== 'paillasse')) && (
-              <section className="sp-carte">
-                <h3>🌐 Site des élèves</h3>
-              {(
-          <div style={{ ...styleBoite, margin: '6px 0 8px', fontSize: 13.5 }}>
-            <b>🌐 Site des élèves</b> : les élèves de « {classe.nom} » se connectent sur
-            <label style={{ margin: '0 10px 0 8px', cursor: 'pointer' }}><input type="radio" name="site-classe" checked={classe.site === 'paillasse' || !classe.site} disabled={occupe} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /> la Paillasse virtuelle seulement</label>
-            <label style={{ margin: '0 10px 0 0', cursor: energy ? 'pointer' : 'default' }}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe || !energy} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /> Energy@School seulement</label>
-            <label style={{ cursor: energy ? 'pointer' : 'default' }}><input type="radio" name="site-classe" checked={classe.site === 'deux'} disabled={occupe || !energy} onChange={() => choisirSite('deux')} style={{ accentColor: '#7c3aed' }} /> les deux sites</label>
-            {!energy && <div style={{ color: KIT.txt2, marginTop: 3 }}>Votre compte n’est plus autorisé à utiliser Energy@School : vous pouvez seulement revenir à la Paillasse. Demandez l’accès à l’administrateur du site.</div>}
-            <div style={{ color: KIT.txt2, marginTop: 3 }}>Les comptes sont les mêmes sur les deux sites ; ce réglage indique sur quel(s) site(s) les élèves de la classe peuvent se connecter. Le suivi de l’avancement Energy@School se consulte sur le site Energy@School (avec votre compte professeur).</div>
-          </div>)}
+              <section className="sp-carte" id="sp-site">
+                <div className="sp-tete"><span className="sp-puce"><Pic n="globe"/></span><div>
+                  <h3>Site des élèves</h3>
+                  <p className="sp-sous">Sur quel(s) site(s) les élèves de « {classe.nom} » se connectent. Les comptes sont les mêmes sur les deux sites.</p>
+                </div></div>
+                <label className="sp-opt"><input type="radio" name="site-classe" checked={classe.site === 'paillasse' || !classe.site} disabled={occupe} onChange={() => choisirSite('paillasse')} style={{ accentColor: '#0b4f94' }} /><span><b>Paillasse virtuelle seulement</b></span></label>
+                <label className={`sp-opt${energy ? '' : ' desactive'}`}><input type="radio" name="site-classe" checked={classe.site === 'energy'} disabled={occupe || !energy} onChange={() => choisirSite('energy')} style={{ accentColor: '#ea580c' }} /><span><b>Energy@School seulement</b></span></label>
+                <label className={`sp-opt${energy ? '' : ' desactive'}`}><input type="radio" name="site-classe" checked={classe.site === 'deux'} disabled={occupe || !energy} onChange={() => choisirSite('deux')} style={{ accentColor: '#7c3aed' }} /><span><b>Les deux sites</b></span></label>
+                {!energy && <p className="sp-sous" style={{ margin: '4px 0 0' }}>Votre compte n’est plus autorisé à utiliser Energy@School : vous pouvez seulement revenir à la Paillasse. Demandez l’accès à l’administrateur du site.</p>}
+                <p className="sp-sous" style={{ margin: '8px 0 0', fontSize: 13 }}>Le suivi de l’avancement Energy@School se consulte sur le site Energy@School (avec votre compte professeur).</p>
               </section>
               )}
-              <section className="sp-carte">
-                <h3>🤝 Partager la classe avec un collègue</h3>
+
+              <section className="sp-carte" id="sp-partage">
+                <div className="sp-tete"><span className="sp-puce"><Pic n="link"/></span><div>
+                  <h3>Partager la classe avec un collègue</h3>
+                  <p className="sp-sous">Un collègue ayant un compte professeur peut suivre la classe avec vous.</p>
+                </div></div>
                 <PartageClasse classe={classe} proprio={proprio} occupe={occupe} proteger={proteger} setMsg={setMsg} onQuitte={async () => { setClasseId(''); await chargerClasses(); }} />
               </section>
+
               {proprio && (
                 <section className="sp-carte sp-danger">
-                  <h3>🗑️ Supprimer la classe</h3>
-                  <p className="sp-sous">Efface la classe, ses comptes élèves et toutes leurs données. Définitif.</p>
+                  <div className="sp-tete"><span className="sp-puce"><Pic n="trash"/></span><div>
+                    <h3>Supprimer la classe</h3>
+                    <p className="sp-sous">Efface la classe, ses comptes élèves et toutes leurs données. Définitif.</p>
+                  </div></div>
                   <button onClick={supprimerClasse} style={styleBouton(false, '#b91c1c')} disabled={occupe}><Pic n="trash"/>Supprimer « {classe.nom} »</button>
                 </section>)}
             </div>)}
