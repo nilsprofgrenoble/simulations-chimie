@@ -207,11 +207,12 @@ const etatDefi = d => {
 
 function evaluer(d, dtChoisi) {
   if (d.type === 'vitesse') {
-    const vrai = d.vB - d.vA, x = parseFloat(String(d.reps.v ?? '').replace(',', '.'));
-    const okN = isFinite(x) && Math.abs(x - Math.abs(vrai)) <= 0.03 * Math.abs(vrai) + 0.2, okS = d.reps.sens === (vrai > 0 ? 'droite' : 'gauche');
-    return { ok: okN && okS, lignes: [
-      [okN, okN ? 'Norme correcte.' : `Norme : dans le référentiel de A, on retranche la vitesse de A : v_B/A = v_B − v_A (valeurs algébriques).`],
-      [okS, okS ? 'Sens correct.' : 'Sens : comparez v_B − v_A à zéro (positif : vers la droite).']] };
+    const vrai = d.vB - d.vA, x = parseFloat(String(d.reps.v ?? '').replace(',', '.').replace('−', '-').replace('–', '-'));
+    const tol = 0.03 * Math.abs(vrai) + 0.2;
+    const okVal = isFinite(x) && Math.abs(x - vrai) <= tol, okNorme = isFinite(x) && Math.abs(Math.abs(x) - Math.abs(vrai)) <= tol;
+    return { ok: okVal, lignes: [[okVal, okVal ? 'Valeur correcte, avec le bon signe.'
+      : okNorme ? 'La valeur absolue est bonne mais le signe est faux : une vitesse algébrique est positive vers la droite, négative vers la gauche. Calculez (vitesse de B) − (vitesse de A) en gardant les signes.'
+      : 'Dans le référentiel de A, on retranche la vitesse de A à celle de B (valeurs algébriques, avec leur signe).']] };
   }
   if (d.type === 'trajectoire') {
     const S = scene(d.sc), obj = S.objets[0].id;
@@ -244,14 +245,15 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
       {defi.type === 'vitesse' && <>
-        <div style={txt}><Pic n="target"/>Deux véhicules, A et B, roulent en ligne droite à vitesse constante dans le référentiel de la route (vitesses inconnues). Dans la chronophotographie, relevez la vitesse de chacun
-          (norme et sens dans le tableau), puis calculez la <strong>vitesse de B dans le référentiel de A</strong>. Le positif est vers la droite.</div>
-        <div style={txt}><strong>Comment faire :</strong> dans « Réglages », appuyez sur <strong>A</strong> puis sur <strong>B</strong> (« Mesures pour ») ; à chaque fois, lisez dans le tableau « Mesures » la <em>vitesse approchée</em> et sa <em>direction</em> (vers la droite = positif, vers la gauche = négatif). Retranchez ensuite la vitesse de A à celle de B.</div>
+        <div style={txt}><Pic n="target"/>Deux véhicules roulent en ligne droite à vitesse constante dans le référentiel de la route : <strong>A est le camion <IcoTxt ico="🚛"/></strong> et <strong>B est la voiture <IcoTxt ico="🚗"/></strong> (leurs vitesses sont inconnues).
+          On cherche <strong>la vitesse de B vue depuis A</strong> : comme si on était assis dans le camion, qu’on se considère immobile et qu’on regarde la voiture.</div>
+        <div style={txt}><strong>Valeur algébrique :</strong> on choisit un sens positif, <strong>vers la droite</strong>. Un véhicule qui va vers la droite a une vitesse positive ; vers la gauche, une vitesse <strong>négative</strong>. Le signe indique donc le sens.</div>
+        <div style={txt}><strong>Comment faire :</strong> dans « Réglages », appuyez sur <strong>A</strong> puis sur <strong>B</strong> (« Mesures pour ») et lisez dans le tableau « Mesures » la <em>vitesse algébrique</em> de chacun, dans le référentiel de la route. Calculez ensuite v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind>.</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 14 }}>
-          <span>Norme de la vitesse de B dans le référentiel de A :</span>
-          <input value={defi.reps.v ?? ''} aria-label="Norme de la vitesse de B dans le référentiel de A" onChange={e => rep('v', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') verifier(); }}
-            style={{ width: 80, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${KIT.bord}`, fontSize: 14 }}/><span>m/s</span></div>
-        {q('Sens de cette vitesse')}{choix('sens', [['droite', 'vers la droite'], ['gauche', 'vers la gauche']])}
+          <span>Vitesse algébrique de B dans le référentiel de A :</span>
+          <input value={defi.reps.v ?? ''} aria-label="Vitesse algébrique de B dans le référentiel de A, en mètres par seconde (peut être négative)" onChange={e => rep('v', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') verifier(); }}
+            style={{ width: 90, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${KIT.bord}`, fontSize: 14 }}/><span>m/s</span></div>
+        <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Écrivez le signe si la valeur est négative (par exemple −12). Positive : vers la droite ; négative : vers la gauche.</div>
       </>}
       {defi.type === 'trajectoire' && <>
         <div style={txt}><Pic n="target"/>Observez {defi.sc === 'wagon' ? 'la bille lâchée dans le wagon' : 'le colis largué de l’avion'} dans les deux référentiels, puis répondez.</div>
@@ -263,7 +265,7 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
           Choisissez, avec les boutons de Δt, la valeur pour laquelle l’<strong>écart moyen</strong> du tableau est le plus <strong>faible</strong>, puis cliquez sur « Vérifier ». L’écart moyen mesure la distance entre vitesses approchées et vitesses réelles du modèle.</div>
         <div style={{ ...txt, fontWeight: 700 }}>Δt actuellement choisi : {vir(dtChoisi)} s</div>
       </>}
-      <IndiceDefi cache={reussi}>{defi.type === 'vitesse' ? <>Vitesse de B dans le référentiel de A : v(B/A) = v(B) − v(A), en tenant compte du sens (signe). Relève d’abord chaque vitesse dans le référentiel de la route.</>
+      <IndiceDefi cache={reussi}>{defi.type === 'vitesse' ? <>Vitesse de B vue depuis A : v(B/A) = v(B) − v(A). Utilisez les valeurs algébriques lues dans le tableau, avec leur signe (une vitesse vers la gauche est négative) : attention à bien soustraire un nombre négatif si besoin.</>
         : defi.type === 'trajectoire' ? <>La trajectoire dépend du référentiel : place-toi mentalement dans le référentiel demandé (il devient immobile) et regarde comment l’objet se déplace par rapport à lui.</>
         : <>Un Δt trop petit laisse l’erreur de pointage dominer ; un Δt trop grand donne une vitesse moyenne, pas celle de l’instant voulu. Teste plusieurs valeurs et compare l’écart moyen.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -275,7 +277,8 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
         {res.lignes.map(([ok, t], k) => <div key={k} style={{ color: ok ? '#15803d' : '#b91c1c', fontWeight: 600 }}>{ok ? '✅' : '❌'} {t}</div>)}
         {res.ok && <div style={{ color: '#15803d', fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
-        {defi.type === 'vitesse' && <>v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind> = ({vir(defi.vB)}) − ({vir(defi.vA)}) = <strong>{vir(defi.vB - defi.vA)} m/s</strong> : norme {vir(Math.abs(defi.vB - defi.vA))} m/s, {defi.vB - defi.vA > 0 ? 'vers la droite' : 'vers la gauche'}.</>}
+        {defi.type === 'vitesse' && <>v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind> = ({vir(defi.vB)}) − ({vir(defi.vA)}) = <strong>{vir(defi.vB - defi.vA)} m/s</strong>.<br/>
+          {defi.vB - defi.vA < 0 ? 'Le résultat est négatif : vu depuis A, la voiture B se déplace vers la gauche' : 'Le résultat est positif : vu depuis A, la voiture B se déplace vers la droite'}, à {vir(Math.abs(defi.vB - defi.vA))} m/s.</>}
         {defi.type === 'trajectoire' && (() => { const obj = S.objets[0].id, c1 = caracteriser(S, defi.f1, obj).traj, h2 = Math.abs(S.objets[0].vit(0).x - S.frames.find(f => f.id === defi.f2).V(0).x) > 1e-6;
           return <>Dans le référentiel de {nomF(defi.f1)}, la trajectoire est <strong>{c1}</strong>. Dans celui de {nomF(defi.f2)}, la vitesse horizontale vaut {h2 ? 'celle du mobile par rapport au sol : elle n’est pas nulle' : '0 : le colis (ou la bille) a la même vitesse horizontale que le référentiel'} : <strong>{h2 ? 'oui' : 'non'}</strong>.</>; })()}
         {defi.type === 'dt' && (() => { const b = meilleurDt(S, 'sol', S.objets[0].id, S.sigmaDef);
@@ -532,6 +535,7 @@ export function SimulationMouvementReferentiel() {
   const lignesMes = [
     ['Date t', data.map(d => `${vir(d[sel].t[i].toFixed(2))} s`), null],
     ['Position M' + i, data.map(d => `(${nbA(d[sel].p[i].x)} ; ${nbA(d[sel].p[i].y)}) m`), null],
+    ...(aff.v && S.id === 'deux' ? [['Vitesse algébrique vₓ (+ : vers la droite)', data.map(d => `${nbA(d[sel].v[i].x).replace('-', '−')} m/s`), VERT]] : []),
     ...(aff.v ? [['Vitesse approchée ‖v‖', data.map(d => `${nbA(norme(d[sel].v[i]))} m/s`), VERT],
       ['Direction de v', data.map(d => direction(d[sel].v[i])), VERT]] : []),
     ...(aff.dv ? [['Variation ‖Δv‖', data.map(d => `${nb(norme(d[sel].dv[i - 1]), 2)} m/s`), ROUGE],
