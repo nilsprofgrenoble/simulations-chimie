@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, ExempleResolu } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, ExempleResolu, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./niveauSonore2gtModele";
 import { QCM } from "./niveauSonore2gtQcm";
@@ -43,7 +43,7 @@ const LIBELLE_VERDICT = { sous: 'Sous le repère de 85 dB pour cette durée ; mo
 export function SimulationNiveauSonore2gt() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
-  const [suiviC, noterC] = useCompteurDefi(), [suiviE, noterE] = useCompteurDefi();
+  const [suiviC, noterC, vueC] = useCompteurDefi(), [suiviE, noterE, vueE] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('classer');
   const [ex, setEx] = useState({ a: 10, n: 1, r: 1, jL: 85, jT: 60, ouv: { echelle: true } });
@@ -139,8 +139,8 @@ export function SimulationNiveauSonore2gt() {
 
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => setDefi(type === 'classer'
-    ? { type, ...M.tirerDefiClasser(defi && defi.type === 'classer' ? defi : null), choix: [], reps: {}, verifie: false }
-    : { type, ...M.tirerDefiExposition(defi && defi.type === 'exposition' ? defi : null), reps: {}, verifie: false });
+    ? { type, ...M.tirerDefiClasser(defi && defi.type === 'classer' ? defi : null), choix: [], reps: {}, verifie: false, solution: false }
+    : { type, ...M.tirerDefiExposition(defi && defi.type === 'exposition' ? defi : null), reps: {}, verifie: false, solution: false });
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
   const verifier = () => {
@@ -195,7 +195,12 @@ export function SimulationNiveauSonore2gt() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
         <button id="ns2-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
+        <VoirSolution visible={!(defi.verifie && defi.ok) && !defi.solution} onClick={() => { (defiClasser ? vueC : vueE)(); setDefi(d => ({ ...d, solution: true })); }}/>
       </div>
+      {defi.solution && <BoiteSolution>{defiClasser
+        ? <>Classement du plus faible au plus fort : <strong>{defi.ordre.map(id => `${M.son(id).court} (${M.son(id).db} dB)`).join(' < ')}</strong>. Écart = {defi.ecart}{NB}dB ; chaque tranche de 10{NB}dB multiplie l’intensité par 10, donc le plus fort est <strong>{entier(defi.facteur)} fois</strong> plus intense que le plus faible.</>
+        : defi.cas === 'sous' ? <>{defi.L}{NB}dB est inférieur à 85{NB}dB : l’exposition est <strong>{LIBELLE_VERDICT.sous}</strong>.</>
+          : <>À {defi.L}{NB}dB, la durée repère est de {M.formatDuree(defi.D)} et l’exposition dure {M.formatDuree(defi.t)} : {defi.cas === 'dans' ? 'elle est dans la durée repère' : 'elle dépasse le repère'}. Réponse : <strong>{LIBELLE_VERDICT[defi.cas]}</strong>.</>}</BoiteSolution>}
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defiClasser
           ? (defi.ok ? `✓ Correct : ${defi.ordre.map(id => `${M.son(id).court} (${M.son(id).db} dB)`).join(' < ')} ; l’écart est de ${defi.ecart} dB, soit ${entier(defi.facteur)} fois plus intense.`
