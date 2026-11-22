@@ -17,6 +17,7 @@ import { ProchaineEtape } from "./ProchaineEtape";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
 import { SignalerProbleme } from "./SignalerProbleme";
+import { Calculatrice } from "./Calculatrice";
 import { AccueilSite } from "./AccueilSite";
 import { resoudreCode } from "./resoudreCode";
 import { DESCRIPTIONS } from "./descriptions";
@@ -885,6 +886,7 @@ export default function App() {
         </div>
         <ToastRecompense naviguer={naviguer} />
         <SignalerProbleme activeId={activeId} titre={nomsSim[activeId]} />
+        <Calculatrice activeId={activeId} />
         <PiedDePage naviguer={naviguer} energyUrl={ENERGY_URL} />
       </main>
     </div>
