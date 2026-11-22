@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { envoyerSignalement } from "./serveur";
-import { MOTIFS, NOMS_MODES, contexteActuel } from "./signalement";
+import { envoyerSignalement, envoyerCapture } from "./serveur";
+import { MOTIFS, NOMS_MODES, contexteActuel, reduireImage } from "./signalement";
 import { KIT, styleBouton } from "./commun";
 import { Pic } from "./Pictos";
 
@@ -16,11 +16,19 @@ const envoyesRecemment = () => { try { return (JSON.parse(window.localStorage.ge
 export function SignalerProbleme({ activeId, titre }) {
   const [ouvert, setOuvert] = useState(false), [ctx, setCtx] = useState(null);
   const [motif, setMotif] = useState(''), [message, setMessage] = useState('');
+  const [capture, setCapture] = useState(null), [apercu, setApercu] = useState('');     // image réduite + son aperçu
   const [etat, setEtat] = useState('saisie'), [erreur, setErreur] = useState('');     // saisie · envoi · fait
   const boutonRef = useRef(null), dialogRef = useRef(null);
 
   const fermer = () => { setOuvert(false); boutonRef.current?.focus(); };
-  const ouvrir = () => { setCtx(contexteActuel(activeId, titre)); setMotif(''); setMessage(''); setEtat('saisie'); setErreur(''); setOuvert(true); };
+  const ouvrir = () => { setCtx(contexteActuel(activeId, titre)); setMotif(''); setMessage(''); setCapture(null); setApercu(''); setEtat('saisie'); setErreur(''); setOuvert(true); };
+  const choisirImage = async e => {
+    const f = e.target.files?.[0]; e.target.value = '';
+    if (!f) return;
+    try { const b = await reduireImage(f); setCapture(b); setApercu(URL.createObjectURL(b)); setErreur(''); }
+    catch { setErreur('Cette image ne peut pas être utilisée : essaie une capture d’écran.'); }
+  };
+  useEffect(() => () => { if (apercu) URL.revokeObjectURL(apercu); }, [apercu]);
   useEffect(() => {
     const f = () => ouvrir();
     window.addEventListener('signaler-probleme', f);
@@ -40,7 +48,9 @@ export function SignalerProbleme({ activeId, titre }) {
     if (envoyesRecemment().length >= MAX_PAR_HEURE) { setErreur('Tu as déjà envoyé plusieurs signalements : merci, réessaie dans une heure.'); return; }
     setEtat('envoi'); setErreur('');
     try {
-      await envoyerSignalement({ motif, message: message.trim() || null, ...ctx });
+      let chemin = null;
+      if (capture) { try { chemin = await envoyerCapture(capture); } catch { /* le signalement part quand même, sans l’image */ } }
+      await envoyerSignalement({ motif, message: message.trim() || null, ...ctx, capture: chemin });
       try { window.localStorage.setItem(CLE_LIMITE, JSON.stringify([...envoyesRecemment(), Date.now()])); } catch { /* stockage indisponible */ }
       setEtat('fait');
     } catch (e) { setEtat('saisie'); setErreur(e?.message || 'Envoi impossible pour le moment. Réessaie dans un instant.'); }
@@ -79,7 +89,19 @@ export function SignalerProbleme({ activeId, titre }) {
                 <label htmlFor="sig-msg" style={{ display: 'block', margin: '12px 0 4px', fontSize: 14, fontWeight: 700 }}>Un détail utile ? <span style={{ fontWeight: 500, color: KIT.txt2 }}>(facultatif)</span></label>
                 <textarea id="sig-msg" value={message} maxLength={600} rows={3} onChange={e => setMessage(e.target.value)} placeholder="Ce que tu as vu, ce que tu attendais…"
                   style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, fontFamily: 'inherit', resize: 'vertical' }} />
-                <p style={{ margin: '4px 0 0', fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>N’écris ni ton nom ni d’information personnelle. Envoyé avec : {resume || 'la page où tu te trouves'}, ton type d’écran.</p>
+                <div style={{ margin: '10px 0 0' }}>
+                  {apercu ? (
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                      <img src={apercu} alt="Aperçu de la capture jointe" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 10, border: `1px solid ${KIT.bord}` }} />
+                      <button type="button" onClick={() => { setCapture(null); setApercu(''); }} style={styleBouton(false, '#475569')}>Retirer la capture</button>
+                    </div>
+                  ) : (
+                    <label style={{ ...styleBouton(false, '#475569'), display: 'inline-flex', alignItems: 'center', cursor: 'pointer' }}>
+                      <Pic n="plus"/>Joindre une capture d’écran <span style={{ fontWeight: 500, marginLeft: 4 }}>(facultatif)</span>
+                      <input type="file" accept="image/*" onChange={choisirImage} style={{ position: 'absolute', width: 1, height: 1, opacity: 0 }} aria-label="Joindre une capture d’écran (facultatif)" />
+                    </label>)}
+                </div>
+                <p style={{ margin: '6px 0 0', fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>N’écris ni ton nom ni d’information personnelle, et vérifie que ta capture ne montre ni ton nom ni ton identifiant. Envoyé avec : {resume || 'la page où tu te trouves'}, tes réglages et réponses saisis, ton type d’écran.</p>
                 {erreur && <div role="alert" style={{ marginTop: 8, color: '#b91c1c', fontWeight: 700, fontSize: 14 }}>{erreur}</div>}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
                   <button type="button" onClick={envoyer} disabled={etat === 'envoi'} style={styleBouton(true, '#16a34a')}>{etat === 'envoi' ? 'Envoi…' : 'Envoyer'}</button>

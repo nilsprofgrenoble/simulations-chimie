@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { KIT, styleBouton, styleBoite } from "../commun";
-import { fonctionComptes, rest } from "../serveur";
+import { fonctionComptes, rest, lireCapture, supprimerCapture } from "../serveur";
 import { Pic } from "../Pictos";
 
 const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
@@ -168,13 +168,28 @@ export function ClassesAdmin({ occupe, proteger, setMsg, onChange }) {
 // Signalements envoyés par le bouton « Un problème ? » (supabase/21-signalements.sql), réservés à l'administrateur.
 const MOTIFS_LIB = { reponse: 'Réponse fausse ?', enonce: 'Énoncé peu clair', bug: 'Bug / affichage', texte: 'Texte ou schéma', autre: 'Autre' };
 const STATUTS = [['nouveau', 'Nouveau'], ['en_cours', 'En cours'], ['corrige', 'Corrigé'], ['classe', 'Classé sans suite']];
+function CaptureSignalement({ chemin }) {
+  const [url, setUrl] = useState(''), [err, setErr] = useState(false);
+  useEffect(() => {
+    let vivant = true, u = '';
+    lireCapture(chemin).then(b => { if (vivant) { u = URL.createObjectURL(b); setUrl(u); } }).catch(() => { if (vivant) setErr(true); });
+    return () => { vivant = false; if (u) URL.revokeObjectURL(u); };
+  }, [chemin]);
+  if (err) return <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Capture introuvable (déjà supprimée ?).</div>;
+  if (!url) return <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Chargement de la capture…</div>;
+  return <a href={url} target="_blank" rel="noreferrer"><img src={url} alt="Capture jointe au signalement" style={{ maxWidth: '100%', maxHeight: 360, borderRadius: 10, border: `1px solid ${KIT.bord}`, marginTop: 4 }} /></a>;
+}
+
 export function SignalementsAdmin({ occupe, proteger, setMsg }) {
   const [ouvert, setOuvert] = useState(false), [liste, setListe] = useState(null), [tous, setTous] = useState(false);
   const charger = useCallback(async () => { setListe(await rest('signalements?select=*&order=cree_le.desc&limit=300')); }, []);
   useEffect(() => { if (ouvert && !liste) proteger(charger); }, [ouvert, liste, proteger, charger]);
   const changer = (s, statut) => proteger(async () => {
-    await rest(`signalements?id=eq.${s.id}`, { method: 'PATCH', corps: { statut }, entetes: { Prefer: 'return=minimal' } });
-    setListe(l => l.map(x => (x.id === s.id ? { ...x, statut } : x)));
+    // une fois le signalement traité, la capture n'a plus d'utilité : on la supprime (vie privée)
+    const ferme = statut === 'corrige' || statut === 'classe', suppr = ferme && s.capture;
+    if (suppr) { try { await supprimerCapture(s.capture); } catch { /* déjà absente */ } }
+    await rest(`signalements?id=eq.${s.id}`, { method: 'PATCH', corps: suppr ? { statut, capture: null } : { statut }, entetes: { Prefer: 'return=minimal' } });
+    setListe(l => l.map(x => (x.id === s.id ? { ...x, statut, ...(suppr ? { capture: null } : {}) } : x)));
     setMsg('Signalement mis à jour.');
   });
   const aTraiter = (liste || []).filter(s => s.statut === 'nouveau' || s.statut === 'en_cours');
@@ -191,6 +206,9 @@ export function SignalementsAdmin({ occupe, proteger, setMsg }) {
           <div><b>{MOTIFS_LIB[s.motif] || s.motif}</b> <span style={{ color: KIT.txt2 }}>· {new Date(s.cree_le).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span></div>
           <div style={{ color: KIT.txt2 }}>{[s.sim_titre && `${s.sim_titre} (sim ${s.sim_id})`, s.mode, s.etape, s.code_exo].filter(Boolean).join(' · ') || s.page}</div>
           {s.message && <div style={{ margin: '2px 0', overflowWrap: 'anywhere' }}>« {s.message} »</div>}
+          {s.etat && <details style={{ margin: '3px 0' }}><summary style={{ cursor: 'pointer', fontWeight: 700 }}>État de la simulation</summary>
+            <pre style={{ margin: '4px 0', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontFamily: 'inherit', fontSize: 12.5, background: '#f1f5f9', borderRadius: 10, padding: '6px 10px' }}>{s.etat}</pre></details>}
+          {s.capture && <CaptureSignalement chemin={s.capture} />}
           <div style={{ fontSize: 12, color: KIT.txt2, overflowWrap: 'anywhere' }}>{s.appareil}</div>
           <select value={s.statut} onChange={e => changer(s, e.target.value)} disabled={occupe} aria-label="Statut du signalement" style={{ ...champ, marginTop: 4, padding: '4px 6px', fontSize: 13 }}>
             {STATUTS.map(([id, l]) => <option key={id} value={id}>{l}</option>)}

@@ -119,6 +119,21 @@ export async function envoyerSignalement(corps) {
   catch { throw new ErreurServeur('Serveur injoignable : vérifiez votre connexion internet.', 0); }
   if (!r.ok) throw new ErreurServeur(await messageDe(r), r.status);
 }
+// Capture d'écran facultative (supabase/22-signalements-capture-etat.sql) : dépôt ouvert à tous (image JPEG légère), lecture et suppression réservées à l'administrateur.
+export async function envoyerCapture(blob) {
+  const chemin = `${crypto.randomUUID()}.jpg`;
+  let r;
+  try { r = await fetch(`${URL_SB}/storage/v1/object/signalements/${chemin}`, { method: 'POST', headers: { apikey: CLE_PUBLIQUE, 'Content-Type': 'image/jpeg' }, body: blob }); }
+  catch { throw new ErreurServeur('Serveur injoignable : vérifiez votre connexion internet.', 0); }
+  if (!r.ok) throw new ErreurServeur(await messageDe(r), r.status);
+  return chemin;
+}
+export async function lireCapture(chemin) {
+  const r = await fetch(`${URL_SB}/storage/v1/object/authenticated/signalements/${chemin}`, { headers: { apikey: CLE_PUBLIQUE, Authorization: `Bearer ${await jeton()}` } });
+  if (!r.ok) throw new ErreurServeur(await messageDe(r), r.status);
+  return r.blob();
+}
+export const supprimerCapture = chemin => appeler(`${URL_SB}/storage/v1/object/signalements/${chemin}`, { method: 'DELETE' });
 export async function lireClassementPublic() {
   let r;
   try { r = await fetch(`${URL_SB}/rest/v1/rpc/classement_public`, { method: 'POST', headers: { apikey: CLE_PUBLIQUE, 'Content-Type': 'application/json' }, body: '{}' }); }
