@@ -1,7 +1,6 @@
 // Exercices ANA (prévoir sans calculer), VAL (plausible ?) et S'APP (repérer les données utiles) de la simulation 202 « Le noyau de l'atome : taille, masse et écriture ZAX » (2GT).
 // Préfixe d'identifiants : noy2gt- ; domaine : « Noyau de l’atome (2GT) ». Branchés dans AtelierAnalyserBanque.js, AtelierValiderBanque.js et AtelierDonneesBanque.js ; la famille REA est dans AtelierRealiserBanque.jsx (genNoyau2GT).
 // Questions adossées aux capacités du programme : ordre de grandeur de la taille d'un atome, comparaison de la taille et de la masse d'un atome et de son noyau, écriture conventionnelle d'un noyau, charge et masse des particules, atome neutre.
-// Questions adossées aux capacités du programme : ordre de grandeur de la taille d'un atome, comparaison de la taille et de la masse d'un atome et de son noyau, écriture conventionnelle d'un noyau, charge et masse des particules, atome neutre.
 const DOM = 'Noyau de l’atome (2GT)';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];

@@ -38,7 +38,7 @@ export function FicheAtomeNoyau() {
       <text x={140} y={46} fontSize="15" fontWeight="800" fill={COL.bleu}>atome</text><text x={140} y={66} fontSize="15" fontWeight="800" fill={COL.bleu}>{exp(`≈ ${p10(-10)}${NB}m`)}</text><line x1={114} y1={37} x2={134} y2={42} stroke={COL.encre} strokeWidth="1.5" />
       <text x={140} y={100} fontSize="15" fontWeight="800" fill={COL.orange}>noyau</text><text x={140} y={120} fontSize="15" fontWeight="800" fill={COL.orange}>{exp(`≈ ${p10(-15)}${NB}m`)}</text>
       <line x1={76} y1={72} x2={134} y2={96} stroke={COL.encre} strokeWidth="1.5" />
-      <text x={70} y={148} textAnchor="middle" fontSize="12.5" fill={COL.gris}>non à l’échelle</text>
+      <text x={70} y={148} textAnchor="middle" fontSize="13.5" fill={COL.gris}>non à l’échelle</text>
       <Encadre y={160} lignes={[`atome ÷ noyau = ${M.nombreFR(M.RAPPORT_TAILLES)}`, `(${p10(-10)} ÷ ${p10(-15)} = ${p10(5)})`]} c={COL.bleu} fond="#eff6ff" />
       <Encadre y={226} lignes={['noyau = bille de 1\u00a0cm', 'atome = 1\u00a0km !']} c={COL.orange} fond="#fffbeb" taille={16} />
     </svg>);
@@ -55,7 +55,7 @@ export function FicheMasses() {
       {pan(52, <Particule x={52} y={128} type="proton" r={12} />)}{pan(248, <g>{petits}</g>)}
       <text x={14} y={196} fontSize="14.5" fontWeight="800" fill={PART.proton.trait}>1 proton</text>
       <text x={290} y={196} textAnchor="end" fontSize="14.5" fontWeight="800" fill={PART.electron.trait}>≈ 1{NB}800 électrons</text>
-      <text x={150} y={214} textAnchor="middle" fontSize="12.5" fill={COL.gris}>dessin symbolique : 12 électrons pour ≈ 1{NB}800</text>
+      <text x={150} y={214} textAnchor="middle" fontSize="13.5" fill={COL.gris}>symbolique : 12 électrons pour ≈ 1{NB}800</text>
       <text x={150} y={238} textAnchor="middle" fontSize="14.5" fill={COL.encre}>{exp(`proton, neutron : ${sciFR(M.M_NUCLEON)}${NB}kg`)}</text>
       <text x={150} y={258} textAnchor="middle" fontSize="14.5" fill={COL.encre}>{exp(`électron : ${sciFR(M.M_ELECTRON)}${NB}kg`)}</text>
       <Encadre y={274} lignes={['presque toute la masse', 'de l’atome est dans le noyau']} />

@@ -48,7 +48,7 @@ export function FicheArbre() {
   const bte = (x, y, w, titre, c, fond, taille = 14.5) => (
     <g><rect x={x} y={y} width={w} height={34} rx="9" fill={fond} stroke={c} strokeWidth="2" />
       <text x={x + w / 2} y={y + 22} textAnchor="middle" fontSize={taille} fontWeight="800" fill={c}>{titre}</text></g>);
-  const txt = (x, y, t) => <text x={x} y={y} textAnchor="middle" fontSize="12.5" fill={COL.encre}>{t}</text>;
+  const txt = (x, y, t) => <text x={x} y={y} textAnchor="middle" fontSize="13.5" fill={COL.encre}>{t}</text>;
   return (
     <svg viewBox="0 0 300 292" style={stl} role="img" aria-label="La matière se range en deux grandes familles : les corps purs, avec une seule espèce chimique (exemples : l’or pur, le dioxygène), et les mélanges, avec plusieurs espèces. Les mélanges sont homogènes (exemples : l’eau du robinet, l’air) ou hétérogènes (exemples : la vinaigrette, l’eau et le sable). Attention : homogène ne veut pas dire corps pur.">
       <rect x={90} y={6} width={120} height={30} rx="9" fill="#f1f5f9" stroke={COL.gris} strokeWidth="2" /><text x={150} y={27} textAnchor="middle" fontSize="15.5" fontWeight="800" fill={COL.encre}>la matière</text>
@@ -56,7 +56,7 @@ export function FicheArbre() {
       {bte(6, 56, 120, 'CORPS PUR', COL.bleu, '#eff6ff')}{bte(134, 56, 160, 'MÉLANGE', COL.orange, '#fffbeb')}
       {txt(66, 108, '1 espèce')}{txt(66, 128, 'l’or pur,')}{txt(66, 146, 'le dioxygène')}
       <path d="M214 90L172 110M214 90L254 110" stroke={COL.gris} strokeWidth="2.5" fill="none" />
-      {bte(134, 110, 76, 'homogène', COL.orange, 'white', 12.5)}{bte(216, 110, 78, 'hétérogène', COL.orange, 'white', 12.5)}
+      {bte(134, 110, 76, 'homogène', COL.orange, 'white', 13.5)}{bte(216, 110, 78, 'hétérogène', COL.orange, 'white', 13.5)}
       {txt(172, 164, 'eau du')}{txt(172, 180, 'robinet,')}{txt(172, 196, 'air')}
       {txt(255, 164, 'vinaigrette,')}{txt(255, 180, 'eau et')}{txt(255, 196, 'sable')}
       <Encadre y={212} c={COL.rouge} fond="#fef2f2" lignes={['Attention : un mélange', 'homogène n’est PAS', 'un corps pur.']} />

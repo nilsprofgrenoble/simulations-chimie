@@ -11,7 +11,8 @@ const MAUVAIS = [[/\d°/, 'chiffre collé au °'], [/\d °/, 'espace ordinaire a
 function controler(fichier, debut = null, fin = null) {
   const L = fs.readFileSync(dir + fichier, 'utf8').split('\n');
   let a = 0, b = L.length;
-  if (debut) { a = L.findIndex(l => l.includes(debut)); b = L.findIndex((l, i) => i > a && l.startsWith(fin)); }
+  // fenêtre : de la première entrée prisme2gt à la première entrée d'une AUTRE simulation (les entrées sont des lignes « P({ id: '… »), sinon jusqu'à `fin`
+  if (debut) { a = L.findIndex(l => l.includes(debut)); b = L.findIndex((l, i) => i > a && /^\s*(?:[A-Za-z]*\()?\{ id: '/.test(l) && !l.includes("id: 'prisme2gt-")); if (b < 0) b = L.findIndex((l, i) => i > a && l.startsWith(fin)); }
   let nb160 = 0;
   for (let i = a; i < b; i++) {
     const l = L[i]; if (l.trim().startsWith('//')) continue;

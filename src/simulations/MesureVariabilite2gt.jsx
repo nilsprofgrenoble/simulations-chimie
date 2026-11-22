@@ -266,7 +266,7 @@ export function SimulationMesureVariabilite2gt() {
 
   // ════════════════ SCÈNES DU PARCOURS GUIDÉ ════════════════
   const donnee = (nom, valeur, c) => <LigneMesure key={nom} nom={nom} valeur={valeur} couleur={c}/>;
-  const axeDisp = { xmin: M.HISTO_DISP.debut, xmax: M.HISTO_DISP.debut + M.HISTO_DISP.K * M.HISTO_DISP.largeur, yMax: 10, nom: 'durée entre deux gouttes', unite: 's', dec: 2 };
+  const axeDisp = { xmin: M.HISTO_DISP.debut, xmax: M.HISTO_DISP.debut + M.HISTO_DISP.K * M.HISTO_DISP.largeur, yMax: Math.max(10, Math.ceil(Math.max(...Object.values(M.SERIES_DISP).map(sr => M.histogramme(sr, M.HISTO_DISP.debut, M.HISTO_DISP.largeur, M.HISTO_DISP.K).nMax)) / 5) * 5), nom: 'durée entre deux gouttes', unite: 's', dec: 2 };
   const hd = serie => M.histogramme(serie, M.HISTO_DISP.debut, M.HISTO_DISP.largeur, M.HISTO_DISP.K).classes;
   const sceneGuide = (() => {
     switch (idE) {

@@ -54,7 +54,7 @@ export function SimulationNoyauAtome() {
   const ORDRE_ZAX = [1, 3, 0, 2];
   const zaxOk = zaxChoix === 0;
   const sceneZax = (
-    <div data-zax-choix="1">
+    <div>
       <SceneNoyau Z={7} nom="d’azote" />
       <p style={{ margin: '10px 0 8px', fontSize: 15, fontWeight: 700, color: KIT.txt, lineHeight: 1.5 }}>Choisissez l’écriture du noyau d’azote.</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>

@@ -77,7 +77,7 @@ export function FicheMoyenne() {
         {[1, 2, 3, 4, 5, 6, 7].map(v => <text key={v} x={30 + (v - 1) * 40} y="138" textAnchor="middle" fontSize="14" fill={GRIS}>{v}</text>)}
         <text x="110" y="158" textAnchor="middle" fontSize="14" fontWeight="700" fill={ORANGE}>moyenne = 3</text>
         <rect x="14" y="168" width="272" height="26" rx="8" fill="#fff7ed" stroke={ORANGE}/>
-        <text x="150" y="186" textAnchor="middle" fontSize="12.5" fontWeight="700" fill={ENCRE}>somme des valeurs ÷ nombre de valeurs</text>
+        <text x="150" y="186" textAnchor="middle" fontSize="13.5" fontWeight="700" fill={ENCRE}>somme des valeurs ÷ nombre de valeurs</text>
       </svg>
       <ul style={liste}>
         <li><strong>Moyenne</strong> : on additionne toutes les valeurs, puis on divise par leur nombre.</li>
@@ -189,7 +189,7 @@ export function FicheBilan() {
         {caisse(96, VIOLET, 'Ranger', 'histogramme : valeurs par classes')}
         {fl(142)}
         {caisse(162, ORANGE, 'Résumer', 'moyenne : centre · écart-type : largeur')}
-        <text x="150" y="226" textAnchor="middle" fontSize="12.5" fontWeight="700" fill={ROUGE}>si indépendantes et à peu près symétriques</text>
+        <text x="150" y="223" textAnchor="middle" fontSize="13" fontWeight="700" fill={ROUGE}>si indépendantes et à peu près symétriques</text>
       </svg>
       <ul style={liste}>
         <li>Plus l’instrument ou le protocole est bon, plus la série est étroite.</li>

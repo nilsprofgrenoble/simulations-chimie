@@ -29,7 +29,7 @@ export function SceneLentille({ o, mise = G.MISE_SCENE, label, max = 480, sous =
           {[-12, -8, -4, 0, 4, 8, 12].map(i => <text key={i} x={P(i, 0)[0]} y={mise.ruleY + 31} textAnchor="middle" fontSize={fs} fontWeight="700" fill="#334155">{Math.abs(i)}</text>)}
           <text x={mise.w - 3} y={mise.ruleY + 31} textAnchor="end" fontSize={fs} fontWeight="700" fill="#334155">cm</text>
         </g>)}
-      {carte && note && <text x={6} y={mise.h - 6} fontSize="12.5" fill="#475569" fontWeight="700">1 carreau = 1&nbsp;cm</text>}
+      {carte && note && <text x={6} y={mise.h - 6} fontSize="14" fill="#475569" fontWeight="700">1 carreau = 1&nbsp;cm</text>}
       {/* axe optique */}
       <line x1={E.axe[0][0]} y1={E.axe[0][1]} x2={E.axe[1][0]} y2={E.axe[1][1]} stroke={M.COUL.axe} strokeWidth="1.6" />
       {sous && sous(P)}
