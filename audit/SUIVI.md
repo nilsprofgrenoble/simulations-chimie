@@ -13,7 +13,7 @@ Statut : ⬜ à faire · 🟨 en cours · ✅ audité (rapport écrit) · ⏭️
 | SIM61 | Dissolution et concentration en masse | 2GT | src/simulations/Dissolution, src/simulations/solutionsVue, src/simulations/solutionsModele, src/simulations/DissolutionFiches (591 l.) | ⬜ |  |  |  |  |
 | SIM62 | Dilution et échelle de teintes | 2GT | src/simulations/Dilution, src/simulations/solutionsVue, src/simulations/solutionsModele, src/simulations/DilutionSchemas (530 l.) | ⬜ |  |  |  |  |
 | SIM63 | Mélanges : miscibilité, solubilité et densité | 2GT | src/simulations/Melanges, src/simulations/solutionsModele, src/simulations/MelangesFiches (594 l.) | ⬜ |  |  |  |  |
-| SIM64 | Réfraction de la lumière : lois de Snell-Descartes | 2GT | src/simulations/Refraction, src/simulations/optiqueModele, src/simulations/RefractionFiches (648 l.) | ⬜ |  |  |  |  |
+| SIM64 | Réfraction de la lumière : lois de Snell-Descartes | 2GT | src/simulations/Refraction, src/simulations/optiqueModele, src/simulations/RefractionFiches (648 l.) | ✅ | 1 | 6 | 10 | SIM64.md |
 | SIM65 | Lentille convergente : trajet de la lumière et foyer | 2GT | src/simulations/Lentille, src/simulations/optiqueModele, src/simulations/LentilleFiches (605 l.) | ⬜ |  |  |  |  |
 | SIM66 | Spectres d’émission : corps chauds et lampes à décharge | 2GT | src/simulations/Spectres, src/simulations/spectresModele, src/simulations/SpectresFiches (643 l.) | ⬜ |  |  |  |  |
 | SIM67 | L’ISS en chute libre : pourquoi les astronautes flottent | 2GT | src/simulations/ISS, src/simulations/issModele (524 l.) | ⬜ |  |  |  |  |
