@@ -371,6 +371,9 @@ export function SimulationDiffraction({ naviguer }) {
     if (md === 'guide') { setScene('cuve'); setCuve({ a: 10, lam: 1 }); setAngle(false); setVue('ondes'); }
   }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
+  // le verdict affiché porte sur la mesure au moment de « Vérifier » : si l'élève déplace un repère ou change D / le zoom, il n'a plus de sens
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setDefi(d => (d && d.verifie ? { ...d, verifie: false, corr: false } : d)); }, [lz.x1, lz.x2, lz.D, lz.zoom]);
   const dres = (() => {
     if (!defi || !defi.verifie) return null;
     const x = lireNombre(defi.reps.a), v = defi.reps.v;
