@@ -12,3 +12,6 @@ Bilan : 0 Bloquant · 1 Important · 1 Mineur
 
 ## Vérifié sans défaut
 Défi « trouver » (f′ ± 0,8 cm, curseur au pas de 0,1 cm, retour qui distingue « tache non minimale » et « lecture fausse »), « voir la solution » présent sur les trois défis, étape f′ = 12 cm (tolérance 7 % ≥ celle de l'action ±0,4 cm).
+
+## Suite : corrections faites (22/11/2026)
+SIM65-01 corrigé (textes du schéma et du banc ≥ 8,6 px rendus à 390 px, contre 4,3 avant ; titre du banc réorganisé). SIM65-02 corrigé (le conseil renvoie au croisement des rayons sur chaque schéma).

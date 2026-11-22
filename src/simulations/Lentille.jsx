@@ -44,7 +44,7 @@ function Lunette({ L, normales, mince, foyers, ideale = false, w = 700, hauteurs
   return (
     <svg viewBox={`0 0 ${w} 330`} width="100%" role="img" aria-label="Rayons lumineux parallèles à l’axe optique traversant une lentille convergente" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="8" y1={AXE} x2={w - 8} y2={AXE} stroke="#0f172a" strokeWidth="1.5" strokeDasharray="10 5"/>
-      <text x={w - 12} y={AXE + 16} textAnchor="end" fontSize="12.5" fontWeight="700" fill="#0f172a">axe optique Δ</text>
+      <text x={w - 12} y={AXE + 16} textAnchor="end" fontSize="24" fontWeight="700" fill="#0f172a">axe optique Δ</text>
       <polygon points={contourVerre(L)} fill="#7dd3fc" fillOpacity="0.45" stroke="#0369a1" strokeWidth="2.5"/>
       <g opacity={op}>
         {rayons.map(({ h, r, s }) => {
@@ -58,20 +58,20 @@ function Lunette({ L, normales, mince, foyers, ideale = false, w = 700, hauteurs
             <line x1={a[0] - n1[0] * e} y1={AXE - s * a[1] + s * n1[1] * e} x2={a[0] + n1[0] * e} y2={AXE - s * a[1] - s * n1[1] * e}/>
             {!ideale && <line x1={b[0] - n2[0] * e} y1={AXE - s * b[1] + s * n2[1] * e} x2={b[0] + n2[0] * e} y2={AXE - s * b[1] - s * n2[1] * e}/>}</g>; })}
       </g>
-      {normales && !mince && hl && legende && <g fontSize="12.5" fontWeight="700" fill={C_NRM}>
+      {normales && !mince && hl && legende && <g fontSize="24" fontWeight="700" fill={C_NRM}>
         <text x={hl.r.q1[0] - 120} y={AXE - hl.r.q1[1] - 30}>normale (entrée)</text>{!ideale && <text x={hl.r.q2[0] + 20} y={AXE - hl.r.q2[1] - 30}>normale (sortie)</text>}</g>}
       {mince && fo && <g>
         <line x1={G.xO} y1={AXE - H - 14} x2={G.xO} y2={AXE + H + 14} stroke={C_SCH} strokeWidth="4"/>
         <polygon points={`${G.xO},${AXE - H - 20} ${G.xO - 7},${AXE - H - 6} ${G.xO + 7},${AXE - H - 6}`} fill={C_SCH}/><polygon points={`${G.xO},${AXE + H + 20} ${G.xO - 7},${AXE + H + 6} ${G.xO + 7},${AXE + H + 6}`} fill={C_SCH}/>
         {[-60, -30, 30, 60].map(h => <polyline key={h} points={`40,${AXE - h} ${G.xO},${AXE - h} ${fo.xF},${AXE}`} fill="none" stroke={C_SCH} strokeWidth="3"/>)}
-        {legende && <text x={G.xO + 8} y={AXE - H - 20} fontSize="12.5" fontWeight="700" fill={C_SCH}>lentille mince (schéma)</text>}</g>}
-      {foyers && fo && <g fontSize="14" fontWeight="800">
+        {legende && <text x={G.xO + 8} y={AXE - H - 20} fontSize="24" fontWeight="700" fill={C_SCH}>lentille mince (schéma)</text>}</g>}
+      {foyers && fo && <g fontSize="26.5" fontWeight="800">
         <circle cx={G.xO} cy={AXE} r="4.5" fill="#0f172a"/><text x={G.xO - 4} y={AXE + 20} textAnchor="end">O</text>
         <circle cx={fo.xF} cy={AXE} r="6" fill={C_F} stroke="#fff" strokeWidth="1.5"/><text x={fo.xF} y={AXE + 22} textAnchor="middle" fill={C_F}>F′</text>
         <circle cx={2 * G.xO - fo.xF} cy={AXE} r="6" fill="#fff" stroke={C_F} strokeWidth="2.5"/><text x={2 * G.xO - fo.xF} y={AXE + 22} textAnchor="middle" fill={C_F}>F</text>
-        {legende && <text x={(G.xO + fo.xF) / 2} y={AXE + 50} textAnchor="middle" fontSize="13" fill={C_F} stroke="#fff" strokeWidth="4" paintOrder="stroke">f′ = OF′ = {cm(fo.f)} cm</text>}
+        {legende && <text x={(G.xO + fo.xF) / 2} y={AXE + 50} textAnchor="middle" fontSize="24.5" fill={C_F} stroke="#fff" strokeWidth="4" paintOrder="stroke">f′ = OF′ = {cm(fo.f)} cm</text>}
         {legende && <line x1={G.xO} y1={AXE + 30} x2={fo.xF} y2={AXE + 30} stroke={C_F} strokeWidth="2"/>}</g>}
-      <text x="14" y="26" fontSize="13" fontWeight="800" fill="#0f172a">faisceau de rayons parallèles à l’axe</text>
+      <text x="14" y="26" fontSize="24.5" fontWeight="800" fill="#0f172a">faisceau de rayons parallèles à l’axe</text>
     </svg>);
 }
 
@@ -85,19 +85,19 @@ function Banc({ f, s, reveler }) {
       <line x1="8" y1={AXE} x2="692" y2={AXE} stroke="#0f172a" strokeWidth="1.5" strokeDasharray="10 5"/>
       <line x1="30" y1="290" x2="690" y2="290" stroke="#0f172a" strokeWidth="3"/>
       {Array.from({ length: 38 }, (_, k) => k).map(k => <g key={k}><line x1={XL + PXB * k} y1="290" x2={XL + PXB * k} y2={k % 5 === 0 ? 304 : 298} stroke="#0f172a" strokeWidth="1.5"/>
-        {k % 5 === 0 && <text x={XL + PXB * k} y="318" textAnchor="middle" fontSize="11.5" fill="#0f172a">{k} cm</text>}</g>)}
+        {k % 5 === 0 && <text x={XL + PXB * k} y="320" textAnchor="middle" fontSize="24" fill="#0f172a">{k} cm</text>}</g>)}
       {[-28, -14, 0, 14, 28].map(h => { const fin = h === 0 ? [xs, AXE] : [xs, AXE - h * (1 - s / f)];
         return <g key={h}><polyline points={`20,${AXE - h} ${XL},${AXE - h} ${fin[0]},${fin[1]}`} fill="none" stroke={C_RAY} strokeWidth="2.6"/>
           <polygon points={`44,${AXE - h} 33,${AXE - h - 5} 33,${AXE - h + 5}`} fill={C_RAY}/></g>; })}
       <line x1={XL} y1={AXE - 62} x2={XL} y2={AXE + 62} stroke="#0369a1" strokeWidth="5"/>
       <polygon points={`${XL},${AXE - 70} ${XL - 7},${AXE - 56} ${XL + 7},${AXE - 56}`} fill="#0369a1"/><polygon points={`${XL},${AXE + 70} ${XL - 7},${AXE + 56} ${XL + 7},${AXE + 56}`} fill="#0369a1"/>
-      <text x={XL} y={AXE - 78} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0369a1">lentille (f′ inconnue)</text>
+      <text x="14" y={AXE + 102} fontSize="24" fontWeight="700" fill="#0369a1">lentille (f′ inconnue)</text>
       <line x1={xs} y1={AXE - 62} x2={xs} y2={AXE + 62} stroke="#0f172a" strokeWidth="2.5"/><rect x={xs} y={AXE - 62} width="9" height="124" fill="#e2e8f0" stroke="#0f172a" strokeWidth="2"/>
       <rect x={xs - 2} y={AXE - demi} width="13" height={2 * demi} rx="3" fill="#fde047" stroke={C_RAY} strokeWidth="2"/>
-      <text x={xs + 4} y={AXE - 70} textAnchor="middle" fontSize="12.5" fontWeight="700">écran</text>
-      <text x="14" y="26" fontSize="14" fontWeight="800" fill="#0f172a">Écran à s = {cm(s)} cm de la lentille</text>
-      <text x="14" y="46" fontSize="13.5" fontWeight="700" fill={nette ? VERT : ORANGE}>Tache sur l’écran : {nette ? 'très petite, quasi un point' : demi > 18 ? 'grande' : 'moyenne'}</text>
-      {reveler && <g><circle cx={xf} cy={AXE} r="6" fill={C_F} stroke="#fff" strokeWidth="1.5"/><text x={xf} y={AXE + 24} textAnchor="middle" fontSize="14" fontWeight="800" fill={C_F}>F′ : f′ = {cm(f)} cm</text></g>}
+      <text x={xs + 4} y={AXE - 70} textAnchor="middle" fontSize="24" fontWeight="700">écran</text>
+      <text x="14" y="28" fontSize="25" fontWeight="800" fill="#0f172a">Écran à s = {cm(s)} cm de la lentille</text>
+      <text x="14" y="58" fontSize="23" fontWeight="700" fill={nette ? VERT : ORANGE}>Tache sur l’écran : {nette ? 'très petite, quasi un point' : demi > 18 ? 'grande' : 'moyenne'}</text>
+      {reveler && <g><circle cx={xf} cy={AXE} r="6" fill={C_F} stroke="#fff" strokeWidth="1.5"/><text x={xf} y={AXE + 24} textAnchor="middle" fontSize="26.5" fontWeight="800" fill={C_F}>F′ : f′ = {cm(f)} cm</text></g>}
     </svg>);
 }
 
@@ -121,7 +121,7 @@ const RAYONS = {
 const BONS = { pF: 'passe par le foyer image F′', tout: 'n’est pas dévié', para: 'ressort parallèlement à l’axe optique' };
 function evaluer(d, bancS) {
   if (d.type === 'trouver') { const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.f) <= 0.8, vu = Math.abs(bancS - d.f) <= 1.2; return { ok, lignes: [[ok, ok ? 'Distance focale correcte (à 0,8 cm près).' : vu ? 'Ta valeur ne correspond pas à la position où la tache est la plus petite : relis la graduation.' : 'Cherche d’abord la position de l’écran où la tache est la plus petite possible.']] }; }
-  const ok = d.reps.d === d.rep; return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : d.type === 'comparer' ? 'Une lentille plus « bombée » (R petit) et plus réfringente (n grand) dévie plus et converge plus près.' : 'Rappel : parallèle à l’axe → F′ ; par O → pas dévié ; par F → parallèle à l’axe.']] };
+  const ok = d.reps.d === d.rep; return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : d.type === 'comparer' ? 'Regarde sur chaque schéma où les rayons se croisent : la lentille dont les rayons se croisent le plus près a la distance focale la plus courte. (Un verre plus réfringent et une face plus bombée rapprochent le foyer ; si les deux effets s’opposent, fie-toi au schéma.)' : 'Rappel : parallèle à l’axe → F′ ; par O → pas dévié ; par F → parallèle à l’axe.']] };
 }
 function VoletDefi({ defi, setDefi, changerType, bancS }) {
   const res = defi.verifie ? evaluer(defi, bancS) : null, reussi = !!res && res.ok;

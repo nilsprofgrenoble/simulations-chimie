@@ -14,3 +14,6 @@ Bilan : 0 Bloquant · 3 Important · 1 Mineur
 
 ## Vérifié sans défaut
 Poids m × g à ±2 % : l'erreur de lecture de g à 0,1 près ne dépasse pas 0,7 % (script) ; réponse 608 N (70 kg, 400 km) ; « voir la solution » présent. Fausses alertes du contrôle de rendu (graduations 0 m…110 m vues comme superposées) : vérifié sur capture, pas de chevauchement.
+
+## Suite : corrections faites (22/11/2026)
+SIM67-01 corrigé (« la cabine tombe » / « la cabine ne bouge pas »). SIM67-02 corrigé (écart apogée–périgée toléré 300 km : fenêtre ≈ 0,15 km/s au lieu de 0,08). SIM67-03 corrigé (légendes à ≈ 8,9 px rendus au lieu de 7,4). SIM67-04 corrigé (défi poids : poids au sol, g recopié, division, trop grand/petit).

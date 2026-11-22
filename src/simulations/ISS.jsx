@@ -35,24 +35,24 @@ function Orbite({ h, v, etat, trace, etatAff, valeurs = true }) {
   const ang = Math.atan2(-cur.y, cur.x) * 180 / Math.PI;      // rotation de l'icône (dans le repère écran)
   const arrow = (x, y, dx, dy, c, lettre, val, off = [8, -6]) => { const l = Math.hypot(dx, dy); if (l < 3) return null; const ux = dx / l, uy = dy / l;
     return <g><line x1={x} y1={y} x2={x + dx} y2={y + dy} stroke={c} strokeWidth="3.5"/><polygon points={`${x + dx},${y + dy} ${x + dx - ux * 10 - uy * 5},${y + dy - uy * 10 + ux * 5} ${x + dx - ux * 10 + uy * 5},${y + dy - uy * 10 - ux * 5}`} fill={c}/>
-      <TV x={x + dx + off[0]} y={y + dy + off[1]} c={c} s={26} halo>{lettre}</TV><text x={x + dx + off[0] + 17} y={y + dy + off[1]} fontSize="22" fontWeight="800" fill={c} stroke="#0b1630" strokeWidth="4" paintOrder="stroke">{valeurs ? `: ${val}` : ''}</text></g>; };
+      <TV x={x + dx + off[0]} y={y + dy + off[1]} c={c} s={26} halo>{lettre}</TV><text x={x + dx + off[0] + 17} y={y + dy + off[1]} fontSize="26.5" fontWeight="800" fill={c} stroke="#0b1630" strokeWidth="4" paintOrder="stroke">{valeurs ? `: ${val}` : ''}</text></g>; };
   return (
     <svg viewBox="0 0 700 390" width="100%" role="img" aria-label="La Terre vue de loin, avec la trajectoire de la station spatiale" style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#0b1630', borderRadius: 10 }}>
       <circle cx={CX} cy={CY} r={R_KM * s} fill="#2563eb"/><circle cx={CX} cy={CY} r={R_KM * s} fill="none" stroke="#93c5fd" strokeWidth="2"/>
       <path d={`M ${CX - 40} ${CY - 30} q 30 -40 70 -10 q 20 20 -10 40 q -50 10 -60 -30 Z`} fill="#16a34a" opacity="0.8"/><path d={`M ${CX + 30} ${CY + 50} q 40 -10 50 20 q -10 30 -50 10 Z`} fill="#16a34a" opacity="0.8"/>
-      <text x={CX} y={CY + 8} textAnchor="middle" fontSize="24" fontWeight="800" fill="#fff">Terre</text>
+      <text x={CX} y={CY + 8} textAnchor="middle" fontSize="29" fontWeight="800" fill="#fff">Terre</text>
       <polyline points={pred.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ')} fill="none" stroke="#fde68a" strokeWidth="1.8" strokeDasharray="5 5" opacity="0.8"/>
       {trace && trace.length > 1 && <polyline points={trace.map(([x, y]) => `${X(x)},${Y(y)}`).join(' ')} fill="none" stroke="#fef08a" strokeWidth="3"/>}
-      {etatAff === 'impact' && <g><circle cx={X(cur.x)} cy={Y(cur.y)} r="9" fill="#ef4444"/><text x={X(cur.x) + 12} y={Y(cur.y) - 8} fontSize="24" fontWeight="800" fill="#fecaca">Impact sur la Terre !</text></g>}
+      {etatAff === 'impact' && <g><circle cx={X(cur.x)} cy={Y(cur.y)} r="9" fill="#ef4444"/><text x={X(cur.x) + 12} y={Y(cur.y) - 8} fontSize="29" fontWeight="800" fill="#fecaca">Impact sur la Terre !</text></g>}
       {etatAff !== 'impact' && <g transform={`translate(${X(cur.x)} ${Y(cur.y)}) rotate(${-ang + 90}) scale(1.8)`}>
         <rect x="-5" y="-4" width="10" height="8" fill="#e2e8f0" stroke="#fff" strokeWidth="1"/><rect x="-22" y="-2" width="14" height="4" fill="#fbbf24"/><rect x="8" y="-2" width="14" height="4" fill="#fbbf24"/><circle cx="0" cy="0" r="2.2" fill="#ef4444"/></g>}
       {etatAff !== 'impact' && <g>{arrow(X(cur.x), Y(cur.y), gx / gl * 36, -(gy / gl) * 36, '#fca5a5', 'g', `${fr(gAlt(h), 1)} N/kg`, [-6, 34])}
         {arrow(X(cur.x), Y(cur.y), cur.vx / (vl || 1) * Math.min(60, vl * ech), -cur.vy / (vl || 1) * Math.min(60, vl * ech), '#7dd3fc', 'v', `${fr(vl, 2)} km/s`, [8, -10])}</g>}
-      <text x="12" y="28" fontSize="24" fontWeight="700" fill="#e2e8f0">Altitude : {fr(h, 0)} km</text>
-      <text x="12" y="56" fontSize="20" fill="#cbd5e1">rouge : gravité · bleu : vitesse</text>
-      <text x="12" y="378" fontSize="20" fill="#94a3b8">Terre à l’échelle ; station trop grande</text>
-      <text x="688" y="350" textAnchor="end" fontSize="20" fill="#94a3b8">pointillés : trajectoire prévue</text>
-      <text x="688" y="378" textAnchor="end" fontSize="20" fill="#94a3b8">trait jaune : trajet parcouru</text>
+      <text x="12" y="28" fontSize="29" fontWeight="700" fill="#e2e8f0">Altitude : {fr(h, 0)} km</text>
+      <text x="12" y="56" fontSize="24" fill="#cbd5e1">rouge : gravité · bleu : vitesse</text>
+      <text x="12" y="378" fontSize="24" fill="#94a3b8">Terre à l’échelle ; station trop grande</text>
+      <text x="688" y="318" textAnchor="end" fontSize="24" fill="#94a3b8">pointillés : trajectoire prévue</text>
+      <text x="688" y="348" textAnchor="end" fontSize="24" fill="#94a3b8">trait jaune : trajet parcouru</text>
     </svg>);
 }
 
@@ -104,7 +104,7 @@ function Cabine({ c, t, vueCabine }) {
         <g>{cab(yc, 1, true, t)}</g>
       </g>
       <text x={CX} y="26" textAnchor="middle" fontSize="22" fontWeight="800" fill="#0f172a">{vueCabine ? 'Vue depuis la cabine' : 'Vue depuis le sol'}</text>
-      <text x={CX} y="50" textAnchor="middle" fontSize="20" fill="#334155">{vueCabine ? 'la cabine est immobile : c’est le sol qui monte' : 'la cabine est en mouvement'}</text>
+      <text x={CX} y="50" textAnchor="middle" fontSize="20" fill="#334155">{vueCabine ? 'la cabine est immobile : c’est le sol qui monte' : tombe ? 'la cabine tombe' : 'la cabine ne bouge pas'}</text>
       <text x="512" y="78" textAnchor="end" fontSize="20" fontWeight="700" fill={tombe ? C_V : '#334155'}>{tombe ? `chute libre · v = ${fr(e.v, 1)} m/s` : 'cabine immobile (câble tenu)'}</text>
       {e.fini && <text x={CX} y="104" textAnchor="middle" fontSize="22" fontWeight="800" fill={ORANGE}>La cabine arrive au sol.</text>}
     </svg>);
@@ -119,7 +119,16 @@ function nouveauDefi(type) {
 }
 const TXT_CTX = { sol: 'dans une cabine posée sur le sol', chute: 'dans une cabine en chute libre (câbles coupés, sans frottement)', iss: 'dans la Station spatiale en orbite', montee: 'dans un ascenseur qui monte à vitesse constante' };
 function evaluer(d, v) {
-  if (d.type === 'poids') { const vrai = d.m * gAlt(d.h), x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - vrai) <= 0.02 * vrai; return { ok, lignes: [[ok, ok ? 'Poids correct.' : 'Lis g à cette altitude dans la simulation puis calcule P = m × g (en newtons).']] }; }
+  if (d.type === 'poids') {
+    const g = gAlt(d.h), vrai = d.m * g, x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - vrai) <= 0.02 * vrai;
+    if (ok) return { ok, lignes: [[true, 'Poids correct.']] };
+    if (!d.reps.v || !isFinite(x)) return { ok, lignes: [[false, 'Entre un nombre : le poids en newtons (N).']] };
+    const msg = Math.abs(x - d.m * G0) <= 0.02 * d.m * G0 ? `C’est le poids au sol (${d.m} × 9,8). À ${d.h} km, g est plus petit : lis sa valeur dans la simulation.`
+      : Math.abs(x - g) <= 0.05 * g ? `C’est g (le poids d’1 kg). Pour ${d.m} kg, multiplie : P = m × g.`
+        : Math.abs(x - d.m / g) <= 0.05 * (d.m / g) ? 'On multiplie : P = m × g (on ne divise pas la masse par g).'
+          : `${x > vrai ? 'Ta valeur est trop grande' : 'Ta valeur est trop petite'}. Lis g à ${d.h} km d’altitude dans la simulation, puis calcule P = ${d.m} kg × g (en newtons).`;
+    return { ok, lignes: [[false, msg]] };
+  }
   if (d.type === 'cabine') { const ok = d.reps.d === d.rep; return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : 'Regarde si la cabine tombe en même temps que la balle : si oui, la balle ne bouge pas par rapport à la cabine.']] }; }
   const ok = typeOrbite(d.h, v).type === 'circulaire'; return { ok, lignes: [[ok, ok ? 'Orbite circulaire : la station reste à la même altitude.' : v < vOrb(d.h) ? 'Trop lent : la station finit par se rapprocher de la Terre.' : 'Trop rapide : la station s’éloigne de la Terre (l’orbite est une ellipse).']] };
 }

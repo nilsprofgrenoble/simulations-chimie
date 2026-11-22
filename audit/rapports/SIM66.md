@@ -15,3 +15,6 @@ Bilan : 0 Bloquant · 2 Important · 3 Mineur
 
 ## Vérifié sans défaut
 Valeurs recalculées : 485 nm → 5 702 °C ; sodium 589,3 nm (tolérance 1 %) ; défi « comparer » (écart ≥ 1 000 °C) ; « voir la solution » présent.
+
+## Suite : corrections faites (22/11/2026)
+SIM66-01 corrigé (kelvins refusés avec message dédié, étape et défi ; tolérance 4,5 % et ±250 °C). SIM66-02 corrigé (textes ≥ 8,2 px contre 4,1 ; graduation « 1000 » ramenée dans le cadre). SIM66-03 : « 1000 » corrigé ; les étiquettes de raies superposées du tableau de gaz restent proches (non revérifiées une à une). SIM66-04 laissé à Nils (valeurs de cours). SIM66-05 corrigé (retour du défi température diagnostique : kelvins, λ recopiée, trop grand/petit).
