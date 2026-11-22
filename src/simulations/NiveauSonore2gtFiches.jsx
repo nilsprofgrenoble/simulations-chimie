@@ -50,7 +50,7 @@ export function FicheEchelle() {
         <text x="296" y="302" textAnchor="end" fontSize="13" fill={GRIS}>valeurs : ordres de grandeur</text>
       </svg>
       <ul style={liste}>
-        <li><strong>0 : on n’entend rien · 60 : on parle · 85 : attention · 120 : ça fait mal.</strong></li>
+        <li><strong>0 : on entend à peine · 60 : on parle · 85 : attention · 120 : ça fait mal.</strong></li>
         <li>Le <strong>seuil d’audition</strong> (0{NB}dB) n’est pas « aucun son » : c’est le son le plus faible que l’on puisse entendre.</li>
         <li>Les valeurs de l’échelle sont des <strong>repères</strong> : elles varient de 10{NB}dB selon les sources et les personnes.</li>
       </ul>

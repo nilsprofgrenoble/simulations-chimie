@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, ExempleResolu } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, ExempleResolu, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./sonEmission2gtModele";
 import { QCM } from "./sonEmission2gtQcm";
@@ -41,7 +41,7 @@ const boite = (titre, corps, extra = {}) => (
 export function SimulationSonEmission2gt() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
-  const [suiviM, noterM] = useCompteurDefi(), [suiviP, noterP] = useCompteurDefi();
+  const [suiviM, noterM, vueM] = useCompteurDefi(), [suiviP, noterP, vueP] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('mesure');
   const [ex, setEx] = useState({ milieu: 'air', d: 340, temp: 20, comparer: true, ouv: {} });
@@ -129,7 +129,7 @@ export function SimulationSonEmission2gt() {
   const cadre = id => (hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {});
 
   // ════════════════ DÉFIS ════════════════
-  const nouveauDefi = type => { setDefi({ ...(type === 'mesure' ? { type, ...M.tirerDefiMesure(defi && defi.type === 'mesure' ? defi : null) } : { type, ...M.tirerDefiPrevoir(defi && defi.type === 'prevoir' ? defi : null) }), reps: {}, verifie: false }); };
+  const nouveauDefi = type => { setDefi({ ...(type === 'mesure' ? { type, ...M.tirerDefiMesure(defi && defi.type === 'mesure' ? defi : null) } : { type, ...M.tirerDefiPrevoir(defi && defi.type === 'prevoir' ? defi : null) }), reps: {}, verifie: false, solution: false }); };
   function changerMode(md) {
     setMode(md);
     if (md === 'defi' && !defi) nouveauDefi(typeDefi);
@@ -172,9 +172,15 @@ export function SimulationSonEmission2gt() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="se2-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
+        <VoirSolution visible={!(defi.verifie && defi.ok) && !defi.solution} onClick={() => { (defiMesure ? vueM : vueP)(); setDefi(d => ({ ...d, solution: true })); }}/>
       </div>
+      {defi.solution && <BoiteSolution>{defiMesure
+        ? <>{defi.d >= 1000 ? <>On convertit d en mètres : d = {M.entier(defi.d)}{NB}m. Puis </> : null}v = d ÷ Δt = {M.entier(defi.d)}{NB}m ÷ {dtTxtDefi} ≈ <strong>{M.nb(defi.vrai, 2)}{NB}m/s</strong> (marge acceptée : ± {margeTxt}{NB}%).</>
+        : defi.cas === 'orage'
+          ? <>d = v × Δt = 340{NB}m/s × {M.nb(defi.dt, 2)}{NB}s = {M.entier(340 * defi.dt)}{NB}m, soit <strong>{M.nb(defi.vrai, 2)}{NB}km</strong> (marge acceptée : ± 6 %).</>
+          : <>On convertit d en mètres : d = {M.nb(defi.dkm * 1000, 3)}{NB}m. Puis Δt = d ÷ v = {M.nb(defi.dkm * 1000, 3)}{NB}m ÷ 340{NB}m/s ≈ <strong>{M.nb(defi.vrai, 2)}{NB}s</strong> (marge acceptée : ± 6 %).</>}</BoiteSolution>}
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
-        {defi.ok ? (defiMesure ? `✓ Correct : v = d ÷ Δt = ${M.longueur(defi.d)} ÷ ${dtTxtDefi} ≈ ${M.nb(defi.vrai, 2)}${NB}m/s (marge acceptée : ± ${margeTxt}${NB}%).`
+        {defi.ok ? (defiMesure ? `✓ Correct : v = d ÷ Δt = ${M.entier(defi.d)}${NB}m ÷ ${dtTxtDefi} ≈ ${M.nb(defi.vrai, 2)}${NB}m/s (marge acceptée : ± ${margeTxt}${NB}%).`
           : defi.cas === 'orage' ? `✓ Correct : d = 340 m/s × ${M.nb(defi.dt, 2)} s ≈ ${M.nb(defi.vrai, 2)} km (marge acceptée : ± 6 %).`
             : `✓ Correct : Δt = ${M.nb(defi.dkm * 1000, 3)} m ÷ 340 m/s ≈ ${M.nb(defi.vrai, 2)} s (marge acceptée : ± 6 %).`)
           : defiMesure ? (defi.recopie ? `✗ Vous avez recopié la valeur connue (${M.nb(defi.nominal, 2)}${NB}m/s). Ici, calculez avec les données de l’énoncé : v = d ÷ Δt.` : '✗ Vérifiez : v = d ÷ Δt, avec d en mètres et Δt en secondes (pas l’inverse).')
