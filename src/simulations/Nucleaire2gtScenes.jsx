@@ -1,7 +1,7 @@
 // Scènes de la simulation 203 « Transformation nucléaire : isotopes, Soleil et centrales » (2GT).
 // Les schémas sont dessinés à partir des primitives CALCULÉES par nucleaire2gtDispo.js (testé) : nombres exacts de protons et de neutrons, aucune étiquette sur un trait ni sur un autre texte.
 // Textes de 18 à 22 dans un viewBox de 480, plafonnés à maxWidth 480 ; cartes en viewBox de 300 plafonnées à 320. Les aria-label du parcours sont NEUTRES (jamais une réponse).
-import { KIT, Formule } from "../commun";
+import { KIT } from "../commun";
 import { AmasSvg } from "./EquationReactionScenes";
 import { MN } from "./rdaSchemas";
 import * as M from "./nucleaire2gtModele";
