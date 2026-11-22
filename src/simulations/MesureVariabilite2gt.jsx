@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, LigneMesure, IndiceDefi, ExempleResolu } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, LigneMesure, IndiceDefi, ExempleResolu, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./mesureVariabilite2gtModele";
 import { QCM } from "./mesureVariabilite2gtQcm";
@@ -54,7 +54,7 @@ function CurseurListe({ nom, valeurs, rang, onChange, texte, couleur = COL.orang
 export function SimulationMesureVariabilite2gt() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
-  const [suiviC, noterC] = useCompteurDefi(), [suiviE, noterE] = useCompteurDefi();
+  const [suiviC, noterC] = useCompteurDefi(), [suiviE, noterE, vueE] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('comparer');
   const [ex, setEx] = useState({ sit: 'chute', cfg: 'main', iN: 2, graine: 3, derive: 0, stats: true, ref: false, ouv: {} });
@@ -164,14 +164,14 @@ export function SimulationMesureVariabilite2gt() {
       <li><strong>Classes d’un histogramme</strong> : la forme dépend de la largeur de classe choisie (trop étroites, beaucoup de barres vides ; trop larges, le détail disparaît). Ici, une valeur égale à la borne de droite est rangée dans la classe suivante ; selon le tableur, elle peut être rangée dans l’autre classe : vérifiez le réglage.</li>
       <li><strong>Protocole « 10 intervalles ÷ 10 »</strong> : on suppose que les gouttes tombent régulièrement et que l’erreur principale vient du déclenchement à la main, qui ne dépend pas de la durée mesurée.</li>
       <li><strong>Comparaison à l’écart-type</strong> : dire qu’une différence « se perd dans la variabilité » quand elle est plus petite que l’écart-type est une règle d’ordre de grandeur, pas un test statistique.</li>
-      <li><strong>Valeurs fictives et chiffres significatifs</strong> : les dispersions sont choisies pour la lisibilité (ordres de grandeur réalistes). La moyenne est écrite avec une décimale de plus que les mesures, l’écart-type avec 2 chiffres significatifs ; les réponses sont acceptées avec une petite marge (0,3&nbsp;% à 10&nbsp;% selon la question).</li>
+      <li><strong>Valeurs fictives et chiffres significatifs</strong> : les dispersions sont choisies pour la lisibilité (ordres de grandeur réalistes). La moyenne est écrite avec une décimale de plus que les mesures, l’écart-type avec 2 chiffres significatifs ; les réponses sont acceptées avec une petite marge (de 0,1&nbsp;% à 10&nbsp;% selon la question, ou une largeur de classe dans le défi « estimer »).</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ex.ouv.hypo} onBascule={() => setE({ ouv: { ...ex.ouv, hypo: !ex.ouv.hypo } })}>{hypotheses}</Section></div>);
 
   // ════════════════ DÉFIS ════════════════
   function nouveauDefi(type) {
     const d = type === 'comparer' ? M.tirerDefiComparer(defi && defi.type === 'comparer' ? defi : null) : M.tirerDefiEstimer(defi && defi.type === 'estimer' ? defi : null);
-    setDefi({ type, ...d, reps: {}, verifie: false });
+    setDefi({ type, ...d, reps: {}, verifie: false, solution: false });
   }
   const changerMode = md => { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); };
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
@@ -230,7 +230,9 @@ export function SimulationMesureVariabilite2gt() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
         <button id="mv2-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
+        <VoirSolution visible={!defiC && !(defi.verifie && defi.ok) && !defi.solution} onClick={() => { vueE(); setDefi(d => ({ ...d, solution: true })); }}/>
       </div>
+      {!defiC && defi.solution && <BoiteSolution>La moyenne est au centre du paquet de barres : environ <strong>{nbf(defi.m, M.decimalesDe(M.configDe(defi.sit, defi.cfg).res) + 1)}{NB}{SD.unite}</strong>. L’écart-type vaut la largeur de la zone occupée divisée par 4 : environ <strong>{M.nbSig(defi.s, 2)}{NB}{SD.unite}</strong>, c’est la proposition à choisir.</BoiteSolution>}
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defiC
           ? (defi.ok ? `✓ Correct : la série ${defi.largeEstA ? 'A' : 'B'} est la plus dispersée, son écart-type est environ ${nbf(defi.vrai, 1)} fois plus grand.`

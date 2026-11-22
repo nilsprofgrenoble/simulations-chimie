@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, LigneMesure, IndiceDefi, ExempleResolu, Formule } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, LigneMesure, IndiceDefi, ExempleResolu, Formule, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./mesureIncertitude2gtModele";
 import { QCM } from "./mesureIncertitude2gtQcm";
@@ -45,7 +45,7 @@ function axeAuto(sit, instr) {
 export function SimulationMesureIncertitude2gt() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
-  const [suiviE, noterE] = useCompteurDefi(), [suiviC, noterC] = useCompteurDefi();
+  const [suiviE, noterE, vueE] = useCompteurDefi(), [suiviC, noterC] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('ecrire');
   const [ex, setEx] = useState({ sit: 'piece', ii: 1, n: 9, graine: 7, biais: false, ouv: {} });
@@ -137,8 +137,8 @@ export function SimulationMesureIncertitude2gt() {
 
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => setDefi(type === 'ecrire'
-    ? { type, ...M.tirerDefiEcrire(defi && defi.type === 'ecrire' ? defi : null), reps: {}, verifie: false }
-    : { type, ...M.tirerDefiCompare(defi && defi.type === 'compatible' ? defi : null), reps: {}, verifie: false });
+    ? { type, ...M.tirerDefiEcrire(defi && defi.type === 'ecrire' ? defi : null), reps: {}, verifie: false, solution: false }
+    : { type, ...M.tirerDefiCompare(defi && defi.type === 'compatible' ? defi : null), reps: {}, verifie: false, solution: false });
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
   const defiEcrire = defi && defi.type === 'ecrire';
@@ -189,7 +189,9 @@ export function SimulationMesureIncertitude2gt() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
         <button id="mi2-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
+        <VoirSolution visible={defiEcrire && !(defi.verifie && defi.ok) && !defi.solution} onClick={() => { vueE(); setDefi(d => ({ ...d, solution: true })); }}/>
       </div>
+      {defiEcrire && defi.solution && <BoiteSolution>u = s ÷ √n = {fr3(defi.s)} ÷ √{defi.n} ≈ {fr3(defi.s / Math.sqrt(defi.n))}{NB}{defi.sit.unite}. On garde un seul chiffre significatif, arrondi vers le haut (deux si le premier est 1) : u = <strong>{M.fmt(defi.ua, defi.d)}{NB}{defi.sit.unite}</strong>. La moyenne s’arrête à la même décimale : <strong>{M.fmt(defi.ma, defi.d)}{NB}{defi.sit.unite}</strong>. Résultat : <strong>{defi.sit.sym} = {M.ecrireResultat(defi.m, defi.u, defi.sit.unite).texte}</strong>.</BoiteSolution>}
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defiEcrire ? retourEcrire(defi)
           : (defi.ok ? `✓ Correct : la zone va de ${M.fmt(defi.m - defi.u, defi.d)} à ${M.fmt(defi.m + defi.u, defi.d)} ${defi.sit.unite} ; la référence ${M.fmt(defi.sit.ref, 2)} ${defi.sit.unite} est ${defi.cas === 'compatible' ? 'dans la zone : compatible.' : 'loin en dehors : pas compatible.'}`
