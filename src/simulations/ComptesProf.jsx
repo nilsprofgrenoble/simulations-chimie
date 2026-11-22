@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { KIT, styleBouton, styleBoite } from "../commun";
 import { fonctionComptes, rest } from "../serveur";
+import { Pic } from "../Pictos";
 
 const champ = { padding: '7px 9px', fontSize: 14, borderRadius: 8, border: `1px solid ${KIT.bord}`, boxSizing: 'border-box' };
 
@@ -180,7 +181,7 @@ export function SignalementsAdmin({ occupe, proteger, setMsg }) {
   const vus = tous ? liste : aTraiter;
   return (
     <details data-signalements-admin open={ouvert} onToggle={e => setOuvert(e.currentTarget.open)} style={{ ...styleBoite, margin: '8px 0' }}>
-      <summary style={{ cursor: 'pointer', fontWeight: 700, color: KIT.txt }}>🐞 Signalements des utilisateurs <span style={{ fontWeight: 500, color: KIT.txt2, fontSize: 13 }}>(administrateur){liste ? ` · ${aTraiter.length} à traiter` : ''}</span></summary>
+      <summary style={{ cursor: 'pointer', fontWeight: 700, color: KIT.txt }}><Pic n="flag"/>Signalements des utilisateurs <span style={{ fontWeight: 500, color: KIT.txt2, fontSize: 13 }}>(administrateur){liste ? ` · ${aTraiter.length} à traiter` : ''}</span></summary>
       {!liste && <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 8 }}>Chargement…</div>}
       {liste && (
         <label style={{ display: 'block', fontSize: 13.5, margin: '8px 0', cursor: 'pointer' }}><input type="checkbox" checked={tous} onChange={e => setTous(e.target.checked)} style={{ marginRight: 6 }} />Afficher aussi les signalements corrigés ou classés ({liste.length - aTraiter.length})</label>)}
