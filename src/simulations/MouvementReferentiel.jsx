@@ -243,6 +243,7 @@ function VoletDefi({ defi, setDefi, changerType, dtChoisi }) {
       {defi.type === 'vitesse' && <>
         <div style={txt}><Pic n="target"/>Deux véhicules, A et B, roulent en ligne droite à vitesse constante dans le référentiel de la route (vitesses inconnues). Dans la chronophotographie, relevez la vitesse de chacun
           (norme et sens dans le tableau), puis calculez la <strong>vitesse de B dans le référentiel de A</strong>. Le positif est vers la droite.</div>
+        <div style={txt}><strong>Comment faire :</strong> dans « Réglages », appuyez sur <strong>A</strong> puis sur <strong>B</strong> (« Mesures pour ») ; à chaque fois, lisez dans le tableau « Mesures » la <em>vitesse approchée</em> et sa <em>direction</em> (vers la droite = positif, vers la gauche = négatif). Retranchez ensuite la vitesse de A à celle de B.</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 14 }}>
           <span>Norme de la vitesse de B dans le référentiel de A :</span>
           <input value={defi.reps.v ?? ''} aria-label="Norme de la vitesse de B dans le référentiel de A" onChange={e => rep('v', e.target.value)} onKeyDown={e => { if (e.key === 'Enter') verifier(); }}
@@ -298,7 +299,7 @@ export function SimulationMouvementReferentiel() {
   const go = (id, extra = {}, over = {}) => { setAnim(null); setEx(e => ({ ...e, ...initScene(id, extra), aff: AFF0, bruit: false, ...over })); };
   const majAff = patch => setEx(e => ({ ...e, aff: { ...e.aff, ...patch } }));
 
-  const eff = enDefi ? { ...ex, ...etatDefi(defi), dtIdx: ex.dtIdx, i: ex.i, aff: defi.type === 'dt' ? { ...ex.aff, ve: true } : ex.aff } : ex;
+  const eff = enDefi ? { ...ex, ...etatDefi(defi), ...(defi.type === 'vitesse' ? { obj: ex.obj } : {}), dtIdx: ex.dtIdx, i: ex.i, aff: defi.type === 'dt' ? { ...ex.aff, ve: true } : ex.aff } : ex;
   const S = scene(eff.scene, { vA: eff.vA, vB: eff.vB });
   const dtIdx = clamp(eff.dtIdx, 0, S.dts.length - 1), dt = S.dts[dtIdx], n = Math.round(S.T / dt);
   const i = clamp(eff.i, 1, n - 1);
