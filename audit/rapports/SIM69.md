@@ -13,3 +13,6 @@ Bilan : 0 Bloquant · 2 Important · 1 Mineur
 
 ## Vérifié sans défaut
 Recalcul par script : arrondi de I affiché sur R (≤ 0,27 % pour une tolérance de 3 %) ; capteur : θ retrouvé à ≤ 0,28 °C pour ±3 °C ; points de fonctionnement lampe (E, Rp) vérifiés (56,6 à 232,8 mA) ; « voir la solution » présent sur les 4 défis.
+
+## Suite : corrections faites (22/11/2026)
+SIM69-01 corrigé pour le montage et les graphes (≥ 8,3 px au lieu de 5,8–7,9) ; le recouvrement ① ⟷ ② de la fiche d'étalonnage (étape 11) n'a pas été traité. SIM69-02 corrigé (tolérance max(8 %, 10 mA)). SIM69-03 corrigé (défis R et I : conversion mA/A, ×1 000, tension ou intensité recopiée).

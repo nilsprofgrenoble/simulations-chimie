@@ -13,3 +13,6 @@ Bilan : 0 Bloquant · 1 Important · 2 Mineur
 
 ## Vérifié sans défaut
 Cohérence des données affichées et de la réponse (U₂ = E − U₁, I₂ = I − I₁ avec I et I₁ arrondis au mA : tolérance ±1 mA suffisante), tâches 5,5 V et 75 mA, « voir la solution » présent.
+
+## Suite : corrections faites (22/11/2026)
+SIM68-01 corrigé (étiquettes agrandies, 8,3–9 px au lieu de 5,6–6,5 ; schéma élargi à 600 pour loger les cadres). SIM68-02 corrigé (étiquette « maille » déplacée, « nœud » déplacé). SIM68-03 corrigé (défis tensions et intensités : E ou U₁ recopiés, addition, ampères au lieu de mA, trop grand/petit).

@@ -18,7 +18,7 @@ Statuts : ✅ audité et corrigé · 🟨 audité, corrections en attente · ⬜
 | 195 | Changement d’état (2GT) | ✅ | Bouton « voir la solution » (deux défis) ; équation du défi situation révélée avec la solution | 22/11/2026 |
 | 56 à 63 | 2GT mécanique et solutions | 🟨 | Rapports sur l'ordinateur de Nils, à intégrer ; voir famille F-01 | — |
 | 64 | Réfraction : lois de Snell-Descartes (2GT) | ✅ | Ré-audit 22/11/2026 (1 bloquant, 6 importants, 10 mineurs) puis corrections faites le même jour : tolérance et précision des réponses, messages d’erreur du défi, exemples distincts des questions, schémas lisibles à 390 px, légende du pêcheur. Non corrigé volontairement : indice du plexiglas (1,51), pas de « verre » | — |
-| 65 à 69, 140 | 2GT optique, électricité, chute libre | 🟨 | Ré-audit fait le 22/11/2026 (rapports `audit/rapports/SIM65…69.md`, `SIM140.md`) : 0 bloquant, 9 importants, 9 mineurs. Corrections à faire (surtout : textes des schémas trop petits sur téléphone, réponse en kelvins acceptée en SIM66, cabine « en mouvement » en SIM67, défis orbite et point de fonctionnement trop précis) | — |
+| 65 à 69, 140 | 2GT optique, électricité, chute libre | ✅ | Ré-audit 22/11/2026 : 0 bloquant, 9 importants, 8 mineurs (SIM140 : rien, un défaut annoncé était faux). Tout corrigé le même jour sauf : valeurs d'étoiles du cours (SIM66-04, à décider), recouvrement ①/② de la fiche d'étalonnage (SIM69), textes encore à 8,2–9 px sur quelques légendes | — |
 | Autres | — | — | Non audités | — |
 
 ## Corrections transversales (familles de défauts)
@@ -40,3 +40,4 @@ Statuts : ✅ audité et corrigé · 🟨 audité, corrections en attente · ⬜
 - 22/11/2026 : ré-audit de la SIM64 (code + recalculs + rendu 390 px) : rapport `audit/rapports/SIM64.md`, scripts `audit/scripts/recalc-SIM64.mjs` et `rendu-SIM64.cjs`.
 - 22/11/2026 : corrections SIM64 publiées (Refraction.jsx, RefractionFiches.jsx) ; défis rejoués à 390 px avec de mauvaises réponses : messages précis, aucune erreur console.
 - 22/11/2026 : ré-audit ciblé de SIM65–69 et SIM140 (défis, recalculs par script, rendu 390 px) ; scènes `entreeDeux` (SIM201) et question `fusionFission` (SIM203) jugées non nécessaires : laissées telles quelles.
+- 22/11/2026 : corrections SIM65–69 publiées (tailles de textes des schémas, kelvins refusés en SIM66, cabine SIM67, orbite plus jouable, messages de défis SIM67/68/69, tolérance du point de fonctionnement SIM69).

@@ -26,7 +26,7 @@ const nm = x => `${fr(x, Math.abs(x - Math.round(x)) < 0.05 ? 0 : 1)} nm`;
 
 // ---------- spectrogramme (intensité en fonction de la longueur d'onde) ----------
 function Spectro({ xmin = 200, xmax = 1000, courbe, courbe2, raies, etiq, curseur, compact, titre, w = 700 }) {
-  const H = compact ? 92 : 250, X0 = 46, X1 = w - 14, Y0 = compact ? 8 : 14, Y1 = compact ? 66 : 196;
+  const q = w >= 600 ? 1 : 0.5, H = compact ? 92 : 292, X0 = 46, X1 = w - 14, Y0 = compact ? 8 : 14, Y1 = compact ? 66 : 214;
   const X = x => X0 + (x - xmin) / (xmax - xmin) * (X1 - X0), Y = v => Y1 - v * (Y1 - Y0);
   const graduations = []; for (let x = Math.ceil(xmin / 100) * 100; x <= xmax; x += 100) graduations.push(x);
   const bandes = []; for (let x = Math.max(xmin, 380); x < Math.min(xmax, 780); x += 5) bandes.push(x);
@@ -34,22 +34,22 @@ function Spectro({ xmin = 200, xmax = 1000, courbe, courbe2, raies, etiq, curseu
     <svg viewBox={`0 0 ${w} ${H}`} width="100%" role="img" aria-label={titre || 'Spectrogramme : intensité lumineuse en fonction de la longueur d’onde'} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       {xmin < 400 && <rect x={X(xmin)} y={Y0} width={X(400) - X(xmin)} height={Y1 - Y0} fill="#ede9fe" opacity="0.7"/>}
       {xmax > 800 && <rect x={X(800)} y={Y0} width={X(xmax) - X(800)} height={Y1 - Y0} fill="#fee2e2" opacity="0.7"/>}
-      {!compact && xmin < 400 && <text x={(X(xmin) + X(400)) / 2} y={Y0 + 14} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#6d28d9">ultraviolet</text>}
-      {!compact && xmax > 800 && <text x={(X(800) + X(xmax)) / 2} y={Y0 + 14} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#b91c1c">infrarouge</text>}
+      {!compact && xmin < 400 && <text x={(X(xmin) + X(400)) / 2} y={Y0 + 14} textAnchor="middle" fontSize={24 * q} fontWeight="700" fill="#6d28d9">ultraviolet</text>}
+      {!compact && xmax > 800 && <text x={(X(800) + X(xmax)) / 2} y={Y0 + 14} textAnchor="middle" fontSize={24 * q} fontWeight="700" fill="#b91c1c">infrarouge</text>}
       <line x1={X0} y1={Y1} x2={X1} y2={Y1} stroke="#0f172a" strokeWidth="2"/><line x1={X0} y1={Y0} x2={X0} y2={Y1} stroke="#0f172a" strokeWidth="2"/>
-      {graduations.map(x => <g key={x}><line x1={X(x)} y1={Y1} x2={X(x)} y2={Y1 + 5} stroke="#0f172a"/><text x={X(x)} y={Y1 + (compact ? 17 : 36)} textAnchor="middle" fontSize="11.5" fill="#334155">{x}</text></g>)}
-      {!compact && <><text x={(X0 + X1) / 2} y={H - 4} textAnchor="middle" fontSize="12.5" fontWeight="700">longueur d’onde λ (nm)</text>
-        <text x="12" y={(Y0 + Y1) / 2} fontSize="12.5" fontWeight="700" transform={`rotate(-90 12 ${(Y0 + Y1) / 2})`} textAnchor="middle">intensité</text>
+      {graduations.map(x => <g key={x}><line x1={X(x)} y1={Y1} x2={X(x)} y2={Y1 + 5} stroke="#0f172a"/><text x={X(x)} y={Y1 + (compact ? 17 : 46)} textAnchor={X(x) > w - 40 * q ? 'end' : 'middle'} fontSize={22 * q} fill="#334155">{x}</text></g>)}
+      {!compact && <><text x={(X0 + X1) / 2} y={H - 6} textAnchor="middle" fontSize={24 * q} fontWeight="700">longueur d’onde λ (nm)</text>
+        <text x="18" y={(Y0 + Y1) / 2} fontSize={24 * q} fontWeight="700" transform={`rotate(-90 18 ${(Y0 + Y1) / 2})`} textAnchor="middle">intensité</text>
         {bandes.map(x => <rect key={x} x={X(x)} y={Y1 + 8} width={X(x + 5) - X(x) + 0.5} height="10" fill={css(rgbLambda(x + 2.5))}/>)}</>}
       {courbe && <><path d={`M ${X(courbe[0][0])} ${Y1} ` + courbe.map(([x, v]) => `L ${X(x)} ${Y(v)}`).join(' ') + ` L ${X(courbe[courbe.length - 1][0])} ${Y1} Z`} fill="#0072b2" opacity="0.18"/>
         <polyline points={courbe.map(([x, v]) => `${X(x)},${Y(v)}`).join(' ')} fill="none" stroke="#0072b2" strokeWidth="3" strokeLinejoin="round"/></>}
       {courbe2 && <polyline points={courbe2.map(([x, v]) => `${X(x)},${Y(v)}`).join(' ')} fill="none" stroke="#475569" strokeWidth="2" strokeDasharray="6 5"/>}
       {raies && raies.filter(([x]) => x >= xmin && x <= xmax).map(([x, v]) => <line key={x} x1={X(x)} y1={Y1} x2={X(x)} y2={Y(v)} stroke={css(rgbLambda(x))} strokeWidth={compact ? 3 : 4} strokeLinecap="round"/>)}
       {raies && raies.filter(([x]) => x >= xmin && x <= xmax).map(([x, v]) => <line key={`c${x}`} x1={X(x)} y1={Y1} x2={X(x)} y2={Y(v)} stroke="#0f172a" strokeWidth="0.8" opacity="0.6"/>)}
-      {etiq && raies && raies.filter(([x]) => etiq.includes(x)).map(([x, v]) => <text key={`e${x}`} x={X(x)} y={Y(v) - 4} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="#0f172a" stroke="#fff" strokeWidth="3" paintOrder="stroke">{fr(x, 1)}</text>)}
+      {etiq && raies && raies.filter(([x]) => etiq.includes(x)).map(([x, v]) => <text key={`e${x}`} x={X(x)} y={Y(v) - 4} textAnchor="middle" fontSize={20 * q} fontWeight="700" fill="#0f172a" stroke="#fff" strokeWidth="3" paintOrder="stroke">{fr(x, 1)}</text>)}
       {curseur != null && curseur >= xmin && curseur <= xmax && <g><line x1={X(curseur)} y1={Y0} x2={X(curseur)} y2={Y1} stroke="#d55e00" strokeWidth="2" strokeDasharray="6 4"/>
-        <text x={X(curseur) + (curseur > (xmin + xmax) * 0.8 ? -6 : 6)} y={Y0 + (compact ? 10 : 30)} textAnchor={curseur > (xmin + xmax) * 0.8 ? 'end' : 'start'} fontSize="12.5" fontWeight="800" fill="#d55e00">{fr(curseur, 0)} nm</text></g>}
-      {titre && compact && <text x={X1 - 4} y={Y0 + 12} textAnchor="end" fontSize="13" fontWeight="800" fill="#0f172a">{titre}</text>}
+        <text x={X(curseur) + (curseur > (xmin + xmax) * 0.8 ? -6 : 6)} y={Y0 + (compact ? 10 : 30)} textAnchor={curseur > (xmin + xmax) * 0.8 ? 'end' : 'start'} fontSize={24 * q} fontWeight="800" fill="#d55e00">{fr(curseur, 0)} nm</text></g>}
+      {titre && compact && <text x={X1 - 4} y={Y0 + 12} textAnchor="end" fontSize={24.5 * q} fontWeight="800" fill="#0f172a">{titre}</text>}
     </svg>);
 }
 
@@ -59,11 +59,11 @@ function Bande({ T, raies, nom }) {
   let m = 0; if (T != null) for (const x of xs) m = Math.max(m, intensiteCorps(x, T));
   const lum = T != null ? Math.min(1, 0.25 + (T - 500) / 1500) : 1;
   return (
-    <svg viewBox="0 0 700 56" width="100%" role="img" aria-label={`Spectre sur l’écran : ${nom || ''}`} style={{ display: 'block', borderRadius: 8, background: '#000' }}>
-      {T != null && T >= 500 && xs.map(x => <rect key={x} x={(x - 400) / 400 * 700} y="0" width="8" height="56" fill={css(rgbLambda(x + 2))} opacity={Math.min(1, Math.sqrt(intensiteCorps(x, T) / m)) * lum}/>)}
-      {raies && raies.filter(([x]) => x >= 400 && x <= 800).map(([x, v]) => <rect key={x} x={(x - 400) / 400 * 700 - 2} y="0" width="4" height="56" fill={css(rgbLambda(x))} opacity={0.45 + 0.55 * v}/>)}
-      <text x="8" y="50" fontSize="12" fontWeight="700" fill="#fff" opacity="0.9" stroke="#000" strokeWidth="3" paintOrder="stroke">{nom}</text>
-      <text x="692" y="50" fontSize="11" fill="#fff" opacity="0.8" textAnchor="end">400 nm → 800 nm</text>
+    <svg viewBox="0 0 700 64" width="100%" role="img" aria-label={`Spectre sur l’écran : ${nom || ''}`} style={{ display: 'block', borderRadius: 8, background: '#000' }}>
+      {T != null && T >= 500 && xs.map(x => <rect key={x} x={(x - 400) / 400 * 700} y="0" width="8" height="64" fill={css(rgbLambda(x + 2))} opacity={Math.min(1, Math.sqrt(intensiteCorps(x, T) / m)) * lum}/>)}
+      {raies && raies.filter(([x]) => x >= 400 && x <= 800).map(([x, v]) => <rect key={x} x={(x - 400) / 400 * 700 - 2} y="0" width="4" height="64" fill={css(rgbLambda(x))} opacity={0.45 + 0.55 * v}/>)}
+      <text x="8" y="55" fontSize="26.5" fontWeight="700" fill="#fff" opacity="0.9" stroke="#000" strokeWidth="3" paintOrder="stroke">{nom}</text>
+      <text x="692" y="55" fontSize="24" fill="#fff" opacity="0.8" textAnchor="end">400 nm → 800 nm</text>
     </svg>);
 }
 
@@ -81,13 +81,13 @@ function Wien({ marque }) {
   for (let l = 250; l <= 1000; l += 10) { const t = tempDepuisLmax(l); if (t >= 1000 && t <= 12000) pts.push([X(l), Y(t)]); }
   return (
     <svg viewBox="0 0 400 230" width="100%" role="img" aria-label="Température d’un corps chaud en fonction de la longueur d’onde du maximum d’intensité" style={{ display: 'block', maxWidth: 440, background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-      {[2000, 4000, 6000, 8000, 10000, 12000].map(t => <g key={t}><line x1="46" y1={Y(t)} x2="376" y2={Y(t)} stroke="#e2e8f0"/><text x="42" y={Y(t) + 4} textAnchor="end" fontSize="10.5" fill="#334155">{t}</text></g>)}
-      {[300, 400, 500, 600, 700, 800, 900, 1000].map(l => <g key={l}><line x1={X(l)} y1="20" x2={X(l)} y2="190" stroke="#e2e8f0"/><text x={X(l)} y="205" textAnchor="middle" fontSize="10.5" fill="#334155">{l}</text></g>)}
+      {[2000, 4000, 6000, 8000, 10000, 12000].map(t => <g key={t}><line x1="46" y1={Y(t)} x2="376" y2={Y(t)} stroke="#e2e8f0"/><text x="42" y={Y(t) + 4} textAnchor="end" fontSize="14" fill="#334155">{t}</text></g>)}
+      {[300, 400, 500, 600, 700, 800, 900, 1000].map(l => <g key={l}><line x1={X(l)} y1="20" x2={X(l)} y2="190" stroke="#e2e8f0"/><text x={X(l)} y="205" textAnchor="middle" fontSize="14" fill="#334155">{l}</text></g>)}
       <line x1="46" y1="190" x2="376" y2="190" stroke="#0f172a" strokeWidth="2"/><line x1="46" y1="20" x2="46" y2="190" stroke="#0f172a" strokeWidth="2"/>
       <polyline points={pts.map(p => p.join(',')).join(' ')} fill="none" stroke="#009e73" strokeWidth="3"/>
       {marque != null && marque >= 250 && marque <= 1000 && <line x1={X(marque)} y1="20" x2={X(marque)} y2="190" stroke="#d55e00" strokeWidth="1.5" strokeDasharray="5 4"/>}
-      <text x="211" y="224" textAnchor="middle" fontSize="11.5" fontWeight="700">λ du maximum (nm)</text>
-      <text x="10" y="14" fontSize="11.5" fontWeight="700">température (°C)</text>
+      <text x="211" y="224" textAnchor="middle" fontSize="15.5" fontWeight="700">λ du maximum (nm)</text>
+      <text x="10" y="14" fontSize="15.5" fontWeight="700">température (°C)</text>
     </svg>);
 }
 
@@ -99,7 +99,15 @@ function nouveauDefi(type) {
   return { ...base, T: alea([3500, 4500, 5500, 6500, 7500]) };
 }
 function evaluer(d) {
-  if (d.type === 'temperature') { const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.T) <= 500; return { ok, lignes: [[ok, ok ? 'Température correcte (à 500 °C près).' : 'Relève d’abord λ du maximum avec le curseur, puis lis la température sur la courbe verte (axes : λ en abscisse, température en ordonnée).']] }; }
+  if (d.type === 'temperature') {
+    const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.T) <= 250, lm = lambdaMax(d.T);
+    if (ok) return { ok, lignes: [[true, 'Température correcte (à 250 °C près).']] };
+    if (!d.reps.v || !isFinite(x)) return { ok, lignes: [[false, 'Entre un nombre : la température de surface en °C (par exemple 5 500).']] };
+    const msg = Math.abs(x - (d.T + 273)) <= 200 ? 'Ta valeur est en kelvins. On demande des °C : retire 273.'
+      : Math.abs(x - lm) <= 0.08 * lm ? 'C’est la longueur d’onde du maximum (en nm). Il faut ensuite lire la température sur la courbe verte, axe vertical, en °C.'
+        : `${x > d.T ? 'Ta valeur est trop grande' : 'Ta valeur est trop petite'}. Place le curseur exactement sur le maximum du spectre, relève λ, puis lis la température correspondante sur la courbe verte (axes : λ en abscisse, température en ordonnée).`;
+    return { ok, lignes: [[false, msg]] };
+  }
   const bon = d.type === 'gaz' ? d.g : d.rep, ok = d.reps.d === bon;
   return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : d.type === 'gaz' ? 'Compare la position et la couleur des raies avec le tableau : chaque gaz a ses propres raies.' : 'Plus un corps est chaud, plus le maximum de son spectre est vers le violet (petite longueur d’onde).']] };
 }
@@ -194,9 +202,9 @@ export function SimulationSpectres() {
       tache: { type: 'qcm', q: 'Pourquoi le Soleil paraît-il jaune depuis le sol ?', options: ['L’atmosphère diffuse surtout les radiations bleues', 'Le Soleil change de température', 'L’atmosphère émet de la lumière jaune', 'Le Soleil est vraiment jaune'], bonne: 0, expl: 'L’atmosphère retire du bleu à la lumière du Soleil : elle paraît plus jaune. Vu de l’espace, le Soleil est blanc.', indice: "Compare la lumière du Soleil dans l’espace et celle qui arrive au sol : qu’a pu lui retirer l’atmosphère en la traversant ?" } },
     { id: 'lmax', titre: 'Lire la température d’une étoile', depart: () => voirE('soleil', 485),
       texte: <>Le <strong>maximum</strong> du spectre du Soleil est à environ <strong>485 nm</strong> (curseur orange). Sur la <strong>courbe verte</strong> (dessinée dans l’atelier « Étoiles »), on lit la température qui correspond : on part de λ sur l’axe horizontal, on monte jusqu’à la courbe, puis on lit la température sur l’axe vertical.</>,
-      tache: { type: 'num', q: 'Pour λ du maximum = 485 nm, quelle est la température de surface (en °C) ?', unite: '°C', vrai: 5700, tol: 0.08, affiche: x => String(x),
+      tache: { type: 'num', q: 'Pour λ du maximum = 485 nm, quelle est la température de surface (en °C) ?', unite: '°C', vrai: 5700, tol: 0.045, affiche: x => String(x),
         aide: 'Lecture graphique : pars de 485 nm sur l’axe horizontal, monte jusqu’à la courbe verte, puis lis la température sur l’axe vertical (en °C).',
-        pieges: [[485, 'C’est la longueur d’onde ! Il faut lire la température sur l’axe vertical.']], expl: 'On lit environ 5 700 °C : c’est bien la température de surface du Soleil.', indice: "C’est une lecture graphique, avec 8 % de marge. Attention à l’unité de température demandée : des °C, pas des kelvins." } },
+        pieges: [[485, 'C’est la longueur d’onde ! Il faut lire la température sur l’axe vertical.'], [5975, 'C’est la température en kelvins (5 975 K). On demande des °C : retire 273.', 0.02]], expl: 'On lit environ 5 700 °C : c’est bien la température de surface du Soleil.', indice: "C’est une lecture graphique, avec 4,5 % de marge. Attention à l’unité de température demandée : des °C, pas des kelvins." } },
     { id: 'raies', titre: 'Un gaz chaud et dilué : des raies', depart: () => voirG('mercure', 546.1),
       retenirTitre: 'À RETENIR : LIRE UNE TEMPÉRATURE',
       retenir: <FicheWien/>,

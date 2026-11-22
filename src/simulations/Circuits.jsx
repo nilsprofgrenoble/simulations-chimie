@@ -28,37 +28,38 @@ const fU = U => `${fr(U, 2)} V`;
 const vit = I => 30 + 500 * I;
 
 // ---------- schéma ----------
+const KK = 1.55;   // agrandissement des étiquettes : lisibles sur téléphone (≈ 9 px rendus)
 function Schema({ atelier, E, R1, R2, mesures, ph, maille = 0, w = 560 }) {
   const ser = atelier === 'serie', m = ser ? serie(E, R1, R2) : derivation(E, R1, R2);
   const fleche = (x1, y1, x2, y2) => { const l = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / l, uy = (y2 - y1) / l;
     return <g stroke={BLEU} fill={BLEU}><line x1={x1} y1={y1} x2={x2} y2={y2} strokeWidth="2"/><polygon points={`${x2},${y2} ${x2 - ux * 11 - uy * 5},${y2 - uy * 11 + ux * 5} ${x2 - ux * 11 + uy * 5},${y2 - uy * 11 - ux * 5}`}/></g>; };
   return (
-    <svg viewBox={`0 0 ${w} 320`} width="100%" role="img" aria-label={ser ? 'Circuit en série : un générateur et deux résistors dans une seule boucle' : 'Circuit en dérivation : un générateur et deux résistors sur deux branches'} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 620 }}>
-      {maille > 0 && (() => { const [x1, x2] = ser ? [102, 458] : maille === 1 ? [92, 248] : [92, 408]; return <g><rect x={x1} y={104} width={x2 - x1} height={124} rx={8} fill="#7b2d8e" opacity="0.07" stroke={VIOLET} strokeWidth="3" strokeDasharray="9 6"/><text x={x1 + 8} y={124} fontSize="13.5" fontWeight="800" fill={VIOLET}>{ser ? 'maille' : `maille ${maille}`}</text></g>; })()}
+    <svg viewBox={`0 0 ${w + 40} 320`} width="100%" role="img" aria-label={ser ? 'Circuit en série : un générateur et deux résistors dans une seule boucle' : 'Circuit en dérivation : un générateur et deux résistors sur deux branches'} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 620 }}>
+      {maille > 0 && (() => { const [x1, x2] = ser ? [102, 458] : maille === 1 ? [92, 248] : [92, 408]; return <g><rect x={x1} y={104} width={x2 - x1} height={124} rx={8} fill="#7b2d8e" opacity="0.07" stroke={VIOLET} strokeWidth="3" strokeDasharray="9 6"/><text x={x1 + 8} y={218} fontSize="21" fontWeight="800" fill={VIOLET}>{ser ? 'maille' : `maille ${maille}`}</text></g>; })()}
       {ser ? <>
         <Fil pts={[[80, 250], [80, 80], [480, 80], [480, 250], [80, 250]]} v={vit(m.I)} ph={ph}/>
-        <Pile cx={80} cy={165} nom="Pile" lab={mesures ? undefined : undefined}/>
-        <Resistor cx={280} cy={80} w={130} val={`R₁ = ${R1} Ω`}/><Resistor cx={280} cy={250} w={130} val={`R₂ = ${R2} Ω`}/>
+        <Pile k={KK} cx={80} cy={165} nom="Pile" lab={mesures ? undefined : undefined}/>
+        <Resistor k={KK} cx={280} cy={80} w={130} val={`R₁ = ${R1} Ω`}/><Resistor k={KK} cx={280} cy={250} w={130} val={`R₂ = ${R2} Ω`}/>
         {mesures && <>
-          {fleche(345, 50, 215, 50)}<Mesure x={280} y={32} nom="U₁" val={fU(m.U1)} couleur={BLEU} w={120}/>
-          {fleche(215, 282, 345, 282)}<Mesure x={280} y={302} nom="U₂" val={fU(m.U2)} couleur={BLEU} w={120}/>
-          {fleche(34, 215, 34, 115)}<Mesure x={78} y={290} nom="E" val={fU(E)} couleur={BLEU} w={100}/>
-          <Mesure x={480} y={165} nom="I" val={fI(m.I)}/></>}
-        <text x={474} y={118} fontSize="12.5" fontWeight="700" fill={VERMILLON} textAnchor="end">sens du courant ↓</text>
+          {fleche(345, 50, 215, 50)}<Mesure k={KK} x={280} y={32} nom="U₁" val={fU(m.U1)} couleur={BLEU} w={120}/>
+          {fleche(215, 282, 345, 282)}<Mesure k={KK} x={280} y={302} nom="U₂" val={fU(m.U2)} couleur={BLEU} w={120}/>
+          {fleche(34, 215, 34, 115)}<Mesure k={KK} x={78} y={290} nom="E" val={fU(E)} couleur={BLEU} w={100}/>
+          <Mesure k={KK} x={480} y={165} nom="I" val={fI(m.I)}/></>}
+        <text x={474} y={118} fontSize="19.5" fontWeight="700" fill={VERMILLON} textAnchor="end">sens du courant ↓</text>
       </> : <>
         <Fil pts={[[70, 250], [70, 80], [270, 80]]} v={vit(m.I)} ph={ph}/><Fil pts={[[270, 80], [270, 250]]} v={vit(m.I1)} ph={ph}/>
         <Fil pts={[[270, 80], [430, 80], [430, 250], [270, 250]]} v={vit(m.I2)} ph={ph}/><Fil pts={[[270, 250], [70, 250]]} v={vit(m.I)} ph={ph}/>
-        <Pile cx={70} cy={165} nom="Pile"/>
-        <Resistor cx={270} cy={165} w={26} h={90} couleur="#0f172a"/><Resistor cx={430} cy={165} w={26} h={90}/>
-        <text x={248} y={160} fontSize="13.5" fontWeight="800" textAnchor="end">R₁</text><text x={248} y={177} fontSize="12.5" fontWeight="700" textAnchor="end">{R1} Ω</text>
-        <text x={408} y={160} fontSize="13.5" fontWeight="800" textAnchor="end">R₂</text><text x={408} y={177} fontSize="12.5" fontWeight="700" textAnchor="end">{R2} Ω</text>
+        <Pile k={KK} cx={70} cy={165} nom="Pile"/>
+        <Resistor k={KK} cx={270} cy={165} w={26} h={90} couleur="#0f172a"/><Resistor k={KK} cx={430} cy={165} w={26} h={90}/>
+        <text x={248} y={158} fontSize="21" fontWeight="800" textAnchor="end">R₁</text><text x={248} y={186} fontSize="19.5" fontWeight="700" textAnchor="end">{R1} Ω</text>
+        <text x={408} y={158} fontSize="21" fontWeight="800" textAnchor="end">R₂</text><text x={408} y={186} fontSize="19.5" fontWeight="700" textAnchor="end">{R2} Ω</text>
         <circle cx={270} cy={80} r="6" fill="#0f172a"/><circle cx={270} cy={250} r="6" fill="#0f172a"/>
-        <text x={258} y={104} fontSize="12" fontWeight="700" fill={GRIS} textAnchor="end">nœud</text>
+        <text x={282} y={242} fontSize="19" fontWeight="700" fill={GRIS}>nœud</text>
         {mesures && <>
-          <Mesure x={150} y={58} nom="I" val={fI(m.I)} w={118}/><Mesure x={338} y={102} nom="I₁" val={fI(m.I1)} w={108}/><Mesure x={498} y={102} nom="I₂" val={fI(m.I2)} w={108}/>
-          <Mesure x={342} y={205} nom="U₁" val={fU(m.U1)} couleur={BLEU} w={100}/><Mesure x={500} y={205} nom="U₂" val={fU(m.U2)} couleur={BLEU} w={100}/>
-          <Mesure x={92} y={295} nom="E" val={fU(E)} couleur={BLEU} w={100}/></>}
-        <text x={82} y={118} fontSize="12.5" fontWeight="700" fill={VERMILLON}>↑ sens du courant</text>
+          <Mesure k={KK} x={150} y={58} nom="I" val={fI(m.I)} w={118}/><Mesure k={KK} x={338} y={102} nom="I₁" val={fI(m.I1)} w={108}/><Mesure k={KK} x={498} y={102} nom="I₂" val={fI(m.I2)} w={108}/>
+          <Mesure k={KK} x={342} y={205} nom="U₁" val={fU(m.U1)} couleur={BLEU} w={100}/><Mesure k={KK} x={500} y={205} nom="U₂" val={fU(m.U2)} couleur={BLEU} w={100}/>
+          <Mesure k={KK} x={92} y={295} nom="E" val={fU(E)} couleur={BLEU} w={100}/></>}
+        <text x={82} y={118} fontSize="19.5" fontWeight="700" fill={VERMILLON}>↑ sens du courant</text>
       </>}
     </svg>);
 }
@@ -78,8 +79,27 @@ function nouveauDefi(type) {
   return { ...base, ...alea(S) };
 }
 function evaluer(d) {
-  if (d.type === 'tensions') { const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.U2) <= 0.06; return { ok, lignes: [[ok, ok ? 'Tension correcte.' : 'Revois la loi des mailles : E = U_1 + U_2, donc U_2 = E − U_1.']] }; }
-  if (d.type === 'intensites') { const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.I2a) <= 1; return { ok, lignes: [[ok, ok ? 'Intensité correcte.' : 'Revois la loi des nœuds : I = I_1 + I_2, donc I_2 = I − I_1 (attention aux mA).']] }; }
+  if (d.type === 'tensions') {
+    const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.U2) <= 0.06, pr = (a, b) => Math.abs(a - b) <= 0.06;
+    if (ok) return { ok, lignes: [[true, 'Tension correcte.']] };
+    if (!d.reps.v || !isFinite(x)) return { ok, lignes: [[false, 'Entre un nombre : la tension U₂ en volts.']] };
+    const msg = pr(x, d.E) ? `C’est E (${fr(d.E, 1)} V), la tension de la pile. U₂ n’en est qu’une partie : retire U₁.`
+      : pr(x, d.U1) ? `C’est U₁ (${fr(d.U1, 1)} V). On cherche U₂, la tension de l’autre résistor.`
+        : pr(x, d.E + d.U1) ? 'Tu as additionné E et U₁. Dans une seule maille, E = U₁ + U₂ : donc U₂ = E − U₁.'
+          : `Revois la loi des mailles : E = U₁ + U₂, donc U₂ = E − U₁ = ${fr(d.E, 1)} − ${fr(d.U1, 1)}. ${x > d.U2 ? 'Ta valeur est trop grande.' : 'Ta valeur est trop petite.'}`;
+    return { ok, lignes: [[false, msg]] };
+  }
+  if (d.type === 'intensites') {
+    const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.I2a) <= 1;
+    if (ok) return { ok, lignes: [[true, 'Intensité correcte.']] };
+    if (!d.reps.v || !isFinite(x)) return { ok, lignes: [[false, 'Entre un nombre : l’intensité I₂ en mA.']] };
+    const msg = Math.abs(x - d.Ia) <= 1 ? `C’est I (${d.Ia} mA), le courant total. I₂ n’en est qu’une partie : retire I₁.`
+      : Math.abs(x - d.I1a) <= 1 ? `C’est I₁ (${d.I1a} mA). On cherche I₂, le courant de l’autre branche.`
+        : Math.abs(x - (d.Ia + d.I1a)) <= 1 ? 'Tu as additionné I et I₁. Au nœud, I = I₁ + I₂ : donc I₂ = I − I₁.'
+          : Math.abs(x * 1000 - d.I2a) <= 1 ? 'Ta valeur est en ampères : l’énoncé et la réponse sont en mA (1 A = 1 000 mA).'
+            : `Revois la loi des nœuds : I = I₁ + I₂, donc I₂ = ${d.Ia} − ${d.I1a} (en mA). ${x > d.I2a ? 'Ta valeur est trop grande.' : 'Ta valeur est trop petite.'}`;
+    return { ok, lignes: [[false, msg]] };
+  }
   const ok = d.reps.d === d.rep; return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : d.expl]] };
 }
 const enonce = (d, { champ, choix }) => {

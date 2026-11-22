@@ -31,12 +31,12 @@ const E_CAPTEUR = 5;
 
 // ---------- schéma de mesure ----------
 function Dipole({ type, cx, cy, th, lux }) {
-  if (type === 'lampe') return <g><circle cx={cx} cy={cy} r="24" fill="#fff" stroke="#0f172a" strokeWidth="3"/><line x1={cx - 17} y1={cy - 17} x2={cx + 17} y2={cy + 17} stroke="#0f172a" strokeWidth="3"/><line x1={cx - 17} y1={cy + 17} x2={cx + 17} y2={cy - 17} stroke="#0f172a" strokeWidth="3"/><text x={cx} y={cy - 30} fontSize="14" fontWeight="800" textAnchor="middle">lampe</text></g>;
-  if (type === 'ldr') return <g><rect x={cx - 50} y={cy - 14} width="100" height="28" fill="#fff" stroke="#0f172a" strokeWidth="3"/><line x1={cx - 44} y1={cy - 40} x2={cx - 24} y2={cy - 18} stroke={VERMILLON} strokeWidth="2.5"/><line x1={cx - 28} y1={cy - 44} x2={cx - 8} y2={cy - 22} stroke={VERMILLON} strokeWidth="2.5"/><text x={cx + 10} y={cy - 32} fontSize="14" fontWeight="800" textAnchor="start">photorésistance ({lux} lux)</text></g>;
+  if (type === 'lampe') return <g><circle cx={cx} cy={cy} r="24" fill="#fff" stroke="#0f172a" strokeWidth="3"/><line x1={cx - 17} y1={cy - 17} x2={cx + 17} y2={cy + 17} stroke="#0f172a" strokeWidth="3"/><line x1={cx - 17} y1={cy + 17} x2={cx + 17} y2={cy - 17} stroke="#0f172a" strokeWidth="3"/><text x={cx} y={cy - 30} fontSize="21.5" fontWeight="800" textAnchor="middle">lampe</text></g>;
+  if (type === 'ldr') return <g><rect x={cx - 50} y={cy - 14} width="100" height="28" fill="#fff" stroke="#0f172a" strokeWidth="3"/><line x1={cx - 44} y1={cy - 40} x2={cx - 24} y2={cy - 18} stroke={VERMILLON} strokeWidth="2.5"/><line x1={cx - 28} y1={cy - 44} x2={cx - 8} y2={cy - 22} stroke={VERMILLON} strokeWidth="2.5"/><text x={cx + 10} y={cy - 32} fontSize="21.5" fontWeight="800" textAnchor="start">photorésistance ({lux} lux)</text></g>;
   const ctnSym = type === 'ctn';
   return <g><rect x={cx - 50} y={cy - 14} width="100" height="28" fill="#fff" stroke="#0f172a" strokeWidth="3"/>
     {ctnSym && <line x1={cx - 30} y1={cy + 22} x2={cx + 34} y2={cy - 22} stroke="#0f172a" strokeWidth="3"/>}
-    <text x={cx} y={cy - (ctnSym ? 32 : 22)} fontSize="14" fontWeight="800" textAnchor="middle">{ctnSym ? `capteur (θ = ${th} °C)` : type.nom}</text></g>;
+    <text x={cx} y={cy - (ctnSym ? 32 : 22)} fontSize="21.5" fontWeight="800" textAnchor="middle">{ctnSym ? `capteur (θ = ${th} °C)` : type.nom}</text></g>;
 }
 function Montage({ dip, U, I, ph, th, lux, nomR, rp }) {
   const cx = 360, cy = 70;
@@ -44,14 +44,14 @@ function Montage({ dip, U, I, ph, th, lux, nomR, rp }) {
     <svg viewBox="0 0 560 270" width="100%" role="img" aria-label="Montage : un générateur réglable, un ampèremètre en série et un voltmètre aux bornes du dipôle" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 620 }}>
       <Fil pts={[[60, 230], [60, 70], [500, 70], [500, 230], [60, 230]]} v={30 + 500 * I} ph={ph}/>
       <polyline points={`${cx - 52},${cy} ${cx - 52},140 ${cx - 28},140`} fill="none" stroke="#0f172a" strokeWidth="2.5"/><polyline points={`${cx + 52},${cy} ${cx + 52},140 ${cx + 28},140`} fill="none" stroke="#0f172a" strokeWidth="2.5"/>
-      <Pile cx={60} cy={150} nom="Générateur" lab="réglable"/>
+      <Pile k={1.55} cx={60} cy={150} nom="Générateur" lab="réglable"/>
       <Dipole type={dip === 'ctn' ? 'ctn' : dip === 'ldr' ? 'ldr' : dip === 'lampe' ? 'lampe' : { nom: nomR }} cx={cx} cy={cy} th={th} lux={lux}/>
-      {rp != null && <g><rect x="225" y="216" width="110" height="28" fill="#fff" stroke="#0f172a" strokeWidth="3"/><text x="280" y="236" fontSize="14" fontWeight="800" textAnchor="middle">R = {rp} Ω</text></g>}
-      <g><circle cx={170} cy={70} r="23" fill="#fff" stroke={VERMILLON} strokeWidth="3"/><text x={170} y={77} fontSize="20" fontWeight="800" textAnchor="middle" fill={VERMILLON}>A</text></g>
-      <g><circle cx={cx} cy={140} r="23" fill="#fff" stroke={BLEU} strokeWidth="3"/><text x={cx} y={147} fontSize="20" fontWeight="800" textAnchor="middle" fill={BLEU}>V</text></g>
-      <Mesure x={170} y={118} nom="I" val={`${fr(I * 1000, I * 1000 < 100 ? 2 : 1)} mA`} w={130}/>
-      <Mesure x={cx} y={190} nom="U" val={`${fr(U, 2)} V`} couleur={BLEU} w={110}/>
-      <text x={490} y={150} fontSize="12.5" fontWeight="700" fill={VERMILLON} textAnchor="end">sens ↓</text>
+      {rp != null && <g><rect x="205" y="214" width="150" height="34" fill="#fff" stroke="#0f172a" strokeWidth="3"/><text x="280" y="236" fontSize="21.5" fontWeight="800" textAnchor="middle">R = {rp} Ω</text></g>}
+      <g><circle cx={170} cy={70} r="23" fill="#fff" stroke={VERMILLON} strokeWidth="3"/><text x={170} y={77} fontSize="31" fontWeight="800" textAnchor="middle" fill={VERMILLON}>A</text></g>
+      <g><circle cx={cx} cy={140} r="23" fill="#fff" stroke={BLEU} strokeWidth="3"/><text x={cx} y={147} fontSize="31" fontWeight="800" textAnchor="middle" fill={BLEU}>V</text></g>
+      <Mesure k={1.55} x={170} y={108} nom="I" val={`${fr(I * 1000, I * 1000 < 100 ? 2 : 1)} mA`} w={130}/>
+      <Mesure k={1.55} x={cx} y={190} nom="U" val={`${fr(U, 2)} V`} couleur={BLEU} w={110}/>
+      <text x={490} y={150} fontSize="19.5" fontWeight="700" fill={VERMILLON} textAnchor="end">sens ↓</text>
     </svg>);
 }
 
@@ -65,9 +65,26 @@ function nouveauDefi(type) {
 }
 function evaluer(d) {
   const x = lireNombre(d.reps.v);
-  if (d.type === 'fonct') { const ok = isFinite(x) && proche(x, d.I * 1000, 0.08); return { ok, lignes: [[ok, ok ? 'Point de fonctionnement correct (lecture à 8 % près).' : 'Cherchez le point où la courbe de la lampe coupe la droite U = E − R·I (la droite part de E sur l’axe vertical). Lisez alors I sur l’axe horizontal, en mA.']] }; }
-  if (d.type === 'res') { const ok = isFinite(x) && proche(x, d.R, 0.03); return { ok, lignes: [[ok, ok ? 'Résistance correcte.' : 'Revois : R = U / I, avec I en ampères (1 mA = 0,001 A). Réponse en ohms.']] }; }
-  if (d.type === 'courant') { const ok = isFinite(x) && proche(x, d.I * 1000, 0.03); return { ok, lignes: [[ok, ok ? 'Intensité correcte.' : 'Revois : I = U / R. Le résultat est en ampères : multiplie par 1000 pour l’avoir en mA.']] }; }
+  if (d.type === 'fonct') { const Ima = d.I * 1000, ok = isFinite(x) && Math.abs(x - Ima) <= Math.max(0.08 * Ima, 10); return { ok, lignes: [[ok, ok ? 'Point de fonctionnement correct (lecture à 8 % ou 10 mA près).' : 'Cherchez le point où la courbe de la lampe coupe la droite U = E − R·I (la droite part de E sur l’axe vertical). Lisez alors I sur l’axe horizontal, en mA.']] }; }
+  if (d.type === 'res') {
+    const ok = isFinite(x) && proche(x, d.R, 0.03);
+    const msg = ok ? 'Résistance correcte.' : !d.reps.v || !isFinite(x) ? 'Entre un nombre : la résistance R en ohms (Ω).'
+      : proche(x, d.R * 1000, 0.05) ? 'Ta valeur est 1 000 fois trop grande : tu as gardé I en mA. Convertis I en ampères (1 mA = 0,001 A) avant de diviser.'
+        : proche(x, d.R / 1000, 0.05) ? 'Ta valeur est 1 000 fois trop petite : le résultat de U / I est en ohms si I est en ampères.'
+          : proche(x, d.I * 1000, 0.05) ? 'C’est l’intensité en mA. On demande la résistance : R = U / I.'
+            : proche(x, d.U, 0.03) ? 'C’est la tension U. On demande la résistance : R = U / I.'
+              : `Revois : R = U / I, avec I en ampères (1 mA = 0,001 A). Réponse en ohms. ${x > d.R ? 'Ta valeur est trop grande.' : 'Ta valeur est trop petite.'}`;
+    return { ok, lignes: [[ok, msg]] };
+  }
+  if (d.type === 'courant') {
+    const ok = isFinite(x) && proche(x, d.I * 1000, 0.03);
+    const msg = ok ? 'Intensité correcte.' : !d.reps.v || !isFinite(x) ? 'Entre un nombre : l’intensité I en milliampères (mA).'
+      : proche(x, d.I, 0.05) ? 'Ta valeur est en ampères. On demande des mA : multiplie par 1 000.'
+        : proche(x, d.I * 1e6, 0.05) ? 'Ta valeur est 1 000 fois trop grande : U / R est en ampères ; en mA on multiplie par 1 000 une seule fois.'
+          : proche(x, d.R / d.U, 0.03) ? 'Tu as calculé R / U. La loi d’Ohm donne I = U / R.'
+            : `Revois : I = U / R. Le résultat est en ampères : multiplie par 1000 pour l’avoir en mA. ${x > d.I * 1000 ? 'Ta valeur est trop grande.' : 'Ta valeur est trop petite.'}`;
+    return { ok, lignes: [[ok, msg]] };
+  }
   const ok = isFinite(x) && Math.abs(x - d.th) <= 3; return { ok, lignes: [[ok, ok ? 'Température correcte (à 3 °C près).' : 'Calcule d’abord R = U / I (avec I en A), puis cherche cette valeur de R sur la courbe d’étalonnage pour lire θ.']] };
 }
 const enonce = (d, { champ }) => {
