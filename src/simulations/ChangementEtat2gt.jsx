@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, IndiceDefi, ExempleResolu, OngletExercices, LigneMesure, Curseur } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, IndiceDefi, ExempleResolu, OngletExercices, LigneMesure, Curseur, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./changementEtat2gtModele";
 import { QCM } from "./changementEtat2gtQcm";
@@ -45,7 +45,7 @@ const verbeEnergie = chid => (M.sens(chid) === 'endo' ? 'à fournir' : 'cédée'
 export function SimulationChangementEtat() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
-  const [suiviE, noterE] = useCompteurDefi(), [suiviS, noterS] = useCompteurDefi();
+  const [suiviE, noterE, vueE] = useCompteurDefi(), [suiviS, noterS, vueS] = useCompteurDefi();
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('energie');
   const [hypoOuv, setHypoOuv] = useState(() => mode === 'defi');
@@ -175,8 +175,8 @@ export function SimulationChangementEtat() {
 
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = (type, prec = defi) => {
-    if (type === 'energie') setDefi({ type, ...M.tirerDefiEnergie(prec && prec.type === 'energie' ? prec : null), rep: '', verifie: false });
-    else setDefi({ type, s: M.tirerSituation(prec && prec.type === 'situation' ? prec.s : null), chid: '', sens: '', verifie: false });
+    if (type === 'energie') setDefi({ type, ...M.tirerDefiEnergie(prec && prec.type === 'energie' ? prec : null), rep: '', verifie: false, solution: false });
+    else setDefi({ type, s: M.tirerSituation(prec && prec.type === 'situation' ? prec.s : null), chid: '', sens: '', verifie: false, solution: false });
   };
   function changerMode(md) {
     setMode(md);
@@ -210,6 +210,15 @@ export function SimulationChangementEtat() {
     if (d.ok) return `✓ Correct : ${ch.nom}, ${M.PHRASE_SENS[M.sens(ch.id)]} (${M.NOM_SENS[M.sens(ch.id)]}). Équation : ${eq}.`;
     const dits = [!d.v.nomOk ? 'le nom du changement d’état : regardez l’état de départ et l’état d’arrivée' : null, !d.v.sensOk ? 'le sens du transfert : le système reçoit-il ou cède-t-il de l’énergie ?' : null].filter(Boolean);
     return `✗ À revoir : ${dits.join(' ; ')}.`;
+  };
+  const messageSolutionEnergie = d => {
+    const bon = d.variante === 'E' ? unKJ(d.vrai) : `${nf(M.arrondiSig(d.vrai, 2))}${NB}kg`;
+    return d.variante === 'E' ? <>E = m × L = {nf(d.m)}{NB}kg × {nf(d.L)}{NB}kJ/kg ≈ <strong>{bon}</strong>.</>
+      : <>m = E ÷ L = {nf(d.E)}{NB}kJ ÷ {nf(d.L)}{NB}kJ/kg ≈ <strong>{bon}</strong>.</>;
+  };
+  const messageSolutionSituation = d => {
+    const ch = M.changement(d.s.chid), eq = M.equation(d.s.cid, d.s.chid);
+    return <>Nom : <strong>{ch.nom}</strong>. Sens : {M.PHRASE_SENS[M.sens(ch.id)]} (<strong>{M.NOM_SENS[M.sens(ch.id)]}</strong>). Équation : {eq}.</>;
   };
   const champDefiEnergie = (d) => {
     const c = M.corps(d.cid), ch = M.changement(d.chid), deltaEntete = d.variante === 'E';
@@ -250,13 +259,15 @@ export function SimulationChangementEtat() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="ce-verif" onClick={verifier} disabled={defi.type === 'situation' && (!defi.chid || !defi.sens)} style={{ ...styleBouton(true, '#15803d'), opacity: defi.type === 'situation' && (!defi.chid || !defi.sens) ? 0.5 : 1 }}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh" />Nouveau défi</button>
+        <VoirSolution visible={!(defi.verifie && defi.ok) && !defi.solution} onClick={() => { (defi.type === 'energie' ? vueE : vueS)(); setDefi(d => ({ ...d, solution: true })); }}/>
       </div>
+      {defi.solution && <BoiteSolution>{defi.type === 'energie' ? messageSolutionEnergie(defi) : messageSolutionSituation(defi)}</BoiteSolution>}
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defi.type === 'energie' ? messageEnergie(defi) : messageSituation(defi)}</div>}
     </div>);
   const teteDefi = defi && (defi.type === 'energie'
     ? <EquationTete texte={M.equation(defi.cid, defi.chid)} note={`${M.changement(defi.chid).nom} ${M.corps(defi.cid).de}`} />
-    : <EquationTete texte={defi.verifie && defi.ok ? M.equation(defi.s.cid, defi.s.chid) : `${M.corps(defi.s.cid).f}(?) → ${M.corps(defi.s.cid).f}(?)`} note={defi.verifie && defi.ok ? M.changement(defi.s.chid).nom : 'les états sont à trouver'} />);
+    : <EquationTete texte={(defi.verifie && defi.ok) || defi.solution ? M.equation(defi.s.cid, defi.s.chid) : `${M.corps(defi.s.cid).f}(?) → ${M.corps(defi.s.cid).f}(?)`} note={(defi.verifie && defi.ok) || defi.solution ? M.changement(defi.s.chid).nom : 'les états sont à trouver'} />);
 
   // ---------- hypothèses ----------
   const hypotheses = (
