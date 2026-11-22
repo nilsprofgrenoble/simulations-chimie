@@ -243,3 +243,6 @@ Certitude: Certain · Effort: petit
 - La partie « lentille » de `optiqueModele.js` (L40-84) est utilisée par SIM65 : à auditer dans le rapport de cette simulation.
 - Le choix pédagogique de l'ordre des étapes (une idée par étape) est jugé sur le texte, sans test auprès d'élèves.
 - La valeur de référence du plexiglas (SIM64-12) n'a pas été confrontée à un manuel : à valider avec Nils.
+
+## Suite : corrections faites (22/11/2026)
+Bloquant et importants corrigés : réponse de l’étape 8 acceptée à ±2,6 % (19° accepté, 20° refusé avec message adapté) ; défi calcul accepté à max(2 %, 0,5°) près avec consigne de précision ; messages d’erreur distincts (sin i₂ donné, indices inversés, angles divisés, radians, trop grand/petit) pour calcul, indice et prévision ; fiche loi et étape 6 avec des exemples différents de la question ; schémas et textes agrandis (≥ 9,4 px rendus à 390 px) ; légende du pêcheur sortie du dessin. Mineurs : tirage jamais identique deux fois de suite, mesures à angles différents exigées, légende de la fiche indice. Non corrigés volontairement : SIM64-12 (indice du plexiglas) et SIM64-14 (pas de « verre »). Remarque : `recalc-SIM64.mjs` décrit l’ancien modèle de tolérance.

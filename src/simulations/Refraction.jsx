@@ -37,30 +37,35 @@ function Interface({ n1, n2, i1, nom1, nom2, leg, masqueN, w = 560 }) {
   const cx = 280, cy = 170, L = 150, i2 = refraction(n1, n2, i1), lim = angleLimite(n1, n2);
   const pt = (a, s, v, l = L) => [cx + s * l * sin(a), cy + v * l * Math.cos(a * RAD)];
   const [xi, yi] = pt(i1, -1, -1), [xr, yr] = pt(i1, 1, -1), t = i2 != null ? pt(i2, 1, 1) : null;
+  const court = nm => nm.replace(' (20 %)', '');
   const fl = (x, y, dx, dy, c) => { const l = Math.hypot(dx, dy), ux = dx / l, uy = dy / l; return <polygon points={`${x},${y} ${x - ux * 14 - uy * 6},${y - uy * 14 + ux * 6} ${x - ux * 14 + uy * 6},${y - uy * 14 - ux * 6}`} fill={c}/>; };
+  const refl = xr + 160 <= w - 6 ? { x: xr + 10, a: 'start', y: yr + 4 } : { x: Math.min(xr - 6, w - 8), a: 'end', y: yr - 10 };
+  // textes de 21 à 24 unités : ≈ 10 à 11 px rendus quand le schéma occupe 260 px (téléphone) ; la figure reste plafonnée à 620 px sur ordinateur
   return (
-    <svg viewBox={`0 0 ${w} 340`} width="100%" role="img" aria-label={`Rayon lumineux passant de ${nom1} à ${nom2}, angle d’incidence ${i1} degrés`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+    <svg viewBox={`0 0 ${w} 340`} width="100%" role="img" aria-label={`Rayon lumineux passant de ${nom1} à ${nom2}, angle d’incidence ${i1} degrés`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 620, margin: '0 auto' }}>
       <rect x="0" y="0" width={w} height={cy} fill="#e0f2fe" opacity={0.1 + 0.25 * Math.min(1, (n1 - 1) / 1.4)}/>
       <rect x="0" y={cy} width={w} height={340 - cy} fill="#0072b2" opacity={0.06 + 0.2 * Math.min(1, (n2 - 1) / 1.4)}/>
       <line x1="10" y1={cy} x2={w - 10} y2={cy} stroke="#0f172a" strokeWidth="3"/>
       <line x1={cx} y1="12" x2={cx} y2="328" stroke="#475569" strokeWidth="2" strokeDasharray="7 6"/>
-      <text x={cx + 8} y="26" fontSize="13" fontWeight="700" fill="#475569">normale</text>
-      <text x="14" y="28" fontSize="14" fontWeight="800" fill="#0f172a">Milieu 1 : {nom1}{masqueN ? '' : ` (n₁ = ${fr(n1, 2)})`}</text>
-      <text x="14" y="326" fontSize="14" fontWeight="800" fill="#0f172a">Milieu 2 : {nom2}{masqueN ? '' : ` (n₂ = ${fr(n2, 2)})`}</text>
+      <text x={cx + 10} y="332" fontSize="22" fontWeight="700" fill="#475569">normale</text>
+      <text x="12" y="30" fontSize="23" fontWeight="800" fill="#0f172a">Milieu 1 : {court(nom1)}</text>
+      {!masqueN && <text x="12" y="58" fontSize="21" fontWeight="700" fill="#334155">n₁ = {fr(n1, 2)}</text>}
+      <text x="12" y="296" fontSize="23" fontWeight="800" fill="#0f172a">Milieu 2 : {court(nom2)}</text>
+      {!masqueN && <text x="12" y="324" fontSize="21" fontWeight="700" fill="#334155">n₂ = {fr(n2, 2)}</text>}
       <line x1={xr} y1={yr} x2={cx} y2={cy} stroke={C_REFL} strokeWidth={i2 == null ? 4 : 2} strokeDasharray={i2 == null ? '' : '6 5'}/>{fl(xr, yr, xr - cx, yr - cy, C_REFL)}
       <line x1={xi} y1={yi} x2={cx} y2={cy} stroke={C_INC} strokeWidth="4"/>{fl(cx, cy, cx - xi, cy - yi, C_INC)}
       {t && <g><line x1={cx} y1={cy} x2={t[0]} y2={t[1]} stroke={C_REF} strokeWidth="4"/>{fl(t[0], t[1], t[0] - cx, t[1] - cy, C_REF)}</g>}
       <circle cx={cx} cy={cy} r="5" fill="#0f172a"/>
       {i1 > 0 && <><path d={arc(cx, cy, 56, i1, true, true)} fill="none" stroke={C_INC} strokeWidth="2.5"/>
-        <text x={cx - 62 * sin(i1 / 2) - 22} y={cy - 62 * Math.cos(i1 * RAD / 2) - 4} fontSize="15" fontWeight="800" fill={C_INC}>i₁</text></>}
+        <text x={cx - 62 * sin(i1 / 2) - 30} y={cy - 62 * Math.cos(i1 * RAD / 2) - 4} fontSize="24" fontWeight="800" fill={C_INC}>i₁</text></>}
       {i2 != null && i2 > 0 && <><path d={arc(cx, cy, 56, i2, false, false)} fill="none" stroke={C_REF} strokeWidth="2.5"/>
-        <text x={cx + 62 * sin(i2 / 2) + 6} y={cy + 66 * Math.cos(i2 * RAD / 2) + 8} fontSize="15" fontWeight="800" fill={C_REF}>i₂</text></>}
-      {leg && <g fontSize="12.5" fontWeight="700"><text x={xi + 6} y={yi + 4} fill={C_INC}>rayon incident</text>
-        {t && <text x={t[0] + 6} y={t[1] - 4} fill={C_REF}>rayon réfracté</text>}
-        <text x={cx + 10} y={cy + 20} fill="#0f172a">point d’incidence</text>
-        <text x={w - 14} y={cy - 8} textAnchor="end" fill="#0f172a">surface de séparation</text></g>}
-      {!leg && <text x={xr - 4} y={yr - 6} fontSize="12" fontWeight="700" fill={C_REFL} textAnchor="end">rayon réfléchi</text>}
-      {i2 == null && <text x={w - 14} y="320" textAnchor="end" fontSize="13.5" fontWeight="800" fill={ORANGE}>Réflexion totale : plus de rayon réfracté (i₁ &gt; {fr(lim, 1)}°)</text>}
+        <text x={cx + 62 * sin(i2 / 2) + 6} y={cy + 66 * Math.cos(i2 * RAD / 2) + 14} fontSize="24" fontWeight="800" fill={C_REF}>i₂</text></>}
+      {leg && <g fontSize="21" fontWeight="700"><text x={xi - 8} y={yi + 22} textAnchor="end" fill={C_INC}>rayon incident</text>
+        {t && <text x={t[0] + 8} y={t[1] - 6} fill={C_REF}>rayon réfracté</text>}
+        <text x={cx + 22} y={cy + 36} fill="#0f172a">point d’incidence</text>
+        <text x={w - 14} y={cy - 10} textAnchor="end" fill="#0f172a">surface de séparation</text></g>}
+      {!leg && <text x={refl.x} y={refl.y} fontSize="20" fontWeight="700" fill={C_REFL} textAnchor={refl.a}>rayon réfléchi</text>}
+      {i2 == null && <g fontSize="22" fontWeight="800" fill={ORANGE} textAnchor="end"><text x={w - 14} y="232">Réflexion totale :</text><text x={w - 14} y="260">plus de rayon réfracté</text><text x={w - 14} y="288">(i₁ &gt; {fr(lim, 1)}°)</text></g>}
     </svg>);
 }
 
@@ -69,11 +74,11 @@ const COUL_LIQ = { plexi: '#0072b2', eau: '#d55e00', eausucree: '#009e73', incon
 function Graphe({ pts }) {
   const X = x => 40 + x * 230, Y = y => 190 - y * 170, liqs = [...new Set(pts.map(p => p.liq))];
   return (
-    <svg viewBox="0 0 300 220" width="100%" role="img" aria-label="Graphique de sin i1 en fonction de sin i2" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+    <svg viewBox="0 0 300 236" width="100%" role="img" aria-label="Graphique de sin i1 en fonction de sin i2" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       {[0, 0.2, 0.4, 0.6, 0.8, 1].map(v => <g key={v}><line x1={X(v)} y1={Y(0)} x2={X(v)} y2={Y(1)} stroke="#e2e8f0"/><line x1={X(0)} y1={Y(v)} x2={X(1)} y2={Y(v)} stroke="#e2e8f0"/>
-        <text x={X(v)} y="206" textAnchor="middle" fontSize="10" fill="#475569">{fr(v, 1)}</text><text x="34" y={Y(v) + 3} textAnchor="end" fontSize="10" fill="#475569">{fr(v, 1)}</text></g>)}
+        <text x={X(v)} y="207" textAnchor="middle" fontSize="12.5" fill="#475569">{fr(v, 1)}</text><text x="34" y={Y(v) + 4} textAnchor="end" fontSize="12.5" fill="#475569">{fr(v, 1)}</text></g>)}
       <line x1={X(0)} y1={Y(0)} x2={X(1)} y2={Y(0)} stroke="#0f172a" strokeWidth="2"/><line x1={X(0)} y1={Y(0)} x2={X(0)} y2={Y(1)} stroke="#0f172a" strokeWidth="2"/>
-      <text x="170" y="218" textAnchor="middle" fontSize="11.5" fontWeight="700">sin i₂</text><text x="46" y="12" fontSize="11.5" fontWeight="700">sin i₁</text>
+      <text x="170" y="227" textAnchor="middle" fontSize="13.5" fontWeight="700">sin i₂</text><text x="46" y="13" fontSize="13.5" fontWeight="700">sin i₁</text>
       {liqs.map(l => { const q = pts.filter(p => p.liq === l).map(p => [sin(p.i2), sin(p.i1)]), k = pente(q), xm = Math.min(1, 1 / k);
         return <g key={l}>{isFinite(k) && <line x1={X(0)} y1={Y(0)} x2={X(xm)} y2={Y(k * xm)} stroke={COUL_LIQ[l]} strokeWidth="2" strokeDasharray="5 4"/>}
           {q.map(([x, y], j) => <circle key={j} cx={X(x)} cy={Y(y)} r="4.5" fill={COUL_LIQ[l]} stroke="#fff" strokeWidth="1.2"/>)}</g>; })}
@@ -84,39 +89,75 @@ function Graphe({ pts }) {
 function Pecheur({ P }) {
   const S = 170, r = pecheur({ xf: P.xf, d: P.d, xe: 80, h: P.h }), eye = [80, S - P.h];
   const fish = (x, y, c, dash) => <g opacity={dash ? 0.9 : 1}><ellipse cx={x} cy={y} rx="20" ry="10" fill={dash ? 'none' : c} stroke={c} strokeWidth="2.5" strokeDasharray={dash ? '4 3' : ''}/><polygon points={`${x + 18},${y} ${x + 32},${y - 10} ${x + 32},${y + 10}`} fill={dash ? 'none' : c} stroke={c} strokeWidth="2.5" strokeDasharray={dash ? '4 3' : ''}/></g>;
+  const pi = r.xp + 8 + 195 <= 556 ? { x: r.xp + 8, a: 'start' } : { x: r.xp - 8, a: 'end' };
   return (
-    <svg viewBox="0 0 560 330" width="100%" role="img" aria-label="Un pêcheur vise un poisson sous la surface de l’eau" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-      <rect x="0" y="0" width="560" height={S} fill="#e0f2fe" opacity="0.25"/><rect x="0" y={S} width="560" height={330 - S} fill="#0072b2" opacity="0.18"/>
+    <div>
+    <svg viewBox="0 0 560 340" width="100%" role="img" aria-label="Un pêcheur vise un poisson sous la surface de l’eau" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 620, margin: '0 auto' }}>
+      <rect x="0" y="0" width="560" height={S} fill="#e0f2fe" opacity="0.25"/><rect x="0" y={S} width="560" height={340 - S} fill="#0072b2" opacity="0.18"/>
       <line x1="0" y1={S} x2="560" y2={S} stroke="#0f172a" strokeWidth="3"/>
       <circle cx={eye[0]} cy={eye[1]} r="9" fill="#fde68a" stroke="#0f172a" strokeWidth="2.5"/><line x1={eye[0]} y1={eye[1] + 9} x2={eye[0]} y2={S} stroke="#0f172a" strokeWidth="3"/>
-      <text x={eye[0] + 14} y={eye[1] + 4} fontSize="12.5" fontWeight="700">œil</text>
+      <text x={eye[0] + 16} y={eye[1] + 8} fontSize="23" fontWeight="700">œil</text>
       <line x1={r.xp} y1={S} x2={P.xf} y2={S + P.d} stroke={C_REF} strokeWidth="3.5"/>
       <line x1={r.xp} y1={S} x2={eye[0]} y2={eye[1]} stroke={C_REF} strokeWidth="3.5"/>
       <line x1={eye[0]} y1={eye[1]} x2={r.aimX} y2={S + P.d} stroke={C_INC} strokeWidth="2.5" strokeDasharray="7 5"/>
       {fish(r.aimX, S + P.d, C_INC, true)}{fish(P.xf, S + P.d, '#0f172a', false)}
-      <text x={r.aimX + 4} y={S + P.d + 28} textAnchor="end" fontSize="12.5" fontWeight="700" fill={C_INC}>où pointe la visée</text>
-      <text x={P.xf - 4} y={S + P.d - 16} fontSize="12.5" fontWeight="700" fill="#0f172a">poisson réel</text>
-      <circle cx={r.xp} cy={S} r="4.5" fill="#0f172a"/><text x={r.xp + 6} y={S - 8} fontSize="11.5" fill="#0f172a">point d’incidence</text>
-      <text x="14" y="322" fontSize="12.5" fill="#0f172a">Lumière : poisson → surface → œil (bleu) · visée : prolongement de la droite œil → surface (orange pointillé)</text>
-    </svg>);
+      <circle cx={r.xp} cy={S} r="4.5" fill="#0f172a"/><text x={pi.x} y={S - 12} fontSize="22" fontWeight="700" fill="#0f172a" textAnchor={pi.a}>point d’incidence</text>
+    </svg>
+    <div style={{ marginTop: 6, fontSize: 13.5, color: KIT.txt, lineHeight: 1.6 }}>
+      <span style={{ color: C_REF, fontWeight: 800 }}>━ bleu</span> : trajet de la lumière (poisson → surface → œil) · <span style={{ color: '#0f172a', fontWeight: 800 }}>● noir</span> : poisson réel · <span style={{ color: C_INC, fontWeight: 800 }}>┅ orange</span> : visée (prolongement de la droite œil → surface) et endroit où elle arrive à la profondeur du poisson (poisson en pointillés).</div>
+    </div>);
 }
 
 // ---------- défis ----------
 const PAIRES = [['air', 'eau'], ['air', 'plexi'], ['air', 'diamant'], ['eau', 'plexi'], ['eau', 'diamant'], ['glycerol', 'diamant'], ['plexi', 'air'], ['eau', 'air'], ['plexi', 'eau'], ['diamant', 'plexi']];
 const INCONNUS = [1.33, 1.36, 1.40, 1.47, 1.52];
-function nouveauDefi(type) {
-  const base = { type, reps: {}, verifie: false, solution: false };
-  if (type === 'calcul') { for (;;) { const [a, b] = alea(PAIRES), i1 = alea([20, 25, 30, 40, 45, 50, 60]), i2 = refraction(milieu(a).n, milieu(b).n, i1); if (i2 != null) return { ...base, a, b, i1, i2 }; } }
-  if (type === 'indice') return { ...base, n: alea(INCONNUS) };
-  for (;;) { const [a, b] = alea(PAIRES), i1 = alea([0, 20, 30, 40, 50]); if (a === b) continue; const lim = angleLimite(milieu(a).n, milieu(b).n); if (lim != null && i1 >= lim - 3) continue; return { ...base, a, b, i1, rep: i1 === 0 ? 'zero' : milieu(b).n > milieu(a).n ? 'rapproche' : 'ecarte' }; }
+function nouveauDefi(type, prec) {
+  const base = { type, reps: {}, verifie: false, solution: false }, memes = prec && prec.type === type ? prec : null;   // jamais deux fois le même tirage de suite
+  if (type === 'calcul') { for (;;) { const [a, b] = alea(PAIRES), i1 = alea([20, 25, 30, 40, 45, 50, 60]), i2 = refraction(milieu(a).n, milieu(b).n, i1); if (i2 != null && !(memes && memes.a === a && memes.b === b && memes.i1 === i1)) return { ...base, a, b, i1, i2 }; } }
+  if (type === 'indice') { for (;;) { const n = alea(INCONNUS); if (!(memes && memes.n === n)) return { ...base, n }; } }
+  for (;;) { const [a, b] = alea(PAIRES), i1 = alea([0, 20, 30, 40, 50]); if (a === b || (memes && memes.a === a && memes.b === b && memes.i1 === i1)) continue; const lim = angleLimite(milieu(a).n, milieu(b).n); if (lim != null && i1 >= lim - 3) continue; return { ...base, a, b, i1, rep: i1 === 0 ? 'zero' : milieu(b).n > milieu(a).n ? 'rapproche' : 'ecarte' }; }
 }
-function evaluer(d) {
-  if (d.type === 'calcul') { const x = lireNombre(d.reps.v), ok = isFinite(x) && proche(x, d.i2, 0.02); return { ok, lignes: [[ok, ok ? 'Angle correct.' : 'Revois : n₁ × sin i₁ = n₂ × sin i₂, donc sin i₂ = n₁ × sin i₁ / n₂ (puis arcsin, touche sin⁻¹).']] }; }
-  if (d.type === 'indice') { const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.n) <= 0.03; return { ok, lignes: [[ok, ok ? 'Indice correct (à 0,03 près).' : 'Revois : air → liquide, n = sin i₁ / sin i₂ ; ou la pente de la droite sin i₁ = f(sin i₂).']] }; }
-  const ok = d.reps.d === d.rep; return { ok, lignes: [[ok, ok ? 'Bonne réponse.' : 'Rappel : n₂ > n₁ → se rapproche de la normale ; n₂ < n₁ → s’écarte ; i₁ = 0° → pas de déviation.']] };
+// Marge du défi « calcul » : 2 % ou 0,5° (le plus grand), pour accepter la réponse arrondie au degré
+const margeCalcul = i2 => Math.max(0.02 * i2, 0.5);
+function evaluer(d, pts = []) {
+  if (d.type === 'calcul') {
+    const n1 = milieu(d.a).n, n2 = milieu(d.b).n, x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.i2) <= margeCalcul(d.i2);
+    if (ok) return { ok, lignes: [[true, 'Angle correct.']] };
+    const donnees = `n₁ = ${fr(n1, 2)}, n₂ = ${fr(n2, 2)}, i₁ = ${d.i1}°`;
+    if (!d.reps.v || !isFinite(x)) return { ok, lignes: [[false, 'Entre un nombre (l’angle i₂ en degrés, par exemple 28,9).']] };
+    const s2 = n1 * sin(d.i1) / n2, inv = refraction(n2, n1, d.i1), sr = n1 * Math.sin(d.i1) / n2;
+    let msg;
+    if (Math.abs(x - s2) <= 0.03 * s2 + 0.005) msg = 'Tu as donné sin i₂, pas l’angle i₂. Applique sin⁻¹ (calculatrice en degrés) à ce nombre pour obtenir i₂.';
+    else if (inv != null && Math.abs(x - inv) <= margeCalcul(inv)) msg = `Tu as inversé les indices : sin i₂ = n₁ × sin i₁ / n₂ avec n₁ = ${fr(n1, 2)} (milieu 1, d’où vient le rayon) et n₂ = ${fr(n2, 2)} (milieu 2).`;
+    else if (Math.abs(x - d.i1 * n1 / n2) <= 0.03 * d.i1 * n1 / n2) msg = 'Tu as divisé les angles. Ce sont les sinus qui sont reliés : n₁ × sin i₁ = n₂ × sin i₂.';
+    else if (Math.abs(sr) <= 1 && (Math.abs(Math.abs(x) - Math.abs(Math.asin(sr))) <= 0.03 || Math.abs(Math.abs(x) - Math.abs(Math.asin(sr)) / RAD) <= 0.03 * Math.abs(Math.asin(sr)) / RAD)) msg = 'Ta calculatrice semble être en radians : passe-la en mode degrés (DEG) puis recommence.';
+    else msg = `${x > d.i2 ? 'Ta valeur est trop grande' : 'Ta valeur est trop petite'}. Recalcule pas à pas avec ${donnees} : sin i₂ = n₁ × sin i₁ / n₂, puis i₂ = sin⁻¹(sin i₂).`;
+    return { ok, lignes: [[false, msg]] };
+  }
+  if (d.type === 'indice') {
+    const x = lireNombre(d.reps.v), ok = isFinite(x) && Math.abs(x - d.n) <= 0.03;
+    if (ok) return { ok, lignes: [[true, 'Indice correct (à 0,03 près).']] };
+    if (!d.reps.v || !isFinite(x)) return { ok, lignes: [[false, 'Entre un nombre : l’indice n n’a pas d’unité (par exemple 1,45).']] };
+    if (!pts.length) return { ok, lignes: [[false, 'Fais d’abord au moins 3 mesures avec des angles d’incidence différents (bouton « Noter cette mesure »), puis calcule n.']] };
+    const rap = pts.map(q => Math.sin(q.i1 * RAD) / Math.sin(q.i2 * RAD)).filter(Number.isFinite), moy = rap.length ? rap.reduce((a, b) => a + b, 0) / rap.length : NaN;
+    const ang = pts.map(q => q.i1 / q.i2).filter(Number.isFinite), moyA = ang.length ? ang.reduce((a, b) => a + b, 0) / ang.length : NaN;
+    let msg;
+    if (isFinite(moy) && Math.abs(x - 1 / moy) <= 0.03 * (1 / moy)) msg = 'Tu as inversé : pour un rayon qui passe de l’air au liquide, n = sin i₁ / sin i₂ (et non sin i₂ / sin i₁).';
+    else if (isFinite(moyA) && Math.abs(x - moyA) <= 0.04 * moyA) msg = 'Tu as divisé les angles. Il faut diviser les sinus : n = sin i₁ / sin i₂, ou lire la pente de la droite sin i₁ = f(sin i₂).';
+    else if (pts.length < 3) msg = `Ta valeur ne correspond pas à tes mesures. Avec ${pts.length === 1 ? 'une seule mesure' : 'deux mesures'}, l’erreur de lecture au demi-degré pèse beaucoup : ajoute au moins 3 mesures (angles très différents, évite les petits angles).`;
+    else msg = `${x > d.n ? 'Ta valeur est trop grande' : 'Ta valeur est trop petite'} : pour chaque mesure, calcule sin i₁ / sin i₂ (colonnes du tableau), puis fais la moyenne, ou lis la pente affichée sous le tableau.`;
+    return { ok, lignes: [[false, msg]] };
+  }
+  const ok = d.reps.d === d.rep, n1 = milieu(d.a).n, n2 = milieu(d.b).n;
+  if (ok) return { ok, lignes: [[true, 'Bonne réponse.']] };
+  if (!d.reps.d) return { ok, lignes: [[false, 'Choisis une des trois réponses.']] };
+  const cas = d.rep === 'zero' ? 'i₁ = 0° : le rayon arrive le long de la normale, il n’est pas dévié, quels que soient les milieux.'
+    : d.rep === 'rapproche' ? `n₂ = ${fr(n2, 2)} est plus grand que n₁ = ${fr(n1, 2)} : sin i₂ = n₁ sin i₁ / n₂ est plus petit que sin i₁, donc i₂ < i₁ : le rayon se rapproche de la normale.`
+      : `n₂ = ${fr(n2, 2)} est plus petit que n₁ = ${fr(n1, 2)} : sin i₂ = n₁ sin i₁ / n₂ est plus grand que sin i₁, donc i₂ > i₁ : le rayon s’écarte de la normale.`;
+  return { ok, lignes: [[false, `Compare n₁ et n₂ (et regarde i₁). ${cas}`]] };
 }
-function VoletDefi({ defi, setDefi, changerType }) {
-  const res = defi.verifie ? evaluer(defi) : null, reussi = !!res && res.ok;
+function VoletDefi({ defi, setDefi, changerType, pts }) {
+  const res = defi.verifie ? evaluer(defi, pts) : null, reussi = !!res && res.ok;
   const suivi = useSuivi(`${SIM}:defi.${defi.type}`, reussi);
   const prog = lireProgression();
   const rep = (k, v) => setDefi(d => ({ ...d, reps: { ...d.reps, [k]: v }, verifie: false }));
@@ -127,7 +168,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {Object.entries(TITRES).map(([t, l]) => <button key={t} onClick={() => changerType(t)} style={stylePetitBouton(defi.type === t, '#0ea5e9')}>{prog[`${SIM}:defi.${t}`] ? '✅ ' : ''}{l}</button>)}</div>
-      {defi.type === 'calcul' && <><div style={txt}><Pic n="target"/>Un rayon passe de <strong>{nm(defi.a)}</strong> (n₁ = {fr(milieu(defi.a).n, 2)}) à <strong>{nm(defi.b)}</strong> (n₂ = {fr(milieu(defi.b).n, 2)}) avec un angle d’incidence <strong>i₁ = {defi.i1}°</strong>. Calculez l’angle de réfraction i₂.</div>{champ('°')}</>}
+      {defi.type === 'calcul' && <><div style={txt}><Pic n="target"/>Un rayon passe de <strong>{nm(defi.a)}</strong> (n₁ = {fr(milieu(defi.a).n, 2)}) à <strong>{nm(defi.b)}</strong> (n₂ = {fr(milieu(defi.b).n, 2)}) avec un angle d’incidence <strong>i₁ = {defi.i1}°</strong>. Calculez l’angle de réfraction i₂ (au degré ou au dixième de degré près).</div>{champ('°')}</>}
       {defi.type === 'indice' && <><div style={txt}><Pic n="target"/>Un rayon passe de l’<strong>air</strong> à un <strong>liquide inconnu</strong>. Faites des mesures (atelier ci-dessous) et déterminez son <strong>indice de réfraction</strong> n.</div>{champ('')}</>}
       {defi.type === 'prevoir' && <><div style={txt}><Pic n="target"/>Un rayon passe de <strong>{nm(defi.a)}</strong> (n₁ = {fr(milieu(defi.a).n, 2)}) à <strong>{nm(defi.b)}</strong> (n₂ = {fr(milieu(defi.b).n, 2)}) avec un angle d’incidence de <strong>{defi.i1}°</strong>. Le rayon réfracté…</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{[['rapproche', 'se rapproche de la normale'], ['ecarte', 's’écarte de la normale'], ['zero', 'n’est pas dévié']].map(([v, l]) => <button key={v} onClick={() => rep('d', v)} style={stylePetitBouton(defi.reps.d === v, '#0ea5e9')}>{l}</button>)}</div></>}
@@ -198,9 +239,9 @@ export function SimulationRefraction() {
       texte: <>Si le rayon arrive <strong>le long de la normale</strong> (i₁ = 0°), il traverse la surface <strong>sans être dévié</strong> : i₂ = 0° aussi, quels que soient les milieux.</>,
       tache: { type: 'qcm', q: 'Un rayon arrive perpendiculairement à la surface de l’eau. Il…', options: ['n’est pas dévié', 'est dévié vers la normale', 'est dévié loin de la normale', 'est entièrement réfléchi'], bonne: 0, expl: 'i₁ = 0° donne i₂ = 0° : il continue tout droit.', indice: "Quel angle fait ce rayon avec la normale ? Applique la loi de Snell-Descartes avec cette valeur de i₁." } },
     { id: 'sinus', titre: 'Mesurer i₂ : une relation cachée', depart: () => voirM('plexi', 30),
-      texte: <>Passons au <strong>TP</strong> : un laser éclaire un hémi-cylindre de plexiglas, on lit i₁ et i₂. Faites varier i₁ puis cliquez sur « Noter cette mesure ». Regardez le graphique : les points sont alignés avec l’origine quand on trace <strong>sin i₁ en fonction de sin i₂</strong>.
-        <ExempleResolu>Mesures du TP : i₁ = 30° donne i₂ = 19,5° ; i₁ = 60° donne i₂ = 35,0°. Les angles ne sont <strong>pas</strong> proportionnels (30/19,5 ≠ 60/35,0), mais les sinus le sont : sin 30° / sin 19,5° = 0,500 / 0,334 = 1,50 et sin 60° / sin 35,0° = 0,866 / 0,574 = 1,51.</ExempleResolu></>,
-      tache: { type: 'action', ok: enGuide && atelier === 'mesure' && pts.length >= 5, consigne: 'Notez au moins 5 mesures avec des angles d’incidence différents.' } },
+      texte: <>Passons au <strong>TP</strong> : un laser éclaire un hémi-cylindre de plexiglas, on lit i₁ et i₂. Faites varier i₁ puis cliquez sur « Noter cette mesure » (au moins 4 angles différents). Regardez le graphique : les points sont alignés avec l’origine quand on trace <strong>sin i₁ en fonction de sin i₂</strong>.
+        <ExempleResolu>Mesures du TP : i₁ = 20° donne i₂ = 13,0° ; i₁ = 50° donne i₂ = 30,5°. Les angles ne sont <strong>pas</strong> proportionnels (20/13,0 ≠ 50/30,5), mais les sinus le sont : sin 20° / sin 13,0° = 0,342 / 0,225 = 1,52 et sin 50° / sin 30,5° = 0,766 / 0,508 = 1,51.</ExempleResolu></>,
+      tache: { type: 'action', ok: enGuide && atelier === 'mesure' && new Set(pts.map(p => p.i1)).size >= 4, consigne: 'Notez au moins 4 mesures avec des angles d’incidence différents.' } },
     { id: 'indice', titre: 'En déduire l’indice du plexiglas', depart: null,
       texte: <>La pente de la droite sin i₁ = f(sin i₂) est l’<strong>indice de réfraction</strong> n du plexiglas (le milieu 1 est l’air, n₁ = 1,00). C’est la loi de <strong>Snell-Descartes</strong> : <strong>n₁ × sin i₁ = n₂ × sin i₂</strong>.</>,
       tache: { type: 'num', q: 'Une mesure donne i₁ = 60° et i₂ = 35,0°. Quel est l’indice n du plexiglas ? (n = sin i₁ / sin i₂)', unite: '', vrai: 1.51, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.71, 'Tu as divisé les angles. Il faut diviser les sinus : sin 60° / sin 35°.'], [0.66, 'Tu as inversé : n = sin i₁ / sin i₂.'], [Math.sin(60) / Math.sin(35), 'Ta calculatrice est en radians : passe-la en mode degrés (DEG).']],
@@ -215,7 +256,7 @@ export function SimulationRefraction() {
         <ExempleResolu>Air → eau, i₁ = 40° : sin i₂ = 1,00 × sin 40° / 1,33 = 0,643 / 1,33 = 0,483, donc i₂ = <strong>28,9°</strong>.
           {bouton('Vérifier sur le schéma', () => voirI('air', 'eau', 40))}</ExempleResolu>
         À vous : air → verre d’indice 1,50, avec i₁ = 30°.</>,
-      tache: { type: 'num', q: 'Quel est l’angle de réfraction i₂ (en degrés) ?', unite: '°', vrai: 19.47, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[20, 'Ne divise pas directement les angles (30 / 1,5) : ce sont les sinus qui sont reliés.'], [0.33, 'Tu as calculé sin i₂ : il faut ensuite appliquer sin⁻¹ pour obtenir l’angle.'], [48.59, 'Tu as inversé les indices : sin i₂ = n₁ × sin i₁ / n₂ (l’indice de l’air, n₁ = 1,00, est au numérateur).']],
+      tache: { type: 'num', q: 'Quel est l’angle de réfraction i₂ (en degrés, au degré ou au dixième près) ?', unite: '°', vrai: 19.47, tol: 0.026, affiche: x => String(x).replace('.', ','), pieges: [[20, 'Ne divise pas directement les angles (30 / 1,5) : ce sont les sinus qui sont reliés.'], [0.33, 'Tu as calculé sin i₂ : il faut ensuite appliquer sin⁻¹ pour obtenir l’angle.'], [48.59, 'Tu as inversé les indices : sin i₂ = n₁ × sin i₁ / n₂ (l’indice de l’air, n₁ = 1,00, est au numérateur).']],
         calcul: () => [
           'Loi de Snell-Descartes : n₁ × sin i₁ = n₂ × sin i₂, donc sin i₂ = n₁ × sin i₁ / n₂. Données : n₁ = 1,00 (air) ; n₂ = 1,50 (verre) ; i₁ = 30°.',
           'Avec la calculatrice en mode degrés : sin 30° = 0,500.',
@@ -224,8 +265,8 @@ export function SimulationRefraction() {
     { id: 'liquides', titre: 'L’eau et l’eau sucrée', depart: () => voirM('eau', 40),
       retenirTitre: 'À RETENIR : CALCULER UN ANGLE',
       retenir: <FicheCalcAngle/>,
-      texte: <>Déterminez l’indice de l’<strong>eau</strong> puis de l’<strong>eau sucrée</strong> : mesurez au moins 3 angles pour chaque liquide (changez de liquide avec les boutons). Chaque liquide donne sa propre droite sur le graphique.</>,
-      tache: { type: 'action', ok: enGuide && atelier === 'mesure' && pts.filter(p => p.liq === 'eau').length >= 3 && pts.filter(p => p.liq === 'eausucree').length >= 3, consigne: 'Notez au moins 3 mesures pour l’eau et 3 pour l’eau sucrée.' } },
+      texte: <>Déterminez l’indice de l’<strong>eau</strong> puis de l’<strong>eau sucrée</strong> : mesurez au moins 3 angles différents pour chaque liquide (changez de liquide avec les boutons). Chaque liquide donne sa propre droite sur le graphique.</>,
+      tache: { type: 'action', ok: enGuide && atelier === 'mesure' && new Set(pts.filter(p => p.liq === 'eau').map(p => p.i1)).size >= 3 && new Set(pts.filter(p => p.liq === 'eausucree').map(p => p.i1)).size >= 3, consigne: 'Notez au moins 3 mesures (angles différents) pour l’eau et 3 pour l’eau sucrée.' } },
     { id: 'compare', titre: 'Lequel dévie le plus ?', depart: null,
       texte: <>Comparez les deux droites : la pente de l’eau sucrée est un peu plus grande que celle de l’eau. L’eau sucrée a donc un indice <strong>plus grand</strong> (1,36 contre 1,33).</>,
       tache: { type: 'qcm', q: 'Pour un même angle d’incidence, le rayon réfracté dans l’eau sucrée, par rapport à l’eau, est…', options: ['un peu plus proche de la normale (i₂ plus petit)', 'un peu plus loin de la normale (i₂ plus grand)', 'exactement identique', 'impossible à dire'], bonne: 0, expl: 'n plus grand : le rayon se rapproche davantage de la normale, donc i₂ est plus petit.', indice: "L’eau sucrée a un indice un peu plus grand que l’eau. Dans n₁ sin i₁ = n₂ sin i₂, que devient i₂ quand n₂ augmente, avec le même i₁ ?" } },
@@ -250,14 +291,14 @@ export function SimulationRefraction() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, guide.etape]);
 
-  function lancer(type) { const d = nouveauDefi(type); setDefi(d); if (type === 'indice') { setAtelier('mesure'); setMe({ liq: 'inconnu', i1: 30, reveler: false }); setPts([]); } }
+  function lancer(type) { const d = nouveauDefi(type, defi); setDefi(d); if (type === 'indice') { setAtelier('mesure'); setMe({ liq: 'inconnu', i1: 30, reveler: false }); setPts([]); } }
   function changerMode(md) { setMode(md); if (md === 'defi') lancer(defi ? defi.type : 'calcul'); else if (md === 'explore') setAtelier('interface'); }
 
   const i2mes = mesurerI2(nLiq, Me.i1);
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Milieux transparents et homogènes</strong>, surface de séparation <strong>plane et parfaite</strong> : la lumière se propage en <strong>ligne droite</strong> dans chaque milieu (modèle du rayon lumineux).</li>
-      <li><strong>Indices à 589 nm</strong> (lumière jaune) : l’indice dépend un peu de la couleur (dispersion), ce qui n’est pas modélisé ici. Valeurs tabulées : air 1,00 ; eau 1,33 ; eau sucrée à 20 % 1,36 ; glycérol 1,47 ; plexiglas 1,51 ; diamant 2,42.</li>
+      <li><strong>Indices à 589 nm</strong> (lumière jaune) : l’indice dépend un peu de la couleur (dispersion), ce qui n’est pas modélisé ici. Valeurs tabulées : air 1,00 ; eau 1,33 ; eau sucrée à 20 % 1,36 ; glycérol 1,47 ; plexiglas 1,51 (valeur arrondie : selon la qualité du plexiglas, de 1,49 à 1,51) ; diamant 2,42.</li>
       <li><strong>Rayon réfléchi</strong> : l’angle de réflexion est égal à l’angle d’incidence (autre loi de Descartes). Son <strong>intensité</strong> n’est pas modélisée : on le dessine toujours en pointillés, sauf en réflexion totale.</li>
       <li><strong>Mesure d’angles</strong> : lecture au <strong>demi-degré</strong> près, comme sur un rapporteur. L’indice trouvé est donc connu à environ 0,02 près ; l’exploitation graphique (pente) limite l’effet de ces erreurs.</li>
       <li><strong>Pêcheur</strong> : poisson ponctuel, surface calme et plane, un seul œil, plan vertical. Le harpon, lui, n’est pas dévié en entrant dans l’eau.</li>
@@ -339,7 +380,7 @@ export function SimulationRefraction() {
         Pourquoi un crayon paraît-il « cassé » dans un verre d’eau, et pourquoi rate-t-on un poisson au harpon ? Étudiez la <strong>réfraction</strong>, mesurez un <strong>indice</strong> et retrouvez la <strong>loi de Snell-Descartes</strong>.</div>
       <div className={`rf-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {enDefi && <div style={styleBoite}><VoletDefi defi={defi} setDefi={setDefi} changerType={lancer}/></div>}
+          {enDefi && <div style={styleBoite}><VoletDefi defi={defi} setDefi={setDefi} changerType={lancer} pts={pts}/></div>}
           {enDefiIndice && <div style={styleBoite}>{mesurePanel}</div>}
           {!enDefi && planche}
         </div>
