@@ -105,7 +105,7 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
   const Y = (y, o) => (lanes ? mt + ah / 2 + ((o ? o.voie : 0) - 0.5) * 70 : oy - (y - y0) * s);
   const barre = nice(60 / s);          // barre d'échelle d'environ 60 px
   const arrondi = (q, o) => ({ x: X(q.x), y: Y(q.y, o) });
-  const n = data[visObjs[0].id].n;
+  const n = data[visObjs[0].id].n, dt0 = data[visObjs[0].id].dt;
   const pas = Math.ceil((n + 1) / 12);
   const pp = data[visObjs[0].id].p, espace = Math.max(...pp.slice(1).map((q, j) => Math.hypot(q.x - pp[j].x, q.y - pp[j].y))) * s;
   return (
@@ -115,6 +115,11 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
       {batons.map((b, j) => { if (j > jusqua) return null; const A = arrondi(b.a), B = arrondi(b.b); return <g key={`b${j}`}>
         <line x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#94a3b8" strokeWidth="2.2" strokeLinecap="round"/>
         <circle cx={A.x} cy={A.y} r="2.8" fill="#dc2626"/><circle cx={B.x} cy={B.y} r="2.8" fill="#0369a1"/></g>; })}
+      {S.id === 'baton' && aff.sys && jusqua < n && (() => {     // le bâton entier tourne et avance sans à-coups pendant « revoir le mouvement »
+        const c = S.objets.find(q => q.id === 'centre'), t = jusqua * dt0, p = c.pos(t), th = c.th(t), og = F.O(t), h = c.longueur / 2;
+        const A = arrondi({ x: p.x - og.x + h * Math.cos(th), y: p.y - og.y + h * Math.sin(th) }), B = arrondi({ x: p.x - og.x - h * Math.cos(th), y: p.y - og.y - h * Math.sin(th) });
+        return <g><line x1={A.x} y1={A.y} x2={B.x} y2={B.y} stroke="#64748b" strokeWidth="3.2" strokeLinecap="round"/>
+          <circle cx={A.x} cy={A.y} r="4" fill="#dc2626"/><circle cx={B.x} cy={B.y} r="4" fill="#0369a1"/></g>; })()}
       {orig.map((o, ko) => <g key={o.g.id}>
         {o.pts.map((q, j) => { const P = arrondi(q); return <circle key={j} cx={P.x} cy={P.y} r="2.2" fill="none" stroke={VIOLET} strokeWidth="1.2" opacity="0.7"/>; })}
         {[0, i].map(j => { const P = arrondi(o.pts[j]); return <IcoSvg key={j} x={P.x} y={P.y + 6} size="19" ico={icoF(S, o.g.id)}/>; })}
@@ -136,7 +141,8 @@ function Panneau({ S, fid, data, visObjs, aff, i, sv, sel, titre, jusqua, simple
             </g>; })}
           {jusqua < n && (() => {       // pendant « revoir le mouvement » : le mobile avance sans à-coups, la photo se « dépose » quand il passe
             const t = jusqua * E.dt, g = o.pos(t), og = F.O(t), P = arrondi({ x: g.x - og.x, y: g.y - og.y }, o);
-            return <IcoSvg x={P.x} y={P.y - 9} size="20" ico={ICO_OBJ[o.id]}/>; })()}
+            return ICO_OBJ[o.id] ? <IcoSvg x={P.x} y={P.y - 9} size="20" ico={ICO_OBJ[o.id]}/>
+              : <circle cx={P.x} cy={P.y} r="6" fill={o.col} stroke="#fff" strokeWidth="1.5"/>; })()}
           {(() => { const P = arrondi(E.p[i], o); return !simple && i <= jusqua && o.id === sel ? <text x={P.x + 11} y={P.y + 16} fontSize="12.5" fontWeight="800" fill={NOIR}>M<tspan fontSize="9" dy="3">{i}</tspan></text> : null; })()}
         </g>; })}
       {/* barre d'échelle des longueurs et des vitesses */}
@@ -612,6 +618,14 @@ export function SimulationMouvementReferentiel() {
       <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer', display: 'block', marginBottom: 6 }}><input type="checkbox" checked={!!eff.aff.v} onChange={e => majAff({ v: e.target.checked })} style={{ marginRight: 6 }}/>Afficher la vitesse (une flèche verte pour chaque photo)</label>
       {S.id === 'baton' && <label style={{ fontSize: 14, color: KIT.txt, cursor: 'pointer', display: 'block', marginBottom: 6 }}><input type="checkbox" checked={!!eff.aff.sys} onChange={e => majAff({ sys: e.target.checked })} style={{ marginRight: 6 }}/>Dessiner le bâton entier</label>}
     </div>);
+  // parcours guidé (étapes de base) : jamais tous les réglages d'emblée ; seul le choix du point de vue apparaît, aux étapes qui parlent de référentiel
+  const ETAPES_POINT_DE_VUE = ['referentiel', 'avion', 'vitesserel'];
+  const reglagesGuide = enGuide && S.frames.length > 1 && ETAPES_POINT_DE_VUE.includes(ETAPES[Math.min(etape, ETAPES.length - 1)].id) ? (
+    <div style={{ ...styleBoite, ...cadre('reglages') }}>
+      {etiq(`D’où regarde-t-on le mouvement ?${eff.cmp ? ' (à gauche)' : ''}`)}
+      {choixPlace('fG', ex.fG)}
+      {eff.cmp && <>{etiq('À droite')}{choixPlace('fD', ex.fD)}</>}
+    </div>) : null;
   const observation = (
     <div style={{ ...styleBoite, background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>👀 Ce que l’on observe</div>
@@ -691,7 +705,9 @@ export function SimulationMouvementReferentiel() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Référentiel et mouvement : décrire un mouvement</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 14, color: KIT.txt2, marginBottom: 10, lineHeight: 1.55 }}>{compact
+      <div style={{ fontSize: 14, color: KIT.txt2, marginBottom: 10, lineHeight: 1.55 }}>{enGuide && compact
+        ? 'Un mobile est photographié à intervalles de temps réguliers : chaque point est une photo. Appuyez sur ▶ pour voir le mouvement se construire.'
+        : compact
         ? 'Un mobile est photographié à intervalles de temps réguliers : chaque point est une photo. Choisissez une situation et l’endroit d’où on observe, puis appuyez sur ▶ pour voir le mouvement se construire.'
         : 'Une chronophotographie : la position d’un mobile, relevée à intervalles de temps égaux Δt. Choisissez une situation, puis un référentiel (le point de vue d’un observateur). On peut afficher le vecteur vitesse, sa variation Δv et comparer deux référentiels.'}</div>
       {mode === 'explore' && <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 10 }}>
@@ -704,7 +720,7 @@ export function SimulationMouvementReferentiel() {
             <VoletDefi defi={defi} setDefi={setDefi} dtChoisi={dt} changerType={t => { const d = nouveauDefi(t); setDefi(d); setEx(e => ({ ...e, ...etatDefi(d), aff: { ...AFF0, v: true, ve: t === 'dt' }, bruit: t === 'dt', i: 4 })); }}/></div>}
           <div className={`mr-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {panneaux}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{compact ? <>{reglagesSimples}{observation}</> : <>{reglages}{mesures}</>}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{enGuide && compact ? reglagesGuide : compact ? <>{reglagesSimples}{observation}</> : <>{reglages}{mesures}</>}</div>
           </div>
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
