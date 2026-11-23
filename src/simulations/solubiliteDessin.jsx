@@ -185,7 +185,7 @@ export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, hal
   });
   // charges partielles
   const delta = (m, i, signe, k, extra = []) => { const M = mols[m], t = dirLibre(M, i, extra), r = fs * 1.15, p = M.at[i];
-    return <text key={`q${k}`} x={X(p.x) + Math.cos(t) * r} y={Y(p.y) - Math.sin(t) * r + fs * 0.3} textAnchor="middle" fontSize={fs * 0.78} fontWeight="800" fill={signe > 0 ? '#2563eb' : '#dc2626'}>{signe > 0 ? 'δ+' : 'δ−'}</text>; };
+    return <text key={`q${k}`} x={X(p.x) + Math.cos(t) * r} y={Y(p.y) - Math.sin(t) * r + fs * 0.3} textAnchor="middle" fontSize={fs * 0.88} fontWeight="800" fill={signe > 0 ? '#2563eb' : '#dc2626'}>{signe > 0 ? 'δ+' : 'δ−'}</text>; };
   if (charges === 'toutes') mols.forEach((M, m) => ANA[M.id].q.forEach((q, i) => { if (q) elems.push(delta(m, i, q, `${m}-${i}`)); }));
   if (charges === 'inter') lignes.filter(l => l.t !== 'd').forEach((l, k) => {
     const p = mols[l.m1].at[l.i1], q = mols[l.m2].at[l.i2], ang = Math.atan2(q.y - p.y, q.x - p.x);
@@ -229,8 +229,8 @@ export function PaireSVG({ a, b, titre, sous, W = 360, H = 140, actif = null, on
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`${titre} : ${ESPECES[a].nom} et ${ESPECES[b].nom}`}>
       <g transform="translate(0,0)"><Scene mols={mols} lignes={lignes} W={W} H={H - 18} smax={40} charges="inter" actif={actif} onSurvol={onSurvol}/></g>
-      <text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">{titre}</text>
-      <text x={W - 6} y={H - 4} textAnchor="end" fontSize="11" fill="#475569">{sous}</text>
+      <text x="6" y={H - 4} fontSize="16" fontWeight="700" fill="#0f172a">{titre}</text>
+      <text x={W - 6} y={H - 4} textAnchor="end" fontSize="15" fill="#475569">{sous}</text>
     </svg>);
 }
 
@@ -273,18 +273,18 @@ export function SolvateSVG({ solv, W = 360, H = 190, actif = null, onSurvol = nu
       <Scene mols={a.mols} lignes={a.lignes} W={w} H={H - 18} smax={24} charges="inter" actif={actif} onSurvol={onSurvol}/>
       <g transform={`translate(${w},0)`}><Scene mols={b.mols} lignes={b.lignes} W={w} H={H - 18} smax={24} charges="inter" actif={actif} onSurvol={onSurvol}/></g>
       <line x1={w} y1="8" x2={w} y2={H - 22} stroke="#e2e8f0"/>
-      <text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">Na⁺ entouré de solvant</text>
-      <text x={W - 6} y={H - 4} textAnchor="end" fontSize="12" fontWeight="700" fill="#0f172a">Cl⁻ entouré de solvant</text>
+      <text x="6" y={H - 4} fontSize="16" fontWeight="700" fill="#0f172a">Na⁺ entouré de solvant</text>
+      <text x={W - 6} y={H - 4} textAnchor="end" fontSize="16" fontWeight="700" fill="#0f172a">Cl⁻ entouré de solvant</text>
     </svg>);
 }
 export function CristalSVG({ W = 360, H = 150 }) {
   const ions = [];
   for (let i = 0; i < 6; i++) for (let j = 0; j < 3; j++) { const na = (i + j) % 2 === 0; ions.push(<g key={`${i}-${j}`}>
     <circle cx={70 + i * 44} cy={22 + j * 40} r={na ? 13 : 18} fill={na ? '#fde68a' : '#bbf7d0'} stroke={na ? '#b45309' : '#15803d'} strokeWidth="1.5"/>
-    <text x={70 + i * 44} y={26 + j * 40} textAnchor="middle" fontSize="11" fontWeight="800" fill="#0f172a">{na ? 'Na⁺' : 'Cl⁻'}</text></g>); }
+    <text x={70 + i * 44} y={26 + j * 40} textAnchor="middle" fontSize="15" fontWeight="800" fill="#0f172a">{na ? 'Na⁺' : 'Cl⁻'}</text></g>); }
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Cristal de chlorure de sodium">
-      {ions}<text x="6" y={H - 4} fontSize="12" fontWeight="700" fill="#0f172a">cristal : chaque ion entouré d’ions de signe opposé</text>
+      {ions}<text x="6" y={H - 4} fontSize="16" fontWeight="700" fill="#0f172a">cristal : chaque ion entouré d’ions de signe opposé</text>
     </svg>);
 }
 

@@ -465,8 +465,8 @@ export function SimulationMouvementSysteme() {
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img"
         aria-label={`Chronophotographie : ${SCEN[eff.id].label}`}>
         {S.terre && <g><circle cx={X(0)} cy={Y(0)} r={RL * g.s} fill="none" stroke="#cbd5e1" strokeDasharray="4 4"/><circle cx={X(0)} cy={Y(0)} r="11" fill="#38bdf8" stroke="#0369a1" strokeWidth="1.5"/>
-          <text x={X(0)} y={Y(0) + 26} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0369a1">Terre</text></g>}
-        {A.pts.map((p, j) => <text key={`l${j}`} x={X(p.x) - 12} y={Y(p.y) - 7} textAnchor="end" fontSize="10" fill={GRIS}>A<tspan fontSize="8" dy="2">{j}</tspan></text>)}
+          <text x={X(0)} y={Y(0) + 26} textAnchor="middle" fontSize="21" fontWeight="700" fill="#0369a1">Terre</text></g>}
+        {(() => { let lx = -1e9, ly = -1e9; return A.pts.map((p, j) => { const px = X(p.x), py = Y(p.y); if (j > 0 && Math.hypot(px - lx, py - ly) < 36) return null; lx = px; ly = py; return <text key={`l${j}`} x={X(p.x) - 12} y={Y(p.y) - 7} textAnchor="end" fontSize="22" fill={GRIS}>A<tspan fontSize="17" dy="3">{j}</tspan></text>; }); })()}
         {A.pts.map((p, j) => croix(X(p.x), Y(p.y), `c${j}`, j === i - k || j === i || j === i + k))}
         {/* flèches vitesse */}
         {aff.v && !figee && A.v.map((v, j) => v && <Fleche key={`v${j}`} x1={X(A.pts[j].x) + dec(10)[0]} y1={Y(A.pts[j].y) + dec(10)[1]}
@@ -483,20 +483,20 @@ export function SimulationMouvementSysteme() {
         {/* construction de Δv */}
         {pas >= 1 && !figee && <g>
           <Fleche x1={ax} y1={ay} x2={tipv[0]} y2={tipv[1]} col={VERT} w={3.4}/>
-          <text x={(ax + tipv[0]) / 2 + 8} y={(ay + tipv[1]) / 2 - 4} fontSize="12" fontWeight="700" fill={VERT}>v<tspan fontSize="9" dy="2">i+{k}</tspan></text>
+          <text x={(ax + tipv[0]) / 2 + 8} y={(ay + tipv[1]) / 2 - 4} fontSize="21" fontWeight="700" fill={VERT}>v<tspan fontSize="16" dy="2">i+{k}</tspan></text>
           {pas >= 2 && <Fleche x1={tipv[0]} y1={tipv[1]} x2={tipm[0]} y2={tipm[1]} col={VERT} w={3.4} dash="6 3"/>}
-          {pas >= 2 && <text x={(tipv[0] + tipm[0]) / 2 + 8} y={(tipv[1] + tipm[1]) / 2 + 12} fontSize="12" fontWeight="700" fill={VERT}>−v<tspan fontSize="9" dy="2">i−{k}</tspan></text>}
+          {pas >= 2 && <text x={(tipv[0] + tipm[0]) / 2 + 8} y={(tipv[1] + tipm[1]) / 2 + 12} fontSize="21" fontWeight="700" fill={VERT}>−v<tspan fontSize="16" dy="2">i−{k}</tspan></text>}
           {pas >= 3 && <Fleche x1={ax} y1={ay} x2={tipm[0]} y2={tipm[1]} col={ROUGE} w={4}/>}
-          {pas >= 3 && <text x={(ax + tipm[0]) / 2 - 10} y={(ay + tipm[1]) / 2} textAnchor="end" fontSize="13" fontWeight="800" fill={ROUGE}>Δv<tspan fontSize="9" dy="2">i</tspan></text>}
+          {pas >= 3 && <text x={(ax + tipm[0]) / 2 - 10} y={(ay + tipm[1]) / 2} textAnchor="end" fontSize="23" fontWeight="800" fill={ROUGE}>Δv<tspan fontSize="16" dy="2">i</tspan></text>}
         </g>}
         {/* légende : échelles */}
-        <g transform={`translate(14,${H - 44})`}>
-          <rect x="-6" y="-18" width={200} height="58" rx="6" fill="white" opacity="0.85" stroke="#e2e8f0"/>
-          <Fleche x1={0} y1={0} x2={60} y2={0} col={VERT} w={2.6}/><text x="68" y="4" fontSize="11.5" fill={NOIR}>{nb(vn)} {S.U.Vu} (v et Δv)</text>
-          <Fleche x1={0} y1={22} x2={60} y2={22} col={NOIR} w={2.6}/><text x="68" y="26" fontSize="11.5" fill={NOIR}>{nb(fn)} {S.U.Fu} (forces)</text>
+        <g transform={`translate(${W - 300},${H - 62})`}>
+          <rect x="-6" y="-22" width={290} height="76" rx="6" fill="white" opacity="0.85" stroke="#e2e8f0"/>
+          <Fleche x1={0} y1={0} x2={60} y2={0} col={VERT} w={2.6}/><text x="68" y="6" fontSize="20" fill={NOIR}>{nb(vn)} {S.U.Vu} (v et Δv)</text>
+          <Fleche x1={0} y1={30} x2={60} y2={30} col={NOIR} w={2.6}/><text x="68" y="36" fontSize="20" fill={NOIR}>{nb(fn)} {S.U.Fu} (forces)</text>
         </g>
-        <text x={W - 10} y="20" textAnchor="end" fontSize="12.5" fontWeight="700" fill={NOIR}>{SCEN[eff.id].label} : τ = {nb(S.tau * S.U.Tf)} {S.U.Tu}</text>
-        {figee && <text x={W / 2} y={H - 14} textAnchor="middle" fontSize="13" fontWeight="700" fill={GRIS}>Prédisez avant de regarder.</text>}
+        <text x={W - 10} y="20" textAnchor="end" fontSize="22" fontWeight="700" fill={NOIR}>{SCEN[eff.id].label} : τ = {nb(S.tau * S.U.Tf)} {S.U.Tu}</text>
+        {figee && <text x={W / 2} y={H - 14} textAnchor="middle" fontSize="23" fontWeight="700" fill={GRIS}>Prédisez avant de regarder.</text>}
       </svg>);
   })();
 
@@ -506,14 +506,14 @@ export function SimulationMouvementSysteme() {
     return (
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Trajectoire calculée par la méthode d’Euler">
         {S.terre && <g><circle cx={X(0)} cy={Y(0)} r={RL * g.s} fill="none" stroke="#cbd5e1" strokeDasharray="4 4"/><circle cx={X(0)} cy={Y(0)} r="11" fill="#38bdf8" stroke="#0369a1" strokeWidth="1.5"/>
-          <text x={X(0)} y={Y(0) + 26} textAnchor="middle" fontSize="12" fontWeight="700" fill="#0369a1">Terre</text></g>}
+          <text x={X(0)} y={Y(0) + 26} textAnchor="middle" fontSize="21" fontWeight="700" fill="#0369a1">Terre</text></g>}
         <polyline points={trajE.map(p => `${X(p.x)},${Y(p.y)}`).join(' ')} fill="none" stroke={ORANGE} strokeWidth="2.2"/>
         {trajE.map((p, q) => (trajE.length <= 60 || q % Math.ceil(trajE.length / 60) === 0) && <circle key={`e${q}`} cx={X(p.x)} cy={Y(p.y)} r="2.6" fill={ORANGE}/>)}
         {ex.map((p, j) => croix(X(p.x), Y(p.y), `x${j}`, false))}
-        <text x={W - 10} y="20" textAnchor="end" fontSize="12.5" fontWeight="700" fill={NOIR}>{SCEN[eff.id].label}</text>
-        <g transform={`translate(14,${H - 44})`}><rect x="-6" y="-18" width={236} height="58" rx="6" fill="white" opacity="0.85" stroke="#e2e8f0"/>
-          <path d="M-3,-3 L3,3 M-3,3 L3,-3" transform="translate(4,0)" stroke={BLEU} strokeWidth="2"/><text x="16" y="4" fontSize="11.5" fill={NOIR}>mouvement exact (chronophotographie)</text>
-          <circle cx="4" cy="22" r="3" fill={ORANGE}/><text x="16" y="26" fontSize="11.5" fill={NOIR}>calcul : v(t+Δt) = v(t) + ΣF/m·Δt</text></g>
+        <text x={W - 10} y="20" textAnchor="end" fontSize="22" fontWeight="700" fill={NOIR}>{SCEN[eff.id].label}</text>
+        <g transform={`translate(14,${H - 62})`}><rect x="-6" y="-22" width={420} height="76" rx="6" fill="white" opacity="0.85" stroke="#e2e8f0"/>
+          <path d="M-3,-3 L3,3 M-3,3 L3,-3" transform="translate(4,0)" stroke={BLEU} strokeWidth="2"/><text x="16" y="6" fontSize="20" fill={NOIR}>mouvement exact (chronophotographie)</text>
+          <circle cx="4" cy="30" r="4" fill={ORANGE}/><text x="16" y="36" fontSize="20" fill={NOIR}>calcul : v(t+Δt) = v(t) + ΣF/m·Δt</text></g>
       </svg>);
   })();
   const dEuler = hyp(trajE[trajE.length - 1].x - ex[ex.length - 1].x, trajE[trajE.length - 1].y - ex[ex.length - 1].y);
@@ -529,22 +529,22 @@ export function SimulationMouvementSysteme() {
     const X = x => ZW / 2 + (x - xc) * sc, Y = y => ZH / 2 - (y - yc) * sc;
     const o = [X(0), Y(0)], P = [X(vp.x), Y(vp.y)], M = [X(vm.x), Y(vm.y)], T = [X(tip.x), Y(tip.y)];
     const dx = T[0] - o[0], dy = T[1] - o[1], dl = Math.hypot(dx, dy) || 1, nx = dy / dl * 22, ny = -dx / dl * 22;   // décalage latéral pour que les flèches colinéaires restent lisibles
-    const t = (x, y, txt, col) => <text x={x} y={y} fontSize="14" fontWeight="800" fill={col}>{txt}</text>;
+    const t = (x, y, txt, col) => <text x={x} y={y} fontSize="24.5" fontWeight="800" fill={col}>{txt}</text>;
     return (
       <svg viewBox={`0 0 ${ZW} ${ZH}`} style={{ width: '100%', display: 'block', background: '#fffbeb', borderRadius: 8, marginTop: 8, border: '1px solid #fde68a' }} role="img" aria-label="Construction de Δv, vue agrandie">
-        <text x="10" y="20" fontSize="12.5" fontWeight="700" fill={NOIR}>Construction de Δv au point A<tspan fontSize="9" dy="3">{i}</tspan><tspan dy="-3"> (vue agrandie, origine en A</tspan><tspan fontSize="9" dy="3">{i}</tspan><tspan dy="-3">)</tspan></text>
+        <text x="10" y="20" fontSize="22" fontWeight="700" fill={NOIR}>Construction de Δv au point A<tspan fontSize="16" dy="3">{i}</tspan><tspan dy="-3"> (vue agrandie, origine en A</tspan><tspan fontSize="16" dy="3">{i}</tspan><tspan dy="-3">)</tspan></text>
         <circle cx={o[0]} cy={o[1]} r="4.5" fill={NOIR}/>
         {pas < 2 && <Fleche x1={o[0]} y1={o[1]} x2={M[0]} y2={M[1]} col={VERT} w={2} dash="3 3" op={0.55}/>}
-        {pas < 2 && t(M[0] + 6, M[1] - 6, <>v<tspan fontSize="10" dy="3">i−{k}</tspan></>, VERT)}
+        {pas < 2 && t(M[0] + 6, M[1] - 6, <>v<tspan fontSize="17.5" dy="3">i−{k}</tspan></>, VERT)}
         <Fleche x1={o[0]} y1={o[1]} x2={P[0]} y2={P[1]} col={VERT} w={3.4}/>
-        {t(P[0] + 8, P[1] - 6, <>v<tspan fontSize="10" dy="3">i+{k}</tspan></>, VERT)}
+        {t(P[0] + 8, P[1] - 6, <>v<tspan fontSize="17.5" dy="3">i+{k}</tspan></>, VERT)}
         {pas >= 2 && <line x1={P[0]} y1={P[1]} x2={P[0] + nx} y2={P[1] + ny} stroke={VERT} strokeWidth="1.4" strokeDasharray="2 3"/>}
         {pas >= 2 && <Fleche x1={P[0] + nx} y1={P[1] + ny} x2={T[0] + nx} y2={T[1] + ny} col={VERT} w={3.4} dash="7 4"/>}
         {pas >= 2 && <line x1={T[0] + nx} y1={T[1] + ny} x2={T[0]} y2={T[1]} stroke={VERT} strokeWidth="1.4" strokeDasharray="2 3"/>}
-        {pas >= 2 && t((P[0] + T[0]) / 2 + nx + 8, (P[1] + T[1]) / 2 + ny + 4, <>−v<tspan fontSize="10" dy="3">i−{k}</tspan></>, VERT)}
+        {pas >= 2 && t((P[0] + T[0]) / 2 + nx + 8, (P[1] + T[1]) / 2 + ny + 4, <>−v<tspan fontSize="17.5" dy="3">i−{k}</tspan></>, VERT)}
         {pas >= 3 && <Fleche x1={o[0]} y1={o[1]} x2={T[0]} y2={T[1]} col={ROUGE} w={4.4}/>}
-        {pas >= 3 && t((o[0] + T[0]) / 2 - 38, (o[1] + T[1]) / 2 - 4, <>Δv<tspan fontSize="10" dy="3">i</tspan></>, ROUGE)}
-        <text x={ZW - 10} y={ZH - 10} textAnchor="end" fontSize="11.5" fill={GRIS}>échelle : la flèche v<tspan fontSize="9" dy="3">i+{k}</tspan><tspan dy="-3"> mesure {nb(hyp(vp.x, vp.y) * V)} {S.U.Vu}</tspan></text>
+        {pas >= 3 && t((o[0] + T[0]) / 2 - 38, (o[1] + T[1]) / 2 - 4, <>Δv<tspan fontSize="17.5" dy="3">i</tspan></>, ROUGE)}
+        <text x={ZW - 10} y={ZH - 10} textAnchor="end" fontSize="20" fill={GRIS}>échelle : la flèche v<tspan fontSize="16" dy="3">i+{k}</tspan><tspan dy="-3"> mesure {nb(hyp(vp.x, vp.y) * V)} {S.U.Vu}</tspan></text>
       </svg>);
   })();
   // ════════════════ PANNEAUX ════════════════
