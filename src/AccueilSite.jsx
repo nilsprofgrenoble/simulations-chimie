@@ -1,3 +1,4 @@
+import "./AccueilBlocs.css";
 import { BoutonMail } from "./contact";
 import { lazy, Suspense, useState, useEffect, useRef, useCallback } from "react";
 const SimulationClassement = lazy(() => import("./simulations/Classement").then(m => ({ default: m.SimulationClassement })));
