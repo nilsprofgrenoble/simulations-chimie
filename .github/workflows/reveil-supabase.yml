@@ -1,0 +1,17 @@
+# Empêche Supabase de mettre le projet en pause pendant les vacances (projets gratuits : pause après 7 jours sans activité).
+# Tous les 3 jours, GitHub appelle la fonction « ping » de la base (créée par supabase/04-durcissement.sql).
+# Elle ne lit ni n'écrit aucune donnée. La clé utilisée est la clé publique (« publishable ») : elle n'a rien de secret.
+# Remarque : GitHub suspend les tâches programmées d'un dépôt resté 60 jours sans aucun « push ».
+name: Réveil Supabase
+on:
+  schedule:
+    - cron: '17 6 */3 * *'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -sS --fail -X POST 'https://pqgzlklnynbkgiwmbzdj.supabase.co/rest/v1/rpc/ping' \
+            -H 'apikey: sb_publishable_i2K6w3cEgTNcgmLWhuYx8w_9gXT6-tB' -H 'Content-Type: application/json' -d '{}'
