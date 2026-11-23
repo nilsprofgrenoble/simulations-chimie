@@ -337,7 +337,8 @@ export function SimulationTravail() {
   const lienBase = aRetablir && !cibleOk && <button onClick={rendreBase} style={{ ...styleBouton(true, '#b45309'), marginBottom: 8 }}>Rétablir la situation de l’étape</button>;
 
   // ════════════════ DÉFIS ════════════════
-  const nouveauFrott = () => { const alpha = tire([10, 12, 15, 18, 20]), m = tire([0.15, 0.2, 0.25, 0.3]), f = tire([0.1, 0.15, 0.2, 0.25, 0.3, 0.35]);
+  const nouveauFrott = () => { let alpha, m, f;
+    do { alpha = tire([10, 12, 15, 18, 20]); m = tire([0.15, 0.2, 0.25, 0.3]); f = tire([0.1, 0.15, 0.2, 0.25, 0.3, 0.35]); } while (9.8 * Math.sin(alpha * Math.PI / 180) - f / m < 1);   // le mobile doit descendre nettement (a ≥ 1 m/s²)
     return { type: 'frott', p: { alpha, m, f }, vrai: f, reps: {}, verifie: false }; };
   const nouvelArret = () => { const combis = []; [1.5, 2, 2.5, 3].forEach(m => [3, 4, 5].forEach(vA => [4, 5, 6, 8].forEach(F => { if (M.ecin(m, vA) / F <= 5.5) combis.push([m, vA, F]); })));   // d ≤ AB = 6 m : le chariot reste dans le cadre
     const [m, vA, F] = tire(combis);

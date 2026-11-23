@@ -131,10 +131,10 @@ export function SimulationCaracPile() {
       </>,
       texte: <>La régression linéaire donne la droite U = a·I + b. L’<strong>ordonnée à l’origine</strong> b est la tension à vide <strong>U₀</strong> ; le coefficient directeur a est négatif, et <strong>r = −a</strong> est la <strong>résistance interne</strong> de la pile (en Ω). Donc <strong>U = U₀ − r × I</strong>.
         <ExempleResolu>Mesures du TP : U = 4,43 V à vide et U = 3,80 V pour I = 125,8 mA. r = (4,43 − 3,80) / 0,1258 = <strong>5,0 Ω</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'Une pile donne U₀ = 4,50 V à vide et U = 4,00 V pour I = 100 mA. Quelle est sa résistance interne r (en Ω) ?', unite: 'Ω', vrai: 5, tol: 0.02, affiche: x => String(x),
-        calcul: () => ['Modèle de la pile réelle : U = U₀ − r × I (U₀ et r constants), donc r = (U₀ − U) / I.', 'Chute de tension : U₀ − U = 4,50 − 4,00 = 0,50 V ; courant : I = 100 mA = 0,100 A.', 'r = 0,50 / 0,100 = 5,0 Ω.'],
-        pieges: [[0.005, 'Convertis I en ampères : 100 mA = 0,100 A.'], [40, 'Tu as divisé U par I : il faut diviser la baisse de tension (U₀ − U) par I.'],
-          [45, 'Tu as divisé la tension à vide U₀ par I : r est la baisse de tension (U₀ − U) divisée par I.'], [0.5, 'C’est la baisse de tension U₀ − U (en V). Il reste à la diviser par I (en A) pour obtenir r.']], expl: 'r = (U₀ − U) / I = (4,50 − 4,00) / 0,100 = 5,0 Ω.', indice: "U = U₀ − r × I, donc r = (U₀ − U) / I, avec I en ampères (convertis les mA)." } },
+      tache: { type: 'num', q: 'Une pile donne U₀ = 4,50 V à vide et U = 3,90 V pour I = 100 mA. Quelle est sa résistance interne r (en Ω) ?', unite: 'Ω', vrai: 6, tol: 0.02, affiche: x => String(x),
+        calcul: () => ['Modèle de la pile réelle : U = U₀ − r × I (U₀ et r constants), donc r = (U₀ − U) / I.', 'Chute de tension : U₀ − U = 4,50 − 3,90 = 0,60 V ; courant : I = 100 mA = 0,100 A.', 'r = 0,60 / 0,100 = 6,0 Ω.'],
+        pieges: [[0.006, 'Convertis I en ampères : 100 mA = 0,100 A.'], [39, 'Tu as divisé U par I : il faut diviser la baisse de tension (U₀ − U) par I.'],
+          [45, 'Tu as divisé la tension à vide U₀ par I : r est la baisse de tension (U₀ − U) divisée par I.'], [0.6, 'C’est la baisse de tension U₀ − U (en V). Il reste à la diviser par I (en A) pour obtenir r.']], expl: 'r = (U₀ − U) / I = (4,50 − 3,90) / 0,100 = 6,0 Ω.', indice: "U = U₀ − r × I, donc r = (U₀ − U) / I, avec I en ampères (convertis les mA)." } },
     { id: 'ideale', titre: 'La source idéale de tension', depart: () => voir('tp', { pile: 'labo' }),
       retenirTitre: 'À RETENIR : U = U₀ − r × I',
       retenir: <>

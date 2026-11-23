@@ -226,7 +226,7 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
           {choix('sensF', [['vers', 'vers Q (attraction)'], ['loin', 'à l’opposé de Q (répulsion)']])}
         </div>
       </>}
-      <IndiceDefi cache={reussi}>{defi.type === 'signes' ? <>Observe le sens des vecteurs champ autour de la charge : vers elle ou loin d’elle ? Déduis-en son signe.</>
+      <IndiceDefi cache={reussi}>{defi.type === 'signes' ? <>Observe la flèche rouge : la force F subie par la charge test q est-elle dirigée vers Q ou loin de Q ? Des charges de même signe se repoussent, de signes contraires s’attirent : déduis-en le signe de Q, puis le sens de E.</>
         : defi.type === 'altitude' ? <>La norme du champ de gravitation diminue avec la distance au centre de la Terre (en 1 / d²). Fais varier l’altitude et observe l’évolution de g.</>
         : <>E = k × |Q| / d², puis F = |q| × E (charges en coulombs, distance en mètres).</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
