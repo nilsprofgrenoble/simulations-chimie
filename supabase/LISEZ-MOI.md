@@ -218,3 +218,22 @@ Règles à connaître :
 ## Activité des professeurs (administrateur) — `20-activite-profs.sql`
 
 « Gérer les professeurs » affiche, sous chaque professeur, sa dernière connexion, son nombre de classes et d'élèves (rien d'autre n'est suivi : ni temps passé, ni pages vues). Réservé à l'administrateur ; déjà appliqué sur le projet.
+
+## Inscription libre des enseignants par adresse académique (étape 40)
+
+**État : préparée, pas encore ouverte.** La base (`23-inscription-profs.sql`, appliquée) et la fonction « inscription-prof » (déployée) sont en place.
+Le site, lui, n'affiche le formulaire que lorsque l'interrupteur `INSCRIPTION_PROF_OUVERTE` (fichier `src/simulations/InscriptionProf.jsx`) passe à `true`.
+Tant qu'il est à `false`, la page « Mon compte » garde le bouton « Demander un compte enseignant » par mail.
+
+**Ce qu'il reste à faire avant d'ouvrir (à vous, dans les sites des services) :**
+1. **Un service d'envoi de mails.** Le service par défaut de Supabase n'envoie qu'aux membres de votre équipe (2 mails par heure) : les enseignants inconnus ne recevraient rien.
+   Créez un compte chez un service d'envoi (Brevo, par exemple, palier gratuit), faites-lui valider le domaine `paillasse-virtuelle.fr` (quelques lignes à ajouter chez OVH, dans la zone DNS), puis dans Supabase :
+   *Authentication → Emails → SMTP Settings → Enable custom SMTP* : collez serveur, port, identifiant et mot de passe donnés par le service. Adresse d'expédition conseillée : `no-reply@paillasse-virtuelle.fr`.
+2. **Autoriser l'adresse de retour.** *Authentication → URL Configuration* : « Site URL » = `https://paillasse-virtuelle.fr`, et ajouter dans « Redirect URLs » : `https://paillasse-virtuelle.fr/?sim=39`.
+3. **Mails en français.** *Authentication → Emails → Templates* : traduire « Invite user » et « Reset password » (garder la balise du lien `{{ .ConfirmationURL }}`).
+4. **Redéployer « comptes »** (plafond de 8 classes pour un compte inscrit librement, liste des professeurs corrigée) : même méthode que d'habitude, avec `functions/comptes/index.ts`. Claude peut le faire.
+5. **Essai** avec une adresse académique que vous maîtrisez, puis passer l'interrupteur à `true`.
+
+**Ce que fait la fonction :** adresse en liste fermée d'académies (pas un simple motif « ac-… »), 3 demandes par jour et par adresse, 5 par heure et par réseau, 150 par jour au total,
+400 comptes libres au plus, compte jamais confirmé supprimé au bout de 14 jours. Un enseignant inscrit librement est un professeur normal (il crée ses classes, 8 au plus) ; Energy@School reste réservé (accordé par vous).
+Hors liste (enseignement agricole, étranger, IUT, privé…) : vous créez le compte à la main, comme avant.
