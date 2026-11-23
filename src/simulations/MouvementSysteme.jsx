@@ -1,7 +1,6 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, Children, Fragment, cloneElement, isValidElement } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Formule, Vec, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci, IndiceDefi } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, Vec, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { FicheConstruireDv, FicheDvForce, FicheInertie, FicheMasse, FichePlusieursForces, FichePasDt, FicheEuler, FicheVetDv, FicheLune } from "./MouvementSystemeFiches";
 

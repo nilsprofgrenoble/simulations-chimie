@@ -5,7 +5,7 @@
 import { useId } from "react";
 import { KIT } from "../commun";
 import { TV, Fl, ROUGE, BLEU, VERT, ORANGE, NOIR, GRIS } from "./Travail";
-import { rampe, PRODUITS, COULEURS } from "./rheoCourbesModele";
+import { rampe, PRODUITS } from "./rheoCourbesModele";
 
 const NB = " ";
 const milliers = (x) => {

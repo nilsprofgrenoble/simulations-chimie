@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, FormuleEnLigne, ExempleResolu, lireNombre, proche } from "../commun";
-import { fr, E_CHARGE, N_CUIVRE, deriveVitesse } from "./elecModele";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, FormuleEnLigne, ExempleResolu, lireNombre, proche } from "../commun";
+import { fr, E_CHARGE, deriveVitesse } from "./elecModele";
 import { BLEU, VERMILLON, GRIS, alea, usePhase } from "./elecOutils";
-import { Curseur, VoletDefiGen, Fil, Mesure } from "./elecCommun";
+import { Curseur, VoletDefiGen, Fil } from "./elecCommun";
 import { Pic } from "../Pictos";
 import { FicheMetal, FicheSolution, FicheDebit, FicheElectrons, FicheBatterie, FicheVitesse } from "./DebitChargesFiches";
 

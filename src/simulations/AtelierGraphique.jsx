@@ -1,10 +1,9 @@
 import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo, useRef } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, exParam, attrTest } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, exParam, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
 import { parDomaine } from "./ordreDomaines";
-import { SCENARIOS, COMPETENCES, nouveauGraphique, questions, verifierNum, nb, decimales, fmtAxe } from "./AtelierGraphiqueBanque";
+import { SCENARIOS, nouveauGraphique, questions, verifierNum, nb, decimales, fmtAxe } from "./AtelierGraphiqueBanque";
 import { Pic } from "../Pictos";
 
 // ====================================================

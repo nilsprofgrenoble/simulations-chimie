@@ -4,7 +4,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi } from "../commun";
 import { G, ASTRES, astre, gravite, forceGrav, fr, sci, PX_CM, ECHELLES, caracteristiques, conforme } from "./forcesModele";
 import { Pic } from "../Pictos";
-import { Schema, Fl, T, TV, TL, GRIS, BLEU, NOIR } from "./Travail";
+import { Schema, Fl, T, TV, GRIS, NOIR } from "./Travail";
 
 // ====================================================
 //  SIM 59 — MODÉLISER UNE ACTION MÉCANIQUE PAR UNE FORCE (2GT, « Mouvement et interactions »)

@@ -33,8 +33,7 @@
 
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, FormuleEnLigne, LigneMesure, ORANGE_GUIDE, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, FormuleEnLigne, ORANGE_GUIDE, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { FicheCourbe, FicheLeviers, FicheCatalyseur, FicheRendement, FicheEquilibre } from "./OptimiserSyntheseFiches";
 

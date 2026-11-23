@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FicheDispersion, FicheSeuils, FicheCompat, FicheEcriture, FicheJustesse } from "./InterLaboratoireFiches";
 import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, Formule, FormuleEnLigne, OngletExercices } from "../commun";
 const vf = x => String(x).replace('.', ',');

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NIVEAUX_ETALON, ETAL_MAX, ECH_MAX, T_PREP, T_INJ, C_IS, TR, M_POUDRE, POUDRES_HUILE, HUILE_MAX_ESSAIS, HUILE_DUREE, etatPate, rapportPate, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
+import { NIVEAUX_ETALON, ETAL_MAX, ECH_MAX, T_PREP, C_IS, TR, M_POUDRE, POUDRES_HUILE, HUILE_MAX_ESSAIS, HUILE_DUREE, etatPate, rapportPate, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, masseCoadis } from "./stationsModele";
 import { essaiBanc, indiceBanc, INDICES_BANC, essaiCourbe, indiceCourbe, INDICES_COURBE, conclureHuile, huileRetenue, phVrai, cpgDe, injecterEtalon, preparerEchantillon, injecterEchantillon, choisirModeCpg, resultatCpg, injecterControle, recuperation, C_CTRL, TMFF_MAX, COV_MAX, nf, fmDepuisFlags, FM_CHAMPS, validerFormule, controlesFormule, optionsPlan, choixPlan } from "./laboJournee";
 import { proprietes } from "./Peinture";
 import { Instrument } from "./LaboVisuels";

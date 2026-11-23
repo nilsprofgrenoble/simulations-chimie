@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, Curseur, LigneMesure, IndiceDefi, VoirSolution, BoiteSolution } from "../commun";
 import { Pic } from "../Pictos";
 import * as O from "./organiqueModele";
 import { puces } from "./Travail";
@@ -399,7 +399,11 @@ export function SimulationNomenclatureOrganique() {
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
         <button id="no-verif" onClick={verifierDefi} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type, defi)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
+        {(defi.type === 'nom' || defi.type === 'brute') && <VoirSolution visible={!(defi.verifie && defi.res.ok) && !defi.solution} onClick={() => maj({ solution: true })}/>}
       </div>
+      {defi.solution && (defi.type === 'nom' || defi.type === 'brute') && <BoiteSolution>{defi.type === 'nom'
+        ? <>Nom attendu : <strong>{O.nom(defi.m)}</strong>. Méthode : repérer la chaîne principale{O.aGroupe(defi.m) ? ' (celle qui porte le groupe)' : ''}, la numéroter pour que les numéros soient les plus petits possible, puis nommer les ramifications par ordre alphabétique.</>
+        : <>Formule brute attendue : <strong><FB m={defi.m}/></strong>. Méthode : compter les C (ramifications comprises) et les O, puis les H : chaque carbone fait 4 liaisons au total, celles qui ne sont pas occupées par un autre atome portent un H.</>}</BoiteSolution>}
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.res.ok ? '#15803d' : '#dc2626' }}>
         {defi.res.ok ? <>✓ Correct : {defi.type === 'brute' ? <FB m={defi.m}/> : reponseDefi(defi)}.</> : `✗ ${defi.res.msg}`}</div>}
       <SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={compteurs[defi.type][0]}/>

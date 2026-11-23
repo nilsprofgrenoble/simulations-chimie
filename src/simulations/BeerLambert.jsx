@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CoeffInput, Field, TabBtn, cardStyle, KIT } from "../commun";
 import { Pic } from "../Pictos";
 

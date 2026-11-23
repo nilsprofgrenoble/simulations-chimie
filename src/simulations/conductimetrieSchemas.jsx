@@ -4,7 +4,7 @@
 //  Couleurs : rouge = H₃O⁺, violet = HO⁻, bleu = Na⁺, vert = anion spectateur (Cl⁻, NO₃⁻) ou ion éthanoate, gris = molécule d'acide éthanoïque.
 //  Les points de la scène sont un schéma : un point = une même quantité de matière (0,1 mmol), sans échelle affichée.
 // ====================================================
-import { IONS, ANALYTES, V_BURETTE } from './conductimetrieModele';
+import { IONS, V_BURETTE } from './conductimetrieModele';
 
 const COL = { bleu: '#0369a1', vert: '#15803d', orange: '#b45309', rouge: '#b91c1c', violet: '#7c3aed', gris: '#64748b', txt: '#0f172a' };
 const stl = { width: '100%', maxWidth: 440, height: 'auto', display: 'block', margin: '0 auto 6px', background: 'white', borderRadius: 8 };

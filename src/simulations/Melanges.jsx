@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression, avecIndices, IndiceDefi } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, ExempleResolu, lireProgression, avecIndices, IndiceDefi } from "../commun";
 import { fr, LIQUIDES, COLORANTS, miscible, goutte, D_HUILE, SHA, shaEau, D_EAU } from "./solutionsModele";
 import { Pic } from "../Pictos";
 import { FicheMisc, FicheRho, FicheSuperpose, FicheMelange, FicheSha, FicheBilanMel } from "./MelangesFiches";

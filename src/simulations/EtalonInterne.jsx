@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Field, TabBtn, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 import { FicheRoleEI, FicheUnEtalon, FicheDilution, FicheRapports, FichePourcentage, FicheLimitesEI, FicheNI, FicheK, FicheCorrection, FicheChoix } from "./EtalonInterneFiches";

@@ -1,11 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, sci, ORANGE_GUIDE } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, sci, ORANGE_GUIDE } from "../commun";
 import { ECHANTILLONS, POS, STRUCT, METAUX_PAR_STRUCT, compacite, masseVol, fermer, denombrer, cleLigne, FR, SITES, formSite, rSite,
   HOTES, INSERES, IONIQUES, coordPrevue } from "./maillesModele";
 import { fr } from "./elecModele";
-import { BLEU, VERMILLON, VIOLET, GRIS, VERT, alea } from "./elecOutils";
+import { BLEU, VERMILLON, VIOLET, VERT, alea } from "./elecOutils";
 import { Curseur, VoletDefiGen } from "./elecCommun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";

@@ -1,7 +1,7 @@
 import { missionEnCours } from "../mission";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, lireNombre, OngletExercices } from "../commun";
+import { useState, useEffect } from "react";
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
 import { FTroisFormes, FIdentite, FVitesseTuyau, FPertesCharge, FBilanAB, FBilanBern } from "./BernoulliSchemas";

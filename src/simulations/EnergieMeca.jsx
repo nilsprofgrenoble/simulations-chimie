@@ -5,7 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { FDef, FConserv, FPerte, FBilan } from "./EnergieMecaSchemas";
-import { nbf, tire, useLecture, Schema, Fl, T, TV, TL, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
+import { nbf, tire, useLecture, Fl, T, TV, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
 import * as M from "./energieModele";
 
 const SIM_ID = 107;

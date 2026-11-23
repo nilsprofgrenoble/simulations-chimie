@@ -4,7 +4,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
 import { fr, R_KM, gAlt, G0, vOrb, periode, typeOrbite, depart, pas, trajectoire } from "./issModele";
 import { Pic } from "../Pictos";
-import { Schema, Fl, T, TV, TL, GRIS, BLEU, NOIR } from "./Travail";
+import { Schema, Fl, T, TV, TL, GRIS, NOIR } from "./Travail";
 
 // ====================================================
 //  SIM 67 — L'ISS EN CHUTE LIBRE (2GT, « Mouvement et interactions »)

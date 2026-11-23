@@ -2,7 +2,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { useState, useEffect, useRef, useMemo } from "react";
 import { Frac, Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche } from "../commun";
-import { FLUIDES, rhoDe, facteurConv, sig, sciTxt, nf, analyser, Un, Chaine, ConvPrefixe, RhoLigne, AlerteRho } from "./DebitsFluides";
+import { FLUIDES, rhoDe, facteurConv, sig, sciTxt, nf, Un, Chaine, ConvPrefixe, RhoLigne, AlerteRho } from "./DebitsFluides";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
 import { FTranches, FDebitVS, FPrefixes, FSectionTuyau, FConvQv, FConserv, FSurDeux, FMasseVD, FHypoVD, FBilanVD } from "./VitesseSchemas";

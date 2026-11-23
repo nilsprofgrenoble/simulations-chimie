@@ -7,10 +7,7 @@ import TableurTitrage from './TableurTitrage';
 import { useState, useEffect, useRef } from "react";
 import { useEtatPersistant, Formule, avecIndices } from "../commun";
 import { Avatar as AvatarVisuel, STYLE_VISUELS } from './LaboVisuels';
-import {
-  CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, FORMULE_REPLI, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub,
-  horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, mesurerPhCom, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, ficheCorrection, ficheFormule, peutSuspendre, suspendre, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe,
-} from "./percutafeineJeu";
+import { CLE_ETAT, CLE_FINS, FINS, PNJ, SCENES, T_FIN, T_MIDI, T_PAUSE, NB_AVATARS, avatarDe, pn, CHAMPS_FORMULE, etatInitial, texteDe, choixDe, visuelsDe, choisir, valider, estFin, peutRevenir, revenirHub, horloge, duree, nf, statutBg, resume, bilan, validerFormule, cliquerPiece, ajouterBase, mesurerPhCom, validerPh, observationsDe, resultatsVus, demanderAide, niveauAide, textesAide, noterObs, pointsRheo, ajusteRheo, MODELES_RHEO, validerRheo, ficheCorrection, ficheFormule, peutSuspendre, suspendre, cpgModele, CPG_LIM, cpgSimFin, chronologie, consequences, fiche, validerPlan, nombre, donneesTitr, GRANDEUR_TITR, phReel, docsDe } from "./percutafeineJeu";
 
 // ====================================================
 //  SIM 113 : CONTRE-TYPAGE DE LA PERCUTAFÉINE (BTS Métiers de la Chimie), histoire à choix d'après le TP / CCF4. Hors menu : ?sim=113.

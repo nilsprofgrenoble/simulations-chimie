@@ -1,8 +1,7 @@
 import { SchemaMontage, SchemaMassique, SchemaDiagramme, SchemaSimple, SchemaEscalier, SchemaTete } from "./DistillationSchemas";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, indicesProfond, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { MELANGES, Teb, yEq, Tros, escalier, tete, trajectoire, pointA, wDe, degre, bilanColonneInfinie } from "./distillationModele";
 import { Pic } from "../Pictos";
 

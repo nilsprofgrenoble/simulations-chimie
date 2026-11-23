@@ -2,8 +2,7 @@ import { useSignalerMode, declarerDefis, SuiviDefiDirect, modeOuverture } from "
 import { useState, useEffect, useRef } from "react";
 import { PeintureExploration, AnimationSechageTest } from "./PeintureExploration";
 import { SchemasFilmSec } from "./peintureSchema";
-import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, OngletExercices } from "../commun";
+import { cardStyle, fmt, lireNombre, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
 import { Formule } from "../commun";
