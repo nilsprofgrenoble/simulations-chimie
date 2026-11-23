@@ -37,19 +37,19 @@ function SchemaSource({ U0, r, R, I, ph, modele }) {
     <svg viewBox="0 0 560 280" width="100%" role="img" aria-label="Pile réelle modélisée par une source idéale de tension U0 en série avec une résistance r, branchée sur un résistor R" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
       <Fil pts={[[60, 235], [60, 60], [500, 60], [500, 235], [60, 235]]} v={30 + 400 * I} ph={ph}/>
       {modele ? <>
-        <rect x="20" y="90" width="180" height="140" rx="10" fill="none" stroke="#64748b" strokeWidth="2.5" strokeDasharray="8 5"/>
-        <text x="72" y="110" fontSize="12.5" fontWeight="800" fill="#475569">pile réelle (modèle)</text>
-        <circle cx="60" cy="170" r="22" fill="#fff" stroke="#0f172a" strokeWidth="3"/><text x="60" y="176" fontSize="16" fontWeight="800" textAnchor="middle">U₀</text>
-        <text x="86" y="168" fontSize="12" fontWeight="700" fill="#0f172a">source idéale</text>
-        <rect x="26" y="116" width="68" height="24" fill="#fff" stroke="#d55e00" strokeWidth="3"/><text x="130" y="133" fontSize="14" fontWeight="800" fill="#d55e00">r = {fr(r, 1)} Ω</text>
+        <rect x="12" y="84" width="222" height="146" rx="10" fill="none" stroke="#64748b" strokeWidth="2.5" strokeDasharray="8 5"/>
+        <text x="76" y="108" fontSize="19" fontWeight="800" fill="#475569">pile (modèle)</text>
+        <circle cx="60" cy="190" r="22" fill="#fff" stroke="#0f172a" strokeWidth="3"/><text x="60" y="197" fontSize="20" fontWeight="800" textAnchor="middle">U₀</text>
+        <text x="90" y="188" fontSize="19" fontWeight="700" fill="#0f172a">source idéale</text>
+        <rect x="26" y="122" width="68" height="26" fill="#fff" stroke="#d55e00" strokeWidth="3"/><text x="104" y="142" fontSize="20" fontWeight="800" fill="#d55e00">r = {fr(r, 1)} Ω</text>
       </> : <>
         <rect x="38" y="140" width="44" height="50" fill="#fff"/><line x1="40" y1="150" x2="80" y2="150" stroke="#0f172a" strokeWidth="4"/><line x1="49" y1="168" x2="71" y2="168" stroke="#0f172a" strokeWidth="6"/>
-        <text x="30" y="148" fontSize="16" fontWeight="800" textAnchor="end" fill={VERMILLON}>+</text><text x="30" y="178" fontSize="18" fontWeight="800" textAnchor="end" fill={BLEU}>−</text>
-        <text x="92" y="162" fontSize="14" fontWeight="800">pile</text></>}
-      <rect x="320" y="46" width="110" height="28" fill="#fff" stroke="#0f172a" strokeWidth="3"/><text x="375" y="66" fontSize="14" fontWeight="800" textAnchor="middle">{R >= 1e5 ? 'K ouvert' : `R = ${fr(R, 0)} Ω`}</text>
-      <Mesure x={375} y={102} nom="I" val={`${fr(I * 1000, 1)} mA`} w={118}/>
-      <Mesure x={500} y={150} nom="U" val={`${fr(U, 2)} V`} couleur={BLEU} w={104}/>
-      <text x="488" y="200" fontSize="12.5" fontWeight="700" fill={VERMILLON} textAnchor="end">sens ↓</text>
+        <text x="30" y="148" fontSize="22" fontWeight="800" textAnchor="end" fill={VERMILLON}>+</text><text x="30" y="180" fontSize="24" fontWeight="800" textAnchor="end" fill={BLEU}>−</text>
+        <text x="92" y="170" fontSize="21" fontWeight="800">pile</text></>}
+      <rect x="300" y="42" width="150" height="36" fill="#fff" stroke="#0f172a" strokeWidth="3"/><text x="375" y="67" fontSize="21" fontWeight="800" textAnchor="middle">{R >= 1e5 ? 'K ouvert' : `R = ${fr(R, 0)} Ω`}</text>
+      <Mesure x={375} y={116} nom="I" val={`${fr(I * 1000, 1)} mA`} w={104} k={1.5}/>
+      <Mesure x={486} y={160} nom="U" val={`${fr(U, 2)} V`} couleur={BLEU} w={76} k={1.5}/>
+      <text x="488" y="208" fontSize="20" fontWeight="700" fill={VERMILLON} textAnchor="end">sens ↓</text>
     </svg>);
 }
 

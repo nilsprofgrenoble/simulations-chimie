@@ -35,21 +35,21 @@ function Fil3D({ I, sens, ph, section }) {
     const base = k * 53 + (r % 2) * 26 + r * 11, x = x0 + ((((base + dirE * v * ph) % W) + W) % W), y = yr(r) + 3 * Math.sin(ph * 6 + k * 2 + r);
     e.push(<circle key={r + '-' + k} cx={x} cy={y} r="4.5" fill={BLEU} stroke="#fff" strokeWidth="1"/>);
   }
-  for (let r = 0; r < lignes; r++) for (let k = 0; k < 14; k++) ions.push(<text key={r + '_' + k} x={x0 + 18 + k * 34 + (r % 2) * 17} y={yr(r) + 5} fontSize="13" fontWeight="800" textAnchor="middle" fill="#94a3b8">+</text>);
+  for (let r = 0; r < lignes; r++) for (let k = 0; k < 14; k++) ions.push(<text key={r + '_' + k} x={x0 + 18 + k * 34 + (r % 2) * 17} y={yr(r) + 8} fontSize="21" fontWeight="800" textAnchor="middle" fill="#94a3b8">+</text>);
   const fl = (x1, x2, y, c) => <g stroke={c} fill={c}><line x1={x1} y1={y} x2={x2} y2={y} strokeWidth="3"/><polygon points={`${x2},${y} ${x2 - (x2 > x1 ? 12 : -12)},${y - 6} ${x2 - (x2 > x1 ? 12 : -12)},${y + 6}`}/></g>;
   return (
     <svg viewBox="0 0 560 296" width="100%" role="img" aria-label={`Fil de cuivre de section ${section == null ? '' : fr(section, 1) + ' mm²'} : ions fixes et électrons libres en mouvement`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
       <rect x={x0} y={y0} width={W} height={h} rx="14" fill="#f1f5f9" stroke="#64748b" strokeWidth="2.5"/>
       {ions}{e}
       <line x1="280" y1={y0 - 10} x2="280" y2={y0 + h + 10} stroke={VERMILLON} strokeWidth="3" strokeDasharray="7 5"/>
-      <text x="288" y={y0 - 14} fontSize="18" fontWeight="800" fill={VERMILLON}>section S</text>
+      <text x="288" y={y0 - 14} fontSize="21.5" fontWeight="800" fill={VERMILLON}>section S</text>
       {sens > 0 ? fl(120, 250, 30, VERMILLON) : fl(440, 310, 30, VERMILLON)}
-      <text x="280" y="22" fontSize="19" fontWeight="800" textAnchor="middle" fill={VERMILLON}>sens conventionnel du courant</text>
+      <text x="280" y="22" fontSize="21.5" fontWeight="800" textAnchor="middle" fill={VERMILLON}>sens conventionnel du courant</text>
       {sens > 0 ? fl(440, 310, 246, BLEU) : fl(120, 250, 246, BLEU)}
-      <text x="280" y="282" fontSize="19" fontWeight="800" textAnchor="middle" fill={BLEU}>sens de déplacement des électrons</text>
-      <g fontSize="17" fontWeight="700"><circle cx="52" cy="226" r="5.5" fill={BLEU}/><text x="64" y="232" fill="#0f172a">électron libre (−e)</text>
-        <text x="290" y="232" fill="#94a3b8" fontWeight="800" fontSize="20">+</text><text x="306" y="232" fill="#0f172a">ion cuivre fixe</text></g>
-      {section != null && <text x="530" y={y0 - 14} fontSize="17" fontWeight="700" textAnchor="end" fill={GRIS}>S = {fr(section, 1)} mm²</text>}
+      <text x="280" y="282" fontSize="21.5" fontWeight="800" textAnchor="middle" fill={BLEU}>sens de déplacement des électrons</text>
+      <g fontSize="21" fontWeight="700"><circle cx="52" cy="226" r="5.5" fill={BLEU}/><text x="64" y="232" fill="#0f172a">électron libre (−e)</text>
+        <text x="290" y="232" fill="#94a3b8" fontWeight="800" fontSize="24">+</text><text x="306" y="232" fill="#0f172a">ion cuivre fixe</text></g>
+      {section != null && <text x="530" y={y0 - 14} fontSize="21" fontWeight="700" textAnchor="end" fill={GRIS}>S = {fr(section, 1)} mm²</text>}
     </svg>);
 }
 
@@ -69,23 +69,23 @@ function Electrolyte({ actif, ph }) {
     const jx = actif ? 0 : 6 * Math.sin(ph * 2.6 + o.ph0), jy = (actif ? 2.5 : 6) * Math.cos(ph * 3.1 + o.ph0 * 1.7);
     const dep = o.cation ? -v * ph : v * ph, x = 172 + ((((o.x - 172 + dep) % span) + span) % span) + jx;
     const c = o.cation ? VERMILLON : BLEU;
-    return <g key={k}><circle cx={x} cy={o.y + jy} r="9" fill="#fff" stroke={c} strokeWidth="2.5"/><text x={x} y={o.y + jy + 4.5} fontSize="14" fontWeight="800" textAnchor="middle" fill={c}>{o.cation ? '+' : '−'}</text></g>;
+    return <g key={k}><circle cx={x} cy={o.y + jy} r="11" fill="#fff" stroke={c} strokeWidth="2.5"/><text x={x} y={o.y + jy + 6} fontSize="18" fontWeight="800" textAnchor="middle" fill={c}>{o.cation ? '+' : '−'}</text></g>;
   });
   return (
-    <svg viewBox="0 0 560 340" width="100%" role="img" aria-label="Solution ionique entre deux électrodes reliées à un générateur : cations et anions répartis au hasard" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
+    <svg viewBox="0 0 560 372" width="100%" role="img" aria-label="Solution ionique entre deux électrodes reliées à un générateur : cations et anions répartis au hasard" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
       <rect x="110" y="150" width="340" height="135" fill="#e0f2fe" stroke="#475569" strokeWidth="3"/>
       <rect x="150" y="125" width="12" height="150" fill="#64748b"/><rect x="398" y="125" width="12" height="150" fill="#64748b"/>
-      <rect x="225" y="20" width="110" height="40" rx="6" fill="#fff" stroke="#0f172a" strokeWidth="3"/>
-      <text x="280" y="45" fontSize="14" fontWeight="800" textAnchor="middle">Générateur</text>
-      <text x="212" y="48" fontSize="22" fontWeight="800" textAnchor="end" fill={BLEU}>−</text><text x="348" y="48" fontSize="20" fontWeight="800" fill={VERMILLON}>+</text>
+      <rect x="200" y="14" width="160" height="46" rx="6" fill="#fff" stroke="#0f172a" strokeWidth="3"/>
+      <text x="280" y="46" fontSize="23" fontWeight="800" textAnchor="middle">Générateur</text>
+      <text x="194" y="76" fontSize="28" fontWeight="800" textAnchor="end" fill={BLEU}>−</text><text x="366" y="76" fontSize="26" fontWeight="800" fill={VERMILLON}>+</text>
       {actif ? <>
-        <Fil pts={[[225, 40], [156, 40], [156, 130]]} v={40} ph={ph} rayon={4} couleur={BLEU} esp={22}/>
-        <Fil pts={[[404, 130], [404, 40], [335, 40]]} v={40} ph={ph} rayon={4} couleur={BLEU} esp={22}/></> :
-        <><polyline points="225,40 156,40 156,130" fill="none" stroke="#0f172a" strokeWidth="3"/><polyline points="404,130 404,40 335,40" fill="none" stroke="#0f172a" strokeWidth="3"/></>}
+        <Fil pts={[[200, 40], [156, 40], [156, 130]]} v={40} ph={ph} rayon={4} couleur={BLEU} esp={22}/>
+        <Fil pts={[[404, 130], [404, 40], [360, 40]]} v={40} ph={ph} rayon={4} couleur={BLEU} esp={22}/></> :
+        <><polyline points="200,40 156,40 156,130" fill="none" stroke="#0f172a" strokeWidth="3"/><polyline points="404,130 404,40 360,40" fill="none" stroke="#0f172a" strokeWidth="3"/></>}
       {ions}
-      <text x="156" y="308" fontSize="16" fontWeight="700" textAnchor="middle" fill={BLEU}>électrode (borne −)</text>
-      <text x="404" y="308" fontSize="16" fontWeight="700" textAnchor="middle" fill={VERMILLON}>électrode (borne +)</text>
-      {actif && <text x="280" y="332" fontSize="14" fontWeight="700" textAnchor="middle"><tspan fill={VERMILLON}>← cations (+) vers la borne −</tspan><tspan fill={GRIS}>  ·  </tspan><tspan fill={BLEU}>anions (−) vers la borne + →</tspan></text>}
+      <text x="156" y="308" fontSize="21" fontWeight="700" textAnchor="middle" fill={BLEU}>électrode (borne −)</text>
+      <text x="404" y="308" fontSize="21" fontWeight="700" textAnchor="middle" fill={VERMILLON}>électrode (borne +)</text>
+      {actif && <><text x="280" y="334" fontSize="20" fontWeight="700" textAnchor="middle" fill={VERMILLON}>← cations (+) vers la borne −</text><text x="280" y="360" fontSize="20" fontWeight="700" textAnchor="middle" fill={BLEU}>anions (−) vers la borne + →</text></>}
     </svg>);
 }
 
@@ -99,18 +99,18 @@ function Batterie({ cap, I, ph, details }) {
       <rect x="54" y="32" width="20" height="10" rx="3" fill="#475569"/>
       <rect x="36" y="40" width="56" height="112" rx="10" fill="#ecfdf5" stroke="#15803d" strokeWidth="3.5"/>
       <rect x="42" y="46" width="44" height="100" rx="6" fill="#86efac"/>
-      <text x="64" y="66" fontSize="16" fontWeight="800" textAnchor="middle" fill="#14532d">+</text>
-      <text x="64" y="138" fontSize="18" fontWeight="800" textAnchor="middle" fill="#14532d">−</text>
-      <text x="64" y="96" fontSize="14" fontWeight="800" textAnchor="middle" fill="#14532d">{cap}</text>
-      <text x="64" y="113" fontSize="12.5" fontWeight="800" textAnchor="middle" fill="#14532d">mA·h</text>
-      <rect x="304" y="58" width="66" height="84" rx="10" fill="#0f172a"/>
-      <rect x="309" y="64" width="56" height="72" rx="4" fill="#e0f2fe"/>
-      <text x="337" y="94" fontSize="12.5" fontWeight="800" textAnchor="middle" fill="#0369a1">appareil</text>
-      <text x="337" y="114" fontSize="13" fontWeight="700" textAnchor="middle" fill="#0f172a">{I} mA</text>
-      <text x="200" y="88" fontSize="15" fontWeight="800" textAnchor="middle" fill="#14532d">batterie :</text>
-      <text x="200" y="106" fontSize="15" fontWeight="800" textAnchor="middle" fill="#14532d">réserve de charge</text>
-      <text x="200" y="130" fontSize="14.5" fontWeight="700" textAnchor="middle" fill={BLEU}>I = {I} mA</text>
-      {details && <text x="200" y="208" fontSize="13.5" fontWeight="700" textAnchor="middle" fill={GRIS}>Plus I est grand, plus la batterie se vide vite.</text>}
+      <text x="64" y="66" fontSize="21" fontWeight="800" textAnchor="middle" fill="#14532d">+</text>
+      <text x="64" y="138" fontSize="22" fontWeight="800" textAnchor="middle" fill="#14532d">−</text>
+      <text x="64" y="96" fontSize="19" fontWeight="800" textAnchor="middle" fill="#14532d">{cap}</text>
+      <text x="64" y="113" fontSize="17.5" fontWeight="800" textAnchor="middle" fill="#14532d">mA·h</text>
+      <rect x="296" y="58" width="82" height="84" rx="10" fill="#0f172a"/>
+      <rect x="301" y="64" width="72" height="72" rx="4" fill="#e0f2fe"/>
+      <text x="337" y="94" fontSize="16.5" fontWeight="800" textAnchor="middle" fill="#0369a1">appareil</text>
+      <text x="337" y="114" fontSize="17.5" fontWeight="700" textAnchor="middle" fill="#0f172a">{I} mA</text>
+      <text x="200" y="88" fontSize="19" fontWeight="800" textAnchor="middle" fill="#14532d">batterie :</text>
+      <text x="200" y="106" fontSize="19" fontWeight="800" textAnchor="middle" fill="#14532d">réserve de charge</text>
+      <text x="200" y="130" fontSize="19" fontWeight="700" textAnchor="middle" fill={BLEU}>I = {I} mA</text>
+      {details && <text x="200" y="208" fontSize="18" fontWeight="700" textAnchor="middle" fill={GRIS}>Plus I est grand, plus la batterie se vide vite.</text>}
     </svg>);
 }
 
