@@ -38,16 +38,16 @@ const fP = W => (W >= 1e6 ? `${fr(W / 1e6, 2)} MW` : W >= 1e3 ? `${fr(W / 1e3, 2
 function Bilan({ Pe, rho, utile, pertes }) {
   const w = 520, u = rho * w;
   return (
-    <svg viewBox="0 0 560 200" width="100%" role="img" aria-label={`Bilan de puissance : ${fr(rho * 100, 0)} % utile, ${fr((1 - rho) * 100, 0)} % de pertes`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
-      <text x="20" y="28" fontSize="14" fontWeight="800" fill="#0f172a">Puissance électrique reçue : P<tspan fontSize="11" dy="3">élec</tspan><tspan dy="-3"> = {fP(Pe)}</tspan></text>
-      <rect x="20" y="40" width={w} height="36" fill="#e2e8f0" stroke="#0f172a" strokeWidth="2"/><text x="280" y="64" fontSize="15" fontWeight="800" textAnchor="middle" fill="#0f172a">{fP(Pe)} reçus</text>
-      <text x="20" y="100" fontSize="12.5" fontWeight="700" fill={GRIS_T}>↓ elle se répartit en :</text>
+    <svg viewBox="0 0 560 236" width="100%" role="img" aria-label={`Bilan de puissance : ${fr(rho * 100, 0)} % utile, ${fr((1 - rho) * 100, 0)} % de pertes`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
+      <text x="20" y="28" fontSize="21" fontWeight="800" fill="#0f172a">Puissance électrique reçue : P<tspan fontSize="16.5" dy="3">élec</tspan><tspan dy="-3"> = {fP(Pe)}</tspan></text>
+      <rect x="20" y="40" width={w} height="36" fill="#e2e8f0" stroke="#0f172a" strokeWidth="2"/><text x="280" y="64" fontSize="22.5" fontWeight="800" textAnchor="middle" fill="#0f172a">{fP(Pe)} reçus</text>
+      <text x="20" y="102" fontSize="19" fontWeight="700" fill={GRIS_T}>↓ elle se répartit en :</text>
       <rect x="20" y="108" width={Math.max(u, 0.5)} height="40" fill={BLEU}/>
       <rect x={20 + u} y="108" width={w - u} height="40" fill="#fff" stroke={VERMILLON} strokeWidth="3" strokeDasharray="6 4"/>
-      {u > 90 && <text x={20 + u / 2} y="133" fontSize="14" fontWeight="800" textAnchor="middle" fill="#fff">utile : {fP(rho * Pe)}</text>}
-      {w - u > 110 && <text x={20 + u + (w - u) / 2} y="133" fontSize="14" fontWeight="800" textAnchor="middle" fill={VERMILLON}>pertes : {fP((1 - rho) * Pe)}</text>}
-      <text x="20" y="176" fontSize="13.5" fontWeight="700" fill={BLEU}>■ puissance utile ({utile}) : {fP(rho * Pe)}</text>
-      <text x="20" y="194" fontSize="13.5" fontWeight="700" fill={VERMILLON}>▭ puissance perdue ({pertes}) : {fP((1 - rho) * Pe)}</text>
+      {u > 140 && <text x={20 + u / 2} y="136" fontSize="21" fontWeight="800" textAnchor="middle" fill="#fff">utile : {fP(rho * Pe)}</text>}
+      {w - u > 160 && <text x={20 + u + (w - u) / 2} y="136" fontSize="21" fontWeight="800" textAnchor="middle" fill={VERMILLON}>pertes : {fP((1 - rho) * Pe)}</text>}
+      <text x="20" y="184" fontSize="20" fontWeight="700" fill={BLEU}>■ puissance utile ({utile}) : {fP(rho * Pe)}</text>
+      <text x="20" y="216" fontSize="20" fontWeight="700" fill={VERMILLON}>▭ pertes ({pertes}) : {fP((1 - rho) * Pe)}</text>
     </svg>);
 }
 const GRIS_T = '#475569';
@@ -280,13 +280,13 @@ export function SimulationPuissanceJoule() {
     </div>);
   const atelierJoule = (
     <div>
-      <svg viewBox="0 0 560 150" width="100%" role="img" aria-label="Résistor qui chauffe" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
+      <svg viewBox="0 0 560 164" width="100%" role="img" aria-label="Résistor qui chauffe" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
         <line x1="20" y1="75" x2="170" y2="75" stroke="#0f172a" strokeWidth="3"/><line x1="390" y1="75" x2="540" y2="75" stroke="#0f172a" strokeWidth="3"/>
         <rect x="170" y="40" width="220" height="70" fill={`rgb(255, ${Math.round(255 - Math.min(1, Pj / 150) * 200)}, ${Math.round(255 - Math.min(1, Pj / 150) * 230)})`} stroke="#0f172a" strokeWidth="3"/>
-        <text x="280" y="82" fontSize="18" fontWeight="800" textAnchor="middle">R = {J.R} Ω</text>
-        <text x="280" y="28" fontSize="13.5" fontWeight="800" textAnchor="middle" fill={VERMILLON}>chaleur dégagée : {fP(Pj)}</text>
-        <text x="95" y="62" fontSize="13.5" fontWeight="800" textAnchor="middle" fill={VERMILLON}>I = {fr(J.I, 2)} A →</text><text x="465" y="62" fontSize="13.5" fontWeight="800" textAnchor="middle" fill={BLEU}>U = {fr(Uj, 1)} V</text>
-        <text x="280" y="138" fontSize="12.5" fontWeight="700" textAnchor="middle" fill={GRIS_T}>plus la puissance est grande, plus le résistor est rouge</text>
+        <text x="280" y="82" fontSize="27" fontWeight="800" textAnchor="middle">R = {J.R} Ω</text>
+        <text x="280" y="28" fontSize="20" fontWeight="800" textAnchor="middle" fill={VERMILLON}>chaleur dégagée : {fP(Pj)}</text>
+        <text x="95" y="62" fontSize="20" fontWeight="800" textAnchor="middle" fill={VERMILLON}>I = {fr(J.I, 2)} A →</text><text x="465" y="62" fontSize="20" fontWeight="800" textAnchor="middle" fill={BLEU}>U = {fr(Uj, 1)} V</text>
+        <text x="280" y="150" fontSize="20" fontWeight="700" textAnchor="middle" fill={GRIS_T}>plus la puissance est grande, plus il rougit</text>
       </svg>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Résistance R" val={J.R} min={5} max={100} pas={1} set={v => setJ(j => ({ ...j, R: v }))} unite=" Ω"/>
@@ -299,13 +299,13 @@ export function SimulationPuissanceJoule() {
     </div>);
   const atelierLigne = (
     <div>
-      <svg viewBox="0 0 560 120" width="100%" role="img" aria-label="Ligne électrique entre une centrale et une ville" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
-        <rect x="20" y="40" width="90" height="46" rx="6" fill="#e0f2fe" stroke="#0f172a" strokeWidth="2.5"/><text x="65" y="68" fontSize="14" fontWeight="800" textAnchor="middle">centrale</text>
-        <rect x="450" y="40" width="90" height="46" rx="6" fill="#e0f2fe" stroke="#0f172a" strokeWidth="2.5"/><text x="495" y="68" fontSize="14" fontWeight="800" textAnchor="middle">ville</text>
-        <line x1="110" y1="63" x2="450" y2="63" stroke="#0f172a" strokeWidth={Math.max(2, Math.min(8, IL / 400))}/>
-        <text x="280" y="50" fontSize="13.5" fontWeight="800" textAnchor="middle" fill={VERMILLON}>I = {fr(IL, 0)} A</text>
-        <text x="280" y="92" fontSize="13" fontWeight="700" textAnchor="middle" fill={GRIS_T}>ligne de {L.L} km : r = {fr(rL, 0)} Ω</text>
-        <text x="280" y="110" fontSize="13" fontWeight="800" textAnchor="middle" fill={pcL > 10 ? VERMILLON : BLEU}>pertes : {fr(PjL, 2)} MW ({fr(Math.min(pcL, 999), 1)} %)</text>
+      <svg viewBox="0 0 560 136" width="100%" role="img" aria-label="Ligne électrique entre une centrale et une ville" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 640 }}>
+        <rect x="12" y="38" width="112" height="46" rx="6" fill="#e0f2fe" stroke="#0f172a" strokeWidth="2.5"/><text x="68" y="68" fontSize="21" fontWeight="800" textAnchor="middle">centrale</text>
+        <rect x="436" y="38" width="112" height="46" rx="6" fill="#e0f2fe" stroke="#0f172a" strokeWidth="2.5"/><text x="492" y="68" fontSize="21" fontWeight="800" textAnchor="middle">ville</text>
+        <line x1="124" y1="61" x2="436" y2="61" stroke="#0f172a" strokeWidth={Math.max(2, Math.min(8, IL / 400))}/>
+        <text x="280" y="48" fontSize="20" fontWeight="800" textAnchor="middle" fill={VERMILLON}>I = {fr(IL, 0)} A</text>
+        <text x="280" y="96" fontSize="19.5" fontWeight="700" textAnchor="middle" fill={GRIS_T}>ligne de {L.L} km : r = {fr(rL, 0)} Ω</text>
+        <text x="280" y="124" fontSize="19.5" fontWeight="800" textAnchor="middle" fill={pcL > 10 ? VERMILLON : BLEU}>pertes : {fr(PjL, 2)} MW ({fr(Math.min(pcL, 999), 1)} %)</text>
       </svg>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Puissance transportée P" val={L.P} min={10} max={200} pas={10} set={v => setL(l => ({ ...l, P: v }))} unite=" MW"/>
