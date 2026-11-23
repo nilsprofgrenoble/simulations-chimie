@@ -36,6 +36,7 @@ Statuts : ✅ audité et corrigé · 🟨 audité, corrections en attente · ⬜
 - 22/11/2026 : PR 776 (F-08 sur 178, 179, 190 + textes). Correctif F-02 sur tout le site (aide `attrTest` dans `src/commun.jsx`, lecture seule par `scripts/controle-parcours.cjs` en mode test).
 - 22/11/2026 : F-08 sur 191 et 192, correctifs C3 (unités du message de succès, 191) et C4 (fiche échelle, 192).
 - 22/11/2026 : F-08 sur 193, 194, 195 ; C5 (marges des panneaux Hypothèses : 178, 190, 193).
+- 23/11/2026 : suite F-05 : Avancement (SIM1) textes agrandis (schémas et fiches), fiche SIM69 (①/②/③ espacés), hypothèse des températures d'étoiles précisée (SIM66, Sirius/Rigel : valeurs du cours).
 - 22/11/2026 : passe « mineurs » : F-05 (193, 196, 199, 202), F-07 (193), test de typographie du prisme (201) réparé, import inutile (201), attribut et commentaire en trop (202). Non traité : scène `entreeDeux` définie mais jamais affichée (201), à trancher avec Nils.
 - 22/11/2026 : ré-audit de la SIM64 (code + recalculs + rendu 390 px) : rapport `audit/rapports/SIM64.md`, scripts `audit/scripts/recalc-SIM64.mjs` et `rendu-SIM64.cjs`.
 - 22/11/2026 : corrections SIM64 publiées (Refraction.jsx, RefractionFiches.jsx) ; défis rejoués à 390 px avec de mauvaises réponses : messages précis, aucune erreur console.

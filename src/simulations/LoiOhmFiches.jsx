@@ -142,8 +142,8 @@ export function FicheEtalon() {
         <L2 x1={x0} y1={Y(12.5)} x2={X(20)} y2={Y(12.5)} c={ORANGE} w="2.2" dash="5 4"/>
         <L2 x1={X(20)} y1={Y(12.5)} x2={X(20)} y2={y0} c={ORANGE} w="2.2" dash="5 4"/>
         <T x={X(34)} y={Y(27)} c={ORANGE} w={800}>① R lu</T>
-        <T x={X(34)} y={Y(27) + 16} c={ORANGE} w={800}>② courbe</T>
-        <T x={X(34)} y={Y(27) + 32} c={ORANGE} w={800}>③ θ</T>
+        <T x={X(34)} y={Y(27) + 24} c={ORANGE} w={800}>② courbe</T>
+        <T x={X(34)} y={Y(27) + 48} c={ORANGE} w={800}>③ θ</T>
       </svg>
       <ul style={liste}>
         <li><em>Étalonner : mesurer R pour des températures connues. Utiliser : mesurer R, puis lire θ sur la courbe.</em></li>

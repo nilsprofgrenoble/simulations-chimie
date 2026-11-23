@@ -8,8 +8,8 @@ const svgStyle = { width: '100%', maxWidth: 360, display: 'block', margin: '0 au
 const liste = { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 };
 
 // x_max et V_m dans un SVG (indice en tspan, puis retour à la ligne de base)
-const Xm = () => <><tspan>x</tspan><tspan fontSize="12" dy="4">max</tspan><tspan dy="-4"> </tspan></>;
-const Vm = () => <><tspan>V</tspan><tspan fontSize="12" dy="4">m</tspan><tspan dy="-4"> </tspan></>;
+const Xm = () => <><tspan>x</tspan><tspan fontSize="13.5" dy="4">max</tspan><tspan dy="-4"> </tspan></>;
+const Vm = () => <><tspan>V</tspan><tspan fontSize="13.5" dy="4">m</tspan><tspan dy="-4"> </tspan></>;
 
 // pointes de flèche (d : vers la droite, g : vers la gauche)
 const Tete = ({ x, y, dir, c }) => {
@@ -24,14 +24,14 @@ export function FicheQuantite() {
       <svg viewBox="0 0 300 182" style={svgStyle} role="img" aria-label="Deux chemins vers la quantité de matière n en moles : à partir de la masse m d’un solide, on divise par la masse molaire M ; à partir du volume V d’une solution en litres, on multiplie par la concentration c">
         <rect x="6" y="8" width="108" height="64" rx="10" fill="#eff6ff" stroke={BLEU} strokeWidth="2.5"/>
         <text x="60" y="34" textAnchor="middle" fontSize="14" fontWeight="800" fill={BLEU}>solide pesé</text>
-        <text x="60" y="55" textAnchor="middle" fontSize="12.5" fill={GRIS}>m en grammes</text>
+        <text x="60" y="55" textAnchor="middle" fontSize="13.5" fill={GRIS}>m en grammes</text>
         <rect x="186" y="8" width="108" height="64" rx="10" fill="#fff7ed" stroke={ORANGE} strokeWidth="2.5"/>
         <text x="240" y="34" textAnchor="middle" fontSize="14" fontWeight="800" fill={ORANGE}>solution</text>
-        <text x="240" y="55" textAnchor="middle" fontSize="12.5" fill={GRIS}>V en litres</text>
+        <text x="240" y="55" textAnchor="middle" fontSize="13.5" fill={GRIS}>V en litres</text>
         <path d="M 60 74 V 150 H 100" fill="none" stroke={BLEU} strokeWidth="3" strokeLinejoin="round"/><Tete x={110} y={150} dir="d" c={BLEU}/>
         <path d="M 240 74 V 150 H 200" fill="none" stroke={ORANGE} strokeWidth="3" strokeLinejoin="round"/><Tete x={190} y={150} dir="g" c={ORANGE}/>
-        <text x="68" y="100" fontSize="15" fontWeight="800" fill={BLEU}>÷ M</text><text x="68" y="117" fontSize="12.5" fill={GRIS}>(g·mol⁻¹)</text>
-        <text x="232" y="100" textAnchor="end" fontSize="15" fontWeight="800" fill={ORANGE}>× c</text><text x="232" y="117" textAnchor="end" fontSize="12.5" fill={GRIS}>(mol·L⁻¹)</text>
+        <text x="68" y="100" fontSize="15" fontWeight="800" fill={BLEU}>÷ M</text><text x="68" y="117" fontSize="13.5" fill={GRIS}>(g·mol⁻¹)</text>
+        <text x="232" y="100" textAnchor="end" fontSize="15" fontWeight="800" fill={ORANGE}>× c</text><text x="232" y="117" textAnchor="end" fontSize="13.5" fill={GRIS}>(mol·L⁻¹)</text>
         <rect x="112" y="128" width="76" height="44" rx="22" fill="#f0fdf4" stroke={VERT} strokeWidth="2.5"/>
         <text x="150" y="156" textAnchor="middle" fontSize="16" fontWeight="800" fill={VERT}>n (mol)</text>
       </svg>
@@ -48,8 +48,8 @@ export function FicheQuantite() {
 // ── Carte 2 : structure du tableau d'avancement ──
 const Ligne = ({ y, fond, c, textes, etiquette }) => (
   <g>
-    <text x="34" y={y + 17} textAnchor="middle" fontSize="12" fill={GRIS}>{etiquette[0]}</text>
-    <text x="34" y={y + 33} textAnchor="middle" fontSize="12" fontWeight="700" fill={ENCRE}>{etiquette[1]}</text>
+    <text x="34" y={y + 17} textAnchor="middle" fontSize="13.5" fill={GRIS}>{etiquette[0]}</text>
+    <text x="34" y={y + 33} textAnchor="middle" fontSize="13.5" fontWeight="700" fill={ENCRE}>{etiquette[1]}</text>
     {textes.map((t, k) => <g key={k}>
       <rect x={68 + k * 76} y={y} width="76" height="46" fill={fond} stroke="#94a3b8" strokeWidth="1.5"/>
       <text x={106 + k * 76} y={y + 28} textAnchor="middle" fontSize="13" fontWeight="700" fill={c}>{t}</text></g>)}
@@ -66,13 +66,13 @@ export function FicheTableau() {
         <Ligne y={64} fond="#ffffff" c={ENCRE} textes={['n₁', 'n₂', '0']} etiquette={['initial', 'x = 0']}/>
         <Ligne y={110} fond="#fff7ed" c={ORANGE} textes={['n₁ − 2x', 'n₂ − x', '2x']} etiquette={['en cours', 'x']}/>
         <g>
-          <text x="34" y="173" textAnchor="middle" fontSize="12" fill={GRIS}>final</text>
-          <text x="34" y="189" textAnchor="middle" fontSize="12" fontWeight="700" fill={ENCRE}>x = <Xm/></text>
+          <text x="34" y="173" textAnchor="middle" fontSize="13.5" fill={GRIS}>final</text>
+          <text x="34" y="189" textAnchor="middle" fontSize="13.5" fontWeight="700" fill={ENCRE}>x = <Xm/></text>
           {['n₁ − 2', 'n₂ − ', '2'].map((t, k) => <g key={k}>
             <rect x={68 + k * 76} y="156" width="76" height="46" fill="#f0fdf4" stroke="#94a3b8" strokeWidth="1.5"/>
             <text x={106 + k * 76} y="184" textAnchor="middle" fontSize="13" fontWeight="700" fill={VERT}>{t}<Xm/></text></g>)}
         </g>
-        <text x="150" y="220" textAnchor="middle" fontSize="12.5" fill={GRIS}>le coefficient de l’équation se retrouve devant x</text>
+        <text x="150" y="220" textAnchor="middle" fontSize="13.5" fill={GRIS}>le coefficient de l’équation se retrouve devant x</text>
       </svg>
       <ul style={liste}>
         <li>Une ligne par état : <strong>initial</strong>, <strong>en cours</strong> (avancement x), <strong>final</strong>.</li>
