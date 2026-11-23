@@ -41,8 +41,8 @@ const pasJoli = (maxV, n = 4) => { const mag = 10 ** Math.floor(Math.log10(maxV 
 // lignes : [{ court, col, ini, fin }] ; zones : [z1, z2] sur le solde (vert sous z1, orange jusqu'à z2, rouge au-delà)
 function Barres({ lignes, u, uLong, zones, legZones, masque }) {
   const [tip, setTip] = useState(null);
-  const n = lignes.length, W = 640, x0 = 320, Wh = 262, y0 = 44, hT = 56, yTot = y0 + n * hT + 6, hTot = 58, yAx = yTot + hTot;
-  const yZ = yAx + 50, H = yZ + 70;
+  const n = lignes.length, W = 640, x0 = 320, Wh = 262, y0 = 76, hT = 56, yTot = y0 + n * hT + 6, hTot = 58, yAx = yTot + hTot;
+  const yZ = yAx + 70, H = yZ + 100;
   const totIni = lignes.reduce((s, t) => s + t.ini, 0), totFin = lignes.reduce((s, t) => s + t.fin, 0), solde = totIni - totFin;
   const pas = pasJoli(Math.max(1, totIni, totFin)), M = Math.ceil(Math.max(1, totIni, totFin) / pas) * pas;
   const L = v => Math.max(0, v) / M * Wh;
@@ -54,7 +54,7 @@ function Barres({ lignes, u, uLong, zones, legZones, masque }) {
   const prop = txt => ({ tabIndex: 0, style: { cursor: 'pointer', outline: 'none' }, onMouseEnter: () => setTip(txt), onFocus: () => setTip(txt), onClick: () => setTip(txt) });
   const pointille = (val, x, y, h, Lf) => { const perte = val > 0; return <rect x={perte ? x0 - Lf(val) : x0} y={y} width={Lf(val)} height={h} fill={perte ? '#fee2e2' : '#dcfce7'} fillOpacity="0.6" stroke={perte ? '#dc2626' : '#16a34a'} strokeWidth="1.6" strokeDasharray="4 3"/>; };
   const ligne = (y, nom, col, ini, fin, h, tH, total) => { const p = ini - fin; return <g key={nom}>
-    <text x="8" y={y + 11} fontSize="12.5" fontWeight="700" fill={col}>{nom}</text>
+    <text x="8" y={y + 11} fontSize="22" fontWeight="700" fill={col}>{nom}</text>
     {ini > 0 && <g {...prop(`${nom} — état initial : ≈ ${arr(ini)} ${u}`)}><rect x={x0 - L(ini)} y={y + 16} width={L(ini)} height={h} rx="3" fill="#94a3b8"/></g>}
     {fin > 0 && <g {...prop(`${nom} — état final : ≈ ${arr(fin)} ${u}`)}><rect x={x0} y={y + 16} width={L(fin)} height={h} rx="3" fill={col}/></g>}
     {(total || (ini > 0 && fin > 0)) && Math.abs(p) > 0.005 * M && <g {...prop(`${nom} — solde : on ${p > 0 ? 'perd' : 'gagne'} ≈ ${arr(p)} ${u}`)}>{pointille(p, x0, y + 18 + h, tH, L)}</g>}
@@ -62,18 +62,18 @@ function Barres({ lignes, u, uLong, zones, legZones, masque }) {
   return (
     <div>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Bilan des interactions : état initial à gauche, état final à droite, solde en pointillés">
-        <text x={x0 - 8} y="16" textAnchor="end" fontSize="12.5" fontWeight="700" fill="#475569">◀ état initial : à rompre</text>
-        <text x={x0 + 8} y="16" fontSize="12.5" fontWeight="700" fill="#475569">état final : retrouvé ▶</text>
-        <text x={x0} y="32" textAnchor="middle" fontSize="11.5" fill="#64748b">{uLong}</text>
+        <text x={x0 - 8} y="26" textAnchor="end" fontSize="22" fontWeight="700" fill="#475569">◀ état initial : à rompre</text>
+        <text x={x0 + 8} y="26" fontSize="22" fontWeight="700" fill="#475569">état final : retrouvé ▶</text>
+        <text x={x0} y="56" textAnchor="middle" fontSize="22" fill="#64748b">{uLong}</text>
         <line x1={x0} y1={y0 - 4} x2={x0} y2={yAx} stroke="#334155" strokeWidth="1.5"/>
         {lignes.map((t, i) => ligne(y0 + i * hT, t.court, t.col, t.ini, t.fin, 16, 8, false))}
         {ligne(yTot, 'Total', '#0f172a', totIni, totFin, 20, 12, true)}
         <line x1={x0 - Wh} y1={yAx} x2={x0 + Wh} y2={yAx} stroke="#94a3b8"/>
         {ticks.flatMap(v => (v === 0 ? [0] : [-1, 1]).map(sg => <g key={`${v}${sg}`}><line x1={x0 + sg * L(v)} y1={yAx} x2={x0 + sg * L(v)} y2={yAx + 5} stroke="#94a3b8"/>
-          <text x={x0 + sg * L(v)} y={yAx + 18} textAnchor="middle" fontSize="11" fill="#64748b">{vir(v)}</text></g>))}
-        <text x={x0} y={yAx + 32} textAnchor="middle" fontSize="11" fill="#64748b">{u}</text>
+          <text x={x0 + sg * L(v)} y={yAx + 18} textAnchor="middle" fontSize="21.5" fill="#64748b">{vir(v)}</text></g>))}
+        <text x={x0} y={yAx + 40} textAnchor="middle" fontSize="21.5" fill="#64748b">{u}</text>
         {/* zoom sur le solde, avec les zones */}
-        <text x="8" y={yZ - 4} fontSize="12.5" fontWeight="700" fill="#0f172a">Solde, vu de plus près</text>
+        <text x="8" y={yZ - 4} fontSize="22" fontWeight="700" fill="#0f172a">Solde, vu de plus près</text>
         {!masque && <g>
           <rect x={x0 - Wh} y={yZ + 2} width={Math.max(0, Wh - LZ(z2))} height="26" fill="#fecaca" fillOpacity="0.6"/>
           <rect x={x0 - LZ(z2)} y={yZ + 2} width={LZ(z2) - LZ(z1)} height="26" fill="#fde68a" fillOpacity="0.7"/>
@@ -82,9 +82,9 @@ function Barres({ lignes, u, uLong, zones, legZones, masque }) {
         <g {...prop(`Solde total : on ${solde > 0 ? 'perd' : 'gagne'} ≈ ${arr(solde)} ${u}`)}>{pointille(solde, x0, yZ + 8, 14, LZ)}</g>
         <line x1={x0 - Wh} y1={yZ + 30} x2={x0 + Wh} y2={yZ + 30} stroke="#94a3b8"/>
         {ticksZ.flatMap(v => (v === 0 ? [0] : [-1, 1]).map(sg => <g key={`z${v}${sg}`}><line x1={x0 + sg * LZ(v)} y1={yZ + 30} x2={x0 + sg * LZ(v)} y2={yZ + 35} stroke="#94a3b8"/>
-          <text x={x0 + sg * LZ(v)} y={yZ + 48} textAnchor="middle" fontSize="11" fill="#64748b">{vir(v)}</text></g>))}
-        <text x={x0 - 8} y={yZ + 64} textAnchor="end" fontSize="11" fill="#b91c1c">◀ on perd de la stabilité</text>
-        <text x={x0 + 8} y={yZ + 64} fontSize="11" fill="#15803d">on en gagne ▶</text>
+          <text x={x0 + sg * LZ(v)} y={yZ + 48} textAnchor="middle" fontSize="21.5" fill="#64748b">{vir(v)}</text></g>))}
+        <text x={x0 - 8} y={yZ + 82} textAnchor="end" fontSize="21.5" fill="#b91c1c">◀ on perd de la stabilité</text>
+        <text x={x0 + 8} y={yZ + 82} fontSize="21.5" fill="#15803d">on en gagne ▶</text>
       </svg>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Pointillés : le <strong>solde</strong> (initial − final), <span style={{ color: '#dc2626', fontWeight: 700 }}>rouge à gauche</span> quand le mélange fait perdre de la stabilité, <span style={{ color: '#16a34a', fontWeight: 700 }}>vert à droite</span> quand il en fait gagner.</div>
       <div style={{ minHeight: 26, margin: '4px 0 2px', padding: '4px 8px', borderRadius: 6, background: tip ? '#f1f5f9' : 'transparent', fontSize: 13.5, color: KIT.txt }}>
@@ -433,11 +433,11 @@ export function SimulationSolubilite({ naviguer }) {
 
   // échelle continue de polarité : toutes les espèces moléculaires, A et B mises en évidence
   const echelle = (() => {
-    const W = 640, H = 128, x = f => 30 + f * (W - 60);
+    const W = 640, H = 168, x = f => 30 + f * (W - 60);
     const ids = [...ORDRE_LIQ, ...ORDRE_SOL].filter(k => ESPECES[k].famille !== 'ion');
     const marque = (k, haut, col) => { const f = partPolaire(k), X = x(f);
       return <g key={`m${k}`}><line x1={X} y1={haut ? 30 : 70} x2={X} y2={50} stroke={col} strokeWidth="2.5"/>
-        <text x={Math.min(W - 6, Math.max(6, X))} y={haut ? 24 : 86} textAnchor={X < 80 ? 'start' : X > W - 80 ? 'end' : 'middle'} fontSize="12.5" fontWeight="800" fill={col}>{haut ? 'A' : 'B'} : {nomEsp(k).replace(/ \(.*\)/, '')} ({Math.round(f * 100)} %)</text></g>; };
+        <text x={Math.min(W - 6, Math.max(6, X))} y={haut ? 24 : 86} textAnchor={X < 80 ? 'start' : X > W - 80 ? 'end' : 'middle'} fontSize="22" fontWeight="800" fill={col}>{haut ? 'A' : 'B'} : {nomEsp(k).replace(/ \(.*\)/, '')} ({Math.round(f * 100)} %)</text></g>; };
     return (
       <div>
         <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block' }} role="img" aria-label="Échelle de polarité">
@@ -449,9 +449,9 @@ export function SimulationSolubilite({ naviguer }) {
             <circle cx={x(partPolaire(k))} cy="50" r={pt === k ? 7 : 4.5} fill={pt === k ? '#0f172a' : '#334155'} stroke="#fff" strokeWidth="1.5" opacity={pt === k ? 1 : 0.7}/></g>)}
           {ESPECES[solv].famille !== 'ion' && marque(solv, true, '#0284c7')}
           {ESPECES[sol].famille !== 'ion' && marque(sol, false, '#7c3aed')}
-          {[0, 25, 50, 75, 100].map(v => <text key={v} x={x(v / 100)} y="104" textAnchor="middle" fontSize="11" fill="#64748b">{v} %</text>)}
-          <text x={x(0)} y="120" fontSize="11.5" fontWeight="700" fill="#a16207">◀ lipophile (cohésion par dispersion)</text>
-          <text x={x(1)} y="120" textAnchor="end" fontSize="11.5" fontWeight="700" fill="#1d4ed8">hydrophile (dipôles, liaisons H) ▶</text>
+          {[0, 25, 50, 75, 100].map(v => <text key={v} x={x(v / 100)} y="104" textAnchor="middle" fontSize="19" fill="#64748b">{v} %</text>)}
+          <text x={x(0)} y="132" fontSize="20" fontWeight="700" fill="#a16207">◀ lipophile</text><text x={x(0)} y="158" fontSize="19" fill="#a16207">(cohésion par dispersion)</text>
+          <text x={x(1)} y="132" textAnchor="end" fontSize="20" fontWeight="700" fill="#1d4ed8">hydrophile ▶</text><text x={x(1)} y="158" textAnchor="end" fontSize="19" fill="#1d4ed8">(dipôles, liaisons H)</text>
         </svg>
         <div style={{ minHeight: 26, margin: '2px 0 6px', padding: '4px 8px', borderRadius: 6, background: pt ? '#f1f5f9' : 'transparent', fontSize: 13.5, color: KIT.txt }}>
           {pt ? <><strong>{nomEsp(pt).replace(/ \(.*\)/, '')}</strong> : part polaire de la cohésion ≈ <strong>{Math.round(partPolaire(pt) * 100)} %</strong> (dipôles {Math.round(ESPECES[pt].dp ** 2 / (ESPECES[pt].dd ** 2 + ESPECES[pt].dp ** 2 + ESPECES[pt].dh ** 2) * 100)} % + liaisons H {Math.round(ESPECES[pt].dh ** 2 / (ESPECES[pt].dd ** 2 + ESPECES[pt].dp ** 2 + ESPECES[pt].dh ** 2) * 100)} %)</>

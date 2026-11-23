@@ -669,7 +669,7 @@ export function SimulationElectrisation() {
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button>
     </span>);
   // ════════════════ SCÈNE 1 : FROTTEMENT ════════════════
-  const FW = 640, FH = 270;
+  const FW = 640, FH = 300;
   const sFr = TIGES[frot.tige].signe, nFr = frot.n;
   const tf = nFr * sFr;                                       // charge de la tige (en e)
   const scFrottement = (() => {
@@ -702,14 +702,14 @@ export function SimulationElectrisation() {
         aria-label={`Frottement d’une tige ${TIGES[frot.tige].nom} avec un tissu : ${nFr} électron${nFr > 1 ? 's' : ''} transféré${nFr > 1 ? 's' : ''}`}>
         <rect x="50" y="30" width="540" height="84" rx="22" fill={TIGES[frot.tige].couleur} stroke="#0f172a" strokeWidth="1.5" opacity="0.55"/>
         <rect x="50" y="150" width="540" height="84" rx="10" fill="#fef3c7" stroke="#0f172a" strokeWidth="1.5" strokeDasharray="6 3" opacity="0.8"/>
-        <text x="58" y="24" fontSize="13.5" fontWeight="700" fill="#0f172a">Tige {TIGES[frot.tige].nom}</text>
-        <text x="58" y="145" fontSize="13.5" fontWeight="700" fill="#0f172a">Tissu (laine)</text>
-        <text x="582" y="24" textAnchor="end" fontSize="14" fontWeight="800" fill={cache.bilan ? '#64748b' : tf > 0 ? ROUGE : tf < 0 ? BLEU : '#0f172a'}>{cache.bilan ? 'q = ?' : `q = ${chg(tf)}`}</text>
-        <text x="582" y="145" textAnchor="end" fontSize="14" fontWeight="800" fill={cache.bilan ? '#64748b' : tf < 0 ? ROUGE : tf > 0 ? BLEU : '#0f172a'}>{cache.bilan ? 'q = ?' : `q = ${chg(-tf)}`}</text>
+        <text x="58" y="24" fontSize="23" fontWeight="700" fill="#0f172a">Tige {TIGES[frot.tige].nom}</text>
+        <text x="58" y="145" fontSize="23" fontWeight="700" fill="#0f172a">Tissu (laine)</text>
+        <text x="582" y="24" textAnchor="end" fontSize="23" fontWeight="800" fill={cache.bilan ? '#64748b' : tf > 0 ? ROUGE : tf < 0 ? BLEU : '#0f172a'}>{cache.bilan ? 'q = ?' : `q = ${chg(tf)}`}</text>
+        <text x="582" y="145" textAnchor="end" fontSize="23" fontWeight="800" fill={cache.bilan ? '#64748b' : tf < 0 ? ROUGE : tf > 0 ? BLEU : '#0f172a'}>{cache.bilan ? 'q = ?' : `q = ${chg(-tf)}`}</text>
         {el}
         {nFr > 0 && <g><path d={`M320,${sFr > 0 ? 120 : 144} v${sFr > 0 ? 24 : -24}`} stroke="#0f172a" strokeWidth="2"/>
-          <text x="332" y="136" fontSize="12.5" fontWeight="700" fill="#0f172a">{nFr} électron{nFr > 1 ? 's' : ''} {sFr > 0 ? '↓' : '↑'}</text></g>}
-        <text x="320" y="258" textAnchor="middle" fontSize="12" fill="#334155">Les protons (+) ne bougent pas. Cercle en pointillés : place laissée vide par un électron.</text>
+          <text x="332" y="136" fontSize="21" fontWeight="700" fill="#0f172a">{nFr} électron{nFr > 1 ? 's' : ''} {sFr > 0 ? '↓' : '↑'}</text></g>}
+        <text x="320" y="258" textAnchor="middle" fontSize="22" fill="#334155">Les protons (+) ne bougent pas.</text><text x="320" y="284" textAnchor="middle" fontSize="22" fill="#334155">Cercle en pointillés : place laissée vide par un électron.</text>
       </svg>);
   })();
 
@@ -735,23 +735,23 @@ export function SimulationElectrisation() {
         aria-label="Une paille chargée posée sur deux barres de verre et une tige frottée que l’on approche">
         <rect x="30" y="96" width="590" height="11" rx="5" fill="#bfdbfe" stroke="#0f172a" strokeWidth="1"/>
         <rect x="30" y="196" width="590" height="11" rx="5" fill="#bfdbfe" stroke="#0f172a" strokeWidth="1"/>
-        <text x="620" y="90" textAnchor="end" fontSize="11" fill="#475569">barres de verre</text>
+        <text x="620" y="90" textAnchor="end" fontSize="20" fill="#475569">barres de verre</text>
         <rect x={xs - 28} y="50" width="56" height="190" rx="18" fill="#fde68a" stroke="#0f172a" strokeWidth="1.5" opacity="0.7"/>
-        <text x={xs} y="256" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">paille ({neut ? 'neutre' : inter.paille > 0 ? '+' : '−'})</text>
+        <text x={xs} y="256" textAnchor="middle" fontSize="21" fontWeight="700" fill="#0f172a">paille ({neut ? 'neutre' : inter.paille > 0 ? '+' : '−'})</text>
         {paille.map((c, i) => <Charge key={`p${i}`} x={c.x} y={c.y} s={c.s} r={5.5}/>)}
         <rect x={xr} y="116" width="200" height="58" rx="14" fill={inter.tige === 'neutre' || cache.bilan ? '#e2e8f0' : TIGES[inter.tige].couleur} stroke="#0f172a" strokeWidth="1.5" opacity="0.65"/>
         {inter.tige !== 'neutre' && (cache.bilan
           ? grille(5, 4, xr + 28, 123, 36, 12.5, 8, 6).map((c, i) => <Inconnue key={`h${i}`} x={c.x} y={c.y} r={5.5}/>)
           : tige.map((c, i) => <Charge key={`t${i}`} x={c.x} y={c.y} s={c.s} r={5.5}/>))}
-        <text x={xr + 100} y="226" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">
+        <text x={xr + 100} y="226" textAnchor="middle" fontSize="21" fontWeight="700" fill="#0f172a">
           {inter.tige === 'neutre' ? 'tige non frottée (neutre)' : cache.bilan ? 'tige frottée : charge inconnue' : `tige ${TIGES[inter.tige].nom} frottée (${neut ? 'neutre' : sIn > 0 ? '+' : '−'})`}</text>
         {voyageurs.map((c, i) => <Charge key={`v${i}`} x={c.x} y={c.y} s={-1} r={5.5}/>)}
-        {neut && <text x="400" y="24" textAnchor="middle" fontSize="13" fontWeight="700" fill="#15803d">Contact : les électrons passent d’un corps à l’autre, les deux deviennent neutres.</text>}
+        {neut && <><text x="400" y="28" textAnchor="middle" fontSize="21" fontWeight="700" fill="#15803d">Contact : les électrons passent d’un corps à l’autre,</text><text x="400" y="54" textAnchor="middle" fontSize="21" fontWeight="700" fill="#15803d">les deux deviennent neutres.</text></>}
         {fort && <g>
-          {fleche(xs - forceIn * 23, 30, forceIn, 46, ROUGE, 3.2, 'f1')}{etiquetteVec(xs, 18, 'F', 'tige/paille', ROUGE, 'e1', 13)}
-          {fleche(xr + 100 + forceIn * 23, 30, -forceIn, 46, ORANGE, 3.2, 'f2')}{etiquetteVec(xr + 100, 18, 'F', 'paille/tige', ORANGE, 'e2', 13)}
+          {fleche(xs - forceIn * 23, 50, forceIn, 46, ROUGE, 3.2, 'f1')}{etiquetteVec(xs, 32, 'F', 'tige/paille', ROUGE, 'e1', 22)}
+          {fleche(xr + 100 + forceIn * 23, 50, -forceIn, 46, ORANGE, 3.2, 'f2')}{etiquetteVec(xr + 100, 32, 'F', 'paille/tige', ORANGE, 'e2', 22)}
         </g>}
-        {sIn === 0 && <text x="400" y="60" textAnchor="middle" fontSize="13" fontWeight="700" fill="#64748b">Tige neutre : aucune interaction électrostatique (modèle).</text>}
+        {sIn === 0 && !neut && <><text x="400" y="28" textAnchor="middle" fontSize="21" fontWeight="700" fill="#64748b">Tige neutre : aucune interaction</text><text x="400" y="54" textAnchor="middle" fontSize="21" fontWeight="700" fill="#64748b">électrostatique (modèle).</text></>}
       </svg>);
   })();
 
@@ -759,7 +759,7 @@ export function SimulationElectrisation() {
   const dEff = 1 + Math.max(0, gapB0 - xB) / 12;                // distance effective boule–tige (cm), au contact : 1
   const IB = { type: coefB > 0 ? 'attr' : coefB < 0 ? 'rep' : 'aucune', amp: Math.abs(coefB) * proxim(dEff, 1), phi: coefB === 0 ? 0 : proxim(dEff, 1), influence: infl.Q === 0 && coefB > 0 };
   const repInf = (() => {
-    const W = 640, H = 312, px = 200, R = 56, L = 168, xrod = 256 + gapB0;
+    const W = 640, H = 336, px = 200, R = 56, L = 168, xrod = 256 + gapB0;
     const dx = xB;
     const xb = px + dx, yb = 14 + Math.sqrt(L * L - dx * dx);  // centre de la boule
     // charges de la boule : 6 protons fixes + (6 − Q) électrons, déplacés par influence
@@ -800,23 +800,23 @@ export function SimulationElectrisation() {
         <line x1="150" y1="14" x2="250" y2="14" stroke="#0f172a" strokeWidth="4" strokeLinecap="round"/>
         <rect x={xrod} y="153" width="200" height="58" rx="14" fill={TIGES[infl.tige].couleur} stroke="#0f172a" strokeWidth="1.5" opacity="0.65"/>
         {tigeCh.map((c, i) => <Charge key={`t${i}`} x={c.x} y={c.y} s={c.s} r={5.5}/>)}
-        <text x={xrod + 100} y="233" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">tige {TIGES[infl.tige].nom} frottée ({sBo > 0 ? '+' : '−'})</text>
+        <text x={xrod + 100} y="233" textAnchor="middle" fontSize="21" fontWeight="700" fill="#0f172a">tige {TIGES[infl.tige].nom} frottée ({sBo > 0 ? '+' : '−'})</text>
         <line x1="200" y1="14" x2={xb} y2={yb - R} stroke="#0f172a" strokeWidth="1.5"/>
         <circle cx={xb} cy={yb} r={R} fill="#d1d5db" stroke="#0f172a" strokeWidth="1.8"/>
         {prot.map((p, i) => { const q = place(p, false); return <Charge key={`bp${i}`} x={q.x} y={q.y} s={1} r={5}/>; })}
         {ePosI.map((q, k) => <Charge key={`be${k}`} x={xb + q.x} y={yb + q.y} s={-1} r={5} vis={q.o}/>)}
-        <text x={xb} y={yb + R + 17} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">boule d’aluminium{infl.Q !== 0 ? ` (${sgn(infl.Q)})` : ' (neutre)'}</text>
+        <text x={xb} y={yb + R + 17} textAnchor="middle" fontSize="21" fontWeight="700" fill="#0f172a">boule d’aluminium{infl.Q !== 0 ? ` (${sgn(infl.Q)})` : ' (neutre)'}</text>
         {IB.type !== 'aucune' && dEff < 9 && <g>
-          {fleche(xb, 294, gaucheAttr ? 1 : -1, 42, ROUGE, 3.2, 'f1')}{etiquetteVec(xb + (gaucheAttr ? 21 : -21), 284, 'F', 'tige/boule', ROUGE, 'e1', 13)}
-          {fleche(xrod + 100, 294, gaucheAttr ? -1 : 1, 42, ORANGE, 3.2, 'f2')}{etiquetteVec(xrod + 100 + (gaucheAttr ? -21 : 21), 284, 'F', 'boule/tige', ORANGE, 'e2', 13)}
+          {fleche(xb, 312, gaucheAttr ? 1 : -1, 42, ROUGE, 3.2, 'f1')}{etiquetteVec(xb + (gaucheAttr ? 21 : -21), 296, 'F', 'tige/boule', ROUGE, 'e1', 22)}
+          {fleche(xrod + 100, 312, gaucheAttr ? -1 : 1, 42, ORANGE, 3.2, 'f2')}{etiquetteVec(xrod + 100 + (gaucheAttr ? -21 : 21), 296, 'F', 'boule/tige', ORANGE, 'e2', 22)}
         </g>}
-        {cache.figee && <text x="430" y="60" textAnchor="middle" fontSize="13" fontWeight="700" fill="#64748b">Prédisez avant de regarder (voir le défi).</text>}
+        {cache.figee && <><text x="430" y="60" textAnchor="middle" fontSize="21" fontWeight="700" fill="#64748b">Prédisez avant de regarder</text><text x="430" y="86" textAnchor="middle" fontSize="21" fontWeight="700" fill="#64748b">(voir le défi).</text></>}
       </svg>);
   })();
 
   // ════════════════ SCÈNE 4 : ÉLECTROSCOPE ════════════════
   const repEle = (() => {
-    const W = 480, H = 335, cx = 150, cy = 84, R = 36, xr = cx + R + 4 + (dAff - 1) * 8;
+    const W = 480, H = 352, cx = 150, cy = 84, R = 36, xr = cx + R + 4 + (dAff - 1) * 8;
     const NP = 14, PL = 6, total = NP - ele.Q;                       // protons : sphère 5, tige 3, feuilles 6
     let El = Math.max(0, Math.min(10, 2 * Math.round((PL - EMa.ql) / 2)));
     El = Math.min(El, total - 0);
@@ -864,18 +864,18 @@ export function SimulationElectrisation() {
         <rect x={cx - 9} y="118" width="18" height="120" rx="4" fill="#d1d5db" stroke="#0f172a" strokeWidth="1.2"/>
         <rect x={xr} y="55" width="120" height="58" rx="14" fill={TIGES[ele.tige].couleur} stroke="#0f172a" strokeWidth="1.5" opacity="0.65"/>
         {tigeCh.map((c, i) => <Charge key={`t${i}`} x={c.x} y={c.y} s={c.s} r={5.2}/>)}
-        <text x={xr + 60} y="132" textAnchor="middle" fontSize="12" fontWeight="700" fill="#0f172a">tige {TIGES[ele.tige].court} ({sEl > 0 ? '+' : '−'})</text>
+        <text x={xr + 60} y="132" textAnchor="middle" fontSize="18" fontWeight="700" fill="#0f172a">tige {TIGES[ele.tige].court} ({sEl > 0 ? '+' : '−'})</text>
         <circle cx={cx} cy={cy} r={R} fill="#d1d5db" stroke="#0f172a" strokeWidth="1.8"/>
         {cote.map((q, i) => { const c = placeS(q); return <Charge key={`sp${i}`} x={c.x} y={c.y} s={1} r={4.8}/>; })}
         {[0, 1, 2].map(i => <Charge key={`tp${i}`} x={cx - 3.5} y={134 + 34 * i} s={1} r={4.4}/>)}
         {feuille(-1)}{feuille(1)}
         {ePos.map((q, i) => <Charge key={`el${i}`} x={q.x} y={q.y} s={-1} r={4.6} vis={q.o}/>)}
         <circle cx={piv.x} cy={piv.y} r="3.5" fill="#0f172a"/>
-        <text x={cx - R - 6} y={cy + 4} textAnchor="end" fontSize="12" fill="#334155">sphère</text>
-        <text x={cx + 76} y="196" fontSize="12" fill="#334155">tige métallique</text>
-        <text x={cx + 76} y="300" fontSize="12" fill="#334155">feuilles</text>
-        <text x={cx} y="332" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">électroscope{ele.Q !== 0 ? ` (${sgn(ele.Q)})` : ' (neutre)'}</text>
-        {cache.figee && <text x="340" y="255" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#64748b">Prédisez avant de regarder</text>}
+        <text x={cx - R - 6} y={cy + 4} textAnchor="end" fontSize="18" fill="#334155">sphère</text>
+        <text x={cx + 76} y="196" fontSize="18" fill="#334155">tige métallique</text>
+        <text x={cx + 76} y="300" fontSize="18" fill="#334155">feuilles</text>
+        <text x={cx} y="346" textAnchor="middle" fontSize="18" fontWeight="700" fill="#0f172a">électroscope{ele.Q !== 0 ? ` (${sgn(ele.Q)})` : ' (neutre)'}</text>
+        {cache.figee && <text x="340" y="255" textAnchor="middle" fontSize="18" fontWeight="700" fill="#64748b">Prédisez avant de regarder</text>}
       </svg>);
   })();
 

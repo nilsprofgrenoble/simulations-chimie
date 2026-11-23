@@ -30,7 +30,7 @@ function couleurLambda(nm) {
 
 // ════════════════ LE SPECTRE ════════════════
 function Spectre({ courbes, lambda, onLambda, yMax = 2, titre }) {
-  const W = 560, H = 250, g = 46, d = 14, h = 14, b = 40;
+  const W = 560, H = 300, g = 80, d = 16, h = 16, b = 74;
   const X = l => g + (l - LAMBDA_MIN) / (LAMBDA_MAX - LAMBDA_MIN) * (W - g - d);
   const Y = A => H - b - Math.max(0, Math.min(yMax, A)) / yMax * (H - b - h);
   const clic = e => {
@@ -44,28 +44,28 @@ function Spectre({ courbes, lambda, onLambda, yMax = 2, titre }) {
       style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}`, cursor: onLambda ? 'crosshair' : 'default' }}>
       {/* au-delà de 780 nm : proche infrarouge, invisible à l'œil */}
       <rect x={X(780)} y={h} width={X(LAMBDA_MAX) - X(780)} height={H - b - h} fill="#f1f5f9"/>
-      <text x={(X(780) + X(LAMBDA_MAX)) / 2} y={H - b - 6} fontSize="11" fill={KIT.txt2} textAnchor="middle">proche infrarouge</text>
+      <text x={(X(780) + X(LAMBDA_MAX)) / 2} y={H - b - 34} fontSize="19" fill={KIT.txt2} textAnchor="middle">proche</text><text x={(X(780) + X(LAMBDA_MAX)) / 2} y={H - b - 12} fontSize="19" fill={KIT.txt2} textAnchor="middle">infrarouge</text>
       {/* bande des couleurs du visible */}
       {Array.from({ length: 52 }, (_, k) => LAMBDA_MIN + k * 10).map(l => <rect key={l} x={X(l)} y={H - b + 2} width={X(l + 10) - X(l) + 0.5} height="6" fill={couleurLambda(l)}/>)}
       {Array.from({ length: Math.floor(yMax / pas) + 1 }, (_, k) => k * pas).map(A => (
         <g key={A}><line x1={g} y1={Y(A)} x2={W - d} y2={Y(A)} stroke="#e2e8f0"/>
-          <text x={g - 5} y={Y(A) + 4} fontSize="11.5" fill={KIT.txt2} textAnchor="end">{fmt(A, pas < 0.1 ? 2 : 1)}</text></g>
+          <text x={g - 5} y={Y(A) + 7} fontSize="19" fill={KIT.txt2} textAnchor="end">{fmt(A, pas < 0.1 ? 2 : 1)}</text></g>
       ))}
-      {[400, 500, 600, 700, 800, 900].map(l => <text key={l} x={X(l)} y={H - b + 22} fontSize="11.5" fill={KIT.txt2} textAnchor="middle">{l}</text>)}
+      {[400, 500, 600, 700, 800, 900].map(l => <text key={l} x={X(l)} y={H - b + 28} fontSize="19" fill={KIT.txt2} textAnchor={l >= 900 ? 'end' : 'middle'}>{l}</text>)}
       {courbes.map((c, k) => (
         <polyline key={k} fill="none" stroke={c.couleur} strokeWidth="2.5" strokeDasharray={c.pointilles ? '5 4' : undefined}
           points={Array.from({ length: 105 }, (_, i) => LAMBDA_MIN + i * 5).map(l => `${X(l).toFixed(1)},${Y(c.f(l)).toFixed(1)}`).join(' ')}/>
       ))}
       {lambda != null && <g>
         <line x1={X(lambda)} y1={h} x2={X(lambda)} y2={H - b} stroke={ORANGE_GUIDE} strokeWidth="2"/>
-        <text x={Math.min(W - d - 4, X(lambda) + 5)} y={h + 12} fontSize="12" fontWeight="700" fill="#c2410c" textAnchor={X(lambda) > W - 90 ? 'end' : 'start'}>λ = {lambda} nm</text>
+        <text x={Math.min(W - d - 4, X(lambda) + 5)} y={h + 22} fontSize="20" fontWeight="700" fill="#c2410c" textAnchor={X(lambda) > W - 90 ? 'end' : 'start'}>λ = {lambda} nm</text>
       </g>}
       <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={h} x2={g} y2={H - b} stroke={KIT.txt}/>
-      <text x={(g + W - d) / 2} y={H - 4} fontSize="12.5" fontWeight="700" fill={KIT.txt} textAnchor="middle">longueur d'onde λ (nm)</text>
-      <text x="13" y={(h + H - b) / 2} fontSize="12.5" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 13 ${(h + H - b) / 2})`}>absorbance A</text>
+      <text x={(g + W - d) / 2} y={H - 8} fontSize="20" fontWeight="700" fill={KIT.txt} textAnchor="middle">longueur d'onde λ (nm)</text>
+      <text x="20" y={(h + H - b) / 2} fontSize="20" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 20 ${(h + H - b) / 2})`}>absorbance A</text>
       {courbes.length > 1 && courbes.map((c, k) => (
-        <g key={`l${k}`}><line x1={g + 12} y1={h + 12 + k * 16} x2={g + 32} y2={h + 12 + k * 16} stroke={c.couleur} strokeWidth="2.5" strokeDasharray={c.pointilles ? '5 4' : undefined}/>
-          <text x={g + 37} y={h + 16 + k * 16} fontSize="11.5" fill={KIT.txt}>{c.nom}</text></g>
+        <g key={`l${k}`}><line x1={g + 12} y1={h + 16 + k * 26} x2={g + 32} y2={h + 16 + k * 26} stroke={c.couleur} strokeWidth="2.5" strokeDasharray={c.pointilles ? '5 4' : undefined}/>
+          <text x={g + 37} y={h + 23 + k * 26} fontSize="19" fill={KIT.txt}>{c.nom}</text></g>
       ))}
     </svg>
   );
@@ -73,7 +73,7 @@ function Spectre({ courbes, lambda, onLambda, yMax = 2, titre }) {
 
 // ════════════════ LA COURBE D'ÉTALONNAGE ════════════════
 function CourbeEtalonnage({ points, inconnue, modele, unite, cMax, aMax }) {
-  const W = 560, H = 260, g = 52, d = 16, h = 14, b = 40;
+  const W = 560, H = 310, g = 84, d = 16, h = 16, b = 74;
   const xm = cMax || Math.max(1e-9, ...points.map(p => p[0])) * 1.1, ym = aMax || Math.max(0.1, ...points.map(p => p[1]), inconnue || 0) * 1.12;
   const X = c => g + c / xm * (W - g - d), Y = A => H - b - A / ym * (H - b - h);
   const pasY = ym > 1.5 ? 0.5 : ym > 0.6 ? 0.2 : 0.1;
@@ -81,10 +81,10 @@ function CourbeEtalonnage({ points, inconnue, modele, unite, cMax, aMax }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Courbe d'étalonnage A = f(c)" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
       {Array.from({ length: Math.floor(ym / pasY) + 1 }, (_, k) => k * pasY).map(A => (
-        <g key={A}><line x1={g} y1={Y(A)} x2={W - d} y2={Y(A)} stroke="#e2e8f0"/><text x={g - 5} y={Y(A) + 4} fontSize="11.5" fill={KIT.txt2} textAnchor="end">{fmt(A, 1)}</text></g>
+        <g key={A}><line x1={g} y1={Y(A)} x2={W - d} y2={Y(A)} stroke="#e2e8f0"/><text x={g - 5} y={Y(A) + 7} fontSize="19" fill={KIT.txt2} textAnchor="end">{fmt(A, 1)}</text></g>
       ))}
       {(() => { const pc = pasRond(xm), dec = Math.max(0, -Math.floor(Math.log10(pc)) + (pc / Math.pow(10, Math.floor(Math.log10(pc))) === 2.5 ? 1 : 0));
-        return Array.from({ length: Math.floor(xm / pc + 1e-9) + 1 }, (_, k) => k * pc).map(c => <text key={c} x={X(c)} y={H - b + 16} fontSize="11.5" fill={KIT.txt2} textAnchor="middle">{fmt(c, dec)}</text>); })()}
+        return Array.from({ length: Math.floor(xm / pc + 1e-9) + 1 }, (_, k) => k * pc).map(c => <text key={c} x={X(c)} y={H - b + 28} fontSize="19" fill={KIT.txt2} textAnchor="middle">{fmt(c, dec)}</text>); })()}
       {modele && <line x1={X(0)} y1={Y(modele.b)} x2={X(xm)} y2={Y(modele.a * xm + modele.b)} stroke="#2563eb" strokeWidth="2"/>}
       {cX != null && cX > 0 && cX < xm && <g>
         <line x1={g} y1={Y(inconnue)} x2={X(cX)} y2={Y(inconnue)} stroke="#dc2626" strokeDasharray="5 4"/>
@@ -93,8 +93,8 @@ function CourbeEtalonnage({ points, inconnue, modele, unite, cMax, aMax }) {
       </g>}
       {points.map(([c, A], k) => <circle key={k} cx={X(c)} cy={Y(A)} r="5" fill="#1e3a8a"/>)}
       <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={h} x2={g} y2={H - b} stroke={KIT.txt}/>
-      <text x={(g + W - d) / 2} y={H - 6} fontSize="12.5" fontWeight="700" fill={KIT.txt} textAnchor="middle">concentration c ({unite})</text>
-      <text x="13" y={(h + H - b) / 2} fontSize="12.5" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 13 ${(h + H - b) / 2})`}>absorbance A</text>
+      <text x={(g + W - d) / 2} y={H - 8} fontSize="20" fontWeight="700" fill={KIT.txt} textAnchor="middle">concentration c ({unite})</text>
+      <text x="20" y={(h + H - b) / 2} fontSize="20" fontWeight="700" fill={KIT.txt} textAnchor="middle" transform={`rotate(-90 20 ${(h + H - b) / 2})`}>absorbance A</text>
     </svg>
   );
 }
@@ -104,22 +104,22 @@ function SchemaSpectro({ lambda, couleurSol, A, enMesure }) {
   const coulF = couleurLambda(lambda);
   const sortie = Math.pow(10, -Math.max(0, A || 0));
   return (
-    <svg viewBox="0 0 560 150" role="img" aria-label="Principe du spectrophotomètre" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
+    <svg viewBox="0 0 620 160" role="img" aria-label="Principe du spectrophotomètre" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
       <rect x="14" y="48" width="70" height="54" rx="8" fill="#334155"/><circle cx="72" cy="75" r="10" fill="#fde68a"/>
-      <text x="49" y="122" fontSize="12" fill={KIT.txt} textAnchor="middle">source</text>
+      <text x="49" y="126" fontSize="22" fill={KIT.txt} textAnchor="middle">source</text>
       <polygon points="120,48 160,75 120,102" fill="#e0f2fe" stroke={KIT.txt}/>
-      <text x="140" y="122" fontSize="12" fill={KIT.txt} textAnchor="middle">monochromateur</text>
+      <text x="140" y="126" fontSize="22" fill={KIT.txt} textAnchor="middle">mono-</text><text x="140" y="148" fontSize="22" fill={KIT.txt} textAnchor="middle">chromateur</text>
       <line x1="84" y1="75" x2="120" y2="75" stroke="#fde68a" strokeWidth="6"/>
       <line x1="160" y1="75" x2="282" y2="75" stroke={coulF} strokeWidth="6"/>
-      <text x="221" y="64" fontSize="12" fill="#c2410c" textAnchor="middle" fontWeight="700">λ = {lambda} nm</text>
+      <text x="221" y="62" fontSize="22" fill="#c2410c" textAnchor="middle" fontWeight="700">λ = {lambda} nm</text>
       <rect x="282" y="40" width="44" height="70" fill={couleurSol} stroke={KIT.txt} strokeWidth="2"/>
-      <text x="304" y="128" fontSize="12" fill={KIT.txt} textAnchor="middle">cuve (L = 1 cm)</text>
+      <text x="304" y="126" fontSize="22" fill={KIT.txt} textAnchor="middle">cuve</text><text x="304" y="148" fontSize="22" fill={KIT.txt} textAnchor="middle">L = 1 cm</text>
       <line x1="326" y1="75" x2="420" y2="75" stroke={coulF} strokeWidth="6" opacity={0.15 + 0.85 * sortie}/>
       <rect x="420" y="50" width="40" height="50" rx="4" fill="#1e293b"/>
-      <text x="440" y="122" fontSize="12" fill={KIT.txt} textAnchor="middle">détecteur</text>
-      <rect x="474" y="54" width="76" height="42" rx="5" fill="#0f172a"/>
-      <text x="512" y="81" fontSize="15" fill="#86efac" textAnchor="middle" fontFamily="monospace" fontWeight="700">{enMesure && A != null ? fmt(A, 3) : '—'}</text>
-      <text x="512" y="112" fontSize="11.5" fill={KIT.txt2} textAnchor="middle">absorbance A</text>
+      <text x="430" y="126" fontSize="22" fill={KIT.txt} textAnchor="middle">détecteur</text>
+      <rect x="502" y="40" width="88" height="48" rx="5" fill="#0f172a"/>
+      <text x="546" y="73" fontSize="23" fill="#86efac" textAnchor="middle" fontFamily="monospace" fontWeight="700">{enMesure && A != null ? fmt(A, 3) : '—'}</text>
+      <text x="548" y="112" fontSize="20.5" fill={KIT.txt2} textAnchor="middle">absorbance A</text>
     </svg>
   );
 }
@@ -263,14 +263,14 @@ export function BeerLambert1G() {
     { id: 'calibrer', titre: 'Faire le blanc', focus: [],
       retenirTitre: 'Le spectrophotomètre et le blanc',
       retenir: <>
-        <svg viewBox="0 0 360 120" role="img" aria-label="Schéma d’un spectrophotomètre : une lampe émet de la lumière blanche, un monochromateur sélectionne la longueur d’onde λ, le faisceau d’intensité I0 traverse la cuve de largeur 1 cm contenant la solution, puis le détecteur mesure l’intensité transmise I plus faible ; l’absorbance est A = log(I0 / I)" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
-          <rect x="8" y="42" width="44" height="36" rx="6" fill="#fef3c7" stroke="#b45309" strokeWidth="2" /><text x="30" y="64" textAnchor="middle" fontSize="11" fontWeight="700" fill="#92400e">lampe</text>
-          <rect x="76" y="42" width="74" height="36" rx="6" fill="#e0e7ff" stroke="#4338ca" strokeWidth="2" /><text x="113" y="57" textAnchor="middle" fontSize="10" fontWeight="700" fill="#3730a3">mono-</text><text x="113" y="70" textAnchor="middle" fontSize="10" fontWeight="700" fill="#3730a3">chromateur</text>
-          <rect x="188" y="30" width="46" height="60" rx="4" fill="#bfdbfe" stroke="#1d4ed8" strokeWidth="2.5" /><text x="211" y="64" textAnchor="middle" fontSize="11" fontWeight="700" fill="#1e3a8a">cuve</text>
-          <rect x="290" y="42" width="62" height="36" rx="6" fill="#dcfce7" stroke="#15803d" strokeWidth="2" /><text x="321" y="64" textAnchor="middle" fontSize="11" fontWeight="700" fill="#166534">détecteur</text>
-          <line x1="52" y1="60" x2="76" y2="60" stroke="#475569" strokeWidth="2" /><line x1="150" y1="60" x2="188" y2="60" stroke="#0072b2" strokeWidth="4" /><line x1="234" y1="60" x2="290" y2="60" stroke="#0072b2" strokeWidth="1.5" />
-          <text x="169" y="50" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">I₀ (λ)</text><text x="262" y="50" textAnchor="middle" fontSize="11" fontWeight="700" fill="#0072b2">I &lt; I₀</text>
-          <line x1="188" y1="102" x2="234" y2="102" stroke="#334155" strokeWidth="1.5" /><line x1="188" y1="97" x2="188" y2="107" stroke="#334155" /><line x1="234" y1="97" x2="234" y2="107" stroke="#334155" /><text x="211" y="118" textAnchor="middle" fontSize="11" fill="#334155">ℓ = 1 cm</text>
+        <svg viewBox="0 0 360 140" role="img" aria-label="Schéma d’un spectrophotomètre : une lampe émet de la lumière blanche, un monochromateur sélectionne la longueur d’onde λ, le faisceau d’intensité I0 traverse la cuve de largeur 1 cm contenant la solution, puis le détecteur mesure l’intensité transmise I plus faible ; l’absorbance est A = log(I0 / I)" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block', margin: '0 auto 6px' }}>
+          <rect x="4" y="46" width="58" height="42" rx="6" fill="#fef3c7" stroke="#b45309" strokeWidth="2" /><text x="33" y="73" textAnchor="middle" fontSize="15" fontWeight="700" fill="#92400e">lampe</text>
+          <rect x="72" y="46" width="88" height="42" rx="6" fill="#e0e7ff" stroke="#4338ca" strokeWidth="2" /><text x="116" y="64" textAnchor="middle" fontSize="15" fontWeight="700" fill="#3730a3">mono-</text><text x="116" y="81" textAnchor="middle" fontSize="15" fontWeight="700" fill="#3730a3">chromateur</text>
+          <rect x="196" y="32" width="52" height="70" rx="4" fill="#bfdbfe" stroke="#1d4ed8" strokeWidth="2.5" /><text x="222" y="73" textAnchor="middle" fontSize="15" fontWeight="700" fill="#1e3a8a">cuve</text>
+          <rect x="284" y="46" width="72" height="42" rx="6" fill="#dcfce7" stroke="#15803d" strokeWidth="2" /><text x="320" y="73" textAnchor="middle" fontSize="14.5" fontWeight="700" fill="#166534">détecteur</text>
+          <line x1="62" y1="67" x2="72" y2="67" stroke="#475569" strokeWidth="2" /><line x1="160" y1="67" x2="196" y2="67" stroke="#0072b2" strokeWidth="4" /><line x1="248" y1="67" x2="284" y2="67" stroke="#0072b2" strokeWidth="1.5" />
+          <text x="178" y="24" textAnchor="middle" fontSize="15" fontWeight="700" fill="#0072b2">I₀ (λ)</text><text x="266" y="24" textAnchor="middle" fontSize="15" fontWeight="700" fill="#0072b2">I &lt; I₀</text>
+          <line x1="196" y1="116" x2="248" y2="116" stroke="#334155" strokeWidth="1.5" /><line x1="196" y1="111" x2="196" y2="121" stroke="#334155" /><line x1="248" y1="111" x2="248" y2="121" stroke="#334155" /><text x="222" y="136" textAnchor="middle" fontSize="15" fill="#334155">ℓ = 1 cm</text>
         </svg>
         <Formule><mi>A</mi><mo>=</mo><mi>log</mi><mo>(</mo><mfrac><msub><mi>I</mi><mn>0</mn></msub><mi>I</mi></mfrac><mo>)</mo></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>

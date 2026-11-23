@@ -36,6 +36,7 @@ Statuts : ✅ audité et corrigé · 🟨 audité, corrections en attente · ⬜
 - 22/11/2026 : PR 776 (F-08 sur 178, 179, 190 + textes). Correctif F-02 sur tout le site (aide `attrTest` dans `src/commun.jsx`, lecture seule par `scripts/controle-parcours.cjs` en mode test).
 - 22/11/2026 : F-08 sur 191 et 192, correctifs C3 (unités du message de succès, 191) et C4 (fiche échelle, 192).
 - 22/11/2026 : F-08 sur 193, 194, 195 ; C5 (marges des panneaux Hypothèses : 178, 190, 193).
+- 23/11/2026 : F-05 sur les anciennes simulations 1G (textes des schémas ≥ 9 px sur téléphone) : sims 2, 10, 48, 49 (PR 791), puis 50, 51, 52, 53. Incident : le nettoyage F-03 avait retiré par erreur l'import des styles de l'accueil (corrigé PR 792) ; vérifier l'accueil après tout changement de masse.
 - 23/11/2026 : F-03 sur tout le site (imports inutilisés retirés dans 53 fichiers, exports morts Barre et D_NACL) ; F-08 sur 102 (nomenclature : « voir la solution » pour les défis nom et formule brute).
 - 23/11/2026 : suite F-05 : Avancement (SIM1) textes agrandis (schémas et fiches), fiche SIM69 (①/②/③ espacés), hypothèse des températures d'étoiles précisée (SIM66, Sirius/Rigel : valeurs du cours).
 - 22/11/2026 : passe « mineurs » : F-05 (193, 196, 199, 202), F-07 (193), test de typographie du prisme (201) réparé, import inutile (201), attribut et commentaire en trop (202). Non traité : scène `entreeDeux` définie mais jamais affichée (201), à trancher avec Nils.

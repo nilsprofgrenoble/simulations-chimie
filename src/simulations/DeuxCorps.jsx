@@ -106,7 +106,7 @@ function fleche(x, y, dir, len, col, ep = 3, cle) {
     <path d={`M${x2},${y} L${bx},${y - w} L${bx},${y + w} z`} fill={col}/></g>;
 }
 // Nom d’un vecteur dans le SVG, avec sa flèche dessinée au-dessus et un indice (la flèche combinante ne s’affiche pas partout)
-function etiquetteVec(x, y, lettre, indice, col, cle, taille = 15) {
+function etiquetteVec(x, y, lettre, indice, col, cle, taille = 23) {
   const w = taille * 0.4, h = y - taille * 0.95;
   return <g key={cle}><text x={x} y={y} textAnchor="middle" fontSize={taille} fontWeight="800" fill={col}>{lettre}
     {indice && <tspan fontSize={taille * 0.7} dy={taille * 0.28}>{indice}</tspan>}</text>
@@ -436,7 +436,7 @@ export function SimulationDeuxCorps() {
     <g>
       <circle cx={x} cy={YC} r={r} fill={col} stroke="#0f172a" strokeWidth="1.5"/>
       <text x={x} y={YC + 5} textAnchor="middle" fontSize={r > 14 ? 15 : 11} fontWeight="800" fill="white">{txt || lettre}</text>
-      <text x={x} y={YC + r + 18} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">{nom}</text>
+      <text x={x} y={YC + r + 18} textAnchor="middle" fontSize="20" fontWeight="700" fill="#0f172a">{nom}</text>
     </g>);
   const yBr = YC + 66;
   const fleches = !I.nul && <g>
@@ -446,7 +446,7 @@ export function SimulationDeuxCorps() {
     {etiquetteVec(XA - sB * (C.rA + 3 + LF / 2), YC - 16, 'F', 'B/A', ORANGE, 'efba')}
   </g>;
   const xu = (XA + xB) / 2 - 28;
-  const unitaire = aff.u && <g>{fleche(xu, yBr + 40, 1, 56, BLEU, 2.6, 'u')}{etiquetteVec(xu + 28, yBr + 66, 'u', 'A/B', BLEU, 'eu', 14)}</g>;
+  const unitaire = aff.u && <g>{fleche(xu, yBr + 40, 1, 56, BLEU, 2.6, 'u')}{etiquetteVec(xu + 28, yBr + 66, 'u', 'A/B', BLEU, 'eu', 22)}</g>;
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       <svg ref={svgRef} viewBox={`0 0 ${W0} ${H0}`} style={{ width: '100%', display: 'block', touchAction: 'none', background: '#fafaf9', borderRadius: 8, cursor: enDefi ? 'default' : 'ew-resize' }}
@@ -459,9 +459,9 @@ export function SimulationDeuxCorps() {
         {corps(xB, C.rB, colB, 'B', C.B, C.type === 'elec' ? (cache.signeB ? '?' : signe(I.qB)) : null)}
         <g stroke="#0f172a" strokeWidth="1.6">
           <line x1={XA} y1={yBr} x2={xB} y2={yBr}/><line x1={XA} y1={yBr - 6} x2={XA} y2={yBr + 6}/><line x1={xB} y1={yBr - 6} x2={xB} y2={yBr + 6}/></g>
-        <text x={(XA + xB) / 2} y={yBr - 7} textAnchor="middle" fontSize="13.5" fontWeight="700" fill="#0f172a">{cache.d ? 'd = ?' : `d = ${C.dTxt(I.d)}`}</text>
+        <text x={(XA + xB) / 2} y={yBr - 7} textAnchor="middle" fontSize="21.5" fontWeight="700" fill="#0f172a">{cache.d ? 'd = ?' : `d = ${C.dTxt(I.d)}`}</text>
         {unitaire}
-        {I.nul && <text x={W0 / 2} y={YC - 40} textAnchor="middle" fontSize="14" fontWeight="700" fill="#64748b">Une des charges est nulle : aucune force.</text>}
+        {I.nul && <text x={W0 / 2} y={YC - 40} textAnchor="middle" fontSize="22.5" fontWeight="700" fill="#64748b">Une des charges est nulle : aucune force.</text>}
       </svg>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
         Cliquez ou faites glisser sur la scène pour changer la distance d. <span style={{ color: ROUGE, fontWeight: 700 }}>Rouge</span> : force exercée par A sur B.
@@ -538,7 +538,7 @@ export function SimulationDeuxCorps() {
 
   // courbe F(d)
   const graphe = !cache.valeurs && (() => {
-    const gw = 330, gh = 190, ml = 54, mr = 14, mt = 14, mb = 34;
+    const gw = 330, gh = 190, ml = 80, mr = 14, mt = 14, mb = 34;
     const Fd = pd => interaction(cas, { ...p, d: pd }).F;
     const Fmax = Fd(dc.min), pts = [];
     for (let i = 0; i <= 60; i++) { const pd = dc.min + (dc.max - dc.min) * i / 60; pts.push(pd); }
@@ -551,13 +551,13 @@ export function SimulationDeuxCorps() {
           <line x1={ml} y1={mt} x2={ml} y2={gh - mb} stroke="#0f172a" strokeWidth="1.4"/><line x1={ml} y1={gh - mb} x2={gw - mr} y2={gh - mb} stroke="#0f172a" strokeWidth="1.4"/>
           <polyline fill="none" stroke="#7c3aed" strokeWidth="2.2" points={pts.map(pd => `${X(pd).toFixed(1)},${Y(Fd(pd)).toFixed(1)}`).join(' ')}/>
           {a2 && <g><line x1={X(d2)} y1={Y(Fd(d2))} x2={X(d2)} y2={gh - mb} stroke="#0891b2" strokeDasharray="4 3"/><circle cx={X(d2)} cy={Y(Fd(d2))} r="4.5" fill="#0891b2"/>
-            <text x={X(d2) - 6} y={Y(Fd(d2)) - 8} textAnchor="end" fontSize="11" fill="#0e7490" fontWeight="700">2d : {val(Fd(d2), 2)}{NB}N</text></g>}
+            <text x={X(d2) - 6} y={Y(Fd(d2)) - 8} textAnchor="end" fontSize="14" fill="#0e7490" fontWeight="700">2d : {val(Fd(d2), 2)}{NB}N</text></g>}
           <line x1={X(p.d)} y1={Y(I.F)} x2={X(p.d)} y2={gh - mb} stroke={ROUGE} strokeDasharray="4 3"/><circle cx={X(p.d)} cy={Y(I.F)} r="5" fill={ROUGE}/>
-          <text x={Math.min(gw - mr, X(p.d) + 8)} y={Math.max(mt + 10, Y(I.F) - 8)} textAnchor="start" fontSize="11" fill={ROUGE} fontWeight="700">d : {val(I.F, 2)}{NB}N</text>
-          <text x={ml - 4} y={mt + 4} textAnchor="end" fontSize="10" fill="#334155">{val(Fmax, 2)}</text><text x={ml - 4} y={gh - mb} textAnchor="end" fontSize="10" fill="#334155">0</text>
-          <text x={ml} y={gh - mb + 14} textAnchor="middle" fontSize="10.5" fill="#334155">{fmt(dc.min, dc.dec)}</text><text x={gw - mr} y={gh - mb + 14} textAnchor="end" fontSize="10.5" fill="#334155">{fmt(dc.max, dc.dec)}</text>
-          <text x={(ml + gw - mr) / 2} y={gh - 6} textAnchor="middle" fontSize="11.5" fill="#0f172a" fontWeight="700">d ({dc.u})</text>
-          <text x="10" y={gh / 2 - 8} fontSize="11.5" fill="#0f172a" fontWeight="700" transform={`rotate(-90 10 ${gh / 2 - 8})`} textAnchor="middle">F (N)</text>
+          <text x={Math.min(gw - mr, X(p.d) + 8)} y={Math.max(mt + 10, Y(I.F) - 8)} textAnchor="start" fontSize="14" fill={ROUGE} fontWeight="700">d : {val(I.F, 2)}{NB}N</text>
+          <text x={ml - 4} y={mt + 4} textAnchor="end" fontSize="12.5" fill="#334155">{val(Fmax, 2)}</text><text x={ml - 4} y={gh - mb} textAnchor="end" fontSize="12.5" fill="#334155">0</text>
+          <text x={ml} y={gh - mb + 14} textAnchor="middle" fontSize="13" fill="#334155">{fmt(dc.min, dc.dec)}</text><text x={gw - mr} y={gh - mb + 14} textAnchor="end" fontSize="13" fill="#334155">{fmt(dc.max, dc.dec)}</text>
+          <text x={(ml + gw - mr) / 2} y={gh - 6} textAnchor="middle" fontSize="14.5" fill="#0f172a" fontWeight="700">d ({dc.u})</text>
+          <text x="10" y={gh / 2 - 8} fontSize="14.5" fill="#0f172a" fontWeight="700" transform={`rotate(-90 10 ${gh / 2 - 8})`} textAnchor="middle">F (N)</text>
         </svg>
       </div>);
   })();

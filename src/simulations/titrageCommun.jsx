@@ -54,7 +54,7 @@ export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, 
   const yNivB = yB0 + V2 / V_BURETTE * (yB1 - yB0);
   const coule = ouvert;
   return (
-    <svg viewBox="0 0 640 380" role="img" aria-label="Montage du titrage : burette, erlenmeyer, agitateur magnétique"
+    <svg viewBox="0 -14 640 394" role="img" aria-label="Montage du titrage : burette, erlenmeyer, agitateur magnétique"
       style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
       {/* potence */}
       <rect x="150" y="350" width="260" height="10" fill="#94a3b8"/><rect x="330" y="20" width="8" height="332" fill="#94a3b8"/>
@@ -65,16 +65,16 @@ export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, 
       {Array.from({ length: 26 }, (_, k) => k).map(v => {
         const y = yB0 + v / V_BURETTE * (yB1 - yB0);
         return <g key={v}><line x1={260} y1={y} x2={v % 5 === 0 ? 270 : 265} y2={y} stroke={KIT.txt} strokeWidth="1"/>
-          {v % 5 === 0 && <text x="274" y={y + 4} fontSize="11" fill={KIT.txt}>{v}</text>}</g>;
+          {v % 5 === 0 && <text x="274" y={y + 8} fontSize="22" fill={KIT.txt}>{v}</text>}</g>;
       })}
       <path d={`M 236 ${yB1} L 244 ${yB1 + 22} L 252 ${yB1 + 22} L 260 ${yB1} Z`} fill="#e0f2fe" stroke={KIT.txt} strokeWidth="2"/>
       <rect x="240" y={yB1 + 22} width="16" height="8" rx="2" fill={ouvert ? '#16a34a' : '#dc2626'}/>
       <line x1="248" y1={yB1 + 30} x2="248" y2={yB1 + 44} stroke={KIT.txt} strokeWidth="3"/>
       {coule && [0, 1, 2].map(k => <circle key={k} cx="248" cy={yB1 + 48} r="2.5" fill="#7dd3fc"><animate attributeName="cy" from={yB1 + 46} to={yB1 + 78} dur="0.45s" begin={`${k * 0.15}s`} repeatCount="indefinite"/></circle>)}
       {typeof etiquetteBurette === 'string'
-        ? <text x="214" y={yB0 - 18} fontSize="12" fill={KIT.txt2} textAnchor="middle">{etiquetteBurette}</text>
-        : <foreignObject x="350" y="22" width="286" height="62"><div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.45 }}>{etiquetteBurette}</div></foreignObject>}
-      {etiquetteErlen && <foreignObject x="350" y="262" width="286" height="62"><div style={{ fontSize: 13, color: KIT.txt, lineHeight: 1.4 }}>{etiquetteErlen}</div></foreignObject>}
+        ? <text x="214" y={yB0 - 18} fontSize="20" fill={KIT.txt2} textAnchor="middle">{etiquetteBurette}</text>
+        : <foreignObject x="346" y="8" width="290" height="150"><div style={{ fontSize: 22, color: KIT.txt, lineHeight: 1.25 }}>{etiquetteBurette}</div></foreignObject>}
+      {etiquetteErlen && <foreignObject x="346" y="246" width="290" height="130"><div style={{ fontSize: 21, color: KIT.txt, lineHeight: 1.25 }}>{etiquetteErlen}</div></foreignObject>}
       {/* zoom de lecture */}
       {(() => {
         const z0 = 110, zy = 40, zh = 130, zw = 56, mlParPx = 2 / zh, Yz = v => zy + zh / 2 + (v - V2) / mlParPx;
@@ -85,10 +85,10 @@ export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, 
             const y = Yz(v); if (y < zy || y > zy + zh || v < -0.001 || v > V_BURETTE + 0.001) return null;
             const r10 = Math.round(v * 10);
             return <g key={r10}><line x1={z0 + zw - (r10 % 10 === 0 ? 18 : r10 % 5 === 0 ? 13 : 8)} y1={y} x2={z0 + zw} y2={y} stroke={KIT.txt}/>
-              {r10 % 10 === 0 && <text x={z0 - 4} y={y + 4} fontSize="12" fill={KIT.txt} textAnchor="end">{r10 / 10}</text>}</g>;
+              {r10 % 10 === 0 && <text x={z0 - 4} y={y + 7} fontSize="20" fill={KIT.txt} textAnchor="end">{r10 / 10}</text>}</g>;
           })}
           <path d={`M ${z0} ${Yz(V2) - 2} Q ${z0 + zw / 2} ${Yz(V2) + 6} ${z0 + zw} ${Yz(V2) - 2}`} fill="none" stroke="#0284c7" strokeWidth="2"/>
-          <text x={z0 + zw / 2} y={zy - 6} fontSize="12" fill={KIT.txt2} textAnchor="middle">zoom (mL)</text>
+          <text x={z0 + zw / 2} y={zy - 8} fontSize="20" fill={KIT.txt2} textAnchor="middle">zoom (mL)</text>
           <line x1={z0 + zw} y1={zy + zh / 2} x2="236" y2={yNivB} stroke="#94a3b8" strokeDasharray="3 3"/>
         </g>;
       })()}
@@ -103,21 +103,21 @@ export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, 
       {/* repères à légender */}
       {reperes && [[290, 80, '1'], [300, 300, '2'], [312, 335, '3']].map(([x, y, n]) => (
         <g key={n}><line x1={x - 22} y1={y} x2={x + 16} y2={y} stroke={KIT.txt2} strokeDasharray="4 3"/>
-          <circle cx={x + 28} cy={y} r="11" fill="white" stroke={ORANGE_GUIDE} strokeWidth="2"/><text x={x + 28} y={y + 4.5} fontSize="13" fontWeight="800" fill={KIT.txt} textAnchor="middle">{n}</text></g>
+          <circle cx={x + 28} cy={y} r="15" fill="white" stroke={ORANGE_GUIDE} strokeWidth="2"/><text x={x + 28} y={y + 7} fontSize="21" fontWeight="800" fill={KIT.txt} textAnchor="middle">{n}</text></g>
       ))}
       {/* sonde d'un pH-mètre (titrage pH-métrique) : sonde plongée dans la solution, câble et afficheur */}
       {sonde && <g>
         <path d="M 350 190 Q 330 232 276 262 L 270 302" fill="none" stroke={KIT.txt2} strokeWidth="2.5" strokeLinecap="round"/>
         <rect x="266" y="296" width="8" height="16" rx="3" fill="#fde68a" stroke={KIT.txt}/>
-        <rect x="350" y="168" width="150" height="46" rx="6" fill="#0f172a"/>
-        <text x="425" y="188" fontSize="11" textAnchor="middle" fill="#94a3b8">{sonde.nom || 'pH-mètre'}</text>
-        <text x="425" y="207" fontSize="18" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="ui-monospace, monospace">{sonde.valeur}</text>
+        <rect x="350" y="160" width="160" height="62" rx="6" fill="#0f172a"/>
+        <text x="430" y="182" fontSize="18" textAnchor="middle" fill="#94a3b8">{sonde.nom || 'pH-mètre'}</text>
+        <text x="430" y="212" fontSize="26" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="ui-monospace, monospace">{sonde.valeur}</text>
       </g>}
       {/* légende de couleur */}
       {legendeCouleur && <>
-        <text x="470" y="290" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">couleur de la solution</text>
-        <rect x="430" y="298" width="80" height="34" rx="6" fill={coul} stroke={KIT.txt}/>
-        <text x="470" y="352" fontSize="12" fill={KIT.txt2} textAnchor="middle">{indicateur || 'sans indicateur'}</text>
+        <text x="470" y="284" fontSize="20" fontWeight="700" fill={KIT.txt} textAnchor="middle">couleur de la solution</text>
+        <rect x="430" y="294" width="80" height="34" rx="6" fill={coul} stroke={KIT.txt}/>
+        <text x="470" y="356" fontSize="20" fill={KIT.txt2} textAnchor="middle">{indicateur || 'sans indicateur'}</text>
       </>}
       <Cadre actif={hl('burette')} x={204} y={8} w={90} h={270}/>
       <Cadre actif={hl('erlen')} x={198} y={260} w={100} h={60}/>

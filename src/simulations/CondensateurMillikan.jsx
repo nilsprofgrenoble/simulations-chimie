@@ -57,7 +57,7 @@ function flecheV(x, y, dir, len, col, ep = 3, cle) {
     <path d={`M${x},${y2} L${x - w},${by} L${x + w},${by} z`} fill={col}/></g>;
 }
 // Nom d’un vecteur dans le SVG, avec sa flèche dessinée au-dessus (la flèche combinante ne s’affiche pas partout)
-function etiquetteVec(x, y, txt, col, cle, taille = 14) {
+function etiquetteVec(x, y, txt, col, cle, taille = 23) {
   const w = taille * 0.42, h = y - taille * 0.95;
   return <g key={cle}><text x={x} y={y} textAnchor="middle" fontSize={taille} fontWeight="800" fill={col}>{txt}</text>
     <line x1={x - w} y1={h} x2={x + w - 2} y2={h} stroke={col} strokeWidth="1.4"/><path d={`M${x + w + 1},${h} l-4.5,-2.6 l0,5.2 z`} fill={col}/></g>;
@@ -392,7 +392,7 @@ export function SimulationCondensateurMillikan() {
 
   // ════════════════ SCÈNE ════════════════
   const ecart = 70 + (d - 0.5) / 2.5 * 170;                     // écartement des plaques à l’écran (px)
-  const yH = YC - ecart / 2, yB = YC + ecart / 2, ep = 10;
+  const yH = YC - ecart / 2, yB = YC + ecart / 2, ep = 20;
   const xM = XP1 + 40 + M.x * (XP2 - XP1 - 80), yM = yH + ep + 16 + M.y * (ecart - 2 * ep - 32);
   const placerM = e => {
     const rc = svgRef.current.getBoundingClientRect(), k = W0 / rc.width;
@@ -405,7 +405,7 @@ export function SimulationCondensateurMillikan() {
   const plaque = (y, plus, cle) => (
     <g key={cle}>
       <rect x={XP1} y={y} width={XP2 - XP1} height={ep} rx="3" fill={plus ? '#fecaca' : '#bfdbfe'} stroke={plus ? ROUGE : BLEU} strokeWidth="2"/>
-      {Array.from({ length: 12 }, (_, k) => <text key={k} x={XP1 + 22 + k * 38} y={y + (plus ? 8.5 : 8.5)} textAnchor="middle" fontSize="13" fontWeight="800" fill={plus ? ROUGE : BLEU}>{plus ? '+' : '−'}</text>)}
+      {Array.from({ length: 12 }, (_, k) => <text key={k} x={XP1 + 22 + k * 38} y={y + 15} textAnchor="middle" fontSize="21" fontWeight="800" fill={plus ? ROUGE : BLEU}>{plus ? '+' : '−'}</text>)}
     </g>);
   const lignes = aff.lignes && U > 0 && Array.from({ length: 13 }, (_, k) => {
     const x = XP1 + 20 + k * 35, ya = yH + ep + 4, yb = yB - 4;
@@ -422,9 +422,9 @@ export function SimulationCondensateurMillikan() {
       {!cache.valeurs && U > 0 && <>{flecheV(xM - 30, yM - dirE * lenE / 2, dirE, lenE, VERT, 3.2, 'em')}{etiquetteVec(xM - 44, yM + 4, 'E', VERT, 'eem')}</>}
       {cache.fleches !== true && F > 0 && <>{flecheV(xM + 12, yM, Fhaut ? -1 : 1, lenF, ROUGE, 3.2, 'fm')}{etiquetteVec(xM + 28, yM + (Fhaut ? -lenF / 2 : lenF / 2) + 4, 'F', ROUGE, 'efm')}</>}
       {cache.fleches !== true && <>{flecheV(xM - 12, yM, 1, lenP, BLEU, 3.2, 'pm')}{etiquetteVec(xM - 27, yM + lenP / 2 + 4, 'P', BLEU, 'epm')}</>}
-      <circle cx={xM} cy={yM} r="7.5" fill="#f59e0b" stroke="#78350f" strokeWidth="1.5"/>
-      <text x={xM} y={yM + 4} textAnchor="middle" fontSize="10.5" fontWeight="800" fill="#451a03">{n > 0 ? '+' : n < 0 ? '−' : '0'}</text>
-      <text x={xM + 14} y={yM - 9} fontSize="12.5" fontWeight="700" fill="#0f172a">M</text>
+      <circle cx={xM} cy={yM} r="10.5" fill="#f59e0b" stroke="#78350f" strokeWidth="1.5"/>
+      <text x={xM} y={yM + 7} textAnchor="middle" fontSize="21" fontWeight="800" fill="#451a03">{n > 0 ? '+' : n < 0 ? '−' : '0'}</text>
+      <text x={xM + 16} y={yM + 26} fontSize="22" fontWeight="700" fill="#0f172a">M</text>
     </g>);
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
@@ -436,9 +436,9 @@ export function SimulationCondensateurMillikan() {
         {plaque(yH, pol === 'haut+', 'ph')}{plaque(yB - ep, pol !== 'haut+', 'pb')}
         {lignes}{grille}{goutte}
         <g stroke="#0f172a" strokeWidth="1.6"><line x1={XP2 + 22} y1={yH + ep} x2={XP2 + 22} y2={yB - ep}/><line x1={XP2 + 16} y1={yH + ep} x2={XP2 + 28} y2={yH + ep}/><line x1={XP2 + 16} y1={yB - ep} x2={XP2 + 28} y2={yB - ep}/></g>
-        <text x={XP2 + 32} y={YC + 4} fontSize="13.5" fontWeight="700" fill="#0f172a">d</text>
-        <text x={XP1} y={Math.max(18, yH - 12)} fontSize="13.5" fontWeight="700" fill="#0f172a">U = {fmt(U, 0)} V</text>
-        {U === 0 && <text x={W0 / 2} y={YC + 4} textAnchor="middle" fontSize="14" fontWeight="700" fill="#64748b">U = 0 : pas de champ</text>}
+        <text x={XP2 + 30} y={YC + 7} fontSize="22" fontWeight="700" fill="#0f172a">d</text>
+        <text x={XP1} y={Math.max(18, yH - 12)} fontSize="22" fontWeight="700" fill="#0f172a">U = {fmt(U, 0)} V</text>
+        {U === 0 && <text x={W0 / 2} y={YC + 7} textAnchor="middle" fontSize="22" fontWeight="700" fill="#64748b">U = 0 : pas de champ</text>}
       </svg>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
         Cliquez ou faites glisser pour déplacer M. <span style={{ color: GRIS, fontWeight: 700 }}>Flèches grises</span> et <span style={{ color: BLEU, fontWeight: 700 }}>traits bleus</span> : le champ entre les plaques (hors de la zone entre les plaques, il n’est pas représenté).
