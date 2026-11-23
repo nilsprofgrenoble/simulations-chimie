@@ -241,6 +241,12 @@ export function bilan(solv, sol) {
 }
 
 // batterie de cas connus : [solvant, soluté, résultat réel : 'ok' | 'lim' | 'non']
+// Règle de classe (23/11/2026). Liquides : ok = miscibles en toutes proportions, lim = miscibilité partielle,
+// non = quasi non miscibles (M, P, I du tableau de miscibilité du CRC Handbook, mélange à volumes égaux). Solides dans un liquide,
+// en g pour 100 g de solvant vers 25 °C : ok à partir de 10, lim de 0,1 à 10, non en dessous.
+// Deux étiquettes de solides ne suivent pas encore cette règle, faute de valeur primaire sourcée : naphtalène dans l'éthanol
+// (11 g/100 g d'après une table secondaire, donc ok selon la règle) et diiode dans le cyclohexane (2,7 g, quantité de solvant non précisée
+// dans la fiche HSDB, donc lim selon la règle). À requalifier quand les valeurs originales auront été retrouvées.
 export const BATTERIE = [
   ['eau', 'ethanol', 'ok'], ['eau', 'methanol', 'ok'], ['eau', 'acetone', 'ok'], ['eau', 'propanol', 'ok'], ['eau', 'glycerol', 'ok'],
   ['eau', 'butanol', 'lim'], ['eau', 'ether', 'lim'], ['eau', 'acetate', 'lim'],
