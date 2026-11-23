@@ -114,7 +114,7 @@ function fleche(x, y, dx, dy, len, col, ep = 2.5, cle, tirets) {
 }
 
 // Nom d'un vecteur dans le SVG, avec sa flèche dessinée au-dessus (la flèche combinante « ⃗ » ne s'affiche pas partout)
-function etiquetteVec(x, y, txt, col, cle, taille = 14) {
+function etiquetteVec(x, y, txt, col, cle, taille = 23) {
   const w = taille * 0.42, h = y - taille * 0.95;
   return <g key={cle}><text x={x} y={y} textAnchor="middle" fontSize={taille} fontWeight="800" fill={col}>{txt}</text>
     <line x1={x - w} y1={h} x2={x + w - 2} y2={h} stroke={col} strokeWidth="1.4"/><path d={`M${x + w + 1},${h} l-4.5,-2.6 l0,5.2 z`} fill={col}/></g>;
@@ -540,10 +540,10 @@ export function SimulationChampForce() {
     svgSource = <g>
       {Riss < 4000 && Riss > 80 && <circle cx={ox} cy={oy} r={Riss} fill="none" stroke="#a855f7" strokeWidth="1" strokeDasharray="5 4" opacity="0.7"/>}
       {terreSvg}
-      {R < 4000 && R > 6 && <><circle cx={ox} cy={oy} r="3" fill="#0f172a"/><text x={ox + 6} y={oy - 5} fontSize="13" fontWeight="700" fill="#0f172a">O</text></>}
-      {R < 4000 && R > 25 && <text x={ox} y={oy + Math.min(R * 0.5, 40) + 14} textAnchor="middle" fontSize="13" fontWeight="700" fill="#3f6212">Terre</text>}
-      {R >= 4000 && ySol < H0 && <text x={W0 - 12} y={Math.min(H0 - 8, ySol + 18)} textAnchor="end" fontSize="13" fontWeight="700" fill="#3f6212">sol (le centre O est {fmt(RT / 1e3, 0)} km plus bas)</text>}
-      {Riss < 4000 && Riss > 80 && oy - Riss > 14 && <text x={ox} y={oy - Riss - 5} textAnchor="middle" fontSize="11" fill="#7e22ce">orbite de l’ISS (400 km d’altitude)</text>}
+      {R < 4000 && R > 6 && <><circle cx={ox} cy={oy} r="3" fill="#0f172a"/><text x={ox + 6} y={oy - 5} fontSize="21.5" stroke="white" strokeWidth="4" paintOrder="stroke" fontWeight="700" fill="#0f172a">O</text></>}
+      {R < 4000 && R > 25 && <text x={ox} y={oy + Math.min(R * 0.5, 40) + 14} textAnchor="middle" fontSize="21.5" stroke="white" strokeWidth="4" paintOrder="stroke" fontWeight="700" fill="#3f6212">Terre</text>}
+      {R >= 4000 && ySol < H0 && <text x={W0 - 12} y={Math.min(H0 - 8, ySol + 18)} textAnchor="end" fontSize="21.5" stroke="white" strokeWidth="4" paintOrder="stroke" fontWeight="700" fill="#3f6212">sol (le centre O est {fmt(RT / 1e3, 0)} km plus bas)</text>}
+      {Riss < 4000 && Riss > 80 && oy - Riss > 14 && <text x={ox} y={oy - Riss - 5} textAnchor="middle" fontSize="18" fill="#7e22ce" stroke="white" strokeWidth="4" paintOrder="stroke">orbite de l’ISS (400 km d’altitude)</text>}
       {pers}
     </g>;
   } else {
@@ -551,8 +551,8 @@ export function SimulationChampForce() {
     const col = inconnue ? '#94a3b8' : Qn > 0 ? ROUGE : BLEU;
     svgSource = <g>
       <circle cx={ox} cy={oy} r={r} fill={col} stroke="#0f172a" strokeWidth="1.5"/>
-      <text x={ox} y={oy + 7} textAnchor="middle" fontSize="20" fontWeight="800" fill="white">{inconnue ? '?' : Qn > 0 ? '+' : '−'}</text>
-      <text x={ox} y={oy + r + 16} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f172a">{inconnue ? 'Q = ?' : `Q = ${nC(Qn)}`}</text>
+      <text x={ox} y={oy + 7} textAnchor="middle" fontSize="33" fontWeight="800" fill="white">{inconnue ? '?' : Qn > 0 ? '+' : '−'}</text>
+      <text x={ox} y={oy + r + 16} textAnchor="middle" fontSize="21.5" fontWeight="700" fill="#0f172a">{inconnue ? 'Q = ?' : `Q = ${nC(Qn)}`}</text>
     </g>;
   }
   // échelle
@@ -560,7 +560,7 @@ export function SimulationChampForce() {
   const lgTxt = lg >= 1e3 ? `${fmt(lg / 1e3, 0)} km` : lg >= 1 ? `${fmt(lg, 0)} m` : `${fmt(lg * 100, 0)} cm`;
   const echelle = <g><line x1={W0 - 16 - lgPx} y1={20} x2={W0 - 16} y2={20} stroke="#0f172a" strokeWidth="2"/>
     <line x1={W0 - 16 - lgPx} y1={15} x2={W0 - 16 - lgPx} y2={25} stroke="#0f172a" strokeWidth="2"/><line x1={W0 - 16} y1={15} x2={W0 - 16} y2={25} stroke="#0f172a" strokeWidth="2"/>
-    <text x={W0 - 16 - lgPx / 2} y={40} textAnchor="middle" fontSize="12" fill="#0f172a">{lgTxt}</text></g>;
+    <text x={W0 - 14} y={46} textAnchor="end" fontSize="20" fill="#0f172a">{lgTxt}</text></g>;
 
   // l'objet en M, le champ et la force en M
   const lenM = Math.min(90, Math.max(6, LMAX * cM.n / (ref || cM.n)));
@@ -570,15 +570,15 @@ export function SimulationChampForce() {
   const lenF = cache.valeurs ? 46 : lenM;
   const objet = <g>
     {aff.u && !cache.champM && fleche(mx, my, cM.ux, -cM.uy, 38, BLEU, 2.5, 'u')}
-    {aff.u && !cache.champM && etiquetteVec(mx + cM.ux * 50, my - cM.uy * 50 + 5, 'u', BLEU, 'eu', 13)}
+    {aff.u && !cache.champM && etiquetteVec(mx + cM.ux * 50, my - cM.uy * 50 + 5, 'u', BLEU, 'eu', 22)}
     {!cache.champM && fleche(mx - pxo, my - pyo, dxs, dys, lenM, VERT, 3, 'cm')}
-    {!cache.champM && etiquetteVec(mx - pxo * 2.2 + dxs / nn * (lenM + 12), my - pyo * 2.2 + dys / nn * (lenM + 12) + 5, terre ? GRAV : 'E', VERT, 'ec')}
+    {!cache.champM && etiquetteVec(mx - pxo * 2.2 + dxs / nn * (lenM + 12), my - pyo * 2.2 + dys / nn * (lenM + 12) + 5, terre ? GRAV : 'E', VERT, 'ec', terre ? 32 : 23)}
     {sensF !== 0 && fleche(mx + pxo, my + pyo, sensF * dxs, sensF * dys, lenF, ROUGE, 3, 'f')}
     {sensF !== 0 && etiquetteVec(mx + pxo * 2.2 + sensF * dxs / nn * (lenF + 12), my + pyo * 2.2 + sensF * dys / nn * (lenF + 12) + 5, 'F', ROUGE, 'ef')}
     {terre ? <circle cx={mx} cy={my} r="7" fill="#334155" stroke="white" strokeWidth="1.5"/>
-      : <><circle cx={mx} cy={my} r="9" fill={qn > 0 ? ROUGE : qn < 0 ? BLEU : '#94a3b8'} stroke="white" strokeWidth="1.5"/>
-        <text x={mx} y={my + 4.5} textAnchor="middle" fontSize="13" fontWeight="800" fill="white">{qn > 0 ? '+' : qn < 0 ? '−' : '0'}</text></>}
-    <text x={mx - dxs / nn * 18 * (sensF < 0 ? -1 : 1) + (sensF < 0 ? pxo * 2.6 : 0)} y={my - dys / nn * 18 * (sensF < 0 ? -1 : 1) + (sensF < 0 ? pyo * 2.6 : 0) + 4} textAnchor="middle" fontSize="13" fontWeight="700" fill="#0f172a">M</text>
+      : <><circle cx={mx} cy={my} r="12" fill={qn > 0 ? ROUGE : qn < 0 ? BLEU : '#94a3b8'} stroke="white" strokeWidth="1.5"/>
+        <text x={mx} y={my + 6.5} textAnchor="middle" fontSize="19" fontWeight="800" fill="white">{qn > 0 ? '+' : qn < 0 ? '−' : '0'}</text></>}
+    <text x={mx - dxs / nn * 18 * (sensF < 0 ? -1 : 1) + (sensF < 0 ? pxo * 2.6 : 0)} y={my - dys / nn * 18 * (sensF < 0 ? -1 : 1) + (sensF < 0 ? pyo * 2.6 : 0) + 4} textAnchor="middle" fontSize="21.5" stroke="white" strokeWidth="4" paintOrder="stroke" fontWeight="700" fill="#0f172a">M</text>
   </g>;
 
   const scene = (

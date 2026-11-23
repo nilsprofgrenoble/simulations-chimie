@@ -93,12 +93,12 @@ export function Simulation2() {
           <path d="M47 112 L47 124" stroke="#0369a1" strokeWidth="2" strokeDasharray="2 3" />
           <path d="M26 128 L34 164 L60 164 L68 128 Z" fill="#fde68a" stroke="#334155" strokeWidth="2" /><line x1="22" y1="128" x2="72" y2="128" stroke="#334155" strokeWidth="2" />
           <rect x="18" y="168" width="58" height="12" rx="3" fill="#cbd5e1" stroke="#475569" strokeWidth="1.5" /><rect x="39" y="158" width="16" height="5" rx="2" fill="#475569" />
-          <text x="68" y="24" fontSize="12" fontWeight="700" fill="#0369a1">burette graduée</text>
-          <text x="68" y="40" fontSize="11.5" fill="#334155">solution <tspan fontWeight="700">titrante</tspan> : thiosulfate S₂O₃²⁻</text>
-          <text x="68" y="55" fontSize="11.5" fill="#334155">concentration c<tspan fontSize="9" dy="3">B</tspan><tspan dy="-3"> connue</tspan></text>
-          <text x="80" y="140" fontSize="12" fontWeight="700" fill="#b45309">erlenmeyer</text>
-          <text x="80" y="156" fontSize="11.5" fill="#334155">solution <tspan fontWeight="700">titrée</tspan> : Lugol (I₂)</text>
-          <text x="80" y="171" fontSize="11.5" fill="#334155">volume V<tspan fontSize="9" dy="3">A</tspan><tspan dy="-3"> prélevé à la pipette jaugée</tspan></text>
+          <text x="68" y="24" fontSize="16" fontWeight="700" fill="#0369a1">burette graduée</text>
+          <text x="68" y="40" fontSize="15.5" fill="#334155">solution <tspan fontWeight="700">titrante</tspan> : thiosulfate S₂O₃²⁻</text>
+          <text x="68" y="55" fontSize="15.5" fill="#334155">concentration c<tspan fontSize="12" dy="3">B</tspan><tspan dy="-3"> connue</tspan></text>
+          <text x="80" y="140" fontSize="16" fontWeight="700" fill="#b45309">erlenmeyer</text>
+          <text x="80" y="156" fontSize="15.5" fill="#334155">solution <tspan fontWeight="700">titrée</tspan> : Lugol (I₂)</text>
+          <text x="80" y="171" fontSize="15.5" fill="#334155">volume V<tspan fontSize="12" dy="3">A</tspan><tspan dy="-3"> prélevé à la pipette jaugée</tspan></text>
         </svg>
         <Formule><mtext>2 S₂O₃²⁻</mtext><mo>+</mo><mtext>I₂</mtext><mo>→</mo><mtext>S₄O₆²⁻</mtext><mo>+</mo><mtext>2 I⁻</mtext></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
