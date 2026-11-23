@@ -5,7 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { FDef, FConserv, FPerte, FBilan } from "./EnergieMecaSchemas";
-import { nbf, tire, useLecture, Fl, T, TV, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
+import { nbf, tire, useLecture, Fl, TV, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
 import * as M from "./energieModele";
 
 const SIM_ID = 107;
@@ -37,15 +37,15 @@ function ScenePiste({ T, idx, f, forces, vitesse }) {
   return (
     <svg viewBox="0 0 600 250" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
       aria-label={`Bille de 0,200 kilogramme sur une piste en forme de cuvette, lâchée sans vitesse à ${nbf(T.z0, 2)} mètre au-dessus du point bas${forces ? ' ; forces : poids, réaction, frottement' : ''}`}>
-      <line x1="20" y1={SOL} x2="580" y2={SOL} stroke="#94a3b8" strokeDasharray="4 4"/><text x="24" y={SOL - 5} fontSize="12" fill={GRIS}>z = 0</text>
+      <line x1="20" y1={SOL} x2="580" y2={SOL} stroke="#94a3b8" strokeDasharray="4 4"/><text x="24" y={SOL - 6} fontSize="21" fill={GRIS}>z = 0</text>
       <path d={chemin} fill="none" stroke={NOIR} strokeWidth="4"/>
-      <line x1={X(1.15)} y1={Y(T.z0)} x2={X(-1.15)} y2={Y(T.z0)} stroke={BLEU} strokeDasharray="5 4" opacity="0.6"/><text x={X(-1.12)} y={Y(T.z0) - 4} fontSize="11.5" fill={BLEU} stroke="#f8fafc" strokeWidth="4" paintOrder="stroke">hauteur de départ</text>
+      <line x1={X(1.15)} y1={Y(T.z0)} x2={X(-1.15)} y2={Y(T.z0)} stroke={BLEU} strokeDasharray="5 4" opacity="0.6"/><text x={X(-1.12)} y={Y(T.z0) - 4} fontSize="21" fill={BLEU} stroke="#f8fafc" strokeWidth="5" paintOrder="stroke">hauteur de départ</text>
       <circle cx={bx} cy={by} r="9" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
       {forces && <g>
-        <Fl x1={bx} y1={by} x2={bx} y2={by + 42} c={ROUGE}/><TV x={bx + 6} y={by + 50} c={ROUGE} halo>P</TV>
-        {f > 0 && p.s > 0 && <g><Fl x1={bx} y1={by} x2={bx - ux * (18 + f * 90)} y2={by - uy * (18 + f * 90)} c={ORANGE}/><TV x={bx - ux * (18 + f * 90) - 4} y={by - uy * (18 + f * 90) - 8} c={ORANGE} halo>f</TV></g>}
+        <Fl x1={bx} y1={by} x2={bx} y2={by + 42} c={ROUGE}/><TV s={21} x={bx + 6} y={by + 50} c={ROUGE} halo>P</TV>
+        {f > 0 && p.s > 0 && <g><Fl x1={bx} y1={by} x2={bx - ux * (18 + f * 90)} y2={by - uy * (18 + f * 90)} c={ORANGE}/><TV s={21} x={bx - ux * (18 + f * 90) - 4} y={by - uy * (18 + f * 90) - 8} c={ORANGE} halo>f</TV></g>}
       </g>}
-      {vitesse && v > 0.03 && <g><Fl x1={bx} y1={by} x2={bx + ux * lv} y2={by + uy * lv} c={VERT}/><TV x={bx + ux * lv * 0.5 - 4} y={by - 12 + uy * lv * 0.5} c={VERT} halo>v</TV></g>}
+      {vitesse && v > 0.03 && <g><Fl x1={bx} y1={by} x2={bx + ux * lv} y2={by + uy * lv} c={VERT}/><TV s={21} x={bx + ux * lv * 0.5 - 4} y={by - 12 + uy * lv * 0.5} c={VERT} halo>v</TV></g>}
     </svg>);
 }
 
@@ -54,12 +54,12 @@ function Barres({ T, idx, m, montrer }) {
   const p = T.pts[Math.min(idx, T.pts.length - 1)], max = T.Em0, w = 380, L = e => Math.max(0, (e / max) * w);
   const lignes = [['Epp', p.Epp, VERT, montrer.epp], ['Ec', p.Ec, BLEU, montrer.ec], ['Em', p.Em, '#475569', montrer.em]].filter(l => l[3]);
   return (
-    <svg viewBox={`0 0 600 ${16 + lignes.length * 34}`} style={{ width: '100%', display: 'block', background: '#fff', borderRadius: 8 }} role="img"
+    <svg viewBox={`0 0 600 ${16 + lignes.length * 40}`} style={{ width: '100%', display: 'block', background: '#fff', borderRadius: 8 }} role="img"
       aria-label={`Énergies : ${lignes.map(l => `${l[0]} ${nbf(l[1], 2)} joule`).join(', ')}`}>
       {lignes.map(([nom, e, c], i) => <g key={nom}>
-        <text x="10" y={30 + i * 34} fontSize="15" fontWeight="700" fill={c}>{nom === 'Epp' ? 'E' : 'E'}<tspan fontSize="11" dy="4">{nom === 'Epp' ? 'pp' : nom[1]}</tspan></text>
-        <rect x="64" y={14 + i * 34} width={L(e)} height="22" fill={c} opacity="0.85"/>
-        <text x={64 + L(e) + 8} y={31 + i * 34} fontSize="13" fontWeight="700" fill={NOIR}>{nbf(e, 2)} J</text></g>)}
+        <text x="8" y={34 + i * 40} fontSize="22" fontWeight="700" fill={c}>{nom === 'Epp' ? 'E' : 'E'}<tspan fontSize="20" dy="5">{nom === 'Epp' ? 'pp' : nom[1]}</tspan></text>
+        <rect x="76" y={10 + i * 40} width={L(e)} height="28" fill={c} opacity="0.85"/>
+        <text x={76 + L(e) + 8} y={32 + i * 40} fontSize="21" fontWeight="700" fill={NOIR}>{nbf(e, 2)} J</text></g>)}
     </svg>);
 }
 

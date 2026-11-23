@@ -124,7 +124,7 @@ function nouveauDefi(type) {
 function evaluer(d) {
   const x = lireNombre(d.reps.v);
   if (d.type === 'charge') { const ok = isFinite(x) && proche(x, d.Q, 0.015); return { ok, lignes: [[ok, ok ? 'Charge correcte.' : 'Revois : Q = I × Δt, avec I en A, Δt en s ; Q en coulombs (C).']] }; }
-  if (d.type === 'electrons') { const ok = isFinite(x) && proche(x, d.N, 0.03); return { ok, lignes: [[ok, ok ? 'Nombre correct.' : 'Revois : Q = I × Δt (en C), puis N = Q / e avec e = 1,602·10⁻¹⁹ C. Écris par exemple 6,2e18.']] }; }
+  if (d.type === 'electrons') { const ok = isFinite(x) && proche(x, d.N, 0.05); return { ok, lignes: [[ok, ok ? 'Nombre correct.' : 'Revois : Q = I × Δt (en C), puis N = Q / e avec e = 1,602·10⁻¹⁹ C. Écris par exemple 6,2e18.']] }; }
   const ok = isFinite(x) && proche(x, d.T, 0.02); return { ok, lignes: [[ok, ok ? 'Durée correcte.' : 'Revois : Δt = Q / I, avec Q en mA·h et I en mA : la durée sort directement en heures.']] };
 }
 const enonce = (d, { champ }) => d.type === 'charge' ? <><Pic n="target"/>Un fil est parcouru par un courant d’intensité <strong>I = {fr(d.I, 1)} A</strong> pendant <strong>Δt = {d.dt} s</strong>. Quelle charge électrique Q (valeur absolue) a traversé une section du fil ?<div style={{ marginTop: 6 }}>{champ('v', 'C')}</div></>

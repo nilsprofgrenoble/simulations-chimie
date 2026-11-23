@@ -5,7 +5,6 @@ import { Formule, cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEta
 import { Pic } from "../Pictos";
 import { FicheCouleurs, FicheDroite, FicheLineaire, FicheEtalonnage, FichePurete, FicheBilan } from "./BeerLambert1GFiches";
 import { L_CUVE, M_CUSO4, LAMBDA_MIN, LAMBDA_MAX, ESPECES, epsilon, absorbance, couleurCuve, regression } from "./beerLambert1GModele";
-export { epsilon };
 
 const SIM_ID = 10;
 declarerDefis(SIM_ID, [['principal', 'Déterminer la concentration d’une solution inconnue']]);
