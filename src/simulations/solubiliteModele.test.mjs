@@ -9,11 +9,11 @@ assert.equal(BATTERIE.length, 86);
 const faux = BATTERIE.filter(([s, e, r]) => bilan(s, e).classe !== r).map(([s, e, r]) => `${s}+${e}:${r}>${bilan(s, e).classe}`);
 const ATTENDUS_FAUX = [
   'eau+acetone:ok>lim', 'eau+butanol:lim>ok', 'eau+ether:lim>non', 'ethanol+toluene:ok>lim', 'methanol+hexane:lim>non',
-  'methanol+cyclohexane:lim>non', 'ethanol+naphtalene:ok>lim', 'cyclohexane+diiode:lim>ok', 'propanol+hexane:ok>lim',
+  'methanol+cyclohexane:lim>non', 'propanol+hexane:ok>lim',
   'butanol+hexane:ok>lim', 'ethanol+ccl4:ok>lim',
 ];
 assert.deepEqual(faux, ATTENDUS_FAUX);
-const PLANCHER = 75;
+const PLANCHER = 77;
 assert.ok(BATTERIE.length - faux.length >= PLANCHER, `couples retrouvés : ${BATTERIE.length - faux.length}`);
 
 // NaCl dans l'eau : solde d'énergie de Gibbs ≈ −9,0 kJ/mol, solubilité estimée ≈ 359 g/kg (mesurée : 360)
