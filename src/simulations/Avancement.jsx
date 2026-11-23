@@ -157,7 +157,7 @@ function OutilGeneral() {
       style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
       {[0, 0.25, 0.5, 0.75, 1].map(f => (
         <g key={f}><line x1={g} y1={Yg(f * nMaxG)} x2={W - d} y2={Yg(f * nMaxG)} stroke="#e2e8f0"/>
-          <text x={g - 5} y={Yg(f * nMaxG) + 4} fontSize="12" fill={KIT.txt2} textAnchor="end">{sci(f * nMaxG, 2)}</text></g>
+          <text x={g - 5} y={Yg(f * nMaxG) + 4} fontSize="14.5" fill={KIT.txt2} textAnchor="end">{sci(f * nMaxG, 2)}</text></g>
       ))}
       {especes.map((e, k) => (
         <line key={k} x1={Xg(0)} y1={Yg(e.n)} x2={Xg(xmax)} y2={Yg(e.cote === 'r' ? e.n - e.a * xmax : e.n + e.a * xmax)}
@@ -165,9 +165,9 @@ function OutilGeneral() {
       ))}
       <line x1={Xg(x)} y1={h} x2={Xg(x)} y2={H - b} stroke={ORANGE_GUIDE} strokeWidth="2"/>
       <line x1={g} y1={H - b} x2={W - d} y2={H - b} stroke={KIT.txt}/><line x1={g} y1={h} x2={g} y2={H - b} stroke={KIT.txt}/>
-      <text x={g} y={H - b + 16} fontSize="12" fill={KIT.txt2} textAnchor="middle">0</text>
-      <text x={W - d} y={H - b + 16} fontSize="12" fill={KIT.txt2} textAnchor="end">x_max = {sci(xmax, 3)}</text>
-      <text x={(g + W - d) / 2} y={H - 6} fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">avancement x (mol)</text>
+      <text x={g} y={H - b + 16} fontSize="14.5" fill={KIT.txt2} textAnchor="middle">0</text>
+      <text x={W - d} y={H - b + 16} fontSize="14.5" fill={KIT.txt2} textAnchor="end">x_max = {sci(xmax, 3)}</text>
+      <text x={(g + W - d) / 2} y={H - 6} fontSize="15.5" fontWeight="700" fill={KIT.txt} textAnchor="middle">avancement x (mol)</text>
     </svg>
   );
   const nTxt = v => (Math.abs(v) < 1e-12 ? '0' : sci(v, 3));
@@ -217,7 +217,7 @@ function OutilGeneral() {
               return (
                 <g key={k}>
                   <rect x={xb + w * 0.15} y={185 - hb} width={w * 0.7} height={hb} fill={COUL_ESP[(e.cote === 'r' ? 0 : 4) + e.i]} opacity="0.85"/>
-                  <text x={xb + w / 2} y={180 - hb} fontSize="12" fill={KIT.txt} textAnchor="middle">{nTxt(Math.max(0, e.nx))}</text>
+                  <text x={xb + w / 2} y={180 - hb} fontSize="14.5" fill={KIT.txt} textAnchor="middle">{nTxt(Math.max(0, e.nx))}</text>
                   <foreignObject x={xb} y={190} width={w} height={26}><div style={{ textAlign: 'center', fontSize: 14 }}><Formule texte={e.f}/></div></foreignObject>
                 </g>
               );
@@ -419,18 +419,18 @@ export function Simulation1() {
   const yHaut = 46, yBas = 266;                              // éprouvette : 0 mL en haut, 100 mL à yBas
   const yNiv = yHaut + Math.min(100, Vgaz) / 100 * (yBas - yHaut);
   const schema = (
-    <svg viewBox="0 0 640 330" role="img" aria-label="Montage de recueil du dihydrogène par déplacement d'eau"
+    <svg viewBox="0 -34 640 380" role="img" aria-label="Montage de recueil du dihydrogène par déplacement d'eau"
       style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
       {/* balance */}
       <rect x="18" y="268" width="120" height="36" rx="6" fill="#e2e8f0" stroke={KIT.txt} strokeWidth="1.5"/>
       <rect x="34" y="276" width="88" height="20" rx="3" fill="#0f172a"/>
-      <text x="78" y="291" fontSize="15" fill="#86efac" textAnchor="middle" fontFamily="monospace" fontWeight="700">{mAffiche} mg</text>
-      <text x="78" y="320" fontSize="13" fill={KIT.txt2} textAnchor="middle">balance</text>
+      <text x="78" y="291" fontSize="21.0" fill="#86efac" textAnchor="middle" fontFamily="monospace" fontWeight="700">{mAffiche} mg</text>
+      <text x="78" y="320" fontSize="22.4" fill={KIT.txt2} textAnchor="middle">balance</text>
       {phase === 'vide' || phase === 'acide' ? <rect x="58" y="258" width="40" height="5" fill={COUL.mg} rx="1"/> : null}
       {/* erlenmeyer */}
       <path d="M 186 120 L 186 170 L 150 262 L 262 262 L 226 170 L 226 120 Z" fill="white" stroke={KIT.txt} strokeWidth="2"/>
       {phase !== 'vide' && <path d="M 172 214 L 240 214 L 258 260 L 154 260 Z" fill={COUL.acide}/>}
-      {phase === 'vide' && <text x="206" y="244" fontSize="12" fill={KIT.txt2} textAnchor="middle">vide</text>}
+      {phase === 'vide' && <text x="206" y="244" fontSize="21.0" fill={KIT.txt2} textAnchor="middle">vide</text>}
       {phase === 'reaction' && fMg > 0.001 && <rect x={190} y={248} width={32 * fMg + 2} height="6" fill={COUL.mg} rx="1"/>}
       {enReaction && [0, 1, 2, 3, 4].map(k => (
         <circle key={k} cx={196 + k * 6} cy="240" r="2.5" fill="white" stroke={COUL.h2}>
@@ -438,7 +438,7 @@ export function Simulation1() {
         </circle>
       ))}
       <rect x="198" y="106" width="16" height="16" fill={phase === 'reaction' ? '#c2410c' : 'none'} stroke={phase === 'reaction' ? KIT.txt : 'none'}/>
-      <text x="206" y="316" fontSize="13" fill={KIT.txt} textAnchor="middle">H⁺ + Cl⁻ {phase !== 'vide' ? `(${fmt(params.Va, 0)} mL, ${fmt(params.c, 1)} mol/L)` : ''}</text>
+      <text x="206" y="336" fontSize="22.4" fill={KIT.txt} textAnchor="middle">H⁺ + Cl⁻ {phase !== 'vide' ? `(${fmt(params.Va, 0)} mL, ${fmt(params.c, 1)} mol/L)` : ''}</text>
       {/* tuyau */}
       <polyline points="206,106 206,80 300,80 300,284 352,284 352,262" fill="none" stroke={KIT.txt2} strokeWidth="5" strokeLinejoin="round"/>
       {/* cuve à eau et éprouvette retournée */}
@@ -449,15 +449,15 @@ export function Simulation1() {
       <rect x="338" y={yHaut - 4} width="40" height={yBas - yHaut + 38} fill="none" stroke={KIT.txt} strokeWidth="2"/>
       {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(v => {
         const y = yHaut + v / 100 * (yBas - yHaut);
-        return <g key={v}><line x1="378" y1={y} x2="386" y2={y} stroke={KIT.txt}/>{v % 20 === 0 && <text x="390" y={y + 4} fontSize="11" fill={KIT.txt}>{v}</text>}</g>;
+        return <g key={v}><line x1="378" y1={y} x2="386" y2={y} stroke={KIT.txt}/>{v % 20 === 0 && <text x="390" y={y + 4} fontSize="21.0" fill={KIT.txt}>{v}</text>}</g>;
       })}
       {enReaction && [0, 1, 2].map(k => (
         <circle key={k} cx={352 + k * 5} cy="250" r="2.5" fill="white" stroke={COUL.h2}>
           <animate attributeName="cy" from="270" to={Math.max(yHaut + 6, yNiv - 4)} dur={`${0.9 + k * 0.2}s`} repeatCount="indefinite"/>
         </circle>
       ))}
-      <text x="358" y="30" fontSize="13" fontWeight="700" fill={KIT.txt} textAnchor="middle">éprouvette 100 mL</text>
-      {deborde && <text x="358" y="16" fontSize="13" fontWeight="800" fill="#b91c1c" textAnchor="middle">l'éprouvette déborde !</text>}
+      <text x="358" y="12" fontSize="22.4" fontWeight="700" fill={KIT.txt} textAnchor="middle">éprouvette 100 mL</text>
+      {deborde && <text x="358" y="-12" fontSize="22.4" fontWeight="800" fill="#b91c1c" textAnchor="middle">l'éprouvette déborde !</text>}
       {/* zoom de lecture */}
       {(() => {
         const zc = Math.min(100, Math.max(0, Vlu)), z0 = 432, zy = 52, zh = 150, zw = 60, mlParPx = 10 / zh;
@@ -469,15 +469,15 @@ export function Simulation1() {
             {Array.from({ length: 21 }, (_, k) => Math.round(zc) - 10 + k).filter(v => v >= 0 && v <= 100).map(v => {
               const y = Yz(v); if (y < zy || y > zy + zh) return null;
               return <g key={v}><line x1={z0 + zw - (v % 5 === 0 ? 18 : 10)} y1={y} x2={z0 + zw} y2={y} stroke={KIT.txt}/>
-                {v % 5 === 0 && <text x={z0 + zw + 4} y={y + 4} fontSize="12" fill={KIT.txt}>{v}</text>}</g>;
+                {v % 5 === 0 && <text x={z0 + zw + 4} y={y + 4} fontSize="21.0" fill={KIT.txt}>{v}</text>}</g>;
             })}
             <path d={`M ${z0} ${Yz(zc) - 2} Q ${z0 + zw / 2} ${Yz(zc) + 6} ${z0 + zw} ${Yz(zc) - 2}`} fill="none" stroke={COUL.h2} strokeWidth="2"/>
-            <text x={z0 + zw / 2} y={zy - 6} fontSize="12" fill={KIT.txt2} textAnchor="middle">zoom (mL)</text>
+            <text x={z0 + zw / 2} y={zy - 12} fontSize="21.0" fill={KIT.txt2} textAnchor="middle">zoom (mL)</text>
             <line x1="380" y1={yNiv} x2={z0} y2={zy + zh / 2} stroke="#94a3b8" strokeDasharray="3 3"/>
           </g>
         );
       })()}
-      <text x="560" y="250" fontSize="12" fill={KIT.txt2}>t = {fmt(phase === 'reaction' ? t : 0, 0)} s</text>
+      <text x="560" y="250" fontSize="21.0" fill={KIT.txt2}>t = {fmt(phase === 'reaction' ? t : 0, 0)} s</text>
       <Cadre actif={hl('balance')} x={12} y={252} w={132} h={74}/>
       <Cadre actif={hl('erlen')} x={142} y={98} w={128} h={202}/>
       <Cadre actif={hl('eprouvette')} x={330} y={36} w={190} h={272}/>
