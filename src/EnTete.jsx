@@ -202,7 +202,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
       {large && ouvert === 'code' && (
         <div style={panneau} role="region" aria-label="Code d’un exercice">
           <div style={{ maxWidth: 420, margin: '0 auto', padding: '14px 16px 18px' }}>
-            <SaisieCode simulations={simulations} onCode={(id, ex) => { setOuvert(null); naviguer(id, ex); }} />
+            <SaisieCode simulations={simulations} onCode={(id, ex) => { setOuvert(null); naviguer(id, ex, false, true); }} />
           </div>
         </div>
       )}
@@ -210,7 +210,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
       {!large && ouvert === 'mobile' && (
         <div style={panneau} role="region" aria-label="Menu">
           <div style={{ padding: '8px 12px 14px' }}>
-            <div style={{ padding: '6px 10px 12px' }}><SaisieCode compact simulations={simulations} onCode={(id, ex) => { setOuvert(null); naviguer(id, ex); }} /></div>
+            <div style={{ padding: '6px 10px 12px' }}><SaisieCode compact simulations={simulations} onCode={(id, ex) => { setOuvert(null); naviguer(id, ex, false, true); }} /></div>
             <button onClick={() => aller(0)} style={{ display: 'flex', width: '100%', padding: '10px', border: 'none', background: activeId === 0 ? ACCENT_CLAIR : 'transparent',
               borderRadius: 8, fontSize: 15, fontWeight: 700, color: TXT, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left' }}><Pic n="home"/>Accueil</button>
             {menus.map(m => (
