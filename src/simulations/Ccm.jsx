@@ -1,10 +1,9 @@
 import { declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, IndiceDefi, avecIndices, indicesProfond } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, IndiceDefi, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
-import { nbf, tire, Schema, T, puces, ROUGE, VERT, BLEU, ORANGE, NOIR, GRIS } from "./Travail";
+import { nbf, tire, T, puces, ROUGE, VERT, BLEU, NOIR, GRIS } from "./Travail";
 import * as C from "./ccmModele";
 import { SchemaRf, SchemaComparer, SchemaEluant, SchemaTfCompat } from "./TpChaloneSchemas";
 

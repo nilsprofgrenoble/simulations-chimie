@@ -1,7 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { TabBtn, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Formule, FormuleEnLigne, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+import { TabBtn, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, Formule, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { SOLUB, solubilite, tempDeSolub } from "./cristallisationModele";
 import { FicheSolubilite, FicheBilan, FichePremiersCristaux, FicheRendement, FicheEvaporation, FicheProcede } from "./CristallisationFiches";

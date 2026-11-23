@@ -1,8 +1,7 @@
 // Substitution ou élimination ? (BTS) : SN1, SN2, E1, E2 sur des halogénoalcanes en C4.
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, LigneMesure, ARetenir, FormuleEnLigne, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { FDeuxVoies, FClasse, FEtapes, FStereo, FTemperature, FPrevoir } from "./SNSchemas";
 import { SUBSTRATS, REACTIFS, MECA, proportions, profil, energieEn, barriere } from "./snModele";

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
 import { fr, tracer, foyer, geometrie, PX_CM } from "./optiqueModele";
 import { Pic } from "../Pictos";
 import { FicheRefLentille, FicheFoyer, FicheMince, FicheDependF, FicheBanc, FicheBilanLent } from "./LentilleFiches";

@@ -1,7 +1,7 @@
 // Schémas des cartes « À retenir » de la simulation 204 « Synthèse d'une espèce naturelle : montage à reflux et CCM » (2GT).
 // Chaque carte est affichée UNE ÉTAPE APRÈS la question qu'elle conclut ; ses exemples ne sont pas ceux que l'élève doit trouver.
 // viewBox de 300 de large (≈ 230 px sur téléphone) : textes de 13,5 à 16 ; schémas plafonnés à 320 px. Le montage est le MÊME dessin que dans les scènes (MontageGroupe, réduit de moitié).
-import { COL, MontageGroupe, Goutte, Fleche, C2 } from "./SyntheseReflux2gtScenes";
+import { COL, MontageGroupe, Fleche, C2 } from "./SyntheseReflux2gtScenes";
 import * as G from "./syntheseReflux2gtGeometrie.js";
 import * as M from "./syntheseReflux2gtModele.js";
 

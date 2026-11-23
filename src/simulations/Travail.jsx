@@ -115,7 +115,6 @@ const FTheo = <Formule><mi>Δ</mi><msub><mi>E</mi><mi>c</mi></msub><mo>=</mo><mi
 export const Schema = ({ aria, h = 150, children }) => <svg viewBox={`0 0 360 ${h}`} role="img" aria-label={aria} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '4px 0 8px', background: '#fff', borderRadius: 8 }}>{children}</svg>;
 export const Fl = ({ x1, y1, x2, y2, c = ROUGE, w = 3 }) => { const dx = x2 - x1, dy = y2 - y1, n = Math.hypot(dx, dy) || 1, ux = dx / n, uy = dy / n;
   return <g><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={c} strokeWidth={w}/><polygon points={`${x2},${y2} ${x2 - 9 * ux - 4.5 * uy},${y2 - 9 * uy + 4.5 * ux} ${x2 - 9 * ux + 4.5 * uy},${y2 - 9 * uy - 4.5 * ux}`} fill={c}/></g>; };
-export const Barre = ({ x, h, c, nom, y0 = 120 }) => <g><rect x={x} y={y0 - h} width="46" height={h} fill={c} opacity="0.85"/><text x={x + 23} y={y0 + 14} textAnchor="middle" fontSize="11.5" fontWeight="700" fill={NOIR}>{nom}</text></g>;
 export const T = ({ x, y, children, c = NOIR, s = 11.5, w = 600, a = 'start' }) => <text x={x} y={y} fontSize={s} fontWeight={w} fill={c} textAnchor={a}>{children}</text>;
 
 // Lettre-vecteur dans un SVG : lettre + flèche au-dessus (notation vectorielle exigée par le programme)

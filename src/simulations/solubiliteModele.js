@@ -12,7 +12,6 @@
 
 export const RT = 2.479;                 // kJ/mol à 298 K
 export const K_COULOMB = 1389.35;        // N_A·e²/(4π ε0) en kJ·Å/mol
-export const D_NACL = 2.82;              // Å (distance Na⁺…Cl⁻ dans le cristal)
 
 const Z = n => Array.from({ length: n }, (_, i) => ['C', i * 0.866, i % 2 ? 0.5 : 0]);
 const zb = n => Array.from({ length: n - 1 }, (_, i) => [i, i + 1, 1]);

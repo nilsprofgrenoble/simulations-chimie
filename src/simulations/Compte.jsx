@@ -8,7 +8,7 @@ import { estSimulation, estDefi, tempsParSimulation, MODES, etiquettesDefis, sim
 import { EspaceEleve } from "./EspaceEleve";
 import { BoutonMail } from "../contact";
 import { ACCENT, TEXTE, TEXTE2, LAME } from "../theme";
-import { Pic, Emo } from "../Pictos";
+import { Pic } from "../Pictos";
 
 const ROSE = '#0b4f94';
 

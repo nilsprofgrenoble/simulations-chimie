@@ -1,11 +1,11 @@
-import { Children, Fragment, cloneElement, isValidElement, useId, useState, useEffect, useLayoutEffect, useRef, useMemo } from "react";
+import { Children, Fragment, cloneElement, isValidElement, useId, useState, useEffect, useLayoutEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { compter } from "./stats";
-import { Pic, Emo } from "./Pictos";
+import { Pic } from "./Pictos";
 import { missionEnCours } from "./mission";
 import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
 import { OngletFiche } from "./FicheOnglet";
-import { noterFiche, EN_RECOLTE, EN_CONSULT, envoyerRecolte, envoyerFigure, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
+import { noterFiche, EN_RECOLTE, EN_CONSULT, envoyerRecolte, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
 import { nomsSim } from "./suivi";
 import { simDeLUrl } from "./slugs";
 import { LectureSonoreBouton } from "./LectureSonoreBouton";

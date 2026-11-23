@@ -7,7 +7,7 @@
 import { useId, useState } from 'react';
 import { COL } from './optOutils';
 import { Fl } from './optSchemas';
-import { VOL_MOL, ML_ENTRAINEUR, ML_BALLON, volumeMelange, niveauY, useAnime, useGouttes, LEGENDE, LEGENDE_DS, texteEtat, NOTE_REFLUX, NOTE_DS, NOTE_EAU } from './optMontageModele';
+import { ML_ENTRAINEUR, ML_BALLON, volumeMelange, niveauY, useAnime, useGouttes, LEGENDE, LEGENDE_DS, texteEtat, NOTE_REFLUX, NOTE_DS, NOTE_EAU } from './optMontageModele';
 import { KIT, styleBouton, stylePetitBouton, Section } from '../commun';
 
 const NBF = '\u202f';

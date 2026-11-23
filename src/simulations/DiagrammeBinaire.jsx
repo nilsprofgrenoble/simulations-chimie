@@ -1,8 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
-import { MELANGES, Teb, Tros, yEq, equilibreA, wDe } from "./distillationModele";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+import { MELANGES, Teb, Tros, equilibreA, wDe } from "./distillationModele";
 import { Diagramme, Pastilles, nf, pct, NB, Xi, XiS } from "./Distillation";
 import { Pic } from "../Pictos";
 import { FPurMel, FDiagramme, FHorizontale, FMassiqueDB, FAzeo, FBilanDB } from "./DiagrammeSchemas";

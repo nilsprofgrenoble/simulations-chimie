@@ -1,5 +1,5 @@
 import { KIT, styleBouton } from "../commun";
-import { Pic } from "../Pictos";
+
 import { ACCENT, TEXTE, TEXTE2 } from "../theme";
 
 const urlGuide = (ext) => `${import.meta.env.BASE_URL}guides/guide-eleve-paillasse.${ext}`;

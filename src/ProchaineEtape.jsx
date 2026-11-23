@@ -4,7 +4,7 @@ import { trierPourEleve, SEUIL_GUIDE_S } from "./devoirs";
 import { etapesDevoir, prochaineSimulation } from "./profil";
 import { nomsSim } from "./suivi";
 import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2 } from "./theme";
-import { Pic, Emo } from "./Pictos";
+import { Pic } from "./Pictos";
 import { chapitresDeSim, allerChapitre } from "./chapitres";
 
 // ═══════════════════════════════════════════════════════════════════════════

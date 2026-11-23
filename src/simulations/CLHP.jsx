@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { FicheChaine, FichePhaseInverse, FicheResolution, FicheGradient, FicheDebit, FichePannes } from "./CLHPFiches";
-import { Formule, Field, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Frac, Curseur, lireProgression, IndiceDefi } from "../commun";
+import { Field, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, Frac, Curseur, lireProgression, IndiceDefi } from "../commun";
 import { MOLECULES_CLHP, PARAMS_DEFAUT, SEUIL_RS, P_MAX, PANNES, analyse, colonne, signal, bruitLigne, positionBande, phiEntree } from "./clhpModele";
 import { Pic } from "../Pictos";
 

@@ -1,7 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useId } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, IndiceDefi, indicesProfond, Formule } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, lireNombre, proche, IndiceDefi, indicesProfond, Formule } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { nbf, tire, ROUGE, VERT, BLEU, ORANGE } from "./Travail";

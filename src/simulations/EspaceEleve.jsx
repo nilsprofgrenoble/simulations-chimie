@@ -8,7 +8,7 @@ import { Carnet, Anneau } from "./Carnet";
 import { DevoirsEleve, useDevoirs } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";
 import { MonPseudo } from "./MonPseudo";
-import { ACCENT, ACCENT_CLAIR, FOND_BLOC, TEXTE, TEXTE2, BORDURE } from "../theme";
+import { FOND_BLOC, TEXTE2, BORDURE } from "../theme";
 import { Pic, Emo } from "../Pictos";
 
 // ═══════════════════════════════════════════════════════════════════════════

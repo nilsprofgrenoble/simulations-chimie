@@ -1,8 +1,7 @@
 // Transposition de carbocation (BTS) : migration 1,2 d'un hydrure ou d'un méthyle lors de l'addition de HBr.
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { FStabilite, FMigration, FTypes, FProfil, FDeuxVoies, FMethodeT } from "./TranspositionSchemas";
 import { CAS, voie, energie, barriereMigration, gainStabilite } from "./transpoModele";

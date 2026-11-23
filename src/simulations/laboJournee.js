@@ -9,7 +9,7 @@
 //  Chaque scène de résultat porte un champ « visuel » (données) que l'interface dessine sous forme d'instrument.
 // ====================================================
 import { proprietes } from "./Peinture";
-import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, HUILE_MAX_ESSAIS, HUILE_DUREE, M_POUDRE, etatPate, rapportPate, injection, cEchantillon, etalonnage, dosage, covDepuisC, T_PREP, T_INJ, ETAL_MAX, ECH_MAX, NIVEAUX_ETALON, BORNE_BASSE, BORNE_SEUIL, BORNE_HAUTE, masseCoadis, lectureVisco } from "./stationsModele";
+import { secretsAleatoires, lectureBanc, penteMesuree, DOSES_BANC, ESSAIS_MAX, DUREE_ESSAI, DOSES_COURBE, COURBE_MAX, COURBE_DUREE, HUILE_MAX_ESSAIS, HUILE_DUREE, M_POUDRE, etatPate, rapportPate, injection, cEchantillon, etalonnage, dosage, covDepuisC, T_PREP, ETAL_MAX, ECH_MAX, NIVEAUX_ETALON, BORNE_BASSE, BORNE_SEUIL, BORNE_HAUTE, masseCoadis, lectureVisco } from "./stationsModele";
 
 export const ID_LABO = 81;
 export const CLE_ETAT = 'labo-histoire-v3';

@@ -5,8 +5,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
 import { FPrincipe, FEventail, FProfondeur, FFrequence, FReflexion, FLire } from "./Echo2DSchemas";

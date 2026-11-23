@@ -1,7 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
-import { Formule as FormuleMath, cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi, OngletExercices } from "../commun";
+import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi, OngletExercices } from "../commun";
 import { Formule } from "./Avancement";
 import { V_BURETTE, seuilVisible, couleurSolution, ContexteBanc, SchemaBurette } from "./titrageCommun";
 import { Pic } from "../Pictos";

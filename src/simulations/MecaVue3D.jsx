@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { geom3D, V3 } from "./mecaModele";
+import { geom3D } from "./mecaModele";
 
 const COUL = { C: 0x475569, H: 0xf1f5f9, Br: 0x9a3412 };
 const RAYON = { C: 0.36, H: 0.22, Br: 0.5 };   // rayons d'affichage (non à l'échelle) pour garder la scène lisible
