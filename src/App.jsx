@@ -691,6 +691,7 @@ export default function App() {
   };
 
   const [activeIdBrut, setActiveId] = useState(getInitialId);
+  const [ouvertureCode, setOuvertureCode] = useState(0);   // +1 à chaque code saisi : rouvre l'atelier même quand la simulation est déjà à l'écran
   const sessionSb = useSession();
   const jeuxOuverts = JEUX_VISIBLES || !!sessionSb?.profil?.admin;
   const adminConnecte = !!sessionSb?.profil?.admin;
@@ -786,7 +787,7 @@ export default function App() {
 
   // Ferme le menu et navigue
   confierNavigation(naviguer);
-  function naviguer(id, ex, duDevoir) {
+  function naviguer(id, ex, duDevoir, viaCode) {
     // ex : exercice précis à ouvrir dans un atelier (lu par l'atelier à son ouverture)
     // duDevoir : l'élève vient d'un devoir (l'atelier propose alors « Retour à mon devoir » plutôt que l'exercice suivant)
     try {
@@ -796,6 +797,7 @@ export default function App() {
       if (duDevoir) u.searchParams.set('devoir', '1'); else u.searchParams.delete('devoir');
       window.history.replaceState(null, '', u.toString());
     } catch { /* adresse non modifiable */ }
+    if (viaCode) setOuvertureCode(n => n + 1);
     setActiveId(id);
   }
 
@@ -805,7 +807,7 @@ export default function App() {
       <PictosSprite/>
       <CadreMission mission={mission} naviguer={naviguer}>
         <SuiviTemps simId={activeId} />
-        <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
+        <div id="zone-simulation"><EnChargement><ActiveComponent key={`${activeId}-${ouvertureCode}`} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
       </CadreMission>
       <ToastRecompense naviguer={naviguer} />
     </>);
@@ -823,7 +825,7 @@ export default function App() {
         <span style={{ width: 72 }} aria-hidden="true" />
       </div>
       <main style={{ ...styles.main, padding: 'clamp(8px, 2vw, 20px)', animation: 'jeu-entree .7s ease-out .1s both' }}>
-        <div id="zone-simulation" style={{ textAlign: 'left', flex: 1 }}><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
+        <div id="zone-simulation" style={{ textAlign: 'left', flex: 1 }}><EnChargement><ActiveComponent key={`${activeId}-${ouvertureCode}`} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
         <ToastRecompense naviguer={naviguer} />
       </main>
     </div>);
@@ -876,14 +878,14 @@ export default function App() {
 
         <div style={styles.simContainer}>
           {activeId === 0
-            ? <AccueilSite onStart={(id) => naviguer(id || 1)} onCode={naviguer} session={sessionSb} simulations={SIMULATIONS} energyUrl={ENERGY_URL} />
+            ? <AccueilSite onStart={(id) => naviguer(id || 1)} onCode={(id, ex) => naviguer(id, ex, false, true)} session={sessionSb} simulations={SIMULATIONS} energyUrl={ENERGY_URL} />
             : <div style={{ textAlign: "left" }}>
                 {/* Le fichier App.css du modèle Vite centre tout le texte (#root) : on rétablit l'alignement
                     à gauche pour les simulations ; la page d'accueil garde sa mise en page centrée. */}
                 <BandeauContexte key={`b${activeId}`} id={activeId} contexte={CONTEXTES[activeId]} couleur={active.color} />
                 {(activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 113 && activeId !== 103 && activeId !== 104 && activeId !== 105 && activeId !== 219) && <SuiviTemps simId={activeId} />}
                 {estEleve(sessionSb) && (activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 113 && activeId !== 103 && activeId !== 104 && activeId !== 105 && activeId !== 219) && <ProchaineEtape key={`pe${activeId}`} simId={activeId} naviguer={naviguer} />}
-                <div id="zone-simulation"><EnChargement><ActiveComponent key={activeId} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
+                <div id="zone-simulation"><EnChargement><ActiveComponent key={`${activeId}-${ouvertureCode}`} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
                 {activeId > 0 && activeId < 34 || activeId >= 41 && activeId !== 47 && activeId !== 79 && activeId !== 80 && activeId !== 81 && activeId !== 113 && activeId !== 103 && activeId !== 104 && activeId !== 105 && activeId !== 219 ? <ModeParDefaut simId={activeId} cibleId="zone-simulation" /> : null}
               </div>}
         </div>
