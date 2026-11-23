@@ -3229,11 +3229,11 @@ export const ENONCES = [
   },
   // ───────────────────────────── Transport des fluides : bilan d’énergie, puissance hydraulique et rendement d’une pompe
   {
-    id: 'flu-pompe', domaine: 'Transport des fluides', titre: 'Une pompe qui alimente un château d’eau', noms: ['Hauteur manométrique totale', 'Puissance hydraulique', 'Rendement du groupe motopompe'],
+    id: 'flu-pompe', domaine: 'Transport des fluides', titre: 'Une pompe qui alimente un château d’eau', noms: ['Pression à fournir par la pompe', 'Puissance hydraulique', 'Rendement du groupe motopompe'],
     schema: (p, b) => ({ type: 'pompeChateau', dz: b.tokens.dz.aff, L: b.tokens.L.aff, dp: b.tokens.dp.aff, Q: b.tokens.Q.aff }),
     gen: () => {
       const rho = 1000, g = 9.81, dz = tire([15, 20, 25, 30, 40]), dp = tire([0.5, 0.8, 1.0, 1.5, 2.0]), Q = tire([20, 30, 40, 60]), eta0 = tire([0.5, 0.55, 0.6, 0.65, 0.7, 0.75]);
-      const Ph = rho * g * (Q / 3600) * (dz + dp * 1e5 / (rho * g));
+      const Ph = (rho * g * dz + dp * 1e5) * (Q / 3600);
       return { rho, g, dz, dp, Q, Pel: Math.ceil(Ph / eta0 / 100) / 10, L: tire([50, 100, 200, 400]), th: tire([10, 15, 20]), Patm: tire([1005, 1013, 1020]) };
     },
     build: (p, q) => {
@@ -3251,25 +3251,24 @@ export const ENONCES = [
       const debut = ['Une pompe aspire de l’eau (masse volumique ', T('rho'), ', température ', T('th'), ') dans un bassin et la refoule dans un château d’eau dont la surface libre est ', T('dz'),
         ' plus haut que celle du bassin.\n\nLes deux surfaces libres sont à l’air libre (pression atmosphérique ', T('Patm'), ') et l’eau y est pratiquement immobile.\n\nLes frottements dans la conduite, de longueur ', T('L'),
         ', provoquent une perte de charge totale de ', T('dp'), ' pour le débit de ', T('Q'), ' choisi.\n\nLe groupe motopompe absorbe une puissance électrique de ', T('Pel'), '. On prendra g = ', T('g'), '. '];
-      const J = p.dp * 1e5 / (p.rho * p.g), H = p.dz + J, Ph = p.rho * p.g * (p.Q / 3600) * H;
+      const Pp = p.rho * p.g * p.dz + p.dp * 1e5, Ph = Pp * (p.Q / 3600);
       const rL = 'La longueur de la conduite explique l’origine des pertes de charge, mais celles-ci sont déjà données : elle n’intervient pas dans le calcul.';
       const rTh = 'La température n’intervient pas ici : seule compte la masse volumique de l’eau, qui est donnée.';
       const rPatm = 'Les deux surfaces libres sont à la même pression atmosphérique : elle s’élimine dans le bilan d’énergie entre les deux surfaces.';
-      const dJ = { id: 'J', nom: 'Perte de charge exprimée en hauteur d’eau', expr: 'J = Δp_J / (ρ·g)', val: J, u: 'm' };
-      const dH = { id: 'H', nom: 'Hauteur manométrique totale H', expr: 'H = Δz + Δp_J / (ρ·g)', val: H, u: 'm' };
-      if (q === 0) return { tokens, derivees: [dJ], texte: [...debut, 'Quelle hauteur manométrique totale H, exprimée en mètres d’eau, la pompe doit-elle fournir ?'], utiles: ['rho', 'g', 'dz', 'dp'],
+      const dPp = { id: 'Pp', nom: 'Pression à fournir par la pompe', expr: 'frac(P_hyd|Q_V) = ρ·g·Δz + Δp_charges', val: Pp, u: 'Pa' };
+      if (q === 0) return { tokens, derivees: [dPp], texte: [...debut, 'Quelle pression la pompe doit-elle apporter à l’eau, pour la monter jusqu’au château d’eau et compenser les frottements ?'], utiles: ['rho', 'g', 'dz', 'dp'],
         raisons: { th: rTh, Patm: rPatm, L: rL, Q: 'Le débit sert à calculer une puissance ; la perte de charge est déjà donnée pour ce débit.', Pel: 'La puissance électrique sert à calculer un rendement, pas la hauteur que doit fournir la pompe.' },
-        cherche: { bonne: 'La hauteur manométrique totale H que la pompe doit fournir (en m)', faux: ['La hauteur géométrique de refoulement seule, sans les pertes de charge (en m)', 'La puissance hydraulique communiquée à l’eau (en W)', 'Le débit volumique de la pompe (en m³·h⁻¹)'] },
-        manque: null, solution: { txt: 'H = Δz + Δp_J / (ρ·g)  (bilan d’énergie entre les deux surfaces libres)', val: H, u: 'm' } };
-      if (q === 1) return { tokens, derivees: [dJ, dH], texte: [...debut, 'Quelle puissance hydraulique la pompe communique-t-elle à l’eau ?'], utiles: ['rho', 'g', 'dz', 'dp', 'Q'],
+        cherche: { bonne: 'La pression que la pompe doit apporter à l’eau, frac(P_hyd|Q_V) (en Pa)', faux: ['La pression due à la seule hauteur de refoulement ρ·g·Δz, sans la perte de charge (en Pa)', 'La puissance hydraulique communiquée à l’eau (en W)', 'Le débit volumique de la pompe (en m³·h⁻¹)'] },
+        manque: null, solution: { txt: 'frac(P_hyd|Q_V) = ρ·g·Δz + Δp_charges  (Bernoulli entre les deux surfaces libres, avec la pompe)', val: Pp, u: 'Pa' } };
+      if (q === 1) return { tokens, derivees: [dPp], texte: [...debut, 'Quelle puissance hydraulique la pompe communique-t-elle à l’eau ?'], utiles: ['rho', 'g', 'dz', 'dp', 'Q'],
         raisons: { th: rTh, Patm: rPatm, L: rL, Pel: 'La puissance électrique absorbée sert à calculer le rendement ; la puissance communiquée à l’eau se calcule sans elle.' },
-        cherche: { bonne: 'La puissance hydraulique P_h communiquée à l’eau (en W)', faux: ['La puissance électrique absorbée par le groupe (en W)', 'La hauteur manométrique totale de la pompe (en m)', 'L’énergie communiquée à l’eau en une heure (en kWh)'] },
-        manque: null, solution: { txt: 'P_h = ρ·g·Q_V·H, avec H = Δz + Δp_J / (ρ·g)', val: Ph, u: 'W' } };
-      return { tokens, derivees: [dJ, dH, { id: 'Ph', nom: 'Puissance hydraulique communiquée à l’eau', expr: 'P_h = ρ·g·Q_V·H', val: Ph, u: 'W' }],
+        cherche: { bonne: 'La puissance hydraulique P_hyd communiquée à l’eau (en W)', faux: ['La puissance électrique absorbée par le groupe (en W)', 'La pression que la pompe doit apporter à l’eau (en Pa)', 'L’énergie communiquée à l’eau en une heure (en kWh)'] },
+        manque: null, solution: { txt: 'P_hyd = (ρ·g·Δz + Δp_charges) × Q_V', val: Ph, u: 'W' } };
+      return { tokens, derivees: [dPp, { id: 'Ph', nom: 'Puissance hydraulique communiquée à l’eau', expr: 'P_hyd = frac(P_hyd|Q_V) × Q_V', val: Ph, u: 'W' }],
         texte: [...debut, 'Quel est le rendement global du groupe motopompe ?'], utiles: ['rho', 'g', 'dz', 'dp', 'Q', 'Pel'],
         raisons: { th: rTh, Patm: rPatm, L: rL },
-        cherche: { bonne: 'Le rendement global η du groupe motopompe (en %)', faux: ['La puissance hydraulique communiquée à l’eau (en W)', 'La puissance perdue dans le groupe motopompe (en W)', 'La hauteur manométrique totale de la pompe (en m)'] },
-        manque: null, solution: { txt: 'η = P_h / P_él × 100, avec P_h = ρ·g·Q_V·H et H = Δz + Δp_J / (ρ·g)', val: Ph / (p.Pel * 1000) * 100, u: '%' } };
+        cherche: { bonne: 'Le rendement global η du groupe motopompe (en %)', faux: ['La puissance hydraulique communiquée à l’eau (en W)', 'La puissance perdue dans le groupe motopompe (en W)', 'La pression que la pompe doit apporter à l’eau (en Pa)'] },
+        manque: null, solution: { txt: 'η = frac(P_hyd|P_él) × 100, avec P_hyd = (ρ·g·Δz + Δp_charges) × Q_V', val: Ph / (p.Pel * 1000) * 100, u: '%' } };
     },
   },
   // ───────────────────────────── Ondes (TSTL) : diffraction, interférences, réseaux
@@ -5142,7 +5141,7 @@ const SYMBOLES = {
   'flu-statique': { rho: 'ρ', g: 'g', P: 'P_rel', th: 'θ', Vc: 'V_cuve', Patm: 'P_atm', d: 'd', dh: 'Δh' },
   'flu-debit': { mv: 'm_fût', mt: 'm_balance', dt: 'Δt', V: 'V', Bmax: 'm_max', Pm: 'P_moteur', th: 'θ' },
   'flu-section': { D1: 'D₁', D2: 'D₂', v1: 'v₁', P1: 'P₁', L: 'L', th: 'θ', Vr: 'V_bassin' },
-  'flu-pompe': { rho: 'ρ', g: 'g', dz: 'Δz', dp: 'Δp_J', Q: 'Q_V', Pel: 'P_él', L: 'L', th: 'θ', Patm: 'P_atm' },
+  'flu-pompe': { rho: 'ρ', g: 'g', dz: 'Δz', dp: 'Δp_charges', Q: 'Q_V', Pel: 'P_él', L: 'L', th: 'θ', Patm: 'P_atm' },
   hydrodist: { mp: 'm_fleurs', Veau: 'V_eau', P: 'P', t: 'Δt', T: 'θ', mh: 'm_huile', rho: 'ρ', Vh: 'V_hydrolat' },
   'crist-evaporateur': { q1: 'q₁', w1: 'w₁', w2: 'w₂', S: 'S', Pv: 'P', th: 'θ', dur: 'Δt' },
   paroi: { an: '', L: 'L', h: 'h', e: 'e', lam: 'λ', Ti: 'T_int', Te: 'T_ext', prix: 'prix', dur: 'durée' },
