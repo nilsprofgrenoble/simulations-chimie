@@ -205,3 +205,50 @@ export async function restaurer() {
 export async function changerMotDePasse(nouveau) {
   await appeler(`${URL_SB}/auth/v1/user`, { method: 'PUT', corps: { password: nouveau } });
 }
+
+// ── Inscription d'un enseignant par adresse académique (fonction « inscription-prof ») ──
+// Le mail contient un lien qui ramène sur « Mon compte » avec un jeton à usage unique dans l'adresse (après le « # »).
+// On le lit tout de suite, on le range en mémoire (jamais sur disque) et on l'efface de la barre d'adresse.
+let lienAuth = null;
+if (typeof window !== 'undefined' && !EN_RECOLTE) {
+  try {
+    const h = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const type = h.get('type');
+    if (h.get('access_token') && h.get('refresh_token') && (type === 'invite' || type === 'recovery')) {
+      lienAuth = { access_token: h.get('access_token'), refresh_token: h.get('refresh_token'), type,
+        expires_at: Number(h.get('expires_at')) || Math.floor(Date.now() / 1000) + (Number(h.get('expires_in')) || 3600) };
+    } else if (h.get('error_code') || (h.get('error') && h.get('error_description'))) {
+      lienAuth = { erreur: 'Ce lien n’est plus valable (il ne sert qu’une fois et expire au bout d’un moment). Refaites une demande d’inscription : un nouveau mail vous sera envoyé.' };
+    }
+    if (lienAuth) window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  } catch { /* adresse illisible : on l'ignore */ }
+}
+export const getLienAuth = () => lienAuth;
+export async function demanderInscriptionProf({ email, nom, site_web = '' }) {
+  let r;
+  try {
+    r = await fetch(`${URL_SB}/functions/v1/inscription-prof`, {
+      method: 'POST', headers: { apikey: CLE_PUBLIQUE, 'Content-Type': 'application/json' }, body: JSON.stringify({ email, nom, site_web }) });
+  } catch { throw new ErreurServeur('Serveur injoignable : vérifiez votre connexion internet.', 0); }
+  if (!r.ok) throw new ErreurServeur(await messageDe(r), r.status);
+}
+// Choisir son mot de passe depuis le lien du mail, puis être connecté
+export async function terminerInscriptionProf(motDePasse) {
+  const l = lienAuth;
+  if (!l?.access_token) throw new ErreurServeur('Ce lien n’est plus valable. Refaites une demande d’inscription.', 400);
+  let r;
+  try {
+    r = await fetch(`${URL_SB}/auth/v1/user`, {
+      method: 'PUT', headers: { apikey: CLE_PUBLIQUE, Authorization: `Bearer ${l.access_token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ password: motDePasse }) });
+  } catch { throw new ErreurServeur('Serveur injoignable : vérifiez votre connexion internet.', 0); }
+  if (!r.ok) throw new ErreurServeur(r.status === 401 || r.status === 403 ? 'Ce lien n’est plus valable. Refaites une demande d’inscription.' : await messageDe(r), r.status);
+  let u = null; try { u = await r.json(); } catch { /* réponse sans corps : sans importance */ }
+  ecrireSession({ access_token: l.access_token, refresh_token: l.refresh_token, expires_at: l.expires_at, user: { id: u?.id }, profil: null, persistant: false });
+  try {
+    const profil = await chargerProfil();
+    if (!profil || profil.role !== 'prof') { ecrireSession(null); throw new ErreurServeur('Mot de passe enregistré, mais ce compte n’est pas un compte enseignant : écrivez-moi.', 403); }
+    ecrireSession({ ...session, profil });
+    lienAuth = null;
+  } catch (e) { if (session) ecrireSession(null); throw e; }
+}
+

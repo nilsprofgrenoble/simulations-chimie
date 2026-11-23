@@ -37,7 +37,8 @@ const DOMAINE = 'eleves.example.com';
 const MAX_PAR_APPEL = 40;
 const MAX_PAR_CLASSE = 60;      // garde-fous si un compte professeur était utilisé par quelqu'un d'autre
 const MAX_CLASSES = 30;
-const MAX_PROFS = 40;           // garde-fou sur le nombre de comptes professeur
+const MAX_PROFS = 40;           // garde-fou sur le nombre de comptes professeur créés par l'administrateur (les inscriptions libres ont leur propre plafond : fonction « inscription-prof »)
+const MAX_CLASSES_LIBRE = 8;    // un professeur inscrit librement (adresse académique) a des plafonds plus bas : 8 classes ; l'administrateur peut le passer en « prof » normal en le recréant ou nous écrire
 // Mot de passe fort (16 caractères, sans caractères ambigus) pour un compte professeur
 const ALPHA = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 function motDePasseProf(): string {
@@ -168,7 +169,8 @@ Deno.serve(async (req) => {
       if (!nombreValide(corps.nombre)) return rep(400, { erreur: `Nombre d’élèves : entre 1 et ${MAX_PAR_APPEL}.` });
       const { count: nbClasses, error: errNb } = await admin.from('classes').select('id', { count: 'exact', head: true }).eq('prof_id', profId);
       if (errNb) throw new Error(errNb.message);
-      if ((nbClasses ?? 0) >= MAX_CLASSES) return rep(400, { erreur: `Vous avez déjà ${MAX_CLASSES} classes : supprimez-en une avant d’en créer une autre.` });
+      const plafondClasses = (prof as { auto_inscrit?: boolean }).auto_inscrit ? MAX_CLASSES_LIBRE : MAX_CLASSES;   // auto_inscrit : supabase/23-inscription-profs.sql
+      if ((nbClasses ?? 0) >= plafondClasses) return rep(400, { erreur: `Vous avez déjà ${plafondClasses} classes : supprimez-en une avant d’en créer une autre.` });
       const { data: classe, error } = await admin.from('classes').insert({ nom, prefixe, prof_id: profId, site }).select('id, prefixe, nom').single();
       if (error) return rep(409, { erreur: error.code === '23505' ? 'Ce préfixe est déjà utilisé : choisissez-en un autre.' : error.message });
       return rep(200, { classe, comptes: await creerComptes(classe, corps.nombre as number) });
@@ -240,7 +242,7 @@ Deno.serve(async (req) => {
       const email = String(corps.email ?? '').trim().toLowerCase(), nom = String(corps.nom ?? '').trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return rep(400, { erreur: 'Adresse email invalide.' });
       if (nom.length < 1 || nom.length > 60) return rep(400, { erreur: 'Nom : 1 à 60 caractères.' });
-      const { count, error: errNb } = await admin.from('professeurs').select('user_id', { count: 'exact', head: true });
+      const { count, error: errNb } = await admin.from('professeurs').select('user_id', { count: 'exact', head: true }).neq('auto_inscrit', true);
       if (errNb) throw new Error(errNb.message);
       if ((count ?? 0) >= MAX_PROFS) return rep(400, { erreur: `Limite de ${MAX_PROFS} professeurs atteinte.` });
       const invite = corps.invite !== false;     // par défaut : compte invité (droits limités), sauf demande contraire explicite
@@ -259,10 +261,11 @@ Deno.serve(async (req) => {
       if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
       const { data, error } = await admin.from('professeurs').select('*');
       if (error) throw new Error(error.message);
-      const { data: liste, error: errU } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
+      // Adresses lues par une fonction de la base (supabase/23-inscription-profs.sql) : l'ancienne lecture ne voyait que les 200 premiers comptes, élèves compris
+      const { data: liste, error: errU } = await admin.rpc('profs_emails');
       if (errU) throw new Error(errU.message);
-      const emails = new Map((liste?.users ?? []).map((u) => [u.id, u.email]));
-      return rep(200, { profs: (data ?? []).map((p) => ({ nom: p.nom, admin: !!p.admin, invite: !!p.invite, acces_energy: !!p.acces_energy, moi: p.user_id === profId, email: emails.get(p.user_id) ?? '' })) });
+      const emails = new Map(((liste ?? []) as { user_id: string; email: string; jamais_connecte: boolean }[]).map((u) => [u.user_id, u]));
+      return rep(200, { profs: (data ?? []).map((p) => ({ nom: p.nom, admin: !!p.admin, invite: !!p.invite, acces_energy: !!p.acces_energy, auto_inscrit: !!p.auto_inscrit, jamais_connecte: !!emails.get(p.user_id)?.jamais_connecte, moi: p.user_id === profId, email: emails.get(p.user_id)?.email ?? '' })) });
     }
     case 'acces_energy': {
       if (!prof.admin) return rep(403, { erreur: 'Réservé à l’administrateur.' });
