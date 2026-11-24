@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { cardStyle, fmt, sci, lireNombre, proche, CarteParcours, Cadre, useEtatPersistant, KIT, styleBouton,
-  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, PanneauHypotheses, IndiceDefi, OngletExercices } from "../commun";
+  stylePetitBouton, styleBoite, Section, LigneMesure, Curseur, ORANGE_GUIDE, avecIndices, FormuleEnLigne, PanneauHypotheses, IndiceDefi, OngletExercices } from "../commun";
 import { Pic } from "../Pictos";
 import { FicheQuantite, FicheTableau, FicheLimitant, FicheEtatFinal, FicheVolumeMolaire, FicheEcarts } from "./AvancementFiches";
 
@@ -318,7 +318,7 @@ export function Simulation1() {
       texte: <>Votre ruban de magnésium a été prépesé : lisez sa masse sur la balance.</>,
       tache: { type: 'num', q: 'Masse de magnésium m, en grammes', unite: 'g', vrai: ech.m / 1000, tol: 0.005,
         aide: 'Lisez la valeur affichée sur la balance (en mg) puis convertissez-la en grammes.',
-        calcul: () => [`La balance affiche ${ech.m} mg.`, `1 g = 1000 mg, donc on divise par 1000 : m = ${ech.m} / 1000 = ${fmt(ech.m / 1000, 3)} g.`],
+        calcul: () => [`La balance affiche ${ech.m} mg.`, `1 g = 1000 mg, donc on divise par 1000 : m = frac(${ech.m}|1000) = ${fmt(ech.m / 1000, 3)} g.`],
         pieges: [[ech.m, 'La balance affiche des milligrammes : 1 mg = 0,001 g.']], indice: "Convertis les milligrammes en grammes : 1 g = 1000 mg." } },
     { id: 'manip', titre: 'L’expérience', focus: ['erlen'],
       texte: <>L'éprouvette retournée est remplie d'eau : le gaz formé va chasser l'eau, c'est un recueil par <strong>déplacement d'eau</strong>.
@@ -333,12 +333,12 @@ export function Simulation1() {
         pieges: refroidi ? [] : [[Vgaz, 'Le volume diminue encore : la réaction a chauffé le gaz. Attendez qu’il revienne à température ambiante.']],
         surReussite: v => setMes(x => ({ ...x, V: v })), indice: "Avant de lire, repère la valeur d’un trait de l’éprouvette, puis lis le niveau à hauteur d’œil, à la surface qui sépare le gaz de l’eau." } },
     { id: 'nMg', titre: 'La quantité de magnésium', focus: ['balance'],
-      texte: <>On rappelle n = m / M, avec M(Mg) = 24,0 g/mol et m = {ech.m} mg.</>,
+      texte: <>On rappelle n = frac(m|M), avec M(Mg) = 24,0 g/mol et m = {ech.m} mg.</>,
       tache: { type: 'num', q: 'Quantité de matière de magnésium n₁', unite: 'mol', vrai: n1Aff, tol: 0.02,
-        calcul: () => [`Formule : n₁ = m / M, avec m en grammes et M en g/mol.`, `m = ${ech.m} mg = ${ech.m} / 1000 = ${fmt(ech.m / 1000, 3)} g.`,
-          `n₁ = ${fmt(ech.m / 1000, 3)} / ${fmt(M_MG, 1)} = ${sci(n1Aff, 3)} mol.`],
-        pieges: [[ech.m / M_MG, 'Convertissez d’abord la masse en grammes.'], [M_MG / (ech.m / 1000), 'C’est m / M, et non M / m.'],
-          [ech.m / 1000 * M_MG, 'On divise la masse par la masse molaire (n = m / M) ; on ne les multiplie pas.']], aide: 'Écriture scientifique acceptée : par exemple 4,5e-3.', indice: "Quantité de matière : n = m / M, avec m en grammes et M la masse molaire du magnésium (en g/mol, d’après le tableau périodique)." } },
+        calcul: () => [`Formule : n₁ = frac(m|M), avec m en grammes et M en g/mol.`, `m = ${ech.m} mg = frac(${ech.m}|1000) = ${fmt(ech.m / 1000, 3)} g.`,
+          `n₁ = frac(${fmt(ech.m / 1000, 3)}|${fmt(M_MG, 1)}) = ${sci(n1Aff, 3)} mol.`],
+        pieges: [[ech.m / M_MG, 'Convertissez d’abord la masse en grammes.'], [M_MG / (ech.m / 1000), 'C’est frac(m|M), et non frac(M|m).'],
+          [ech.m / 1000 * M_MG, 'On divise la masse par la masse molaire (n = frac(m|M)) ; on ne les multiplie pas.']], aide: 'Écriture scientifique acceptée : par exemple 4,5e-3.', indice: "Quantité de matière : n = frac(m|M), avec m en grammes et M la masse molaire du magnésium (en g/mol, d’après le tableau périodique)." } },
     { id: 'nH', titre: 'La quantité d’ions H⁺', focus: ['erlen'],
       texte: <>On a versé V = 50 mL d'acide à c = 2 mol/L. On rappelle n = c × V.</>,
       tache: { type: 'num', q: 'Quantité de matière d’ions H⁺ n₂', unite: 'mol', vrai: n2, tol: 0.02,
@@ -368,7 +368,7 @@ export function Simulation1() {
       texte: <>La transformation est totale : l'avancement final x<sub>f</sub> est égal à l'avancement maximal x<sub>max</sub>. Rappel : n₁ = {sci(n1Aff, 3)} mol et n₂ = {fmt(n2, 3)} mol.</>,
       tache: { type: 'num', q: 'Avancement maximal x_max', unite: 'mol', vrai: n1Aff, tol: 0.02,
         calcul: () => [`Si Mg est limitant : n₁ − x = 0, donc x = n₁ = ${sci(n1Aff, 3)} mol.`,
-          `Si H⁺ est limitant : n₂ − 2x = 0, donc x = n₂ / 2 = ${fmt(n2, 3)} / 2 = ${sci(n2 / 2, 3)} mol.`,
+          `Si H⁺ est limitant : n₂ − 2x = 0, donc x = frac(n₂|2) = frac(${fmt(n2, 3)}|2) = ${sci(n2 / 2, 3)} mol.`,
           `La réaction s’arrête dès qu’un réactif est épuisé : x_max est la plus petite des deux valeurs, soit ${sci(Math.min(n1Aff, n2 / 2), 3)} mol.`],
         pieges: [[n2 / 2, 'C’est la valeur obtenue si H⁺ était limitant : prenez la plus petite des deux.'], [n2, 'Pensez au coefficient 2 devant H⁺, et comparez avec n₁.']], indice: "x_max est la valeur de x pour laquelle le réactif limitant est entièrement consommé : n(limitant) − coefficient × x = 0." } },
     { id: 'tabFin', titre: 'Le tableau d’avancement : état final', focus: ['tableau'],
@@ -378,22 +378,22 @@ export function Simulation1() {
       retenirTitre: 'À RETENIR : L’ÉTAT FINAL',
       retenir: <FicheEtatFinal/>,
       texte: <>Le dihydrogène formé a la quantité n(H₂) = x<sub>max</sub> = {sci(n1Aff, 3)} mol, et il occupe le volume V(H₂) = {fmt(Veleve, 1)} mL que vous avez mesuré.
-        Le volume molaire est le volume occupé par une mole : V<sub>m</sub> = V(H₂) / n(H₂).</>,
+        Le volume molaire est le volume occupé par une mole : V<sub>m</sub> = frac(V(H₂)|n(H₂)).</>,
       tache: { type: 'num', q: 'Volume molaire V_m, en L/mol', unite: 'L/mol', vrai: VmEleve, tol: 0.02,
-        calcul: () => [`Formule : V_m = V(H₂) / n(H₂), avec V en litres. On suppose n(H₂) = x_max, car le coefficient de H₂ vaut 1 et la transformation est totale.`,
+        calcul: () => [`Formule : V_m = frac(V(H₂)|n(H₂)), avec V en litres. On suppose n(H₂) = x_max, car le coefficient de H₂ vaut 1 et la transformation est totale.`,
           `V(H₂) = ${fmt(Veleve, 1)} mL = ${fmt(Math.round(Veleve * 10) / 10000, 4)} L ; n(H₂) = x_max = ${sci(n1Aff, 4)} mol.`,
-          `V_m = ${fmt(Math.round(Veleve * 10) / 10000, 4)} / ${sci(n1Aff, 4)} = ${fmt(Math.round(Veleve * 10) / 10000 / Number(n1Aff.toPrecision(4)), 2)} L/mol.`],
-        pieges: [[VmEleve * 1000, 'Le volume doit être en litres.'], [1 / VmEleve, 'C’est V / n, et non n / V.'], [VmEleve / 2, 'n(H₂) = x_max, et non 2 x_max.']],
-        surReussite: v => setMes(x => ({ ...x, Vm: v })), indice: "V_m = V / n(H₂), avec V en litres. L’équation produit 1 mole de H₂ pour 1 mole de Mg consommée : n(H₂) est égale à l’avancement maximal." } },
+          `V_m = frac(${fmt(Math.round(Veleve * 10) / 10000, 4)}|${sci(n1Aff, 4)}) = ${fmt(Math.round(Veleve * 10) / 10000 / Number(n1Aff.toPrecision(4)), 2)} L/mol.`],
+        pieges: [[VmEleve * 1000, 'Le volume doit être en litres.'], [1 / VmEleve, 'C’est frac(V|n), et non frac(n|V).'], [VmEleve / 2, 'n(H₂) = x_max, et non 2 x_max.']],
+        surReussite: v => setMes(x => ({ ...x, Vm: v })), indice: "V_m = frac(V|n(H₂)), avec V en litres. L’équation produit 1 mole de H₂ pour 1 mole de Mg consommée : n(H₂) est égale à l’avancement maximal." } },
     { id: 'ecart', titre: 'Comparer à la valeur attendue', focus: [],
       retenirTitre: 'À RETENIR : LE VOLUME MOLAIRE',
       retenir: <FicheVolumeMolaire/>,
       texte: <>À 20 °C et sous 1013 hPa, le volume molaire d'un gaz vaut environ <strong>{fmt(VM_REF, 1)} L/mol</strong>. Avec votre V<sub>m</sub> = {fmt(mes.Vm ?? VmEleve, 2)} L/mol (étape 13), l'écart relatif vaut
-        |V<sub>m</sub> − {fmt(VM_REF, 1)}| / {fmt(VM_REF, 1)}. Le gaz recueilli sur l'eau contient un peu de vapeur d'eau, ce qui augmente le V<sub>m</sub> mesuré d'environ 2 % : un petit écart positif est donc attendu, ce n'est pas forcément une erreur de manipulation.</>,
+        <FormuleEnLigne><mfrac><mrow><mo>|</mo><msub><mi>V</mi><mi>m</mi></msub><mo>−</mo><mn>{fmt(VM_REF, 1)}</mn><mo>|</mo></mrow><mn>{fmt(VM_REF, 1)}</mn></mfrac></FormuleEnLigne>. Le gaz recueilli sur l'eau contient un peu de vapeur d'eau, ce qui augmente le V<sub>m</sub> mesuré d'environ 2 % : un petit écart positif est donc attendu, ce n'est pas forcément une erreur de manipulation.</>,
       tache: { type: 'num', q: 'Écart relatif, en %', unite: '%', vrai: Math.abs((mes.Vm ?? VmEleve) - VM_REF) / VM_REF * 100, tol: 0.15,
-        calcul: () => { const Vm = mes.Vm ?? VmEleve; return [`Formule : écart relatif = |V_m − V_ref| / V_ref × 100. On prend V_ref = ${fmt(VM_REF, 1)} L/mol comme valeur de référence exacte.`,
+        calcul: () => { const Vm = mes.Vm ?? VmEleve; return [`Formule : écart relatif = frac(∣V_m − V_ref∣|V_ref) × 100. On prend V_ref = ${fmt(VM_REF, 1)} L/mol comme valeur de référence exacte.`,
           `|${fmt(Vm, 2)} − ${fmt(VM_REF, 1)}| = ${fmt(Math.abs(Vm - VM_REF), 2)} L/mol.`,
-          `${fmt(Math.abs(Vm - VM_REF), 2)} / ${fmt(VM_REF, 1)} = ${fmt(Math.abs(Vm - VM_REF) / VM_REF, 4)}, soit × 100 = ${fmt(Math.abs(Vm - VM_REF) / VM_REF * 100, 2)} %.`]; },
+          `frac(${fmt(Math.abs(Vm - VM_REF), 2)}|${fmt(VM_REF, 1)}) = ${fmt(Math.abs(Vm - VM_REF) / VM_REF, 4)}, soit × 100 = ${fmt(Math.abs(Vm - VM_REF) / VM_REF * 100, 2)} %.`]; },
         pieges: [[Math.abs((mes.Vm ?? VmEleve) - VM_REF) / VM_REF, 'Vous avez donné le rapport sans le multiplier par 100 : un pourcentage, c’est ce rapport × 100.'],
           [Math.abs((mes.Vm ?? VmEleve) - VM_REF), `Vous avez donné la différence |V_m − V_ref|. Il faut la diviser par V_ref (${fmt(VM_REF, 1)}), puis multiplier par 100.`]],
         aide: 'Multipliez par 100 pour obtenir un pourcentage.', indice: "Écart relatif = |valeur mesurée − valeur de référence| ÷ valeur de référence, puis × 100." } },
