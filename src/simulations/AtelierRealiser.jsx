@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
-import { ChoixListe } from "../ChoixListe";
-import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau } from "../chapitres";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam, attrTest } from "../commun";
+import { CHAPITRES } from "../chapitres";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, attrTest, lireProgression } from "../commun";
+import { ParcoursCompetence, FilAriane } from "../ParcoursCompetence";
+import { SEL_VIDE, lireSelection, ecrireSelection } from "../selectionParcours";
+import { TYPES_REA, construireItems, filtrer } from "./realiserParcours";
 import { useSuivi } from "../suivi";
 import { txtVec } from "./FigureVecteurs";
-import { FAMILLES, GROUPES, verifier, reponseAttendue } from "./AtelierRealiserBanque";
+import { FAMILLES, verifier, reponseAttendue } from "./AtelierRealiserBanque";
 import { Pic } from "../Pictos";
 import { TraceCourbe, verifierTrace } from "./RealiserC1";
 
@@ -14,31 +16,6 @@ import { TraceCourbe, verifierTrace } from "./RealiserC1";
 // Démarche travaillée : mettre en œuvre un calcul sans erreur : unités et conversions, manipulation d'une relation,
 // chiffres significatifs, fonctions usuelles, saisie à la calculatrice. Exploration seule, énoncés tirés au hasard.
 
-// Menu des exercices : un filtre « chapitre » (les exercices de calcul d'un thème du programme + les exercices transversaux : unités,
-// vecteurs, chiffres significatifs, graphiques) et, sans filtre, les formules rangées par niveau pour ne pas noyer le reste.
-const chapitreDuDomaine = d => CHAPITRES.find(c => c.domaines.includes(d)) || null;
-const estTransversal = f => !f.domaine || !chapitreDuDomaine(f.domaine);
-const nbParChapitre = (() => {
-  const m = new Map();
-  FAMILLES.forEach(f => { if (f.domaine) CHAPITRES.filter(c => c.domaines.includes(f.domaine)).forEach(c => m.set(c.id, (m.get(c.id) || 0) + 1)); });
-  return m;
-})();
-const FILTRE_TOUS = '';
-const groupesFiltre = [
-  { label: 'Tout le site', items: [{ value: FILTRE_TOUS, label: 'Tous les chapitres' }] },
-  ...NIVEAUX_CHAPITRES.map(n => ({ label: n.label, items: chapitresDuNiveau(n.key).filter(c => nbParChapitre.get(c.id)).map(c => ({ value: c.id, label: `${c.label} (${nbParChapitre.get(c.id)})` })) })).filter(g => g.items.length),
-];
-const dansFiltre = (f, chap) => !chap || estTransversal(f) || (f.domaine && CHAPITRES.find(c => c.id === chap)?.domaines.includes(f.domaine));
-function groupesExercices(chap) {
-  const item = f => ({ value: f.id, label: f.titre });
-  const liste = FAMILLES.filter(f => dansFiltre(f, chap));
-  const courts = GROUPES.filter(g => g !== 'Formules').map(g => ({ label: g, items: liste.filter(f => f.groupe === g).map(item) }));
-  const formules = liste.filter(f => f.groupe === 'Formules');
-  if (chap) return [{ label: 'Formules du chapitre', items: formules.filter(f => !estTransversal(f)).map(item) }, { label: 'Formules générales (tous chapitres)', items: formules.filter(estTransversal).map(item) }, ...courts].filter(g => g.items.length);
-  const parNiveau = NIVEAUX_CHAPITRES.map(n => ({ label: `Formules · ${n.label}`, items: formules.filter(f => !estTransversal(f) && chapitreDuDomaine(f.domaine).niveau === n.key).map(item) }));
-  return [...courts, { label: 'Formules (sans chapitre précis)', items: formules.filter(estTransversal).map(item) }, ...parNiveau].filter(g => g.items.length);
-}
-
 const Verdict = ({ ok, children }) => (
   <div role="status" style={{ fontSize: 14, marginTop: 6, fontWeight: 700, color: ok ? '#15803d' : '#b91c1c' }}>{ok ? '✅ ' : '❌ '}{children}</div>
 );
@@ -46,17 +23,9 @@ const Correction = ({ children }) => (
   <div style={{ fontSize: 13.5, marginTop: 6, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', color: KIT.txt, lineHeight: 1.7 }}>{children}</div>
 );
 
-export function SimulationAtelierRealiser() {
-  const depart = (() => { const p = exParam(); return FAMILLES.some(f => f.id === p) ? p : 'simple'; })();
-  const [choix, setChoix] = useState(depart);
-  const [chap, setChap] = useState(() => { const f = FAMILLES.find(x => x.id === depart); return f?.domaine && chapitreDuDomaine(f.domaine) && exParam() ? chapitreDuDomaine(f.domaine).id : FILTRE_TOUS; });
-  const groupes = useMemo(() => groupesExercices(chap), [chap]);
-  const changerChapitre = c => {
-    setChap(c);
-    const f = FAMILLES.find(x => x.id === choix);
-    if (!dansFiltre(f, c)) { const premier = FAMILLES.find(x => dansFiltre(x, c) && !estTransversal(x)) || FAMILLES.find(x => dansFiltre(x, c)); setChoix(premier.id); charger(premier.id); }
-  };
-  const [exo, setExo] = useState(() => FAMILLES.find(f => f.id === depart).gen());
+function ExerciceRea({ id, titre, detail, entete, navigation }) {
+  const choix = id;
+  const [exo, setExo] = useState(() => FAMILLES.find(f => f.id === id).gen());
   const [rep, setRep] = useState({});
   const [chk, setChk] = useState({});
   const [vu, setVu] = useState({});
@@ -110,18 +79,12 @@ export function SimulationAtelierRealiser() {
 
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>REA : réaliser un calcul</h2>
-      </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Réaliser</b> (REA) — mettre en œuvre un calcul sans erreur : unités et conversions, manipulation d’une relation, chiffres significatifs, fonctions de la calculatrice.</div>
-      <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Chapitre :
-          <ChoixListe ariaLabel="Filtrer par chapitre" titre="Filtrer les exercices par chapitre" valeur={chap} onChoisir={changerChapitre} groupes={groupesFiltre}/>
-        </div>
-        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Exercice :
-          <ChoixListe ariaLabel="Choix de l’exercice" titre={chap ? 'Choisir un exercice du chapitre' : 'Choisir un exercice'} valeur={choix} onChoisir={v => { setChoix(v); charger(v); }} groupes={groupes}/>
-        </div>
-        <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouvel exercice</button>
+      {entete}
+      <h2 style={{ margin: '0 0 4px', fontSize: 19, color: KIT.txt, fontWeight: 800 }}>{titre}</h2>
+      {detail && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Tu calcules : {detail}.</div>}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
+        {navigation}
+        <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Autres valeurs</button>
       </div>
       <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.65 }}>{txtVec(avecIndices(exo.intro))}</div>
@@ -130,5 +93,54 @@ export function SimulationAtelierRealiser() {
         {fini && exo.retenir && <ARetenir titre="À RETENIR"><ul style={{ margin: 0, paddingLeft: 18 }}>{exo.retenir.map((t, i) => <li key={i}>{txtVec(avecIndices(t))}</li>)}</ul></ARetenir>}
       </div>
     </div>
+  );
+}
+
+// ── Page de l'atelier : types d'exercices → (niveau → chapitre) → liste → exercice ──
+const COULEUR_REA = '#357f54';
+const INTRO_REA = 'Mener un calcul sans se tromper. Choisis d’abord le type d’exercice dont tu as besoin.';
+// Sélection valide : un type connu, un chapitre qui existe et qui appartient au niveau choisi
+function sanitiser(s, items) {
+  const type = TYPES_REA.some(t => t.id === s.type) ? s.type : '';
+  const ch = CHAPITRES.find(c => c.id === s.ch);
+  const niv = type && TYPES_REA.find(t => t.id === type).filtre ? s.niv : '';
+  const chOk = ch && niv && ch.niveau === niv ? ch.id : '';
+  const it = items.find(i => i.id === s.ex);
+  if (it) {   // arrivée directe sur un exercice (lien, devoir, page d'un chapitre) : on reconstitue le fil d'Ariane
+    const filtre = TYPES_REA.find(t => t.id === it.type).filtre;
+    const c = it.chapitres.includes(chOk) ? CHAPITRES.find(x => x.id === chOk) : CHAPITRES.find(x => it.chapitres.includes(x.id));
+    return { type: it.type, niv: filtre && c ? c.niveau : '', ch: filtre && c ? c.id : '', ex: it.id };
+  }
+  return { type, niv, ch: chOk, ex: '' };
+}
+
+export function SimulationAtelierRealiser() {
+  const items = useMemo(() => construireItems(FAMILLES), []);
+  const [sel, setSelBrut] = useState(() => sanitiser(lireSelection(), items));
+  const setSel = s => {
+    const net = { ...SEL_VIDE, ...s }; setSelBrut(net); ecrireSelection(net);
+    try { document.getElementById('zone-simulation')?.scrollIntoView({ block: 'start' }); } catch { /* sans effet */ }
+  };
+  const ouvrir = (it, ctx) => setSel({ ...(ctx || sel), type: it.type, ex: it.id });
+  const prog = lireProgression();
+  if (!sel.ex) {
+    return (
+      <div style={{ ...cardStyle, textAlign: 'left' }}>
+        <ParcoursCompetence code="REA" titre="REA : réaliser" intro={INTRO_REA} couleur={COULEUR_REA} types={TYPES_REA} items={items} chapitres={CHAPITRES} prog={prog} sel={sel} setSel={setSel} ouvrir={ouvrir} />
+      </div>);
+  }
+  const it = items.find(i => i.id === sel.ex);
+  const liste = filtrer(items, { type: it.type, niv: sel.niv, ch: sel.ch });
+  const pos = liste.findIndex(i => i.id === it.id);
+  const aller = i => setSel({ type: it.type, niv: sel.niv, ch: sel.ch, ex: liste[i].id });
+  const navigation = (
+    <>
+      <button onClick={() => setSel({ type: it.type, niv: sel.niv, ch: sel.ch, ex: '' })} style={stylePetitBouton(false)}>☰ Retour à la liste</button>
+      {pos > 0 && <button onClick={() => aller(pos - 1)} style={stylePetitBouton(false)}>◀ Précédent</button>}
+      {pos >= 0 && pos < liste.length - 1 && <button onClick={() => aller(pos + 1)} style={stylePetitBouton(false)}>Suivant ▶</button>}
+    </>);
+  return (
+    <ExerciceRea key={it.id} id={it.id} titre={it.titre} detail={it.detail} navigation={navigation}
+      entete={<FilAriane code="REA" couleur={COULEUR_REA} types={TYPES_REA} chapitres={CHAPITRES} sel={{ type: it.type, niv: sel.niv, ch: sel.ch }} setSel={setSel} dansExercice />} />
   );
 }
