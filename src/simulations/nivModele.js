@@ -64,7 +64,6 @@ export const COUL_UV = '#7c3aed', COUL_IR = '#9f1239';
 // Couleur du trait d'une raie : sa couleur réelle si elle est visible, un violet (UV) ou un rouge sombre (IR) sinon ; le domaine est toujours écrit.
 export const couleurRaie = lam => (lam < 400 ? COUL_UV : lam >= 780 ? COUL_IR : cssVisible(lam));
 // Teinte de texte lisible : nom de couleur (accessibilité)
-export const nomCouleur = lam => (lam < 400 ? 'ultraviolet' : lam >= 780 ? 'infrarouge' : couleurVisible(lam));
 
 // ───────────── Identification d'un atome (tableau de raies visibles) ─────────────
 export const lignesVisibles = atome => raiesVisibles(atome).map(t => Math.round(t.lam)).sort((a, b) => a - b);
@@ -137,4 +136,3 @@ export function tirerBalmer(rng, exclu) {
   const [ni, nf] = c, dE = 13.6 * (1 / (nf * nf) - 1 / (ni * ni));
   return { ni, nf, dE, vrai: lamNmDeEv(dE) };
 }
-export const ENIV_H = n => -13.6 / (n * n);

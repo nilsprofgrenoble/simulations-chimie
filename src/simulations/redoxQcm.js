@@ -33,7 +33,7 @@ export const QCM = {
     indice: 'Combien d’électrons échange chaque demi-équation ? Par quel nombre faut-il multiplier la demi-équation de Fe³⁺/Fe²⁺ pour égaliser les électrons ?' },
   erreur: {
     q: 'Un élève propose, pour la réaction du zinc Zn(s) avec les ions argent Ag⁺(aq) qui donne Zn²⁺(aq) et Ag(s), l’équation écrite en haut de l’écran. Quelle erreur contient-elle ?',
-    options: ['la charge totale n’est pas la même des deux côtés', 'les électrons échangés doivent figurer dans l’équation', 'le zinc est un réducteur : il doit être dans le second membre', 'les coefficients ne sont pas les plus petits entiers possibles'], bonne: 0,
+    options: ['la charge électrique totale n’est pas la même des deux côtés', 'les électrons échangés doivent figurer dans l’équation', 'le zinc est un réducteur : il doit être dans le second membre', 'les coefficients ne sont pas les plus petits entiers possibles'], bonne: 0,
     expl: 'Éléments : 1 Zn et 1 Ag de chaque côté, c’est bon. Charge : +1 à gauche (Ag⁺) mais +2 à droite (Zn²⁺) : elle n’est pas conservée. Les électrons cédés (2 par Zn) ne sont pas égaux aux électrons captés (1 par Ag⁺) : il faut 2 Ag⁺ et 2 Ag : Zn + 2 Ag⁺ → Zn²⁺ + 2 Ag.',
     indice: 'Compte les éléments puis la charge électrique totale de chaque côté de la flèche.' },
 };

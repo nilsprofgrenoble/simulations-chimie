@@ -40,7 +40,6 @@ export const concApportee = (n, V_L) => n / V_L;               // c = n / V (sol
 export const concIon = (nu, c) => nu * c;                      // [ion] = coefficient × c
 export const concCation = (s, c) => concIon(s.cat.nu, c);
 export const concAnion = (s, c) => concIon(s.an.nu, c);
-export const masseAPeser = (c, V_L, M) => c * V_L * M;
 
 // ---------- tirages des défis ----------
 const tire = t => t[Math.floor(Math.random() * t.length)];

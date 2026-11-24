@@ -136,4 +136,3 @@ export const equationDe = t => equilibrer(t.couple1, t.couple2);
 // La transformation « fe3-i » : l'oxydant est Fe³⁺ (couple Fe³⁺/Fe²⁺), le réducteur est I⁻ (couple I₂/I⁻)
 
 /** Nom du réactif oxydant et du réducteur d'une transformation (identifiants d'espèces). */
-export function acteurs(t) { return { oxydant: COUPLES[t.couple1][0], reducteur: COUPLES[t.couple2][1] }; }

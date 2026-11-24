@@ -81,7 +81,6 @@ export const energieReaction = c => energieRompue(c) - energieFormee(c);
 export const ecartRelatif = c => Math.abs(energieReaction(c) - c.ref) / Math.abs(c.ref);
 // Pouvoir calorifique estimé (énergie libérée par kg de combustible) : kJ/g = MJ/kg
 export const pouvoirCalorifique = c => -energieReaction(c) / masseMolaire(c);
-export const pouvoirCalorifiqueRef = c => -c.ref / masseMolaire(c);
 
 // ---------- défis ----------
 const tire = t => t[Math.floor(Math.random() * t.length)];

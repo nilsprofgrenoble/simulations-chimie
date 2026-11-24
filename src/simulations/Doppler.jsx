@@ -42,7 +42,7 @@ function FrontsOnde({ beta, anim, relance, annot, posRef, recC }) {
       ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(XL, Y0); ctx.lineTo(XR, Y0); ctx.stroke(); ctx.setLineDash([]);
       const F = D.fronts({ beta, t: tt });
       ctx.lineWidth = 2; ctx.strokeStyle = '#0e7490';
-      for (const f of F) { if (f.r * U > 560) continue; ctx.beginPath(); ctx.arc(X0 + f.cx * U, Y0, f.r * U, 0, 2 * Math.PI); ctx.stroke(); }
+      for (const f of F) { if (f.r * U > 560) continue; ctx.beginPath(); ctx.arc(X0 + f.cx * U, Y0, Math.max(0, f.r * U), 0, 2 * Math.PI); ctx.stroke(); }
       if (posRef) posRef.current = D.positionSource({ beta, t: tt });
       const xs = X0 + D.positionSource({ beta, t: tt }) * U;
       if (annot) {
@@ -51,17 +51,17 @@ function FrontsOnde({ beta, anim, relance, annot, posRef, recC }) {
         const fleche = (x1, x2, y, txt) => {
           ctx.strokeStyle = '#b45309'; ctx.fillStyle = '#7c2d12'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y);
           ctx.moveTo(x1, y - 5); ctx.lineTo(x1, y + 5); ctx.moveTo(x2, y - 5); ctx.lineTo(x2, y + 5); ctx.stroke();
-          ctx.font = '700 14px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = '#f8fafc'; ctx.strokeText(txt, (x1 + x2) / 2, y - 9); ctx.fillText(txt, (x1 + x2) / 2, y - 9);
+          ctx.font = '700 21px sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 4; ctx.strokeStyle = '#f8fafc'; ctx.strokeText(txt, (x1 + x2) / 2, y - 9); ctx.fillText(txt, (x1 + x2) / 2, y - 9);
         };
         if (devant.length > 1) fleche(devant[0], devant[1], Y0 - 62, beta > 0 ? 'λ devant' : 'λ');
         if (derriere.length > 1) fleche(derriere[1], derriere[0], Y0 + 92, beta > 0 ? 'λ derrière' : 'λ');
       }
       ctx.fillStyle = '#b45309'; ctx.beginPath(); ctx.arc(xs, Y0, 8, 0, 2 * Math.PI); ctx.fill();
       if (beta > 0) { ctx.strokeStyle = '#b45309'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(xs + 12, Y0 - 16); ctx.lineTo(xs + 12 + 70 * beta, Y0 - 16); ctx.stroke(); ctx.beginPath(); ctx.moveTo(xs + 12 + 70 * beta, Y0 - 22); ctx.lineTo(xs + 22 + 70 * beta, Y0 - 16); ctx.lineTo(xs + 12 + 70 * beta, Y0 - 10); ctx.fillStyle = '#b45309'; ctx.fill(); }
-      ctx.fillStyle = '#0f172a'; ctx.font = '700 13px sans-serif'; ctx.textAlign = 'center';
-      for (const [x, txt] of [[SC.W - 46, 'récepteur A'], [46, 'récepteur B']]) { ctx.fillRect(x - 6, Y0 - 6, 12, 12); ctx.fillText(txt, x, Y0 + 26); }
-      if (recC) { ctx.fillStyle = '#0f172a'; ctx.fillRect(X0 + XC * U - 6, Y0 + DC * U - 6, 12, 12); ctx.textAlign = 'left'; ctx.font = '700 13px sans-serif'; ctx.fillText('récepteur C', X0 + XC * U + 12, Y0 + DC * U + 5); }
-      ctx.textAlign = 'left'; ctx.font = '12px sans-serif'; ctx.fillStyle = '#475569'; ctx.fillText('vue de dessus (schéma : vitesse de l’émetteur exagérée)', 8, 16);
+      ctx.fillStyle = '#0f172a'; ctx.font = '700 21px sans-serif';
+      for (const [x, txt, al, xt] of [[SC.W - 46, 'récepteur A', 'right', SC.W - 6], [46, 'récepteur B', 'left', 6]]) { ctx.fillRect(x - 6, Y0 - 6, 12, 12); ctx.textAlign = al; ctx.fillText(txt, xt, Y0 + 34); }
+      if (recC) { ctx.fillStyle = '#0f172a'; ctx.fillRect(X0 + XC * U - 6, Y0 + DC * U - 6, 12, 12); ctx.textAlign = 'left'; ctx.font = '700 21px sans-serif'; ctx.fillText('récepteur C', X0 + XC * U + 12, Y0 + DC * U + 8); }
+      ctx.textAlign = 'left'; ctx.font = '21px sans-serif'; ctx.fillStyle = '#475569'; ctx.fillText('vue de dessus (schéma :', 8, 22); ctx.fillText('vitesse de l’émetteur exagérée)', 8, 46);
     };
     let raf, dernier = performance.now();
     const boucle = now => {
@@ -79,35 +79,33 @@ function FrontsOnde({ beta, anim, relance, annot, posRef, recC }) {
 // ---------- schéma du rail (scène 2) ----------
 function Rail({ montage, sens, v, fe }) {
   const echo = montage === 'echo', approche = sens === 'approche';
-  const cartX = echo ? (approche ? 380 : 300) : (approche ? 190 : 330), rx = echo ? 62 : 520;
+  const R = 134, cartX = echo ? (approche ? 420 : 330) : (approche ? 190 : 330), rx = echo ? 72 : 520;      // textes à 21 : la scène est réduite à ~43 % sur téléphone (≥ 9 px rendus)
   const flecheDir = echo ? (approche ? -1 : 1) : (approche ? 1 : -1);
   return (
-    <svg viewBox="0 0 600 132" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
+    <svg viewBox="0 0 600 182" style={{ width: '100%', display: 'block', background: '#f8fafc', borderRadius: 8 }} role="img"
       aria-label={echo ? 'Schéma du montage : un émetteur et un récepteur fixes à gauche du rail, une plaque réfléchissante sur un chariot mobile' : 'Schéma du montage : un chariot portant l’émetteur ultrasonore roule sur un rail vers ou loin d’un récepteur fixe'}>
-      <g transform="translate(0,18)">
-      <rect x="20" y="78" width="560" height="6" fill="#94a3b8"/>
-      {echo ? <g>
-        <rect x={rx - 40} y="40" width="80" height="38" rx="5" fill="#1e293b"/><text x={rx} y="58" fontSize="11" fontWeight="700" fill="white" textAnchor="middle">émetteur</text><text x={rx} y="71" fontSize="11" fontWeight="700" fill="white" textAnchor="middle">+ récepteur</text>
-        <rect x={cartX - 30} y="60" width="60" height="18" rx="4" fill="#475569"/><circle cx={cartX - 16} cy="82" r="5" fill="#0f172a"/><circle cx={cartX + 16} cy="82" r="5" fill="#0f172a"/>
-        <rect x={cartX + 24} y="26" width="7" height="40" fill="#0e7490"/><text x={cartX + 28} y="20" fontSize="12" fontWeight="700" fill="#0e7490" textAnchor="middle">plaque</text>
-        <path d={`M${rx + 44} 50 L${cartX + 18} 50`} stroke="#0e7490" strokeWidth="2" strokeDasharray="6 4" fill="none"/><text x={(rx + 44 + cartX) / 2} y="44" fontSize="11" fill="#0e7490" textAnchor="middle">onde émise ({FE})</text>
-        <path d={`M${cartX + 18} 62 L${rx + 44} 62`} stroke="#b45309" strokeWidth="2" strokeDasharray="6 4" fill="none"/><text x={(rx + 44 + cartX) / 2} y="76" fontSize="11" fill="#b45309" textAnchor="middle">onde renvoyée ({FR})</text>
-      </g> : <g>
-        <rect x={cartX - 36} y="52" width="72" height="26" rx="5" fill="#475569"/><circle cx={cartX - 20} cy="82" r="5" fill="#0f172a"/><circle cx={cartX + 20} cy="82" r="5" fill="#0f172a"/>
-        <rect x={cartX - 14} y="36" width="28" height="16" rx="3" fill="#b45309"/><text x={cartX} y="30" fontSize="12" fontWeight="700" fill="#b45309" textAnchor="middle">émetteur ({FE})</text>
-        <rect x={rx - 14} y="40" width="28" height="38" rx="4" fill="#1e293b"/><text x={rx} y="30" fontSize="12" fontWeight="700" fill="#0f172a" textAnchor="middle">récepteur fixe</text>
+      <rect x="20" y={R} width="560" height="6" fill="#94a3b8"/>
+      {echo ? <g fontSize="21" fontWeight="700">
+        <rect x={rx - 66} y={R - 62} width="132" height="62" rx="5" fill="#1e293b"/><text x={rx} y={R - 36} fill="white" textAnchor="middle">émetteur</text><text x={rx} y={R - 12} fill="white" textAnchor="middle">+ récepteur</text>
+        <rect x={cartX - 30} y={R - 18} width="60" height="18" rx="4" fill="#475569"/><circle cx={cartX - 16} cy={R + 4} r="5" fill="#0f172a"/><circle cx={cartX + 16} cy={R + 4} r="5" fill="#0f172a"/>
+        <rect x={cartX + 24} y={R - 52} width="7" height="40" fill="#0e7490"/><text x={cartX + 28} y={R - 60} fill="#0e7490" textAnchor="middle">plaque</text>
+        <path d={`M${rx + 70} ${R - 56} L${cartX + 18} ${R - 56}`} stroke="#0e7490" strokeWidth="2" strokeDasharray="6 4" fill="none"/><text x={(rx + 70 + cartX) / 2} y={R - 70} fill="#0e7490" textAnchor="middle">émise ({FE})</text>
+        <path d={`M${cartX + 18} ${R - 34} L${rx + 70} ${R - 34}`} stroke="#b45309" strokeWidth="2" strokeDasharray="6 4" fill="none"/><text x={(rx + 70 + cartX) / 2} y={R - 10} fill="#b45309" textAnchor="middle">renvoyée ({FR})</text>
+      </g> : <g fontSize="21" fontWeight="700">
+        <rect x={cartX - 36} y={R - 26} width="72" height="26" rx="5" fill="#475569"/><circle cx={cartX - 20} cy={R + 4} r="5" fill="#0f172a"/><circle cx={cartX + 20} cy={R + 4} r="5" fill="#0f172a"/>
+        <rect x={cartX - 14} y={R - 42} width="28" height="16" rx="3" fill="#b45309"/><text x={cartX} y={R - 50} fill="#b45309" textAnchor="middle">émetteur ({FE})</text>
+        <rect x={rx - 14} y={R - 38} width="28" height="38" rx="4" fill="#1e293b"/><text x={rx} y={R - 50} fill="#0f172a" textAnchor="middle">récepteur fixe</text>
       </g>}
-      {v > 0 && <g><line x1={cartX} y1="100" x2={cartX + flecheDir * 56} y2="100" stroke="#0f172a" strokeWidth="3"/>
-        <path d={`M${cartX + flecheDir * 56} 94 L${cartX + flecheDir * 68} 100 L${cartX + flecheDir * 56} 106 Z`} fill="#0f172a"/>
-        <text x={cartX} y={echo ? 96 : 96} fontSize="12" fontWeight="700" fill="#0f172a" textAnchor="middle" stroke="#f8fafc" strokeWidth="3" paintOrder="stroke">v</text></g>}
-      </g>
-      <text x="8" y="12" fontSize="11" fill="#64748b">schéma non à l’échelle</text>
+      {v > 0 && <g><line x1={cartX} y1={R + 38} x2={cartX + flecheDir * 56} y2={R + 38} stroke="#0f172a" strokeWidth="3"/>
+        <path d={`M${cartX + flecheDir * 56} ${R + 32} L${cartX + flecheDir * 68} ${R + 38} L${cartX + flecheDir * 56} ${R + 44} Z`} fill="#0f172a"/>
+        <text x={cartX} y={R + 32} fontSize="21" fontWeight="700" fill="#0f172a" textAnchor="middle" stroke="#f8fafc" strokeWidth="3" paintOrder="stroke">v</text></g>}
+      <text x="8" y="22" fontSize="21" fill="#64748b">schéma non à l’échelle</text>
     </svg>);
 }
 
 // ---------- spectre ----------
-const SP = { W: 600, H: 190, L: 14, R: 14, T: 16, B: 34 };
-function pasGraduation(etendue) { const c = [5, 10, 20, 25, 50, 100]; return c.find(p => etendue / p <= 9) || 100; }
+const SP = { W: 600, H: 232, L: 14, R: 14, T: 30, B: 70 };      // textes à 21 : la scène est réduite à ~43 % sur téléphone (≥ 9 px rendus)
+function pasGraduation(etendue) { const c = [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000]; return c.find(p => etendue / p <= 5) || 1000; }
 function Spectre({ fe, fr, T, fen, cur, setCur, aMontrerRef, aMontrerCurseur, aria, nomRef }) {
   const [f0, f1] = fen, xW = SP.W - SP.L - SP.R, yB = SP.H - SP.B, hMax = yB - SP.T - 8;
   const X = f => SP.L + (f - f0) / (f1 - f0) * xW;
@@ -128,13 +126,13 @@ function Spectre({ fe, fr, T, fen, cur, setCur, aMontrerRef, aMontrerCurseur, ar
     <svg ref={svgRef} viewBox={`0 0 ${SP.W} ${SP.H}`} style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}`, touchAction: 'none' }} role="img" aria-label={aria}
       onPointerMove={e => { if (glisse.current) setCur(versF(e)); }} onPointerUp={() => { glisse.current = false; }} onPointerLeave={() => { glisse.current = false; }}>
       <line x1={SP.L} y1={yB} x2={SP.W - SP.R} y2={yB} stroke="#94a3b8" strokeWidth="1.2"/>
-      {ticks.map(f => <g key={f}><line x1={X(f)} y1={yB} x2={X(f)} y2={yB + 5} stroke="#475569"/><text x={X(f)} y={yB + 18} fontSize="11" textAnchor="middle" fill="#334155">{milliers(f)}</text></g>)}
-      <text x={SP.W - SP.R} y={SP.H - 3} fontSize="11" textAnchor="end" fill="#334155">fréquence (Hz)</text>
+      {ticks.map(f => <g key={f}><line x1={X(f)} y1={yB} x2={X(f)} y2={yB + 5} stroke="#475569"/><text x={X(f)} y={yB + 28} fontSize="21" textAnchor="middle" fill="#334155">{milliers(f)}</text></g>)}
+      <text x={SP.W - SP.R} y={SP.H - 8} fontSize="21" textAnchor="end" fill="#334155">fréquence (Hz)</text>
       {aMontrerRef && separe && <g><path d={chemin(fe, true)} fill="#e2e8f0" opacity="0.9"/><path d={chemin(fe, false)} fill="none" stroke="#64748b" strokeWidth="1.6" strokeDasharray="5 3"/>
-        <text x={X(fe) + (fr > fe ? -8 : 8)} y={SP.T + 14} fontSize="12" fontWeight="700" fill="#475569" textAnchor={fr > fe ? 'end' : 'start'}>émise {FE}</text></g>}
+        <text x={X(fe) + (fr > fe ? -8 : 8)} y={SP.T + 14} fontSize="21" fontWeight="700" fill="#475569" textAnchor={fr > fe ? 'end' : 'start'}>émise {FE}</text></g>}
       <path d={chemin(fr, true)} fill="#bae6fd" opacity="0.85"/><path d={chemin(fr, false)} fill="none" stroke="#0369a1" strokeWidth="2"/>
-      {separe ? <text x={X(fr) + (fr > fe ? 8 : -8)} y={SP.T + 14} fontSize="12" fontWeight="700" fill="#0369a1" textAnchor={fr > fe ? 'start' : 'end'}>reçue {FR}</text>
-        : <text x={X(fe) + 8} y={SP.T + 14} fontSize="12" fontWeight="700" fill="#0369a1">émise = reçue</text>}
+      {separe ? <text x={X(fr) + (fr > fe ? 8 : -8)} y={SP.T + 14} fontSize="21" fontWeight="700" fill="#0369a1" textAnchor={fr > fe ? 'start' : 'end'}>reçue {FR}</text>
+        : <text x={X(fe) + 8} y={SP.T + 14} fontSize="21" fontWeight="700" fill="#0369a1">émise = reçue</text>}
       {aMontrerCurseur && cur >= f0 && cur <= f1 && <g style={{ cursor: 'ew-resize' }} onPointerDown={e => { glisse.current = true; e.currentTarget.ownerSVGElement.setPointerCapture?.(e.pointerId); setCur(versF(e)); }}>
         <rect x={X(cur) - 16} y={SP.T - 8} width="32" height={yB - SP.T + 8} fill="transparent"/>
         <line x1={X(cur)} y1={SP.T - 4} x2={X(cur)} y2={yB} stroke="#f59e0b" strokeWidth="2.5"/>

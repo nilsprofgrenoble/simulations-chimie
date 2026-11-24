@@ -10,7 +10,6 @@ const mk = () => { const atomes = [], liaisons = []; return { atomes, liaisons,
   at(e, x, y) { atomes.push({ e, x, y }); return atomes.length - 1; },
   li(a, b, t, o = 1) { liaisons.push({ a, b, t, o }); } }; };
 
-const TYPE = { 'C-H': 'CH', 'C-C': 'CC', 'C-O': 'CO', 'O-H': 'OH' };
 export const bornes = m => {
   const xs = m.atomes.map(a => a.x), ys = m.atomes.map(a => a.y);
   return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
@@ -43,7 +42,6 @@ export function valences(m) {
 }
 export const valenceOK = m => valences(m).every((v, i) => v === { C: 4, O: 2, H: 1 }[m.atomes[i].e]);
 export const compteLiaisons = m => m.liaisons.reduce((s, l) => { s[l.t] = (s[l.t] || 0) + 1; return s; }, {});
-export { TYPE };
 
 // Nombre entier de kJ/mol écrit à la française, avec un vrai signe moins
 export const nbm = v => Number(v).toFixed(0).replace('-', '−');

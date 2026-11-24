@@ -4,14 +4,11 @@
 // chaque bande qu'il diffuse (0 = tout absorbé, 1 = tout diffusé) ; un filtre ou un verre, par la part qu'il transmet.
 // Sans React : testé par couleursModele.test.mjs.
 
-export const BANDES = ['R', 'V', 'B'];
 export const NOM_BANDE = ['rouge', 'vert', 'bleu'];
 export const COULEURS = {
   noir: [0, 0, 0], rouge: [1, 0, 0], vert: [0, 1, 0], bleu: [0, 0, 1],
   jaune: [1, 1, 0], cyan: [0, 1, 1], magenta: [1, 0, 1], blanc: [1, 1, 1],
 };
-export const PRIMAIRES = ['rouge', 'vert', 'bleu'];
-export const SECONDAIRES = ['jaune', 'cyan', 'magenta'];
 
 const borne = x => Math.max(0, Math.min(1, x));
 export const rgb = c => `rgb(${c.map(x => Math.round(255 * borne(x))).join(',')})`;
@@ -20,7 +17,6 @@ export const rgb = c => `rgb(${c.map(x => Math.round(255 * borne(x))).join(',')}
 export const additif = (...lumieres) => [0, 1, 2].map(i => borne(lumieres.reduce((s, l) => s + l[i], 0)));
 // Synthèse soustractive, objet ou filtre : bande par bande, la lumière reçue est multipliée par la part diffusée ou transmise
 export const traverse = (lumiere, filtre) => [0, 1, 2].map(i => lumiere[i] * filtre[i]);
-export const diffuse = traverse;
 export const absorbe = (lumiere, objet) => [0, 1, 2].map(i => lumiere[i] * (1 - objet[i]));
 // Couleur complémentaire (modèle à trois bandes) : celle qui, ajoutée en lumière, donne du blanc
 export const complementaire = c => c.map(x => 1 - x);
