@@ -3,14 +3,19 @@ on:
   push:
     branches: [master]
 permissions:
+  contents: read
   pages: write
   id-token: write
+# Une seule publication à la fois ; on n'annule pas celle en cours, mais seule la plus récente attend son tour.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deploy3.outputs.page_url || steps.deploy2.outputs.page_url || steps.deploy1.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -18,8 +23,42 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      # Protection : on ne publie que si ce commit est encore le plus récent de master.
+      # (Relancer à la main une ancienne publication ne peut plus écraser le site avec une vieille version.)
+      - name: Ce commit est-il le dernier de master ?
+        id: tete
+        run: |
+          derniere=$(git ls-remote origin refs/heads/master | cut -f1)
+          if [ "$derniere" = "$GITHUB_SHA" ]; then
+            echo "publier=oui" >> "$GITHUB_OUTPUT"
+          else
+            echo "publier=non" >> "$GITHUB_OUTPUT"
+            echo "::notice::Publication ignorée : un commit plus récent existe sur master ($derniere). Relancez la publication la plus récente si besoin."
+          fi
+      - if: steps.tete.outputs.publier == 'oui'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: dist
-      - uses: actions/deploy-pages@v4
-        id: deployment
+          include-hidden-files: true
+      # GitHub échoue de temps en temps à retrouver le paquet ("Fetching artifact metadata failed") :
+      # on retente automatiquement jusqu'à 3 fois, avec une pause entre les essais.
+      - name: Publier (essai 1)
+        id: deploy1
+        if: steps.tete.outputs.publier == 'oui'
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Pause avant l'essai 2
+        if: steps.deploy1.outcome == 'failure'
+        run: sleep 45
+      - name: Publier (essai 2)
+        id: deploy2
+        if: steps.deploy1.outcome == 'failure'
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Pause avant l'essai 3
+        if: steps.deploy2.outcome == 'failure'
+        run: sleep 90
+      - name: Publier (essai 3)
+        id: deploy3
+        if: steps.deploy2.outcome == 'failure'
+        uses: actions/deploy-pages@v5
