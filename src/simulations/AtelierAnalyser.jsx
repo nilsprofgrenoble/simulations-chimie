@@ -1,9 +1,12 @@
 import CodeExo from '../CodeExo';
-import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam, venantDuDevoir, attrTest } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, venantDuDevoir, attrTest, lireProgression } from "../commun";
+import { CHAPITRES } from "../chapitres";
+import { ParcoursCompetence, FilAriane } from "../ParcoursCompetence";
+import { lireSelection, ecrireSelection, SEL_VIDE } from "../selectionParcours";
+import { sanitiser, filtrer } from "../parcoursCommun";
+import { TYPES_ANA, construireItemsAna } from "./analyserParcours";
 import { useSuivi } from "../suivi";
-import { parDomaine } from "./ordreDomaines";
 import { FAMILLES, METHODE } from "./AtelierAnalyserBanque";
 import { Visuel, EnonceLisible } from "./SchemasC1";
 
@@ -157,24 +160,17 @@ function etapesDe(fam, it) {
 const permsDe = etapes => Object.fromEntries(etapes.map(e => [e.id,
   e.type === 'ordre' ? melange(e.dem.etapes.length + e.dem.pieges.length) : e.o ? melange(e.o.length) : null]));
 
-export function SimulationAtelierAnalyser({ naviguer }) {
+function ExerciceAna({ fam, it, entete, navigation, naviguer, suivantExo }) {
   const [duDevoir] = useState(venantDuDevoir);
-  const depart = (() => { const [f, i] = (exParam() || '').split('.'); const fa = FAMILLES.find(x => x.id === f); const k = fa ? fa.liste.findIndex(x => x.id === i) : -1; return { f: fa ? f : 'probleme', i: Math.max(0, k) }; })();
-  const [fam, setFam] = useState(depart.f);
   const famille = FAMILLES.find(f => f.id === fam);
-  const [idx, setIdx] = useState(depart.i);
-  const it = famille.liste[Math.min(idx, famille.liste.length - 1)];
   const etapes = useMemo(() => etapesDe(fam, it), [fam, it]);
-  const [graine, setGraine] = useState(0);
+  const [graine] = useState(0);
   const perms = useMemo(() => permsDe(etapes), [etapes, graine]); // eslint-disable-line react-hooks/exhaustive-deps
   const [rep, setRep] = useState({});
   const [chk, setChk] = useState({});
   const [vu, setVu] = useState({});
   const [etp, setEtp] = useState(0);
 
-  const charger = (f, i) => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setFam(f); setIdx(i); setRep({}); setChk({}); setVu({}); setEtp(0); setGraine(g => g + 1); };
-  const hasard = () => { const n = famille.liste.length; let j = idx; if (n > 1) while (j === idx) j = Math.floor(Math.random() * n); charger(fam, j); };
-  const suivant = () => charger(fam, (idx + 1) % famille.liste.length);
   const majRep = (id, v) => { setRep(r => ({ ...r, [id]: v })); setChk(c => ({ ...c, [id]: false })); };
 
   const resultat = e => {
@@ -235,20 +231,9 @@ export function SimulationAtelierAnalyser({ naviguer }) {
         .ata-g { position: sticky; top: 8px; display: flex; flex-direction: column; gap: 10px; }
         @media (max-width: 960px) { .ata-l1 { grid-template-columns: minmax(0, 1fr); } .ata-g { position: static; } }
       `}</style>
-      <h2 style={{ margin: '0 0 6px', fontSize: 18, color: KIT.txt, fontWeight: 700 }}>ANA : analyser un problème</h2>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Analyser</b> (ANA) — identifier ce que l’on cherche, trier les données, choisir les relations, expliciter les hypothèses, organiser la démarche. Ici, on ne calcule presque pas : on prépare la résolution.</div>
-      <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontSize: 14, flex: '1 1 240px', minWidth: 0 }}>Entraînement :
-          <ChoixListe ariaLabel="Type d’entraînement" titre="Type d’entraînement" valeur={fam} onChoisir={v => charger(v, 0)}
-            groupes={[{ items: FAMILLES.map(f => ({ value: f.id, label: f.titre })) }]}/>
-        </div>
-        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Énoncé :
-          <ChoixListe ariaLabel="Choix de l’énoncé" titre="Choisir un énoncé" valeur={it.id} onChoisir={v => charger(fam, famille.liste.findIndex(x => x.id === v))}
-            groupes={parDomaine(famille.liste).map(([d, l]) => ({ label: d, items: l.map(x => ({ value: x.id, label: x.titre })) }))}/>
-        </div>
-        <button onClick={hasard} style={stylePetitBouton(false)}>🎲 Au hasard</button>
-        <div style={{ flexBasis: '100%', fontSize: 13, color: KIT.txt2 }}>{famille.aide}</div>
-      </div>
+      {entete}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>{navigation}</div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 10 }}>{famille.aide}</div>
       <div className={fam === 'probleme' ? 'ata-l1' : ''} style={fam === 'probleme' ? {} : { maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 10 }}>
         {fam === 'probleme' ? <div className="ata-g">{enonce}{methode}</div> : enonce}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -264,9 +249,48 @@ export function SimulationAtelierAnalyser({ naviguer }) {
             </ARetenir>)}
           {fini && (duDevoir && naviguer
             ? <button onClick={() => naviguer(39)} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>↩ Retour à mon devoir</button>
-            : <button onClick={suivant} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>Énoncé suivant ▶</button>)}
+            : <button onClick={suivantExo} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>Énoncé suivant ▶</button>)}
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Page de l'atelier : types d'exercices → (niveau → enseignement → chapitre) → liste → exercice ──
+const COULEUR_ANA = '#1f7a72';
+const INTRO_ANA = 'Analyser, c’est préparer la résolution avant de calculer : ce que l’on cherche, les données utiles, la bonne relation, les hypothèses. Choisis d’abord ce que tu veux travailler.';
+export function SimulationAtelierAnalyser({ naviguer }) {
+  const items = useMemo(() => construireItemsAna(FAMILLES), []);
+  const [sel, setSelBrut] = useState(() => sanitiser(lireSelection(), items, TYPES_ANA));
+  const setSel = x => {
+    const net = { ...SEL_VIDE, ...x }; setSelBrut(net); ecrireSelection(net);
+    try { document.getElementById('zone-simulation')?.scrollIntoView({ block: 'start' }); } catch { /* sans effet */ }
+  };
+  const ouvrir = (it, ctx) => setSel({ ...(ctx || sel), type: it.type, ex: it.id });
+  const prog = lireProgression();
+  if (!sel.ex) {
+    return (
+      <div style={{ ...cardStyle, textAlign: 'left' }}>
+        <ParcoursCompetence code="ANA" titre="ANA : analyser un problème" intro={INTRO_ANA} couleur={COULEUR_ANA} types={TYPES_ANA} items={items} chapitres={CHAPITRES} prog={prog} sel={sel} setSel={setSel} ouvrir={ouvrir} />
+      </div>);
+  }
+  const item = items.find(i => i.id === sel.ex);
+  const ctx = { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch };
+  const liste = filtrer(items, ctx);
+  const pos = liste.findIndex(i => i.id === item.id);
+  const aller = i => setSel({ ...ctx, ex: liste[i].id });
+  const hasard = () => { const n = liste.length; let j = pos; if (n > 1) while (j === pos) j = Math.floor(Math.random() * n); aller(j); };
+  const navigation = (
+    <>
+      <button onClick={() => setSel({ ...ctx, ex: '' })} style={stylePetitBouton(false)}>☰ Retour à la liste</button>
+      {pos > 0 && <button onClick={() => aller(pos - 1)} style={stylePetitBouton(false)}>◀ Précédent</button>}
+      {pos >= 0 && pos < liste.length - 1 && <button onClick={() => aller(pos + 1)} style={stylePetitBouton(false)}>Suivant ▶</button>}
+      {liste.length > 1 && <button onClick={hasard} style={stylePetitBouton(false)}>🎲 Au hasard</button>}
+    </>);
+  const exo = FAMILLES.find(f => f.id === item.fam).liste.find(x => x.id === item.brut);
+  return (
+    <ExerciceAna key={item.id} fam={item.fam} it={exo} naviguer={naviguer} navigation={navigation}
+      suivantExo={() => aller(pos >= 0 ? (pos + 1) % liste.length : 0)}
+      entete={<FilAriane code="ANA" couleur={COULEUR_ANA} types={TYPES_ANA} chapitres={CHAPITRES} sel={ctx} setSel={setSel} dansExercice />} />
   );
 }
