@@ -11,10 +11,10 @@ import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
 import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe, allerChapitre } from "../chapitres";
 import { nomsSim } from "../suivi";
+import { ENSEIGNEMENTS, chapitresDe as chapitresNiveauEns } from "../parcoursCommun";
 import { exosDeSim, EXOS_DE_SIM } from "../exosDeSim";
 import { Pic, nomPicto } from "../Pictos";
 import { useSimsValidees, PastilleFaite } from "../simsValidees";
-import { JeuxCode } from "./JeuxEscape";
 
 const ROSE = '#0b4f94';   // bleu Blocs (ancien rose)
 const ORANGE_B = '#f5a31a', TEAL_B = '#2cc4ae', BORD_B = '#d5dfeb', TITRE_B = "'Outfit', 'Inter', sans-serif";
@@ -328,6 +328,7 @@ export function SimulationEntrainement({ naviguer }) {
   const [niveauChoisi, setNiveauChoisi] = useEtatPersistant('entrainement-niveau-v1', null);
   const [chapChoisi, setChapChoisi] = useState(undefined);      // undefined : pas de choix de l'élève (on ouvre le chapitre en cours) ; null : tout replié
   const [comp, setComp] = useState('toutes');
+  const [ens, setEns] = useState('');                       // enseignement (TSTL : PCM ou une partie de SPCL) ; vide = tous
   const ctx = useProgressionEleve();
   const { sess, eleve, prog, setProg, etoilesSrv, etoilesDe, nbFaits, chapsEnCours, idsEnCours } = ctx;
   const exos = useMemo(() => tousLesExercices(), []);
@@ -341,14 +342,16 @@ export function SimulationEntrainement({ naviguer }) {
   // Niveau : le choix de l'élève, sinon celui du chapitre en cours de sa classe, sinon rien (on lui demande)
   const niveauValide = NIVEAUX_CHAPITRES.some(n => n.key === niveauChoisi) || niveauChoisi === 'tous';
   const niveau = (niveauValide && niveauChoisi) || chapsEnCours[0]?.niveau || null;
-  const chapsNiveau = niveau === 'tous' ? CHAPITRES : niveau ? chapitresDuNiveau(niveau) : [];
+  const enseignements = ENSEIGNEMENTS[niveau] || [];
+  const ensValide = enseignements.some(e => e.key === ens) ? ens : '';
+  const chapsNiveau = niveau === 'tous' ? CHAPITRES : niveau ? chapitresNiveauEns(niveau, ensValide) : [];
   const ouvertId = chapChoisi !== undefined ? chapChoisi : (chapsNiveau.find(c => idsEnCours.includes(c.id))?.id ?? null);
   const exosDe = c => exosDuChapitre(exos, c.domaines);
 
   // Exercices du niveau (pour la partie « par compétence ») : thèmes des chapitres du niveau + calcul transversal
   const exosN = (() => {
     if (!niveau || niveau === 'tous') return exos;
-    const ds = domainesDe(chapitresDuNiveau(niveau));
+    const ds = domainesDe(chapitresNiveauEns(niveau, ensValide));
     return exos.filter(e => e.domaine === TRANSVERSAL || ds.includes(e.domaine));
   })();
   const liste = exosN.filter(e => comp === 'toutes' || e.comp === comp);
@@ -394,14 +397,20 @@ export function SimulationEntrainement({ naviguer }) {
         </p>
       </details>
 
-      <JeuxCode naviguer={naviguer} />
-
       <section data-niveaux>
         <h3 className="en-etape">1 · Je suis en…</h3>
         <div role="group" aria-label="Mon niveau" className="en-niveaux">
-          {NIVEAUX_CHAPITRES.map(n => <button key={n.key} type="button" className="en-niv" data-niveau={n.key} aria-pressed={niveau === n.key} onClick={() => { setNiveauChoisi(n.key); setChapChoisi(undefined); }}>{n.label}</button>)}
-          <button type="button" className="en-niv tous" data-niveau="tous" aria-pressed={niveau === 'tous'} onClick={() => { setNiveauChoisi('tous'); setChapChoisi(undefined); }}>Voir tous les niveaux</button>
+          {NIVEAUX_CHAPITRES.map(n => <button key={n.key} type="button" className="en-niv" data-niveau={n.key} aria-pressed={niveau === n.key} onClick={() => { setNiveauChoisi(n.key); setEns(''); setChapChoisi(undefined); }}>{n.label}</button>)}
+          <button type="button" className="en-niv tous" data-niveau="tous" aria-pressed={niveau === 'tous'} onClick={() => { setNiveauChoisi('tous'); setEns(''); setChapChoisi(undefined); }}>Voir tous les niveaux</button>
         </div>
+        {enseignements.length > 0 && (
+          <div data-enseignements>
+            <h4 className="en-etape" style={{ margin: '14px 0 6px' }}>Mon enseignement</h4>
+            <div role="group" aria-label="Mon enseignement" className="en-niveaux">
+              <button type="button" className="en-niv" data-ens="tous" aria-pressed={!ensValide} onClick={() => { setEns(''); setChapChoisi(undefined); }}>Tous</button>
+              {enseignements.map(e => <button key={e.key} type="button" className="en-niv" data-ens={e.key} aria-pressed={ensValide === e.key} onClick={() => { setEns(e.key); setChapChoisi(undefined); }}>{e.label}</button>)}
+            </div>
+          </div>)}
       </section>
 
       {!niveau && <div data-choix-niveau className="en-invite"><Pic n="arrow" t={22} />Choisis ton niveau : tu verras les chapitres de ton année et les exercices qui vont avec.</div>}
