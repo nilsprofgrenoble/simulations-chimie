@@ -28,8 +28,8 @@ const SchemaPrincipe = () => (
   </Schema>);
 
 // ---------- spectre IR : σ décroissant de 4000 à 500 cm⁻¹ ----------
-const W = 600, H = 300, MX = 46, MY = 18, MB = 40;
-const X = s => MX + (I.SIGMA_MAX - s) / (I.SIGMA_MAX - I.SIGMA_MIN) * (W - MX - 14);
+const W = 600, H = 336, MX = 60, MY = 42, MB = 76;
+const X = s => MX + (I.SIGMA_MAX - s) / (I.SIGMA_MAX - I.SIGMA_MIN) * (W - MX - 32);
 const Y = t => MY + (100 - t) / 100 * (H - MY - MB);
 function SpectreIR({ courbes, marques = [], titre, empreinte = true }) {
   const ticks = []; for (let s = I.SIGMA_MIN; s <= I.SIGMA_MAX; s += 100) ticks.push(s);
@@ -37,15 +37,15 @@ function SpectreIR({ courbes, marques = [], titre, empreinte = true }) {
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fff', borderRadius: 8 }} role="img"
       aria-label={`${titre || 'Spectre d’absorption infrarouge'} : transmittance en pourcentage en fonction du nombre d’onde de 4000 à 500 cm moins un, l’axe étant orienté de la droite vers la gauche${courbes.map(c => ` ; courbe ${c.nom}`).join('')}`}>
       <rect x={X(1500)} y={MY} width={X(500) - X(1500)} height={H - MY - MB} fill="#f1f5f9" opacity={empreinte ? 1 : 0}/>
-      {empreinte && <text x={(X(1500) + X(500)) / 2} y={H - MB - 8} textAnchor="middle" fontSize="11.5" fill={GRIS}>empreinte digitale</text>}
+      {empreinte && <g textAnchor="middle" fontSize="21" fill={GRIS}><text x={(X(1500) + X(500)) / 2} y={H - MB - 38}>empreinte</text><text x={(X(1500) + X(500)) / 2} y={H - MB - 10}>digitale</text></g>}
       <line x1={MX} y1={H - MB} x2={W - 10} y2={H - MB} stroke={GRIS}/><line x1={MX} y1={MY} x2={MX} y2={H - MB} stroke={GRIS}/>
-      {[0, 25, 50, 75, 100].map(t => <g key={t}><line x1={MX - 4} y1={Y(t)} x2={MX} y2={Y(t)} stroke={GRIS}/><text x={MX - 7} y={Y(t) + 4} textAnchor="end" fontSize="11.5" fill={GRIS}>{t}</text></g>)}
+      {[0, 25, 50, 75, 100].map(t => <g key={t}><line x1={MX - 4} y1={Y(t)} x2={MX} y2={Y(t)} stroke={GRIS}/><text x={MX - 7} y={Y(t) + 6} textAnchor="end" fontSize="21" fill={GRIS}>{t}</text></g>)}
       {ticks.map(s => <line key={s} x1={X(s)} y1={H - MB} x2={X(s)} y2={H - MB + (s % 500 === 0 ? 8 : 4)} stroke={GRIS}/>)}
-      {[4000, 3500, 3000, 2500, 2000, 1500, 1000, 500].map(s => <g key={s}><line x1={X(s)} y1={MY} x2={X(s)} y2={H - MB} stroke="#e2e8f0" strokeDasharray="2 4"/><text x={X(s)} y={H - MB + 22} textAnchor="middle" fontSize="12" fill={NOIR}>{s}</text></g>)}
-      <text x={W - 12} y={H - 6} textAnchor="end" fontSize="12.5" fill={GRIS}>σ (cm⁻¹)</text><text x={MX + 6} y="12" fontSize="12.5" fill={GRIS}>T (%)</text>
+      {[4000, 3500, 3000, 2500, 2000, 1500, 1000, 500].map(s => <g key={s}><line x1={X(s)} y1={MY} x2={X(s)} y2={H - MB} stroke="#e2e8f0" strokeDasharray="2 4"/><text x={X(s)} y={H - MB + 32} textAnchor="middle" fontSize="21" fill={NOIR}>{s}</text></g>)}
+      <text x={W - 12} y={H - 8} textAnchor="end" fontSize="21" fill={GRIS}>σ (cm⁻¹)</text><text x={MX + 6} y="22" fontSize="21" fill={GRIS}>T (%)</text>
       {courbes.map((c, i) => <polyline key={i} fill="none" stroke={c.c} strokeWidth="2" points={c.pts.map(([s, t]) => `${X(s).toFixed(1)},${Y(t).toFixed(1)}`).join(' ')}/>)}
-      {marques.map((m, i) => <g key={i}><line x1={X(m.s)} y1={Y(m.t) - 4} x2={X(m.s)} y2={Y(m.t) - 24} stroke={m.c || ROUGE} strokeWidth="2"/><text x={X(m.s)} y={Y(m.t) - 28} textAnchor="middle" fontSize="12" fontWeight="700" fill={m.c || ROUGE}>{m.txt}</text></g>)}
-      <g fontSize="12" fontWeight="700">{courbes.length > 1 && courbes.map((c, i) => <text key={i} x={W - 14} y={MY + 14 + i * 16} textAnchor="end" fill={c.c}>{c.nom}</text>)}</g>
+      {marques.map((m, i) => <g key={i}><line x1={X(m.s)} y1={Y(m.t) - 4} x2={X(m.s)} y2={Y(m.t) - 24} stroke={m.c || ROUGE} strokeWidth="2"/><text x={X(m.s)} y={Y(m.t) - 28} textAnchor="middle" fontSize="21" fontWeight="700" fill={m.c || ROUGE}>{m.txt}</text></g>)}
+      <g fontSize="21" fontWeight="700">{courbes.length > 1 && courbes.map((c, i) => <text key={i} x={W - 14} y={MY + 22 + i * 26} textAnchor="end" fill={c.c}>{c.nom}</text>)}</g>
     </svg>);
 }
 const courbe = (mol, nom, c = BLEU, bruit = 0) => ({ nom: nom || mol.nom, c, pts: I.spectre(mol, 5, bruit) });

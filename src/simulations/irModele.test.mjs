@@ -6,7 +6,7 @@ assert.ok(Math.abs(I.longueurOnde(1700) - 5.882) < 0.001);
 const tp = I.MOLECULES.propanol, tm = I.MOLECULES.menthone;
 assert.ok(I.T(tp, 3330) < 40, 'creux O–H lié'); assert.ok(I.T(tp, 1700) > 90, 'pas de C=O dans un alcool');
 assert.ok(I.T(tm, 1710) < 15, 'C=O de la cétone'); assert.ok(I.T(tm, 3300) > 90, 'pas d’O–H dans la menthone');
-assert.equal(I.bandePrincipale(I.MOLECULES.menthol)[0], 2940 === 2940 ? I.bandePrincipale(I.MOLECULES.menthol)[0] : 0);
+assert.equal(I.bandePrincipale(I.MOLECULES.menthol)[0], 2940);
 assert.ok(I.sansBandeOH(I.MOLECULES.menthone) && !I.sansBandeOH(I.MOLECULES.menthol) && I.aBandeCO(I.MOLECULES.chalcone) && !I.aBandeCO(I.MOLECULES.menthol));
 const sp = I.spectre(tp); assert.equal(sp[0][0], 4000); assert.equal(sp[sp.length - 1][0], 500);
 assert.ok(sp.every(([s, t]) => t >= 2 && t <= 99));

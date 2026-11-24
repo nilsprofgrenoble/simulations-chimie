@@ -73,7 +73,7 @@ function Reactifs({ m1, m2 }) {
 
 // ---------- séchage à masse constante ----------
 export function Sechage({ pes, mBoite, nom = 'm' }) {
-  const W = 600, H = 190, mx = 52, my = 16, lo = Math.min(...pes) - 0.3, hi = Math.max(...pes) + 0.3, n = pes.length;
+  const W = 600, H = 236, mx = 62, my = 48, lo = Math.min(...pes) - 0.3, hi = Math.max(...pes) + 0.3, n = pes.length;
   const X = i => mx + i * (W - mx - 16) / (n - 1), Y = v => H - 30 - (v - lo) / (hi - lo) * (H - 30 - my);
   return (
     <div>
@@ -83,9 +83,9 @@ export function Sechage({ pes, mBoite, nom = 'm' }) {
         <tbody>{pes.map((v, i) => <tr key={i}><td style={cel()}>{nom}<sub>{i + 1}</sub></td><td style={cel()}>{i * 5}</td><td style={{ ...cel(), fontFamily: 'monospace' }}>{nbf(v, 2)}</td></tr>)}</tbody></table>
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fff', borderRadius: 8 }} role="img" aria-label="Masse de la boîte et du solide en fonction du temps : elle diminue puis devient constante">
         <line x1={mx} y1={H - 30} x2={W - 10} y2={H - 30} stroke={GRIS}/><line x1={mx} y1={my} x2={mx} y2={H - 30} stroke={GRIS}/>
-        <text x={W - 12} y={H - 36} textAnchor="end" fontSize="13" fill={GRIS}>t (min)</text><text x="6" y="22" fontSize="13" fill={GRIS}>m (g)</text>
+        <text x={W - 12} y="26" textAnchor="end" fontSize="24" fill={GRIS}>t (min)</text><text x="4" y="26" fontSize="24" fill={GRIS}>m (g)</text>
         <polyline fill="none" stroke={BLEU} strokeWidth="2.5" points={pes.map((v, i) => `${X(i)},${Y(v)}`).join(' ')}/>
-        {pes.map((v, i) => <g key={i}><circle cx={X(i)} cy={Y(v)} r="4.5" fill={BLEU}/><text x={X(i)} y={H - 14} textAnchor="middle" fontSize="12" fill={GRIS}>{i * 5}</text></g>)}
+        {pes.map((v, i) => <g key={i}><circle cx={X(i)} cy={Y(v)} r="4.5" fill={BLEU}/><text x={X(i)} y={H - 8} textAnchor="middle" fontSize="24" fill={GRIS}>{i * 5}</text></g>)}
       </svg>
     </div>);
 }
@@ -182,7 +182,7 @@ export function SimulationSynthese({ integre = false, modeExt, setModeExt, suite
       tache: { type: 'qcm', q: 'À quoi sert le réfrigérant ?', options: ['condenser les vapeurs d’éthanol, qui retombent dans le ballon : on chauffe sans perdre de solvant', 'refroidir la chalcone pour la faire cristalliser', 'éliminer l’eau formée par la réaction'], bonne: 0,
         expl: 'Les vapeurs d’éthanol se condensent dans le réfrigérant et retombent dans le ballon : on peut maintenir l’ébullition sans perdre de solvant (inflammable !) et sans rejeter de vapeurs.', indice: 'Que deviennent les vapeurs d’éthanol quand elles arrivent dans le réfrigérant ?' } },
     { id: 'tf', titre: 'Contrôler la pureté', focus: [],
-      texte: <>Sur le banc Kofler, le produit recristallisé fond progressivement entre 91 et 95{NB}°C. La littérature indique 98{NB}°C pour la chalcone.</>,
+      texte: <>Sur le banc Kofler, le produit brut (avant recristallisation) fond progressivement entre 91 et 95{NB}°C. La littérature indique 98{NB}°C pour la chalcone.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['le produit contient encore des impuretés : Tf abaissée et fusion étalée', 'le produit est pur : 95 °C est proche de 98 °C', 'ce n’est pas de la chalcone'], bonne: 0,
         expl: 'Un produit pur fond nettement à 98 °C. Une fusion étalée et plus basse est le signe d’impuretés (par exemple des traces de solvant ou de réactif). La CCM et l’IR diront s’il s’agit bien de la chalcone.', indice: 'Comparez la température et la largeur de l’intervalle de fusion avec ceux d’un produit pur.' } },
     { id: 'bravo', titre: 'Le bilan', focus: [],

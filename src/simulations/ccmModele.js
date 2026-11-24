@@ -1,5 +1,5 @@
 // ====================================================
-//  Modèle de la simulation 110 : CCM et température de fusion (TP de la chalcone).
+//  Modèle de la simulation 109 : CCM et température de fusion (TP de la chalcone).
 //  Les valeurs de Rf sont ILLUSTRATIVES (non mesurées) : elles respectent l'ordre de migration d'un éluant pentane / éther.
 // ====================================================
 export const ESPECES = {
@@ -31,5 +31,7 @@ export function plaque({ front = 6.0, e = 0.5, produit = 'brut' }) {
   };
 }
 // Température de fusion selon le taux d'impuretés (%) : modèle illustratif linéaire, fusion de plus en plus étalée.
-export function fusion(imp) { const fin = TF_LIT - 0.4 - 0.9 * imp, largeur = 1 + 0.8 * imp; return { debut: fin - largeur, fin, largeur }; }
+// Au-delà de IMP_MAX % d'impuretés, le modèle linéaire n'a plus de sens (il donnerait des températures négatives) : on plafonne.
+export const IMP_MAX = 20;
+export function fusion(impBrut) { const imp = Math.min(Math.max(impBrut, 0), IMP_MAX), fin = TF_LIT - 0.4 - 0.9 * imp, largeur = 1 + 0.8 * imp; return { debut: fin - largeur, fin, largeur }; }
 export const compatibleTf = (mesure, lit = TF_LIT, u = U_TF) => Math.abs(mesure - lit) <= u;

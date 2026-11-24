@@ -14,7 +14,6 @@
 import { elementDeSym, valence } from './atomesModele.js';
 
 const SUPS = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
-export const chargeTxt = q => (q === 0 ? '' : `${Math.abs(q) > 1 ? String(Math.abs(q)).replace(/[0-9]/g, c => SUPS[c]) : ''}${q > 0 ? '⁺' : '⁻'}`);
 // Charge portée par un atome sur le schéma : « + », « − », « 2− »
 export const chargeSigne = q => (q === 0 ? '' : `${Math.abs(q) > 1 ? Math.abs(q) : ''}${q > 0 ? '+' : '−'}`);
 

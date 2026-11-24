@@ -4,7 +4,7 @@
 //  Ici : le banc à gradient de température (TMFF). Hypothèse de scénario : l'abaissement de la TMFF par % de coalescent
 //  (efficacité) vaut entre 2,6 et 3,6 °C/% selon le lot ; l'élève ne le sait pas, il le déduit de ses essais.
 // ====================================================
-import { rng, gauss } from "./etalonnageModele";
+import { rng, gauss } from "./etalonnageModele.js";
 
 export const EFF_MIN = 2.6, EFF_MAX = 3.6;          // °C par % de coalescent sur polymère sec (secret)
 export const SIGMA_BANC = 0.4;                       // °C : dispersion de lecture du banc (écart-type, hypothèse)
@@ -95,7 +95,7 @@ export const rapportPate = (huile, phVrai) => huile / M_POUDRE * 100 / phVrai;
 // Échantillon : 1,00 g de peinture + étalon interne, complété à 10,0 mL au solvant (éthanol) ; étalons : DPnB de 0,25 à 3 mg/mL dans le même solvant.
 // Hypothèses du modèle (explicitées dans le débrief) : réponse du FID linéaire sur la plage ; erreur de volume injecté commune aux deux pics (6 %, écart-type) ;
 // bruit propre à chaque aire 1,5 % ; erreurs normales, de variance constante ; préparation de l'échantillon ± 1 % (pesée et dilution).
-import { regression } from "./etalonnageModele";
+import { regression } from "./etalonnageModele.js";
 export const NIVEAUX_ETALON = [0.25, 0.5, 1, 1.5, 2, 3];   // mg/mL de DPnB
 export const C_IS = 1.0;                                    // mg/mL d'étalon interne dans toutes les solutions
 export const M_ECH = 1.00, V_ECH = 10;                      // g de peinture, mL de volume final

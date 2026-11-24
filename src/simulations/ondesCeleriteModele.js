@@ -15,7 +15,7 @@ export const MILIEUX = [
   { id: 'eau', nom: 'eau', c: 1500 },
   { id: 'acier', nom: 'acier', c: 5900 },
 ];
-export const C_AIR = 340, C_EAU = 1500, C_P = 6000;       // m/s : son dans l'air, son dans l'eau, ondes sismiques P dans la croûte
+export const C_AIR = 340, C_EAU = 1500;       // m/s : son dans l’air, son dans l’eau
 // Corde du dessin : trois états de la corde (valeurs choisies pour l'animation)
 export const CORDES = [
   { id: 'lache', nom: 'corde lâche', c: 2.5 },

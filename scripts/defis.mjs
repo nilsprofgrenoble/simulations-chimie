@@ -14,6 +14,9 @@ try {
   globalThis.window ??= { location: { search: '', href: 'http://x/' }, localStorage: { getItem() { return null }, setItem() {} }, addEventListener() {}, matchMedia: () => ({ matches: false, addEventListener() {} }) }
   const dossier = new URL('../src/simulations/', import.meta.url)
   const echecs = []
+  // On repart d'une liste vide : sinon la liste déjà écrite (src/defisDeclares.js) alimente DEFIS et les défis supprimés ou déplacés ne disparaissent jamais.
+  const { DEFIS: DEFIS_VIDE } = await vite.ssrLoadModule('/src/suivi.js')
+  DEFIS_VIDE.length = 0
   for (const f of readdirSync(dossier).filter(n => /\.jsx?$/.test(n) && readFileSync(new URL(n, dossier), 'utf8').includes('declarerDefis('))) {
     try { await vite.ssrLoadModule(`/src/simulations/${f}`) } catch (e) { echecs.push(`${f} : ${e.message.split('\n')[0]}`) }
   }

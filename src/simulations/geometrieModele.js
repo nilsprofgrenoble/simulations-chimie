@@ -101,8 +101,6 @@ export const ENTITES = [
     cram: { c: [0, 0], liens: [{ s: 'H', x: -56, y: 0, st: 'plan' }, { s: 'N', x: 62, y: 0, st: 'plan', o: 3 }] } }),
 ];
 export const entite = id => ENTITES.find(e => e.id === id);
-export const DU_PROGRAMME = ENTITES.filter(e => e.programme);
-export const AU_DELA = ENTITES.filter(e => !e.programme);
 
 /** Notation VSEPR AXₙEₘ (chiffres en indices) d'une entité à atome central. */
 const IND = { 0: '₀', 1: '₁', 2: '₂', 3: '₃', 4: '₄' };
@@ -182,7 +180,6 @@ export function relaxer(depart, iterations = 400, pas = 0.05) {
   return pts;
 }
 /** Un pas de relaxation (pour l'animation). */
-export const pasRelaxation = (pts, pas = 0.06) => relaxer(pts, 1, pas);
 export const anglesDeux = pts => { const a = []; for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) a.push(angleDeg(pts[i], pts[j])); return a; };
 /** Points de départ « désordonnés » (reproductibles) pour n doublets. */
 export function departDesordre(n) {
