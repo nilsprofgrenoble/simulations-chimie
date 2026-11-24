@@ -17,6 +17,7 @@ export const EXOS_DE_SIM = {
   100: [/^rheo-/],                                                                                                      // Épaississants associatifs
   146: [/(^|\.)tens-/, /plausible\.tens-/],                                                                           // Tensioactifs : de la structure à la CMC
   220: [/(^|\.)chtens-/, /plausible\.chtens-/],   // Charge d’un tensioactif selon le pH (BTS)
+  221: [/(^|\.)semul-/, /plausible\.semul-/],   // Sens de l’émulsion et épaississement (BTS)
   101: [/for-lasure-/],                                                                                                 // Lasure alkyde
   // ── BTS · Synthèse organique (un thème d'exercices par simulation) ──
   93: [/^regio-/], 94: [/^cinet-/], 95: [/^sn-/], 96: [/^br-/], 97: [/^tr-/], 98: [/^se-/], 99: [/^ch-/],

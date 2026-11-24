@@ -1934,5 +1934,19 @@
  "37:prevoir:chtens-ana-ecriture-na": "ANA776",
  "37:prevoir:chtens-ana-ecriture-br": "ANA777",
  "37:prevoir:chtens-ana-contre-ion": "ANA778",
- "77:plausible:chtens-val-sel-amphotere": "VAL526"
+ "77:plausible:chtens-val-sel-amphotere": "VAL526",
+ "37:prevoir:semul-ana-dilution": "ANA779",
+ "37:prevoir:semul-ana-conduct-forte": "ANA780",
+ "37:prevoir:semul-ana-conduct-faible": "ANA781",
+ "37:prevoir:semul-ana-rouge-soudan": "ANA782",
+ "37:prevoir:semul-ana-deux-colorants": "ANA783",
+ "37:prevoir:semul-ana-epaissir-sauce": "ANA784",
+ "37:prevoir:semul-ana-epaissir-eh": "ANA785",
+ "37:prevoir:semul-ana-diluer-lotion": "ANA786",
+ "37:prevoir:semul-ana-fraction": "ANA787",
+ "37:prevoir:semul-ana-limite": "ANA788",
+ "77:plausible:semul-val-conduct-faible": "VAL527",
+ "77:plausible:semul-val-epaissir-eh": "VAL528",
+ "77:plausible:semul-val-violet": "VAL529",
+ "77:plausible:semul-val-dilution-eau": "VAL530"
 }
