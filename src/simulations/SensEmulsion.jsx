@@ -235,7 +235,7 @@ export function SimulationSensEmulsion() {
         <label htmlFor="se-sens" style={libelle}>Sens de l’émulsion</label>
         <select id="se-sens" value={defi.rep} onChange={ev => setDefi(d => ({ ...d, rep: ev.target.value, verifie: false }))} style={{ ...selectStyle, maxWidth: 260, border: `1.5px solid ${defi.verifie ? (defi.rep === defi.type ? '#15803d' : '#dc2626') : KIT.bord}` }}>
           <option value="">Choisir…</option>{M.TYPES.map(t => <option key={t} value={t}>{M.nomType(t)}</option>)}</select>
-        <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>Cherchez le test qui conclut à coup sûr : la dilution (le liquide qui disperse la goutte est miscible avec la phase continue). Une conductivité faible ne prouve rien si la phase aqueuse est sans sel ; une crème violette à l’œil nu ne dit rien.</IndiceDefi></div>
+        <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>Cherchez le test qui conclut à coup sûr : la dilution (le liquide qui disperse la goutte est miscible avec la phase continue). Une conductivité faible ne prouve rien si la phase aqueuse est sans sel ; sans microscope, une coloration ne se lit pas.</IndiceDefi></div>
       </>}
       {defi.kind === 'epaissir' && <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : épaissir une émulsion</div>
@@ -342,7 +342,7 @@ export function SimulationSensEmulsion() {
     <ul style={liste}>
       <li>Avec la mayonnaise H/E, ajoutez 40 mL d’huile, puis 40 mL d’eau : comparez la viscosité et la bille. Qu’en concluez-vous pour épaissir ?</li>
       <li>Passez à la crème E/H : quelle phase faut-il ajouter pour épaissir ? Est-ce la même que pour la mayonnaise ?</li>
-      <li>Choisissez RS + BM sur la crème E/H, puis sur la mayonnaise : l’aspect à l’œil nu change-t-il ? Et la coupe ?</li>
+      <li>Choisissez le rouge Soudan, puis le bleu de méthylène, pour la crème E/H puis pour la mayonnaise : quelle phase est colorée dans chaque cas ? Où se trouve le fond coloré ?</li>
       <li>Avec la mayonnaise, ramenez le sel à 0 mmol/L : que devient la conductivité ? Peut-on encore conclure ?</li>
       <li>Poussez φ au-delà de 70 % : que devient la coupe et que dit le modèle ?</li>
     </ul>);

@@ -1954,5 +1954,19 @@
  "37:prevoir:pertes-diametre": "ANA791",
  "37:prevoir:pertes-vanne": "ANA792",
  "77:plausible:flu-pertes-conduite": "VAL531",
- "77:plausible:flu-pertes-conduite-ok": "VAL532"
+ "77:plausible:flu-pertes-conduite-ok": "VAL532",
+ "37:prevoir:inst-ana-cremage-haut": "ANA793",
+ "37:prevoir:inst-ana-stokes-rayon": "ANA794",
+ "37:prevoir:inst-ana-stokes-viscosite": "ANA795",
+ "37:prevoir:inst-ana-sedimentation": "ANA796",
+ "37:prevoir:inst-ana-floculation": "ANA797",
+ "37:prevoir:inst-ana-coalescence": "ANA798",
+ "37:prevoir:inst-ana-coal-volume": "ANA799",
+ "37:prevoir:inst-ana-ostwald": "ANA800",
+ "37:prevoir:inst-ana-remede-coalescence": "ANA801",
+ "37:prevoir:inst-ana-remede-ostwald": "ANA802",
+ "77:plausible:inst-val-stokes-diametre": "VAL533",
+ "77:plausible:inst-val-agitation-coalescence": "VAL534",
+ "77:plausible:inst-val-cremage-duree": "VAL535",
+ "77:plausible:inst-val-viscosite-duree": "VAL536"
 }
