@@ -22,7 +22,6 @@ export const masseMolaireSoluteDe = s => masseMolaire(espece(s.esp));
 export const formuleSolute = s => formuleTexte(espece(s.esp));
 
 // ---------- relations (unités : mol, L, mL, g) ----------
-export const mL_L = V_mL => V_mL / 1000;                       // conversion mL → L
 export const concentration = (n, V_L) => n / V_L;              // c = n / V  (mol/L)
 export const quantite = (c, V_L) => c * V_L;                   // n = c × V
 export const concMasse = (c, M) => c * M;                      // Cm = c × M  (g/L)
@@ -81,4 +80,3 @@ export function tirerDefiDilution(rng = Math.random) {
   throw new Error('tirage impossible');
 }
 // arrondi à cs chiffres significatifs
-export const arrondiCS = (x, cs) => Number(Number(x).toPrecision(cs));

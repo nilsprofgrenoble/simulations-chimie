@@ -14,7 +14,6 @@ export const SOLUTES = {
   chlorureSodium: { nom: 'chlorure de sodium', eau: true, org: false, cEau: '#e0f2fe', cOrg: '#fef9c3' },
 };
 export const densite = (m, V) => (m / V) / RHO_EAU;            // m en g, V en mL
-export const masseVolumique = (m, V) => m / V;
 export const biphasique = s => !SOLVANTS[s].miscible;
 export const phaseSuperieure = s => (!biphasique(s) ? null : (SOLVANTS[s].d < RHO_EAU ? s : 'eau'));
 export const phaseInferieure = s => (!biphasique(s) ? null : (SOLVANTS[s].d < RHO_EAU ? 'eau' : s));

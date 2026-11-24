@@ -7,7 +7,6 @@
 
 export const NA = 6.02e23;                        // mol⁻¹ (valeur arrondie de 6,02214076 × 10²³)
 export const R_GP = 8.314;                        // J·mol⁻¹·K⁻¹ (constante des gaz parfaits, exploration seulement)
-export const P_ATM = 1013;                        // hPa
 
 // Masses molaires atomiques (g/mol), arrondies au dixième comme dans un tableau périodique de lycée
 export const MM_ATOME = { H: 1.0, He: 4.0, C: 12.0, N: 14.0, O: 16.0, Na: 23.0, Mg: 24.3, P: 31.0, S: 32.1, Cl: 35.5, K: 39.1, Ca: 40.1, Fe: 55.8, Cu: 63.5, Zn: 65.4 };

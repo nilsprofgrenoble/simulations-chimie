@@ -45,11 +45,11 @@ const PX = 58, PY = 40, FS = 18;
 const larg = lab => { let w = 0; for (const c of lab) w += /\d/.test(c) ? 7 : 12; return w; };
 const couleurAtome = el => (el === 'O' ? '#b91c1c' : el === 'H' ? '#334155' : KIT.txt);
 
-function Etiquette({ x, y, lab, el }) {
+function Etiquette({ x, y, lab, el, f = 1 }) {
   const mm = /^([A-Za-z]+)(\d)?$/.exec(lab);
   return (
-    <text x={x} y={y + 6} textAnchor="middle" fontSize={FS} fontWeight="700" fill={couleurAtome(el)} fontFamily="'Nunito', system-ui, sans-serif">
-      {mm[1]}{mm[2] && <tspan dy="5" fontSize="12">{mm[2]}</tspan>}
+    <text x={x} y={y + 6 * f} textAnchor="middle" fontSize={FS * f} fontWeight="700" fill={couleurAtome(el)} fontFamily="'Nunito', system-ui, sans-serif">
+      {mm[1]}{mm[2] && <tspan dy={5 * f} fontSize={14 * f}>{mm[2]}</tspan>}
     </text>);
 }
 
@@ -58,7 +58,8 @@ function Formule({ s, surligner = null, chemin = null, numeros = [], masqueH = f
   const r0 = Math.min(...N.map(n => n.row)), r1 = Math.max(...N.map(n => n.row));
   const bandes = numeros.length, W = s.cols * PX + 12, H = (r1 - r0 + 1) * PY + 14 + (bandes ? 6 + bandes * 24 : 0);
   const cx = c => 6 + PX * (c + 0.5), cy = r => 7 + PY * (r - r0 + 0.5);
-  const demi = n => larg(lab(n)) / 2;
+  const f = Math.min(1.45, Math.max(1, 0.039 * W / 14));      // formules larges (plusieurs molécules) : le schéma est réduit à l'écran, on grossit les atomes pour rester lisible sur téléphone (≥ 9 px pour l'indice)
+  const demi = n => larg(lab(n)) * f / 2;
   // zones à entourer
   const zones = [];
   const boite = ids => {
@@ -88,12 +89,12 @@ function Formule({ s, surligner = null, chemin = null, numeros = [], masqueH = f
           const d = Math.sign(B.col - A.col), x1 = cx(A.col) + d * (demi(A) + 4), x2 = cx(B.col) - d * (demi(B) + 4);
           return <line key={i} x1={x1} y1={cy(A.row)} x2={x2} y2={cy(A.row)} stroke={col} strokeWidth="2.2" strokeLinecap="round"/>;
         }
-        const d = Math.sign(B.row - A.row), y1 = cy(A.row) + d * 13, y2 = cy(B.row) - d * 13, x = cx(A.col);
+        const d = Math.sign(B.row - A.row), y1 = cy(A.row) + d * 13 * f, y2 = cy(B.row) - d * 13 * f, x = cx(A.col);
         return l.ordre === 2
           ? <g key={i}><line x1={x - 3} y1={y1} x2={x - 3} y2={y2} stroke={col} strokeWidth="2.2" strokeLinecap="round"/><line x1={x + 3} y1={y1} x2={x + 3} y2={y2} stroke={col} strokeWidth="2.2" strokeLinecap="round"/></g>
           : <line key={i} x1={x} y1={y1} x2={x} y2={y2} stroke={col} strokeWidth="2.2" strokeLinecap="round"/>;
       })}
-      {N.map(n => <Etiquette key={n.id} x={cx(n.col)} y={cy(n.row)} lab={lab(n)} el={n.el}/>)}
+      {N.map(n => <Etiquette key={n.id} x={cx(n.col)} y={cy(n.row)} lab={lab(n)} el={n.el} f={f}/>)}
       {numeros.map((sens, b) => colonnes.map((n, i) => (
         <g key={`${sens}${n.id}`}>
           <circle cx={cx(n.col)} cy={yBande(b)} r="10" fill={sens === 'g' ? '#2563eb' : '#c2410c'}/>

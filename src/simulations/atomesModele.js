@@ -112,7 +112,6 @@ export const MOLECULES_DEFI = ['HCl', 'HF', 'Cl2', 'O2', 'H2O', 'NH3', 'CH4', 'N
 const cle = (i, j) => (i < j ? `${i}-${j}` : `${j}-${i}`);
 export const cleLiaison = cle;
 // bonds : { '0-1': ordre } ; lp : nombre de doublets non liants par atome
-export function ordreLiaison(bonds, i, j) { return bonds[cle(i, j)] || 0; }
 export function liaisonsDe(bonds, i) { let b = 0; for (const k of Object.keys(bonds)) { const [a, c] = k.split('-').map(Number); if (a === i || c === i) b += bonds[k]; } return b; }
 export const voisinsDe = (bonds, i) => Object.keys(bonds).map(k => k.split('-').map(Number)).filter(([a, c]) => (a === i || c === i) && bonds[cle(a, c)] > 0).map(([a, c]) => (a === i ? c : a));
 

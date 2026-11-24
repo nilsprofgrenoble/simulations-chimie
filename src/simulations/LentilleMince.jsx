@@ -35,6 +35,7 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
   signes = false, coteF = true, valeursImage = false, mesure = null, onMesure = null }) {
   const im = M.image(d, f), R = M.rayons(d, f);
   const svgRef = useRef(null);
+  const fl = typeof window !== 'undefined' && window.innerWidth < 600 ? 2 : 1;      // textes de lecture (règle, étiquettes, scène) : la scène est réduite à ~37 % sur téléphone, il faut les doubler pour dépasser 9 px
   const fk = typeof window !== 'undefined' && window.innerWidth < 600 ? 1.45 : 1;      // textes des aides plus grands sur téléphone (la scène y est réduite à ~40 %)
   const arrondi = x => Math.round(Math.max(X_MIN, Math.min(X_MAX, x)) * 10) / 10;
   const xDepuisEvt = e => { const r = svgRef.current.getBoundingClientRect(); return arrondi(((e.clientX - r.left) * LARG / r.width - X0) / KX); };
@@ -62,7 +63,7 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
   };
   const hImgPx = hClamp(im.hImg * KY);
   return (
-    <svg ref={svgRef} viewBox={`0 0 ${LARG} ${HAUT}`} width="100%" role="img" aria-label={`Banc d’optique : objet à ${cm(d)} cm d’une lentille convergente de distance focale ${cm(f)} cm, écran à ${cm(s)} cm`}
+    <svg ref={svgRef} viewBox={`0 0 ${LARG} ${HAUT}`} width="100%" role="img" aria-label={`Banc d’optique : objet à ${cm(d)} cm d’une lentille convergente de ${!coteF ? 'distance focale inconnue' : `distance focale ${cm(f)} cm`}, écran à ${cm(s)} cm`}
       style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <defs>
         <clipPath id={`lm-clip-${identifiant}`}><rect x="0" y="0" width={LARG} height={HAUT}/></clipPath>
@@ -75,36 +76,36 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
           <text x={px(0) - 10} y="18" textAnchor="end" fontSize={16 * fk} fontWeight="800" fill={NEG}>avant la lentille : −</text>
           <text x={px(0) + 10} y="18" fontSize={16 * fk} fontWeight="800" fill={POS}>après : +</text>
           <g stroke="#334155" fill="#334155"><line x1="14" y1="40" x2="74" y2="40" strokeWidth="2"/>{fleche(76, 40, 0, '#334155', 6)}</g>
-          <text x="84" y="45" fontSize={13.5 * fk} fontWeight="700" fill="#334155">sens de la lumière</text>
+          <text x="84" y="45" fontSize={13.5 * fl} fontWeight="700" fill="#334155">sens de la lumière</text>
         </g>}
         <line x1="8" y1={YA} x2={LARG - 8} y2={YA} stroke="#0f172a" strokeWidth="1.5" strokeDasharray="10 5"/>
         {regle && <g>
           <line x1={px(-30)} y1="292" x2={px(50)} y2="292" stroke="#0f172a" strokeWidth="2.5"/>
           {Array.from({ length: 81 }, (_, k) => k - 30).map(k => <g key={k}><line x1={px(k)} y1="292" x2={px(k)} y2={k % 5 === 0 ? 304 : 298} stroke="#0f172a" strokeWidth="1.3"/>
-            {k % 5 === 0 && <text x={px(k)} y="320" textAnchor="middle" fontSize="11.5" fill="#0f172a">{k < 0 ? `−${-k}` : k}</text>}</g>)}
-          <text x={LARG - 8} y="282" textAnchor="end" fontSize="11.5" fill="#334155" fontWeight="700">position sur l’axe, en cm (0 au centre optique O)</text></g>}
+            {k % (fl > 1 ? 10 : 5) === 0 && px(k) > 30 && px(k) < LARG - 30 && <text x={px(k)} y="320" textAnchor="middle" fontSize={12.5 * fl} fill="#0f172a">{k < 0 ? `−${-k}` : k}</text>}</g>)}
+          <text x={LARG - 8} y="282" textAnchor="end" fontSize={12.5 * fl} fill="#334155" fontWeight="700">position (cm), 0 au centre optique O</text></g>}
         {rayons && [[R.r1, COUL.r1, 'r1'], [R.r2, COUL.r2, 'r2'], [R.r3, COUL.r3, 'r3']].map(([r, c, k]) => trace(r, c, k))}
         {/* lentille mince */}
         <line x1={px(0)} y1={YA - 125} x2={px(0)} y2={YA + 125} stroke={COUL.lent} strokeWidth="4.5"/>
         <polygon points={`${px(0)},${YA - 132} ${px(0) - 8},${YA - 114} ${px(0) + 8},${YA - 114}`} fill={COUL.lent}/><polygon points={`${px(0)},${YA + 132} ${px(0) - 8},${YA + 114} ${px(0) + 8},${YA + 114}`} fill={COUL.lent}/>
-        <circle cx={px(0)} cy={YA} r="4" fill="#0f172a"/><text x={px(0) - 8} y={YA + 18} textAnchor="end" fontSize="13.5" fontWeight="800" fill="#0f172a">O</text>
-        {foyers && isFinite(f) && <g fontSize="14" fontWeight="800" fill={COUL.foyer}>
+        <circle cx={px(0)} cy={YA} r="4" fill="#0f172a"/><text x={px(0) - 8} y={YA + 18} textAnchor="end" fontSize={13.5 * fl} fontWeight="800" fill="#0f172a">O</text>
+        {foyers && isFinite(f) && <g fontSize={14 * fl} fontWeight="800" fill={COUL.foyer}>
           <circle cx={px(f)} cy={YA} r="5.5" fill={COUL.foyer} stroke="#fff" strokeWidth="1.5"/><text x={px(f)} y={YA + 22} textAnchor="middle">F′</text>
           <circle cx={px(-f)} cy={YA} r="5.5" fill="#fff" stroke={COUL.foyer} strokeWidth="2.5"/><text x={px(-f)} y={YA + 22} textAnchor="middle">F</text></g>}
         {/* objet AB */}
         <line x1={px(-d)} y1={YA} x2={px(-d)} y2={py(M.H_OBJ) + 6} stroke={COUL.obj} strokeWidth="4"/>{fleche(px(-d), py(M.H_OBJ), -90, COUL.obj, 8)}
-        {etiquettes && <g fontSize="13.5" fontWeight="800" fill={COUL.obj}><text x={px(-d) + (px(-d) < 30 ? 8 : -6)} y={py(M.H_OBJ) - 6} textAnchor={px(-d) < 30 ? 'start' : 'end'}>B</text><text x={px(-d) + (px(-d) < 30 ? 8 : -6)} y={YA + 18} textAnchor={px(-d) < 30 ? 'start' : 'end'}>A</text></g>}
-        {!signes && <text x={Math.max(px(-d), 44)} y={YA + 44} textAnchor="middle" fontSize="12.5" fontWeight="700" fill={COUL.obj}>objet AB</text>}
+        {etiquettes && <g fontSize={13.5 * fl} fontWeight="800" fill={COUL.obj}><text x={px(-d) + (px(-d) < 30 ? 8 : -6)} y={py(M.H_OBJ) - 6} textAnchor={px(-d) < 30 ? 'start' : 'end'}>B</text><text x={px(-d) + (px(-d) < 30 ? 8 : -6)} y={YA + 18} textAnchor={px(-d) < 30 ? 'start' : 'end'}>A</text></g>}
+        {!signes && <text x={Math.max(px(-d), 30 + 24 * fl)} y={YA + 44 + 16 * (fl - 1)} textAnchor="middle" fontSize={12.5 * fl} fontWeight="700" fill={COUL.obj}>objet AB</text>}
         {/* image calculée par les rayons */}
         {rayons && aff && <g>
           <line x1={px(im.OAp)} y1={YA} x2={px(im.OAp)} y2={YA - hImgPx} stroke={COUL.img} strokeWidth="3.5" strokeDasharray={im.nature === 'virtuelle' ? '6 4' : undefined}/>
           {fleche(px(im.OAp), YA - hImgPx, hImgPx > 0 ? -90 : 90, COUL.img, 8)}
-          {etiquettes && <g fontSize="13.5" fontWeight="800" fill={COUL.img}><text x={px(im.OAp) + 8} y={YA - hImgPx + (hImgPx > 0 ? -4 : 14)}>B′</text><text x={px(im.OAp) + 8} y={YA + (hImgPx > 0 ? 18 : -6)}>A′</text></g>}
-          <text x={px(im.OAp)} y={YA - hImgPx + (hImgPx > 0 ? -22 : 32)} textAnchor="middle" fontSize="12.5" fontWeight="700" fill={COUL.img}>{im.nature === 'virtuelle' ? 'image virtuelle' : 'image réelle'}</text></g>}
+          {etiquettes && <g fontSize={13.5 * fl} fontWeight="800" fill={COUL.img}><text x={px(im.OAp) + 8} y={YA - hImgPx + (hImgPx > 0 ? -4 : 14)}>B′</text><text x={px(im.OAp) + 8} y={YA + (hImgPx > 0 ? 18 : -6)}>A′</text></g>}
+          <text x={px(im.OAp)} y={YA - hImgPx + (hImgPx > 0 ? -22 - 24 * (fl - 1) : 32 + 24 * (fl - 1))} textAnchor="middle" fontSize={12.5 * fl} fontWeight="700" fill={COUL.img}>{im.nature === 'virtuelle' ? 'image virtuelle' : 'image réelle'}</text></g>}
         {/* écran */}
         {ecran && <g>
           <rect x={px(s) - 4} y={YA - 125} width="8" height="250" fill="#e2e8f0" stroke="#0f172a" strokeWidth="2"/>
-          <text x={px(s)} y={YA - 132} textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">écran</text>
+          <text x={px(s)} y={YA - 132} textAnchor="middle" fontSize={12.5 * fl} fontWeight="700" fill="#0f172a">écran</text>
           {im.nature === 'reelle' && <g filter={`url(#lm-flou-${identifiant})`} opacity={Math.max(0.35, 1 - (dist || 0) * 0.05)}>
             <line x1={px(s) + 8} y1={YA} x2={px(s) + 8} y2={YA - hImgPx} stroke={COUL.img} strokeWidth="4"/>{fleche(px(s) + 8, YA - hImgPx, hImgPx > 0 ? -90 : 90, COUL.img, 8)}</g>}
           {im.nature !== 'reelle' && <ellipse cx={px(s) + 8} cy={YA} rx="22" ry="34" fill="#fde68a" opacity="0.55" filter={`url(#lm-lueur-${identifiant})`}/>}

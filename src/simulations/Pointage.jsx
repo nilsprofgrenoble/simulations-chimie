@@ -62,18 +62,18 @@ const REF_FILM = M.filmPendule({ L: L_PEND, theta0: 35, tau: TAU, n: 48, amort: 
 // ---------- courbes Ec, Epp, Em (avec barres d'incertitude sur Em) ----------
 function Courbes({ B }) {
   if (!B.length) return null;
-  const W = 600, H = 220, mx = 46, my = 14, tmax = B[B.length - 1].t, emax = Math.max(...B.map(b => Math.max(b.Em + b.uEm, b.Epp, b.Ec))) * 1.08;
+  const W = 600, H = 232, mx = 62, my = 42, tmax = B[B.length - 1].t, emax = Math.max(...B.map(b => Math.max(b.Em + b.uEm, b.Epp, b.Ec))) * 1.08;
   const X = t => mx + (t / tmax) * (W - mx - 10), Y = e => H - 30 - (e / emax) * (H - 30 - my);
   const ligneSvg = (k, c) => <polyline fill="none" stroke={c} strokeWidth="2.5" points={B.map(b => `${X(b.t)},${Y(b[k])}`).join(' ')}/>;
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fff', borderRadius: 8 }} role="img"
       aria-label="Courbes de l’énergie cinétique, de l’énergie potentielle et de l’énergie mécanique en fonction du temps, avec des barres d’incertitude sur l’énergie mécanique">
       <line x1={mx} y1={H - 30} x2={W - 10} y2={H - 30} stroke={GRIS}/><line x1={mx} y1={my} x2={mx} y2={H - 30} stroke={GRIS}/>
-      <text x={W - 12} y={H - 10} textAnchor="end" fontSize="13" fill={GRIS}>t (s)</text><text x="6" y="22" fontSize="13" fill={GRIS}>E (mJ)</text>
-      {[0, 0.5, 1].map(f => <g key={f}><line x1={mx - 4} y1={Y(f * emax)} x2={mx} y2={Y(f * emax)} stroke={GRIS}/><text x={mx - 7} y={Y(f * emax) + 4} textAnchor="end" fontSize="12" fill={GRIS}>{nbf(f * emax * 1000, 0)}</text></g>)}
+      <text x={W - 12} y={H - 6} textAnchor="end" fontSize="21" fill={GRIS}>t (s)</text><text x="4" y="22" fontSize="21" fill={GRIS}>E (mJ)</text>
+      {[0, 0.5, 1].map(f => <g key={f}><line x1={mx - 4} y1={Y(f * emax)} x2={mx} y2={Y(f * emax)} stroke={GRIS}/><text x={mx - 7} y={Y(f * emax) + 7} textAnchor="end" fontSize="21" fill={GRIS}>{nbf(f * emax * 1000, 0)}</text></g>)}
       {ligneSvg('Epp', VERT)}{ligneSvg('Ec', BLEU)}
       {B.filter((_, k) => k % 3 === 0).map(b => <g key={b.i} stroke="#334155" strokeWidth="1.5"><line x1={X(b.t)} y1={Y(b.Em - b.uEm)} x2={X(b.t)} y2={Y(b.Em + b.uEm)}/><circle cx={X(b.t)} cy={Y(b.Em)} r="3.5" fill="#334155"/></g>)}
-      <g fontSize="13" fontWeight="700"><text x={W - 150} y={my + 10} fill={VERT}>E pp</text><text x={W - 110} y={my + 10} fill={BLEU}>E c</text><text x={W - 70} y={my + 10} fill="#334155">E m ± u</text></g>
+      <g fontSize="21" fontWeight="700"><text x={W - 270} y="22" fill={VERT}>E pp</text><text x={W - 200} y="22" fill={BLEU}>E c</text><text x={W - 130} y="22" fill="#334155">E m ± u</text></g>
     </svg>);
 }
 
@@ -104,7 +104,6 @@ export function SimulationPointage() {
   else if (enGuide) { donnees = REF; }
   else if (source === 'film') donnees = pointsM.length >= 3 ? pointsM : [];
   else if (source === 'csv') { donnees = M.lireCSV(csv); tau = M.pasDeTemps(donnees); }
-  const B = donnees.length >= 3 && isFinite(tau) && tau > 0 ? M.bilan(donnees, enGuide || enDefi ? (defi?.m ?? MASSE) : masse, tau) : [];
 
   // valeurs du guidé
   const rA = ligne(REF, I1 - 1), rB = ligne(REF, I1), rC = ligne(REF, I1 + 1);
@@ -115,7 +114,6 @@ export function SimulationPointage() {
   const tabLignes = (ls) => (
     <table style={{ borderCollapse: 'collapse', fontSize: 13.5, margin: '6px 0' }}><thead><tr>{['image', 't (s)', 'x (m)', 'y (m)'].map(h => <th key={h} style={{ border: `1px solid ${KIT.bord}`, padding: '2px 8px', background: '#f1f5f9' }}>{h}</th>)}</tr></thead>
       <tbody>{ls.map(([lab, r]) => <tr key={lab}>{[lab, nbf(r.t, 3), nbf(r.x, 3), nbf(r.y, 3)].map((c, k) => <td key={k} style={{ border: `1px solid ${KIT.bord}`, padding: '2px 8px', textAlign: 'right', fontFamily: 'monospace' }}>{c}</td>)}</tr>)}</tbody></table>);
-  const rC2 = ligne(REF, I2), rD2 = ligne(REF, I2 + 1);
 
   const ETAPES = [
     { id: 'film', titre: 'Pointer une image', focus: ['scene'],
@@ -132,7 +130,7 @@ export function SimulationPointage() {
       retenirTitre: 'À RETENIR : LA VITESSE PAR DIFFÉRENCE CENTRÉE',
       retenir: <><FVitesse/>{puces(<>Pas de capteur de vitesse : on la <strong>calcule</strong> à partir des positions successives.</>, <>En M<sub>i</sub> : <strong>v ≈ M<sub>i−1</sub>M<sub>i+1</sub> ÷ (2τ)</strong>, avec τ la durée entre deux images.</>, <>Exemple : 0,60 m parcourus en 2 intervalles de 0,033 s ⇒ v ≈ 9,1 m/s.</>, <><strong>Idée fausse</strong> : « diviser par τ ». <strong>Vrai</strong> : M<sub>i−1</sub>M<sub>i+1</sub> couvre <strong>deux</strong> intervalles : on divise par 2τ.</>)}</>,
       texte: <>Voici 3 images consécutives (τ = 0,033{NB}s) :{tabLignes([[I1, rA], [I1 + 1, rB], [I1 + 2, rC]])}Calculez la norme <em>v</em> de la vitesse <strong>vec(v)</strong> à l’image {I1 + 1} avec <strong>v ≈ M<sub>i−1</sub>M<sub>i+1</sub> ÷ (2τ)</strong>, où M<sub>i−1</sub>M<sub>i+1</sub> = √[(x<sub>i+1</sub> − x<sub>i−1</sub>)² + (y<sub>i+1</sub> − y<sub>i−1</sub>)²].</>,
-      tache: { type: 'num', q: `Vitesse v à l’image ${I1 + 1}`, unite: 'm/s', vrai: v1, tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
+      tache: { type: 'num', q: `Vitesse v à l’image ${I1 + 1}`, unite: 'm/s', vrai: v1, tol: 0.005, affiche: v => nbf(v, 3), cs: 3,
         calcul: () => [`Δx = ${nbf(rC.x, 3)} − ${nbf(rA.x, 3)} = ${nbf(rC.x - rA.x, 3)} m ; Δy = ${nbf(rC.y, 3)} − ${nbf(rA.y, 3)} = ${nbf(rC.y - rA.y, 3)} m.`, `M(i−1)M(i+1) = √(Δx² + Δy²) = ${nbf(Math.hypot(rC.x - rA.x, rC.y - rA.y), 4)} m.`, `v = ${nbf(Math.hypot(rC.x - rA.x, rC.y - rA.y), 4)} ÷ (2 × 0,033) = ${nbf(v1, 3)} m/s.`],
         pieges: [[Math.hypot(rC.x - rA.x, rC.y - rA.y) / TAU, 'Vous avez divisé par τ : la distance M(i−1)M(i+1) correspond à deux intervalles, donc 2τ.'], [Math.hypot(rC.x - rB.x, rC.y - rB.y) / TAU, 'Vous avez utilisé deux positions voisines : prenez M(i−1) et M(i+1), de part et d’autre.']],
         expl: `v = M(i−1)M(i+1) ÷ (2τ) = ${nbf(v1, 3)} m/s.`, indice: 'v = √(Δx² + Δy²) ÷ (2τ), avec Δx = x(i+1) − x(i−1) et τ = 0,033 s.' } },
@@ -196,7 +194,7 @@ export function SimulationPointage() {
   // ════════════════ DÉFI ════════════════
   const nouveauDefi = () => {
     const mm = tire([0.015, 0.02, 0.025]), amort = tire([0.25, 0.35, 0.45]), pts = M.arrondiPointage(M.filmPendule({ L: L_PEND, theta0: tire([30, 35, 40]), tau: TAU, n: 48, amort }));
-    const a = 6, b = 40, Bt = M.bilan(pts, mm, TAU), ea = Bt[a - 1], eb = Bt[b - 1];
+    const a = 6, b = 40;
     const calc = i => { const r = [i - 1, i, i + 1].map(k => ligne(pts, k)); const v = Math.hypot(r[2].x - r[0].x, r[2].y - r[0].y) / (2 * TAU); return { r, Em: M.ecin(mm, tel(v, 3)) + M.epp(mm, r[1].y) }; };
     const A = calc(a), Bc = calc(b);
     setDefi({ m: mm, pts, a, b, A, B: Bc, vrai: 100 * (A.Em - Bc.Em) / A.Em, reps: {}, verifie: false });

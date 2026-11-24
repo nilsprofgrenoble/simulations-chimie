@@ -18,7 +18,6 @@ pr(c.x, 0.5, 1e-12, 'x'); pr(c.y, 0.5, 1e-12, 'y');
 // vitesse centrée : mouvement uniforme
 const u = [0, 1, 2].map(i => ({ x: 0.1 * i, y: 0 })); pr(M.vitesse(u, 1, 0.5), 0.2, 1e-12, 'v');
 // CSV Fizziq : en-tête de métadonnées puis #,t,x,y
-const csv = '# Fizziq export\nfoo;bar\n#,t,x,y\n0,0.000,0.10,0.05\n1,0.033,0.11,0.06\n2,0.066,0,12,0,07\n';
 let r = M.lireCSV('#,t,x,y\n0,0.000,0.10,0.05\n1,0.033,0.11,0.06\n'); assert.equal(r.length, 2); pr(r[1].t, 0.033, 1e-9, 'csv t');
 r = M.lireCSV('t;x;y\n0;0,10;0,05\n0,033;0,11;0,06\n'); assert.equal(r.length, 2); pr(r[1].x, 0.11, 1e-9, 'csv virgule');
 pr(M.pasDeTemps(r), 0.033, 1e-9, 'pas');

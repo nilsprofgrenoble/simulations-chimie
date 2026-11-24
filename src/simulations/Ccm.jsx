@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, IndiceDefi, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
-import { nbf, tire, T, puces, ROUGE, VERT, BLEU, NOIR, GRIS } from "./Travail";
+import { nbf, tire, puces, ROUGE, VERT, BLEU, NOIR, GRIS } from "./Travail";
 import * as C from "./ccmModele";
 import { SchemaRf, SchemaComparer, SchemaEluant, SchemaTfCompat } from "./TpChaloneSchemas";
 
@@ -214,7 +214,7 @@ export function SimulationCcm({ integre = false, modeExt, setModeExt, suite } = 
       <li><strong>Mesure des distances</strong> : lues à 0,1 cm près au centre de chaque tache ; le Rf est donc connu à quelques centièmes près.</li>
       <li><strong>Identification</strong> : deux espèces de même Rf <strong>peuvent</strong> être identiques mais ce n’est pas une preuve ; une seule tache ne prouve pas la pureté.</li>
       <li><strong>Température de fusion</strong> : incertitude de lecture u = 2 °C, <strong>valeur de travail</strong> de type B (estimée, non répétée), qui suppose le banc étalonné. Deux valeurs sont dites compatibles si leur écart est inférieur ou égal à u.</li>
-      <li><strong>Modèle d’impuretés</strong> : l’abaissement linéaire de la Tf et l’étalement de la fusion avec le taux d’impuretés sont un modèle <strong>qualitatif</strong> ; les chiffres ne sont pas des mesures.</li>
+      <li><strong>Modèle d’impuretés</strong> : l’abaissement linéaire de la Tf et l’étalement de la fusion avec le taux d’impuretés sont un modèle <strong>qualitatif</strong> ; les chiffres ne sont pas des mesures. Au-delà de 20 % d’impuretés, le modèle est plafonné.</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
 
