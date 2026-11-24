@@ -1064,7 +1064,7 @@ export const PLAUSIBLES = [
       F('il a mesuré les distances depuis le bas de la plaque', 'Cela changerait les valeurs de d et D mais ne ferait pas passer le Rf au-dessus de 1.'),
       F('il aurait dû convertir les centimètres en mètres', 'Le Rf est un rapport de longueurs de même unité : le résultat ne dépend pas de l’unité.'),
     ] }),
-  P({ id: 'ext-val-densite', domaine: 'Synthèse et rendement', niveau: 2, titre: 'Densité d’un solvant', plausible: false,
+  P({ id: 'ext-val-densite', domaine: 'Extraction liquide-liquide', niveau: 2, titre: 'Densité d’un solvant', plausible: false,
     enonce: 'Un élève pèse 20,0 mL de cyclohexane : 15,6 g. Il calcule d = 20,0 ÷ 15,6 = 1,28 et conclut que le cyclohexane est en dessous de l’eau.',
     reperes: [['Cyclohexane', 'liquide léger, il flotte sur l’eau'], ['Densité', 'd = ρ ÷ ρ(eau), ρ = m ÷ V'], ['ρ(eau)', '1,00 g/mL']],
     ver: 'Le cyclohexane flotte sur l’eau : sa densité est inférieure à 1. L’élève a divisé V par m. Il faut ρ = m ÷ V = 15,6 ÷ 20,0 = 0,78 g/mL, donc d = 0,78.',
