@@ -21,6 +21,18 @@ try {
     try { await vite.ssrLoadModule(`/src/simulations/${f}`) } catch (e) { echecs.push(`${f} : ${e.message.split('\n')[0]}`) }
   }
   const { DEFIS } = await vite.ssrLoadModule('/src/suivi.js')
+  // Parcours guidés : chaque simulation dont le composant utilise CarteParcours a un « défi » parcours (étoiles du parcours), clé « <id>:defi.parcours ».
+  {
+    const app = readFileSync(new URL('../src/App.jsx', import.meta.url), 'utf8')
+    const fichierDe = {}
+    for (const m of app.matchAll(/const\s+(\w+)\s*=\s*paresseux\(\s*\(\)\s*=>\s*import\(["']\.\/simulations\/(\w+)["']\)/g)) fichierDe[m[1]] = m[2]
+    for (const m of app.matchAll(/\{\s*id\s*:\s*(\d+)\s*,[^\n]*?component\s*:\s*(\w+)/g)) {
+      const f = fichierDe[m[2]]
+      if (!f) continue
+      const chemin = ['.jsx', '.js'].map(e => new URL(`../src/simulations/${f}${e}`, import.meta.url)).find(u => existsSync(u))
+      if (chemin && readFileSync(chemin, 'utf8').includes('CarteParcours') && !DEFIS.some(d => d.cle === `${m[1]}:defi.parcours`)) DEFIS.push({ cle: `${m[1]}:defi.parcours`, sim: Number(m[1]), comp: 'DÉFI', titre: 'Parcours guidé' })
+    }
+  }
   const lignes = DEFIS.filter(d => d.cle !== undefined).map(d => [d.sim, d.cle.split(':defi.')[1], d.titre])
     .sort((a, b) => a[0] - b[0] || String(a[1]).localeCompare(String(b[1])))
   const texte = `// Fichier généré par « node scripts/defis.mjs » : ne pas modifier à la main.\n// Défis de simulation connus d'avance : [identifiant de la simulation, nom du défi, titre].\nexport const DEFIS_DECLARES = ${JSON.stringify(lignes)}\n`

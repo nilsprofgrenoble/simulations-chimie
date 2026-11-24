@@ -4,6 +4,11 @@ import { getSession, estEleve, estProf } from "./serveur";
 import { estDefi } from "./suivi";
 
 // Petite fenêtre « bravo » à chaque réussite d'un exercice ou d'un défi (pas pour un professeur qui teste).
+const MESSAGES_PARCOURS = {
+  3: 'Un parcours sans aucune erreur : bravo !',
+  2: 'Parcours terminé avec 1 à 3 erreurs : refais-le sans erreur pour les 3 étoiles (« revenir au début »).',
+  1: 'Parcours terminé ! Refais-le pour gagner plus d’étoiles (« revenir au début ») : l’indice ne coûte rien.',
+};
 const MESSAGES = {
   3: 'Sans aucune aide : du premier coup !',
   2: 'Réussi avec une seule erreur : encore un effort pour les 3 étoiles !',
@@ -37,8 +42,8 @@ export function ToastRecompense({ naviguer }) {
             display: 'inline-block', animation: k <= info.etoiles ? `toast-etoile .55s ${0.15 + 0.2 * k}s both` : 'none' }}>★</span>)}
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 800, fontSize: 16 }}>{estDefi(info.cle) ? 'Défi relevé !' : 'Exercice réussi !'}</div>
-          <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,.85)', lineHeight: 1.4 }}>{MESSAGES[info.etoiles]}</div>
+          <div style={{ fontWeight: 800, fontSize: 16 }}>{/:defi\.parcours$/.test(info.cle || '') ? 'Parcours terminé !' : estDefi(info.cle) ? 'Défi relevé !' : 'Exercice réussi !'}</div>
+          <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,.85)', lineHeight: 1.4 }}>{(/:defi\.parcours$/.test(info.cle || '') ? MESSAGES_PARCOURS : MESSAGES)[info.etoiles]}</div>
         </div>
       </div>
       <div style={{ marginTop: 8, fontSize: 12.5 }}>
