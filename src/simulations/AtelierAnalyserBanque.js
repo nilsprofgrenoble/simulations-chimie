@@ -2784,18 +2784,18 @@ export const PREVOIR = [
       F('Il faut refaire la mesure avec un conductimètre plus précis', 'Plus de précision ne changerait rien : une eau sans ions conduit peu, c’est une limite de la méthode.'),
     ] },
   { id: 'semul-ana-rouge-soudan', domaine: 'Sens de l’émulsion et épaississement', titre: 'Rouge Soudan seul',
-    enonce: 'On saupoudre de rouge Soudan (colorant liposoluble) une émulsion, puis on l’observe au microscope : on voit un fond rouge uniforme et des gouttelettes incolores.', q: 'Quel est le sens de l’émulsion ?', options: [
+    enonce: 'On saupoudre de rouge Soudan (colorant liposoluble) une émulsion, puis on l’observe au microscope : on voit un fond rouge uniforme et des gouttelettes blanches (non colorées).', q: 'Quel est le sens de l’émulsion ?', options: [
       F('H/E : le fond coloré est de l’eau, car le rouge domine', 'Le rouge Soudan colore l’huile, pas l’eau : le fond rouge est de l’huile.'),
-      F('H/E : les gouttes incolores sont de l’huile qui n’a pas été colorée', 'Le rouge Soudan colore l’huile : de l’huile non colorée serait surprenante.'),
+      F('H/E : les gouttes blanches sont de l’huile qui n’a pas été colorée', 'Le rouge Soudan colore l’huile : de l’huile non colorée serait surprenante.'),
       F('on ne peut pas conclure avec un seul colorant', 'Un seul colorant suffit : il suffit de repérer s’il colore le fond ou les gouttes.'),
-      V('E/H : le fond rouge est de l’huile, phase continue ; les gouttes incolores sont de l’eau', 'Le rouge Soudan colore l’huile : le fond coloré est la phase continue.'),
+      V('E/H : le fond rouge est de l’huile, phase continue ; les gouttes blanches sont de l’eau', 'Le rouge Soudan colore l’huile : le fond coloré est la phase continue.'),
     ] },
-  { id: 'semul-ana-deux-colorants', domaine: 'Sens de l’émulsion et épaississement', titre: 'Une crème violette à l’œil nu',
-    enonce: 'Une crème est colorée à la fois par du rouge Soudan (qui colore l’huile) et du bleu de méthylène (qui colore l’eau). À l’œil nu, elle paraît violette. Au microscope, on voit des gouttes rouges dans un fond bleu.', q: 'Quel est le sens de l’émulsion, et pourquoi la crème paraît-elle violette ?', options: [
-      F('E/H ; les gouttes rouges sont de l’eau colorée par le rouge Soudan', 'Le rouge Soudan colore l’huile : les gouttes rouges sont de l’huile.'),
-      F('E/H ; le violet vient d’une réaction chimique entre les deux colorants', 'Les colorants ne réagissent pas ici : chacun colore sa phase. Le fond bleu indique une phase continue aqueuse, donc H/E.'),
-      V('H/E ; les gouttes sont trop petites pour être vues, et l’œil mélange le rouge et le bleu', 'Le fond bleu est de l’eau, phase continue. À l’œil nu, on ne distingue pas des gouttes de quelques micromètres.'),
-      F('émulsion multiple : le violet prouve la présence de trois phases', 'Le violet n’est qu’un mélange optique du rouge et du bleu à l’œil nu.'),
+  { id: 'semul-ana-deux-colorants', domaine: 'Sens de l’émulsion et épaississement', titre: 'Deux colorations d’une même crème',
+    enonce: 'Deux petits prélèvements d’une même crème sont observés au microscope. Dans le premier, additionné de rouge Soudan (qui colore l’huile), on voit un fond rouge et des gouttes blanches. Dans le second, additionné de bleu de méthylène (qui colore l’eau), on voit des gouttes bleues dans un fond blanc.', q: 'Que conclure sur cette crème ?', options: [
+      F('H/E d’après le bleu de méthylène et E/H d’après le rouge Soudan : les tests se contredisent', 'Les deux tests disent la même chose : le fond rouge est de l’huile continue, et les gouttes bleues sont de l’eau dispersée.'),
+      F('H/E : dans un des échantillons le fond est blanc, donc c’est de l’eau', 'Un fond blanc n’est pas coloré : avec le bleu de méthylène, l’eau colorée est ici dans les gouttes, et le fond blanc est de l’huile.'),
+      V('E/H : les deux colorations concordent (huile continue colorée en rouge, eau dispersée colorée en bleu)', 'Le fond coloré par le rouge Soudan est de l’huile, phase continue ; les gouttes colorées par le bleu de méthylène sont de l’eau, phase dispersée.'),
+      F('on ne peut conclure qu’en mélangeant les deux colorants dans un même échantillon', 'Chaque colorant suffit seul, dans son propre échantillon ; les mélanger rendrait la lecture plus difficile.'),
     ] },
   { id: 'semul-ana-epaissir-sauce', domaine: 'Sens de l’émulsion et épaississement', titre: 'Épaissir une sauce H/E',
     enonce: 'Une sauce H/E contient 100 mL d’huile dans 200 mL de préparation. Elle est trop liquide et on veut l’épaissir en ajoutant un seul ingrédient.', q: 'Que faut-il ajouter ?', options: [

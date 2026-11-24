@@ -4,7 +4,7 @@ import { useState } from "react";
 import * as M from "./sensEmulsionModele";
 
 const C = { eau: '#dbeafe', eauB: '#60a5fa', huile: '#fde68a', huileR: '#f87171', trait: '#475569', txt: '#0f172a', gris: '#64748b', creme: '#fff4da',
-  vert: '#15803d', orange: '#b45309', bleu: '#1d4ed8', rouge: '#b91c1c', violet: '#7c3aed' };
+  vert: '#15803d', orange: '#b45309', bleu: '#1d4ed8', rouge: '#b91c1c', violet: '#7c3aed', blanc: '#fcfbf8' };
 const T = (x, y, s, o = {}) => <text key={`${x}-${y}-${s}`} x={x} y={y} fontSize={o.size ?? 14} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? C.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit">{s}</text>;
 function base(w, h, label, children, max = 460) {
   return <svg role="img" aria-label={label} viewBox={`0 0 ${w} ${h}`} width="100%" style={{ display: 'block', maxWidth: max, margin: '0 auto' }}>{children}</svg>;
@@ -18,8 +18,9 @@ function alea(graine) { let a = graine >>> 0; return () => { a = (a + 0x6D2B79F5
 // Couleur conventionnelle d'une phase : jaune = huile, bleu très pâle = eau ; avec colorant : rouge (rouge Soudan, huile) ou bleu franc (bleu de méthylène, eau)
 const teinte = (phase, colorant) => {
   const c = M.couleurDe(colorant, phase);
-  if (phase === 'huile') return c === 'rouge' ? C.huileR : C.huile;
-  return c === 'bleu' ? C.eauB : C.eau;
+  if (c) return phase === 'huile' ? C.huileR : C.eauB;
+  if (colorant !== 'aucun') return C.blanc;   // phase non colorée : l'émulsion reste blanche
+  return phase === 'huile' ? C.huile : C.eau;
 };
 
 // ---- réseau de gouttes d'une coupe (même nombre de gouttes, mêmes positions : seule leur taille change avec φ) ----
@@ -47,7 +48,7 @@ export function Coupe({ id, x = 0, y = 0, w = 220, h = 170, type, phi, colorant 
   const reduit = useReduit(), { L } = sites(w, h, d);
   const dispersee = M.phaseDispersee(type), continue_ = M.phaseContinue(type);
   const fondC = teinte(continue_, colorant), gouteC = teinte(dispersee, colorant);
-  const trait = dispersee === 'huile' ? (colorant === 'RS' || colorant === 'RS+BM' ? '#b91c1c' : '#ca8a04') : (colorant === 'BM' || colorant === 'RS+BM' ? '#1d4ed8' : '#60a5fa');
+  const trait = M.couleurDe(colorant, dispersee) ? (dispersee === 'huile' ? '#b91c1c' : '#1d4ed8') : colorant !== 'aucun' ? '#94a3b8' : dispersee === 'huile' ? '#ca8a04' : '#60a5fa';
   const rm = rayon(phi, d), hex = phi >= M.PHI_M;
   const a = d * Math.sqrt(phi) / 2;
   return (
@@ -72,21 +73,23 @@ export function Coupe({ id, x = 0, y = 0, w = 220, h = 170, type, phi, colorant 
 }
 function Legende({ x, y, colorant = 'aucun' }) {
   const item = (cx, couleur, nom) => <g key={nom}><rect x={cx} y={y - 10} width="14" height="14" rx="3" fill={couleur} stroke={C.trait} strokeWidth="1"/>{T(cx + 19, y + 2, nom, { size: 13, anchor: 'start' })}</g>;
-  const nHuile = colorant === 'RS' || colorant === 'RS+BM' ? 'huile (rouge Soudan)' : 'huile', nEau = colorant === 'BM' || colorant === 'RS+BM' ? 'eau (bleu de méthylène)' : 'eau';
-  return <g>{item(x, teinte('huile', colorant), nHuile)}{item(x + (colorant === 'aucun' ? 76 : 150), teinte('eau', colorant), nEau)}</g>;
+  const nHuile = colorant === 'RS' ? 'huile : rouge Soudan' : colorant === 'BM' ? 'huile : non colorée' : 'huile';
+  const nEau = colorant === 'BM' ? 'eau : bleu de méthylène' : colorant === 'RS' ? 'eau : non colorée' : 'eau';
+  return colorant === 'aucun' ? <g>{item(x, teinte('huile', colorant), nHuile)}{item(x + 76, teinte('eau', colorant), nEau)}</g>
+    : <g>{item(x, teinte('huile', colorant), nHuile)}<g transform="translate(0 20)">{item(x, teinte('eau', colorant), nEau)}</g></g>;
 }
 
 // ---- coupe seule, avec légende (utilisée seule ou en carte) ----
 export function SvgCoupe({ id = 'seule', type, phi, colorant = 'aucun', titre, anim = true }) {
-  return base(300, 226, `coupe au microscope d’une émulsion ${type} avec ${Math.round(phi * 100)} % de phase dispersée`, <>
+  return base(300, colorant === 'aucun' ? 226 : 244, `coupe au microscope d’une émulsion ${type} avec ${Math.round(phi * 100)} % de phase dispersée`, <>
     {titre && T(150, 18, titre, { size: 15, gras: true })}
     <Coupe id={id} x={40} y={28} w={220} h={160} type={type} phi={phi} colorant={colorant} anim={anim}/>
-    <Legende x={colorant === 'aucun' ? 66 : 28} y={210} colorant={colorant}/>
+    <Legende x={colorant === 'aucun' ? 66 : 62} y={206} colorant={colorant}/>
   </>, 360);
 }
 
 // ---- aspect à l'œil nu d'une émulsion colorée ----
-const aspectMacro = colorant => ({ aucun: '#fff4da', RS: '#fbd0c8', BM: '#cfe1fb', 'RS+BM': '#d8c4ea' }[colorant] ?? '#fff4da');
+const aspectMacro = colorant => ({ aucun: '#fff4da', RS: '#fbd0c8', BM: '#cfe1fb' }[colorant] ?? '#fff4da');
 
 // ---- lien micro-macro : le pot à l'œil nu, une loupe, la coupe au microscope, et la bille qui tombe ----
 const dureeBille = eta => 0.7 + 1.6 * Math.log10(Math.max(1, eta / 0.005));
@@ -214,7 +217,7 @@ export function SvgCarteDilution() {
     <path d={`M${x + 1.5} ${y + 14} L${x + 1.5} ${y + 50} Q${x + 1.5} ${y + 56.5} ${x + 8} ${y + 56.5} L${x + 62} ${y + 56.5} Q${x + 68.5} ${y + 56.5} ${x + 68.5} ${y + 50} L${x + 68.5} ${y + 14} Z`} fill={liq}/>
     {se ? <g>{Array.from({ length: 9 }, (_, k) => <circle key={k} cx={x + 14 + (k % 3) * 21} cy={y + 24 + Math.floor(k / 3) * 12} r="3.4" fill={C.creme} stroke={C.trait} strokeWidth="1"/>)}</g>
       : <ellipse cx={x + 35} cy={y + 22} rx="14" ry="9" fill={C.creme} stroke={C.trait} strokeWidth="2"/>}
-    {T(x + 35, y + 76, se ? 'se disperse' : 'reste en bloc', { size: 12.5, gras: true, fill: se ? C.vert : C.orange })}
+    {T(x + 35, y + 76, se ? 'se disperse' : 'en bloc', { size: 12.5, gras: true, fill: se ? C.vert : C.orange })}
     {T(x + 35, y - 6, nom, { size: 12.5 })}
   </g>;
   return base(300, 250, 'test de dilution : une émulsion H/E se disperse dans l’eau et reste en bloc dans l’huile ; une émulsion E/H se disperse dans l’huile et reste en bloc dans l’eau', <>
@@ -227,15 +230,29 @@ export function SvgCarteDilution() {
   </>, 340);
 }
 export function SvgCarteColorants() {
-  return base(300, 262, 'colorants : à gauche une émulsion H/E avec un fond bleu et des gouttes rouges, à droite une émulsion E/H avec un fond rouge et des gouttes bleues', <>
-    {T(150, 16, 'Les deux colorants ensemble, au microscope', { size: 14, gras: true })}
-    <Coupe id="cc1" x={6} y={30} w={138} h={108} type="H/E" phi={0.3} colorant="RS+BM" d={20} anim={false}/>
-    <Coupe id="cc2" x={156} y={30} w={138} h={108} type="E/H" phi={0.3} colorant="RS+BM" d={20} anim={false}/>
-    {T(75, 156, 'fond bleu : eau', { size: 13, gras: true, fill: C.bleu })}{T(75, 172, 'émulsion H/E', { size: 13, gras: true })}
-    {T(225, 156, 'fond rouge : huile', { size: 13, gras: true, fill: C.rouge })}{T(225, 172, 'émulsion E/H', { size: 13, gras: true })}
-    {T(150, 198, 'rouge Soudan : colore l’huile', { size: 13.5, fill: C.rouge, gras: true })}{T(150, 216, 'bleu de méthylène : colore l’eau', { size: 13.5, fill: C.bleu, gras: true })}
-    <rect x="10" y="226" width="280" height="30" rx="8" fill="#fff7ed" stroke={C.orange} strokeWidth="1.5"/>{T(150, 246, 'le fond coloré est la phase continue', { size: 13.5, gras: true, fill: C.orange })}
+  const cell = (id, x, y, type, col, legende, couleur) => <g key={id}>
+    <Coupe id={id} x={x} y={y} w={136} h={64} type={type} phi={0.3} colorant={col} d={16} anim={false}/>
+    {T(x + 68, y + 80, legende, { size: 13, gras: true, fill: couleur })}
+  </g>;
+  return base(300, 296, 'colorants, un par échantillon : le rouge Soudan colore l’huile et le bleu de méthylène colore l’eau ; le fond coloré est la phase continue', <>
+    {T(150, 15, 'Un colorant par échantillon', { size: 14, gras: true })}
+    {T(76, 36, 'émulsion H/E', { size: 13, gras: true, fill: C.bleu })}{T(224, 36, 'émulsion E/H', { size: 13, gras: true, fill: C.orange })}
+    {T(150, 56, 'rouge Soudan : colore l’huile', { size: 13, gras: true, fill: C.rouge })}
+    {cell('cc1', 8, 62, 'H/E', 'RS', 'gouttes rouges', C.rouge)}{cell('cc2', 156, 62, 'E/H', 'RS', 'fond rouge', C.rouge)}
+    {T(150, 164, 'bleu de méthylène : colore l’eau', { size: 13, gras: true, fill: C.bleu })}
+    {cell('cc3', 8, 170, 'H/E', 'BM', 'fond bleu', C.bleu)}{cell('cc4', 156, 170, 'E/H', 'BM', 'gouttes bleues', C.bleu)}
+    <rect x="10" y="262" width="280" height="28" rx="8" fill="#fff7ed" stroke={C.orange} strokeWidth="1.5"/>{T(150, 281, 'fond coloré = phase continue', { size: 13.5, gras: true, fill: C.orange })}
   </>, 340);
+}
+// deux échantillons d'une même émulsion, chacun avec son colorant
+export function SvgDeuxEchantillons({ type }) {
+  return base(300, 206, `deux échantillons d’une même émulsion au microscope : l’un avec du rouge Soudan, l’autre avec du bleu de méthylène`, <>
+    {T(75, 18, 'échantillon 1', { size: 13.5, gras: true })}{T(225, 18, 'échantillon 2', { size: 13.5, gras: true })}
+    <Coupe id="de1" x={6} y={26} w={138} h={112} type={type} phi={0.3} colorant="RS" d={20}/>
+    <Coupe id="de2" x={156} y={26} w={138} h={112} type={type} phi={0.3} colorant="BM" d={20}/>
+    {T(75, 158, 'rouge Soudan', { size: 13, fill: C.rouge, gras: true })}{T(225, 158, 'bleu de méthylène', { size: 13, fill: C.bleu, gras: true })}
+    {T(150, 192, 'même émulsion, deux petits prélèvements', { size: 12.5, fill: C.gris })}
+  </>, 400);
 }
 export function SvgCarteConduct() {
   const X0 = 20, X1 = 280, Y = 92, px = v => X0 + ((Math.log10(v) + 1) / 5) * (X1 - X0);   // 0,1 à 10 000 µS/cm
@@ -271,9 +288,9 @@ export function SvgCarteRegle() {
 }
 export function SvgCarteTests() {
   const L = [
-    ['Dilution', 'une goutte dans l’eau, puis dans l’huile', 'le plus fiable : ne dépend que de la phase continue', C.vert],
-    ['Colorants', 'RS colore l’huile, BM colore l’eau', 'au microscope : le fond coloré est la phase continue', C.orange],
-    ['Conductimétrie', 'H/E > 100 µS/cm ; E/H < 1 µS/cm', 'ne conclut pas si la phase aqueuse est sans sel', C.bleu],
+    ['Dilution', 'une goutte dans l’eau, puis dans l’huile', 'ne dépend que de la phase continue', C.vert],
+    ['Colorants', 'un colorant par échantillon, au microscope', 'fond coloré : phase continue', C.orange],
+    ['Conductimétrie', 'H/E > 100 µS/cm ; E/H < 1 µS/cm', 'ne conclut pas si l’eau est sans sel', C.bleu],
   ];
   return base(300, 250, 'trois tests du sens d’une émulsion : dilution, colorants, conductimétrie, avec leur limite', <>
     {L.map(([n, a, b, col], k) => <g key={n}>

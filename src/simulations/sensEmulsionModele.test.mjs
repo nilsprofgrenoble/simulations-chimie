@@ -12,13 +12,11 @@ ok(M.sedisperse('H/E', 'eau') && !M.sedisperse('H/E', 'huile'), 'dilution H/E');
 ok(M.sedisperse('E/H', 'huile') && !M.sedisperse('E/H', 'eau'), 'dilution E/H');
 
 // colorants
-let c = M.coloration('H/E', 'RS+BM'); ok(c.fond === 'bleu' && c.gouttes === 'rouge', 'H/E avec les deux colorants : fond bleu, gouttes rouges');
-c = M.coloration('E/H', 'RS+BM'); ok(c.fond === 'rouge' && c.gouttes === 'bleu', 'E/H avec les deux colorants : fond rouge, gouttes bleues');
-c = M.coloration('H/E', 'RS'); ok(c.fond === null && c.gouttes === 'rouge', 'RS sur H/E : gouttes rouges, fond incolore');
+let c = M.coloration('H/E', 'RS'); ok(c.fond === null && c.gouttes === 'rouge', 'RS sur H/E : gouttes rouges, fond non coloré');
 c = M.coloration('E/H', 'RS'); ok(c.fond === 'rouge' && c.gouttes === null, 'RS sur E/H : fond rouge');
 c = M.coloration('H/E', 'BM'); ok(c.fond === 'bleu' && c.gouttes === null, 'BM sur H/E : fond bleu');
 c = M.coloration('E/H', 'BM'); ok(c.fond === null && c.gouttes === 'bleu', 'BM sur E/H : gouttes bleues');
-for (const t of M.TYPES) for (const col of ['RS', 'BM', 'RS+BM']) { const x = M.coloration(t, col); ok(M.lireColoration(x.fond, x.gouttes) === t, `lecture du microscope ${t} ${col}`); }
+for (const t of M.TYPES) for (const col of ['RS', 'BM']) { const x = M.coloration(t, col); ok(M.lireColoration(x.fond, x.gouttes) === t, `lecture du microscope ${t} ${col}`); }
 
 // conductimétrie : 10 mmol/L de NaCl ≈ 1,3 mS/cm ; H/E déminéralisée ≈ quelques µS/cm ; E/H < 1 µS/cm
 ok(proche(M.sigmaAqueuse(10), 1266), 'σ de 10 mmol/L NaCl');

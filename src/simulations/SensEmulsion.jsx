@@ -4,7 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { Pic } from "../Pictos";
 import * as M from "./sensEmulsionModele";
 import { QCM } from "./sensEmulsionQcm";
-import { SvgCoupe, SvgMicroMacro, SvgDilution, SvgConductimetre, SvgViscoCourbe, SvgCarteDilution, SvgCarteColorants, SvgCarteConduct, SvgCarteRegle, SvgCarteTests, SvgCarteMicro } from "./SensEmulsionSchemas";
+import { SvgCoupe, SvgDeuxEchantillons, SvgMicroMacro, SvgDilution, SvgConductimetre, SvgViscoCourbe, SvgCarteDilution, SvgCarteColorants, SvgCarteConduct, SvgCarteRegle, SvgCarteTests, SvgCarteMicro } from "./SensEmulsionSchemas";
 const lectureConduct = M.lectureConduct;
 
 const SIM_ID = 221, CLE_GUIDE = 'sens-emulsion-guide-v1';
@@ -34,8 +34,8 @@ const nomPhase = p => (p === 'eau' ? 'l’eau' : 'l’huile');
 function expliqueSens(d) {
   const L = [];
   if (d.tests.dilution) L.push(d.type === 'H/E' ? 'Dilution : la goutte se disperse dans l’eau, donc la phase continue est l’eau (H/E).' : 'Dilution : la goutte se disperse dans l’huile, donc la phase continue est l’huile (E/H).');
-  if (d.tests.colorants === 'micro') L.push(d.type === 'H/E' ? 'Colorants : le fond est bleu (eau, bleu de méthylène) : la phase continue est l’eau.' : 'Colorants : le fond est rouge (huile, rouge Soudan) : la phase continue est l’huile.');
-  else L.push('Colorants : à l’œil nu, tout paraît violet, car les gouttes sont trop petites : on ne peut pas conclure sans microscope.');
+  if (d.tests.colorants === 'micro') L.push(d.type === 'H/E' ? 'Colorants : avec le rouge Soudan, les gouttes sont rouges ; avec le bleu de méthylène, le fond est bleu. Les deux disent que l’eau est continue.' : 'Colorants : avec le rouge Soudan, le fond est rouge ; avec le bleu de méthylène, les gouttes sont bleues. Les deux disent que l’huile est continue.');
+  else L.push('Colorants : sans microscope, on ne peut pas lire la coloration (les gouttes sont trop petites) : ce test ne permet pas de conclure.');
   const v = M.verdictConductivite(d.sigma);
   L.push(v === 'H/E' ? `Conductimétrie : ${lectureConduct(d.sigma)} est une valeur forte : phase aqueuse continue (H/E).`
     : v === 'E/H' ? `Conductimétrie : ${lectureConduct(d.sigma)} est inférieure à 1 µS/cm : l’huile isolante est continue (E/H).`
@@ -68,14 +68,14 @@ export function SimulationSensEmulsion() {
       texte: <>Une émulsion est un liquide dispersé en gouttelettes dans un autre liquide non miscible. La phase en gouttes est la <strong>phase dispersée</strong> ; celle qui les entoure est la <strong>phase continue</strong>. On écrit <strong>H/E</strong> pour de l’huile dispersée dans de l’eau, et <strong>E/H</strong> pour de l’eau dispersée dans de l’huile. Les deux coupes ci-dessous sont vues au microscope (jaune : huile, bleu pâle : eau ; ces couleurs sont conventionnelles). <strong>À l’œil nu</strong>, une crème H/E et une crème E/H ont le même aspect : il faut un test pour les distinguer.</>,
       tache: { type: 'qcm', q: 'Dans une émulsion notée E/H, quelle est la phase continue ?', ...QCM.sensDef,
         expl: 'E/H se lit « eau dans huile » : l’eau forme les gouttes (phase dispersée) et l’huile les entoure (phase continue). Le sens se lit sur la phase continue : c’est elle qui détermine presque tout le comportement de l’émulsion.', indice: 'Dans « A dans B », A est dispersée en gouttes et B est la phase qui entoure.' } },
-    { id: 'dil-1', titre: 'Test de dilution : une première émulsion', focus: ['scene'],
-      texte: <>Le <strong>test de dilution</strong> est le plus simple : on dépose avec une spatule une goutte d’émulsion dans de l’eau, une autre dans de l’huile, sans agiter, et on observe. Voici l’émulsion X (l’animation se répète : regardez ce que devient la goutte).</>,
-      tache: { type: 'qcm', q: 'Une goutte de X se disperse dans l’eau et reste en bloc dans l’huile. Que peut-on dire de X ?', ...QCM.dil1,
-        expl: 'La goutte se mélange au liquide miscible avec sa phase continue : ici l’eau. La phase continue de X est donc l’eau : X est une émulsion H/E (huile dans eau). Les gouttes d’huile se retrouvent simplement plus écartées.', indice: 'Un liquide se mélange avec ce qui lui est miscible : avec quelle phase de l’émulsion l’eau est-elle miscible ?' } },
-    { id: 'dil-2', titre: 'Test de dilution : une seconde émulsion', focus: ['scene'],
-      texte: <>Voici maintenant l’émulsion Y, avec le même protocole : une goutte dans l’eau, une goutte dans l’huile.</>,
-      tache: { type: 'qcm', q: 'Pourquoi la goutte de Y se disperse-t-elle dans l’huile ?', ...QCM.dil2,
-        expl: 'Y reste en bloc dans l’eau et se disperse dans l’huile : l’huile est miscible avec la phase continue de Y, donc Y est une émulsion E/H. L’huile ajoutée se mélange à l’huile qui entoure les gouttes d’eau, qui se retrouvent plus espacées.', indice: 'La goutte se disperse dans le liquide miscible avec sa phase continue.' } },
+    { id: 'dil-1', titre: 'Déterminer le sens de l’émulsion par le test de dilution : émulsion n°1', focus: ['scene'],
+      texte: <>Le <strong>test de dilution</strong> est le plus simple : on dépose avec une spatule une goutte d’émulsion dans de l’eau, une autre dans de l’huile, sans agiter, et on observe. Voici l’émulsion n°1 (l’animation se répète : regardez ce que devient la goutte).</>,
+      tache: { type: 'qcm', q: 'Une goutte de l’émulsion n°1 se disperse dans l’eau et reste en bloc dans l’huile. Que peut-on dire de cette émulsion ?', ...QCM.dil1,
+        expl: 'La goutte se mélange au liquide miscible avec sa phase continue : ici l’eau. La phase continue de l’émulsion n°1 est donc l’eau : c’est une émulsion H/E (huile dans eau). Les gouttes d’huile se retrouvent simplement plus écartées.', indice: 'Un liquide se mélange avec ce qui lui est miscible : avec quelle phase de l’émulsion l’eau est-elle miscible ?' } },
+    { id: 'dil-2', titre: 'Déterminer le sens de l’émulsion par le test de dilution : émulsion n°2', focus: ['scene'],
+      texte: <>Voici maintenant l’émulsion n°2, avec le même protocole : une goutte dans l’eau, une goutte dans l’huile.</>,
+      tache: { type: 'qcm', q: 'Pourquoi la goutte de l’émulsion n°2 se disperse-t-elle dans l’huile ?', ...QCM.dil2,
+        expl: 'La goutte reste en bloc dans l’eau et se disperse dans l’huile : l’huile est miscible avec la phase continue, donc l’émulsion n°2 est E/H. L’huile ajoutée se mélange à l’huile qui entoure les gouttes d’eau, qui se retrouvent plus espacées.', indice: 'La goutte se disperse dans le liquide miscible avec sa phase continue.' } },
     { id: 'cond-1', titre: 'Conductimétrie : par où passent les ions ?', focus: ['scene'],
       retenirTitre: 'À retenir : le test de dilution', retenir: <>
         <SvgCarteDilution/>
@@ -90,7 +90,7 @@ export function SimulationSensEmulsion() {
       texte: <>On prépare une crème avec de l’eau déminéralisée et un tensioactif non ionique (donc très peu d’ions). La conductivité mesurée est de <strong>4 µS/cm</strong>.</>,
       tache: { type: 'qcm', q: 'Peut-on en conclure que la crème est E/H ?', ...QCM.cond2,
         expl: 'Une phase aqueuse presque sans ions conduit très mal elle aussi : 4 µS/cm est possible pour une H/E faite avec de l’eau déminéralisée. Une valeur très faible ne prouve donc pas que l’huile est continue ; en revanche, une valeur forte prouve que l’eau est continue.', indice: 'Pour qu’une phase aqueuse conduise, il lui faut des ions : en a-t-elle ici ?' } },
-    { id: 'col-1', titre: 'Colorants : un seul à la fois', focus: ['scene'],
+    { id: 'col-1', titre: 'Test de coloration : le rouge Soudan', focus: ['scene'],
       retenirTitre: 'À retenir : la conductimétrie', retenir: <>
         <SvgCarteConduct/>
         <ul style={puces}>
@@ -98,24 +98,24 @@ export function SimulationSensEmulsion() {
           <li>Une H/E faite avec de l’eau <strong>peu ionisée</strong> a une conductivité faible : la mesure ne conclut pas.</li>
           <li>Moyen de s’en souvenir : <strong>« conducteur, donc eau continue ; isolant, doute possible »</strong>.</li>
         </ul></>,
-      texte: <>Le <strong>rouge Soudan</strong> (RS) est liposoluble : il colore l’huile, pas l’eau. Le <strong>bleu de méthylène</strong> (BM) est hydrosoluble : il colore l’eau, pas l’huile. On ajoute du rouge Soudan seul à une émulsion et on l’observe au microscope.</>,
-      tache: { type: 'qcm', q: 'On voit des gouttelettes rouges dans un fond incolore. Quelle est l’émulsion ?', ...QCM.col1,
-        expl: 'Le rouge Soudan colore l’huile : les gouttes sont de l’huile, dispersée dans une phase aqueuse (le fond incolore). L’émulsion est H/E. Avec un seul colorant, c’est la phase colorée (gouttes ou fond) qui renseigne.', indice: 'Le rouge Soudan colore uniquement l’huile : où est l’huile ici, en gouttes ou en fond ?' } },
-    { id: 'col-2', titre: 'Les deux colorants ensemble', focus: ['scene'],
-      texte: <>Souvent, on ajoute les <strong>deux colorants</strong> à la fois. Chaque phase prend alors sa couleur : l’huile rouge, l’eau bleue. À gauche, à l’œil nu : les gouttes, trop petites, ne se voient pas et la crème paraît violette. À droite, au microscope, on distingue un fond et des gouttes.</>,
-      tache: { type: 'qcm', q: 'On voit au microscope des gouttes bleues dans un fond rouge. Quelle est l’émulsion ?', ...QCM.col2,
-        expl: 'Le rouge Soudan colore l’huile : le fond rouge est de l’huile, phase continue ; les gouttes bleues sont de l’eau. L’émulsion est E/H. Il faut lire la couleur du fond, pas seulement celles qui sont présentes : les deux le sont toujours.', indice: 'Cherchez la couleur du fond, qui entoure tout le reste : rouge = huile, bleu = eau.' } },
-    { id: 'col-3', titre: 'Quel test pour lever le doute ?', focus: ['scene'],
+      texte: <>Le <strong>rouge Soudan</strong> (RS) est liposoluble : il colore l’huile, pas l’eau. On prélève un <strong>petit échantillon</strong> d’émulsion (qui est blanche), on y ajoute une pointe de rouge Soudan et on l’observe au microscope.</>,
+      tache: { type: 'qcm', q: 'On voit des gouttelettes rouges dans un fond blanc (non coloré). Quelle est l’émulsion ?', ...QCM.col1,
+        expl: 'Le rouge Soudan colore l’huile : les gouttes sont de l’huile, dispersée dans une phase aqueuse qui reste blanche. L’émulsion est H/E. Avec un colorant, on regarde ce qui est coloré : le fond (phase continue) ou les gouttes (phase dispersée).', indice: 'Le rouge Soudan colore uniquement l’huile : où est l’huile ici, en gouttes ou en fond ?' } },
+    { id: 'col-2', titre: 'Test de coloration : le bleu de méthylène', focus: ['scene'],
+      texte: <>Le <strong>bleu de méthylène</strong> (BM) est hydrosoluble : il colore l’eau, pas l’huile. On le teste sur <strong>un autre échantillon</strong> : chaque colorant a son propre prélèvement, on ne les mélange pas dans le même échantillon. Voici une autre émulsion, observée au microscope avec le bleu de méthylène.</>,
+      tache: { type: 'qcm', q: 'On voit des gouttelettes bleues dans un fond blanc (non coloré). Quelle est l’émulsion ?', ...QCM.col2,
+        expl: 'Le bleu de méthylène colore l’eau : les gouttes sont de l’eau, dispersée dans une phase huileuse qui reste blanche. L’émulsion est E/H. Attention : avec le bleu, des gouttes colorées signifient E/H, alors qu’avec le rouge Soudan elles signifient H/E.', indice: 'Le bleu de méthylène colore uniquement l’eau : où est l’eau ici, en gouttes ou en fond ?' } },
+    { id: 'col-3', titre: 'Deux colorations d’une même émulsion', focus: ['scene'],
       retenirTitre: 'À retenir : les colorants', retenir: <>
         <SvgCarteColorants/>
         <ul style={puces}>
-          <li>Avec rouge Soudan et bleu de méthylène ensemble, <strong>chaque phase prend sa couleur</strong> : huile rouge, eau bleue. C’est pour cela que les deux couleurs apparaissent toujours.</li>
-          <li>À l’œil nu, les gouttes (quelques micromètres) ne se voient pas : la crème paraît violette. Au microscope, <strong>le fond coloré est la phase continue</strong> ; les gouttes ont l’autre couleur.</li>
+          <li>Le <strong>rouge Soudan</strong> colore l’huile, le <strong>bleu de méthylène</strong> colore l’eau. Chacun se teste dans <strong>son propre échantillon</strong> : on ne les mélange pas.</li>
+          <li>Au microscope, un fond coloré est la phase continue ; des gouttes colorées sont la phase dispersée. L’émulsion elle-même est blanche : la phase non colorée reste blanche.</li>
           <li>Moyen de s’en souvenir : <strong>« la couleur du fond, c’est la phase continue »</strong>.</li>
         </ul></>,
-      texte: <>Revenons à l’émulsion colorée par les deux colorants. À l’œil nu, elle paraît violette et uniforme : on n’a pas de microscope sous la main.</>,
-      tache: { type: 'qcm', q: 'Quel test simple permet de conclure malgré tout ?', ...QCM.col3,
-        expl: 'Le test de dilution ne dépend ni des colorants ni de la couleur : il suffit de voir si la goutte se disperse dans l’eau ou dans l’huile. La conductimétrie aide aussi quand la phase aqueuse est salée.', indice: 'Quel test a fonctionné à l’œil nu, sans rien ajouter à l’émulsion ?' } },
+      texte: <>Les deux colorations donnent des résultats qui doivent <strong>concorder</strong>. On teste une même émulsion avec chaque colorant, sur deux échantillons séparés. Échantillon 1 (rouge Soudan) : un fond rouge et des gouttes blanches. Échantillon 2 (bleu de méthylène) : des gouttes bleues dans un fond blanc.</>,
+      tache: { type: 'qcm', q: 'Que peut-on conclure sur cette émulsion ?', ...QCM.col3,
+        expl: 'Fond rouge avec le rouge Soudan : l’huile est continue. Gouttes bleues avec le bleu de méthylène : l’eau est dispersée. Les deux tests disent E/H : ils concordent, ce qui renforce la conclusion. Chaque test fonctionne seul ; le test de dilution reste souvent le plus discriminant.', indice: 'Lisez chaque échantillon avec la règle de son colorant : rouge = huile, bleu = eau, puis cherchez la phase continue.' } },
     { id: 'ep-1', titre: 'Comment épaissir une mayonnaise ?', focus: ['scene'],
       retenirTitre: 'À retenir : trois tests', retenir: <>
         <SvgCarteTests/>
@@ -165,7 +165,7 @@ export function SimulationSensEmulsion() {
           <li><strong>Dilution</strong> : l’émulsion se mélange à sa phase continue (le test le plus fiable) ; <strong>colorants</strong> : le fond coloré est la phase continue ; <strong>conductimétrie</strong> : H/E au-dessus de 100 µS/cm, E/H sous 1 µS/cm.</li>
           <li>Pour <strong>épaissir</strong>, on ajoute la phase <strong>dispersée</strong> ; pour <strong>diluer</strong>, la phase <strong>continue</strong>.</li>
         </ul></>,
-      texte: <>Vous savez reconnaître le sens d’une émulsion par trois tests, expliquer pourquoi l’émulsion colorée par les deux colorants ne se lit qu’au microscope et prévoir quelle phase ajouter pour épaissir ou diluer. En exploration, vous pouvez comparer H/E et E/H, régler la salinité et le colorant ; les défis proposent des résultats de tests à interpréter et un calcul de volume à ajouter.</> },
+      texte: <>Vous savez reconnaître le sens d’une émulsion par trois tests, lire une coloration au microscope avec chacun des deux colorants et prévoir quelle phase ajouter pour épaissir ou diluer. En exploration, vous pouvez comparer H/E et E/H, régler la salinité et le colorant ; les défis proposent des résultats de tests à interpréter et un calcul de volume à ajouter.</> },
   ];
   const IDS = ETAPES.map(e => e.id), etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? IDS[etape] : null;
   const hl = id => enGuide && ETAPES[etape].focus.includes(id);
@@ -180,13 +180,13 @@ export function SimulationSensEmulsion() {
   // ---------- scènes du parcours ----------
   const sceneGuide = {
     sens: () => <div className="se-deux"><SvgCoupe id="g1" type="H/E" phi={0.35} titre="H/E (huile dans eau)"/><SvgCoupe id="g2" type="E/H" phi={0.35} titre="E/H (eau dans huile)"/></div>,
-    'dil-1': () => <SvgDilution type="H/E" nom="émulsion X"/>,
-    'dil-2': () => <SvgDilution type="E/H" nom="émulsion Y"/>,
+    'dil-1': () => <SvgDilution type="H/E" nom="émulsion n°1"/>,
+    'dil-2': () => <SvgDilution type="E/H" nom="émulsion n°2"/>,
     'cond-1': () => <SvgConductimetre type="H/E" phi={0.4} cmmol={10} forcerSigma={1400}/>,
     'cond-2': () => <SvgConductimetre type="H/E" phi={0.4} cmmol={0} forcerSigma={4} peu/>,
-    'col-1': () => <SvgCoupe id="g3" type="H/E" phi={0.3} colorant="RS" titre="Au microscope, avec le rouge Soudan seul"/>,
-    'col-2': () => <SvgMicroMacro type="E/H" phi={0.3} colorant="RS+BM" bille={false} legende={false}/>,
-    'col-3': () => <SvgMicroMacro type="E/H" phi={0.3} colorant="RS+BM" bille={false} legende={false}/>,
+    'col-1': () => <SvgCoupe id="g3" type="H/E" phi={0.3} colorant="RS" titre="Au microscope : rouge Soudan"/>,
+    'col-2': () => <SvgCoupe id="g4" type="E/H" phi={0.3} colorant="BM" titre="Au microscope : bleu de méthylène"/>,
+    'col-3': () => <SvgDeuxEchantillons type="E/H"/>,
     'ep-1': () => <SvgMicroMacro type="H/E" phi={M.phi(em)}/>,
     'ep-2': () => <SvgMicroMacro type={em.type} phi={M.phi(em)}/>,
     'ep-micro': () => <SvgMicroMacro type={em.type} phi={M.phi(em)}/>,
@@ -217,7 +217,7 @@ export function SimulationSensEmulsion() {
   const resultatsSens = d => {
     const lignes = [];
     if (d.tests.dilution) lignes.push(['Dilution', `dans l’eau : ${M.sedisperse(d.type, 'eau') ? 'la goutte se disperse' : 'la goutte reste en bloc'} ; dans l’huile : ${M.sedisperse(d.type, 'huile') ? 'la goutte se disperse' : 'la goutte reste en bloc'}`]);
-    lignes.push(['Colorants (rouge Soudan + bleu de méthylène)', d.tests.colorants === 'micro' ? (() => { const c = M.coloration(d.type, 'RS+BM'); return `au microscope : fond ${c.fond}, gouttes ${c.gouttes}`; })() : 'à l’œil nu : mélange violet uniforme, pas de microscope disponible']);
+    lignes.push(['Colorants (un échantillon avec chaque colorant)', d.tests.colorants === 'micro' ? (() => { const a = M.coloration(d.type, 'RS'), b = M.coloration(d.type, 'BM'); const dec = c => `fond ${c.fond ?? 'blanc'}, gouttes ${c.gouttes ?? 'blanches'}`; return `au microscope, avec le rouge Soudan : ${dec(a)} ; avec le bleu de méthylène : ${dec(b)}`; })() : 'pas de microscope disponible : coloration illisible']);
     lignes.push(['Conductimétrie', `${lectureConduct(d.sigma)}${d.cmmol === 0 && d.type === 'H/E' ? ' (eau déminéralisée, tensioactif non ionique)' : ''}`]);
     return lignes;
   };
@@ -268,7 +268,7 @@ export function SimulationSensEmulsion() {
   // ---------- hypothèses ----------
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Coupe schématique</strong> : jaune = huile et bleu pâle = eau sont des couleurs conventionnelles (en réalité les deux phases sont incolores et l’émulsion est blanche à l’œil nu). Les gouttes de tailles voisines occupent des positions fixes : ajouter une phase les fait grossir ou les écarter, sans en changer le nombre. Dans une vraie préparation, l’agitation modifie aussi la taille et le nombre des gouttes. Les gouttes réelles mesurent quelques micromètres, et leur fraction d’aire sur une coupe est égale à leur fraction volumique.</li>
+      <li><strong>Coupe schématique</strong> : jaune = huile et bleu pâle = eau sont des couleurs conventionnelles (en réalité l’émulsion est blanche à l’œil nu). Les gouttes de tailles voisines occupent des positions fixes : ajouter une phase les fait grossir ou les écarter, sans en changer le nombre. Dans une vraie préparation, l’agitation modifie aussi la taille et le nombre des gouttes. Les gouttes réelles mesurent quelques micromètres, et leur fraction d’aire sur une coupe est égale à leur fraction volumique.</li>
       <li><strong>Test de dilution</strong> : goutte déposée sans agiter ; il suppose une crème pas trop épaisse ni gélifiée, et ne convient pas aux émulsions multiples (E/H/E) sans croiser avec un autre test.</li>
       <li><strong>Colorants</strong> : le rouge Soudan (liposoluble) colore l’huile, le bleu de méthylène (hydrosoluble) colore l’eau. Dans la réalité, ils se partagent un peu entre les phases et peuvent se fixer sur le tensioactif : la lecture se fait au microscope sur le fond coloré, et il vaut mieux croiser avec la dilution.</li>
       <li><strong>Conductimétrie</strong> : ordres de grandeur. Phase aqueuse déminéralisée avec un peu de tensioactif ≈ 6 µS/cm, plus 126 µS/cm par mmol/L de chlorure de sodium. Pour une H/E, on prend σ = σ<sub>eau</sub> · 2(1 − φ)/(2 + φ) (sphères isolantes dans un milieu conducteur). Une E/H est donnée à moins de 1 µS/cm ; une E/H très riche en eau peut conduire par des canaux d’eau reliés (non modélisé).</li>
@@ -292,8 +292,8 @@ export function SimulationSensEmulsion() {
       <Section titre={`Colorants : ${ex.colorant === 'aucun' ? 'aucun' : ex.colorant}`} ouvert={!!ouv.col} onBascule={() => bascule('col')}>
         <label htmlFor="se-col" style={libelle}>Colorant ajouté</label>
         <select id="se-col" value={ex.colorant} onChange={ev => majEx({ colorant: ev.target.value })} style={selectStyle}>
-          <option value="aucun">aucun</option><option value="RS">rouge Soudan (RS) seul</option><option value="BM">bleu de méthylène (BM) seul</option><option value="RS+BM">RS + BM ensemble</option></select>
-        <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>RS colore l’huile, BM colore l’eau. Regardez la coupe et l’aspect à l’œil nu.</div>
+          <option value="aucun">aucun</option><option value="RS">rouge Soudan (RS)</option><option value="BM">bleu de méthylène (BM)</option></select>
+        <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4 }}>RS colore l’huile, BM colore l’eau. On les teste dans des échantillons séparés : choisissez-en un et regardez la coupe.</div>
       </Section>
       <Section titre={`Sel dans la phase aqueuse : ${fr(ex.cmmol, 0)} mmol/L`} ouvert={!!ouv.sel} onBascule={() => bascule('sel')}>
         <label htmlFor="se-sel" style={libelle}>Chlorure de sodium (mmol/L)</label>
