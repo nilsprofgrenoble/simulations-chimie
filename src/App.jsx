@@ -215,8 +215,7 @@ const SimulationSolubilite = paresseux(() => import("./simulations/Solubilite"),
 const SimulationAPropos = paresseux(() => import("./simulations/APropos"), "SimulationAPropos");
 const SimulationPourEnseignants = paresseux(() => import("./simulations/PourEnseignants"), "SimulationPourEnseignants");
 const SimulationModeleSolubilite = paresseux(() => import("./simulations/ModeleSolubilite"), "SimulationModeleSolubilite");
-const SimulationAtelierDonnees = paresseux(() => import("./simulations/AtelierDonnees"), "SimulationAtelierDonnees");
-const SimulationAtelierGraphique = paresseux(() => import("./simulations/AtelierGraphique"), "SimulationAtelierGraphique");
+const SimulationAtelierSapp = paresseux(() => import("./simulations/AtelierSapp"), "SimulationAtelierSapp");
 const SimulationAtelierRealiser = paresseux(() => import("./simulations/AtelierRealiser"), "SimulationAtelierRealiser");
 const SimulationAtelierAnalyser = paresseux(() => import("./simulations/AtelierAnalyser"), "SimulationAtelierAnalyser");
 const SimulationAtelierValider = paresseux(() => import("./simulations/AtelierValider"), "SimulationAtelierValider");
@@ -524,10 +523,10 @@ const SIMULATIONS = [
     component: SimulationRMNC2D },
   { id:53, label:"Solubilité et miscibilité : le bilan des interactions", niveau:"1G", icon:"🧪", color:"#2a9d8f",
     component: SimulationSolubilite },
-  { id:34, label:"S'APP : extraire les données d'un énoncé", niveau:"COMP", icon:"🎯", color:"#5b4bdb",
-    component: SimulationAtelierDonnees },
+  { id:34, label:"S'APP : s'approprier un énoncé", niveau:"COMP", icon:"🎯", color:"#5b4bdb",
+    component: SimulationAtelierSapp },
   { id:35, label:"S'APP : lire un graphique", niveau:"COMP", icon:"📈", color:"#5b4bdb",
-    component: SimulationAtelierGraphique },
+    component: SimulationAtelierSapp },
   { id:36, label:"REA : réaliser un calcul", niveau:"COMP", icon:"🧮", color:"#5b4bdb",
     component: SimulationAtelierRealiser },
   { id:37, label:"ANA : analyser un problème", niveau:"COMP", icon:"🧭", color:"#5b4bdb",
@@ -595,7 +594,8 @@ function construireMenus() {
     if (m.key === "JEUX") return { ...m, groupes: [{ sims: [], contenu: ({ aller }) => <EnChargement><JeuxMenu aller={aller} /></EnChargement> }] };
     if (m.key === "OUTILS") return { ...m, groupes: [{ sims: OUTILS_ADMIN_IDS.map(id => SIMULATIONS.find(x => x.id === id)).filter(Boolean).map(fiche) }] };
     if (m.key === "COMP") {
-      const sims = SIMULATIONS.filter(s => s.niveau === "COMP").sort((a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
+      const sims = SIMULATIONS.filter(s => s.niveau === "COMP" && s.id !== 35).sort(   // 35 (lire un graphique) est un type de la porte S'APP (34) : on garde l'adresse ?sim=35 sans doublon dans le menu
+        (a, b) => ORDRE_COMP.indexOf(a.id) - ORDRE_COMP.indexOf(b.id)).map(fiche);
       return { ...m, groupes: [{ sims }] };
     }
     const groupes = [];

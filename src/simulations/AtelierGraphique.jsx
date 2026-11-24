@@ -1,8 +1,6 @@
-import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo, useRef } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, exParam, attrTest } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
-import { parDomaine } from "./ordreDomaines";
 import { SCENARIOS, nouveauGraphique, questions, verifierNum, nb, decimales, fmtAxe } from "./AtelierGraphiqueBanque";
 import { Pic } from "../Pictos";
 
@@ -77,10 +75,10 @@ const Correction = ({ children }) => (
 
 const nouveau = id => nouveauGraphique(id);
 
-export function SimulationAtelierGraphique() {
-  const depart = (() => { const p = exParam(); return SCENARIOS.some(s => s.id === p) ? p : 'manometre'; })();
-  const [choix, setChoix] = useState(depart);
-  const [g, setG] = useState(() => nouveau(depart));
+// Un graphique à lire (S'APP) : entête et navigation fournis par le parcours (AtelierSapp.jsx)
+export function ExerciceGraphique({ id, entete, navigation }) {
+  const choix = id;
+  const [g, setG] = useState(() => nouveau(id));
   const [rep, setRep] = useState({});
   const [chk, setChk] = useState({});
   const [vu, setVu] = useState({});
@@ -148,7 +146,6 @@ export function SimulationAtelierGraphique() {
       <GrapheLecture g={gr} reticule={reticule && !enDefi} marques={marques}/>
       {caseReticule}
     </div>);
-  const scen = SCENARIOS.find(s => s.id === g.id);
 
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
@@ -157,20 +154,14 @@ export function SimulationAtelierGraphique() {
         .atg-g { position: sticky; top: 8px; }
         @media (max-width: 960px) { .atg-l1 { grid-template-columns: minmax(0, 1fr); } .atg-g { position: static; } }
       `}</style>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-        <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>S’APP : lire un graphique</h2>
+      {entete}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+        {navigation}
+        <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouveau graphique</button>
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>S’approprier</b> — identifier grandeurs, unités et échelles, lire des valeurs (parfois dans une autre unité que celle de l’axe), interpréter l’allure d’une courbe.</div>
       <div className="atg-l1">
           <div className="atg-g">
-            {!enDefi && (
-              <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}>
-                <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Graphique :
-                  <ChoixListe ariaLabel="Choix du graphique" titre="Choisir un graphique" valeur={choix} onChoisir={v => { setChoix(v); charger(v); }}
-                    groupes={parDomaine(SCENARIOS).map(([d, l]) => ({ label: d, items: l.map(sc => ({ value: sc.id, label: sc.titre({ liq: 'eau' }) })) }))}/>
-                </div>
-                <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouveau graphique</button>
-              </div>)}
             {vueGraphe(g, marquesExplore)}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
