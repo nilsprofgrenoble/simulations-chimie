@@ -154,7 +154,7 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
     const dEt = Math.sqrt(K * defi.qA * Math.abs(defi.qB) * 1e-18 / (defi.Fp * 1e-6));
     const d = lireNombre(r.d), attr = defi.qA * defi.qB < 0;
     const okD = isFinite(d) && proche(d * 1e-2, dEt, 0.02), okS = r.sensF === (attr ? 'vers' : 'loin');
-    let mD = okD ? 'Distance correcte.' : 'Distance : isolez d dans F = k·|q_A|·|q_B| / d², puis d = √(k·|q_A|·|q_B| / F), avec les charges en coulombs et F en newtons.';
+    let mD = okD ? 'Distance correcte.' : 'Distance : isolez d dans F = frac(k·∣q_A∣·∣q_B∣|d²), puis d = √(k·|q_A|·|q_B| / F), avec les charges en coulombs et F en newtons.';
     if (!okD && isFinite(d) && proche(d, dEt, 0.02)) mD = 'C’est la bonne valeur, mais en mètres : la distance est demandée en cm.';
     return { ok: okD && okS, lignes: [[okD, mD],
       [okS, okS ? 'Sens correct.' : 'Sens : des charges de même signe se repoussent, des charges de signes opposés s’attirent.']] };
@@ -222,8 +222,8 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
         </div>
       </>}
       <IndiceDefi cache={reussi}>{defi.type === 'sens' ? <>Charges de même signe : répulsion ; de signes opposés : attraction. Chaque force est dirigée selon la droite qui joint les deux corps.</>
-        : defi.type === 'gravite' ? <>F = G × M × m / d², avec d la distance entre le centre de la Terre et celui du satellite (rayon de la Terre + altitude, en mètres).</>
-        : <>Isole d dans la loi de Coulomb F = k × |qA × qB| / d² : d = √(k × |qA × qB| / F). Convertis tout en unités du système international.</>}</IndiceDefi>
+        : defi.type === 'gravite' ? <>F = {avecIndices('frac(G × M × m|d²)')}, avec d la distance entre le centre de la Terre et celui du satellite (rayon de la Terre + altitude, en mètres).</>
+        : <>Isole d dans la loi de Coulomb F = {avecIndices('frac(k × ∣qA × qB∣|d²)')} : d = √(k × |qA × qB| / F). Convertis tout en unités du système international.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
@@ -292,31 +292,31 @@ export function SimulationDeuxCorps() {
     { id: 'calculLune', titre: 'Calculer la force de gravitation', focus: ['calcul'],
       retenirTitre: 'À RETENIR : ACTIONS RÉCIPROQUES',
       retenir: <FicheReciproques/>,
-      texte: <>La norme de la force de gravitation entre deux corps de masses m<sub>A</sub> et m<sub>B</sub> dont les centres sont distants de d est <strong>F = G·m<sub>A</sub>·m<sub>B</sub> / d²</strong>, avec G = 6,674 × 10⁻¹¹ N·m²·kg⁻². Faites le calcul vous-même avant de lire la mesure.</>,
+      texte: <>La norme de la force de gravitation entre deux corps de masses m<sub>A</sub> et m<sub>B</sub> dont les centres sont distants de d est <strong>F = G·m<sub>A</sub>·{avecIndices('frac(m_B|d²)')}</strong>, avec G = 6,674 × 10⁻¹¹ N·m²·kg⁻². Faites le calcul vous-même avant de lire la mesure.</>,
       tache: { type: 'num', q: 'Norme de la force entre la Terre et la Lune à d = 3,84 × 10⁸ m', unite: 'N', vrai: F_LUNE, tol: 0.03, affiche: v => puiss(v, 2), cs: 2,
         bloque: okLune ? null : 'Réglez d’abord Terre – Lune à d = 3,84 × 10⁸ m (bouton de l’étape précédente).',
         pieges: [[F_LUNE * 3.84e8 / 1, 'Le dénominateur est d² : n’oubliez pas le carré.'], [G * M_T * 7.35e22 * 3.84e8, 'La distance est au dénominateur, au carré.'],
           [G * M_T * 7.35e22 / (3.84e5) ** 2, 'Convertissez d en mètres : 3,84 × 10⁸ m (et non en km).']],
         calcul: () => [
-          'Formule : F = G·m_A·m_B / d². On suppose la Terre et la Lune à répartition sphérique de masse : d est la distance entre leurs centres. G = 6,674 × 10⁻¹¹ N·m²·kg⁻².',
+          'Formule : F = frac(G·m_A·m_B|d²). On suppose la Terre et la Lune à répartition sphérique de masse : d est la distance entre leurs centres. G = 6,674 × 10⁻¹¹ N·m²·kg⁻².',
           'Données : M_T = 5,972 × 10²⁴ kg ; M_L = 7,35 × 10²² kg ; d = 3,84 × 10⁸ m.',
           `Numérateur : G·M_T·M_L = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ × 7,35 × 10²² = ${puiss(G * M_T * 7.35e22, 4)}.`,
           `Dénominateur : d² = (3,84 × 10⁸)² = ${puiss(3.84e8 ** 2, 4)} m².`,
-          `F = ${puiss(G * M_T * 7.35e22, 4)} / ${puiss(3.84e8 ** 2, 4)} = ${puiss(F_LUNE, 3)} N, soit ${puiss(F_LUNE, 2)} N.`],
-        expl: 'F = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ × 7,35 × 10²² / (3,84 × 10⁸)² ≈ 1,99 × 10²⁰ N.', indice: "F = G × mA × mB / d², avec les masses en kg et d en mètres (valeurs données dans la simulation). Garde 2 chiffres significatifs." } },
+          `F = frac(${puiss(G * M_T * 7.35e22, 4)}|${puiss(3.84e8 ** 2, 4)}) = ${puiss(F_LUNE, 3)} N, soit ${puiss(F_LUNE, 2)} N.`],
+        expl: 'F = frac(6,674 × 10⁻¹¹ × 5,972 × 10²⁴ × 7,35 × 10²²|(3,84 × 10⁸)²) ≈ 1,99 × 10²⁰ N.', indice: "F = frac(G × mA × mB|d²), avec les masses en kg et d en mètres (valeurs données dans la simulation). Garde 2 chiffres significatifs." } },
     { id: 'calculEleves', titre: 'La force entre deux élèves', focus: ['reglages', 'scene', 'calcul'],
       retenirTitre: 'À RETENIR : LA GRAVITATION UNIVERSELLE',
       retenir: <FicheGravitationUniverselle/>,
       texte: <>Passons à une échelle humaine : deux élèves de <strong>60 kg</strong> et <strong>70 kg</strong>, à <strong>1,0 m</strong> l’un de l’autre.{' '}<button onClick={poserEleves} style={stylePetitBouton(true, '#2563eb')}>Deux élèves : 60 kg, 70 kg, d = 1,0 m</button><br/>Calculez la norme de la force de gravitation exercée par un élève sur l’autre.</>,
       tache: { type: 'num', q: 'Norme de la force entre les deux élèves', unite: 'N', vrai: G * 60 * 70, tol: 0.03, affiche: v => puiss(v, 2), cs: 2,
         bloque: okEleves ? null : 'Réglez d’abord les deux élèves (bouton ci-dessus).',
-        pieges: [[60 * 70, 'Il manque la constante G = 6,674 × 10⁻¹¹ N·m²·kg⁻².'], [G * (60 + 70), 'Les masses se multiplient : F = G·m_A·m_B / d², on n’additionne pas m_A et m_B.']],
+        pieges: [[60 * 70, 'Il manque la constante G = 6,674 × 10⁻¹¹ N·m²·kg⁻².'], [G * (60 + 70), 'Les masses se multiplient : F = frac(G·m_A·m_B|d²), on n’additionne pas m_A et m_B.']],
         calcul: () => [
-          'Formule : F = G·m_A·m_B / d², avec G = 6,674 × 10⁻¹¹ N·m²·kg⁻² (élèves assimilés à des corps ponctuels, distance d entre leurs centres).',
+          'Formule : F = frac(G·m_A·m_B|d²), avec G = 6,674 × 10⁻¹¹ N·m²·kg⁻² (élèves assimilés à des corps ponctuels, distance d entre leurs centres).',
           'Données : m_A = 60 kg ; m_B = 70 kg ; d = 1,0 m (déjà en mètres).',
           `Numérateur : G·m_A·m_B = 6,674 × 10⁻¹¹ × 60 × 70 = ${puiss(G * 4200, 4)}.`,
-          `F = ${puiss(G * 4200, 4)} / 1,0² = ${puiss(G * 4200, 2)} N.`],
-        expl: 'F = 6,674 × 10⁻¹¹ × 60 × 70 / 1,0² ≈ 2,8 × 10⁻⁷ N.', indice: "F = G × mA × mB / d² : prends les masses des deux élèves (en kg) et la distance indiquée (en m)." } },
+          `F = frac(${puiss(G * 4200, 4)}|1,0²) = ${puiss(G * 4200, 2)} N.`],
+        expl: 'F = frac(6,674 × 10⁻¹¹ × 60 × 70|1,0²) ≈ 2,8 × 10⁻⁷ N.', indice: "F = frac(G × mA × mB|d²) : prends les masses des deux élèves (en kg) et la distance indiquée (en m)." } },
     { id: 'poidsComp', titre: 'Pourquoi ne la sent-on pas ?', focus: ['mesures'],
       texte: <>Le poids d’un élève de 70 kg est d’environ 690 N. Comparez avec la force que vous venez de calculer.</>,
       tache: { type: 'qcm', q: 'On ne ressent pas l’attraction gravitationnelle de son voisin parce que…', options: ['elle est environ 10⁹ fois plus faible que le poids : elle est négligeable', 'elle n’existe pas entre deux personnes', 'elle est compensée par la force exercée par le voisin sur nous'], bonne: 0,
@@ -329,39 +329,39 @@ export function SimulationDeuxCorps() {
           [G * 60 * 70, 'C’est la valeur à d = 1,0 m. Ici d = 2,0 m : divisez par d² = 4.'],
           [G * 60 * 70 * 4, 'Plus on s’éloigne, plus la force diminue : on divise par d², on ne multiplie pas.']],
         calcul: () => [
-          'Formule : F = G·m_A·m_B / d², avec m_A = 60 kg, m_B = 70 kg, d = 2,0 m.',
+          'Formule : F = frac(G·m_A·m_B|d²), avec m_A = 60 kg, m_B = 70 kg, d = 2,0 m.',
           `Numérateur : G·m_A·m_B = 6,674 × 10⁻¹¹ × 60 × 70 = ${puiss(G * 4200, 4)}.`,
           'Dénominateur : d² = (2,0)² = 4,0 m².',
-          `F = ${puiss(G * 4200, 4)} / 4,0 = ${puiss(G * 4200 / 4, 2)} N.`],
-        expl: 'F = 6,674 × 10⁻¹¹ × 60 × 70 / 2,0² ≈ 7,0 × 10⁻⁸ N, soit quatre fois moins qu’à 1,0 m.', indice: "Même formule, F = G × mA × mB / d², avec cette nouvelle valeur de d (en mètres)." } },
+          `F = frac(${puiss(G * 4200, 4)}|4,0) = ${puiss(G * 4200 / 4, 2)} N.`],
+        expl: 'F = frac(6,674 × 10⁻¹¹ × 60 × 70|2,0²) ≈ 7,0 × 10⁻⁸ N, soit quatre fois moins qu’à 1,0 m.', indice: "Même formule, F = frac(G × mA × mB|d²), avec cette nouvelle valeur de d (en mètres)." } },
     { id: 'loiD', titre: 'La loi en 1/d²', focus: ['graphe'],
       texte: <>Comparez les deux résultats (à 1,0 m et à 2,0 m) et regardez la courbe de F en fonction de d.</>,
       tache: { type: 'qcm', q: 'Quand la distance entre les centres des deux corps double, la norme de la force est…', options: ['divisée par 4', 'divisée par 2', 'inchangée'], bonne: 0,
-        expl: 'F = G·m_A·m_B / d² : si d est multiplié par 2, d² est multiplié par 4, donc F est divisée par 4.', indice: "La norme de la force est proportionnelle à 1 / d². Remplace d par 2 d dans F = G × mA × mB / d²." } },
+        expl: 'F = frac(G·m_A·m_B|d²) : si d est multiplié par 2, d² est multiplié par 4, donc F est divisée par 4.', indice: "La norme de la force est proportionnelle à frac(1|d²). Remplace d par 2 d dans F = frac(G × mA × mB|d²)." } },
     { id: 'loiM', titre: 'Effet de la masse', focus: ['reglages', 'mesures', 'calcul'],
       retenirTitre: 'À RETENIR : COMMENT VARIE LA FORCE ?',
       retenir: <FicheLoiDistance/>,
       texte: <>Remettez les élèves à 1,0 m l’un de l’autre, puis remplacez l’élève B par un élève de <strong>140 kg</strong> (deux fois plus lourd).{' '}<button onClick={poserM2} style={stylePetitBouton(true, '#2563eb')}>m_B = 140 kg, d = 1,0 m</button><br/>Comparez avec la force obtenue pour 70 kg à 1,0 m (≈ 2,8 × 10⁻⁷ N).</>,
       tache: { type: 'qcm', q: 'Quand la masse m_B double, la norme de la force est…', options: ['multipliée par 2 (proportionnelle à m_B)', 'multipliée par 4', 'inchangée'], bonne: 0,
-        expl: 'F = G·m_A·m_B / d² est proportionnelle à chacune des deux masses : doubler m_B double F.', indice: "La norme de la force est proportionnelle au produit mA × mB. Que devient F quand l’une des deux masses est multipliée par 2 ?" } },
+        expl: 'F = frac(G·m_A·m_B|d²) est proportionnelle à chacune des deux masses : doubler m_B double F.', indice: "La norme de la force est proportionnelle au produit mA × mB. Que devient F quand l’une des deux masses est multipliée par 2 ?" } },
     { id: 'repulsion', titre: 'Des charges de même signe', focus: ['reglages', 'scene'],
       texte: <>Deux corps portant des charges électriques q<sub>A</sub> et q<sub>B</sub> exercent aussi l’un sur l’autre des forces : c’est l’<strong>interaction électrostatique</strong>. Choisissez deux boules de <strong>+10 nC</strong> chacune, à <strong>10 cm</strong>.{' '}<button onClick={poserPP} style={stylePetitBouton(true, '#2563eb')}>q_A = q_B = +10 nC, d = 10 cm</button><br/>Observez le sens des flèches de force.</>,
       tache: { type: 'qcm', q: 'Deux charges de même signe…', options: ['se repoussent : chaque force est dirigée à l’opposé de l’autre corps', 's’attirent : chaque force est dirigée vers l’autre corps', 'n’interagissent pas'], bonne: 0,
         expl: 'Charges de même signe : interaction répulsive. Charges de signes opposés : interaction attractive.', indice: "Rappelle la règle d’interaction entre charges : même signe ou signes opposés, attraction ou répulsion ? Les forces sont dirigées selon la droite qui joint les deux corps." } },
     { id: 'calculCoulomb', titre: 'La loi de Coulomb', focus: ['reglages', 'scene', 'calcul'],
-      texte: <>Gardez q<sub>A</sub> = +10 nC et réglez maintenant <strong>q<sub>B</sub> = −10 nC</strong>.{' '}<button onClick={poserPM} style={stylePetitBouton(true, '#2563eb')}>q_B = −10 nC</button><br/>La norme de la force électrostatique est <strong>F = k·|q<sub>A</sub>|·|q<sub>B</sub>| / d²</strong>, avec k = 9,0 × 10⁹ N·m²·C⁻². Calculez-la pour les deux boules (q<sub>A</sub> = +10 nC, q<sub>B</sub> = −10 nC, d = 10 cm) ; charges en coulombs, distance en mètres.</>,
+      texte: <>Gardez q<sub>A</sub> = +10 nC et réglez maintenant <strong>q<sub>B</sub> = −10 nC</strong>.{' '}<button onClick={poserPM} style={stylePetitBouton(true, '#2563eb')}>q_B = −10 nC</button><br/>La norme de la force électrostatique est <strong>F = {avecIndices('frac(k·∣q_A∣·∣q_B∣|d²)')}</strong>, avec k = 9,0 × 10⁹ N·m²·C⁻². Calculez-la pour les deux boules (q<sub>A</sub> = +10 nC, q<sub>B</sub> = −10 nC, d = 10 cm) ; charges en coulombs, distance en mètres.</>,
       tache: { type: 'num', q: 'Norme de la force entre les deux boules', unite: 'N', vrai: F_COUL, tol: 0.02, affiche: v => puiss(v, 2), cs: 2,
         bloque: okPM ? null : 'Réglez d’abord q_A = +10 nC, q_B = −10 nC et d = 10 cm (bouton ci-dessus).',
         pieges: [[K * 100 / 0.01, 'Convertissez les charges en coulombs : 10 nC = 10 × 10⁻⁹ C.'], [K * 10e-9 * 10e-9 / 0.1, 'Convertissez d en mètres puis élevez-le au carré : (0,10 m)² = 0,010 m².'], [-F_COUL, 'La norme d’une force est positive : on utilise |q_A|·|q_B|.'],
-          [K * 1e-16, 'Il manque d² au dénominateur : F = k·|q_A|·|q_B| / d².'],
+          [K * 1e-16, 'Il manque d² au dénominateur : F = frac(k·∣q_A∣·∣q_B∣|d²).'],
           [K * 1e-16 / 100, 'Convertissez d en mètres : 10 cm = 0,10 m, donc d² = 0,010 m².']],
         calcul: () => [
-          'Formule : F = k·|q_A|·|q_B| / d², avec k = 9,0 × 10⁹ N·m²·C⁻² (boules assimilées à des charges ponctuelles ; d = distance entre leurs centres). On utilise les valeurs absolues des charges.',
+          'Formule : F = frac(k·∣q_A∣·∣q_B∣|d²), avec k = 9,0 × 10⁹ N·m²·C⁻² (boules assimilées à des charges ponctuelles ; d = distance entre leurs centres). On utilise les valeurs absolues des charges.',
           'Conversions : |q_A| = |q_B| = 10 nC = 10 × 10⁻⁹ C = 1,0 × 10⁻⁸ C ; d = 10 cm = 0,10 m.',
           'Numérateur : k·|q_A|·|q_B| = 9,0 × 10⁹ × 1,0 × 10⁻⁸ × 1,0 × 10⁻⁸ = 9,0 × 10⁻⁷.',
           'Dénominateur : d² = (0,10)² = 1,0 × 10⁻² m².',
-          `F = 9,0 × 10⁻⁷ / 1,0 × 10⁻² = ${puiss(F_COUL, 2)} N.`],
-        expl: 'F = 9,0 × 10⁹ × 10 × 10⁻⁹ × 10 × 10⁻⁹ / (0,10)² = 9,0 × 10⁻⁵ N.', indice: "Loi de Coulomb : F = k × |qA × qB| / d², avec les charges en coulombs et d en mètres (convertis les µC, nC et cm)." } },
+          `F = frac(9,0 × 10⁻⁷|1,0 × 10⁻²) = ${puiss(F_COUL, 2)} N.`],
+        expl: 'F = frac(9,0 × 10⁹ × 10 × 10⁻⁹ × 10 × 10⁻⁹|(0,10)²) = 9,0 × 10⁻⁵ N.', indice: "Loi de Coulomb : F = frac(k × ∣qA × qB∣|d²), avec les charges en coulombs et d en mètres (convertis les µC, nC et cm)." } },
     { id: 'calculAtome', titre: 'La force dans l’atome', focus: ['reglages', 'scene', 'calcul'],
       retenirTitre: 'À RETENIR : LA LOI DE COULOMB',
       retenir: <FicheCoulomb/>,
@@ -371,20 +371,20 @@ export function SimulationDeuxCorps() {
         pieges: [[K * E_CH ** 2 / 53e-12, 'N’oubliez pas le carré sur la distance : R² = (53 × 10⁻¹² m)².'], [K * E_CH ** 2 / 53 ** 2, 'Convertissez R en mètres : 53 pm = 53 × 10⁻¹² m.'],
           [K * E_CH / (53e-12) ** 2, 'Les deux charges valent e : au numérateur, c’est e² = e × e (il manque un facteur e).']],
         calcul: () => [
-          'Formule : F = k·e·e / R² (proton +e, électron −e ; modèle planétaire, charges ponctuelles), avec k = 9,0 × 10⁹ N·m²·C⁻² et e = 1,602 × 10⁻¹⁹ C.',
+          'Formule : F = frac(k·e·e|R²) (proton +e, électron −e ; modèle planétaire, charges ponctuelles), avec k = 9,0 × 10⁹ N·m²·C⁻² et e = 1,602 × 10⁻¹⁹ C.',
           'Conversion : R = 53 pm = 53 × 10⁻¹² m = 5,3 × 10⁻¹¹ m.',
           `Numérateur : k·e² = 9,0 × 10⁹ × (1,602 × 10⁻¹⁹)² = 9,0 × 10⁹ × ${puiss(E_CH ** 2, 4)} = ${puiss(K * E_CH ** 2, 4)}.`,
           `Dénominateur : R² = (5,3 × 10⁻¹¹)² = ${puiss((53e-12) ** 2, 4)} m².`,
-          `F = ${puiss(K * E_CH ** 2, 4)} / ${puiss((53e-12) ** 2, 4)} = ${puiss(F_ATOME, 2)} N.`],
-        expl: 'F = 9,0 × 10⁹ × (1,602 × 10⁻¹⁹)² / (53 × 10⁻¹²)² ≈ 8,2 × 10⁻⁸ N. Petite valeur… mais appliquée à un électron de 9 × 10⁻³¹ kg !', indice: "Proton et électron ont des charges égales (en valeur absolue) à e = 1,6 × 10⁻¹⁹ C : F = k × e² / d², avec d en mètres." } },
+          `F = frac(${puiss(K * E_CH ** 2, 4)}|${puiss((53e-12) ** 2, 4)}) = ${puiss(F_ATOME, 2)} N.`],
+        expl: 'F = frac(9,0 × 10⁹ × (1,602 × 10⁻¹⁹)²|(53 × 10⁻¹²)²) ≈ 8,2 × 10⁻⁸ N. Petite valeur… mais appliquée à un électron de 9 × 10⁻³¹ kg !', indice: "Proton et électron ont des charges égales (en valeur absolue) à e = 1,6 × 10⁻¹⁹ C : F = frac(k × e²|d²), avec d en mètres." } },
     { id: 'compare', titre: 'Gravitation ou électrostatique ?', focus: ['compar'],
       texte: <>Le cadre « Comparer les deux interactions » calcule aussi la force de <em>gravitation</em> entre le proton (1,673 × 10⁻²⁷ kg) et l’électron (9,109 × 10⁻³¹ kg) à la même distance.</>,
       tache: { type: 'qcm', q: 'Dans l’atome, la force électrostatique est… la force de gravitation.', options: ['environ 10³⁹ fois plus grande que', 'environ 10³ fois plus grande que', 'du même ordre de grandeur que'], bonne: 0,
         expl: `F_élec ≈ ${puiss(F_ATOME, 2)} N et F_grav ≈ ${puiss(F_GATOME, 2)} N : le rapport vaut ≈ ${puiss(F_ATOME / F_GATOME, 2)}. À l’échelle atomique, la gravitation est totalement négligeable ; c’est l’électrostatique qui assemble les atomes et les molécules.`, indice: "Calcule le rapport entre la force électrostatique et la force gravitationnelle dans l’atome, puis donne son ordre de grandeur (une puissance de 10)." } },
     { id: 'analogie', titre: 'Deux lois, une même forme', focus: [],
-      texte: <>Comparez F = G·m<sub>A</sub>·m<sub>B</sub> / d² et F = k·|q<sub>A</sub>|·|q<sub>B</sub>| / d².</>,
+      texte: <>Comparez F = G·m<sub>A</sub>·{avecIndices('frac(m_B|d²)')} et F = {avecIndices('frac(k·∣q_A∣·∣q_B∣|d²)')}.</>,
       tache: { type: 'qcm', q: 'Quelle est la principale différence entre les deux interactions ?', options: ['la gravitation est toujours attractive ; l’interaction électrostatique peut être attractive ou répulsive', 'la gravitation varie en 1/d et l’électrostatique en 1/d²', 'seule la gravitation obéit au principe des actions réciproques'], bonne: 0,
-        expl: 'Les deux lois ont la même forme (proportionnelles au produit des « charges » — masses ou charges électriques — et en 1/d²). Les masses sont toujours positives : la gravitation est toujours attractive. Les charges ont deux signes : l’interaction peut être répulsive.', indice: "Pense au signe des charges et à la forme des deux lois : laquelle des deux interactions peut être aussi bien attractive que répulsive ? Les deux varient-elles en 1 / d² ?" } },
+        expl: 'Les deux lois ont la même forme (proportionnelles au produit des « charges » — masses ou charges électriques — et en 1/d²). Les masses sont toujours positives : la gravitation est toujours attractive. Les charges ont deux signes : l’interaction peut être répulsive.', indice: "Pense au signe des charges et à la forme des deux lois : laquelle des deux interactions peut être aussi bien attractive que répulsive ? Les deux varient-elles en frac(1|d²) ?" } },
     { id: 'bilan', titre: 'Le bilan', focus: [],
       retenirTitre: 'À RETENIR : DEUX LOIS, UNE MÊME FORME',
       retenir: <FicheBilanInteractions/>,
@@ -600,7 +600,7 @@ export function SimulationDeuxCorps() {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>{FAB} = −{FBA} : même direction, même norme, sens opposés</li>
-        <li>gravitation : F = G·m<sub>A</sub>·m<sub>B</sub> / d² (toujours attractive) ; Coulomb : F = k·|q<sub>A</sub>|·|q<sub>B</sub>| / d² (attractive si q<sub>A</sub>·q<sub>B</sub> {'<'} 0)</li>
+        <li>gravitation : F = G·m<sub>A</sub>·{avecIndices('frac(m_B|d²)')} (toujours attractive) ; Coulomb : F = {avecIndices('frac(k·∣q_A∣·∣q_B∣|d²)')} (attractive si q<sub>A</sub>·q<sub>B</sub> {'<'} 0)</li>
         <li>dans les deux cas : F ∝ 1/d² (d doublée → F divisée par 4)</li>
       </ul>
     </ARetenir>);

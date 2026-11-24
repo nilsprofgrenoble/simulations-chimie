@@ -1,7 +1,7 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { FichePlaques, FicheUniforme, FicheForceElectrique, FichePoidsGoutte, FicheEquilibre, FicheMillikan } from "./CondensateurMillikanFiches";
@@ -107,7 +107,7 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
     if (defi.type === 'equilibre') {
       const Ueq = defi.m * GPES * defi.d * 1e-2 / (Math.abs(defi.n) * E_CH), hautPlus = defi.n < 0;
       const u = lireNombre(r.U), okU = isFinite(u) && proche(u, Ueq, 0.01), okP = r.pol === (hautPlus ? 'haut+' : 'haut-');
-      let mU = okU ? 'Tension correcte.' : 'Tension : à l’équilibre F = P, donc |q|·U / d = m·g, d’où U = m·g·d / |q|.';
+      let mU = okU ? 'Tension correcte.' : 'Tension : à l’équilibre F = P, donc frac(∣q∣·U|d) = m·g, d’où U = frac(m·g·d|∣q∣).';
       if (!okU && isFinite(u) && proche(u, Ueq * 100, 0.03)) mU = 'Convertissez d en mètres : 1 cm = 10⁻² m.';
       return { ok: okU && okP, lignes: [[okU, mU],
         [okP, okP ? 'Polarité correcte.' : 'Polarité : la force électrique doit être vers le haut (pour équilibrer le poids). Pour q < 0, F est de sens opposé à E : E doit donc aller vers le bas, la plaque du haut est positive. Pour q > 0, c’est l’inverse.']] };
@@ -115,10 +115,10 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
     const q = defi.m * GPES * defi.d * 1e-2 / defi.U;
     const qa = lireNombre(r.q), na = lireNombre(r.n);
     const okQ = isFinite(qa) && proche(qa * 1e-19, q, 0.025), okN = isFinite(na) && na === defi.nv;
-    let mQ = okQ ? 'Charge correcte.' : 'Charge : à l’équilibre |q|·U / d = m·g, donc |q| = m·g·d / U, avec d en mètres. Exprimez-la en 10⁻¹⁹ C.';
+    let mQ = okQ ? 'Charge correcte.' : 'Charge : à l’équilibre frac(∣q∣·U|d) = m·g, donc |q| = m·g·d / U, avec d en mètres. Exprimez-la en 10⁻¹⁹ C.';
     if (!okQ && isFinite(qa) && proche(qa, q, 0.025)) mQ = 'La valeur est juste, mais en coulomb : la réponse est demandée en 10⁻¹⁹ C (divisez par 10⁻¹⁹).';
     return { ok: okQ && okN, lignes: [[okQ, mQ],
-      [okN, okN ? 'Nombre de charges élémentaires correct.' : 'n = |q| / e : divisez par e = 1,602 × 10⁻¹⁹ C. Le résultat doit être un nombre entier : arrondissez à l’entier le plus proche.']] };
+      [okN, okN ? 'Nombre de charges élémentaires correct.' : 'n = frac(∣q∣|e) : divisez par e = 1,602 × 10⁻¹⁹ C. Le résultat doit être un nombre entier : arrondissez à l’entier le plus proche.']] };
   })();
   const reussi = !!res && res.ok;
   const suivi = useSuivi(cle, reussi);
@@ -178,12 +178,12 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
           <strong> U = {fmt(defi.U, 0)}{NB}V</strong>. Calculez la valeur absolue de sa charge, puis le nombre n de charges élémentaires qu’elle porte. Données : g = 9,81 N·kg⁻¹, e = 1,602 × 10⁻¹⁹ C.</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {saisie('q', '× 10⁻¹⁹ C', '|q|')}
-          {saisie('n', '', 'n = |q| / e')}
+          {saisie('n', '', 'n = frac(∣q∣|e)')}
         </div>
       </>}
       <IndiceDefi cache={reussi}>{defi.type === 'champ' ? <>E = U / d (U en volts, d en mètres), puis F = |q| × E.</>
-        : defi.type === 'equilibre' ? <>À l’équilibre, la force électrique compense le poids : |q| × U / d = m × g. Isole U.</>
-        : <>À l’équilibre, |q| = m × g × d / U. Compare ensuite |q| à la charge élémentaire e pour trouver le nombre n.</>}</IndiceDefi>
+        : defi.type === 'equilibre' ? <>À l’équilibre, la force électrique compense le poids : {avecIndices('frac(∣q∣ × U|d)')} = m × g. Isole U.</>
+        : <>À l’équilibre, |q| = {avecIndices('frac(m × g × d|U)')}. Compare ensuite |q| à la charge élémentaire e pour trouver le nombre n.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
@@ -199,10 +199,10 @@ function VoletDefi({ defi, setDefi, changerType, appliquer }) {
           {' '}Le champ est dirigé vers {defi.pol === 'haut+' ? 'le bas' : 'le haut'} (de la plaque + vers la plaque −) ; comme q {defi.n < 0 ? '< 0' : '> 0'}, la force est de sens {defi.n < 0 ? 'opposé à' : 'identique à'} E : elle est dirigée vers {haut ? 'le haut' : 'le bas'}.</>; })()}
         {defi.type === 'equilibre' && (() => { const Ueq = defi.m * GPES * defi.d * 1e-2 / (Math.abs(defi.n) * E_CH); return <>
           Pour être immobile, la gouttelette doit avoir F = P, avec F vers le haut. Comme q {defi.n < 0 ? '< 0' : '> 0'}, il faut que E soit dirigé vers {defi.n < 0 ? 'le bas' : 'le haut'} : la plaque du {defi.n < 0 ? 'haut' : 'bas'} est positive.
-          {' '}|q|·U / d = m·g donc U = <Frac haut="m·g·d" bas="|q|"/> = <Frac haut={`${puiss(defi.m)} × 9,81 × ${fmt(defi.d, 1)} × 10⁻²`} bas={`${Math.abs(defi.n)} × 1,602 × 10⁻¹⁹`}/> ≈ {fmt(Ueq, 0)}{NB}V.</>; })()}
+          {' '}{avecIndices('frac(∣q∣·U|d)')} = m·g donc U = <Frac haut="m·g·d" bas="|q|"/> = <Frac haut={`${puiss(defi.m)} × 9,81 × ${fmt(defi.d, 1)} × 10⁻²`} bas={`${Math.abs(defi.n)} × 1,602 × 10⁻¹⁹`}/> ≈ {fmt(Ueq, 0)}{NB}V.</>; })()}
         {defi.type === 'millikan' && (() => { const q = defi.m * GPES * defi.d * 1e-2 / defi.U; return <>
           |q| = <Frac haut="m·g·d" bas="U"/> = <Frac haut={`${puiss(defi.m)} × 9,81 × ${fmt(defi.d, 1)} × 10⁻²`} bas={fmt(defi.U, 0)}/> = {puiss(q)}{NB}C = {fmt(q * 1e19, 2)} × 10⁻¹⁹{NB}C.
-          {' '}n = |q| / e = {fmt(q * 1e19, 2)} × 10⁻¹⁹ / 1,602 × 10⁻¹⁹ = {fmt(q / E_CH, 2)} ≈ {defi.nv} : la charge est bien un multiple entier de la charge élémentaire.</>; })()}
+          {' '}n = {avecIndices('frac(∣q∣|e)')} = {fmt(q * 1e19, 2)} × 10⁻¹⁹ / 1,602 × 10⁻¹⁹ = {fmt(q / E_CH, 2)} ≈ {defi.nv} : la charge est bien un multiple entier de la charge élémentaire.</>; })()}
       </div>}
     </div>);
 }
@@ -258,24 +258,24 @@ export function SimulationCondensateurMillikan() {
     { id: 'calculE', titre: 'La norme du champ', focus: ['reglages', 'calcul', 'mesures'],
       retenirTitre: 'À RETENIR : LE CHAMP ENTRE DEUX PLAQUES',
       retenir: <FichePlaques/>,
-      texte: <>Réglez la tension sur <strong>U = 500 V</strong> et la distance entre les plaques sur <strong>d = 2,0 cm</strong>.{' '}<button onClick={poserUd} style={stylePetitBouton(true, '#2563eb')}>U = 500 V, d = 2,0 cm</button><br/>La norme du champ uniforme est <strong>E = U / d</strong>, avec U en volt et d en <strong>mètre</strong> ; E s’exprime alors en V·m⁻¹ (ou N·C⁻¹). Calculez-la avant de lire la mesure.</>,
+      texte: <>Réglez la tension sur <strong>U = 500 V</strong> et la distance entre les plaques sur <strong>d = 2,0 cm</strong>.{' '}<button onClick={poserUd} style={stylePetitBouton(true, '#2563eb')}>U = 500 V, d = 2,0 cm</button><br/>La norme du champ uniforme est <strong>E = {avecIndices('frac(U|d)')}</strong>, avec U en volt et d en <strong>mètre</strong> ; E s’exprime alors en V·m⁻¹ (ou N·C⁻¹). Calculez-la avant de lire la mesure.</>,
       tache: { type: 'num', q: 'Norme du champ E pour U = 500 V et d = 2,0 cm', unite: 'N·C⁻¹', vrai: EG, tol: 0.01, affiche: v => fmt(v, 0),
         bloque: okE ? null : 'Réglez d’abord U = 500 V et d = 2,0 cm (bouton ci-dessus).',
         pieges: [[500 / 2, 'Convertissez d en mètres : 2,0 cm = 2,0 × 10⁻² m.'],
-          [500 * 0.02, 'Formule inversée : E = U / d (on divise la tension par la distance), pas U × d.']],
+          [500 * 0.02, 'Formule inversée : E = frac(U|d) (on divise la tension par la distance), pas U × d.']],
         calcul: () => [
-          'Formule : E = U / d (champ uniforme : on néglige les effets de bord des plaques).',
+          'Formule : E = frac(U|d) (champ uniforme : on néglige les effets de bord des plaques).',
           'Conversion : d = 2,0 cm = 2,0 × 10⁻² m.',
-          `E = 500 / (2,0 × 10⁻²) = ${fmt(EG, 0)} V·m⁻¹ = ${fmt(EG, 0)} N·C⁻¹ (soit 2,5 × 10⁴).`],
-        expl: 'E = U / d = 500 / (2,0 × 10⁻²) = 2,5 × 10⁴ N·C⁻¹ (ou V·m⁻¹).', indice: "E = U / d, avec U en volts et d en mètres (2,0 cm = 0,020 m)." } },
+          `E = frac(500|2,0 × 10⁻²) = ${fmt(EG, 0)} V·m⁻¹ = ${fmt(EG, 0)} N·C⁻¹ (soit 2,5 × 10⁴).`],
+        expl: 'E = frac(U|d) = frac(500|2,0 × 10⁻²) = 2,5 × 10⁴ N·C⁻¹ (ou V·m⁻¹).', indice: "E = frac(U|d), avec U en volts et d en mètres (2,0 cm = 0,020 m)." } },
     { id: 'unif', titre: 'Un champ uniforme', focus: ['scene', 'mesures'],
       texte: <>Faites glisser le point M (la gouttelette) à différents endroits entre les plaques, en regardant la mesure « Champ E en M ».</>,
       tache: { type: 'qcm', q: 'Quand M se déplace entre les plaques, la norme de E…', options: ['ne change pas : le champ est le même en tout point', 'augmente en se rapprochant de la plaque positive', 'diminue quand M s’éloigne du milieu'], bonne: 0,
-        expl: 'E = U / d ne dépend pas de la position de M entre les plaques : c’est ce qui définit un champ uniforme. (Près des bords des plaques, le champ réel se déforme : le modèle les néglige.)', indice: "Entre les plaques, le champ est uniforme. Que peut-on en déduire sur sa norme d’un point à un autre ?" } },
+        expl: 'E = frac(U|d) ne dépend pas de la position de M entre les plaques : c’est ce qui définit un champ uniforme. (Près des bords des plaques, le champ réel se déforme : le modèle les néglige.)', indice: "Entre les plaques, le champ est uniforme. Que peut-on en déduire sur sa norme d’un point à un autre ?" } },
     { id: 'effetD', titre: 'Effet de la distance', focus: ['reglages', 'mesures', 'calcul'],
       texte: <>Gardez U = 500 V et réglez maintenant <strong>d = 1,0 cm</strong>.{' '}<button onClick={poserD1} style={stylePetitBouton(true, '#2563eb')}>U = 500 V, d = 1,0 cm</button><br/>Comparez avec le champ obtenu pour d = 2,0 cm (2,5 × 10⁴ N·C⁻¹).</>,
       tache: { type: 'qcm', q: 'À tension constante, quand la distance d est divisée par 2, la norme de E est…', options: ['multipliée par 2', 'divisée par 2', 'inchangée'], bonne: 0,
-        expl: 'E = U / d : à U constant, E est inversement proportionnelle à d. Deux fois plus près, deux fois plus de champ.', indice: "E = U / d. Si d est divisée par 2 avec la même tension U, que devient E ?" } },
+        expl: 'E = frac(U|d) : à U constant, E est inversement proportionnelle à d. Deux fois plus près, deux fois plus de champ.', indice: "E = frac(U|d). Si d est divisée par 2 avec la même tension U, que devient E ?" } },
     { id: 'calculF', titre: 'La force électrique', focus: ['reglages', 'scene', 'calcul'],
       retenirTitre: 'À RETENIR : UN CHAMP UNIFORME',
       retenir: <FicheUniforme/>,
@@ -283,7 +283,7 @@ export function SimulationCondensateurMillikan() {
       tache: { type: 'num', q: 'Norme de la force électrique sur la gouttelette', unite: 'N', vrai: FG, tol: 0.02, affiche: v => puiss(v, 2), cs: 2,
         bloque: okBase ? null : 'Réglez d’abord la gouttelette et les plaques (bouton ci-dessus).',
         pieges: [[E_CH * EG, 'La charge n’est pas e mais 3e : |q| = 3 × 1,602 × 10⁻¹⁹ C.'], [3 * EG, 'Il manque la charge élémentaire : |q| = 3 × e = 3 × 1,602 × 10⁻¹⁹ C.'],
-          [3 * E_CH * 250, 'E doit être en N·C⁻¹ (V·m⁻¹) : E = U / d avec d en mètres (2,5 × 10⁴), pas en V·cm⁻¹.'],
+          [3 * E_CH * 250, 'E doit être en N·C⁻¹ (V·m⁻¹) : E = frac(U|d) avec d en mètres (2,5 × 10⁴), pas en V·cm⁻¹.'],
           [-FG, 'La norme d’une force est positive : F = |q| × E.']],
         calcul: () => [
           'Formule : F = |q| × E. La charge est q = −3e, donc |q| = 3e (valeur absolue).',
@@ -313,16 +313,16 @@ export function SimulationCondensateurMillikan() {
       tache: { type: 'qcm', q: 'Avec U = 500 V, la résultante des deux forces est…', options: ['dirigée vers le bas : le poids l’emporte, la gouttelette descend', 'dirigée vers le haut : la gouttelette monte', 'nulle : la gouttelette reste immobile'], bonne: 0,
         expl: 'F ≈ 1,2 × 10⁻¹⁴ N est trois fois plus petite que P ≈ 3,6 × 10⁻¹⁴ N : la résultante est vers le bas.', indice: "Compare les normes de la force électrique et du poids, et regarde le sens de chacune : la résultante est dirigée dans le sens de la plus grande." } },
     { id: 'calculUeq', titre: 'Quelle tension pour l’équilibre ?', focus: ['calcul'],
-      texte: <>Pour que la gouttelette reste immobile, il faut que la force électrique compense exactement le poids : <strong>F = P</strong>, soit |q|·U / d = m·g. Calculez la tension U correspondante (d = 2,0 cm ; |q| = 3e ; m = {puiss(mG, 3)} kg, lue dans « Mesures » ; g = 9,81 N·kg⁻¹).</>,
+      texte: <>Pour que la gouttelette reste immobile, il faut que la force électrique compense exactement le poids : <strong>F = P</strong>, soit {avecIndices('frac(∣q∣·U|d)')} = m·g. Calculez la tension U correspondante (d = 2,0 cm ; |q| = 3e ; m = {puiss(mG, 3)} kg, lue dans « Mesures » ; g = 9,81 N·kg⁻¹).</>,
       tache: { type: 'num', q: 'Tension U qui immobilise la gouttelette', unite: 'V', vrai: UeqG, tol: 0.01, affiche: v => fmt(v, 0),
         pieges: [[UeqG * 100, 'Convertissez d en mètres : 2,0 cm = 2,0 × 10⁻² m.'], [UeqG * 3, 'La charge est 3e, pas e : |q| = 3 × 1,602 × 10⁻¹⁹ C.'],
-          [PG / (3 * E_CH), 'Il manque la distance d : de |q|·U / d = m·g, on tire U = m·g·d / |q|.']],
+          [PG / (3 * E_CH), 'Il manque la distance d : de frac(∣q∣·U|d) = m·g, on tire U = frac(m·g·d|∣q∣).']],
         calcul: () => [
-          'À l’équilibre, F = P (gouttelette immobile) : |q|·U / d = m·g, donc U = m·g·d / |q|. On suppose le champ uniforme et g = 9,81 N·kg⁻¹.',
+          'À l’équilibre, F = P (gouttelette immobile) : frac(∣q∣·U|d) = m·g, donc U = frac(m·g·d|∣q∣). On suppose le champ uniforme et g = 9,81 N·kg⁻¹.',
           `Numérateur : m·g·d = ${puiss(mG, 3)} × 9,81 × 2,0 × 10⁻² = ${puiss(PG * 0.02, 3)} (unités SI ; d = 2,0 cm = 2,0 × 10⁻² m).`,
           'Dénominateur : |q| = 3 × 1,602 × 10⁻¹⁹ = 4,806 × 10⁻¹⁹ C.',
-          `U = ${puiss(PG * 0.02, 3)} / 4,806 × 10⁻¹⁹ = ${fmt(UeqG, 0)} V (soit 1,5 × 10³).`],
-        expl: 'U = m·g·d / |q| = 3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻² / (3 × 1,602 × 10⁻¹⁹) ≈ 1,5 × 10³ V.', indice: "À l’équilibre, la force électrique compense le poids : |q| × E = m × g, avec E = U / d. Isole U." } },
+          `U = frac(${puiss(PG * 0.02, 3)}|4,806 × 10⁻¹⁹) = ${fmt(UeqG, 0)} V (soit 1,5 × 10³).`],
+        expl: 'U = frac(m·g·d|∣q∣) = frac(3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻²|3 × 1,602 × 10⁻¹⁹) ≈ 1,5 × 10³ V.', indice: "À l’équilibre, la force électrique compense le poids : |q| × E = m × g, avec E = frac(U|d). Isole U." } },
     { id: 'equilibre', titre: 'Vérifier avec la simulation', focus: ['reglages', 'scene', 'mesures'],
       retenirTitre: 'À RETENIR : ÉQUILIBRE D’UNE GOUTTELETTE',
       retenir: <FicheEquilibre/>,
@@ -330,32 +330,32 @@ export function SimulationCondensateurMillikan() {
       tache: { type: 'action', ok: equilibre && pol === 'haut+' && Math.abs(d - 2) < 0.01 && r === 1 && n === -3, label: 'Régler U pour l’équilibre', faire: () => { aBase(); setU(Math.round(UeqG / 10) * 10); },
         consigne: 'Réglez U pour que la gouttelette soit en équilibre (F = P)' } },
     { id: 'millikanIdee', titre: 'L’expérience de Millikan', focus: [],
-      texte: <>En 1909-1913, Robert Millikan a utilisé cette méthode : il immobilisait des gouttelettes d’huile entre deux plaques, et calculait leur charge |q| = m·g·d / U. Il a mesuré des centaines de gouttelettes.</>,
+      texte: <>En 1909-1913, Robert Millikan a utilisé cette méthode : il immobilisait des gouttelettes d’huile entre deux plaques, et calculait leur charge ∣q∣ = {avecIndices('frac(m·g·d|U)')}. Il a mesuré des centaines de gouttelettes.</>,
       tache: { type: 'qcm', q: 'Qu’a-t-il découvert sur les charges mesurées ?', options: ['elles sont toutes des multiples entiers d’une même valeur, la charge élémentaire e', 'elles prennent toutes les valeurs possibles', 'elles sont toutes égales'], bonne: 0,
         expl: 'Les charges mesurées étaient toujours des multiples entiers d’une valeur e ≈ 1,6 × 10⁻¹⁹ C : la charge électrique est quantifiée.', indice: "Compare entre elles les charges mesurées par Millikan : que remarque-t-on quand on les divise par la plus petite d’entre elles ?" } },
     { id: 'millikanQ', titre: 'Calculer une charge', focus: ['millikan'],
-      texte: <>Une gouttelette de masse 3,71 × 10⁻¹⁵ kg est immobile pour U = 2 270 V, avec d = 2,0 cm. Calculez la valeur absolue de sa charge : |q| = m·g·d / U.</>,
+      texte: <>Une gouttelette de masse 3,71 × 10⁻¹⁵ kg est immobile pour U = 2 270 V, avec d = 2,0 cm. Calculez la valeur absolue de sa charge : ∣q∣ = {avecIndices('frac(m·g·d|U)')}.</>,
       tache: { type: 'num', q: '|q| de la gouttelette', unite: '× 10⁻¹⁹ C', vrai: qMill * 1e19, tol: 0.015, affiche: v => fmt(v, 2),
         pieges: [[qMill * 1e19 * 100, 'Convertissez d en mètres : 2,0 cm = 2,0 × 10⁻² m.'], [qMill, 'Exprimez la réponse en 10⁻¹⁹ C : 3,2 × 10⁻¹⁹ C s’écrit « 3,2 ».'],
-          [mG * 0.02 / 2270 * 1e19, 'Il manque g dans le calcul : |q| = m·g·d / U, avec g = 9,81 N·kg⁻¹.']],
+          [mG * 0.02 / 2270 * 1e19, 'Il manque g dans le calcul : ∣q∣ = frac(m·g·d|U), avec g = 9,81 N·kg⁻¹.']],
         calcul: () => [
-          'Formule : |q| = m·g·d / U (gouttelette immobile : F = P ; champ uniforme, g = 9,81 N·kg⁻¹).',
+          'Formule : ∣q∣ = frac(m·g·d|U) (gouttelette immobile : F = P ; champ uniforme, g = 9,81 N·kg⁻¹).',
           'Conversion : d = 2,0 cm = 2,0 × 10⁻² m.',
           `Numérateur : m·g·d = 3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻² = ${puiss(3.71e-15 * 9.81 * 0.02, 3)}.`,
-          `|q| = ${puiss(3.71e-15 * 9.81 * 0.02, 3)} / 2 270 = ${puiss(qMill, 3)} C, soit ${fmt(qMill * 1e19, 2)} × 10⁻¹⁹ C.`],
-        expl: '|q| = 3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻² / 2 270 ≈ 3,2 × 10⁻¹⁹ C.', indice: "À l’équilibre, |q| × U / d = m × g. Isole |q|, puis exprime-la en 10⁻¹⁹ C." } },
+          `|q| = frac(${puiss(3.71e-15 * 9.81 * 0.02, 3)}|2 270) = ${puiss(qMill, 3)} C, soit ${fmt(qMill * 1e19, 2)} × 10⁻¹⁹ C.`],
+        expl: '|q| = frac(3,71 × 10⁻¹⁵ × 9,81 × 2,0 × 10⁻²|2 270) ≈ 3,2 × 10⁻¹⁹ C.', indice: "À l’équilibre, frac(∣q∣ × U|d) = m × g. Isole |q|, puis exprime-la en 10⁻¹⁹ C." } },
     { id: 'millikanN', titre: 'Combien de charges élémentaires ?', focus: ['millikan'],
       retenirTitre: 'À RETENIR : L’EXPÉRIENCE DE MILLIKAN',
       retenir: <FicheMillikan/>,
       texte: <>Divisez |q| = {fmt(qMill * 1e19, 2)} × 10⁻¹⁹ C (étape précédente) par la charge élémentaire e = 1,602 × 10⁻¹⁹ C.</>,
-      tache: { type: 'num', q: 'n = |q| / e (nombre entier)', unite: '', vrai: 2, tol: 0.05, affiche: v => fmt(v, 0),
-        pieges: [[3.2, 'Divisez par e = 1,602 × 10⁻¹⁹ C : |q| / e.'], [E_CH / qMill, 'Rapport inversé : n = |q| / e (la charge mesurée au numérateur).']],
+      tache: { type: 'num', q: 'n = frac(∣q∣|e) (nombre entier)', unite: '', vrai: 2, tol: 0.05, affiche: v => fmt(v, 0),
+        pieges: [[3.2, 'Divisez par e = 1,602 × 10⁻¹⁹ C : frac(∣q∣|e).'], [E_CH / qMill, 'Rapport inversé : n = frac(∣q∣|e) (la charge mesurée au numérateur).']],
         calcul: () => [
           `|q| = ${fmt(qMill * 1e19, 2)} × 10⁻¹⁹ C (étape précédente) ; e = 1,602 × 10⁻¹⁹ C.`,
-          `n = |q| / e = ${fmt(qMill * 1e19, 2)} × 10⁻¹⁹ / 1,602 × 10⁻¹⁹ = ${fmt(qMill / E_CH, 2)}.`,
+          `n = frac(∣q∣|e) = frac(${fmt(qMill * 1e19, 2)} × 10⁻¹⁹|1,602 × 10⁻¹⁹) = ${fmt(qMill / E_CH, 2)}.`,
           'On suppose (hypothèse de Millikan) que la charge est un multiple entier de e, aux incertitudes de mesure près : n est l’entier le plus proche.',
           'n = 2.'],
-        expl: 'n = 3,2 × 10⁻¹⁹ / 1,602 × 10⁻¹⁹ ≈ 2,0 : la gouttelette porte deux charges élémentaires (q = ±2e). Un résultat comme 2,4 serait impossible : n est entier.', indice: "Divise |q| par la charge élémentaire e = 1,6 × 10⁻¹⁹ C : le résultat doit être très proche d’un nombre entier." } },
+        expl: 'n = frac(3,2 × 10⁻¹⁹|1,602 × 10⁻¹⁹) ≈ 2,0 : la gouttelette porte deux charges élémentaires (q = ±2e). Un résultat comme 2,4 serait impossible : n est entier.', indice: "Divise |q| par la charge élémentaire e = 1,6 × 10⁻¹⁹ C : le résultat doit être très proche d’un nombre entier." } },
     { id: 'fin', titre: 'Le bilan', focus: [],
       texte: <>Vous savez décrire le champ d’un condensateur plan, la force qu’il exerce sur une charge, et l’utiliser comme Millikan. Essayez maintenant les défis.</>, tache: null },
   ];
@@ -501,18 +501,18 @@ export function SimulationCondensateurMillikan() {
     <div style={{ ...styleBoite, ...cadre('millikan') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La méthode de Millikan</div>
       <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.7 }}>
-        Si la gouttelette est <strong>immobile</strong> (F = P), alors |q|·U / d = m·g, donc <strong>|q| = <Frac haut="m·g·d" bas="U"/></strong>.
+        Si la gouttelette est <strong>immobile</strong> (F = P), alors {avecIndices('frac(∣q∣·U|d)')} = m·g, donc <strong>|q| = <Frac haut="m·g·d" bas="U"/></strong>.
       </div>
       {n !== 0 && U > 0 && <>
         {!enGuide && <LigneMesure nom="Tension d’équilibre pour cette gouttelette" valeur={Ueq <= 5000 ? `${fmt(Ueq, 0)}${NB}V` : `${fmt(Ueq, 0)}${NB}V (hors curseur)`}/>}
         <LigneMesure nom="Charge déduite de U : |q| = m·g·d / U" valeur={`${val(m * GPES * dm / U)}${NB}C`}/>
-        <LigneMesure nom="Rapport |q| / e" valeur={fmt(m * GPES * dm / U / E_CH, 2)} couleur={equilibre ? '#15803d' : GRIS}/>
+        <LigneMesure nom="Rapport frac(∣q∣|e)" valeur={fmt(m * GPES * dm / U / E_CH, 2)} couleur={equilibre ? '#15803d' : GRIS}/>
         <div style={{ fontSize: 12.5, color: equilibre ? '#15803d' : KIT.txt2, marginTop: 4 }}>
           {equilibre ? `La gouttelette est immobile : |q|/e vaut ${fmt(Math.abs(n), 0)}, un nombre entier.` : 'Ces deux dernières lignes n’ont de sens que si la gouttelette est immobile (réglez U pour obtenir F = P).'}</div></>}
     </div>);
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
-      <li><strong>Plaques grandes devant leur écartement</strong> : le champ est uniforme entre les plaques, de norme E = U / d. On néglige les effets de bord : près des bords, le champ réel se courbe. En dehors des plaques, on ne représente aucun champ.</li>
+      <li><strong>Plaques grandes devant leur écartement</strong> : le champ est uniforme entre les plaques, de norme E = {avecIndices('frac(U|d)')}. On néglige les effets de bord : près des bords, le champ réel se courbe. En dehors des plaques, on ne représente aucun champ.</li>
       <li><strong>Champ du condensateur seul</strong> : la gouttelette ne modifie pas le champ (sa charge est très petite devant celle des plaques).</li>
       <li><strong>Gouttelette sphérique d’huile</strong> : ρ = 886 kg·m⁻³, m = ρ·(4/3)π r³, avec r de l’ordre du micromètre comme chez Millikan. Sa charge est q = n·e, avec e = 1,602 × 10⁻¹⁹ C.</li>
       <li><strong>Poussée d’Archimède de l’air négligée</strong> (environ 0,14 % du poids pour de l’huile dans l’air), ainsi que les frottements : dans l’expérience réelle, les frottements de l’air freinent la gouttelette, qui atteint très vite une vitesse limite. La simulation ne calcule pas le mouvement : elle compare F et P et donne la direction de la résultante.</li>
@@ -538,8 +538,8 @@ export function SimulationCondensateurMillikan() {
   const retenir = (
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-        <li>condensateur plan : <Vec>E</Vec> uniforme, perpendiculaire aux plaques, de la plaque + vers la plaque −, E = U / d</li>
-        <li><Vec>F</Vec> = q·<Vec>E</Vec> ; gouttelette immobile : <Vec>F</Vec> + <Vec>P</Vec> = <Vec>0</Vec>, donc |q|·U / d = m·g</li>
+        <li>condensateur plan : <Vec>E</Vec> uniforme, perpendiculaire aux plaques, de la plaque + vers la plaque −, E = {avecIndices('frac(U|d)')}</li>
+        <li><Vec>F</Vec> = q·<Vec>E</Vec> ; gouttelette immobile : <Vec>F</Vec> + <Vec>P</Vec> = <Vec>0</Vec>, donc {avecIndices('frac(∣q∣·U|d)')} = m·g</li>
         <li>les charges sont des multiples entiers de e = 1,602 × 10⁻¹⁹ C</li>
       </ul>
     </ARetenir>);
@@ -558,7 +558,7 @@ export function SimulationCondensateurMillikan() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Condensateur plan et gouttelette de Millikan</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Entre deux plaques parallèles de charges opposées, le champ électrostatique est <strong>uniforme</strong> : <Vec>E</Vec> est perpendiculaire aux plaques, de norme E = U / d.
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Entre deux plaques parallèles de charges opposées, le champ électrostatique est <strong>uniforme</strong> : <Vec>E</Vec> est perpendiculaire aux plaques, de norme E = {avecIndices('frac(U|d)')}.
         Une charge q y subit la force <Vec>F</Vec> = q·<Vec>E</Vec> ; elle peut compenser le poids d’une gouttelette d’huile.</div>
       <div className={`cm-l1${mode !== 'explore' ? ' cote' : ''}`}>
         <div>
