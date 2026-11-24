@@ -1922,5 +1922,13 @@
  "77:plausible:itt-val-pourcent": "VAL521",
  "77:plausible:itt-val-temps": "VAL522",
  "77:plausible:itt-val-pente": "VAL523",
- "36:itt-calcul": "REA134"
+ "36:itt-calcul": "REA134",
+ "37:prevoir:chtens-ana-sulfate": "ANA770",
+ "37:prevoir:chtens-ana-savon": "ANA771",
+ "37:prevoir:chtens-ana-cationique": "ANA772",
+ "37:prevoir:chtens-ana-betaine": "ANA773",
+ "37:prevoir:chtens-ana-nonionique": "ANA774",
+ "37:prevoir:chtens-ana-emulsion": "ANA775",
+ "77:plausible:chtens-val-savon-amphotere": "VAL524",
+ "77:plausible:chtens-val-nonionique-ph": "VAL525"
 }
