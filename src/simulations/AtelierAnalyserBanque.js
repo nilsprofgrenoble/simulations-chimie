@@ -1042,6 +1042,13 @@ export const RELATIONS = [
       F('P_abs = Q_V × ΔP', 'C’est la puissance hydraulique utile, pas la puissance absorbée.'),
       F('P_abs = ΔP / Q_V', 'Pas homogène à une puissance : des Pa divisés par des m³·s⁻¹ ne donnent pas des watts.'),
     ] },
+  { id: 'pertes-bernoulli', domaine: 'Transport des fluides', titre: 'La pression en aval d’une longue conduite',
+    ...presenter({ schema: { type: 'conduite' }, contexte: 'De l’eau s’écoule dans une conduite horizontale de diamètre constant. Entre deux prises de pression distantes de 80 m, les pertes de charge valent 0,4 bar.', liste: [['Pression en amont', 'P₁ = 3,0 bar'], ['Pertes de charge entre les prises', 'ΔP_pertes = 0,4 bar']], suite: 'On cherche la pression P₂ en aval.' }), q: 'Quelle relation permet de répondre ?', options: [
+      V('P₂ = P₁ − ΔP_pertes', 'Altitude et vitesse sont les mêmes aux deux prises : les termes ρ·g·z et ½·ρ·v² s’annulent. Il reste P₁ = P₂ + ΔP_pertes, soit P₂ = 2,6 bar.'),
+      F('P₂ = P₁', 'C’est Bernoulli sans pertes (fluide parfait). L’énoncé donne ici une perte de charge : P₂ est plus petite que P₁.'),
+      F('P₂ = P₁ + ΔP_pertes', 'Signe inversé : une perte d’énergie fait baisser la pression dans le sens de l’écoulement.'),
+      F('P₂ = P₁ − ½·ρ·v²', 'Ce terme apparaît quand la vitesse change entre les deux points (comme dans un Venturi). Ici le diamètre est constant : v₁ = v₂ et il s’annule.'),
+    ] },
   { id: 'equilibre', domaine: 'Régulation', titre: 'Un niveau stable',
     enonce: 'Une cuve se remplit avec un débit Q_e et se vide avec un débit Q_s. Le régulateur a stabilisé le niveau.',
     q: 'Quelle relation traduit cet équilibre ?', options: [
@@ -1684,6 +1691,27 @@ export const PREVOIR = [
       F('multipliée par 4', 'ΔP est bien multipliée par 4 (∝ Q_V²), mais il faut encore multiplier par le débit, qui double.'),
       V('multipliée par 8', 'P = Q_V × ΔP avec ΔP ∝ Q_V² : P ∝ Q_V³, soit 2³ = 8.'),
       F('multipliée par 6', 'Les facteurs se multiplient et ne s’additionnent pas : 2 × 4 = 8, pas 2 + 4.'),
+    ] },
+  { id: 'pertes-longueur', domaine: 'Transport des fluides', titre: 'Un tuyau deux fois plus long',
+    ...presenter({ schema: { type: 'conduite' }, contexte: 'De l’eau s’écoule dans une conduite horizontale de diamètre constant, au même débit. On mesure la différence de pression P₁ − P₂ entre deux prises distantes de L. On admet que la perte de charge est proportionnelle à la longueur L entre les prises.', liste: [['Débit volumique', 'le même dans les deux cas'], ['Longueur L entre les prises', 'passe de 20 m à 40 m']] }), q: 'La différence de pression P₁ − P₂ est…', options: [
+      V('doublée', 'Chaque mètre de conduite apporte la même perte de charge : deux fois plus de longueur, deux fois plus de pertes.'),
+      F('inchangée, car la vitesse de l’eau est la même', 'La vitesse ne change pas, mais les frottements s’exercent sur toute la longueur : plus la conduite est longue, plus la pression baisse.'),
+      F('multipliée par 4', 'Le carré est réservé à la vitesse (pertes en v²). Ici la vitesse ne change pas : seule la longueur varie, proportionnellement.'),
+      F('divisée par 2', 'Sens inversé : davantage de conduite donne davantage de pertes, pas moins.'),
+    ] },
+  { id: 'pertes-diametre', domaine: 'Transport des fluides', titre: 'Un tronçon de diamètre moitié',
+    ...presenter({ schema: { type: 'conduite' }, contexte: 'Une conduite horizontale transporte de l’eau au même débit. On remplace un tronçon par un tronçon de même longueur, mais de diamètre deux fois plus petit. Modèle simplifié : on admet que la perte de charge du tronçon varie seulement comme le carré de la vitesse moyenne v.', liste: [['Débit volumique', 'constant'], ['Diamètre du tronçon', 'divisé par 2']] }), q: 'La perte de charge du tronçon est…', options: [
+      V('multipliée par 16', 'La section varie comme d² : elle est divisée par 4, donc v = Q_V / S est multipliée par 4. Avec ΔP en v², le facteur est 4² = 16. (Dans la réalité, le diamètre intervient aussi directement : l’effet est encore plus fort. Le modèle simplifié donne le sens et l’ordre de grandeur.)'),
+      F('multipliée par 4', 'La vitesse est bien multipliée par 4, mais la perte de charge varie comme v² : il faut encore élever au carré.'),
+      F('multipliée par 2', 'Diviser le diamètre par 2 ne multiplie pas la vitesse par 2 : la section varie comme d², pas comme d.'),
+      F('multipliée par 8', 'Ce facteur n’a pas de justification : la vitesse est multipliée par 4, puis la perte de charge par 4², soit 16.'),
+    ] },
+  { id: 'pertes-vanne', domaine: 'Transport des fluides', titre: 'Une vanne à moitié fermée',
+    ...presenter({ schema: { type: 'conduite', vanne: true }, contexte: 'De l’eau s’écoule à débit constant dans une conduite horizontale de diamètre constant. Une vanne partiellement fermée est placée entre deux prises de pression : P₁ en amont, P₂ en aval. La vitesse de l’eau et l’altitude sont les mêmes aux deux prises.' }), q: 'En comparant les deux pressions, on trouve…', options: [
+      V('P₂ < P₁ : la vanne provoque une perte de charge', 'Sans la vanne, Bernoulli (sans pertes) donnerait P₁ = P₂. Mais l’eau perd de l’énergie dans la vanne (tourbillons, frottements) : P₂ = P₁ − ΔP_pertes.'),
+      F('P₂ = P₁, car la vitesse et l’altitude sont les mêmes', 'Cette égalité vient de Bernoulli sans pertes de charge. Une vanne partiellement fermée dissipe de l’énergie : la pression chute d’une prise à l’autre.'),
+      F('P₂ > P₁, car la vanne freine l’eau et la pression remonte en aval', 'Une pression qui remonterait en aval supposerait un apport d’énergie, alors que la vanne en dissipe. De plus la vitesse est la même aux deux prises.'),
+      F('on ne peut rien dire sans connaître le diamètre de la vanne', 'Le sens est certain : un obstacle dissipe de l’énergie. Le diamètre de la vanne ne ferait varier que la valeur de la chute de pression.'),
     ] },
   { id: 'bits', domaine: 'Transmission de signaux numériques', titre: 'Deux bits de plus',
     ...presenter({ contexte: 'On remplace un CAN par un autre, sur la même plage de tension.', liste: [['Ancien CAN', '10 bits'], ['Nouveau CAN', '12 bits']] }), q: 'Le quantum est…', options: [

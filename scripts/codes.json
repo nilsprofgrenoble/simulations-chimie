@@ -1948,5 +1948,11 @@
  "77:plausible:semul-val-conduct-faible": "VAL527",
  "77:plausible:semul-val-epaissir-eh": "VAL528",
  "77:plausible:semul-val-violet": "VAL529",
- "77:plausible:semul-val-dilution-eau": "VAL530"
+ "77:plausible:semul-val-dilution-eau": "VAL530",
+ "37:relation:pertes-bernoulli": "ANA789",
+ "37:prevoir:pertes-longueur": "ANA790",
+ "37:prevoir:pertes-diametre": "ANA791",
+ "37:prevoir:pertes-vanne": "ANA792",
+ "77:plausible:flu-pertes-conduite": "VAL531",
+ "77:plausible:flu-pertes-conduite-ok": "VAL532"
 }

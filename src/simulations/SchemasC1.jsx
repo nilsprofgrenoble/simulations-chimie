@@ -388,8 +388,38 @@ function PompePuits() {
     </div>);
 }
 
+function ManoPrise({ x, nom }) {
+  return (
+    <g>
+      <line x1={x} y1="90" x2={x} y2="62" stroke={TR} strokeWidth="2.5"/>
+      <circle cx={x} cy="44" r="18" fill="white" stroke={TR} strokeWidth="2.5"/>
+      <line x1={x} y1="44" x2={x + 8} y2="35" stroke="#b91c1c" strokeWidth="2.5" strokeLinecap="round"/>
+      <text x={x} y="18" fontSize="14" textAnchor="middle" fill="#0f172a" fontWeight="700"><tspan fontStyle="italic">P</tspan><tspan fontSize="0.75em" dy="3">{nom}</tspan></text>
+    </g>);
+}
+
+// Conduite horizontale à section constante, deux prises de pression (manomètres) distantes de L ; option : une vanne partiellement fermée entre les prises
+function ConduiteManometres({ vanne = false }) {
+  const u = useId().replace(/:/g, '');
+  return (
+    <div style={boite} data-schema="conduite">
+      <svg viewBox="0 0 360 214" role="img" aria-label={`Conduite horizontale de diamètre constant, avec deux manomètres P1 et P2 distants de L${vanne ? ', et une vanne partiellement fermée entre les deux' : ''}`} style={{ width: '100%', maxWidth: 420, display: 'block', margin: '0 auto' }}>
+        <defs><F id={`${u}f`} c="#475569"/><F id={`${u}a`} c="#2563eb"/></defs>
+        <rect x="20" y="90" width="320" height="40" fill={EAU} opacity="0.55"/>
+        <path d="M20,90 L340,90 M20,130 L340,130" fill="none" stroke={TR} strokeWidth="3"/>
+        <ManoPrise x={90} nom="1"/><ManoPrise x={270} nom="2"/>
+        {vanne && <g><path d="M165,92 L195,128 L195,92 L165,128 Z" fill="white" stroke={TR} strokeWidth="3" strokeLinejoin="round"/><path d="M180,86 L180,70" stroke={TR} strokeWidth="3"/><line x1="168" y1="70" x2="192" y2="70" stroke={TR} strokeWidth="4" strokeLinecap="round"/><text x="180" y="62" fontSize="13" textAnchor="middle" fill="#0f172a">vanne</text></g>}
+        <line x1="30" y1="110" x2="150" y2="110" stroke="#2563eb" strokeWidth="2.5" markerEnd={`url(#${u}a)`}/>
+        <Cote u={u} x1="90" y1="158" x2="270" y2="158" txt={<tspan fontStyle="italic">L</tspan>} tx="180" ty="178" anchor="middle" c="#0f172a"/>
+        <text x="30" y="150" fontSize="13" fill="#64748b">écoulement</text>
+        <text x="330" y="150" fontSize="12.5" fill="#64748b" textAnchor="end">diamètre constant</text>
+        <text x="180" y="208" fontSize="12" textAnchor="middle" fill="#64748b">schéma non à l’échelle</text>
+      </svg>
+    </div>);
+}
+
 // ── Répartition ──
-const DESSINS = { ...DESSINS_SECONDE, ...DESSINS_DONNEES, ...DESSINS_MECA, pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai, cuve: Cuve, tubeu: TubeU, venturi: Venturi, pompe: PompePuits };
+const DESSINS = { ...DESSINS_SECONDE, ...DESSINS_DONNEES, ...DESSINS_MECA, pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai, cuve: Cuve, tubeu: TubeU, venturi: Venturi, pompe: PompePuits, conduite: ConduiteManometres };
 export function Visuel({ schema, revele = false }) {
   if (!schema) return null;
   const liste = Array.isArray(schema) ? schema : [schema];
