@@ -7,8 +7,8 @@
 //  On suit deux grandeurs par molécule : nPlus (nombre de charges +) et nMoins (nombre de charges −), entre 0 et 2 ;
 //  la charge nette vaut nPlus − nMoins. La famille se lit sur les DEUX grandeurs, pas sur la charge nette seule.
 //  Les pKa sont des ORDRES DE GRANDEUR arrondis (voir le panneau d'hypothèses de la simulation) :
-//   savon (laurate) ≈ 7,5 (valeur apparente en agrégat, qui croît avec la longueur de chaîne) ; amine primaire ≈ 10 ;
-//   bétaïne, groupe carboxylate ≈ 2 ; amphotère à amine : carboxyle ≈ 3, amine ≈ 10.
+//   palmitate de sodium (acide gras RCOOH en solution diluée) ≈ 4,8 — en agrégats (micelles, vésicules) le pKa apparent est plus élevé, de 6 à 9 selon les études : non modélisé ;
+//   dodécylammonium (alkylammonium primaire) ≈ 10,6 ; bétaïne, groupe carboxylate ≈ 2 ; N-dodécyl-β-alanine : carboxyle ≈ 3,6, amine ≈ 10,2 (ordres de grandeur de la β-alanine).
 // ====================================================
 
 export const PH_MIN = 0, PH_MAX = 14;
@@ -18,19 +18,19 @@ const SEUIL = 0.15;           // en dessous, une charge est considérée comme a
 export const ESPECES = [
   { id: 'sds', nom: 'SDS (dodécylsulfate de sodium)', court: 'SDS', famille: 'anionique', sous: 'sulfate', formule: 'R–OSO₃⁻ Na⁺',
     groupes: [{ type: 'fixe', q: -1, texte: 'OSO₃⁻' }] },
-  { id: 'savon', nom: 'laurate de sodium (savon)', court: 'savon', famille: 'anionique', sous: 'carboxylate', formule: 'R–COO⁻ Na⁺',
-    groupes: [{ type: 'acide', pKa: 7.5, formes: ['COOH', 'COO⁻'] }] },
+  { id: 'savon', nom: 'palmitate de sodium (savon)', court: 'palmitate de sodium', famille: 'anionique', sous: 'carboxylate', formule: 'C₁₅H₃₁–COO⁻ Na⁺',
+    groupes: [{ type: 'acide', pKa: 4.8, formes: ['COOH', 'COO⁻'] }] },
   { id: 'ctab', nom: 'CTAB (bromure de cétyltriméthylammonium)', court: 'CTAB', famille: 'cationique', sous: 'ammonium quaternaire', formule: 'R–N⁺(CH₃)₃ Br⁻',
     groupes: [{ type: 'fixe', q: 1, texte: 'N⁺(CH₃)₃' }] },
-  { id: 'amine', nom: 'dodécylamine (sel d’ammonium primaire)', court: 'amine', famille: 'cationique', sous: 'ammonium primaire', formule: 'R–NH₃⁺ Cl⁻',
-    groupes: [{ type: 'base', pKa: 10.0, formes: ['NH₃⁺', 'NH₂'] }] },
-  { id: 'betaine', nom: 'alkylbétaïne', court: 'bétaïne', famille: 'amphotère', sous: 'bétaïne', formule: 'R–N⁺(CH₃)₂–CH₂–COO⁻',
+  { id: 'amine', nom: 'chlorure de dodécylammonium', court: 'dodécylammonium', famille: 'cationique', sous: 'ammonium primaire', formule: 'C₁₂H₂₅–NH₃⁺ Cl⁻',
+    groupes: [{ type: 'base', pKa: 10.6, formes: ['NH₃⁺', 'NH₂'] }] },
+  { id: 'betaine', nom: 'N-dodécylbétaïne', court: 'dodécylbétaïne', famille: 'amphotère', sous: 'bétaïne', formule: 'R–N⁺(CH₃)₂–CH₂–COO⁻',
     groupes: [{ type: 'fixe', q: 1, texte: 'N⁺(CH₃)₂' }, { type: 'acide', pKa: 2.0, formes: ['COOH', 'COO⁻'] }] },
-  { id: 'alanine', nom: 'alkylaminopropionate (N-alkyl-β-alanine)', court: 'alkylaminopropionate', famille: 'amphotère', sous: 'amino-acide', formule: 'R–NH₂⁺–CH₂CH₂–COO⁻',
-    groupes: [{ type: 'base', pKa: 10.0, formes: ['NH₂⁺', 'NH'] }, { type: 'acide', pKa: 3.0, formes: ['COOH', 'COO⁻'] }] },
-  { id: 'age', nom: 'alcool gras éthoxylé (polyéthylène glycol)', court: 'alcool gras éthoxylé', famille: 'non ionique', sous: 'polyéther', formule: 'R–(OCH₂CH₂)ₙ–OH',
+  { id: 'alanine', nom: 'N-dodécyl-β-alanine', court: 'dodécyl-β-alanine', famille: 'amphotère', sous: 'amino-acide', formule: 'R–NH₂⁺–CH₂CH₂–COO⁻',
+    groupes: [{ type: 'base', pKa: 10.2, formes: ['NH₂⁺', 'NH'] }, { type: 'acide', pKa: 3.6, formes: ['COOH', 'COO⁻'] }] },
+  { id: 'age', nom: 'dodécanol éthoxylé (alcool gras polyéthoxylé)', court: 'dodécanol éthoxylé', famille: 'non ionique', sous: 'polyéther', formule: 'R–(OCH₂CH₂)ₙ–OH',
     groupes: [] },
-  { id: 'sorbitane', nom: 'ester de sorbitane', court: 'ester de sorbitane', famille: 'non ionique', sous: 'polyol', formule: 'R–COO–sorbitane (OH multiples)',
+  { id: 'sorbitane', nom: 'monolaurate de sorbitane', court: 'monolaurate de sorbitane', famille: 'non ionique', sous: 'polyol', formule: 'R–COO–sorbitane (OH multiples)',
     groupes: [] },
 ];
 // Écritures de la formule non dissoute, de la plus lisible à la plus trompeuse : ion seul, ion avec son contre-ion, formule condensée du sel (charges non écrites).
@@ -122,13 +122,13 @@ export function tirageFamille(r = Math.random) {
   const type = tire(['sds', 'savon', 'ctab', 'amine', 'betaine', 'alanine', 'age'], r);
   const base = espece(type);
   const jit = (v, L) => Math.max(1.5, v + tire(L, r));   // pKa lisibles sur l'échelle 0–14
-  const groupes = base.groupes.map(g => g.type === 'fixe' ? { ...g } : { ...g, pKa: jit(g.pKa, [-1, -0.5, 0, 0.5, 1]) });
+  const groupes = base.groupes.map(g => g.type === 'fixe' ? { ...g } : { ...g, pKa: Math.min(12, jit(g.pKa, [-1, -0.5, 0, 0.5, 1])) });
   const e = { ...base, groupes };
   return { id: type, e, famille: familleDeduite(e) };
 }
 // défi 2 (prolongement hors référentiel) : fraction ionisée d'un acide faible à un pH donné
 export function tirageFraction(r = Math.random) {
-  const pKa = tire([6.5, 7, 7.5, 8, 8.5], r), ecart = tire([-1.5, -1, -0.5, 0.5, 1, 1.5, 2], r), pH = pKa + ecart;   // 3 % à 99 % ionisé
+  const pKa = tire([4, 4.5, 5, 5.5], r), ecart = tire([-1.5, -1, -0.5, 0.5, 1, 1.5, 2], r), pH = pKa + ecart;   // 3 % à 99 % ionisé
   const vrai = fracIonisee(pKa, pH);
   return { pKa, pH, ecart, vrai, pct: 100 * vrai };
 }
