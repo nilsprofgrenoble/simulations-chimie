@@ -9,7 +9,7 @@ import { EspaceEleve } from "./EspaceEleve";
 import { BoutonMail } from "../contact";
 import { ACCENT, TEXTE, TEXTE2, LAME } from "../theme";
 import { Pic } from "../Pictos";
-import { InscriptionProf, BienvenueProf, INSCRIPTION_PROF_OUVERTE } from "./InscriptionProf";
+import { InscriptionProf, BienvenueProf, INSCRIPTION_PROF_VISIBLE } from "./InscriptionProf";
 
 const ROSE = '#0b4f94';
 
@@ -99,7 +99,7 @@ function Connexion() {
         </section>
       </div>
 
-      {INSCRIPTION_PROF_OUVERTE ? <InscriptionProf /> : <ContactEnseignant />}
+      {INSCRIPTION_PROF_VISIBLE ? <InscriptionProf /> : <ContactEnseignant />}
 
       <section style={{ ...LAME, fontSize: 13, color: TEXTE2, lineHeight: 1.65 }} aria-labelledby="titre-donnees">
         <h2 id="titre-donnees" style={{ margin: '0 0 6px', fontSize: 16, fontWeight: 800, color: TEXTE, fontFamily: "'Outfit', sans-serif" }}>Ce qui est enregistré quand tu es connecté·e</h2>
