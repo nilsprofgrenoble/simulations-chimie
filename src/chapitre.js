@@ -18,7 +18,8 @@ export const exosCalcul = exos => exos.filter(e => e.comp === 'REA');
 
 // exosChap : exercices du chapitre ; etoilesDe(cle) → 0 (pas réussi) à 3
 // Renvoie { exo, raison: 'nouveau' | 'ameliorer', etoiles } ou null si tout est à 3 étoiles (ou chapitre vide)
-export function prochainExercice(exosChap, etoilesDe) {
+// hasard (facultatif, renvoie un nombre dans [0 ; 1[) : parmi les exercices jamais réussis de même niveau, on en tire un au sort (variations d'un sous-thème)
+export function prochainExercice(exosChap, etoilesDe, hasard) {
   if (!exosChap.length) return null;
   const parComp = new Map();
   for (const e of exosChap) { if (!parComp.has(e.comp)) parComp.set(e.comp, []); parComp.get(e.comp).push(e); }
@@ -27,7 +28,10 @@ export function prochainExercice(exosChap, etoilesDe) {
     comp, L, ratio: L.reduce((s, e) => s + etoilesDe(e.cle), 0) / (3 * L.length), restants: L.filter(e => etoilesDe(e.cle) === 0).sort((a, b) => (a.niveau || 0) - (b.niveau || 0)),
   })).sort((a, b) => a.ratio - b.ratio || rang(a.comp) - rang(b.comp));
   const aFaire = bilan.find(b => b.restants.length);
-  if (aFaire) return { exo: aFaire.restants[0], raison: 'nouveau', etoiles: 0 };
+  if (aFaire) {
+    const r = aFaire.restants, ex = hasard ? r.filter(e => (e.niveau || 0) === (r[0].niveau || 0)) : [r[0]];
+    return { exo: ex[hasard ? Math.floor(hasard() * ex.length) : 0], raison: 'nouveau', etoiles: 0 };
+  }
   const ameliorables = exosChap.filter(e => etoilesDe(e.cle) < 3).sort((a, b) => etoilesDe(a.cle) - etoilesDe(b.cle));
   return ameliorables.length ? { exo: ameliorables[0], raison: 'ameliorer', etoiles: etoilesDe(ameliorables[0].cle) } : null;
 }

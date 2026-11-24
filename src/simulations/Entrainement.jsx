@@ -9,6 +9,7 @@ import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
 import { FAMILLES as FAM_VAL } from "./AtelierValiderBanque";
 import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
 import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
+import { repartir } from "../sousThemes";
 import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe, allerChapitre } from "../chapitres";
 import { nomsSim } from "../suivi";
 import { ENSEIGNEMENTS, chapitresDe as chapitresNiveauEns } from "../parcoursCommun";
@@ -102,6 +103,14 @@ const CSS_EN = `
   .en-exo-theme { font-size:11.5px; color:var(--txt2); }
   .en-exo-titre { font-size:14px; line-height:1.35; }
   .en-exo-etat { flex:none; min-width:30px; display:flex; align-items:center; justify-content:flex-end; }
+  .en-st { display:flex; align-items:center; gap:12px; width:100%; min-height:64px; padding:12px 14px; text-align:left; border:1px solid var(--bord); border-radius:16px; background:#fff; color:var(--txt); font:inherit; cursor:pointer; }
+  .en-st:hover { border-color:#9db8d6; background:#f6f9fd; }
+  .en-st:focus-visible { outline:3px solid var(--bleu); outline-offset:2px; }
+  .en-st[data-fait] { background:#f1fbf8; border-color:#bfe8df; }
+  .en-st-nom { font:800 15.5px/1.3 Outfit,Inter,sans-serif; }
+  .en-st-cap { font-size:13px; line-height:1.4; color:var(--txt2); }
+  .en-st-grille { display:grid; grid-template-columns:1fr; gap:8px; }
+  @media (min-width:720px) { .en-st-grille { grid-template-columns:1fr 1fr; } }
   .en-sim { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:8px 16px; border:none; border-radius:999px; background:var(--bleu); color:#fff; font:700 14px Inter,system-ui,sans-serif; text-align:left; cursor:pointer; }
   .en-comps { display:grid; grid-template-columns:1fr; gap:12px; margin:12px 0; }
   @media (min-width:720px) { .en-comps { grid-template-columns:1fr 1fr; } }
@@ -221,12 +230,37 @@ function ExosDeSimulation({ simId, exos, ctx, naviguer }) {
     </section>);
 }
 
+// Un sous-thème du chapitre : une carte qui ouvre le prochain exercice adapté (les variations restent en réserve)
+function CarteSousTheme({ st, exos, etoilesDe, ouvrir }) {
+  const av = avancementChapitre(exos, etoilesDe), fini = av.reussis === av.total;
+  const aller = () => ouvrir(prochainExercice(exos, etoilesDe, Math.random)?.exo || exos[Math.floor(Math.random() * exos.length)]);
+  return (
+    <button type="button" className="en-st" data-st={st.id} data-fait={fini || undefined} onClick={aller}>
+      <span className="en-exo-corps">
+        <span className="en-st-nom">{st.nom}</span>
+        <span className="en-st-cap">{st.capacite}</span>
+        <span className="en-barre" aria-hidden="true" style={{ height: 6, marginTop: 4 }}><span style={{ width: `${100 * av.reussis / av.total}%` }} /></span>
+      </span>
+      <span className="en-exo-etat">{fini ? <PastilleFaite taille={24} /> : <span aria-hidden="true" style={{ color: KIT.txt2, fontSize: 20 }}>▶</span>}</span>
+    </button>);
+}
+
 function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
   const { prog, etoilesSrv, etoilesDe, nbFaits, idsEnCours } = ctx;
   const ouvrir = e => naviguer(e.atelier, e.ex);
   const exosChap = exosDuChapitre(exos, c.domaines), av = avancementChapitre(exosChap, etoilesDe), conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
   const enCours = idsEnCours.includes(c.id);
   const validees = useSimsValidees(c.id);
+  const { themes, autres } = repartir(exosChap, c.id);
+  const listesCompetences = L0 => ['S\'APP', 'ANA', 'VAL'].map(code => {
+    const L = L0.filter(e => e.comp === code);
+    const cc = COMPETENCES.find(x => x.code === code);
+    return L.length === 0 ? null : (
+      <div key={code} style={{ marginBottom: 10 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: cc.couleur, margin: '10px 0 6px', fontFamily: TITRE_B }}>{code} · {cc.nom} <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(L)} / {L.length} réussis)</span></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{L.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
+      </div>);
+  });
   return (
     <section data-chapitre style={{ margin: '14px 0 18px', padding: '18px 18px', border: `1px solid ${BORD_B}`, borderRadius: 26, background: 'white' }}>
       {!sansTitre && <h3 style={{ margin: '0 0 4px', color: ROSE, fontFamily: TITRE_B }}><Pic n="book"/>{c.label}</h3>}
@@ -257,15 +291,17 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
       ) : (
         <div style={{ ...styleBoite, background: '#ecfaf7', border: `1px solid ${TEAL_B}`, borderRadius: 22, marginBottom: 12 }}><Pic n="party"/><b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe à un autre chapitre, ou refais un exercice pour t’entraîner.</div>
       )}
-      {['S\'APP', 'ANA', 'VAL'].map(code => {
-        const L = exosChap.filter(e => e.comp === code);
-        const cc = COMPETENCES.find(x => x.code === code);
-        return L.length === 0 ? null : (
-          <div key={code} style={{ marginBottom: 10 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: cc.couleur, margin: '10px 0 6px', fontFamily: TITRE_B }}>{code} · {cc.nom} <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(L)} / {L.length} réussis)</span></div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{L.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
-          </div>);
-      })}
+      {themes.length > 0 && (
+        <div data-sous-themes style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, margin: '0 0 8px', fontFamily: TITRE_B }}>Choisis ce que tu veux travailler</div>
+          <div className="en-st-grille">{themes.map(t => <CarteSousTheme key={t.st.id} st={t.st} exos={t.exos} etoilesDe={etoilesDe} ouvrir={ouvrir} />)}</div>
+        </div>)}
+      {themes.length > 0
+        ? <details data-tous-exercices style={{ marginBottom: 6 }}>
+            <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt, minHeight: 44, display: 'flex', alignItems: 'center' }}>{autres.length ? `▸ Autres exercices (${autres.length})` : `▸ Voir la liste complète des exercices (${exosChap.length})`}</summary>
+            {autres.length ? listesCompetences(autres) : listesCompetences(exosChap)}
+          </details>
+        : listesCompetences(exosChap)}
       {exosChap.length > 0 && <details style={{ marginTop: 6 }}>
         <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}><Pic n="abacus"/>Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length} réussis)</span></summary>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>{exosCalcul(exos).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
@@ -300,7 +336,7 @@ export function SimulationChapitre({ naviguer }) {
         <>
           <h2 style={{ margin: '4px 0 0', color: ROSE, fontFamily: TITRE_B, fontSize: 28, lineHeight: 1.2 }}>{niveau?.label} · {c.label}</h2>
           <p style={{ color: KIT.txt2, fontSize: 14, lineHeight: 1.55, margin: '6px 0 0' }}>
-            Tout ce qu’il faut pour ce chapitre : les <b>simulations</b> pour comprendre et expérimenter, puis des <b>exercices</b> pour t’entraîner, rangés par compétence
+            Tout ce qu’il faut pour ce chapitre : les <b>simulations</b> pour comprendre et expérimenter, puis des <b>exercices</b> pour t’entraîner, rangés par thème
             (<b>s’approprier → analyser → valider</b>). Les exercices de calcul (<b>réaliser</b>) sont en bas de page.
           </p>
           {depuis ? <>
