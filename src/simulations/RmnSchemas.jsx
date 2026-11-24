@@ -44,16 +44,17 @@ export const FCouplage = () => (
   </Svg>);
 
 export const FChamp = () => (
-  <Svg h={206} aria="Effet du champ : à 60 MHz, les multiplets sont larges en ppm et se chevauchent ; à 400 MHz, les mêmes multiplets sont étroits et bien séparés ; la constante de couplage J en hertz ne change pas">
+  <Svg h={206} aria="Effet du champ sur un même axe en ppm : un triplet et un quartet gardent le même déplacement chimique à 60 MHz et à 400 MHz ; à 60 MHz leurs raies sont écartées et les deux multiplets se chevauchent ; à 400 MHz les raies sont resserrées en ppm et les multiplets bien séparés ; la constante de couplage J en hertz ne change pas">
     <T x={150} y={16} a="middle" c={ROUGE} w={800}>60 MHz : chevauchement</T>
+    <Lg x1={118} y1={26} x2={118} y2={192} c="#cbd5e1" w={1} d="3 3"/><Lg x1={162} y1={26} x2={162} y2={192} c="#cbd5e1" w={1} d="3 3"/>
     <Lg x1={14} y1={84} x2={286} y2={84} c={GRIS} w={1.6}/>
-    {[[102, 20], [118, 40], [134, 20]].map(([x, h]) => <Lg key={x} x1={x} y1={84} x2={x} y2={84 - h} c={BLEU} w={3.6}/>)}
-    {[[138, 16], [154, 44], [170, 44], [186, 16]].map(([x, h]) => <Lg key={x} x1={x} y1={84} x2={x} y2={84 - h} c={ORANGE} w={3.6}/>)}
+    {[[98, 20], [118, 40], [138, 20]].map(([x, h]) => <Lg key={x} x1={x} y1={84} x2={x} y2={84 - h} c={BLEU} w={3.6}/>)}
+    {[[132, 16], [152, 44], [172, 44], [192, 16]].map(([x, h]) => <Lg key={x} x1={x} y1={84} x2={x} y2={84 - h} c={ORANGE} w={3.6}/>)}
     <T x={150} y={118} a="middle" c={VERT} w={800}>400 MHz : bien séparés</T>
     <Lg x1={14} y1={186} x2={286} y2={186} c={GRIS} w={1.6}/>
-    {[[78, 22], [84, 44], [90, 22]].map(([x, h]) => <Lg key={x} x1={x} y1={186} x2={x} y2={186 - h} c={BLEU} w={3.6}/>)}
-    {[[204, 18], [210, 46], [216, 46], [222, 18]].map(([x, h]) => <Lg key={x} x1={x} y1={186} x2={x} y2={186 - h} c={ORANGE} w={3.6}/>)}
-    <T x={150} y={204} a="middle" c={GRIS}>J en Hz : inchangée</T>
+    {[[115, 22], [118, 44], [121, 22]].map(([x, h]) => <Lg key={x} x1={x} y1={186} x2={x} y2={186 - h} c={BLEU} w={1.8}/>)}
+    {[[157.5, 18], [160.5, 46], [163.5, 46], [166.5, 18]].map(([x, h]) => <Lg key={x} x1={x} y1={186} x2={x} y2={186 - h} c={ORANGE} w={1.8}/>)}
+    <T x={150} y={204} a="middle" c={GRIS}>axe en ppm · J en Hz : inchangée</T>
   </Svg>);
 
 const Lignes = ({ lignes, h, aria, bas }) => (
