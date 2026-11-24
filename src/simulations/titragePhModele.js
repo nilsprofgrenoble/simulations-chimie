@@ -88,4 +88,3 @@ export function classeIndicateur(ind, p) {
 }
 
 // Concentration de l'acide à partir du volume équivalent : C_A = C_b V_E / V_A
-export const concentrationAcide = (Cb, VE, V0) => Cb * VE / V0;

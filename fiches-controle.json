@@ -1,0 +1,14 @@
+{
+ "119": {
+  "min": 0,
+  "petits": 32,
+  "debordent": 1,
+  "schemas": 5
+ },
+ "121": {
+  "min": 9.9,
+  "petits": 0,
+  "debordent": 0,
+  "schemas": 6
+ }
+}

@@ -31,7 +31,7 @@ const nomCouleur = c => NOMS_COUL[c] || 'colorée';
 
 // ---------- graphe pH = f(V) ----------
 function CourbePH({ pts, ptsCmp, Vb, ph, VE, montrerVE, deriv, ind }) {
-  const W = 480, H = 310, mx = 40, my = 12, bas = H - 46;
+  const W = 480, H = 340, mx = 50, my = 14, bas = H - 62;
   const X = v => mx + (W - mx - 12) * v / VMAX, Y = p => my + (bas - my) * (1 - p / 14);
   const dmax = Math.max(...pts.map(p => p.d));
   const Yd = d => bas - (bas - my - 20) * d / dmax;
@@ -40,25 +40,25 @@ function CourbePH({ pts, ptsCmp, Vb, ph, VE, montrerVE, deriv, ind }) {
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
       aria-label={`Courbe de titrage : pH en fonction du volume de soude versé. Le point orange est au volume ${nbf(Vb, 1)} millilitres, pH ${nbf(ph, 2)}${deriv ? ' ; la dérivée du pH est tracée en vert' : ''}${ind ? ` ; zone de virage du ${ind.nom} de pH ${nbf(ind.zone[0], 1)} à ${nbf(ind.zone[1], 1)}` : ''}${montrerVE ? ` ; le volume équivalent est ${nbf(VE, 1)} millilitres` : ''}`}>
       <line x1={mx} y1={bas} x2={W - 12} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
-      {[0, 5, 10, 15, 20, 25].map(v => <text key={v} x={X(v)} y={bas + 16} fontSize="12.5" textAnchor="middle" fill="#334155">{v}</text>)}
-      {[0, 2, 4, 6, 8, 10, 12, 14].map(p => <g key={p}><line x1={mx} y1={Y(p)} x2={W - 12} y2={Y(p)} stroke="#eef2f7"/><text x={mx - 6} y={Y(p) + 4} fontSize="12.5" textAnchor="end" fill="#334155">{p}</text></g>)}
-      <text x={(mx + W) / 2} y={H - 8} fontSize="12.5" textAnchor="middle" fill="#334155">volume de soude versé V<tspan baselineShift="sub" fontSize="0.75em">B</tspan> (mL)</text>
-      <text x="13" y={(my + bas) / 2} fontSize="12.5" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">pH</text>
+      {[0, 5, 10, 15, 20, 25].map(v => <text key={v} x={X(v)} y={bas + 21} fontSize="17" textAnchor="middle" fill="#334155">{v}</text>)}
+      {[0, 2, 4, 6, 8, 10, 12, 14].map(p => <g key={p}><line x1={mx} y1={Y(p)} x2={W - 12} y2={Y(p)} stroke="#eef2f7"/><text x={mx - 7} y={Y(p) + 6} fontSize="17" textAnchor="end" fill="#334155">{p}</text></g>)}
+      <text x={(mx + W) / 2} y={H - 10} fontSize="17" textAnchor="middle" fill="#334155">volume de soude versé V<tspan baselineShift="sub" fontSize="0.75em">B</tspan> (mL)</text>
+      <text x="16" y={(my + bas) / 2} fontSize="17" fill="#334155" transform={`rotate(-90 16 ${(my + bas) / 2})`} textAnchor="middle">pH</text>
       {ind && <><defs><linearGradient id="tph-grad" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stopColor={ind.acide}/><stop offset="1" stopColor={ind.base}/></linearGradient></defs>
         <rect x={mx} y={Y(ind.zone[1])} width={W - mx - 12} height={Y(ind.zone[0]) - Y(ind.zone[1])} fill="url(#tph-grad)" opacity="0.55"/>
         <rect x={mx} y={Y(ind.zone[1])} width={W - mx - 12} height={Y(ind.zone[0]) - Y(ind.zone[1])} fill="none" stroke="#475569" strokeDasharray="4 3"/>
-        <text x={W - 16} y={(Y(ind.zone[0]) + Y(ind.zone[1])) / 2 + 4} fontSize="11.5" fontWeight="700" textAnchor="end" fill="#0f172a" stroke="white" strokeWidth="3" paintOrder="stroke">zone de virage ({nbf(ind.zone[0], 1)} – {nbf(ind.zone[1], 1)})</text>
-        <rect x={mx + 6} y={Y(ind.zone[0]) + 5} width="12" height="12" rx="2" fill={ind.acide} stroke="#475569"/>
-        <text x={mx + 23} y={Y(ind.zone[0]) + 15} fontSize="11.5" fill="#334155">pH &lt; {nbf(ind.zone[0], 1)} : {nomCouleur(ind.acide)} (forme acide)</text>
-        <rect x={mx + 6} y={Y(ind.zone[1]) - 19} width="12" height="12" rx="2" fill={ind.base} stroke="#475569"/>
-        <text x={mx + 23} y={Y(ind.zone[1]) - 9} fontSize="11.5" fill="#334155">pH &gt; {nbf(ind.zone[1], 1)} : {nomCouleur(ind.base)} (forme basique)</text></>}
+        <text x={W - 16} y={(Y(ind.zone[0]) + Y(ind.zone[1])) / 2 + 4} fontSize="17" fontWeight="700" textAnchor="end" fill="#0f172a" stroke="white" strokeWidth="3" paintOrder="stroke">zone de virage ({nbf(ind.zone[0], 1)} – {nbf(ind.zone[1], 1)})</text>
+        <rect x={mx + 6} y={Y(ind.zone[0]) + 5} width="14" height="14" rx="2" fill={ind.acide} stroke="#475569"/>
+        <text x={mx + 24} y={Y(ind.zone[0]) + 18} fontSize="17" fill="#334155">pH &lt; {nbf(ind.zone[0], 1)} : {nomCouleur(ind.acide)} </text>
+        <rect x={mx + 6} y={Y(ind.zone[1]) - 21} width="14" height="14" rx="2" fill={ind.base} stroke="#475569"/>
+        <text x={mx + 24} y={Y(ind.zone[1]) - 8} fontSize="17" fill="#334155">pH &gt; {nbf(ind.zone[1], 1)} : {nomCouleur(ind.base)} </text></>}
       {ptsCmp && <path d={trace(ptsCmp, p => Y(p.pH))} fill="none" stroke="#94a3b8" strokeWidth="2" strokeDasharray="6 4"/>}
-      {ptsCmp && <text x={X(20.5)} y={Y(2.2)} fontSize="11.5" fill="#64748b">acide fort (HCl)</text>}
+      {ptsCmp && <text x={X(20.5)} y={Y(2.2)} fontSize="17" fill="#64748b">acide fort (HCl)</text>}
       {deriv && <path d={trace(pts, p => Yd(p.d))} fill="none" stroke="#15803d" strokeWidth="1.8" strokeDasharray="5 3"/>}
-      {deriv && <text x={X(Math.min(VMAX - 7, VE + 1))} y={my + 18} fontSize="12" fill="#15803d" fontWeight="700">dpH/dV<tspan baselineShift="sub" fontSize="0.75em">B</tspan></text>}
+      {deriv && <text x={X(Math.min(VMAX - 7, VE + 1))} y={my + 22} fontSize="17" fill="#15803d" fontWeight="700">dpH/dV<tspan baselineShift="sub" fontSize="0.75em">B</tspan></text>}
       <path d={trace(pts, p => Y(p.pH))} fill="none" stroke="#0369a1" strokeWidth="2.6"/>
       {montrerVE && VE <= VMAX && <><line x1={X(VE)} y1={my} x2={X(VE)} y2={bas} stroke="#15803d" strokeWidth="1.3" strokeDasharray="3 3"/>
-        <text x={X(VE) + 5} y={bas - 6} fontSize="12.5" fill="#15803d" fontWeight="700">V<tspan baselineShift="sub" fontSize="0.75em">E</tspan> = {nbf(VE, 1)} mL</text></>}
+        <text x={X(VE) + 5} y={bas - 6} fontSize="17" fill="#15803d" fontWeight="700">V<tspan baselineShift="sub" fontSize="0.75em">E</tspan> = {nbf(VE, 1)} mL</text></>}
       <line x1={X(Vb)} y1={my} x2={X(Vb)} y2={bas} stroke="#b45309" strokeWidth="1.4" strokeDasharray="3 3"/>
       <circle cx={X(Vb)} cy={Y(ph)} r="6" fill="#f59e0b" stroke="#0f172a" strokeWidth="1.5"/>
     </svg>);
@@ -66,7 +66,7 @@ function CourbePH({ pts, ptsCmp, Vb, ph, VE, montrerVE, deriv, ind }) {
 
 // ---------- graphe des quantités de matière n = f(V) (transformation totale) ----------
 function GrapheQuantites({ p, Vb, VE, montrerVE }) {
-  const W = 480, H = 250, mx = 40, my = 14, bas = H - 44, fort = M.ACIDES[p.acide].fort;
+  const W = 480, H = 290, mx = 56, my = 16, bas = H - 60, fort = M.ACIDES[p.acide].fort;
   const { acide, C0, V0, Cb } = p;
   const pts = useMemo(() => M.courbeQuantites({ acide, C0, V0, Cb }, VMAX, 200), [acide, C0, V0, Cb]);
   const top = Math.max(p.C0 * p.V0, p.Cb * VMAX - p.C0 * p.V0, 0.5), pas = top > 2 ? 1 : 0.5, haut = Math.ceil(top / pas) * pas;
@@ -79,14 +79,14 @@ function GrapheQuantites({ p, Vb, VE, montrerVE }) {
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
       aria-label={`Quantités de matière en millimoles en fonction du volume versé : ${nomAH} décroît jusqu’à zéro à l’équivalence, ${nomA ? `${nomA} croît jusqu’à ${nbf(c.n0, 2)} millimoles, ` : ''}HO⁻ n’apparaît qu’après l’équivalence`}>
       <line x1={mx} y1={bas} x2={W - 12} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
-      {[0, 5, 10, 15, 20, 25].map(v => <text key={v} x={X(v)} y={bas + 16} fontSize="12.5" textAnchor="middle" fill="#334155">{v}</text>)}
-      {ticks.map(n => <g key={n}><line x1={mx} y1={Y(n)} x2={W - 12} y2={Y(n)} stroke="#eef2f7"/><text x={mx - 6} y={Y(n) + 4} fontSize="12" textAnchor="end" fill="#334155">{nbf(n, 1)}</text></g>)}
-      <text x={(mx + W) / 2} y={H - 8} fontSize="12.5" textAnchor="middle" fill="#334155">V<tspan baselineShift="sub" fontSize="0.75em">B</tspan> (mL)</text>
-      <text x="13" y={(my + bas) / 2} fontSize="12" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">n (mmol)</text>
+      {[0, 5, 10, 15, 20, 25].map(v => <text key={v} x={X(v)} y={bas + 21} fontSize="17" textAnchor="middle" fill="#334155">{v}</text>)}
+      {ticks.map(n => <g key={n}><line x1={mx} y1={Y(n)} x2={W - 12} y2={Y(n)} stroke="#eef2f7"/><text x={mx - 7} y={Y(n) + 6} fontSize="17" textAnchor="end" fill="#334155">{nbf(n, 1)}</text></g>)}
+      <text x={(mx + W) / 2} y={H - 10} fontSize="17" textAnchor="middle" fill="#334155">V<tspan baselineShift="sub" fontSize="0.75em">B</tspan> (mL)</text>
+      <text x="16" y={(my + bas) / 2} fontSize="17" fill="#334155" transform={`rotate(-90 16 ${(my + bas) / 2})`} textAnchor="middle">n (mmol)</text>
       <path d={L('nAH')} fill="none" stroke="#6d28d9" strokeWidth="2.4"/>{nomA && <path d={L('nA')} fill="none" stroke="#0e7490" strokeWidth="2.4"/>}<path d={L('nOH')} fill="none" stroke="#c2410c" strokeWidth="2.4"/>
-      <text x={X(1)} y={Y(c.n0) - 5} fontSize="12" fontWeight="700" fill="#6d28d9">{nomAH}</text>
-      {nomA && <text x={X(18.5)} y={Y(c.n0) - 5} fontSize="12" fontWeight="700" fill="#0e7490">{nomA}</text>}
-      <text x={X(20.5)} y={Y(Math.max(0, p.Cb * 21 - c.n0)) - 5} fontSize="12" fontWeight="700" fill="#c2410c">HO⁻</text>
+      <text x={X(1)} y={Y(c.n0) - 5} fontSize="17" fontWeight="700" fill="#6d28d9">{nomAH}</text>
+      {nomA && <text x={X(18.5)} y={Y(c.n0) - 5} fontSize="17" fontWeight="700" fill="#0e7490">{nomA}</text>}
+      <text x={X(22.6)} y={Y(Math.max(0, p.Cb * 22.6 - c.n0)) - 14} fontSize="17" fontWeight="700" fill="#c2410c" textAnchor="end">HO⁻</text>
       {montrerVE && VE <= VMAX && <line x1={X(VE)} y1={my} x2={X(VE)} y2={bas} stroke="#15803d" strokeWidth="1.3" strokeDasharray="3 3"/>}
       <line x1={X(Vb)} y1={my} x2={X(Vb)} y2={bas} stroke="#b45309" strokeWidth="1.4" strokeDasharray="3 3"/>
     </svg>);
@@ -113,18 +113,18 @@ function TableComposition({ p, Vb }) {
 
 // ---------- diagramme de prédominance du couple ----------
 function Predominance({ pKa, ph, acide, base }) {
-  const W = 480, x = p => 20 + p / 14 * 440, yb = 34;
+  const W = 480, x = p => 20 + p / 14 * 440, yb = 36;
   return (
-    <svg viewBox={`0 -12 ${W} 98`} style={{ width: '100%', maxWidth: 520, display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
+    <svg viewBox={`0 -20 ${W} 118`} style={{ width: '100%', maxWidth: 520, display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
       aria-label={`Diagramme de prédominance du couple ${acide} / ${base} de pKA ${nbf(pKa, 1)} : ${acide} prédomine pour pH inférieur à ${nbf(pKa, 1)}, ${base} au-dessus. Le pH actuel est ${nbf(ph, 2)}`}>
-      <rect x={x(0)} y={yb} width={x(pKa) - x(0)} height="26" fill="#ede9fe"/><rect x={x(pKa)} y={yb} width={x(14) - x(pKa)} height="26" fill="#cffafe"/>
-      <text x={(x(0) + x(pKa)) / 2} y={yb + 18} fontSize="12.5" fontWeight="700" fill="#6d28d9" textAnchor="middle">{acide} prédomine</text>
-      <text x={(x(pKa) + x(14)) / 2} y={yb + 18} fontSize="12.5" fontWeight="700" fill="#0e7490" textAnchor="middle">{base} prédomine</text>
-      <line x1={x(pKa)} y1={yb - 4} x2={x(pKa)} y2={yb + 30} stroke="#0f172a" strokeWidth="1.8"/>
-      <text x={x(pKa)} y="78" fontSize="12.5" fill="#0f172a" textAnchor="middle">pK<tspan baselineShift="sub" fontSize="0.75em">A</tspan> = {nbf(pKa, 1)}</text>
-      {[0, 7, 14].map(p => <text key={p} x={x(p)} y="78" fontSize="11.5" fill="#64748b" textAnchor={p === 0 ? 'start' : p === 14 ? 'end' : 'middle'}>{p === 7 ? '' : p}</text>)}
-      <polygon points={`${x(ph) - 7},8 ${x(ph) + 7},8 ${x(ph)},20`} fill="#f59e0b" stroke="#0f172a"/>
-      <text x={Math.min(Math.max(x(ph), 40), 440)} y="6" fontSize="12" fontWeight="700" fill="#b45309" textAnchor="middle" style={{ paintOrder: 'stroke' }}>pH = {nbf(ph, 2)}</text>
+      <rect x={x(0)} y={yb} width={x(pKa) - x(0)} height="30" fill="#ede9fe"/><rect x={x(pKa)} y={yb} width={x(14) - x(pKa)} height="30" fill="#cffafe"/>
+      <text x={(x(0) + x(pKa)) / 2} y={yb + 21} fontSize="17" fontWeight="700" fill="#6d28d9" textAnchor="middle">{acide} prédomine</text>
+      <text x={(x(pKa) + x(14)) / 2} y={yb + 21} fontSize="17" fontWeight="700" fill="#0e7490" textAnchor="middle">{base} prédomine</text>
+      <line x1={x(pKa)} y1={yb - 4} x2={x(pKa)} y2={yb + 34} stroke="#0f172a" strokeWidth="1.8"/>
+      <text x={x(pKa)} y="88" fontSize="17" fill="#0f172a" textAnchor="middle">pK<tspan baselineShift="sub" fontSize="0.75em">A</tspan> = {nbf(pKa, 1)}</text>
+      {[0, 7, 14].map(p => <text key={p} x={x(p)} y="88" fontSize="17" fill="#64748b" textAnchor={p === 0 ? 'start' : p === 14 ? 'end' : 'middle'}>{p === 7 ? '' : p}</text>)}
+      <polygon points={`${x(ph) - 7},8 ${x(ph) + 7},8 ${x(ph)},21`} fill="#f59e0b" stroke="#0f172a"/>
+      <text x={Math.min(Math.max(x(ph), 50), 430)} y="2" fontSize="17" fontWeight="700" fill="#b45309" textAnchor="middle" style={{ paintOrder: 'stroke' }}>pH = {nbf(ph, 2)}</text>
     </svg>);
 }
 

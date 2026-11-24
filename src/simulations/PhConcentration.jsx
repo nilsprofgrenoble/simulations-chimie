@@ -91,17 +91,18 @@ function TableSerie({ lignes, colLog, colPH, kSel, choix }) {
 // ---------- graphe pH lu = f(−log(C/c°)) ----------
 function GrapheTest({ lignes, kSel }) {
   const W = 480, H = 300, mx = 46, my = 14, bas = H - 46, droite = W - 16;
-  const X = v => mx + (droite - mx) * v / 8, Y = p => my + (bas - my) * (1 - p / 8);
+  const vmax = Math.max(8, 2 * Math.ceil(Math.max(0, ...lignes.map(l => l.moinsLog)) / 2));
+  const X = v => mx + (droite - mx) * v / vmax, Y = p => my + (bas - my) * (1 - p / 8);
   const ecarte = lignes.some(l => Math.abs(l.ecart) > 0.05);
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
       aria-label={`Graphe du pH lu en fonction de moins log de C sur c zéro, pour ${lignes.length} solutions ; la droite pointillée est pH égal moins log de C sur c zéro${ecarte ? ' ; pour les solutions les plus diluées les points s’écartent de la droite et le pH reste inférieur à 7' : ' ; les points sont sur la droite'}`}>
       <line x1={mx} y1={bas} x2={droite} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
-      {[0, 2, 4, 6, 8].map(v => <g key={v}><text x={X(v)} y={bas + 16} fontSize="12.5" textAnchor="middle" fill="#334155">{v}</text>
-        <line x1={mx} y1={Y(v)} x2={droite} y2={Y(v)} stroke="#eef2f7"/><text x={mx - 6} y={Y(v) + 4} fontSize="12.5" textAnchor="end" fill="#334155">{v}</text></g>)}
+      {Array.from({ length: vmax / 2 + 1 }, (_, i) => 2 * i).map(v => <text key={'x' + v} x={X(v)} y={bas + 16} fontSize="12.5" textAnchor="middle" fill="#334155">{v}</text>)}
+      {[0, 2, 4, 6, 8].map(v => <g key={v}><line x1={mx} y1={Y(v)} x2={droite} y2={Y(v)} stroke="#eef2f7"/><text x={mx - 6} y={Y(v) + 4} fontSize="12.5" textAnchor="end" fill="#334155">{v}</text></g>)}
       <text x={(mx + droite) / 2} y={H - 8} fontSize="12.5" textAnchor="middle" fill="#334155">−log(<tspan fontStyle="italic">C</tspan> / c°)</text>
       <text x="13" y={(my + bas) / 2} fontSize="12.5" fill="#334155" transform={`rotate(-90 13 ${(my + bas) / 2})`} textAnchor="middle">pH lu</text>
-      <line x1={X(7)} y1={Y(7)} x2={droite} y2={Y(7)} stroke="#b91c1c" strokeWidth="1" strokeDasharray="3 3" opacity="0.7"/>
+      <line x1={mx} y1={Y(7)} x2={droite} y2={Y(7)} stroke="#b91c1c" strokeWidth="1" strokeDasharray="3 3" opacity="0.7"/>
       <text x={mx + 6} y={Y(7) - 5} fontSize="11.5" fill="#b91c1c">pH = 7</text>
       <line x1={X(0)} y1={Y(0)} x2={X(8)} y2={Y(8)} stroke="#64748b" strokeWidth="2" strokeDasharray="6 4"/>
       {lignes.map(l => <circle key={l.k} cx={X(l.moinsLog)} cy={Y(l.pHMes)} r={kSel === l.k ? 7 : 5} fill={kSel === l.k ? '#f59e0b' : '#0369a1'} stroke="#0f172a" strokeWidth="1.3"/>)}
@@ -201,7 +202,7 @@ export function SimulationPhConcentration() {
       tache: { type: 'action', ok: ti.k >= 4, label: 'Préparer jusqu’à S₄', faire: () => setT({ k: 4 }), consigne: 'Préparez S1 à S4 (4 dilutions au total)' } },
     { id: 'protocole', titre: 'Mesurer le pH de la série', focus: ['scene'],
       texte: <>Les solutions {Sk(0)} à {Sk(4)} sont prêtes. Pour mesurer leur pH, on utilise un pH-mètre <strong>étalonné</strong> avec deux solutions tampons (pH 4,00 et pH 7,00).</>,
-      tache: { type: 'qcm', q: 'Dans quel ordre mesurer les cinq pH ?', options: ['de la plus diluée (S₄) à la plus concentrée (S₀), avec rinçage entre deux mesures', 'de la plus concentrée (S₀) à la plus diluée (S₄), sans rincer l’électrode entre deux mesures', 'dans n’importe quel ordre, car l’électrode ne garde aucune trace de la solution précédente'], bonne: 0, bloque,
+      tache: { type: 'qcm', q: 'Dans quel ordre mesurer les cinq pH ?', options: ['de la plus diluée (S₄) à la plus concentrée (S₀), en rinçant l’électrode à l’eau distillée entre deux mesures', 'de la plus concentrée (S₀) à la plus diluée (S₄), sans rincer l’électrode entre deux mesures', 'dans n’importe quel ordre, car l’électrode ne garde aucune trace de la solution précédente'], bonne: 0, bloque,
         expl: 'Quelques gouttes d’une solution concentrée restées sur l’électrode fausseraient beaucoup le pH d’une solution diluée ; l’inverse est négligeable. On rince donc l’électrode à l’eau distillée et on mesure du plus dilué au plus concentré, en lisant la valeur quand elle est stable.',
         indice: 'Que se passe-t-il si une trace de solution concentrée contamine une solution très diluée ?' } },
     { id: 'fact100', titre: 'Un facteur de dilution 100', focus: ['mesures'],
