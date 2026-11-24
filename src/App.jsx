@@ -199,6 +199,7 @@ const SimulationExtractionAcideBase = paresseux(() => import("./simulations/Extr
 const SimulationTensioactifs = paresseux(() => import("./simulations/Tensioactifs"), "SimulationTensioactifs");
 const SimulationChargeTensioactifs = paresseux(() => import("./simulations/ChargeTensioactifs"), "SimulationChargeTensioactifs");
 const SimulationSensEmulsion = paresseux(() => import("./simulations/SensEmulsion"), "SimulationSensEmulsion");
+const SimulationInstabilite = paresseux(() => import("./simulations/Instabilite"), "SimulationInstabilite");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
@@ -563,6 +564,7 @@ const SIMULATIONS = [
   { id:146, label:"Tensioactifs : de la structure à la CMC", niveau:"BTS", icon:"🫧", color:"#0369a1", component: SimulationTensioactifs },
   { id:220, label:"Charge d’un tensioactif selon le pH", niveau:"BTS", icon:"⚡", color:"#7c3aed", component: SimulationChargeTensioactifs },
   { id:221, label:"Sens de l’émulsion et épaississement", niveau:"BTS", icon:"🥣", color:"#0ea5e9", component: SimulationSensEmulsion },
+  { id:222, label:"Instabilités des émulsions", niveau:"BTS", icon:"⏳", color:"#7c3aed", component: SimulationInstabilite },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
