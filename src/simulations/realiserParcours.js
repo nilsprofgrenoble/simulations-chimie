@@ -8,13 +8,13 @@ import { CHAPITRES, NIVEAUX_CHAPITRES } from '../chapitres.js';
 
 // Les types, dans l'ordre conseillé. « filtre: niveau » : le type contient beaucoup d'exercices rattachés à un chapitre du programme.
 export const TYPES_REA = [
-  { id: 'unites', nom: 'Convertir des unités', icone: '📏', but: 'km/h en m/s, mm en m, cm³ en L… sans se tromper.' },
-  { id: 'chiffres', nom: 'Chiffres significatifs et arrondi', icone: '🔢', but: 'Combien de chiffres garder dans un résultat, et comment arrondir.' },
-  { id: 'calculatrice', nom: 'Utiliser la calculatrice', icone: '🧮', but: 'Saisir une expression, utiliser log, exp et racine.' },
-  { id: 'isoler', nom: 'Isoler une grandeur', icone: '↔️', but: 'Transformer une formule pour calculer la grandeur cherchée.' },
-  { id: 'calcul', nom: 'Effectuer un calcul', icone: '✍️', but: 'Appliquer les formules d’un chapitre : à choisir par niveau puis par chapitre.', filtre: 'niveau' },
-  { id: 'vecteurs', nom: 'Calculer avec des vecteurs', icone: '➡️', but: 'Sommes et différences de vecteurs (forces, vitesses).' },
-  { id: 'courbe', nom: 'Tracer une courbe', icone: '📈', but: 'Placer les points d’un tableau et tracer la courbe.' },
+  { id: 'unites', nom: 'Convertir des unités', but: 'km/h en m/s, mm en m, cm³ en L… sans se tromper.' },
+  { id: 'chiffres', nom: 'Chiffres significatifs et arrondi', but: 'Combien de chiffres garder dans un résultat, et comment arrondir.' },
+  { id: 'calculatrice', nom: 'Utiliser la calculatrice', but: 'Saisir une expression, utiliser log, exp et racine.' },
+  { id: 'isoler', nom: 'Isoler une grandeur', but: 'Transformer une formule pour calculer la grandeur cherchée.' },
+  { id: 'calcul', nom: 'Effectuer un calcul', but: 'Appliquer les formules d’un chapitre : à choisir par niveau puis par chapitre.', filtre: 'niveau' },
+  { id: 'vecteurs', nom: 'Calculer avec des vecteurs', but: 'Sommes et différences de vecteurs (forces, vitesses).' },
+  { id: 'courbe', nom: 'Tracer une courbe', but: 'Placer les points d’un tableau et tracer la courbe.' },
 ];
 
 // Types qui ne se déduisent pas du champ « domaine » : (« Vitesses » a un chapitre mais c'est d'abord une conversion)

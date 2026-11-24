@@ -32,25 +32,31 @@ export function FilAriane({ code, couleur, types, chapitres, sel, setSel, dansEx
 }
 
 const carte = (actif, couleur) => ({
-  display: 'flex', alignItems: 'center', gap: 12, width: '100%', boxSizing: 'border-box', minHeight: 56, padding: '10px 14px', textAlign: 'left', borderRadius: 16,
-  border: `2px solid ${actif ? couleur : KIT.bord}`, background: actif ? '#f3f8f5' : '#fff', color: KIT.txt, fontFamily: 'inherit', cursor: 'pointer',
+  display: 'flex', alignItems: 'center', gap: 12, width: '100%', boxSizing: 'border-box', minHeight: 52, padding: '10px 14px', textAlign: 'left', borderRadius: 8,
+  border: `1px solid ${actif ? couleur : KIT.bord}`, boxShadow: actif ? `inset 3px 0 0 ${couleur}` : 'none', background: actif ? '#f3f8f5' : '#fff', color: KIT.txt, fontFamily: 'inherit', cursor: 'pointer',
 });
+// Survol et focus des lignes (le style en ligne ne les gère pas)
+const CSS_LIGNES = '.pc-ligne{transition:background .12s}.pc-ligne:hover{background:#f1f5f9 !important}.pc-ligne:focus-visible{outline:3px solid #0f172a;outline-offset:-3px}';
 
-// ── Écran 1 : les types d'exercices ──
+// ── Écran 1 : les types d'exercices (un sommaire : une ligne par type, sans décor) ──
 function EcranTypes({ couleur, types, items, prog, choisir }) {
+  const lignes = types.map(t => ({ t, its: itemsDuType(items, t.id) })).filter(x => x.its.length);
   return (
-    <div role="list" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 10 }}>
-      {types.map(t => {
-        const its = itemsDuType(items, t.id); if (!its.length) return null;
+    <div role="list" style={{ border: `1px solid ${KIT.bord}`, borderRadius: 8, background: '#fff', overflow: 'hidden', maxWidth: 760 }}>
+      <style>{CSS_LIGNES}</style>
+      {lignes.map(({ t, its }, k) => {
         const faits = its.filter(i => prog[i.cle]).length;
         return (
-          <button key={t.id} role="listitem" type="button" data-type={t.id} onClick={() => choisir(t, its)} style={{ ...carte(false, couleur), borderTop: `6px solid ${couleur}`, minHeight: 92, alignItems: 'flex-start' }}>
-            <span aria-hidden="true" style={{ flex: 'none', width: 46, height: 46, borderRadius: 14, background: '#eef7f1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>{t.icone}</span>
-            <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.3 }}>{t.nom}</span>
-              <span style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.45 }}>{t.but}</span>
-              <span style={{ fontSize: 12.5, color: '#475569', fontWeight: 700 }}>{its.length} exercice{its.length > 1 ? 's' : ''}{faits > 0 ? ` · ${faits} déjà fait${faits > 1 ? 's' : ''}` : ''}</span>
+          <button key={t.id} role="listitem" type="button" data-type={t.id} className="pc-ligne" onClick={() => choisir(t, its)}
+            style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', boxSizing: 'border-box', padding: '14px 16px', minHeight: 64, textAlign: 'left', border: 'none', borderTop: k ? `1px solid ${KIT.bord}` : 'none', background: '#fff', color: KIT.txt, fontFamily: 'inherit', cursor: 'pointer' }}>
+            <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.3, color: couleur }}>{t.nom}</span>
+              <span style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.45 }}>{t.but}</span>
             </span>
+            <span style={{ flex: 'none', textAlign: 'right', fontSize: 13, color: '#475569', fontWeight: 700, lineHeight: 1.4 }}>
+              {its.length} exercice{its.length > 1 ? 's' : ''}{faits > 0 && <><br /><span style={{ fontWeight: 600 }}>{faits} fait{faits > 1 ? 's' : ''}</span></>}
+            </span>
+            <span aria-hidden="true" style={{ flex: 'none', color: '#64748b', fontSize: 22, lineHeight: 1 }}>›</span>
           </button>);
       })}
     </div>);
@@ -59,7 +65,7 @@ function EcranTypes({ couleur, types, items, prog, choisir }) {
 // ── Liste d'exercices (éventuellement groupée par chapitre) ──
 function LigneExo({ it, fait, ouvrir, couleur }) {
   return (
-    <button type="button" data-exo={it.id} onClick={() => ouvrir(it)} style={{ ...carte(false, couleur), minHeight: 52, borderRadius: 14, border: `1px solid ${fait ? '#bfe8df' : KIT.bord}`, background: fait ? '#f1fbf8' : '#fff' }}>
+    <button type="button" data-exo={it.id} onClick={() => ouvrir(it)} className="pc-ligne" style={{ ...carte(false, couleur), minHeight: 52, border: `1px solid ${KIT.bord}`, background: fait ? '#f1fbf8' : '#fff' }}>
       <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <span style={{ fontWeight: 700, fontSize: 14.5, lineHeight: 1.35 }}>{it.titre}</span>
         {it.detail && <span style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.4 }}>{it.detail}</span>}
@@ -96,7 +102,8 @@ function EcranType({ couleur, type, items, chapitres, prog, sel, setSel, ouvrir 
   const groupes = parNiveau ? regrouper(liste, chapitres, sel.niv) : null;
   const etape = { margin: '14px 0 6px', fontSize: 13, fontWeight: 800, letterSpacing: '.05em', textTransform: 'uppercase', color: '#475569' };
   return (
-    <div>
+    <div style={{ maxWidth: 760 }}>
+      <style>{CSS_LIGNES}</style>
       <p style={{ margin: '0 0 6px', fontSize: 14, color: KIT.txt2, lineHeight: 1.5 }}>{type.but}</p>
       {parNiveau && <>
         <div style={etape}>1. Ton niveau</div>
