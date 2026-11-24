@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi, Formule, FormuleEnLigne, avecIndices } from "../commun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
 import { FResistance, FPuissance, FSerie, FChute, FOrdre, FBilanParoi } from "./ParoiSchemas";
@@ -221,11 +221,11 @@ function questionsDefi(df) {
     const s = modeleDefi(df).mur, iso = s.L[1], dT = s.P * iso.R, E = s.P * 24 / 1000;
     return [
       { id: 'Ri', q: <>Résistance thermique R<Sub c="th"/> de la couche 2 ({iso.nom.toLowerCase()})</>, u: 'K·W⁻¹', vrai: iso.R, tol: 0.02,
-        detail: `R_th = e / (λ·S) = ${nf(iso.e / 1000)} / (${nf(iso.lam)} × ${df.S}) = ${nf(iso.R)} K·W⁻¹` },
+        detail: `R_th = frac(e|λ·S) = frac(${nf(iso.e / 1000)}|${nf(iso.lam)} × ${df.S}) = ${nf(iso.R)} K·W⁻¹` },
       { id: 'Rt', q: <>Résistance thermique globale R<Sub c="th,global"/> de la paroi</>, u: 'K·W⁻¹', vrai: s.Rtot, tol: 0.02,
         detail: `R_th,global = ${s.L.map(l => nf(l.R)).join(' + ')} = ${nf(s.Rtot)} K·W⁻¹` },
       { id: 'P', q: <>Puissance thermique P perdue à travers la paroi</>, u: 'W', vrai: s.P, tol: 0.02,
-        detail: `P = (T_int − T_ext) / R_th,global = (${df.Ti} − (${df.Te})) / ${nf(s.Rtot)} = ${nf(s.P, 4)} W` },
+        detail: `P = frac(T_int − T_ext|R_th,global) = frac(${df.Ti} − (${df.Te})|${nf(s.Rtot)}) = ${nf(s.P, 4)} W` },
       { id: 'dT', q: <>Écart de température entre les deux faces de la couche 2</>, u: '°C', vrai: dT, tol: 0.02,
         detail: `ΔT = P × R_th = ${nf(s.P, 4)} × ${nf(iso.R)} = ${nf(dT)} °C` },
       { id: 'E', q: <>Énergie thermique perdue en 24 h, en <strong>kWh</strong></>, u: 'kWh', vrai: E, tol: 0.02,
@@ -237,29 +237,29 @@ function questionsDefi(df) {
     const Rmin = df.Rcible - Rm - Rp, emin = Rmin * iso.lam * 100, P = df.dT / df.Rcible;
     return [
       { id: 'Rm', q: <>Résistance thermique de la maçonnerie ({mac.nom.toLowerCase()}), pour 1 m²</>, u: 'K·W⁻¹', vrai: Rm, tol: 0.02,
-        detail: `R_th = e / (λ·S) = ${nf(df.eMaco / 1000)} / (${nf(mac.lam)} × 1) = ${nf(Rm)} K·W⁻¹` },
+        detail: `R_th = frac(e|λ·S) = frac(${nf(df.eMaco / 1000)}|${nf(mac.lam)} × 1) = ${nf(Rm)} K·W⁻¹` },
       { id: 'Rp', q: <>Résistance thermique de la plaque de plâtre, pour 1 m²</>, u: 'K·W⁻¹', vrai: Rp, tol: 0.02,
-        detail: `R_th = ${nf(df.ePlatre / 1000)} / (${MATS.platre.lam} × 1) = ${nf(Rp)} K·W⁻¹` },
+        detail: `R_th = frac(${nf(df.ePlatre / 1000)}|${MATS.platre.lam} × 1) = ${nf(Rp)} K·W⁻¹` },
       { id: 'Rmin', q: <>Résistance thermique minimale de l’isolant ({iso.nom.toLowerCase()})</>, u: 'K·W⁻¹', vrai: Rmin, tol: 0.02,
         detail: `R_isolant = R_cible − R_maçonnerie − R_plâtre = ${df.Rcible} − ${nf(Rm)} − ${nf(Rp)} = ${nf(Rmin)} K·W⁻¹` },
       { id: 'emin', q: <>Épaisseur minimale d’isolant, en <strong>cm</strong></>, u: 'cm', vrai: emin, tol: 0.02,
         detail: `e = R × λ × S = ${nf(Rmin)} × ${nf(iso.lam)} × 1 = ${nf(Rmin * iso.lam, 3)} m = ${nf(emin)} cm` },
       { id: 'P', q: <>Puissance thermique perdue par m² si R<Sub c="th,global"/> = {df.Rcible} K·W⁻¹ et T<Sub c="int"/> − T<Sub c="ext"/> = {df.dT} °C</>, u: 'W', vrai: P, tol: 0.02,
-        detail: `P = ΔT / R_th,global = ${df.dT} / ${df.Rcible} = ${nf(P)} W` },
+        detail: `P = frac(ΔT|R_th,global) = frac(${df.dT}|${df.Rcible}) = ${nf(P)} W` },
     ];
   }
   const { simple, double } = modeleDefi(df);
   return [
     { id: 'Rs', q: <>Résistance thermique R<Sub c="th"/> du simple vitrage ({2 * df.ev} mm de verre)</>, u: 'K·W⁻¹', vrai: simple.Rtot, tol: 0.02,
-      detail: `R_th = e / (λ·S) = ${nf(2 * df.ev / 1000)} / (1,0 × ${df.S}) = ${nf(simple.Rtot)} K·W⁻¹` },
+      detail: `R_th = frac(e|λ·S) = frac(${nf(2 * df.ev / 1000)}|1,0 × ${df.S}) = ${nf(simple.Rtot)} K·W⁻¹` },
     { id: 'Rd', q: <>Résistance thermique R<Sub c="th,global"/> du double vitrage (2 × {df.ev} mm de verre et {df.a} mm d’air)</>, u: 'K·W⁻¹', vrai: double.Rtot, tol: 0.02,
       detail: `R_th,global = ${double.L.map(l => nf(l.R)).join(' + ')} = ${nf(double.Rtot)} K·W⁻¹` },
     { id: 'Ps', q: <>Puissance thermique P<Sub c="s"/> perdue par le simple vitrage</>, u: 'W', vrai: simple.P, tol: 0.02,
-      detail: `P = (T_int − T_ext) / R_th = (${df.Ti} − ${df.Te}) / ${nf(simple.Rtot)} = ${nf(simple.P, 4)} W` },
+      detail: `P = frac(T_int − T_ext|R_th) = frac(${df.Ti} − ${df.Te}|${nf(simple.Rtot)}) = ${nf(simple.P, 4)} W` },
     { id: 'Pd', q: <>Puissance thermique P<Sub c="d"/> perdue par le double vitrage</>, u: 'W', vrai: double.P, tol: 0.02,
-      detail: `P = ${df.Ti - df.Te} / ${nf(double.Rtot)} = ${nf(double.P, 4)} W` },
+      detail: `P = frac(${df.Ti - df.Te}|${nf(double.Rtot)}) = ${nf(double.P, 4)} W` },
     { id: 'rap', q: <>Rapport P<Sub c="s"/> / P<Sub c="d"/> (de combien le double vitrage divise-t-il la puissance perdue ?)</>, u: '', vrai: simple.P / double.P, tol: 0.02,
-      detail: `P_s / P_d = ${nf(simple.P, 4)} / ${nf(double.P, 4)} = ${nf(simple.P / double.P)}` },
+      detail: `frac(P_s|P_d) = frac(${nf(simple.P, 4)}|${nf(double.P, 4)}) = ${nf(simple.P / double.P)}` },
   ];
 }
 
@@ -326,16 +326,16 @@ export function SimulationParoi() {
       texte: <>Données : e = 20 cm, λ = 0,25 W·m⁻¹·K⁻¹, S = 1 m². Attention aux unités : l’épaisseur doit être en <strong>mètres</strong>.</>,
       tache: { type: 'num', q: 'R_th de la brique', unite: 'K·W⁻¹', vrai: A.Rb, tol: 0.02, affiche: x => nf(x),
         calcul: () => ['Conversion de l’épaisseur en mètres : e = 20 cm = 0,20 m.',
-          `R_th = e / (λ × S) = 0,20 / (0,25 × 1) = 0,20 / 0,25 = ${nf(A.Rb)} K·W⁻¹.`],
-        pieges: [[20 / 0.25, 'e = 20 cm = 0,20 m : convertissez en mètres.'], [200 / 0.25, 'e doit être en m (0,20 m), pas en mm.'], [0.25 / 0.2, 'R_th = e / (λ·S) : on divise e par λ·S, pas l’inverse.']],
-        expl: 'R_th = e / (λ·S) = 0,20 / (0,25 × 1) = 0,80 K·W⁻¹.', indice: "R_th = e ÷ (λ × S), avec e en mètres." } },
+          `R_th = frac(e|λ × S) = frac(0,20|0,25 × 1) = frac(0,20|0,25) = ${nf(A.Rb)} K·W⁻¹.`],
+        pieges: [[20 / 0.25, 'e = 20 cm = 0,20 m : convertissez en mètres.'], [200 / 0.25, 'e doit être en m (0,20 m), pas en mm.'], [0.25 / 0.2, 'R_th = frac(e|λ·S) : on divise e par λ·S, pas l’inverse.']],
+        expl: 'R_th = frac(e|λ·S) = frac(0,20|0,25 × 1) = 0,80 K·W⁻¹.', indice: "R_th = e ÷ (λ × S), avec e en mètres." } },
     { id: 'P1', titre: 'La puissance thermique à travers la brique', focus: ['schema'],
       texte: <>La puissance thermique P qui traverse la paroi est d’autant plus grande que l’écart de température est grand et que la résistance est faible : Calculez-la pour le mur de brique seul (R<Sub c="th"/> trouvée à l’étape 3) :{FPuiT}</>,
       tache: { type: 'num', q: 'Puissance P', unite: 'W', vrai: A.P1, tol: 0.02, affiche: x => nf(x),
         calcul: () => ['Écart de température : T_int − T_ext = 20 − 0 = 20 °C (soit 20 K).',
-          `P = (T_int − T_ext) / R_th = 20 / ${nf(A.Rb)} = ${nf(A.P1)} W.`],
-        pieges: [[20 * A.Rb, 'On divise : P = ΔT / R_th (plus R_th est grande, plus P est faible).']],
-        expl: 'P = 20 / 0,80 = 25 W : le mur laisse passer 25 J par seconde.', indice: "P = (T_int − T_ext) ÷ R_th, avec la résistance de la brique." } },
+          `P = frac(T_int − T_ext|R_th) = frac(20|${nf(A.Rb)}) = ${nf(A.P1)} W.`],
+        pieges: [[20 * A.Rb, 'On divise : P = frac(ΔT|R_th) (plus R_th est grande, plus P est faible).']],
+        expl: 'P = frac(20|0,80) = 25 W : le mur laisse passer 25 J par seconde.', indice: "P = (T_int − T_ext) ÷ R_th, avec la résistance de la brique." } },
     { id: 'profil1', titre: 'La température à l’intérieur du mur', focus: ['graphe'],
       retenirTitre: 'La puissance thermique',
       retenir: <><FPuissance/>{FPui}{puces(<>La chaleur va du chaud vers le froid.</>, <>R<sub>th</sub> grande : P petite, le mur « freine » le transfert.</>, <>P en W (soit J·s⁻¹), R<sub>th</sub> en K·W⁻¹, ΔT en K ou en °C.</>)}</>,
@@ -351,15 +351,15 @@ export function SimulationParoi() {
       texte: <>Même calcul que pour la brique, avec e = 10 cm et λ = 0,036 W·m⁻¹·K⁻¹ (S = 1 m²).</>,
       tache: { type: 'num', q: 'R_th de la laine de bois', unite: 'K·W⁻¹', vrai: A.Rl, tol: 0.02, affiche: x => nf(x),
         calcul: () => ['Conversion de l’épaisseur en mètres : e = 10 cm = 0,10 m.',
-          `R_th = e / (λ × S) = 0,10 / (0,036 × 1) = 0,10 / 0,036 = ${nf(A.Rl)} K·W⁻¹.`],
-        pieges: [[0.036 / 0.1, 'Fraction à l’envers : R_th = e / (λ·S), avec e = 0,10 m au numérateur.'], [10 / 0.036, 'e = 10 cm = 0,10 m : convertissez en mètres.'], [A.Rb, 'C’est la valeur de la brique : la laine de bois a une λ bien plus faible.']],
-        expl: `R_th = 0,10 / (0,036 × 1) ≈ ${nf(A.Rl)} K·W⁻¹ : ${nf(A.Rl / A.Rb, 2)} fois la résistance de la brique, pour la moitié de l’épaisseur.`, indice: "Même formule : R_th = e ÷ (λ × S)." } },
+          `R_th = frac(e|λ × S) = frac(0,10|0,036 × 1) = frac(0,10|0,036) = ${nf(A.Rl)} K·W⁻¹.`],
+        pieges: [[0.036 / 0.1, 'Fraction à l’envers : R_th = frac(e|λ·S), avec e = 0,10 m au numérateur.'], [10 / 0.036, 'e = 10 cm = 0,10 m : convertissez en mètres.'], [A.Rb, 'C’est la valeur de la brique : la laine de bois a une λ bien plus faible.']],
+        expl: `R_th = frac(0,10|0,036 × 1) ≈ ${nf(A.Rl)} K·W⁻¹ : ${nf(A.Rl / A.Rb, 2)} fois la résistance de la brique, pour la moitié de l’épaisseur.`, indice: "Même formule : R_th = e ÷ (λ × S)." } },
     { id: 'serie', titre: 'Les résistances s’ajoutent', focus: ['donnees'],
       retenirTitre: 'Couches en série',
       retenir: <><FSerie/>{FSom}{puces(<>Couches traversées l’une après l’autre par la même puissance : leurs résistances s’ajoutent.</>, <>Ajouter une couche augmente R<sub>th,global</sub> et diminue la puissance perdue.</>)}</>,
       texte: <>La plaque de plâtre a une résistance R<Sub c="th"/> ≈ {nf(A.Rp, 2)} K·W⁻¹ (même calcul). Les trois couches sont traversées l’une après l’autre par la même puissance : elles sont <strong>en série</strong>, et leurs résistances s’ajoutent.</>,
       tache: { type: 'num', q: 'R_th,global de la paroi', unite: 'K·W⁻¹', vrai: A.Rt, tol: 0.02, affiche: x => nf(x),
-        calcul: () => [`Plâtre : R_th = 0,013 / (0,33 × 1) = ${nf(A.Rp)} K·W⁻¹ (e = 13 mm = 0,013 m).`,
+        calcul: () => [`Plâtre : R_th = frac(0,013|0,33 × 1) = ${nf(A.Rp)} K·W⁻¹ (e = 13 mm = 0,013 m).`,
           `Laine de bois : ${nf(A.Rl)} K·W⁻¹ ; brique : ${nf(A.Rb)} K·W⁻¹.`,
           `Couches en série, traversées par la même puissance : R_th,global = ${nf(A.Rp)} + ${nf(A.Rl)} + ${nf(A.Rb)} = ${nf(A.Rt)} K·W⁻¹.`],
         pieges: [[A.Rl, 'Il faut ajouter les trois résistances (plâtre + laine + brique).'], [1 / (1 / A.Rb + 1 / A.Rl + 1 / A.Rp), 'Des couches superposées s’additionnent simplement : ce n’est pas la formule des résistances en parallèle.']],
@@ -368,10 +368,10 @@ export function SimulationParoi() {
       texte: <>Avec la même différence de température (20 °C) et la résistance globale R<Sub c="th,global"/> trouvée à l’étape précédente, calculez la nouvelle puissance P.</>,
       tache: { type: 'num', q: 'Puissance P', unite: 'W', vrai: A.P2, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`On utilise la résistance globale R_th,global = ${nf(A.Rt)} K·W⁻¹ (et non celle d’une seule couche).`,
-          `P = (T_int − T_ext) / R_th,global = 20 / ${nf(A.Rt)} = ${nf(A.P2)} W.`],
+          `P = frac(T_int − T_ext|R_th,global) = frac(20|${nf(A.Rt)}) = ${nf(A.P2)} W.`],
         pieges: [[A.P1, 'C’est la valeur sans isolant (25 W).'], [20 / A.Rl, 'Vous avez utilisé la résistance de la laine seule : la puissance dépend de la résistance globale des trois couches (R_th,global).'],
-          [20 * A.Rt, 'On divise : P = ΔT / R_th,global (plus R_th est grande, plus P est faible).']],
-        expl: `P = 20 / ${nf(A.Rt)} ≈ ${nf(A.P2)} W, contre 25 W sans isolant : on divise la puissance perdue par ${nf(A.Rt / A.Rb, 2)}.`, indice: "Même formule, avec la résistance globale R_th,global de la paroi." } },
+          [20 * A.Rt, 'On divise : P = frac(ΔT|R_th,global) (plus R_th est grande, plus P est faible).']],
+        expl: `P = frac(20|${nf(A.Rt)}) ≈ ${nf(A.P2)} W, contre 25 W sans isolant : on divise la puissance perdue par ${nf(A.Rt / A.Rb, 2)}.`, indice: "Même formule, avec la résistance globale R_th,global de la paroi." } },
     { id: 'dTl', titre: 'Où tombe l’écart de température ?', focus: ['graphe'],
       retenirTitre: 'Chute de température dans une couche',
       retenir: <><FChute/>{FChuteF}{puces(<>La chute de température d’une couche est proportionnelle à sa résistance.</>, <>L’essentiel de l’écart tombe dans la couche la plus résistante : l’isolant.</>, <>Même idée qu’en électricité : U = R × I.</>)}</>,
@@ -385,7 +385,7 @@ export function SimulationParoi() {
       texte: <>La barre colorée montre la part de chaque couche dans la résistance thermique totale, donc dans l’écart de température.</>,
       tache: { type: 'qcm', q: 'La brique est la couche la plus épaisse. Laquelle prend pourtant la plus grande part de l’écart de température ?',
         options: ['La laine de bois, car sa résistance thermique est la plus grande', 'La brique, car elle est la plus épaisse', 'Chaque couche en prend le même tiers'], bonne: 0,
-        expl: `Ce n’est pas l’épaisseur seule qui compte, mais R_th = e / (λ·S) : un isolant (λ faible) même peu épais a une grande résistance. Ici la laine de bois fait ${partEp} % de l’épaisseur du mur mais ${partR} % de sa résistance.`, indice: "La part de l’écart de température dépend de la résistance de la couche, pas de son épaisseur seule." } },
+        expl: `Ce n’est pas l’épaisseur seule qui compte, mais R_th = frac(e|λ·S) : un isolant (λ faible) même peu épais a une grande résistance. Ici la laine de bois fait ${partEp} % de l’épaisseur du mur mais ${partR} % de sa résistance.`, indice: "La part de l’écart de température dépend de la résistance de la couche, pas de son épaisseur seule." } },
     { id: 'bilan2', titre: 'Le bilan', focus: [],
       texte: <>Vous savez additionner les résistances de couches en série, calculer la puissance après isolation et repérer la couche où tombe l’essentiel de l’écart de température. Le parcours 3 étudie l’ordre des couches et le dimensionnement de l’isolant.</>, tache: null },
     { id: 'ordre', titre: 'Changer l’ordre des couches', focus: ['schema', 'graphe'],
@@ -401,7 +401,7 @@ export function SimulationParoi() {
       texte: <>Cahier des charges (exercice du TD) : pour 1 m², il faut <strong>R<Sub c="th,global"/> ≥ 4 K·W⁻¹</strong>. Quelle épaisseur minimale de laine de bois (λ = 0,036 W·m⁻¹·K⁻¹) faut-il ? La brique (R<Sub c="th"/> = {nf(A.Rb)} K·W⁻¹) et le plâtre (R<Sub c="th"/> ≈ {nf(A.Rp, 2)} K·W⁻¹) sont inchangés.</>,
       tache: { type: 'num', q: 'Épaisseur minimale de laine de bois', unite: 'cm', vrai: A.emin, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Résistance minimale de la laine : R_min = 4 − R_plâtre − R_brique = 4 − ${nf(A.Rp)} − ${nf(A.Rb)} = ${nf(4 - A.Rp - A.Rb)} K·W⁻¹.`,
-          `De R = e / (λ × S) on tire e = R × λ × S = ${nf(4 - A.Rp - A.Rb)} × 0,036 × 1 = ${nf((4 - A.Rp - A.Rb) * 0.036, 3)} m.`,
+          `De R = frac(e|λ × S) on tire e = R × λ × S = ${nf(4 - A.Rp - A.Rb)} × 0,036 × 1 = ${nf((4 - A.Rp - A.Rb) * 0.036, 3)} m.`,
           `Conversion en cm (1 m = 100 cm) : e = ${nf(A.emin)} cm.`],
         aide: 'Calculez d’abord la résistance minimale de la laine : R_min = 4 − R_plâtre − R_brique. Puis e = R × λ × S.',
         pieges: [[A.emin * 10, 'Résultat en mm : l’énoncé demande des cm.'], [A.emin / 100, 'Résultat en m : l’énoncé demande des cm.'], [4 * 0.036 * 100, 'Il faut retirer la résistance du plâtre et de la brique : elles contribuent déjà.', 0.004], [(4 - A.Rp) * 0.036 * 100, 'Vous avez oublié de retirer la résistance de la brique (0,8 K·W⁻¹) : elle contribue déjà.', 0.004]],
@@ -417,7 +417,7 @@ export function SimulationParoi() {
     { id: 'bravo', titre: 'Le bilan', focus: [],
       retenirTitre: 'Bilan : paroi multicouche',
       retenir: <><FBilanParoi/></>,
-      texte: <>Vous savez calculer la résistance thermique d’une couche (R<Sub c="th"/> = e / (λ·S)), additionner les résistances de couches superposées, en déduire la puissance P = ΔT / R<Sub c="th"/> et l’écart de température aux bornes de chaque couche, et dimensionner une épaisseur d’isolant. En exploration libre, chargez le simple et le double vitrage (exercice 2 du TD), ajoutez les films d’air et comparez les matériaux.</>, tache: null },
+      texte: <>Vous savez calculer la résistance thermique d’une couche (R<Sub c="th"/> = {avecIndices('frac(e|λ·S)')}), additionner les résistances de couches superposées, en déduire la puissance P = {avecIndices('frac(ΔT|R)')}<Sub c="th"/> et l’écart de température aux bornes de chaque couche, et dimensionner une épaisseur d’isolant. En exploration libre, chargez le simple et le double vitrage (exercice 2 du TD), ajoutez les films d’air et comparez les matériaux.</>, tache: null },
   ];
   const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
@@ -514,13 +514,13 @@ export function SimulationParoi() {
       {solE.L.map((l, i) => (
         <div key={i} style={ligne}>
           <strong>{i + 1}. {l.nom}</strong> : {l.film
-            ? <>R<Sub c="th"/> = r / S = {dec(l.r, 2)} / {nf(S)} = <strong>{nf(l.R)} K·W⁻¹</strong></>
-            : <>R<Sub c="th"/> = e / (λ · S) = {nf(l.e / 1000)} / ({nf(l.lam)} × {nf(S)}) = <strong>{nf(l.R)} K·W⁻¹</strong></>}
+            ? <>R<Sub c="th"/> = {avecIndices('frac(r|S)')} = {dec(l.r, 2)} / {nf(S)} = <strong>{nf(l.R)} K·W⁻¹</strong></>
+            : <>R<Sub c="th"/> = {avecIndices('frac(e|λ · S)')} = {nf(l.e / 1000)} / ({nf(l.lam)} × {nf(S)}) = <strong>{nf(l.R)} K·W⁻¹</strong></>}
           <span style={{ color: KIT.txt2 }}> · ΔT = P × R<Sub c="th"/> = {nf(Math.abs(solE.P * l.R))} °C</span>
         </div>))}
       <div style={ligne}><strong>Résistance globale</strong> (couches en série) : R<Sub c="th,global"/> = {solE.L.map(l => nf(l.R)).join(' + ')} = <strong>{nf(solE.Rtot)} K·W⁻¹</strong></div>
       <div style={ligne}><strong>Températures aux interfaces</strong> (de l’intérieur vers l’extérieur) : {solE.T.map(t1).join(' °C → ')} °C <span style={{ color: KIT.txt2 }}>(T<Sub c="k"/> = T<Sub c="k−1"/> − P × R<Sub c="th"/> de la couche)</span></div>
-      <div style={ligne}><strong>Puissance thermique</strong> : P = (T<Sub c="int"/> − T<Sub c="ext"/>) / R<Sub c="th,global"/> = ({t1(Ti)} − ({t1(Te)})) / {nf(solE.Rtot)} = <strong>{nf(Math.abs(Ptot), 4)} W</strong>
+      <div style={ligne}><strong>Puissance thermique</strong> : P = {avecIndices('frac(T<Sub c="int"/> − T<Sub c="ext"/>|R)')}<Sub c="th,global"/> = ({t1(Ti)} − ({t1(Te)})) / {nf(solE.Rtot)} = <strong>{nf(Math.abs(Ptot), 4)} W</strong>
         {Ptot < 0 && <span style={{ color: KIT.txt2 }}> (de l’extérieur vers l’intérieur : la paroi laisse entrer de l’énergie)</span>}
         <span style={{ color: KIT.txt2 }}> · par m² : {nf(Math.abs(solE.phi), 3)} W·m⁻²</span></div>
       <div style={ligne}><strong>Sur 24 h</strong> : E = P × 24 h = {nf(Math.abs(Ptot) * 24, 4)} Wh = <strong>{nf(Math.abs(E24))} kWh</strong>, soit {nf(Math.abs(E24) * PRIX_KWH, 3)} € à {dec(PRIX_KWH, 2)} €/kWh (prix du TD, chauffage électrique).</div>
@@ -584,7 +584,7 @@ export function SimulationParoi() {
           <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Simple vitrage</div><Schema sol={M.simple}/><Legende sol={M.simple}/>
           <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Double vitrage</div><Schema sol={M.double}/><Legende sol={M.double}/>
         </>}
-        <div style={{ fontSize: 13, color: KIT.txt2 }}>Rappels : R<Sub c="th"/> = e / (λ·S) ; couches en série : R<Sub c="th,global"/> = ΣR<Sub c="th"/> ; P = ΔT / R<Sub c="th"/> ; ΔT = P × R<Sub c="th"/>. Donnez 3 chiffres significatifs (notation possible : 1,2e-3).</div>
+        <div style={{ fontSize: 13, color: KIT.txt2 }}>Rappels : R<Sub c="th"/> = {avecIndices('frac(e|λ·S)')} ; couches en série : R<Sub c="th,global"/> = ΣR<Sub c="th"/> ; P = {avecIndices('frac(ΔT|R)')}<Sub c="th"/> ; ΔT = P × R<Sub c="th"/>. Donnez 3 chiffres significatifs (notation possible : 1,2e-3).</div>
         {Q.map((q, k) => {
           const ok = juste(q);
           return (
@@ -617,7 +617,7 @@ export function SimulationParoi() {
       <li><strong>Paroi plane, flux unidirectionnel</strong> : l’énergie traverse la paroi perpendiculairement à ses faces ; on néglige les fuites par les bords (surface grande devant l’épaisseur). Pas de ponts thermiques (joints, poteaux, fixations).</li>
       <li><strong>Couches homogènes, λ constante</strong> : λ ne dépend ni de la température ni de l’humidité (en réalité, un isolant humide isole moins bien). Valeurs de λ tirées des documents du chapitre ; les tables varient d’une source à l’autre (par exemple verre : 1,0 ou 1,2 ; polystyrène : 0,032 ou 0,035).</li>
       <li><strong>Contact parfait entre couches</strong> : pas de résistance de contact. (En TP, on met souvent de la pâte thermique pour s’en approcher.)</li>
-      <li><strong>Faces de la paroi à la température de l’air</strong> : on néglige l’échange par convection avec l’air de chaque côté. L’option « films d’air » ajoute r = 0,13 m²·K·W⁻¹ (intérieur) et 0,04 m²·K·W⁻¹ (extérieur), ordres de grandeur usuels pour une paroi verticale ; la résistance d’un film sur la surface S vaut r / S.</li>
+      <li><strong>Faces de la paroi à la température de l’air</strong> : on néglige l’échange par convection avec l’air de chaque côté. L’option « films d’air » ajoute r = 0,13 m²·K·W⁻¹ (intérieur) et 0,04 m²·K·W⁻¹ (extérieur), ordres de grandeur usuels pour une paroi verticale ; la résistance d’un film sur la surface S vaut {avecIndices('frac(r|S)')}.</li>
       <li><strong>Lame d’air immobile</strong> (λ = 0,025 W·m⁻¹·K⁻¹) : modèle de conduction pure. Dans un vrai double vitrage, la convection et le rayonnement dans la lame réduisent sa résistance (de l’ordre de 0,15 m²·K·W⁻¹ pour 1 cm au lieu de 0,40 par ce modèle), donc le gain réel du double vitrage est plus faible que celui calculé ici.</li>
       <li><strong>Unités</strong> : R<Sub c="th"/> est donnée ici en K·W⁻¹ (elle dépend de la surface S), comme dans le cours. En bâtiment, on donne plutôt R en m²·K·W⁻¹, c’est-à-dire pour 1 m².</li>
       <li><strong>Énergie sur 24 h</strong> : calculée avec la puissance constante, sans variation de température au fil de la journée ; prix de 0,17 €/kWh repris du TD.</li>

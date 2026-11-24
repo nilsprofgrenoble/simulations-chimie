@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./planFactorielModele";
@@ -198,7 +198,7 @@ export function SimulationPlanFactoriel() {
     } else if (defi.type === 'predire') {
       const v = lireNombre(defi.reps.a);
       ok = isFinite(v) && Math.abs(v - defi.v) <= 0.06;
-      msg = ok ? `✓ Correct : x₁ = ${nbf(defi.x1, 2)}, x₂ = ${nbf(defi.x2, 2)}, donc Ŷ = ${nbf(defi.v, 2)}.` : '✗ Vérifiez : calculez d’abord les niveaux codés x = (valeur − centre) / demi-étendue, puis Ŷ = a₀ + a₁x₁ + a₂x₂ + a₁₂x₁x₂.';
+      msg = ok ? `✓ Correct : x₁ = ${nbf(defi.x1, 2)}, x₂ = ${nbf(defi.x2, 2)}, donc Ŷ = ${nbf(defi.v, 2)}.` : '✗ Vérifiez : calculez d’abord les niveaux codés x = frac(valeur − centre|demi-étendue), puis Ŷ = a₀ + a₁x₁ + a₂x₂ + a₁₂x₁x₂.';
       noterP(ok);
     } else {
       ok = Math.abs(pred - defi.t) <= 150;
@@ -234,24 +234,24 @@ export function SimulationPlanFactoriel() {
     { id: 'moyennes', titre: 'Comparer deux moyennes', focus: ['scene', 'table'],
       texte: <>Pour mesurer l’effet de la <strong>recette</strong>, on compare deux moyennes. La première, <strong>Moy⁻</strong>, porte sur les 4 essais où la recette est animale (niveau −1 : face de gauche du cube, essais 1 à 4).</>,
       tache: { type: 'num', q: 'Moy⁻ : moyenne des notes des essais 1 à 4', unite: '/ 10', vrai: mR.moins, tol: 0.01, affiche: v => nbf(v, 2),
-        calcul: () => ['Notes des essais 1 à 4 : 6,5 ; 6 ; 7 et 5,5.', 'Somme : 25 ; moyenne : 25 / 4 = 6,25.'], pieges: [[25, 'C’est la somme des quatre notes. Divisez par 4 pour obtenir la moyenne.']],
-        expl: '(6,5 + 6 + 7 + 5,5) / 4 = 6,25.', indice: 'Moyenne = somme des notes ÷ nombre d’essais (4).' } },
+        calcul: () => ['Notes des essais 1 à 4 : 6,5 ; 6 ; 7 et 5,5.', 'Somme : 25 ; moyenne : frac(25|4) = 6,25.'], pieges: [[25, 'C’est la somme des quatre notes. Divisez par 4 pour obtenir la moyenne.']],
+        expl: 'frac(6,5 + 6 + 7 + 5,5|4) = 6,25.', indice: 'Moyenne = somme des notes ÷ nombre d’essais (4).' } },
     { id: 'coefficient', titre: 'Le coefficient d’un facteur', focus: ['scene', 'table'],
-      texte: <>Les deux moyennes sont maintenant connues : <strong>Moy⁻</strong> = 6,25 (recette animale, essais 1 à 4, calculée à l’étape précédente) et <strong>Moy⁺</strong> = 2,375 (recette végétale, essais 5 à 8). Le <strong>coefficient</strong> de la recette dans le modèle est la demi-différence des deux moyennes : {A1('R')} = (Moy⁺ − Moy⁻) / 2. Il indique de combien la note s’écarte de la moyenne générale quand la recette passe au niveau +1.</>,
+      texte: <>Les deux moyennes sont maintenant connues : <strong>Moy⁻</strong> = 6,25 (recette animale, essais 1 à 4, calculée à l’étape précédente) et <strong>Moy⁺</strong> = 2,375 (recette végétale, essais 5 à 8). Le <strong>coefficient</strong> de la recette dans le modèle est la demi-différence des deux moyennes : {A1('R')} = {avecIndices('frac(Moy⁺ − Moy⁻|2)')}. Il indique de combien la note s’écarte de la moyenne générale quand la recette passe au niveau +1.</>,
       tache: { type: 'num', q: 'Coefficient aR de la recette', unite: '/ 10', vrai: A_R, tol: 0.02, affiche: v => nbf(v, 2),
-        calcul: () => ['Moy⁻ = 6,25 et Moy⁺ = 2,375.', 'aR = (2,375 − 6,25) / 2 = −3,875 / 2 = −1,94.'],
+        calcul: () => ['Moy⁻ = 6,25 et Moy⁺ = 2,375.', 'aR = frac(2,375 − 6,25|2) = −frac(3,875|2) = −1,94.'],
         pieges: [[-3.875, 'Vous n’avez pas divisé par 2 : le coefficient est la demi-différence.'], [1.9375, 'Attention au signe : c’est Moy⁺ − Moy⁻ = 2,375 − 6,25, qui est négatif.']],
-        expl: '(2,375 − 6,25) / 2 = −1,94 : passer à la recette végétale fait baisser la note.', indice: 'a = (Moy⁺ − Moy⁻) / 2 ; ici la différence est négative.' } },
+        expl: 'frac(2,375 − 6,25|2) = −1,94 : passer à la recette végétale fait baisser la note.', indice: 'a = frac(Moy⁺ − Moy⁻|2) ; ici la différence est négative.' } },
     { id: 'autres', titre: 'Comparer les trois facteurs', focus: ['effets'],
-      retenirTitre: 'À RETENIR : LE COEFFICIENT D’UN FACTEUR', retenir: <><CarteEffet/>{liste('coefficient = (Moy⁺ − Moy⁻) / 2', 'signe : sens de variation de la réponse quand on passe de −1 à +1', 'valeur absolue : importance du facteur')}</>,
+      retenirTitre: 'À RETENIR : LE COEFFICIENT D’UN FACTEUR', retenir: <><CarteEffet/>{liste('coefficient = frac(Moy⁺ − Moy⁻|2)', 'signe : sens de variation de la réponse quand on passe de −1 à +1', 'valeur absolue : importance du facteur')}</>,
       texte: <>Le logiciel calcule de même les deux autres coefficients : {A1('T')} = +0,19 pour la température et {A1('C')} = −0,19 pour le refroidissement. Le diagramme montre les trois coefficients.</>,
       tache: { type: 'qcm', q: 'Quel facteur influence le plus la note ?', options: ['La recette : |−1,94| est le plus grand', 'La température, dont le coefficient est positif', 'Le refroidissement, dont le coefficient est négatif'], bonne: 0,
         expl: 'On compare les valeurs absolues : 1,94 est bien plus grand que 0,19. Le signe donne le sens de variation, pas l’importance.', indice: 'L’importance d’un facteur se lit sur la valeur absolue de son coefficient.' } },
     { id: 'a0', titre: 'Le modèle', focus: ['table'],
       texte: <>Le <strong>modèle</strong> prévoit la note à partir des niveaux codés : {Y0}. Le terme constant {A1('0')} est la <strong>moyenne des 8 notes</strong>.</>,
       tache: { type: 'num', q: 'a₀ : moyenne des 8 notes', unite: '/ 10', vrai: A0, tol: 0.01, affiche: v => nbf(v, 2),
-        calcul: () => ['Somme des 8 notes : 6,5 + 6 + 7 + 5,5 + 2 + 2 + 2,5 + 3 = 34,5.', 'a₀ = 34,5 / 8 = 4,31.'], pieges: [[34.5, 'C’est la somme des notes. Divisez par 8.']],
-        expl: '34,5 / 8 = 4,31.', indice: 'Moyenne = somme des 8 notes ÷ 8.' } },
+        calcul: () => ['Somme des 8 notes : 6,5 + 6 + 7 + 5,5 + 2 + 2 + 2,5 + 3 = 34,5.', 'a₀ = frac(34,5|8) = 4,31.'], pieges: [[34.5, 'C’est la somme des notes. Divisez par 8.']],
+        expl: 'frac(34,5|8) = 4,31.', indice: 'Moyenne = somme des 8 notes ÷ 8.' } },
     { id: 'predire', titre: 'Prévoir une note', focus: ['table'],
       texte: <>Le modèle est complet : Ŷ = 4,31 − 1,94 {X1('R')} + 0,19 {X1('T')} − 0,19 {X1('C')}. Prévoyez la note d’un flan fabriqué avec la <strong>recette végétale</strong>, à <strong>102{NB}°C</strong>, avec un <strong>refroidissement lent</strong>.</>,
       tache: { type: 'num', q: 'Note prévue Ŷ', unite: '/ 10', vrai: 2.75, tol: 0.03, affiche: v => nbf(v, 2),
@@ -270,8 +270,8 @@ export function SimulationPlanFactoriel() {
     { id: 'visc', titre: 'Une deuxième réponse : la viscosité', focus: ['scene', 'table'],
       texte: <>Le fabricant a aussi mesuré la <strong>viscosité à bas gradient</strong> de chaque flan (en unités du viscosimètre) : elle doit rester élevée pour que le flan tienne. Elle s’ajoute au cube et au tableau. Calculez la moyenne des essais où la recette est <strong>végétale</strong> et la température de <strong>102{NB}°C</strong> (essais 7 et 8).</>,
       tache: { type: 'num', q: 'Viscosité moyenne, recette végétale à 102 °C', unite: '', vrai: 5476, tol: 0.01, affiche: v => nbf(v, 0),
-        calcul: () => ['Essais 7 et 8 : 5 863 et 5 089.', 'Moyenne : (5 863 + 5 089) / 2 = 5 476.'], pieges: [[10952, 'C’est la somme des deux viscosités. Divisez par 2.']],
-        expl: '(5 863 + 5 089) / 2 = 5 476.', indice: 'Moyenne des viscosités des essais 7 et 8.' } },
+        calcul: () => ['Essais 7 et 8 : 5 863 et 5 089.', 'Moyenne : frac(5 863 + 5 089|2) = 5 476.'], pieges: [[10952, 'C’est la somme des deux viscosités. Divisez par 2.']],
+        expl: 'frac(5 863 + 5 089|2) = 5 476.', indice: 'Moyenne des viscosités des essais 7 et 8.' } },
     { id: 'interaction', titre: 'Lire une interaction', focus: ['inter'],
       texte: <>Le graphique montre la viscosité moyenne selon la recette, avec <strong>une droite par niveau de température</strong>. Chaque point est la moyenne de 2 essais (par exemple 5 476 pour la recette végétale à 102{NB}°C).</>,
       tache: { type: 'qcm', q: 'Que signifie le fait que les deux droites ne soient pas parallèles ?', options: ['L’effet de T dépend de la recette', 'La température n’a aucun effet sur la viscosité', 'Les mesures contiennent des erreurs de lecture'], bonne: 0,
@@ -302,8 +302,8 @@ export function SimulationPlanFactoriel() {
     { id: 'effetN', titre: 'L’effet de Novation', focus: ['table'],
       texte: <>Comme pour un plan 2³, le coefficient d’un facteur est la demi-différence de deux moyennes, chacune sur 8 essais. Pour Novation : Moy⁺ (N = +1) = 7,34 et Moy⁻ (N = −1) = 3,76.</>,
       tache: { type: 'num', q: 'Coefficient aN de l’amidon Novation', unite: '/ 10', vrai: M.coefTerme(J.vin4.X, Y4, [3]), tol: 0.02, affiche: v => nbf(v, 2),
-        calcul: () => ['aN = (Moy⁺ − Moy⁻) / 2 = (7,34 − 3,76) / 2', 'aN = 3,58 / 2 = 1,79.'], pieges: [[3.58, 'Vous n’avez pas divisé par 2.']],
-        expl: 'Ajouter de l’amidon Novation augmente la note de 1,79 point en moyenne, par rapport à la moyenne générale.', indice: 'a = (Moy⁺ − Moy⁻) / 2.' } },
+        calcul: () => ['aN = frac(Moy⁺ − Moy⁻|2) = frac(7,34 − 3,76|2)', 'aN = frac(3,58|2) = 1,79.'], pieges: [[3.58, 'Vous n’avez pas divisé par 2.']],
+        expl: 'Ajouter de l’amidon Novation augmente la note de 1,79 point en moyenne, par rapport à la moyenne générale.', indice: 'a = frac(Moy⁺ − Moy⁻|2).' } },
     { id: 'inter', titre: 'Une interaction', focus: ['inter'],
       texte: <>Le graphique montre la note moyenne selon l’amidon Ultratech (U), avec une droite par niveau de Novation (N).</>,
       tache: { type: 'qcm', q: 'Quand N = 1 g, passer de U = 0,9 g à 2,2 g fait…', options: ['baisser légèrement la note', 'augmenter fortement la note', 'ne rien changer du tout'], bonne: 0,
@@ -319,20 +319,20 @@ export function SimulationPlanFactoriel() {
         expl: '16 − 5 = 11 degrés de liberté : il reste de quoi estimer la dispersion et tester.', indice: 'ddl = nombre d’essais − nombre de coefficients, constante comprise.' } },
     { id: 'seuil', titre: 'Un seuil de significativité', focus: ['effets'],
       retenirTitre: 'À RETENIR : DEGRÉS DE LIBERTÉ', retenir: <><CarteDdl/>{liste('ddl = nombre d’essais − nombre de coefficients', 'ddl = 0 : le modèle passe par tous les points, aucun test', 'réduire le modèle redonne des degrés de liberté')}</>,
-      texte: <>Pour savoir si un coefficient se distingue du bruit, on le compare à son incertitude. Le logiciel donne l’écart-type résiduel du modèle réduit : <em>s</em> = 0,155. On le traite comme l’écart-type σ des mesures (hypothèse de travail : erreurs normales, indépendantes, de même écart-type). Un coefficient est une moyenne de 16 termes : son intervalle de confiance à 95 % est ± 1,96 σ / √16.</>,
+      texte: <>Pour savoir si un coefficient se distingue du bruit, on le compare à son incertitude. Le logiciel donne l’écart-type résiduel du modèle réduit : <em>s</em> = 0,155. On le traite comme l’écart-type σ des mesures (hypothèse de travail : erreurs normales, indépendantes, de même écart-type). Un coefficient est une moyenne de 16 termes : son intervalle de confiance à 95 % est ± {avecIndices('frac(1,96 σ|√16)')}.</>,
       tache: { type: 'num', q: 'Demi-largeur de l’intervalle de confiance', unite: '', vrai: SEUIL4, tol: 0.03, affiche: v => nbf(v, 3),
-        calcul: () => ['1,96 × 0,155 / √16 = 1,96 × 0,155 / 4', '= 0,076.'], pieges: [[0.304, 'Vous n’avez pas divisé par √16 = 4.'], [0.152, 'Vous avez divisé par 2 au lieu de √16 = 4.']],
+        calcul: () => ['frac(1,96 × 0,155|√16) = frac(1,96 × 0,155|4)', '= 0,076.'], pieges: [[0.304, 'Vous n’avez pas divisé par √16 = 4.'], [0.152, 'Vous avez divisé par 2 au lieu de √16 = 4.']],
         expl: '± 0,076 : un coefficient dont la valeur absolue est inférieure à 0,076 ne se distingue pas du bruit.', indice: 'Demi-largeur = 1,96 × σ ÷ √n, avec n = 16.' } },
     { id: 'reduire', titre: 'Réduire le modèle', focus: ['termes', 'effets'],
       texte: <>Le seuil ± 0,076 est tracé en pointillés rouges. Dans « Termes du modèle », ne gardez que les coefficients dont la <strong>valeur absolue dépasse le seuil</strong> : cliquez sur un terme pour le garder ou l’écarter.</>,
       tache: { type: 'action', ok: ens(kept.vin4, CIBLE_CONF), label: 'Garder les termes significatifs', faire: () => setKept(kp => ({ ...kp, vin4: CIBLE_CONF })), consigne: 'Gardez uniquement les termes dont |coefficient| > 0,076' } },
     { id: 'prevoir', titre: 'Prévoir avec le modèle réduit', focus: ['effets'],
       retenirTitre: 'À RETENIR : CLASSER PUIS TRIER LES EFFETS', retenir: <><CartePareto/>{liste('classer les coefficients par valeur absolue (Pareto)', 'garder ceux qui dépassent nettement le bruit', 'un modèle réduit laisse des degrés de liberté pour le tester')}</>,
-      texte: <>Le modèle réduit s’écrit Ŷ = 5,55 + 0,95 {X1('X')} + 0,54 {X1('U')} + 1,79 {X1('N')} − 0,83 {X1('U')}{X1('N')}. Prévoyez la note pour <strong>0,4{NB}g de xanthane, 1,55{NB}g d’Ultratech et 1{NB}g de Novation</strong>. La valeur codée est x = (valeur − centre) / demi-étendue, le centre étant la moyenne des deux niveaux.</>,
+      texte: <>Le modèle réduit s’écrit Ŷ = 5,55 + 0,95 {X1('X')} + 0,54 {X1('U')} + 1,79 {X1('N')} − 0,83 {X1('U')}{X1('N')}. Prévoyez la note pour <strong>0,4{NB}g de xanthane, 1,55{NB}g d’Ultratech et 1{NB}g de Novation</strong>. La valeur codée est x = {avecIndices('frac(valeur − centre|demi-étendue)')}, le centre étant la moyenne des deux niveaux.</>,
       tache: { type: 'num', q: 'Note prévue Ŷ', unite: '/ 10', vrai: M.predit(MOD4.coefs, MOD4.ts, [0, 1, 0, 1]), tol: 0.015, affiche: v => nbf(v, 2),
-        calcul: () => ['Codage : X = 0,4 g → +1 ; U = 1,55 g est le centre (0,9 + 2,2) / 2 → 0 ; N = 1 g → +1.', 'Ŷ = 5,55 + 0,95 × 1 + 0,54 × 0 + 1,79 × 1 − 0,83 × 0 × 1', 'Ŷ = 8,29.'],
+        calcul: () => ['Codage : X = 0,4 g → +1 ; U = 1,55 g est le centre frac(0,9 + 2,2|2) → 0 ; N = 1 g → +1.', 'Ŷ = 5,55 + 0,95 × 1 + 0,54 × 0 + 1,79 × 1 − 0,83 × 0 × 1', 'Ŷ = 8,29.'],
         pieges: [[8.0, 'U = 1,55 g est exactement le centre : sa valeur codée est 0, pas +1.']],
-        expl: 'Ŷ = 8,29 sur 10. Comme U est au centre, ni U ni U·N ne contribuent.', indice: 'x = (valeur − centre) / demi-étendue. Pour U : centre 1,55 g, demi-étendue 0,65 g.' } },
+        expl: 'Ŷ = 8,29 sur 10. Comme U est au centre, ni U ni U·N ne contribuent.', indice: 'x = frac(valeur − centre|demi-étendue). Pour U : centre 1,55 g, demi-étendue 0,65 g.' } },
     { id: 'optimum', titre: 'Chercher le meilleur compromis', focus: ['iso', 'prevision'],
       texte: <>Cherchez la formule de <strong>meilleure note prévue</strong> (au moins 8,5). La carte montre la note prévue selon l’amidon Ultratech et l’amidon Novation ; la xanthane se règle au curseur. Les courbes ne sont pas des droites : c’est l’effet de l’interaction U·N.</>,
       tache: { type: 'action', ok: pred >= 8.5, label: 'Placer le point pour moi', faire: () => setX([0, 1, -1, 1, 0]), consigne: 'Placez le point où la note prévue atteint au moins 8,5' } },
@@ -359,8 +359,8 @@ export function SimulationPlanFactoriel() {
       retenirTitre: 'À RETENIR : PLAN FRACTIONNAIRE', retenir: <><CarteFraction/>{liste('2⁵⁻¹ : la moitié des essais d’un plan complet', 'relation de définition I = A·B·C·D·E', 'résolution V : effets principaux et interactions d’ordre 2 lisibles si l’ordre 3 est négligeable')}</>,
       texte: <>Le logiciel estime 15 coefficients : 5 effets principaux et 10 interactions d’ordre 2. Pour E : Moy⁺ (E = +1) = 7,375 et Moy⁻ (E = −1) = 4,125, sur 8 essais chacune.</>,
       tache: { type: 'num', q: 'Coefficient aE de l’amidon Novation', unite: '/ 10', vrai: M.coefTerme(J.vin5.X, Y5, [4]), tol: 0.02, affiche: v => nbf(v, 3),
-        calcul: () => ['aE = (7,375 − 4,125) / 2 = 3,25 / 2 = 1,625.'], pieges: [[3.25, 'Vous n’avez pas divisé par 2.']],
-        expl: 'aE = 1,625. Les plus grands coefficients sont D·E (−2), E, C·E et D.', indice: 'a = (Moy⁺ − Moy⁻) / 2.' } },
+        calcul: () => ['aE = frac(7,375 − 4,125|2) = frac(3,25|2) = 1,625.'], pieges: [[3.25, 'Vous n’avez pas divisé par 2.']],
+        expl: 'aE = 1,625. Les plus grands coefficients sont D·E (−2), E, C·E et D.', indice: 'a = frac(Moy⁺ − Moy⁻|2).' } },
     { id: 'ddl', titre: 'Zéro degré de liberté', focus: ['effets'],
       texte: <>Le diagramme range les 15 coefficients estimables : les plus grands sont D·E, E, C·E, D et C. Le modèle complet a 1 constante + 5 effets principaux + 10 interactions = <strong>16 coefficients</strong> pour 16 essais.</>,
       tache: { type: 'num', q: 'Degrés de liberté du modèle complet', unite: 'ddl', vrai: 0, tol: 0, affiche: v => nbf(v, 0),
@@ -370,9 +370,9 @@ export function SimulationPlanFactoriel() {
       texte: <>Gardez les cinq plus grands coefficients du diagramme, en respectant la <strong>hiérarchie</strong> : une interaction n’est gardée que si ses deux effets principaux le sont.</>,
       tache: { type: 'action', ok: ens(kept.vin5, CIBLE_EXP), label: 'Garder ces termes', faire: () => setKept(kp => ({ ...kp, vin5: CIBLE_EXP })), consigne: 'Gardez D·E, E, C·E, D et C' } },
     { id: 'student', titre: 'Intervalle de confiance de Student', focus: ['effets'],
-      texte: <>Le modèle réduit a 6 coefficients : ddl = 16 − 6 = 10, et un écart-type résiduel <em>s</em> = 0,65. L’écart-type σ n’est plus connu : on utilise la loi de <strong>Student</strong> à 10 ddl (<em>t</em> = 2,23). L’incertitude d’un coefficient est <em>t</em> · <em>s</em> / √<em>n</em>, avec <em>n</em> = 16.</>,
+      texte: <>Le modèle réduit a 6 coefficients : ddl = 16 − 6 = 10, et un écart-type résiduel <em>s</em> = 0,65. L’écart-type σ n’est plus connu : on utilise la loi de <strong>Student</strong> à 10 ddl (<em>t</em> = 2,23). L’incertitude d’un coefficient est {avecIndices('frac(t · s|√n)')}, avec <em>n</em> = 16.</>,
       tache: { type: 'num', q: 'Demi-largeur de l’intervalle de confiance à 95 %', unite: '', vrai: 2.23 * 0.65 / 4, tol: 0.03, affiche: v => nbf(v, 2),
-        calcul: () => ['2,23 × 0,65 / √16 = 2,23 × 0,65 / 4', '= 0,36.'], pieges: [[1.45, 'Vous n’avez pas divisé par √16 = 4.']],
+        calcul: () => ['frac(2,23 × 0,65|√16) = frac(2,23 × 0,65|4)', '= 0,36.'], pieges: [[1.45, 'Vous n’avez pas divisé par √16 = 4.']],
         expl: '± 0,36 : les barres d’erreur sont maintenant tracées sur le diagramme.', indice: 't × s ÷ √n, avec n = 16.' } },
     { id: 'verif', titre: 'Contrôler le modèle', focus: ['effets', 'table'],
       retenirTitre: 'À RETENIR : EFFET SIGNIFICATIF', retenir: <><CarteSignif/>{liste('intervalle de confiance qui contient 0 : effet non significatif', 'ici : C, D, E, C·E et D·E sont significatifs, A et B ne le sont pas', 'le test suppose des erreurs normales et indépendantes')}</>,
@@ -517,7 +517,7 @@ export function SimulationPlanFactoriel() {
         </table>
         {champ('a', 'Coefficient', '')}
         <IndiceDefi cache={false}>{defi.cible === 'AB' ? 'Multipliez, pour chaque essai, le signe de A par le signe de B (+, −, −, +), puis faites la moyenne de ce signe × le rendement sur les 4 essais.' : 'a = (Moy⁺ − Moy⁻) / 2, chaque moyenne portant sur les 2 essais où le facteur est au niveau +1 (ou −1).'}</IndiceDefi></>}
-      {defi.type === 'predire' && <>{champ('a', 'Rendement prévu', '%')}<IndiceDefi cache={false}>Niveau codé : x = (valeur − centre) / demi-étendue, avec centre = (bas + haut) / 2 et demi-étendue = (haut − bas) / 2. Puis remplacez x<sub>1</sub> et x<sub>2</sub> dans le modèle.</IndiceDefi></>}
+      {defi.type === 'predire' && <>{champ('a', 'Rendement prévu', '%')}<IndiceDefi cache={false}>Niveau codé : x = {avecIndices('frac(valeur − centre|demi-étendue)')}, avec centre = (bas + haut) / 2 et demi-étendue = (haut − bas) / 2. Puis remplacez x<sub>1</sub> et x<sub>2</sub> dans le modèle.</IndiceDefi></>}
       {defi.type === 'cible' && <IndiceDefi cache={false}>Choisissez d’abord la courbe isoréponse dont la valeur est au milieu de la fenêtre, puis placez le point dessus.</IndiceDefi>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="pf-verif" onClick={verifierDefi} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -542,7 +542,7 @@ export function SimulationPlanFactoriel() {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>plan complet : 2<sup>k</sup> essais ; niveaux codés −1 et +1</li>
-        <li>coefficient d’un facteur = (Moy⁺ − Moy⁻) / 2 ; interaction = produit des colonnes</li>
+        <li>coefficient d’un facteur = {avecIndices('frac(Moy⁺ − Moy⁻|2)')} ; interaction = produit des colonnes</li>
         <li>droites non parallèles : interaction entre les deux facteurs</li>
         <li>ddl = essais − coefficients ; un modèle saturé n’est pas testable</li>
         <li>plan fractionnaire : moins d’essais, effets confondus (alias)</li>

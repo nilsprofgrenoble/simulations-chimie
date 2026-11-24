@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi, Formule } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi, Formule, FormuleEnLigne, avecIndices } from "../commun";
 import { puces } from "./Travail";
 import { FSens, FBilanP, FDTm, FU, FCroise, FContreEff, FBain, FHypo } from "./EchangeurSchemas";
 import { Pic } from "../Pictos";
@@ -262,7 +262,7 @@ function Calculs({ p, sol, chaud }) {
           {chaud === 'vapeur' && <> Débit de vapeur condensée : Q<Sub c="m,vap"/> = P / L<Sub c="v"/> = {nf(sol.PF)} / 2 257 000 = <strong>{nf(sol.PF / LV_100)} kg·s⁻¹</strong> (L<Sub c="v"/> = 2 257 kJ·kg⁻¹ à 100 °C).</>}</div>}
       <div style={ligne}><strong>Surface d’échange</strong> : S = π · D · L = π × {nf(p.D / 1000)} × {nf(p.L)} = <strong>{nf(sol.S)} m²</strong></div>
       <div style={ligne}><strong>Écarts aux extrémités</strong> : à gauche ΔT<Sub c="1"/> = {co ? <>T<Sub c="CE"/> − T<Sub c="FE"/></> : <>T<Sub c="CE"/> − T<Sub c="FS"/></>} = <strong>{t1(sol.dT1)} °C</strong> ; à droite ΔT<Sub c="2"/> = {co ? <>T<Sub c="CS"/> − T<Sub c="FS"/></> : <>T<Sub c="CS"/> − T<Sub c="FE"/></>} = <strong>{t1(sol.dT2)} °C</strong></div>
-      <div style={ligne}><strong>Écart moyen</strong> : ΔT<Sub c="m"/> = (ΔT<Sub c="1"/> − ΔT<Sub c="2"/>) / ln(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>) = <strong>{nf(sol.dTm)} °C</strong>
+      <div style={ligne}><strong>Écart moyen</strong> : ΔT<Sub c="m"/> = {avecIndices('frac(ΔT<Sub c="1"/> − ΔT<Sub c="2"/>|ln)')}(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>) = <strong>{nf(sol.dTm)} °C</strong>
         <span style={{ color: KIT.txt2 }}> (moyenne arithmétique, pour comparer : {nf((sol.dT1 + sol.dT2) / 2)} °C)</span></div>
       <div style={ligne}><strong>Puissance transférée</strong> : P = U · S · ΔT<Sub c="m"/> = {p.U} × {nf(sol.S)} × {nf(sol.dTm)} = <strong>{nf(P)} W</strong>
         <span style={{ color: '#15803d' }}> ✓ égale à P<Sub c="F"/> (pas de pertes dans le modèle)</span></div>
@@ -299,10 +299,10 @@ function questionsDefi(df) {
       { id: 'PF', q: <>Puissance thermique P<Sub c="F"/> reçue par l’eau froide</>, u: 'W', vrai: PF, tol: 0.02,
         detail: `P_F = Q_mF·C·(T_FS − T_FE) = ${nf(QmF)} × 4 180 × (${t1(TFS)} − ${t1(p.TFE)}) = ${nf(PF)} W` },
       { id: 'dTm', q: <>Écart de température moyen ΔT<Sub c="m"/></>, u: '°C', vrai: dTm, tol: 0.02,
-        detail: `ΔT_1 = ${t1(d1)} °C, ΔT_2 = ${t1(d2)} °C ; ΔT_m = (ΔT_1 − ΔT_2) / ln(ΔT_1 / ΔT_2) = ${nf(dTm)} °C` },
+        detail: `ΔT_1 = ${t1(d1)} °C, ΔT_2 = ${t1(d2)} °C ; ΔT_m = frac(ΔT_1 − ΔT_2|ln(ΔT_1 / ΔT_2)) = ${nf(dTm)} °C` },
       { id: 'S', q: <>Surface d’échange S</>, u: 'm²', vrai: S, tol: 0.02, detail: `S = π·D·L = π × ${nf(p.D / 1000, 2)} × ${dec(p.L, 1)} = ${nf(S)} m²` },
       { id: 'U', q: <>Coefficient global d’échange U (on admet que la puissance transférée est P<Sub c="F"/>)</>, u: 'W·m⁻²·K⁻¹', vrai: U, tol: 0.03,
-        detail: `U = P_F / (S·ΔT_m) = ${nf(PF)} / (${nf(S)} × ${nf(dTm)}) = ${nf(U)} W·m⁻²·K⁻¹` },
+        detail: `U = frac(P_F|S·ΔT_m) = frac(${nf(PF)}|${nf(S)} × ${nf(dTm)}) = ${nf(U)} W·m⁻²·K⁻¹` },
     ];
   }
   const P = Number(PF.toPrecision(3)), Sd = P / (p.U * dTm), Ld = Sd / (Math.PI * p.D / 1000), QmFd = P / (C_EAU * (TFS - p.TFE));
@@ -310,11 +310,11 @@ function questionsDefi(df) {
   const possible = p.mode === 'co' ? true : TFS < TCS;
   return [
     { id: 'dTm', q: <>Écart de température moyen ΔT<Sub c="m"/></>, u: '°C', vrai: dTm, tol: 0.02,
-      detail: `ΔT_1 = ${t1(d1)} °C, ΔT_2 = ${t1(d2)} °C ; ΔT_m = (ΔT_1 − ΔT_2) / ln(ΔT_1 / ΔT_2) = ${nf(dTm)} °C` },
-    { id: 'S', q: <>Surface d’échange S nécessaire</>, u: 'm²', vrai: Sd, tol: 0.02, detail: `S = P / (U·ΔT_m) = ${nf(P)} / (${p.U} × ${nf(dTm)}) = ${nf(Sd)} m²` },
-    { id: 'L', q: <>Longueur L du tube intérieur, de diamètre D = {p.D} mm</>, u: 'm', vrai: Ld, tol: 0.02, detail: `S = π·D·L donc L = S / (π·D) = ${nf(Sd)} / (π × ${nf(p.D / 1000, 2)}) = ${nf(Ld)} m` },
+      detail: `ΔT_1 = ${t1(d1)} °C, ΔT_2 = ${t1(d2)} °C ; ΔT_m = frac(ΔT_1 − ΔT_2|ln(ΔT_1 / ΔT_2)) = ${nf(dTm)} °C` },
+    { id: 'S', q: <>Surface d’échange S nécessaire</>, u: 'm²', vrai: Sd, tol: 0.02, detail: `S = frac(P|U·ΔT_m) = frac(${nf(P)}|${p.U} × ${nf(dTm)}) = ${nf(Sd)} m²` },
+    { id: 'L', q: <>Longueur L du tube intérieur, de diamètre D = {p.D} mm</>, u: 'm', vrai: Ld, tol: 0.02, detail: `S = π·D·L donc L = frac(S|π·D) = frac(${nf(Sd)}|π × ${nf(p.D / 1000, 2)}) = ${nf(Ld)} m` },
     { id: 'QmF', q: <>Débit massique Q<Sub c="mF"/> d’eau froide nécessaire</>, u: 'kg·s⁻¹', vrai: QmFd, tol: 0.02,
-      detail: `Q_mF = P / (C·(T_FS − T_FE)) = ${nf(P)} / (4 180 × (${t1(TFS)} − ${t1(p.TFE)})) = ${nf(QmFd)} kg·s⁻¹` },
+      detail: `Q_mF = frac(P|C·(T_FS − T_FE)) = frac(${nf(P)}|4 180 × (${t1(TFS)} − ${t1(p.TFE)})) = ${nf(QmFd)} kg·s⁻¹` },
     { id: 'possible', choix: ['oui', 'non'], bonne: possible ? 0 : 1,
       q: <>Ces quatre températures pourraient-elles être obtenues avec un échangeur fonctionnant à <strong>{autreMode}</strong> (de surface éventuellement différente) ?</>,
       expl: p.mode === 'co' ? 'Oui : à contre-courant, on peut obtenir toutes les températures possibles à co-courant (il faudrait même une surface plus petite).'
@@ -393,9 +393,9 @@ export function SimulationEchangeur() {
       tache: { type: 'num', q: 'Débit massique Q_mF de l’eau froide', unite: 'kg·s⁻¹', vrai: A.QmF, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Masse d’eau : 1 L d’eau a une masse de 1,00 kg, donc Q_vF = ${G.QvF} L·h⁻¹ correspond à ${G.QvF} kg·h⁻¹.`,
           `Conversion de l’heure en secondes : 1 h = 3 600 s.`,
-          `Q_mF = ${G.QvF} / 3 600 = ${nf(A.QmF)} kg·s⁻¹.`],
+          `Q_mF = frac(${G.QvF}|3 600) = ${nf(A.QmF)} kg·s⁻¹.`],
         pieges: [[G.QvF, 'C’est le débit en kg·h⁻¹ : il faut des kg·s⁻¹ (1 h = 3 600 s).'], [G.QvF / 60, '1 h = 3 600 s, et non 60 s.']],
-        expl: `Q_mF = 100 kg·h⁻¹ / 3 600 s·h⁻¹ = ${nf(A.QmF)} kg·s⁻¹.`, indice: "Débit massique = masse d’eau recueillie ÷ durée." } },
+        expl: `Q_mF = frac(100 kg·h⁻¹|3 600 s·h⁻¹) = ${nf(A.QmF)} kg·s⁻¹.`, indice: "Débit massique = masse d’eau recueillie ÷ durée." } },
     { id: 'PF', titre: 'La puissance reçue par l’eau froide', focus: ['releve'],
       texte: <>Lisez T<Sub c="FS"/> dans le relevé (T<Sub c="FE"/> = {G.TFE} °C) et reprenez Q<Sub c="mF"/> calculé à l’étape précédente. L’eau froide reçoit la puissance P<Sub c="F"/> = Q<Sub c="mF"/> · C · (T<Sub c="FS"/> − T<Sub c="FE"/>), avec C = 4 180 J·kg⁻¹·K⁻¹.</>,
       tache: { type: 'num', q: 'Puissance P_F reçue par l’eau froide', unite: 'W', vrai: A.PF, tol: 0.02, affiche: x => nf(x),
@@ -406,7 +406,7 @@ export function SimulationEchangeur() {
     { id: 'PC', titre: 'La puissance du fluide chaud', focus: ['releve'],
       texte: <>Même calcul pour le fluide chaud : P<Sub c="C"/> = Q<Sub c="mC"/> · C · (T<Sub c="CS"/> − T<Sub c="CE"/>), avec Q<Sub c="vC"/> = {G.QvC} L·h⁻¹ et T<Sub c="CE"/> = {G.TCE} °C ; lisez T<Sub c="CS"/> dans le relevé. Attention au <strong>signe</strong> (principe du banquier : ce qui sort du système est compté négativement).</>,
       tache: { type: 'num', q: 'Puissance P_C du fluide chaud (avec son signe)', unite: 'W', vrai: A.PC, tol: 0.02, affiche: x => nf(x),
-        calcul: () => [`Débit massique chaud : Q_mC = ${G.QvC} / 3 600 = ${nf(A.QmC)} kg·s⁻¹ (1 L d’eau = 1,00 kg ; 1 h = 3 600 s).`,
+        calcul: () => [`Débit massique chaud : Q_mC = frac(${G.QvC}|3 600) = ${nf(A.QmC)} kg·s⁻¹ (1 L d’eau = 1,00 kg ; 1 h = 3 600 s).`,
           `Relevé : T_CE = ${G.TCE} °C et T_CS = ${t1(A.TCS)} °C, donc T_CS − T_CE = ${t1(A.TCS - G.TCE).replace('-', '−')} K (négatif : le fluide chaud se refroidit).`,
           `P_C = Q_mC × C × (T_CS − T_CE) = ${nf(A.QmC)} × 4 180 × (${t1(A.TCS - G.TCE).replace('-', '−')}) = ${nf(A.PC)} W.`],
         pieges: [[-A.PC, 'Le fluide chaud cède de l’énergie : T_CS < T_CE, donc P_C = Q_mC·C·(T_CS − T_CE) est négative.']],
@@ -429,15 +429,15 @@ export function SimulationEchangeur() {
         pieges: [[r1(A.TFS - G.TFE), 'C’est l’échauffement de l’eau froide. ΔT_2 est l’écart entre les deux fluides à la même extrémité.'], [r1(G.TCE - A.TCS), 'C’est le refroidissement du fluide chaud. ΔT_2 est l’écart entre les deux fluides à la même extrémité.']],
         expl: `À droite, sortent le fluide chaud et l’eau froide : ΔT_2 = T_CS − T_FS = ${t1(A.TCS)} − ${t1(A.TFS)} = ${t1(A.d2)} °C.`, indice: "ΔT_2 = T_chaud − T_froid, à l’extrémité de droite." } },
     { id: 'dTm', titre: 'L’écart de température moyen', focus: ['graphe'],
-      texte: <>L’écart varie beaucoup le long de l’échangeur. La bonne moyenne est la <strong>moyenne logarithmique</strong> (relation fournie) : ΔT<Sub c="m"/> = (ΔT<Sub c="1"/> − ΔT<Sub c="2"/>) / ln(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>), avec ΔT<Sub c="1"/> = {A.d1} °C et ΔT<Sub c="2"/> calculé à l’étape précédente.</>,
+      texte: <>L’écart varie beaucoup le long de l’échangeur. La bonne moyenne est la <strong>moyenne logarithmique</strong> (relation fournie) : <FormuleEnLigne><msub><mi>ΔT</mi><mi>m</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>ΔT</mi><mn>1</mn></msub><mo>−</mo><msub><mi>ΔT</mi><mn>2</mn></msub></mrow><mrow><mi>ln</mi><mo>(</mo><mfrac><msub><mi>ΔT</mi><mn>1</mn></msub><msub><mi>ΔT</mi><mn>2</mn></msub></mfrac><mo>)</mo></mrow></mfrac></FormuleEnLigne>, avec ΔT<Sub c="1"/> = {A.d1} °C et ΔT<Sub c="2"/> calculé à l’étape précédente.</>,
       tache: { type: 'num', q: 'Écart de température moyen ΔT_m', unite: '°C', vrai: A.dTm, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`Écarts aux deux extrémités (co-courant) : ΔT_1 = ${G.TCE} − ${G.TFE} = ${A.d1} °C ; ΔT_2 = ${t1(A.d2)} °C.`,
           `Numérateur : ΔT_1 − ΔT_2 = ${A.d1} − ${t1(A.d2)} = ${t1(A.d1 - A.d2)} °C.`,
-          `Dénominateur : ln(ΔT_1 / ΔT_2) = ln(${A.d1} / ${t1(A.d2)}) = ln(${nf(A.d1 / A.d2)}) = ${nf(Math.log(A.d1 / A.d2))}.`,
-          `ΔT_m = ${t1(A.d1 - A.d2)} / ${nf(Math.log(A.d1 / A.d2))} = ${nf(A.dTm)} °C (la moyenne logarithmique suppose le régime stationnaire, U et C constants).`],
+          `Dénominateur : ln(frac(ΔT_1|ΔT_2)) = ln(frac(${A.d1}|${t1(A.d2)})) = ln(${nf(A.d1 / A.d2)}) = ${nf(Math.log(A.d1 / A.d2))}.`,
+          `ΔT_m = frac(${t1(A.d1 - A.d2)}|${nf(Math.log(A.d1 / A.d2))}) = ${nf(A.dTm)} °C (la moyenne logarithmique suppose le régime stationnaire, U et C constants).`],
         aide: 'ln est le logarithme népérien (touche « ln » de la calculatrice).',
-        pieges: [[(A.d1 + A.d2) / 2, 'C’est la moyenne arithmétique. Utilisez la relation du cours : (ΔT_1 − ΔT_2) / ln(ΔT_1 / ΔT_2).'], [(A.d1 - A.d2) / Math.log10(A.d1 / A.d2), 'Vous avez utilisé log (logarithme décimal) : il faut ln (logarithme népérien).']],
-        expl: `ΔT_m = (${A.d1} − ${t1(A.d2)}) / ln(${A.d1} / ${t1(A.d2)}) ≈ ${nf(A.dTm)} °C, bien moins que la moyenne arithmétique (${nf((A.d1 + A.d2) / 2)} °C) : une grande partie de l’échangeur travaille avec un petit écart.`, indice: "ΔT_m = (ΔT₁ − ΔT₂) ÷ ln(ΔT₁ ÷ ΔT₂), avec les écarts aux deux extrémités." } },
+        pieges: [[(A.d1 + A.d2) / 2, 'C’est la moyenne arithmétique. Utilisez la relation du cours : frac(ΔT_1 − ΔT_2|ln(ΔT_1 / ΔT_2)).'], [(A.d1 - A.d2) / Math.log10(A.d1 / A.d2), 'Vous avez utilisé log (logarithme décimal) : il faut ln (logarithme népérien).']],
+        expl: `ΔT_m = frac(${A.d1} − ${t1(A.d2)}|ln(${A.d1} / ${t1(A.d2)})) ≈ ${nf(A.dTm)} °C, bien moins que la moyenne arithmétique (${nf((A.d1 + A.d2) / 2)} °C) : une grande partie de l’échangeur travaille avec un petit écart.`, indice: "ΔT_m = (ΔT₁ − ΔT₂) ÷ ln(ΔT₁ ÷ ΔT₂), avec les écarts aux deux extrémités." } },
     { id: 'S', titre: 'La surface d’échange', focus: ['releve'],
       retenirTitre: 'À RETENIR : L’ÉCART DE TEMPÉRATURE MOYEN',
       retenir: <>
@@ -455,10 +455,10 @@ export function SimulationEchangeur() {
       texte: <>Comme en TP, on admet que la puissance transférée dans l’échangeur est P<Sub c="F"/>. La relation du cours est P = U · S · ΔT<Sub c="m"/>. Déduisez-en U, qui caractérise l’efficacité des échanges à travers la paroi.</>,
       tache: { type: 'num', q: 'Coefficient global d’échange U', unite: 'W·m⁻²·K⁻¹', vrai: A.U, tol: 0.03, affiche: x => nf(x),
         calcul: () => [`On admet que la puissance transférée est P = P_F = ${nf(A.PF)} W.`,
-          `De P = U × S × ΔT_m on tire U = P / (S × ΔT_m).`,
-          `U = ${nf(A.PF)} / (${nf(A.S)} × ${nf(A.dTm)}) = ${nf(A.PF)} / ${nf(A.S * A.dTm)} = ${nf(A.U)} W·m⁻²·K⁻¹.`],
-        pieges: [[A.PF * A.S / A.dTm, 'U = P / (S·ΔT_m) : on divise P par le produit S·ΔT_m.'], [A.PF / (A.S * (A.d1 + A.d2) / 2), 'Il faut ΔT_m (moyenne logarithmique), pas la moyenne arithmétique.']],
-        expl: `U = ${nf(A.PF)} / (${nf(A.S)} × ${nf(A.dTm)}) ≈ ${nf(A.U)} W·m⁻²·K⁻¹. La simulation était réglée sur U = ${G.U} W·m⁻²·K⁻¹ : l’écart vient de l’arrondi des températures.`, indice: "P = U × S × ΔT_m, donc U = P ÷ (S × ΔT_m)." } },
+          `De P = U × S × ΔT_m on tire U = frac(P|S × ΔT_m).`,
+          `U = frac(${nf(A.PF)}|${nf(A.S)} × ${nf(A.dTm)}) = frac(${nf(A.PF)}|${nf(A.S * A.dTm)}) = ${nf(A.U)} W·m⁻²·K⁻¹.`],
+        pieges: [[A.PF * A.S / A.dTm, 'U = frac(P|S·ΔT_m) : on divise P par le produit S·ΔT_m.'], [A.PF / (A.S * (A.d1 + A.d2) / 2), 'Il faut ΔT_m (moyenne logarithmique), pas la moyenne arithmétique.']],
+        expl: `U = frac(${nf(A.PF)}|${nf(A.S)} × ${nf(A.dTm)}) ≈ ${nf(A.U)} W·m⁻²·K⁻¹. La simulation était réglée sur U = ${G.U} W·m⁻²·K⁻¹ : l’écart vient de l’arrondi des températures.`, indice: "P = U × S × ΔT_m, donc U = P ÷ (S × ΔT_m)." } },
     { id: 'bilan1', titre: 'Le bilan', focus: [],
       retenirTitre: 'À RETENIR : LE COEFFICIENT GLOBAL D’ÉCHANGE U',
       retenir: <>
@@ -485,8 +485,8 @@ export function SimulationEchangeur() {
       tache: { type: 'num', q: 'Écart de température moyen ΔT_m à contre-courant', unite: '°C', vrai: A.dTmc, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`À contre-courant : ΔT_1 = T_CE − T_FS = ${G.TCE} − ${t1(A.TFSc)} = ${t1(A.d1c)} °C ; ΔT_2 = T_CS − T_FE = ${t1(A.TCSc)} − ${G.TFE} = ${t1(A.d2c)} °C.`,
           `Numérateur : ΔT_1 − ΔT_2 = ${t1(A.d1c)} − ${t1(A.d2c)} = ${t1(A.d1c - A.d2c).replace('-', '−')} °C.`,
-          `Dénominateur : ln(ΔT_1 / ΔT_2) = ln(${t1(A.d1c)} / ${t1(A.d2c)}) = ${nf(Math.log(A.d1c / A.d2c)).replace('-', '−')} (si ΔT_1 < ΔT_2, le numérateur et le logarithme sont tous deux négatifs : le quotient reste positif).`,
-          `ΔT_m = ${t1(A.d1c - A.d2c).replace('-', '−')} / ${nf(Math.log(A.d1c / A.d2c)).replace('-', '−')} = ${nf(A.dTmc)} °C.`],
+          `Dénominateur : ln(frac(ΔT_1|ΔT_2)) = ln(frac(${t1(A.d1c)}|${t1(A.d2c)})) = ${nf(Math.log(A.d1c / A.d2c)).replace('-', '−')} (si ΔT_1 < ΔT_2, le numérateur et le logarithme sont tous deux négatifs : le quotient reste positif).`,
+          `ΔT_m = frac(${t1(A.d1c - A.d2c).replace('-', '−')}|${nf(Math.log(A.d1c / A.d2c)).replace('-', '−')}) = ${nf(A.dTmc)} °C.`],
         pieges: [[A.dTm, 'C’est la valeur du co-courant. À contre-courant, ce ne sont plus les mêmes températures qui se font face : l’entrée de l’un est en face de la sortie de l’autre (ΔT_1 = T_CE − T_FS et ΔT_2 = T_CS − T_FE).'], [(A.d1c + A.d2c) / 2, 'C’est la moyenne arithmétique : utilisez la moyenne logarithmique.', 0.01]],
         expl: `ΔT_1 = ${G.TCE} − ${t1(A.TFSc)} = ${t1(A.d1c)} °C et ΔT_2 = ${t1(A.TCSc)} − ${G.TFE} = ${t1(A.d2c)} °C, donc ΔT_m ≈ ${nf(A.dTmc)} °C (contre ${nf(A.dTm)} °C à co-courant).`, indice: "Même formule, avec les écarts aux deux extrémités du contre-courant." } },
     { id: 'P2', titre: 'Quel mode est le plus efficace ?', focus: ['graphe'],
@@ -646,7 +646,7 @@ export function SimulationEchangeur() {
             La puissance thermique à transférer est <strong>P = {nf(P / 1000)} kW</strong> et le coefficient global d’échange vaut <strong>U = {p.U} W·m⁻²·K⁻¹</strong>.
           </div>
         )}
-        <div style={{ fontSize: 13, color: KIT.txt2 }}>Données : C<Sub c="eau"/> = 4 180 J·kg⁻¹·K⁻¹ ; 1 L d’eau a une masse de 1,00 kg ; S = π·D·L ; P = U·S·ΔT<Sub c="m"/> ; ΔT<Sub c="m"/> = (ΔT<Sub c="1"/> − ΔT<Sub c="2"/>) / ln(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>). Notation possible : 1,2e-3.</div>
+        <div style={{ fontSize: 13, color: KIT.txt2 }}>Données : C<Sub c="eau"/> = 4 180 J·kg⁻¹·K⁻¹ ; 1 L d’eau a une masse de 1,00 kg ; S = π·D·L ; P = U·S·ΔT<Sub c="m"/> ; ΔT<Sub c="m"/> = {avecIndices('frac(ΔT<Sub c="1"/> − ΔT<Sub c="2"/>|ln)')}(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>). Notation possible : 1,2e-3.</div>
         {Q.map((q, k) => {
           const ok = juste(q);
           return (
@@ -693,7 +693,7 @@ export function SimulationEchangeur() {
       <li><strong>U constant</strong> tout le long du tube, et <strong>fixé par l’utilisateur</strong>. En réalité, U dépend du matériau et de l’épaisseur de la paroi, de l’encrassement et des débits (il augmente quand le débit augmente). Dans la simulation, changer un débit ne change pas U : c’est un choix de modèle, pas la réalité. De même, U y est identique à co- et à contre-courant : c’est vrai en première approximation, à débits fixés ; en pratique il peut différer de quelques % (les propriétés de l’eau varient avec la température).</li>
       <li><strong>Eau liquide des deux côtés</strong>, de capacité thermique massique C = 4 180 J·kg⁻¹·K⁻¹ et de masse volumique 1,00 kg·L⁻¹, considérées constantes (valeurs du TP).</li>
       <li><strong>Surface d’échange S = π·D·L</strong> avec D le diamètre du tube intérieur : on néglige l’épaisseur de la paroi (avec le diamètre extérieur, S serait un peu plus grande).</li>
-      <li><strong>Côté chaud à température constante</strong> (option) : bain très bien agité, ou vapeur d’eau qui se condense à 100 °C (sous 1,013 bar) ; dans ce cas, la puissance vient du changement d’état et le débit de vapeur condensée vaut P / L<Sub c="v"/>, avec L<Sub c="v"/> = 2 257 kJ·kg⁻¹.</li>
+      <li><strong>Côté chaud à température constante</strong> (option) : bain très bien agité, ou vapeur d’eau qui se condense à 100 °C (sous 1,013 bar) ; dans ce cas, la puissance vient du changement d’état et le débit de vapeur condensée vaut {avecIndices('frac(P|L)')}<Sub c="v"/>, avec L<Sub c="v"/> = 2 257 kJ·kg⁻¹.</li>
       <li><strong>Profils calculés exactement</strong> à partir du bilan d’énergie sur chaque tranche du tube : avec ces hypothèses, ce sont des exponentielles, et P = U·S·ΔT<Sub c="m"/> avec la moyenne logarithmique est exacte (c’est la relation fournie au programme). Les températures affichées sont arrondies au 0,1 °C.</li>
     </ul>
   );

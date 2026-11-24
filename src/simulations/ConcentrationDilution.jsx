@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { Pic } from "../Pictos";
 import * as C from "./concentrationModele";
 import { QCM } from "./concentrationQcm";
@@ -74,15 +74,15 @@ export function SimulationConcentrationDilution() {
       texte: <>Une <strong>solution</strong> est obtenue en dissolvant un <strong>soluté</strong> (ici du sel) dans un <strong>solvant</strong> (ici de l’eau). Voici deux solutions, A et B, qui contiennent <strong>la même quantité de sel dissous</strong> : chaque point représente une particule de soluté.</>,
       tache: { type: 'qcm', ...QCM.comparer } },
     { id: 'defc', titre: 'Une concentration à calculer', focus: ['scene'],
-      texte: <>La <strong>concentration en quantité de matière</strong> d’un soluté, notée <em>c</em>, est la quantité de matière de soluté dissous dans <strong>un litre</strong> de solution : <em>c</em> = <em>n</em> / <em>V</em>, avec <em>n</em> en mol, <em>V</em> en L et <em>c</em> en mol/L. On dissout <strong>n = 0,0500{NB}mol</strong> de glucose dans de l’eau pour obtenir <strong>V = 250,0{NB}mL</strong> de solution (volume de la solution, pas celui de l’eau versée).{FC}</>,
+      texte: <>La <strong>concentration en quantité de matière</strong> d’un soluté, notée <em>c</em>, est la quantité de matière de soluté dissous dans <strong>un litre</strong> de solution : <em>c</em> = {avecIndices('frac(n|V)')}, avec <em>n</em> en mol, <em>V</em> en L et <em>c</em> en mol/L. On dissout <strong>n = 0,0500{NB}mol</strong> de glucose dans de l’eau pour obtenir <strong>V = 250,0{NB}mL</strong> de solution (volume de la solution, pas celui de l’eau versée).{FC}</>,
       tache: { type: 'num', q: 'Concentration de la solution de glucose', carnet: 'c de la solution de glucose', unite: 'mol/L', vrai: 0.2, tol: 0.01, affiche: v => nbf(v, 3),
-        calcul: () => ['V = 250,0 mL = 0,2500 L (1 mL = 10⁻³ L). Hypothèse : V est le volume de la solution obtenue, pas celui de l’eau versée.', 'c = n / V = 0,0500 mol ÷ 0,2500 L = 0,200 mol/L.'],
-        pieges: [[0.0002, 'Il faut convertir le volume en litres : 250,0 mL = 0,2500 L.'], [5.0, 'Le rapport est inversé : c = n / V (la quantité de matière en haut).'], [12.5, 'On divise n par V, on ne les multiplie pas : c = n / V.']],
-        expl: 'c = 0,0500 / 0,2500 = 0,200 mol/L : un litre de cette solution contient 0,200 mol de glucose.', indice: 'c = n / V : convertissez d’abord le volume en litres.' } },
+        calcul: () => ['V = 250,0 mL = 0,2500 L (1 mL = 10⁻³ L). Hypothèse : V est le volume de la solution obtenue, pas celui de l’eau versée.', 'c = frac(n|V) = 0,0500 mol ÷ 0,2500 L = 0,200 mol/L.'],
+        pieges: [[0.0002, 'Il faut convertir le volume en litres : 250,0 mL = 0,2500 L.'], [5.0, 'Le rapport est inversé : c = frac(n|V) (la quantité de matière en haut).'], [12.5, 'On divise n par V, on ne les multiplie pas : c = frac(n|V).']],
+        expl: 'c = frac(0,0500|0,2500) = 0,200 mol/L : un litre de cette solution contient 0,200 mol de glucose.', indice: 'c = frac(n|V) : convertissez d’abord le volume en litres.' } },
     { id: 'nsol', titre: 'Du soluté dans un prélèvement', focus: ['scene'],
       texte: <>Une solution de glucose a pour concentration <strong>c = 0,100{NB}mol/L</strong> : chaque litre de solution contient 0,100{NB}mol de glucose. On en prélève un volume <strong>V = 50,0{NB}mL</strong>. Combien de glucose contient ce prélèvement, en millimoles (1 mmol = 10⁻³ mol) ?</>,
       tache: { type: 'num', q: 'Quantité de matière de glucose dans le prélèvement', carnet: 'n de glucose dans 50,0 mL', unite: 'mmol', vrai: 5.0, tol: 0.01, affiche: v => nbf(v, 2),
-        calcul: () => ['V = 50,0 mL = 0,0500 L. De c = n / V, on tire n = c × V (les litres se simplifient).', 'n = 0,100 mol/L × 0,0500 L = 5,00 × 10⁻³ mol = 5,00 mmol.'],
+        calcul: () => ['V = 50,0 mL = 0,0500 L. De c = frac(n|V), on tire n = c × V (les litres se simplifient).', 'n = 0,100 mol/L × 0,0500 L = 5,00 × 10⁻³ mol = 5,00 mmol.'],
         pieges: [[0.005, 'Le résultat est demandé en millimoles : 0,00500 mol = 5,00 mmol.'], [2.0, 'On multiplie c par V, on ne les divise pas : n = c × V.'], [0.5, 'Le rapport est inversé : n = c × V.']],
         expl: 'n = 0,100 × 0,0500 = 5,00 × 10⁻³ mol, soit 5,00 mmol.', indice: 'La concentration donne les moles par litre : n = c × V, avec V en litres.' },
       retenirTitre: 'À RETENIR : LA CONCENTRATION c',
@@ -97,15 +97,15 @@ export function SimulationConcentrationDilution() {
     { id: 'cm', titre: 'Deux façons de donner la concentration', focus: ['scene'],
       texte: <>Le sérum physiologique est une solution de chlorure de sodium NaCl, de <strong>concentration en masse C<sub>m</sub> = 9,0{NB}g/L</strong> (masse de soluté dissous par litre de solution, vue en seconde). Un litre de sérum contient donc 9,0{NB}g de NaCl. La masse molaire du chlorure de sodium est <strong>M = 58,5{NB}g/mol</strong>. Quelle est sa concentration en quantité de matière ?</>,
       tache: { type: 'num', q: 'Concentration en quantité de matière du sérum physiologique', carnet: 'c du sérum physiologique', unite: 'mol/L', vrai: 9.0 / 58.5, tol: 0.03, affiche: v => nbf(v, 2), cs: 2,
-        calcul: () => ['Dans 1 L de solution : m = 9,0 g de NaCl, donc n = m / M = 9,0 g ÷ 58,5 g/mol = 0,154 mol.', 'c = n / V = 0,154 mol ÷ 1 L = 0,154 mol/L, soit 0,15 mol/L avec 2 chiffres significatifs (la donnée Cm en a 2). Autrement dit c = Cm / M.'],
-        pieges: [[526.5, 'On divise Cm par M, on ne les multiplie pas : g/L ÷ g/mol donne des mol/L.'], [6.5, 'Le rapport est inversé : c = Cm / M (la concentration en masse en haut).']],
-        expl: 'c = Cm / M = 9,0 / 58,5 = 0,154 mol/L ≈ 0,15 mol/L.', indice: 'Dans 1 L de solution il y a 9,0 g de NaCl : à combien de moles correspondent ces 9,0 g ? (n = m / M)' } },
+        calcul: () => ['Dans 1 L de solution : m = 9,0 g de NaCl, donc n = frac(m|M) = 9,0 g ÷ 58,5 g/mol = 0,154 mol.', 'c = frac(n|V) = 0,154 mol ÷ 1 L = 0,154 mol/L, soit 0,15 mol/L avec 2 chiffres significatifs (la donnée Cm en a 2). Autrement dit c = frac(Cm|M).'],
+        pieges: [[526.5, 'On divise Cm par M, on ne les multiplie pas : g/L ÷ g/mol donne des mol/L.'], [6.5, 'Le rapport est inversé : c = frac(Cm|M) (la concentration en masse en haut).']],
+        expl: 'c = frac(Cm|M) = frac(9,0|58,5) = 0,154 mol/L ≈ 0,15 mol/L.', indice: 'Dans 1 L de solution il y a 9,0 g de NaCl : à combien de moles correspondent ces 9,0 g ? (n = frac(m|M))' } },
     { id: 'ncm', titre: 'Quantité de matière à partir de Cm', focus: ['scene'],
       texte: <>Un flacon contient <strong>V = 250,0{NB}mL</strong> de sérum physiologique, de concentration en masse <strong>C<sub>m</sub> = 9,0{NB}g/L</strong> en chlorure de sodium NaCl, de masse molaire <strong>M = 58,5{NB}g/mol</strong>. Quelle quantité de matière de NaCl ce flacon contient-il, en millimoles (1{NB}mmol = 10⁻³{NB}mol) ?</>,
       tache: { type: 'num', q: 'Quantité de matière de NaCl dans le flacon', carnet: 'n de NaCl dans 250,0 mL de sérum', unite: 'mmol', vrai: 9.0 * 0.25 / 58.5 * 1000, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
-        calcul: () => ['V = 250,0 mL = 0,2500 L. Masse de NaCl dissous : m = Cm × V = 9,0 g/L × 0,2500 L = 2,25 g.', 'n = m / M = 2,25 g ÷ 58,5 g/mol = 0,0385 mol = 38 mmol (2 chiffres significatifs, comme Cm). En une fois : n = Cm × V / M.'],
-        pieges: [[0.0385, 'Le résultat est demandé en millimoles : 0,0385 mol = 38,5 mmol.'], [131.6, 'On divise la masse par M, on ne la multiplie pas : n = m / M.'], [0.154, 'Vous avez calculé la concentration c ; il faut encore tenir compte du volume du flacon : n = c × V.']],
-        expl: 'n = Cm × V / M = 9,0 × 0,2500 / 58,5 = 0,0385 mol ≈ 38 mmol.', indice: 'Quelle masse de NaCl y a-t-il dans 250,0 mL (Cm est une masse par litre) ? Combien de moles représente cette masse (n = m / M) ?' } },
+        calcul: () => ['V = 250,0 mL = 0,2500 L. Masse de NaCl dissous : m = Cm × V = 9,0 g/L × 0,2500 L = 2,25 g.', 'n = frac(m|M) = 2,25 g ÷ 58,5 g/mol = 0,0385 mol = 38 mmol (2 chiffres significatifs, comme Cm). En une fois : n = frac(Cm × V|M).'],
+        pieges: [[0.0385, 'Le résultat est demandé en millimoles : 0,0385 mol = 38,5 mmol.'], [131.6, 'On divise la masse par M, on ne la multiplie pas : n = frac(m|M).'], [0.154, 'Vous avez calculé la concentration c ; il faut encore tenir compte du volume du flacon : n = c × V.']],
+        expl: 'n = frac(Cm × V|M) = frac(9,0 × 0,2500|58,5) = 0,0385 mol ≈ 38 mmol.', indice: 'Quelle masse de NaCl y a-t-il dans 250,0 mL (Cm est une masse par litre) ? Combien de moles représente cette masse (n = frac(m|M)) ?' } },
     { id: 'dissol', titre: 'Quelle masse faut-il peser ?', focus: ['scene'],
       texte: <>On veut préparer un volume <strong>V = 250,0{NB}mL</strong> de solution de chlorure de sodium, de concentration <strong>c = 0,100{NB}mol/L</strong>, en dissolvant du solide dans l’eau. La dissolution s’écrit :{equation('NaCl(s) → Na⁺(aq) + Cl⁻(aq)')}La masse molaire du chlorure de sodium est <strong>M = 58,5{NB}g/mol</strong>. Quelle masse de solide faut-il placer sur la balance ?</>,
       tache: { type: 'num', q: 'Masse de chlorure de sodium à peser', carnet: 'Masse de NaCl à peser', unite: 'g', vrai: 0.025 * 58.5, tol: 0.01, affiche: v => nbf(v, 2), cs: 3,
@@ -119,7 +119,7 @@ export function SimulationConcentrationDilution() {
         <ul style={liste}>
           <li><strong>Cm en g/L, c en mol/L</strong> : on passe de l’une à l’autre avec la masse molaire M (g/mol). Moyen de s’en souvenir : les unités se simplifient.</li>
           <li>Exemple de la simulation : le sérum physiologique à 9,0 g/L de NaCl (M = 58,5 g/mol) a une concentration c = 0,15 mol/L.</li>
-          <li>Dans un volume V de solution : <strong>n = Cm × V / M</strong> (la masse de soluté Cm × V, divisée par M).</li>
+          <li>Dans un volume V de solution : <strong>n = {avecIndices('frac(Cm × V|M)')}</strong> (la masse de soluté Cm × V, divisée par M).</li>
           <li><strong>Piège</strong> : multiplier au lieu de diviser. Pour un soluté de masse molaire supérieure à 1 g/mol, la valeur de c (mol/L) est plus petite que celle de Cm (g/L).</li>
         </ul></> },
     { id: 'verreS', titre: 'Le récipient pour ajuster le volume', focus: ['scene'],
@@ -139,15 +139,15 @@ export function SimulationConcentrationDilution() {
     { id: 'vpreleve', titre: 'Quel volume de solution mère prélever ?', focus: ['scene'],
       texte: <>On veut préparer <strong>V<sub>fille</sub> = 100,0{NB}mL</strong> de solution fille, de concentration <strong>c<sub>fille</sub> = 0,0500{NB}mol/L</strong>, à partir d’une solution mère de concentration <strong>c<sub>mère</sub> = 0,500{NB}mol/L</strong>. Pendant la dilution, la quantité de matière de soluté ne change pas : celle du prélèvement est égale à celle de la solution fille. Quel volume de solution mère faut-il prélever ?</>,
       tache: { type: 'num', q: 'Volume de solution mère à prélever', carnet: 'V de solution mère à prélever', unite: 'mL', vrai: 10.0, tol: 0.01, affiche: v => nbf(v, 1),
-        calcul: () => ['La quantité de soluté se conserve : c_mère × V_mère = c_fille × V_fille, donc V_mère = c_fille × V_fille / c_mère.', 'V_mère = 0,0500 mol/L × 100,0 mL ÷ 0,500 mol/L = 10,0 mL (les unités de concentration se simplifient, on garde des mL). Hypothèse : la fiole est complétée exactement au trait de jauge.'],
-        pieges: [[1000, 'Le rapport est inversé : V_mère = c_fille × V_fille / c_mère (la mère au dénominateur).'], [90.0, 'C’est à peu près le volume d’eau à ajouter (V_fille − V_mère), pas le volume de solution mère.'], [0.01, 'Le résultat est demandé en mL : ne le convertissez pas en litres.']],
+        calcul: () => ['La quantité de soluté se conserve : c_mère × V_mère = c_fille × V_fille, donc V_mère = frac(c_fille × V_fille|c_mère).', 'V_mère = 0,0500 mol/L × 100,0 mL ÷ 0,500 mol/L = 10,0 mL (les unités de concentration se simplifient, on garde des mL). Hypothèse : la fiole est complétée exactement au trait de jauge.'],
+        pieges: [[1000, 'Le rapport est inversé : V_mère = frac(c_fille × V_fille|c_mère) (la mère au dénominateur).'], [90.0, 'C’est à peu près le volume d’eau à ajouter (V_fille − V_mère), pas le volume de solution mère.'], [0.01, 'Le résultat est demandé en mL : ne le convertissez pas en litres.']],
         expl: 'n(fille) = 0,0500 × 0,1000 = 5,00 × 10⁻³ mol, apportée par V_mère = 5,00 × 10⁻³ ÷ 0,500 = 0,0100 L = 10,0 mL.', indice: 'c_mère × V_mère = c_fille × V_fille : isolez V_mère (les volumes peuvent rester en mL).' } },
     { id: 'facteur', titre: 'Combien de fois plus diluée ?', focus: ['scene'],
       texte: <>On dilue une solution mère de concentration <strong>c<sub>mère</sub> = 0,400{NB}mol/L</strong> pour obtenir une solution fille de concentration <strong>c<sub>fille</sub> = 0,0100{NB}mol/L</strong>. Le <strong>facteur de dilution</strong> F est le rapport de la concentration de la solution mère à celle de la solution fille ; il n’a pas d’unité.{FF}</>,
       tache: { type: 'num', q: 'Facteur de dilution', carnet: 'Facteur de dilution F', unite: '(sans unité)', vrai: 40, tol: 0.01, affiche: v => nbf(v, 1),
-        calcul: () => ['F = c_mère / c_fille : on divise la plus grande concentration par la plus petite (les mol/L se simplifient).', 'F = 0,400 ÷ 0,0100 = 40,0 : la solution fille est 40 fois moins concentrée que la solution mère.'],
-        pieges: [[0.025, 'Le rapport est inversé : F = c_mère / c_fille, et F est supérieur à 1 pour une dilution.'], [0.39, 'Un rapport n’est pas une différence : F = c_mère / c_fille.']],
-        expl: 'F = 0,400 / 0,0100 = 40,0 : on a dilué 40 fois.', indice: 'Divisez la concentration de la solution mère par celle de la solution fille.' },
+        calcul: () => ['F = frac(c_mère|c_fille) : on divise la plus grande concentration par la plus petite (les mol/L se simplifient).', 'F = 0,400 ÷ 0,0100 = 40,0 : la solution fille est 40 fois moins concentrée que la solution mère.'],
+        pieges: [[0.025, 'Le rapport est inversé : F = frac(c_mère|c_fille), et F est supérieur à 1 pour une dilution.'], [0.39, 'Un rapport n’est pas une différence : F = frac(c_mère|c_fille).']],
+        expl: 'F = frac(0,400|0,0100) = 40,0 : on a dilué 40 fois.', indice: 'Divisez la concentration de la solution mère par celle de la solution fille.' },
       retenirTitre: 'À RETENIR : LA DILUTION CONSERVE n',
       retenir: <>
         <SvgConservation/>
@@ -160,9 +160,9 @@ export function SimulationConcentrationDilution() {
     { id: 'vf', titre: 'Utiliser le facteur de dilution', focus: ['scene'],
       texte: <>Avec ce facteur <strong>F = 40,0</strong>, on veut préparer <strong>V<sub>fille</sub> = 200,0{NB}mL</strong> de solution fille. Diluer <em>F</em> fois, c’est aussi multiplier le volume de la solution par <em>F</em> : la solution fille occupe un volume <em>F</em> fois plus grand que le prélèvement de solution mère. Quel volume de solution mère faut-il prélever ?</>,
       tache: { type: 'num', q: 'Volume de solution mère à prélever', carnet: 'V de solution mère (200,0 mL, F = 40,0)', unite: 'mL', vrai: 5.0, tol: 0.01, affiche: v => nbf(v, 2),
-        calcul: () => ['V_fille = F × V_mère, donc V_mère = V_fille / F.', 'V_mère = 200,0 mL ÷ 40,0 = 5,00 mL. On retrouve le même résultat avec c_mère × V_mère = c_fille × V_fille.'],
+        calcul: () => ['V_fille = F × V_mère, donc V_mère = frac(V_fille|F).', 'V_mère = 200,0 mL ÷ 40,0 = 5,00 mL. On retrouve le même résultat avec c_mère × V_mère = c_fille × V_fille.'],
         pieges: [[8000, 'On divise V_fille par F, on ne les multiplie pas : la mère est plus petite que la fille.'], [195.0, 'C’est à peu près le volume d’eau à ajouter, pas le volume de solution mère.']],
-        expl: 'V_mère = 200,0 / 40,0 = 5,00 mL.', indice: 'La solution fille a un volume F fois plus grand que le prélèvement : divisez V_fille par F.' } },
+        expl: 'V_mère = frac(200,0|40,0) = 5,00 mL.', indice: 'La solution fille a un volume F fois plus grand que le prélèvement : divisez V_fille par F.' } },
     { id: 'verreD', titre: 'Le matériel de la dilution', focus: ['scene'],
       texte: <>Reprenons la dilution : <strong>5,00{NB}mL</strong> de solution mère à prélever, <strong>200,0{NB}mL</strong> de solution fille à préparer. Voici le matériel disponible.</>,
       tache: { type: 'qcm', ...QCM.verreDilution },
@@ -221,7 +221,7 @@ export function SimulationConcentrationDilution() {
       </> : <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.6 }}>Une solution mère de {defi.s.nom} {C.formuleSolute(defi.s)} a pour concentration <strong>c<sub>mère</sub> = {nbs(defi.c0, 3)}{NB}mol/L</strong>. Par dilution, on veut préparer <strong>V<sub>fille</sub> = {defi.V1}{NB}mL</strong> de solution fille de concentration <strong>c<sub>fille</sub> = {nbs(defi.c1, 3)}{NB}mol/L</strong>. Quel volume de solution mère faut-il prélever ? Donnez le résultat en mL avec 3{NB}chiffres significatifs (marge acceptée : ± 2{NB}%).</div>
         {champ('Volume de solution mère', 'mL')}
-        <IndiceDefi cache={false}>La quantité de matière de soluté se conserve : c_mère × V_mère = c_fille × V_fille. Isolez V_mère : V_mère = c_fille × V_fille / c_mère (les volumes peuvent rester en mL). Vous pouvez aussi calculer F = c_mère / c_fille puis V_mère = V_fille / F.</IndiceDefi>
+        <IndiceDefi cache={false}>La quantité de matière de soluté se conserve : c_mère × V_mère = c_fille × V_fille. Isolez V_mère : V_mère = c_fille × V_fille / c_mère (les volumes peuvent rester en mL). Vous pouvez aussi calculer F = c_mè{avecIndices('frac(re|c)')}_fille puis V_mère = V_fille / F.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="cc-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -407,10 +407,10 @@ export function SimulationConcentrationDilution() {
   const retenirExplore = (
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-        <li>c = n / V (mol/L ; V en litres) et n = c × V</li>
-        <li>C<sub>m</sub> = c × M (g/L = mol/L × g/mol) ; n = C<sub>m</sub> × V / M</li>
+        <li>c = {avecIndices('frac(n|V)')} (mol/L ; V en litres) et n = c × V</li>
+        <li>C<sub>m</sub> = c × M (g/L = mol/L × g/mol) ; n = {avecIndices('frac(C_m × V|M)')}</li>
         <li>dissolution : m = c × V × M ; on ajuste le volume dans une fiole jaugée jusqu’au trait</li>
-        <li>dilution : c<sub>mère</sub> × V<sub>mère</sub> = c<sub>fille</sub> × V<sub>fille</sub> ; F = c<sub>mère</sub> / c<sub>fille</sub> = V<sub>fille</sub> / V<sub>mère</sub></li>
+        <li>dilution : c<sub>mère</sub> × V<sub>mère</sub> = c<sub>fille</sub> × V<sub>fille</sub> ; F = {avecIndices('frac(c_mère|c_fille)')} = {avecIndices('frac(V_fille|V_mère)')}</li>
         <li>volume précis : pipette jaugée (prélèvement) et fiole jaugée (volume final)</li>
       </ul>
     </ARetenir>);
