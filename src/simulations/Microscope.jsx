@@ -164,7 +164,7 @@ const FICHES = {
     <CarteBilanSVG/>
     {puces(<>Objectif : image intermédiaire réelle, renversée, agrandie, γ₁ = −Δ / f₁′ après mise au point (A₁ en F₂).</>,
       <>Oculaire utilisé comme une loupe : image définitive virtuelle à l’infini, œil au repos.</>,
-      <>G = θ₂ / θ₀ = |γ₁| × d<sub>m</sub> / f₂′ ; changer d’objectif impose de refaire la mise au point.</>)}
+      <>G = θ₂ / θ₀ = |γ₁| × {avecIndices('frac(d_m|f)')}₂′ ; changer d’objectif impose de refaire la mise au point.</>)}
   </>,
 };
 
@@ -218,37 +218,37 @@ export function SimulationMicroscope() {
         expl: '|OA| ≈ 10,6 mm. L’objet est tout près du foyer objet de l’objectif (10 mm).', indice: '1/OA = 1/OA′ − 1/f′ avec OA′ = 170 mm et f′ = 10 mm. Calculez, puis inversez.' } },
     { id: 'gamma', titre: 'Le grandissement de l’objectif', focus: ['mesures'], depart: null,
       retenirTitre: 'À RETENIR : INTERVALLE OPTIQUE ET GRANDISSEMENT', retenir: FICHES.gamma,
-      texte: <>Le <strong>grandissement</strong> de l’objectif est γ₁ = O₁A₁ / O₁A (grandeurs algébriques). Vous avez O₁A₁ = +170{NB}mm et O₁A = −10,6{NB}mm. Calculez γ₁ (avec son signe).</>,
+      texte: <>Le <strong>grandissement</strong> de l’objectif est γ₁ = {avecIndices('frac(O₁A₁|O₁A)')} (grandeurs algébriques). Vous avez O₁A₁ = +170{NB}mm et O₁A = −10,6{NB}mm. Calculez γ₁ (avec son signe).</>,
       tache: { type: 'num', q: 'Grandissement γ₁ de l’objectif', unite: '', vrai: -16, tol: 0.03, affiche: v => fm(v, 1), carnet: 'Grandissement γ₁ de l’objectif',
-        calcul: () => ['γ₁ = O₁A₁ / O₁A = 170 / (−10,625) = −16.', 'Le signe négatif traduit l’image renversée. On retrouve γ₁ = −Δ / f₁′ = −160 / 10.'],
-        pieges: [[16, 'Le signe : O₁A est négatif, donc γ₁ aussi. Une image renversée a un grandissement négatif.'], [-0.0625, 'Vous avez calculé O₁A / O₁A₁ : le grandissement est O₁A₁ / O₁A.']],
-        expl: 'γ₁ = −16 : l’image intermédiaire est 16 fois plus grande que l’objet, et renversée.', indice: 'γ₁ = O₁A₁ / O₁A avec O₁A₁ = 170 mm et O₁A = −10,6 mm.' } },
+        calcul: () => ['γ₁ = frac(O₁A₁|O₁A) = frac(170|−10,625) = −16.', 'Le signe négatif traduit l’image renversée. On retrouve γ₁ = −frac(Δ|f₁′) = −frac(160|10).'],
+        pieges: [[16, 'Le signe : O₁A est négatif, donc γ₁ aussi. Une image renversée a un grandissement négatif.'], [-0.0625, 'Vous avez calculé frac(O₁A|O₁A₁) : le grandissement est frac(O₁A₁|O₁A).']],
+        expl: 'γ₁ = −16 : l’image intermédiaire est 16 fois plus grande que l’objet, et renversée.', indice: 'γ₁ = frac(O₁A₁|O₁A) avec O₁A₁ = 170 mm et O₁A = −10,6 mm.' } },
     { id: 'a1b1', titre: 'Taille de l’image intermédiaire', focus: ['mesures'], depart: null,
       texte: <>L’objet observé est un petit détail de <strong>20{NB}µm</strong> (soit 0,020{NB}mm). Avec γ₁ = −16, calculez la taille de l’image intermédiaire A₁B₁ (valeur positive, en mm).</>,
       tache: { type: 'num', q: 'Taille de A₁B₁', unite: 'mm', vrai: 0.32, tol: 0.03, affiche: v => fm(v, 2), carnet: 'Taille de l’image intermédiaire A₁B₁',
         calcul: () => ['A₁B₁ = |γ₁| × A₀B₀ = 16 × 0,020 mm = 0,32 mm.'], pieges: [[0.02 / 16, 'Vous avez divisé par 16 : l’image est agrandie, on multiplie.'], [320, 'Valeur correcte, mais en µm : l’énoncé demande des mm.']],
         expl: 'A₁B₁ = 0,32 mm : 16 fois plus grande que l’objet.', indice: 'A₁B₁ = |γ₁| × A₀B₀ avec A₀B₀ = 0,020 mm.' } },
     { id: 'theta2', titre: 'L’angle sous lequel on voit l’image', focus: ['mesures'], depart: null,
-      texte: <>L’oculaire (<em>f₂′</em> = 25{NB}mm) est une loupe dont l’objet A₁B₁ est dans le plan focal : l’œil voit l’image définitive sous l’angle <strong>θ₂ ≈ A₁B₁ / f₂′</strong> (radian). Avec A₁B₁ = 0,32{NB}mm, calculez θ₂.</>,
+      texte: <>L’oculaire (<em>f₂′</em> = 25{NB}mm) est une loupe dont l’objet A₁B₁ est dans le plan focal : l’œil voit l’image définitive sous l’angle <strong>θ₂ ≈ {avecIndices('frac(A₁B₁|f₂′)')}</strong> (radian). Avec A₁B₁ = 0,32{NB}mm, calculez θ₂.</>,
       tache: { type: 'num', q: 'Diamètre apparent θ₂ de l’image définitive', unite: 'rad', vrai: 0.0128, tol: 0.03, affiche: v => fm(v, 4), carnet: 'Diamètre apparent θ₂ (avec le microscope)',
-        calcul: () => ['A₁B₁ et f₂′ en mm : θ₂ ≈ A₁B₁ / f₂′ = 0,32 / 25 = 0,0128 rad (12,8 mrad).'], pieges: [[0.32 / 250, 'Vous avez divisé par dm = 250 mm : c’est l’angle à l’œil nu. Avec l’oculaire, on divise par f₂′.'], [78, 'Vous avez calculé f₂′ / A₁B₁ : θ₂ = A₁B₁ / f₂′.']],
-        expl: 'θ₂ ≈ 0,0128 rad = 12,8 mrad.', indice: 'θ₂ ≈ A₁B₁ / f₂′, avec A₁B₁ = 0,32 mm et f₂′ = 25 mm.' } },
+        calcul: () => ['A₁B₁ et f₂′ en mm : θ₂ ≈ frac(A₁B₁|f₂′) = frac(0,32|25) = 0,0128 rad (12,8 mrad).'], pieges: [[0.32 / 250, 'Vous avez divisé par dm = 250 mm : c’est l’angle à l’œil nu. Avec l’oculaire, on divise par f₂′.'], [78, 'Vous avez calculé frac(f₂′|A₁B₁) : θ₂ = frac(A₁B₁|f₂′).']],
+        expl: 'θ₂ ≈ 0,0128 rad = 12,8 mrad.', indice: 'θ₂ ≈ frac(A₁B₁|f₂′), avec A₁B₁ = 0,32 mm et f₂′ = 25 mm.' } },
     { id: 'theta0', titre: 'À l’œil nu', focus: ['mesures'], depart: null,
       texte: <>À l’œil nu, on observerait le même détail (0,020{NB}mm) à la distance minimale de vision distincte <strong>d<sub>m</sub> = 250{NB}mm</strong>. Calculez l’angle θ₀ en <strong>mrad</strong> et comparez-le au pouvoir séparateur de l’œil ε ≈ 0,3{NB}mrad : le détail est-il visible à l’œil nu ?</>,
       tache: { type: 'num', q: 'Diamètre apparent θ₀ à l’œil nu', unite: 'mrad', vrai: 0.08, tol: 0.03, affiche: v => fm(v, 3), carnet: 'Diamètre apparent θ₀ à l’œil nu',
-        calcul: () => ['θ₀ ≈ AB / dm = 0,020 / 250 = 8,0×10⁻⁵ rad = 0,080 mrad.', '0,080 mrad < ε = 0,3 mrad : le détail est invisible à l’œil nu ; avec le microscope θ₂ = 12,8 mrad, bien supérieur à ε.'],
+        calcul: () => ['θ₀ ≈ frac(AB|dm) = frac(0,020|250) = 8,0×10⁻⁵ rad = 0,080 mrad.', '0,080 mrad < ε = 0,3 mrad : le détail est invisible à l’œil nu ; avec le microscope θ₂ = 12,8 mrad, bien supérieur à ε.'],
         pieges: [[0.8, 'Vous avez divisé 0,020 mm par 25 mm : dm est de 250 mm (25 cm).'], [0.00008, 'Valeur correcte en radian ; l’énoncé demande des mrad (× 1000).']],
-        expl: 'θ₀ = 0,080 mrad < ε : invisible à l’œil nu. Le microscope le rend visible (θ₂ = 12,8 mrad).', indice: 'θ₀ ≈ AB / dm avec AB = 0,020 mm et dm = 250 mm ; 1 rad = 1000 mrad.' } },
+        expl: 'θ₀ = 0,080 mrad < ε : invisible à l’œil nu. Le microscope le rend visible (θ₂ = 12,8 mrad).', indice: 'θ₀ ≈ frac(AB|dm) avec AB = 0,020 mm et dm = 250 mm ; 1 rad = 1000 mrad.' } },
     { id: 'G', titre: 'Le grossissement', focus: ['mesures'], depart: null,
       retenirTitre: 'À RETENIR : LE GROSSISSEMENT', retenir: FICHES.gross,
-      texte: <>Le <strong>grossissement</strong> du microscope est G = θ₂ / θ₀. Vous avez θ₂ = 12,8{NB}mrad et θ₀ = 0,080{NB}mrad. Calculez G (sans unité).</>,
+      texte: <>Le <strong>grossissement</strong> du microscope est G = {avecIndices('frac(θ₂|θ₀)')}. Vous avez θ₂ = 12,8{NB}mrad et θ₀ = 0,080{NB}mrad. Calculez G (sans unité).</>,
       tache: { type: 'num', q: 'Grossissement G du microscope', unite: '', vrai: 160, tol: 0.03, affiche: v => fm(v, 0), carnet: 'Grossissement G du microscope',
-        calcul: () => ['G = θ₂ / θ₀ = 12,8 / 0,080 = 160.', 'Autre expression : G = |γ₁| × dm / f₂′ = 16 × (250 / 25) = 16 × 10 = 160.'], pieges: [[1 / 160, 'Vous avez calculé θ₀ / θ₂ : G = θ₂ / θ₀.']],
-        expl: 'G = 160 = |γ₁| × G_oculaire = 16 × 10 : l’image définitive est vue 160 fois plus grande, angulairement, qu’à l’œil nu à 25 cm.', indice: 'G = θ₂ / θ₀, avec θ₂ = 12,8 mrad et θ₀ = 0,080 mrad (mêmes unités).' } },
+        calcul: () => ['G = frac(θ₂|θ₀) = frac(12,8|0,080) = 160.', 'Autre expression : G = frac(∣γ₁∣ × dm|f₂′) = 16 × (frac(250|25)) = 16 × 10 = 160.'], pieges: [[1 / 160, 'Vous avez calculé frac(θ₀|θ₂) : G = frac(θ₂|θ₀).']],
+        expl: 'G = 160 = |γ₁| × G_oculaire = 16 × 10 : l’image définitive est vue 160 fois plus grande, angulairement, qu’à l’œil nu à 25 cm.', indice: 'G = frac(θ₂|θ₀), avec θ₂ = 12,8 mrad et θ₀ = 0,080 mrad (mêmes unités).' } },
     { id: 'G2', titre: 'Changer le grossissement', focus: ['reglages'], depart: dep({ io: 1, ioc: 1, ...pAuto(1) }),
-      texte: <>La relation <strong>G = |γ₁| × d<sub>m</sub> / f₂′ = Δ·d<sub>m</sub> / (f₁′ f₂′)</strong> montre comment agir sur le grossissement. Essayez les boutons d’objectif et d’oculaire.</>,
+      texte: <>La relation <strong>G = |γ₁| × {avecIndices('frac(d_m|f)')}₂′ = Δ·{avecIndices('frac(d_m|f₁′ f₂′)')}</strong> montre comment agir sur le grossissement. Essayez les boutons d’objectif et d’oculaire.</>,
       tache: { type: 'qcm', q: 'Parmi ces changements, lequel augmente le grossissement G ?', options: ['remplacer l’objectif par un autre de distance focale plus petite', 'remplacer l’oculaire par un autre de distance focale plus grande', 'éloigner l’œil de l’oculaire', 'utiliser un éclairage plus intense'], bonne: 0,
-        indice: 'G = Δ·dm / (f₁′ f₂′) : G est grand quand le dénominateur est petit.', expl: 'G est inversement proportionnel à f₁′ et à f₂′ : une distance focale plus petite pour l’objectif (ou pour l’oculaire) donne un plus grand grossissement.' } },
+        indice: 'G = frac(Δ·dm|f₁′ f₂′) : G est grand quand le dénominateur est petit.', expl: 'G est inversement proportionnel à f₁′ et à f₂′ : une distance focale plus petite pour l’objectif (ou pour l’oculaire) donne un plus grand grossissement.' } },
     { id: 'refaire', titre: 'On change d’objectif', focus: ['scene', 'reglages'], depart: dep({ io: 2, ioc: 1, pg: 10.6, pf: 0.025 }),
       texte: <>On vient de tourner la tourelle pour passer à l’objectif de distance focale <em>f₁′</em> = 8{NB}mm, <strong>sans toucher</strong> à la molette. Le schéma indique que l’image n’est plus au point. Refaites la mise au point.</>,
       tache: { type: 'action', ok: enGuide && PE.io === 2 && M.miseAuPoint(p, f1, f2), consigne: 'Refaites la mise au point avec ce nouvel objectif.' } },
@@ -419,8 +419,8 @@ export function SimulationMicroscope() {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>objectif : image intermédiaire A₁B₁ réelle, renversée, agrandie ; oculaire = loupe</li>
-        <li>mise au point : A₁ en F₂, image définitive à l’infini (œil au repos) ; γ₁ = −Δ / f₁′</li>
-        <li>G = θ₂ / θ₀ = |γ₁| × d<sub>m</sub> / f₂′ ; changer d’objectif ⇒ refaire la mise au point</li>
+        <li>mise au point : A₁ en F₂, image définitive à l’infini (œil au repos) ; γ₁ = −{avecIndices('frac(Δ|f)')}₁′</li>
+        <li>G = θ₂ / θ₀ = |γ₁| × {avecIndices('frac(d_m|f)')}₂′ ; changer d’objectif ⇒ refaire la mise au point</li>
       </ul>
     </ARetenir>);
 

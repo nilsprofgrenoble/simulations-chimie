@@ -417,7 +417,7 @@ export function SimulationParoi() {
     { id: 'bravo', titre: 'Le bilan', focus: [],
       retenirTitre: 'Bilan : paroi multicouche',
       retenir: <><FBilanParoi/></>,
-      texte: <>Vous savez calculer la résistance thermique d’une couche (R<Sub c="th"/> = {avecIndices('frac(e|λ·S)')}), additionner les résistances de couches superposées, en déduire la puissance P = {avecIndices('frac(ΔT|R)')}<Sub c="th"/> et l’écart de température aux bornes de chaque couche, et dimensionner une épaisseur d’isolant. En exploration libre, chargez le simple et le double vitrage (exercice 2 du TD), ajoutez les films d’air et comparez les matériaux.</>, tache: null },
+      texte: <>Vous savez calculer la résistance thermique d’une couche (R<Sub c="th"/> = {avecIndices('frac(e|λ·S)')}), additionner les résistances de couches superposées, en déduire la puissance P = {avecIndices('frac(ΔT|R_th)')} et l’écart de température aux bornes de chaque couche, et dimensionner une épaisseur d’isolant. En exploration libre, chargez le simple et le double vitrage (exercice 2 du TD), ajoutez les films d’air et comparez les matériaux.</>, tache: null },
   ];
   const ETAPES = IDS.map(id => TOUTES.find(e => e.id === id));
   const et = ETAPES[Math.min(etape, ETAPES.length - 1)];
@@ -520,7 +520,7 @@ export function SimulationParoi() {
         </div>))}
       <div style={ligne}><strong>Résistance globale</strong> (couches en série) : R<Sub c="th,global"/> = {solE.L.map(l => nf(l.R)).join(' + ')} = <strong>{nf(solE.Rtot)} K·W⁻¹</strong></div>
       <div style={ligne}><strong>Températures aux interfaces</strong> (de l’intérieur vers l’extérieur) : {solE.T.map(t1).join(' °C → ')} °C <span style={{ color: KIT.txt2 }}>(T<Sub c="k"/> = T<Sub c="k−1"/> − P × R<Sub c="th"/> de la couche)</span></div>
-      <div style={ligne}><strong>Puissance thermique</strong> : P = {avecIndices('frac(T<Sub c="int"/> − T<Sub c="ext"/>|R)')}<Sub c="th,global"/> = ({t1(Ti)} − ({t1(Te)})) / {nf(solE.Rtot)} = <strong>{nf(Math.abs(Ptot), 4)} W</strong>
+      <div style={ligne}><strong>Puissance thermique</strong> : P = {avecIndices('frac(T_int − T_ext|R_th,global)')} = ({t1(Ti)} − ({t1(Te)})) / {nf(solE.Rtot)} = <strong>{nf(Math.abs(Ptot), 4)} W</strong>
         {Ptot < 0 && <span style={{ color: KIT.txt2 }}> (de l’extérieur vers l’intérieur : la paroi laisse entrer de l’énergie)</span>}
         <span style={{ color: KIT.txt2 }}> · par m² : {nf(Math.abs(solE.phi), 3)} W·m⁻²</span></div>
       <div style={ligne}><strong>Sur 24 h</strong> : E = P × 24 h = {nf(Math.abs(Ptot) * 24, 4)} Wh = <strong>{nf(Math.abs(E24))} kWh</strong>, soit {nf(Math.abs(E24) * PRIX_KWH, 3)} € à {dec(PRIX_KWH, 2)} €/kWh (prix du TD, chauffage électrique).</div>
@@ -584,7 +584,7 @@ export function SimulationParoi() {
           <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Simple vitrage</div><Schema sol={M.simple}/><Legende sol={M.simple}/>
           <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Double vitrage</div><Schema sol={M.double}/><Legende sol={M.double}/>
         </>}
-        <div style={{ fontSize: 13, color: KIT.txt2 }}>Rappels : R<Sub c="th"/> = {avecIndices('frac(e|λ·S)')} ; couches en série : R<Sub c="th,global"/> = ΣR<Sub c="th"/> ; P = {avecIndices('frac(ΔT|R)')}<Sub c="th"/> ; ΔT = P × R<Sub c="th"/>. Donnez 3 chiffres significatifs (notation possible : 1,2e-3).</div>
+        <div style={{ fontSize: 13, color: KIT.txt2 }}>Rappels : R<Sub c="th"/> = {avecIndices('frac(e|λ·S)')} ; couches en série : R<Sub c="th,global"/> = ΣR<Sub c="th"/> ; P = {avecIndices('frac(ΔT|R_th)')} ; ΔT = P × R<Sub c="th"/>. Donnez 3 chiffres significatifs (notation possible : 1,2e-3).</div>
         {Q.map((q, k) => {
           const ok = juste(q);
           return (

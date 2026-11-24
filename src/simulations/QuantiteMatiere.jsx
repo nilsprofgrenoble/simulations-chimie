@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./quantiteMatiereModele";
 import { QCM } from "./quantiteMatiereQcm";
@@ -130,9 +130,9 @@ export function SimulationQuantiteMatiere() {
     { id: 'nsolide', titre: 'De la masse à la quantité de matière', focus: ['scene'],
       texte: <>Une mole de glucose pèse M grammes : le nombre de moles d’un échantillon est donc sa masse divisée par M. On pèse un échantillon de glucose C₆H₁₂O₆ de masse <strong>m = 90,0{NB}g</strong>, de masse molaire M = 180,0{NB}g/mol (calculée à l’étape précédente).{FnM}</>,
       tache: { type: 'num', q: 'Quantité de matière de glucose dans l’échantillon', carnet: 'n de glucose (90,0 g)', unite: 'mol', vrai: 0.500, tol: 0.01, affiche: v => nbf(v, 3), cs: 3,
-        calcul: () => ['n = m / M : les grammes se simplifient, il reste des moles (g ÷ g/mol = mol).', 'n = 90,0 g ÷ 180,0 g/mol = 0,500 mol.'],
-        pieges: [[2.0, 'Le rapport est inversé : n = m / M (la masse en haut).'], [16200, 'Il faut diviser m par M, pas les multiplier.']],
-        expl: 'n = 90,0 / 180,0 = 0,500 mol : l’échantillon pèse la moitié d’une mole.', indice: 'n = frac(m|M) avec m en g et M en g/mol ; le résultat est en mol.' },
+        calcul: () => ['n = frac(m|M) : les grammes se simplifient, il reste des moles (g ÷ g/mol = mol).', 'n = 90,0 g ÷ 180,0 g/mol = 0,500 mol.'],
+        pieges: [[2.0, 'Le rapport est inversé : n = frac(m|M) (la masse en haut).'], [16200, 'Il faut diviser m par M, pas les multiplier.']],
+        expl: 'n = frac(90,0|180,0) = 0,500 mol : l’échantillon pèse la moitié d’une mole.', indice: 'n = frac(m|M) avec m en g et M en g/mol ; le résultat est en mol.' },
       retenirTitre: 'À RETENIR : LA MASSE MOLAIRE',
       retenir: <>
         <SvgMasseMolaire/>
@@ -145,13 +145,13 @@ export function SimulationQuantiteMatiere() {
     { id: 'nmg', titre: 'Un comprimé de vitamine C', focus: ['scene'],
       texte: <>Un comprimé contient une masse <strong>m = 500{NB}mg</strong> de vitamine C, de formule C₆H₈O₆, de masse molaire M = 176,0{NB}g/mol. Pour que les unités se simplifient, la masse doit être en grammes (1{NB}g = 1000{NB}mg).</>,
       tache: { type: 'num', q: 'Quantité de matière de vitamine C dans le comprimé', carnet: 'n de vitamine C (500 mg)', unite: '× 10⁻³ mol', vrai: 2.84, tol: 0.01, affiche: v => nbf(v, 2), cs: 3,
-        calcul: () => ['m = 500 mg = 0,500 g (1 mg = 10⁻³ g).', 'n = m / M = 0,500 g ÷ 176,0 g/mol = 2,84 × 10⁻³ mol (soit 2,84 mmol).'],
-        pieges: [[2841, 'Vous n’avez pas converti les milligrammes en grammes : 500 mg = 0,500 g.'], [352, 'Le rapport est inversé et les mg n’ont pas été convertis : n = m / M avec m = 0,500 g.'], [352000, 'Le rapport est inversé : n = m / M (la masse en haut, la masse molaire en bas).']],
-        expl: 'n = 0,500 / 176,0 = 2,84 × 10⁻³ mol.', indice: 'Convertissez d’abord : 500 mg = 0,500 g. Puis n = frac(m|M). Le résultat attendu est de l’ordre du millième de mole.' } },
+        calcul: () => ['m = 500 mg = 0,500 g (1 mg = 10⁻³ g).', 'n = frac(m|M) = 0,500 g ÷ 176,0 g/mol = 2,84 × 10⁻³ mol (soit 2,84 mmol).'],
+        pieges: [[2841, 'Vous n’avez pas converti les milligrammes en grammes : 500 mg = 0,500 g.'], [352, 'Le rapport est inversé et les mg n’ont pas été convertis : n = frac(m|M) avec m = 0,500 g.'], [352000, 'Le rapport est inversé : n = frac(m|M) (la masse en haut, la masse molaire en bas).']],
+        expl: 'n = frac(0,500|176,0) = 2,84 × 10⁻³ mol.', indice: 'Convertissez d’abord : 500 mg = 0,500 g. Puis n = frac(m|M). Le résultat attendu est de l’ordre du millième de mole.' } },
     { id: 'mpeser', titre: 'Quelle masse faut-il peser ?', focus: ['scene'],
-      texte: <>Pour une expérience, il faut <strong>0,250{NB}mol</strong> de glucose, de masse molaire M = 180,0{NB}g/mol. On cherche la masse à placer sur la balance : on isole m dans la relation n = frac(m|M).</>,
+      texte: <>Pour une expérience, il faut <strong>0,250{NB}mol</strong> de glucose, de masse molaire M = 180,0{NB}g/mol. On cherche la masse à placer sur la balance : on isole m dans la relation n = {avecIndices('frac(m|M)')}.</>,
       tache: { type: 'num', q: 'Masse de glucose à peser', carnet: 'Masse de glucose pour 0,250 mol', unite: 'g', vrai: 45.0, tol: 0.01, affiche: v => nbf(v, 1), cs: 3,
-        calcul: () => ['De n = m / M, on tire m = n × M.', 'm = 0,250 mol × 180,0 g/mol = 45,0 g.'],
+        calcul: () => ['De n = frac(m|M), on tire m = n × M.', 'm = 0,250 mol × 180,0 g/mol = 45,0 g.'],
         pieges: [[0.00139, 'Vous avez divisé n par M : m = n × M.'], [720, 'Vous avez divisé M par n : m = n × M.']],
         expl: 'm = n × M = 0,250 × 180,0 = 45,0 g.', indice: 'm = n × M : les mol se simplifient, il reste des grammes.' } },
     { id: 'vmcommun', titre: 'Le volume molaire d’un gaz', focus: ['scene'],
@@ -162,7 +162,7 @@ export function SimulationQuantiteMatiere() {
         <SvgTriangle/>
         {FnM}
         <ul style={liste}>
-          <li><strong>n = m / M</strong> : m en g, M en g/mol, n en mol. Le triangle aide à isoler la grandeur cherchée.</li>
+          <li><strong>n = {avecIndices('frac(m|M)')}</strong> : m en g, M en g/mol, n en mol. Le triangle aide à isoler la grandeur cherchée.</li>
           <li>Exemples de la simulation : 90,0 g de glucose → 0,500 mol ; 500 mg = 0,500 g de vitamine C → 2,84 × 10⁻³ mol.</li>
           <li><strong>Piège</strong> : convertir les mg en g avant de calculer (1 g = 1000 mg).</li>
         </ul></> },
@@ -172,15 +172,15 @@ export function SimulationQuantiteMatiere() {
     { id: 'ngaz', titre: 'La quantité de matière d’un gaz', focus: ['scene'],
       texte: <>On a vu que V<sub>m</sub> dépend de la température et de la pression : on le lit toujours dans l’énoncé. Un flacon de volume <strong>V = 600{NB}mL</strong> contient du dioxygène O₂ à 20{NB}°C et 1013{NB}hPa ; dans ces conditions, <strong>V<sub>m</sub> = 24,0{NB}L/mol</strong>. Le volume et V<sub>m</sub> doivent être dans la même unité de volume.{FnV}</>,
       tache: { type: 'num', q: 'Quantité de matière de dioxygène dans le flacon', carnet: 'n de dioxygène (600 mL)', unite: 'mol', vrai: 0.0250, tol: 0.01, affiche: v => nbf(v, 4), cs: 3,
-        calcul: () => ['V = 600 mL = 0,600 L (1 mL = 10⁻³ L).', 'n = V / V_m = 0,600 L ÷ 24,0 L/mol = 0,0250 mol.'],
-        pieges: [[25.0, 'Vous n’avez pas converti les mL en L : 600 mL = 0,600 L.'], [40.0, 'Le rapport est inversé : n = V / V_m.']],
-        expl: 'n = 0,600 / 24,0 = 0,0250 mol, soit 2,50 × 10⁻² mol.', indice: 'Convertissez 600 mL en litres, puis n = frac(V|V_m) avec V_m en L/mol.' } },
+        calcul: () => ['V = 600 mL = 0,600 L (1 mL = 10⁻³ L).', 'n = frac(V|V_m) = 0,600 L ÷ 24,0 L/mol = 0,0250 mol.'],
+        pieges: [[25.0, 'Vous n’avez pas converti les mL en L : 600 mL = 0,600 L.'], [40.0, 'Le rapport est inversé : n = frac(V|V_m).']],
+        expl: 'n = frac(0,600|24,0) = 0,0250 mol, soit 2,50 × 10⁻² mol.', indice: 'Convertissez 600 mL en litres, puis n = frac(V|V_m) avec V_m en L/mol.' } },
     { id: 'nliq', titre: 'Un liquide : la masse volumique', focus: ['scene'],
-      texte: <>Un liquide se prélève plus facilement au volume qu’à la balance. Sa <strong>masse volumique</strong> ρ donne la masse d’un millilitre : m = ρ × V, puis n = m / M. On prélève <strong>V = 20,0{NB}mL</strong> d’éthanol C₂H₆O, de masse volumique ρ = 0,79{NB}g/mL et de masse molaire M = 46,0{NB}g/mol.{FnRho}</>,
+      texte: <>Un liquide se prélève plus facilement au volume qu’à la balance. Sa <strong>masse volumique</strong> ρ donne la masse d’un millilitre : m = ρ × V, puis n = {avecIndices('frac(m|M)')}. On prélève <strong>V = 20,0{NB}mL</strong> d’éthanol C₂H₆O, de masse volumique ρ = 0,79{NB}g/mL et de masse molaire M = 46,0{NB}g/mol.{FnRho}</>,
       tache: { type: 'num', q: 'Quantité de matière d’éthanol prélevée', carnet: 'n d’éthanol (20,0 mL)', unite: 'mol', vrai: nEthaLiq, tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
-        calcul: () => ['m = ρ × V = 0,79 g/mL × 20,0 mL = 15,8 g (les mL se simplifient).', 'n = m / M = 15,8 g ÷ 46,0 g/mol = 0,343 mol, soit 0,34 mol : on garde 2 chiffres significatifs, comme la masse volumique ρ = 0,79 g/mL.'],
+        calcul: () => ['m = ρ × V = 0,79 g/mL × 20,0 mL = 15,8 g (les mL se simplifient).', 'n = frac(m|M) = 15,8 g ÷ 46,0 g/mol = 0,343 mol, soit 0,34 mol : on garde 2 chiffres significatifs, comme la masse volumique ρ = 0,79 g/mL.'],
         pieges: [[15.8, 'C’est la masse m = ρ × V (15,8 g) : il reste à la diviser par M pour obtenir n.'], [1.82, 'Vous avez calculé ρ × M ÷ V : la bonne relation est n = ρ × V ÷ M.'], [0.435, 'Il manque la masse volumique : il faut d’abord passer du volume à la masse, m = ρ × V.']],
-        expl: 'm = 0,79 × 20,0 = 15,8 g ; n = 15,8 / 46,0 = 0,343 mol, soit 0,34 mol avec 2 chiffres significatifs (ρ n’en a que 2).', indice: 'm = ρ × V (en g), puis n = m ÷ M : la masse n’est qu’une étape du calcul.' },
+        expl: 'm = 0,79 × 20,0 = 15,8 g ; n = frac(15,8|46,0) = 0,343 mol, soit 0,34 mol avec 2 chiffres significatifs (ρ n’en a que 2).', indice: 'm = ρ × V (en g), puis n = m ÷ M : la masse n’est qu’une étape du calcul.' },
       retenirTitre: 'À RETENIR : LE VOLUME MOLAIRE',
       retenir: <>
         <SvgVolumeMolaire/>
@@ -193,9 +193,9 @@ export function SimulationQuantiteMatiere() {
     { id: 'nmel', titre: 'La composition d’un mélange', focus: ['scene'],
       texte: <>Pour connaître la composition d’un mélange, on calcule la quantité de matière de chaque constituant. Un mélange liquide contient <strong>18,0{NB}g d’eau</strong> (M = 18,0{NB}g/mol, soit n(eau) = 1,00{NB}mol) et <strong>23,0{NB}g d’éthanol</strong> C₂H₆O (M = 46,0{NB}g/mol).{FnM}</>,
       tache: { type: 'num', q: 'Quantité de matière d’éthanol dans le mélange', carnet: 'n d’éthanol (23,0 g)', unite: 'mol', vrai: 0.500, tol: 0.01, affiche: v => nbf(v, 3), cs: 3,
-        calcul: () => ['n(éthanol) = m / M : les grammes se simplifient.', 'n(éthanol) = 23,0 g ÷ 46,0 g/mol = 0,500 mol.'],
-        pieges: [[2.0, 'Le rapport est inversé : n = m / M (la masse en haut).'], [1.00, 'Vous avez repris la quantité d’eau : pour l’éthanol, M = 46,0 g/mol et m = 23,0 g.'], [0.391, 'Vous avez utilisé la masse molaire de l’eau (18,0 g/mol) : pour l’éthanol, M = 46,0 g/mol.']],
-        expl: 'n(éthanol) = 23,0 / 46,0 = 0,500 mol.', indice: 'n = frac(m|M) avec m = 23,0 g et M = 46,0 g/mol (la masse molaire de l’éthanol, pas celle de l’eau).' } },
+        calcul: () => ['n(éthanol) = frac(m|M) : les grammes se simplifient.', 'n(éthanol) = 23,0 g ÷ 46,0 g/mol = 0,500 mol.'],
+        pieges: [[2.0, 'Le rapport est inversé : n = frac(m|M) (la masse en haut).'], [1.00, 'Vous avez repris la quantité d’eau : pour l’éthanol, M = 46,0 g/mol et m = 23,0 g.'], [0.391, 'Vous avez utilisé la masse molaire de l’eau (18,0 g/mol) : pour l’éthanol, M = 46,0 g/mol.']],
+        expl: 'n(éthanol) = frac(23,0|46,0) = 0,500 mol.', indice: 'n = frac(m|M) avec m = 23,0 g et M = 46,0 g/mol (la masse molaire de l’éthanol, pas celle de l’eau).' } },
     { id: 'melange', titre: 'Comparer deux constituants', focus: ['scene'],
       texte: <>Dans ce mélange, n(eau) = 1,00{NB}mol et n(éthanol) = 0,500{NB}mol (calculé à l’étape précédente), alors que l’éthanol a la plus grande masse (23,0{NB}g contre 18,0{NB}g).</>,
       tache: { type: 'qcm', ...QCM.melange },
@@ -243,7 +243,7 @@ export function SimulationQuantiteMatiere() {
       </> : <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.6 }}>Un ballon de volume <strong>V = {defi.V}{NB}mL</strong> contient du {defi.e.nom} <strong>{M.formuleTexte(defi.e)}</strong> à {defi.theta}{NB}°C et 1013{NB}hPa ; dans ces conditions, <strong>V<sub>m</sub> = {nbf(defi.Vm, 1)}{NB}L/mol</strong>. Quelle est la masse de gaz dans le ballon ? Masses molaires atomiques : {atomesDe(defi.e)}. Donnez le résultat en grammes avec 3{NB}chiffres significatifs (marge acceptée : ± 1{NB}%).</div>
         {champ('Masse de gaz', 'g')}
-        <IndiceDefi cache={false}>Trois étapes : (1) convertir V en litres ; (2) n = frac(V|V_m) avec V_m en L/mol ; (3) calculer M = somme des masses molaires atomiques de {M.formuleTexte(defi.e)}, puis m = n × M.</IndiceDefi>
+        <IndiceDefi cache={false}>Trois étapes : (1) convertir V en litres ; (2) n = {avecIndices('frac(V|V_m)')} avec V_m en L/mol ; (3) calculer M = somme des masses molaires atomiques de {M.formuleTexte(defi.e)}, puis m = n × M.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="qm-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -264,7 +264,7 @@ export function SimulationQuantiteMatiere() {
       <li><strong>Ions</strong> : la masse des électrons est négligée devant celle des noyaux, donc M(ion) ≈ somme des masses molaires atomiques (M(Na⁺) ≈ M(Na)).</li>
       <li><strong>Corps pur et mélange</strong> : l’échantillon est supposé pur (pas d’eau d’hydratation, pas d’impureté). Dans un mélange, chaque constituant est traité séparément ; les masses s’additionnent, les volumes ne sont pas toujours additifs, et aucune réaction n’a lieu entre les constituants.</li>
       <li><strong>Volume molaire</strong> : V<sub>m</sub> dépend de la température et de la pression : il faut toujours donner la valeur utilisée (22,4 L/mol à 0 °C, 24,0 L/mol à 20 °C, 24,5 L/mol à 25 °C, à pression atmosphérique, valeurs arrondies). Le fait qu’il ne dépende pas du gaz est exact pour un <strong>gaz parfait</strong> (molécules sans interaction, de volume négligeable) ; pour un gaz réel, l’écart à pression atmosphérique est de quelques pour mille pour O₂, N₂, H₂ et CH₄, et de 1 à 3 % pour NH₃, Cl₂ et le butane ; il augmente si la pression est grande ou si la température est proche de celle de liquéfaction (le butane, qui bout vers −1 °C, est liquide à 0 °C et n’est donc pas proposé à cette température).</li>
-      <li><strong>Exploration</strong> : la simulation calcule V<sub>m</sub> par V<sub>m</sub> = R·T / P (R = 8,314 J·mol⁻¹·K⁻¹, T en kelvin, P en pascal) : 24,05 L/mol à 20 °C sous 1013 hPa, que les exercices arrondissent à 24,0 L/mol (cet écart d’arrondi est inférieur à 0,5 %).</li>
+      <li><strong>Exploration</strong> : la simulation calcule V<sub>m</sub> par V<sub>m</sub> = R·{avecIndices('frac(T|P)')} (R = 8,314 J·mol⁻¹·K⁻¹, T en kelvin, P en pascal) : 24,05 L/mol à 20 °C sous 1013 hPa, que les exercices arrondissent à 24,0 L/mol (cet écart d’arrondi est inférieur à 0,5 %).</li>
       <li><strong>Liquides</strong> : masses volumiques à 20 °C, valeurs arrondies (eau 1,00 ; éthanol 0,79 g/mL). Elles varient avec la température.</li>
       <li><strong>Chiffres significatifs</strong> : un résultat ne doit pas avoir plus de chiffres significatifs que la donnée la moins précise ; les calculs intermédiaires gardent un chiffre de plus.</li>
     </ul>);
@@ -455,9 +455,9 @@ export function SimulationQuantiteMatiere() {
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>N = n × N<sub>A</sub>, avec N<sub>A</sub> = 6,02 × 10²³ mol⁻¹</li>
         <li>masse molaire d’une molécule : somme des masses molaires des atomes, chacune multipliée par son indice</li>
-        <li>solide ou liquide pesé : n = m / M (m en g, M en g/mol)</li>
-        <li>gaz : n = V / V<sub>m</sub> (V<sub>m</sub> en L/mol, à donner pour une température et une pression)</li>
-        <li>liquide en volume : n = ρ·V / M</li>
+        <li>solide ou liquide pesé : n = {avecIndices('frac(m|M)')} (m en g, M en g/mol)</li>
+        <li>gaz : n = {avecIndices('frac(V|V_m)')} (V<sub>m</sub> en L/mol, à donner pour une température et une pression)</li>
+        <li>liquide en volume : n = ρ·{avecIndices('frac(V|M)')}</li>
         <li>mélange : un calcul par constituant ; plus de masse ne veut pas dire plus de moles</li>
       </ul>
     </ARetenir>);

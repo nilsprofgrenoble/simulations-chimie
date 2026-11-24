@@ -213,8 +213,8 @@ function VoletDefi({ defi, setDefi, changerType }) {
         {q('Le mobile qui subit la plus grande variation de vitesse est…')}{choix('q', [[1, 'le mobile 1'], [2, 'le mobile 2']])}
       </>}
       <IndiceDefi cache={reussi}>{defi.type === 'force' ? <>ΣF a la direction et le sens de Δv, et ΣF ≈ m × Δv / Δt. Identifie d’abord les forces qui s’exercent sur le système.</>
-        : defi.type === 'delta' ? <>Δv a la direction et le sens de ΣF, et ‖Δv‖ ≈ ΣF × Δt / m.</>
-        : <>Δv / Δt = ΣF / m : compare ce que devient Δv quand la masse change, la force restant la même ou non selon la situation.</>}</IndiceDefi>
+        : defi.type === 'delta' ? <>Δv a la direction et le sens de ΣF, et ‖Δv‖ ≈ {avecIndices('frac(ΣF × Δt|m)')}.</>
+        : <>{avecIndices('frac(Δv|Δt)')} = {avecIndices('frac(ΣF|m)')} : compare ce que devient Δv quand la masse change, la force restant la même ou non selon la situation.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -278,7 +278,7 @@ export function SimulationMouvementSysteme() {
   const TOUTES = [
     { id: 'intro', titre: 'Une chute filmée', onglet: 'chrono', focus: ['scene'],
       texte: <>Une bille de 100 g est lâchée sans vitesse initiale. On la photographie toutes les 0,12 s (chronophotographie). Les croix sont ses positions A_[0], A_[1], …
-        Les flèches <strong style={{ color: VERT }}>vertes</strong> sont les vecteurs vitesse : v_[i] ≈ A_[i−1]A_[i+1] / (2τ).</>,
+        Les flèches <strong style={{ color: VERT }}>vertes</strong> sont les vecteurs vitesse : v_[i] ≈ A_[i−1]{avecIndices('frac(A_[i+1]|2τ)')}.</>,
       tache: { type: 'qcm', q: 'Au cours de la chute, le vecteur vitesse…', options: ['varie : sa norme augmente (sa direction reste verticale)', 'reste constant', 'change de direction'], bonne: 0,
         expl: 'Les flèches s’allongent d’une image à l’autre : la vitesse augmente. Le vecteur vitesse varie donc, alors que la direction ne change pas.', indice: "Compare le vecteur vitesse à différents instants de la chute : que deviennent sa norme et sa direction ?" } },
     { id: 'constr', titre: 'Construire Δv', onglet: 'chrono', focus: ['reglages', 'scene'],
@@ -307,16 +307,16 @@ export function SimulationMouvementSysteme() {
         expl: 'La bille n’est soumise qu’à son poids. Le vecteur Δv a le même direction et le même sens que cette force.', indice: "La variation de vitesse est due aux forces. Quelle(s) force(s) s’exerce(nt) sur la bille en chute libre ?" } },
     { id: 'loi', titre: 'La relation ΣF ≈ m·Δv/Δt', onglet: 'chrono', focus: ['bilan'],
       texte: <>Le tableau donne la masse (m = 0,100 kg), ‖Δv‖ (≈ 2,35 m/s, trouvé à l’étape précédente) et Δt = 2τ = 0,24 s. Calculez m·‖Δv‖/Δt, puis comparez avec le poids de la bille.</>,
-      tache: { type: 'num', q: 'm·‖Δv‖ / Δt (en N)', unite: 'N', vrai: 0.1 * G0, tol: 0.03, affiche: v => vir(v.toFixed(2)), cs: 2,
-        pieges: [[0.1 * 2 * G0 * 0.12, 'Vous avez oublié de diviser par Δt = 2τ = 0,24 s : ΣF ≈ m·‖Δv‖ / Δt.'],
+      tache: { type: 'num', q: 'm·frac(‖Δv‖|Δt) (en N)', unite: 'N', vrai: 0.1 * G0, tol: 0.03, affiche: v => vir(v.toFixed(2)), cs: 2,
+        pieges: [[0.1 * 2 * G0 * 0.12, 'Vous avez oublié de diviser par Δt = 2τ = 0,24 s : ΣF ≈ m·frac(‖Δv‖|Δt).'],
           [0.1 * 2 * G0 * 0.12 / 0.12, 'Δt n’est pas τ = 0,12 s : c’est la durée entre v_[i−1] et v_[i+1], soit 2τ = 0,24 s.'],
           [G0, 'Vous avez oublié de multiplier par la masse m = 0,100 kg : 9,8 est une accélération (en m/s²), pas une force en N.']],
         calcul: () => [
-          'Relation : ΣF ≈ m·‖Δv‖ / Δt (système assimilé à un point, frottements de l’air négligés).',
+          'Relation : ΣF ≈ m·frac(‖Δv‖|Δt) (système assimilé à un point, frottements de l’air négligés).',
           'Données : m = 0,100 kg ; ‖Δv‖ = 2,35 m/s (étape précédente) ; Δt = 2τ = 0,24 s.',
           `m·‖Δv‖ = 0,100 × ${vir((2 * G0 * 0.12).toFixed(2))} = ${vir((0.2 * G0 * 0.12).toFixed(3))}.`,
-          `m·‖Δv‖ / Δt = ${vir((0.2 * G0 * 0.12).toFixed(3))} / 0,24 = ${vir((0.1 * G0).toFixed(2))} N.`],
-        expl: 'On trouve 0,98 N, soit exactement le poids P = m·g = 0,100 × 9,8. Pour un système de masse m : ΣF ≈ m·Δv/Δt.', indice: "Calcule m × ‖Δv‖ / Δt avec m en kg, Δv en m/s et Δt en s : le résultat est en newtons. Compare-le au poids m × g." } },
+          `m·frac(‖Δv‖|Δt) = frac(${vir((0.2 * G0 * 0.12).toFixed(3))}|0,24) = ${vir((0.1 * G0).toFixed(2))} N.`],
+        expl: 'On trouve 0,98 N, soit exactement le poids P = m·g = 0,100 × 9,8. Pour un système de masse m : ΣF ≈ m·Δv/Δt.', indice: "Calcule m × frac(‖Δv‖|Δt) avec m en kg, Δv en m/s et Δt en s : le résultat est en newtons. Compare-le au poids m × g." } },
     { id: 'masseC', titre: 'Et si la bille était plus lourde ?', onglet: 'chrono', focus: ['reglages', 'scene'],
       retenirTitre: 'À RETENIR : Δv A LA DIRECTION DE LA FORCE', retenir: <FicheDvForce/>,
       texte: <>Avec le curseur de masse, prenez une bille de 0,3 kg ou plus et regardez ce que devient Δv.</>,
@@ -324,7 +324,7 @@ export function SimulationMouvementSysteme() {
     { id: 'masseCq', titre: 'Masse et chute libre', onglet: 'chrono', focus: ['bilan'],
       texte: <>Comparez ‖Δv‖ et m‖Δv‖/Δt : le poids a changé.</>,
       tache: { type: 'qcm', q: 'Quand la masse change, en chute libre, ‖Δv‖…', options: ['ne change pas : le poids augmente comme la masse, donc ΣF/m reste égal à g', 'augmente avec la masse', 'diminue avec la masse'], bonne: 0,
-        expl: 'P = m·g et Δv ≈ (ΣF/m)·Δt = g·Δt : la masse se simplifie. Tous les corps tombent pareil en l’absence de frottements.', indice: "Δv / Δt = ΣF / m. En chute libre, la seule force est le poids P = m × g : que devient ΣF / m quand m change ?" } },
+        expl: 'P = m·g et Δv ≈ (ΣF/m)·Δt = g·Δt : la masse se simplifie. Tous les corps tombent pareil en l’absence de frottements.', indice: "frac(Δv|Δt) = frac(ΣF|m). En chute libre, la seule force est le poids P = m × g : que devient frac(ΣF|m) quand m change ?" } },
     { id: 'vert', titre: 'Lancer vers le haut', onglet: 'chrono', focus: ['reglages', 'scene'],
       texte: <>La bille est maintenant lancée vers le haut à 5 m/s. Choisissez « Lancer vertical » et affichez les flèches Δv (case « variation Δv »).</>,
       tache: { type: 'action', ok: okVert, label: 'Lancer vertical, avec Δv', faire: () => setSc(s => ({ ...s, ...etatInit('vertical'), aff: { ...s.aff, dv: true } })), consigne: 'Lancer vertical, flèches Δv affichées' } },
@@ -353,7 +353,7 @@ export function SimulationMouvementSysteme() {
     { id: 'masseMq', titre: 'Plus léger : plus de variation', onglet: 'chrono', focus: ['bilan'],
       texte: <>Comparez avec le cas 0,5 kg (‖Δv‖ ≈ 0,20 m/s au point A5 pour k = 1).</>,
       tache: { type: 'qcm', q: 'À force et durée identiques, un mobile 2,5 fois plus léger subit une variation de vitesse…', options: ['2,5 fois plus grande', '2,5 fois plus petite', 'identique'], bonne: 0,
-        expl: 'Δv ≈ ΣF·Δt / m : Δv est inversement proportionnel à la masse. Le plus léger (le moins inerte) varie le plus.', indice: "Δv / Δt = ΣF / m. À force identique, comment varie Δv quand la masse diminue ?" } },
+        expl: 'Δv ≈ frac(ΣF·Δt|m) : Δv est inversement proportionnel à la masse. Le plus léger (le moins inerte) varie le plus.', indice: "frac(Δv|Δt) = frac(ΣF|m). À force identique, comment varie Δv quand la masse diminue ?" } },
     { id: 'plan', titre: 'Deux forces non colinéaires', onglet: 'chrono', focus: ['reglages', 'scene'],
       retenirTitre: 'À RETENIR : LE RÔLE DE LA MASSE', retenir: <FicheMasse/>,
       texte: <>Un solide glisse sur un plan incliné sans frottement. Il subit son poids P et la réaction R du plan. Choisissez « Plan incliné » et affichez les <strong>forces</strong> (cases « forces » et « variation Δv »).</>,
@@ -361,7 +361,7 @@ export function SimulationMouvementSysteme() {
     { id: 'planq', titre: 'Somme vectorielle', onglet: 'chrono', focus: ['scene', 'bilan'],
       texte: <>P et R ne sont pas colinéaires. La flèche noire est leur somme ΣF.</>,
       tache: { type: 'qcm', q: 'La somme ΣF et le vecteur Δv sont…', options: ['colinéaires, de même sens, dirigés le long de la pente vers le bas', 'perpendiculaires', 'dirigés comme le poids'], bonne: 0,
-        expl: 'ΣF = P + R est dirigée le long de la pente (norme m·g·sin α). Δv a la même direction et le même sens que ΣF, quelle que soit la façon dont on construit la somme.', indice: "ΣF et Δv ont même direction et même sens (ΣF ≈ m Δv / Δt). Quelle est la direction de ΣF sur un plan incliné ?" } },
+        expl: 'ΣF = P + R est dirigée le long de la pente (norme m·g·sin α). Δv a la même direction et le même sens que ΣF, quelle que soit la façon dont on construit la somme.', indice: "ΣF et Δv ont même direction et même sens (ΣF ≈ m frac(Δv|Δt)). Quelle est la direction de ΣF sur un plan incliné ?" } },
     { id: 'para', titre: 'Le parachutiste', onglet: 'chrono', focus: ['reglages', 'scene'],
       retenirTitre: 'À RETENIR : PLUSIEURS FORCES', retenir: <FichePlusieursForces/>,
       texte: <>Après l’ouverture du parachute, le frottement de l’air dépend de la vitesse. Choisissez « Parachutiste » et affichez les flèches Δv.</>,
@@ -369,7 +369,7 @@ export function SimulationMouvementSysteme() {
     { id: 'paraq', titre: 'Vitesse limite', onglet: 'chrono', focus: ['scene'],
       texte: <>Les flèches Δv rétrécissent, jusqu’à presque disparaître.</>,
       tache: { type: 'qcm', q: 'Quand Δv devient presque nul, la somme des forces…', options: ['est presque nulle : le frottement compense le poids, la vitesse devient constante', 'vaut le poids', 'est dirigée vers le haut'], bonne: 0,
-        expl: 'La force de frottement augmente avec la vitesse jusqu’à compenser le poids : ΣF = 0, donc Δv = 0. Le mouvement devient rectiligne et uniforme (vitesse limite).', indice: "D’après ΣF ≈ m × Δv / Δt, que vaut la somme des forces quand Δv est presque nul ?" } },
+        expl: 'La force de frottement augmente avec la vitesse jusqu’à compenser le poids : ΣF = 0, donc Δv = 0. Le mouvement devient rectiligne et uniforme (vitesse limite).', indice: "D’après ΣF ≈ frac(m × Δv|Δt), que vaut la somme des forces quand Δv est presque nul ?" } },
     { id: 'lune', titre: 'La Lune autour de la Terre', onglet: 'chrono', focus: ['reglages', 'scene'],
       texte: <>La Lune se déplace d’environ une position par jour. Choisissez « La Lune autour de la Terre » et terminez la construction de Δv (3 étapes).</>,
       tache: { type: 'action', ok: okLune, label: 'Construire Δv pour la Lune', faire: () => setSc(s => ({ ...s, ...etatInit('lune'), etape: 3, aff: { ...s.aff, dv: true } })), consigne: 'Lune : construction de Δv terminée' } },
@@ -379,7 +379,7 @@ export function SimulationMouvementSysteme() {
         expl: 'La direction de v change : Δv pointe vers l’intérieur de l’orbite, donc vers la Terre. C’est bien la direction de la force de gravitation exercée par la Terre.', indice: "Δv a la direction et le sens de la somme des forces. Quelle force s’exerce sur le système en orbite, et vers où est-elle dirigée ?" } },
     { id: 'lunef', titre: 'La force exercée par la Terre', onglet: 'chrono', focus: ['bilan'],
       texte: <>La masse de la Lune est m = 7,35×10²² kg. Calculez m·‖Δv‖/Δt avec les valeurs du tableau, au point A5 (attention aux unités : km/s et jours ; passez en m/s et en s).</>,
-      tache: { type: 'num', q: 'm·‖Δv‖ / Δt (en N)', unite: 'N', vrai: FCIN_LUNE, tol: 0.04, affiche: v => sci(v, 2), cs: 2,
+      tache: { type: 'num', q: 'm·frac(‖Δv‖|Δt) (en N)', unite: 'N', vrai: FCIN_LUNE, tol: 0.04, affiche: v => sci(v, 2), cs: 2,
         bloque: okLune ? null : 'Faites d’abord la construction pour la Lune.',
         pieges: (() => { const S = SCEN.lune.build({}), d = dvEn(analyser(S, 0), S, 5, 1);
           return [[S.m * hyp(d.x, d.y) / 2, 'Convertissez la durée en secondes : Δt = 2 jours = 2 × 86 400 s = 172 800 s.'],
@@ -388,19 +388,19 @@ export function SimulationMouvementSysteme() {
         calcul: () => {
           const S = SCEN.lune.build({}), d = dvEn(analyser(S, 0), S, 5, 1), n = hyp(d.x, d.y);
           return [
-            'Relation : ΣF ≈ m·‖Δv‖ / Δt (Lune assimilée à un point, orbite circulaire dans le référentiel géocentrique supposé galiléen). On se place au point A5 avec k = 1.',
+            'Relation : ΣF ≈ m·frac(‖Δv‖|Δt) (Lune assimilée à un point, orbite circulaire dans le référentiel géocentrique supposé galiléen). On se place au point A5 avec k = 1.',
             `Conversions : ‖Δv‖ = ${fmt(n / 1000, 3)} km/s = ${fmt(n, 0)} m/s ; Δt = 2τ = 2 jours = 2 × 86 400 = ${fmt(d.dt, 0)} s.`,
             `m·‖Δv‖ = 7,35 × 10²² × ${fmt(n, 0)} = ${sci(S.m * n, 3)}.`,
-            `m·‖Δv‖ / Δt = ${sci(S.m * n, 3)} / ${fmt(d.dt, 0)} = ${sci(FCIN_LUNE, 3)} N, soit ${sci(FCIN_LUNE, 2)} N.`];
+            `m·frac(‖Δv‖|Δt) = frac(${sci(S.m * n, 3)}|${fmt(d.dt, 0)}) = ${sci(FCIN_LUNE, 3)} N, soit ${sci(FCIN_LUNE, 2)} N.`];
         },
-        expl: `On trouve ≈ 2,0×10²⁰ N. La loi de gravitation donne G·m_L·m_T/R² = ${sci(F_GRAV_LUNE, 2)} N : les deux méthodes sont d’accord, ce qui confirme la relation ΣF ≈ m·Δv/Δt.`, indice: "Calcule m × ‖Δv‖ / Δt avec la masse en kg, Δv en m/s et Δt en s. Attention aux puissances de dix." } },
+        expl: `On trouve ≈ 2,0×10²⁰ N. La loi de gravitation donne G·m_L·m_T/R² = ${sci(F_GRAV_LUNE, 2)} N : les deux méthodes sont d’accord, ce qui confirme la relation ΣF ≈ m·Δv/Δt.`, indice: "Calcule m × frac(‖Δv‖|Δt) avec la masse en kg, Δv en m/s et Δt en s. Attention aux puissances de dix." } },
     { id: 'dt', titre: 'Et si Δt est grand ?', onglet: 'chrono', focus: ['reglages', 'bilan'],
       texte: <>On reprend la Lune. Avec « Écart entre les dates », prenez k = 3 (Δt = 6 jours) et regardez l’écart relatif entre m·Δv/Δt et ΣF dans le tableau.</>,
       tache: { type: 'action', ok: okLuneK, label: 'Lune avec k = 3', faire: () => setSc(s => ({ ...s, ...etatInit('lune'), k: 3, i: 5 })), consigne: 'Lune, k = 3' } },
     { id: 'dtq', titre: 'Plus Δt est petit, mieux c’est', onglet: 'chrono', focus: ['bilan'],
       texte: <>L’écart a augmenté (autour de 8 %).</>,
       tache: { type: 'qcm', q: 'La relation ΣF ≈ m·Δv/Δt est d’autant mieux vérifiée que…', options: ['Δt est petit', 'Δt est grand', 'la masse est grande'], bonne: 0,
-        expl: 'Sur un intervalle long, la force a le temps de changer de direction : on moyenne. Pour Δt infiniment petit, la relation devient exacte : c’est la deuxième loi de Newton.', indice: "Δv / Δt est une variation moyenne entre deux instants. Pour approcher la variation à un instant précis, que faut-il faire de l’intervalle Δt ?" } },
+        expl: 'Sur un intervalle long, la force a le temps de changer de direction : on moyenne. Pour Δt infiniment petit, la relation devient exacte : c’est la deuxième loi de Newton.', indice: "frac(Δv|Δt) est une variation moyenne entre deux instants. Pour approcher la variation à un instant précis, que faut-il faire de l’intervalle Δt ?" } },
     { id: 'euler', titre: 'Prédire le mouvement', onglet: 'euler', focus: ['reglages', 'scene'],
       retenirTitre: 'À RETENIR : PLUS Δt EST PETIT, MIEUX C’EST', retenir: <FichePasDt/>,
       texte: <>Au lieu d’analyser un mouvement, on peut le <strong>calculer</strong> : v(t+Δt) = v(t) + (ΣF/m)·Δt, puis la position avec v. C’est la méthode d’Euler. Dans l’onglet « Prédire », choisissez la Lune et un pas de calcul très petit (0,05 jour ou moins).</>,
@@ -642,7 +642,7 @@ export function SimulationMouvementSysteme() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
       <li><strong>Point matériel</strong> : chaque système est réduit à son centre d’inertie, dont on étudie le mouvement.</li>
       <li><strong>Positions fournies par un modèle</strong> (chute libre, parabole, orbite circulaire…) : ce n’est pas une mesure. Ce choix permet de voir que Δv est constant (ou varie régulièrement) sans être gêné par les erreurs. Une vraie vidéo pointée est bruitée : le curseur « bruit de pointage » le montre, et Δv, qui est une double différence, y est très sensible.</li>
-      <li><strong>Vitesse</strong> : v_[i] ≈ A_[i−1]A_[i+1] / (2τ) est une vitesse <em>moyenne</em> sur 2τ, pas la vitesse instantanée (valable si τ est petit devant la durée de variation).</li>
+      <li><strong>Vitesse</strong> : v_[i] ≈ A_[i−1]A_{avecIndices('frac([i+1]|2τ)')} est une vitesse <em>moyenne</em> sur 2τ, pas la vitesse instantanée (valable si τ est petit devant la durée de variation).</li>
       <li><strong>Relation approchée</strong> : ΣF ≈ m·Δv/Δt avec Δt = 2k·τ. Elle est exacte quand Δt tend vers 0 (deuxième loi de Newton) ; l’écart croît avec Δt si la force varie.</li>
       <li><strong>Référentiel galiléen</strong> : le référentiel terrestre pour les mouvements près du sol ; le référentiel géocentrique pour la Lune. On suppose que ces référentiels sont galiléens (approximation).</li>
       <li><strong>Pesanteur</strong> : g = 9,8 N/kg, uniforme ; frottements de l’air négligés, sauf pour le parachutiste.</li>

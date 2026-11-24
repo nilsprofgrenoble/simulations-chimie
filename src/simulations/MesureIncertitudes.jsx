@@ -1,7 +1,7 @@
 import { useState, useRef, useLayoutEffect } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./mesureModele";
 import { QCM } from "./mesureQcm";
@@ -103,7 +103,7 @@ export function SimulationMesureIncertitudes() {
       tache: { type: 'num', q: 'Valeur moyenne de la durée de 10 oscillations', carnet: 'Moyenne des 5 mesures', unite: 's', vrai: MOY5, tol: 0.0005, affiche: v => M.fmt(v, 2), cs: 4,
         calcul: () => ['Somme : 14,28 + 14,11 + 14,35 + 14,19 + 14,32 = 71,25 s.', 'Moyenne : 71,25 ÷ 5 = 14,25 s (on garde le centième, comme les mesures ; 14,3 s serait un arrondi trop tôt).'],
         pieges: [[71.25, 'C’est la somme des mesures : il faut la diviser par le nombre de mesures N = 5.'], [14.28, 'Ce n’est que la première mesure : la moyenne utilise les cinq valeurs.']],
-        expl: 'x̄ = (14,28 + 14,11 + 14,35 + 14,19 + 14,32) / 5 = 71,25 / 5 = 14,25 s.', indice: 'Additionnez les 5 valeurs, puis divisez par le nombre de valeurs.' } },
+        expl: 'x̄ = frac(14,28 + 14,11 + 14,35 + 14,19 + 14,32|5) = frac(71,25|5) = 14,25 s.', indice: 'Additionnez les 5 valeurs, puis divisez par le nombre de valeurs.' } },
     { id: 'disp', titre: 'Deux séries à comparer', focus: ['scene'],
       retenirTitre: 'À RETENIR : HISTOGRAMME ET MOYENNE',
       retenir: <Repliable key="cA">
@@ -131,13 +131,13 @@ export function SimulationMesureIncertitudes() {
     { id: 'typeA', titre: 'Une incertitude à calculer', focus: ['scene'],
       texte: <>Pour les 5 mesures de l’étape 3, de moyenne <strong>x̄ = 14,25{NB}s</strong>, la calculatrice donne l’écart-type expérimental <strong>s = 0,099{NB}s</strong>. L’<strong>incertitude-type</strong> <em>u</em> mesure la dispersion des valeurs que l’on peut raisonnablement attribuer à la grandeur : plus u est petite, mieux la grandeur est connue. Quand on évalue u à partir d’une série de N mesures indépendantes (<strong>type A</strong>), on utilise :{FUA}On suppose la dispersion à peu près symétrique autour de la moyenne. Calculez u pour N = 5.</>,
       tache: { type: 'num', q: 'Incertitude-type de type A de la moyenne', carnet: 'Incertitude-type u (type A)', unite: 's', vrai: UA5, tol: 0.03, affiche: v => M.fmt(v, 3), cs: 2,
-        calcul: () => ['N = 5, donc √N = √5 ≈ 2,236.', 'u = s / √N = 0,099 s ÷ 2,236 = 0,044 s (2 chiffres significatifs, comme s).'],
-        pieges: [[S5 / 5, 'On divise par la racine carrée de N, pas par N : u = s / √N.'], [S5 * Math.sqrt(5), 'On divise s par √N, on ne le multiplie pas : u est plus petite que s.'], [S5, 'u n’est pas égale à s : s décrit UNE mesure, u décrit la moyenne de N mesures.']],
-        expl: 'u = s / √N = 0,099 / √5 = 0,044 s : la moyenne est mieux connue qu’une mesure isolée (s = 0,099 s).', indice: 'u = s / √N : calculez d’abord √5 à la calculatrice, puis divisez s par ce nombre.' } },
+        calcul: () => ['N = 5, donc √N = √5 ≈ 2,236.', 'u = frac(s|√N) = 0,099 s ÷ 2,236 = 0,044 s (2 chiffres significatifs, comme s).'],
+        pieges: [[S5 / 5, 'On divise par la racine carrée de N, pas par N : u = frac(s|√N).'], [S5 * Math.sqrt(5), 'On divise s par √N, on ne le multiplie pas : u est plus petite que s.'], [S5, 'u n’est pas égale à s : s décrit UNE mesure, u décrit la moyenne de N mesures.']],
+        expl: 'u = frac(s|√N) = frac(0,099|√5) = 0,044 s : la moyenne est mieux connue qu’une mesure isolée (s = 0,099 s).', indice: 'u = frac(s|√N) : calculez d’abord √5 à la calculatrice, puis divisez s par ce nombre.' } },
     { id: 'effetN', titre: 'Faire plus de mesures', focus: ['scene'],
-      texte: <>Avec le même chronomètre et le même opérateur, s reste voisin de <strong>0,10{NB}s</strong>, quel que soit le nombre de mesures. Un élève passe de <strong>N = 4</strong> à <strong>N = 16</strong> mesures. Dans u = s / √N, que devient u ?</>,
+      texte: <>Avec le même chronomètre et le même opérateur, s reste voisin de <strong>0,10{NB}s</strong>, quel que soit le nombre de mesures. Un élève passe de <strong>N = 4</strong> à <strong>N = 16</strong> mesures. Dans u = {avecIndices('frac(s|√N)')}, que devient u ?</>,
       tache: { type: 'num', q: 'Par quel nombre u est-elle divisée ?', carnet: false, unite: '(sans unité)', vrai: 2, tol: 0, affiche: v => String(v),
-        calcul: () => ['N = 4 : u = s / √4 = s / 2. N = 16 : u = s / √16 = s / 4.', 'u passe de s / 2 à s / 4 : elle est divisée par 2 (et non par 4).'],
+        calcul: () => ['N = 4 : u = frac(s|√4) = frac(s|2). N = 16 : u = frac(s|√16) = frac(s|4).', 'u passe de frac(s|2) à frac(s|4) : elle est divisée par 2 (et non par 4).'],
         pieges: [[4, 'Le nombre de mesures est multiplié par 4, mais u est divisée par √4 : ce n’est pas 4.'], [0.5, 'Ce nombre est l’inverse : u est divisée par 2, c’est-à-dire multipliée par 0,5.']],
         expl: 'u est divisée par √(16/4) = √4 = 2 : pour diviser u par 10, il faudrait 100 fois plus de mesures.', indice: 'Calculez u pour N = 4 puis pour N = 16 en fonction de s, puis comparez les deux résultats.' } },
     { id: 'syst', titre: 'Un instrument mal réglé', focus: ['scene'],
@@ -166,24 +166,24 @@ export function SimulationMesureIncertitudes() {
       tache: { type: 'num', q: 'Demi-largeur a de l’intervalle', carnet: 'Demi-largeur a de l’intervalle', unite: 'mm', vrai: A_FOC, tol: 0, affiche: v => M.fmt(v, 1),
         calcul: () => ['Largeur de l’intervalle : 159 − 147 = 12 mm.', 'Demi-largeur : a = 12 ÷ 2 = 6,0 mm.'],
         pieges: [[12, 'C’est la largeur totale de l’intervalle : la demi-largeur est la moitié.'], [153, 'C’est le milieu de l’intervalle, pas sa demi-largeur.']],
-        expl: 'a = (f′max − f′min) / 2 = (159 − 147) / 2 = 6,0 mm.', indice: 'La demi-largeur est la moitié de la différence entre la valeur la plus grande et la plus petite.' } },
+        expl: 'a = frac(f′max − f′min|2) = frac(159 − 147|2) = 6,0 mm.', indice: 'La demi-largeur est la moitié de la différence entre la valeur la plus grande et la plus petite.' } },
     { id: 'uB', titre: 'Passer de l’intervalle à l’incertitude', focus: ['scene'],
       texte: <>La demi-largeur est <strong>a = 6,0{NB}mm</strong>. Il n’y a pas de série de mesures ici : on utilise ce que l’on sait de l’instrument. C’est l’évaluation de <strong>type B</strong>. Pour une valeur possible dans tout l’intervalle [x − a ; x + a], avec la même probabilité partout (loi uniforme), la formule suivante est donnée :{FUB}Calculez u.</>,
       tache: { type: 'num', q: 'Incertitude-type de type B', carnet: 'Incertitude-type u (type B)', unite: 'mm', vrai: UB_FOC, tol: 0.02, affiche: v => M.fmt(v, 2), cs: 3,
-        calcul: () => ['√3 ≈ 1,732.', 'u = a / √3 = 6,0 mm ÷ 1,732 = 3,46 mm.'],
-        pieges: [[2, 'On divise par √3 ≈ 1,73, pas par 3 : u = a / √3.'], [A_FOC * Math.sqrt(3), 'On divise a par √3, on ne le multiplie pas : u est plus petite que a.'], [6, 'u n’est pas égale à a : il faut diviser a par √3.']],
-        expl: 'u = a / √3 = 6,0 / 1,732 = 3,46 mm.', indice: 'u = a / √3 : calculez √3 à la calculatrice, puis divisez 6,0 mm par ce nombre.' } },
+        calcul: () => ['√3 ≈ 1,732.', 'u = frac(a|√3) = 6,0 mm ÷ 1,732 = 3,46 mm.'],
+        pieges: [[2, 'On divise par √3 ≈ 1,73, pas par 3 : u = frac(a|√3).'], [A_FOC * Math.sqrt(3), 'On divise a par √3, on ne le multiplie pas : u est plus petite que a.'], [6, 'u n’est pas égale à a : il faut diviser a par √3.']],
+        expl: 'u = frac(a|√3) = frac(6,0|1,732) = 3,46 mm.', indice: 'u = frac(a|√3) : calculez √3 à la calculatrice, puis divisez 6,0 mm par ce nombre.' } },
     { id: 'ecrire', titre: 'Écrire le résultat', focus: ['scene'],
       retenirTitre: 'À RETENIR : INCERTITUDE DE TYPE B',
       retenir: <Repliable key="cD">
         <SvgCarteTypeB/>
         {FUB}
         <ul style={liste}>
-          <li><strong>Pas de série ? On utilise l’instrument (type B).</strong> Intervalle ± a et loi uniforme : u = a / √3, donc u est plus petite que a.</li>
+          <li><strong>Pas de série ? On utilise l’instrument (type B).</strong> Intervalle ± a et loi uniforme : u = {avecIndices('frac(a|√3)')}, donc u est plus petite que a.</li>
           <li>Exemple de la simulation : l’image est nette de 147 mm à 159 mm, donc a = 6,0 mm et u = 3,46 mm.</li>
-          <li><strong>Piège</strong> : avec la loi uniforme, u = a / √3 et non u = a. L’hypothèse « toutes les valeurs de l’intervalle sont équiprobables » est à énoncer.</li>
+          <li><strong>Piège</strong> : avec la loi uniforme, u = {avecIndices('frac(a|√3)')} et non u = a. L’hypothèse « toutes les valeurs de l’intervalle sont équiprobables » est à énoncer.</li>
         </ul></Repliable>,
-      texte: <>La valeur estimée de f′ est le milieu de l’intervalle : <strong>(147 + 159) / 2 = 153{NB}mm</strong>, avec <strong>u = 3,46{NB}mm</strong>. Règle de la simulation : l’incertitude s’écrit avec <strong>1 chiffre significatif</strong> (2 si son premier chiffre est 1), <strong>arrondie par excès</strong> ; la valeur estimée s’arrondit à la même décimale.</>,
+      texte: <>La valeur estimée de f′ est le milieu de l’intervalle : <strong>{avecIndices('frac(147 + 159|2)')} = 153{NB}mm</strong>, avec <strong>u = 3,46{NB}mm</strong>. Règle de la simulation : l’incertitude s’écrit avec <strong>1 chiffre significatif</strong> (2 si son premier chiffre est 1), <strong>arrondie par excès</strong> ; la valeur estimée s’arrondit à la même décimale.</>,
       tache: { type: 'qcm', ...QCM.ecrire } },
     { id: 'comparer', titre: 'Comparer à la référence', focus: ['scene'],
       texte: <>La lentille porte la valeur du fabricant <strong>f′ = 150{NB}mm</strong>, prise ici comme <strong>valeur de référence</strong> (on néglige son incertitude). La mesure est <strong>f′ = 153 ± 4{NB}mm</strong>. En 1<sup>re</sup>, on compare qualitativement : l’écart entre mesure et référence est-il petit, du même ordre ou très grand devant l’incertitude ?</>,
@@ -234,7 +234,7 @@ export function SimulationMesureIncertitudes() {
       </> : <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.6 }}>On cherche la distance focale d’une lentille convergente. L’image d’un objet très éloigné paraît nette quand l’écran est entre <strong>f′<sub>min</sub> = {defi.min}{NB}mm</strong> et <strong>f′<sub>max</sub> = {defi.max}{NB}mm</strong>. On suppose toutes les positions de cet intervalle équiprobables. Calculez l’incertitude-type de type B <em>u</em> sur f′, en mm, avec 3{NB}chiffres significatifs (marge acceptée : ± 3{NB}%).</div>
         {champ('Incertitude-type u', 'mm')}
-        <IndiceDefi cache={false}>La demi-largeur est a = (f′<sub>max</sub> − f′<sub>min</sub>) / 2. Puis, pour une loi uniforme : u = a / √3.</IndiceDefi>
+        <IndiceDefi cache={false}>La demi-largeur est a = {avecIndices('frac(f′_max − f′_min|2)')}. Puis, pour une loi uniforme : u = a / √3.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="me-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -371,7 +371,7 @@ export function SimulationMesureIncertitudes() {
   const retenirExplore = (
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-        <li>moyenne : x̄ = (x₁ + … + x<sub>N</sub>) / N ; écart-type expérimental s : dispersion d’<strong>une</strong> mesure</li>
+        <li>moyenne : x̄ = {avecIndices('frac(x₁ + … + x_N|N)')} ; écart-type expérimental s : dispersion d’<strong>une</strong> mesure</li>
         <li>type A : u = s / √N (N mesures indépendantes) ; 4 fois plus de mesures, u divisée par 2</li>
         <li>type B : u = a / √3 (loi uniforme sur ± a) pour une mesure unique ou un intervalle connu</li>
         <li>résultat : x = x̄ ± u, u sur 1 chiffre significatif (2 si le premier est 1) par excès, valeur au même rang</li>

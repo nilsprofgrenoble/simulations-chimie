@@ -262,7 +262,7 @@ function Calculs({ p, sol, chaud }) {
           {chaud === 'vapeur' && <> Débit de vapeur condensée : Q<Sub c="m,vap"/> = P / L<Sub c="v"/> = {nf(sol.PF)} / 2 257 000 = <strong>{nf(sol.PF / LV_100)} kg·s⁻¹</strong> (L<Sub c="v"/> = 2 257 kJ·kg⁻¹ à 100 °C).</>}</div>}
       <div style={ligne}><strong>Surface d’échange</strong> : S = π · D · L = π × {nf(p.D / 1000)} × {nf(p.L)} = <strong>{nf(sol.S)} m²</strong></div>
       <div style={ligne}><strong>Écarts aux extrémités</strong> : à gauche ΔT<Sub c="1"/> = {co ? <>T<Sub c="CE"/> − T<Sub c="FE"/></> : <>T<Sub c="CE"/> − T<Sub c="FS"/></>} = <strong>{t1(sol.dT1)} °C</strong> ; à droite ΔT<Sub c="2"/> = {co ? <>T<Sub c="CS"/> − T<Sub c="FS"/></> : <>T<Sub c="CS"/> − T<Sub c="FE"/></>} = <strong>{t1(sol.dT2)} °C</strong></div>
-      <div style={ligne}><strong>Écart moyen</strong> : ΔT<Sub c="m"/> = {avecIndices('frac(ΔT<Sub c="1"/> − ΔT<Sub c="2"/>|ln)')}(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>) = <strong>{nf(sol.dTm)} °C</strong>
+      <div style={ligne}><strong>Écart moyen</strong> : ΔT<Sub c="m"/> = {avecIndices('frac(ΔT_1 − ΔT_2|ln)')}(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>) = <strong>{nf(sol.dTm)} °C</strong>
         <span style={{ color: KIT.txt2 }}> (moyenne arithmétique, pour comparer : {nf((sol.dT1 + sol.dT2) / 2)} °C)</span></div>
       <div style={ligne}><strong>Puissance transférée</strong> : P = U · S · ΔT<Sub c="m"/> = {p.U} × {nf(sol.S)} × {nf(sol.dTm)} = <strong>{nf(P)} W</strong>
         <span style={{ color: '#15803d' }}> ✓ égale à P<Sub c="F"/> (pas de pertes dans le modèle)</span></div>
@@ -646,7 +646,7 @@ export function SimulationEchangeur() {
             La puissance thermique à transférer est <strong>P = {nf(P / 1000)} kW</strong> et le coefficient global d’échange vaut <strong>U = {p.U} W·m⁻²·K⁻¹</strong>.
           </div>
         )}
-        <div style={{ fontSize: 13, color: KIT.txt2 }}>Données : C<Sub c="eau"/> = 4 180 J·kg⁻¹·K⁻¹ ; 1 L d’eau a une masse de 1,00 kg ; S = π·D·L ; P = U·S·ΔT<Sub c="m"/> ; ΔT<Sub c="m"/> = {avecIndices('frac(ΔT<Sub c="1"/> − ΔT<Sub c="2"/>|ln)')}(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>). Notation possible : 1,2e-3.</div>
+        <div style={{ fontSize: 13, color: KIT.txt2 }}>Données : C<Sub c="eau"/> = 4 180 J·kg⁻¹·K⁻¹ ; 1 L d’eau a une masse de 1,00 kg ; S = π·D·L ; P = U·S·ΔT<Sub c="m"/> ; ΔT<Sub c="m"/> = {avecIndices('frac(ΔT_1 − ΔT_2|ln)')}(ΔT<Sub c="1"/> / ΔT<Sub c="2"/>). Notation possible : 1,2e-3.</div>
         {Q.map((q, k) => {
           const ok = juste(q);
           return (
@@ -693,7 +693,7 @@ export function SimulationEchangeur() {
       <li><strong>U constant</strong> tout le long du tube, et <strong>fixé par l’utilisateur</strong>. En réalité, U dépend du matériau et de l’épaisseur de la paroi, de l’encrassement et des débits (il augmente quand le débit augmente). Dans la simulation, changer un débit ne change pas U : c’est un choix de modèle, pas la réalité. De même, U y est identique à co- et à contre-courant : c’est vrai en première approximation, à débits fixés ; en pratique il peut différer de quelques % (les propriétés de l’eau varient avec la température).</li>
       <li><strong>Eau liquide des deux côtés</strong>, de capacité thermique massique C = 4 180 J·kg⁻¹·K⁻¹ et de masse volumique 1,00 kg·L⁻¹, considérées constantes (valeurs du TP).</li>
       <li><strong>Surface d’échange S = π·D·L</strong> avec D le diamètre du tube intérieur : on néglige l’épaisseur de la paroi (avec le diamètre extérieur, S serait un peu plus grande).</li>
-      <li><strong>Côté chaud à température constante</strong> (option) : bain très bien agité, ou vapeur d’eau qui se condense à 100 °C (sous 1,013 bar) ; dans ce cas, la puissance vient du changement d’état et le débit de vapeur condensée vaut {avecIndices('frac(P|L)')}<Sub c="v"/>, avec L<Sub c="v"/> = 2 257 kJ·kg⁻¹.</li>
+      <li><strong>Côté chaud à température constante</strong> (option) : bain très bien agité, ou vapeur d’eau qui se condense à 100 °C (sous 1,013 bar) ; dans ce cas, la puissance vient du changement d’état et le débit de vapeur condensée vaut {avecIndices('frac(P|L_v)')}, avec L<Sub c="v"/> = 2 257 kJ·kg⁻¹.</li>
       <li><strong>Profils calculés exactement</strong> à partir du bilan d’énergie sur chaque tranche du tube : avec ces hypothèses, ce sont des exponentielles, et P = U·S·ΔT<Sub c="m"/> avec la moyenne logarithmique est exacte (c’est la relation fournie au programme). Les températures affichées sont arrondies au 0,1 °C.</li>
     </ul>
   );

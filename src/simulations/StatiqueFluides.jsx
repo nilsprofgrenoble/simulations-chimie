@@ -177,14 +177,14 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       tache: { type: 'qcm', indice: 'Comparez terme à terme P = a·h + b et P = Patm + ρ·g·h : que multiplie h dans la seconde équation ?', q: 'Que représente la pente a de la droite ?', options: ['ρ × g (masse volumique × intensité de la pesanteur)', 'La pression atmosphérique', 'La profondeur maximale'], bonne: 0,
         expl: 'En identifiant P = a·h + b et P = Patm + ρ·g·h : a = ρ·g (en Pa/m) et b = Patm.' } },
     { id: 'rho', titre: 'Masse volumique du liquide', focus: ['courbe'],
-      texte: <>Avec g = 9,81 m/s², déduisez la masse volumique ρ = a / g à partir de la pente de votre droite{fit1 ? <> (a = {fmt(a1, 0)} Pa/m)</> : null}.</>,
-      tache: { type: 'num', indice: 'La pente vaut a = ρ·g (en Pa/m), donc ρ = a / g avec g = 9,81 m/s².', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: a1 / G, tol: 0.02, affiche: x => fmt(x, 0),
+      texte: <>Avec g = 9,81 m/s², déduisez la masse volumique ρ = {avecIndices('frac(a|g)')} à partir de la pente de votre droite{fit1 ? <> (a = {fmt(a1, 0)} Pa/m)</> : null}.</>,
+      tache: { type: 'num', indice: 'La pente vaut a = ρ·g (en Pa/m), donc ρ = frac(a|g) avec g = 9,81 m/s².', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: a1 / G, tol: 0.02, affiche: x => fmt(x, 0),
         bloque: !(mod === 1 && fit1) ? 'Le modèle linéaire doit être affiché (étape précédente).' : null,
-        calcul: () => ['La pente de la droite vaut a = ρ·g (en Pa/m), donc ρ = a / g.', `a = ${fmt(a1, 0)} Pa/m ; g = 9,81 m/s².`,
-          `ρ = ${fmt(a1, 0)} / 9,81 = ${fmt(a1 / G, 0)} kg/m³ (liquide supposé incompressible, g = 9,81 m/s²).`],
+        calcul: () => ['La pente de la droite vaut a = ρ·g (en Pa/m), donc ρ = frac(a|g).', `a = ${fmt(a1, 0)} Pa/m ; g = 9,81 m/s².`,
+          `ρ = frac(${fmt(a1, 0)}|9,81) = ${fmt(a1 / G, 0)} kg/m³ (liquide supposé incompressible, g = 9,81 m/s²).`],
         pieges: [[a1, 'Vous avez donné la pente a, qui vaut ρ·g. Divisez-la par g = 9,81 m/s² pour obtenir ρ.'],
-          [a1 * G, 'Vous avez multiplié la pente par g au lieu de la diviser : a = ρ·g, donc ρ = a / g.']],
-        expl: `ρ = ${fmt(a1, 0)} / 9,81 ≈ ${fmt(a1 / G, 0)} kg/m³ : on retrouve la masse volumique de l'eau (1 000 kg/m³), à l'arrondi du manomètre près.` } },
+          [a1 * G, 'Vous avez multiplié la pente par g au lieu de la diviser : a = ρ·g, donc ρ = frac(a|g).']],
+        expl: `ρ = frac(${fmt(a1, 0)}|9,81) ≈ ${fmt(a1 / G, 0)} kg/m³ : on retrouve la masse volumique de l'eau (1 000 kg/m³), à l'arrondi du manomètre près.` } },
     { id: 'ordonnee', titre: 'Ordonnée à l’origine', focus: ['courbe'],
       texte: <>La loi de la statique des fluides s’écrit <strong>P = Patm + ρ·g·h</strong>. Elle a la même forme que votre modèle <strong>P = a·h + b</strong>. Comparez b avec la pression atmosphérique que vous avez relevée au début, à l’étape 2 (embout à h = 0 : {P0} hPa).</>,
       tache: { type: 'qcm', indice: 'Dans P = Patm + ρ·g·h, que vaut P quand h = 0 ? C’est la valeur de b dans P = a·h + b.', q: 'Que représente l’ordonnée à l’origine b ?', options: ['La pression atmosphérique (pression à h = 0)', 'La pression au fond de l’éprouvette', 'La masse volumique de l’eau'], bonne: 0,
@@ -213,16 +213,16 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
     { id: 'H', titre: 'En déduire la hauteur d’eau', focus: ['cuve', 'courbe'],
       texte: <>Rappel de vos résultats : modèle <strong>P = {fmt(a1, 0)}·h + {fmt(b1, 0)}</strong> (P en Pa, h en m), et pression lue au fond du récipient : <strong>{PincGuide} hPa</strong>. Avec votre modèle, trouvez la profondeur h correspondant à cette pression : c’est la hauteur d’eau H. Donnez H en centimètres.</>,
       tache: { type: 'num', q: 'Hauteur d’eau H dans le récipient', unite: 'cm', vrai: HfitGuide, tol: 0.03, affiche: x => fmt(x, 0),
-        indice: 'On isole h dans P = a·h + b : h = (P − b) / a. Attention aux unités : P en Pa (1 hPa = 100 Pa), h en m, puis convertir en cm.',
+        indice: 'On isole h dans P = a·h + b : h = frac(P − b|a). Attention aux unités : P en Pa (1 hPa = 100 Pa), h en m, puis convertir en cm.',
         bloque: !(mod === 1 && fit1 && zCm === HC_CM) ? 'Gardez le modèle linéaire et l’embout au fond.' : null,
         calcul: () => [`Conversion de la pression lue : P = ${PincGuide} hPa × 100 = ${fmt(PincGuide * 100, 0)} Pa.`,
-          'On isole h dans P = a·h + b : h = (P − b) / a.',
-          `h = (${fmt(PincGuide * 100, 0)} − ${fmt(b1, 0)}) / ${fmt(a1, 0)} = ${fmt((PincGuide * 100 - b1) / a1, 3)} m.`,
+          'On isole h dans P = a·h + b : h = frac(P − b|a).',
+          `h = frac(${fmt(PincGuide * 100, 0)} − ${fmt(b1, 0)}|${fmt(a1, 0)}) = ${fmt((PincGuide * 100 - b1) / a1, 3)} m.`,
           `Conversion : ${fmt((PincGuide * 100 - b1) / a1, 3)} m × 100 = ${fmt(HfitGuide, 1)} cm, soit H ≈ ${fmt(HfitGuide, 0)} cm (liquide incompressible, modèle linéaire).`],
         pieges: [[HfitGuide / 100, 'Votre résultat semble être en mètres : la question demande des centimètres (× 100).'],
-          [PincGuide * 100 / a1 * 100, 'Vous n’avez pas retranché b (la pression atmosphérique) avant de diviser par a : h = (P − b) / a.'],
+          [PincGuide * 100 / a1 * 100, 'Vous n’avez pas retranché b (la pression atmosphérique) avant de diviser par a : h = frac(P − b|a).'],
           [(PincGuide - b1) / a1 * 100, 'Vous avez mélangé les unités : P doit être en Pa (1 hPa = 100 Pa) pour être comparée à a (Pa/m) et b (Pa).']],
-        expl: `h = (${fmt(PincGuide * 100, 0)} − ${fmt(b1, 0)}) / ${fmt(a1, 0)} ≈ ${fmt(HfitGuide, 1)} cm. Le niveau réel (${fmt(H_GUIDE * 100, 0)} cm) est maintenant révélé sur le schéma : l'écart vient surtout de l'arrondi du manomètre à 1 hPa, soit environ 1 cm d'eau.` } },
+        expl: `h = frac(${fmt(PincGuide * 100, 0)} − ${fmt(b1, 0)}|${fmt(a1, 0)}) ≈ ${fmt(HfitGuide, 1)} cm. Le niveau réel (${fmt(H_GUIDE * 100, 0)} cm) est maintenant révélé sur le schéma : l'écart vient surtout de l'arrondi du manomètre à 1 hPa, soit environ 1 cm d'eau.` } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'],
       retenirTitre: 'De la pression à la hauteur',
       retenir: <><FMethodeH/><Formule><mi>h</mi><mo>=</mo><mfrac><mrow><mi>P</mi><mo>−</mo><mi>b</mi></mrow><mi>a</mi></mfrac></Formule>{puces(<>Embout <strong>au fond</strong> : sa profondeur est la hauteur d’eau H ; ailleurs, h n’est que la profondeur de l’embout.</>)}</>,
@@ -264,11 +264,11 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
       { id: 'p0', q: 'Pression atmosphérique (pression à h = 0)', unite: 'hPa', vrai: L(0), tol: 0.001, aff: fmt(L(0), 0),
         indice: 'À h = 0, l’embout est à la surface : lisez la première valeur du tableau.' },
       { id: 'a', q: 'Pente a de la droite P = f(h)', unite: 'Pa/m', vrai: rh * G, tol: 0.04, aff: `${sci2(rh * G)} (à ±4 % près)`,
-        indice: 'La pente a est le rapport ΔP / Δh entre deux points : convertissez P en Pa (× 100) et h en m avant de diviser.' },
+        indice: 'La pente a est le rapport frac(ΔP|Δh) entre deux points : convertissez P en Pa (× 100) et h en m avant de diviser.' },
       { id: 'rho', q: 'Masse volumique ρ du liquide', unite: 'kg/m³', vrai: rh, tol: 0.05, aff: `${sci2(rh)} (à ±5 % près)`,
-        indice: 'La pente vaut a = ρ·g : ρ = a / g, avec g = 9,81 m/s².' },
+        indice: 'La pente vaut a = ρ·g : ρ = frac(a|g), avec g = 9,81 m/s².' },
       { id: 'H', q: `Un manomètre posé au fond d’un récipient contenant ce liquide indique ${Pf} hPa. Hauteur de liquide H ?`, unite: 'cm', vrai: defi.H, tol: 2 / defi.H, aff: `${fmt(defi.H, 0)} (à ±2 cm près)`,
-        indice: 'Au fond, la profondeur est H : h = (P − Patm) / (ρ·g). Convertissez P et Patm en Pa (× 100), puis le résultat de m en cm.' },
+        indice: 'Au fond, la profondeur est H : h = frac(P − Patm|ρ·g). Convertissez P et Patm en Pa (× 100), puis le résultat de m en cm.' },
       { id: 'pr', q: 'Pression que l’on lirait à 25 cm de profondeur', unite: 'hPa', vrai: defi.patm + rh * G * 0.25 / 100, tol: 0.002, aff: fmt(defi.patm + rh * G * 0.25 / 100, 1),
         indice: 'P = Patm + ρ·g·h avec h = 0,25 m ; ρ·g·h est en Pa : divisez par 100 pour l’avoir en hPa.' },
     ];
@@ -492,7 +492,7 @@ export function SimulationStatiqueFluides({ plotlyReady }) {
             </div>}
             {estimationVisible && (mod === 1 && profEstimee != null ? (
               <div style={{ ...styleBoite, background: 'white', fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
-                Profondeur de l'embout sous la surface, d'après votre droite : h = (P − b) / a = <strong>{fmt(profEstimee, 1)} cm</strong>
+                Profondeur de l'embout sous la surface, d'après votre droite : h = {avecIndices('frac(P − b|a)')} = <strong>{fmt(profEstimee, 1)} cm</strong>
                 <div style={{ fontSize: 12.5, color: TXT2 }}>C'est la hauteur d'eau H seulement si l'embout est au fond.</div>
               </div>
             ) : (
