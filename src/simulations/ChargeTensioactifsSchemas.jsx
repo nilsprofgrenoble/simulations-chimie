@@ -78,27 +78,44 @@ export function SvgTete({ id, pH, titre = true, contre = false }) {
   return base(138, `${e.nom} : ${e.formule} ; à pH ${nf(pH, 1)} : charges + ${nf(c.nPlus)}, charges − ${nf(c.nMoins)}`, <>{entete}{corps}</>);
 }
 
-// ---- courbes : nombre de charges + (bleu) et de charges − (rouge) par molécule, selon le pH ----
-export function SvgCourbes({ id, pH, e: eDirect, etiquette, petit = false, repere = true, legende = true }) {
-  const e = eDirect ?? M.espece(id), W = 300, H = petit ? 138 : 205;
-  const x0 = 36, x1 = 288, yb = petit ? 102 : 156, ht = petit ? 62 : 96;
-  const X = v => x0 + (v / 14) * (x1 - x0), Y = n => yb - n * ht;
-  const pts = M.courbe(e, 0.25), cheminP = pts.map((p, k) => `${k ? 'L' : 'M'}${X(p.pH).toFixed(1)},${Y(p.nPlus).toFixed(1)}`).join(' '), cheminM = pts.map((p, k) => `${k ? 'L' : 'M'}${X(p.pH).toFixed(1)},${Y(p.nMoins).toFixed(1)}`).join(' ');
-  const zone = M.plageDeuxCharges(e), c = M.charges(e, pH);
-  const hautPlot = Y(1) - 6;
-  return base(H, `${etiquette ? etiquette + ' : ' : ''}nombre de charges plus et de charges moins par molécule selon le pH, de 0 à 14`, <>
-    {zone && <rect x={X(zone[0])} y={hautPlot} width={X(zone[1]) - X(zone[0])} height={yb - hautPlot} fill={C.amph} opacity="0.13"/>}
-    <line x1={x0} y1={yb} x2={x1} y2={yb} stroke={C.txt} strokeWidth="1.5"/><line x1={x0} y1={hautPlot} x2={x0} y2={yb} stroke={C.txt} strokeWidth="1.5"/>
-    {(petit ? [0, 7, 14] : [0, 2, 4, 6, 8, 10, 12, 14]).map(t => <g key={t}><line x1={X(t)} y1={yb} x2={X(t)} y2={yb + 5} stroke={C.txt}/>{T(X(t), yb + 20, String(t), { size: 12.5 })}</g>)}
-    {T((x0 + x1) / 2, yb + (petit ? 36 : 38), 'pH', { size: 13.5, gras: true })}
-    {T(x0 - 7, Y(1) + 5, '1', { size: 12.5, anchor: 'end' })}{T(x0 - 7, Y(0) + 4, '0', { size: 12.5, anchor: 'end' })}
-    <path d={cheminM} fill="none" stroke={C.moins} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d={cheminP} fill="none" stroke={C.plus} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    {repere && <><line x1={X(pH)} y1={hautPlot} x2={X(pH)} y2={yb} stroke={C.orange} strokeWidth="2.5" strokeDasharray="5 4"/>
-      <circle cx={X(pH)} cy={Y(c.nPlus)} r="6" fill="white" stroke={C.plus} strokeWidth="3"/><circle cx={X(pH)} cy={Y(c.nMoins)} r="6" fill="white" stroke={C.moins} strokeWidth="3"/></>}
-    {legende && !petit && <><circle cx={x0 + 6} cy={13} r="6" fill={C.plus}/>{T(x0 + 17, 18, 'charges +', { size: 12.5, anchor: 'start' })}<circle cx={x0 + 92} cy={13} r="6" fill={C.moins}/>{T(x0 + 103, 18, 'charges −', { size: 12.5, anchor: 'start' })}{zone && <><rect x={x0 + 176} y={6} width={14} height={14} fill={C.amph} opacity="0.3"/>{T(x0 + 195, 18, 'les deux', { size: 12.5, anchor: 'start' })}</>}</>}
-    {etiquette && T(x0 + 8, petit ? 22 : 40, etiquette, { size: petit ? 15 : 16, gras: true, anchor: 'start' })}
-  </>, W, petit ? 340 : 420);
+// ---- diagramme de prédominance : pour chaque tensioactif, des zones de pH colorées selon la charge portée par la tête (frontières = pKa) ----
+const COUL = { '+': C.plus, '−': C.moins, deux: C.amph, '0': C.zero };
+const TXTZ = { '+': '+', '−': '−', deux: '+ −', '0': '0' };
+function zonesDe(e) {
+  const pk = [...new Set(e.groupes.filter(g => g.type !== 'fixe').map(g => g.pKa))].sort((a, b) => a - b);
+  const bords = [M.PH_MIN, ...pk, M.PH_MAX];
+  return bords.slice(0, -1).map((a, k) => {
+    const b = bords[k + 1], c = M.charges(e, (a + b) / 2);
+    const cl = c.nPlus > 0.5 && c.nMoins > 0.5 ? 'deux' : c.nette > 0.5 ? '+' : c.nette < -0.5 ? '−' : '0';
+    return { a, b, cl };
+  });
+}
+const LEG = [['+', 'charge +'], ['−', 'charge −'], ['deux', 'deux charges'], ['0', 'aucune charge']];
+// lignes : [{ id } ou { e }, etiquette]. pH = null : pas de repère. avecPKa : valeurs de pKa sous les frontières.
+export function SvgPredominance({ lignes, pH = null, avecPKa = true, legende = true, notes = true, bas = [], maxW = 420 }) {
+  const W = 300, x0 = 14, x1 = 286, X = v => x0 + (v / 14) * (x1 - x0), RH = 70, haut = pH == null ? 8 : 30;
+  const classes = new Set();
+  const rows = lignes.map(l => { const e = l.e ?? M.espece(l.id); const z = zonesDe(e); z.forEach(q => classes.add(q.cl)); return { e, z, et: l.etiquette }; });
+  const yAxe = haut + rows.length * RH + 2, nLeg = legende ? Math.ceil(LEG.filter(([c]) => classes.has(c)).length / 2) : 0;
+  const yLeg = yAxe + 46, H = yLeg + nLeg * 22 + bas.length * 19 + 6;
+  const leg = LEG.filter(([c]) => classes.has(c));
+  const c0 = pH == null ? null : pH;
+  return base(H, `diagramme de prédominance du pH 0 à 14 : ${rows.map(r => r.et ?? r.e.court).join(', ')}`, <>
+    {rows.map((r, i) => { const y = haut + i * RH; return <g key={i}>
+      {r.et && T(x0, y + 14, r.et, { size: 14.5, gras: true, anchor: 'start' })}
+      {r.z.map((q, k) => <g key={k}><rect x={X(q.a)} y={y + 20} width={X(q.b) - X(q.a)} height="28" fill={COUL[q.cl]} stroke="white" strokeWidth="1.5" rx={k === 0 || k === r.z.length - 1 ? 5 : 0}/>
+        {X(q.b) - X(q.a) > 24 && T((X(q.a) + X(q.b)) / 2, y + 40, TXTZ[q.cl], { size: 15, gras: true, fill: 'white' })}</g>)}
+      {r.z.slice(1).map((q, k) => <g key={'p' + k}><line x1={X(q.a)} y1={y + 48} x2={X(q.a)} y2={y + 54} stroke={C.txt} strokeWidth="1.5"/>{avecPKa && T(X(q.a), y + 64, `pKa ${nf(q.a, 1)}`, { size: 12.5, gras: true })}</g>)}
+      {r.z.length === 1 && avecPKa && notes && T(x1, y + 64, r.e.groupes.some(g => g.type !== 'fixe') ? '' : (r.z[0].cl === '0' ? 'aucun groupe ionisable' : 'charge fixe : pas de pKa'), { size: 12.5, anchor: 'end', fill: C.zero })}
+    </g>; })}
+    <line x1={x0} y1={yAxe} x2={x1} y2={yAxe} stroke={C.txt} strokeWidth="1.5"/>
+    {[0, 2, 4, 6, 8, 10, 12, 14].map(t => <g key={t}><line x1={X(t)} y1={yAxe} x2={X(t)} y2={yAxe + 5} stroke={C.txt} strokeWidth="1.5"/>{T(X(t), yAxe + 20, String(t), { size: 13 })}</g>)}
+    {T(150, yAxe + 38, 'pH', { size: 15, gras: true })}
+    {c0 != null && <g>{rows.map((r, i) => <line key={i} x1={X(c0)} y1={haut + i * RH + 18} x2={X(c0)} y2={haut + i * RH + 50} stroke={C.orange} strokeWidth="3" strokeDasharray="5 3"/>)}<line x1={X(c0)} y1={yAxe - 6} x2={X(c0)} y2={yAxe + 6} stroke={C.orange} strokeWidth="3"/><path d={`M${X(c0) - 7},${haut - 2} L${X(c0) + 7},${haut - 2} L${X(c0)},${haut + 10} z`} fill={C.orange}/>
+      {T(Math.min(Math.max(X(c0), 46), 254), haut - 8, `pH = ${nf(c0, 1)}`, { size: 14, gras: true, fill: C.orange })}</g>}
+    {leg.map(([c, t], k) => <g key={c}><rect x={x0 + (k % 2) * 140} y={yLeg + Math.floor(k / 2) * 22} width="16" height="16" rx="3" fill={COUL[c]}/>{T(x0 + (k % 2) * 140 + 22, yLeg + Math.floor(k / 2) * 22 + 13, t, { size: 12.5, anchor: 'start' })}</g>)}
+    {bas.map((t, k) => T(150, yLeg + nLeg * 22 + 16 + k * 19, t, { size: 13.5, gras: k === 0 }))}
+  </>, W, maxW);
 }
 
 // ---- deux gouttes d'huile stabilisées par un tensioactif : répulsion des gouttes selon la charge des têtes ----
@@ -147,15 +164,19 @@ export function SvgFormules() {
 }
 // ---- dissolution du sel : deux ions séparés (les rôles ne sont pas nommés : c'est la question de l'étape) ----
 export function SvgDissolution() {
-  return base(170, 'le sel R–OSO₃Na se dissocie dans l’eau en un ion R–OSO₃⁻ qui porte une longue chaîne et un ion Na⁺', <>
-    <rect x="0" y="0" width="300" height="170" rx="12" fill={C.eau}/>
-    <rect x="6" y="52" width="78" height="46" rx="10" fill="white" stroke={C.gris} strokeWidth="2"/>{T(45, 80, 'R–OSO₃Na', { size: 13, gras: true })}{T(45, 44, 'sel', { size: 12.5, fill: C.zero })}
+  return base(236, 'le sel R–OSO₃Na se dissocie dans l’eau en un ion R–OSO₃⁻ qui porte une longue chaîne et un ion Na⁺', <>
+    <rect x="0" y="0" width="300" height="236" rx="12" fill={C.eau}/>
+    {T(150, 22, 'le sel, avant dissolution', { size: 13.5, gras: true })}
+    {T(52, 50, 'R', { size: 15, gras: true, fill: C.queue })}{queue(22, 66, 5, 12, 9)}<line x1="82" y1="64" x2="96" y2="64" stroke={C.queue} strokeWidth="3"/>
+    <rect x="96" y="44" width="72" height="40" rx="10" fill="white" stroke={C.gris} strokeWidth="2"/>{T(132, 70, 'OSO₃', { size: 14, gras: true })}
+    <rect x="176" y="44" width="52" height="40" rx="10" fill="white" stroke={C.gris} strokeWidth="2"/>{T(202, 70, 'Na', { size: 14, gras: true })}
     <defs><marker id="fl220b" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill={C.orange}/></marker></defs>
-    <line x1="90" y1="75" x2="126" y2="75" stroke={C.orange} strokeWidth="3" markerEnd="url(#fl220b)"/>{T(108, 62, 'eau', { size: 12.5, fill: C.orange, gras: true })}
-    {queue(134, 78, 4, 11, 9)}<line x1="178" y1="73" x2="184" y2="73" stroke={C.queue} strokeWidth="3"/>
-    <rect x="184" y="50" width="62" height="46" rx="12" fill="white" stroke={C.moins} strokeWidth="3"/>{T(215, 78, 'OSO₃⁻', { size: 14, gras: true, fill: C.moins })}{disque(244, 46, '−', 1, 11)}
-    <circle cx="276" cy="73" r="15" fill="white" stroke={C.plus} strokeWidth="2.5"/>{T(276, 78, 'Na⁺', { size: 12.5, gras: true, fill: C.plus })}
-    {T(150, 140, 'deux ions séparés, libres dans l’eau', { size: 13.5, gras: true })}
+    <line x1="150" y1="96" x2="150" y2="128" stroke={C.orange} strokeWidth="3" markerEnd="url(#fl220b)"/>{T(162, 117, 'dans l’eau', { size: 13, fill: C.orange, gras: true, anchor: 'start' })}
+    {T(52, 154, 'R', { size: 15, gras: true, fill: C.queue })}{queue(22, 170, 5, 12, 9)}<line x1="82" y1="168" x2="96" y2="168" stroke={C.queue} strokeWidth="3"/>
+    <rect x="96" y="148" width="72" height="40" rx="10" fill="white" stroke={C.moins} strokeWidth="3"/>{T(132, 174, 'OSO₃⁻', { size: 14, gras: true, fill: C.moins })}
+    <line x1="196" y1="140" x2="196" y2="196" stroke={C.gris} strokeWidth="2" strokeDasharray="4 4"/>
+    <circle cx="250" cy="168" r="22" fill="white" stroke={C.plus} strokeWidth="2.5"/>{T(250, 173, 'Na⁺', { size: 14, gras: true, fill: C.plus })}
+    {T(150, 222, 'deux ions séparés, libres dans l’eau', { size: 13.5, gras: true })}
   </>);
 }
 // ---- deux formules condensées à classer ----
@@ -170,18 +191,7 @@ export function SvgFormulesEx() {
 // ================= cartes « À retenir » (viewBox de 300 de large, textes de 12,5 à 15, maxWidth 320) =================
 const WC = 300, MAXC = 320;
 export function SvgCarteIoniques() {
-  const mini = (x, y, titre, trait) => <g key={titre}>
-    <line x1={x} y1={y + 50} x2={x + 130} y2={y + 50} stroke={C.txt} strokeWidth="1.5"/><line x1={x} y1={y - 4} x2={x} y2={y + 50} stroke={C.txt} strokeWidth="1.5"/>
-    {trait}{T(x + 65, y - 12, titre, { size: 14, gras: true })}</g>;
-  const rouge = d => <path d={d} fill="none" stroke={C.moins} strokeWidth="4" strokeLinecap="round"/>;
-  const bleu = d => <path d={d} fill="none" stroke={C.plus} strokeWidth="4" strokeLinecap="round"/>;
-  return base(215, 'quatre tensioactifs ioniques : jamais une charge plus et une charge moins en même temps', <>
-    {mini(14, 40, 'SDS', rouge('M14,40 H144'))}
-    {mini(156, 40, 'CTAB', bleu('M156,40 H286'))}
-    {mini(14, 125, 'savon', rouge('M14,175 H55 C75,175 80,125 100,125 H144'))}
-    {mini(156, 125, 'amine', bleu('M156,125 H200 C225,125 230,175 250,175 H286'))}
-    {T(150, 205, 'une seule couleur à la fois', { size: 14.5, gras: true })}
-  </>, WC, MAXC);
+  return <SvgPredominance maxW={MAXC} lignes={[{ id: 'sds', etiquette: 'SDS (sulfate)' }, { id: 'ctab', etiquette: 'CTAB (ammonium quaternaire)' }, { id: 'savon', etiquette: 'palmitate de sodium' }, { id: 'amine', etiquette: 'chlorure de dodécylammonium' }]} bas={['jamais + et − en même temps']}/>;
 }
 export function SvgCarteZwitterion() {
   return base(190, 'un amphotère neutre porte deux charges, un non ionique n’en porte aucune', <>
@@ -194,18 +204,7 @@ export function SvgCarteZwitterion() {
   </>, WC, MAXC);
 }
 export function SvgCarteAmphotere() {
-  const e = M.espece('alanine'), x0 = 20, x1 = 290, yb = 130, ht = 78, X = v => x0 + (v / 14) * (x1 - x0), Y = n => yb - n * ht;
-  const pts = M.courbe(e, 0.25), P = k => pts.map((p, i) => `${i ? 'L' : 'M'}${X(p.pH).toFixed(1)},${Y(p[k]).toFixed(1)}`).join(' ');
-  const pi = M.pointIsoelectrique(e);
-  return base(232, 'un amphotère est cationique en milieu acide, zwitterionique au milieu et anionique en milieu basique', <>
-    <rect x={X(3.5)} y="40" width={X(9.5) - X(3.5)} height={yb - 40} fill={C.amph} opacity="0.13"/>
-    <line x1={x0} y1={yb} x2={x1} y2={yb} stroke={C.txt} strokeWidth="1.5"/>
-    {[0, 7, 14].map(t => <g key={t}>{T(X(t), yb + 18, String(t), { size: 12.5 })}</g>)}{T(150, yb + 36, 'pH', { size: 13.5, gras: true })}
-    <path d={P('nMoins')} fill="none" stroke={C.moins} strokeWidth="4" strokeLinecap="round"/><path d={P('nPlus')} fill="none" stroke={C.plus} strokeWidth="4" strokeLinecap="round"/>
-    {T(X(1.4), 34, 'cation', { size: 13, gras: true, fill: C.plus })}{T(X(6.5), 34, 'zwitterion', { size: 13, gras: true, fill: C.amph })}{T(X(12.4), 34, 'anion', { size: 13, gras: true, fill: C.moins })}
-    {T(150, 190, 'amphotère : les deux sortes de charges', { size: 13.5, gras: true })}{T(150, 209, 'le signe de la charge nette suit le pH', { size: 13 })}{T(150, 226, 'la bétaïne ne devient jamais −', { size: 12.5, fill: C.zero })}
-    <line x1={X(pi)} y1="44" x2={X(pi)} y2={yb} stroke={C.orange} strokeWidth="2" strokeDasharray="5 4"/>
-  </>, WC, MAXC);
+  return <SvgPredominance maxW={MAXC} lignes={[{ id: 'alanine', etiquette: 'N-dodécyl-β-alanine' }, { id: 'betaine', etiquette: 'dodécylbétaïne' }]} bas={['amphotère : les deux sortes de charges', 'le signe de la charge nette suit le pH']}/>;
 }
 export function SvgCarteTest() {
   const ligne = (y, col, tit, sous) => <g key={tit}><rect x="6" y={y} width="288" height="58" rx="12" fill="white" stroke={col} strokeWidth="2.5"/>{T(150, y + 24, tit, { size: 14, gras: true, fill: col })}{T(150, y + 44, sous, { size: 13 })}</g>;
@@ -224,16 +223,6 @@ export function SvgCarteNonionique() {
     {eau(205, 44, 'e1')}{eau(205, 100, 'e2')}{eau(268, 72, 'e3')}
     <line x1="124" y1="62" x2="187" y2="46" stroke={C.orange} strokeWidth="3" strokeDasharray="3 5" strokeLinecap="round"/><line x1="124" y1="92" x2="187" y2="100" stroke={C.orange} strokeWidth="3" strokeDasharray="3 5" strokeLinecap="round"/>
     {T(150, 150, 'pas de charge,', { size: 14.5, gras: true })}{T(150, 170, 'mais des liaisons hydrogène', { size: 14.5, gras: true })}{T(150, 192, 'soluble sans dépendre du pH', { size: 13 })}
-  </>, WC, MAXC);
-}
-export function SvgCarteChoix() {
-  const X = v => 100 + (v / 14) * 190;
-  const lig = (y, nom, col, a, b) => <g key={nom}>{T(4, y + 4, nom, { size: 13, anchor: 'start', gras: true, fill: col })}{b > a && <rect x={a} y={y - 10} width={b - a} height="22" rx="6" fill={col} opacity="0.85"/>}</g>;
-  return base(226, 'zones de pH où la tête est chargée : sulfate et ammonium quaternaire partout, savon au-dessus de 7,5 environ, amine en dessous de 10 environ, non ionique nulle part', <>
-    {T(150, 18, 'pH où la tête est chargée', { size: 14, gras: true })}
-    {lig(50, 'SDS', C.moins, X(0), X(14))}{lig(84, 'CTAB', C.plus, X(0), X(14))}{lig(118, 'savon', C.moins, X(7.5), X(14))}{lig(152, 'amine', C.plus, X(0), X(10))}{lig(186, 'non ionique', C.non, 0, 0)}
-    {T(X(7), 190, 'aucune charge à aucun pH', { size: 12.5, fill: C.non, gras: true })}
-    <line x1={X(0)} y1="204" x2={X(14)} y2="204" stroke={C.txt}/>{[0, 7, 14].map(t => <g key={t}>{T(X(t), 220, String(t), { size: 12.5 })}</g>)}{T(296, 220, 'pH', { size: 12.5, anchor: 'end', gras: true })}
   </>, WC, MAXC);
 }
 export function SvgCarteFormule() {
