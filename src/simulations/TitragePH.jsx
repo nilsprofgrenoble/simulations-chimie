@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { SchemaBurette } from "./titrageCommun";
@@ -215,7 +215,7 @@ export function SimulationTitragePH() {
         <Formule><msub><mi>n</mi><mi>B</mi></msub><mo>=</mo><msub><mi>C</mi><mi>B</mi></msub><mo>×</mo><msub><mi>V</mi><mi>B</mi></msub></Formule></>,
       tache: { type: 'num', q: 'Quantité n_B d’ions HO⁻ versée', unite: 'mmol', vrai: 0.40, tol: 0.04, affiche: v => nbf(v, 2), cs: 2, bloque,
         calcul: () => ['Unités : mol·L⁻¹ × mL = mmol (pas besoin de convertir les mL si on garde des mmol).', 'n_B = C_B × V_B = 0,100 × 4,0 = 0,40 mmol (soit 4,0 × 10⁻⁴ mol).'],
-        pieges: [[4.0e-4, 'Le résultat est demandé en millimoles (1 mmol = 10⁻³ mol) : 4,0 × 10⁻⁴ mol = 0,40 mmol.'], [0.025, 'Le rapport est inversé : n_B = C_B × V_B, pas V_B / C_B.']],
+        pieges: [[4.0e-4, 'Le résultat est demandé en millimoles (1 mmol = 10⁻³ mol) : 4,0 × 10⁻⁴ mol = 0,40 mmol.'], [0.025, 'Le rapport est inversé : n_B = C_B × V_B, pas frac(V_B|C_B).']],
         expl: 'n_B = 0,100 × 4,0 = 0,40 mmol d’ions HO⁻.', indice: 'n = C × V : avec C en mol·L⁻¹ et V en mL, on obtient des millimoles.' } },
     { id: 'limitant', titre: 'Une transformation totale', focus: ['scene'],
       retenirTitre: 'La réaction support du titrage',
@@ -223,7 +223,7 @@ export function SimulationTitragePH() {
         <SvgReaction/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
           <li><strong>Titrer = faire réagir, de façon totale et rapide, l’espèce à doser avec un réactif titrant connu.</strong> Ici : transfert de H⁺ de l’acide vers HO⁻.</li>
-          <li>Constante de la réaction : <em>K</em> = <em>K</em><sub>A</sub> / <em>K</em><sub>e</sub> ≈ 1,6 × 10⁹ ≫ 1 ⇒ on la considère comme <strong>totale</strong>.</li>
+          <li>Constante de la réaction : <em>K</em> = {avecIndices('frac(K_A|K_e)')} ≈ 1,6 × 10⁹ ≫ 1 ⇒ on la considère comme <strong>totale</strong>.</li>
           <li><strong>Idée fausse</strong> : « les ions HO⁻ versés restent dans le bécher ». <strong>Vrai</strong> : tant qu’il reste de l’acide, chaque HO⁻ versé est consommé.</li>
         </ul></>,
       texte: <>Au contact de l’acide, les ions HO⁻ réagissent. La constante de la réaction, <em>K</em>, se calcule avec la constante d’acidité <em>K</em><sub>A</sub> du couple CH₃COOH / CH₃COO⁻ (p<em>K</em><sub>A</sub> = 4,8) et le produit ionique de l’eau <em>K</em><sub>e</sub> (10⁻¹⁴ à 25 °C). Elle est très grande :
@@ -273,16 +273,16 @@ export function SimulationTitragePH() {
         <SvgRepererVE/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
           <li><strong>V<sub>E</sub> = milieu du saut de pH = maximum de dpH/dV<sub>B</sub>.</strong></li>
-          <li>À l’équivalence : n<sub>A</sub> = n<sub>B</sub>, donc <em>C</em><sub>A</sub> <em>V</em><sub>A</sub> = <em>C</em><sub>B</sub> <em>V</em><sub>E</sub>. Exemple de la simulation : <em>C</em><sub>A</sub> = 0,100 × 16,0 / 20,0 = 0,0800 mol·L⁻¹.</li>
+          <li>À l’équivalence : n<sub>A</sub> = n<sub>B</sub>, donc <em>C</em><sub>A</sub> <em>V</em><sub>A</sub> = <em>C</em><sub>B</sub> <em>V</em><sub>E</sub>. Exemple de la simulation : <em>C</em><sub>A</sub> = {avecIndices('frac(0,100 × 16,0|20,0)')} = 0,0800 mol·L⁻¹.</li>
           <li><em>V</em><sub>E</sub> et <em>V</em><sub>A</sub> dans la même unité ; le résultat se compare à l’étiquette.</li>
         </ul></>,
       texte: <>À l’équivalence, la quantité d’ions HO⁻ versée est égale à la quantité d’acide initiale :
         <Formule><msub><mi>C</mi><mi>A</mi></msub><mo>×</mo><msub><mi>V</mi><mi>A</mi></msub><mo>=</mo><msub><mi>C</mi><mi>B</mi></msub><mo>×</mo><msub><mi>V</mi><mi>E</mi></msub></Formule>
         Vous avez repéré <em>V</em><sub>E</sub> = 16,0{NB}mL ; on a <em>V</em><sub>A</sub> = 20,0{NB}mL et <em>C</em><sub>B</sub> = 0,100{NB}mol·L⁻¹.</>,
       tache: { type: 'num', q: 'Concentration C_A de la solution d’acide', unite: 'mol·L⁻¹', vrai: 0.0800, tol: 0.04, affiche: v => nbf(v, 4), cs: 3,
-        calcul: () => ['C_A = C_B × V_E / V_A : V_E et V_A sont dans la même unité (mL), le rapport V_E / V_A est sans unité.', 'C_A = 0,100 × 16,0 / 20,0 = 0,0800 mol·L⁻¹.', 'Comparaison avec l’étiquette (0,080 mol·L⁻¹) : la solution est conforme.'],
-        pieges: [[0.125, 'Le rapport est inversé : C_A = C_B × V_E / V_A.'], [0.0800 * 1000, 'La concentration est demandée en mol·L⁻¹, pas en mmol·L⁻¹.']],
-        expl: 'C_A = 0,0800 mol·L⁻¹ : la solution est conforme à l’étiquette (0,080 mol·L⁻¹).', indice: 'C_A × V_A = C_B × V_E, donc C_A = C_B × V_E / V_A.' } },
+        calcul: () => ['C_A = frac(C_B × V_E|V_A) : V_E et V_A sont dans la même unité (mL), le rapport frac(V_E|V_A) est sans unité.', 'C_A = frac(0,100 × 16,0|20,0) = 0,0800 mol·L⁻¹.', 'Comparaison avec l’étiquette (0,080 mol·L⁻¹) : la solution est conforme.'],
+        pieges: [[0.125, 'Le rapport est inversé : C_A = frac(C_B × V_E|V_A).'], [0.0800 * 1000, 'La concentration est demandée en mol·L⁻¹, pas en mmol·L⁻¹.']],
+        expl: 'C_A = 0,0800 mol·L⁻¹ : la solution est conforme à l’étiquette (0,080 mol·L⁻¹).', indice: 'C_A × V_A = C_B × V_E, donc C_A = frac(C_B × V_E|V_A).' } },
     { id: 'phe', titre: 'Le pH à l’équivalence', focus: ['scene', 'mesures'],
       texte: <>La solution à l’équivalence est-elle neutre ? Placez le curseur à <em>V</em><sub>E</sub> = 16,0{NB}mL (bouton ci-dessous si besoin) et lisez le pH sur le pH-mètre.</>,
       tache: { type: 'num', q: 'pH à l’équivalence', unite: '', vrai: M.pHEq({ acide: 'etha', C0: 0.080, V0: 20.0, Cb: 0.100 }), tol: 0.02, affiche: v => nbf(v, 2), cs: 2, bloque,
@@ -383,7 +383,7 @@ export function SimulationTitragePH() {
       {defi.type === 'conc' ? <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>On titre <strong>20,0{NB}mL</strong> d’une solution d’un acide (fort ou faible) de concentration inconnue <em>C</em><sub>A</sub> par de la soude de concentration <em>C</em><sub>B</sub> = <strong>0,100{NB}mol·L⁻¹</strong>. Faites varier le volume versé, repérez l’équivalence sur la courbe, puis calculez <em>C</em><sub>A</sub>. Donnez le résultat avec 3 chiffres significatifs.</div>
         {champ('c', 'Concentration C_A', 'mol·L⁻¹', 110)}
-        <IndiceDefi cache={false}>Repérez <em>V</em><sub>E</sub> au maximum de la dérivée (bouton « Afficher la dérivée »), puis <em>C</em><sub>A</sub> = <em>C</em><sub>B</sub> × <em>V</em><sub>E</sub> / <em>V</em><sub>A</sub> avec <em>V</em><sub>E</sub> et <em>V</em><sub>A</sub> en mL.</IndiceDefi>
+        <IndiceDefi cache={false}>Repérez <em>V</em><sub>E</sub> au maximum de la dérivée (bouton « Afficher la dérivée »), puis <em>C</em><sub>A</sub> = {avecIndices('frac(C_B × V_E|V_A)')} avec <em>V</em><sub>E</sub> et <em>V</em><sub>A</sub> en mL.</IndiceDefi>
       </> : <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>On titre <strong>20,0{NB}mL</strong> d’<strong>{M.ACIDES[defi.acide].nom}</strong> de concentration <em>C</em><sub>A</sub> = <strong>{nbf(defi.C0, 3)}{NB}mol·L⁻¹</strong> par de la soude de concentration <em>C</em><sub>B</sub> = <strong>0,100{NB}mol·L⁻¹</strong>. 1) Calculez <em>V</em><sub>E</sub>, placez le curseur à ce volume et lisez le pH à l’équivalence (à 0,1 près). 2) Choisissez l’indicateur coloré qui convient.</div>
         {champ('ph', 'pH à l’équivalence', '', 90)}
@@ -391,7 +391,7 @@ export function SimulationTitragePH() {
           <span style={{ fontSize: 14 }}>Indicateur :</span>
           {defi.options.map(id => <button key={id} onClick={() => setDefi(d => ({ ...d, ind: id, verifie: false }))} aria-pressed={defi.ind === id} style={stylePetitBouton(defi.ind === id, '#475569')}>{IND(id).nom} ({nbf(IND(id).zone[0], 1)} – {nbf(IND(id).zone[1], 1)})</button>)}
         </div>
-        <IndiceDefi cache={false}><em>V</em><sub>E</sub> = <em>C</em><sub>A</sub> × <em>V</em><sub>A</sub> / <em>C</em><sub>B</sub> (en mL). Lisez le pH à ce volume. L’indicateur convient si sa zone de virage <strong>contient</strong> pH<sub>E</sub> ; vous pouvez tester chacun : sa couleur apparaît dans l’erlenmeyer.</IndiceDefi>
+        <IndiceDefi cache={false}><em>V</em><sub>E</sub> = {avecIndices('frac(C_A × V_A|C_B)')} (en mL). Lisez le pH à ce volume. L’indicateur convient si sa zone de virage <strong>contient</strong> pH<sub>E</sub> ; vous pouvez tester chacun : sa couleur apparaît dans l’erlenmeyer.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="tph-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -522,7 +522,7 @@ export function SimulationTitragePH() {
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Titrez l’acide chlorhydrique, puis un acide faible : comparez le pH initial, le pH à l’équivalence et la largeur du saut (bouton « Comparer avec l’acide fort »).</li>
         <li>Diminuez la concentration de l’acide de 0,10 à 0,02 mol·L⁻¹ : que deviennent V<sub>E</sub>, le saut de pH et pH<sub>E</sub> ?</li>
-        <li>Pour trois acides faibles, lisez le pH à V<sub>E</sub> / 2 et comparez-le au p<em>K</em><sub>A</sub> du couple.</li>
+        <li>Pour trois acides faibles, lisez le pH à {avecIndices('frac(V_E|2)')} et comparez-le au p<em>K</em><sub>A</sub> du couple.</li>
         <li>Dans le tableau des indicateurs, trouvez ceux qui conviennent pour l’acide benzoïque, puis pour l’acide chlorhydrique. Vérifiez la couleur obtenue autour de V<sub>E</sub>.</li>
         <li>Mettez la soude à 0,05 mol·L⁻¹ avec 25 mL d’acide à 0,10 mol·L⁻¹ : que se passe-t-il pour V<sub>E</sub> ? Quelle solution ?</li>
       </ul>

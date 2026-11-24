@@ -156,9 +156,9 @@ export function SimulationAminoAcides() {
         </Ul></>,
       texte: <>Le pH du sang vaut environ 7,4. À ce pH, la glycine est presque entièrement sous forme de zwitterion ; une très petite part est sous forme d’anion. C’est le couple 2 (zwitterion / anion, pK<sub>A2</sub> = 9,6) qui permet de la calculer : {FRapport2}</>,
       tache: { type: 'num', q: 'Pourcentage de glycine sous forme d’anion à pH = 7,4', unite: '%', vrai: M.pct(M.frac(7.4, GLY)[2]), tol: 0.05, affiche: v => nbf(v, 2), cs: 2,
-        calcul: () => ['pH − pK_A2 = 7,4 − 9,6 = −2,2.', 'frac([anion]|[zwitterion]) = 10^(−2,2) = 6,3×10⁻³ (sans unité).', 'Le zwitterion représente presque toute la glycine : % anion = 100 × r / (1 + r) = 100 × 6,3×10⁻³ / 1,0063 ≈ 0,63 %.'],
+        calcul: () => ['pH − pK_A2 = 7,4 − 9,6 = −2,2.', 'frac([anion]|[zwitterion]) = 10^(−2,2) = 6,3×10⁻³ (sans unité).', 'Le zwitterion représente presque toute la glycine : % anion = frac(100 × r|1 + r) = frac(100 × 6,3×10⁻³|1,0063) ≈ 0,63 %.'],
         pieges: [[99.4, 'C’est le pourcentage de zwitterion, la forme dominante ; on demande celui de l’anion.'], [0.0063, 'C’est le rapport, pas un pourcentage : multipliez par 100.'], [158, 'Le rapport est inversé : l’anion est au numérateur, et il est très minoritaire à ce pH.']],
-        expl: 'r = 10^(7,4 − 9,6) = 10^(−2,2) = 6,3×10⁻³ ; % anion = 100 × r / (1 + r) ≈ 0,63 %.', indice: 'Calculez d’abord le rapport frac([anion]|[zwitterion]) = 10^(pH − pK_A2) ; l’anion est très minoritaire, donc le pourcentage vaut environ 100 × ce rapport.' } },
+        expl: 'r = 10^(7,4 − 9,6) = 10^(−2,2) = 6,3×10⁻³ ; % anion = frac(100 × r|1 + r) ≈ 0,63 %.', indice: 'Calculez d’abord le rapport frac([anion]|[zwitterion]) = 10^(pH − pK_A2) ; l’anion est très minoritaire, donc le pourcentage vaut environ 100 × ce rapport.' } },
     { id: 'bilan', titre: 'Bilan', focus: [],
       texte: <>Vous savez associer à un pH la forme dominante d’un acide α-aminé : le <strong>cation</strong> sous pK<sub>A1</sub>, le <strong>zwitterion</strong> entre pK<sub>A1</sub> et pK<sub>A2</sub>, l’<strong>anion</strong> au-dessus de pK<sub>A2</sub>. Vous savez lire une frontière comme un couple (rapport 10<sup>pH − pK<sub>A</sub></sup>), lire un diagramme de distribution et dire pourquoi le zwitterion est amphotère. Passez à l’exploration (quatre acides α-aminés, tous les pH) ou tentez les deux défis.</>, tache: null },
   ];
@@ -203,12 +203,12 @@ export function SimulationAminoAcides() {
             style={stylePetitBouton(defi.reps.forme === f.id, defi.verifie ? (defi.prod === f.id ? '#15803d' : '#dc2626') : '#475569')}>le {f.nom} domine</button>)}
         </div>
         {champ('pct', 'Pourcentage de zwitterion', '%')}
-        <IndiceDefi cache={false}>Repérez la frontière voisine du pH (pK<sub>A1</sub> ou pK<sub>A2</sub>) et calculez r = 10<sup>pH − pK<sub>A</sub></sup> avec ce pK<sub>A</sub>. Près de pK<sub>A1</sub>, r = [zwitterion] / [cation] et % zwitterion = 100 × r / (1 + r). Près de pK<sub>A2</sub>, r = [anion] / [zwitterion] et % zwitterion = 100 / (1 + r).</IndiceDefi>
+        <IndiceDefi cache={false}>Repérez la frontière voisine du pH (pK<sub>A1</sub> ou pK<sub>A2</sub>) et calculez r = 10<sup>pH − pK<sub>A</sub></sup> avec ce pK<sub>A</sub>. Près de pK<sub>A1</sub>, r = {avecIndices('frac([zwitterion]|[cation])')} et % zwitterion = {avecIndices('frac(100 × r|1 + r)')}. Près de pK<sub>A2</sub>, r = {avecIndices('frac([anion]|[zwitterion])')} et % zwitterion = {avecIndices('frac(100|1 + r)')}.</IndiceDefi>
       </> : <>
         <div style={{ ...lbl, marginBottom: 8 }}>Pour une solution de <strong>{defi.acide.nom}</strong> ({avecIndices('pK_A1')} = <strong>{nbf(defi.acide.pKa1, 1)}</strong> ; {avecIndices('pK_A2')} = <strong>{nbf(defi.acide.pKa2, 1)}</strong>), on veut qu’au moins <strong>{defi.p}{NB}%</strong> de l’acide aminé soit sous forme de zwitterion. Donnez la plus petite et la plus grande valeur de pH qui conviennent (marge acceptée : 5{NB}% de la valeur).</div>
         {champ('bas', 'pH minimal', '')}
         {champ('haut', 'pH maximal', '')}
-        <IndiceDefi cache={false}>Près de pK<sub>A1</sub>, il faut r = [zwitterion] / [cation] au moins égal à p / (100 − p), donc pH minimal = pK<sub>A1</sub> + log(p / (100 − p)). Près de pK<sub>A2</sub>, le zwitterion est la forme acide : il faut [anion] / [zwitterion] au plus égal à (100 − p) / p, donc pH maximal = pK<sub>A2</sub> − log(p / (100 − p)).</IndiceDefi>
+        <IndiceDefi cache={false}>Près de pK<sub>A1</sub>, il faut r = {avecIndices('frac([zwitterion]|[cation])')} au moins égal à {avecIndices('frac(p|100 − p)')}, donc pH minimal = pK<sub>A1</sub> + log({avecIndices('frac(p|100 − p)')}). Près de pK<sub>A2</sub>, le zwitterion est la forme acide : il faut {avecIndices('frac([anion]|[zwitterion])')} au plus égal à {avecIndices('frac(100 − p|p)')}, donc pH maximal = pK<sub>A2</sub> − log({avecIndices('frac(p|100 − p)')}).</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="aa-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>

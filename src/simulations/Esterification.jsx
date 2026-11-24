@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./esterModele";
@@ -85,10 +85,10 @@ export function SimulationEsterification({ naviguer }) {
       texte: <>On introduit 15{NB}mL d’acide éthanoïque (ρ = 1,05{NB}g·mL⁻¹) et 24{NB}mL de butan-1-ol (ρ = 0,81{NB}g·mL⁻¹), avec du catalyseur acide, et on chauffe à 100{NB}°C. Les quantités de matière sont voisines.</>,
       tache: { type: 'action', ok: rxBase && rx.t === 0, label: 'Préparer le mélange', faire: () => { setScene('reaction'); setRx(PRESET_RX); }, consigne: 'Réglez 15 mL d’acide, 24 mL de butan-1-ol, catalyseur, 100 °C, sans Dean-Stark, t = 0' } },
     { id: 'quantites', titre: 'Quantités de matière initiales', focus: ['mesures'],
-      texte: <>La quantité de matière se calcule par <em>n</em> = <em>ρ</em>·<em>V</em> / <em>M</em>. Pour l’acide éthanoïque : <em>M</em> = 60,05{NB}g·mol⁻¹.</>,
+      texte: <>La quantité de matière se calcule par <em>n</em> = {avecIndices('frac(ρ·V|M)')}. Pour l’acide éthanoïque : <em>M</em> = 60,05{NB}g·mol⁻¹.</>,
       tache: { type: 'num', q: 'Quantité d’acide éthanoïque introduit', unite: 'mol', vrai: nA0, tol: 0.02, affiche: v => nbf(v, 3), cs: 2,
         bloque: rxBase ? null : 'Préparez d’abord le mélange (étape précédente).',
-        calcul: () => ['m = ρ·V = 1,05 × 15 = 15,75 g.', `n = m / M = 15,75 / 60,05 = ${nbf(nA0, 3)} mol.`], pieges: [[1.05 * 15, 'Vous avez donné la masse : il faut diviser par la masse molaire.']],
+        calcul: () => ['m = ρ·V = 1,05 × 15 = 15,75 g.', `n = frac(m|M) = frac(15,75|60,05) = ${nbf(nA0, 3)} mol.`], pieges: [[1.05 * 15, 'Vous avez donné la masse : il faut diviser par la masse molaire.']],
         expl: `n(acide) = ${nbf(nA0, 3)} mol ; le butan-1-ol est introduit en quantité quasi identique (${nbf(nB0, 3)} mol).`, indice: "n = m ÷ M, avec m = ρ × V (masse volumique × volume) ; attention aux unités." } },
     { id: 'catalyseur', titre: 'Pourquoi chauffer et catalyser ?', focus: ['reglages'],
       texte: <>Faites varier la température et le catalyseur (avec t = 60{NB}min) et observez la quantité d’ester formée.</>,
@@ -101,13 +101,13 @@ export function SimulationEsterification({ naviguer }) {
       texte: <>Le <strong>rendement</strong> est le rapport entre la quantité d’ester obtenue et la quantité maximale (celle qu’on obtiendrait si la réaction était totale : <em>n</em>(ester) = <em>n</em> du réactif limitant). Lisez <em>n</em>(ester) dans « Mesures ».</>,
       tache: { type: 'num', q: 'Rendement à t = 120 min', unite: '%', vrai: simBase.E[M.indiceTemps(simBase, 120)] / Math.min(nA0, nB0) * 100, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
         bloque: rxBase && rx.t === 120 ? null : 'Placez d’abord le temps à 120 min avec le mélange de départ.',
-        calcul: () => [`n(ester) = ${nbf(simBase.E[M.indiceTemps(simBase, 120)], 3)} mol ; n maximale = n du réactif limitant = ${nbf(Math.min(nA0, nB0), 3)} mol.`, `η = ${nbf(simBase.E[M.indiceTemps(simBase, 120)], 3)} / ${nbf(Math.min(nA0, nB0), 3)} = ${nbf(simBase.E[M.indiceTemps(simBase, 120)] / Math.min(nA0, nB0) * 100, 0)} %.`], pieges: [[simBase.E[M.indiceTemps(simBase, 120)] / Math.min(nA0, nB0), 'Le rendement est demandé en pourcentage.']],
+        calcul: () => [`n(ester) = ${nbf(simBase.E[M.indiceTemps(simBase, 120)], 3)} mol ; n maximale = n du réactif limitant = ${nbf(Math.min(nA0, nB0), 3)} mol.`, `η = frac(${nbf(simBase.E[M.indiceTemps(simBase, 120)], 3)}|${nbf(Math.min(nA0, nB0), 3)}) = ${nbf(simBase.E[M.indiceTemps(simBase, 120)] / Math.min(nA0, nB0) * 100, 0)} %.`], pieges: [[simBase.E[M.indiceTemps(simBase, 120)] / Math.min(nA0, nB0), 'Le rendement est demandé en pourcentage.']],
         expl: 'η ≈ 67 % : même après un long chauffage, un tiers du réactif limitant n’est pas transformé.', indice: "Rendement = quantité d’ester formée ÷ quantité du réactif limitant × 100." } },
     { id: 'quotient', titre: 'L’équilibre atteint', focus: ['mesures'],
       texte: <>À l’équilibre, le quotient de réaction vaut la constante <em>K</em> : <em>Q</em><sub>r,éq</sub> = <em>n</em>(E)·<em>n</em>(H₂O) / (<em>n</em>(acide)·<em>n</em>(alcool)) (le volume se simplifie). Calculez-le avec les quantités affichées.</>,
       tache: { type: 'num', q: 'Quotient de réaction à t = 120 min', unite: '', vrai: (() => { const i = M.indiceTemps(simBase, 120); return simBase.E[i] * simBase.W[i] / (simBase.A[i] * simBase.B[i]); })(), tol: 0.04, affiche: v => nbf(v, 1), cs: 2,
         bloque: rxBase && rx.t === 120 ? null : 'Placez d’abord le temps à 120 min avec le mélange de départ.',
-        calcul: () => ['n(H₂O) = n(ester) car l’eau est formée avec l’ester.', `Qr = n(E)² / (n(A)·n(B)) = ${nbf(simBase.E[M.indiceTemps(simBase, 120)], 3)}² / (${nbf(simBase.A[M.indiceTemps(simBase, 120)], 3)} × ${nbf(simBase.B[M.indiceTemps(simBase, 120)], 3)}) ≈ 4,0.`],
+        calcul: () => ['n(H₂O) = n(ester) car l’eau est formée avec l’ester.', `Qr = frac(n(E)²|n(A)·n(B)) = frac(${nbf(simBase.E[M.indiceTemps(simBase, 120)], 3)}²|${nbf(simBase.A[M.indiceTemps(simBase, 120)], 3)} × ${nbf(simBase.B[M.indiceTemps(simBase, 120)], 3)}) ≈ 4,0.`],
         expl: 'Qr,éq ≈ 4,0 : c’est la constante d’équilibre K de l’estérification d’un alcool primaire.', indice: "Q_r = [ester][eau] ÷ ([acide][alcool]), à partir des quantités à t = 120 min." } },
     { id: 'exces', titre: 'Un excès d’alcool', focus: ['reglages', 'mesures'],
       retenirTitre: 'À RETENIR : ESTÉRIFICATION ET ÉQUILIBRE',
@@ -133,7 +133,7 @@ export function SimulationEsterification({ naviguer }) {
       texte: <>Le décanteur est gradué : l’eau recueillie provient uniquement de la réaction. Chaque mole d’ester formée libère <strong>une mole d’eau</strong> (M = 18,0{NB}g·mol⁻¹, ρ = 1,00{NB}g·mL⁻¹). Lisez le volume d’eau recueilli et déduisez la quantité d’ester formée.</>,
       tache: { type: 'num', q: 'Quantité d’ester formée (déduite du volume d’eau)', unite: 'mol', vrai: simDS.Wd[M.indiceTemps(simDS, 180)], tol: 0.03, affiche: v => nbf(v, 3), cs: 2,
         bloque: rxDS && rx.t === 180 ? null : 'Activez d’abord le Dean-Stark (étape précédente) et placez t = 180 min.',
-        calcul: () => [`Volume d’eau lu : ${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)} mL, donc m = ρ·V = ${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)} g.`, `n(H₂O) = m / M = ${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)} / 18,0 = ${nbf(simDS.Wd[M.indiceTemps(simDS, 180)], 3)} mol = n(ester) (l’eau restant dans le ballon est négligeable).`],
+        calcul: () => [`Volume d’eau lu : ${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)} mL, donc m = ρ·V = ${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)} g.`, `n(H₂O) = frac(m|M) = frac(${nbf(M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 1)}|18,0) = ${nbf(simDS.Wd[M.indiceTemps(simDS, 180)], 3)} mol = n(ester) (l’eau restant dans le ballon est négligeable).`],
         pieges: [[M.volumeEau_mL(simDS.Wd[M.indiceTemps(simDS, 180)]), 'Vous avez donné le volume ; il faut le convertir en quantité de matière.']],
         expl: 'Compter l’eau recueillie permet de suivre l’avancement de la synthèse : n(ester) = n(eau formée).', indice: "Une mole d’eau formée correspond à une mole d’ester formée." } },    { id: 'bilan1', titre: 'Le bilan', focus: [],
       retenirTitre: 'À RETENIR : LE DEAN-STARK',
@@ -144,10 +144,10 @@ export function SimulationEsterification({ naviguer }) {
       texte: <>La <strong>chromatographie sur couche mince</strong> (CCM) permet de suivre l’avancement : on dépose sur une plaque de silice les <strong>témoins</strong> (acide, alcool, ester purs) et le mélange réactionnel prélevé à des instants différents. Le solvant (éluant, ici un mélange cyclohexane / éthanoate d’éthyle) monte par capillarité et entraîne chaque espèce plus ou moins loin. Ouvrez l’onglet CCM : éluant à 30{NB}% d’éthanoate d’éthyle, prélèvement à t = 30{NB}min.</>,
       tache: { type: 'action', ok: ccmBase, label: 'Ouvrir la CCM', faire: () => { setScene('ccm'); setCc(PRESET_CCM); }, consigne: 'Onglet « CCM » : 30 % d’éthanoate d’éthyle, prélèvement à 30 min' } },
     { id: 'rf', titre: 'Le rapport frontal', focus: ['mesures'],
-      texte: <>Le <strong>rapport frontal</strong> d’une espèce est <em>R</em><sub>f</sub> = <em>d</em> / <em>L</em>, où <em>d</em> est la distance parcourue par la tache (du dépôt à son centre) et <em>L</em> la distance parcourue par le front de l’éluant. Calculez <em>R</em><sub>f</sub> pour l’ester pur.</>,
+      texte: <>Le <strong>rapport frontal</strong> d’une espèce est <em>R</em><sub>f</sub> = {avecIndices('frac(d|L)')}, où <em>d</em> est la distance parcourue par la tache (du dépôt à son centre) et <em>L</em> la distance parcourue par le front de l’éluant. Calculez <em>R</em><sub>f</sub> pour l’ester pur.</>,
       tache: { type: 'num', q: 'Rapport frontal de l’ester', unite: '', vrai: M.rf('ester', 0.3), tol: 0.03, affiche: v => nbf(v, 2), cs: 2,
         bloque: ccmBase ? null : 'Ouvrez d’abord la CCM préréglée.',
-        calcul: () => [`d = ${nbf(M.rf('ester', 0.3) * FRONT, 1)} mm ; L = ${FRONT} mm.`, `Rf = d / L = ${nbf(M.rf('ester', 0.3), 2)}.`], pieges: [[FRONT / (M.rf('ester', 0.3) * FRONT), 'Rf = d / L : la distance du front est au dénominateur (le Rf est inférieur à 1).']],
+        calcul: () => [`d = ${nbf(M.rf('ester', 0.3) * FRONT, 1)} mm ; L = ${FRONT} mm.`, `Rf = frac(d|L) = ${nbf(M.rf('ester', 0.3), 2)}.`], pieges: [[FRONT / (M.rf('ester', 0.3) * FRONT), 'Rf = frac(d|L) : la distance du front est au dénominateur (le Rf est inférieur à 1).']],
         expl: 'Rf ≈ 0,74 : l’ester, peu polaire, est très peu retenu par la silice et monte presque avec le front.', indice: "Rf = distance parcourue par la tache ÷ distance parcourue par l’éluant." } },
     { id: 'polarite', titre: 'Qui est le plus retenu ?', focus: ['scene'],
       texte: <>Regardez la position des trois témoins : la plaque de silice est très polaire.</>,
@@ -179,7 +179,7 @@ export function SimulationEsterification({ naviguer }) {
       texte: <>On obtient la masse d’ester indiquée dans « Mesures » après lavages et distillation. Calculez le rendement global de la synthèse (quantité de matière d’ester obtenue / quantité maximale), avec <em>M</em>(éthanoate de butyle) = {nbf(M.COUPLES.butyle.ester.M, 2)}{NB}g·mol⁻¹ et une quantité maximale égale à celle du réactif limitant, soit {nbf(Math.min(nA0, nB0), 3)}{NB}mol.</>,
       tache: { type: 'num', q: 'Rendement de la synthèse', unite: '%', vrai: (() => { const n = M.bilanMasse({ nEster: simDS.E[M.indiceTemps(simDS, 180)], nLavages: 2, distille: true }); return M.rendement(n, nA0, nB0) * 100; })(), tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
         bloque: scene === 'bilan' && rxDSbase && rx.t === 180 && bl.nLav === 2 && bl.dist ? null : 'Ouvrez d’abord le traitement préréglé (étape précédente).',
-        calcul: () => { const n = M.bilanMasse({ nEster: simDS.E[M.indiceTemps(simDS, 180)], nLavages: 2, distille: true }); return [`m(ester) = ${nbf(n * M.COUPLES.butyle.ester.M, 1)} g ; n = m / M = ${nbf(n * M.COUPLES.butyle.ester.M, 1)} / ${nbf(M.COUPLES.butyle.ester.M, 2)} = ${nbf(n, 3)} mol.`, `n maximale = ${nbf(Math.min(nA0, nB0), 3)} mol, donc η = ${nbf(M.rendement(n, nA0, nB0) * 100, 0)} %.`]; },
+        calcul: () => { const n = M.bilanMasse({ nEster: simDS.E[M.indiceTemps(simDS, 180)], nLavages: 2, distille: true }); return [`m(ester) = ${nbf(n * M.COUPLES.butyle.ester.M, 1)} g ; n = frac(m|M) = frac(${nbf(n * M.COUPLES.butyle.ester.M, 1)}|${nbf(M.COUPLES.butyle.ester.M, 2)}) = ${nbf(n, 3)} mol.`, `n maximale = ${nbf(Math.min(nA0, nB0), 3)} mol, donc η = ${nbf(M.rendement(n, nA0, nB0) * 100, 0)} %.`]; },
         expl: 'Le rendement global est inférieur au rendement de la réaction : on perd un peu d’ester à chaque lavage (échange avec la phase aqueuse) et à la distillation.', indice: "Rendement = quantité d’ester isolée ÷ quantité maximale possible (réactif limitant) × 100." } },
     { id: 'bravo', titre: 'Le bilan', focus: [],
       retenirTitre: 'À RETENIR : LE BILAN',
@@ -540,7 +540,7 @@ export function SimulationEsterification({ naviguer }) {
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>estérification : acide + alcool ⇌ ester + eau, lente, limitée</li>
         <li>on déplace l’équilibre par un excès de réactif ou l’élimination de l’eau</li>
-        <li>R<sub>f</sub> = d / L ; η = n(obtenu) / n(maximal)</li>
+        <li>R<sub>f</sub> = {avecIndices('frac(d|L)')} ; η = {avecIndices('frac(n(obtenu)|n(maximal))')}</li>
       </ul>
     </ARetenir>);
 

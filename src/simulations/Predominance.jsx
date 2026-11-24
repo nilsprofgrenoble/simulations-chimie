@@ -98,9 +98,9 @@ export function SimulationPredominance() {
     { id: 'pourcent', titre: 'Les pourcentages des deux formes', focus: ['mesures'],
       texte: <>Le rapport vaut {avecIndices('frac([A⁻]|[AH])')} = 10 à pH = 5,76 : pour 10 parties de A⁻, il y a 1 partie de AH. Le pourcentage de forme basique est la part de A⁻ dans le total des deux formes : {FPct}</>,
       tache: { type: 'num', q: 'Pourcentage de forme basique CH₃COO⁻ à pH = 5,76', unite: '%', vrai: 90.909, tol: 0.01, affiche: v => nbf(v, 1), cs: 3,
-        calcul: () => ['[A⁻] = 10 parties et [AH] = 1 partie, soit 11 parties au total.', '% A⁻ = 100 × 10 / 11 = 90,9 % (et 9,1 % de AH).'],
+        calcul: () => ['[A⁻] = 10 parties et [AH] = 1 partie, soit 11 parties au total.', '% A⁻ = frac(100 × 10|11) = 90,9 % (et 9,1 % de AH).'],
         pieges: [[10, 'C’est le rapport frac([A⁻]|[AH]), pas un pourcentage de la totalité des deux formes.'], [9.09, 'C’est le pourcentage de la forme acide AH ; on demande celui de A⁻.'], [0.909, 'Une fraction s’exprime entre 0 et 1 ; en pourcentage, multipliez par 100.'], [100, 'AH est présent en petite quantité : le pourcentage de A⁻ est proche de 100 % sans l’atteindre.']],
-        expl: '% A⁻ = 100 × 10 / (10 + 1) = 90,9 %.', indice: 'Au total il y a 10 + 1 = 11 parties : divisez la part de A⁻ par ce total, puis multipliez par 100.' } },
+        expl: '% A⁻ = frac(100 × 10|10 + 1) = 90,9 %.', indice: 'Au total il y a 10 + 1 = 11 parties : divisez la part de A⁻ par ce total, puis multipliez par 100.' } },
     { id: 'dist', titre: 'Le diagramme de distribution', focus: ['dist'],
       retenirTitre: 'À RETENIR : LE RAPPORT ET LES POURCENTAGES',
       retenir: <>
@@ -194,7 +194,7 @@ export function SimulationPredominance() {
           <input value={defi.reps.pct} aria-label="Pourcentage de forme basique" onKeyDown={e => e.key === 'Enter' && document.getElementById('pd-verif')?.click()} onChange={e => setDefi(d => ({ ...d, reps: { ...d.reps, pct: e.target.value }, verifie: false }))} inputMode="decimal"
             style={{ width: 90, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${defi.verifie ? (defi.ok ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>%</span>
         </div>
-        <IndiceDefi cache={false}>Le rapport frac([A⁻]|[AH]) vaut 10<sup>pH − pK<sub>A</sub></sup>. La forme basique domine si ce rapport dépasse 1 (pH &gt; pK<sub>A</sub>). Le pourcentage de A⁻ est 100 × r / (1 + r), avec r = frac([A⁻]|[AH]).</IndiceDefi>
+        <IndiceDefi cache={false}>Le rapport {avecIndices('frac([A⁻]|[AH])')} vaut 10<sup>pH − pK<sub>A</sub></sup>. La forme basique domine si ce rapport dépasse 1 (pH &gt; pK<sub>A</sub>). Le pourcentage de A⁻ est {avecIndices('frac(100 × r|1 + r)')}, avec r = {avecIndices('frac([A⁻]|[AH])')}.</IndiceDefi>
       </> : <>
         <div style={{ ...lbl, marginBottom: 8 }}>On réalise un titrage dont le pH à l’équivalence vaut <strong>{nbf(defi.pHeq, 1)}</strong>. Trois indicateurs colorés sont disponibles, chacun défini par son {avecIndices('pK_A')}. Rappel : la zone de virage va de {avecIndices('pK_A')} − 1 à {avecIndices('pK_A')} + 1. Quel indicateur permet de repérer l’équivalence ?</div>
         <div role="group" aria-label="Indicateur choisi" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>

@@ -340,7 +340,7 @@ function Exploration() {
         <FTroisComportements />
         {puces(
           <>Un fluide <strong>newtonien</strong> a une viscosité constante ; un fluide <strong>plastique</strong> ne s’écoule qu’au-delà d’une <strong>contrainte seuil</strong> τ₀ ; un fluide <strong>pseudoplastique</strong> devient plus fluide quand γ̇ augmente ; un fluide <strong>thixotrope</strong> a une courbe retour sous la courbe aller.</>,
-          <>η = τ / γ̇ : sur la courbe d’écoulement, c’est la pente de la droite qui joint l’origine au point.</>,
+          <>η = {avecIndices('frac(τ|γ)')}̇ : sur la courbe d’écoulement, c’est la pente de la droite qui joint l’origine au point.</>,
         )}
       </Section>
     </div>
@@ -462,10 +462,10 @@ export function SimulationRheoCourbes() {
       </>,
       tache: {
         type: "num", q: "Viscosité dynamique η de cette huile", unite: "mPa·s", vrai: 12500, tol: 0.05, affiche: (v) => fmt(v, 0), cs: 3,
-        calcul: () => ["η = τ / γ̇ = 25 Pa ÷ 2,0 s⁻¹ = 12,5 Pa·s.", "Conversion : 1 Pa·s = 1 000 mPa·s, donc η = 12 500 mPa·s."],
+        calcul: () => ["η = frac(τ|γ̇) = 25 Pa ÷ 2,0 s⁻¹ = 12,5 Pa·s.", "Conversion : 1 Pa·s = 1 000 mPa·s, donc η = 12 500 mPa·s."],
         pieges: [[12.5, "C’est la bonne valeur, mais en Pa·s. Convertissez en mPa·s : 1 Pa·s = 1 000 mPa·s."], [0.08, "Vous avez divisé γ̇ par τ. La viscosité est τ divisée par γ̇."]],
-        expl: <>η = τ / γ̇ = 25 / 2,0 = 12,5 Pa·s = 12 500 mPa·s.</>,
-        indice: "η = τ / γ̇, avec τ en Pa et γ̇ en s⁻¹ : le résultat est en Pa·s. Puis 1 Pa·s = 1 000 mPa·s.",
+        expl: <>η = {avecIndices('frac(τ|γ)')}̇ = {avecIndices('frac(25|2,0)')} = 12,5 Pa·s = 12 500 mPa·s.</>,
+        indice: "η = frac(τ|γ̇), avec τ en Pa et γ̇ en s⁻¹ : le résultat est en Pa·s. Puis 1 Pa·s = 1 000 mPa·s.",
       },
     },
     {
@@ -476,7 +476,7 @@ export function SimulationRheoCourbes() {
         <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "center" }}>
           <Formule>{GD}<mo>=</mo><mfrac><mi>v</mi><mi>e</mi></mfrac><mspace width="1em" /><mi>τ</mi><mo>=</mo><mfrac><mi>F</mi><mi>S</mi></mfrac><mspace width="1em" /><mi>η</mi><mo>=</mo><mfrac><mi>τ</mi>{GD}</mfrac></Formule>
         </div>
-        {puces(<>γ̇ en <strong>s⁻¹</strong>, τ en <strong>Pa</strong>, η en <strong>Pa·s</strong> (1 Pa·s = 1 000 mPa·s).</>, <>La <strong>viscosité cinématique</strong> ν = η / ρ s’exprime en m²·s⁻¹ (ρ : masse volumique).</>)}
+        {puces(<>γ̇ en <strong>s⁻¹</strong>, τ en <strong>Pa</strong>, η en <strong>Pa·s</strong> (1 Pa·s = 1 000 mPa·s).</>, <>La <strong>viscosité cinématique</strong> ν = {avecIndices('frac(η|ρ)')} s’exprime en m²·s⁻¹ (ρ : masse volumique).</>)}
       </>,
       texte: "Dans un viscosimètre ou un rhéomètre rotatif, le moteur impose la vitesse de rotation N : elle fixe le gradient γ̇ (pour le mobile MSR3 de ton viscosimètre, γ̇ = 0,30 × N, avec N en tr/min). Le capteur mesure ce qu’il faut fournir pour maintenir cette rotation. Déplace le curseur de vitesse.",
       tache: {
@@ -492,7 +492,7 @@ export function SimulationRheoCourbes() {
       tache: {
         type: "qcm", q: "Sur sa courbe d’écoulement, comment se reconnaît un fluide newtonien ?",
         options: ["Une droite qui passe par l’origine", "Une droite qui part du haut du graphique", "Une courbe qui s’incurve vers le bas", "Une courbe qui s’incurve vers le haut"], bonne: 0,
-        indice: "Lis η pour γ̇ = 4 s⁻¹ puis γ̇ = 80 s⁻¹ : change-t-elle ? Que dire alors du rapport τ / γ̇ ?",
+        indice: "Lis η pour γ̇ = 4 s⁻¹ puis γ̇ = 80 s⁻¹ : change-t-elle ? Que dire alors du rapport frac(τ|γ̇) ?",
         expl: <>Pour le glycérol, η reste égale à 1 400 mPa·s quel que soit γ̇ : τ = η × γ̇ est proportionnelle à γ̇. La courbe d’écoulement est une <strong>droite passant par l’origine</strong>, de pente η : c’est le comportement <strong>newtonien</strong>.</>,
       },
     },
@@ -550,7 +550,7 @@ export function SimulationRheoCourbes() {
       titre: "Deux peintures mesurées",
       texte: "Voici de vraies mesures faites au viscosimètre sur deux peintures murales blanches, vendues pour le même usage mais à des prix très différents : gradient de 1 à 300 s⁻¹ (courbe « aller »). Compare-les, puis teste l’échelle logarithmique en γ̇ et en η. Pour la peinture B, on lit η(1 s⁻¹) = 28 000 mPa·s et η(300 s⁻¹) = 816 mPa·s.",
       tache: {
-        type: "num", q: "Rapport η(1 s⁻¹) / η(300 s⁻¹) de la peinture B", unite: "(sans unité)", vrai: 28000 / 816, tol: 0.05, affiche: (v) => fmt(v, 1), cs: 2,
+        type: "num", q: "Rapport frac(η(1 s⁻¹)|η(300 s⁻¹)) de la peinture B", unite: "(sans unité)", vrai: 28000 / 816, tol: 0.05, affiche: (v) => fmt(v, 1), cs: 2,
         calcul: () => ["Données lues : η(1 s⁻¹) = 28 000 mPa·s et η(300 s⁻¹) = 816 mPa·s (même unité, le rapport n’a pas d’unité).", `Rapport = 28 000 ÷ 816 ≈ ${fmt(28000 / 816, 1)}.`],
         pieges: [[816 / 28000, "Vous avez inversé le rapport : il faut η à 1 s⁻¹ divisée par η à 300 s⁻¹."]],
         expl: <>La viscosité de la peinture B est divisée par environ 34 entre 1 et 300 s⁻¹ (pour la A, par environ 21) : les deux peintures sont <strong>rhéofluidifiantes</strong>. La courbe de B ne part pas de l’origine : un <em>seuil apparent</em> de l’ordre de 13 Pa (extrapolé : à confirmer aux très bas gradients, à l’étape suivante) en ferait un plastique non idéal, alors que celui de A est faible.</>,
@@ -582,7 +582,7 @@ export function SimulationRheoCourbes() {
         type: "qcm", q: "Que peut-on dire de la peinture A aux très bas gradients ?",
         options: ["Sa contrainte tend vers 0 : pas de seuil d’écoulement", "Sa contrainte garde un palier non nul : elle a un seuil de 15 Pa", "Sa viscosité reste constante sur toute la plage de γ̇ mesurée", "Elle a le même seuil que la peinture B, car les deux sont rhéofluidifiantes"], bonne: 0,
         indice: "Compare la peinture A à la B : que vaut τ pour A quand γ̇ devient très petit ? Reste-t-elle sur un palier ?",
-        expl: <>Pour A, τ continue de diminuer avec γ̇ et tend vers <strong>0</strong> : pas de seuil, et sa viscosité tend vers un palier aux très bas gradients. Pour B, la viscosité <strong>augmente sans limite</strong> quand γ̇ diminue (courbe de pente −1 en échelles logarithmiques : η = τ₀ / γ̇) : c’est la signature d’un seuil.</>,
+        expl: <>Pour A, τ continue de diminuer avec γ̇ et tend vers <strong>0</strong> : pas de seuil, et sa viscosité tend vers un palier aux très bas gradients. Pour B, la viscosité <strong>augmente sans limite</strong> quand γ̇ diminue (courbe de pente −1 en échelles logarithmiques : η = {avecIndices('frac(τ₀|γ)')}̇) : c’est la signature d’un seuil.</>,
       },
     },
     {
@@ -614,7 +614,7 @@ export function SimulationRheoCourbes() {
     {
       titre: "Le bilan",
       texte: <>
-        Tu sais lire un rhéogramme. Retiens les <strong>deux courbes</strong> et leur lien : η = τ / γ̇.
+        Tu sais lire un rhéogramme. Retiens les <strong>deux courbes</strong> et leur lien : η = {avecIndices('frac(τ|γ)')}̇.
         {puces(
           <>Sur la courbe d’écoulement : droite par l’origine, newtonien ; courbe qui s’incurve vers le bas, pseudoplastique ; vers le haut, rhéoépaississant.</>,
           <>Une courbe qui ne part pas de l’origine : fluide plastique (idéal si la courbe est droite, non idéal sinon).</>,
