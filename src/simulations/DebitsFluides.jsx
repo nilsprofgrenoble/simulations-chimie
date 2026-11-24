@@ -396,7 +396,7 @@ export function SimulationDebits({ naviguer }) {
     { id: 'relation', titre: 'Le débit massique', focus: ['manip'],
       texte: <>Un débit massique, noté <strong>Q_m</strong>, est la masse de fluide qui s’écoule par unité de temps.</>,
       tache: { type: 'qcm', indice: 'Un débit est une quantité par unité de temps : la masse est au numérateur, la durée au dénominateur.', q: 'Quelle relation donne Q_m à partir de m et Δt ?', options: ['Q_m = m / Δt', 'Q_m = m × Δt', 'Q_m = Δt / m'], bonne: 0,
-        expl: 'Q_m = m / Δt : plus la masse recueillie est grande pour une même durée, plus le débit est grand. Son unité est une masse divisée par une durée : kg·s⁻¹, kg·h⁻¹…' } },
+        expl: 'Q_m = frac(m|Δt) : plus la masse recueillie est grande pour une même durée, plus le débit est grand. Son unité est une masse divisée par une durée : kg·s⁻¹, kg·h⁻¹…' } },
     { id: 'methode', titre: 'Écrire les unités dans le calcul', focus: [],
       retenirTitre: 'Un débit : quantité ÷ durée',
       retenir: <><FDebit/>{FQm}{FQv}{puces(<>Un débit dit « combien de fluide passe en <strong>une unité de temps</strong> » : le temps est au dénominateur.</>, <>Débit massique Q<sub>m</sub> en kg·s⁻¹, kg·h⁻¹, t·h⁻¹ ; débit volumique Q<sub>v</sub> en m³·s⁻¹, m³·h⁻¹, L·s⁻¹.</>, <>Ne pas confondre avec la <strong>vitesse</strong> du fluide dans le tuyau (en m·s⁻¹).</>)}</>,
@@ -409,19 +409,19 @@ export function SimulationDebits({ naviguer }) {
       tache: { type: 'num', indice: 'Multipliez 5 min par une fraction égale à 1 qui a les minutes au dénominateur, pour qu’elles se simplifient. Combien y a-t-il de secondes dans 1 min ?', q: 'Δt en secondes', unite: 's', vrai: G_DT_S, tol: 0.001, affiche: x => fmt(x, 0),
         calcul: () => ['1 min = 60 s.', `Δt = ${G_DT_MIN} min = ${G_DT_MIN} × 60 s = ${fmt(G_DT_S, 0)} s.`],
         pieges: [[5 / 60, 'Il y a 60 s dans 1 min : le nombre de secondes est plus grand que le nombre de minutes. On multiplie par 60.'], [5 * 3600, '1 min = 60 s (et non 3 600 s).']],
-        expl: <>On écrit 5 min × (60 s / 1 min) : les minutes se simplifient. <Chaine facteurs={[{ num: [{ n: 5, u: 'min' }], den: [] }, facteurConv('min', 's', 'num')]}/></> } },
+        expl: <>On écrit 5 min × (frac(60 s|1 min)) : les minutes se simplifient. <Chaine facteurs={[{ num: [{ n: 5, u: 'min' }], den: [] }, facteurConv('min', 's', 'num')]}/></> } },
     { id: 'qmMin', titre: 'Calculer Q_m avec les unités', focus: ['manip'],
       retenirTitre: 'Convertir avec les unités',
       retenir: <><FFractions/>{puces(<>Les unités se multiplient, se divisent et <strong>se simplifient</strong> comme des nombres.</>, <>Mémo : 1 min = 60 s ; 1 h = 3&nbsp;600 s ; 1 kg = 1&nbsp;000 g ; 1 m³ = 1&nbsp;000 L.</>, <><strong>Bon sens :</strong> une unité plus petite donne un nombre plus grand.</>, <><strong>Piège :</strong> multiplier par 60 quand il fallait diviser.</>)}</>,
       texte: <>
-        <p style={{ margin: '0 0 8px' }}>Q_m = m / Δt, avec les unités dans le calcul. On garde pour l’instant la durée en minutes :</p>
+        <p style={{ margin: '0 0 8px' }}>Q_m = frac(m|Δt), avec les unités dans le calcul. On garde pour l’instant la durée en minutes :</p>
         <Ch1 nom="Q_m" facteurs={chGuideQm('kg', 'min')} cacher/>
         <p style={{ margin: '8px 0 0' }}>L’unité du résultat est une masse divisée par une durée : <strong>kg·min⁻¹</strong> (kilogrammes par minute).</p>
       </>,
       tache: { type: 'num', indice: 'Divisez la masse (en kg) par la durée (en min) : le résultat est en kg par minute.', q: 'Q_m en kg·min⁻¹', unite: 'kg·min⁻¹', vrai: G_QM_MIN, tol: 0.01, cs: 3, affiche: x => sig(x),
-        calcul: () => ['Q_m = m / Δt, avec m en kg et Δt en min.', `Q_m = ${fmt(G_M, 4)} kg / ${fmt(G_DT_MIN, 2)} min = ${sig(G_QM_MIN)} kg·min⁻¹.`],
+        calcul: () => ['Q_m = frac(m|Δt), avec m en kg et Δt en min.', `Q_m = frac(${fmt(G_M, 4)} kg|${fmt(G_DT_MIN, 2)} min) = ${sig(G_QM_MIN)} kg·min⁻¹.`],
         pieges: [[G_M * G_DT_MIN, 'Vous avez multiplié : un débit est une masse divisée par une durée.'], [G_DT_MIN / G_M, 'Attention à l’ordre : on divise la masse (35,6760) par la durée (5,00).']],
-        expl: 'Q_m = 35,6760 / 5,00 ≈ 7,14 kg·min⁻¹ : chaque minute, 7,14 kg de vin s’écoulent.' } },
+        expl: 'Q_m = frac(35,6760|5,00) ≈ 7,14 kg·min⁻¹ : chaque minute, 7,14 kg de vin s’écoulent.' } },
     { id: 'qmH', titre: 'Passer en kg·h⁻¹', focus: [],
       texte: <>
         <p style={{ margin: '0 0 8px' }}>On veut maintenant des <strong>heures</strong> : la minute doit disparaître. Elle est au <strong>dénominateur</strong> de Q_m ; on multiplie donc par une fraction égale à 1 qui a <strong>min au numérateur</strong> :</p>
@@ -430,20 +430,20 @@ export function SimulationDebits({ naviguer }) {
       </>,
       tache: { type: 'num', indice: 'Partez de Q_m en kg·min⁻¹. Il y a 60 min dans 1 h : par heure, passe-t-il plus ou moins de vin que par minute ?', q: 'Q_m en kg·h⁻¹', unite: 'kg·h⁻¹', vrai: G_QM_H, tol: 0.01, cs: 3, affiche: x => sig(x),
         calcul: () => ['1 h = 60 min : en une heure il passe 60 fois plus de vin qu’en une minute, donc on multiplie par 60.',
-          `Q_m = ${fmt(G_M, 4)} kg × 60 / ${fmt(G_DT_MIN, 2)} min = ${sig(G_QM_H)} kg·h⁻¹.`],
+          `Q_m = frac(${fmt(G_M, 4)} kg × 60|${fmt(G_DT_MIN, 2)} min) = ${sig(G_QM_H)} kg·h⁻¹.`],
         pieges: [[G_QM_MIN / 60, 'Vous avez divisé par 60. Il y a 60 min dans 1 h : par heure, il passe 60 fois plus de vin que par minute. On multiplie.'], [G_QM_MIN * 3600, '1 h = 60 min (et non 3 600 min).']],
-        expl: 'Q_m = 35,6760 × 60 / 5,00 ≈ 428 kg·h⁻¹ : cohérent, car 428 est 60 fois plus grand que 7,14.' } },
+        expl: 'Q_m = frac(35,6760 × 60|5,00) ≈ 428 kg·h⁻¹ : cohérent, car 428 est 60 fois plus grand que 7,14.' } },
     { id: 'qmSChoix', titre: 'Passer en kg·s⁻¹ : quel facteur ?', focus: [],
       texte: <>Repartons de Q_m ≈ 7,14 <Un u="kg"/>·<Un u="min" inv/>. On veut des <strong>secondes</strong>. Quelle fraction égale à 1 faut-il multiplier ?</>,
       tache: { type: 'qcm', indice: 'La minute est au dénominateur de Q_m : pour qu’elle se simplifie, elle doit se trouver au numérateur de la fraction. Rappel : 1 min = 60 s.', q: 'Par quelle fraction multiplier pour obtenir des kg·s⁻¹ ?', options: qcmFacteur, bonne: 0,
-        expl: 'La minute est au dénominateur de Q_m : pour qu’elle se simplifie, elle doit être au numérateur du facteur. Et 1 min = 60 s, donc (1 min) / (60 s) = 1. Le facteur 3 600 s / 1 h vaut aussi 1, mais il ne fait pas disparaître les minutes.' } },
+        expl: 'La minute est au dénominateur de Q_m : pour qu’elle se simplifie, elle doit être au numérateur du facteur. Et 1 min = 60 s, donc frac(1 min|60 s) = 1. Le facteur frac(3 600 s|1 h) vaut aussi 1, mais il ne fait pas disparaître les minutes.' } },
     { id: 'qmS', titre: 'Calculer Q_m en kg·s⁻¹', focus: [],
       texte: <><Ch1 nom="Q_m" facteurs={chGuideQm('kg', 's')} cacher/></>,
-      tache: { type: 'num', indice: 'Par seconde, il passe moins de vin que par minute (1 min = 60 s) : divisez le résultat en kg·min⁻¹ par 60, ou calculez directement m / Δt avec Δt en secondes.', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.01, cs: 3, affiche: x => sig(x),
+      tache: { type: 'num', indice: 'Par seconde, il passe moins de vin que par minute (1 min = 60 s) : divisez le résultat en kg·min⁻¹ par 60, ou calculez directement frac(m|Δt) avec Δt en secondes.', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.01, cs: 3, affiche: x => sig(x),
         calcul: () => ['1 min = 60 s : par seconde, il passe 60 fois moins de vin que par minute, donc on divise par 60.',
-          `Q_m = ${fmt(G_M, 4)} kg / (${fmt(G_DT_MIN, 2)} × 60 s) = ${fmt(G_M, 4)} / ${fmt(G_DT_S, 0)} = ${sig(G_QM_S)} kg·s⁻¹.`],
+          `Q_m = frac(${fmt(G_M, 4)} kg|${fmt(G_DT_MIN, 2)} × 60 s) = frac(${fmt(G_M, 4)}|${fmt(G_DT_S, 0)}) = ${sig(G_QM_S)} kg·s⁻¹.`],
         pieges: [[G_QM_MIN * 60, 'Vous avez multiplié par 60. Il y a 60 s dans 1 min : par seconde, il passe 60 fois moins de vin que par minute. On divise.'], [G_QM_MIN, 'C’est le résultat en kg·min⁻¹ : il manque la conversion des minutes en secondes.']],
-        expl: 'Q_m = 35,6760 / (5,00 × 60) = 35,6760 / 300 ≈ 0,119 kg·s⁻¹.' } },
+        expl: 'Q_m = frac(35,6760|5,00 × 60) = frac(35,6760|300) ≈ 0,119 kg·s⁻¹.' } },
     { id: 'chiffres', titre: 'Combien de chiffres significatifs ?', focus: [],
       retenirTitre: 'Convertir un débit',
       retenir: <><FConvDebit/>{puces(<>Dans un débit le temps est <strong>au dénominateur</strong> : pour passer de kg·s⁻¹ à kg·h⁻¹, on multiplie par la fraction de 3&nbsp;600 s pour 1 h.</>, <>Mémo : 1 m³·h⁻¹ ≈ 0,278 L·s⁻¹.</>, <>Écrire les unités dans le calcul évite l’erreur de sens.</>)}</>,
@@ -457,11 +457,11 @@ export function SimulationDebits({ naviguer }) {
       texte: <>Vous savez mesurer un débit massique, écrire les unités dans le calcul pour convertir sans erreur et donner le bon nombre de chiffres significatifs. Passez au parcours 2 pour la masse volumique et le débit volumique.</>, tache: null },
     { id: 'rho', titre: 'Densité et masse volumique', focus: ['manip'],
       texte: <>
-        <p style={{ margin: '0 0 8px' }}>On cherche maintenant le <strong>débit volumique</strong>. Il faut pour cela la <strong>masse volumique ρ</strong> du vin. On donne sa <strong>densité</strong> d = 0,991 (affichée sous les boutons de la manip). Elle compare le fluide à l’eau : d = ρ / ρ<sub>eau</sub>, donc <strong>ρ = d × ρ<sub>eau</sub></strong>. La densité n’a <strong>pas d’unité</strong>.</p>
+        <p style={{ margin: '0 0 8px' }}>On cherche maintenant le <strong>débit volumique</strong>. Il faut pour cela la <strong>masse volumique ρ</strong> du vin. On donne sa <strong>densité</strong> d = 0,991 (affichée sous les boutons de la manip). Elle compare le fluide à l’eau : d = frac(ρ|ρ_eau), donc <strong>ρ = d × ρ<sub>eau</sub></strong>. La densité n’a <strong>pas d’unité</strong>.</p>
         <p style={{ margin: '0 0 8px' }}>On prend ρ<sub>eau</sub> = 1 000 kg·m⁻³ (cette valeur dépend de la température : 998 kg·m⁻³ à 20 °C).</p>
         <AlerteRho/>
       </>,
-      tache: { type: 'num', indice: 'La densité vaut d = ρ / ρ_eau, donc ρ = d × ρ_eau, avec ρ_eau = 1 000 kg·m⁻³. La densité n’a pas d’unité.', q: 'Masse volumique ρ du vin', unite: 'kg·m⁻³', vrai: G_RHO, tol: 0.001, affiche: x => fmt(x, 0),
+      tache: { type: 'num', indice: 'La densité vaut d = frac(ρ|ρ_eau), donc ρ = d × ρ_eau, avec ρ_eau = 1 000 kg·m⁻³. La densité n’a pas d’unité.', q: 'Masse volumique ρ du vin', unite: 'kg·m⁻³', vrai: G_RHO, tol: 0.001, affiche: x => fmt(x, 0),
         calcul: () => ['ρ = d × ρ_eau, avec ρ_eau = 1 000 kg·m⁻³ (valeur prise par hypothèse, elle dépend de la température ; la densité d n’a pas d’unité).', `ρ = ${fmt(0.991, 3)} × 1 000 = ${fmt(G_RHO, 0)} kg·m⁻³.`],
         pieges: [[0.991, 'La densité n’a pas d’unité : ρ est la densité multipliée par la masse volumique de l’eau (1 000 kg·m⁻³).']],
         expl: <>Chaque mètre cube de vin pèse 991 kg. <RhoLigne d={0.991}/></> } },
@@ -479,26 +479,26 @@ export function SimulationDebits({ naviguer }) {
         <Ch1 nom="Q_v" facteurs={chaineQv(428, 'kg', 'h', 'm³', 'h', G_RHO, '428')} cacher/>
         
       </>,
-      tache: { type: 'num', indice: 'Q_v = Q_m / ρ. Pour que les kg se simplifient, multipliez Q_m (en kg·h⁻¹) par la fraction (1 m³) / (991 kg).', q: 'Q_v en m³·h⁻¹', unite: 'm³·h⁻¹', vrai: G_QV_H, tol: 0.01, cs: 3, affiche: x => sig(x),
-        calcul: () => ['Q_m = ρ × Q_v, donc Q_v = Q_m / ρ (fluide incompressible, ρ constante).', `Q_v = ${sig(G_QM_H, 3)} kg·h⁻¹ / ${fmt(G_RHO, 0)} kg·m⁻³ = ${sig(G_QV_H)} m³·h⁻¹ (les kg se simplifient).`],
-        pieges: [[G_RHO / G_QM_H, 'Attention à l’ordre : Q_v = Q_m / ρ (et non ρ / Q_m).'], [G_QM_H * G_RHO, 'Vous avez multiplié par ρ. Les kg ne se simplifieraient pas : il faut multiplier par 1/ρ, soit 1 m³ pour 991 kg.']],
+      tache: { type: 'num', indice: 'Q_v = frac(Q_m|ρ). Pour que les kg se simplifient, multipliez Q_m (en kg·h⁻¹) par la fraction frac(1 m³|991 kg).', q: 'Q_v en m³·h⁻¹', unite: 'm³·h⁻¹', vrai: G_QV_H, tol: 0.01, cs: 3, affiche: x => sig(x),
+        calcul: () => ['Q_m = ρ × Q_v, donc Q_v = frac(Q_m|ρ) (fluide incompressible, ρ constante).', `Q_v = frac(${sig(G_QM_H, 3)} kg·h⁻¹|${fmt(G_RHO, 0)} kg·m⁻³) = ${sig(G_QV_H)} m³·h⁻¹ (les kg se simplifient).`],
+        pieges: [[G_RHO / G_QM_H, 'Attention à l’ordre : Q_v = frac(Q_m|ρ) (et non frac(ρ|Q_m)).'], [G_QM_H * G_RHO, 'Vous avez multiplié par ρ. Les kg ne se simplifieraient pas : il faut multiplier par 1/ρ, soit 1 m³ pour 991 kg.']],
         expl: <>Q_v = 428 × <Frac haut="1" bas="991"/> ≈ 0,432 m³·h⁻¹. Garder un chiffre de plus dans les calculs intermédiaires évite les erreurs d’arrondi : on arrondit seulement le résultat final.</> } },
     { id: 'qvL', titre: 'Q_v en litres par seconde', focus: [],
       texte: <>On exprime maintenant Q_v en <strong>L·s⁻¹</strong>, à partir de Q_v ≈ 0,432 m³·h⁻¹. Écrivez vous-même les <strong>deux conversions</strong> (m³ → L et h → s) en vérifiant que les unités se simplifient.</>,
-      tache: { type: 'num', indice: 'Deux conversions : 1 m³ = 1 000 L (le m³ est au numérateur) et 1 h = 3 600 s (l’heure est au dénominateur). Multipliez par (1 000 L / 1 m³) puis par (1 h / 3 600 s).', q: 'Q_v en L·s⁻¹', unite: 'L·s⁻¹', vrai: G_QV_LS, tol: 0.01, cs: 3, affiche: x => sig(x),
+      tache: { type: 'num', indice: 'Deux conversions : 1 m³ = 1 000 L (le m³ est au numérateur) et 1 h = 3 600 s (l’heure est au dénominateur). Multipliez par (frac(1 000 L|1 m³)) puis par (frac(1 h|3 600 s)).', q: 'Q_v en L·s⁻¹', unite: 'L·s⁻¹', vrai: G_QV_LS, tol: 0.01, cs: 3, affiche: x => sig(x),
         aide: '1 m³ = 1 000 L ; 1 h = 3 600 s. Le m³ est au numérateur, l’heure au dénominateur.',
-        calcul: () => ['1 m³ = 1 000 L ; 1 h = 3 600 s.', `Q_v = ${sig(G_QV_H)} m³·h⁻¹ × 1 000 L / 1 m³ × 1 h / 3 600 s`,
-          `Q_v = ${sig(G_QV_H)} × 1 000 / 3 600 = ${sig(G_QV_LS)} L·s⁻¹.`],
+        calcul: () => ['1 m³ = 1 000 L ; 1 h = 3 600 s.', `Q_v = ${sig(G_QV_H)} m³·h⁻¹ × frac(1 000 L|1 m³) × frac(1 h|3 600 s)`,
+          `Q_v = frac(${sig(G_QV_H)} × 1 000|3 600) = ${sig(G_QV_LS)} L·s⁻¹.`],
         pieges: [[G_QV_H * 1000, 'Il manque la conversion des heures en secondes (1 h = 3 600 s).'], [G_QV_H / 3600, 'Il manque la conversion des m³ en litres (1 m³ = 1 000 L).'], [G_QV_H * 3600 * 1000, 'Pour passer de h⁻¹ à s⁻¹, on divise par 3 600 (une heure contient 3 600 s).']],
-        expl: <>Le m³ est au numérateur : on multiplie par (1 000 L / 1 m³). L’heure est au dénominateur : on multiplie par (1 h / 3 600 s).
+        expl: <>Le m³ est au numérateur : on multiplie par (frac(1 000 L|1 m³)). L’heure est au dénominateur : on multiplie par (frac(1 h|3 600 s)).
           <Ch1 nom="Q_v" facteurs={[{ num: [{ n: 0.432, s: '0,432', u: 'm³' }], den: [{ u: 'h' }] }, facteurConv('m³', 'L', 'num'), facteurConv('h', 's', 'den')]}/></> } },
     { id: 'voie', titre: 'Une autre voie : mesurer le volume', focus: ['manip'],
       texte: <>On peut aussi calculer le <strong>volume V</strong> de vin recueilli. Rappel : Q_m = ρ × Q_v (débit massique = masse volumique × débit volumique) ; de même, la masse et le volume sont liés par m = ρ × V. Calculez V en <strong>litres</strong> à partir de m = 35,6760 kg et ρ = 991 kg·m⁻³.</>,
-      tache: { type: 'num', indice: 'De m = ρ × V on tire V = m / ρ. Le résultat sort en m³ (kg divisés par des kg·m⁻³) : convertissez-le ensuite en litres (1 m³ = 1 000 L).', q: 'Volume V de vin', unite: 'L', vrai: G_V_L, tol: 0.01, cs: 3, affiche: x => sig(x),
+      tache: { type: 'num', indice: 'De m = ρ × V on tire V = frac(m|ρ). Le résultat sort en m³ (kg divisés par des kg·m⁻³) : convertissez-le ensuite en litres (1 m³ = 1 000 L).', q: 'Volume V de vin', unite: 'L', vrai: G_V_L, tol: 0.01, cs: 3, affiche: x => sig(x),
         aide: 'Isolez V dans m = ρ × V : on obtient des m³ (kg ÷ kg·m⁻³), puis on convertit en L.',
-        calcul: () => ['m = ρ × V, donc V = m / ρ (fluide incompressible).', `V = ${fmt(G_M, 4)} kg / ${fmt(G_RHO, 0)} kg·m⁻³ = ${sig(G_M / G_RHO)} m³.`,
+        calcul: () => ['m = ρ × V, donc V = frac(m|ρ) (fluide incompressible).', `V = frac(${fmt(G_M, 4)} kg|${fmt(G_RHO, 0)} kg·m⁻³) = ${sig(G_M / G_RHO)} m³.`,
           `Conversion : ${sig(G_M / G_RHO)} m³ × 1 000 = ${sig(G_V_L)} L.`],
-        pieges: [[G_M * G_RHO, 'Vous avez multiplié par ρ : m = ρ × V donc V = m / ρ.'], [G_M / G_RHO, 'C’est un résultat en m³. Pour l’avoir en litres, multipliez par 1 000.']],
+        pieges: [[G_M * G_RHO, 'Vous avez multiplié par ρ : m = ρ × V donc V = frac(m|ρ).'], [G_M / G_RHO, 'C’est un résultat en m³. Pour l’avoir en litres, multipliez par 1 000.']],
         expl: <>La graduation de la cuve indique bien environ 36 L. Et Q_v = <Frac haut="36,0 L" bas="300 s"/> = 0,120 L·s⁻¹ : on retrouve Q_v.
           <Ch1 nom="V" facteurs={[{ num: [{ n: G_M, s: '35,6760', u: 'kg' }], den: [] }, facteurRho(G_RHO), facteurConv('m³', 'L', 'num')]}/></> } },
     { id: 'duree2', titre: 'Et si on change la durée ?', focus: ['manip'],
@@ -510,13 +510,13 @@ export function SimulationDebits({ naviguer }) {
         consigne: mesure2 ? null : (duree === 120 && !run.ouvert ? 'Ouvrez le robinet pour faire la mesure' : 'Puis ouvrez le robinet') } },
     { id: 'constant', titre: 'Un débit constant', focus: ['manip'],
       texte: <>Lisez la nouvelle masse sur la balance (mesure de Δt = 2 min = 120 s) et calculez Q_m en kg·s⁻¹ avec <strong>3 chiffres significatifs</strong>.</>,
-      tache: { type: 'num', indice: 'Q_m = m / Δt, avec Δt = 2 min = 120 s. Donnez 3 chiffres significatifs, comme Δt = 120 s.', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.003, cs: 3, affiche: x => sig(x),
+      tache: { type: 'num', indice: 'Q_m = frac(m|Δt), avec Δt = 2 min = 120 s. Donnez 3 chiffres significatifs, comme Δt = 120 s.', q: 'Q_m en kg·s⁻¹', unite: 'kg·s⁻¹', vrai: G_QM_S, tol: 0.003, cs: 3, affiche: x => sig(x),
         bloque: !mesure2 ? 'Faites d’abord la mesure de 2 min (étape précédente).' : null,
-        calcul: () => ['Q_m = m / Δt, avec Δt = 2 min = 2 × 60 s = 120 s (débit supposé constant : régime permanent).',
-          `Q_m = ${fmt(G_QM_S * 120, 4)} kg / 120 s = ${sig(G_QM_S)} kg·s⁻¹ (3 chiffres significatifs, comme Δt = 120 s).`],
+        calcul: () => ['Q_m = frac(m|Δt), avec Δt = 2 min = 2 × 60 s = 120 s (débit supposé constant : régime permanent).',
+          `Q_m = frac(${fmt(G_QM_S * 120, 4)} kg|120 s) = ${sig(G_QM_S)} kg·s⁻¹ (3 chiffres significatifs, comme Δt = 120 s).`],
         pieges: [[G_QM_S * 120 / 2, 'Vous avez divisé par 2 : c’est Δt en minutes. Convertissez la durée en secondes (2 min = 120 s) pour obtenir des kg·s⁻¹.'],
           [G_QM_S * 120 / G_DT_S, 'Vous avez utilisé la durée de la première mesure (5 min = 300 s). Ici Δt = 2 min = 120 s.']],
-        expl: 'Q_m = 14,2704 / 120 ≈ 0,119 kg·s⁻¹ : la même valeur qu’avec 5 min. Le débit est constant : la masse recueillie est proportionnelle à la durée. Au-delà de 3 chiffres, les arrondis de la balance (0,1 g) et du chronomètre (1 s) rendent les résultats peu fiables.' } },
+        expl: 'Q_m = frac(14,2704|120) ≈ 0,119 kg·s⁻¹ : la même valeur qu’avec 5 min. Le débit est constant : la masse recueillie est proportionnelle à la durée. Au-delà de 3 chiffres, les arrondis de la balance (0,1 g) et du chronomètre (1 s) rendent les résultats peu fiables.' } },
     { id: 'huile', titre: 'Et avec un autre fluide ?', focus: ['manip'],
       retenirTitre: 'Un débit constant',
       retenir: <><FProportion/>{puces(<>Quand le débit est constant, la masse recueillie est <strong>proportionnelle à la durée</strong> : doubler Δt double m.</>, <>Le rapport m ÷ Δt, la pente de la droite, donne le même Q<sub>m</sub> quelle que soit la durée.</>)}</>,
@@ -532,7 +532,7 @@ export function SimulationDebits({ naviguer }) {
       retenirTitre: 'Même volume, masses différentes',
       retenir: <><FMemeVolume/>{puces(<>Même robinet, même durée : le volume recueilli est le même, donc Q<sub>v</sub> ne change pas.</>, <>Un litre d’huile pèse moins qu’un litre de vin : Q<sub>m</sub> = ρ × Q<sub>v</sub> diminue.</>, <>Q<sub>v</sub> dépend du robinet ; Q<sub>m</sub> dépend aussi du fluide.</>)}</>,
       texte: <>Lisez l’encadré « Hypothèses de travail ».</>,
-      tache: { type: 'qcm', indice: 'Si le débit variait pendant la mesure, m / Δt ne donnerait qu’une valeur moyenne. Que faut-il pour que le résultat ne dépende pas de la durée choisie ?', q: 'Pour que m/Δt représente « le » débit, que suppose-t-on pendant la mesure ?', options: ['Que le débit reste constant (régime permanent)', 'Que le débit augmente régulièrement avec le temps', 'Que la masse volumique varie pendant la mesure'], bonne: 0,
+      tache: { type: 'qcm', indice: 'Si le débit variait pendant la mesure, frac(m|Δt) ne donnerait qu’une valeur moyenne. Que faut-il pour que le résultat ne dépende pas de la durée choisie ?', q: 'Pour que m/Δt représente « le » débit, que suppose-t-on pendant la mesure ?', options: ['Que le débit reste constant (régime permanent)', 'Que le débit augmente régulièrement avec le temps', 'Que la masse volumique varie pendant la mesure'], bonne: 0,
         expl: 'Si le débit variait, m/Δt ne donnerait qu’une valeur moyenne. En régime permanent, le débit est le même à chaque instant et le résultat ne dépend pas de la durée choisie.' } },
     { id: 'bravo', titre: 'Le bilan', focus: [],
       retenirTitre: 'Bilan : les hypothèses de la mesure',
@@ -579,11 +579,11 @@ export function SimulationDebits({ naviguer }) {
     const ch3 = chaineQv(a1, m1, t1, v3, t3, r0, sig(a1)), ch4 = chaineQv(a2, m2, t2, v4, t4, r0, sig(a2));
     const vrai3 = analyser(chaineQv(v1, m1, t1, v3, t3, r0)).valeur, vrai4 = analyser(chaineQv(v2, m2, t2, v4, t4, r0)).valeur;
     const Q = [
-      { id: 'q1', q: <>Débit massique Q<sub>m</sub> en <strong>{uniteSimple(defi.c1)}</strong></>, unite: uniteSimple(defi.c1), vrai: v1, tol: 0.01, ch: ch1, nom: 'Q_m', indice: 'Q_m = m / Δt. Écrivez les unités dans le calcul et multipliez par des fractions égales à 1 pour convertir la masse et la durée (1 kg = 1 000 g ; 1 min = 60 s ; 1 h = 3 600 s ; 1 t = 1 000 kg).' },
-      { id: 'q2', q: <>Débit massique Q<sub>m</sub> en <strong>{uniteSimple(defi.c2)}</strong></>, unite: uniteSimple(defi.c2), vrai: v2, tol: 0.01, ch: ch2, nom: 'Q_m', indice: 'Même calcul que la question 1, avec d’autres unités : Q_m = m / Δt, puis conversion de la masse et de la durée par des fractions égales à 1.' },
+      { id: 'q1', q: <>Débit massique Q<sub>m</sub> en <strong>{uniteSimple(defi.c1)}</strong></>, unite: uniteSimple(defi.c1), vrai: v1, tol: 0.01, ch: ch1, nom: 'Q_m', indice: 'Q_m = frac(m|Δt). Écrivez les unités dans le calcul et multipliez par des fractions égales à 1 pour convertir la masse et la durée (1 kg = 1 000 g ; 1 min = 60 s ; 1 h = 3 600 s ; 1 t = 1 000 kg).' },
+      { id: 'q2', q: <>Débit massique Q<sub>m</sub> en <strong>{uniteSimple(defi.c2)}</strong></>, unite: uniteSimple(defi.c2), vrai: v2, tol: 0.01, ch: ch2, nom: 'Q_m', indice: 'Même calcul que la question 1, avec d’autres unités : Q_m = frac(m|Δt), puis conversion de la masse et de la durée par des fractions égales à 1.' },
       { id: 'q3', q: <>Masse volumique ρ du fluide (en SI)</>, unite: 'kg·m⁻³', vrai: r0, tol: 0.002, ch: null, indice: 'ρ = d × ρ_eau, avec ρ_eau = 1 000 kg·m⁻³. La densité n’a pas d’unité ; le résultat est en kg·m⁻³.' },
-      { id: 'q4', q: <>Débit volumique Q<sub>v</sub> en <strong>{uniteSimple(defi.c3)}</strong> (déduit de Q<sub>m</sub> en {uniteSimple(defi.c1)})</>, unite: uniteSimple(defi.c3), vrai: vrai3, tol: 0.015, ch: ch3, nom: 'Q_v', indice: 'Q_v = Q_m / ρ : multipliez Q_m par (1 m³) / (ρ kg) pour que les kg se simplifient, puis convertissez (1 m³ = 1 000 L ; 1 h = 60 min = 3 600 s). Partez de la valeur de Q_m trouvée à la question 1, arrondie à 3 chiffres significatifs.' },
-      { id: 'q5', q: <>Débit volumique Q<sub>v</sub> en <strong>{uniteSimple(defi.c4)}</strong> (déduit de Q<sub>m</sub> en {uniteSimple(defi.c2)})</>, unite: uniteSimple(defi.c4), vrai: vrai4, tol: 0.015, ch: ch4, nom: 'Q_v', indice: 'Même démarche que la question 4 : Q_v = Q_m / ρ avec la valeur de Q_m de la question 2, puis conversion des unités par des fractions égales à 1.' },
+      { id: 'q4', q: <>Débit volumique Q<sub>v</sub> en <strong>{uniteSimple(defi.c3)}</strong> (déduit de Q<sub>m</sub> en {uniteSimple(defi.c1)})</>, unite: uniteSimple(defi.c3), vrai: vrai3, tol: 0.015, ch: ch3, nom: 'Q_v', indice: 'Q_v = frac(Q_m|ρ) : multipliez Q_m par frac(1 m³|ρ kg) pour que les kg se simplifient, puis convertissez (1 m³ = 1 000 L ; 1 h = 60 min = 3 600 s). Partez de la valeur de Q_m trouvée à la question 1, arrondie à 3 chiffres significatifs.' },
+      { id: 'q5', q: <>Débit volumique Q<sub>v</sub> en <strong>{uniteSimple(defi.c4)}</strong> (déduit de Q<sub>m</sub> en {uniteSimple(defi.c2)})</>, unite: uniteSimple(defi.c4), vrai: vrai4, tol: 0.015, ch: ch4, nom: 'Q_v', indice: 'Même démarche que la question 4 : Q_v = frac(Q_m|ρ) avec la valeur de Q_m de la question 2, puis conversion des unités par des fractions égales à 1.' },
     ];
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

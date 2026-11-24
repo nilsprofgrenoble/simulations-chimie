@@ -76,10 +76,10 @@ const piegesLoin = (liste, vrai) => liste.filter(([v]) => isFinite(v) && Math.ab
 // Calcul pas à pas de la CPVC à partir d'un résultat de proprietes() (prises d'huile pp.phT et pp.phC en g pour 100 g)
 const calculCPVC = pp => {
   const mT = FORMULE_REF.tio2, mC = FORMULE_REF.caco3, hT = mT * pp.phT / 100, hC = mC * pp.phC / 100;
-  return [`Hypothèse du modèle : le liant se comporte comme l’huile de lin vis-à-vis des poudres. Volume d’huile = masse d’huile / ${fmt(RHO_HUILE, 2)} g/mL.`,
-    `Masse d’huile : TiO₂ ${fmt(mT, 0)} × ${fmt(pp.phT, 1)} / 100 = ${fmt(hT, 2)} g ; CaCO₃ ${fmt(mC, 0)} × ${fmt(pp.phC, 1)} / 100 = ${fmt(hC, 2)} g.`,
-    `V(huile) = (${fmt(hT, 2)} + ${fmt(hC, 2)}) / ${fmt(RHO_HUILE, 2)} = ${fmt(pp.vHuile, 2)} mL. V(pulvérulents) = ${fmt(mT, 0)} / ${fmt(POUDRES.tio2.rho, 1)} + ${fmt(mC, 0)} / ${fmt(POUDRES.caco3.rho, 2)} = ${fmt(pp.vPulv, 2)} mL.`,
-    `CPVC = V(pulv.) / (V(pulv.) + V(huile)) × 100 = ${fmt(pp.vPulv, 2)} / (${fmt(pp.vPulv, 2)} + ${fmt(pp.vHuile, 2)}) × 100 = ${fmt(pp.CPVC, 1)} %.`];
+  return [`Hypothèse du modèle : le liant se comporte comme l’huile de lin vis-à-vis des poudres. Volume d’huile = frac(masse d’huile|${fmt(RHO_HUILE, 2)} g/mL).`,
+    `Masse d’huile : TiO₂ frac(${fmt(mT, 0)} × ${fmt(pp.phT, 1)}|100) = ${fmt(hT, 2)} g ; CaCO₃ frac(${fmt(mC, 0)} × ${fmt(pp.phC, 1)}|100) = ${fmt(hC, 2)} g.`,
+    `V(huile) = frac(${fmt(hT, 2)} + ${fmt(hC, 2)}|${fmt(RHO_HUILE, 2)}) = ${fmt(pp.vHuile, 2)} mL. V(pulvérulents) = frac(${fmt(mT, 0)}|${fmt(POUDRES.tio2.rho, 1)}) + frac(${fmt(mC, 0)}|${fmt(POUDRES.caco3.rho, 2)}) = ${fmt(pp.vPulv, 2)} mL.`,
+    `CPVC = frac(V(pulv.)|V(pulv.) + V(huile)) × 100 = frac(${fmt(pp.vPulv, 2)}|${fmt(pp.vPulv, 2)} + ${fmt(pp.vHuile, 2)}) × 100 = ${fmt(pp.CPVC, 1)} %.`];
 };
 
 // ════════════════ SIMULATION ════════════════
@@ -146,7 +146,7 @@ export function SimulationPeinture({ plotlyReady }) {
   const TOUTES = [
     { id: 'contexte', titre: 'Changer de résine', focus: [],
       texte: <>Votre laboratoire fabrique une base de peinture blanche <strong>mate</strong> avec la résine Vinnapas EP 3360, qui risque de manquer. Il faut la
-        reformuler avec la résine <strong>Orgal PST 50A</strong>, en respectant le même cahier des charges : peinture mate (λ = CPV / CPVC ≥ 0,8), monocouche
+        reformuler avec la résine <strong>Orgal PST 50A</strong>, en respectant le même cahier des charges : peinture mate (λ = frac(CPV|CPVC) ≥ 0,8), monocouche
         (extrait sec ES &gt; 50 %), et COV &lt; 30 g/L. La formule de référence est dans le cadre « Formule ».</>, tache: null },
     { id: 'roles', titre: 'Le rôle des matières premières', focus: ['formule'],
       texte: <>Chaque matière première a un rôle : solvant (eau), liant (la résine), pigment (TiO₂, qui donne l'opacité et le blanc), charge (CaCO₃), additifs.</>,
@@ -156,32 +156,32 @@ export function SimulationPeinture({ plotlyReady }) {
         Le DPnB, lui, est un volatil : il ne compte pas dans l'extrait sec. (Attention : l'outil tableur le compte à 100 %, ce qui donne 53,3 %.)</>,
       tache: { type: 'num', q: 'Extrait sec de la formule de référence', unite: '%', vrai: refMes.ES, tol: 0.01, affiche: x => fmt(x, 1),
         calcul: () => { const mL = FORMULE_REF.liant * RESINES.vinnapas.es / 100, mA = refMes.mSec - FORMULE_REF.tio2 - FORMULE_REF.caco3 - mL;
-          return ['ES = m(sèche) / m(totale) × 100. Hypothèse : seules comptent les parties qui restent après séchage ; l’eau et le DPnB (volatil) s’évaporent.',
+          return ['ES = frac(m(sèche)|m(totale)) × 100. Hypothèse : seules comptent les parties qui restent après séchage ; l’eau et le DPnB (volatil) s’évaporent.',
             `m(sèche) = pulvérulents (${fmt(FORMULE_REF.tio2, 0)} + ${fmt(FORMULE_REF.caco3, 0)}) + liant sec (${fmt(FORMULE_REF.liant, 1)} × 60 % = ${fmt(mL, 2)}) + additifs secs (${fmt(mA, 2)}) = ${fmt(refMes.mSec, 2)} g.`,
             `m(totale) = somme de toutes les matières premières = ${fmt(refMes.mTot, 2)} g.`,
-            `ES = ${fmt(refMes.mSec, 2)} / ${fmt(refMes.mTot, 2)} × 100 = ${fmt(refMes.ES, 1)} %.`]; },
+            `ES = frac(${fmt(refMes.mSec, 2)}|${fmt(refMes.mTot, 2)}) × 100 = ${fmt(refMes.ES, 1)} %.`]; },
         pieges: [[proprietes({ ...FORMULE_REF, dpnb: 0 }).ES * 0 + (refMes.mSec + FORMULE_REF.dpnb) / refMes.mTot * 100, 'Vous avez compté le DPnB dans l’extrait sec : c’est un volatil.'],
           ...piegesLoin([[(FORMULE_REF.tio2 + FORMULE_REF.caco3 + FORMULE_REF.liant) / refMes.mTot * 100, 'Le liant est une dispersion à 60 % d’extrait sec : seule sa partie sèche (60 % de sa masse) compte.']], refMes.ES)], indice: "Extrait sec = masse des matières non volatiles ÷ masse totale de la formule × 100 (l’eau et les solvants ne comptent pas)." } },
     { id: 'cpv', titre: 'La CPV', focus: ['formule'],
-      texte: <>La concentration pigmentaire volumique CPV = V(pulvérulents) / [V(pulvérulents) + V(liant sec)]. Les volumes se calculent avec les masses volumiques
+      texte: <>La concentration pigmentaire volumique CPV = frac(V(pulvérulents)|V(pulvérulents) + V(liant sec)). Les volumes se calculent avec les masses volumiques
         <strong> vraies</strong> : TiO₂ 4,1 ; CaCO₃ 2,75 ; liant sec ≈ 1.</>,
       tache: { type: 'num', q: 'CPV de la formule de référence', unite: '%', vrai: refMes.CPV, tol: 0.01, affiche: x => fmt(x, 1),
         calcul: () => { const mL = FORMULE_REF.liant * RESINES.vinnapas.es / 100;
-          return ['CPV = V(pulv.) / (V(pulv.) + V(liant sec)) × 100, avec des volumes V = m / ρ (masses volumiques vraies). Le liant compte par sa partie sèche : 60 % de 74,7 g.',
-            `V(pulv.) = ${fmt(FORMULE_REF.tio2, 0)} / ${fmt(POUDRES.tio2.rho, 1)} + ${fmt(FORMULE_REF.caco3, 0)} / ${fmt(POUDRES.caco3.rho, 2)} = ${fmt(refMes.vPulv, 2)} mL.`,
-            `V(liant sec) = ${fmt(mL, 2)} g / ${fmt(RESINES.vinnapas.rhoSec, 1)} g/mL = ${fmt(refMes.vLiantSec, 2)} mL.`,
-            `CPV = ${fmt(refMes.vPulv, 2)} / (${fmt(refMes.vPulv, 2)} + ${fmt(refMes.vLiantSec, 2)}) × 100 = ${fmt(refMes.CPV, 1)} %.`]; },
-        pieges: piegesLoin([[(FORMULE_REF.tio2 + FORMULE_REF.caco3) / (FORMULE_REF.tio2 + FORMULE_REF.caco3 + FORMULE_REF.liant * RESINES.vinnapas.es / 100) * 100, 'Vous avez utilisé des masses : la CPV est une proportion de volumes (V = m / ρ).'],
+          return ['CPV = frac(V(pulv.)|V(pulv.) + V(liant sec)) × 100, avec des volumes V = frac(m|ρ) (masses volumiques vraies). Le liant compte par sa partie sèche : 60 % de 74,7 g.',
+            `V(pulv.) = frac(${fmt(FORMULE_REF.tio2, 0)}|${fmt(POUDRES.tio2.rho, 1)}) + frac(${fmt(FORMULE_REF.caco3, 0)}|${fmt(POUDRES.caco3.rho, 2)}) = ${fmt(refMes.vPulv, 2)} mL.`,
+            `V(liant sec) = frac(${fmt(mL, 2)} g|${fmt(RESINES.vinnapas.rhoSec, 1)} g/mL) = ${fmt(refMes.vLiantSec, 2)} mL.`,
+            `CPV = frac(${fmt(refMes.vPulv, 2)}|${fmt(refMes.vPulv, 2)} + ${fmt(refMes.vLiantSec, 2)}) × 100 = ${fmt(refMes.CPV, 1)} %.`]; },
+        pieges: piegesLoin([[(FORMULE_REF.tio2 + FORMULE_REF.caco3) / (FORMULE_REF.tio2 + FORMULE_REF.caco3 + FORMULE_REF.liant * RESINES.vinnapas.es / 100) * 100, 'Vous avez utilisé des masses : la CPV est une proportion de volumes (V = frac(m|ρ)).'],
           [refMes.vPulv / (refMes.vPulv + FORMULE_REF.liant / RESINES.vinnapas.rhoHumide) * 100, 'Le liant compte par sa partie sèche (60 % de 74,7 g), pas par sa masse humide.']], refMes.CPV), indice: "CPV = volume des pulvérulents ÷ (volume des pulvérulents + volume de liant sec) × 100. Chaque volume = masse ÷ masse volumique." } },
     { id: 'cpvcFiche', titre: 'La CPVC d’après les fiches techniques', focus: ['formule'],
-      texte: <>La CPV critique s'estime avec la prise d'huile : CPVC = V(pulvérulents) / [V(pulvérulents) + V(huile)], avec V(huile) = m × prise d'huile / 100 / 0,93.
+      texte: <>La CPV critique s'estime avec la prise d'huile : CPVC = frac(V(pulvérulents)|V(pulvérulents) + V(huile)), avec V(huile) = frac(m × prise d'huile|100 × 0,93).
         Les fiches techniques annoncent : TiO₂ {POUDRES.tio2.phFiche} g et CaCO₃ {POUDRES.caco3.phFiche} g d'huile pour 100 g. Volume des pulvérulents de la formule : V(pulvérulents) = {fmt(refMes.vPulv, 2)} mL (calculé à l'étape précédente).</>,
       tache: { type: 'num', q: 'CPVC d’après les fiches techniques', unite: '%', vrai: refFiche.CPVC, tol: 0.01, affiche: x => fmt(x, 1),
         calcul: () => calculCPVC(refFiche),
         pieges: piegesLoin([[refMes.CPVC, 'Ce sont les prises d’huile mesurées. Ici, utilisez celles des fiches techniques (20 g et 14 g pour 100 g).']], refFiche.CPVC), indice: "La CPVC est la valeur du CPV pour laquelle le liant remplit juste les espaces entre les pulvérulents : elle se calcule à partir des prises d’huile des fiches." } },
     { id: 'prevision', titre: 'L’aspect prévu', focus: ['resultats'],
-      texte: <>λ = CPV / CPVC = {fmt(refFiche.lambda, 2)}.</>,
-      tache: { type: 'qcm', q: 'D’après les fiches techniques, la peinture devrait être…', options: ['satinée (λ < 0,8), donc non conforme au cahier des charges', 'mate', 'poreuse'], bonne: 0, indice: "Calcule λ = CPV / CPVC avec les valeurs précédentes, puis compare-le à 0,8 et à 1 (cahier des charges)." } },
+      texte: <>λ = frac(CPV|CPVC) = {fmt(refFiche.lambda, 2)}.</>,
+      tache: { type: 'qcm', q: 'D’après les fiches techniques, la peinture devrait être…', options: ['satinée (λ < 0,8), donc non conforme au cahier des charges', 'mate', 'poreuse'], bonne: 0, indice: "Calcule λ = frac(CPV|CPVC) avec les valeurs précédentes, puis compare-le à 0,8 et à 1 (cahier des charges)." } },
     { id: 'surprise', titre: 'On fabrique, on applique… elle est mate !', focus: [],
       retenirTitre: 'À RETENIR : L’ASPECT D’UNE PEINTURE : λ',
       retenir: <>
@@ -200,7 +200,7 @@ export function SimulationPeinture({ plotlyReady }) {
       texte: <>Même mesure avec le carbonate de calcium (choisissez la poudre dans le cadre).</>,
       tache: { type: 'action', ok: mesPH.caco3 != null, consigne: mesPH.caco3 != null ? `✅ Prise d’huile du CaCO₃ : ${fmt(mesPH.caco3, 1)} g / 100 g` : 'Mesurez la prise d’huile du CaCO₃.' } },
     { id: 'cpvcReelle', titre: 'La vraie CPVC', focus: ['resultats'],
-      texte: <>Recalculez la CPVC avec vos prises d'huile mesurées{phEleve ? ` (${fmt(phEleve.tio2, 1)} et ${fmt(phEleve.caco3, 1)} g / 100 g)` : ''}.</>,
+      texte: <>Recalculez la CPVC avec vos prises d'huile mesurées{phEleve ? ` (${fmt(phEleve.tio2, 1)} et ${fmt(phEleve.caco3, 1)} g pour 100 g)` : ''}.</>,
       tache: { type: 'num', q: 'CPVC avec les prises d’huile mesurées', unite: '%', vrai: refEleve.CPVC, tol: 0.015, affiche: x => fmt(x, 1),
         calcul: () => calculCPVC(refEleve),
         pieges: piegesLoin([[refFiche.CPVC, 'C’est la CPVC calculée avec les prises d’huile des fiches techniques. Utilisez vos prises d’huile mesurées.']], refEleve.CPVC), indice: "Même calcul de la CPVC que précédemment, mais avec les prises d’huile mesurées à la place de celles des fiches." } },
@@ -212,28 +212,28 @@ export function SimulationPeinture({ plotlyReady }) {
         {puces(<>La CPVC ne dépend que des <strong>pulvérulents</strong> : leurs volumes et leurs prises d’huile, pas de la résine.</>, <>Le calcul suppose que le liant se comporte comme l’huile de lin vis-à-vis des poudres : c’est une <strong>hypothèse</strong> du modèle.</>)}
       </>,
       texte: <>Avec la vraie CPVC (étape précédente) et la CPV de la formule de référence ({fmt(refEleve.CPV, 1)} %, étape « La CPV »).</>,
-      tache: { type: 'num', q: 'λ = CPV / CPVC', unite: '', vrai: refEleve.lambda, tol: 0.02, affiche: x => fmt(x, 2),
-        calcul: () => [`λ = CPV / CPVC, avec CPV = ${fmt(refEleve.CPV, 1)} % (calculée à l’étape précédente) et CPVC = ${fmt(refEleve.CPVC, 1)} % (prises d’huile mesurées).`,
-          `λ = ${fmt(refEleve.CPV, 1)} / ${fmt(refEleve.CPVC, 1)} = ${fmt(refEleve.lambda, 2)} (sans unité).`],
-        pieges: piegesLoin([[refEleve.CPVC / refEleve.CPV, 'Rapport à l’envers : λ = CPV / CPVC.'], [refEleve.lambda * 100, 'λ est un rapport de deux pourcentages : il n’a pas d’unité et n’est pas multiplié par 100.']], refEleve.lambda),
-        expl: 'λ ≥ 0,8 : la peinture est bien mate, comme constaté. Ce sont les prises d’huile mesurées qu’il faut utiliser.', indice: "λ = CPV / CPVC, avec la CPVC que tu viens de calculer." } },
+      tache: { type: 'num', q: 'λ = frac(CPV|CPVC)', unite: '', vrai: refEleve.lambda, tol: 0.02, affiche: x => fmt(x, 2),
+        calcul: () => [`λ = frac(CPV|CPVC), avec CPV = ${fmt(refEleve.CPV, 1)} % (calculée à l’étape précédente) et CPVC = ${fmt(refEleve.CPVC, 1)} % (prises d’huile mesurées).`,
+          `λ = frac(${fmt(refEleve.CPV, 1)}|${fmt(refEleve.CPVC, 1)}) = ${fmt(refEleve.lambda, 2)} (sans unité).`],
+        pieges: piegesLoin([[refEleve.CPVC / refEleve.CPV, 'Rapport à l’envers : λ = frac(CPV|CPVC).'], [refEleve.lambda * 100, 'λ est un rapport de deux pourcentages : il n’a pas d’unité et n’est pas multiplié par 100.']], refEleve.lambda),
+        expl: 'λ ≥ 0,8 : la peinture est bien mate, comme constaté. Ce sont les prises d’huile mesurées qu’il faut utiliser.', indice: "λ = frac(CPV|CPVC), avec la CPVC que tu viens de calculer." } },
     { id: 'orgal', titre: 'La masse d’Orgal', focus: ['formule'],
       texte: <>Pour garder la même CPV, il faut le même <strong>volume de liant sec</strong> : la Vinnapas en apporte {fmt(mSecV, 2)} g (60 % de 74,7 g), soit
         {' '}{fmt(vSecV, 2)} mL. L'Orgal est à 50 % d'extrait sec, avec une densité sèche de 1,03.</>,
       tache: { type: 'num', q: 'Masse d’Orgal PST 50A à introduire', unite: 'g', vrai: mOrgal, tol: 0.01, affiche: x => fmt(x, 1),
-        calcul: () => ['On garde le même volume de liant sec (même CPV). Hypothèse : le volume du liant sec = masse sèche / densité sèche.',
-          `Vinnapas : ${fmt(FORMULE_REF.liant, 1)} × 60 % = ${fmt(mSecV, 2)} g secs ; V = ${fmt(mSecV, 2)} / ${fmt(RESINES.vinnapas.rhoSec, 2)} = ${fmt(vSecV, 2)} mL.`,
+        calcul: () => ['On garde le même volume de liant sec (même CPV). Hypothèse : le volume du liant sec = frac(masse sèche|densité sèche).',
+          `Vinnapas : ${fmt(FORMULE_REF.liant, 1)} × 60 % = ${fmt(mSecV, 2)} g secs ; V = frac(${fmt(mSecV, 2)}|${fmt(RESINES.vinnapas.rhoSec, 2)}) = ${fmt(vSecV, 2)} mL.`,
           `Orgal : masse sèche = V × densité sèche = ${fmt(vSecV, 2)} × ${fmt(RESINES.orgal.rhoSec, 2)} = ${fmt(vSecV * RESINES.orgal.rhoSec, 2)} g.`,
-          `L’Orgal contient 50 % d’extrait sec : m = ${fmt(vSecV * RESINES.orgal.rhoSec, 2)} / 0,50 = ${fmt(mOrgal, 1)} g.`],
+          `L’Orgal contient 50 % d’extrait sec : m = frac(${fmt(vSecV * RESINES.orgal.rhoSec, 2)}|0,50) = ${fmt(mOrgal, 1)} g.`],
         pieges: [[mSecV / 0.5, 'C’est le volume de liant sec qu’il faut conserver, pas sa masse : tenez compte de la densité sèche 1,03.'], [74.7 * 60 / 50, 'Même raisonnement : c’est le volume sec qui compte, avec la densité sèche.']], indice: "Cherche la masse de produit qui apporte la même masse de liant sec que la résine de référence : tiens compte de l’extrait sec de chaque produit." } },
     { id: 'eau', titre: 'L’eau à ajuster', focus: ['formule'],
       texte: <>L'Orgal apporte plus d'eau que la Vinnapas. Pour garder le même extrait sec ({fmt(refMes.ES, 1)} %), la masse totale doit valoir
-        m(sèche) / ES, et l'eau ajoutée complète. La nouvelle formule contient {fmt(mOrgal, 1)} g d'Orgal (étape précédente).</>,
+        frac(m(sèche)|ES), et l'eau ajoutée complète. La nouvelle formule contient {fmt(mOrgal, 1)} g d'Orgal (étape précédente).</>,
       tache: { type: 'num', q: 'Masse d’eau à ajouter dans la nouvelle formule', unite: 'g', vrai: eauOrgal, tol: 0.015, affiche: x => fmt(x, 1),
         calcul: () => { const sansEau = proprietes({ ...fOrgalSansEau, eau: 0 }).mTot;
-          return ['ES doit rester égal à celui de la référence : ES = m(sèche) / m(totale), donc m(totale) = m(sèche) / ES. L’eau ajoutée complète jusqu’à cette masse totale.',
+          return ['ES doit rester égal à celui de la référence : ES = frac(m(sèche)|m(totale)), donc m(totale) = frac(m(sèche)|ES). L’eau ajoutée complète jusqu’à cette masse totale.',
             `m(sèche) de la nouvelle formule (pulvérulents, Orgal sec, additifs secs) = ${fmt(mSecOrgal, 2)} g ; ES = ${fmt(refMes.ES, 1)} % = ${fmt(refMes.ES / 100, 3)}.`,
-            `m(totale) cible = ${fmt(mSecOrgal, 2)} / ${fmt(refMes.ES / 100, 3)} = ${fmt(mTotCible, 1)} g.`,
+            `m(totale) cible = frac(${fmt(mSecOrgal, 2)}|${fmt(refMes.ES / 100, 3)}) = ${fmt(mTotCible, 1)} g.`,
             `Sans eau, les autres matières pèsent ${fmt(sansEau, 1)} g : eau = ${fmt(mTotCible, 1)} − ${fmt(sansEau, 1)} = ${fmt(eauOrgal, 1)} g.`]; },
         pieges: piegesLoin([[mTotCible, 'C’est la masse totale visée. L’eau est la différence avec la masse des autres matières premières.'], [mSecOrgal, 'C’est la masse sèche. Divisez-la par ES pour obtenir la masse totale, puis soustrayez les autres matières.']], eauOrgal), indice: "Fais le bilan de l’eau : celle qu’apporte la nouvelle résine (selon son extrait sec) et celle à ajouter pour retrouver la formule visée." } },
     { id: 'cpvcInchangee', titre: 'Et la CPVC ?', focus: ['resultats'],
@@ -251,7 +251,7 @@ export function SimulationPeinture({ plotlyReady }) {
       tache: { type: 'num', q: 'Teneur actuelle en matière active de Coadis, en % des pulvérulents', unite: '%', vrai: 0.18 * 0.4 / 108 * 100, tol: 0.03, affiche: x => fmt(x, 3),
         calcul: () => ['Seule la matière active compte : c’est l’extrait sec du Coadis, soit 40 % de sa masse.',
           `Matière active = 0,18 g × 40 % = ${fmt(0.18 * 0.4, 3)} g.`,
-          `Rapportée aux 108 g de pulvérulents : ${fmt(0.18 * 0.4, 3)} / 108 × 100 = ${fmt(0.18 * 0.4 / 108 * 100, 3)} %.`],
+          `Rapportée aux 108 g de pulvérulents : frac(${fmt(0.18 * 0.4, 3)}|108) × 100 = ${fmt(0.18 * 0.4 / 108 * 100, 3)} %.`],
         pieges: [[0.18 / 108 * 100, 'Seule la matière active compte : 40 % de 0,18 g.'], [0.18 * 0.4 / 108, 'Le résultat est demandé en % : multipliez la fraction par 100.']],
         expl: 'C’est 2 à 3 fois moins que le minimum recommandé : les poudres sont mal défloculées, d’où les amas.', indice: "Matière active (en % des pulvérulents) = masse de matière active ÷ masse des pulvérulents × 100, avec la masse de matière active = masse de Coadis × sa teneur en matière active." } },
     { id: 'coadisNouveau', titre: 'Corriger le dosage', focus: ['formule'],
@@ -260,7 +260,7 @@ export function SimulationPeinture({ plotlyReady }) {
         calcul: () => { const mA = 0.00175 * (FORMULE_REF.tio2 + FORMULE_REF.caco3);
           return ['On vise 0,175 % = 0,00175 de matière active, rapportée à la masse des pulvérulents (108 g). Le Coadis n’est actif qu’à 40 % (son extrait sec).',
             `Matière active nécessaire = 0,00175 × 108 = ${fmt(mA, 3)} g.`,
-            `Masse de Coadis = ${fmt(mA, 3)} / 0,40 = ${fmt(coadisCible, 4)} g ≈ ${fmt(coadisCible, 2)} g.`]; },
+            `Masse de Coadis = frac(${fmt(mA, 3)}|0,40) = ${fmt(coadisCible, 4)} g ≈ ${fmt(coadisCible, 2)} g.`]; },
         pieges: [[0.00175 * (FORMULE_REF.tio2 + FORMULE_REF.caco3), 'Ce n’est que la matière active : le Coadis est actif à 40 %, il faut diviser par 0,40.'],
           [0.175 * (FORMULE_REF.tio2 + FORMULE_REF.caco3) / 0.4, 'Le pourcentage n’est pas converti : 0,175 % = 0,00175.']], indice: "Masse de Coadis = masse de matière active visée (en % des pulvérulents) ÷ teneur en matière active du Coadis." } },
     { id: 'tmff', titre: 'La température minimale de formation de film', focus: ['sechage'],
@@ -288,10 +288,10 @@ export function SimulationPeinture({ plotlyReady }) {
         {' '}{fmt(pOrgal.densite, 2)}, et sa masse totale {fmt(pOrgal.mTot, 1)} g.</>,
       tache: { type: 'num', q: 'Teneur en COV de la nouvelle formule', unite: 'g/L', vrai: pOrgal.COV, tol: 0.04, affiche: x => fmt(x, 0),
         calcul: () => { const vmL = pOrgal.mTot / pOrgal.densite;
-          return ['COV = masse de composés organiques volatils / volume de peinture. Ici, le seul COV est le DPnB (4,5 g).',
-            `Volume de peinture = masse totale / densité = ${fmt(pOrgal.mTot, 1)} g / ${fmt(pOrgal.densite, 2)} g/mL = ${fmt(vmL, 1)} mL = ${fmt(vmL / 1000, 4)} L.`,
-            `COV = ${fmt(FORMULE_REF.dpnb, 1)} g / ${fmt(vmL / 1000, 4)} L = ${fmt(pOrgal.COV, 0)} g/L.`]; },
-        pieges: [[4.5 / pOrgal.mTot * 1000, 'C’est par litre, et non par kilogramme : divisez par le volume (masse / densité).'],
+          return ['COV = frac(masse de composés organiques volatils|volume de peinture). Ici, le seul COV est le DPnB (4,5 g).',
+            `Volume de peinture = frac(masse totale|densité) = frac(${fmt(pOrgal.mTot, 1)} g|${fmt(pOrgal.densite, 2)} g/mL) = ${fmt(vmL, 1)} mL = ${fmt(vmL / 1000, 4)} L.`,
+            `COV = frac(${fmt(FORMULE_REF.dpnb, 1)} g|${fmt(vmL / 1000, 4)} L) = ${fmt(pOrgal.COV, 0)} g/L.`]; },
+        pieges: [[4.5 / pOrgal.mTot * 1000, 'C’est par litre, et non par kilogramme : divisez par le volume (frac(masse|densité)).'],
           [pOrgal.COV / 1000, 'Le résultat est demandé en g/L (et non en g/mL) : le volume doit être en litres.']], indice: "COV = masse de composés organiques volatils de la formule (coalescent notamment) ÷ volume de la formule, en g/L." } },
     { id: 'hypotheses', titre: 'Les hypothèses du modèle', focus: ['hypo'],
       texte: <>Lisez l'encadré « Hypothèses de travail ».</>,

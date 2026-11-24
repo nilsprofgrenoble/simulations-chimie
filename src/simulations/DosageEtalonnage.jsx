@@ -242,7 +242,7 @@ export function SimulationDosageEtalonnage() {
         meta: [['Données', source === 'simu' || !ext ? `gamme simulée : ${T.nom}` : source === 'exemple' ? EXEMPLES[exId].nom : 'données saisies'],
           ['Grandeur mesurée', E.T.signal], ['Niveaux (blanc compris)', String(r.p)], ['Nombre de points', String(r.n)]],
         stats: [['Pente a ± s(a)', avecU(r.a, r.sa)], ["Ordonnée à l'origine b ± s(b)", avecU(r.b, r.sb)],
-          ['R²', fmt(r.R2, 5)], ['s(y/x)', fmt(r.syx, d)], ['LD = 3 s(b) / a', `${fmt(E.LD, 3)} ${u}`], ['LQ = 10 s(b) / a', `${fmt(E.LQ, 3)} ${u}`]],
+          ['R²', fmt(r.R2, 5)], ['s(y/x)', fmt(r.syx, d)], ['LD = frac(3 s(b)|a)', `${fmt(E.LD, 3)} ${u}`], ['LQ = frac(10 s(b)|a)', `${fmt(E.LQ, 3)} ${u}`]],
         resultat: E.cInj != null ? `Échantillon : signal moyen ${fmt(E.echMoy, E.T.dec)} (${E.m} mesure(s)) -> C = ${avecU(E.cInj, E.uC)} ${u}` : null,
         graphes: [{ titre: "Droite d'étalonnage", svg: svgs[0] }, { titre: 'Graphique des résidus', svg: svgs[1] }],
         fisher: f ? { ok: f.F <= f.Fc, lignes: lignesAnova(r).map(l => l.map(String)),
@@ -282,14 +282,14 @@ export function SimulationDosageEtalonnage() {
     { id: 'sref', titre: 'La solution de référence', focus: [],
       texte: <>On pèse 100,4 mg de caféine, que l'on dissout dans une fiole jaugée de 100 mL : c'est la solution S<sub>ref</sub>.</>,
       tache: { type: 'num', q: 'Concentration en masse de S_ref, en mg/L', unite: 'mg/L', vrai: 1004, tol: 0.002,
-        calcul: () => ['Concentration en masse : C = m / V.',
+        calcul: () => ['Concentration en masse : C = frac(m|V).',
           'Données : m = 100,4 mg ; V = 100 mL = 0,100 L (on convertit : 100 mL ÷ 1000 = 0,100 L).',
-          `C = 100,4 mg / 0,100 L = ${sci(1004)} mg/L.`],
+          `C = frac(100,4 mg|0,100 L) = ${sci(1004)} mg/L.`],
         pieges: [[1.004, 'C’est en g/L : la réponse est demandée en mg/L.'], [100.4, 'Divisez par le volume en litres (100 mL = 0,100 L).']], indice: "Concentration = masse dissoute ÷ volume de la fiole. Convertissez les g en mg et les mL en L." } },
     { id: 'masseAtt', titre: 'L’ordre de grandeur attendu (1)', focus: [],
       texte: <>Avant de préparer la gamme, il faut savoir où tombera l'échantillon. On pèse {fmt(CREME.m, 2)} g de crème, annoncée à 5 % de caféine.</>,
       tache: { type: 'num', q: 'Masse de caféine attendue dans la prise d’essai', unite: 'mg', vrai: mCafAtt, tol: 0.01,
-        calcul: () => ['5 % en masse : il y a 5 g de caféine pour 100 g de crème, soit une fraction 5 / 100 = 0,05.',
+        calcul: () => ['5 % en masse : il y a 5 g de caféine pour 100 g de crème, soit une fraction frac(5|100) = 0,05.',
           `Masse de crème : ${fmt(CREME.m, 2)} g = ${fmt(CREME.m * 1000, 0)} mg (1 g = 1000 mg).`,
           `m(caféine) = 0,05 × ${fmt(CREME.m * 1000, 0)} mg = ${sci(mCafAtt)} mg.`],
         pieges: [[5 * CREME.m * 1000, 'Le pourcentage n’est pas converti : 5 % = 0,05 (et non 5), car 5 % veut dire 5 pour 100.'],
@@ -297,9 +297,9 @@ export function SimulationDosageEtalonnage() {
     { id: 'cMere', titre: 'L’ordre de grandeur attendu (2)', focus: [],
       texte: <>La crème est mise en solution dans une fiole de 100 mL : c'est la solution S<sub>éch-mère</sub>. Elle contient toute la caféine de la prise d'essai ({sci(mCafAtt)} mg, calculée à l'étape précédente).</>,
       tache: { type: 'num', q: 'Concentration attendue de S_éch-mère', unite: 'mg/L', vrai: cMereAtt, tol: 0.01,
-        calcul: () => ['Concentration en masse : C = m / V, avec la masse de caféine trouvée à l’étape précédente.',
+        calcul: () => ['Concentration en masse : C = frac(m|V), avec la masse de caféine trouvée à l’étape précédente.',
           `m = ${sci(mCafAtt)} mg ; V = ${CREME.vFiole} mL = ${fmt(CREME.vFiole / 1000, 3)} L (conversion : mL ÷ 1000).`,
-          `C = ${sci(mCafAtt)} mg / ${fmt(CREME.vFiole / 1000, 3)} L = ${sci(cMereAtt)} mg/L.`],
+          `C = frac(${sci(mCafAtt)} mg|${fmt(CREME.vFiole / 1000, 3)} L) = ${sci(cMereAtt)} mg/L.`],
         pieges: [[mCafAtt / CREME.vFiole, 'Le volume doit être en litres : 100 mL = 0,100 L. Ici, il est resté en mL.'],
           [mCafAtt / CREME.m, 'On divise par le volume de la fiole (100 mL = 0,100 L), pas par la masse de crème.']], indice: "Divisez la masse de caféine attendue par le volume de la fiole (en L)." } },
     { id: 'dilution', titre: 'Diluer d’un facteur 1000', focus: ['ech'],
@@ -311,19 +311,19 @@ export function SimulationDosageEtalonnage() {
       texte: <>S<sub>éch-mère</sub> a une concentration attendue de {sci(cMereAtt)} mg/L (étape précédente). On la dilue d'un facteur 1000.</>,
       tache: { type: 'num', q: 'Concentration attendue dans la solution injectée', unite: 'mg/L', vrai: cInjAtt, tol: 0.01,
         calcul: () => ['Diluer d’un facteur 1000 : la solution est 1000 fois moins concentrée, donc C est divisée par 1000.',
-          `C = ${sci(cMereAtt)} mg/L / 1000 = ${sci(cInjAtt)} mg/L.`],
+          `C = frac(${sci(cMereAtt)} mg/L|1000) = ${sci(cInjAtt)} mg/L.`],
         pieges: [[cMereAtt, 'Cette valeur est celle de S_éch-mère, avant dilution. Il faut ensuite diviser par 1000.'],
           [cMereAtt * 1000, 'Une dilution diminue la concentration : on divise par 1000, on ne multiplie pas.']], indice: "Une dilution divise la concentration par le facteur de dilution." } },
     { id: 'volume', titre: 'Préparer un étalon', focus: ['gamme'],
-      texte: <>Chaque étalon se prépare en prélevant un volume V de S<sub>ref</sub> à la {TECHNIQUES.clhp.outil}, et en complétant une fiole de 20 mL. On a C = C<sub>ref</sub> × V / V<sub>fiole</sub>, avec C<sub>ref</sub> = {fmt(TECHNIQUES.clhp.cRef, 0)} mg/L (concentration de S<sub>ref</sub>, étape 2).</>,
+      texte: <>Chaque étalon se prépare en prélevant un volume V de S<sub>ref</sub> à la {TECHNIQUES.clhp.outil}, et en complétant une fiole de 20 mL. On a C = frac(C_ref × V|V_fiole), avec C<sub>ref</sub> = {fmt(TECHNIQUES.clhp.cRef, 0)} mg/L (concentration de S<sub>ref</sub>, étape 2).</>,
       tache: { type: 'num', q: 'Volume de S_ref à prélever pour un étalon à 1,00 mg/L', unite: 'µL', vrai: vPour1, tol: 0.02,
-        calcul: () => ['On isole V dans C = C_ref × V / V_fiole : V = C × V_fiole / C_ref.',
+        calcul: () => ['On isole V dans C = frac(C_ref × V|V_fiole) : V = frac(C × V_fiole|C_ref).',
           `Données : C = 1,00 mg/L ; V_fiole = ${TECHNIQUES.clhp.vFiole} mL ; C_ref = ${fmt(TECHNIQUES.clhp.cRef, 0)} mg/L.`,
-          `V = 1,00 × ${TECHNIQUES.clhp.vFiole} / ${fmt(TECHNIQUES.clhp.cRef, 0)} = ${fmt(vPour1 / 1000, 4)} mL.`,
+          `V = frac(1,00 × ${TECHNIQUES.clhp.vFiole}|${fmt(TECHNIQUES.clhp.cRef, 0)}) = ${fmt(vPour1 / 1000, 4)} mL.`,
           `Conversion : ${fmt(vPour1 / 1000, 4)} mL × 1000 = ${sci(vPour1)} µL.`],
         pieges: [[vPour1 / 1000, 'La réponse est demandée en µL (1 mL = 1000 µL).'],
-          [1.0 / TECHNIQUES.clhp.cRef * 1000, 'Vous avez oublié de multiplier par le volume de la fiole (20 mL) : V = C × V_fiole / C_ref.'],
-          [TECHNIQUES.clhp.cRef * TECHNIQUES.clhp.vFiole / 1.0, 'Formule à l’envers : on cherche V = C × V_fiole / C_ref (et non C_ref × V_fiole / C).']], indice: "La quantité de matière se conserve à la dilution : C_ref × V_prélevé = C_étalon × V_fiole." } },
+          [1.0 / TECHNIQUES.clhp.cRef * 1000, 'Vous avez oublié de multiplier par le volume de la fiole (20 mL) : V = frac(C × V_fiole|C_ref).'],
+          [TECHNIQUES.clhp.cRef * TECHNIQUES.clhp.vFiole / 1.0, 'Formule à l’envers : on cherche V = frac(C × V_fiole|C_ref) (et non frac(C_ref × V_fiole|C)).']], indice: "La quantité de matière se conserve à la dilution : C_ref × V_prélevé = C_étalon × V_fiole." } },
     { id: 'gamme', titre: 'Concevoir la gamme', focus: ['gamme'],
       texte: <>Dans le cadre « Ma gamme », choisissez le nombre d'étalons et le volume prélevé pour chacun. Les vérifications s'affichent en direct : il faut
         encadrer les {fmt(cInjAtt, 2)} mg/L attendus, de préférence vers le milieu de la gamme.</>,
@@ -349,7 +349,7 @@ export function SimulationDosageEtalonnage() {
       retenirTitre: 'À RETENIR : L’ORDRE DE GRANDEUR ATTENDU',
       retenir: <>
         <FOrdreGrandeur/>
-        {puces(<><strong>m(caféine attendue) = teneur annoncée × m(crème)</strong> ; C = m / V avec V en litres ; on divise par le facteur de dilution pour viser la gamme.</>, <>Avant d’étalonner, on sait ainsi <strong>où tombera l’échantillon</strong> : c’est ce qui décide du choix de la gamme.</>)}
+        {puces(<><strong>m(caféine attendue) = teneur annoncée × m(crème)</strong> ; C = frac(m|V) avec V en litres ; on divise par le facteur de dilution pour viser la gamme.</>, <>Avant d’étalonner, on sait ainsi <strong>où tombera l’échantillon</strong> : c’est ce qui décide du choix de la gamme.</>)}
       </>,
       texte: <>Vous savez estimer la concentration attendue et préparer une gamme d’étalons adaptée. Passez au parcours suivant pour mesurer et exploiter.</>, tache: null },
     { id: 'pente', titre: 'La droite d’étalonnage', focus: ['stats'],
@@ -397,17 +397,17 @@ export function SimulationDosageEtalonnage() {
       texte: <>Choisissez la dilution B, puis cliquez sur « Préparer et injecter l'échantillon » (deux injections).</>,
       tache: { type: 'action', ok: !!mes.ech, consigne: mes.ech ? '✅ Échantillon mesuré' : 'Mesurez l’échantillon.' } },
     { id: 'cEch', titre: 'La concentration injectée', focus: ['stats'],
-      texte: <>On utilise la droite : C = (A − b) / a, avec A la moyenne des deux injections{echMoy != null ? ` (${fmt(echMoy, 2)})` : ''}{reg ? `, et a = ${fmt(reg.a, 3)}, b = ${fmt(reg.b, 3)} (droite d'étalonnage, lue dans « Exploitation »)` : ''}.</>,
+      texte: <>On utilise la droite : C = frac(A − b|a), avec A la moyenne des deux injections{echMoy != null ? ` (${fmt(echMoy, 2)})` : ''}{reg ? `, et a = ${fmt(reg.a, 3)}, b = ${fmt(reg.b, 3)} (droite d'étalonnage, lue dans « Exploitation »)` : ''}.</>,
       tache: { type: 'num', q: 'Concentration de caféine dans la solution injectée', unite: 'mg/L', vrai: cInj ?? NaN, tol: 0.01, affiche: v => fmt(v, 3),
-        calcul: () => ['On inverse la droite d’étalonnage A = a × C + b, donc C = (A − b) / a. Hypothèse : la droite reste valable pour l’échantillon (modèle linéaire, échantillon dans la gamme, pas d’effet de matrice).',
-          `Signal moyen des deux injections : A = (${fmt(mes.ech[0], T.dec)} + ${fmt(mes.ech[1], T.dec)}) / 2 = ${fmt(echMoy, T.dec + 1)}.`,
+        calcul: () => ['On inverse la droite d’étalonnage A = a × C + b, donc C = frac(A − b|a). Hypothèse : la droite reste valable pour l’échantillon (modèle linéaire, échantillon dans la gamme, pas d’effet de matrice).',
+          `Signal moyen des deux injections : A = frac(${fmt(mes.ech[0], T.dec)} + ${fmt(mes.ech[1], T.dec)}|2) = ${fmt(echMoy, T.dec + 1)}.`,
           `Droite : a = ${fmt(reg.a, 3)} ; b = ${fmt(reg.b, 3)}.`,
-          `C = (${fmt(echMoy, T.dec + 1)} − ${fmt(reg.b, 3)}) / ${fmt(reg.a, 3)} = ${fmt(cInj, 3)} mg/L.`],
+          `C = frac(${fmt(echMoy, T.dec + 1)} − ${fmt(reg.b, 3)}|${fmt(reg.a, 3)}) = ${fmt(cInj, 3)} mg/L.`],
         bloque: cInj == null ? 'Mesurez d’abord l’échantillon.' : null,
         pieges: reg && echMoy != null ? piegesLoin([[echMoy / reg.a, 'N’oubliez pas de retrancher b.'],
-          [(echMoy + reg.b) / reg.a, 'Erreur de signe : on retranche b (C = (A − b) / a), on ne l’ajoute pas.'],
-          [reg.a / echMoy, 'Formule à l’envers : C = (A − b) / a, la pente est au dénominateur.'],
-          [echMoy - reg.b, 'Il faut aussi diviser par la pente a : C = (A − b) / a.']], cInj) : [], indice: "Inversez la droite A = a × C + b : C = (A − b) / a." } },
+          [(echMoy + reg.b) / reg.a, 'Erreur de signe : on retranche b (C = frac(A − b|a)), on ne l’ajoute pas.'],
+          [reg.a / echMoy, 'Formule à l’envers : C = frac(A − b|a), la pente est au dénominateur.'],
+          [echMoy - reg.b, 'Il faut aussi diviser par la pente a : C = frac(A − b|a).']], cInj) : [], indice: "Inversez la droite A = a × C + b : C = frac(A − b|a)." } },
     { id: 'pourcent', titre: 'La teneur de la crème', focus: [],
       retenirTitre: 'À RETENIR : LIRE LA CONCENTRATION DE L’ÉCHANTILLON',
       retenir: <>
@@ -422,7 +422,7 @@ export function SimulationDosageEtalonnage() {
           return [`Avant dilution : C_éch-mère = ${fmt(cInj, 3)} mg/L × ${fmt(facteur, 0)} = ${fmt(cMere, 1)} mg/L.`,
             `Masse de caféine dans la fiole de ${CREME.vFiole} mL (= ${fmt(CREME.vFiole / 1000, 3)} L) : m = C × V = ${fmt(cMere, 1)} × ${fmt(CREME.vFiole / 1000, 3)} = ${fmt(mCaf, 2)} mg.`,
             `Masse de crème : ${fmt(CREME.m, 2)} g = ${fmt(CREME.m * 1000, 0)} mg (même unité que m).`,
-            `Teneur = m(caféine) / m(crème) × 100 = ${fmt(mCaf, 2)} / ${fmt(CREME.m * 1000, 0)} × 100 = ${fmt(pourcent, 2)} %.`];
+            `Teneur = frac(m(caféine)|m(crème)) × 100 = frac(${fmt(mCaf, 2)}|${fmt(CREME.m * 1000, 0)}) × 100 = ${fmt(pourcent, 2)} %.`];
         },
         bloque: pourcent == null ? 'Mesurez d’abord l’échantillon.' : null,
         pieges: pourcent != null ? piegesLoin([[pourcent / facteur, 'Vous avez oublié de remonter la dilution : la solution injectée est 1000 fois moins concentrée que S_éch-mère.'],
@@ -439,11 +439,11 @@ export function SimulationDosageEtalonnage() {
       tache: { type: 'qcm', q: 'Quelle piste explorer en priorité ?', options: ['L’extraction : une crème se dissout mal, une partie de la caféine peut rester piégée. On le vérifie avec un ajout dosé (crème dopée avec une quantité connue)', 'Recommencer jusqu’à trouver 5 %', 'Augmenter R²'], bonne: 0,
         expl: 'L’étalonnage externe suppose que la caféine de l’échantillon se comporte comme celle des étalons (pas d’effet de matrice). Un ajout dosé, ou un rendement d’extraction, le vérifie.', indice: "Qu’est-ce qui diffère entre une solution simple et une crème, avant l’injection ?" } },
     { id: 'ld', titre: 'Limites de détection et de quantification', focus: ['stats'],
-      texte: <>Comme dans l'activité, on prend LD = 3 s(b) / a et LQ = 10 s(b) / a. s(b) (écart-type de l'ordonnée à l'origine) et a (pente) se lisent dans « Exploitation ». (D'autres conventions existent, par exemple avec s(y/x) ou à partir de blancs répétés.)</>,
+      texte: <>Comme dans l'activité, on prend LD = frac(3 × s(b)|a) et LQ = frac(10 × s(b)|a). s(b) (écart-type de l'ordonnée à l'origine) et a (pente) se lisent dans « Exploitation ». (D'autres conventions existent, par exemple avec s(y/x) ou à partir de blancs répétés.)</>,
       tache: { type: 'num', q: 'Limite de quantification LQ', unite: 'mg/L', vrai: LQ ?? NaN, tol: 0.02, affiche: v => fmt(v, 3), bloque: LQ == null ? 'Mesurez d’abord la gamme.' : null,
-        calcul: () => ['LQ = 10 × s(b) / a, où s(b) est l’écart-type de l’ordonnée à l’origine (donné par la régression, qui suppose des erreurs de loi normale et de même dispersion sur toute la gamme) et a la pente. La division par a convertit un signal en concentration.',
+        calcul: () => ['LQ = frac(10 × s(b)|a), où s(b) est l’écart-type de l’ordonnée à l’origine (donné par la régression, qui suppose des erreurs de loi normale et de même dispersion sur toute la gamme) et a la pente. La division par a convertit un signal en concentration.',
           `Valeurs lues dans « Exploitation » : s(b) = ${fmt(reg.sb, 4)} ; a = ${fmt(reg.a, 3)}.`,
-          `LQ = 10 × ${fmt(reg.sb, 4)} / ${fmt(reg.a, 3)} = ${fmt(LQ, 3)} mg/L.`],
+          `LQ = frac(10 × ${fmt(reg.sb, 4)}|${fmt(reg.a, 3)}) = ${fmt(LQ, 3)} mg/L.`],
         pieges: reg ? piegesLoin([[LD, 'C’est la limite de détection LD (facteur 3). Pour la limite de quantification, le facteur est 10.'],
           [10 * reg.sb, 'Il faut diviser par la pente a, pour passer d’un signal à une concentration en mg/L.'],
           [10 * reg.sb * reg.a, 'On divise par la pente a (on ne la multiplie pas) pour obtenir une concentration.']], LQ) : [], indice: "La LQ se calcule à partir d’un écart-type et de la pente a de la droite." } },
@@ -452,7 +452,7 @@ export function SimulationDosageEtalonnage() {
       retenir: <>
         <FLimites/>
         <Formule><mtext>LD</mtext><mo>=</mo><mfrac><mrow><mn>3</mn><mo>×</mo><mi>s</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow><mi>a</mi></mfrac><mspace width="1.5em"/><mtext>LQ</mtext><mo>=</mo><mfrac><mrow><mn>10</mn><mo>×</mo><mi>s</mi><mo>(</mo><mi>b</mi><mo>)</mo></mrow><mi>a</mi></mfrac></Formule>
-        {puces(<>s(b) : écart-type de l’ordonnée à l’origine ; on divise par a pour passer d’un signal à une concentration (mg/L).</>, <><strong>LD</strong> : plus petite concentration détectable ; <strong>LQ</strong> : plus petite quantifiable avec une incertitude acceptable. D’autres conventions existent (avec s(y/x) ou des blancs répétés).</>, <><strong>Étalonnage externe</strong> : gamme → droite A = a C + b → C = (A − b) / a ; valider par R², résidus <em>et</em> test de Fisher.</>)}
+        {puces(<>s(b) : écart-type de l’ordonnée à l’origine ; on divise par a pour passer d’un signal à une concentration (mg/L).</>, <><strong>LD</strong> : plus petite concentration détectable ; <strong>LQ</strong> : plus petite quantifiable avec une incertitude acceptable. D’autres conventions existent (avec s(y/x) ou des blancs répétés).</>, <><strong>Étalonnage externe</strong> : gamme → droite A = a C + b → C = frac(A − b|a) ; valider par R², résidus <em>et</em> test de Fisher.</>)}
       </>,
       texte: <>Vous avez mené un dosage par étalonnage externe complet : de l'ordre de grandeur à la gamme, de la régression aux hypothèses, jusqu'au
         résultat et à sa discussion. En exploration libre, changez de technique (spectrophotométrie, absorption atomique) ou exploitez vos propres données.</>, tache: null },
@@ -527,7 +527,7 @@ export function SimulationDosageEtalonnage() {
             couleur={E.reg.fisher.F > E.reg.fisher.Fc ? '#b91c1c' : '#15803d'}/> : <LigneMesure nom="Test de Fisher" valeur="impossible : il faut au moins 3 niveaux, avec des répétitions"/>}
           {E.reg.fisher && E.mode === 'injection' && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}><Pic n="warn"/>Répétitions = deux mesures de la même fiole : l'hypothèse de répétitions indépendantes n'est pas vérifiée, le test n'est pas fiable.</div>}
           {E.reg.fisher && ext && E.reg.fisher.F > E.reg.fisher.Fc && nUtil > 3 && <div style={{ fontSize: 12.5, color: '#b45309', margin: '4px 0' }}><Pic n="bulb"/>Regardez les résidus : s'ils dessinent une courbe, réduisez le domaine avec « Niveaux inclus ».</div>}
-          <LigneMesure nom="LD = 3 s(b) / a ; LQ = 10 s(b) / a" valeur={passe('ld') ? `${fmt(E.LD, 3)} ; ${fmt(E.LQ, 3)} ${E.T.uC}` : '? ; ?'}/>
+          <LigneMesure nom="LD = frac(3 s(b)|a) ; LQ = frac(10 s(b)|a)" valeur={passe('ld') ? `${fmt(E.LD, 3)} ; ${fmt(E.LQ, 3)} ${E.T.uC}` : '? ; ?'}/>
           {ext && <label style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', fontSize: 14, fontWeight: 600, color: KIT.txt, margin: '8px 0 4px' }}>
             Signal de l'échantillon :
             <input value={yEchTxt} onChange={e => setYEchTxt(e.target.value)} placeholder="ex. 0,262 ; 0,265" aria-label="Signal de l'échantillon"
@@ -535,7 +535,7 @@ export function SimulationDosageEtalonnage() {
             <span style={{ fontSize: 12.5, color: KIT.txt2, fontWeight: 500 }}>une ou plusieurs valeurs, séparées par « ; »</span></label>}
           {E.cInj != null && <>
             {!ext && <LigneMesure nom="Échantillon : signal moyen (2 mesures)" valeur={fmt(E.echMoy, E.T.dec)}/>}
-            <LigneMesure nom={ext ? 'C(échantillon) = (y − b) / a' : 'C injectée = (A − b) / a'} valeur={passe('cEch') ? `${avecU(E.cInj, E.uC)} ${E.T.uC} (incertitude-type due à l'étalonnage)` : '?'} couleur="#dc2626"/>
+            <LigneMesure nom={ext ? 'C(échantillon) = frac(y − b|a)' : 'C injectée = frac(A − b|a)'} valeur={passe('cEch') ? `${avecU(E.cInj, E.uC)} ${E.T.uC} (incertitude-type due à l'étalonnage)` : '?'} couleur="#dc2626"/>
             {!ext && ((pourcent != null && vu('pourcent') && etape > idx('pourcent')) || (pourcent != null && !enGuide)) ? <LigneMesure nom="Teneur en caféine de la crème" valeur={`${fmt(pourcent, 2)} %`} couleur="#dc2626"/> : null}
             {E.cInj < E.LQ && <div style={{ fontSize: 12.5, color: '#b91c1c' }}>L'échantillon est sous la limite de quantification.</div>}
             {(E.cInj < Math.min(...E.x.filter(x => x > 0)) || E.cInj > Math.max(...E.x)) && <div style={{ fontSize: 12.5, color: '#b91c1c' }}>L'échantillon est hors de la gamme : le résultat est extrapolé.</div>}
