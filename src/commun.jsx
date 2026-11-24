@@ -6,7 +6,7 @@ import { missionEnCours } from "./mission";
 import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
 import { OngletFiche } from "./FicheOnglet";
 import { noterFiche, EN_RECOLTE, EN_CONSULT, envoyerRecolte, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
-import { nomsSim } from "./suivi";
+import { nomsSim, useSuivi, declarerDefis } from "./suivi";
 import { simDeLUrl } from "./slugs";
 import { LectureSonoreBouton } from "./LectureSonoreBouton";
 import { lectureActivee } from "./lectureSonore";
@@ -324,9 +324,14 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     background: actif ? c : 'white', color: actif ? 'white' : TXT2 });
   const maj = f => setEtat(e => ({ ...e, ...f(e) }));
   const setRep = v => maj(e => ({ reps: { ...e.reps, [etape]: v }, verifs: { ...e.verifs, [etape]: false } }));
+  // Une erreur = une réponse fausse validée (une seule fois par réponse : cliquer de nouveau sans changer la réponse ne compte pas) ; l'indice est gratuit.
   const verifier = () => {
     setTicVerif(t => t + 1);
-    maj(e => ({ verifs: { ...e.verifs, [etape]: true } }));
+    const fausse = !!tache && tache.type !== 'action' && !(etat.verifs && etat.verifs[etape]) && !(etat.reussies && etat.reussies[etape]) && !(() => {
+      if (tache.type === 'qcm') return reps[etape] === tache.bonne;
+      const x = lireNombre(reps[etape]); return tache.vrai != null && isFinite(x) && proche(x, tache.vrai, tache.tol);
+    })();
+    maj(e => ({ verifs: { ...e.verifs, [etape]: true }, ...(fausse ? { erreurs: (e.erreurs || 0) + 1 } : {}) }));
     // Une étape numérique peut demander à garder la valeur trouvée par l'élève (par exemple un volume lu)
     if (tache && tache.type === 'num' && tache.surReussite) {
       const x = lireNombre(reps[etape]);
@@ -358,6 +363,23 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
   // Arrivé à la dernière étape (le bilan) : le parcours est terminé ; la simulation s'ouvrira désormais sur l'exploration libre
   const derniere = etape >= etapes.length - 1;
   useEffect(() => { if (derniere && !etat.fini) setEtat(e => (e.fini ? e : { ...e, fini: true })); }, [derniere, etat.fini, setEtat]);
+  // Étoiles du parcours guidé : 3 sans erreur, 2 pour 1 à 3 erreurs, 1 pour 4 erreurs ou plus. Le parcours est suivi comme un défi (clé « <sim>:defi.parcours »)
+  // pour que les étoiles arrivent au classement et à « Mon compte » ; les « essais » enregistrés (1, 2 ou 3) donnent ces étoiles avec la règle des exercices.
+  const simParcours = simDeLUrl();
+  const cleParcours = `${simParcours}:defi.parcours`;
+  const [parcoursOk, setParcoursOk] = useState(false);
+  const suiviParcours = useSuivi(cleParcours, parcoursOk);
+  // Les étoiles se gagnent en ARRIVANT au bilan pendant cette visite : rouvrir un parcours laissé au bilan n'en donne pas
+  const ouvertAuBilan = useRef(derniere);
+  useEffect(() => { if (!derniere) ouvertAuBilan.current = false; }, [derniere]);
+  useEffect(() => {
+    if (simParcours) declarerDefis(simParcours, [['parcours', 'Parcours guidé']]);
+    if (!derniere || ouvertAuBilan.current || parcoursOk || etat.etoilesDonnees || EN_RECOLTE || EN_CONSULT || !simParcours) return;
+    const err = etat.erreurs || 0, essais = err === 0 ? 1 : err <= 3 ? 2 : 3;
+    for (let i = 0; i < essais; i++) suiviParcours.essai();
+    setParcoursOk(true);
+    setEtat(e => ({ ...e, etoilesDonnees: true }));
+  }, [derniere, parcoursOk, etat.etoilesDonnees, etat.erreurs, simParcours]);   // eslint-disable-line react-hooks/exhaustive-deps
   // Parcours terminé : la simulation entre dans « Mes fiches » (cartes « À retenir » de toutes ses étapes) ; son schéma principal est gardé pour la fiche
   useEffect(() => { noterProgres(simDeLUrl(), etape, etapes.length); }, [etape, etapes.length]);   // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -393,7 +415,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: TXT2, fontWeight: 700 }}>
           <span>Étape {etape + 1} / {etapes.length}</span>
-          {etape > 0 && <button onClick={() => setEtat({ etape: 0, reps: {}, verifs: {}, reussies: {}, carnet: {}, ...(etat.fini ? { fini: true } : {}) })} style={{ background: 'none', border: 'none', color: TXT2,
+          {etape > 0 && <button onClick={() => setEtat({ etape: 0, reps: {}, verifs: {}, reussies: {}, carnet: {}, erreurs: 0, ...(etat.fini ? { fini: true } : {}) })} style={{ background: 'none', border: 'none', color: TXT2,
             cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>revenir au début</button>}
         </div>
         <div role="progressbar" aria-label="Progression du parcours" aria-valuemin={1} aria-valuenow={etape + 1} aria-valuemax={etapes.length} aria-valuetext={`Étape ${etape + 1} sur ${etapes.length}`} style={{ height: 6, background: '#e2e8f0', borderRadius: 3, marginTop: 4 }}>

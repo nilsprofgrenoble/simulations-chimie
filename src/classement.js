@@ -7,11 +7,11 @@
 // Les lames (classements), dans l'ordre où on les fait défiler. « code » = clé renvoyée par le serveur.
 export const LAMES = [
   { code: 'etoiles', titre: 'Étoiles', icone: '⭐', unite: ['étoile', 'étoiles'], couleur: '#b45309', fond: '#fef3c7',
-    sous: 'Toutes les étoiles gagnées : 3 pour un exercice réussi du premier coup, 2 après une erreur, 1 sinon.' },
+    sous: 'Toutes les étoiles gagnées : 3 pour un exercice ou un défi réussi du premier coup, 2 après une erreur, 1 sinon ; pour un parcours guidé : 3 sans erreur, 2 avec 1 à 3 erreurs, 1 avec 4 erreurs ou plus.' },
   { code: 'semaine', titre: 'Cette semaine', icone: '🔥', unite: ['exercice', 'exercices'], couleur: '#c2410c', fond: '#ffedd5',
     sous: 'Exercices et défis réussis depuis lundi. Le classement repart de zéro chaque lundi : tout le monde peut y entrer !' },
   { code: 'defis', titre: 'Défis', icone: '🎯', unite: ['défi', 'défis'], couleur: '#be185d', fond: '#fce7f3',
-    sous: 'Nombre de défis de simulations réussis.' },
+    sous: 'Nombre de défis et de parcours guidés de simulations réussis.' },
   { code: 'regularite', titre: 'Régularité', icone: '📅', unite: ['semaine', 'semaines'], couleur: '#0f766e', fond: '#ccfbf1',
     sous: 'Nombre de semaines différentes où l’élève a travaillé sur le site : travailler un peu, souvent, ça paie.' },
 ];
