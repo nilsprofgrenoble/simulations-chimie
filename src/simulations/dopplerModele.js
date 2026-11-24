@@ -12,7 +12,6 @@
 export const C_AIR = 340;                 // m/s : célérité du son dans l’air (valeur de la simulation, air vers 15 à 20 °C)
 export const DC_AIR = 3;                  // m/s : demi-étendue sur c (température du laboratoire non contrôlée)
 export const F_EMETTEURS = [25000, 40000];   // Hz : fréquences des émetteurs ultrasonores disponibles
-export const SENS = { approche: 1, eloigne: -1 };
 
 // ---------- émetteur mobile, récepteur fixe ----------
 // sens = +1 : l’émetteur se rapproche du récepteur ; −1 : il s’en éloigne

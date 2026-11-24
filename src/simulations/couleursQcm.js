@@ -16,7 +16,7 @@ export const QCM = {
     indice: "Dans la zone commune, quelles lumières arrivent à l’œil ? Quels cônes sont alors stimulés, et lesquels restent au repos ?" },
   pixels: {
     q: "Quels sous-pixels sont allumés dans une zone de l’écran qui affiche du jaune ?",
-    options: ["les sous-pixels rouges et verts, tandis que les bleus restent éteints","les sous-pixels jaunes, qui s’ajoutent aux rouges, aux verts et aux bleus","les sous-pixels bleus seuls, puisque le jaune est complémentaire du bleu","les trois sortes de sous-pixels, car le jaune est une couleur très claire"], bonne: 0,
+    options: ["les sous-pixels rouges et verts, tandis que les bleus restent éteints","les sous-pixels jaunes, qui s’ajoutent aux autres sous-pixels","les sous-pixels bleus seuls, puisque le jaune est complémentaire du bleu","les trois sortes de sous-pixels, car le jaune est une couleur très claire"], bonne: 0,
     expl: "Les écrans n’ont que trois sortes de sous-pixels. Pour afficher du jaune, on allume le rouge et le vert, et on éteint le bleu : l’œil, trop loin pour distinguer les sous-pixels, perçoit la somme. Allumer les trois donnerait du blanc.",
     indice: "Reprends l’étape des deux lampes : quelle somme de deux lumières primaires donne du jaune ?" },
   superpose: {
@@ -31,7 +31,7 @@ export const QCM = {
     indice: "Demande-toi si les couleurs se forment en ajoutant des lumières émises, ou en retirant des radiations à une lumière blanche." },
   opaque: {
     q: "Quelles radiations la tomate absorbe-t-elle ?",
-    options: ["le vert et le bleu : un objet rouge diffuse le rouge, pas le reste","le rouge seul : c’est la couleur de l’objet, donc celle qu’il absorbe","aucune : la tomate fabrique elle-même la lumière rouge que l’on voit","toutes : un objet opaque garde toute la lumière qu’il reçoit pour lui"], bonne: 0,
+    options: ["le vert et le bleu : un objet rouge diffuse le rouge, pas le reste","le rouge seul : c’est la couleur de l’objet, donc celle absorbée","aucune : la tomate fabrique elle-même la lumière rouge que l’on voit","toutes : un objet opaque garde toute la lumière qu’il reçoit pour lui"], bonne: 0,
     expl: "La lumière blanche contient du rouge, du vert et du bleu. La tomate paraît rouge parce qu’elle diffuse le rouge vers l’œil : elle absorbe donc le vert et le bleu, c’est-à-dire la couleur complémentaire du rouge, le cyan (dans le modèle idéal à trois bandes). Elle ne produit pas sa propre lumière.",
     indice: "Seule la lumière diffusée arrive à l’œil. Quelle radiation arrive à l’œil quand on voit un objet rouge ? Les autres ont été absorbées." },
   coloree: {

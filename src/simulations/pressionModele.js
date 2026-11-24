@@ -14,31 +14,22 @@
 
 export const P_ATM = 1013;                                    // hPa : pression atmosphérique usuelle (≈ 1,013 × 10⁵ Pa)
 export const REF = { V: 60, thetaC: 20, P: P_ATM };           // état initial de la seringue : 60 mL d'air à 20 °C et 1013 hPa
-export const V_MAX = 60;                                      // mL : capacité de la seringue
-export const V_MIN = 10;
 
 // ---------- conversions ----------
 export const hPa_Pa = h => h * 100;
 export const Pa_hPa = p => p / 100;
 export const bar_Pa = b => b * 1e5;
-export const Pa_bar = p => p / 1e5;
 export const bar_hPa = b => b * 1000;
-export const hPa_bar = h => h / 1000;
 export const cm2_m2 = s => s * 1e-4;
-export const m2_cm2 = s => s * 1e4;
-export const mm2_m2 = s => s * 1e-6;
-export const mL_L = v => v / 1000;
 export const kelvin = thetaC => thetaC + 273.15;
 
 // ---------- force pressante : F = P·S (P en Pa, S en m², F en N) ----------
 export const forcePressante = (P_Pa, S_m2) => P_Pa * S_m2;
 export const pressionDepuisForce = (F_N, S_m2) => F_N / S_m2;
-export const surfaceDepuisForce = (F_N, P_Pa) => F_N / P_Pa;
 
 // ---------- loi de Mariotte : P1·V1 = P2·V2 (T et quantité de gaz constantes) ----------
 export const pressionFinale = (P1, V1, V2) => P1 * V1 / V2;
 export const volumeFinal = (P1, V1, P2) => P1 * V1 / P2;
-export const produitPV = (P, V) => P * V;
 
 // ---------- seringue fermée : pression « vraie » du gaz ----------
 // Vt : volume du tuyau et du capteur (mL), n : quantité de gaz relative à l'état initial (1 = inchangée), thetaC : température (°C).

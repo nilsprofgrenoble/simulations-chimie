@@ -17,7 +17,6 @@ export const lambdaDeNu = nu => C / nu;                   // m
 export const energieDeNu = nu => H * nu;                  // J
 export const energieDeLambda = lam => H * C / lam;        // J
 export const jVersEv = e => e / EV;
-export const evVersJ = e => e * EV;
 export const lambdaDeEv = eEv => H * C / (eEv * EV);      // m
 export const photonsParSeconde = (puissance, lam) => puissance / energieDeLambda(lam);   // s⁻¹ (au-delà du programme)
 
@@ -34,7 +33,6 @@ export const DOMAINES = [
 ];
 export const domaine = id => DOMAINES.find(d => d.id === id);
 export const domaineDeLambda = lam => DOMAINES.find(d => lam >= d.lmin && lam < d.lmax) || DOMAINES[0];
-export const domaineDeNu = nu => domaineDeLambda(lambdaDeNu(nu));
 
 // Couleur approximative d'une radiation visible (repères indicatifs, en nm)
 export function couleurVisible(lamNm) {

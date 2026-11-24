@@ -18,7 +18,6 @@ export const ORDRE_LIQUIDES = ['eau', 'mer', 'huile', 'mercure'];
 export const liquideDe = id => LIQUIDES[id] || LIQUIDES.eau;
 
 // z (m) d'un point situé à la profondeur h sous la surface libre, l'origine de l'axe vertical z étant à la surface
-export const zDepuisProfondeur = h => -h;
 
 // Relation fournie : P_B − P_A = ρ·g·(z_A − z_B), en Pa (z en m)
 export const diffPression = (rho, zA, zB) => rho * G * (zA - zB);
@@ -28,8 +27,6 @@ export const pression = (Ps, rho, h) => Ps + rho * G * Math.max(0, h);
 export const profondeur = (P, Ps, rho) => (P - Ps) / (rho * G);
 // Le manomètre affiche des hPa entiers (résolution 1 hPa)
 export const hPa = pa => Math.round(pa / 100);
-// Pression relative (par rapport à l'atmosphère), en Pa
-export const relative = pa => pa - PATM;
 // Force pressante (N) d'une pression P (Pa) sur une surface S (m²) : F = P·S (la force est perpendiculaire à la paroi)
 export const force = (P, S) => P * S;
 // Masse volumique (kg·m⁻³) déduite de deux relevés (h en m, P en hPa) : ρ = ΔP / (g·Δh)

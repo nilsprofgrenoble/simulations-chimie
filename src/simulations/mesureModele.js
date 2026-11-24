@@ -119,7 +119,6 @@ export function comparer(m, u, ref) {
 // Classes centrées sur centre + k × largeur (k de −K à +K), la classe k contient les valeurs de [centre + (k − ½)·w ; centre + (k + ½)·w[.
 // Domaine fixe pour toutes les séries d'une même situation (pour pouvoir comparer deux histogrammes).
 export const K_CLASSES = 8;
-export const largeurClasse = sit => sit.classe;
 export const decimalesClasse = (sit, w = sit.classe) => { for (let d = 0; d < 6; d++) if (Math.abs(w * Math.pow(10, d) - Math.round(w * Math.pow(10, d))) < 1e-9) return d; return 6; };
 export function histogramme(sit, valeurs, w = sit.classe, K = K_CLASSES) {
   const c0 = sit.centre, classes = [];

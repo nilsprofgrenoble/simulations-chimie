@@ -10,13 +10,13 @@ export const QCM = {
     indice: 'Le même opérateur lance et arrête le chronomètre à la main : refait-il exactement le même geste au dixième de seconde près ?' },
   disp: {
     q: 'Ces deux séries de 20 mesures ont des moyennes voisines. Laquelle a le plus petit écart-type s ?',
-    options: ['la série 1 : elle couvre un plus grand intervalle, donc elle est plus précise', 'la série 2 : ses mesures sont groupées près de la moyenne', 'aucune : des moyennes voisines donnent des écarts-types voisins', 'on ne peut pas savoir : il faudrait la liste de toutes les valeurs'],
+    options: ['la série 1 : elle couvre un plus grand intervalle, donc elle est plus précise', 'la série 2 : ses mesures sont toutes groupées assez près de la moyenne', 'aucune : des moyennes voisines donnent des écarts-types voisins', 'on ne peut pas savoir : il faudrait la liste de toutes les valeurs'],
     bonne: 1,
     expl: 'L’écart-type s mesure l’étalement des mesures autour de la moyenne : plus les barres de l’histogramme sont groupées au centre, plus s est petit. Ici la série 2 occupe peu de classes (mesures resserrées), la série 1 en occupe beaucoup. La moyenne et l’écart-type sont deux informations indépendantes : deux séries peuvent avoir la même moyenne et des dispersions très différentes.',
     indice: 'Regardez sur combien de classes chaque série s’étale : une série étroite et haute ou une série large et basse ?' },
   protocole: {
     q: 'On veut des mesures moins dispersées. Quel changement de protocole y contribue le plus ?',
-    options: ['mesurer une seule oscillation : la durée à lire est plus petite', 'afficher les millièmes de seconde : le chronomètre est plus fin', 'déclencher par une cellule : on réduit fortement la part due au geste', 'ne faire qu’une seule mesure : on évite d’avoir plusieurs valeurs'],
+    options: ['mesurer une seule oscillation : la durée à lire est plus petite', 'afficher les millièmes de seconde : le chronomètre est plus fin', 'déclencher par une cellule : on réduit fortement la part due au geste', 'ne faire qu’une seule mesure : on évite d’avoir à comparer plusieurs valeurs'],
     bonne: 2,
     expl: 'La dispersion vient surtout du geste de l’opérateur au départ et à l’arrivée. Une cellule photoélectrique déclenche et arrête le chronomètre à un repère fixe : la part due au geste est fortement réduite et les mesures se resserrent. Afficher plus de chiffres ne supprime pas la variation du geste ; mesurer une seule oscillation rend l’écart de réaction proportionnellement plus grand (on chronomètre plutôt 10 oscillations) ; ne faire qu’une mesure cache la dispersion sans la réduire.',
     indice: 'Cherchez ce qui introduit la variation d’un essai à l’autre, puis ce qui la supprime : l’affichage, la durée mesurée, ou le geste ?' },
