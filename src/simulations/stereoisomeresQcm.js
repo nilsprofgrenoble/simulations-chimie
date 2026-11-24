@@ -23,8 +23,11 @@ export const QCM = {
     options: [`diastéréoisomères : stéréoisomères qui ne sont pas image l’un de l’autre`, `énantiomères : ils diffèrent par la configuration d’un carbone, c’est un miroir`, `identiques : les deux molécules se superposent après rotation`, `énantiomères : ils ont la même formule semi-développée, donc ils sont image l’un de l’autre`],
     bonne: 0 },
   alcene: {
-    options: ['CH₃–CH=CH–CH₂CH₃ : chaque carbone de C=C porte deux groupes différents', 'CH₃–CH=CH₂ : un carbone de C=C porte deux atomes d’hydrogène, il suffit que l’autre soit substitué', '(CH₃)₂C=CH–CH₃ : un carbone de C=C porte deux groupes méthyle identiques, ce qui suffit', 'Cl₂C=CH₂ : la double liaison est très polarisée, donc il y a toujours deux arrangements'],
-    bonne: 0 },
+    options: ['A : CH₃–CH=CH₂ : un carbone de C=C porte deux atomes d’hydrogène, il suffit que l’autre soit substitué',
+      'B : CH₃–CH=CH–CH₂CH₃ : chaque carbone de C=C porte deux groupes différents',
+      'C : (CH₃)₂C=CH–CH₃ : un carbone de C=C porte deux groupes méthyle identiques, ce qui suffit',
+      'D : Cl₂C=CH₂ : la double liaison est très polarisée, donc il y a toujours deux arrangements'],
+    bonne: 1 },
   prio: {
     options: ['Cl sur un carbone, COOH sur l’autre (jamais H)', 'H sur les deux carbones : les petits atomes passent toujours avant', 'Cl et COOH sur le même carbone, comme sur un seul carbone de C=C', 'Cl sur un carbone, H sur l’autre, car H n’a pas de numéro atomique'],
     bonne: 0 },

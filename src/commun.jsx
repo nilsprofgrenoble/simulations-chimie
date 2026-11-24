@@ -424,7 +424,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           <div data-lecture="1" style={{ fontSize: 14.5, fontWeight: 700, color: TXT, marginBottom: 6 }}>{avecIndices(tache.q)}</div>
           {tache.bloque && <div style={{ fontSize: 14, color: '#b45309', marginBottom: 6 }}>{tache.bloque}</div>}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {ordreOptions(tache.options.length, etape).map(i => <button key={i} data-ok={attrTest(i === tache.bonne ? 'true' : 'false')} onClick={() => setRep(i)} aria-pressed={reps[etape] === i}
+            {(tache.ordreFixe ? tache.options.map((_, k) => k) : ordreOptions(tache.options.length, etape)).map(i => <button key={i} data-ok={attrTest(i === tache.bonne ? 'true' : 'false')} onClick={() => setRep(i)} aria-pressed={reps[etape] === i}
               style={{ ...btn(reps[etape] === i, '#0ea5e9'), padding: '6px 10px', textAlign: 'left',
                 ...(typeof tache.options[i] !== 'string' ? { background: reps[etape] === i ? '#e0f2fe' : 'white', color: TXT, borderWidth: 2 } : {}) }}>{avecIndices(tache.options[i])}</button>)}
           </div>

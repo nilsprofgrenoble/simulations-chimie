@@ -6,7 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./stereoisomeresModele";
 import { QCM, MOL, A, IMG, AUTRE, AUTRE2, nom, MESO, MESO_RS } from "./stereoisomeresQcm";
-import { CoupleCram, SceneAlcene, SvgNombre, SvgRelations, SvgBio, SvgZE, SvgArbre } from "./StereoisomeresSchemas";
+import { CoupleCram, SceneAlcene, ListeAlcenes, SvgNombre, SvgRelations, SvgBio, SvgZE, SvgArbre } from "./StereoisomeresSchemas";
 
 const SIM_ID = 144, CLE_GUIDE = 'stereoisomeres-guide-v1';
 declarerDefis(SIM_ID, [['relation', 'Relation entre deux stéréoisomères'], ['ze', 'Isomérie Z ou E d’un alcène']]);
@@ -32,6 +32,7 @@ const PAL = M.parIdAlc('chloropropenoique'), BCE = M.parIdAlc('bromochloroethene
 const H_PREM = [true, true], H_ZE2 = [true, false];                        // Z pour l’acide, E pour le bromochloroéthène
 const MASSE = 250, ACTIF = MASSE / 2;
 const LETTRES = [['A', A], ['B', IMG], ['C', AUTRE], ['D', AUTRE2]];
+const ALC4 = ['propene', 'pent2ene', 'methylbutene', 'dichloroethene'].map((id, k) => ({ lettre: 'ABCD'[k], m: M.parIdAlc(id) }));   // mêmes lettres que les propositions du QCM « alcene »
 
 // ---------- scènes ----------
 const sCram2 = (mol, items, aria) => <CoupleCram mol={mol} items={items} ariaLabel={aria}/>;
@@ -125,10 +126,10 @@ export function SimulationStereoisomeres() {
       texte: <>Une synthèse classique, à partir de réactifs non chiraux, donne un <strong>mélange racémique</strong> de M : la moitié du produit est du distomère inutile. Les deux énantiomères ont les mêmes propriétés physiques, ce qui les rend difficiles à séparer.</>,
       tache: { type: 'qcm', q: 'Comment obtenir uniquement l’énantiomère (R)-M ?', ...QCM.synthese,
         expl: 'La synthèse asymétrique prépare un seul énantiomère à partir d’une matière première non chirale, avec l’aide d’un catalyseur ou d’un auxiliaire chiral. Elle évite de gaspiller la moitié du produit : elle respecte des principes de la chimie verte (économie d’atomes, moins de déchets).', indice: 'Les énantiomères ont les mêmes propriétés physiques : une séparation par chauffage ou distillation est-elle possible ? Il faut plutôt n’en fabriquer qu’un.' } },
-    { id: 'alcene', titre: 'Une autre isomérie : la double liaison', focus: [],
-      texte: <>Autour d’une liaison simple C–C, les atomes tournent librement. Autour d’une <strong>double liaison C=C</strong>, la rotation est <strong>bloquée</strong> : les quatre groupes liés aux deux carbones restent dans un même plan, et leur arrangement compte. Il peut alors exister deux stéréoisomères, notés Z et E.</>,
-      tache: { type: 'qcm', q: 'Laquelle de ces molécules peut exister sous deux formes Z et E ?', ...QCM.alcene,
-        expl: 'Il faut que chaque carbone de la double liaison porte deux groupes différents. CH₃–CH=CH–CH₂CH₃ convient ; dans les trois autres, un carbone porte deux groupes identiques (H, H ; CH₃, CH₃ ou Cl, Cl).', indice: 'Regardez séparément les deux groupes liés à chacun des deux carbones de C=C : sont-ils différents ?' } },
+    { id: 'alcene', titre: 'Une autre isomérie : la double liaison', focus: ['scene'],
+      texte: <>Autour d’une liaison simple C–C, les atomes tournent librement. Autour d’une <strong>double liaison C=C</strong>, la rotation est <strong>bloquée</strong> : les quatre groupes liés aux deux carbones restent dans un même plan, et leur arrangement compte. Il peut alors exister deux stéréoisomères, notés Z et E. Les quatre molécules <strong>A, B, C et D</strong> sont dessinées avec les quatre groupes liés à leur double liaison.</>,
+      tache: { type: 'qcm', ordreFixe: true, q: 'Laquelle des molécules A, B, C et D peut exister sous deux formes Z et E ?', ...QCM.alcene,
+        expl: 'Il faut que chaque carbone de la double liaison porte deux groupes différents. La molécule B, CH₃–CH=CH–CH₂CH₃, convient ; dans les trois autres, un carbone porte deux groupes identiques : H et H pour A, CH₃ et CH₃ pour C, Cl et Cl pour D.', indice: 'Regardez séparément les deux groupes liés à chacun des deux carbones de C=C : sont-ils différents ?' } },
     { id: 'prio', titre: 'Classer les groupes sur chaque carbone', focus: ['scene'],
       texte: <>On étudie <strong>{PAL.semi}</strong> ({PAL.nom}). Sur <strong>chaque carbone</strong> de la double liaison, on classe les deux groupes avec les règles CIP vues pour R et S (numéro atomique, puis atomes suivants) : le <strong>numéro 1</strong> est le groupe prioritaire.</>,
       tache: { type: 'qcm', q: 'Quel est le groupe prioritaire (numéro 1) sur chacun des deux carbones ?', ...QCM.prio,
@@ -177,6 +178,7 @@ export function SimulationStereoisomeres() {
     proprietes: () => <Chips items={LETTRES.slice(0, 3)} surligne="A"/>,
     meso: () => sCram2(MESO, [{ affs: MESO_RS.affs, legende: `Forme ${M.nomDesc(MESO, MESO_RS.desc)}` }, { affs: MESO_RS.affs, miroir: true, legende: `Son image dans un miroir ${M.nomDesc(MESO, MESO_RS.desc.map(d => (d === 'R' ? 'S' : 'R')))}`, pointille: true }], 'Le 2,3-dibromobutane et son image dans un miroir'),
     prio: () => paire(H_PREM, PAL, false, null, false),
+    alcene: () => <ListeAlcenes items={ALC4} ariaLabel="Les molécules A, B, C et D, avec les groupes liés à leur double liaison"/>,
     ze: () => paire(H_PREM, PAL, true, null, false),
     ze2: () => paire(H_ZE2, BCE, true, null, false),
     relZE: () => <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 10 }}>{paire(H_PREM, BCE, true, 'Z', false)}{paire(H_ZE2, BCE, true, 'E', false)}</div>,
@@ -286,7 +288,7 @@ export function SimulationStereoisomeres() {
     : <SceneAlcene m={am} haut={hX} rangs={ti.rangs} relier={ti.rangs && am.ze} verdict={ti.rangs && am.ze ? M.geometrieZE(hX) : null}/>;
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enGuide ? (idE === 'bio' || idE === 'alcene' || idE === 'bilan' ? '' : 'Les molécules') : (ti.mode === 'c' ? 'Deux stéréoisomères en perspective de Cram' : 'Double liaison C=C')}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enGuide ? (idE === 'bio' || idE === 'bilan' ? '' : 'Les molécules') : (ti.mode === 'c' ? 'Deux stéréoisomères en perspective de Cram' : 'Double liaison C=C')}</div>
       {enExplore && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>{ti.mode === 'c' ? 'Choisissez deux stéréoisomères A et B de la même molécule : la relation entre eux est donnée dans Mesures.' : 'Placez les groupes de la double liaison : la configuration Z ou E apparaît dans Mesures si chaque carbone porte deux groupes différents.'}</div>}
       {enGuide ? sceneGuide : gScene}
     </div>);
