@@ -12,11 +12,11 @@ export const nomType = t => (t === 'H/E' ? 'H/E (huile dans eau)' : 'E/H (eau da
 export const sedisperse = (type, milieu) => phaseContinue(type) === milieu;
 
 // ---------- 2. Colorants ----------
-// Rouge Soudan (RS) : liposoluble, colore l'huile. Bleu de méthylène (BM) : hydrosoluble, colore l'eau. Avec les deux, chaque phase prend sa couleur.
-export const COLORANTS = ['aucun', 'RS', 'BM', 'RS+BM'];
+// Rouge Soudan (RS) : liposoluble, colore l'huile. Bleu de méthylène (BM) : hydrosoluble, colore l'eau. Chaque colorant se teste dans son propre échantillon (on ne les mélange jamais).
+export const COLORANTS = ['aucun', 'RS', 'BM'];
 export const couleurDe = (colorant, phase) => {
-  if (phase === 'huile') return colorant === 'RS' || colorant === 'RS+BM' ? 'rouge' : null;
-  return colorant === 'BM' || colorant === 'RS+BM' ? 'bleu' : null;
+  if (phase === 'huile') return colorant === 'RS' ? 'rouge' : null;
+  return colorant === 'BM' ? 'bleu' : null;
 };
 // Ce qu'on voit au microscope : la couleur du fond (phase continue) et celle des gouttes (phase dispersée) ; null = phase non colorée.
 export function coloration(type, colorant) {
