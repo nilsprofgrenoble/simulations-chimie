@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, sci, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, sci, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./sonModele";
@@ -214,17 +214,17 @@ export function SimulationSon() {
       texte: <>La <strong>période</strong> <em>T</em> est la durée d’un motif complet. Pour la mesurer précisément, on mesure la durée de <strong>plusieurs</strong> périodes d’un coup : placez le repère 1 sur un maximum de la courbe et le repère 2 sur le maximum situé <strong>3 périodes</strong> plus loin.</>,
       tache: { type: 'action', ok: pointe, bloque: null, label: 'Placer pour moi', consigne: 'Repères sur deux maximums séparés de 3 périodes', faire: () => { setScene('synthe'); setSy({ ...BASE_SY, ...T_PLACE }); } } },
     { id: 'mesureT', titre: 'Calculer la période', focus: ['mesures'], cible: cible.repere,
-      texte: <>Lisez la durée <em>d</em> entre les repères dans « Mesures » (ici <em>d</em> = {nbf(d, 2)}{NB}ms). Elle correspond à 3 périodes : calculez <em>T</em> = <em>d</em> / 3.</>,
+      texte: <>Lisez la durée <em>d</em> entre les repères dans « Mesures » (ici <em>d</em> = {nbf(d, 2)}{NB}ms). Elle correspond à 3 périodes : calculez <em>T</em> = {avecIndices('frac(d|3)')}.</>,
       tache: { type: 'num', q: 'Période T', unite: 'ms', vrai: d / 3, tol: 0.02, affiche: v => nbf(v, 2), bloque: bloqueRepere,
-        calcul: () => [`d = ${nbf(d, 2)} ms pour 3 périodes.`, `T = ${nbf(d, 2)} / 3 = ${nbf(d / 3, 2)} ms.`],
+        calcul: () => [`d = ${nbf(d, 2)} ms pour 3 périodes.`, `T = frac(${nbf(d, 2)}|3) = ${nbf(d / 3, 2)} ms.`],
         pieges: [[d, 'Vous avez donné la durée des trois périodes : divisez-la par 3.']],
-        expl: `T = d / 3 ≈ ${nbf(d / 3, 2)} ms.`, indice: "T = durée de n périodes ÷ n : mesurez entre deux maximums éloignés." } },
+        expl: `T = frac(d|3) ≈ ${nbf(d / 3, 2)} ms.`, indice: "T = durée de n périodes ÷ n : mesurez entre deux maximums éloignés." } },
     { id: 'freq', titre: 'Calculer la fréquence', focus: ['mesures', 'spectre'], cible: cible.repere,
-      texte: <>La <strong>fréquence</strong> est le nombre de périodes par seconde : <em>f</em> = 1 / <em>T</em>, avec <em>T</em> en secondes. Avec <em>T</em> = {nbf(d / 3, 2)}{NB}ms (étape précédente), calculez <em>f</em>, puis comparez avec la position de la raie sur le spectre.</>,
+      texte: <>La <strong>fréquence</strong> est le nombre de périodes par seconde : <em>f</em> = {avecIndices('frac(1|T)')}, avec <em>T</em> en secondes. Avec <em>T</em> = {nbf(d / 3, 2)}{NB}ms (étape précédente), calculez <em>f</em>, puis comparez avec la position de la raie sur le spectre.</>,
       tache: { type: 'num', q: 'Fréquence f', unite: 'Hz', vrai: 1000 / (d / 3), tol: 0.02, affiche: v => nbf(v, 0), bloque: bloqueRepere,
-        calcul: () => [`T = ${nbf(d / 3, 2)} ms = ${nbf(d / 3 * 1e-3, 4)} s.`, `f = 1 / T = 1 / ${nbf(d / 3 * 1e-3, 4)} = ${nbf(1000 / (d / 3), 0)} Hz.`],
-        pieges: [[1 / (d / 3), 'T est en millisecondes : convertissez-la en secondes avant de calculer 1 / T.'], [1 / (d / 3) * 1000 * 1000, 'Vérifiez la conversion : 1 ms = 10⁻³ s.']],
-        expl: 'f = 1 / T = 500 Hz. Le spectre confirme : la raie est à 500 Hz.', indice: "f = 1 ÷ T, avec T en secondes." } },
+        calcul: () => [`T = ${nbf(d / 3, 2)} ms = ${nbf(d / 3 * 1e-3, 4)} s.`, `f = frac(1|T) = frac(1|${nbf(d / 3 * 1e-3, 4)}) = ${nbf(1000 / (d / 3), 0)} Hz.`],
+        pieges: [[1 / (d / 3), 'T est en millisecondes : convertissez-la en secondes avant de calculer frac(1|T).'], [1 / (d / 3) * 1000 * 1000, 'Vérifiez la conversion : 1 ms = 10⁻³ s.']],
+        expl: 'f = frac(1|T) = 500 Hz. Le spectre confirme : la raie est à 500 Hz.', indice: "f = 1 ÷ T, avec T en secondes." } },
     { id: 'violon', titre: 'Un son complexe', focus: ['reglages', 'temps', 'spectre'],
       retenirTitre: 'Période et fréquence',
       retenir: <><FPeriode/><Formule><mi>f</mi><mo>=</mo><mfrac><mn>1</mn><mi>T</mi></mfrac><mspace width="1.5em"/><mi>T</mi><mo>=</mo><mfrac><mi>d</mi><mi>n</mi></mfrac></Formule>{puces(<>Un son pur est une sinusoïde : son spectre ne comporte qu’<strong>une raie</strong>, à la fréquence f.</>, <>Convertir les ms en s avant de calculer f = 1 ÷ T.</>)}</>,
@@ -286,14 +286,14 @@ export function SimulationSon() {
       tache: { type: 'action', ok: ampOk, label: 'Régler a₁ = 0,5', consigne: 'Son pur de 500 Hz, amplitude a₁ = 0,5', faire: () => { setScene('synthe'); setSy({ ...BASE_SY, ...T_PLACE, a: [0.5, 0, 0, 0, 0, 0] }); } } },
     { id: 'puissance', titre: 'Amplitude et puissance', focus: ['mesures'],
       texte: <>Comparez la puissance moyenne relative actuelle (P<sub>rel</sub> = {nbf(P, 3)}) à celle du son pur d’amplitude 1 (0,50). L’amplitude a été multipliée par 0,5.</>,
-      tache: { type: 'num', q: 'Rapport P(a₁ = 0,5) / P(a₁ = 1)', unite: '', vrai: P / Pref, tol: 0.001, affiche: v => nbf(v, 2), bloque: ampOk ? null : 'Réglez d’abord a₁ = 0,5 sur un son pur de 500 Hz (étape précédente).',
-        calcul: () => [`Prel vaut ${nbf(P, 3)} pour a₁ = 0,5 et 0,50 pour a₁ = 1.`, `Rapport : ${nbf(P, 3)} / 0,50 = ${nbf(P / Pref, 2)}.`],
+      tache: { type: 'num', q: 'Rapport frac(P(a₁ = 0,5)|P(a₁ = 1))', unite: '', vrai: P / Pref, tol: 0.001, affiche: v => nbf(v, 2), bloque: ampOk ? null : 'Réglez d’abord a₁ = 0,5 sur un son pur de 500 Hz (étape précédente).',
+        calcul: () => [`Prel vaut ${nbf(P, 3)} pour a₁ = 0,5 et 0,50 pour a₁ = 1.`, `Rapport : frac(${nbf(P, 3)}|0,50) = ${nbf(P / Pref, 2)}.`],
         pieges: [[0.5, 'La puissance moyenne est proportionnelle au carré de l’amplitude : (0,5)² = 0,25, et non 0,5.']],
         expl: 'P est proportionnelle à A² : en multipliant A par 0,5, on multiplie P par 0,5² = 0,25. La puissance est divisée par 4 : elle ne varie pas proportionnellement à l’amplitude.', indice: "La puissance est proportionnelle au carré de l’amplitude." } },
     { id: 'niveau', titre: 'Le niveau d’intensité sonore', focus: ['scene'],
       retenirTitre: 'Amplitude et puissance',
       retenir: <><FAmpPuiss/>{puces(<>La puissance acoustique est proportionnelle au <strong>carré de l’amplitude</strong>.</>, <>Amplitude × 2 : puissance × 4, soit + 6 dB.</>)}</>,
-      texte: <>L’oreille n’est pas proportionnelle à la puissance reçue : on décrit le « volume sonore » par le <strong>niveau d’intensité sonore</strong> <em>L</em>, en décibels : <em>L</em> = 10 × log(<em>I</em> / <em>I</em><sub>0</sub>), avec <em>I</em><sub>0</sub> = 1,0 × 10⁻¹²{NB}W·m⁻². L’<strong>intensité</strong> <em>I</em> est la puissance reçue par unité de surface : <em>I</em> = <em>P</em> / <em>S</em>. Hypothèse : source ponctuelle qui émet de la même façon dans toutes les directions, en champ libre (sans sol ni mur réfléchissant), donc <em>S</em> = 4π<em>r</em>². La source émet <em>P</em> = 1,0{NB}mW.</>,
+      texte: <>L’oreille n’est pas proportionnelle à la puissance reçue : on décrit le « volume sonore » par le <strong>niveau d’intensité sonore</strong> <em>L</em>, en décibels : <em>L</em> = 10 × log({avecIndices('frac(I|I_0)')}), avec <em>I</em><sub>0</sub> = 1,0 × 10⁻¹²{NB}W·m⁻². L’<strong>intensité</strong> <em>I</em> est la puissance reçue par unité de surface : <em>I</em> = {avecIndices('frac(P|S)')}. Hypothèse : source ponctuelle qui émet de la même façon dans toutes les directions, en champ libre (sans sol ni mur réfléchissant), donc <em>S</em> = 4π<em>r</em>². La source émet <em>P</em> = 1,0{NB}mW.</>,
       tache: { type: 'action', ok: scene === 'niveau' && memeNv(nv, NV_BASE), label: 'Afficher la source (1 mW, à 1 m)', consigne: 'Source de 1,0 mW, sonomètre à 1,0 m', faire: () => { setScene('niveau'); setNv(NV_BASE); } } },
     { id: 'surface', titre: 'La surface de la sphère', focus: ['scene'], cible: cible.nv,
       texte: <>À 1,00{NB}m de la source, la puissance se répartit sur une sphère de rayon <em>r</em> = 1,00{NB}m. Calculez son aire <em>S</em> = 4π<em>r</em>² (<em>r</em> = 1,00{NB}m).</>,
@@ -303,16 +303,16 @@ export function SimulationSon() {
     { id: 'I', titre: 'L’intensité sonore', focus: ['scene'], cible: cible.nv,
       retenirTitre: 'Intensité sonore',
       retenir: <><FSphere/><Formule><mi>I</mi><mo>=</mo><mfrac><mi>P</mi><mrow><mn>4</mn><mi>π</mi><msup><mi>r</mi><mn>2</mn></msup></mrow></mfrac></Formule>{puces(<>Une source ponctuelle rayonne dans toutes les directions : en champ libre, la puissance se répartit sur une sphère.</>)}</>,
-      texte: <>Calculez l’intensité <em>I</em> = <em>P</em> / <em>S</em> à 1,00{NB}m, avec <em>P</em> = 1,0 × 10⁻³{NB}W et <em>S</em> = 12,57{NB}m² (étape précédente).</>,
+      texte: <>Calculez l’intensité <em>I</em> = {avecIndices('frac(P|S)')} à 1,00{NB}m, avec <em>P</em> = 1,0 × 10⁻³{NB}W et <em>S</em> = 12,57{NB}m² (étape précédente).</>,
       tache: { type: 'num', q: 'Intensité I', unite: 'W·m⁻²', vrai: IIe, tol: 0.01, affiche: v => sci(v, 3), cs: 3, aide: 'Écrivez par exemple 7,96e-5 pour 7,96 × 10⁻⁵.', bloque: okCible(cible.nv) ? null : 'Affichez d’abord la source de 1 mW à 1 m (bouton « Rétablir »).',
-        calcul: () => ['I = P / S = 1,0 × 10⁻³ / 12,57 = 7,96 × 10⁻⁵ W·m⁻².'], pieges: [[1e-3, 'Vous avez donné la puissance : l’intensité est une puissance par unité de surface, divisez par S.']],
-        expl: 'I = P / S ≈ 7,96 × 10⁻⁵ W·m⁻².', indice: "I = P ÷ S (puissance divisée par l’aire de la sphère)." } },
+        calcul: () => ['I = frac(P|S) = frac(1,0 × 10⁻³|12,57) = 7,96 × 10⁻⁵ W·m⁻².'], pieges: [[1e-3, 'Vous avez donné la puissance : l’intensité est une puissance par unité de surface, divisez par S.']],
+        expl: 'I = frac(P|S) ≈ 7,96 × 10⁻⁵ W·m⁻².', indice: "I = P ÷ S (puissance divisée par l’aire de la sphère)." } },
     { id: 'L', titre: 'Le niveau en décibels', focus: ['scene'], cible: cible.nv,
-      texte: <>Calculez <em>L</em> = 10 × log(<em>I</em> / <em>I</em><sub>0</sub>) avec <em>I</em> = 7,96 × 10⁻⁵{NB}W·m⁻² (étape précédente) et <em>I</em><sub>0</sub> = 1,0 × 10⁻¹²{NB}W·m⁻² (touche « log » de la calculatrice).</>,
+      texte: <>Calculez <em>L</em> = 10 × log({avecIndices('frac(I|I_0)')}) avec <em>I</em> = 7,96 × 10⁻⁵{NB}W·m⁻² (étape précédente) et <em>I</em><sub>0</sub> = 1,0 × 10⁻¹²{NB}W·m⁻² (touche « log » de la calculatrice).</>,
       tache: { type: 'num', q: 'Niveau L', unite: 'dB', vrai: LL, tol: 0.004, affiche: v => nbf(v, 1), cs: 2, bloque: okCible(cible.nv) ? null : 'Affichez d’abord la source de 1 mW à 1 m (bouton « Rétablir »).',
-        calcul: () => ['I / I₀ = 7,96 × 10⁻⁵ / 1,0 × 10⁻¹² = 7,96 × 10⁷.', 'L = 10 × log(7,96 × 10⁷) = 10 × 7,90 = 79,0 dB.'],
-        pieges: [[10 * Math.log10(IIe), 'Vous avez oublié de diviser par I₀ avant de prendre le logarithme.'], [Math.log10(IIe / M.I0), 'Il manque le facteur 10 : L = 10 × log(I / I₀).']],
-        expl: 'L = 10 × log(I / I₀) ≈ 79,0 dB.', indice: "L = 10·log(I ÷ I₀), avec I₀ = 10⁻¹² W·m⁻²." } },
+        calcul: () => ['frac(I|I₀) = frac(7,96 × 10⁻⁵|1,0 × 10⁻¹²) = 7,96 × 10⁷.', 'L = 10 × log(7,96 × 10⁷) = 10 × 7,90 = 79,0 dB.'],
+        pieges: [[10 * Math.log10(IIe), 'Vous avez oublié de diviser par I₀ avant de prendre le logarithme.'], [Math.log10(IIe / M.I0), 'Il manque le facteur 10 : L = 10 × log(frac(I|I₀)).']],
+        expl: 'L = 10 × log(frac(I|I₀)) ≈ 79,0 dB.', indice: "L = 10·log(I ÷ I₀), avec I₀ = 10⁻¹² W·m⁻²." } },
     { id: 'dist', titre: 'Doubler la distance', focus: ['reglages', 'scene'],
       retenirTitre: 'Le niveau en décibels',
       retenir: <><FEchelleDb/><Formule><mi>L</mi><mo>=</mo><mn>10</mn><mo>×</mo><mi>log</mi><mfrac><mi>I</mi><msub><mi>I</mi><mn>0</mn></msub></mfrac></Formule>{puces(<>I₀ = 1,0 × 10⁻¹² W·m⁻² est le seuil de référence ; log est le logarithme décimal.</>)}</>,
@@ -321,7 +321,7 @@ export function SimulationSon() {
     { id: 'L2', titre: 'Le niveau à 2 m', focus: ['scene'],
       texte: <>Refaites le calcul à <em>r</em> = 2,0{NB}m, avec toujours <em>P</em> = 1,0 × 10⁻³{NB}W : <em>S</em> = 4π<em>r</em>², puis <em>I</em>, puis <em>L</em>. (À 1,0{NB}m, vous aviez trouvé <em>L</em> = 79,0{NB}dB.)</>,
       tache: { type: 'num', q: 'Niveau L à 2,0 m', unite: 'dB', vrai: L2, tol: 0.004, affiche: v => nbf(v, 1), cs: 2, bloque: memeNv(nv, { ...NV_BASE, r: 2 }) && scene === 'niveau' ? null : 'Placez d’abord le sonomètre à 2 m (étape précédente, bouton « Rétablir »).',
-        calcul: () => ['S = 4π × (2,0)² = 50,27 m².', 'I = 1,0 × 10⁻³ / 50,27 = 1,99 × 10⁻⁵ W·m⁻².', 'L = 10 × log(1,99 × 10⁻⁵ / 1,0 × 10⁻¹²) = 10 × log(1,99 × 10⁷) = 73,0 dB.'],
+        calcul: () => ['S = 4π × (2,0)² = 50,27 m².', 'I = frac(1,0 × 10⁻³|50,27) = 1,99 × 10⁻⁵ W·m⁻².', 'L = 10 × log(frac(1,99 × 10⁻⁵|1,0 × 10⁻¹²)) = 10 × log(1,99 × 10⁷) = 73,0 dB.'],
         pieges: [[LL / 2, 'Le niveau n’est pas divisé par 2 quand la distance double : refaites le calcul avec la nouvelle surface.']],
         expl: 'À 2,0 m : I ≈ 1,99 × 10⁻⁵ W·m⁻², donc L ≈ 73,0 dB, soit 6 dB de moins qu’à 1 m.', indice: "À 2 m, l’aire est quatre fois plus grande : calculez I puis L." } },
     { id: 'dist3', titre: 'Chaque doublement de distance', focus: ['scene'],
@@ -336,9 +336,9 @@ export function SimulationSon() {
     { id: 'Ln', titre: 'Le niveau de deux sources', focus: ['scene'],
       texte: <>La puissance totale est doublée. À 1,0{NB}m, une seule source donnait <em>I</em> = 7,96 × 10⁻⁵{NB}W·m⁻² et <em>L</em> = 79,0{NB}dB. Calculez le niveau avec les deux sources (on additionne les <em>intensités</em>, pas les niveaux).</>,
       tache: { type: 'num', q: 'Niveau L pour deux sources', unite: 'dB', vrai: Ln, tol: 0.004, affiche: v => nbf(v, 1), cs: 2, bloque: scene === 'niveau' && memeNv(nv, { k: -3, r: 1, n: 2 }) ? null : 'Mettez d’abord deux sources à 1 m (étape précédente, bouton « Rétablir »).',
-        calcul: () => ['I totale = 2 × 7,96 × 10⁻⁵ = 1,59 × 10⁻⁴ W·m⁻².', 'L = 10 × log(1,59 × 10⁻⁴ / 1,0 × 10⁻¹²) = 10 × log(1,59 × 10⁸) = 82,0 dB.'],
+        calcul: () => ['I totale = 2 × 7,96 × 10⁻⁵ = 1,59 × 10⁻⁴ W·m⁻².', 'L = 10 × log(frac(1,59 × 10⁻⁴|1,0 × 10⁻¹²)) = 10 × log(1,59 × 10⁸) = 82,0 dB.'],
         pieges: [[2 * LL, 'On n’additionne pas les niveaux en décibels : on additionne les intensités, puis on calcule le niveau.'], [LL, 'Il faut tenir compte de la deuxième source : la puissance totale est doublée.']],
-        expl: 'L = 10 × log(2I / I₀) = 79,0 + 10 × log 2 ≈ 82,0 dB : deux sources identiques ajoutent environ 3 dB.', indice: "Deux sources identiques doublent l’intensité (et non le niveau)." } },
+        expl: 'L = 10 × log(frac(2I|I₀)) = 79,0 + 10 × log 2 ≈ 82,0 dB : deux sources identiques ajoutent environ 3 dB.', indice: "Deux sources identiques doublent l’intensité (et non le niveau)." } },
     { id: 'bilan', titre: 'Le bilan', focus: [],
       retenirTitre: 'Deux sources',
       retenir: <><FDeuxSources/>{puces(<>Deux sources identiques indépendantes : les <strong>intensités</strong> s’ajoutent, pas les niveaux : L = 10 × log((I₁ + I₂) ÷ I₀).</>)}</>,
@@ -433,9 +433,9 @@ export function SimulationSon() {
       <li><strong>Timbres</strong> : les amplitudes des harmoniques sont des valeurs choisies pour illustrer, pas des mesures d’instruments réels. Un vrai instrument a des amplitudes qui varient dans le temps.</li>
       <li><strong>Son non périodique</strong> : fréquences égales à <em>f</em><sub>1</sub> multiplié par √1, √2, √5, √7, √11 et √13, sans rapport simple entre elles. <strong>Bruit</strong> : 60 composantes de fréquences et de phases choisies au hasard (le spectre d’un vrai bruit est continu).</li>
       <li><strong>Spectre</strong> : amplitude de chaque composante (raies), pas la transformée de Fourier d’un enregistrement. La raie à 0 Hz représente la valeur moyenne <em>u</em><sub>0</sub> du signal.</li>
-      <li><strong>Mesure de la période</strong> : chaque repère est pointé à ± 0,05 ms près (demi-largeur = pas du curseur). Incertitude de type B, loi <strong>rectangulaire</strong> : u = demi-étendue / √3 pour un pointé ; les deux pointés sont indépendants, donc u(<em>d</em>) = √2 × 0,05 / √3 ms ≈ 0,04 ms ; l’incertitude relative sur <em>T</em> = <em>d</em> / <em>n</em> est u(<em>d</em>) / <em>d</em> (le nombre <em>n</em> est compté exactement). Mesurer plusieurs périodes d’un coup réduit l’incertitude relative.</li>
+      <li><strong>Mesure de la période</strong> : chaque repère est pointé à ± 0,05 ms près (demi-largeur = pas du curseur). Incertitude de type B, loi <strong>rectangulaire</strong> : u = demi-étendue / √3 pour un pointé ; les deux pointés sont indépendants, donc u(<em>d</em>) = √2 × 0,05 / √3 ms ≈ 0,04 ms ; l’incertitude relative sur <em>T</em> = {avecIndices('frac(d|n)')} est u{avecIndices('frac(d|d)')} (le nombre <em>n</em> est compté exactement). Mesurer plusieurs périodes d’un coup réduit l’incertitude relative.</li>
       <li><strong>Puissance relative</strong> : P<sub>rel</sub> = Σ <em>a</em>²/2 pour les composantes qui varient (moyenne sur un nombre entier de périodes) : la composante continue <em>u</em><sub>0</sub> n’en fait pas partie, car elle ne fait pas vibrer l’air. Elle est proportionnelle à la puissance acoustique moyenne ; l’unité est arbitraire, la référence est 0,50 (son pur d’amplitude 1).</li>
-      <li><strong>Niveau d’intensité sonore</strong> : <em>L</em> = 10 log(<em>I</em> / <em>I</em><sub>0</sub>), avec <em>I</em><sub>0</sub> = 1,0 × 10⁻¹² W·m⁻². Source <strong>ponctuelle et isotrope</strong>, en <strong>champ libre</strong> (ni sol, ni murs, ni absorption par l’air), donc <em>I</em> = <em>P</em> / 4π<em>r</em>². Plusieurs sources identiques placées au même point sont <strong>indépendantes</strong> : leurs puissances s’ajoutent (deux sources de même fréquence et en phase pourraient interférer, ce qui n’est pas modélisé).</li>
+      <li><strong>Niveau d’intensité sonore</strong> : <em>L</em> = 10 log({avecIndices('frac(I|I_0)')}), avec <em>I</em><sub>0</sub> = 1,0 × 10⁻¹² W·m⁻². Source <strong>ponctuelle et isotrope</strong>, en <strong>champ libre</strong> (ni sol, ni murs, ni absorption par l’air), donc <em>I</em> = {avecIndices('frac(P|4π)')}<em>r</em>². Plusieurs sources identiques placées au même point sont <strong>indépendantes</strong> : leurs puissances s’ajoutent (deux sources de même fréquence et en phase pourraient interférer, ce qui n’est pas modélisé).</li>
       <li><strong>Écoute</strong> : le « bruit » entendu est un bruit blanc (spectre continu), alors que l’écran montre 60 raies. Le volume réel dépend de votre appareil ; il est plafonné ici. L’amplitude à l’écran n’est pas étalonnée en décibels, et on ne tient pas compte de la sensibilité de l’oreille selon la fréquence.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
@@ -591,7 +591,7 @@ export function SimulationSon() {
         <li>son pur : une raie ; son musical : fondamental <em>f</em><sub>1</sub> et harmoniques <em>n</em> <em>f</em><sub>1</sub></li>
         <li>hauteur : fondamental ; timbre : amplitudes relatives des harmoniques</li>
         <li>puissance moyenne ∝ amplitude²</li>
-        <li><em>L</em> = 10 log(<em>I</em> / <em>I</em><sub>0</sub>) ; <em>I</em> = <em>P</em> / 4π<em>r</em>² ; distance × 2 : − 6 dB ; deux sources : + 3 dB</li>
+        <li><em>L</em> = 10 log({avecIndices('frac(I|I_0)')}) ; <em>I</em> = {avecIndices('frac(P|4π)')}<em>r</em>² ; distance × 2 : − 6 dB ; deux sources : + 3 dB</li>
       </ul>
     </ARetenir>);
 

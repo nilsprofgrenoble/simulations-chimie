@@ -182,22 +182,22 @@ export function SimulationDilution() {
     { id: 'facteur', titre: 'Le facteur de dilution', depart: () => voir({ Vm: 10, Vf: 100 }),
       retenirTitre: 'À RETENIR : DILUER',
       retenir: <><FDiluer/><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li><strong>Diluer</strong>, c’est <strong>ajouter de l’eau</strong> : la solution fille est <strong>moins concentrée</strong> que la mère.</li><li>On n’ajoute <strong>que de l’eau</strong> : la <strong>masse de soluté ne change pas</strong>. Ici, 10 mL à 0,40 g/L contiennent 4,0 mg, tous dans la fiole de 100 mL.</li></ul></>,
-      texte: <>Comme la masse de soluté se conserve : <strong>t<sub>m</sub> × V<sub>m</sub> = t<sub>f</sub> × V<sub>f</sub></strong>. Le <strong>facteur de dilution</strong> est <strong>F = t<sub>m</sub> / t<sub>f</sub> = V<sub>f</sub> / V<sub>m</sub></strong> : « diluer 10 fois » signifie diviser la concentration par 10.
-        <ExempleResolu>10 mL complétés à 100 mL : F = 100 / 10 = <strong>10</strong>. La concentration est divisée par 10 : 0,40 / 10 = 0,040 g/L.</ExempleResolu>
+      texte: <>Comme la masse de soluté se conserve : <strong>t<sub>m</sub> × V<sub>m</sub> = t<sub>f</sub> × V<sub>f</sub></strong>. Le <strong>facteur de dilution</strong> est <strong>F = {avecIndices('frac(t_m|t_f)')} = {avecIndices('frac(V_f|V_m)')}</strong> : « diluer 10 fois » signifie diviser la concentration par 10.
+        <ExempleResolu>10 mL complétés à 100 mL : F = {avecIndices('frac(100|10)')} = <strong>10</strong>. La concentration est divisée par 10 : {avecIndices('frac(0,40|10)')} = 0,040 g/L.</ExempleResolu>
         À vous : on prélève 5 mL de solution mère, que l’on complète à 100 mL.</>,
       tache: { type: 'num', q: 'Quel est le facteur de dilution F ?', unite: '', vrai: 20, tol: 0.02, affiche: x => String(x),
-        calcul: () => ['Le facteur de dilution est le volume final divisé par le volume prélevé : F = V_f / V_m.', 'Ici V_f = 100 mL (la fiole) et V_m = 5 mL (ce qu’on prélève).', 'F = 100 / 5 = 20.'],
-        pieges: [[0.05, 'F = V_f / V_m (le grand volume divisé par le petit), pas l’inverse.'], [95, 'Tu as soustrait : on divise V_f par V_m.'], [500, 'Tu as multiplié : on divise V_f par V_m.']], expl: 'F = V_f / V_m = 100 / 5 = 20 : la solution fille est 20 fois moins concentrée.', indice: "Facteur de dilution : F = concentration de la solution mère ÷ concentration de la solution fille (dans la même unité)." } },
+        calcul: () => ['Le facteur de dilution est le volume final divisé par le volume prélevé : F = frac(V_f|V_m).', 'Ici V_f = 100 mL (la fiole) et V_m = 5 mL (ce qu’on prélève).', 'F = frac(100|5) = 20.'],
+        pieges: [[0.05, 'F = frac(V_f|V_m) (le grand volume divisé par le petit), pas l’inverse.'], [95, 'Tu as soustrait : on divise V_f par V_m.'], [500, 'Tu as multiplié : on divise V_f par V_m.']], expl: 'F = frac(V_f|V_m) = frac(100|5) = 20 : la solution fille est 20 fois moins concentrée.', indice: "Facteur de dilution : F = concentration de la solution mère ÷ concentration de la solution fille (dans la même unité)." } },
     { id: 'volume', titre: 'Quel volume prélever ?', depart: () => voir({ Vm: 10, Vf: 200 }),
       retenirTitre: 'À RETENIR : LE FACTEUR DE DILUTION',
       retenir: <><FFacteur/><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>Le <strong>facteur de dilution</strong> F n’a pas d’unité ; « diluer 25 fois » signifie diviser la concentration par 25.</li><li><strong>Piège :</strong> F est toujours supérieur à 1 : le grand volume (V<sub>f</sub>) au numérateur, le petit (V<sub>m</sub>) au dénominateur.</li></ul></>,
-      texte: <>On connaît la concentration voulue : on calcule d’abord <strong>F = t<sub>m</sub> / t<sub>f</sub></strong>, puis <strong>V<sub>m</sub> = V<sub>f</sub> / F</strong>.
-        <ExempleResolu>Pour 100 mL à 0,040 g/L : F = 0,40 / 0,040 = 10, donc V<sub>m</sub> = 100 / 10 = <strong>10 mL</strong>.</ExempleResolu>
+      texte: <>On connaît la concentration voulue : on calcule d’abord <strong>F = {avecIndices('frac(t_m|t_f)')}</strong>, puis <strong>V<sub>m</sub> = {avecIndices('frac(V_f|F)')}</strong>.
+        <ExempleResolu>Pour 100 mL à 0,040 g/L : F = {avecIndices('frac(0,40|0,040)')} = 10, donc V<sub>m</sub> = {avecIndices('frac(100|10)')} = <strong>10 mL</strong>.</ExempleResolu>
         À vous : 100 mL de solution fille à 0,020 g/L.</>,
       tache: { type: 'num', q: 'Quel volume de solution mère (0,40 g/L) faut-il prélever ?', unite: 'mL', vrai: 5, tol: 0.02, affiche: x => String(x),
-        calcul: () => ['Étape 1, le facteur de dilution : F = t_m / t_f = 0,40 / 0,020 = 20 (la concentration est divisée par 20).', 'Étape 2, le volume à prélever : V_m = V_f / F, avec V_f = 100 mL.', 'V_m = 100 / 20 = 5 mL.'],
-        pieges: [[20, 'C’est le facteur de dilution F. Le volume à prélever vaut V_f / F.'], [0.05, 'Attention aux unités : V_f est en mL, donc V_m aussi (100 / 20).'],
-          [2000, 'Pour trouver V_m, on divise V_f par F (on ne multiplie pas) : plus on dilue, moins il faut prélever de solution mère.']], expl: 'F = 0,40 / 0,020 = 20 ; V_m = 100 / 20 = 5 mL.', indice: "Volume à prélever = volume de la solution fille à préparer ÷ facteur de dilution F." } },
+        calcul: () => ['Étape 1, le facteur de dilution : F = frac(t_m|t_f) = frac(0,40|0,020) = 20 (la concentration est divisée par 20).', 'Étape 2, le volume à prélever : V_m = frac(V_f|F), avec V_f = 100 mL.', 'V_m = frac(100|20) = 5 mL.'],
+        pieges: [[20, 'C’est le facteur de dilution F. Le volume à prélever vaut frac(V_f|F).'], [0.05, 'Attention aux unités : V_f est en mL, donc V_m aussi (frac(100|20)).'],
+          [2000, 'Pour trouver V_m, on divise V_f par F (on ne multiplie pas) : plus on dilue, moins il faut prélever de solution mère.']], expl: 'F = frac(0,40|0,020) = 20 ; V_m = frac(100|20) = 5 mL.', indice: "Volume à prélever = volume de la solution fille à préparer ÷ facteur de dilution F." } },
     { id: 'regler', titre: 'Essayez avec la pipette et la fiole', depart: () => voir({ Vm: 2, Vf: 100 }),
       retenirTitre: 'À RETENIR : QUEL VOLUME PRÉLEVER ?',
       retenir: <><FMethodeV/><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>La masse de soluté se conserve : t<sub>m</sub> × V<sub>m</sub> = t<sub>f</sub> × V<sub>f</sub>, avec les mêmes unités de volume des deux côtés.</li><li>Solution mère de la simulation : t<sub>m</sub> = 0,40 g/L.</li></ul></>,
@@ -221,8 +221,8 @@ export function SimulationDilution() {
       retenir: <><FEchelle/><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>Plus une solution est <strong>concentrée</strong>, plus sa teinte est <strong>foncée</strong> (faibles concentrations, tubes identiques).</li><li>Comparer l’inconnue à l’échelle permet d’<strong>encadrer</strong> sa concentration : plus foncée que Sf3, plus claire que Sf2 donne 0,020 g/L &lt; t &lt; 0,040 g/L.</li><li><strong>Hypothèse :</strong> comparaison « à l’œil » idéalisée ; à l’écran, la couleur n’est qu’une représentation.</li></ul></>,
       texte: <>La liqueur de Dakin est un antiseptique coloré par du permanganate. Le fabricant indique que <strong>100,0 mL</strong> de solution contiennent <strong>1,0 mg</strong> de permanganate de potassium. Comparez avec l’échelle de teintes : est-ce cohérent ?</>,
       tache: { type: 'num', q: 'Quelle est la concentration en masse théorique en KMnO₄ de la liqueur de Dakin ? (1,0 mg = 0,0010 g ; 100,0 mL = 0,1000 L)', unite: 'g/L', vrai: T_DAKIN, tol: 0.03, affiche: x => String(x).replace('.', ','),
-        calcul: () => ['Formule : t = m / V, avec m en g et V en L.', 'Conversions : m = 1,0 mg = 0,0010 g ; V = 100,0 mL = 0,1000 L.', 't = 0,0010 / 0,1000 = 0,010 g/L (on suppose les valeurs du fabricant exactes).'],
-        pieges: [[1, 'Convertis : 1,0 mg = 0,0010 g, pas 1 g.'], [0.1, 'Convertis aussi les mL : 100,0 mL = 0,1000 L.'], [10, 'Les mg ne sont pas convertis en g : 1,0 mg = 0,0010 g (1 g = 1000 mg).']], expl: 't = m / V = 0,0010 g / 0,1000 L = 0,010 g/L : c’est la teinte de Sf4 sur l’échelle.', indice: "Concentration en masse = masse de KMnO₄ ÷ volume de solution (en litres). Les conversions utiles sont rappelées dans l’énoncé." } },
+        calcul: () => ['Formule : t = frac(m|V), avec m en g et V en L.', 'Conversions : m = 1,0 mg = 0,0010 g ; V = 100,0 mL = 0,1000 L.', 't = frac(0,0010|0,1000) = 0,010 g/L (on suppose les valeurs du fabricant exactes).'],
+        pieges: [[1, 'Convertis : 1,0 mg = 0,0010 g, pas 1 g.'], [0.1, 'Convertis aussi les mL : 100,0 mL = 0,1000 L.'], [10, 'Les mg ne sont pas convertis en g : 1,0 mg = 0,0010 g (1 g = 1000 mg).']], expl: 't = frac(m|V) = frac(0,0010 g|0,1000 L) = 0,010 g/L : c’est la teinte de Sf4 sur l’échelle.', indice: "Concentration en masse = masse de KMnO₄ ÷ volume de solution (en litres). Les conversions utiles sont rappelées dans l’énoncé." } },
     { id: 'fin', titre: 'Le bilan', depart: null,
       retenirTitre: 'À RETENIR : LE BILAN',
       retenir: <><FBilanD/><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li><strong>Pièges :</strong> inverser F ; oublier de convertir les unités ; croire que diluer change la masse de soluté.</li></ul></>,
@@ -288,7 +288,7 @@ export function SimulationDilution() {
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-    <li>diluer = ajouter de l’eau : t<sub>m</sub> V<sub>m</sub> = t<sub>f</sub> V<sub>f</sub></li><li>F = t<sub>m</sub> / t<sub>f</sub> = V<sub>f</sub> / V<sub>m</sub></li><li>plus c’est concentré, plus c’est foncé</li></ul></ARetenir>;
+    <li>diluer = ajouter de l’eau : t<sub>m</sub> V<sub>m</sub> = t<sub>f</sub> V<sub>f</sub></li><li>F = {avecIndices('frac(t_m|t_f)')} = {avecIndices('frac(V_f|V_m)')}</li><li>plus c’est concentré, plus c’est foncé</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>

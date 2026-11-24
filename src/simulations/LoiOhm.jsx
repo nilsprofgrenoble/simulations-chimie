@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, avecIndices } from "../commun";
 import { fr, ctn, ldr, lampeI, fonctionnementLampe, regression } from "./elecModele";
 import { BLEU, VERMILLON, VIOLET, alea, usePhase } from "./elecOutils";
 import { Curseur, VoletDefiGen, Fil, Pile, Mesure, Graphe } from "./elecCommun";
@@ -94,13 +94,13 @@ const enonce = (d, { champ }) => {
   return <><Pic n="target"/>Un capteur de température (thermistance) est alimenté sous <strong>5,0 V</strong>. L’ampèremètre indique <strong>I = {fr(d.I * 1000, 2)} mA</strong>. Calculez la résistance du capteur, puis utilisez la <strong>courbe d’étalonnage</strong> pour trouver la température θ.<div style={{ marginTop: 6 }}>{champ('v', '°C')}</div></>;
 };
 const indiceDefi = d => d.type === 'res' ? <>Loi d’Ohm : R = U / I. Convertis d’abord I de mA en A (1 mA = 0,001 A).</>
-  : d.type === 'courant' ? <>Loi d’Ohm : I = U / R. Le résultat sort en ampères : convertis-le en mA (1 A = 1000 mA).</>
+  : d.type === 'courant' ? <>Loi d’Ohm : I = {avecIndices('frac(U|R)')}. Le résultat sort en ampères : convertis-le en mA (1 A = 1000 mA).</>
   : d.type === 'fonct' ? <>Le point de fonctionnement est là où la courbe de la lampe croise la droite pointillée. Lis alors l’intensité sur l’axe horizontal et pense à l’unité (mA).</>
-  : <>Deux temps : calcule d’abord la résistance du capteur avec la loi d’Ohm (R = U / I, I en ampères), puis cherche cette valeur sur l’axe vertical de la courbe d’étalonnage et lis θ sur l’axe horizontal.</>;
+  : <>Deux temps : calcule d’abord la résistance du capteur avec la loi d’Ohm (R = {avecIndices('frac(U|I)')}, I en ampères), puis cherche cette valeur sur l’axe vertical de la courbe d’étalonnage et lis θ sur l’axe horizontal.</>;
 const solution = d => d.type === 'fonct' ? <>Le point de fonctionnement est l’intersection de la courbe de la lampe et de la droite : I ≈ <strong>{fr(d.I * 1000, 0)} mA</strong> et U ≈ {fr(d.U, 1)} V aux bornes de la lampe. Vérification (loi des mailles) : E = U + R × I = {fr(d.U, 1)} + {d.Rp} × {fr(d.I, 3)} = {fr(d.U + d.Rp * d.I, 1)} V.</>
-  : d.type === 'res' ? <>R = U / I = {fr(d.U, 1)} / {fr(d.I, 4)} = <strong>{fr(d.R, 0)} Ω</strong> (I = {fr(d.I * 1000, 1)} mA = {fr(d.I, 4)} A).</>
-  : d.type === 'courant' ? <>I = U / R = {fr(d.U, 1)} / {d.R} = {fr(d.I, 4)} A = <strong>{fr(d.I * 1000, 1)} mA</strong>.</>
-  : <>R = U / I = 5,0 / {fr(d.I, 5)} ≈ {fr(d.R / 1000, 1)} kΩ. Sur la courbe d’étalonnage, R = {fr(d.R / 1000, 1)} kΩ correspond à θ ≈ <strong>{d.th} °C</strong> (à 3 °C près).</>;
+  : d.type === 'res' ? <>R = {avecIndices('frac(U|I)')} = {fr(d.U, 1)} / {fr(d.I, 4)} = <strong>{fr(d.R, 0)} Ω</strong> (I = {fr(d.I * 1000, 1)} mA = {fr(d.I, 4)} A).</>
+  : d.type === 'courant' ? <>I = {avecIndices('frac(U|R)')} = {fr(d.U, 1)} / {d.R} = {fr(d.I, 4)} A = <strong>{fr(d.I * 1000, 1)} mA</strong>.</>
+  : <>R = {avecIndices('frac(U|I)')} = 5,0 / {fr(d.I, 5)} ≈ {fr(d.R / 1000, 1)} kΩ. Sur la courbe d’étalonnage, R = {fr(d.R / 1000, 1)} kΩ correspond à θ ≈ <strong>{d.th} °C</strong> (à 3 °C près).</>;
 
 // ====================================================
 export function SimulationLoiOhm() {
@@ -133,7 +133,7 @@ export function SimulationLoiOhm() {
   const ETAPES = [
     { id: 'resistor', titre: 'Le résistor et sa résistance', depart: () => voir('ohm', { inconnu: false, R: 100, U: 6 }),
       texte: <>Un <strong>résistor</strong> (ou « conducteur ohmique ») limite le courant dans un circuit. Sa <strong>résistance R</strong> s’exprime en <strong>ohms (Ω)</strong>. Sur le schéma, un <strong>ampèremètre</strong> (A) mesure l’intensité I et un <strong>voltmètre</strong> (V) mesure la tension U aux bornes du résistor. Changez R avec les boutons, en gardant la même tension.</>,
-      tache: { type: 'qcm', q: 'Pour la même tension U, si on remplace R = 100 Ω par R = 470 Ω, l’intensité I…', options: ['diminue : un grand R freine le courant', 'augmente', 'ne change pas', 'devient nulle'], bonne: 0, expl: 'Plus la résistance est grande, plus le courant est freiné : I diminue.', indice: 'La tension U reste la même. Compare l’intensité I = U / R pour les deux valeurs de R : que se passe-t-il quand on divise par un nombre plus grand ?' } },
+      tache: { type: 'qcm', q: 'Pour la même tension U, si on remplace R = 100 Ω par R = 470 Ω, l’intensité I…', options: ['diminue : un grand R freine le courant', 'augmente', 'ne change pas', 'devient nulle'], bonne: 0, expl: 'Plus la résistance est grande, plus le courant est freiné : I diminue.', indice: 'La tension U reste la même. Compare l’intensité I = frac(U|R) pour les deux valeurs de R : que se passe-t-il quand on divise par un nombre plus grand ?' } },
     { id: 'mesures', titre: 'Faire des mesures', depart: () => voir('ohm', { inconnu: false, R: 100 }),
       texte: <>Faisons comme en TP : on règle la tension U du générateur (curseur), on lit I, puis on clique sur « Noter cette mesure ». Faites <strong>au moins 5 mesures</strong> avec des tensions différentes, pour le même résistor R = 100 Ω.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'ohm' && !O.inconnu && ptsO.filter(p => p.R === 100).length >= 5, consigne: 'Notez au moins 5 mesures avec R = 100 Ω.' } },
@@ -143,33 +143,33 @@ export function SimulationLoiOhm() {
     { id: 'loi', titre: 'La loi d’Ohm : U = R × I', depart: () => voir('ohm', { inconnu: false, R: 100, U: 6 }),
       retenirTitre: 'À RETENIR : LA CARACTÉRISTIQUE',
       retenir: <FicheCaract/>,
-      texte: <>Le coefficient de proportionnalité est la résistance : <strong>U = R × I</strong> (loi d’Ohm), avec U en <strong>volts</strong>, I en <strong>ampères</strong>, R en <strong>ohms</strong>. Donc R = U / I. ⚠️ Pensez à convertir les mA en A !
-        <ExempleResolu>U = 6,0 V et I = 60 mA = 0,060 A : R = U / I = 6,0 / 0,060 = <strong>100 Ω</strong>.</ExempleResolu></>,
-      tache: { type: 'num', q: 'On mesure U = 9,0 V et I = 45 mA. Quelle est la résistance R (en Ω) ?', unite: 'Ω', vrai: 200, tol: 0.02, affiche: x => String(x), pieges: [[0.2, 'Tu as oublié de convertir : I = 45 mA = 0,045 A.'], [5, 'Tu as divisé à l’envers. La résistance est R = U / I : on divise la tension U par l’intensité I.'], [9 * 45, 'Tu as multiplié. La résistance est R = U / I : on divise U par I (avec I en ampères).']],
+      texte: <>Le coefficient de proportionnalité est la résistance : <strong>U = R × I</strong> (loi d’Ohm), avec U en <strong>volts</strong>, I en <strong>ampères</strong>, R en <strong>ohms</strong>. Donc R = {avecIndices('frac(U|I)')}. ⚠️ Pensez à convertir les mA en A !
+        <ExempleResolu>U = 6,0 V et I = 60 mA = 0,060 A : R = {avecIndices('frac(U|I)')} = {avecIndices('frac(6,0|0,060)')} = <strong>100 Ω</strong>.</ExempleResolu></>,
+      tache: { type: 'num', q: 'On mesure U = 9,0 V et I = 45 mA. Quelle est la résistance R (en Ω) ?', unite: 'Ω', vrai: 200, tol: 0.02, affiche: x => String(x), pieges: [[0.2, 'Tu as oublié de convertir : I = 45 mA = 0,045 A.'], [5, 'Tu as divisé à l’envers. La résistance est R = frac(U|I) : on divise la tension U par l’intensité I.'], [9 * 45, 'Tu as multiplié. La résistance est R = frac(U|I) : on divise U par I (avec I en ampères).']],
         calcul: () => [
-          'La loi d’Ohm donne U = R × I. Donc R = U / I.',
+          'La loi d’Ohm donne U = R × I. Donc R = frac(U|I).',
           'Les unités doivent être des volts (V) et des ampères (A). U = 9,0 V est déjà en volts.',
           'Conversion : 1 mA = 0,001 A, donc I = 45 mA = 45 × 0,001 = 0,045 A.',
-          'R = U / I = 9,0 / 0,045 = 200 Ω.'], expl: 'R = U / I = 9,0 / 0,045 = 200 Ω.',
-        indice: 'Loi d’Ohm : U = R × I, donc R = U / I. Attention aux unités : U en volts, I en ampères (1 mA = 0,001 A).' } },
+          'R = frac(U|I) = frac(9,0|0,045) = 200 Ω.'], expl: 'R = frac(U|I) = frac(9,0|0,045) = 200 Ω.',
+        indice: 'Loi d’Ohm : U = R × I, donc R = frac(U|I). Attention aux unités : U en volts, I en ampères (1 mA = 0,001 A).' } },
     { id: 'calcul', titre: 'Prévoir l’intensité', depart: () => voir('ohm', { inconnu: false, R: 220, U: 9 }),
       retenirTitre: 'À RETENIR : LA LOI D’OHM',
       retenir: <FicheOhm/>,
-      texte: <>On peut aussi <strong>prévoir</strong> le courant : I = U / R.
-        <ExempleResolu>U = 6,0 V et R = 100 Ω : I = 6,0 / 100 = 0,060 A = <strong>60 mA</strong>. {bouton('Voir sur le montage', () => voir('ohm', { inconnu: false, R: 100, U: 6 }))}</ExempleResolu>
+      texte: <>On peut aussi <strong>prévoir</strong> le courant : I = {avecIndices('frac(U|R)')}.
+        <ExempleResolu>U = 6,0 V et R = 100 Ω : I = {avecIndices('frac(6,0|100)')} = 0,060 A = <strong>60 mA</strong>. {bouton('Voir sur le montage', () => voir('ohm', { inconnu: false, R: 100, U: 6 }))}</ExempleResolu>
         À vous : R = 330 Ω et U = 6,0 V.</>,
-      tache: { type: 'num', q: 'Quelle est l’intensité I (en mA) ?', unite: 'mA', vrai: 18.18, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1980, 'Tu as multiplié : I = U / R, pas U × R.'], [0.01818, 'Tu as donné l’intensité en ampères : multiplie par 1000 pour l’avoir en mA.'], [330 / 6, 'Tu as divisé à l’envers. L’intensité est I = U / R : on divise la tension U par la résistance R.']],
+      tache: { type: 'num', q: 'Quelle est l’intensité I (en mA) ?', unite: 'mA', vrai: 18.18, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1980, 'Tu as multiplié : I = frac(U|R), pas U × R.'], [0.01818, 'Tu as donné l’intensité en ampères : multiplie par 1000 pour l’avoir en mA.'], [330 / 6, 'Tu as divisé à l’envers. L’intensité est I = frac(U|R) : on divise la tension U par la résistance R.']],
         calcul: () => [
-          'La loi d’Ohm donne U = R × I. Donc I = U / R.',
+          'La loi d’Ohm donne U = R × I. Donc I = frac(U|R).',
           'Ici, U = 6,0 V et R = 330 Ω (déjà en volts et en ohms).',
-          'I = U / R = 6,0 / 330 = 0,01818 A.',
-          'Conversion en mA : 1 A = 1000 mA, donc I = 0,01818 × 1000 = 18,18 mA (environ 18 mA).'], expl: 'I = 6,0 / 330 = 0,0182 A = 18,2 mA.',
-        indice: 'Loi d’Ohm : I = U / R, avec U en volts et R en ohms. Le résultat sort en ampères : il faut ensuite le convertir en mA (1 A = 1000 mA).' } },
+          'I = frac(U|R) = frac(6,0|330) = 0,01818 A.',
+          'Conversion en mA : 1 A = 1000 mA, donc I = 0,01818 × 1000 = 18,18 mA (environ 18 mA).'], expl: 'I = frac(6,0|330) = 0,0182 A = 18,2 mA.',
+        indice: 'Loi d’Ohm : I = frac(U|R), avec U en volts et R en ohms. Le résultat sort en ampères : il faut ensuite le convertir en mA (1 A = 1000 mA).' } },
     { id: 'modele', titre: 'Modéliser la caractéristique', depart: () => voir('ohm', { inconnu: false, R: 100 }),
       texte: <>Modéliser, c’est trouver une <strong>relation mathématique</strong> qui décrit les points mesurés. Deux modèles sont possibles : <strong>proportionnel</strong> U = k × I (droite passant par l’origine) ou <strong>affine</strong> U = a × I + b (droite qui ne passe pas forcément par l’origine). Essayez les deux dans l’atelier. Vous pouvez aussi copier vos mesures et utiliser le code <strong>Python</strong> proposé pour tracer le nuage de points et la droite.</>,
       tache: { type: 'qcm', q: 'Pour un conducteur ohmique, on trouve avec le modèle affine…', options: ['b ≈ 0 : le modèle proportionnel convient', 'b très grand', 'a = 0', 'rien : le modèle affine ne marche pas'], bonne: 0, expl: 'La droite passe par l’origine : b est nul (aux incertitudes près). U = k × I convient, et k est la résistance R.', indice: 'Dans le modèle affine U = a × I + b, b est l’ordonnée à l’origine. Que vaut b pour une droite qui passe par l’origine ?' } },
     { id: 'inconnu', titre: 'Trouver une résistance inconnue', depart: () => voir('ohm', { inconnu: true, U: 6, reveler: false }),
-      texte: <>Le résistor du montage est maintenant <strong>inconnu</strong>. Mesurez U et I, calculez R = U / I, puis vérifiez en cliquant sur « Révéler R ». Faites plusieurs mesures : la <strong>pente</strong> de la droite donne R.</>,
+      texte: <>Le résistor du montage est maintenant <strong>inconnu</strong>. Mesurez U et I, calculez R = {avecIndices('frac(U|I)')}, puis vérifiez en cliquant sur « Révéler R ». Faites plusieurs mesures : la <strong>pente</strong> de la droite donne R.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'ohm' && O.inconnu && ptsO.filter(p => p.inconnu).length >= 3, consigne: 'Notez au moins 3 mesures avec le résistor inconnu.' } },
     { id: 'lampe', titre: 'Tous les dipôles ne sont pas ohmiques', depart: () => setAtelier('dipoles'),
       retenirTitre: 'À RETENIR : DIPÔLES NON OHMIQUES',
@@ -275,7 +275,7 @@ plt.show()`;
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Dipôle :</span>
         {[['res', 'résistor 100 Ω', BLEU], ['lampe', 'lampe 6 V – 0,30 A', VERMILLON]].map(([k, l, c]) => <button key={k} onClick={() => setD(d => ({ ...d, dip: k }))} style={stylePetitBouton(D.dip === k, c)}>{l}</button>)}</div>
       {btnNoter(() => setPtsD(p => [...p, { dip: D.dip, U: D.U, I: ID }].slice(-30)))}
-      <div style={{ fontSize: 14.5, color: KIT.txt, marginTop: 6 }}>U / I = <strong>{D.U > 0 ? `${fr(D.U / ID, 0)} Ω` : '—'}</strong>{D.dip === 'lampe' ? ' (change quand U change !)' : ' (toujours la même)'}</div>
+      <div style={{ fontSize: 14.5, color: KIT.txt, marginTop: 6 }}>{avecIndices('frac(U|I)')} = <strong>{D.U > 0 ? `${fr(D.U / ID, 0)} Ω` : '—'}</strong>{D.dip === 'lampe' ? ' (change quand U change !)' : ' (toujours la même)'}</div>
       <div style={{ marginTop: 8, maxWidth: 440 }}><Graphe pts={ptsD.filter(p => p.dip === 'res').map(p => [p.I * 1000, p.U])} series={[{ pts: ptsD.filter(p => p.dip === 'lampe').map(p => [p.I * 1000, p.U]), couleur: VERMILLON }]} xmax={600} ymax={9} xlab="I (mA)" ylab="U (V)" couleur={BLEU} w={440} h={280}/>
         <div style={{ fontSize: 12.5, color: KIT.txt2 }}><span style={{ color: BLEU, fontWeight: 700 }}>● résistor</span> · <span style={{ color: VERMILLON, fontWeight: 700 }}>● lampe</span> <button onClick={() => setPtsD([])} style={{ ...styleBouton(false), marginLeft: 8 }}><Pic n="trash"/>Effacer</button></div></div>
     </div>);
@@ -293,7 +293,7 @@ plt.show()`;
       <div style={{ marginTop: 8 }}>{K.cap === 'ctn'
         ? <Curseur nom="Température θ" val={K.th} min={0} max={80} pas={5} set={v => setK(k => ({ ...k, th: v }))} unite=" °C"/>
         : <Curseur nom="Éclairement" val={K.lux} min={10} max={1000} pas={10} set={v => setK(k => ({ ...k, lux: v }))} unite=" lux"/>}</div>
-      <div style={{ fontSize: 14.5, color: KIT.txt, marginTop: 4 }}>R = U / I = {fr(E_CAPTEUR, 1)} / {fr(IK, 5)} = <strong>{fr(RK / 1000, 2)} kΩ</strong></div>
+      <div style={{ fontSize: 14.5, color: KIT.txt, marginTop: 4 }}>R = {avecIndices('frac(U|I)')} = {fr(E_CAPTEUR, 1)} / {fr(IK, 5)} = <strong>{fr(RK / 1000, 2)} kΩ</strong></div>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>{btnNoter(() => setPtsK(p => p.some(q => q.c === K.cap && q.x === xK) ? p : [...p, { c: K.cap, x: xK, R: RK }]))}
         <button onClick={() => setK(k => ({ ...k, ref: !k.ref }))} style={{ ...stylePetitBouton(K.ref, '#334155'), marginTop: 6 }}>{K.ref ? 'Cacher' : 'Afficher'} la courbe d’étalonnage</button></div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10, marginTop: 8, alignItems: 'start' }}>
@@ -330,8 +330,8 @@ plt.show()`;
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Notez des mesures pour R = 100 Ω puis R = 470 Ω : que devient la pente de la droite ?</li>
-        <li>Pour un même résistor, calculez U / I pour chaque mesure : que remarquez-vous ?</li>
-        <li>Même chose avec la lampe : U / I est-il constant ?</li>
+        <li>Pour un même résistor, calculez {avecIndices('frac(U|I)')} pour chaque mesure : que remarquez-vous ?</li>
+        <li>Même chose avec la lampe : {avecIndices('frac(U|I)')} est-il constant ?</li>
         <li>Capteur : combien de degrés faut-il gagner pour que R soit divisée par 2 ?</li>
         <li>Résistor inconnu : trouvez R par la pente, puis révélez-la pour comparer.</li>
       </ul>

@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi, Formule, FormuleEnLigne } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche, IndiceDefi, Formule, FormuleEnLigne, avecIndices } from "../commun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
 import { FDeuxDT, FEnergiePuissance, FSurface, FFourier, FMethode, FEcartTP } from "./BouilloireSchemas";
@@ -360,18 +360,18 @@ function questionsDefi(df) {
       { id: 'Q', q: <>Énergie |Q| perdue par l’eau pendant la baisse de {dec(df.drop, 1)} °C</>, u: 'kJ', vrai: Q / 1000, tol: 0.02, detail: `|Q| = m·C·ΔT_eau = ${dec(df.m, 2)} × 4 185 × ${dec(df.drop, 1)} = ${nf(Q, 4)} J = ${nf(Q / 1000)} kJ` },
       { id: 'S', q: <>Surface latérale S</>, u: 'm²', vrai: S, tol: 0.02, detail: `S = c × h = ${nf(df.ccm / 100)} × ${nf(df.hcm / 100)} = ${nf(S)} m²` },
       { id: 'dTm', q: <>Écart moyen ΔT<Sub c="m"/> entre l’eau et l’air</>, u: '°C', vrai: dTm, tol: 0.02, detail: `ΔT_m = (θ₁′ + θ₁″)/2 − T_ext = ${t1(df.T0 - df.drop / 2)} − ${t1(df.Text)} = ${t1(dTm)} °C` },
-      { id: 'phi', q: <>Puissance φ qui traverse la paroi latérale</>, u: 'W', vrai: phi, tol: 0.02, detail: `φ = λ·S·ΔT_m / e = ${nf(lam)} × ${nf(S)} × ${t1(dTm)} / ${nf(df.emm / 1000)} = ${nf(phi)} W` },
-      { id: 'dt', q: <>Durée Δt prévue pour cette baisse de {dec(df.drop, 1)} °C</>, u: 's', vrai: Q / phi, tol: 0.02, detail: `Δt = |Q| / φ = ${nf(Q, 4)} / ${nf(phi)} = ${nf(Q / phi)} s` },
+      { id: 'phi', q: <>Puissance φ qui traverse la paroi latérale</>, u: 'W', vrai: phi, tol: 0.02, detail: `φ = frac(λ·S·ΔT_m|e) = frac(${nf(lam)} × ${nf(S)} × ${t1(dTm)}|${nf(df.emm / 1000)}) = ${nf(phi)} W` },
+      { id: 'dt', q: <>Durée Δt prévue pour cette baisse de {dec(df.drop, 1)} °C</>, u: 's', vrai: Q / phi, tol: 0.02, detail: `Δt = frac(∣Q∣|φ) = frac(${nf(Q, 4)}|${nf(phi)}) = ${nf(Q / phi)} s` },
     ];
   }
   const m = (df.mPlein - df.mVide) / 1000, Q = -m * C_EAU * df.drop, phi = -Q / df.dt, lam = phi * (df.emm / 1000) / (S * dTm);
   return [
     { id: 'm', q: <>Masse d’eau m<Sub c="eau"/></>, u: 'kg', vrai: m, tol: 0.005, detail: `m_eau = m_plein − m_vide = ${df.mPlein} − ${df.mVide} = ${df.mPlein - df.mVide} g = ${dec(m, 3)} kg` },
     { id: 'Q', q: <>Énergie Q perdue par l’eau (avec son signe)</>, u: 'kJ', vrai: Q / 1000, tol: 0.02, detail: `Q = m·C·(θ₁″ − θ₁′) = ${dec(m, 3)} × 4 185 × (−${dec(df.drop, 1)}) = ${nf(Q / 1000)} kJ` },
-    { id: 'phi', q: <>Puissance thermique φ = |Q| / Δt</>, u: 'W', vrai: phi, tol: 0.02, detail: `φ = ${nf(-Q, 4)} / ${df.dt} = ${nf(phi)} W` },
+    { id: 'phi', q: <>Puissance thermique φ = {avecIndices('frac(∣Q∣|Δt)')}</>, u: 'W', vrai: phi, tol: 0.02, detail: `φ = frac(${nf(-Q, 4)}|${df.dt}) = ${nf(phi)} W` },
     { id: 'S', q: <>Surface latérale S</>, u: 'm²', vrai: S, tol: 0.02, detail: `S = c × h = ${nf(df.ccm / 100)} × ${nf(df.hcm / 100)} = ${nf(S)} m²` },
     { id: 'dTm', q: <>Écart moyen ΔT<Sub c="m"/> entre l’eau et l’air</>, u: '°C', vrai: dTm, tol: 0.02, detail: `ΔT_m = (${t1(df.T0)} + ${t1(df.T0 - df.drop)})/2 − ${t1(df.Text)} = ${t1(dTm)} °C` },
-    { id: 'lam', q: <>Conductivité thermique λ de la paroi</>, u: 'W·m⁻¹·K⁻¹', vrai: lam, tol: 0.03, detail: `λ = φ·e / (S·ΔT_m) = ${nf(phi)} × ${nf(df.emm / 1000)} / (${nf(S)} × ${t1(dTm)}) = ${nf(lam)} W·m⁻¹·K⁻¹` },
+    { id: 'lam', q: <>Conductivité thermique λ de la paroi</>, u: 'W·m⁻¹·K⁻¹', vrai: lam, tol: 0.03, detail: `λ = frac(φ·e|S·ΔT_m) = frac(${nf(phi)} × ${nf(df.emm / 1000)}|${nf(S)} × ${t1(dTm)}) = ${nf(lam)} W·m⁻¹·K⁻¹` },
   ];
 }
 
@@ -482,14 +482,14 @@ export function SimulationBouilloire() {
       texte: <>Cette énergie (|Q| = {nf(-A.Q, 4)} J, étape 6) est sortie de l’eau pendant la durée Δt = {dec(A.dt, 1)} s lue au chronomètre à l’étape 3. La puissance thermique (énergie perdue par seconde) vaut {FPhi}.</>,
       tache: { type: 'num', q: 'Puissance thermique φ', unite: 'W', vrai: A.phi, tol: 0.02, affiche: x => nf(x),
         calcul: () => [`|Q| = ${nf(-A.Q, 4)} J (valeur absolue de Q, en joules et non en kJ) ; Δt = ${dec(A.dt, 1)} s.`,
-          `φ = |Q| / Δt = ${nf(-A.Q, 4)} / ${dec(A.dt, 1)} = ${nf(A.phi)} W.`],
-        pieges: [[-A.Q * A.dt, 'On divise l’énergie par la durée : φ = |Q| / Δt.'], [A.Q / A.dt, 'φ est la valeur absolue : prenez |Q|.']],
-        expl: `φ = ${nf(-A.Q, 4)} J / ${dec(A.dt, 1)} s ≈ ${nf(A.phi)} W : l’eau perd environ ${nf(A.phi, 2)} J chaque seconde.`, indice: "φ = |Q| ÷ Δt, avec Q en joules et Δt en secondes." } },
+          `φ = frac(∣Q∣|Δt) = frac(${nf(-A.Q, 4)}|${dec(A.dt, 1)}) = ${nf(A.phi)} W.`],
+        pieges: [[-A.Q * A.dt, 'On divise l’énergie par la durée : φ = frac(∣Q∣|Δt).'], [A.Q / A.dt, 'φ est la valeur absolue : prenez |Q|.']],
+        expl: `φ = frac(${nf(-A.Q, 4)} J|${dec(A.dt, 1)} s) ≈ ${nf(A.phi)} W : l’eau perd environ ${nf(A.phi, 2)} J chaque seconde.`, indice: "φ = |Q| ÷ Δt, avec Q en joules et Δt en secondes." } },
     { id: 'chemin', titre: 'Par où sort cette énergie ?', focus: ['schema'],
       retenirTitre: 'De l’énergie à la puissance',
       retenir: <><FEnergiePuissance/>{puces(<>Q (J) est négatif : l’eau cède de l’énergie ; on utilise |Q|.</>, <>φ est l’énergie perdue chaque seconde.</>)}</>,
       texte: <>Le modèle du TP fait une <strong>grosse approximation</strong> : toute cette énergie traverse la <strong>paroi latérale</strong> en plastique (les flèches orange) ; rien ne sort par le couvercle, le fond ou la vapeur. On reviendra sur cette hypothèse.</>,
-      tache: { type: 'qcm', q: 'Avec cette hypothèse, la puissance qui traverse la paroi latérale est…', options: ['égale à la puissance perdue par l’eau, φ = |Q| / Δt', 'plus petite que φ', 'nulle, car la paroi est isolante'], bonne: 0,
+      tache: { type: 'qcm', q: 'Avec cette hypothèse, la puissance qui traverse la paroi latérale est…', options: ['égale à la puissance perdue par l’eau, φ = frac(∣Q∣|Δt)', 'plus petite que φ', 'nulle, car la paroi est isolante'], bonne: 0,
         expl: 'Ce que l’eau perd, la paroi latérale le transmet : la même puissance φ traverse la paroi. On peut donc relier φ aux caractéristiques de la paroi (λ, S, e).', indice: "On suppose que toute l’énergie perdue par l’eau traverse la paroi latérale." } },
     { id: 'S', titre: 'La surface de la paroi latérale', focus: ['schema', 'releve'],
       texte: <>On modélise la bouilloire par un <strong>cylindre</strong>. Déroulée, sa paroi latérale (au contact de l’eau) est un rectangle de longueur c (la circonférence) et de largeur h (la hauteur d’eau) : <strong>S = c × h</strong>, avec c = {dec(GUIDE.ccm, 1)} cm et h = {dec(GUIDE.hcm, 1)} cm (relevé).</>,
@@ -501,26 +501,26 @@ export function SimulationBouilloire() {
     { id: 'dTm', titre: 'L’écart de température de part et d’autre de la paroi', focus: ['graphe'],
       retenirTitre: 'Surface de la paroi',
       retenir: <><FSurface/>{puces(<>Paroi latérale d’un cylindre = rectangle de longueur c (circonférence) et de largeur h (hauteur d’eau).</>, <>Convertir c et h en mètres avant de multiplier.</>)}</>,
-      texte: <>La puissance qui traverse une paroi dépend de l’écart de température entre ses deux côtés : l’<strong>eau</strong> dedans, l’<strong>air</strong> dehors. Ce n’est pas la baisse de 3,0 °C ! La température de l’air est T<Sub c="ext"/> = 21,0 °C. Comme l’eau passe de 100,0 à 97,0 °C pendant la mesure, on prend sa <strong>température moyenne</strong> θ<Sub c="moy"/> = (θ₁′ + θ₁″) / 2 : c’est une approximation.</>,
+      texte: <>La puissance qui traverse une paroi dépend de l’écart de température entre ses deux côtés : l’<strong>eau</strong> dedans, l’<strong>air</strong> dehors. Ce n’est pas la baisse de 3,0 °C ! La température de l’air est T<Sub c="ext"/> = 21,0 °C. Comme l’eau passe de 100,0 à 97,0 °C pendant la mesure, on prend sa <strong>température moyenne</strong> θ<Sub c="moy"/> = {avecIndices('frac(θ₁′ + θ₁″|2)')} : c’est une approximation.</>,
       tache: { type: 'num', q: 'Écart moyen ΔT_m = θ_moy − T_ext', unite: '°C', vrai: A.dTm, tol: 0.005, affiche: x => dec(x, 1),
         calcul: () => [`Hypothèse du modèle : on remplace la température de l’eau, qui varie, par sa moyenne sur la mesure.`,
-          `θ_moy = (θ₁′ + θ₁″) / 2 = (${dec(GUIDE.T0, 1)} + ${dec(GUIDE.T0 - GUIDE.drop, 1)}) / 2 = ${dec(GUIDE.T0 - GUIDE.drop / 2, 1)} °C.`,
+          `θ_moy = frac(θ₁′ + θ₁″|2) = frac(${dec(GUIDE.T0, 1)} + ${dec(GUIDE.T0 - GUIDE.drop, 1)}|2) = ${dec(GUIDE.T0 - GUIDE.drop / 2, 1)} °C.`,
           `ΔT_m = θ_moy − T_ext = ${dec(GUIDE.T0 - GUIDE.drop / 2, 1)} − ${dec(GUIDE.Text, 1)} = ${dec(A.dTm, 1)} °C.`],
         pieges: [[3, 'C’est la baisse de température de l’eau, utilisée pour Q. Pour la paroi, il faut l’écart entre l’eau et l’air.'], [79, 'θ₁′ − T_ext : prenez la température moyenne de l’eau pendant la mesure.', 0.005],
           [76, 'θ₁″ − T_ext : prenez la température moyenne de l’eau pendant la mesure.', 0.005], [98.5, 'C’est la température moyenne de l’eau : retirez la température de l’air.']],
-        expl: 'θ_moy = (100,0 + 97,0) / 2 = 98,5 °C, donc ΔT_m = 98,5 − 21,0 = 77,5 °C : 26 fois plus que la baisse de 3,0 °C.', indice: "ΔT_m = moyenne des températures de l’eau (début et fin) − température extérieure." } },
+        expl: 'θ_moy = frac(100,0 + 97,0|2) = 98,5 °C, donc ΔT_m = 98,5 − 21,0 = 77,5 °C : 26 fois plus que la baisse de 3,0 °C.', indice: "ΔT_m = moyenne des températures de l’eau (début et fin) − température extérieure." } },
     { id: 'lambda', titre: 'La conductivité thermique de la paroi', focus: ['releve'],
       retenirTitre: 'La loi de Fourier',
       retenir: <><FFourier/>{FFour}{puces(<>Hypothèses : paroi plane, toute la puissance traverse la paroi latérale, ΔT<sub>m</sub> constant.</>, <>ΔT<sub>m</sub> = θ<sub>moy</sub> − T<sub>ext</sub> (température moyenne de l’eau pendant la mesure).</>)}</>,
       texte: <>Pour une paroi plane d’épaisseur e :{FFour}donc{FLam}Reprenez φ = {nf(A.phi)} W (étape 7), S = {nf(A.S)} m² (étape 9), ΔT<Sub c="m"/> = {dec(A.dTm, 1)} °C (étape 10) et l’épaisseur e = {dec(GUIDE.emm, 1)} mm (relevé). Attention à l’unité de e.</>,
       tache: { type: 'num', q: 'Conductivité thermique λ de la paroi', unite: 'W·m⁻¹·K⁻¹', vrai: A.lam, tol: 0.03, affiche: x => nf(x, 2),
         calcul: () => [`Hypothèses du modèle : paroi plane, toute la puissance φ traverse la paroi latérale, écart de température ΔT_m constant.`,
-          `λ = φ × e / (S × ΔT_m), avec e = ${dec(GUIDE.emm, 1)} mm = ${dec(A.e, 4)} m.`,
-          `λ = ${nf(A.phi)} × ${dec(A.e, 4)} / (${nf(A.S)} × ${dec(A.dTm, 1)}) = ${nf(A.lam, 2)} W·m⁻¹·K⁻¹.`],
+          `λ = frac(φ × e|S × ΔT_m), avec e = ${dec(GUIDE.emm, 1)} mm = ${dec(A.e, 4)} m.`,
+          `λ = frac(${nf(A.phi)} × ${dec(A.e, 4)}|${nf(A.S)} × ${dec(A.dTm, 1)}) = ${nf(A.lam, 2)} W·m⁻¹·K⁻¹.`],
         pieges: [[A.lam * 100, 'e = 2,1 mm = 0,0021 m : l’épaisseur doit être en mètres.'], [A.lam * A.dTm / 3, 'Vous avez pris ΔT = 3,0 °C : pour la paroi, il faut l’écart eau – air ΔT_m = 77,5 °C.'],
           [A.lam * 1000, 'e = 2,1 mm = 0,0021 m : l’épaisseur doit être en mètres (1 mm = 10⁻³ m).'],
-          [A.S * A.dTm / (A.phi * A.e), 'Formule à l’envers : de φ = λ·S·ΔT_m / e on tire λ = φ·e / (S·ΔT_m).']],
-        expl: `λ = ${nf(A.phi)} × 0,0021 / (${nf(A.S)} × 77,5) ≈ ${nf(A.lam, 2)} W·m⁻¹·K⁻¹.`, indice: "φ = λ × S × ΔT_m ÷ e, donc λ = φ × e ÷ (S × ΔT_m), avec e en mètres." } },
+          [A.S * A.dTm / (A.phi * A.e), 'Formule à l’envers : de φ = frac(λ·S·ΔT_m|e) on tire λ = frac(φ·e|S·ΔT_m).']],
+        expl: `λ = frac(${nf(A.phi)} × 0,0021|${nf(A.S)} × 77,5) ≈ ${nf(A.lam, 2)} W·m⁻¹·K⁻¹.`, indice: "φ = λ × S × ΔT_m ÷ e, donc λ = φ × e ÷ (S × ΔT_m), avec e en mètres." } },
     { id: 'verdict', titre: 'Le verdict', focus: [],
       texte: <>La simulation utilisait une paroi en ABS, de conductivité <strong>λ = 0,16 W·m⁻¹·K⁻¹</strong>, dans un monde où <strong>toutes les hypothèses du TP sont exactement vraies</strong>.</>,
       tache: { type: 'qcm', q: 'Que montre votre résultat ?', options: ['Quand les hypothèses sont vraies, la méthode du TP retrouve la bonne valeur de λ', 'La méthode du TP donne toujours la bonne valeur, même dans une vraie bouilloire', 'La méthode du TP est fausse'], bonne: 0,
@@ -536,11 +536,11 @@ export function SimulationBouilloire() {
     { id: 'lambdaReel', titre: 'Refaire le calcul', focus: ['releve'],
       texte: <>Seule la durée Δt a changé : elle vaut maintenant {dec(A.dtR, 1)} s. Refaites le calcul de λ avec cette durée : Q, S et ΔT<Sub c="m"/> sont inchangés.</>,
       tache: { type: 'num', q: 'λ calculée avec le nouveau Δt', unite: 'W·m⁻¹·K⁻¹', vrai: A.lamR, tol: 0.03, affiche: x => nf(x, 2),
-        calcul: () => [`Nouvelle puissance : φ = |Q| / Δt = ${nf(-A.Q, 4)} / ${dec(A.dtR, 1)} = ${nf(-A.Q / A.dtR)} W.`,
-          `Même modèle du TP (paroi plane, toute la puissance par la paroi latérale, ΔT_m = ${dec(A.dTm, 1)} °C) : λ = φ × e / (S × ΔT_m).`,
-          `λ = ${nf(-A.Q / A.dtR)} × ${dec(A.e, 4)} / (${nf(A.S)} × ${dec(A.dTm, 1)}) = ${nf(A.lamR, 2)} W·m⁻¹·K⁻¹.`],
+        calcul: () => [`Nouvelle puissance : φ = frac(∣Q∣|Δt) = frac(${nf(-A.Q, 4)}|${dec(A.dtR, 1)}) = ${nf(-A.Q / A.dtR)} W.`,
+          `Même modèle du TP (paroi plane, toute la puissance par la paroi latérale, ΔT_m = ${dec(A.dTm, 1)} °C) : λ = frac(φ × e|S × ΔT_m).`,
+          `λ = frac(${nf(-A.Q / A.dtR)} × ${dec(A.e, 4)}|${nf(A.S)} × ${dec(A.dTm, 1)}) = ${nf(A.lamR, 2)} W·m⁻¹·K⁻¹.`],
         pieges: [[0.16, 'C’est la vraie valeur de la simulation : refaites le calcul avec le nouveau Δt.'], [A.lam, 'C’est le résultat avec l’ancien Δt.']],
-        expl: `λ = (${nf(-A.Q, 4)} / ${dec(A.dtR, 1)}) × 0,0021 / (${nf(A.S)} × 77,5) ≈ ${nf(A.lamR, 2)} W·m⁻¹·K⁻¹, au lieu de 0,16 : comme en TP, on trouve moins que la valeur de référence.`, indice: "Refaites le calcul avec la nouvelle durée : φ change, puis λ." } },
+        expl: `λ = frac(frac(${nf(-A.Q, 4)}|${dec(A.dtR, 1)}) × 0,0021|${nf(A.S)} × 77,5) ≈ ${nf(A.lamR, 2)} W·m⁻¹·K⁻¹, au lieu de 0,16 : comme en TP, on trouve moins que la valeur de référence.`, indice: "Refaites le calcul avec la nouvelle durée : φ change, puis λ." } },
     { id: 'flux', titre: 'Où passe vraiment l’énergie ?', focus: ['flux'],
       texte: <>Le bilan montre par où sort l’énergie de cette bouilloire réaliste.</>,
       tache: { type: 'qcm', q: 'Quelle part de l’énergie traverse la paroi latérale ?', options: [`Environ ${A.partLat} %`, '100 %, comme le suppose le modèle du TP', 'Moins de 10 %'], bonne: 0,
@@ -697,10 +697,10 @@ export function SimulationBouilloire() {
   const calcul = (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <div style={ligne}><strong>1. Énergie perdue par l’eau</strong> (baisse de l’eau) : Q = m·C·(θ₁″ − θ₁′) = {dec(ux.m, 3)} × 4 185 × (−{dec(ux.drop, 1)}) = <strong>{nf(-Qx / 1000, 4)} kJ</strong></div>
-      <div style={ligne}><strong>2. Puissance</strong> : φ = |Q| / Δt = {nf(Qx, 4)} / {fini ? dec(s.tEnd, 1) : 'Δt'} = <strong>{fini ? `${nf(Qx / s.tEnd)} W` : '— (lancez l’expérience)'}</strong></div>
+      <div style={ligne}><strong>2. Puissance</strong> : φ = {avecIndices('frac(∣Q∣|Δt)')} = {nf(Qx, 4)} / {fini ? dec(s.tEnd, 1) : 'Δt'} = <strong>{fini ? `${nf(Qx / s.tEnd)} W` : '— (lancez l’expérience)'}</strong></div>
       <div style={ligne}><strong>3. Surface latérale</strong> : S = c × h = {nf(p.c)} × {nf(p.h)} = <strong>{nf(Sx)} m²</strong></div>
       <div style={ligne}><strong>4. Écart eau – air</strong> : ΔT<Sub c="m"/> = (θ₁′ + θ₁″)/2 − T<Sub c="ext"/> = {t1(ux.T0 - ux.drop / 2)} − {t1(ux.Text)} = <strong>{dec(dTmx, 1)} °C</strong></div>
-      <div style={ligne}><strong>5. Conductivité</strong> : λ = φ·e / (S·ΔT<Sub c="m"/>) = <strong>{fini ? `${nf(lamMes, 3)} W·m⁻¹·K⁻¹` : '—'}</strong>
+      <div style={ligne}><strong>5. Conductivité</strong> : λ = φ·{avecIndices('frac(e|S·ΔT_m)')} = <strong>{fini ? `${nf(lamMes, 3)} W·m⁻¹·K⁻¹` : '—'}</strong>
         {fini && <span style={{ color: Math.abs(lamMes / p.lam - 1) < 0.01 ? '#15803d' : '#b45309' }}> (valeur de la simulation : {nf(p.lam)} ; écart {pct(lamMes / p.lam - 1)})</span>}</div>
     </div>
   );
@@ -731,7 +731,7 @@ export function SimulationBouilloire() {
         <table style={{ borderCollapse: 'collapse', background: 'white', maxWidth: 460 }}>
           <tbody>{donnees.map(([a, b]) => <tr key={a}><td style={{ ...cell, color: KIT.txt2 }}>{indicesProfond(a)}</td><td style={{ ...cell, fontWeight: 700, color: KIT.txt }}>{b}</td></tr>)}</tbody>
         </table>
-        <div style={{ fontSize: 13, color: KIT.txt2 }}>C<Sub c="eau"/> = 4 185 J·kg⁻¹·°C⁻¹ ; Q = m·C·ΔT ; φ = |Q| / Δt ; S = c × h ; φ = λ·S·ΔT<Sub c="m"/> / e. Notation possible : 1,2e-3.</div>
+        <div style={{ fontSize: 13, color: KIT.txt2 }}>C<Sub c="eau"/> = 4 185 J·kg⁻¹·°C⁻¹ ; Q = m·C·ΔT ; φ = {avecIndices('frac(∣Q∣|Δt)')} ; S = c × h ; φ = λ·S·ΔT<Sub c="m"/> / e. Notation possible : 1,2e-3.</div>
         {Q.map((q, k) => {
           const ok = juste(q);
           return (
@@ -774,7 +774,7 @@ export function SimulationBouilloire() {
       <ul style={{ margin: 0, paddingLeft: 18 }}>
         <li><strong>Films</strong> : résistances de convection en série avec la paroi, 1/(h<Sub c="eau"/>·S) côté eau (h ≈ {ENRICHI.hint} W·m⁻²·K⁻¹, convection naturelle dans l’eau, ordre de grandeur 100 à 1 000) et 1/(h<Sub c="air"/>·S) côté air (h ≈ {ENRICHI.hextVent} W·m⁻²·K⁻¹ avec ventilateur, {ENRICHI.hextSans} sans ; convection et rayonnement réunis). h est supposé constant ; en réalité il dépend de l’écart de température et de la vitesse de l’air.</li>
         <li><strong>Couvercle et fond</strong> : deux disques d’aire c²/(4π) chacun, supposés faits de la même paroi que le côté (même e, même λ, mêmes films). Hypothèse grossière : le fond repose sur un socle, le couvercle a souvent une autre épaisseur.</li>
-        <li><strong>Évaporation</strong> (vapeur qui s’échappe par le bec et le couvercle) : P<Sub c="évap"/> = P<Sub c="100"/> · (p<Sub c="sat"/>(θ) − p<Sub c="v,air"/>) / (p<Sub c="sat"/>(100 °C) − p<Sub c="v,air"/>) (loi de Dalton), p<Sub c="sat"/> par la formule d’Antoine, air à 50 % d’humidité. P<Sub c="100"/> ≈ {ENRICHI.P100} W est mal connue (par exemple, 100 W correspondent à environ 3 g d’eau évaporée en 70 s).</li>
+        <li><strong>Évaporation</strong> (vapeur qui s’échappe par le bec et le couvercle) : P<Sub c="évap"/> = P<Sub c="100"/> · {avecIndices('frac(p_sat(θ) − p_v,air|p_sat(100 °C) − p_v,air)')} (loi de Dalton), p<Sub c="sat"/> par la formule d’Antoine, air à 50 % d’humidité. P<Sub c="100"/> ≈ {ENRICHI.P100} W est mal connue (par exemple, 100 W correspondent à environ 3 g d’eau évaporée en 70 s).</li>
         <li><strong>Capacité thermique de la bouilloire</strong> : C<Sub c="corps"/> ≈ {ENRICHI.Ccorps} J·K⁻¹ (paroi en ABS et plaque chauffante qui refroidissent avec l’eau), à comparer aux ≈ 6 660 J·K⁻¹ de l’eau.</li>
         <li><strong>Ces valeurs par défaut ne sont pas mesurées</strong> : c’est un jeu plausible parmi d’autres, choisi pour retrouver l’ordre de grandeur du TP (Δt ≈ 70 s avec λ = 0,16). D’autres combinaisons donneraient le même Δt : la simulation montre le sens et l’ordre de grandeur de chaque effet, elle ne prouve pas quelle est la cause de l’écart dans votre bouilloire.</li>
         <li>Résolution numérique (Runge-Kutta d’ordre 4, pas de 0,05 s) quand l’évaporation est prise en compte ; sinon la solution exponentielle exacte.</li>
