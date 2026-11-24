@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo, useDeferredValue } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./ondesModele";
@@ -260,14 +260,14 @@ export function SimulationInterferences({ naviguer }) {
     { id: 'tau', titre: 'Le retard τ', focus: ['sonde'],
       retenirTitre: 'Chemins, δ et retard',
       retenir: <><FChemins/>{puces(<>δ est la différence entre les deux distances parcourues ; le retard τ est le temps que met l’onde pour la parcourir.</>, <>Sur l’axe de symétrie, les deux distances sont égales : δ = 0, les ondes arrivent ensemble.</>)}</>,
-      texte: <>Les ondes se propagent à la célérité <em>v</em> = <em>λ</em> × <em>f</em> = 2{NB}cm × 20{NB}Hz = 0,40{NB}m/s. Calculez le retard τ = δ / <em>v</em>, en millisecondes.</>,
+      texte: <>Les ondes se propagent à la célérité <em>v</em> = <em>λ</em> × <em>f</em> = 2{NB}cm × 20{NB}Hz = 0,40{NB}m/s. Calculez le retard τ = {avecIndices('frac(δ|v)')}, en millisecondes.</>,
       tache: { type: 'num', q: 'Retard τ', unite: 'ms', vrai: delta * 1e-2 / 0.4 * 1e3, tol: 0.05, affiche: v => nbf(v, 0), cs: 2,
         bloque: cuveBase && Math.abs(delta - 3) < 0.3 ? null : 'Placez d’abord M avec le bouton « Rétablir le point M » au-dessus de la cuve.',
-        calcul: () => ['Hypothèse : la célérité est la même dans toute la cuve (eau de profondeur constante).', `Unités SI : δ = ${nbf(delta, 1)} cm = ${nbf(delta * 1e-2, 3)} m ; v = 0,40 m/s.`, `τ = ${nbf(delta * 1e-2, 3)} / 0,40 = ${nbf(delta * 1e-2 / 0.4, 3)} s = ${nbf(delta * 1e-2 / 0.4 * 1e3, 0)} ms.`],
+        calcul: () => ['Hypothèse : la célérité est la même dans toute la cuve (eau de profondeur constante).', `Unités SI : δ = ${nbf(delta, 1)} cm = ${nbf(delta * 1e-2, 3)} m ; v = 0,40 m/s.`, `τ = frac(${nbf(delta * 1e-2, 3)}|0,40) = ${nbf(delta * 1e-2 / 0.4, 3)} s = ${nbf(delta * 1e-2 / 0.4 * 1e3, 0)} ms.`],
         pieges: [[delta * 1e-2 / 0.4, 'Vous avez donné τ en secondes. L’unité demandée est la milliseconde.'], [delta / 0.4 * 1e3, 'Convertissez δ en mètres avant de diviser par v (en m/s).']],
-        expl: 'τ = δ / v = 0,030 / 0,40 = 0,075 s = 75 ms (valeurs pour δ = 3,0 cm).', indice: "τ = δ ÷ v, avec δ en mètres et v la célérité de l’onde." } },
+        expl: 'τ = frac(δ|v) = frac(0,030|0,40) = 0,075 s = 75 ms (valeurs pour δ = 3,0 cm).', indice: "τ = δ ÷ v, avec δ en mètres et v la célérité de l’onde." } },
     { id: 'nature', titre: 'Constructive ou destructive ?', focus: ['sonde'],
-      texte: <>La période des ondes est <em>T</em> = 1 / <em>f</em> = 50{NB}ms. Comparez le retard τ = 75{NB}ms à <em>T</em>. Les interférences sont constructives si τ = <em>k</em>·<em>T</em> et destructives si τ = <em>k</em>·<em>T</em> + <em>T</em>/2 (<em>k</em> entier).</>,
+      texte: <>La période des ondes est <em>T</em> = {avecIndices('frac(1|f)')} = 50{NB}ms. Comparez le retard τ = 75{NB}ms à <em>T</em>. Les interférences sont constructives si τ = <em>k</em>·<em>T</em> et destructives si τ = <em>k</em>·<em>T</em> + <em>T</em>/2 (<em>k</em> entier).</>,
       tache: { type: 'qcm', q: 'Au point M, où τ = 75 ms et T = 50 ms, l’interférence est…', options: ['constructive', 'destructive', 'ni l’une ni l’autre exactement'], bonne: 1,
         expl: '75 ms = 50 ms + 25 ms = 1 × T + T/2 : le retard vaut une période plus une demi-période, donc l’interférence est destructive. On le vérifie sur la vue « amplitude » : M est dans une zone claire (calme).', indice: "Calculez τ ÷ T : un nombre entier donne une interférence constructive, un demi-entier une destructive." } },
     { id: 'constructive', titre: 'Chercher une frange agitée', focus: ['scene', 'sonde'],
@@ -302,24 +302,24 @@ export function SimulationInterferences({ naviguer }) {
     { id: 'interfrange', titre: 'Calculer l’interfrange', focus: ['mesures'],
       retenirTitre: 'L’interfrange',
       retenir: <><FInterfrange/>{puces(<>L’<strong>interfrange i</strong> est la distance entre deux franges brillantes consécutives.</>, <>On mesure plusieurs interfranges d’un coup, puis on divise par leur nombre.</>)}</>,
-      texte: <>Lisez la distance <em>d</em> entre vos repères dans « Mesures », puis calculez l’interfrange <em>i</em> = <em>d</em> / 6.</>,
+      texte: <>Lisez la distance <em>d</em> entre vos repères dans « Mesures », puis calculez l’interfrange <em>i</em> = {avecIndices('frac(d|6)')}.</>,
       tache: { type: 'num', q: 'Interfrange i', unite: 'mm', vrai: Lmes / nY, tol: 0.02, affiche: v => nbf(v, 2), cs: 3,
         bloque: pointeYoung ? null : 'Placez d’abord les repères (étape précédente).',
-        calcul: () => [`d = ${nbf(Lmes, 1)} mm sur 6 interfranges.`, `i = ${nbf(Lmes, 1)} / 6 = ${nbf(Lmes / nY, 2)} mm.`],
+        calcul: () => [`d = ${nbf(Lmes, 1)} mm sur 6 interfranges.`, `i = frac(${nbf(Lmes, 1)}|6) = ${nbf(Lmes / nY, 2)} mm.`],
         pieges: [[Lmes, 'Vous avez donné la distance entre les repères : il faut la diviser par le nombre d’interfranges (6).']],
-        expl: `i = d / 6 ≈ ${nbf(Lmes / nY, 2)} mm.`, indice: "i = largeur de plusieurs interfranges ÷ leur nombre." } },
+        expl: `i = frac(d|6) ≈ ${nbf(Lmes / nY, 2)} mm.`, indice: "i = largeur de plusieurs interfranges ÷ leur nombre." } },
     { id: 'dependance', titre: 'De quoi dépend l’interfrange ?', focus: ['reglages'],
-      texte: <>Pour des fentes de Young, l’interfrange est <strong>i = λ·D / l</strong>. Essayez les curseurs <em>l</em> et <em>D</em>, puis répondez.</>,
+      texte: <>Pour des fentes de Young, l’interfrange est <strong>i = {avecIndices('frac(λ·D|l)')}</strong>. Essayez les curseurs <em>l</em> et <em>D</em>, puis répondez.</>,
       tache: { type: 'qcm', q: 'Si l’on rapproche les deux fentes (l diminue), l’interfrange…', options: ['augmente', 'diminue', 'reste le même'], bonne: 0,
         expl: 'Avec i = λD/l, l’interfrange est inversement proportionnel à l : si l diminue, i augmente. C’est cohérent avec la cuve : sources plus rapprochées, franges plus larges.', indice: "i = λD ÷ l : que devient i quand l diminue ?" } },
     { id: 'calcl', titre: 'La distance entre les fentes', focus: ['mesures'],
       retenirTitre: 'Les fentes de Young',
       retenir: <><FYoung/><Formule><mi>i</mi><mo>=</mo><mfrac><mrow><mi>λ</mi><mo>×</mo><mi>D</mi></mrow><mi>l</mi></mfrac></Formule>{puces(<>Chaque fente est une <strong>source secondaire</strong> ; les deux ondes sont synchrones car elles viennent du même laser.</>, <>Fentes plus proches ou écran plus loin : franges plus larges.</>)}</>,
-      texte: <>Revenez au réglage de base si besoin. Avec <em>i</em> = <em>d</em> / 6, déduisez la distance <em>l</em> entre les fentes : isolez <em>l</em> dans <em>i</em> = <em>λ</em>·<em>D</em> / <em>l</em> et calculez-la en micromètres (<em>λ</em> = 532{NB}nm, <em>D</em> = 2,50{NB}m).</>,
+      texte: <>Revenez au réglage de base si besoin. Avec <em>i</em> = {avecIndices('frac(d|6)')}, déduisez la distance <em>l</em> entre les fentes : isolez <em>l</em> dans <em>i</em> = <em>λ</em>·{avecIndices('frac(D|l)')} et calculez-la en micromètres (<em>λ</em> = 532{NB}nm, <em>D</em> = 2,50{NB}m).</>,
       tache: { type: 'num', q: 'Distance l entre les fentes', unite: 'µm', vrai: lCalc, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
         bloque: pointeYoung ? null : 'Placez d’abord les repères (étape « Mesurer plusieurs interfranges »).',
         calcul: () => ['Hypothèses : écran loin des fentes ; petits angles (ici θ ≈ 10⁻³ rad).', `Unités SI : λ = 532 × 10⁻⁹ m ; D = 2,50 m ; i = ${nbf(Lmes / nY, 2)} × 10⁻³ m.`,
-          `l = λD / i = 532 × 10⁻⁹ × 2,50 / (${nbf(Lmes / nY, 2)} × 10⁻³) = ${nbf(lCalc * 1e-6 * 1e4, 2)} × 10⁻⁴ m = ${nbf(lCalc, 0)} µm.`],
+          `l = frac(λD|i) = frac(532 × 10⁻⁹ × 2,50|${nbf(Lmes / nY, 2)} × 10⁻³) = ${nbf(lCalc * 1e-6 * 1e4, 2)} × 10⁻⁴ m = ${nbf(lCalc, 0)} µm.`],
         pieges: [[lCalc * 1e-6, 'Le résultat est à donner en micromètres (1 µm = 10⁻⁶ m).'], [lCalc / 1000, 'Vous avez donné l en millimètres ; l’unité demandée est le micromètre.']],
         expl: 'l = λD/i ≈ 300 µm : les deux fentes sont distantes d’environ un tiers de millimètre (valeur exacte de la simulation : 300 µm ; l’écart vient du pointé).', indice: "l = λD ÷ i, avec toutes les longueurs dans la même unité." } },
     { id: 'pourquoi6', titre: 'Pourquoi six interfranges ?', focus: ['incert'],
@@ -341,25 +341,25 @@ export function SimulationInterferences({ naviguer }) {
       texte: <>Les taches sont numérotées par leur <strong>ordre</strong> <em>k</em> : <em>k</em> = 0 au centre, <em>k</em> = ±1 de part et d’autre, etc. Placez le repère 1 sur la tache d’ordre <strong>−1</strong> et le repère 2 sur celle d’ordre <strong>+1</strong>.</>,
       tache: { type: 'action', ok: pointeReseau, bloque: reseauBase ? null : 'Revenez au réglage de base avec le bouton « Rétablir le réglage » sous l’image.', label: 'Placer pour moi', consigne: 'Repères sur les taches d’ordre −1 et +1', faire: () => setRz(z => ({ ...z, x1: -x1k, x2: x1k })) } },
     { id: 'theta', titre: 'L’angle de déviation', focus: ['mesures'],
-      texte: <>La distance entre les deux repères (lue dans « Mesures ») vaut 2<em>x</em>₁. L’écran est à <em>D</em> = 1,00{NB}m. L’angle <em>θ</em>₁ entre la tache centrale et la tache d’ordre 1 vérifie tan <em>θ</em>₁ = <em>x</em>₁ / <em>D</em>. Calculez-le, en degrés.</>,
+      texte: <>La distance entre les deux repères (lue dans « Mesures ») vaut 2<em>x</em>₁. L’écran est à <em>D</em> = 1,00{NB}m. L’angle <em>θ</em>₁ entre la tache centrale et la tache d’ordre 1 vérifie tan <em>θ</em>₁ = {avecIndices('frac(x₁|D)')}. Calculez-le, en degrés.</>,
       tache: { type: 'num', q: 'Angle θ₁', unite: '°', vrai: deg(Math.atan2(Lmes / 2, 1000)), tol: 0.03, affiche: v => nbf(v, 1), cs: 3,
         bloque: pointeReseau ? null : 'Placez d’abord les repères (étape précédente).',
-        calcul: () => [`x₁ = ${nbf(Lmes / 2, 1)} mm = ${nbf(Lmes / 2 / 1000, 3)} m ; D = 1,00 m.`, `tan θ₁ = ${nbf(Lmes / 2 / 1000, 3)} / 1,00 donc θ₁ = ${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}° (calculatrice en degrés).`],
+        calcul: () => [`x₁ = ${nbf(Lmes / 2, 1)} mm = ${nbf(Lmes / 2 / 1000, 3)} m ; D = 1,00 m.`, `tan θ₁ = frac(${nbf(Lmes / 2 / 1000, 3)}|1,00) donc θ₁ = ${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}° (calculatrice en degrés).`],
         pieges: [[Math.atan2(Lmes / 2, 1000), 'Votre calculatrice est en radians : l’angle demandé est en degrés.'], [deg(Math.atan2(Lmes, 1000)), 'Vous avez utilisé la distance entre les deux repères : x₁ est la moitié.']],
         expl: `θ₁ = ${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°.`, indice: "tan θ = (L ÷ 2) ÷ D : utilisez la touche arctan de la calculatrice." } },
     { id: 'pas', titre: 'Le pas du réseau', focus: ['mesures'],
       retenirTitre: 'Le réseau et ses ordres',
       retenir: <><FReseau/>{puces(<>Un <strong>réseau</strong> : un très grand nombre de traits parallèles ; le <strong>pas a</strong> est la distance entre deux traits voisins.</>, <>Les taches (ordres k = 0, ±1, ±2…) sont fines, bien séparées et lumineuses : faciles à pointer.</>)}</>,
-      texte: <>La <strong>formule des réseaux</strong> relie l’angle de déviation <em>θ</em><sub>k</sub> de l’ordre <em>k</em>, la longueur d’onde et le pas : <strong>sin θ<sub>k</sub> = k·λ / a</strong>. Pour <em>k</em> = 1 et <em>λ</em> = 532{NB}nm, calculez le pas <em>a</em>, en micromètres.</>,
+      texte: <>La <strong>formule des réseaux</strong> relie l’angle de déviation <em>θ</em><sub>k</sub> de l’ordre <em>k</em>, la longueur d’onde et le pas : <strong>sin θ<sub>k</sub> = {avecIndices('frac(k·λ|a)')}</strong>. Pour <em>k</em> = 1 et <em>λ</em> = 532{NB}nm, calculez le pas <em>a</em>, en micromètres.</>,
       tache: { type: 'num', q: 'Pas a du réseau', unite: 'µm', vrai: aMesG, tol: 0.03, affiche: v => nbf(v, 2), cs: 3,
         bloque: pointeReseau ? null : 'Placez d’abord les repères (étape « Les ordres de diffraction »).',
-        calcul: () => ['Hypothèse : formule des réseaux, valable sans approximation des petits angles.', `a = kλ / sin θ₁ = 1 × 532 × 10⁻⁹ / sin(${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°) = ${nbf(aMesG * 1e-6 * 1e6, 2)} × 10⁻⁶ m = ${nbf(aMesG, 2)} µm.`],
-        pieges: [[aMesG * 1e-6, 'Le résultat est à donner en micromètres.'], [532e-9 * Math.sin(Math.atan2(Lmes / 2, 1000)) * 1e6, 'Vous avez multiplié λ par sin θ₁ : la formule des réseaux est sin θ₁ = λ / a, donc a = λ / sin θ₁.'], [532e-9 / Math.cos(Math.atan2(Lmes / 2, 1000)) * 1e6, 'Utilisez le sinus de θ₁ (formule des réseaux), pas son cosinus.'], [aMesG / 1000, 'Vérifiez l’unité : le résultat est à donner en micromètres.']],
-        expl: `a = λ / sin θ₁ ≈ ${nbf(aMesG, 1)} µm (valeur exacte de la simulation : 3,3 µm), soit environ 300 traits par millimètre.`, indice: "a = λ ÷ sin θ₁ (ordre 1)." } },
+        calcul: () => ['Hypothèse : formule des réseaux, valable sans approximation des petits angles.', `a = frac(kλ|sin θ₁) = frac(1 × 532 × 10⁻⁹|sin(${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°)) = ${nbf(aMesG * 1e-6 * 1e6, 2)} × 10⁻⁶ m = ${nbf(aMesG, 2)} µm.`],
+        pieges: [[aMesG * 1e-6, 'Le résultat est à donner en micromètres.'], [532e-9 * Math.sin(Math.atan2(Lmes / 2, 1000)) * 1e6, 'Vous avez multiplié λ par sin θ₁ : la formule des réseaux est sin θ₁ = frac(λ|a), donc a = frac(λ|sin θ₁).'], [532e-9 / Math.cos(Math.atan2(Lmes / 2, 1000)) * 1e6, 'Utilisez le sinus de θ₁ (formule des réseaux), pas son cosinus.'], [aMesG / 1000, 'Vérifiez l’unité : le résultat est à donner en micromètres.']],
+        expl: `a = frac(λ|sin θ₁) ≈ ${nbf(aMesG, 1)} µm (valeur exacte de la simulation : 3,3 µm), soit environ 300 traits par millimètre.`, indice: "a = λ ÷ sin θ₁ (ordre 1)." } },
     { id: 'ordremax', titre: 'Combien d’ordres ?', focus: ['ecran'],
-      texte: <>Un ordre n’existe que si sin θ<sub>k</sub> = k·λ / a est inférieur à 1. Calculez l’ordre maximal <em>k</em> théorique avec <em>λ</em> = 532{NB}nm et <em>a</em> = 3,3{NB}µm.</>,
+      texte: <>Un ordre n’existe que si sin θ<sub>k</sub> = {avecIndices('frac(k·λ|a)')} est inférieur à 1. Calculez l’ordre maximal <em>k</em> théorique avec <em>λ</em> = 532{NB}nm et <em>a</em> = 3,3{NB}µm.</>,
       tache: { type: 'num', q: 'Ordre maximal observable', unite: '', vrai: 6, tol: 0.001, affiche: v => nbf(v, 0), cs: 1,
-        calcul: () => ['Condition : k λ / a < 1, donc k < a / λ.', 'a / λ = 3,3 × 10⁻⁶ / 532 × 10⁻⁹ ≈ 6,2 : le plus grand entier strictement inférieur est k = 6.'],
+        calcul: () => ['Condition : k frac(λ|a) < 1, donc k < frac(a|λ).', 'frac(a|λ) = frac(3,3 × 10⁻⁶|532 × 10⁻⁹) ≈ 6,2 : le plus grand entier strictement inférieur est k = 6.'],
         pieges: [[6.2, 'Un ordre est un nombre entier : prenez la partie entière.']],
         expl: 'k < a/λ ≈ 6,2 : les ordres vont théoriquement de −6 à +6. En pratique, les ordres élevés sont très écartés, presque rasants, peu lumineux, et sortent de l’image (écran plan) : on n’en voit ici que quelques-uns.', indice: "sin θ ne peut pas dépasser 1 : p ≤ a ÷ λ. Gardez la partie entière." } },
     { id: 'blanche', titre: 'Et en lumière blanche ?', focus: ['reglages', 'ecran'],
@@ -370,7 +370,7 @@ export function SimulationInterferences({ naviguer }) {
     { id: 'dispersion', titre: 'Le réseau disperse la lumière', focus: ['ecran'],
       texte: <>Les ordres 1, 2… sont étalés en <strong>spectres</strong> : chaque longueur d’onde interfère de façon constructive dans une direction qui lui est propre. La tache centrale (<em>k</em> = 0) reste blanche.</>,
       tache: { type: 'qcm', q: 'Dans le spectre d’ordre 1, quelle couleur est la plus éloignée du centre ?', options: ['le rouge (λ la plus grande)', 'le violet (λ la plus petite)', 'toutes les couleurs sont à la même distance'], bonne: 0,
-        expl: 'D’après sin θ₁ = λ / a, plus λ est grande, plus θ₁ est grand : le rouge (≈ 700 nm) est plus dévié que le violet (≈ 400 nm). C’est l’inverse d’un prisme. Un réseau sépare donc les longueurs d’onde : c’est le principe du spectrophotomètre à réseau.', indice: "sin θ = λ ÷ a : θ augmente avec λ." } },
+        expl: 'D’après sin θ₁ = frac(λ|a), plus λ est grande, plus θ₁ est grand : le rouge (≈ 700 nm) est plus dévié que le violet (≈ 400 nm). C’est l’inverse d’un prisme. Un réseau sépare donc les longueurs d’onde : c’est le principe du spectrophotomètre à réseau.', indice: "sin θ = λ ÷ a : θ augmente avec λ." } },
     { id: 'mercure', titre: 'Une lampe à vapeur de mercure', focus: ['reglages', 'ecran'],
       retenirTitre: 'Le réseau disperse la lumière',
       retenir: <><FDispersion/>{puces(<>Chaque longueur d’onde est déviée d’un angle différent : le réseau <strong>sépare les couleurs</strong>.</>, <>Une lampe à vapeur n’émet que quelques <strong>raies</strong> : des taches colorées séparées.</>)}</>,
@@ -603,7 +603,7 @@ export function SimulationInterferences({ naviguer }) {
       {sceneEff === 'young' && !enDefi && apres('interfrange') && <LigneMesure nom="Interfrange i = d / 6 (6 interfranges)" valeur={`${nbf(Lmes / nY, 2)}${NB}mm`} couleur="#15803d"/>}
       {sceneEff === 'young' && !enDefi && apres('calcl') && <LigneMesure nom="l calculé = λ D / i" valeur={isFinite(lCalc) ? `${nbf(lCalc, 0)}${NB}µm` : '–'} couleur="#15803d"/>}
       {sceneEff === 'reseau' && !enDefi && apres('theta') && <LigneMesure nom="θ₁ = arctan(d / 2D)" valeur={`${nbf(deg(thMes), 1)}${NB}°`} couleur="#15803d"/>}
-      {sceneEff === 'reseau' && !enDefi && rz.source === 'laser' && apres('pas') && <LigneMesure nom="a = λ / sin θ₁ (ordre 1)" valeur={isFinite(aMes) ? `${nbf(aMes, 2)}${NB}µm` : '–'} couleur="#15803d"/>}
+      {sceneEff === 'reseau' && !enDefi && rz.source === 'laser' && apres('pas') && <LigneMesure nom="a = frac(λ|sin θ₁) (ordre 1)" valeur={isFinite(aMes) ? `${nbf(aMes, 2)}${NB}µm` : '–'} couleur="#15803d"/>}
       {sceneEff === 'reseau' && !enDefi && rz.source === 'mercure' && apres('raie') && <LigneMesure nom="λ = a sin θ₁ (ordre 1)" valeur={isFinite(lamRaieMes) ? `${nbf(lamRaieMes, 0)}${NB}nm` : '–'} couleur="#15803d"/>}
       {mode === 'explore' && sceneEff === 'young' && <LigneMesure nom="i prévu par la formule" valeur={`${nbf(iY, 2)}${NB}mm`} couleur="#15803d"/>}
       {mode === 'explore' && sceneEff === 'reseau' && rz.source === 'laser' && <LigneMesure nom="Ordre maximal (k λ / a < 1)" valeur={`${kMax}`}/>}
@@ -651,8 +651,8 @@ export function SimulationInterferences({ naviguer }) {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>interférences : superposition d’ondes synchrones ; constructive si τ = kT, destructive si τ = kT + T/2</li>
-        <li>fentes de Young : i = λ D / l</li>
-        <li>réseau : sin θ<sub>k</sub> = k λ / a ; il disperse la lumière blanche</li>
+        <li>fentes de Young : i = λ {avecIndices('frac(D|l)')}</li>
+        <li>réseau : sin θ<sub>k</sub> = k {avecIndices('frac(λ|a)')} ; il disperse la lumière blanche</li>
       </ul>
     </ARetenir>);
 

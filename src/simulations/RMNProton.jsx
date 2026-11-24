@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { Formule as FormuleMath, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, avecIndices } from "../commun";
 import { NU0, MOLECULES, MOL, FAMILLES, NOM_COMPLET, plat, visibles, yRef, spectre, courbeGroupe, courbeZoom, limitesPremierOrdre, hauteurMm } from "./rmnModele";
 import { fr } from "./elecModele";
 import { puces } from "./Travail";
@@ -196,7 +196,7 @@ const enonce = (d, { champ, choix }) => {
 const indiceDefi = d => d.type === 'signaux' ? <>Un signal par groupe de H équivalents (pense à la symétrie). Multiplicité d’un signal : n + 1, avec n le nombre de H sur les carbones voisins.</>
   : d.type === 'integration' ? <>Les hauteurs d’intégration sont dans le rapport du nombre de H de chaque signal. Divise par la plus petite, puis ajuste pour que le total soit le nombre de H de la molécule.</>
   : d.type === 'identifier' ? <>Utilise le nombre de signaux, les déplacements chimiques, les intégrations et les multiplicités pour éliminer les molécules proposées une à une.</>
-  : <>δ = (f − f₀) / ν₀ × 10⁶. δ est en ppm (indépendant du champ), J est en Hz.</>;
+  : <>δ = {avecIndices('frac(f − f₀|ν)')}₀ × 10⁶. δ est en ppm (indépendant du champ), J est en Hz.</>;
 const solution = d => {
   if (d.type === 'signaux') { const m = MOL[d.id], t = m.liste[0];
     return <>{nbSignaux(m)} groupes de H équivalents → <strong>{nbSignaux(m)} signaux</strong>. Le plus déblindé ({t.desc}, δ ≈ {nf(t.d)} ppm) a <strong>n = {t.nv}</strong> H voisins : <strong>{NOM_COMPLET[t.mult]}</strong>{t.simple && t.nv ? ` (n + 1 = ${t.nv + 1} raies)` : ''}.</>; }
@@ -240,14 +240,14 @@ export function SimulationRMN() {
         {puces(<>1 ppm = 10⁻⁶ : un écart de fréquence Δf = Δδ × ν₀ (ν₀ : fréquence du spectromètre).</>, <><strong>Un signal par groupe de protons équivalents</strong> (même environnement chimique, par exemple par symétrie).</>, <>Un atome électronégatif (O, N, Cl, Br…) <strong>déblinde</strong> les protons proches : δ plus élevé, signal plus à gauche. L’effet s’atténue avec la distance.</>, <>Cycle benzénique : groupe donneur (+M, NH₂) → H voisins blindés ; attracteur (−M, NO₂, C=O) → H déblindés.</>)}
       </>,
       texte: <>Un échantillon placé dans un champ magnétique intense B₀ absorbe des ondes radio pour certaines fréquences : c’est la <strong>résonance</strong> des noyaux d’hydrogène (protons). Chaque groupe de protons équivalents absorbe à sa propre fréquence f, et donne un <strong>signal</strong> sur le spectre. On repère f par rapport à celle du TMS, tétraméthylsilane (δ = 0), grâce au <strong>déplacement chimique</strong> :
-        <div style={{ textAlign: 'center', fontSize: 16, margin: '6px 0' }}><strong>δ = (f − f₀) / f₀</strong> (en ppm, 1 ppm = 10⁻⁶)</div>
+        <div style={{ textAlign: 'center', fontSize: 16, margin: '6px 0' }}><strong>δ = {avecIndices('frac(f − f₀|f₀)')}</strong> (en ppm, 1 ppm = 10⁻⁶)</div>
         <ExempleResolu>Spectromètre de 60 MHz (f₀ = 60 000 000 Hz) : un signal à δ = 2 ppm est à f − f₀ = 2×10⁻⁶ × 60×10⁶ = <strong>120 Hz</strong> du TMS.</ExempleResolu>
         Spectromètre de 400 MHz : le signal du CH₃ du 1-bromo-2,2-diméthylpropane est à δ = 1,05 ppm.</>,
       tache: { type: 'num', q: 'Écart de fréquence f − f₀ entre ce signal et le TMS (en Hz)', unite: 'Hz', vrai: 1.05 * 400, tol: 0.01, affiche: x => fr(x, 0),
-        calcul: () => ['δ = (f − f₀) / f₀, donc f − f₀ = δ × f₀. Ici δ = 1,05 ppm = 1,05 × 10⁻⁶ et f₀ = 400 MHz = 400 × 10⁶ Hz.',
+        calcul: () => ['δ = frac(f − f₀|f₀), donc f − f₀ = δ × f₀. Ici δ = 1,05 ppm = 1,05 × 10⁻⁶ et f₀ = 400 MHz = 400 × 10⁶ Hz.',
           'f − f₀ = 1,05 × 10⁻⁶ × 400 × 10⁶ Hz : les puissances de 10 se simplifient, il reste 1,05 × 400.',
           `f − f₀ = ${fr(1.05 * 400, 0)} Hz.`],
-        pieges: [[1.05 / 400, 'f − f₀ = δ × f₀ : multipliez δ (ppm) par la fréquence en MHz pour obtenir des Hz.']], expl: 'f − f₀ = δ × ν₀ = 1,05 × 400 = 420 Hz.', indice: "δ (ppm) = (f − f₀) / ν₀ × 10⁶, avec ν₀ en Hz. Inverse cette relation pour obtenir f − f₀ en hertz." } },
+        pieges: [[1.05 / 400, 'f − f₀ = δ × f₀ : multipliez δ (ppm) par la fréquence en MHz pour obtenir des Hz.']], expl: 'f − f₀ = δ × ν₀ = 1,05 × 400 = 420 Hz.', indice: "δ (ppm) = frac(f − f₀|ν₀) × 10⁶, avec ν₀ en Hz. Inverse cette relation pour obtenir f − f₀ en hertz." } },
     { id: 'equivalents', titre: 'Protons équivalents : un signal par groupe', depart: () => voir({ mol: 'ethoxyethane', corrige: false }),
       texte: <>Des protons sont <strong>équivalents</strong> s’ils ont le même environnement chimique (même distance aux autres atomes, en particulier par symétrie) : ils résonnent à la même fréquence et donnent <strong>un seul signal</strong>. Sur la formule, les H d’un même groupe ont la même couleur et la même lettre : les deux CH₃ de l’éthoxyéthane sont équivalents, comme les deux CH₂. Cliquez sur un groupe pour voir son signal.</>,
       tache: { type: 'qcm', q: 'Combien de signaux donne le spectre RMN ¹H du 1,2-dichloroéthane Cl–CH₂–CH₂–Cl ?', options: ['1', '2', '3', '4'], bonne: 0, expl: 'Les quatre H sont équivalents par symétrie : un seul signal (un singulet).', indice: "Un signal par groupe de H équivalents (même environnement chimique). Combien de groupes distincts dans Cl–CH₂–CH₂–Cl ?" } },
@@ -261,15 +261,15 @@ export function SimulationRMN() {
         <FormuleMath><mtext>nombre de H</mtext><mo>=</mo><mi>N</mi><mo>×</mo><mfrac><mi>h</mi><mi>H</mi></mfrac></FormuleMath>
         {puces(<>L’aire d’un signal est proportionnelle au nombre de protons du groupe : h est la hauteur du palier, H la hauteur totale, N le nombre total de protons (lu sur la formule brute).</>, <>Exemple : paliers de 20 mm et 30 mm pour N = 10 : H = 50 mm, donc 4 H et 6 H.</>)}
       </>,
-      texte: <>L’aire d’un signal est proportionnelle au nombre de protons du groupe. La <strong>courbe d’intégration</strong> (en rouge) monte d’un palier à chaque signal : la hauteur h du palier est proportionnelle au nombre de H. Avec H la hauteur totale et N le nombre total de protons de la molécule : <strong>nombre de H = N × h / H</strong>.
+      texte: <>L’aire d’un signal est proportionnelle au nombre de protons du groupe. La <strong>courbe d’intégration</strong> (en rouge) monte d’un palier à chaque signal : la hauteur h du palier est proportionnelle au nombre de H. Avec H la hauteur totale et N le nombre total de protons de la molécule : <strong>nombre de H = {avecIndices('frac(N × h|H)')}</strong>.
         <ExempleResolu>Sur le spectre du 1-bromo-2,2-diméthylpropane (C₅H₁₁Br, N = 11), les paliers mesurent 45 mm (δ = 1,05 ppm) et 10 mm (δ = 3,30 ppm) : H = 55 mm.</ExempleResolu></>,
       tache: { type: 'num', q: 'Nombre de H du signal à 3,30 ppm', unite: '', vrai: 2, tol: 0.001, affiche: x => String(x),
         calcul: () => ['Hypothèse : la hauteur d’un palier d’intégration est proportionnelle au nombre de H du signal (même noyau ¹H, spectre quantitatif).',
           'Hauteur totale : H = 45 + 10 = 55 mm. Nombre total de protons : N = 11 (C₅H₁₁Br).',
-          'Nombre de H = N × h / H = 11 × 10 / 55 = 110 / 55 = 2.'],
-        pieges: [[9, 'C’est le nombre de H de l’autre signal (45 mm).'], [10, 'Il faut calculer N × h / H, et non reprendre la hauteur.'],
-          [10 / 55, 'Il manque le nombre total de protons N = 11 : nombre de H = N × h / H.'],
-          [11 * 55 / 10, 'Rapport à l’envers : c’est h / H (hauteur du signal sur hauteur totale), multiplié par N.']], expl: 'N × h / H = 11 × 10 / 55 = 2 H.', indice: "L’intégration est proportionnelle au nombre de H : compare la hauteur de la courbe d’intégration de ce signal à celle des autres." } },
+          'Nombre de H = frac(N × h|H) = frac(11 × 10|55) = frac(110|55) = 2.'],
+        pieges: [[9, 'C’est le nombre de H de l’autre signal (45 mm).'], [10, 'Il faut calculer frac(N × h|H), et non reprendre la hauteur.'],
+          [10 / 55, 'Il manque le nombre total de protons N = 11 : nombre de H = frac(N × h|H).'],
+          [11 * 55 / 10, 'Rapport à l’envers : c’est frac(h|H) (hauteur du signal sur hauteur totale), multiplié par N.']], expl: 'frac(N × h|H) = frac(11 × 10|55) = 2 H.', indice: "L’intégration est proportionnelle au nombre de H : compare la hauteur de la courbe d’intégration de ce signal à celle des autres." } },
     { id: 'couplage', titre: 'Le couplage entre protons voisins', depart: () => voir({ mol: 'ethoxyethane', sel: 'ch2', corrige: false }),
       retenirTitre: 'À RETENIR : COUPLAGE ET MULTIPLETS',
       retenir: <>
@@ -282,11 +282,11 @@ export function SimulationRMN() {
       texte: <>Les raies d’un multiplet n’ont pas la même intensité : elles suivent le <strong>triangle de Pascal</strong>. Doublet 1 : 1 ; triplet 1 : 2 : 1 ; quadruplet 1 : 3 : 3 : 1 ; quintuplet 1 : 4 : 6 : 4 : 1. Dans le 1,3-dibromopropane, le CH₂ central est voisin des 4 H des deux CH₂Br (ils sont équivalents entre eux).</>,
       tache: { type: 'qcm', q: 'Quelle est la multiplicité du signal du CH₂ central du 1,3-dibromopropane ?', options: ['triplet', 'quadruplet', 'quintuplet', 'sextuplet'], bonne: 2, expl: 'n = 4 H voisins équivalents : n + 1 = 5 raies, d’intensités 1 : 4 : 6 : 4 : 1.', indice: "Règle des (n + 1) : compte les H portés par les carbones voisins du CH₂ central, de chaque côté." } },
     { id: 'j', titre: 'La constante de couplage J', depart: () => voir({ mol: 'bromobutane', sel: 'br', corrige: false }),
-      texte: <>L’écart entre deux raies voisines d’un multiplet est la <strong>constante de couplage J</strong>, mesurée en <strong>Hz</strong> (de 0 à 20 Hz). Elle ne dépend <strong>pas</strong> du champ B₀. Pour la convertir en ppm, on divise par la fréquence ν₀ du spectromètre (en MHz) : J (ppm) = J (Hz) / ν₀ (MHz). Le triplet du CH₂Br du 1-bromobutane a J = 7,0 Hz et le spectre est enregistré à 400 MHz.</>,
+      texte: <>L’écart entre deux raies voisines d’un multiplet est la <strong>constante de couplage J</strong>, mesurée en <strong>Hz</strong> (de 0 à 20 Hz). Elle ne dépend <strong>pas</strong> du champ B₀. Pour la convertir en ppm, on divise par la fréquence ν₀ du spectromètre (en MHz) : J (ppm) = J {avecIndices('frac(Hz|ν₀)')} (MHz). Le triplet du CH₂Br du 1-bromobutane a J = 7,0 Hz et le spectre est enregistré à 400 MHz.</>,
       tache: { type: 'num', q: 'Écart entre deux raies voisines, en ppm', unite: 'ppm', vrai: 7 / 400, tol: 0.02, affiche: x => fr(x, 4),
-        calcul: () => ['J ne dépend pas du champ : J = 7,0 Hz. Pour l’exprimer en ppm, on divise par la fréquence du spectromètre en MHz : J (ppm) = J (Hz) / ν₀ (MHz).',
-          `J (ppm) = 7,0 / 400 = ${fr(7 / 400, 4)} ppm.`],
-        pieges: [[7, 'Ici J est en Hz : divisez par ν₀ (400 MHz) pour obtenir des ppm.'], [400 / 7, 'Rapport à l’envers : J (ppm) = J (Hz) / ν₀ (MHz).']], expl: 'J / ν₀ = 7,0 / 400 = 0,0175 ppm.', indice: "L’écart entre deux raies voisines d’un multiplet vaut J, en Hz. Pour l’exprimer en ppm, divise par ν₀ exprimée en MHz." } },
+        calcul: () => ['J ne dépend pas du champ : J = 7,0 Hz. Pour l’exprimer en ppm, on divise par la fréquence du spectromètre en MHz : J (ppm) = J frac(Hz|ν₀) (MHz).',
+          `J (ppm) = frac(7,0|400) = ${fr(7 / 400, 4)} ppm.`],
+        pieges: [[7, 'Ici J est en Hz : divisez par ν₀ (400 MHz) pour obtenir des ppm.'], [400 / 7, 'Rapport à l’envers : J (ppm) = J frac(Hz|ν₀) (MHz).']], expl: 'frac(J|ν₀) = frac(7,0|400) = 0,0175 ppm.', indice: "L’écart entre deux raies voisines d’un multiplet vaut J, en Hz. Pour l’exprimer en ppm, divise par ν₀ exprimée en MHz." } },
     { id: 'champ', titre: 'Effet du champ B₀', depart: () => voir({ mol: 'bromobutane', corrige: false }),
       texte: <>Un spectromètre de fréquence ν₀ plus faible disperse moins les signaux. Utilisez les boutons de fréquence sous la molécule : réglez <strong>60 MHz</strong> et observez les multiplets.</>,
       tache: { type: 'action', ok: enGuide && nu0 <= 90, consigne: 'Réglez le spectromètre sur 60 MHz (ou 90 MHz).' } },
@@ -372,7 +372,7 @@ export function SimulationRMN() {
           <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.65, marginTop: 6 }}>
             <strong>Signal {gSel.lettre} ({gSel.desc})</strong> : δ = {nf(gSel.d)} ppm, soit f − f₀ = δ × ν₀ = {nf(gSel.d)} × {nu0} = <strong>{nf(gSel.d * nu0, 0)} Hz</strong> du TMS.
             <br/>{gSel.labile ? <>H labile : pas de couplage, <strong>singulet élargi</strong>.</> : gSel.nv === 0 ? <>Aucun H voisin non équivalent : <strong>singulet</strong>.</>
-              : gSel.simple ? <>n = {gSel.nv} H voisins équivalents → n + 1 = {gSel.nv + 1} raies : <strong>{NOM_COMPLET[gSel.mult]}</strong>, J = {nf(gSel.J, 1)} Hz = J / ν₀ = {nf(gSel.J, 1)} / {nu0} = {nf(gSel.J / nu0, 4)} ppm.</>
+              : gSel.simple ? <>n = {gSel.nv} H voisins équivalents → n + 1 = {gSel.nv + 1} raies : <strong>{NOM_COMPLET[gSel.mult]}</strong>, J = {nf(gSel.J, 1)} Hz = {avecIndices('frac(J|ν)')}₀ = {nf(gSel.J, 1)} / {nu0} = {nf(gSel.J / nu0, 4)} ppm.</>
                 : <>Couplé à des H voisins avec <strong>plusieurs constantes J différentes</strong> ({gSel.coupl.map(c => `${c.n} H, J = ${nf(c.J, 1)} Hz`).join(' ; ')}) : <strong>{NOM_COMPLET[gSel.mult]}</strong>.</>}
           </div></div> : <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Sélectionnez un signal pour voir son multiplet agrandi, avec l’échelle en Hz.</div>}
       </div>}
@@ -394,7 +394,7 @@ export function SimulationRMN() {
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-    <li>signaux = groupes de H équivalents</li><li>δ = (f − f₀) / f₀ ; déblindé → δ grand</li><li>nombre de H = N × h / H</li><li>n voisins → n + 1 raies ; J en Hz, indépendante de B₀</li></ul></ARetenir>;
+    <li>signaux = groupes de H équivalents</li><li>δ = {avecIndices('frac(f − f₀|f)')}₀ ; déblindé → δ grand</li><li>nombre de H = {avecIndices('frac(N × h|H)')}</li><li>n voisins → n + 1 raies ; J en Hz, indépendante de B₀</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>

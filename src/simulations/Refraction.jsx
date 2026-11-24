@@ -141,8 +141,8 @@ function evaluer(d, pts = []) {
     const rap = pts.map(q => Math.sin(q.i1 * RAD) / Math.sin(q.i2 * RAD)).filter(Number.isFinite), moy = rap.length ? rap.reduce((a, b) => a + b, 0) / rap.length : NaN;
     const ang = pts.map(q => q.i1 / q.i2).filter(Number.isFinite), moyA = ang.length ? ang.reduce((a, b) => a + b, 0) / ang.length : NaN;
     let msg;
-    if (isFinite(moy) && Math.abs(x - 1 / moy) <= 0.03 * (1 / moy)) msg = 'Tu as inversé : pour un rayon qui passe de l’air au liquide, n = sin i₁ / sin i₂ (et non sin i₂ / sin i₁).';
-    else if (isFinite(moyA) && Math.abs(x - moyA) <= 0.04 * moyA) msg = 'Tu as divisé les angles. Il faut diviser les sinus : n = sin i₁ / sin i₂, ou lire la pente de la droite sin i₁ = f(sin i₂).';
+    if (isFinite(moy) && Math.abs(x - 1 / moy) <= 0.03 * (1 / moy)) msg = 'Tu as inversé : pour un rayon qui passe de l’air au liquide, n = frac(sin i₁|sin i₂) (et non sin i₂ / sin i₁).';
+    else if (isFinite(moyA) && Math.abs(x - moyA) <= 0.04 * moyA) msg = 'Tu as divisé les angles. Il faut diviser les sinus : n = frac(sin i₁|sin i₂), ou lire la pente de la droite sin i₁ = f(sin i₂).';
     else if (pts.length < 3) msg = `Ta valeur ne correspond pas à tes mesures. Avec ${pts.length === 1 ? 'une seule mesure' : 'deux mesures'}, l’erreur de lecture au demi-degré pèse beaucoup : ajoute au moins 3 mesures (angles très différents, évite les petits angles).`;
     else msg = `${x > d.n ? 'Ta valeur est trop grande' : 'Ta valeur est trop petite'} : pour chaque mesure, calcule sin i₁ / sin i₂ (colonnes du tableau), puis fais la moyenne, ou lis la pente affichée sous le tableau.`;
     return { ok, lignes: [[false, msg]] };
@@ -172,7 +172,7 @@ function VoletDefi({ defi, setDefi, changerType, pts }) {
       {defi.type === 'prevoir' && <><div style={txt}><Pic n="target"/>Un rayon passe de <strong>{nm(defi.a)}</strong> (n₁ = {fr(milieu(defi.a).n, 2)}) à <strong>{nm(defi.b)}</strong> (n₂ = {fr(milieu(defi.b).n, 2)}) avec un angle d’incidence de <strong>{defi.i1}°</strong>. Le rayon réfracté…</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{[['rapproche', 'se rapproche de la normale'], ['ecarte', 's’écarte de la normale'], ['zero', 'n’est pas dévié']].map(([v, l]) => <button key={v} onClick={() => rep('d', v)} style={stylePetitBouton(defi.reps.d === v, '#0ea5e9')}>{l}</button>)}</div></>}
       <IndiceDefi cache={reussi}>{defi.type === 'calcul' ? <>Loi de Snell-Descartes : n₁ sin i₁ = n₂ sin i₂. Isole sin i₂, calcule-le, puis applique sin⁻¹ (calculatrice en degrés).</>
-        : defi.type === 'indice' ? <>L’air a pour indice 1 : n = sin i₁ / sin i₂. Fais plusieurs mesures, calcule n à chaque fois, puis fais la moyenne.</>
+        : defi.type === 'indice' ? <>L’air a pour indice 1 : n = {avecIndices('frac(sin i₁|sin i₂)')}. Fais plusieurs mesures, calcule n à chaque fois, puis fais la moyenne.</>
         : <>Compare n₁ et n₂ dans n₁ sin i₁ = n₂ sin i₂ : que devient sin i₂ par rapport à sin i₁ ? Déduis-en si le rayon se rapproche ou s’écarte de la normale.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
@@ -184,7 +184,7 @@ function VoletDefi({ defi, setDefi, changerType, pts }) {
         {res.ok && <div style={{ color: VERT, fontWeight: 700, marginTop: 4 }}><Pic n="party"/>Défi réussi !</div>}</div>}
       {defi.solution && <div style={{ marginTop: 8, fontSize: 13.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', lineHeight: 1.55 }}>
         {defi.type === 'calcul' && <>sin i₂ = n₁ × sin i₁ / n₂ = {fr(milieu(defi.a).n, 2)} × sin {defi.i1}° / {fr(milieu(defi.b).n, 2)} = {g3(milieu(defi.a).n * sin(defi.i1) / milieu(defi.b).n)}, donc i₂ = <strong>{fr(defi.i2, 1)}°</strong>.</>}
-        {defi.type === 'indice' && <>Pour chaque mesure, n = sin i₁ / sin i₂ (air → liquide) : c’est la pente de la droite. Ici n = <strong>{fr(defi.n, 2)}</strong> (à 0,03 près).</>}
+        {defi.type === 'indice' && <>Pour chaque mesure, n = {avecIndices('frac(sin i₁|sin i₂)')} (air → liquide) : c’est la pente de la droite. Ici n = <strong>{fr(defi.n, 2)}</strong> (à 0,03 près).</>}
         {defi.type === 'prevoir' && <>{defi.rep === 'zero' ? 'i₁ = 0° : le rayon arrive le long de la normale, il n’est pas dévié.' : defi.rep === 'rapproche' ? `n₂ = ${fr(milieu(defi.b).n, 2)} > n₁ = ${fr(milieu(defi.a).n, 2)} : le rayon se rapproche de la normale.` : `n₂ = ${fr(milieu(defi.b).n, 2)} < n₁ = ${fr(milieu(defi.a).n, 2)} : le rayon s’écarte de la normale.`}</>}
       </div>}
     </div>);
@@ -239,28 +239,28 @@ export function SimulationRefraction() {
       tache: { type: 'qcm', q: 'Un rayon arrive perpendiculairement à la surface de l’eau. Il…', options: ['n’est pas dévié', 'est dévié vers la normale', 'est dévié loin de la normale', 'est entièrement réfléchi'], bonne: 0, expl: 'i₁ = 0° donne i₂ = 0° : il continue tout droit.', indice: "Quel angle fait ce rayon avec la normale ? Applique la loi de Snell-Descartes avec cette valeur de i₁." } },
     { id: 'sinus', titre: 'Mesurer i₂ : une relation cachée', depart: () => voirM('plexi', 30),
       texte: <>Passons au <strong>TP</strong> : un laser éclaire un hémi-cylindre de plexiglas, on lit i₁ et i₂. Faites varier i₁ puis cliquez sur « Noter cette mesure » (au moins 4 angles différents). Regardez le graphique : les points sont alignés avec l’origine quand on trace <strong>sin i₁ en fonction de sin i₂</strong>.
-        <ExempleResolu>Mesures du TP : i₁ = 20° donne i₂ = 13,0° ; i₁ = 50° donne i₂ = 30,5°. Les angles ne sont <strong>pas</strong> proportionnels (20/13,0 ≠ 50/30,5), mais les sinus le sont : sin 20° / sin 13,0° = 0,342 / 0,225 = 1,52 et sin 50° / sin 30,5° = 0,766 / 0,508 = 1,51.</ExempleResolu></>,
+        <ExempleResolu>Mesures du TP : i₁ = 20° donne i₂ = 13,0° ; i₁ = 50° donne i₂ = 30,5°. Les angles ne sont <strong>pas</strong> proportionnels (20/13,0 ≠ 50/30,5), mais les sinus le sont : sin {avecIndices('frac(20°|sin)')} 13,0° = {avecIndices('frac(0,342|0,225)')} = 1,52 et sin {avecIndices('frac(50°|sin)')} 30,5° = {avecIndices('frac(0,766|0,508)')} = 1,51.</ExempleResolu></>,
       tache: { type: 'action', ok: enGuide && atelier === 'mesure' && new Set(pts.map(p => p.i1)).size >= 4, consigne: 'Notez au moins 4 mesures avec des angles d’incidence différents.' } },
     { id: 'indice', titre: 'En déduire l’indice du plexiglas', depart: null,
       texte: <>La pente de la droite sin i₁ = f(sin i₂) est l’<strong>indice de réfraction</strong> n du plexiglas (le milieu 1 est l’air, n₁ = 1,00). C’est la loi de <strong>Snell-Descartes</strong> : <strong>n₁ × sin i₁ = n₂ × sin i₂</strong>.</>,
-      tache: { type: 'num', q: 'Une mesure donne i₁ = 60° et i₂ = 35,0°. Quel est l’indice n du plexiglas ? (n = sin i₁ / sin i₂)', unite: '', vrai: 1.51, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.71, 'Tu as divisé les angles. Il faut diviser les sinus : sin 60° / sin 35°.'], [0.66, 'Tu as inversé : n = sin i₁ / sin i₂.'], [Math.sin(60) / Math.sin(35), 'Ta calculatrice est en radians : passe-la en mode degrés (DEG).']],
+      tache: { type: 'num', q: 'Une mesure donne i₁ = 60° et i₂ = 35,0°. Quel est l’indice n du plexiglas ? (n = frac(sin i₁|sin i₂))', unite: '', vrai: 1.51, tol: 0.02, affiche: x => String(x).replace('.', ','), pieges: [[1.71, 'Tu as divisé les angles. Il faut diviser les sinus : frac(sin 60°|sin 35°).'], [0.66, 'Tu as inversé : n = frac(sin i₁|sin i₂).'], [Math.sin(60) / Math.sin(35), 'Ta calculatrice est en radians : passe-la en mode degrés (DEG).']],
         calcul: () => [
-          'Loi de Snell-Descartes : n₁ × sin i₁ = n₂ × sin i₂, avec n₁ = 1,00 (air). Donc n = n₂ = sin i₁ / sin i₂.',
+          'Loi de Snell-Descartes : n₁ × sin i₁ = n₂ × sin i₂, avec n₁ = 1,00 (air). Donc n = n₂ = frac(sin i₁|sin i₂).',
           'Calculatrice en mode degrés : sin 60° = 0,866 et sin 35,0° = 0,574.',
-          'n = 0,866 / 0,574 = 1,51 (l’indice n’a pas d’unité).'], expl: 'n = sin 60° / sin 35,0° = 0,866 / 0,574 ≈ 1,51.', indice: "Calcule chaque sinus séparément avec la calculatrice réglée en degrés, puis divise. Ne divise pas les angles entre eux." } },
+          'n = frac(0,866|0,574) = 1,51 (l’indice n’a pas d’unité).'], expl: 'n = frac(sin 60°|sin 35,0°) = frac(0,866|0,574) ≈ 1,51.', indice: "Calcule chaque sinus séparément avec la calculatrice réglée en degrés, puis divise. Ne divise pas les angles entre eux." } },
     { id: 'snell', titre: 'Calculer un angle de réfraction', depart: () => voirI('air', 'eau', 40),
       retenirTitre: 'À RETENIR : LA LOI DE SNELL-DESCARTES',
       retenir: <FicheLoi/>,
-      texte: <>Avec n₁ et n₂ connus, on peut <strong>prévoir</strong> i₂ : sin i₂ = n₁ × sin i₁ / n₂, puis on utilise la touche <strong>sin⁻¹</strong> de la calculatrice (mode degrés).
-        <ExempleResolu>Air → eau, i₁ = 40° : sin i₂ = 1,00 × sin 40° / 1,33 = 0,643 / 1,33 = 0,483, donc i₂ = <strong>28,9°</strong>.
+      texte: <>Avec n₁ et n₂ connus, on peut <strong>prévoir</strong> i₂ : sin i₂ = n₁ × sin {avecIndices('frac(i₁|n₂)')}, puis on utilise la touche <strong>sin⁻¹</strong> de la calculatrice (mode degrés).
+        <ExempleResolu>Air → eau, i₁ = 40° : sin i₂ = 1,00 × sin {avecIndices('frac(40°|1,33)')} = {avecIndices('frac(0,643|1,33)')} = 0,483, donc i₂ = <strong>28,9°</strong>.
           {bouton('Vérifier sur le schéma', () => voirI('air', 'eau', 40))}</ExempleResolu>
         À vous : air → verre d’indice 1,50, avec i₁ = 30°.</>,
-      tache: { type: 'num', q: 'Quel est l’angle de réfraction i₂ (en degrés, au degré ou au dixième près) ?', unite: '°', vrai: 19.47, tol: 0.026, affiche: x => String(x).replace('.', ','), pieges: [[20, 'Ne divise pas directement les angles (30 / 1,5) : ce sont les sinus qui sont reliés.'], [0.33, 'Tu as calculé sin i₂ : il faut ensuite appliquer sin⁻¹ pour obtenir l’angle.'], [48.59, 'Tu as inversé les indices : sin i₂ = n₁ × sin i₁ / n₂ (l’indice de l’air, n₁ = 1,00, est au numérateur).']],
+      tache: { type: 'num', q: 'Quel est l’angle de réfraction i₂ (en degrés, au degré ou au dixième près) ?', unite: '°', vrai: 19.47, tol: 0.026, affiche: x => String(x).replace('.', ','), pieges: [[20, 'Ne divise pas directement les angles (frac(30|1,5)) : ce sont les sinus qui sont reliés.'], [0.33, 'Tu as calculé sin i₂ : il faut ensuite appliquer sin⁻¹ pour obtenir l’angle.'], [48.59, 'Tu as inversé les indices : sin i₂ = n₁ × sin frac(i₁|n₂) (l’indice de l’air, n₁ = 1,00, est au numérateur).']],
         calcul: () => [
-          'Loi de Snell-Descartes : n₁ × sin i₁ = n₂ × sin i₂, donc sin i₂ = n₁ × sin i₁ / n₂. Données : n₁ = 1,00 (air) ; n₂ = 1,50 (verre) ; i₁ = 30°.',
+          'Loi de Snell-Descartes : n₁ × sin i₁ = n₂ × sin i₂, donc sin i₂ = n₁ × sin frac(i₁|n₂). Données : n₁ = 1,00 (air) ; n₂ = 1,50 (verre) ; i₁ = 30°.',
           'Avec la calculatrice en mode degrés : sin 30° = 0,500.',
-          'sin i₂ = 1,00 × 0,500 / 1,50 = 0,333.',
-          'On cherche l’angle : i₂ = sin⁻¹(0,333) = 19,5°.'], expl: 'sin i₂ = 1,00 × sin 30° / 1,50 = 0,333 ; i₂ = sin⁻¹(0,333) ≈ 19,5°.', indice: "Loi de Snell-Descartes : n₁ sin i₁ = n₂ sin i₂. Isole sin i₂, calcule-le, puis utilise sin⁻¹ (calculatrice en degrés) pour obtenir l’angle." } },
+          'sin i₂ = frac(1,00 × 0,500|1,50) = 0,333.',
+          'On cherche l’angle : i₂ = sin⁻¹(0,333) = 19,5°.'], expl: 'sin i₂ = 1,00 × sin frac(30°|1,50) = 0,333 ; i₂ = sin⁻¹(0,333) ≈ 19,5°.', indice: "Loi de Snell-Descartes : n₁ sin i₁ = n₂ sin i₂. Isole sin i₂, calcule-le, puis utilise sin⁻¹ (calculatrice en degrés) pour obtenir l’angle." } },
     { id: 'liquides', titre: 'L’eau et l’eau sucrée', depart: () => voirM('eau', 40),
       retenirTitre: 'À RETENIR : CALCULER UN ANGLE',
       retenir: <FicheCalcAngle/>,
@@ -271,8 +271,8 @@ export function SimulationRefraction() {
       tache: { type: 'qcm', q: 'Pour un même angle d’incidence, le rayon réfracté dans l’eau sucrée, par rapport à l’eau, est…', options: ['un peu plus proche de la normale (i₂ plus petit)', 'un peu plus loin de la normale (i₂ plus grand)', 'exactement identique', 'impossible à dire'], bonne: 0, expl: 'n plus grand : le rayon se rapproche davantage de la normale, donc i₂ est plus petit.', indice: "L’eau sucrée a un indice un peu plus grand que l’eau. Dans n₁ sin i₁ = n₂ sin i₂, que devient i₂ quand n₂ augmente, avec le même i₁ ?" } },
     { id: 'tir', titre: '★ Quand il n’y a plus de rayon réfracté', depart: () => voirI('plexi', 'air', 50),
       texte: <>Dans le sens plexiglas → air, essayez i₁ = 50° : <strong>plus de rayon réfracté</strong> ! Au-delà d’un <strong>angle limite</strong> (41,5° ici), toute la lumière est réfléchie : c’est la <strong>réflexion totale</strong> (hors programme de Seconde : vous la reverrez en Première, c’est le principe des fibres optiques).
-        <ExempleResolu>Elle ne se produit que si la lumière va d’un milieu à un indice <strong>plus faible</strong> (n₁ {'>'} n₂), et seulement au-delà de l’angle limite : sin i<sub>lim</sub> = n₂ / n₁.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Peut-on observer une réflexion totale pour un rayon qui passe de l’air au plexiglas ?', options: ['Non : l’indice augmente, le rayon réfracté existe toujours', 'Oui, pour un grand angle d’incidence', 'Oui, à partir de 41,5°', 'Oui, à tous les angles'], bonne: 0, expl: 'La réflexion totale n’existe que de l’indice le plus grand vers le plus petit.', indice: "Il y aurait réflexion totale si sin i₂ = (n₁ / n₂) × sin i₁ devait dépasser 1. Compare n₁ (air) et n₂ (plexiglas) : le rapport n₁ / n₂ peut-il être supérieur à 1 ?" } },
+        <ExempleResolu>Elle ne se produit que si la lumière va d’un milieu à un indice <strong>plus faible</strong> (n₁ {'>'} n₂), et seulement au-delà de l’angle limite : sin i<sub>lim</sub> = {avecIndices('frac(n₂|n₁)')}.</ExempleResolu></>,
+      tache: { type: 'qcm', q: 'Peut-on observer une réflexion totale pour un rayon qui passe de l’air au plexiglas ?', options: ['Non : l’indice augmente, le rayon réfracté existe toujours', 'Oui, pour un grand angle d’incidence', 'Oui, à partir de 41,5°', 'Oui, à tous les angles'], bonne: 0, expl: 'La réflexion totale n’existe que de l’indice le plus grand vers le plus petit.', indice: "Il y aurait réflexion totale si sin i₂ = (frac(n₁|n₂)) × sin i₁ devait dépasser 1. Compare n₁ (air) et n₂ (plexiglas) : le rapport frac(n₁|n₂) peut-il être supérieur à 1 ?" } },
     { id: 'pecheur2', titre: 'Retour au pêcheur', depart: () => setAtelier('pecheur'),
       retenirTitre: 'À RETENIR : RÉFLEXION TOTALE',
       retenir: <FicheTotale/>,

@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
@@ -189,7 +189,7 @@ export function SimulationEchographe() {
     { id: 'trajet', titre: 'Un aller et un retour', focus: ['scene'],
       texte: <>L’obstacle est à <em>d</em> = 1,20{NB}m du capteur.</>,
       tache: { type: 'qcm', q: 'Quelle distance la salve parcourt-elle entre l’émission et la réception ?', options: ['2 d', 'd', 'd / 2'], bonne: 0,
-        expl: 'La salve va jusqu’à l’obstacle (d) puis revient (d) : le trajet total est 2d, donc Δt = 2d / v.', indice: "La salve va jusqu’à l’obstacle, puis revient." } },
+        expl: 'La salve va jusqu’à l’obstacle (d) puis revient (d) : le trajet total est 2d, donc Δt = frac(2d|v).', indice: "La salve va jusqu’à l’obstacle, puis revient." } },
     { id: 'oscillo', titre: 'Lire le retard', focus: ['scene', 'reglages'],
       retenirTitre: 'Un aller et un retour',
       retenir: <><FAllerRetour/>{FDt}{puces(<>La salve parcourt <strong>2 d</strong> : jusqu’à l’obstacle, puis le retour.</>, <>Le capteur ne mesure qu’une <strong>durée</strong> : la distance s’en déduit avec une célérité supposée connue.</>)}</>,
@@ -202,30 +202,30 @@ export function SimulationEchographe() {
     { id: 'celerite', titre: 'Déduire la célérité', focus: ['mesures'],
       retenirTitre: 'Lire le retard Δt',
       retenir: <><FRetard/>{puces(<>Repère 1 au <strong>début de la salve émise</strong>, repère 2 au <strong>début de l’écho</strong> : Δt est la durée entre les deux.</>, <>Hypothèse : célérité uniforme sur tout le trajet. Étalonner, c’est en déduire v avec une distance connue.</>)}</>,
-      texte: <>Votre mesure : Δt = <strong>{nbf(dtMes, 2)}{NB}ms</strong>. On a mesuré au mètre ruban <em>d</em> = 1,200{NB}m. Avec Δt = 2<em>d</em> / <em>v</em>, calculez la célérité <em>v</em> des ultrasons dans l’air de la salle. C’est un <strong>étalonnage</strong>.</>,
+      texte: <>Votre mesure : Δt = <strong>{nbf(dtMes, 2)}{NB}ms</strong>. On a mesuré au mètre ruban <em>d</em> = 1,200{NB}m. Avec Δt = {avecIndices('frac(2d|v)')}, calculez la célérité <em>v</em> des ultrasons dans l’air de la salle. C’est un <strong>étalonnage</strong>.</>,
       tache: { type: 'num', q: 'Célérité v', unite: 'm/s', vrai: 2.4 / (dtMes * 1e-3), tol: 0.02, affiche: v => nbf(v, 0), cs: 3, bloque: pointeCap ? null : 'Placez d’abord les repères.',
-        calcul: () => ['Hypothèse : célérité uniforme sur tout le trajet (air à température uniforme).', `Unités SI : Δt = ${nbf(dtMes, 2)} ms = ${nbf(dtMes * 1e-3, 5)} s ; d = 1,200 m.`, `v = 2d / Δt = 2 × 1,200 / ${nbf(dtMes * 1e-3, 5)} = ${nbf(2.4 / (dtMes * 1e-3), 0)} m/s.`],
+        calcul: () => ['Hypothèse : célérité uniforme sur tout le trajet (air à température uniforme).', `Unités SI : Δt = ${nbf(dtMes, 2)} ms = ${nbf(dtMes * 1e-3, 5)} s ; d = 1,200 m.`, `v = frac(2d|Δt) = frac(2 × 1,200|${nbf(dtMes * 1e-3, 5)}) = ${nbf(2.4 / (dtMes * 1e-3), 0)} m/s.`],
         pieges: [[1.2 / (dtMes * 1e-3), 'Vous avez utilisé d au lieu de 2d : la salve fait un aller-retour.'], [2.4 / dtMes, 'Convertissez Δt en secondes avant de diviser.']],
         expl: 'v ≈ 343 m/s : valeur du modèle de l’air à 20 °C (343,0 m/s). La mesure donne la célérité sans connaître la température.', indice: "v = distance parcourue ÷ durée, avec Δt en secondes. La distance parcourue est un aller-retour." } },
     { id: 'temperature', titre: 'Et s’il fait plus froid ?', focus: ['reglages', 'scene'],
-      texte: <>Le modèle du <strong>gaz parfait</strong> fournit la relation (admise ici) <em>v</em> = √(<em>γ</em>·<em>R</em>·<em>T</em> / <em>M</em>), avec <em>R</em> = 8,314{NB}J·mol⁻¹·K⁻¹, <em>T</em> en kelvin, <em>γ</em> = 1,40 et <em>M</em> = 29{NB}g/mol pour l’air. Abaissez la température à <strong>0 °C</strong> (l’obstacle reste à 1,20{NB}m).</>,
+      texte: <>Le modèle du <strong>gaz parfait</strong> fournit la relation (admise ici) <em>v</em> = √(<em>γ</em>·<em>R</em>·{avecIndices('frac(T|M)')}), avec <em>R</em> = 8,314{NB}J·mol⁻¹·K⁻¹, <em>T</em> en kelvin, <em>γ</em> = 1,40 et <em>M</em> = 29{NB}g/mol pour l’air. Abaissez la température à <strong>0 °C</strong> (l’obstacle reste à 1,20{NB}m).</>,
       tache: { type: 'action', ok: scene === 'capteur' && cap.T === 0 && cap.d === 1.2 && cap.gaz === 'air', label: 'Régler 0 °C', faire: () => { setScene('capteur'); setCap({ d: 1.2, T: 0, gaz: 'air', tb: 20 }); }, consigne: 'Température réglée à 0 °C' } },
     { id: 'influence', titre: 'Le retard a changé', focus: ['scene'],
       texte: <>Observez l’écho : il est arrivé à un autre instant que pour 20 °C.</>,
       tache: { type: 'qcm', q: 'À 0 °C, par rapport à 20 °C, le retard de l’écho est…', options: ['plus grand', 'plus petit', 'le même'], bonne: 0,
-        expl: 'Quand la température baisse, la célérité diminue (v varie comme √T). Le trajet 2d est le même, donc le retard Δt = 2d / v augmente : environ 7,25 ms au lieu de 7,00 ms.', indice: "Le son va-t-il plus vite dans l’air froid ou dans l’air chaud ?" } },
+        expl: 'Quand la température baisse, la célérité diminue (v varie comme √T). Le trajet 2d est le même, donc le retard Δt = frac(2d|v) augmente : environ 7,25 ms au lieu de 7,00 ms.', indice: "Le son va-t-il plus vite dans l’air froid ou dans l’air chaud ?" } },
     { id: 'formule', titre: 'Calculer v à 0 °C', focus: ['mesures'],
-      texte: <>Calculez la célérité des ultrasons dans l’air à 0 °C avec la relation <em>v</em> = √(<em>γ</em>·<em>R</em>·<em>T</em> / <em>M</em>), où <em>R</em> = 8,314{NB}J·mol⁻¹·K⁻¹, <em>γ</em> = 1,40 et <em>M</em> = 29{NB}g/mol.</>,
+      texte: <>Calculez la célérité des ultrasons dans l’air à 0 °C avec la relation <em>v</em> = √(<em>γ</em>·<em>R</em>·{avecIndices('frac(T|M)')}), où <em>R</em> = 8,314{NB}J·mol⁻¹·K⁻¹, <em>γ</em> = 1,40 et <em>M</em> = 29{NB}g/mol.</>,
       tache: { type: 'num', q: 'Célérité v à 0 °C', unite: 'm/s', vrai: M.celeriteGaz(0), tol: 0.005, affiche: v => nbf(v, 1), cs: 3,
-        calcul: () => ['Hypothèses : air = gaz parfait ; γ et M constants ; T en kelvin.', 'T = 0 + 273,15 = 273,15 K ; M = 0,029 kg/mol (unités SI).', `v = √(1,40 × 8,314 × 273,15 / 0,029) = √(${nbf(1.4 * 8.314 * 273.15 / 0.029, 0)}) = ${nbf(M.celeriteGaz(0), 1)} m/s.`],
-        pieges: [[Math.sqrt(1.4 * 8.314 * 273.15 / 29), 'M doit être en kg/mol (0,029) et non en g/mol.'], [1.4 * 8.314 * 273.15 / 0.029, 'Il manque la racine carrée : v = √(γRT / M).']],
+        calcul: () => ['Hypothèses : air = gaz parfait ; γ et M constants ; T en kelvin.', 'T = 0 + 273,15 = 273,15 K ; M = 0,029 kg/mol (unités SI).', `v = √(frac(1,40 × 8,314 × 273,15|0,029)) = √(${nbf(1.4 * 8.314 * 273.15 / 0.029, 0)}) = ${nbf(M.celeriteGaz(0), 1)} m/s.`],
+        pieges: [[Math.sqrt(1.4 * 8.314 * 273.15 / 29), 'M doit être en kg/mol (0,029) et non en g/mol.'], [1.4 * 8.314 * 273.15 / 0.029, 'Il manque la racine carrée : v = √(frac(γRT|M)).']],
         expl: `v = ${nbf(M.celeriteGaz(0), 1)} m/s à 0 °C, contre ${nbf(M.celeriteGaz(20), 1)} m/s à 20 °C.`, indice: "v = √(γRT ÷ M), avec T en kelvin et M en kg/mol." } },
     { id: 'erreur', titre: 'Un capteur réglé sur 340 m/s', focus: ['mesures'],
       retenirTitre: 'Température et célérité',
       retenir: <><FFroid/>{FVit}{puces(<>Dans un gaz parfait, v varie comme la racine de T (en kelvin) : plus froid, v plus petite.</>, <>Le trajet 2 d ne change pas : le retard Δt = 2 d ÷ v augmente.</>)}</>,
-      texte: <>Beaucoup de capteurs calculent <em>d</em> = <em>v</em><sub>0</sub>·Δt / 2 avec une célérité fixe <em>v</em><sub>0</sub> = 340{NB}m/s, valable vers 20 °C. Vous avez calculé à l’étape précédente <em>v</em> = {nbf(M.celeriteGaz(0), 1)}{NB}m/s à 0 °C, donc un retard réel de {nbf(2.4 / M.celeriteGaz(0) * 1e3, 2)}{NB}ms. L’obstacle est réellement à 1,200{NB}m. Quelle distance le capteur affiche-t-il ?</>,
+      texte: <>Beaucoup de capteurs calculent <em>d</em> = <em>v</em><sub>0</sub>{avecIndices('frac(·Δt|2)')} avec une célérité fixe <em>v</em><sub>0</sub> = 340{NB}m/s, valable vers 20 °C. Vous avez calculé à l’étape précédente <em>v</em> = {nbf(M.celeriteGaz(0), 1)}{NB}m/s à 0 °C, donc un retard réel de {nbf(2.4 / M.celeriteGaz(0) * 1e3, 2)}{NB}ms. L’obstacle est réellement à 1,200{NB}m. Quelle distance le capteur affiche-t-il ?</>,
       tache: { type: 'num', q: 'Distance affichée', unite: 'm', vrai: v340, tol: 0.002, affiche: v => nbf(v, 3), cs: 4,
-        calcul: () => [`Retard réel à 0 °C : Δt = 2 × 1,200 / ${nbf(M.celeriteGaz(0), 1)} = ${nbf(2.4 / M.celeriteGaz(0) * 1e3, 3)} ms.`, `Distance affichée : d = 340 × ${nbf(2.4 / M.celeriteGaz(0), 6)} / 2 = ${nbf(v340, 3)} m.`],
+        calcul: () => [`Retard réel à 0 °C : Δt = frac(2 × 1,200|${nbf(M.celeriteGaz(0), 1)}) = ${nbf(2.4 / M.celeriteGaz(0) * 1e3, 3)} ms.`, `Distance affichée : d = frac(340 × ${nbf(2.4 / M.celeriteGaz(0), 6)}|2) = ${nbf(v340, 3)} m.`],
         pieges: [[1.2, 'Le capteur n’affiche pas la vraie distance : il utilise une célérité fausse à 0 °C.']],
         expl: `Le capteur affiche ${nbf(v340, 3)} m au lieu de 1,200 m, soit une erreur de ${nbf((v340 - 1.2) * 100, 1)} cm (${nbf((v340 / 1.2 - 1) * 100, 1)} %) : il surestime parce que la célérité réelle est plus faible que 340 m/s.`, indice: "L’appareil suppose une célérité de 340 m/s : d = 340 × Δt ÷ 2." } },
     { id: 'gaz', titre: 'Changer de gaz', focus: ['reglages', 'scene'],
@@ -262,7 +262,7 @@ export function SimulationEchographe() {
         calcul: () => ['À une interface, R + T = 1.', 'T = 1 − R = 1 − 0,99 = 0,01 soit 1 %.'], pieges: [[99, 'Ces 99 % sont l’énergie réfléchie (R). L’énergie transmise est T = 1 − R.']],
         expl: 'T = 1 − R = 0,01 : seulement 1 % de l’énergie entre dans le corps.', indice: "Énergie transmise = 100 % − coefficient de réflexion R de l’interface air / peau." } },
     { id: 'perte', titre: 'Aller et retour', focus: ['tableau', 'scene'],
-      texte: <>L’énergie qui doit entrer dans la peau puis en ressortir traverse l’interface air/peau <strong>deux fois</strong> : à l’aller et au retour, avec <em>T</em> = 0,01 à chaque traversée. Le niveau de l’écho s’exprime en décibels : <em>L</em> = 10·log(énergie reçue / énergie émise).</>,
+      texte: <>L’énergie qui doit entrer dans la peau puis en ressortir traverse l’interface air/peau <strong>deux fois</strong> : à l’aller et au retour, avec <em>T</em> = 0,01 à chaque traversée. Le niveau de l’écho s’exprime en décibels : <em>L</em> = 10·log({avecIndices('frac(énergie reçue|énergie émise)')}).</>,
       tache: { type: 'num', q: 'De combien de décibels tous les échos situés sous la peau sont-ils affaiblis par la traversée aller-retour de l’interface air/peau ?', unite: 'dB', vrai: 40, tol: 0.02, affiche: v => nbf(v, 0), cs: 2,
         calcul: () => ['Fraction de l’énergie conservée à l’aller puis au retour : T² = 0,01² = 10⁻⁴.', 'L = 10 × log(10⁻⁴) = −40 dB : l’affaiblissement est de 40 dB.'],
         pieges: [[20, 'Vous n’avez compté qu’une traversée (10 log 0,01 = −20 dB) : il y en a deux, à l’aller et au retour.'], [4, 'Le niveau s’exprime avec 10 log (énergie), et il y a deux traversées : 10 × log(10⁻⁴).']],
@@ -280,9 +280,9 @@ export function SimulationEchographe() {
       texte: <>Réglez 5{NB}MHz. Le tableau des échos donne l’interface de chaque lettre. Placez le repère 1 sur l’émission (0{NB}µs) et le repère 2 sur l’écho de l’interface <strong>muscle / organe</strong>.</>,
       tache: { type: 'action', ok: pointeEcho, label: 'Placer pour moi (5 MHz, avec gel)', faire: () => { baseEcho(); setRa({ r1: 0, r2: tOrgBase }); }, consigne: 'Repère 1 sur 0 µs, repère 2 sur l’écho muscle / organe' } },
     { id: 'profondeur', titre: 'La profondeur de l’organe', focus: ['mesures'],
-      texte: <>Un échographe ne connaît pas la célérité de chaque tissu : il utilise une valeur moyenne <em>v</em> = 1{NB}540{NB}m/s pour toutes les profondeurs. Votre mesure : Δt = <strong>{nbf(dtMesUs, 1)}{NB}µs</strong>. Calculez la profondeur de l’interface muscle/organe avec <em>d</em> = <em>v</em>·Δt / 2.</>,
+      texte: <>Un échographe ne connaît pas la célérité de chaque tissu : il utilise une valeur moyenne <em>v</em> = 1{NB}540{NB}m/s pour toutes les profondeurs. Votre mesure : Δt = <strong>{nbf(dtMesUs, 1)}{NB}µs</strong>. Calculez la profondeur de l’interface muscle/organe avec <em>d</em> = <em>v</em>{avecIndices('frac(·Δt|2)')}.</>,
       tache: { type: 'num', q: 'Profondeur calculée', unite: 'cm', vrai: M.V_APPAREIL * dtMesUs * 1e-6 / 2 * 100, tol: 0.02, affiche: v => nbf(v, 2), cs: 3, bloque: pointeEcho ? null : 'Placez d’abord les repères (étape précédente).',
-        calcul: () => ['Hypothèse : célérité moyenne 1 540 m/s partout (valeur de l’appareil).', `Δt = ${nbf(dtMesUs, 1)} µs = ${nbf(dtMesUs * 1e-6, 7)} s.`, `d = 1 540 × ${nbf(dtMesUs * 1e-6, 7)} / 2 = ${nbf(M.V_APPAREIL * dtMesUs * 1e-6 / 2, 4)} m = ${nbf(M.V_APPAREIL * dtMesUs * 1e-6 / 2 * 100, 2)} cm.`],
+        calcul: () => ['Hypothèse : célérité moyenne 1 540 m/s partout (valeur de l’appareil).', `Δt = ${nbf(dtMesUs, 1)} µs = ${nbf(dtMesUs * 1e-6, 7)} s.`, `d = frac(1 540 × ${nbf(dtMesUs * 1e-6, 7)}|2) = ${nbf(M.V_APPAREIL * dtMesUs * 1e-6 / 2, 4)} m = ${nbf(M.V_APPAREIL * dtMesUs * 1e-6 / 2 * 100, 2)} cm.`],
         pieges: [[M.V_APPAREIL * dtMesUs * 1e-6 * 100, 'Vous avez oublié de diviser par 2 : l’onde fait un aller-retour.'], [M.V_APPAREIL * dtMesUs * 1e-6 / 2, 'Le résultat est demandé en centimètres.']],
         expl: `d ≈ ${nbf(M.V_APPAREIL * dtMesUs * 1e-6 / 2 * 100, 2)} cm. L’organe est en réalité à 3,50 cm : l’écart vient de ce que la célérité varie un peu d’un tissu à l’autre.`, indice: "Profondeur = v × Δt ÷ 2 (aller-retour), avec la célérité de l’appareil." } },
     { id: 'absorption', titre: 'L’absorption', focus: ['tableau'],
@@ -305,9 +305,9 @@ export function SimulationEchographe() {
       retenir: <><FAbsorption/>{FAtt}{puces(<>L’atténuation est proportionnelle à la fréquence f et à la distance parcourue d<sub>AR</sub> (aller et retour compris).</>, <>À haute fréquence, les échos profonds passent sous le seuil de détection : la pénétration est limitée.</>)}</>,
       texte: <>Vous savez expliquer comment un échographe forme ses échos, le rôle du gel, comment il calcule une profondeur et pourquoi la fréquence limite la pénétration. Passez au parcours 3 pour la résolution.</>, tache: null },
     { id: 'lambda', titre: 'La longueur d’onde', focus: ['mesures'],
-      texte: <>La plus petite structure qu’on peut distinguer est de l’ordre de la longueur d’onde <em>λ</em> = <em>v</em> / <em>f</em> dans le milieu : c’est la <strong>résolution</strong>. Dans l’organe, <em>v</em> = 1{NB}590{NB}m/s. Calculez <em>λ</em> à 5{NB}MHz.</>,
+      texte: <>La plus petite structure qu’on peut distinguer est de l’ordre de la longueur d’onde <em>λ</em> = {avecIndices('frac(v|f)')} dans le milieu : c’est la <strong>résolution</strong>. Dans l’organe, <em>v</em> = 1{NB}590{NB}m/s. Calculez <em>λ</em> à 5{NB}MHz.</>,
       tache: { type: 'num', q: 'Longueur d’onde λ à 5 MHz', unite: 'mm', vrai: M.longueurOnde(ORG, 5), tol: 0.02, affiche: v => nbf(v, 3), cs: 2,
-        calcul: () => ['Unités SI : f = 5 MHz = 5 × 10⁶ Hz ; v = 1 590 m/s.', `λ = v / f = 1 590 / 5 × 10⁶ = ${nbf(M.longueurOnde(ORG, 5) * 1e-3, 7)} m = ${nbf(M.longueurOnde(ORG, 5), 3)} mm.`],
+        calcul: () => ['Unités SI : f = 5 MHz = 5 × 10⁶ Hz ; v = 1 590 m/s.', `λ = frac(v|f) = frac(1 590|5 × 10⁶) = ${nbf(M.longueurOnde(ORG, 5) * 1e-3, 7)} m = ${nbf(M.longueurOnde(ORG, 5), 3)} mm.`],
         pieges: [[M.longueurOnde(ORG, 5) * 1e-3, 'Le résultat est demandé en millimètres.'], [1590 / 5, 'Convertissez 5 MHz en hertz (5 × 10⁶ Hz).']],
         expl: 'λ ≈ 0,32 mm : on ne peut guère distinguer des détails plus petits que cette taille.', indice: "λ = v ÷ f, avec f en hertz." } },
     { id: 'detailsbas', titre: 'Deux petits détails', focus: ['scene', 'reglages', 'zoom'],
@@ -324,7 +324,7 @@ export function SimulationEchographe() {
       retenir: <><FSepare/>{FLam}{puces(<>Deux détails séparés de s se distinguent si λ ≤ s.</>, <>Sinon leurs échos se recouvrent : un seul pic.</>)}</>,
       texte: <>Quelle est la fréquence minimale pour que les deux détails (<em>s</em> = 0,8{NB}mm, dans l’organe où <em>v</em> = 1{NB}590{NB}m/s) soient séparés ? On écrit la condition <em>λ</em> ≤ <em>s</em>. Vérifiez ensuite avec le curseur de fréquence.</>,
       tache: { type: 'num', q: 'Fréquence minimale', unite: 'MHz', vrai: M.frequenceMin(0.8, ORG), tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
-        calcul: () => ['Condition : λ = v / f ≤ s donc f ≥ v / s.', 'Unités SI : s = 0,8 mm = 0,8 × 10⁻³ m.', `f = 1 590 / 0,8 × 10⁻³ = ${nbf(M.frequenceMin(0.8, ORG) * 1e6, 0)} Hz = ${nbf(M.frequenceMin(0.8, ORG), 2)} MHz.`],
+        calcul: () => ['Condition : λ = frac(v|f) ≤ s donc f ≥ frac(v|s).', 'Unités SI : s = 0,8 mm = 0,8 × 10⁻³ m.', `f = frac(1 590|0,8 × 10⁻³) = ${nbf(M.frequenceMin(0.8, ORG) * 1e6, 0)} Hz = ${nbf(M.frequenceMin(0.8, ORG), 2)} MHz.`],
         pieges: [[M.frequenceMin(0.8, ORG) * 1e6, 'Le résultat est demandé en mégahertz (1 MHz = 10⁶ Hz).']],
         expl: 'f ≥ 2,0 MHz environ. Autour de 2 MHz, les deux pics commencent à se séparer sur le zoom ; au-dessus, le creux entre eux se creuse.', indice: "Les détails sont séparés si λ est au plus égale à leur écart s : f = v ÷ s." } },
     { id: 'compromis', titre: 'Un compromis', focus: ['reglages'],
@@ -423,7 +423,7 @@ export function SimulationEchographe() {
   // ---------- hypothèses ----------
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Gaz</strong> : gaz parfait, v = √(γRT / M) avec T en kelvin, γ et M constants. Air : γ = 1,40 et M = 29 g/mol (343 m/s à 20 °C) ; dioxyde de carbone : γ = 1,30 et M = 44 g/mol ; hélium : γ = 1,67 et M = 4,0 g/mol. L’humidité de l’air est négligée.</li>
+      <li><strong>Gaz</strong> : gaz parfait, v = √({avecIndices('frac(γRT|M)')}) avec T en kelvin, γ et M constants. Air : γ = 1,40 et M = 29 g/mol (343 m/s à 20 °C) ; dioxyde de carbone : γ = 1,30 et M = 44 g/mol ; hélium : γ = 1,67 et M = 4,0 g/mol. L’humidité de l’air est négligée.</li>
       <li><strong>Capteur</strong> : onde plane, célérité uniforme sur le trajet, obstacle perpendiculaire au faisceau, échos ponctuels. <strong>Incertitudes</strong> (mêmes conventions que les autres simulations d’ondes) : chaque pointé est connu à ± 1 % de la base de temps (demi-largeur) ; loi rectangulaire, u = demi-étendue / √3 ; les deux pointés sont indépendants, donc u(Δt) = √2 × u(pointé). Dans le défi, la tolérance est le double de l’incertitude relative, entre 4 % et 10 %. L’amplitude de l’écho à l’oscilloscope est en unité arbitraire (elle décroît avec la distance, sans échelle). La salve de 40 kHz est dessinée très étirée ; l’animation du schéma est ralentie et ne respecte pas l’échelle des temps.</li>
       <li><strong>Tissus</strong> : couches planes parallèles en incidence normale ; célérités arrondies (gel 1 500, peau 1 540, graisse 1 450, muscle 1 580, organe 1 590 m/s) ; l’appareil suppose 1 540 m/s partout pour calculer les profondeurs.</li>
       <li><strong>Réflexion</strong> : les coefficients R des interfaces sont des <strong>données arrondies</strong> de la simulation, du bon ordre de grandeur (ils ne sont pas calculés) ; T = 1 − R. Un écho est la fraction R de l’énergie qui arrive à l’interface ; l’énergie transmise subit les pertes de chaque interface traversée, à l’aller et au retour.</li>
@@ -567,16 +567,16 @@ export function SimulationEchographe() {
         <li>Capteur : comparez le retard dans l’air, le dioxyde de carbone et l’hélium. Quel gaz donne la célérité la plus grande ? Pourquoi (masse molaire) ?</li>
         <li>Échographe : retirez le gel. De combien de décibels l’écho du fond change-t-il ? Que vaut T à l’interface air/peau ?</li>
         <li>Échographe : à quelle fréquence l’écho du fond disparaît-il ? Et l’écho de l’entrée de l’organe ?</li>
-        <li>Échographe : pour s = 0,5 mm puis s = 1,5 mm, cherchez la fréquence minimale qui sépare les deux détails. Vérifiez f = v / s.</li>
+        <li>Échographe : pour s = 0,5 mm puis s = 1,5 mm, cherchez la fréquence minimale qui sépare les deux détails. Vérifiez f = {avecIndices('frac(v|s)')}.</li>
         <li>Échographe : vers quelle valeur de s la fréquence minimale dépasse-t-elle la fréquence maximale utilisable pour voir le fond ?</li>
       </ul>
     </div>);
   const retenir = (
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-        <li>retard d’un écho : Δt = 2d / v ; dans un gaz parfait, v = √(γRT / M)</li>
+        <li>retard d’un écho : Δt = {avecIndices('frac(2d|v)')} ; dans un gaz parfait, v = √({avecIndices('frac(γRT|M)')})</li>
         <li>à une interface : R + T = 1 ; l’absorption atténue l’onde (en dB, proportionnellement à la distance)</li>
-        <li>résolution ≈ λ = v / f : fréquence élevée = meilleure résolution, moins de pénétration</li>
+        <li>résolution ≈ λ = {avecIndices('frac(v|f)')} : fréquence élevée = meilleure résolution, moins de pénétration</li>
       </ul>
     </ARetenir>);
 
@@ -595,7 +595,7 @@ export function SimulationEchographe() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Échographe : écho, célérité et résolution</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une onde ultrasonore se réfléchit sur un obstacle : le <strong>retard</strong> de l’écho donne la distance (Δt = 2d / v). Un échographe utilise le même principe, mais dans des tissus qui <strong>réfléchissent</strong>, <strong>transmettent</strong> et <strong>absorbent</strong> les ultrasons.</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une onde ultrasonore se réfléchit sur un obstacle : le <strong>retard</strong> de l’écho donne la distance (Δt = {avecIndices('frac(2d|v)')}). Un échographe utilise le même principe, mais dans des tissus qui <strong>réfléchissent</strong>, <strong>transmettent</strong> et <strong>absorbent</strong> les ultrasons.</div>
       <div className={`ec-l1${mode !== 'explore' ? ' cote' : ''}`}>
         {enGuide ? <div className="ec-carte">
           <div role="group" aria-label="Choix du parcours" style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 13.5 }}>

@@ -191,14 +191,14 @@ export function SimulationMelanges() {
     { id: 'rho', titre: 'Masse volumique et densité', depart: null,
       retenirTitre: 'À RETENIR : MISCIBLE OU SOLUBLE ?',
       retenir: <FicheMisc/>,
-      texte: <>La <strong>masse volumique</strong> d’un liquide est <strong>ρ = m / V</strong> (en g/L). Sa <strong>densité</strong> compare à l’eau : <strong>d = ρ / ρ<sub>eau</sub></strong> (sans unité, avec ρ<sub>eau</sub> = 1000 g/L).
-        <ExempleResolu>L’huile : 90 g pour 100 mL = 0,100 L : ρ = 90 / 0,100 = 900 g/L ; d = 900 / 1000 = <strong>0,9</strong>.</ExempleResolu>
+      texte: <>La <strong>masse volumique</strong> d’un liquide est <strong>ρ = {avecIndices('frac(m|V)')}</strong> (en g/L). Sa <strong>densité</strong> compare à l’eau : <strong>d = {avecIndices('frac(ρ|ρ)')}<sub>eau</sub></strong> (sans unité, avec ρ<sub>eau</sub> = 1000 g/L).
+        <ExempleResolu>L’huile : 90 g pour 100 mL = 0,100 L : ρ = {avecIndices('frac(90|0,100)')} = 900 g/L ; d = {avecIndices('frac(900|1000)')} = <strong>0,9</strong>.</ExempleResolu>
         À vous : un alcool de masse 40 g occupe 50 mL.</>,
-      tache: { type: 'num', q: 'Quelle est sa densité ? (convertir 50 mL en 0,050 L)', unite: '', vrai: 0.8, tol: 0.02, affiche: x => String(x).replace('.', ','), calcul: () => ['Première étape : la masse volumique ρ = m / V.',
+      tache: { type: 'num', q: 'Quelle est sa densité ? (convertir 50 mL en 0,050 L)', unite: '', vrai: 0.8, tol: 0.02, affiche: x => String(x).replace('.', ','), calcul: () => ['Première étape : la masse volumique ρ = frac(m|V).',
           'Le volume doit être en litres : 50 mL = 50 ÷ 1000 = 0,050 L.',
-          'ρ = 40 g / 0,050 L = 800 g/L.',
-          'Deuxième étape : la densité d = ρ / ρ_eau = 800 / 1000 = 0,8 (sans unité).'],
-        pieges: [[800, 'Ça, c’est ρ en g/L : la densité s’obtient en divisant par 1000 g/L.'], [0.0008, 'Convertis d’abord 50 mL en litres.'], [50 / 40, 'Tu as divisé le volume par la masse. Il faut diviser la masse par le volume : ρ = m / V.']], expl: 'ρ = 40 / 0,050 = 800 g/L ; d = 800 / 1000 = 0,80.', indice: "Densité = masse volumique du liquide ÷ masse volumique de l’eau. Calcule d’abord ρ = m / V (avec V converti en litres)." } },
+          'ρ = frac(40 g|0,050 L) = 800 g/L.',
+          'Deuxième étape : la densité d = frac(ρ|ρ_eau) = frac(800|1000) = 0,8 (sans unité).'],
+        pieges: [[800, 'Ça, c’est ρ en g/L : la densité s’obtient en divisant par 1000 g/L.'], [0.0008, 'Convertis d’abord 50 mL en litres.'], [50 / 40, 'Tu as divisé le volume par la masse. Il faut diviser la masse par le volume : ρ = frac(m|V).']], expl: 'ρ = frac(40|0,050) = 800 g/L ; d = frac(800|1000) = 0,80.', indice: "Densité = masse volumique du liquide ÷ masse volumique de l’eau. Calcule d’abord ρ = frac(m|V) (avec V converti en litres)." } },
     { id: 'superpose', titre: 'Dans quel ordre se superposent-ils ?', depart: () => tube('huile', 'eau'),
       retenirTitre: 'À RETENIR : MASSE VOLUMIQUE ET DENSITÉ',
       retenir: <FicheRho/>,
@@ -213,16 +213,16 @@ export function SimulationMelanges() {
         À vous : ajoutez de l’alcool (curseur) jusqu’à ce que la goutte soit suspendue.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'goutte' && g.etat === 'suspendue', consigne: 'Réglez le volume d’alcool pour que la goutte d’huile reste suspendue.' } },
     { id: 'calcul', titre: 'Pourquoi cette quantité d’alcool ?', depart: () => goutteVoir(20, 5),
-      texte: <>Le mélange eau-alcool a une densité <strong>comprise entre 0,8 et 1,0</strong> : une moyenne pondérée par les volumes, <strong>d = (V<sub>eau</sub> × 1,0 + V<sub>alcool</sub> × 0,8) / (V<sub>eau</sub> + V<sub>alcool</sub>)</strong>. La goutte est suspendue quand d(mélange) = d(huile) = 0,9.</>,
+      texte: <>Le mélange eau-alcool a une densité <strong>comprise entre 0,8 et 1,0</strong> : une moyenne pondérée par les volumes, <strong>d = {avecIndices('frac(V_eau × 1,0 + V_alcool × 0,8|V_eau + V_alcool)')}</strong>. La goutte est suspendue quand d(mélange) = d(huile) = 0,9.</>,
       tache: { type: 'num', q: 'Quelle est la densité d’un mélange de 15 mL d’eau et de 15 mL d’alcool ?', unite: '', vrai: 0.9, tol: 0.01, affiche: x => String(x).replace('.', ','), calcul: () => ['On a 15 mL d’eau (d = 1,0) et 15 mL d’alcool (d = 0,8).',
           'En haut de la fraction : 15 × 1,0 + 15 × 0,8 = 15 + 12 = 27.',
           'En bas : le volume total = 15 + 15 = 30 mL.',
-          'd = 27 / 30 = 0,9.'],
-        pieges: [[1.8, 'Tu as additionné les densités. La densité du mélange est une moyenne pondérée : entre 0,8 et 1,0.'], [27, 'Tu as oublié de diviser par le volume total (30 mL). La densité du mélange est entre 0,8 et 1,0.']], expl: 'd = (15 × 1,0 + 15 × 0,8) / 30 = 27 / 30 = 0,90 : égale à celle de l’huile, la goutte est suspendue.', indice: "Densité du mélange = masse totale ÷ volume total (rapportée à l’eau). Calcule la masse de chaque liquide avec m = ρ × V." } },
+          'd = frac(27|30) = 0,9.'],
+        pieges: [[1.8, 'Tu as additionné les densités. La densité du mélange est une moyenne pondérée : entre 0,8 et 1,0.'], [27, 'Tu as oublié de diviser par le volume total (30 mL). La densité du mélange est entre 0,8 et 1,0.']], expl: 'd = frac(15 × 1,0 + 15 × 0,8|30) = frac(27|30) = 0,90 : égale à celle de l’huile, la goutte est suspendue.', indice: "Densité du mélange = masse totale ÷ volume total (rapportée à l’eau). Calcule la masse de chaque liquide avec m = ρ × V." } },
     { id: 'sha', titre: 'Une solution hydro-alcoolique', depart: () => { setAtelier('sha'); setS({ e: 60, h: 2, g: 1 }); },
       retenirTitre: 'À RETENIR : DENSITÉ D’UN MÉLANGE',
       retenir: <FicheMelange/>,
-      texte: <>Pour décrire un mélange de liquides, on donne la <strong>proportion en volume</strong> de chaque constituant : <strong>V(E) / V<sub>tot</sub></strong>, souvent en pourcentage (« pourcentage volumique »). La recette de l’OMS pour 100,0 mL de solution hydro-alcoolique : 85 % d’éthanol, 4 % d’eau oxygénée, 1,5 % de glycérol, le reste en eau distillée.
+      texte: <>Pour décrire un mélange de liquides, on donne la <strong>proportion en volume</strong> de chaque constituant : <strong>{avecIndices('frac(V(E)|V_tot)')}</strong>, souvent en pourcentage (« pourcentage volumique »). La recette de l’OMS pour 100,0 mL de solution hydro-alcoolique : 85 % d’éthanol, 4 % d’eau oxygénée, 1,5 % de glycérol, le reste en eau distillée.
         <ExempleResolu>Pour 100,0 mL : V(éthanol) = 85 % × 100,0 = <strong>85,0 mL</strong>. L’eau complète : 100,0 − 85,0 − 4,0 − 1,5 = 9,5 mL.</ExempleResolu>
         À vous : réglez les volumes pour respecter la recette.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'sha' && shaOk(S), consigne: 'Réglez éthanol, eau oxygénée et glycérol pour que la composition soit conforme (colonne OMS).' } },
@@ -269,7 +269,7 @@ export function SimulationMelanges() {
       <li><strong>Densité du mélange</strong> = moyenne des densités pondérée par les volumes (conséquence de l’additivité des volumes et de la conservation de la masse).</li>
       <li><strong>Valeurs à 20 °C</strong> : eau 1,00 ; huile 0,9 ; alcool 0,8 (valeurs de l’énoncé). L’huile 0,9 est un ordre de grandeur : selon l’huile, d vaut 0,91 à 0,93 (huile d’olive : 0,92). Une goutte est « suspendue » si les densités diffèrent de moins de 0,01 : un petit intervalle de volumes d’alcool convient.</li>
       <li><strong>Miscibilité</strong> : eau et alcool miscibles ; huile et eau non miscibles. L’huile <strong>végétale</strong> est très peu miscible à l’éthanol à froid, on la considère donc comme non miscible (l’huile de ricin, elle, y est miscible).</li>
-      <li><strong>Colorants</strong> : le bleu de méthylène est soluble dans l’eau et l’alcool, le rouge Soudan dans l’huile et l’alcool. Solubilité = oui / non (on ne parle pas ici de quantité limite).</li>
+      <li><strong>Colorants</strong> : le bleu de méthylène est soluble dans l’eau et l’alcool, le rouge Soudan dans l’huile et l’alcool. Solubilité = {avecIndices('frac(oui|non)')} (on ne parle pas ici de quantité limite).</li>
       <li><strong>Recette OMS</strong> : pourcentages en volume pour 100,0 mL, l’eau complétant au volume final ; on néglige aussi la contraction pour calculer les masses.</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
@@ -300,7 +300,7 @@ export function SimulationMelanges() {
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-    <li>miscibles ⇒ homogène ; non miscibles ⇒ hétérogène</li><li>ρ = m / V ; d = ρ / ρ<sub>eau</sub></li><li>le liquide le moins dense flotte</li></ul></ARetenir>;
+    <li>miscibles ⇒ homogène ; non miscibles ⇒ hétérogène</li><li>ρ = {avecIndices('frac(m|V)')} ; d = {avecIndices('frac(ρ|ρ_eau)')}</li><li>le liquide le moins dense flotte</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>

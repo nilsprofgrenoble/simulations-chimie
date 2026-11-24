@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { nf, NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import { SchemaStatorRotor, SchemaPasComplet, SchemaDemiPas, SchemaReducteur, SchemaRapport, SchemaDuree, SchemaPasVsDemi } from "./MoteurPasAPasSchemas";
@@ -268,7 +268,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
     { id: 'angle', titre: 'De quel angle a-t-il tourné ?', focus: ['schema'],
       texte: <>Le rotor était aligné sur la bobine 1 (en haut), il est maintenant aligné sur la bobine 2 (à droite).</>,
       tache: { type: 'num', q: 'Angle dont le rotor a tourné en passant de la bobine 1 à la bobine 2', unite: '°', vrai: 90, tol: 0.03, affiche: v => nf(v, 0), cs: 2,
-        calcul: () => ['Les 4 bobines sont régulièrement réparties sur un cercle : 360° / 4 = 90° entre deux bobines voisines.',
+        calcul: () => ['Les 4 bobines sont régulièrement réparties sur un cercle : frac(360°|4) = 90° entre deux bobines voisines.',
           `La bobine 1 est en haut (${PHI[0]}°) et la bobine 2 à droite (${PHI[1]}°) : le rotor suit le champ, donc il tourne de ${PHI[1]} − ${PHI[0]} = ${PHI[1] - PHI[0]}°.`],
         expl: 'Les bobines sont à 90° l’une de l’autre : le rotor tourne d’un quart de tour. C’est un « pas ».', indice: "Les 4 bobines sont réparties régulièrement autour du rotor. Combien de degrés séparent deux bobines voisines ? (un tour = 360°)" } },
     { id: 'complet', titre: 'La séquence 1 – 2 – 3 – 4', focus: ['schema', 'commandes', 'chrono'],
@@ -280,9 +280,9 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       texte: <>À chaque pas, le rotor tourne d’un quart de tour.</>,
       tache: { type: 'num', q: 'Nombre de pas complets pour un tour du rotor', unite: '', vrai: 4, tol: 0.01, affiche: v => nf(v, 0), cs: 1,
         calcul: () => ['Un tour complet du rotor correspond à 360°, et un pas complet fait tourner le rotor de 90°.',
-          'Nombre de pas = 360° / 90° = 4 pas complets.'],
-        pieges: [[8, 'Vous avez compté des demi-pas (45° chacun). Un pas complet fait 90° : 360° / 90°.'], [360, 'Vous avez recopié l’angle d’un tour. Il faut diviser 360° par l’angle d’un pas (90°).']],
-        expl: '360° / 90° = 4 pas complets pour un tour.', indice: "Combien de fois l’angle d’un pas complet tient-il dans 360° ?" } },
+          'Nombre de pas = frac(360°|90°) = 4 pas complets.'],
+        pieges: [[8, 'Vous avez compté des demi-pas (45° chacun). Un pas complet fait 90° : frac(360°|90°).'], [360, 'Vous avez recopié l’angle d’un tour. Il faut diviser 360° par l’angle d’un pas (90°).']],
+        expl: 'frac(360°|90°) = 4 pas complets pour un tour.', indice: "Combien de fois l’angle d’un pas complet tient-il dans 360° ?" } },
     { id: 'chrono', titre: 'Le chronogramme du demi-pas', focus: ['chrono'],
       retenirTitre: 'À RETENIR : LE PAS COMPLET',
       retenir: <>
@@ -304,9 +304,9 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       texte: <>Entre deux positions successives du rotor, il y a maintenant moitié moins d’angle qu’en pas complet (90°).</>,
       tache: { type: 'num', q: 'Angle dont le rotor tourne à chaque demi-pas', unite: '°', vrai: 45, tol: 0.02, affiche: v => nf(v, 0), cs: 2,
         calcul: () => ['Un demi-pas est la moitié d’un pas complet, et un pas complet vaut 90°.',
-          'Angle d’un demi-pas = 90° / 2 = 45°.'],
+          'Angle d’un demi-pas = frac(90°|2) = 45°.'],
         pieges: [[180, 'Vous avez multiplié par 2 au lieu de diviser : un demi-pas est deux fois plus petit qu’un pas complet.']],
-        expl: '90° / 2 = 45° : il faut 8 demi-pas pour un tour du rotor. Le positionnement est deux fois plus fin.', indice: "Un demi-pas vaut la moitié d’un pas complet." } },
+        expl: 'frac(90°|2) = 45° : il faut 8 demi-pas pour un tour du rotor. Le positionnement est deux fois plus fin.', indice: "Un demi-pas vaut la moitié d’un pas complet." } },
     { id: 'force', titre: 'Pas complet à force maximale', focus: ['schema', 'commandes', 'mesures'],
       retenirTitre: 'À RETENIR : LE DEMI-PAS',
       retenir: <>
@@ -360,18 +360,18 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       texte: <>La documentation du moteur indique : <strong>à chaque demi-pas du rotor, l’axe tourne de 0,0879°</strong> (valeur exacte : 5,625°/64). Lancez l’animation pour voir l’aiguille de l’axe avancer lentement, puis calculez.</>,
       tache: { type: 'num', q: 'Nombre de demi-pas pour que l’axe fasse un tour (360°)', unite: '', vrai: N_AXE, tol: 0.005, affiche: v => nf(v, 0), cs: 4,
         calcul: () => ['Un tour d’axe = 360° ; chaque demi-pas fait tourner l’axe de 0,0879°.',
-          `Nombre de demi-pas = 360° / 0,0879° = ${nf(360 / 0.0879, 1)} ≈ ${nf(360 / ANG_AXE, 0)}.`,
-          `Avec la valeur exacte 5,625° / 64 = ${nf(5.625 / 64, 9)}°, on trouve 360 / ${nf(5.625 / 64, 9)} = ${nf(360 / (5.625 / 64), 0)} demi-pas (le résultat est un nombre entier).`],
+          `Nombre de demi-pas = frac(360°|0,0879°) = ${nf(360 / 0.0879, 1)} ≈ ${nf(360 / ANG_AXE, 0)}.`,
+          `Avec la valeur exacte frac(5,625°|64) = ${nf(5.625 / 64, 9)}°, on trouve frac(360|${nf(5.625 / 64, 9)}) = ${nf(360 / (5.625 / 64), 0)} demi-pas (le résultat est un nombre entier).`],
         pieges: [[4000, 'Avec 0,09° (valeur arrondie) vous trouvez environ 4000 : cette valeur est trop approchée. Gardez 0,0879° (ou la valeur exacte 5,625°/64) dans la division.', 0.01],
           [360 * 0.0879, 'Vous avez multiplié 360 par 0,0879. Le nombre de demi-pas est 360° divisé par l’angle d’un demi-pas.'],
-          [0.0879 / 360, 'Division à l’envers : il faut 360° / 0,0879° (nombre de petits angles dans un tour).']],
-        expl: '360° / 0,0879° ≈ 4096 demi-pas.', indice: "Un tour de rotor correspond à 8 demi-pas ; il faut aussi savoir combien de tours de rotor font un tour d’axe (réducteur)." } },
+          [0.0879 / 360, 'Division à l’envers : il faut frac(360°|0,0879°) (nombre de petits angles dans un tour).']],
+        expl: 'frac(360°|0,0879°) ≈ 4096 demi-pas.', indice: "Un tour de rotor correspond à 8 demi-pas ; il faut aussi savoir combien de tours de rotor font un tour d’axe (réducteur)." } },
     { id: 'tours', titre: 'Combien de tours du rotor ?', focus: ['compteurs'],
       retenirTitre: 'À RETENIR : LE RÉDUCTEUR',
       retenir: <>
         <SchemaReducteur/>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le <strong>réducteur à engrenages</strong> démultiplie le mouvement : à chaque demi-pas du rotor, l’axe tourne de 5,625° / 64 ≈ 0,0879°.</li>
+          <li>Le <strong>réducteur à engrenages</strong> démultiplie le mouvement : à chaque demi-pas du rotor, l’axe tourne de {avecIndices('frac(5,625°|64)')} ≈ 0,0879°.</li>
           <li>Un tour d’axe = <strong>4096 demi-pas</strong> (360° ÷ 0,0879°).</li>
         </ul>
       </>,
@@ -382,7 +382,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
         pieges: [[4096, 'C’est le nombre de demi-pas : divisez par 8 pour avoir des tours.'],
           [N_AXE / 4, 'Vous avez divisé par 4 (pas complets). Ici on compte des demi-pas : il y en a 8 par tour du rotor.'],
           [N_AXE * 8, 'Vous avez multiplié par 8 au lieu de diviser : 8 demi-pas font un tour, donc le nombre de tours est plus petit que le nombre de demi-pas.']],
-        expl: '4096 / 8 = 512 tours du rotor pour un seul tour de l’axe : le rapport de réduction est de 1/512.', indice: "C’est le rapport de réduction : nombre de demi-pas d’un tour d’axe ÷ nombre de demi-pas d’un tour de rotor." } },
+        expl: 'frac(4096|8) = 512 tours du rotor pour un seul tour de l’axe : le rapport de réduction est de 1/512.', indice: "C’est le rapport de réduction : nombre de demi-pas d’un tour d’axe ÷ nombre de demi-pas d’un tour de rotor." } },
     { id: 'duree', titre: 'Durée d’un tour d’axe', focus: ['compteurs'],
       retenirTitre: 'À RETENIR : DU ROTOR À L’AXE',
       retenir: <>
@@ -411,7 +411,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       </>,
       texte: <>En pas complet, le rotor avance de 2 demi-pas à chaque pas. Un tour d’axe demande {nf(N_AXE, 0)} demi-pas ; le délai reste delay(5), soit 5{NB}ms par pas.</>,
       tache: { type: 'num', q: 'Durée d’un tour de l’axe en pas complet', unite: 's', vrai: N_AXE / 2 * T_DELAY, tol: 0.01, affiche: v => nf(v, 2), cs: 4,
-        calcul: () => [`Un pas complet = 2 demi-pas, donc pour un tour d’axe : ${nf(N_AXE, 0)} / 2 = ${nf(N_AXE / 2, 0)} pas.`,
+        calcul: () => [`Un pas complet = 2 demi-pas, donc pour un tour d’axe : frac(${nf(N_AXE, 0)}|2) = ${nf(N_AXE / 2, 0)} pas.`,
           `Hypothèse : toujours delay(5), soit 5 ms par pas, et aucun pas perdu.`,
           `Durée = ${nf(N_AXE / 2, 0)} × 5 ms = ${nf(N_AXE / 2 * 5, 0)} ms = ${nf(N_AXE / 2 * T_DELAY, 2)} s.`],
         pieges: [[N_AXE * T_DELAY, 'C’est la durée en demi-pas. En pas complet, il y a deux fois moins de pas à faire : divisez par 2.'],
