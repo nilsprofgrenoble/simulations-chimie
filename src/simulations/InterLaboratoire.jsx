@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { FicheDispersion, FicheSeuils, FicheCompat, FicheEcriture, FicheJustesse } from "./InterLaboratoireFiches";
-import { cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, Formule, FormuleEnLigne, OngletExercices } from "../commun";
+import { Frac, cardStyle, fmt, lireNombre, proche, CarteParcours, useEtatPersistant, KIT, styleBouton, styleBoite, Section, ORANGE_GUIDE, avecIndices, IndiceDefi, Formule, FormuleEnLigne, OngletExercices } from "../commun";
 const vf = x => String(x).replace('.', ',');
 import { Pic } from "../Pictos";
 
@@ -442,9 +442,9 @@ function ExplorationInterlabo({ plotlyReady, visible = true }) {
               <div style={{background:"#fff5f5",border:"1px solid #ffcccc",borderRadius:6,
                 padding:"10px 14px",marginBottom:12,fontSize:13}}>
                 <div style={{marginBottom:6}}>
-                  <strong>C = s²max / Σsᵢ²</strong>
+                  <strong>C = {avecIndices('frac(s²_max|Σsᵢ²)')}</strong>
                   {" = "}
-                  <strong style={{color:"#c0392b"}}>{vf(ecarts[idxMax])}² / Σsᵢ²</strong>
+                  <strong style={{color:"#c0392b"}}><Frac haut={<>{vf(ecarts[idxMax])}²</>} bas="Σsᵢ²" /></strong>
                   {" = "}
                   <strong style={{color:"#c0392b",fontSize:15}}>{vf(C)}</strong>
                 </div>
@@ -1243,7 +1243,7 @@ function ParcoursInterlabo({ changerMode }) {
       tache: { type: 'num', q: 'Moyenne ȳ_1 du laboratoire 1', unite: 'mmol/L', vrai: m[0], tol: 0.0006, affiche: x => fmt(x, 3), aide: <>ȳ_i = (somme des n essais) / n</>,
         calcul: () => ['ȳ_1 = (somme des n essais) / n, avec n = 4 essais du laboratoire 1.',
           `Somme = ${DG[0].map(x => fmt(x, 2)).join(' + ')} = ${fmt(DG[0].reduce((a, b) => a + b, 0), 2)} mmol/L.`,
-          `ȳ_1 = ${fmt(DG[0].reduce((a, b) => a + b, 0), 2)} / 4 = ${fmt(m[0], 3)} mmol/L.`],
+          `ȳ_1 = frac(${fmt(DG[0].reduce((a, b) => a + b, 0), 2)}|4) = ${fmt(m[0], 3)} mmol/L.`],
         pieges: [[DG[0].reduce((a, b) => a + b, 0), 'Vous avez donné la somme des 4 essais : il faut la diviser par n = 4.']], indice: "Additionnez les n essais du laboratoire 1, puis divisez par n." } },
     { id: 'ecartLab', titre: 'L’écart-type d’un laboratoire', focus: ['donnees'],
       texte: <>Toujours pour le laboratoire 1, calculez l’écart-type expérimental (touche σ<sub>n−1</sub> ou s<sub>x</sub> de la calculatrice).</>,
@@ -1267,7 +1267,7 @@ function ParcoursInterlabo({ changerMode }) {
             `La plus grande est celle du laboratoire ${k + 1} : s²_max = ${fmt(v[k], 5)}. Somme : Σ s²_i = ${fmt(tot, 5)}.`,
             <>C = <FormuleEnLigne><Fraction haut={fmt(v[k], 5)} bas={fmt(tot, 5)}/></FormuleEnLigne> = {fmt(c8.C, 3)}.</>]; },
         pieges: [[Math.max(...s) / s.reduce((a, b) => a + b, 0), 'Il faut élever les écarts-types au carré (variances), au numérateur et pour la somme.'],
-          ...piegesLoin([[1 / s.length, 'C’est la valeur que prendrait C si tous les laboratoires avaient la même dispersion (1 / p). Calculez s²_max / Σ s²_i avec les données.']], c8.C)], indice: "C = plus grande variance ÷ somme des variances de tous les laboratoires." } },
+          ...piegesLoin([[1 / s.length, 'C’est la valeur que prendrait C si tous les laboratoires avaient la même dispersion (frac(1|p)). Calculez frac(s²_max|Σ s²_i) avec les données.']], c8.C)], indice: "C = plus grande variance ÷ somme des variances de tous les laboratoires." } },
     { id: 'cochranT', titre: 'Lire la table de Cochran', focus: ['tables'],
       texte: <>La table donne la valeur que C dépasserait rarement si tous les laboratoires avaient la même dispersion : seuil à 5 % et seuil à 1 %. Entrez dans la table avec p = 8 laboratoires et n = 4 essais.</>,
       tache: { type: 'num', q: 'Valeur critique C₁ % (p = 8, n = 4)', unite: '', vrai: tableCochran[8][4].p1, tol: 0.003, affiche: x => fmt(x, 3),
@@ -1298,7 +1298,7 @@ function ParcoursInterlabo({ changerMode }) {
           return ['ȳ est la moyenne des moyennes ȳ_i des 7 laboratoires conservés (le laboratoire 3 est écarté). Chaque laboratoire a le même nombre d’essais, donc le même poids.',
             `Moyennes ȳ_i (laboratoires 1, 2, 4 à 8) : ${mm.map(x => fmt(x, 3)).join(' ; ')} mmol/L.`,
             `Somme = ${fmt(mm.reduce((a, b) => a + b, 0), 3)} mmol/L.`,
-            `ȳ = ${fmt(mm.reduce((a, b) => a + b, 0), 3)} / 7 = ${fmt(g7.ybar, 3)} mmol/L.`]; },
+            `ȳ = frac(${fmt(mm.reduce((a, b) => a + b, 0), 3)}|7) = ${fmt(g7.ybar, 3)} mmol/L.`]; },
         pieges: [[PG.m8, 'Vous avez gardé le laboratoire écarté.']], indice: "Faites la moyenne des moyennes des 7 laboratoires restants." } },
     { id: 'grubbsS', titre: 'La dispersion des moyennes', focus: [],
       texte: <>Calculez maintenant l’écart-type expérimental s(ȳ) des 7 moyennes ȳ<sub>i</sub> (σ<sub>n−1</sub> de la calculatrice).</>,
@@ -1313,7 +1313,7 @@ function ParcoursInterlabo({ changerMode }) {
         calcul: () => ['G = |ȳ_i − ȳ| / s(ȳ), pour la moyenne la plus éloignée de ȳ. Le test suppose que les moyennes des laboratoires suivent une loi normale.',
           `Moyenne la plus éloignée : laboratoire ${g7.lab + 1}, ȳ_${g7.lab + 1} = ${fmt(m[g7.lab], 3)} mmol/L.`,
           `|ȳ_${g7.lab + 1} − ȳ| = |${fmt(m[g7.lab], 3)} − ${fmt(g7.ybar, 3)}| = ${fmt(Math.abs(m[g7.lab] - g7.ybar), 3)} mmol/L.`,
-          `G = ${fmt(Math.abs(m[g7.lab] - g7.ybar), 3)} / ${fmt(g7.sy, 4)} = ${fmt(g7.G, 3)}.`],
+          `G = frac(${fmt(Math.abs(m[g7.lab] - g7.ybar), 3)}|${fmt(g7.sy, 4)}) = ${fmt(g7.G, 3)}.`],
         pieges: [[g8.G, 'Vous avez gardé le laboratoire écarté par Cochran.']], indice: "G = écart entre la moyenne la plus éloignée et ȳ, en valeur absolue, ÷ s(ȳ)." } },
     { id: 'grubbsT', titre: 'Lire la table de Grubbs', focus: ['tables'],
       texte: <>La table de Grubbs ne dépend que du nombre p de laboratoires (ici p = 7).</>,
@@ -1330,7 +1330,7 @@ function ParcoursInterlabo({ changerMode }) {
     { id: 'bilan2', titre: 'Le bilan', focus: [],
       texte: <>Vous savez appliquer les tests de Cochran (dispersion des essais) et de Grubbs (dispersion des moyennes), lire leurs tables critiques et décider quoi faire d’un laboratoire suspect. Le parcours 3 utilise les résultats de l’étude pour exprimer un résultat de mesure avec son incertitude.</>, tache: null },
     { id: 'resultatEtude', titre: 'Les résultats de l’étude', focus: [],
-      texte: <>Rappel du parcours 2 : le laboratoire 3 a été écarté (test de Cochran) et le laboratoire 6 conservé (test de Grubbs). Avec les 7 laboratoires conservés, la norme donne : s<sub>r</sub>² = Σ s<sub>i</sub>² / p (répétabilité) ; s<sub>L</sub>² = s²(ȳ) − s<sub>r</sub>² / n (effet laboratoire) ; s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>² (reproductibilité). On obtient s<sub>r</sub> = {fmt(SRG.sr, 3)} ; s<sub>L</sub> = {fmt(SRG.sL, 3)} ; s<sub>R</sub> = {fmt(SRG.sR, 3)} mmol/L.</>,
+      texte: <>Rappel du parcours 2 : le laboratoire 3 a été écarté (test de Cochran) et le laboratoire 6 conservé (test de Grubbs). Avec les 7 laboratoires conservés, la norme donne : s<sub>r</sub>² = {avecIndices('frac(Σ s_i²|p)')} (répétabilité) ; s<sub>L</sub>² = s²(ȳ) − s<sub>r</sub>{avecIndices('frac(²|n)')} (effet laboratoire) ; s<sub>R</sub>² = s<sub>L</sub>² + s<sub>r</sub>² (reproductibilité). On obtient s<sub>r</sub> = {fmt(SRG.sr, 3)} ; s<sub>L</sub> = {fmt(SRG.sL, 3)} ; s<sub>R</sub> = {fmt(SRG.sR, 3)} mmol/L.</>,
       tache: { type: 'qcm', q: 'Pourquoi s_R est-il supérieur à s_r ?', options: ['Entre laboratoires, s’ajoute à la dispersion des essais d’un même laboratoire un effet propre à chaque laboratoire', 'Parce que le laboratoire 3 a été écarté', 'Parce que la méthode est fausse'], bonne: 0, indice: "s_R contient s_r plus un effet propre au changement de laboratoire. Lequel ?" } },
     { id: 'limiteR', titre: 'Utiliser la méthode : deux essais', focus: ['mesurage'],
       texte: <>Votre laboratoire applique maintenant la méthode à un échantillon de teneur voisine : <strong>2 essais</strong>, en conditions de répétabilité, donnent y<sub>1</sub> = {fmt(Y_G[0], 2)} et y<sub>2</sub> = {fmt(Y_G[1], 2)} mmol/L. Avant de les moyenner, on vérifie qu’ils sont compatibles : leur écart ne doit pas dépasser la <strong>limite de répétabilité</strong> r = 2,8 × s<sub>r</sub>. (2,8 ≈ 1,96 × √2 : seuil à 95 %, si les essais suivent une loi normale d’écart-type s<sub>r</sub>.)</>,
@@ -1347,8 +1347,8 @@ function ParcoursInterlabo({ changerMode }) {
       retenir: <FicheCompat/>,
       texte: <>Les essais (y<sub>1</sub> = {fmt(Y_G[0], 2)} et y<sub>2</sub> = {fmt(Y_G[1], 2)} mmol/L) sont compatibles : le résultat du mesurage est leur moyenne.</>,
       tache: { type: 'num', q: 'Moyenne ȳ des deux essais', unite: 'mmol/L', vrai: (Y_G[0] + Y_G[1]) / 2, tol: 0.0007, affiche: x => fmt(x, 2),
-        calcul: () => [`ȳ = (y_1 + y_2) / 2 = (${fmt(Y_G[0], 2)} + ${fmt(Y_G[1], 2)}) / 2.`,
-          `ȳ = ${fmt(Y_G[0] + Y_G[1], 2)} / 2 = ${fmt((Y_G[0] + Y_G[1]) / 2, 2)} mmol/L.`],
+        calcul: () => [`ȳ = frac(y_1 + y_2|2) = frac(${fmt(Y_G[0], 2)} + ${fmt(Y_G[1], 2)}|2).`,
+          `ȳ = frac(${fmt(Y_G[0] + Y_G[1], 2)}|2) = ${fmt((Y_G[0] + Y_G[1]) / 2, 2)} mmol/L.`],
         pieges: [[Y_G[0] + Y_G[1], 'Vous avez donné la somme des deux essais : il faut la diviser par 2.']], indice: "Somme des deux essais divisée par 2." } },
     { id: 'quelSigma', titre: 'Quelle incertitude associer ?', focus: [],
       texte: <>Il reste à exprimer l’incertitude sur ce résultat. L’étude interlaboratoire en fournit une estimation.</>,

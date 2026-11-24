@@ -1,7 +1,7 @@
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { useState, useRef, useMemo } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { FicheGravitation, FichePoids, FicheChamps, FicheChampE, FicheForceQE, FicheBilanChamp } from "./ChampForceFiches";
 import { Pic } from "../Pictos";
@@ -159,7 +159,7 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
     const d = lireNombre(r.d), F = lireNombre(r.F);
     const okD = isFinite(d) && proche(d * 1e-2, dEt, 0.02), okF = isFinite(F) && proche(F, FEt, 0.03);
     const attire = defi.Q * defi.q < 0, okS = r.sensF === (attire ? 'vers' : 'loin');
-    let mD = okD ? 'Distance correcte.' : 'Distance : isolez d dans E = k·|Q| / d², puis d = √(k·|Q| / E), avec Q en coulombs.';
+    let mD = okD ? 'Distance correcte.' : 'Distance : isolez d dans E = frac(k·∣Q∣|d²), puis d = √(frac(k·∣Q∣|E)), avec Q en coulombs.';
     if (!okD && isFinite(d) && proche(d, dEt, 0.02)) mD = 'C’est la bonne valeur, mais en mètres : la distance est demandée en cm.';
     let mF = okF ? 'Force correcte.' : 'Force : F = |q| × E, avec q en coulombs (1 nC = 10⁻⁹ C).';
     if (!okF && isFinite(F) && proche(F, FEt * 1e9, 0.03)) mF = 'Convertissez q en coulombs : 1 nC = 10⁻⁹ C.';
@@ -227,8 +227,8 @@ function VoletDefi({ defi, setDefi, changerType, placer }) {
         </div>
       </>}
       <IndiceDefi cache={reussi}>{defi.type === 'signes' ? <>Observe la flèche rouge : la force F subie par la charge test q est-elle dirigée vers Q ou loin de Q ? Des charges de même signe se repoussent, de signes contraires s’attirent : déduis-en le signe de Q, puis le sens de E.</>
-        : defi.type === 'altitude' ? <>La norme du champ de gravitation diminue avec la distance au centre de la Terre (en 1 / d²). Fais varier l’altitude et observe l’évolution de g.</>
-        : <>E = k × |Q| / d², puis F = |q| × E (charges en coulombs, distance en mètres).</>}</IndiceDefi>
+        : defi.type === 'altitude' ? <>La norme du champ de gravitation diminue avec la distance au centre de la Terre (en {avecIndices('frac(1|d²)')}). Fais varier l’altitude et observe l’évolution de g.</>
+        : <>E = {avecIndices('frac(k × ∣Q∣|d²)')}, puis F = |q| × E (charges en coulombs, distance en mètres).</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
         <button onClick={verifier} style={styleBouton(true, VERT)}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
@@ -339,23 +339,23 @@ export function SimulationChampForce() {
         expl: `Le vecteur ${GRAV} est porté par la droite (OM) et dirigé vers le centre de la Terre. « Vers le bas » n’est vrai que localement, à la surface.`, indice: "Le champ de gravitation traduit l’attraction de la Terre : vers quel point est-on attiré, en n’importe quel endroit ?" } },
     { id: 'valeur2R', titre: 'Norme du champ', focus: ['scene', 'reglages', 'mesures', 'calcul'],
       texte: <>Placez l’objet à la distance <strong>d = 2 R<sub>T</sub></strong> du centre de la Terre, soit environ 12 740 km (glissez-le, ou utilisez le bouton).
-        {' '}<button onClick={poser2R} style={stylePetitBouton(true, '#2563eb')}>Placer l’objet à 2 R_T</button><br/>La norme du champ de gravitation à la distance d du centre de la Terre est <strong>{GRAV} = G·M<sub>T</sub> / d²</strong>. Lisez-la dans « Mesures » (le calcul détaillé est juste en dessous), avec d lue dans « Distance au centre ».</>,
+        {' '}<button onClick={poser2R} style={stylePetitBouton(true, '#2563eb')}>Placer l’objet à 2 R_T</button><br/>La norme du champ de gravitation à la distance d du centre de la Terre est <strong>{GRAV} = {avecIndices('frac(G·M_T|d²)')}</strong>. Lisez-la dans « Mesures » (le calcul détaillé est juste en dessous), avec d lue dans « Distance au centre ».</>,
       tache: { type: 'num', q: `Norme de ${GRAV} à d = 2 R_T`, unite: 'N·kg⁻¹', vrai: g2, tol: 0.03, affiche: v => val(v), cs: 2,
         bloque: a2R ? null : 'Placez d’abord l’objet à d = 2 R_T (bouton ci-dessus).',
         pieges: [[gSol / 2, 'Le champ n’est pas divisé par 2 quand la distance double : il varie en 1/d².'],
           [G * MT / (2 * RT), 'Vous avez oublié le carré : au dénominateur, c’est d² = (2 R_T)², pas d.'],
           [gSol, 'C’est la valeur au sol (d = R_T). Ici, la distance au centre de la Terre est d = 2 R_T.']],
         calcul: () => [
-          `Formule : ${GRAV} = G·M_T / d², avec G = 6,674 × 10⁻¹¹ N·m²·kg⁻², M_T = 5,972 × 10²⁴ kg, R_T = 6,371 × 10⁶ m.`,
+          `Formule : ${GRAV} = frac(G·M_T|d²), avec G = 6,674 × 10⁻¹¹ N·m²·kg⁻², M_T = 5,972 × 10²⁴ kg, R_T = 6,371 × 10⁶ m.`,
           `Distance au centre : d = 2 R_T = 2 × 6,371 × 10⁶ = ${puiss(2 * RT, 4)} m (en mètres, pas en km).`,
           `Dénominateur : d² = (${puiss(2 * RT, 4)})² = ${puiss((2 * RT) ** 2, 4)} m².`,
           `Numérateur : G·M_T = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ = ${puiss(G * MT, 4)} N·m²·kg⁻¹.`,
-          `${GRAV} = ${puiss(G * MT, 4)} / ${puiss((2 * RT) ** 2, 4)} = ${val(g2)} N·kg⁻¹.`],
-        expl: `${GRAV} = G·M_T / (2 R_T)² ≈ ${val(g2)} N·kg⁻¹, quatre fois moins qu’au sol (9,82 N·kg⁻¹).`, indice: "La norme du champ dépend de la distance d au centre de la Terre : g = G × M / d². Que devient d² quand d est doublée ? Compare avec la valeur à la surface." } },
+          `${GRAV} = frac(${puiss(G * MT, 4)}|${puiss((2 * RT) ** 2, 4)}) = ${val(g2)} N·kg⁻¹.`],
+        expl: `${GRAV} = frac(G·M_T|(2 R_T)²) ≈ ${val(g2)} N·kg⁻¹, quatre fois moins qu’au sol (9,82 N·kg⁻¹).`, indice: "La norme du champ dépend de la distance d au centre de la Terre : g = frac(G × M|d²). Que devient d² quand d est doublée ? Compare avec la valeur à la surface." } },
     { id: 'loi', titre: 'Comment varie le champ ?', focus: ['scene', 'mesures'],
       texte: <>Déplacez l’objet à <strong>4 R<sub>T</sub></strong> (environ 25 500 km) et comparez.</>,
       tache: { type: 'qcm', q: `Quand la distance au centre double, la norme de ${GRAV} est…`, options: ['divisée par 4', 'divisée par 2', 'inchangée'], bonne: 0,
-        expl: `${GRAV} = G·M_T / d² : si d est multiplié par 2, d² est multiplié par 4, donc ${GRAV} est divisé par 4 (2,45 → 0,61 N·kg⁻¹).`, indice: "La norme est proportionnelle à 1 / d². Remplace d par 2 d dans g = G × M / d²." } },
+        expl: `${GRAV} = frac(G·M_T|d²) : si d est multiplié par 2, d² est multiplié par 4, donc ${GRAV} est divisé par 4 (2,45 → 0,61 N·kg⁻¹).`, indice: "La norme est proportionnelle à frac(1|d²). Remplace d par 2 d dans g = frac(G × M|d²)." } },
     { id: 'lignes', titre: 'Les lignes de champ', focus: ['scene'],
       retenirTitre: 'À RETENIR : LE CHAMP DE GRAVITATION',
       retenir: <FicheGravitation/>,
@@ -375,11 +375,11 @@ export function SimulationChampForce() {
         pieges: [[G * MT / RT, 'Vous avez oublié le carré : au dénominateur, c’est R_T², pas R_T.'],
           [G * MT / (RT / 1e3) ** 2, 'Convertissez la distance en mètres : R_T = 6,371 × 10⁶ m (et non 6 371 km).']],
         calcul: () => [
-          `Au sol, la distance au centre de la Terre est d = R_T = 6,371 × 10⁶ m. Formule : g = G·M_T / R_T².`,
+          `Au sol, la distance au centre de la Terre est d = R_T = 6,371 × 10⁶ m. Formule : g = frac(G·M_T|R_T²).`,
           `Numérateur : G·M_T = 6,674 × 10⁻¹¹ × 5,972 × 10²⁴ = ${puiss(G * MT, 4)} N·m²·kg⁻¹.`,
           `Dénominateur : R_T² = (6,371 × 10⁶)² = ${puiss(RT ** 2, 4)} m².`,
-          `g = ${puiss(G * MT, 4)} / ${puiss(RT ** 2, 4)} = ${val(gSol)} N·kg⁻¹.`],
-        expl: 'g = G·M_T / R_T² ≈ 9,82 N·kg⁻¹. La valeur mesurée à Paris (9,81) est un peu plus faible : le modèle néglige la rotation de la Terre et sa forme aplatie.', indice: "g = G × M / R², avec M la masse de la Terre et R son rayon (en mètres). Utilise les valeurs du modèle affichées." } },
+          `g = frac(${puiss(G * MT, 4)}|${puiss(RT ** 2, 4)}) = ${val(gSol)} N·kg⁻¹.`],
+        expl: 'g = frac(G·M_T|R_T²) ≈ 9,82 N·kg⁻¹. La valeur mesurée à Paris (9,81) est un peu plus faible : le modèle néglige la rotation de la Terre et sa forme aplatie.', indice: "g = frac(G × M|R²), avec M la masse de la Terre et R son rayon (en mètres). Utilise les valeurs du modèle affichées." } },
     { id: 'poids', titre: 'Le poids', focus: ['reglages', 'mesures'],
       retenirTitre: 'À RETENIR : CHAMP DE PESANTEUR ET POIDS',
       retenir: <FichePoids/>,
@@ -404,18 +404,18 @@ export function SimulationChampForce() {
       retenirTitre: 'À RETENIR : LES CHAMPS ET LEURS LIGNES',
       retenir: <FicheChamps/>,
       texte: <>Reprenez <strong>Q = +10 nC</strong> et placez la charge test à <strong>10 cm</strong> du centre de la boule.
-        {' '}<button onClick={poser10} style={stylePetitBouton(true, '#2563eb')}>Q = +10 nC, q à 10 cm</button><br/>La norme du champ électrostatique est <strong>E = k·|Q| / d²</strong>, avec k = 9,0 × 10⁹ N·m²·C⁻². Faites le calcul vous-même (Q en coulombs, d en mètres) avant de lire la mesure.</>,
+        {' '}<button onClick={poser10} style={stylePetitBouton(true, '#2563eb')}>Q = +10 nC, q à 10 cm</button><br/>La norme du champ électrostatique est <strong>E = {avecIndices('frac(k·∣Q∣|d²)')}</strong>, avec k = 9,0 × 10⁹ N·m²·C⁻². Faites le calcul vous-même (Q en coulombs, d en mètres) avant de lire la mesure.</>,
       tache: { type: 'num', q: 'Norme de E à 10 cm de Q = +10 nC', unite: 'N·C⁻¹', vrai: E10, tol: 0.02, affiche: v => fmt(v, 0),
         bloque: a10 ? null : 'Réglez Q = +10 nC avec la charge test à 10 cm (bouton ci-dessus).',
         pieges: [[0.9, 'Convertissez d en mètres : 10 cm = 10 × 10⁻² m.'], [9e12, 'Convertissez Q en coulombs : 10 nC = 10 × 10⁻⁹ C.'], [900, 'N’oubliez pas le carré : d² = (10 × 10⁻² m)² = 10⁻² m².'],
           [1e-6, 'Vous avez oublié la constante k = 9,0 × 10⁹ N·m²·C⁻² au numérateur.']],
         calcul: () => [
-          'Formule : E = k·|Q| / d², avec k = 9,0 × 10⁹ N·m²·C⁻².',
+          'Formule : E = frac(k·∣Q∣|d²), avec k = 9,0 × 10⁹ N·m²·C⁻².',
           'Conversions en unités du système international : Q = 10 nC = 10 × 10⁻⁹ C = 1,0 × 10⁻⁸ C ; d = 10 cm = 0,10 m.',
           'Dénominateur : d² = (0,10)² = 1,0 × 10⁻² m².',
           'Numérateur : k·|Q| = 9,0 × 10⁹ × 1,0 × 10⁻⁸ = 90 N·m²·C⁻¹.',
-          `E = 90 / (1,0 × 10⁻²) = ${fmt(E10, 0)} N·C⁻¹ (soit 9,0 × 10³).`],
-        expl: 'E = 9,0 × 10⁹ × 10 × 10⁻⁹ / (10 × 10⁻²)² = 90 / 10⁻² = 9,0 × 10³ N·C⁻¹.', indice: "E = k × |Q| / d², avec d en mètres et Q en coulombs (10 cm = 0,10 m ; 1 nC = 10⁻⁹ C)." } },
+          `E = frac(90|1,0 × 10⁻²) = ${fmt(E10, 0)} N·C⁻¹ (soit 9,0 × 10³).`],
+        expl: 'E = frac(9,0 × 10⁹ × 10 × 10⁻⁹|(10 × 10⁻²)²) = frac(90|10⁻²) = 9,0 × 10³ N·C⁻¹.', indice: "E = frac(k × ∣Q∣|d²), avec d en mètres et Q en coulombs (10 cm = 0,10 m ; 1 nC = 10⁻⁹ C)." } },
     { id: 'sensF', titre: 'Sens de la force', focus: ['reglages', 'scene', 'vecteurs'],
       retenirTitre: 'À RETENIR : LE CHAMP ÉLECTROSTATIQUE',
       retenir: <FicheChampE/>,

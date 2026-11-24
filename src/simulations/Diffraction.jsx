@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef, useMemo, useDeferredValue } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { puces } from "./Travail";
 import { FDiffraction, FPorte, FFigure, FTache, FIncert, FBilanDiff } from "./DiffractionSchemas";
@@ -254,12 +254,12 @@ export function SimulationDiffraction({ naviguer }) {
       tache: { type: 'action', ok: scene === 'cuve' && Math.abs(cuve.a - 4) < 0.15 && Math.abs(cuve.lam - 1) < 0.1 && angle && vue === 'intensite', label: 'Régler et afficher θ',
         faire: () => { setScene('cuve'); setCuve({ a: 4, lam: 1 }); setAngle(true); setVue('intensite'); }, consigne: 'a = 4 cm, λ = 1 cm, vue « Amplitude », écart angulaire affichée' } },
     { id: 'theta', titre: 'L’angle d’ouverture', focus: ['mesures'],
-      texte: <>Pour les petits angles, l’écart angulaire est donné par <strong>θ = λ / a</strong> (en radians, <em>λ</em> et <em>a</em> dans la même unité). Calculez-la pour ce réglage (<em>a</em> = 4{NB}cm ; <em>λ</em> = 1{NB}cm).</>,
+      texte: <>Pour les petits angles, l’écart angulaire est donné par <strong>θ = {avecIndices('frac(λ|a)')}</strong> (en radians, <em>λ</em> et <em>a</em> dans la même unité). Calculez-la pour ce réglage (<em>a</em> = 4{NB}cm ; <em>λ</em> = 1{NB}cm).</>,
       tache: { type: 'num', q: 'Écart angulaire θ', unite: 'rad', vrai: 0.25, tol: 0.05, affiche: v => nbf(v, 2), cs: 2,
         bloque: scene === 'cuve' && Math.abs(cuve.a - 4) < 0.15 && Math.abs(cuve.lam - 1) < 0.1 ? null : 'Réglez d’abord a = 4 cm et λ = 1 cm (étape précédente).',
-        calcul: () => ['Hypothèse : petits angles, donc θ ≈ λ / a.', 'λ et a sont déjà dans la même unité (le centimètre), le rapport n’a pas d’unité.', 'θ = 1 / 4 = 0,25 rad.'],
-        pieges: [[14.3, 'Vous avez donné l’angle en degrés. La relation θ = λ/a donne des radians : θ = 0,25 rad (≈ 14°).'], [4, 'Division à l’envers : θ = λ / a, pas a / λ.']],
-        expl: 'θ = λ / a = 1 / 4 = 0,25 rad, soit environ 14°. Les traits rouges tracés par la simulation (arcsin λ/a ≈ 14,5°) confirment que θ ≈ λ/a est une bonne approximation ici.', indice: "θ = λ ÷ a, avec λ et a dans la même unité." } },
+        calcul: () => ['Hypothèse : petits angles, donc θ ≈ frac(λ|a).', 'λ et a sont déjà dans la même unité (le centimètre), le rapport n’a pas d’unité.', 'θ = frac(1|4) = 0,25 rad.'],
+        pieges: [[14.3, 'Vous avez donné l’angle en degrés. La relation θ = frac(λ|a) donne des radians : θ = 0,25 rad (≈ 14°).'], [4, 'Division à l’envers : θ = frac(λ|a), pas frac(a|λ).']],
+        expl: 'θ = frac(λ|a) = frac(1|4) = 0,25 rad, soit environ 14°. Les traits rouges tracés par la simulation (arcsin λ/a ≈ 14,5°) confirment que θ ≈ frac(λ|a) est une bonne approximation ici.', indice: "θ = λ ÷ a, avec λ et a dans la même unité." } },
     { id: 'porte', titre: 'On entend derrière une porte, mais on ne voit pas', focus: [],
       retenirTitre: 'À RETENIR : L’ÉCART ANGULAIRE',
       retenir: <>
@@ -292,12 +292,12 @@ export function SimulationDiffraction({ naviguer }) {
         aide: 'C’est une lecture, sans calcul : recopiez la valeur de L affichée dans « Mesures », en millimètres.', pieges: [[Lmes / 10, 'Vous avez donné L en centimètres. L’unité demandée est le millimètre.']],
         expl: `L ≈ ${nbf(Lmes, 1)} mm (valeur lue entre vos deux repères).`, indice: "Attention à l’unité demandée : le millimètre." } },
     { id: 'calculA', titre: 'En déduire la largeur de la fente', focus: ['mesures'],
-      texte: <>Pour une fente de largeur <em>a</em>, la tache centrale a pour largeur <strong>L = 2 λ D / a</strong>. Isolez <em>a</em> et calculez-la en micromètres (<em>λ</em> = 532{NB}nm, <em>D</em> = 2,00{NB}m, <em>L</em> = {nbf(Lmes, 1)}{NB}mm mesurée à l’étape précédente).</>,
+      texte: <>Pour une fente de largeur <em>a</em>, la tache centrale a pour largeur <strong>L = {avecIndices('frac(2λD|a)')}</strong>. Isolez <em>a</em> et calculez-la en micromètres (<em>λ</em> = 532{NB}nm, <em>D</em> = 2,00{NB}m, <em>L</em> = {nbf(Lmes, 1)}{NB}mm mesurée à l’étape précédente).</>,
       tache: { type: 'num', q: 'Largeur a de la fente', unite: 'µm', vrai: aCalc, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
         bloque: laserDeBase && pointe ? null : 'Placez d’abord les repères sur les extinctions.',
-        calcul: () => ['Hypothèses : petits angles et écran loin de la fente. La relation L = 2λD/a donne a = 2λD / L.',
+        calcul: () => ['Hypothèses : petits angles et écran loin de la fente. La relation L = frac(2λD|a) donne a = frac(2λD|L).',
           `Unités SI : λ = 532 nm = 532 × 10⁻⁹ m ; D = 2,00 m ; L = ${nbf(Lmes, 1)} mm = ${nbf(Lmes, 1)} × 10⁻³ m.`,
-          `a = 2 × 532 × 10⁻⁹ × 2,00 / (${nbf(Lmes, 1)} × 10⁻³) = ${nbf(aCalc * 1e-6 * 1e4, 2)} × 10⁻⁴ m = ${nbf(aCalc, 0)} µm.`],
+          `a = frac(2 × 532 × 10⁻⁹ × 2,00|${nbf(Lmes, 1)} × 10⁻³) = ${nbf(aCalc * 1e-6 * 1e4, 2)} × 10⁻⁴ m = ${nbf(aCalc, 0)} µm.`],
         pieges: [[aCalc / 2, 'Il manque le facteur 2 : L = 2λD/a, donc a = 2λD/L.'], [aCalc * 1e-6, 'Vérifiez l’unité : le résultat est à donner en micromètres (1 µm = 10⁻⁶ m).'], [aCalc * 2, 'Un facteur 2 en trop : a = 2λD/L.']],
         expl: 'a = 2λD/L : la fente mesure environ un dixième de millimètre (valeur exacte : 100 µm ; l’écart vient du pointé).', indice: "L = 2λD ÷ a, donc a = 2λD ÷ L, avec toutes les longueurs dans la même unité." } },
     { id: 'fil', titre: 'Et si c’était un fil ?', focus: ['reglages', 'ecran'],
@@ -318,12 +318,12 @@ export function SimulationDiffraction({ naviguer }) {
         <Formule><mi>L</mi><mo>=</mo><mfrac><mrow><mn>2,44</mn><mi>λ</mi><mi>D</mi></mrow><mi>d</mi></mfrac><mspace width="1.2em"/><mtext>(trou)</mtext></Formule>
         {puces(<>Convertir en <strong>unités SI</strong> avant de calculer : nm → 10⁻⁹ m, µm → 10⁻⁶ m, mm → 10⁻³ m.</>, <>Un <strong>obstacle</strong> (fil) donne la même figure qu’une <strong>ouverture</strong> de mêmes dimensions (sauf au centre).</>, <>Plus l’objet est petit, plus L est grand : la diffraction est plus marquée.</>)}
       </>,
-      texte: <>Pour un trou circulaire, la tache centrale (disque d’Airy) a pour diamètre <strong>L = 2,44 λ D / d</strong>. Calculez-le pour ce réglage (<em>λ</em> = 532{NB}nm, <em>D</em> = 2,00{NB}m, <em>d</em> = 100{NB}µm), en millimètres.</>,
+      texte: <>Pour un trou circulaire, la tache centrale (disque d’Airy) a pour diamètre <strong>L = {avecIndices('frac(2,44·λ·D|d)')}</strong>. Calculez-le pour ce réglage (<em>λ</em> = 532{NB}nm, <em>D</em> = 2,00{NB}m, <em>d</em> = 100{NB}µm), en millimètres.</>,
       tache: { type: 'num', q: 'Diamètre L de la tache centrale', unite: 'mm', vrai: M.largeurTrou(100e-6, 532e-9, 2) * 1e3, tol: 0.03, affiche: v => nbf(v, 1), cs: 3,
-        calcul: () => ['Hypothèses : petits angles, écran loin du trou. Relation donnée : L = 2,44 λ D / d.', 'Unités SI : λ = 532 × 10⁻⁹ m ; D = 2,00 m ; d = 100 × 10⁻⁶ m.',
-          'L = 2,44 × 532 × 10⁻⁹ × 2,00 / (100 × 10⁻⁶) = 2,60 × 10⁻² m = 26,0 mm.'],
+        calcul: () => ['Hypothèses : petits angles, écran loin du trou. Relation donnée : L = frac(2,44·λ·D|d).', 'Unités SI : λ = 532 × 10⁻⁹ m ; D = 2,00 m ; d = 100 × 10⁻⁶ m.',
+          'L = frac(2,44 × 532 × 10⁻⁹ × 2,00|100 × 10⁻⁶) = 2,60 × 10⁻² m = 26,0 mm.'],
         pieges: [[21.3, 'Ici l’objet est un trou circulaire : le coefficient est 2,44 et non 2.'], [26000, 'Vérifiez les unités : le résultat est à donner en millimètres.']],
-        expl: 'L = 2,44 × 532 × 10⁻⁹ × 2,00 / (100 × 10⁻⁶) ≈ 26,0 mm : plus large qu’avec une fente de même dimension (21,3 mm).', indice: "Pour un trou circulaire : L = 2,44 × λ × D ÷ d, avec D la distance à l’écran." } },
+        expl: 'L = frac(2,44 × 532 × 10⁻⁹ × 2,00|100 × 10⁻⁶) ≈ 26,0 mm : plus large qu’avec une fente de même dimension (21,3 mm).', indice: "Pour un trou circulaire : L = 2,44 × λ × D ÷ d, avec D la distance à l’écran." } },
     { id: 'poids', titre: 'D’où vient l’incertitude ?', focus: ['incert'],
       texte: <>Revenez à la fente de 100{NB}µm (bouton ci-dessous). Le panneau « Incertitude » donne le poids de chaque source (pointé de <em>L</em>, mesure de <em>D</em>, longueur d’onde du laser) dans l’incertitude-type sur <em>a</em>.</>,
       tache: { type: 'action', ok: laserDeBase && pointe, label: 'Revenir à la fente et pointer', faire: () => { setScene('laser'); { const Lf = M.largeurFente(100e-6, 532e-9, 2) * 1e3; setL({ objet: 'fente', a: 100, lam: 532, D: 2, zoom: 0, x1: -Lf / 2, x2: Lf / 2 }); }; }, consigne: 'Fente de 100 µm, repères sur les extinctions' } },
@@ -436,10 +436,10 @@ export function SimulationDiffraction({ naviguer }) {
           : !isFinite(lireNombre(defi.reps.a)) ? '✗ Entrez un nombre (en µm) pour le diamètre.'
           : proche(lireNombre(defi.reps.a), defi.snapA, 0.03)
             ? `✗ Votre calcul est juste pour L = ${nbf(defi.snapL, 1)} mm, mais ce L est trop ${defi.snapL < Lp ? 'petit' : 'grand'} : le pointé est éloigné des centres des extinctions. Repointez, avec un zoom plus fort si besoin.`
-            : `✗ Cette valeur ne correspond pas à votre mesure : avec L = ${nbf(defi.snapL, 1)} mm, D = ${nbf(defi.snapD, 2)} m et λ = ${defi.lam} nm, la relation a = 2λD / L donne ${nbf(defi.snapA, 0)} µm. Vérifiez le calcul et les unités.`}</div>
+            : `✗ Cette valeur ne correspond pas à votre mesure : avec L = ${nbf(defi.snapL, 1)} mm, D = ${nbf(defi.snapD, 2)} m et λ = ${defi.lam} nm, la relation a = frac(2λD|L) donne ${nbf(defi.snapA, 0)} µm. Vérifiez le calcul et les unités.`}</div>
         {!dres.aOk && !defi.corr && <button onClick={() => setDefi(d => ({ ...d, corr: true }))} style={{ ...stylePetitBouton(false, '#475569'), marginTop: 6 }}>Voir la correction</button>}
         {!dres.aOk && defi.corr && <div style={{ ...styleBoite, marginTop: 6, fontWeight: 400, color: KIT.txt }}>
-          <b>Correction.</b> Le diamètre réel du fil est <b>{nbf(defi.a, 0)} µm</b> (annonce : {defi.nom} µm). Pour D = {nbf(defi.snapD, 2)} m et λ = {defi.lam} nm, la tache centrale mesure L = 2λD / a ≈ <b>{nbf(M.largeurTache('fil', defi.a * 1e-6, defi.lam * 1e-9, defi.snapD) * 1e3, 1)} mm</b> ; vous avez pointé {nbf(defi.snapL, 1)} mm. Avec votre pointé, a = 2λD / L = {nbf(defi.snapA, 0)} µm. Un pointé précis (centres des extinctions, zoom plus fort ou écran plus éloigné) donne un résultat plus proche de la valeur réelle.
+          <b>Correction.</b> Le diamètre réel du fil est <b>{nbf(defi.a, 0)} µm</b> (annonce : {defi.nom} µm). Pour D = {nbf(defi.snapD, 2)} m et λ = {defi.lam} nm, la tache centrale mesure L = {avecIndices('frac(2λD|a)')} ≈ <b>{nbf(M.largeurTache('fil', defi.a * 1e-6, defi.lam * 1e-9, defi.snapD) * 1e3, 1)} mm</b> ; vous avez pointé {nbf(defi.snapL, 1)} mm. Avec votre pointé, a = {avecIndices('frac(2λD|L)')} = {nbf(defi.snapA, 0)} µm. Un pointé précis (centres des extinctions, zoom plus fort ou écran plus éloigné) donne un résultat plus proche de la valeur réelle.
         </div>}
         {dres.aOk && <div style={{ color: dres.vOk ? '#15803d' : '#dc2626' }}>{dres.vOk ? '✓ Conclusion cohérente avec le critère 2 u(a).' : `✗ Conclusion : comparez |a mesuré − ${defi.nom}| à 2 u(a) = ${dres.u != null ? nbf(2 * dres.u * 1e6, 1) : '?'} µm (panneau « Incertitude »).`}</div>}
         {dres.ok && <div style={{ color: KIT.txt2, fontWeight: 400 }}>Diamètre réel du fil dans la simulation : {nbf(defi.a, 1)} µm (annonce : {defi.nom} µm). {Math.abs(defi.a - defi.nom) < 0.2
@@ -582,7 +582,7 @@ export function SimulationDiffraction({ naviguer }) {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>À essayer</div>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
         <li>Cuve : fixez <em>a</em> et augmentez <em>λ</em> jusqu’à ce que λ dépasse <em>a</em> : que devient la zone derrière le mur ?</li>
-        <li>Cuve : cherchez deux réglages différents qui donnent la même ouverture θ. Que remarquez-vous sur le rapport λ / a ?</li>
+        <li>Cuve : cherchez deux réglages différents qui donnent la même ouverture θ. Que remarquez-vous sur le rapport {avecIndices('frac(λ|a)')} ?</li>
         <li>Laser : doublez la largeur de la fente. Comment varie L ? Et si vous passez du laser rouge au laser violet ?</li>
         <li>Laser : éloignez l’écran de 1 m à 4 m : que devient L ? Que devient le poids de L dans l’incertitude ?</li>
         <li>Laser : comparez fente, fil et trou de même dimension. Qu’est-ce qui distingue le trou ?</li>
@@ -593,8 +593,8 @@ export function SimulationDiffraction({ naviguer }) {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>diffraction : étalement des directions d’une onde limitée par une ouverture ou un obstacle (ondes mécaniques et lumineuses)</li>
-        <li>d’autant plus marquée que λ est grande ou que a est petit : θ ≈ λ / a</li>
-        <li>fente ou fil : L = 2 λ D / a ; trou circulaire : L = 2,44 λ D / d</li>
+        <li>d’autant plus marquée que λ est grande ou que a est petit : θ ≈ {avecIndices('frac(λ|a)')}</li>
+        <li>fente ou fil : L = {avecIndices('frac(2λD|a)')} ; trou circulaire : L = {avecIndices('frac(2,44·λ·D|d)')}</li>
       </ul>
     </ARetenir>);
 

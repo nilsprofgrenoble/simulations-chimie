@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi, avecIndices } from "../commun";
 import { G, ASTRES, astre, gravite, forceGrav, fr, sci, PX_CM, ECHELLES, caracteristiques, conforme } from "./forcesModele";
 import { Pic } from "../Pictos";
 import { Schema, Fl, T, TV, GRIS, NOIR } from "./Travail";
@@ -213,7 +213,7 @@ function PanneauPoids({ pw, setPw, verrouAstre, mode = 'explore', etape = '' }) 
               [`À l’altitude ${pw.h} km : g = G·M/(R + h)²`, `${fr(g, 2)} N/kg`]] : [])].map(([l, v]) => <tr key={l} style={{ borderTop: '1px solid #e2e8f0' }}><td style={{ padding: '3px 6px 3px 0', color: KIT.txt2 }}>{l}</td><td style={{ fontWeight: 700 }}>{v}</td></tr>)}</tbody></table>}
           {montreCalcul && <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 8, background: '#f0fdfa', border: '1.5px solid #5eead4' }}>
             Force exercée par {a.nom} sur l’objet : <strong>F = {fr(F, F < 10 ? 2 : 1)} N</strong><br/>
-            <span style={{ fontSize: 13, color: KIT.txt2 }}>F = G × M × m / (R + h)² = {fr(pw.m * g, F < 10 ? 2 : 1)} N, soit m × g.{pw.h === 0 ? ' À la surface, c’est le poids de l’objet.' : ' Elle diminue quand l’altitude augmente, mais ne disparaît pas.'}</span></div>}
+            <span style={{ fontSize: 13, color: KIT.txt2 }}>F = {avecIndices('frac(G × M × m|(R + h)²)')} = {fr(pw.m * g, F < 10 ? 2 : 1)} N, soit m × g.{pw.h === 0 ? ' À la surface, c’est le poids de l’objet.' : ' Elle diminue quand l’altitude augmente, mais ne disparaît pas.'}</span></div>}
         </div>
       </div>
     </div>);
@@ -271,7 +271,7 @@ function VoletDefi({ defi, setDefi, changerType, vec }) {
       <IndiceDefi cache={reussi}>{defi.type === 'lire' ? <>Mesure la flèche avec la grille (1 carreau = 1 cm), puis : intensité = longueur (en cm) × valeur d’1 cm.</>
         : defi.type === 'tracer' ? <>Longueur de la flèche (en cm) = intensité ÷ valeur d’1 cm. Place ensuite la pointe en respectant la direction et le sens demandés.</>
         : defi.variante === 'g' ? <>Formule du poids : P = m × g, avec m en kg et g en N/kg.</>
-        : <>F = G × M × m / R², avec R en mètres. Écris les puissances de dix à part et regroupe-les à la fin.</>}</IndiceDefi>
+        : <>F = {avecIndices('frac(G × M × m|R²)')}, avec R en mètres. Écris les puissances de dix à part et regroupe-les à la fin.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={verifier} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
         <button onClick={() => changerType(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau tirage</button>
@@ -330,7 +330,7 @@ export function SimulationForcesVecteurs() {
       tache: { type: 'qcm', q: 'L’action de l’aimant sur la bille d’acier est une action…', options: ['à distance', 'de contact', 'nulle', 'de contact, car la bille est posée sur la table'], bonne: 0, expl: 'L’aimant ne touche pas la bille : c’est une action à distance, comme l’attraction de la Terre sur une pomme.', indice: 'L’aimant touche-t-il la bille ? Compare avec la Terre, qui attire une pomme sans la toucher.' } },
     { id: 'force', titre: 'On modélise l’action par une force', depart: () => voirVec('caisse', 100, 3, 0),
       texte: <>En physique, on <strong>modélise</strong> une action mécanique par une <strong>force</strong>, représentée par un <strong>vecteur</strong> (une flèche). Une force est caractérisée par <strong>4 informations</strong> : son <strong>point d’application</strong>, sa <strong>direction</strong>, son <strong>sens</strong>, son <strong>intensité</strong> (en newtons, N). La <strong>longueur</strong> de la flèche est proportionnelle à l’intensité : il faut une <strong>échelle</strong>.
-        <ExempleResolu>Un homme pousse une caisse avec une force de 300 N, horizontale, vers la droite. Échelle : <strong>1 cm ↔ 100 N</strong>. Longueur de la flèche : 300 / 100 = <strong>3 cm</strong>. La flèche part du point de contact.
+        <ExempleResolu>Un homme pousse une caisse avec une force de 300 N, horizontale, vers la droite. Échelle : <strong>1 cm ↔ 100 N</strong>. Longueur de la flèche : {avecIndices('frac(300|100)')} = <strong>3 cm</strong>. La flèche part du point de contact.
           {bouton('Voir cet exemple', () => voirVec('caisse', 100, 3, 0))}</ExempleResolu>
         À vous : l’homme <strong>tire</strong> maintenant la caisse <strong>vers la gauche</strong> avec 200 N (même échelle).</>,
       tache: { type: 'action', ok: bon('caisse', 100, 200, 180), consigne: 'Tracez le vecteur force : 200 N, horizontale, vers la gauche, à l’échelle 1 cm ↔ 100 N (glissez la pointe de la flèche ou utilisez les curseurs).' } },
@@ -370,7 +370,7 @@ export function SimulationForcesVecteurs() {
       tache: { type: 'qcm', q: 'Laquelle de ces écritures est correcte ?', options: ['F = 5 N', <span key="v1"><Vec/> = 5 N</span>, 'F = 5', <span key="v2"><Vec/> = 5 N/m</span>], bonne: 0, expl: 'L’intensité est un nombre avec une unité : F = 5 N. Le vecteur force a une direction et un sens, il n’est pas égal à un nombre.', indice: "L’intensité d’une force est un nombre suivi d’une unité. Quelle est l’unité d’une force ? Un vecteur, lui, a aussi une direction et un sens : peut-il être égal à un simple nombre ?" } },
     { id: 'oblique', titre: 'Une force oblique', depart: () => voirVec('ballon', 50, 0, 30),
       texte: <>Une force n’est pas toujours horizontale ou verticale. L’angle indique la <strong>direction</strong>, la pointe de la flèche le <strong>sens</strong>.
-        <ExempleResolu>Un tir à 30° vers le haut et la droite, de 150 N, échelle 1 cm ↔ 50 N : longueur = 150 / 50 = 3 cm, la flèche fait 30° avec l’horizontale.</ExempleResolu>
+        <ExempleResolu>Un tir à 30° vers le haut et la droite, de 150 N, échelle 1 cm ↔ 50 N : longueur = {avecIndices('frac(150|50)')} = 3 cm, la flèche fait 30° avec l’horizontale.</ExempleResolu>
         À vous : tracez le tir du footballeur : <strong>200 N</strong>, direction à <strong>30°</strong> au-dessus de l’horizontale, vers la droite. Échelle : <strong>1 cm ↔ 50 N</strong>.</>,
       tache: { type: 'action', ok: bon('ballon', 50, 200, 30), consigne: 'Tracez le vecteur force : 200 N, 30° au-dessus de l’horizontale, vers la droite, échelle 1 cm ↔ 50 N.' } },
     { id: 'retenir1', titre: 'À retenir : la force', depart: null,
@@ -467,24 +467,24 @@ export function SimulationForcesVecteurs() {
           <li>La <strong>masse</strong> est la même partout ; le <strong>poids</strong> change avec l’astre. <strong>Hypothèses :</strong> astre sphérique, rotation négligée.</li>
         </ul>
       </>,
-      texte: <>Deux objets de masses m<sub>A</sub> et m<sub>B</sub>, dont les centres sont distants de d, s’attirent avec des forces de même intensité : <strong>F = G × m<sub>A</sub> × m<sub>B</sub> / d²</strong>, avec G = {sci(G)} N·m²·kg⁻². Le poids est cette force pour un objet proche de la surface d’un astre. En <strong>vecteurs</strong>, la force exercée par A sur B est dirigée vers A : <Fn a="A" r="B" vec/> = − (G × m<sub>A</sub> × m<sub>B</sub> / d²) <Vec c="u"/>, avec <Vec c="u"/> le vecteur de longueur 1 dirigé de A vers B.
+      texte: <>Deux objets de masses m<sub>A</sub> et m<sub>B</sub>, dont les centres sont distants de d, s’attirent avec des forces de même intensité : <strong>F = {avecIndices('frac(G × m_A × m_B|d²)')}</strong>, avec G = {sci(G)} N·m²·kg⁻². Le poids est cette force pour un objet proche de la surface d’un astre. En <strong>vecteurs</strong>, la force exercée par A sur B est dirigée vers A : <Fn a="A" r="B" vec/> = − ({avecIndices('frac(G × m_A × m_B|d²)')}) <Vec c="u"/>, avec <Vec c="u"/> le vecteur de longueur 1 dirigé de A vers B.
         <ExempleResolu>Si la distance d <strong>double</strong>, d² est multiplié par 4 : la force est <strong>divisée par 4</strong>. Regardez la valeur de g quand vous augmentez l’altitude.</ExempleResolu></>,
-      tache: { type: 'qcm', q: 'Si la distance entre deux astres est multipliée par 3, la force gravitationnelle…', options: ['est divisée par 9', 'est divisée par 3', 'est multipliée par 3', 'ne change pas'], bonne: 0, expl: 'F est proportionnelle à 1/d² : d × 3 donne F / 9.', indice: "La force gravitationnelle est F = G × M × m / d². Essaie avec une distance d, puis avec 3 d : que devient le dénominateur ?" } },
+      tache: { type: 'qcm', q: 'Si la distance entre deux astres est multipliée par 3, la force gravitationnelle…', options: ['est divisée par 9', 'est divisée par 3', 'est multipliée par 3', 'ne change pas'], bonne: 0, expl: 'F est proportionnelle à 1/d² : d × 3 donne frac(F|9).', indice: "La force gravitationnelle est F = frac(G × M × m|d²). Essaie avec une distance d, puis avec 3 d : que devient le dénominateur ?" } },
     { id: 'iss', titre: '★ La Station spatiale : le poids disparaît-il ?', depart: () => voirPoids('terre', 1, 400),
       texte: <>La Station spatiale internationale orbite à 400 km d’altitude. Les astronautes « flottent » : a-t-on <em>plus de gravité</em> là-haut ? Regardez avec l’altitude réglée à 400 km…
-        <ExempleResolu>À la surface, g = 9,8 N/kg. À 400 km, g = G M / (R + h)² ≈ 8,7 N/kg : la gravité n’a presque pas diminué. Les astronautes flottent parce que la station et eux <strong>tombent ensemble</strong> autour de la Terre (chute libre), pas parce que la gravité a disparu.</ExempleResolu></>,
+        <ExempleResolu>À la surface, g = 9,8 N/kg. À 400 km, g = {avecIndices('frac(G M|(R + h)²)')} ≈ 8,7 N/kg : la gravité n’a presque pas diminué. Les astronautes flottent parce que la station et eux <strong>tombent ensemble</strong> autour de la Terre (chute libre), pas parce que la gravité a disparu.</ExempleResolu></>,
       tache: { type: 'num', q: 'Quelle est la force exercée par la Terre sur un objet de 1 kg à 400 km d’altitude ? (regardez la simulation)', unite: 'N', vrai: 8.7, tol: 0.03, affiche: x => fr(x, 1),
         pieges: [[gravite(astre('terre'), 0), 'C’est la valeur au sol (g = 9,8 N/kg). À 400 km, on est plus loin du centre de la Terre : la distance à utiliser est R + h.'],
           [0, 'La gravité n’a pas disparu à 400 km : elle vaut encore presque autant qu’au sol. Les astronautes flottent parce qu’ils tombent (chute libre).']],
         calcul: () => {
           const T = astre('terre'), d = T.R + 4e5, g = gravite(T, 4e5);
           return [
-            'La force de la Terre sur l’objet est son poids à cette altitude : F = m × g, avec g = G × M / (R + h)² (Terre supposée sphérique).',
+            'La force de la Terre sur l’objet est son poids à cette altitude : F = m × g, avec g = frac(G × M|(R + h)²) (Terre supposée sphérique).',
             `Distance au centre de la Terre : R + h = 6 378 km + 400 km = 6 778 km = ${sci(d, 3)} m (on convertit en mètres).`,
-            `g = G × M / (R + h)² = ${sci(G, 2)} × ${sci(T.M, 2)} / (${sci(d, 3)})² = ${fr(g, 1)} N/kg.`,
+            `g = frac(G × M|(R + h)²) = frac(${sci(G, 2)} × ${sci(T.M, 2)}|(${sci(d, 3)})²) = ${fr(g, 1)} N/kg.`,
             `F = m × g = 1 × ${fr(g, 1)} = ${fr(g, 1)} N.`];
         },
-        expl: 'F = G M m / (R + h)² ≈ 8,7 N : presque autant qu’au sol (9,8 N). L’impesanteur vient de la chute libre.', indice: "Cette force est le poids de l’objet : P = m × g. Lis la valeur de g à 400 km dans la simulation (curseur d’altitude)." } },
+        expl: 'F = frac(G M m|(R + h)²) ≈ 8,7 N : presque autant qu’au sol (9,8 N). L’impesanteur vient de la chute libre.', indice: "Cette force est le poids de l’objet : P = m × g. Lis la valeur de g à 400 km dans la simulation (curseur d’altitude)." } },
     { id: 'fin', titre: 'Bravo ! Le bilan', depart: null,
       retenirTitre: 'À RETENIR : LA GRAVITATION',
       retenir: <>
@@ -502,7 +502,7 @@ export function SimulationForcesVecteurs() {
         <Formule><mi>F</mi><mo>=</mo><mfrac><mrow><mi>G</mi><mo>×</mo><msub><mi>m</mi><mtext>A</mtext></msub><mo>×</mo><msub><mi>m</mi><mtext>B</mtext></msub></mrow><msup><mi>d</mi><mn>2</mn></msup></mfrac></Formule>
         <Formule><mi>G</mi><mo>=</mo><mn>6,67</mn><mo>×</mo><msup><mn>10</mn><mrow><mo>−</mo><mn>11</mn></mrow></msup><mtext> N·m²·kg⁻²</mtext></Formule>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>En vecteurs :</strong> <Fn a="A" r="B" vec/> = − (G × m<sub>A</sub> × m<sub>B</sub> / d²) <Vec c="u"/>, où <Vec c="u"/> est le vecteur de longueur 1 dirigé de A vers B : la force sur B est dirigée vers A.</li>
+          <li><strong>En vecteurs :</strong> <Fn a="A" r="B" vec/> = − ({avecIndices('frac(G × m_A × m_B|d²)')}) <Vec c="u"/>, où <Vec c="u"/> est le vecteur de longueur 1 dirigé de A vers B : la force sur B est dirigée vers A.</li>
           <li>d est la distance entre les <strong>centres</strong>, en <strong>mètres</strong>. À 400 km d’altitude, g ≈ 8,7 N·kg⁻¹ (contre 9,8 au sol) : la gravité n’a pas disparu.</li>
         </ul>
       </>,
