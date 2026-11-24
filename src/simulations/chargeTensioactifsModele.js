@@ -24,9 +24,9 @@ export const ESPECES = [
     groupes: [{ type: 'fixe', q: 1, texte: 'N⁺(CH₃)₃' }] },
   { id: 'amine', nom: 'chlorure de dodécylammonium', court: 'dodécylammonium', famille: 'cationique', sous: 'ammonium primaire', formule: 'C₁₂H₂₅–NH₃⁺ Cl⁻',
     groupes: [{ type: 'base', pKa: 10.6, formes: ['NH₃⁺', 'NH₂'] }] },
-  { id: 'betaine', nom: 'N-dodécylbétaïne', court: 'dodécylbétaïne', famille: 'amphotère', sous: 'bétaïne', formule: 'R–N⁺(CH₃)₂–CH₂–COO⁻',
+  { id: 'betaine', nom: 'N-dodécylbétaïne', court: 'dodécylbétaïne', famille: 'zwitterionique (amphotère)', sous: 'bétaïne', formule: 'R–N⁺(CH₃)₂–CH₂–COO⁻',
     groupes: [{ type: 'fixe', q: 1, texte: 'N⁺(CH₃)₂' }, { type: 'acide', pKa: 2.0, formes: ['COOH', 'COO⁻'] }] },
-  { id: 'alanine', nom: 'N-dodécyl-β-alanine', court: 'dodécyl-β-alanine', famille: 'amphotère', sous: 'amino-acide', formule: 'R–NH₂⁺–CH₂CH₂–COO⁻',
+  { id: 'alanine', nom: 'N-dodécyl-β-alanine', court: 'dodécyl-β-alanine', famille: 'zwitterionique (amphotère)', sous: 'amino-acide', formule: 'R–NH₂⁺–CH₂CH₂–COO⁻',
     groupes: [{ type: 'base', pKa: 10.2, formes: ['NH₂⁺', 'NH'] }, { type: 'acide', pKa: 3.6, formes: ['COOH', 'COO⁻'] }] },
   { id: 'age', nom: 'dodécanol éthoxylé (alcool gras polyéthoxylé)', court: 'dodécanol éthoxylé', famille: 'non ionique', sous: 'polyéther', formule: 'R–(OCH₂CH₂)ₙ–OH',
     groupes: [] },
@@ -79,11 +79,11 @@ export function bilan(e) {
   }
   return { sPlus, sMoins, deux, zero, nettePlus, netteMoins };
 }
-// famille déduite de la structure (règle de la simulation) : aucune charge possible → non ionique ; une seule sorte → ionique ; deux sortes → amphotère
+// famille déduite de la structure (règle de la simulation) : aucune charge possible → non ionique ; une seule sorte → anionique ou cationique ; deux sortes → amphotère
 export function familleDeduite(e) {
   const b = bilan(e);
   if (!b.sPlus && !b.sMoins) return 'non ionique';
-  if (b.sPlus && b.sMoins) return 'amphotère';
+  if (b.sPlus && b.sMoins) return 'zwitterionique (amphotère)';
   return b.sMoins ? 'anionique' : 'cationique';
 }
 // pH où une charge donnée (+ ou −) a sa moitié de valeur : pKa du groupe concerné

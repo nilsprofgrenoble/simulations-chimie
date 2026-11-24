@@ -109,7 +109,7 @@ const svgBase = (h, aria, kids) => <svg viewBox={`0 0 420 ${h}`} width="100%" ro
 const mini = (x, y, tete, signe) => <g transform={`translate(${x},${y})`}><Mono tete={tete} long={30}/>{signe && <text x="0" y="3.5" fontSize="10" fontWeight="700" textAnchor="middle" fill="white">{signe}</text>}</g>;
 
 export function SvgFamilles() {
-  const F = [['anionique', 'anionique (−)', 'SDS', '−'], ['cationique', 'cationique (+)', 'CTAB', '+'], ['amphotère', 'amphotère (+ et −)', 'sulfobétaïne', '±'], ['non ionique', 'non ionique (0)', 'maltoside', '']];
+  const F = [['anionique', 'anionique (−)', 'SDS', '−'], ['cationique', 'cationique (+)', 'CTAB', '+'], ['amphotère', 'zwitterionique (+ et −)', 'sulfobétaïne', '±'], ['non ionique', 'non ionique (0)', 'maltoside', '']];
   return svgBase(170, 'Les quatre familles de tensioactifs selon la tête polaire', <>
     {F.map(([c, nom, ex, sg], i) => <g key={c}>{mini(55 + i * 103, 70, teteDe(c), sg)}{T(55 + i * 103, 102, nom, { gras: true, size: 12 })}{T(55 + i * 103, 120, ex, { fill: COUL.gris, size: 12 })}</g>)}
     {T(210, 18, 'même queue hydrophobe, quatre têtes hydrophiles possibles', { size: 13 })}

@@ -72,10 +72,10 @@ export function SimulationTensioactifs() {
       retenirTitre: 'À RETENIR : LES FAMILLES', retenir: <>
         <SvgFamilles/>
         <ul style={puces}>
-          <li>On classe les tensioactifs selon la <strong>charge de leur tête</strong> : anionique (−), cationique (+), amphotère (+ et −) ou non ionique (0).</li>
-          <li>Moyen de s’en souvenir : <strong>« anionique : anion, charge − ; cationique : cation, charge + »</strong> (les amphotères portent les deux, les non ioniques aucune).</li>
+          <li>On classe les tensioactifs selon la <strong>charge de leur tête</strong> : anionique (−), cationique (+), zwitterionique ou amphotère (+ et −) ou non ionique (0). Les trois premiers sont ioniques : leur tête porte des charges.</li>
+          <li>Moyen de s’en souvenir : <strong>« anionique : anion, charge − ; cationique : cation, charge + »</strong> (les zwitterioniques portent les deux, les non ioniques aucune).</li>
         </ul></>,
-      texte: <>Les têtes hydrophiles n’ont pas toutes la même charge. On distingue les tensioactifs <strong>anioniques</strong> (tête chargée −), <strong>cationiques</strong> (+), <strong>amphotères</strong> (une charge + et une charge −, donc globalement neutre) et <strong>non ioniques</strong> (aucune charge). La tête du SDS porte une charge négative.</>,
+      texte: <>Les têtes hydrophiles n’ont pas toutes la même charge. On distingue les tensioactifs <strong>anioniques</strong> (tête chargée −), <strong>cationiques</strong> (+), <strong>zwitterioniques</strong>, dits aussi amphotères (une charge + et une charge − sur la même tête, ionique aussi, de charge nette nulle) et <strong>non ioniques</strong> (aucune charge). La tête du SDS porte une charge négative.</>,
       tache: { type: 'qcm', q: 'À quelle famille appartient le SDS ?', ...QCM.famille,
         expl: 'La tête sulfate du SDS porte une charge négative : c’est un tensioactif anionique (le contre-ion est Na⁺). Le CTAB, à tête ammonium (+), est cationique.', indice: 'Regardez la charge de la tête du schéma de la première étape.' } },
     { id: 'interface', titre: 'À la surface de l’eau', focus: ['scene'],
