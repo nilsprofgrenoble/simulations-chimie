@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi } from "../commun";
+  BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi, avecIndices } from "../commun";
 import { Fiole } from "./solutionsVue";
 import { fr, SOLUTES, soluteDe, concentration, massePeser, dissolution, teinte } from "./solutionsModele";
 import { Pic } from "../Pictos";
@@ -129,7 +129,7 @@ function VoletDefi({ defi, setDefi, changerType }) {
         <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>{[[false, 'Oui, tout se dissout'], [true, 'Non, il reste du solide']].map(([v, l]) => <button key={String(v)} onClick={() => rep('sat', v)} style={stylePetitBouton(defi.reps.sat === v, '#0ea5e9')}>{l}</button>)}</div>
         {defi.reps.sat === true && champ('g de solide restant')}</>}
       <IndiceDefi cache={reussi}>{defi.type === 'masse' ? <>Masse à peser : m = t × V, avec t en g/L et V en litres (convertis les mL).</>
-        : defi.type === 'conc' ? <>Concentration en masse : t = m / V, avec V en litres (convertis les mL).</>
+        : defi.type === 'conc' ? <>Concentration en masse : t = {avecIndices('frac(m|V)')}, avec V en litres (convertis les mL).</>
         : <>Calcule la masse maximale qui peut se dissoudre dans ce volume : solubilité × volume (en L). Compare-la à la masse introduite.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'wrap' }}>
         <button onClick={() => { suivi.essai(); setDefi(d => ({ ...d, verifie: true })); }} style={styleBouton(true, '#16a34a')}>✓ Vérifier</button>
@@ -177,13 +177,13 @@ export function SimulationDissolution() {
       retenirTitre: 'À RETENIR : SOLUTÉ, SOLVANT, SOLUTION',
       retenir: <FicheVocab/>,
       texte: <>Une solution plus ou moins « chargée » en soluté se décrit par sa <strong>concentration en masse</strong> <em>t</em> : la masse de soluté dissous dans <strong>1 litre</strong> de solution.
-        <ExempleResolu><strong>t = m / V</strong> (m en g, V en L, t en g/L). On dissout 2 g de sel dans une solution de 500 mL = 0,500 L : t = 2 / 0,500 = <strong>4 g/L</strong>. Attention : on convertit les mL en L (÷ 1000).
+        <ExempleResolu><strong>t = {avecIndices('frac(m|V)')}</strong> (m en g, V en L, t en g/L). On dissout 2 g de sel dans une solution de 500 mL = 0,500 L : t = {avecIndices('frac(2|0,500)')} = <strong>4 g/L</strong>. Attention : on convertit les mL en L (÷ 1000).
           {bouton('Voir la fiole', () => voir({ sol: 'NaCl', V: 500, m: 2 }))}</ExempleResolu>
         À vous : on dissout 0,60 g de sulfate de cuivre dans une solution de 200 mL.</>,
       tache: { type: 'num', q: 'Quelle est la concentration en masse de cette solution ?', unite: 'g/L', vrai: 3, tol: 0.02, affiche: x => String(x),
-        calcul: () => ['Formule : t = m / V, avec m en g et V en L.', 'Conversion : V = 200 mL = 200 / 1000 = 0,200 L.', 't = 0,60 / 0,200 = 3,0 g/L.'],
-        pieges: [[0.003, 'Pense à convertir 200 mL en litres : 200 mL = 0,200 L.'], [0.12, 'Pour t on divise la masse par le volume (t = m / V), on ne multiplie pas.'],
-          [0.200 / 0.60, 'Formule à l’envers : t = m / V (la masse divisée par le volume), pas V / m.']], expl: 't = 0,60 / 0,200 = 3,0 g/L.', indice: "Concentration en masse : t = m / V, avec m la masse de soluté (en g) et V le volume de solution (en L). Convertis les mL en L si besoin." } },
+        calcul: () => ['Formule : t = frac(m|V), avec m en g et V en L.', 'Conversion : V = 200 mL = frac(200|1000) = 0,200 L.', 't = frac(0,60|0,200) = 3,0 g/L.'],
+        pieges: [[0.003, 'Pense à convertir 200 mL en litres : 200 mL = 0,200 L.'], [0.12, 'Pour t on divise la masse par le volume (t = frac(m|V)), on ne multiplie pas.'],
+          [0.200 / 0.60, 'Formule à l’envers : t = frac(m|V) (la masse divisée par le volume), pas frac(V|m).']], expl: 't = frac(0,60|0,200) = 3,0 g/L.', indice: "Concentration en masse : t = frac(m|V), avec m la masse de soluté (en g) et V le volume de solution (en L). Convertis les mL en L si besoin." } },
     { id: 'masse', titre: 'Quelle masse faut-il peser ?', depart: () => voir({ sol: 'NaCl', V: 200, m: 1 }),
       retenirTitre: 'À RETENIR : CONCENTRATION EN MASSE',
       retenir: <FicheConc/>,
@@ -201,7 +201,7 @@ export function SimulationDissolution() {
       texte: <>Réglez la masse pour obtenir exactement la solution du TP. Observez la <strong>couleur</strong> : plus la solution est concentrée, plus elle est foncée.</>,
       tache: { type: 'action', ok: enGuide && P.sol === 'KMnO4' && P.V === 250 && Math.abs(tC - 0.4) < 0.005, consigne: 'Choisissez KMnO₄, fiole de 250 mL, et réglez la masse pour obtenir t = 0,40 g/L.' } },
     { id: 'protocole', titre: 'Le protocole de la fiole jaugée', depart: () => voir({ sol: 'KMnO4', V: 250, m: 0.1 }, 'protocole'),
-      texte: <>Pour que la formule <em>t = m / V</em> soit juste, le volume de la solution doit être <strong>exactement</strong> celui de la fiole. D’où un protocole précis. Réalisez-le dans l’ordre : en cas d’erreur, le message vous aide.</>,
+      texte: <>Pour que la formule <em>t = {avecIndices('frac(m|V)')}</em> soit juste, le volume de la solution doit être <strong>exactement</strong> celui de la fiole. D’où un protocole précis. Réalisez-le dans l’ordre : en cas d’erreur, le message vous aide.</>,
       tache: { type: 'action', ok: enGuide && atelier === 'protocole' && proto.n === 6, consigne: 'Cliquez sur les 6 étapes dans le bon ordre.' } },
     { id: 'pourquoi', titre: 'Pourquoi remplir à moitié ?', depart: null,
       retenirTitre: 'À RETENIR : LA FIOLE JAUGÉE',
@@ -268,7 +268,7 @@ export function SimulationDissolution() {
       </ul>
     </div>);
   const retenir = <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-    <li>soluté + solvant = solution</li><li>t = m / V (g/L) ; m = t × V</li><li>au-delà de la solubilité : solution saturée</li></ul></ARetenir>;
+    <li>soluté + solvant = solution</li><li>t = {avecIndices('frac(m|V)')} (g/L) ; m = t × V</li><li>au-delà de la solubilité : solution saturée</li></ul></ARetenir>;
   const finParcours = (
     <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>

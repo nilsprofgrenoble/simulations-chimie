@@ -201,7 +201,7 @@ function ExplicationHenry({ v, unite, dec }) {
           on sait calculer <em>de combien</em> pour une loi normale. On compare donc chaque résultat à ce qu'on attendrait, et on regarde si les points s'alignent.</p>
         <ol style={{ margin: '0 0 8px', paddingLeft: 20, fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
           <li><strong>Ranger</strong> les {n} résultats du plus petit (rang 1) au plus grand (rang {n}).</li>
-          <li><strong>Fréquence cumulée.</strong> Au rang i, on estime la proportion de résultats situés en dessous : F<sub>i</sub> = (i − 0,375) / (N + 0,25). Les nombres 0,375 et 0,25 évitent
+          <li><strong>Fréquence cumulée.</strong> Au rang i, on estime la proportion de résultats situés en dessous : F<sub>i</sub> = {avecIndices('frac(i − 0,375|N + 0,25)')}. Les nombres 0,375 et 0,25 évitent
             d'obtenir 0 % ou 100 %, que la loi normale n'atteint jamais (formule de Blom).</li>
           <li><strong>Quantile de la loi normale.</strong> On cherche le nombre u<sub>i</sub> tel que, pour une loi normale centrée réduite, une proportion F<sub>i</sub> des valeurs soit inférieure à u<sub>i</sub>.
             C'est le z-score que le résultat de rang i aurait si les données étaient parfaitement normales. Dans un tableur : LOI.NORMALE.STANDARD.INVERSE(F<sub>i</sub>).</li>
@@ -354,7 +354,7 @@ export function SimulationAptitude() {
       tache: { type: 'num', q: 'Moyenne x̄', unite: 'mg/L', vrai: mP, tol: 0.002, affiche: x => fmt(x, 2),
         calcul: () => ['Moyenne : x̄ = (somme des résultats) / (nombre de laboratoires N).',
           `Somme = ${P.map(x => fmt(x, 1)).join(' + ')} = ${fmt(P.reduce((a, b) => a + b, 0), 1)} mg/L ; N = ${P.length}.`,
-          `x̄ = ${fmt(P.reduce((a, b) => a + b, 0), 1)} / ${P.length} = ${fmt(mP, 2)} mg/L.`],
+          `x̄ = frac(${fmt(P.reduce((a, b) => a + b, 0), 1)}|${P.length}) = ${fmt(mP, 2)} mg/L.`],
         pieges: piegesLoin([[P.reduce((a, b) => a + b, 0), 'Vous avez donné la somme : il faut encore la diviser par le nombre de laboratoires (10).'],
           [P.reduce((a, b) => a + b, 0) / (P.length - 1), 'Pour une moyenne, on divise par N (10 résultats), pas par N − 1.']], mP), indice: "Moyenne arithmétique des résultats de tous les laboratoires." } },
     { id: 'ecartType', titre: 'L’écart-type expérimental', focus: [],
@@ -362,9 +362,9 @@ export function SimulationAptitude() {
       tache: { type: 'num', q: 'Écart-type expérimental s', unite: 'mg/L', vrai: sP, tol: 0.02, affiche: x => fmt(x, 2),
         calcul: () => {
           const S = P.reduce((a, b) => a + (b - mP) ** 2, 0);
-          return [`s = √[ Σ(x_i − x̄)² / (N − 1) ], calculé sur les ${P.length} résultats (le laboratoire aberrant est compris : il gonfle s).`,
+          return [`s = √[ frac(Σ(x_i − x̄)²|N − 1) ], calculé sur les ${P.length} résultats (le laboratoire aberrant est compris : il gonfle s).`,
             `Avec x̄ = ${fmt(mP, 2)} mg/L : Σ(x_i − x̄)² = ${fmt(S, 2)} mg²/L².`,
-            `Variance : s² = ${fmt(S, 2)} / (${P.length} − 1) = ${fmt(S / (P.length - 1), 2)}.`,
+            `Variance : s² = frac(${fmt(S, 2)}|${P.length} − 1) = ${fmt(S / (P.length - 1), 2)}.`,
             `s = √${fmt(S / (P.length - 1), 2)} = ${fmt(sP, 2)} mg/L.`];
         },
         pieges: [[ecartTypePop(P), 'C’est σ_n : prenez σ_n−1, qui divise par N − 1.'],
@@ -373,9 +373,9 @@ export function SimulationAptitude() {
     { id: 'z', titre: 'Le z-score d’un laboratoire', focus: [],
       texte: <>Le laboratoire {iLab + 1} (en jaune) a trouvé {fmt(P[iLab], 1)} mg/L. Rappel : x̄ = {fmt(mP, 2)} mg/L et s = {fmt(sP, 2)} mg/L (étapes précédentes).</>,
       tache: { type: 'num', q: `z-score du laboratoire ${iLab + 1}`, unite: '', vrai: zRef[iLab], tol: 0.03, affiche: x => fmt(x, 2),
-        calcul: () => ['z = (x − x̄) / s, avec x̄ et s calculés sur tous les laboratoires. Si les laboratoires sont compétents, z suit à peu près une loi normale centrée réduite (hypothèse qui justifie les seuils 2 et 3).',
+        calcul: () => ['z = frac(x − x̄|s), avec x̄ et s calculés sur tous les laboratoires. Si les laboratoires sont compétents, z suit à peu près une loi normale centrée réduite (hypothèse qui justifie les seuils 2 et 3).',
           `x − x̄ = ${fmt(P[iLab], 1)} − ${fmt(mP, 2)} = ${fmt(P[iLab] - mP, 2)} mg/L (négatif : le laboratoire trouve moins que la moyenne).`,
-          `z = ${fmt(P[iLab] - mP, 2)} / ${fmt(sP, 2)} = ${fmt(zRef[iLab], 2)} (sans unité).`],
+          `z = frac(${fmt(P[iLab] - mP, 2)}|${fmt(sP, 2)}) = ${fmt(zRef[iLab], 2)} (sans unité).`],
         pieges: [[-zRef[iLab], 'Attention au signe : c’est x − x̄. Un z négatif signifie que le laboratoire trouve moins que la moyenne.'],
           ...piegesLoin([[P[iLab] - mP, 'Il manque la division par s : z est un écart exprimé en nombre d’écarts-types.'],
             [(P[iLab] - mP) / sP ** 2, 'On divise par l’écart-type s, pas par sa variance s².']], zRef[iLab])], indice: "Le z-score exprime l’écart du résultat du laboratoire à la référence, en nombre d’écarts-types." } },
@@ -410,7 +410,7 @@ export function SimulationAptitude() {
       tache: { type: 'qcm', q: 'Avec cette formule, le laboratoire 10 est…', options: ['non satisfaisant', 'discutable', 'satisfaisant'], bonne: 0,
         expl: `Son z passe de ${fmt(zRef[9], 2)} à ${fmt(tousZ.exclu && PARCOURS.v === v ? tousZ.exclu[9] : NaN, 1)} : la même mesure, un tout autre verdict. Le choix de la formule n’est pas un détail.`, indice: "Recalculez z avec la référence et l’écart-type imposés par la formule, puis comparez à 2 et à 3." } },
     { id: 'borne', titre: 'Une limite mathématique', focus: ['alertes'],
-      texte: <>Revenez à la formule du référentiel et lisez la première alerte. Avec p laboratoires, cette formule ne peut jamais donner |z| &gt; (p − 1) / √p.</>,
+      texte: <>Revenez à la formule du référentiel et lisez la première alerte. Avec p laboratoires, cette formule ne peut jamais donner |z| &gt; {avecIndices('frac(p − 1|√p)')}.</>,
       tache: { type: 'qcm', q: 'Avec 10 laboratoires, quelle catégorie est impossible à atteindre ?', options: ['non satisfaisant : |z| ne peut pas dépasser 2,85', 'discutable', 'aucune'], bonne: 0,
         expl: 'Avec 9 laboratoires, la borne tombe à 2,67 ; avec 5, à 1,79 : même « discutable » devient impossible. Il faut le savoir avant d’interpréter un essai à peu de participants.', indice: "Quand x̄ et s viennent des mêmes résultats, |z| est limité à (n − 1)/√n. Comparez ce maximum à 2 et à 3." } },
     { id: 'bilan2', titre: 'Le bilan', focus: [],
@@ -423,15 +423,15 @@ export function SimulationAptitude() {
         calcul: () => { const t = [...P].sort((a, b) => a - b), n = t.length;
           return [`On range les ${n} résultats par ordre croissant : ${t.map(x => fmt(x, 1)).join(' ; ')}.`,
             `N = ${n} est pair : la médiane est la moyenne des deux valeurs centrales (les ${n / 2}e et ${n / 2 + 1}e).`,
-            `Médiane = (${fmt(t[n / 2 - 1], 1)} + ${fmt(t[n / 2], 1)}) / 2 = ${fmt(medP, 2)} mg/L.`]; },
+            `Médiane = frac(${fmt(t[n / 2 - 1], 1)} + ${fmt(t[n / 2], 1)}|2) = ${fmt(medP, 2)} mg/L.`]; },
         pieges: [[mP, 'C’est la moyenne : rangez les valeurs et prenez celle du milieu (ici la moyenne des deux du milieu).']], indice: "Rangez les 10 résultats par ordre croissant. Avec n pair, faites la moyenne des deux valeurs centrales." } },
     { id: 'iso', titre: 'La norme ISO 13528', focus: ['formule'],
       texte: <>Les professionnels utilisent{FZpt}Ici, l'organisateur a utilisé un <strong>matériau de
         référence certifié</strong> : x<sub>pt</sub> = 24,0 mg/L ; et il a fixé, d'après l'exigence de la méthode, σ<sub>pt</sub> = 1,2 mg/L. Le laboratoire 10 a trouvé {fmt(P[9], 1)} mg/L. Choisissez « Norme ISO 13528 ».</>,
       tache: { type: 'num', q: 'z-score du laboratoire 10 avec cette formule', unite: '', vrai: (P[9] - 24) / 1.2, tol: 0.02, affiche: x => fmt(x, 2),
-        calcul: () => ['z = (x − x_pt) / σ_pt. Hypothèses : x_pt = 24,0 mg/L (valeur de référence du matériau certifié, supposée exacte) et σ_pt = 1,2 mg/L (fixé à l’avance, indépendant des résultats des laboratoires).',
+        calcul: () => ['z = frac(x − x_pt|σ_pt). Hypothèses : x_pt = 24,0 mg/L (valeur de référence du matériau certifié, supposée exacte) et σ_pt = 1,2 mg/L (fixé à l’avance, indépendant des résultats des laboratoires).',
           `x − x_pt = ${fmt(P[9], 1)} − ${fmt(24, 1)} = ${fmt(P[9] - 24, 1)} mg/L.`,
-          `z = ${fmt(P[9] - 24, 1)} / ${fmt(1.2, 1)} = ${fmt((P[9] - 24) / 1.2, 2)} (sans unité).`],
+          `z = frac(${fmt(P[9] - 24, 1)}|${fmt(1.2, 1)}) = ${fmt((P[9] - 24) / 1.2, 2)} (sans unité).`],
         pieges: piegesLoin([[zRef[9], 'C’est le z avec la formule du référentiel (x̄ et s des participants). Ici, utilisez x_pt = 24,0 et σ_pt = 1,2.'],
           [P[9] - 24, 'Il manque la division par σ_pt (1,2 mg/L) : z est un écart en nombre d’écarts-types.'],
           [(P[9] - 24) * 1.2, 'On divise par σ_pt, on ne multiplie pas.']], (P[9] - 24) / 1.2), indice: "Remplacez x par le résultat du laboratoire 10, puis x_pt et σ_pt par les valeurs de la formule." } },
