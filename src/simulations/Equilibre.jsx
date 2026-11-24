@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./equilibreModele";
@@ -150,9 +150,9 @@ export function SimulationEquilibre() {
     { id: 'qr', titre: 'Le quotient de réaction Qr', focus: ['scene'],
       texte: <>Autre mélange (1,00{NB}L) : [CH<sub>3</sub>COOH] = 0,20{NB}mol/L ; [HCOO<sup>−</sup>] = 0,10{NB}mol/L ; [CH<sub>3</sub>COO<sup>−</sup>] = 0,10{NB}mol/L ; [HCOOH] = 0,050{NB}mol/L. Pour une réaction A + B ⇌ C + D en solution, le <strong>quotient de réaction</strong> s’écrit {FQr}où [X] est la concentration de X en mol/L divisée par c° = 1{NB}mol/L : <em>Q</em><sub>r</sub> n’a pas d’unité. Le solvant n’intervient pas.</>,
       tache: { type: 'num', q: 'Quotient de réaction Qr du mélange de départ', unite: '(sans unité)', vrai: 0.25, tol: 0.03, affiche: v => nbf(v, 2), cs: 2,
-        calcul: () => ['Qr = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻]).', 'Qr = (0,10 × 0,050) / (0,20 × 0,10) = 0,0050 / 0,020 = 0,25 (sans unité).'],
+        calcul: () => ['Qr = frac([CH₃COO⁻] × [HCOOH]|[CH₃COOH] × [HCOO⁻]).', 'Qr = frac(0,10 × 0,050|0,20 × 0,10) = frac(0,0050|0,020) = 0,25 (sans unité).'],
         pieges: [[4.0, 'Le rapport est inversé : les produits (C et D) sont au numérateur, les réactifs (A et B) au dénominateur.'], [0.50, 'On multiplie les concentrations de deux espèces, on ne les additionne pas.'], [0.0050, 'Il manque le dénominateur : Qr est un rapport, produits sur réactifs.']],
-        expl: 'Qr = (0,10 × 0,050) / (0,20 × 0,10) = 0,25.', indice: 'Numérateur : produit des concentrations des deux produits. Dénominateur : produit des concentrations des deux réactifs.' },
+        expl: 'Qr = frac(0,10 × 0,050|0,20 × 0,10) = 0,25.', indice: 'Numérateur : produit des concentrations des deux produits. Dénominateur : produit des concentrations des deux réactifs.' },
       retenirTitre: 'À RETENIR : UNE TRANSFORMATION NON TOTALE',
       retenir: <>
         <SvgNonTotale/>
@@ -179,9 +179,9 @@ export function SimulationEquilibre() {
     { id: 'kf', titre: 'Qr dans l’état final', focus: ['mesures'],
       texte: <>Dans l’état final (équilibre), les concentrations sont celles du panneau « Mesures » : [CH<sub>3</sub>COOH] = 0,218{NB}mol/L ; [HCOO<sup>−</sup>] = 0,118{NB}mol/L ; [CH<sub>3</sub>COO<sup>−</sup>] = 0,082{NB}mol/L ; [HCOOH] = 0,032{NB}mol/L.</>,
       tache: { type: 'num', q: 'Quotient de réaction Qr dans l’état final', unite: '(sans unité)', vrai: 0.102, tol: 0.05, affiche: v => nbf(v, 3), cs: 2,
-        calcul: () => ['Qr = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻]).', 'Qr = (0,082 × 0,032) / (0,218 × 0,118) = 0,002624 / 0,025724 = 0,10 : on retrouve K (à l’arrondi des concentrations près).'],
+        calcul: () => ['Qr = frac([CH₃COO⁻] × [HCOOH]|[CH₃COOH] × [HCOO⁻]).', 'Qr = frac(0,082 × 0,032|0,218 × 0,118) = frac(0,002624|0,025724) = 0,10 : on retrouve K (à l’arrondi des concentrations près).'],
         pieges: [[9.8, 'Le rapport est inversé : produits au numérateur, réactifs au dénominateur.'], [0.25, 'Cette valeur est le Qr du mélange de départ ; il faut utiliser les concentrations de l’état final.'], [0.56, 'On multiplie les concentrations de deux espèces (produits au numérateur, réactifs au dénominateur), on ne les additionne pas.']],
-        expl: 'Qr = (0,082 × 0,032) / (0,218 × 0,118) ≈ 0,10 = K : dans l’état final, Qr est égal à K.', indice: 'Même formule qu’avant, avec les concentrations de l’état final : produits au numérateur, réactifs au dénominateur.' } },
+        expl: 'Qr = frac(0,082 × 0,032|0,218 × 0,118) ≈ 0,10 = K : dans l’état final, Qr est égal à K.', indice: 'Même formule qu’avant, avec les concentrations de l’état final : produits au numérateur, réactifs au dénominateur.' } },
     { id: 'essais', titre: 'Trois mélanges de départ différents', focus: ['scene', 'tableau'],
       texte: <>Choisissez successivement les <strong>mélanges 1, 2 et 3</strong> (boutons sous les barres). Ils ont des compositions de départ différentes. Le tableau note <em>Q</em><sub>r</sub> au départ et <em>Q</em><sub>r</sub> à l’état final.</>,
       tache: { type: 'qcm', q: 'Que constate-t-on pour Qr à l’état final ?', options: ['le même pour les trois mélanges : il vaut K', 'il dépend du mélange de départ', 'il est égal à Qr de départ pour chaque mélange', 'il vaut 1 dans tous les cas'], bonne: 0, bloque: bloqueEssais,
@@ -189,9 +189,9 @@ export function SimulationEquilibre() {
     { id: 'tau', titre: 'Le taux d’avancement final', focus: ['scene', 'mesures'],
       texte: <>Retour au premier mélange : 0,10{NB}mol de CH<sub>3</sub>COOH et 0,10{NB}mol de HCOO<sup>−</sup> dans 1,00{NB}L. Si la transformation était totale, un réactif disparaîtrait : l’avancement serait <em>x</em><sub>max</sub> = 0,10{NB}mol. Dans l’état final, [CH<sub>3</sub>COO<sup>−</sup>] = 0,024{NB}mol/L, donc l’avancement final est <em>x</em><sub>f</sub> = 0,024{NB}mol. Le <strong>taux d’avancement final</strong> est {Ftau}</>,
       tache: { type: 'num', q: 'Taux d’avancement final τ', unite: '(sans unité)', vrai: 0.24, tol: 0.04, affiche: v => nbf(v, 2), cs: 2,
-        calcul: () => ['xf = [CH₃COO⁻] × V = 0,024 mol/L × 1,00 L = 0,024 mol ; xmax = 0,10 mol.', 'τ = xf / xmax = 0,024 / 0,10 = 0,24 (soit 24 %) : τ est inférieur à 1, la transformation est non totale.'],
-        pieges: [[4.17, 'Le rapport est inversé : τ = xf / xmax, et xf est plus petit que xmax.'], [0.76, 'Cette valeur est la part de réactif restante (0,076 / 0,10), pas ce qui a réagi.'], [24, 'τ est un nombre sans unité : 24 % s’écrit 0,24.']],
-        expl: 'τ = 0,024 / 0,10 = 0,24 : seul un quart environ de l’avancement maximal est atteint.', indice: 'τ = avancement final divisé par avancement maximal, tous deux en mol.' },
+        calcul: () => ['xf = [CH₃COO⁻] × V = 0,024 mol/L × 1,00 L = 0,024 mol ; xmax = 0,10 mol.', 'τ = frac(x_f|x_max) = frac(0,024|0,10) = 0,24 (soit 24 %) : τ est inférieur à 1, la transformation est non totale.'],
+        pieges: [[4.17, 'Le rapport est inversé : τ = frac(x_f|x_max), et xf est plus petit que xmax.'], [0.76, 'Cette valeur est la part de réactif restante (frac(0,076|0,10)), pas ce qui a réagi.'], [24, 'τ est un nombre sans unité : 24 % s’écrit 0,24.']],
+        expl: 'τ = frac(0,024|0,10) = 0,24 : seul un quart environ de l’avancement maximal est atteint.', indice: 'τ = avancement final divisé par avancement maximal, tous deux en mol.' },
       retenirTitre: 'À RETENIR : À L’ÉQUILIBRE, QR = K',
       retenir: <>
         <SvgQrFinal/>
@@ -207,14 +207,14 @@ export function SimulationEquilibre() {
     { id: 'sens2', titre: 'Prévoir avant de laisser évoluer', focus: ['scene'],
       texte: <>Retour à la première réaction (K = 0,10). Nouveau mélange : [CH<sub>3</sub>COOH] = 0,050{NB}mol/L ; [HCOO<sup>−</sup>] = 0,050{NB}mol/L ; [CH<sub>3</sub>COO<sup>−</sup>] = 0,10{NB}mol/L ; [HCOOH] = 0,10{NB}mol/L.</>,
       tache: { type: 'qcm', q: 'Dans quel sens ce système évolue-t-il spontanément ?', options: ['sens inverse, car Qr = 4,0 est supérieur à K', 'sens direct, car Qr = 4,0 est supérieur à K', 'sens direct, car il y a plus de produits que de réactifs', 'pas d’évolution, car les 4 espèces sont présentes'], bonne: 0,
-        expl: 'Qr = (0,10 × 0,10) / (0,050 × 0,050) = 4,0, supérieur à K = 0,10 : le système évolue dans le sens inverse, Qr diminue jusqu’à K.', indice: 'Calculez Qr = ([C] × [D]) / ([A] × [B]) avec les quatre concentrations, puis comparez à K = 0,10.' },
+        expl: 'Qr = frac(0,10 × 0,10|0,050 × 0,050) = 4,0, supérieur à K = 0,10 : le système évolue dans le sens inverse, Qr diminue jusqu’à K.', indice: 'Calculez Qr = frac([C] × [D]|[A] × [B]) avec les quatre concentrations, puis comparez à K = 0,10.' },
       retenirTitre: 'À RETENIR : TAUX D’AVANCEMENT ET TRANSFORMATION TOTALE',
       retenir: <>
         <SvgTaux/>
         {Ftau}
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>τ = xf / xmax</strong>, sans unité, compris entre 0 et 1. <strong>τ = 1 : totale</strong> (le réactif limitant disparaît) ; <strong>τ &lt; 1 : non totale</strong> (tous les constituants présents).</li>
-          <li>Exemple de la simulation : τ = 0,024 / 0,10 = 0,24 pour K = 0,10 ; τ ≈ 1 pour K = 1,7 × 10⁹.</li>
+          <li><strong>τ = {avecIndices('frac(x_f|x_max)')}</strong>, sans unité, compris entre 0 et 1. <strong>τ = 1 : totale</strong> (le réactif limitant disparaît) ; <strong>τ &lt; 1 : non totale</strong> (tous les constituants présents).</li>
+          <li>Exemple de la simulation : τ = {avecIndices('frac(0,024|0,10)')} = 0,24 pour K = 0,10 ; τ ≈ 1 pour K = 1,7 × 10⁹.</li>
           <li>Moyen de s’en souvenir : <strong>« τ, c’est la part de l’avancement maximal réellement atteinte »</strong>.</li>
         </ul></> },
     { id: 'bilan', titre: 'Bilan', focus: [],
@@ -273,7 +273,7 @@ export function SimulationEquilibre() {
             {Object.entries(NOMS_SENS).map(([k, l]) => <button key={k} onClick={() => setDefi(d => ({ ...d, reps: { ...d.reps, [i]: k }, verifie: false }))} aria-pressed={defi.reps[i] === k}
               style={stylePetitBouton(defi.reps[i] === k, defi.verifie ? (defi.vrais[i] === k ? '#15803d' : '#dc2626') : '#475569')}>{l}</button>)}
           </div>))}
-        <IndiceDefi cache={false}>Pour chaque mélange, calculez <em>Q</em><sub>r</sub> = [CH<sub>3</sub>COO<sup>−</sup>]·[HCOOH] / ([CH<sub>3</sub>COOH]·[HCOO<sup>−</sup>]) puis comparez à K = 0,10 : <em>Q</em><sub>r</sub> &lt; K sens direct ; <em>Q</em><sub>r</sub> &gt; K sens inverse ; <em>Q</em><sub>r</sub> = K équilibre.</IndiceDefi>
+        <IndiceDefi cache={false}>Pour chaque mélange, calculez <em>Q</em><sub>r</sub> = [CH<sub>3</sub>COO<sup>−</sup>]·{avecIndices('frac([HCOOH]|[CH_3COOH]·[HCOO^−])')} puis comparez à K = 0,10 : <em>Q</em><sub>r</sub> &lt; K sens direct ; <em>Q</em><sub>r</sub> &gt; K sens inverse ; <em>Q</em><sub>r</sub> = K équilibre.</IndiceDefi>
       </> : <>
         <div style={{ ...lbl, marginBottom: 8 }}>On mélange un acide AH et une base B<sup>−</sup> (couples inconnus), <strong>0,10{NB}mol/L de chacun</strong> dans 1,00{NB}L, à température constante. La réaction s’écrit AH + B<sup>−</sup> ⇌ A<sup>−</sup> + BH. À l’état final, on mesure <strong>[A<sup>−</sup>] = {nbf(defi.x, 2)}{NB}mol/L</strong> (et [BH] = [A<sup>−</sup>]). Déterminez la constante d’équilibre K de cette réaction (2{NB}chiffres significatifs ; marge acceptée : ± 6{NB}%).</div>
         <div style={{ marginBottom: 8 }}><Barres sysId="ac" ini={{ a: 0.10, b: 0.10, c: 0, d: 0 }} cur={{ a: 0.10 - defi.x, b: 0.10 - defi.x, c: defi.x, d: defi.x }} avance smax={0.2} noms={{ A: 'AH', B: 'B⁻', C: 'A⁻', D: 'BH' }}/></div>
@@ -282,7 +282,7 @@ export function SimulationEquilibre() {
           <input value={defi.reps.v ?? ''} aria-label="Constante d’équilibre K" onKeyDown={e => e.key === 'Enter' && document.getElementById('eq-verif')?.click()} onChange={e => setDefi(d => ({ ...d, reps: { ...d.reps, v: e.target.value }, verifie: false }))} inputMode="decimal"
             style={{ width: 100, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${defi.verifie ? (defi.ok ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>(sans unité)</span>
         </div>
-        <IndiceDefi cache={false}>À l’état final, <em>Q</em><sub>r</sub> = K. Ici <em>Q</em><sub>r</sub> = [A<sup>−</sup>]·[BH] / ([AH]·[B<sup>−</sup>]), avec [A<sup>−</sup>] = [BH] = {nbf(defi.x, 2)}{NB}mol/L et [AH] = [B<sup>−</sup>] = 0,10 − {nbf(defi.x, 2)}{NB}mol/L.</IndiceDefi>
+        <IndiceDefi cache={false}>À l’état final, <em>Q</em><sub>r</sub> = K. Ici <em>Q</em><sub>r</sub> = [A<sup>−</sup>]·{avecIndices('frac([BH]|[AH]·[B^−])')}, avec [A<sup>−</sup>] = [BH] = {nbf(defi.x, 2)}{NB}mol/L et [AH] = [B<sup>−</sup>] = 0,10 − {nbf(defi.x, 2)}{NB}mol/L.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="eq-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -300,12 +300,12 @@ export function SimulationEquilibre() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Température constante</strong> (25 °C) : la constante d’équilibre K dépend de la réaction et de la température, pas de la composition. Si T change, K change : la simulation ne fait pas varier T.</li>
       <li><strong>Espèces concernées</strong> : uniquement des espèces dissoutes dans l’eau (et le solvant). Réaction 1 : acide éthanoïque CH<sub>3</sub>COOH et ion méthanoate HCOO<sup>−</sup> ; réaction 2 : acide éthanoïque et ion hydroxyde HO<sup>−</sup>. Les ions spectateurs (Na<sup>+</sup>…) n’interviennent pas. Aucune espèce solide ni gazeuse : pas de pression partielle.</li>
-      <li><strong>Activités ≈ concentrations</strong> : solutions diluées (concentrations de 0,40 mol/L au plus), on remplace l’activité de chaque espèce par [X] / c° avec c° = 1 mol/L ; Qr et K n’ont pas d’unité. Le solvant (l’eau) n’apparaît pas dans Qr.</li>
+      <li><strong>Activités ≈ concentrations</strong> : solutions diluées (concentrations de 0,40 mol/L au plus), on remplace l’activité de chaque espèce par {avecIndices('frac([X]|c°)')} avec c° = 1 mol/L ; Qr et K n’ont pas d’unité. Le solvant (l’eau) n’apparaît pas dans Qr.</li>
       <li><strong>Valeurs de K</strong> : K = 0,10 (réaction 1) et K = 1,7 × 10⁹ (réaction 2) sont des valeurs arrondies, déduites de constantes d’acidité usuelles à 25 °C (K = 10<sup>pKa(base) − pKa(acide)</sup>) ; ce sont des données, pas des résultats à retrouver.</li>
       <li><strong>Volume constant</strong> : 1,00 L, donc l’avancement en mol s’exprime avec le même nombre qu’en mol/L ; l’ajout de solutés ne change pas le volume.</li>
       <li><strong>État final = état d’équilibre</strong> : le simulateur calcule l’état où Qr = K (équation du second degré résolue numériquement). Il ne dit rien de la durée pour l’atteindre (cinétique).</li>
       <li><strong>Transformation totale</strong> : avec K = 1,7 × 10⁹, il reste quelques 10⁻⁶ mol/L de réactif, sous la précision d’affichage : on considère le réactif limitant comme disparu (τ = 1). C’est une convention de précision, pas une disparition absolue.</li>
-      <li><strong>Taux d’avancement final</strong> : défini ici seulement pour un mélange de départ sans produit, τ = x<sub>f</sub> / x<sub>max</sub>, où x<sub>max</sub> correspond à la disparition du réactif limitant.</li>
+      <li><strong>Taux d’avancement final</strong> : défini ici seulement pour un mélange de départ sans produit, τ = {avecIndices('frac(x_f|x_max)')}, où x<sub>max</sub> correspond à la disparition du réactif limitant.</li>
       <li><strong>Limites</strong> : pas de calcul de pH ni de réaction concurrente (autoprotolyse de l’eau, autres équilibres) ; interactions entre ions négligées ; la « règle » de Qr est en échelle logarithmique pour lire des valeurs très différentes.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
@@ -395,10 +395,10 @@ export function SimulationEquilibre() {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>Non totale : tous les réactifs et tous les produits présents à l’état final ; équilibre dynamique (deux réactions opposées de même vitesse)</li>
-        <li>Quotient de réaction : Qr = [C]·[D] / ([A]·[B]) (sans unité, solvant absent)</li>
+        <li>Quotient de réaction : Qr = [C]·{avecIndices('frac([D]|[A]·[B])')} (sans unité, solvant absent)</li>
         <li>Qr &lt; K : sens direct ; Qr &gt; K : sens inverse ; Qr = K : équilibre</li>
         <li>État final : Qr = K(T), indépendant de la composition initiale (à T donnée)</li>
-        <li>Taux d’avancement final : τ = xf / xmax ; τ = 1 totale, τ &lt; 1 non totale</li>
+        <li>Taux d’avancement final : τ = {avecIndices('frac(x_f|x_max)')} ; τ = 1 totale, τ &lt; 1 non totale</li>
       </ul>
     </ARetenir>);
 

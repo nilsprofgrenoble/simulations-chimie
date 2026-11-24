@@ -125,15 +125,15 @@ const FICHES = {
       <><strong>Exemple</strong> : f₁′ = 800{NB}mm et f₂′ = 20{NB}mm donnent O₁O₂ = 820{NB}mm.</>)}</>,
   gross: <><CarteGrossSVG/>{FG}
     {puces(<>G compare l’angle θ₂ sous lequel on voit l’image définitive à l’angle θ₀ sous lequel on voit l’astre à l’œil nu.</>,
-      <>θ₀ = A₁B₁ / f₁′ et θ₂ = A₁B₁ / f₂′ : on en déduit <strong>G = f₁′ / f₂′</strong>.</>,
-      <><strong>Exemple</strong> : 900 / 30 = 30. Pour augmenter G : oculaire de focale <strong>plus courte</strong>.</>)}</>,
+      <>θ₀ = A₁B₁ / f₁′ et θ₂ = A₁B₁ / f₂′ : on en déduit <strong>G = f₁{avecIndices('frac(′|f)')}₂′</strong>.</>,
+      <><strong>Exemple</strong> : {avecIndices('frac(900|30)')} = 30. Pour augmenter G : oculaire de focale <strong>plus courte</strong>.</>)}</>,
   oculaire: <><CarteOculaireSVG/>
     {puces(<>Changer d’oculaire change f₂′ : il faut <strong>refaire la mise au point</strong>, car O₁O₂ = f₁′ + f₂′ n’est plus la bonne valeur.</>,
       <>Avantage d’un oculaire plus court : G plus grand. Inconvénients : image <strong>moins lumineuse</strong> et <strong>champ plus étroit</strong>.</>,
       <><strong>Mémo</strong> : « plus de grossissement = moins de champ et moins de lumière ».</>)}</>,
   bilan: <><CarteBilanSVG/>
     {puces(<>Objectif : image intermédiaire A₁B₁ dans le plan focal image, réelle et renversée ; oculaire : loupe.</>,
-      <>Lunette afocale : F₁′ = F₂, O₁O₂ = f₁′ + f₂′ ; image définitive à l’infini ; G = f₁′ / f₂′.</>,
+      <>Lunette afocale : F₁′ = F₂, O₁O₂ = f₁′ + f₂′ ; image définitive à l’infini ; G = f₁{avecIndices('frac(′|f)')}₂′.</>,
       <>Un œil myope voit net une image plus proche : on rapproche l’oculaire de l’objectif.</>)}</>,
 };
 
@@ -187,26 +187,26 @@ export function SimulationLunette() {
         calcul: () => ['θ₀ = 2,0 mrad = 0,0020 rad.', 'A₁B₁ = f₁′ × θ₀ = 800 × 0,0020 = 1,6 mm.'], pieges: [[1600, 'Vous avez oublié de convertir θ₀ de mrad en rad : 2,0 mrad = 0,0020 rad.'], [0.0020 / 800, 'Vous avez divisé : A₁B₁ = f₁′ × θ₀.']],
         expl: 'A₁B₁ = 800 × 0,0020 = 1,6 mm.', indice: 'A₁B₁ = f₁′ × θ₀, θ₀ en radian (1 mrad = 0,001 rad).' } },
     { id: 'theta2', titre: 'L’angle sous lequel on voit l’image', focus: ['mesures'], depart: null,
-      texte: <>L’oculaire est une loupe dont l’objet A₁B₁ est dans le plan focal : l’œil voit l’image définitive sous l’angle <strong>θ₂ ≈ A₁B₁ / f₂′</strong>. Avec A₁B₁ = 1,6{NB}mm et <em>f₂′</em> = 20{NB}mm, calculez θ₂ en <strong>mrad</strong>.</>,
+      texte: <>L’oculaire est une loupe dont l’objet A₁B₁ est dans le plan focal : l’œil voit l’image définitive sous l’angle <strong>θ₂ ≈ {avecIndices('frac(A₁B₁|f₂′)')}</strong>. Avec A₁B₁ = 1,6{NB}mm et <em>f₂′</em> = 20{NB}mm, calculez θ₂ en <strong>mrad</strong>.</>,
       tache: { type: 'num', q: 'Diamètre apparent θ₂ de l’image définitive', unite: 'mrad', vrai: 80, tol: 0.03, affiche: v => fm(v, 0), carnet: 'Diamètre apparent θ₂ (avec la lunette)',
-        calcul: () => ['θ₂ ≈ A₁B₁ / f₂′ = 1,6 / 20 = 0,080 rad (A₁B₁ et f₂′ en mm).', '0,080 rad = 80 mrad.'], pieges: [[0.08, 'Valeur correcte en radian ; l’énoncé demande des mrad (× 1000).'], [1.6 / 800 * 1000, 'Vous avez divisé par f₁′ : c’est θ₀. Avec l’oculaire, on divise par f₂′.']],
-        expl: 'θ₂ ≈ 80 mrad : 40 fois plus que θ₀ = 2,0 mrad.', indice: 'θ₂ ≈ A₁B₁ / f₂′, les deux en mm ; 1 rad = 1000 mrad.' } },
+        calcul: () => ['θ₂ ≈ frac(A₁B₁|f₂′) = frac(1,6|20) = 0,080 rad (A₁B₁ et f₂′ en mm).', '0,080 rad = 80 mrad.'], pieges: [[0.08, 'Valeur correcte en radian ; l’énoncé demande des mrad (× 1000).'], [1.6 / 800 * 1000, 'Vous avez divisé par f₁′ : c’est θ₀. Avec l’oculaire, on divise par f₂′.']],
+        expl: 'θ₂ ≈ 80 mrad : 40 fois plus que θ₀ = 2,0 mrad.', indice: 'θ₂ ≈ frac(A₁B₁|f₂′), les deux en mm ; 1 rad = 1000 mrad.' } },
     { id: 'G', titre: 'Le grossissement', focus: ['mesures'], depart: null,
       retenirTitre: 'À RETENIR : LE GROSSISSEMENT', retenir: FICHES.gross,
-      texte: <>Le <strong>grossissement</strong> de la lunette est G = θ₂ / θ₀. Vous avez θ₂ = 80{NB}mrad et θ₀ = 2,0{NB}mrad. Calculez G (sans unité).</>,
+      texte: <>Le <strong>grossissement</strong> de la lunette est G = {avecIndices('frac(θ₂|θ₀)')}. Vous avez θ₂ = 80{NB}mrad et θ₀ = 2,0{NB}mrad. Calculez G (sans unité).</>,
       tache: { type: 'num', q: 'Grossissement G de la lunette', unite: '', vrai: 40, tol: 0.03, affiche: v => fm(v, 0), carnet: 'Grossissement G de la lunette',
-        calcul: () => ['G = θ₂ / θ₀ = 80 / 2,0 = 40.', 'Autre expression : G = f₁′ / f₂′ = 800 / 20 = 40.'], pieges: [[1 / 40, 'Vous avez calculé θ₀ / θ₂ : G = θ₂ / θ₀.']],
-        expl: 'G = 40 = f₁′ / f₂′ : l’image définitive est vue sous un angle 40 fois plus grand que l’objet à l’œil nu.', indice: 'G = θ₂ / θ₀, avec les deux angles en mrad.' } },
+        calcul: () => ['G = frac(θ₂|θ₀) = frac(80|2,0) = 40.', 'Autre expression : G = frac(f₁′|f₂′) = frac(800|20) = 40.'], pieges: [[1 / 40, 'Vous avez calculé frac(θ₀|θ₂) : G = frac(θ₂|θ₀).']],
+        expl: 'G = 40 = frac(f₁′|f₂′) : l’image définitive est vue sous un angle 40 fois plus grand que l’objet à l’œil nu.', indice: 'G = frac(θ₂|θ₀), avec les deux angles en mrad.' } },
     { id: 'Gq', titre: 'Agir sur le grossissement', focus: [], depart: null,
-      texte: <>La relation <strong>G = f₁′ / f₂′</strong> montre comment agir sur le grossissement d’une lunette.</>,
+      texte: <>La relation <strong>G = {avecIndices('frac(f₁′|f₂′)')}</strong> montre comment agir sur le grossissement d’une lunette.</>,
       tache: { type: 'qcm', q: 'Quel choix donne le plus grand grossissement ?', options: ['un objectif de grande focale et un oculaire de petite focale', 'un objectif de petite focale et un oculaire de grande focale', 'deux lentilles de même focale', 'un objectif de petit diamètre'], bonne: 0,
-        indice: 'G = f₁′ / f₂′ est grand quand le numérateur est grand et le dénominateur petit.', expl: 'G = f₁′ / f₂′ : on gagne en grossissement avec un objectif de grande focale et un oculaire de petite focale. Deux lentilles de même focale donnent G = 1.' } },
+        indice: 'G = frac(f₁′|f₂′) est grand quand le numérateur est grand et le dénominateur petit.', expl: 'G = frac(f₁′|f₂′) : on gagne en grossissement avec un objectif de grande focale et un oculaire de petite focale. Deux lentilles de même focale donnent G = 1.' } },
     { id: 'oculaire', titre: 'On change d’oculaire', focus: ['scene', 'reglages'], depart: dep({ io: 1, ioc: 0, dg: 820, df: 0, oeil: 'normal' }),
       texte: <>On remplace l’oculaire par un autre de distance focale <em>f₂′</em> = 10{NB}mm, sans toucher au tirage : le schéma montre que l’image n’est plus au point. Refaites la mise au point.</>,
       tache: { type: 'action', ok: enGuide && PE.ioc === 0 && M.afocale(d, f1, f2), consigne: 'Refaites la mise au point avec le nouvel oculaire.' } },
     { id: 'oculaire-q', titre: 'Intérêt et limites', focus: [], depart: null,
       retenirTitre: 'À RETENIR : CHANGER D’OCULAIRE', retenir: FICHES.oculaire,
-      texte: <>Avec l’oculaire de 10{NB}mm, le grossissement devient G = 800 / 10 = 80 : il double. Vous avez dû modifier O₁O₂ (810{NB}mm au lieu de 820{NB}mm).</>,
+      texte: <>Avec l’oculaire de 10{NB}mm, le grossissement devient G = {avecIndices('frac(800|10)')} = 80 : il double. Vous avez dû modifier O₁O₂ (810{NB}mm au lieu de 820{NB}mm).</>,
       tache: { type: 'qcm', q: 'Quel est l’inconvénient d’un oculaire de plus courte focale ?', options: ['l’image est moins lumineuse et le champ de vision plus étroit', 'l’image est renversée', 'le grossissement diminue', 'l’image n’est plus à l’infini'], bonne: 0,
         indice: 'On agrandit l’image : la même énergie lumineuse est répartie sur une image plus grande, et on ne voit qu’une petite partie du ciel.', expl: 'Un plus grand grossissement s’accompagne d’une baisse de luminosité de l’image et d’une réduction du champ (portion du ciel visible).' } },
     { id: 'myope-q', titre: 'Un observateur myope', focus: ['scene'], depart: dep({ io: 1, ioc: 1, oeil: 'myope', ...reglage(1, 1, 'normal') }),
@@ -218,7 +218,7 @@ export function SimulationLunette() {
       tache: { type: 'action', ok: enGuide && PE.oeil === 'myope' && nette && !afo, consigne: 'Réglez la lunette pour l’œil myope.' } },
     { id: 'bravo', titre: 'Bravo ! Le bilan', focus: [], depart: null,
       retenirTitre: 'À RETENIR : LE BILAN', retenir: FICHES.bilan,
-      texte: <>Vous savez décrire une lunette astronomique : image intermédiaire dans le plan focal image, lunette afocale (O₁O₂ = f₁′ + f₂′), grossissement G = f₁′ / f₂′, et adapter le réglage à un œil myope. Essayez l’exploration, puis les défis.</>, tache: null },
+      texte: <>Vous savez décrire une lunette astronomique : image intermédiaire dans le plan focal image, lunette afocale (O₁O₂ = f₁′ + f₂′), grossissement G = {avecIndices('frac(f₁′|f₂′)')}, et adapter le réglage à un œil myope. Essayez l’exploration, puis les défis.</>, tache: null },
   ];
   const etape = Math.min(guide.etape, ETAPES.length - 1);
   const IDS = ETAPES.map(e => e.id), idE = ETAPES[etape].id;
@@ -372,7 +372,7 @@ export function SimulationLunette() {
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>objet à l’infini : image intermédiaire A₁B₁ = f₁′ θ₀ dans le plan focal image de l’objectif</li>
         <li>lunette afocale : F₁′ = F₂, O₁O₂ = f₁′ + f₂′, image définitive à l’infini</li>
-        <li>G = θ₂ / θ₀ = f₁′ / f₂′ ; changer d’oculaire ⇒ refaire la mise au point ; œil myope : rapprocher l’oculaire</li>
+        <li>G = θ₂ / θ₀ = f₁{avecIndices('frac(′|f)')}₂′ ; changer d’oculaire ⇒ refaire la mise au point ; œil myope : rapprocher l’oculaire</li>
       </ul>
     </ARetenir>);
 
