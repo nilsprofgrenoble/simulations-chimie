@@ -66,6 +66,34 @@ export function SceneAlcene({ m, haut, rangs = false, relier = false, verdict = 
     </svg>);
 }
 
+// ═════════ Scène : plusieurs alcènes l'un sous l'autre, repérés par une lettre (A, B, C…) ═════════
+//  items : [{ lettre, m }] ; la double liaison de chaque molécule est dessinée avec ses quatre groupes (un seul dessin par molécule, sans choix Z/E).
+export function ListeAlcenes({ items, ariaLabel }) {
+  const H = 118, XC = [165, 275], BX = [130, 310];
+  const inverse = et => (et.match(/[A-Z][a-z]?[₀-₉]*/g) || [et]).reverse().join('');
+  return (
+    <svg viewBox={`0 0 460 ${H * items.length}`} role="img" aria-label={ariaLabel} style={base}>
+      {items.map(({ lettre, m }, r) => {
+        const oy = r * H, yc = oy + 60;
+        const groupes = [0, 1].map(k => m.g.voisins[m.c[k]].map(v => v.j).filter(j => j !== m.c[1 - k]).map((j, i) => ({ k, j, haut: i === 0 }))).flat();
+        return (
+          <g key={lettre} data-molecule={lettre}>
+            {r > 0 && <line x1="10" y1={oy} x2="450" y2={oy} stroke="#e2e8f0" strokeWidth="2"/>}
+            <circle cx="34" cy={yc} r="20" fill={COL.bleu}/><text x="34" y={yc + 8} textAnchor="middle" fontSize="23" fontWeight="800" fill="#fff">{lettre}</text>
+            {[0, 1].map(k => <g key={k}>
+              <line x1={XC[k]} y1={yc} x2={BX[k]} y2={oy + 26} stroke={COL.encre} strokeWidth="3.4" strokeLinecap="round"/>
+              <line x1={XC[k]} y1={yc} x2={BX[k]} y2={oy + 94} stroke={COL.encre} strokeWidth="3.4" strokeLinecap="round"/>
+            </g>)}
+            <line x1={XC[0]} y1={yc - 5} x2={XC[1]} y2={yc - 5} stroke={COL.encre} strokeWidth="3.4"/>
+            <line x1={XC[0]} y1={yc + 5} x2={XC[1]} y2={yc + 5} stroke={COL.encre} strokeWidth="3.4"/>
+            {XC.map((x, k) => <g key={k}><circle cx={x} cy={yc} r="14" fill="#fff" stroke="#64748b" strokeWidth="2.6"/><text x={x} y={yc + 6} textAnchor="middle" fontSize="17" fontWeight="800" fill="#475569">C</text></g>)}
+            {groupes.map((g, i) => { const et = M.etiqAlc(m, g.j); return (
+              <text key={i} data-groupe={et} x={g.k === 0 ? BX[0] - 6 : BX[1] + 6} y={g.haut ? oy + 26 : oy + 106} textAnchor={g.k === 0 ? 'end' : 'start'} fontSize="21" fontWeight="800" fill={COL.encre}>{g.k === 0 ? inverse(et) : et}</text>); })}
+          </g>);
+      })}
+    </svg>);
+}
+
 // ═════════ Cartes « À retenir » ═════════
 // A : combien de stéréoisomères ? arbre des configurations
 export function SvgNombre() {

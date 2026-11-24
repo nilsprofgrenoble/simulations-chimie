@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChoixListe } from "../ChoixListe";
+import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau } from "../chapitres";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, exParam, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
 import { txtVec } from "./FigureVecteurs";
@@ -13,6 +14,31 @@ import { TraceCourbe, verifierTrace } from "./RealiserC1";
 // Démarche travaillée : mettre en œuvre un calcul sans erreur : unités et conversions, manipulation d'une relation,
 // chiffres significatifs, fonctions usuelles, saisie à la calculatrice. Exploration seule, énoncés tirés au hasard.
 
+// Menu des exercices : un filtre « chapitre » (les exercices de calcul d'un thème du programme + les exercices transversaux : unités,
+// vecteurs, chiffres significatifs, graphiques) et, sans filtre, les formules rangées par niveau pour ne pas noyer le reste.
+const chapitreDuDomaine = d => CHAPITRES.find(c => c.domaines.includes(d)) || null;
+const estTransversal = f => !f.domaine || !chapitreDuDomaine(f.domaine);
+const nbParChapitre = (() => {
+  const m = new Map();
+  FAMILLES.forEach(f => { if (f.domaine) CHAPITRES.filter(c => c.domaines.includes(f.domaine)).forEach(c => m.set(c.id, (m.get(c.id) || 0) + 1)); });
+  return m;
+})();
+const FILTRE_TOUS = '';
+const groupesFiltre = [
+  { label: 'Tout le site', items: [{ value: FILTRE_TOUS, label: 'Tous les chapitres' }] },
+  ...NIVEAUX_CHAPITRES.map(n => ({ label: n.label, items: chapitresDuNiveau(n.key).filter(c => nbParChapitre.get(c.id)).map(c => ({ value: c.id, label: `${c.label} (${nbParChapitre.get(c.id)})` })) })).filter(g => g.items.length),
+];
+const dansFiltre = (f, chap) => !chap || estTransversal(f) || (f.domaine && CHAPITRES.find(c => c.id === chap)?.domaines.includes(f.domaine));
+function groupesExercices(chap) {
+  const item = f => ({ value: f.id, label: f.titre });
+  const liste = FAMILLES.filter(f => dansFiltre(f, chap));
+  const courts = GROUPES.filter(g => g !== 'Formules').map(g => ({ label: g, items: liste.filter(f => f.groupe === g).map(item) }));
+  const formules = liste.filter(f => f.groupe === 'Formules');
+  if (chap) return [{ label: 'Formules du chapitre', items: formules.filter(f => !estTransversal(f)).map(item) }, { label: 'Formules générales (tous chapitres)', items: formules.filter(estTransversal).map(item) }, ...courts].filter(g => g.items.length);
+  const parNiveau = NIVEAUX_CHAPITRES.map(n => ({ label: `Formules · ${n.label}`, items: formules.filter(f => !estTransversal(f) && chapitreDuDomaine(f.domaine).niveau === n.key).map(item) }));
+  return [...courts, { label: 'Formules (sans chapitre précis)', items: formules.filter(estTransversal).map(item) }, ...parNiveau].filter(g => g.items.length);
+}
+
 const Verdict = ({ ok, children }) => (
   <div role="status" style={{ fontSize: 14, marginTop: 6, fontWeight: 700, color: ok ? '#15803d' : '#b91c1c' }}>{ok ? '✅ ' : '❌ '}{children}</div>
 );
@@ -23,6 +49,13 @@ const Correction = ({ children }) => (
 export function SimulationAtelierRealiser() {
   const depart = (() => { const p = exParam(); return FAMILLES.some(f => f.id === p) ? p : 'simple'; })();
   const [choix, setChoix] = useState(depart);
+  const [chap, setChap] = useState(() => { const f = FAMILLES.find(x => x.id === depart); return f?.domaine && chapitreDuDomaine(f.domaine) && exParam() ? chapitreDuDomaine(f.domaine).id : FILTRE_TOUS; });
+  const groupes = useMemo(() => groupesExercices(chap), [chap]);
+  const changerChapitre = c => {
+    setChap(c);
+    const f = FAMILLES.find(x => x.id === choix);
+    if (!dansFiltre(f, c)) { const premier = FAMILLES.find(x => dansFiltre(x, c) && !estTransversal(x)) || FAMILLES.find(x => dansFiltre(x, c)); setChoix(premier.id); charger(premier.id); }
+  };
   const [exo, setExo] = useState(() => FAMILLES.find(f => f.id === depart).gen());
   const [rep, setRep] = useState({});
   const [chk, setChk] = useState({});
@@ -82,9 +115,11 @@ export function SimulationAtelierRealiser() {
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Réaliser</b> (REA) — mettre en œuvre un calcul sans erreur : unités et conversions, manipulation d’une relation, chiffres significatifs, fonctions de la calculatrice.</div>
       <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Chapitre :
+          <ChoixListe ariaLabel="Filtrer par chapitre" titre="Filtrer les exercices par chapitre" valeur={chap} onChoisir={changerChapitre} groupes={groupesFiltre}/>
+        </div>
         <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Exercice :
-          <ChoixListe ariaLabel="Choix de l’exercice" titre="Choisir un exercice" valeur={choix} onChoisir={v => { setChoix(v); charger(v); }}
-            groupes={GROUPES.map(g => ({ label: g, items: FAMILLES.filter(f => f.groupe === g).map(f => ({ value: f.id, label: f.titre })) }))}/>
+          <ChoixListe ariaLabel="Choix de l’exercice" titre={chap ? 'Choisir un exercice du chapitre' : 'Choisir un exercice'} valeur={choix} onChoisir={v => { setChoix(v); charger(v); }} groupes={groupes}/>
         </div>
         <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Nouvel exercice</button>
       </div>
