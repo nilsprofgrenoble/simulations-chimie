@@ -1,7 +1,7 @@
 // Test du classement des exercices VAL par type, niveau, chapitre et difficulté (node src/simulations/validerParcours.test.mjs)
 import assert from 'node:assert/strict';
 import { TYPES_VAL, construireItemsVal } from './validerParcours.js';
-import { filtrer, itemsDuType, niveauxDuType, chapitresDuNiveauType, difficultesDuType, sanitiser } from '../parcoursCommun.js';
+import { filtrer, itemsDuType, niveauxDuType, chapitresDuNiveauType, difficultesDuType, sanitiser, ENSEIGNEMENTS, enseignementDe, enseignementsDuNiveauType, nomChapitre } from '../parcoursCommun.js';
 import { CHAPITRES } from '../chapitres.js';
 let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 
@@ -40,6 +40,19 @@ ok(s2.type === 'decision' && s2.niv === '' && s2.ch === '' && s2.dif === '', 'ty
 const s3 = sanitiser({ type: 'plausible', niv: '1G', ch: '', dif: '9', ex: '' }, items, TYPES_VAL);
 ok(s3.niv === '1G' && s3.dif === '', 'difficulté inconnue ignorée');
 ok(sanitiser({ type: 'zzz', niv: '', ch: '', dif: '', ex: 'zzz.q' }, items, TYPES_VAL).type === '', 'type inconnu');
+
+// enseignements de TSTL (PCM, SPCL : systèmes et procédés, ondes, chimie et développement durable)
+assert.deepEqual(ENSEIGNEMENTS.TSTL.map(e => e.key), ['pcm', 'sp', 'ondes', 'cdd']); n++;
+ok(CHAPITRES.filter(c => c.niveau === 'TSTL').every(c => enseignementDe(c)), 'tout chapitre TSTL a un enseignement');
+ok(CHAPITRES.filter(c => c.niveau !== 'TSTL').every(c => enseignementDe(c) === ''), 'les autres niveaux n’en ont pas');
+const chSp = CHAPITRES.find(c => c.niveau === 'TSTL' && enseignementDe(c) === 'sp');
+const itSp = { id: 'plausible.z', cle: 'z', type: 'plausible', dif: 1, niveaux: ['TSTL'], chapitres: [chSp.id] };
+ok(filtrer([itSp], { type: 'plausible', niv: 'TSTL', ens: 'sp' }).length === 1 && filtrer([itSp], { type: 'plausible', niv: 'TSTL', ens: 'pcm' }).length === 0, 'filtre par enseignement');
+ok(enseignementsDuNiveauType([itSp], 'plausible', 'TSTL').map(e => e.key).join() === 'sp', 'enseignements non vides');
+const s4 = sanitiser({ type: 'plausible', niv: 'TSTL', ens: 'pcm', ch: chSp.id, dif: '', ex: '' }, [itSp], TYPES_VAL);
+ok(s4.ens === 'pcm' && s4.ch === '', 'chapitre d’un autre enseignement refusé');
+ok(sanitiser({ type: '', niv: '', ens: '', ch: '', dif: '', ex: 'plausible.z' }, [itSp], TYPES_VAL).ens === 'sp', 'arrivée directe : enseignement reconstitué');
+ok(!/^[^\p{L}\p{N}]/u.test(nomChapitre(chSp)), 'nom de chapitre sans émoji de tête');
 
 // banque réelle : chaque exercice est classé, aucun doublon
 const { FAMILLES } = await import('./AtelierValiderBanque.js');
