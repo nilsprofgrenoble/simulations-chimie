@@ -698,6 +698,12 @@ export default function App() {
   const activeId = (!jeuxOuverts && JEUX_IDS.includes(activeIdBrut) && !JEUX_PUBLICS.includes(activeIdBrut)) || (!adminConnecte && OUTILS_ADMIN_IDS.includes(activeIdBrut)) ? 0 : activeIdBrut;
   const MENUS = menusVisibles(jeuxOuverts || JEUX_PUBLICS.length > 0, adminConnecte);   // le menu « Jeux » existe dès qu'un jeu est ouvert à tous (Percutaféine)
   useEffect(() => { restaurer(); }, []);
+  // Bouton « précédent » / « suivant » du navigateur : on réaffiche la page de l'adresse retrouvée (l'atelier est rouvert pour relire ?ex=…)
+  useEffect(() => {
+    const retour = () => { setActiveId(getInitialId()); setOuvertureCode(n => n + 1); };
+    window.addEventListener('popstate', retour);
+    return () => window.removeEventListener('popstate', retour);
+  }, []);
   // Un professeur connecté n'a pas d'écran « Mon compte » intermédiaire : on l'emmène directement au suivi
   const idAffiche = activeId === 39 && sessionSb?.profil?.role === 'prof' ? 40 : activeId;
   const active = SIMULATIONS.find(s => s.id === idAffiche) || SIMULATIONS[0];
@@ -787,15 +793,19 @@ export default function App() {
 
   // Ferme le menu et navigue
   confierNavigation(naviguer);
-  function naviguer(id, ex, duDevoir, viaCode) {
+  function naviguer(id, ex, duDevoir, viaCode, extra) {
     // ex : exercice précis à ouvrir dans un atelier (lu par l'atelier à son ouverture)
     // duDevoir : l'élève vient d'un devoir (l'atelier propose alors « Retour à mon devoir » plutôt que l'exercice suivant)
+    // extra : paramètres d'adresse supplémentaires (page d'un chapitre : { chap, depuis })
+    // Changer de page ajoute une étape à l'historique du navigateur : le bouton « précédent » ramène à la page d'où l'on vient.
     try {
       const u = new URL(window.location.href);
       if (ex) u.searchParams.set('ex', ex); else u.searchParams.delete('ex');
       if (id !== 82) { u.searchParams.delete('chap'); u.searchParams.delete('depuis'); }
+      if (extra && extra.chap) { u.searchParams.set('chap', extra.chap); if (extra.depuis) u.searchParams.set('depuis', extra.depuis); else u.searchParams.delete('depuis'); }
       if (duDevoir) u.searchParams.set('devoir', '1'); else u.searchParams.delete('devoir');
-      window.history.replaceState(null, '', u.toString());
+      if (id !== activeId && !EN_RECOLTE) window.history.pushState(null, '', u.toString());
+      else window.history.replaceState(null, '', u.toString());
     } catch { /* adresse non modifiable */ }
     if (viaCode) setOuvertureCode(n => n + 1);
     setActiveId(id);

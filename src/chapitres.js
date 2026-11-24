@@ -119,8 +119,7 @@ export const chapitresDuDomaine = d => CHAPITRES.filter(c => c.domaines.includes
 // Page d'accueil d'un chapitre (simulation 82, cachée du menu) : l'identifiant du chapitre voyage dans l'adresse (?chap=…)
 export const ID_PAGE_CHAPITRE = 82;
 export function allerChapitre(naviguer, id, depuis) {
-  try { const u = new URL(window.location.href); u.searchParams.set('chap', id); if (depuis) u.searchParams.set('depuis', depuis); else u.searchParams.delete('depuis'); window.history.replaceState(null, '', u.toString()); } catch { /* adresse non modifiable */ }
-  naviguer(ID_PAGE_CHAPITRE);
+  naviguer(ID_PAGE_CHAPITRE, undefined, false, false, { chap: id, depuis });
 }
 
 // La fonction de navigation de l'application, confiée ici pour que les boutons communs (onglet « Exercices ») puissent s'en servir
