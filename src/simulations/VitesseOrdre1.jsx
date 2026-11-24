@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useMemo } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./vitesseOrdre1Modele";
@@ -206,30 +206,30 @@ export function SimulationVitesseOrdre1() {
         <Formule><mi>v</mi><mo>=</mo><mo>−</mo><mfrac><mrow><mi mathvariant="normal">Δ</mi><mi>c</mi></mrow><mrow><mi mathvariant="normal">Δ</mi><mi>t</mi></mrow></mfrac></Formule>
         avec Δ<em>c</em> = <em>c</em><sub>2</sub> − <em>c</em><sub>1</sub> et Δ<em>t</em> = <em>t</em><sub>2</sub> − <em>t</em><sub>1</sub>.</>,
       tache: { type: 'num', q: 'Vitesse volumique moyenne de disparition de RCl entre 4,0 et 6,0 min', unite: 'mmol·L⁻¹·min⁻¹', vrai: 2.85, tol: 0.04, affiche: v => nbf(v, 1), cs: 2,
-        calcul: () => ['Δc = c₂ − c₁ = 16,3 − 22,0 = −5,7 mmol·L⁻¹ ; Δt = 6,0 − 4,0 = 2,0 min.', 'v = −Δc / Δt = 5,7 / 2,0 = 2,85 mmol·L⁻¹·min⁻¹, soit environ 2,9 mmol·L⁻¹·min⁻¹ (2 chiffres significatifs).'],
-        pieges: [[-2.85, 'Une vitesse volumique de disparition est positive : Δc est négatif, donc −Δc/Δt est positif.'], [5.7, 'Il faut diviser par Δt = 2,0 min.'], [0.351, 'Le rapport est inversé : v = −Δc / Δt.']],
-        expl: 'v = −Δc / Δt = −(16,3 − 22,0) / (6,0 − 4,0) = 2,85 mmol·L⁻¹·min⁻¹ ≈ 2,9 mmol·L⁻¹·min⁻¹.', indice: 'Calculez d’abord Δc (valeur finale moins valeur initiale), puis Δt, puis v = −Δc / Δt.' } },
+        calcul: () => ['Δc = c₂ − c₁ = 16,3 − 22,0 = −5,7 mmol·L⁻¹ ; Δt = 6,0 − 4,0 = 2,0 min.', 'v = −frac(Δc|Δt) = frac(5,7|2,0) = 2,85 mmol·L⁻¹·min⁻¹, soit environ 2,9 mmol·L⁻¹·min⁻¹ (2 chiffres significatifs).'],
+        pieges: [[-2.85, 'Une vitesse volumique de disparition est positive : Δc est négatif, donc −Δc/Δt est positif.'], [5.7, 'Il faut diviser par Δt = 2,0 min.'], [0.351, 'Le rapport est inversé : v = −frac(Δc|Δt).']],
+        expl: 'v = −frac(Δc|Δt) = −frac(16,3 − 22,0|6,0 − 4,0) = 2,85 mmol·L⁻¹·min⁻¹ ≈ 2,9 mmol·L⁻¹·min⁻¹.', indice: 'Calculez d’abord Δc (valeur finale moins valeur initiale), puis Δt, puis v = −frac(Δc|Δt).' } },
     { id: 'signe', titre: 'Pourquoi un signe moins ?', focus: [],
       texte: <>Dans le calcul précédent, Δ<em>c</em> = −5,7{NB}mmol·L⁻¹ est <strong>négatif</strong> (RCl disparaît), mais la vitesse volumique trouvée, 2,9{NB}mmol·L⁻¹·min⁻¹, est positive.</>,
-      tache: { type: 'qcm', q: 'Pourquoi définit-on la vitesse volumique de disparition par v = −Δc / Δt ?', options: ['c diminue (Δc < 0) : le signe − rend la vitesse volumique de disparition positive', 'pour convertir les minutes en secondes', 'parce que la vitesse volumique d’un réactif est toujours négative'], bonne: 0,
-        expl: 'Un réactif disparaît : sa concentration diminue, Δc < 0. Le signe − compense pour que la vitesse volumique de disparition soit une grandeur positive. (Pour un produit qui apparaît, Δc > 0 et on écrit v = +Δc / Δt.)', indice: 'Regardez le signe de Δc quand un réactif est consommé.' } },
+      tache: { type: 'qcm', q: 'Pourquoi définit-on la vitesse volumique de disparition par v = −frac(Δc|Δt) ?', options: ['c diminue (Δc < 0) : le signe − rend la vitesse volumique de disparition positive', 'pour convertir les minutes en secondes', 'parce que la vitesse volumique d’un réactif est toujours négative'], bonne: 0,
+        expl: 'Un réactif disparaît : sa concentration diminue, Δc < 0. Le signe − compense pour que la vitesse volumique de disparition soit une grandeur positive. (Pour un produit qui apparaît, Δc > 0 et on écrit v = +frac(Δc|Δt).)', indice: 'Regardez le signe de Δc quand un réactif est consommé.' } },
     { id: 'tangente', titre: 'La vitesse volumique à un instant', focus: ['courbe'],
       texte: <>La vitesse moyenne dépend de l’intervalle choisi. Pour la vitesse volumique à <strong>un instant</strong> <em>t</em>, on fait tendre Δ<em>t</em> vers 0 : c’est la dérivée
         <Formule><mi>v</mi><mo>=</mo><mo>−</mo><mfrac><mrow><mi mathvariant="normal">d</mi><mi>c</mi></mrow><mrow><mi mathvariant="normal">d</mi><mi>t</mi></mrow></mfrac></Formule>
         c’est-à-dire l’<strong>opposée de la pente de la tangente</strong> à la courbe en ce point. Cliquez sur « Tracer la tangente » sous le graphique : elle est tracée à <em>t</em> = 4,0{NB}min.</>,
       tache: { type: 'action', ok: ti.tang && Math.abs(ti.t - 4) < 0.05, label: 'Tracer la tangente à 4,0 min', faire: () => setT({ t: 4, tang: true }), consigne: 'Tracez la tangente à t = 4,0 min (bouton sous le graphique)' } },
     { id: 'pente', titre: 'Lire la pente de la tangente', focus: ['courbe'],
-      texte: <>La tangente à <em>t</em> = 4,0{NB}min coupe l’axe des concentrations au point M (<em>t</em> = 0 ; <em>c</em> = 35,1{NB}mmol·L⁻¹) et l’axe des temps au point N (<em>t</em> = 10,7{NB}min ; <em>c</em> = 0). Sa pente vaut (0 − 35,1) / (10,7 − 0).</>,
+      texte: <>La tangente à <em>t</em> = 4,0{NB}min coupe l’axe des concentrations au point M (<em>t</em> = 0 ; <em>c</em> = 35,1{NB}mmol·L⁻¹) et l’axe des temps au point N (<em>t</em> = 10,7{NB}min ; <em>c</em> = 0). Sa pente vaut {avecIndices('frac(0 − 35,1|10,7 − 0)')}.</>,
       tache: { type: 'num', q: 'Vitesse volumique de disparition de RCl à t = 4,0 min', unite: 'mmol·L⁻¹·min⁻¹', vrai: 3.29, tol: 0.04, affiche: v => nbf(v, 1), cs: 2, bloque,
-        calcul: () => ['Pente de la tangente = (0 − 35,1) / (10,7 − 0) = −3,28 mmol·L⁻¹·min⁻¹ : elle est négative car c diminue.', 'v = −(pente) = +3,3 mmol·L⁻¹·min⁻¹ (3,29 avec les valeurs non arrondies).'],
-        pieges: [[-3.29, 'La pente de la tangente est négative, mais la vitesse volumique de disparition est positive : v = −(pente).'], [0.305, 'Le rapport est inversé : la pente est (variation de c) / (variation de t).'], [35.1, '35,1 mmol·L⁻¹ est la concentration en M (ordonnée à l’origine de la tangente), pas la pente.']],
-        expl: 'v = −(0 − 35,1) / (10,7 − 0) ≈ 3,3 mmol·L⁻¹·min⁻¹ : c’est plus que la valeur moyenne 2,9 entre 4 et 6 min, car on est au début de l’intervalle, où la courbe est plus raide.', indice: 'La pente d’une droite vaut (variation de c) / (variation de t) entre deux de ses points ; v est l’opposée de cette pente.' } },
+        calcul: () => ['Pente de la tangente = frac(0 − 35,1|10,7 − 0) = −3,28 mmol·L⁻¹·min⁻¹ : elle est négative car c diminue.', 'v = −(pente) = +3,3 mmol·L⁻¹·min⁻¹ (3,29 avec les valeurs non arrondies).'],
+        pieges: [[-3.29, 'La pente de la tangente est négative, mais la vitesse volumique de disparition est positive : v = −(pente).'], [0.305, 'Le rapport est inversé : la pente est frac(variation de c|variation de t).'], [35.1, '35,1 mmol·L⁻¹ est la concentration en M (ordonnée à l’origine de la tangente), pas la pente.']],
+        expl: 'v = −frac(0 − 35,1|10,7 − 0) ≈ 3,3 mmol·L⁻¹·min⁻¹ : c’est plus que la valeur moyenne 2,9 entre 4 et 6 min, car on est au début de l’intervalle, où la courbe est plus raide.', indice: 'La pente d’une droite vaut frac(variation de c|variation de t) entre deux de ses points ; v est l’opposée de cette pente.' } },
     { id: 'pente12', titre: 'Et plus tard ?', focus: ['courbe'],
       texte: <>Placez le curseur à <em>t</em> = 12,0{NB}min : la tangente est bien moins inclinée. Elle coupe l’axe des concentrations en M (0 ; 18,5{NB}mmol·L⁻¹) et l’axe des temps en N (18,7{NB}min ; 0).</>,
       tache: { type: 'num', q: 'Vitesse volumique de disparition de RCl à t = 12,0 min', unite: 'mmol·L⁻¹·min⁻¹', vrai: 0.992, tol: 0.04, affiche: v => nbf(v, 2), cs: 2, bloque,
-        calcul: () => ['Pente de la tangente = (0 − 18,5) / (18,7 − 0) = −0,989 mmol·L⁻¹·min⁻¹.', 'v = −(pente) = 0,99 mmol·L⁻¹·min⁻¹.'],
+        calcul: () => ['Pente de la tangente = frac(0 − 18,5|18,7 − 0) = −0,989 mmol·L⁻¹·min⁻¹.', 'v = −(pente) = 0,99 mmol·L⁻¹·min⁻¹.'],
         pieges: [[-0.992, 'La vitesse volumique de disparition est positive : v = −(pente de la tangente).'], [1.01, 'Le rapport est inversé.'], [18.5, '18,5 mmol·L⁻¹ est la concentration en M, pas la pente.']],
-        expl: 'v = 18,5 / 18,7 ≈ 0,99 mmol·L⁻¹·min⁻¹ : plus de trois fois plus petite qu’à 4 min.', indice: 'Même méthode qu’à 4,0 min : v est l’opposée de la pente (variation de c) / (variation de t) entre M et N.' } },
+        expl: 'v = frac(18,5|18,7) ≈ 0,99 mmol·L⁻¹·min⁻¹ : plus de trois fois plus petite qu’à 4 min.', indice: 'Même méthode qu’à 4,0 min : v est l’opposée de la pente frac(variation de c|variation de t) entre M et N.' } },
     { id: 'diminue', titre: 'Comment la vitesse évolue-t-elle ?', focus: [],
       texte: <>À <em>t</em> = 4,0{NB}min, <em>v</em> = 3,3{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 22,0{NB}mmol·L⁻¹. À <em>t</em> = 12,0{NB}min, <em>v</em> = 0,99{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 6,6{NB}mmol·L⁻¹.</>,
       tache: { type: 'qcm', q: 'Comment la vitesse volumique de disparition évolue-t-elle au cours du temps ?', options: ['elle diminue, en même temps que la concentration du réactif', 'elle reste constante : la transformation avance au même rythme', 'elle augmente, car il se forme de plus en plus d’ions'], bonne: 0,
@@ -261,29 +261,29 @@ export function SimulationVitesseOrdre1() {
       tache: { type: 'qcm', q: 'Combien de temps faut-il, à partir de là, pour passer de 10,0 à 5,0 mmol·L⁻¹ ?', options: ['4,6 min, comme pour les deux premières : t½ est constant', '9,2 min : il faut deux fois plus de temps, car la réaction ralentit', '2,3 min : il reste moins de réactif à consommer'], bonne: 0,
         expl: 'Pour cette transformation, t½ ne dépend pas de la concentration de départ : chaque demi-réaction dure 4,6 min (on lit c = 5,0 mmol·L⁻¹ à 13,9 min = 3 × 4,6). La vitesse diminue, mais la quantité à consommer diminue dans la même proportion.', indice: 'Comparez la durée des deux demi-réactions que vous venez de mesurer.' } },
     { id: 'vc', titre: 'Un lien entre v et c ?', focus: ['graphes'],
-      texte: <>Un graphique v = f(c) apparaît (un point par instant). On donne la relation à tester <strong>v = k × c</strong>, où k est une constante. Si elle est vraie, le rapport v / c est constant. À <em>t</em> = 4,0{NB}min : <em>v</em> = 3,3{NB}mmol·L⁻¹·min⁻¹ (valeur de l’étape précédente) et <em>c</em> = 22,0{NB}mmol·L⁻¹.</>,
-      tache: { type: 'num', q: 'Rapport v / c à t = 4,0 min', unite: 'min⁻¹', vrai: 0.150, tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
-        calcul: () => ['v / c = 3,3 / 22,0 = 0,150 (mmol·L⁻¹·min⁻¹ divisé par mmol·L⁻¹ : l’unité restante est min⁻¹).', 'v / c ≈ 0,150 min⁻¹.'],
-        pieges: [[6.67, 'Le rapport est inversé : on demande v / c.'], [3.3 * 22.0, 'On divise v par c, on ne les multiplie pas.']],
-        expl: 'v / c = 3,3 / 22,0 = 0,150 min⁻¹.', indice: 'Divisez v par c : l’unité du résultat est min⁻¹.' },
+      texte: <>Un graphique v = f(c) apparaît (un point par instant). On donne la relation à tester <strong>v = k × c</strong>, où k est une constante. Si elle est vraie, le rapport {avecIndices('frac(v|c)')} est constant. À <em>t</em> = 4,0{NB}min : <em>v</em> = 3,3{NB}mmol·L⁻¹·min⁻¹ (valeur de l’étape précédente) et <em>c</em> = 22,0{NB}mmol·L⁻¹.</>,
+      tache: { type: 'num', q: 'Rapport frac(v|c) à t = 4,0 min', unite: 'min⁻¹', vrai: 0.150, tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
+        calcul: () => ['frac(v|c) = frac(3,3|22,0) = 0,150 (mmol·L⁻¹·min⁻¹ divisé par mmol·L⁻¹ : l’unité restante est min⁻¹).', 'frac(v|c) ≈ 0,150 min⁻¹.'],
+        pieges: [[6.67, 'Le rapport est inversé : on demande frac(v|c).'], [3.3 * 22.0, 'On divise v par c, on ne les multiplie pas.']],
+        expl: 'frac(v|c) = frac(3,3|22,0) = 0,150 min⁻¹.', indice: 'Divisez v par c : l’unité du résultat est min⁻¹.' },
       retenirTitre: 'Le temps de demi-réaction',
       retenir: <>
         <SvgDemiReaction/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
           <li><strong>t½ : durée au bout de laquelle la concentration du réactif limitant est divisée par 2</strong> (transformation totale).</li>
           <li>Ici : 40,0 → 20,0 → 10,0 → 5,0 mmol·L⁻¹, <strong>chaque fois en 4,6 min</strong>. Pour cette loi, t½ ne dépend pas de la concentration de départ.</li>
-          <li>Moyen de s’en souvenir : <strong>« ordre 1 : même durée pour chaque division par 2 »</strong>. Après n demi-réactions, il reste c₀ / 2ⁿ.</li>
+          <li>Moyen de s’en souvenir : <strong>« ordre 1 : même durée pour chaque division par 2 »</strong>. Après n demi-réactions, il reste {avecIndices('frac(c₀|2ⁿ)')}.</li>
         </ul></> },
     { id: 'kconst', titre: 'Le test se poursuit', focus: ['graphes'],
-      texte: <>À <em>t</em> = 12,0{NB}min : <em>v</em> = 0,99{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 6,6{NB}mmol·L⁻¹, donc <em>v</em> / <em>c</em> = 0,150{NB}min⁻¹ : la même valeur qu’à 4,0{NB}min. Les points du graphique v = f(c) sont alignés sur une droite qui passe par l’origine.</>,
+      texte: <>À <em>t</em> = 12,0{NB}min : <em>v</em> = 0,99{NB}mmol·L⁻¹·min⁻¹ et <em>c</em> = 6,6{NB}mmol·L⁻¹, donc {avecIndices('frac(v|c)')} = 0,150{NB}min⁻¹ : la même valeur qu’à 4,0{NB}min. Les points du graphique v = f(c) sont alignés sur une droite qui passe par l’origine.</>,
       tache: { type: 'qcm', q: 'Que conclure ?', options: ['v est proportionnelle à c : v = k × c avec k = 0,150 min⁻¹ ; la loi de vitesse est d’ordre 1', 'la vitesse est constante au cours du temps', 'la concentration est proportionnelle au temps'], bonne: 0,
-        expl: 'Le rapport v / c reste égal à 0,150 min⁻¹ à des instants très différents : la vitesse volumique est proportionnelle à la concentration. C’est une loi de vitesse d’ordre 1, v = k × c ; k est la constante de vitesse (en min⁻¹).', indice: 'Si v / c est constant, que peut-on dire de v par rapport à c ?' } },
+        expl: 'Le rapport frac(v|c) reste égal à 0,150 min⁻¹ à des instants très différents : la vitesse volumique est proportionnelle à la concentration. C’est une loi de vitesse d’ordre 1, v = k × c ; k est la constante de vitesse (en min⁻¹).', indice: 'Si frac(v|c) est constant, que peut-on dire de v par rapport à c ?' } },
     { id: 'ln', titre: 'Un autre test : ln c en fonction de t', focus: ['graphes'],
-      texte: <>Si <em>v</em> = −d<em>c</em>/d<em>t</em> = <em>k</em> × <em>c</em>, on montre que <em>c</em>(<em>t</em>) = <em>c</em><sub>0</sub> e<sup>−<em>k</em>·<em>t</em></sup> (solution donnée), donc ln(<em>c</em> / <em>c</em>°) = ln(<em>c</em><sub>0</sub> / <em>c</em>°) − <em>k</em> · <em>t</em>, avec <em>c</em>° = 1{NB}mol·L⁻¹ : c’est une <strong>droite de pente −<em>k</em></strong>. Le graphique ln(<em>c</em> / <em>c</em>°) = f(<em>t</em>) apparaît avec sa droite d’ajustement. Sur la droite : ln(<em>c</em> / <em>c</em>°) = −3,22 à <em>t</em> = 0 et −4,72 à <em>t</em> = 10,0{NB}min.</>,
-      tache: { type: 'num', q: 'Pente de la droite ln(c / c°) = f(t)', unite: 'min⁻¹', vrai: -0.150, tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
-        calcul: () => ['Pente = [ln(c/c°) à 10,0 min − ln(c/c°) à 0] / (10,0 − 0) = (−4,72 − (−3,22)) / 10,0.', 'Pente = −1,50 / 10,0 = −0,150 min⁻¹ : la pente est négative. Donc k = 0,150 min⁻¹, comme avec v / c.'],
-        pieges: [[0.150, 'ln c diminue quand t augmente : la pente est négative (elle vaut −k).'], [-6.67, 'Le rapport est inversé : pente = Δ(ln c) / Δt.'], [-1.5, 'Il faut diviser par Δt = 10,0 min.']],
-        expl: 'Pente = −0,150 min⁻¹, donc k = 0,150 min⁻¹ : la même valeur que par le rapport v / c. Les points sont alignés : c’est la signature d’une loi d’ordre 1.', indice: 'Pente = (variation de ln(c/c°)) / (variation de t) entre les deux points donnés.' } },
+      texte: <>Si <em>v</em> = −d<em>c</em>/d<em>t</em> = <em>k</em> × <em>c</em>, on montre que <em>c</em>(<em>t</em>) = <em>c</em><sub>0</sub> e<sup>−<em>k</em>·<em>t</em></sup> (solution donnée), donc ln({avecIndices('frac(c|c°)')}) = ln({avecIndices('frac(c_0|c°)')}) − <em>k</em> · <em>t</em>, avec <em>c</em>° = 1{NB}mol·L⁻¹ : c’est une <strong>droite de pente −<em>k</em></strong>. Le graphique ln({avecIndices('frac(c|c°)')}) = f(<em>t</em>) apparaît avec sa droite d’ajustement. Sur la droite : ln({avecIndices('frac(c|c°)')}) = −3,22 à <em>t</em> = 0 et −4,72 à <em>t</em> = 10,0{NB}min.</>,
+      tache: { type: 'num', q: 'Pente de la droite ln(frac(c|c°)) = f(t)', unite: 'min⁻¹', vrai: -0.150, tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
+        calcul: () => ['Pente = frac([ln(c/c°) à 10,0 min − ln(c/c°) à 0]|10,0 − 0) = frac(−4,72 − (−3,22)|10,0).', 'Pente = −frac(1,50|10,0) = −0,150 min⁻¹ : la pente est négative. Donc k = 0,150 min⁻¹, comme avec frac(v|c).'],
+        pieges: [[0.150, 'ln c diminue quand t augmente : la pente est négative (elle vaut −k).'], [-6.67, 'Le rapport est inversé : pente = frac(Δ(ln c)|Δt).'], [-1.5, 'Il faut diviser par Δt = 10,0 min.']],
+        expl: 'Pente = −0,150 min⁻¹, donc k = 0,150 min⁻¹ : la même valeur que par le rapport frac(v|c). Les points sont alignés : c’est la signature d’une loi d’ordre 1.', indice: 'Pente = frac(variation de ln(c/c°)|variation de t) entre les deux points donnés.' } },
     { id: 'bilan2', titre: 'Le bilan', focus: [],
       texte: <>Vous savez lire des temps de demi-réaction successifs et tester une loi d’ordre 1 : le rapport v ÷ c reste constant et ln c est une droite en fonction du temps. Le parcours 3 applique ces tests à une autre transformation puis à des mesures bruitées.</>, tache: null },
     { id: 'compB', titre: 'Une autre transformation : B', focus: ['courbe'],
@@ -297,23 +297,23 @@ export function SimulationVitesseOrdre1() {
       retenir: <>
         <SvgLoiOrdre1/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Ordre 1 : v = k × c.</strong> Alors c(t) = c₀ e<sup>−kt</sup>, <strong>ln(c/c°) est une droite de pente −k</strong>, et t½ = ln 2 / k (k en min⁻¹ ou s⁻¹).</li>
-          <li>Exemple de la simulation : k = 0,150 min⁻¹, t½ = ln 2 / 0,150 = 4,6 min, trouvé aussi sur la courbe.</li>
+          <li><strong>Ordre 1 : v = k × c.</strong> Alors c(t) = c₀ e<sup>−kt</sup>, <strong>ln(c/c°) est une droite de pente −k</strong>, et t½ = {avecIndices('frac(ln 2|k)')} (k en min⁻¹ ou s⁻¹).</li>
+          <li>Exemple de la simulation : k = 0,150 min⁻¹, t½ = {avecIndices('frac(ln 2|0,150)')} = 4,6 min, trouvé aussi sur la courbe.</li>
           <li>Moyen de s’en souvenir : <strong>« ordre 1 : v ∝ c, ln c affine, t½ constant »</strong>.</li>
         </ul></> },
     { id: 'conclB', titre: 'B suit-elle l’ordre 1 ?', focus: ['graphes'],
-      texte: <>Pour la transformation B : les durées de demi-réaction valent 4,6{NB}min puis 9,2{NB}min, le rapport <em>v</em> / <em>c</em> diminue (0,216 puis 0,108{NB}min⁻¹ quand <em>c</em> passe de 40,0 à 20,0{NB}mmol·L⁻¹) et les points de ln(<em>c</em> / <em>c</em>°) = f(<em>t</em>) ne sont pas alignés.</>,
+      texte: <>Pour la transformation B : les durées de demi-réaction valent 4,6{NB}min puis 9,2{NB}min, le rapport {avecIndices('frac(v|c)')} diminue (0,216 puis 0,108{NB}min⁻¹ quand <em>c</em> passe de 40,0 à 20,0{NB}mmol·L⁻¹) et les points de ln({avecIndices('frac(c|c°)')}) = f(<em>t</em>) ne sont pas alignés.</>,
       tache: { type: 'qcm', q: 'La transformation B suit-elle une loi de vitesse d’ordre 1 ?', options: ['non : t½ n’est pas constant, v / c n’est pas constant et ln c n’est pas une droite', 'oui : sa première demi-réaction dure 4,6 min, comme pour A', 'oui : sa concentration décroît au cours du temps'], bonne: 0,
-        expl: 'Un seul test négatif suffit pour écarter l’ordre 1, et ici les trois le sont. La première demi-réaction de B est identique à celle de A : il faut comparer plusieurs demi-réactions, pas une seule.', indice: 'Comparez, pour A et pour B, la constance de t½, celle de v / c et l’allure de ln c.' } },
+        expl: 'Un seul test négatif suffit pour écarter l’ordre 1, et ici les trois le sont. La première demi-réaction de B est identique à celle de A : il faut comparer plusieurs demi-réactions, pas une seule.', indice: 'Comparez, pour A et pour B, la constance de t½, celle de frac(v|c) et l’allure de ln c.' } },
     { id: 'bruit', titre: 'Des mesures bruitées', focus: ['courbe', 'mesures'],
-      texte: <>Dans une vraie expérience, chaque mesure est entachée d’un petit écart aléatoire, dont l’<strong>écart-type</strong> est noté σ (ici σ = 0,4{NB}mmol·L⁻¹). Revenez à la <strong>transformation A (RCl)</strong> et à <em>t</em> = 6,0{NB}min (bouton ci-dessus). On estime <em>v</em> avec deux points écartés de Δ<em>t</em> et centrés sur <em>t</em> : <em>v</em> ≈ −(<em>c</em><sub>2</sub> − <em>c</em><sub>1</sub>) / Δ<em>t</em>. Le tableau donne l’estimation pour quatre valeurs de Δ<em>t</em> ; « Nouvelle série » refait l’expérience. Valeur exacte du modèle, inconnue en pratique : {nbf(v6, 2)}{NB}mmol·L⁻¹·min⁻¹.</>,
+      texte: <>Dans une vraie expérience, chaque mesure est entachée d’un petit écart aléatoire, dont l’<strong>écart-type</strong> est noté σ (ici σ = 0,4{NB}mmol·L⁻¹). Revenez à la <strong>transformation A (RCl)</strong> et à <em>t</em> = 6,0{NB}min (bouton ci-dessus). On estime <em>v</em> avec deux points écartés de Δ<em>t</em> et centrés sur <em>t</em> : <em>v</em> ≈ −{avecIndices('frac(c_2 − c_1|Δ)')}<em>t</em>. Le tableau donne l’estimation pour quatre valeurs de Δ<em>t</em> ; « Nouvelle série » refait l’expérience. Valeur exacte du modèle, inconnue en pratique : {nbf(v6, 2)}{NB}mmol·L⁻¹·min⁻¹.</>,
       tache: { type: 'qcm', q: 'Quel intervalle Δt donne le meilleur compromis ?', options: ['Δt = 4 min : assez grand pour que le bruit compte peu, assez petit pour que la courbe reste presque une droite', 'Δt = 1 min : plus l’intervalle est petit, plus on se rapproche de la tangente', 'Δt = 8 min : plus l’intervalle est grand, plus la mesure est précise'], bonne: 0, bloque,
         expl: 'Avec Δt = 1 min, l’écart dû au bruit atteint environ 23 % : les estimations varient beaucoup d’une série à l’autre. Avec Δt = 8 min, le bruit pèse peu (3 %) mais la courbure fausse la sécante d’environ 6 %. Δt = 4 min : environ 6 % de bruit et 1,5 % de courbure.', indice: 'Refaites plusieurs séries et regardez comment varient les estimations pour chaque Δt, et si elles s’écartent systématiquement de 2,44.' },
       retenirTitre: 'Tester l’ordre 1',
       retenir: <>
         <SvgTestOrdre1/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Trois tests</strong> pour savoir si c(t) suit une loi d’ordre 1 : t½ constant ; ln(c/c°) = f(t) est une droite ; v / c est constant.</li>
+          <li><strong>Trois tests</strong> pour savoir si c(t) suit une loi d’ordre 1 : t½ constant ; ln(c/c°) = f(t) est une droite ; {avecIndices('frac(v|c)')} est constant.</li>
           <li><strong>Un seul test négatif suffit pour rejeter l’ordre 1</strong>. Comparer au moins deux demi-réactions : la première seule ne prouve rien.</li>
           <li><strong>Idée fausse</strong> : « la courbe décroît, donc c’est d’ordre 1 ». <strong>Vrai</strong> : A et B décroissent toutes deux, une seule suit l’ordre 1.</li>
         </ul></> },
@@ -323,7 +323,7 @@ export function SimulationVitesseOrdre1() {
       retenir: <>
         <SvgIntervalle/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Mesures bruitées : v ≈ −Δc/Δt sur un intervalle ni trop petit, ni trop grand.</strong> Δt petit : le bruit domine (incertitude sur v : u(v) ≈ √2·σ / Δt, σ étant l’écart-type du bruit). Δt grand : la courbure fausse la valeur.</li>
+          <li><strong>Mesures bruitées : v ≈ −Δc/Δt sur un intervalle ni trop petit, ni trop grand.</strong> Δt petit : le bruit domine (incertitude sur v : u(v) ≈ {avecIndices('frac(√2·σ|Δt)')}, σ étant l’écart-type du bruit). Δt grand : la courbure fausse la valeur.</li>
           <li>Exemple (σ = 0,4 mmol·L⁻¹, v = 2,4 à 6 min) : Δt = 1 min → ± 23 %, Δt = 4 min → ± 6 %.</li>
           <li><strong>Une valeur sans incertitude est incomplète</strong> : donner v avec 2 chiffres significatifs et une marge de quelques pour cent.</li>
         </ul></> },
@@ -387,15 +387,15 @@ export function SimulationVitesseOrdre1() {
       {defi.type === 'vit' ? <>
         <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>La concentration d’un réactif est suivie au cours du temps ; les mesures sont <strong>bruitées</strong> (écart-type σ = 0,3{NB}mmol·L⁻¹). Estimez la vitesse volumique de disparition à <strong><em>t</em> = {defi.tc},0{NB}min</strong> : choisissez l’intervalle Δ<em>t</em> (boutons sous le graphique), relevez les deux points entourés de la sécante dans « Mesures », puis calculez <em>v</em> = −Δ<em>c</em>/Δ<em>t</em>. Donnez le résultat avec 2 chiffres significatifs ; une marge de ± 15 % est acceptée à cause du bruit.</div>
         {champ('v', 'Vitesse volumique v', 'mmol·L⁻¹·min⁻¹', 100)}
-        <IndiceDefi cache={false}>Choisissez Δ<em>t</em> de 4 min environ (ni trop petit : le bruit domine, ni trop grand : la courbure fausse la valeur). Relevez <em>c</em><sub>1</sub> à <em>t</em><sub>1</sub> = <em>t</em> − Δ<em>t</em>/2 et <em>c</em><sub>2</sub> à <em>t</em><sub>2</sub> = <em>t</em> + Δ<em>t</em>/2, puis <em>v</em> = (<em>c</em><sub>1</sub> − <em>c</em><sub>2</sub>) / (<em>t</em><sub>2</sub> − <em>t</em><sub>1</sub>).</IndiceDefi>
+        <IndiceDefi cache={false}>Choisissez Δ<em>t</em> de 4 min environ (ni trop petit : le bruit domine, ni trop grand : la courbure fausse la valeur). Relevez <em>c</em><sub>1</sub> à <em>t</em><sub>1</sub> = <em>t</em> − Δ<em>t</em>/2 et <em>c</em><sub>2</sub> à <em>t</em><sub>2</sub> = <em>t</em> + Δ<em>t</em>/2, puis <em>v</em> = {avecIndices('frac(c_1 − c_2|t_2 − t_1)')}.</IndiceDefi>
       </> : <>
-        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Trois séries de mesures bruitées (écart-type σ = 0,3{NB}mmol·L⁻¹) de la même concentration initiale <em>c</em><sub>0</sub> = <strong>{nbf(defi.series[0].c0, 1)}{NB}mmol·L⁻¹</strong> : une seule suit une loi de vitesse d’ordre 1. Affichez chaque série (boutons sous le graphique), utilisez les traits de demi-réaction et le graphique de ln(<em>c</em> / <em>c</em>°), puis indiquez la série d’ordre 1 et sa constante <em>k</em> (2 chiffres significatifs, marge de ± 8 %).</div>
+        <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>Trois séries de mesures bruitées (écart-type σ = 0,3{NB}mmol·L⁻¹) de la même concentration initiale <em>c</em><sub>0</sub> = <strong>{nbf(defi.series[0].c0, 1)}{NB}mmol·L⁻¹</strong> : une seule suit une loi de vitesse d’ordre 1. Affichez chaque série (boutons sous le graphique), utilisez les traits de demi-réaction et le graphique de ln({avecIndices('frac(c|c°)')}), puis indiquez la série d’ordre 1 et sa constante <em>k</em> (2 chiffres significatifs, marge de ± 8 %).</div>
         <div role="group" aria-label="Série d’ordre 1" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 14 }}>La série d’ordre 1 est :</span>
           {[0, 1, 2].map(i => <button key={i} onClick={() => setDefi(d => ({ ...d, choix: i, verifie: false }))} aria-pressed={defi.choix === i} style={stylePetitBouton(defi.choix === i, '#475569')}>n° {i + 1}</button>)}
         </div>
         {champ('k', 'Constante k de cette série', 'min⁻¹', 90)}
-        <IndiceDefi cache={false}>Pour chaque série, comparez les durées de la 1ʳᵉ et de la 2ᵉ demi-réaction (traits de demi-réaction) : elles sont égales pour l’ordre 1. Pour la série d’ordre 1, <em>k</em> = ln 2 / <em>t</em><sub>½</sub> avec <em>t</em><sub>½</sub> en minutes (ou l’opposé de la pente de ln(<em>c</em> / <em>c</em>°)).</IndiceDefi>
+        <IndiceDefi cache={false}>Pour chaque série, comparez les durées de la 1ʳᵉ et de la 2ᵉ demi-réaction (traits de demi-réaction) : elles sont égales pour l’ordre 1. Pour la série d’ordre 1, <em>k</em> = {avecIndices('frac(ln 2|t_½)')} avec <em>t</em><sub>½</sub> en minutes (ou l’opposé de la pente de ln({avecIndices('frac(c|c°)')})).</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="vo-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -419,7 +419,7 @@ export function SimulationVitesseOrdre1() {
       <li><strong>Bruit éventuel</strong> : écart aléatoire centré, de même écart-type σ pour tous les points, indépendant d’un point à l’autre (loi normale) ; mesures arrondies au 0,1{NB}mmol·L⁻¹. En réalité, le bruit peut varier avec la concentration ou présenter des dérives. Les premières étapes du parcours utilisent des données sans bruit pour isoler la notion.</li>
       <li><strong>Validité de la loi d’ordre 1</strong> : pour la transformation A, <em>v</em> = <em>k</em> · <em>c</em> est supposée vraie pendant tout le suivi, avec <em>k</em> constante (le milieu ne change pas de polarité au fur et à mesure que les ions se forment). La transformation B est un <strong>exemple construit</strong> pour la simulation (pas une réaction réelle identifiée) : sa loi de vitesse n’est volontairement pas donnée et n’est pas d’ordre 1 ; sa première demi-réaction dure autant que celle de A, pour montrer qu’une courbe décroissante, ou une seule demi-réaction, ne suffit pas à conclure.</li>
       <li><strong>Temps de demi-réaction</strong> : défini pour une transformation totale par <em>c</em> = <em>c</em><sub>0</sub>/2 ; il ne se lit pas de la même façon pour une transformation non totale.</li>
-      <li><strong>Vitesse volumique</strong> : c’est la dérivée temporelle de la concentration, −d<em>c</em>/d<em>t</em> ; la « vitesse de réaction » (dérivée de l’avancement) n’est pas utilisée ici. En pratique on l’estime par une sécante sur un intervalle Δ<em>t</em> : un petit Δ<em>t</em> amplifie le bruit (u(<em>v</em>) ≈ √2 σ / Δ<em>t</em>), un grand Δ<em>t</em> écarte la sécante de la tangente.</li>
+      <li><strong>Vitesse volumique</strong> : c’est la dérivée temporelle de la concentration, −d<em>c</em>/d<em>t</em> ; la « vitesse de réaction » (dérivée de l’avancement) n’est pas utilisée ici. En pratique on l’estime par une sécante sur un intervalle Δ<em>t</em> : un petit Δ<em>t</em> amplifie le bruit (u(<em>v</em>) ≈ {avecIndices('frac(√2·σ|Δt)')}), un grand Δ<em>t</em> écarte la sécante de la tangente.</li>
       <li><strong>Limites du modèle</strong> : durée de 20{NB}min, un point toutes les 0,5{NB}min, un seul réactif suivi ; les facteurs cinétiques, la catalyse et le mécanisme réactionnel ne sont pas traités ici. Le test de l’ordre 1 se fait sur la durée du suivi : il ne prouve pas la validité de la loi hors de cette plage.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
@@ -529,7 +529,7 @@ export function SimulationVitesseOrdre1() {
     </div>);
   const graphiqueLn = (!enGuide || deja('ln')) && !(dd && dd.type === 'vit') && (
     <div style={{ ...styleBoite, ...cadre('graphes') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Test : ln(c / c°) = f(t)</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Test : ln({avecIndices('frac(c|c°)')}) = f(t)</div>
       <GrapheLn pts={pts} P={P} ajust={ajust} montrerAjust={!dd} t={tc}/>
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4 }}>c° = 1 mol·L⁻¹ ; c est converti en mol·L⁻¹. {dd ? 'Points alignés ⇒ loi d’ordre 1.' : 'Pointillés orange : droite d’ajustement (moindres carrés).'} {!ideal ? 'Les points de concentration inférieure à 1 mmol·L⁻¹ ne sont pas tracés (bruit relatif trop grand).' : ''}</div>
     </div>);
@@ -584,7 +584,7 @@ export function SimulationVitesseOrdre1() {
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>vitesse volumique de disparition : v = −dc/dt, opposée de la pente de la tangente (≈ −Δc/Δt sur un petit intervalle)</li>
         <li>temps de demi-réaction : c = c₀/2 (transformation totale)</li>
-        <li>ordre 1 : v = k·c ⇔ c = c₀e<sup>−kt</sup> ⇔ ln c affine de pente −k ⇔ t½ = ln 2 / k constant</li>
+        <li>ordre 1 : v = k·c ⇔ c = c₀e<sup>−kt</sup> ⇔ ln c affine de pente −k ⇔ t½ = {avecIndices('frac(ln 2|k)')} constant</li>
         <li>mesures bruitées : Δt ni trop petit (bruit), ni trop grand (courbure) ; un seul test négatif rejette l’ordre 1</li>
       </ul>
     </ARetenir>);
@@ -614,7 +614,7 @@ plt.tight_layout(); plt.show()`;
   const blocPython = enExplore && (
     <div style={styleBoite}>
       <Section titre="Le même traitement avec Python (capacité numérique)" ouvert={pyOuv} onBascule={() => setPyOuv(o => !o)}>
-        <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Programme qui trace c(t), v = f(c) et ln c = f(t) pour la série affichée, estime v par sécante, ajuste ln c et teste si v / c est constant.</div>
+        <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Programme qui trace c(t), v = f(c) et ln c = f(t) pour la série affichée, estime v par sécante, ajuste ln c et teste si {avecIndices('frac(v|c)')} est constant.</div>
         <pre style={{ margin: 0, padding: 10, background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 8, fontSize: 12, overflowX: 'auto', lineHeight: 1.45 }}><code>{codePython}</code></pre>
       </Section>
     </div>);
