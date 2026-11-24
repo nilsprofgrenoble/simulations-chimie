@@ -197,6 +197,7 @@ const SimulationTamponTstl = paresseux(() => import("./simulations/TamponTstl"),
 const SimulationCo2Dissous = paresseux(() => import("./simulations/Co2Dissous"), "SimulationCo2Dissous");
 const SimulationExtractionAcideBase = paresseux(() => import("./simulations/ExtractionAcideBase"), "SimulationExtractionAcideBase");
 const SimulationTensioactifs = paresseux(() => import("./simulations/Tensioactifs"), "SimulationTensioactifs");
+const SimulationChargeTensioactifs = paresseux(() => import("./simulations/ChargeTensioactifs"), "SimulationChargeTensioactifs");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
@@ -560,6 +561,7 @@ const SIMULATIONS = [
   // Grapheur (tableau → nuage de points → modèle → écarts → hypothèses) : outil hors menu, ouvert par son lien (?sim=124), en attendant la relecture de Nils
   { id:124, label:"Grapheur de mesures", niveau:"COMPTE", icon:"📈", color:"#1d4ed8", component: SimulationGrapheur },
   { id:146, label:"Tensioactifs : de la structure à la CMC", niveau:"BTS", icon:"🫧", color:"#0369a1", component: SimulationTensioactifs },
+  { id:220, label:"Charge d’un tensioactif selon le pH", niveau:"BTS", icon:"⚡", color:"#7c3aed", component: SimulationChargeTensioactifs },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
