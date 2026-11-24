@@ -19,7 +19,7 @@ export const SOUS_THEMES = {
     { id: 'bernoulli', nom: 'Bernoulli et effet Venturi', capacite: 'Exploiter le théorème de Bernoulli ; expliquer l’effet Venturi.',
       refs: ['37:hypothese:bernoulli', '37:prevoir:cinetique', '37:prevoir:torricelli', '77:plausible:flu-venturi', '77:compat:flu-jet-torricelli'] },
     { id: 'pertes', nom: 'Les pertes de charge', capacite: 'Voir l’effet de la vitesse, de la longueur et de la section sur les pertes d’énergie.',
-      refs: ['37:prevoir:pertes'] },
+      refs: ['37:prevoir:pertes', '37:prevoir:pertes-longueur', '37:prevoir:pertes-diametre', '37:prevoir:pertes-vanne', '37:relation:pertes-bernoulli', '77:plausible:flu-pertes-conduite', '77:plausible:flu-pertes-conduite-ok'] },
     { id: 'pompe', nom: 'La pompe : puissance et rendement', capacite: 'Exploiter Bernoulli avec une pompe ; puissance utile, puissance absorbée, rendement.',
       refs: ['37:relation:pompe', '37:probleme:cuve', '77:plausible:p-hydraulique', '77:plausible:flu-pompe-hauteur-ok', '34:flu-pompe', '35:pompe'] },
   ],
