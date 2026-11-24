@@ -2741,6 +2741,27 @@ export const PREVOIR = [
       F('rien ne change : la charge de la tête d’un tensioactif ne dépend pas du pH', 'Pour un carboxylate, la charge dépend du pH ; seules les charges permanentes (sulfate, ammonium quaternaire) n’en dépendent pas.'),
       F('l’huile devient soluble dans l’eau et l’émulsion disparaît par dissolution', 'L’huile reste insoluble ; ce sont les gouttes qui se rejoignent, et l’huile se sépare en une couche.'),
     ] },
+  { id: 'chtens-ana-ecriture-na', domaine: 'Charge des tensioactifs selon le pH', titre: 'Formule condensée d’un tensioactif sodique',
+    enonce: 'Un tensioactif a pour formule, à l’état solide, R–OSO₃Na, où R est une longue chaîne carbonée. Un élève hésite : aucune charge n’est écrite dans cette formule.', q: 'Quelle est la famille de ce tensioactif, et pourquoi ?', options: [
+      V('anionique : c’est un sel, dont l’ion à longue queue R–OSO₃⁻ porte une charge −', 'Dans l’eau, le sel se dissocie en R–OSO₃⁻ et Na⁺ : on lit la famille sur l’ion qui porte la chaîne, ici anionique.'),
+      F('non ionique : aucune charge n’est écrite dans la formule', 'La formule condensée d’un sel n’écrit pas les charges, mais la liaison entre O et Na est ionique : le tensioactif est ionique.'),
+      F('amphotère : on y trouve un ion − (sulfate) et un ion + (sodium)', 'Le Na⁺ est un contre-ion sans chaîne, il ne fait pas partie de la tête : il n’y a qu’une sorte de charge sur l’ion à longue queue.'),
+      F('cationique : le sodium est un ion positif, qui détermine la famille', 'Le contre-ion Na⁺ n’a pas de queue hydrophobe : la famille se lit sur l’ion qui porte la chaîne, ici l’anion R–OSO₃⁻.'),
+    ] },
+  { id: 'chtens-ana-ecriture-br', domaine: 'Charge des tensioactifs selon le pH', titre: 'Ammonium quaternaire écrit sans charge',
+    enonce: 'Un tensioactif a pour formule R–N(CH₃)₃Br, où R est une longue chaîne carbonée. Dans cette formule, l’atome d’azote est lié à quatre groupes carbonés.', q: 'Quelle est la famille de ce tensioactif ?', options: [
+      V('cationique : l’ion à longue queue est R–N⁺(CH₃)₃, le bromure Br⁻ est un contre-ion', 'Un azote lié à quatre groupes est un ammonium quaternaire, de charge + ; le bromure n’a pas de chaîne et ne compte pas dans la famille.'),
+      F('anionique : le brome est un ion négatif, donc la tête est négative', 'Le bromure Br⁻ n’a pas de queue hydrophobe : il n’appartient pas à la tête, qui est ici l’ammonium chargé +.'),
+      F('amphotère : la formule contient un ion + et un ion −', 'Le Br⁻ est un contre-ion, pas un groupe de la même molécule : une seule sorte de charge sur la tête, c’est un cationique.'),
+      F('non ionique : aucune charge n’est écrite dans la formule', 'L’azote lié à quatre groupes porte une charge + même si elle n’est pas écrite : le tensioactif est ionique.'),
+    ] },
+  { id: 'chtens-ana-contre-ion', domaine: 'Charge des tensioactifs selon le pH', titre: 'Un contre-ion change-t-il la famille ?',
+    enonce: 'On dispose de deux tensioactifs à la même chaîne carbonée R : R–OSO₃⁻ Na⁺ et R–OSO₃⁻ K⁺. Les deux se dissolvent dans l’eau en libérant un ion à longue queue et un contre-ion.', q: 'Que peut-on dire de leur famille ?', options: [
+      V('les deux sont anioniques : le contre-ion, sans chaîne, ne change pas la famille', 'La famille se lit sur l’ion à longue queue R–OSO₃⁻, identique dans les deux cas ; Na⁺ et K⁺ ne jouent que le rôle de contre-ion.'),
+      F('l’un est anionique et l’autre cationique, selon le métal du contre-ion', 'Les deux contre-ions sont des cations, mais ils ne portent pas de chaîne : ils ne déterminent pas la famille.'),
+      F('les deux sont amphotères : chacun contient un ion + et un ion −', 'L’ion + est un contre-ion extérieur à la tête ; un amphotère porte les deux charges sur la même molécule.'),
+      F('les deux sont cationiques, car le sel contient un ion métallique positif', 'Le cation métallique est le contre-ion : la famille est donnée par l’ion à longue chaîne, ici un anion.'),
+    ] },
   { id: 'lum-spectre-sodium', domaine: 'Lumière', titre: 'Lampe à vapeur de sodium',
     enonce: 'On observe, à travers un spectroscope, la lumière d’une lampe spectrale à vapeur de sodium (basse pression).', q: 'Le spectre observé est…', options: [
       V('un spectre de raies : une raie jaune très fine sur fond noir', 'Un gaz chaud sous faible pression émet seulement certaines longueurs d’onde : un spectre de raies, propre à l’élément (jaune pour le sodium ; en réalité un doublet de deux raies très proches).'),

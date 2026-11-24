@@ -1930,5 +1930,9 @@
  "37:prevoir:chtens-ana-nonionique": "ANA774",
  "37:prevoir:chtens-ana-emulsion": "ANA775",
  "77:plausible:chtens-val-savon-amphotere": "VAL524",
- "77:plausible:chtens-val-nonionique-ph": "VAL525"
+ "77:plausible:chtens-val-nonionique-ph": "VAL525",
+ "37:prevoir:chtens-ana-ecriture-na": "ANA776",
+ "37:prevoir:chtens-ana-ecriture-br": "ANA777",
+ "37:prevoir:chtens-ana-contre-ion": "ANA778",
+ "77:plausible:chtens-val-sel-amphotere": "VAL526"
 }

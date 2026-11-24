@@ -19,7 +19,7 @@ const CADRES = {
   sds: [{ g: 0 }], savon: [{ g: 0 }], ctab: [{ g: 0 }], amine: [{ g: 0 }],
   betaine: [{ g: 0 }, { t: 'CH₂', w: 46 }, { g: 1 }], alanine: [{ g: 0 }, { t: 'CH₂CH₂', w: 72 }, { g: 1 }],
 };
-export function SvgTete({ id, pH, titre = true }) {
+export function SvgTete({ id, pH, titre = true, contre = false }) {
   const e = M.espece(id), W = 300, y0 = 80, nC = 7, xt = 10, pas = 13;
   const xFin = xt + nC * pas;
   const corps = [queue(xt, y0, nC, pas)];
@@ -69,6 +69,9 @@ export function SvgTete({ id, pH, titre = true }) {
     </g>);
     x += w;
   });
+  if (contre && e.contre) {
+    corps.push(<g key="contre"><circle cx={x + 36} cy={y0 - 5} r={17} fill="white" stroke={C.gris} strokeWidth="2" strokeDasharray="4 3"/><text x={x + 36} y={y0} fontSize={13} fontWeight={700} fill={C.zero} textAnchor="middle">{e.contre}</text><text x={x + 36} y={y0 + 24} fontSize={12} fill={C.zero} textAnchor="middle">contre-ion</text></g>);
+  }
   corps.push(T(W - 6, y0 + 46, 'tête hydrophile', { size: 13, fill: C.plus, gras: true, anchor: 'end' }));
   const c = M.charges(e, pH);
   corps.push(T(W - 6, 20, `pH ${nf(pH, 1)}`, { size: 14, gras: true, anchor: 'end' }));
@@ -132,6 +135,35 @@ export function SvgAttraction() {
     <line x1="80" y1="32" x2="220" y2="32" stroke={C.orange} strokeWidth="3" strokeDasharray="7 5" markerEnd="url(#fl220)"/>
     {T(150, 24, 'elles s’attirent', { size: 13.5, gras: true, fill: C.orange })}
     {T(150, 170, 'sel peu soluble : trouble ou précipité', { size: 13, gras: true, fill: C.moins })}
+  </>);
+}
+
+// ---- trois écritures de la formule non dissoute (SDS) ----
+export function SvgFormules() {
+  const ligne = (y, f, leg) => <g key={f}><rect x="6" y={y} width="288" height="54" rx="12" fill="white" stroke={C.gris} strokeWidth="2"/>{T(150, y + 26, f, { size: 19, gras: true })}{T(150, y + 45, leg, { size: 12.5, fill: C.zero })}</g>;
+  return base(190, 'trois écritures de la formule du SDS : R–OSO₃⁻, R–OSO₃⁻ Na⁺ et R–OSO₃Na', <>
+    {ligne(6, 'R–OSO₃⁻', 'écriture 1')}{ligne(68, 'R–OSO₃⁻ Na⁺', 'écriture 2')}{ligne(130, 'R–OSO₃Na', 'écriture 3')}
+  </>);
+}
+// ---- dissolution du sel : deux ions séparés (les rôles ne sont pas nommés : c'est la question de l'étape) ----
+export function SvgDissolution() {
+  return base(170, 'le sel R–OSO₃Na se dissocie dans l’eau en un ion R–OSO₃⁻ qui porte une longue chaîne et un ion Na⁺', <>
+    <rect x="0" y="0" width="300" height="170" rx="12" fill={C.eau}/>
+    <rect x="6" y="52" width="78" height="46" rx="10" fill="white" stroke={C.gris} strokeWidth="2"/>{T(45, 80, 'R–OSO₃Na', { size: 13, gras: true })}{T(45, 44, 'sel', { size: 12.5, fill: C.zero })}
+    <defs><marker id="fl220b" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill={C.orange}/></marker></defs>
+    <line x1="90" y1="75" x2="126" y2="75" stroke={C.orange} strokeWidth="3" markerEnd="url(#fl220b)"/>{T(108, 62, 'eau', { size: 12.5, fill: C.orange, gras: true })}
+    {queue(134, 78, 4, 11, 9)}<line x1="178" y1="73" x2="184" y2="73" stroke={C.queue} strokeWidth="3"/>
+    <rect x="184" y="50" width="62" height="46" rx="12" fill="white" stroke={C.moins} strokeWidth="3"/>{T(215, 78, 'OSO₃⁻', { size: 14, gras: true, fill: C.moins })}{disque(244, 46, '−', 1, 11)}
+    <circle cx="276" cy="73" r="15" fill="white" stroke={C.plus} strokeWidth="2.5"/>{T(276, 78, 'Na⁺', { size: 12.5, gras: true, fill: C.plus })}
+    {T(150, 140, 'deux ions séparés, libres dans l’eau', { size: 13.5, gras: true })}
+  </>);
+}
+// ---- deux formules condensées à classer ----
+export function SvgFormulesEx() {
+  return base(110, 'deux formules condensées : R–N(CH₃)₃Br et R–COONa', <>
+    <rect x="6" y="10" width="138" height="54" rx="12" fill="white" stroke={C.gris} strokeWidth="2"/>{T(75, 44, 'R–N(CH₃)₃Br', { size: 16, gras: true })}
+    <rect x="156" y="10" width="138" height="54" rx="12" fill="white" stroke={C.gris} strokeWidth="2"/>{T(225, 44, 'R–COONa', { size: 16, gras: true })}
+    {T(150, 92, 'R : longue chaîne carbonée', { size: 13, fill: C.queue, gras: true })}
   </>);
 }
 
@@ -202,5 +234,16 @@ export function SvgCarteChoix() {
     {lig(50, 'SDS', C.moins, X(0), X(14))}{lig(84, 'CTAB', C.plus, X(0), X(14))}{lig(118, 'savon', C.moins, X(7.5), X(14))}{lig(152, 'amine', C.plus, X(0), X(10))}{lig(186, 'non ionique', C.non, 0, 0)}
     {T(X(7), 190, 'aucune charge à aucun pH', { size: 12.5, fill: C.non, gras: true })}
     <line x1={X(0)} y1="204" x2={X(14)} y2="204" stroke={C.txt}/>{[0, 7, 14].map(t => <g key={t}>{T(X(t), 220, String(t), { size: 12.5 })}</g>)}{T(296, 220, 'pH', { size: 12.5, anchor: 'end', gras: true })}
+  </>, WC, MAXC);
+}
+export function SvgCarteFormule() {
+  return base(236, 'lire la famille sur l’ion qui porte la longue chaîne : dans R–OSO₃Na, c’est R–OSO₃⁻ ; le contre-ion Na⁺ est ignoré', <>
+    <rect x="6" y="6" width="288" height="88" rx="12" fill="white" stroke={C.gris} strokeWidth="2"/>
+    {T(150, 32, 'R–OSO₃⁻', { size: 15, gras: true })}{T(150, 55, 'R–OSO₃⁻ Na⁺', { size: 15, gras: true })}{T(150, 78, 'R–OSO₃Na', { size: 15, gras: true })}
+    {T(150, 118, '↓ dans l’eau', { size: 14, gras: true, fill: C.orange })}
+    <rect x="14" y="130" width="160" height="42" rx="12" fill="white" stroke={C.orange} strokeWidth="3"/>{T(94, 158, 'R–OSO₃⁻', { size: 16, gras: true, fill: C.moins })}
+    <rect x="190" y="130" width="96" height="42" rx="12" fill="white" stroke={C.gris} strokeWidth="2" strokeDasharray="5 4"/>{T(238, 158, 'Na⁺', { size: 15, gras: true, fill: C.zero })}
+    {T(94, 194, 'ion à longue queue :', { size: 13, gras: true, fill: C.orange })}{T(94, 212, 'on lit la famille ici', { size: 13, fill: C.orange })}
+    {T(238, 194, 'contre-ion :', { size: 13, gras: true, fill: C.zero })}{T(238, 212, 'on l’ignore', { size: 13, fill: C.zero })}
   </>, WC, MAXC);
 }

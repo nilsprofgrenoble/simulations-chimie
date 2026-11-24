@@ -63,4 +63,11 @@ ok(pire < 0.05, 'tolérance 5 % suffisante');
 for (let k = 0; k < 2000; k++) { const t = M.tirageFraction(); ok(t.vrai > 0.025 && t.vrai < 0.995 && Math.abs(t.pH * 2 - Math.round(t.pH * 2)) < 1e-9, 'tirage fraction'); }
 // défi « point isoélectrique » : demi-somme exacte en dixièmes
 for (let k = 0; k < 200; k++) { const t = M.tirageIso(); ok(pr(t.vrai * 4, Math.round(t.vrai * 4)), 'demi-somme ' + t.vrai); }
+// écritures : ioniques à contre-ion, trois écritures ; autres, une seule ; défi formule cohérent
+for (const e of M.ESPECES) {
+  ok(Array.isArray(e.ecritures) && e.ecritures.length >= 1, 'écritures ' + e.id);
+  if (['anionique', 'cationique'].includes(e.famille)) ok(e.ecritures.length === 3 && e.contre && e.ecritures[2].indexOf('⁻') < 0 && e.ecritures[2].indexOf('⁺') < 0, 'condensée sans charge ' + e.id);
+  else ok(e.contre == null, 'pas de contre-ion ' + e.id);
+}
+for (let k = 0; k < 2000; k++) { const t = M.tirageFormule(); ok(t.ecriture === t.e.ecritures[t.k] && t.famille === t.e.famille, 'tirage formule'); }
 console.log(n, 'vérifications OK');

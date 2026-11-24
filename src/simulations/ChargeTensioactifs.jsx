@@ -5,10 +5,10 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./chargeTensioactifsModele";
 import { QCM } from "./chargeTensioactifsQcm";
-import { SvgTete, SvgCourbes, SvgGouttes, SvgAttraction, SvgCarteIoniques, SvgCarteZwitterion, SvgCarteAmphotere, SvgCarteTest, SvgCarteNonionique, SvgCarteChoix } from "./ChargeTensioactifsSchemas";
+import { SvgTete, SvgCourbes, SvgGouttes, SvgAttraction, SvgCarteIoniques, SvgCarteZwitterion, SvgCarteAmphotere, SvgCarteTest, SvgCarteNonionique, SvgCarteChoix, SvgFormules, SvgDissolution, SvgFormulesEx, SvgCarteFormule } from "./ChargeTensioactifsSchemas";
 
 const SIM_ID = 220, CLE_GUIDE = 'charge-tensioactifs-guide-v1';
-declarerDefis(SIM_ID, [['famille', 'Reconnaître la famille d’un tensioactif sur ses courbes'], ['fraction', 'Fraction ionisée d’un acide faible (prolongement)'], ['iso', 'Point isoélectrique d’un amphotère (prolongement)']]);
+declarerDefis(SIM_ID, [['famille', 'Reconnaître la famille d’un tensioactif sur ses courbes'], ['fraction', 'Fraction ionisée d’un acide faible (prolongement)'], ['iso', 'Point isoélectrique d’un amphotère (prolongement)'], ['formule', 'Famille d’un tensioactif d’après sa formule écrite']]);
 
 // ====================================================
 //  SIM 220 — CHARGE D'UN TENSIOACTIF SELON LE pH (BTS MDC, Formulation › Tensioactifs et émulsions)
@@ -24,10 +24,16 @@ const liste = { margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHe
 const fr = (v, d = 1) => v.toFixed(d).replace('.', ',').replace('-', '−');
 const sig2 = v => String(Number(Number(v).toPrecision(2))).replace('.', ',');
 const signee = (v, d = 2) => (Math.abs(v) < 0.005 ? '0,00' : `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(d).replace('.', ',')}`);
-const PH_DEPART = { 'sds-a': 7, 'sds-b': 7, ctab: 7, savon: 10, ioniques: 7, betaine: 7, 'betaine-courbes': 7, alanine: 7, distinguer: 7, nonionique: 7, melange: 7, emulsion: 9 };
+const PH_DEPART = { sds: 7, formules: 7, sel: 7, 'formules-ex': 7, ctab: 7, savon: 10, ioniques: 7, betaine: 7, 'betaine-courbes': 7, alanine: 7, distinguer: 7, nonionique: 7, melange: 7, emulsion: 9 };
 const FAMILLES = ['anionique', 'cationique', 'amphotère', 'non ionique'];
 const COUL_FAM = { anionique: COL.rouge, cationique: COL.bleu, 'amphotère': COL.violet, 'non ionique': COL.vert };
 
+// corrigé du défi « famille d'après la formule »
+function corrigeFormule(d) {
+  if (d.famille === 'non ionique') return 'Aucun groupe ionisable : la tête n’est jamais chargée.';
+  if (d.famille === 'amphotère') return 'La même molécule porte un groupe + et un groupe − (pas de contre-ion à ignorer) : amphotère.';
+  return `L’ion qui porte la chaîne R est ${d.e.ecritures[0]}, de charge ${d.famille === 'anionique' ? '−' : '+'}. Le contre-ion ${d.e.contre} n’a pas de chaîne : on l’ignore. Famille : ${d.famille}.`;
+}
 // phrase qui explique, à partir des courbes, la famille d'un tensioactif (corrigé du défi 1)
 function expliqueFamille(e) {
   const b = M.bilan(e);
@@ -43,20 +49,25 @@ export function SimulationChargeTensioactifs() {
   const [pH, setPH] = useState(7);
   const [sp, setSp] = useState('sds');
   const [ouv, setOuv] = useState({});
-  const [suiviF, noterF] = useCompteurDefi(), [suiviX, noterX] = useCompteurDefi(), [suiviI, noterI] = useCompteurDefi();
+  const [suiviF, noterF] = useCompteurDefi(), [suiviX, noterX] = useCompteurDefi(), [suiviI, noterI] = useCompteurDefi(), [suiviE, noterE] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('famille');
   const enGuide = mode === 'guide', enExplore = mode === 'explore', enDefi = mode === 'defi';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
   // ---------- étapes du parcours ----------
   const ETAPES = [
-    { id: 'sds-a', titre: 'Une tête qui porte une charge', focus: ['scene'],
-      texte: <>La tête d’un <strong>tensioactif ionique</strong> porte une charge. Voici le SDS, dont la tête sulfate porte une charge <strong>−</strong>. Le curseur règle le <strong>pH</strong> de la solution (il vaut 7 au départ).</>,
-      tache: { type: 'action', ok: pH <= 2, consigne: 'Faites passer le pH en dessous de 2 (milieu très acide) et regardez la tête.', attente: null } },
-    { id: 'sds-b', titre: 'Le SDS ne change pas', focus: ['scene'],
-      texte: <>La charge du SDS reste − de pH 0 à pH 14 : la tête du SDS ne change pas quand on modifie le pH.</>,
+    { id: 'sds', titre: 'Une tête qui porte une charge', focus: ['scene'],
+      texte: <>La tête d’un <strong>tensioactif ionique</strong> porte une charge. Voici le SDS, dont la tête sulfate porte une charge <strong>−</strong>. Le curseur règle le <strong>pH</strong> de la solution (il vaut 7 au départ) : faites-le descendre en dessous de 2 (milieu très acide) et regardez la tête.</>,
       tache: { type: 'qcm', q: 'Pourquoi la charge de la tête du SDS ne dépend-elle pas du pH ?', ...QCM.sds,
-        expl: 'Le groupe sulfate dérive d’un acide très fort : même en milieu très acide, il garde sa charge − (il ne se reprotone pas). Sa charge est permanente.', indice: 'Un acide très fort cède son H⁺ pour de bon : sa base conjuguée a-t-elle envie de le reprendre ?' } },
+        expl: 'Le groupe sulfate dérive d’un acide très fort : même en milieu très acide, il garde sa charge − (il ne se reprotone pas). Sa charge est permanente, de pH 0 à pH 14.', indice: 'Un acide très fort cède son H⁺ pour de bon : sa base conjuguée a-t-elle envie de le reprendre ?' } },
+    { id: 'formules', titre: 'Une substance, trois écritures', focus: ['scene'],
+      texte: <>Dans les documents, le SDS (dodécylsulfate de sodium) s’écrit de <strong>trois façons</strong>. <strong>R</strong> représente la longue chaîne carbonée, la queue hydrophobe. Les deux premières écritures montrent les charges ; la troisième n’en écrit aucune.</>,
+      tache: { type: 'qcm', q: 'Que cache l’écriture R–OSO₃Na ?', ...QCM.formule,
+        expl: 'Le sodium, métal très électropositif, ne forme pas de liaison covalente avec l’oxygène : il est présent sous forme d’ion Na⁺. R–OSO₃Na est la formule condensée d’un sel, où les charges ne sont pas écrites. Le tensioactif est ionique (anionique), pas non ionique, et il n’est pas amphotère : le Na⁺ n’est pas un groupe de la tête.', indice: 'Entre un métal comme le sodium et un groupe sulfate, la liaison est ionique : quelles espèces chargées retrouve-t-on ?' } },
+    { id: 'sel', titre: 'Dans l’eau, le sel se dissocie', focus: ['scene'],
+      texte: <>Le SDS est un <strong>sel</strong> : dissous dans l’eau, il libère <strong>deux ions indépendants</strong>, R–OSO₃⁻ et Na⁺. Un seul d’entre eux porte la longue chaîne carbonée. Le schéma de la tête, plus bas, montre aussi le contre-ion en pointillés.</>,
+      tache: { type: 'qcm', q: 'Pour trouver la famille du tensioactif, quel ion regarde-t-on ?', ...QCM.ion,
+        expl: 'Le contre-ion Na⁺ n’a pas de chaîne : il n’est pas amphiphile et il ne fait pas partie de la tête. La famille est celle de l’ion qui porte la queue : ici R–OSO₃⁻, de charge −, donc anionique. Avoir un ion + et un ion − dans la formule du sel ne fait pas un amphotère.', indice: 'Un tensioactif est une molécule à queue hydrophobe : lequel des deux ions a une queue ?' } },
     { id: 'ctab', titre: 'Un ionique de charge +', focus: ['scene'],
       texte: <>Voici le <strong>CTAB</strong>, un tensioactif <strong>cationique</strong> : sa tête ammonium quaternaire porte une charge <strong>+</strong>. Montez le pH jusqu’à 13 (milieu très basique) et regardez la tête.</>,
       tache: { type: 'qcm', q: 'Pourquoi la tête du CTAB garde-t-elle sa charge + même à pH 13 ?', ...QCM.ctab,
@@ -69,6 +80,18 @@ export function SimulationChargeTensioactifs() {
       texte: <>Voici quatre tensioactifs <strong>ioniques</strong>, avec leur nombre de charges + (bleu) et de charges − (rouge) par molécule, en fonction du pH. Faites varier le pH et suivez les points : le savon et l’amine (pK<sub>a</sub> voisin de 10) changent avec le pH, le SDS et le CTAB non.</>,
       tache: { type: 'qcm', q: 'Un tensioactif ionique peut-il porter à la fois une charge + et une charge − ?', ...QCM.ioniques,
         expl: 'Un ionique n’a qu’une sorte de charge possible : − pour un anionique, + pour un cationique. Selon le pH, cette charge peut disparaître (savon, amine), mais l’autre sorte n’apparaît jamais.', indice: 'Regardez chacune des quatre figures : voit-on les deux couleurs apparaître sur la même courbe ?' } },
+    { id: 'formules-ex', titre: 'Lire une formule sans charge écrite', focus: ['scene'],
+      retenirTitre: 'À retenir : lire une formule', retenir: <>
+        <SvgCarteFormule/>
+        <ul style={puces}>
+          <li>Un tensioactif ionique est un <strong>sel</strong> : dans l’eau, il se dissocie en un <strong>ion à longue queue</strong> et un <strong>contre-ion</strong>.</li>
+          <li>On lit la famille sur l’<strong>ion qui porte la chaîne R</strong> : sa charge dit anionique (−) ou cationique (+).</li>
+          <li>Moyen de s’en souvenir : <strong>« on lit l’ion à longue queue, on oublie le contre-ion »</strong>.</li>
+          <li><strong>Idée fausse :</strong> « un ion + et un ion − dans la formule, donc un amphotère ». <strong>Vrai :</strong> le contre-ion n’appartient pas à la tête ; un amphotère porte les deux charges sur la même molécule.</li>
+        </ul></>,
+      texte: <>On écrit souvent les sels sans les charges. Voici deux formules condensées, où <strong>R</strong> est une longue chaîne carbonée : R–N(CH₃)₃Br (c’est le CTAB, avec le brome sous forme de bromure) et R–COONa (un savon).</>,
+      tache: { type: 'qcm', q: 'Quelles sont les familles de R–N(CH₃)₃Br et de R–COONa ?', ...QCM.ecritures,
+        expl: 'Dans R–N(CH₃)₃Br, l’azote porte quatre groupes : c’est un ammonium quaternaire R–N⁺(CH₃)₃, avec le bromure Br⁻ comme contre-ion : cationique. Dans R–COONa, l’ion à longue queue est le carboxylate R–COO⁻ (contre-ion Na⁺) : anionique. Aucun n’est amphotère.', indice: 'Dans chaque formule, repérez l’ion qui porte la chaîne R, puis sa charge.' } },
     { id: 'betaine', titre: 'Un amphotère à pH 7', focus: ['scene'],
       retenirTitre: 'À retenir : les ioniques', retenir: <>
         <SvgCarteIoniques/>
@@ -151,7 +174,8 @@ export function SimulationChargeTensioactifs() {
   // ---------- scènes du parcours ----------
   const bloc = (...c) => <div className="ct-col">{c}</div>;
   const sceneGuide = {
-    'sds-a': () => <SvgTete id="sds" pH={pH}/>, 'sds-b': () => <SvgTete id="sds" pH={pH}/>, ctab: () => <SvgTete id="ctab" pH={pH}/>, savon: () => <SvgTete id="savon" pH={pH}/>,
+    sds: () => <SvgTete id="sds" pH={pH}/>, formules: () => <SvgFormules/>, sel: () => bloc(<SvgDissolution key="d"/>, <SvgTete key="t" id="sds" pH={pH} contre/>), 'formules-ex': () => <SvgFormulesEx/>,
+    ctab: () => <SvgTete id="ctab" pH={pH}/>, savon: () => <SvgTete id="savon" pH={pH}/>,
     ioniques: () => <div className="ct-grille">{[['sds', 'SDS'], ['ctab', 'CTAB'], ['savon', 'savon'], ['amine', 'amine']].map(([id, n]) => <SvgCourbes key={id} id={id} pH={pH} etiquette={n} petit legende={false}/>)}</div>,
     betaine: () => <SvgTete id="betaine" pH={pH}/>,
     'betaine-courbes': () => <SvgCourbes id="betaine" pH={pH} etiquette="bétaïne"/>,
@@ -172,6 +196,7 @@ export function SimulationChargeTensioactifs() {
   // ---------- défis ----------
   const nouveauDefi = type => {
     if (type === 'famille') setDefi({ type, ...M.tirageFamille(), rep: '', verifie: false });
+    else if (type === 'formule') setDefi({ type, ...M.tirageFormule(), rep: '', verifie: false });
     else if (type === 'fraction') setDefi({ type, ...M.tirageFraction(), rep: '', verifie: false });
     else setDefi({ type, ...M.tirageIso(), rep: '', verifie: false });
   };
@@ -181,6 +206,7 @@ export function SimulationChargeTensioactifs() {
   const verifier = () => {
     let ok;
     if (defi.type === 'famille') { ok = defi.rep === defi.famille; noterF(ok); }
+    else if (defi.type === 'formule') { ok = defi.rep === defi.famille; noterE(ok); }
     else if (defi.type === 'fraction') { ok = proche(defi.rep, defi.pct); noterX(ok); }
     else { ok = proche(defi.rep, defi.vrai); noterI(ok); }
     setDefi(d => ({ ...d, verifie: true, ok }));
@@ -195,7 +221,7 @@ export function SimulationChargeTensioactifs() {
   const voletDefi = defi && (
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {[['famille', 'Reconnaître la famille'], ['fraction', 'Fraction ionisée (prolongement)'], ['iso', 'Point isoélectrique (prolongement)']].map(([tp, l]) => <button key={tp} onClick={() => choisirDefi(tp)} aria-pressed={defi.type === tp} style={stylePetitBouton(defi.type === tp, '#7c3aed')}>{l}</button>)}
+        {[['famille', 'Reconnaître la famille'], ['formule', 'Famille d’après la formule'], ['fraction', 'Fraction ionisée (prolongement)'], ['iso', 'Point isoélectrique (prolongement)']].map(([tp, l]) => <button key={tp} onClick={() => choisirDefi(tp)} aria-pressed={defi.type === tp} style={stylePetitBouton(defi.type === tp, '#7c3aed')}>{l}</button>)}
       </div>
       {defi.type === 'famille' && <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : quelle famille de tensioactif ?</div>
@@ -205,6 +231,15 @@ export function SimulationChargeTensioactifs() {
         <select id="ct-fam" value={defi.rep} onChange={ev => setDefi(d => ({ ...d, rep: ev.target.value, verifie: false }))} style={{ ...selectStyle, maxWidth: 260, border: `1.5px solid ${defi.verifie ? (defi.rep === defi.famille ? '#15803d' : '#dc2626') : KIT.bord}` }}>
           <option value="">Choisir…</option>{FAMILLES.map(f => <option key={f} value={f}>{f}</option>)}</select>
         <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>Comptez les sortes de charges qui apparaissent entre pH 0 et pH 14 : aucune (non ionique), une seule (ionique : bleu = cationique, rouge = anionique) ou les deux (amphotère).</IndiceDefi></div>
+      </>}
+      {defi.type === 'formule' && <>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : quelle famille, d’après la formule ?</div>
+        <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>Un tensioactif a pour formule, à l’état non dissous (<strong>R</strong> : longue chaîne carbonée) :</div>
+        <div style={{ textAlign: 'center', fontSize: 22, fontWeight: 700, color: KIT.txt, margin: '8px 0 10px', padding: '10px 8px', border: `2px solid ${KIT.bord}`, borderRadius: 12 }}>{defi.ecriture}</div>
+        <label htmlFor="ct-fam2" style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '0 0 3px' }}>Famille</label>
+        <select id="ct-fam2" value={defi.rep} onChange={ev => setDefi(d => ({ ...d, rep: ev.target.value, verifie: false }))} style={{ ...selectStyle, maxWidth: 260, border: `1.5px solid ${defi.verifie ? (defi.rep === defi.famille ? '#15803d' : '#dc2626') : KIT.bord}` }}>
+          <option value="">Choisir…</option>{FAMILLES.map(f => <option key={f} value={f}>{f}</option>)}</select>
+        <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>Cherchez l’ion qui porte la chaîne R, et sa charge (même si elle n’est pas écrite). Le contre-ion ne compte pas. Un groupe + et un groupe − sur la même molécule : amphotère. Aucun groupe chargé : non ionique.</IndiceDefi></div>
       </>}
       {defi.type === 'fraction' && <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : fraction ionisée d’un savon</div>
@@ -227,6 +262,7 @@ export function SimulationChargeTensioactifs() {
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defi.ok ? '✓ Correct. ' : '✗ Pas tout à fait. '}
         {defi.type === 'famille' && `Réponse : ${defi.famille}. ${expliqueFamille(defi.e)}`}
+        {defi.type === 'formule' && `Réponse : ${defi.famille}. ${corrigeFormule(defi)}`}
         {defi.type === 'fraction' && <>pK<sub>a</sub> − pH = {fr(defi.pKa - defi.pH, 1)}, donc <FormuleEnLigne><msup><mn>10</mn><mrow><mo>{fr(defi.pKa - defi.pH, 1)}</mo></mrow></msup></FormuleEnLigne> = {sig2(10 ** (defi.pKa - defi.pH))} ; <FormuleEnLigne><mi>α</mi><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><mn>{sig2(10 ** (defi.pKa - defi.pH))}</mn></mrow></mfrac></FormuleEnLigne> = {fr(defi.vrai, 3)}, soit {sig2(defi.pct)} %.</>}
         {defi.type === 'iso' && <><FormuleEnLigne><mfrac><mrow><mn>{fr(defi.pKaAcide, 1)}</mn><mo>+</mo><mn>{fr(defi.pKaBase, 1)}</mn></mrow><mn>2</mn></mfrac></FormuleEnLigne> = {fr(defi.vrai, 2)}, soit pH ≈ {sig2(defi.vrai)}.</>}
       </div>}
@@ -244,6 +280,7 @@ export function SimulationChargeTensioactifs() {
       <li><strong>Charges moyennes par molécule</strong> : chaque groupe acide ou basique est traité séparément, dans une solution diluée, par la loi d’équilibre acide-base (fraction ionisée <FormuleEnLigne><mi>α</mi><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mn>10</mn><mrow><msub><mi>pK</mi><mi mathvariant="normal">a</mi></msub><mo>−</mo><mi>pH</mi></mrow></msup></mrow></mfrac></FormuleEnLigne>). Les charges tracées sont donc des moyennes, comprises entre 0 et 1 par groupe.</li>
       <li><strong>Les pK<sub>a</sub> sont des ordres de grandeur arrondis</strong> : carboxylate d’un savon ≈ 7,5 ; amine primaire ≈ 10 ; carboxyle de la bétaïne ≈ 2 ; amphotère à amine ≈ 3 et ≈ 10. Les valeurs réelles varient avec le produit : pour un savon, le pK<sub>a</sub> apparent dans les agrégats va de 6 à 9 environ selon la longueur de la chaîne, et pour les amphotères du commerce le pH où la charge nette s’annule dépend de la formulation.</li>
       <li><strong>Charges permanentes</strong> : le sulfate (SDS) et l’ammonium quaternaire (CTAB) gardent leur charge de pH 0 à 14 (pas de proton échangeable). Les contre-ions (Na⁺, Br⁻) ne sont pas représentés.</li>
+      <li><strong>Écritures des formules</strong> : R désigne une longue chaîne carbonée. Un tensioactif ionique est un sel : à l’état dissous, il est séparé en un ion à longue queue et un contre-ion (Na⁺, Br⁻, Cl⁻) qui n’a pas de rôle dans la famille. Les trois écritures (ion seul, ion avec contre-ion, formule condensée) désignent la même substance ; les contre-ions sont dessinés en pointillés sur la tête et absents des scènes de gouttes. Les amphotères et les non ioniques n’ont pas de contre-ion nécessaire.</li>
       <li><strong>Seuil de lecture</strong> : une tête est dite « chargée » si sa charge moyenne dépasse 0,15 en valeur absolue ; la famille est déduite sur toute l’échelle de pH 0 à 14.</li>
       <li><strong>Scène des gouttes</strong> : douze têtes par goutte ; on ne représente que la <strong>répulsion électrostatique</strong>. Pas de sel ajouté, pas de force ionique, pas de répulsion stérique. Les non ioniques stabilisent autrement (têtes hydratées) et sont hors de cette scène.</li>
       <li><strong>Pas de dégradation chimique</strong> : en milieu très acide ou très basique, certains tensioactifs (esters de sorbitane, par exemple) s’hydrolysent ; la simulation ne le modélise pas.</li>
@@ -275,7 +312,7 @@ export function SimulationChargeTensioactifs() {
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {enExplore && <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La tête du tensioactif à ce pH</div>}
-      {enGuide ? sceneGuide : <SvgTete id={sp} pH={pH}/>}
+      {enGuide ? sceneGuide : <SvgTete id={sp} pH={pH} contre/>}
     </div>);
   const mesures = (enExplore || (enGuide && lignesGuide.length > 0)) && (
     <div style={styleBoite}>
@@ -302,6 +339,16 @@ export function SimulationChargeTensioactifs() {
         ? <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>Un tensioactif non ionique ne porte aucune charge : il ne crée pas de répulsion électrostatique. Il stabilise les gouttes autrement (têtes hydratées qui s’opposent au rapprochement), et son efficacité ne dépend pas du pH. Cette scène ne s’applique donc pas.</div>
         : <SvgGouttes id={sp} pH={pH}/>}
     </div>);
+  const formule = enExplore && (
+    <Section titre={`Formule de ${e.court} : écritures`} ouvert={!!ouv.form} onBascule={() => bascule('form')}>
+      <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
+        {e.ecritures.map((f, k) => <div key={f} style={{ fontWeight: 700, fontSize: 16 }}>{f}{e.contre ? <span style={{ fontWeight: 400, fontSize: 13, color: KIT.txt2 }}>{['  (ion seul)', '  (avec son contre-ion)', '  (formule condensée du sel)'][k]}</span> : null}</div>)}
+        <div style={{ marginTop: 6 }}>{e.contre
+          ? <>R est la longue chaîne carbonée. Dans l’eau, le sel se dissocie : l’ion à longue queue (celui dont on lit la famille) et le contre-ion {e.contre}, sans queue, qu’on ignore.</>
+          : e.famille === 'non ionique' ? <>Aucun ion dans la formule : la tête n’est jamais chargée.</>
+          : <>Les deux charges sont sur la même molécule : aucun contre-ion n’est à ignorer. C’est ce qui distingue un amphotère d’un sel ionique.</>}</div>
+      </div>
+    </Section>);
   const prolongement = enExplore && (
     <Section titre="Prolongement : fraction ionisée (hors référentiel)" ouvert={!!ouv.prol} onBascule={() => bascule('prol')}>
       <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
@@ -328,6 +375,7 @@ export function SimulationChargeTensioactifs() {
         <li>Sulfate et ammonium quaternaire : charge permanente ; carboxylate et amine : charge qui dépend du pH</li>
         <li>Neutre ne veut pas dire sans charge : un amphotère peut avoir une charge nette nulle avec deux charges</li>
         <li>Un anionique et un cationique en mélange s’attirent et précipitent</li>
+        <li>Une formule de sel (R–OSO₃Na, R–N(CH₃)₃Br) se lit sur l’ion à longue queue ; le contre-ion est ignoré</li>
       </ul>
     </ARetenir>);
 
@@ -364,7 +412,7 @@ export function SimulationChargeTensioactifs() {
           </div>
         </div>
       </div>}
-      {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'famille' ? suiviF : defi.type === 'fraction' ? suiviX : suiviI}/></div>}
+      {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'famille' ? suiviF : defi.type === 'formule' ? suiviE : defi.type === 'fraction' ? suiviX : suiviI}/></div>}
       {enExplore && <>
         <div className="ct-ex">
           {scene}
@@ -373,6 +421,7 @@ export function SimulationChargeTensioactifs() {
           {mesures}
           {gouttes}
         </div>
+        {formule}
         {prolongement}
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
