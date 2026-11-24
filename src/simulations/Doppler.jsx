@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as D from "./dopplerModele";
@@ -327,13 +327,13 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         bloque: Math.abs(beta - 0.4) < 0.026 ? null : 'Rétablissez d’abord v = 0,40 c avec le bouton au-dessus de la scène.',
         expl: 'Derrière lui, l’émetteur s’éloigne des fronts qu’il vient d’émettre : ils sont plus espacés, donc la longueur d’onde reçue est plus grande.', indice: 'C’est l’inverse du cas précédent : l’émetteur s’éloigne de ses fronts.' } },
     { id: 'frequence', titre: 'Longueur d’onde et fréquence', focus: ['mesures'],
-      texte: <>La célérité <em>c</em> de l’onde ne dépend que du milieu, pas de l’émetteur : un récepteur reçoit donc des fronts à la célérité <em>c</em>, mais plus ou moins serrés. La fréquence reçue est liée à la longueur d’onde reçue par <em>f</em> = <em>c</em> / <em>λ</em>.</>,
+      texte: <>La célérité <em>c</em> de l’onde ne dépend que du milieu, pas de l’émetteur : un récepteur reçoit donc des fronts à la célérité <em>c</em>, mais plus ou moins serrés. La fréquence reçue est liée à la longueur d’onde reçue par <em>f</em> = {avecIndices('frac(c|λ)')}.</>,
       tache: { type: 'qcm', q: 'Le récepteur A, placé devant l’émetteur, reçoit une fréquence…', options: ['plus grande que la fréquence émise', 'plus petite que la fréquence émise', 'égale à la fréquence émise'], bonne: 0,
         bloque: Math.abs(beta - 0.4) < 0.026 ? null : 'Rétablissez d’abord v = 0,40 c avec le bouton au-dessus de la scène.',
-        expl: 'Devant l’émetteur, λ reçue est plus petite que λ émise. Comme f = c / λ avec c inchangée, la fréquence reçue est plus grande. Derrière, c’est l’inverse. L’émetteur, lui, n’a pas changé sa fréquence : f_e est toujours la même.', indice: 'f = c / λ : si λ diminue et que c ne change pas, que fait f ?' } },
+        expl: 'Devant l’émetteur, λ reçue est plus petite que λ émise. Comme f = frac(c|λ) avec c inchangée, la fréquence reçue est plus grande. Derrière, c’est l’inverse. L’émetteur, lui, n’a pas changé sa fréquence : f_e est toujours la même.', indice: 'f = frac(c|λ) : si λ diminue et que c ne change pas, que fait f ?' } },
     ...(tg ? [
     { id: 'etablir1', titre: 'Établir l’expression : le chemin de l’émetteur', focus: ['scene'],
-      texte: <>L’émetteur émet un front d’onde toutes les <em>T</em><sub>e</sub> (période de l’onde émise, <em>f</em><sub>e</sub> = 1 / <em>T</em><sub>e</sub>). L’onde se propage à la célérité <em>c</em> ; l’émetteur, lui, se déplace à la vitesse <em>v</em> vers le récepteur A. Cherchons la distance entre deux fronts consécutifs <strong>devant</strong> l’émetteur.</>,
+      texte: <>L’émetteur émet un front d’onde toutes les <em>T</em><sub>e</sub> (période de l’onde émise, <em>f</em><sub>e</sub> = {avecIndices('frac(1|T_e)')}). L’onde se propage à la célérité <em>c</em> ; l’émetteur, lui, se déplace à la vitesse <em>v</em> vers le récepteur A. Cherchons la distance entre deux fronts consécutifs <strong>devant</strong> l’émetteur.</>,
       tache: { type: 'qcm', q: 'Pendant une période T_e, l’émetteur parcourt la distance…', options: ['v × T_e', 'c × T_e', 'v / T_e'], bonne: 0,
         bloque: Math.abs(beta - 0.4) < 0.026 ? null : 'Rétablissez d’abord v = 0,40 c avec le bouton au-dessus de la scène.',
         expl: 'Mouvement uniforme : distance = vitesse × durée = v × T_e. C’est la distance entre les points où deux fronts consécutifs ont été émis.', indice: 'Distance = vitesse × durée, avec la durée égale à T_e.' } },
@@ -341,7 +341,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       texte: <>Quand l’émetteur émet le 2<sup>e</sup> front, le 1<sup>er</sup> front a parcouru <em>c</em> × <em>T</em><sub>e</sub> depuis son point d’émission. Mais le 2<sup>e</sup> front part d’un point situé <em>v</em> × <em>T</em><sub>e</sub> plus loin, <strong>dans le même sens</strong> que l’onde (devant l’émetteur).</>,
       tache: { type: 'qcm', q: 'La distance entre les deux fronts devant l’émetteur (longueur d’onde reçue en A, λ_A) vaut…', options: ['(c − v) × T_e', '(c + v) × T_e', 'c × T_e'], bonne: 0,
         bloque: Math.abs(beta - 0.4) < 0.026 ? null : 'Rétablissez d’abord v = 0,40 c avec le bouton au-dessus de la scène.',
-        expl: 'Le 1er front est à c × T_e de la 1re position ; le 2e part de v × T_e plus loin : l’écart vaut c × T_e − v × T_e = (c − v) × T_e. Derrière l’émetteur, il part dans l’autre sens : (c + v) × T_e. Ensuite f = c / λ donne f_A = c / ((c − v) T_e) = f_e / (1 − v / c).', indice: 'Les deux distances sont mesurées dans le même sens : on soustrait. Faites un schéma avec les positions d’émission.' } },
+        expl: 'Le 1er front est à c × T_e de la 1re position ; le 2e part de v × T_e plus loin : l’écart vaut c × T_e − v × T_e = (c − v) × T_e. Derrière l’émetteur, il part dans l’autre sens : (c + v) × T_e. Ensuite f = frac(c|λ) donne f_A = frac(c|(c − v) T_e) = frac(f_e|1 − frac(v|c)).', indice: 'Les deux distances sont mesurées dans le même sens : on soustrait. Faites un schéma avec les positions d’émission.' } },
     ] : []),
     { id: 'rapport', titre: 'Le rapport des fréquences', focus: ['mesures'],
       retenirTitre: 'L’émetteur mobile décale la fréquence reçue',
@@ -349,21 +349,21 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         <SvgFronts/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
           <li><strong>Je fonce vers toi : tes fronts arrivent serrés ⇒ λ petite ⇒ f grande.</strong> Je m’éloigne : fronts étirés ⇒ λ grande ⇒ f petite.</li>
-          <li>Relation à garder : <em>f</em> = <em>c</em> / <em>λ</em>, avec <em>c</em> fixée par le milieu.</li>
+          <li>Relation à garder : <em>f</em> = {avecIndices('frac(c|λ)')}, avec <em>c</em> fixée par le milieu.</li>
           <li><strong>Idée fausse</strong> : l’émetteur change la fréquence qu’il émet. <strong>Vrai</strong> : il émet toujours <em>f</em><sub>e</sub> ; c’est la fréquence <em>reçue</em> qui diffère.</li>
           <li><strong>Idée fausse</strong> : l’onde va plus vite quand l’émetteur avance. <strong>Vrai</strong> : <em>c</em> ne dépend que du milieu.</li>
         </ul></>,
-      texte: <>L’émetteur se déplace à <em>v</em> = 0,40{NB}<em>c</em>. Devant lui, la longueur d’onde reçue vaut <em>λ</em><sub>devant</sub> = 0,60{NB}<em>λ</em> (valeur affichée dans « Mesures »). Comme <em>f</em> = <em>c</em> / <em>λ</em>, calculez le rapport <em>f</em><sub>devant</sub> / <em>f</em><sub>e</sub> = <em>λ</em> / <em>λ</em><sub>devant</sub>.</>,
-      tache: { type: 'num', q: 'Rapport f_devant / f_e', unite: '', vrai: 1 / 0.6, tol: 0.03, affiche: v => nbf(v, 2), cs: 3,
+      texte: <>L’émetteur se déplace à <em>v</em> = 0,40{NB}<em>c</em>. Devant lui, la longueur d’onde reçue vaut <em>λ</em><sub>devant</sub> = 0,60{NB}<em>λ</em> (valeur affichée dans « Mesures »). Comme <em>f</em> = {avecIndices('frac(c|λ)')}, calculez le rapport {avecIndices('frac(f_devant|f_e)')} = {avecIndices('frac(λ|λ_devant)')}.</>,
+      tache: { type: 'num', q: 'Rapport frac(f_devant|f_e)', unite: '', vrai: 1 / 0.6, tol: 0.03, affiche: v => nbf(v, 2), cs: 3,
         bloque: Math.abs(beta - 0.4) < 0.026 ? null : 'Rétablissez d’abord v = 0,40 c avec le bouton au-dessus de la scène.',
-        calcul: () => ['f = c / λ avec la même célérité c : f_devant / f_e = λ / λ_devant.', `λ_devant = 0,60 λ, donc f_devant / f_e = 1 / 0,60 = ${nbf(1 / 0.6, 2)}.`, 'La fréquence reçue devant l’émetteur est environ 1,67 fois la fréquence émise (valeur exagérée : le schéma est exagéré).'],
-        pieges: [[0.6, 'Vous avez donné le rapport des longueurs d’onde λ_devant / λ. La fréquence varie en sens inverse de la longueur d’onde : f = c / λ.']],
-        expl: 'f_devant / f_e ≈ 1,67 : la fréquence reçue est bien plus grande que la fréquence émise (ici le schéma exagère la vitesse).', indice: 'f = c / λ, donc f_devant / f_e = λ / λ_devant. Inversez le rapport des longueurs d’onde.' } },
+        calcul: () => ['f = frac(c|λ) avec la même célérité c : frac(f_devant|f_e) = frac(λ|λ_devant).', `λ_devant = 0,60 λ, donc frac(f_devant|f_e) = frac(1|0,60) = ${nbf(1 / 0.6, 2)}.`, 'La fréquence reçue devant l’émetteur est environ 1,67 fois la fréquence émise (valeur exagérée : le schéma est exagéré).'],
+        pieges: [[0.6, 'Vous avez donné le rapport des longueurs d’onde frac(λ_devant|λ). La fréquence varie en sens inverse de la longueur d’onde : f = frac(c|λ).']],
+        expl: 'frac(f_devant|f_e) ≈ 1,67 : la fréquence reçue est bien plus grande que la fréquence émise (ici le schéma exagère la vitesse).', indice: 'f = frac(c|λ), donc frac(f_devant|f_e) = frac(λ|λ_devant). Inversez le rapport des longueurs d’onde.' } },
     ...(tg ? [
     { id: 'etablir3', titre: 'Le décalage Doppler (v très inférieure à c)', focus: ['mesures'],
-      texte: <>Vous avez montré que la fréquence reçue devant l’émetteur vaut <em>f</em><sub>A</sub> = <em>f</em><sub>e</sub> / (1 − <em>v</em> / <em>c</em>). Le décalage Doppler est <em>δf</em> = |<em>f</em><sub>A</sub> − <em>f</em><sub>e</sub>|, soit <em>δf</em> = <em>f</em><sub>e</sub> × <em>v</em> / (<em>c</em> − <em>v</em>). On se place dans le cas <em>v</em> ≪ <em>c</em>.</>,
+      texte: <>Vous avez montré que la fréquence reçue devant l’émetteur vaut <em>f</em><sub>A</sub> = {avecIndices('frac(f_e|1 − frac(v|c))')}. Le décalage Doppler est <em>δf</em> = |<em>f</em><sub>A</sub> − <em>f</em><sub>e</sub>|, soit <em>δf</em> = {avecIndices('frac(f_e × v|c − v)')}. On se place dans le cas <em>v</em> ≪ <em>c</em>.</>,
       tache: { type: 'qcm', q: 'Pour v très inférieure à c, le décalage Doppler vaut environ…', options: ['f_e × v / c', 'f_e × c / v', 'f_e × (c − v) / c'], bonne: 0,
-        expl: 'Si v ≪ c, alors c − v ≈ c et δf = f_e v / (c − v) ≈ f_e × v / c. Le décalage est proportionnel à v, comme le montrera la mesure.', indice: 'Dans δf = f_e × v / (c − v), que devient c − v quand v est négligeable devant c ?' } },
+        expl: 'Si v ≪ c, alors c − v ≈ c et δf = f_e frac(v|c − v) ≈ frac(f_e × v|c). Le décalage est proportionnel à v, comme le montrera la mesure.', indice: 'Dans δf = frac(f_e × v|c − v), que devient c − v quand v est négligeable devant c ?' } },
     ] : []),
     { id: 'bilan1', titre: 'Le bilan', focus: [],
       texte: <>Vous savez que le mouvement relatif d’un émetteur et d’un récepteur décale la fréquence reçue : plus grande en rapprochement, plus petite en éloignement. Le parcours 2 mesure ce décalage sur un montage de laboratoire pour en déduire une vitesse.</>, tache: null },
@@ -390,33 +390,33 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         pieges: [[Math.abs(dfMesBase) / 1000, 'Le décalage est à donner en hertz, pas en kilohertz.']],
         expl: `δf ≈ ${nbf(Math.abs(dfMesBase), 0)} Hz : un décalage minuscule devant 40 000 Hz (environ 0,15 %).`, indice: 'δf = f_r − f_e, avec les deux fréquences en hertz.' } },
     { id: 'vitesse', titre: 'En déduire la vitesse', focus: ['mesures'],
-      texte: <>Pour un émetteur mobile à la vitesse <em>v</em> très inférieure à <em>c</em>, le décalage vaut <em>δf</em> = <em>f</em><sub>e</sub> × <em>v</em> / <em>c</em>, d’où :
+      texte: <>Pour un émetteur mobile à la vitesse <em>v</em> très inférieure à <em>c</em>, le décalage vaut <em>δf</em> = {avecIndices('frac(f_e × v|c)')}, d’où :
         <Formule><mi>v</mi><mo>=</mo><mi>c</mi><mo>×</mo><mfrac><mrow><mi>δ</mi><mi>f</mi></mrow><msub><mi>f</mi><mi>e</mi></msub></mfrac></Formule>
         Calculez <em>v</em> avec <em>δf</em> = {nbf(Math.abs(dfMesBase), 0)}{NB}Hz (étape précédente), <em>f</em><sub>e</sub> = 40{FINE}000{NB}Hz et <em>c</em> = 340{NB}m/s.</>,
       tache: { type: 'num', q: 'Vitesse v du chariot', unite: 'm/s', vrai: 340 * Math.abs(dfMesBase) / 40000, tol: 0.04, affiche: v => nbf(v, 2), cs: 2,
         bloque: pointeOk ? null : 'Placez d’abord le curseur sur le pic avec le bouton « Rétablir » au-dessus du spectre.',
-        calcul: () => ['Unités : δf et f_e en hertz, c en m/s ; le rapport δf / f_e est sans unité, v est en m/s.', `v = c × δf / f_e = 340 × ${nbf(Math.abs(dfMesBase), 0)} / 40 000 = ${nbf(340 * Math.abs(dfMesBase) / 40000, 3)} m/s.`, 'Hypothèse : v ≪ c (ici v / c ≈ 1,5 × 10⁻³), la formule approchée est suffisante.'],
-        pieges: [[340 * Math.abs(dfMesBase) / 40, 'δf et f_e doivent être dans la même unité : vous avez mis f_e en kilohertz avec δf en hertz.'], [Math.abs(dfMesBase) / 40000, 'Il manque la célérité c : δf / f_e est le rapport v / c, sans unité.'], [340 * 40000 / Math.abs(dfMesBase), 'Le rapport est inversé : v = c × δf / f_e.']],
-        expl: `v ≈ ${nbf(340 * Math.abs(dfMesBase) / 40000, 2)} m/s : on retrouve la vitesse réglée.`, indice: 'v = c × δf / f_e ; mettez δf et f_e en hertz.' } },
+        calcul: () => ['Unités : δf et f_e en hertz, c en m/s ; le rapport frac(δf|f_e) est sans unité, v est en m/s.', `v = frac(c × δf|f_e) = frac(340 × ${nbf(Math.abs(dfMesBase), 0)}|40 000) = ${nbf(340 * Math.abs(dfMesBase) / 40000, 3)} m/s.`, 'Hypothèse : v ≪ c (ici frac(v|c) ≈ 1,5 × 10⁻³), la formule approchée est suffisante.'],
+        pieges: [[340 * Math.abs(dfMesBase) / 40, 'δf et f_e doivent être dans la même unité : vous avez mis f_e en kilohertz avec δf en hertz.'], [Math.abs(dfMesBase) / 40000, 'Il manque la célérité c : frac(δf|f_e) est le rapport frac(v|c), sans unité.'], [340 * 40000 / Math.abs(dfMesBase), 'Le rapport est inversé : v = frac(c × δf|f_e).']],
+        expl: `v ≈ ${nbf(340 * Math.abs(dfMesBase) / 40000, 2)} m/s : on retrouve la vitesse réglée.`, indice: 'v = frac(c × δf|f_e) ; mettez δf et f_e en hertz.' } },
     { id: 'validite', titre: 'Quand la formule est-elle valable ?', focus: ['mesures'],
-      texte: <>Ici <em>v</em> / <em>c</em> = 0,50 / 340 ≈ 1,5 × 10⁻³. La formule <em>δf</em> = <em>f</em><sub>e</sub> × <em>v</em> / <em>c</em> est une <strong>approximation</strong> ; la formule exacte (non demandée) donne un décalage qui en diffère de moins de 0,2 %.</>,
-      tache: { type: 'qcm', q: 'La relation v = c × δf / f_e suppose que…', options: ['la vitesse v est très petite devant la célérité c', 'le récepteur est plus rapide que l’émetteur', 'la fréquence émise est exactement 40 000 Hz'], bonne: 0,
-        expl: 'L’approximation est valable quand v ≪ c : c’est le cas d’un chariot de laboratoire (0,5 m/s contre 340 m/s). Pour une vitesse comparable à celle du son, il faudrait la relation exacte. Le décalage reste proportionnel à f_e : un émetteur de 25 kHz donnerait un décalage 1,6 fois plus petit.', indice: 'On a remplacé un quotient exact par une expression plus simple : elle est bonne quand v / c est petit.' } },
+      texte: <>Ici {avecIndices('frac(v|c)')} = {avecIndices('frac(0,50|340)')} ≈ 1,5 × 10⁻³. La formule <em>δf</em> = {avecIndices('frac(f_e × v|c)')} est une <strong>approximation</strong> ; la formule exacte (non demandée) donne un décalage qui en diffère de moins de 0,2 %.</>,
+      tache: { type: 'qcm', q: 'La relation v = frac(c × δf|f_e) suppose que…', options: ['la vitesse v est très petite devant la célérité c', 'le récepteur est plus rapide que l’émetteur', 'la fréquence émise est exactement 40 000 Hz'], bonne: 0,
+        expl: 'L’approximation est valable quand v ≪ c : c’est le cas d’un chariot de laboratoire (0,5 m/s contre 340 m/s). Pour une vitesse comparable à celle du son, il faudrait la relation exacte. Le décalage reste proportionnel à f_e : un émetteur de 25 kHz donnerait un décalage 1,6 fois plus petit.', indice: 'On a remplacé un quotient exact par une expression plus simple : elle est bonne quand frac(v|c) est petit.' } },
     ...(tg ? [
     { id: 'em', titre: 'Et pour une onde lumineuse ?', focus: ['mesures'],
       retenirTitre: 'Établir et exploiter le décalage doppler',
       retenir: <>
         <SvgEtablir/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>Devant l’émetteur : λ<sub>A</sub> = (c − v) T<sub>e</sub> ⇒ f<sub>A</sub> = f<sub>e</sub> / (1 − v/c).</strong> Derrière : λ<sub>B</sub> = (c + v) T<sub>e</sub> ⇒ f<sub>B</sub> = f<sub>e</sub> / (1 + v/c).</li>
-          <li>Si v ≪ c : <em>δf</em> ≈ <em>f</em><sub>e</sub> × <em>v</em> / <em>c</em> ; donc <em>δf</em> / <em>f</em><sub>e</sub> = <em>v</em> / <em>c</em>, pour une onde sonore comme pour une onde lumineuse.</li>
+          <li><strong>Devant l’émetteur : λ<sub>A</sub> = (c − v) T<sub>e</sub> ⇒ f<sub>A</sub> = {avecIndices('frac(f_e|1 − frac(v|c))')}.</strong> Derrière : λ<sub>B</sub> = (c + v) T<sub>e</sub> ⇒ f<sub>B</sub> = {avecIndices('frac(f_e|1 + frac(v|c))')}.</li>
+          <li>Si v ≪ c : <em>δf</em> ≈ {avecIndices('frac(f_e × v|c)')} ; donc {avecIndices('frac(δf|f_e)')} = {avecIndices('frac(v|c)')}, pour une onde sonore comme pour une onde lumineuse.</li>
           <li>Même vitesse, deux ondes : le décalage <strong>relatif</strong> est 10<sup>6</sup> fois plus petit pour la lumière (c plus grande), mais <em>δf</em> est grand parce que <em>f</em><sub>e</sub> est énorme.</li>
         </ul></>,
-      texte: <>Le décalage ne dépend que de <em>v</em> / <em>c</em> : la méthode vaut aussi pour la lumière. Une diode laser (λ = 633{NB}nm, soit <em>f</em><sub>e</sub> = 4,74 × 10¹⁴{NB}Hz) est fixée sur le chariot qui roule à <em>v</em> = 0,50{NB}m/s vers un récepteur. La célérité de la lumière est <em>c</em> = 3,00 × 10⁸{NB}m/s.</>,
+      texte: <>Le décalage ne dépend que de {avecIndices('frac(v|c)')} : la méthode vaut aussi pour la lumière. Une diode laser (λ = 633{NB}nm, soit <em>f</em><sub>e</sub> = 4,74 × 10¹⁴{NB}Hz) est fixée sur le chariot qui roule à <em>v</em> = 0,50{NB}m/s vers un récepteur. La célérité de la lumière est <em>c</em> = 3,00 × 10⁸{NB}m/s.</>,
       tache: { type: 'num', q: 'Décalage δf du laser', unite: 'MHz', vrai: 4.74e14 * 0.5 / 3e8 / 1e6, tol: 0.04, affiche: v => nbf(v, 2), cs: 2,
-        calcul: () => ['δf = f_e × v / c, avec c = 3,00 × 10⁸ m/s et v ≪ c.', 'δf = 4,74 × 10¹⁴ × 0,50 / (3,00 × 10⁸) = 7,9 × 10⁵ Hz.', 'Conversion : 7,9 × 10⁵ Hz = 0,79 MHz.', 'Comparaison : v / c = 1,7 × 10⁻⁹ pour la lumière contre 1,5 × 10⁻³ pour le son à la même vitesse.'],
+        calcul: () => ['δf = frac(f_e × v|c), avec c = 3,00 × 10⁸ m/s et v ≪ c.', 'δf = frac(4,74 × 10¹⁴ × 0,50|3,00 × 10⁸) = 7,9 × 10⁵ Hz.', 'Conversion : 7,9 × 10⁵ Hz = 0,79 MHz.', 'Comparaison : frac(v|c) = 1,7 × 10⁻⁹ pour la lumière contre 1,5 × 10⁻³ pour le son à la même vitesse.'],
         pieges: [[4.74e14 * 0.5 / 3e8, 'Le résultat est à donner en mégahertz : 1 MHz = 10⁶ Hz.']],
-        expl: 'δf ≈ 0,79 MHz, soit un décalage relatif de 1,7 × 10⁻⁹ seulement.', indice: 'δf = f_e × v / c ; calculez en hertz puis convertissez en MHz.' } },
+        expl: 'δf ≈ 0,79 MHz, soit un décalage relatif de 1,7 × 10⁻⁹ seulement.', indice: 'δf = frac(f_e × v|c) ; calculez en hertz puis convertissez en MHz.' } },
     ] : []),
     { id: 'bilan2', titre: 'Le bilan', focus: [],
       retenirTitre: 'Mesurer une vitesse par le décalage',
@@ -424,8 +424,8 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         <SvgDecalage/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Décalage : <em>δf</em> = |<em>f</em><sub>r</sub> − <em>f</em><sub>e</sub>| ; il est <strong>proportionnel à v</strong> et à <em>f</em><sub>e</sub>.</li>
-          <li>Pour retrouver la vitesse : <em>v</em> = <em>c</em> × <em>δf</em> / <em>f</em><sub>e</sub>, avec <em>δf</em> et <em>f</em><sub>e</sub> dans la même unité.</li>
-          <li>Exemple de la simulation : <em>δf</em> ≈ 59 Hz pour <em>f</em><sub>e</sub> = 40 000 Hz et <em>v</em> = 0,50 m/s, donc <em>δf</em> / <em>f</em><sub>e</sub> ≈ 1,5 × 10⁻³.</li>
+          <li>Pour retrouver la vitesse : <em>v</em> = {avecIndices('frac(c × δf|f_e)')}, avec <em>δf</em> et <em>f</em><sub>e</sub> dans la même unité.</li>
+          <li>Exemple de la simulation : <em>δf</em> ≈ 59 Hz pour <em>f</em><sub>e</sub> = 40 000 Hz et <em>v</em> = 0,50 m/s, donc {avecIndices('frac(δf|f_e)')} ≈ 1,5 × 10⁻³.</li>
           <li><strong>Hypothèse</strong> : <em>v</em> ≪ <em>c</em>. La formule exacte et la formule approchée diffèrent ici de moins de 0,2 %.</li>
         </ul></>,
       texte: <>Vous savez lire la fréquence reçue, calculer le décalage δf, en déduire la vitesse et dire quand la formule est valable. Le parcours 3 compare les deux sens de déplacement et étudie la durée d’enregistrement et la résolution.</>, tache: null },
@@ -452,8 +452,8 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       retenir: <>
         <SvgResolution/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li>Le pic d’un spectre a une largeur d’environ <strong>1 / T</strong>, avec <em>T</em> la durée de l’enregistrement.</li>
-          <li>Pour distinguer <em>f</em><sub>r</sub> de <em>f</em><sub>e</sub>, il faut un décalage <em>δf</em> supérieur à 1 / <em>T</em> : <strong>enregistrer plus longtemps</strong> affine les pics.</li>
+          <li>Le pic d’un spectre a une largeur d’environ <strong>{avecIndices('frac(1|T)')}</strong>, avec <em>T</em> la durée de l’enregistrement.</li>
+          <li>Pour distinguer <em>f</em><sub>r</sub> de <em>f</em><sub>e</sub>, il faut un décalage <em>δf</em> supérieur à {avecIndices('frac(1|T)')} : <strong>enregistrer plus longtemps</strong> affine les pics.</li>
           <li>Exemple : <em>T</em> = 0,5 s ⇒ largeur 2 Hz ; <em>T</em> = 2 s ⇒ 0,5 Hz.</li>
         </ul></>,
       texte: <>Avec <em>v</em> = 0,02{NB}m/s, le décalage ne vaut que 2,4{NB}Hz et les deux pics se chevauchent. Réglez la durée d’enregistrement sur 2{NB}s avec le curseur « durée » et observez les pics.</>,
@@ -462,14 +462,14 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       texte: <>Avec une durée de 2{NB}s, le pic décalé se distingue nettement du pic de <em>f</em><sub>e</sub>. Avec 0,5{NB}s, ils se chevauchaient.</>,
       tache: { type: 'qcm', q: 'Pour mieux séparer le pic décalé du pic de f_e quand δf est très petit, on…', options: ['allonge la durée d’enregistrement : les pics sont plus fins', 'raccourcit la durée d’enregistrement : les pics sont plus fins', 'augmente la célérité du son c'], bonne: 0,
         bloque: mes.montage === 'emetteur' && mes.fe === 40000 && Math.abs(mes.v - 0.02) < 1e-9 ? null : 'Rétablissez d’abord v = 0,02 m/s avec le bouton au-dessus du spectre.',
-        expl: 'La largeur d’un pic est environ 1 / T : avec T = 0,5 s elle vaut 2 Hz (les deux pics, distants de 2,4 Hz, se chevauchent) ; avec T = 2 s elle vaut 0,5 Hz (ils sont bien séparés). La célérité du son ne change pas la largeur des pics.', indice: 'Un enregistrement plus long permet de mieux distinguer deux fréquences voisines : la largeur du pic est 1 / T.' } },
+        expl: 'La largeur d’un pic est environ frac(1|T) : avec T = 0,5 s elle vaut 2 Hz (les deux pics, distants de 2,4 Hz, se chevauchent) ; avec T = 2 s elle vaut 0,5 Hz (ils sont bien séparés). La célérité du son ne change pas la largeur des pics.', indice: 'Un enregistrement plus long permet de mieux distinguer deux fréquences voisines : la largeur du pic est frac(1|T).' } },
     { id: 'bravo', titre: 'Le bilan', focus: [],
       retenirTitre: 'La chaîne de mesure',
       retenir: <>
         <SvgChaine/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
           <li>Mouvement relatif ⇒ <em>f</em><sub>r</sub> ≠ <em>f</em><sub>e</sub> ; rapprochement : <em>f</em><sub>r</sub> &gt; <em>f</em><sub>e</sub>, éloignement : <em>f</em><sub>r</sub> &lt; <em>f</em><sub>e</sub>.</li>
-          <li><em>δf</em> = |<em>f</em><sub>r</sub> − <em>f</em><sub>e</sub>| = <em>f</em><sub>e</sub> × <em>v</em> / <em>c</em> si <em>v</em> ≪ <em>c</em> ; donc <em>v</em> = <em>c</em> × <em>δf</em> / <em>f</em><sub>e</sub>.</li>
+          <li><em>δf</em> = |<em>f</em><sub>r</sub> − <em>f</em><sub>e</sub>| = {avecIndices('frac(f_e × v|c)')} si <em>v</em> ≪ <em>c</em> ; donc <em>v</em> = {avecIndices('frac(c × δf|f_e)')}.</li>
           <li>Le décalage est petit devant <em>f</em><sub>e</sub> (de l’ordre de 10⁻³) : il faut un spectre <strong>fin</strong>, donc un enregistrement assez long.</li>
         </ul></>,
       texte: <>Vous savez expliquer pourquoi la fréquence reçue diffère de la fréquence émise et mesurer une vitesse à partir d’un décalage de fréquence. Passez à l’exploration (autres fréquences, montage avec une plaque qui renvoie l’onde) ou tentez les défis.</>, tache: null },
@@ -512,7 +512,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>
         {defi.type === 'emetteur'
           ? <>Un chariot roule à vitesse constante sur un rail. Il porte un émetteur ultrasonore de fréquence <em>f</em><sub>e</sub> = {hz(defi.fe)} ({nbf(defi.fe / 1000, 1)}{NB}kHz). Le récepteur est fixe. Lisez la fréquence reçue <em>f</em><sub>r</sub> avec le curseur, puis calculez la vitesse du chariot (<em>c</em> = 340{NB}m/s). Donnez <em>v</em> avec 2 chiffres significatifs.</>
-          : <>Une plaque réfléchissante est fixée sur un chariot qui roule à vitesse constante. Un émetteur ultrasonore (<em>f</em><sub>e</sub> = {hz(defi.fe)}) et un récepteur, fixes et côte à côte, enregistrent l’onde renvoyée par la plaque. Ici, le décalage vaut <em>δf</em> = 2 <em>f</em><sub>e</sub> <em>v</em> / <em>c</em> (l’onde est décalée une première fois en arrivant sur la plaque mobile, puis une seconde fois quand elle repart). Lisez <em>f</em><sub>r</sub> au curseur et calculez <em>v</em> (<em>c</em> = 340{NB}m/s), avec 2 chiffres significatifs.</>}
+          : <>Une plaque réfléchissante est fixée sur un chariot qui roule à vitesse constante. Un émetteur ultrasonore (<em>f</em><sub>e</sub> = {hz(defi.fe)}) et un récepteur, fixes et côte à côte, enregistrent l’onde renvoyée par la plaque. Ici, le décalage vaut <em>δf</em> = 2 {avecIndices('frac(f_e v|c)')} (l’onde est décalée une première fois en arrivant sur la plaque mobile, puis une seconde fois quand elle repart). Lisez <em>f</em><sub>r</sub> au curseur et calculez <em>v</em> (<em>c</em> = 340{NB}m/s), avec 2 chiffres significatifs.</>}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
         <span>Vitesse v</span>
@@ -520,8 +520,8 @@ export function SimulationDoppler({ naviguer, tg = false }) {
           style={{ width: 90, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${defi.verifie ? (defi.ok ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>m/s</span>
       </div>
       <IndiceDefi cache={false}>{defi.type === 'emetteur'
-        ? <>Décalage <em>δf</em> = |<em>f</em><sub>r</sub> − <em>f</em><sub>e</sub>| (lu au curseur, en hertz) ; puis <em>v</em> = <em>c</em> × <em>δf</em> / <em>f</em><sub>e</sub> avec <em>c</em> = 340 m/s.</>
-        : <>Décalage <em>δf</em> = |<em>f</em><sub>r</sub> − <em>f</em><sub>e</sub>| (en hertz) ; avec <em>δf</em> = 2 <em>f</em><sub>e</sub> <em>v</em> / <em>c</em>, on obtient <em>v</em> = <em>c</em> × <em>δf</em> / (2 <em>f</em><sub>e</sub>).</>}</IndiceDefi>
+        ? <>Décalage <em>δf</em> = |<em>f</em><sub>r</sub> − <em>f</em><sub>e</sub>| (lu au curseur, en hertz) ; puis <em>v</em> = {avecIndices('frac(c × δf|f_e)')} avec <em>c</em> = 340 m/s.</>
+        : <>Décalage <em>δf</em> = |<em>f</em><sub>r</sub> − <em>f</em><sub>e</sub>| (en hertz) ; avec <em>δf</em> = 2 {avecIndices('frac(f_e v|c)')}, on obtient <em>v</em> = {avecIndices('frac(c × δf|2 f_e)')}.</>}</IndiceDefi>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="dop-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
         <button onClick={() => nouveauDefi(defi.type)} style={styleBouton(false)}><Pic n="refresh"/>Nouveau défi</button>
@@ -537,13 +537,13 @@ export function SimulationDoppler({ naviguer, tg = false }) {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Célérité</strong> : <em>c</em> = 340 m/s dans l’air du laboratoire, <strong>indépendante de la vitesse de l’émetteur</strong> (elle ne dépend que du milieu). La température n’est pas contrôlée : <em>c</em> est connue à ± 3 m/s.</li>
       <li><strong>Mouvement</strong> : rectiligne uniforme, sur la droite qui joint l’émetteur et le récepteur ; récepteur fixe dans le laboratoire. L’effet n’est calculé que dans une seule dimension.</li>
-      <li><strong>Formule du décalage</strong> : <em>δf</em> = <em>f</em><sub>e</sub> <em>v</em> / <em>c</em> pour un émetteur mobile, valable si <em>v</em> ≪ <em>c</em> (ici <em>v</em> / <em>c</em> ≤ 5 × 10⁻³). Le spectre est calculé avec la formule <strong>exacte</strong> <em>f</em><sub>r</sub> = <em>f</em><sub>e</sub> <em>c</em> / (<em>c</em> ∓ <em>v</em>) ; l’écart avec la formule approchée est de l’ordre de <em>v</em> / <em>c</em> (moins de 0,5 %). Pour l’écho sur une plaque mobile : <em>δf</em> = 2 <em>f</em><sub>e</sub> <em>v</em> / <em>c</em> (même hypothèse).</li>
+      <li><strong>Formule du décalage</strong> : <em>δf</em> = {avecIndices('frac(f_e v|c)')} pour un émetteur mobile, valable si <em>v</em> ≪ <em>c</em> (ici {avecIndices('frac(v|c)')} ≤ 5 × 10⁻³). Le spectre est calculé avec la formule <strong>exacte</strong> <em>f</em><sub>r</sub> = {avecIndices('frac(f_e c|c ∓ v)')} ; l’écart avec la formule approchée est de l’ordre de {avecIndices('frac(v|c)')} (moins de 0,5 %). Pour l’écho sur une plaque mobile : <em>δf</em> = 2 {avecIndices('frac(f_e v|c)')} (même hypothèse).</li>
       <li><strong>Son au récepteur C</strong> : la hauteur est calculée avec la position et la direction de la source <strong>au moment de l’émission</strong> (le son met du temps à arriver), pas avec sa position visible à l’écran. Le glissement entendu est donc un peu en retard sur l’image : la note émise est entendue seulement quand la source a déjà dépassé C. Le calcul est la relation exacte pour une source en mouvement rectiligne uniforme et un récepteur fixe, sans vent ni réflexion, avec une célérité constante. Les récepteurs A et B sont sur l’axe du mouvement : leur hauteur est constante (f<sub>e</sub>/(1 − v/c) pour A, f<sub>e</sub>/(1 + v/c) pour B).</li>
       <li><strong>Volume du son</strong> : il décroît comme 1 / distance entre la source (au moment de l’émission) et le récepteur, avec un plafond près de la source ; dans le véhicule il est constant. Ce n’est pas un effet Doppler mais ce qu’on entend vraiment. On néglige l’absorption, la directivité de la source et le fait que l’amplitude reçue dépend aussi de la vitesse. Le son s’atténue brièvement quand l’animation recommence, pour ne pas entendre un saut de hauteur sans signification physique.</li>
       {tg && <li><strong>Ondes lumineuses (partie TG)</strong> : le décalage est calculé avec la même expression, valable pour <em>v</em> ≪ <em>c</em> (ici <em>v</em> / <em>c</em> ≈ 10⁻⁹) ; pour une vitesse comparable à celle de la lumière, il faudrait la relativité, hors programme. La célérité de la lumière est prise égale à 3,00 × 10⁸ m/s dans l’air ; la source est monochromatique et son mouvement rectiligne uniforme dans l’axe du récepteur.</li>}
       <li><strong>Scène des fronts d’onde</strong> : schéma qualitatif où la vitesse de l’émetteur est volontairement <strong>exagérée</strong> (jusqu’à 0,6 <em>c</em>) pour que l’effet se voie ; les mesures de la scène 2 utilisent des valeurs réalistes.</li>
-      <li><strong>Spectre</strong> : transformée de Fourier d’un enregistrement de durée <em>T</em> ; chaque pic a la forme sinc² et une largeur d’environ 1 / <em>T</em>. On ne tient pas compte du bruit ni de la fenêtre d’enregistrement réelle. Les deux pics (<em>f</em><sub>e</sub> et <em>f</em><sub>r</sub>) sont tracés séparément.</li>
-      <li><strong>Incertitudes</strong> (type B, loi rectangulaire, <em>u</em> = demi-étendue / √3, sources indépendantes) : pointé du sommet du pic à ± 0,5 Hz (ou 1 / 4T si c’est plus grand), <em>f</em><sub>e</sub> et <em>f</em><sub>r</sub> lues avec le même instrument donc <em>u</em>(<em>δf</em>) = √2 <em>u</em>(<em>f</em>), et <em>c</em> à ± 3 m/s. L’incertitude sur <em>f</em><sub>e</sub> seule est négligée devant celle de <em>δf</em>.</li>
+      <li><strong>Spectre</strong> : transformée de Fourier d’un enregistrement de durée <em>T</em> ; chaque pic a la forme sinc² et une largeur d’environ {avecIndices('frac(1|T)')}. On ne tient pas compte du bruit ni de la fenêtre d’enregistrement réelle. Les deux pics (<em>f</em><sub>e</sub> et <em>f</em><sub>r</sub>) sont tracés séparément.</li>
+      <li><strong>Incertitudes</strong> (type B, loi rectangulaire, <em>u</em> = {avecIndices('frac(demi-étendue|√3)')}, sources indépendantes) : pointé du sommet du pic à ± 0,5 Hz (ou {avecIndices('frac(1|4T)')} si c’est plus grand), <em>f</em><sub>e</sub> et <em>f</em><sub>r</sub> lues avec le même instrument donc <em>u</em>(<em>δf</em>) = √2 <em>u</em>(<em>f</em>), et <em>c</em> à ± 3 m/s. L’incertitude sur <em>f</em><sub>e</sub> seule est négligée devant celle de <em>δf</em>.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
   const NOMS_PARC = tg ? ['1. Établir l’expression du décalage', '2. Mesurer une vitesse par le décalage', '3. Sens, durée et résolution'] : ['1. Mouvement relatif et fréquence reçue', '2. Mesurer une vitesse par le décalage', '3. Sens, durée et résolution'];
@@ -598,7 +598,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
         {deja('duree') && <div style={{ marginBottom: 8 }}>
           <Curseur nom="Durée d’écoute T (durée de l’enregistrement)" valeur={mes.T} onChange={v => setM({ T: v })} min={0.5} max={2} pas={0.5} unite="s" decimales={1} couleur="#475569"/>
           <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5, background: '#f1f5f9', borderRadius: 8, padding: '6px 10px' }}>
-            <strong>À quoi sert-elle ?</strong> Le spectre est calculé à partir du son enregistré pendant T secondes. Plus on écoute longtemps, plus les pics sont <strong>fins</strong> : largeur ≈ 1 / T = <strong>{nbf(D.resolution(T), 1)}{NB}Hz</strong> ici. Deux fréquences très proches ne se distinguent que si leur écart est plus grand que cette largeur.
+            <strong>À quoi sert-elle ?</strong> Le spectre est calculé à partir du son enregistré pendant T secondes. Plus on écoute longtemps, plus les pics sont <strong>fins</strong> : largeur ≈ {avecIndices('frac(1|T)')} = <strong>{nbf(D.resolution(T), 1)}{NB}Hz</strong> ici. Deux fréquences très proches ne se distinguent que si leur écart est plus grand que cette largeur.
             {mode === 'explore' && <> <em>Essayez : v = 0,02 m/s (δf ≈ 2,4 Hz), puis T = 0,5 s et T = 2 s.</em></>}
           </div></div>}
         {!deja('deplace') && <div style={{ fontSize: 13.5, color: KIT.txt2 }}>Le chariot est arrêté.</div>}
@@ -704,7 +704,7 @@ export function SimulationDoppler({ naviguer, tg = false }) {
           <LigneMesure nom="v / c" valeur={o.rel.toExponential(1).replace('e-', ` × 10⁻`).replace('.', ',')}/>
           <LigneMesure nom="δf" valeur={fmtHz(o.df)} couleur="#15803d"/>
         </div>))}
-      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>δf / f<sub>e</sub> = v / c dans les deux cas : le décalage <em>relatif</em> est minuscule pour la lumière, mais comme f<sub>e</sub> est énorme, δf se mesure (de l’ordre du MHz à quelques m/s).</div>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>{avecIndices('frac(δf|f_e)')} = {avecIndices('frac(v|c)')} dans les deux cas : le décalage <em>relatif</em> est minuscule pour la lumière, mais comme f<sub>e</sub> est énorme, δf se mesure (de l’ordre du MHz à quelques m/s).</div>
     </div>);
   const aEssayer = (
     <div style={styleBoite}>
@@ -721,9 +721,9 @@ export function SimulationDoppler({ naviguer, tg = false }) {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>émetteur et récepteur en mouvement relatif : f<sub>r</sub> ≠ f<sub>e</sub> (rapprochement : f<sub>r</sub> &gt; f<sub>e</sub> ; éloignement : f<sub>r</sub> &lt; f<sub>e</sub>)</li>
-        <li>décalage : δf = |f<sub>r</sub> − f<sub>e</sub>| ; si v ≪ c, δf = f<sub>e</sub> v / c, donc v = c δf / f<sub>e</sub></li>
-        <li>plaque mobile qui renvoie l’onde : δf = 2 f<sub>e</sub> v / c</li>
-        <li>largeur des pics du spectre ≈ 1 / T : séparer deux fréquences voisines demande un enregistrement long</li>
+        <li>décalage : δf = |f<sub>r</sub> − f<sub>e</sub>| ; si v ≪ c, δf = f<sub>e</sub> {avecIndices('frac(v|c)')}, donc v = c {avecIndices('frac(δf|f_e)')}</li>
+        <li>plaque mobile qui renvoie l’onde : δf = 2 f<sub>e</sub> {avecIndices('frac(v|c)')}</li>
+        <li>largeur des pics du spectre ≈ {avecIndices('frac(1|T)')} : séparer deux fréquences voisines demande un enregistrement long</li>
       </ul>
     </ARetenir>);
 

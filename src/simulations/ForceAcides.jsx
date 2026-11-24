@@ -170,8 +170,8 @@ export function SimulationForceAcides() {
     { id: 'hclph', titre: 'Composition et pH d’un acide fort', focus: ['scene'],
       texte: <>Avec un <strong>acide fort</strong>, la réaction est quasi-totale : chaque molécule introduite donne un ion oxonium, donc [H₃O⁺] = C, [Cl⁻] = C et [HCl] ≈ 0. Le pH se calcule avec {FpH}où c° = 1{NB}mol·L⁻¹ est la concentration standard. Nouvelle solution : C = 0,020{NB}mol·L⁻¹ d’acide chlorhydrique.</>,
       tache: { type: 'num', q: 'pH de la solution d’acide chlorhydrique', unite: '(sans unité)', vrai: 1.699, tol: 0.02, affiche: v => nbf(v, 2), cs: 3,
-        calcul: () => ['[H₃O⁺] = C = 0,020 mol·L⁻¹ (acide fort : transformation quasi-totale).', 'pH = −log(0,020 / 1) = 1,70.'],
-        pieges: [[0.020, 'C’est la concentration [H₃O⁺], pas le pH : pH = −log([H₃O⁺] / c°).'], [-1.699, 'Un pH est positif ici : log(0,020) est négatif, donc −log(0,020) est positif.'], [3.912, 'Vous avez utilisé ln au lieu de log (logarithme décimal).']],
+        calcul: () => ['[H₃O⁺] = C = 0,020 mol·L⁻¹ (acide fort : transformation quasi-totale).', 'pH = −log(frac(0,020|1)) = 1,70.'],
+        pieges: [[0.020, 'C’est la concentration [H₃O⁺], pas le pH : pH = −log(frac([H₃O⁺]|c°)).'], [-1.699, 'Un pH est positif ici : log(0,020) est négatif, donc −log(0,020) est positif.'], [3.912, 'Vous avez utilisé ln au lieu de log (logarithme décimal).']],
         expl: 'pH = −log(0,020) = 1,70 ; [H₃O⁺] = [Cl⁻] = 0,020 mol·L⁻¹ ; [HCl] ≈ 0.', indice: 'Pour un acide fort, [H₃O⁺] = C. Calculez ensuite −log(C) avec la touche log de la calculatrice.' } },
     { id: 'eth', titre: 'Un acide faible : l’acide éthanoïque', focus: ['scene', 'mesures'],
       retenirTitre: 'À RETENIR : ACIDE FORT',
@@ -200,16 +200,16 @@ export function SimulationForceAcides() {
         </ul></>,
       texte: <>Pour mesurer ce que l’acide a réellement transformé, on utilise le <strong>taux d’avancement final</strong> {Ftau}Pour 1{NB}L de solution à C = 0,010{NB}mol·L⁻¹, x<sub>max</sub> = 0,010{NB}mol (si tout l’acide réagissait) et x<sub>f</sub> est la quantité d’ions oxonium formés : x<sub>f</sub> = [H₃O⁺] × 1,00{NB}L, avec [H₃O⁺] = 10<sup>−pH</sup>{NB}mol·L⁻¹ (pH = {nbf(ETH.pH, 2)}).</>,
       tache: { type: 'num', q: 'Taux d’avancement final de l’acide éthanoïque', unite: '(sans unité)', vrai: 0.0407, tol: 0.04, affiche: v => nbf(v, 3), cs: 2,
-        calcul: () => ['[H₃O⁺] = 10^(−3,39) = 4,1×10⁻⁴ mol·L⁻¹, donc x_f = 4,1×10⁻⁴ mol ; x_max = 0,010 mol.', 'τ = x_f / x_max = 4,1×10⁻⁴ / 0,010 = 0,041 (sans unité), soit 4,1 % : τ < 1, l’acide est faible.'],
-        pieges: [[24.5, 'Le rapport est inversé : τ = x_f / x_max, et x_f est plus petit que x_max.'], [4.07, 'τ est sans unité : 4,1 % s’écrit 0,041.'], [0.000407, 'C’est [H₃O⁺] (en mol·L⁻¹) : il faut encore le diviser par C = 0,010 mol·L⁻¹.'], [0.959, 'C’est la part d’acide qui n’a pas réagi ; τ est la part qui a réagi.']],
-        expl: 'τ = 4,1×10⁻⁴ / 0,010 = 0,041 : environ 4 molécules sur 100 ont réagi (comme sur le schéma).', indice: '[H₃O⁺] = 10^(−pH) avec la touche 10^x de la calculatrice ; puis τ = [H₃O⁺] / C (le volume se simplifie).' } },
+        calcul: () => ['[H₃O⁺] = 10^(−3,39) = 4,1×10⁻⁴ mol·L⁻¹, donc x_f = 4,1×10⁻⁴ mol ; x_max = 0,010 mol.', 'τ = frac(x_f|x_max) = frac(4,1×10⁻⁴|0,010) = 0,041 (sans unité), soit 4,1 % : τ < 1, l’acide est faible.'],
+        pieges: [[24.5, 'Le rapport est inversé : τ = frac(x_f|x_max), et x_f est plus petit que x_max.'], [4.07, 'τ est sans unité : 4,1 % s’écrit 0,041.'], [0.000407, 'C’est [H₃O⁺] (en mol·L⁻¹) : il faut encore le diviser par C = 0,010 mol·L⁻¹.'], [0.959, 'C’est la part d’acide qui n’a pas réagi ; τ est la part qui a réagi.']],
+        expl: 'τ = frac(4,1×10⁻⁴|0,010) = 0,041 : environ 4 molécules sur 100 ont réagi (comme sur le schéma).', indice: '[H₃O⁺] = 10^(−pH) avec la touche 10^x de la calculatrice ; puis τ = frac([H₃O⁺]|C) (le volume se simplifie).' } },
     { id: 'dilu', titre: 'Effet de la dilution', focus: ['scene', 'reglage'],
       retenirTitre: 'À RETENIR : LE TAUX D’AVANCEMENT FINAL τ',
       retenir: <>
         <SvgTaux/>
         {Ftau}
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>τ = x<sub>f</sub> / x<sub>max</sub></strong>, sans unité, entre 0 et 1. <strong>Acide fort : τ = 1</strong> ; <strong>acide faible : τ &lt; 1</strong>. Pour un acide, τ = [H₃O⁺] / C.</li>
+          <li><strong>τ = {avecIndices('frac(x_f|x_max)')}</strong>, sans unité, entre 0 et 1. <strong>Acide fort : τ = 1</strong> ; <strong>acide faible : τ &lt; 1</strong>. Pour un acide, τ = {avecIndices('frac([H₃O⁺]|C)')}.</li>
           <li>Exemple de la simulation : 4 molécules d’acide éthanoïque sur 100 ont réagi à 0,010{NB}mol·L⁻¹.</li>
           <li>Moyen de s’en souvenir : <strong>« τ, c’est la part de l’acide qui a réagi »</strong>.</li>
         </ul></>,
@@ -221,11 +221,11 @@ export function SimulationForceAcides() {
       tache: { type: 'qcm', q: 'Quelle équation de réaction est associée à la constante K_A du couple CH₃COOH / CH₃COO⁻ ?', ...Q.ka,
         expl: 'K_A est associée à la réaction de l’acide avec l’eau : CH₃COOH + H₂O ⇌ CH₃COO⁻ + H₃O⁺. La deuxième équation est la réaction de la base avec l’eau, la troisième est celle de l’eau avec elle-même (constante K_e), la dernière est la réaction avec une base forte.', indice: 'K_A contient [CH₃COO⁻] et [H₃O⁺] au numérateur : ce sont les produits de la réaction de l’acide avec l’eau.' } },
     { id: 'kaph', titre: 'Estimer K_A avec une mesure de pH', focus: ['mesures'],
-      texte: <>Solution d’acide éthanoïque : C = 0,010{NB}mol·L⁻¹ et pH = {nbf(ETH.pH, 2)}. À l’état final : [H₃O⁺] = [CH₃COO⁻] = 10<sup>−pH</sup>{NB}mol·L⁻¹ et [CH₃COOH] = C − [H₃O⁺]. On en déduit K<sub>A</sub> = [CH₃COO⁻]·[H₃O⁺] / [CH₃COOH].</>,
+      texte: <>Solution d’acide éthanoïque : C = 0,010{NB}mol·L⁻¹ et pH = {nbf(ETH.pH, 2)}. À l’état final : [H₃O⁺] = [CH₃COO⁻] = 10<sup>−pH</sup>{NB}mol·L⁻¹ et [CH₃COOH] = C − [H₃O⁺]. On en déduit K<sub>A</sub> = {avecIndices('frac([CH₃COO⁻]·[H₃O⁺]|[CH₃COOH])')}.</>,
       tache: { type: 'num', q: 'Constante d’acidité K_A de l’acide éthanoïque', unite: '(sans unité)', vrai: 1.73e-5, tol: 0.08, affiche: v => sci(v, 2), cs: 2,
-        calcul: () => ['[H₃O⁺] = [CH₃COO⁻] = 10^(−3,39) = 4,1×10⁻⁴ mol·L⁻¹ ; [CH₃COOH] = 0,010 − 4,1×10⁻⁴ = 9,6×10⁻³ mol·L⁻¹.', 'K_A = (4,1×10⁻⁴)² / 9,6×10⁻³ = 1,7×10⁻⁵ (sans unité). Hypothèses : activités ≈ concentrations, 25 °C.'],
-        pieges: [[0.0425, 'Il manque un facteur [H₃O⁺] : K_A = [CH₃COO⁻]·[H₃O⁺] / [CH₃COOH], les deux concentrations de produits sont au numérateur.'], [4.07e-4, 'C’est la concentration [H₃O⁺] : K_A est un rapport faisant intervenir [H₃O⁺] au carré et [CH₃COOH].'], [57800, 'Le rapport est inversé : l’acide est au dénominateur, les produits au numérateur.']],
-        expl: 'K_A = (4,1×10⁻⁴)² / (0,010 − 4,1×10⁻⁴) = 1,7×10⁻⁵.', indice: 'Calculez [H₃O⁺] = 10^(−pH), puis [CH₃COOH] = C − [H₃O⁺], puis K_A = [H₃O⁺]² / [CH₃COOH] (car [CH₃COO⁻] = [H₃O⁺]).' } },
+        calcul: () => ['[H₃O⁺] = [CH₃COO⁻] = 10^(−3,39) = 4,1×10⁻⁴ mol·L⁻¹ ; [CH₃COOH] = 0,010 − 4,1×10⁻⁴ = 9,6×10⁻³ mol·L⁻¹.', 'K_A = frac((4,1×10⁻⁴)²|9,6×10⁻³) = 1,7×10⁻⁵ (sans unité). Hypothèses : activités ≈ concentrations, 25 °C.'],
+        pieges: [[0.0425, 'Il manque un facteur [H₃O⁺] : K_A = frac([CH₃COO⁻]·[H₃O⁺]|[CH₃COOH]), les deux concentrations de produits sont au numérateur.'], [4.07e-4, 'C’est la concentration [H₃O⁺] : K_A est un rapport faisant intervenir [H₃O⁺] au carré et [CH₃COOH].'], [57800, 'Le rapport est inversé : l’acide est au dénominateur, les produits au numérateur.']],
+        expl: 'K_A = frac((4,1×10⁻⁴)²|0,010 − 4,1×10⁻⁴) = 1,7×10⁻⁵.', indice: 'Calculez [H₃O⁺] = 10^(−pH), puis [CH₃COOH] = C − [H₃O⁺], puis K_A = frac([H₃O⁺]²|[CH₃COOH]) (car [CH₃COO⁻] = [H₃O⁺]).' } },
     { id: 'pka', titre: 'Le pK_A', focus: ['mesures'],
       texte: <>Comme pour le pH, on utilise une échelle logarithmique plus pratique : le <strong>pK<sub>A</sub> = −log K<sub>A</sub></strong>. Pour l’acide éthanoïque, on vient de trouver K<sub>A</sub> = 1,7×10⁻⁵.</>,
       tache: { type: 'num', q: 'pK_A du couple CH₃COOH / CH₃COO⁻', unite: '(sans unité)', vrai: 4.77, tol: 0.02, affiche: v => nbf(v, 2), cs: 3,
@@ -237,8 +237,8 @@ export function SimulationForceAcides() {
       retenir: <>
         <SvgKaPKa/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}>
-          <li><strong>K<sub>A</sub> = [A⁻]·[H₃O⁺] / [AH]</strong> (sans unité) à l’état final, associée à AH + H₂O ⇌ A⁻ + H₃O⁺ ; <strong>pK<sub>A</sub> = −log K<sub>A</sub></strong>.</li>
-          <li>On estime K<sub>A</sub> avec une mesure de pH : K<sub>A</sub> = [H₃O⁺]² / (C − [H₃O⁺]). Exemple : acide éthanoïque, K<sub>A</sub> = 1,7×10⁻⁵, pK<sub>A</sub> = 4,77.</li>
+          <li><strong>K<sub>A</sub> = {avecIndices('frac([A⁻]·[H₃O⁺]|[AH])')}</strong> (sans unité) à l’état final, associée à AH + H₂O ⇌ A⁻ + H₃O⁺ ; <strong>pK<sub>A</sub> = −log K<sub>A</sub></strong>.</li>
+          <li>On estime K<sub>A</sub> avec une mesure de pH : K<sub>A</sub> = {avecIndices('frac([H₃O⁺]²|C − [H₃O⁺])')}. Exemple : acide éthanoïque, K<sub>A</sub> = 1,7×10⁻⁵, pK<sub>A</sub> = 4,77.</li>
           <li>Moyen de s’en souvenir : <strong>« K<sub>A</sub> est une propriété du couple, pas de la concentration »</strong>.</li>
         </ul></>,
       texte: <>À la même concentration C = 0,010{NB}mol·L⁻¹, comparons des acides. Avec les boutons « Acide étudié », choisissez l’acide méthanoïque, l’acide benzoïque puis l’acide éthanoïque : le tableau garde leur pK<sub>A</sub>, leur pH et leur τ.</>,
@@ -255,9 +255,9 @@ export function SimulationForceAcides() {
         </ul></>,
       texte: <>L’eau pure réagit un tout petit peu avec elle-même : 2{NB}H₂O ⇌ H₃O⁺ + HO⁻. Sa constante est le <strong>produit ionique de l’eau</strong> {FKe}qui vaut K<sub>e</sub> = 1,0×10⁻¹⁴ à 25{NB}°C. Dans la solution d’acide éthanoïque (pH = {nbf(ETH.pH, 2)}), [H₃O⁺] = 4,1×10⁻⁴{NB}mol·L⁻¹.</>,
       tache: { type: 'num', q: 'Concentration en ions hydroxyde [HO⁻]', unite: 'mol·L⁻¹', vrai: 2.45e-11, tol: 0.06, affiche: v => sci(v, 2), cs: 2,
-        calcul: () => ['K_e = [H₃O⁺]·[HO⁻], donc [HO⁻] = K_e / [H₃O⁺].', '[HO⁻] = 1,0×10⁻¹⁴ / 4,1×10⁻⁴ = 2,4×10⁻¹¹ mol·L⁻¹ (2,5×10⁻¹¹ sans arrondir [H₃O⁺]) : très inférieure à [H₃O⁺].'],
-        pieges: [[4.1e-18, 'Il faut diviser K_e par [H₃O⁺], pas les multiplier.'], [1e-14, 'C’est K_e lui-même : [HO⁻] = K_e / [H₃O⁺].'], [10.61, 'C’est 14 − pH (le pOH) et non une concentration.'], [4.1e-4, 'C’est [H₃O⁺] : [HO⁻] est beaucoup plus petite.']],
-        expl: '[HO⁻] = 1,0×10⁻¹⁴ / 4,1×10⁻⁴ ≈ 2,5×10⁻¹¹ mol·L⁻¹.', indice: 'K_e = [H₃O⁺]·[HO⁻] : isolez [HO⁻], puis calculez avec [H₃O⁺] = 4,1×10⁻⁴ mol·L⁻¹.' } },
+        calcul: () => ['K_e = [H₃O⁺]·[HO⁻], donc [HO⁻] = frac(K_e|[H₃O⁺]).', '[HO⁻] = frac(1,0×10⁻¹⁴|4,1×10⁻⁴) = 2,4×10⁻¹¹ mol·L⁻¹ (2,5×10⁻¹¹ sans arrondir [H₃O⁺]) : très inférieure à [H₃O⁺].'],
+        pieges: [[4.1e-18, 'Il faut diviser K_e par [H₃O⁺], pas les multiplier.'], [1e-14, 'C’est K_e lui-même : [HO⁻] = frac(K_e|[H₃O⁺]).'], [10.61, 'C’est 14 − pH (le pOH) et non une concentration.'], [4.1e-4, 'C’est [H₃O⁺] : [HO⁻] est beaucoup plus petite.']],
+        expl: '[HO⁻] = frac(1,0×10⁻¹⁴|4,1×10⁻⁴) ≈ 2,5×10⁻¹¹ mol·L⁻¹.', indice: 'K_e = [H₃O⁺]·[HO⁻] : isolez [HO⁻], puis calculez avec [H₃O⁺] = 4,1×10⁻⁴ mol·L⁻¹.' } },
     { id: 'second', titre: 'Prévoir la composition : l’équation du second degré', focus: ['scene'],
       retenirTitre: 'À RETENIR : LE PRODUIT IONIQUE DE L’EAU',
       retenir: <>
@@ -267,15 +267,15 @@ export function SimulationForceAcides() {
           <li>Exemple de la simulation : pH 3,39, soit [H₃O⁺] = 4,1×10⁻⁴{NB}mol·L⁻¹ et [HO⁻] = 2,5×10⁻¹¹{NB}mol·L⁻¹.</li>
           <li>Moyen de s’en souvenir : <strong>« le produit reste fixé : l’un monte, l’autre descend »</strong>.</li>
         </ul></>,
-      texte: <>Peut-on prévoir la composition connaissant K<sub>A</sub> et C ? Oui. Soit x = [H₃O⁺] = [A⁻] à l’état final ; alors [AH] = C − x et K<sub>A</sub> = x² / (C − x). On obtient une <strong>équation du second degré</strong> en x : {FSecond}Cas étudié : C = 0,020{NB}mol·L⁻¹ d’acide éthanoïque, K<sub>A</sub> = 1,7×10⁻⁵.</>,
+      texte: <>Peut-on prévoir la composition connaissant K<sub>A</sub> et C ? Oui. Soit x = [H₃O⁺] = [A⁻] à l’état final ; alors [AH] = C − x et K<sub>A</sub> = {avecIndices('frac(x²|C − x)')}. On obtient une <strong>équation du second degré</strong> en x : {FSecond}Cas étudié : C = 0,020{NB}mol·L⁻¹ d’acide éthanoïque, K<sub>A</sub> = 1,7×10⁻⁵.</>,
       tache: { type: 'qcm', q: 'Quelle équation permet de trouver x = [H₃O⁺] ?', ...Q.second,
-        expl: 'K_A = x² / (C − x) donne x² = K_A (C − x), soit x² + K_A·x − K_A·C = 0. Ici K_A·C = 1,7×10⁻⁵ × 0,020 = 3,4×10⁻⁷.', indice: 'Partez de K_A = x² / (C − x) : multipliez par (C − x), puis passez tout du même côté.' } },
+        expl: 'K_A = frac(x²|C − x) donne x² = K_A (C − x), soit x² + K_A·x − K_A·C = 0. Ici K_A·C = 1,7×10⁻⁵ × 0,020 = 3,4×10⁻⁷.', indice: 'Partez de K_A = frac(x²|C − x) : multipliez par (C − x), puis passez tout du même côté.' } },
     { id: 'solve', titre: 'Résoudre l’équation', focus: ['scene'],
-      texte: <>L’équation est x² + 1,7×10⁻⁵·x − 3,4×10⁻⁷ = 0, de la forme a·x² + b·x + c = 0 avec a = 1, b = 1,7×10⁻⁵ et c = −3,4×10⁻⁷. Le discriminant est Δ = b² − 4ac ; la solution positive (une concentration) est x = (−b + √Δ) / (2a).</>,
+      texte: <>L’équation est x² + 1,7×10⁻⁵·x − 3,4×10⁻⁷ = 0, de la forme a·x² + b·x + c = 0 avec a = 1, b = 1,7×10⁻⁵ et c = −3,4×10⁻⁷. Le discriminant est Δ = b² − 4ac ; la solution positive (une concentration) est x = {avecIndices('frac(−b + √Δ|2a)')}.</>,
       tache: { type: 'num', q: 'Concentration en ions oxonium [H₃O⁺] à l’état final', unite: 'mol·L⁻¹', vrai: 5.75e-4, tol: 0.01, affiche: v => sci(v, 3), cs: 3,
-        calcul: () => ['Δ = b² − 4ac = (1,7×10⁻⁵)² + 4 × 3,4×10⁻⁷ = 2,9×10⁻¹⁰ + 1,36×10⁻⁶ = 1,3603×10⁻⁶.', 'x = (−1,7×10⁻⁵ + √(1,3603×10⁻⁶)) / 2 = (−1,7×10⁻⁵ + 1,1663×10⁻³) / 2 = 5,75×10⁻⁴ mol·L⁻¹ (pH = 3,24).'],
+        calcul: () => ['Δ = b² − 4ac = (1,7×10⁻⁵)² + 4 × 3,4×10⁻⁷ = 2,9×10⁻¹⁰ + 1,36×10⁻⁶ = 1,3603×10⁻⁶.', 'x = frac(−1,7×10⁻⁵ + √(1,3603×10⁻⁶)|2) = frac(−1,7×10⁻⁵ + 1,1663×10⁻³|2) = 5,75×10⁻⁴ mol·L⁻¹ (pH = 3,24).'],
         pieges: [[3.4e-7, 'C’est le terme c = −K_A·C (au signe près), pas la solution de l’équation.'], [3.24, 'C’est le pH : on demande la concentration [H₃O⁺].'], [1.15e-3, 'Vous avez oublié de diviser par 2a = 2 dans la formule des racines.'], [0.020, 'C’est la concentration apportée C : l’acide est faible, [H₃O⁺] est beaucoup plus petite.']],
-        expl: 'x = 5,75×10⁻⁴ mol·L⁻¹, donc pH = −log(5,75×10⁻⁴) = 3,24 et τ = x / C = 0,029.', indice: 'Calculez Δ = b² − 4ac avec c négatif (−c est positif), puis x = (−b + √Δ) / 2. Gardez au moins 3 chiffres significatifs.' } },
+        expl: 'x = 5,75×10⁻⁴ mol·L⁻¹, donc pH = −log(5,75×10⁻⁴) = 3,24 et τ = frac(x|C) = 0,029.', indice: 'Calculez Δ = b² − 4ac avec c négatif (−c est positif), puis x = frac(−b + √Δ|2). Gardez au moins 3 chiffres significatifs.' } },
     { id: 'bilan', titre: 'Bilan', focus: [],
       texte: <>Vous savez associer K<sub>A</sub> et K<sub>e</sub> aux équations de réaction, reconnaître un acide fort (transformation quasi-totale, pH = −log C) ou faible (pH supérieur à −log C), calculer un taux d’avancement final, estimer K<sub>A</sub> avec le pH, comparer des acides avec le pK<sub>A</sub> et prévoir la composition finale. <strong>Méthode</strong> pour un acide faible : 1) écrire la réaction avec l’eau ; 2) exprimer K<sub>A</sub> avec x = [H₃O⁺] ; 3) résoudre l’équation du second degré ; 4) en déduire pH et τ. Passez à l’exploration (tous les acides, toutes les concentrations) ou tentez les deux défis.</>, tache: null },
   ];
@@ -315,7 +315,7 @@ export function SimulationForceAcides() {
           <input value={defi.reps.ka} aria-label="Constante d’acidité K A (laisser vide si l’acide est fort)" onKeyDown={e => e.key === 'Enter' && document.getElementById('fa-verif')?.click()} onChange={e => setDefi(d => ({ ...d, reps: { ...d.reps, ka: e.target.value }, verifie: false }))} inputMode="decimal"
             style={{ width: 110, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${defi.verifie ? (defi.ok ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>(sans unité ; vide si l’acide est fort)</span>
         </div>
-        <IndiceDefi cache={false}>Comparez le pH mesuré à −log C : s’ils sont égaux, l’acide est fort. Sinon, [H₃O⁺] = 10<sup>−pH</sup> = [A⁻] et [AH] = C − [H₃O⁺], donc K<sub>A</sub> = [H₃O⁺]² / (C − [H₃O⁺]).</IndiceDefi>
+        <IndiceDefi cache={false}>Comparez le pH mesuré à −log C : s’ils sont égaux, l’acide est fort. Sinon, [H₃O⁺] = 10<sup>−pH</sup> = [A⁻] et [AH] = C − [H₃O⁺], donc K<sub>A</sub> = {avecIndices('frac([H₃O⁺]²|C − [H₃O⁺])')}.</IndiceDefi>
       </> : <>
         <div style={{ ...lbl, marginBottom: 8 }}>Trois solutions d’acides faibles différents ont été préparées à des concentrations apportées différentes. Pour chacune, on mesure le pH à 25{NB}°C. Quel acide est le plus fort, c’est-à-dire de plus grande constante d’acidité K<sub>A</sub> ?</div>
         <table style={{ width: '100%', fontSize: 13.5, borderCollapse: 'collapse', marginBottom: 8 }}>
@@ -326,7 +326,7 @@ export function SimulationForceAcides() {
           {defi.sols.map((s, i) => <button key={i} onClick={() => setDefi(d => ({ ...d, reps: { choix: i }, verifie: false }))} aria-pressed={defi.reps.choix === i}
             style={stylePetitBouton(defi.reps.choix === i, defi.verifie ? (defi.vrai === i ? '#15803d' : '#dc2626') : '#475569')}>Solution {i + 1}</button>)}
         </div>
-        <IndiceDefi cache={false}>Le pH seul ne suffit pas : les concentrations sont différentes. Pour chaque solution, calculez K<sub>A</sub> = [H₃O⁺]² / (C − [H₃O⁺]) avec [H₃O⁺] = 10<sup>−pH</sup>, puis comparez les trois valeurs.</IndiceDefi>
+        <IndiceDefi cache={false}>Le pH seul ne suffit pas : les concentrations sont différentes. Pour chaque solution, calculez K<sub>A</sub> = {avecIndices('frac([H₃O⁺]²|C − [H₃O⁺])')} avec [H₃O⁺] = 10<sup>−pH</sup>, puis comparez les trois valeurs.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="fa-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -343,7 +343,7 @@ export function SimulationForceAcides() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Température constante : 25 °C</strong>. K<sub>A</sub> et K<sub>e</sub> ne dépendent que de la température : K<sub>e</sub> = 1,0×10⁻¹⁴ à 25 °C ; la simulation ne fait pas varier T.</li>
-      <li><strong>Activités ≈ concentrations</strong> : solutions diluées (C au plus égale à 0,10 mol·L⁻¹). On remplace l’activité de chaque soluté par [X] / c° avec c° = 1 mol·L⁻¹ ; K<sub>A</sub>, K<sub>e</sub> et τ n’ont pas d’unité. L’eau, solvant, n’apparaît pas dans K<sub>A</sub>.</li>
+      <li><strong>Activités ≈ concentrations</strong> : solutions diluées (C au plus égale à 0,10 mol·L⁻¹). On remplace l’activité de chaque soluté par {avecIndices('frac([X]|c°)')} avec c° = 1 mol·L⁻¹ ; K<sub>A</sub>, K<sub>e</sub> et τ n’ont pas d’unité. L’eau, solvant, n’apparaît pas dans K<sub>A</sub>.</li>
       <li><strong>Acide fort</strong> : l’acide chlorhydrique est considéré comme totalement transformé ([HCl] ≈ 0, τ = 1) ; c’est une convention de précision, pas une disparition absolue.</li>
       <li><strong>Valeurs de pK<sub>A</sub></strong> : valeurs usuelles à 25 °C arrondies (méthanoïque 3,75 ; benzoïque 4,20 ; éthanoïque 4,76 ; ion ammonium 9,20), données du problème, non à retrouver.</li>
       <li><strong>Calcul du pH</strong> : la simulation calcule le pH « exact » en tenant compte de l’autoprotolyse de l’eau. La formule du cours (équation du second degré x² + K<sub>A</sub>·x − K<sub>A</sub>·C = 0) la néglige : elle est valable tant que [HO⁻] est très inférieur à [H₃O⁺], ce qui est le cas ici (solutions acides). Les approximations « [AH] ≈ C » ou x = √(K<sub>A</sub>·C) ne sont valables que si τ est petit.</li>
@@ -428,8 +428,8 @@ export function SimulationForceAcides() {
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>Acide fort : réaction quasi-totale avec l’eau, τ = 1, pH = −log C</li>
         <li>Acide faible : réaction limitée (⇌), τ &lt; 1, pH &gt; −log C ; τ augmente quand on dilue</li>
-        <li>K_A = [A⁻]·[H₃O⁺] / [AH] (sans unité) pour AH + H₂O ⇌ A⁻ + H₃O⁺ ; pK_A = −log K_A</li>
-        <li>K_A estimé par le pH : K_A = [H₃O⁺]² / (C − [H₃O⁺]) ; plus pK_A est petit, plus l’acide est fort</li>
+        <li>K_A = {avecIndices('frac([A⁻]·[H₃O⁺]|[AH])')} (sans unité) pour AH + H₂O ⇌ A⁻ + H₃O⁺ ; pK_A = −log K_A</li>
+        <li>K_A estimé par le pH : K_A = {avecIndices('frac([H₃O⁺]²|C − [H₃O⁺])')} ; plus pK_A est petit, plus l’acide est fort</li>
         <li>K_e = [H₃O⁺]·[HO⁻] = 1,0×10⁻¹⁴ à 25 °C ; acide faible : x² + K_A·x − K_A·C = 0</li>
       </ul>
     </ARetenir>);

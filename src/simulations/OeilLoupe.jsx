@@ -135,8 +135,8 @@ const FICHES = {
   bilan: <>
     <CarteBilanSVG/>
     {puces(<><strong>Œil réduit</strong> : lentille de focale f′ variable + rétine à 17{NB}mm ; image nette ⇔ sur la rétine ; objet proche ⇒ f′ diminue (accommodation).</>,
-      <><strong>Diamètre apparent</strong> θ ≈ AB / D ; détails séparés si θ ≥ ε ≈ 3×10⁻⁴{NB}rad.</>,
-      <><strong>Loupe</strong> : objet dans le plan focal, image à l’infini, G = θ′ / θ = d<sub>m</sub> / f′.</>)}
+      <><strong>Diamètre apparent</strong> θ ≈ {avecIndices('frac(AB|D)')} ; détails séparés si θ ≥ ε ≈ 3×10⁻⁴{NB}rad.</>,
+      <><strong>Loupe</strong> : objet dans le plan focal, image à l’infini, G = {avecIndices('frac(θ′|θ)')} = {avecIndices('frac(d_m|f′)')}.</>)}
   </>,
 };
 
@@ -184,24 +184,24 @@ export function SimulationOeilLoupe() {
     { id: 'diam', titre: 'Ce que voit l’œil : un angle', focus: ['scene', 'reglages'], depart: dep({ vue: 'angle', D: 50, AB: 2 }),
       texte: <>Un objet <strong>AB</strong> de 2,0{NB}cm est vu à la distance <em>D</em> de l’œil. Ce que perçoit l’œil n’est pas sa taille, mais l’<strong>angle θ</strong> entre les deux rayons issus de ses extrémités : son <strong>diamètre apparent</strong>. Faites varier <em>D</em> avec le curseur (l’objet gris est à 25{NB}cm) et regardez l’angle.</>,
       tache: { type: 'qcm', q: 'Quand on rapproche l’objet de l’œil (D diminue), son diamètre apparent θ…', options: ['augmente', 'diminue', 'ne change pas', 'devient nul'], bonne: 0,
-        indice: 'Regardez l’angle θ du schéma quand l’objet se rapproche (objet gris, à 25 cm, comparé à l’objet à 50 cm).', expl: 'Plus l’objet est proche, plus il est vu sous un grand angle : θ ≈ AB / D augmente quand D diminue, même si AB ne change pas.' } },
+        indice: 'Regardez l’angle θ du schéma quand l’objet se rapproche (objet gris, à 25 cm, comparé à l’objet à 50 cm).', expl: 'Plus l’objet est proche, plus il est vu sous un grand angle : θ ≈ frac(AB|D) augmente quand D diminue, même si AB ne change pas.' } },
     { id: 'diam-calc', titre: 'Calculer un diamètre apparent', focus: ['mesures'], depart: dep({ vue: 'angle', D: 50, AB: 2 }),
-      texte: <>On a AB = 2,0{NB}cm = 20{NB}mm et <em>D</em> = 50{NB}cm = 500{NB}mm. Les angles sont petits : on utilise l’approximation <strong>θ ≈ AB / D</strong>, avec θ en <strong>radian</strong>.</>,
+      texte: <>On a AB = 2,0{NB}cm = 20{NB}mm et <em>D</em> = 50{NB}cm = 500{NB}mm. Les angles sont petits : on utilise l’approximation <strong>θ ≈ {avecIndices('frac(AB|D)')}</strong>, avec θ en <strong>radian</strong>.</>,
       tache: { type: 'num', q: 'Diamètre apparent θ de l’objet', unite: 'rad', vrai: 0.04, tol: 0.03, affiche: v => fm(v, 3), carnet: 'Diamètre apparent θ à 50 cm',
-        calcul: () => ['AB et D dans la même unité : AB = 20 mm, D = 500 mm.', 'θ ≈ AB / D = 20 ÷ 500 = 0,040 rad, soit 40 mrad (environ 2,3°).'],
-        pieges: [[4, 'Vous avez divisé AB = 2,0 cm par D = 0,50 m sans convertir : AB et D doivent avoir la même unité.'], [25, 'Vous avez calculé D / AB : le diamètre apparent est AB / D.'], [2.29, 'Ce résultat est en degrés. L’approximation θ ≈ AB / D donne θ en radian.']],
-        expl: 'θ ≈ 0,040 rad = 40 mrad. À 25 cm, θ serait deux fois plus grand (0,080 rad).', indice: 'θ ≈ AB / D, avec AB et D dans la même unité (par exemple en mm).' } },
+        calcul: () => ['AB et D dans la même unité : AB = 20 mm, D = 500 mm.', 'θ ≈ frac(AB|D) = 20 ÷ 500 = 0,040 rad, soit 40 mrad (environ 2,3°).'],
+        pieges: [[4, 'Vous avez divisé AB = 2,0 cm par D = 0,50 m sans convertir : AB et D doivent avoir la même unité.'], [25, 'Vous avez calculé frac(D|AB) : le diamètre apparent est frac(AB|D).'], [2.29, 'Ce résultat est en degrés. L’approximation θ ≈ frac(AB|D) donne θ en radian.']],
+        expl: 'θ ≈ 0,040 rad = 40 mrad. À 25 cm, θ serait deux fois plus grand (0,080 rad).', indice: 'θ ≈ frac(AB|D), avec AB et D dans la même unité (par exemple en mm).' } },
     { id: 'sep', titre: 'Le pouvoir séparateur de l’œil', focus: ['scene', 'mesures'], depart: dep({ vue: 'angle', D: 25, AB: 0.01 }),
       texte: <>L’œil ne sépare deux détails que si l’angle θ qui les sépare est au moins égal à son <strong>pouvoir séparateur</strong> ε ≈ 3×10⁻⁴{NB}rad = 0,3{NB}mrad (environ 1′, un ordre de grandeur). Deux traits très fins sont distants de <strong>0,10{NB}mm</strong>, observés à <em>D</em> = 25{NB}cm. Calculez l’angle θ entre eux.</>,
       tache: { type: 'num', q: 'Angle θ entre les deux traits (D = 25 cm)', unite: 'mrad', vrai: 0.4, tol: 0.03, affiche: v => fm(v, 2), carnet: 'Angle θ entre deux traits à 25 cm',
-        calcul: () => ['Écart AB = 0,10 mm ; D = 25 cm = 250 mm.', 'θ ≈ AB / D = 0,10 ÷ 250 = 4,0×10⁻⁴ rad = 0,40 mrad.'],
-        pieges: [[4, 'Vous avez divisé 0,10 mm par 25 cm sans convertir (mm et cm mélangés). Passez D en mm : 250 mm.'], [0.0004, 'C’est la bonne valeur, mais en radian : l’énoncé demande des mrad (1 mrad = 10⁻³ rad).'], [2500, 'Vous avez calculé D / AB : le diamètre apparent est AB / D.']],
-        expl: 'θ = 4,0×10⁻⁴ rad = 0,40 mrad, supérieur à ε = 0,3 mrad : les deux traits sont vus séparés.', indice: 'θ ≈ AB / D avec AB = 0,10 mm et D = 250 mm ; 1 mrad = 10⁻³ rad.' } },
+        calcul: () => ['Écart AB = 0,10 mm ; D = 25 cm = 250 mm.', 'θ ≈ frac(AB|D) = 0,10 ÷ 250 = 4,0×10⁻⁴ rad = 0,40 mrad.'],
+        pieges: [[4, 'Vous avez divisé 0,10 mm par 25 cm sans convertir (mm et cm mélangés). Passez D en mm : 250 mm.'], [0.0004, 'C’est la bonne valeur, mais en radian : l’énoncé demande des mrad (1 mrad = 10⁻³ rad).'], [2500, 'Vous avez calculé frac(D|AB) : le diamètre apparent est frac(AB|D).']],
+        expl: 'θ = 4,0×10⁻⁴ rad = 0,40 mrad, supérieur à ε = 0,3 mrad : les deux traits sont vus séparés.', indice: 'θ ≈ frac(AB|D) avec AB = 0,10 mm et D = 250 mm ; 1 mrad = 10⁻³ rad.' } },
     { id: 'sep2', titre: 'Et si on recule ?', focus: ['scene', 'mesures'], depart: dep({ vue: 'angle', D: 50, AB: 0.01 }),
       retenirTitre: 'À RETENIR : DIAMÈTRE APPARENT ET POUVOIR SÉPARATEUR', retenir: FICHES.diam,
       texte: <>Les mêmes traits (écart 0,10{NB}mm) sont maintenant observés à <em>D</em> = 50{NB}cm. On rappelle ε ≈ 0,3{NB}mrad.</>,
       tache: { type: 'qcm', q: 'À 50 cm, les deux traits sont-ils vus séparés ?', options: ['Non : θ = 0,20 mrad est inférieur à ε', 'Oui : θ = 0,20 mrad est supérieur à ε', 'Oui : l’œil accommode et sépare tout', 'Non : θ est devenu nul'], bonne: 0,
-        indice: 'Calculez θ ≈ AB / D = 0,10 mm ÷ 500 mm, puis comparez-le à ε = 0,3 mrad.', expl: 'θ = 0,10 ÷ 500 = 2,0×10⁻⁴ rad = 0,20 mrad < 0,3 mrad : les traits se confondent. Pour mieux voir, on rapproche l’objet (limite : 25 cm) ou on utilise un instrument.' } },
+        indice: 'Calculez θ ≈ frac(AB|D) = 0,10 mm ÷ 500 mm, puis comparez-le à ε = 0,3 mrad.', expl: 'θ = 0,10 ÷ 500 = 2,0×10⁻⁴ rad = 0,20 mrad < 0,3 mrad : les traits se confondent. Pour mieux voir, on rapproche l’objet (limite : 25 cm) ou on utilise un instrument.' } },
     { id: 'loupe', titre: 'La loupe : où placer l’objet ?', focus: ['scene', 'reglages'], depart: dep({ vue: 'loupe', dl: 3, fl: 5 }),
       texte: <>Une <strong>loupe</strong> est une lentille convergente (ici <em>f′</em> = 5,0{NB}cm). L’objet AB (0,50{NB}cm) est entre la loupe et son foyer F ; l’œil est juste derrière la loupe. Déplacez l’objet jusqu’à ce que les rayons qui sortent de la loupe soient <strong>parallèles</strong> entre eux.</>,
       tache: { type: 'action', ok: enGuide && M.imageALInfini(P.dl, 5), consigne: 'Placez l’objet pour que les rayons ressortent parallèles.' } },
@@ -217,30 +217,30 @@ export function SimulationOeilLoupe() {
         pieges: [[45, 'Le signe : 1/OA′ est négatif, donc OA′ aussi. OA′ < 0 signifie image virtuelle, du côté de l’objet.'], [-0.0222, 'Vous avez calculé 1/OA′ : il reste à inverser.'], [1 / (1 / 5 + 1 / 4.5), 'Vous avez pris OA = +4,5 cm : l’objet est avant la loupe, OA est négatif.']],
         expl: 'OA′ = −45 cm : l’image est virtuelle, à 45 cm de la loupe du côté de l’objet. L’œil peut la voir nette (plus loin que 25 cm), mais en accommodant : f′ du cristallin ≈ 16,4 mm.', indice: '1/OA′ = 1/f′ + 1/OA avec OA = −4,5 cm. Calculez 1/OA′, puis inversez.' } },
     { id: 'thetap', titre: 'L’angle sous lequel on voit l’image', focus: ['scene', 'mesures'], depart: dep({ vue: 'loupe', dl: 5, fl: 5 }),
-      texte: <>L’objet est de nouveau dans le plan focal (<em>d</em> = <em>f′</em> = 5,0{NB}cm), l’œil est contre la loupe. Il voit le point B sous l’angle <strong>θ′</strong> ; avec AB = 0,50{NB}cm, l’approximation des petits angles donne <strong>θ′ ≈ AB / f′</strong>. Calculez θ′ en radian.</>,
+      texte: <>L’objet est de nouveau dans le plan focal (<em>d</em> = <em>f′</em> = 5,0{NB}cm), l’œil est contre la loupe. Il voit le point B sous l’angle <strong>θ′</strong> ; avec AB = 0,50{NB}cm, l’approximation des petits angles donne <strong>θ′ ≈ {avecIndices('frac(AB|f′)')}</strong>. Calculez θ′ en radian.</>,
       tache: { type: 'num', q: 'Diamètre apparent θ′ de l’image', unite: 'rad', vrai: 0.1, tol: 0.03, affiche: v => fm(v, 3), carnet: 'Diamètre apparent θ′ avec la loupe',
-        calcul: () => ['AB = 0,50 cm ; f′ = 5,0 cm : même unité.', 'θ′ ≈ AB / f′ = 0,50 ÷ 5,0 = 0,10 rad.'],
-        pieges: [[0.02, 'Vous avez divisé par 25 cm : c’est le diamètre apparent de l’objet à l’œil nu. Avec la loupe, l’objet est vu depuis la distance f′.'], [10, 'Vous avez calculé f′ / AB : θ′ = AB / f′.']],
-        expl: 'θ′ ≈ 0,10 rad = 100 mrad.', indice: 'θ′ ≈ AB / f′, AB et f′ dans la même unité (ici en cm).' } },
+        calcul: () => ['AB = 0,50 cm ; f′ = 5,0 cm : même unité.', 'θ′ ≈ frac(AB|f′) = 0,50 ÷ 5,0 = 0,10 rad.'],
+        pieges: [[0.02, 'Vous avez divisé par 25 cm : c’est le diamètre apparent de l’objet à l’œil nu. Avec la loupe, l’objet est vu depuis la distance f′.'], [10, 'Vous avez calculé frac(f′|AB) : θ′ = frac(AB|f′).']],
+        expl: 'θ′ ≈ 0,10 rad = 100 mrad.', indice: 'θ′ ≈ frac(AB|f′), AB et f′ dans la même unité (ici en cm).' } },
     { id: 'theta0', titre: 'Sans la loupe', focus: ['mesures'], depart: null,
       texte: <>Sans la loupe, on observe le même objet (AB = 0,50{NB}cm) à la <strong>distance minimale de vision distincte</strong> d<sub>m</sub> = 25{NB}cm : plus près, l’œil ne peut plus accommoder. Calculez son diamètre apparent θ.</>,
       tache: { type: 'num', q: 'Diamètre apparent θ de l’objet à 25 cm', unite: 'rad', vrai: 0.02, tol: 0.03, affiche: v => fm(v, 3), carnet: 'Diamètre apparent θ à l’œil nu (25 cm)',
-        calcul: () => ['θ ≈ AB / dm = 0,50 ÷ 25 = 0,020 rad (20 mrad).'],
-        pieges: [[0.1, 'Vous avez utilisé f′ = 5,0 cm au lieu de dm = 25 cm : c’est le résultat avec la loupe.'], [50, 'Vous avez calculé dm / AB : θ ≈ AB / dm.']],
-        expl: 'θ ≈ 0,020 rad = 20 mrad.', indice: 'θ ≈ AB / dm avec dm = 25 cm.' } },
+        calcul: () => ['θ ≈ frac(AB|dm) = 0,50 ÷ 25 = 0,020 rad (20 mrad).'],
+        pieges: [[0.1, 'Vous avez utilisé f′ = 5,0 cm au lieu de dm = 25 cm : c’est le résultat avec la loupe.'], [50, 'Vous avez calculé frac(dm|AB) : θ ≈ frac(AB|dm).']],
+        expl: 'θ ≈ 0,020 rad = 20 mrad.', indice: 'θ ≈ frac(AB|dm) avec dm = 25 cm.' } },
     { id: 'gross', titre: 'Le grossissement', focus: ['mesures'], depart: null,
       retenirTitre: 'À RETENIR : LE GROSSISSEMENT D’UNE LOUPE', retenir: FICHES.gross,
-      texte: <>Le <strong>grossissement</strong> de la loupe compare les deux angles : <strong>G = θ′ / θ</strong>. Vous avez θ′ = 0,10{NB}rad avec la loupe et θ = 0,020{NB}rad à l’œil nu. Calculez G (sans unité).</>,
+      texte: <>Le <strong>grossissement</strong> de la loupe compare les deux angles : <strong>G = {avecIndices('frac(θ′|θ)')}</strong>. Vous avez θ′ = 0,10{NB}rad avec la loupe et θ = 0,020{NB}rad à l’œil nu. Calculez G (sans unité).</>,
       tache: { type: 'num', q: 'Grossissement G de la loupe', unite: '', vrai: 5, tol: 0.03, affiche: v => fm(v, 1), carnet: 'Grossissement G',
-        calcul: () => ['G = θ′ / θ = 0,10 ÷ 0,020 = 5,0.', 'On retrouve G = dm / f′ = 25 ÷ 5,0 = 5,0.'],
-        pieges: [[0.2, 'Vous avez calculé θ / θ′ : le grossissement est θ′ / θ.']],
-        expl: 'G = 5,0 : l’objet est vu sous un angle 5 fois plus grand qu’à l’œil nu à 25 cm. Plus généralement G = θ′ / θ = (AB / f′) ÷ (AB / dm) = dm / f′.', indice: 'G = θ′ / θ, avec θ′ = 0,10 rad et θ = 0,020 rad.' } },
+        calcul: () => ['G = frac(θ′|θ) = 0,10 ÷ 0,020 = 5,0.', 'On retrouve G = frac(dm|f′) = 25 ÷ 5,0 = 5,0.'],
+        pieges: [[0.2, 'Vous avez calculé frac(θ|θ′) : le grossissement est frac(θ′|θ).']],
+        expl: 'G = 5,0 : l’objet est vu sous un angle 5 fois plus grand qu’à l’œil nu à 25 cm. Plus généralement G = frac(θ′|θ) = (frac(AB|f′)) ÷ (frac(AB|dm)) = frac(dm|f′).', indice: 'G = frac(θ′|θ), avec θ′ = 0,10 rad et θ = 0,020 rad.' } },
     { id: 'gross2', titre: 'Une loupe plus puissante', focus: ['scene'], depart: dep({ vue: 'loupe', dl: 2.5, fl: 2.5 }),
-      texte: <>La relation <strong>G = d<sub>m</sub> / f′</strong> (d<sub>m</sub> = 25{NB}cm) permet de comparer des loupes. Voici une loupe plus convergente, de distance focale <em>f′</em> = 2,5{NB}cm, avec l’objet dans son plan focal.</>,
+      texte: <>La relation <strong>G = {avecIndices('frac(d_m|f′)')}</strong> (d<sub>m</sub> = 25{NB}cm) permet de comparer des loupes. Voici une loupe plus convergente, de distance focale <em>f′</em> = 2,5{NB}cm, avec l’objet dans son plan focal.</>,
       tache: { type: 'num', q: 'Grossissement G de cette loupe', unite: '', vrai: 10, tol: 0.03, affiche: v => fm(v, 1), carnet: 'Grossissement G (f′ = 2,5 cm)',
-        calcul: () => ['G = dm / f′ = 25 ÷ 2,5 = 10.'],
-        pieges: [[0.1, 'Vous avez calculé f′ / dm : G = dm / f′.'], [62.5, 'Vous avez multiplié dm par f′ : G = dm / f′.']],
-        expl: 'G = 10 : plus f′ est petite, plus le grossissement est grand.', indice: 'G = dm / f′ avec dm = 25 cm et f′ = 2,5 cm.' } },
+        calcul: () => ['G = frac(dm|f′) = 25 ÷ 2,5 = 10.'],
+        pieges: [[0.1, 'Vous avez calculé frac(f′|dm) : G = frac(dm|f′).'], [62.5, 'Vous avez multiplié dm par f′ : G = frac(dm|f′).']],
+        expl: 'G = 10 : plus f′ est petite, plus le grossissement est grand.', indice: 'G = frac(dm|f′) avec dm = 25 cm et f′ = 2,5 cm.' } },
     { id: 'bravo', titre: 'Bravo ! Le bilan', focus: [], depart: null,
       retenirTitre: 'À RETENIR : LE BILAN', retenir: FICHES.bilan,
       texte: <>Vous savez modéliser l’œil, expliquer l’accommodation, calculer un diamètre apparent et le comparer au pouvoir séparateur de l’œil, et calculer le grossissement d’une loupe. Essayez maintenant l’exploration, puis les défis.</>, tache: null },
@@ -324,8 +324,8 @@ export function SimulationOeilLoupe() {
       <li><strong>Œil réduit emmétrope</strong> : le cristallin et la cornée sont remplacés par une lentille mince convergente de distance focale variable ; la rétine est un écran plan à L = 17,0 mm. L’œil n’a aucun défaut de vision (ni myopie, ni hypermétropie).</li>
       <li><strong>Lentille mince, approximation de Gauss</strong>, lumière monochromatique : on néglige les aberrations. La netteté sur la rétine est jugée à ± 0,1 mm près (la diffraction par la pupille est ignorée).</li>
       <li><strong>Accommodation</strong> : la distance focale du cristallin peut varier ; la plage affichée (15,0 à 17,5 mm) est plus large que celle d’un œil réel pour laisser des erreurs possibles. La distance minimale de vision distincte est d<sub>m</sub> = 25 cm.</li>
-      <li><strong>Diamètre apparent</strong> : θ ≈ AB / D pour les petits angles, en radian (erreur inférieure à 1 % tant que θ &lt; 0,25 rad). <strong>Pouvoir séparateur</strong> de l’œil : ε ≈ 3×10⁻⁴ rad (environ 1′), un ordre de grandeur : il varie d’une personne à l’autre.</li>
-      <li><strong>Loupe</strong> : lentille mince convergente, œil collé à la loupe ; objet-plan de hauteur 0,50 cm. G = θ′ / θ = d<sub>m</sub> / f′ suppose l’objet dans le plan focal objet (image à l’infini).</li>
+      <li><strong>Diamètre apparent</strong> : θ ≈ {avecIndices('frac(AB|D)')} pour les petits angles, en radian (erreur inférieure à 1 % tant que θ &lt; 0,25 rad). <strong>Pouvoir séparateur</strong> de l’œil : ε ≈ 3×10⁻⁴ rad (environ 1′), un ordre de grandeur : il varie d’une personne à l’autre.</li>
+      <li><strong>Loupe</strong> : lentille mince convergente, œil collé à la loupe ; objet-plan de hauteur 0,50 cm. G = {avecIndices('frac(θ′|θ)')} = {avecIndices('frac(d_m|f′)')} suppose l’objet dans le plan focal objet (image à l’infini).</li>
       <li><strong>Dessins</strong> : dans l’œil, l’échelle est la même sur l’axe et en hauteur ; la distance à l’objet et la taille de l’objet sont <em>hors échelle</em> (axe interrompu) ; pour l’angle et la loupe, l’échelle verticale est agrandie.</li>
     </ul>);
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
@@ -419,8 +419,8 @@ export function SimulationOeilLoupe() {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>œil réduit : lentille de focale f′ variable + rétine à 17 mm ; image nette ⇔ sur la rétine ; objet proche ⇒ f′ diminue</li>
-        <li>diamètre apparent : θ ≈ AB / D (rad) ; détails séparés si θ ≥ ε ≈ 3×10⁻⁴ rad</li>
-        <li>loupe : objet dans le plan focal, image à l’infini ; G = θ′ / θ = d<sub>m</sub> / f′ (d<sub>m</sub> = 25 cm)</li>
+        <li>diamètre apparent : θ ≈ {avecIndices('frac(AB|D)')} (rad) ; détails séparés si θ ≥ ε ≈ 3×10⁻⁴ rad</li>
+        <li>loupe : objet dans le plan focal, image à l’infini ; G = {avecIndices('frac(θ′|θ)')} = {avecIndices('frac(d_m|f′)')} (d<sub>m</sub> = 25 cm)</li>
       </ul>
     </ARetenir>);
 

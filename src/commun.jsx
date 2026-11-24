@@ -198,10 +198,18 @@ export const Vec = ({ n }) => <math style={{ fontSize: '1.05em' }}><mover><mi>{n
 // Les indices « pK_A » y sont aussi transformés. Les textes de part et d'autre restent du texte normal.
 function fermante(t, i) { let d = 0; for (let k = i; k < t.length; k++) { if (t[k] === '(') d++; else if (t[k] === ')' && --d === 0) return k; } return -1; }
 function mathTexte(t, cle = 'm') {
-  const out = []; let dernier = 0, k = 0, m; const re = /10\^\(|([A-Za-zΔ]+)_([A-Za-zÀ-ÿ0-9−]+)/g;
+  const out = []; let dernier = 0, k = 0, m; const re = /frac\(|10\^\(|([A-Za-zΔ]+)_([A-Za-zÀ-ÿ0-9−½]+)/g;
   const txt = (x) => { if (x) out.push(<mtext key={`${cle}t${k++}`}>{x.replace(/ /g, '\u00a0')}</mtext>); };
   while ((m = re.exec(t))) {
-    if (m[0] === '10^(') {
+    if (m[0] === 'frac(') {
+      const f = fermante(t, m.index + 4); if (f < 0) continue;
+      const dedans = t.slice(m.index + 5, f); let d = 0, coupe = -1;
+      for (let i = 0; i < dedans.length; i++) { if (dedans[i] === '(') d++; else if (dedans[i] === ')') d--; else if (dedans[i] === '|' && d === 0) { coupe = i; break; } }
+      if (coupe < 0) continue;
+      txt(t.slice(dernier, m.index));
+      out.push(<mfrac key={`${cle}f${k++}`}><mrow>{mathTexte(dedans.slice(0, coupe), `${cle}n${k}`)}</mrow><mrow>{mathTexte(dedans.slice(coupe + 1), `${cle}d${k}`)}</mrow></mfrac>);
+      dernier = f + 1; re.lastIndex = dernier;
+    } else if (m[0] === '10^(') {
       const f = fermante(t, m.index + 3); if (f < 0) continue;
       txt(t.slice(dernier, m.index));
       out.push(<msup key={`${cle}p${k++}`}><mn>10</mn><mrow>{mathTexte(t.slice(m.index + 4, f), `${cle}e${k}`)}</mrow></msup>);
