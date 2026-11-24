@@ -116,17 +116,17 @@ export function SimulationAtelierRealiser() {
       </div>);
   }
   const it = items.find(i => i.id === sel.ex);
-  const liste = filtrer(items, { type: it.type, niv: sel.niv, ch: sel.ch });
+  const liste = filtrer(items, { type: it.type, niv: sel.niv, ens: sel.ens, ch: sel.ch });
   const pos = liste.findIndex(i => i.id === it.id);
-  const aller = i => setSel({ type: it.type, niv: sel.niv, ch: sel.ch, ex: liste[i].id });
+  const aller = i => setSel({ type: it.type, niv: sel.niv, ens: sel.ens, ch: sel.ch, ex: liste[i].id });
   const navigation = (
     <>
-      <button onClick={() => setSel({ type: it.type, niv: sel.niv, ch: sel.ch, ex: '' })} style={stylePetitBouton(false)}>☰ Retour à la liste</button>
+      <button onClick={() => setSel({ type: it.type, niv: sel.niv, ens: sel.ens, ch: sel.ch, ex: '' })} style={stylePetitBouton(false)}>☰ Retour à la liste</button>
       {pos > 0 && <button onClick={() => aller(pos - 1)} style={stylePetitBouton(false)}>◀ Précédent</button>}
       {pos >= 0 && pos < liste.length - 1 && <button onClick={() => aller(pos + 1)} style={stylePetitBouton(false)}>Suivant ▶</button>}
     </>);
   return (
     <ExerciceRea key={it.id} id={it.id} titre={it.titre} detail={it.detail} navigation={navigation}
-      entete={<FilAriane code="REA" couleur={COULEUR_REA} types={TYPES_REA} chapitres={CHAPITRES} sel={{ type: it.type, niv: sel.niv, ch: sel.ch }} setSel={setSel} dansExercice />} />
+      entete={<FilAriane code="REA" couleur={COULEUR_REA} types={TYPES_REA} chapitres={CHAPITRES} sel={{ type: it.type, niv: sel.niv, ens: sel.ens, ch: sel.ch }} setSel={setSel} dansExercice />} />
   );
 }
