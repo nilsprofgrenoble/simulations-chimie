@@ -33,6 +33,19 @@ export const ESPECES = [
   { id: 'sorbitane', nom: 'ester de sorbitane', court: 'ester de sorbitane', famille: 'non ionique', sous: 'polyol', formule: 'R–COO–sorbitane (OH multiples)',
     groupes: [] },
 ];
+// Écritures de la formule non dissoute, de la plus lisible à la plus trompeuse : ion seul, ion avec son contre-ion, formule condensée du sel (charges non écrites).
+// R = longue chaîne carbonée (queue hydrophobe). `contre` = contre-ion (sans queue, sans rôle dans la famille). Amphotères et non ioniques : pas de contre-ion.
+const ECRITURES = {
+  sds: { ecritures: ['R–OSO₃⁻', 'R–OSO₃⁻ Na⁺', 'R–OSO₃Na'], contre: 'Na⁺' },
+  savon: { ecritures: ['R–COO⁻', 'R–COO⁻ Na⁺', 'R–COONa'], contre: 'Na⁺' },
+  ctab: { ecritures: ['R–N⁺(CH₃)₃', 'R–N⁺(CH₃)₃ Br⁻', 'R–N(CH₃)₃Br'], contre: 'Br⁻' },
+  amine: { ecritures: ['R–NH₃⁺', 'R–NH₃⁺ Cl⁻', 'R–NH₃Cl'], contre: 'Cl⁻' },
+  betaine: { ecritures: ['R–N⁺(CH₃)₂–CH₂–COO⁻'], contre: null },
+  alanine: { ecritures: ['R–NH₂⁺–CH₂CH₂–COO⁻'], contre: null },
+  age: { ecritures: ['R–(OCH₂CH₂)ₙ–OH'], contre: null },
+  sorbitane: { ecritures: ['R–COO–sorbitane (plusieurs OH)'], contre: null },
+};
+ESPECES.forEach(e => Object.assign(e, ECRITURES[e.id]));
 export const espece = id => ESPECES.find(e => e.id === id);
 
 const pw = x => Math.pow(10, x);
@@ -123,4 +136,11 @@ export function tirageFraction(r = Math.random) {
 export function tirageIso(r = Math.random) {
   const a = tire([2.5, 3, 3.5, 4], r), b = tire([9, 9.5, 10, 10.5], r);
   return { pKaAcide: a, pKaBase: b, vrai: (a + b) / 2 };
+}
+
+// défi « famille d'après la formule » : une espèce et une de ses écritures tirées au hasard
+export function tirageFormule(r = Math.random) {
+  const id = tire(['sds', 'savon', 'ctab', 'amine', 'betaine', 'age'], r), e = espece(id);
+  const k = Math.floor(r() * e.ecritures.length);
+  return { id, e, k, ecriture: e.ecritures[k], famille: familleDeduite(e) };
 }

@@ -6,6 +6,21 @@ export const QCM = {
     'Les ions Na⁺ voisins protègent la tête et bloquent les ions H⁺',
     'La longue chaîne carbonée empêche H⁺ d’atteindre la tête',
     'Les ions H⁺ ajoutent des charges + qui compensent la charge −'] },
+  formule: { bonne: 0, options: [
+    'Un sel : l’ion R–OSO₃⁻ et l’ion Na⁺, tenus par une liaison ionique',
+    'Une molécule neutre, avec une liaison covalente entre O et Na',
+    'Un tensioactif non ionique, puisqu’aucune charge n’est écrite',
+    'Un amphotère, puisqu’on y trouve un ion − et un ion +'] },
+  ion: { bonne: 0, options: [
+    'L’ion qui porte la longue chaîne : R–OSO₃⁻',
+    'Les deux ions : une charge + et une charge − font un amphotère',
+    'Na⁺, car c’est lui qui porte la charge positive du sel',
+    'L’ion le plus petit, car il se déplace le plus vite'] },
+  ecritures: { bonne: 0, options: [
+    'Cationique (ion R–N⁺(CH₃)₃) et anionique (ion R–COO⁻)',
+    'Anionique (ion Br⁻) et cationique (ion Na⁺)',
+    'Amphotères : chaque formule contient un ion + et un ion −',
+    'Non ioniques : aucune charge n’est écrite dans ces formules'] },
   ctab: { bonne: 0, options: [
     'L’azote n’a aucun H à perdre : il ne réagit pas avec HO⁻',
     'La longue chaîne carbonée empêche HO⁻ d’approcher la tête',
