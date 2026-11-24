@@ -20,10 +20,10 @@ const CADRES = {
   betaine: [{ g: 0 }, { t: 'CH₂', w: 46 }, { g: 1 }], alanine: [{ g: 0 }, { t: 'CH₂CH₂', w: 72 }, { g: 1 }],
 };
 export function SvgTete({ id, pH, titre = true, contre = false }) {
-  const e = M.espece(id), W = 300, y0 = 80, nC = 7, xt = 10, pas = 13;
+  const e = M.espece(id), W = 300, y0 = id === 'sorbitane' ? 76 : 80, nC = 7, xt = 10, pas = 13, yl = id === 'sorbitane' ? y0 + 62 : y0 + 46;
   const xFin = xt + nC * pas;
   const corps = [queue(xt, y0, nC, pas)];
-  corps.push(T(6, y0 + 46, 'queue hydrophobe', { size: 13, fill: C.queue, gras: true, anchor: 'start' }));
+  corps.push(T(6, yl, 'queue hydrophobe', { size: 13, fill: C.queue, gras: true, anchor: 'start' }));
   const entete = titre && T(6, 20, e.court, { size: 15, gras: true, anchor: 'start' });
   if (e.famille === 'non ionique') {
     if (id === 'age') {
@@ -35,21 +35,26 @@ export function SvgTete({ id, pH, titre = true, contre = false }) {
         x += 52;
       }
       corps.push(<g key="oh"><rect x={x + 2} y={y0 - 22} width={36} height={28} rx={8} fill="white" stroke={C.non} strokeWidth="2.5"/><text x={x + 20} y={y0 - 3} fontSize={14} fontWeight={700} fill={C.non} textAnchor="middle">OH</text></g>);
-      corps.push(T(W - 6, y0 + 46, 'tête hydrophile', { size: 13, fill: C.non, gras: true, anchor: 'end' }));
+      corps.push(T(W - 6, yl, 'tête hydrophile', { size: 13, fill: C.non, gras: true, anchor: 'end' }));
       corps.push(T(W / 2, y0 + 68, 'motifs O–CH₂–CH₂ répétés, puis OH', { size: 12.5, fill: C.non }));
     } else {
-      const cx = xFin + 58, cy = y0 - 4;
+      const cx = 190, cy = y0 - 4, yL = y0 - 11;
       const P = [[cx, cy - 22], [cx + 21, cy - 7], [cx + 13, cy + 18], [cx - 13, cy + 18], [cx - 21, cy - 7]];
-      corps.push(<line key="e" x1={xFin} y1={y0 - 5} x2={xFin + 14} y2={y0 - 5} stroke={C.non} strokeWidth="3"/>);
-      corps.push(<text key="est" x={xFin + 30} y={y0 - 12} fontSize={12.5} fontWeight={700} fill={C.non} textAnchor="middle">C=O</text>);
-      corps.push(<polygon key="p" points={P.map(q => q.join(',')).join(' ')} fill="white" stroke={C.non} strokeWidth="2.5"/>);
-      corps.push(<text key="or" x={P[0][0]} y={P[0][1] + 5} fontSize={12.5} fontWeight={700} fill={C.non} textAnchor="middle">O</text>);
-      [[P[1][0] + 17, P[1][1] - 8], [P[2][0] + 17, P[2][1] + 12], [P[3][0] - 17, P[3][1] + 12], [P[4][0] - 17, P[4][1] - 8]].forEach(([x, y], k) => corps.push(<text key={`h${k}`} x={x} y={y + 4} fontSize={12.5} fontWeight={700} fill={C.non} textAnchor="middle">OH</text>));
-      corps.push(T(W - 6, y0 + 46, 'tête hydrophile', { size: 13, fill: C.non, gras: true, anchor: 'end' }));
-      corps.push(T(W / 2, y0 + 68, 'cycle avec plusieurs groupes OH', { size: 12.5, fill: C.non }));
+      const lien = (k, x1, y1, x2, y2) => <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke={C.non} strokeWidth="3" strokeLinecap="round"/>;
+      corps.push(lien('e0', xFin, y0 - 5, xFin + 10, y0 - 5));
+      corps.push(<g key="est"><rect x={xFin + 10} y={yL - 14} width={44} height={28} rx={8} fill="white" stroke={C.non} strokeWidth="2.5"/><text x={xFin + 32} y={yL + 5} fontSize={13} fontWeight={700} fill={C.non} textAnchor="middle">COO</text></g>);
+      corps.push(lien('e1', xFin + 54, yL, P[4][0], P[4][1]));
+      corps.push(<polygon key="p" points={P.map(q => q.join(',')).join(' ')} fill="white" stroke={C.non} strokeWidth="2.5" strokeLinejoin="round"/>);
+      corps.push(<g key="or"><circle cx={P[0][0]} cy={P[0][1]} r={9} fill="white" stroke={C.non} strokeWidth="2"/><text x={P[0][0]} y={P[0][1] + 4.5} fontSize={12.5} fontWeight={700} fill={C.non} textAnchor="middle">O</text></g>);
+      [[P[1], 14, -8, 'start'], [P[2], 8, 20, 'start'], [P[3], -8, 20, 'end']].forEach(([q, dx, dy, an], k) => {
+        corps.push(lien(`hb${k}`, q[0], q[1], q[0] + dx, q[1] + dy * 0.6));
+        corps.push(<text key={`h${k}`} x={q[0] + dx + (an === 'start' ? 3 : -3)} y={q[1] + dy * 0.6 + (dy > 0 ? 14 : 4)} fontSize={12.5} fontWeight={700} fill={C.non} textAnchor={an}>OH</text>);
+      });
+      corps.push(T(W - 6, yl, 'tête hydrophile', { size: 13, fill: C.non, gras: true, anchor: 'end' }));
+      corps.push(T(W / 2, y0 + 82, 'cycle avec plusieurs groupes OH', { size: 12.5, fill: C.non }));
     }
-    corps.push(T(W - 6, 20, 'aucun groupe chargé', { size: 13, gras: true, anchor: 'end', fill: C.non }));
-    return base(156, `${e.nom} : ${e.formule}, tête sans charge à tout pH`, <>{entete}{corps}</>);
+    corps.push(T(6, 40, 'aucun groupe chargé', { size: 13, gras: true, anchor: 'start', fill: C.non }));
+    return base(id === 'sorbitane' ? 170 : 156, `${e.nom} : ${e.formule}, tête sans charge à tout pH`, <>{entete}{corps}</>);
   }
   const seq = CADRES[id]; let x = xFin + 6;
   corps.push(<line key="l" x1={xFin} y1={y0 - 5} x2={x} y2={y0 - 5} stroke={C.queue} strokeWidth="3"/>);
