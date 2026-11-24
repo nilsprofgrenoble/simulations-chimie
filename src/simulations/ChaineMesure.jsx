@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect, useRef } from "react";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, ORANGE_GUIDE, Frac, avecIndices, fmt, lireNombre, proche } from "../commun";
+import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, ORANGE_GUIDE, Frac, FormuleEnLigne, avecIndices, fmt, lireNombre, proche } from "../commun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
 import { FCaracteristique, FPont, FCAN, FHysteresis, FChaine } from "./ChaineSchemas";
@@ -136,10 +136,10 @@ export function Simulation8({ plotlyReady }) {
       tache: { type: 'num', q: 'Tension Ur', unite: 'V', vrai: Ur200, tol: 0.01, affiche: x => fmt(x, 2), cs: 3, detail: true,
         indice: 'Remplacez Rp et R par leurs valeurs en Ω : le résultat est en V. Gardez au moins 3 chiffres significatifs.',
         bloque: !(E === 200 && R === R0) ? 'Gardez E = 200 lx et R = 1000 Ω.' : null,
-        calcul: () => [`Formule du pont diviseur (alimentation 5 V, tension prise aux bornes de R) : Ur = 5 × R / (Rp + R).`,
+        calcul: () => [<>Formule du pont diviseur (alimentation 5 V, tension prise aux bornes de R) : <FormuleEnLigne><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><msub><mi>R</mi><mi>p</mi></msub><mo>+</mo><mi>R</mi></mrow></mfrac></FormuleEnLigne>.</>,
           `Données : Rp = ${fmt(Rp200, 0)} Ω (lue à l’étape précédente) et R = ${fmt(R0, 0)} Ω, toutes deux en Ω : le résultat est en V.`,
           `Rp + R = ${fmt(Rp200, 0)} + ${fmt(R0, 0)} = ${fmt(Rp200 + R0, 0)} Ω.`,
-          `Ur = 5 × ${fmt(R0, 0)} / ${fmt(Rp200 + R0, 0)} ≈ ${fmt(Ur200, 3)} V, soit ${fmt(Ur200, 2)} V.`],
+          <><FormuleEnLigne><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mn>{fmt(R0, 0)}</mn><mn>{fmt(Rp200 + R0, 0)}</mn></mfrac></FormuleEnLigne> ≈ {fmt(Ur200, 3)} V, soit {fmt(Ur200, 2)} V.</>],
         pieges: [[5 * Rp200 / (Rp200 + R0), 'Vous avez pris la tension aux bornes de Rp. Ici, Ur est mesurée aux bornes de R : le numérateur est 5 × R.'],
           [R0 / (Rp200 + R0), 'Vous avez oublié de multiplier par la tension d’alimentation (5 V) : Ur = 5 × R / (Rp + R).'],
           [5 * R0 / Rp200, 'Il manque R au dénominateur : c’est Rp + R (somme des deux résistances), pas Rp seule.']],
@@ -156,26 +156,26 @@ export function Simulation8({ plotlyReady }) {
     { id: 'quantum', titre: 'Le quantum', focus: ['can', 'graph'], bloc: 'can',
       texte: <>Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité. Dans ce modèle, N va de 0 à 2<sup>n</sup> − 1 pour une tension de 0 à 5 V, donc :<Formule><mi>q</mi><mo>=</mo><mfrac><mn>5</mn><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></Formule></>,
       tache: { type: 'num', q: 'Quantum q pour 10 bits', unite: 'mV', vrai: q10, tol: 0.01, affiche: x => fmt(x, 2), cs: 3,
-        indice: <>Utilisez q = (V<sub>max</sub> − V<sub>min</sub>) / (2ⁿ − 1), avec une plage de 0 à 5 V et n = 10 bits. Le calcul donne q en V : l’unité demandée est le mV (1 V = 1 000 mV).</>,
+        indice: <>Utilisez <FormuleEnLigne><mi>q</mi><mo>=</mo><mfrac><mrow><msub><mi>V</mi><mi>max</mi></msub><mo>−</mo><msub><mi>V</mi><mi>min</mi></msub></mrow><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></FormuleEnLigne>, avec une plage de 0 à 5 V et n = 10 bits. Le calcul donne q en V : l’unité demandée est le mV (1 V = 1 000 mV).</>,
         calcul: () => [`Modèle du parcours : N va de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V (CAN idéal, référence 5 V exacte).`,
           `Pour n = ${B0} : 2ⁿ − 1 = ${fmt(Math.pow(2, B0) - 1, 0)}.`,
-          `q = 5 / ${fmt(Math.pow(2, B0) - 1, 0)} = ${fmt(q10 / 1000, 5)} V.`,
+          <><FormuleEnLigne><mi>q</mi><mo>=</mo><mfrac><mn>5</mn><mn>{fmt(Math.pow(2, B0) - 1, 0)}</mn></mfrac></FormuleEnLigne> = {fmt(q10 / 1000, 5)} V.</>,
           `Conversion : 1 V = 1 000 mV, donc q = ${fmt(q10 / 1000, 5)} × 1 000 = ${fmt(q10, 2)} mV.`],
         pieges: [[q10 / 1000, 'Votre résultat est en V alors que l’unité demandée est le mV : multipliez par 1 000.'],
           [5000 / B0, 'Vous avez divisé par le nombre de bits (10). Il faut diviser par le nombre de pas, 2ⁿ − 1, avec n = 10.']],
-        bloque: bits !== B0 ? 'Choisissez 10 bits dans la liste.' : null, expl: `q = 5 / 1023 = ${fmt(q10 / 1000, 5)} V = ${fmt(q10, 2)} mV.` } },
+        bloque: bits !== B0 ? 'Choisissez 10 bits dans la liste.' : null, expl: <><FormuleEnLigne><mi>q</mi><mo>=</mo><mfrac><mn>5</mn><mn>1023</mn></mfrac></FormuleEnLigne> = {fmt(q10 / 1000, 5)} V = {fmt(q10, 2)} mV.</> } },
     { id: 'n', titre: 'Le nombre N', focus: ['can', 'graph'], bloc: 'can',
       texte: <>Le CAN calcule N, tronqué à l'entier inférieur :<Formule><mi>N</mi><mo>=</mo><mo>⌊</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo><mo>⌋</mo></Formule>Reprenez Ur = {fmt(Ur200, 2)} V (E = 200 lx).</>,
       tache: { type: 'num', q: 'Nombre N donné par le CAN', unite: '', vrai: N200, tol: 0.004, affiche: x => fmt(x, 0),
-        indice: 'Appliquez N = Ur / 5 × (2ⁿ − 1), avec Ur en V (valeur de l’étape précédente, gardez au moins 3 chiffres significatifs) et n = 10. N est la partie entière du résultat : on tronque, on n’arrondit pas.',
-        calcul: () => [`Formule : N = Ur / 5 × (2ⁿ − 1), puis on garde la partie entière (troncature, pas d’arrondi).`,
+        indice: <>Appliquez <FormuleEnLigne><mi>N</mi><mo>=</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo></FormuleEnLigne>, avec U<sub>r</sub> en V (valeur de l’étape précédente, gardez au moins 3 chiffres significatifs) et n = 10. N est la partie entière du résultat : on tronque, on n’arrondit pas.</>,
+        calcul: () => [<>Formule : <FormuleEnLigne><mi>N</mi><mo>=</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo></FormuleEnLigne>, puis on garde la partie entière (troncature, pas d’arrondi).</>,
           `Données : Ur = ${fmt(Ur200, 3)} V (valeur non arrondie : ${fmt(Ur200, 4)} V), n = ${B0} bits, donc 2ⁿ − 1 = ${fmt(Math.pow(2, B0) - 1, 0)}.`,
-          `N = ${fmt(Ur200, 4)} / 5 × ${fmt(Math.pow(2, B0) - 1, 0)} ≈ ${fmt(Ur200 / 5 * (Math.pow(2, B0) - 1), 2)}.`,
+          <><FormuleEnLigne><mi>N</mi><mo>=</mo><mfrac><mn>{fmt(Ur200, 4)}</mn><mn>5</mn></mfrac><mo>×</mo><mn>{fmt(Math.pow(2, B0) - 1, 0)}</mn></FormuleEnLigne> ≈ {fmt(Ur200 / 5 * (Math.pow(2, B0) - 1), 2)}.</>,
           `Partie entière : N = ${fmt(N200, 0)}.`],
         pieges: [[Ur200 * (Math.pow(2, B0) - 1), 'Vous avez oublié de diviser par 5 V : N = Ur / 5 × (2ⁿ − 1).'],
           [Ur200 / q10, 'Mélange d’unités : q est en mV alors que Ur est en V. Convertissez-les dans la même unité avant de diviser (ou utilisez N = Ur / 5 × 1023).']],
         bloque: !reglage200 ? 'Gardez E = 200 lx, R = 1000 Ω et 10 bits.' : null,
-        expl: `N = ${fmt(Ur200, 3)} / 5 × 1023 ≈ ${fmt(N200, 0)}.` } },
+        expl: <><FormuleEnLigne><mi>N</mi><mo>=</mo><mfrac><mn>{fmt(Ur200, 3)}</mn><mn>5</mn></mfrac><mo>×</mo><mn>1023</mn></FormuleEnLigne> ≈ {fmt(N200, 0)}.</> } },
     { id: 'arduino', titre: 'Le traitement : allumer les phares', focus: ['arduino', 'montage'], bloc: 'arduino',
       retenirTitre: 'À RETENIR : LE CONVERTISSEUR ANALOGIQUE-NUMÉRIQUE',
       retenir: <>
@@ -255,7 +255,7 @@ export function Simulation8({ plotlyReady }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>
           La photorésistance reçoit un éclairement de <strong>{defi.E} lx</strong>. Elle est montée en pont diviseur avec <strong>R = {fmt(defi.R, 0)} Ω</strong> (alimentation 5 V), et la tension Ur est lue par un CAN <strong>{defi.bits} bits</strong> de référence 5 V.
-          <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : Ur = 5 R / (Rp + R) ; N = Ur / 5 × (2<sup>n</sup> − 1) tronqué ; q = 5 / (2<sup>n</sup> − 1).</div>
+          <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : <FormuleEnLigne><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><msub><mi>R</mi><mi>p</mi></msub><mo>+</mo><mi>R</mi></mrow></mfrac></FormuleEnLigne> ; <FormuleEnLigne><mi>N</mi><mo>=</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo></FormuleEnLigne> tronqué ; <FormuleEnLigne><mi>q</mi><mo>=</mo><mfrac><mn>5</mn><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></FormuleEnLigne>.</div>
           <button onClick={() => { setE(defi.E); setR(defi.R); setBits(defi.bits); setCanInput('Ur'); setActiveBlock('capteur'); setMode('explore'); }}
             style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}><Pic n="search"/>Régler l’exploration sur ces valeurs</button>
         </div>
@@ -287,8 +287,8 @@ export function Simulation8({ plotlyReady }) {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Photorésistance</strong> : la caractéristique Rp(E) est donnée par 9 points de mesure ; entre deux points, on interpole linéairement en échelle log-log. En dessous de 11 lx (resp. au-dessus de 1590 lx), Rp garde la valeur du point extrême. La température, la couleur de la lumière et le temps de réponse sont ignorés, et l'éclairement est uniforme sur le capteur.</li>
       <li><strong>Alimentation et résistance R</strong> : alimentation 5 V parfaite et stable ; R exacte (tolérance ignorée).</li>
-      <li><strong>Pont diviseur non chargé</strong> : l'entrée du CAN ne prélève pas de courant, donc Ur = 5 R / (R<sub>p</sub> + R). La photorésistance est reliée au 5 V, la résistance R à la masse, et Ur est prise aux bornes de R.</li>
-      <li><strong>CAN idéal à n bits, référence 5 V</strong> : N = Ur / 5 × (2<sup>n</sup> − 1), tronqué à l'entier inférieur (comme sur une carte Arduino), et quantum q = 5 / (2<sup>n</sup> − 1). Pas de bruit ni d'erreur de gain ou de décalage. Le CAN réel d'une carte Uno est à 10 bits et convertit sur 1024 pas : l'écart avec ce modèle est d'au plus un pas.</li>
+      <li><strong>Pont diviseur non chargé</strong> : l'entrée du CAN ne prélève pas de courant, donc <FormuleEnLigne><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><msub><mi>R</mi><mi>p</mi></msub><mo>+</mo><mi>R</mi></mrow></mfrac></FormuleEnLigne>. La photorésistance est reliée au 5 V, la résistance R à la masse, et Ur est prise aux bornes de R.</li>
+      <li><strong>CAN idéal à n bits, référence 5 V</strong> : <FormuleEnLigne><mi>N</mi><mo>=</mo><mfrac><msub><mi>U</mi><mi>r</mi></msub><mn>5</mn></mfrac><mo>×</mo><mo>(</mo><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn><mo>)</mo></FormuleEnLigne>, tronqué à l'entier inférieur (comme sur une carte Arduino), et quantum <FormuleEnLigne><mi>q</mi><mo>=</mo><mfrac><mn>5</mn><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></FormuleEnLigne>. Pas de bruit ni d'erreur de gain ou de décalage. Le CAN réel d'une carte Uno est à 10 bits et convertit sur 1024 pas : l'écart avec ce modèle est d'au plus un pas.</li>
       <li><strong>Algorithme</strong> : N est comparé à deux seuils (hystérésis) ; entre les deux seuils, la sortie 8 garde son état précédent. Les phares sont éteints au départ. Le délai de 5 s entre deux lectures n'est pas simulé.</li>
     </ul>
   );
