@@ -4,7 +4,7 @@
 //  Source des niveaux et des chapitres : src/chapitres.js (champ « domaine » de chaque famille d'exercices). Aucun exercice n'est modifié ici : on ne fait que les ranger et les nommer.
 //  Pur (sans React) : testé par realiserParcours.test.mjs.
 // ═══════════════════════════════════════════════════════════════════════════
-import { CHAPITRES, NIVEAUX_CHAPITRES } from '../chapitres.js';
+import { CHAPITRES } from '../chapitres.js';
 
 // Les types, dans l'ordre conseillé. « filtre: niveau » : le type contient beaucoup d'exercices rattachés à un chapitre du programme.
 export const TYPES_REA = [
@@ -45,12 +45,5 @@ export function construireItems(familles) {
   });
 }
 
-export const itemsDuType = (items, type) => items.filter(i => i.type === type);
-export const niveauxDuType = (items, type) => NIVEAUX_CHAPITRES.map(n => ({ ...n, n: itemsDuType(items, type).filter(i => i.niveaux.includes(n.key)).length })).filter(n => n.n > 0);
-// Chapitres d'un niveau qui contiennent des exercices du type, dans l'ordre du programme : [{ chap, n }]
-export const chapitresDuNiveauType = (items, type, niv) => CHAPITRES.filter(c => c.niveau === niv)
-  .map(c => ({ chap: c, n: itemsDuType(items, type).filter(i => i.chapitres.includes(c.id)).length })).filter(x => x.n > 0);
-// Exercices d'une sélection { type, niv, ch } (tout niveau si niv vide, tout chapitre si ch vide)
-export function filtrer(items, { type, niv, ch }) {
-  return itemsDuType(items, type).filter(i => (!niv || i.niveaux.includes(niv)) && (!ch || i.chapitres.includes(ch)));
-}
+// Fonctions communes à tous les ateliers : voir parcoursCommun.js
+export { itemsDuType, niveauxDuType, chapitresDuNiveauType, filtrer } from '../parcoursCommun.js';

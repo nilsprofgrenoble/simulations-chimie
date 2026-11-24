@@ -3,6 +3,7 @@ import { CHAPITRES } from "../chapitres";
 import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, attrTest, lireProgression } from "../commun";
 import { ParcoursCompetence, FilAriane } from "../ParcoursCompetence";
 import { SEL_VIDE, lireSelection, ecrireSelection } from "../selectionParcours";
+import { sanitiser } from "../parcoursCommun";
 import { TYPES_REA, construireItems, filtrer } from "./realiserParcours";
 import { useSuivi } from "../suivi";
 import { txtVec } from "./FigureVecteurs";
@@ -99,24 +100,9 @@ function ExerciceRea({ id, titre, detail, entete, navigation }) {
 // ── Page de l'atelier : types d'exercices → (niveau → chapitre) → liste → exercice ──
 const COULEUR_REA = '#357f54';
 const INTRO_REA = 'Mener un calcul sans se tromper. Choisis d’abord le type d’exercice dont tu as besoin.';
-// Sélection valide : un type connu, un chapitre qui existe et qui appartient au niveau choisi
-function sanitiser(s, items) {
-  const type = TYPES_REA.some(t => t.id === s.type) ? s.type : '';
-  const ch = CHAPITRES.find(c => c.id === s.ch);
-  const niv = type && TYPES_REA.find(t => t.id === type).filtre ? s.niv : '';
-  const chOk = ch && niv && ch.niveau === niv ? ch.id : '';
-  const it = items.find(i => i.id === s.ex);
-  if (it) {   // arrivée directe sur un exercice (lien, devoir, page d'un chapitre) : on reconstitue le fil d'Ariane
-    const filtre = TYPES_REA.find(t => t.id === it.type).filtre;
-    const c = it.chapitres.includes(chOk) ? CHAPITRES.find(x => x.id === chOk) : CHAPITRES.find(x => it.chapitres.includes(x.id));
-    return { type: it.type, niv: filtre && c ? c.niveau : '', ch: filtre && c ? c.id : '', ex: it.id };
-  }
-  return { type, niv, ch: chOk, ex: '' };
-}
-
 export function SimulationAtelierRealiser() {
   const items = useMemo(() => construireItems(FAMILLES), []);
-  const [sel, setSelBrut] = useState(() => sanitiser(lireSelection(), items));
+  const [sel, setSelBrut] = useState(() => sanitiser(lireSelection(), items, TYPES_REA));
   const setSel = s => {
     const net = { ...SEL_VIDE, ...s }; setSelBrut(net); ecrireSelection(net);
     try { document.getElementById('zone-simulation')?.scrollIntoView({ block: 'start' }); } catch { /* sans effet */ }

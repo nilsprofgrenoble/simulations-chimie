@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { KIT, stylePetitBouton } from './commun';
 import { NIVEAUX_CHAPITRES } from './chapitres';
-import { itemsDuType, niveauxDuType, chapitresDuNiveauType, filtrer } from './simulations/realiserParcours';
+import { itemsDuType, niveauxDuType, chapitresDuNiveauType, filtrer, difficultesDuType } from './parcoursCommun';
 import { SEL_VIDE } from './selectionParcours';
 
 const niveauLabel = k => NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k;
@@ -123,7 +123,15 @@ function EcranType({ couleur, type, items, chapitres, prog, sel, setSel, ouvrir 
               <button key={chap.id} type="button" aria-pressed={sel.ch === chap.id} onClick={() => setSel({ ...sel, ch: chap.id, ex: '' })} style={{ ...carte(sel.ch === chap.id, couleur), minHeight: 48, fontSize: 14, fontWeight: 700 }}>
                 <span style={{ flex: 1 }}>{chap.label}</span><span style={{ fontWeight: 600, color: KIT.txt2, flex: 'none' }}>{n}</span></button>))}
           </div></>}
-        <div style={etape}>{sel.niv ? '3. Ton exercice' : 'Les exercices'} <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 600 }}>({liste.length})</span></div>
+        {type.difficulte && <>
+          <div style={etape}>{sel.niv ? '3. La difficulté' : 'La difficulté'} <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 600 }}>(facultatif)</span></div>
+          <div role="group" aria-label="Difficulté" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <button type="button" aria-pressed={!sel.dif} onClick={() => setSel({ ...sel, dif: '', ex: '' })} style={{ ...stylePetitBouton(!sel.dif, couleur), minHeight: 44, padding: '0 14px', fontSize: 14, fontWeight: 800 }}>Toutes</button>
+            {difficultesDuType(items, sel, type).filter(d => d.n > 0).map(d => (
+              <button key={d.dif} type="button" aria-pressed={sel.dif === d.dif} onClick={() => setSel({ ...sel, dif: d.dif, ex: '' })} style={{ ...stylePetitBouton(sel.dif === d.dif, couleur), minHeight: 44, padding: '0 14px', fontSize: 14, fontWeight: 800 }}>
+                {'★'.repeat(Number(d.dif))} {type.difficulte[d.dif]} <span style={{ fontWeight: 600, opacity: .85 }}>· {d.n}</span></button>))}
+          </div></>}
+        <div style={etape}>{sel.niv ? (type.difficulte ? '4. Ton exercice' : '3. Ton exercice') : 'Les exercices'} <span style={{ textTransform: 'none', letterSpacing: 0, fontWeight: 600 }}>({liste.length})</span></div>
       </>}
       <ListeExos liste={liste} prog={prog} ouvrir={ouvrir} couleur={couleur} groupes={groupes} />
     </div>);

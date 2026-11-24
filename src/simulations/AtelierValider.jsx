@@ -1,9 +1,12 @@
 import CodeExo from '../CodeExo';
-import { ChoixListe } from "../ChoixListe";
 import { useState, useMemo } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, ExempleResolu, avecIndices, exParam, venantDuDevoir, lireNombre, proche, attrTest } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, ExempleResolu, avecIndices, venantDuDevoir, lireNombre, proche, attrTest, lireProgression } from "../commun";
+import { CHAPITRES } from "../chapitres";
+import { ParcoursCompetence, FilAriane } from "../ParcoursCompetence";
+import { lireSelection, ecrireSelection, SEL_VIDE } from "../selectionParcours";
+import { sanitiser, filtrer } from "../parcoursCommun";
+import { TYPES_VAL, construireItemsVal } from "./validerParcours";
 import { useSuivi } from "../suivi";
-import { parDomaine } from "./ordreDomaines";
 import { Pic } from "../Pictos";
 import { FAMILLES, NIVEAUX, METHODE_PLAUSIBLE, METHODE_COMPAT, METHODE_DECISION } from "./AtelierValiderBanque";
 import { FigureModeles } from "./FigureModeles";
@@ -101,15 +104,10 @@ const EXEMPLES = {
     </ExempleResolu>),
 };
 
-export function SimulationAtelierValider({ naviguer }) {
+function ExerciceVal({ fam, it, entete, navigation, naviguer, suivantExo }) {
   const [duDevoir] = useState(venantDuDevoir);
-  const depart = (() => { const [f, i] = (exParam() || '').split('.'); const fa = FAMILLES.find(x => x.id === f); const k = fa ? fa.liste.findIndex(x => x.id === i) : -1; return { f: fa ? f : 'plausible', i: Math.max(0, k) }; })();
-  const [fam, setFam] = useState(depart.f);
-  const famille = FAMILLES.find(f => f.id === fam);
-  const [idx, setIdx] = useState(depart.i);
-  const it = famille.liste[Math.min(idx, famille.liste.length - 1)];
   const etapes = useMemo(() => etapesDe(fam, it), [fam, it]);
-  const [graine, setGraine] = useState(0);
+  const [graine] = useState(0);
   const perms = useMemo(() => permsDe(etapes), [etapes, graine]); // eslint-disable-line react-hooks/exhaustive-deps
   const [rep, setRep] = useState({});
   const [chk, setChk] = useState({});
@@ -117,9 +115,6 @@ export function SimulationAtelierValider({ naviguer }) {
   const [aide, setAide] = useState({});
   const [etp, setEtp] = useState(0);
 
-  const charger = (f, i) => { try { document.activeElement?.blur?.(); } catch { /* sans effet */ } setFam(f); setIdx(i); setRep({}); setChk({}); setVu({}); setAide({}); setEtp(0); setGraine(g => g + 1); };
-  const suivant = () => charger(fam, (idx + 1) % famille.liste.length);
-  const hasard = () => { const n = famille.liste.length; let j = idx; if (n > 1) while (j === idx) j = Math.floor(Math.random() * n); charger(fam, j); };
   const majRep = (id, v) => { setRep(r => ({ ...r, [id]: v })); setChk(c => ({ ...c, [id]: false })); };
 
   const resultat = e => {
@@ -153,20 +148,9 @@ export function SimulationAtelierValider({ naviguer }) {
   const methode = fam === 'plausible' ? METHODE_PLAUSIBLE : fam === 'decision' ? METHODE_DECISION : METHODE_COMPAT;
   return (
     <div style={{ ...cardStyle, textAlign: 'left' }}>
-      <h2 style={{ margin: '0 0 6px', fontSize: 18, color: KIT.txt, fontWeight: 700 }}>VAL : valider un résultat</h2>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Compétence travaillée : <b>Valider</b> (VAL) — garder un regard critique sur un résultat : est-il vraisemblable ? est-il compatible avec la référence ? <b>Tu n’as rien à apprendre par cœur : les repères sont donnés.</b></div>
-      <div style={{ ...styleBoite, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-        <div style={{ fontSize: 14, flex: '1 1 240px', minWidth: 0 }}>Entraînement :
-          <ChoixListe ariaLabel="Type d’entraînement" titre="Type d’entraînement" valeur={fam} onChoisir={v => charger(v, 0)}
-            groupes={[{ items: FAMILLES.map(f => ({ value: f.id, label: f.titre })) }]}/>
-        </div>
-        <div style={{ fontSize: 14, flex: '1 1 260px', minWidth: 0 }}>Exercice :
-          <ChoixListe ariaLabel="Choix de l’exercice" titre="Choisir un exercice" valeur={it.id} onChoisir={v => charger(fam, famille.liste.findIndex(x => x.id === v))}
-            groupes={parDomaine(famille.liste).map(([d, l]) => ({ label: d, items: l.map(x => ({ value: x.id, label: `${'★'.repeat(x.niveau)} ${x.titre}` })) }))}/>
-        </div>
-        <button onClick={hasard} style={stylePetitBouton(false)}>🎲 Au hasard</button>
-        <div style={{ flexBasis: '100%', fontSize: 13, color: KIT.txt2 }}>{famille.aide}</div>
-      </div>
+      {entete}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>{navigation}</div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 10 }}>{FAMILLES.find(f => f.id === fam).aide}</div>
       <div style={{ maxWidth: 760, display: 'flex', flexDirection: 'column', gap: 10 }}>
         <details data-methode style={{ ...styleBoite, fontSize: 13.5, color: KIT.txt }}>
           <summary style={{ cursor: 'pointer', fontWeight: 700 }}>La démarche et un exemple résolu</summary>
@@ -195,8 +179,46 @@ export function SimulationAtelierValider({ naviguer }) {
           </ARetenir>)}
         {fini && (duDevoir && naviguer
           ? <button onClick={() => naviguer(39)} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>↩ Retour à mon devoir</button>
-          : <button onClick={suivant} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>Exercice suivant ▶</button>)}
+          : <button onClick={suivantExo} style={{ ...styleBouton(true, '#334155'), alignSelf: 'flex-start' }}>Exercice suivant ▶</button>)}
       </div>
     </div>
+  );
+}
+
+// ── Page de l'atelier : types d'exercices → (niveau → chapitre → difficulté) → liste → exercice ──
+const INTRO_VAL = 'Garder un regard critique sur un résultat. Tu n’as rien à apprendre par cœur : les repères sont donnés. Choisis d’abord ce que tu veux travailler.';
+export function SimulationAtelierValider({ naviguer }) {
+  const items = useMemo(() => construireItemsVal(FAMILLES), []);
+  const [sel, setSelBrut] = useState(() => sanitiser(lireSelection(), items, TYPES_VAL));
+  const setSel = x => {
+    const net = { ...SEL_VIDE, ...x }; setSelBrut(net); ecrireSelection(net);
+    try { document.getElementById('zone-simulation')?.scrollIntoView({ block: 'start' }); } catch { /* sans effet */ }
+  };
+  const ouvrir = (it, ctx) => setSel({ ...(ctx || sel), type: it.type, ex: it.id });
+  const prog = lireProgression();
+  if (!sel.ex) {
+    return (
+      <div style={{ ...cardStyle, textAlign: 'left' }}>
+        <ParcoursCompetence code="VAL" titre="VAL : valider un résultat" intro={INTRO_VAL} couleur={COULEUR} types={TYPES_VAL} items={items} chapitres={CHAPITRES} prog={prog} sel={sel} setSel={setSel} ouvrir={ouvrir} />
+      </div>);
+  }
+  const item = items.find(i => i.id === sel.ex);
+  const liste = filtrer(items, { type: item.type, niv: sel.niv, ch: sel.ch, dif: sel.dif });
+  const pos = liste.findIndex(i => i.id === item.id);
+  const ctx = { type: item.type, niv: sel.niv, ch: sel.ch, dif: sel.dif };
+  const aller = i => setSel({ ...ctx, ex: liste[i].id });
+  const hasard = () => { const n = liste.length; let j = pos; if (n > 1) while (j === pos) j = Math.floor(Math.random() * n); aller(j); };
+  const navigation = (
+    <>
+      <button onClick={() => setSel({ ...ctx, ex: '' })} style={stylePetitBouton(false)}>☰ Retour à la liste</button>
+      {pos > 0 && <button onClick={() => aller(pos - 1)} style={stylePetitBouton(false)}>◀ Précédent</button>}
+      {pos >= 0 && pos < liste.length - 1 && <button onClick={() => aller(pos + 1)} style={stylePetitBouton(false)}>Suivant ▶</button>}
+      {liste.length > 1 && <button onClick={hasard} style={stylePetitBouton(false)}>🎲 Au hasard</button>}
+    </>);
+  const exo = FAMILLES.find(f => f.id === item.fam).liste.find(x => x.id === item.brut);
+  return (
+    <ExerciceVal key={item.id} fam={item.fam} it={exo} naviguer={naviguer} navigation={navigation}
+      suivantExo={() => aller(pos >= 0 ? (pos + 1) % liste.length : 0)}
+      entete={<FilAriane code="VAL" couleur={COULEUR} types={TYPES_VAL} chapitres={CHAPITRES} sel={ctx} setSel={setSel} dansExercice />} />
   );
 }
