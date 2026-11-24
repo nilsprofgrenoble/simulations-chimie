@@ -194,25 +194,25 @@ export function SvgCarteIoniques() {
   return <SvgPredominance maxW={MAXC} lignes={[{ id: 'sds', etiquette: 'SDS (sulfate)' }, { id: 'ctab', etiquette: 'CTAB (ammonium quaternaire)' }, { id: 'savon', etiquette: 'palmitate de sodium' }, { id: 'amine', etiquette: 'chlorure de dodécylammonium' }]} bas={['jamais + et − en même temps']}/>;
 }
 export function SvgCarteZwitterion() {
-  return base(190, 'un amphotère neutre porte deux charges, un non ionique n’en porte aucune', <>
+  return base(190, 'un zwitterionique neutre porte deux charges, un non ionique n’en porte aucune', <>
     <rect x="4" y="6" width="141" height="138" rx="12" fill="white" stroke={C.amph} strokeWidth="2.5"/>
     <rect x="155" y="6" width="141" height="138" rx="12" fill="white" stroke={C.non} strokeWidth="2.5"/>
-    {T(74, 30, 'amphotère à pH 7', { size: 13, gras: true, fill: C.amph })}{T(226, 30, 'non ionique', { size: 13.5, gras: true, fill: C.non })}
+    {T(74, 30, 'zwitterionique, pH 7', { size: 12.5, gras: true, fill: C.amph })}{T(226, 30, 'non ionique', { size: 13.5, gras: true, fill: C.non })}
     {disque(40, 76, '+', 1, 15)}{disque(108, 76, '−', 1, 15)}{T(74, 112, 'deux charges', { size: 14, gras: true })}{T(74, 132, 'charge nette = 0', { size: 13 })}
     <circle cx="226" cy="76" r="15" fill="white" stroke={C.zero} strokeWidth="3"/>{T(226, 112, 'aucune charge', { size: 14, gras: true })}{T(226, 132, 'charge nette = 0', { size: 13 })}
     {T(150, 176, 'neutre ≠ sans charge', { size: 15, gras: true, fill: C.moins })}
   </>, WC, MAXC);
 }
 export function SvgCarteAmphotere() {
-  return <SvgPredominance maxW={MAXC} lignes={[{ id: 'alanine', etiquette: 'N-dodécyl-β-alanine' }, { id: 'betaine', etiquette: 'dodécylbétaïne' }]} bas={['amphotère : les deux sortes de charges', 'le signe de la charge nette suit le pH']}/>;
+  return <SvgPredominance maxW={MAXC} lignes={[{ id: 'alanine', etiquette: 'N-dodécyl-β-alanine' }, { id: 'betaine', etiquette: 'dodécylbétaïne' }]} bas={['zwitterionique : les deux sortes de charges', 'le signe de la charge nette suit le pH']}/>;
 }
 export function SvgCarteTest() {
   const ligne = (y, col, tit, sous) => <g key={tit}><rect x="6" y={y} width="288" height="58" rx="12" fill="white" stroke={col} strokeWidth="2.5"/>{T(150, y + 24, tit, { size: 14, gras: true, fill: col })}{T(150, y + 44, sous, { size: 13 })}</g>;
-  return base(236, 'test de la famille : compter les sortes de charges possibles sur la tête entre pH 0 et 14', <>
+  return base(262, 'test de la famille : compter les sortes de charges possibles sur la tête entre pH 0 et 14', <>
     {T(150, 20, 'Quelles charges la tête peut-elle porter ?', { size: 13.5, gras: true })}
     {ligne(32, C.non, 'aucune : non ionique', 'pas de groupe ionisable')}
-    {ligne(98, C.plus, 'une seule sorte : ionique', '+ (cationique) ou − (anionique)')}
-    {ligne(164, C.amph, 'les deux sortes : amphotère', '+ et − sur la même tête')}
+    {ligne(98, C.plus, 'une sorte : anionique ou cationique', 'ionique : charge − seule ou + seule')}
+    {ligne(164, C.amph, 'deux sortes : zwitterionique', 'ionique aussi : + et − (amphotère)')}{T(150, 254, 'tête chargée = ionique, même si nette nulle', { size: 13, gras: true })}
   </>, WC, MAXC);
 }
 export function SvgCarteNonionique() {

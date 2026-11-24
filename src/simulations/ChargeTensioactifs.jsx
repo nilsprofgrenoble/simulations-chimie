@@ -8,11 +8,11 @@ import { QCM } from "./chargeTensioactifsQcm";
 import { SvgTete, SvgPredominance, SvgGouttes, SvgAttraction, SvgCarteIoniques, SvgCarteZwitterion, SvgCarteAmphotere, SvgCarteTest, SvgCarteNonionique, SvgFormules, SvgDissolution, SvgFormulesEx, SvgCarteFormule } from "./ChargeTensioactifsSchemas";
 
 const SIM_ID = 220, CLE_GUIDE = 'charge-tensioactifs-guide-v1';
-declarerDefis(SIM_ID, [['famille', 'Reconnaître la famille d’un tensioactif sur son diagramme de prédominance'], ['fraction', 'Fraction ionisée d’un acide gras (prolongement)'], ['iso', 'Point isoélectrique d’un amphotère (prolongement)'], ['formule', 'Famille d’un tensioactif d’après sa formule écrite']]);
+declarerDefis(SIM_ID, [['famille', 'Reconnaître la famille d’un tensioactif sur son diagramme de prédominance'], ['fraction', 'Fraction ionisée d’un acide gras (prolongement)'], ['iso', 'Point isoélectrique d’un zwitterionique (prolongement)'], ['formule', 'Famille d’un tensioactif d’après sa formule écrite']]);
 
 // ====================================================
 //  SIM 220 — CHARGE D'UN TENSIOACTIF SELON LE pH (BTS MDC, Formulation › Tensioactifs et émulsions)
-//  Une seule idée : la charge de la tête dépend (ou non) du pH selon la famille ; on distingue ioniques, amphotères et non ioniques en comptant les SORTES de charges possibles.
+//  Une seule idée : la charge de la tête dépend (ou non) du pH selon la famille ; on distingue anioniques, cationiques, zwitterioniques (amphotères) — tous ioniques — et non ioniques en comptant les SORTES de charges possibles.
 //  Capacités visées (jamais affichées à l'élève) : citer les familles de tensioactifs et expliquer leur rôle émulsifiant (charge de la tête, répulsion des gouttes).
 //  Prolongements HORS référentiel (exploration, défis) : fraction ionisée (Henderson–Hasselbalch), point isoélectrique.
 //  Modèle : chargeTensioactifsModele.js. Schémas : ChargeTensioactifsSchemas.jsx. Les pKa sont des ordres de grandeur arrondis (panneau d'hypothèses).
@@ -25,20 +25,20 @@ const fr = (v, d = 1) => v.toFixed(d).replace('.', ',').replace('-', '−');
 const sig2 = v => String(Number(Number(v).toPrecision(2))).replace('.', ',');
 const signee = (v, d = 2) => (Math.abs(v) < 0.005 ? '0,00' : `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(d).replace('.', ',')}`);
 const PH_DEPART = { sds: 7, formules: 7, sel: 7, 'formules-ex': 7, ctab: 7, savon: 8, ioniques: 7, betaine: 7, 'betaine-courbes': 7, alanine: 7, distinguer: 7, nonionique: 7, melange: 7, emulsion: 9 };
-const FAMILLES = ['anionique', 'cationique', 'amphotère', 'non ionique'];
-const COUL_FAM = { anionique: COL.rouge, cationique: COL.bleu, 'amphotère': COL.violet, 'non ionique': COL.vert };
+const FAMILLES = ['anionique', 'cationique', 'zwitterionique (amphotère)', 'non ionique'];
+const COUL_FAM = { anionique: COL.rouge, cationique: COL.bleu, 'zwitterionique (amphotère)': COL.violet, 'non ionique': COL.vert };
 
 // corrigé du défi « famille d'après la formule »
 function corrigeFormule(d) {
   if (d.famille === 'non ionique') return 'Aucun groupe ionisable : la tête n’est jamais chargée.';
-  if (d.famille === 'amphotère') return 'La même molécule porte un groupe + et un groupe − (pas de contre-ion à ignorer) : amphotère.';
+  if (d.famille === 'zwitterionique (amphotère)') return 'La même molécule porte un groupe + et un groupe − (pas de contre-ion à ignorer) : zwitterionique (amphotère), ionique lui aussi.';
   return `L’ion qui porte la chaîne R est ${d.e.ecritures[0]}, de charge ${d.famille === 'anionique' ? '−' : '+'}. Le contre-ion ${d.e.contre} n’a pas de chaîne : on l’ignore. Famille : ${d.famille}.`;
 }
 // phrase qui explique, à partir des courbes, la famille d'un tensioactif (corrigé du défi 1)
 function expliqueFamille(e) {
   const b = M.bilan(e);
   if (e.groupes.length === 0) return 'Une seule zone grise sur tout le diagramme : la tête n’a aucun groupe qui se charge, à aucun pH. C’est un tensioactif non ionique.';
-  if (b.sPlus && b.sMoins) return 'Les deux sortes de charges (+ et −) apparaissent sur la même tête, pour des pH différents (zones bleue, violette ou rouge) : c’est un amphotère.';
+  if (b.sPlus && b.sMoins) return 'Les deux sortes de charges (+ et −) apparaissent sur la même tête, pour des pH différents (zones bleue, violette ou rouge) : c’est un zwitterionique (amphotère).';
   return b.sMoins ? 'Seule la charge − apparaît (zone rouge), jamais la charge + : c’est un tensioactif anionique.' : 'Seule la charge + apparaît (zone bleue), jamais la charge − : c’est un tensioactif cationique.';
 }
 
@@ -63,23 +63,23 @@ export function SimulationChargeTensioactifs() {
     { id: 'formules', titre: 'Une substance, trois écritures', focus: ['scene'],
       texte: <>Dans les documents, le SDS (dodécylsulfate de sodium) s’écrit de <strong>trois façons</strong>. <strong>R</strong> représente la longue chaîne carbonée, la queue hydrophobe. Les deux premières écritures montrent les charges ; la troisième n’en écrit aucune.</>,
       tache: { type: 'qcm', q: 'Que cache l’écriture R–OSO₃Na ?', ...QCM.formule,
-        expl: 'Le sodium, métal très électropositif, ne forme pas de liaison covalente avec l’oxygène : il est présent sous forme d’ion Na⁺. R–OSO₃Na est la formule condensée d’un sel, où les charges ne sont pas écrites. Le tensioactif est ionique (anionique), pas non ionique, et il n’est pas amphotère : le Na⁺ n’est pas un groupe de la tête.', indice: 'Entre un métal comme le sodium et un groupe sulfate, la liaison est ionique : quelles espèces chargées retrouve-t-on ?' } },
+        expl: 'Le sodium, métal très électropositif, ne forme pas de liaison covalente avec l’oxygène : il est présent sous forme d’ion Na⁺. R–OSO₃Na est la formule condensée d’un sel, où les charges ne sont pas écrites. Le tensioactif est ionique (anionique), pas non ionique, et il n’est pas zwitterionique : le Na⁺ n’est pas un groupe de la tête.', indice: 'Entre un métal comme le sodium et un groupe sulfate, la liaison est ionique : quelles espèces chargées retrouve-t-on ?' } },
     { id: 'sel', titre: 'Dans l’eau, le sel se dissocie', focus: ['scene'],
       texte: <>Le SDS est un <strong>sel</strong> : dissous dans l’eau, il libère <strong>deux ions indépendants</strong>, R–OSO₃⁻ et Na⁺. Un seul d’entre eux porte la longue chaîne carbonée. Le schéma de la tête, plus bas, montre aussi le contre-ion en pointillés.</>,
       tache: { type: 'qcm', q: 'Pour trouver la famille du tensioactif, quel ion regarde-t-on ?', ...QCM.ion,
-        expl: 'Le contre-ion Na⁺ n’a pas de chaîne : il n’est pas amphiphile et il ne fait pas partie de la tête. La famille est celle de l’ion qui porte la queue : ici R–OSO₃⁻, de charge −, donc anionique. Avoir un ion + et un ion − dans la formule du sel ne fait pas un amphotère.', indice: 'Un tensioactif est une molécule à queue hydrophobe : lequel des deux ions a une queue ?' } },
-    { id: 'ctab', titre: 'Un ionique de charge +', focus: ['scene'],
+        expl: 'Le contre-ion Na⁺ n’a pas de chaîne : il n’est pas amphiphile et il ne fait pas partie de la tête. La famille est celle de l’ion qui porte la queue : ici R–OSO₃⁻, de charge −, donc anionique. Avoir un ion + et un ion − dans la formule du sel ne fait pas un zwitterionique.', indice: 'Un tensioactif est une molécule à queue hydrophobe : lequel des deux ions a une queue ?' } },
+    { id: 'ctab', titre: 'Un cationique : charge +', focus: ['scene'],
       texte: <>Voici le <strong>CTAB</strong> (bromure de cétyltriméthylammonium), un tensioactif <strong>cationique</strong> : sa tête ammonium quaternaire porte une charge <strong>+</strong>. Montez le pH jusqu’à 13 (milieu très basique) et regardez la tête.</>,
       tache: { type: 'qcm', q: 'Pourquoi la tête du CTAB garde-t-elle sa charge + même à pH 13 ?', ...QCM.ctab,
         expl: 'L’azote est lié à quatre groupes carbonés : il n’a aucun hydrogène à perdre, donc rien à céder aux ions HO⁻. Sa charge + est permanente, comme celle du sulfate du SDS.', indice: 'Pour perdre sa charge +, la tête devrait céder un H⁺ : en a-t-elle un ?' } },
-    { id: 'savon', titre: 'Un ionique qui perd sa charge', focus: ['scene'],
+    { id: 'savon', titre: 'Un anionique qui perd sa charge', focus: ['scene'],
       texte: <>Voici un <strong>savon</strong>, le palmitate de sodium C₁₅H₃₁–COO⁻ Na⁺ : sa tête <strong>carboxylate</strong> est la base de l’acide palmitique C₁₅H₃₁–COOH, un acide faible de pK<sub>a</sub> voisin de <strong>4,8</strong>. Sous la tête, le <strong>diagramme de prédominance</strong> colore chaque zone de pH selon la forme qui domine : la frontière est le pK<sub>a</sub>. Le pH est réglé à 8 ; baissez-le peu à peu jusqu’à 2 en regardant la tête.</>,
       tache: { type: 'qcm', q: 'À pH 2, que devient la tête du palmitate ?', ...QCM.savon,
         expl: 'Au-dessous du pKa (4,8), c’est la forme acide COOH qui domine : le carboxylate a capté un H⁺ et la tête n’est plus chargée. Le palmitate reste un tensioactif anionique (il n’a jamais de charge +), mais sa tête est sans charge en milieu acide.', indice: <>À pH inférieur au pK<sub>a</sub>, c’est la forme acide COOH qui domine : porte-t-elle une charge ?</> } },
-    { id: 'ioniques', titre: 'Un ionique : une seule sorte de charge', focus: ['scene'],
-      texte: <>Voici le diagramme de prédominance de quatre tensioactifs <strong>ioniques</strong> : le SDS, le CTAB, le palmitate de sodium (pK<sub>a</sub> 4,8) et le chlorure de dodécylammonium C₁₂H₂₅–NH₃⁺ Cl⁻ (pK<sub>a</sub> voisin de 10,6). Chaque zone est colorée selon la charge de la tête : bleu +, rouge −, gris aucune charge. Faites varier le pH et regardez dans quelle zone vous êtes pour chacun.</>,
-      tache: { type: 'qcm', q: 'Un tensioactif ionique peut-il porter à la fois une charge + et une charge − ?', ...QCM.ioniques,
-        expl: 'Un ionique n’a qu’une sorte de charge possible : − pour un anionique, + pour un cationique. Selon le pH, cette charge peut disparaître (zone grise du palmitate en milieu acide, du dodécylammonium en milieu basique), mais l’autre sorte n’apparaît jamais.', indice: 'Regardez les quatre lignes : une même ligne contient-elle à la fois du bleu et du rouge ?' } },
+    { id: 'ioniques', titre: 'Anionique ou cationique : une seule sorte de charge', focus: ['scene'],
+      texte: <>Voici le diagramme de prédominance de quatre tensioactifs ioniques : deux <strong>anioniques</strong>, le SDS et le palmitate de sodium (pK<sub>a</sub> 4,8), et deux <strong>cationiques</strong>, le CTAB et le chlorure de dodécylammonium C₁₂H₂₅–NH₃⁺ Cl⁻ (pK<sub>a</sub> voisin de 10,6). Chaque zone est colorée selon la charge de la tête : bleu +, rouge −, gris aucune charge. Faites varier le pH et regardez dans quelle zone vous êtes pour chacun.</>,
+      tache: { type: 'qcm', q: 'Un tensioactif anionique ou cationique peut-il porter à la fois une charge + et une charge − ?', ...QCM.ioniques,
+        expl: 'Un anionique n’a qu’une sorte de charge possible, −, et un cationique seulement +. Selon le pH, cette charge peut disparaître (zone grise du palmitate en milieu acide, du dodécylammonium en milieu basique), mais l’autre sorte n’apparaît jamais.', indice: 'Regardez les quatre lignes : une même ligne contient-elle à la fois du bleu et du rouge ?' } },
     { id: 'formules-ex', titre: 'Lire une formule sans charge écrite', focus: ['scene'],
       retenirTitre: 'À retenir : lire une formule', retenir: <>
         <SvgCarteFormule/>
@@ -87,48 +87,48 @@ export function SimulationChargeTensioactifs() {
           <li>Un tensioactif ionique est un <strong>sel</strong> : dans l’eau, il se dissocie en un <strong>ion à longue queue</strong> et un <strong>contre-ion</strong>.</li>
           <li>On lit la famille sur l’<strong>ion qui porte la chaîne R</strong> : sa charge dit anionique (−) ou cationique (+).</li>
           <li>Moyen de s’en souvenir : <strong>« on lit l’ion à longue queue, on oublie le contre-ion »</strong>.</li>
-          <li><strong>Idée fausse :</strong> « un ion + et un ion − dans la formule, donc un amphotère ». <strong>Vrai :</strong> le contre-ion n’appartient pas à la tête ; un amphotère porte les deux charges sur la même molécule.</li>
+          <li><strong>Idée fausse :</strong> « un ion + et un ion − dans la formule, donc un zwitterionique ». <strong>Vrai :</strong> le contre-ion n’appartient pas à la tête ; un zwitterionique porte les deux charges sur la même molécule.</li>
         </ul></>,
       texte: <>On écrit souvent les sels sans les charges. Voici deux formules condensées, où <strong>R</strong> est une longue chaîne carbonée : R–N(CH₃)₃Br (c’est le CTAB, avec le brome sous forme de bromure) et R–COONa (un savon, par exemple le palmitate de sodium).</>,
       tache: { type: 'qcm', q: 'Quelles sont les familles de R–N(CH₃)₃Br et de R–COONa ?', ...QCM.ecritures,
-        expl: 'Dans R–N(CH₃)₃Br, l’azote porte quatre groupes : c’est un ammonium quaternaire R–N⁺(CH₃)₃, avec le bromure Br⁻ comme contre-ion : cationique. Dans R–COONa, l’ion à longue queue est le carboxylate R–COO⁻ (contre-ion Na⁺) : anionique. Aucun n’est amphotère.', indice: 'Dans chaque formule, repérez l’ion qui porte la chaîne R, puis sa charge.' } },
-    { id: 'betaine', titre: 'Un amphotère à pH 7', focus: ['scene'],
-      retenirTitre: 'À retenir : les ioniques', retenir: <>
+        expl: 'Dans R–N(CH₃)₃Br, l’azote porte quatre groupes : c’est un ammonium quaternaire R–N⁺(CH₃)₃, avec le bromure Br⁻ comme contre-ion : cationique. Dans R–COONa, l’ion à longue queue est le carboxylate R–COO⁻ (contre-ion Na⁺) : anionique. Aucun n’est zwitterionique.', indice: 'Dans chaque formule, repérez l’ion qui porte la chaîne R, puis sa charge.' } },
+    { id: 'betaine', titre: 'Un zwitterionique à pH 7', focus: ['scene'],
+      retenirTitre: 'À retenir : anioniques et cationiques', retenir: <>
         <SvgCarteIoniques/>
         <ul style={puces}>
-          <li>Un tensioactif <strong>ionique</strong> n’a <strong>qu’une sorte</strong> de charge : − (anionique) ou + (cationique).</li>
+          <li>Un tensioactif <strong>anionique</strong> ou <strong>cationique</strong> n’a <strong>qu’une sorte</strong> de charge : − (anionique) ou + (cationique). Les zwitterioniques, ioniques eux aussi, en portent deux sortes.</li>
           <li>Sa charge est permanente (sulfate, ammonium quaternaire) ou dépend du pH (carboxylate d’un savon, ammonium primaire).</li>
           <li>Moyen de s’en souvenir : <strong>« une seule couleur à la fois »</strong>.</li>
         </ul></>,
-      texte: <>Voici maintenant la <strong>dodécylbétaïne</strong> R–N⁺(CH₃)₂–CH₂–COO⁻, un tensioactif <strong>amphotère</strong>. Sa tête compte deux groupes : un ammonium quaternaire (+), et un groupe carboxyle (pK<sub>a</sub> voisin de 2). À pH 7, regardez ses deux groupes.</>,
+      texte: <>Voici maintenant la <strong>dodécylbétaïne</strong> R–N⁺(CH₃)₂–CH₂–COO⁻, un tensioactif <strong>zwitterionique</strong> (on dit aussi amphotère), donc ionique lui aussi. Sa tête compte deux groupes : un ammonium quaternaire (+), et un groupe carboxyle (pK<sub>a</sub> voisin de 2). À pH 7, regardez ses deux groupes.</>,
       tache: { type: 'qcm', q: 'À pH 7, la tête de la bétaïne est-elle sans aucune charge ?', ...QCM.betaine,
         expl: 'À pH 7, le groupe + (ammonium quaternaire) et le groupe − (carboxylate) sont tous deux chargés : la charge nette est nulle, mais la tête porte deux charges. « Neutre » ne veut pas dire « sans charge ».', indice: 'Comptez les groupes marqués d’un disque + ou − sur la tête.' } },
     { id: 'betaine-courbes', titre: 'La bétaïne selon le pH', focus: ['scene'],
       retenirTitre: 'À retenir : neutre n’est pas sans charge', retenir: <>
         <SvgCarteZwitterion/>
         <ul style={puces}>
-          <li>Un amphotère porte <strong>les deux sortes de charges</strong> sur la même tête (zwitterion) : sa charge nette peut être nulle sans que la tête soit sans charge.</li>
+          <li>Un zwitterionique (amphotère) porte <strong>les deux sortes de charges</strong> sur la même tête : sa charge nette peut être nulle sans que la tête soit sans charge.</li>
           <li>Un non ionique, lui, ne porte <strong>aucune</strong> charge.</li>
           <li>Moyen de s’en souvenir : <strong>« neutre ≠ sans charge »</strong>.</li>
         </ul></>,
       texte: <>Voici le diagramme de prédominance de la dodécylbétaïne. Le groupe ammonium quaternaire est toujours +. Le groupe carboxyle, de pK<sub>a</sub> voisin de <strong>2</strong>, est neutre (COOH) en dessous de 2 et chargé − (COO⁻) au-dessus. Là où les deux charges sont présentes, la zone est violette.</>,
       tache: { type: 'qcm', q: 'Comment évolue la charge nette de la bétaïne de pH 0 à pH 14 ?', ...QCM.betaineAcide,
         expl: 'La charge + est permanente. En milieu très acide (pH < 2), le carboxyle est neutre : charge nette +. Au-dessus de pH 2, il est −, la charge nette est nulle, et le reste jusqu’à pH 14. La bétaïne n’est jamais globalement négative.', indice: <>Le groupe + est toujours là ; le groupe − apparaît quand le pH dépasse le pK<sub>a</sub> du carboxylate.</> } },
-    { id: 'alanine', titre: 'Un amphotère dont le signe change', focus: ['scene'],
-      texte: <>Voici la <strong>N-dodécyl-β-alanine</strong> R–NH₂⁺–CH₂CH₂–COO⁻, un autre amphotère. Son groupe ammonium (pK<sub>a</sub> voisin de <strong>10,2</strong>) est + tant que le pH est plus faible. Son groupe carboxyle (pK<sub>a</sub> voisin de <strong>3,6</strong>) est − quand le pH est plus grand. Parcourez le pH de 0 à 14 et suivez la tête et le diagramme.</>,
+    { id: 'alanine', titre: 'Un zwitterionique dont le signe change', focus: ['scene'],
+      texte: <>Voici la <strong>N-dodécyl-β-alanine</strong> R–NH₂⁺–CH₂CH₂–COO⁻, un autre tensioactif zwitterionique. Son groupe ammonium (pK<sub>a</sub> voisin de <strong>10,2</strong>) est + tant que le pH est plus faible. Son groupe carboxyle (pK<sub>a</sub> voisin de <strong>3,6</strong>) est − quand le pH est plus grand. Parcourez le pH de 0 à 14 et suivez la tête et le diagramme.</>,
       tache: { type: 'qcm', q: 'Comment varie la charge nette de cet amphotère quand le pH augmente ?', ...QCM.alanine,
         expl: 'À pH inférieur à 3,6, seul l’ammonium est chargé (+). Entre 3,6 et 10,2, les deux groupes sont chargés (charge nette nulle). Au-dessus de 10,2, l’ammonium perd son H⁺ : il ne reste que le carboxylate (−). Le signe de la charge nette change avec le pH.', indice: 'Pour chaque zone de pH, dites si le groupe amine puis le groupe carboxyle sont chargés.' } },
-    { id: 'distinguer', titre: 'Reconnaître un amphotère', focus: ['scene'],
+    { id: 'distinguer', titre: 'Reconnaître un zwitterionique', focus: ['scene'],
       texte: <>Trois tensioactifs inconnus, A, B et C, sont décrits par leur diagramme de prédominance (bleu : charge +, rouge : charge −, violet : les deux). Les noms sont cachés : il faut raisonner sur les couleurs.</>,
-      tache: { type: 'qcm', q: 'Lequel de ces trois diagrammes est celui d’un amphotère ?', ...QCM.distinguer,
-        expl: 'Un amphotère est la seule famille qui présente une zone violette, où les deux sortes de charges sont présentes. A est un savon, le palmitate de sodium (anionique : zones grise et rouge seulement) et C le dodécylammonium (cationique : zones bleue et grise seulement).', indice: 'Cherchez la ligne qui contient une zone violette : les deux sortes de charges y sont présentes pour un même pH.' } },
+      tache: { type: 'qcm', q: 'Lequel de ces trois diagrammes est celui d’un zwitterionique (amphotère) ?', ...QCM.distinguer,
+        expl: 'Un zwitterionique est la seule famille qui présente une zone violette, où les deux sortes de charges sont présentes. A est un savon, le palmitate de sodium (anionique : zones grise et rouge seulement) et C le dodécylammonium (cationique : zones bleue et grise seulement).', indice: 'Cherchez la ligne qui contient une zone violette : les deux sortes de charges y sont présentes pour un même pH.' } },
     { id: 'nonionique', titre: 'Des tensioactifs sans charge', focus: ['scene'],
-      retenirTitre: 'À retenir : les amphotères', retenir: <>
+      retenirTitre: 'À retenir : les zwitterioniques', retenir: <>
         <SvgCarteAmphotere/>
         <ul style={puces}>
-          <li>Un <strong>amphotère</strong> peut porter les deux sortes de charges ; son signe net change avec le pH (+ en milieu acide, − en milieu basique pour la N-dodécyl-β-alanine).</li>
+          <li>Un <strong>zwitterionique</strong> (amphotère) peut porter les deux sortes de charges ; son signe net peut changer avec le pH (+ en milieu acide, − en milieu basique pour la N-dodécyl-β-alanine).</li>
           <li>La <strong>bétaïne</strong> ne devient jamais globalement négative.</li>
-          <li>Moyen de s’en souvenir : <strong>« amphotère = deux sortes de charges possibles »</strong>.</li>
+          <li>Moyen de s’en souvenir : <strong>« zwitterionique = deux sortes de charges possibles »</strong>.</li>
         </ul></>,
       texte: <>Les tensioactifs <strong>non ioniques</strong> n’ont aucun groupe qui se charge : le dodécanol éthoxylé (chaîne de motifs O–CH₂–CH₂ terminée par OH) ou le monolaurate de sorbitane (plusieurs groupes OH). Leur charge est nulle à tout pH.</>,
       tache: { type: 'qcm', q: 'Comment une tête sans charge peut-elle être soluble dans l’eau ?', ...QCM.nonionique,
@@ -143,20 +143,20 @@ export function SimulationChargeTensioactifs() {
         </ul></>,
       texte: <>On peut associer plusieurs tensioactifs dans une formule. Mais deux têtes de <strong>charges opposées</strong> s’attirent. Voici un anionique (SDS, −) et un cationique (CTAB, +) mis en présence.</>,
       tache: { type: 'qcm', q: 'Quel mélange de deux tensioactifs faut-il éviter ?', ...QCM.melange,
-        expl: 'Un anionique et un cationique s’attirent et forment un sel peu soluble : la solution se trouble ou précipite, et les deux tensioactifs perdent leur efficacité. Un non ionique ou un amphotère se mélange sans problème avec l’un ou l’autre.', indice: 'Quelles têtes s’attirent : celles de même charge ou de charges opposées ?' } },
+        expl: 'Un anionique et un cationique s’attirent et forment un sel peu soluble : la solution se trouble ou précipite, et les deux tensioactifs perdent leur efficacité. Un non ionique ou un zwitterionique se mélange sans problème avec l’un ou l’autre.', indice: 'Quelles têtes s’attirent : celles de même charge ou de charges opposées ?' } },
     { id: 'emulsion', titre: 'Pourquoi la charge compte', focus: ['scene'],
       texte: <>Dans une émulsion huile dans l’eau, les têtes chargées entourent les gouttes qui <strong>se repoussent</strong> : cela évite qu’elles se rejoignent (coalescence). Voici une émulsion stabilisée par le palmitate de sodium, à pH 9. Baissez le pH jusqu’à 3 et regardez les gouttes.</>,
       tache: { type: 'qcm', q: 'On veut garder une émulsion stable à pH 3. Que faire ?', ...QCM.emulsion,
-        expl: 'À pH 3, très en dessous du pKa (4,8), les têtes carboxylate du palmitate sont devenues neutres (COOH) : plus de charge, plus de répulsion, les gouttes se rejoignent. Il faut un tensioactif dont la tête reste active à pH 3 : un non ionique, un sulfate comme le SDS, ou un amphotère adapté.', indice: 'Le palmitate perd sa charge en milieu acide : lequel des autres tensioactifs vus garde son action à pH 3 ?' } },
+        expl: 'À pH 3, très en dessous du pKa (4,8), les têtes carboxylate du palmitate sont devenues neutres (COOH) : plus de charge, plus de répulsion, les gouttes se rejoignent. Il faut un tensioactif dont la tête reste active à pH 3 : un non ionique, un sulfate comme le SDS, ou un zwitterionique adapté.', indice: 'Le palmitate perd sa charge en milieu acide : lequel des autres tensioactifs vus garde son action à pH 3 ?' } },
     { id: 'bilan', titre: 'Bilan', focus: [],
       retenirTitre: 'À retenir : quelle famille ?', retenir: <>
         <SvgCarteTest/>
         <ul style={puces}>
           <li>Pour trouver la famille, on compte <strong>les sortes de charges</strong> que la tête peut porter entre pH 0 et 14 : aucune, une seule, ou les deux.</li>
           <li>Un tensioactif chargé stabilise une émulsion par <strong>répulsion des gouttes</strong> ; sa charge, et donc son efficacité, peut dépendre du pH.</li>
-          <li><strong>Idée fausse :</strong> « un amphotère est un ionique qui peut être + ou − selon le pH ». <strong>Vrai :</strong> un ionique n’a qu’une sorte de charge ; un amphotère porte les deux.</li>
+          <li><strong>Idée fausse :</strong> « un zwitterionique n’est pas ionique, puisque sa charge nette est nulle ». <strong>Vrai :</strong> il porte des charges, donc il est ionique ; on le distingue des anioniques et des cationiques parce qu’il porte les deux sortes.</li>
         </ul></>,
-      texte: <>Vous savez distinguer un tensioactif <strong>ionique</strong> (une sorte de charge, parfois nulle selon le pH), <strong>amphotère</strong> (les deux sortes de charges possibles) et <strong>non ionique</strong> (aucune charge, solubles par liaisons hydrogène), et expliquer pourquoi la charge de la tête compte pour stabiliser une émulsion. En exploration, vous pouvez comparer huit tensioactifs ; les défis proposent aussi deux calculs de prolongement.</>},
+      texte: <>Vous savez distinguer un tensioactif <strong>anionique</strong> ou <strong>cationique</strong> (une sorte de charge, parfois nulle selon le pH), <strong>zwitterionique</strong> (les deux sortes de charges possibles ; ces trois familles sont ioniques) et <strong>non ionique</strong> (aucune charge, solubles par liaisons hydrogène), et expliquer pourquoi la charge de la tête compte pour stabiliser une émulsion. En exploration, vous pouvez comparer huit tensioactifs ; les défis proposent aussi deux calculs de prolongement.</>},
   ];
   const IDS = ETAPES.map(e => e.id), etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? IDS[etape] : null;
   const hl = id => enGuide && ETAPES[etape].focus.includes(id);
@@ -229,7 +229,7 @@ export function SimulationChargeTensioactifs() {
         <label htmlFor="ct-fam" style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '8px 0 3px' }}>Famille</label>
         <select id="ct-fam" value={defi.rep} onChange={ev => setDefi(d => ({ ...d, rep: ev.target.value, verifie: false }))} style={{ ...selectStyle, maxWidth: 260, border: `1.5px solid ${defi.verifie ? (defi.rep === defi.famille ? '#15803d' : '#dc2626') : KIT.bord}` }}>
           <option value="">Choisir…</option>{FAMILLES.map(f => <option key={f} value={f}>{f}</option>)}</select>
-        <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>Comptez les sortes de charges qui apparaissent entre pH 0 et pH 14 : aucune (que du gris : non ionique), une seule (ionique : du bleu = cationique, du rouge = anionique) ou les deux (une zone violette, ou du bleu et du rouge : amphotère).</IndiceDefi></div>
+        <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>Comptez les sortes de charges qui apparaissent entre pH 0 et pH 14 : aucune (que du gris : non ionique), une seule (ionique : du bleu = cationique, du rouge = anionique) ou les deux (une zone violette, ou du bleu et du rouge : zwitterionique, ionique lui aussi).</IndiceDefi></div>
       </>}
       {defi.type === 'formule' && <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : quelle famille, d’après la formule ?</div>
@@ -238,7 +238,7 @@ export function SimulationChargeTensioactifs() {
         <label htmlFor="ct-fam2" style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '0 0 3px' }}>Famille</label>
         <select id="ct-fam2" value={defi.rep} onChange={ev => setDefi(d => ({ ...d, rep: ev.target.value, verifie: false }))} style={{ ...selectStyle, maxWidth: 260, border: `1.5px solid ${defi.verifie ? (defi.rep === defi.famille ? '#15803d' : '#dc2626') : KIT.bord}` }}>
           <option value="">Choisir…</option>{FAMILLES.map(f => <option key={f} value={f}>{f}</option>)}</select>
-        <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>Cherchez l’ion qui porte la chaîne R, et sa charge (même si elle n’est pas écrite). Le contre-ion ne compte pas. Un groupe + et un groupe − sur la même molécule : amphotère. Aucun groupe chargé : non ionique.</IndiceDefi></div>
+        <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>Cherchez l’ion qui porte la chaîne R, et sa charge (même si elle n’est pas écrite). Le contre-ion ne compte pas. Un groupe + et un groupe − sur la même molécule : zwitterionique (amphotère). Aucun groupe chargé : non ionique.</IndiceDefi></div>
       </>}
       {defi.type === 'fraction' && <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : fraction ionisée d’un acide gras</div>
@@ -248,9 +248,9 @@ export function SimulationChargeTensioactifs() {
         <IndiceDefi cache={false}>La fraction ionisée vaut <FormuleEnLigne><mi>α</mi><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mn>10</mn><mrow><msub><mi>pK</mi><mi mathvariant="normal">a</mi></msub><mo>−</mo><mi>pH</mi></mrow></msup></mrow></mfrac></FormuleEnLigne>. Ici pK<sub>a</sub> − pH = {fr(defi.pKa - defi.pH, 1)}. Multipliez le résultat par 100 pour l’avoir en %.</IndiceDefi>
       </>}
       {defi.type === 'iso' && <>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : point isoélectrique d’un amphotère</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : point isoélectrique d’un zwitterionique</div>
         <div style={{ fontSize: 13.5, color: COL.orange, fontWeight: 700, marginBottom: 4 }}>Prolongement du programme (hors référentiel)</div>
-        <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>Un amphotère a un groupe carboxyle de pK<sub>a</sub> égal à <strong>{fr(defi.pKaAcide, 1)}</strong> et un groupe amine de pK<sub>a</sub> égal à <strong>{fr(defi.pKaBase, 1)}</strong>. À quel pH sa charge nette est-elle nulle, avec une répartition la plus symétrique des deux charges (point isoélectrique) ? Donnez le pH avec 2 chiffres significatifs.</div>
+        <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>Un zwitterionique a un groupe carboxyle de pK<sub>a</sub> égal à <strong>{fr(defi.pKaAcide, 1)}</strong> et un groupe amine de pK<sub>a</sub> égal à <strong>{fr(defi.pKaBase, 1)}</strong>. À quel pH sa charge nette est-elle nulle, avec une répartition la plus symétrique des deux charges (point isoélectrique) ? Donnez le pH avec 2 chiffres significatifs.</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '8px 0', fontSize: 14 }}><span>pH<sub>iso</sub> :</span>{champ('pH du point isoélectrique')}</div>
         <IndiceDefi cache={false}>Le point isoélectrique est au milieu des deux pK<sub>a</sub> : on fait la moyenne des deux valeurs données.</IndiceDefi>
       </>}
@@ -279,11 +279,11 @@ export function SimulationChargeTensioactifs() {
       <li><strong>Diagramme de prédominance</strong> : une zone est colorée selon la forme qui domine dans la tête (frontière = pK<sub>a</sub>) ; bleu = charge +, rouge = charge −, violet = les deux sortes de charges sur la même tête, gris = aucune charge. <strong>Charges moyennes par molécule</strong> : chaque groupe acide ou basique est traité séparément, dans une solution diluée, par la loi d’équilibre acide-base (fraction ionisée <FormuleEnLigne><mi>α</mi><mo>=</mo><mfrac><mn>1</mn><mrow><mn>1</mn><mo>+</mo><msup><mn>10</mn><mrow><msub><mi>pK</mi><mi mathvariant="normal">a</mi></msub><mo>−</mo><mi>pH</mi></mrow></msup></mrow></mfrac></FormuleEnLigne>). Les nombres de charges affichés dans les mesures sont donc des moyennes, comprises entre 0 et 1 par groupe.</li>
       <li><strong>Les pK<sub>a</sub> sont des ordres de grandeur arrondis</strong> : acide palmitique (savon palmitate) ≈ 4,8, valeur d’un acide gras en solution diluée ; ion dodécylammonium ≈ 10,6 (valeur à vérifier, ordre de grandeur des alkylamines primaires) ; carboxyle de la bétaïne ≈ 2 ; N-dodécyl-β-alanine ≈ 3,6 et ≈ 10,2 (valeurs de la β-alanine). Les valeurs réelles varient avec le produit. <strong>Nuance importante</strong> : quand les acides gras sont rassemblés en micelles ou en vésicules, les têtes se gênent mutuellement et le pK<sub>a</sub> apparent monte, jusqu’à 6 à 9 selon les études et la longueur de la chaîne. Cet effet n’est pas modélisé ici : les diagrammes montrent le cas d’un acide gras isolé en solution diluée.</li>
       <li><strong>Charges permanentes</strong> : le sulfate (SDS) et l’ammonium quaternaire (CTAB) gardent leur charge de pH 0 à 14 (pas de proton échangeable). Les contre-ions (Na⁺, Br⁻) ne sont pas représentés.</li>
-      <li><strong>Écritures des formules</strong> : R désigne une longue chaîne carbonée. Un tensioactif ionique est un sel : à l’état dissous, il est séparé en un ion à longue queue et un contre-ion (Na⁺, Br⁻, Cl⁻) qui n’a pas de rôle dans la famille. Les trois écritures (ion seul, ion avec contre-ion, formule condensée) désignent la même substance ; les contre-ions sont dessinés en pointillés sur la tête et absents des scènes de gouttes. Les amphotères et les non ioniques n’ont pas de contre-ion nécessaire.</li>
+      <li><strong>Écritures des formules</strong> : R désigne une longue chaîne carbonée. Un tensioactif ionique est un sel : à l’état dissous, il est séparé en un ion à longue queue et un contre-ion (Na⁺, Br⁻, Cl⁻) qui n’a pas de rôle dans la famille. Les trois écritures (ion seul, ion avec contre-ion, formule condensée) désignent la même substance ; les contre-ions sont dessinés en pointillés sur la tête et absents des scènes de gouttes. Les zwitterioniques et les non ioniques n’ont pas de contre-ion nécessaire.</li>
       <li><strong>Seuil de lecture</strong> : une tête est dite « chargée » si sa charge moyenne dépasse 0,15 en valeur absolue ; la famille est déduite sur toute l’échelle de pH 0 à 14.</li>
       <li><strong>Scène des gouttes</strong> : douze têtes par goutte ; on ne représente que la <strong>répulsion électrostatique</strong>. Pas de sel ajouté, pas de force ionique, pas de répulsion stérique. Les non ioniques stabilisent autrement (têtes hydratées) et sont hors de cette scène.</li>
       <li><strong>Pas de dégradation chimique</strong> : en milieu très acide ou très basique, certains tensioactifs (esters de sorbitane, par exemple) s’hydrolysent ; la simulation ne le modélise pas.</li>
-      <li><strong>Prolongements hors référentiel</strong> : la fraction ionisée chiffrée et le point isoélectrique (moyenne des deux pK<sub>a</sub>, pour un amphotère à un groupe acide et un groupe basique) ne sont pas exigibles en BTS.</li>
+      <li><strong>Prolongements hors référentiel</strong> : la fraction ionisée chiffrée et le point isoélectrique (moyenne des deux pK<sub>a</sub>, pour un zwitterionique à un groupe acide et un groupe basique) ne sont pas exigibles en BTS.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
 
@@ -345,7 +345,7 @@ export function SimulationChargeTensioactifs() {
         <div style={{ marginTop: 6 }}>{e.contre
           ? <>R est la longue chaîne carbonée. Dans l’eau, le sel se dissocie : l’ion à longue queue (celui dont on lit la famille) et le contre-ion {e.contre}, sans queue, qu’on ignore.</>
           : e.famille === 'non ionique' ? <>Aucun ion dans la formule : la tête n’est jamais chargée.</>
-          : <>Les deux charges sont sur la même molécule : aucun contre-ion n’est à ignorer. C’est ce qui distingue un amphotère d’un sel ionique.</>}</div>
+          : <>Les deux charges sont sur la même molécule : aucun contre-ion n’est à ignorer. C’est ce qui distingue un zwitterionique d’un sel anionique ou cationique.</>}</div>
       </div>
     </Section>);
   const prolongement = enExplore && (
@@ -370,9 +370,9 @@ export function SimulationChargeTensioactifs() {
   const retenirExplore = (
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-        <li>Ionique : une seule sorte de charge ; amphotère : les deux sortes ; non ionique : aucune</li>
+        <li>Ioniques (tête chargée) : anionique = charge − seule, cationique = charge + seule, zwitterionique (amphotère) = les deux sortes ; non ionique : aucune charge</li>
         <li>Sulfate et ammonium quaternaire : charge permanente ; carboxylate d’un savon et ammonium primaire : charge qui dépend du pH</li>
-        <li>Neutre ne veut pas dire sans charge : un amphotère peut avoir une charge nette nulle avec deux charges</li>
+        <li>Neutre ne veut pas dire sans charge : un zwitterionique peut avoir une charge nette nulle avec deux charges</li>
         <li>Un anionique et un cationique en mélange s’attirent et précipitent</li>
         <li>Une formule de sel (R–OSO₃Na, R–N(CH₃)₃Br) se lit sur l’ion à longue queue ; le contre-ion est ignoré</li>
       </ul>
@@ -400,7 +400,7 @@ export function SimulationChargeTensioactifs() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Charge d’un tensioactif selon le pH</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>La tête d’un tensioactif peut porter une charge, qui dépend ou non du <strong>pH</strong>. On distingue ainsi les tensioactifs <strong>ioniques</strong>, <strong>amphotères</strong> et <strong>non ioniques</strong>, et l’on voit pourquoi cette charge compte pour stabiliser une émulsion.</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>La tête d’un tensioactif peut porter une charge, qui dépend ou non du <strong>pH</strong>. On distingue ainsi les tensioactifs <strong>ioniques</strong> (anioniques, cationiques, zwitterioniques ou amphotères) et <strong>non ioniques</strong>, et l’on voit pourquoi cette charge compte pour stabiliser une émulsion.</div>
       {enGuide && <div className="ct-l1 cote">
         <div className="ct-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setEtatGuide} fin={finParcours}/></div>
         <div className="ct-main">
