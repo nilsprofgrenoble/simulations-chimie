@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, Formule, ExempleResolu, Curseur, lireProgression, IndiceDefi } from "../commun";
+import { Frac, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
+  BoutonsModes, ORANGE_GUIDE, ARetenir, Formule, ExempleResolu, Curseur, lireProgression, IndiceDefi, avecIndices } from "../commun";
 import { scene, ORDRE_SCENES, echantillonner, caracteriser, ecartPoint, ecartAttendu, meilleurDt, norme, angle } from "./mvtRefModele";
 import { Pic } from "../Pictos";
 import { FicheTrajectoire, FicheEcarts, FicheRef, FicheVitesse } from "./MouvementReferentielFiches";
@@ -392,22 +392,22 @@ export function SimulationMouvementReferentiel() {
       tache: { type: 'qcm', q: 'Vu du sol, quand le colis arrive près du sol, l’avion est…', options: ['juste au-dessus du colis', 'loin derrière le colis', 'loin devant le colis', 'revenu à son point de départ'], bonne: 0,
         expl: 'Le colis garde la vitesse horizontale de l’avion (100 m/s) pendant toute sa chute : il reste sous l’avion (en négligeant l’air). C’est pour cela que, pour le pilote, il tombe tout droit.', indice: "Le colis et l’avion avaient la même vitesse horizontale au moment du largage. Compare ensuite leurs mouvements horizontaux pendant la chute." } },
     { id: 'vitesse', titre: 'La vitesse et le vecteur vitesse', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1, aff: { ...AFF0, v: true } }),
-      texte: <>La vitesse dit <strong>de combien le mobile avance pendant une durée</strong> : <strong>vitesse = distance parcourue ÷ durée</strong>. Entre deux photos successives M et M′ séparées de la durée Δt : <strong>v = MM′ / Δt</strong>. On la représente par une flèche, le <strong>vecteur vitesse</strong> : il part du mobile, pointe dans le sens du mouvement et sa longueur est proportionnelle à la vitesse.
+      texte: <>La vitesse dit <strong>de combien le mobile avance pendant une durée</strong> : <strong>vitesse = distance parcourue ÷ durée</strong>. Entre deux photos successives M et M′ séparées de la durée Δt : <strong>v = {avecIndices('frac(MM′|Δt)')}</strong>. On la représente par une flèche, le <strong>vecteur vitesse</strong> : il part du mobile, pointe dans le sens du mouvement et sa longueur est proportionnelle à la vitesse.
         <ExempleResolu>Le camion : entre deux photos, il parcourt MM′ = {nb(dEdep, 0)} m en Δt = 2 s.<br/>
-          Expression littérale : v = MM′ / Δt.<br/>
-          Application numérique : v = {nb(dEdep, 0)} m / 2 s = <strong>{nb(dEdep / 2, 0)} m/s</strong>, soit {nb(dEdep / 2 * 3.6, 0)} km/h, vers la droite.
+          Expression littérale : v = frac(MM′|Δt).<br/>
+          Application numérique : v = <Frac haut={<>{nb(dEdep, 0)} m</>} bas="2 s" /> = <strong>{nb(dEdep / 2, 0)} m/s</strong>, soit {nb(dEdep / 2 * 3.6, 0)} km/h, vers la droite.
           {bouton('Voir le camion avec ses flèches', () => go('deux', { vA: 20, vB: 25 }, { cmp: false, vis: ['A'], obj: 'A', dtIdx: 1, aff: { ...AFF0, v: true } }))}</ExempleResolu>
         À vous : l’avion, vu du sol. {bouton('Voir l’avion avec ses flèches', () => go('avion', {}, { cmp: false, vis: ['avion'], obj: 'avion', dtIdx: 2, aff: { ...AFF0, v: true } }))} Entre deux photos (Δt = 2 s), l’avion se déplace de {nb(dAvion, 0)} m.</>,
       tache: { type: 'num', q: `L’avion se déplace de ${nb(dAvion, 0)} m en 2 s. Quelle est sa vitesse, en km/h ?`, unite: 'km/h', vrai: dAvion / 2 * 3.6, tol: 0.02, affiche: x => nb(x, 0),
         pieges: [[dAvion / 2, 'Vous avez trouvé la vitesse en m/s : pour passer en km/h, multipliez par 3,6.'],
-          [2 / dAvion, 'Vous avez divisé à l’envers : la vitesse, c’est la distance divisée par la durée (v = MM′ / Δt).'],
-          [dAvion * 3.6, 'Vous avez oublié de diviser par la durée Δt = 2 s : v = MM′ / Δt.']],
+          [2 / dAvion, 'Vous avez divisé à l’envers : la vitesse, c’est la distance divisée par la durée (v = frac(MM′|Δt)).'],
+          [dAvion * 3.6, 'Vous avez oublié de diviser par la durée Δt = 2 s : v = frac(MM′|Δt).']],
         calcul: () => [
-          'Formule : vitesse = distance parcourue ÷ durée, soit v = MM′ / Δt.',
+          'Formule : vitesse = distance parcourue ÷ durée, soit v = frac(MM′|Δt).',
           `Données : MM′ = ${nb(dAvion, 0)} m et Δt = 2 s.`,
-          `En m/s : v = ${nb(dAvion, 0)} / 2 = ${nb(dAvion / 2, 0)} m/s.`,
+          `En m/s : v = frac(${nb(dAvion, 0)}|2) = ${nb(dAvion / 2, 0)} m/s.`,
           `Conversion : 1 m/s = 3,6 km/h, donc v = ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.`],
-        expl: `v = ${nb(dAvion, 0)} m / 2 s = ${nb(dAvion / 2, 0)} m/s, soit ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.`, indice: "Vitesse = distance ÷ durée : avec des mètres et des secondes, on obtient des m/s. Pour passer de m/s à km/h, on multiplie par 3,6." } },
+        expl: `v = frac(${nb(dAvion, 0)} m|2 s) = ${nb(dAvion / 2, 0)} m/s, soit ${nb(dAvion / 2, 0)} × 3,6 = ${nb(dAvion / 2 * 3.6, 0)} km/h.`, indice: "Vitesse = distance ÷ durée : avec des mètres et des secondes, on obtient des m/s. Pour passer de m/s à km/h, on multiplie par 3,6." } },
     { id: 'vitesserel', titre: 'La vitesse dépend aussi du point de vue', focus: ['scene'], depart: () => go('deux', { vA: 20, vB: 25 }, { cmp: true, fD: 'A', obj: 'B', dtIdx: 1, aff: { ...AFF0, v: true } }),
       texte: <>Un mobile n’a pas la même vitesse dans tous les référentiels.
         <ExempleResolu>Vous êtes dans le camion A (20 m/s par rapport à la route). La voiture B vous double à 25 m/s (par rapport à la route).<br/>
@@ -435,7 +435,7 @@ export function SimulationMouvementReferentiel() {
         <li>La <strong>trajectoire</strong> est le chemin des points : droite ou courbe.</li>
         <li>Points toujours espacés pareil : <strong>vitesse constante</strong>. Points qui s’écartent : le mobile accélère.</li>
         <li>Le <strong>référentiel</strong> est le point de vue de l’observateur. <strong>Trajectoire et vitesse en dépendent.</strong></li>
-        <li><strong>v = MM′ / Δt</strong>, représentée par le vecteur vitesse (une flèche). Et v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind>.</li></ul></ARetenir>
+        <li><strong>v = {avecIndices('frac(MM′|Δt)')}</strong>, représentée par le vecteur vitesse (une flèche). Et v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind>.</li></ul></ARetenir>
         <div style={{ marginTop: 8 }}>Les étapes suivantes (marquées ★) vont plus loin : choix de l’intervalle Δt, variation de la vitesse et forces. Elles utilisent l’affichage complet.</div></>,
       tache: null },
     { id: 'dt', titre: '★ Pour aller plus loin : le choix de Δt', focus: ['reglages', 'mesures'],
@@ -688,7 +688,7 @@ export function SimulationMouvementReferentiel() {
     <ARetenir><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
       <li>trajectoire et vitesse dépendent du référentiel</li>
       <li>v<Ind>B/A</Ind> = v<Ind>B</Ind> − v<Ind>A</Ind></li>
-      <li>v ≈ MM′ / Δt : choisir un Δt adapté</li>
+      <li>v ≈ {avecIndices('frac(MM′|Δt)')} : choisir un Δt adapté</li>
       <li>Δv ne dépend pas du référentiel, si les deux référentiels se déplacent l’un par rapport à l’autre en ligne droite et à vitesse constante (« galiléens »)</li>
       <li>Δv = 0 : les forces se compensent</li></ul></ARetenir>);
 

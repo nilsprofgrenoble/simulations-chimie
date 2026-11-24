@@ -316,7 +316,7 @@ export function SimulationCAN({ plotlyReady }) {
     { id: 'montage', titre: 'Le montage du TP', focus: ['montage'],
       texte: <>La CTN et une résistance de 10 kΩ sont en série sous 5 V ; la carte Arduino mesure la tension Ur aux bornes de la résistance (entrée A0). C'est un pont diviseur : Ur = 5 × R / (R + R<sub>CTN</sub>).</>,
       tache: { type: 'qcm', q: 'Les mesures montrent que Ur augmente avec la température. Pourquoi ?', options: ['La résistance de la CTN diminue quand T augmente : la tension à ses bornes diminue, donc celle aux bornes de R augmente', 'La résistance de la CTN augmente quand T augmente', 'La tension d’alimentation augmente avec T'], bonne: 0,
-        indice: <>Pont diviseur : U<sub>r</sub> = 5 × R / (R + R<sub>CTN</sub>), avec R et 5 V constants. Étudiez comment varie U<sub>r</sub> quand R<sub>CTN</sub> augmente ou diminue, puis rappelez-vous le sens de variation de la résistance d’une CTN avec la température.</>,
+        indice: <>Pont diviseur : U<sub>r</sub> = {avecIndices('frac(5 × R|R + R_CTN)')}, avec R et 5 V constants. Étudiez comment varie U<sub>r</sub> quand R<sub>CTN</sub> augmente ou diminue, puis rappelez-vous le sens de variation de la résistance d’une CTN avec la température.</>,
         expl: 'Une CTN a un coefficient de température négatif : sa résistance baisse quand T monte, donc Ur = 5 × R / (R + R_CTN) augmente.' } },
     { id: 'courbe', titre: 'Les données et la courbe d’étalonnage', focus: ['donnees', 'courbe'],
       texte: <>Vous avez mesuré la tension Ur pour plusieurs températures T : c'est la <strong>courbe d'étalonnage</strong> du capteur. Chargez les données du TP, puis affichez les points de mesure. Le pointeur de la souris affiche les valeurs de Ur et de T, avec un repère en pointillés.</>,
@@ -324,17 +324,17 @@ export function SimulationCAN({ plotlyReady }) {
     { id: 'quantum', titre: 'Le quantum', focus: ['can'],
       retenirTitre: 'À RETENIR : LE MONTAGE ET L’ÉTALONNAGE',
       retenir: <><FMontage/><Formule><msub><mi>U</mi><mi>r</mi></msub><mo>=</mo><mn>5</mn><mo>×</mo><mfrac><mi>R</mi><mrow><mi>R</mi><mo>+</mo><msub><mi>R</mi><mtext>CTN</mtext></msub></mrow></mfrac></Formule>{puces(<>Une CTN a un coefficient de température <strong>négatif</strong> : R<sub>CTN</sub> ↘ quand T ↗, donc U<sub>r</sub> ↗.</>, <>La <strong>courbe d’étalonnage</strong> U<sub>r</sub> = f(T) est mesurée point par point ; un <strong>modèle</strong> ajusté sur ces points donne T à partir de U<sub>r</sub>.</>)}</>,
-      texte: <>Le CAN a n bits : il fournit un nombre entier N de 0 à 2<sup>n</sup> − 1, pour une tension de 0 à 5 V. Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité : les 5 V sont partagés en 2<sup>n</sup> − 1 intervalles égaux, <strong>q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1)</strong>. Ici, n = 10 bits (carte Arduino Uno).</>,
+      texte: <>Le CAN a n bits : il fournit un nombre entier N de 0 à 2<sup>n</sup> − 1, pour une tension de 0 à 5 V. Le <strong>quantum</strong> q est la variation de tension qui fait changer N d'une unité : les 5 V sont partagés en 2<sup>n</sup> − 1 intervalles égaux, <strong>q = {avecIndices('frac(V_max − V_min|2ⁿ − 1)')}</strong>. Ici, n = 10 bits (carte Arduino Uno).</>,
       tache: { type: 'num', q: 'Quantum q pour 10 bits sur 0–5 V', unite: 'mV', vrai: Q10 * 1000, tol: 0.01, affiche: x => fmt(x, 2),
         calcul: () => ['Hypothèse : CAN idéal (sans bruit ni défaut), N de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V.',
           `Pour n = 10 : 2ⁿ − 1 = ${fmt(Math.pow(2, 10) - 1, 0)} intervalles égaux.`,
-          `q = (V_max − V_min) / (2ⁿ − 1) = (5 − 0) / ${fmt(Math.pow(2, 10) - 1, 0)} = ${fmt(Q10, 5)} V.`,
+          `q = frac(V_max − V_min|2ⁿ − 1) = frac(5 − 0|${fmt(Math.pow(2, 10) - 1, 0)}) = ${fmt(Q10, 5)} V.`,
           `Conversion : 1 V = 1 000 mV, donc q = ${fmt(Q10, 5)} × 1 000 = ${fmt(Q10 * 1000, 2)} mV.`],
         pieges: [[Q10, 'Votre résultat est en V : l’unité demandée est le mV, multipliez par 1 000.'],
           [5000 / 10, 'Vous avez divisé par le nombre de bits (10). Il faut diviser par le nombre d’intervalles, 2ⁿ − 1, avec n = 10.']],
         bloque: !(nbits === 10 && vmin === 0 && vmax === 5) ? 'Réglez 0 V, 5 V et 10 bits dans « Paramètres du CAN ».' : null,
-        indice: <>q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1). Calculez d’abord le nombre d’intervalles 2<sup>n</sup> − 1 avec n = 10, puis divisez l’étendue de la plage par ce nombre. Le résultat est en volts : convertissez-le en millivolts (1 V = 1 000 mV).</>,
-        expl: `q = 5 / 1023 = ${fmt(Q10 * 1000, 2)} mV.` } },
+        indice: <>q = {avecIndices('frac(V_max − V_min|2ⁿ − 1)')}. Calculez d’abord le nombre d’intervalles 2<sup>n</sup> − 1 avec n = 10, puis divisez l’étendue de la plage par ce nombre. Le résultat est en volts : convertissez-le en millivolts (1 V = 1 000 mV).</>,
+        expl: `q = frac(5|1023) = ${fmt(Q10 * 1000, 2)} mV.` } },
     { id: 'ordre', titre: 'Un modèle pour passer de Ur à T', focus: ['modele', 'courbe'],
       retenirTitre: 'À RETENIR : LE QUANTUM D’UN CAN',
       retenir: <><FQuantum/><Formule><mi>q</mi><mo>=</mo><mfrac><mrow><msub><mi>V</mi><mtext>max</mtext></msub><mo>−</mo><msub><mi>V</mi><mtext>min</mtext></msub></mrow><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>−</mo><mn>1</mn></mrow></mfrac></Formule>{puces(<>N est un <strong>entier</strong> de 0 à 2<sup>n</sup> − 1 ; le <strong>quantum</strong> q est la variation de tension qui fait changer N d’une unité.</>, <>Plus n est grand, plus q est petit : le CAN est plus <strong>fin</strong>. On divise par le nombre d’<strong>intervalles</strong> 2<sup>n</sup> − 1, non par n ni par 2<sup>n</sup>.</>)}</>,
@@ -372,26 +372,26 @@ export function SimulationCAN({ plotlyReady }) {
       tache: { type: 'num', q: 'Quantum q pour 4 bits sur 0–5 V', unite: 'mV', vrai: Q4 * 1000, tol: 0.01, affiche: x => fmt(x, 1),
         calcul: () => ['Même hypothèse : CAN idéal, N de 0 à 2ⁿ − 1 pour une tension de 0 à 5 V.',
           `Pour n = 4 : 2ⁿ − 1 = ${fmt(Math.pow(2, 4) - 1, 0)} intervalles égaux.`,
-          `q = (5 − 0) / ${fmt(Math.pow(2, 4) - 1, 0)} = ${fmt(Q4, 4)} V.`,
+          `q = frac(5 − 0|${fmt(Math.pow(2, 4) - 1, 0)}) = ${fmt(Q4, 4)} V.`,
           `Conversion : q = ${fmt(Q4, 4)} × 1 000 ≈ ${fmt(Q4 * 1000, 1)} mV.`],
         pieges: [[Q4, 'Votre résultat est en V : l’unité demandée est le mV, multipliez par 1 000.'],
           [5000 / 16, 'Vous avez divisé par 2ⁿ = 16. Les 5 V sont partagés en 2ⁿ − 1 = 15 intervalles (N va de 0 à 15).'],
           [5000 / 4, 'Vous avez divisé par le nombre de bits (4). Il faut diviser par le nombre d’intervalles, 2ⁿ − 1 = 15.']],
         bloque: !(nbits === 4 && vmin === 0 && vmax === 5) ? <>Réglez 0 V, 5 V et 4 bits dans « Paramètres du CAN » <button onClick={() => { setNbits(4); setVmin(0); setVmax(5); }} style={stylePetitBouton(true, ORANGE_GUIDE)}>ou cliquez ici</button></> : null,
-        indice: <>Même démarche qu’avec 10 bits : q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1) avec n = 4. Calculez d’abord le nombre d’intervalles 2<sup>n</sup> − 1, divisez, puis convertissez en mV (1 V = 1 000 mV).</>,
-        expl: `q = 5 / 15 ≈ ${fmt(Q4 * 1000, 1)} mV.` } },
+        indice: <>Même démarche qu’avec 10 bits : q = {avecIndices('frac(V_max − V_min|2ⁿ − 1)')} avec n = 4. Calculez d’abord le nombre d’intervalles 2<sup>n</sup> − 1, divisez, puis convertissez en mV (1 V = 1 000 mV).</>,
+        expl: `q = frac(5|15) ≈ ${fmt(Q4 * 1000, 1)} mV.` } },
     { id: 'taff', titre: 'Quelle température est affichée ?', focus: ['courbe'],
-      texte: <>Dans le premier graphique, cochez « Afficher les niveaux de quantification du CAN » (sous le modèle polynomial) : chaque trait vertical est une valeur de Ur que le CAN peut « voir » (N × q).<br/>Le capteur est à {fmt(TreelB, 0)} °C : on mesure Ur = {fmt(UB, 2).replace('.', ',')} V. Le CAN calcule N = Ur / q = {fmt(UB / Q4, 2)} et <strong>ne garde que la partie entière</strong> : N = {NB}. Il en déduit la tension N × q = {fmt(NB * Q4, 3)} V, et la chaîne affiche la température associée à cette tension.
+      texte: <>Dans le premier graphique, cochez « Afficher les niveaux de quantification du CAN » (sous le modèle polynomial) : chaque trait vertical est une valeur de Ur que le CAN peut « voir » (N × q).<br/>Le capteur est à {fmt(TreelB, 0)} °C : on mesure Ur = {fmt(UB, 2).replace('.', ',')} V. Le CAN calcule N = {avecIndices('frac(Ur|q)')} = {fmt(UB / Q4, 2)} et <strong>ne garde que la partie entière</strong> : N = {NB}. Il en déduit la tension N × q = {fmt(NB * Q4, 3)} V, et la chaîne affiche la température associée à cette tension.
         <br/>Repérez Ur = {fmt(UB, 2).replace('.', ',')} V sur l'axe horizontal, repérez le niveau du CAN situé juste à sa gauche, puis suivez le trait horizontal jusqu'à l'axe des températures.</>,
       tache: { type: 'num', q: `Température affichée par la chaîne pour Ur = ${fmt(UB, 2).replace('.', ',')} V`, unite: '°C', vrai: TB, tol: 0.03, affiche: x => fmt(x, 1),
         calcul: () => [`Hypothèses : CAN idéal à 4 bits (q = ${fmt(Q4, 4)} V), température déduite de la tension par le modèle polynomial d’ordre 3.`,
-          `N = partie entière de Ur / q = partie entière de ${fmt(UB, 2)} / ${fmt(Q4, 4)} = partie entière de ${fmt(UB / Q4, 2)} = ${NB}.`,
+          `N = partie entière de frac(Ur|q) = partie entière de frac(${fmt(UB, 2)}|${fmt(Q4, 4)}) = partie entière de ${fmt(UB / Q4, 2)} = ${NB}.`,
           `Tension vue par la chaîne : N × q = ${NB} × ${fmt(Q4, 4)} = ${fmt(NB * Q4, 3)} V (le niveau situé juste à gauche de ${fmt(UB, 2)} V).`,
           `Le modèle donne T(${fmt(NB * Q4, 3)} V) = ${fmt(TB, 1)} °C : c’est la température affichée.`],
         pieges: [[Thaut, 'Vous avez pris le niveau situé à droite (N + 1). Le CAN garde la partie entière de N : il faut le niveau juste à gauche de Ur.'],
           [TreelB, 'C’est la température réelle du capteur. La chaîne affiche la température associée au niveau du CAN (N × q), pas à Ur exacte.']],
         bloque: !(reglage4 && etapeModele && showQuant) ? <>Gardez le modèle d’ordre 3 et 4 bits, puis affichez les niveaux de quantification {reglage4 && etapeModele ? <button onClick={() => setShowQuant(true)} style={stylePetitBouton(true, ORANGE_GUIDE)}>Afficher les niveaux</button> : null}</> : null,
-        indice: <>Le CAN tronque : N = partie entière de U<sub>r</sub> / q. La chaîne « voit » alors la tension N × q (le niveau juste à gauche de U<sub>r</sub>). Calculez N × q avec q non arrondi, puis lisez sur le graphique, avec les niveaux affichés, la température associée à cette tension.</>,
+        indice: <>Le CAN tronque : N = partie entière de {avecIndices('frac(U_r|q)')}. La chaîne « voit » alors la tension N × q (le niveau juste à gauche de U<sub>r</sub>). Calculez N × q avec q non arrondi, puis lisez sur le graphique, avec les niveaux affichés, la température associée à cette tension.</>,
         expl: `La chaîne affiche ${fmt(TB, 1)} °C alors que la température réelle est ${fmt(TreelB, 0)} °C : un écart de ${fmt(TreelB - TB, 0)} °C dû uniquement à la discrétisation.` } },
     { id: 'resolution3', titre: 'Que sait-on de la vraie température ?', focus: ['courbe'],
       texte: <>La chaîne affiche {fmt(TB, 0)} °C (N = {NB}). Tous les Ur compris entre N × q = {fmt(NB * Q4, 3)} V et (N + 1) × q = {fmt((NB + 1) * Q4, 3)} V donnent le même N.</>,
@@ -446,8 +446,8 @@ export function SimulationCAN({ plotlyReady }) {
   const voletDefi = defi && (() => {
     const q = quantumDe(defi.bits, defi.vmin, defi.vmax), N = Math.floor((defi.u - defi.vmin) / q + 1e-9), uq = defi.vmin + N * q, Taf = fEx(uq), largeur = fEx(uq + q) - fEx(uq);
     const INDICES_DEFI = {
-      q: <>q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1) ; le résultat est en volts, à convertir en millivolts (1 V = 1 000 mV).</>,
-      n: <>N = (U<sub>r</sub> − V<sub>min</sub>) / q, puis on ne garde que la partie entière (le CAN tronque). Utilisez q non arrondi (gardez-le en mémoire de la calculatrice).</>,
+      q: <>q = {avecIndices('frac(V_max − V_min|2ⁿ − 1)')} ; le résultat est en volts, à convertir en millivolts (1 V = 1 000 mV).</>,
+      n: <>N = {avecIndices('frac(U_r − V_min|q)')}, puis on ne garde que la partie entière (le CAN tronque). Utilisez q non arrondi (gardez-le en mémoire de la calculatrice).</>,
       u: <>La tension convertie vaut V<sub>min</sub> + N × q, avec N entier (question précédente) et q en volts, non arrondi.</>,
       t: <>Reportez la tension V<sub>min</sub> + N × q dans le modèle d’ordre 3, ou lisez-la sur la courbe d’étalonnage avec les niveaux de quantification affichés (bouton « Régler l’exploration »). Ce n’est pas la température réelle du capteur.</>,
       l: <>Les températures réelles qui donnent le même N correspondent aux tensions comprises entre V<sub>min</sub> + N × q et V<sub>min</sub> + (N + 1) × q : largeur = T(niveau suivant) − T(niveau N). Lisez les deux températures sur la courbe ou dans l’exploration, avec q non arrondi.</>,
@@ -464,7 +464,7 @@ export function SimulationCAN({ plotlyReady }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.55 }}>
           Un CAN <strong>{defi.bits} bits</strong> mesure des tensions de {fmt(defi.vmin, 0)} V à {fmt(defi.vmax, 0)} V. Il convertit la tension <strong>Ur = {fmt(defi.u, 2)} V</strong> aux bornes de la résistance du montage du TP (modèle polynomial d'ordre 3).
-          <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1) ; N = (Ur − V<sub>min</sub>) / q tronqué à l’entier inférieur ; la tension convertie est V<sub>min</sub> + N × q, et la température affichée est celle du modèle pour cette tension. Le quantum q est aussi l’erreur maximale de quantification sur Ur.</div>
+          <div style={{ fontSize: 13.5, color: KIT.txt2, marginTop: 4 }}>Rappels : q = {avecIndices('frac(V_max − V_min|2ⁿ − 1)')} ; N = {avecIndices('frac(Ur − V_min|q)')} tronqué à l’entier inférieur ; la tension convertie est V<sub>min</sub> + N × q, et la température affichée est celle du modèle pour cette tension. Le quantum q est aussi l’erreur maximale de quantification sur Ur.</div>
           <button onClick={() => { setSource('exemple'); setTexte(CAN_EXEMPLE); setEtapeDonnees(true); setEtapeModele(true); setEtapeZoom(true); setOrdre(3); setVmin(defi.vmin); setVmax(defi.vmax); setNbits(defi.bits);
             setUrVal(uq); setMode('explore'); }}
             style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}><Pic n="search"/>Régler l’exploration sur ces valeurs</button>
@@ -495,11 +495,11 @@ export function SimulationCAN({ plotlyReady }) {
 
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Montage et mesures</strong> : la CTN (10 kΩ à 25 °C) et une résistance R = 10 kΩ sont en série sous 5 V ; Ur est mesurée aux bornes de R, donc Ur = 5 R / (R + R<sub>CTN</sub>) augmente avec T. Les points (T, Ur) sont supposés sans erreur ; vous pouvez les remplacer par vos propres mesures.</li>
+      <li><strong>Montage et mesures</strong> : la CTN (10 kΩ à 25 °C) et une résistance R = 10 kΩ sont en série sous 5 V ; Ur est mesurée aux bornes de R, donc Ur = {avecIndices('frac(5 × R|R + R_CTN)')} augmente avec T. Les points (T, Ur) sont supposés sans erreur ; vous pouvez les remplacer par vos propres mesures.</li>
       <li><strong>Modèle polynomial</strong> T = f(Ur) : on suppose qu'il représente fidèlement le capteur entre les points mesurés, sans extrapoler au-delà (sauf, éventuellement, pour le dernier niveau du CAN). Un R² proche de 1 ne suffit pas à le garantir : sur ces données, l'ordre 2 donne R² = {fmt(oEx2.r2, 4)} mais jusqu'à {fmt(oEx2.ecart, 1)} °C d'écart avec une mesure, l'ordre 3 {fmt(oEx3.ecart, 1)} °C. La résolution calculée dépend du modèle choisi.</li>
-      <li><strong>CAN idéal à n bits</strong> : N est un entier de 0 à 2<sup>n</sup> − 1, obtenu en tronquant Ur / q à l'entier inférieur (comme sur une carte Arduino), et le quantum vaut q = (V<sub>max</sub> − V<sub>min</sub>) / (2<sup>n</sup> − 1). Pas de bruit, ni d'erreur de gain, de décalage ou de non-linéarité. La tension réelle est comprise entre N × q et (N + 1) × q : l'erreur de quantification va de 0 à q.</li>
+      <li><strong>CAN idéal à n bits</strong> : N est un entier de 0 à 2<sup>n</sup> − 1, obtenu en tronquant {avecIndices('frac(Ur|q)')} à l'entier inférieur (comme sur une carte Arduino), et le quantum vaut q = {avecIndices('frac(V_max − V_min|2ⁿ − 1)')}. Pas de bruit, ni d'erreur de gain, de décalage ou de non-linéarité. La tension réelle est comprise entre N × q et (N + 1) × q : l'erreur de quantification va de 0 à q.</li>
       <li><strong>Résolution en température</strong> : ΔT = |T(Ur + q) − T(Ur)|, soit environ q × |dT/dUr|. C'est la plus petite variation de température qui change N, une conséquence du CAN seul ; l'incertitude de mesure complète (capteur, étalonnage, bruit, stabilité) est plus grande.</li>
-      <li><strong>Température affichée</strong> : pour une tension Ur, le CAN donne N = ⌊Ur / q⌋ ; la chaîne affiche la température du modèle pour la tension N × q.</li>
+      <li><strong>Température affichée</strong> : pour une tension Ur, le CAN donne N = ⌊{avecIndices('frac(Ur|q)')}⌋ ; la chaîne affiche la température du modèle pour la tension N × q.</li>
     </ul>
   );
   const panneauHypo = (
@@ -547,7 +547,7 @@ export function SimulationCAN({ plotlyReady }) {
               style={{ width: '100%', maxWidth: 400, display: 'block', borderRadius: 6, background: 'white' }}/>
             <div style={{ flex: 1, minWidth: 240, fontSize: 13.5, color: TXT, lineHeight: 1.6 }}>
               La CTN (thermistance) et une résistance R = 10 kΩ sont en série entre le 5 V et la masse. L'entrée analogique A0 de la carte mesure la tension U<sub>r</sub> aux bornes de la résistance :
-              <div style={{ fontFamily: 'monospace', margin: '6px 0', color: '#b45309', fontSize: 14 }}>U<sub>r</sub> = 5 × R / (R + R<sub>CTN</sub>)</div>
+              <div style={{ fontFamily: 'monospace', margin: '6px 0', color: '#b45309', fontSize: 14 }}>U<sub>r</sub> = {avecIndices('frac(5 × R|R + R_CTN)')}</div>
               Quand la température augmente, R<sub>CTN</sub> diminue et U<sub>r</sub> augmente. Le CAN de la carte convertit U<sub>r</sub> en un nombre entier N.
             </div>
           </div>

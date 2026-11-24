@@ -1,7 +1,7 @@
 import { missionEnCours } from "../mission";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
-import { Formule, cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, OngletExercices } from "../commun";
+import { Frac, Formule, cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, OngletExercices, avecIndices } from "../commun";
 import { Pic } from "../Pictos";
 import { puces } from "./Travail";
 import { FTroisFormes, FIdentite, FVitesseTuyau, FPertesCharge, FBilanAB, FBilanBern } from "./BernoulliSchemas";
@@ -261,17 +261,17 @@ export function bernCorrection(ex) {
   ];
   const L = [];
   L.push({ titre: <>Débit en m³·s⁻¹</>,
-    calcul: <>Q<sub>V</sub> = {ex.qvLh} × 10⁻³ / 3600 = <strong>{F(V.Q)} m³·s⁻¹</strong></> });
+    calcul: <>Q<sub>V</sub> = {ex.qvLh} × {avecIndices('frac(10⁻³|3600)')} = <strong>{F(V.Q)} m³·s⁻¹</strong></> });
   L.push({ titre: <>Section du tuyau</>,
-    calcul: <>S = π·D²/4 = π × ({F(ex.dMm / 1000)})² / 4 = <strong>{F(V.S)} m²</strong></> });
+    calcul: <>S = {avecIndices('frac(π·D²|4)')} = <Frac haut={<>π × ({F(ex.dMm / 1000)})²</>} bas="4" /> = <strong>{F(V.S)} m²</strong></> });
   L.push({ titre: <>Vitesse dans le tuyau</>,
-    calcul: <>v = Q<sub>V</sub> / S = {F(V.Q)} / {F(V.S)} = <strong>{F(V.v, 3)} m·s⁻¹</strong>
+    calcul: <>v = {avecIndices('frac(Q_V|S)')} = {F(V.Q)} / {F(V.S)} = <strong>{F(V.v, 3)} m·s⁻¹</strong>
       {cinB && <> : c'est v<sub>B</sub></>}{annul && <> : c'est à la fois v<sub>A</sub> et v<sub>B</sub></>}</> });
   if (cinA) {
     L.push({ titre: <>Section de la colonne</>,
-      calcul: <>S<sub>A</sub> = π·D<sub>A</sub>²/4 = π × ({F(ex.dAmm / 1000)})² / 4 = <strong>{F(V.SA)} m²</strong></> });
+      calcul: <>S<sub>A</sub> = {avecIndices('frac(π·D_A²|4)')} = <Frac haut={<>π × ({F(ex.dAmm / 1000)})²</>} bas="4" /> = <strong>{F(V.SA)} m²</strong></> });
     L.push({ titre: <>Vitesse en A</>,
-      calcul: <>v<sub>A</sub> = Q<sub>V</sub> / S<sub>A</sub> = {F(V.Q)} / {F(V.SA)} = <strong>{F(V.vA, 3)} m·s⁻¹</strong></> });
+      calcul: <>v<sub>A</sub> = {avecIndices('frac(Q_V|S_A)')} = {F(V.Q)} / {F(V.SA)} = <strong>{F(V.vA, 3)} m·s⁻¹</strong></> });
     L.push({ titre: <>Terme ½·ρ·v<sub>A</sub>²</>,
       calcul: <>½·ρ·v<sub>A</sub>² = 0,5 × 1000 × ({F(V.vA, 3)})² = <strong>{F(V.ecinA, 3)} Pa</strong></> });
   }
@@ -323,7 +323,7 @@ export function bernCorrection(ex) {
     L.push({ titre: <>Puissance hydraulique</>,
       calcul: <>P<sub>hyd</sub> = (P<sub>hyd</sub>/Q<sub>V</sub>) × Q<sub>V</sub> = {F(V.wp)} × {F(V.Q)} = <strong>{F(V.phyd, 3)} W</strong></> });
     L.push({ titre: <>Puissance absorbée</>,
-      calcul: <>P<sub>abs</sub> = P<sub>hyd</sub> / η = {F(V.phyd, 3)} / {bernFmt(eta, 2)} = <strong>{F(V.pabs, 3)} W</strong></> });
+      calcul: <>P<sub>abs</sub> = {avecIndices('frac(P_hyd|η)')} = {F(V.phyd, 3)} / {bernFmt(eta, 2)} = <strong>{F(V.pabs, 3)} W</strong></> });
   } else {
     L.push({ titre: <>Puissance hydraulique</>,
       calcul: <>P<sub>hyd</sub> = η × P<sub>abs</sub> = {bernFmt(eta, 2)} × {bernFmt(ex.pabs, 1)} = <strong>{F(V.phyd, 3)} W</strong></> });
@@ -332,7 +332,7 @@ export function bernCorrection(ex) {
     L.push({ titre: <>Isoler ρ·g·z<sub>B</sub></>,
       calcul: <>ρ·g·z<sub>B</sub> = P<sub>hyd</sub>/Q<sub>V</sub>{ecrire(termes, false, true, false)} = {F(V.wp)}{ecrire(termes, true, true, false)} = <strong>{F(V.epot)} Pa</strong></> });
     L.push({ titre: <>Hauteur maximale</>,
-      calcul: <>Δz = ρ·g·z<sub>B</sub> / (ρ·g) = {F(V.epot)} / 9810 = <strong>{F(V.dz, 3)} m</strong></> });
+      calcul: <>Δz = {avecIndices('frac(ρ·g·z_B|ρ·g)')} = {F(V.epot)} / 9810 = <strong>{F(V.dz, 3)} m</strong></> });
   }
   return L;
 }
@@ -451,7 +451,7 @@ export function SimulationBernoulli({ plotlyReady }) {
       tache: { type: 'qcm', q: <>Pourquoi peut-on écrire v<sub>A</sub> ≈ 0 ?</>,
         indice: <>Le débit est le même partout : Q<sub>V</sub> = v × S. Comparez la section du réservoir à celle du tuyau.</>,
         options: ['Le réservoir a une très grande surface donc le niveau descend très lentement', 'Il n’y a pas de pompe dans le réservoir', 'L’eau est toujours immobile à l’entrée d’un tuyau'], bonne: 0,
-        expl: 'Le débit est le même partout, mais la section du réservoir est immense devant celle du tuyau : v = Q_V / S y est quasi nulle.' } },
+        expl: 'Le débit est le même partout, mais la section du réservoir est immense devant celle du tuyau : v = frac(Q_V|S) y est quasi nulle.' } },
     { titre: 'Le point B', survol: 'p', entoure: ['pB'],
       texte: <>Le point B est la sortie du tuyau, au-dessus du réservoir B : l'eau en sort en jet, à l'altitude z<sub>B</sub> = Δz,
         avec la vitesse qu'elle avait dans le tuyau.</>,
@@ -462,15 +462,15 @@ export function SimulationBernoulli({ plotlyReady }) {
       retenirTitre: 'À RETENIR : LA CARTE D’IDENTITÉ DES POINTS A ET B',
       retenir: <><FIdentite/>{puces(<><strong>Pourquoi v<sub>A</sub> ≈ 0 :</strong> v = Q<sub>V</sub> ÷ S, et S est immense dans le réservoir.</>, <>P<sub>A</sub> = P<sub>B</sub> = P<sub>atm</sub> : <strong>les deux termes de pression se compensent</strong>.</>, <><strong>Méthode :</strong> pour chaque point, remplir les trois cases P, z, v avant de calculer. Un terme inconnu = une case à justifier.</>, <>Si le réservoir est fermé ou si l’eau est aspirée, la carte change : P n’est plus P<sub>atm</sub>.</>)}</>,
       texte: <>Les réglages sont apparus. Le débit vaut Q<sub>V</sub> = <strong>{bernFmt(qvEff, 0)} L·h⁻¹</strong> et le diamètre intérieur
-        du tuyau D = <strong>{dMm} mm</strong>. Déterminez la vitesse v de l'eau dans le tuyau, de section S = π·D² / 4. Donnez la réponse avec <strong>2 chiffres significatifs</strong>.</>,
+        du tuyau D = <strong>{dMm} mm</strong>. Déterminez la vitesse v de l'eau dans le tuyau, de section S = {avecIndices('frac(π·D²|4)')}. Donnez la réponse avec <strong>2 chiffres significatifs</strong>.</>,
       tache: { type: 'num', q: 'Vitesse de l’eau dans le tuyau', unite: 'm·s⁻¹', vrai: r.v, tol: 0.05, detail: true,
-        indice: 'Convertissez d’abord Q_V en m³·s⁻¹ (1 L·h⁻¹ = 1/3 600 000 m³·s⁻¹) et D en m, puis utilisez v = Q_V / S.',
+        indice: 'Convertissez d’abord Q_V en m³·s⁻¹ (1 L·h⁻¹ = 1/3 600 000 m³·s⁻¹) et D en m, puis utilisez v = frac(Q_V|S).',
         pieges: [[r.v * 4, 'S = π·D²/4 : n’oubliez pas le 4.'], [r.v / 4, 'S = π·D²/4, avec D le diamètre (et non le rayon).'], [r.v * 1000, 'Convertissez le débit en m³·s⁻¹.'], [r.v * 3600, 'Convertissez le débit en m³·s⁻¹ : divisez aussi par 3600.'],
           ...piegesValides(r.v, 0.05, [[r.v * 3.6e6, 'Le débit n’a pas été converti : 1 L·h⁻¹ = 1/3 600 000 m³·s⁻¹ (÷ 1000 pour les L, ÷ 3600 pour les h).'],
             [r.v / 1e6, `Le diamètre doit être en m pour que S soit en m² : D = ${dMm} mm = ${bernFmt(dMm / 1000, 3)} m (et non ${dMm}).`]])],
-        expl: <>Q<sub>V</sub> = {bernFmt(qvEff, 0)} L·h⁻¹ = {bernFmt(qvEff, 0)} × 10⁻³ / 3 600 m³·s⁻¹ = {bernSci(r.Q, 2)} m³·s⁻¹ ;
+        expl: <>Q<sub>V</sub> = {bernFmt(qvEff, 0)} L·h⁻¹ = {bernFmt(qvEff, 0)} × {avecIndices('frac(10⁻³|3)')} 600 m³·s⁻¹ = {bernSci(r.Q, 2)} m³·s⁻¹ ;
           S = π × ({bernFmt(dMm / 1000, 3)})² / 4 = {bernSci(r.S, 2)} m² ;
-          v = Q<sub>V</sub> / S = {bernSci(r.Q, 2)} / {bernSci(r.S, 2)} = <strong>{bernFmt(r.v, 2)} m·s⁻¹</strong>.</> } },
+          v = {avecIndices('frac(Q_V|S)')} = {bernSci(r.Q, 2)} / {bernSci(r.S, 2)} = <strong>{bernFmt(r.v, 2)} m·s⁻¹</strong>.</> } },
     { titre: 'Les pertes de charge', survol: 'pertes',
       retenirTitre: 'À RETENIR : CALCULER LA VITESSE',
       retenir: <><FVitesseTuyau/><Formule><mi>v</mi><mo>=</mo><mfrac><msub><mi>Q</mi><mi>V</mi></msub><mi>S</mi></mfrac></Formule><Formule><mi>S</mi><mo>=</mo><mfrac><mrow><mi>π</mi><msup><mi>D</mi><mn>2</mn></msup></mrow><mn>4</mn></mfrac></Formule>{puces(<><strong>Tout en unités SI</strong> : Q<sub>V</sub> en m³·s⁻¹, D en m, S en m².</>, <>1 L·h⁻¹ ≈ 2,78 × 10⁻⁷ m³·s⁻¹ (÷ 1 000 pour les litres, ÷ 3 600 pour les heures) ; 1 m³·h⁻¹ ≈ 2,78 × 10⁻⁴ m³·s⁻¹.</>, <><strong>Exemple :</strong> Q<sub>V</sub> = 3 000 L·h⁻¹ ≈ 8,33 × 10⁻⁴ m³·s⁻¹ ; D = 32 mm : S ≈ 8,04 × 10⁻⁴ m² ; v ≈ 1,0 m·s⁻¹.</>, <><strong>Ordre de grandeur :</strong> dans une installation d’eau, v est de l’ordre de 1 m·s⁻¹.</>, <><strong>Pièges :</strong> D en mm ; oublier le « 4 » ; oublier de convertir les L en m³ ou les heures en secondes.</>, <>2 chiffres significatifs pour v (données à 2 chiffres) ; garder 3 chiffres dans les calculs intermédiaires.</>)}</>,
@@ -513,7 +513,7 @@ export function SimulationBernoulli({ plotlyReady }) {
         P<sub>hyd</sub>/Q<sub>V</sub> = ρ·g·z<sub>B</sub> + ½·ρ·v<sub>B</sub>² + ΔP<sub>charge</sub>, avec ΔP<sub>charge</sub> = {bernFmt(kpa(r.dpCharge), 2)} kPa.
         Rappel des étapes précédentes : ρ·g·z<sub>B</sub> = {bernFmt(kpa(r.Epot), 2)} kPa et ½·ρ·v<sub>B</sub>² = {bernFmt(kpa(r.Ecin), 3)} kPa.
         <strong> Déterminez par le calcul la valeur du terme P<sub>hyd</sub>/Q<sub>V</sub>.</strong></>,
-      tache: { type: 'num', q: 'Valeur du terme P_hyd / Q_V, en kPa', unite: 'kPa', vrai: kpa(r.Wp), tol: 0.05, detail: true,
+      tache: { type: 'num', q: 'Valeur du terme frac(P_hyd|Q_V), en kPa', unite: 'kPa', vrai: kpa(r.Wp), tol: 0.05, detail: true,
         indice: <>Isolez P<sub>hyd</sub>/Q<sub>V</sub> : additionnez ρ·g·z<sub>B</sub>, ½·ρ·v<sub>B</sub>² et ΔP<sub>charge</sub> (les pertes sont à compenser), dans la même unité.</>,
         pieges: [[kpa(r.Epot + r.Ecin - r.dpCharge), 'Les pertes s’ajoutent : la pompe doit aussi les compenser.'], [kpa(r.Epot + r.dpCharge), 'N’oubliez pas l’énergie de vitesse ½·ρ·v_B².'],
           ...piegesValides(kpa(r.Wp), 0.05, [[r.Wp, 'Vous avez répondu en Pa : la réponse est demandée en kPa (÷ 1000).'], [kpa(r.Epot + r.Ecin), 'Il manque les pertes de charge ΔP_charge : la pompe doit aussi les compenser.']])],
@@ -528,13 +528,13 @@ export function SimulationBernoulli({ plotlyReady }) {
         expl: <>P<sub>hyd</sub>/Q<sub>V</sub> = {bernFmt(kpa(r.Wp), 2)} kPa = {bernFmt(r.Wp, 0)} Pa et Q<sub>V</sub> = {bernSci(r.Q, 2)} m³·s⁻¹ ;
           P<sub>hyd</sub> = {bernFmt(r.Wp, 0)} × {bernSci(r.Q, 2)} = <strong>{affP(r.Phyd)} W</strong>.</> } },
     { titre: 'La puissance de la pompe', survol: 'pompe',
-      texte: <>Une partie de l'énergie électrique reçue par la pompe ne passe pas dans l'eau. Son <strong>rendement</strong> est η = P<sub>utile</sub> / P<sub>abs</sub>.
+      texte: <>Une partie de l'énergie électrique reçue par la pompe ne passe pas dans l'eau. Son <strong>rendement</strong> est η = {avecIndices('frac(P_utile|P_abs)')}.
         Ici, la puissance utile est la puissance hydraulique : P<sub>utile</sub> = P<sub>hyd</sub> = {affP(r.Phyd)} W, et η = {bernFmt(eta, 0)} %.</>,
       tache: { type: 'num', q: 'Puissance électrique absorbée par la pompe P_abs', unite: 'W', vrai: r.Pabs, tol: 0.05, detail: true,
-        indice: <>η = P<sub>utile</sub> / P<sub>abs</sub>, donc P<sub>abs</sub> = P<sub>utile</sub> / η, avec η en fraction ({bernFmt(eta, 0)} % = {bernFmt(eta / 100, 2)}).</>,
+        indice: <>η = {avecIndices('frac(P_utile|P_abs)')}, donc P<sub>abs</sub> = {avecIndices('frac(P_utile|η)')}, avec η en fraction ({bernFmt(eta, 0)} % = {bernFmt(eta / 100, 2)}).</>,
         pieges: [[r.Phyd * eta / 100, 'C’est P_hyd × η : la pompe absorbe plus qu’elle ne donne à l’eau.'],
-          ...piegesValides(r.Pabs, 0.05, [[r.Phyd, 'Il manque le rendement : P_abs = P_utile / η, avec η < 1, donc P_abs > P_hyd.'], [r.Phyd / eta, `Le rendement doit être une fraction : η = ${eta} % = ${bernFmt(eta / 100, 2)} (et non ${eta}).`]])],
-        expl: <>η = P<sub>utile</sub> / P<sub>abs</sub> donc P<sub>abs</sub> = P<sub>utile</sub> / η = {affP(r.Phyd)} / {bernFmt(eta / 100, 2)} = <strong>{affP(r.Pabs)} W</strong>.</> } },
+          ...piegesValides(r.Pabs, 0.05, [[r.Phyd, 'Il manque le rendement : P_abs = frac(P_utile|η), avec η < 1, donc P_abs > P_hyd.'], [r.Phyd / eta, `Le rendement doit être une fraction : η = ${eta} % = ${bernFmt(eta / 100, 2)} (et non ${eta}).`]])],
+        expl: <>η = {avecIndices('frac(P_utile|P_abs)')} donc P<sub>abs</sub> = {avecIndices('frac(P_utile|η)')} = {affP(r.Phyd)} / {bernFmt(eta / 100, 2)} = <strong>{affP(r.Pabs)} W</strong>.</> } },
     { titre: 'Et si l’on double le débit ?', survol: 'pertes',
       texte: <>Réglez le débit à Q<sub>V</sub> = 1000 L·h⁻¹ et notez les pertes de charge, puis passez à Q<sub>V</sub> = 2000 L·h⁻¹ (le double).</>,
       tache: { type: 'qcm', q: 'Quand le débit double, les pertes de charge…',
@@ -543,7 +543,7 @@ export function SimulationBernoulli({ plotlyReady }) {
     { titre: 'Le choix du diamètre', survol: 'pertes',
       texte: <>Revenez à un débit de 1000 L·h⁻¹, puis passez le diamètre de 16 mm à 10 mm.</>,
       tache: { type: 'qcm', q: 'Avec un tuyau plus fin…',
-        indice: <>Quand D diminue, S = π·D² / 4 diminue : que devient la vitesse pour le même débit ? Comparez ensuite les pertes lues dans les réglages.</>, options: ['les pertes de charge sont beaucoup plus grandes', 'les pertes diminuent', 'rien ne change'], bonne: 0,
+        indice: <>Quand D diminue, S = {avecIndices('frac(π·D²|4)')} diminue : que devient la vitesse pour le même débit ? Comparez ensuite les pertes lues dans les réglages.</>, options: ['les pertes de charge sont beaucoup plus grandes', 'les pertes diminuent', 'rien ne change'], bonne: 0,
         expl: 'La vitesse augmente comme 1/D², et les pertes encore plus vite. C’est pourquoi on investit dans des canalisations assez larges : la pompe consomme ensuite moins chaque jour.' } },
     { titre: 'Le bilan', survol: null,
       retenirTitre: 'À RETENIR : LE BILAN',
@@ -889,7 +889,7 @@ export function SimulationBernoulli({ plotlyReady }) {
   const etapes2 = !exo ? [] : [
     ...(niv === 1 && (besoinV || cinA) ? [
       { id: 'q', titre: <>Débit Q<sub>V</sub> en m³·s⁻¹</>, vrai: Vx.Q,
-        aide: <>Convertissez : 1 L = 10⁻³ m³ et 1 h = 3600 s. Q<sub>V</sub> = {exo.qvLh} × 10⁻³ / 3600.</> },
+        aide: <>Convertissez : 1 L = 10⁻³ m³ et 1 h = 3600 s. Q<sub>V</sub> = {exo.qvLh} × {avecIndices('frac(10⁻³|3600)')}.</> },
     ] : []),
     ...(niv === 1 && besoinV ? [
       { id: 's', titre: <>Section S du tuyau en m²</>, vrai: Vx.S,
@@ -897,13 +897,13 @@ export function SimulationBernoulli({ plotlyReady }) {
     ] : []),
     ...(besoinV ? [
       { id: 'v', titre: <>Vitesse {nomV} en m·s⁻¹</>, vrai: Vx.v,
-        aide: <>v = Q<sub>V</sub> / S, avec Q<sub>V</sub> en m³·s⁻¹ et S = π·D²/4 (D en mètres).</> },
+        aide: <>v = {avecIndices('frac(Q_V|S)')}, avec Q<sub>V</sub> en m³·s⁻¹ et S = {avecIndices('frac(π·D²|4)')} (D en mètres).</> },
     ] : []),
     ...(cinA ? [
       ...(niv === 1 ? [{ id: 'sA', titre: <>Section S<sub>A</sub> de la colonne en m²</>, vrai: Vx.SA,
         aide: <>S<sub>A</sub> = π·D<sub>A</sub>²/4 avec D<sub>A</sub> = {exo.dAmm} mm = {bernFmt(exo.dAmm / 1000, 3)} m.</> }] : []),
       { id: 'vA', titre: <>Vitesse v<sub>A</sub> en m·s⁻¹</>, vrai: Vx.vA,
-        aide: <>Le même débit traverse la colonne : v<sub>A</sub> = Q<sub>V</sub> / S<sub>A</sub>.</> },
+        aide: <>Le même débit traverse la colonne : v<sub>A</sub> = {avecIndices('frac(Q_V|S_A)')}.</> },
       { id: 'ecinA', titre: <>Terme ½·ρ·v<sub>A</sub>² en Pa</>, vrai: Vx.ecinA,
         aide: <>Comparez-le ensuite à ½·ρ·v<sub>B</sub>² : l'hypothèse v<sub>A</sub> ≈ 0 aurait-elle été grave ?</> },
     ] : []),
@@ -947,7 +947,7 @@ export function SimulationBernoulli({ plotlyReady }) {
     { id: 'phyd', titre: <>Puissance hydraulique P<sub>hyd</sub> en W</>, vrai: Vx.phyd,
       aide: <>Multipliez le terme précédent par Q<sub>V</sub> en m³·s⁻¹ : Pa × m³·s⁻¹ = J·s⁻¹ = W.</> },
     { id: 'pabs', titre: <>Puissance absorbée P<sub>abs</sub> en W</>, vrai: Vx.pabs,
-      aide: <>η = P<sub>hyd</sub> / P<sub>abs</sub>, avec η = {exo.eta} % = {bernFmt(exo.eta / 100, 2)}.</> },
+      aide: <>η = {avecIndices('frac(P_hyd|P_abs)')}, avec η = {exo.eta} % = {bernFmt(exo.eta / 100, 2)}.</> },
   ] : [
     { id: 'phyd', titre: <>Puissance hydraulique P<sub>hyd</sub> en W</>, vrai: Vx.phyd },
     { id: 'wp', titre: <>Terme P<sub>hyd</sub>/Q<sub>V</sub> en Pa</>, vrai: Vx.wp },
@@ -1028,7 +1028,7 @@ export function SimulationBernoulli({ plotlyReady }) {
       if (proche(x, sansN)) return "Chaque singularité compte autant de fois qu'elle apparaît : multipliez par leur nombre.";
     }
     if (id === 'pabs') {
-      if (proche(x, V.phyd) || proche(x, V.phyd * eta)) return <>La pompe consomme plus qu'elle ne fournit : P<sub>abs</sub> = P<sub>hyd</sub> / η, donc P<sub>abs</sub> &gt; P<sub>hyd</sub>.</>;
+      if (proche(x, V.phyd) || proche(x, V.phyd * eta)) return <>La pompe consomme plus qu'elle ne fournit : P<sub>abs</sub> = {avecIndices('frac(P_hyd|η)')}, donc P<sub>abs</sub> &gt; P<sub>hyd</sub>.</>;
       if (facteur(100)) return 'η en pourcentage : 60 % = 0,60.';
     }
     if (id === 'phyd' && niv === 4) {
@@ -1492,7 +1492,7 @@ export function SimulationBernoulli({ plotlyReady }) {
           <div style={{ fontSize: 11.5, color: TXT2, lineHeight: 1.5 }}>
             {impose === 'debit'
               ? <>Le débit est imposé : le circuit fixe P<sub>hyd</sub>. Le rendement ne change que la
-                  puissance consommée P<sub>abs</sub> = P<sub>hyd</sub> / η.</>
+                  puissance consommée P<sub>abs</sub> = {avecIndices('frac(P_hyd|η)')}.</>
               : <>La pompe fournit P<sub>hyd</sub> = η × P<sub>abs</sub>. Le débit s'ajuste jusqu'à ce que
                   le circuit consomme exactement cette puissance : meilleur rendement, plus de débit.</>}
           </div>
@@ -1664,7 +1664,7 @@ export function SimulationBernoulli({ plotlyReady }) {
         </tbody>
       </table>
       <div style={{ fontSize: 11, color: TXT2, marginTop: 4, lineHeight: 1.45 }}>
-        « donnée » : valeur fournie par l'énoncé (manomètre…). « Q<sub>V</sub> / S » : vitesse calculable à partir
+        « donnée » : valeur fournie par l'énoncé (manomètre…). « frac(Q_V|S) » : vitesse calculable à partir
         du débit et de la section traversée.
       </div>
       {niv <= 2 && verifs[1] && !valides[1] && !carteOk && (
