@@ -109,6 +109,8 @@ export default {
         ...VV('chtens-val-savon-amphotere', 'chtens-val-nonionique-ph', 'chtens-val-sel-amphotere')] },
     { id: 'cmc', nom: 'Micelles et concentration micellaire critique', capacite: 'Concentration micellaire critique : évaluer la CMC par conductimétrie ou par tensiométrie ; distinguer monomères libres et micelles.',
       refs: [...S('tens-libres', 'tens-micelles'), ...A('tens-ana-plateau', 'tens-ana-conducti', 'tens-ana-chaine', 'tens-ana-tete'), ...VV('tens-val-monomeres', 'tens-val-micelles'), ...R('tens-libres-micelles')] },
+    { id: 'winsor', nom: 'Microémulsions : types de Winsor et effet du sel', capacite: 'Microémulsions : distinguer microémulsion et émulsion ; identifier les types de Winsor I à IV, prévoir l’effet de la salinité et du mélange actif, repérer la formulation optimale.',
+      refs: [...A('wins-ana-micro', 'wins-ana-type-i', 'wins-ana-type-ii', 'wins-ana-sel', 'wins-ana-optimum', 'wins-ana-iv'), ...VV('wins-val-sel', 'wins-val-masse', 'wins-val-optimum')] },
     { id: 'hlb', nom: 'HLB requis et mélange d’émulsifiants', capacite: 'Notion de balance hydrophile-lipophile (HLB) : évaluer la composition d’un mélange d’émulsifiants par la méthode du RHLB (HLB requis).',
       refs: [...A('hlb-ana-lipophile', 'hlb-ana-choix-seul', 'hlb-ana-rhlb-melange', 'hlb-ana-hlb-melange', 'hlb-ana-equilibre', 'hlb-ana-fraction', 'hlb-ana-hors-portee', 'hlb-ana-trop-lipophile', 'hlb-ana-sens', 'hlb-ana-limites'),
         ...VV('hlb-val-moyenne-simple', 'hlb-val-melange-ok', 'hlb-val-fraction-inversee', 'hlb-val-hors-intervalle', 'for-hlb-melange-ok')] },

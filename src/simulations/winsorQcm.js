@@ -1,0 +1,33 @@
+// QCM du parcours guidé de la simulation 243 (Microémulsions : types de Winsor et effet du sel).
+// Ordre FIXE : place de la bonne réponse choisie à la main (équilibrée, jamais deux fois de suite à la même place), jamais la plus longue.
+const mk = (pos, bonne, ...autres) => ({ ordreFixe: true, bonne: pos, options: [...autres.slice(0, pos), bonne, ...autres.slice(pos)] });
+export const QCM = {
+  emulsion: mk(2, 'Elle est transparente : ses domaines font 10 à 50 nm',
+    'Ses gouttes sont plus grosses, donc elle est plus opaque qu’une émulsion',
+    'Elle exige une forte agitation pour se former, comme une émulsion',
+    'Sa tension interfaciale huile-eau reste proche de 50 mN/m, comme l’eau pure'),
+  butanol: mk(0, 'Le SDS seul n’abaisse pas assez la tension interfaciale',
+    'Le butanol joue le rôle de phase huileuse à la place du toluène',
+    'Le butanol est un conservateur qui évite le développement de bactéries',
+    'Le butanol rend le SDS insoluble dans l’eau pour le chasser vers l’huile'),
+  winsor1: mk(3, 'Dans la phase aqueuse, qui est la microémulsion H/E',
+    'Dans l’huile en excès, qui est la phase la plus abondante en volume',
+    'Autant dans l’huile que dans l’eau, c’est la définition du Winsor I',
+    'Dans aucune phase : le tensioactif reste uniquement collé au verre'),
+  sel: mk(1, 'Les ions Na⁺ écrantent les charges de la tête sulfate',
+    'Les ions Na⁺ réagissent chimiquement avec les molécules de toluène',
+    'Le sel fait baisser le pH, ce qui détruit les molécules de SDS',
+    'Le sel rend l’eau plus dense, donc le SDS flotte à sa surface'),
+  phasesIII: mk(2, 'Trois : huile, microémulsion bicontinue et eau',
+    'Deux : une microémulsion H/E et l’huile restée en excès',
+    'Deux : une microémulsion E/H et l’eau restée en excès',
+    'Une seule : une microémulsion qui contient toute l’huile et toute l’eau'),
+  rapportR: mk(0, 'R augmente : le tensioactif est plus attiré par l’huile',
+    'R diminue : le tensioactif est de plus en plus attiré par l’eau',
+    'R ne change pas : le sel n’agit pas sur le tensioactif ionique',
+    'R vaut toujours 1 : c’est la définition du rapport de Winsor'),
+  actif: mk(3, 'Il devient monophasique : une seule microémulsion',
+    'Il reste triphasique, mais l’huile en excès devient plus abondante',
+    'Il se sépare en deux phases : l’eau et l’huile reprennent leurs places',
+    'Il se transforme en émulsion blanche et opaque, comme du lait'),
+};
