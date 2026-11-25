@@ -11,6 +11,7 @@ import { NOY2GT_ANA } from './noyauAtome2gtExos.js';
 import { NUC2GT_ANA } from './nucleaire2gtExos.js';
 import { RHC_ANA } from './rheoCourbesExos.js';
 import { ITT_ANA } from './itt3Exos.js';
+import { TSTLB_ANA, TSTLB_REL } from './tstlBExos.js';
 import { figureTopo } from './topoFigure.js';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -1018,6 +1019,7 @@ export const PROBLEMES = [
 
 // ──────────────────────────────── 2. CHOISIR LA BONNE RELATION ────────────────────────────────
 export const RELATIONS = [
+  ...TSTLB_REL,
   { id: 'retrecissement', domaine: 'Transport des fluides', titre: 'Une conduite qui se rétrécit',
     ...presenter({ schema: { type: 'venturi', rapport: 0.5 }, contexte: 'L’eau circule dans une conduite qui se rétrécit.', liste: [['Vitesse dans la partie large', 'v₁ = 0,80 m·s⁻¹'], ['Diamètre de la partie large', 'd₁ = 40 mm'], ['Diamètre de la partie étroite', 'd₂ = 20 mm']], suite: 'On cherche la vitesse v₂ dans la partie étroite.' }),
     q: 'Quelle relation permet de répondre ?', options: [
@@ -5819,6 +5821,7 @@ export const PREVOIR = [
   ...NUC2GT_ANA,
   ...RHC_ANA,
   ...ITT_ANA,
+  ...TSTLB_ANA,
   // ───────────────────────────── Changement d'état (2GT, sim 195) : fusion ou dissolution, proportionnalité, sens du transfert, palier, équation, comparaison de L
   { id: 'etat2gt-ana-dissolution', domaine: 'Changement d’état (2GT)', titre: 'Le sucre dans le thé : fusion ou dissolution ?',
     enonce: 'Un élève met un morceau de sucre dans un thé chaud. Le sucre « disparaît ». Il affirme : « le sucre a fondu, c’est une fusion : H₂O(s) → H₂O(l) ».', q: 'Que penser de son affirmation ?', options: [

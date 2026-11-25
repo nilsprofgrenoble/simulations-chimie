@@ -3,6 +3,7 @@ import { KIT, avecIndices } from "../commun";
 import { DESSINS_SECONDE } from "./SchemasSeconde.jsx";
 import { DESSINS_DONNEES } from "./SchemasDonnees.jsx";
 import { DESSINS_MECA } from "./SchemasMeca.jsx";
+import { DESSINS_TSTLB } from "./tstlBSchemas.jsx";
 
 // ====================================================
 //  SCHÉMAS ET MISE EN PAGE DES ÉNONCÉS (chapitre « Transmission de signaux numériques »)
@@ -419,7 +420,7 @@ function ConduiteManometres({ vanne = false }) {
 }
 
 // ── Répartition ──
-const DESSINS = { ...DESSINS_SECONDE, ...DESSINS_DONNEES, ...DESSINS_MECA, pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai, cuve: Cuve, tubeu: TubeU, venturi: Venturi, pompe: PompePuits, conduite: ConduiteManometres };
+const DESSINS = { ...DESSINS_SECONDE, ...DESSINS_DONNEES, ...DESSINS_MECA, ...DESSINS_TSTLB, pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai, cuve: Cuve, tubeu: TubeU, venturi: Venturi, pompe: PompePuits, conduite: ConduiteManometres };
 export function Visuel({ schema, revele = false }) {
   if (!schema) return null;
   const liste = Array.isArray(schema) ? schema : [schema];
