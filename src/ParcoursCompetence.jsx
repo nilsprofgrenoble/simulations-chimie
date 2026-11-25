@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 import { KIT, stylePetitBouton } from './commun';
 import { NIVEAUX_CHAPITRES } from './chapitres';
-import { itemsDuType, niveauxDuType, chapitresDuNiveauType, filtrer, difficultesDuType, enseignementsDuNiveauType, enseignementDe, ENSEIGNEMENTS, nomChapitre } from './parcoursCommun';
+import { itemsDuType, niveauxDuType, chapitresDuNiveauType, filtrer, difficultesDuType, enseignementsDuNiveauType, enseignementDe, ENSEIGNEMENTS, nomChapitre, contexteMemorise } from './parcoursCommun';
 import { SEL_VIDE } from './selectionParcours';
 import { sousThemesDe, dansSousTheme } from './sousThemes';
 import { IllustrationType } from './IllustrationsTypes';
@@ -193,7 +193,12 @@ export function ParcoursCompetence({ code, titre, intro, couleur, types, items, 
   const type = types.find(t => t.id === sel.type);
   const choisirType = (t, its) => {
     if (its.length === 1 && !t.filtre) ouvrir(its[0], { ...SEL_VIDE, type: t.id });      // un seul exercice : inutile de faire choisir
-    else setSel({ ...SEL_VIDE, type: t.id });
+    else {
+      // le niveau et l'enseignement choisis dans « Je m'entraîne » sont repris : l'élève n'a plus qu'à choisir son chapitre
+      const m = contexteMemorise(), ok = t.filtre === 'niveau' && m.niv && niveauxDuType(items, t.id).some(n => n.key === m.niv);
+      const ensOk = ok && m.ens && enseignementsDuNiveauType(items, t.id, m.niv).some(e => e.key === m.ens);
+      setSel({ ...SEL_VIDE, type: t.id, niv: ok ? m.niv : '', ens: ensOk ? m.ens : '' });
+    }
   };
   return (
     <div>
