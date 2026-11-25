@@ -8,6 +8,7 @@ import { KIT, stylePetitBouton } from './commun';
 import { NIVEAUX_CHAPITRES } from './chapitres';
 import { itemsDuType, niveauxDuType, chapitresDuNiveauType, filtrer, difficultesDuType, enseignementsDuNiveauType, enseignementDe, ENSEIGNEMENTS, nomChapitre } from './parcoursCommun';
 import { SEL_VIDE } from './selectionParcours';
+import { IllustrationType } from './IllustrationsTypes';
 
 const niveauLabel = k => NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k;
 
@@ -38,7 +39,7 @@ const carte = (actif, couleur) => ({
   border: `1px solid ${actif ? couleur : KIT.bord}`, boxShadow: actif ? `inset 3px 0 0 ${couleur}` : 'none', background: actif ? '#f3f8f5' : '#fff', color: KIT.txt, fontFamily: 'inherit', cursor: 'pointer',
 });
 // Survol et focus des lignes (le style en ligne ne les gère pas)
-const CSS_LIGNES = '.pc-ligne{transition:background .12s}.pc-ligne:hover{background:#f1f5f9 !important}.pc-ligne:focus-visible{outline:3px solid #0f172a;outline-offset:-3px}';
+const CSS_LIGNES = '.pc-ligne{transition:background .12s}.pc-ligne:hover{background:#f1f5f9 !important}.pc-ligne:focus-visible{outline:3px solid #0f172a;outline-offset:-3px}.pc-ill{width:150px;height:94px}.pc-ill-petit{width:120px;height:75px}@media (max-width:520px){.pc-ill{width:88px;height:55px}.pc-ill-petit{width:84px;height:52px}}';
 
 // ── Écran 1 : les types d'exercices (un sommaire : une ligne par type, sans décor) ──
 function EcranTypes({ couleur, types, items, prog, choisir }) {
@@ -50,14 +51,15 @@ function EcranTypes({ couleur, types, items, prog, choisir }) {
         const faits = its.filter(i => prog[i.cle]).length;
         return (
           <button key={t.id} role="listitem" type="button" data-type={t.id} className="pc-ligne" onClick={() => choisir(t, its)}
-            style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', boxSizing: 'border-box', padding: '14px 16px', minHeight: 64, textAlign: 'left', border: 'none', borderTop: k ? `1px solid ${KIT.bord}` : 'none', background: '#fff', color: KIT.txt, fontFamily: 'inherit', cursor: 'pointer' }}>
-            <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 14, width: '100%', boxSizing: 'border-box', padding: '14px 16px', minHeight: 100, textAlign: 'left', border: 'none', borderTop: k ? `1px solid ${KIT.bord}` : 'none', background: '#fff', color: KIT.txt, fontFamily: 'inherit', cursor: 'pointer' }}>
+            <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
               <span style={{ fontWeight: 800, fontSize: 16, lineHeight: 1.3, color: couleur }}>{t.nom}</span>
               <span style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.45 }}>{t.but}</span>
+              <span style={{ fontSize: 13, color: '#475569', fontWeight: 700, marginTop: 2 }}>
+                {its.length} exercice{its.length > 1 ? 's' : ''}{faits > 0 && <span style={{ fontWeight: 600 }}> · {faits} fait{faits > 1 ? 's' : ''}</span>}
+              </span>
             </span>
-            <span style={{ flex: 'none', textAlign: 'right', fontSize: 13, color: '#475569', fontWeight: 700, lineHeight: 1.4 }}>
-              {its.length} exercice{its.length > 1 ? 's' : ''}{faits > 0 && <><br /><span style={{ fontWeight: 600 }}>{faits} fait{faits > 1 ? 's' : ''}</span></>}
-            </span>
+            <IllustrationType id={t.id} couleur={couleur} />
             <span aria-hidden="true" style={{ flex: 'none', color: '#64748b', fontSize: 22, lineHeight: 1 }}>›</span>
           </button>);
       })}
@@ -117,7 +119,10 @@ function EcranType({ couleur, type, items, chapitres, prog, sel, setSel, ouvrir 
   return (
     <div style={{ maxWidth: 760 }}>
       <style>{CSS_LIGNES}</style>
-      <p style={{ margin: '0 0 6px', fontSize: 14, color: KIT.txt2, lineHeight: 1.5 }}>{type.but}</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14, justifyContent: 'space-between' }}>
+        <p style={{ margin: '0 0 6px', fontSize: 14, color: KIT.txt2, lineHeight: 1.5 }}>{type.but}</p>
+        <IllustrationType id={type.id} couleur={couleur} className="pc-ill-petit" />
+      </div>
       {parNiveau && <>
         <Etape n={++k} titre="Ton niveau" couleur={couleur} />
         <div role="group" aria-label="Niveau" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
