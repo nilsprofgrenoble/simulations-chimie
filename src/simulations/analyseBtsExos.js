@@ -133,7 +133,7 @@ const ANA_TIT = [
       F('Elle augmente : on ajoute des ions Na⁺ et HO⁻ dans la solution à chaque goutte versée', 'Les HO⁻ sont consommés par la réaction : ils ne s’accumulent qu’après l’équivalence.'),
       F('Elle reste constante : les ions spectateurs fixent seuls la conductivité', 'Les H⁺ très conducteurs sont remplacés par des Na⁺ moins conducteurs : σ varie.'),
     ] },
-  { id: 'tit-indicateur-choix', domaine: TIT, titre: 'Choisir un indicateur coloré',
+  { id: 'tit-indicateur-choix', domaine: TIT, titre: 'Indicateur coloré pour un titrage (BTS)',
     enonce: 'On titre l’acide éthanoïque (acide faible) par la soude. À l’équivalence, la solution contient l’ion éthanoate, base faible : son pH est supérieur à 7. Zones de virage : hélianthine 3,1 – 4,4 ; bleu de bromothymol 6,0 – 7,6 ; phénolphtaléine 8,2 – 10,0.', q: 'Quel indicateur convient ?', options: [
       V('La phénolphtaléine, dont la zone de virage contient le pH basique de l’équivalence', 'L’indicateur doit virer au voisinage du pH à l’équivalence.'),
       F('L’hélianthine, car une zone de virage acide signale plus tôt la fin du titrage', 'Elle virerait bien avant l’équivalence : le volume serait sous-estimé.'),

@@ -295,7 +295,7 @@ export const TGPB_HYP = [
 
 // ───────────── VAL : plausible ? ─────────────
 export const TGPB_VAL = [
-  P({ id: 'pho-val-energie-photon', domaine: DOM_PHOTONS, niveau: 2, titre: 'Énergie d’un photon de lumière verte', plausible: false,
+  P({ id: 'pho-val-energie-photon', domaine: DOM_PHOTONS, niveau: 2, titre: 'Énergie d’un photon vert : erreur de puissance de dix', plausible: false,
     ...presenter({ contexte: 'Un élève calcule l’énergie d’un photon de lumière verte, de longueur d’onde λ = 530 nm :', suite: '« E = h·c / λ = 6,63×10⁻³⁴ × 3,00×10⁸ / 530 = 3,8×10⁻²⁸ J ».' }),
     reperes: [['Énergie d’un photon visible', 'de l’ordre de 2 à 3 eV, soit environ 3×10⁻¹⁹ à 5×10⁻¹⁹ J'], ['Constantes', 'h = 6,63×10⁻³⁴ J·s ; c = 3,00×10⁸ m·s⁻¹'], ['Unité', 'λ doit être exprimée en mètres : 1 nm = 10⁻⁹ m']],
     ver: 'La longueur d’onde n’a pas été convertie en mètres : avec λ = 530×10⁻⁹ m, E = 1,989×10⁻²⁵ / 530×10⁻⁹ = 3,75×10⁻¹⁹ J, soit environ 2,3 eV. Une énergie de 10⁻²⁸ J serait 10⁹ fois trop faible pour un photon visible.',
