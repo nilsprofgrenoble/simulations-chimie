@@ -94,5 +94,9 @@ export default {
       refs: ['37:prevoir:pve-ana-double', '37:prevoir:pve-ana-tiers', '77:plausible:pve-val-loi'] },
     { id: 'panneau-distance', nom: 'Puissance reçue par un panneau selon sa distance', capacite: 'Calculer la puissance lumineuse reçue puis la puissance électrique d’un panneau placé à une distance donnée d’une source.',
       refs: ['34:pve-sapp-panneau', '37:prevoir:pve-ana-surface'] },
+    { id: 'laser-eclairement', nom: 'Faisceau laser : section et éclairement', capacite: 'Citer les propriétés d’un faisceau laser et exploiter la relation entre flux énergétique et éclairement pour un faisceau de section donnée.',
+      refs: ['34:las-sapp-eclair', '37:prevoir:las-ana-diametre', '37:prevoir:las-ana-distance', '77:plausible:las-val-section'] },
+    { id: 'laser-energie', nom: 'Énergie reçue, durée d’exposition et sécurité', capacite: 'Établir et exploiter la relation entre énergie reçue, flux et durée d’exposition ; exploiter une norme pour déterminer la durée maximale d’exposition.',
+      refs: ['34:las-sapp-duree', '37:prevoir:las-ana-flux', '37:prevoir:las-ana-duree', '77:plausible:las-val-energie'] },
   ],
 };

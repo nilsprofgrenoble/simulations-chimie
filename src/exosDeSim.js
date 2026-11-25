@@ -158,6 +158,7 @@ export const EXOS_DE_SIM = {
   227: [/(^|\.)pvc-/, /plausible\.pvc-/],
   228: [/(^|\.)pvr-/, /plausible\.pvr-/],
   229: [/(^|\.)pve-/, /plausible\.pve-/],
+  230: [/(^|\.)las-/, /plausible\.las-/],
   144: [/(^|\.)stereo-/, /plausible\.stereo-/],
   142: [/(^|\.)co2dis-/, /plausible\.co2dis-/],
   // ── TSTL · Acides et bases (ancienne simulation 85 découpée en quatre, 19/11/2026)

@@ -2685,6 +2685,49 @@ function genPveDistance() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['E = Pél ÷ (η × S), puis d = √(Φ ÷ (4πE)).', 'Part reçue = Plum ÷ Φ : petite, car la lumière part dans toutes les directions.'] };
 }
+// ---------- Laser : éclairement, énergie reçue et sécurité (TSTL, PCM) ----------
+function genLasEclairement() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const phiMw = tire([1, 2, 3, 4, 5, 8]), D = tire([1, 1.5, 2, 2.5, 3]);
+  const Smm = Math.PI * D * D / 4, E = phiMw / 1000 / (Smm * 1e-6), rap = E / 10;
+  const intro = `Un laser émet un faisceau visible de section circulaire, de diamètre D = ${nbF(D, D % 1 ? 1 : 0)}${NB}mm, avec un flux φ = ${phiMw}${NB}mW. Pour l’œil, la norme de référence impose un éclairement inférieur ou égal à 10${NB}W/m² quand l’exposition dure plus de 0,25${NB}s.`;
+  const q1 = { id: 'l0', type: 'num', q: <>Calculez la <b>section du faisceau</b> S = πD² ÷ 4 (en mm², 2 chiffres significatifs).</>, unite: 'mm²', vrai: Smm, tolRel: 0.05, csMin: 2,
+    aide: 'S = π × D² ÷ 4, avec D en mm : le résultat est en mm².',
+    pieges: [[Math.PI * D * D, 'Il faut diviser par 4 : S = πD² ÷ 4.'], [Math.PI * D, 'Le diamètre est au carré : S = π × D × D ÷ 4.'], [Math.PI * D * D / 2, 'Le facteur est 1/4, pas 1/2 : S = πD² ÷ 4.']],
+    expl: <>S = π × {nbF(D, D % 1 ? 1 : 0)}² ÷ 4 = <b>{pvFmt(Smm)}{NB}mm²</b>.</> };
+  const q2 = { id: 'l1', type: 'num', q: <>Avec S = {pvFmt(Smm)}{NB}mm², calculez l’<b>éclairement</b> E = φ ÷ S (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
+    aide: 'Convertissez le flux en watts (1 mW = 0,001 W) et la section en m² (1 mm² = 10⁻⁶ m²), puis divisez.',
+    pieges: [[phiMw / Smm, 'Le flux est resté en mW et la section en mm² : convertissez en W et en m² avant de diviser.'], [phiMw / 1000 / Smm, 'La section est restée en mm² : convertissez-la en m² (1 mm² = 10⁻⁶ m²).'], [phiMw * 1e-3 * Smm * 1e-6, 'Il faut diviser le flux par la section, pas les multiplier.']],
+    expl: <>φ = {phiMw}{NB}mW = {nbF(phiMw / 1000, 3)}{NB}W ; S = {pvFmt(Smm)}{NB}mm² = {pvFmt(Smm * 1e-6)}{NB}m² ; E = φ ÷ S = <b>{pvFmt(E)}{NB}W/m²</b>.</> };
+  const q3 = { id: 'l2', type: 'num', q: <>Par quel <b>facteur</b> cet éclairement dépasse-t-il la limite de 10{NB}W/m² ? (2 chiffres significatifs)</>, unite: 'fois', vrai: rap, tolRel: 0.05, csMin: 2,
+    aide: 'Divisez l’éclairement du faisceau par l’éclairement maximal permis.',
+    pieges: [[10 / E, 'Le rapport est inversé : facteur = E ÷ 10.'], [E - 10, 'Il faut un rapport (une division), pas une différence.']],
+    expl: <>facteur = E ÷ 10 = {pvFmt(E)} ÷ 10 = <b>{pvFmt(rap)}</b> : le faisceau est bien au-dessus de la limite.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Section S = πD² ÷ 4 (D en mm : S en mm², 1 mm² = 10⁻⁶ m²) ; E = φ ÷ S.', 'Un faisceau mince concentre le flux : E bien plus grand que la limite pour l’œil.'] };
+}
+function genLasEnergie() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const phi = tire([0.5, 1, 2, 5]), Q = tire([0.1, 0.2, 0.5, 1, 2]), k = tire([2, 4, 5]);
+  const dt = Q / phi, phi2 = k * phi, E10 = phi * 10;
+  const intro = `Un laser de gravure délivre un flux φ = ${nbF(phi, phi % 1 ? 1 : 0)}${NB}W sur la pièce. Pour marquer un motif, la pièce doit recevoir une énergie Q = ${nbF(Q, Q % 1 ? 1 : 0)}${NB}J.`;
+  const q1 = { id: 'g0', type: 'num', q: <>Calculez la <b>durée d’exposition</b> Δt = Q ÷ φ (en s, 2 chiffres significatifs).</>, unite: 's', vrai: dt, tolRel: 0.05, csMin: 2,
+    aide: 'Q = φ × Δt, donc Δt = Q ÷ φ (Q en J, φ en W, Δt en s).',
+    pieges: [[phi / Q, 'Le rapport est inversé : Δt = Q ÷ φ.'], [Q * phi, 'Il faut diviser l’énergie par le flux, pas les multiplier.']],
+    expl: <>Δt = Q ÷ φ = {nbF(Q, Q % 1 ? 1 : 0)} ÷ {nbF(phi, phi % 1 ? 1 : 0)} = <b>{pvFmt(dt)}{NB}s</b>.</> };
+  const q2 = { id: 'g1', type: 'num', q: <>On remplace le laser par un laser de flux {k} fois plus grand ({nbF(phi2, 1)}{NB}W). Quelle <b>durée</b> suffit maintenant pour déposer la même énergie ? (en s, 2 chiffres significatifs)</>, unite: 's', vrai: Q / phi2, tolRel: 0.05, csMin: 2,
+    aide: 'Même énergie Q, nouveau flux : Δt = Q ÷ φ.',
+    pieges: [[dt * k, `Un flux plus grand demande une durée plus courte : divisez par ${k}, ne multipliez pas.`]],
+    expl: <>Δt = {nbF(Q, Q % 1 ? 1 : 0)} ÷ {nbF(phi2, 1)} = <b>{pvFmt(Q / phi2)}{NB}s</b> : {k} fois plus court.</> };
+  const q3 = { id: 'g2', type: 'num', q: <>Avec le laser de départ ({nbF(phi, phi % 1 ? 1 : 0)}{NB}W) allumé en continu pendant 10{NB}s, quelle <b>énergie</b> la pièce reçoit-elle ? (en J, 2 chiffres significatifs)</>, unite: 'J', vrai: E10, tolRel: 0.05, csMin: 2,
+    aide: 'Q = φ × Δt, avec φ en W et Δt en s.',
+    pieges: [[phi / 10, 'Il faut multiplier le flux par la durée, pas les diviser.']],
+    expl: <>Q = φ × Δt = {nbF(phi, phi % 1 ? 1 : 0)} × 10 = <b>{pvFmt(E10)}{NB}J</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Q = φ × Δt ; Δt = Q ÷ φ (J, W, s).', 'Flux ×k à énergie égale : durée ÷k.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -4815,6 +4858,8 @@ export const FAMILLES = [
   { id: 'pvr-dimension', groupe: 'Formules', titre: 'Panneau photovoltaïque : dimensionner la surface (terminale STL)', gen: genPvDimension, domaine: 'Panneau photovoltaïque : rendement et bilan énergétique' },
   { id: 'pve-eclairement', groupe: 'Formules', titre: 'Source lumineuse : surface de la sphère, éclairement et distance (terminale STL)', gen: genPveEclairement, domaine: 'Panneau photovoltaïque : éclairement et distance à la source' },
   { id: 'pve-distance', groupe: 'Formules', titre: 'Panneau photovoltaïque : placer le panneau à la bonne distance (terminale STL)', gen: genPveDistance, domaine: 'Panneau photovoltaïque : éclairement et distance à la source' },
+  { id: 'las-eclairement', groupe: 'Formules', titre: 'Faisceau laser : section, éclairement et limite pour l’œil (terminale STL)', gen: genLasEclairement, domaine: 'Laser : éclairement, énergie reçue et sécurité' },
+  { id: 'las-energie', groupe: 'Formules', titre: 'Laser de gravure : énergie, flux et durée d’exposition (terminale STL)', gen: genLasEnergie, domaine: 'Laser : éclairement, énergie reçue et sécurité' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
