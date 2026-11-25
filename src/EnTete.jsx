@@ -139,14 +139,16 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
     fontSize: 15, fontWeight: actif ? 800 : 600, color: TXT, whiteSpace: 'nowrap', height: HAUTEUR_ENTETE - 8,
   });
 
+  // Déconnecté : bouton plein, avec un mot (« Se connecter »), pour qu'on comprenne tout de suite qu'un compte existe. Connecté : pastille discrète avec l'identifiant.
   const iconeCompte = (
-    <button onClick={allerCompte} data-bouton-compte aria-label={profil ? `Mon compte (${profil.identifiant || profil.nom})` : 'Se connecter'}
-      title={profil ? `Mon compte : ${profil.identifiant || profil.nom}` : 'Se connecter'}
-      style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '6px 10px', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
-        border: `2px solid ${profil ? VERT : BORD}`, background: profil ? ACCENT_CLAIR : 'white', color: TXT, fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={TXT} strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+    <button onClick={allerCompte} data-bouton-compte aria-label={profil ? `Mon compte (${profil.identifiant || profil.nom})` : 'Se connecter ou créer un compte'}
+      title={profil ? `Mon compte : ${profil.identifiant || profil.nom}` : 'Se connecter ou créer un compte'}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: profil ? '6px 10px' : '7px 14px 7px 11px', borderRadius: 999, cursor: 'pointer', fontFamily: 'inherit',
+        border: `2px solid ${profil ? VERT : ACCENT}`, background: profil ? ACCENT_CLAIR : ACCENT, color: profil ? TXT : '#ffffff', fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={profil ? TXT : '#ffffff'} strokeWidth="2" strokeLinecap="round" aria-hidden="true">
         <circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.500 4-6.500 8-6.500s7 2 8 6.500"/>
       </svg>
+      {!profil && <span>{large ? 'Se connecter' : 'Connexion'}</span>}
       {profil && <span aria-hidden="true">✓</span>}
       {profil && large && <span style={{ maxWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis' }}>{profil.identifiant || profil.nom}</span>}
     </button>
@@ -169,7 +171,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
           {menus.map(m => (
             <button key={m.key} onClick={() => setOuvert(o => o === m.key ? null : m.key)} aria-expanded={ouvert === m.key} aria-haspopup="true"
               style={bouton(niveauActif === m.key, ouvert === m.key)}>
-              {m.label}<span aria-hidden="true" style={{ fontSize: 10 }}>{ouvert === m.key ? '▲' : '▼'}</span>
+              <AvecPicto texte={m.label}/><span aria-hidden="true" style={{ fontSize: 10 }}>{ouvert === m.key ? '▲' : '▼'}</span>
             </button>
           ))}
         </nav>}
@@ -190,7 +192,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
       </div>
 
       {large && menuOuvert && (
-        <div style={panneau} role="region" aria-label={menuOuvert.label}>
+        <div style={panneau} role="region" aria-label={menuOuvert.label.replace(/^[^\p{L}\p{N}]+/u, '')}>
           <div style={{ maxWidth: 1280, margin: '0 auto', padding: '14px 16px 18px', boxSizing: 'border-box' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '12px 22px' }}>
               {groupesRepliables(menuOuvert)}
@@ -219,7 +221,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
                   style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', padding: '11px 10px', border: 'none', background: 'transparent',
                     fontSize: 15.5, fontWeight: niveauActif === m.key ? 800 : 700, color: TXT, cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
                     textDecoration: niveauActif === m.key ? 'underline' : 'none', textDecorationThickness: 3, textUnderlineOffset: 4 }}>
-                  {m.label}<span aria-hidden="true">{accordeon === m.key ? '▲' : '▼'}</span>
+                  <span><AvecPicto texte={m.label}/></span><span aria-hidden="true">{accordeon === m.key ? '▲' : '▼'}</span>
                 </button>
                 {accordeon === m.key && <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 8 }}>{groupesRepliables(m)}</div>}
               </div>

@@ -1,4 +1,5 @@
 import { BoutonMail } from "../contact";
+import { Pic } from "../Pictos";
 import "./APropos.css";
 
 // ====================================================
@@ -69,7 +70,7 @@ export function SimulationAPropos() {
         <section className="ap-carte">
           <h3>Contact</h3>
           <p>Une erreur, une remarque, une idée de simulation, une question sur l’utilisation en classe ? Écrivez-moi.</p>
-          <BoutonMail libelle="✉️ Écrire à l’auteur" sujet="Paillasse virtuelle — message" couleur="#0b4f94" plein />
+          <BoutonMail libelle={<><Pic n="mail"/>Écrire à l’auteur</>} sujet="Paillasse virtuelle — message" couleur="#0b4f94" plein />
         </section>
         <section className="ap-carte">
           <h3>Licence et réutilisation</h3>

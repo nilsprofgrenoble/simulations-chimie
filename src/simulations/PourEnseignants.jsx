@@ -1,4 +1,5 @@
 import { BoutonMail } from "../contact";
+import { Pic } from "../Pictos";
 import { nomsSim } from "../suivi";
 import { cheminSimulation } from "../slugs";
 import "./APropos.css";
@@ -23,6 +24,8 @@ export function SimulationPourEnseignants({ naviguer }) {
   const base = import.meta.env.BASE_URL;
   // vrai lien (adresse propre, explorable par les moteurs de recherche) qui navigue sans recharger la page
   const lien = id => ({ href: cheminSimulation(id, nomsSim[id] || '', base), onClick: e => { e.preventDefault(); naviguer(id); } });
+  // page « Mon compte » (n° 39) : on y trouve la connexion et l'inscription libre des enseignants
+  const lienCompte = { href: `${base}?sim=39`, onClick: e => { e.preventDefault(); naviguer(39); } };
   return (
     <div className="ap">
 
@@ -31,7 +34,7 @@ export function SimulationPourEnseignants({ naviguer }) {
         <h1 id="pe-titre">Vos élèves manipulent, <mark>vous gardez la main.</mark></h1>
         <p>La Paillasse virtuelle est un site gratuit de simulations de chimie et de physique, conçu par un professeur pour ses classes. Pour l’essayer : <b>un lien, une simulation, trente secondes.</b> Pas d’inscription, pas d’installation, rien à configurer.</p>
         <a className="ap-bouton" {...lien(2)}>Essayer une simulation</a>
-        <a className="ap-bouton" href="#pe-suivi">Suivre mes classes</a>
+        <a className="ap-bouton" {...lienCompte}>Créer mon compte enseignant</a>
         <a className="ap-bouton" href={`${base}trajectoire.html`}>Corriger avec Trajectoire</a>
       </section>
 
@@ -81,18 +84,32 @@ export function SimulationPourEnseignants({ naviguer }) {
         </section>
       </div>
 
-      <div className="ap-titre-section"><h2>Un compte enseignant, ou simplement une question</h2></div>
-      <div className="ap-grille">
+      <section className="pe-compte" id="pe-compte" aria-labelledby="pe-compte-titre">
+        <div>
+          <span className="pe-pastille">Compte enseignant · gratuit</span>
+          <h2 id="pe-compte-titre">Créez votre compte en deux minutes</h2>
+          <p>Avec votre adresse académique, sans attendre ma réponse : classes, comptes élèves, devoirs et suivi de la progression.</p>
+          <a className="ap-bouton" {...lienCompte}>Créer mon compte enseignant</a>
+        </div>
+        <ol className="pe-etapes" aria-label="Les trois étapes">
+          <li><span className="pe-num" aria-hidden="true">1</span><span>Vous indiquez votre nom et votre adresse académique (prenom.nom@ac-…).</span></li>
+          <li><span className="pe-num" aria-hidden="true">2</span><span>Vous recevez tout de suite un mail avec un lien.</span></li>
+          <li><span className="pe-num" aria-hidden="true">3</span><span>Vous choisissez votre mot de passe : c’est fini, vous êtes connecté·e.</span></li>
+        </ol>
+      </section>
+
+      <div className="ap-titre-section"><h2>Une question, un coup de main</h2></div>
+      <div className="ap-grille pe-deux">
         <section className="ap-carte">
-          <h3>Demander un compte</h3>
-          <p>Le compte enseignant est gratuit. Écrivez-moi en deux lignes (établissement, discipline), je vous réponds rapidement.</p>
-          <BoutonMail libelle="Demander un compte enseignant" sujet="Demande de compte enseignant — Paillasse virtuelle" couleur="#0b4f94" plein
+          <h3>Pas d’adresse académique ?</h3>
+          <p>Le compte est ouvert aux enseignants qui ont une adresse académique (ac-…). Si ce n’est pas votre cas, ou si le mail n’arrive pas, écrivez-moi en deux lignes (établissement, discipline) : je vous ouvre un compte à la main.</p>
+          <BoutonMail libelle={<><Pic n="mail"/>Me demander un compte</>} sujet="Demande de compte enseignant — Paillasse virtuelle" couleur="#0b4f94" plein
             corps={'Bonjour,\n\nJe suis enseignant·e (établissement : …, discipline : …) et je souhaite un compte pour moi et mes classes.\n\nMerci !'} />
         </section>
         <section className="ap-carte">
           <h3>Un coup de main</h3>
           <p>Vous hésitez, ou vous voulez une simulation adaptée à votre séquence ? Écrivez-moi : je préfère un message « je ne comprends pas » à un site qu’on n’ose pas ouvrir.</p>
-          <BoutonMail libelle="✉️ Me poser une question" sujet="Question d'enseignant — Paillasse virtuelle" couleur="#0b4f94" plein />
+          <BoutonMail libelle={<><Pic n="mail"/>Me poser une question</>} sujet="Question d'enseignant — Paillasse virtuelle" couleur="#0b4f94" plein />
         </section>
         <section className="ap-carte">
           <h3>Utilisation libre</h3>

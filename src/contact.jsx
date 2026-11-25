@@ -1,4 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
+import { Pic } from './Pictos';
 import { useState } from "react";
 import { styleBouton, KIT } from "./commun";
 
@@ -17,7 +18,7 @@ export function ecrireAuAuteur(sujet = '', corps = '') {
   window.location.assign(`mailto:${adresseContact()}${q ? '?' + q : ''}`);
 }
 
-export function BoutonMail({ libelle = '✉️ Écrire un mail', sujet = '', corps = '', couleur = '#475569', plein = false }) {
+export function BoutonMail({ libelle = <><Pic n="mail"/>Écrire un mail</>, sujet = '', corps = '', couleur = '#475569', plein = false }) {
   const [adresse, setAdresse] = useState('');
   const ecrire = () => {
     const a = adresseContact();
