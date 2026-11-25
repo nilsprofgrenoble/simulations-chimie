@@ -59,12 +59,12 @@ export function SvgDistribution({ q, qRef = null, marques = true, nom = '' }) {
   const ly = v => PX.y1 - (v / ymax) * (PX.y1 - PX.y0);
   const path = serie => serie.map((v, i) => `${i ? 'L' : 'M'}${lx(M.GRILLE[i]).toFixed(1)},${ly(v).toFixed(1)}`).join(' ');
   const d10 = M.diametre(q, 10), d50 = M.diametre(q, 50), d90 = M.diametre(q, 90);
-  return base(320, 214, `distribution granulométrique ${nom} : fraction massique en pourcentage selon le diamètre des particules en micromètres, échelle logarithmique de 0,1 à 40 ; D10 ${fr(d10)} µm, D50 ${fr(d50)} µm, D90 ${fr(d90)} µm`, <>
+  return base(320, 214, `distribution granulométrique ${nom} : fraction en volume en pourcentage selon le diamètre des particules en micromètres, échelle logarithmique de 0,1 à 40 ; D10 ${fr(d10)} µm, D50 ${fr(d50)} µm, D90 ${fr(d90)} µm`, <>
     <rect x={lx(M.SEUIL_AGGLO)} y={PX.y0} width={PX.x1 - lx(M.SEUIL_AGGLO)} height={PX.y1 - PX.y0} fill="#ffedd5"/>
     {T((lx(M.SEUIL_AGGLO) + PX.x1) / 2, PX.y0 + 12, '> 5 µm', { size: 12, gras: true, fill: C.orange })}
     <line x1={PX.x0} y1={PX.y1} x2={PX.x1} y2={PX.y1} stroke={C.trait} strokeWidth="1.5"/><line x1={PX.x0} y1={PX.y0} x2={PX.x0} y2={PX.y1} stroke={C.trait} strokeWidth="1.5"/>
     {[0.1, 1, 10].map(d => <g key={d}><line x1={lx(d)} y1={PX.y1} x2={lx(d)} y2={PX.y1 + 4} stroke={C.trait}/>{T(lx(d), PX.y1 + 17, String(d).replace('.', ','), { size: 12 })}</g>)}
-    {T(PX.x1 / 2 + 22, 205, 'diamètre (µm, échelle log)', { size: 12, gras: true })}{T(6, 18, 'fraction massique (%)', { size: 12, gras: true, anchor: 'start' })}
+    {T(PX.x1 / 2 + 22, 205, 'diamètre (µm, échelle log)', { size: 12, gras: true })}{T(6, 18, 'fraction en volume (%)', { size: 12, gras: true, anchor: 'start' })}
     {[0, ymax / 2, ymax].map(v => T(PX.x0 - 5, ly(v) + 4, String(Math.round(v)), { size: 12, anchor: 'end' }))}
     {qRef && <path d={path(qRef)} fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="5 4"/>}
     <path d={path(q)} fill="none" stroke={C.violet} strokeWidth="3.2" strokeLinejoin="round"/>

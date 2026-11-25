@@ -15,7 +15,7 @@ export const solide = id => SOLIDES.find(s => s.id === id);
 export const K_DISP = 0.05;      // % de dispersant actif (sur la masse de pigment) pour demi-saturation de l'adsorption
 export const SEUIL_AGGLO = 5;    // µm : au-delà, on parle d'agglomérats
 export const D50_SPEC = 1.1;     // µm : spécification illustrative du défi (D50 maximal)
-export const AGGLO_MAX = 0.12;   // fraction massique d'agglomérats tolérée (spécification illustrative)
+export const AGGLO_MAX = 0.12;   // fraction (volumique, assimilée à massique) d'agglomérats tolérée (spécification illustrative)
 
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 export const theta = (x, K = K_DISP) => (x <= 0 ? 0 : x / (x + K));           // taux de recouvrement par adsorption (Langmuir)
@@ -28,7 +28,7 @@ export const d50Primaires = (sol, { g }) => sol.d50p * (1 - 0.55 * clamp(g));
 
 export const GRILLE = Array.from({ length: 41 }, (_, i) => Math.pow(10, (i / 40) * Math.log10(400)) / 10);   // 0,1 à 40 µm, échelle log
 const lognorm = (d, d50, sg) => Math.exp(-0.5 * (Math.log(d / d50) / Math.log(sg)) ** 2);
-// Distribution massique q(%) par point de la grille (somme = 100)
+// Distribution en volume q(%) (= massique si la masse volumique est uniforme) par point de la grille (somme = 100)
 export function distribution(sol, etat) {
   const fa = fractionAgglo(sol, etat), dp = d50Primaires(sol, etat);
   const ps = GRILLE.map(d => lognorm(d, dp, sol.sp)), as = GRILLE.map(d => lognorm(d, sol.d50a, sol.sa));

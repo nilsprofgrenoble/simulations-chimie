@@ -3166,7 +3166,7 @@ export const PREVOIR = [
     enonce: 'Deux lots de pâte d’empâtage ont le même D50 de 1,0 µm. Le lot A a un D90 de 1,8 µm, le lot B un D90 de 12 µm.', q: 'Que conclut-on ?', options: [
       F('les deux lots sont aussi homogènes l’un que l’autre', 'Le D50 seul ne suffit pas : le D90 renseigne sur les gros grains.'),
       F('le lot A contient des agglomérats, pas le lot B', 'C’est l’inverse : un D90 élevé indique des gros grains.'),
-      V('le lot B contient des agglomérats, pas le lot A', 'Un D90 de 12 µm signifie que 10 % de la masse dépasse cette taille : des amas subsistent.'),
+      V('le lot B contient des agglomérats, pas le lot A', 'Un D90 de 12 µm signifie que 10 % du volume dépasse cette taille : des amas subsistent.'),
     ] },
   { id: 'disp-ana-milieu-organique', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Dispersant en milieu organique',
     enonce: 'Un pigment est dispersé dans un solvant organique (encre). Dans ce milieu peu polaire, les charges de surface sont presque inexistantes.', q: 'Quel type de dispersant choisir ?', options: [
