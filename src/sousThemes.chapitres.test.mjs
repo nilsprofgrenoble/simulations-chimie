@@ -2,8 +2,8 @@
 // et (sauf exceptions assumées) aucun exercice sans sous-thème. Lancé : node src/sousThemes.chapitres.test.mjs
 import { createServer } from 'vite';
 import assert from 'node:assert/strict';
-// Exercices volontairement laissés hors sous-thème (restent dans « Autres exercices ») : BTS partagés avec le chapitre 1G
-const AUTORISE_HORS_THEME = { '1g-evolution': 20 };
+// Exercices volontairement laissés hors sous-thème (restent dans « Autres exercices ») : BTS partagés avec 1G ; réseau, timbre et échographie hors programme TG
+const AUTORISE_HORS_THEME = { '1g-evolution': 20, 'tg-ondes': 40 };
 const vite = await createServer({ root: process.cwd(), server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
 try {
   const { SOUS_THEMES, dansSousTheme } = await vite.ssrLoadModule('/src/sousThemes.js');
