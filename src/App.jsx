@@ -222,6 +222,7 @@ const SimulationJoule = paresseux(() => import("./simulations/Joule"), "Simulati
 const SimulationChaine = paresseux(() => import("./simulations/Chaine"), "SimulationChaine");
 const SimulationSigne = paresseux(() => import("./simulations/Signe"), "SimulationSigne");
 const SimulationFormes = paresseux(() => import("./simulations/Formes"), "SimulationFormes");
+const SimulationModesTransfert = paresseux(() => import("./simulations/ModesTransfert"), "SimulationModesTransfert");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -423,6 +424,8 @@ const SIMULATIONS = [
     component: SimulationSigne },
   { id:244, label:"Formes d’énergie stockée : cinétique, potentielle, interne", niveau:"TSTL", icon:"🎢", color:"#b45309",
     component: SimulationFormes },
+  { id:245, label:"Travail ou transfert thermique : classer les transferts d’énergie", niveau:"TSTL", icon:"🔀", color:"#0e7490",
+    component: SimulationModesTransfert },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
