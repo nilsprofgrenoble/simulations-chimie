@@ -93,7 +93,7 @@ export function SvgCarteSel() {
     <Grain x={38} y={84} s="−" r={14} cotes={[0, 2, 3]}/><Grain x={112} y={84} s="−" r={14} cotes={[0, 1, 2]}/>
     <Fleche x1={64} x2={50} y={140} col={C.vert}/><Fleche x1={86} x2={100} y={140} col={C.vert}/>
     {T(75, 170, 'elles se repoussent', { size: 13, gras: true, fill: C.vert })}
-    {ions.map(([x, y, k], i) => <g key={i}><circle cx={x} cy={y} r="6" fill={k ? '#64748b' : '#94a3b8'}/>{T(x, y + 4, k ? '+' : '−', { size: 10, fill: 'white', gras: true })}</g>)}
+    {ions.map(([x, y, k], i) => <g key={i}><circle cx={x} cy={y} r="8" fill={k ? "#64748b" : "#94a3b8"}/>{T(x, y + 4.5, k ? "+" : "−", { size: 12, fill: "white", gras: true })}</g>)}
     <circle cx="207" cy="84" r="20" fill="#eff6ff" stroke={C.gris} strokeDasharray="3 3"/><circle cx="237" cy="84" r="20" fill="#eff6ff" stroke={C.gris} strokeDasharray="3 3"/>
     <Grain x={207} y={84} s="−" r={14} cotes={[0, 2, 3]}/><Grain x={237} y={84} s="−" r={14} cotes={[0, 1, 2]}/>
     <Fleche x1={178} x2={192} y={158} col={C.rouge}/><Fleche x1={266} x2={252} y={158} col={C.rouge}/>
