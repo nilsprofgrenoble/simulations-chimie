@@ -50,6 +50,6 @@ export default {
     { id: 'ecriture', nom: 'Écrire un résultat', capacite: 'Écrire, avec un nombre adapté de chiffres significatifs, le résultat d’une mesure et son incertitude-type.',
       refs: ['37:prevoir:mes-prevoir-ecriture', '37:prevoir:mes-ana-ecriture-chiffres', '77:plausible:ecriture-resultat', '77:plausible:mes-val-ecriture-ok', '36:cs'] },
     { id: 'reference', nom: 'Comparer à une valeur de référence', capacite: 'Comparer le résultat d’une mesure à une valeur de référence avec le quotient |m_mes − m_ref| / u(m).',
-      refs: ['34:icc-sapp-reference', '34:compatS', '37:relation:compatibilite', '37:hypothese:compatibilite-hyp', '37:probleme:pompe-doseuse', '37:prevoir:icc-ana-seuil', '77:plausible:icc-val-compat', '77:compat:volume-pipette', '77:compat:etalonnage-ph', '77:compat:deux-series', '77:compat:vitesse-son-salle', '77:compat:mes-etalonnage-sonde'] },
+      refs: ['77:compat:deux-gouttelettes', '34:icc-sapp-reference', '34:compatS', '37:relation:compatibilite', '37:hypothese:compatibilite-hyp', '37:probleme:pompe-doseuse', '37:prevoir:icc-ana-seuil', '77:plausible:icc-val-compat', '77:compat:volume-pipette', '77:compat:etalonnage-ph', '77:compat:deux-series', '77:compat:vitesse-son-salle', '77:compat:mes-etalonnage-sonde'] },
   ],
 };

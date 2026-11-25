@@ -37,13 +37,13 @@ export default {
     { id: 'virtuelle', nom: 'Image réelle ou image virtuelle', capacite: 'Déterminer les caractéristiques de l’image : réelle ou virtuelle, droite ou renversée, selon la position de l’objet par rapport au foyer.',
       refs: ['37:prevoir:lum1-virtuelle-loupe', '37:prevoir:lum1-objet-au-foyer', '77:plausible:lum1-val-loupe'] },
     { id: 'focale', nom: 'Estimer la distance focale', capacite: 'Estimer la distance focale d’une lentille mince convergente ; tester la relation de conjugaison avec des mesures.',
-      refs: ['37:prevoir:lum1-focale-objet-lointain', '77:plausible:lum1-val-focale-estimee', '77:plausible:lum1-val-test-relation'] },
+      refs: ['77:plausible:lum-vergence-cm', '37:prevoir:lum1-focale-objet-lointain', '77:plausible:lum1-val-focale-estimee', '77:plausible:lum1-val-test-relation'] },
   ],
   '1g-lumiere': [
     { id: 'domaines', nom: 'Les domaines des ondes électromagnétiques', capacite: 'Utiliser une échelle de fréquences ou de longueurs d’onde pour identifier un domaine spectral ; citer des ordres de grandeur (radio, wifi, visible, rayons X…).',
       refs: ['37:prevoir:phot1g-ana-ordre-longueurs', '37:prevoir:phot1g-ana-echelle-log', '37:prevoir:phot1g-ana-ordre-domaines', '77:plausible:phot1g-val-domaine-fm', '77:plausible:phot1g-val-rayons-x-longueur'] },
     { id: 'lambda-nu', nom: 'Longueur d’onde, fréquence et célérité', capacite: 'Exploiter la relation entre longueur d’onde, célérité de la lumière et fréquence (λ = c / ν).',
-      refs: ['37:prevoir:phot1g-ana-lambda-nu', '77:plausible:phot1g-val-wifi-nm', '77:plausible:phot1g-val-frequence-verte-ok'] },
+      refs: ['77:plausible:lum-longueur-onde-laser-ok', '37:prevoir:phot1g-ana-lambda-nu', '77:plausible:phot1g-val-wifi-nm', '77:plausible:phot1g-val-frequence-verte-ok'] },
     { id: 'photon', nom: 'L’énergie d’un photon', capacite: 'Utiliser l’expression de l’énergie d’un photon E = h·ν = h·c / λ (en joules et en électronvolts).',
       refs: ['34:phot1g-sapp-photon', '37:prevoir:phot1g-ana-photon-uv', '37:prevoir:phot1g-ana-puissance-photon', '77:plausible:phot1g-val-energie-visible', '77:plausible:phot1g-val-energie-x', '77:plausible:phot1g-val-ev-j'] },
     { id: 'niveaux', nom: 'Niveaux d’énergie et transitions', capacite: 'Exploiter un diagramme de niveaux d’énergie avec ΔE = h·ν et λ = c / ν : énergie et longueur d’onde du photon absorbé ou émis.',
@@ -61,6 +61,6 @@ export default {
     { id: 'ecriture', nom: 'Écrire le résultat d’une mesure', capacite: 'Écrire, avec un nombre adapté de chiffres significatifs, le résultat d’une mesure et son incertitude-type.',
       refs: ['37:prevoir:mes1g-ana-ecriture-resultat', '77:plausible:mes1g-val-ecriture', '77:plausible:mes1g-val-ecriture-ok', '77:plausible:mes1g-val-ecriture-u-trop-precise'] },
     { id: 'reference', nom: 'Comparer à une valeur de référence', capacite: 'Comparer qualitativement un résultat à une valeur de référence ; distinguer dispersion (type A) et décalage systématique.',
-      refs: ['37:prevoir:mes1g-ana-systematique', '77:plausible:mes1g-val-compat', '77:plausible:mes1g-val-100-pesees'] },
+      refs: ['77:compat:g-pendule', '37:prevoir:mes1g-ana-systematique', '77:plausible:mes1g-val-compat', '77:plausible:mes1g-val-100-pesees'] },
   ],
 };

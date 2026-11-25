@@ -49,7 +49,7 @@ export default {
     { id: 'rendement', nom: 'Le rendement d’un convertisseur', capacite: 'Définir le rendement d’un convertisseur (η = P_utile / P_reçue) et l’évaluer pour un dispositif.',
       refs: ['37:prevoir:ene-rendement', '37:prevoir:ene-rendement-chaine', '77:plausible:ene-rendement-val', '77:plausible:ene-rendement-chauffage'] },
     { id: 'ordres', nom: 'Ordres de grandeur de puissances', capacite: 'Citer quelques ordres de grandeur de puissances fournies ou consommées par des dispositifs courants.',
-      refs: ['77:plausible:ene-batterie-smartphone', '77:plausible:ene-puissance-ordres', '37:prevoir:ene-ordres-comparer'] },
+      refs: ['77:plausible:cir-puissance-lampe', '77:plausible:ene-batterie-smartphone', '77:plausible:ene-puissance-ordres', '37:prevoir:ene-ordres-comparer'] },
   ],
   // ── Aspects énergétiques des phénomènes mécaniques ──
   '1g-energie-meca': [

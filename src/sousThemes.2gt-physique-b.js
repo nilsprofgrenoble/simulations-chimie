@@ -40,7 +40,7 @@ export default {
 
   '2gt-circuits': [
     { id: 'noeuds', nom: 'La loi des nœuds : le courant se partage', capacite: 'Exploiter la loi des nœuds dans un circuit électrique comportant au plus deux mailles : intensité en série et en dérivation.',
-      refs: ['37:prevoir:cir-serie-intensite', '37:prevoir:cir-derivation-intensite', '37:prevoir:cir2gt-ana-noeud', '77:plausible:cir2gt-val-noeud', '77:plausible:cir2gt-val-noeud-ok'] },
+      refs: ['77:plausible:cir-resistance-derivation-ok', '37:prevoir:cir-serie-intensite', '37:prevoir:cir-derivation-intensite', '37:prevoir:cir2gt-ana-noeud', '77:plausible:cir2gt-val-noeud', '77:plausible:cir2gt-val-noeud-ok'] },
     { id: 'mailles', nom: 'La loi des mailles : la tension se partage', capacite: 'Exploiter la loi des mailles dans un circuit électrique comportant au plus deux mailles : tension en série et en dérivation.',
       refs: ['37:prevoir:cir-derivation-tension', '37:prevoir:cir-serie-tension', '37:prevoir:cir-derivation-panne', '37:prevoir:ene-loi-mailles', '77:plausible:cir-tension-serie-val'] },
     { id: 'mesure', nom: 'Mesurer une tension et une intensité', capacite: 'Mesurer une tension (voltmètre en dérivation) et une intensité (ampèremètre en série) ; lire l’unité affichée par le calibre.',

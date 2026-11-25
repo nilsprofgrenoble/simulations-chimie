@@ -6829,7 +6829,7 @@ export const PREVOIR = [
     ] },
   { id: 'prisme2gt-ana-ordre', domaine: 'Dispersion de la lumière (2GT)', titre: 'Trois lasers, un prisme',
     enonce: 'Trois lasers éclairent tour à tour le même prisme, avec le même angle d’incidence : un laser violet (405 nm, indice du verre 1,69), un laser vert (532 nm, indice 1,65) et un laser rouge (650 nm, indice 1,63).', q: 'Lequel des trois est le plus dévié ?', options: [
-      V('le laser violet, dont l’indice du verre est le plus grand', 'L’indice du verre est le plus grand pour le violet : il est plus près de la normale à chaque face, donc le plus dévié.'),
+      V('le laser violet, d’indice le plus grand dans le verre', 'L’indice du verre est le plus grand pour le violet : il est plus près de la normale à chaque face, donc le plus dévié.'),
       F('le laser rouge, car sa longueur d’onde est la plus grande', 'Une longueur d’onde plus grande correspond à un indice plus petit, donc à une déviation plus faible : le rouge est le moins dévié.'),
       F('le laser vert, car il est au milieu du visible', 'Le vert est intermédiaire : il est plus dévié que le rouge, mais moins que le violet.'),
       F('les trois sont déviés de la même façon par le prisme', 'Le verre a des indices différents pour les trois couleurs : les déviations sont différentes.'),

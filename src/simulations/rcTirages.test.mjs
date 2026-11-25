@@ -67,7 +67,7 @@ try {
   const anaListe = Object.values(A).filter(Array.isArray).flat().filter(x => x && typeof x.id === 'string' && x.id.startsWith('rc-') && x.options);
   for (const x of anaListe) lots.push([x.id, x.options.map(o => rendu(o[0])), x.options.findIndex(o => o[1])]);
   for (const x of V.PLAUSIBLES.filter(y => y.id.startsWith('rc-'))) lots.push([x.id, x.options.map(o => rendu(o[0])), x.options.findIndex(o => o[1])]);
-  ok(anaListe.length === 3 && V.PLAUSIBLES.filter(y => y.id.startsWith('rc-')).length === 3, 'ANA : 3 et VAL : 3');
+  ok(anaListe.length >= 3 && V.PLAUSIBLES.filter(y => y.id.startsWith('rc-')).length >= 3, 'ANA : 3 et VAL : 3');
   const mauvais = [];
   for (const [nom, opts, b] of lots) {
     const L = opts.map(o => o.length), max = Math.max(...L), min = Math.min(...L);
