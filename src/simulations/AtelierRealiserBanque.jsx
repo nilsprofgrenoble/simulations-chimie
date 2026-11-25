@@ -2945,6 +2945,63 @@ function genSigneFour() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['ΔU = W + Q : reçu (+), cédé (−) ; ΔU = m × c × ΔT.', 'Énergie = puissance × durée (en secondes).'] };
 }
+// ---------- Formes d'énergie stockée : cinétique, potentielle, interne (TSTL, PCM) ----------
+function genFormesGlisse() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, v0, v1, Ec0, Ec1, dU, part;
+  do {
+    m = tire([1, 2, 3, 4, 5]); v0 = tire([3, 4, 5, 6]); v1 = tire([1, 2, 3]);
+    Ec0 = 0.5 * m * v0 * v0; Ec1 = 0.5 * m * v1 * v1; dU = Ec0 - Ec1; part = 100 * dU / Ec0;
+  } while (v1 >= v0 || new Set([Ec0, Ec1, dU, part].map(v => Number(v.toPrecision(3)))).size < 4);
+  const intro = `Un bloc de masse ${m}${NB}kg glisse sur un sol horizontal. À cause des frottements, sa vitesse passe de ${v0}${NB}m/s à ${v1}${NB}m/s. Le système « bloc et sol » n’échange aucune énergie avec l’extérieur et l’énergie potentielle ne varie pas.`;
+  const q1 = { id: 'g0', type: 'num', q: <>Calculez l’<b>énergie cinétique initiale</b> du bloc (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec0, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v², avec v en m/s.',
+    pieges: [[m * v0 * v0, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v0, 'La vitesse doit être élevée au carré.']],
+    expl: <>Ec = ½ × {m} × {v0}² = <b>{pvFmt(Ec0)}{NB}J</b>.</> };
+  const q2 = { id: 'g1', type: 'num', q: <>Calculez l’<b>énergie cinétique finale</b> du bloc (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec1, tolRel: 0.05, csMin: 2,
+    aide: 'Même formule avec la vitesse finale : Ec = ½ × m × v².',
+    pieges: [[m * v1 * v1, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [Ec0, 'Cette valeur est l’énergie cinétique initiale : utilisez la vitesse finale.']],
+    expl: <>Ec = ½ × {m} × {v1}² = <b>{pvFmt(Ec1)}{NB}J</b>.</> };
+  const q3 = { id: 'g2', type: 'num', q: <>Calculez l’<b>énergie interne gagnée</b> par le bloc et le sol (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: dU, tolRel: 0.05, csMin: 2,
+    aide: 'ΔEc + ΔU = 0 (système isolé, Ep constante), donc ΔU = Ec initiale − Ec finale.',
+    pieges: [[Ec0, 'Le bloc garde une énergie cinétique finale : il faut la retirer.'], [Ec1, 'Cette valeur est l’énergie cinétique finale ; ΔU est l’énergie cinétique perdue.'], [-dU, 'Le signe est inversé : l’énergie interne augmente, ΔU est positive.'], [0.5 * m * (v0 - v1) ** 2, 'On ne soustrait pas les vitesses : on soustrait les énergies cinétiques.']],
+    expl: <>ΔU = {pvFmt(Ec0)} − {pvFmt(Ec1)} = <b>{pvFmt(dU)}{NB}J</b>.</> };
+  const q4 = { id: 'g3', type: 'num', q: <>Quelle <b>part de l’énergie cinétique initiale</b> est convertie en énergie interne ? (en %, 2 chiffres significatifs)</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
+    aide: 'Part = ΔU ÷ Ec initiale, puis multipliez par 100.',
+    pieges: [[dU / Ec0, 'Multipliez le rapport par 100 pour l’avoir en pourcentage.'], [100 * Ec1 / Ec0, 'Cette valeur est la part d’énergie cinétique qui reste ; on cherche la part convertie.']],
+    expl: <>{pvFmt(dU)} ÷ {pvFmt(Ec0)} = {nbF(dU / Ec0, 2)} soit <b>{pvFmt(part)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Ec = ½ × m × v² ; sans échange avec l’extérieur, ΔEc + ΔEp + ΔU = 0.', 'L’énergie cinétique perdue par frottement devient de l’énergie interne.'] };
+}
+function genFormesChute() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, Ep0, Ep1, Ec, v, vsol, part;
+  do {
+    m = tire([0.2, 0.5, 1, 2]); Ep0 = tire([6, 8, 12, 15, 20]); Ep1 = tire([1, 2, 3, 4, 5]);
+    Ec = Ep0 - Ep1; v = Math.sqrt(2 * Ec / m); vsol = Math.sqrt(2 * Ep0 / m); part = 100 * Ec / Ep0;
+  } while (Ep1 >= Ep0 - 1 || new Set([Ec, v, vsol, part].map(x => Number(x.toPrecision(3)))).size < 4);
+  const intro = `Une bille de masse ${nbF(m, 1)}${NB}kg est lâchée sans vitesse. On néglige les frottements. Elle stocke ${Ep0}${NB}J d’énergie potentielle au départ et ${Ep1}${NB}J à un instant de sa chute ; elle n’en stocke plus du tout au sol.`;
+  const q1 = { id: 'c0', type: 'num', q: <>Calculez l’<b>énergie cinétique</b> de la bille à cet instant (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec, tolRel: 0.05, csMin: 2,
+    aide: 'Sans frottement, Ec + Ep reste constante et Ec valait 0 au départ : Ec = Ep départ − Ep instant.',
+    pieges: [[Ep0 + Ep1, 'L’énergie potentielle a diminué : on soustrait, on n’additionne pas.'], [Ep1, 'Cette valeur est l’énergie potentielle restante ; Ec = Ep départ − Ep instant.']],
+    expl: <>Ec = {Ep0} − {Ep1} = <b>{pvFmt(Ec)}{NB}J</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>Calculez la <b>vitesse</b> de la bille à cet instant (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: v, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v², donc v = √(2 × Ec ÷ m).',
+    pieges: [[Math.sqrt(Ec / m), 'Il manque le facteur 2 : v = √(2 × Ec ÷ m).'], [2 * Ec / m, 'Il faut prendre la racine carrée : v = √(2 × Ec ÷ m).']],
+    expl: <>v = √(2 × {pvFmt(Ec)} ÷ {nbF(m, 1)}) = <b>{pvFmt(v)}{NB}m/s</b>.</> };
+  const q3 = { id: 'c2', type: 'num', q: <>Calculez la <b>vitesse de la bille au moment d’arriver au sol</b> (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: vsol, tolRel: 0.05, csMin: 2,
+    aide: 'Au sol, Ep = 0 : toute l’énergie potentielle de départ est devenue cinétique ; puis v = √(2 × Ec ÷ m).',
+    pieges: [[v, 'Cette valeur est la vitesse à l’instant intermédiaire ; au sol, toute l’énergie potentielle est convertie.'], [Math.sqrt(Ep0 / m), 'Il manque le facteur 2 : v = √(2 × Ec ÷ m).']],
+    expl: <>Ec au sol = {Ep0} J ; v = √(2 × {Ep0} ÷ {nbF(m, 1)}) = <b>{pvFmt(vsol)}{NB}m/s</b>.</> };
+  const q4 = { id: 'c3', type: 'num', q: <>Quelle <b>part de l’énergie potentielle de départ</b> est convertie en énergie cinétique à cet instant ? (en %, 2 chiffres significatifs)</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
+    aide: 'Part = Ec ÷ Ep départ, puis multipliez par 100.',
+    pieges: [[Ec / Ep0, 'Multipliez le rapport par 100 pour l’avoir en pourcentage.'], [100 * Ep1 / Ep0, 'Cette valeur est la part d’énergie potentielle qui reste ; on cherche la part convertie.']],
+    expl: <>{pvFmt(Ec)} ÷ {Ep0} = {nbF(Ec / Ep0, 2)} soit <b>{pvFmt(part)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Sans frottement : ΔEc + ΔEp = 0 ; Ec = ½ × m × v².', 'L’énergie potentielle perdue est gagnée en énergie cinétique.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5277,6 +5334,8 @@ export const FAMILLES = [
   { id: 'cha-serie', groupe: 'Formules', titre: 'Chargeur et moteur en série : rendement global et énergie à fournir (terminale STL)', gen: genChaineSerie, domaine: 'Chaîne énergétique, conservation de l’énergie et rendement' },
   { id: 'sgn-bloc', groupe: 'Formules', titre: 'Bloc de cuivre : bilan d’énergie, signe des transferts, variation de température et puissance (terminale STL)', gen: genSigneBloc, domaine: 'Conservation de l’énergie : bilan et signe des transferts' },
   { id: 'sgn-four', groupe: 'Formules', titre: 'Plaque d’acier chauffée : travail reçu, transfert cédé, ΔU et variation de température (terminale STL)', gen: genSigneFour, domaine: 'Conservation de l’énergie : bilan et signe des transferts' },
+  { id: 'frm-glisse', groupe: 'Formules', titre: 'Bloc qui ralentit par frottement : énergie cinétique, énergie interne gagnée et part convertie (terminale STL)', gen: genFormesGlisse, domaine: 'Formes d’énergie stockée : cinétique, potentielle, interne' },
+  { id: 'frm-chute', groupe: 'Formules', titre: 'Bille en chute libre : énergie cinétique, vitesse et part d’énergie convertie (terminale STL)', gen: genFormesChute, domaine: 'Formes d’énergie stockée : cinétique, potentielle, interne' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

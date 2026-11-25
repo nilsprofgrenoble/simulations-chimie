@@ -1,3 +1,4 @@
+import { FRM_ANA } from './formesExos.js';
 import { CHA_ANA } from './chaineExos.js';
 import { SGN_ANA } from './signeExos.js';
 import { JOU_ANA } from './jouleExos.js';
@@ -6492,6 +6493,7 @@ export const PREVOIR = [
   ...JOU_ANA,
   ...CHA_ANA,
   ...SGN_ANA,
+  ...FRM_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,
