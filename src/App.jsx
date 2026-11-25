@@ -201,6 +201,7 @@ const SimulationChargeTensioactifs = paresseux(() => import("./simulations/Charg
 const SimulationSensEmulsion = paresseux(() => import("./simulations/SensEmulsion"), "SimulationSensEmulsion");
 const SimulationInstabilite = paresseux(() => import("./simulations/Instabilite"), "SimulationInstabilite");
 const SimulationHlb = paresseux(() => import("./simulations/Hlb"), "SimulationHlb");
+const SimulationSuspension = paresseux(() => import("./simulations/Suspension"), "SimulationSuspension");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
@@ -567,6 +568,7 @@ const SIMULATIONS = [
   { id:221, label:"Sens de l’émulsion et épaississement", niveau:"BTS", icon:"🥣", color:"#0ea5e9", component: SimulationSensEmulsion },
   { id:222, label:"Instabilités des émulsions", niveau:"BTS", icon:"⏳", color:"#7c3aed", component: SimulationInstabilite },
   { id:223, label:"HLB requis et mélange d’émulsifiants", niveau:"BTS", icon:"⚖️", color:"#7c3aed", component: SimulationHlb },
+  { id:224, label:"Stabilité d’une suspension : charge, pH et sel", niveau:"BTS", icon:"⚗️", color:"#0e7490", component: SimulationSuspension },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
