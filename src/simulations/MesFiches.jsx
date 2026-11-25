@@ -96,9 +96,11 @@ export function SimulationFiches({ naviguer }) {
   const eleve = estEleve(sess);
   const prof = estProf(sess);
   // Espace enseignant : les fiches de TOUTES les simulations, sans avoir fait les parcours (rendues en arrière-plan, gardées à part de la collection d'un élève)
-  const [consult, setConsult] = useState(null);   // { cartes, t }
+  // Fiches de consultation de l'enseignant : lues une fois à l'ouverture ; une fois chargées ou oubliées par l'enseignant, c'est cette valeur qui compte ({ cartes, t } ou null)
+  const [consultInitial] = useState(() => { try { return lireConsult(); } catch { return null; } });
+  const [consultMaj, setConsult] = useState(undefined);
+  const consult = consultMaj !== undefined ? consultMaj : (prof ? consultInitial : null);
   const [chargeConsult, setChargeConsult] = useState(null);   // { i, n } pendant le chargement
-  useEffect(() => { if (prof) setConsult(c => c || lireConsult()); }, [prof]);
   const avecCartes = ids => [...new Set(ids)].filter(id => SIMS_AVEC_CARTES.has(id) && !simsCachees.has(id)).sort((x, y) => x - y);
   const simsDuNiveau = k => avecCartes(chapitresDuNiveau(k).flatMap(c => c.sims));
   const lancerConsult = async ids => {
@@ -126,13 +128,12 @@ export function SimulationFiches({ naviguer }) {
     setRecolte('fini');
   };
   // À chaque ouverture : les simulations débloquées (parcours terminé ou défi réussi) dont la fiche n'est pas encore rangée sont relues en arrière-plan
-  const [relecture, setRelecture] = useState(false);
+  const idsARelire = () => { const dejaLues = new Set(listerFiches().map(f => f.sim)); return simsTerminees().filter(id => !dejaLues.has(id) && !simsCachees.has(id)); };
+  const [relecture, setRelecture] = useState(() => idsARelire().length > 0);
   useEffect(() => {
-    const dejaLues = new Set(listerFiches().map(f => f.sim));
-    const ids = simsTerminees().filter(id => !dejaLues.has(id) && !simsCachees.has(id));
+    const ids = idsARelire();
     if (!ids.length) return;
     let vivant = true;
-    setRelecture(true);
     recolterFiches(ids).finally(() => { if (vivant) setRelecture(false); });
     return () => { vivant = false; };
   }, []);
@@ -140,7 +141,7 @@ export function SimulationFiches({ naviguer }) {
   useEffect(() => {
     if (!eleve) return;
     let deja = null; try { deja = window.localStorage.getItem('fiches-recolte-v2-' + sess.profil.identifiant); } catch { /* ignoré */ }
-    if (!deja) lancerRecolte();
+    if (!deja) Promise.resolve().then(lancerRecolte);
   }, [eleve]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const libNiv = k => (k === 'tous' ? 'Tous' : k === 'autre' ? 'Autres' : NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k);
