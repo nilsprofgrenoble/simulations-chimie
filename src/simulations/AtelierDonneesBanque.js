@@ -2749,26 +2749,26 @@ export const ENONCES = [
     id: 'conc2', domaine: 'Solutions et concentration', titre: 'Préparer une solution de sel', noms: ['Concentration en masse de la solution', 'Masse de sel à peser'],
     gen: () => { const Vf = tire([100, 250, 500]); return { m: tire([2, 5, 10, 15]), Vf, Vi: Math.round(Vf * tire([0.4, 0.6])), t: tire([9, 20, 40]), M: 58.5 }; },
     build: (p, q) => {
-      const tokens = { M: tok('58,5 g·mol⁻¹', 'Masse molaire du chlorure de sodium', p.M, 'g·mol⁻¹') };
+      const tokens = { M: tok('1,0 g·mL⁻¹', 'Masse volumique de l’eau', 1, 'g·mL⁻¹') };
       if (q === 0) {
         tokens.m = tok(`${p.m} g`, 'Masse de sel pesée', p.m, 'g');
         tokens.Vi = tok(`${p.Vi} mL`, 'Volume d’eau versé pour dissoudre le sel', p.Vi / 1000, 'L');
         tokens.Vf = tok(`${p.Vf} mL`, 'Volume de la solution (fiole jaugée)', p.Vf / 1000, 'L');
         return { tokens, derivees: [],
-          texte: ['Un élève pèse ', T('m'), ' de chlorure de sodium. Il les dissout dans environ ', T('Vi'), ' d’eau distillée dans une fiole jaugée de ', T('Vf'), ', puis complète avec de l’eau jusqu’au trait de jauge. Données : masse molaire du chlorure de sodium ', T('M'), '. Quelle est la concentration en masse de la solution (en g·L⁻¹) ?'],
+          texte: ['Un élève pèse ', T('m'), ' de chlorure de sodium. Il les dissout dans environ ', T('Vi'), ' d’eau distillée dans une fiole jaugée de ', T('Vf'), ', puis complète avec de l’eau jusqu’au trait de jauge. Donnée : masse volumique de l’eau ', T('M'), '. Quelle est la concentration en masse de la solution (en g·L⁻¹) ?'],
           utiles: ['m', 'Vf'],
-          raisons: { Vi: 'C’est le volume d’eau versé au début, pas le volume de la solution : le volume de la solution, c’est celui de la fiole jaugée (jusqu’au trait de jauge).', M: 'La masse molaire sert à calculer une concentration en quantité de matière (mol·L⁻¹), pas une concentration en masse.' },
-          cherche: { bonne: 'La concentration en masse t de la solution (en g·L⁻¹)', faux: ['La quantité de matière de sel dissous (en mol)', 'La masse volumique de la solution (en g·L⁻¹)', 'La concentration en quantité de matière (en mol·L⁻¹)'] },
+          raisons: { Vi: 'C’est le volume d’eau versé au début, pas le volume de la solution : le volume de la solution, c’est celui de la fiole jaugée (jusqu’au trait de jauge).', M: 'La masse volumique de l’eau permettrait de calculer la masse d’eau versée, pas la concentration en masse du sel : on divise la masse de sel par le volume de la solution.' },
+          cherche: { bonne: 'La concentration en masse t de la solution (en g·L⁻¹)', faux: ['La quantité de matière de sel dissous (en mol)', 'La masse volumique de la solution (en g·L⁻¹)', 'La masse d’eau versée pour dissoudre le sel (en g)'] },
           manque: null, solution: { txt: 't = m / V (avec V converti en L)', val: p.m / (p.Vf / 1000), u: 'g·L⁻¹' } };
       }
       tokens.t = tok(`${p.t} g·L⁻¹`, 'Concentration en masse souhaitée', p.t, 'g·L⁻¹');
       tokens.Vf = tok(`${p.Vf} mL`, 'Volume de la solution à préparer (fiole jaugée)', p.Vf / 1000, 'L');
       tokens.Vi = tok(`${p.Vi} mL`, 'Volume d’eau versé pour dissoudre le sel', p.Vi / 1000, 'L');
       return { tokens, derivees: [],
-        texte: ['On veut préparer une solution de chlorure de sodium de concentration en masse ', T('t'), ', dans une fiole jaugée de ', T('Vf'), '. On dissoudra d’abord le sel dans environ ', T('Vi'), ' d’eau. Données : masse molaire du chlorure de sodium ', T('M'), '. Quelle masse de sel faut-il peser (en g) ?'],
+        texte: ['On veut préparer une solution de chlorure de sodium de concentration en masse ', T('t'), ', dans une fiole jaugée de ', T('Vf'), '. On dissoudra d’abord le sel dans environ ', T('Vi'), ' d’eau. Donnée : masse volumique de l’eau ', T('M'), '. Quelle masse de sel faut-il peser (en g) ?'],
         utiles: ['t', 'Vf'],
-        raisons: { Vi: 'C’est le volume d’eau versé au début : la solution finale fait le volume de la fiole jaugée.', M: 'La masse molaire n’intervient pas : la concentration est donnée en masse, pas en quantité de matière.' },
-        cherche: { bonne: 'La masse de chlorure de sodium solide nécessaire (en g)', faux: ['La quantité de matière de sel à peser (en mol)', 'La masse volumique de la solution (en g·L⁻¹)', 'La concentration en quantité de matière (en mol·L⁻¹)'] },
+        raisons: { Vi: 'C’est le volume d’eau versé au début : la solution finale fait le volume de la fiole jaugée.', M: 'La masse volumique de l’eau n’intervient pas : la concentration en masse relie la masse de sel au volume de la solution.' },
+        cherche: { bonne: 'La masse de chlorure de sodium solide nécessaire (en g)', faux: ['La quantité de matière de sel à peser (en mol)', 'La masse volumique de la solution (en g·L⁻¹)', 'La masse d’eau versée pour dissoudre le sel (en g)'] },
         manque: null, solution: { txt: 'm = t × V (avec V converti en L)', val: p.t * p.Vf / 1000, u: 'g' } };
     },
   },
