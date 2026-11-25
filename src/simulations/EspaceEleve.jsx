@@ -8,6 +8,7 @@ import { Carnet, Anneau } from "./Carnet";
 import { DevoirsEleve, useDevoirs } from "./DevoirsEleve";
 import { VieDeClasse } from "./VieDeClasse";
 import { MonPseudo } from "./MonPseudo";
+import { CarteClassement } from "./CarteClassement";
 import { FOND_BLOC, TEXTE2, BORDURE } from "../theme";
 import { Pic, Emo } from "../Pictos";
 
@@ -127,7 +128,8 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied, fiches, reglages }
   const A = useMemo(() => analyser(items, lignes), [items, lignes]);
   const devoirs = useDevoirs(apercu?.devoirs);
   const etape = etapeEleve(A, lignes);
-  const [onglet, setOnglet] = useState('aujourdhui'), [vPseudo, setVPseudo] = useState(0);
+  const [onglet, setOnglet] = useState(() => { try { const v = window.sessionStorage.getItem('ee-onglet'); window.sessionStorage.removeItem('ee-onglet'); return v || 'aujourdhui'; } catch { return 'aujourdhui'; } });
+  const [vPseudo, setVPseudo] = useState(0);
   const prochaine = useMemo(() => prochaineSimulation(devoirs, lignes, trierPourEleve), [devoirs, lignes]);
   const prochaines = useMemo(() => prochainesSimulations(devoirs, lignes, trierPourEleve), [devoirs, lignes]);
 
@@ -177,6 +179,7 @@ export function EspaceEleve({ lignes, naviguer, apercu, pied, fiches, reglages }
                 <button className="ee-lien" onClick={() => naviguer(prochaine ? Number(prochaine.sim) : 0)}>Simulations →</button>
                 <button className="ee-lien" onClick={() => naviguer(38)}>Compétences →</button>
               </div>)}
+            {etape > 0 && <CarteClassement apercu={!!apercu} version={vPseudo} allerChoisir={() => { setOnglet('classe'); window.scrollTo?.({ top: 0 }); }} />}
             {fiches}
             {/* Ma classe : étape 0, une simple invitation ; ensuite, les devoirs pas à pas (2 au plus, les autres repliés) */}
             {etape === 0
