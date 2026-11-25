@@ -7,7 +7,7 @@ import { Pic } from '../Pictos';
 
 // Interrupteur de l'inscription libre des enseignants (adresse académique). « false » : la page ne propose que « Demander un compte » par mail.
 // Ne passer à « true » qu'une fois l'envoi des mails réglé dans Supabase (voir supabase/LISEZ-MOI.md, étape 40).
-export const INSCRIPTION_PROF_OUVERTE = false;
+export const INSCRIPTION_PROF_OUVERTE = true;
 // Lien d'essai caché : ajouter « &inscription=1 » à l'adresse de la page Mon compte (…/?sim=39&inscription=1) affiche le formulaire même si l'interrupteur est fermé.
 // Lu une seule fois au chargement, pour résister aux changements d'adresse du navigateur.
 export const INSCRIPTION_PROF_VISIBLE = INSCRIPTION_PROF_OUVERTE
