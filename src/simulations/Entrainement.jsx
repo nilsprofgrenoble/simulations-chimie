@@ -15,7 +15,7 @@ import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresD
 import { nomsSim } from "../suivi";
 import { ENSEIGNEMENTS, chapitresDe as chapitresNiveauEns } from "../parcoursCommun";
 import { exosDeSim, EXOS_DE_SIM } from "../exosDeSim";
-import { Pic, nomPicto } from "../Pictos";
+import { Pic } from "../Pictos";
 import { useSimsValidees, PastilleFaite } from "../simsValidees";
 
 const ROSE = '#0b4f94';   // bleu Blocs (ancien rose)
@@ -83,22 +83,21 @@ const CSS_EN = `
   .en-mode { flex:1; min-height:48px; padding:0 6px; white-space:nowrap; border:none; border-radius:14px; background:transparent; color:var(--txt2); font:800 14.5px Inter,system-ui,sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px; }
   @media (max-width:420px) { .en-mode .ic { display:none; } }
   .en-mode[aria-selected="true"] { background:#fff; color:var(--bleu); box-shadow:0 2px 8px rgba(15,23,42,.12); }
-  .en-grille { display:grid; grid-template-columns:1fr; gap:10px; margin:10px 0; }
-  @media (min-width:720px) { .en-grille { grid-template-columns:1fr 1fr; } }
+  .en-grille { display:flex; flex-direction:column; gap:8px; margin:10px 0; max-width:760px; }
   .en-detail { grid-column:1 / -1; min-width:0; }
   @media (max-width:600px) { .en-detail > section { padding:10px 2px !important; border:none !important; margin:4px 0 10px !important; } }
-  .en-chap { scroll-margin-top:84px; display:flex; align-items:center; gap:12px; width:100%; min-height:72px; padding:14px; text-align:left; border-radius:22px; border:2px solid var(--bord); background:#fff; color:var(--txt); font:inherit; cursor:pointer; box-shadow:0 1px 2px rgba(15,23,42,.05); }
+  .en-chap { scroll-margin-top:84px; display:flex; align-items:center; gap:12px; width:100%; min-height:64px; padding:12px 14px; text-align:left; border-radius:12px; border:1px solid var(--bord); border-left:5px solid #9db8d6; background:#fff; color:var(--txt); font:inherit; cursor:pointer; }
   .en-chap:hover { border-color:#9db8d6; }
   .en-chap:focus-visible, .en-niv:focus-visible, .en-mode:focus-visible, .en-exo:focus-visible, .en-cta:focus-visible, .en-sim:focus-visible, .en-chip:focus-visible, .en-lien:focus-visible { outline:3px solid var(--bleu); outline-offset:2px; }
-  .en-chap[data-ouvert] { border-color:var(--bleu); background:#eaf2fb; }
-  .en-chap[data-en-cours]:not([data-ouvert]) { border-color:var(--teal); }
+  .en-chap[data-ouvert] { border-color:var(--bleu); border-left-color:var(--bleu); background:#f3f8fd; }
+  .en-chap[data-en-cours] { border-left-color:var(--teal); }
   .en-chap-tuile { flex:none; width:48px; height:48px; border-radius:16px; background:#eaf2fb; color:var(--bleu); display:flex; align-items:center; justify-content:center; }
   .en-chap[data-ouvert] .en-chap-tuile { background:var(--bleu); color:#fff; }
   .en-chap-corps { flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
   .en-chap-badge { align-self:flex-start; padding:2px 9px; border-radius:999px; background:#dcf5f0; color:#1f6f66; font:800 11px Inter,system-ui,sans-serif; letter-spacing:.05em; text-transform:uppercase; }
-  .en-chap-titre { font:800 16px/1.3 Outfit,Inter,sans-serif; }
+  .en-chap-titre { font:800 16px/1.3 Outfit,Inter,sans-serif; color:var(--bleu); }
   .en-chap-stats { font-size:12.5px; color:var(--txt2); }
-  .en-barre { display:block; height:8px; border-radius:4px; background:#e6edf5; overflow:hidden; }
+  .en-barre { display:block; height:6px; border-radius:4px; background:#e6edf5; overflow:hidden; }
   .en-barre > span { display:block; height:100%; border-radius:4px; background:var(--teal); }
   .en-exo { display:flex; align-items:center; gap:10px; width:100%; min-height:56px; padding:10px 12px; text-align:left; border:1px solid var(--bord); border-radius:16px; background:#fff; color:var(--txt); font:inherit; cursor:pointer; }
   .en-exo[data-fait] { background:#f1fbf8; border-color:#bfe8df; }
@@ -159,20 +158,18 @@ function LigneExo({ e, prog, etoiles, ouvrir, montrerTheme }) {
 // Carte d'un chapitre : pictogramme, titre, avancement en étoiles, badge « chapitre en cours » si le professeur l'a choisi
 function CarteChapitre({ c, ouvert, enCours, av, onClick }) {
   const pct = av.max ? (100 * av.etoiles) / av.max : 0;
-  const m = /^([^\p{L}\p{N}\s]+)\s+([\s\S]+)$/u.exec(c.label || '');
-  const picto = m ? nomPicto(m[1]) : null, titre = m ? m[2] : c.label;
+  const titre = (c.label || '').replace(/^[^\p{L}\p{N}]+/u, '');   // sans l'émoji de tête : certains appareils l'affichent en case vide
   return (
     <button type="button" className="en-chap" data-chapitre-id={c.id} data-ouvert={ouvert || undefined} data-en-cours={enCours || undefined} aria-expanded={ouvert} onClick={onClick}>
-      <span className="en-chap-tuile" aria-hidden="true">{picto ? <Pic n={picto} t={28} style={{ margin: 0 }} /> : m ? <span style={{ fontSize: 24 }}>{m[1]}</span> : <Pic n="book" t={28} style={{ margin: 0 }} />}</span>
       <span className="en-chap-corps">
         {enCours && <span className="en-chap-badge">Chapitre en cours</span>}
         <span className="en-chap-titre">{titre}</span>
         <span className="en-chap-stats">
-          {av.total > 0 ? `${av.reussis} / ${av.total} réussis · ${av.etoiles} ★ sur ${av.max}` : 'Simulations seulement (pas encore d’exercice)'}
+          {av.total > 0 ? `${av.total} exercice${av.total > 1 ? 's' : ''} · ${av.reussis} réussi${av.reussis > 1 ? 's' : ''}` : 'Simulations seulement (pas encore d’exercice)'}
         </span>
-        {av.total > 0 && <span className="en-barre"><span style={{ width: `${pct}%` }} /></span>}
+        {av.total > 0 && <span className="en-barre" aria-hidden="true"><span style={{ width: `${pct}%` }} /></span>}
       </span>
-      <Pic n="chevron" t={22} style={{ margin: 0, transform: ouvert ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />
+      <span aria-hidden="true" style={{ color: KIT.txt2, fontSize: 24, lineHeight: 1, transform: ouvert ? 'rotate(90deg)' : 'none', transition: 'transform .2s' }}>›</span>
     </button>);
 }
 
