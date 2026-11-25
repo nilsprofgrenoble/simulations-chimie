@@ -31,7 +31,8 @@ const titreGraphique = s => {
 const COMPETENCES = [
   { code: "S'APP", nom: "S’approprier", couleur: '#3f78a8', dispo: true,
     but: "Comprendre ce qui est demandé : repérer les données utiles, les associer aux symboles et aux unités, lire un graphique.",
-    ateliers: [{ id: 34, nom: 'Extraire les données d’un énoncé' }, { id: 35, nom: 'Lire un graphique' }] },
+    ateliers: [{ id: 34, nom: 'Travailler S’APP' }],
+    types: 'Trois sortes d’exercices : repérer les données d’un énoncé · comprendre une situation pas à pas · lire un graphique.' },
   { code: 'ANA', nom: 'Analyser', couleur: '#1f7a72', dispo: true,
     but: "Construire la démarche : ce que l’on cherche, quelles relations, quelles hypothèses, dans quel ordre calculer, et prévoir sans calculer.",
     ateliers: [{ id: 37, nom: 'Analyser un problème' }] },
@@ -110,8 +111,14 @@ const CSS_EN = `
   .en-st[data-fait] { background:#f1fbf8; border-color:#bfe8df; }
   .en-st-nom { font:800 15.5px/1.3 Outfit,Inter,sans-serif; }
   .en-st-cap { font-size:13px; line-height:1.4; color:var(--txt2); }
-  .en-st-grille { display:grid; grid-template-columns:1fr; gap:8px; }
-  @media (min-width:720px) { .en-st-grille { grid-template-columns:1fr 1fr; } }
+  .en-st-grille { display:grid; grid-template-columns:1fr; gap:8px; max-width:760px; }
+  .en-lignes { display:flex; flex-direction:column; gap:8px; max-width:760px; }
+  .en-ligne { display:flex; align-items:center; gap:12px; width:100%; min-height:72px; padding:12px 14px; text-align:left; border:1px solid var(--bord); border-left:5px solid var(--c); border-radius:12px; background:#fff; color:var(--txt); font:inherit; cursor:pointer; }
+  .en-ligne:hover { background:#f6f9fd; }
+  .en-ligne:focus-visible { outline:3px solid var(--bleu); outline-offset:2px; }
+  .en-ligne-nom { font:800 16px/1.3 Outfit,Inter,sans-serif; color:var(--c); }
+  .en-reco { margin-left:8px; padding:1px 8px; border-radius:999px; background:#fff3d6; border:1px solid #f1c46b; color:#7a4b00; font:700 11.5px Inter,sans-serif; }
+  .en-retour { background:none; border:none; padding:8px 0; min-height:44px; color:var(--bleu); font:700 14px Inter,sans-serif; cursor:pointer; text-decoration:underline; }
   .en-sim { display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:8px 16px; border:none; border-radius:999px; background:var(--bleu); color:#fff; font:700 14px Inter,system-ui,sans-serif; text-align:left; cursor:pointer; }
   .en-comps { display:grid; grid-template-columns:1fr; gap:12px; margin:12px 0; }
   @media (min-width:720px) { .en-comps { grid-template-columns:1fr 1fr; } }
@@ -231,19 +238,55 @@ function ExosDeSimulation({ simId, exos, ctx, naviguer }) {
     </section>);
 }
 
-// Un sous-thème du chapitre : une carte qui ouvre le prochain exercice adapté (les variations restent en réserve)
-function CarteSousTheme({ st, exos, etoilesDe, ouvrir }) {
+// Un sous-thème du chapitre : une ligne (même style que les écrans « par compétence ») ; elle ouvre le choix de la compétence à travailler
+function CarteSousTheme({ st, exos, etoilesDe, onChoisir }) {
   const av = avancementChapitre(exos, etoilesDe), fini = av.reussis === av.total;
-  const aller = () => ouvrir(prochainExercice(exos, etoilesDe, Math.random)?.exo || exos[Math.floor(Math.random() * exos.length)]);
+  const comps = ["S'APP", 'ANA', 'VAL'].filter(code => exos.some(e => e.comp === code));
   return (
-    <button type="button" className="en-st" data-st={st.id} data-fait={fini || undefined} onClick={aller}>
+    <button type="button" className="en-st" data-st={st.id} data-fait={fini || undefined} onClick={onChoisir}>
       <span className="en-exo-corps">
         <span className="en-st-nom">{st.nom}</span>
         <span className="en-st-cap">{st.capacite}</span>
-        <span className="en-barre" aria-hidden="true" style={{ height: 6, marginTop: 4 }}><span style={{ width: `${100 * av.reussis / av.total}%` }} /></span>
+        <span className="en-exo-tete" style={{ marginTop: 4 }}>
+          {comps.map(code => <span key={code} className="en-pastille" style={{ background: COMPETENCES.find(x => x.code === code).couleur }}>{code}</span>)}
+          <span style={{ fontSize: 12.5, fontWeight: 700, color: KIT.txt2 }}>{exos.length} exercice{exos.length > 1 ? 's' : ''} · {av.reussis} réussi{av.reussis > 1 ? 's' : ''}</span>
+        </span>
       </span>
-      <span className="en-exo-etat">{fini ? <PastilleFaite taille={24} /> : <span aria-hidden="true" style={{ color: KIT.txt2, fontSize: 20 }}>▶</span>}</span>
+      <span className="en-exo-etat">{fini ? <PastilleFaite taille={24} /> : <span aria-hidden="true" style={{ color: KIT.txt2, fontSize: 24 }}>›</span>}</span>
     </button>);
+}
+
+// Un sous-thème choisi : on annonce les compétences qu'on peut y travailler, l'élève en choisit une (rien ne se lance sans son choix)
+function ChoixCompetence({ theme, etoilesDe, nbFaits, ouvrir, retour, listes }) {
+  const { st, exos } = theme;
+  const lignes = ["S'APP", 'ANA', 'VAL'].map(code => ({ cc: COMPETENCES.find(x => x.code === code), L: exos.filter(e => e.comp === code) })).filter(x => x.L.length);
+  const conseille = lignes.find(x => nbFaits(x.L) < x.L.length)?.cc.code;
+  return (
+    <div data-choix-competence={st.id} style={{ margin: '4px 0 12px' }}>
+      <button type="button" className="en-retour" onClick={retour}>‹ Tous les thèmes du chapitre</button>
+      <h4 style={{ margin: '6px 0 2px', fontFamily: TITRE_B, fontSize: 20, color: KIT.txt }}>{st.nom}</h4>
+      <p style={{ margin: '0 0 10px', fontSize: 13.5, color: KIT.txt2, lineHeight: 1.45 }}>{st.capacite}</p>
+      <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, margin: '0 0 8px', fontFamily: TITRE_B }}>Quelle compétence veux-tu travailler ?</div>
+      <div className="en-lignes">
+        {lignes.map(({ cc, L }, i) => {
+          const f = nbFaits(L), c = prochainExercice(L, etoilesDe)?.exo || L[0];
+          return (
+            <button key={cc.code} type="button" className="en-ligne" data-comp-choix={cc.code} style={{ '--c': cc.couleur }} onClick={() => ouvrir(c)}>
+              <span className="en-comp-num" aria-hidden="true">{i + 1}</span>
+              <span className="en-exo-corps">
+                <span className="en-ligne-nom">{cc.code} · {cc.nom}{conseille === cc.code && <span className="en-reco">conseillé</span>}</span>
+                <span className="en-st-cap">{cc.but}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: KIT.txt2 }}>{L.length} exercice{L.length > 1 ? 's' : ''} · {f} réussi{f > 1 ? 's' : ''}</span>
+              </span>
+              <span aria-hidden="true" style={{ color: KIT.txt2, fontSize: 24 }}>›</span>
+            </button>);
+        })}
+      </div>
+      <details style={{ marginTop: 8 }}>
+        <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt, minHeight: 44, display: 'flex', alignItems: 'center' }}>Voir tous les exercices de ce thème ({exos.length})</summary>
+        {listes(exos)}
+      </details>
+    </div>);
 }
 
 function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
@@ -254,6 +297,8 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
   const validees = useSimsValidees(c.id);
   const { themes, autres } = repartir(exosChap, c.id);
   const auDela = exosAuDela(exos, c);
+  const [stOuvert, setStOuvert] = useState(null);
+  const themeOuvert = themes.find(t => t.st.id === stOuvert) || null;
   const listesCompetences = L0 => ['S\'APP', 'ANA', 'VAL'].map(code => {
     const L = L0.filter(e => e.comp === code);
     const cc = COMPETENCES.find(x => x.code === code);
@@ -279,7 +324,7 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
       {exosChap.length > 0 && <div style={{ height: 10, borderRadius: 5, background: '#e6edf5', marginBottom: 14 }} role="progressbar" aria-valuemin={0} aria-valuemax={av.max} aria-valuenow={av.etoiles} aria-label="Étoiles gagnées dans le chapitre">
         <div style={{ height: 10, borderRadius: 5, background: TEAL_B, width: `${av.max ? (100 * av.etoiles) / av.max : 0}%` }} />
       </div>}
-      {exosChap.length === 0 ? null : conseil ? (
+      {exosChap.length === 0 || themeOuvert ? null : conseil ? (
         <div data-conseil style={{ ...styleBoite, border: 'none', borderRadius: 22, padding: '16px 18px', background: ROSE, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
           <div style={{ flex: 1, minWidth: 220 }}>
             <div style={{ fontSize: 12.5, fontWeight: 800, color: '#ffd68a', letterSpacing: 0.5 }}><Pic n="arrow"/>TON PROCHAIN EXERCICE CONSEILLÉ</div>
@@ -293,12 +338,13 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
       ) : (
         <div style={{ ...styleBoite, background: '#ecfaf7', border: `1px solid ${TEAL_B}`, borderRadius: 22, marginBottom: 12 }}><Pic n="party"/><b>Tout le chapitre est réussi avec 3 étoiles !</b> Passe à un autre chapitre, ou refais un exercice pour t’entraîner.</div>
       )}
-      {themes.length > 0 && (
+      {themeOuvert && <ChoixCompetence theme={themeOuvert} etoilesDe={etoilesDe} nbFaits={nbFaits} ouvrir={ouvrir} retour={() => setStOuvert(null)} listes={listesCompetences} />}
+      {!themeOuvert && themes.length > 0 && (
         <div data-sous-themes style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, margin: '0 0 8px', fontFamily: TITRE_B }}>Choisis ce que tu veux travailler</div>
-          <div className="en-st-grille">{themes.map(t => <CarteSousTheme key={t.st.id} st={t.st} exos={t.exos} etoilesDe={etoilesDe} ouvrir={ouvrir} />)}</div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, margin: '0 0 8px', fontFamily: TITRE_B }}>Choisis un thème du chapitre</div>
+          <div className="en-st-grille">{themes.map(t => <CarteSousTheme key={t.st.id} st={t.st} exos={t.exos} etoilesDe={etoilesDe} onChoisir={() => setStOuvert(t.st.id)} />)}</div>
         </div>)}
-      {themes.length > 0
+      {themeOuvert ? null : themes.length > 0
         ? <details data-tous-exercices style={{ marginBottom: 6 }}>
             <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt, minHeight: 44, display: 'flex', alignItems: 'center' }}>{autres.length ? `▸ Autres exercices (${autres.length})` : `▸ Voir la liste complète des exercices (${exosChap.length})`}</summary>
             {autres.length ? listesCompetences(autres) : listesCompetences(exosChap)}
@@ -371,7 +417,7 @@ export function SimulationEntrainement({ naviguer }) {
   const [niveauChoisi, setNiveauChoisi] = useEtatPersistant('entrainement-niveau-v1', null);
   const [chapChoisi, setChapChoisi] = useState(undefined);      // undefined : pas de choix de l'élève (on ouvre le chapitre en cours) ; null : tout replié
   const [comp, setComp] = useState('toutes');
-  const [ens, setEns] = useState('');                       // enseignement (TSTL : PCM ou une partie de SPCL) ; vide = tous
+  const [ens, setEns] = useEtatPersistant('entrainement-ens-v1', '');                       // enseignement (TSTL : PCM ou une partie de SPCL) ; vide = tous
   const ctx = useProgressionEleve();
   const { sess, eleve, prog, setProg, etoilesSrv, etoilesDe, nbFaits, chapsEnCours, idsEnCours } = ctx;
   const exos = useMemo(() => tousLesExercices(), []);
@@ -491,6 +537,7 @@ export function SimulationEntrainement({ naviguer }) {
                       </div>
                       <span className="en-barre"><span style={{ width: `${mes.length ? 100 * nb / mes.length : 0}%`, background: c.couleur }} /></span>
                       <p className="en-comp-but">{c.but}</p>
+                      {c.types && <p className="en-comp-but" style={{ fontSize: 13 }}>{c.types}</p>}
                       {c.dispo
                         ? c.ateliers.map(a => <button key={a.id} type="button" className="en-cta" onClick={() => naviguer(a.id)}>{a.nom} ▶</button>)
                         : <div style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}><Pic n="warn"/>Bientôt</div>}

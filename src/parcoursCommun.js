@@ -71,3 +71,10 @@ export function sanitiser(s, items, types) {
   }
   return { type, niv, ens: ensOk, ch: chOk, st, dif, ex: '' };
 }
+
+// Niveau et enseignement choisis dans « Je m'entraîne » (mémorisés sur l'appareil) : les parcours par compétence les reprennent, l'élève n'a plus à les redonner
+export function contexteMemorise() {
+  const lire = k => { try { const v = JSON.parse(window.localStorage.getItem(k)); return typeof v === 'string' ? v : ''; } catch { return ''; } };
+  const niv = lire('entrainement-niveau-v1'), ens = lire('entrainement-ens-v1');
+  return { niv: niv === 'tous' ? '' : niv, ens };
+}
