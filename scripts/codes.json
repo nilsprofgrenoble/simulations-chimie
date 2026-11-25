@@ -2002,5 +2002,19 @@
  "34:ondEcho.1": "SAPP500",
  "37:relation:ond-rel-niveau-intensite": "ANA823",
  "37:hypothese:ond-hyp-doppler": "ANA824",
- "37:hypothese:ond-hyp-young-interfrange": "ANA825"
+ "37:hypothese:ond-hyp-young-interfrange": "ANA825",
+ "37:prevoir:susp-ana-charge-acide": "ANA826",
+ "37:prevoir:susp-ana-charge-silice": "ANA827",
+ "37:prevoir:susp-ana-pie-flocule": "ANA828",
+ "37:prevoir:susp-ana-delta": "ANA829",
+ "37:prevoir:susp-ana-sel-valence": "ANA830",
+ "37:prevoir:susp-ana-eau-deminer": "ANA831",
+ "37:prevoir:susp-ana-choc-ph": "ANA832",
+ "37:prevoir:susp-ana-disp-aqueux": "ANA833",
+ "37:prevoir:susp-ana-liant": "ANA834",
+ "37:prevoir:susp-ana-taille": "ANA835",
+ "77:plausible:susp-val-pie-interpole": "VAL546",
+ "77:plausible:susp-val-sel-stabilise": "VAL547",
+ "77:plausible:susp-val-signe-inverse": "VAL548",
+ "77:plausible:susp-val-silice-pie": "VAL549"
 }
