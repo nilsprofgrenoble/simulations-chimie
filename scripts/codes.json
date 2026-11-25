@@ -2649,5 +2649,14 @@
  "77:plausible:mtr-val-chaine": "VAL715",
  "77:plausible:mtr-val-ray": "VAL716",
  "36:mtr-freine": "REA159",
- "36:mtr-depart": "REA160"
+ "36:mtr-depart": "REA160",
+ "37:prevoir:tern-ana-pourcent": "ANA1211",
+ "37:prevoir:tern-ana-cote": "ANA1212",
+ "37:prevoir:tern-ana-trois": "ANA1213",
+ "37:prevoir:tern-ana-conjug": "ANA1214",
+ "37:prevoir:tern-ana-ajout": "ANA1215",
+ "37:prevoir:tern-ana-dilution": "ANA1216",
+ "77:plausible:tern-val-exces": "VAL717",
+ "77:plausible:tern-val-sel": "VAL718",
+ "77:plausible:tern-val-dilution": "VAL719"
 }
