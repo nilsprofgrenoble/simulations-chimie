@@ -141,6 +141,7 @@ const SimulationPremierPrincipe = paresseux(() => import("./simulations/PremierP
 const SimulationTransfertsThermiques = paresseux(() => import("./simulations/TransfertsThermiques"), "SimulationTransfertsThermiques");
 const SimulationTerreAtmosphere = paresseux(() => import("./simulations/TerreAtmosphere"), "SimulationTerreAtmosphere");
 const SimulationCellulePhotovoltaique = paresseux(() => import("./simulations/CellulePhotovoltaique"), "SimulationCellulePhotovoltaique");
+const SimulationEffetPhotoelectrique = paresseux(() => import("./simulations/EffetPhotoelectrique"), "SimulationEffetPhotoelectrique");
 const SimulationArchimede = paresseux(() => import("./simulations/Archimede"), "SimulationArchimede");
 const SimulationLoiNewtonThermostat = paresseux(() => import("./simulations/LoiNewtonThermostat"), "SimulationLoiNewtonThermostat");
 const SimulationEcoulementFluide = paresseux(() => import("./simulations/EcoulementFluide"), "SimulationEcoulementFluide");
@@ -362,6 +363,7 @@ const SIMULATIONS = [
   { id:235, label:"Transferts thermiques : flux et résistance", niveau:"TG", icon:"♨️", color:"#c2410c", component: SimulationTransfertsThermiques },
   { id:236, label:"Bilan thermique de la Terre", niveau:"TG", icon:"🌍", color:"#0f766e", component: SimulationTerreAtmosphere },
   { id:242, label:"Cellule photovoltaïque", niveau:"TG", icon:"🔆", color:"#b45309", component: SimulationCellulePhotovoltaique },
+  { id:240, label:"Effet photoélectrique", niveau:"TG", icon:"💡", color:"#b45309", component: SimulationEffetPhotoelectrique },
   { id:213, label:"Poussée d’Archimède : origine et expression", niveau:"TG", icon:"🛟", color:"#0369a1", component: SimulationArchimede },
   { id:212, label:"Loi de Newton et thermostat : T(t)", niveau:"TG", icon:"🔥", color:"#c2410c", component: SimulationLoiNewtonThermostat },
   { id:214, label:"Écoulement d’un fluide : débit et Bernoulli", niveau:"TG", icon:"💧", color:"#0369a1", component: SimulationEcoulementFluide },

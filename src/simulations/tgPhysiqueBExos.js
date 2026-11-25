@@ -251,6 +251,30 @@ export const TGPB_ANA = [
       F('le module stocke la chaleur du Soleil comme une batterie', 'Un module photovoltaïque ne stocke pas l’énergie : il la convertit immédiatement ou la perd.'),
       F('le module a un rendement supérieur à 100 % : il crée de l’énergie', 'Un rendement est toujours inférieur à 100 % : un module ne peut pas fournir plus d’énergie qu’il n’en reçoit.'),
     ] },
+  { id: 'phe-ana-metaux', domaine: DOM_PHOTONS, titre: 'Une lumière jaune sur deux métaux',
+    ...presenter({ contexte: 'Un photon de lumière jaune transporte une énergie h ν d’environ 2,1 eV. On éclaire successivement une plaque de césium (travail d’extraction W = 2,0 eV) et une plaque de zinc (W = 4,3 eV).' }),
+    q: 'Que se passe-t-il ?', options: [
+      V('des électrons sont éjectés du césium seulement', 'Pour le césium, h ν = 2,1 eV dépasse W = 2,0 eV : des électrons sortent, avec E_c,max = 0,1 eV. Pour le zinc, h ν est inférieure à W = 4,3 eV : aucun électron, même si la lumière est très intense.'),
+      F('des électrons sont éjectés du zinc seulement, car il est plus dur à ioniser', 'Un travail d’extraction plus grand rend l’éjection plus difficile, pas plus facile : il faut des photons plus énergétiques.'),
+      F('des électrons sont éjectés des deux métaux, mais plus vite du zinc', 'L’énergie du photon (2,1 eV) est inférieure au travail d’extraction du zinc (4,3 eV) : aucun électron n’en sort.'),
+      F('aucun électron n’est éjecté, la lumière visible n’ayant jamais assez d’énergie', 'Cela dépend du métal : le césium a un travail d’extraction faible (2,0 eV), inférieur à l’énergie d’un photon jaune.'),
+    ] },
+  { id: 'phe-ana-droite', domaine: DOM_PHOTONS, titre: 'Deux métaux, deux droites',
+    ...presenter({ contexte: 'On trace l’énergie cinétique maximale E_c,max des électrons éjectés en fonction de la fréquence ν de la lumière, pour deux métaux : A (travail d’extraction W = 2,0 eV) et B (W = 4,3 eV).' }),
+    q: 'Comment sont les deux droites ?', options: [
+      V('parallèles, celle de A démarrant à plus basse fréquence', 'E_c,max = h ν − W : la pente vaut h pour tous les métaux (droites parallèles). La droite quitte l’axe quand h ν = W, donc pour une fréquence plus petite avec A (W plus petit).'),
+      F('parallèles, celle de B quittant l’axe des fréquences la première', 'Le seuil ν₀ = W divisé par h est plus petit quand W est plus petit : c’est la droite de A qui commence en premier.'),
+      F('de pentes différentes : la pente dépend du travail d’extraction', 'La pente est la constante de Planck h, la même pour tous les métaux ; W décale seulement la droite.'),
+      F('confondues : la droite ne dépend pas du métal', 'W intervient dans E_c,max = h ν − W : la droite est décalée vers les grandes fréquences quand W augmente.'),
+    ] },
+  { id: 'phe-ana-cellule', domaine: DOM_PHOTONS, titre: 'Une cellule photoélectrique éclairée moitié moins',
+    ...presenter({ contexte: 'Une cellule photoélectrique est éclairée par une lumière de fréquence supérieure à la fréquence seuil de sa photocathode ; un courant circule dans le circuit. On diminue de moitié le nombre de photons envoyés par seconde, sans changer la fréquence.' }),
+    q: 'Que devient le courant ?', options: [
+      V('il est divisé par deux : deux fois moins d’électrons par seconde', 'Chaque photon absorbé éjecte au plus un électron : deux fois moins de photons éjectent deux fois moins d’électrons par seconde, donc le courant est divisé par deux (si tous les électrons sont collectés).'),
+      F('il ne change pas : il ne dépend que de la fréquence', 'La fréquence détermine l’énergie des électrons, pas leur nombre : le nombre d’électrons par seconde est proportionnel au nombre de photons.'),
+      F('il s’annule, car il n’y a plus assez de photons pour dépasser le seuil', 'Le seuil porte sur l’énergie de chaque photon (fréquence), pas sur leur nombre : un seul photon suffit à éjecter un électron.'),
+      F('il est divisé par quatre, car l’énergie reçue est divisée par deux', 'Le courant est proportionnel au nombre d’électrons éjectés, donc au nombre de photons : il est divisé par deux, pas par quatre.'),
+    ] },
 ];
 
 // ───────────── RELATIONS : choisir la bonne relation ─────────────
@@ -477,6 +501,46 @@ export const TGPB_VAL = [
       F('plausible : le Soleil est très puissant', 'La puissance du Soleil est immense, mais une cellule de 200 cm² n’en reçoit qu’une toute petite part : 16 W.'),
       F('invraisemblable : il fallait ajouter E et S', 'Une puissance se calcule avec un produit (éclairement × surface), pas avec une somme.'),
     ] }),
+  P({ id: 'phe-val-seuil-unite', domaine: DOM_PHOTONS, niveau: 2, titre: 'Fréquence seuil du potassium, calculée par un élève', plausible: false,
+    ...presenter({ contexte: 'Le travail d’extraction du potassium est W = 2,3 eV. Un élève calcule la fréquence seuil avec h = 6,63×10⁻³⁴ J·s :', suite: '« ν₀ = W / h = 2,3 / (6,63×10⁻³⁴) = 3,5×10³³ Hz ».' }),
+    reperes: [['Fréquences de la lumière visible', 'environ 4×10¹⁴ à 8×10¹⁴ Hz'], ['Conversion', '1 eV = 1,60×10⁻¹⁹ J'], ['Seuil d’un métal', 'ordre de grandeur de 10¹⁴ à 10¹⁵ Hz']],
+    ver: 'Il faut convertir W en joules : W = 2,3 × 1,60×10⁻¹⁹ = 3,68×10⁻¹⁹ J, d’où ν₀ = 3,68×10⁻¹⁹ divisé par 6,63×10⁻³⁴ ≈ 5,5×10¹⁴ Hz. Un seuil de 10³³ Hz serait des milliards de fois au-dessus des fréquences du visible.',
+    q2: 'Quelle erreur explique ce résultat ?',
+    options: [
+      V('W est resté en eV au lieu d’être converti en joules', 'Avec W en joules (3,68×10⁻¹⁹ J), on trouve ν₀ ≈ 5,5×10¹⁴ Hz, au bord du visible : c’est le seuil attendu pour le potassium.'),
+      F('il fallait multiplier W par h au lieu de diviser', 'ν₀ = W divisé par h est la bonne relation (h ν₀ = W) ; la multiplication donnerait un résultat minuscule et sans unité de fréquence.'),
+      F('la valeur de h est fausse : elle devrait être beaucoup plus petite', 'h = 6,63×10⁻³⁴ J·s est correcte : l’erreur vient de l’unité de W.'),
+    ] }),
+  P({ id: 'phe-val-ec-negative', domaine: DOM_PHOTONS, niveau: 2, titre: 'Une énergie cinétique négative', plausible: false,
+    ...presenter({ contexte: 'Une lumière rouge de longueur d’onde 650 nm, dont les photons ont une énergie h ν ≈ 1,9 eV, éclaire du potassium (W = 2,3 eV). Un élève écrit :', suite: '« E_c,max = h ν − W = 1,9 − 2,3 = −0,4 eV : les électrons sont éjectés avec une énergie cinétique de −0,4 eV ».' }),
+    reperes: [['Énergie cinétique', 'toujours positive ou nulle'], ['Condition d’éjection', 'h ν supérieure à W'], ['Photon rouge', 'environ 1,9 eV']],
+    ver: 'Une énergie cinétique ne peut pas être négative. Le résultat négatif signifie que h ν est inférieure à W : le photon n’a pas assez d’énergie, aucun électron n’est éjecté (E_c,max n’a pas de sens physique ici).',
+    q2: 'Que penser de cette conclusion ?',
+    options: [
+      V('invraisemblable : h ν est inférieure à W, aucun électron ne sort', 'La formule E_c,max = h ν − W ne s’applique que si h ν dépasse W ; un résultat négatif indique qu’il n’y a pas d’effet photoélectrique.'),
+      F('plausible : les électrons sortent mais ils sont freinés par le métal', 'Une énergie cinétique est toujours positive ou nulle ; un électron qui n’a pas reçu W ne sort pas du métal.'),
+      F('invraisemblable : il fallait ajouter W et non le retrancher', 'Le bilan est h ν = W + E_c,max : W se retranche. Le résultat négatif montre simplement que le photon est trop peu énergétique.'),
+    ] }),
+  P({ id: 'phe-val-cuivre-visible', domaine: DOM_PHOTONS, niveau: 1, titre: 'Lumière bleue sur une plaque de cuivre', plausible: false,
+    ...presenter({ contexte: 'Un élève affirme : « une lampe à lumière bleue, de longueur d’onde 450 nm, éjecte des électrons d’une plaque de cuivre, dont le travail d’extraction est W = 4,7 eV ».' }),
+    reperes: [['Énergie d’un photon', 'E (en eV) ≈ 1 240 divisé par λ (en nm)'], ['Condition d’éjection', 'h ν supérieure à W'], ['Travail d’extraction du cuivre', 'W = 4,7 eV']],
+    ver: 'Un photon de 450 nm a une énergie h ν ≈ 1 240 / 450 ≈ 2,8 eV, inférieure à W = 4,7 eV : aucun électron n’est éjecté, même avec une lampe très intense. Il faudrait de l’ultraviolet (λ inférieure à environ 264 nm).',
+    q2: 'Que penser de cette affirmation ?',
+    options: [
+      V('invraisemblable : 2,8 eV est inférieure à 4,7 eV', 'Les photons bleus n’ont pas assez d’énergie : l’intensité ne compense pas.'),
+      F('plausible : il suffit que la lampe soit assez intense', 'L’intensité change le nombre de photons, pas leur énergie : sous le seuil, aucun photon ne peut éjecter d’électron.'),
+      F('plausible : la lumière visible éjecte des électrons de tous les métaux', 'Le seuil dépend du métal : pour le cuivre (4,7 eV), il faut de l’ultraviolet.'),
+    ] }),
+  P({ id: 'phe-val-intensite-ok', domaine: DOM_PHOTONS, niveau: 1, titre: 'Du zinc sous ultraviolet, intensité triplée', plausible: true,
+    ...presenter({ contexte: 'Du zinc (W = 4,3 eV) est éclairé par une lumière ultraviolette de longueur d’onde 200 nm : l’énergie cinétique maximale des électrons est E_c,max ≈ 1,9 eV. On triple l’intensité lumineuse sans changer la longueur d’onde. Un élève annonce : « le courant triple, et E_c,max reste égale à 1,9 eV ».' }),
+    reperes: [['Énergie d’un photon', 'E (en eV) ≈ 1 240 divisé par λ (en nm)'], ['Bilan d’énergie', 'E_c,max = h ν − W'], ['Intensité', 'nombre de photons par seconde']],
+    ver: 'Le photon de 200 nm a une énergie ≈ 6,2 eV : E_c,max = 6,2 − 4,3 = 1,9 eV. Tripler l’intensité triple le nombre de photons, donc le nombre d’électrons et le courant ; l’énergie de chaque photon est inchangée, donc E_c,max aussi. L’annonce est cohérente.',
+    q2: 'Que penser de cette annonce ?',
+    options: [
+      V('cohérente : trois fois plus de photons, mais chacun a la même énergie', 'Le nombre d’électrons éjectés par seconde est proportionnel au nombre de photons ; E_c,max = h ν − W ne dépend pas de l’intensité.'),
+      F('incohérente : E_c,max devrait aussi tripler', 'E_c,max ne dépend que de la fréquence et du métal : elle ne varie pas avec l’intensité.'),
+      F('incohérente : le courant ne devrait pas changer, seule la fréquence compte', 'Le courant est proportionnel au nombre d’électrons éjectés par seconde, donc à l’intensité lumineuse.'),
+    ] }),
 ];
 
 // ───────────── S'APP : repérer les données utiles ─────────────
@@ -553,6 +617,31 @@ export const TGPB_SAPP = [
         raisons: { L: 'La longueur d’onde de la lampe ne sert pas à trouver la limite de la cellule.', P: 'La puissance de la lampe n’intervient pas dans la longueur d’onde maximale.', S: 'La surface de la cellule n’intervient pas dans la longueur d’onde maximale.' },
         cherche: { bonne: 'La longueur d’onde maximale absorbée par la cellule (en nm)', faux: ['La longueur d’onde de la lumière de la lampe (en nm)', 'L’énergie d’un photon de la lampe (en eV)', 'La puissance reçue par la cellule (en W)'] },
         manque: null, solution: { txt: 'λ_max = h × c divisé par E_seuil (en joules)', val: 6.63e-34 * 3.00e8 / (p.gap * 1.60e-19) * 1e9, u: 'nm' } };
+    },
+  },
+  {
+    id: 'phe-sapp-photon', domaine: DOM_PHOTONS, titre: 'Une plaque métallique éclairée', noms: ['Énergie d’un photon', 'Énergie cinétique maximale des électrons'],
+    gen: () => { const [metal, W, lam] = tire([['calcium', 2.9, 250], ['calcium', 2.9, 300], ['calcium', 2.9, 320], ['zinc', 4.3, 200], ['zinc', 4.3, 220], ['zinc', 4.3, 240]]); return { metal, W, lam, S: tire([4, 6, 10]), P: tire([20, 50, 100]) }; },
+    build: (p, q) => {
+      const tokens = {
+        lam: tok(`${p.lam} nm`, 'Longueur d’onde de la lumière', p.lam, 'nm'),
+        W: tok(`${nb(p.W, 1)} eV`, 'Travail d’extraction du métal', p.W, 'eV'),
+        h: tok('6,63×10⁻³⁴ J·s', 'Constante de Planck', 6.63e-34, 'J·s'),
+        c: tok('3,00×10⁸ m·s⁻¹', 'Célérité de la lumière dans le vide', 3.00e8, 'm·s⁻¹'),
+        e: tok('1,60×10⁻¹⁹ J', 'Valeur d’un électronvolt', 1.60e-19, 'J'),
+        S: tok(`${p.S} cm²`, 'Surface éclairée de la plaque', p.S, 'cm²'),
+        P: tok(`${p.P} mW`, 'Puissance de la lampe', p.P, 'mW'),
+      };
+      const E = 6.63e-34 * 3.00e8 / (p.lam * 1e-9) / 1.60e-19;
+      const debut = ['Une plaque de ', p.metal, ', de travail d’extraction ', T('W'), ', est éclairée sur une surface de ', T('S'), ' par une lampe de puissance ', T('P'), ' qui émet une lumière de longueur d’onde ', T('lam'), '. On donne la constante de Planck ', T('h'), ', la célérité de la lumière ', T('c'), ' et ', T('e'), ' pour un électronvolt. '];
+      const rs = { S: 'La surface éclairée ne change ni l’énergie d’un photon ni celle des électrons éjectés : elle ne sert pas dans ce calcul.', P: 'La puissance de la lampe fixe le nombre de photons par seconde, pas l’énergie de chacun.' };
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’énergie d’un photon de cette lumière ?'], utiles: ['lam', 'h', 'c', 'e'], raisons: { ...rs, W: 'Le travail d’extraction sert à calculer l’énergie cinétique des électrons, pas l’énergie du photon.' },
+        cherche: { bonne: 'L’énergie d’un photon de cette lumière (en eV)', faux: ['L’énergie cinétique maximale des électrons éjectés (en eV)', 'Le nombre de photons envoyés par seconde', 'La fréquence seuil du métal (en Hz)'] },
+        manque: null, solution: { txt: 'E = h × c divisé par λ, puis conversion en eV (division par 1,60×10⁻¹⁹ J)', val: E, u: 'eV' } };
+      return { tokens, derivees: [{ id: 'Eph', nom: 'Énergie d’un photon', expr: 'E = h × c / λ', val: E, u: 'eV' }],
+        texte: [...debut, 'Quelle est l’énergie cinétique maximale des électrons éjectés ?'], utiles: ['lam', 'h', 'c', 'e', 'W'], raisons: rs,
+        cherche: { bonne: 'L’énergie cinétique maximale des électrons éjectés (en eV)', faux: ['L’énergie d’un photon de cette lumière (en eV)', 'La fréquence seuil du métal (en Hz)', 'Le nombre d’électrons éjectés par seconde'] },
+        manque: null, solution: { txt: 'E_c,max = h ν − W, avec h ν = h × c divisé par λ (en eV)', val: E - p.W, u: 'eV' } };
     },
   },
 ];
