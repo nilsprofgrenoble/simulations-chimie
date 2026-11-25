@@ -3130,7 +3130,7 @@ export const PREVOIR = [
       V('celle à 0,2 µm : elle sédimente moins vite', 'Plus les particules sont petites, plus la suspension est stable : d’où l’intérêt d’une dispersion efficace.'),
     ] },
   { id: 'disp-ana-mouillant-role', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Rôle d’un agent mouillant',
-    enonce: 'Une poudre de ciment versée dans l’eau forme des grumeaux qui flottent : l’air reste emprisonné entre les grains.', q: 'Quel additif résout d’abord ce problème, et pourquoi ?', options: [
+    enonce: 'Lors de l’empâtage d’une peinture, du dioxyde de titane en poudre versé dans l’eau forme des grumeaux : leur surface est mouillée mais leur cœur reste sec, car l’air des pores n’est pas chassé.', q: 'Quel additif résout d’abord ce problème, et pourquoi ?', options: [
       F('un sel, pour augmenter la force ionique de l’eau', 'Le sel ne chasse pas l’air des amas : il écrante les charges de surface.'),
       V('un agent mouillant, qui abaisse la tension superficielle', 'Le liquide s’étale alors sur les grains et remplace l’air entre eux.'),
       F('un dispersant polymère, qui crée une répulsion entre les grains', 'Le dispersant agit après le mouillage : tant que l’air est piégé, le liquide ne pénètre pas.'),
@@ -3150,23 +3150,23 @@ export const PREVOIR = [
       F('elle dissout la poudre dans le liquide', 'Une suspension reste un solide divisé : la poudre ne se dissout pas.'),
     ] },
   { id: 'disp-ana-broyage', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Dispersion ou broyage ?',
-    enonce: 'Après dispersion, la distribution granulométrique n’a plus d’agglomérats, mais le pic principal reste à 15 µm alors que la spécification demande des particules de 5 µm.', q: 'Que faut-il faire ?', options: [
+    enonce: 'Après dispersion, la distribution granulométrique n’a plus d’agglomérats, mais le pic principal reste à 1,5 µm alors que la spécification demande des particules de 0,5 µm.', q: 'Que faut-il faire ?', options: [
       F('doubler la durée de dispersion à la même vitesse', 'Le disperseur ne casse que les agglomérats, déjà éliminés ici.'),
       F('ajouter davantage de dispersant', 'Le dispersant stabilise, mais ne modifie pas la taille des grains primaires.'),
-      V('broyer la poudre', 'Seul un broyage réduit la taille des particules primaires.'),
+      V('broyer la poudre (broyeur à billes)', 'Seul un broyage réduit la taille des particules primaires.'),
     ] },
   { id: 'disp-ana-pic', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Lire un deuxième pic',
-    enonce: 'Le granulomètre laser montre une suspension de ciment avec un pic principal à 12 µm et un second pic vers 150 µm.', q: 'Comment interpréter le second pic ?', options: [
+    enonce: 'Le granulomètre laser montre, pour une pâte d’empâtage de peinture, un pic principal à 1,2 µm et un second pic vers 15 µm.', q: 'Comment interpréter le second pic ?', options: [
       F('des grains primaires plus gros que les autres', 'Un pic isolé à très grand diamètre est le signe d’amas de grains, pas de grains primaires.'),
       F('une erreur de mesure à ignorer', 'Ce second pic est réel : il signale une dispersion incomplète.'),
-      V('des agglomérats mal dispersés', 'Des amas de particules primaires subsistent : la suspension n’est pas homogène.'),
       F('de l’air emprisonné dans les grains primaires', 'L’air piégé empêche le mouillage mais ne s’observe pas comme un pic sur la distribution.'),
+      V('des agglomérats mal dispersés', 'Des amas de particules primaires subsistent : la suspension n’est pas homogène.'),
     ] },
   { id: 'disp-ana-d90', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Contrôler l’homogénéité par D90',
-    enonce: 'Deux lots de ciment en suspension ont le même D50 de 10 µm. Le lot A a un D90 de 18 µm, le lot B un D90 de 120 µm.', q: 'Que conclut-on ?', options: [
+    enonce: 'Deux lots de pâte d’empâtage ont le même D50 de 1,0 µm. Le lot A a un D90 de 1,8 µm, le lot B un D90 de 12 µm.', q: 'Que conclut-on ?', options: [
       F('les deux lots sont aussi homogènes l’un que l’autre', 'Le D50 seul ne suffit pas : le D90 renseigne sur les gros grains.'),
       F('le lot A contient des agglomérats, pas le lot B', 'C’est l’inverse : un D90 élevé indique des gros grains.'),
-      V('le lot B contient des agglomérats, pas le lot A', 'Un D90 de 120 µm signifie que 10 % de la masse dépasse cette taille : des amas subsistent.'),
+      V('le lot B contient des agglomérats, pas le lot A', 'Un D90 de 12 µm signifie que 10 % de la masse dépasse cette taille : des amas subsistent.'),
     ] },
   { id: 'disp-ana-milieu-organique', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Dispersant en milieu organique',
     enonce: 'Un pigment est dispersé dans un solvant organique (encre). Dans ce milieu peu polaire, les charges de surface sont presque inexistantes.', q: 'Quel type de dispersant choisir ?', options: [
@@ -3174,25 +3174,25 @@ export const PREVOIR = [
       V('un polymère greffé qui agit par répulsion stérique', 'Ses chaînes solubles dans le solvant gardent les grains à distance sans besoin de charges.'),
       F('du sel, pour augmenter la force ionique', 'Le sel ne se dissout pas dans un solvant organique.'),
     ] },
-  { id: 'disp-ana-pce', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Dispersant dans une pâte de ciment',
-    enonce: 'L’eau d’une pâte de ciment contient beaucoup d’ions dissous (calcium, sulfates, alcalins). Un dispersant uniquement électrostatique y est peu efficace.', q: 'Pourquoi un polycarboxylate convient-il mieux ?', options: [
-      F('il fait gonfler le ciment et ouvre les amas', 'Le ciment ne gonfle pas : l’effet vient de la répulsion entre grains.'),
-      F('il neutralise les ions de la solution interstitielle', 'Il ne supprime pas les ions : il s’adsorbe sur les grains.'),
+  { id: 'disp-ana-pce', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Dispersant en milieu très ionique',
+    enonce: 'Une phase aqueuse contient beaucoup d’ions dissous (sels, comme dans l’eau d’un béton). Un dispersant uniquement électrostatique y est peu efficace.', q: 'Pourquoi un polycarboxylate convient-il mieux ?', options: [
+      F('il fait gonfler le solide et ouvre les amas', 'Le solide ne gonfle pas : l’effet vient de la répulsion entre grains.'),
+      F('il neutralise les ions de la phase aqueuse', 'Il ne supprime pas les ions : il s’adsorbe sur les grains.'),
       F('il charge les grains plus fortement qu’un polyacrylate', 'Un excès de charge serait écranté par les ions : l’avantage vient des chaînes.'),
-    
-      V('ses chaînes greffées gardent les grains à distance', 'Les ions écrantent les charges, mais pas l’encombrement stérique des chaînes greffées.'),] },
-  { id: 'disp-ana-optimum', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Un excès de dispersant',
-    enonce: 'On mesure l’étalement d’une pâte pour plusieurs dosages en dispersant. L’étalement croît jusqu’à 2,5 % puis reste à peu près constant jusqu’à 5 %.', q: 'Quel dosage choisit-on, et pourquoi ?', options: [
-      V('environ 2,5 %, car l’excès n’apporte plus rien', 'Les grains sont saturés : l’excès reste dans l’eau, coûte et peut perturber la prise.'),
-      F('5 %, car plus de dispersant donne toujours une pâte plus fluide', 'Au-delà de la saturation, l’étalement n’augmente plus : l’excès est inutile.'),
-      F('1 %, pour limiter le coût même si l’étalement est plus faible', 'On vise l’étalement maximal : 1 % laisse la pâte moins fluide que nécessaire.'),
+      V('ses chaînes greffées gardent les grains à distance', 'Les ions écrantent les charges, mais pas l’encombrement stérique des chaînes greffées.'),
     ] },
-  { id: 'disp-ana-dosage-eau', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Eau d’un dispersant liquide',
-    enonce: 'Un dispersant liquide est une solution aqueuse à 40 % d’extrait sec. On fixe le rapport E/C d’une pâte de ciment.', q: 'Comment tenir compte de l’eau du dispersant ?', options: [
-      V('on décompte l’eau qu’il apporte de l’eau de gâchage', 'L’eau totale doit rester égale à E/C × masse de ciment.'),
-      F('on l’ignore : la masse de dispersant est trop faible', 'À fort dosage, cette eau fausse sensiblement le rapport E/C visé.'),
-      F('on la rajoute à l’eau de gâchage', 'Il faut au contraire la décompter : elle fait déjà partie de l’eau totale.'),
-      F('on retire toute la masse de dispersant liquide', 'Seule l’eau du dispersant est à retirer, pas l’extrait sec.'),
+  { id: 'disp-ana-optimum', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Un excès de dispersant',
+    enonce: 'On mesure la viscosité d’une pâte d’empâtage pour plusieurs dosages en dispersant. Elle chute jusqu’à 0,25 % de matière active sur pigment, puis reste à peu près constante jusqu’à 0,6 %.', q: 'Quel dosage choisit-on, et pourquoi ?', options: [
+      V('environ 0,25 %, car l’excès n’apporte plus rien', 'Les grains sont saturés : l’excès reste dans l’eau, coûte et peut altérer le film de peinture.'),
+      F('0,6 %, car plus de dispersant donne toujours une pâte plus fluide', 'Au-delà de la saturation, la viscosité ne baisse plus : l’excès est inutile.'),
+      F('0,05 %, pour limiter le coût même si la pâte est plus visqueuse', 'On vise la viscosité minimale : 0,05 % laisse la pâte plus épaisse que nécessaire.'),
+    ] },
+  { id: 'disp-ana-dosage-eau', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Masse de solution de dispersant',
+    enonce: 'Un dispersant est livré en solution contenant 40 % de matière active. Une recette demande 0,60 g de matière active dans la pâte d’empâtage.', q: 'Quelle masse de solution faut-il peser ?', options: [
+      V('1,5 g : 0,60 g divisé par 0,40', 'La solution ne contient que 40 % de matière active : on divise par cette fraction.'),
+      F('0,60 g, la masse de matière active elle-même', 'La solution contient aussi de l’eau : il faut peser davantage que la matière active.'),
+      F('0,24 g, en multipliant 0,60 g par 40 %', 'Multiplier donne moins que la matière active : la solution est plus diluée, il faut diviser.'),
+      F('0,36 g, en retranchant 40 % de la matière active', 'On ne retranche pas : la masse de solution se déduit d’un rapport.'),
     ] },
   { id: 'lum-spectre-sodium', domaine: 'Lumière', titre: 'Lampe à vapeur de sodium',
     enonce: 'On observe, à travers un spectroscope, la lumière d’une lampe spectrale à vapeur de sodium (basse pression).', q: 'Le spectre observé est…', options: [
