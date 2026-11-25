@@ -1,3 +1,4 @@
+import { FRM_VAL } from './formesExos.js';
 import { CHA_VAL } from './chaineExos.js';
 import { SGN_VAL } from './signeExos.js';
 import { JOU_VAL } from './jouleExos.js';
@@ -4556,6 +4557,7 @@ export const PLAUSIBLES = [
   ...JOU_VAL,
   ...CHA_VAL,
   ...SGN_VAL,
+  ...FRM_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,

@@ -220,6 +220,7 @@ const SimulationBatterie = paresseux(() => import("./simulations/Batterie"), "Si
 const SimulationJoule = paresseux(() => import("./simulations/Joule"), "SimulationJoule");
 const SimulationChaine = paresseux(() => import("./simulations/Chaine"), "SimulationChaine");
 const SimulationSigne = paresseux(() => import("./simulations/Signe"), "SimulationSigne");
+const SimulationFormes = paresseux(() => import("./simulations/Formes"), "SimulationFormes");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -419,6 +420,8 @@ const SIMULATIONS = [
     component: SimulationChaine },
   { id:238, label:"Conservation de l’énergie : bilan et signe des transferts", niveau:"TSTL", icon:"⚖️", color:"#0f766e",
     component: SimulationSigne },
+  { id:243, label:"Formes d’énergie stockée : cinétique, potentielle, interne", niveau:"TSTL", icon:"🎢", color:"#b45309",
+    component: SimulationFormes },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",

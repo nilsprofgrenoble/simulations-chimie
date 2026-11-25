@@ -2616,5 +2616,17 @@
  "77:plausible:phe-val-ec-negative": "VAL707",
  "77:plausible:phe-val-cuivre-visible": "VAL708",
  "77:plausible:phe-val-intensite-ok": "VAL709",
- "36:phe-calcul": "REA156"
+ "36:phe-calcul": "REA156",
+ "34:frm-sapp-glisse.0": "SAPP558",
+ "34:frm-sapp-glisse.1": "SAPP559",
+ "34:frm-sapp-chute.0": "SAPP560",
+ "34:frm-sapp-chute.1": "SAPP561",
+ "37:prevoir:frm-ana-sommet": "ANA1197",
+ "37:prevoir:frm-ana-vitesse": "ANA1198",
+ "37:prevoir:frm-ana-frottement": "ANA1199",
+ "37:prevoir:frm-ana-total": "ANA1200",
+ "77:plausible:frm-val-bilan": "VAL710",
+ "77:plausible:frm-val-chute": "VAL711",
+ "36:frm-glisse": "REA157",
+ "36:frm-chute": "REA158"
 }
