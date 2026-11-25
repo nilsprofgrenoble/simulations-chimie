@@ -72,7 +72,7 @@ export function SimulationMousse() {
       tache: { type: 'qcm', q: 'Une solution donne 18 cm de mousse qui disparaît en moins de deux minutes. Comment la décrire ?', ...QCM.moussaStab,
         expl: 'La hauteur initiale (18 cm) mesure la moussabilité : elle est élevée. La vitesse de disparition mesure la stabilité : ici la mousse disparaît vite, elle est peu stable. Les deux qualités sont indépendantes.', indice: 'La hauteur de départ renseigne sur la formation ; la vitesse de décroissance sur la durée de vie.' } },
     { id: 'ross-miles', titre: 'Mesurer le pouvoir moussant : Ross-Miles', focus: ['scene', 'curseur', 'mesures'],
-      texte: <>Méthode de <strong>Ross-Miles</strong> : on verse 200 mL de solution depuis 90 cm de haut dans une éprouvette contenant déjà 50 mL de la même solution. La hauteur de mousse formée mesure la moussabilité ; on suit ensuite sa décroissance pour estimer la stabilité. Faites avancer le temps avec le curseur : le tableau donne les hauteurs relevées pour une solution de SDS à 5 CMC.</>,
+      texte: <>Méthode de <strong>Ross-Miles</strong> : on verse 200 mL de solution depuis 90 cm de haut dans une éprouvette contenant déjà 50 mL de la même solution. La hauteur de mousse formée mesure la moussabilité ; on relève ensuite la hauteur au cours du temps (les essais normalisés la lisent à t = 0 puis à 5 min) pour estimer la stabilité. Faites avancer le temps avec le curseur : le tableau donne les hauteurs relevées pour une solution de SDS à 5 CMC.</>,
       tache: { type: 'num', q: 'Part de la hauteur initiale perdue au bout de 10 minutes', unite: '%', vrai: PERTE, tol: 0.03, affiche: v => fr(v, 0), cs: 2,
         calcul: () => [`Hauteur initiale : ${fr(HRM[0], 1)} cm ; hauteur à 10 min : ${fr(HRM[5], 1)} cm.`, `Perte : ${fr(HRM[0], 1)} − ${fr(HRM[5], 1)} = ${fr(HRM[0] - HRM[5], 1)} cm.`, `En pourcentage de la hauteur initiale : ${fr(HRM[0] - HRM[5], 1)} ÷ ${fr(HRM[0], 1)} × 100 = ${fr(PERTE, 0)} %.`],
         pieges: [[HRM[5] / HRM[0] * 100, 'C’est la part de hauteur restante : on demande la part perdue.'], [HRM[0] - HRM[5], 'C’est la perte en cm : il faut la ramener à la hauteur initiale pour avoir un pourcentage.']],
@@ -139,7 +139,7 @@ export function SimulationMousse() {
   const sceneGuide = !enGuide ? null
     : sc === 'lamelle' ? <SvgLamelle type="sds"/>
     : ['cmc-action', 'cmc-q'].includes(sc) ? <SvgMousse h={M.H0(eVie)} legende={`SDS à ${fr(vie.c, 1)} fois la CMC : hauteur initiale (Ross-Miles)`}/>
-    : sc === 'moussa-stab' ? <SvgCourbeMousse mode="rm" p={{ H0: 18, td: 0.2, th: 0.5 }}/>
+    : sc === 'moussa-stab' ? <SvgCourbeMousse mode="rm" p={{ H0: 18, td: 0.2, th: 0.5 }} tMax={6}/>
     : sc === 'ross-miles' ? <SvgMousse h={M.hauteurRM(eVie, vie.tps)} t={vie.tps} legende="SDS à 5 CMC, mousse de Ross-Miles"/>
     : sc === 'bikerman' ? <SvgCourbeMousse mode="bik" e={eVie}/>
     : sc === 'ethoxy' ? <><SvgFormulesTensio/><div style={{ marginTop: 8 }}><SvgComparaisonLamelles/></div></>
@@ -164,7 +164,7 @@ export function SimulationMousse() {
   const curseurGuide = enGuide && ['cmc-action', 'ross-miles', 'supermoussant', 'facteurs', 'antimousse-action'].includes(sc) ? (
     <div style={{ ...styleBoite, ...cadre('curseur') }}>
       {sc === 'cmc-action' && curs('mo-c', `Concentration en SDS : ${fr(vie.c, 1)} × CMC (${fr(vie.c * M.CMC_SDS, 1)} mmol/L)`, vie.c, 0.1, 10, 0.1, setV('c'), 'Hauteur initiale de mousse mesurée par Ross-Miles.')}
-      {sc === 'ross-miles' && curs('mo-t', `Temps écoulé : ${fr(vie.tps, 1)} min`, vie.tps, 0, 15, 0.5, setV('tps'), 'La hauteur de mousse diminue avec le temps.')}
+      {sc === 'ross-miles' && curs('mo-t', `Temps écoulé : ${fr(vie.tps, 1)} min`, vie.tps, 0, 30, 0.5, setV('tps'), 'La hauteur de mousse diminue avec le temps.')}
       {sc === 'supermoussant' && curs('mo-r', `Dodécanol ajouté : ${fr(vie.r * 100, 0)} % du SDS`, vie.r, 0, 0.2, 0.01, setV('r'), '0 % : SDS seul. Le dodécanol s’intercale entre les molécules.')}
       {sc === 'facteurs' && <>
         {curs('mo-ca', `Ions Ca²⁺ : ${fr(vie.ca, 1)} mmol/L`, vie.ca, 0, 5, 0.5, setV('ca'), '0 : eau douce.')}
@@ -268,7 +268,7 @@ export function SimulationMousse() {
       {ex.courbe === 'rm' && <>
         <div style={{ height: 6 }}/>
         <SvgMousse h={M.hauteurRM(eEx, ex.tps)} t={ex.tps} legende="mousse de Ross-Miles"/>
-        {cursEx('mo-xt', `Temps écoulé : ${fr(ex.tps, 1)} min`, ex.tps, 0, 15, 0.5, 'tps', 'Fait vieillir la mousse : repérez la demi-vie.')}</>}
+        {cursEx('mo-xt', `Temps écoulé : ${fr(ex.tps, 1)} min`, ex.tps, 0, 30, 0.5, 'tps', 'Fait vieillir la mousse : repérez la demi-vie.')}</>}
       {ex.courbe === 'bik' && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Débit de gaz constant jusqu’à 10 min, puis arrêt du gaz.</div>}
     </div>);
   const mesuresEx = enExplore && (
@@ -305,13 +305,14 @@ export function SimulationMousse() {
   // ---------- hypothèses ----------
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Modèle qualitatif</strong> : la hauteur initiale et la demi-vie sont des produits de facteurs simples (concentration, eau dure, additifs, gaz). Les courbes ont une forme simplifiée : hauteur constante un court instant puis décroissance exponentielle (Ross-Miles) ; montée exponentielle vers un plateau (Bikerman). Les ordres de grandeur (hauteurs de 10 à 20 cm, demi-vies de quelques minutes) s’inspirent de mesures de ce type ; les valeurs sont indicatives.</li>
+      <li><strong>Modèle qualitatif</strong> : la hauteur initiale et la demi-vie sont des produits de facteurs simples (concentration, eau dure, additifs, gaz). Les courbes ont une forme simplifiée : hauteur constante un court instant puis décroissance exponentielle (Ross-Miles) ; montée exponentielle vers un plateau (Bikerman). Les effets sont réglés pour reproduire les tendances et les ordres de grandeur publiés (voir ci-dessous) ; les autres valeurs sont indicatives.</li>
       <li><strong>CMC</strong> : 8,2 mmol/L pour le SDS dans l’eau pure à 25 °C (valeur usuelle de la littérature). Pour un laureth sulfate de sodium, les valeurs publiées vont d’environ 1,5 à 4 mmol/L selon le nombre de groupes éthoxy, la pureté, la méthode et la présence de sels (par exemple 1,5 mmol/L pour un laureth-2 sulfate, 4,3 mmol/L pour un SLES commercial) : la simulation prend 3 mmol/L. La concentration est donnée en multiples de la CMC, donc ce choix change peu les résultats.</li>
-      <li><strong>Origine des valeurs de mousse</strong> : les hauteurs, les plateaux et surtout les demi-vies sont des valeurs choisies pour illustrer les tendances ; ce ne sont pas des mesures. À titre de repère, des essais publiés en eau du robinet (0,2 % de matière active) donnent pour le SDS et pour un laureth sulfate des hauteurs initiales proches (écart d’environ 5 % en faveur du laureth sulfate) et une mousse qui garde 70 à 90 % de son volume après 5 min, soit des demi-vies de l’ordre de 10 à 30 min. La simulation exagère donc l’écart de stabilité entre SDS et laureth sulfate et prend des durées plus courtes : en eau pure sans salissure, l’écart réel est faible ; il augmente en eau dure et en présence de matières grasses. Seul le sens des effets est à retenir, pas les valeurs (sources : J. Soc. Cosmet. Chem., vol. 25 et vol. 48).</li>
-      <li><strong>Eau dure et additifs</strong> : seul Ca²⁺ est modélisé ; l’effet moindre sur le laureth sulfate est une hypothèse du modèle. Le dodécanol double la demi-vie à 10 % du SDS ; une quantité trop importante d’additif insoluble n’est pas décrite.</li>
+      <li><strong>Origine des valeurs de mousse</strong> : le SDS à 5 CMC a ici une demi-vie de 25 min en eau douce. C’est calé sur des essais publiés en eau du robinet (0,2 % de matière active), où la mousse garde 70 à 90 % de sa hauteur ou de son volume après 5 min (soit des demi-vies de 10 à 30 min environ). Dans ces mêmes essais, le laureth sulfate donne une hauteur initiale d’environ 5 % supérieure à celle du SDS et une rétention un peu meilleure : la simulation prend 19 cm contre 18 cm, et une demi-vie 1,3 fois plus longue en eau douce. Un écart de stabilité plus net n’apparaît que dans des conditions plus sévères (eau dure, salissures). Les résultats dépendent du protocole : seul le sens des effets est à retenir (sources : J. Soc. Cosmet. Chem., vol. 25, n° 11, et vol. 48, n° 5).</li>
+      <li><strong>Plateau de Bikerman</strong> : aucune mesure publiée n’a été trouvée pour ces deux tensioactifs. Le plateau est supposé proportionnel à la hauteur initiale et à la demi-vie de la mousse (hypothèse du modèle), et la durée de vie dynamique est prise 8 fois plus courte que la demi-vie statique pour que la courbe se lise bien : les valeurs sont illustratives.</li>
+      <li><strong>Eau dure et additifs</strong> : seul Ca²⁺ est modélisé. Qu’un excès de calcium fasse chuter la moussabilité et la stabilité du SDS (précipitation du dodécylsulfate de calcium) est établi ; en revanche, l’avantage du laureth sulfate en eau dure est ici une hypothèse du modèle, d’ampleur non mesurée (le laureth sulfate reste sensible au calcium). Le dodécanol double la demi-vie à 10 % du SDS ; une quantité trop importante d’additif insoluble n’est pas décrite.</li>
       <li><strong>Antimousse</strong> : la dose efficace dépend du produit et de la formulation (par exemple, pour une émulsion de polyéther-siloxane avec silice, de l’ordre de 0,1 à 1 % de la formulation d’après une fiche technique). Selon le produit, l’antimousse s’ajoute dès l’empâtage ou à la dilution. Un antimousse peut aussi laisser des défauts dans un film (cratères) : non modélisé.</li>
       <li><strong>Hors modèle</strong> : le drainage et le mûrissement des bulles, la taille des bulles, la température, le pH, les protéines et polymères tensioactifs, la rhéologie de la mousse.</li>
-      <li><strong>Spécifications</strong> : hauteur initiale ≥ 12 cm, demi-vie ≥ 8 min et plateau ≤ 3 cm sont des seuils illustratifs, pas des normes.</li>
+      <li><strong>Spécifications</strong> : hauteur initiale ≥ 12 cm, demi-vie ≥ 30 min et plateau ≤ 3 cm sont des seuils illustratifs, pas des normes.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
   const mesuresGuide = enGuide && lignesGuide.length > 0 && (

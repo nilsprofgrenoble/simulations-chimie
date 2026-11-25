@@ -2,11 +2,11 @@
 // Capacités visées (jamais affichées à l'élève) : « Expliquer le mode d'action d'un tensioactif dans une mousse » ; « Mettre en œuvre un protocole expérimental pour déterminer le pouvoir moussant d'un mélange » ;
 // « Mettre en œuvre un contrôle de stabilité d'une mousse » ; « Expliquer le mode d'action des agents antimousse ».
 // Fil rouge : un liquide vaisselle (on veut de la mousse à la main), et l'antimousse qui la supprime quand elle gêne.
-// Modèle QUALITATIF : moussabilité (hauteur initiale H0) et stabilité (demi-vie t½) sont des produits de facteurs simples ; les ordres de grandeur s'inspirent de mesures de type Ross-Miles et Bikerman.
+// Modèle QUALITATIF : moussabilité (hauteur initiale H0) et stabilité (demi-vie t½) sont des produits de facteurs simples ; les ordres de grandeur sont calés sur des essais publiés de type Ross-Miles et Bacon (SDS : demi-vie de 10 à 30 min en eau du robinet ; laureth sulfate : environ 1,3 fois plus stable, hauteur initiale environ 5 % supérieure). Aucune mesure de plateau de Bikerman n'a été trouvée : les plateaux sont illustratifs.
 
 export const TENSIOACTIFS = [
-  { id: 'sds', nom: 'dodécylsulfate de sodium (SDS)', court: 'SDS', cmc: 8.2, M: 18, th: 6, sdur: 0.5 },
-  { id: 'sles', nom: 'laureth sulfate de sodium (SDS éthoxylé)', court: 'laureth sulfate', cmc: 3, M: 17, th: 13, sdur: 0.2 },
+  { id: 'sds', nom: 'dodécylsulfate de sodium (SDS)', court: 'SDS', cmc: 8.2, M: 18, th: 30, sdur: 0.5 },
+  { id: 'sles', nom: 'laureth sulfate de sodium (SDS éthoxylé)', court: 'laureth sulfate', cmc: 3, M: 19, th: 39, sdur: 0.3 },
 ];
 export const tensio = id => TENSIOACTIFS.find(t => t.id === id);
 export const GAZ = [
@@ -19,7 +19,7 @@ export const gaz = id => GAZ.find(g => g.id === id);
 export const M_SDS = 288.4;       // g/mol
 export const CMC_SDS = 8.2;       // mmol/L
 export const H_SPEC = 12;         // cm : spécification illustrative d'un liquide vaisselle (moussabilité)
-export const TH_SPEC = 8;         // min : spécification illustrative (stabilité)
+export const TH_SPEC = 30;        // min : spécification illustrative (stabilité)
 export const H_PLATEAU_MAX = 3;   // cm : mousse « supprimée » (hauteur du plateau de Bikerman)
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 
@@ -32,12 +32,13 @@ export const antiStab = d => 1 / (1 + 60 * Math.max(0, d));
 
 export const H0 = e => { const T = tensio(e.t); return T.M * fForm(e.c) * durete(T, e.ca) * antiForm(e.d); };              // cm
 export const demiVie = e => { const T = tensio(e.t); return T.th * fStab(e.c) * durete(T, e.ca) * (1 + 10 * clamp(e.r, 0, 0.2)) * (1 + clamp(e.v)) * gaz(e.g).f * antiStab(e.d); };   // min
-export const delaiRM = e => Math.min(2, 0.25 * demiVie(e));                  // min : la hauteur reste constante avant de décroître (Ross-Miles)
+export const delaiRM = e => Math.min(0.5, 0.25 * demiVie(e));                  // min : la hauteur reste constante avant de décroître (Ross-Miles)
 // Ross-Miles : hauteur de mousse après t minutes
 export const hauteurRM = (e, t) => { const h0 = H0(e), th = demiVie(e), td = delaiRM(e); return t <= td ? h0 : h0 * Math.pow(2, -(t - td) / th); };
 // Bikerman : débit de gaz constant, la hauteur tend vers un plateau
-export const tauB = e => demiVie(e) / Math.LN2;
-export const debitFormation = e => 0.15 * H0(e);                              // cm/min
+export const K_BIK = 8;                                                        // hypothèse : durée de vie dynamique (Bikerman) = demi-vie statique / 8, pour des courbes lisibles
+export const tauB = e => demiVie(e) / (Math.LN2 * K_BIK);
+export const debitFormation = e => 0.24 * H0(e);                              // cm/min
 export const plateauB = e => debitFormation(e) * tauB(e);                     // cm
 export const hauteurB = (e, t, tStop = Infinity) => { const tau = tauB(e), hp = plateauB(e); const h = tt => hp * (1 - Math.exp(-tt / tau)); return t <= tStop ? h(t) : h(tStop) * Math.exp(-(t - tStop) / tau); };
 
