@@ -3925,6 +3925,30 @@ export const PREVOIR = [
       F('seulement une coordonnée normale, vers le centre, comme à vitesse constante', 'La norme de la vitesse diminue : a_t = frac(dv|dt) n’est pas nulle, il y a aussi une coordonnée tangentielle.'),
       F('une coordonnée tangentielle négative et une normale vers l’extérieur du virage', 'La coordonnée normale a_n = frac(v²|R) est positive : dirigée vers le centre du cercle, jamais vers l’extérieur.'),
     ] },
+  { id: 'fre-ana-vitesse', domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Les coordonnées du vecteur vitesse dans le repère de Frenet',
+    ...presenter({ contexte: 'Un point décrit un cercle de rayon R avec une vitesse de norme v non nulle. On décrit son mouvement dans le repère de Frenet : vec(u)_t est tangent au cercle, dans le sens du mouvement ; vec(u)_n est perpendiculaire à vec(u)_t, dirigé vers le centre.' }),
+    q: 'Quelles sont les coordonnées du vecteur vitesse vec(v) dans ce repère ?', options: [
+      V('v sur vec(u)_t et 0 sur vec(u)_n : le vecteur vitesse est tangent au cercle', 'Le vecteur vitesse est tangent à la trajectoire : il est porté par vec(u)_t, sa coordonnée sur vec(u)_n est nulle et sa coordonnée sur vec(u)_t est sa norme v.'),
+      F('v sur vec(u)_t et frac(v²|R) sur vec(u)_n, comme pour l’accélération', 'frac(v²|R) est la coordonnée normale du vecteur accélération, pas du vecteur vitesse : le vecteur vitesse n’a aucune coordonnée normale.'),
+      F('0 sur vec(u)_t et v sur vec(u)_n : le vecteur vitesse est dirigé vers le centre', 'Un vecteur vitesse dirigé vers le centre ferait approcher le point du centre : or le point reste à la distance R. C’est l’accélération, pas la vitesse, qui est dirigée vers le centre.'),
+      F('v sur vec(u)_t et frac(dv|dt) sur vec(u)_n, la variation de la norme', 'frac(dv|dt) est la coordonnée tangentielle du vecteur accélération : c’est une coordonnée de vec(a), pas de vec(v).'),
+    ] },
+  { id: 'vac-ana-tangente', domaine: 'Vecteurs vitesse et accélération', titre: 'La direction du vecteur vitesse sur une trajectoire courbe',
+    ...presenter({ contexte: 'Un point M décrit une trajectoire courbe. Son vecteur vitesse est la dérivée de son vecteur position par rapport au temps : vec(v) = frac(d vec(OM)|dt).' }),
+    q: 'Quelle est la direction du vecteur vitesse en un point de la trajectoire ?', options: [
+      V('tangente à la trajectoire, dans le sens du mouvement', 'vec(v) = frac(d vec(OM)|dt) : pendant une durée très courte, le point se déplace le long de la trajectoire. Le vecteur vitesse est donc tangent à la trajectoire, dans le sens du mouvement.'),
+      F('perpendiculaire à la trajectoire, vers l’intérieur de la courbe', 'Cette direction est celle de la coordonnée normale de l’accélération pour un mouvement circulaire, pas celle de la vitesse.'),
+      F('dirigée vers le point de départ du mouvement', 'Le vecteur vitesse décrit le déplacement à l’instant considéré : il ne dépend pas du point de départ.'),
+      F('portée par la droite qui joint le point M à l’origine du repère', 'Cette droite porte le vecteur position vec(OM), pas sa dérivée. Les deux vecteurs ne sont parallèles que dans un cas particulier (mouvement le long d’une droite passant par l’origine).'),
+    ] },
+  { id: 'vac-ana-polynome', domaine: 'Vecteurs vitesse et accélération', titre: 'Dériver une position proportionnelle à t²',
+    ...presenter({ contexte: 'Un mobile se déplace sur l’axe Ox. Sa position est proportionnelle au carré de la date : x(t) = k t², avec k constante positive et t ≥ 0.' }),
+    q: 'Comment évoluent la coordonnée v_x de sa vitesse et la coordonnée a_x de son accélération ?', options: [
+      V('v_x proportionnelle à t ; a_x constante, non nulle', 'v_x = frac(dx|dt) = 2k t, proportionnelle à t ; puis a_x = frac(dv_x|dt) = 2k, constante. Chaque dérivation abaisse d’une unité la puissance de t.'),
+      F('v_x constante ; a_x nulle : mouvement uniforme', 'Une vitesse constante correspondrait à une position de la forme x(t) = x_0 + v t. Ici x varie comme t² : v_x augmente avec t.'),
+      F('v_x proportionnelle à t² ; a_x proportionnelle à t', 'C’est la position x qui est proportionnelle à t². La dérivée de t² est 2t : v_x est proportionnelle à t, et a_x est constante.'),
+      F('v_x proportionnelle à t ; a_x proportionnelle à t', 'v_x = 2k t est bien proportionnelle à t, mais sa dérivée 2k est une constante : a_x ne dépend pas de t.'),
+    ] },
   { id: 'uvv-ana-couleur', domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert', titre: 'Une solution orange et son spectre',
     enonce: 'Une solution de colorant alimentaire paraît orange. On trace son spectre d’absorption dans le domaine visible, de 400 à 750 nm.', q: 'Où se situe le maximum d’absorption de cette solution ?', options: [
       V('dans le bleu, couleur complémentaire de l’orange', 'La solution absorbe la couleur complémentaire de celle qu’on voit : orange vu, bleu absorbé (vers 450 à 490 nm).'),
@@ -4024,7 +4048,7 @@ export const PREVOIR = [
       F('i est constante, égale à frac(E|R) en valeur absolue', 'L’intensité diminue avec u_C : elle vaut frac(E|R) en valeur absolue seulement au début de la décharge, puis tend vers 0.'),
     ] },
   { id: 'nwt-ana-balance', domaine: 'Deuxième loi de Newton', titre: 'Une balance dans la cabine',
-    enonce: 'Un voyageur de masse 70 kg est debout sur une balance posée sur le sol d’une cabine d’ascenseur. La cabine démarre vers le haut. Le voyageur est soumis à son poids vec(P) et à la réaction vec(R) de la balance ; la balance indique la norme R.', q: 'Pendant le démarrage, comment se comparent R et P ?', options: [
+    ...presenter({ contexte: 'Un voyageur est debout sur une balance posée sur le sol d’une cabine d’ascenseur. La cabine démarre vers le haut. Le voyageur est soumis à son poids vec(P) et à la réaction vec(R) de la balance ; la balance indique la norme R.', liste: [['Masse du voyageur', '70 kg']] }), q: 'Pendant le démarrage, comment se comparent R et P ?', options: [
       V('R est plus grande que P : la somme des forces est vers le haut', 'Le voyageur accélère vers le haut avec la cabine : vec(a)_G est vers le haut, donc Σ vec(F) aussi. Avec un axe vers le haut, R − P > 0 : R est plus grande que P, et la balance indique plus que d’habitude.'),
       F('R est égale à P, puisque le voyageur reste immobile dans la cabine', 'Le voyageur est immobile par rapport à la cabine, mais la cabine accélère par rapport au sol : il accélère aussi, donc Σ vec(F) n’est pas nulle et R n’est pas égale à P.'),
       F('R est plus petite que P, car la cabine s’éloigne du sol', 'Ce n’est pas le mouvement qui décide, mais le sens de l’accélération : ici vers le haut, donc R est plus grande que P. R serait plus petite si l’accélération était vers le bas.'),
@@ -4032,10 +4056,10 @@ export const PREVOIR = [
     ] },
   { id: 'nwt-ana-masse', domaine: 'Deuxième loi de Newton', titre: 'Un chariot deux fois plus lourd',
     enonce: 'Un chariot de masse m est tiré par un fil horizontal de tension constante T, sans frottement ; son centre de masse a une accélération de norme a. On ajoute une charge qui double la masse du chariot, et la tension T reste la même.', q: 'Que devient la norme de l’accélération du centre de masse ?', options: [
-      V('elle est divisée par 2', 'Σ vec(F) = m vec(a)_G : à somme des forces constante, la norme a de l’accélération est inversement proportionnelle à m. Une masse doublée donne une accélération moitié.'),
-      F('elle est multipliée par 2', 'Plus de masse rend le chariot plus difficile à accélérer : l’accélération est la somme des forces divisée par m, elle diminue quand m augmente.'),
+      V('elle est divisée par 2, la force restant la même', 'Σ vec(F) = m vec(a)_G : à somme des forces constante, la norme a de l’accélération est inversement proportionnelle à m. Une masse doublée donne une accélération moitié.'),
+      F('elle est multipliée par 2, la force restant la même', 'Plus de masse rend le chariot plus difficile à accélérer : l’accélération est la somme des forces divisée par m, elle diminue quand m augmente.'),
       F('elle ne change pas, car la force est la même', 'La force est la même, mais l’accélération dépend aussi de la masse : c’est la somme des forces divisée par m.'),
-      F('elle est divisée par 4', 'Le facteur 4 apparaîtrait pour l’énergie cinétique (proportionnelle à v²), pas ici : a est inversement proportionnelle à m, donc divisée par 2.'),
+      F('elle est divisée par 4, la force restant la même', 'Le facteur 4 apparaîtrait pour l’énergie cinétique (proportionnelle à v²), pas ici : a est inversement proportionnelle à m, donc divisée par 2.'),
     ] },
   { id: 'nwt-ana-galileen', domaine: 'Deuxième loi de Newton', titre: 'Un tramway qui démarre',
     enonce: 'Dans un tramway qui démarre brusquement, un voyageur debout, qui ne se tient pas, bascule vers l’arrière. Un élève affirme : « aucune force ne le tire vers l’arrière, donc la deuxième loi de Newton est fausse ».', q: 'Quelle est la bonne analyse ?', options: [
@@ -4045,7 +4069,7 @@ export const PREVOIR = [
       F('la loi n’est valable que pour des vitesses constantes', 'C’est l’inverse : elle relie justement la variation de vitesse à la somme des forces ; elle s’applique à un système qui accélère, dans un référentiel galiléen.'),
     ] },
   { id: 'pes-ana-masse', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Deux balles de masses différentes',
-    enonce: 'Dans la cour, deux balles de même taille, l’une de 50 g et l’autre de 200 g, sont lancées du même point avec la même vitesse initiale vec(v_0) (même norme, même direction). On néglige l’action de l’air.', q: 'Comment se comparent leurs trajectoires ?', options: [
+    ...presenter({ contexte: 'Dans la cour, deux balles de même taille sont lancées du même point avec la même vitesse initiale vec(v_0) (même norme, même direction). On néglige l’action de l’air.', liste: [['Masse de la première balle', '50 g'], ['Masse de la seconde balle', '200 g']] }), q: 'Comment se comparent leurs trajectoires ?', options: [
       V('elles sont identiques : la masse n’intervient pas ici', 'Avec le poids seul, Σ vec(F) = m vec(g) = m vec(a) : la masse se simplifie et vec(a) = vec(g) pour les deux balles. Mêmes équations horaires, donc même trajectoire.'),
       F('la balle de 200 g va moins loin, car elle est plus lourde', 'Une balle plus lourde subit un poids plus grand, mais aussi une inertie plus grande : les deux effets se compensent, l’accélération est la même (vec(g)) et la portée aussi.'),
       F('la balle de 50 g retombe plus vite, car elle est plus légère', 'Sans air, la durée de la chute ne dépend pas de la masse : à la même hauteur, les deux balles arrivent en même temps. Seul l’air peut les différencier.'),
@@ -4059,11 +4083,43 @@ export const PREVOIR = [
       F('vec(v) est horizontal ; vec(a) est nul, car la balle n’accélère plus', 'Au sommet, la composante verticale de la vitesse passe de positive à négative : elle varie encore, donc vec(a) = vec(g) n’est pas nul. Le poids n’est jamais compensé en vol.'),
     ] },
   { id: 'pes-ana-lune', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Le même lancer sur la Lune',
-    enonce: 'Sur Terre (g = 9,8 m/s²), un astronaute lance une balle depuis le sol avec une vitesse initiale de norme v_0 sous un angle α. Sur la Lune (g = 1,6 m/s², sans atmosphère), il refait exactement le même lancer (même v_0, même α). Pour un tir depuis le sol, la portée s’écrit P = frac(v_0² sin 2α|g).', q: 'Que devient la portée sur la Lune ?', options: [
+    ...presenter({ contexte: 'Un astronaute lance une balle depuis le sol, avec une vitesse initiale de norme v_0 sous un angle α, d’abord sur Terre, puis sur la Lune (sans atmosphère), en refaisant exactement le même lancer. Pour un tir depuis le sol, la portée s’écrit P = frac(v_0² sin 2α|g).', liste: [['Pesanteur sur Terre', 'g = 9,8 m/s²'], ['Pesanteur sur la Lune', 'g = 1,6 m/s²']] }), q: 'Que devient la portée sur la Lune ?', options: [
       V('elle est environ 6 fois plus grande', 'P = frac(v_0² sin 2α|g) : v_0 et α sont inchangés et g est divisé par environ 6 (9,8 divisé par 1,6), donc la portée est multipliée par environ 6.'),
       F('elle est environ 6 fois plus petite', 'C’est l’inverse : g apparaît au dénominateur de P. Sur la Lune, la pesanteur est plus faible, la balle retombe moins vite et va plus loin.'),
       F('elle ne change pas, car v_0 et α ne changent pas', 'v_0 et α sont les mêmes, mais g n’est pas le même : il figure dans l’expression de P, et la portée dépend de la valeur du champ de pesanteur.'),
       F('elle est environ 36 fois plus grande, car g est élevé au carré', 'g n’est pas élevé au carré dans P : il apparaît à la puissance 1, au dénominateur. Le rapport des portées est celui des valeurs de g, soit environ 6.'),
+    ] },
+  { id: 'nwt-ana-centre-masse', domaine: 'Deuxième loi de Newton', titre: 'Où se trouve le centre de masse de deux boules ?',
+    ...presenter({ contexte: 'Deux boules sont reliées par une tige rigide, dont la masse est négligeable. La boule A est trois fois plus lourde que la boule B. On lance l’ensemble en l’air.' }),
+    q: 'Où se trouve approximativement le centre de masse G du système ?', options: [
+      V('sur la tige, plus près de la boule A, la plus lourde', 'Le centre de masse est du côté de la masse la plus grande. Ici G est entre les deux boules, à un quart de la longueur de la tige à partir de A (trois fois plus près de A que de B).'),
+      F('au milieu de la tige, à égale distance des deux boules', 'Le milieu de la tige n’est le centre de masse que si les deux boules ont la même masse. Avec une boule plus lourde, G se rapproche d’elle.'),
+      F('sur la tige, plus près de la boule B, la plus légère', 'C’est l’inverse : le centre de masse se rapproche de la masse la plus grande, ici la boule A.'),
+      F('en dehors de la tige, au-dessus de la boule la plus lourde', 'Le centre de masse d’un ensemble de masses se trouve entre elles, jamais en dehors de la zone qu’elles occupent.'),
+    ] },
+  { id: 'nwt-ana-galileen-terre', domaine: 'Deuxième loi de Newton', titre: 'Un référentiel terrestre est-il galiléen ?',
+    ...presenter({ contexte: 'Dans un laboratoire, on étudie la chute d’une bille d’acier lâchée sans vitesse initiale, d’une hauteur de 2 m. La chute dure moins d’une seconde. Le référentiel d’étude est le laboratoire, lié à la Terre.' }),
+    q: 'Peut-on appliquer la deuxième loi de Newton dans ce référentiel ?', options: [
+      V('oui : sur une durée aussi courte, ce référentiel est quasi galiléen', 'La Terre tourne sur elle-même en 24 h : pendant moins d’une seconde, cette rotation est négligeable. Le référentiel terrestre est galiléen avec une très bonne approximation pour ce mouvement.'),
+      F('non : la Terre tourne, donc aucun référentiel terrestre ne peut être galiléen', 'Le caractère galiléen dépend du mouvement étudié : une rotation en 24 h est sans effet mesurable sur une chute de moins d’une seconde.'),
+      F('non : seul le référentiel lié au Soleil permet d’appliquer la deuxième loi', 'Le référentiel héliocentrique est une meilleure approximation, mais un référentiel terrestre convient pour des mouvements courts devant 24 h.'),
+      F('oui, mais seulement tant que la bille est immobile dans ce référentiel', 'La deuxième loi s’applique à un système en mouvement : elle relie justement la variation de son vecteur vitesse aux forces appliquées.'),
+    ] },
+  { id: 'pes-ana-plan', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Pourquoi la trajectoire est-elle plane ?',
+    ...presenter({ contexte: 'Un ballon est lancé depuis le sol avec une vitesse initiale vec(v_0) oblique (ni verticale, ni horizontale). On néglige l’action de l’air : seul le poids s’exerce sur le ballon.' }),
+    q: 'Pourquoi la trajectoire du ballon reste-t-elle contenue dans un plan ?', options: [
+      V('vec(a) est vertical : la trajectoire reste dans le plan vertical de vec(v_0)', 'D’après la deuxième loi, vec(a) = vec(g) est vertical. Aucune coordonnée de la vitesse ne varie dans la direction perpendiculaire au plan formé par vec(v_0) et la verticale : le mouvement reste dans ce plan.'),
+      F('le ballon est lancé obliquement, ce qui suffit à rendre le mouvement plan', 'L’obliquité du lancer ne suffit pas. C’est la direction de vec(a) qui compte : une force latérale (vent, effet de rotation) pourrait faire sortir la trajectoire de ce plan.'),
+      F('une force unique impose toujours une trajectoire plane, quelle que soit sa direction', 'Une force dont la direction change au cours du mouvement peut donner une trajectoire qui n’est pas plane. Ici, le poids garde une direction fixe.'),
+      F('l’action de l’air est négligée, ce qui rend le mouvement plan', 'Négliger l’air simplifie le calcul de la trajectoire, mais ne détermine pas son caractère plan : c’est la direction fixe du poids qui le garantit.'),
+    ] },
+  { id: 'pes-ana-energie', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Deux cailloux lancés d’une falaise',
+    ...presenter({ contexte: 'Du haut d’une falaise, on lance deux cailloux identiques avec la même vitesse initiale de norme v_0 : l’un vers le haut, l’autre vers le bas. On néglige l’action de l’air.' }),
+    q: 'Comment se comparent les normes de leurs vitesses quand ils arrivent au pied de la falaise ?', options: [
+      V('elles sont égales : seules v_0 et la hauteur comptent', 'Théorème de l’énergie cinétique : ΔE_c = m g h pour chacun, avec la même masse, la même vitesse initiale et la même dénivelée. Les durées de chute diffèrent, pas les vitesses d’arrivée.'),
+      F('elle est plus grande pour le caillou lancé vers le bas', 'Il arrive plus tôt, mais pas plus vite : l’énergie cinétique finale ne dépend que de l’énergie initiale et du travail du poids, identiques ici.'),
+      F('elle est plus grande pour le caillou lancé vers le haut', 'Il monte d’abord puis redescend : il repasse au niveau du lancer avec la vitesse v_0 vers le bas, et se retrouve dans la même situation que l’autre caillou.'),
+      F('on ne peut pas comparer sans connaître la durée des chutes', 'Le théorème de l’énergie cinétique relie les vitesses sans passer par le temps : la durée de chute n’est pas nécessaire.'),
     ] },
   { id: 'icc-ana-dominante', domaine: 'Incertitudes-types composées et comparaison à une valeur de référence', titre: 'Une balance dix fois plus précise',
     enonce: 'Pour trouver la masse volumique d’un cylindre, ρ = frac(4 m|π d² h), on mesure la masse m à 0,1 g près avec une balance (frac(u(m)|m) ≈ 0,06 %), et le diamètre d à la règle graduée (frac(2 u(d)|d) ≈ 3 %, en tenant compte de l’exposant de d) ; la hauteur h contribue pour frac(u(h)|h) ≈ 0,4 %. On remplace la balance par une balance dix fois plus précise : u(m) est divisée par 10. Les grandeurs sont indépendantes.', q: 'Que devient l’incertitude-type u(ρ) ?', options: [
@@ -4116,9 +4172,9 @@ export const PREVOIR = [
     ] },
   { id: 'cpl-ana-vitesse', domaine: 'Particule chargée dans un condensateur plan', titre: 'On double la vitesse d’entrée',
     enonce: 'Une particule chargée entre au milieu d’un condensateur plan avec la vitesse v₀ et sort des plaques avec une déviation y_S. Sans rien changer d’autre (même tension, mêmes plaques, même particule), on double la vitesse d’entrée.', q: 'Que devient la déviation à la sortie ?', options: [
-      V('elle est divisée par 4', 'y_S = frac(a_y × L²|2 × v₀²) : à a_y et L constants, y_S est inversement proportionnelle à v₀². Doubler v₀ divise y_S par 4 : la particule traverse deux fois plus vite, donc la force agit deux fois moins longtemps.'),
-      F('elle est divisée par 2', 'La durée de traversée est divisée par 2, mais y_S dépend du carré de cette durée : y_S est divisée par 2² = 4, pas par 2.'),
-      F('elle est doublée, car la particule va plus vite', 'Une vitesse plus grande donne moins de temps à la force pour agir : la déviation diminue.'),
+      V('elle est divisée par 4 : la traversée est deux fois plus courte', 'y_S = frac(a_y × L²|2 × v₀²) : à a_y et L constants, y_S est inversement proportionnelle à v₀². Doubler v₀ divise y_S par 4 : la particule traverse deux fois plus vite, donc la force agit deux fois moins longtemps.'),
+      F('elle est divisée par 2, car la traversée est deux fois plus courte', 'La durée de traversée est divisée par 2, mais y_S dépend du carré de cette durée : y_S est divisée par 2² = 4, pas par 2.'),
+      F('elle est doublée, car la particule entre deux fois plus vite', 'Une vitesse plus grande donne moins de temps à la force pour agir : la déviation diminue.'),
       F('elle ne change pas, car la force ne dépend pas de v₀', 'La force est bien indépendante de v₀, mais la durée de traversée en dépend, et c’est elle qui fixe la déviation.'),
     ] },
   { id: 'cpl-ana-tubes', domaine: 'Particule chargée dans un condensateur plan', titre: 'À l’intérieur d’un tube de l’accélérateur',
@@ -4128,8 +4184,32 @@ export const PREVOIR = [
       F('rectiligne ralenti, car la tension change de signe', 'La tension s’inverse pendant que la particule est dans un tube, ce qui prépare l’accélération à l’intervalle suivant, mais aucune force ne s’exerce dans le tube : elle ne ralentit pas.'),
       F('circulaire, car la particule est guidée par le tube', 'Le tube ne dévie pas la particule : sans champ ni force, la trajectoire reste une droite.'),
     ] },
+  { id: 'cpl-ana-tension', domaine: 'Particule chargée dans un condensateur plan', titre: 'On double la tension accélératrice',
+    ...presenter({ contexte: 'Un proton, initialement au repos, est accéléré dans le vide entre deux plaques soumises à une tension U. Le poids du proton est négligé.' }),
+    q: 'On double la tension U. Par quel facteur la vitesse acquise est-elle multipliée ?', options: [
+      V('par 1,4 environ : v varie comme la racine de U', 'Théorème de l’énergie cinétique : frac(1|2) m v² = e U, donc v = racine de (frac(2 e U|m)). Doubler U multiplie v par racine de 2, soit environ 1,4.'),
+      F('par 2 : la vitesse est proportionnelle à la tension', 'Ce serait l’énergie cinétique qui est proportionnelle à U, pas la vitesse : v est proportionnelle à la racine de U.'),
+      F('par 4 : la vitesse varie comme le carré de la tension', 'C’est le carré de la vitesse qui est proportionnel à U : doubler U double v², donc multiplie v par racine de 2.'),
+      F('par 1 : la vitesse ne dépend pas de la tension', 'La tension fixe le travail de la force électrique, donc l’énergie cinétique acquise : la vitesse en dépend.'),
+    ] },
+  { id: 'cpl-ana-tubes-longueur', domaine: 'Particule chargée dans un condensateur plan', titre: 'Pourquoi des tubes de plus en plus longs ?',
+    ...presenter({ contexte: 'Dans un accélérateur linéaire, une particule positive traverse une suite de tubes métalliques, reliés alternativement aux deux bornes d’un générateur de tension alternative de fréquence fixe. Les tubes successifs sont de plus en plus longs.' }),
+    q: 'Pourquoi les tubes doivent-ils être de plus en plus longs ?', options: [
+      V('la particule va de plus en plus vite et passe la même durée dans chaque tube', 'La durée passée dans un tube est fixée par la fréquence de la tension (une demi-période). La vitesse augmente à chaque intervalle : la longueur parcourue pendant cette durée aussi.'),
+      F('pour que le champ, plus intense dans les tubes, accélère davantage la particule', 'Dans un tube métallique le champ est nul : c’est dans les intervalles entre deux tubes que la particule est accélérée.'),
+      F('parce que la particule devient plus lourde en accélérant', 'Dans ce modèle, la masse de la particule ne change pas ; ce sont ses vitesses successives qui imposent des tubes plus longs.'),
+      F('parce que la fréquence de la tension diminue au cours du temps', 'La fréquence de la tension est fixe : si elle changeait, il faudrait un générateur plus compliqué. C’est la vitesse de la particule qui augmente.'),
+    ] },
+  { id: 'cpl-ana-alternance', domaine: 'Particule chargée dans un condensateur plan', titre: 'Pourquoi une tension alternative ?',
+    ...presenter({ contexte: 'Dans un accélérateur linéaire de particules positives, la particule traverse une succession de tubes métalliques ; entre deux tubes consécutifs règne un champ électrique.' }),
+    q: 'Pourquoi alimenter les tubes avec une tension alternative plutôt qu’avec une tension continue ?', options: [
+      V('le champ entre deux tubes doit changer de sens à chaque passage', 'Les tubes sont reliés alternativement aux deux bornes : avec une tension alternative, le champ entre deux tubes a le bon sens à l’instant du passage de la particule, intervalle après intervalle.'),
+      F('une tension continue conviendrait : le champ serait toujours dans le bon sens', 'Avec une tension continue, le champ a un sens fixe : il accélérerait la particule dans un intervalle puis la freinerait dans le suivant (polarité inverse).'),
+      F('la tension doit augmenter à chaque passage pour accélérer davantage', 'La valeur maximale de la tension reste la même : c’est son sens qui s’inverse. Chaque intervalle apporte le même gain d’énergie.'),
+      F('le champ doit être nul entre les tubes pour que la particule avance', 'C’est dans les intervalles que le champ accélère la particule ; dans les tubes, il est nul.'),
+    ] },
   { id: 'kep-ana-masse', domaine: 'Satellites et lois de Kepler', titre: 'Deux satellites sur la même orbite',
-    enonce: 'Deux satellites, l’un de masse 500 kg et l’autre de masse 2 000 kg, décrivent la même orbite circulaire autour de la Terre. Seule la gravitation exercée par la Terre s’applique à chacun d’eux.', q: 'Comment se comparent leurs vitesses v et leurs périodes de révolution T ?', options: [
+    ...presenter({ contexte: 'Deux satellites décrivent la même orbite circulaire autour de la Terre. Seule la gravitation exercée par la Terre s’applique à chacun d’eux.', liste: [['Masse du premier satellite', '500 kg'], ['Masse du second satellite', '2 000 kg']] }), q: 'Comment se comparent leurs vitesses v et leurs périodes de révolution T ?', options: [
       V('les deux satellites ont la même vitesse et la même période de révolution', 'Pour une orbite de rayon r autour d’un astre de masse M : v² = frac(G M|r) et T = frac(2π r|v). La masse m du satellite ne figure dans aucune de ces relations : elle se simplifie dans la deuxième loi de Newton.'),
       F('le satellite le plus lourd a une vitesse plus petite et une période plus grande', 'Le satellite lourd subit une force plus grande, mais son inertie l’est aussi : m × a = F donne a = frac(G M|r²), indépendante de m. Sa vitesse et sa période sont donc les mêmes.'),
       F('le satellite le plus lourd a une vitesse plus grande et une période plus petite', 'La force gravitationnelle est proportionnelle à m, mais l’accélération est F divisée par m : la masse se simplifie, et ni v ni T ne changent.'),
@@ -4140,7 +4220,7 @@ export const PREVOIR = [
       V('v diminue et T augmente', 'v² = frac(G M|r) diminue quand r augmente. La période T = frac(2π r|v) augmente doublement : le tour est plus long et le satellite est plus lent (de façon équivalente, T² est proportionnel à r³).'),
       F('v augmente et T augmente', 'v² = frac(G M|r) diminue quand r augmente : plus un satellite est haut, plus il va lentement. Seule T augmente.'),
       F('v diminue et T diminue', 'Le chemin à parcourir (2π r) est plus long et la vitesse plus petite : la durée d’un tour augmente. La troisième loi donne T² proportionnel à r³.'),
-      F('v reste la même, car la masse du satellite ne change pas', 'v ne dépend pas de m, mais elle dépend de r : v² = frac(G M|r). Si r change, v change.'),
+      F('v et T ne changent pas', 'v et T ne dépendent pas de la masse du satellite, mais ils dépendent du rayon r de l’orbite : v² = frac(G M|r) et T² est proportionnel à r³. Si r change, v et T changent.'),
     ] },
   { id: 'kep-ana-geo', domaine: 'Satellites et lois de Kepler', titre: 'Reconnaître un satellite géostationnaire',
     enonce: 'Quatre satellites décrivent des orbites circulaires autour de la Terre. La période de rotation de la Terre sur elle-même est le jour sidéral, 23 h 56 min.', q: 'Lequel peut être géostationnaire ?', options: [
@@ -4148,6 +4228,22 @@ export const PREVOIR = [
       F('celui dont l’orbite polaire passe par les deux pôles de la Terre, avec T = 23 h 56 min', 'Avec la bonne période, il survole pourtant tour à tour des points différents : une orbite polaire n’est pas dans le plan de l’équateur, il ne reste pas à la verticale d’un même point.'),
       F('celui dont l’orbite est dans le plan de l’équateur, mais dans le sens contraire de la rotation de la Terre, avec T = 23 h 56 min', 'Dans le sens contraire, il croise le point du sol à chaque passage : il se déplace par rapport au sol, il n’est pas immobile dans le ciel.'),
       F('celui dont l’orbite est dans le plan de l’équateur, dans le sens de la Terre, avec T = 90 min', 'Avec T = 90 min, il tourne bien plus vite que la Terre : il fait seize tours pendant un tour de la Terre, il n’est pas immobile par rapport au sol.'),
+    ] },
+  { id: 'kep-ana-troisieme', domaine: 'Satellites et lois de Kepler', titre: 'Une orbite quatre fois plus grande',
+    ...presenter({ contexte: 'Deux planètes, A et B, décrivent des orbites circulaires autour du même Soleil. Le rayon de l’orbite de B est quatre fois plus grand que celui de l’orbite de A.' }),
+    q: 'Comment se comparent leurs périodes de révolution ?', options: [
+      V('la période de B est 8 fois plus grande', 'Troisième loi de Kepler : frac(T²|r³) est le même pour les deux planètes. Si r est multiplié par 4, T² est multiplié par 4³ = 64, donc T par 8.'),
+      F('la période de B est 4 fois plus grande', 'T n’est pas proportionnelle à r : la troisième loi relie T² à r³. Multiplier r par 4 multiplie T par 4 × racine de 4 = 8.'),
+      F('la période de B est 16 fois plus grande', 'Ce facteur viendrait de T proportionnelle à r². La troisième loi donne T² proportionnelle à r³, donc T proportionnelle à r^(3/2).'),
+      F('la période de B est 2 fois plus grande', 'Ce facteur viendrait de T proportionnelle à la racine de r. C’est T² qui est proportionnelle à r³ : le facteur est bien plus grand.'),
+    ] },
+  { id: 'kep-ana-geo-altitude', domaine: 'Satellites et lois de Kepler', titre: 'Une seule altitude pour un satellite géostationnaire',
+    ...presenter({ contexte: 'Un satellite géostationnaire reste immobile dans le ciel d’un observateur situé au sol. Il décrit une orbite circulaire dans le plan de l’équateur, à une altitude voisine de 36 000 km.' }),
+    q: 'Pourquoi un satellite géostationnaire ne peut-il se trouver qu’à une seule altitude ?', options: [
+      V('sa période est celle de la Terre : cela fixe le rayon de l’orbite', 'Il doit tourner en un jour sidéral, comme la Terre. La troisième loi de Kepler relie la période au rayon de l’orbite : une seule valeur de r convient pour cette période.'),
+      F('sa masse fixe l’altitude à laquelle il peut rester immobile', 'La masse du satellite n’intervient ni dans sa vitesse ni dans sa période : elle ne peut pas fixer l’altitude.'),
+      F('au-delà de cette altitude, la gravitation de la Terre serait nulle', 'La gravitation diminue avec la distance mais ne s’annule jamais : la Lune reste liée à la Terre à plus de 380 000 km.'),
+      F('sa vitesse doit être égale à la vitesse de libération de la Terre', 'À cette altitude, la vitesse est d’environ 3 km/s, bien inférieure à la vitesse de libération (environ 11 km/s) : le satellite reste en orbite.'),
     ] },
   { id: 'pil-ana-pont', domaine: 'Piles : fonctionnement et capacité', titre: 'On retire le pont salin',
     enonce: 'Une pile zinc-cuivre alimente une petite lampe. On retire le pont salin qui relie les deux solutions, sans toucher aux fils.', q: 'Que se passe-t-il ?', options: [
@@ -6470,34 +6566,66 @@ export const PREVOIR = [
     ] },
   // ───────────────────────────── Écoulement d'un fluide (TG, sim 214) : prévoir l'effet d'un rétrécissement, d'un col plus étroit, de la masse volumique
   { id: 'ber-ana-section', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Un tuyau d’eau qui se rétrécit',
-    enonce: 'Un tuyau d’eau de diamètre 30 mm se raccorde à un tuyau horizontal de diamètre 15 mm. L’écoulement est permanent et l’eau est supposée sans viscosité.', q: 'Comment se comparent la vitesse et la pression de l’eau dans le tuyau de 15 mm, par rapport au tuyau de 30 mm ?', options: [
+    ...presenter({ schema: { type: 'venturi', rapport: 0.5, simple: true }, contexte: 'Un tuyau d’eau se raccorde à un tuyau horizontal plus étroit. L’écoulement est permanent et l’eau est supposée sans viscosité.', liste: [['Diamètre du premier tuyau', '30 mm'], ['Diamètre du second tuyau', '15 mm']] }), q: 'Comment se comparent la vitesse et la pression de l’eau dans le tuyau de 15 mm, par rapport au tuyau de 30 mm ?', options: [
       V('vitesse 4 fois plus grande, pression plus faible', 'Le diamètre est divisé par 2, donc la section par 4 : S × v est constant, la vitesse est multipliée par 4. En conduite horizontale, P + ½ρv² est constant : la pression est plus faible là où la vitesse est plus grande.'),
       F('vitesse 2 fois plus grande, pression plus faible', 'La vitesse varie comme l’inverse de la section, et la section comme le carré du diamètre : diamètre divisé par 2, vitesse multipliée par 4. Le sens de variation de la pression est correct.'),
       F('vitesse 4 fois plus grande, pression plus forte', 'La vitesse est bien multipliée par 4, mais la relation de Bernoulli en conduite horizontale relie une vitesse plus grande à une pression plus petite : P + ½ρv² reste constant.'),
       F('vitesse et pression inchangées, le débit étant conservé', 'C’est le débit Q = S × v qui est conservé, pas la vitesse : la section diminue, donc la vitesse augmente, et la pression change avec elle d’après la relation de Bernoulli.'),
     ] },
   { id: 'ber-ana-venturi', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Un col plus étroit dans un tube de Venturi',
-    enonce: 'Dans un tube de Venturi horizontal, des tubes manométriques ouverts à l’air libre sont placés en A (entrée) et en B (col). On remplace le col de 12 mm par un col plus étroit, de 8 mm, sans changer le débit ni la pression à l’entrée.', q: 'Que deviennent la colonne en B et l’écart Δh entre les colonnes A et B ?', options: [
+    ...presenter({ contexte: 'Dans un tube de Venturi horizontal, des tubes manométriques ouverts à l’air libre sont placés en A (entrée) et en B (col). On remplace le col par un col plus étroit, sans changer le débit ni la pression à l’entrée.', liste: [['Diamètre du col initial', '12 mm'], ['Diamètre du nouveau col', '8 mm']] }), q: 'Que deviennent la colonne en B et l’écart Δh entre les colonnes A et B ?', options: [
       V('la colonne en B baisse et Δh augmente', 'Un col plus étroit augmente la vitesse au col : la pression y est plus petite d’après la relation de Bernoulli, donc la colonne baisse. P_A − P_B = ρ g Δh augmente, alors que la colonne en A ne change pas.'),
       F('la colonne en B monte et Δh diminue', 'C’est le contraire : un col plus étroit accélère l’eau, donc la pression au col diminue encore et la colonne baisse. Δh augmente.'),
       F('la colonne en B et Δh ne changent pas, le débit étant le même', 'Le débit est le même, mais la vitesse au col change, car la section change : v_B = Q divisé par S_B augmente, donc la pression au col diminue.'),
       F('la colonne en B baisse et Δh diminue', 'La colonne en B baisse bien, mais elle s’éloigne alors de celle de A, qui ne change pas : l’écart Δh augmente.'),
     ] },
   { id: 'ber-ana-torricelli', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Eau ou huile dans un réservoir',
-    enonce: 'Deux grands réservoirs ouverts à l’air libre se vident par des petits orifices identiques, percés à la même profondeur h = 1,0 m sous la surface libre. L’un contient de l’eau (ρ = 1000 kg·m⁻³), l’autre de l’huile (ρ = 900 kg·m⁻³). On applique la relation de Bernoulli (fluide sans viscosité).', q: 'Comment se comparent les vitesses de sortie ?', options: [
+    ...presenter({ contexte: 'Deux grands réservoirs ouverts à l’air libre se vident par des petits orifices identiques, percés à la même profondeur sous la surface libre. L’un contient de l’eau, l’autre de l’huile. On applique la relation de Bernoulli (fluide sans viscosité).', liste: [['Profondeur des orifices', 'h = 1,0 m'], ['Masse volumique de l’eau', 'ρ = 1 000 kg·m⁻³'], ['Masse volumique de l’huile', 'ρ = 900 kg·m⁻³']] }), q: 'Comment se comparent les vitesses de sortie ?', options: [
       V('elles sont égales pour l’eau et pour l’huile', 'Dans ρ g h = ½ρ v², la masse volumique ρ se simplifie : v = racine de (2 g h) ne dépend que de g et de h. Un liquide plus dense n’a pas une vitesse de sortie plus grande.'),
       F('elle est plus grande pour l’huile, moins dense', 'ρ apparaît des deux côtés de ρ g h = ½ρ v² et se simplifie : la vitesse de sortie ne dépend pas de la masse volumique.'),
       F('elle est plus grande pour l’eau, plus dense', 'Le liquide plus dense a une pression de pesanteur ρ g h plus grande, mais aussi une pression cinétique ½ρ v² plus grande pour la même vitesse : ρ se simplifie.'),
       F('on ne peut pas comparer sans le diamètre des orifices', 'La vitesse de sortie ne dépend pas du diamètre de l’orifice tant que la surface libre descend lentement (grand réservoir) : elle vaut racine de (2 g h).'),
+    ] },
+  { id: 'ber-ana-debit', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Débit et vitesse dans une conduite qui s’élargit',
+    ...presenter({ contexte: 'De l’eau, fluide supposé incompressible, s’écoule en régime permanent dans une conduite dont la section est trois fois plus grande en B qu’en A.' }),
+    q: 'Comment se comparent le débit volumique et la vitesse de l’eau en B, par rapport à A ?', options: [
+      V('même débit ; vitesse 3 fois plus petite en B', 'En régime permanent, le débit volumique Q = S × v se conserve. La section triple, donc la vitesse est divisée par 3.'),
+      F('même débit ; vitesse 3 fois plus grande en B', 'Le débit est bien conservé, mais Q = S × v impose une vitesse plus petite là où la section est plus grande.'),
+      F('débit 3 fois plus grand en B ; même vitesse', 'Le débit n’augmente pas : l’eau qui entre en A est la même que celle qui sort en B (fluide incompressible, régime permanent).'),
+      F('débit 3 fois plus petit en B ; vitesse inchangée', 'Un débit plus petit en B signifierait que l’eau s’accumule dans la conduite : impossible en régime permanent.'),
+    ] },
+  { id: 'ber-ana-conditions', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Quand peut-on appliquer la relation de Bernoulli ?',
+    ...presenter({ contexte: 'La relation de Bernoulli relie la pression, la vitesse et l’altitude en deux points d’un écoulement. Elle suppose un fluide incompressible, un écoulement permanent et une viscosité négligeable.' }),
+    q: 'Dans laquelle de ces situations peut-on l’appliquer ?', options: [
+      V('de l’eau en régime permanent, dans un tuyau court, viscosité négligeable', 'Les trois hypothèses sont satisfaites : eau (incompressible), régime permanent, tuyau court donc peu de pertes d’énergie par viscosité.'),
+      F('de l’eau dont le débit varie fortement juste après l’ouverture d’un robinet', 'L’écoulement n’est pas permanent : la vitesse varie dans le temps en chaque point, la relation ne s’applique pas.'),
+      F('de l’huile très visqueuse qui s’écoule lentement dans un très long tuyau', 'La viscosité n’est pas négligeable : des pertes d’énergie se produisent le long du tuyau, la relation ne s’applique pas.'),
+      F('de l’air comprimé qui sort d’une tuyère à grande vitesse', 'L’air est fortement comprimé : sa masse volumique varie, le fluide ne peut pas être considéré comme incompressible.'),
+    ] },
+  { id: 'ber-ana-venturi-debit', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'On double le débit dans un tube de Venturi',
+    ...presenter({ contexte: 'Dans un tube de Venturi horizontal, des tubes manométriques ouverts sont placés en A (entrée) et en B (col, plus étroit). On double le débit de l’eau, sans changer le tube. On s’intéresse à l’écart Δh entre les colonnes en A et en B.' }),
+    q: 'Par quel facteur l’écart Δh est-il multiplié ?', options: [
+      V('par 4 : Δh varie comme le carré du débit', 'P_A − P_B = frac(1|2) ρ (v_B² − v_A²) = ρ g Δh. Les vitesses sont proportionnelles au débit : doubler le débit multiplie v² par 4, donc Δh par 4.'),
+      F('par 2 : Δh est proportionnel au débit', 'Les vitesses sont proportionnelles au débit, mais la différence de pression fait intervenir leurs carrés : Δh varie comme le carré du débit.'),
+      F('par racine de 2 : Δh varie comme la racine du débit', 'La racine carrée apparaît quand on cherche une vitesse à partir d’une différence de pression, pas l’inverse : ici Δh varie comme v².'),
+      F('par 1 : Δh ne change pas puisque le tube est le même', 'Le tube est le même, mais les vitesses ne le sont plus : la différence de pression dépend de la vitesse.'),
+    ] },
+  { id: 'ber-ana-torricelli-profondeur', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Un orifice quatre fois plus bas',
+    ...presenter({ contexte: 'Un grand réservoir d’eau ouvert à l’air libre est percé de deux petits orifices identiques : le premier à la profondeur h sous la surface libre, le second à la profondeur 4h. On applique la relation de Bernoulli (fluide sans viscosité).' }),
+    q: 'Comment se comparent les vitesses de sortie de l’eau par les deux orifices ?', options: [
+      V('la vitesse est 2 fois plus grande par l’orifice le plus bas', 'v = racine de (2 g h) : multiplier la profondeur par 4 multiplie la vitesse par racine de 4 = 2.'),
+      F('la vitesse est 4 fois plus grande par l’orifice le plus bas', 'v n’est pas proportionnelle à h mais à sa racine carrée : quatre fois plus profond donne une vitesse deux fois plus grande.'),
+      F('la vitesse est 16 fois plus grande par l’orifice le plus bas', 'v n’est pas proportionnelle à h² : c’est v² qui est proportionnelle à h.'),
+      F('les vitesses sont identiques puisque c’est la même eau', 'La vitesse de sortie dépend de la profondeur : la pression due à l’eau au-dessus de l’orifice est plus grande plus bas.'),
     ] },
 
   // ───────────────────────────── Poussée d'Archimède (TG, sim 213) : prévoir sans calculer
   { id: 'arc-ana-masse', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Deux cubes de même volume, deux matériaux',
     enonce: 'Deux cubes de même volume, l’un en aluminium, l’autre en acier (plus dense), sont plongés entièrement dans l’eau douce et suspendus chacun à un dynamomètre. Dans l’air, le dynamomètre de l’acier indique davantage.', q: 'Comment se comparent les poussées d’Archimède exercées sur les deux cubes et les indications des dynamomètres dans l’eau ?', options: [
       V('poussées égales ; indication plus grande pour l’acier', 'La poussée vaut ρ_fluide × V_immergé × g : même fluide, même volume immergé, donc même poussée. Le poids de l’acier est plus grand, donc F = P − Π aussi.'),
-      F('poussée plus grande pour l’acier ; indication plus grande pour l’acier', 'La poussée ne dépend ni de la masse ni de la nature du solide, seulement du fluide et du volume immergé : elle est la même pour les deux cubes.'),
-      F('poussées égales ; indications égales', 'Les poussées sont égales, mais pas les poids : F = P − Π reste plus grande pour le cube le plus lourd, l’acier.'),
-      F('poussée plus petite pour l’acier ; indication plus petite pour l’acier', 'Rien dans l’expression de la poussée ne fait intervenir la nature du solide : les poussées sont égales, et l’indication de l’acier reste la plus grande puisque son poids est plus grand.'),
+      F('poussée plus grande pour l’acier ; indication plus grande', 'La poussée ne dépend ni de la masse ni de la nature du solide, seulement du fluide et du volume immergé : elle est la même pour les deux cubes.'),
+      F('poussées égales ; indications égales dans l’eau', 'Les poussées sont égales, mais pas les poids : F = P − Π reste plus grande pour le cube le plus lourd, l’acier.'),
+      F('poussée plus petite pour l’acier ; indication plus petite', 'Rien dans l’expression de la poussée ne fait intervenir la nature du solide : les poussées sont égales, et l’indication de l’acier reste la plus grande puisque son poids est plus grand.'),
     ] },
   { id: 'arc-ana-fluide', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Un flotteur passe de l’eau douce à l’eau de mer',
     enonce: 'Un cube de bois flotte, immobile, dans de l’eau douce. On le transfère dans de l’eau de mer, un peu plus dense, où il flotte aussi, immobile.', q: 'Comment évoluent son volume immergé et la poussée d’Archimède qui s’exerce sur lui ?', options: [
@@ -6512,6 +6640,22 @@ export const PREVOIR = [
       F('elle augmente avec la profondeur', 'Les forces pressantes augmentent sur chaque face, mais c’est leur différence entre le bas et le haut qui donne la poussée, et elle ne dépend pas de la profondeur du cube.'),
       F('elle diminue avec la profondeur', 'Rien dans l’expression de la poussée n’en fait diminuer la valeur : ρ_fluide, V_immergé et g sont inchangés.'),
       F('elle devient nulle', 'La poussée ne s’annule que si le fluide n’est plus en contact avec la face du bas du solide ; ici le cube reste entouré d’eau, donc la poussée est inchangée.'),
+    ] },
+  { id: 'arc-ana-origine', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'D’où vient la poussée d’Archimède ?',
+    ...presenter({ contexte: 'Un cube est totalement immergé dans un liquide au repos. Le liquide exerce des forces pressantes sur chacune des six faces du cube.' }),
+    q: 'Quelle est l’origine de la poussée d’Archimède exercée sur le cube ?', options: [
+      V('la pression est plus grande sur la face du bas que sur celle du haut', 'La pression augmente avec la profondeur : la force pressante vers le haut sur la face du bas l’emporte sur la force vers le bas sur la face du haut. La résultante est vers le haut.'),
+      F('les forces pressantes sur les côtés du cube ne se compensent pas', 'À une même profondeur, les forces sur deux faces latérales opposées ont la même valeur et des sens opposés : elles se compensent. Seules les faces du haut et du bas comptent.'),
+      F('le liquide exerce une force sur la face du bas mais pas sur celle du haut', 'Le liquide exerce une force pressante sur toutes les faces, y compris sur celle du haut (dirigée vers le bas) : mais elle est plus petite que sur la face du bas.'),
+      F('la pression est plus grande sur la face du haut, plus proche de la surface', 'La pression augmente avec la profondeur, donc elle est plus grande sur la face du bas, plus profonde.'),
+    ] },
+  { id: 'arc-ana-coule', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Un cube moins dense que l’eau',
+    ...presenter({ contexte: 'Un cube plein est maintenu entièrement immergé dans l’eau douce, puis lâché sans vitesse initiale.', liste: [['Masse volumique du cube', '800 kg·m⁻³'], ['Masse volumique de l’eau', '1 000 kg·m⁻³']] }),
+    q: 'Que se passe-t-il quand on le lâche ?', options: [
+      V('il remonte, puis flotte avec 80 % de son volume immergé', 'Entièrement immergé, il subit une poussée Π = ρ_eau V g supérieure à son poids ρ_cube V g : il remonte. À l’équilibre, Π = P donne V_immergé = frac(800|1 000) V = 0,80 V.'),
+      F('il coule : son poids dépasse celui du volume d’eau déplacé', 'Un cube de masse volumique 800 kg·m⁻³ est plus léger que le même volume d’eau (1 000 kg·m⁻³) : la poussée l’emporte sur son poids.'),
+      F('il reste immobile à l’endroit où on le lâche', 'Il resterait immobile seulement si poids et poussée étaient égaux quand il est totalement immergé, donc à masse volumique égale à celle de l’eau.'),
+      F('il remonte, puis flotte avec 20 % de son volume immergé', 'La part immergée est le rapport des masses volumiques, 800 sur 1 000 soit 80 %. Les 20 % sont la part émergée.'),
     ] },
 ];
 
