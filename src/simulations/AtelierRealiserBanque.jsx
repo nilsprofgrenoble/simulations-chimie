@@ -1122,6 +1122,40 @@ function genSavon1G() {
     retenir: ['Ion carboxylate CH₃–(CH₂)ₙ–COO⁻ : n + 2 atomes de carbone et 2n + 3 atomes d’hydrogène.', 'Masse molaire du savon (sel de sodium) : on additionne les masses molaires atomiques de tous les atomes, ion Na⁺ compris.', 'Quantité de matière : n = m / M (m en g, M en g/mol).'] };
 }
 
+// ───────────── Synthèse et rendement (1G) : quantités de réactifs, réactif limitant, masse théorique, rendement (synthèse de l'aspirine) ─────────────
+function genSynthese1G() {
+  // acide salicylique + anhydride éthanoïque → aspirine + acide éthanoïque (coefficients 1, 1, 1, 1)
+  const M1 = 138.1, M2 = 102.1, rho2 = 1.08, M3 = 180.2;
+  let m1 = 3.0, V2 = 3.0, n1 = 0, n2 = 0;
+  for (let i = 0; i < 200; i++) {
+    m1 = tire([2.0, 3.0, 4.0, 5.0]); V2 = tire([1.5, 2.0, 3.0, 4.0, 5.0, 6.0]);
+    n1 = m1 / M1 * 1000; n2 = rho2 * V2 / M2 * 1000;
+    if (Math.abs(n1 - n2) / Math.min(n1, n2) > 0.1) break;
+  }
+  const nLim = Math.min(n1, n2), limitantEstA = n1 < n2, mTh = nLim / 1000 * M3;
+  const donnees = <>La synthèse de l’aspirine suit la transformation acide salicylique + anhydride éthanoïque → aspirine + acide éthanoïque (coefficients tous égaux à 1). Données : M(acide salicylique) = <b>{nb(M1, 4)}{NB}g/mol</b> ; M(anhydride éthanoïque) = <b>{nb(M2, 4)}{NB}g/mol</b>, de masse volumique <b>{nb(rho2, 3)}{NB}g/mL</b> ; M(aspirine) = <b>{nb(M3, 4)}{NB}g/mol</b>. On introduit <b>{avecU(m1, 'g', 2)}</b> d’acide salicylique et <b>{avecU(V2, 'mL', 2)}</b> d’anhydride éthanoïque.</>;
+  const q1 = { id: 'sy0', type: 'num', q: <>{donnees} Calculez la quantité de matière d’acide salicylique introduite, en <b>mmol</b>.</>, unite: 'mmol', vrai: n1, csMin: 3, tolRel: 0.01,
+    aide: 'n = m ÷ M, avec m en g et M en g/mol : le résultat est en mol ; 1 mol = 1000 mmol.',
+    pieges: [[n1 / 1000, 'Ce résultat est en mol : le résultat est demandé en mmol (× 1000).'], [m1 * M1, 'On divise la masse par la masse molaire, on ne les multiplie pas : n = m ÷ M.'], [M1 / m1, 'Le rapport est inversé : n = m ÷ M.']],
+    expl: <>n = m ÷ M = {nb(m1, 2)} ÷ {nb(M1, 4)} = {nb(n1 / 1000, 3)}{NB}mol = <b>{avecU(n1, 'mmol', 3)}</b>.</> };
+  const q2 = { id: 'sy1', type: 'num', q: <>{donnees} Calculez la quantité de matière d’anhydride éthanoïque introduite, en <b>mmol</b>.</>, unite: 'mmol', vrai: n2, csMin: 3, tolRel: 0.01,
+    aide: 'Le liquide est mesuré en volume : sa masse est m = ρ × V, puis n = m ÷ M ; 1 mol = 1000 mmol.',
+    pieges: [[V2 / M2 * 1000, 'Le volume ne se divise pas directement par la masse molaire : il faut d’abord la masse m = ρ × V.'], [rho2 * V2 / M2, 'Ce résultat est en mol : le résultat est demandé en mmol (× 1000).'], [V2 * M2 / rho2, 'Le calcul est faux : m = ρ × V puis n = m ÷ M.']],
+    expl: <>m = ρ × V = {nb(rho2, 3)} × {nb(V2, 2)} = {nb(rho2 * V2, 3)}{NB}g ; n = m ÷ M = {nb(rho2 * V2, 3)} ÷ {nb(M2, 4)} = <b>{avecU(n2, 'mmol', 3)}</b>.</> };
+  const q3 = { id: 'sy2', type: 'num', q: <>{donnees} Les quantités introduites sont n(acide salicylique) = {nb(n1, 3)}{NB}mmol et n(anhydride éthanoïque) = {nb(n2, 3)}{NB}mmol. Calculez la masse maximale d’aspirine que l’on peut obtenir (masse théorique), en <b>g</b>.</>, unite: 'g', vrai: mTh, csMin: 3, tolRel: 0.01,
+    aide: 'Les coefficients valent tous 1 : le réactif limitant est celui dont la quantité de matière est la plus petite ; n(aspirine) maximale = n(réactif limitant), puis m = n × M.',
+    pieges: [[(limitantEstA ? n2 : n1) / 1000 * M3, 'Tu as utilisé le réactif en excès : c’est le réactif limitant (la plus petite quantité) qui fixe la quantité maximale d’aspirine.'], [nLim * M3, 'Ce résultat est 1000 fois trop grand : n est en mmol, il faut la convertir en mol avant de multiplier par M.'], [(n1 + n2) / 1000 * M3, 'On n’additionne pas les quantités de réactifs : n(aspirine) maximale = n(réactif limitant).']],
+    expl: <>Réactif limitant : {limitantEstA ? 'l’acide salicylique' : 'l’anhydride éthanoïque'} ({nb(nLim, 3)}{NB}mmol, la plus petite quantité). n(aspirine) max = {nb(nLim, 3)}{NB}mmol ; m<sub>th</sub> = n × M = {nb(nLim / 1000, 3)} × {nb(M3, 4)} = <b>{avecU(mTh, 'g', 3)}</b>.</> };
+  const r = tire([0.55, 0.62, 0.70, 0.78, 0.85, 0.92]), mExp = Number((mTh * r).toPrecision(3)), R = mExp / mTh * 100;
+  const q4 = { id: 'sy3', type: 'num', q: <>On forme au maximum <b>{avecU(mTh, 'g', 3)}</b> d’aspirine (masse théorique). Après filtration, lavage et séchage, on récupère <b>{avecU(mExp, 'g', 3)}</b> d’aspirine. Calculez le rendement de la synthèse, en <b>%</b>.</>, unite: '%', vrai: R, csMin: 2, tolRel: 0.02,
+    aide: 'Rendement = masse obtenue ÷ masse théorique (même unité), puis × 100 pour l’exprimer en pourcentage.',
+    pieges: [[mTh / mExp * 100, 'Le rapport est inversé : c’est la masse obtenue divisée par la masse théorique (un rendement ne dépasse pas 100 %).'], [R / 100, 'Ce résultat est un rapport : le rendement est demandé en pourcentage (× 100).'], [(mTh - mExp) / mTh * 100, 'Ce résultat est la perte, pas le rendement : R = m obtenue ÷ m théorique.']],
+    expl: <>R = m<sub>exp</sub> ÷ m<sub>th</sub> = {nb(mExp, 3)} ÷ {nb(mTh, 3)} = {nb(R / 100, 3)} soit <b>{avecU(R, '%', 2)}</b>.</> };
+  [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai && Math.abs(x - q.vrai) > Math.max(q.tolRel * 1.5, 0.02) * Math.abs(q.vrai)); });
+  return { intro: 'Synthèse de l’aspirine : quantités de matière des réactifs, réactif limitant, masse théorique et rendement.', questions: [q1, q2, q3, q4],
+    retenir: ['n = m ÷ M pour un solide ; pour un liquide mesuré en volume, m = ρ × V puis n = m ÷ M.', 'Avec des coefficients égaux à 1, le réactif limitant est celui de plus petite quantité de matière : il fixe la quantité maximale de produit.', 'Rendement = masse obtenue ÷ masse théorique (× 100 pour des %) ; il ne peut pas dépasser 100 %.'] };
+}
+
 // ───────────── Fluide au repos (1G) : force pressante F = P·S, pression, loi de Mariotte, ballon en altitude, test de la loi ─────────────
 function genPressionMariotte1G() {
   const pInv = (x, y) => Math.abs(x - y) > 0;
@@ -4668,6 +4702,7 @@ export const FAMILLES = [
   { id: 'syn2gt-calcul', groupe: 'Formules', titre: 'Synthèse et reflux : quantités de liquides d’un protocole, masse volumique, capacité du ballon et identification d’un liquide (2GT)', gen: genSynthese2GT, domaine: 'Synthèse et reflux (2GT)' },
   { id: 'lewis1g-calcul', groupe: 'Formules', titre: 'Schéma de Lewis : électrons de valence, doublets, doublets non liants et charge d’un atome (1G)', gen: genLewis1G, domaine: 'Schéma de Lewis des molécules et des ions' },
   { id: 'savon1g-calcul', groupe: 'Formules', titre: 'Savons : atomes de l’ion carboxylate, masse molaire du savon et quantité de matière (1G)', gen: genSavon1G, domaine: 'Savons et amphiphilie' },
+  { id: 'syn1g-calcul', groupe: 'Formules', titre: 'Synthèse et rendement : quantités de réactifs, réactif limitant, masse théorique et rendement (1G)', gen: genSynthese1G, domaine: 'Synthèse et rendement' },
   { id: 'coul1g-calcul', groupe: 'Formules', titre: 'Couleurs : mélange de lumières, filtres, couleur d’un objet éclairé, radiations absorbées et sous-pixels (1G)', gen: genCouleurs1G, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets' },
   { id: 'phot1g-calcul', groupe: 'Formules', titre: 'Lumière : domaine d’une onde, longueur d’onde, fréquence, énergie d’un photon, joules et électronvolts (1G)', gen: genPhoton1G, domaine: 'Domaines spectraux et énergie d’un photon' },
   { id: 'niv1g-calcul', groupe: 'Formules', titre: 'Niveaux d’énergie : écart entre niveaux, longueur d’onde d’un photon, niveau atteint, nombre de raies et domaine (1G)', gen: genNiveaux1G, domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies' },
