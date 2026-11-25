@@ -8,6 +8,7 @@ import { MAT2GT_VAL } from './matiere2gtExos.js';
 import { RHC_VAL } from './rheoCourbesExos.js';
 import { ITT_VAL } from './itt3Exos.js';
 import { TGPB_VAL } from './tgPhysiqueBExos.js';
+import { TSTLB_VAL } from './tstlBExos.js';
 // ====================================================
 //  BANQUE DE L'ATELIER « VALIDER » (compétence VAL : juger la vraisemblance d'un résultat, le comparer à une référence)
 // ====================================================
@@ -4343,6 +4344,7 @@ export const PLAUSIBLES = [
   ...RHC_VAL,
   ...ITT_VAL,
   ...TGPB_VAL,
+  ...TSTLB_VAL,
   // ───────────────────────────── Changement d'état (2GT, sim 195)
   P({ id: 'etat2gt-val-glacon-grammes', domaine: 'Changement d’état (2GT)', niveau: 1, titre: 'Fondre un glaçon de 20 g', plausible: false,
     enonce: 'Un élève calcule l’énergie pour faire fondre un glaçon de 20 g, avec L = 334 kJ/kg : « E = 20 × 334 = 6 680 kJ ».',
