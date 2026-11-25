@@ -2507,25 +2507,22 @@
  "77:plausible:las-val-energie": "VAL680",
  "36:las-eclairement": "REA142",
  "36:las-energie": "REA143",
-<<<<<<< Updated upstream
  "34:tht-sapp-paroi.0": "SAPP532",
  "34:tht-sapp-paroi.1": "SAPP533",
  "37:prevoir:tht-ana-double": "ANA1155",
  "77:plausible:tht-val-unite": "VAL681",
  "77:plausible:tht-val-resistance": "VAL682",
- "36:tht-calcul": "REA144"
-=======
- "34:bat-sapp-duree.0": "SAPP532",
- "34:bat-sapp-duree.1": "SAPP533",
- "34:bat-sapp-energie.0": "SAPP534",
- "34:bat-sapp-energie.1": "SAPP535",
- "37:prevoir:bat-ana-capacite": "ANA1155",
- "37:prevoir:bat-ana-puissance": "ANA1156",
- "37:prevoir:bat-ana-tension": "ANA1157",
- "37:prevoir:bat-ana-courant": "ANA1158",
- "77:plausible:bat-val-energie": "VAL681",
- "77:plausible:bat-val-duree": "VAL682",
- "36:bat-energie": "REA144",
- "36:bat-duree": "REA145"
->>>>>>> Stashed changes
+ "36:tht-calcul": "REA144",
+ "34:bat-sapp-duree.0": "SAPP534",
+ "34:bat-sapp-duree.1": "SAPP535",
+ "34:bat-sapp-energie.0": "SAPP536",
+ "34:bat-sapp-energie.1": "SAPP537",
+ "37:prevoir:bat-ana-capacite": "ANA1156",
+ "37:prevoir:bat-ana-puissance": "ANA1157",
+ "37:prevoir:bat-ana-tension": "ANA1158",
+ "37:prevoir:bat-ana-courant": "ANA1159",
+ "77:plausible:bat-val-energie": "VAL683",
+ "77:plausible:bat-val-duree": "VAL684",
+ "36:bat-energie": "REA145",
+ "36:bat-duree": "REA146"
 }
