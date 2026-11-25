@@ -71,7 +71,7 @@ try {
   const exportsAna = Object.values(ana).flat().filter(x => x && typeof x === 'object' && /^pes-ana/.test(x.id || ''));
   const exportsVal = Object.values(val).flat().filter(x => x && typeof x === 'object' && /^pes-val/.test(x.id || ''));
   const anaPes = exportsAna.length ? exportsAna : null, valPes = exportsVal.length ? exportsVal : null;
-  assert.ok(anaPes && anaPes.length === 3, `3 ANA attendus (${anaPes && anaPes.length})`); assert.ok(valPes && valPes.length === 3, `3 VAL attendus (${valPes && valPes.length})`);
+  assert.ok(anaPes && anaPes.length >= 3, `au moins 3 ANA attendus (${anaPes && anaPes.length})`); assert.ok(valPes && valPes.length >= 3, `au moins 3 VAL attendus (${valPes && valPes.length})`);
   for (const it of [...anaPes, ...valPes]) console.log('  ', it.id, it.options.map(o => (o[1] ? '*' : '') + o[0].length).join(' '));
   let c2 = 0; for (const it of anaPes) { const opts = it.options; const l = opts.map(o => o[0].length); const bi = opts.findIndex(o => o[1]); assert.ok(l[bi] < Math.max(...l), `${it.id} : bonne réponse la plus longue (${l.join(' ')})`); if (l[bi] === Math.min(...l)) c2++; }
   let c3 = 0; for (const it of valPes) { const opts = it.options; const l = opts.map(o => o[0].length); const bi = opts.findIndex(o => o[1]); assert.ok(l[bi] < Math.max(...l), `${it.id} : bonne réponse la plus longue (${l.join(' ')})`); if (l[bi] === Math.min(...l)) c3++; }

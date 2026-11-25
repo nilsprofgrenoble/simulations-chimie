@@ -1708,6 +1708,38 @@ export const ENONCES = [
         manque: null, solution: { txt: 'a_x(4) ≈ frac(v_x(5) − v_x(3)|2τ) (des m/s divisés par des s donnent des m/s²)', val: p.a, u: 'm/s²' } };
     },
   },
+  // ───────────────────────────── Vecteurs vitesse et accélération (TG, sim 166) : dériver la position x(t) d’un mobile
+  {
+    id: 'vac-sapp-derivee', domaine: 'Vecteurs vitesse et accélération', titre: 'Dériver la position d’un chariot', noms: ['Vitesse à une date donnée', 'Accélération du chariot'],
+    gen: () => {
+      // on écarte les tirages où une réponse fausse classique (B seul, vitesse moyenne, position, 2C, constante A non annulée) tomberait à 12 % de la bonne
+      for (;;) {
+        const A = tire([1.0, 2.0, 3.0]), B = tire([1.0, 2.0, 3.0]), C = tire([0.50, 1.0, 1.5, 2.0]), t1 = tire([2.0, 3.0, 4.0]), v = B + 2 * C * t1;
+        if ([B, B + C * t1, A + B * t1 + C * t1 * t1, 2 * C, v + A].every(x => Math.abs(x - v) > 0.12 * v)) return { A, B, C, t1, m: tire([0.50, 1.0, 2.0]) };
+      }
+    },
+    build: (p, q) => {
+      const tokens = {
+        A: tok(`${nb(p.A, 1)} m`, 'Terme constant de x(t) : position du chariot à la date t = 0', p.A, 'm'),
+        B: tok(`${nb(p.B, 1)} m/s`, 'Coefficient du terme en t de x(t)', p.B, 'm/s'),
+        C: tok(`${nb(p.C, 2)} m/s²`, 'Coefficient du terme en t² de x(t)', p.C, 'm/s²'),
+        m: tok(`${nb(p.m, 2)} kg`, 'Masse du chariot', p.m, 'kg'),
+      };
+      const debut = ['Un chariot se déplace sur l’axe Ox. Sa position est donnée par x(t) = A + B·t + C·t² (x en m, t en s), avec A = ', T('A'), ', B = ', T('B'), ' et C = ', T('C'), '. Sa masse est ', T('m'), '. '];
+      const mTexte = 'La masse ne joue aucun rôle dans la description du mouvement (la cinématique décrit le mouvement sans en chercher la cause).';
+      if (q === 0) {
+        tokens.t1 = tok(`${nb(p.t1, 1)} s`, 'Date à laquelle on étudie le chariot', p.t1, 's');
+        return { tokens, derivees: [], texte: [...debut, 'On étudie le chariot à la date ', T('t1'), '. Quelle est la coordonnée de sa vitesse à cet instant ?'],
+          utiles: ['B', 'C', 't1'], raisons: { A: 'Le terme constant A disparaît quand on dérive : la position initiale ne change pas la vitesse.', m: mTexte },
+          cherche: { bonne: 'La coordonnée v_x de la vitesse à la date t₁ (en m/s)', faux: ['La position x(t₁) du chariot à cette date (en m)', 'La coordonnée a_x de l’accélération (en m/s²)', 'La vitesse moyenne entre t = 0 et t = t₁ (en m/s)'] },
+          manque: null, solution: { txt: 'v_x(t) = frac(dx|dt) = B + 2C·t, donc v_x(t₁) = B + 2C·t₁', val: p.B + 2 * p.C * p.t1, u: 'm/s' } };
+      }
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la coordonnée de son accélération ?'],
+        utiles: ['C'], raisons: { A: 'Le terme constant A disparaît dès la première dérivation : il n’intervient ni dans la vitesse, ni dans l’accélération.', B: 'Le terme en B·t donne une vitesse constante B : sa dérivée est nulle, il n’intervient pas dans l’accélération.', m: mTexte },
+        cherche: { bonne: 'La coordonnée a_x de l’accélération (en m/s²)', faux: ['La coordonnée v_x de la vitesse à la date t = 0 (en m/s)', 'La force exercée sur le chariot (en N)', 'La position x du chariot à la date t = 0 (en m)'] },
+        manque: null, solution: { txt: 'v_x(t) = frac(dx|dt) = B + 2C·t puis a_x = frac(dv_x|dt) = 2C', val: 2 * p.C, u: 'm/s²' } };
+    },
+  },
   // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
   {
     id: 'pil-sapp-capacite', domaine: 'Piles : fonctionnement et capacité', titre: 'Capacité d’une pile zinc-cuivre', noms: ['Quantité d’ions cuivre initiale', 'Capacité électrique de la pile'],
@@ -5254,6 +5286,7 @@ export function melange(tab, graine) {
 
 // Symbole de chaque donnée tel qu'il apparaît dans la formule (affiché à côté du nom de la grandeur)
 const SYMBOLES = {
+  'vac-sapp-derivee': { A: 'A', B: 'B', C: 'C', m: 'm', t1: 't₁' },
   'ber-sapp-venturi': { dA: 'd_A', dB: 'd_B', vA: 'v_A', rho: 'ρ', L: 'L', th: 'θ', P: 'P_A − P_atm' },
   'flu-statique': { rho: 'ρ', g: 'g', P: 'P_rel', th: 'θ', Vc: 'V_cuve', Patm: 'P_atm', d: 'd', dh: 'Δh' },
   'flu-debit': { mv: 'm_fût', mt: 'm_balance', dt: 'Δt', V: 'V', Bmax: 'm_max', Pm: 'P_moteur', th: 'θ' },

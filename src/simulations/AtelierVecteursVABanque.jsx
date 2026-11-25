@@ -37,7 +37,7 @@ export const VAC_ANA = [
     enonce: 'Une voiture roule vers la droite sur une route droite et freine. Voici sa chronophotographie : les points sont pris à intervalles de temps égaux et l’axe Ox est orienté vers la droite.',
     figure: <FigMv id="frein" N={6} aria="Chronophotographie d’une voiture qui freine : les points, numérotés de 0 à 6, se rapprochent de plus en plus sur un axe Ox gradué en mètres orienté vers la droite"/>,
     q: 'Quelle est la direction et le sens du vecteur accélération vec(a) de la voiture ?', options: [
-      V('vers la gauche : la vitesse diminue, donc opposé à vec(v)', 'Les points se rapprochent : la norme de la vitesse diminue. Le vecteur vitesse est vers la droite et sa variation vec(Δv) est vers la gauche : vec(a) est de sens opposé à vec(v) (a_x < 0).'),
+      V('vers la gauche : la vitesse diminue, opposé à vec(v)', 'Les points se rapprochent : la norme de la vitesse diminue. Le vecteur vitesse est vers la droite et sa variation vec(Δv) est vers la gauche : vec(a) est de sens opposé à vec(v) (a_x < 0).'),
       F('vers la droite, comme vec(v), puisque la voiture avance', 'Le sens de vec(a) est celui de la variation de la vitesse, pas celui du mouvement. Ici la vitesse diminue : vec(a) est dirigé vers la gauche.'),
       F('perpendiculaire à la route, vers le haut de la figure', 'Une accélération perpendiculaire à la route changerait la direction de la vitesse, pas sa norme. Ici les points restent alignés et se rapprochent : vec(a) est horizontal, vers la gauche.'),
       F('aucun : vec(a) est nul car la trajectoire est une droite', 'Une trajectoire droite n’impose pas que vec(a) soit nul : ici la norme de vec(v) change, donc vec(a) n’est pas nul. Il est nul si vec(v) est constant.'),
@@ -59,5 +59,14 @@ export const VAC_ANA = [
       F('pour B seulement : ses points sont de plus en plus espacés', 'Pour B, les écarts augmentent : la norme de vec(v) augmente, donc vec(a) n’est pas nul.'),
       F('pour A et pour B : les deux avancent toujours vers la droite', 'Avancer dans le même sens ne suffit pas : pour B la vitesse change (les écarts augmentent), donc vec(a) n’est pas nul.'),
       F('pour aucun : un mobile en mouvement accélère toujours', 'Un mobile peut avoir un vecteur vitesse constant non nul : c’est le cas de A. Dans ce cas vec(a) est nul.'),
+    ] },
+  { id: 'vac-ana-mrua', domaine: DOM, titre: 'Une voiture qui démarre : quel mouvement rectiligne ?',
+    enonce: 'Une voiture démarre sur une route droite. Voici sa chronophotographie : les points, numérotés de 0 à 6, sont pris à intervalles de temps égaux ; l’axe Ox est orienté vers la droite.',
+    figure: <FigMv id="acc" N={6} aria="Chronophotographie d’une voiture qui démarre : les points, numérotés de 0 à 6, sont de plus en plus espacés sur un axe Ox gradué en mètres orienté vers la droite"/>,
+    q: 'Comment décrire ce mouvement rectiligne ?', options: [
+      V('uniformément accéléré : vec(a) constant, de même sens que vec(v)', 'Les écarts entre points successifs augmentent de la même quantité à chaque intervalle : la vitesse augmente de la même valeur par intervalle de temps. Le vecteur accélération est constant et de même sens que vec(v) (la vitesse augmente).'),
+      F('uniforme : vec(v) est constant, puisque la trajectoire est une droite', 'Une trajectoire droite n’impose pas une vitesse constante : ici les écarts entre points augmentent, donc la norme de vec(v) augmente. Un mouvement rectiligne uniforme aurait des points régulièrement espacés.'),
+      F('accéléré, avec un vec(a) qui augmente à chaque intervalle de temps', 'Les écarts augmentent régulièrement, d’une même quantité : la variation de vitesse est la même à chaque intervalle, donc vec(a) est constant. Un vec(a) croissant ferait augmenter les écarts de plus en plus vite.'),
+      F('uniformément accéléré : vec(a) constant, de sens opposé à vec(v)', 'Un vec(a) de sens opposé à vec(v) ferait diminuer la vitesse : les points se rapprocheraient (comme pour une voiture qui freine). Ici ils s’écartent.'),
     ] },
 ];

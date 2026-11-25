@@ -19,6 +19,7 @@ import st_2gt_physique_a from './sousThemes.2gt-physique-a.js';
 import st_2gt_physique_b from './sousThemes.2gt-physique-b.js';
 import st_bts_a from './sousThemes.bts-a.js';
 import st_bts_b from './sousThemes.bts-b.js';
+import st_tg_physique_a from './sousThemes.tg-physique-a.js';
 import st_tg_chimie from './sousThemes.tg-chimie.js';
 import st_tg_physique_b from './sousThemes.tg-physique-b.js';
 import st_tstl_a from './sousThemes.tstl-a.js';
@@ -26,7 +27,7 @@ import st_tstl_b from './sousThemes.tstl-b.js';
 
 export const SOUS_THEMES = {
   ...evolution1g, ...composition, ...etatFinal, ...signaux, ...ondes,
-  ...st_1g_chimie, ...st_1g_meca_elec, ...st_1g_ondes, ...st_2gt_matiere, ...st_2gt_physique_a, ...st_2gt_physique_b, ...st_bts_a, ...st_bts_b, ...st_tg_chimie, ...st_tg_physique_b, ...st_tstl_a, ...st_tstl_b,
+  ...st_1g_chimie, ...st_1g_meca_elec, ...st_1g_ondes, ...st_2gt_matiere, ...st_2gt_physique_a, ...st_2gt_physique_b, ...st_bts_a, ...st_bts_b, ...st_tg_physique_a, ...st_tg_chimie, ...st_tg_physique_b, ...st_tstl_a, ...st_tstl_b,
   'tstl-fluides': [
     { id: 'debit', nom: 'Le débit d’un liquide', capacite: 'Relier débit massique, débit volumique et masse volumique ; changer d’unité.',
       refs: ['34:flu-debit', '77:plausible:flu-conv-debit', '77:compat:debit-2methodes'] },
