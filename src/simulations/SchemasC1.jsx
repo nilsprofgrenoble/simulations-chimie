@@ -360,8 +360,8 @@ function Venturi({ rapport = 0.25, simple = false }) {
           <text x="70" y="182" fontSize="14" textAnchor="middle" fill="#0f172a"><Ind b="P" i="1"/> et <Ind b="v" i="1"/></text><text x="70" y="199" fontSize="12.5" textAnchor="middle" fill="#64748b">en amont</text>
           <text x="255" y="182" fontSize="14" textAnchor="middle" fill="#0f172a"><Ind b="P" i="2"/> et <Ind b="v" i="2"/></text><text x="255" y="199" fontSize="12.5" textAnchor="middle" fill="#64748b">au col</text>
           <text x="330" y="36" fontSize="12.5" textAnchor="end" fill="#64748b">conduite horizontale</text></>}
-        {simple && <text x="330" y="36" fontSize="12.5" textAnchor="end" fill="#64748b">conduite</text>}
-        <text x="180" y="212" fontSize="11.5" textAnchor="middle" fill="#64748b">{rapport === 0.25 ? '' : 'schéma non à l’échelle'}</text>
+        {simple && <text x="330" y="36" fontSize="15" textAnchor="end" fill="#64748b">conduite</text>}
+        <text x="180" y="212" fontSize="14" textAnchor="middle" fill="#64748b">{rapport === 0.25 ? '' : 'schéma non à l’échelle'}</text>
       </svg>
     </div>);
 }

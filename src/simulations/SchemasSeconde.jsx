@@ -246,7 +246,7 @@ function Optique({ cas = 'miroir', ...p }) {
 function Mouvement({ cas = 'manege-sol', reponse = false }) {
   const u = useId().replace(/:/g, '');
   const defs = <defs><Pointe id={`${u}r`} c={ORANGE}/><Pointe id={`${u}v`} c={VERT}/><Pointe id={`${u}t`} c={TR}/></defs>;
-  const Etiq = ({ x, y, t, c = '#475569', a = 'middle', g }) => <text x={x} y={y} fontSize="12.5" fontWeight={g ? 700 : 400} fill={c} textAnchor={a}>{t}</text>;
+  const Etiq = ({ x, y, t, c = '#475569', a = 'middle', g, s = 12.5 }) => <text x={x} y={y} fontSize={s} fontWeight={g ? 700 : 400} fill={c} textAnchor={a}>{t}</text>;
   const Bonhomme = ({ x, y, c = TR }) => <g stroke={c} strokeWidth="2" fill="none"><circle cx={x} cy={y - 16} r="5"/><line x1={x} y1={y - 11} x2={x} y2={y + 4}/><line x1={x - 7} y1={y - 5} x2={x + 7} y2={y - 5}/><line x1={x} y1={y + 4} x2={x - 5} y2={y + 14}/><line x1={x} y1={y + 4} x2={x + 5} y2={y + 14}/></g>;
   let corps = null, label = '';
   if (cas === 'manege-sol' || cas === 'manege-ref') {
@@ -313,8 +313,8 @@ function Mouvement({ cas = 'manege-sol', reponse = false }) {
       <path d={`M${pos(0)[0]},${pos(0)[1]} A${R},${R} 0 0 0 ${pos(90)[0]},${pos(90)[1]}`} fill="none" stroke={TR} strokeWidth="1.6" strokeDasharray="8 6"/>
       {[8, 45, 82].map(a => { const [x, y] = pos(a); return <g key={a}><rect x={x - 9} y={y - 9} width="18" height="18" rx="4" fill={BLEU} stroke="white" strokeWidth="1.5" transform={`rotate(${-(90 - a)} ${x} ${y})`}/>
         {reponse && <Rayon x1={x} y1={y} x2={x - 40 * Math.sin(a * RAD)} y2={y - 40 * Math.cos(a * RAD)} c={VERT} id={`${u}v`}/>}</g>; })}
-      <Etiq x="232" y="40" t="voiture à 3 instants" c={BLEU} g a="start"/><Etiq x="232" y="58" t="50 km·h⁻¹ constants" a="start"/>
-      {reponse && <Etiq x="232" y="90" t="même valeur, mais" c={VERT} g a="start"/>}{reponse && <Etiq x="232" y="106" t="direction qui change" c={VERT} g a="start"/>}
+      <Etiq x="212" y="34" t="3 positions" c={BLEU} g a="start" s={16}/><Etiq x="212" y="56" t="50 km·h⁻¹" a="start" s={16}/>
+      {reponse && <Etiq x="212" y="92" t="même valeur," c={VERT} g a="start" s={16}/>}{reponse && <Etiq x="212" y="114" t="autre direction" c={VERT} g a="start" s={16}/>}
     </g>);
   }
   return (
