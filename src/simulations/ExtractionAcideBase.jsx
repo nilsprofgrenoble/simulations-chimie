@@ -141,7 +141,7 @@ export function SimulationExtractionAcideBase() {
         expl: `10^(−1,0) = 0,10, donc α = 1 divisé par 1,10 = ${nbf(M.alpha(B, PA.pH1), 2)} : environ 91 % de l’acide est sous forme HA.`, indice: 'Calculez pH − pKa (négatif), puis 10 puissance cette valeur, ajoutez 1 et prenez l’inverse.' } },
     { id: 'D', titre: 'Le rapport de distribution D', focus: ['scene', 'mesures'],
       texte: <>À pH {nbf(PA.pH1, 1)}, α = <strong>{nbf(a1, 3)}</strong> de l’acide est sous forme HA, la seule qui passe dans l’organique, avec K = <strong>{PA.Kbenz}</strong>. Le <strong>rapport de distribution</strong> compare l’acide total (HA et A⁻) dans l’organique et dans l’eau : {FD}</>,
-      tache: { type: 'num', q: 'Rapport de distribution D à pH 3,2 (sans unité)', unite: '(sans unité)', vrai: D1a, tol: 0.05, affiche: v => nbf(v, 1), cs: 3,
+      tache: { type: 'num', q: 'Rapport de distribution D à pH 3,2 (sans unité)', unite: '(sans unité)', vrai: D1a, tol: 0.05, affiche: v => nbf(v, 1), cs: 2,
         calcul: () => [`D = K × α = ${PA.Kbenz} × ${nbf(a1, 3)}`, `D = ${nbf(D1, 1)} (sans unité).`],
         pieges: [[PA.Kbenz / a1, 'Il faut multiplier K par α, pas les diviser.'], [PA.Kbenz - a1, 'Il faut multiplier K par α, pas les soustraire.'], [a1, 'C’est α seule : D = K × α.']],
         expl: `D = ${PA.Kbenz} × ${nbf(a1, 3)} = ${nbf(D1, 1)} : un peu moins que K, car une petite part de l’acide est sous forme ionique.`, indice: 'D = K × α : multipliez le coefficient de partage K par la fraction α sous forme HA.' } },

@@ -358,7 +358,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
       tache: { type: 'action', ok: vue === 'axe', label: 'Aller à la vue « Du rotor à l’axe »', faire: () => changerVue('axe'), consigne: 'Cliquez sur l’onglet « Du rotor à l’axe »' } },
     { id: 'n4096', titre: 'Combien de demi-pas pour un tour d’axe ?', focus: ['reducteur', 'compteurs'],
       texte: <>La documentation du moteur indique : <strong>à chaque demi-pas du rotor, l’axe tourne de 0,0879°</strong> (valeur exacte : 5,625°/64). Lancez l’animation pour voir l’aiguille de l’axe avancer lentement, puis calculez.</>,
-      tache: { type: 'num', q: 'Nombre de demi-pas pour que l’axe fasse un tour (360°)', unite: '', vrai: N_AXE, tol: 0.005, affiche: v => nf(v, 0), cs: 4,
+      tache: { type: 'num', q: 'Nombre de demi-pas pour que l’axe fasse un tour (360°)', unite: '', vrai: N_AXE, tol: 0.005, affiche: v => nf(v, 0), cs: 2,
         calcul: () => ['Un tour d’axe = 360° ; chaque demi-pas fait tourner l’axe de 0,0879°.',
           `Nombre de demi-pas = frac(360°|0,0879°) = ${nf(360 / 0.0879, 1)} ≈ ${nf(360 / ANG_AXE, 0)}.`,
           `Avec la valeur exacte frac(5,625°|64) = ${nf(5.625 / 64, 9)}°, on trouve frac(360|${nf(5.625 / 64, 9)}) = ${nf(360 / (5.625 / 64), 0)} demi-pas (le résultat est un nombre entier).`],
@@ -376,7 +376,7 @@ export function SimulationMoteurPasAPas({ naviguer }) {
         </ul>
       </>,
       texte: <>Il faut 8 demi-pas (de 45°) pour un tour du rotor. Un tour d’axe demande {nf(N_AXE, 0)} demi-pas (étape précédente).</>,
-      tache: { type: 'num', q: 'Nombre de tours du rotor pour un tour d’axe', unite: '', vrai: 512, tol: 0.005, affiche: v => nf(v, 0), cs: 3,
+      tache: { type: 'num', q: 'Nombre de tours du rotor pour un tour d’axe', unite: '', vrai: 512, tol: 0.005, affiche: v => nf(v, 0), cs: 2,
         calcul: () => ['Un tour du rotor = 8 demi-pas (8 × 45° = 360°).',
           `Nombre de tours du rotor = ${nf(N_AXE, 0)} demi-pas / 8 demi-pas par tour = ${nf(N_AXE / 8, 0)} tours.`],
         pieges: [[4096, 'C’est le nombre de demi-pas : divisez par 8 pour avoir des tours.'],

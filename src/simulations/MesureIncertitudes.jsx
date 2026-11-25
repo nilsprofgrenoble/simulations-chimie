@@ -169,7 +169,7 @@ export function SimulationMesureIncertitudes() {
         expl: 'a = frac(f′max − f′min|2) = frac(159 − 147|2) = 6,0 mm.', indice: 'La demi-largeur est la moitié de la différence entre la valeur la plus grande et la plus petite.' } },
     { id: 'uB', titre: 'Passer de l’intervalle à l’incertitude', focus: ['scene'],
       texte: <>La demi-largeur est <strong>a = 6,0{NB}mm</strong>. Il n’y a pas de série de mesures ici : on utilise ce que l’on sait de l’instrument. C’est l’évaluation de <strong>type B</strong>. Pour une valeur possible dans tout l’intervalle [x − a ; x + a], avec la même probabilité partout (loi uniforme), la formule suivante est donnée :{FUB}Calculez u.</>,
-      tache: { type: 'num', q: 'Incertitude-type de type B', carnet: 'Incertitude-type u (type B)', unite: 'mm', vrai: UB_FOC, tol: 0.02, affiche: v => M.fmt(v, 2), cs: 3,
+      tache: { type: 'num', q: 'Incertitude-type de type B', carnet: 'Incertitude-type u (type B)', unite: 'mm', vrai: UB_FOC, tol: 0.02, affiche: v => M.fmt(v, 2), cs: 2,
         calcul: () => ['√3 ≈ 1,732.', 'u = frac(a|√3) = 6,0 mm ÷ 1,732 = 3,46 mm.'],
         pieges: [[2, 'On divise par √3 ≈ 1,73, pas par 3 : u = frac(a|√3).'], [A_FOC * Math.sqrt(3), 'On divise a par √3, on ne le multiplie pas : u est plus petite que a.'], [6, 'u n’est pas égale à a : il faut diviser a par √3.']],
         expl: 'u = frac(a|√3) = frac(6,0|1,732) = 3,46 mm.', indice: 'u = frac(a|√3) : calculez √3 à la calculatrice, puis divisez 6,0 mm par ce nombre.' } },

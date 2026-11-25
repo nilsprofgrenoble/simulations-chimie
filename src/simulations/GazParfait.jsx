@@ -109,7 +109,7 @@ export function SimulationGazParfait() {
           <li>Moyen de s’en souvenir : <strong>« pression = chocs, température = agitation »</strong>. Idée fausse : « chauffer fait grossir les molécules ». Vrai : elles vont plus vite, leur taille ne change pas.</li>
         </ul></>,
       texte: <>On donne souvent une température en degrés Celsius, notée θ. La température thermodynamique T en kelvins s’en déduit : T (en K) = θ (en °C) + 273,15. Un écart de 1 K est égal à un écart de 1 °C. T ne peut pas être négative : quand T diminue, l’agitation diminue ; la valeur T = 0 K est appelée zéro absolu.</>,
-      tache: { type: 'num', q: 'Une enceinte contient du gaz à θ = 37 °C. Quelle est sa température thermodynamique T, en K ?', unite: 'K', vrai: 310.15, tol: 0.01, affiche: v => nbf(v, 0), cs: 3,
+      tache: { type: 'num', q: 'Une enceinte contient du gaz à θ = 37 °C. Quelle est sa température thermodynamique T, en K ?', unite: 'K', vrai: 310.15, tol: 0.01, affiche: v => nbf(v, 0), cs: 2,
         calcul: () => ['T = θ + 273,15 = 37 + 273,15 = 310,15 K, soit environ 310 K.'],
         pieges: [[37, 'Vous avez laissé la température en °C : il faut ajouter 273,15 pour obtenir des kelvins.'], [-236.15, 'Vous avez soustrait 273,15 : c’est l’inverse, T (en K) = θ (en °C) + 273,15.'], [37 * 273.15, 'Il faut additionner 273,15, pas multiplier.']],
         expl: 'T = θ + 273,15 = 37 + 273,15 = 310,15 K : environ 310 K.',

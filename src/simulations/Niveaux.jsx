@@ -200,7 +200,7 @@ export function SimulationNiveaux() {
       tache: { type: 'qcm', ...QCM.sodium } },
     { id: 'inverse', titre: 'Faire le chemin inverse',
       texte: <>Pour un atome W (fictif), le spectre d’émission montre une raie de longueur d’onde λ = 500{NB}nm. Elle correspond au retour d’un niveau excité E₁ vers le niveau fondamental E₀ = 0. Quelle est l’énergie du niveau E₁ ? Utilise {FEnuLigne} avec les mêmes constantes qu’avant.</>,
-      tache: { type: 'num', q: 'Énergie du niveau E₁, en eV', unite: 'eV', vrai: N.evDeLamNm(500), tol: 0.02, cs: 3, affiche: v => dec(v, 3), carnet: 'Énergie du niveau E₁ de W',
+      tache: { type: 'num', q: 'Énergie du niveau E₁, en eV', unite: 'eV', vrai: N.evDeLamNm(500), tol: 0.02, cs: 2, affiche: v => dec(v, 3), carnet: 'Énergie du niveau E₁ de W',
         aide: 'Écris le résultat avec une virgule ou un point, par exemple 7,5.',
         calcul: () => ['λ = 500 nm = 5,00 × 10⁻⁷ m.', 'ΔE = frac(h × c|λ) = frac(6,63 × 10⁻³⁴ × 3,00 × 10⁸|5,00 × 10⁻⁷) ≈ 3,98 × 10⁻¹⁹ J.', 'En eV : 3,98 × 10⁻¹⁹ ÷ 1,60 × 10⁻¹⁹ ≈ 2,49 eV, donc E₁ = 2,49 eV (E₀ = 0).'],
         pieges: [[3.98e-19, 'Votre résultat est en joules : la réponse est demandée en eV (÷ 1,60 × 10⁻¹⁹).'], [N.H * N.C / (500) / N.EV, 'La longueur d’onde n’a pas été convertie en mètres (500 nm = 5,00 × 10⁻⁷ m).'], [1 / N.evDeLamNm(500), 'Vous avez inversé la relation : ΔE = h × c ÷ λ.']],

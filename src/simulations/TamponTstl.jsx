@@ -109,7 +109,7 @@ export function SimulationTamponTstl() {
         expl: 'n(C₂H₅COO⁻) = 4,0 mmol et n(C₂H₅COOH) = 6,0 mmol : le rapport vaut 0,67.', indice: 'La base perd 1,0 mmol (elle réagit) et l’acide gagne 1,0 mmol (il se forme) : calculez les deux quantités puis leur quotient.' } },
     { id: 'phacide', titre: 'Le pH après l’ajout d’acide', focus: ['mesures'],
       texte: <>Après l’ajout : n(C₂H₅COO⁻) = 4,0 mmol et n(C₂H₅COOH) = 6,0 mmol, soit un rapport de <strong>{nbf(rAcide2, 2)}</strong>. Le volume se simplifie dans le rapport des concentrations : on utilise directement le rapport des quantités de matière. {FpH}Le pKa du couple vaut {nbf(K, 1)}.</>,
-      tache: { type: 'num', q: 'pH du tampon après l’ajout', unite: '(sans unité)', vrai: M.pHFormule(K, eAcide.nA, eAcide.nAH), tol: 0.02, affiche: v => nbf(v, 2), cs: 3,
+      tache: { type: 'num', q: 'pH du tampon après l’ajout', unite: '(sans unité)', vrai: M.pHFormule(K, eAcide.nA, eAcide.nAH), tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
         calcul: () => [`rapport = frac(4,0|6,0) = ${nbf(eAcide.r, 2)}`, `pH = pKa + log(${nbf(eAcide.r, 2)}) = 4,9 − 0,18 = 4,72.`],
         pieges: [[K, 'Vous avez oublié le terme log : le pH n’est égal au pKa que si les deux quantités sont égales, ce qui n’est plus le cas.'], [K - eAcide.r, 'Il faut le logarithme décimal du rapport, pas le rapport lui-même.'], [K - Math.log10(eAcide.r), 'Le signe est inversé : le rapport est inférieur à 1, donc son logarithme est négatif et le pH est inférieur au pKa.']],
         expl: 'pH = 4,9 + log(0,67) = 4,72 : le pH du tampon n’a baissé que de 0,18 unité alors que celui de l’eau avait baissé de 5 unités.', indice: 'Calculez log(0,67) avec la touche log (le résultat est négatif car 0,67 < 1), puis ajoutez-le au pKa.' } },

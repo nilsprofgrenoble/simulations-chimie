@@ -83,14 +83,16 @@ const csDe = x => nbCS(String(x).replace('.', ','));
 export function verifier(q, rep) {
   const x = lireNombre(rep);
   if (!isFinite(x)) return { ok: false, msg: 'Entrez une valeur numérique (virgule ou point ; 1,5e-3 ou 1,5 × 10^-3 pour une puissance de 10).' };
-  const bon = Math.abs(x - q.vrai) <= Math.abs(q.vrai) * (q.tolRel ?? 0.006) + 1e-12 * Math.abs(q.vrai);
+  const ncs = nbCS(rep), tolRel = q.tolRel ?? 0.006;
+  const bon = Math.abs(x - q.vrai) <= Math.abs(q.vrai) * tolRel + 1e-12 * Math.abs(q.vrai);
   if (bon) {
     // un entier terminé par des zéros (« 1800 ») a un nombre de chiffres significatifs ambigu : on ne l’exige pas
     const arr = Number(q.vrai.toPrecision(q.csExact || q.csMin || 3)), ambigu = Number.isInteger(arr) && Math.abs(arr) >= 10 && arr % 10 === 0;
     if (ambigu) return { ok: true, msg: '' };
     if (q.csExact && nbCS(rep) !== q.csExact) return { ok: false, msg: `La valeur est juste, mais il faut l’écrire avec exactement ${q.csExact} chiffres significatifs (vous en avez écrit ${nbCS(rep)}).` };
     const dernier = q.csMin ? q.vrai.toPrecision(q.csMin).replace(/e.*/, '').replace(/[.-]/g, '').slice(-1) : '';
-    if (q.csMin && dernier !== '0' && nbCS(rep) < q.csMin) return { ok: false, msg: `La valeur est juste, mais arrondie trop tôt : gardez au moins ${q.csMin} chiffres significatifs (vous en avez écrit ${nbCS(rep)}).` };
+    // Trop peu de chiffres significatifs : la réponse est comptée juste (pas d'erreur, pas d'étoile perdue), avec un simple conseil
+    if (q.csMin && dernier !== '0' && nbCS(rep) < q.csMin) return { ok: true, msg: '', note: `Conseil : gardez ${q.csMin} chiffres significatifs pour ne pas arrondir trop tôt (vous en avez écrit ${nbCS(rep)}).` };
     return { ok: true, msg: '' };
   }
   const pg = (q.pieges || []).find(([v]) => Math.abs(x - v) <= Math.abs(v) * 0.01 + 1e-12);

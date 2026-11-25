@@ -223,7 +223,7 @@ export function SimulationRefractometre({ naviguer }) {
       retenirTitre: 'À RETENIR : LEVER L’AMBIGUÏTÉ',
       retenir: <><FContexte/><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li>Une colonne très efficace plafonne à l’<strong>azéotrope eau – éthanol</strong> (température d’ébullition minimale) : le distillat ne peut pas être beaucoup plus pauvre en éthanol que lui.</li><li>La <strong>température en tête de colonne</strong> et l’étape de la distillation permettent de choisir la bonne composition.</li></ul></>,
       texte: <>Convertissez la fraction molaire en fraction massique (M<sub>éthanol</sub> = 46 g·mol⁻¹, M<sub>eau</sub> = 18 g·mol⁻¹) puis en degré alcoolique avec la masse volumique du mélange (le simulateur le fait pour vous ci-dessous).</>,
-      tache: { type: 'num', q: 'Fraction massique w en éthanol du distillat (x = 0,90)', unite: '', vrai: wDe(ew, 0.9), tol: 0.03, affiche: v => nf(v, 3), cs: 3,
+      tache: { type: 'num', q: 'Fraction massique w en éthanol du distillat (x = 0,90)', unite: '', vrai: wDe(ew, 0.9), tol: 0.03, affiche: v => nf(v, 3), cs: 2,
         calcul: () => {
           const nA = 0.9 * ew.MA, nB = 0.1 * ew.MB;
           return [`On raisonne pour 1 mol de distillat (mélange binaire eau – éthanol) : 0,90 mol d’éthanol (M_A = ${ew.MA} g·mol⁻¹) et 0,10 mol d’eau (M_B = ${ew.MB} g·mol⁻¹).`,
