@@ -1,0 +1,26 @@
+// Sous-thèmes du chapitre « Transmission de signaux numériques » (TSTL SPCL · Systèmes et procédés), à intégrer dans SOUS_THEMES (src/sousThemes.js).
+// Même structure que SOUS_THEMES ; références = clés de progression des exercices (voir sousThemes.js).
+export default {
+  'tstl-signaux': [
+    { id: 'capteur', nom: 'Les caractéristiques d’un capteur', capacite: 'Exploiter la caractéristique d’un capteur (sensibilité, courbe d’étalonnage) et choisir un modèle adapté.',
+      refs: ['37:relation:sig-rel-sensibilite', '35:photoresistance', '35:ctn', '77:decision:modele-ctn', '77:decision:modele-photoresistance'] },
+    { id: 'reponse', nom: 'Le temps de réponse d’un capteur', capacite: 'Exploiter le temps de réponse d’un capteur et juger s’il respecte un cahier des charges.',
+      refs: ['36:temps-reponse', '35:capteur', '34:reponse-tunnel-entree', '34:reponse-tunnel-sortie', '34:reponse-fumee', '34:reponse-regulation', '37:prevoir:sig-prev-rampe-retard',
+        '77:decision:conforme-phares', '77:decision:conforme-fumee', '77:decision:conforme-marge', '77:decision:conforme-strict'] },
+    { id: 'conditionneur', nom: 'Le conditionneur : pont diviseur et amplificateur', capacite: 'Exploiter un pont diviseur de tension et un amplificateur pour adapter le signal du capteur au convertisseur.',
+      refs: ['36:pont-diviseur', '37:relation:pont', '37:hypothese:pontdiv', '37:prevoir:ur-eclairement', '37:prevoir:up-eclairement', '37:prevoir:echange-positions', '37:prevoir:r-augmente', '37:prevoir:ug-double',
+        '77:plausible:ur-superieure-ug', '77:plausible:sig-gain-conditionneur', '37:relation:sig-rel-gain'] },
+    { id: 'quantum', nom: 'Le CAN : bits et quantum', capacite: 'Relier le nombre de bits, la plage et le quantum d’un convertisseur analogique-numérique.',
+      refs: ['34:can', '37:probleme:can', '37:relation:quantum', '37:hypothese:can', '37:prevoir:bits', '37:prevoir:plage', '77:plausible:quantum-can', '77:plausible:quantum-faux', '77:plausible:nb-valeurs'] },
+    { id: 'conversion', nom: 'De la tension au nombre N, et retour', capacite: 'Passer de la tension au nombre fourni par le CAN, et inversement, tout au long de la chaîne de mesure.',
+      refs: ['37:relation:can-u-vers-n', '37:relation:can-n-vers-u', '37:prevoir:n-eclairement', '37:probleme:seuil-eclairement-n', '37:probleme:n-vers-eclairement', '34:bilan-photoresistance',
+        '77:plausible:n-hors-plage', '77:plausible:n-plausible', '77:plausible:sig-etalonnage-zero-ok'] },
+    { id: 'bruit', nom: 'Bruit, moyenne et incertitude d’une mesure numérique', capacite: 'Évaluer la qualité d’une mesure numérique : bruit, moyenne de plusieurs acquisitions, incertitudes et compatibilité.',
+      refs: ['37:hypothese:sig-hyp-moyennage', '77:plausible:sig-moyenne-sous-quantum-ok', '77:compat:tension-can', '77:compat:sig-can-moyenne-alimentation'] },
+    { id: 'echantillonnage', nom: 'Échantillonnage et débit', capacite: 'Choisir la fréquence d’échantillonnage (critère de Shannon) et évaluer le débit et la taille des données.',
+      refs: ['37:probleme:echant', '37:prevoir:fichier', '37:prevoir:sig-prev-repliement', '77:plausible:sig-shannon-insuffisant', '77:plausible:debit-transfert-fichier', '77:plausible:debit-binaire', '77:plausible:sig-enregistreur-taille'] },
+    { id: 'programme', nom: 'Programmer la carte : instructions et seuils', capacite: 'Écrire ou compléter un algorithme de traitement du signal (instructions Arduino, seuils, états).',
+      refs: ['34:arduino-allumer', '34:arduino-bouton', '34:arduino-tension', '34:arduino-afficher', '37:algorithme:algo-allumage', '37:algorithme:algo-extinction', '37:algorithme:algo-entre-seuils', '37:algorithme:algo-pourquoi-deux',
+        '37:algorithme:algo-sens-inverse', '37:algorithme:algo-seuils-inverses'] },
+  ],
+};

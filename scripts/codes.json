@@ -1982,5 +1982,20 @@
  "77:plausible:hlb-val-moyenne-simple": "VAL537",
  "77:plausible:hlb-val-melange-ok": "VAL538",
  "77:plausible:hlb-val-fraction-inversee": "VAL539",
- "77:plausible:hlb-val-hors-intervalle": "VAL540"
+ "77:plausible:hlb-val-hors-intervalle": "VAL540",
+ "37:relation:evo-avancement-limitant": "ANA813",
+ "37:relation:sig-rel-sensibilite": "ANA814",
+ "37:relation:sig-rel-gain": "ANA815",
+ "37:prevoir:evo-avancement-exces": "ANA816",
+ "37:prevoir:evo-equivalence-limitant": "ANA817",
+ "37:prevoir:cmp-titph-equivalence": "ANA818",
+ "37:prevoir:etf-k-pka": "ANA819",
+ "37:prevoir:etf-bases-force": "ANA820",
+ "37:prevoir:cmp-cdt-avant-equiv": "ANA821",
+ "37:prevoir:cmp-uvv-longueur-onde": "ANA822",
+ "77:plausible:evo-avancement-bilan": "VAL541",
+ "77:plausible:etf-val-k-pka": "VAL542",
+ "77:plausible:etf-val-bases": "VAL543",
+ "77:plausible:cmp-cdt-val-ions": "VAL544",
+ "77:plausible:sig-shannon-insuffisant": "VAL545"
 }

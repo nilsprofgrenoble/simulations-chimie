@@ -173,11 +173,11 @@ export const PROBLEMES = [
   },
   {
     id: 'can', domaine: 'Transmission de signaux numériques', titre: 'Détecter une variation de 0,2 °C',
-    ...presenter({ contexte: 'Une sonde de température délivre une tension proportionnelle à la température. Elle est reliée à l’entrée analogique d’une carte Arduino, dotée d’un convertisseur analogique-numérique (CAN).', liste: [['Sensibilité de la sonde', '10 mV·°C⁻¹ (0 V à 0 °C)'], ['CAN', '10 bits, plage 0 – 5 V'], ['Cadence', '10 mesures par seconde'], ['Température de la pièce', '22 °C']], question: 'Ce montage peut-il détecter une variation de température de 0,2 °C ?' }),
+    ...presenter({ contexte: 'Une sonde de température, linéaire, est reliée à l’entrée analogique d’une carte Arduino : son convertisseur analogique-numérique (CAN) numérise la tension de la sonde.', liste: [['Sensibilité de la sonde', '10 mV·°C⁻¹ (0 V à 0 °C)'], ['CAN', '10 bits, plage 0 – 5 V'], ['Cadence', '10 mesures par seconde'], ['Température de la pièce', '22 °C']], question: 'Ce montage peut-il détecter une variation de température de 0,2 °C ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
-      V('La plus petite variation de température détectable (résolution), pour la comparer à 0,2 °C', 'On compare la finesse du montage au besoin : 0,2 °C.'),
-      F('La tension délivrée par la sonde à 22 °C', 'La valeur de la tension ne dit pas si une petite variation sera détectée : il faut comparer une variation de tension au quantum.'),
-      F('Le nombre N donné par le CAN à 22 °C', 'N à 22 °C ne renseigne pas sur la plus petite variation détectable.'),
+      V('La plus petite variation de température détectable, à comparer à 0,2 °C', 'On compare la finesse du montage (sa résolution) au besoin : 0,2 °C.'),
+      F('La tension délivrée par la sonde à 22 °C, à comparer à la plage du CAN', 'La valeur de la tension ne dit pas si une petite variation sera détectée : il faut comparer une variation de tension au quantum.'),
+      F('Le nombre N donné par le CAN à 22 °C, à comparer à 1 023', 'N à 22 °C ne renseigne pas sur la plus petite variation détectable.'),
     ] },
     donnees: [
       ['sensibilité 10 mV·°C⁻¹', true, 'Elle convertit une variation de température en variation de tension.'],
@@ -213,19 +213,19 @@ export const PROBLEMES = [
       ],
     },
     conclusion: { q: 'Quelle conclusion obtient-on ?', options: [
-      V('Non : 0,2 °C ne produit que 2 mV, moins que le quantum (4,9 mV) ; la résolution est d’environ 0,5 °C', 'Résolution en température : q / s = 4,89 / 10 ≈ 0,49 °C.'),
+      V('Non : 0,2 °C ne produit que 2 mV, moins que le quantum (4,9 mV)', 'La résolution en température vaut q / s = 4,89 / 10 ≈ 0,49 °C : le montage ne distingue pas des variations inférieures à environ 0,5 °C.'),
       F('Oui : 0,2 °C produit 2 mV, et le CAN mesure jusqu’à 5 V', 'La plage dit jusqu’où l’on mesure, pas avec quelle finesse : c’est le quantum qu’il faut comparer.'),
-      F('Oui : le quantum vaut 5 / 1 023 ≈ 0,0049 °C', 'Erreur d’unité : le quantum est une tension (4,89 mV), pas une température. Il faut le diviser par la sensibilité.'),
+      F('Oui : le quantum vaut 5 / 1 023 ≈ 0,0049 °C, très petit devant 0,2 °C', 'Erreur d’unité : le quantum est une tension (4,89 mV), pas une température. Il faut le diviser par la sensibilité.'),
     ] },
     retenir: ['Résolution en température : Δθ_min = q / s (q : quantum ; s : sensibilité).'],
   },
   {
     id: 'echant', domaine: 'Transmission de signaux numériques', titre: 'Enregistrer des vibrations',
-    ...presenter({ contexte: 'On veut enregistrer les vibrations d’une machine avec un module d’acquisition (convertisseur analogique-numérique, CAN) qui échantillonne puis stocke chaque échantillon en mémoire.', liste: [['Durée d’enregistrement', '10 s'], ['Fréquence la plus élevée du signal', '400 Hz'], ['Fréquence d’échantillonnage', '1,0 kHz'], ['CAN', '12 bits'], ['Stockage', '2 octets par échantillon'], ['Mémoire', '32 ko (1 ko = 1 000 octets)']], suite: 'Rappel : un signal dont la fréquence maximale vaut f_max est bien restitué si la fréquence d’échantillonnage f_e respecte le critère de Shannon, f_e > 2 × f_max.', question: 'Ce réglage permet-il de bien restituer le signal et de tout enregistrer ?' }),
+    ...presenter({ contexte: 'On enregistre les vibrations d’une machine avec un module d’acquisition (CAN) : chaque échantillon est stocké en mémoire.', liste: [['Durée d’enregistrement', '10 s'], ['Fréquence la plus élevée du signal', '400 Hz'], ['Fréquence d’échantillonnage', '1,0 kHz'], ['CAN', '12 bits'], ['Stockage', '2 octets par échantillon'], ['Mémoire', '32 ko (1 ko = 1 000 octets)']], suite: 'Rappel (critère de Shannon) : le signal est bien restitué si f_e > 2 × f_max.', question: 'Ce réglage permet-il de bien restituer le signal et de tout enregistrer ?' }),
     cherche: { q: 'Que faut-il déterminer pour répondre ?', options: [
-      V('Deux choses : si f_e respecte le critère de Shannon, et la taille des données, à comparer à 32 ko', 'La question contient deux critères : restitution du signal et place en mémoire.'),
-      F('Le quantum du CAN de 12 bits', 'Le quantum concerne la finesse en amplitude : il n’est pas mis en cause ici.'),
-      F('La période des vibrations', 'Elle se déduit de 400 Hz, mais ne suffit pas à conclure.'),
+      V('Si f_e respecte Shannon, et si les données tiennent dans les 32 ko', 'La question contient deux critères : restitution du signal et place en mémoire.'),
+      F('Le quantum du CAN de 12 bits, pour juger la finesse en amplitude', 'Le quantum concerne la finesse en amplitude : il n’est pas mis en cause ici.'),
+      F('La période des vibrations, pour la comparer à la durée de 10 s', 'Elle se déduit de 400 Hz, mais ne suffit pas à conclure.'),
     ] },
     donnees: [
       ['durée 10 s', true, 'Elle fixe le nombre d’échantillons.'],
@@ -263,8 +263,8 @@ export const PROBLEMES = [
     },
     conclusion: { q: 'Quelle conclusion obtient-on ?', options: [
       V('Oui pour les deux : f_e = 1 000 Hz > 800 Hz, et 20 ko < 32 ko', 'Les deux critères sont respectés.'),
-      F('Non : il faudrait f_e d’au moins 10 × f_max', 'C’est une règle de confort pour obtenir une courbe bien dessinée, pas le critère de Shannon (f_e > 2 × f_max).'),
-      F('Non : les données occupent 120 ko', 'Résultat obtenu en comptant 12 octets par échantillon : 12 est le nombre de bits.'),
+      F('Non : il faudrait f_e d’au moins 10 × f_max, soit 4 000 Hz', 'C’est une règle de confort pour obtenir une courbe bien dessinée, pas le critère de Shannon (f_e > 2 × f_max).'),
+      F('Non : les données occupent 120 ko, plus que les 32 ko', 'Résultat obtenu en comptant 12 octets par échantillon : 12 est le nombre de bits.'),
     ] },
     retenir: ['Shannon : f_e > 2 × f_max.', 'Taille des données = f_e × Δt × (octets par échantillon).'],
   },
@@ -426,11 +426,11 @@ export const PROBLEMES = [
   },
   {
     id: 'vinaigre', domaine: 'Chimie', titre: 'Le vinaigre est-il bien à 6 % ?',
-    ...presenter({ contexte: 'Un vinaigre est vendu comme titrant « 6 % d’acidité » : 6 g d’acide acétique pour 100 g de vinaigre. On le dilue 10 fois, puis on titre 10,0 mL de la solution diluée par une solution d’hydroxyde de sodium, en présence de phénolphtaléine.', liste: [['Dilution du vinaigre', '10 fois'], ['Prise d’essai de la solution diluée', '10,0 mL'], ['Concentration de la solution d’hydroxyde de sodium', '0,100 mol·L⁻¹'], ['Volume à l’équivalence', '10,2 mL'], ['Masse molaire de l’acide acétique', 'M = 60,0 g·mol⁻¹'], ['Densité du vinaigre', 'd = 1,01'], ['Température du titrage', '20 °C'], ['Critère', 'écart relatif avec 6 % d’au plus 5 % (incertitude du dosage)']], question: 'L’indication de l’étiquette est-elle vérifiée ?' }),
+    ...presenter({ contexte: 'Un vinaigre est vendu comme titrant « 6 % d’acidité » : 6 g d’acide éthanoïque pour 100 g de vinaigre. On le dilue 10 fois, puis on titre 10,0 mL de la solution diluée par une solution d’hydroxyde de sodium, en présence de phénolphtaléine.', liste: [['Dilution du vinaigre', '10 fois'], ['Prise d’essai de la solution diluée', '10,0 mL'], ['Concentration de la solution d’hydroxyde de sodium', '0,100 mol·L⁻¹'], ['Volume à l’équivalence', '10,2 mL'], ['Masse molaire de l’acide éthanoïque', 'M = 60,0 g·mol⁻¹'], ['Densité du vinaigre', 'd = 1,01'], ['Température du titrage', '20 °C'], ['Critère', 'écart relatif avec 6 % d’au plus 5 % (incertitude du dosage)']], question: 'L’indication de l’étiquette est-elle vérifiée ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
-      V('Le pourcentage massique d’acide acétique dans le vinaigre, pour le comparer à 6 %', 'L’étiquette donne un pourcentage massique : c’est lui qu’il faut retrouver.'),
-      F('Le pH du vinaigre', 'Le critère porte sur un pourcentage massique : le pH ne le donne pas sans connaître la constante d’acidité et sans hypothèse sur la dissociation.'),
-      F('Le volume à l’équivalence', 'Il est déjà mesuré : c’est une donnée.'),
+      V('Le pourcentage massique d’acide éthanoïque du vinaigre, à comparer à 6 %', 'L’étiquette donne un pourcentage massique : c’est lui qu’il faut retrouver.'),
+      F('Le pH du vinaigre avant dilution, à comparer à une valeur de référence', 'Le critère porte sur un pourcentage massique : le pH ne le donne pas sans connaître la constante d’acidité et sans hypothèse sur la dissociation.'),
+      F('Le volume à l’équivalence, à comparer à celui attendu pour 6 %', 'Il est déjà mesuré : c’est une donnée.'),
     ] },
     donnees: [
       ['dilution 10 fois', true, 'La solution titrée est 10 fois moins concentrée que le vinaigre.'],
@@ -444,18 +444,18 @@ export const PROBLEMES = [
       ['20 °C', false, 'La température n’intervient pas dans les calculs.'],
     ],
     relations: { options: [
-      V('À l’équivalence : n(acide) = c_b × V_E (réaction mole à mole)', 'L’acide acétique réagit avec les ions hydroxyde dans les proportions 1 : 1.'),
+      V('À l’équivalence : n(acide) = c_b × V_E (réaction mole à mole)', 'L’acide éthanoïque réagit avec les ions hydroxyde dans les proportions 1 : 1.'),
       V('c = n / V, et c_vinaigre = 10 × c_diluée', 'Concentration de la solution titrée, puis facteur de dilution.'),
       V('m = n × M', 'Conversion quantité de matière → masse.'),
       V('ρ_vinaigre = d × ρ_eau', 'Masse d’un litre de vinaigre : 1 010 g.'),
-      F('pH = −log [H₃O⁺]', 'Pour un acide faible, le pH ne donne pas directement la concentration en acide acétique, et ce n’est pas la méthode du titrage.'),
+      F('pH = −log [H₃O⁺]', 'Pour un acide faible, le pH ne donne pas directement la concentration en acide éthanoïque, et ce n’est pas la méthode du titrage.'),
       F('A = ε × ℓ × c', 'Aucune mesure d’absorbance.'),
     ] },
     hypotheses: { options: [
       V('La réaction de titrage est totale, rapide et unique', 'Conditions de tout titrage.'),
-      V('L’acide acétique est le seul acide présent dans le vinaigre', 'Si d’autres acides étaient titrés, on surestimerait l’acide acétique.'),
+      V('L’acide éthanoïque est le seul acide présent dans le vinaigre', 'Si d’autres acides étaient titrés, on surestimerait l’acide éthanoïque.'),
       V('La dilution au dixième est faite avec précision (verrerie jaugée)', 'Toute erreur sur la dilution se retrouve multipliée dans le résultat.'),
-      F('L’acide acétique est un acide fort', 'Faux : c’est un acide faible. Cela ne change pas la méthode, car sa réaction avec la soude est totale.'),
+      F('L’acide éthanoïque est un acide fort', 'Faux : c’est un acide faible. Cela ne change pas la méthode, car sa réaction avec la soude est totale.'),
       F('La masse volumique du vinaigre est celle de l’eau, la densité est inutile', 'La densité 1,01 est donnée : l’utiliser évite une approximation de 1 % sans intérêt ici.'),
     ] },
     demarche: {
@@ -867,13 +867,13 @@ export const PROBLEMES = [
       contexte: 'Un lampadaire doit s’allumer quand l’éclairement descend sous 600 lx. Une photorésistance est en série avec une résistance R (pont diviseur) ; la tension U_R, mesurée aux bornes de R, est envoyée sur un CAN 10 bits.',
       liste: [['Résistance R', '2,2 kΩ'], ['Tension d’alimentation U_G', '5,0 V'], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire)'], ['Caractéristique de la photorésistance', 'R_p = 2,0 kΩ à 400 lx ; 1,5 kΩ à 600 lx ; 1,2 kΩ à 800 lx']],
       question: 'Quelle valeur de N correspond au seuil d’allumage ?',
-      schema: [{ type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Ordre de calcul : R_p (lu sur la courbe à 600 lx) → U_R (pont diviseur) → N (CAN).' } }, { type: 'pont', UG: '5,0 V', R: '2,2 kΩ', mesure: 'R' },
+      schema: [{ type: 'chaine', apres: { actif: [0, 1, 2, 3], inconnu: 3, note: 'Ordre de calcul : R_p (lu sur la courbe à 600 lx) → U_R (pont diviseur) → N (CAN).' } }, { type: 'pont', mesure: 'R' },
         { type: 'courbe', pts: [[400, 2.0], [600, 1.5], [800, 1.2]], x: [0, 1000, 200], y: [0, 2.5, 0.5], apres: { surligne: [1] } }],
     }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le nombre N lu par le CAN quand l’éclairement vaut 600 lx', 'Le seuil d’allumage, exprimé comme le programme le voit : un nombre N à comparer à N_allumage.'),
-      F('La résistance R_p à 600 lx', 'C’est une étape intermédiaire, pas ce que l’on cherche : le programme compare N, pas R_p.'),
-      F('L’éclairement qui correspond à N = 1 023', 'On part de l’éclairement (600 lx) pour aller vers N, et non l’inverse.'),
+      F('La résistance R_p de la photorésistance à 600 lx', 'C’est une étape intermédiaire, pas ce que l’on cherche : le programme compare N, pas R_p.'),
+      F('L’éclairement qui correspond à N = 1 023 (5,0 V)', 'On part de l’éclairement (600 lx) pour aller vers N, et non l’inverse.'),
     ] },
     donnees: [
       ['seuil d’allumage : 600 lx', true, 'C’est la condition qui fixe la valeur de R_p à utiliser.'],
@@ -921,13 +921,13 @@ export const PROBLEMES = [
       contexte: 'Un conditionneur (pont diviseur) est formé d’une photorésistance en série avec R ; la tension U_R, mesurée aux bornes de R, est envoyée sur un CAN 10 bits. Le programme lit N = 432.',
       liste: [['Résistance R', '1,0 kΩ'], ['Tension d’alimentation U_G', '5,0 V'], ['CAN 10 bits', 'N = 0 pour 0 V ; N = 1 023 pour 5,0 V (réponse linéaire)'], ['Caractéristique de la photorésistance', 'R_p = 1,79 kΩ à 450 lx ; 1,37 kΩ à 720 lx ; 1,13 kΩ à 1 020 lx ; 0,93 kΩ à 1 500 lx']],
       question: 'Quel est l’éclairement ?',
-      schema: [{ type: 'chaine', apres: { actif: [3, 2, 1], inconnu: 0, note: 'On remonte la chaîne : N → U_R (CAN) → R_p (pont) → éclairement (courbe).' } }, { type: 'pont', UG: '5,0 V', R: '1,0 kΩ', mesure: 'R' },
+      schema: [{ type: 'chaine', apres: { actif: [3, 2, 1], inconnu: 0, note: 'On remonte la chaîne : N → U_R (CAN) → R_p (pont) → éclairement (courbe).' } }, { type: 'pont', mesure: 'R' },
         { type: 'courbe', pts: [[450, 1.79], [720, 1.37], [1020, 1.13], [1500, 0.93]], x: [0, 1500, 500], y: [0, 2, 0.5], apres: { surligne: [1] } }],
     }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('L’éclairement E correspondant à N = 432', 'On remonte de N vers E : N → U_R → R_p → E.'),
-      F('Le nombre N à 720 lx', 'Ce serait le problème inverse : ici N est donné, E est cherché.'),
-      F('La tension maximale du CAN', 'Elle est donnée : 5,0 V. Ce n’est pas ce que l’on cherche.'),
+      F('Le nombre N obtenu pour un éclairement de 720 lx', 'Ce serait le problème inverse : ici N est donné, E est cherché.'),
+      F('La tension maximale que le CAN peut convertir', 'Elle est donnée : 5,0 V. Ce n’est pas ce que l’on cherche.'),
     ] },
     donnees: [
       ['N = 432', true, 'C’est la mesure : le point de départ du raisonnement.'],
@@ -1121,6 +1121,14 @@ export const RELATIONS = [
       F('c = k / A', 'Rapport inversé.'),
       F('c = −log A', 'Confusion avec la définition du pH.'),
     ] },
+  { id: 'evo-avancement-limitant', domaine: 'Chimie', titre: 'Trouver l’avancement maximal',
+    enonce: 'On mélange 0,30 mol de magnésium Mg et 0,20 mol de dioxygène O₂ : 2 Mg + O₂ → 2 MgO. On cherche l’avancement maximal x_max.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('x_max est la plus petite des deux valeurs n(Mg) / 2 et n(O₂) / 1', 'Chaque réactif impose une limite : x ≤ 0,30 / 2 = 0,15 mol pour Mg et x ≤ 0,20 / 1 = 0,20 mol pour O₂. On retient la plus petite : x_max = 0,15 mol, et Mg est limitant.'),
+      F('x_max est la plus petite des deux quantités initiales : 0,20 mol', 'Il faut tenir compte des coefficients : avec x = 0,20 mol, il faudrait 2 × 0,20 = 0,40 mol de Mg, alors qu’il n’y en a que 0,30 mol.'),
+      F('x_max est la somme des deux valeurs n(Mg) / 2 et n(O₂) / 1', 'Les deux limites s’appliquent en même temps : l’avancement ne peut pas dépasser la plus petite, il ne s’additionne pas.'),
+      F('x_max est la plus grande des deux valeurs n(Mg) / 2 et n(O₂) / 1', 'Avec x = 0,20 mol, il resterait 0,30 − 2 × 0,20 = −0,10 mol de Mg : une quantité négative est impossible.'),
+    ] },
   { id: 'mvt-vitesse', domaine: 'Mouvement et vitesse', titre: 'Calculer une vitesse',
     enonce: 'Un cycliste parcourt 36 km en 2 h. On cherche sa vitesse moyenne.',
     q: 'Quelle relation permet de répondre ?', options: [
@@ -1301,6 +1309,22 @@ export const RELATIONS = [
       F('U = N × 1 023 / 5,0', 'Rapport inversé : on trouverait U ≈ 121 000 V. Une tension supérieure à la plage 0 – 5,0 V n’a aucun sens.'),
       F('U = N / 5,0', 'Il manque le facteur 1 023 : on trouverait U ≈ 119 V, hors de la plage 0 – 5,0 V.'),
       F('U = 5,0 − N / 1 023', 'On retranche au lieu de multiplier : la tension doit être proportionnelle à N (0 V pour N = 0).'),
+    ] },
+  { id: 'sig-rel-sensibilite', domaine: 'Transmission de signaux numériques', titre: 'La sensibilité d’une sonde de température',
+    ...presenter({ contexte: 'Une sonde de température délivre une tension qui varie linéairement avec la température, mais qui n’est pas nulle à 0 °C.', liste: [['Tension à 0 °C', '0,50 V'], ['Tension à 100 °C', '1,50 V']], suite: 'On cherche la sensibilité s de la sonde : la variation de tension produite par une variation de température de 1 °C.' }),
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('s = (1,50 − 0,50) / (100 − 0)', 'La sensibilité est le rapport entre une variation de tension et la variation de température qui la provoque : s = ΔU / Δθ = 1,00 V / 100 °C = 10 mV·°C⁻¹.'),
+      F('s = 1,50 / 100', 'On divise la tension à 100 °C et non sa variation : les 0,50 V présents à 0 °C ne sont pas dus à la température. On trouverait 15 mV·°C⁻¹ au lieu de 10 mV·°C⁻¹.'),
+      F('s = (100 − 0) / (1,50 − 0,50)', 'Rapport inversé : on obtiendrait 100 °C·V⁻¹, une variation de température par volt, alors que la sensibilité s’exprime en V·°C⁻¹.'),
+      F('s = 1,50 − 0,50', 'On oublie de diviser par la variation de température : on trouverait 1,00 V, une tension et non une sensibilité (V·°C⁻¹).'),
+    ] },
+  { id: 'sig-rel-gain', domaine: 'Transmission de signaux numériques', titre: 'Le gain d’un amplificateur avant le CAN',
+    ...presenter({ contexte: 'Un capteur de pression délivre une très faible tension. Un amplificateur, placé avant le CAN, multiplie cette tension par un gain G.', liste: [['Tension du capteur à la pression maximale', '80 mV'], ['Plage du CAN', '0 – 3,3 V']], suite: 'On veut que la tension envoyée au CAN atteigne presque 3,3 V à la pression maximale, sans la dépasser.' }),
+    q: 'Quelle relation donne le gain G maximal à choisir ?', options: [
+      V('G = 3,3 / 0,080', 'Le gain est le rapport tension de sortie / tension d’entrée, avec les deux tensions dans la même unité : G = 3,3 V / 0,080 V ≈ 41. On prend un gain un peu inférieur (par exemple 40) pour ne pas dépasser 3,3 V.'),
+      F('G = 0,080 / 3,3', 'Rapport inversé : on trouverait G ≈ 0,024, un gain inférieur à 1 qui atténuerait la tension au lieu de l’amplifier.'),
+      F('G = 3,3 − 0,080', 'Le gain est un rapport, pas une différence : un amplificateur multiplie la tension, il ne lui ajoute pas une valeur.'),
+      F('G = 3,3 / 80', 'Les deux tensions ne sont pas dans la même unité (V et mV) : on trouverait 0,041 au lieu de 41.'),
     ] },
   { id: 'ond-rel-diffraction-fil', domaine: 'Ondes', titre: 'Diamètre d’un fil par diffraction',
     ...presenter({ contexte: 'On éclaire un fil fin avec un laser. La figure de diffraction est observée sur un écran ; l’angle d’ouverture θ = λ / a (angle entre le centre de la figure et la première extinction) est petit.', liste: [['Longueur d’onde du laser', 'λ = 650 nm'], ['Distance fil-écran', 'D = 2,0 m'], ['Largeur de la tache centrale', 'L = 4,0 cm']], question: 'Quel est le diamètre a du fil ?' }),
@@ -1775,6 +1799,20 @@ export const PREVOIR = [
       F('multipliée par 2', 'Sens inversé : moins d’espèce absorbante, moins d’absorbance.'),
       F('divisée par 4', 'A est proportionnelle à c, pas à c².'),
       F('inchangée', 'L’absorbance dépend de la concentration.'),
+    ] },
+  { id: 'evo-avancement-exces', domaine: 'Chimie', titre: 'Ajouter du réactif en excès',
+    enonce: 'On fait réagir 0,10 mol de A avec 0,50 mol de B selon A + B → C : A est le réactif limitant. On remplace ensuite les 0,50 mol de B par 1,0 mol de B, sans changer A.', q: 'L’avancement maximal est alors…', options: [
+      V('inchangé : x_max = 0,10 mol, fixé par le réactif limitant A', 'x_max = n(A) / 1 = 0,10 mol : B est déjà en excès, en ajouter ne permet pas de consommer plus de A qu’il n’y en a.'),
+      F('doublé : on a deux fois plus de réactif B à disposition', 'Seul le réactif limitant fixe x_max. Avec 1,0 mol de B, il en resterait simplement 0,90 mol non consommées.'),
+      F('plus grand, sans être doublé : B aide à consommer un peu plus de A', 'A est déjà entièrement consommé pour x = 0,10 mol : il n’y a rien de plus à faire réagir.'),
+      F('plus petit : trop de B gêne la réaction avec A', 'Un excès de réactif ne diminue pas x_max : l’avancement maximal reste fixé par le réactif limitant.'),
+    ] },
+  { id: 'evo-equivalence-limitant', domaine: 'Titrage direct', titre: 'Avant l’équivalence : quel réactif est limitant ?',
+    enonce: 'On verse peu à peu une solution de thiosulfate (titrant) dans une solution de diiode I₂ (espèce titrée). La réaction est totale et rapide. On se place avant l’équivalence.', q: 'Le réactif limitant est…', options: [
+      V('le titrant : consommé dès qu’il est versé, il reste du diiode', 'Avant l’équivalence, le thiosulfate versé est entièrement consommé : c’est lui qui limite. À l’équivalence, on change de réactif limitant.'),
+      F('l’espèce titrée : le diiode a presque tout réagi à ce stade', 'Il reste du diiode : la solution en contient encore tant qu’on n’a pas versé assez de titrant. Le diiode ne devient limitant qu’après l’équivalence.'),
+      F('aucun des deux : les deux sont consommés ensemble', 'Cela n’arrive qu’à l’équivalence, quand les réactifs ont été introduits dans les proportions de l’équation.'),
+      F('les deux : la réaction étant totale, tout est consommé', 'Une réaction totale consomme entièrement le réactif limitant, pas l’autre : avant l’équivalence, il reste du diiode.'),
     ] },
   { id: 'mvt-duree-double', domaine: 'Mouvement et vitesse', titre: 'Distance doublée à vitesse constante',
     enonce: 'Un cycliste roule à vitesse constante. Il décide de parcourir une distance deux fois plus grande.', q: 'La durée du trajet est…', options: [
@@ -3403,25 +3441,32 @@ export const PREVOIR = [
       F('nul pour la lumière, car la lumière ne subit pas l’effet Doppler', 'Les ondes lumineuses subissent aussi l’effet Doppler ; il est seulement très petit en valeur relative.'),
     ] },
   { id: 'titph-apres-eq', domaine: 'Titrage pH-métrique', titre: 'Après l’équivalence : qui fixe le pH ?',
-    enonce: 'On titre V_A = 20,0 mL d’une solution d’acide éthanoïque de concentration C_A = 0,080 mol/L par une solution d’hydroxyde de sodium de concentration C_B = 0,100 mol/L. On a versé V_B = 20,0 mL de soude, soit plus que le volume équivalent V_E = 16,0 mL. La transformation est supposée totale.', q: 'Dans l’erlenmeyer, juste après cet ajout…', options: [
-      V('l’acide est entièrement consommé et il reste 0,40 mmol d’ions HO⁻ en excès, qui fixent le pH', 'n(acide) = 0,080 × 20,0 = 1,60 mmol ; n(HO⁻) versé = 0,100 × 20,0 = 2,00 mmol. L’acide est le réactif limitant : il reste 2,00 − 1,60 = 0,40 mmol de HO⁻ (soit 0,010 mol/L dans 40,0 mL, pH = 12).'),
+    ...presenter({ contexte: 'On titre une solution d’acide éthanoïque par une solution d’hydroxyde de sodium (soude). On a versé plus de soude que le volume équivalent. La transformation est supposée totale.', liste: [['Acide éthanoïque', 'V_A = 20,0 mL ; C_A = 0,080 mol/L'], ['Soude versée', 'V_B = 20,0 mL ; C_B = 0,100 mol/L'], ['Volume équivalent', 'V_E = 16,0 mL']] }), q: 'Dans l’erlenmeyer, juste après cet ajout…', options: [
+      V('l’acide est consommé ; il reste 0,40 mmol de HO⁻, qui fixent le pH', 'n(acide) = 0,080 × 20,0 = 1,60 mmol ; n(HO⁻) versé = 0,100 × 20,0 = 2,00 mmol. L’acide est le réactif limitant : il reste 2,00 − 1,60 = 0,40 mmol de HO⁻ (soit 0,010 mol/L dans 40,0 mL, pH = 12).'),
       F('il reste 0,40 mmol d’acide éthanoïque, car la soude est le réactif limitant', 'C’est avant l’équivalence que HO⁻ est le réactif limitant. Ici n(HO⁻) versé (2,00 mmol) dépasse n(acide) (1,60 mmol).'),
       F('l’acide et HO⁻ sont tous deux entièrement consommés, comme à l’équivalence', 'Cela n’arrive qu’à V_B = V_E = 16,0 mL. À 20,0 mL, on a versé plus de HO⁻ que d’acide.'),
       F('il reste 2,00 mmol de HO⁻, car les ions HO⁻ versés ne réagissent plus', 'Une partie des ions HO⁻ (1,60 mmol) a réagi avec l’acide ; seul l’excès (0,40 mmol) reste.'),
     ] },
   { id: 'titph-phe-benz', domaine: 'Titrage pH-métrique', titre: 'Titrage d’un acide faible : pH à l’équivalence',
-    enonce: 'On titre une solution d’acide benzoïque C₆H₅COOH (acide faible, pK_A = 4,2) par une solution d’hydroxyde de sodium. À l’équivalence, l’acide et les ions HO⁻ ont été introduits dans les proportions stœchiométriques.', q: 'Le pH de la solution à l’équivalence est…', options: [
-      V('supérieur à 7 : la base conjuguée C₆H₅COO⁻ formée prédomine (pH > pK_A) et rend la solution basique', 'À l’équivalence il ne reste que C₆H₅COO⁻ (base faible) et Na⁺ (spectateur). C₆H₅COO⁻ + H₂O ⇌ C₆H₅COOH + HO⁻ : la solution est basique.'),
-      F('égal à 7, car l’équivalence correspond à la neutralisation exacte', 'Équivalence signifie réactifs en proportions stœchiométriques, pas solution neutre. Le pH dépend de l’espèce formée.'),
-      F('égal à pK_A = 4,2, car il y a autant d’acide que de base', 'pH = pK_A correspond à n(acide) = n(base), soit la demi-équivalence. À l’équivalence il ne reste plus d’acide.'),
-      F('inférieur à 7, car on a titré un acide', 'On a ajouté exactement la quantité de HO⁻ qui consomme l’acide : le pH est fixé par la base conjuguée formée, pas par l’acide initial.'),
+    ...presenter({ contexte: 'On titre une solution d’acide benzoïque C₆H₅COOH par une solution d’hydroxyde de sodium. À l’équivalence, l’acide et les ions HO⁻ ont été introduits dans les proportions stœchiométriques.', liste: [['Acide benzoïque', 'acide faible, pK_A = 4,2']] }), q: 'Le pH de la solution à l’équivalence est…', options: [
+      V('supérieur à 7 : C₆H₅COO⁻, base conjuguée, rend le milieu basique', 'À l’équivalence il ne reste que C₆H₅COO⁻ (base faible) et Na⁺ (spectateur). C₆H₅COO⁻ + H₂O ⇌ C₆H₅COOH + HO⁻ : la solution est basique.'),
+      F('égal à 7, car l’équivalence correspond à une neutralisation exacte', 'Équivalence signifie réactifs en proportions stœchiométriques, pas solution neutre. Le pH dépend de l’espèce formée.'),
+      F('égal à pK_A = 4,2, car il y a autant d’acide que de base conjuguée', 'pH = pK_A correspond à n(acide) = n(base), soit la demi-équivalence. À l’équivalence il ne reste plus d’acide.'),
+      F('inférieur à 7, car la solution contient de l’acide benzoïque', 'On a ajouté exactement la quantité de HO⁻ qui consomme l’acide : le pH est fixé par la base conjuguée formée, pas par l’acide initial.'),
     ] },
   { id: 'titph-indic-benz', domaine: 'Titrage pH-métrique', titre: 'Quel indicateur pour titrer l’acide benzoïque ?',
-    enonce: 'On titre 20,0 mL d’acide benzoïque à 0,080 mol/L par de la soude à 0,100 mol/L : V_E = 16,0 mL et pH_E ≈ 8,4. Zones de virage : jaune de méthyle 2,9 – 4,0 ; bleu de bromothymol 6,0 – 7,6 ; bleu de thymol 8,0 – 9,6 ; jaune d’alizarine R 10,1 – 12,0.', q: 'Pour repérer l’équivalence, on choisit…', options: [
+    ...presenter({ contexte: 'On titre 20,0 mL d’acide benzoïque à 0,080 mol/L par de la soude à 0,100 mol/L. Le volume équivalent est V_E = 16,0 mL et le pH à l’équivalence vaut pH_E ≈ 8,4. On dispose de quatre indicateurs colorés.', liste: [['Jaune de méthyle', 'zone de virage 2,9 – 4,0'], ['Bleu de bromothymol', 'zone de virage 6,0 – 7,6'], ['Bleu de thymol', 'zone de virage 8,0 – 9,6'], ['Jaune d’alizarine R', 'zone de virage 10,1 – 12,0']] }), q: 'Pour repérer l’équivalence, on choisit…', options: [
       V('le bleu de thymol, car sa zone de virage contient pH_E ≈ 8,4', 'Un indicateur convient si sa zone de virage contient le pH à l’équivalence : 8,0 < 8,4 < 9,6.'),
       F('le bleu de bromothymol, car il vire autour de 7, valeur « neutre »', 'pH_E n’est pas 7 pour un acide faible. La zone 6,0 – 7,6 ne contient pas 8,4 : le virage a lieu avant V_E et est progressif.'),
       F('le jaune de méthyle, car l’acide est initialement à pH acide', 'Le choix dépend de pH_E, pas du pH initial. La zone 2,9 – 4,0 est très loin de 8,4.'),
       F('le jaune d’alizarine R, car la soude est une base forte', 'C’est le pH à l’équivalence qui compte, pas la force de la base. La zone 10,1 – 12,0 ne contient pas 8,4 : le virage a lieu après V_E.'),
+    ] },
+  { id: 'cmp-titph-equivalence', domaine: 'Titrage pH-métrique', titre: 'Repérer l’équivalence sur des mesures de pH',
+    ...presenter({ contexte: 'On titre 20,0 mL d’acide chlorhydrique par de la soude à 0,100 mol/L en suivant le pH. Voici les mesures faites autour de l’équivalence.', liste: [['V = 9,0 mL', 'pH = 2,46'], ['V = 9,5 mL', 'pH = 2,77'], ['V = 9,9 mL', 'pH = 3,48'], ['V = 10,1 mL', 'pH = 10,52'], ['V = 10,5 mL', 'pH = 11,21'], ['V = 11,0 mL', 'pH = 11,51']] }), q: 'Comment repère-t-on le volume équivalent V_E ?', options: [
+      V('V_E ≈ 10,0 mL : c’est là que le pH varie le plus vite', 'Entre 9,9 et 10,1 mL, le pH passe de 3,48 à 10,52, soit environ 35 unités par mL (maximum de dpH/dV) ; partout ailleurs la variation est de l’ordre de 1 unité par mL ou moins. V_E se trouve dans ce saut de pH.'),
+      F('V_E ≈ 11,0 mL, dernier volume où le pH a été mesuré', 'Le dernier point mesuré n’a rien de particulier : à 11,0 mL il y a déjà un excès de soude, le pH varie peu.'),
+      F('V_E ≈ 9,5 mL, où le pH commence à augmenter nettement', 'Entre 9,0 et 9,5 mL, le pH varie d’environ 0,6 unité par mL : c’est la montée lente d’avant le saut, pas l’équivalence.'),
+      F('on ne peut pas conclure sans mesure à V = 10,0 mL exactement', 'Le saut de pH est encadré par deux mesures (9,9 et 10,1 mL) : cela suffit à placer V_E vers 10,0 mL. Une mesure au centre du saut permettrait seulement de l’affiner.'),
     ] },
   { id: 'cinv-moyenne', domaine: 'Cinétique : vitesse volumique et ordre 1', titre: 'Vitesse volumique moyenne de disparition d’un réactif',
     enonce: 'On suit la disparition d’un réactif R dans un mélange maintenu à température constante : sa concentration vaut 0,080 mol/L à l’instant t₁ = 2,0 min et 0,056 mol/L à l’instant t₂ = 5,0 min.', q: 'La vitesse volumique moyenne de disparition de R entre ces deux instants vaut…', options: [
@@ -3480,7 +3525,7 @@ export const PREVOIR = [
       F('voisin de 10 000 × 0,56 = 5 600, valeur maximale observée pour 100 noyaux', 'La valeur moyenne reste N₀/2 = 5 000 : c’est la valeur autour de laquelle les essais se répartissent, quel que soit N₀.'),
     ] },
   { id: 'equ-ana-non-totale', domaine: 'Équilibre chimique : Qr, K et taux d’avancement', titre: 'Transformation totale ou non totale ?',
-    enonce: 'Une transformation modélisée par A + B ⇌ C + D part de 0,10 mol/L de A et de B, sans produit. À l’état final, on mesure [A] = [B] = 0,030 mol/L et [C] = [D] = 0,070 mol/L.', q: 'Cette transformation est…', options: [
+    ...presenter({ contexte: 'Une transformation modélisée par A + B ⇌ C + D est menée en solution, sans produit au départ.', liste: [['Concentration initiale de A et de B', '0,10 mol/L chacun'], ['Concentration finale de A et de B', '0,030 mol/L chacun'], ['Concentration finale de C et de D', '0,070 mol/L chacun']] }), q: 'Cette transformation est…', options: [
       V('non totale : A et B sont encore présents à l’état final', 'Les deux réactifs subsistent (0,030 mol/L chacun) : l’avancement final est inférieur à l’avancement maximal, donc τ = 0,070 / 0,10 = 0,70 < 1 : la transformation est non totale.'),
       F('totale : les produits sont plus abondants que les réactifs', 'Ce n’est pas l’abondance relative qui compte : une transformation est totale si un réactif a disparu, ce qui n’est pas le cas (0,030 mol/L de A et de B).'),
       F('totale : les concentrations ne varient plus à l’état final', 'Des concentrations constantes caractérisent tout état final (équilibre dynamique), total ou non ; ce qui distingue une transformation totale, c’est la disparition d’un réactif.'),
@@ -3514,9 +3559,16 @@ export const PREVOIR = [
       F('les deux sont non totales, car τ est compris entre 0 et 1', 'τ = 1 est la valeur maximale possible et correspond à une transformation totale.'),
       F('dans 2, la moitié environ du réactif limitant a réagi', 'τ = 0,35 signifie que 35 % de l’avancement maximal est atteint, soit un peu plus du tiers, pas la moitié.'),
     ] },
+  { id: 'etf-k-pka', domaine: 'Équilibre chimique : Qr, K et taux d’avancement', titre: 'Constante d’une réaction acide-base : lire les pKA',
+    ...presenter({ contexte: 'On mélange de l’acide méthanoïque HCOOH et de l’ammoniac NH₃. La transformation est modélisée par HCOOH + NH₃ ⇌ HCOO⁻ + NH₄⁺. Relation fournie : pour la réaction entre l’acide d’un couple et la base d’un autre, K = K_A(couple de l’acide) / K_A(couple de la base).', liste: [['pK_A du couple HCOOH / HCOO⁻', '3,75'], ['pK_A du couple NH₄⁺ / NH₃', '9,20']] }), q: 'Quelle est la valeur de K, et que dit-elle de la transformation ?', options: [
+      V('K ≈ 2,8 × 10⁵ : la transformation est quasi totale', 'K = K_A(HCOOH) / K_A(NH₄⁺) = 10^(−3,75) / 10^(−9,20) = 10^(9,20 − 3,75) = 10^5,45 ≈ 2,8 × 10⁵. K est très grande : à l’état final, il reste très peu de réactifs.'),
+      F('K ≈ 3,5 × 10⁻⁶ : la transformation est très limitée', 'C’est le rapport inversé : K_A de l’acide doit être au numérateur. Ici l’acide HCOOH est bien plus fort que NH₄⁺, donc K est très supérieure à 1.'),
+      F('K ≈ 9 × 10¹² : la transformation est quasi totale', 'On a additionné les pK_A (3,75 + 9,20 = 12,95) au lieu de les soustraire : K dépend de l’écart entre les pK_A, 5,45 unités.'),
+      F('K ≈ 5,45 : la transformation est non totale', '5,45 est l’écart des pK_A, pas la constante : K = 10^5,45 ≈ 2,8 × 10⁵. Une constante aussi grande correspond à une transformation quasi totale.'),
+    ] },
   { id: 'fab-ana-fort-faible', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Acide fort ou acide faible : ce que dit le pH',
-    enonce: 'Deux solutions d’acides différents ont la même concentration apportée, 0,010 mol/L. L’acide chlorhydrique donne un pH égal à 2,00 ; l’acide X donne un pH égal à 3,10.', q: 'On peut en conclure que l’acide X est…', options: [
-      V('faible : son pH est supérieur à −log C = 2,00', 'Pour C = 0,010 mol/L, un acide fort donne pH = −log C = 2,00. Ici [H₃O⁺] = 10⁻³·¹ = 7,9 × 10⁻⁴ mol/L est inférieure à C : l’acide n’a réagi que partiellement (τ ≈ 0,08).'),
+    ...presenter({ contexte: 'On mesure, à la même température, le pH de deux solutions d’acides différents, de même concentration apportée.', liste: [['Concentration apportée', '0,010 mol/L'], ['pH de l’acide chlorhydrique', '2,00'], ['pH de l’acide X', '3,10']] }), q: 'On peut en conclure que l’acide X est…', options: [
+      V('faible : son pH est supérieur à −log C = 2,00 (acide fort)', 'Pour C = 0,010 mol/L, un acide fort donne pH = −log C = 2,00. Ici [H₃O⁺] = 10⁻³·¹ = 7,9 × 10⁻⁴ mol/L est inférieure à C : l’acide n’a réagi que partiellement (τ ≈ 0,08).'),
       F('fort : son pH est proche de celui de l’acide chlorhydrique', 'Un acide fort a exactement pH = −log C = 2,00. Un écart de 1,1 unité de pH est énorme : [H₃O⁺] est environ 13 fois plus petite.'),
       F('fort : un pH inférieur à 7 est propre aux acides forts', 'Tout acide, même faible, donne un pH inférieur à 7 : le test du caractère fort compare le pH mesuré à −log C.'),
       F('faible, mais plus dilué que la solution d’acide chlorhydrique', 'Les deux solutions ont la même concentration apportée (0,010 mol/L) : la différence de pH vient de la force de l’acide, pas de la concentration.'),
@@ -3537,10 +3589,10 @@ export const PREVOIR = [
     ] },
   { id: 'fab-ana-equation', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Quelle équation pour la constante d’acidité ?',
     enonce: 'Le couple ion ammonium / ammoniac NH₄⁺ / NH₃ a pour constante d’acidité K_A.', q: 'Quelle équation de réaction est associée à K_A de ce couple ?', options: [
-      V('NH₄⁺ + H₂O ⇌ NH₃ + H₃O⁺', 'K_A est associée à la réaction de l’acide du couple (NH₄⁺) avec l’eau : K_A = [NH₃]·[H₃O⁺] / [NH₄⁺].'),
-      F('NH₃ + H₂O ⇌ NH₄⁺ + HO⁻ (réaction de la base avec l’eau)', 'C’est la réaction de la base NH₃ avec l’eau ; sa constante vaut K_e / K_A, pas K_A.'),
-      F('2 H₂O ⇌ H₃O⁺ + HO⁻ (autoprotolyse de l’eau)', 'Cette équation est associée au produit ionique de l’eau K_e, pas à K_A.'),
-      F('NH₄⁺ + HO⁻ → NH₃ + H₂O (réaction avec la soude)', 'C’est la réaction de l’ion ammonium avec une base forte, quasi-totale : sa constante est très grande, ce n’est pas K_A.'),
+      V('NH₄⁺ + H₂O ⇌ NH₃ + H₃O⁺ (acide + eau)', 'K_A est associée à la réaction de l’acide du couple (NH₄⁺) avec l’eau : K_A = [NH₃]·[H₃O⁺] / [NH₄⁺].'),
+      F('NH₃ + H₂O ⇌ NH₄⁺ + HO⁻ (la base avec l’eau)', 'C’est la réaction de la base NH₃ avec l’eau ; sa constante vaut K_e / K_A, pas K_A.'),
+      F('2 H₂O ⇌ H₃O⁺ + HO⁻ (autoprotolyse)', 'Cette équation est associée au produit ionique de l’eau K_e, pas à K_A.'),
+      F('NH₄⁺ + HO⁻ → NH₃ + H₂O (avec la soude)', 'C’est la réaction de l’ion ammonium avec une base forte, quasi-totale : sa constante est très grande, ce n’est pas K_A.'),
     ] },
   { id: 'fab-ana-ke', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Le produit ionique de l’eau quand le pH change',
     enonce: 'À 25 °C, une solution aqueuse a un pH égal à 4,0. On rappelle K_e = [H₃O⁺]·[HO⁻] = 1,0 × 10⁻¹⁴.', q: 'On dilue la solution avec de l’eau et son pH passe à 5,0. La concentration en ions hydroxyde HO⁻…', options: [
@@ -3549,9 +3601,16 @@ export const PREVOIR = [
       F('ne change pas, car elle ne dépend que de la constante K_e', 'K_e est constant, mais [HO⁻] = K_e / [H₃O⁺] dépend de [H₃O⁺], qui a changé.'),
       F('est multipliée par 5, comme la valeur du pH qui passe de 4 à 5', 'Le pH est un logarithme : une unité de pH correspond à un facteur 10 sur les concentrations.'),
     ] },
+  { id: 'etf-bases-force', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Comparer deux bases faibles',
+    ...presenter({ contexte: 'On compare deux solutions de bases faibles, de même concentration apportée et à la même température.', liste: [['Ammoniac NH₃', 'pK_A(NH₄⁺ / NH₃) = 9,20'], ['Méthylamine CH₃NH₂', 'pK_A(CH₃NH₃⁺ / CH₃NH₂) = 10,6']] }), q: 'Par rapport à la solution d’ammoniac, celle de méthylamine a…', options: [
+      V('un pH plus élevé et un taux d’avancement plus grand', 'Un pK_A plus grand signifie un acide conjugué plus faible, donc une base plus forte : elle capte davantage de H⁺ à l’eau, forme plus d’ions HO⁻ (pH plus élevé) et τ est plus grand.'),
+      F('un pH plus bas, car un pK_A plus grand signifie une base plus faible', 'C’est l’inverse : plus le pK_A du couple est grand, plus sa base est forte, donc plus il se forme d’ions HO⁻ et plus le pH est élevé.'),
+      F('le même pH, car ces deux bases sont toutes les deux faibles', 'Deux bases faibles n’ont pas la même force : leurs pK_A diffèrent de 1,4 unité, donc leurs pH aussi.'),
+      F('un pH plus élevé, mais le même taux d’avancement final', 'Plus d’ions HO⁻ formés à la même concentration apportée correspond à un taux d’avancement plus grand, pas au même.'),
+    ] },
   { id: 'pdi-ana-predominance', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Quelle forme du couple prédomine ?',
     enonce: 'On considère le couple de l’acide méthanoïque et de l’ion méthanoate, HCOOH / HCOO⁻, de pK_A = 3,75. Le pH d’une solution est égal à 3,0.', q: 'Dans cette solution, quelle forme du couple prédomine ?', options: [
-      V('HCOOH, car le pH est inférieur au pK_A', 'pH = 3,0 est inférieur à pK_A = 3,75 : frac([HCOO⁻]|[HCOOH]) = 10^(3,0 − 3,75) ≈ 0,18, inférieur à 1. La forme acide HCOOH est la plus abondante (environ 85 %).'),
+      V('HCOOH, car le pH est inférieur au pK_A (3,0 < 3,75)', 'pH = 3,0 est inférieur à pK_A = 3,75 : frac([HCOO⁻]|[HCOOH]) = 10^(3,0 − 3,75) ≈ 0,18, inférieur à 1. La forme acide HCOOH est la plus abondante (environ 85 %).'),
       F('HCOO⁻, car la solution est acide donc la base domine', 'C’est l’inverse : à pH inférieur au pK_A, c’est la forme acide qui domine ; la base ne domine qu’au-dessus de pK_A.'),
       F('HCOO⁻, car le pH est inférieur à 7 donc la base domine', 'Le critère n’est pas la comparaison à 7 mais la comparaison au pK_A du couple : ici pH < 3,75, donc la forme acide domine.'),
       F('aucune, car le pH n’est pas égal au pK_A du couple', 'Les deux formes coexistent toujours ; l’une est plus abondante que l’autre sauf à pH = pK_A, où elles sont à 50 % chacune.'),
@@ -3568,17 +3627,17 @@ export const PREVOIR = [
       V('l’acide du couple 1 est plus fort : son pK_A est plus petit', 'Les courbes se croisent à pH = pK_A : pK_A,1 = 3,75 < pK_A,2 = 9,20, donc K_A,1 est bien plus grand : l’acide 1 réagit davantage avec l’eau.'),
       F('l’acide du couple 2 est plus fort : son pK_A est plus grand', 'Un pK_A plus grand correspond à un K_A plus petit, donc à un acide plus faible.'),
       F('les deux acides ont la même force : les croisements sont à 50 %', 'Les deux croisements sont à 50 %, mais à des pH différents : ce sont ces pH (les pK_A) qui permettent de comparer la force des acides.'),
-      F('le couple 1 est neutre car son pH de croisement est proche de 4', 'Un couple n’est pas « neutre » ; seul un pK_A proche de 7 dénoterait un acide ni fort ni faible, ce qui n’a pas de sens ici.'),
+      F('le couple 1 est neutre car son pH de croisement est proche de 4', 'Un couple n’est pas « neutre » : le pH de croisement est le pK_A du couple (ici 3,75), et c’est la comparaison des pK_A (3,75 contre 9,20) qui renseigne sur la force des acides.'),
     ] },
   { id: 'pdi-ana-indicateur', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Choisir un indicateur coloré',
-    enonce: 'On titre une solution d’ammoniac (base faible) par de l’acide chlorhydrique : le pH à l’équivalence vaut 5,3. Zones de virage (pK_A ± 1) : jaune de méthyle 2,5 – 4,5 ; vert de bromocrésol 3,6 – 5,6 ; bleu de bromothymol 5,8 – 7,8 ; bleu de thymol 7,8 – 9,8.', q: 'Quel indicateur coloré permet de repérer l’équivalence ?', options: [
+    ...presenter({ contexte: 'On titre une solution d’ammoniac (base faible) par de l’acide chlorhydrique. Le pH à l’équivalence vaut 5,3. Les zones de virage des indicateurs sont de la forme pK_A ± 1.', liste: [['Jaune de méthyle', 'zone de virage 2,5 – 4,5'], ['Vert de bromocrésol', 'zone de virage 3,6 – 5,6'], ['Bleu de bromothymol', 'zone de virage 5,8 – 7,8'], ['Bleu de thymol', 'zone de virage 7,8 – 9,8']] }), q: 'Quel indicateur coloré permet de repérer l’équivalence ?', options: [
       V('le vert de bromocrésol : 5,3 est dans sa zone de virage', 'Seule la zone 3,6 – 5,6 contient pH = 5,3 : le changement de couleur a lieu à l’équivalence.'),
       F('le bleu de bromothymol : sa zone est autour du pH neutre', 'La zone 5,8 – 7,8 ne contient pas 5,3 : le virage serait atteint trop tard, après l’équivalence. Le choix dépend du titrage, pas du pH neutre.'),
       F('le jaune de méthyle : l’ammoniac et l’acide sont deux espèces acides', 'La zone 2,5 – 4,5 est trop acide : le virage aurait lieu avant l’équivalence.'),
       F('le bleu de thymol : l’ammoniac est une base, donc un virage basique', 'La zone 7,8 – 9,8 est trop basique par rapport à pH = 5,3 : le choix repose sur le pH à l’équivalence.'),
     ] },
   { id: 'tmp-ana-propriete', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Que montre cette expérience sur le tampon ?',
-    enonce: 'Dans 100 mL d’une solution contenant de l’acide éthanoïque et de l’éthanoate de sodium en quantités égales, on verse 10 mL d’acide chlorhydrique à 0,10 mol/L : le pH passe de 4,76 à 4,67. Le même ajout dans 100 mL d’eau pure fait passer le pH de 7,0 à 2,0.', q: 'Quelle propriété d’une solution tampon cette expérience illustre-t-elle ?', options: [
+    ...presenter({ contexte: 'On verse 10 mL d’acide chlorhydrique à 0,10 mol/L dans 100 mL de chacun de deux liquides : une solution contenant 0,10 mol/L d’acide éthanoïque et 0,10 mol/L d’éthanoate de sodium, puis de l’eau pure.', liste: [['Solution d’acide éthanoïque et d’éthanoate de sodium', 'pH : 4,76 avant, 4,67 après'], ['Eau pure', 'pH : 7,0 avant, 2,0 après']] }), q: 'Quelle propriété d’une solution tampon cette expérience illustre-t-elle ?', options: [
       V('son pH varie très peu quand on ajoute un peu d’acide', 'Le pH du tampon baisse de 0,09 unité seulement, contre environ 5 pour l’eau pure : c’est la propriété essentielle d’une solution tampon.'),
       F('son pH reste égal à 7 quelle que soit la quantité d’acide', 'Un tampon n’a pas un pH de 7 : son pH est voisin du pK_A de son couple (ici 4,76) et il varie un peu à chaque ajout.'),
       F('son pH ne varie jamais, car il est fixé par le pK_A', 'Le pH varie légèrement (4,76 → 4,67) : il est seulement très stable, et le tampon s’épuise pour un ajout trop grand.'),
@@ -3599,7 +3658,7 @@ export const PREVOIR = [
       F('CH₃COO⁻ + H₂O → CH₃COOH + HO⁻', 'Cette réaction produit des HO⁻ au lieu d’en consommer ; elle est très limitée et n’explique pas la stabilité du pH.'),
     ] },
   { id: 'tmp-ana-dilution', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Diluer une solution tampon',
-    enonce: 'Une solution tampon contient 10 mmol de CH₃COOH et 10 mmol de CH₃COO⁻ dans 100 mL (pH = 4,76). On ajoute 900 mL d’eau pure.', q: 'Pourquoi le pH reste-t-il voisin de 4,76 ?', options: [
+    ...presenter({ contexte: 'Une solution tampon de 100 mL contient les deux formes d’un même couple acide-base. On ajoute de l’eau pure.', liste: [['Quantité de CH₃COOH', '10 mmol'], ['Quantité de CH₃COO⁻', '10 mmol'], ['pH initial', '4,76'], ['Volume d’eau pure ajoutée', '900 mL']] }), q: 'Pourquoi le pH reste-t-il voisin de 4,76 ?', options: [
       V('le rapport [CH₃COO⁻] / [CH₃COOH] reste égal à 1', 'Les deux concentrations sont divisées par 10 : leur rapport ne change pas, donc le pH reste voisin du pK_A = 4,76.'),
       F('le pH d’un tampon ne dépend d’aucune concentration', 'Le pH dépend du rapport des deux concentrations : il est conservé ici car ce rapport est conservé, mais il changerait si ce rapport changeait.'),
       F('l’eau ajoutée est neutre, donc elle ne change pas le pH', 'Une eau neutre modifie en général le pH d’une solution acide en la diluant : ici le pH est conservé car le rapport des deux formes l’est.'),
@@ -3614,7 +3673,7 @@ export const PREVOIR = [
     ] },
   { id: 'aam-ana-domaine', domaine: 'Acides α-aminés : forme selon le pH', titre: 'Où le zwitterion domine-t-il ?',
     enonce: 'Pour l’alanine, pK_A1 = 2,3 et pK_A2 = 9,7. Un élève dit que la forme zwitterion domine quand le pH est supérieur à 7 (« solution basique »).', q: 'Quelle est la bonne lecture du diagramme de prédominance ?', options: [
-      V('le zwitterion domine entre pH 2,3 et pH 9,7', 'Les frontières sont aux deux pK_A : le domaine du zwitterion s’étend de pK_A1 à pK_A2, ce qui inclut pH = 7 mais n’est pas limité à pH > 7.'),
+      V('le zwitterion domine sur l’intervalle de pH 2,3 à 9,7', 'Les frontières sont aux deux pK_A : le domaine du zwitterion s’étend de pK_A1 à pK_A2, ce qui inclut pH = 7 mais n’est pas limité à pH > 7.'),
       F('le zwitterion domine au-dessus de pH 7, comme toute base', 'Le critère n’est pas la comparaison à 7 mais la position par rapport à pK_A1 et pK_A2 : au-dessus de 9,7, c’est l’anion qui domine.'),
       F('le zwitterion domine seulement à pH = 6, le milieu de l’intervalle', 'Un domaine est un intervalle de pH, pas une valeur unique : le zwitterion domine sur tout l’intervalle entre les deux frontières.'),
       F('le zwitterion domine au-dessous de pH 2,3', 'En dessous de pK_A1, c’est le cation qui domine : le groupe –COOH n’a pas encore cédé son H⁺.'),
@@ -3648,7 +3707,7 @@ export const PREVOIR = [
       F('elle rend la réaction de titrage plus rapide', 'La réaction entre H₃O⁺ et HO⁻ est quasi instantanée, quelle que soit la dilution.'),
     ] },
   { id: 'cdt-ana-nitrique', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Acide nitrique ou acide chlorhydrique ?',
-    enonce: 'On titre 20,0 mL d’acide nitrique à 0,050 mol/L, dilué dans 180 mL d’eau, par de la soude à 0,100 mol/L, en suivant σ. On compare à la courbe obtenue avec l’acide chlorhydrique de même concentration : λ(NO₃⁻) = 7,1 et λ(Cl⁻) = 7,6 mS·m²·mol⁻¹.', q: 'Que dire des deux courbes ?', options: [
+    ...presenter({ contexte: 'On titre de l’acide nitrique par de la soude en suivant la conductivité σ, puis on compare la courbe obtenue à celle de l’acide chlorhydrique, de même concentration et de même prise d’essai.', liste: [['Acide nitrique', '20,0 mL à 0,050 mol/L, dilué dans 180 mL d’eau'], ['Soude', '0,100 mol/L'], ['λ(NO₃⁻)', '7,1 mS·m²·mol⁻¹'], ['λ(Cl⁻)', '7,6 mS·m²·mol⁻¹']] }), q: 'Que dire des deux courbes ?', options: [
       V('presque superposées, avec le même volume équivalent', 'Même quantité d’acide, donc même V_E = 10,0 mL ; les ions spectateurs NO₃⁻ et Cl⁻ ont des λ voisins (7,1 et 7,6), donc les deux courbes ne diffèrent que de quelques pour cent.'),
       F('le volume équivalent est différent, car l’anion n’est pas le même', 'Le volume équivalent ne dépend que de la quantité d’ions H₃O⁺ à consommer, pas de l’anion spectateur.'),
       F('la courbe de l’acide nitrique n’a pas de minimum', 'Les deux acides sont forts : H₃O⁺ est consommé puis HO⁻ s’accumule, donc la courbe a bien un minimum pour les deux.'),
@@ -3660,6 +3719,13 @@ export const PREVOIR = [
       F('l’acide éthanoïque devient un acide fort', 'La force d’un acide ne change pas pendant le titrage : l’acide éthanoïque reste un acide faible, mais il est consommé.'),
       F('les ions Cl⁻ et CH₃COO⁻ ont le même λ', 'Leurs λ diffèrent (7,6 et 4,1) ; mais après l’équivalence la quantité de ces anions ne varie plus, donc ils ne modifient pas la pente.'),
       F('la réaction de titrage consomme encore des ions H₃O⁺', 'Après l’équivalence, il n’y a plus d’acide à titrer : la réaction ne consomme plus rien, les ions HO⁻ versés restent en solution.'),
+    ] },
+  { id: 'cmp-cdt-avant-equiv', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Avant l’équivalence : pourquoi σ diminue-t-elle ?',
+    ...presenter({ contexte: 'On titre de l’acide chlorhydrique par de la soude en suivant la conductivité σ. Avant l’équivalence, chaque ion HO⁻ versé réagit avec un ion H₃O⁺ et un ion Na⁺ apparaît. On suppose le volume total à peu près constant (solution diluée avant le titrage).', liste: [['λ(H₃O⁺)', '35,0 mS·m²·mol⁻¹'], ['λ(Na⁺)', '5,0 mS·m²·mol⁻¹'], ['λ(Cl⁻)', '7,6 mS·m²·mol⁻¹']] }), q: 'Avant l’équivalence, la conductivité σ…', options: [
+      V('diminue, car H₃O⁺ est remplacé par Na⁺, moins conducteur', 'Le nombre d’ions ne change presque pas, mais chaque H₃O⁺ (λ = 35,0) est remplacé par un Na⁺ (λ = 5,0) : σ = Σ λ × c diminue. Les ions Cl⁻ sont spectateurs : leur concentration ne varie pas.'),
+      F('augmente, car la solution reçoit de plus en plus d’ions', 'Les ions apportés par la soude sont compensés par ceux qui disparaissent : un H₃O⁺ est consommé pour chaque Na⁺ apporté. Le nombre d’ions varie très peu.'),
+      F('reste constante, car le nombre total d’ions ne change pas', 'Le nombre d’ions est à peu près constant, mais σ dépend aussi de la nature des ions, par leurs λ : remplacer H₃O⁺ (35,0) par Na⁺ (5,0) change σ.'),
+      F('diminue, car les ions Cl⁻ sont consommés par la réaction', 'Les ions Cl⁻ ne participent pas à la réaction de titrage (ions spectateurs) : leur quantité ne varie pas. C’est H₃O⁺ qui est consommé.'),
     ] },
   { id: 'etl-ana-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Deux cellules, une même solution',
     enonce: 'On mesure, dans la même solution de chlorure de sodium et à la même température, la conductance avec deux cellules de conductimétrie. La cellule 1 affiche G₁ = 1,50 mS ; la cellule 2, dont les plaques sont plus éloignées, affiche G₂ = 0,75 mS.', q: 'Que peut-on en conclure ?', options: [
@@ -3723,6 +3789,13 @@ export const PREVOIR = [
       F('correcte : la loi s’applique quelle que soit la valeur de A', 'La loi de Beer-Lambert n’est valable que pour une solution diluée, soit A ≲ 1,5 à 2.'),
       F('trop grande : à forte absorbance, l’appareil surestime A', 'C’est l’inverse : la courbe mesurée passe sous la droite, A est sous-estimée, donc c aussi.'),
       F('correcte, à condition d’utiliser une cuve plus longue', 'Une cuve plus longue ferait encore augmenter A : il faudrait au contraire diluer (ou raccourcir la cuve).'),
+    ] },
+  { id: 'cmp-uvv-longueur-onde', domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert', titre: 'Choisir la longueur d’onde de travail d’un dosage',
+    ...presenter({ contexte: 'On veut doser un colorant bleu par spectrophotométrie. On a mesuré l’absorbance d’une même solution de ce colorant à quatre longueurs d’onde.', liste: [['λ = 470 nm', 'A = 0,05'], ['λ = 530 nm', 'A = 0,22'], ['λ = 630 nm', 'A = 0,80'], ['λ = 700 nm', 'A = 0,35']] }), q: 'Pour doser ce colorant, on règle le spectrophotomètre à…', options: [
+      V('630 nm, où l’absorbance est maximale : mesure plus sensible', 'A = ε × l × c : à concentration donnée, A est la plus grande là où ε est maximal. La mesure y est la plus sensible, et le spectre y varie peu si la longueur d’onde est légèrement mal réglée. A = 0,80 reste dans le domaine de validité de la loi (A ≲ 1,5 à 2).'),
+      F('470 nm, la couleur bleue qu’on voit dans la cuve de mesure', 'On voit la lumière qui n’est pas absorbée : à 470 nm la solution absorbe très peu (A = 0,05). La mesure serait peu sensible, donc peu précise.'),
+      F('700 nm, la plus grande longueur d’onde de la série étudiée', 'La valeur de la longueur d’onde n’a pas d’intérêt en soi : ce qui compte est l’absorbance, qui vaut 0,35 à 700 nm, bien moins qu’à 630 nm.'),
+      F('530 nm, pour que l’absorbance reste faible et la loi valable', 'A = 0,80 est déjà dans le domaine de validité de la loi de Beer-Lambert (A ≲ 1,5 à 2) : il n’y a aucune raison de choisir une absorbance plus faible, donc moins sensible.'),
     ] },
   { id: 'irt-ana-esterification', domaine: 'Spectroscopie infrarouge : données tabulées', titre: 'Acide carboxylique devenu ester',
     enonce: 'On estérifie un acide carboxylique par un alcool, puis on isole l’ester pur (lavé et séché). On compare le spectre infrarouge du produit à celui de l’acide de départ, au-dessus de 1500 cm⁻¹.', q: 'Quel changement observe-t-on ?', options: [
@@ -3949,7 +4022,7 @@ export const PREVOIR = [
       F('ne bougent pas : seuls les ions se déplacent', 'Dans les fils et les lames, ce sont bien des électrons qui circulent ; les ions circulent dans les solutions.'),
     ] },
   { id: 'ely-ana-tension', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Un générateur trop faible',
-    enonce: 'Une pile zinc-cuivre a une tension à vide de 1,10 V. Pour la recharger, un élève la relie à un générateur réglé sur 0,80 V, borne + du générateur sur le pôle + de la pile.', q: 'Que se passe-t-il ?', options: [
+    ...presenter({ contexte: 'Pour recharger une pile zinc-cuivre, un élève la relie à un générateur, borne + du générateur sur le pôle + de la pile.', liste: [['Tension à vide de la pile', '1,10 V'], ['Tension réglée sur le générateur', '0,80 V']] }), q: 'Que se passe-t-il ?', options: [
       V('la pile débite toujours, sens spontané', 'La tension du générateur (0,80 V) est inférieure à la tension à vide (1,10 V) : c’est la pile qui impose le sens du courant ; elle continue de s’user.'),
       F('la pile se recharge, mais plus lentement', 'Pour recharger, le générateur doit imposer le sens inverse : il faut une tension supérieure à la tension à vide.'),
       F('aucun courant ne circule dans le circuit', 'Il n’y a aucun courant seulement si la tension du générateur compense exactement la tension à vide.'),
@@ -3963,7 +4036,7 @@ export const PREVOIR = [
       F('la cathode, et elle devient le pôle −', 'Une électrode où le métal se dissout est le siège d’une oxydation : c’est l’anode.'),
     ] },
   { id: 'ely-ana-intensite', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Doubler l’intensité',
-    enonce: 'Une électrolyse dépose du cuivre sur une cathode pendant 20 min avec une intensité constante de 0,50 A. On recommence pendant la même durée avec une intensité de 1,0 A.', q: 'La masse de cuivre déposé…', options: [
+    ...presenter({ contexte: 'On dépose du cuivre sur une cathode par électrolyse. On admet que tout le courant sert au dépôt de cuivre.', liste: [['Première expérience', '0,50 A pendant 20 min'], ['Seconde expérience', '1,0 A pendant 20 min']] }), q: 'La masse de cuivre déposé…', options: [
       V('double, car la charge passée double', 'Q = I × Δt double ; n(e⁻) = Q ÷ F double, donc la quantité de cuivre déposé et sa masse doublent aussi.'),
       F('ne change pas, car la durée est la même', 'La durée est la même, mais l’intensité double : il passe deux fois plus d’électrons.'),
       F('est divisée par deux, car le courant va plus vite', 'Plus d’intensité signifie plus de charge passée en un même temps, donc plus de métal déposé.'),
@@ -3971,8 +4044,8 @@ export const PREVOIR = [
     ] },
   { id: 'ely-ana-qr', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Le quotient de réaction pendant une électrolyse',
     enonce: 'La réaction Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s) a pour constante K ≈ 10³⁷. On impose avec un générateur la transformation inverse : du zinc se dépose et du cuivre se dissout.', q: 'Pendant l’électrolyse, Qr = [Zn²⁺] ÷ [Cu²⁺]…', options: [
-      V('diminue : il s’éloigne de K', '[Zn²⁺] diminue et [Cu²⁺] augmente : Qr diminue et s’éloigne de K, ce qui n’est possible qu’avec l’énergie du générateur.'),
-      F('augmente : il se rapproche de K', 'C’est ce qui se passe quand la pile débite spontanément ; ici la transformation est inverse.'),
+      V('diminue : il s’éloigne de la valeur de K', '[Zn²⁺] diminue et [Cu²⁺] augmente : Qr diminue et s’éloigne de K, ce qui n’est possible qu’avec l’énergie du générateur.'),
+      F('augmente : il se rapproche de la valeur de K', 'C’est ce qui se passe quand la pile débite spontanément ; ici la transformation est inverse.'),
       F('reste égal à K pendant toute l’électrolyse', 'Qr = K correspond à l’équilibre ; ici le système en est très loin et s’en éloigne encore.'),
       F('ne change pas, car K ne dépend que de T', 'K ne dépend que de la température, mais Qr dépend des concentrations, qui changent.'),
     ] },
@@ -4780,18 +4853,18 @@ export const PREVOIR = [
       F('2,2 : le pH diminue de 1 car il y a davantage d’eau et moins d’acide', 'Diluer un acide diminue [H₃O⁺] donc augmente le pH : la solution devient moins acide.'),
     ] },
   { id: 'phc-comparer-ph', domaine: 'pH et concentration en ions oxonium', titre: 'Comparer deux solutions d’après leur pH',
-    enonce: 'Deux solutions d’acide chlorhydrique ont pour pH : solution A, pH = 3,0 ; solution B, pH = 5,0.', q: 'La concentration en ions oxonium de A est, par rapport à celle de B…', options: [
-      V('100 fois plus grande : 2 unités de pH d’écart correspondent à un facteur 10² = 100', '[H₃O⁺]ₐ = 10⁻³ mol/L et [H₃O⁺]ᵦ = 10⁻⁵ mol/L : le rapport vaut 10⁻³ / 10⁻⁵ = 100.'),
+    ...presenter({ contexte: 'On mesure le pH de deux solutions d’acide chlorhydrique.', liste: [['Solution A', 'pH = 3,0'], ['Solution B', 'pH = 5,0']] }), q: 'La concentration en ions oxonium de A est, par rapport à celle de B…', options: [
+      V('100 fois plus grande, car 2 unités de pH d’écart valent 10²', '[H₃O⁺]ₐ = 10⁻³ mol/L et [H₃O⁺]ᵦ = 10⁻⁵ mol/L : le rapport vaut 10⁻³ / 10⁻⁵ = 100.'),
       F('2 fois plus grande, car 3,0 et 5,0 diffèrent de 2 unités', 'Un écart de pH correspond à un rapport de concentrations égal à 10 puissance cet écart, et non à l’écart lui-même.'),
       F('1,7 fois plus petite, car le rapport 3,0 / 5,0 vaut 0,6', 'On ne divise pas des pH : la relation entre pH et concentration est logarithmique.'),
       F('100 fois plus petite, car la solution A a le pH le plus petit', 'Le pH le plus petit correspond à la concentration la plus grande : A contient davantage d’ions H₃O⁺ que B.'),
     ] },
   { id: 'phc-ecrire-resultat', domaine: 'pH et concentration en ions oxonium', titre: 'Écrire [H₃O⁺] avec le bon nombre de chiffres significatifs',
-    enonce: 'Un pH-mètre indique pH = 4,60 pour une solution d’acide chlorhydrique. La calculatrice donne 10^(−4,60) = 2,5118864 × 10⁻⁵ pour [H₃O⁺] en mol/L.', q: 'Comment écrire le résultat ?', options: [
-      V('[H₃O⁺] = 2,5 × 10⁻⁵ mol/L : 2 chiffres significatifs, comme le pH a 2 décimales', 'Une incertitude de 0,01 sur le pH correspond à environ 2 % sur [H₃O⁺] : on garde 2 chiffres significatifs.'),
+    ...presenter({ contexte: 'Un pH-mètre indique le pH d’une solution d’acide chlorhydrique. La calculatrice donne [H₃O⁺] = 10^(−pH) en mol/L.', liste: [['pH mesuré', '4,60'], ['Affichage de la calculatrice', '10^(−4,60) = 2,5118864 × 10⁻⁵']] }), q: 'Comment écrire le résultat ?', options: [
+      V('[H₃O⁺] = 2,5 × 10⁻⁵ mol/L : 2 chiffres significatifs seulement', 'Une incertitude de 0,01 sur le pH correspond à environ 2 % sur [H₃O⁺] : on garde 2 chiffres significatifs.'),
       F('[H₃O⁺] = 2,5118864 × 10⁻⁵ mol/L : tous les chiffres de la calculatrice', 'Un résultat ne peut pas être plus précis que la donnée : le pH n’a que 2 décimales.'),
-      F('[H₃O⁺] = 3 × 10⁻⁵ mol/L : un seul chiffre significatif', 'Un seul chiffre est trop peu : 3 × 10⁻⁵ s’écarte de près de 20 % de la valeur calculée, bien plus que l’incertitude due au pH.'),
-      F('[H₃O⁺] = 4,60 × 10⁻⁵ mol/L : on reprend le nombre du pH', 'Le 4,60 du pH n’est pas la mantisse de [H₃O⁺] : il faut calculer 10^(−4,60).'),
+      F('[H₃O⁺] = 3 × 10⁻⁵ mol/L : on arrondit à un seul chiffre significatif', 'Un seul chiffre est trop peu : 3 × 10⁻⁵ s’écarte de près de 20 % de la valeur calculée, bien plus que l’incertitude due au pH.'),
+      F('[H₃O⁺] = 4,60 × 10⁻⁵ mol/L : on reprend simplement le nombre du pH', 'Le 4,60 du pH n’est pas la mantisse de [H₃O⁺] : il faut calculer 10^(−4,60).'),
     ] },
   // ───────────────────────────── Plans d'expériences (BTS) : plan de mélange
   { id: 'pmel-pas-de-constante', domaine: 'Plans', titre: 'Pourquoi pas de constante dans un modèle de mélange ?',
