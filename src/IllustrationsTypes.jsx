@@ -74,7 +74,7 @@ const DESSINS = {
     <rect x="46" y="44" width="48" height="16" rx="4" fill={c} opacity=".28" /><rect x="46" y="44" width="48" height="16" rx="4" fill="none" stroke={c} strokeWidth="2.2" />
     <circle cx="132" cy="62" r="6" fill={ROUGE} /><path d="M132 14l15 26H117z" fill={AMBRE} stroke={ENCRE} strokeWidth="2" strokeLinejoin="round" />
     <path d="M132 22v9" stroke={ENCRE} strokeWidth="2.8" strokeLinecap="round" /><circle cx="132" cy="35" r="1.6" fill={ENCRE} /></>),
-  compat: c => (<>
+  compat: () => (<>
     <path d="M80 8V92" stroke={ENCRE} strokeWidth="2.5" strokeDasharray="5 4" />
     {[[34, 54, 106, 80, 1], [70, 112, 140, 126, 0]].map(([y, a, b, m, ok]) => <g key={y}>
       <path d={`M${a} ${y}H${b}M${a} ${y - 6}V${y + 6}M${b} ${y - 6}V${y + 6}`} stroke={ok ? VERT : ROUGE} strokeWidth="3" strokeLinecap="round" />
@@ -121,8 +121,6 @@ const DESSINS = {
     <path d="M34 72C60 50 70 38 148 28" fill="none" stroke={c} strokeWidth="3" strokeLinecap="round" strokeDasharray="1 0" />
     {[[40, 68], [60, 54], [80, 44], [100, 36], [124, 32]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="5" fill={AMBRE} stroke={ENCRE} strokeWidth="1.8" />)}</>),
 };
-
-export const aUneIllustration = id => !!DESSINS[id];
 
 // Illustration d'un type d'exercice. couleur = couleur de la compétence ; la taille se règle en CSS (classe .pc-ill dans ParcoursCompetence)
 export function IllustrationType({ id, couleur, className = 'pc-ill' }) {
