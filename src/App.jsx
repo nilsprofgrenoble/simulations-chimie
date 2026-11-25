@@ -206,6 +206,7 @@ const SimulationHlb = paresseux(() => import("./simulations/Hlb"), "SimulationHl
 const SimulationSuspension = paresseux(() => import("./simulations/Suspension"), "SimulationSuspension");
 const SimulationDispersion = paresseux(() => import("./simulations/Dispersion"), "SimulationDispersion");
 const SimulationMousse = paresseux(() => import("./simulations/Mousse"), "SimulationMousse");
+const SimulationMouillage = paresseux(() => import("./simulations/Mouillage"), "SimulationMouillage");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationPanneauPhotovoltaique = paresseux(() => import("./simulations/PanneauPhotovoltaique"), "SimulationPanneauPhotovoltaique");
 const SimulationPanneauRendement = paresseux(() => import("./simulations/PanneauRendement"), "SimulationPanneauRendement");
@@ -598,6 +599,7 @@ const SIMULATIONS = [
   { id:224, label:"Stabilité d’une suspension : charge, pH et sel", niveau:"BTS", icon:"⚗️", color:"#0e7490", component: SimulationSuspension },
   { id:225, label:"Mouiller, disperser, stabiliser une suspension", niveau:"BTS", icon:"🧪", color:"#0f766e", component: SimulationDispersion },
   { id:226, label:"Mousses : former, stabiliser, détruire", niveau:"BTS", icon:"🫧", color:"#0f766e", component: SimulationMousse },
+  { id:234, label:"Mouillage : tension superficielle, angle de contact, tension critique", niveau:"BTS", icon:"💧", color:"#0f766e", component: SimulationMouillage },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 

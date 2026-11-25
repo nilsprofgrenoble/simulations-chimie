@@ -114,6 +114,16 @@ export default {
         ...VV('disp-val-agglo-d50', 'disp-val-energie-suffit', 'disp-val-dosage-eau', 'disp-val-pce-ions', 'disp-val-angle-grand')] },
   ],
 
+  // ───────────────────────── S7 · Formulation : mouillage ─────────────────────────
+  'bts-mouillage': [
+    { id: 'tension-angle', nom: 'Tension superficielle et angle de contact', capacite: 'Mettre en œuvre une méthode de mesure de la tension interfaciale ; identifier les situations de mouillage total, partiel et non mouillage selon l’angle de raccordement.',
+      refs: [...A('angc-ana-situation', 'angc-ana-wilhelmy'), ...VV('angc-val-wilhelmy')] },
+    { id: 'young-zisman', nom: 'Young-Dupré et tension critique de Zisman', capacite: 'Appliquer la loi de Young-Dupré pour déterminer un critère simple de mouillage ; déterminer et utiliser la tension critique de Zisman d’un solide.',
+      refs: [...A('angc-ana-critere', 'angc-ana-zisman'), ...VV('angc-val-young', 'angc-val-zisman')] },
+    { id: 'ameliorer', nom: 'Améliorer le mouillage : tensioactif et traitement de surface', capacite: 'Améliorer le mouillage d’une encre sur un film : abaisser la tension superficielle du liquide ou traiter le solide (corona, plasma, dégraissage).',
+      refs: [...A('angc-ana-tensioactif', 'angc-ana-corona')] },
+  ],
+
   // ───────────────────────── S7 · Formulation : plans d’expériences ─────────────────────────
   'bts-plans': [
     { id: 'melange', nom: 'Plan de mélange : fractions et somme égale à 1', capacite: 'Plan de mélanges ternaires : mettre en œuvre un plan d’expériences pour développer ou optimiser une formule (facteurs d’entrée, réponses, fractions dont la somme vaut 1).',
