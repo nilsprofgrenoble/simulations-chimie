@@ -2771,6 +2771,64 @@ function genBatDuree() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['I = P ÷ U ; Δt = Qs ÷ I = E ÷ P (h, Ah, A, Wh, W).', 'Puissance ×k : intensité ×k et durée ÷k.'] };
 }
+// ---------- Effet Joule : puissance, énergie thermique et pertes (TSTL, PCM) ----------
+function genJoulePuissance() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let R, U, dt, I, Pw, W, P2;
+  do {
+    R = tire([10, 15, 20, 30]); U = tire([6, 12, 24]); dt = tire([2, 5, 10, 15]);
+    I = U / R; Pw = U * U / R; W = Pw * dt * 60; P2 = 4 * Pw;
+  } while (new Set([I, Pw, W / 1000, P2].map(v => Number(v.toPrecision(3)))).size < 4);
+  const intro = `Un résistor chauffant de résistance R = ${R}${NB}Ω est branché sur une source de tension U = ${U}${NB}V pendant ${dt}${NB}minutes.`;
+  const q1 = { id: 'j0', type: 'num', q: <>Calculez l’<b>intensité</b> I = U ÷ R du courant (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
+    aide: 'Loi d’Ohm : I = U ÷ R (U en V, R en Ω, I en A).',
+    pieges: [[R / U, 'Le rapport est inversé : I = U ÷ R.'], [R * U, 'Il faut diviser la tension par la résistance, pas les multiplier.']],
+    expl: <>I = {U} ÷ {R} = <b>{pvFmt(I)}{NB}A</b>.</> };
+  const q2 = { id: 'j1', type: 'num', q: <>Avec I = {pvFmt(I)}{NB}A, calculez la <b>puissance</b> P = U × I dissipée (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: Pw, tolRel: 0.05, csMin: 2,
+    aide: 'P = U × I : tension en V multipliée par intensité en A.',
+    pieges: [[U / I, 'Il faut multiplier la tension par l’intensité, pas les diviser.'], [R * I, 'Cette valeur est la tension R × I ; il manque un facteur I pour obtenir la puissance.']],
+    expl: <>P = {U} × {pvFmt(I)} = <b>{pvFmt(Pw)}{NB}W</b>.</> };
+  const q3 = { id: 'j2', type: 'num', q: <>Avec P = {pvFmt(Pw)}{NB}W pendant {dt}{NB}minutes, calculez l’<b>énergie thermique</b> dégagée (en kJ, 2 chiffres significatifs).</>, unite: 'kJ', vrai: W / 1000, tolRel: 0.05, csMin: 2,
+    aide: 'W = P × Δt avec Δt en secondes (1 min = 60 s) ; 1 kJ = 1 000 J.',
+    pieges: [[Pw * dt / 1000, 'La durée est restée en minutes : convertissez-la en secondes (1 min = 60 s).'], [W, 'Cette valeur est en joules : le résultat est demandé en kJ.']],
+    expl: <>Δt = {dt * 60}{NB}s ; W = {pvFmt(Pw)} × {dt * 60} = {pvFmt(W)}{NB}J = <b>{pvFmt(W / 1000)}{NB}kJ</b>.</> };
+  const q4 = { id: 'j3', type: 'num', q: <>On double la tension ({2 * U}{NB}V) avec le même résistor. Quelle est la nouvelle <b>puissance</b> ? (en W, 2 chiffres significatifs)</>, unite: 'W', vrai: P2, tolRel: 0.05, csMin: 2,
+    aide: 'Avec R constante, I double (loi d’Ohm) et P = R × I² est multipliée par 4.',
+    pieges: [[2 * Pw, 'La puissance dépend du carré de la tension : elle est multipliée par 4, pas par 2.']],
+    expl: <>P = {2 * U}² ÷ {R} = <b>{pvFmt(P2)}{NB}W</b> : 4 fois plus grande.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['I = U ÷ R ; P = U × I = R × I² ; W = P × Δt (Δt en s).', 'Tension ×2 à R constante : puissance ×4.'] };
+}
+function genJouleCable() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let r, U, Pw, k, I, pert, part, pert2;
+  do {
+    r = tire([0.2, 0.5]); U = tire([24, 48]); Pw = tire([60, 120, 240]); k = tire([2, 4]);
+    I = Pw / U; pert = r * I * I; part = 100 * pert / Pw; pert2 = pert / (k * k);
+  } while (new Set([I, pert, part, pert2].map(v => Number(v.toPrecision(3)))).size < 4);
+  const rs = nbF(r, 1);
+  const intro = `Un appareil de puissance ${Pw}${NB}W est alimenté sous une tension de ${U}${NB}V par un câble de résistance r = ${rs}${NB}Ω.`;
+  const q1 = { id: 'c0', type: 'num', q: <>Calculez l’<b>intensité</b> I = P ÷ U dans le câble (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
+    aide: 'I = P ÷ U : puissance en W divisée par tension en V.',
+    pieges: [[U / Pw, 'Le rapport est inversé : I = P ÷ U.'], [Pw * U, 'Il faut diviser la puissance par la tension, pas les multiplier.']],
+    expl: <>I = {Pw} ÷ {U} = <b>{pvFmt(I)}{NB}A</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>Avec I = {pvFmt(I)}{NB}A, calculez la <b>puissance perdue</b> r × I² par effet Joule dans le câble (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: pert, tolRel: 0.08, csMin: 2,
+    aide: 'Pertes = r × I² : calculez I² d’abord.',
+    pieges: [[r * I, 'Le carré de l’intensité a été oublié : pertes = r × I².'], [r * I * 2, 'L’intensité est au carré (I × I), pas multipliée par 2.']],
+    expl: <>pertes = {rs} × {pvFmt(I)}² = <b>{pvFmt(pert)}{NB}W</b>.</> };
+  const q3 = { id: 'c2', type: 'num', q: <>Quelle <b>part</b> de la puissance de l’appareil ces pertes représentent-elles ? (en %, 2 chiffres significatifs)</>, unite: '%', vrai: part, tolRel: 0.08, csMin: 2,
+    aide: 'Part en % = pertes ÷ puissance de l’appareil × 100.',
+    pieges: [[pert / Pw, 'C’est une fraction : multipliez par 100 pour un pourcentage.']],
+    expl: <>part = {pvFmt(pert)} ÷ {Pw} × 100 = <b>{pvFmt(part)}{NB}%</b>.</> };
+  const q4 = { id: 'c3', type: 'num', q: <>La tension est multipliée par {k} (même appareil, même puissance, même câble). Quelles sont les nouvelles <b>pertes</b> ? (en W, 2 chiffres significatifs)</>, unite: 'W', vrai: pert2, tolRel: 0.08, csMin: 2,
+    aide: `I = P ÷ U est divisée par ${k} ; les pertes r × I² sont divisées par ${k}².`,
+    pieges: [[pert / k, `Les pertes sont proportionnelles à I², donc divisées par ${k}² = ${k * k}, pas par ${k}.`]],
+    expl: <>pertes = {pvFmt(pert)} ÷ {k * k} = <b>{pvFmt(pert2)}{NB}W</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['I = P ÷ U ; pertes = r × I² ; part = pertes ÷ P × 100.', 'Tension ×k à puissance égale : pertes ÷ k².'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -4953,6 +5011,8 @@ export const FAMILLES = [
   { id: 'las-energie', groupe: 'Formules', titre: 'Laser de gravure : énergie, flux et durée d’exposition (terminale STL)', gen: genLasEnergie, domaine: 'Laser : éclairement, énergie reçue et sécurité' },
   { id: 'bat-energie', groupe: 'Formules', titre: 'Accumulateur : énergie disponible en Wh et en J (terminale STL)', gen: genBatEnergie, domaine: 'Batterie : énergie disponible et durée de fonctionnement' },
   { id: 'bat-duree', groupe: 'Formules', titre: 'Accumulateur : intensité et durée de fonctionnement (terminale STL)', gen: genBatDuree, domaine: 'Batterie : énergie disponible et durée de fonctionnement' },
+  { id: 'jou-puissance', groupe: 'Formules', titre: 'Résistor chauffant : intensité, puissance et énergie thermique (terminale STL)', gen: genJoulePuissance, domaine: 'Effet Joule : puissance, énergie thermique et pertes' },
+  { id: 'jou-cable', groupe: 'Formules', titre: 'Câble d’alimentation : intensité et pertes par effet Joule (terminale STL)', gen: genJouleCable, domaine: 'Effet Joule : puissance, énergie thermique et pertes' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
