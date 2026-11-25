@@ -3782,6 +3782,51 @@ function genCelluleTG() {
     retenir: ['Énergie d’un photon : E_ph = h × c divisé par λ, avec λ en mètres ; 1 eV = 1,60×10⁻¹⁹ J.', 'Un photon n’est absorbé que si E_ph est au moins égale à l’énergie seuil ; d’où une longueur d’onde maximale λ_max = h × c divisé par E_seuil.', 'Puissance reçue : P_reçue = E × S ; puissance électrique : P_él = U × I = η × P_reçue.', 'Rendement : η = P_él divisé par P_reçue (sans unité, ×100 pour des %) ; les pertes valent P_reçue − P_él.'] };
 }
 
+function genPhotoTG() {
+  // Effet photoélectrique (TG, sim 240). h = 6,63×10⁻³⁴ J·s ; c = 3,00×10⁸ m·s⁻¹ ; 1 eV = 1,60×10⁻¹⁹ J (données). Pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const HH = 6.63e-34, CC = 3.00e8, EE = 1.60e-19;
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const METAUX = [['le césium', 2.0], ['le potassium', 2.3], ['le calcium', 2.9], ['le zinc', 4.3], ['le cuivre', 4.7]];
+  const donnees = <>h = 6,63 × 10⁻³⁴{NB}J·s ; c = 3,00 × 10⁸{NB}m·s⁻¹ ; 1{NB}eV = 1,60 × 10⁻¹⁹{NB}J</>;
+  const eV = nm => HH * CC / (nm * 1e-9) / EE;
+  // q1 : E (eV) à partir de λ
+  const l1 = tire([200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700]), E1 = eV(l1);
+  const q1 = { id: 'phe0', type: 'num', q: <>Un photon a pour longueur d’onde <b>λ = {l1}{NB}nm</b>. Calculez son énergie E (en eV, 3 chiffres significatifs). Données : {donnees}.</>, unite: 'eV', vrai: E1, tolRel: 0.04, csMin: 3,
+    aide: 'E = h × c divisé par λ, avec λ en mètres (1 nm = 10⁻⁹ m) ; le résultat est en joules : divisez par 1,60×10⁻¹⁹ pour obtenir des eV.',
+    pieges: [[E1 * EE, 'Votre résultat est en joules : l’énoncé demande des électronvolts (divisez par 1,60×10⁻¹⁹).'], [E1 * 1e9, 'λ doit être convertie en mètres : 1 nm = 10⁻⁹ m.'], [E1 * 1.6 * 1.6, 'Pour convertir des joules en eV, on divise par 1,60×10⁻¹⁹ (on ne multiplie pas).']],
+    expl: <>E = {avecIndices(`frac(6,63×10⁻³⁴ × 3,00×10⁸|${l1}×10⁻⁹)`)} = {f(E1 * EE / 1e-19, 2)}×10⁻¹⁹ J = <b>{f(E1, 2)}{NB}eV</b> (repère : E en eV ≈ 1 240 divisé par λ en nm).</> };
+  // q2 : λ à partir de E (eV)
+  const E2 = tire([1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0]), l2 = HH * CC / (E2 * EE) * 1e9;
+  const q2 = { id: 'phe1', type: 'num', q: <>Un photon a pour énergie <b>E = {f(E2, 1)}{NB}eV</b>. Calculez sa longueur d’onde λ (en nm, 3 chiffres significatifs). Données : {donnees}.</>, unite: 'nm', vrai: l2, tolRel: 0.04, csMin: 3,
+    aide: 'Convertissez E en joules (× 1,60×10⁻¹⁹), puis λ = h × c divisé par E, en mètres ; enfin passez en nm (× 10⁹).',
+    pieges: [[l2 / 1e9, 'Votre résultat est en mètres : l’énoncé demande des nanomètres (multipliez par 10⁹).'], [HH * CC / E2 * 1e9, 'E doit être converti en joules : multipliez les eV par 1,60×10⁻¹⁹.']],
+    expl: <>E = {f(E2, 1)} × 1,60×10⁻¹⁹ = {f(E2 * 1.6, 2)}×10⁻¹⁹ J ; λ = {avecIndices(`frac(6,63×10⁻³⁴ × 3,00×10⁸|${f(E2 * 1.6, 2)}×10⁻¹⁹)`)} = <b>{f(l2, 0)}{NB}nm</b>.</> };
+  // q3 : Ec,max = E − W
+  let m3, E3, Ec3;
+  for (;;) { m3 = tire(METAUX); E3 = tire([2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0]); Ec3 = E3 - m3[1]; if (Ec3 >= 0.4) break; }
+  const q3 = { id: 'phe2', type: 'num', q: <>Des photons d’énergie <b>h ν = {f(E3, 1)}{NB}eV</b> éclairent {m3[0]}, de travail d’extraction <b>W = {f(m3[1], 1)}{NB}eV</b>. Calculez l’énergie cinétique maximale E<sub>c,max</sub> des électrons éjectés (en eV, 2 chiffres significatifs).</>, unite: 'eV', vrai: Ec3, tolRel: 0.06, csMin: 2,
+    aide: 'Bilan d’énergie : h ν = W + E_c,max, donc E_c,max = h ν − W (les deux en eV).',
+    pieges: [[E3, 'Une partie de l’énergie du photon sert à extraire l’électron : il faut retrancher W.'], [E3 + m3[1], 'W se retranche, il ne s’ajoute pas : E_c,max = h ν − W.'], [m3[1] - E3, 'Le résultat est inversé : on retranche W à l’énergie du photon (h ν − W), pas l’inverse.']],
+    expl: <>E<sub>c,max</sub> = h ν − W = {f(E3, 1)} − {f(m3[1], 1)} = <b>{f(Ec3, 1)}{NB}eV</b>.</> };
+  // q4 : fréquence seuil
+  const m4 = tire(METAUX), nu4 = m4[1] * EE / HH / 1e14;
+  const q4 = { id: 'phe3', type: 'num', q: <>Le travail d’extraction de {m4[0]} est <b>W = {f(m4[1], 1)}{NB}eV</b>. Calculez la fréquence seuil ν₀ (en 10¹⁴{NB}Hz, 3 chiffres significatifs). Données : {donnees}.</>, unite: '×10¹⁴ Hz', vrai: nu4, tolRel: 0.03, csMin: 3,
+    aide: 'À la fréquence seuil, h ν₀ = W : ν₀ = W divisé par h, avec W en joules (W en J = W en eV × 1,60×10⁻¹⁹) ; exprimez le résultat en unités de 10¹⁴ Hz.',
+    pieges: [[m4[1] / HH / 1e14, 'W doit être converti en joules : multipliez les eV par 1,60×10⁻¹⁹.'], [nu4 * 1e14, 'Le résultat est attendu en unités de 10¹⁴ Hz : divisez par 10¹⁴.'], [nu4 / 10, 'Vérifiez la puissance de 10 : 10⁻¹⁹ divisé par 10⁻³⁴ donne 10¹⁵.']],
+    expl: <>W = {f(m4[1], 1)} × 1,60×10⁻¹⁹ = {f(m4[1] * 1.6, 2)}×10⁻¹⁹ J ; ν₀ = {avecIndices(`frac(${f(m4[1] * 1.6, 2)}×10⁻¹⁹|6,63×10⁻³⁴)`)} = <b>{f(nu4, 2)}×10¹⁴{NB}Hz</b>.</> };
+  // q5 : Ec,max à partir de λ (deux étapes)
+  let m5, l5, E5, Ec5;
+  for (;;) { m5 = tire(METAUX); l5 = tire([200, 220, 250, 280, 300, 320, 350, 400, 430, 450]); E5 = eV(l5); Ec5 = E5 - m5[1]; if (Ec5 >= 0.6 && E5 <= 6.3) break; }
+  const q5 = { id: 'phe4', type: 'num', q: <>Une plaque de {m5[0].replace(/^le /, '')} (<b>W = {f(m5[1], 1)}{NB}eV</b>) est éclairée par une lumière de longueur d’onde <b>λ = {l5}{NB}nm</b>. Calculez l’énergie cinétique maximale E<sub>c,max</sub> des électrons éjectés (en eV, 2 chiffres significatifs). Données : {donnees}.</>, unite: 'eV', vrai: Ec5, tolRel: 0.10, csMin: 2,
+    aide: 'D’abord l’énergie du photon : E = h × c divisé par λ (λ en mètres), convertie en eV (÷ 1,60×10⁻¹⁹) ; puis E_c,max = E − W.',
+    pieges: [[E5, 'Il reste à retrancher le travail d’extraction : E_c,max = h ν − W.'], [E5 * EE, 'Vous avez gardé l’énergie du photon en joules : convertissez en eV puis retranchez W.'], [E5 + m5[1], 'W se retranche, il ne s’ajoute pas : E_c,max = h ν − W.']],
+    expl: <>E = {avecIndices(`frac(6,63×10⁻³⁴ × 3,00×10⁸|${l5}×10⁻⁹)`)} = {f(E5, 2)} eV ; E<sub>c,max</sub> = {f(E5, 2)} − {f(m5[1], 1)} = <b>{f(Ec5, 2)}{NB}eV</b>. Gardez un chiffre de plus dans le calcul intermédiaire.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Effet photoélectrique : énergie d’un photon E = h ν = h c divisé par λ ; bilan d’énergie h ν = W + E_c,max ; fréquence seuil ν₀ = W divisé par h. Énergies en eV (1 eV = 1,60×10⁻¹⁹ J).', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Énergie d’un photon : E = h ν = h c divisé par λ (λ en mètres) ; 1 eV = 1,60×10⁻¹⁹ J ; E en eV ≈ 1 240 divisé par λ en nm.', 'Bilan d’énergie : h ν = W + E_c,max, donc E_c,max = h ν − W ; pas d’électron si h ν est inférieure à W.', 'Fréquence seuil : ν₀ = W divisé par h (W en joules).', 'L’intensité de la lumière change le nombre d’électrons éjectés par seconde, pas leur énergie maximale.'] };
+}
+
 function genEcoulementTG() {
   // Écoulement d'un fluide (TG, sim 214). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -5294,6 +5339,7 @@ export const FAMILLES = [
   { id: 'gpf-calcul', groupe: 'Formules', titre: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température (TG)', gen: genGazParfaitTG, domaine: 'Gaz parfait : équation d’état et limites du modèle' },
   { id: 'pp1-calcul', groupe: 'Formules', titre: 'Premier principe : variation d’énergie interne, capacité thermique et température finale (TG)', gen: genPremierPrincipeTG, domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie' },
   { id: 'tht-calcul', groupe: 'Formules', titre: 'Transferts thermiques : flux, résistance thermique d’une paroi, énergie transférée et nouvel écart de température (TG)', gen: genTransfertsThermTG, domaine: 'Transferts thermiques et bilan de la Terre (TG)' },
+  { id: 'phe-calcul', groupe: 'Formules', titre: 'Effet photoélectrique : énergie d’un photon, bilan d’énergie, fréquence seuil (TG)', gen: genPhotoTG, domaine: 'Photons : effet photoélectrique et cellule photovoltaïque' },
   { id: 'ter-calcul', groupe: 'Formules', titre: 'Bilan thermique d’une planète : puissance absorbée, loi de Stefan-Boltzmann, température d’équilibre (TG)', gen: genTerreTG, domaine: 'Transferts thermiques et bilan de la Terre (TG)' },
   { id: 'cel-calcul', groupe: 'Formules', titre: 'Cellule photovoltaïque : énergie d’un photon, seuil d’absorption, puissance reçue, rendement et puissance électrique (TG)', gen: genCelluleTG, domaine: 'Photons : effet photoélectrique et cellule photovoltaïque' },
   { id: 'ber-calcul', groupe: 'Formules', titre: 'Écoulement d’un fluide : débit volumique, vitesse dans un col, différence de pression, vitesse de vidange et colonnes d’un Venturi (TG)', gen: genEcoulementTG, domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi' },

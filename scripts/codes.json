@@ -2606,5 +2606,15 @@
  "77:plausible:chc-val-sequence": "VAL703",
  "77:plausible:chc-val-ok": "VAL704",
  "77:plausible:chc-val-tertiaire": "VAL705",
- "36:chc-calcul": "REA155"
+ "36:chc-calcul": "REA155",
+ "34:phe-sapp-photon.0": "SAPP556",
+ "34:phe-sapp-photon.1": "SAPP557",
+ "37:prevoir:phe-ana-metaux": "ANA1194",
+ "37:prevoir:phe-ana-droite": "ANA1195",
+ "37:prevoir:phe-ana-cellule": "ANA1196",
+ "77:plausible:phe-val-seuil-unite": "VAL706",
+ "77:plausible:phe-val-ec-negative": "VAL707",
+ "77:plausible:phe-val-cuivre-visible": "VAL708",
+ "77:plausible:phe-val-intensite-ok": "VAL709",
+ "36:phe-calcul": "REA156"
 }
