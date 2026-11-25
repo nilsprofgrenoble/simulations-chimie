@@ -94,7 +94,7 @@ export function SvgVieillissement({ phen, etat, t, hist0, N0, r0, anim = true, a
     {phen === 'ostwald' && <g>
       <circle cx="162" cy="253" r="5" fill="#fef3c7" stroke={C.bleu} strokeWidth="1.6" strokeDasharray="3 2"/>{T(171, 257, 'rétrécit', { size: 12, anchor: 'start' })}
       <circle cx="232" cy="253" r="5" fill={C.huile} stroke={C.orange} strokeWidth="2.4"/>{T(241, 257, 'grossit', { size: 12, anchor: 'start' })}
-      <circle cx="297" cy="253" r="3.6" fill={C.orange} stroke="#fff"/>{T(305, 257, 'huile qui diffuse', { size: 12, anchor: 'start' })}
+      <circle cx="297" cy="253" r="3.6" fill={C.orange} stroke="#fff"/>{T(305, 257, 'huile dissoute', { size: 12, anchor: 'start' })}
     </g>}
     {avecHisto && <>
       <Histo x={46} y={272} w={380} h={60} hist={hist} hist0={hist0}/>
@@ -117,8 +117,8 @@ export function SvgCremage({ C: cr, t, nom = 'crémage' }) {
   return base(340, 290, `tube d’émulsion après ${fr(t, 1)} jours : ${nom}, ${pct} % des gouttes ont atteint la couche ${haut ? 'de crème en haut' : 'de sédiment en bas'}`, <>
     <rect x={X0} y={Y0} width={W} height={TH} rx="6" fill="#eaf3ff"/>
     {hc > 0 && <rect x={X0} y={yCouche} width={W} height={hc} fill="#fffaf0" stroke="#d6b36a" strokeWidth="1.5" strokeDasharray="5 3"/>}
-    {mobiles.map(({ g, p }, k) => { const y = Y0 + TH - p.y * TH, x = X0 + 8 + g.x * (W - 16), r = rp(g), sens = haut ? 1 : -1;
-      return <g key={k}><line x1={x} y1={y + sens * (r + 1)} x2={x} y2={y + sens * (r + 8)} stroke={C.violet} strokeWidth="1.5" strokeLinecap="round" opacity=".5"/><circle cx={x} cy={y} r={r} fill={C.huile} stroke={C.huileTr} strokeWidth="1.3"/></g>; })}
+    {mobiles.map(({ g, p }, k) => { const y = Y0 + TH - p.y * TH, x = X0 + 8 + g.x * (W - 16), r = rp(g);
+      return <g key={k}><circle cx={x} cy={y} r={r} fill={C.huile} stroke={C.huileTr} strokeWidth="1.3"/></g>; })}
     {arrivees.map((a, k) => { const q = place(a, k); return <circle key={`a${k}`} cx={q.x} cy={q.y} r={q.r} fill={C.huile} stroke={C.huileTr} strokeWidth="1.3"/>; })}
     <path d={`M${X0} ${Y0} L${X0} ${Y0 + TH + 4} Q${X0} ${Y0 + TH + 12} ${X0 + 8} ${Y0 + TH + 12} L${X0 + W - 8} ${Y0 + TH + 12} Q${X0 + W} ${Y0 + TH + 12} ${X0 + W} ${Y0 + TH + 4} L${X0 + W} ${Y0}`} fill="none" stroke={C.trait} strokeWidth="3"/>
     <line x1={X0 - 4} y1={Y0} x2={X0 + W + 4} y2={Y0} stroke={C.trait} strokeWidth="3" strokeLinecap="round"/>
@@ -198,9 +198,12 @@ export function SvgCarteOstwald() {
   return base(300, 252, 'mûrissement d’Ostwald : l’huile des petites gouttes diffuse à travers la phase continue vers les grosses ; les petites disparaissent, les grosses grossissent, sans contact entre gouttes', <>
     {T(150, 16, 'Mûrissement d’Ostwald (hors référentiel)', { size: 13.5, gras: true })}
     <rect x="8" y="26" width="284" height="84" rx="8" fill={C.eau} stroke={C.trait} strokeWidth="2"/>
-    {g(60, 60, 9)}{g(100, 84, 24)}{g(210, 56, 26)}{g(258, 88, 8)}{g(160, 76, 7)}
-    {[[72, 66], [82, 72], [92, 79]].map(([x, y], k) => <circle key={k} cx={x} cy={y} r="2.6" fill={C.orange}/>)}
-    {[[168, 70], [180, 66], [190, 62]].map(([x, y], k) => <circle key={k} cx={x} cy={y} r="2.6" fill={C.orange}/>)}
+    {g(38, 62, 9)}{g(232, 62, 28)}{g(110, 94, 12)}{g(162, 97, 8)}{g(270, 98, 7)}
+    <line x1="50" y1="62" x2="196" y2="62" stroke={C.orange} strokeWidth="2" strokeDasharray="4 4"/>
+    <polygon points="203,62 191,55 191,69" fill={C.orange}/>
+    {[[80, 62], [115, 62], [150, 62]].map(([x, y], k) => <circle key={k} cx={x} cy={y} r="3" fill={C.orange} stroke="#fff"/>)}
+    {T(118, 50, 'huile dissoute dans l’eau', { size: 12, fill: C.orange, gras: true })}
+    {T(38, 84, 'petite', { size: 12, fill: C.gris })}{T(232, 104, 'grosse', { size: 12, fill: C.gris })}
     <text x="150" y="132" fontSize="18" textAnchor="middle" fill={C.gris} fontFamily="inherit">↓ dans le temps</text>
     <rect x="8" y="142" width="284" height="56" rx="8" fill={C.eau} stroke={C.trait} strokeWidth="2"/>
     {g(100, 170, 26)}{g(210, 168, 28)}
