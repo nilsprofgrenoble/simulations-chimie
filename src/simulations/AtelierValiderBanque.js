@@ -1,5 +1,6 @@
 import { presenter } from './presenter.js';
 import { OEIL2GT_VAL } from './oeilReduit2gtExos.js';
+import { OSG2GT_VAL } from './ondesSignaux2gtExos.js';
 import { NOY2GT_VAL } from './noyauAtome2gtExos.js';
 import { NUC2GT_VAL } from './nucleaire2gtExos.js';
 import { RHC_VAL } from './rheoCourbesExos.js';
@@ -519,8 +520,8 @@ export const PLAUSIBLES = [
     ver: 'En série, les tensions des deux lampes s’additionnent pour donner celle aux bornes de la pile : U₁ + U₂ = 4,5 V (pile idéale ; avec une pile réelle en charge, la somme serait un peu inférieure). Les lampes étant identiques, chacune est à environ 2,25 V, pas 9,0 V.',
     q2: 'Quelle explication est la bonne ?',
     options: [
-      V('les tensions des deux lampes s’additionnent pour donner la tension aux bornes de la pile (au plus 4,5 V)', 'Loi d’additivité (régime continu, appareils idéaux) : aux bornes d’un dipôle en série avec un autre, on ne peut pas mesurer plus que la tension aux bornes du générateur.'),
-      F('les lampes en série multiplient par deux la tension de la pile', 'Une lampe est un récepteur : elle ne crée pas de tension.'),
+      V('les tensions des deux lampes s’additionnent : leur somme ne peut pas dépasser 4,5 V', 'Loi d’additivité (régime continu, appareils idéaux) : aux bornes d’un dipôle en série avec un autre, on ne peut pas mesurer plus que la tension aux bornes du générateur.'),
+      F('chaque lampe multiplie par deux la tension de la pile qui l’alimente', 'Une lampe est un récepteur : elle ne crée pas de tension.'),
       F('le voltmètre a été branché en série avec les lampes, ce qui double la tension affichée', 'Un voltmètre mal branché en série afficherait environ la tension de la pile, 4,5 V au plus, jamais 9,0 V.'),
     ] }),
   P({ id: 'lum-indice-inverse', domaine: 'Lumière', niveau: 1, titre: 'Lumière dans un verre', plausible: false,
@@ -539,9 +540,9 @@ export const PLAUSIBLES = [
     ver: 'En entrant dans l’eau (n plus grand), le rayon se rapproche de la normale : i₂ doit être plus petit que 40°. 59° est impossible. Le bon calcul : sin i₂ = (1,00 / 1,33) × sin 40° = 0,483, soit i₂ ≈ 29°.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
-      V('il a inversé les indices : sin i₂ = (n₁ / n₂) × sin i₁', 'La loi n₁ sin i₁ = n₂ sin i₂ donne sin i₂ = (n₁ / n₂) sin i₁.'),
-      F('il a calculé en radians au lieu de degrés', 'Cette erreur donnerait un résultat très différent et absurde, pas 59°.'),
-      F('il a oublié d’utiliser l’indice de l’air', 'n₁ = 1,00 : l’oublier ne change rien au calcul.'),
+      V('il a inversé les indices : n₂ / n₁ au lieu de n₁ / n₂', 'La loi n₁ sin i₁ = n₂ sin i₂ donne sin i₂ = (n₁ / n₂) sin i₁.'),
+      F('il a calculé en radians au lieu de degrés avec sa calculatrice', 'Cette erreur donnerait un résultat très différent et absurde, pas 59°.'),
+      F('il a oublié d’utiliser l’indice de l’air dans son calcul', 'n₁ = 1,00 : l’oublier ne change rien au calcul.'),
     ] }),
   P({ id: 'lum-angle-refracte-ok', domaine: 'Lumière', niveau: 2, titre: 'Angle de réfraction air → verre', plausible: true,
     enonce: 'Un rayon passe de l’air (n₁ = 1,00) dans un verre (n₂ = 1,50) avec un angle d’incidence i₁ = 45°. Un élève calcule sin i₂ = (1,00 / 1,50) × sin 45° = 0,471, soit i₂ ≈ 28°.',
@@ -4198,6 +4199,7 @@ export const PLAUSIBLES = [
       F('« le colorant est un corps pur, car il est coloré »', 'La couleur ne dit rien de la pureté : un mélange de colorants est coloré lui aussi.'),
     ] }),
   ...OEIL2GT_VAL,
+  ...OSG2GT_VAL,
   ...NOY2GT_VAL,
   ...NUC2GT_VAL,
   ...RHC_VAL,

@@ -7,6 +7,7 @@
 
 import { presenter } from './presenter.js';
 import { OEIL2GT_ANA } from './oeilReduit2gtExos.js';
+import { OSG2GT_ANA } from './ondesSignaux2gtExos.js';
 import { NOY2GT_ANA } from './noyauAtome2gtExos.js';
 import { NUC2GT_ANA } from './nucleaire2gtExos.js';
 import { RHC_ANA } from './rheoCourbesExos.js';
@@ -2258,17 +2259,17 @@ export const PREVOIR = [
   { id: 'cir-derivation-tension', domaine: 'Circuits électriques', titre: 'Deux lampes en dérivation',
     schema: { type: 'circuit', montage: 'derivation', tension: '6 V', tensionLampes: true },
     enonce: 'Deux lampes sont montées en dérivation aux bornes d’un générateur qui impose 6 V.', q: 'La tension aux bornes de chaque lampe est…', options: [
-      V('6 V', 'Les branches en dérivation sont soumises à la même tension : celle du générateur.'),
+      V('6 V, la tension du générateur', 'Les branches en dérivation sont soumises à la même tension : celle du générateur.'),
       F('3 V, car les deux lampes se partagent la tension', 'Le partage de la tension concerne les dipôles en série, pas ceux en dérivation.'),
-      F('12 V, car il y a deux lampes', 'Les tensions ne s’additionnent pas en dérivation.'),
+      F('12 V, car il y a deux lampes qui s’ajoutent', 'Les tensions ne s’additionnent pas en dérivation.'),
     ] },
   { id: 'cir-serie-tension', domaine: 'Circuits électriques', titre: 'Deux lampes identiques en série',
     schema: { type: 'circuit', montage: 'serie', tension: '4,5 V', avecAmperemetres: false },
     enonce: 'Deux lampes identiques sont montées en série aux bornes d’une pile de 4,5 V (fils de résistance négligeable, tension de la pile supposée constante).', q: 'La tension aux bornes de chaque lampe est…', options: [
-      F('4,5 V', 'Ce serait vrai en dérivation. En série, la tension de la pile est partagée entre les deux lampes.'),
-      F('1,5 V', 'Les lampes identiques, traversées par le même courant, ont la même tension : U₁ = U₂ = 4,5 / 2, et non un partage inégal 1,5 V / 3 V.'),
-      F('9 V', 'Les tensions des lampes s’additionnent pour donner celle de la pile (U₁ + U₂ = 4,5 V) : la tension de chaque lampe ne peut pas dépasser celle de la pile.'),
-      V('2,25 V', 'Additivité des tensions en série : U_pile = U₁ + U₂. Les lampes étant identiques, U₁ = U₂ = 4,5 / 2 = 2,25 V.'),
+      F('4,5 V, la même tension que celle de la pile', 'Ce serait vrai en dérivation. En série, la tension de la pile est partagée entre les deux lampes.'),
+      F('1,5 V, le tiers de la tension de la pile', 'Les lampes identiques, traversées par le même courant, ont la même tension : U₁ = U₂ = 4,5 / 2, et non un partage inégal 1,5 V / 3 V.'),
+      F('9 V, le double de la tension de la pile', 'Les tensions des lampes s’additionnent pour donner celle de la pile (U₁ + U₂ = 4,5 V) : la tension de chaque lampe ne peut pas dépasser celle de la pile.'),
+      V('2,25 V, la moitié de la tension de la pile', 'Additivité des tensions en série : U_pile = U₁ + U₂. Les lampes étant identiques, U₁ = U₂ = 4,5 / 2 = 2,25 V.'),
     ] },
   { id: 'cir-ohm-tension-double', domaine: 'Circuits électriques', titre: 'Doubler la tension sur un résistor',
     enonce: 'Un résistor de résistance constante est alimenté sous 3 V, puis sous 6 V.', q: 'L’intensité du courant qui le traverse est…', options: [
@@ -2279,22 +2280,22 @@ export const PREVOIR = [
     ] },
   { id: 'cir-ohm-resistance-double', domaine: 'Circuits électriques', titre: 'Doubler la résistance',
     enonce: 'Un générateur impose une tension constante de 6 V. On remplace un résistor de 100 Ω par un résistor de 200 Ω.', q: 'L’intensité du courant est…', options: [
-      V('2 fois plus petite', 'I = U / R : à U constante, une résistance 2 fois plus grande donne une intensité 2 fois plus petite.'),
-      F('2 fois plus grande', 'C’est l’inverse : une plus grande résistance freine davantage le courant.'),
+      V('2 fois plus petite, car R est doublée', 'I = U / R : à U constante, une résistance 2 fois plus grande donne une intensité 2 fois plus petite.'),
+      F('2 fois plus grande, car R est doublée', 'C’est l’inverse : une plus grande résistance freine davantage le courant.'),
       F('inchangée, puisque la tension est la même', 'I = U / R : si R change, I change aussi.'),
     ] },
   { id: 'cir-derivation-panne', domaine: 'Circuits électriques', titre: 'Une lampe grille',
     schema: { type: 'circuit', montage: 'derivation', tension: '6 V', panne: true },
     enonce: 'Deux lampes sont montées en dérivation aux bornes d’une pile (dont la tension reste la même : pile idéale). Le filament de l’une des lampes grille : le courant ne passe plus dans cette branche.', q: 'Que fait l’autre lampe ?', options: [
       V('elle continue de briller comme avant', 'Chaque branche en dérivation est indépendante : la tension à ses bornes ne change pas.'),
-      F('elle s’éteint aussi', 'Cela se produirait en série, où il n’y a qu’un seul chemin pour le courant. En dérivation, il reste un chemin complet.'),
-      F('elle brille plus fort, car elle récupère le courant de l’autre', 'Sa tension n’a pas changé : le courant qui la traverse reste le même.'),
+      F('elle s’éteint aussi, comme la première', 'Cela se produirait en série, où il n’y a qu’un seul chemin pour le courant. En dérivation, il reste un chemin complet.'),
+      F('elle brille plus fort : elle récupère du courant', 'Sa tension n’a pas changé : le courant qui la traverse reste le même.'),
     ] },
   { id: 'cir-voltmetre', domaine: 'Circuits électriques', titre: 'Brancher un voltmètre',
     schema: { type: 'circuit', montage: 'voltmetre', apres: { reponse: true } },
     enonce: 'On veut mesurer la tension aux bornes d’une lampe d’un circuit.', q: 'Le voltmètre se branche…', options: [
       F('en série, juste avant la lampe', 'C’est l’ampèremètre qui se place en série. Un voltmètre a une très grande résistance : en série, il bloquerait presque tout le courant.'),
-      V('en dérivation, aux bornes de la lampe', 'Une tension se mesure entre deux points : le voltmètre est en dérivation sur le dipôle étudié.'),
+      V('en dérivation sur la lampe', 'Une tension se mesure entre deux points : le voltmètre est en dérivation sur le dipôle étudié.'),
       F('en série, juste après la lampe', 'La position en série ne change rien : le voltmètre n’y mesure pas la tension de la lampe et perturbe le circuit.'),
       F('en série avec la pile', 'Un voltmètre en série bloque le courant et ne donne pas la tension de la lampe.'),
     ] },
@@ -2312,7 +2313,7 @@ export const PREVOIR = [
       F('s’éloigne de la normale (angle de réfraction supérieur à 45°)', 'L’éloignement a lieu en passant d’un milieu plus réfringent vers un moins réfringent ; ici n augmente de 1,00 à 1,33.'),
       F('ne change pas de direction (angle de réfraction égal à 45°)', 'Il y a déviation dès que les indices diffèrent et que l’incidence n’est pas nulle.'),
       F('est entièrement réfléchi (aucun rayon ne pénètre dans l’eau)', 'La réflexion totale n’existe que de l’eau vers l’air, au-delà de l’angle limite ; ici, la lumière entre dans un milieu plus réfringent.'),
-      V('se rapproche de la normale (angle de réfraction inférieur à 45°)', 'Snell-Descartes : 1,00 × sin 45° = 1,33 × sin r, donc sin r ≈ 0,53 et r ≈ 32° < 45°.'),
+      V('se rapproche de la normale (réfraction inférieure à 45°)', 'Snell-Descartes : 1,00 × sin 45° = 1,33 × sin r, donc sin r ≈ 0,53 et r ≈ 32° < 45°.'),
     ] },
   { id: 'lum-incidence-normale', domaine: 'Lumière', titre: 'Incidence perpendiculaire',
     schema: { type: 'optique', cas: 'dioptre', n1: 1.0, n2: 1.5, i: 0, apres: { reponse: true } },
@@ -2340,8 +2341,8 @@ export const PREVOIR = [
   { id: 'lum-lentille-centre', domaine: 'Lumière', titre: 'Rayon par le centre optique',
     schema: { type: 'optique', cas: 'lentille-centre', apres: { reponse: true } },
     enonce: 'Un rayon lumineux arrive sur une lentille mince convergente et passe par son centre optique O.', q: 'Ce rayon…', options: [
-      F('est dévié vers l’axe optique', 'Un rayon passant par O ne se rapproche pas de l’axe : il garde sa direction.'),
-      F('est réfléchi par la lentille', 'Une lentille de verre transparente laisse passer la lumière, y compris en son centre.'),
+      F('est dévié et ressort vers l’axe optique', 'Un rayon passant par O ne se rapproche pas de l’axe : il garde sa direction.'),
+      F('est réfléchi par la lentille de verre', 'Une lentille de verre transparente laisse passer la lumière, y compris en son centre.'),
       V('traverse la lentille sans être dévié', 'Au centre, les deux faces sont quasi parallèles : le rayon traverse comme à travers une vitre mince, sans changer de direction.'),
       F('est dévié vers le foyer image F′', 'Seuls les rayons parallèles à l’axe optique sont déviés vers F′ ; le rayon passant par O n’est pas dévié.'),
     ] },
@@ -3196,7 +3197,7 @@ export const PREVOIR = [
     ] },
   { id: 'lum-spectre-sodium', domaine: 'Lumière', titre: 'Lampe à vapeur de sodium',
     enonce: 'On observe, à travers un spectroscope, la lumière d’une lampe spectrale à vapeur de sodium (basse pression).', q: 'Le spectre observé est…', options: [
-      V('un spectre de raies : une raie jaune très fine sur fond noir', 'Un gaz chaud sous faible pression émet seulement certaines longueurs d’onde : un spectre de raies, propre à l’élément (jaune pour le sodium ; en réalité un doublet de deux raies très proches).'),
+      V('un spectre de raies : une raie jaune fine sur fond noir', 'Un gaz chaud sous faible pression émet seulement certaines longueurs d’onde : un spectre de raies, propre à l’élément (jaune pour le sodium ; en réalité un doublet de deux raies très proches).'),
       F('un spectre continu, de toutes les couleurs de l’arc-en-ciel', 'C’est le spectre d’un corps chaud (lampe à incandescence, Soleil), pas d’une lampe spectrale.'),
       F('un spectre continu, mais seulement dans le jaune', 'Une lampe spectrale n’émet que des longueurs d’onde bien précises : le spectre est formé de raies fines, pas d’une bande continue.'),
     ] },
@@ -3204,7 +3205,7 @@ export const PREVOIR = [
     enonce: 'On observe deux étoiles : l’une paraît rouge, l’autre paraît bleue. Pour un corps chaud, le maximum d’émission de son spectre se situe à une longueur d’onde d’autant plus courte que sa température est élevée.', q: 'Quelle étoile est la plus chaude ?', options: [
       V('l’étoile bleue', 'Le bleu correspond à des longueurs d’onde plus courtes que le rouge : le maximum d’émission de l’étoile bleue est à une longueur d’onde plus courte, donc sa température est plus élevée.'),
       F('l’étoile rouge', 'On associe souvent « rouge = chaud » (robinet d’eau chaude), mais pour un corps qui émet de la lumière, c’est l’inverse : un métal chauffé passe du rouge au blanc-bleuté quand sa température augmente.'),
-      F('elles ont la même température, la couleur n’a rien à voir', 'La couleur d’un corps chaud dépend de sa température : c’est ainsi qu’on estime celle des étoiles.'),
+      F('la même température : la couleur n’a rien à voir', 'La couleur d’un corps chaud dépend de sa température : c’est ainsi qu’on estime celle des étoiles.'),
     ] },
   { id: 'mic-electrons-atome', domaine: 'Matière à l’échelle microscopique', titre: 'Électrons de l’ion sodium',
     enonce: 'Un atome de sodium a pour numéro atomique Z = 11 et pour nombre de nucléons A = 23. Il perd un électron et devient l’ion sodium Na⁺.', q: 'Combien d’électrons possède l’ion Na⁺ ?', options: [
@@ -5704,7 +5705,7 @@ export const PREVOIR = [
       V('6 : deux fois plus de motifs dans la même durée', 'Fréquence deux fois plus grande, c’est deux fois plus de motifs par seconde : donc 6 motifs dans les mêmes 10 ms.'),
       F('1,5 : la fréquence a doublé, donc le nombre est divisé par 2', 'Une fréquence plus grande veut dire plus de motifs par seconde, pas moins.'),
       F('3 : le réglage de l’écran n’a pas changé', 'Le réglage est le même, mais le signal a changé : il répète son motif deux fois plus souvent.'),
-      F('5 : 3 + 2', 'Doubler la fréquence multiplie le nombre de motifs par 2 ; on n’ajoute pas.'),
+      F('5 : on ajoute 2 motifs aux 3 motifs', 'Doubler la fréquence multiplie le nombre de motifs par 2 ; on n’ajoute pas.'),
     ] },
   // ───────────────────────────── Équation de réaction (2GT, sim 179) : indices, charge, proportions, spectatrices, énergie
   { id: 'eq2gt-ana-indice', domaine: 'Équation de réaction (2GT)', titre: 'Ajuster sans changer l’indice',
@@ -5815,6 +5816,7 @@ export const PREVOIR = [
       F('le liquide ne bout jamais, même chauffé', 'Il bout, mais de façon irrégulière : c’est cette ébullition brusque qui est dangereuse.'),
     ] },
   ...OEIL2GT_ANA,
+  ...OSG2GT_ANA,
   ...NOY2GT_ANA,
   ...NUC2GT_ANA,
   ...RHC_ANA,
@@ -5994,10 +5996,10 @@ export const PREVOIR = [
   // ───────────────────────────── Niveau sonore et dangers de l'exposition (2GT, sim 192)
   { id: 'son2gt-niv-ana-amplitude', domaine: 'Niveau sonore (2GT)', titre: 'On tourne le bouton du volume',
     enonce: 'Un même haut-parleur joue la même note, à la même distance d’un sonomètre. On tourne le bouton du volume : l’amplitude de la vibration devient trois fois plus grande.', q: 'Le niveau affiché par le sonomètre…', options: [
-      V('augmente', 'Une amplitude plus grande donne un son plus intense, donc un niveau en dB plus élevé. (Il n’est pas pour autant multiplié par 3 : l’échelle des dB n’est pas proportionnelle.)'),
+      V('augmente, car le son est plus intense', 'Une amplitude plus grande donne un son plus intense, donc un niveau en dB plus élevé. (Il n’est pas pour autant multiplié par 3 : l’échelle des dB n’est pas proportionnelle.)'),
       F('diminue, car le son devient plus aigu', 'Le volume change la force du son, pas sa note : un son plus fort n’est pas plus aigu.'),
       F('reste le même, car la note n’a pas changé', 'La note ne change pas, mais le niveau dépend de l’amplitude, pas de la note : il augmente.'),
-      F('est multiplié par 3', 'L’échelle des dB n’est pas proportionnelle à l’amplitude : le niveau augmente, mais il n’est pas multiplié par 3.'),
+      F('est multiplié par 3, comme l’amplitude', 'L’échelle des dB n’est pas proportionnelle à l’amplitude : le niveau augmente, mais il n’est pas multiplié par 3.'),
     ] },
   { id: 'son2gt-niv-ana-plus-10', domaine: 'Niveau sonore (2GT)', titre: '50 dB, puis 60 dB',
     enonce: 'Un sonomètre indique 50 dB dans une pièce, puis 60 dB dans la pièce voisine. Repère : + 10 dB correspond à une intensité environ 10 fois plus grande.', q: 'L’intensité du son dans la pièce voisine est…', options: [
@@ -6008,17 +6010,17 @@ export const PREVOIR = [
     ] },
   { id: 'son2gt-niv-ana-deux-sources', domaine: 'Niveau sonore (2GT)', titre: 'Une seconde perceuse',
     enonce: 'Une perceuse seule produit 90 dB à 1 m. Un collègue allume une seconde perceuse identique, au même endroit. Repère : une intensité × 2 correspond à environ + 3 dB.', q: 'Le niveau devient environ…', options: [
-      V('93 dB', 'Deux perceuses identiques apportent deux fois plus d’intensité : environ + 3 dB, soit 90 + 3 = 93 dB.'),
+      V('93 dB, soit 3 dB de plus', 'Deux perceuses identiques apportent deux fois plus d’intensité : environ + 3 dB, soit 90 + 3 = 93 dB.'),
       F('180 dB, le double de 90 dB', 'On n’additionne pas les niveaux : 180 dB serait un son insupportable. C’est l’intensité qui double (+ 3 dB).'),
       F('100 dB, soit 10 dB de plus', '+ 10 dB correspondrait à une intensité × 10, donc à dix perceuses, pas deux.'),
       F('90 dB : le niveau ne change pas', 'Deux sources apportent plus d’intensité qu’une seule : le niveau augmente de 3 dB environ.'),
     ] },
   { id: 'son2gt-niv-ana-distance', domaine: 'Niveau sonore (2GT)', titre: 'Reculer devant une enceinte',
     enonce: 'Un élève mesure le niveau sonore d’une enceinte à 1 m : 85 dB. Il recule de 3 m (il est maintenant à 4 m), sans toucher au volume.', q: 'À 4 m, le niveau mesuré sera…', options: [
-      V('plus faible qu’à 1 m', 'Le son s’affaiblit quand on s’éloigne de la source : le niveau mesuré diminue.'),
+      V('plus faible qu’à 1 m, car le son s’étale', 'Le son s’affaiblit quand on s’éloigne de la source : le niveau mesuré diminue.'),
       F('plus fort qu’à 1 m, car il y a plus d’air entre eux', 'Plus d’air ne renforce pas le son : l’énergie se répartit sur une zone plus grande, le niveau baisse.'),
       F('le même, car le volume de l’enceinte est inchangé', 'L’enceinte n’a pas changé, mais le niveau mesuré dépend aussi de la distance à la source : il diminue.'),
-      F('nul : on n’entend plus rien à 4 m', 'Le niveau diminue, mais un son à 85 dB à 1 m reste très audible à 4 m.'),
+      F('nul : on n’entend plus rien à 4 m de distance', 'Le niveau diminue, mais un son à 85 dB à 1 m reste très audible à 4 m.'),
     ] },
   { id: 'son2gt-niv-ana-duree-baisse', domaine: 'Niveau sonore (2GT)', titre: 'Baisser le volume du casque',
     enonce: 'Repères de durée d’exposition : 94 dB, 1 h ; 91 dB, 2 h ; 88 dB, 4 h. Un élève écoute de la musique au casque à 94 dB. Il baisse le volume pour passer à 88 dB.', q: 'Pour rester dans les repères, il peut maintenant écouter…', options: [
@@ -6375,7 +6377,7 @@ export const PREVOIR = [
     ] },
   { id: 'prisme2gt-ana-ordre', domaine: 'Dispersion de la lumière (2GT)', titre: 'Trois lasers, un prisme',
     enonce: 'Trois lasers éclairent tour à tour le même prisme, avec le même angle d’incidence : un laser violet (405 nm, indice du verre 1,69), un laser vert (532 nm, indice 1,65) et un laser rouge (650 nm, indice 1,63).', q: 'Lequel des trois est le plus dévié ?', options: [
-      V('le laser violet', 'L’indice du verre est le plus grand pour le violet : il est plus près de la normale à chaque face, donc le plus dévié.'),
+      V('le laser violet, dont l’indice du verre est le plus grand', 'L’indice du verre est le plus grand pour le violet : il est plus près de la normale à chaque face, donc le plus dévié.'),
       F('le laser rouge, car sa longueur d’onde est la plus grande', 'Une longueur d’onde plus grande correspond à un indice plus petit, donc à une déviation plus faible : le rouge est le moins dévié.'),
       F('le laser vert, car il est au milieu du visible', 'Le vert est intermédiaire : il est plus dévié que le rouge, mais moins que le violet.'),
       F('les trois sont déviés de la même façon par le prisme', 'Le verre a des indices différents pour les trois couleurs : les déviations sont différentes.'),
