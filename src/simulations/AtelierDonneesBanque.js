@@ -1,3 +1,4 @@
+import { JOU_SAPP } from "./jouleExos.js";
 import { BAT_SAPP } from "./batterieExos.js";
 import { LAS_SAPP } from "./laserExos.js";
 import { PVE_SAPP } from "./panneauEclairementExos.js";
@@ -5040,6 +5041,7 @@ export const ENONCES = [
   ...PVE_SAPP,
   ...LAS_SAPP,
   ...BAT_SAPP,
+  ...JOU_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,

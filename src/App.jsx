@@ -211,6 +211,7 @@ const SimulationPanneauRendement = paresseux(() => import("./simulations/Panneau
 const SimulationPanneauEclairement = paresseux(() => import("./simulations/PanneauEclairement"), "SimulationPanneauEclairement");
 const SimulationLaser = paresseux(() => import("./simulations/Laser"), "SimulationLaser");
 const SimulationBatterie = paresseux(() => import("./simulations/Batterie"), "SimulationBatterie");
+const SimulationJoule = paresseux(() => import("./simulations/Joule"), "SimulationJoule");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -400,6 +401,8 @@ const SIMULATIONS = [
     component: SimulationLaser },
   { id:231, label:"Batterie : énergie et durée", niveau:"TSTL", icon:"🔋", color:"#15803d",
     component: SimulationBatterie },
+  { id:232, label:"Effet Joule : chaleur et pertes", niveau:"TSTL", icon:"🔥", color:"#c2410c",
+    component: SimulationJoule },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",

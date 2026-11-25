@@ -2524,5 +2524,17 @@
  "77:plausible:bat-val-energie": "VAL683",
  "77:plausible:bat-val-duree": "VAL684",
  "36:bat-energie": "REA145",
- "36:bat-duree": "REA146"
+ "36:bat-duree": "REA146",
+ "34:jou-sapp-puissance.0": "SAPP538",
+ "34:jou-sapp-puissance.1": "SAPP539",
+ "34:jou-sapp-energie.0": "SAPP540",
+ "34:jou-sapp-energie.1": "SAPP541",
+ "37:prevoir:jou-ana-courant": "ANA1160",
+ "37:prevoir:jou-ana-tension": "ANA1161",
+ "37:prevoir:jou-ana-duree": "ANA1162",
+ "37:prevoir:jou-ana-ligne": "ANA1163",
+ "77:plausible:jou-val-puissance": "VAL685",
+ "77:plausible:jou-val-energie": "VAL686",
+ "36:jou-puissance": "REA147",
+ "36:jou-cable": "REA148"
 }
