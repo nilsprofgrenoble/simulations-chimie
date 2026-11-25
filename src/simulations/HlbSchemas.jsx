@@ -3,7 +3,7 @@
 import * as M from "./hlbModele";
 
 const C = { huile: '#fde68a', huileTr: '#ca8a04', eau: '#bfdbfe', eauTr: '#1d4ed8', trait: '#475569', txt: '#0f172a', gris: '#64748b', orange: '#b45309', vert: '#15803d', violet: '#7c3aed', rouge: '#b91c1c' };
-const T = (x, y, s, o = {}) => <text key={`${x}-${y}-${s}`} x={x} y={y} fontSize={o.size ?? 14} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? C.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit">{s}</text>;
+const T = (x, y, s, o = {}) => <text key={`${x}-${y}-${s}`} x={x} y={y} fontSize={o.size ?? 14} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? C.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit" {...(o.halo ? { stroke: "#f8fafc", strokeWidth: 4, paintOrder: "stroke" } : {})}>{s}</text>;
 function base(w, h, label, children, max = 460) {
   return <svg role="img" aria-label={label} viewBox={`0 0 ${w} ${h}`} width="100%" style={{ display: 'block', maxWidth: max, margin: '0 auto' }}>{children}</svg>;
 }
@@ -17,7 +17,7 @@ function Tete({ x, y, grosse }) {   // molécule amphiphile : tête (disque) + q
   return <g transform={`translate(${x} ${y})`}><circle r={grosse ? 11 : 6} fill={C.eau} stroke={C.eauTr} strokeWidth="2"/><path d={`M0 ${grosse ? 11 : 6} q4 8 -2 14 q-5 7 2 ${grosse ? 8 : 14}`} fill="none" stroke={C.huileTr} strokeWidth={grosse ? 2 : 4} strokeLinecap="round"/></g>;
 }
 export function SvgEchelle({ marques = [], rhlb = null, hlbMel = null, titre = true }) {
-  return base(320, 240, `échelle du HLB de 0 à 20 : à gauche les émulsifiants lipophiles (émulsions E/H), à droite les hydrophiles (émulsions H/E)${marques.length ? ` ; repères : ${marques.map(m => `${m.nom} ${fr(m.hlb)}`).join(', ')}` : ''}`, <>
+  return base(320, 240, `échelle du HLB de 0 à 20 : à gauche les émulsifiants lipophiles (émulsions E/H), à droite les hydrophiles (émulsions H/E)${marques.length ? ` ; repères : ${marques.map(m => `${m.court} ${fr(m.hlb)}`).join(', ')}` : ''}`, <>
     <defs><linearGradient id="hlb-deg" x1="0" x2="1"><stop offset="0" stopColor={C.huile}/><stop offset="1" stopColor={C.eau}/></linearGradient></defs>
     {titre && T(160, 18, 'Échelle HLB (balance hydrophile-lipophile)', { size: 13.5, gras: true })}
     <Tete x={px(0) + 8} y="36" grosse={false}/><Tete x={px(20) - 8} y="36" grosse/>
@@ -29,7 +29,7 @@ export function SvgEchelle({ marques = [], rhlb = null, hlbMel = null, titre = t
     {T(160, 218, 'domaines d’emploi usuels', { size: 12.5, fill: C.gris })}
     {marques.map((m, k) => <g key={m.nom}><polygon points={`${px(m.hlb)},120 ${px(m.hlb) - 6},108 ${px(m.hlb) + 6},108`} fill={C.violet}/>
       {k % 2 === 1 && <line x1={px(m.hlb)} y1="108" x2={px(m.hlb)} y2="88" stroke={C.violet} strokeWidth="1.5"/>}
-      {T(px(m.hlb), k % 2 === 1 ? 82 : 102, `${m.nom} ${fr(m.hlb)}`, { size: 12.5, gras: true, fill: C.violet })}</g>)}
+      {T(px(m.hlb), k % 2 === 1 ? 82 : 102, `${m.court} ${fr(m.hlb)}`, { size: 12.5, gras: true, fill: C.violet })}</g>)}
     {rhlb != null && <g style={{ ...mvt, transform: `translate(${px(rhlb)}px,0)` }}><line x1="0" y1="116" x2="0" y2="150" stroke={C.rouge} strokeWidth="3"/><polygon points="0,150 -7,160 7,160" fill={C.rouge}/>{T(0, 236, `RHLB ${fr(rhlb)}`, { size: 12.5, gras: true, fill: C.rouge })}</g>}
     {hlbMel != null && <g style={{ ...mvt, transform: `translate(${px(hlbMel)}px,0)` }}><circle cx="0" cy="133" r="6" fill="white" stroke={C.vert} strokeWidth="3"/></g>}
   </>, 400);
@@ -38,28 +38,40 @@ export function SvgEchelle({ marques = [], rhlb = null, hlbMel = null, titre = t
 // ---------- balance du mélange : le HLB du mélange est le point d'équilibre (barycentre) ----------
 export function SvgBalance({ A, B, xA, cible = null }) {
   const hmel = M.hlbMelange(A.hlb, B.hlb, xA);
-  const rA = 6 + 18 * Math.sqrt(xA), rB = 6 + 18 * Math.sqrt(1 - xA), yb = 130;
+  const rA = 15 + 13 * Math.sqrt(xA), rB = 15 + 13 * Math.sqrt(1 - xA), yb = 130;
   return base(320, 262, `balance de Griffin : ${A.court} (HLB ${fr(A.hlb)}, ${Math.round(xA * 100)} % de la masse) et ${B.court} (HLB ${fr(B.hlb)}, ${Math.round((1 - xA) * 100)} %) ; le point d’équilibre est le HLB du mélange : ${fr(hmel)}${cible != null ? ` ; cible RHLB ${fr(cible)}` : ''}`, <>
     {T(160, 18, 'Le HLB du mélange est le point d’équilibre', { size: 13.5, gras: true })}
     {T(px(B.hlb), 42, B.court, { size: 12.5, gras: true, fill: C.orange })}{T(px(B.hlb), 56, `HLB ${fr(B.hlb)}`, { size: 12, fill: C.gris })}
     {T(px(A.hlb), 42, A.court, { size: 12.5, gras: true, fill: C.eauTr })}{T(px(A.hlb), 56, `HLB ${fr(A.hlb)}`, { size: 12, fill: C.gris })}
-    <circle cx={px(B.hlb)} cy={yb - rB} r={rB} fill={C.huile} stroke={C.huileTr} strokeWidth="2.5" style={{ transition: 'r .45s, cy .45s' }}/>{T(px(B.hlb), yb - rB + 5, `${Math.round((1 - xA) * 100)} %`, { size: 12.5, gras: true })}
-    <circle cx={px(A.hlb)} cy={yb - rA} r={rA} fill={C.eau} stroke={C.eauTr} strokeWidth="2.5" style={{ transition: 'r .45s, cy .45s' }}/>{T(px(A.hlb), yb - rA + 5, `${Math.round(xA * 100)} %`, { size: 12.5, gras: true })}
+    <circle cx={px(B.hlb)} cy={yb - rB} r={rB} fill={C.huile} stroke={C.huileTr} strokeWidth="2.5" style={{ transition: 'r .45s, cy .45s' }}/>{T(px(B.hlb), yb - rB + 4.5, `${Math.round((1 - xA) * 100)} %`, { size: 12, gras: true })}
+    <circle cx={px(A.hlb)} cy={yb - rA} r={rA} fill={C.eau} stroke={C.eauTr} strokeWidth="2.5" style={{ transition: 'r .45s, cy .45s' }}/>{T(px(A.hlb), yb - rA + 4.5, `${Math.round(xA * 100)} %`, { size: 12, gras: true })}
     <rect x={AX.x0} y={yb} width={AX.x1 - AX.x0} height="10" rx="5" fill="#e2e8f0" stroke={C.trait} strokeWidth="2"/>
     {[0, 5, 10, 15, 20].map(h => <g key={h}><line x1={px(h)} y1={yb + 10} x2={px(h)} y2={yb + 16} stroke={C.trait}/>{T(px(h), yb + 30, String(h), { size: 12 })}</g>)}
-    <g style={{ ...mvt, transform: `translate(${px(hmel)}px,0)` }}><polygon points={`0,${yb + 10} -9,${yb + 20} 9,${yb + 20}`} fill={C.vert} stroke="#14532d" strokeWidth="1.5"/>{T(0, yb + 50, `HLB du mélange = ${fr(hmel)}`, { size: 13.5, gras: true, fill: C.vert })}</g>
-    {cible != null && <g style={{ ...mvt, transform: `translate(${px(cible)}px,0)` }}><line x1="0" y1={yb - 4} x2="0" y2={yb + 66} stroke={C.rouge} strokeWidth="2.5" strokeDasharray="5 3"/>{T(0, yb + 84, `cible RHLB = ${fr(cible)}`, { size: 13, gras: true, fill: C.rouge })}</g>}
+    {cible != null && <g style={{ ...mvt, transform: `translate(${px(cible)}px,0)` }}><line x1="0" y1={yb - 4} x2="0" y2={yb + 66} stroke={C.rouge} strokeWidth="2.5" strokeDasharray="5 3"/>{T(0, yb + 84, `cible RHLB = ${fr(cible)}`, { size: 13, gras: true, fill: C.rouge, halo: true })}</g>}
+    <g style={{ ...mvt, transform: `translate(${px(hmel)}px,0)` }}><polygon points={`0,${yb + 10} -9,${yb + 20} 9,${yb + 20}`} fill={C.vert} stroke="#14532d" strokeWidth="1.5"/>{T(0, yb + 50, `HLB du mélange = ${fr(hmel)}`, { size: 13.5, gras: true, fill: C.vert, halo: true })}</g>
     {T(160, 252, 'la plus grosse masse attire le point d’équilibre', { size: 12, fill: C.gris })}
   </>, 400);
 }
 
 // ---------- stabilité selon le HLB du mélange, et aspect au microscope ----------
-const GRILLE = [[22, 18], [62, 14], [100, 22], [140, 16], [30, 52], [74, 46], [114, 56], [150, 50], [20, 88], [58, 84], [100, 92], [142, 86]];
+// Champ du microscope : la quantité d'huile est la même, la fraction de surface occupée par les gouttes reste constante (≈ 30 %) :
+// quand les gouttes rapetissent, elles sont beaucoup plus nombreuses (nombre ∝ 1 / rayon²).
+const CW = 170, CH = 104, PHI = 0.3;
+const alea = k => { const v = Math.sin(k * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+function champGouttes(r) {
+  const rv = 2.6 + (Math.min(6, Math.max(0.8, r)) - 0.8) / 5.2 * 20;   // rayon dessiné (px)
+  const n = Math.max(3, Math.round(PHI * CW * CH / (Math.PI * rv * rv)));
+  const cols = Math.max(1, Math.round(Math.sqrt(n * CW / CH))), rows = Math.max(1, Math.ceil(n / cols)), cw = CW / cols, ch = CH / rows;
+  const g = [];
+  for (let k = 0; k < n; k++) { const c = k % cols, l = Math.floor(k / cols);
+    g.push({ x: (c + 0.5 + (alea(k) - 0.5) * 0.6) * cw, y: (l + 0.5 + (alea(k + 500) - 0.5) * 0.6) * ch, r: rv * (0.85 + 0.3 * alea(k + 900)) }); }
+  return g;
+}
 export function SvgStabilite({ hlb, rhlb }) {
   const r = M.rayonGouttes(hlb, rhlb), s = M.stabilite(hlb, rhlb), cx = h => 40 + h / 20 * 258;
   const pts = Array.from({ length: 41 }, (_, k) => { const h = k / 2; return `${cx(h).toFixed(1)},${(130 - M.stabilite(h, rhlb) * 80).toFixed(1)}`; }).join(' ');
   const ok = Math.abs(hlb - rhlb) <= 0.5;
-  return base(320, 330, `stabilité de l’émulsion selon le HLB du mélange d’émulsifiants : maximale quand le HLB du mélange (${fr(hlb)}) égale le RHLB de l’huile (${fr(rhlb)}) ; ici les gouttes ont un rayon d’environ ${fr(r)} micromètres`, <>
+  return base(320, 366, `stabilité de l’émulsion selon le HLB du mélange d’émulsifiants : maximale quand le HLB du mélange (${fr(hlb)}) égale le RHLB de l’huile (${fr(rhlb)}) ; ici les gouttes ont un rayon d’environ ${fr(r)} micromètres`, <>
     {T(160, 18, 'Stabilité selon le HLB du mélange', { size: 13.5, gras: true })}
     <line x1="40" y1="130" x2="298" y2="130" stroke={C.trait} strokeWidth="2"/><line x1="40" y1="40" x2="40" y2="130" stroke={C.trait} strokeWidth="2"/>
     <polyline points={pts} fill="none" stroke={C.violet} strokeWidth="3"/>
@@ -70,12 +82,12 @@ export function SvgStabilite({ hlb, rhlb }) {
     <g style={{ ...mvt, transform: `translate(${cx(hlb)}px,0)` }}><circle cx="0" cy={130 - s * 80} r="7" fill="white" stroke={C.vert} strokeWidth="3.5"/></g>
     {T(160, 196, 'Au microscope', { size: 13.5, gras: true })}
     <g transform="translate(20 206)"><clipPath id="hlb-cp"><rect width="170" height="104" rx="10"/></clipPath><rect width="170" height="104" rx="10" fill={C.eau}/>
-      <g clipPath="url(#hlb-cp)">{GRILLE.map(([x, y], k) => <circle key={k} cx={x + 4} cy={y + 6} r={r * 3.3} fill={C.huile} stroke={C.huileTr} strokeWidth="1.5" style={{ transition: 'r .45s ease-out' }}/>)}</g>
+      <g clipPath="url(#hlb-cp)">{champGouttes(r).map((d, k) => <circle key={k} cx={d.x} cy={d.y} r={d.r} fill={C.huile} stroke={C.huileTr} strokeWidth={d.r < 5 ? 0.8 : 1.5}/>)}</g>
       <rect width="170" height="104" rx="10" fill="none" stroke={C.trait} strokeWidth="2"/></g>
     {T(244, 232, 'rayon moyen', { size: 12.5, fill: C.gris })}{T(244, 250, `≈ ${fr(r)} µm`, { size: 14, gras: true })}
     {T(244, 276, ok ? 'fine et stable' : hlb < rhlb ? 'trop lipophile' : 'trop hydrophile', { size: 13, gras: true, fill: ok ? C.vert : C.rouge })}
     {!ok && T(244, 293, 'gouttes grosses', { size: 12.5, fill: C.gris })}
-    {T(160, 324, `HLB du mélange ${fr(hlb)} · RHLB ${fr(rhlb)}`, { size: 12.5, gras: true })}
+    {T(160, 326, 'même volume d’huile : plus les gouttes sont petites,', { size: 12, fill: C.gris })}{T(160, 341, 'plus elles sont nombreuses', { size: 12, fill: C.gris })}{T(160, 360, `HLB du mélange ${fr(hlb)} · RHLB ${fr(rhlb)}`, { size: 12.5, gras: true })}
   </>, 400);
 }
 
@@ -100,8 +112,8 @@ export function SvgCarteMelange() {
   return base(300, 250, 'le HLB d’un mélange est la moyenne des HLB pondérée par les masses : 40 % de Span 80 à 4,3 et 60 % de Tween 80 à 15 donnent environ 10,7 ; la croix de Griffin donne la proportion pour une cible', <>
     {T(150, 18, 'Mélange de deux émulsifiants', { size: 14, gras: true })}
     <rect x="20" y="112" width="260" height="9" rx="4" fill="#e2e8f0" stroke={C.trait} strokeWidth="1.5"/>
-    <circle cx={x(4.3)} cy={112 - 14} r="14" fill={C.huile} stroke={C.huileTr} strokeWidth="2"/>{T(x(4.3), 94, '40 %', { size: 12, gras: true })}
-    <circle cx={x(15)} cy={112 - 17} r="17" fill={C.eau} stroke={C.eauTr} strokeWidth="2"/>{T(x(15), 90, '60 %', { size: 12.5, gras: true })}
+    <circle cx={x(4.3)} cy={112 - 18} r="18" fill={C.huile} stroke={C.huileTr} strokeWidth="2"/>{T(x(4.3), 98, '40 %', { size: 12, gras: true })}
+    <circle cx={x(15)} cy={112 - 21} r="21" fill={C.eau} stroke={C.eauTr} strokeWidth="2"/>{T(x(15), 95, '60 %', { size: 12, gras: true })}
     {T(x(4.3), 52, 'Span 80', { size: 12.5, gras: true, fill: C.orange })}{T(x(4.3), 66, '4,3', { size: 12.5, fill: C.gris })}
     {T(x(15), 52, 'Tween 80', { size: 12.5, gras: true, fill: C.eauTr })}{T(x(15), 66, '15', { size: 12.5, fill: C.gris })}
     <polygon points={`${x(10.72)},121 ${x(10.72) - 9},142 ${x(10.72) + 9},142`} fill={C.vert}/>{T(x(10.72), 160, 'HLB = 10,7', { size: 13, gras: true, fill: C.vert })}

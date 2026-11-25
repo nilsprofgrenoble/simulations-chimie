@@ -66,20 +66,20 @@ export function SimulationHlb() {
         <ul style={puces}>
           <li><strong>HLB bas</strong> : lipophile, favorise les émulsions <strong>E/H</strong> ; <strong>HLB haut</strong> : hydrophile, favorise les émulsions <strong>H/E</strong>.</li>
           <li>Le <strong>RHLB</strong> d’une huile est le HLB qui donne l’émulsion la plus stable.</li>
-          <li>Moyen de s’en souvenir : <strong>« HLB bas : huile continue ; HLB haut : eau continue »</strong>.</li>
+          <li>Moyen de s’en souvenir : <strong>« HLB bas aime le GRAS, HLB haut aime l’EAU ! »</strong></li>
         </ul></>,
       texte: <>Le RHLB dépend aussi du <strong>sens</strong> de l’émulsion voulue. Pour l’huile minérale, on trouve environ 10 pour une H/E et 4 pour une E/H. Les boutons H/E et E/H ci-dessous déplacent la marque du RHLB : regardez où se trouve le maximum de stabilité dans chaque cas.</>,
       tache: { type: 'qcm', q: 'On veut une crème E/H à base d’huile minérale. Quel HLB d’émulsifiant viser ?', ...QCM.rhlbEH,
         expl: 'Pour une E/H d’huile minérale, le RHLB tabulé est d’environ 4 : on utilise un émulsifiant lipophile (comme le Span 80, 4,3). Le RHLB annoncé pour une H/E (10) ne vaut que pour une H/E.', indice: 'Les émulsions E/H se situent dans le bas de l’échelle HLB.' } },
     { id: 'rhlb-huiles', titre: 'RHLB d’une phase huileuse : mélange de deux huiles', focus: ['mesures'],
       texte: <>Une crème contient souvent plusieurs huiles et cires. Le RHLB de la phase huileuse est la <strong>moyenne des RHLB pondérée par les masses</strong>. Données : <strong>80 g</strong> d’huile minérale (RHLB 10) et <strong>20 g</strong> d’alcool cétylique (RHLB 15), pour une émulsion H/E.</>,
-      tache: { type: 'num', q: 'RHLB de cette phase huileuse', unite: '', vrai: 11, tol: 0.03, affiche: v => fr(v, 1), cs: 3,
+      tache: { type: 'num', q: 'RHLB de cette phase huileuse', unite: '', vrai: 11, tol: 0.03, affiche: v => fr(v, 1), cs: 2,
         calcul: () => ['Masse totale de la phase huileuse : 80 + 20 = 100 g ; fractions massiques : 0,80 et 0,20.', 'RHLB = 0,80 × 10 + 0,20 × 15 = 8,0 + 3,0 = 11,0.', 'Le résultat est compris entre 10 et 15 et plus proche de 10, car l’huile minérale domine en masse.'],
         pieges: [[12.5, 'Vous avez fait la moyenne simple (10 + 15) ÷ 2 : il faut pondérer par les masses, l’huile minérale en a quatre fois plus.'], [25, 'Vous avez additionné les RHLB : il faut une moyenne pondérée, pas une somme.'], [13, 'Les fractions massiques sont 0,80 et 0,20 (pas 0,5 et 0,5) : l’huile minérale domine.']],
         expl: 'RHLB = (80 × 10 + 20 × 15) ÷ 100 = 11,0 : on pondère chaque RHLB par la fraction massique de l’huile correspondante.', indice: 'RHLB = Σ (fraction massique × RHLB de chaque huile). Calculez d’abord les fractions massiques.' } },
     { id: 'melange', titre: 'HLB d’un mélange de deux émulsifiants', focus: ['mesures'],
       texte: <>Un seul émulsifiant n’a en général pas le bon HLB, mais on peut en <strong>mélanger deux</strong> : le HLB du mélange est la moyenne des HLB <strong>pondérée par les masses</strong> : {HLB_MEL} où <em>x</em> est la fraction massique de chaque émulsifiant. On mélange <strong>40 %</strong> de Span 80 (HLB 4,3) et <strong>60 %</strong> de Tween 80 (HLB 15,0).</>,
-      tache: { type: 'num', q: 'HLB de ce mélange d’émulsifiants', unite: '', vrai: M.hlbMelange(15, 4.3, 0.6), tol: 0.03, affiche: v => fr(v, 1), cs: 3,
+      tache: { type: 'num', q: 'HLB de ce mélange d’émulsifiants', unite: '', vrai: M.hlbMelange(15, 4.3, 0.6), tol: 0.03, affiche: v => fr(v, 1), cs: 2,
         calcul: () => ['HLB = 0,40 × 4,3 + 0,60 × 15,0.', 'HLB = 1,72 + 9,00 = 10,72, soit environ 10,7.', 'Le résultat est compris entre 4,3 et 15,0, plus proche du Tween 80 qui domine en masse.'],
         pieges: [[9.65, 'Vous avez fait la moyenne simple (4,3 + 15) ÷ 2 : il faut pondérer par les fractions massiques 0,40 et 0,60.'], [19.3, 'Vous avez additionné les HLB : le HLB d’un mélange est une moyenne, pas une somme.']],
         expl: 'HLB = 0,40 × 4,3 + 0,60 × 15,0 ≈ 10,7 : le mélange est un peu plus hydrophile que le milieu de l’échelle parce que le Tween 80 domine.', indice: 'HLB du mélange = fraction de Span 80 × 4,3 + fraction de Tween 80 × 15,0.' } },
@@ -88,7 +88,7 @@ export function SimulationHlb() {
       tache: { type: 'action', ok: Math.abs(hMel - RHLB_CIBLE) <= 0.2, consigne: 'Placer le HLB du mélange à moins de 0,2 du RHLB 11,0' } },
     { id: 'croix', titre: 'Calculer la proportion exacte', focus: ['mesures'],
       texte: <>Plutôt que de chercher au curseur, on peut calculer. Si le mélange est fait de Tween 80 (HLB 15,0) et de Span 80 (HLB 4,3) et doit avoir un HLB de <strong>11,0</strong>, la fraction massique <em>x</em> de Tween 80 vérifie <FormuleEnLigne><mn>11,0</mn><mo>=</mo><mi>x</mi><mo>×</mo><mn>15,0</mn><mo>+</mo><mo>(</mo><mn>1</mn><mo>−</mo><mi>x</mi><mo>)</mo><mo>×</mo><mn>4,3</mn></FormuleEnLigne>. (Méthode de la « croix » de Griffin : les parts sont 11,0 − 4,3 pour le Tween 80 et 15,0 − 11,0 pour le Span 80.)</>,
-      tache: { type: 'num', q: 'Pourcentage massique de Tween 80 dans le mélange d’émulsifiants', unite: '%', vrai: X_CIBLE * 100, tol: 0.03, affiche: v => fr(v, 1), cs: 3,
+      tache: { type: 'num', q: 'Pourcentage massique de Tween 80 dans le mélange d’émulsifiants', unite: '%', vrai: X_CIBLE * 100, tol: 0.03, affiche: v => fr(v, 1), cs: 2,
         calcul: () => ['11,0 = 4,3 + x × (15,0 − 4,3), donc x = frac(11,0 − 4,3|15,0 − 4,3).', 'x = frac(6,7|10,7) ≈ 0,626.', 'Il faut donc environ 62,6 % de Tween 80 et 37,4 % de Span 80. Vérification : 0,626 × 15,0 + 0,374 × 4,3 ≈ 11,0.'],
         pieges: [[37.4, 'C’est la part du Span 80 : l’énoncé demande celle du Tween 80.'], [50, 'Un mélange moitié-moitié donne 9,65, pas 11,0 : le mélange doit contenir plus de Tween 80.'], [67.0, 'Pensez à diviser par l’écart total 15,0 − 4,3 = 10,7, pas par 10.']],
         expl: 'x = (11,0 − 4,3) ÷ (15,0 − 4,3) = 6,7 ÷ 10,7 ≈ 0,626 : 62,6 % de Tween 80. C’est exactement ce que fait la croix de Griffin : parts de Tween 80 = 6,7 et parts de Span 80 = 4,0.', indice: 'x = frac(RHLB − HLB du Span 80|HLB du Tween 80 − HLB du Span 80).' } },
@@ -105,7 +105,7 @@ export function SimulationHlb() {
         expl: 'Le HLB d’un mélange est toujours compris entre les HLB de ses constituants : ici entre 4,3 et 4,7. Pour viser 11,0, il faut deux émulsifiants dont les HLB encadrent 11,0 (par exemple 4,3 et 15,0).', indice: 'Le point d’équilibre d’une balance est toujours entre les deux masses.' } },
     { id: 'masses', titre: 'De la proportion à la pesée', focus: ['mesures'],
       texte: <>On prépare <strong>5,0 g</strong> de mélange d’émulsifiants pour la crème : il faut <strong>62,6 %</strong> de Tween 80 (HLB 15,0) et le reste de Span 80 (HLB 4,3).</>,
-      tache: { type: 'num', q: 'Masse de Tween 80 à peser', unite: 'g', vrai: X_CIBLE * 5, tol: 0.03, affiche: v => fr(v, 2), cs: 3,
+      tache: { type: 'num', q: 'Masse de Tween 80 à peser', unite: 'g', vrai: X_CIBLE * 5, tol: 0.03, affiche: v => fr(v, 2), cs: 2,
         calcul: () => ['m(Tween 80) = 0,626 × 5,0 g ≈ 3,13 g.', 'm(Span 80) = 5,0 − 3,13 ≈ 1,87 g.', 'Vérification : HLB = (3,13 × 15,0 + 1,87 × 4,3) ÷ 5,0 ≈ 11,0.'],
         pieges: [[1.87, 'C’est la masse de Span 80 : on demande celle du Tween 80.'], [3.0, 'Le pourcentage est 62,6 % (pas 60 %) : 0,626 × 5,0 g ≈ 3,13 g.']],
         expl: 'La masse de Tween 80 est 0,626 × 5,0 g ≈ 3,13 g ; il reste 1,87 g de Span 80. Le mélange pesé a bien un HLB d’environ 11,0.', indice: 'masse = fraction massique × masse totale du mélange d’émulsifiants.' } },
@@ -114,9 +114,9 @@ export function SimulationHlb() {
       tache: { type: 'qcm', q: 'Quelle modification de la formulation est la plus adaptée ?', ...QCM.diag,
         expl: 'Le HLB du mélange (7) est inférieur au RHLB (10) : le mélange est trop lipophile. On le rapproche du RHLB en ajoutant de l’émulsifiant plus hydrophile, ce qui fait monter le HLB du mélange. La masse totale d’émulsifiant ne corrige pas un mauvais HLB.', indice: 'Comparez le HLB du mélange (7) au RHLB (10) : de quel côté faut-il se déplacer ?' } },
     { id: 'limites', titre: 'Les limites de la méthode', focus: [],
-      texte: <>La méthode du RHLB est très utilisée parce qu’elle est simple, mais elle repose sur des hypothèses : additivité du HLB (vérifiée surtout pour des émulsifiants non ioniques de même famille), valeurs de RHLB déterminées par essais, quantité d’émulsifiant suffisante. Elle donne un <strong>point de départ</strong> à valider par des essais.</>,
+      texte: <>La méthode du RHLB est très utilisée parce qu’elle est simple, mais elle repose sur des hypothèses : additivité du HLB (vérifiée surtout pour des émulsifiants non ioniques de même famille), valeurs de RHLB déterminées par essais, quantité d’émulsifiant suffisante. Elle donne un <strong>point de départ</strong> à valider par des essais. Attention aussi aux sources : les valeurs de RHLB trouvées sur internet sont rarement fiables, et le <strong>sens de l’émulsion</strong> pour lequel un RHLB a été déterminé est presque toujours omis.</>,
       tache: { type: 'qcm', q: 'Pourquoi les valeurs de RHLB des tables sont-elles à prendre comme des ordres de grandeur ?', ...QCM.limites,
-        expl: 'Les RHLB sont obtenus par des essais (on cherche l’émulsion la plus stable) : ils dépendent de la méthode, de la pureté de l’huile et du sens de l’émulsion, et varient d’environ une unité d’une table à l’autre. La méthode sert donc à choisir un point de départ à confirmer expérimentalement.', indice: 'Comment a-t-on trouvé le RHLB d’une huile ?' } },
+        expl: 'Les RHLB sont obtenus par des essais (on cherche l’émulsion la plus stable) : ils dépendent de la méthode, de la pureté de l’huile et du sens de l’émulsion, et varient d’environ une unité d’une table à l’autre. Les sources en ligne sont peu fiables et précisent rarement le sens de l’émulsion. La méthode sert donc à choisir un point de départ à confirmer expérimentalement.', indice: 'Comment a-t-on trouvé le RHLB d’une huile ?' } },
     { id: 'bilan', titre: 'Le bilan : la méthode du RHLB', focus: [],
       retenirTitre: 'À retenir : la méthode du RHLB', retenir: <>
         <SvgCarteBilanHlb/>
@@ -304,7 +304,7 @@ export function SimulationHlb() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Additivité du HLB</strong> : la moyenne pondérée par les masses est une règle empirique (Griffin), bien vérifiée pour des émulsifiants non ioniques de même famille chimique (ici esters de sorbitane et leurs dérivés éthoxylés). Elle est moins fiable avec des émulsifiants ioniques ou de familles très différentes.</li>
-      <li><strong>Valeurs tabulées</strong> : les HLB et les RHLB sont des valeurs usuelles de la littérature (déterminées par essais) ; elles varient d’environ une unité selon les sources et les conditions. Le RHLB dépend du sens de l’émulsion ; il n’est tabulé ici en E/H que pour l’huile minérale et la lanoline.</li>
+      <li><strong>Valeurs tabulées</strong> : les HLB et les RHLB sont des valeurs usuelles de la littérature (déterminées par essais) ; elles varient d’environ une unité selon les sources et les conditions. Il est difficile de trouver des sources fiables en ligne, et le sens de l’émulsion associé à un RHLB n’est presque jamais précisé. Le RHLB dépend du sens de l’émulsion ; il n’est tabulé ici en E/H que pour l’huile minérale et la lanoline.</li>
       <li><strong>Stabilité et taille des gouttes</strong> : la courbe en cloche (maximum quand HLB = RHLB, largeur de l’ordre de 2 unités) et le rayon des gouttes sont des représentations <strong>qualitatives</strong>, pas des mesures.</li>
       <li><strong>Quantité d’émulsifiant</strong> : elle est supposée suffisante pour couvrir l’interface (de l’ordre de 5 à 10 % de la phase huileuse) ; le HLB choisit le <em>type</em> d’émulsifiant, pas la quantité. La température (inversion de phase), les huiles polaires et les cires peuvent faire dévier la méthode : elle donne un point de départ à valider par des essais.</li>
     </ul>);
