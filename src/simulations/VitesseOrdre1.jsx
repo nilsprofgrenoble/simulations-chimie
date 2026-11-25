@@ -262,7 +262,7 @@ export function SimulationVitesseOrdre1() {
         expl: 'Pour cette transformation, t½ ne dépend pas de la concentration de départ : chaque demi-réaction dure 4,6 min (on lit c = 5,0 mmol·L⁻¹ à 13,9 min = 3 × 4,6). La vitesse diminue, mais la quantité à consommer diminue dans la même proportion.', indice: 'Comparez la durée des deux demi-réactions que vous venez de mesurer.' } },
     { id: 'vc', titre: 'Un lien entre v et c ?', focus: ['graphes'],
       texte: <>Un graphique v = f(c) apparaît (un point par instant). On donne la relation à tester <strong>v = k × c</strong>, où k est une constante. Si elle est vraie, le rapport {avecIndices('frac(v|c)')} est constant. À <em>t</em> = 4,0{NB}min : <em>v</em> = 3,3{NB}mmol·L⁻¹·min⁻¹ (valeur de l’étape précédente) et <em>c</em> = 22,0{NB}mmol·L⁻¹.</>,
-      tache: { type: 'num', q: 'Rapport frac(v|c) à t = 4,0 min', unite: 'min⁻¹', vrai: 0.150, tol: 0.03, affiche: v => nbf(v, 3), cs: 3,
+      tache: { type: 'num', q: 'Rapport frac(v|c) à t = 4,0 min', unite: 'min⁻¹', vrai: 0.150, tol: 0.03, affiche: v => nbf(v, 3), cs: 2,
         calcul: () => ['frac(v|c) = frac(3,3|22,0) = 0,150 (mmol·L⁻¹·min⁻¹ divisé par mmol·L⁻¹ : l’unité restante est min⁻¹).', 'frac(v|c) ≈ 0,150 min⁻¹.'],
         pieges: [[6.67, 'Le rapport est inversé : on demande frac(v|c).'], [3.3 * 22.0, 'On divise v par c, on ne les multiplie pas.']],
         expl: 'frac(v|c) = frac(3,3|22,0) = 0,150 min⁻¹.', indice: 'Divisez v par c : l’unité du résultat est min⁻¹.' },

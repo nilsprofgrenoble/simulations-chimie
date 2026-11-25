@@ -378,7 +378,7 @@ export function SimulationInterferences({ naviguer }) {
       tache: { type: 'action', ok: reseauHg, label: 'Lampe à mercure', faire: () => { setScene('reseau'); setRz({ pas: 3.3, source: 'mercure', lam: 532, D: 1, expo: 2, x1: -100, x2: 100 }); }, consigne: 'Choisissez « Lampe à mercure » (réseau 3,3 µm, D = 1,00 m)' } },
     { id: 'raie', titre: 'Mesurer une longueur d’onde', focus: ['ecran', 'mesures'],
       texte: <>Placez les repères sur la raie <strong>verte</strong> d’ordre −1 et d’ordre +1, puis calculez sa longueur d’onde avec <em>a</em> = 3,3{NB}µm et <em>D</em> = 1,00{NB}m : <em>λ</em> = <em>a</em>·sin θ₁ (<em>k</em> = 1).</>,
-      tache: { type: 'num', q: 'Longueur d’onde λ de la raie verte', unite: 'nm', vrai: lamVertMes, tol: 0.03, affiche: v => nbf(v, 0), cs: 3,
+      tache: { type: 'num', q: 'Longueur d’onde λ de la raie verte', unite: 'nm', vrai: lamVertMes, tol: 0.03, affiche: v => nbf(v, 0), cs: 2,
         bloque: reseauHg ? (pointeVert ? null : 'Placez d’abord les repères sur la raie verte d’ordre ±1 avec le bouton « Rétablir le réglage » au-dessus de l’image.') : 'Choisissez d’abord la lampe à mercure (étape précédente).',
         calcul: () => [`Distance entre les repères : ${nbf(Lmes, 1)} mm donc x₁ = ${nbf(Lmes / 2, 1)} mm ; D = 1,00 m ; θ₁ = ${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°.`, `λ = a sin θ₁ = 3,3 × 10⁻⁶ × sin(${nbf(deg(Math.atan2(Lmes / 2, 1000)), 1)}°) = ${nbf(lamVertMes, 0)} × 10⁻⁹ m = ${nbf(lamVertMes, 0)} nm.`],
         pieges: [[lamVertMes * 1e-9, 'Le résultat est à donner en nanomètres.'], [3.3e-6 * Math.sin(Math.atan2(Lmes, 1000)) * 1e9, 'Vous avez utilisé la distance entre les deux repères au lieu de x₁ (sa moitié) pour calculer l’angle.']],

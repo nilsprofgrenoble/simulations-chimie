@@ -265,7 +265,7 @@ export function SimulationTravail() {
       retenirTitre: 'À RETENIR : LE TRAVAIL DU POIDS',
       retenir: <><SPoids/>{puces(<>Pour un déplacement de E à F : <strong>W(vec(P)) = m·g·(z<sub>E</sub> − z<sub>F</sub>)</strong> ; il ne dépend <strong>que de la différence d’altitude</strong>, pas du trajet.</>, <>Descente (z<sub>E</sub> &gt; z<sub>F</sub>) : W(vec(P)) &gt; 0 ; montée : W(vec(P)) &lt; 0 ; même niveau : W(vec(P)) = 0.</>, <>Exemple : 0,500 kg qui descend de 0,40 m ⇒ W(vec(P)) = 0,500 × 9,8 × 0,40 ≈ 2,0 J.</>, <><strong>Piège</strong> : on utilise le <strong>dénivelé</strong>, pas la longueur du trajet.</>)}</>,
       texte: <>Une languette de largeur <em>ℓ</em> = 1,0{NB}cm, fixée sur le mobile, coupe le faisceau de chaque barrière pendant la durée <em>Δt</em>. Pendant ce temps, le mobile avance de <em>ℓ</em> : <strong>v = ℓ / Δt</strong>. Lancez le mobile et lisez <em>Δt</em><sub>F</sub> dans « Mesures ».</>,
-      tache: { type: 'num', q: 'Vitesse v_F du mobile en F', unite: 'm/s', vrai: vF0, tol: 0.02, affiche: v => nbf(v, 2), cs: 3,
+      tache: { type: 'num', q: 'Vitesse v_F du mobile en F', unite: 'm/s', vrai: vF0, tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
         bloque: bloqueSi(estP({ alpha: 15, f: 0 }), 'Revenez d’abord au plan incliné de 15° sans frottement (bouton « Rétablir »).'),
         calcul: () => ['Hypothèse : la vitesse moyenne sur 1 cm est proche de la vitesse au niveau de la barrière.', `ℓ = 1,0 cm = 0,010 m ; Δt_F = ${nbf(dtF0, 2)} ms = ${nbf(dtF0 * 1e-3, 5)} s.`, `v_F = 0,010 / ${nbf(dtF0 * 1e-3, 5)} = ${nbf(vF0, 2)} m/s.`],
         pieges: [[0.01 / dtF0, 'La durée doit être en secondes (1 ms = 10⁻³ s).'], [1 / (dtF0 * 1e-3), 'La largeur doit être en mètres (1,0 cm = 0,010 m).']],

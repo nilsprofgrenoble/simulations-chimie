@@ -154,7 +154,7 @@ export function SimulationSensEmulsion() {
           <li>Moyen de s’en souvenir : <strong>« dispersée : on épaissit ; continue : on dilue »</strong>.</li>
         </ul></>,
       texte: <>Reprenons la crème E/H : <strong>200 mL</strong> dont <strong>60 mL d’eau</strong>. On ajoute <strong>40 mL d’eau</strong>. La fraction volumique de phase dispersée est le volume de phase dispersée divisé par le volume total.</>,
-      tache: { type: 'num', q: 'Nouvelle fraction volumique d’eau φ', unite: '%', vrai: 100 / 240 * 100, tol: 0.02, affiche: v => fr(v, 1), cs: 3,
+      tache: { type: 'num', q: 'Nouvelle fraction volumique d’eau φ', unite: '%', vrai: 100 / 240 * 100, tol: 0.02, affiche: v => fr(v, 1), cs: 2,
         calcul: () => ['Les 40 mL ajoutés sont de l’eau, donc de la phase dispersée : V dispersée = 60 + 40 = 100 mL.', 'Le volume total augmente aussi : V total = 200 + 40 = 240 mL.', 'φ = frac(100|240) = 0,417, soit 41,7 %.'],
         pieges: [[50, 'Le volume total augmente aussi de 40 mL : le dénominateur est 240 mL, pas 200 mL.'], [25, 'Les 40 mL ajoutés sont de l’eau, donc de la phase dispersée : ils s’ajoutent aussi au numérateur (60 + 40 = 100 mL).']],
         expl: 'φ = frac(60 + 40|200 + 40) = frac(100|240) ≈ 0,417, soit environ 41,7 % : la crème est passée de 30 % à 42 % d’eau dispersée, donc elle est plus épaisse.', indice: 'φ = V de phase dispersée divisé par V total, après l’ajout (les deux volumes changent).' } },

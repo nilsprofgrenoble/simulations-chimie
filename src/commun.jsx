@@ -85,6 +85,16 @@ export const lireNombre = s => {
   return parseFloat(t);
 };
 export const proche = (a, b, tol) => Math.abs(a - b) <= Math.abs(b) * tol;
+// Réponse numérique acceptée : proche de la valeur attendue (tolérance relative) OU correctement arrondie à son propre nombre de chiffres significatifs (au moins 2 : la valeur saisie est à une demi-unité de son dernier chiffre de la valeur exacte).
+// Ainsi un élève qui arrondit proprement n'est jamais compté faux à cause d'une tolérance trop serrée (ni pénalisé en étoiles).
+export const accepte = (x, rep, vrai, tol) => {
+  if (vrai == null || !isFinite(x)) return false;
+  if (proche(x, vrai, tol)) return true;
+  const n = nbCS(rep);
+  if (!(tol >= 0.005) || n < 2 || vrai === 0 || !isFinite(vrai)) return false;
+  const u = Math.pow(10, Math.floor(Math.log10(Math.abs(vrai))) - n + 1);
+  return Math.abs(x - vrai) <= u * 0.5001;
+};
 // Nombre de chiffres significatifs d'une valeur saisie (« 1,26e-3 » → 3 ; « 0,00126 » → 3 ; « 1850 » → 3)
 export const nbCS = s => {
   const t = String(s ?? '').replace(/\s/g, '').replace(/[−–]/g, '-').replace(',', '.').replace(/(?:×|x|\*)10\^?(-?\d+)/i, 'e$1');
@@ -329,13 +339,13 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     setTicVerif(t => t + 1);
     const fausse = !!tache && tache.type !== 'action' && !(etat.verifs && etat.verifs[etape]) && !(etat.reussies && etat.reussies[etape]) && !(() => {
       if (tache.type === 'qcm') return reps[etape] === tache.bonne;
-      const x = lireNombre(reps[etape]); return tache.vrai != null && isFinite(x) && proche(x, tache.vrai, tache.tol);
+      const x = lireNombre(reps[etape]); return accepte(x, reps[etape], tache.vrai, tache.tol);
     })();
     maj(e => ({ verifs: { ...e.verifs, [etape]: true }, ...(fausse ? { erreurs: (e.erreurs || 0) + 1 } : {}) }));
     // Une étape numérique peut demander à garder la valeur trouvée par l'élève (par exemple un volume lu)
     if (tache && tache.type === 'num' && tache.surReussite) {
       const x = lireNombre(reps[etape]);
-      if (tache.vrai != null && isFinite(x) && proche(x, tache.vrai, tache.tol)) tache.surReussite(x);
+      if (accepte(x, reps[etape], tache.vrai, tache.tol)) tache.surReussite(x);
     }
   };
   const juste = (() => {
@@ -343,7 +353,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     if (tache.type === 'action') return !!tache.ok;
     if (tache.type === 'qcm') return reps[etape] === tache.bonne;
     const x = lireNombre(reps[etape]);
-    return tache.vrai != null && isFinite(x) && proche(x, tache.vrai, tache.tol);
+    return accepte(x, reps[etape], tache.vrai, tache.tol);
   })();
   const verifie = !!verifs[etape];
   const reussieMaintenant = tache && tache.type === 'action' ? !!tache.ok : verifie && juste;
@@ -493,7 +503,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           <div role="status" aria-live="polite" aria-atomic="true">{verifie && <div key={ticVerif}>
           {verifie && juste && tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs && (
             <div style={{ fontSize: 14, color: '#b45309', fontWeight: 700, marginTop: 6 }}>
-              ✔ Valeur juste, mais arrondie trop tôt : <span style={{ fontWeight: 400, color: TXT }}>gardez au moins {tache.cs} chiffres significatifs (vous en avez écrit {nbCS(reps[etape])}).
+              ✔ Valeur juste (étape validée). Conseil : <span style={{ fontWeight: 400, color: TXT }}>gardez {tache.cs} chiffres significatifs pour ne pas arrondir trop tôt (vous en avez écrit {nbCS(reps[etape])}).
               {' '}{indicesProfond(tache.expl)}</span></div>)}
           {verifie && juste && !(tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs) && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
             <Pic n="ok"/>Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{indicesProfond(tache.expl)}</span></div>}

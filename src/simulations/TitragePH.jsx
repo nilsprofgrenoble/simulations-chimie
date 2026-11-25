@@ -233,7 +233,7 @@ export function SimulationTitragePH() {
         expl: 'La transformation étant totale et l’acide en excès, chaque ion HO⁻ versé réagit : HO⁻ est le réactif limitant. Il n’en reste pratiquement pas dans l’erlenmeyer.', indice: 'Dans une transformation totale, le réactif limitant est entièrement consommé.' } },
     { id: 'compo', titre: 'Composition après un ajout', focus: ['scene'],
       texte: <>Au départ, l’erlenmeyer contient <em>n</em><sub>A</sub> = <em>C</em><sub>A</sub> × <em>V</em><sub>A</sub> = 0,080 × 20,0 = 1,60{NB}mmol d’acide éthanoïque. Vous avez versé 0,40{NB}mmol d’ions HO⁻ (étape précédente) : chacun fait disparaître une molécule d’acide et forme un ion CH₃COO⁻.</>,
-      tache: { type: 'num', q: 'Quantité d’acide éthanoïque restant', unite: 'mmol', vrai: 1.20, tol: 0.04, affiche: v => nbf(v, 2), cs: 3, bloque,
+      tache: { type: 'num', q: 'Quantité d’acide éthanoïque restant', unite: 'mmol', vrai: 1.20, tol: 0.04, affiche: v => nbf(v, 2), cs: 2, bloque,
         calcul: () => ['Transformation totale, coefficients stœchiométriques égaux à 1 : n(CH₃COOH) restant = n(CH₃COOH) initial − n_B.', 'n(CH₃COOH) restant = 1,60 − 0,40 = 1,20 mmol ; il s’est formé 0,40 mmol d’ions CH₃COO⁻.'],
         pieges: [[0.40, '0,40 mmol est la quantité d’ions CH₃COO⁻ formés, pas celle d’acide restant.'], [2.00, 'Il faut soustraire : l’acide disparaît quand on verse HO⁻.'], [1.60, '1,60 mmol est la quantité initiale d’acide : il en a déjà réagi 0,40 mmol.']],
         expl: 'n(CH₃COOH) restant = 1,60 − 0,40 = 1,20 mmol.', indice: 'Quantité restante = quantité initiale − quantité qui a réagi (= quantité de HO⁻ versée).' } },

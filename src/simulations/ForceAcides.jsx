@@ -169,7 +169,7 @@ export function SimulationForceAcides() {
         expl: 'Toutes les cases sont colorées : presque toutes les molécules HCl ont réagi avec l’eau pour donner Cl⁻ et H₃O⁺. La transformation est quasi-totale (flèche simple dans l’équation), quelle que soit la concentration.', indice: 'Comptez les cases claires sur le schéma : elles représentent les molécules qui sont restées sous forme HCl.' } },
     { id: 'hclph', titre: 'Composition et pH d’un acide fort', focus: ['scene'],
       texte: <>Avec un <strong>acide fort</strong>, la réaction est quasi-totale : chaque molécule introduite donne un ion oxonium, donc [H₃O⁺] = C, [Cl⁻] = C et [HCl] ≈ 0. Le pH se calcule avec {FpH}où c° = 1{NB}mol·L⁻¹ est la concentration standard. Nouvelle solution : C = 0,020{NB}mol·L⁻¹ d’acide chlorhydrique.</>,
-      tache: { type: 'num', q: 'pH de la solution d’acide chlorhydrique', unite: '(sans unité)', vrai: 1.699, tol: 0.02, affiche: v => nbf(v, 2), cs: 3,
+      tache: { type: 'num', q: 'pH de la solution d’acide chlorhydrique', unite: '(sans unité)', vrai: 1.699, tol: 0.02, affiche: v => nbf(v, 2), cs: 2,
         calcul: () => ['[H₃O⁺] = C = 0,020 mol·L⁻¹ (acide fort : transformation quasi-totale).', 'pH = −log(frac(0,020|1)) = 1,70.'],
         pieges: [[0.020, 'C’est la concentration [H₃O⁺], pas le pH : pH = −log(frac([H₃O⁺]|c°)).'], [-1.699, 'Un pH est positif ici : log(0,020) est négatif, donc −log(0,020) est positif.'], [3.912, 'Vous avez utilisé ln au lieu de log (logarithme décimal).']],
         expl: 'pH = −log(0,020) = 1,70 ; [H₃O⁺] = [Cl⁻] = 0,020 mol·L⁻¹ ; [HCl] ≈ 0.', indice: 'Pour un acide fort, [H₃O⁺] = C. Calculez ensuite −log(C) avec la touche log de la calculatrice.' } },
