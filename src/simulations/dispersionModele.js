@@ -6,8 +6,9 @@
 // agglomérats de 10 à 20 µm) s'inspirent de distributions mesurées au granulomètre laser ; ils sont annoncés comme tels dans les hypothèses.
 
 export const SOLIDES = [
-  { id: 'tio2', nom: 'dioxyde de titane (pigment blanc)', court: 'TiO₂', fa0: 0.24, d50p: 1.5, sp: 1.85, d50a: 13, sa: 1.45 },
-  { id: 'fer', nom: 'oxyde de fer jaune (pigment coloré)', court: 'oxyde de fer', fa0: 0.32, d50p: 0.9, sp: 2.0, d50a: 13, sa: 1.5 },
+  { id: 'tio2', nom: 'dioxyde de titane (pigment blanc, hydrophile)', court: 'TiO₂', m0: 0.9, fa0: 0.24, d50p: 1.5, sp: 1.85, d50a: 13, sa: 1.45 },
+  { id: 'fer', nom: 'oxyde de fer jaune (pigment coloré, hydrophile)', court: 'oxyde de fer', m0: 0.9, fa0: 0.32, d50p: 0.9, sp: 2.0, d50a: 13, sa: 1.5 },
+  { id: 'noir', nom: 'noir de carbone (pigment noir, hydrophobe)', court: 'noir de carbone', m0: 0.05, fa0: 0.3, d50p: 1.0, sp: 1.9, d50a: 13, sa: 1.5 },
 ];
 export const solide = id => SOLIDES.find(s => s.id === id);
 
@@ -20,7 +21,9 @@ const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 export const theta = (x, K = K_DISP) => (x <= 0 ? 0 : x / (x + K));           // taux de recouvrement par adsorption (Langmuir)
 export const transmission = m => 0.25 + 0.75 * clamp(m);                      // part de l'énergie de dispersion qui atteint les agglomérats (0 = air emprisonné)
 // État : m (mouillage 0..1), E (énergie de dispersion 0..1), x (% de dispersant sec), g (broyage 0..1)
-export const fractionAgglo = (sol, { m, E, x }) => sol.fa0 * (1 - clamp(E * transmission(m)) * (0.35 + 0.65 * theta(x)));
+// Mouillage effectif : un solide hydrophile (m0 élevé) est déjà mouillé par l'eau ; un solide hydrophobe (m0 faible) ne l'est qu'avec un agent mouillant (m)
+export const mouillageEff = (sol, m) => 1 - (1 - sol.m0) * (1 - clamp(m));
+export const fractionAgglo = (sol, { m, E, x }) => sol.fa0 * (1 - clamp(E * transmission(mouillageEff(sol, m))) * (0.35 + 0.65 * theta(x)));
 export const d50Primaires = (sol, { g }) => sol.d50p * (1 - 0.55 * clamp(g));
 
 export const GRILLE = Array.from({ length: 41 }, (_, i) => Math.pow(10, (i / 40) * Math.log10(400)) / 10);   // 0,1 à 40 µm, échelle log
@@ -61,19 +64,21 @@ export function tirageDosage(r = Math.random) {
   return { mP, pc, ES, active: masseActive(mP, pc), vrai: masseSolution(mP, pc, ES) };
 }
 export const CAS = ['mouillage', 'energie', 'dispersant', 'broyage', 'aucune'];
-export const CAUSES = { mouillage: 'agent mouillant absent : l’air des pores empêche le mouillage des agglomérats', energie: 'énergie de dispersion insuffisante : les agglomérats ne sont pas cassés', dispersant: 'dispersant absent : les agglomérats se reforment après dispersion', broyage: 'particules primaires trop grosses : il faut broyer', aucune: 'aucune lacune : mouillage, dispersion, dispersant et broyage sont en place' };
-export const REMEDES = { mouillage: 'ajouter un agent mouillant dans la cuve d’empâtage', energie: 'augmenter l’énergie de dispersion (disperseur plus rapide ou plus long)', dispersant: 'ajouter un dispersant', broyage: 'broyer (broyeur à billes) pour réduire les particules primaires', aucune: 'ne rien changer' };
+export const CAUSES = { mouillage: 'agent mouillant absent avec un pigment hydrophobe : l’air des pores empêche le mouillage des agglomérats', energie: 'énergie de dispersion insuffisante : les agglomérats ne sont pas cassés', dispersant: 'dispersant absent : les agglomérats se reforment après dispersion', broyage: 'particules primaires trop grosses : il faut broyer', aucune: 'aucune lacune : mouillage, dispersion, dispersant et broyage sont en place' };
+export const REMEDES = { mouillage: 'ajouter un agent mouillant dans la cuve d’empâtage (pigment hydrophobe)', energie: 'augmenter l’énergie de dispersion (disperseur plus rapide ou plus long)', dispersant: 'ajouter un dispersant', broyage: 'broyer (broyeur à billes) pour réduire les particules primaires', aucune: 'ne rien changer' };
 // État type de chaque cas : une seule lacune à la fois
 export function etatDuCas(cas, r = Math.random) {
   const u = (a, b) => a + (b - a) * r();
   const base = { m: u(0.85, 1), E: u(0.85, 1), x: Math.round(u(0.2, 0.3) * 20) / 20, g: u(0.6, 0.85) };
-  if (cas === 'mouillage') base.m = u(0, 0.15);
+  if (cas === 'mouillage') base.m = u(0, 0.15);   // (cas réservé à un solide hydrophobe : voir tirageDiagnostic)
   if (cas === 'energie') base.E = u(0.05, 0.2);
   if (cas === 'dispersant') base.x = 0;
   if (cas === 'broyage') base.g = 0;
   return base;
 }
 export function tirageDiagnostic(r = Math.random) {
-  const cas = choix(CAS, r), sol = cas === 'broyage' ? SOLIDES[0] : choix(SOLIDES, r), etat = etatDuCas(cas, r), q = distribution(sol, etat);
+  const cas = choix(CAS, r), sol = cas === 'broyage' ? SOLIDES[0] : cas === 'mouillage' ? solide('noir') : choix(SOLIDES, r), etat = etatDuCas(cas, r);
+  if (sol.m0 > 0.5) etat.m = 0;   // pigment hydrophile : pas d'agent mouillant dans la peinture
+  const q = distribution(sol, etat);
   return { cas, solide: sol, etat, q, d10: diametre(q, 10), d50: diametre(q, 50), d90: diametre(q, 90), agglo: fractionAuDessus(q) };
 }

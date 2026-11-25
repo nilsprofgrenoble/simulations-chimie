@@ -3130,7 +3130,7 @@ export const PREVOIR = [
       V('celle à 0,2 µm : elle sédimente moins vite', 'Plus les particules sont petites, plus la suspension est stable : d’où l’intérêt d’une dispersion efficace.'),
     ] },
   { id: 'disp-ana-mouillant-role', domaine: 'Mouiller, disperser, stabiliser une suspension', titre: 'Rôle d’un agent mouillant',
-    enonce: 'Lors de l’empâtage d’une peinture, du dioxyde de titane en poudre versé dans l’eau forme des grumeaux : leur surface est mouillée mais leur cœur reste sec, car l’air des pores n’est pas chassé.', q: 'Quel additif résout d’abord ce problème, et pourquoi ?', options: [
+    enonce: 'Lors de la fabrication d’une peinture noire, du noir de carbone, pigment hydrophobe, versé dans l’eau flotte et forme des grumeaux : leur surface est mouillée mais leur cœur reste sec, car l’air des pores n’est pas chassé. (Le dioxyde de titane, hydrophile, se mouille bien plus facilement.)', q: 'Quel additif résout d’abord ce problème, et pourquoi ?', options: [
       F('un sel, pour augmenter la force ionique de l’eau', 'Le sel ne chasse pas l’air des amas : il écrante les charges de surface.'),
       V('un agent mouillant, qui abaisse la tension superficielle', 'Le liquide s’étale alors sur les grains et remplace l’air entre eux.'),
       F('un dispersant polymère, qui crée une répulsion entre les grains', 'Le dispersant agit après le mouillage : tant que l’air est piégé, le liquide ne pénètre pas.'),

@@ -13,7 +13,8 @@ for (const so of M.SOLIDES) {
   prev = 2; for (const m of [0, 0.25, 0.5, 0.75, 1]) { const f = M.fractionAgglo(so, { m, E: 0.9, x: 0.2 }); ok(f <= prev + 1e-12, 'fa décroît avec le mouillage'); prev = f; }
   prev = 2; for (const x of [0, 0.01, 0.05, 0.1, 0.2, 0.3]) { const f = M.fractionAgglo(so, { m: 1, E: 0.9, x }); ok(f <= prev + 1e-12, 'fa décroît avec le dispersant'); prev = f; }
   // sans mouillage, l'énergie est peu efficace
-  ok(M.fractionAgglo(so, { m: 0, E: 1, x: 0.2 }) > M.fractionAgglo(so, { m: 1, E: 1, x: 0.2 }) + 0.02, 'sans mouillant moins efficace');
+  ok(M.fractionAgglo(so, { m: 0, E: 1, x: 0.2 }) > M.fractionAgglo(so, { m: 1, E: 1, x: 0.2 }) + (so.m0 < 0.5 ? 0.02 : 0), 'sans mouillant moins efficace (nettement pour un solide hydrophobe)');
+  ok(so.m0 < 0.5 || M.fractionAgglo(so, { m: 0, E: 1, x: 0.2 }) - M.fractionAgglo(so, { m: 1, E: 1, x: 0.2 }) < 0.03, 'solide hydrophile : l’agent mouillant change peu de chose');
   // le broyage réduit D50 des primaires mais ne casse pas les agglomérats à lui seul
   ok(M.d50Primaires(so, { g: 1 }) < M.d50Primaires(so, { g: 0 }), 'broyage');
   ok(Math.abs(M.fractionAgglo(so, { m: 1, E: 0, x: 0 }) - so.fa0) < 1e-12, 'sans énergie : fa0');
