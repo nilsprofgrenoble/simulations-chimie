@@ -56,7 +56,7 @@ export function TabBtn({ active, color, onClick, children }) {
 
 export const cardStyle = {
   background: "#fff", border: "1px solid #eef5ff",
-  borderRadius: 10, padding: 14, boxSizing: "border-box",
+  borderRadius: 10, padding: '14px clamp(9px, 2.6vw, 14px)', boxSizing: "border-box",
   textAlign: "left"   // le gabarit Vite (App.css) centre tout le texte du site par défaut
 };
 
@@ -423,7 +423,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
     return null;
   };
   return (
-    <div ref={carteRef} data-carte-parcours={etape} data-etape-parcours={`Étape ${etape + 1} / ${etapes.length}${etapes[etape]?.titre ? ' : ' + etapes[etape].titre : ''}`.slice(0, 190)} data-type-tache={tache ? tache.type : 'aucune'} style={{ background: 'white', borderRadius: 22, padding: '14px 16px', border: `2px solid ${ORANGE_GUIDE}`,
+    <div ref={carteRef} data-carte-parcours={etape} data-etape-parcours={`Étape ${etape + 1} / ${etapes.length}${etapes[etape]?.titre ? ' : ' + etapes[etape].titre : ''}`.slice(0, 190)} data-type-tache={tache ? tache.type : 'aucune'} style={{ background: 'white', borderRadius: 22, padding: '14px clamp(9px, 2.6vw, 16px)', border: `2px solid ${ORANGE_GUIDE}`,
       display: 'flex', flexDirection: 'column', gap: 10,
       // La carte reste visible quand on fait défiler la page (dans une mise en page à deux colonnes)
       position: 'sticky', top: 'calc(var(--entete-h, 0px) + 8px)', maxHeight: 'calc(100vh - var(--entete-h, 0px) - 24px)', overflowY: 'auto', zIndex: 5 }}>
@@ -587,7 +587,7 @@ export function ARetenir({ titre = 'À RETENIR', children, sansFiche = false, ti
     return undefined;
   });
   return (
-    <div data-retenir="1" style={{ background: '#eaf2fb', border: '2px solid #7aa6d6', borderRadius: 10, padding: '8px 12px', color: '#0f172a' }}>
+    <div data-retenir="1" style={{ background: '#eaf2fb', border: '2px solid #7aa6d6', borderRadius: 10, padding: '8px clamp(8px, 2.4vw, 12px)', color: '#0f172a' }}>
       <div style={{ fontWeight: 800, fontSize: 14, color: '#be123c', letterSpacing: 0.4, marginBottom: 4 }}>{titre} ❤️</div>
       <div ref={contenu} style={{ fontSize: 15, lineHeight: 1.6 }} onClick={e => { const sv = e.target.closest && e.target.closest('svg[role="img"]'); if (sv && contenu.current && contenu.current.contains(sv)) setZoom(sv.outerHTML); }}>{indicesProfond(children)}</div>
       {!EN_RECOLTE && <div data-zoom-indice="1" style={{ fontSize: 12, color: '#475569', textAlign: 'right', marginTop: 2 }}>🔍 Touche le schéma pour l’agrandir</div>}
