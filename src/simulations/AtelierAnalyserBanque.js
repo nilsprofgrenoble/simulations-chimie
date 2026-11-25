@@ -13,6 +13,7 @@ import { NUC2GT_ANA } from './nucleaire2gtExos.js';
 import { MAT2GT_ANA } from './matiere2gtExos.js';
 import { RHC_ANA } from './rheoCourbesExos.js';
 import { ITT_ANA } from './itt3Exos.js';
+import { TGPB_ANA, TGPB_REL, TGPB_HYP } from './tgPhysiqueBExos.js';
 import { figureTopo } from './topoFigure.js';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -1377,6 +1378,7 @@ export const RELATIONS = [
       F('pH = ½ (pKa + log C)', 'Le signe devant log C est faux : on trouverait 1,55, un pH plus acide que celui d’un acide fort de même concentration, ce qui est impossible.'),
       F('pH = ½ (14 + pKa + log C)', 'Cette relation concerne une base faible. Elle donnerait 8,55 pour une solution qui est en fait acide.'),
     ] },
+  ...TGPB_REL,
 ];
 
 // ──────────────────────────────── 3. HYPOTHÈSES D'UN MODÈLE ────────────────────────────────
@@ -1705,6 +1707,7 @@ export const HYPOTHESES = [
       F('La réaction est effectivement totale dans l’expérience, donc le rendement doit valoir 100 %', 'La réaction d’estérification est limitée (K = 4) : un rendement inférieur à 100 % est normal. La valeur 100 % n’est que la référence théorique (n(ester) = n(réactif limitant)) à laquelle on compare le résultat.'),
       F('La température d’ébullition de l’ester doit être inférieure à celle des réactifs', 'La température d’ébullition sert à choisir la méthode de séparation (distillation), pas à calculer le rendement.'),
     ] },
+  ...TGPB_HYP,
 ];
 
 // ──────────────────────────────── 4. PRÉVOIR SANS CALCULER ────────────────────────────────
@@ -4054,6 +4057,7 @@ export const PREVOIR = [
       F('A et B n’ont pas de groupe C=O, car 1715 est hors du tableau', 'Le tableau contient plusieurs lignes C=O autour de 1700–1740 cm⁻¹ : 1715 y a sa place.'),
     ] },
   { id: 'lun-ana-hors-axe', domaine: 'Lunette afocale : schéma, faisceau et grossissement', titre: 'Une étoile qui n’est pas sur l’axe',
+    schema: { type: 'lunetteTG', montre: { ocu: true, noms: true }, apres: { montre: { ocu: true, noms: true, incl: true, plan: true, image: true, foyers: 1 } } },
     enonce: 'Une étoile n’est pas sur l’axe optique de l’objectif d’une lunette : les rayons qui en viennent arrivent sur l’objectif en formant un faisceau parallèle, incliné d’un angle θ par rapport à l’axe.', q: 'Où l’objectif forme-t-il l’image de cette étoile ?', options: [
       V('dans le plan focal image, hors de l’axe', 'Un faisceau de rayons parallèles, même incliné, converge dans le plan focal image de l’objectif : en un point B₁ hors de l’axe, à la distance f′ de l’objectif.'),
       F('au foyer image F′, sur l’axe optique', 'F′ est l’image d’une étoile située sur l’axe (faisceau parallèle à l’axe) : pour un faisceau incliné, le point image est dans le même plan mais hors de l’axe.'),
@@ -4061,6 +4065,7 @@ export const PREVOIR = [
       F('très loin derrière l’objectif, à l’infini', 'L’étoile est à l’infini, mais l’objectif en donne une image réelle, à distance finie, dans son plan focal image.'),
     ] },
   { id: 'lun-ana-oculaire-court', domaine: 'Lunette afocale : schéma, faisceau et grossissement', titre: 'On change d’oculaire',
+    schema: { type: 'lunetteTG', montre: { ocu: true, noms: true } },
     enonce: 'Un amateur observe avec une lunette afocale réglée. Il remplace l’oculaire par un autre, de distance focale plus courte (l’objectif reste le même), puis refait la mise au point pour retrouver une lunette afocale.', q: 'Que deviennent le grossissement G et la distance O₁O₂ entre l’objectif et l’oculaire ?', options: [
       V('G augmente, O₁O₂ diminue un peu', 'G, rapport de f′_obj à f′_oc, augmente quand f′_oc diminue ; O₁O₂ = f′_obj + f′_oc diminue de la même quantité que f′_oc.'),
       F('G augmente et O₁O₂ augmente aussi', 'O₁O₂ = f′_obj + f′_oc : avec un oculaire de focale plus courte, la distance entre les lentilles diminue.'),
@@ -4068,6 +4073,7 @@ export const PREVOIR = [
       F('G et O₁O₂ ne changent pas', 'f′_oc intervient dans G et dans O₁O₂ : changer d’oculaire change les deux grandeurs.'),
     ] },
   { id: 'lun-ana-emergent', domaine: 'Lunette afocale : schéma, faisceau et grossissement', titre: 'Le faisceau qui sort de la lunette',
+    schema: { type: 'lunetteTG', montre: { ocu: true, noms: true }, apres: { montre: { ocu: true, noms: true, incl: true, angles: 2, ref: true } } },
     enonce: 'Une lunette afocale est pointée vers une étoile hors de l’axe, que l’on voit à l’œil nu sous l’angle θ. Le faisceau qui sort de l’oculaire est formé de rayons parallèles.', q: 'Comment est ce faisceau émergent par rapport à l’axe optique ?', options: [
       V('parallèle, incliné d’un angle θ′ > θ', 'Lunette afocale : le faisceau émergent est parallèle ; il est incliné de θ′ = G × θ avec G > 1, donc plus incliné que le faisceau incident.'),
       F('parallèle, incliné du même angle θ', 'Une lunette grossit : l’angle sous lequel on voit l’étoile augmente, θ′ = G × θ avec G > 1.'),
@@ -4082,6 +4088,7 @@ export const PREVOIR = [
       F('on ne peut pas comparer sans les angles', 'G est le rapport de f′_obj à f′_oc : les distances focales suffisent, aucune mesure d’angle n’est nécessaire.'),
     ] },
   { id: 'rc-ana-resistance', domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'On double la résistance',
+    schema: { type: 'rcSerie', generateur: true, uC: true, i: true },
     enonce: 'Un condensateur initialement déchargé est chargé par un générateur de tension E à travers un résistor de résistance R. On remplace le résistor par un autre, de résistance 2R, sans rien changer d’autre (même E, même condensateur).', q: 'Que deviennent le temps caractéristique et la tension finale aux bornes du condensateur ?', options: [
       V('τ double ; la tension finale reste égale à E', 'τ = R × C est proportionnel à R : il double, la charge est deux fois plus lente. En régime stationnaire, u_C = E quelle que soit la valeur de R.'),
       F('τ est divisé par deux ; la tension finale reste égale à E', 'τ = R × C augmente avec R : une plus grande résistance freine l’arrivée des charges, la charge est plus lente.'),
@@ -4089,6 +4096,7 @@ export const PREVOIR = [
       F('τ double ; la tension finale est divisée par deux', 'La tension finale est toujours E : en régime stationnaire, il n’y a plus de courant, donc plus de tension aux bornes du résistor.'),
     ] },
   { id: 'rc-ana-stationnaire', domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Longtemps après la fermeture',
+    schema: { type: 'rcSerie', generateur: true, uC: true, i: true },
     enonce: 'Un condensateur initialement déchargé est relié à un générateur de tension E par un résistor R. L’interrupteur reste fermé très longtemps (plus de dix fois le temps caractéristique).', q: 'Quelles valeurs prennent alors la tension aux bornes du condensateur et l’intensité du courant ?', options: [
       V('u_C = E et i = 0 : régime stationnaire', 'Quand u_C ne varie plus, i = C × frac(du|dt) = 0, donc u_R = R × i = 0 et la loi des mailles E = u_R + u_C donne u_C = E.'),
       F('u_C = 0 et i = frac(E|R), comme au début de la charge', 'C’est la situation à t = 0 : après plusieurs fois τ, le condensateur est chargé et le courant a disparu.'),
@@ -4096,6 +4104,7 @@ export const PREVOIR = [
       F('u_C = frac(E|2) et i = frac(E|2R), à mi-chemin', 'Ces valeurs correspondent à un instant de la charge (vers 0,7 τ), pas au régime stationnaire atteint après dix τ.'),
     ] },
   { id: 'rc-ana-signe', domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Le signe de l’intensité en décharge',
+    schema: { type: 'rcSerie', generateur: false, signes: true, uC: true, i: true, armature: 'A' },
     enonce: 'Dans un circuit RC, l’intensité i est fléchée vers l’armature A du condensateur (convention récepteur), comme pour la charge. Le condensateur, chargé sous la tension E, est maintenant déchargé à travers le résistor, sans générateur.', q: 'Que peut-on dire de i pendant la décharge ?', options: [
       V('i est négative : le courant réel quitte l’armature A', 'Pendant la décharge, l’armature A, positive, perd des charges : le courant réel circule en sens contraire de la flèche de i, donc i = C × frac(du|dt) est négative.'),
       F('i est positive, comme en charge, car la flèche n’a pas changé', 'La flèche est un choix d’orientation ; le signe de i dit si le courant réel va dans ce sens. En décharge u_C diminue, donc i = C × frac(du|dt) est négative.'),
@@ -5984,6 +5993,7 @@ export const PREVOIR = [
   ...MAT2GT_ANA,
   ...RHC_ANA,
   ...ITT_ANA,
+  ...TGPB_ANA,
   // ───────────────────────────── Changement d'état (2GT, sim 195) : fusion ou dissolution, proportionnalité, sens du transfert, palier, équation, comparaison de L
   { id: 'etat2gt-ana-dissolution', domaine: 'Changement d’état (2GT)', titre: 'Le sucre dans le thé : fusion ou dissolution ?',
     enonce: 'Un élève met un morceau de sucre dans un thé chaud. Le sucre « disparaît ». Il affirme : « le sucre a fondu, c’est une fusion : H₂O(s) → H₂O(l) ».', q: 'Que penser de son affirmation ?', options: [
@@ -6568,20 +6578,23 @@ export const PREVOIR = [
     ] },
   // ───────────────────────────── Loi de Newton et thermostat (TG, sim 212) : prévoir l'effet de la masse, des températures, du flux
   { id: 'thm-ana-masse', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', titre: 'Deux tasses plus ou moins remplies',
-    enonce: 'Deux tasses identiques, avec la même isolation (même produit h × S), sont posées dans la même pièce. L’une contient 0,15 kg de café, l’autre 0,30 kg, les deux à 80 °C au départ. Le café est assimilé à de l’eau.', q: 'Comment se comparent leurs temps caractéristiques τ et leurs températures finales ?', options: [
+    ...presenter({ schema: { type: 'thermoTG', cas: 'deuxTasses' }, contexte: 'Deux tasses identiques, avec la même isolation (même produit h × S), sont posées dans la même pièce. Le café est assimilé à de l’eau.', liste: [['Tasse A', '0,15 kg de café à 80 °C au départ'], ['Tasse B', '0,30 kg de café à 80 °C au départ']] }),
+    q: 'Comment se comparent leurs temps caractéristiques τ et leurs températures finales ?', options: [
       V('τ double pour la tasse pleine ; même température finale', 'τ = frac(C|h × S) : C est proportionnelle à la masse, donc τ double quand la masse double. La température finale est celle du thermostat, T_ext, pour les deux tasses.'),
       F('τ identique ; la tasse pleine finit plus chaude', 'τ dépend de la capacité thermique C : plus de liquide, plus d’énergie à évacuer, donc τ plus grand. Et les deux tasses finissent à T_ext, la température de la pièce.'),
       F('τ double ; la tasse pleine finit plus chaude', 'Le doublement de τ est juste, mais la température finale n’est pas liée à la masse : elle tend vers T_ext pour les deux tasses.'),
       F('τ est divisé par 2 pour la tasse pleine ; même température finale', 'Plus de liquide veut dire C plus grande, donc τ = frac(C|h × S) plus grand : la tasse pleine refroidit plus lentement, pas plus vite.'),
     ] },
   { id: 'thm-ana-pieces', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', titre: 'Une pièce et une cave',
-    enonce: 'Deux tasses identiques, contenant chacune 0,20 kg de café à 80 °C, sont posées l’une dans une pièce à 20 °C, l’autre dans une cave à 10 °C. On suppose h × S identique dans les deux cas.', q: 'Comment se comparent leur temps caractéristique τ et leur température finale ?', options: [
+    ...presenter({ schema: { type: 'thermoTG', cas: 'pieces' }, contexte: 'Deux tasses identiques, avec le même produit h × S, contiennent chacune du café.', liste: [['Quantité de café', '0,20 kg par tasse, à 80 °C au départ'], ['Tasse 1', 'dans une pièce à 20 °C'], ['Tasse 2', 'dans une cave à 10 °C']] }),
+    q: 'Comment se comparent leur temps caractéristique τ et leur température finale ?', options: [
       V('même τ ; la tasse de la cave finit plus froide', 'τ = frac(C|h × S) ne dépend que de la tasse (C et h × S), pas des températures. La température finale est T_ext : 10 °C dans la cave, 20 °C dans la pièce.'),
       F('τ plus petit ; la tasse de la cave finit plus froide', 'La température finale est juste, mais τ ne dépend pas de l’écart de température : à t = τ, il reste toujours 37 % de l’écart initial, quel qu’il soit. Un écart plus grand rend le flux plus fort au départ, pas τ plus petit.'),
       F('même τ ; même température finale', 'Le système est identique, donc τ aussi, mais la température finale est celle du thermostat : 10 °C dans la cave, 20 °C dans la pièce.'),
       F('τ plus grand ; la tasse de la cave finit plus chaude', 'τ ne dépend pas des températures, et la cave, plus froide, amène le café à une température finale plus basse, pas plus haute : le café tend vers T_ext.'),
     ] },
   { id: 'thm-ana-flux', domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps', titre: 'Le flux thermique d’un café qui refroidit',
+    schema: { type: 'thermoTG', cas: 'tasse' },
     enonce: 'Un café refroidit dans une pièce à température constante, sans autre transfert d’énergie que le transfert thermique. On note φ = h × S × (T_ext − T) le flux thermique reçu par le café (négatif tant que le café cède de l’énergie).', q: 'Comment évolue la valeur absolue de φ pendant le refroidissement ?', options: [
       V('elle diminue au cours du temps et tend vers 0', 'φ est proportionnel à l’écart T_ext − T, qui diminue quand T se rapproche de T_ext : la valeur absolue de φ est maximale à t = 0, divisée par e à t = τ, et tend vers 0.'),
       F('elle reste constante, égale à sa valeur initiale', 'φ = h × S × (T_ext − T) dépend de T : si le flux restait constant, la température baisserait linéairement et passerait sous T_ext, ce qui est impossible.'),
@@ -6591,20 +6604,23 @@ export const PREVOIR = [
 
   // ───────────────────────────── Gaz parfait (TG, sim 215) : prévoir sans calculer
   { id: 'gpf-ana-chauffage', domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'Une bouteille fermée que l’on chauffe',
-    enonce: 'Une bouteille rigide et fermée contient un gaz, assimilé à un gaz parfait, à la température de 27 °C. On la chauffe jusqu’à 327 °C.', q: 'Que devient la pression du gaz ?', options: [
+    ...presenter({ schema: { type: 'gazTG', cas: 'bouteille' }, contexte: 'Une bouteille rigide et fermée contient un gaz, assimilé à un gaz parfait. On le chauffe.', liste: [['Température initiale', '27 °C'], ['Température finale', '327 °C']] }),
+    q: 'Que devient la pression du gaz ?', options: [
       V('elle est multipliée par 2', 'Le volume et la quantité de gaz sont constants : P est proportionnelle à T en kelvins. De 27 °C = 300 K à 327 °C = 600 K, T double, donc P double.'),
       F('elle est multipliée par 12', 'Vous avez utilisé les températures en °C (327 divisé par 27 ≈ 12) : la proportionnalité n’est valable qu’avec T en kelvins (300 K et 600 K).'),
       F('elle reste la même : le volume est fixe', 'À volume fixe, la pression change tout de même : plus T est grande, plus les molécules sont agitées, plus les chocs sur les parois sont nombreux et violents.'),
       F('elle est divisée par 2', 'La pression augmente quand on chauffe à volume constant : P est proportionnelle à T (en kelvins), pas inversement proportionnelle.'),
     ] },
   { id: 'gpf-ana-piston', domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'Un gaz comprimé sous un piston',
-    enonce: 'Un gaz enfermé sous un piston est comprimé lentement, à température constante : son volume passe de 6,0 L à 2,0 L. On suppose le gaz parfait.', q: 'Que devient la pression du gaz ?', options: [
+    ...presenter({ schema: { type: 'gazTG', cas: 'piston' }, contexte: 'Un gaz enfermé sous un piston est comprimé lentement, à température constante. On suppose le gaz parfait.', liste: [['Volume initial', '6,0 L'], ['Volume final', '2,0 L']] }),
+    q: 'Que devient la pression du gaz ?', options: [
       V('elle est multipliée par 3', 'À T et n constants, P × V est constant (loi de Mariotte) : V est divisé par 3, donc P est multipliée par 3.'),
       F('elle est divisée par 3', 'C’est l’inverse : quand le volume diminue, les molécules sont plus rapprochées et frappent la paroi plus souvent ; la pression augmente.'),
       F('elle ne change pas, la température est constante', 'La température constante n’empêche pas P de varier : c’est le produit P × V qui reste constant, pas P.'),
       F('elle est multipliée par 9', 'Le volume est divisé par 3 et P est inversement proportionnelle à V : le facteur est 3, pas 3 × 3.'),
     ] },
   { id: 'gpf-ana-ballon', domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'De l’air chauffé dans un ballon ouvert',
+    schema: { type: 'gazTG', cas: 'ballon' },
     enonce: 'De l’air est chauffé dans un ballon ouvert par le bas : la pression reste égale à la pression atmosphérique. On suppose l’air parfait, de masse molaire constante.', q: 'Comment évolue la masse volumique de l’air du ballon quand T augmente ?', options: [
       V('elle diminue quand T augmente', 'ρ = frac(P × M|R × T) : à P et M constantes, ρ est inversement proportionnelle à T. L’air chaud est plus dilué, donc moins dense que l’air froid.'),
       F('elle augmente quand T augmente', 'ρ = frac(P × M|R × T) diminue quand T augmente ; l’agitation plus grande éloigne les molécules, elle ne les rapproche pas.'),
@@ -6613,13 +6629,15 @@ export const PREVOIR = [
     ] },
   // ───────────────────────────── Premier principe (TG, sim 216) : énergie interne, transferts, bilan d'énergie
   { id: 'pp1-ana-sens', domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie', titre: 'Un bloc chaud plongé dans de l’eau froide',
-    enonce: 'Un bloc de fer à 100 °C est plongé dans de l’eau à 15 °C, dans un récipient isolé de l’extérieur. On attend que la température se stabilise.', q: 'Que deviennent les énergies internes du bloc et de l’eau ?', options: [
+    ...presenter({ schema: { type: 'pp1TG', cas: 'bloc' }, contexte: 'Un bloc de fer est plongé dans de l’eau, dans un récipient isolé de l’extérieur. On attend que la température se stabilise.', liste: [['Bloc de fer', '100 °C au départ'], ['Eau', '15 °C au départ']] }),
+    q: 'Que deviennent les énergies internes du bloc et de l’eau ?', options: [
       V('celle du bloc diminue, celle de l’eau augmente', 'Un transfert thermique se fait du corps chaud (le bloc) vers le corps froid (l’eau) : le bloc cède de l’énergie, donc son énergie interne diminue, et l’eau en reçoit, donc la sienne augmente.'),
       F('celle du bloc augmente, celle de l’eau diminue', 'Le sens est inversé : le transfert thermique va spontanément du plus chaud vers le plus froid, donc l’énergie interne du bloc diminue.'),
       F('aucune ne change, car l’ensemble est isolé', 'L’ensemble bloc + eau est isolé : la somme de ses énergies internes ne change pas, mais chaque partie échange de l’énergie avec l’autre, donc leurs énergies internes varient.'),
       F('seule celle de l’eau change, car le fer est un solide', 'Le bloc se refroidit (sa température baisse, son agitation diminue) : son énergie interne diminue aussi, même s’il reste solide.'),
     ] },
   { id: 'pp1-ana-pale', domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie', titre: 'Un liquide brassé dans un récipient isolé',
+    schema: { type: 'pp1TG', cas: 'pale' },
     enonce: 'Un liquide est brassé avec une pale dans un récipient parfaitement isolé thermiquement : aucun transfert thermique n’a lieu entre le liquide et l’extérieur.', q: 'Que devient la température du liquide ?', options: [
       V('elle augmente : le travail reçu fait croître U', 'La pale exerce une force sur le liquide : il reçoit de l’énergie par travail (W > 0). Avec Q = 0, ΔU = W > 0 : l’énergie interne augmente, donc la température aussi.'),
       F('elle ne change pas, car il n’y a pas de chaleur reçue', 'Il existe un autre mode de transfert que la chaleur : le travail. ΔU = W + Q = W > 0, donc l’énergie interne et la température augmentent.'),
@@ -6627,7 +6645,8 @@ export const PREVOIR = [
       F('elle augmente, mais seulement si le récipient est chauffé', 'Chauffer n’est pas nécessaire : le travail de la pale suffit à augmenter l’énergie interne (ΔU = W + Q avec Q = 0).'),
     ] },
   { id: 'pp1-ana-masse', domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie', titre: 'Deux masses d’eau pour la même énergie',
-    enonce: 'Deux récipients contiennent de l’eau initialement à la même température : 1,0 kg dans l’un, 2,0 kg dans l’autre. Chacun reçoit le même transfert thermique Q, sans travail, sans pertes ni changement d’état.', q: 'Comparez les échauffements ΔT.', options: [
+    ...presenter({ schema: { type: 'pp1TG', cas: 'recipients' }, contexte: 'Deux récipients contiennent de l’eau, initialement à la même température. Chacun reçoit le même transfert thermique Q, sans travail, sans pertes ni changement d’état.', liste: [['Récipient 1', '1,0 kg d’eau'], ['Récipient 2', '2,0 kg d’eau']] }),
+    q: 'Comparez les échauffements ΔT.', options: [
       V('l’échauffement est deux fois plus petit dans le récipient de 2,0 kg', 'ΔU = Q = C × ΔT avec C = m × c : à Q égal, ΔT est inversement proportionnel à la masse. Avec une masse double, C est doublée et ΔT est divisé par 2.'),
       F('l’échauffement est deux fois plus grand dans le récipient de 2,0 kg', 'C’est l’inverse : une masse plus grande a une capacité thermique C plus grande, donc il faut plus d’énergie par kelvin ; à Q égal, ΔT est plus petit.'),
       F('les échauffements sont égaux, car Q est le même', 'À Q égal, ΔU est le même, mais ΔT = ΔU divisé par C dépend de la masse (C = m × c) : les échauffements ne sont pas égaux.'),
