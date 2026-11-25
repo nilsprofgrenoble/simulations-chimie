@@ -1997,5 +1997,10 @@
  "77:plausible:etf-val-k-pka": "VAL542",
  "77:plausible:etf-val-bases": "VAL543",
  "77:plausible:cmp-cdt-val-ions": "VAL544",
- "77:plausible:sig-shannon-insuffisant": "VAL545"
+ "77:plausible:sig-shannon-insuffisant": "VAL545",
+ "34:ondEcho.0": "SAPP499",
+ "34:ondEcho.1": "SAPP500",
+ "37:relation:ond-rel-niveau-intensite": "ANA823",
+ "37:hypothese:ond-hyp-doppler": "ANA824",
+ "37:hypothese:ond-hyp-young-interfrange": "ANA825"
 }
