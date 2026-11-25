@@ -248,7 +248,7 @@ function CarteSousTheme({ st, exos, etoilesDe, ouvrir }) {
 function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
   const { prog, etoilesSrv, etoilesDe, nbFaits, idsEnCours } = ctx;
   const ouvrir = e => naviguer(e.atelier, e.ex);
-  const exosChap = exosDuChapitre(exos, c.domaines), av = avancementChapitre(exosChap, etoilesDe), conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
+  const exosChap = exosDuChapitre(exos, c), av = avancementChapitre(exosChap, etoilesDe), conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
   const enCours = idsEnCours.includes(c.id);
   const validees = useSimsValidees(c.id);
   const { themes, autres } = repartir(exosChap, c.id);
@@ -323,7 +323,7 @@ export function SimulationChapitre({ naviguer }) {
   const depuis = (() => { try { const v = parseInt(new URLSearchParams(window.location.search).get('depuis')); return c && c.sims.includes(v) && v in EXOS_DE_SIM ? v : null; } catch { return null; } })();
   const cartes = l => (
     <div data-chapitres className="en-grille">
-      {l.map(x => <CarteChapitre key={x.id} c={x} ouvert={false} enCours={ctx.idsEnCours.includes(x.id)} av={avancementChapitre(exosDuChapitre(exos, x.domaines), ctx.etoilesDe)} onClick={() => aller(x.id)} />)}
+      {l.map(x => <CarteChapitre key={x.id} c={x} ouvert={false} enCours={ctx.idsEnCours.includes(x.id)} av={avancementChapitre(exosDuChapitre(exos, x), ctx.etoilesDe)} onClick={() => aller(x.id)} />)}
     </div>);
   return (
     <div className="en" style={{ ...cardStyle, maxWidth: 1000, margin: '0 auto' }} data-page-chapitre={c?.id || 'index'}>
@@ -382,7 +382,7 @@ export function SimulationEntrainement({ naviguer }) {
   const ensValide = enseignements.some(e => e.key === ens) ? ens : '';
   const chapsNiveau = niveau === 'tous' ? CHAPITRES : niveau ? chapitresNiveauEns(niveau, ensValide) : [];
   const ouvertId = chapChoisi !== undefined ? chapChoisi : (chapsNiveau.find(c => idsEnCours.includes(c.id))?.id ?? null);
-  const exosDe = c => exosDuChapitre(exos, c.domaines);
+  const exosDe = c => exosDuChapitre(exos, c);
 
   // Exercices du niveau (pour la partie « par compétence ») : thèmes des chapitres du niveau + calcul transversal
   const exosN = (() => {
