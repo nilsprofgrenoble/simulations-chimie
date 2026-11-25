@@ -1,3 +1,4 @@
+import { PVE_ANA } from './panneauEclairementExos.js';
 // ====================================================
 //  BANQUE DE L'ATELIER « ANALYSER » (compétence S'APP : analyser)
 // ====================================================
@@ -6350,6 +6351,7 @@ export const PREVOIR = [
   ...NOY2GT_ANA,
   ...PVC_ANA,
   ...PVR_ANA,
+  ...PVE_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,

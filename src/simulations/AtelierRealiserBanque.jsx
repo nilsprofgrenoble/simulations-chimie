@@ -2636,6 +2636,55 @@ function genPvDimension() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['Plum = Pél ÷ η (η en nombre décimal), puis S = Plum ÷ E.', 'À rendement constant, Pél varie comme l’éclairement.'] };
 }
+// ---------- Panneau photovoltaïque : éclairement et distance à la source (TSTL, PCM) ----------
+function genPveEclairement() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const phi = tire([100, 150, 200, 300, 500]), d = tire([0.5, 0.8, 1.0, 1.2, 1.5, 2.0]), k = tire([2, 3]);
+  const S = 4 * Math.PI * d * d, E = phi / S, E2 = phi / (4 * Math.PI * (k * d) ** 2);
+  const intro = `Une source lumineuse ponctuelle émet un flux Φ = ${phi}${NB}W de façon uniforme dans toutes les directions. Un capteur est placé à la distance d = ${nbF(d, 1)}${NB}m de la source, face à elle.`;
+  const q1 = { id: 'e0', type: 'num', q: <>Calculez la <b>surface de la sphère</b> 4πd² sur laquelle la lumière est répartie (en m², 2 chiffres significatifs).</>, unite: 'm²', vrai: S, tolRel: 0.05, csMin: 2,
+    aide: 'S = 4 × π × d², avec d en mètres.',
+    pieges: [[2 * Math.PI * d * d, 'Il faut multiplier par 4π, pas par 2π.'], [4 * Math.PI * d, 'La distance est au carré : surface = 4π × d × d.'], [Math.PI * d * d, 'N’oubliez pas le facteur 4 : surface = 4πd².']],
+    expl: <>4π × {nbF(d, 1)}² = <b>{pvFmt(S)}{NB}m²</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>Avec une surface de {pvFmt(S)}{NB}m², calculez l’<b>éclairement</b> E = Φ ÷ surface (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
+    aide: 'Divisez le flux par la surface de la sphère.',
+    pieges: [[phi * S, 'Il faut diviser le flux par la surface, pas les multiplier.'], [S / phi, 'Le rapport est inversé : E = Φ ÷ S.']],
+    expl: <>E = {phi} ÷ {pvFmt(S)} = <b>{pvFmt(E)}{NB}W/m²</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>On éloigne le capteur à d′ = {nbF(k * d, 1)}{NB}m, soit {k} fois plus loin. Quel est le nouvel <b>éclairement</b> (en W/m², 2 chiffres significatifs) ?</>, unite: 'W/m²', vrai: E2, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez la nouvelle surface 4πd′², puis E = Φ ÷ S′ ; ou divisez E par le carré du facteur d’éloignement.',
+    pieges: [[E / k, `L’éclairement varie comme 1/d², pas comme 1/d : divisez par ${k}² = ${k * k}.`], [E * k, 'Plus loin de la source, l’éclairement diminue.']],
+    expl: <>E′ = {pvFmt(E)} ÷ {k}² = <b>{pvFmt(E2)}{NB}W/m²</b> (la surface de la sphère est multipliée par {k * k}).</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Surface de la sphère = 4πd² (d en m) ; E = Φ ÷ (4πd²).', 'Distance × k : éclairement ÷ k².'] };
+}
+function genPveDistance() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let phi, Scm2, etaP, Pel, E, d, Plum;
+  for (let i = 0; i < 400; i++) {
+    phi = tire([200, 300, 400, 500]); Scm2 = tire([25, 37.5, 50, 75]); etaP = tire([12, 14, 15, 16, 18]);
+    Pel = pvCs2(etaP / 100 * Scm2 / 1e4 * tire([100, 150, 200, 250, 300, 400, 500, 600]));
+    E = Pel / (etaP / 100 * Scm2 / 1e4); d = Math.sqrt(phi / (4 * Math.PI * E)); Plum = Pel / (etaP / 100);
+    if (d >= 0.2 && d <= 1.2) break;
+  }
+  const part = 100 * Plum / phi;
+  const intro = `Une source lumineuse ponctuelle émet un flux Φ = ${phi}${NB}W dans toutes les directions. On veut qu’un panneau photovoltaïque de surface S = ${nbF(Scm2, Scm2 % 1 ? 1 : 0)}${NB}cm² et de rendement η = ${etaP}${NB}%, placé face à la source, fournisse une puissance électrique Pél = ${nbF(Pel, Pel < 0.1 ? 3 : 2)}${NB}W.`;
+  const q1 = { id: 'p0', type: 'num', q: <>Calculez l’<b>éclairement</b> nécessaire E = Pél ÷ (η × S) (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
+    aide: 'Convertissez S en m² (1 cm² = 0,0001 m²) et η en nombre décimal ; la puissance lumineuse reçue est Pél ÷ η, et E = Plum ÷ S.',
+    pieges: [[Pel / (etaP / 100 * Scm2), 'La surface est restée en cm² : convertissez-la en m² (1 cm² = 0,0001 m²).'], [Pel / (etaP * Scm2 / 1e4), 'Le rendement doit être en nombre décimal (15 % = 0,15).']],
+    expl: <>Plum = Pél ÷ η = {pvFmt(Plum)}{NB}W ; E = Plum ÷ S = {pvFmt(Plum)} ÷ {nbF(Scm2 / 1e4, 5)} = <b>{pvFmt(E)}{NB}W/m²</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>Avec E = {pvFmt(E)}{NB}W/m², calculez la <b>distance</b> d à laquelle placer le panneau : d = √(Φ ÷ (4πE)) (en m, 2 chiffres significatifs).</>, unite: 'm', vrai: d, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez d’abord 4πd² = Φ ÷ E, puis d², puis prenez la racine carrée.',
+    pieges: [[d * d, 'Vous avez donné d² : prenez la racine carrée.'], [phi / (4 * Math.PI * E), 'Vous avez donné d² : prenez la racine carrée pour obtenir d.'], [Math.sqrt(phi / E), 'Il manque le facteur 4π : 4πd² = Φ ÷ E.']],
+    expl: <>4πd² = {phi} ÷ {pvFmt(E)} = {nbF(phi / E, 2)}{NB}m² ; d² = {nbF(phi / E / (4 * Math.PI), 4)}{NB}m² ; d = <b>{pvFmt(d)}{NB}m</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Quelle <b>part du flux émis</b> Φ atteint le panneau ? Calculez Plum ÷ Φ avec Plum = {pvFmt(Plum)}{NB}W (en %, 2 chiffres significatifs).</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
+    aide: 'Divisez la puissance lumineuse reçue par le flux émis, puis multipliez par 100.',
+    pieges: [[part / 100, 'Ce rapport est une fraction : multipliez par 100 pour un pourcentage.'], [100 * phi / Plum, 'Le rapport est inversé : part = Plum ÷ Φ.']],
+    expl: <>Plum ÷ Φ = {pvFmt(Plum)} ÷ {phi} = <b>{pvFmt(part)}{NB}%</b> : presque toute la lumière émise passe à côté du panneau.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['E = Pél ÷ (η × S), puis d = √(Φ ÷ (4πE)).', 'Part reçue = Plum ÷ Φ : petite, car la lumière part dans toutes les directions.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -4764,6 +4813,8 @@ export const FAMILLES = [
   { id: 'pvc-eclair', groupe: 'Formules', titre: 'Panneau photovoltaïque : effet de l’éclairement sur Icc et Pmax (terminale STL)', gen: genPvEclair, domaine: 'Panneau photovoltaïque : caractéristique, puissance maximale, éclairement' },
   { id: 'pvr-rendement', groupe: 'Formules', titre: 'Panneau photovoltaïque : puissance reçue, rendement et pertes (terminale STL)', gen: genPvRendement, domaine: 'Panneau photovoltaïque : rendement et bilan énergétique' },
   { id: 'pvr-dimension', groupe: 'Formules', titre: 'Panneau photovoltaïque : dimensionner la surface (terminale STL)', gen: genPvDimension, domaine: 'Panneau photovoltaïque : rendement et bilan énergétique' },
+  { id: 'pve-eclairement', groupe: 'Formules', titre: 'Source lumineuse : surface de la sphère, éclairement et distance (terminale STL)', gen: genPveEclairement, domaine: 'Panneau photovoltaïque : éclairement et distance à la source' },
+  { id: 'pve-distance', groupe: 'Formules', titre: 'Panneau photovoltaïque : placer le panneau à la bonne distance (terminale STL)', gen: genPveDistance, domaine: 'Panneau photovoltaïque : éclairement et distance à la source' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

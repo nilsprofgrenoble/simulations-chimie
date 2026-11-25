@@ -1,3 +1,4 @@
+import { PVE_SAPP } from "./panneauEclairementExos.js";
 // ====================================================
 //  ATELIER « EXTRAIRE LES DONNÉES D'UN ÉNONCÉ » — BANQUE D'ÉNONCÉS
 // ====================================================
@@ -5034,6 +5035,7 @@ export const ENONCES = [
   ...NOY2GT_SAPP,
   ...PVC_SAPP,
   ...PVR_SAPP,
+  ...PVE_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,
