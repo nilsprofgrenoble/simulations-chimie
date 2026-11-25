@@ -4478,8 +4478,8 @@ export const PREVOIR = [
     q: 'Comment se comparent leurs périodes de révolution ?', options: [
       V('la période de B est 8 fois plus grande', 'Troisième loi de Kepler : frac(T²|r³) est le même pour les deux planètes. Si r est multiplié par 4, T² est multiplié par 4³ = 64, donc T par 8.'),
       F('la période de B est 4 fois plus grande', 'T n’est pas proportionnelle à r : la troisième loi relie T² à r³. Multiplier r par 4 multiplie T par 4 × racine de 4 = 8.'),
-      F('la période de B est 16 fois plus grande', 'Ce facteur viendrait de T proportionnelle à r². La troisième loi donne T² proportionnelle à r³, donc T proportionnelle à r^(3/2).'),
-      F('la période de B est 2 fois plus grande', 'Ce facteur viendrait de T proportionnelle à la racine de r. C’est T² qui est proportionnelle à r³ : le facteur est bien plus grand.'),
+      F('la période de B est 16 fois plus grande', 'Ce facteur viendrait de T proportionnelle à r². La troisième loi donne T² proportionnelle à r³, donc T proportionnelle à r puissance trois demis.'),
+      F('la période de B est 2 fois supérieure', 'Ce facteur viendrait de T proportionnelle à la racine de r. C’est T² qui est proportionnelle à r³ : le facteur est bien plus grand.'),
     ] },
   { id: 'kep-ana-geo-altitude', domaine: 'Satellites et lois de Kepler', titre: 'Une seule altitude pour un satellite géostationnaire',
     ...presenter({ contexte: 'Un satellite géostationnaire reste immobile dans le ciel d’un observateur situé au sol. Il décrit une orbite circulaire dans le plan de l’équateur, à une altitude voisine de 36 000 km.' }),
