@@ -6,7 +6,13 @@
 //  Références = clés de progression des exercices (voir tousLesExercices) : « 37:prevoir:diametre » (ANA), « 77:plausible:… » (VAL),
 //  « 34:flu-debit » (S'APP : toutes les questions de l'énoncé), « 35:pompe » (graphique). Un exercice appartient à un seul sous-thème.
 // ═══════════════════════════════════════════════════════════════════════════
+import evolution1g from './sousThemes.evolution-1g.js';
+import composition from './sousThemes.composition.js';
+import etatFinal from './sousThemes.etat-final.js';
+import signaux from './sousThemes.tstl-signaux.js';
+
 export const SOUS_THEMES = {
+  ...evolution1g, ...composition, ...etatFinal, ...signaux,
   'tstl-fluides': [
     { id: 'debit', nom: 'Le débit d’un liquide', capacite: 'Relier débit massique, débit volumique et masse volumique ; changer d’unité.',
       refs: ['34:flu-debit', '77:plausible:flu-conv-debit', '77:compat:debit-2methodes'] },

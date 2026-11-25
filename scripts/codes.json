@@ -1968,5 +1968,20 @@
  "77:plausible:inst-val-stokes-diametre": "VAL533",
  "77:plausible:inst-val-agitation-coalescence": "VAL534",
  "77:plausible:inst-val-cremage-duree": "VAL535",
- "77:plausible:inst-val-viscosite-duree": "VAL536"
+ "77:plausible:inst-val-viscosite-duree": "VAL536",
+ "37:relation:evo-avancement-limitant": "ANA803",
+ "37:relation:sig-rel-sensibilite": "ANA804",
+ "37:relation:sig-rel-gain": "ANA805",
+ "37:prevoir:evo-avancement-exces": "ANA806",
+ "37:prevoir:evo-equivalence-limitant": "ANA807",
+ "37:prevoir:cmp-titph-equivalence": "ANA808",
+ "37:prevoir:etf-k-pka": "ANA809",
+ "37:prevoir:etf-bases-force": "ANA810",
+ "37:prevoir:cmp-cdt-avant-equiv": "ANA811",
+ "37:prevoir:cmp-uvv-longueur-onde": "ANA812",
+ "77:plausible:evo-avancement-bilan": "VAL537",
+ "77:plausible:etf-val-k-pka": "VAL538",
+ "77:plausible:etf-val-bases": "VAL539",
+ "77:plausible:cmp-cdt-val-ions": "VAL540",
+ "77:plausible:sig-shannon-insuffisant": "VAL541"
 }
