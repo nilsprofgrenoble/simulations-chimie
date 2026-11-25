@@ -1,3 +1,4 @@
+import { CHA_SAPP } from "./chaineExos.js";
 import { JOU_SAPP } from "./jouleExos.js";
 import { BAT_SAPP } from "./batterieExos.js";
 import { LAS_SAPP } from "./laserExos.js";
@@ -5042,6 +5043,7 @@ export const ENONCES = [
   ...LAS_SAPP,
   ...BAT_SAPP,
   ...JOU_SAPP,
+  ...CHA_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,
