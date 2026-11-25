@@ -151,6 +151,7 @@ const SimulationFacteursCinetiques = paresseux(() => import("./simulations/Facte
 const SimulationPesanteur = paresseux(() => import("./simulations/Pesanteur"), "SimulationPesanteur");
 const SimulationOptimisationRendement = paresseux(() => import("./simulations/OptimisationRendement"), "SimulationOptimisationRendement");
 const SimulationStrategieSynthese = paresseux(() => import("./simulations/StrategieSynthese"), "SimulationStrategieSynthese");
+const SimulationChaineCarbonee = paresseux(() => import("./simulations/ChaineCarbonee"), "SimulationChaineCarbonee");
 const SimulationTransfertsH = paresseux(() => import("./simulations/TransfertsH"), "SimulationTransfertsH");
 const SimulationIncertitudesComposees = paresseux(() => import("./simulations/IncertitudesComposees"), "SimulationIncertitudesComposees");
 const SimulationEquationsDesintegration = paresseux(() => import("./simulations/EquationsDesintegration"), "SimulationEquationsDesintegration");
@@ -367,6 +368,7 @@ const SIMULATIONS = [
   { id:175, label:"Mouvement dans un champ de pesanteur uniforme : équations horaires et trajectoire", niveau:"TG", icon:"🏀", color:"#c2410c", component: SimulationPesanteur },
   { id:189, label:"Optimiser une synthèse : vitesse et rendement", niveau:"TG", icon:"⚗️", color:"#0f766e", component: SimulationOptimisationRendement },
   { id:210, label:"Stratégie de synthèse multi-étapes", niveau:"TG", icon:"🧩", color:"#7c3aed", component: SimulationStrategieSynthese },
+  { id:241, label:"Modifier la chaîne carbonée", niveau:"TG", icon:"⛓️", color:"#7c3aed", component: SimulationChaineCarbonee },
   { id:186, label:"Mécanismes réactionnels et flèches courbes", niveau:"TG", icon:"🏹", color:"#7c3aed", component: SimulationMecanismesTG },
   { id:187, label:"Facteurs cinétiques, catalyse et capteurs", niveau:"TG", icon:"🧪", color:"#0f766e", component: SimulationFacteursCinetiques },
   { id:188, label:"Transferts de H⁺ : acides, amines, Lewis", niveau:"TG", icon:"🍋", color:"#0e7490", component: SimulationTransfertsH },

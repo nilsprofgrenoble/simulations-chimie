@@ -137,6 +137,7 @@ export const EXOS_DE_SIM = {
   211: [/(^|\.)isn-/, /plausible\.isn-/],                                                                              // Intensité sonore, niveau d’intensité et atténuation (TG)
   189: [/(^|\.)opt-/, /plausible\.opt-/],                                                                           // Optimiser une étape de synthèse : vitesse et rendement (TG)
   210: [/(^|\.)str-/, /plausible\.str-/],                                                                           // Stratégie de synthèse multi-étapes, protection, synthèse écoresponsable (TG)
+  241: [/(^|\.)chc-/, /plausible\.chc-/],   // Modifier la chaîne carbonée : allongement, ramification, raccourcissement (TG)
   188: [/(^|\.)brn-/, /plausible\.brn-/],   // Transferts de H⁺ : acides carboxyliques, amines (TG)
   186: [/(^|\.)mrx-/, /plausible\.mrx-/],   // Mécanismes réactionnels et flèches courbes (TG)
   187: [/(^|\.)cin-/, /plausible\.cin-/],    // Facteurs cinétiques, catalyse et choix d’un capteur (TG)

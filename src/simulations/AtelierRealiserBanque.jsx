@@ -20,6 +20,7 @@ import * as SV from "./savonModele";
 import * as DM from "./dissolutionModele";
 import { tirageCalcul as tirageMecanismesTG } from "./mrxExos";
 import { tirageCalcul as tirageStrategieTG } from "./strExos";
+import { tirageCalcul as tirageChaineCTG } from "./chcExos";
 import { tirageCalcul as tirageTransfertsHTG } from "./brnExos";
 import * as ME from "./mesureModele";
 import * as CM from "./combustionModele";
@@ -4164,6 +4165,9 @@ function genMecanismesTG() { const e = tirageMecanismesTG(tire); e.questions.for
 // ───────── Stratégie de synthèse (TG, sim 210) : tirage pur dans strExos.js (testé par strExos.test.mjs) ─────────
 function genStrategieTG() { const e = tirageStrategieTG(tire); e.questions.forEach(q => { q.expl = <>{avecIndices(q.expl)}</>; }); return e; }
 
+// ───────── Modifier la chaîne carbonée (TG, sim 241) : tirage pur dans chcExos.js (testé par chcExos.test.mjs) ─────────
+function genChaineCTG() { const e = tirageChaineCTG(tire); e.questions.forEach(q => { q.expl = <>{avecIndices(q.expl)}</>; }); return e; }
+
 // ───────── Transferts de H⁺ (TG, sim 188) : tirage pur dans brnExos.js (testé par brnExos.test.mjs) ─────────
 function genTransfertsHTG() { const e = tirageTransfertsHTG(tire); e.questions.forEach(q => { q.expl = <>{avecIndices(q.expl)}</>; }); return e; }
 
@@ -5317,6 +5321,7 @@ export const FAMILLES = [
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'opt-calcul', groupe: 'Formules', titre: 'Optimiser une synthèse : rendement, quotient de réaction Qr, retrait d’un produit et ajout de réactif (TG)', gen: genOptimisationTG, domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement' },
   { id: 'str-calcul', groupe: 'Formules', titre: 'Stratégie de synthèse : rendement global, quantité de produit final et déchets (TG)', gen: genStrategieTG, domaine: 'Stratégie de synthèse multi-étapes et synthèses écoresponsables' },
+  { id: 'chc-calcul', groupe: 'Formules', titre: 'Modifier la chaîne carbonée : atomes de carbone d’un produit, rendement global, masse de produit et masse de réactif (TG)', gen: genChaineCTG, domaine: 'Modification de la chaîne carbonée' },
   { id: 'mrx-calcul', groupe: 'Formules', titre: 'Mécanismes réactionnels : atomes d’un acte, chocs efficaces, part efficace et bilan d’un mécanisme (TG)', gen: genMecanismesTG, domaine: 'Mécanismes réactionnels et flèches courbes' },
   { id: 'brn-calcul', groupe: 'Formules', titre: 'Transferts de H⁺ : électrons de valence, doublets, doublets non liants et charge dans une équation acide-base (TG)', gen: genTransfertsHTG, domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées' },
   { id: 'itt-calcul', groupe: 'Formules', titre: 'Test 3ITT : régénération en % (M1), viscosité cible et temps de régénération (M2), pente de la viscosité (M3) (BTS)', gen: genTroisITTBTS, domaine: 'Rhéologie' },
