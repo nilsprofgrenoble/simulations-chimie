@@ -2573,5 +2573,14 @@
  "77:plausible:sgn-val-bilan": "VAL694",
  "77:plausible:sgn-val-signe": "VAL695",
  "36:sgn-bloc": "REA152",
- "36:sgn-four": "REA153"
+ "36:sgn-four": "REA153",
+ "37:prevoir:mdisp-ana-phases": "ANA1179",
+ "37:prevoir:mdisp-ana-fumee": "ANA1180",
+ "37:prevoir:mdisp-ana-beurre": "ANA1181",
+ "37:prevoir:mdisp-ana-case-gaz": "ANA1182",
+ "37:prevoir:mdisp-ana-vdw": "ANA1183",
+ "37:prevoir:mdisp-ana-solide-stable": "ANA1184",
+ "77:plausible:mdisp-val-brouillard": "VAL696",
+ "77:plausible:mdisp-val-colloide": "VAL697",
+ "77:plausible:mdisp-val-floc-coal": "VAL698"
 }

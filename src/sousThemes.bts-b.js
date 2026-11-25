@@ -88,19 +88,27 @@ export default {
       refs: [...A('disp-ana-optimum', 'rheo-ana-flow-point'), ...VV('rheo-val-defloc-optimum')] },
   ],
 
-  // ───────────────────────── S7 · Formulation : milieux dispersés, tensioactifs, mouillage ─────────────────────────
-  'bts-tensioactifs': [
-    { id: 'familles', nom: 'Familles de tensioactifs et charge selon le pH', capacite: 'Tensioactifs, différentes familles (cationiques, anioniques, amphotères, non ioniques) : expliquer le rôle émulsifiant d’un tensioactif et prévoir sa charge selon le pH.',
-      refs: [...A('tens-ana-famille', 'chtens-ana-sulfate', 'chtens-ana-savon', 'chtens-ana-cationique', 'chtens-ana-betaine', 'chtens-ana-nonionique', 'chtens-ana-emulsion', 'chtens-ana-ecriture-na', 'chtens-ana-ecriture-br', 'chtens-ana-contre-ion'),
-        ...VV('chtens-val-savon-amphotere', 'chtens-val-nonionique-ph', 'chtens-val-sel-amphotere')] },
-    { id: 'cmc', nom: 'Micelles et concentration micellaire critique', capacite: 'Concentration micellaire critique : évaluer la CMC par conductimétrie ou par tensiométrie ; distinguer monomères libres et micelles.',
-      refs: [...S('tens-libres', 'tens-micelles'), ...A('tens-ana-plateau', 'tens-ana-conducti', 'tens-ana-chaine', 'tens-ana-tete'), ...VV('tens-val-monomeres', 'tens-val-micelles'), ...R('tens-libres-micelles')] },
+  // ───────────────────────── S7 · Formulation : qu'est-ce qu'un milieu dispersé ? ─────────────────────────
+  'bts-milieux-disperses': [
+    { id: 'types', nom: 'Les types de milieux dispersés', capacite: 'Distinguer les différents types de milieux dispersés (émulsion, suspension, mousse, aérosol, formes solides) selon l’état de la phase dispersée et de la phase continue.',
+      refs: [...A('mdisp-ana-phases', 'mdisp-ana-fumee', 'mdisp-ana-beurre', 'mdisp-ana-case-gaz'), ...VV('mdisp-val-brouillard', 'mdisp-val-colloide')] },
+    { id: 'causes', nom: 'Problèmes de stabilité et causes d’instabilité', capacite: 'Identifier les problèmes liés à l’instabilité des milieux dispersés (crémage, sédimentation, floculation, coalescence) et en identifier les causes (masse volumique, taille, viscosité, forces de van der Waals).',
+      refs: [...A('mdisp-ana-vdw', 'mdisp-ana-solide-stable'), ...VV('mdisp-val-floc-coal')] },
     { id: 'sens', nom: 'Sens d’une émulsion et épaississement', capacite: 'Identifier expérimentalement le sens d’une émulsion (E/H ou H/E) ; distinguer les différents types de milieux dispersés.',
       refs: [...A('semul-ana-dilution', 'semul-ana-conduct-forte', 'semul-ana-conduct-faible', 'semul-ana-rouge-soudan', 'semul-ana-deux-colorants', 'semul-ana-epaissir-sauce', 'semul-ana-epaissir-eh', 'semul-ana-diluer-lotion', 'semul-ana-fraction', 'semul-ana-limite'),
         ...VV('semul-val-conduct-faible', 'semul-val-epaissir-eh', 'semul-val-violet', 'semul-val-dilution-eau')] },
     { id: 'instabilites', nom: 'Les instabilités d’une émulsion', capacite: 'Coalescence, crémage, floculation, sédimentation : identifier les problèmes liés à l’instabilité des milieux dispersés et en identifier les causes.',
       refs: [...A('inst-ana-cremage-haut', 'inst-ana-stokes-rayon', 'inst-ana-stokes-viscosite', 'inst-ana-sedimentation', 'inst-ana-floculation', 'inst-ana-coalescence', 'inst-ana-coal-volume', 'inst-ana-ostwald', 'inst-ana-remede-coalescence', 'inst-ana-remede-ostwald'),
         ...VV('inst-val-stokes-diametre', 'inst-val-agitation-coalescence', 'inst-val-cremage-duree', 'inst-val-viscosite-duree')] },
+  ],
+
+  // ───────────────────────── S7 · Formulation : tensioactifs, mouillage ─────────────────────────
+  'bts-tensioactifs': [
+    { id: 'familles', nom: 'Familles de tensioactifs et charge selon le pH', capacite: 'Tensioactifs, différentes familles (cationiques, anioniques, amphotères, non ioniques) : expliquer le rôle émulsifiant d’un tensioactif et prévoir sa charge selon le pH.',
+      refs: [...A('tens-ana-famille', 'chtens-ana-sulfate', 'chtens-ana-savon', 'chtens-ana-cationique', 'chtens-ana-betaine', 'chtens-ana-nonionique', 'chtens-ana-emulsion', 'chtens-ana-ecriture-na', 'chtens-ana-ecriture-br', 'chtens-ana-contre-ion'),
+        ...VV('chtens-val-savon-amphotere', 'chtens-val-nonionique-ph', 'chtens-val-sel-amphotere')] },
+    { id: 'cmc', nom: 'Micelles et concentration micellaire critique', capacite: 'Concentration micellaire critique : évaluer la CMC par conductimétrie ou par tensiométrie ; distinguer monomères libres et micelles.',
+      refs: [...S('tens-libres', 'tens-micelles'), ...A('tens-ana-plateau', 'tens-ana-conducti', 'tens-ana-chaine', 'tens-ana-tete'), ...VV('tens-val-monomeres', 'tens-val-micelles'), ...R('tens-libres-micelles')] },
     { id: 'hlb', nom: 'HLB requis et mélange d’émulsifiants', capacite: 'Notion de balance hydrophile-lipophile (HLB) : évaluer la composition d’un mélange d’émulsifiants par la méthode du RHLB (HLB requis).',
       refs: [...A('hlb-ana-lipophile', 'hlb-ana-choix-seul', 'hlb-ana-rhlb-melange', 'hlb-ana-hlb-melange', 'hlb-ana-equilibre', 'hlb-ana-fraction', 'hlb-ana-hors-portee', 'hlb-ana-trop-lipophile', 'hlb-ana-sens', 'hlb-ana-limites'),
         ...VV('hlb-val-moyenne-simple', 'hlb-val-melange-ok', 'hlb-val-fraction-inversee', 'hlb-val-hors-intervalle', 'for-hlb-melange-ok')] },
