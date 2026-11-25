@@ -1968,5 +1968,19 @@
  "77:plausible:inst-val-stokes-diametre": "VAL533",
  "77:plausible:inst-val-agitation-coalescence": "VAL534",
  "77:plausible:inst-val-cremage-duree": "VAL535",
- "77:plausible:inst-val-viscosite-duree": "VAL536"
+ "77:plausible:inst-val-viscosite-duree": "VAL536",
+ "37:prevoir:hlb-ana-lipophile": "ANA803",
+ "37:prevoir:hlb-ana-choix-seul": "ANA804",
+ "37:prevoir:hlb-ana-rhlb-melange": "ANA805",
+ "37:prevoir:hlb-ana-hlb-melange": "ANA806",
+ "37:prevoir:hlb-ana-equilibre": "ANA807",
+ "37:prevoir:hlb-ana-fraction": "ANA808",
+ "37:prevoir:hlb-ana-hors-portee": "ANA809",
+ "37:prevoir:hlb-ana-trop-lipophile": "ANA810",
+ "37:prevoir:hlb-ana-sens": "ANA811",
+ "37:prevoir:hlb-ana-limites": "ANA812",
+ "77:plausible:hlb-val-moyenne-simple": "VAL537",
+ "77:plausible:hlb-val-melange-ok": "VAL538",
+ "77:plausible:hlb-val-fraction-inversee": "VAL539",
+ "77:plausible:hlb-val-hors-intervalle": "VAL540"
 }
