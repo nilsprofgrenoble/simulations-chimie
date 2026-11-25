@@ -1,0 +1,61 @@
+// ═══════════════════════════════════════════════════════════════════════════
+//  SOUS-THÈMES des chapitres de Terminale spécialité « tg-images-photons », « tg-circuit-rc », « tg-gaz-parfait » et « tg-bilans-energie ».
+//  Même structure que SOUS_THEMES (voir sousThemes.js) ; à intégrer dans SOUS_THEMES. Un sous-thème = une capacité exigible du programme (texte officiel reformulé).
+//  Un exercice figure dans UN seul sous-thème. « 34:id.q » désigne une seule question d'un énoncé S'APP.
+// ═══════════════════════════════════════════════════════════════════════════
+export default {
+  'tg-images-photons': [
+    { id: 'lunette-faisceau', nom: 'Schéma d’une lunette et faisceau émergent', capacite: 'Représenter le schéma d’une lunette afocale (deux lentilles convergentes) ; identifier l’objectif et l’oculaire ; représenter le faisceau issu d’un point objet à l’infini qui la traverse.',
+      refs: ['37:prevoir:lun-ana-identifier', '37:prevoir:lun-ana-hors-axe', '37:prevoir:lun-ana-emergent'] },
+    { id: 'lunette-grossissement', nom: 'Le grossissement d’une lunette', capacite: 'Établir et exploiter l’expression du grossissement d’une lunette afocale : rapport des distances focales de l’objectif et de l’oculaire.',
+      refs: ['34:lun-sapp-fiche.0', '37:prevoir:lun-ana-image-intermediaire', '37:prevoir:lun-ana-oculaire-court', '77:plausible:lun-val-g-inverse', '36:lun-calcul'] },
+    { id: 'lunette-commerciale', nom: 'La fiche d’une lunette du commerce', capacite: 'Exploiter les données caractéristiques d’une lunette commerciale (diamètre et distance focale de l’objectif, distance focale de l’oculaire).',
+      refs: ['34:lun-sapp-fiche.1', '37:prevoir:lun-ana-diametre', '77:plausible:lun-val-fiche-ok'] },
+    { id: 'photoelectrique', nom: 'L’effet photoélectrique', capacite: 'Interpréter l’effet photoélectrique avec le modèle particulaire de la lumière ; établir par un bilan d’énergie la relation entre l’énergie cinétique des électrons éjectés et la fréquence.',
+      refs: ['37:prevoir:pho-ana-seuil', '37:prevoir:pho-ana-intensite', '37:prevoir:pho-ana-frequence', '77:plausible:pho-val-energie-photon', '77:plausible:pho-val-ec-ok'] },
+    { id: 'photovoltaique', nom: 'Photons et cellule photovoltaïque', capacite: 'Citer des applications de l’interaction photon-matière (capteurs, cellules photovoltaïques, DEL…) ; déterminer le rendement d’une cellule photovoltaïque.',
+      refs: ['37:prevoir:pho-ana-applications', '34:pho-sapp-panneau', '77:plausible:pho-val-rendement', '77:plausible:pho-val-rendement-ok'] },
+  ],
+  'tg-circuit-rc': [
+    { id: 'courant', nom: 'Intensité du courant et charge', capacite: 'Relier l’intensité d’un courant électrique au débit de charges, en régime variable.',
+      refs: ['37:relation:rc-rel-intensite', '77:plausible:rc-val-debit-charges'] },
+    { id: 'condensateur', nom: 'Le condensateur : charge, tension, capacité', capacite: 'Identifier un comportement capacitif ; exploiter la relation entre charge et tension ; citer des ordres de grandeur de capacités usuelles.',
+      refs: ['37:prevoir:rc-ana-comportement', '37:prevoir:rc-ana-charge-tension', '77:plausible:rc-val-capacite'] },
+    { id: 'charge', nom: 'La charge d’un condensateur', capacite: 'Établir et résoudre l’équation différentielle vérifiée par la tension aux bornes d’un condensateur lors de sa charge par une source idéale de tension.',
+      refs: ['37:hypothese:rc-hyp-modele', '37:relation:rc-rel-equation', '34:rc-sapp-circuit.1', '37:prevoir:rc-ana-resistance', '37:prevoir:rc-ana-stationnaire', '77:plausible:rc-val-63', '36:rc-calcul'] },
+    { id: 'decharge', nom: 'La décharge d’un condensateur', capacite: 'Établir et résoudre l’équation différentielle vérifiée par la tension aux bornes d’un condensateur lors de sa décharge ; interpréter le signe de l’intensité.',
+      refs: ['37:prevoir:rc-ana-signe', '77:plausible:rc-val-decharge'] },
+    { id: 'tau', nom: 'Le temps caractéristique τ = R × C', capacite: 'Déterminer et exploiter le temps caractéristique d’un dipôle RC.',
+      refs: ['34:rc-sapp-circuit.0', '37:prevoir:rc-ana-decharge-capacite', '77:plausible:rc-val-unite-tau'] },
+    { id: 'capteurs', nom: 'Les capteurs capacitifs', capacite: 'Expliquer le principe de fonctionnement de quelques capteurs capacitifs ; étudier la réponse d’un dispositif modélisé par un dipôle RC.',
+      refs: ['37:prevoir:rc-ana-capteur-niveau', '37:prevoir:rc-ana-capteur-tau'] },
+  ],
+  'tg-gaz-parfait': [
+    { id: 'modele', nom: 'Le modèle du gaz parfait', capacite: 'Relier qualitativement les grandeurs macroscopiques (pression, température) aux propriétés microscopiques du gaz ; connaître les hypothèses du modèle.',
+      refs: ['37:hypothese:gpf-hyp-modele', '37:prevoir:gpf-ana-micro-pression', '37:prevoir:gpf-ana-micro-temperature'] },
+    { id: 'etat', nom: 'L’équation d’état P·V = n·R·T', capacite: 'Exploiter l’équation d’état du gaz parfait pour décrire le comportement d’un gaz (pression, volume, température, quantité de matière).',
+      refs: ['34:gpf-sapp-ballon.0', '37:prevoir:gpf-ana-chauffage', '37:prevoir:gpf-ana-piston', '77:plausible:gpf-val-volume', '77:plausible:gpf-val-bouteille', '36:gpf-calcul'] },
+    { id: 'masse-volumique', nom: 'La masse volumique d’un gaz', capacite: 'Exploiter l’équation d’état pour exprimer et prévoir la masse volumique d’un gaz.',
+      refs: ['34:gpf-sapp-ballon.1', '37:prevoir:gpf-ana-ballon', '77:plausible:gpf-val-masse-volumique'] },
+    { id: 'limites', nom: 'Les limites du modèle', capacite: 'Identifier quelques limites du modèle du gaz parfait (haute pression, liquéfaction).',
+      refs: ['37:prevoir:gpf-ana-limites-volume', '37:prevoir:gpf-ana-limites-liquefaction', '77:plausible:gpf-val-limites-co2'] },
+  ],
+  'tg-bilans-energie': [
+    { id: 'energie-interne', nom: 'L’énergie interne d’un système', capacite: 'Citer les différentes contributions microscopiques à l’énergie interne d’un système (énergie cinétique d’agitation, énergie potentielle d’interaction).',
+      refs: ['37:prevoir:pp1-ana-contributions', '37:prevoir:pp1-ana-gaz-contribution', '77:plausible:pp1-val-fusion'] },
+    { id: 'premier-principe', nom: 'Le premier principe : ΔU = W + Q', capacite: 'Distinguer, dans un bilan d’énergie, la variation d’énergie du système et les transferts d’énergie (travail, transfert thermique) ; prévoir le sens d’un transfert thermique.',
+      refs: ['34:pp1-sapp-bloc.0', '37:prevoir:pp1-ana-sens', '37:prevoir:pp1-ana-pale', '37:prevoir:pp1-ana-distinguer', '77:plausible:pp1-val-signe'] },
+    { id: 'incompressible', nom: 'Système incompressible : ΔU = C × ΔT', capacite: 'Exploiter la variation d’énergie interne d’un système incompressible en fonction de sa capacité thermique et de sa variation de température pour effectuer un bilan énergétique.',
+      refs: ['34:pp1-sapp-bloc.1', '37:prevoir:pp1-ana-masse', '37:hypothese:chauffage', '37:prevoir:masse', '77:plausible:pp1-val-chauffage', '77:plausible:pp1-val-temperature', '77:plausible:chauffer-eau', '77:plausible:chauffer-eau-faux', '77:plausible:melange', '77:plausible:melange-3', '36:pp1-calcul'] },
+    { id: 'transferts', nom: 'Modes de transfert, flux et résistance thermique', capacite: 'Caractériser qualitativement conduction, convection et rayonnement ; exploiter la relation entre flux thermique, résistance thermique et écart de température.',
+      refs: ['37:prevoir:tht-ana-modes', '37:prevoir:tht-ana-thermos', '77:plausible:tht-val-flux', '34:paroi', '37:relation:vitrage', '37:hypothese:paroi', '37:prevoir:epaisseur', '37:prevoir:surface', '37:prevoir:therm-prev-serie', '77:plausible:therm-lambda-faux'] },
+    { id: 'terre', nom: 'Bilan thermique de la Terre et effet de serre', capacite: 'Effectuer un bilan d’énergie pour estimer la température moyenne de la Terre (loi de Stefan-Boltzmann donnée) ; discuter l’influence de l’albédo et de l’effet de serre.',
+      refs: ['34:ter-sapp-bilan', '37:prevoir:ter-ana-albedo', '37:prevoir:ter-ana-serre', '77:plausible:ter-val-temperature'] },
+    { id: 'newton-modele', nom: 'La loi de Newton : flux et équation', capacite: 'Effectuer un bilan d’énergie pour un système incompressible échangeant de l’énergie avec un thermostat (loi de Newton fournie) et en déduire l’équation différentielle.',
+      refs: ['34:thm-sapp-tasse.1', '37:prevoir:thm-ana-flux', '37:relation:thm-rel-equation', '37:hypothese:thm-hyp-newton'] },
+    { id: 'newton-tau', nom: 'Le temps caractéristique du refroidissement', capacite: 'Exploiter le temps caractéristique τ = C / (h × S) d’un système au contact d’un thermostat ; prévoir son effet sur l’évolution de la température.',
+      refs: ['34:thm-sapp-tasse.0', '37:prevoir:thm-ana-masse', '37:prevoir:thm-ana-pieces', '77:plausible:thm-val-unite'] },
+    { id: 'newton-temperature', nom: 'La température au cours du temps', capacite: 'Établir l’expression de la température en fonction du temps et suivre l’évolution de la température d’un système incompressible.',
+      refs: ['37:relation:thm-rel-solution', '77:plausible:thm-val-fin', '77:plausible:thm-val-chauffage', '35:bouilloire', '36:thm-calcul'] },
+  ],
+};
