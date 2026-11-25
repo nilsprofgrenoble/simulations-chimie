@@ -79,9 +79,12 @@ export function sci(x, sig = 3) {
   return fmt(x, Math.max(0, Math.min(4, sig - 1 - e)));
 }
 // Lit un nombre saisi : « 1,26 », « 1,26e-3 », « 1,26×10⁻³ », « 1,26x10^-3 »
+// Normalise la saisie : espaces, signe moins, exposants en chiffres, « · » ou « . » (après une virgule) pris pour le signe ×
+const normaliserSaisie = s => String(s ?? '').replace(/\s/g, '').replace(/[−–]/g, '-')
+  .replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, m => '^' + m.replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]/g, ch => (ch === '⁻' ? '-' : String('⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(ch)))))
+  .replace(/[·⋅∙•]10/g, '×10').replace(/^([^.]*,[^.]*)\.10/, '$1×10').replace(/^(\d*\.\d+)\.10/, '$1×10');
 export const lireNombre = s => {
-  const t = String(s ?? '').replace(/\s/g, '').replace(/[−–]/g, '-').replace(/[⁻⁰¹²³⁴⁵⁶⁷⁸⁹]/g, ch => (ch === '⁻' ? '-' : String('⁰¹²³⁴⁵⁶⁷⁸⁹'.indexOf(ch))))
-    .replace(',', '.').replace(/(?:×|x|\*)10\^?(-?\d+)/i, 'e$1');
+  const t = normaliserSaisie(s).replace(',', '.').replace(/(?:×|x|\*)10\^?(-?\d+)/i, 'e$1');
   return parseFloat(t);
 };
 export const proche = (a, b, tol) => Math.abs(a - b) <= Math.abs(b) * tol;
@@ -97,7 +100,7 @@ export const accepte = (x, rep, vrai, tol) => {
 };
 // Nombre de chiffres significatifs d'une valeur saisie (« 1,26e-3 » → 3 ; « 0,00126 » → 3 ; « 1850 » → 3)
 export const nbCS = s => {
-  const t = String(s ?? '').replace(/\s/g, '').replace(/[−–]/g, '-').replace(',', '.').replace(/(?:×|x|\*)10\^?(-?\d+)/i, 'e$1');
+  const t = normaliserSaisie(s).replace(',', '.').replace(/(?:×|x|\*)10\^?(-?\d+)/i, 'e$1');
   const m = t.match(/^[+-]?(\d*\.?\d*)(?:e[+-]?\d+)?$/i);
   if (!m) return 0;
   let d = m[1];
