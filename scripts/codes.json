@@ -2591,5 +2591,20 @@
  "77:plausible:cel-val-longueur": "VAL699",
  "77:plausible:cel-val-rendement": "VAL700",
  "77:plausible:cel-val-puissance": "VAL701",
- "36:cel-calcul": "REA154"
+ "36:cel-calcul": "REA154",
+ "34:chc-sapp-carbone.0": "SAPP552",
+ "34:chc-sapp-carbone.1": "SAPP553",
+ "34:chc-sapp-masse.0": "SAPP554",
+ "34:chc-sapp-masse.1": "SAPP555",
+ "37:prevoir:chc-ana-cyanure": "ANA1188",
+ "37:prevoir:chc-ana-nitrile": "ANA1189",
+ "37:prevoir:chc-ana-liaison": "ANA1190",
+ "37:prevoir:chc-ana-ramification": "ANA1191",
+ "37:prevoir:chc-ana-coupure": "ANA1192",
+ "37:prevoir:chc-ana-tertiaire": "ANA1193",
+ "77:plausible:chc-val-comptage": "VAL702",
+ "77:plausible:chc-val-sequence": "VAL703",
+ "77:plausible:chc-val-ok": "VAL704",
+ "77:plausible:chc-val-tertiaire": "VAL705",
+ "36:chc-calcul": "REA155"
 }

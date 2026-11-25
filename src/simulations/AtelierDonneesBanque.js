@@ -4944,6 +4944,52 @@ export const ENONCES = [
         manque: null, solution: { txt: 'déchets totaux = déchets de l’étape 1 + déchets de l’étape 2', val: p.k1 + p.k2, u: 'kg' } };
     }),
   },
+  // ───────────────────────────── Modification de la chaîne carbonée (TG, sim 241)
+  {
+    id: 'chc-sapp-carbone', domaine: 'Modification de la chaîne carbonée', titre: 'Atomes de carbone du produit d’une addition d’organomagnésien : quelles données utiliser ?', noms: ['Atomes de carbone de l’alcool formé', 'Atomes de carbone perdus ou gagnés par rapport au bromoalcane'],
+    gen: () => ({ n1: tire([2, 3, 4]), n2: tire([2, 3, 4]), e1: tire([80, 85, 90]), e2: tire([60, 65, 70, 75]), T: tire([20, 25, 35]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        n1: tok(`${p.n1} atomes de carbone`, 'Atomes de carbone du bromoalcane R–Br (groupe R)', p.n1, ''),
+        n2: tok(`${p.n2} atomes de carbone`, 'Atomes de carbone du composé carbonylé', p.n2, ''),
+        e1: tok(`${p.e1} %`, 'Rendement de la formation de l’organomagnésien', p.e1, '%'),
+        e2: tok(`${p.e2} %`, 'Rendement de l’addition suivie de l’hydrolyse', p.e2, '%'),
+        T: tok(`${p.T} °C`, 'Température de l’addition', p.T, '°C'),
+      };
+      const debut = ['Un bromoalcane R–Br dont le groupe R compte ', T('n1'), ' est transformé en organomagnésien (rendement ', T('e1'), '). Celui-ci réagit à ', T('T'), ' avec un composé carbonylé de ', T('n2'), ', puis on hydrolyse (rendement ', T('e2'), '). '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Combien d’atomes de carbone compte l’alcool formé ?'],
+        utiles: ['n1', 'n2'], raisons: { e1: 'Un rendement dit quelle part des réactifs est transformée, pas combien d’atomes de carbone contient le produit.', e2: 'Un rendement dit quelle part des réactifs est transformée, pas combien d’atomes de carbone contient le produit.', T: 'La température de la réaction ne change pas le nombre d’atomes de carbone du produit.' },
+        cherche: { bonne: 'Le nombre d’atomes de carbone de l’alcool formé', faux: ['Le rendement global de la synthèse (en %)', 'Le nombre d’atomes de carbone du bromoalcane seul', 'Le nombre de liaisons C–C du composé carbonylé'] },
+        manque: null, solution: { txt: 'nombre d’atomes de carbone du produit = atomes de carbone du groupe R + atomes de carbone du composé carbonylé (la nouvelle liaison C–C réunit les deux squelettes)', val: p.n1 + p.n2, u: 'atomes de carbone' } };
+      return { tokens, derivees: [], texte: [...debut, 'Combien d’atomes de carbone l’alcool compte-t-il de plus que le groupe R du bromoalcane ?'],
+        utiles: ['n2'], raisons: { n1: 'On cherche un écart par rapport à R : le nombre d’atomes de carbone de R n’est pas la donnée utile, c’est celui du composé carbonylé qui s’ajoute.', e1: 'Un rendement ne dit rien du nombre d’atomes de carbone.', e2: 'Un rendement ne dit rien du nombre d’atomes de carbone.', T: 'La température ne change pas le nombre d’atomes de carbone du produit.' },
+        cherche: { bonne: 'Le nombre d’atomes de carbone gagnés par R', faux: ['Le nombre total d’atomes de carbone de l’alcool formé', 'Le rendement global de la synthèse (en %)', 'Le nombre d’atomes de carbone du bromoalcane'] },
+        manque: null, solution: { txt: 'atomes de carbone gagnés = atomes de carbone du composé carbonylé (ils s’ajoutent au groupe R, conservé)', val: p.n2, u: 'atomes de carbone' } };
+    }),
+  },
+  {
+    id: 'chc-sapp-masse', domaine: 'Modification de la chaîne carbonée', titre: 'Masse de butan-2-ol obtenue en deux étapes : quelles données utiliser ?', noms: ['Masse de butan-2-ol obtenue', 'Rendement global de la synthèse'],
+    gen: () => ({ n0: tire([0.20, 0.25, 0.40, 0.50]), e1: tire([80, 85, 90]), e2: tire([60, 65, 70, 75]), T: tire([20, 25, 35]) }),
+    build: epure((p, q) => {
+      const d2 = x => Number(x).toFixed(2).replace('.', ',');
+      const tokens = {
+        n0: tok(`${d2(p.n0)} mol`, 'Quantité de bromoéthane de départ', p.n0, 'mol'),
+        e1: tok(`${p.e1} %`, 'Rendement de la formation de l’organomagnésien', p.e1, '%'),
+        e2: tok(`${p.e2} %`, 'Rendement de l’addition de l’éthanal suivie de l’hydrolyse', p.e2, '%'),
+        M: tok('74,1 g/mol', 'Masse molaire du butan-2-ol', 74.1, 'g/mol'),
+        T: tok(`${p.T} °C`, 'Température de l’addition', p.T, '°C'),
+      };
+      const debut = ['On part de ', T('n0'), ' de bromoéthane. Il est transformé en organomagnésien (rendement ', T('e1'), '), qui réagit à ', T('T'), ' avec l’éthanal ; après hydrolyse (rendement ', T('e2'), '), on obtient du butan-2-ol de masse molaire ', T('M'), '. Les coefficients stœchiométriques valent tous 1. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle masse de butan-2-ol obtient-on ?'],
+        utiles: ['n0', 'e1', 'e2', 'M'], raisons: { T: 'La température de l’addition n’intervient pas dans le calcul d’une masse de produit.' },
+        cherche: { bonne: 'La masse de butan-2-ol obtenue (en g)', faux: ['Le rendement global de la synthèse (en %)', 'La quantité de butan-2-ol obtenue à la première étape (en mol)', 'Le nombre d’atomes de carbone du butan-2-ol'] },
+        manque: null, solution: { txt: 'm = n départ × η₁ × η₂ × M (rendements écrits entre 0 et 1, coefficients égaux à 1)', val: p.n0 * p.e1 * p.e2 / 10000 * 74.1, u: 'g' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le rendement global de la synthèse ?'],
+        utiles: ['e1', 'e2'], raisons: { n0: 'La quantité de départ sert à calculer une quantité de produit, pas un rendement.', M: 'La masse molaire sert à convertir une quantité en masse, pas à calculer un rendement.', T: 'La température de l’addition n’intervient pas dans le calcul d’un rendement global.' },
+        cherche: { bonne: 'Le rendement global de la synthèse (en %)', faux: ['La masse de butan-2-ol obtenue (en g)', 'Le rendement moyen des deux étapes (en %)', 'La quantité de butan-2-ol obtenue (en mol)'] },
+        manque: null, solution: { txt: 'η global = η₁ × η₂, les rendements étant écrits comme des nombres compris entre 0 et 1', val: p.e1 * p.e2 / 100, u: '%' } };
+    }),
+  },
   // ───────────────────────────── Facteurs cinétiques, catalyse et choix d’un capteur (TG, sim 187)
   {
     id: 'cin-sapp-temperature', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Deux expériences à deux températures', noms: ['Rapport des temps de demi-réaction', 'Durée gagnée pour atteindre la demi-réaction'],

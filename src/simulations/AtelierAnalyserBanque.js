@@ -7008,6 +7008,49 @@ export const PREVOIR = [
       F('utiliser le réactif en grand excès pour assurer la réaction', 'L’excès de réactif devient un déchet à traiter ; à rendement égal, c’est une dégradation de l’impact.'),
       F('chauffer davantage pour raccourcir la durée de la synthèse', 'Chauffer plus consomme plus d’énergie et ne change rien à la toxicité du solvant : l’impact environnemental ne diminue pas.'),
     ] },
+  // ───────────────────────────── Modification de la chaîne carbonée (TG, sim 241)
+  { id: 'chc-ana-cyanure', domaine: 'Modification de la chaîne carbonée', titre: 'Un groupe cyano qui s’ajoute à la chaîne',
+    enonce: 'Le bromoéthane CH₃CH₂Br réagit avec les ions cyanure CN⁻ (dans l’éthanol, à chaud) : CH₃CH₂Br + CN⁻ → CH₃CH₂CN + Br⁻. Le produit est le propanenitrile.', q: 'Quel est l’effet de cette réaction sur la chaîne carbonée ?', options: [
+      V('la chaîne est allongée d’un atome de carbone', 'Le carbone du groupe cyano se lie au carbone qui portait l’atome Br : une liaison C–C se forme. On passe de 2 à 3 atomes de carbone.'),
+      F('la chaîne est inchangée : seul l’atome Br est remplacé par un autre groupe', 'Le groupe –C≡N qui remplace Br contient lui-même un atome de carbone : il prolonge la chaîne, qui passe de 2 à 3 atomes de carbone.'),
+      F('la chaîne est raccourcie d’un atome de carbone', 'Aucun atome de carbone n’est perdu : l’atome Br part sous forme d’ion bromure, et un atome de carbone est apporté par CN⁻.'),
+      F('la chaîne est ramifiée : CN⁻ forme une branche', 'Le carbone du groupe cyano se lie au bout de la chaîne : le produit CH₃CH₂CN reste une chaîne linéaire de 3 atomes de carbone, sans ramification.'),
+    ] },
+  { id: 'chc-ana-nitrile', domaine: 'Modification de la chaîne carbonée', titre: 'Réduire un nitrile : et la chaîne ?',
+    enonce: 'Le propanenitrile CH₃CH₂C≡N est réduit par LiAlH₄ (dans l’éther anhydre, puis ajout d’eau) en propan-1-amine CH₃CH₂CH₂NH₂.', q: 'Combien d’atomes de carbone la chaîne compte-t-elle avant et après la réaction ?', options: [
+      V('3 avant et 3 après : la chaîne est inchangée', 'La triple liaison C≡N devient une liaison simple C–N et le groupe NH₂ apparaît, mais aucune liaison C–C n’est formée ni rompue : 3 atomes de carbone avant et après.'),
+      F('3 avant et 4 après : l’atome d’azote s’ajoute à la chaîne carbonée', 'L’azote n’est pas un atome de carbone : il appartient au groupe caractéristique, pas à la chaîne carbonée, qui compte toujours 3 atomes de carbone.'),
+      F('3 avant et 2 après : le carbone du groupe nitrile est perdu', 'Le carbone du groupe C≡N reste dans la molécule : il devient le carbone du groupe –CH₂–NH₂.'),
+      F('2 avant et 3 après : la réduction allonge la chaîne d’un atome de carbone', 'Le propanenitrile compte déjà 3 atomes de carbone, dont celui du groupe C≡N : la réduction ne modifie pas ce nombre.'),
+    ] },
+  { id: 'chc-ana-liaison', domaine: 'Modification de la chaîne carbonée', titre: 'Où se forme la liaison carbone-carbone ?',
+    enonce: 'Le bromure d’éthylmagnésium CH₃CH₂MgBr réagit avec l’éthanal CH₃CHO ; après hydrolyse, on obtient le butan-2-ol CH₃CH(OH)CH₂CH₃.', q: 'Entre quels atomes la nouvelle liaison carbone-carbone se forme-t-elle ?', options: [
+      V('le carbone lié à Mg et le carbone du groupe C=O', 'Le carbone lié à Mg, riche en électrons, se lie au carbone du groupe C=O. C’est cette liaison C–C qui allonge la chaîne de 2 à 4 atomes de carbone.'),
+      F('le carbone du groupe CH₃ de l’éthanal et le carbone du groupe C=O', 'Cette liaison C–C existe déjà dans l’éthanal : ce n’est pas une liaison nouvelle.'),
+      F('le carbone lié à Mg et l’atome d’oxygène du groupe C=O', 'Une liaison entre un carbone et un oxygène est une liaison C–O, pas une liaison carbone-carbone : elle ne prolonge pas la chaîne.'),
+      F('l’atome de magnésium et le carbone du groupe C=O', 'Le magnésium n’est pas un atome de carbone : il quitte la chaîne carbonée en fin de réaction, sous forme de sel (Mg(OH)Br).'),
+    ] },
+  { id: 'chc-ana-ramification', domaine: 'Modification de la chaîne carbonée', titre: 'Éthanal ou propanone : une chaîne ramifiée ?',
+    enonce: 'Le bromure d’éthylmagnésium CH₃CH₂MgBr réagit soit avec l’éthanal CH₃CHO, soit avec la propanone CH₃COCH₃ ; dans chaque cas, on hydrolyse ensuite le mélange pour obtenir un alcool.', q: 'Avec quel composé carbonylé obtient-on un alcool à chaîne ramifiée ?', options: [
+      V('la propanone : son carbone C=O porte déjà deux carbones', 'Dans l’alcool formé, l’ancien carbone C=O est lié aux deux groupes CH₃ de la propanone et au groupe éthyle : un atome de carbone est lié à trois autres, la chaîne est ramifiée (2-méthylbutan-2-ol).'),
+      F('l’éthanal : son carbone C=O porte un seul atome de carbone', 'Avec l’éthanal, le carbone C=O devient lié à deux atomes de carbone seulement (CH₃ et le groupe éthyle) : la chaîne du butan-2-ol est linéaire.'),
+      F('les deux : toute formation d’une liaison C–C ramifie la chaîne', 'Une nouvelle liaison C–C ne ramifie la chaîne que si elle se forme sur un carbone déjà lié à deux autres carbones.'),
+      F('aucun des deux : la ramification exige une cyclisation de la chaîne', 'Une ramification (un carbone lié à trois autres carbones) n’a rien à voir avec une cyclisation : elle apparaît ici à la formation de la liaison C–C.'),
+    ] },
+  { id: 'chc-ana-coupure', domaine: 'Modification de la chaîne carbonée', titre: 'Couper une double liaison carbone-carbone',
+    enonce: 'Le but-2-ène CH₃CH=CHCH₃ est oxydé par des ions permanganate en excès, en milieu acide et à chaud : la liaison C=C est coupée.', q: 'Quels produits organiques obtient-on ?', options: [
+      V('deux molécules d’acide éthanoïque CH₃COOH', 'La coupure de C=C sépare la chaîne de 4 atomes de carbone en deux fragments de 2 atomes de carbone, chacun oxydé en acide éthanoïque : la chaîne est raccourcie.'),
+      F('une molécule d’acide butanoïque CH₃CH₂CH₂COOH', 'L’acide butanoïque garde 4 atomes de carbone dans une même chaîne : or la liaison C=C est coupée, la chaîne se sépare en deux fragments.'),
+      F('une molécule de butane-2,3-diol CH₃CH(OH)CH(OH)CH₃', 'Le diol garde la chaîne de 4 atomes de carbone : il correspond à une simple modification de la liaison C=C, sans coupure de la chaîne.'),
+      F('une molécule de butan-2-one CH₃COCH₂CH₃', 'La butan-2-one garde les 4 atomes de carbone dans une chaîne : l’oxydation décrite coupe au contraire la chaîne en deux.'),
+    ] },
+  { id: 'chc-ana-tertiaire', domaine: 'Modification de la chaîne carbonée', titre: 'Oxyder un alcool tertiaire',
+    enonce: 'Les ions permanganate en milieu acide, à chaud, oxydent le butan-2-ol CH₃CH(OH)CH₂CH₃ en butan-2-one. On traite de la même façon le 2-méthylbutan-2-ol CH₃C(OH)(CH₃)CH₂CH₃, qui est un alcool tertiaire.', q: 'Que se passe-t-il pour le 2-méthylbutan-2-ol ?', options: [
+      V('il ne se forme aucune cétone : le carbone du groupe –OH n’a pas d’atome H', 'Pour former C=O, le carbone du groupe –OH doit perdre un atome H. Ici ce carbone est lié à trois autres carbones et n’en possède aucun : l’oxydation douce ne se produit pas.'),
+      F('on obtient une cétone à 5 atomes de carbone, comme avec le butan-2-ol', 'Une cétone de 5 atomes de carbone exigerait que le carbone du groupe –OH perde un H, ce qu’il ne peut pas : il n’en porte pas.'),
+      F('l’oxydant coupe la chaîne pour former une cétone et un acide à chaîne plus courte', 'La coupure de la chaîne n’a lieu qu’avec une double liaison C=C et un oxydant en excès : ce n’est pas ce que fait l’oxydation d’un alcool.'),
+      F('on obtient un aldéhyde, car le groupe –OH est au bout de la chaîne', 'Le groupe –OH est porté par un carbone lié à trois autres carbones, pas en bout de chaîne : il ne peut donner un aldéhyde.'),
+    ] },
   // ───────────────────────────── Facteurs cinétiques, catalyse et choix d’un capteur (TG, sim 187)
   { id: 'cin-ana-facteur', domaine: 'Facteurs cinétiques, catalyse et choix d’un capteur', titre: 'Une comparaison où deux paramètres changent',
     enonce: 'Pour étudier l’effet de la température, un élève réalise une expérience à 20 °C avec une solution d’iodure à 0,050 mol/L, puis une expérience à 40 °C avec une solution d’iodure à 0,10 mol/L (même réaction, même volume, sans catalyseur). La seconde est plus rapide. Il conclut : « c’est la température qui accélère la transformation ».', q: 'Que penser de cette conclusion ?', options: [

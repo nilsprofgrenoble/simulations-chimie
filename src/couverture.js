@@ -87,7 +87,7 @@ export const COUVERTURE = [
     { th: CTM, t: 'Électrolyse : forcer le sens d’évolution d’un système', e: 'ok', chap: 'tg-etat-final' },
     { th: CTM, t: 'Synthèse organique : formules topologiques, isomérie de constitution, polymères', e: 'ok', chap: 'tg-synthese' },
     { th: CTM, t: 'Synthèse organique : optimisation d’une étape (vitesse, rendement)', e: 'ok', chap: 'tg-synthese' },
-    { th: CTM, t: 'Synthèse organique : stratégie multi-étapes et synthèses écoresponsables', e: 'partiel', chap: 'tg-synthese', reste: 'modification de la chaîne carbonée (aucune réaction de la banque ne la modifie)' },
+    { th: CTM, t: 'Synthèse organique : stratégie multi-étapes et synthèses écoresponsables', e: 'ok', chap: 'tg-synthese' },
     { th: MVT, t: 'Décrire un mouvement : vecteurs position, vitesse, accélération, repère de Frenet', e: 'ok', chap: 'tg-decrire-mouvement' },
     { th: MVT, t: 'Deuxième loi de Newton', e: 'ok', chap: 'tg-newton' },
     { th: MVT, t: 'Mouvement dans un champ uniforme (pesanteur, condensateur plan)', e: 'ok', chap: 'tg-newton' },
