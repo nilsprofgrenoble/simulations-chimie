@@ -2552,5 +2552,14 @@
  "77:plausible:cha-val-rendement": "VAL689",
  "77:plausible:cha-val-serie": "VAL690",
  "36:cha-rendement": "REA150",
- "36:cha-serie": "REA151"
+ "36:cha-serie": "REA151",
+ "37:prevoir:angc-ana-situation": "ANA1169",
+ "37:prevoir:angc-ana-critere": "ANA1170",
+ "37:prevoir:angc-ana-zisman": "ANA1171",
+ "37:prevoir:angc-ana-wilhelmy": "ANA1172",
+ "37:prevoir:angc-ana-tensioactif": "ANA1173",
+ "37:prevoir:angc-ana-corona": "ANA1174",
+ "77:plausible:angc-val-young": "VAL691",
+ "77:plausible:angc-val-wilhelmy": "VAL692",
+ "77:plausible:angc-val-zisman": "VAL693"
 }

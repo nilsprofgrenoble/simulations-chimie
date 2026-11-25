@@ -23,6 +23,7 @@ export const EXOS_DE_SIM = {
   224: [/(^|\.)susp-/, /plausible\.susp-/],   // Stabilité d’une suspension (BTS)
   225: [/(^|\.)disp-/, /plausible\.disp-/],   // Mouiller, disperser, stabiliser une suspension (BTS)
   226: [/(^|\.)mou-/, /plausible\.mou-/],   // Mousses : former, stabiliser, détruire (BTS)
+  234: [/(^|\.)angc-/, /plausible\.angc-/],   // Mouillage : tension superficielle, angle de contact, tension critique (BTS)
   101: [/for-lasure-/],                                                                                                 // Lasure alkyde
   // ── BTS · Synthèse organique (un thème d'exercices par simulation) ──
   93: [/^regio-/], 94: [/^cinet-/], 95: [/^sn-/], 96: [/^br-/], 97: [/^tr-/], 98: [/^se-/], 99: [/^ch-/],
