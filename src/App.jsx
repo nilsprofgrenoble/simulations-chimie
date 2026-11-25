@@ -203,6 +203,7 @@ const SimulationInstabilite = paresseux(() => import("./simulations/Instabilite"
 const SimulationHlb = paresseux(() => import("./simulations/Hlb"), "SimulationHlb");
 const SimulationSuspension = paresseux(() => import("./simulations/Suspension"), "SimulationSuspension");
 const SimulationDispersion = paresseux(() => import("./simulations/Dispersion"), "SimulationDispersion");
+const SimulationMousse = paresseux(() => import("./simulations/Mousse"), "SimulationMousse");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
@@ -571,6 +572,7 @@ const SIMULATIONS = [
   { id:223, label:"HLB requis et mélange d’émulsifiants", niveau:"BTS", icon:"⚖️", color:"#7c3aed", component: SimulationHlb },
   { id:224, label:"Stabilité d’une suspension : charge, pH et sel", niveau:"BTS", icon:"⚗️", color:"#0e7490", component: SimulationSuspension },
   { id:225, label:"Mouiller, disperser, stabiliser une suspension", niveau:"BTS", icon:"🧪", color:"#0f766e", component: SimulationDispersion },
+  { id:226, label:"Mousses : former, stabiliser, détruire", niveau:"BTS", icon:"🫧", color:"#0f766e", component: SimulationMousse },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 

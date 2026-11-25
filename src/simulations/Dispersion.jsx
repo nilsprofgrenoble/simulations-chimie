@@ -159,7 +159,7 @@ export function SimulationDispersion() {
     'lecture-num': M.CLASSES.map((c, i) => [nomClasse(c), `${fr(CLAS[i], 1)} %`]),
     'dosage-num': [['Masse de pigment TiO₂', `${DOS.mP} g`], ['Dispersant (matière active)', `${fr(DOS.pc, 2)} % du pigment`], ['Matière active de la solution', `${DOS.ES} %`]],
   };
-  const mesDist = enGuide && sceneDist && !brut ? [['D10 (10 % du volume en dessous)', `${fr(M.diametre(qVie, 10), 2)} µm`], ['D50 (diamètre médian)', `${fr(M.diametre(qVie, 50), 2)} µm`], ['D90 (90 % du volume en dessous)', `${fr(M.diametre(qVie, 90), 2)} µm`], ...(apres('pic') ? [['Part de masse au-delà de 50 µm', pc(agVie)]] : [])] : [];
+  const mesDist = enGuide && sceneDist && !brut ? [['D10 (10 % du volume en dessous)', `${fr(M.diametre(qVie, 10), 2)} µm`], ['D50 (diamètre médian)', `${fr(M.diametre(qVie, 50), 2)} µm`], ['D90 (90 % du volume en dessous)', `${fr(M.diametre(qVie, 90), 2)} µm`], ...(apres('pic') ? [['Part de volume au-delà de 5 µm', pc(agVie)]] : [])] : [];
   const lignesGuide = enGuide ? (MES_GUIDE[sc] ?? mesDist) : [];
   const setV = k => ev => setVie(s => ({ ...s, [k]: parseFloat(ev.target.value) }));
   const curseurGuide = enGuide && (sceneMouill ? apres('mouillant-action') && sc !== 'mouillage' : sceneDist ? !brut : sceneEtal) ? (
