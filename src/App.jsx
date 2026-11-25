@@ -138,6 +138,7 @@ const SimulationCircuitRC = paresseux(() => import("./simulations/CircuitRC"), "
 const SimulationIntensiteSonore = paresseux(() => import("./simulations/IntensiteSonore"), "SimulationIntensiteSonore");
 const SimulationGazParfait = paresseux(() => import("./simulations/GazParfait"), "SimulationGazParfait");
 const SimulationPremierPrincipe = paresseux(() => import("./simulations/PremierPrincipe"), "SimulationPremierPrincipe");
+const SimulationTransfertsThermiques = paresseux(() => import("./simulations/TransfertsThermiques"), "SimulationTransfertsThermiques");
 const SimulationArchimede = paresseux(() => import("./simulations/Archimede"), "SimulationArchimede");
 const SimulationLoiNewtonThermostat = paresseux(() => import("./simulations/LoiNewtonThermostat"), "SimulationLoiNewtonThermostat");
 const SimulationEcoulementFluide = paresseux(() => import("./simulations/EcoulementFluide"), "SimulationEcoulementFluide");
@@ -349,6 +350,7 @@ const SIMULATIONS = [
   { id:174, label:"Circuit RC : charge et décharge d’un condensateur", niveau:"TG", icon:"🔌", color:"#0e7490", component: SimulationCircuitRC },
   { id:215, label:"Gaz parfait : équation d’état et limites", niveau:"TG", icon:"🎈", color:"#0f766e", component: SimulationGazParfait },
   { id:216, label:"Premier principe : énergie interne et bilan", niveau:"TG", icon:"🔥", color:"#b45309", component: SimulationPremierPrincipe },
+  { id:235, label:"Transferts thermiques : flux et résistance", niveau:"TG", icon:"♨️", color:"#c2410c", component: SimulationTransfertsThermiques },
   { id:213, label:"Poussée d’Archimède : origine et expression", niveau:"TG", icon:"🛟", color:"#0369a1", component: SimulationArchimede },
   { id:212, label:"Loi de Newton et thermostat : T(t)", niveau:"TG", icon:"🔥", color:"#c2410c", component: SimulationLoiNewtonThermostat },
   { id:214, label:"Écoulement d’un fluide : débit et Bernoulli", niveau:"TG", icon:"💧", color:"#0369a1", component: SimulationEcoulementFluide },

@@ -2506,5 +2506,11 @@
  "77:plausible:las-val-section": "VAL679",
  "77:plausible:las-val-energie": "VAL680",
  "36:las-eclairement": "REA142",
- "36:las-energie": "REA143"
+ "36:las-energie": "REA143",
+ "34:tht-sapp-paroi.0": "SAPP532",
+ "34:tht-sapp-paroi.1": "SAPP533",
+ "37:prevoir:tht-ana-double": "ANA1155",
+ "77:plausible:tht-val-unite": "VAL681",
+ "77:plausible:tht-val-resistance": "VAL682",
+ "36:tht-calcul": "REA144"
 }
