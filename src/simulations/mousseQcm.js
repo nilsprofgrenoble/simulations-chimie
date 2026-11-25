@@ -1,0 +1,33 @@
+// QCM du parcours guidé de la simulation 226 (Mousses : former, stabiliser, détruire).
+// Ordre FIXE : place de la bonne réponse choisie à la main (équilibrée, jamais deux fois de suite à la même place), jamais la plus longue.
+const mk = (pos, bonne, ...autres) => ({ ordreFixe: true, bonne: pos, options: [...autres.slice(0, pos), bonne, ...autres.slice(pos)] });
+export const QCM = {
+  lamelle: mk(1, 'Sans tensioactif, rien ne stabilise la lamelle d’eau',
+    'L’eau pure ne contient pas assez d’air dissous pour former des bulles',
+    'L’eau pure est trop visqueuse pour que des bulles s’y forment',
+    'Les bulles d’air sont instables dans l’eau pure car elles sont trop lourdes'),
+  micelles: mk(3, 'Les micelles fournissent du tensioactif aux nouvelles interfaces',
+    'Au-delà de la CMC, les tensioactifs ne s’adsorbent plus du tout aux interfaces',
+    'Les micelles bouchent les lamelles et empêchent l’eau de s’écouler',
+    'La CMC est la concentration où l’eau mousse sans aucune agitation'),
+  moussaStab: mk(0, 'Très moussante, mais peu stable',
+    'Peu moussante, mais très stable dans le temps',
+    'Peu moussante et peu stable à la fois',
+    'Très stable, puisque la mousse s’est bien formée'),
+  plateau: mk(2, 'La formation en bas égale la rupture en haut',
+    'Le tensioactif est épuisé et plus aucune bulle ne se forme',
+    'Le gaz injecté se dissout entièrement dans la solution moussante',
+    'La colonne de verre limite mécaniquement la hauteur de mousse'),
+  ethoxy: mk(1, 'Il se range de façon plus compacte, avec une couche plus cohésive',
+    'Il porte une charge positive qui renforce la répulsion entre les lamelles',
+    'Il est beaucoup moins soluble que le SDS, donc il reste en surface',
+    'Sa CMC est nulle, donc il n’y a jamais de micelles à renouveler'),
+  facteurs: mk(3, 'L’emploi d’une eau dure, riche en ions Ca²⁺',
+    'L’ajout d’un polymère qui épaissit la solution moussante',
+    'Le remplacement de l’air par un gaz peu soluble dans l’eau',
+    'Le passage d’une concentration de 1 CMC à 5 CMC'),
+  antimousse: mk(0, 'Il pénètre la lamelle et désorganise la couche de tensioactif',
+    'Il se dissout dans l’eau et augmente la cohésion de la couche de tensioactif',
+    'Il se charge électriquement pour repousser les bulles de gaz entre elles',
+    'Il dissout le gaz des bulles dans l’eau pour les faire disparaître'),
+};

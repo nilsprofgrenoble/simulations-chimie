@@ -2030,5 +2030,19 @@
  "77:plausible:disp-val-agglo-d50": "VAL550",
  "77:plausible:disp-val-energie-suffit": "VAL551",
  "77:plausible:disp-val-dosage-eau": "VAL552",
- "77:plausible:disp-val-pce-ions": "VAL553"
+ "77:plausible:disp-val-pce-ions": "VAL553",
+ "37:prevoir:mou-ana-lamelle": "ANA846",
+ "37:prevoir:mou-ana-cmc": "ANA847",
+ "37:prevoir:mou-ana-moussa-stab": "ANA848",
+ "37:prevoir:mou-ana-bikerman": "ANA849",
+ "37:prevoir:mou-ana-ross-miles": "ANA850",
+ "37:prevoir:mou-ana-ethoxylation": "ANA851",
+ "37:prevoir:mou-ana-supermoussant": "ANA852",
+ "37:prevoir:mou-ana-eau-dure": "ANA853",
+ "37:prevoir:mou-ana-antimousse-nature": "ANA854",
+ "37:prevoir:mou-ana-antimousse-peinture": "ANA855",
+ "77:plausible:mou-val-cmc-masse": "VAL554",
+ "77:plausible:mou-val-moussa-stab": "VAL555",
+ "77:plausible:mou-val-antimousse-soluble": "VAL556",
+ "77:plausible:mou-val-dodecanol": "VAL557"
 }
