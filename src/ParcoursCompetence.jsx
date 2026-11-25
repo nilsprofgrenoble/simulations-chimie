@@ -46,9 +46,17 @@ const CSS_LIGNES = '.pc-ligne{transition:background .12s}.pc-ligne:hover{backgro
 
 // ── Écran 1 : les types d'exercices (un sommaire : une ligne par type, sans décor) ──
 function EcranTypes({ couleur, types, items, prog, choisir }) {
-  const lignes = types.map(t => ({ t, its: itemsDuType(items, t.id) })).filter(x => x.its.length);
+  // Le niveau et l'enseignement choisis dans « Je m'entraîne » limitent les types et les nombres affichés (un TSTL ne voit pas les exercices de 2GT)
+  const m = contexteMemorise();
+  const dansContexte = (t, its) => (m.niv && t.filtre === 'niveau' ? filtrer(its, { type: t.id, niv: m.niv, ens: m.ens }) : its);
+  const brut = types.map(t => ({ t, its: itemsDuType(items, t.id) })).filter(x => x.its.length);
+  const filtre = brut.map(x => ({ ...x, its: dansContexte(x.t, x.its) })).filter(x => x.its.length);   // les types sans « filtre » (conversions, calculatrice…) valent pour tous les niveaux
+  const lignes = filtre.length ? filtre : brut;
+  const nomCtx = m.niv && filtre.length ? [niveauLabel(m.niv), (ENSEIGNEMENTS[m.niv] || []).find(e => e.key === m.ens)?.label].filter(Boolean).join(' · ') : '';
   return (
-    <div role="list" style={{ border: `1px solid ${KIT.bord}`, borderRadius: 8, background: '#fff', overflow: 'hidden', maxWidth: 760 }}>
+    <div style={{ maxWidth: 760 }}>
+      {nomCtx && <p data-contexte style={{ margin: '0 0 8px', fontSize: 13.5, color: KIT.txt2 }}>Exercices pour : <b style={{ color: KIT.txt }}>{nomCtx}</b> (tu peux changer à l’étape suivante).</p>}
+    <div role="list" style={{ border: `1px solid ${KIT.bord}`, borderRadius: 8, background: '#fff', overflow: 'hidden' }}>
       <style>{CSS_LIGNES}</style>
       {lignes.map(({ t, its }, k) => {
         const faits = its.filter(i => prog[i.cle]).length;
@@ -66,7 +74,7 @@ function EcranTypes({ couleur, types, items, prog, choisir }) {
             <span aria-hidden="true" style={{ flex: 'none', color: '#64748b', fontSize: 22, lineHeight: 1 }}>›</span>
           </button>);
       })}
-    </div>);
+    </div></div>);
 }
 
 // ── Liste d'exercices (éventuellement groupée par chapitre) ──
