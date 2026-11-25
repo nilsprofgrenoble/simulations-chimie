@@ -9,6 +9,7 @@ import { presenter } from './presenter.js';
 import { OEIL2GT_ANA } from './oeilReduit2gtExos.js';
 import { NOY2GT_ANA } from './noyauAtome2gtExos.js';
 import { NUC2GT_ANA } from './nucleaire2gtExos.js';
+import { MAT2GT_ANA } from './matiere2gtExos.js';
 import { RHC_ANA } from './rheoCourbesExos.js';
 import { ITT_ANA } from './itt3Exos.js';
 import { figureTopo } from './topoFigure.js';
@@ -3227,29 +3228,29 @@ export const PREVOIR = [
       F('17 protons et 16 électrons', 'Gagner un électron en donne un de plus (18), pas un de moins.'),
     ] },
   { id: 'mic-octet-sodium', domaine: 'Matière à l’échelle microscopique', titre: 'L’ion stable du sodium',
-    ...presenter({ contexte: 'Le sodium (Z = 11) a pour répartition des électrons : 2 sur la 1re couche, 8 sur la 2e, 1 sur la 3e, soit (K)²(L)⁸(M)¹.', liste: [['Règle', 'un atome tend à avoir une couche externe pleine (8 électrons, ou 2 pour la 1re couche)'], ['Principe', 'il gagne ou perd le moins d’électrons possible']] }), q: 'L’ion le plus stable formé par le sodium est…', options: [
-      V('Na⁺ : en perdant 1 électron, il a la couche L pleine (8 électrons)', 'Perdre l’unique électron de la couche M laisse la couche L, pleine, comme couche externe : configuration stable.'),
-      F('Na⁻ : en gagnant 1 électron, il aurait 2 électrons sur sa couche externe', 'Gagner un électron sur la couche M ne la remplirait pas : il en manquerait encore 6.'),
-      F('Na⁷⁻ : en gagnant 7 électrons, il aurait 8 électrons sur sa couche externe', 'Il est bien plus simple de perdre 1 seul électron que d’en gagner 7.'),
+    ...presenter({ contexte: 'Le sodium (Z = 11) a pour configuration électronique à l’état fondamental : 1s² 2s² 2p⁶ 3s¹. Un gaz noble est stable : sa couche de valence est pleine (2 électrons pour l’hélium, 8 pour les autres).', liste: [['Règle', 'un atome devient un ion qui a la configuration d’un gaz noble'], ['Principe', 'il gagne ou perd le moins d’électrons possible']] }), q: 'L’ion le plus stable formé par le sodium est…', options: [
+      V('Na⁺ : en perdant 1 électron, il a la configuration du néon', 'Perdre l’unique électron de valence (3s¹) laisse 1s² 2s² 2p⁶ : c’est la configuration du néon, dont la couche de valence est pleine (8 électrons).'),
+      F('Na⁻ : en gagnant 1 électron, il aurait 2 électrons de valence (3s²)', 'Gagner un électron donne 3s² : 2 électrons de valence seulement, loin des 8 d’une couche pleine.'),
+      F('Na⁷⁻ : en gagnant 7 électrons, il aurait 8 électrons de valence', 'Il faudrait gagner 7 électrons, alors qu’il suffit d’en perdre 1 : on gagne ou perd le moins d’électrons possible.'),
     ] },
   { id: 'mic-octet-chlore', domaine: 'Matière à l’échelle microscopique', titre: 'L’ion stable du chlore',
-    enonce: 'Le chlore (Z = 17) a pour répartition (K)²(L)⁸(M)⁷. Un atome tend à avoir une couche externe pleine (8 électrons), en gagnant ou en perdant le moins d’électrons possible.', q: 'L’ion le plus stable formé par le chlore est…', options: [
-      V('Cl⁻ : en gagnant 1 électron, il a 8 électrons sur la couche M', 'Il lui manque un électron pour compléter la couche externe à 8 : il en gagne un et devient Cl⁻.'),
-      F('Cl⁺ : en perdant 1 électron, il aurait 6 électrons sur la couche M', 'Cela l’éloignerait de la couche pleine (8 électrons).'),
-      F('Cl⁷⁺ : en perdant 7 électrons, il aurait la couche L pleine', 'Cette couche L est bien pleine, mais il faudrait perdre 7 électrons alors qu’il suffit d’en gagner 1.'),
+    enonce: 'Le chlore (Z = 17) a pour configuration électronique à l’état fondamental : 1s² 2s² 2p⁶ 3s² 3p⁵. Un atome devient un ion qui a la configuration d’un gaz noble (8 électrons de valence), en gagnant ou en perdant le moins d’électrons possible.', q: 'L’ion le plus stable formé par le chlore est…', options: [
+      V('Cl⁻ : en gagnant 1 électron, il a 8 électrons de valence', 'Il lui manque un électron pour avoir 8 électrons de valence (3s² 3p⁶, comme l’argon) : il en gagne un et devient Cl⁻.'),
+      F('Cl⁺ : en perdant 1 électron, il aurait 6 électrons de valence', 'Cela l’éloignerait de la couche pleine (8 électrons de valence).'),
+      F('Cl⁷⁺ : en perdant 7 électrons, il aurait 8 électrons de valence', 'Perdre les 7 électrons de valence laisserait bien une couche pleine (celle du néon), mais il suffit d’en gagner 1.'),
     ] },
   { id: 'mic-famille-alcalins', domaine: 'Matière à l’échelle microscopique', titre: 'Même colonne, mêmes propriétés',
-    enonce: 'Le lithium (Z = 3), le sodium (Z = 11) et le potassium (Z = 19) sont dans la même colonne du tableau périodique.', q: 'Ils ont des propriétés chimiques semblables parce que…', options: [
-      F('ils ont le même nombre total d’électrons', 'Les nombres d’électrons diffèrent (3, 11, 19) : un atome neutre a Z électrons.'),
-      F('ils ont le même nombre de couches électroniques occupées', 'Le nombre de couches augmente en descendant la colonne (2, 3, 4).'),
-      V('ils ont le même nombre d’électrons sur leur couche externe', 'Les propriétés chimiques dépendent des électrons de la couche externe : même colonne, même nombre d’électrons de valence (ici 1).'),
-      F('ils ont le même nombre de protons dans leur noyau', 'Ils ont des nombres de protons différents (3, 11, 19) : Z distingue les éléments.'),
+    enonce: 'Le lithium (Z = 3, configuration 1s² 2s¹) et le sodium (Z = 11, configuration 1s² 2s² 2p⁶ 3s¹) sont dans la même colonne du tableau périodique : celle des alcalins.', q: 'Ils ont des propriétés chimiques semblables parce que…', options: [
+      F('ils ont le même nombre total d’électrons', 'Les nombres d’électrons diffèrent (3 et 11) : un atome neutre a Z électrons.'),
+      F('ils sont dans la même ligne du tableau périodique', 'Ils sont dans la même colonne, mais pas dans la même ligne : la dernière couche est la couche 2 pour Li, la couche 3 pour Na.'),
+      V('ils ont le même nombre d’électrons de valence (1)', 'Les propriétés chimiques dépendent des électrons de valence : même colonne, même nombre d’électrons de valence (ici 2s¹ pour Li, 3s¹ pour Na).'),
+      F('ils ont le même nombre de protons dans leur noyau', 'Ils ont des nombres de protons différents (3 et 11) : Z distingue les éléments.'),
     ] },
   { id: 'mic-gaz-nobles', domaine: 'Matière à l’échelle microscopique', titre: 'Les gaz nobles',
-    enonce: 'L’hélium (couche externe à 2 électrons) et le néon (couche externe à 8 électrons) ne réagissent presque pas avec les autres corps.', q: 'Pourquoi ?', options: [
-      F('leurs atomes sont trop petits pour pouvoir réagir', 'La taille des atomes n’est pas le critère : les petites molécules de dihydrogène et de difluor sont très réactives. C’est la couche externe pleine qui explique l’inertie.'),
-      F('leur noyau est très stable, il ne peut pas échanger d’électrons', 'Ce sont les électrons de la couche externe qui interviennent dans les réactions, pas la stabilité du noyau.'),
-      V('leur couche externe est saturée, leur structure électronique est stable', 'Une couche externe pleine (2 électrons pour He, 8 pour Ne) est très stable : ces atomes n’ont aucune tendance à gagner, perdre ou partager des électrons.'),
+    enonce: 'L’hélium (configuration 1s²) et le néon (1s² 2s² 2p⁶) ne réagissent presque pas avec les autres corps. On les appelle des gaz nobles.', q: 'Pourquoi ?', options: [
+      F('leurs atomes sont trop petits pour pouvoir réagir', 'La taille des atomes n’est pas le critère : les petites molécules de dihydrogène et de difluor sont très réactives. C’est la couche de valence pleine qui explique l’inertie.'),
+      F('leur noyau est très stable, il ne peut pas échanger d’électrons', 'Ce sont les électrons de valence qui interviennent dans les réactions, pas la stabilité du noyau.'),
+      V('leur couche de valence est pleine, leur configuration est stable', 'Une couche de valence pleine (2 électrons pour He, 8 pour Ne) est très stable : ces atomes n’ont aucune tendance à gagner, perdre ou partager des électrons.'),
       F('leurs atomes sont trop éloignés les uns des autres dans un gaz pour réagir', 'L’état physique n’explique rien : le dioxygène et le dihydrogène sont des gaz très réactifs.'),
     ] },
   { id: 'mic-masse-noyau', domaine: 'Matière à l’échelle microscopique', titre: 'Où est la masse de l’atome ?',
@@ -5817,6 +5818,7 @@ export const PREVOIR = [
   ...OEIL2GT_ANA,
   ...NOY2GT_ANA,
   ...NUC2GT_ANA,
+  ...MAT2GT_ANA,
   ...RHC_ANA,
   ...ITT_ANA,
   // ───────────────────────────── Changement d'état (2GT, sim 195) : fusion ou dissolution, proportionnalité, sens du transfert, palier, équation, comparaison de L

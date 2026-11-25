@@ -2,6 +2,7 @@ import { presenter } from './presenter.js';
 import { OEIL2GT_VAL } from './oeilReduit2gtExos.js';
 import { NOY2GT_VAL } from './noyauAtome2gtExos.js';
 import { NUC2GT_VAL } from './nucleaire2gtExos.js';
+import { MAT2GT_VAL } from './matiere2gtExos.js';
 import { RHC_VAL } from './rheoCourbesExos.js';
 import { ITT_VAL } from './itt3Exos.js';
 // ====================================================
@@ -479,8 +480,8 @@ export const PLAUSIBLES = [
     ver: '790 g·mL⁻¹ serait presque 60 fois plus dense que le mercure ! 39,5 / 50 = 0,79 g·mL⁻¹ : la valeur 790 est celle en kg·m⁻³.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
-      V('790 est la valeur en kg·m⁻³ : l’unité écrite (g·mL⁻¹) n’est pas la bonne', '0,79 g·mL⁻¹ = 790 kg·m⁻³. Le nombre ne va qu’avec l’autre unité.'),
-      F('l’élève a multiplié m par V au lieu de les diviser', '39,5 × 50 = 1 975 : ce n’est pas 790.'),
+      V('le nombre 790 est en kg·m⁻³ : l’unité écrite est fausse', '0,79 g·mL⁻¹ = 790 kg·m⁻³. Le nombre ne va qu’avec l’autre unité.'),
+      F('l’élève a multiplié m par V au lieu de diviser m par V', '39,5 × 50 = 1 975 : ce n’est pas 790.'),
       F('les 39,5 g sont faux : 50 mL d’éthanol devraient peser 790 g', '50 mL d’éthanol pèsent 50 × 0,79 ≈ 39,5 g : la pesée est correcte, seule l’unité écrite est fausse.'),
     ] }),
   P({ id: 'sol-dilution-val', domaine: 'Solutions et concentration', niveau: 1, titre: 'Une dilution d’une solution', plausible: false,
@@ -489,9 +490,9 @@ export const PLAUSIBLES = [
     ver: 'Diluer, c’est ajouter de l’eau : la solution devient moins concentrée. La concentration doit passer à 20 / 10 = 2 g·L⁻¹.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
-      V('il a multiplié par le facteur de dilution au lieu de diviser', 't_fille = t_mère / F = 20 / 10 = 2 g·L⁻¹.'),
-      F('il a oublié de convertir g·L⁻¹ en mol·L⁻¹', 'Une conversion d’unités ne change pas le sens de variation : la concentration diminue en diluant.'),
-      F('il a divisé par 10 deux fois de suite', 'On trouverait 20 / 10 / 10 = 0,20 g·L⁻¹ : une concentration bien plus petite, et non 10 fois plus grande.'),
+      V('il a multiplié par 10 au lieu de diviser par 10', 't_fille = t_mère / F = 20 / 10 = 2 g·L⁻¹.'),
+      F('il a oublié de convertir g·L⁻¹ en mol·L⁻¹ avant de diluer', 'Une conversion d’unités ne change pas le sens de variation : la concentration diminue en diluant.'),
+      F('il a divisé deux fois de suite par le facteur de dilution', 'On trouverait 20 / 10 / 10 = 0,20 g·L⁻¹ : une concentration bien plus petite, et non 10 fois plus grande.'),
     ] }),
   P({ id: 'cir-ohm-kohm', domaine: 'Circuits électriques', niveau: 1, titre: 'Courant dans un résistor', plausible: false,
     enonce: 'Un résistor de résistance R = 2,2 kΩ est soumis à une tension U = 6,0 V. Un élève calcule l’intensité du courant qui le traverse et trouve I = 2,7 A.',
@@ -2208,7 +2209,7 @@ export const PLAUSIBLES = [
     ver: 'Chaque dilution a un facteur F = 100 mL / 1,0 mL = 100. La solution 1 vaut 0,50 / 100 = 5,0×10⁻³ mol·L⁻¹, puis la solution 2 vaut 5,0×10⁻³ / 100 = 5,0×10⁻⁵ mol·L⁻¹ : les facteurs se multiplient (F = 10⁴). La valeur est très petite, mais elle est correcte.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : chaque fiole divise par F = 100 / 1,0 = 100, donc par 10⁴ au total : 0,50 / 10⁴ = 5,0×10⁻⁵ mol·L⁻¹', 'Les facteurs de dilution successifs se multiplient : 100 × 100 = 10⁴.'),
+      V('Cohérent : chaque fiole divise par 100, donc par 10⁴ au total : 0,50 / 10⁴ = 5,0×10⁻⁵ mol·L⁻¹', 'Les facteurs de dilution successifs se multiplient : 100 × 100 = 10⁴.'),
       F('Cohérent : on ajoute 99 mL d’eau pour 1,0 mL prélevé, donc F = 99 par fiole et 99 × 99 ≈ 10⁴ au total', 'F = V_fille / V_prélevé = 100 / 1,0 = 100, pas le volume d’eau ajoutée : le verdict tient par chance (99² ≈ 10⁴), l’argument est inexact.'),
       F('Pas cohérent : les facteurs s’additionnent, 100 + 100 = 200, donc c₂ = 0,50 / 200 = 2,5×10⁻³ mol·L⁻¹', 'Les dilutions successives se multiplient : le facteur total vaut 100 × 100 = 10⁴ et non 200.'),
     ] }),
@@ -4200,6 +4201,7 @@ export const PLAUSIBLES = [
   ...OEIL2GT_VAL,
   ...NOY2GT_VAL,
   ...NUC2GT_VAL,
+  ...MAT2GT_VAL,
   ...RHC_VAL,
   ...ITT_VAL,
   // ───────────────────────────── Changement d'état (2GT, sim 195)
