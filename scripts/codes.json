@@ -2561,5 +2561,17 @@
  "37:prevoir:angc-ana-corona": "ANA1174",
  "77:plausible:angc-val-young": "VAL691",
  "77:plausible:angc-val-wilhelmy": "VAL692",
- "77:plausible:angc-val-zisman": "VAL693"
+ "77:plausible:angc-val-zisman": "VAL693",
+ "34:sgn-sapp-bloc.0": "SAPP546",
+ "34:sgn-sapp-bloc.1": "SAPP547",
+ "34:sgn-sapp-air.0": "SAPP548",
+ "34:sgn-sapp-air.1": "SAPP549",
+ "37:prevoir:sgn-ana-recoit": "ANA1175",
+ "37:prevoir:sgn-ana-cede": "ANA1176",
+ "37:prevoir:sgn-ana-conservation": "ANA1177",
+ "37:prevoir:sgn-ana-regime": "ANA1178",
+ "77:plausible:sgn-val-bilan": "VAL694",
+ "77:plausible:sgn-val-signe": "VAL695",
+ "36:sgn-bloc": "REA152",
+ "36:sgn-four": "REA153"
 }

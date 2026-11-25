@@ -2886,6 +2886,64 @@ function genChaineSerie() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['En série : η = η₁ × η₂ ; reçue = utile ÷ η.', 'L’énergie dissipée est la différence reçue − utile.'] };
 }
+// ---------- Conservation de l'énergie : bilan et signe des transferts (TSTL, PCM) ----------
+function genSigneBloc() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let W, Q, m, dt, dU, dT, P, part;
+  do {
+    W = tire([400, 600, 900, 1200]); Q = tire([100, 200, 300]); m = tire([0.4, 0.5, 0.8]); dt = tire([20, 40, 50, 80]);
+    dU = W - Q; dT = dU / (m * 385); P = Q / dt; part = 100 * Q / W;
+  } while (new Set([dU, dT, P, part].map(v => Number(v.toPrecision(3)))).size < 4);
+  const intro = `Un bloc de cuivre de masse ${nbF(m, 2)}${NB}kg reçoit un travail électrique W = +${W}${NB}J et cède à l’air de la pièce un transfert thermique de valeur absolue ${Q}${NB}J, en Δt = ${dt}${NB}s. Capacité thermique massique du cuivre : c = 385${NB}J·kg⁻¹·K⁻¹ ; pas de changement d’état.`;
+  const q1 = { id: 'b0', type: 'num', q: <>Calculez la <b>variation d’énergie interne ΔU</b> du bloc (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: dU, tolRel: 0.05, csMin: 2,
+    aide: 'ΔU = somme algébrique des transferts : travail reçu (+) et transfert thermique cédé (−).',
+    pieges: [[W + Q, 'Le transfert thermique est cédé par le bloc : il est négatif, il faut le soustraire.'], [W, 'Il faut aussi tenir compte du transfert thermique cédé à l’air.'], [-dU, 'Le signe est inversé : le bloc reçoit plus qu’il ne cède, ΔU est positive.']],
+    expl: <>ΔU = (+{W}) + (−{Q}) = <b>+{dU}{NB}J</b>.</> };
+  const q2 = { id: 'b1', type: 'num', q: <>Calculez la <b>variation de température ΔT</b> du bloc (en K, 2 chiffres significatifs).</>, unite: 'K', vrai: dT, tolRel: 0.05, csMin: 2,
+    aide: 'ΔU = m × c × ΔT, donc ΔT = ΔU ÷ (m × c).',
+    pieges: [[dU / m, 'Il faut aussi diviser par la capacité thermique massique c.'], [dU / 385, 'Il faut aussi diviser par la masse m du bloc.'], [(W + Q) / (m * 385), 'Votre calcul utilise W + |Q| : le transfert thermique cédé se soustrait.']],
+    expl: <>ΔT = {dU} ÷ ({nbF(m, 2)} × 385) = <b>{pvFmt(dT)}{NB}K</b>.</> };
+  const q3 = { id: 'b2', type: 'num', q: <>Calculez la <b>puissance du transfert thermique</b> cédé à l’air (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P, tolRel: 0.05, csMin: 2,
+    aide: 'P = |Q| ÷ Δt, avec Δt en secondes : une puissance est toujours positive.',
+    pieges: [[Q * dt, 'Il faut diviser l’énergie par la durée, pas la multiplier.'], [-P, 'Une puissance est positive : on utilise la valeur absolue de l’énergie.']],
+    expl: <>P = {Q} ÷ {dt} = <b>{pvFmt(P)}{NB}W</b>.</> };
+  const q4 = { id: 'b3', type: 'num', q: <>Quelle <b>part du travail électrique reçu</b> est cédée à l’air ? (en %, 2 chiffres significatifs)</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
+    aide: 'Part = |Q| ÷ W, puis multipliez par 100 pour un pourcentage.',
+    pieges: [[Q / W, 'Multipliez le rapport par 100 pour l’avoir en pourcentage.'], [100 * W / Q, 'Le rapport est inversé : on compare l’énergie cédée à l’énergie reçue.']],
+    expl: <>{Q} ÷ {W} = {nbF(Q / W, 2)} soit <b>{pvFmt(part)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['ΔE = somme algébrique des transferts : reçu (+), cédé (−).', 'ΔU = m × c × ΔT (sans changement d’état) ; P = |E| ÷ Δt.'] };
+}
+function genSigneFour() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let Pel, dtMin, alpha, m, W, Q, dU, dT;
+  const c = 450;
+  do {
+    Pel = tire([500, 800, 1000, 1500]); dtMin = tire([2, 3, 5]); alpha = tire([0.2, 0.4, 0.5]); m = tire([2, 4, 5]);
+    W = Pel * dtMin * 60 / 1000; Q = alpha * W; dU = W - Q; dT = 1000 * dU / (m * c);
+  } while (new Set([W, Q, dU, dT].map(v => Number(v.toPrecision(3)))).size < 4);
+  const intro = `Une plaque d’acier de masse ${m}${NB}kg est chauffée par une résistance qui reçoit une puissance électrique de ${Pel}${NB}W pendant ${dtMin}${NB}minutes. La plaque cède à l’air ${Math.round(100 * alpha)}${NB}% du travail électrique qu’elle reçoit, par transfert thermique. Capacité thermique massique de l’acier : c = ${c}${NB}J·kg⁻¹·K⁻¹ ; pas de changement d’état.`;
+  const q1 = { id: 'f0', type: 'num', q: <>Calculez le <b>travail électrique W reçu</b> par la plaque (en kJ, 2 chiffres significatifs).</>, unite: 'kJ', vrai: W, tolRel: 0.05, csMin: 2,
+    aide: 'W = P × Δt avec Δt en secondes (1 min = 60 s) ; 1 kJ = 1 000 J.',
+    pieges: [[Pel * dtMin / 1000, 'La durée est restée en minutes : convertissez-la en secondes.'], [Pel * dtMin * 60, 'Cette valeur est en joules : le résultat est demandé en kJ.']],
+    expl: <>W = {Pel} × {dtMin * 60} = {pvFmt(Pel * dtMin * 60)}{NB}J = <b>{pvFmt(W)}{NB}kJ</b>.</> };
+  const q2 = { id: 'f1', type: 'num', q: <>Calculez la valeur absolue du <b>transfert thermique cédé à l’air</b> (en kJ, 2 chiffres significatifs).</>, unite: 'kJ', vrai: Q, tolRel: 0.05, csMin: 2,
+    aide: '|Q| = part cédée × W, avec la part en nombre décimal (40 % = 0,40).',
+    pieges: [[alpha * 100 * W, 'La part est en pourcentage : divisez-la par 100 avant de multiplier.'], [W - Q, 'Cette valeur est la part restée dans la plaque ; on demande celle cédée à l’air.']],
+    expl: <>|Q| = {nbF(alpha, 2)} × {pvFmt(W)} = <b>{pvFmt(Q)}{NB}kJ</b>.</> };
+  const q3 = { id: 'f2', type: 'num', q: <>Calculez la <b>variation d’énergie interne ΔU</b> de la plaque (en kJ, 2 chiffres significatifs).</>, unite: 'kJ', vrai: dU, tolRel: 0.05, csMin: 2,
+    aide: 'ΔU = W + Q avec W reçu (+) et Q cédé (−) : ΔU = W − |Q|.',
+    pieges: [[W + Q, 'Le transfert thermique est cédé : il est négatif, il faut le soustraire.'], [-dU, 'Le signe est inversé : la plaque reçoit plus qu’elle ne cède, ΔU est positive.']],
+    expl: <>ΔU = {pvFmt(W)} − {pvFmt(Q)} = <b>{pvFmt(dU)}{NB}kJ</b>.</> };
+  const q4 = { id: 'f3', type: 'num', q: <>Calculez la <b>variation de température ΔT</b> de la plaque (en K, 2 chiffres significatifs).</>, unite: 'K', vrai: dT, tolRel: 0.05, csMin: 2,
+    aide: 'ΔU = m × c × ΔT, donc ΔT = ΔU ÷ (m × c) ; ΔU en joules (1 kJ = 1 000 J).',
+    pieges: [[dU / (m * c), 'ΔU est restée en kilojoules : convertissez-la en joules.'], [1000 * dU / c, 'Il faut aussi diviser par la masse m de la plaque.']],
+    expl: <>ΔT = {pvFmt(1000 * dU)} ÷ ({m} × {c}) = <b>{pvFmt(dT)}{NB}K</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['ΔU = W + Q : reçu (+), cédé (−) ; ΔU = m × c × ΔT.', 'Énergie = puissance × durée (en secondes).'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5119,6 +5177,8 @@ export const FAMILLES = [
   { id: 'jou-cable', groupe: 'Formules', titre: 'Câble d’alimentation : intensité et pertes par effet Joule (terminale STL)', gen: genJouleCable, domaine: 'Effet Joule : puissance, énergie thermique et pertes' },
   { id: 'cha-rendement', groupe: 'Formules', titre: 'Moteur de treuil : rendement, puissance et énergie dissipées (terminale STL)', gen: genChaineRendement, domaine: 'Chaîne énergétique, conservation de l’énergie et rendement' },
   { id: 'cha-serie', groupe: 'Formules', titre: 'Chargeur et moteur en série : rendement global et énergie à fournir (terminale STL)', gen: genChaineSerie, domaine: 'Chaîne énergétique, conservation de l’énergie et rendement' },
+  { id: 'sgn-bloc', groupe: 'Formules', titre: 'Bloc de cuivre : bilan d’énergie, signe des transferts, variation de température et puissance (terminale STL)', gen: genSigneBloc, domaine: 'Conservation de l’énergie : bilan et signe des transferts' },
+  { id: 'sgn-four', groupe: 'Formules', titre: 'Plaque d’acier chauffée : travail reçu, transfert cédé, ΔU et variation de température (terminale STL)', gen: genSigneFour, domaine: 'Conservation de l’énergie : bilan et signe des transferts' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
