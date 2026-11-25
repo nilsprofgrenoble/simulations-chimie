@@ -59,11 +59,11 @@ try {
   for (const [k, q] of Object.entries(QCM_PARCOURS)) { total++; if (verifQcm('parcours ' + k, q.options.map(o => texte(o).length), q.bonne)) courtes++; }
   const lesOpt = it => it.options.map(o => o[0].length), bonneIdx = it => it.options.findIndex(o => o[1]);
   const anaOpt = Object.values(ana).flat().filter(x => x && typeof x === 'object' && /^opt-ana/.test(x.id || '')), valOpt = Object.values(val).flat().filter(x => x && typeof x === 'object' && /^opt-val/.test(x.id || ''));
-  assert.equal(anaOpt.length, 2); assert.equal(valOpt.length, 3);
+  assert.equal(anaOpt.length, 3); assert.equal(valOpt.length, 3);
   let c2 = 0, c3 = 0;
   for (const it of anaOpt) if (verifQcm(it.id, lesOpt(it), bonneIdx(it))) c2++;
   for (const it of valOpt) if (verifQcm(it.id, lesOpt(it), bonneIdx(it))) c3++;
-  assert.ok(c3 <= 1, `VAL : la bonne réponse est la plus courte ${c3}/3 fois`); assert.ok(c2 <= 1, `ANA : la bonne réponse est la plus courte ${c2}/2 fois`);
+  assert.ok(c3 <= 1, `VAL : la bonne réponse est la plus courte ${c3}/3 fois`); assert.ok(c2 <= 1, `ANA : la bonne réponse est la plus courte ${c2}/3 fois`);
   const sapp = don.ENONCES.filter(e => /^opt-sapp/.test(e.id)); assert.equal(sapp.length, 2);
   let c4 = 0, n4 = 0;
   for (const e of sapp) for (let q = 0; q < 2; q++) { for (let j = 0; j < 200; j++) { const b = e.build(e.gen(), q); assert.ok(b.utiles.every(u => b.tokens[u]), `${e.id}.${q} : donnée utile absente de l'énoncé`); const l = [b.cherche.bonne, ...b.cherche.faux].map(x => x.length); assert.ok(l[0] < Math.max(...l), `${e.id}.${q} : libellé « cherche » le plus long (${l.join(' ')})`); if (j === 0) { n4++; if (l[0] === Math.min(...l)) c4++; } } }
@@ -87,5 +87,5 @@ try {
   }
   assert.ok(comptes.v > 0 && comptes.r > 0 && comptes.n > 0);
   assert.ok(stat.court < stat.n * 0.7, `défi : la bonne réponse est la plus courte trop souvent (${stat.court}/${stat.n})`);
-  console.log(`optExercices : REA OK sur ${N} tirages (pires écarts d'un élève qui arrondit à 2 chiffres significatifs : ${pire.map(p => (100 * p).toFixed(2) + ' %').join(', ')} ; pièges restants au minimum ${minPieges}) ; QCM parcours : ${courtes}/${total} les plus courtes ; ANA : ${c2}/2 ; VAL : ${c3}/3 ; libellés S'APP : ${c4}/${n4} ; défi rôle d'une opération : bonne réponse la plus courte dans ${(100 * stat.court / stat.n).toFixed(0)} % des tirages`);
+  console.log(`optExercices : REA OK sur ${N} tirages (pires écarts d'un élève qui arrondit à 2 chiffres significatifs : ${pire.map(p => (100 * p).toFixed(2) + ' %').join(', ')} ; pièges restants au minimum ${minPieges}) ; QCM parcours : ${courtes}/${total} les plus courtes ; ANA : ${c2}/3 ; VAL : ${c3}/3 ; libellés S'APP : ${c4}/${n4} ; défi rôle d'une opération : bonne réponse la plus courte dans ${(100 * stat.court / stat.n).toFixed(0)} % des tirages`);
 } finally { await serveur.close(); }

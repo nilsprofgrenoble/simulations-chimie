@@ -62,7 +62,7 @@ try {
   for (const [k, q] of Object.entries(QCM_PARCOURS)) { assert.ok(q.options.length >= 3, k); const lp = q.options.map(o => o.length); verifQcm('parcours ' + k, lp, q.bonne); assert.ok(lp[q.bonne] > Math.min(...lp), `parcours ${k} : la bonne réponse est la plus courte (${lp.join(' ')})`); }
   const tousAna = Object.values(ana).flat().filter(x => x && typeof x === 'object' && /^cin-ana/.test(x.id || ''));
   const tousVal = Object.values(val).flat().filter(x => x && typeof x === 'object' && /^cin-val/.test(x.id || ''));
-  assert.equal(tousAna.length, 3, 'ANA'); assert.equal(tousVal.length, 2, 'VAL');
+  assert.equal(tousAna.length, 6, 'ANA'); assert.equal(tousVal.length, 2, 'VAL');
   for (const it of [...tousAna, ...tousVal]) { const l = it.options.map(o => o[0].length), bi = it.options.findIndex(o => o[1]); assert.ok(bi >= 0, it.id); verifQcm(it.id, l, bi); }
   for (const it of [...tousAna, ...tousVal]) assert.ok(!/÷/.test(JSON.stringify(it)), `${it.id} : « ÷ » dans le texte affiché`);
   const sapp = don.ENONCES.filter(e => /^cin-sapp/.test(e.id)); assert.equal(sapp.length, 2);

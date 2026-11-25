@@ -300,7 +300,7 @@ export const ENONCES = [
   // ───────────────────────────── Radioactivité (TG) : activité et datation
   {
     id: 'rad-activite', domaine: 'Radioactivité : décroissance et demi-vie', titre: 'Activité d’un échantillon d’iode 131', noms: ['Activité initiale', 'Constante radioactive λ'],
-    gen: () => { const th = tire([4, 6, 8, 10]), N0 = tire([2.0e7, 4.0e7, 5.0e7, 8.0e7]); return { th, N0, lam: Number((Math.LN2 / (th * 86400)).toPrecision(2)), m: tire([12, 25, 40]) }; },
+    gen: () => { const th = 8 /* demi-vie réelle de l’iode 131 : 8,0 jours */, N0 = tire([2.0e7, 4.0e7, 5.0e7, 8.0e7]); return { th, N0, lam: Number((Math.LN2 / (th * 86400)).toPrecision(2)), m: tire([12, 25, 40]) }; },
     build: (p, q) => {
       const tokens = {
         th: tok(`${p.th},0 jours`, 'Demi-vie de l’iode 131 (valeur utilisée)', p.th, 'j'),
