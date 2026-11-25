@@ -2588,6 +2588,54 @@ function genPvEclair() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['Icc est proportionnel à l’éclairement : Icc₂ = Icc₁ × E₂ ÷ E₁.', 'Pmax suit à peu près l’éclairement ; la tension à vide Uco varie très peu.'] };
 }
+// ---------- Panneau photovoltaïque : rendement et bilan énergétique (TSTL, PCM) ----------
+function genPvRendement() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const S = tire([25, 37.5, 50, 75]), E = tire([600, 800, 1000]), Plum = E * S / 1e4, U = tire([1.6, 2.2, 2.8, 3.1, 3.4, 3.8]);
+  const I = Math.max(20, Math.round(tire([0.08, 0.1, 0.12, 0.14, 0.16, 0.18]) * Plum * 1000 / U));
+  const Pel = pvCs2(U * I / 1000), eta = 100 * Pel / Plum, pert = Plum - Pel;
+  const intro = `Un panneau photovoltaïque de surface S = ${nbF(S, S % 1 ? 1 : 0)}${NB}cm² est éclairé avec E = ${E}${NB}W/m². Un voltmètre indique U = ${nbF(U, 1)}${NB}V aux bornes du panneau et un ampèremètre indique I = ${I}${NB}mA.`;
+  const q1 = { id: 'r0', type: 'num', q: <>Calculez la <b>puissance lumineuse reçue</b> Plum = E × S (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: Plum, tolRel: 0.05, csMin: 2,
+    aide: 'Convertissez la surface en m² (1 cm² = 0,0001 m²) puis multipliez par E.',
+    pieges: [[E * S, 'La surface est restée en cm² : convertissez-la en m² avant de multiplier.'], [E / (S / 1e4), 'Il faut multiplier E par S, pas les diviser.']],
+    expl: <>S = {nbF(S, S % 1 ? 1 : 0)}{NB}cm² = {nbF(S / 1e4, 5)}{NB}m² ; Plum = {E} × {nbF(S / 1e4, 5)} = <b>{pvFmt(Plum)}{NB}W</b>.</> };
+  const q2 = { id: 'r1', type: 'num', q: <>Calculez la <b>puissance électrique</b> Pél = U × I fournie par le panneau (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: U * I / 1000, tolRel: 0.05, csMin: 2,
+    aide: 'Convertissez I en ampères (1 mA = 0,001 A) puis multipliez par U.',
+    pieges: [[U * I, 'I est en milliampères : le produit donne des milliwatts. Convertissez I en ampères pour obtenir des watts.']],
+    expl: <>Pél = U × I = {nbF(U, 1)} × {nbF(I / 1000, 3)} = <b>{pvFmt(U * I / 1000)}{NB}W</b>.</> };
+  const q3 = { id: 'r2', type: 'num', q: <>Avec Plum = {pvFmt(Plum)}{NB}W et Pél = {pvFmt(Pel)}{NB}W, calculez le <b>rendement</b> η = Pél ÷ Plum (en %, 2 chiffres significatifs).</>, unite: '%', vrai: eta, tolRel: 0.05, csMin: 2,
+    aide: 'η = puissance électrique divisée par puissance lumineuse, puis multipliez par 100 pour des %.',
+    pieges: [[eta / 100, 'Ce rapport est une fraction : multipliez par 100 pour un pourcentage.'], [100 * Plum / Pel, 'Le rapport est inversé : η = Pél divisé par Plum.']],
+    expl: <>η = {pvFmt(Pel)} ÷ {pvFmt(Plum)} = {nbF(eta / 100, 3)} soit <b>{pvFmt(eta)}{NB}%</b>.</> };
+  const q4 = { id: 'r3', type: 'num', q: <>Calculez la <b>puissance perdue</b> Plum − Pél (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: pert, tolRel: 0.05, csMin: 2,
+    aide: 'Les pertes sont la différence entre la lumière reçue et l’électricité fournie.',
+    pieges: [[Pel, 'Cette valeur est la puissance électrique, pas la puissance perdue.'], [Plum + Pel, 'Les pertes sont une différence, pas une somme.']],
+    expl: <>pertes = {pvFmt(Plum)} − {pvFmt(Pel)} = <b>{pvFmt(pert)}{NB}W</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Plum = E × S (S en m²) ; Pél = U × I (I en A).', 'Rendement η = Pél ÷ Plum (en %) ; pertes = Plum − Pél.'] };
+}
+function genPvDimension() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const Pel = tire([1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]), etaP = tire([12, 14, 15, 16, 18]), E = tire([600, 700, 800, 900, 1000]);
+  const Plum = Pel / (etaP / 100), S = Plum / E * 1e4, Pel2 = Pel / 2;
+  const intro = `On veut alimenter un appareil qui demande une puissance électrique Pél = ${nbF(Pel, 1)}${NB}W avec un panneau photovoltaïque de rendement η = ${etaP}${NB}% (soit ${nbF(etaP / 100, 2)}), éclairé avec E = ${E}${NB}W/m².`;
+  const q1 = { id: 'd0', type: 'num', q: <>Calculez la <b>puissance lumineuse</b> Plum = Pél ÷ η que le panneau doit recevoir (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: Plum, tolRel: 0.05, csMin: 2,
+    aide: 'Divisez Pél par le rendement écrit en nombre décimal (15 % = 0,15).',
+    pieges: [[Pel * etaP / 100, 'Ce produit est Pél × η. Pour retrouver la lumière reçue, il faut diviser par η.'], [Pel / etaP, 'Le rendement doit être en nombre décimal : divisez par 0,15 et non par 15.']],
+    expl: <>Plum = {nbF(Pel, 1)} ÷ {nbF(etaP / 100, 2)} = <b>{pvFmt(Plum)}{NB}W</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>Avec Plum = {pvFmt(Plum)}{NB}W, calculez la <b>surface S</b> du panneau (en cm², 2 chiffres significatifs).</>, unite: 'cm²', vrai: S, tolRel: 0.05, csMin: 2,
+    aide: 'S = Plum ÷ E donne des m² ; multipliez par 10 000 pour des cm².',
+    pieges: [[S / 1e4, 'Cette valeur est en m² : multipliez par 10 000 pour des cm².'], [Plum * E, 'Il faut diviser Plum par E, pas les multiplier.']],
+    expl: <>S = {pvFmt(Plum)} ÷ {E} = {nbF(Plum / E, 4)}{NB}m² = <b>{pvFmt(S)}{NB}cm²</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>Le rendement restant le même, l’éclairement est divisé par 2 (E = {E / 2}{NB}W/m²) sur le même panneau. Quelle <b>puissance électrique</b> fournit-il (en W, 2 chiffres significatifs) ?</>, unite: 'W', vrai: Pel2, tolRel: 0.05, csMin: 2,
+    aide: 'La lumière reçue est divisée par 2 et le rendement ne change pas : Pél = η × Plum est divisée par 2.',
+    pieges: [[Pel, 'La puissance électrique dépend de la lumière reçue : elle diminue quand l’éclairement diminue.'], [Pel * 2, 'L’éclairement diminue, donc la puissance électrique diminue aussi.']],
+    expl: <>Plum est divisée par 2, donc Pél = {nbF(Pel, 1)} ÷ 2 = <b>{pvFmt(Pel2)}{NB}W</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Plum = Pél ÷ η (η en nombre décimal), puis S = Plum ÷ E.', 'À rendement constant, Pél varie comme l’éclairement.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -4714,6 +4762,8 @@ export const FAMILLES = [
   { id: 'extrac-passes', groupe: 'Formules', titre: 'Extraction acide-base : extractions successives (terminale STL)', gen: genExtracPasses, domaine: 'Extraction acide-base : choix du pH' },
   { id: 'pvc-puissance', groupe: 'Formules', titre: 'Panneau photovoltaïque : puissance, loi d’Ohm et énergie (terminale STL)', gen: genPvPuissance, domaine: 'Panneau photovoltaïque : caractéristique, puissance maximale, éclairement' },
   { id: 'pvc-eclair', groupe: 'Formules', titre: 'Panneau photovoltaïque : effet de l’éclairement sur Icc et Pmax (terminale STL)', gen: genPvEclair, domaine: 'Panneau photovoltaïque : caractéristique, puissance maximale, éclairement' },
+  { id: 'pvr-rendement', groupe: 'Formules', titre: 'Panneau photovoltaïque : puissance reçue, rendement et pertes (terminale STL)', gen: genPvRendement, domaine: 'Panneau photovoltaïque : rendement et bilan énergétique' },
+  { id: 'pvr-dimension', groupe: 'Formules', titre: 'Panneau photovoltaïque : dimensionner la surface (terminale STL)', gen: genPvDimension, domaine: 'Panneau photovoltaïque : rendement et bilan énergétique' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

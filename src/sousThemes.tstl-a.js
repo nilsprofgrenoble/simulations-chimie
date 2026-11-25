@@ -83,4 +83,12 @@ export default {
     { id: 'eclairement', nom: 'Effet de l’éclairement sur le courant et la tension', capacite: 'Prévoir comment le courant de court-circuit, la tension à vide et la puissance maximale d’un panneau varient avec l’éclairement.',
       refs: ['34:pvc-sapp-eclair', '37:prevoir:pvc-ana-eclair', '77:plausible:pvc-val-eclair'] },
   ],
+  'tstl-pcm-energie-ondes': [
+    { id: 'lumiere-recue', nom: 'Puissance lumineuse reçue, éclairement et surface', capacite: 'Exploiter la relation entre le flux énergétique (puissance lumineuse reçue) et l’éclairement énergétique : Plum = E × S.',
+      refs: ['34:pvr-sapp-rendement', '37:prevoir:pvr-ana-surface', '77:plausible:pvr-val-sup100'] },
+    { id: 'rendement', nom: 'Rendement d’un panneau et pertes', capacite: 'Estimer le rendement d’un panneau photovoltaïque à partir de données expérimentales et en déduire la puissance perdue.',
+      refs: ['37:prevoir:pvr-ana-pertes', '37:prevoir:pvr-ana-charge', '77:plausible:pvr-val-eta'] },
+    { id: 'eclairement-dimension', nom: 'Effet de l’éclairement et dimensionnement', capacite: 'Prévoir l’effet de l’éclairement sur la puissance fournie et dimensionner la surface d’un panneau à partir de son rendement.',
+      refs: ['34:pvr-sapp-dimension', '37:prevoir:pvr-ana-eclair'] },
+  ],
 };

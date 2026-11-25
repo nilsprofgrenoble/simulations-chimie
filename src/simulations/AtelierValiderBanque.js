@@ -1,3 +1,4 @@
+import { PVR_VAL } from './panneauRendementExos.js';
 import { PVC_VAL } from './panneauPvExos.js';
 import { presenter } from './presenter.js';
 import { OEIL2GT_VAL } from './oeilReduit2gtExos.js';
@@ -4482,6 +4483,7 @@ export const PLAUSIBLES = [
   ...OSG2GT_VAL,
   ...NOY2GT_VAL,
   ...PVC_VAL,
+  ...PVR_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
