@@ -971,8 +971,8 @@ export const PROBLEMES = [
     ...presenter({ contexte: 'Un laser rouge éclaire un fil de cuivre tendu verticalement. On mesure la tache centrale de la figure de diffraction sur un écran, entre les deux premières extinctions. L’angle d’ouverture de la figure (angle entre le centre de la figure et la première extinction) vaut θ = λ / a (θ en radian, petit).', liste: [['Longueur d’onde du laser', 'λ = 650 nm'], ['Puissance du laser', '5 mW'], ['Distance fil-écran', 'D = 3,00 m'], ['Largeur de la tache centrale', 'L = 5,2 cm'], ['Longueur du fil', '15 cm'], ['Diamètre annoncé par le fabricant', '75 µm ± 5 µm']], question: 'Le diamètre du fil est-il conforme à l’annonce du fabricant ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('Le diamètre a du fil, pour le comparer à l’intervalle 70 – 80 µm', 'Le critère porte sur le diamètre : il faut le déduire de la figure de diffraction.'),
-      F('La fréquence du laser', 'La fréquence ne dit rien du diamètre du fil : seule la longueur d’onde intervient.'),
-      F('L’angle d’ouverture θ seul', 'θ est une étape utile, mais la question porte sur le diamètre, à comparer à l’annonce.'),
+      F('La fréquence f du laser, calculée à partir de sa longueur d’onde', 'La fréquence ne dit rien du diamètre du fil : seule la longueur d’onde intervient.'),
+      F('L’angle d’ouverture θ seul, sans en déduire le diamètre', 'θ est une étape utile, mais la question porte sur le diamètre, à comparer à l’annonce.'),
     ] },
     donnees: [
       ['λ = 650 nm', true, 'Elle intervient dans θ = λ / a : sans elle on ne peut pas passer de l’angle au diamètre.'],
@@ -1009,8 +1009,8 @@ export const PROBLEMES = [
     },
     conclusion: { q: 'Quelle conclusion obtient-on en suivant la démarche ?', options: [
       V('Oui : a ≈ 75 µm, dans l’intervalle annoncé (70 µm à 80 µm)', 'θ = 8,7×10⁻³ rad puis a = λ / θ = 75 µm. Sur ces données, le fil est conforme.'),
-      F('Non : a ≈ 37,5 µm, deux fois trop fin', 'Résultat obtenu avec θ = L / D, c’est-à-dire en prenant la largeur totale pour la demi-largeur. Il faut diviser L par 2 pour obtenir l’angle.'),
-      F('Non : a ≈ 150 µm, deux fois trop épais', 'Résultat obtenu en divisant L par 2 deux fois, c’est-à-dire avec θ = L / (4D). L’angle d’ouverture est L / (2D).'),
+      F('Non : a ≈ 37,5 µm, un fil deux fois trop fin par rapport à l’annonce', 'Résultat obtenu avec θ = L / D, c’est-à-dire en prenant la largeur totale pour la demi-largeur. Il faut diviser L par 2 pour obtenir l’angle.'),
+      F('Non : a ≈ 150 µm, un fil deux fois trop épais par rapport à l’annonce', 'Résultat obtenu en divisant L par 2 deux fois, c’est-à-dire avec θ = L / (4D). L’angle d’ouverture est L / (2D).'),
     ] },
     retenir: ['Diffraction par un fil ou une fente : θ = λ / a, avec θ = L / (2D) pour une tache centrale de largeur L à la distance D. D’où a = 2·λ·D / L.'],
   },
@@ -1326,6 +1326,14 @@ export const RELATIONS = [
       F('λ = a / sin θ₁', 'Le rapport est inversé : on trouverait 7,5 µm, une longueur d’onde plus grande que le pas, ce qui est impossible puisque sin θ₁ = λ / a ne peut dépasser 1.'),
       F('λ = a·cos θ₁', 'Le cosinus ne figure pas dans la formule des réseaux ; il donnerait 1,9 µm, une valeur hors du domaine visible.'),
     ] },
+  { id: 'ond-rel-niveau-intensite', domaine: 'Ondes', titre: 'Niveau d’intensité sonore à partir de l’intensité',
+    ...presenter({ contexte: 'Un sonomètre mesure l’intensité sonore reçue en un point d’une salle, près d’un haut-parleur. On veut en déduire le niveau d’intensité sonore.', liste: [['Intensité sonore mesurée', 'I = 2,5×10⁻⁵ W·m⁻²'], ['Intensité sonore de référence (seuil d’audibilité)', 'I₀ = 1,0×10⁻¹² W·m⁻²']], question: 'Quel est le niveau d’intensité sonore L, en décibels ?' }),
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('L = 10 log (I / I₀)', 'Le niveau se calcule avec le logarithme décimal du rapport I / I₀ : L = 10 × log(2,5×10⁷) ≈ 74 dB, valeur d’un lieu bruyant.'),
+      F('L = 10 log (I₀ / I)', 'Le rapport est inversé : on trouverait −74 dB, un niveau négatif (inférieur au seuil d’audibilité), absurde pour un son bien audible.'),
+      F('L = 20 log (I / I₀)', 'Le facteur 20 convient à une grandeur proportionnelle à une amplitude (tension, pression), pas à une intensité (puissance par unité de surface) : on trouverait 148 dB, un niveau dangereux pour l’oreille.'),
+      F('L = 10 × I / I₀', 'Le logarithme est oublié : on trouverait 2,5×10⁸, nombre sans rapport avec l’échelle usuelle de 0 à 130 dB.'),
+    ] },
   // ── Acides et bases / Synthèse organique ──
   { id: 'ab-rel-henderson', domaine: 'Acides et bases', titre: 'pH d’une solution tampon éthanoïque',
     ...presenter({ contexte: 'On prépare une solution tampon en mélangeant l’acide éthanoïque et l’ion éthanoate (pKa = 4,8).', liste: [['Concentration en acide éthanoïque', '[AH] = 0,010 mol·L⁻¹'], ['Concentration en ion éthanoate', '[A⁻] = 0,040 mol·L⁻¹']], question: 'Quel est le pH de la solution ?' }),
@@ -1624,6 +1632,24 @@ export const HYPOTHESES = [
       F('L’angle θ₁ doit être petit pour que la formule s’applique', 'La formule des réseaux est exacte pour tout angle : elle ne contient pas d’approximation des petits angles (contrairement à l’expression de l’angle d’ouverture en diffraction).'),
       F('Le réseau doit comporter exactement deux traits éclairés', 'Ce serait un dispositif de Young. L’intérêt du réseau est justement d’en éclairer un grand nombre, ce qui affine les maxima.'),
       F('La largeur de chaque trait doit être égale au pas', 'La position des ordres ne dépend que du pas a ; la largeur des traits agit sur l’éclat de chaque ordre, pas sur sa direction.'),
+    ] },
+  { id: 'ond-hyp-doppler', domaine: 'Ondes', titre: 'Vitesse par effet Doppler : hypothèses',
+    ...presenter({ contexte: 'Un chariot porte un émetteur d’ultrasons et se déplace en ligne droite vers un récepteur fixe. On détermine sa vitesse v à partir du décalage Doppler δf lu sur le spectre, avec la relation δf = f_e × v / c.' }), options: [
+      V('La vitesse v du chariot est très inférieure à la célérité c du son', 'La relation δf = f_e × v / c est une approximation de f_r = f_e / (1 − v / c) : elle n’est valable que si v / c est très petit (ici de l’ordre de 10⁻³).'),
+      V('Le chariot se déplace sur la droite qui le joint au récepteur', 'La relation concerne la vitesse dans la direction du récepteur : pour un mouvement oblique, seule la composante de la vitesse sur cette droite interviendrait.'),
+      V('La vitesse du chariot reste constante pendant l’enregistrement', 'Si la vitesse variait, la fréquence reçue changerait au cours de l’enregistrement : le pic du spectre s’étalerait et ne donnerait plus une valeur unique de δf.'),
+      F('La masse du chariot est connue avec précision', 'La masse n’intervient pas dans le décalage Doppler : seul le rapport v / c compte.'),
+      F('Le chariot s’approche du récepteur : s’il s’éloignait, la relation ne s’appliquerait pas', 'En s’éloignant, la fréquence reçue est plus petite que f_e : le décalage change de signe, mais sa valeur absolue suit la même relation.'),
+      F('Le récepteur se déplace à la même vitesse que le chariot', 'Il n’y aurait alors plus de mouvement relatif, donc plus de décalage : dans l’expérience, le récepteur est fixe.'),
+    ] },
+  { id: 'ond-hyp-young-interfrange', domaine: 'Ondes', titre: 'Fentes de Young : mesurer la distance entre les fentes (hypothèses)',
+    ...presenter({ contexte: 'Pour déterminer la distance l entre deux fentes de Young, on mesure l’interfrange i sur un écran placé à la distance D des fentes, puis on calcule l = λ·D / i.' }), options: [
+      V('La lumière est monochromatique, de longueur d’onde λ connue', 'Avec de la lumière blanche, chaque couleur donnerait sa propre figure : les franges seraient irisées et i n’aurait pas de valeur unique.'),
+      V('La distance D est très grande devant l', 'Cette condition permet d’écrire i = λ·D / l : la différence de chemin vaut alors δ ≈ l·x / D en un point de l’écran d’abscisse x (petits angles).'),
+      V('Les deux fentes sont éclairées par la même source', 'Seules deux ondes issues de la même source sont cohérentes : leur déphasage reste constant et les franges sont stables.'),
+      V('Les franges sont régulièrement espacées dans la zone observée', 'La mesure de l’interfrange n’a de sens que si les franges sont équidistantes ; c’est le cas près du centre de la figure.'),
+      F('Chaque fente doit être éclairée par un laser différent', 'Deux lasers indépendants ne sont pas cohérents : leur déphasage varie sans cesse et les franges disparaissent.'),
+      F('La puissance du laser est connue avec précision', 'La puissance règle l’éclat des franges, pas leur position : elle n’intervient pas dans le calcul de l.'),
     ] },
   // ── Acides et bases / Synthèse organique ──
   { id: 'ab-hyp-henderson', domaine: 'Acides et bases', titre: 'Solution tampon : relation de Henderson-Hasselbalch',
@@ -3292,45 +3318,45 @@ export const PREVOIR = [
     ] },
   { id: 'dop-sens', domaine: 'Ondes', titre: 'Un chariot qui s’éloigne',
     enonce: 'Sur un rail de laboratoire, un chariot porte un émetteur ultrasonore de fréquence 40 000 Hz. Un récepteur est fixé à une extrémité du rail. On éloigne le chariot du récepteur à vitesse constante et on trace le spectre du signal reçu.', q: 'Le pic du spectre se trouve…', options: [
-      V('à une fréquence inférieure à 40 000 Hz', 'Quand l’émetteur s’éloigne, les fronts d’onde arrivent plus espacés : la longueur d’onde reçue est plus grande et la fréquence reçue plus petite que f_e.'),
-      F('à une fréquence supérieure à 40 000 Hz', 'C’est le cas quand l’émetteur se rapproche du récepteur, pas quand il s’en éloigne.'),
+      V('à une fréquence inférieure à 40 000 Hz, car les fronts d’onde arrivent plus espacés', 'Quand l’émetteur s’éloigne, les fronts d’onde arrivent plus espacés : la longueur d’onde reçue est plus grande et la fréquence reçue plus petite que f_e.'),
+      F('à une fréquence supérieure à 40 000 Hz, car les fronts d’onde arrivent plus serrés', 'C’est le cas quand l’émetteur se rapproche du récepteur, pas quand il s’en éloigne.'),
       F('exactement à 40 000 Hz, car l’émetteur n’a pas changé sa fréquence', 'L’émetteur émet bien toujours 40 000 Hz, mais c’est la fréquence reçue qui diffère dès qu’il y a un mouvement relatif.'),
       F('à une fréquence inférieure, car l’onde se propage plus lentement', 'La célérité de l’onde ne dépend que du milieu : elle ne change pas quand l’émetteur bouge.'),
     ] },
   { id: 'dop-proportion', domaine: 'Ondes', titre: 'Doubler la vitesse du chariot',
-    enonce: 'Un émetteur ultrasonore se rapproche d’un récepteur fixe à la vitesse v ; le décalage Doppler mesuré est δf = 60 Hz. On recommence avec la même fréquence émise, mais à la vitesse 2v (toujours très inférieure à la célérité du son).', q: 'Le décalage vaut alors environ…', options: [
-      V('120 Hz', 'Pour v très inférieure à c, δf = f_e × v / c est proportionnel à v : doubler v double δf.'),
+    ...presenter({ contexte: 'Un émetteur ultrasonore se rapproche d’un récepteur fixe, avec la même fréquence émise dans les deux expériences. La vitesse reste, dans les deux cas, très inférieure à la célérité du son.', liste: [['Expérience 1 : vitesse v', 'décalage Doppler δf = 60 Hz'], ['Expérience 2', 'vitesse 2v']] }), q: 'Quel décalage Doppler mesure-t-on dans l’expérience 2 ?', options: [
+      V('120 Hz, car δf est proportionnel à v', 'Pour v très inférieure à c, δf = f_e × v / c est proportionnel à v : doubler v double δf.'),
       F('60 Hz, car la fréquence émise ne change pas', 'La fréquence émise ne change pas, mais le décalage dépend de la vitesse : δf = f_e × v / c.'),
-      F('30 Hz', 'Le décalage augmente avec la vitesse : il ne diminue pas quand v augmente.'),
-      F('240 Hz', 'Il faudrait que δf soit proportionnel à v² ; ici δf est proportionnel à v.'),
+      F('30 Hz, car δf diminue quand v augmente', 'Le décalage augmente avec la vitesse : il ne diminue pas quand v augmente.'),
+      F('240 Hz, car δf varie comme v²', 'Il faudrait que δf soit proportionnel à v² ; ici δf est proportionnel à v.'),
     ] },
   { id: 'dop-duree', domaine: 'Ondes', titre: 'Deux pics qui se chevauchent',
-    enonce: 'Un chariot émetteur (40 000 Hz) roule très lentement : le décalage Doppler vaut δf = 1,5 Hz. Le signal est enregistré pendant 0,5 s ; sur le spectre, les pics de f_e et de f_r ont chacun une largeur d’environ 1 / T et se chevauchent.', q: 'Pour distinguer nettement les deux pics, on peut…', options: [
+    ...presenter({ contexte: 'Un chariot émetteur roule très lentement. Sur le spectre du signal reçu, les pics de la fréquence émise f_e et de la fréquence reçue f_r ont chacun une largeur d’environ 1 / T, où T est la durée d’enregistrement : ils se chevauchent.', liste: [['Fréquence émise', 'f_e = 40 000 Hz'], ['Décalage Doppler', 'δf = 1,5 Hz'], ['Durée d’enregistrement', 'T = 0,5 s']] }), q: 'Pour distinguer nettement les deux pics, on peut…', options: [
       V('allonger l’enregistrement, par exemple à 4 s', 'La largeur d’un pic est environ 1 / T : elle passe de 2 Hz (T = 0,5 s) à 0,25 Hz (T = 4 s), inférieure à δf = 1,5 Hz.'),
       F('enregistrer le signal moins longtemps, par exemple 0,1 s', 'Un enregistrement plus court élargit les pics (10 Hz pour 0,1 s) : le chevauchement augmente.'),
-      F('utiliser un son plus aigu pour que l’onde aille plus vite', 'La célérité du son ne dépend pas de la fréquence et ne modifie pas la largeur des pics.'),
+      F('amplifier le signal reçu pour obtenir des pics plus hauts', 'L’amplification change la hauteur des pics, pas leur largeur (environ 1 / T) ni leur écart δf : le chevauchement reste le même.'),
       F('choisir un émetteur de fréquence plus basse', 'Une fréquence f_e plus basse diminue même le décalage (δf = f_e × v / c) sans affiner les pics.'),
     ] },
   { id: 'dopg-derriere', domaine: 'Ondes', titre: 'Fréquence reçue derrière un émetteur mobile',
-    enonce: 'Un émetteur sonore de fréquence f_e se déplace en ligne droite à la vitesse v = c / 4, c étant la célérité de l’onde dans le milieu. Un observateur fixe est placé sur la même droite, derrière l’émetteur (l’émetteur s’en éloigne).', q: 'La fréquence qu’il reçoit vaut…', options: [
+    ...presenter({ contexte: 'Un émetteur sonore de fréquence f_e s’éloigne en ligne droite d’un observateur fixe placé derrière lui, à la vitesse v = c / 4 (c : célérité de l’onde dans le milieu). Comme v n’est pas négligeable devant c, on ne peut pas utiliser δf = f_e × v / c : il faut raisonner sur la distance entre deux fronts d’onde reçus.' }), q: 'La fréquence qu’il reçoit vaut…', options: [
       V('0,80 f_e', 'Derrière l’émetteur, λ_B = (c + v) T_e, donc f_B = f_e / (1 + v / c) = f_e / 1,25 = 0,80 f_e.'),
       F('0,75 f_e', 'C’est f_e × (1 − v / c), une approximation qui n’est pas l’expression établie ; ici v n’est pas très inférieure à c.'),
       F('1,25 f_e', 'La fréquence reçue est plus grande que f_e seulement devant l’émetteur ; derrière, elle est plus petite.'),
-      F('f_e, car l’émetteur n’a pas changé sa fréquence d’émission', 'La fréquence d’émission ne change pas, mais la fréquence reçue dépend du mouvement relatif.'),
+      F('f_e, car l’émetteur garde la même fréquence', 'La fréquence d’émission ne change pas, mais la fréquence reçue dépend du mouvement relatif.'),
     ] },
   { id: 'dopg-limite', domaine: 'Ondes', titre: 'Quand v n’est plus négligeable devant c',
-    enonce: 'Un émetteur se rapproche d’un observateur fixe, sur la même droite, à la vitesse v = c / 2 (cas théorique). On dispose de l’expression exacte f_r = f_e / (1 − v / c) et de l’expression approchée δf = f_e × v / c valable si v est très inférieure à c.', q: 'La fréquence reçue est…', options: [
+    ...presenter({ contexte: 'Un émetteur se rapproche d’un observateur fixe, sur la même droite, à la vitesse v = c / 2 (cas théorique, pour comparer deux expressions).', liste: [['Expression exacte', 'f_r = f_e / (1 − v / c)'], ['Expression approchée (v très inférieure à c)', 'δf = f_e × v / c']] }), q: 'La fréquence reçue est…', options: [
       V('2 f_e, calculée avec l’expression exacte', 'f_r = f_e / (1 − 1/2) = 2 f_e. Ici v n’est pas très inférieure à c, l’approximation n’est pas applicable.'),
       F('1,5 f_e, en ajoutant le décalage approché f_e × v / c', 'L’approximation δf = f_e v / c suppose v très inférieure à c, ce qui n’est pas le cas à c / 2.'),
       F('0,5 f_e, car l’émetteur est rapide', 'Un émetteur qui se rapproche donne une fréquence reçue plus grande que f_e.'),
       F('f_e, car le milieu ne change pas', 'La célérité ne change pas, mais la longueur d’onde devant l’émetteur est divisée par 2 : la fréquence reçue double.'),
     ] },
   { id: 'dopg-lumiere', domaine: 'Ondes', titre: 'Son et lumière : même vitesse, quel décalage relatif ?',
-    enonce: 'Un émetteur d’ultrasons et un laser, fixés chacun sur un chariot, se déplacent à la même vitesse v = 0,50 m/s vers un récepteur fixe (c = 340 m/s dans l’air pour le son ; c = 3,00 × 10⁸ m/s pour la lumière). On compare le décalage relatif δf / f_e dans les deux cas.', q: 'Le décalage relatif δf / f_e est…', options: [
+    ...presenter({ contexte: 'Un émetteur d’ultrasons et un laser, fixés chacun sur un chariot, se déplacent à la même vitesse vers un récepteur fixe. On compare le décalage relatif δf / f_e dans les deux cas.', liste: [['Vitesse des chariots', 'v = 0,50 m·s⁻¹'], ['Célérité du son dans l’air', 'c = 340 m·s⁻¹'], ['Célérité de la lumière', 'c = 3,00×10⁸ m·s⁻¹']] }), q: 'Le décalage relatif δf / f_e est…', options: [
       V('environ un million de fois plus petit pour la lumière', 'δf / f_e = v / c : c est environ 10⁶ fois plus grande pour la lumière (3,00 × 10⁸ / 340 ≈ 9 × 10⁵), donc le rapport est environ 10⁶ fois plus petit.'),
       F('identique, car il ne dépend que de la vitesse', 'Il dépend de v / c : la célérité intervient et diffère beaucoup entre le son et la lumière.'),
       F('plus grand pour la lumière, car sa fréquence est plus grande', 'La fréquence f_e s’élimine dans le rapport δf / f_e = v / c.'),
-      F('nul pour la lumière, car la lumière ne subit pas l’effet Doppler', 'Les ondes lumineuses subissent aussi l’effet Doppler ; il est seulement très petit en valeur relative.'),
+      F('nul pour la lumière, car elle ne subit pas l’effet Doppler', 'Les ondes lumineuses subissent aussi l’effet Doppler ; il est seulement très petit en valeur relative.'),
     ] },
   { id: 'titph-apres-eq', domaine: 'Titrage pH-métrique', titre: 'Après l’équivalence : qui fixe le pH ?',
     enonce: 'On titre V_A = 20,0 mL d’une solution d’acide éthanoïque de concentration C_A = 0,080 mol/L par une solution d’hydroxyde de sodium de concentration C_B = 0,100 mol/L. On a versé V_B = 20,0 mL de soude, soit plus que le volume équivalent V_E = 16,0 mL. La transformation est supposée totale.', q: 'Dans l’erlenmeyer, juste après cet ajout…', options: [
@@ -4235,10 +4261,10 @@ export const PREVOIR = [
       F('Le platine est un isolant : il ne peut pas échanger d’électrons avec l’eau à 1,23 V', 'Le platine est un très bon conducteur. Ce qui est lent, c’est la réaction d’oxydation de l’eau à sa surface.'),
     ] },
   { id: 'son-distance-niveau', domaine: 'Ondes', titre: 'Doubler la distance à une source sonore',
-    enonce: 'Une source sonore ponctuelle émet de façon identique dans toutes les directions : l’intensité sonore décroît comme 1 / r², où r est la distance à la source. Le niveau sonore est L = 10 log (I / I₀).', q: 'On passe de r = 1 m à r = 2 m. Que devient le niveau sonore ?', options: [
-      V('Il diminue d’environ 6 dB : l’intensité est divisée par 4, et 10 log 4 ≈ 6', 'Doubler r divise I par 2² = 4 : L diminue de 10 log 4 ≈ 6,0 dB.'),
-      F('Il est divisé par deux', 'Le niveau sonore est une grandeur logarithmique : diviser l’intensité par 4 ne divise pas L par 2, cela retranche environ 6 dB.'),
-      F('Il diminue de 3 dB, car l’intensité est divisée par 2', 'L’intensité varie comme 1 / r² : elle est divisée par 4 (et non par 2), soit 6 dB de moins.'),
+    ...presenter({ contexte: 'Une source sonore ponctuelle émet de façon identique dans toutes les directions : l’intensité sonore I décroît comme 1 / r², où r est la distance à la source.', liste: [['Niveau sonore', 'L = 10 log (I / I₀)']] }), q: 'On passe de r = 1 m à r = 2 m. Que devient le niveau sonore ?', options: [
+      V('Il diminue d’environ 6 dB, car I est divisée par 4', 'Doubler r divise I par 2² = 4 : L diminue de 10 log 4 ≈ 6,0 dB.'),
+      F('Il est divisé par deux, car la distance double', 'Le niveau sonore est une grandeur logarithmique : diviser l’intensité par 4 ne divise pas L par 2, cela retranche environ 6 dB.'),
+      F('Il diminue de 3 dB, car I est divisée par 2', 'L’intensité varie comme 1 / r² : elle est divisée par 4 (et non par 2), soit 6 dB de moins.'),
     ] },
   { id: 'son-sources-identiques', domaine: 'Ondes', titre: 'Deux sources identiques',
     enonce: 'Un haut-parleur seul produit en un point un niveau sonore de 70 dB. On en place un second, identique, au même endroit, qui émet la même chose.', q: 'Quel est le niveau sonore total en ce point ?', options: [
@@ -4248,45 +4274,45 @@ export const PREVOIR = [
     ] },
   { id: 'son-hauteur-timbre', domaine: 'Ondes', titre: 'Même note, instruments différents',
     enonce: 'Une flûte et un violon jouent la même note, de même fréquence fondamentale. On entend pourtant deux sons différents.', q: 'Qu’est-ce qui est identique, et qu’est-ce qui diffère dans leurs spectres ?', options: [
-      V('La fréquence du fondamental (hauteur) est identique ; les amplitudes relatives des harmoniques (timbre) diffèrent', 'La hauteur est liée à la fréquence fondamentale ; le timbre à la répartition de l’énergie entre les harmoniques.'),
-      F('Les deux spectres sont identiques, la différence vient seulement du niveau sonore', 'Le niveau sonore concerne l’amplitude globale ; le timbre est une propriété du spectre.'),
-      F('Les fondamentaux sont différents, c’est ce qui distingue les deux instruments', 'Même note signifie même fondamental : la différence entre les instruments est dans les harmoniques.'),
+      V('Même fondamental (hauteur), mais harmoniques d’amplitudes relatives différentes (timbre)', 'La hauteur est liée à la fréquence fondamentale ; le timbre à la répartition de l’énergie entre les harmoniques.'),
+      F('Spectres identiques : la différence ne vient que du niveau sonore des deux instruments', 'Le niveau sonore concerne l’amplitude globale ; le timbre est une propriété du spectre.'),
+      F('Fondamentaux différents : c’est ce qui distingue une flûte d’un violon', 'Même note signifie même fondamental : la différence entre les instruments est dans les harmoniques.'),
     ] },
   { id: 'ech-aller-retour', domaine: 'Ondes', titre: 'Retard d’un écho et distance',
-    enonce: 'Un capteur à ultrasons émet une brève salve et mesure la durée Δt entre l’émission et la réception de l’écho renvoyé par un obstacle. La célérité des ultrasons dans l’air est v = 340 m·s⁻¹. On mesure Δt = 2,0 ms.', q: 'Quelle est la distance entre le capteur et l’obstacle ?', options: [
+    ...presenter({ contexte: 'Un capteur à ultrasons émet une brève salve et mesure la durée Δt entre l’émission et la réception de l’écho renvoyé par un obstacle.', liste: [['Célérité des ultrasons dans l’air', 'v = 340 m·s⁻¹'], ['Durée mesurée', 'Δt = 2,0 ms']] }), q: 'Quelle est la distance entre le capteur et l’obstacle ?', options: [
       V('0,34 m : le son parcourt l’aller-retour, soit 0,68 m, donc la distance est la moitié', 'd = v Δt / 2 = 340 × 2,0·10⁻³ / 2 = 0,34 m.'),
       F('0,68 m : la distance est le produit de la célérité par la durée', 'v Δt = 0,68 m est la distance parcourue pendant l’aller-retour ; l’obstacle est deux fois plus près.'),
       F('0,17 m : on divise encore par deux à cause de l’émetteur et du récepteur', 'Il faut diviser par deux une seule fois, pour passer de l’aller-retour à la distance de l’obstacle.'),
     ] },
   { id: 'ech-frequence-resolution', domaine: 'Ondes', titre: 'Choisir la fréquence d’un échographe',
     enonce: 'En échographie, on peut augmenter la fréquence des ultrasons émis. Une fréquence plus élevée correspond à une longueur d’onde plus courte.', q: 'Quel est le compromis à connaître ?', options: [
-      V('Une fréquence plus élevée améliore la résolution (détails plus fins) mais l’onde est plus absorbée : on voit moins profond', 'Résolution et profondeur d’exploration varient en sens inverse quand la fréquence change.'),
-      F('Une fréquence plus élevée améliore à la fois la résolution et la profondeur d’exploration', 'L’absorption croît avec la fréquence : l’onde s’éteint plus vite dans les tissus.'),
-      F('La fréquence n’a aucun effet sur la résolution, qui ne dépend que de la sonde', 'La résolution dépend de la longueur d’onde, donc de la fréquence.'),
+      V('Fréquence élevée : détails plus fins, mais onde plus absorbée, donc moins de profondeur', 'Résolution et profondeur d’exploration varient en sens inverse quand la fréquence change.'),
+      F('Fréquence élevée : détails plus fins, et onde qui pénètre aussi plus profondément', 'L’absorption croît avec la fréquence : l’onde s’éteint plus vite dans les tissus.'),
+      F('Fréquence élevée : aucun effet sur les détails, qui ne dépendent que de la sonde', 'La résolution dépend de la longueur d’onde, donc de la fréquence.'),
     ] },
   { id: 'ech-interface-gel', domaine: 'Ondes', titre: 'Pourquoi un gel sur la peau ?',
     enonce: 'Pour réaliser une échographie, le praticien applique un gel entre la sonde et la peau. L’air et les tissus ont des impédances acoustiques très différentes : à une interface air / tissu, l’onde est presque entièrement réfléchie.', q: 'Quel est le rôle du gel ?', options: [
-      V('Supprimer la couche d’air entre sonde et peau, qui réfléchirait presque tout l’onde avant qu’elle ne pénètre', 'Le gel a une impédance acoustique proche de celle de la peau : l’onde est transmise dans le corps.'),
-      F('Augmenter l’intensité de l’onde émise par la sonde', 'Le gel n’amplifie rien : il évite seulement la perte à l’interface air / peau.'),
-      F('Absorber les échos parasites des tissus', 'Le gel ne filtre pas les échos : on a besoin de ces échos pour construire l’image.'),
+      V('Chasser l’air entre sonde et peau, qui réfléchirait presque toute l’onde', 'Le gel a une impédance acoustique proche de celle de la peau : l’onde est transmise dans le corps.'),
+      F('Amplifier les ultrasons émis par la sonde pour qu’ils pénètrent plus loin', 'Le gel n’amplifie rien : il évite seulement la perte à l’interface air / peau.'),
+      F('Absorber les échos parasites renvoyés par les tissus superficiels', 'Le gel ne filtre pas les échos : on a besoin de ces échos pour construire l’image.'),
     ] },
   { id: 'e2d-eventail', domaine: 'Ondes', titre: 'Pourquoi une image en éventail ?',
     enonce: 'Dans un échographe à balayage sectoriel, la sonde pivote : à chaque tir, l’onde part dans une direction (un angle) différente, et chaque écho est placé à la distance donnée par son retard.', q: 'Deux tirs dans deux directions différentes reçoivent des échos avec le même retard. Où les place-t-on sur l’image ?', options: [
-      V('À la même distance de la sonde, mais dans deux directions différentes : sur un même arc de cercle', 'Le retard donne la distance, l’angle de tir donne la direction : les points d’égale distance forment un arc, d’où l’éventail.'),
-      F('Au même endroit, puisque le retard est le même', 'Le retard ne donne que la distance : deux tirs d’angles différents explorent des directions différentes.'),
-      F('À des profondeurs différentes, car les angles sont différents', 'À retard identique, la distance parcourue est identique : seule la direction change.'),
+      V('À la même distance de la sonde, dans deux directions : sur un arc de cercle', 'Le retard donne la distance, l’angle de tir donne la direction : les points d’égale distance forment un arc, d’où l’éventail.'),
+      F('Au même endroit de l’image, puisque le retard est identique', 'Le retard ne donne que la distance : deux tirs d’angles différents explorent des directions différentes.'),
+      F('À des profondeurs différentes, car les angles de tir sont différents', 'À retard identique, la distance parcourue est identique : seule la direction change.'),
     ] },
   { id: 'e2d-profondeur-apparente', domaine: 'Ondes', titre: 'Une couche de graisse change la profondeur affichée',
-    enonce: 'L’échographe calcule la profondeur à partir du retard en supposant une célérité de 1 540 m·s⁻¹, valeur moyenne des tissus mous. Dans la graisse, la célérité est plus faible (environ 1 450 m·s⁻¹).', q: 'Pour un écho qui a traversé une épaisse couche de graisse, la profondeur affichée est…', options: [
-      V('Plus grande que la profondeur réelle : la célérité réelle est plus petite que celle supposée, donc le retard est plus long que prévu', 'L’appareil calcule d = 1540 × Δt / 2 avec un Δt trop grand : la profondeur affichée est surestimée.'),
-      F('Plus petite que la profondeur réelle, car la graisse absorbe une partie de l’onde', 'L’absorption diminue l’amplitude de l’écho, pas son retard : l’erreur de profondeur vient de la célérité.'),
-      F('Exacte : l’appareil mesure la profondeur directement', 'L’appareil mesure un retard, et en déduit une profondeur avec une célérité supposée.'),
+    ...presenter({ contexte: 'L’échographe calcule la profondeur à partir du retard de l’écho, en supposant une célérité unique pour tous les tissus. Une épaisse couche de graisse est traversée par l’onde.', liste: [['Célérité supposée par l’appareil (tissus mous)', '1 540 m·s⁻¹'], ['Célérité réelle dans la graisse', 'environ 1 450 m·s⁻¹']] }), q: 'Pour un écho qui a traversé la graisse, la profondeur affichée est…', options: [
+      V('Plus grande que la réalité : la célérité réelle est plus faible, donc le retard est plus long', 'L’appareil calcule d = 1540 × Δt / 2 avec un Δt trop grand : la profondeur affichée est surestimée.'),
+      F('Plus petite que la réalité : la graisse absorbe l’onde et l’écho revient plus tôt', 'L’absorption diminue l’amplitude de l’écho, pas son retard : l’erreur de profondeur vient de la célérité.'),
+      F('Exacte : l’appareil mesure directement la profondeur, quel que soit le milieu', 'L’appareil mesure un retard, et en déduit une profondeur avec une célérité supposée.'),
     ] },
   { id: 'e2d-frequence-profondeur', domaine: 'Ondes', titre: 'Une structure profonde : quelle fréquence ?',
     enonce: 'Pour examiner un organe situé à grande profondeur, le praticien dispose de sondes de fréquences différentes, par exemple 3 MHz et 10 MHz.', q: 'Quelle sonde est la plus adaptée, et pourquoi ?', options: [
       V('La sonde de 3 MHz : l’absorption est plus faible, l’onde atteint l’organe, au prix d’une résolution moindre', 'La profondeur d’exploration est limitée par l’absorption, qui croît avec la fréquence.'),
       F('La sonde de 10 MHz : une fréquence élevée donne une meilleure résolution, donc une meilleure image à toute profondeur', 'La résolution est meilleure à haute fréquence, mais l’onde est trop absorbée pour atteindre une structure profonde.'),
-      F('Peu importe : la profondeur ne dépend que de la durée du tir', 'Pour une même durée, l’onde de 10 MHz est davantage absorbée : elle revient beaucoup trop faible.'),
+      F('Peu importe : la profondeur atteinte ne dépend que de la durée du tir', 'Pour une même durée, l’onde de 10 MHz est davantage absorbée : elle revient beaucoup trop faible.'),
     ] },
   { id: 'for-extrait-sec', domaine: 'Formulation', titre: 'Masse de film sec',
     enonce: 'Un pot contient 2,0 kg de peinture dont l’extrait sec est de 60 % en masse. On admet que tout ce qui n’est pas l’extrait sec s’évapore au séchage.', q: 'Après séchage complet, la masse de film sec est…', options: [
@@ -4574,8 +4600,8 @@ export const PREVOIR = [
     ] },
   { id: 'ond-spectro-principe', domaine: 'Ondes', titre: 'Choisir la couleur dans un spectrophotomètre à réseau',
     ...presenter({ contexte: 'Un spectrophotomètre à réseau reçoit la lumière d’une lampe blanche. Il doit envoyer sur l’échantillon une lumière de longueur d’onde choisie par l’utilisateur (par exemple 600 nm), à partir de la lumière blanche.' }), q: 'Comment la longueur d’onde est-elle sélectionnée ?', options: [
-      V('Le réseau étale la lumière blanche en spectre et on le tourne pour qu’une seule couleur arrive sur la fente de sortie', 'Pour un ordre donné, sin θₖ = k·λ / a : chaque longueur d’onde part dans une direction différente. La fente de sortie est fixe : en tournant le réseau, on fait arriver sur elle la longueur d’onde voulue, et la fente ne laisse passer qu’une petite plage autour d’elle.'),
-      F('L’échantillon lui-même absorbe toutes les couleurs sauf celle que l’on veut mesurer', 'L’échantillon absorbe certaines longueurs d’onde : c’est justement ce que l’on cherche à mesurer. La sélection de la longueur d’onde se fait avant l’échantillon.'),
+      V('On tourne le réseau pour qu’une seule couleur du spectre atteigne la fente de sortie', 'Pour un ordre donné, sin θₖ = k·λ / a : chaque longueur d’onde part dans une direction différente. La fente de sortie est fixe : en tournant le réseau, on fait arriver sur elle la longueur d’onde voulue, et la fente ne laisse passer qu’une petite plage autour d’elle.'),
+      F('L’échantillon absorbe toutes les couleurs sauf celle que l’on veut mesurer', 'L’échantillon absorbe certaines longueurs d’onde : c’est justement ce que l’on cherche à mesurer. La sélection de la longueur d’onde se fait avant l’échantillon.'),
       F('On change la puissance de la lampe, car chaque puissance correspond à une couleur', 'La puissance règle l’éclat de la lumière, pas sa longueur d’onde : une lampe blanche reste blanche quelle que soit sa puissance.'),
       F('Le détecteur ne réagit qu’à la longueur d’onde choisie sur le panneau de commande', 'Le détecteur mesure l’intensité lumineuse qui lui parvient ; la sélection se fait en amont, par le réseau et la fente de sortie.'),
     ] },
@@ -5837,7 +5863,7 @@ export const PREVOIR = [
     ] },
   // ───────────── Intensité sonore, niveau d'intensité et atténuation (TG)
   { id: 'isn-ana-distance', domaine: 'Intensité sonore, niveau d’intensité et atténuation', titre: 'On éloigne le sonomètre d’une enceinte',
-    enonce: 'Un sonomètre placé à 2,0 m d’une enceinte, en plein air (champ libre, source assimilée à un point), indique 72 dB. On l’éloigne à 8,0 m de l’enceinte, sans toucher au réglage de l’enceinte.', q: 'Quel niveau peut-on prévoir à 8,0 m ?', options: [
+    ...presenter({ contexte: 'Un sonomètre mesure le niveau sonore d’une enceinte, en plein air (champ libre, source assimilée à un point). On l’éloigne ensuite de l’enceinte, sans toucher à son réglage.', liste: [['Niveau mesuré à 2,0 m', '72 dB'], ['Nouvelle distance', '8,0 m']] }), q: 'Quel niveau peut-on prévoir à 8,0 m ?', options: [
       V('à peu près 60 dB', 'De 2 m à 8 m, la distance est multipliée par 4 : elle double deux fois. Chaque doublement retire 6 dB (l’intensité est divisée par 4), donc 72 − 2 × 6 = 60 dB (intensité divisée par 16).'),
       F('environ 66 dB', 'Un seul doublement de la distance retirerait 6 dB : de 2 m à 8 m, la distance double deux fois, donc la baisse est de 12 dB.'),
       F('un peu moins de 18 dB', 'Le niveau n’est pas divisé par 4 : c’est l’intensité qui est divisée par 16. Le niveau diminue de 6 dB à chaque doublement de la distance.'),
