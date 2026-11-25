@@ -888,7 +888,7 @@ export const PROBLEMES = [
       V('N = U × 1 023 / 5,0', 'Réponse linéaire du CAN, avec N = 1 023 pour 5,0 V.'),
       F('U_R = U_G × R_p / (R + R_p)', 'Cette expression donne la tension aux bornes de la photorésistance, pas aux bornes de R.'),
       F('U_R = U_G × R / R_p', 'Ce n’est pas un pont diviseur : on obtiendrait une tension supérieure à U_G.'),
-      F('q = (V_max − V_min) / 2ⁿ', 'Donne le quantum du CAN (une tension), qui n’est pas le nombre N lui-même.'),
+      F('q = (V_max − V_min) / (2ⁿ − 1)', 'Donne le quantum du CAN (une tension), qui n’est pas le nombre N lui-même.'),
     ] },
     hypotheses: { options: [
       V('Le CAN répond linéairement entre 0 V (N = 0) et 5,0 V (N = 1 023)', 'Hypothèse qui justifie N = U × 1 023 / 5,0. Une autre convention (q = 5,0 / 1 024) change N de moins de 0,1 %.'),
@@ -1092,8 +1092,8 @@ export const RELATIONS = [
   { id: 'quantum', domaine: 'Transmission de signaux numériques', titre: 'La finesse d’un CAN',
     ...presenter({ contexte: 'Un CAN convertit une tension en un nombre.', liste: [['Nombre de bits', '12'], ['Plage de conversion', '0 – 3,3 V']], suite: 'On cherche le plus petit écart de tension que ce CAN peut distinguer.' }),
     q: 'Quelle relation permet de répondre ?', options: [
-      V('q = 3,3 / 2¹²', 'Le CAN a 2¹² = 4 096 niveaux : le quantum est la plage divisée par le nombre de niveaux, soit environ 0,81 mV.'),
-      F('q = 3,3 / 12', 'Le CAN a 2¹² = 4 096 niveaux, pas 12 : on divise par le nombre de niveaux.'),
+      V('q = 3,3 / (2¹² − 1)', 'N va de 0 à 2¹² − 1 = 4 095 : la plage est partagée en 4 095 intervalles égaux, soit q ≈ 0,81 mV.'),
+      F('q = 3,3 / 12', 'Le CAN a 2¹² = 4 096 valeurs possibles, donc 4 095 intervalles, pas 12 : on divise par le nombre d’intervalles.'),
       F('q = 3,3 × 2¹²', 'Le quantum est une petite tension : on divise la plage par le nombre d’intervalles.'),
       F('q = 2¹² / 3,3', 'Inverse : on obtiendrait un nombre de niveaux par volt.'),
     ] },
@@ -1299,8 +1299,8 @@ export const RELATIONS = [
     q: 'Quelle relation permet de répondre ?', options: [
       V('N = U × 1 023 / 5,0', 'Proportionnalité : N / 1 023 = U / 5,0. Ici N = 2,3 × 1 023 / 5,0 ≈ 471 (partie entière : 470 ou 471 selon l’arrondi).'),
       F('N = U × 5,0 / 1 023', 'Rapport inversé : on obtiendrait N ≈ 0,011, qui n’a rien d’un nombre entre 0 et 1 023. Le résultat doit être un nombre de 0 à 1 023.'),
-      F('N = U / 2¹⁰', 'On divise par 1 024 sans tenir compte de la plage 0 – 5,0 V : on obtiendrait N ≈ 0,002. Le quantum q = 5,0 / 1 024 est en volts, il faut diviser la tension par q.'),
-      F('N = U × 1 024 / 5,0', 'Presque la même chose : avec q = 5,0 / 2¹⁰, N = U / q = U × 1 024 / 5,0 = 471,0 au lieu de 470,6, soit moins de 0,1 % d’écart. Les deux conventions existent ; mais l’énoncé fixe ici N = 1 023 pour 5,0 V, et avec 1 024 on aurait N = 1 024 à 5,0 V, impossible sur 10 bits.'),
+      F('N = U / 2¹⁰', 'On divise par 1 024 sans tenir compte de la plage 0 – 5,0 V : on obtiendrait N ≈ 0,002. Le quantum q = 5,0 / 1 023 est en volts, il faut diviser la tension par q.'),
+      F('N = U × 1 024 / 5,0', 'Presque la même chose, mais N serait égal à 1 024 pour 5,0 V, impossible sur 10 bits : le plus grand nombre est 2¹⁰ − 1 = 1 023. Le quantum est q = 5,0 / 1 023 et N = U / q = U × 1 023 / 5,0.'),
     ] },
   { id: 'can-n-vers-u', domaine: 'Transmission de signaux numériques', titre: 'Du nombre N à la tension',
     ...presenter({ schema: { type: 'chaine', apres: { actif: [3, 2], inconnu: 2, note: 'N est connu : on remonte vers U_R.' }, seulementApres: true }, contexte: 'Un CAN fournit un nombre N au microcontrôleur. Sa réponse est linéaire : N = 0 pour 0 V et N = 1 023 pour 5,0 V.', liste: [['CAN', '10 bits, plage 0 – 5,0 V'], ['Nombre fourni', 'N = 593']], suite: 'On cherche la tension U appliquée à l’entrée.' }),
@@ -1439,7 +1439,7 @@ export const HYPOTHESES = [
       F('Solution titrante plus concentrée que la solution titrée', 'Pratique pour la précision, mais pas nécessaire.'),
     ] },
   { id: 'can', domaine: 'Transmission de signaux numériques', titre: 'Conversion par un CAN',
-    ...presenter({ contexte: 'On calcule le nombre donné par un CAN.', liste: [['Relation utilisée', 'N = partie entière de U / q'], ['Où', 'U : tension d’entrée ; q : quantum du CAN (plage / 2ⁿ)'], ['Remarque', 'c’est la relation du cours ; la carte Arduino utilise la proportionnalité N = U × 1 023 / 5, qui donne le même résultat à moins de 0,1 % près']] }), options: [
+    ...presenter({ contexte: 'On calcule le nombre donné par un CAN.', liste: [['Relation utilisée', 'N = partie entière de U / q'], ['Où', 'U : tension d’entrée ; q : quantum du CAN, q = plage / (2ⁿ − 1)'], ['Remarque', 'pour 10 bits et 5 V, q = 5 / 1 023 : c’est la proportionnalité N = U × 1 023 / 5 utilisée par la carte Arduino']] }), options: [
       V('CAN idéal : pas de bruit, ni d’erreur de gain ou de décalage', 'Un CAN réel peut se tromper d’une ou deux unités.'),
       V('U est comprise dans la plage du CAN', 'Au-delà, N reste bloqué à sa valeur maximale (saturation).'),
       V('U ne varie pas pendant la durée de la conversion', 'Sinon la valeur convertie ne correspond à aucun instant précis.'),
@@ -1765,16 +1765,16 @@ export const PREVOIR = [
     ] },
   { id: 'bits', domaine: 'Transmission de signaux numériques', titre: 'Deux bits de plus',
     ...presenter({ contexte: 'On remplace un CAN par un autre, sur la même plage de tension.', liste: [['Ancien CAN', '10 bits'], ['Nouveau CAN', '12 bits']] }), q: 'Le quantum est…', options: [
-      V('divisé par 4', 'Le quantum vaut la plage divisée par 2ⁿ : 2¹² = 4 × 2¹⁰, donc le quantum est divisé par 4 (chaque bit supplémentaire le divise par 2).'),
-      F('divisé par 2', 'Un bit divise par 2 ; deux bits, par 4.'),
-      F('divisé par 1,2 (12 / 10)', 'Le quantum dépend du nombre de niveaux 2ⁿ, pas du nombre de bits n.'),
+      V('divisé par 4 (environ)', 'Le quantum vaut la plage divisée par 2ⁿ − 1 : 4 095 / 1 023 ≈ 4,00, donc le quantum est divisé par 4 environ (chaque bit supplémentaire le divise par 2 environ).'),
+      F('divisé par 2', 'Un bit divise par 2 environ ; deux bits, par 4 environ.'),
+      F('divisé par 1,2 (12 / 10)', 'Le quantum dépend du nombre d’intervalles 2ⁿ − 1, pas du nombre de bits n.'),
       F('multiplié par 4', 'Plus de bits donnent des niveaux plus serrés, donc un quantum plus petit.'),
     ] },
   { id: 'plage', domaine: 'Transmission de signaux numériques', titre: 'Plage doublée',
     ...presenter({ contexte: 'On garde le même CAN de 10 bits, mais on change la plage de tension.', liste: [['Plage avant', '0 – 5 V'], ['Plage après', '0 – 10 V']] }), q: 'Le quantum est…', options: [
-      F('divisé par 2 : la résolution est deux fois meilleure', 'Le nombre de niveaux (2¹⁰) ne change pas ; une plage plus large donne des paliers plus grands, donc une résolution moins bonne.'),
-      F('inchangé : la résolution reste la même', 'Le nombre de bits est le même, mais q = plage / 2¹⁰ : le quantum dépend aussi de la plage, il double.'),
-      V('doublé : la résolution est deux fois moins bonne', 'Les mêmes 2¹⁰ niveaux sont répartis sur une plage deux fois plus large : q passe d’environ 4,9 mV à 9,8 mV.'),
+      F('divisé par 2 : la résolution est deux fois meilleure', 'Le nombre d’intervalles (2¹⁰ − 1) ne change pas ; une plage plus large donne des paliers plus grands, donc une résolution moins bonne.'),
+      F('inchangé : la résolution reste la même', 'Le nombre de bits est le même, mais q = plage / (2¹⁰ − 1) : le quantum dépend aussi de la plage, il double.'),
+      V('doublé : la résolution est deux fois moins bonne', 'Les mêmes 1 023 intervalles sont répartis sur une plage deux fois plus large : q passe d’environ 4,9 mV à 9,8 mV.'),
       F('multiplié par 4 : la résolution est quatre fois moins bonne', 'Seule la plage change, d’un facteur 2 ; le nombre de niveaux est fixé par les 10 bits. Le facteur est 2, pas 4.'),
     ] },
   { id: 'fichier', domaine: 'Transmission de signaux numériques', titre: 'Fréquence d’échantillonnage doublée',
