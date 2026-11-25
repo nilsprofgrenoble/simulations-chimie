@@ -4,7 +4,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { Pic } from "../Pictos";
 import * as M from "./mousseModele";
 import { QCM } from "./mousseQcm";
-import { SvgLamelle, SvgComparaisonLamelles, SvgMousse, SvgCourbeMousse, SvgCarteLamelle, SvgCarteMesures, SvgCarteBilanMousse } from "./MousseSchemas";
+import { SvgLamelle, SvgAntimousse, SvgFormulesTensio, SvgComparaisonLamelles, SvgMousse, SvgCourbeMousse, SvgCarteLamelle, SvgCarteMesures, SvgCarteBilanMousse } from "./MousseSchemas";
 
 const SIM_ID = 226, CLE_GUIDE = 'mousse-guide-v1';
 declarerDefis(SIM_ID, [['masse', 'Peser le tensioactif pour une solution à k fois la CMC'], ['diagnostic', 'Diagnostiquer une formulation de liquide vaisselle']]);
@@ -142,10 +142,10 @@ export function SimulationMousse() {
     : sc === 'moussa-stab' ? <SvgCourbeMousse mode="rm" p={{ H0: 18, td: 0.2, th: 0.5 }}/>
     : sc === 'ross-miles' ? <SvgMousse h={M.hauteurRM(eVie, vie.tps)} t={vie.tps} legende="SDS à 5 CMC, mousse de Ross-Miles"/>
     : sc === 'bikerman' ? <SvgCourbeMousse mode="bik" e={eVie}/>
-    : sc === 'ethoxy' ? <SvgComparaisonLamelles/>
+    : sc === 'ethoxy' ? <><SvgFormulesTensio/><div style={{ marginTop: 8 }}><SvgComparaisonLamelles/></div></>
     : sc === 'supermoussant' ? <SvgLamelle type="sds" r={vie.r}/>
     : sc === 'facteurs' ? <SvgCourbeMousse mode="rm" e={eVie}/>
-    : ['antimousse-action', 'antimousse-q'].includes(sc) ? <SvgLamelle type="sds" d={vie.d} titre={false}/>
+    : ['antimousse-action', 'antimousse-q'].includes(sc) ? <SvgAntimousse d={vie.d}/>
     : null;
   const MES_GUIDE = {
     'masse-num': [['Concentration visée', `${DOS.k} × CMC`], ['CMC du SDS', `${fr(M.CMC_SDS, 1)} mmol/L`], ['Masse molaire du SDS', `${fr(M.M_SDS, 1)} g/mol`], ['Volume de solution', `${DOS.V} mL`]],
@@ -281,7 +281,7 @@ export function SimulationMousse() {
     </div>);
   const sectionLamelle = enExplore && (
     <Section titre="La lamelle de liquide, à l’échelle moléculaire" ouvert={!!ouv.lam} onBascule={() => bascule('lam')}>
-      <SvgLamelle type={ex.t} r={ex.r} d={ex.d}/>
+      <><SvgLamelle type={ex.t} r={ex.r}/>{ex.d > 0.03 && <div style={{ marginTop: 10 }}><SvgAntimousse d={ex.d}/></div>}</>
     </Section>);
   const aEssayer = (
     <ul style={liste}>
