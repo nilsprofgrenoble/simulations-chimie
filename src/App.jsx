@@ -950,7 +950,7 @@ const styles = {
   topBar: { display:"flex", alignItems:"center", gap:"1rem", padding:"1.25rem 2rem" },
   pageTitle: { fontFamily:"'Playfair Display', Georgia, serif",
     fontSize:"1.5rem", fontWeight:"700", margin:0 },
-  simContainer: { flex:1, padding:"1.5rem 2rem", overflowX:"clip" },
+  simContainer: { flex:1, padding:"1.5rem clamp(10px, 3.5vw, 2rem)", overflowX:"clip" },
 };
 
 
