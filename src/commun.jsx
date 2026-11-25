@@ -98,6 +98,8 @@ export const accepte = (x, rep, vrai, tol) => {
   const u = Math.pow(10, Math.floor(Math.log10(Math.abs(vrai))) - n + 1);
   return Math.abs(x - vrai) <= u * 0.5001;
 };
+// Vrai si la valeur saisie a été arrondie (elle diffère de la valeur exacte) : un résultat exact comme « 80 » pour 80 mA n'appelle aucun conseil sur les chiffres significatifs.
+export const arrondiPerdu = (rep, vrai) => { const x = lireNombre(rep); return !(isFinite(x) && isFinite(vrai)) || Math.abs(x - vrai) > 1e-9 * Math.max(Math.abs(vrai), 1e-300); };
 // Nombre de chiffres significatifs d'une valeur saisie (« 1,26e-3 » → 3 ; « 0,00126 » → 3 ; « 1850 » → 3)
 export const nbCS = s => {
   const t = normaliserSaisie(s).replace(',', '.').replace(/(?:×|x|\*)10\^?(-?\d+)/i, 'e$1');
@@ -440,6 +442,7 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
           Vous reprenez votre parcours là où vous l'aviez laissé. Si une mesure a disparu, revenez à l'étape où elle a été faite.
         </div>
       )}
+      {et.retenir && <ARetenir titre={et.retenirTitre || 'À RETENIR'} capture={false} rangee={!!etat.fini}>{et.retenir}</ARetenir>}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
         <div data-lecture="1" data-titre-etape="1" style={{ flex: 1, minWidth: 0, fontSize: 18, fontWeight: 700, color: TXT }}>{indicesProfond(et.titre)}</div>
         {lectureActivee(simDeLUrl()) && <LectureSonoreBouton key={etape} racine={carteRef} simId={simDeLUrl()}/>}
@@ -452,7 +455,6 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
             {valeursGardees.slice(-8).map((v, i) => <li key={i}>{avecIndices(v.n)} : <strong>{avecIndices(v.v)}</strong></li>)}
           </ul>
         </details>)}
-      {et.retenir && <ARetenir titre={et.retenirTitre || 'À RETENIR'} capture={false} rangee={!!etat.fini}>{et.retenir}</ARetenir>}
       {tache && tache.type === 'action' && (
         <div>
           {tache.bloque ? <div style={{ fontSize: 14, color: '#b45309' }}>{tache.bloque}</div>
@@ -504,11 +506,11 @@ export function CarteParcours({ etapes, etat, setEtat, fin }) {
         <div>
           {!reussie && <button onClick={verifier} style={btn(true, '#16a34a')}>✓ Vérifier</button>}
           <div role="status" aria-live="polite" aria-atomic="true">{verifie && <div key={ticVerif}>
-          {verifie && juste && tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs && (
+          {verifie && juste && tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs && arrondiPerdu(reps[etape], tache.vrai) && (
             <div style={{ fontSize: 14, color: '#b45309', fontWeight: 700, marginTop: 6 }}>
               ✔ Valeur juste (étape validée). Conseil : <span style={{ fontWeight: 400, color: TXT }}>gardez {tache.cs} chiffres significatifs pour ne pas arrondir trop tôt (vous en avez écrit {nbCS(reps[etape])}).
               {' '}{indicesProfond(tache.expl)}</span></div>)}
-          {verifie && juste && !(tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs) && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
+          {verifie && juste && !(tache.type === 'num' && tache.cs && nbCS(reps[etape]) < tache.cs && arrondiPerdu(reps[etape], tache.vrai)) && <div style={{ fontSize: 14, color: '#15803d', fontWeight: 700, marginTop: 6 }}>
             <Pic n="ok"/>Bravo ! <span style={{ fontWeight: 400, color: TXT }}>{indicesProfond(tache.expl)}</span></div>}
           {verifie && !juste && (
             <div style={{ marginTop: 6 }}>
