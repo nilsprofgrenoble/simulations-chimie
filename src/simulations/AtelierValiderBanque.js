@@ -1,3 +1,4 @@
+import { MTR_VAL } from './modesTransfertExos.js';
 import { FRM_VAL } from './formesExos.js';
 import { CHA_VAL } from './chaineExos.js';
 import { SGN_VAL } from './signeExos.js';
@@ -4588,6 +4589,7 @@ export const PLAUSIBLES = [
   ...CHA_VAL,
   ...SGN_VAL,
   ...FRM_VAL,
+  ...MTR_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,

@@ -1,3 +1,4 @@
+import { MTR_SAPP } from "./modesTransfertExos.js";
 import { FRM_SAPP } from "./formesExos.js";
 import { CHA_SAPP } from "./chaineExos.js";
 import { SGN_SAPP } from "./signeExos.js";
@@ -5094,6 +5095,7 @@ export const ENONCES = [
   ...CHA_SAPP,
   ...SGN_SAPP,
   ...FRM_SAPP,
+  ...MTR_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,

@@ -2637,5 +2637,17 @@
  "77:plausible:frm-val-bilan": "VAL713",
  "77:plausible:frm-val-chute": "VAL714",
  "36:frm-glisse": "REA157",
- "36:frm-chute": "REA158"
+ "36:frm-chute": "REA158",
+ "34:mtr-sapp-chariot.0": "SAPP562",
+ "34:mtr-sapp-chariot.1": "SAPP563",
+ "34:mtr-sapp-depart.0": "SAPP564",
+ "34:mtr-sapp-depart.1": "SAPP565",
+ "37:prevoir:mtr-ana-posee": "ANA1207",
+ "37:prevoir:mtr-ana-vide": "ANA1208",
+ "37:prevoir:mtr-ana-solide": "ANA1209",
+ "37:prevoir:mtr-ana-signe": "ANA1210",
+ "77:plausible:mtr-val-chaine": "VAL715",
+ "77:plausible:mtr-val-ray": "VAL716",
+ "36:mtr-freine": "REA159",
+ "36:mtr-depart": "REA160"
 }

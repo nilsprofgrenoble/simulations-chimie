@@ -3002,6 +3002,63 @@ function genFormesChute() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Sans frottement : ΔEc + ΔEp = 0 ; Ec = ½ × m × v².', 'L’énergie potentielle perdue est gagnée en énergie cinétique.'] };
 }
+// ---------- Travail ou transfert thermique : travail algébrique et puissance (TSTL, PCM) ----------
+function genModesFreine() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, v0, v1, dt, Ec0, Ec1, W, P;
+  do {
+    m = tire([1, 2, 3, 4]); v0 = tire([4, 5, 6, 8]); v1 = tire([1, 2, 3]); dt = tire([2, 3, 4, 5]);
+    Ec0 = 0.5 * m * v0 * v0; Ec1 = 0.5 * m * v1 * v1; W = Ec1 - Ec0; P = Math.abs(W) / dt;
+  } while (v1 >= v0 || new Set([Ec0, Ec1, Math.abs(W), P].map(v => Number(v.toPrecision(3)))).size < 4);
+  const intro = `Un chariot de masse ${m}${NB}kg roule sur un sol horizontal : une force de freinage fait passer sa vitesse de ${v0}${NB}m/s à ${v1}${NB}m/s en ${dt}${NB}s. C’est la seule force qui fait varier sa vitesse. On étudie le système « le chariot ».`;
+  const q1 = { id: 'f0', type: 'num', q: <>Calculez l’<b>énergie cinétique initiale</b> du chariot (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec0, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v², avec v en m/s.',
+    pieges: [[m * v0 * v0, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v0, 'La vitesse doit être élevée au carré.']],
+    expl: <>Ec = ½ × {m} × {v0}² = <b>{pvFmt(Ec0)}{NB}J</b>.</> };
+  const q2 = { id: 'f1', type: 'num', q: <>Calculez l’<b>énergie cinétique finale</b> du chariot (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec1, tolRel: 0.05, csMin: 2,
+    aide: 'Même formule avec la vitesse finale.',
+    pieges: [[m * v1 * v1, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [Ec0, 'Cette valeur est l’énergie cinétique initiale : utilisez la vitesse finale.']],
+    expl: <>Ec = ½ × {m} × {v1}² = <b>{pvFmt(Ec1)}{NB}J</b>.</> };
+  const q3 = { id: 'f2', type: 'num', q: <>Calculez le <b>travail reçu</b> par le chariot (en J, avec son signe, 2 chiffres significatifs).</>, unite: 'J', vrai: W, tolRel: 0.05, csMin: 2,
+    aide: 'ΔEc = somme des travaux : W = Ec finale − Ec initiale. Le chariot ralentit : W est négatif.',
+    pieges: [[-W, 'Le signe est inversé : le chariot ralentit, son énergie cinétique diminue, le travail est négatif.'], [-Ec0, 'Il faut tenir compte de l’énergie cinétique qui reste au chariot.'], [Ec1, 'Cette valeur est l’énergie cinétique finale ; le travail est la variation d’énergie cinétique.']],
+    expl: <>W = {pvFmt(Ec1)} − {pvFmt(Ec0)} = <b>{pvFmt(W)}{NB}J</b>.</> };
+  const q4 = { id: 'f3', type: 'num', q: <>Calculez la <b>puissance du transfert</b> par travail (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P, tolRel: 0.05, csMin: 2,
+    aide: 'P = |W| ÷ Δt : une puissance est toujours positive.',
+    pieges: [[-P, 'Une puissance est positive : on utilise la valeur absolue du travail.'], [Math.abs(W) * dt, 'Il faut diviser l’énergie par la durée, pas la multiplier.']],
+    expl: <>P = {pvFmt(Math.abs(W))} ÷ {dt} = <b>{pvFmt(P)}{NB}W</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['ΔEc = somme des travaux ; un chariot qui ralentit cède de l’énergie : W < 0.', 'P = |W| ÷ Δt, toujours positive.'] };
+}
+function genModesDepart() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, v, dt, W, P, Wd, Pd;
+  do {
+    m = tire([1, 2, 3, 4, 5]); v = tire([2, 3, 4, 5, 6]); dt = tire([2, 3, 4, 5]);
+    W = 0.5 * m * v * v; P = W / dt; Wd = 4 * W; Pd = P / 2;
+  } while (new Set([W, P, Wd, Pd].map(x => Number(x.toPrecision(3)))).size < 4);
+  const intro = `Une personne pousse un chariot de masse ${m}${NB}kg, initialement immobile, sur un sol horizontal. Au bout de ${dt}${NB}s il atteint la vitesse ${v}${NB}m/s. La poussée est la seule force qui fait varier sa vitesse. On étudie le système « le chariot ».`;
+  const q1 = { id: 'd0', type: 'num', q: <>Calculez le <b>travail reçu</b> par le chariot (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: W, tolRel: 0.05, csMin: 2,
+    aide: 'ΔEc = somme des travaux, avec une énergie cinétique initiale nulle : W = ½ × m × v².',
+    pieges: [[m * v * v, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v, 'La vitesse doit être élevée au carré.']],
+    expl: <>W = ½ × {m} × {v}² = <b>{pvFmt(W)}{NB}J</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>Calculez la <b>puissance moyenne</b> du transfert par travail (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P, tolRel: 0.05, csMin: 2,
+    aide: 'P = |W| ÷ Δt.',
+    pieges: [[W * dt, 'Il faut diviser l’énergie par la durée, pas la multiplier.']],
+    expl: <>P = {pvFmt(W)} ÷ {dt} = <b>{pvFmt(P)}{NB}W</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>Si la vitesse atteinte était <b>deux fois plus grande</b>, quel travail faudrait-il fournir ? (en J, 2 chiffres significatifs)</>, unite: 'J', vrai: Wd, tolRel: 0.05, csMin: 2,
+    aide: 'Ec dépend du carré de la vitesse : doubler v multiplie Ec par 4.',
+    pieges: [[2 * W, 'Ec est proportionnelle au carré de la vitesse : le facteur est 4, pas 2.']],
+    expl: <>W = 4 × {pvFmt(W)} = <b>{pvFmt(Wd)}{NB}J</b>.</> };
+  const q4 = { id: 'd3', type: 'num', q: <>Si le même travail était fourni en <b>deux fois plus de temps</b>, quelle serait la puissance ? (en W, 2 chiffres significatifs)</>, unite: 'W', vrai: Pd, tolRel: 0.05, csMin: 2,
+    aide: 'P = |W| ÷ Δt : doubler la durée divise la puissance par 2.',
+    pieges: [[2 * P, 'Une durée plus longue donne une puissance plus faible : on divise.']],
+    expl: <>P = {pvFmt(P)} ÷ 2 = <b>{pvFmt(Pd)}{NB}W</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Ec = ½ × m × v² : doubler la vitesse multiplie Ec par 4.', 'P = |W| ÷ Δt : à énergie égale, une durée double divise la puissance par 2.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5336,6 +5393,8 @@ export const FAMILLES = [
   { id: 'sgn-four', groupe: 'Formules', titre: 'Plaque d’acier chauffée : travail reçu, transfert cédé, ΔU et variation de température (terminale STL)', gen: genSigneFour, domaine: 'Conservation de l’énergie : bilan et signe des transferts' },
   { id: 'frm-glisse', groupe: 'Formules', titre: 'Bloc qui ralentit par frottement : énergie cinétique, énergie interne gagnée et part convertie (terminale STL)', gen: genFormesGlisse, domaine: 'Formes d’énergie stockée : cinétique, potentielle, interne' },
   { id: 'frm-chute', groupe: 'Formules', titre: 'Bille en chute libre : énergie cinétique, vitesse et part d’énergie convertie (terminale STL)', gen: genFormesChute, domaine: 'Formes d’énergie stockée : cinétique, potentielle, interne' },
+  { id: 'mtr-freine', groupe: 'Formules', titre: 'Chariot freiné : énergies cinétiques, travail algébrique et puissance du transfert (terminale STL)', gen: genModesFreine, domaine: 'Travail ou transfert thermique : classer les transferts d’énergie' },
+  { id: 'mtr-depart', groupe: 'Formules', titre: 'Chariot poussé depuis l’arrêt : travail reçu, puissance et effet d’une vitesse ou d’une durée doublée (terminale STL)', gen: genModesDepart, domaine: 'Travail ou transfert thermique : classer les transferts d’énergie' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
