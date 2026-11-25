@@ -105,7 +105,7 @@ export default {
       refs: [...A('hlb-ana-lipophile', 'hlb-ana-choix-seul', 'hlb-ana-rhlb-melange', 'hlb-ana-hlb-melange', 'hlb-ana-equilibre', 'hlb-ana-fraction', 'hlb-ana-hors-portee', 'hlb-ana-trop-lipophile', 'hlb-ana-sens', 'hlb-ana-limites'),
         ...VV('hlb-val-moyenne-simple', 'hlb-val-melange-ok', 'hlb-val-fraction-inversee', 'hlb-val-hors-intervalle', 'for-hlb-melange-ok')] },
     { id: 'mousses', nom: 'Les mousses et les antimousses', capacite: 'Cas des mousses : expliquer le mode d’action d’un tensioactif dans une mousse ; expliquer le mode d’action des agents antimousse.',
-      refs: [...A('mou-ana-role', 'mou-ana-antimousse'), ...VV('mou-val-dose')] },
+      refs: [...A('mou-ana-role', 'mou-ana-antimousse', 'mou-ana-lamelle', 'mou-ana-cmc', 'mou-ana-moussa-stab', 'mou-ana-bikerman', 'mou-ana-ross-miles', 'mou-ana-ethoxylation', 'mou-ana-supermoussant', 'mou-ana-eau-dure', 'mou-ana-antimousse-nature', 'mou-ana-antimousse-peinture'), ...VV('mou-val-dose', 'mou-val-cmc-masse', 'mou-val-moussa-stab', 'mou-val-antimousse-soluble', 'mou-val-dodecanol')] },
     { id: 'suspension', nom: 'Stabilité d’une suspension : charge, pH et sel', capacite: 'Identifier les causes d’instabilité d’une suspension (floculation, sédimentation) et prévoir l’effet de la charge de surface, du pH et d’un sel.',
       refs: [...A('susp-ana-charge-acide', 'susp-ana-charge-silice', 'susp-ana-pie-flocule', 'susp-ana-delta', 'susp-ana-sel-valence', 'susp-ana-eau-deminer', 'susp-ana-choc-ph', 'susp-ana-disp-aqueux', 'susp-ana-liant', 'susp-ana-taille'),
         ...VV('susp-val-pie-interpole', 'susp-val-sel-stabilise', 'susp-val-signe-inverse', 'susp-val-silice-pie')] },
