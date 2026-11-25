@@ -156,7 +156,7 @@ export const COUVERTURE = [
     { th: 'Transformation de la matière', t: 'Radioactivité : types, loi de décroissance, activité', e: 'avenir' },
     { th: MVT, t: 'Mouvements : coordonnées de l’accélération', e: 'avenir' },
     { th: MVT, t: 'Interactions : force électrostatique, lois de Newton, chute avec frottement visqueux', e: 'avenir' },
-    { th: NRJ, t: 'Chaînes énergétiques, conservation de l’énergie, rendement', e: 'avenir' },
+    { th: NRJ, t: 'Chaînes énergétiques, conservation de l’énergie, rendement', e: 'partiel', chap: 'tstl-pcm-energie', reste: 'formes d’énergie stockée (cinétique, potentielle, interne), travail et transfert thermique, algébrisation des transferts' },
     { th: NRJ, t: 'Énergie mécanique', e: 'avenir' },
     { th: NRJ, t: 'Énergie chimique : enthalpie, loi de Hess, pouvoir calorifique', e: 'avenir' },
     { th: NRJ, t: 'Énergie électrique : puissance, effet Joule, piles et accumulateurs', e: 'ok', chap: 'tstl-pcm-energie' },

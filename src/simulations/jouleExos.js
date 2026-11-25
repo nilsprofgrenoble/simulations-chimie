@@ -61,7 +61,7 @@ export const JOU_VAL = [
 ];
 
 const tire = t => t[Math.floor(Math.random() * t.length)];
-const NBSP = s => s.replace(/ /g, ' ');
+const NBSP = s => s.replace(/ /g, '\u00a0');
 const T = id => ({ t: id });
 const tok = (aff, quoi, val, u) => ({ aff: NBSP(aff), quoi, use: { val, u } });
 const epure = f => (p, q) => { const b = f(p, q); return { ...b, tokens: Object.fromEntries(Object.entries(b.tokens).filter(([k]) => b.texte.some(t => t && t.t === k))) }; };

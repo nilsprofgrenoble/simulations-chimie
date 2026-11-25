@@ -2829,6 +2829,63 @@ function genJouleCable() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['I = P ÷ U ; pertes = r × I² ; part = pertes ÷ P × 100.', 'Tension ×k à puissance égale : pertes ÷ k².'] };
 }
+// ---------- Chaîne énergétique et rendement d'un convertisseur (TSTL, PCM) ----------
+function genChaineRendement() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let Pr, eta, dt, Pu, Pd, Er, Qd;
+  do {
+    Pr = tire([60, 80, 120, 200]); eta = tire([0.4, 0.5, 0.6, 0.75, 0.8]); dt = tire([2, 5, 10]);
+    Pu = Pr * eta; Pd = Pr - Pu; Er = Pr * dt * 60 / 1000; Qd = Pd * dt * 60 / 1000;
+  } while (new Set([100 * eta, Pd, Er, Qd].map(v => Number(v.toPrecision(3)))).size < 4);
+  const intro = `Un moteur de treuil reçoit une puissance électrique de ${Pr}${NB}W et cède une puissance mécanique utile de ${pvFmt(Pu)}${NB}W, pendant ${dt}${NB}minutes.`;
+  const q1 = { id: 'r0', type: 'num', q: <>Calculez le <b>rendement</b> η du moteur (en %, 2 chiffres significatifs).</>, unite: '%', vrai: 100 * eta, tolRel: 0.05, csMin: 2,
+    aide: 'η = puissance utile ÷ puissance reçue, puis multipliez par 100.',
+    pieges: [[100 * Pd / Pr, 'Cette valeur est la part dissipée ; le rendement compare la puissance utile à la puissance reçue.'], [100 * Pr / Pu, 'Le rapport est inversé : η = utile ÷ reçue, et il ne dépasse pas 100 %.']],
+    expl: <>η = {pvFmt(Pu)} ÷ {Pr} = {nbF(eta, 2)} soit <b>{pvFmt(100 * eta)}{NB}%</b>.</> };
+  const q2 = { id: 'r1', type: 'num', q: <>Calculez la <b>puissance dissipée</b> par transfert thermique (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: Pd, tolRel: 0.05, csMin: 2,
+    aide: 'Puissance dissipée = puissance reçue − puissance utile.',
+    pieges: [[Pu, 'Cette valeur est la puissance utile ; la puissance dissipée est la différence reçue − utile.']],
+    expl: <>{Pr} − {pvFmt(Pu)} = <b>{pvFmt(Pd)}{NB}W</b>.</> };
+  const q3 = { id: 'r2', type: 'num', q: <>Calculez l’<b>énergie électrique reçue</b> pendant {dt}{NB}minutes (en kJ, 2 chiffres significatifs).</>, unite: 'kJ', vrai: Er, tolRel: 0.05, csMin: 2,
+    aide: 'W = P × Δt avec Δt en secondes (1 min = 60 s) ; 1 kJ = 1 000 J.',
+    pieges: [[Pr * dt / 1000, 'La durée est restée en minutes : convertissez-la en secondes (1 min = 60 s).'], [Pr * dt * 60, 'Cette valeur est en joules : le résultat est demandé en kJ.']],
+    expl: <>Δt = {dt * 60}{NB}s ; {Pr} × {dt * 60} = {pvFmt(Pr * dt * 60)}{NB}J = <b>{pvFmt(Er)}{NB}kJ</b>.</> };
+  const q4 = { id: 'r3', type: 'num', q: <>Calculez l’<b>énergie dissipée</b> par transfert thermique pendant {dt}{NB}minutes (en kJ, 2 chiffres significatifs).</>, unite: 'kJ', vrai: Qd, tolRel: 0.05, csMin: 2,
+    aide: 'Énergie dissipée = puissance dissipée × durée en secondes, en kJ.',
+    pieges: [[Pd * dt / 1000, 'La durée est restée en minutes : convertissez-la en secondes (1 min = 60 s).'], [Pu * dt * 60 / 1000, 'Cette valeur est l’énergie utile ; l’énergie dissipée correspond à la puissance dissipée.']],
+    expl: <>{pvFmt(Pd)} × {dt * 60} = {pvFmt(Pd * dt * 60)}{NB}J = <b>{pvFmt(Qd)}{NB}kJ</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['η = utile ÷ reçue ; reçue = utile + dissipée (puissances ou énergies).', 'Énergie = puissance × durée (en secondes).'] };
+}
+function genChaineSerie() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let e1, e2, Eu, eT, Er, Qd, Em;
+  do {
+    e1 = tire([0.6, 0.8, 0.9]); e2 = tire([0.5, 0.7, 0.75, 0.9]); Eu = tire([50, 100, 200, 300]);
+    eT = e1 * e2; Er = Eu / eT; Qd = Er - Eu; Em = Eu / e2;
+  } while (e1 === e2 || new Set([100 * eT, Er, Qd, Em].map(v => Number(v.toPrecision(3)))).size < 4);
+  const intro = `Un chargeur de rendement ${Math.round(100 * e1)}${NB}% alimente un moteur de rendement ${Math.round(100 * e2)}${NB}% (en série). On veut obtenir ${Eu}${NB}kJ d’énergie mécanique utile à la sortie du moteur.`;
+  const q1 = { id: 's0', type: 'num', q: <>Calculez le <b>rendement global</b> de la chaîne (en %, 2 chiffres significatifs).</>, unite: '%', vrai: 100 * eT, tolRel: 0.05, csMin: 2,
+    aide: 'En série, les rendements se multiplient : η = η₁ × η₂.',
+    pieges: [[50 * (e1 + e2), 'Les rendements ne se moyennent pas : ils se multiplient.'], [100 * (e1 + e2), 'Les rendements ne s’additionnent pas : ils se multiplient.']],
+    expl: <>η = {nbF(e1, 2)} × {nbF(e2, 2)} = {nbF(eT, 3)} soit <b>{pvFmt(100 * eT)}{NB}%</b>.</> };
+  const q2 = { id: 's1', type: 'num', q: <>Quelle énergie électrique faut-il fournir au chargeur ? (en kJ, 2 chiffres significatifs)</>, unite: 'kJ', vrai: Er, tolRel: 0.08, csMin: 2,
+    aide: 'énergie reçue = énergie utile ÷ rendement global.',
+    pieges: [[Eu * eT, 'Il faut diviser l’énergie utile par le rendement, pas la multiplier : on doit fournir plus que l’énergie utile.'], [Eu / e1, 'Vous n’avez tenu compte que du chargeur ; utilisez le rendement global.']],
+    expl: <>Er = {Eu} ÷ {nbF(eT, 3)} = <b>{pvFmt(Er)}{NB}kJ</b>.</> };
+  const q3 = { id: 's2', type: 'num', q: <>Quelle énergie est dissipée au total par transfert thermique ? (en kJ, 2 chiffres significatifs)</>, unite: 'kJ', vrai: Qd, tolRel: 0.08, csMin: 2,
+    aide: 'énergie dissipée = énergie reçue − énergie utile.',
+    pieges: [[Er + Eu, 'Il faut soustraire l’énergie utile à l’énergie reçue, pas les additionner.']],
+    expl: <>{pvFmt(Er)} − {Eu} = <b>{pvFmt(Qd)}{NB}kJ</b>.</> };
+  const q4 = { id: 's3', type: 'num', q: <>Quelle énergie le moteur reçoit-il du chargeur ? (en kJ, 2 chiffres significatifs)</>, unite: 'kJ', vrai: Em, tolRel: 0.08, csMin: 2,
+    aide: 'Le moteur cède l’énergie utile ; il reçoit énergie utile ÷ rendement du moteur.',
+    pieges: [[Eu * e2, 'Il faut diviser l’énergie utile par le rendement du moteur, pas la multiplier.']],
+    expl: <>Em = {Eu} ÷ {nbF(e2, 2)} = <b>{pvFmt(Em)}{NB}kJ</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['En série : η = η₁ × η₂ ; reçue = utile ÷ η.', 'L’énergie dissipée est la différence reçue − utile.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5060,6 +5117,8 @@ export const FAMILLES = [
   { id: 'bat-duree', groupe: 'Formules', titre: 'Accumulateur : intensité et durée de fonctionnement (terminale STL)', gen: genBatDuree, domaine: 'Batterie : énergie disponible et durée de fonctionnement' },
   { id: 'jou-puissance', groupe: 'Formules', titre: 'Résistor chauffant : intensité, puissance et énergie thermique (terminale STL)', gen: genJoulePuissance, domaine: 'Effet Joule : puissance, énergie thermique et pertes' },
   { id: 'jou-cable', groupe: 'Formules', titre: 'Câble d’alimentation : intensité et pertes par effet Joule (terminale STL)', gen: genJouleCable, domaine: 'Effet Joule : puissance, énergie thermique et pertes' },
+  { id: 'cha-rendement', groupe: 'Formules', titre: 'Moteur de treuil : rendement, puissance et énergie dissipées (terminale STL)', gen: genChaineRendement, domaine: 'Chaîne énergétique, conservation de l’énergie et rendement' },
+  { id: 'cha-serie', groupe: 'Formules', titre: 'Chargeur et moteur en série : rendement global et énergie à fournir (terminale STL)', gen: genChaineSerie, domaine: 'Chaîne énergétique, conservation de l’énergie et rendement' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

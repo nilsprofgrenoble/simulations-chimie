@@ -2540,5 +2540,17 @@
  "37:prevoir:ter-ana-planetes": "ANA1164",
  "77:plausible:ter-val-quart": "VAL687",
  "77:plausible:ter-val-mars": "VAL688",
- "36:ter-calcul": "REA149"
+ "36:ter-calcul": "REA149",
+ "34:cha-sapp-rendement.0": "SAPP542",
+ "34:cha-sapp-rendement.1": "SAPP543",
+ "34:cha-sapp-amont.0": "SAPP544",
+ "34:cha-sapp-amont.1": "SAPP545",
+ "37:prevoir:cha-ana-rendement": "ANA1165",
+ "37:prevoir:cha-ana-amont": "ANA1166",
+ "37:prevoir:cha-ana-serie": "ANA1167",
+ "37:prevoir:cha-ana-reservoir": "ANA1168",
+ "77:plausible:cha-val-rendement": "VAL689",
+ "77:plausible:cha-val-serie": "VAL690",
+ "36:cha-rendement": "REA150",
+ "36:cha-serie": "REA151"
 }

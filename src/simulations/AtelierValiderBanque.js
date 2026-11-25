@@ -1,3 +1,4 @@
+import { CHA_VAL } from './chaineExos.js';
 import { JOU_VAL } from './jouleExos.js';
 import { BAT_VAL } from './batterieExos.js';
 import { LAS_VAL } from './laserExos.js';
@@ -4492,6 +4493,7 @@ export const PLAUSIBLES = [
   ...LAS_VAL,
   ...BAT_VAL,
   ...JOU_VAL,
+  ...CHA_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
