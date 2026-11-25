@@ -129,6 +129,34 @@ export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }
         <div className="ab-code"><SaisieCode onCode={onCode} simulations={simulations} sombre /></div>
       </section>
 
+      {/* Compte : visible d'emblée tant qu'on n'est pas connecté, pour qu'on comprenne vite qu'il existe et à quoi il sert (il reste facultatif) */}
+      {!profil && (
+        <section className="ab-comptes" aria-labelledby="titre-comptes">
+          <h2 id="titre-comptes">Un compte ? Facultatif, mais pratique</h2>
+          <div className="ab-comptes-cartes">
+            <div className="ab-compte-carte">
+              <div className="ab-pic" style={{ background: '#fdeccb' }} aria-hidden="true"><Pic n="star" t={28}/></div>
+              <div>
+                <h3>Élèves</h3>
+                <p>Ton professeur t’a donné un identifiant ? Connecte-toi : ta progression te suit d’un appareil à l’autre, avec étoiles, niveaux, badges et classement. Sans compte, tu peux t’entraîner quand même.</p>
+                <button type="button" className="ab-bouton" onClick={() => onStart(39)}>Me connecter</button>
+              </div>
+            </div>
+            <div className="ab-compte-carte">
+              <div className="ab-pic" style={{ background: '#dce9f7' }} aria-hidden="true"><Pic n="users" t={28}/></div>
+              <div>
+                <h3>Enseignant·es</h3>
+                <p>Créez gratuitement votre compte avec votre adresse académique : classes et comptes élèves en quelques clics, devoirs, suivi de la progression et des exercices ratés.</p>
+                <span className="ab-compte-actions">
+                  <button type="button" className="ab-bouton" onClick={() => onStart(39)}>Créer mon compte enseignant</button>
+                  <button type="button" className="ab-bouton ab-bouton-clair" onClick={() => onStart(105)}>Voir ce que ça permet</button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Les niveaux et leurs chapitres : chaque chapitre ouvre sa première simulation */}
       <div className="ab-titre-section"><h2 id="titre-niveaux">Les simulations, par niveau</h2><span>{totalSims} simulations · {CHAPITRES.length} chapitres</span></div>
       <NiveauxParNiveau onStart={onStart} niveaux={niveaux} classes={classes} sansEmoji={sansEmoji} />
@@ -166,7 +194,7 @@ export function AccueilSite({ onStart, onCode, session, simulations, energyUrl }
       <p className="ab-compte">
         {profil
           ? <>Bon retour, <b>{profil.identifiant || profil.nom}</b>. <button onClick={() => onStart(profil.role === 'prof' ? 40 : 39)} style={lien}>Mon espace</button></>
-          : <>Un compte est facultatif : il sert à garder sa progression d’un appareil à l’autre. <button onClick={() => onStart(39)} style={lien}>Me connecter ou demander un compte</button></>}
+          : <>Un compte est facultatif : il sert à garder sa progression d’un appareil à l’autre. <button onClick={() => onStart(39)} style={lien}>Me connecter ou créer un compte enseignant</button></>}
       </p>
     </div>
   );

@@ -86,3 +86,17 @@
 .ab-classement .cl-note { max-width: none; color: #fff; }
 .ab-classement .cl-lien { color: #fff; }
 @media (max-width: 480px) { .ab-classement { border-radius: 22px; padding: 20px; } }
+
+/* Bandeau « un compte ? » de l'accueil (visible tant qu'on n'est pas connecté) */
+.ab-comptes { margin-top: 10px; }
+.ab-comptes h2 { font: 800 clamp(22px, 3vw, 28px)/1.15 'Outfit', sans-serif; letter-spacing: -.02em; margin: 0 4px 12px; color: #0c1a2e; }
+.ab-comptes-cartes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.ab-compte-carte { background: #fff; border: 1px solid #d5dfeb; border-radius: 28px; padding: 22px 24px; display: flex; gap: 16px; align-items: flex-start; min-width: 0; }
+.ab-compte-carte .ab-pic { flex: none; }
+.ab-compte-carte h3 { font: 800 20px 'Outfit', sans-serif; margin: 0 0 4px; color: #0c1a2e; }
+.ab-compte-carte p { margin: 0 0 12px; color: #3d4d63; font-size: 15px; line-height: 1.6; }
+.ab-compte-actions { display: inline-flex; gap: 10px; flex-wrap: wrap; }
+.ab-bouton-clair { background: #dce9f7; color: #0b4f94; }
+.ab-bouton-clair:hover { background: #c9ddf3; }
+@media (max-width: 900px) { .ab-comptes-cartes { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 480px) { .ab-compte-carte { border-radius: 22px; padding: 18px; flex-direction: column; gap: 10px; } }

@@ -12,3 +12,17 @@
 .pe-niveaux small { color: #3d4d63; font-size: 14px; line-height: 1.5; }
 @media (max-width: 900px) { .pe-niveaux { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 480px) { .pe-hero { border-radius: 22px; padding: 22px 20px; } .pe-hero .ap-bouton + .ap-bouton { margin-left: 0; } }
+
+/* Bandeau « créer mon compte » : le seul bloc coloré de la page, pour qu'on le voie. */
+.pe-compte { margin-top: 22px; background: #0b4f94; color: #fff; border-radius: 28px; padding: 32px 30px; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: center; }
+.pe-pastille { display: inline-block; background: #f5a31a; color: #3a2500; font: 800 12.5px Inter, system-ui, sans-serif; letter-spacing: .06em; text-transform: uppercase; border-radius: 999px; padding: 5px 12px; }
+.pe-compte h2 { font: 800 clamp(26px, 3.6vw, 36px)/1.1 'Outfit', sans-serif; letter-spacing: -.02em; margin: 14px 0 10px; color: #fff; }
+.pe-compte p { margin: 0; color: #dbe8f7; font-size: 16.5px; line-height: 1.6; max-width: 52ch; }
+.pe-compte .ap-bouton { background: #f5a31a; color: #3a2500; }
+.pe-compte .ap-bouton:hover { background: #e69a10; }
+.pe-etapes { list-style: none; margin: 0; padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; background: #ffffff1f; border-radius: 22px; }
+.pe-etapes li { display: flex; gap: 14px; align-items: center; font-size: 16px; line-height: 1.5; color: #fff; }
+.pe-etapes .pe-num { flex: none; }
+.pe-deux { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) { .pe-compte { grid-template-columns: minmax(0, 1fr); padding: 26px 22px; } }
+@media (max-width: 480px) { .pe-compte { border-radius: 22px; } }

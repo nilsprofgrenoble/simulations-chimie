@@ -1,4 +1,5 @@
 import { KIT, styleBouton } from "../commun";
+import { Pic } from "../Pictos";
 
 import { ACCENT, TEXTE, TEXTE2 } from "../theme";
 
@@ -11,13 +12,13 @@ const ETAPES = [
   ['Donner un devoir', <>Sur n’importe quelle simulation, le bouton <b>« 📌 Donner en devoir »</b> (en haut à droite) ouvre le formulaire déjà rempli : il ne reste qu’à choisir une date limite. Sinon, onglet <b>Devoirs</b>. L’élève avance pas à pas : parcours guidé, puis défi, puis la suite.</>],
   ['Suivre la classe', <>Onglet <b>Vue d’ensemble</b> : élèves actifs, exercices à reprendre en classe, élèves à relancer. L’onglet <b>Élèves</b> donne le détail de chacun ; <b>Statistiques</b> les chiffres par exercice, défi et simulation.</>],
   ['Voir ce que voit un élève', <>Le bouton <b>« Voir comme un élève »</b> montre l’espace d’un élève à ses différentes étapes : soit des élèves fictifs, soit un vrai élève de votre classe (ses séances, les devoirs et la vie de classe tels que lui les voit, en lecture seule). Le bouton « 👁 Voir comme cet élève » de l’onglet Élèves y mène directement : à essayer avant de distribuer les fiches.</>],
-  ['Mot de passe perdu ?', <>Onglet <b>Élèves</b>, bouton 🔑 sur la ligne de l’élève : un nouveau mot de passe est généré (l’ancien ne marche plus).</>],
+  ['Mot de passe perdu ?', <>Onglet <b>Élèves</b>, bouton <Pic n="key"/> sur la ligne de l’élève : un nouveau mot de passe est généré (l’ancien ne marche plus).</>],
 ];
 
 export function GuideProf({ ouvertParDefaut }) {
   return (
     <details open={ouvertParDefaut} data-guide-prof style={{ margin: '8px 0 10px', background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '0 14px' }}>
-      <summary style={{ cursor: 'pointer', padding: '10px 0', fontSize: 14.5, fontWeight: 800, color: TEXTE }}>📖 Guide express pour enseignant : mettre en route une classe en 5 minutes</summary>
+      <summary style={{ cursor: 'pointer', padding: '10px 0', fontSize: 14.5, fontWeight: 800, color: TEXTE }}><Pic n="book"/>Guide express pour enseignant : mettre en route une classe en 5 minutes</summary>
       <ol style={{ margin: '0 0 12px', padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 9 }}>
         {ETAPES.map(([titre, texte], i) => (
           <li key={titre} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 14, color: TEXTE2, lineHeight: 1.55 }}>

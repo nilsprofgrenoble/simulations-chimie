@@ -33,6 +33,8 @@ const ICONES = {
   circuit: C('<path d="M2 12h5l2-5 3 10 3-10 2 5h5"/><circle class="a" cx="2.5" cy="12" r="1.6"/><circle class="a" cx="21.5" cy="12" r="1.6"/>'),
   user: C('<circle class="a" cx="12" cy="8" r="4"/><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/>'),
   spectrum: C('<path d="M3 20h18M6 20c.5-8 1-13 2-13s1.5 5 2 13M13 20c.5-5 .8-9 1.5-9s1 4 1.5 9"/>'),
+  gamepad: C('<rect class="a" x="2.5" y="7.5" width="19" height="10" rx="5"/><rect x="2.5" y="7.5" width="19" height="10" rx="5"/><path d="M7 10.5v4M5 12.5h4"/><circle cx="15.5" cy="11.5" r=".9" fill="currentColor"/><circle cx="18" cy="13.5" r=".9" fill="currentColor"/>'),
+  wrench: C('<path class="a" d="M14.5 3.5a4.5 4.5 0 0 0-4 6.2l-7 7a1.9 1.9 0 0 0 2.7 2.7l7-7a4.5 4.5 0 0 0 6.2-4l-3 3-2.4-.6-.6-2.4z"/><path d="M14.5 3.5a4.5 4.5 0 0 0-4 6.2l-7 7a1.9 1.9 0 0 0 2.7 2.7l7-7a4.5 4.5 0 0 0 6.2-4l-3 3-2.4-.6-.6-2.4z"/>'),
   link: C('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
   // ── autres
   testtube: C('<path class="a" d="M10 11h4v6a2 2 0 0 1-4 0z"/><path d="M8.5 3h7M10 3v14a2 2 0 0 0 4 0V3"/>'),
@@ -111,7 +113,7 @@ const EMOJIS = {
   '🥼': 'user', '🎚': 'gauge', '🎼': 'wave', '🏛': 'temple', '🔮': 'diamond', '🔭': 'telescope', '🌱': 'sprout', '🌿': 'sprout', '🌰': 'sprout', '🥇': 'medal',
   '🐉': 'flame', '🦉': 'book', '👑': 'crown', '⏳': 'stopwatch', '⬆': 'chartup', '🧗': 'rocket', '🚧': 'warn', '🚩': 'flag', '🐞': 'flag', '📅': 'calendar', '🧠': 'bulb', '🔁': 'refresh',
   '🪐': 'globe', '🫲': 'hand', '🫱': 'hand', '🤏': 'hand', '🧫': 'petri', '☢': 'atom', '🔊': 'wave', '🎢': 'chartup', '🎡': 'gear', '🛗': 'bars', '🎈': 'gauge', '🫧': 'drops', '🪞': 'diamond', '🎲': 'puzzle', '🎭': 'user', '✏': 'pencil', '🌟': 'star', '✨': 'star', '🌠': 'star', '💪': 'dumbbell', '💎': 'diamond', '📇': 'cards', '🔎': 'search', '⬜': 'empty', '👥': 'users',
-  '🗑': 'trash', '➕': 'plus', '👁': 'eye', '🌳': 'tree', '🏅': 'medal', '👩‍🏫': 'board', '✉': 'mail', '🤝': 'users', '★': 'star',
+  '🗑': 'trash', '➕': 'plus', '👁': 'eye', '🌳': 'tree', '🏅': 'medal', '👩‍🏫': 'board', '🧑‍🏫': 'board', '✉': 'mail', '🤝': 'users', '★': 'star', '🎮': 'gamepad', '🛠': 'wrench',
 };
 const normaliser = (e) => String(e).replace(/️/g, '');
 
