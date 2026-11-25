@@ -207,6 +207,7 @@ const SimulationMousse = paresseux(() => import("./simulations/Mousse"), "Simula
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationPanneauPhotovoltaique = paresseux(() => import("./simulations/PanneauPhotovoltaique"), "SimulationPanneauPhotovoltaique");
 const SimulationPanneauRendement = paresseux(() => import("./simulations/PanneauRendement"), "SimulationPanneauRendement");
+const SimulationPanneauEclairement = paresseux(() => import("./simulations/PanneauEclairement"), "SimulationPanneauEclairement");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -389,6 +390,8 @@ const SIMULATIONS = [
     component: SimulationPanneauPhotovoltaique },
   { id:228, label:"Rendement d’un panneau photovoltaïque", niveau:"TSTL", icon:"🔆", color:"#b45309",
     component: SimulationPanneauRendement },
+  { id:229, label:"Éclairement et distance à la source", niveau:"TSTL", icon:"💡", color:"#b45309",
+    component: SimulationPanneauEclairement },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",

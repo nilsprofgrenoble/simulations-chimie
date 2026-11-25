@@ -2482,5 +2482,17 @@
  "77:plausible:pvr-val-sup100": "VAL675",
  "77:plausible:pvr-val-eta": "VAL676",
  "36:pvr-rendement": "REA138",
- "36:pvr-dimension": "REA139"
+ "36:pvr-dimension": "REA139",
+ "34:pve-sapp-eclair.0": "SAPP524",
+ "34:pve-sapp-eclair.1": "SAPP525",
+ "34:pve-sapp-panneau.0": "SAPP526",
+ "34:pve-sapp-panneau.1": "SAPP527",
+ "37:prevoir:pve-ana-double": "ANA1147",
+ "37:prevoir:pve-ana-flux": "ANA1148",
+ "37:prevoir:pve-ana-surface": "ANA1149",
+ "37:prevoir:pve-ana-tiers": "ANA1150",
+ "77:plausible:pve-val-correct": "VAL677",
+ "77:plausible:pve-val-loi": "VAL678",
+ "36:pve-eclairement": "REA140",
+ "36:pve-distance": "REA141"
 }

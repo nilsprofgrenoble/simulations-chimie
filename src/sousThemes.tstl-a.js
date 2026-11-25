@@ -88,5 +88,11 @@ export default {
       refs: ['37:prevoir:pvr-ana-pertes', '37:prevoir:pvr-ana-charge', '77:plausible:pvr-val-eta'] },
     { id: 'eclairement-dimension', nom: 'Effet de l’éclairement et dimensionnement', capacite: 'Prévoir l’effet de l’éclairement sur la puissance fournie et dimensionner la surface d’un panneau à partir de son rendement.',
       refs: ['34:pvr-sapp-dimension', '37:prevoir:pvr-ana-eclair'] },
+    { id: 'source-eclairement', nom: 'Éclairement d’une source ponctuelle', capacite: 'Exploiter la relation entre le flux énergétique émis par une source et l’éclairement à une distance donnée : E = Φ ÷ (4π d²).',
+      refs: ['34:pve-sapp-eclair', '37:prevoir:pve-ana-flux', '77:plausible:pve-val-correct'] },
+    { id: 'loi-distance', nom: 'Éclairement et distance : loi en 1/d²', capacite: 'Prévoir comment l’éclairement évolue quand la distance à la source varie.',
+      refs: ['37:prevoir:pve-ana-double', '37:prevoir:pve-ana-tiers', '77:plausible:pve-val-loi'] },
+    { id: 'panneau-distance', nom: 'Puissance reçue par un panneau selon sa distance', capacite: 'Calculer la puissance lumineuse reçue puis la puissance électrique d’un panneau placé à une distance donnée d’une source.',
+      refs: ['34:pve-sapp-panneau', '37:prevoir:pve-ana-surface'] },
   ],
 };
