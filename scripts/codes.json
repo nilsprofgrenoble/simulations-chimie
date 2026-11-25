@@ -2616,5 +2616,14 @@
  "77:plausible:phe-val-ec-negative": "VAL707",
  "77:plausible:phe-val-cuivre-visible": "VAL708",
  "77:plausible:phe-val-intensite-ok": "VAL709",
- "36:phe-calcul": "REA156"
+ "36:phe-calcul": "REA156",
+ "37:prevoir:wins-ana-micro": "ANA1197",
+ "37:prevoir:wins-ana-type-i": "ANA1198",
+ "37:prevoir:wins-ana-type-ii": "ANA1199",
+ "37:prevoir:wins-ana-sel": "ANA1200",
+ "37:prevoir:wins-ana-optimum": "ANA1201",
+ "37:prevoir:wins-ana-iv": "ANA1202",
+ "77:plausible:wins-val-sel": "VAL710",
+ "77:plausible:wins-val-masse": "VAL711",
+ "77:plausible:wins-val-optimum": "VAL712"
 }
