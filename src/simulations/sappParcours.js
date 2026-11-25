@@ -21,7 +21,7 @@ export const titreGraphique = s => {
 // Identifiants (même forme que l'adresse ?ex=…) : énoncé « id.numéro de question » · situation « id » · graphique « id ».
 // La clé de progression est celle du suivi de chaque atelier (34:… et 35:…).
 export function construireItemsSapp({ enonces, situations, scenarios }) {
-  const it = (o, rat) => ({ ...o, ...rattachement(rat) });
+  const it = (o, rat) => ({ ...o, ...rattachement(rat, o.cle) });
   return [
     ...enonces.flatMap(e => e.noms.map((nom, q) => it({ id: `${e.id}.${q}`, cle: `34:${e.id}.${q}`, type: 'donnees', atelier: 34, brut: e.id, q, titre: e.titre, detail: nom }, e.domaine))),
     ...situations.map(s => it({ id: s.id, cle: `34:${s.id}`, type: 'situation', atelier: 34, brut: s.id, titre: s.titre, detail: '' }, s.domaine)),

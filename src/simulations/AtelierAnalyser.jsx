@@ -275,7 +275,7 @@ export function SimulationAtelierAnalyser({ naviguer }) {
       </div>);
   }
   const item = items.find(i => i.id === sel.ex);
-  const ctx = { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch };
+  const ctx = { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch, st: sel.st };
   const liste = filtrer(items, ctx);
   const pos = liste.findIndex(i => i.id === item.id);
   const aller = i => setSel({ ...ctx, ex: liste[i].id });

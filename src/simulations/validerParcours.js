@@ -19,7 +19,7 @@ export const TYPES_VAL = [
 // Une entrée par exercice : l'identifiant est « famille.exercice » (même forme que l'adresse ?ex=…)
 export function construireItemsVal(familles) {
   return familles.flatMap(f => f.liste.map(x => {
-    const { niveaux, chapitres } = rattachement(x.domaine);
+    const { niveaux, chapitres } = rattachement(x.domaine, `77:${f.id}:${x.id}`);
     return { id: `${f.id}.${x.id}`, cle: `77:${f.id}:${x.id}`, type: f.id, fam: f.id, brut: x.id, titre: x.titre, detail: x.niveau ? `${'★'.repeat(x.niveau)} ${DIFFICULTES_VAL[x.niveau] || ''}`.trim() : '', dif: x.niveau, niveaux, chapitres };
   }));
 }

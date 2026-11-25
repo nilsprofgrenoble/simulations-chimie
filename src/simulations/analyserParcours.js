@@ -24,7 +24,7 @@ export const typeDeFamille = fam => TYPE_PAR_FAMILLE[fam] || fam;
 // Les types sans filtre (liste courte) affichent le thème sous le titre ; les gros types sont déjà rangés par chapitre.
 export function construireItemsAna(familles) {
   return familles.flatMap(f => f.liste.map(x => {
-    const { niveaux, chapitres } = rattachement(x.domaine);
+    const { niveaux, chapitres } = rattachement(x.domaine, `37:${f.id}:${x.id}`);
     const type = typeDeFamille(f.id), filtre = TYPES_ANA.find(t => t.id === type)?.filtre;
     return { id: `${f.id}.${x.id}`, cle: `37:${f.id}:${x.id}`, type, fam: f.id, brut: x.id, titre: x.titre, detail: filtre ? '' : (x.domaine || ''), niveaux, chapitres };
   }));
