@@ -5,6 +5,7 @@
 // de chaque mauvaise réponse qui comptent. Notation : « Q_V » s'affiche avec un indice ; espaces insécables ajoutés à l'affichage.
 // Option de QCM ou de choix multiple : [texte, juste (booléen), explication].
 
+import { PVC_ANA } from './panneauPvExos.js';
 import { presenter } from './presenter.js';
 import { OEIL2GT_ANA } from './oeilReduit2gtExos.js';
 import { OSG2GT_ANA } from './ondesSignaux2gtExos.js';
@@ -6346,6 +6347,7 @@ export const PREVOIR = [
   ...OEIL2GT_ANA,
   ...OSG2GT_ANA,
   ...NOY2GT_ANA,
+  ...PVC_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,

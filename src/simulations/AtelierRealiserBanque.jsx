@@ -2539,6 +2539,55 @@ function genCo2Milieu() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['[CO₂] = a × P(CO₂) ; frac([HCO₃⁻]|[CO₂]) = 10^(pH − pKa1) ; frac([CO₃²⁻]|[HCO₃⁻]) = 10^(pH − pKa2).', 'C_T = [CO₂] + [HCO₃⁻] + [CO₃²⁻] augmente avec le pH du milieu.'] };
 }
+// ---------- Panneau photovoltaïque (TSTL, PCM) : puissance, loi d'Ohm, éclairement ----------
+const pvCs2 = x => Number(Number(x).toPrecision(2));
+const pvFmt = (v, d = 2) => (v >= 100 ? nbF(v, 0) : v >= 10 ? nbF(v, 1) : nbF(v, v < 0.1 ? 3 : d));
+function genPvPuissance() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const U = tire([1.6, 2.2, 2.8, 3.1, 3.4, 3.8]), I = tire([45, 62, 80, 115, 150, 185]), dt = tire([10, 20, 30, 45, 60]), Ia = I / 1000;
+  const P = pvCs2(U * Ia), R = U / Ia, W = P * dt * 60;
+  const intro = `Un panneau photovoltaïque alimente une résistance. Un voltmètre indique U = ${nbF(U, 1)}${NB}V aux bornes du panneau et un ampèremètre indique I = ${I}${NB}mA. Le panneau fonctionne ainsi pendant Δt = ${dt}${NB}min.`;
+  const q1 = { id: 'v0', type: 'num', q: <>Exprimez l’intensité <b>I</b> en ampères.</>, unite: 'A', vrai: Ia, tolRel: 0.02, csMin: 2,
+    aide: '1 mA = 0,001 A : divisez la valeur en mA par 1000.',
+    pieges: [[I, 'La valeur est restée en milliampères : pour des ampères, divisez par 1000.'], [I * 1000, 'Le sens de la conversion est inversé : 1 mA = 0,001 A, donc on divise par 1000.']],
+    expl: <>I = {I}{NB}mA = {I} ÷ 1000 = <b>{pvFmt(Ia, 3)}{NB}A</b>.</> };
+  const q2 = { id: 'v1', type: 'num', q: <>Avec I = {pvFmt(Ia, 3)}{NB}A, calculez la <b>puissance électrique P</b> fournie par le panneau (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: U * Ia, tolRel: 0.05, csMin: 2,
+    aide: 'P = U × I, avec U en volts et I en ampères.',
+    pieges: [[U * I, 'Ce produit utilise I en milliampères : il donne des milliwatts. Avec I en ampères, le résultat est en watts.'], [U / Ia, 'Ce quotient U divisé par I est la résistance R, pas la puissance.']],
+    expl: <>P = U × I = {nbF(U, 1)} × {pvFmt(Ia, 3)} = <b>{pvFmt(P)}{NB}W</b>.</> };
+  const q3 = { id: 'v2', type: 'num', q: <>Calculez la <b>résistance R</b> de la charge, avec la loi d’Ohm (en Ω, 2 chiffres significatifs).</>, unite: 'Ω', vrai: R, tolRel: 0.05, csMin: 2,
+    aide: 'U = R × I, donc R = U divisé par I, avec I en ampères.',
+    pieges: [[U / I, 'Ici I est en milliampères : il faut le convertir en ampères pour obtenir des ohms.'], [U * Ia, 'Ce produit est la puissance P : la résistance est le quotient U divisé par I.'], [Ia / U, 'Le quotient est inversé : R = U divisé par I.']],
+    expl: <>R = U ÷ I = {nbF(U, 1)} ÷ {pvFmt(Ia, 3)} = <b>{pvFmt(R)}{NB}Ω</b>.</> };
+  const q4 = { id: 'v3', type: 'num', q: <>Avec P = {pvFmt(P)}{NB}W, calculez l’<b>énergie électrique</b> fournie pendant {dt}{NB}min : W = P × Δt (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: W, tolRel: 0.05, csMin: 2,
+    aide: 'Δt doit être en secondes : 1 min = 60 s. Énergie en joules = puissance en watts × durée en secondes.',
+    pieges: [[P * dt, 'La durée est restée en minutes : convertissez-la en secondes (× 60).'], [P * dt * 3600, 'Une minute fait 60 secondes, pas 3600 : 3600 s correspond à une heure.'], [P / (dt * 60), 'Il faut multiplier la puissance par la durée, pas la diviser.']],
+    expl: <>Δt = {dt} × 60 = {dt * 60}{NB}s ; W = {pvFmt(P)} × {dt * 60} = <b>{nbF(W, 0)}{NB}J</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['P = U × I : en watts si U est en volts et I en ampères (convertir les mA).', 'Loi d’Ohm : U = R × I, donc R = U divisé par I.', 'Énergie W = P × Δt : en joules si P est en watts et Δt en secondes.'] };
+}
+function genPvEclair() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const E1 = tire([800, 900, 1000]), E2 = tire([200, 300, 400, 500, 600]), Icc1 = tire([96, 120, 150, 180, 240]), Pm1 = tire([0.25, 0.32, 0.4, 0.5, 0.6]);
+  const k = pvCs2(E2 / E1), I2 = Icc1 * k, P2 = Pm1 * k;
+  const intro = `Un panneau photovoltaïque, maintenu à température constante, est éclairé avec E₁ = ${E1}${NB}W/m². On mesure un courant de court-circuit Icc₁ = ${Icc1}${NB}mA et une puissance maximale Pmax₁ = ${nbF(Pm1, 2)}${NB}W. On éclaire ensuite le panneau avec E₂ = ${E2}${NB}W/m². On admet que Icc et Pmax sont proportionnels à l’éclairement.`;
+  const q1 = { id: 'k0', type: 'num', q: <>Calculez le rapport <b>E₂ ÷ E₁</b> des éclairements (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: E2 / E1, tolRel: 0.03, csMin: 2,
+    aide: 'Divisez le nouvel éclairement E₂ par le premier, E₁.',
+    pieges: [[E1 / E2, 'Le rapport est inversé : on demande E₂ divisé par E₁.'], [E1 - E2, 'Ce n’est pas une différence : il faut diviser E₂ par E₁.']],
+    expl: <>E₂ ÷ E₁ = {E2} ÷ {E1} = <b>{nbF(k, 2)}</b>.</> };
+  const q2 = { id: 'k1', type: 'num', q: <>Avec E₂ ÷ E₁ = {nbF(k, 2)}, calculez le <b>courant de court-circuit</b> Icc₂ (en mA, 2 chiffres significatifs).</>, unite: 'mA', vrai: I2, tolRel: 0.05, csMin: 2,
+    aide: 'Icc est proportionnel à E : Icc₂ = Icc₁ × (E₂ ÷ E₁).',
+    pieges: [[Icc1 / k, 'Le rapport est inversé : l’éclairement diminue, donc Icc diminue.'], [Icc1, 'Icc dépend de l’éclairement : elle doit changer quand E change.']],
+    expl: <>Icc₂ = {Icc1} × {nbF(k, 2)} = <b>{pvFmt(I2)}{NB}mA</b>.</> };
+  const q3 = { id: 'k2', type: 'num', q: <>Avec E₂ ÷ E₁ = {nbF(k, 2)}, estimez la <b>puissance maximale</b> Pmax₂ (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P2, tolRel: 0.05, csMin: 2,
+    aide: 'On admet Pmax proportionnelle à E : Pmax₂ = Pmax₁ × (E₂ ÷ E₁).',
+    pieges: [[Pm1 / k, 'Le rapport est inversé : l’éclairement diminue, donc Pmax diminue.'], [Pm1, 'Pmax dépend de l’éclairement : elle doit changer quand E change.']],
+    expl: <>Pmax₂ = {nbF(Pm1, 2)} × {nbF(k, 2)} = <b>{pvFmt(P2)}{NB}W</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Icc est proportionnel à l’éclairement : Icc₂ = Icc₁ × E₂ ÷ E₁.', 'Pmax suit à peu près l’éclairement ; la tension à vide Uco varie très peu.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -4663,6 +4712,8 @@ export const FAMILLES = [
   { id: 'crist-evaporation', groupe: 'Formules', titre: 'Cristallisation par évaporation : eau à saturation et masse de cristaux (terminale STL)', gen: genCristEvaporation, domaine: 'Évaporation et cristallisation' },
   { id: 'extrac-partage', groupe: 'Formules', titre: 'Extraction acide-base : fraction extraite selon le pH (terminale STL)', gen: genExtracPartage, domaine: 'Extraction acide-base : choix du pH' },
   { id: 'extrac-passes', groupe: 'Formules', titre: 'Extraction acide-base : extractions successives (terminale STL)', gen: genExtracPasses, domaine: 'Extraction acide-base : choix du pH' },
+  { id: 'pvc-puissance', groupe: 'Formules', titre: 'Panneau photovoltaïque : puissance, loi d’Ohm et énergie (terminale STL)', gen: genPvPuissance, domaine: 'Panneau photovoltaïque : caractéristique, puissance maximale, éclairement' },
+  { id: 'pvc-eclair', groupe: 'Formules', titre: 'Panneau photovoltaïque : effet de l’éclairement sur Icc et Pmax (terminale STL)', gen: genPvEclair, domaine: 'Panneau photovoltaïque : caractéristique, puissance maximale, éclairement' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
