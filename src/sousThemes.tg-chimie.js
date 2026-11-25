@@ -1,0 +1,55 @@
+// ═══════════════════════════════════════════════════════════════════════════
+//  SOUS-THÈMES des chapitres de Terminale spécialité « tg-evolution-temporelle », « tg-synthese » et « tg-mesure ».
+//  Même structure que SOUS_THEMES (voir sousThemes.js) ; à intégrer dans SOUS_THEMES. Un exercice dans un seul sous-thème de chaque chapitre.
+//  Chaque sous-thème correspond à une capacité exigible du programme officiel de terminale spécialité (voir le texte dans « capacite »).
+// ═══════════════════════════════════════════════════════════════════════════
+export default {
+  'tg-evolution-temporelle': [
+    { id: 'facteurs', nom: 'Facteurs cinétiques et catalyse', capacite: 'Identifier, à partir de données expérimentales, des facteurs cinétiques (température, concentration) ; citer les propriétés d’un catalyseur et identifier un catalyseur à partir de données expérimentales.',
+      refs: ['34:cin-sapp-temperature', '34:cin-sapp-catalyse', '37:prevoir:cin-ana-facteur', '37:prevoir:cin-ana-tableau', '37:prevoir:cin-ana-catalyseur', '77:plausible:cin-val-temperature', '77:plausible:cin-val-catalyseur', '36:cin-calcul'] },
+    { id: 'capteur', nom: 'Choisir un capteur de suivi', capacite: 'Justifier le choix d’un capteur de suivi temporel de l’évolution d’un système (pression, conductivité, absorbance…).',
+      refs: ['37:prevoir:cin-ana-capteur', '37:prevoir:cin-ana-capteur-ions', '37:prevoir:cin-ana-capteur-colore'] },
+    { id: 'vitesse', nom: 'Vitesse volumique et demi-réaction', capacite: 'À partir de données expérimentales, déterminer une vitesse volumique de disparition d’un réactif ou d’apparition d’un produit, ou un temps de demi-réaction.',
+      refs: ['34:cinv-vitesse', '35:cinetique', '37:prevoir:cinv-moyenne', '37:prevoir:cinv-demi-const', '37:prevoir:cinv-ana-vitesse-temps', '77:plausible:cinv-val-signe', '36:cinv-calcul'] },
+    { id: 'ordre1', nom: 'Loi de vitesse d’ordre 1', capacite: 'Identifier, à partir de données expérimentales, si l’évolution d’une concentration suit ou non une loi de vitesse d’ordre 1 ; exploiter v = k·c et t½ = ln 2 / k.',
+      refs: ['34:cinv-k', '37:prevoir:cinv-ln-pente', '37:prevoir:cinv-v-sur-c', '37:prevoir:cinv-ana-test-ordre1', '77:plausible:cinv-val-ordre1', '77:plausible:cinv-val-k'] },
+    { id: 'mecanisme', nom: 'Mécanisme réactionnel et flèches courbes', capacite: 'À partir d’un mécanisme fourni, identifier un intermédiaire réactionnel, un catalyseur et établir l’équation de la réaction ; représenter les flèches courbes ; interpréter l’influence de la concentration et de la température en termes de chocs.',
+      refs: ['34:mrx-sapp-chocs', '37:prevoir:mrx-ana-fleches', '37:prevoir:mrx-ana-temperature', '37:prevoir:mrx-ana-concentration', '37:prevoir:mrx-ana-catalyseur', '37:prevoir:mrx-ana-intermediaire', '77:plausible:mrx-val-acte', '77:plausible:mrx-val-bilan', '36:mrx-calcul'] },
+    { id: 'noyaux', nom: 'Noyaux, diagramme (N, Z) et désintégrations', capacite: 'Déterminer, à partir d’un diagramme (N, Z), les isotopes radioactifs d’un élément ; utiliser les lois de conservation pour écrire l’équation d’une réaction nucléaire et identifier le type de radioactivité (α, β⁻, β⁺).',
+      refs: ['34:rda-sapp-fils', '37:prevoir:rda-ana-isotopes', '37:prevoir:rda-ana-position', '37:prevoir:rda-ana-conservation', '77:plausible:rda-val-beta-plus', '77:plausible:rda-val-ok', '36:rda-calcul'] },
+    { id: 'decroissance', nom: 'Loi de décroissance radioactive', capacite: 'Établir l’expression de l’évolution temporelle d’une population de noyaux radioactifs ; exploiter la loi, la constante radioactive, le temps de demi-vie, l’activité et une courbe de décroissance.',
+      refs: ['34:rad-activite', '37:prevoir:rad-n-demi', '37:prevoir:rad-lambda', '37:prevoir:rad-activite', '37:prevoir:rad-hasard', '37:prevoir:rad-ana-equation', '77:plausible:rad-val-lambda', '77:plausible:rad-val-activite-24j', '36:rad-calcul'] },
+    { id: 'datation', nom: 'Datation et applications de la radioactivité', capacite: 'Expliquer le principe de la datation à l’aide de noyaux radioactifs et dater un événement ; citer des applications médicales et des méthodes de protection contre les rayonnements ionisants.',
+      refs: ['34:rad-age', '37:prevoir:rad-ana-datation', '37:prevoir:rad-ana-protection', '77:plausible:rad-val-age', '77:plausible:rad-val-traceur'] },
+  ],
+  'tg-synthese': [
+    { id: 'topologie', nom: 'Formules topologiques et isomères', capacite: 'Exploiter des règles de nomenclature fournies pour nommer une espèce ou représenter l’entité associée ; représenter des formules topologiques d’isomères de constitution à partir d’une formule brute ou semi-développée.',
+      refs: ['34:top-sapp-formule', '37:prevoir:top-ana-cinq-liaisons', '37:prevoir:top-ana-chaine-longue', '37:prevoir:top-ana-meme-molecule', '77:plausible:top-val-cyclobutane', '77:plausible:top-val-nombre', '77:plausible:top-val-ok-penetene', '36:top-calcul'] },
+    { id: 'familles', nom: 'Esters, amines, amides, halogénoalcanes', capacite: 'Reconnaître les familles fonctionnelles (esters, amines, amides, halogénoalcanes) et nommer ces espèces à l’aide des règles de nomenclature fournies.',
+      refs: ['37:prevoir:pol-ana-meme-brute', '37:prevoir:pol-ana-classe-amine', '37:prevoir:pol-ana-nom-amide', '37:prevoir:pol-ana-halogenoalcane', '77:plausible:pol-val-nom-inverse'] },
+    { id: 'polymeres', nom: 'Polymères', capacite: 'Identifier le motif d’un polymère à partir de sa formule ; citer des polymères naturels et synthétiques et des utilisations courantes.',
+      refs: ['34:pol-sapp-pvc', '37:prevoir:pol-ana-motif-cl', '37:prevoir:pol-ana-monomere', '77:plausible:pol-val-naturel', '36:pol-calcul'] },
+    { id: 'optimisation', nom: 'Optimiser une étape : vitesse et rendement', capacite: 'Identifier, dans un protocole, les opérations qui optimisent la vitesse de formation d’un produit ; justifier l’augmentation du rendement par un excès d’un réactif ou l’élimination d’un produit.',
+      refs: ['34:opt-sapp-rendement', '34:opt-sapp-exces', '37:prevoir:opt-ana-catalyseur', '37:prevoir:opt-ana-exces', '37:prevoir:opt-ana-protocole', '77:plausible:opt-val-nmax', '77:plausible:opt-val-ok', '77:plausible:opt-val-catalyseur', '36:opt-calcul'] },
+    { id: 'strategie', nom: 'Enchaîner des étapes : types de réactions', capacite: 'Élaborer une séquence réactionnelle de synthèse à partir d’une banque de réactions ; identifier des réactions d’oxydo-réduction, acide-base, de substitution, d’addition, d’élimination ; calculer le rendement global.',
+      refs: ['37:prevoir:str-ana-types', '37:prevoir:str-ana-addition', '37:prevoir:str-ana-oxydation', '77:plausible:str-val-sequence', '34:str-sapp-rendement', '77:plausible:str-val-rendement', '77:plausible:str-val-global-ok', '36:str-calcul'] },
+    { id: 'protection', nom: 'Protection et déprotection', capacite: 'Identifier des étapes de protection / déprotection et justifier leur intérêt, à partir d’une banque de réactions.',
+      refs: ['37:prevoir:str-ana-protection', '37:prevoir:str-ana-deprotection', '77:plausible:str-val-protection'] },
+    { id: 'eco', nom: 'Synthèses écoresponsables', capacite: 'Discuter l’impact environnemental d’une synthèse et proposer des améliorations à l’aide de données fournies (énergie, sous-produits, réactifs et solvants).',
+      refs: ['34:str-sapp-dechets', '37:prevoir:str-ana-eco-solvant', '77:plausible:str-val-eco'] },
+  ],
+  'tg-mesure': [
+    { id: 'variabilite', nom: 'Variabilité d’une mesure', capacite: 'Exploiter une série de mesures indépendantes (histogramme, moyenne, écart-type) ; discuter l’influence de l’instrument et du protocole ; évaluer qualitativement la dispersion.',
+      refs: ['37:prevoir:dispersion-double', '37:prevoir:decalage-constant', '37:prevoir:mes-ana-histogramme', '77:plausible:mes-val-ecart-type', '77:plausible:mes-derive-balance'] },
+    { id: 'typeA', nom: 'Incertitude-type de type A', capacite: 'Définir qualitativement une incertitude-type ; l’évaluer par une approche statistique (type A) : u = s / √n.',
+      refs: ['34:incertA.0', '37:relation:incertitude-type-A', '37:hypothese:type-A', '37:probleme:nombre-mesures', '37:prevoir:quatre-fois-plus', '77:plausible:u-plus-grand-que-s', '77:plausible:u-moyenne-ok'] },
+    { id: 'typeB', nom: 'Incertitude-type de type B', capacite: 'Évaluer une incertitude-type par une approche non statistique (type B) : tolérance, résolution, graduation.',
+      refs: ['37:hypothese:mes-hyp-tolerance', '37:prevoir:mes-ana-type-ab', '77:plausible:mes-tolerance-fiole-ok', '77:plausible:u-nulle', '77:plausible:mes-val-graduation'] },
+    { id: 'composees', nom: 'Incertitudes-types composées', capacite: 'Évaluer, à l’aide d’une formule fournie, l’incertitude-type d’une grandeur qui dépend d’autres grandeurs d’incertitudes connues.',
+      refs: ['34:icc-sapp-resistance', '37:prevoir:icc-ana-dominante', '37:prevoir:icc-ana-tirages', '37:prevoir:mes-prevoir-quotient', '77:plausible:icc-val-somme', '77:plausible:mes-quotient-absolues', '77:plausible:mes-composante-negligeable-ok', '36:icc-calcul'] },
+    { id: 'ecriture', nom: 'Écrire un résultat', capacite: 'Écrire, avec un nombre adapté de chiffres significatifs, le résultat d’une mesure et son incertitude-type.',
+      refs: ['37:prevoir:mes-prevoir-ecriture', '37:prevoir:mes-ana-ecriture-chiffres', '77:plausible:ecriture-resultat', '77:plausible:mes-val-ecriture-ok', '36:cs'] },
+    { id: 'reference', nom: 'Comparer à une valeur de référence', capacite: 'Comparer le résultat d’une mesure à une valeur de référence avec le quotient |m_mes − m_ref| / u(m).',
+      refs: ['77:compat:deux-gouttelettes', '34:icc-sapp-reference', '34:compatS', '37:relation:compatibilite', '37:hypothese:compatibilite-hyp', '37:probleme:pompe-doseuse', '37:prevoir:icc-ana-seuil', '77:plausible:icc-val-compat', '77:compat:volume-pipette', '77:compat:etalonnage-ph', '77:compat:deux-series', '77:compat:vitesse-son-salle', '77:compat:mes-etalonnage-sonde'] },
+  ],
+};

@@ -46,6 +46,7 @@ import { NOY2GT_SAPP } from "./noyauAtome2gtExos.js";
 import { NUC2GT_SAPP } from "./nucleaire2gtExos.js";
 import { RHC_SAPP } from "./rheoCourbesExos.js";
 import { ITT_SAPP } from "./itt3Exos.js";
+import { TGPB_SAPP } from "./tgPhysiqueBExos.js";
 const CDT_SELS = [{ nom: 'chlorure de sodium', f: 'NaCl', cat: 'Na', an: 'Cl' }, { nom: 'nitrate de sodium', f: 'NaNO₃', cat: 'Na', an: 'NO3' }, { nom: 'éthanoate de sodium', f: 'CH₃COONa', cat: 'Na', an: 'AcO' }];
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -54,6 +55,8 @@ const sci3 = x => { const [m, e] = Number(x).toExponential(2).split('e'); return
 export const nb = (x, d = null) => (d == null
   ? (x !== 0 && (Math.abs(x) < 1e-3 || Math.abs(x) >= 1e7) ? sci3(x) : Number(x).toLocaleString('fr-FR', { maximumSignificantDigits: 4 }))
   : Number(x).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+// Sujet de la phrase d'un énoncé d'extraction (article et nature du composé corrects)
+const SUJET_EXT = { benz: 'L’acide benzoïque', phenol: 'Le phénol (acide faible)', aniline: 'L’aniline (base faible)', tea: 'La triéthylamine (base faible)' };
 const NB = s => s.replace(/ /g, ' ');                       // espace insécable : une donnée ne se coupe pas en fin de ligne
 const sg = x => (x < 0 ? '−' + nb(Math.abs(x)) : nb(x));          // nombre avec « vrai » signe moins
 const T = id => ({ t: id });
@@ -297,7 +300,7 @@ export const ENONCES = [
   // ───────────────────────────── Radioactivité (TG) : activité et datation
   {
     id: 'rad-activite', domaine: 'Radioactivité : décroissance et demi-vie', titre: 'Activité d’un échantillon d’iode 131', noms: ['Activité initiale', 'Constante radioactive λ'],
-    gen: () => { const th = tire([4, 6, 8, 10]), N0 = tire([2.0e7, 4.0e7, 5.0e7, 8.0e7]); return { th, N0, lam: Number((Math.LN2 / (th * 86400)).toPrecision(2)), m: tire([12, 25, 40]) }; },
+    gen: () => { const th = 8 /* demi-vie réelle de l’iode 131 : 8,0 jours */, N0 = tire([2.0e7, 4.0e7, 5.0e7, 8.0e7]); return { th, N0, lam: Number((Math.LN2 / (th * 86400)).toPrecision(2)), m: tire([12, 25, 40]) }; },
     build: (p, q) => {
       const tokens = {
         th: tok(`${p.th},0 jours`, 'Demi-vie de l’iode 131 (valeur utilisée)', p.th, 'j'),
@@ -712,7 +715,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'ab-acf-sapp-ph', domaine: 'Acides et bases', titre: 'pH et taux d’avancement d’un acide faible', noms: ['pH de la solution', 'Taux d’avancement de la réaction avec l’eau'],
+    id: 'ab-acf-sapp-ph', domaine: 'Acides et bases', titre: 'pH et coefficient de dissociation d’un acide faible', noms: ['pH de la solution', 'Coefficient de dissociation dans l’eau'],
     gen: () => { for (;;) { const pKa = tire([3.8, 4.2, 4.7, 4.9]), C = tire([0.01, 0.02, 0.05, 0.1]); if (Math.abs(AB.pHAcideFaibleApprox(C, pKa) - AB.pH({ C, pKas: [pKa] })) < 0.02) return { pKa, C, V: tire([50, 100, 250]) }; } },
     build: (p, q) => {
       const pH = AB.pHAcideFaibleApprox(p.C, p.pKa);
@@ -723,13 +726,13 @@ export const ENONCES = [
         T: tok('25 °C', 'Température de la solution', 25, '°C'),
       };
       const debut = ['On prépare ', T('V'), ' de solution d’un acide faible AH de concentration ', T('C'), ' à ', T('T'), '. Le pKa du couple AH / A⁻ vaut ', T('pKa'), '. '];
-      const raisons = { V: 'Le volume ne change ni le pH ni le taux d’avancement : seule la concentration compte.', T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
+      const raisons = { V: 'Le volume ne change ni le pH ni le coefficient de dissociation : seule la concentration compte.', T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le pH de la solution ?'], utiles: ['pKa', 'C'], raisons,
-        cherche: { bonne: 'Le pH de la solution (sans unité)', faux: ['La concentration en ions H₃O⁺ (en mol/L)', 'Le taux d’avancement de la réaction avec l’eau (sans unité)', 'Le pH d’un acide fort de même concentration (sans unité)'] },
+        cherche: { bonne: 'Le pH de la solution (sans unité)', faux: ['La concentration en ions H₃O⁺ (en mol/L)', 'Le coefficient de dissociation α (sans unité)', 'Le pH d’un acide fort de même concentration (sans unité)'] },
         manque: null, solution: { txt: 'pH = ½ × (pKa − log C)', val: pH, u: '' } };
-      return { tokens, derivees: ['pH = ½ × (pKa − log C)', '[H₃O⁺] = 10^(−pH)'], texte: [...debut, 'Quel est le taux d’avancement τ de la réaction de l’acide avec l’eau ?'], utiles: ['pKa', 'C'], raisons,
-        cherche: { bonne: 'Le taux d’avancement τ (sans unité)', faux: ['Le pH de la solution (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)', 'La concentration en ions A⁻ (en mol/L)'] },
-        manque: null, solution: { txt: 'τ = [H₃O⁺] divisé par C', val: 10 ** -pH / p.C, u: '' } };
+      return { tokens, derivees: ['pH = ½ × (pKa − log C)', '[H₃O⁺] = 10^(−pH)'], texte: [...debut, 'Quel est le coefficient de dissociation α de l’acide ?'], utiles: ['pKa', 'C'], raisons,
+        cherche: { bonne: 'Le coefficient de dissociation α (sans unité)', faux: ['Le pH de la solution (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)', 'La concentration en ions A⁻ (en mol/L)'] },
+        manque: null, solution: { txt: 'α = [H₃O⁺] divisé par C', val: 10 ** -pH / p.C, u: '' } };
     },
   },
   {
@@ -906,7 +909,7 @@ export const ENONCES = [
         Ve: tok(`${p.Ve} mL`, 'Volume de phase aqueuse', p.Ve, 'mL'),
         Vo: tok(`${Vo} mL`, 'Volume de solvant organique', Vo, 'mL'),
       };
-      const debut = [acide ? 'L’acide ' : 'La base ', e.nom, ' (', acide ? 'couple HA / A⁻' : 'couple BH⁺ / B', ', pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' d’un solvant organique non miscible. Le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
+      const debut = [SUJET_EXT[e.id], ' (', acide ? 'couple HA / A⁻' : 'couple BH⁺ / B', ', pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' d’un solvant organique non miscible. Le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
       const raisons = { Ve: 'Les volumes ne servent que pour la part extraite : ils n’interviennent pas dans α.', Vo: 'Les volumes ne servent que pour la part extraite : ils n’interviennent pas dans α.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle fraction du composé est sous forme neutre dans la phase aqueuse ?'],
         utiles: ['pKa', 'pH'], raisons: { ...raisons, K: 'Le coefficient de partage K intervient pour D, pas pour la fraction α.' },
@@ -930,7 +933,7 @@ export const ENONCES = [
         Ve: tok(`${p.Ve} mL`, 'Volume de phase aqueuse', p.Ve, 'mL'),
         Vo: tok(`${Vo} mL`, 'Volume de solvant organique à chaque contact', Vo, 'mL'),
       };
-      const debut = [acide ? 'L’acide ' : 'La base ', e.nom, ' (pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' de solvant organique ; le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
+      const debut = [SUJET_EXT[e.id], ' (pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' de solvant organique ; le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
       if (q === 0) return { tokens, derivees: ['D = K × α, avec α la fraction de forme neutre', 'r = Vorg divisé par Veau'], texte: [...debut, 'Quelle part du composé est extraite en un seul contact ?'],
         utiles: ['K', 'pKa', 'pH', 'Ve', 'Vo'], raisons: {},
         cherche: { bonne: 'La part extraite en un contact (en %)', faux: ['Le rapport de distribution D (sans unité)', 'La part restant dans l’eau (en %)', 'La fraction α de forme neutre (sans unité)'] },
@@ -1705,6 +1708,38 @@ export const ENONCES = [
         manque: null, solution: { txt: 'a_x(4) ≈ frac(v_x(5) − v_x(3)|2τ) (des m/s divisés par des s donnent des m/s²)', val: p.a, u: 'm/s²' } };
     },
   },
+  // ───────────────────────────── Vecteurs vitesse et accélération (TG, sim 166) : dériver la position x(t) d’un mobile
+  {
+    id: 'vac-sapp-derivee', domaine: 'Vecteurs vitesse et accélération', titre: 'Dériver la position d’un chariot', noms: ['Vitesse à une date donnée', 'Accélération du chariot'],
+    gen: () => {
+      // on écarte les tirages où une réponse fausse classique (B seul, vitesse moyenne, position, 2C, constante A non annulée) tomberait à 12 % de la bonne
+      for (;;) {
+        const A = tire([1.0, 2.0, 3.0]), B = tire([1.0, 2.0, 3.0]), C = tire([0.50, 1.0, 1.5, 2.0]), t1 = tire([2.0, 3.0, 4.0]), v = B + 2 * C * t1;
+        if ([B, B + C * t1, A + B * t1 + C * t1 * t1, 2 * C, v + A].every(x => Math.abs(x - v) > 0.12 * v)) return { A, B, C, t1, m: tire([0.50, 1.0, 2.0]) };
+      }
+    },
+    build: (p, q) => {
+      const tokens = {
+        A: tok(`${nb(p.A, 1)} m`, 'Terme constant de x(t) : position du chariot à la date t = 0', p.A, 'm'),
+        B: tok(`${nb(p.B, 1)} m/s`, 'Coefficient du terme en t de x(t)', p.B, 'm/s'),
+        C: tok(`${nb(p.C, 2)} m/s²`, 'Coefficient du terme en t² de x(t)', p.C, 'm/s²'),
+        m: tok(`${nb(p.m, 2)} kg`, 'Masse du chariot', p.m, 'kg'),
+      };
+      const debut = ['Un chariot se déplace sur l’axe Ox. Sa position est donnée par x(t) = A + B·t + C·t² (x en m, t en s), avec A = ', T('A'), ', B = ', T('B'), ' et C = ', T('C'), '. Sa masse est ', T('m'), '. '];
+      const mTexte = 'La masse ne joue aucun rôle dans la description du mouvement (la cinématique décrit le mouvement sans en chercher la cause).';
+      if (q === 0) {
+        tokens.t1 = tok(`${nb(p.t1, 1)} s`, 'Date à laquelle on étudie le chariot', p.t1, 's');
+        return { tokens, derivees: [], texte: [...debut, 'On étudie le chariot à la date ', T('t1'), '. Quelle est la coordonnée de sa vitesse à cet instant ?'],
+          utiles: ['B', 'C', 't1'], raisons: { A: 'Le terme constant A disparaît quand on dérive : la position initiale ne change pas la vitesse.', m: mTexte },
+          cherche: { bonne: 'La coordonnée v_x de la vitesse à la date t₁ (en m/s)', faux: ['La position x(t₁) du chariot à cette date (en m)', 'La coordonnée a_x de l’accélération (en m/s²)', 'La vitesse moyenne entre t = 0 et t = t₁ (en m/s)'] },
+          manque: null, solution: { txt: 'v_x(t) = frac(dx|dt) = B + 2C·t, donc v_x(t₁) = B + 2C·t₁', val: p.B + 2 * p.C * p.t1, u: 'm/s' } };
+      }
+      return { tokens, derivees: [], texte: [...debut, 'Quelle est la coordonnée de son accélération ?'],
+        utiles: ['C'], raisons: { A: 'Le terme constant A disparaît dès la première dérivation : il n’intervient ni dans la vitesse, ni dans l’accélération.', B: 'Le terme en B·t donne une vitesse constante B : sa dérivée est nulle, il n’intervient pas dans l’accélération.', m: mTexte },
+        cherche: { bonne: 'La coordonnée a_x de l’accélération (en m/s²)', faux: ['La coordonnée v_x de la vitesse à la date t = 0 (en m/s)', 'La force exercée sur le chariot (en N)', 'La position x du chariot à la date t = 0 (en m)'] },
+        manque: null, solution: { txt: 'v_x(t) = frac(dx|dt) = B + 2C·t puis a_x = frac(dv_x|dt) = 2C', val: 2 * p.C, u: 'm/s²' } };
+    },
+  },
   // ───────────────────────────── Pile (TG) : capacité à partir de la constitution initiale, durée de fonctionnement
   {
     id: 'pil-sapp-capacite', domaine: 'Piles : fonctionnement et capacité', titre: 'Capacité d’une pile zinc-cuivre', noms: ['Quantité d’ions cuivre initiale', 'Capacité électrique de la pile'],
@@ -1995,7 +2030,7 @@ export const ENONCES = [
   // ───────────────────────────── 0 quinquies. Chiralité et configuration R/S (TSTL, PCM)
   {
     id: 'chir-halogenes', domaine: 'Configuration absolue R/S', titre: 'Classer les groupes d’un carbone asymétrique (halogènes)', noms: ['Priorité 1', 'Priorité 3'],
-    gen: () => { const at = [['F', 9], ['Cl', 17], ['Br', 35], ['I', 53]]; const L = [...at].sort(() => Math.random() - 0.5).slice(0, 3); return { L, M: tire([120, 165, 200, 255]), Teb: tire([40, 80, 110]) }; },
+    gen: () => { const at = [['F', 9, 19.0], ['Cl', 17, 35.5], ['Br', 35, 79.9], ['I', 53, 126.9]]; const L = [...at].sort(() => Math.random() - 0.5).slice(0, 3); return { L, M: Math.round(13.0 + L.reduce((t, a) => t + a[2], 0)), Teb: tire([2, 5, 10, 20]) }; },
     build: (p, q) => {
       const tri = [...p.L].sort((a, b) => b[1] - a[1]);
       const tokens = {
@@ -2003,36 +2038,36 @@ export const ENONCES = [
         b: tok(`Z = ${p.L[1][1]}`, `Numéro atomique de ${p.L[1][0]}`, p.L[1][1], ''),
         c: tok(`Z = ${p.L[2][1]}`, `Numéro atomique de ${p.L[2][0]}`, p.L[2][1], ''),
         M: tok(`${p.M} g/mol`, 'Masse molaire de la molécule', p.M, 'g/mol'),
-        Teb: tok(`${p.Teb} °C`, 'Température d’ébullition', p.Teb, '°C'),
+        Teb: tok(`${p.Teb} g`, 'Masse de l’échantillon préparé', p.Teb, 'g'),
       };
-      const debut = ['Un carbone asymétrique est lié à un atome d’hydrogène et à trois atomes d’halogène : ', p.L[0][0], ' (', T('a'), '), ', p.L[1][0], ' (', T('b'), ') et ', p.L[2][0], ' (', T('c'), '). La molécule a une masse molaire de ', T('M'), ' et bout à ', T('Teb'), '. On classe les quatre groupes avec les règles de Cahn, Ingold et Prelog. '];
-      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', Teb: 'La température d’ébullition ne sert pas à classer les groupes.' };
+      const debut = ['Un carbone asymétrique est lié à un atome d’hydrogène et à trois atomes d’halogène : ', p.L[0][0], ' (', T('a'), '), ', p.L[1][0], ' (', T('b'), ') et ', p.L[2][0], ' (', T('c'), '). La molécule a une masse molaire de ', T('M'), ' ; on en a préparé ', T('Teb'), '. On classe les quatre groupes avec les règles de Cahn, Ingold et Prelog. '];
+      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', Teb: 'La masse de l’échantillon ne sert pas à classer les groupes.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome de priorité 1 ?'], utiles: ['a', 'b', 'c'], raisons,
         cherche: { bonne: 'Le numéro atomique Z de l’atome de priorité 1 (sans unité)', faux: ['La masse molaire de la molécule (en g/mol)', 'La somme des trois numéros atomiques (sans unité)', 'Le nombre de groupes différents autour du carbone (sans unité)'] },
         manque: null, solution: { txt: 'priorité 1 = plus grand Z', val: tri[0][1], u: '' } };
       return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome de priorité 3 ?'], utiles: ['a', 'b', 'c'], raisons,
-        cherche: { bonne: 'Le numéro atomique Z de l’atome de priorité 3 (sans unité)', faux: ['La température d’ébullition de la molécule (en °C)', 'Le numéro atomique de l’atome de priorité 1 (sans unité)', 'Le numéro atomique de l’hydrogène (sans unité)'] },
+        cherche: { bonne: 'Le numéro atomique Z de l’atome de priorité 3 (sans unité)', faux: ['La masse de l’échantillon préparé (en g)', 'Le numéro atomique de l’atome de priorité 1 (sans unité)', 'Le numéro atomique de l’hydrogène (sans unité)'] },
         manque: null, solution: { txt: 'priorité 3 = plus petit Z des trois (H est le n°4)', val: tri[2][1], u: '' } };
     },
   },
   {
     id: 'chir-heteroatomes', domaine: 'Configuration absolue R/S', titre: 'Classer les groupes d’un carbone asymétrique (O, N, C)', noms: ['Priorité 1', 'Priorité 3'],
-    gen: () => ({ M: tire([75, 89, 105, 119]), F: tire([150, 190, 230, 260]) }),
+    gen: () => ({ M: 75, F: 173 }),   // valeurs réelles du 2-aminopropan-1-ol (M ≈ 75 g/mol ; ébullition vers 173 °C)
     build: (p, q) => {
       const tokens = {
         o: tok('Z = 8', 'Numéro atomique de O', 8, ''),
         n: tok('Z = 7', 'Numéro atomique de N', 7, ''),
         c: tok('Z = 6', 'Numéro atomique de C', 6, ''),
         M: tok(`${p.M} g/mol`, 'Masse molaire', p.M, 'g/mol'),
-        F: tok(`${p.F} °C`, 'Température de fusion', p.F, '°C'),
+        F: tok(`${p.F} °C`, 'Température d’ébullition', p.F, '°C'),
       };
-      const debut = ['Dans une molécule de formule CH₃–CH(NH₂)–CH₂OH, le carbone asymétrique est lié à un groupe NH₂ (atome lié : N, ', T('n'), '), à un groupe CH₂OH (atome lié : C, ', T('c'), '), à un groupe CH₃ (atome lié : C) et à H. L’atome O a pour numéro atomique ', T('o'), '. La molécule a une masse molaire de ', T('M'), ' et fond à ', T('F'), '. '];
-      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', F: 'La température de fusion ne sert pas à classer les groupes.' };
+      const debut = ['Dans une molécule de formule CH₃–CH(NH₂)–CH₂OH, le carbone asymétrique est lié à un groupe NH₂ (atome lié : N, ', T('n'), '), à un groupe CH₂OH (atome lié : C, ', T('c'), '), à un groupe CH₃ (atome lié : C) et à H. L’atome O a pour numéro atomique ', T('o'), '. La molécule a une masse molaire de ', T('M'), ' et bout vers ', T('F'), '. '];
+      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', F: 'La température d’ébullition ne sert pas à classer les groupes.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome lié au C* du groupe de priorité 1 ?'], utiles: ['n', 'c'], raisons: { ...raisons, o: 'L’atome O n’est pas lié directement au C* : il est dans le groupe CH₂OH, au deuxième rang.' },
         cherche: { bonne: 'Le numéro atomique Z de l’atome lié au C* dans le groupe de priorité 1 (sans unité)', faux: ['Le numéro atomique de l’atome O du groupe CH₂OH (sans unité)', 'La masse molaire de la molécule (en g/mol)', 'Le numéro atomique de H (sans unité)'] },
         manque: null, solution: { txt: 'NH₂ : l’atome lié est N, Z = 7, le plus grand des atomes liés (N, C, C, H)', val: 7, u: '' } };
       return { tokens, derivees: [], texte: [...debut, 'CH₂OH et CH₃ sont tous deux liés par C : quel est le numéro atomique de l’atome commun qui les met à égalité ?'], utiles: ['c'], raisons: { ...raisons, n: 'N est l’atome lié de NH₂, groupe déjà classé 1er.', o: 'O est un voisin du carbone de CH₂OH : il sert au deuxième rang, pas à l’égalité.' },
-        cherche: { bonne: 'Le numéro atomique Z de l’atome lié qui est le même pour CH₂OH et CH₃ (sans unité)', faux: ['Le numéro atomique de l’atome O (sans unité)', 'Le numéro atomique de N (sans unité)', 'La température de fusion de la molécule (en °C)'] },
+        cherche: { bonne: 'Le numéro atomique Z de l’atome lié qui est le même pour CH₂OH et CH₃ (sans unité)', faux: ['Le numéro atomique de l’atome O (sans unité)', 'Le numéro atomique de N (sans unité)', 'La température d’ébullition de la molécule (en °C)'] },
         manque: null, solution: { txt: 'C : Z = 6, pour CH₂OH et CH₃ ; on compare ensuite leurs voisins', val: 6, u: '' } };
     },
   },
@@ -2461,7 +2496,7 @@ export const ENONCES = [
         dur: tok(`${p.dur} min`, 'Durée de la série', p.dur, 'min'),
       };
       const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions.\n\nLe volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
-        '.\n\nLa burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), ', valeur prise par convention : elle donne un niveau de confiance proche de 95 % si les mesures sont indépendantes et suivent une loi normale (hypothèses faites ici). Le niveau réel est un peu plus faible pour un petit nombre de mesures (un facteur de Student serait plus rigoureux) ; on garde ici la valeur conventionnelle. '];
+        '.\n\nLa burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '.\n\nOn élargit l’incertitude avec ', T('k'), ' (convention : niveau de confiance voisin de 95 % si les mesures sont indépendantes et suivent une loi normale, hypothèses faites ici ; un peu moins pour un petit nombre de mesures). '];
       const ur = p.res / Math.sqrt(6), pc = (Math.sqrt(1 + (ur / u) ** 2) - 1) * 100;   // deux lectures de burette, loi rectangulaire : u_res = r / (2√3) par lecture
       const rRes0 = `La résolution de la burette est une autre source d’incertitude (type B) : pour deux lectures, u_res = r / √6 ≈ ${nb(ur, 3)} mL. Ajoutée en quadrature à u ≈ ${nb(u, 3)} mL, elle ne la modifierait que d’environ ${nb(pc, 1)} % : négligeable devant la dispersion, donc on se limite ici à l’incertitude de type A, u = s / √n.`;
       const rRes = q === 0 ? rRes0 : q === 1 ? rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'on calcule U = k × u avec l’incertitude de type A seule.') : rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'l’intervalle x̄ ± U se calcule avec l’incertitude de type A seule.');
@@ -2749,26 +2784,26 @@ export const ENONCES = [
     id: 'conc2', domaine: 'Solutions et concentration', titre: 'Préparer une solution de sel', noms: ['Concentration en masse de la solution', 'Masse de sel à peser'],
     gen: () => { const Vf = tire([100, 250, 500]); return { m: tire([2, 5, 10, 15]), Vf, Vi: Math.round(Vf * tire([0.4, 0.6])), t: tire([9, 20, 40]), M: 58.5 }; },
     build: (p, q) => {
-      const tokens = { M: tok('58,5 g·mol⁻¹', 'Masse molaire du chlorure de sodium', p.M, 'g·mol⁻¹') };
+      const tokens = { M: tok('1,0 g·mL⁻¹', 'Masse volumique de l’eau', 1, 'g·mL⁻¹') };
       if (q === 0) {
         tokens.m = tok(`${p.m} g`, 'Masse de sel pesée', p.m, 'g');
         tokens.Vi = tok(`${p.Vi} mL`, 'Volume d’eau versé pour dissoudre le sel', p.Vi / 1000, 'L');
         tokens.Vf = tok(`${p.Vf} mL`, 'Volume de la solution (fiole jaugée)', p.Vf / 1000, 'L');
         return { tokens, derivees: [],
-          texte: ['Un élève pèse ', T('m'), ' de chlorure de sodium. Il les dissout dans environ ', T('Vi'), ' d’eau distillée dans une fiole jaugée de ', T('Vf'), ', puis complète avec de l’eau jusqu’au trait de jauge. Données : masse molaire du chlorure de sodium ', T('M'), '. Quelle est la concentration en masse de la solution (en g·L⁻¹) ?'],
+          texte: ['Un élève pèse ', T('m'), ' de chlorure de sodium. Il les dissout dans environ ', T('Vi'), ' d’eau distillée dans une fiole jaugée de ', T('Vf'), ', puis complète avec de l’eau jusqu’au trait de jauge. Donnée : masse volumique de l’eau ', T('M'), '. Quelle est la concentration en masse de la solution (en g·L⁻¹) ?'],
           utiles: ['m', 'Vf'],
-          raisons: { Vi: 'C’est le volume d’eau versé au début, pas le volume de la solution : le volume de la solution, c’est celui de la fiole jaugée (jusqu’au trait de jauge).', M: 'La masse molaire sert à calculer une concentration en quantité de matière (mol·L⁻¹), pas une concentration en masse.' },
-          cherche: { bonne: 'La concentration en masse t de la solution (en g·L⁻¹)', faux: ['La quantité de matière de sel dissous (en mol)', 'La masse volumique de la solution (en g·L⁻¹)', 'La concentration en quantité de matière (en mol·L⁻¹)'] },
+          raisons: { Vi: 'C’est le volume d’eau versé au début, pas le volume de la solution : le volume de la solution, c’est celui de la fiole jaugée (jusqu’au trait de jauge).', M: 'La masse volumique de l’eau permettrait de calculer la masse d’eau versée, pas la concentration en masse du sel : on divise la masse de sel par le volume de la solution.' },
+          cherche: { bonne: 'La concentration en masse t de la solution (en g·L⁻¹)', faux: ['La quantité de matière de sel dissous (en mol)', 'La masse volumique de la solution (en g·L⁻¹)', 'La masse d’eau versée pour dissoudre le sel (en g)'] },
           manque: null, solution: { txt: 't = m / V (avec V converti en L)', val: p.m / (p.Vf / 1000), u: 'g·L⁻¹' } };
       }
       tokens.t = tok(`${p.t} g·L⁻¹`, 'Concentration en masse souhaitée', p.t, 'g·L⁻¹');
       tokens.Vf = tok(`${p.Vf} mL`, 'Volume de la solution à préparer (fiole jaugée)', p.Vf / 1000, 'L');
       tokens.Vi = tok(`${p.Vi} mL`, 'Volume d’eau versé pour dissoudre le sel', p.Vi / 1000, 'L');
       return { tokens, derivees: [],
-        texte: ['On veut préparer une solution de chlorure de sodium de concentration en masse ', T('t'), ', dans une fiole jaugée de ', T('Vf'), '. On dissoudra d’abord le sel dans environ ', T('Vi'), ' d’eau. Données : masse molaire du chlorure de sodium ', T('M'), '. Quelle masse de sel faut-il peser (en g) ?'],
+        texte: ['On veut préparer une solution de chlorure de sodium de concentration en masse ', T('t'), ', dans une fiole jaugée de ', T('Vf'), '. On dissoudra d’abord le sel dans environ ', T('Vi'), ' d’eau. Donnée : masse volumique de l’eau ', T('M'), '. Quelle masse de sel faut-il peser (en g) ?'],
         utiles: ['t', 'Vf'],
-        raisons: { Vi: 'C’est le volume d’eau versé au début : la solution finale fait le volume de la fiole jaugée.', M: 'La masse molaire n’intervient pas : la concentration est donnée en masse, pas en quantité de matière.' },
-        cherche: { bonne: 'La masse de chlorure de sodium solide nécessaire (en g)', faux: ['La quantité de matière de sel à peser (en mol)', 'La masse volumique de la solution (en g·L⁻¹)', 'La concentration en quantité de matière (en mol·L⁻¹)'] },
+        raisons: { Vi: 'C’est le volume d’eau versé au début : la solution finale fait le volume de la fiole jaugée.', M: 'La masse volumique de l’eau n’intervient pas : la concentration en masse relie la masse de sel au volume de la solution.' },
+        cherche: { bonne: 'La masse de chlorure de sodium solide nécessaire (en g)', faux: ['La quantité de matière de sel à peser (en mol)', 'La masse volumique de la solution (en g·L⁻¹)', 'La masse d’eau versée pour dissoudre le sel (en g)'] },
         manque: null, solution: { txt: 'm = t × V (avec V converti en L)', val: p.t * p.Vf / 1000, u: 'g' } };
     },
   },
@@ -3833,12 +3868,12 @@ export const ENONCES = [
         F: tok(`${nb(F, 0)} N`, 'Norme de la force pressante exercée par le gaz sur le piston', F, 'N'),
       };
       const raisons = { V: 'Le volume du gaz ne sert pas à calculer la force pressante : celle-ci dépend de la pression et de la surface.', th: 'La température n’intervient pas ici : la pression du gaz est déjà donnée.', m: 'La masse du piston n’est pas la force pressante du gaz : elle ne sert pas à calculer F = P × S.' };
-      if (q === 0) return { tokens, derivees: ['P en pascals : 1 bar = 10⁵ Pa', 'S en mètres carrés : 1 cm² = 10⁻⁴ m²'],
+      if (q === 0) return { tokens, derivees: [],
         texte: ['Dans une seringue bouchée, un gaz de volume ', T('V'), ' est à la température ', T('th'), ' et à la pression ', T('P'), '. Le piston, de masse ', T('m'), ', a une face de surface ', T('S'), '. Quelle est la norme de la force pressante exercée par le gaz sur le piston ?'],
         utiles: ['P', 'S'], raisons,
         cherche: { bonne: 'La norme de la force pressante exercée par le gaz sur le piston (en N)', faux: ['La pression de l’air extérieur (en Pa)', 'Le poids du piston (en N)', 'Le volume du gaz après compression (en mL)'] },
         manque: null, solution: { txt: 'F = P × S, avec P en Pa et S en m²', val: F, u: 'N' } };
-      return { tokens, derivees: ['S en mètres carrés : 1 cm² = 10⁻⁴ m²'],
+      return { tokens, derivees: [],
         texte: ['Le gaz d’une seringue (volume ', T('V'), ', salle à ', T('th'), ') exerce sur la face du piston, de surface ', T('S'), ', une force pressante de norme ', T('F'), '. Quelle est la pression du gaz ?'],
         utiles: ['F', 'S'], raisons: { V: raisons.V, th: 'La température n’intervient pas ici : on connaît directement la force et la surface.' },
         cherche: { bonne: 'La pression du gaz enfermé (en Pa)', faux: ['La surface du piston (en m²)', 'La force de l’air extérieur sur le piston (en N)', 'Le volume du gaz (en mL)'] },
@@ -3866,12 +3901,12 @@ export const ENONCES = [
       };
       const raisons = { S: 'La surface du piston ne sert pas dans la loi de Mariotte : elle relie la pression à la force, pas la pression au volume.', dt: 'La durée de la compression n’intervient pas : on compare l’état initial et l’état final, à température constante.', th: 'La température est constante : elle garantit que la loi de Mariotte s’applique, mais sa valeur ne sert pas au calcul.' };
       const debut = ['Une seringue bouchée contient du gaz à la température constante ', T('th'), ', à la pression ', T('P1'), ' pour un volume ', T('V1'), '. On pousse le piston pendant ', T('dt'), ' ; la face du piston a pour surface ', T('S'), '. '];
-      if (q === 0) return { tokens, derivees: ['les volumes restent en mL, les pressions en bar : aucune conversion'],
+      if (q === 0) return { tokens, derivees: [],
         texte: [...debut, 'Le volume final est ', T('V2'), '. Quelle est la pression finale du gaz ?'],
         utiles: ['P1', 'V1', 'V2'], raisons,
         cherche: { bonne: 'La pression finale du gaz (en bar)', faux: ['La force pressante sur le piston (en N)', 'La quantité de matière de gaz (en mol)', 'Le volume final du gaz (en mL)'] },
         manque: null, solution: { txt: 'P₂ = frac(P₁ × V₁|V₂), à température et quantité de gaz constantes', val: p.P2, u: 'bar' } };
-      return { tokens, derivees: ['les volumes restent en mL, les pressions en bar : aucune conversion'],
+      return { tokens, derivees: [],
         texte: [...debut, 'On s’arrête quand la pression atteint ', T('P2'), '. Quel est alors le volume du gaz ?'],
         utiles: ['P1', 'V1', 'P2'], raisons,
         cherche: { bonne: 'Le volume final du gaz (en mL)', faux: ['La pression finale du gaz (en bar)', 'La force pressante sur le piston (en N)', 'La surface du piston (en m²)'] },
@@ -3902,12 +3937,12 @@ export const ENONCES = [
         S: 'La pression à une profondeur donnée ne dépend pas de la superficie de la piscine ni de la forme du récipient.',
         th: 'Dans ce modèle, la masse volumique de l’eau est supposée constante : la température ne change pas le calcul.',
       };
-      if (q === 0) return { tokens, derivees: ['conversion : 1 hPa = 100 Pa'],
+      if (q === 0) return { tokens, derivees: [],
         texte: ['Une piscine d’eau douce, de masse volumique ', T('rho'), ', contient un volume ', T('V'), ' d’eau à ', T('th'), ' ; la surface de l’eau mesure ', T('S'), '. Un manomètre est posé à ', T('h'), ' sous la surface. À la surface, la pression est ', T('Patm'), ' et l’intensité de la pesanteur vaut ', T('g'), '. Quelle pression absolue le manomètre indique-t-il ?'],
         utiles: ['rho', 'g', 'h', 'Patm'], raisons,
         cherche: { bonne: 'La pression absolue P au niveau du manomètre (en hPa)', faux: ['La force pressante sur le fond de la piscine (en N)', 'La masse d’eau de la piscine (en kg)', 'La profondeur de la piscine (en m)'] },
         manque: null, solution: { txt: 'P = P_atm + ρ·g·h', val: p.Patm * 100 + 1000 * 9.81 * p.h, u: 'Pa' } };
-      return { tokens, derivees: ['conversion : 1 hPa = 100 Pa'],
+      return { tokens, derivees: [],
         texte: ['Une piscine d’eau douce, de masse volumique ', T('rho'), ', contient un volume ', T('V'), ' d’eau à ', T('th'), ' ; la surface de l’eau mesure ', T('S'), '. Un manomètre posé sous la surface indique la pression absolue ', T('P'), '. À la surface, la pression est ', T('Patm'), ' et l’intensité de la pesanteur vaut ', T('g'), '. À quelle profondeur se trouve-t-il ?'],
         utiles: ['rho', 'g', 'P', 'Patm'], raisons,
         cherche: { bonne: 'La profondeur h du manomètre (en m)', faux: ['La pression relative en surface (en hPa)', 'Le volume d’eau situé au-dessus du manomètre (en m³)', 'La masse volumique de l’eau (en kg·m⁻³)'] },
@@ -4998,6 +5033,7 @@ export const ENONCES = [
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,
+  ...TGPB_SAPP,
   // ───────────────────────────── Dispersion par un prisme (2GT, sim 201) : repérer les données utiles pour un angle de réfraction
   {
     id: 'prisme2gt-sapp-angle', domaine: 'Dispersion de la lumière (2GT)', titre: 'Un rayon de couleur dans un prisme', noms: ['Angle i₂ dans le verre', 'Angle i₄ dans l’air'],
@@ -5153,6 +5189,92 @@ export const ENONCES = [
         manque: null, solution: { txt: 'Π = ρ_eau × V × g, avec V converti en m³ (cube totalement immergé)', val: p.rhoE * p.V * 1e-6 * 9.8, u: 'N' } };
     },
   },
+  // ───────────────────────────── Lot 2 (1G) : énergie électrique et mouvement d'un système
+  {
+    id: 'ene-charge-sapp', domaine: 'Énergie électrique', titre: 'Un courant dans un fil : charge et électrons', noms: ['Charge qui traverse le fil', 'Nombre d’électrons'],
+    gen: () => ({ I: tire([20, 50, 80, 150, 250]), dmin: tire([2, 5, 10, 20]), U: tire([3, 6, 9, 12]), L: tire([30, 60, 120]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        I: tok(`${p.I} mA`, 'Intensité du courant continu', p.I / 1000, 'A'),
+        d: tok(`${p.dmin} min`, 'Durée de passage du courant', p.dmin * 60, 's'),
+        U: tok(`${p.U} V`, 'Tension du générateur', p.U, 'V'),
+        L: tok(`${p.L} cm`, 'Longueur du fil', p.L / 100, 'm'),
+        e: tok('e = 1,602 × 10⁻¹⁹ C', 'Charge élémentaire (valeur absolue de la charge d’un électron)', 1.602e-19, 'C'),
+      };
+      const Q = p.I / 1000 * p.dmin * 60;
+      const raisons = { U: 'La tension du générateur n’intervient pas : la charge qui traverse une section se calcule avec l’intensité et la durée.', L: 'La longueur du fil ne sert pas : on s’intéresse à la charge qui traverse une section du fil, quelle que soit sa longueur.' };
+      const debut = ['Un fil de ', T('L'), ' de long est relié à un générateur de ', T('U'), '. Il est parcouru par un courant continu d’intensité ', T('I'), ' pendant ', T('d'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle charge électrique a traversé une section du fil pendant cette durée ?'],
+        utiles: ['I', 'd'], raisons,
+        cherche: { bonne: 'La charge électrique Δq qui a traversé la section (en C)', faux: ['L’énergie électrique transférée par le générateur (en J)', 'Le nombre d’électrons qui ont traversé la section', 'La puissance électrique du générateur (en W)'] },
+        manque: null, solution: { txt: 'Δq = I × Δt, avec I en A et Δt en s', val: Q, u: 'C' } };
+      return { tokens, derivees: [{ id: 'q', nom: 'Charge Δq qui a traversé la section', expr: 'Δq = I × Δt', val: Q, u: 'C' }],
+        texte: [...debut, 'La valeur absolue de la charge d’un électron est ', T('e'), '. Combien d’électrons ont traversé une section du fil pendant cette durée ?'],
+        utiles: ['I', 'd', 'e'], raisons,
+        cherche: { bonne: 'Le nombre N d’électrons qui ont traversé la section', faux: ['La charge électrique Δq qui a traversé la section (en C)', 'La masse des électrons qui ont traversé la section (en kg)', 'La durée de passage d’un électron dans le fil (en s)'] },
+        manque: null, solution: { txt: 'N = Δq / e, avec Δq = I × Δt', val: Q / 1.602e-19, u: 'électrons' } };
+    }),
+  },
+  {
+    id: 'mec-deltav-sapp', domaine: 'Mécanique', titre: 'Une poussée sur un chariot', noms: ['Variation de vitesse'],
+    gen: () => ({ m: tire([200, 250, 400, 500]), F: tire([0.15, 0.25, 0.35, 0.45]), dt: tire([50, 80, 120, 200]), v0: tire([0.3, 0.6, 0.9]) }),
+    build: epure(p => {
+      const tokens = {
+        m: tok(`${p.m} g`, 'Masse du chariot', p.m / 1000, 'kg'),
+        v0: tok(`${nb(p.v0, 1)} m·s⁻¹`, 'Valeur de la vitesse initiale du chariot', p.v0, 'm·s⁻¹'),
+        F: tok(`${nb(p.F, 2)} N`, 'Valeur de la force horizontale constante', p.F, 'N'),
+        dt: tok(`${p.dt} ms`, 'Durée de la poussée', p.dt / 1000, 's'),
+      };
+      return { tokens, derivees: [],
+        texte: ['Un chariot de ', T('m'), ' roule sans frottement sur un rail horizontal à la vitesse ', T('v0'), '. On le pousse dans le sens de son mouvement avec une force horizontale constante de ', T('F'), ' pendant ', T('dt'), ' (le poids et la réaction du rail se compensent). Quelle est la variation de la valeur de sa vitesse pendant cette poussée ?'],
+        utiles: ['m', 'F', 'dt'], raisons: { v0: 'La vitesse initiale ne change pas la variation de vitesse : Δv ≈ (ΣF / m) × Δt ne dépend que de la force, de la masse et de la durée.' },
+        cherche: { bonne: 'La variation Δv de la valeur de la vitesse (en m·s⁻¹)', faux: ['La valeur de la vitesse finale du chariot (en m·s⁻¹)', 'L’accélération moyenne du chariot (en m·s⁻²)', 'Le travail de la force pendant la poussée (en J)'] },
+        manque: null, solution: { txt: 'Δv ≈ ΣF × Δt / m (en unités SI)', val: p.F * (p.dt / 1000) / (p.m / 1000), u: 'm·s⁻¹' } };
+    }),
+  },
+  {
+    id: 'mec-force-sapp', domaine: 'Mécanique', titre: 'Un palet qui accélère', noms: ['Valeur de la somme des forces'],
+    gen: () => { const v1 = tire([0.2, 0.4, 0.6]), dv = tire([0.1, 0.3, 0.5]); return { m: tire([150, 200, 300, 400]), v1, v2: Math.round((v1 + dv) * 10) / 10, dt: tire([40, 50, 100, 250]), L: tire([1.2, 1.5, 2.0]) }; },
+    build: epure(p => {
+      const dv = p.v2 - p.v1;
+      const tokens = {
+        m: tok(`${p.m} g`, 'Masse du palet', p.m / 1000, 'kg'),
+        v1: tok(`${nb(p.v1, 1)} m·s⁻¹`, 'Valeur de la vitesse initiale', p.v1, 'm·s⁻¹'),
+        v2: tok(`${nb(p.v2, 1)} m·s⁻¹`, 'Valeur de la vitesse finale', p.v2, 'm·s⁻¹'),
+        dt: tok(`${p.dt} ms`, 'Durée du souffle', p.dt / 1000, 's'),
+        L: tok(`${nb(p.L, 1)} m`, 'Longueur de la table', p.L, 'm'),
+      };
+      return { tokens, derivees: [{ id: 'dv', nom: 'Variation Δv de la valeur de la vitesse', expr: 'Δv = v₂ − v₁', val: dv, u: 'm·s⁻¹' }],
+        texte: ['Un palet de ', T('m'), ' glisse sans frottement sur une table horizontale de ', T('L'), ' de long. Un souffle d’air, dirigé dans le sens du mouvement, fait passer sa vitesse de ', T('v1'), ' à ', T('v2'), ' en ', T('dt'), '. Quelle est la valeur de la somme des forces horizontales qui s’exercent sur le palet pendant ce souffle ?'],
+        utiles: ['m', 'v1', 'v2', 'dt'], raisons: { L: 'La longueur de la table ne sert pas : on connaît directement la variation de vitesse et sa durée.' },
+        cherche: { bonne: 'La valeur de la somme des forces ΣF (en N)', faux: ['La variation Δv de la valeur de la vitesse (en m·s⁻¹)', 'Le poids du palet (en N)', 'L’énergie cinétique finale du palet (en J)'] },
+        manque: null, solution: { txt: 'ΣF ≈ m × Δv / Δt, avec Δv = v₂ − v₁ (unités SI)', val: (p.m / 1000) * dv / (p.dt / 1000), u: 'N' } };
+    }),
+  },
+  {
+    id: 'ene-pile-sapp', domaine: 'Énergie électrique', titre: 'Deux points de fonctionnement d’une pile réelle', noms: ['Résistance interne', 'Force électromotrice'],
+    gen: () => { let E, r, I1, I2; do { E = tire([3.0, 4.5, 6.0, 9.0]); r = tire([0.5, 1.0, 1.5, 2.0, 3.0]); I1 = tire([100, 200]); I2 = tire([500, 600, 800]); } while (E - r * I2 / 1000 < 0.6 * E); return { E, r, I1, I2, U1: Math.round((E - r * I1 / 1000) * 100) / 100, U2: Math.round((E - r * I2 / 1000) * 100) / 100, C: tire([1500, 2000, 2800]) }; },
+    build: epure((p, q) => {
+      const tokens = {
+        I1: tok(`${p.I1} mA`, 'Intensité du courant, premier point', p.I1 / 1000, 'A'),
+        U1: tok(`${nb(p.U1, 2)} V`, 'Tension aux bornes de la pile, premier point', p.U1, 'V'),
+        I2: tok(`${p.I2} mA`, 'Intensité du courant, second point', p.I2 / 1000, 'A'),
+        U2: tok(`${nb(p.U2, 2)} V`, 'Tension aux bornes de la pile, second point', p.U2, 'V'),
+        C: tok(`${nb(p.C)} mAh`, 'Capacité de la pile', p.C, 'mAh'),
+      };
+      const rI = { id: 'r', nom: 'Résistance interne r de la pile', expr: 'r = (U₁ − U₂) / (I₂ − I₁)', val: p.r, u: 'Ω' };
+      const raisons = { C: 'La capacité de la pile (charge stockée) ne sert pas à déterminer sa force électromotrice ni sa résistance interne.' };
+      const debut = ['Une pile réelle est modélisée par U = E − r × I. Quand elle débite ', T('I1'), ', la tension à ses bornes vaut ', T('U1'), ' ; quand elle débite ', T('I2'), ', elle vaut ', T('U2'), '. La pile a une capacité de ', T('C'), '. '];
+      if (q === 0) return { tokens, derivees: [{ id: 'dU', nom: 'Écart de tension U₁ − U₂', expr: 'ΔU = U₁ − U₂', val: p.U1 - p.U2, u: 'V' }, { id: 'dI', nom: 'Écart d’intensité I₂ − I₁', expr: 'ΔI = I₂ − I₁', val: (p.I2 - p.I1) / 1000, u: 'A' }],
+        texte: [...debut, 'Quelle est la résistance interne r de la pile ?'], utiles: ['I1', 'U1', 'I2', 'U2'], raisons,
+        cherche: { bonne: 'La résistance interne r de la pile (en Ω)', faux: ['La force électromotrice E de la pile (en V)', 'La puissance fournie par la pile (en W)', 'La durée de fonctionnement de la pile (en h)'] },
+        manque: null, solution: { txt: 'r = (U₁ − U₂) / (I₂ − I₁)', val: p.r, u: 'Ω' } };
+      return { tokens, derivees: [rI],
+        texte: [...debut, 'Quelle est la force électromotrice E de la pile ?'], utiles: ['I1', 'U1', 'I2', 'U2'], raisons,
+        cherche: { bonne: 'La force électromotrice E de la pile (en V)', faux: ['La résistance interne r de la pile (en Ω)', 'La tension de la pile pour I = 1 A (en V)', 'La charge stockée dans la pile (en C)'] },
+        manque: null, solution: { txt: 'E = U₁ + r × I₁', val: p.E, u: 'V' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -5164,6 +5286,7 @@ export function melange(tab, graine) {
 
 // Symbole de chaque donnée tel qu'il apparaît dans la formule (affiché à côté du nom de la grandeur)
 const SYMBOLES = {
+  'vac-sapp-derivee': { A: 'A', B: 'B', C: 'C', m: 'm', t1: 't₁' },
   'ber-sapp-venturi': { dA: 'd_A', dB: 'd_B', vA: 'v_A', rho: 'ρ', L: 'L', th: 'θ', P: 'P_A − P_atm' },
   'flu-statique': { rho: 'ρ', g: 'g', P: 'P_rel', th: 'θ', Vc: 'V_cuve', Patm: 'P_atm', d: 'd', dh: 'Δh' },
   'flu-debit': { mv: 'm_fût', mt: 'm_balance', dt: 'Δt', V: 'V', Bmax: 'm_max', Pm: 'P_moteur', th: 'θ' },
@@ -5195,6 +5318,10 @@ const SYMBOLES = {
   dissol2: { M: 'M', T: '', Ve: 'V_eau', m: 'm', Vf: 'V', c: 'c' },
   ener2: { P: 'P', d: 'Δt', prix: 'prix', R: 'R', I: 'I', L: 'ℓ' },
   meca2: { m: 'm', v: 'v', L: 'ℓ', F: 'F', d: 'd', a: 'α', mt: 'm' },
+  'ene-charge-sapp': { I: 'I', d: 'Δt', U: 'U', L: 'ℓ', e: 'e' },
+  'ene-pile-sapp': { I1: 'I₁', U1: 'U₁', I2: 'I₂', U2: 'U₂', C: 'C' },
+  'mec-deltav-sapp': { m: 'm', v0: 'v₀', F: 'ΣF', dt: 'Δt' },
+  'mec-force-sapp': { m: 'm', v1: 'v₁', v2: 'v₂', dt: 'Δt', L: 'L' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
   'phot1g-sapp-photon': { lam: 'λ', c: 'c', h: 'h', P: 'P', d: 'd', t: 'Δt' },

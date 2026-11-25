@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { KIT } from "../commun";
 import { Schema as SchemaLentilleMince } from "./lentilleMinceSchema";
+import { Spectres, Caracteristique } from "./SchemasOndes2gt.jsx";
 
 // ====================================================
 //  SCHÉMAS DE SECONDE : circuits électriques, optique (miroir, dioptre, lentille), mouvements
@@ -226,7 +227,7 @@ function Lentille({ cas = 'parallele', f = '', reponse = false }) {
 function BancLentille({ d = 12, f = 8, hObj = 3, reponse = false, ecran = false }) {
   return (
     <div style={boite} data-schema="lentille-conjugaison">
-      <SchemaLentilleMince d={d} f={f} hObj={hObj} k={Math.min(10, 125 / Math.max(d, f * 2.2))} x0={Math.max(125, 20 + d * Math.min(10, 125 / Math.max(d, f * 2.2)))} image={reponse} ecran={reponse && ecran} large={360} haut={170} y0={85}
+      <SchemaLentilleMince d={d} f={f} hObj={hObj} k={Math.min(10, 125 / Math.max(d, f * 2.2))} x0={Math.max(125, 20 + d * Math.min(10, 125 / Math.max(d, f * 2.2)))} image={reponse} ecran={reponse && ecran} large={360} haut={170} y0={85} fs={16}
         label={`Lentille mince convergente de distance focale ${f} cm ; objet à ${d} cm de la lentille`}/>
     </div>);
 }
@@ -245,7 +246,7 @@ function Optique({ cas = 'miroir', ...p }) {
 function Mouvement({ cas = 'manege-sol', reponse = false }) {
   const u = useId().replace(/:/g, '');
   const defs = <defs><Pointe id={`${u}r`} c={ORANGE}/><Pointe id={`${u}v`} c={VERT}/><Pointe id={`${u}t`} c={TR}/></defs>;
-  const Etiq = ({ x, y, t, c = '#475569', a = 'middle', g }) => <text x={x} y={y} fontSize="12.5" fontWeight={g ? 700 : 400} fill={c} textAnchor={a}>{t}</text>;
+  const Etiq = ({ x, y, t, c = '#475569', a = 'middle', g, s = 12.5 }) => <text x={x} y={y} fontSize={s} fontWeight={g ? 700 : 400} fill={c} textAnchor={a}>{t}</text>;
   const Bonhomme = ({ x, y, c = TR }) => <g stroke={c} strokeWidth="2" fill="none"><circle cx={x} cy={y - 16} r="5"/><line x1={x} y1={y - 11} x2={x} y2={y + 4}/><line x1={x - 7} y1={y - 5} x2={x + 7} y2={y - 5}/><line x1={x} y1={y + 4} x2={x - 5} y2={y + 14}/><line x1={x} y1={y + 4} x2={x + 5} y2={y + 14}/></g>;
   let corps = null, label = '';
   if (cas === 'manege-sol' || cas === 'manege-ref') {
@@ -312,8 +313,8 @@ function Mouvement({ cas = 'manege-sol', reponse = false }) {
       <path d={`M${pos(0)[0]},${pos(0)[1]} A${R},${R} 0 0 0 ${pos(90)[0]},${pos(90)[1]}`} fill="none" stroke={TR} strokeWidth="1.6" strokeDasharray="8 6"/>
       {[8, 45, 82].map(a => { const [x, y] = pos(a); return <g key={a}><rect x={x - 9} y={y - 9} width="18" height="18" rx="4" fill={BLEU} stroke="white" strokeWidth="1.5" transform={`rotate(${-(90 - a)} ${x} ${y})`}/>
         {reponse && <Rayon x1={x} y1={y} x2={x - 40 * Math.sin(a * RAD)} y2={y - 40 * Math.cos(a * RAD)} c={VERT} id={`${u}v`}/>}</g>; })}
-      <Etiq x="232" y="40" t="voiture à 3 instants" c={BLEU} g a="start"/><Etiq x="232" y="58" t="50 km·h⁻¹ constants" a="start"/>
-      {reponse && <Etiq x="232" y="90" t="même valeur, mais" c={VERT} g a="start"/>}{reponse && <Etiq x="232" y="106" t="direction qui change" c={VERT} g a="start"/>}
+      <Etiq x="212" y="34" t="3 positions" c={BLEU} g a="start" s={16}/><Etiq x="212" y="56" t="50 km·h⁻¹" a="start" s={16}/>
+      {reponse && <Etiq x="212" y="92" t="même valeur," c={VERT} g a="start" s={16}/>}{reponse && <Etiq x="212" y="114" t="autre direction" c={VERT} g a="start" s={16}/>}
     </g>);
   }
   return (
@@ -431,4 +432,38 @@ function EchelleSites({ rayon = 0.30, reponse = false }) {
     </div>);
 }
 
-export const DESSINS_SECONDE = { circuit: Circuit, optique: Optique, mouvement: Mouvement, mailles: CircuitMailles, molecule: Molecule, ampoule: Ampoule, maille: Maille, echelleSites: EchelleSites };
+// ── Ondes (1G) : représentations spatiale (photographie) et temporelle (enregistrement) d'une onde sinusoïdale ──
+// cas : 'photo-enregistrement' (deux documents, sans valeur) | 'cretes' (photographie, n crêtes numérotées) | 'enregistrement' (y(t), n oscillations)
+// Schéma neutre : aucune valeur chiffrée, seulement les axes, leur nom et la forme de la courbe. Texte de 16 dans un viewBox de 480.
+function Onde({ cas = 'photo-enregistrement', n = 3 }) {
+  const A = 36, X0 = 56, X1 = 456;
+  const courbe = y0 => Array.from({ length: 161 }, (_, i) => { const t = i / 160; return `${(X0 + (X1 - X0) * t).toFixed(1)},${(y0 + A * Math.cos(2 * Math.PI * n * t)).toFixed(1)}`; }).join(' ');
+  const Panneau = ({ y0, titre, axe, cretes = false }) => (
+    <g>
+      <text x="8" y={y0 - A - 26} fontSize="20" fontWeight="700" fill={TR}>{titre}</text>
+      <line x1={X0} y1={y0 - A - 10} x2={X0} y2={y0 + A + 10} stroke={GRIS} strokeWidth="1.8"/>
+      <line x1={X0} y1={y0} x2={X1 + 14} y2={y0} stroke={GRIS} strokeWidth="1.8"/>
+      <polygon points={`${X1 + 20},${y0} ${X1 + 11},${y0 - 5} ${X1 + 11},${y0 + 5}`} fill={GRIS}/>
+      <text x={X0 - 8} y={y0 - A - 8} fontSize="20" fontWeight="700" fill={TR} textAnchor="end">y</text>
+      <text x={X1 + 14} y={y0 + 28} fontSize="20" fontWeight="700" fill={TR} textAnchor="end">{axe}</text>
+      <polyline points={courbe(y0)} fill="none" stroke={BLEU} strokeWidth="2.6" strokeLinejoin="round"/>
+      {cretes && Array.from({ length: n }, (_, k) => { const x = X0 + (X1 - X0) * (k + 0.5) / n; return (
+        <g key={k}><circle cx={x} cy={y0 - A} r="4.5" fill={ORANGE}/><text x={x} y={y0 - A - 12} fontSize="20" fontWeight="700" fill={ORANGE} textAnchor="middle">{k + 1}</text></g>); })}
+    </g>);
+  if (cas === 'photo-enregistrement') return (
+    <div style={boite} data-schema="onde-photo-enregistrement">
+      <svg viewBox="0 0 480 304" style={svgStyle} role="img" aria-label="Deux documents sur une corde parcourue par une onde sinusoïdale : en haut une photographie (y en fonction de la position x), en bas l’enregistrement d’un point (y en fonction du temps t)">
+        <Panneau y0={104} titre="Photographie, à un instant donné" axe="x"/>
+        <Panneau y0={250} titre="Enregistrement d’un seul point" axe="t"/>
+      </svg>
+    </div>);
+  const photo = cas === 'cretes';
+  return (
+    <div style={boite} data-schema={`onde-${cas}`}>
+      <svg viewBox="0 0 480 160" style={svgStyle} role="img" aria-label={photo ? `Photographie d’une corde parcourue par une onde sinusoïdale, avec ${n} crêtes consécutives numérotées` : `Enregistrement du mouvement d’un point d’une corde : ${n} oscillations complètes`}>
+        <Panneau y0={104} titre={photo ? 'Photographie de la corde' : 'Enregistrement d’un point'} axe={photo ? 'x' : 't'} cretes={photo}/>
+      </svg>
+    </div>);
+}
+
+export const DESSINS_SECONDE = { spectres: Spectres, caracteristique: Caracteristique, circuit: Circuit, optique: Optique, mouvement: Mouvement, mailles: CircuitMailles, molecule: Molecule, ampoule: Ampoule, maille: Maille, echelleSites: EchelleSites, onde: Onde };

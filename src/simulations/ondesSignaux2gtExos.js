@@ -1,0 +1,206 @@
+// Exercices ANA (prévoir sans calculer) et VAL (« ça paraît plausible ? ») qui comblent les trous du programme de seconde, partie « Ondes et signaux »
+// (chapitres 2gt-lumiere et 2gt-circuits) : vitesse de la lumière et propagation rectiligne, spectres de raies et spectres continus, loi de la réflexion,
+// loi des nœuds, mesure d'une intensité, caractéristique d'un dipôle et point de fonctionnement, capteurs résistifs (courbe d'étalonnage).
+// Préfixes d'identifiants : lum2gt- et cir2gt- ; domaines : « Lumière » et « Circuits électriques » (voir chapitres.js).
+// Branchés dans AtelierAnalyserBanque.js et AtelierValiderBanque.js (OSG2GT_ANA, OSG2GT_VAL). Contrôle : node src/simulations/ondesSignaux2gtExos.test.mjs
+// Niveau seconde, élèves peu scientifiques : phrases courtes, aucune relation hors programme (pas de log, pas de conjugaison de lentille).
+
+const LUM = 'Lumière';
+const CIR = 'Circuits électriques';
+const V = (t, e) => [t, true, e];
+const F = (t, e) => [t, false, e];
+const VERDICT = (ok, ver) => [['Plausible', ok, ver], ['Pas plausible', !ok, ver]];
+const P = o => ({ ...o, verdict: VERDICT(o.plausible, o.ver) });
+
+// ───────────── ANA : prévoir sans calculer ─────────────
+export const OSG2GT_ANA = [
+  { id: 'lum2gt-ana-soleil', domaine: LUM, titre: 'Le Soleil que l’on voit',
+    enonce: 'La lumière met environ 8 minutes pour venir du Soleil jusqu’à la Terre. À midi, un astronome qui porte des lunettes de protection regarde le Soleil.',
+    q: 'Ce qu’il voit en ce moment, c’est le Soleil…', options: [
+      V('tel qu’il était il y a environ 8 minutes', 'La lumière va très vite (environ 300 000 km par seconde) mais pas instantanément. Le Soleil est à 150 millions de km : 150 000 000 ÷ 300 000 ≈ 500 s, soit environ 8 minutes de retard.'),
+      F('tel qu’il est à cet instant précis, sans aucun retard', 'La vitesse de la lumière est grande mais finie : il lui faut environ 8 minutes pour nous arriver, donc on voit toujours le Soleil avec ce retard.'),
+      F('tel qu’il sera dans environ 8 minutes', 'La lumière part du Soleil vers la Terre : elle apporte une image du passé, jamais de l’avenir.'),
+      F('tel qu’il était il y a environ 8 heures', 'Le retard est de quelques minutes, pas de plusieurs heures : 150 millions de km ÷ 300 000 km/s ≈ 500 s.'),
+    ] },
+  { id: 'lum2gt-ana-ombre', domaine: LUM, titre: 'Une ombre qui grandit',
+    enonce: 'Une petite lampe éclaire une balle opaque placée entre la lampe et un mur. La lumière se propage en ligne droite. On rapproche la balle de la lampe, sans bouger ni la lampe ni le mur.',
+    q: 'L’ombre de la balle sur le mur…', options: [
+      V('devient plus grande : les rayons s’écartent plus', 'Les rayons qui frôlent la balle partent de la lampe en ligne droite. Plus la balle est près de la lampe, plus ces rayons se sont écartés quand ils arrivent au mur : l’ombre est plus large.'),
+      F('devient plus petite, car la balle s’éloigne du mur', 'Ce n’est pas la distance au mur qui décide : ce sont les rayons en ligne droite qui frôlent la balle et qui s’écartent d’autant plus qu’elle est près de la lampe.'),
+      F('ne change pas, car la balle garde la même taille', 'La balle ne change pas de taille, mais la taille de l’ombre dépend aussi de sa position entre la lampe et le mur.'),
+      F('disparaît, car la lumière contourne la balle', 'La lumière ne contourne pas un objet opaque : elle se propage en ligne droite, et c’est pour cela qu’il y a une ombre.'),
+    ] },
+  { id: 'lum2gt-ana-raies', domaine: LUM, titre: 'Quels gaz dans la lampe ?',
+    schema: { type: 'spectres', cas: 'melange' },
+    enonce: 'Chaque gaz émet des raies à des longueurs d’onde bien précises, comme une empreinte. Le schéma montre les spectres de raies de trois gaz connus, puis le spectre de la lumière d’une lampe qui contient un mélange de gaz.',
+    q: 'Quels gaz la lampe contient-elle ?', options: [
+      V('de l’hydrogène et du sodium', 'Toutes les raies de l’hydrogène (à 410, 434, 486 et 656 nm) et la raie jaune du sodium (589 nm) sont dans le spectre de la lampe, et il n’y en a pas d’autre.'),
+      F('du sodium et du mercure', 'Les raies du mercure à 546 nm (vert) et 578 nm (jaune) manquent dans la lampe : elle ne contient pas de mercure. Et les raies de l’hydrogène, elles, sont bien là.'),
+      F('de l’hydrogène et du mercure', 'Il n’y a pas de raie à 546 nm ni à 578 nm : le mercure est absent. Et la raie jaune du sodium (589 nm) est bien présente dans la lampe.'),
+      F('de l’hydrogène, du sodium et du mercure', 'Un gaz présent montre toutes ses raies : celles du mercure à 546 nm et 578 nm manquent, donc il n’y a pas de mercure.'),
+    ] },
+  { id: 'lum2gt-ana-indice', domaine: LUM, titre: 'Où la lumière va-t-elle le moins vite ?',
+    enonce: 'Plus l’indice de réfraction n d’un milieu est grand, plus la lumière s’y propage lentement (n = c ÷ v, avec v la vitesse dans le milieu). Voici trois milieux transparents : l’eau (n = 1,33), un verre (n = 1,50) et le diamant (n = 2,42).',
+    q: 'Dans quel milieu la lumière va-t-elle le moins vite ?', options: [
+      V('dans le diamant, qui a l’indice le plus grand', 'v = c ÷ n : plus n est grand, plus v est petite. Dans le diamant, v ≈ 3,0×10⁸ ÷ 2,42 ≈ 1,2×10⁸ m/s, la plus faible des trois.'),
+      F('dans l’eau, car c’est un liquide', 'La vitesse ne dépend pas de l’état liquide ou solide mais de l’indice : dans l’eau, v ≈ 2,3×10⁸ m/s, la plus grande des trois.'),
+      F('dans le verre, car il est au milieu des trois', 'Le verre (n = 1,50) est intermédiaire : v ≈ 2,0×10⁸ m/s, plus petite que dans l’eau mais plus grande que dans le diamant.'),
+      F('à la même vitesse dans les trois, car c’est la lumière', 'La vitesse de la lumière est maximale dans le vide ; dans un milieu matériel elle est plus petite, et d’autant plus que l’indice est grand.'),
+    ] },
+  { id: 'cir2gt-ana-noeud', domaine: CIR, titre: 'Un courant qui se partage',
+    enonce: 'Un générateur débite un courant de 0,60 A. Ce courant arrive à un nœud d’où partent deux branches en dérivation. La première branche est traversée par un courant de 0,40 A.',
+    q: 'Le courant dans la seconde branche est de…', options: [
+      V('0,20 A', 'Loi des nœuds : le courant qui arrive est égal à la somme des courants qui repartent. 0,60 = 0,40 + I₂, donc I₂ = 0,60 − 0,40 = 0,20 A.'),
+      F('1,00 A', 'Une branche ne peut pas être traversée par plus que le courant total (0,60 A). On n’additionne pas 0,60 et 0,40 : c’est 0,40 plus I₂ qui donne 0,60.'),
+      F('0,40 A', 'Les deux branches ne sont pas identiques ici : avec 0,40 A dans chacune, le total serait 0,80 A et non 0,60 A.'),
+      F('0,24 A', 'On ne multiplie pas les intensités : la loi des nœuds est une addition (0,60 = 0,40 + I₂).'),
+    ] },
+  { id: 'cir2gt-ana-amperemetre', domaine: CIR, titre: 'Brancher un ampèremètre',
+    enonce: 'On veut mesurer l’intensité du courant qui traverse une lampe d’un circuit.',
+    q: 'L’ampèremètre se branche…', options: [
+      V('en série avec la lampe, dans sa branche', 'Pour mesurer une intensité, tout le courant doit passer par l’appareil : l’ampèremètre se place en série, dans la branche de la lampe.'),
+      F('en dérivation, aux bornes de la lampe', 'Ce branchement est celui du voltmètre. Un ampèremètre a une très faible résistance : en dérivation, il court-circuiterait la lampe.'),
+      F('en dérivation, entre les deux bornes de la pile', 'Aux bornes de la pile, l’ampèremètre laisserait passer un courant énorme (court-circuit) et pourrait être détruit.'),
+      F('n’importe où, à côté du circuit, sans le toucher', 'Un ampèremètre doit être traversé par le courant : relié à rien, il ne mesure rien.'),
+    ] },
+  { id: 'cir2gt-ana-ohmique', domaine: CIR, titre: 'Quel dipôle est un résistor ohmique ?',
+    schema: { type: 'caracteristique', cas: 'deux' },
+    enonce: 'Le schéma donne la caractéristique tension-courant, U = f(I), de deux dipôles A et B. L’un des deux est un résistor ohmique, l’autre est une lampe à filament.',
+    q: 'Quelle courbe correspond au résistor ohmique ?', options: [
+      V('la courbe A : une droite qui passe par l’origine', 'Pour un résistor ohmique, U = R × I : U et I sont proportionnelles, donc la caractéristique est une droite qui passe par l’origine (R est la pente).'),
+      F('la courbe B : elle monte de plus en plus vite', 'Quand la courbe n’est pas une droite, U et I ne sont pas proportionnelles : le rapport U / I change, ce n’est pas un résistor ohmique (c’est la lampe, dont la résistance augmente en chauffant).'),
+      F('les deux, car U augmente avec I dans les deux cas', 'Que U augmente avec I ne suffit pas : il faut que U / I reste constant, donc que la courbe soit une droite qui passe par l’origine.'),
+      F('on ne peut pas savoir sans connaître la valeur de R', 'La valeur de R n’est pas nécessaire : c’est la forme de la courbe (droite qui passe par l’origine ou non) qui permet de reconnaître un résistor ohmique.'),
+    ] },
+  { id: 'cir2gt-ana-point', domaine: CIR, titre: 'Lire le point de fonctionnement',
+    schema: { type: 'caracteristique', cas: 'point', apres: { reponse: true } },
+    enonce: 'Le schéma donne la caractéristique tension-courant, U = f(I), d’une lampe. La lampe est alimentée sous une tension U₀, repérée en orange sur l’axe vertical.',
+    q: 'Comment trouve-t-on l’intensité I₀ du courant dans la lampe ?', options: [
+      V('depuis U₀, rejoindre la courbe puis lire I₀ en bas', 'Le point de fonctionnement est le point de la courbe qui a pour ordonnée U₀ : son abscisse, lue sur l’axe horizontal, est I₀.'),
+      F('lire I₀ sur l’axe vertical, en face de la valeur de U₀', 'L’axe vertical donne des tensions, pas des intensités : I₀ se lit sur l’axe horizontal.'),
+      F('prendre le point de la courbe le plus à droite du graphique', 'Ce point correspond à la plus grande intensité tracée, pas à celle qui correspond à U₀.'),
+      F('diviser U₀ par la pente de la courbe, la même partout', 'La courbe n’est pas une droite : sa pente n’est pas la même partout, et ce n’est pas ainsi qu’on lit I₀.'),
+    ] },
+  { id: 'cir2gt-ana-photoresistance', domaine: CIR, titre: 'Une photorésistance dans la lumière',
+    enonce: 'Une photorésistance est un capteur dont la résistance dépend de l’éclairement. Sa courbe d’étalonnage montre que sa résistance diminue quand l’éclairement augmente. On la déplace d’une pièce sombre vers un jardin ensoleillé.',
+    q: 'Dans le jardin, la résistance de la photorésistance…', options: [
+      V('diminue : l’éclairement augmente', 'D’après la courbe d’étalonnage, R diminue quand l’éclairement augmente : au soleil, la résistance est plus petite que dans la pièce sombre.'),
+      F('augmente : il y a plus de lumière', 'C’est l’inverse de ce que montre la courbe d’étalonnage : plus de lumière donne une résistance plus petite.'),
+      F('ne change pas : le capteur est seulement un fil', 'Une photorésistance n’est pas un simple fil : sa résistance change avec la lumière, et c’est ce qui permet de s’en servir comme capteur.'),
+      F('devient nulle dès qu’il y a de la lumière', 'La résistance diminue mais ne devient jamais nulle : elle reste une valeur que l’on peut mesurer.'),
+    ] },
+];
+
+// ───────────── VAL : ça paraît plausible ? ─────────────
+export const OSG2GT_VAL = [
+  P({ id: 'lum2gt-val-c-unite', domaine: LUM, niveau: 1, titre: 'Vitesse de la lumière en m/s', plausible: false,
+    enonce: 'Un élève écrit dans son cahier : « la lumière se propage dans l’air à environ 300 000 m/s, c’est environ 900 fois plus vite que le son ».',
+    reperes: [['Vitesse du son dans l’air', '340 m/s'], ['Distance Terre–Soleil', '150 millions de km, soit 1,5×10¹¹ m'], ['Durée de la lumière du Soleil jusqu’à la Terre', 'environ 8 minutes (≈ 500 s)']],
+    ver: 'À 300 000 m/s, la lumière mettrait 1,5×10¹¹ ÷ 3,0×10⁵ = 5×10⁵ s, soit près de 6 jours, pour venir du Soleil : or elle met environ 8 minutes. La vitesse de la lumière est 3,0×10⁸ m/s (300 000 km/s), près d’un million de fois celle du son. L’élève a écrit le nombre en km/s avec l’unité m/s.',
+    q2: 'Quelle erreur explique le mieux sa valeur ?',
+    options: [
+      V('il a écrit la valeur en km/s avec l’unité m/s', 'La lumière va à 300 000 km/s, soit 3,0×10⁸ m/s : il a gardé le nombre en km/s mais écrit « m/s ».'),
+      F('il a confondu la vitesse de la lumière et celle du son', 'La vitesse du son (340 m/s) est très différente de la valeur écrite : ce n’est pas la cause.'),
+      F('il a oublié que la lumière va plus lentement dans l’air', 'Dans l’air, la vitesse de la lumière est presque la même que dans le vide : cela ne change pas l’ordre de grandeur.'),
+    ] }),
+  P({ id: 'lum2gt-val-terre-lune', domaine: LUM, niveau: 2, titre: 'La lumière de la Terre à la Lune', plausible: false,
+    enonce: 'Un laser envoie une impulsion lumineuse de la Terre vers la Lune, distante de 384 000 km. Un élève calcule la durée de l’aller : « t = d ÷ c = 384 000 ÷ 3,0×10⁸ ≈ 1,3×10⁻³ s, soit un peu plus d’un millième de seconde ».',
+    reperes: [['Vitesse de la lumière', 'c = 3,0×10⁸ m/s'], ['Conversion', '1 km = 1 000 m'], ['Lumière du Soleil', 'environ 8 minutes (500 s) pour parcourir 150 millions de km']],
+    ver: 'La Lune est environ 400 fois plus proche que le Soleil : la lumière met donc environ 500 s ÷ 400 ≈ 1,3 s, pas un millième de seconde. L’élève a oublié de convertir : 384 000 km = 3,84×10⁸ m, donc t = 3,84×10⁸ ÷ 3,0×10⁸ ≈ 1,3 s.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il n’a pas converti les km en m avant de diviser', 'La vitesse est en m/s : la distance doit être en m (384 000 km = 3,84×10⁸ m). En gardant 384 000, le résultat est 1 000 fois trop petit.'),
+      F('il a multiplié la distance par la vitesse au lieu de diviser', 'Multiplier donnerait un nombre énorme (environ 10¹⁴), pas 1,3×10⁻³ s.'),
+      F('il a utilisé la vitesse du son à la place de celle de la lumière', 'Avec 340 m/s, la durée serait énorme (plus d’un million de secondes), pas 1,3×10⁻³ s.'),
+    ] }),
+  P({ id: 'lum2gt-val-terre-lune-ok', domaine: LUM, niveau: 2, titre: 'La lumière de la Terre à la Lune : le bon calcul', plausible: true,
+    enonce: 'Un laser envoie une impulsion lumineuse de la Terre vers la Lune, distante de 384 000 km = 3,84×10⁸ m. Un élève calcule la durée de l’aller : « t = d ÷ c = 3,84×10⁸ ÷ 3,0×10⁸ ≈ 1,3 s ».',
+    reperes: [['Vitesse de la lumière', 'c = 3,0×10⁸ m/s'], ['Lumière du Soleil', 'environ 8 minutes (500 s) pour parcourir 150 millions de km'], ['Distance Terre–Soleil', 'environ 400 fois la distance Terre–Lune']],
+    ver: 'La distance a bien été convertie en mètres. Le résultat est cohérent avec le repère du Soleil : la Lune est environ 400 fois plus proche, donc 500 s ÷ 400 ≈ 1,3 s. Le résultat est plausible.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('cohérent : la Lune est 400 fois plus près que le Soleil, soit 500 s ÷ 400', 'Le repère du Soleil permet de vérifier l’ordre de grandeur : environ 1,3 s, comme dans le calcul de l’élève.'),
+      F('pas cohérent : la lumière est instantanée, la durée devrait être nulle', 'La lumière va très vite mais pas instantanément : sur de grandes distances, la durée devient mesurable (8 minutes pour le Soleil).'),
+      F('pas cohérent : il fallait garder la distance en km, ce qui donnerait 1,3×10⁻³ s', 'Avec c en m/s, la distance doit être en m : garder les km donnerait un résultat 1 000 fois trop petit.'),
+    ] }),
+  P({ id: 'lum2gt-val-lampe-continu', domaine: LUM, niveau: 1, titre: 'Le spectre d’une lampe à filament', plausible: false,
+    enonce: 'Un élève observe avec un spectroscope la lumière d’une lampe à incandescence (un filament très chaud). Il décrit : « je vois quelques raies colorées très fines sur fond noir, comme avec une lampe à vapeur de sodium ».',
+    reperes: [['Corps très chaud (filament, Soleil, braise)', 'spectre continu : toutes les couleurs, du violet au rouge'], ['Gaz qui émet de la lumière (lampe spectrale)', 'spectre de raies : quelques raies fines sur fond noir'], ['Arc-en-ciel', 'toutes les couleurs, sans trou']],
+    ver: 'Un filament chauffé est un solide très chaud : son spectre est continu, avec toutes les couleurs du violet au rouge, comme un arc-en-ciel. Des raies fines sur fond noir sont le spectre d’un gaz qui émet de la lumière (lampe spectrale), pas celui d’un corps chaud.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il donne à un corps chaud un spectre de raies, propre aux gaz', 'Un filament chaud émet un spectre continu. Les raies fines sur fond noir sont la signature d’un gaz qui émet de la lumière.'),
+      F('il croit que la lumière d’un filament n’a qu’une seule couleur', 'Si le filament n’émettait qu’une couleur, on verrait une seule raie ; or sa lumière blanche contient toutes les couleurs.'),
+      F('il pense qu’un spectroscope ne sert que pour les étoiles', 'Un spectroscope analyse la lumière de n’importe quelle source : lampe, Soleil, étoile…'),
+    ] }),
+  P({ id: 'lum2gt-val-reflexion-surface', domaine: LUM, niveau: 1, titre: 'L’angle de réflexion sur un miroir', plausible: false,
+    enonce: 'Un rayon lumineux arrive sur un miroir plan en faisant un angle de 40° avec la surface du miroir. Un élève écrit : « d’après la loi de la réflexion, l’angle de réflexion est égal à l’angle d’incidence, donc il vaut 40° ».',
+    reperes: [['Normale', 'droite perpendiculaire au miroir (elle fait 90° avec la surface)'], ['Loi de la réflexion', 'angle de réflexion = angle d’incidence, tous deux mesurés depuis la normale'], ['Rayon qui arrive perpendiculairement au miroir', 'angle d’incidence de 0°']],
+    ver: 'Les angles d’incidence et de réflexion se mesurent depuis la normale, pas depuis la surface du miroir. Ici le rayon fait 40° avec la surface : l’angle d’incidence vaut 90° − 40° = 50°, donc l’angle de réflexion vaut aussi 50°.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il a mesuré l’angle depuis la surface, pas depuis la normale', 'L’angle de 40° est mesuré avec la surface du miroir : l’angle d’incidence (avec la normale) vaut 50°.'),
+      F('il a confondu la loi de la réflexion avec celle de la réfraction', 'La loi « angle de réflexion = angle d’incidence » est bien celle de la réflexion : c’est la mesure des angles qui est fausse.'),
+      F('il a oublié que l’angle de réflexion est le double de l’angle d’incidence', 'Ce n’est pas la loi : l’angle de réflexion est égal à l’angle d’incidence, il n’en est pas le double.'),
+    ] }),
+  P({ id: 'cir2gt-val-noeud', domaine: CIR, niveau: 1, titre: 'Intensités dans trois branches', plausible: false,
+    enonce: 'Un générateur débite un courant de 0,90 A dans trois branches en dérivation. Un élève mesure 0,50 A dans la première branche, 0,30 A dans la deuxième et 0,40 A dans la troisième.',
+    reperes: [['Loi des nœuds', 'le courant qui arrive est égal à la somme des courants qui repartent'], ['Branches en dérivation', 'le courant total se partage entre les branches'], ['Intensité dans une branche', 'jamais plus grande que le courant total']],
+    ver: 'Loi des nœuds : I = I₁ + I₂ + I₃. Ici 0,50 + 0,30 + 0,40 = 1,20 A, et non 0,90 A : au moins une des trois mesures est fausse.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('non : la somme des trois intensités devrait valoir 0,90 A', 'La loi des nœuds impose I₁ + I₂ + I₃ = 0,90 A ; ici la somme vaut 1,20 A.'),
+      F('oui : chaque branche est traversée par moins de 0,90 A', 'Cette condition est nécessaire mais pas suffisante : il faut que la somme des trois branches soit égale au courant total.'),
+      F('oui : le courant se répète à l’identique dans chaque branche', 'En dérivation le courant se partage, il ne se répète pas ; d’ailleurs les trois valeurs mesurées ne sont pas égales.'),
+    ] }),
+  P({ id: 'cir2gt-val-noeud-ok', domaine: CIR, niveau: 1, titre: 'Intensités dans trois branches : un bon partage', plausible: true,
+    enonce: 'Un générateur débite un courant de 0,90 A dans trois branches en dérivation. Un élève mesure 0,45 A dans la première branche, 0,25 A dans la deuxième et 0,20 A dans la troisième.',
+    reperes: [['Loi des nœuds', 'le courant qui arrive est égal à la somme des courants qui repartent'], ['Branches en dérivation', 'le courant total se partage entre les branches'], ['Intensité dans une branche', 'jamais plus grande que le courant total']],
+    ver: 'Loi des nœuds : 0,45 + 0,25 + 0,20 = 0,90 A, ce qui est bien le courant du générateur. Les branches ne sont pas identiques, donc les intensités peuvent être différentes : les mesures sont plausibles.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('oui : 0,45 + 0,25 + 0,20 = 0,90 A, comme le générateur', 'La somme des courants des branches est égale au courant du générateur : les mesures sont compatibles.'),
+      F('non : les trois branches devraient avoir la même intensité', 'Des branches différentes peuvent être traversées par des courants différents ; seule leur somme est imposée.'),
+      F('non : chaque branche devrait être traversée par 0,90 A', 'Le courant se partage entre les branches : aucune ne reçoit tout le courant du générateur.'),
+    ] }),
+  P({ id: 'cir2gt-val-calibre', domaine: CIR, niveau: 1, titre: 'Lire un ampèremètre', plausible: false,
+    enonce: 'Un multimètre réglé sur le calibre « 200 mA » (mesure d’intensité) affiche 45,0 quand il est placé en série avec une petite lampe alimentée par une pile. Un élève écrit : « I = 45,0 A ».',
+    reperes: [['Fusible d’une prise de courant', '16 A'], ['Ampoule de lampe de poche', 'environ 0,3 A'], ['Calibre 200 mA', 'le nombre affiché est en milliampères (1 mA = 0,001 A)']],
+    ver: 'Sur le calibre 200 mA, le nombre affiché est en milliampères : I = 45,0 mA = 0,0450 A. Une intensité de 45,0 A serait bien plus grande que ce que supporte une prise de courant : elle est impossible avec une pile.',
+    q2: 'Quelle erreur explique le mieux ce résultat ?',
+    options: [
+      V('il a oublié que l’affichage est en mA sur ce calibre', 'Sur le calibre 200 mA, le nombre affiché est en milliampères : I = 45,0 mA = 0,0450 A.'),
+      F('il a branché l’ampèremètre en dérivation et non en série', 'Le montage est bien en série (c’est écrit dans l’énoncé) : l’erreur est dans l’unité.'),
+      F('il a lu la tension à la place de l’intensité', 'Sur un calibre en mA, l’appareil mesure une intensité : l’erreur est dans l’unité, pas dans la grandeur.'),
+    ] }),
+  P({ id: 'cir2gt-val-lampe-ohm', domaine: CIR, niveau: 2, titre: 'Une lampe est-elle un résistor ohmique ?', plausible: false,
+    enonce: 'Un élève mesure, pour une lampe à filament, les couples (tension ; intensité) suivants : (2,0 V ; 0,10 A), (4,0 V ; 0,16 A) et (6,0 V ; 0,20 A). Il écrit : « la lampe est un résistor ohmique de résistance R = 20 Ω ».',
+    reperes: [['Résistor ohmique', 'U = R × I : le rapport U ÷ I est le même pour toutes les mesures'], ['Calcul', 'R = U ÷ I (en Ω, avec U en V et I en A)'], ['Lampe à filament', 'sa résistance augmente quand le filament chauffe']],
+    ver: 'Pour un résistor ohmique, U ÷ I est constant. Ici : 2,0 ÷ 0,10 = 20 Ω ; 4,0 ÷ 0,16 = 25 Ω ; 6,0 ÷ 0,20 = 30 Ω. Les trois valeurs sont différentes : U et I ne sont pas proportionnelles, la lampe n’est pas un résistor ohmique.',
+    q2: 'Quelle est l’erreur de l’élève ?',
+    options: [
+      V('il n’a calculé R que sur la première mesure', 'U ÷ I vaut 20 Ω pour la première mesure, mais 25 Ω puis 30 Ω pour les suivantes : il fallait vérifier sur toutes les mesures.'),
+      F('il a oublié de convertir les volts en millivolts', 'Les unités sont cohérentes (V et A) : R = U ÷ I est bien en ohms.'),
+      F('il a divisé l’intensité par la tension au lieu de l’inverse', 'Le calcul 2,0 ÷ 0,10 = 20 Ω est le bon pour la première mesure ; le problème est de généraliser à toute la caractéristique.'),
+    ] }),
+  P({ id: 'cir2gt-val-lampe-ohm-ok', domaine: CIR, niveau: 2, titre: 'Un résistor ohmique : le bon constat', plausible: true,
+    enonce: 'Un élève mesure, pour un résistor, les couples (tension ; intensité) suivants : (2,0 V ; 0,010 A), (4,0 V ; 0,020 A) et (6,0 V ; 0,030 A). Il écrit : « le résistor est ohmique, de résistance R = 200 Ω ».',
+    reperes: [['Résistor ohmique', 'U = R × I : le rapport U ÷ I est le même pour toutes les mesures'], ['Calcul', 'R = U ÷ I (en Ω, avec U en V et I en A)'], ['Caractéristique d’un résistor ohmique', 'droite qui passe par l’origine']],
+    ver: '2,0 ÷ 0,010 = 200 Ω ; 4,0 ÷ 0,020 = 200 Ω ; 6,0 ÷ 0,030 = 200 Ω : le rapport U ÷ I est le même pour les trois mesures, U et I sont proportionnelles. L’affirmation est plausible.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('cohérent : U ÷ I vaut 200 Ω pour les trois mesures', 'Le rapport U ÷ I est constant : U et I sont proportionnelles, c’est la signature d’un résistor ohmique.'),
+      F('pas cohérent : I devrait rester la même quand U augmente', 'Dans un résistor ohmique, I augmente quand U augmente : U et I sont proportionnelles.'),
+      F('pas cohérent : il faudrait que U ÷ I augmente à chaque mesure', 'C’est le cas d’une lampe à filament, pas d’un résistor ohmique, pour lequel U ÷ I reste constant.'),
+    ] }),
+  P({ id: 'cir2gt-val-ctn', domaine: CIR, niveau: 2, titre: 'Une CTN dans l’eau chaude', plausible: false,
+    enonce: 'Une thermistance CTN est un capteur de température : sa résistance diminue quand la température augmente. À 25 °C, elle vaut 10 kΩ. On la plonge dans de l’eau chaude : un élève mesure 4,0 kΩ et annonce « l’eau est à 12 °C ».',
+    reperes: [['CTN', 'plus il fait chaud, plus la résistance est petite'], ['Résistance à 25 °C', '10 kΩ'], ['Eau froide du robinet ; eau chaude d’un thé', 'environ 10 °C ; environ 80 °C']],
+    ver: 'La résistance diminue quand la température augmente : 4,0 kΩ est plus petit que 10 kΩ, donc la température est plus élevée que 25 °C, pas 12 °C. L’élève a lu la variation dans le mauvais sens.',
+    q2: 'Quelle erreur explique le mieux l’annonce de l’élève ?',
+    options: [
+      V('il a oublié que R diminue quand la température augmente', 'Une CTN a une résistance plus petite quand il fait plus chaud : 4,0 kΩ < 10 kΩ indique donc plus de 25 °C.'),
+      F('il a confondu des kΩ et des Ω', 'Les unités ne sont pas en cause (4,0 kΩ = 4 000 Ω) : l’erreur est dans le sens de variation.'),
+      F('il a mélangé la résistance et la tension aux bornes de la CTN', 'Le problème n’est pas de confondre deux grandeurs : c’est le sens de variation de R avec la température qui est mal utilisé.'),
+    ] }),
+];

@@ -142,7 +142,8 @@ export const EXERCICES = [
       const r1 = tire([0.92, 0.90, 0.88]);
       const r2 = tire([0.85, 0.80, 0.78]);
       const r3 = tire([0.88, 0.75, 0.70]);
-      const rg = Math.round(r1 * r2 * r3 * 1000) / 1000;
+      const r0 = nobt / nmax;                          // rendement du batch (étape 0)
+      const rg = Math.round(r0 * r1 * r2 * r3 * 1000) / 1000;   // rendement global : batch puis les trois opérations en aval
       return {
         enonce: `Le batch d'essai part de ${nb(nmax, 2)} mol d'acide butanoïque en mélange équimolaire avec l'éthanol. À l'équilibre (x_éq = 2/3), on isole ${nb(nobt, 2)} mol de butanoate d'éthyle. En aval, la purification et la formulation enchaînent trois opérations de rendements ${nb(r1 * 100, 0)} %, ${nb(r2 * 100, 0)} % et ${nb(r3 * 100, 0)} %.`,
         etapes: [
@@ -157,16 +158,16 @@ export const EXERCICES = [
             aide: `n_max = ${nb(nmax, 2)} mol (réaction totale), n_obtenu = ${nb(nobt, 2)} mol.`,
             type: 'saisie', champs: [{ id: 'r', lib: 'R', u: '%', vrai: (nobt / nmax) * 100, tol: 0.02 }],
             expl: `R = ${nb(nobt, 2)}/${nb(nmax, 2)} = ${nb(nobt / nmax, 2)} ≈ ${nb(nobt / nmax * 100, 0)} % : l'équilibre plafonne le batch, quel que soit le volume de matière.` },
-          { id: 'global', titre: 'Rendement de la chaîne', q: `Calculez le rendement global de la chaîne (batch + purification + formulation).`,
-            aide: `Les rendements d'étapes se multiplient : R_global = ${nb(r1, 2)} × ${nb(r2, 2)} × ${nb(r3, 2)}.`,
+          { id: 'global', titre: 'Rendement de la chaîne', q: `Calculez le rendement global de la chaîne complète (le batch, puis les trois opérations en aval).`,
+            aide: `Les rendements d'étapes se multiplient : R_global = R_batch × ${nb(r1, 2)} × ${nb(r2, 2)} × ${nb(r3, 2)}, avec R_batch calculé à l'étape précédente.`,
             type: 'saisie', champs: [{ id: 'rg', lib: 'R_global', u: '%', vrai: rg * 100, tol: 0.03 }],
-            expl: `R_global = ${nb(r1 * 100, 0)} % × ${nb(r2 * 100, 0)} % × ${nb(r3 * 100, 0)} % ≈ ${nb(rg * 100, 0)} %. Chaque étape mange une partie de ce qui reste : c'est pour ça qu'on optimise chaque maillon.` },
-          { id: 'lecture', titre: 'Lire un rendement global', q: `Le rendement global (${nb(rg * 100, 0)} %) est plus petit que chacun des trois rendements d'étapes. Est-ce normal ?`,
-            aide: `Comparez ${nb(rg, 2)} avec ${nb(r1, 2)}, ${nb(r2, 2)}, ${nb(r3, 2)}.`,
+            expl: `R_global = ${nb(r0 * 100, 0)} % × ${nb(r1 * 100, 0)} % × ${nb(r2 * 100, 0)} % × ${nb(r3 * 100, 0)} % ≈ ${nb(rg * 100, 0)} %. Chaque étape mange une partie de ce qui reste : c'est pour ça qu'on optimise chaque maillon.` },
+          { id: 'lecture', titre: 'Lire un rendement global', q: `Le rendement global (${nb(rg * 100, 0)} %) est plus petit que chacun des quatre rendements d'étapes (batch compris). Est-ce normal ?`,
+            aide: `Comparez ${nb(rg, 2)} avec ${nb(r0, 2)}, ${nb(r1, 2)}, ${nb(r2, 2)}, ${nb(r3, 2)}.`,
             o: [
               V('Oui : le rendement global est le produit des rendements, donc toujours inférieur ou égal à chacun d\'eux', 'Multiplier des nombres inférieurs à 1 donne un résultat plus petit que chacun : les pertes se cumulent d\'étape en étape.'),
               F('Non : les rendements devraient s\'additionner', 'On additionne des quantités, jamais des rendements ; ici c\'est le produit qui compte.'),
-              F('Non : une erreur de calcul est probable', `Pas d'erreur : ${nb(r1, 2)} × ${nb(r2, 2)} × ${nb(r3, 2)} ≈ ${nb(rg, 2)}.`),
+              F('Non : une erreur de calcul est probable', `Pas d'erreur : ${nb(r0, 2)} × ${nb(r1, 2)} × ${nb(r2, 2)} × ${nb(r3, 2)} ≈ ${nb(rg, 2)}.`),
             ] },
         ],
         retenir: [`R = n_obtenu/n_max (pourcentage). Pour une synthèse en plusieurs étapes, le rendement global est le produit des rendements : toujours inférieur ou égal à chaque rendement d'étape.`],
