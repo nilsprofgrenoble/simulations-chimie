@@ -2016,5 +2016,19 @@
  "77:plausible:susp-val-pie-interpole": "VAL546",
  "77:plausible:susp-val-sel-stabilise": "VAL547",
  "77:plausible:susp-val-signe-inverse": "VAL548",
- "77:plausible:susp-val-silice-pie": "VAL549"
+ "77:plausible:susp-val-silice-pie": "VAL549",
+ "37:prevoir:disp-ana-mouillant-role": "ANA836",
+ "37:prevoir:disp-ana-mouillant-tension": "ANA837",
+ "37:prevoir:disp-ana-energie": "ANA838",
+ "37:prevoir:disp-ana-broyage": "ANA839",
+ "37:prevoir:disp-ana-pic": "ANA840",
+ "37:prevoir:disp-ana-d90": "ANA841",
+ "37:prevoir:disp-ana-milieu-organique": "ANA842",
+ "37:prevoir:disp-ana-pce": "ANA843",
+ "37:prevoir:disp-ana-optimum": "ANA844",
+ "37:prevoir:disp-ana-dosage-eau": "ANA845",
+ "77:plausible:disp-val-agglo-d50": "VAL550",
+ "77:plausible:disp-val-energie-suffit": "VAL551",
+ "77:plausible:disp-val-dosage-eau": "VAL552",
+ "77:plausible:disp-val-pce-ions": "VAL553"
 }
