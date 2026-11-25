@@ -2188,7 +2188,7 @@ export const ENONCES = [
       return { n: tire([8, 10, 12, 16]), vmin, vmax, fe: tire([1, 10, 100]), sens: tire([10, 20]) };
     },
     build: (p, q) => {
-      const E = p.vmax - p.vmin, N = 2 ** p.n, qt = E / N;
+      const E = p.vmax - p.vmin, N = 2 ** p.n, qt = E / (N - 1);
       const tokens = {
         sens: tok(`${p.sens} mV·°C⁻¹`, 'Sensibilité du capteur', p.sens / 1000, 'V·°C⁻¹'),
         n: tok(`${p.n} bits`, 'Nombre de bits du CAN', p.n, 'bits'),
@@ -2198,17 +2198,18 @@ export const ENONCES = [
       };
       const debut = ['Un capteur de température délivre une tension proportionnelle à la température, avec une sensibilité de ', T('sens'),
         '. Cette tension est numérisée par un convertisseur analogique-numérique (CAN) de ', T('n'), ' dont la plage d’entrée va de ', T('vmin'), ' à ', T('vmax'),
-        '. La fréquence d’échantillonnage est de ', T('fe'), '. On suppose le capteur parfaitement linéaire et le CAN idéal (sa plage d’entrée est découpée en 2ⁿ intervalles égaux, un pour chaque valeur numérique possible). '];
+        '. La fréquence d’échantillonnage est de ', T('fe'), '. On suppose le capteur parfaitement linéaire et le CAN idéal (son nombre N va de 0 à 2ⁿ − 1 : la plage d’entrée est découpée en 2ⁿ − 1 intervalles égaux). '];
       const derivees = [
         { id: 'E', nom: 'Étendue de la plage d’entrée', expr: 'étendue = V_max − V_min', val: E, u: 'V' },
         { id: 'N', nom: 'Nombre de valeurs numériques possibles', expr: 'N = 2^n', val: N, u: '' },
+        { id: 'I', nom: 'Nombre d’intervalles égaux', expr: '2^n − 1', val: N - 1, u: '' },
       ];
       if (q === 0) return { tokens, derivees, texte: [...debut, 'Quel est le quantum q du CAN (le plus petit écart de tension qu’il distingue) ?'], utiles: ['n', 'vmin', 'vmax'],
         raisons: { sens: 'La sensibilité du capteur sert à convertir une tension en température, pas à calculer le quantum du CAN.', fe: 'La fréquence d’échantillonnage fixe le nombre de mesures par seconde, pas la finesse de la numérisation.' },
         cherche: { bonne: 'Le quantum q du convertisseur (en V)', faux: ['La plus petite variation de température détectable (en °C)', 'La durée minimale entre deux mesures successives (en s)', 'Le nombre de valeurs numériques que le CAN peut fournir (sans unité)'] },
-        manque: null, solution: { txt: 'q = (V_max − V_min) / 2^n', val: qt, u: 'V' } };
+        manque: null, solution: { txt: 'q = (V_max − V_min) / (2^n − 1)', val: qt, u: 'V' } };
       return { tokens, texte: [...debut, 'Quelle est la plus petite variation de température que cette chaîne de mesure peut détecter ?'], utiles: ['sens', 'n', 'vmin', 'vmax'],
-        derivees: [...derivees, { id: 'q', nom: 'Quantum q du CAN', expr: 'q = étendue / N', val: qt, u: 'V' }],
+        derivees: [...derivees, { id: 'q', nom: 'Quantum q du CAN', expr: 'q = étendue / (2^n − 1)', val: qt, u: 'V' }],
         raisons: { fe: 'La fréquence d’échantillonnage fixe le nombre de mesures par seconde, pas la plus petite variation détectable.' },
         cherche: { bonne: 'La plus petite variation de température détectable (en °C)', faux: ['Le quantum q du convertisseur, plus petit écart de tension distingué (en V)', 'La durée minimale entre deux mesures successives (en s)', 'La plage de températures que le capteur peut mesurer (en °C)'] },
         manque: null, solution: { txt: 'Δθ = q / sensibilité', val: qt / (p.sens / 1000), u: '°C' } };
