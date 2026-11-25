@@ -14,6 +14,7 @@ import { SyntheseProf } from "./SyntheseProf";
 import { ChapitreClasse } from "./ChapitreClasse";
 import { PartageClasse } from "./PartageClasse";
 import { EtablissementClasse } from "./EtablissementClasse";
+import { OuvrirClassement } from "./OuvrirClassement";
 import { synchroniserClesValides } from "../syncCles";
 import { ComptesProf, ClassesAdmin, SignalementsAdmin } from "./ComptesProf";
 import { ApercuEleve } from "./ApercuEleve";
@@ -181,7 +182,7 @@ export function SimulationSuiviProf({ naviguer }) {
   // « Donner en devoir » (bouton en haut d'une simulation) dépose un devoir à pré-remplir : on ouvre directement l'onglet Devoirs
   const [presetInit] = useState(() => { try { const v = window.sessionStorage.getItem('devoir-preset'); window.sessionStorage.removeItem('devoir-preset'); return v ? JSON.parse(v) : null; } catch { return null; } });
   const [onglet, setOnglet] = useState(presetInit ? 'devoirs' : 'synthese'), [ouvert, setOuvert] = useState(null);
-  const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false);
+  const [msg, setMsg] = useState(''), [erreur, setErreur] = useState(''), [occupe, setOccupe] = useState(false), [bandeauMasque, setBandeauMasque] = useState(false);
   const [comptes, setComptes] = useState(null), [formClasse, setFormClasse] = useState(false);
   const [siteDispo, setSiteDispo] = useState(false), [etabDispo, setEtabDispo] = useState(false), [vieDispo, setVieDispo] = useState(true), [chapDispo, setChapDispo] = useState(true), [apercu, setApercu] = useState(false), [preset, setPreset] = useState(presetInit);
   const [nc, setNc] = useState({ nom: '', prefixe: '', nombre: 30, site: 'paillasse' }), [prefixeSaisi, setPrefixeSaisi] = useState(false), [ajout, setAjout] = useState(5), [exosTous, setExosTous] = useState(false);
@@ -268,6 +269,13 @@ export function SimulationSuiviProf({ naviguer }) {
     setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, etablissement } : c)));
     setMsg(etablissement ? `Établissement enregistré : « ${etablissement} ». Les élèves de cette classe qui l’ont choisi peuvent apparaître dans le classement public.` : 'Établissement effacé : plus aucun élève de cette classe n’apparaît dans le classement public.');
   });
+  // Bandeau « Ouvrir le classement » : indique l'établissement de la classe affichée (et, si le professeur le veut, de ses autres classes qui n'en ont pas)
+  const ouvrirClassement = (etablissement, aussi) => proteger(async () => {
+    const ids = [classeId, ...(aussi ? autresSansEtab.map(c => c.id) : [])];
+    await rest(`classes?id=in.(${ids.join(',')})`, { method: 'PATCH', corps: { etablissement } });
+    setClasses(cs => cs.map(c => (ids.includes(c.id) ? { ...c, etablissement } : c)));
+    setMsg(`Classement ouvert${ids.length > 1 ? ` pour ${ids.length} classes` : ''} : « ${etablissement} ». Chaque élève choisit maintenant son pseudo et coche, s’il le souhaite, « Apparaître dans le classement public » (onglet « Ma classe » de son espace).`);
+  });
   const choisirSite = site => proteger(async () => {
     await rest(`classes?id=eq.${classeId}`, { method: 'PATCH', corps: { site } });
     setClasses(cs => cs.map(c => (c.id === classeId ? { ...c, site } : c)));
@@ -279,6 +287,9 @@ export function SimulationSuiviProf({ naviguer }) {
     setMsg(liste.length ? `Chapitre en cours : ${chapitresDe(liste).map(c => c.label).join(' · ')}. Les élèves de la classe le voient dans « Je m’entraîne ».` : 'Aucun chapitre en cours : les élèves voient la liste complète.');
   });
   const ouvrir = o => { setPreset(null); setOnglet(o); };
+  const mesClasses = classes.filter(c => !c.prof_id || !moiId || c.prof_id === moiId);        // les miennes (pas celles où je suis co-professeur)
+  const autresSansEtab = mesClasses.filter(c => c.id !== classeId && !(c.etablissement || '').trim());
+  const etabSuggere = (mesClasses.find(c => (c.etablissement || '').trim())?.etablissement || '').trim();
   const supprimerClasse = () => {
     const saisie = window.prompt(`Supprimer la classe « ${classe.nom} », ses ${eleves.length} comptes et toutes leurs données ? Définitif.\nPour confirmer, tapez le préfixe : ${classe.prefixe}`);
     if (saisie !== classe.prefixe) return;
@@ -410,6 +421,9 @@ export function SimulationSuiviProf({ naviguer }) {
               <button onClick={() => ouvrir('defis')} style={stylePetitBouton(onglet === 'defis', '#475569')}>Défis des simulations</button>
               <button onClick={() => ouvrir('sims')} style={stylePetitBouton(onglet === 'sims', '#475569')}>Temps par simulation</button>
             </div>)}
+
+          {onglet === 'synthese' && etabDispo && !bandeauMasque && !(classe.etablissement || '').trim() && (
+            <OuvrirClassement key={classe.id} classe={classe} suggestion={etabSuggere} autres={autresSansEtab} occupe={occupe} onOuvrir={ouvrirClassement} onPlusTard={() => setBandeauMasque(true)} />)}
 
           <div id="sp-panneau" role="tabpanel" aria-labelledby={`sp-onglet-${actif}`}>
           {onglet === 'synthese' && <SyntheseProf classe={classe} eleves={eleves} lignes={lignes} allerA={ouvrir} onApercu={() => setApercu(true)} />}

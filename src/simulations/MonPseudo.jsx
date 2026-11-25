@@ -39,7 +39,7 @@ export function MonPseudo({ naviguer, apercu = false, onChange, expliquerSiFerme
   const [etat, setEtat] = useState(exemple);              // undefined : chargement · null : indisponible
   const [version, setVersion] = useState(0);
   const [domaine, setDomaine] = useState('tout'), [idees, setIdees] = useState(() => propositions(4));
-  const [change, setChange] = useState(false), [occupe, setOccupe] = useState(false), [msg, setMsg] = useState('');
+  const [change, setChange] = useState(false), [occupe, setOccupe] = useState(false), [msg, setMsg] = useState(''), [vientDeChoisir, setVientDeChoisir] = useState(false);
 
   useEffect(() => {
     if (apercu) return undefined;
@@ -80,7 +80,7 @@ export function MonPseudo({ naviguer, apercu = false, onChange, expliquerSiFerme
     try {
       if (moi) await rest(`pseudos?user_id=eq.${monId}`, { method: 'PATCH', corps: { adj, nom } });
       else await rest('pseudos', { method: 'POST', corps: { adj, nom, visible: false } });
-      setChange(false); apres();
+      setChange(false); setVientDeChoisir(true); apres();
     } catch (e) {
       setMsg(e.statut === 409 ? 'Ce pseudo vient d’être pris dans ta classe : choisis-en un autre.' : 'Impossible d’enregistrer pour le moment. Réessaie dans un instant.');
       setIdees(propositions(4, Math.random, [], domaine));
@@ -99,6 +99,7 @@ export function MonPseudo({ naviguer, apercu = false, onChange, expliquerSiFerme
   const choixPseudo = (
     <>
       <p className="mp-sous" style={{ marginBottom: 6 }}>{monPseudo ? 'Choisis un autre pseudo' : 'Choisis ton pseudo'} (tiré d’une liste, aucun texte libre) :</p>
+      {etab && !monPseudo && <p className="mp-sous" style={{ marginBottom: 6 }}>Ensuite, tu pourras cocher « Apparaître dans le classement public » juste en dessous.</p>}
       <ChoixDomaine valeur={domaine} disabled={occupe && !apercu} onChange={d => { setDomaine(d); setIdees(propositions(4, Math.random, [], d)); }} />
       <div className="mp-idees">
         {idees.map(([a, n]) => { const p = pseudo(a, n); return <button key={`${a}-${n}`} type="button" className="mp-idee" disabled={occupe && !apercu} onClick={() => choisir(a, n)}><span aria-hidden="true">{p.icone}</span> {p.texte}</button>; })}
@@ -126,7 +127,7 @@ export function MonPseudo({ naviguer, apercu = false, onChange, expliquerSiFerme
                 <span><b>Montrer mon pseudo dans ma classe</b><small>Seuls les élèves de ta classe le voient, dans les prouesses de la semaine. Désactivé par défaut.</small></span>
               </label>)}
             {etab ? (
-              <label className="mp-case">
+              <label className="mp-case" style={vientDeChoisir && !moi.classement ? { outline: '3px solid #f5a31a', outlineOffset: 2 } : undefined}>
                 <input type="checkbox" checked={!!moi.classement} disabled={occupe && !apercu} onChange={e => basculer('classement', e.target.checked)} />
                 <span><b>Apparaître dans le classement public</b>
                   <small>Tout le monde sur Internet verra ton pseudo, « {etab} », « {classe} » et tes scores. Désactivé par défaut. Tu peux décocher quand tu veux. En cas de doute, demande à ton professeur ou à tes parents.</small></span>

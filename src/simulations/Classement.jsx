@@ -43,6 +43,14 @@ const css = `
   .cl-points { display: flex; align-items: center; gap: 7px; }
   .cl-point { flex: none; box-sizing: border-box; width: 10px; height: 10px; min-width: 0; min-height: 0; max-height: 10px; border-radius: 50%; background: #cbd5e1; border: none; padding: 0; cursor: pointer; }
   .cl-point[aria-current="true"] { background: #0b4f94; transform: scale(1.25); }
+  .cl-invite { margin: 0 0 14px; padding: 14px 16px; border-radius: 18px; background: #fff7ed; border: 1.5px solid #fdba74; font-size: 14.5px; line-height: 1.5; color: #1e293b; }
+  .cl-invite p { margin: 0 0 8px; }
+  .cl-invite p:last-child { margin-bottom: 0; }
+  .cl-actions { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .cl-bouton { border: none; border-radius: 14px; padding: 11px 20px; font: inherit; font-weight: 800; font-size: 15px; cursor: pointer; color: #3a2500; background: #f5a31a; }
+  .cl-bouton:hover:not(:disabled) { background: #ffb83d; }
+  .cl-bouton:disabled { opacity: .6; cursor: default; }
+  .cl-bouton:focus-visible { outline: 3px solid #0b4f94; outline-offset: 2px; }
   .cl-note { margin: 16px 0 0; font-size: 13.5px; color: #475569; line-height: 1.55; }
   .cl-lien { border: none; background: none; padding: 0; font: inherit; font-weight: 800; color: #0b4f94; text-decoration: underline; cursor: pointer; }
   @media (max-width: 620px) {
@@ -90,7 +98,7 @@ function Lame({ lame, lignes, moi, lundi, max }) {
 export function SimulationClassement({ naviguer, accueil = false }) {
   const sess = useSession();
   const [donnees, setDonnees] = useState(null), [erreur, setErreur] = useState(false), [charge, setCharge] = useState(true);
-  const [idx, setIdx] = useState(0), [moi, setMoi] = useState(null);
+  const [idx, setIdx] = useState(0), [moi, setMoi] = useState(null), [classeNom, setClasseNom] = useState('');
   const piste = useRef(null);
 
   const [essai, setEssai] = useState(0);
@@ -101,19 +109,35 @@ export function SimulationClassement({ naviguer, accueil = false }) {
   }, [essai]);
   const lire = () => { setCharge(true); setErreur(false); setEssai(n => n + 1); };
 
-  // Un élève connecté retrouve sa propre ligne (mise en valeur) s'il a accepté d'apparaître
+  // Un élève connecté retrouve sa propre ligne (mise en valeur) s'il a accepté d'apparaître ; sinon on lui dit ce qui lui manque pour y entrer
   const eleve = estEleve(sess);
+  const [statut, setStatut] = useState(null), [confirme, setConfirme] = useState(false), [occupe, setOccupe] = useState(false), [msgEleve, setMsgEleve] = useState('');
+  const [versionStatut, setVersionStatut] = useState(0);
   useEffect(() => {
     if (!eleve) return undefined;
     let vivant = true;
     (async () => {
       try {
-        const [p, c] = await Promise.all([rest('pseudos?select=adj,nom,classement'), rest('classes?select=nom,etablissement')]);
-        if (vivant && p[0]?.classement && c[0]?.etablissement) setMoi({ adj: p[0].adj, nom: p[0].nom, classe: c[0].nom, etab: c[0].etablissement });
+        const [p, c] = await Promise.all([
+          rest('pseudos?select=adj,nom,classement,exclu').catch(() => rest('pseudos?select=adj,nom')),
+          rest('classes?select=nom,etablissement'),
+        ]);
+        if (!vivant) return;
+        const etab = (c[0]?.etablissement || '').trim();
+        setStatut({ pseudo: !!p[0], classement: !!p[0]?.classement, exclu: !!p[0]?.exclu, etab });
+        setMoi(p[0]?.classement && etab ? { adj: p[0].adj, nom: p[0].nom, classe: c[0].nom, etab } : null);
+        setClasseNom(c[0]?.nom || '');
       } catch { /* migration absente ou réseau coupé : pas de mise en valeur */ }
     })();
     return () => { vivant = false; };
-  }, [eleve]);
+  }, [eleve, versionStatut]);
+  const entrer = async () => {
+    setOccupe(true); setMsgEleve('');
+    try { await rest(`pseudos?user_id=eq.${sess.user.id}`, { method: 'PATCH', corps: { classement: true } }); setConfirme(false); setVersionStatut(v => v + 1); lire(); }
+    catch { setMsgEleve('Impossible d’enregistrer pour le moment. Réessaie dans un instant.'); }
+    setOccupe(false);
+  };
+  const versMonEspace = () => { try { window.sessionStorage.setItem('ee-onglet', 'classe'); } catch { /* sans effet : l'élève arrive sur « Aujourd'hui » */ } naviguer(39); };
 
   const aller = i => {
     const el = piste.current;
@@ -143,6 +167,28 @@ export function SimulationClassement({ naviguer, accueil = false }) {
       <style>{css}</style>
       {!accueil && <p className="cl-intro">Fais glisser les lames pour changer de classement. Seuls les élèves qui l’ont choisi apparaissent, sous un pseudo.</p>}
 
+      {!accueil && eleve && statut && !statut.classement && (
+        <div className="cl-invite" data-cl-invite role="region" aria-label="Apparaître dans le classement">
+          {!statut.etab
+            ? <p>Ton professeur n’a pas encore ouvert le classement pour ta classe. Dès qu’il l’aura fait, tu pourras apparaître ici.</p>
+            : statut.exclu
+              ? <p>Ton professeur t’a retiré du classement. Parles-en avec lui si tu penses que c’est une erreur.</p>
+              : !statut.pseudo
+                ? (<><p><b>Tu n’es pas encore dans le classement.</b> Choisis d’abord un pseudo (tiré d’une liste, jamais ton nom), puis tu pourras apparaître ici.</p>
+                    <button type="button" className="cl-bouton" onClick={versMonEspace}>Choisir mon pseudo ▶</button></>)
+                : !confirme
+                  ? (<><p><b>Tu n’es pas dans le classement.</b> Veux-tu y apparaître ?</p>
+                      <button type="button" className="cl-bouton" onClick={() => setConfirme(true)}>Apparaître dans le classement</button></>)
+                  : (<><p>Tout le monde sur Internet verra ton pseudo, « {statut.etab} », « {classeNom} » et tes scores. Tu peux décocher quand tu veux dans « Ma classe ». En cas de doute, demande à ton professeur ou à tes parents.</p>
+                      <div className="cl-actions">
+                        <button type="button" className="cl-bouton" disabled={occupe} onClick={entrer}>Oui, j’apparais</button>
+                        <button type="button" className="cl-lien" onClick={() => setConfirme(false)}>Annuler</button>
+                      </div></>)}
+          {msgEleve && <p role="alert" style={{ color: '#b91c1c', fontWeight: 700 }}>{msgEleve}</p>}
+        </div>)}
+      {!accueil && !eleve && (
+        <div className="cl-invite" data-cl-invite><p><b>Tu veux apparaître ici ?</b> Connecte-toi avec ton compte élève : tu pourras choisir un pseudo et décider d’apparaître, dans l’onglet « Ma classe » de ton espace.</p></div>)}
+
       {erreur && (
         <div className="cl-vide" role="status" style={{ border: '1px solid #d5dfeb', borderRadius: 18, background: '#fff' }}>
           Le classement n’est pas disponible pour le moment.<br />
@@ -171,8 +217,8 @@ export function SimulationClassement({ naviguer, accueil = false }) {
       {accueil && <p className="cl-note" style={{ textAlign: 'center' }}><button type="button" className="cl-lien" onClick={() => naviguer(104)}>Voir le classement complet →</button></p>}
       {!accueil && <p className="cl-note">
         {eleve
-          ? <>Tu n’apparais que si tu l’as choisi : <button type="button" className="cl-lien" onClick={() => naviguer(39)}>règle ça dans Mon compte</button>.</>
-          : <>Tu as un compte élève ? Dans <button type="button" className="cl-lien" onClick={() => naviguer(39)}>Mon compte</button>, tu peux choisir un pseudo et décider d’apparaître ici.</>}
+          ? <>Tu n’apparais que si tu l’as choisi : <button type="button" className="cl-lien" onClick={versMonEspace}>règle ça dans « Ma classe »</button>.</>
+          : <>Tu as un compte élève ? Dans l’onglet « Ma classe » de ton espace, tu peux choisir un pseudo et décider d’apparaître ici.</>}
         {' '}Un pseudo est tiré d’une liste (jamais de nom ni d’identifiant). Les scores sont calculés à partir du travail enregistré dans les comptes ; ils servent à s’amuser, pas à noter.
       </p>}
     </div>);
