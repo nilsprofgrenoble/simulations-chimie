@@ -100,7 +100,7 @@ export const CHAPITRES = [
   { id: 'bts-solubilite', niveau: 'BTS', rubrique: 'Formulation', label: '🔵 Solubilité et solvants', sims: [4], domaines: ['Formulation'] },
   { id: 'bts-films', niveau: 'BTS', rubrique: 'Formulation', label: '🎨 Films et séchage', sims: [14, 101], domaines: ['Formulation', 'Séchage'] },
   { id: 'bts-rheologie', niveau: 'BTS', rubrique: 'Formulation', label: '🧴 Rhéologie', sims: [100, 217, 218], domaines: ['Formulation', 'Rhéologie'] },
-  { id: 'bts-tensioactifs', niveau: 'BTS', rubrique: 'Formulation', label: '🫧 Tensioactifs et émulsions', sims: [146, 220, 221, 222, 223, 224, 225], domaines: ['Tensioactifs : de la structure à la CMC', 'Charge des tensioactifs selon le pH', 'Sens de l’émulsion et épaississement', 'Instabilités des émulsions', 'HLB requis et mélange d’émulsifiants', 'Stabilité d’une suspension', 'Mouiller, disperser, stabiliser une suspension'] },
+  { id: 'bts-tensioactifs', niveau: 'BTS', rubrique: 'Formulation', label: '🫧 Tensioactifs et émulsions', sims: [146, 220, 221, 222, 223, 224, 225, 226], domaines: ['Tensioactifs : de la structure à la CMC', 'Charge des tensioactifs selon le pH', 'Sens de l’émulsion et épaississement', 'Instabilités des émulsions', 'HLB requis et mélange d’émulsifiants', 'Stabilité d’une suspension', 'Mouiller, disperser, stabiliser une suspension', 'Mousses : former, stabiliser, détruire'] },
   { id: 'bts-plans', niveau: 'BTS', rubrique: 'Formulation', label: '🔺 Plans d’expériences : plans de mélange et plans factoriels', sims: [128, 127, 126], domaines: ['Formulation', 'Plans'] },
 ];
 
