@@ -13,7 +13,14 @@ export const MAX_CHAPITRES = 3;
 export const ORDRE_COMP = ["S'APP", 'ANA', 'REA', 'VAL'];
 
 // Exercices à thème du chapitre (hors calcul REA, transversal)
-export const exosDuChapitre = (exos, chapitres) => (chapitres?.length ? exos.filter(e => e.comp !== 'REA' && chapitres.includes(e.domaine)) : []);
+// chap : un chapitre (champs domaines, hors, ajouts : voir chapitres.js) ou, par compatibilité, la simple liste de ses domaines
+const cleDans = (cle, liste) => liste.some(r => cle === r || cle.startsWith(`${r}.`));
+export const exosDuChapitre = (exos, chap) => {
+  const c = Array.isArray(chap) ? { domaines: chap } : (chap || {});
+  if (!c.domaines?.length) return [];
+  const hors = c.hors || [], ajouts = c.ajouts || [];
+  return exos.filter(e => e.comp !== 'REA' && !cleDans(e.cle, hors) && (c.domaines.includes(e.domaine) || cleDans(e.cle, ajouts)));
+};
 export const exosCalcul = exos => exos.filter(e => e.comp === 'REA');
 
 // exosChap : exercices du chapitre ; etoilesDe(cle) → 0 (pas réussi) à 3

@@ -2,17 +2,18 @@
 // et (sauf exceptions assumées) aucun exercice sans sous-thème. Lancé : node src/sousThemes.chapitres.test.mjs
 import { createServer } from 'vite';
 import assert from 'node:assert/strict';
-// Exercices volontairement laissés hors sous-thème (restent dans « Autres exercices ») : BTS partagés avec 1G ; réseau, timbre et échographie hors programme TG
-const AUTORISE_HORS_THEME = { '1g-evolution': 20, 'tg-ondes': 40 };
+// Aucun exercice d'un chapitre ne reste sans sous-thème (les exercices hors programme du niveau sont écartés du chapitre par « hors » dans chapitres.js)
+const AUTORISE_HORS_THEME = {};
 const vite = await createServer({ root: process.cwd(), server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
 try {
   const { SOUS_THEMES, dansSousTheme } = await vite.ssrLoadModule('/src/sousThemes.js');
   const { tousLesExercices } = await vite.ssrLoadModule('/src/simulations/Entrainement.jsx');
   const { CHAPITRES } = await vite.ssrLoadModule('/src/chapitres.js');
+  const { exosDuChapitre } = await vite.ssrLoadModule('/src/chapitre.js');
   const tous = tousLesExercices();
   for (const [id, sts] of Object.entries(SOUS_THEMES)) {
     const ch = CHAPITRES.find(c => c.id === id); assert.ok(ch, `chapitre inconnu ${id}`);
-    const exos = tous.filter(e => ch.domaines.includes(e.domaine));
+    const exos = exosDuChapitre(tous, ch);
     let sans = 0;
     for (const e of exos) {
       const k = sts.filter(s => dansSousTheme(e.cle, s)).length;
