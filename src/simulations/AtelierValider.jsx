@@ -203,9 +203,9 @@ export function SimulationAtelierValider({ naviguer }) {
       </div>);
   }
   const item = items.find(i => i.id === sel.ex);
-  const liste = filtrer(items, { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch, dif: sel.dif });
+  const liste = filtrer(items, { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch, st: sel.st, dif: sel.dif });
   const pos = liste.findIndex(i => i.id === item.id);
-  const ctx = { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch, dif: sel.dif };
+  const ctx = { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch, st: sel.st, dif: sel.dif };
   const aller = i => setSel({ ...ctx, ex: liste[i].id });
   const hasard = () => { const n = liste.length; let j = pos; if (n > 1) while (j === pos) j = Math.floor(Math.random() * n); aller(j); };
   const navigation = (

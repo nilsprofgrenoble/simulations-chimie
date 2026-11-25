@@ -8,6 +8,7 @@ import { KIT, stylePetitBouton } from './commun';
 import { NIVEAUX_CHAPITRES } from './chapitres';
 import { itemsDuType, niveauxDuType, chapitresDuNiveauType, filtrer, difficultesDuType, enseignementsDuNiveauType, enseignementDe, ENSEIGNEMENTS, nomChapitre } from './parcoursCommun';
 import { SEL_VIDE } from './selectionParcours';
+import { sousThemesDe, dansSousTheme } from './sousThemes';
 import { IllustrationType } from './IllustrationsTypes';
 
 const niveauLabel = k => NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k;
@@ -16,11 +17,13 @@ const niveauLabel = k => NIVEAUX_CHAPITRES.find(n => n.key === k)?.label || k;
 export function FilAriane({ code, couleur, types, chapitres, sel, setSel, dansExercice = false }) {
   const t = types.find(x => x.id === sel.type), ch = chapitres.find(c => c.id === sel.ch);
   const etapes = [{ l: code, v: { ...SEL_VIDE } }];
-  if (t) etapes.push({ l: t.nom, v: { type: t.id, niv: '', ens: '', ch: '', ex: '' } });
+  if (t) etapes.push({ l: t.nom, v: { type: t.id, niv: '', ens: '', ch: '', st: '', ex: '' } });
   const ens = (ENSEIGNEMENTS[sel.niv] || []).find(e => e.key === sel.ens);
-  if (t && sel.niv) etapes.push({ l: niveauLabel(sel.niv), v: { type: t.id, niv: sel.niv, ens: '', ch: '', ex: '' } });
-  if (t && ens) etapes.push({ l: ens.label, v: { type: t.id, niv: sel.niv, ens: ens.key, ch: '', ex: '' } });
+  if (t && sel.niv) etapes.push({ l: niveauLabel(sel.niv), v: { type: t.id, niv: sel.niv, ens: '', ch: '', st: '', ex: '' } });
+  if (t && ens) etapes.push({ l: ens.label, v: { type: t.id, niv: sel.niv, ens: ens.key, ch: '', st: '', ex: '' } });
   if (t && ch) etapes.push({ l: nomChapitre(ch), v: { type: t.id, niv: sel.niv, ens: sel.ens, ch: ch.id, ex: '' } });
+  const st = ch && sel.st ? sousThemesDe(ch.id).find(x => x.id === sel.st) : null;
+  if (t && ch && st) etapes.push({ l: st.nom, v: { type: t.id, niv: sel.niv, ens: sel.ens, ch: ch.id, st: st.id, ex: '' } });
   const dernier = dansExercice ? etapes.length : etapes.length - 1;   // dans un exercice, toutes les étapes sont cliquables
   return (
     <nav aria-label="Où je suis" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '2px 6px', fontSize: 13.5, margin: '0 0 10px' }}>
@@ -114,6 +117,9 @@ function EcranType({ couleur, type, items, chapitres, prog, sel, setSel, ouvrir 
   const enss = parNiveau && sel.niv ? enseignementsDuNiveauType(items, type.id, sel.niv) : [];
   const chs = parNiveau && sel.niv ? chapitresDuNiveauType(items, type.id, sel.niv, sel.ens) : [];
   const groupes = parNiveau ? regrouper(liste, chapitres, sel.niv, sel.ens) : null;
+  const chapExos = sel.ch ? filtrer(items, { type: type.id, niv: sel.niv, ens: sel.ens, ch: sel.ch }) : [];
+  const themes = sel.ch ? sousThemesDe(sel.ch).map(st => ({ st, its: chapExos.filter(i => dansSousTheme(i.cle, st)) })).filter(x => x.its.length) : [];
+  const attendThemeChoix = themes.length > 0 && !sel.st;   // chapitre rangé en thèmes : on fait choisir le thème avant d'afficher des exercices
   let k = 0;   // numéro d'étape : les étapes affichées se suivent (l'enseignement n'existe que pour certains niveaux)
   const grosBouton = { minHeight: 48, padding: '0 16px', fontSize: 15, fontWeight: 800 };
   return (
@@ -127,27 +133,43 @@ function EcranType({ couleur, type, items, chapitres, prog, sel, setSel, ouvrir 
         <Etape n={++k} titre="Ton niveau" couleur={couleur} />
         <div role="group" aria-label="Niveau" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {niveaux.map(n => (
-            <button key={n.key} type="button" aria-pressed={sel.niv === n.key} onClick={() => setSel({ ...sel, niv: n.key, ens: '', ch: '', ex: '' })}
+            <button key={n.key} type="button" aria-pressed={sel.niv === n.key} onClick={() => setSel({ ...sel, niv: n.key, ens: '', ch: '', st: '', ex: '' })}
               style={{ ...stylePetitBouton(sel.niv === n.key, couleur), ...grosBouton }}>{n.label} <span style={{ fontWeight: 600, opacity: .85 }}>· {n.n}</span></button>))}
-          <button type="button" aria-pressed={!sel.niv} onClick={() => setSel({ ...sel, niv: '', ens: '', ch: '', ex: '' })}
+          <button type="button" aria-pressed={!sel.niv} onClick={() => setSel({ ...sel, niv: '', ens: '', ch: '', st: '', ex: '' })}
             style={{ ...stylePetitBouton(!sel.niv, couleur), ...grosBouton, fontSize: 14, borderStyle: 'dashed' }}>Tous les niveaux</button>
         </div>
         {sel.niv && enss.length > 1 && <>
           <Etape n={++k} titre="Ton enseignement" facultatif couleur={couleur} />
           <div role="group" aria-label="Enseignement" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-            <button type="button" aria-pressed={!sel.ens} onClick={() => setSel({ ...sel, ens: '', ch: '', ex: '' })} style={{ ...stylePetitBouton(!sel.ens, couleur), ...grosBouton, fontSize: 14 }}>Tous</button>
+            <button type="button" aria-pressed={!sel.ens} onClick={() => setSel({ ...sel, ens: '', ch: '', st: '', ex: '' })} style={{ ...stylePetitBouton(!sel.ens, couleur), ...grosBouton, fontSize: 14 }}>Tous</button>
             {enss.map(e => (
-              <button key={e.key} type="button" aria-pressed={sel.ens === e.key} onClick={() => setSel({ ...sel, ens: e.key, ch: '', ex: '' })}
+              <button key={e.key} type="button" aria-pressed={sel.ens === e.key} onClick={() => setSel({ ...sel, ens: e.key, ch: '', st: '', ex: '' })}
                 style={{ ...stylePetitBouton(sel.ens === e.key, couleur), ...grosBouton, fontSize: 14 }}>{e.label} <span style={{ fontWeight: 600, opacity: .85 }}>· {e.n}</span></button>))}
           </div></>}
         {sel.niv && <>
           <Etape n={++k} titre="Ton chapitre" facultatif couleur={couleur} />
           <div role="group" aria-label="Chapitre" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 8 }}>
-            <button type="button" aria-pressed={!sel.ch} onClick={() => setSel({ ...sel, ch: '', ex: '' })} style={{ ...carte(!sel.ch, couleur), minHeight: 48, fontWeight: 800, fontSize: 14 }}>
+            <button type="button" aria-pressed={!sel.ch} onClick={() => setSel({ ...sel, ch: '', st: '', ex: '' })} style={{ ...carte(!sel.ch, couleur), minHeight: 48, fontWeight: 800, fontSize: 14 }}>
               Tous les chapitres <span style={{ fontWeight: 600, color: KIT.txt2 }}>· {filtrer(items, { type: type.id, niv: sel.niv, ens: sel.ens }).length}</span></button>
             {chs.map(({ chap, n }) => (
-              <button key={chap.id} type="button" aria-pressed={sel.ch === chap.id} onClick={() => setSel({ ...sel, ens: enseignementDe(chap) || sel.ens, ch: chap.id, ex: '' })} style={{ ...carte(sel.ch === chap.id, couleur), minHeight: 48, fontSize: 14, fontWeight: 700 }}>
+              <button key={chap.id} type="button" aria-pressed={sel.ch === chap.id} onClick={() => setSel({ ...sel, ens: enseignementDe(chap) || sel.ens, ch: chap.id, st: '', ex: '' })} style={{ ...carte(sel.ch === chap.id, couleur), minHeight: 48, fontSize: 14, fontWeight: 700 }}>
                 <span style={{ flex: 1 }}>{nomChapitre(chap)}</span><span style={{ fontWeight: 600, color: KIT.txt2, flex: 'none' }}>{n}</span></button>))}
+          </div></>}
+        {sel.ch && themes.length > 0 && <>
+          <Etape n={++k} titre="Ton thème" couleur={couleur} />
+          <div role="group" aria-label="Thème du chapitre" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 8 }}>
+            {themes.map(({ st, its }) => {
+              const faits = its.filter(i => prog[i.cle]).length;
+              return (
+                <button key={st.id} type="button" data-theme={st.id} aria-pressed={sel.st === st.id} className="pc-ligne" onClick={() => setSel({ ...sel, st: st.id, ex: '' })}
+                  style={{ ...carte(sel.st === st.id, couleur), minHeight: 64, alignItems: 'flex-start', flexDirection: 'column', gap: 3 }}>
+                  <span style={{ fontWeight: 800, fontSize: 14.5, lineHeight: 1.3, color: couleur }}>{st.nom}</span>
+                  <span style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.4 }}>{st.capacite}</span>
+                  <span style={{ fontSize: 12.5, fontWeight: 700, color: '#475569' }}>{its.length} exercice{its.length > 1 ? 's' : ''}{faits > 0 ? ` · ${faits} fait${faits > 1 ? 's' : ''}` : ''}</span>
+                </button>);
+            })}
+            <button type="button" aria-pressed={sel.st === 'tous'} className="pc-ligne" onClick={() => setSel({ ...sel, st: 'tous', ex: '' })}
+              style={{ ...carte(sel.st === 'tous', couleur), minHeight: 48, fontSize: 14, fontWeight: 700 }}>Tous les thèmes <span style={{ fontWeight: 600, color: KIT.txt2 }}>· {chapExos.length}</span></button>
           </div></>}
         {type.difficulte && <>
           <Etape n={sel.niv ? ++k : null} titre="La difficulté" facultatif couleur={couleur} />
@@ -157,10 +179,11 @@ function EcranType({ couleur, type, items, chapitres, prog, sel, setSel, ouvrir 
               <button key={d.dif} type="button" aria-pressed={sel.dif === d.dif} onClick={() => setSel({ ...sel, dif: d.dif, ex: '' })} style={{ ...stylePetitBouton(sel.dif === d.dif, couleur), minHeight: 44, padding: '0 14px', fontSize: 14, fontWeight: 800 }}>
                 {'★'.repeat(Number(d.dif))} {type.difficulte[d.dif]} <span style={{ fontWeight: 600, opacity: .85 }}>· {d.n}</span></button>))}
           </div></>}
-        <Etape n={sel.niv ? ++k : null} titre={sel.niv ? 'Ton exercice' : 'Les exercices'} couleur={couleur} />
-        <div style={{ margin: '-4px 0 10px', fontSize: 13.5, color: KIT.txt2 }}>{liste.length} exercice{liste.length > 1 ? 's' : ''}</div>
+        {!attendThemeChoix && <>
+          <Etape n={sel.niv ? ++k : null} titre={sel.niv ? 'Ton exercice' : 'Les exercices'} couleur={couleur} />
+          <div style={{ margin: '-4px 0 10px', fontSize: 13.5, color: KIT.txt2 }}>{liste.length} exercice{liste.length > 1 ? 's' : ''}</div></>}
       </>}
-      <ListeExos liste={liste} prog={prog} ouvrir={ouvrir} couleur={couleur} groupes={groupes} />
+      {!attendThemeChoix && <ListeExos liste={liste} prog={prog} ouvrir={ouvrir} couleur={couleur} groupes={groupes} />}
     </div>);
 }
 

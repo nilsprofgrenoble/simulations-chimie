@@ -811,6 +811,8 @@ export default function App() {
     try {
       const u = new URL(window.location.href);
       if (ex) u.searchParams.set('ex', ex); else u.searchParams.delete('ex');
+      // la sélection d'un parcours par compétence (type, niveau, enseignement, chapitre, difficulté) appartient à la page qui l'a écrite : on ne la traîne pas vers une autre page
+      if (id !== activeId) ['type', 'niv', 'ens', 'ch', 'st', 'dif'].forEach(k => u.searchParams.delete(k));
       if (id !== 82) { u.searchParams.delete('chap'); u.searchParams.delete('depuis'); }
       if (extra && extra.chap) { u.searchParams.set('chap', extra.chap); if (extra.depuis) u.searchParams.set('depuis', extra.depuis); else u.searchParams.delete('depuis'); }
       if (duDevoir) u.searchParams.set('devoir', '1'); else u.searchParams.delete('devoir');

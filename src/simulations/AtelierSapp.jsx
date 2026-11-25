@@ -23,6 +23,8 @@ export function SimulationAtelierSapp() {
   const [sel, setSelBrut] = useState(() => {
     const s0 = lireSelection();   // anciens liens : ?ex=reservoir (première question de l'énoncé)
     if (s0.ex && !items.some(i => i.id === s0.ex) && items.some(i => i.id === `${s0.ex}.0`)) s0.ex = `${s0.ex}.0`;
+    // ?sim=35 (« Lire un graphique ») ouvre directement ce type, sans écran de choix
+    if (!s0.type && /(^|[?&])sim=35\b|\/sim\/35-/.test(window.location.href)) s0.type = 'graphique';
     return sanitiser(s0, items, TYPES_SAPP);
   });
   const setSel = x => {
@@ -38,7 +40,7 @@ export function SimulationAtelierSapp() {
       </div>);
   }
   const item = items.find(i => i.id === sel.ex);
-  const ctx = { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch };
+  const ctx = { type: item.type, niv: sel.niv, ens: sel.ens, ch: sel.ch, st: sel.st };
   const liste = filtrer(items, ctx);
   const pos = liste.findIndex(i => i.id === item.id);
   const aller = i => setSel({ ...ctx, ex: liste[i].id });
