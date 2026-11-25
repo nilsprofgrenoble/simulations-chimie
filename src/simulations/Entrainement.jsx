@@ -8,7 +8,8 @@ import { FAMILLES as FAM_REA } from "./AtelierRealiserBanque";
 import { FAMILLES as FAM_ANA } from "./AtelierAnalyserBanque";
 import { FAMILLES as FAM_VAL } from "./AtelierValiderBanque";
 import { useSession, estEleve, estProf, toutLire, rest } from "../serveur";
-import { exosDuChapitre, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
+import { exosDuChapitre, exosAuDela, exosCalcul, prochainExercice, avancementChapitre } from "../chapitre";
+import { estAuDela } from "../auDela";
 import { repartir } from "../sousThemes";
 import { NIVEAUX_CHAPITRES, CHAPITRES, chapitresDuNiveau, chapitreDe, chapitresDe, domainesDe, allerChapitre } from "../chapitres";
 import { nomsSim } from "../suivi";
@@ -139,7 +140,7 @@ function LigneExo({ e, prog, etoiles, ouvrir, montrerTheme }) {
     <button type="button" className="en-exo" data-cle={e.cle} data-fait={fait || undefined} onClick={() => ouvrir(e)}>
       <span className="en-exo-corps">
         <span className="en-exo-tete"><span className="en-pastille" style={{ background: c.couleur }}>{e.comp}</span>{montrerTheme && <span className="en-exo-theme">{e.domaine}</span>}</span>
-        <span className="en-exo-titre">{e.titre}</span>
+        <span className="en-exo-titre">{e.titre}{estAuDela(e.cle) && <span data-au-dela style={{ marginLeft: 8, padding: '0 6px', borderRadius: 6, background: '#fef3c7', border: '1px solid #f59e0b', color: '#92400e', fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap' }}>🚀 Au-delà du programme</span>}</span>
       </span>
       <span className="en-exo-etat">{etoiles[e.cle] ? <Etoiles n={etoiles[e.cle]} /> : fait ? <PastilleFaite taille={24} /> : <Pic n="empty" t={24} style={{ margin: 0 }} />}</span>
     </button>);
@@ -252,6 +253,7 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
   const enCours = idsEnCours.includes(c.id);
   const validees = useSimsValidees(c.id);
   const { themes, autres } = repartir(exosChap, c.id);
+  const auDela = exosAuDela(exos, c);
   const listesCompetences = L0 => ['S\'APP', 'ANA', 'VAL'].map(code => {
     const L = L0.filter(e => e.comp === code);
     const cc = COMPETENCES.find(x => x.code === code);
@@ -302,6 +304,11 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
             {autres.length ? listesCompetences(autres) : listesCompetences(exosChap)}
           </details>
         : listesCompetences(exosChap)}
+      {auDela.length > 0 && <details data-au-dela-bloc style={{ marginTop: 6 }}>
+        <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt, minHeight: 44, display: 'flex', alignItems: 'center' }}>🚀 Pour aller plus loin : au-delà du programme ({auDela.length})</summary>
+        <div style={{ fontSize: 13, color: KIT.txt2, margin: '4px 0 8px' }}>Ces exercices dépassent le programme de ton niveau. Ils ne comptent pas dans l’avancement du chapitre : ils sont là si tu veux aller plus loin.</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>{auDela.map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>
+      </details>}
       {exosChap.length > 0 && <details style={{ marginTop: 6 }}>
         <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt }}><Pic n="abacus"/>Pour t’aider à calculer (REA, valable pour tous les chapitres) <span style={{ fontWeight: 600, color: KIT.txt2 }}>({nbFaits(exosCalcul(exos))} / {exosCalcul(exos).length} réussis)</span></summary>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>{exosCalcul(exos).map(e => <LigneExo key={e.cle} e={e} prog={prog} etoiles={etoilesSrv} ouvrir={ouvrir} />)}</div>

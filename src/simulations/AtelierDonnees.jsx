@@ -33,7 +33,10 @@ const selBilan = (ex, sel) => {
   const u = new Set(ex.b.utiles), bons = sel.filter(i => u.has(i)), mauvais = sel.filter(i => !u.has(i)), manques = ex.b.utiles.filter(i => !sel.includes(i));
   return { bons, mauvais, manques, ok: !mauvais.length && !manques.length };
 };
-const stagesDe = ex => ['cherche', 'sel', 'tab', ...(ex.b.derivees && ex.b.derivees.length ? ['der'] : []), ...(ex.b.manque ? ['manque'] : [])];
+// derivees : objets {id, nom, expr, val, u} = grandeurs à calculer (champ de saisie) ; chaînes = simples pistes (affichées après la réussite)
+const derCalc = ex => (ex.b.derivees || []).filter(d => d && typeof d === 'object');
+const derPistes = ex => (ex.b.derivees || []).filter(d => typeof d === 'string');
+const stagesDe = ex => ['cherche', 'sel', 'tab', ...(derCalc(ex).length ? ['der'] : []), ...(ex.b.manque ? ['manque'] : [])];
 const repVide = () => ({ cherche: null, sel: [], tab: {}, der: {}, manque: null });
 const propositions = (o, graine) => melange([o.bonne, ...o.faux], graine);
 
@@ -126,7 +129,7 @@ export function ExerciceDonnees({ id, q, entete, navigation }) {
     cherche: rep.cherche === ex.b.cherche.bonne,
     sel: selBilan(ex, rep.sel).ok,
     tab: lignes(ex).every(id => rowOk(ex, rep, id)),
-    der: (ex.b.derivees || []).every(d => derOk(rep, d)),
+    der: derCalc(ex).every(d => derOk(rep, d)),
     manque: !!ex.b.manque && rep.manque === ex.b.manque.bonne,
   };
   const toggle = id => { setChk(c => ({ ...c, sel: false })); setRep(r => ({ ...r, sel: r.sel.includes(id) ? r.sel.filter(x => x !== id) : [...r.sel, id] })); };
@@ -208,7 +211,7 @@ export function ExerciceDonnees({ id, q, entete, navigation }) {
       <div key="der" style={styleBoite}>
         {titreEtape(i + 1, 'Calculez les grandeurs intermédiaires dont vous avez besoin')}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {ex.b.derivees.map(d => {
+          {derCalc(ex).map(d => {
             const ok = derOk(rep, d);
             return (
               <div key={d.id} style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -265,6 +268,11 @@ export function ExerciceDonnees({ id, q, entete, navigation }) {
           </div>
         </div>
         {stages.filter((_, i) => i <= etp).map(k => blocs[k](stages.indexOf(k)))}
+        {reussi && derPistes(ex).length > 0 && (
+          <div data-pistes="1" style={{ ...styleBoite, background: '#f0f9ff' }}>
+            <div style={{ fontWeight: 700, fontSize: 14, color: KIT.txt, marginBottom: 4 }}>Pour la suite : avant d’appliquer la formule, il faudra calculer</div>
+            <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt }}>{derPistes(ex).map(t => <li key={t}>{avecIndices(t)}</li>)}</ul>
+          </div>)}
       </div>
     </div>
   );
