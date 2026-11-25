@@ -207,6 +207,7 @@ const SimulationSuspension = paresseux(() => import("./simulations/Suspension"),
 const SimulationDispersion = paresseux(() => import("./simulations/Dispersion"), "SimulationDispersion");
 const SimulationMousse = paresseux(() => import("./simulations/Mousse"), "SimulationMousse");
 const SimulationMouillage = paresseux(() => import("./simulations/Mouillage"), "SimulationMouillage");
+const SimulationMilieuxDisperses = paresseux(() => import("./simulations/MilieuxDisperses"), "SimulationMilieuxDisperses");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationPanneauPhotovoltaique = paresseux(() => import("./simulations/PanneauPhotovoltaique"), "SimulationPanneauPhotovoltaique");
 const SimulationPanneauRendement = paresseux(() => import("./simulations/PanneauRendement"), "SimulationPanneauRendement");
@@ -603,6 +604,7 @@ const SIMULATIONS = [
   { id:225, label:"Mouiller, disperser, stabiliser une suspension", niveau:"BTS", icon:"🧪", color:"#0f766e", component: SimulationDispersion },
   { id:226, label:"Mousses : former, stabiliser, détruire", niveau:"BTS", icon:"🫧", color:"#0f766e", component: SimulationMousse },
   { id:234, label:"Mouillage : tension superficielle, angle de contact, tension critique", niveau:"BTS", icon:"💧", color:"#0f766e", component: SimulationMouillage },
+  { id:237, label:"Milieux dispersés : types et causes d’instabilité", niveau:"BTS", icon:"🌫️", color:"#0369a1", component: SimulationMilieuxDisperses },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
