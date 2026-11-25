@@ -29,28 +29,31 @@ function Pot({ x, y, w, h, couche, grain, creme }) {
 }
 
 // ---------- champ du microscope : gouttes + molécules (Ostwald) ----------
+const POP0 = M.population(40, 11);
 function Gouttes({ phen, etat, anim }) {
-  const reduit = useReduit(), items = etat.items, rc = etat.rc;
-  const gros = items.filter(d => d.r > rc * 1.02), petits = items.filter(d => d.r < rc * 0.9);
-  const molecules = phen === 'ostwald' && anim ? petits.slice(0, 9).map(p => {
+  const reduit = useReduit(), items = etat.items, ost = phen === 'ostwald';
+  const evol = d => (ost && d.i != null ? (d.r < POP0[d.i].r * 0.97 ? -1 : d.r > POP0[d.i].r * 1.03 ? 1 : 0) : 0);
+  const gros = items.filter(d => evol(d) > 0), petits = items.filter(d => evol(d) < 0);
+  const liens = ost && anim ? petits.slice(0, 7).map(p => {
     let best = null, db = 1e9; for (const g of gros) { const d = Math.hypot(g.x - p.x, g.y - p.y); if (d < db) { db = d; best = g; } }
     return best && { p, g: best };
   }).filter(Boolean) : [];
-  return <g>
+    return <g>
+    {liens.map(({ p, g }, k) => { return <line key={`l${k}`} x1={p.x * SC} y1={p.y * SC} x2={g.x * SC} y2={g.y * SC} stroke={C.orange} strokeWidth="1" strokeDasharray="3 4" opacity=".45"/>; })}
     {items.map((d, k) => {
-      const floc = phen === 'floculation' && d.amas > 1, fus = d.fusion;
+      const floc = phen === 'floculation' && d.amas > 1, fus = d.fusion, e = evol(d);
       const A = 1.2, dx = (Math.cos(k * 2.1) * A).toFixed(1), dy = (Math.sin(k * 1.7) * A).toFixed(1);
-      return <circle key={k} cx={d.x * SC} cy={d.y * SC} r={d.r * SC} fill={C.huile} stroke={floc ? C.violet : fus ? C.orange : C.huileTr} strokeWidth={floc || fus ? 2.4 : 1.2}>
+      return <circle key={k} cx={d.x * SC} cy={d.y * SC} r={d.r * SC} fill={e < 0 ? '#fef3c7' : C.huile} stroke={floc ? C.violet : fus ? C.orange : e < 0 ? C.bleu : e > 0 ? C.orange : C.huileTr} strokeWidth={floc || fus || e > 0 ? 2.6 : 1.4} strokeDasharray={e < 0 ? '4 3' : undefined}>
         {anim && !reduit && <animateTransform attributeName="transform" type="translate" values={`0 0;${dx} ${dy};${-dx} ${-dy};0 0`} dur={`${(2.4 + (k % 5) * 0.5).toFixed(1)}s`} begin={`-${(k % 7) * 0.4}s`} repeatCount="indefinite"/>}
       </circle>;
     })}
-    {molecules.map(({ p, g }, k) => <circle key={`m${k}`} r="2.6" fill={C.orange} stroke="#fff" strokeWidth="0.8" cx={p.x * SC} cy={p.y * SC}>
+    {liens.flatMap(({ p, g }, k) => [0, 1].map(m => <circle key={`m${k}-${m}`} r="3.6" fill={C.orange} stroke="#fff" strokeWidth="1" cx={p.x * SC} cy={p.y * SC}>
       {anim && !reduit ? <>
-        <animate attributeName="cx" values={`${p.x * SC};${g.x * SC}`} dur={`${2.2 + (k % 3) * 0.5}s`} begin={`-${k * 0.37}s`} repeatCount="indefinite"/>
-        <animate attributeName="cy" values={`${p.y * SC};${g.y * SC}`} dur={`${2.2 + (k % 3) * 0.5}s`} begin={`-${k * 0.37}s`} repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.15;0.85;1" dur={`${2.2 + (k % 3) * 0.5}s`} begin={`-${k * 0.37}s`} repeatCount="indefinite"/>
+        <animate attributeName="cx" values={`${p.x * SC};${g.x * SC}`} dur="2.6s" begin={`-${(k * 0.37 + m * 1.3).toFixed(2)}s`} repeatCount="indefinite"/>
+        <animate attributeName="cy" values={`${p.y * SC};${g.y * SC}`} dur="2.6s" begin={`-${(k * 0.37 + m * 1.3).toFixed(2)}s`} repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0;1;1;0" keyTimes="0;0.12;0.88;1" dur="2.6s" begin={`-${(k * 0.37 + m * 1.3).toFixed(2)}s`} repeatCount="indefinite"/>
       </> : <animate attributeName="opacity" values="0.9" dur="1s"/>}
-    </circle>)}
+    </circle>))}
   </g>;
 }
 
@@ -74,7 +77,7 @@ const BORNES_TXT = M.BORNES.slice(0, -1).map((b, k) => `${b}–${M.BORNES[k + 1]
 export function SvgVieillissement({ phen, etat, t, hist0, N0, r0, anim = true, avecHisto = true }) {
   const asp = M.aspectMacro(phen, etat, N0, r0), hist = M.histogramme(etat.items);
   const unite = phen === 'floculation' ? 'amas' : 'gouttes';
-  return base(440, avecHisto ? 384 : 262, `vue d’une émulsion qui vieillit (${M.NOMS[phen]}) : à gauche le pot à l’œil nu, à droite le champ du microscope, en dessous la répartition des tailles de gouttes ; après ${Math.round(t)} jours : ${etat.N} ${unite}, rayon moyen ${fr(etat.rc, 1)} micromètres`, <>
+  return base(440, avecHisto ? 392 : 262, `vue d’une émulsion qui vieillit (${M.NOMS[phen]}) : à gauche le pot à l’œil nu, à droite le champ du microscope, en dessous la répartition des tailles de gouttes ; après ${Math.round(t)} jours : ${etat.N} ${unite}, rayon moyen ${fr(etat.rc, 1)} micromètres`, <>
     {T(66, 22, 'À l’œil nu', { size: 15, gras: true })}{T(290, 22, 'Au microscope', { size: 15, gras: true })}
     <Pot x={16} y={64} w={100} h={150} couche={asp.couche} grain={asp.grain} creme={phen === 'ostwald'}/>
     {asp.couche > 0.01 && phen === 'coalescence' && T(66, 236, 'huile libre', { size: 12.5, fill: '#a16207', gras: true })}
@@ -88,36 +91,52 @@ export function SvgVieillissement({ phen, etat, t, hist0, N0, r0, anim = true, a
       <g clipPath="url(#cp-vieil)"><rect width="280" height={M.CHAMP.H * SC} fill={C.eau}/><Gouttes phen={phen} etat={etat} anim={anim}/></g>
       <rect width="280" height={M.CHAMP.H * SC} rx="10" fill="none" stroke={C.trait} strokeWidth="2"/>
     </g>
+    {phen === 'ostwald' && <g>
+      <circle cx="162" cy="253" r="5" fill="#fef3c7" stroke={C.bleu} strokeWidth="1.6" strokeDasharray="3 2"/>{T(171, 257, 'rétrécit', { size: 12, anchor: 'start' })}
+      <circle cx="232" cy="253" r="5" fill={C.huile} stroke={C.orange} strokeWidth="2.4"/>{T(241, 257, 'grossit', { size: 12, anchor: 'start' })}
+      <circle cx="297" cy="253" r="3.6" fill={C.orange} stroke="#fff"/>{T(305, 257, 'huile qui diffuse', { size: 12, anchor: 'start' })}
+    </g>}
     {avecHisto && <>
-      <Histo x={46} y={262} w={380} h={60} hist={hist} hist0={hist0}/>
-      {T(220, 378, `t = ${fr(t, 0)} jours · ${etat.N} ${unite} · rayon moyen ${fr(etat.rc, 1)} µm`, { size: 13.5, gras: true })}
+      <Histo x={46} y={272} w={380} h={60} hist={hist} hist0={hist0}/>
+      {T(220, 386, `t = ${fr(t, 0)} jours · ${etat.N} ${unite} · rayon moyen ${fr(etat.rc, 1)} µm`, { size: 13.5, gras: true })}
     </>}
     {!avecHisto && T(290, 256, `t = ${fr(t, 0)} jours · ${etat.N} ${unite}`, { size: 13.5, gras: true })}
-  </>, 480);
+  </>, 440);
 }
 
 // ---------- crémage / sédimentation dans un tube ----------
 export function SvgCremage({ C: cr, t, nom = 'crémage' }) {
-  const TH = 190, X0 = 70, W = 78, Y0 = 34, nCol = cr.nCol, pas = 5 / TH, cw = (W - 8) / nCol;
+  const TH = 200, X0 = 74, W = 118, Y0 = 36, NC = 10, PITCH = 9, haut = cr.monte;
+  const pas = 5 / TH, rp = g => Math.min(6.5, 2.4 + g.r * 0.75);
   const pos = cr.gouttes.map(g => ({ g, p: M.positionCremage(cr, g, t, pas) }));
-  const hauteurCouche = Math.max(0, ...pos.filter(o => o.p.arrive).map(o => (cr.monte ? 1 - o.p.y : o.p.y) + pas)) * TH;
-  const px = o => Y0 + TH - o.p.y * TH;
-  return base(330, 270, `tube d’émulsion après ${fr(t, 1)} jours : ${nom}, ${Math.round(M.fractionArrivee(cr, t) * 100)} % des gouttes ont atteint la couche ${cr.monte ? 'de crème en haut' : 'de sédiment en bas'}`, <>
-    <rect x={X0} y={Y0} width={W} height={TH} rx="6" fill="#eff6ff"/>
-    {hauteurCouche > 0 && <rect x={X0} y={cr.monte ? Y0 : Y0 + TH - hauteurCouche} width={W} height={hauteurCouche} fill="#fffdf6" stroke="#d6b36a" strokeDasharray="4 3"/>}
-    {pos.map(({ g, p }, k) => <circle key={k} cx={X0 + 4 + (g.col + 0.5) * cw} cy={px({ p })} r={2.7} fill="#fbbf24" stroke={C.huileTr} strokeWidth="1"/>)}
+  const arrivees = pos.filter(o => o.p.arrive).sort((a, b) => a.g.ta - b.g.ta), mobiles = pos.filter(o => !o.p.arrive);
+  const lignes = Math.ceil(arrivees.length / NC), hc = arrivees.length ? lignes * PITCH + 6 : 0;
+  const yCouche = haut ? Y0 : Y0 + TH - hc;
+  const place = (a, k) => { const col = k % NC, row = Math.floor(k / NC); return { x: X0 + 9 + col * (W - 18) / (NC - 1) + (row % 2 ? 4 : 0) - 2, y: haut ? Y0 + 7 + row * PITCH : Y0 + TH - 7 - row * PITCH, r: rp(a.g) }; };
+  const pct = Math.round(M.fractionArrivee(cr, t) * 100), vit = Math.abs(cr.vMoy);
+  return base(340, 290, `tube d’émulsion après ${fr(t, 1)} jours : ${nom}, ${pct} % des gouttes ont atteint la couche ${haut ? 'de crème en haut' : 'de sédiment en bas'}`, <>
+    <rect x={X0} y={Y0} width={W} height={TH} rx="6" fill="#eaf3ff"/>
+    {hc > 0 && <rect x={X0} y={yCouche} width={W} height={hc} fill="#fffaf0" stroke="#d6b36a" strokeWidth="1.5" strokeDasharray="5 3"/>}
+    {mobiles.map(({ g, p }, k) => { const y = Y0 + TH - p.y * TH, x = X0 + 8 + g.x * (W - 16), r = rp(g), sens = haut ? 1 : -1;
+      return <g key={k}><line x1={x} y1={y + sens * (r + 1)} x2={x} y2={y + sens * (r + 8)} stroke={C.violet} strokeWidth="1.5" strokeLinecap="round" opacity=".5"/><circle cx={x} cy={y} r={r} fill={C.huile} stroke={C.huileTr} strokeWidth="1.3"/></g>; })}
+    {arrivees.map((a, k) => { const q = place(a, k); return <circle key={`a${k}`} cx={q.x} cy={q.y} r={q.r} fill={C.huile} stroke={C.huileTr} strokeWidth="1.3"/>; })}
     <path d={`M${X0} ${Y0} L${X0} ${Y0 + TH + 4} Q${X0} ${Y0 + TH + 12} ${X0 + 8} ${Y0 + TH + 12} L${X0 + W - 8} ${Y0 + TH + 12} Q${X0 + W} ${Y0 + TH + 12} ${X0 + W} ${Y0 + TH + 4} L${X0 + W} ${Y0}`} fill="none" stroke={C.trait} strokeWidth="3"/>
     <line x1={X0 - 4} y1={Y0} x2={X0 + W + 4} y2={Y0} stroke={C.trait} strokeWidth="3" strokeLinecap="round"/>
-    {/* règle graduée en cm */}
     {[0, 0.25, 0.5, 0.75, 1].map(f => <g key={f}><line x1={X0 - 16} y1={Y0 + TH - f * TH} x2={X0 - 8} y2={Y0 + TH - f * TH} stroke={C.trait}/>{T(X0 - 20, Y0 + TH - f * TH + 4, fr(f * cr.hCm, f * cr.hCm % 1 ? 1 : 0), { size: 12, anchor: 'end' })}</g>)}
     {T(X0 - 20, Y0 - 12, 'cm', { size: 12, anchor: 'end', fill: C.gris })}
-    {/* flèche du mouvement */}
-    <g>{cr.monte ? <><line x1="222" y1={Y0 + TH - 20} x2="222" y2={Y0 + 30} stroke={C.violet} strokeWidth="4"/><polygon points={`222,${Y0 + 20} 214,${Y0 + 36} 230,${Y0 + 36}`} fill={C.violet}/></>
-      : <><line x1="222" y1={Y0 + 20} x2="222" y2={Y0 + TH - 30} stroke={C.violet} strokeWidth="4"/><polygon points={`222,${Y0 + TH - 20} 214,${Y0 + TH - 36} 230,${Y0 + TH - 36}`} fill={C.violet}/></>}
-      {T(238, Y0 + TH / 2 - 4, 'les gouttes', { size: 12.5, fill: C.violet, gras: true, anchor: 'start' })}{T(238, Y0 + TH / 2 + 12, cr.monte ? 'montent' : 'descendent', { size: 12.5, fill: C.violet, gras: true, anchor: 'start' })}</g>
-    {T(165, 262, `t = ${fr(t, 1)} jours · ${Math.round(M.fractionArrivee(cr, t) * 100)} % des gouttes arrivées`, { size: 13.5, gras: true })}
-    {hauteurCouche > 8 && T(X0 + W + 8, cr.monte ? Y0 + hauteurCouche / 2 + 4 : Y0 + TH - hauteurCouche / 2 + 4, cr.monte ? '← crème' : '← sédiment', { size: 12, fill: C.gris, anchor: 'start' })}
-  </>, 340);
+    {/* flèche du mouvement et vitesse */}
+    <g>{haut ? <><line x1="226" y1={Y0 + TH - 24} x2="226" y2={Y0 + 40} stroke={C.violet} strokeWidth="4"/><polygon points={`226,${Y0 + 28} 218,${Y0 + 44} 234,${Y0 + 44}`} fill={C.violet}/></>
+      : <><line x1="226" y1={Y0 + 24} x2="226" y2={Y0 + TH - 40} stroke={C.violet} strokeWidth="4"/><polygon points={`226,${Y0 + TH - 28} 218,${Y0 + TH - 44} 234,${Y0 + TH - 44}`} fill={C.violet}/></>}
+      {T(244, Y0 + TH / 2 - 14, 'les gouttes', { size: 12.5, fill: C.violet, gras: true, anchor: 'start' })}{T(244, Y0 + TH / 2 + 2, haut ? 'montent' : 'descendent', { size: 12.5, fill: C.violet, gras: true, anchor: 'start' })}
+      {T(244, Y0 + TH / 2 + 22, `≈ ${fr(vit, 1)} cm/jour`, { size: 12, fill: C.gris, anchor: 'start' })}</g>
+    {hc > 0 && <g>
+      <line x1={X0 + W + 10} y1={yCouche} x2={X0 + W + 10} y2={yCouche + hc} stroke={C.orange} strokeWidth="2"/>
+      <line x1={X0 + W + 6} y1={yCouche} x2={X0 + W + 14} y2={yCouche} stroke={C.orange} strokeWidth="2"/><line x1={X0 + W + 6} y1={yCouche + hc} x2={X0 + W + 14} y2={yCouche + hc} stroke={C.orange} strokeWidth="2"/>
+      {T(X0 + W + 20, yCouche + hc / 2 + 4, haut ? 'crème' : 'sédiment', { size: 12.5, fill: C.orange, gras: true, anchor: 'start' })}
+    </g>}
+    {T(X0 + W / 2, Y0 + TH + 28, haut ? 'phase continue (sérum) en dessous' : 'phase continue au-dessus', { size: 12, fill: C.gris })}
+    {T(170, 284, `t = ${fr(t, 1)} jours · ${pct} % des gouttes arrivées`, { size: 13.5, gras: true })}
+  </>, 360);
 }
 
 // ---------- pourquoi une émulsion est instable : l'aire de l'interface ----------
