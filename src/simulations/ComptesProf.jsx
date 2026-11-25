@@ -108,7 +108,7 @@ export function ComptesProf({ occupe, proteger, setMsg }) {
             const soi = !!p.moi;
             return (
               <div key={p.email} data-prof={p.email} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', fontSize: 13.5, padding: '6px 0', borderTop: `1px solid ${KIT.bord}` }}>
-                <span style={{ flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' }}><b>{p.nom}</b>{soi ? ' (vous)' : ''}<br /><span style={{ color: KIT.txt2 }}>{p.email}</span>{p.activite && <><br /><span data-activite style={{ color: p.activite.derniere_connexion ? KIT.txt2 : '#b45309', fontSize: 12.5 }}>{libelleActivite(p.activite)}</span></>}</span>
+                <span style={{ flex: '1 1 220px', minWidth: 0, overflowWrap: 'anywhere' }}><b>{p.nom}</b>{soi ? ' (vous)' : ''}<br /><span style={{ color: KIT.txt2 }}>{p.email}</span>{p.auto_inscrit && <><br /><span data-inscription-libre style={{ color: p.jamais_connecte ? '#b45309' : KIT.txt2, fontSize: 12.5 }}>{p.jamais_connecte ? 'Inscription libre : lien du mail pas encore utilisé' : 'Inscription libre (adresse académique)'}</span></>}{p.activite && <><br /><span data-activite style={{ color: p.activite.derniere_connexion ? KIT.txt2 : '#b45309', fontSize: 12.5 }}>{libelleActivite(p.activite)}</span></>}</span>
                 {p.admin
                   ? <span style={{ color: KIT.txt2, fontSize: 12.5 }}>Energy@School ✓</span>
                   : <label style={{ fontSize: 13, color: KIT.txt, cursor: 'pointer' }}><input type="checkbox" checked={!!p.acces_energy} disabled={occupe} onChange={e => basculerEnergy(p, e.target.checked)} style={{ accentColor: '#ea580c' }} /> Energy@School</label>}
