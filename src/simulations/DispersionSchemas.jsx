@@ -9,42 +9,62 @@ function base(w, h, label, children, max = 400) {
 const fr = (v, d = 1) => v.toFixed(d).replace('.', ',').replace('-', '−');
 const mvt = { transition: 'transform .6s ease-out, opacity .6s ease-out' };
 
-// ---------- mouillage : un amas de poudre dans l'eau ----------
-// Grains de l'amas (positions relatives) et bulles d'air emprisonné
-const GRAINS = Array.from({ length: 19 }, (_, i) => { const r = i < 1 ? 0 : i < 7 ? 1 : 2, k = i < 1 ? 0 : i < 7 ? i - 1 : i - 7, n = r === 0 ? 1 : r === 1 ? 6 : 12, a = (k / n) * 2 * Math.PI + r * 0.4; return [Math.cos(a) * r * 17, Math.sin(a) * r * 17]; });
+// ---------- mouillage : un amas de poudre dans l'eau (surface mouillée, cœur sec tant que l'air n'est pas chassé) ----------
+const GRAINS = Array.from({ length: 19 }, (_, i) => { const r = i < 1 ? 0 : i < 7 ? 1 : 2, k = i < 1 ? 0 : i < 7 ? i - 1 : i - 7, n = r === 0 ? 1 : r === 1 ? 6 : 12, a = (k / n) * 2 * Math.PI + r * 0.4; return [Math.cos(a) * r * 17, Math.sin(a) * r * 17, r]; });
 const BULLES = [[-12, -10], [10, -14], [-20, 8], [16, 6], [0, 18], [-6, 0], [24, -4], [-26, -6]];
+const mouille = (m, r) => Math.min(1, Math.max(0, 0.55 + m * 2.1 - (2 - r) * 0.8));
 export function SvgMouillage({ m }) {
-  const air = 1 - m, niveau = 50 + m * 70;     // le liquide pénètre : l'amas s'enfonce
-  const lib = m < 0.34 ? 'L’amas flotte : air piégé' : m < 0.8 ? 'Le liquide pénètre peu à peu' : 'Le liquide a remplacé l’air';
+  const niveau = 50 + m * 70;
+  const lib = m < 0.34 ? 'Surface mouillée, cœur sec' : m < 0.8 ? 'Le liquide pénètre peu à peu' : 'Cœur mouillé : air chassé';
+  const col = m < 0.34 ? C.rouge : m < 0.8 ? C.orange : C.vert;
   return base(320, 232, `un amas de grains de poudre dans l’eau ; ${lib.toLowerCase()}`, <>
     <rect x="30" y="64" width="260" height="150" rx="10" fill={C.eau} stroke={C.eauTr} strokeWidth="2"/>
     <line x1="30" y1="64" x2="290" y2="64" stroke={C.bleu} strokeWidth="2" strokeDasharray="6 4"/>
     {T(284, 59, 'surface', { size: 12, anchor: 'end', fill: C.bleu })}
     <g style={{ ...mvt, transform: `translate(160px,${niveau + 32}px)` }}>
-      <circle r="48" fill={m > 0.8 ? '#bfdbfe' : '#f1f5f9'} stroke={C.gris} strokeDasharray="4 3" opacity="0.9"/>
-      {GRAINS.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="8" fill={C.part} stroke={C.partTr} strokeWidth="1.8"/>)}
-      {BULLES.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="4" fill="white" stroke={C.gris} opacity={i / BULLES.length < air ? 1 : 0} style={{ transition: 'opacity .6s' }}/>)}
+      <circle r="48" fill="#f1f5f9" stroke={C.gris} strokeDasharray="4 3" opacity="0.9"/>
+      <circle r="48" fill="#bfdbfe" opacity={Math.min(1, m * 1.1)} style={{ transition: 'opacity .6s' }}/>
+      {GRAINS.map(([x, y, r], i) => <g key={i}><circle cx={x} cy={y} r="8" fill={C.part} stroke={C.partTr} strokeWidth="1.8"/><circle cx={x} cy={y} r="7" fill="#93c5fd" opacity={0.85 * mouille(m, r)} style={{ transition: 'opacity .6s' }}/></g>)}
+      {BULLES.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="4" fill="white" stroke={C.gris} opacity={i / BULLES.length < 1 - m ? 1 : 0} style={{ transition: 'opacity .6s' }}/>)}
     </g>
-    <rect x="50" y="6" width="220" height="26" rx="6" fill="white" stroke={m < 0.34 ? C.rouge : m < 0.8 ? C.orange : C.vert} strokeWidth="2"/>{T(160, 24, lib, { size: 13, gras: true, fill: m < 0.34 ? C.rouge : m < 0.8 ? C.orange : C.vert })}
-    {m < 0.5 && T(160, 226, 'bulles blanches : air emprisonné', { size: 12, fill: C.gris })}
-    {m >= 0.5 && T(160, 226, 'le liquide a pris la place de l’air', { size: 12, fill: C.gris })}
+    <rect x="50" y="6" width="220" height="26" rx="6" fill="white" stroke={col} strokeWidth="2"/>{T(160, 24, lib, { size: 13, gras: true, fill: col })}
+    {T(160, 226, m < 0.8 ? 'bulles blanches : air des pores, encore là' : 'le liquide a pris la place de l’air', { size: 12, fill: C.gris })}
+  </>, 400);
+}
+
+// ---------- cuve d'empâtage : eau + dispersant + antimousse, puis poudres sous forte agitation ----------
+export function SvgEmpatage() {
+  return base(320, 232, 'cuve d’empâtage : de l’eau, du dispersant et de l’antimousse sont déjà dans la cuve ; on y verse les poudres sous la pale d’un disperseur en rotation rapide', <>
+    <rect x="40" y="84" width="240" height="124" rx="8" fill={C.eau} stroke={C.eauTr} strokeWidth="2.5"/>
+    {[[70, 92], [96, 90], [236, 92], [258, 90], [122, 93]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="4" fill="white" stroke={C.gris}/>)}
+    <line x1="160" y1="30" x2="160" y2="176" stroke={C.trait} strokeWidth="5"/>
+    <ellipse cx="160" cy="176" rx="46" ry="8" fill={C.violet}/>
+    <path d="M62 140 Q100 122 138 140" fill="none" stroke={C.bleu} strokeWidth="2.5" strokeDasharray="5 4"/>
+    <path d="M182 140 Q220 158 258 140" fill="none" stroke={C.bleu} strokeWidth="2.5" strokeDasharray="5 4"/>
+    <path d="M62 194 Q100 178 128 192" fill="none" stroke={C.bleu} strokeWidth="2.5" strokeDasharray="5 4"/>
+    <path d="M192 194 Q226 206 258 194" fill="none" stroke={C.bleu} strokeWidth="2.5" strokeDasharray="5 4"/>
+    {[0, 1, 2].map(i => <circle key={i} cx={236 + i * 4} cy={34 + i * 14} r="6" fill={C.part} stroke={C.partTr} strokeWidth="1.8"/>)}
+    <path d="M222 58 L200 84" stroke={C.trait} strokeWidth="2.5" fill="none"/><polygon points="196,88 198,76 208,84" fill={C.trait}/>
+    {T(262, 22, 'poudres', { size: 13, gras: true, anchor: 'middle' })}
+    {T(100, 60, 'disperseur', { size: 13, gras: true, anchor: 'middle', fill: C.violet })}
+    {T(160, 226, 'eau + dispersant + antimousse, forte agitation', { size: 12.5, gras: true, fill: C.bleu })}
   </>, 400);
 }
 
 // ---------- distribution granulométrique ----------
 const PX = { x0: 40, x1: 304, y0: 28, y1: 170 };
-const lx = d => PX.x0 + (Math.log10(d) / Math.log10(400)) * (PX.x1 - PX.x0);
+const lx = d => PX.x0 + ((Math.log10(d) + 1) / (Math.log10(40) + 1)) * (PX.x1 - PX.x0);
 export function SvgDistribution({ q, qRef = null, marques = true, nom = '' }) {
   const ymax = Math.max(12, Math.ceil(Math.max(...q, ...(qRef || [0])) / 2) * 2 + 1);
   const ly = v => PX.y1 - (v / ymax) * (PX.y1 - PX.y0);
   const path = serie => serie.map((v, i) => `${i ? 'L' : 'M'}${lx(M.GRILLE[i]).toFixed(1)},${ly(v).toFixed(1)}`).join(' ');
   const d10 = M.diametre(q, 10), d50 = M.diametre(q, 50), d90 = M.diametre(q, 90);
-  return base(320, 214, `distribution granulométrique ${nom} : fraction massique en pourcentage selon le diamètre des particules en micromètres, échelle logarithmique de 1 à 400 ; D10 ${fr(d10)} µm, D50 ${fr(d50)} µm, D90 ${fr(d90)} µm`, <>
+  return base(320, 214, `distribution granulométrique ${nom} : fraction en volume en pourcentage selon le diamètre des particules en micromètres, échelle logarithmique de 0,1 à 40 ; D10 ${fr(d10)} µm, D50 ${fr(d50)} µm, D90 ${fr(d90)} µm`, <>
     <rect x={lx(M.SEUIL_AGGLO)} y={PX.y0} width={PX.x1 - lx(M.SEUIL_AGGLO)} height={PX.y1 - PX.y0} fill="#ffedd5"/>
-    {T((lx(M.SEUIL_AGGLO) + PX.x1) / 2, PX.y0 + 12, '> 50 µm', { size: 12, gras: true, fill: C.orange })}
+    {T((lx(M.SEUIL_AGGLO) + PX.x1) / 2, PX.y0 + 12, '> 5 µm', { size: 12, gras: true, fill: C.orange })}
     <line x1={PX.x0} y1={PX.y1} x2={PX.x1} y2={PX.y1} stroke={C.trait} strokeWidth="1.5"/><line x1={PX.x0} y1={PX.y0} x2={PX.x0} y2={PX.y1} stroke={C.trait} strokeWidth="1.5"/>
-    {[1, 10, 100].map(d => <g key={d}><line x1={lx(d)} y1={PX.y1} x2={lx(d)} y2={PX.y1 + 4} stroke={C.trait}/>{T(lx(d), PX.y1 + 17, String(d), { size: 12 })}</g>)}
-    {T(PX.x1 / 2 + 22, 205, 'diamètre (µm, échelle log)', { size: 12, gras: true })}{T(6, 18, 'fraction massique (%)', { size: 12, gras: true, anchor: 'start' })}
+    {[0.1, 1, 10].map(d => <g key={d}><line x1={lx(d)} y1={PX.y1} x2={lx(d)} y2={PX.y1 + 4} stroke={C.trait}/>{T(lx(d), PX.y1 + 17, String(d).replace('.', ','), { size: 12 })}</g>)}
+    {T(PX.x1 / 2 + 22, 205, 'diamètre (µm, échelle log)', { size: 12, gras: true })}{T(6, 18, 'fraction en volume (%)', { size: 12, gras: true, anchor: 'start' })}
     {[0, ymax / 2, ymax].map(v => T(PX.x0 - 5, ly(v) + 4, String(Math.round(v)), { size: 12, anchor: 'end' }))}
     {qRef && <path d={path(qRef)} fill="none" stroke="#94a3b8" strokeWidth="2.5" strokeDasharray="5 4"/>}
     <path d={path(q)} fill="none" stroke={C.violet} strokeWidth="3.2" strokeLinejoin="round"/>
@@ -73,20 +93,20 @@ export function SvgMecanismes({ sel = null }) {
   </>, 400);
 }
 
-// ---------- étalement en fonction du dosage ----------
-const EX = { x0: 40, x1: 304, y0: 26, y1: 168 }, XM = 5, EM = 32;
-const ex = x => EX.x0 + (x / XM) * (EX.x1 - EX.x0), ey = e => EX.y1 - (e / EM) * (EX.y1 - EX.y0);
-export function SvgEtalement({ x, montreOpt = false }) {
-  const pts = []; for (let v = 0; v <= XM + 1e-9; v += 0.05) pts.push(`${ex(v).toFixed(1)},${ey(M.etalement(v)).toFixed(1)}`);
-  const e = M.etalement(x), xo = M.dosageOptimal();
-  return base(320, 212, `étalement d’une pâte en fonction du dosage en dispersant de 0 à 5 pour cent : l’étalement augmente puis se stabilise${montreOpt ? ` ; optimum vers ${fr(xo)} pour cent` : ''}`, <>
+// ---------- viscosité de la pâte en fonction du dosage ----------
+const EX = { x0: 40, x1: 304, y0: 26, y1: 168 }, XM = 0.6, VM = 13;
+const ex = x => EX.x0 + (x / XM) * (EX.x1 - EX.x0), ey = v => EX.y1 - (v / VM) * (EX.y1 - EX.y0);
+export function SvgViscosite({ x, montreOpt = false }) {
+  const pts = []; for (let v = 0; v <= XM + 1e-9; v += 0.01) pts.push(`${ex(v).toFixed(1)},${ey(M.viscosite(v)).toFixed(1)}`);
+  const v = M.viscosite(x), xo = M.dosageOptimal();
+  return base(320, 212, `viscosité de la pâte d’empâtage en fonction du dosage en dispersant de 0 à 0,6 pour cent : elle chute puis se stabilise${montreOpt ? ` ; minimum vers ${fr(xo, 2)} pour cent` : ''}`, <>
     <line x1={EX.x0} y1={EX.y1} x2={EX.x1} y2={EX.y1} stroke={C.trait} strokeWidth="1.5"/><line x1={EX.x0} y1={EX.y0} x2={EX.x0} y2={EX.y1} stroke={C.trait} strokeWidth="1.5"/>
-    {[0, 1, 2, 3, 4, 5].map(v => <g key={v}><line x1={ex(v)} y1={EX.y1} x2={ex(v)} y2={EX.y1 + 4} stroke={C.trait}/>{T(ex(v), EX.y1 + 17, String(v), { size: 12 })}</g>)}
-    {[0, 10, 20, 30].map(v => T(EX.x0 - 5, ey(v) + 4, String(v), { size: 12, anchor: 'end' }))}
-    {T(EX.x1 / 2 + 20, 206, 'dispersant sec (% de la masse de ciment)', { size: 12, gras: true })}{T(6, 16, 'étalement (cm)', { size: 12, gras: true, anchor: 'start' })}
-    {montreOpt && <g><line x1={ex(xo)} y1={EX.y0} x2={ex(xo)} y2={EX.y1} stroke={C.orange} strokeWidth="2" strokeDasharray="5 4"/>{T(ex(xo), EX.y0 - 4, `optimum ${fr(xo)} %`, { size: 12, gras: true, fill: C.orange, halo: true })}</g>}
+    {[0, 0.2, 0.4, 0.6].map(t => <g key={t}><line x1={ex(t)} y1={EX.y1} x2={ex(t)} y2={EX.y1 + 4} stroke={C.trait}/>{T(ex(t), EX.y1 + 17, String(t).replace('.', ','), { size: 12 })}</g>)}
+    {[0, 4, 8, 12].map(t => T(EX.x0 - 5, ey(t) + 4, String(t), { size: 12, anchor: 'end' }))}
+    {T(EX.x1 / 2 + 20, 206, 'dispersant actif (% de la masse de pigment)', { size: 12, gras: true })}{T(6, 16, 'viscosité de la pâte (Pa·s)', { size: 12, gras: true, anchor: 'start' })}
+    {montreOpt && <g><line x1={ex(xo)} y1={EX.y0} x2={ex(xo)} y2={EX.y1} stroke={C.orange} strokeWidth="2" strokeDasharray="5 4"/>{T(ex(xo) + 4, EX.y0 + 6, `optimum ${fr(xo, 2)} %`, { size: 12, gras: true, fill: C.orange, anchor: 'start', halo: true })}</g>}
     <polyline points={pts.join(' ')} fill="none" stroke={C.violet} strokeWidth="3"/>
-    <g style={{ ...mvt, transform: `translate(${ex(x)}px,${ey(e)}px)` }}><circle r="7" fill="white" stroke="#0f172a" strokeWidth="3"/></g>
+    <g style={{ ...mvt, transform: `translate(${ex(x)}px,${ey(v)}px)` }}><circle r="7" fill="white" stroke="#0f172a" strokeWidth="3"/></g>
   </>, 420);
 }
 
@@ -105,7 +125,7 @@ export function SvgCarteChoix() {
   return base(300, 176, 'choix du dispersant selon le milieu : en milieu aqueux peu salin, un polyélectrolyte à répulsion électrostatique ; en solvant organique, un polymère greffé à répulsion stérique ; en milieu aqueux très ionique, un dispersant électro-stérique', <>
     {ligne(4, 'Eau, peu de sel (peinture au TiO₂)', 'polyacrylate : électrostatique')}
     {ligne(50, 'Solvant organique (encre)', 'polymère greffé : stérique')}
-    {ligne(96, 'Eau très ionique (pâte de ciment)', 'polycarboxylate : électro-stérique')}
+    {ligne(96, 'Milieu aqueux très ionique', 'polycarboxylate : électro-stérique')}
     {T(150, 158, 'on adapte le dispersant au milieu et au solide', { size: 12.5, fill: C.gris })}
   </>, 320);
 }
@@ -114,6 +134,6 @@ export function SvgCarteBilanDisp() {
     {[['1', 'Mouiller', 'agent mouillant : l’air part', C.bleu], ['2', 'Disperser', 'énergie : les amas cassent', C.orange], ['3', 'Stabiliser', 'dispersant : les grains se repoussent', C.violet]].map(([n, a, b, col], i) => <g key={n}>
       <circle cx="20" cy={26 + i * 44} r="14" fill={col}/>{T(20, 31 + i * 44, n, { size: 14, gras: true, fill: 'white' })}
       {T(44, 22 + i * 44, a, { size: 13.5, gras: true, anchor: 'start', fill: col })}{T(44, 38 + i * 44, b, { size: 13, anchor: 'start' })}</g>)}
-    {T(150, 160, 'contrôle : pas d’agglomérats vers 100 µm', { size: 12.5, gras: true, fill: C.vert })}
+    {T(150, 160, 'contrôle : pas d’agglomérats > 5 µm', { size: 12.5, gras: true, fill: C.vert })}
   </>, 320);
 }

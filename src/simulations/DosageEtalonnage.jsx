@@ -22,7 +22,7 @@ declarerDefis(SIM_ID, [['principal', 'Doser la caféine d’une crème inconnue'
 // ── Les techniques : seuls changent le signal, les ordres de grandeur et la verrerie ──
 const TECHNIQUES = {
   clhp: { nom: 'CLHP (caféine)', analyte: 'caféine', signal: 'aire du pic', uC: 'mg/L', cRef: 1004, refTxt: 'Sref : 100,4 mg de caféine dans une fiole de 100 mL',
-    vFiole: 20, outil: 'seringue de 25 µL', uV: 'µL', vMin: 5, vMax: 50, vRemplissage: 25, k: 21.0, cLin: 8, courbure: 0.6,
+    vFiole: 20, outil: 'micropipette', uV: 'µL', vMin: 5, vMax: 50, vRemplissage: 25, k: 21.0, cLin: 8, courbure: 0.6,
     prep: v => 0.3 + 0.01 * v, mesure: s => 0.15 + 0.005 * s, blanc: 0.1, dec: 2 },
   spectro: { nom: 'Spectrophotométrie (permanganate)', analyte: 'ions permanganate', signal: 'absorbance', uC: 'mg/L', cRef: 100, refTxt: 'solution mère de permanganate de potassium à 100 mg/L',
     vFiole: 50, outil: 'burette graduée de 25 mL', uV: 'mL', vMin: 0.5, vMax: 25, vRemplissage: 25, k: 0.0152, cLin: 60, courbure: 0.00002,
@@ -33,9 +33,12 @@ const TECHNIQUES = {
 };
 const signalVrai = (T, c) => T.k * c - T.courbure * Math.max(0, c - T.cLin) ** 2;
 // Préparation de l'échantillon de crème (CLHP) : deux schémas de dilution d'un facteur 1000
+// uRel = incertitude relative, tolérances maximales combinées en quadrature (hypothèse : erreurs indépendantes).
+// A : micropipette réglable à 20 µL, ≈ ±2 % systématique et ±0,8 % aléatoire (ISO 8655-2), cohérent avec prep() de la gamme (0,5 µL à 20 µL) → ≈ 2,5 %.
+// B : 2 pipettes jaugées de 1 mL (±0,007 mL, ISO 648) et 2 fioles (≈ 0,1 à 0,15 %) → ≈ 1,0 %.
 const DILUTIONS = {
-  A: { nom: '20 µL de S(éch-mère) dans une fiole de 20 mL (seringue)', facteur: 1000, uRel: 0.025 },
-  B: { nom: '1 mL dans une fiole de 50 mL, puis 1 mL dans une fiole de 20 mL (pipettes jaugées)', facteur: 1000, uRel: 0.007 },
+  A: { nom: '20 µL de S(éch-mère) à la micropipette, dans une fiole de 20 mL', facteur: 1000, uRel: 0.025 },
+  B: { nom: '1 mL dans une fiole de 50 mL, puis 1 mL dans une fiole de 20 mL (pipettes jaugées)', facteur: 1000, uRel: 0.010 },
 };
 const CREME = { m: 2.34, vFiole: 100 };   // g pesés, mL
 // Garde seulement les pièges dont la valeur est franchement différente de la bonne réponse (sinon confusion avec la tolérance)
@@ -305,8 +308,8 @@ export function SimulationDosageEtalonnage() {
     { id: 'dilution', titre: 'Diluer d’un facteur 1000', focus: ['ech'],
       texte: <>S<sub>éch-mère</sub> est bien trop concentrée pour la gamme : on la dilue d'un facteur 1000. Deux façons de faire :
         <br/>A : {DILUTIONS.A.nom} ;<br/>B : {DILUTIONS.B.nom}.</>,
-      tache: { type: 'qcm', q: 'Quelle dilution est la plus précise ?', options: ['B : prélever 20 µL est très imprécis, alors que deux pipettes jaugées de 1 mL le sont bien plus', 'A : une seule étape, donc une seule erreur', 'Les deux se valent'], bonne: 0,
-        expl: 'Une seule étape n’est pas forcément mieux : ce qui compte, c’est la précision de chaque prélèvement. 20 µL à la seringue, c’est quelques % d’erreur ; 1 mL à la pipette jaugée, moins de 1 %.', indice: "Comparez les volumes prélevés : un très petit volume se mesure-t-il précisément ?" } },
+      tache: { type: 'qcm', q: 'Quelle dilution est la plus précise ?', options: ['B : deux prélèvements de 1 mL à la pipette jaugée (≈ 1 % au total) font un peu mieux qu’un prélèvement de 20 µL à la micropipette (≈ 2 à 3 %)', 'A : une seule étape, donc une seule erreur', 'Les deux se valent exactement'], bonne: 0,
+        expl: 'Ce qui compte, c’est l’erreur relative de chaque prélèvement, pas le nombre d’étapes. Plus le volume prélevé est petit devant la capacité de l’instrument, plus l’erreur relative est grande : à 20 µL, une micropipette réglable garantit ± 2 % (norme ISO 8655), alors qu’une pipette jaugée de 1 mL garantit ± 0,7 % (norme ISO 648), soit environ 1 % pour les deux étapes de B, fioles comprises (tolérances maximales combinées, erreurs supposées indépendantes). B est donc environ deux fois plus précise, mais l’écart reste modeste : A est très utilisée et suffit quand les autres sources d’erreur (extraction, injection) dominent. B se justifie si l’on vise la meilleure précision.', indice: "Comparez l’erreur relative de chaque prélèvement : un volume très petit pour l’instrument se mesure-t-il aussi bien qu’un volume proche de sa capacité ?" } },
     { id: 'cInj', titre: 'Ce que l’on injectera', focus: [],
       texte: <>S<sub>éch-mère</sub> a une concentration attendue de {sci(cMereAtt)} mg/L (étape précédente). On la dilue d'un facteur 1000.</>,
       tache: { type: 'num', q: 'Concentration attendue dans la solution injectée', unite: 'mg/L', vrai: cInjAtt, tol: 0.01,
@@ -333,7 +336,7 @@ export function SimulationDosageEtalonnage() {
       retenir: <>
         <FGamme/>
         <Formule><mi>C</mi><mo>=</mo><mfrac><mrow><msub><mi>C</mi><mtext>réf</mtext></msub><mo>×</mo><mi>V</mi></mrow><msub><mi>V</mi><mtext>fiole</mtext></msub></mfrac></Formule>
-        {puces(<>La gamme doit <strong>encadrer</strong> la concentration attendue, de préférence <strong>vers le milieu</strong>.</>, <>Préférer des prélèvements <strong>précis</strong> (deux pipettes jaugées plutôt qu’un prélèvement de 20 µL) ; unités cohérentes (mL ↔ µL, mg/L).</>)}
+        {puces(<>La gamme doit <strong>encadrer</strong> la concentration attendue, de préférence <strong>vers le milieu</strong>.</>, <>Éviter les très petits volumes : l’erreur relative d’un prélèvement augmente quand le volume diminue (≈ 1 % pour 1 mL à la pipette jaugée, ≈ 2 à 3 % pour 20 µL à la micropipette) ; unités cohérentes (mL ↔ µL, mg/L).</>)}
       </>,
       texte: <>On mesure chaque niveau deux fois. On peut injecter deux fois la même fiole, ou préparer deux fioles indépendantes.</>,
       tache: { type: 'qcm', q: 'Que mesure l’écart entre deux injections de la même fiole ?', options: ['Seulement la répétabilité de l’injection : l’erreur de préparation de la fiole est la même pour les deux', 'Toutes les erreurs du dosage', 'L’erreur de préparation'], bonne: 0, indice: "Deux injections de la même fiole ont la même préparation. Qu’est-ce qui peut alors différer ?" } },

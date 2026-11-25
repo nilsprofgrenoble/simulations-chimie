@@ -14,7 +14,7 @@
 //  Unités : N en noyaux, temps en jours (échantillon) ou en années (datation), λ en j⁻¹ (ou an⁻¹), activité en Bq (= s⁻¹).
 //  P = { type: 'A', c0: N0, k: λ } : même forme que le modèle de la 122 (c0 = nombre initial de noyaux, k = λ dans l'unité de temps choisie).
 // ====================================================
-import { LN2, conc, th1, vit, tempsPour, dureeDemi, tangente } from "./vitesseOrdre1Modele.js";
+import { LN2, conc, vit, tempsPour, dureeDemi, tangente } from "./vitesseOrdre1Modele.js";
 
 export { LN2, tempsPour, dureeDemi, tangente };
 
@@ -28,7 +28,6 @@ export const N0_OPTIONS = [1.0e7, 2.0e7, 4.0e7, 8.0e7];
 // paramètres du modèle de la 122 : λ = ln 2 / t½ (dans l'unité de temps choisie)
 export const params = (N0, th) => ({ type: 'A', c0: N0, k: LN2 / th });
 export const lambda = P => P.k;
-export const demiVie = P => th1(P);
 
 // nombre moyen de noyaux restants à l'instant t
 export const N = (P, t) => conc(P, t);
