@@ -227,6 +227,30 @@ export const TGPB_ANA = [
       F('Aucune : l’albédo compense exactement la distance au Soleil', 'Les puissances absorbées valent environ 110 et 150 W·m⁻² : elles ne sont pas égales, donc les températures non plus.'),
       F('On ne peut pas savoir sans connaître le rayon de chaque planète', 'Le rayon se simplifie dans le bilan (disque π R² éclairé, sphère 4 π R² qui émet) : il n’intervient pas.'),
     ] },
+  { id: 'cel-ana-seuil', domaine: DOM_PHOTONS, titre: 'Quelle lumière une cellule en silicium ne convertit-elle pas ?',
+    ...presenter({ contexte: 'Une cellule photovoltaïque en silicium a pour énergie seuil 1,12 eV : un photon n’est absorbé que si son énergie est au moins égale à cette valeur. On l’éclaire successivement avec quatre lumières monochromatiques de même puissance.' }),
+    q: 'Laquelle de ces lumières ne produit aucun courant ?', options: [
+      V('un infrarouge de 1400 nm', 'Son énergie est h × c divisé par λ ≈ 0,89 eV, inférieure à 1,12 eV : ses photons ne sont pas absorbés, même en grand nombre.'),
+      F('un rouge de longueur d’onde 700 nm, de même puissance', 'Son énergie vaut environ 1,77 eV, supérieure à 1,12 eV : ces photons sont absorbés et libèrent des électrons.'),
+      F('un vert de longueur d’onde 550 nm', 'Son énergie vaut environ 2,25 eV, supérieure au seuil : ces photons sont absorbés.'),
+      F('un bleu de longueur d’onde 450 nm, de même puissance', 'Son énergie vaut environ 2,76 eV, supérieure au seuil : ces photons sont absorbés (l’excédent est perdu en chaleur).'),
+    ] },
+  { id: 'cel-ana-exces', domaine: DOM_PHOTONS, titre: 'Photon bleu ou photon rouge : lequel chauffe le plus la cellule ?',
+    ...presenter({ contexte: 'Une cellule en silicium (énergie seuil 1,12 eV) absorbe un photon bleu d’énergie 2,8 eV, puis un photon rouge d’énergie 1,8 eV. Chaque photon absorbé libère un seul électron.' }),
+    q: 'Que peut-on dire de l’énergie perdue en chaleur par chaque photon ?', options: [
+      V('le photon bleu en perd davantage : son énergie dépasse plus le seuil', 'L’énergie utile est limitée au seuil (1,12 eV) : l’excédent vaut 1,68 eV pour le bleu contre 0,68 eV pour le rouge, et il chauffe la cellule.'),
+      F('le photon rouge en perd davantage, car il est moins énergétique', 'Un photon moins énergétique a moins d’énergie à perdre : son excédent par rapport au seuil est plus petit.'),
+      F('aucun des deux n’en perd : toute l’énergie absorbée devient électrique', 'Chaque photon libère un seul électron, qui n’emporte que l’énergie du seuil ; le reste chauffe la cellule.'),
+      F('les deux en perdent autant, car ils libèrent chacun un électron', 'Les excédents d’énergie diffèrent : 1,68 eV pour le bleu, 0,68 eV pour le rouge.'),
+    ] },
+  { id: 'cel-ana-chaleur', domaine: DOM_PHOTONS, titre: 'Une cellule chauffe au soleil',
+    ...presenter({ contexte: 'Un module photovoltaïque de rendement 20 % est exposé au plein Soleil. En touchant sa surface, on constate qu’elle est nettement plus chaude que l’air ambiant.' }),
+    q: 'Comment l’expliquer ?', options: [
+      V('les 80 % non convertis en électricité se retrouvent en chaleur', 'Le rendement η = P_él divisé par P_reçue vaut 0,20 : les pertes valent 80 % de la puissance reçue, essentiellement sous forme de chaleur.'),
+      F('le courant électrique produit chauffe la surface, car il circule dedans', 'La chaleur dégagée par le courant est faible ; la cause principale est la lumière absorbée qui n’est pas convertie en électricité.'),
+      F('le module stocke la chaleur du Soleil comme une batterie', 'Un module photovoltaïque ne stocke pas l’énergie : il la convertit immédiatement ou la perd.'),
+      F('le module a un rendement supérieur à 100 % : il crée de l’énergie', 'Un rendement est toujours inférieur à 100 % : un module ne peut pas fournir plus d’énergie qu’il n’en reçoit.'),
+    ] },
 ];
 
 // ───────────── RELATIONS : choisir la bonne relation ─────────────
@@ -423,6 +447,36 @@ export const TGPB_VAL = [
       F('Cohérent : le calcul redonne toujours la température observée, quelle que soit la planète', 'Pour la Terre, le calcul donne 255 K contre 288 K observés, et pour Vénus 227 K contre 737 K : l’effet de serre crée un écart d’autant plus grand que l’atmosphère est épaisse.'),
       F('Pas cohérent : il faut ajouter 33 K, l’écart de la Terre, à toute planète', 'L’écart de 33 K est propre à l’atmosphère terrestre ; il dépend de l’atmosphère de chaque planète et n’a aucune raison d’être le même sur Mars.'),
     ] }),
+  P({ id: 'cel-val-longueur', domaine: DOM_PHOTONS, niveau: 2, titre: 'Longueur d’onde maximale du silicium : 1,1 mm ?', plausible: false,
+    ...presenter({ contexte: 'Pour le silicium (énergie seuil 1,12 eV), un élève calcule λ_max = h × c divisé par E_seuil :', suite: '« λ_max = 6,63×10⁻³⁴ × 3,00×10⁸ divisé par (1,12 × 1,60×10⁻¹⁹) = 1,11×10⁻³ m, soit 1,1 mm ».' }),
+    reperes: [['Longueurs d’onde du visible', 'de 400 à 800 nm environ'], ['Infrarouge proche', 'de 800 nm à quelques micromètres'], ['1 µm', '1000 nm = 10⁻⁶ m']],
+    ver: 'Le calcul donne 1,11×10⁻⁶ m (et non 10⁻³ m) : c’est 1,11 µm, soit 1110 nm, dans l’infrarouge proche, juste après le visible. Un millimètre serait une onde bien plus longue que les micro-ondes, hors de propos pour une cellule.',
+    q2: 'Que penser de ce résultat ?',
+    options: [
+      V('invraisemblable : on attend un micromètre (1110 nm)', 'Les photons absorbés par le silicium sont ceux du visible et de l’infrarouge proche : la limite est vers 1 µm, pas 1 mm.'),
+      F('plausible : le silicium absorbe aussi les ondes radio, très longues', 'Les ondes radio ont une énergie bien trop faible : pour 1 mm, l’énergie du photon serait environ mille fois inférieure au seuil.'),
+      F('plausible : 1,11×10⁻³ m correspond bien à 1110 nm', '1,11×10⁻³ m vaut 1,11 mm, soit 1 110 000 nm ; 1110 nm correspond à 1,11×10⁻⁶ m.'),
+    ] }),
+  P({ id: 'cel-val-rendement', domaine: DOM_PHOTONS, niveau: 2, titre: 'Rendement d’une cellule : 18 % ?', plausible: true,
+    ...presenter({ contexte: 'Une cellule de surface 0,020 m² reçoit un éclairement de 1000 W·m⁻² et délivre U = 0,54 V avec I = 6,7 A. Un élève calcule :', suite: '« P_reçue = 1000 × 0,020 = 20 W ; P_él = 0,54 × 6,7 ≈ 3,6 W ; η = 3,6 divisé par 20 = 0,18, soit 18 % ».' }),
+    reperes: [['Rendement d’un module en silicium du commerce', 'environ 15 à 22 %'], ['Valeur maximale possible d’un rendement', 'inférieure à 100 %'], ['Éclairement du plein Soleil', 'environ 1000 W·m⁻²']],
+    ver: 'P_reçue = 20 W, P_él = 0,54 × 6,7 = 3,6 W, η = 3,6 divisé par 20 = 0,18 : le calcul est juste et le rendement est dans l’ordre de grandeur des cellules en silicium.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('plausible : P_él divisée par P_reçue donne 18 %', 'η = P_él divisé par P_reçue (utile sur reçue) = 3,6 divisé par 20 = 18 % : cohérent avec les rendements des modules en silicium.'),
+      F('pas plausible : un rendement aussi bas montre une cellule défectueuse', 'Les modules en silicium convertissent seulement 15 à 22 % de la lumière reçue : 18 % est normal.'),
+      F('pas plausible : il fallait diviser la puissance reçue par la puissance électrique', 'Le rendement compare ce qui est utile (électrique) à ce qui est reçu : P_él au numérateur.'),
+    ] }),
+  P({ id: 'cel-val-puissance', domaine: DOM_PHOTONS, niveau: 2, titre: 'Puissance reçue par une cellule : 40 000 W ?', plausible: false,
+    ...presenter({ contexte: 'Une cellule de surface 0,020 m² est éclairée avec 800 W·m⁻². Un élève calcule :', suite: '« P_reçue = E divisé par S = 800 divisé par 0,020 = 40 000 W ».' }),
+    reperes: [['Puissance d’une ampoule de salon', 'environ 10 à 100 W'], ['Éclairement du plein Soleil', 'environ 1000 W·m⁻²'], ['Surface de la cellule', '0,020 m² (200 cm²)']],
+    ver: 'L’éclairement est une puissance par mètre carré : on multiplie par la surface. P_reçue = 800 × 0,020 = 16 W, ordre de grandeur d’une petite ampoule. 40 000 W est la puissance d’un grand moteur, impossible pour 200 cm² de lumière.',
+    q2: 'Que penser de ce résultat ?',
+    options: [
+      V('invraisemblable : E × S donne 16 W', 'E est en W par mètre carré : pour une petite surface, la puissance reçue est petite, ici 800 × 0,020 = 16 W.'),
+      F('plausible : le Soleil est très puissant', 'La puissance du Soleil est immense, mais une cellule de 200 cm² n’en reçoit qu’une toute petite part : 16 W.'),
+      F('invraisemblable : il fallait ajouter E et S', 'Une puissance se calcule avec un produit (éclairement × surface), pas avec une somme.'),
+    ] }),
 ];
 
 // ───────────── S'APP : repérer les données utiles ─────────────
@@ -474,6 +528,31 @@ export const TGPB_SAPP = [
         texte: [...debut, 'Quelle est la température d’équilibre de la Terre ?'], utiles: ['S0', 'A', 'sig'], raisons: { R: rr, d: 'La distance est déjà prise en compte dans la valeur donnée de la puissance reçue par mètre carré.' },
         cherche: { bonne: 'La température d’équilibre de la Terre (en K)', faux: ['La puissance solaire absorbée par mètre carré (en W·m⁻²)', 'La puissance solaire réfléchie par mètre carré (en W·m⁻²)', 'La puissance émise par la Terre entière (en W)'] },
         manque: null, solution: { txt: 'σ × T⁴ = (1 − A) × S₀ divisé par 4, donc T = [(1 − A) × S₀ divisé par (4σ)] à la puissance 1/4', val: Math.pow(T4, 0.25), u: 'K' } };
+    },
+  },
+  {
+    id: 'cel-sapp-seuil', domaine: DOM_PHOTONS, titre: 'Une cellule éclairée par une lampe', noms: ['Énergie d’un photon de la lampe', 'Longueur d’onde maximale absorbée'],
+    gen: () => ({ gap: tire([1.12, 1.12, 1.4, 1.5]), L: tire([450, 520, 600, 650]), P: tire([20, 40, 60]), S: tire([0.010, 0.015, 0.020]) }),
+    build: (p, q) => {
+      const tokens = {
+        gap: tok(`${nb(p.gap, 2)} eV`, 'Énergie seuil du semi-conducteur de la cellule', p.gap, 'eV'),
+        L: tok(`${p.L} nm`, 'Longueur d’onde de la lumière de la lampe', p.L, 'nm'),
+        h: tok('6,63×10⁻³⁴ J·s', 'Constante de Planck', 6.63e-34, 'J·s'),
+        c: tok('3,00×10⁸ m·s⁻¹', 'Célérité de la lumière', 3.00e8, 'm·s⁻¹'),
+        ev: tok('1,60×10⁻¹⁹ J', 'Valeur d’un électronvolt en joules', 1.60e-19, 'J'),
+        P: tok(`${p.P} W`, 'Puissance électrique consommée par la lampe', p.P, 'W'),
+        S: tok(`${nb(p.S, 3)} m²`, 'Surface de la cellule', p.S, 'm²'),
+      };
+      const debut = ['Une cellule photovoltaïque, de surface ', T('S'), ', a pour énergie seuil ', T('gap'), ' : un photon n’est absorbé que si son énergie est au moins égale à cette valeur. Elle est éclairée par une lampe qui consomme ', T('P'), ' et émet une lumière monochromatique de longueur d’onde ', T('L'), '. Données : h = ', T('h'), ' ; c = ', T('c'), ' ; 1 eV = ', T('ev'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’énergie d’un photon de la lumière de la lampe, en joules ?'], utiles: ['L', 'h', 'c'],
+        raisons: { gap: 'L’énergie seuil sert à savoir si le photon est absorbé, pas à calculer son énergie.', ev: 'Le facteur de conversion ne servirait que pour exprimer l’énergie en eV ; ici elle est demandée en joules.', P: 'La puissance consommée par la lampe n’intervient pas dans l’énergie d’un seul photon.', S: 'La surface de la cellule n’intervient pas dans l’énergie d’un seul photon.' },
+        cherche: { bonne: 'L’énergie d’un photon de la lumière de la lampe (en J)', faux: ['L’énergie seuil de la cellule (en J)', 'La puissance lumineuse reçue par la cellule (en W)', 'Le nombre de photons reçus par seconde'] },
+        manque: null, solution: { txt: 'E_ph = h × c divisé par λ (λ en mètres)', val: 6.63e-34 * 3.00e8 / (p.L * 1e-9), u: 'J' } };
+      return { tokens, derivees: [{ id: 'Es', nom: 'Énergie seuil en joules', expr: 'E_seuil = énergie seuil en eV × 1,60×10⁻¹⁹', val: p.gap * 1.60e-19, u: 'J' }],
+        texte: [...debut, 'Quelle est la longueur d’onde maximale d’un photon que la cellule peut absorber, en nanomètres ?'], utiles: ['gap', 'ev', 'h', 'c'],
+        raisons: { L: 'La longueur d’onde de la lampe ne sert pas à trouver la limite de la cellule.', P: 'La puissance de la lampe n’intervient pas dans la longueur d’onde maximale.', S: 'La surface de la cellule n’intervient pas dans la longueur d’onde maximale.' },
+        cherche: { bonne: 'La longueur d’onde maximale absorbée par la cellule (en nm)', faux: ['La longueur d’onde de la lumière de la lampe (en nm)', 'L’énergie d’un photon de la lampe (en eV)', 'La puissance reçue par la cellule (en W)'] },
+        manque: null, solution: { txt: 'λ_max = h × c divisé par E_seuil (en joules)', val: 6.63e-34 * 3.00e8 / (p.gap * 1.60e-19) * 1e9, u: 'nm' } };
     },
   },
 ];

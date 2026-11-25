@@ -3732,6 +3732,55 @@ function genTerreTG() {
     retenir: ['Puissance absorbée par m² de surface : P_abs = (1 − A) × S₀ divisé par 4 (A albédo, S₀ puissance reçue face au Soleil).', 'Loi de Stefan-Boltzmann (donnée) : P_émise = σ × T⁴, avec T en kelvins (T = θ + 273).', 'À l’équilibre, P_émise = P_abs, donc T = racine quatrième de (P_abs divisé par σ).', 'La température observée est supérieure à celle du calcul sans atmosphère : l’écart traduit l’effet de serre.'] };
 }
 
+function genCelluleTG() {
+  // Cellule photovoltaïque (TG, sim 242). Pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %). h, c et 1 eV donnés.
+  const H = 6.63e-34, C = 3.00e8, EV = 1.60e-19;
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const r2 = x => Number(x.toPrecision(2));
+  const bon = x => Math.abs(r2(x) - x) / Math.abs(x) <= 0.03;
+  const donnee = <>h = 6,63 × 10⁻³⁴{NB}J·s ; c = 3,00 × 10⁸{NB}m·s⁻¹ ; 1{NB}eV = 1,60 × 10⁻¹⁹{NB}J</>;
+  // q1 : énergie d'un photon en eV
+  let L1, E1;
+  for (;;) { L1 = tire([400, 450, 500, 550, 600, 650, 700, 800, 900, 1000, 1200]); E1 = H * C / (L1 * 1e-9) / EV; if (bon(E1)) break; }
+  const q1 = { id: 'cel0', type: 'num', q: <>Un photon a pour longueur d’onde <b>λ = {L1}{NB}nm</b>. Donnée : {donnee}. Calculez son énergie E<sub>ph</sub> = h × c divisé par λ, en électronvolts (eV, 2 chiffres significatifs).</>, unite: 'eV', vrai: E1, tolRel: 0.06, csMin: 2,
+    aide: 'Convertissez λ en mètres (1 nm = 10⁻⁹ m), calculez h × c divisé par λ : le résultat est en joules ; divisez par 1,60×10⁻¹⁹ pour obtenir des eV.',
+    pieges: [[E1 * EV, 'Ce résultat est en joules : divisez par 1,60×10⁻¹⁹ pour l’exprimer en électronvolts.'], [E1 * 1e-9, 'λ doit être en mètres : 1 nm = 10⁻⁹ m.']],
+    expl: <>E<sub>ph</sub> = {avecIndices(`frac(6,63×10⁻³⁴ × 3,00×10⁸|${L1}×10⁻⁹)`)} = {f(H * C / (L1 * 1e-9) * 1e19, 2)}×10⁻¹⁹ J, soit <b>{f(E1, 2)}{NB}eV</b>.</> };
+  // q2 : longueur d'onde maximale à partir de l'énergie seuil
+  let g2, lm2;
+  for (;;) { g2 = tire([1.10, 1.12, 1.20, 1.40, 1.50, 1.70, 2.00]); lm2 = H * C / (g2 * EV) * 1e9; if (bon(lm2)) break; }
+  const q2 = { id: 'cel1', type: 'num', q: <>Un semi-conducteur a pour énergie seuil <b>E<sub>seuil</sub> = {f(g2, 2)}{NB}eV</b>. Donnée : {donnee}. Calculez la longueur d’onde maximale λ<sub>max</sub> d’un photon qu’il peut absorber (en nm, 2 chiffres significatifs).</>, unite: 'nm', vrai: lm2, tolRel: 0.05, csMin: 2,
+    aide: 'Un photon est absorbé si E_ph est au moins égale à E_seuil : λ_max = h × c divisé par E_seuil, avec E_seuil en joules (× 1,60×10⁻¹⁹) ; le résultat est en mètres, × 10⁹ pour les nm.',
+    pieges: [[lm2 * 1e-9, 'Ce résultat est en mètres : exprimez-le en nanomètres (× 10⁹).'], [H * C / g2 * 1e9, 'E_seuil doit être converti en joules (× 1,60×10⁻¹⁹) avant de diviser h × c.']],
+    expl: <>E<sub>seuil</sub> = {f(g2, 2)} × 1,60×10⁻¹⁹ = {f(g2 * 1.6, 2)}×10⁻¹⁹ J ; λ<sub>max</sub> = {avecIndices(`frac(6,63×10⁻³⁴ × 3,00×10⁸|${f(g2 * 1.6, 2)}×10⁻¹⁹)`)} = <b>{f(lm2, 0)}{NB}nm</b>.</> };
+  // q3 : puissance lumineuse reçue
+  let E3, S3, P3;
+  for (;;) { E3 = tire([500, 600, 700, 800, 900, 1000]); S3 = tire([0.010, 0.015, 0.020, 0.025, 0.030, 0.040]); P3 = E3 * S3; if (bon(P3)) break; }
+  const q3 = { id: 'cel2', type: 'num', q: <>Une cellule de surface <b>S = {f(S3, 3)}{NB}m²</b> reçoit un éclairement <b>E = {E3}{NB}W·m⁻²</b>. Calculez la puissance lumineuse P<sub>reçue</sub> qu’elle reçoit (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P3, tolRel: 0.06, csMin: 2,
+    aide: 'L’éclairement est la puissance reçue par mètre carré : P_reçue = E × S.',
+    pieges: [[E3, 'L’éclairement est une puissance par mètre carré : il faut multiplier par la surface S.'], [E3 / S3, 'Il faut multiplier E par S, pas diviser.']],
+    expl: <>P<sub>reçue</sub> = E × S = {E3} × {f(S3, 3)} = <b>{f(P3, 1)}{NB}W</b>.</> };
+  // q4 : rendement à partir de E, S, U, I
+  let E4, S4, U4, I4, P4r, P4e, et4;
+  for (;;) { E4 = tire([600, 800, 1000]); S4 = tire([0.010, 0.015, 0.020, 0.025, 0.040]); U4 = tire([0.48, 0.50, 0.52, 0.54, 0.56]); const eta = 0.12 + 0.10 * Math.random(); I4 = r2(eta * E4 * S4 / U4); P4r = E4 * S4; P4e = U4 * I4; et4 = 100 * P4e / P4r;
+    if (et4 >= 11 && et4 <= 24 && bon(et4) && Math.abs(100 * r2(P4e) / r2(P4r) - et4) <= 0.04 * et4) break; }
+  const q4 = { id: 'cel3', type: 'num', q: <>Une cellule de surface <b>S = {f(S4, 3)}{NB}m²</b> reçoit un éclairement <b>E = {E4}{NB}W·m⁻²</b> et délivre une tension <b>U = {f(U4, 2)}{NB}V</b> avec une intensité <b>I = {f(I4, 1)}{NB}A</b>. Calculez son rendement η (en %, 2 chiffres significatifs).</>, unite: '%', vrai: et4, tolRel: 0.06, csMin: 2,
+    aide: 'D’abord P_reçue = E × S et P_él = U × I ; puis η = P_él divisé par P_reçue, multiplié par 100 pour un pourcentage.',
+    pieges: [[et4 / 100, 'Ce nombre est le rendement sous forme décimale : exprimez-le en pourcentage (× 100).'], [10000 / et4, 'Le rendement est P_él divisé par P_reçue (utile sur reçue), pas l’inverse.']],
+    expl: <>P<sub>reçue</sub> = {E4} × {f(S4, 3)} = {f(P4r, 2)} W ; P<sub>él</sub> = {f(U4, 2)} × {f(I4, 1)} = {f(P4e, 2)} W ; η = {avecIndices(`frac(${f(P4e, 2)}|${f(P4r, 2)})`)} = {f(et4 / 100, 3)}, soit <b>{f(et4, 0)}{NB}%</b>.</> };
+  // q5 : puissance électrique à partir du rendement
+  let E5, S5, eta5, P5;
+  for (;;) { E5 = tire([600, 700, 800, 900, 1000]); S5 = tire([0.010, 0.015, 0.020, 0.025, 0.030, 0.040]); eta5 = tire([0.15, 0.17, 0.18, 0.20, 0.21, 0.22]); P5 = eta5 * E5 * S5; if (bon(P5)) break; }
+  const q5 = { id: 'cel4', type: 'num', q: <>Un module de surface <b>S = {f(S5, 3)}{NB}m²</b>, de rendement <b>η = {f(100 * eta5, 0)}{NB}%</b>, reçoit un éclairement <b>E = {E5}{NB}W·m⁻²</b>. Calculez la puissance électrique P<sub>él</sub> qu’il délivre (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P5, tolRel: 0.06, csMin: 2,
+    aide: 'P_reçue = E × S ; le rendement donne la part convertie : P_él = η × P_reçue (η en décimal : 21 % = 0,21).',
+    pieges: [[E5 * S5, 'C’est la puissance reçue : la puissance électrique est la part η de cette puissance.'], [100 * eta5 * E5 * S5, 'η doit être utilisé en décimal (21 % = 0,21), pas en pourcentage.']],
+    expl: <>P<sub>reçue</sub> = {E5} × {f(S5, 3)} = {f(E5 * S5, 2)} W ; P<sub>él</sub> = η × P<sub>reçue</sub> = {f(eta5, 2)} × {f(E5 * S5, 2)} = <b>{f(P5, 1)}{NB}W</b>.</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Cellule photovoltaïque : énergie d’un photon E_ph = h × c divisé par λ (λ en m ; 1 eV = 1,60×10⁻¹⁹ J), absorption si E_ph est au moins égale à l’énergie seuil, puissance reçue P_reçue = E × S, puissance électrique P_él = U × I, rendement η = P_él divisé par P_reçue.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Énergie d’un photon : E_ph = h × c divisé par λ, avec λ en mètres ; 1 eV = 1,60×10⁻¹⁹ J.', 'Un photon n’est absorbé que si E_ph est au moins égale à l’énergie seuil ; d’où une longueur d’onde maximale λ_max = h × c divisé par E_seuil.', 'Puissance reçue : P_reçue = E × S ; puissance électrique : P_él = U × I = η × P_reçue.', 'Rendement : η = P_él divisé par P_reçue (sans unité, ×100 pour des %) ; les pertes valent P_reçue − P_él.'] };
+}
+
 function genEcoulementTG() {
   // Écoulement d'un fluide (TG, sim 214). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -5242,6 +5291,7 @@ export const FAMILLES = [
   { id: 'pp1-calcul', groupe: 'Formules', titre: 'Premier principe : variation d’énergie interne, capacité thermique et température finale (TG)', gen: genPremierPrincipeTG, domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie' },
   { id: 'tht-calcul', groupe: 'Formules', titre: 'Transferts thermiques : flux, résistance thermique d’une paroi, énergie transférée et nouvel écart de température (TG)', gen: genTransfertsThermTG, domaine: 'Transferts thermiques et bilan de la Terre (TG)' },
   { id: 'ter-calcul', groupe: 'Formules', titre: 'Bilan thermique d’une planète : puissance absorbée, loi de Stefan-Boltzmann, température d’équilibre (TG)', gen: genTerreTG, domaine: 'Transferts thermiques et bilan de la Terre (TG)' },
+  { id: 'cel-calcul', groupe: 'Formules', titre: 'Cellule photovoltaïque : énergie d’un photon, seuil d’absorption, puissance reçue, rendement et puissance électrique (TG)', gen: genCelluleTG, domaine: 'Photons : effet photoélectrique et cellule photovoltaïque' },
   { id: 'ber-calcul', groupe: 'Formules', titre: 'Écoulement d’un fluide : débit volumique, vitesse dans un col, différence de pression, vitesse de vidange et colonnes d’un Venturi (TG)', gen: genEcoulementTG, domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi' },
   { id: 'arc-calcul', groupe: 'Formules', titre: 'Poussée d’Archimède : poussée, poids apparent, fraction immergée, masse posée sur un flotteur et masse volumique d’un liquide (TG)', gen: genArchimedeTG, domaine: 'Poussée d’Archimède : origine, expression et flottaison' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
