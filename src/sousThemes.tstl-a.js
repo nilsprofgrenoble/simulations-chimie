@@ -75,15 +75,13 @@ export default {
     { id: 'erreurs-systematiques', nom: 'Erreur systématique, étalonnage et dérive', capacite: 'Distinguer erreur systématique et dispersion, et reconnaître l’effet d’un mauvais réglage ou d’une dérive.',
       refs: ['37:prevoir:decalage-constant', '37:prevoir:mes-prevoir-biais-repetitions', '77:plausible:mes-derive-balance'] },
   ],
-  'tstl-pcm-energie-electrique': [
+  'tstl-pcm-energie': [
     { id: 'puissance', nom: 'Puissance électrique fournie et loi d’Ohm', capacite: 'Calculer la puissance électrique fournie par un générateur (P = U × I), appliquer la loi d’Ohm et en déduire une énergie.',
       refs: ['34:pvc-sapp-puissance', '37:prevoir:pvc-ana-extremes', '37:prevoir:pvc-ana-charge'] },
     { id: 'caracteristique', nom: 'Caractéristique d’un panneau et source idéale de tension', capacite: 'Exploiter la caractéristique intensité-tension d’un panneau photovoltaïque et la comparer à celle d’une source idéale de tension.',
       refs: ['37:prevoir:pvc-ana-ideale', '77:plausible:pvc-val-impossible'] },
     { id: 'eclairement', nom: 'Effet de l’éclairement sur le courant et la tension', capacite: 'Prévoir comment le courant de court-circuit, la tension à vide et la puissance maximale d’un panneau varient avec l’éclairement.',
       refs: ['34:pvc-sapp-eclair', '37:prevoir:pvc-ana-eclair', '77:plausible:pvc-val-eclair'] },
-  ],
-  'tstl-pcm-energie-ondes': [
     { id: 'lumiere-recue', nom: 'Puissance lumineuse reçue, éclairement et surface', capacite: 'Exploiter la relation entre le flux énergétique (puissance lumineuse reçue) et l’éclairement énergétique : Plum = E × S.',
       refs: ['34:pvr-sapp-rendement', '37:prevoir:pvr-ana-surface', '77:plausible:pvr-val-sup100'] },
     { id: 'rendement', nom: 'Rendement d’un panneau et pertes', capacite: 'Estimer le rendement d’un panneau photovoltaïque à partir de données expérimentales et en déduire la puissance perdue.',

@@ -159,8 +159,8 @@ export const COUVERTURE = [
     { th: NRJ, t: 'Chaînes énergétiques, conservation de l’énergie, rendement', e: 'avenir' },
     { th: NRJ, t: 'Énergie mécanique', e: 'avenir' },
     { th: NRJ, t: 'Énergie chimique : enthalpie, loi de Hess, pouvoir calorifique', e: 'avenir' },
-    { th: NRJ, t: 'Énergie électrique : puissance, effet Joule, piles et accumulateurs', e: 'partiel', chap: 'tstl-pcm-energie-electrique', reste: 'effet Joule, piles et accumulateurs' },
-    { th: NRJ, t: 'Énergie et ondes : flux, éclairement, panneau photovoltaïque, laser', e: 'partiel', chap: 'tstl-pcm-energie-ondes', reste: 'éclairement et distance à la source, laser et sécurité' },
+    { th: NRJ, t: 'Énergie électrique : puissance, effet Joule, piles et accumulateurs', e: 'partiel', chap: 'tstl-pcm-energie', reste: 'effet Joule, piles et accumulateurs' },
+    { th: NRJ, t: 'Énergie et ondes : flux, éclairement, panneau photovoltaïque, laser', e: 'partiel', chap: 'tstl-pcm-energie', reste: 'éclairement et distance à la source, laser et sécurité' },
   ] },
 ];
 
