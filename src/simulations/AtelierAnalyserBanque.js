@@ -426,11 +426,11 @@ export const PROBLEMES = [
   },
   {
     id: 'vinaigre', domaine: 'Chimie', titre: 'Le vinaigre est-il bien à 6 % ?',
-    ...presenter({ contexte: 'Un vinaigre est vendu comme titrant « 6 % d’acidité » : 6 g d’acide acétique pour 100 g de vinaigre. On le dilue 10 fois, puis on titre 10,0 mL de la solution diluée par une solution d’hydroxyde de sodium, en présence de phénolphtaléine.', liste: [['Dilution du vinaigre', '10 fois'], ['Prise d’essai de la solution diluée', '10,0 mL'], ['Concentration de la solution d’hydroxyde de sodium', '0,100 mol·L⁻¹'], ['Volume à l’équivalence', '10,2 mL'], ['Masse molaire de l’acide acétique', 'M = 60,0 g·mol⁻¹'], ['Densité du vinaigre', 'd = 1,01'], ['Température du titrage', '20 °C'], ['Critère', 'écart relatif avec 6 % d’au plus 5 % (incertitude du dosage)']], question: 'L’indication de l’étiquette est-elle vérifiée ?' }),
+    ...presenter({ contexte: 'Un vinaigre est vendu comme titrant « 6 % d’acidité » : 6 g d’acide éthanoïque pour 100 g de vinaigre. On le dilue 10 fois, puis on titre 10,0 mL de la solution diluée par une solution d’hydroxyde de sodium, en présence de phénolphtaléine.', liste: [['Dilution du vinaigre', '10 fois'], ['Prise d’essai de la solution diluée', '10,0 mL'], ['Concentration de la solution d’hydroxyde de sodium', '0,100 mol·L⁻¹'], ['Volume à l’équivalence', '10,2 mL'], ['Masse molaire de l’acide éthanoïque', 'M = 60,0 g·mol⁻¹'], ['Densité du vinaigre', 'd = 1,01'], ['Température du titrage', '20 °C'], ['Critère', 'écart relatif avec 6 % d’au plus 5 % (incertitude du dosage)']], question: 'L’indication de l’étiquette est-elle vérifiée ?' }),
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
-      V('Le pourcentage massique d’acide acétique dans le vinaigre, pour le comparer à 6 %', 'L’étiquette donne un pourcentage massique : c’est lui qu’il faut retrouver.'),
-      F('Le pH du vinaigre', 'Le critère porte sur un pourcentage massique : le pH ne le donne pas sans connaître la constante d’acidité et sans hypothèse sur la dissociation.'),
-      F('Le volume à l’équivalence', 'Il est déjà mesuré : c’est une donnée.'),
+      V('Le pourcentage massique d’acide éthanoïque du vinaigre, à comparer à 6 %', 'L’étiquette donne un pourcentage massique : c’est lui qu’il faut retrouver.'),
+      F('Le pH du vinaigre avant dilution, à comparer à une valeur de référence', 'Le critère porte sur un pourcentage massique : le pH ne le donne pas sans connaître la constante d’acidité et sans hypothèse sur la dissociation.'),
+      F('Le volume à l’équivalence, à comparer à celui attendu pour 6 %', 'Il est déjà mesuré : c’est une donnée.'),
     ] },
     donnees: [
       ['dilution 10 fois', true, 'La solution titrée est 10 fois moins concentrée que le vinaigre.'],
@@ -444,18 +444,18 @@ export const PROBLEMES = [
       ['20 °C', false, 'La température n’intervient pas dans les calculs.'],
     ],
     relations: { options: [
-      V('À l’équivalence : n(acide) = c_b × V_E (réaction mole à mole)', 'L’acide acétique réagit avec les ions hydroxyde dans les proportions 1 : 1.'),
+      V('À l’équivalence : n(acide) = c_b × V_E (réaction mole à mole)', 'L’acide éthanoïque réagit avec les ions hydroxyde dans les proportions 1 : 1.'),
       V('c = n / V, et c_vinaigre = 10 × c_diluée', 'Concentration de la solution titrée, puis facteur de dilution.'),
       V('m = n × M', 'Conversion quantité de matière → masse.'),
       V('ρ_vinaigre = d × ρ_eau', 'Masse d’un litre de vinaigre : 1 010 g.'),
-      F('pH = −log [H₃O⁺]', 'Pour un acide faible, le pH ne donne pas directement la concentration en acide acétique, et ce n’est pas la méthode du titrage.'),
+      F('pH = −log [H₃O⁺]', 'Pour un acide faible, le pH ne donne pas directement la concentration en acide éthanoïque, et ce n’est pas la méthode du titrage.'),
       F('A = ε × ℓ × c', 'Aucune mesure d’absorbance.'),
     ] },
     hypotheses: { options: [
       V('La réaction de titrage est totale, rapide et unique', 'Conditions de tout titrage.'),
-      V('L’acide acétique est le seul acide présent dans le vinaigre', 'Si d’autres acides étaient titrés, on surestimerait l’acide acétique.'),
+      V('L’acide éthanoïque est le seul acide présent dans le vinaigre', 'Si d’autres acides étaient titrés, on surestimerait l’acide éthanoïque.'),
       V('La dilution au dixième est faite avec précision (verrerie jaugée)', 'Toute erreur sur la dilution se retrouve multipliée dans le résultat.'),
-      F('L’acide acétique est un acide fort', 'Faux : c’est un acide faible. Cela ne change pas la méthode, car sa réaction avec la soude est totale.'),
+      F('L’acide éthanoïque est un acide fort', 'Faux : c’est un acide faible. Cela ne change pas la méthode, car sa réaction avec la soude est totale.'),
       F('La masse volumique du vinaigre est celle de l’eau, la densité est inutile', 'La densité 1,01 est donnée : l’utiliser évite une approximation de 1 % sans intérêt ici.'),
     ] },
     demarche: {
@@ -1121,6 +1121,14 @@ export const RELATIONS = [
       F('c = k / A', 'Rapport inversé.'),
       F('c = −log A', 'Confusion avec la définition du pH.'),
     ] },
+  { id: 'evo-avancement-limitant', domaine: 'Chimie', titre: 'Trouver l’avancement maximal',
+    enonce: 'On mélange 0,30 mol de magnésium Mg et 0,20 mol de dioxygène O₂ : 2 Mg + O₂ → 2 MgO. On cherche l’avancement maximal x_max.',
+    q: 'Quelle relation permet de répondre ?', options: [
+      V('x_max est la plus petite des deux valeurs n(Mg) / 2 et n(O₂) / 1', 'Chaque réactif impose une limite : x ≤ 0,30 / 2 = 0,15 mol pour Mg et x ≤ 0,20 / 1 = 0,20 mol pour O₂. On retient la plus petite : x_max = 0,15 mol, et Mg est limitant.'),
+      F('x_max est la plus petite des deux quantités initiales : 0,20 mol', 'Il faut tenir compte des coefficients : avec x = 0,20 mol, il faudrait 2 × 0,20 = 0,40 mol de Mg, alors qu’il n’y en a que 0,30 mol.'),
+      F('x_max est la somme des deux valeurs n(Mg) / 2 et n(O₂) / 1', 'Les deux limites s’appliquent en même temps : l’avancement ne peut pas dépasser la plus petite, il ne s’additionne pas.'),
+      F('x_max est la plus grande des deux valeurs n(Mg) / 2 et n(O₂) / 1', 'Avec x = 0,20 mol, il resterait 0,30 − 2 × 0,20 = −0,10 mol de Mg : une quantité négative est impossible.'),
+    ] },
   { id: 'mvt-vitesse', domaine: 'Mouvement et vitesse', titre: 'Calculer une vitesse',
     enonce: 'Un cycliste parcourt 36 km en 2 h. On cherche sa vitesse moyenne.',
     q: 'Quelle relation permet de répondre ?', options: [
@@ -1775,6 +1783,20 @@ export const PREVOIR = [
       F('multipliée par 2', 'Sens inversé : moins d’espèce absorbante, moins d’absorbance.'),
       F('divisée par 4', 'A est proportionnelle à c, pas à c².'),
       F('inchangée', 'L’absorbance dépend de la concentration.'),
+    ] },
+  { id: 'evo-avancement-exces', domaine: 'Chimie', titre: 'Ajouter du réactif en excès',
+    enonce: 'On fait réagir 0,10 mol de A avec 0,50 mol de B selon A + B → C : A est le réactif limitant. On remplace ensuite les 0,50 mol de B par 1,0 mol de B, sans changer A.', q: 'L’avancement maximal est alors…', options: [
+      V('inchangé : x_max = 0,10 mol, fixé par le réactif limitant A', 'x_max = n(A) / 1 = 0,10 mol : B est déjà en excès, en ajouter ne permet pas de consommer plus de A qu’il n’y en a.'),
+      F('doublé : on a deux fois plus de réactif B à disposition', 'Seul le réactif limitant fixe x_max. Avec 1,0 mol de B, il en resterait simplement 0,90 mol non consommées.'),
+      F('plus grand, sans être doublé : B aide à consommer un peu plus de A', 'A est déjà entièrement consommé pour x = 0,10 mol : il n’y a rien de plus à faire réagir.'),
+      F('plus petit : trop de B gêne la réaction avec A', 'Un excès de réactif ne diminue pas x_max : l’avancement maximal reste fixé par le réactif limitant.'),
+    ] },
+  { id: 'evo-equivalence-limitant', domaine: 'Titrage direct', titre: 'Avant l’équivalence : quel réactif est limitant ?',
+    enonce: 'On verse peu à peu une solution de thiosulfate (titrant) dans une solution de diiode I₂ (espèce titrée). La réaction est totale et rapide. On se place avant l’équivalence.', q: 'Le réactif limitant est…', options: [
+      V('le titrant : consommé dès qu’il est versé, il reste du diiode', 'Avant l’équivalence, le thiosulfate versé est entièrement consommé : c’est lui qui limite. À l’équivalence, on change de réactif limitant.'),
+      F('l’espèce titrée : le diiode a presque tout réagi à ce stade', 'Il reste du diiode : la solution en contient encore tant qu’on n’a pas versé assez de titrant. Le diiode ne devient limitant qu’après l’équivalence.'),
+      F('aucun des deux : les deux sont consommés ensemble', 'Cela n’arrive qu’à l’équivalence, quand les réactifs ont été introduits dans les proportions de l’équation.'),
+      F('les deux : la réaction étant totale, tout est consommé', 'Une réaction totale consomme entièrement le réactif limitant, pas l’autre : avant l’équivalence, il reste du diiode.'),
     ] },
   { id: 'mvt-duree-double', domaine: 'Mouvement et vitesse', titre: 'Distance doublée à vitesse constante',
     enonce: 'Un cycliste roule à vitesse constante. Il décide de parcourir une distance deux fois plus grande.', q: 'La durée du trajet est…', options: [
