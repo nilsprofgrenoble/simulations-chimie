@@ -63,7 +63,7 @@ export function SimulationDispersion() {
       tache: { type: 'qcm', q: 'Dans quel ordre prépare-t-on l’empâtage ?', ...QCM.empatage,
         expl: 'Le dispersant doit déjà être dans l’eau pour s’adsorber sur les grains dès qu’ils sont mouillés ; l’antimousse limite la mousse créée par la forte agitation. Les poudres arrivent en dernier, sous forte agitation : une pâte épaisse transmet un fort cisaillement qui casse les agglomérats.', indice: 'Que doit-il déjà y avoir dans la cuve quand les grains arrivent ?' } },
     { id: 'dispersion', titre: 'Disperser : casser les agglomérats', focus: ['scene', 'curseur'],
-      texte: <>Le <strong>disperseur</strong> fournit de l’énergie mécanique. La courbe grise en tirets montre la poudre avant dispersion ; la courbe violette montre la poudre après. Montez l’énergie avec le curseur et regardez la courbe : la distribution donne la fraction massique en fonction du diamètre.</>,
+      texte: <>Le <strong>disperseur</strong> fournit de l’énergie mécanique. La courbe grise en tirets montre la poudre avant dispersion ; la courbe violette montre la poudre après. Montez l’énergie avec le curseur et regardez la courbe : la distribution donne la fraction en volume (assimilée à la masse) en fonction du diamètre.</>,
       tache: { type: 'qcm', q: 'Que fait la dispersion mécanique ?', ...QCM.dispersion,
         expl: 'La dispersion casse les agglomérats (amas de particules) pour obtenir des particules isolées, appelées particules primaires. Elle ne dissout pas le solide et ne change pas la taille des particules primaires elles-mêmes.', indice: 'Regardez l’effet de l’énergie sur les gros diamètres (au-delà de 5 µm).' } },
     { id: 'broyage', titre: 'Broyer : réduire la taille des particules', focus: ['scene', 'curseur'],
@@ -78,18 +78,18 @@ export function SimulationDispersion() {
           <li><strong>Disperser</strong> : de l’énergie mécanique casse les agglomérats en particules primaires.</li>
           <li><strong>Stabiliser</strong> : un dispersant empêche les particules de se recoller.</li>
         </ul></>,
-      texte: <>Un granulomètre laser mesure la poudre <strong>avant dispersion</strong> : le tableau donne la fraction massique de chaque classe de taille. Les agglomérats se trouvent au-delà de <strong>5 µm</strong>. Additionnez les classes de plus de 5 µm.</>,
-      tache: { type: 'num', q: 'Part de la masse au-dessus de 5 µm', unite: '%', vrai: AU_DESSUS, tol: 0.03, affiche: v => fr(v, 1), cs: 2,
-        calcul: () => [`Classes de plus de 5 µm : 5 à 10 µm, 10 à 20 µm, 20 à 40 µm.`, `${fr(CLAS[4], 1)} + ${fr(CLAS[5], 1)} + ${fr(CLAS[6], 1)} = ${fr(AU_DESSUS, 1)} %.`, 'Cette part est la fraction de masse dans des agglomérats (ou de très grosses particules).'],
+      texte: <>Un granulomètre laser mesure la poudre <strong>avant dispersion</strong> : le tableau donne la fraction en <strong>volume</strong> de chaque classe de taille (pour un seul pigment, elle est égale à la fraction massique). Les agglomérats se trouvent au-delà de <strong>5 µm</strong>. Additionnez les classes de plus de 5 µm.</>,
+      tache: { type: 'num', q: 'Part du volume au-dessus de 5 µm', unite: '%', vrai: AU_DESSUS, tol: 0.03, affiche: v => fr(v, 1), cs: 2,
+        calcul: () => [`Classes de plus de 5 µm : 5 à 10 µm, 10 à 20 µm, 20 à 40 µm.`, `${fr(CLAS[4], 1)} + ${fr(CLAS[5], 1)} + ${fr(CLAS[6], 1)} = ${fr(AU_DESSUS, 1)} %.`, 'Cette part est la fraction du volume dans des agglomérats (ou de très grosses particules).'],
         pieges: [[CLAS[4], 'Vous n’avez pris que la classe 5 à 10 µm : il faut additionner toutes les classes de plus de 5 µm.'], [100 - AU_DESSUS, 'C’est la part en dessous de 5 µm : on demande la part au-dessus.']],
         expl: `On additionne les classes de plus de 5 µm : ${fr(CLAS[4], 1)} + ${fr(CLAS[5], 1)} + ${fr(CLAS[6], 1)} ≈ ${fr(AU_DESSUS, 1)} %.`, indice: 'Sommez les trois dernières classes du tableau (5 à 10, 10 à 20 et 20 à 40 µm).' } },
     { id: 'pic', titre: 'Un deuxième pic : le signe d’agglomérats', focus: ['scene', 'mesures'],
       texte: <>La courbe de la poudre brute a <strong>deux pics</strong> : un pic principal vers 1,5 µm et un second, plus étalé, entre 10 et 20 µm. Le granulomètre permet donc de contrôler l’<strong>homogénéité</strong> de la suspension.</>,
       tache: { type: 'qcm', q: 'Que représente le second pic, entre 10 et 20 µm ?', ...QCM.pic,
-        expl: 'Le second pic est celui des agglomérats : des amas de particules primaires qui n’ont pas été cassés. Une suspension bien dispersée n’a presque plus de masse au-delà de 5 µm : un contrôle granulométrique le vérifie.', indice: 'Ce pic est celui des gros diamètres : que contiennent les gros diamètres dans une poudre mal dispersée ?' } },
+        expl: 'Le second pic est celui des agglomérats : des amas de particules primaires qui n’ont pas été cassés. Une suspension bien dispersée n’a presque plus de volume au-delà de 5 µm : un contrôle granulométrique le vérifie.', indice: 'Ce pic est celui des gros diamètres : que contiennent les gros diamètres dans une poudre mal dispersée ?' } },
     { id: 'refloc', titre: 'Les amas se reforment sans dispersant', focus: ['scene', 'curseur'],
-      texte: <>La poudre a été mouillée et dispersée avec une énergie élevée, puis broyée : pourtant, il reste des agglomérats, car <strong>sans dispersant</strong> les particules se recollent. Ajoutez du dispersant avec le curseur jusqu’à ce que la part de masse au-delà de 5 µm passe sous <strong>12 %</strong>.</>,
-      tache: { type: 'action', ok: agVie <= M.AGGLO_MAX, consigne: 'Ajouter du dispersant pour descendre sous 12 % de masse au-delà de 5 µm' } },
+      texte: <>La poudre a été mouillée et dispersée avec une énergie élevée, puis broyée : pourtant, il reste des agglomérats, car <strong>sans dispersant</strong> les particules se recollent. Ajoutez du dispersant avec le curseur jusqu’à ce que la part de volume au-delà de 5 µm passe sous <strong>12 %</strong>.</>,
+      tache: { type: 'action', ok: agVie <= M.AGGLO_MAX, consigne: 'Ajouter du dispersant pour descendre sous 12 % de volume au-delà de 5 µm' } },
     { id: 'choix', titre: 'Choisir un dispersant selon le milieu', focus: ['scene'],
       texte: <>Les <strong>dispersants</strong> créent des forces de répulsion entre les particules, de deux sortes : <strong>électrostatique</strong> (on charge les grains, comme à la simulation précédente) ou <strong>stérique</strong> (des chaînes de polymère greffées sur les grains les tiennent à distance). Le choix dépend du milieu et du solide. Une peinture à l’eau contient du dioxyde de titane (pigment) dans l’eau.</>,
       tache: { type: 'qcm', q: 'Quel dispersant convient à du TiO₂ dispersé dans l’eau (milieu peu salin) ?', ...QCM.choix,
@@ -159,7 +159,7 @@ export function SimulationDispersion() {
     'lecture-num': M.CLASSES.map((c, i) => [nomClasse(c), `${fr(CLAS[i], 1)} %`]),
     'dosage-num': [['Masse de pigment TiO₂', `${DOS.mP} g`], ['Dispersant (matière active)', `${fr(DOS.pc, 2)} % du pigment`], ['Matière active de la solution', `${DOS.ES} %`]],
   };
-  const mesDist = enGuide && sceneDist && !brut ? [['D10 (10 % de la masse en dessous)', `${fr(M.diametre(qVie, 10), 2)} µm`], ['D50 (diamètre médian)', `${fr(M.diametre(qVie, 50), 2)} µm`], ['D90 (90 % de la masse en dessous)', `${fr(M.diametre(qVie, 90), 2)} µm`], ...(apres('pic') ? [['Part de masse au-delà de 50 µm', pc(agVie)]] : [])] : [];
+  const mesDist = enGuide && sceneDist && !brut ? [['D10 (10 % du volume en dessous)', `${fr(M.diametre(qVie, 10), 2)} µm`], ['D50 (diamètre médian)', `${fr(M.diametre(qVie, 50), 2)} µm`], ['D90 (90 % du volume en dessous)', `${fr(M.diametre(qVie, 90), 2)} µm`], ...(apres('pic') ? [['Part de masse au-delà de 50 µm', pc(agVie)]] : [])] : [];
   const lignesGuide = enGuide ? (MES_GUIDE[sc] ?? mesDist) : [];
   const setV = k => ev => setVie(s => ({ ...s, [k]: parseFloat(ev.target.value) }));
   const curseurGuide = enGuide && (sceneMouill ? apres('mouillant-action') && sc !== 'mouillage' : sceneDist ? !brut : sceneEtal) ? (
@@ -215,7 +215,7 @@ export function SimulationDispersion() {
         <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>Voici les conditions de fabrication, puis la distribution mesurée. Spécification : D50 ≤ {fr(M.D50_SPEC, 1)} µm et moins de {fr(M.AGGLO_MAX * 100, 0)} % de la masse au-delà de 5 µm.</div>
         <ul style={liste}>{conditions(defi).map(([a, b]) => <li key={a}>{a} : {b}</li>)}</ul>
         <div style={{ margin: '8px 0 4px' }}><SvgDistribution q={defi.q} nom={`du ${defi.solide.court}`}/></div>
-        <ul style={liste}><li>D50 = {fr(defi.d50, 2)} µm ; D90 = {fr(defi.d90, 2)} µm</li><li>Part de masse au-delà de 5 µm : {pc(defi.agglo)}</li></ul>
+        <ul style={liste}><li>D50 = {fr(defi.d50, 2)} µm ; D90 = {fr(defi.d90, 2)} µm</li><li>Part de volume au-delà de 5 µm : {pc(defi.agglo)}</li></ul>
         <label htmlFor="di-v" style={{ ...libelle, marginTop: 8 }}>Ce qui manque dans la fabrication</label>
         <select id="di-v" value={defi.v} onChange={ev => setDefi(d => ({ ...d, v: ev.target.value, verifie: false }))} style={{ ...selectStyle, marginBottom: 8 }}>
           <option value="">Choisir…</option>{M.CAS.map(k => <option key={k} value={k}>{M.CAUSES[k]}</option>)}</select>
@@ -275,7 +275,7 @@ export function SimulationDispersion() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       <LigneMesure nom="D10 / D50 / D90" valeur={`${fr(M.diametre(qEx, 10), 2)} / ${fr(M.diametre(qEx, 50), 2)} / ${fr(M.diametre(qEx, 90), 2)} µm`} couleur={COL.violet}/>
       <LigneMesure nom="Étendue (D90 − D10) ÷ D50" valeur={fr(M.etendue(qEx), 1)}/>
-      <LigneMesure nom="Part de masse au-delà de 5 µm" valeur={pc(agEx)} couleur={agEx <= M.AGGLO_MAX ? COL.vert : COL.rouge}/>
+      <LigneMesure nom="Part de volume au-delà de 5 µm" valeur={pc(agEx)} couleur={agEx <= M.AGGLO_MAX ? COL.vert : COL.rouge}/>
       <LigneMesure nom={`Conformité (D50 ≤ ${fr(M.D50_SPEC, 1)} µm, agglomérats ≤ ${fr(M.AGGLO_MAX * 100, 0)} %)`} valeur={conforme ? 'conforme' : 'non conforme'} couleur={conforme ? COL.vert : COL.rouge}/>
       <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>La courbe grise en tirets est la poudre brute (avant dispersion).</div>
     </div>);
@@ -310,7 +310,8 @@ export function SimulationDispersion() {
       <li><strong>Mouillage et énergie</strong> : un pigment hydrophile (TiO₂, oxyde de fer) est mouillé par l’eau presque seule ; un pigment hydrophobe (noir de carbone) ne l’est qu’avec un agent mouillant. Sans mouillage, une partie seulement de l’énergie du disperseur atteint les agglomérats (hypothèse du modèle). Le disperseur ne casse que les agglomérats ; le broyage seul modifie la taille des particules primaires.</li>
       <li><strong>Dispersant</strong> : l’adsorption est décrite par une saturation (type Langmuir) ; le dosage optimal et la viscosité sont qualitatifs (dosage usuel d’un polyacrylate : de l’ordre de 0,1 à 0,3 % de matière active sur pigment). Les polycarboxylates agissent par effet électro-stérique, les polyacrylates et naphtalènes sulfonés surtout par effet électrostatique.</li>
       <li><strong>Hors modèle</strong> : l’antimousse et la mousse formée par la forte agitation (selon le produit, l’antimousse s’ajoute dès l’empâtage ou à la dilution : voir la fiche technique ; voir aussi la simulation sur les mousses), la taille des cristallites de TiO₂ (0,2 à 0,3 µm : on décrit ici la poudre mal dispersée), l’effet de la température, du pH et de la salinité (voir la simulation précédente), la rhéologie complète de la pâte (la viscosité n’est donnée qu’en fonction du dosage). La granulométrie laser mesure un diamètre équivalent de sphère.</li>
-      <li><strong>Spécifications</strong> : D50 ≤ 1,1 µm et moins de 12 % de masse au-delà de 5 µm sont des seuils illustratifs pour les défis, pas des normes.</li>
+      <li><strong>Volume, masse et nombre</strong> : un granulomètre laser mesure une distribution en <strong>volume</strong> (diamètre de la sphère de même volume). Elle est égale à la distribution massique si toutes les particules ont la même masse volumique (un seul pigment ici). Elle diffère beaucoup d’une distribution en <strong>nombre</strong> : le volume varie comme d³, donc quelques gros agglomérats pèsent lourd en volume alors qu’ils sont rares en nombre.</li>
+      <li><strong>Spécifications</strong> : D50 ≤ 1,1 µm et moins de 12 % de volume au-delà de 5 µm sont des seuils illustratifs pour les défis, pas des normes.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
   const mesuresGuide = enGuide && lignesGuide.length > 0 && (
