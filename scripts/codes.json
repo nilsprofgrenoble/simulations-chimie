@@ -2458,5 +2458,17 @@
  "77:plausible:mec-force-val": "VAL670",
  "77:plausible:arc-val-pressions": "VAL671",
  "77:plausible:arc-val-bateau": "VAL672",
- "36:syn1g-calcul": "REA135"
+ "36:syn1g-calcul": "REA135",
+ "34:pvc-sapp-puissance.0": "SAPP516",
+ "34:pvc-sapp-puissance.1": "SAPP517",
+ "34:pvc-sapp-eclair.0": "SAPP518",
+ "34:pvc-sapp-eclair.1": "SAPP519",
+ "37:prevoir:pvc-ana-extremes": "ANA1139",
+ "37:prevoir:pvc-ana-charge": "ANA1140",
+ "37:prevoir:pvc-ana-ideale": "ANA1141",
+ "37:prevoir:pvc-ana-eclair": "ANA1142",
+ "77:plausible:pvc-val-impossible": "VAL673",
+ "77:plausible:pvc-val-eclair": "VAL674",
+ "36:pvc-puissance": "REA136",
+ "36:pvc-eclair": "REA137"
 }

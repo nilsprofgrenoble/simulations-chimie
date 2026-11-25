@@ -15,7 +15,7 @@
 //  chap = chapitre du menu qui la traite (si ok ou partiel), reste = ce qui manque (si partiel).
 //  Le BTS n'a pas de barre : son référentiel n'est pas décliné ici au même niveau de détail.
 // ═══════════════════════════════════════════════════════════════════════════
-export const DATE_COUVERTURE = '20 novembre 2026';
+export const DATE_COUVERTURE = '25 novembre 2026';
 
 export const ETATS = { ok: 1, partiel: 0.5, avenir: 0 };
 
@@ -159,8 +159,8 @@ export const COUVERTURE = [
     { th: NRJ, t: 'Chaînes énergétiques, conservation de l’énergie, rendement', e: 'avenir' },
     { th: NRJ, t: 'Énergie mécanique', e: 'avenir' },
     { th: NRJ, t: 'Énergie chimique : enthalpie, loi de Hess, pouvoir calorifique', e: 'avenir' },
-    { th: NRJ, t: 'Énergie électrique : puissance, effet Joule, piles et accumulateurs', e: 'avenir' },
-    { th: NRJ, t: 'Énergie et ondes : flux, éclairement, panneau photovoltaïque, laser', e: 'avenir' },
+    { th: NRJ, t: 'Énergie électrique : puissance, effet Joule, piles et accumulateurs', e: 'partiel', chap: 'tstl-pcm-energie-electrique', reste: 'effet Joule, piles et accumulateurs' },
+    { th: NRJ, t: 'Énergie et ondes : flux, éclairement, panneau photovoltaïque, laser', e: 'partiel', chap: 'tstl-pcm-energie-electrique', reste: 'flux lumineux et distance, rendement de conversion, laser' },
   ] },
 ];
 

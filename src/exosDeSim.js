@@ -155,6 +155,7 @@ export const EXOS_DE_SIM = {
   138: [/(^|\.)dissoc-/, /plausible\.dissoc-/],                                                                      // Acide faible : α, Ka, pKa (TSTL, PCM)
   139: [/(^|\.)predo-/, /plausible\.predo-/],                                                                      // pH, pKa et prédominance (TSTL, PCM)
   143: [/(^|\.)extrac-/, /plausible\.extrac-/],
+  227: [/(^|\.)pvc-/, /plausible\.pvc-/],
   144: [/(^|\.)stereo-/, /plausible\.stereo-/],
   142: [/(^|\.)co2dis-/, /plausible\.co2dis-/],
   // ── TSTL · Acides et bases (ancienne simulation 85 découpée en quatre, 19/11/2026)
