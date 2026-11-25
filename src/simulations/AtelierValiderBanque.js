@@ -6,6 +6,7 @@ import { ONDES1G_VAL } from './ondes1gExos.js';
 import { NUC2GT_VAL } from './nucleaire2gtExos.js';
 import { MAT2GT_VAL } from './matiere2gtExos.js';
 import { RHC_VAL } from './rheoCourbesExos.js';
+import { ANALYSE_BTS_VAL } from './analyseBtsExos.js';
 import { ITT_VAL } from './itt3Exos.js';
 import { TGPB_VAL } from './tgPhysiqueBExos.js';
 import { TSTLB_VAL } from './tstlBExos.js';
@@ -2144,9 +2145,9 @@ export const PLAUSIBLES = [
     ver: 'Une compacité ne peut pas dépasser 1 : les atomes ne peuvent pas occuper plus de volume que la maille. Les atomes ne se touchent pas selon l’arête en CFC : a = 2√2 R, ce qui donne C = 0,74.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
-      V('il a utilisé la relation a = 2R, valable pour le cubique simple, au lieu de a = 2√2 R', 'En CFC, les atomes se touchent selon la diagonale d’une face : a√2 = 4R. Avec a = 2R, le volume de maille est trop petit.'),
-      F('il a compté 8 atomes par maille (un par sommet) au lieu de 4', 'Avec 8 atomes et a = 2√2 R, on trouverait 1,48, et non 2,09 : ce n’est pas la cause du résultat.'),
-      F('il a mal calculé le volume des sphères avec la formule (4/3)πR³', 'Son volume (4/3)πR³ est correct. Le rapport 2,09 / 0,74 ≈ 2,83 = (√2)³ montre que l’erreur est dans le volume de la maille, donc dans a.'),
+      V('il a pris a = 2R, valable pour le cubique simple, au lieu de a = 2√2 R', 'En CFC, les atomes se touchent selon la diagonale d’une face : a√2 = 4R. Avec a = 2R, le volume de maille est trop petit.'),
+      F('il a compté 8 atomes par maille (un par sommet) au lieu des 4 atomes en propre', 'Avec 8 atomes et a = 2√2 R, on trouverait 1,48, et non 2,09 : ce n’est pas la cause du résultat.'),
+      F('il a mal calculé le volume des sphères avec une formule différente de (4/3)πR³', 'Son volume (4/3)πR³ est correct. Le rapport 2,09 / 0,74 ≈ 2,83 = (√2)³ montre que l’erreur est dans le volume de la maille, donc dans a.'),
     ] }),
   P({ id: 'cri-val-masse-volumique-cuivre', domaine: 'Analyse cristallographique', niveau: 2, titre: 'Masse volumique du cuivre à partir de la maille', plausible: true,
     enonce: 'Le cuivre cristallise en CFC avec a = 361 pm et M = 63,5 g·mol⁻¹. Un élève calcule ρ = 4 × 63,5 / (6,02×10²³ × (3,61×10⁻⁸ cm)³) et trouve ρ = 8,97 g·cm⁻³.',
@@ -2184,9 +2185,9 @@ export const PLAUSIBLES = [
     ver: 'Les intégrations donnent 3 + 2 + 2 = 7 H, alors que la formule brute en contient 8. Si tous les H sont visibles, il manque un H : le spectre n’est pas celui de ce composé, ou une intégration est mal relevée (par exemple 3, 2 et 3).',
     q2: 'Quelle conclusion est correcte ?',
     options: [
-      V('si tous les H sont visibles, la somme des intégrations doit valoir 8 (nombre de H de la formule brute) : 3 + 2 + 2 = 7, ce n’est pas cohérent', 'Si l’échelle est calée en nombre de H, la somme des intégrations est le nombre total de H visibles, soit 8 ici. (En pratique, un H échangeable de type OH ou COOH peut manquer sur un spectre ; l’énoncé écarte ce cas en supposant tous les H visibles.)'),
-      F('c’est cohérent : un H est toujours invisible sur un spectre RMN, donc la somme vaut 7 au lieu de 8', 'L’énoncé suppose tous les H visibles. Un H échangeable (OH, COOH) peut certes manquer, mais ce n’est pas systématique et il faudrait alors le justifier.'),
-      F('c’est cohérent : les intégrations ne donnent que des rapports (3 : 2 : 2), pas un nombre de H', 'Même en ne gardant que le rapport, 3 : 2 : 2 avec des nombres entiers de H correspond à 7 protons (ou 14…), jamais à 8 : il reste incohérent.'),
+      V('si tous les H sont visibles, la somme doit valoir 8 : 3 + 2 + 2 = 7, ce n’est pas cohérent', 'Si l’échelle est calée en nombre de H, la somme des intégrations est le nombre total de H visibles, soit 8 ici. (En pratique, un H échangeable de type OH ou COOH peut manquer sur un spectre ; l’énoncé écarte ce cas en supposant tous les H visibles.)'),
+      F('c’est cohérent : un H est toujours invisible sur un spectre RMN, donc la somme vaut 7 au lieu de 8 attendus', 'L’énoncé suppose tous les H visibles. Un H échangeable (OH, COOH) peut certes manquer, mais ce n’est pas systématique et il faudrait alors le justifier.'),
+      F('c’est cohérent : les intégrations ne donnent que des rapports (3 : 2 : 2), pas un nombre de H réel', 'Même en ne gardant que le rapport, 3 : 2 : 2 avec des nombres entiers de H correspond à 7 protons (ou 14…), jamais à 8 : il reste incohérent.'),
     ] }),
   P({ id: 'for-val-extrait-sec', domaine: 'Formulation', niveau: 1, titre: 'Calcul d’un extrait sec', plausible: false,
     enonce: 'On pèse 500 g de peinture liquide. Après séchage complet à l’étuve, il reste 290 g de film. Un élève calcule l’extrait sec et trouve 172 %.',
@@ -2314,7 +2315,7 @@ export const PLAUSIBLES = [
     ver: 'Un H d’aldéhyde résonne entre 9 et 10 ppm : 9,8 ppm convient, même si cette valeur paraît très élevée pour un H lié à un carbone. Le CH₃ voisin du C=O est attendu vers 2 à 2,5 ppm : 2,2 ppm convient. Les intégrations 1 et 3 correspondent bien à 1 H et 3 H. Enfin, le H de –CHO a 3 H voisins (ceux du CH₃) : quadruplet ; les 3 H du CH₃ ont 1 H voisin : doublet. L’attribution est cohérente.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : 9,8 ppm est dans la zone des aldéhydes (9 à 10 ppm), et le H de –CHO a 3 H voisins (ceux du CH₃), d’où un quadruplet', 'Le CH₃ donne en retour un doublet (1 H voisin), d’intégration 3 : les deux signaux sont cohérents entre eux.'),
+      V('Cohérent : 9,8 ppm est dans la zone des aldéhydes (9 à 10 ppm), et le H de –CHO a 3 H voisins : quadruplet', 'Le CH₃ donne en retour un doublet (1 H voisin), d’intégration 3 : les deux signaux sont cohérents entre eux.'),
       F('Cohérent : 9,8 ppm est dans la zone des aldéhydes (9 à 10 ppm), et le quadruplet correspond aux 4 H de la molécule (1 + 3)', 'Le nombre de pics dépend des H voisins (n + 1) et non du nombre total de H : 3 H voisins donnent 4 pics. Le verdict est juste, pas l’argument.'),
       F('Pas cohérent : le H de –CHO n’est lié à aucun autre H, donc n = 0 et le signal devrait être un singulet (0 + 1 pic)', 'Le couplage dépend des H portés par les atomes de carbone adjacents, et non des H liés au même carbone : le C du CHO est lié au C du CH₃, qui porte 3 H, d’où 3 + 1 = 4 pics.'),
     ] }),
@@ -2394,7 +2395,7 @@ export const PLAUSIBLES = [
     ver: 'L’écart x − X vaut 0,30 mg·L⁻¹, soit une fois et demie σ_pt (0,20) : z = 0,30 / 0,20 = 1,5, positif car x est supérieur à X. Comme |z| = 1,5 est inférieur à 2, le résultat est satisfaisant : l’élève a raison.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : l’écart de 0,30 vaut 1,5 fois σ_pt (0,20), donc z = 1,5 < 2 : satisfaisant', 'Le z-score exprime l’écart à la valeur assignée en nombre de σ_pt.'),
+      V('Cohérent : l’écart 0,30 vaut 1,5 σ_pt, donc z = 1,5 < 2 : satisfaisant', 'Le z-score exprime l’écart à la valeur assignée en nombre de σ_pt.'),
       F('Cohérent : l’écart de 0,30 est plus petit que σ_pt (0,20), donc z < 1', 'L’écart (0,30) est plus grand que σ_pt (0,20) : z vaut 1,5. Le verdict « satisfaisant » reste juste, mais pas ce raisonnement.'),
       F('Pas cohérent : z = 0,30 / 10,00 = 0,03, valeur sans unité très proche de zéro', 'On divise par σ_pt et non par la valeur assignée : z = 0,30 / 0,20 = 1,5.'),
     ] }),
@@ -2414,7 +2415,7 @@ export const PLAUSIBLES = [
     ver: 'À l’équivalence, les deux couples ont le même potentiel, compris entre E°(Fe³⁺/Fe²⁺) = 0,68 V et E°(Ce⁴⁺/Ce³⁺) = 1,44 V. Comme les deux couples échangent un électron, E_éq = (0,68 + 1,44) / 2 ≈ 1,06 V. Une valeur de 1,60 V, supérieure aux deux E°, est impossible.',
     q2: 'Quelle explication est la plus probable ?',
     options: [
-      V('Pas cohérent : à l’équivalence, E est compris entre les deux E° ; on attend (0,68 + 1,44) / 2 ≈ 1,06 V', 'La valeur à l’équivalence est la moyenne des deux E° quand chaque couple échange un électron.'),
+      V('Pas cohérent : à l’équivalence, E est entre les deux E°, soit ≈ 1,06 V', 'La valeur à l’équivalence est la moyenne des deux E° quand chaque couple échange un électron.'),
       F('Cohérent : à l’équivalence, l’oxydant le plus fort impose son potentiel, supérieur à 1,44 V', 'Aucun des deux couples n’impose à lui seul son potentiel à l’équivalence : E reste entre les deux E°.'),
       F('Cohérent : le saut de potentiel à l’équivalence dépasse E°(Ce⁴⁺/Ce³⁺), puis le potentiel redescend', 'Le potentiel croît puis tend vers E°(Ce⁴⁺/Ce³⁺) après l’équivalence : il ne le dépasse pas à l’équivalence.'),
     ] }),
@@ -2434,19 +2435,19 @@ export const PLAUSIBLES = [
     ver: 'La demi-équation ne fait pas intervenir H⁺ : le potentiel ne dépend pas du pH. Avec [Fe³⁺] = [Fe²⁺], E = E° = 0,77 V à tout pH (tant que Fe³⁺ ne précipite pas). Le terme −0,059 pH n’apparaît que pour des couples dont la demi-équation contient H⁺, comme O₂ / H₂O.',
     q2: 'Quelle explication est la plus probable ?',
     options: [
-      V('L’élève a appliqué à tort la pente en −0,059 pH : sans H⁺ dans la demi-équation, E = 0,77 V quel que soit le pH', 'La pente en pH vient de H⁺ dans la demi-équation : ici il n’y en a pas.'),
-      F('L’élève a raison : tout potentiel rédox diminue de 0,059 V par unité de pH', 'Seuls les couples dont la demi-équation contient H⁺ ont une dépendance en pH.'),
-      F('L’élève a oublié de diviser par n : il faut 0,059 / 2 par unité de pH', 'Le problème n’est pas le facteur n : il n’y a tout simplement pas de dépendance en pH ici.'),
+      V('Il a appliqué à tort la pente en pH : sans H⁺ dans la demi-équation, E = 0,77 V', 'La pente en pH vient de H⁺ dans la demi-équation : ici il n’y en a pas.'),
+      F('Il a raison : tout potentiel rédox diminue de 0,059 V par unité de pH, sans exception', 'Seuls les couples dont la demi-équation contient H⁺ ont une dépendance en pH.'),
+      F('Il a oublié de diviser par n : il faut 0,059 / 2 par unité de pH ici', 'Le problème n’est pas le facteur n : il n’y a tout simplement pas de dépendance en pH ici.'),
     ] }),
   P({ id: 'iE-eau-ph7-ok', domaine: 'Chimie', niveau: 2, titre: 'Mur d’oxydation de l’eau à pH 7', plausible: true,
-    ...presenter({ contexte: 'Le potentiel thermodynamique du couple O₂ / H₂O est E = 1,23 − 0,059 × pH (en V, par rapport à l’électrode standard à hydrogène).', liste: [['pH de la solution', '7']], suite: 'Un élève calcule E ≈ 0,82 V pour le mur d’oxydation de l’eau à pH = 7.' }),
-    reperes: [['Relation', 'E = 1,23 − 0,059 × pH'], ['À pH = 0', 'E = 1,23 V']],
-    ver: 'À pH = 0, E = 1,23 V ; chaque unité de pH retranche 0,059 V. À pH = 7, on retranche 7 × 0,059 ≈ 0,41 V : E ≈ 1,23 − 0,41 = 0,82 V. Le résultat est cohérent (il est inférieur à 1,23 V, comme on l’attend pour un pH supérieur à 0).',
+    ...presenter({ contexte: 'Le mur d’oxydation de l’eau correspond au couple O₂ / H₂O : O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O. Sur un diagramme, on observe qu’il est à 1,23 V par rapport à l’électrode standard à hydrogène pour un pH de 0.', liste: [['pH de la solution étudiée', '7']], suite: 'Un élève affirme : « À pH = 7, le mur d’oxydation de l’eau se trouve à un potentiel plus bas qu’à pH = 0. »' }),
+    reperes: [['Demi-équation', 'O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O'], ['Effet du pH', 'H⁺ est du côté de l’oxydant : moins il y en a (pH plus grand), plus le potentiel du couple est bas']],
+    ver: 'Dans la demi-équation, H⁺ est du côté de l’oxydant. Quand le pH augmente, la concentration en H⁺ diminue et le potentiel du couple diminue (la droite du diagramme E-pH a une pente négative). Le mur d’oxydation est donc plus bas à pH 7 qu’à pH 0 : l’affirmation est cohérente.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : 7 × 0,059 ≈ 0,41 V à retrancher de 1,23 V donne ≈ 0,82 V, plus bas qu’à pH = 0', 'La valeur doit diminuer quand le pH augmente : 0,82 V est bien inférieure à 1,23 V.'),
+      V('Cohérent : H⁺ est côté oxydant ; moins il y en a, plus le potentiel est bas', 'Le potentiel du couple diminue quand le pH augmente.'),
       F('Cohérent : le potentiel doit rester égal à 1,23 V, valeur de référence de l’eau', '1,23 V est la valeur à pH = 0 seulement : à pH = 7, le potentiel est plus bas.'),
-      F('Pas cohérent : à pH = 7 le potentiel devrait être supérieur à 1,23 V, car l’eau est neutre', 'Le pH ne fait qu’abaisser ce potentiel (pente négative) : il passe sous 1,23 V.'),
+      F('Pas cohérent : à pH = 7 le potentiel devrait être plus haut, car l’eau est neutre', 'Le pH ne fait qu’abaisser ce potentiel (pente négative) : il passe sous 1,23 V.'),
     ] }),
   P({ id: 'son-deux-sources-niveau', domaine: 'Ondes', niveau: 2, titre: 'Deux haut-parleurs identiques', plausible: false,
     ...presenter({ contexte: 'Un haut-parleur seul produit en un point un niveau sonore de 70 dB. On en ajoute un deuxième, identique, au même endroit.', liste: [['Niveau d’un haut-parleur', '70 dB'], ['Relation', 'L = 10 log (I / I₀)']], suite: 'Un élève écrit : « Les deux haut-parleurs ensemble donnent 70 + 70 = 140 dB. »' }),
@@ -4392,6 +4393,7 @@ export const PLAUSIBLES = [
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
   ...RHC_VAL,
+  ...ANALYSE_BTS_VAL,
   ...ITT_VAL,
   ...TGPB_VAL,
   ...TSTLB_VAL,

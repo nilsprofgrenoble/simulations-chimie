@@ -13,6 +13,7 @@ import { ONDES1G_ANA } from './ondes1gExos.js';
 import { NUC2GT_ANA } from './nucleaire2gtExos.js';
 import { MAT2GT_ANA } from './matiere2gtExos.js';
 import { RHC_ANA } from './rheoCourbesExos.js';
+import { ANALYSE_BTS_ANA } from './analyseBtsExos.js';
 import { ITT_ANA } from './itt3Exos.js';
 import { TGPB_ANA, TGPB_REL, TGPB_HYP } from './tgPhysiqueBExos.js';
 import { TSTLB_ANA, TSTLB_REL } from './tstlBExos.js';
@@ -4558,9 +4559,9 @@ export const PREVOIR = [
     ] },
   { id: 'rmn-cosy', domaine: 'Spectroscopie RMN', titre: 'Lire une tache COSY',
     enonce: 'Sur le spectre COSY de l’éthanoate d’éthyle CH₃COOCH₂CH₃, le CH₃ du groupe éthyle résonne à 1,3 ppm et le CH₂ à 4,1 ppm. On observe une tache hors de la diagonale, aux coordonnées (1,3 ppm ; 4,1 ppm).', q: 'Cette tache indique que…', options: [
-      F('ces H sont portés par le même atome de carbone', 'Des H couplés en COSY sont portés par des carbones voisins ; ici CH₃ et CH₂ sont deux groupes distincts.'),
-      V('les H du CH₃ (1,3 ppm) et ceux du CH₂ (4,1 ppm) sont couplés, donc voisins', 'Une tache hors diagonale relie deux groupes de H couplés, séparés par trois liaisons : CH₃–CH₂.'),
-      F('ces H sont proches dans l’espace sans être couplés', 'C’est l’information d’une expérience NOESY. La COSY détecte les couplages scalaires entre H voisins.'),
+      F('ces H sont portés par un même atome de carbone, en position géminale', 'Des H couplés en COSY sont portés par des carbones voisins ; ici CH₃ et CH₂ sont deux groupes distincts.'),
+      V('les H du CH₃ et ceux du CH₂ sont couplés, donc voisins', 'Une tache hors diagonale relie deux groupes de H couplés, séparés par trois liaisons : CH₃–CH₂.'),
+      F('ces H sont proches dans l’espace, sans être couplés par les liaisons', 'C’est l’information d’une expérience NOESY. La COSY détecte les couplages scalaires entre H voisins.'),
       F('ces deux groupes de H sont équivalents', 'Ils ont des déplacements chimiques différents (1,3 et 4,1 ppm) : ils ne sont pas équivalents.'),
     ] },
   { id: 'rmn-hsqc', domaine: 'Spectroscopie RMN', titre: 'Lire une tache HSQC',
@@ -4717,15 +4718,15 @@ export const PREVOIR = [
     ] },
   { id: 'met-apt-z-seuils', domaine: 'Métrologie', titre: 'Lire un z-score d’essai d’aptitude',
     enonce: 'Dans un essai d’aptitude, la performance d’un laboratoire est évaluée par un z-score. On retient généralement : |z| ≤ 2, résultat satisfaisant ; 2 < |z| < 3, résultat douteux (signal d’alerte) ; |z| ≥ 3, résultat insatisfaisant (action requise). Un laboratoire obtient z = −2,4.', q: 'Comment interpréter ce résultat ?', options: [
-      V('Résultat douteux : en dessous de la valeur de référence, il appelle à vérifier la méthode sans conclure à une erreur grave', 'Le signe négatif indique un résultat inférieur à la valeur assignée ; 2 < |z| < 3 correspond à un signal d’alerte.'),
-      F('Résultat insatisfaisant : un z-score négatif est toujours mauvais', 'Le signe n’est pas un critère de qualité : seule la valeur absolue de z compte. Ici |z| = 2,4, ce qui est douteux et non insatisfaisant.'),
+      V('Résultat douteux : sous la valeur de référence, à vérifier sans conclure à une erreur grave', 'Le signe négatif indique un résultat inférieur à la valeur assignée ; 2 < |z| < 3 correspond à un signal d’alerte.'),
+      F('Résultat insatisfaisant : un z-score négatif est toujours mauvais, quelle que soit sa valeur', 'Le signe n’est pas un critère de qualité : seule la valeur absolue de z compte. Ici |z| = 2,4, ce qui est douteux et non insatisfaisant.'),
       F('Résultat satisfaisant : il est proche de la valeur de référence, puisque z est négatif', 'Un z négatif dit que le résultat est inférieur à la valeur assignée ; il est satisfaisant seulement si |z| ≤ 2, ce qui n’est pas le cas.'),
     ] },
   { id: 'met-apt-z-sigma', domaine: 'Métrologie', titre: 'Un écart-type d’aptitude plus large',
     enonce: 'Un laboratoire a rendu un résultat x pour une valeur assignée X. Le z-score est z = (x − X) / σ_pt, où σ_pt est l’écart-type pour l’évaluation de l’aptitude. L’organisateur élargit σ_pt (par exemple il le double), sans que le résultat du laboratoire change.', q: 'Que devient |z| ?', options: [
-      V('Il est divisé par deux : le même écart à la valeur assignée est jugé moins sévèrement', 'σ_pt est au dénominateur : en le doublant, |z| est divisé par 2.'),
-      F('Il est multiplié par deux, car l’écart-type est plus grand', 'σ_pt est au dénominateur : un σ_pt plus grand diminue |z|.'),
-      F('Il ne change pas, car il ne dépend que de l’écart x − X', 'z dépend aussi de σ_pt : seul l’écart au numérateur ne change pas.'),
+      V('Il est divisé par deux : le même écart est jugé moins sévèrement', 'σ_pt est au dénominateur : en le doublant, |z| est divisé par 2.'),
+      F('Il est multiplié par deux, car l’écart-type utilisé est plus grand', 'σ_pt est au dénominateur : un σ_pt plus grand diminue |z|.'),
+      F('Il ne change pas, car il ne dépend que de l’écart x − X de départ', 'z dépend aussi de σ_pt : seul l’écart au numérateur ne change pas.'),
     ] },
   { id: 'chr-clhp-acn', domaine: 'Chimie', titre: 'Plus d’acétonitrile dans l’éluant (CLHP phase inverse)',
     enonce: 'En CLHP en phase inverse, la phase stationnaire (C18) est apolaire et l’éluant est un mélange eau / acétonitrile. On augmente la proportion d’acétonitrile dans l’éluant, les autres conditions restant identiques.', q: 'Comment évoluent les temps de rétention des composés ?', options: [
@@ -4735,27 +4736,27 @@ export const PREVOIR = [
     ] },
   { id: 'chr-cpg-temperature', domaine: 'Chimie', titre: 'Chauffer plus fort le four en CPG',
     enonce: 'En chromatographie en phase gazeuse (CPG), on analyse un mélange de composés de températures d’ébullition différentes. On augmente la température du four, les autres conditions restant identiques.', q: 'Quel est l’effet attendu sur le chromatogramme ?', options: [
-      V('Les temps de rétention diminuent, au risque de perdre en séparation (pics plus proches)', 'À température plus élevée, les composés passent davantage en phase gazeuse et sortent plus vite, avec moins de temps pour être séparés.'),
+      V('Les temps de rétention diminuent, avec des pics plus proches', 'À température plus élevée, les composés passent davantage en phase gazeuse et sortent plus vite, avec moins de temps pour être séparés.'),
       F('Les temps de rétention augmentent, car les composés sont plus agités et ralentissent', 'La chaleur augmente la fraction de composé dans la phase mobile gazeuse : l’élution est plus rapide.'),
       F('Seuls les composés les moins volatils sont affectés', 'La température agit sur tous les composés ; son effet est simplement plus marqué pour ceux dont la volatilité est faible.'),
     ] },
   { id: 'chr-sm-ion-moleculaire', domaine: 'Chimie', titre: 'Où chercher la masse molaire dans un spectre de masse ?',
     enonce: 'En CPG couplée à la spectrométrie de masse, la molécule est ionisée par impact électronique : elle perd un électron et donne un ion moléculaire M⁺•, qui peut ensuite se fragmenter. L’éthanol a pour masse molaire 46 g·mol⁻¹.', q: 'À quelle valeur de m/z apparaît le pic de l’ion moléculaire de l’éthanol ?', options: [
-      V('À m/z = 46 : l’ion moléculaire a la masse de la molécule (la masse de l’électron perdu est négligeable)', 'M⁺• a une masse égale à celle de la molécule à la masse d’un électron près, soit m/z = M pour une charge +1.'),
-      F('À m/z = 47 : l’ion a gagné un atome d’hydrogène', 'L’impact électronique arrache un électron, il n’ajoute pas d’atome ; (M + 1) correspond à d’autres processus (ionisation chimique, isotopes).'),
-      F('À m/z = 23 : la charge +2 divise la masse par deux', 'L’ionisation par impact électronique donne surtout des ions de charge +1 : m/z est égal à la masse de l’ion.'),
+      V('À m/z = 46 : la masse de l’ion est celle de la molécule', 'M⁺• a une masse égale à celle de la molécule à la masse d’un électron près, soit m/z = M pour une charge +1.'),
+      F('À m/z = 47 : l’ion a gagné un atome d’hydrogène lors de l’ionisation', 'L’impact électronique arrache un électron, il n’ajoute pas d’atome ; (M + 1) correspond à d’autres processus (ionisation chimique, isotopes).'),
+      F('À m/z = 23 : une charge +2 divise la masse par deux, comme pour un ion double', 'L’ionisation par impact électronique donne surtout des ions de charge +1 : m/z est égal à la masse de l’ion.'),
     ] },
   { id: 'elc-demi-equivalence', domaine: 'Chimie', titre: 'Potentiel à la demi-équivalence',
     enonce: 'On dose des ions Fe²⁺ par une solution d’ions Ce⁴⁺ en suivant le potentiel d’une électrode de platine (courant nul). La réaction est Ce⁴⁺ + Fe²⁺ → Ce³⁺ + Fe³⁺. À la demi-équivalence, la moitié des ions Fe²⁺ a été oxydée.', q: 'Quelle est la valeur du potentiel à cet instant ?', options: [
-      V('E = E°(Fe³⁺/Fe²⁺), car [Fe³⁺] = [Fe²⁺] et le logarithme de leur rapport est nul', 'Avant l’équivalence, le potentiel est fixé par le couple Fe³⁺/Fe²⁺ : E = E° + 0,06 log([Fe³⁺]/[Fe²⁺]), et log 1 = 0.'),
+      V('E = E°(Fe³⁺/Fe²⁺), car [Fe³⁺] = [Fe²⁺] et log 1 = 0', 'Avant l’équivalence, le potentiel est fixé par le couple Fe³⁺/Fe²⁺ : E = E° + 0,06 log([Fe³⁺]/[Fe²⁺]), et log 1 = 0.'),
       F('E = E°(Ce⁴⁺/Ce³⁺), car c’est le réactif titrant qui impose le potentiel', 'Avant l’équivalence, il reste très peu de Ce⁴⁺ : le couple qui impose le potentiel est celui dont les deux formes sont présentes en quantités notables, Fe³⁺/Fe²⁺.'),
       F('E = 0 V, car la réaction est à moitié terminée', 'Le potentiel suit la loi de Nernst du couple présent : il n’est pas nul, il vaut E°(Fe³⁺/Fe²⁺) à la demi-équivalence.'),
     ] },
   { id: 'elc-apres-equivalence', domaine: 'Chimie', titre: 'Quel couple impose le potentiel après l’équivalence ?',
     enonce: 'Dans le même dosage de Fe²⁺ par Ce⁴⁺, on continue d’ajouter la solution titrante au-delà de l’équivalence : tous les ions Fe²⁺ ont été consommés.', q: 'Quel couple impose alors le potentiel de l’électrode ?', options: [
-      V('Le couple Ce⁴⁺/Ce³⁺, car Ce³⁺ s’est formé et Ce⁴⁺ est maintenant en excès : les deux formes sont présentes', 'Après l’équivalence, il n’y a plus de Fe²⁺ : le potentiel est fixé par le couple dont les deux formes coexistent, Ce⁴⁺/Ce³⁺.'),
-      F('Le couple Fe³⁺/Fe²⁺, qui continue de fixer le potentiel tout au long du dosage', 'Fe²⁺ est totalement consommé : la loi de Nernst de ce couple n’est plus applicable (le rapport [Fe³⁺]/[Fe²⁺] devient infini).'),
-      F('Aucun couple : après l’équivalence, le potentiel n’est plus défini', 'Le potentiel est toujours défini : il est imposé par Ce⁴⁺/Ce³⁺ après l’équivalence.'),
+      V('Ce⁴⁺/Ce³⁺ : Ce³⁺ s’est formé et Ce⁴⁺ est en excès, les deux formes coexistent', 'Après l’équivalence, il n’y a plus de Fe²⁺ : le potentiel est fixé par le couple dont les deux formes coexistent, Ce⁴⁺/Ce³⁺.'),
+      F('Le couple Fe³⁺/Fe²⁺, qui continue de fixer le potentiel tout au long de ce dosage', 'Fe²⁺ est totalement consommé : la loi de Nernst de ce couple n’est plus applicable (le rapport [Fe³⁺]/[Fe²⁺] devient infini).'),
+      F('Aucun couple : après l’équivalence, le potentiel n’est plus défini par la solution', 'Le potentiel est toujours défini : il est imposé par Ce⁴⁺/Ce³⁺ après l’équivalence.'),
     ] },
   { id: 'elc-ampero-courant-limite', domaine: 'Chimie', titre: 'Courant limite en ampérométrie',
     enonce: 'En ampérométrie, on impose un potentiel à l’électrode et on mesure le courant. Pour une espèce électroactive réduite à l’électrode, le courant limite de diffusion est proportionnel à sa concentration.', q: 'On double la concentration de cette espèce dans la solution (même électrode, même potentiel appliqué dans la zone du palier). Que devient le courant limite ?', options: [
@@ -4771,8 +4772,8 @@ export const PREVOIR = [
     ] },
   { id: 'iE-surtension-oxydation-eau', domaine: 'Chimie', titre: 'Pourquoi le mur d’oxydation de l’eau est observé plus haut',
     enonce: 'Sur une électrode de platine, la thermodynamique place l’oxydation de l’eau à E = 1,23 V (à pH = 0). Sur la courbe i = f(E) expérimentale, le courant d’oxydation de l’eau n’apparaît qu’à un potentiel nettement plus élevé.', q: 'Comment l’expliquer ?', options: [
-      V('La réaction est cinétiquement lente sur platine : il faut une surtension pour obtenir un courant mesurable', 'Un potentiel thermodynamiquement suffisant ne garantit pas un courant : une réaction lente demande une surtension.'),
-      F('Le potentiel thermodynamique 1,23 V est faux : il a été mal calculé', 'La valeur de 1,23 V est correcte : c’est la cinétique, et non la thermodynamique, qui décale le mur.'),
+      V('La réaction est lente sur platine : il faut une surtension pour avoir un courant', 'Un potentiel thermodynamiquement suffisant ne garantit pas un courant : une réaction lente demande une surtension.'),
+      F('Le potentiel thermodynamique de 1,23 V est faux : il a été mal calculé au départ', 'La valeur de 1,23 V est correcte : c’est la cinétique, et non la thermodynamique, qui décale le mur.'),
       F('Le platine est un isolant : il ne peut pas échanger d’électrons avec l’eau à 1,23 V', 'Le platine est un très bon conducteur. Ce qui est lent, c’est la réaction d’oxydation de l’eau à sa surface.'),
     ] },
   { id: 'son-distance-niveau', domaine: 'Ondes', titre: 'Doubler la distance à une source sonore',
@@ -6182,6 +6183,7 @@ export const PREVOIR = [
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,
   ...RHC_ANA,
+  ...ANALYSE_BTS_ANA,
   ...ITT_ANA,
   ...TGPB_ANA,
   ...TSTLB_ANA,
