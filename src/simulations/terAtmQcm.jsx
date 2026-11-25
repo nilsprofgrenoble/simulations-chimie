@@ -1,0 +1,8 @@
+// QCM du parcours « Terre-atmosphère » (sim 236). La bonne réponse est l'option 0 (mélangée à l'affichage) ; jamais la plus longue (contrôle : terAtmTirages.test.mjs).
+export const QCM_PARCOURS = {
+  albedo: { options: ['la neige fraîche, d’albédo voisin de 0,8', 'l’océan, d’albédo voisin de 0,06 environ', 'une forêt dense, d’albédo voisin de 0,15', 'un asphalte noir, d’albédo voisin de 0,05'], bonne: 0 },
+  equilibre: { options: ['la puissance émise est égale à la puissance absorbée', 'la puissance émise est nulle : la Terre ne rayonne plus', 'la puissance absorbée est nulle : tout est réfléchi', 'la puissance émise est le double de la puissance absorbée'], bonne: 0 },
+  serre: { options: ['l’effet de serre : l’atmosphère renvoie de l’infrarouge vers le sol', 'l’albédo : la Terre réfléchit moins de lumière que dans le calcul', 'la loi de Stefan-Boltzmann, qui ne s’applique pas à la Terre', 'la chaleur interne de la Terre, source de presque toute l’énergie reçue'], bonne: 0 },
+  prevoir: { options: ['elle augmente : la Terre absorbe davantage d’énergie solaire', 'elle diminue : la Terre reçoit moins de rayonnement du Soleil', 'elle ne change pas : S₀ est resté le même', 'elle diminue : une Terre plus sombre émet moins d’infrarouge'], bonne: 0 },
+  planetes: { options: ['Mars a un effet de serre très faible, Vénus un effet de serre très intense', 'Les deux planètes ont le même effet de serre, mais Vénus est plus proche du Soleil', 'L’écart sur Vénus vient seulement de sa distance au Soleil, déjà prise en compte dans S₀', 'Le calcul est exact pour Vénus : sa température observée est une erreur de mesure'], bonne: 0 },
+};

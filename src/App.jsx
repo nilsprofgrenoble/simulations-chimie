@@ -139,6 +139,7 @@ const SimulationIntensiteSonore = paresseux(() => import("./simulations/Intensit
 const SimulationGazParfait = paresseux(() => import("./simulations/GazParfait"), "SimulationGazParfait");
 const SimulationPremierPrincipe = paresseux(() => import("./simulations/PremierPrincipe"), "SimulationPremierPrincipe");
 const SimulationTransfertsThermiques = paresseux(() => import("./simulations/TransfertsThermiques"), "SimulationTransfertsThermiques");
+const SimulationTerreAtmosphere = paresseux(() => import("./simulations/TerreAtmosphere"), "SimulationTerreAtmosphere");
 const SimulationArchimede = paresseux(() => import("./simulations/Archimede"), "SimulationArchimede");
 const SimulationLoiNewtonThermostat = paresseux(() => import("./simulations/LoiNewtonThermostat"), "SimulationLoiNewtonThermostat");
 const SimulationEcoulementFluide = paresseux(() => import("./simulations/EcoulementFluide"), "SimulationEcoulementFluide");
@@ -353,6 +354,7 @@ const SIMULATIONS = [
   { id:215, label:"Gaz parfait : équation d’état et limites", niveau:"TG", icon:"🎈", color:"#0f766e", component: SimulationGazParfait },
   { id:216, label:"Premier principe : énergie interne et bilan", niveau:"TG", icon:"🔥", color:"#b45309", component: SimulationPremierPrincipe },
   { id:235, label:"Transferts thermiques : flux et résistance", niveau:"TG", icon:"♨️", color:"#c2410c", component: SimulationTransfertsThermiques },
+  { id:236, label:"Bilan thermique de la Terre", niveau:"TG", icon:"🌍", color:"#0f766e", component: SimulationTerreAtmosphere },
   { id:213, label:"Poussée d’Archimède : origine et expression", niveau:"TG", icon:"🛟", color:"#0369a1", component: SimulationArchimede },
   { id:212, label:"Loi de Newton et thermostat : T(t)", niveau:"TG", icon:"🔥", color:"#c2410c", component: SimulationLoiNewtonThermostat },
   { id:214, label:"Écoulement d’un fluide : débit et Bernoulli", niveau:"TG", icon:"💧", color:"#0369a1", component: SimulationEcoulementFluide },

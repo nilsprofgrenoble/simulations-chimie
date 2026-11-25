@@ -219,6 +219,14 @@ export const TGPB_ANA = [
       F('elle ne change pas : l’énergie reçue du Soleil reste la même, donc la température aussi', 'L’énergie reçue du Soleil est la même, mais l’atmosphère modifie la façon dont l’énergie quitte la Terre, donc la température d’équilibre.'),
       F('elle augmente, car ces gaz émettent davantage de lumière visible vers le sol', 'Ils absorbent et réémettent surtout de l’infrarouge, pas de la lumière visible.'),
     ] },
+  { id: 'ter-ana-planetes', domaine: DOM_TRANSFERTS, titre: 'Mars et Vénus : laquelle est la plus froide ?',
+    ...presenter({ contexte: 'On calcule la température d’équilibre de deux planètes sans atmosphère avec le même modèle : puissance absorbée par m² = (1 − A) × S₀ divisé par 4 ; puissance émise = σ × T⁴. Mars reçoit S₀ = 586 W·m⁻² et a pour albédo A = 0,25. Vénus, plus proche du Soleil, reçoit S₀ = 2601 W·m⁻² mais son albédo est A = 0,77.' }),
+    q: 'Quelle planète a la température d’équilibre la plus basse ?', options: [
+      V('Mars : elle reçoit beaucoup moins de puissance du Soleil', 'P_abs vaut environ 110 W·m⁻² pour Mars et 150 W·m⁻² pour Vénus : Vénus absorbe plus malgré son albédo élevé, donc sa température d’équilibre (227 K) est plus haute que celle de Mars (210 K).'),
+      F('Vénus : son albédo élevé réfléchit presque tout le rayonnement', 'L’albédo réduit la puissance absorbée, mais Vénus reçoit 4,4 fois plus de puissance : elle en absorbe encore 23 %, soit environ 150 W·m⁻², contre 110 pour Mars.'),
+      F('Aucune : l’albédo compense exactement la distance au Soleil', 'Les puissances absorbées valent environ 110 et 150 W·m⁻² : elles ne sont pas égales, donc les températures non plus.'),
+      F('On ne peut pas savoir sans connaître le rayon de chaque planète', 'Le rayon se simplifie dans le bilan (disque π R² éclairé, sphère 4 π R² qui émet) : il n’intervient pas.'),
+    ] },
 ];
 
 // ───────────── RELATIONS : choisir la bonne relation ─────────────
@@ -394,6 +402,26 @@ export const TGPB_VAL = [
       V('invraisemblable : 255 est en kelvins, soit environ −18 °C', 'La formule donne T en kelvins. 255 K ≈ −18 °C : plus froid que la moyenne observée, à cause de l’absence d’effet de serre dans ce modèle.'),
       F('plausible : la Terre est chaude car elle est proche du Soleil', '255 °C est bien trop chaud : l’eau des océans serait vaporisée. La Terre est à 15 °C en moyenne.'),
       F('invraisemblable : il fallait diviser S₀ par 2 et non par 4', 'Le facteur 4 vient du rapport entre la surface interceptée (π R²) et la surface émettrice (4 π R²) : il est correct.'),
+    ] }),
+  P({ id: 'ter-val-quart', domaine: DOM_TRANSFERTS, niveau: 2, titre: 'Terre sans atmosphère : 360 K ?', plausible: false,
+    ...presenter({ contexte: 'Pour la Terre sans atmosphère (S₀ = 1361 W·m⁻², albédo A = 0,30, σ = 5,67×10⁻⁸ W·m⁻²·K⁻⁴), un élève calcule :', suite: '« P_abs = (1 − A) × S₀ = 953 W·m⁻² ; σ × T⁴ = P_abs donc T = 360 K, soit 87 °C ».' }),
+    reperes: [['Température moyenne observée de la Terre', 'environ 15 °C (288 K)'], ['Température d’ébullition de l’eau', '100 °C'], ['Surface d’une sphère', '4 fois celle du disque de même rayon']],
+    ver: 'Il manque la division par 4 : par mètre carré de surface, la puissance absorbée est (1 − A) × S₀ divisé par 4 ≈ 238 W·m⁻², d’où T ≈ 255 K, soit environ −18 °C. Un résultat de 87 °C serait supérieur à la température réelle, alors que ce modèle sans atmosphère donne une valeur plus basse.',
+    q2: 'Que penser de ce résultat ?',
+    options: [
+      V('invraisemblable : le facteur 4 est oublié ; on trouve T ≈ 255 K', 'La Terre intercepte le rayonnement sur un disque (π R²) mais émet par toute sa sphère (4 π R²) : la puissance absorbée par m² est divisée par 4, d’où 255 K.'),
+      F('plausible : la Terre est chaude car elle est proche du Soleil', '87 °C dépasse la température observée (15 °C), alors que le calcul sans atmosphère ignore l’effet de serre, qui ne peut que réchauffer : le résultat est trop élevé.'),
+      F('invraisemblable : il faut ajouter 273 K au résultat', 'T est déjà en kelvins ; 273 sert seulement à convertir des °C en K.'),
+    ] }),
+  P({ id: 'ter-val-mars', domaine: DOM_TRANSFERTS, niveau: 2, titre: 'Température d’équilibre de Mars', plausible: true,
+    ...presenter({ contexte: 'Pour Mars sans atmosphère (S₀ = 586 W·m⁻², albédo A = 0,25), un élève calcule :', suite: '« P_abs = frac((1 − 0,25) × 586|4) ≈ 110 W·m⁻² ; T = racine quatrième de frac(110|5,67×10⁻⁸) ≈ 210 K ».' }),
+    reperes: [['Température moyenne observée sur Mars', 'environ 210 K (−63 °C)'], ['Atmosphère de Mars', 'très ténue : effet de serre faible'], ['Terre sans atmosphère', 'environ 255 K']],
+    ver: 'P_abs = 0,75 × 586 divisé par 4 ≈ 110 W·m⁻² ; T⁴ = 110 divisé par 5,67×10⁻⁸ ≈ 1,9×10⁹ K⁴, d’où T ≈ 210 K. Ce résultat est proche de la température observée, ce qui est cohérent : l’atmosphère de Mars est trop ténue pour produire un effet de serre notable.',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Cohérent : Mars a peu d’effet de serre, donc T calculée ≈ T observée', 'L’atmosphère de Mars est très ténue : peu d’infrarouge est renvoyé vers le sol, et la température observée (210 K) est proche de celle du calcul.'),
+      F('Cohérent : le calcul redonne toujours la température observée, quelle que soit la planète', 'Pour la Terre, le calcul donne 255 K contre 288 K observés, et pour Vénus 227 K contre 737 K : l’effet de serre crée un écart d’autant plus grand que l’atmosphère est épaisse.'),
+      F('Pas cohérent : il faut ajouter 33 K, l’écart de la Terre, à toute planète', 'L’écart de 33 K est propre à l’atmosphère terrestre ; il dépend de l’atmosphère de chaque planète et n’a aucune raison d’être le même sur Mars.'),
     ] }),
 ];
 
