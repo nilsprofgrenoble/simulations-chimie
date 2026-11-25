@@ -3355,25 +3355,32 @@ export const PREVOIR = [
       F('nul pour la lumière, car la lumière ne subit pas l’effet Doppler', 'Les ondes lumineuses subissent aussi l’effet Doppler ; il est seulement très petit en valeur relative.'),
     ] },
   { id: 'titph-apres-eq', domaine: 'Titrage pH-métrique', titre: 'Après l’équivalence : qui fixe le pH ?',
-    enonce: 'On titre V_A = 20,0 mL d’une solution d’acide éthanoïque de concentration C_A = 0,080 mol/L par une solution d’hydroxyde de sodium de concentration C_B = 0,100 mol/L. On a versé V_B = 20,0 mL de soude, soit plus que le volume équivalent V_E = 16,0 mL. La transformation est supposée totale.', q: 'Dans l’erlenmeyer, juste après cet ajout…', options: [
-      V('l’acide est entièrement consommé et il reste 0,40 mmol d’ions HO⁻ en excès, qui fixent le pH', 'n(acide) = 0,080 × 20,0 = 1,60 mmol ; n(HO⁻) versé = 0,100 × 20,0 = 2,00 mmol. L’acide est le réactif limitant : il reste 2,00 − 1,60 = 0,40 mmol de HO⁻ (soit 0,010 mol/L dans 40,0 mL, pH = 12).'),
+    ...presenter({ contexte: 'On titre une solution d’acide éthanoïque par une solution d’hydroxyde de sodium (soude). On a versé plus de soude que le volume équivalent. La transformation est supposée totale.', liste: [['Acide éthanoïque', 'V_A = 20,0 mL ; C_A = 0,080 mol/L'], ['Soude versée', 'V_B = 20,0 mL ; C_B = 0,100 mol/L'], ['Volume équivalent', 'V_E = 16,0 mL']] }), q: 'Dans l’erlenmeyer, juste après cet ajout…', options: [
+      V('l’acide est consommé ; il reste 0,40 mmol de HO⁻, qui fixent le pH', 'n(acide) = 0,080 × 20,0 = 1,60 mmol ; n(HO⁻) versé = 0,100 × 20,0 = 2,00 mmol. L’acide est le réactif limitant : il reste 2,00 − 1,60 = 0,40 mmol de HO⁻ (soit 0,010 mol/L dans 40,0 mL, pH = 12).'),
       F('il reste 0,40 mmol d’acide éthanoïque, car la soude est le réactif limitant', 'C’est avant l’équivalence que HO⁻ est le réactif limitant. Ici n(HO⁻) versé (2,00 mmol) dépasse n(acide) (1,60 mmol).'),
       F('l’acide et HO⁻ sont tous deux entièrement consommés, comme à l’équivalence', 'Cela n’arrive qu’à V_B = V_E = 16,0 mL. À 20,0 mL, on a versé plus de HO⁻ que d’acide.'),
       F('il reste 2,00 mmol de HO⁻, car les ions HO⁻ versés ne réagissent plus', 'Une partie des ions HO⁻ (1,60 mmol) a réagi avec l’acide ; seul l’excès (0,40 mmol) reste.'),
     ] },
   { id: 'titph-phe-benz', domaine: 'Titrage pH-métrique', titre: 'Titrage d’un acide faible : pH à l’équivalence',
-    enonce: 'On titre une solution d’acide benzoïque C₆H₅COOH (acide faible, pK_A = 4,2) par une solution d’hydroxyde de sodium. À l’équivalence, l’acide et les ions HO⁻ ont été introduits dans les proportions stœchiométriques.', q: 'Le pH de la solution à l’équivalence est…', options: [
-      V('supérieur à 7 : la base conjuguée C₆H₅COO⁻ formée prédomine (pH > pK_A) et rend la solution basique', 'À l’équivalence il ne reste que C₆H₅COO⁻ (base faible) et Na⁺ (spectateur). C₆H₅COO⁻ + H₂O ⇌ C₆H₅COOH + HO⁻ : la solution est basique.'),
-      F('égal à 7, car l’équivalence correspond à la neutralisation exacte', 'Équivalence signifie réactifs en proportions stœchiométriques, pas solution neutre. Le pH dépend de l’espèce formée.'),
-      F('égal à pK_A = 4,2, car il y a autant d’acide que de base', 'pH = pK_A correspond à n(acide) = n(base), soit la demi-équivalence. À l’équivalence il ne reste plus d’acide.'),
-      F('inférieur à 7, car on a titré un acide', 'On a ajouté exactement la quantité de HO⁻ qui consomme l’acide : le pH est fixé par la base conjuguée formée, pas par l’acide initial.'),
+    ...presenter({ contexte: 'On titre une solution d’acide benzoïque C₆H₅COOH par une solution d’hydroxyde de sodium. À l’équivalence, l’acide et les ions HO⁻ ont été introduits dans les proportions stœchiométriques.', liste: [['Acide benzoïque', 'acide faible, pK_A = 4,2']] }), q: 'Le pH de la solution à l’équivalence est…', options: [
+      V('supérieur à 7 : C₆H₅COO⁻, base conjuguée, rend le milieu basique', 'À l’équivalence il ne reste que C₆H₅COO⁻ (base faible) et Na⁺ (spectateur). C₆H₅COO⁻ + H₂O ⇌ C₆H₅COOH + HO⁻ : la solution est basique.'),
+      F('égal à 7, car l’équivalence correspond à une neutralisation exacte', 'Équivalence signifie réactifs en proportions stœchiométriques, pas solution neutre. Le pH dépend de l’espèce formée.'),
+      F('égal à pK_A = 4,2, car il y a autant d’acide que de base conjuguée', 'pH = pK_A correspond à n(acide) = n(base), soit la demi-équivalence. À l’équivalence il ne reste plus d’acide.'),
+      F('inférieur à 7, car la solution contient de l’acide benzoïque', 'On a ajouté exactement la quantité de HO⁻ qui consomme l’acide : le pH est fixé par la base conjuguée formée, pas par l’acide initial.'),
     ] },
   { id: 'titph-indic-benz', domaine: 'Titrage pH-métrique', titre: 'Quel indicateur pour titrer l’acide benzoïque ?',
-    enonce: 'On titre 20,0 mL d’acide benzoïque à 0,080 mol/L par de la soude à 0,100 mol/L : V_E = 16,0 mL et pH_E ≈ 8,4. Zones de virage : jaune de méthyle 2,9 – 4,0 ; bleu de bromothymol 6,0 – 7,6 ; bleu de thymol 8,0 – 9,6 ; jaune d’alizarine R 10,1 – 12,0.', q: 'Pour repérer l’équivalence, on choisit…', options: [
+    ...presenter({ contexte: 'On titre 20,0 mL d’acide benzoïque à 0,080 mol/L par de la soude à 0,100 mol/L. Le volume équivalent est V_E = 16,0 mL et le pH à l’équivalence vaut pH_E ≈ 8,4. On dispose de quatre indicateurs colorés.', liste: [['Jaune de méthyle', 'zone de virage 2,9 – 4,0'], ['Bleu de bromothymol', 'zone de virage 6,0 – 7,6'], ['Bleu de thymol', 'zone de virage 8,0 – 9,6'], ['Jaune d’alizarine R', 'zone de virage 10,1 – 12,0']] }), q: 'Pour repérer l’équivalence, on choisit…', options: [
       V('le bleu de thymol, car sa zone de virage contient pH_E ≈ 8,4', 'Un indicateur convient si sa zone de virage contient le pH à l’équivalence : 8,0 < 8,4 < 9,6.'),
       F('le bleu de bromothymol, car il vire autour de 7, valeur « neutre »', 'pH_E n’est pas 7 pour un acide faible. La zone 6,0 – 7,6 ne contient pas 8,4 : le virage a lieu avant V_E et est progressif.'),
       F('le jaune de méthyle, car l’acide est initialement à pH acide', 'Le choix dépend de pH_E, pas du pH initial. La zone 2,9 – 4,0 est très loin de 8,4.'),
       F('le jaune d’alizarine R, car la soude est une base forte', 'C’est le pH à l’équivalence qui compte, pas la force de la base. La zone 10,1 – 12,0 ne contient pas 8,4 : le virage a lieu après V_E.'),
+    ] },
+  { id: 'cmp-titph-equivalence', domaine: 'Titrage pH-métrique', titre: 'Repérer l’équivalence sur des mesures de pH',
+    ...presenter({ contexte: 'On titre 20,0 mL d’acide chlorhydrique par de la soude à 0,100 mol/L en suivant le pH. Voici les mesures faites autour de l’équivalence.', liste: [['V = 9,0 mL', 'pH = 2,46'], ['V = 9,5 mL', 'pH = 2,77'], ['V = 9,9 mL', 'pH = 3,48'], ['V = 10,1 mL', 'pH = 10,52'], ['V = 10,5 mL', 'pH = 11,21'], ['V = 11,0 mL', 'pH = 11,51']] }), q: 'Comment repère-t-on le volume équivalent V_E ?', options: [
+      V('V_E ≈ 10,0 mL : c’est là que le pH varie le plus vite', 'Entre 9,9 et 10,1 mL, le pH passe de 3,48 à 10,52, soit environ 35 unités par mL (maximum de dpH/dV) ; partout ailleurs la variation est de l’ordre de 1 unité par mL ou moins. V_E se trouve dans ce saut de pH.'),
+      F('V_E ≈ 11,0 mL, dernier volume où le pH a été mesuré', 'Le dernier point mesuré n’a rien de particulier : à 11,0 mL il y a déjà un excès de soude, le pH varie peu.'),
+      F('V_E ≈ 9,5 mL, où le pH commence à augmenter nettement', 'Entre 9,0 et 9,5 mL, le pH varie d’environ 0,6 unité par mL : c’est la montée lente d’avant le saut, pas l’équivalence.'),
+      F('on ne peut pas conclure sans mesure à V = 10,0 mL exactement', 'Le saut de pH est encadré par deux mesures (9,9 et 10,1 mL) : cela suffit à placer V_E vers 10,0 mL. Une mesure au centre du saut permettrait seulement de l’affiner.'),
     ] },
   { id: 'cinv-moyenne', domaine: 'Cinétique : vitesse volumique et ordre 1', titre: 'Vitesse volumique moyenne de disparition d’un réactif',
     enonce: 'On suit la disparition d’un réactif R dans un mélange maintenu à température constante : sa concentration vaut 0,080 mol/L à l’instant t₁ = 2,0 min et 0,056 mol/L à l’instant t₂ = 5,0 min.', q: 'La vitesse volumique moyenne de disparition de R entre ces deux instants vaut…', options: [
@@ -3600,7 +3607,7 @@ export const PREVOIR = [
       F('elle rend la réaction de titrage plus rapide', 'La réaction entre H₃O⁺ et HO⁻ est quasi instantanée, quelle que soit la dilution.'),
     ] },
   { id: 'cdt-ana-nitrique', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Acide nitrique ou acide chlorhydrique ?',
-    enonce: 'On titre 20,0 mL d’acide nitrique à 0,050 mol/L, dilué dans 180 mL d’eau, par de la soude à 0,100 mol/L, en suivant σ. On compare à la courbe obtenue avec l’acide chlorhydrique de même concentration : λ(NO₃⁻) = 7,1 et λ(Cl⁻) = 7,6 mS·m²·mol⁻¹.', q: 'Que dire des deux courbes ?', options: [
+    ...presenter({ contexte: 'On titre de l’acide nitrique par de la soude en suivant la conductivité σ, puis on compare la courbe obtenue à celle de l’acide chlorhydrique, de même concentration et de même prise d’essai.', liste: [['Acide nitrique', '20,0 mL à 0,050 mol/L, dilué dans 180 mL d’eau'], ['Soude', '0,100 mol/L'], ['λ(NO₃⁻)', '7,1 mS·m²·mol⁻¹'], ['λ(Cl⁻)', '7,6 mS·m²·mol⁻¹']] }), q: 'Que dire des deux courbes ?', options: [
       V('presque superposées, avec le même volume équivalent', 'Même quantité d’acide, donc même V_E = 10,0 mL ; les ions spectateurs NO₃⁻ et Cl⁻ ont des λ voisins (7,1 et 7,6), donc les deux courbes ne diffèrent que de quelques pour cent.'),
       F('le volume équivalent est différent, car l’anion n’est pas le même', 'Le volume équivalent ne dépend que de la quantité d’ions H₃O⁺ à consommer, pas de l’anion spectateur.'),
       F('la courbe de l’acide nitrique n’a pas de minimum', 'Les deux acides sont forts : H₃O⁺ est consommé puis HO⁻ s’accumule, donc la courbe a bien un minimum pour les deux.'),
@@ -3612,6 +3619,13 @@ export const PREVOIR = [
       F('l’acide éthanoïque devient un acide fort', 'La force d’un acide ne change pas pendant le titrage : l’acide éthanoïque reste un acide faible, mais il est consommé.'),
       F('les ions Cl⁻ et CH₃COO⁻ ont le même λ', 'Leurs λ diffèrent (7,6 et 4,1) ; mais après l’équivalence la quantité de ces anions ne varie plus, donc ils ne modifient pas la pente.'),
       F('la réaction de titrage consomme encore des ions H₃O⁺', 'Après l’équivalence, il n’y a plus d’acide à titrer : la réaction ne consomme plus rien, les ions HO⁻ versés restent en solution.'),
+    ] },
+  { id: 'cmp-cdt-avant-equiv', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Avant l’équivalence : pourquoi σ diminue-t-elle ?',
+    ...presenter({ contexte: 'On titre de l’acide chlorhydrique par de la soude en suivant la conductivité σ. Avant l’équivalence, chaque ion HO⁻ versé réagit avec un ion H₃O⁺ et un ion Na⁺ apparaît. On suppose le volume total à peu près constant (solution diluée avant le titrage).', liste: [['λ(H₃O⁺)', '35,0 mS·m²·mol⁻¹'], ['λ(Na⁺)', '5,0 mS·m²·mol⁻¹'], ['λ(Cl⁻)', '7,6 mS·m²·mol⁻¹']] }), q: 'Avant l’équivalence, la conductivité σ…', options: [
+      V('diminue, car H₃O⁺ est remplacé par Na⁺, moins conducteur', 'Le nombre d’ions ne change presque pas, mais chaque H₃O⁺ (λ = 35,0) est remplacé par un Na⁺ (λ = 5,0) : σ = Σ λ × c diminue. Les ions Cl⁻ sont spectateurs : leur concentration ne varie pas.'),
+      F('augmente, car la solution reçoit de plus en plus d’ions', 'Les ions apportés par la soude sont compensés par ceux qui disparaissent : un H₃O⁺ est consommé pour chaque Na⁺ apporté. Le nombre d’ions varie très peu.'),
+      F('reste constante, car le nombre total d’ions ne change pas', 'Le nombre d’ions est à peu près constant, mais σ dépend aussi de la nature des ions, par leurs λ : remplacer H₃O⁺ (35,0) par Na⁺ (5,0) change σ.'),
+      F('diminue, car les ions Cl⁻ sont consommés par la réaction', 'Les ions Cl⁻ ne participent pas à la réaction de titrage (ions spectateurs) : leur quantité ne varie pas. C’est H₃O⁺ qui est consommé.'),
     ] },
   { id: 'etl-ana-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Deux cellules, une même solution',
     enonce: 'On mesure, dans la même solution de chlorure de sodium et à la même température, la conductance avec deux cellules de conductimétrie. La cellule 1 affiche G₁ = 1,50 mS ; la cellule 2, dont les plaques sont plus éloignées, affiche G₂ = 0,75 mS.', q: 'Que peut-on en conclure ?', options: [
@@ -3675,6 +3689,13 @@ export const PREVOIR = [
       F('correcte : la loi s’applique quelle que soit la valeur de A', 'La loi de Beer-Lambert n’est valable que pour une solution diluée, soit A ≲ 1,5 à 2.'),
       F('trop grande : à forte absorbance, l’appareil surestime A', 'C’est l’inverse : la courbe mesurée passe sous la droite, A est sous-estimée, donc c aussi.'),
       F('correcte, à condition d’utiliser une cuve plus longue', 'Une cuve plus longue ferait encore augmenter A : il faudrait au contraire diluer (ou raccourcir la cuve).'),
+    ] },
+  { id: 'cmp-uvv-longueur-onde', domaine: 'Spectroscopie UV-visible et loi de Beer-Lambert', titre: 'Choisir la longueur d’onde de travail d’un dosage',
+    ...presenter({ contexte: 'On veut doser un colorant bleu par spectrophotométrie. On a mesuré l’absorbance d’une même solution de ce colorant à quatre longueurs d’onde.', liste: [['λ = 470 nm', 'A = 0,05'], ['λ = 530 nm', 'A = 0,22'], ['λ = 630 nm', 'A = 0,80'], ['λ = 700 nm', 'A = 0,35']] }), q: 'Pour doser ce colorant, on règle le spectrophotomètre à…', options: [
+      V('630 nm, où l’absorbance est maximale : mesure plus sensible', 'A = ε × l × c : à concentration donnée, A est la plus grande là où ε est maximal. La mesure y est la plus sensible, et le spectre y varie peu si la longueur d’onde est légèrement mal réglée. A = 0,80 reste dans le domaine de validité de la loi (A ≲ 1,5 à 2).'),
+      F('470 nm, la couleur bleue qu’on voit dans la cuve de mesure', 'On voit la lumière qui n’est pas absorbée : à 470 nm la solution absorbe très peu (A = 0,05). La mesure serait peu sensible, donc peu précise.'),
+      F('700 nm, la plus grande longueur d’onde de la série étudiée', 'La valeur de la longueur d’onde n’a pas d’intérêt en soi : ce qui compte est l’absorbance, qui vaut 0,35 à 700 nm, bien moins qu’à 630 nm.'),
+      F('530 nm, pour que l’absorbance reste faible et la loi valable', 'A = 0,80 est déjà dans le domaine de validité de la loi de Beer-Lambert (A ≲ 1,5 à 2) : il n’y a aucune raison de choisir une absorbance plus faible, donc moins sensible.'),
     ] },
   { id: 'irt-ana-esterification', domaine: 'Spectroscopie infrarouge : données tabulées', titre: 'Acide carboxylique devenu ester',
     enonce: 'On estérifie un acide carboxylique par un alcool, puis on isole l’ester pur (lavé et séché). On compare le spectre infrarouge du produit à celui de l’acide de départ, au-dessus de 1500 cm⁻¹.', q: 'Quel changement observe-t-on ?', options: [
@@ -4732,18 +4753,18 @@ export const PREVOIR = [
       F('2,2 : le pH diminue de 1 car il y a davantage d’eau et moins d’acide', 'Diluer un acide diminue [H₃O⁺] donc augmente le pH : la solution devient moins acide.'),
     ] },
   { id: 'phc-comparer-ph', domaine: 'pH et concentration en ions oxonium', titre: 'Comparer deux solutions d’après leur pH',
-    enonce: 'Deux solutions d’acide chlorhydrique ont pour pH : solution A, pH = 3,0 ; solution B, pH = 5,0.', q: 'La concentration en ions oxonium de A est, par rapport à celle de B…', options: [
-      V('100 fois plus grande : 2 unités de pH d’écart correspondent à un facteur 10² = 100', '[H₃O⁺]ₐ = 10⁻³ mol/L et [H₃O⁺]ᵦ = 10⁻⁵ mol/L : le rapport vaut 10⁻³ / 10⁻⁵ = 100.'),
+    ...presenter({ contexte: 'On mesure le pH de deux solutions d’acide chlorhydrique.', liste: [['Solution A', 'pH = 3,0'], ['Solution B', 'pH = 5,0']] }), q: 'La concentration en ions oxonium de A est, par rapport à celle de B…', options: [
+      V('100 fois plus grande, car 2 unités de pH d’écart valent 10²', '[H₃O⁺]ₐ = 10⁻³ mol/L et [H₃O⁺]ᵦ = 10⁻⁵ mol/L : le rapport vaut 10⁻³ / 10⁻⁵ = 100.'),
       F('2 fois plus grande, car 3,0 et 5,0 diffèrent de 2 unités', 'Un écart de pH correspond à un rapport de concentrations égal à 10 puissance cet écart, et non à l’écart lui-même.'),
       F('1,7 fois plus petite, car le rapport 3,0 / 5,0 vaut 0,6', 'On ne divise pas des pH : la relation entre pH et concentration est logarithmique.'),
       F('100 fois plus petite, car la solution A a le pH le plus petit', 'Le pH le plus petit correspond à la concentration la plus grande : A contient davantage d’ions H₃O⁺ que B.'),
     ] },
   { id: 'phc-ecrire-resultat', domaine: 'pH et concentration en ions oxonium', titre: 'Écrire [H₃O⁺] avec le bon nombre de chiffres significatifs',
-    enonce: 'Un pH-mètre indique pH = 4,60 pour une solution d’acide chlorhydrique. La calculatrice donne 10^(−4,60) = 2,5118864 × 10⁻⁵ pour [H₃O⁺] en mol/L.', q: 'Comment écrire le résultat ?', options: [
-      V('[H₃O⁺] = 2,5 × 10⁻⁵ mol/L : 2 chiffres significatifs, comme le pH a 2 décimales', 'Une incertitude de 0,01 sur le pH correspond à environ 2 % sur [H₃O⁺] : on garde 2 chiffres significatifs.'),
+    ...presenter({ contexte: 'Un pH-mètre indique le pH d’une solution d’acide chlorhydrique. La calculatrice donne [H₃O⁺] = 10^(−pH) en mol/L.', liste: [['pH mesuré', '4,60'], ['Affichage de la calculatrice', '10^(−4,60) = 2,5118864 × 10⁻⁵']] }), q: 'Comment écrire le résultat ?', options: [
+      V('[H₃O⁺] = 2,5 × 10⁻⁵ mol/L : 2 chiffres significatifs seulement', 'Une incertitude de 0,01 sur le pH correspond à environ 2 % sur [H₃O⁺] : on garde 2 chiffres significatifs.'),
       F('[H₃O⁺] = 2,5118864 × 10⁻⁵ mol/L : tous les chiffres de la calculatrice', 'Un résultat ne peut pas être plus précis que la donnée : le pH n’a que 2 décimales.'),
-      F('[H₃O⁺] = 3 × 10⁻⁵ mol/L : un seul chiffre significatif', 'Un seul chiffre est trop peu : 3 × 10⁻⁵ s’écarte de près de 20 % de la valeur calculée, bien plus que l’incertitude due au pH.'),
-      F('[H₃O⁺] = 4,60 × 10⁻⁵ mol/L : on reprend le nombre du pH', 'Le 4,60 du pH n’est pas la mantisse de [H₃O⁺] : il faut calculer 10^(−4,60).'),
+      F('[H₃O⁺] = 3 × 10⁻⁵ mol/L : on arrondit à un seul chiffre significatif', 'Un seul chiffre est trop peu : 3 × 10⁻⁵ s’écarte de près de 20 % de la valeur calculée, bien plus que l’incertitude due au pH.'),
+      F('[H₃O⁺] = 4,60 × 10⁻⁵ mol/L : on reprend simplement le nombre du pH', 'Le 4,60 du pH n’est pas la mantisse de [H₃O⁺] : il faut calculer 10^(−4,60).'),
     ] },
   // ───────────────────────────── Plans d'expériences (BTS) : plan de mélange
   { id: 'pmel-pas-de-constante', domaine: 'Plans', titre: 'Pourquoi pas de constante dans un modèle de mélange ?',
