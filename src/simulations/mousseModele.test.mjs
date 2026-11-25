@@ -5,8 +5,16 @@ const pr = (() => { let s = 7; return () => { s = (s * 16807) % 2147483647; retu
 const base = { t: 'sds', c: 5, r: 0, v: 0, ca: 0, g: 'air', d: 0 };
 // calibration (ordres de grandeur)
 ok(M.H0(base) > 14 && M.H0(base) < 20, 'H0 SDS à 5 CMC ' + M.H0(base));
-ok(M.demiVie(base) > 3 && M.demiVie(base) < 8, 't½ SDS à 5 CMC ' + M.demiVie(base));
-ok(M.demiVie({ ...base, t: 'sles' }) > M.demiVie(base) * 1.8, 'laureth sulfate plus stable');
+ok(M.demiVie(base) > 20 && M.demiVie(base) < 30, 't½ SDS à 5 CMC ' + M.demiVie(base));
+const rap = M.demiVie({ ...base, t: 'sles' }) / M.demiVie(base);
+ok(rap > 1.2 && rap < 1.4, 'laureth sulfate un peu plus stable en eau douce (essais publiés : environ 1,3) ' + rap);
+const rapDur = M.demiVie({ ...base, t: 'sles', ca: 3 }) / M.demiVie({ ...base, ca: 3 });
+ok(rapDur > 1.6, 'écart plus marqué en eau dure ' + rapDur);
+const rapH = M.H0({ ...base, t: 'sles' }) / M.H0(base);
+ok(rapH > 1.04 && rapH < 1.08, 'hauteur initiale du laureth sulfate environ 5 % plus haute ' + rapH);
+const ret5 = M.hauteurRM(base, 5) / M.H0(base);
+ok(ret5 > 0.7 && ret5 < 0.95, 'rétention à 5 min dans la plage publiée (70 à 90 %) ' + ret5);
+const pl = M.plateauB(base); ok(pl > 15 && pl < 22, 'plateau de Bikerman illustratif ' + pl);
 ok(Math.abs(M.hauteurRM(base, 0) - M.H0(base)) < 1e-9, 'H(0) = H0');
 for (const T of M.TENSIOACTIFS) for (const c of [0.1, 0.5, 1, 2, 5, 10]) {
   const e = { ...base, t: T.id, c };

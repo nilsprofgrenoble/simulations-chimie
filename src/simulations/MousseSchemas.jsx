@@ -187,7 +187,8 @@ export function SvgMousse({ h, t = null, legende = '' }) {
 
 // ---------- courbes hauteur de mousse / temps ----------
 const PC = { x0: 44, x1: 304, y0: 24, y1: 166 };
-export function SvgCourbeMousse({ mode = 'rm', e = null, p = null, tNow = null, tStop = 10, tMax = 15, ymax = 30 }) {
+export function SvgCourbeMousse({ mode = 'rm', e = null, p = null, tNow = null, tStop = 10, tMax: tMaxP = null, ymax = 30 }) {
+  const tMax = tMaxP ?? (mode === 'rm' ? 30 : 15), pasT = tMax <= 6 ? 2 : tMax <= 15 ? 5 : 10;
   const fh = mode === 'rm' ? (t => p ? (t <= p.td ? p.H0 : p.H0 * Math.pow(2, -(t - p.td) / p.th)) : M.hauteurRM(e, t)) : (t => M.hauteurB(e, t, tStop));
   const px = t => PC.x0 + (t / tMax) * (PC.x1 - PC.x0), py = h => PC.y1 - (Math.min(h, ymax) / ymax) * (PC.y1 - PC.y0);
   const pts = []; for (let t = 0; t <= tMax + 1e-9; t += 0.25) pts.push(`${px(t).toFixed(1)},${py(fh(t)).toFixed(1)}`);
@@ -195,7 +196,7 @@ export function SvgCourbeMousse({ mode = 'rm', e = null, p = null, tNow = null, 
   return base(320, 214, mode === 'rm' ? 'courbe de la hauteur de mousse en fonction du temps (méthode de Ross-Miles) : hauteur constante un instant, puis décroissance' : 'courbe de la hauteur de mousse en fonction du temps (méthode de Bikerman) : montée vers un plateau sous débit de gaz constant, puis décroissance après l’arrêt du gaz', <>
     <line x1={PC.x0} y1={PC.y1} x2={PC.x1} y2={PC.y1} stroke={C.trait} strokeWidth="2"/><line x1={PC.x0} y1={PC.y0} x2={PC.x0} y2={PC.y1} stroke={C.trait} strokeWidth="2"/>
     {[0, 10, 20, 30].map(v => <g key={v}><line x1={PC.x0 - 4} y1={py(v)} x2={PC.x0} y2={py(v)} stroke={C.trait}/>{T(PC.x0 - 7, py(v) + 4, String(v), { size: 12, anchor: 'end' })}</g>)}
-    {[0, 5, 10, 15].map(v => <g key={v}><line x1={px(v)} y1={PC.y1} x2={px(v)} y2={PC.y1 + 4} stroke={C.trait}/>{T(px(v), PC.y1 + 17, String(v), { size: 12 })}</g>)}
+    {Array.from({ length: Math.floor(tMax / pasT) + 1 }, (_, i) => i * pasT).map(v => <g key={v}><line x1={px(v)} y1={PC.y1} x2={px(v)} y2={PC.y1 + 4} stroke={C.trait}/>{T(px(v), PC.y1 + 17, String(v), { size: 12 })}</g>)}
     {T(PC.x0 + (PC.x1 - PC.x0) / 2, 204, 'temps (min)', { size: 12.5, gras: true })}{T(6, 16, 'hauteur de mousse (cm)', { size: 12.5, gras: true, anchor: 'start' })}
     {mode === 'bik' && plateau != null && plateau < ymax && <g><line x1={PC.x0} y1={py(plateau)} x2={PC.x1} y2={py(plateau)} stroke={C.orange} strokeWidth="1.8" strokeDasharray="5 4"/>{T(PC.x1 - 2, py(plateau) - 5, 'plateau', { size: 12, anchor: 'end', fill: C.orange, gras: true })}</g>}
     {mode === 'bik' && <g><line x1={px(tStop)} y1={PC.y0 + 6} x2={px(tStop)} y2={PC.y1} stroke={C.gris} strokeWidth="1.6" strokeDasharray="3 3"/>{T(px(tStop) + 4, PC.y0 + 14, 'arrêt du gaz', { size: 12, anchor: 'start', fill: C.gris })}</g>}
