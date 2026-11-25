@@ -26,6 +26,7 @@ export const EXOS_DE_SIM = {
   234: [/(^|\.)angc-/, /plausible\.angc-/],   // Mouillage : tension superficielle, angle de contact, tension critique (BTS)
   237: [/(^|\.)mdisp-/, /plausible\.mdisp-/],   // Milieux dispersés : types et causes d'instabilité (BTS)
   243: [/(^|\.)wins-/, /plausible\.wins-/],   // Microémulsions : types de Winsor et effet du sel (BTS)
+  246: [/(^|\.)tern-/, /plausible\.tern-/],   // Microémulsions : lire un diagramme ternaire (BTS)
   101: [/for-lasure-/],                                                                                                 // Lasure alkyde
   // ── BTS · Synthèse organique (un thème d'exercices par simulation) ──
   93: [/^regio-/], 94: [/^cinet-/], 95: [/^sn-/], 96: [/^br-/], 97: [/^tr-/], 98: [/^se-/], 99: [/^ch-/],
