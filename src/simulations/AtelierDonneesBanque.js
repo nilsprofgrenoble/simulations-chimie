@@ -12,6 +12,7 @@
 //   • solution : le calcul final (affiché seulement dans le parcours guidé, pour montrer à quoi servent les données)
 // Aucune de ces fonctions ne dépend de React : elles sont testables seules.
 
+import { PVR_SAPP } from "./panneauRendementExos.js";
 import { PVC_SAPP } from "./panneauPvExos.js";
 import { ACIDES as AAM, ORDRE as AAM_ORDRE } from "./aminoAcidesModele";
 import { IONS as CDT_IONS } from "./conductimetrieModele";
@@ -5032,6 +5033,7 @@ export const ENONCES = [
   ...OEIL2GT_SAPP,
   ...NOY2GT_SAPP,
   ...PVC_SAPP,
+  ...PVR_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,

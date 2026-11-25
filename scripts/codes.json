@@ -2470,5 +2470,17 @@
  "77:plausible:pvc-val-impossible": "VAL673",
  "77:plausible:pvc-val-eclair": "VAL674",
  "36:pvc-puissance": "REA136",
- "36:pvc-eclair": "REA137"
+ "36:pvc-eclair": "REA137",
+ "34:pvr-sapp-rendement.0": "SAPP520",
+ "34:pvr-sapp-rendement.1": "SAPP521",
+ "34:pvr-sapp-dimension.0": "SAPP522",
+ "34:pvr-sapp-dimension.1": "SAPP523",
+ "37:prevoir:pvr-ana-surface": "ANA1143",
+ "37:prevoir:pvr-ana-eclair": "ANA1144",
+ "37:prevoir:pvr-ana-pertes": "ANA1145",
+ "37:prevoir:pvr-ana-charge": "ANA1146",
+ "77:plausible:pvr-val-sup100": "VAL675",
+ "77:plausible:pvr-val-eta": "VAL676",
+ "36:pvr-rendement": "REA138",
+ "36:pvr-dimension": "REA139"
 }
