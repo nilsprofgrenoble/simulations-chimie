@@ -1,3 +1,4 @@
+import { BAT_VAL } from './batterieExos.js';
 import { LAS_VAL } from './laserExos.js';
 import { PVE_VAL } from './panneauEclairementExos.js';
 import { PVR_VAL } from './panneauRendementExos.js';
@@ -4488,6 +4489,7 @@ export const PLAUSIBLES = [
   ...PVR_VAL,
   ...PVE_VAL,
   ...LAS_VAL,
+  ...BAT_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,

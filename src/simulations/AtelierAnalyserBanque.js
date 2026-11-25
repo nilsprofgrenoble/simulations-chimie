@@ -1,3 +1,4 @@
+import { BAT_ANA } from './batterieExos.js';
 import { LAS_ANA } from './laserExos.js';
 import { PVE_ANA } from './panneauEclairementExos.js';
 // ====================================================
@@ -6354,6 +6355,7 @@ export const PREVOIR = [
   ...PVR_ANA,
   ...PVE_ANA,
   ...LAS_ANA,
+  ...BAT_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,
