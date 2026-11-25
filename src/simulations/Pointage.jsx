@@ -52,9 +52,9 @@ function FilmVirtuel({ i, points, onPoint, avecEtalon = true }) {
       <circle cx={bx} cy={by} r="15" fill="#fde68a" stroke={NOIR} strokeWidth="2"/>
       {avecEtalon && <g><line x1={PX.etalon[0][0]} y1={PX.etalon[0][1]} x2={PX.etalon[1][0]} y2={PX.etalon[1][1]} stroke={ORANGE} strokeWidth="4"/>
         <line x1={PX.etalon[0][0]} y1="362" x2={PX.etalon[0][0]} y2="382" stroke={ORANGE} strokeWidth="3"/><line x1={PX.etalon[1][0]} y1="362" x2={PX.etalon[1][0]} y2="382" stroke={ORANGE} strokeWidth="3"/>
-        <text x="160" y="358" textAnchor="middle" fontSize="19" fontWeight="700" fill={ORANGE}>étalon : 0,50 m</text></g>}
+        <text x="160" y="358" textAnchor="middle" fontSize="22" fontWeight="700" fill={ORANGE}>étalon : 0,50 m</text></g>}
       {points.map((p, k) => p && <g key={k} stroke={ROUGE} strokeWidth="2"><line x1={p.px - 6} y1={p.py - 6} x2={p.px + 6} y2={p.py + 6}/><line x1={p.px - 6} y1={p.py + 6} x2={p.px + 6} y2={p.py - 6}/></g>)}
-      <text x="12" y="26" fontSize="18" fontWeight="700" fill={NOIR}>image n° {i + 1} · t = {nbf(i * TAU, 3)} s</text>
+      <text x="12" y="28" fontSize="22" fontWeight="700" fill={NOIR}>image n° {i + 1} · t = {nbf(i * TAU, 3)} s</text>
     </svg>);
 }
 const REF_FILM = M.filmPendule({ L: L_PEND, theta0: 35, tau: TAU, n: 48, amort: 0 });

@@ -2,7 +2,7 @@
 // viewBox de 300 de large, texte de 12,5 : lisible sur téléphone. Chaque carte est posée une étape après sa question.
 const GRIS = '#475569', BLEU = '#0b4f94', ORANGE = '#c2410c', VERT = '#15803d', ROUGE = '#b91c1c', VIOLET = '#6d28d9', ENCRE = '#0f172a', TEAL = '#0e7490';
 const svgStyle = { width: '100%', maxWidth: 320, height: 'auto', display: 'block', margin: '0 auto 6px' };
-const T = ({ x, y, children, a = 'start', c = ENCRE, w = 400 }) => <text x={x} y={y} textAnchor={a} fontSize="12.5" fontWeight={w} fill={c}>{children}</text>;
+const T = ({ x, y, children, a = 'start', c = ENCRE, w = 400 }) => <text x={x} y={y} textAnchor={a} fontSize="14.5" fontWeight={w} fill={c}>{children}</text>;
 const Arr = ({ x1, y1, x2, y2, c = ENCRE, w = 2.6 }) => {
   const a = Math.atan2(y2 - y1, x2 - x1), h = 8, ca = Math.cos(a), sa = Math.sin(a);
   const p = [[x2, y2], [x2 - h * Math.cos(a - 0.45), y2 - h * Math.sin(a - 0.45)], [x2 - h * Math.cos(a + 0.45), y2 - h * Math.sin(a + 0.45)]];
@@ -15,16 +15,17 @@ const Tache = ({ cx, cy, o = 1 }) => <ellipse cx={cx} cy={cy} rx="10" ry="5.5" f
 export const SchemaPhases = () => {
   const PH = [['S', 'fabriquer', '#2563eb'], ['I', 'récupérer', TEAL], ['P', 'nettoyer', VIOLET], ['C', 'vérifier', VERT]];
   return (
-    <Svg h={152} aria="Quatre phases d'une synthèse en chaîne : synthèse (fabriquer), isolement (récupérer), purification (nettoyer), contrôle (vérifier)">
+    <Svg h={170} aria="Quatre phases d'une synthèse en chaîne : synthèse (fabriquer), isolement (récupérer), purification (nettoyer), contrôle (vérifier)">
       {PH.map(([k, nom, c], i) => <g key={k}>
         <rect x={8 + i * 73} y="12" width="64" height="52" rx="8" fill="#fff" stroke={c} strokeWidth="3"/>
         <text x={40 + i * 73} y="48" textAnchor="middle" fontSize="26" fontWeight="800" fill={c}>{k}</text>
         <T x={40 + i * 73} y={84} a="middle" c={c} w={700}>{nom}</T>
         {i < 3 && <polygon points={`${73 + i * 73},34 ${81 + i * 73},38 ${73 + i * 73},42`} fill={GRIS}/>}
       </g>)}
-      <T x={150} y={112} a="middle" c={GRIS}>synthèse → isolement → purification → contrôle</T>
-      <T x={8} y={134} c={ROUGE} w={700}>la purification est facultative,</T>
-      <T x={8} y={150} c={ROUGE} w={700}>le contrôle ne l’est jamais</T>
+      <T x={150} y={112} a="middle" c={GRIS}>synthèse → isolement →</T>
+      <T x={150} y={128} a="middle" c={GRIS}>purification → contrôle</T>
+      <T x={8} y={148} c={ROUGE} w={700}>purification : facultative,</T>
+      <T x={8} y={164} c={ROUGE} w={700}>contrôle : jamais</T>
     </Svg>);
 };
 
@@ -40,7 +41,7 @@ export const SchemaRendement = () => (
   </Svg>);
 
 export const SchemaSechage = () => (
-  <Svg h={160} aria="La masse du produit diminue pendant le séchage à l'étuve puis devient constante : deux pesées successives sont identiques">
+  <Svg h={176} aria="La masse du produit diminue pendant le séchage à l'étuve puis devient constante : deux pesées successives sont identiques">
     <T x={8} y={16} w={700}>Sec = la masse ne bouge plus</T>
     <Axes x0={24} y0={112} y1={26}/>
     <polyline fill="none" stroke={BLEU} strokeWidth="3" points="44,34 84,66 124,86 164,94 204,96 244,96"/>
@@ -48,7 +49,8 @@ export const SchemaSechage = () => (
     <rect x="190" y="84" width="68" height="24" rx="6" fill="none" stroke={VERT} strokeWidth="2.5"/>
     <T x={224} y={76} a="middle" c={VERT} w={700}>deux pesées égales</T>
     <T x={290} y={130} a="end" c={GRIS}>temps à l’étuve →</T>
-    <T x={8} y={152} c={GRIS}>31,40 → 30,95 → 30,82 → 30,81 → 30,81 g</T>
+    <T x={8} y={152} c={GRIS}>31,40 → 30,95 → 30,82 →</T>
+    <T x={8} y={168} c={GRIS}>30,81 → 30,81 g</T>
   </Svg>);
 
 export const SchemaRecristal = () => (

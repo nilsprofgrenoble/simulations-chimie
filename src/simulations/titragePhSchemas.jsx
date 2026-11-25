@@ -23,7 +23,7 @@ export function SvgReaction() {
       <text x="276" y="66" fontSize="18" fontWeight="700" fill={COL.ho} textAnchor="middle">HO⁻</text>
       <text x="276" y="89" fontSize="15.5" fill="#334155" textAnchor="middle">base : reçoit H⁺</text>
       <path d="M150 44 C 168 20, 192 20, 210 44" fill="none" stroke={COL.orange} strokeWidth="2.4" markerEnd="url(#th)"/>
-      <text x="180" y="17" fontSize="18" fontWeight="700" fill={COL.orange} textAnchor="middle">H⁺</text>
+      <text x="180" y="21" fontSize="18" fontWeight="700" fill={COL.orange} textAnchor="middle">H⁺</text>
       <text x="180" y="132" fontSize="16" fontWeight="700" fill="#0f172a" textAnchor="middle">CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O</text>
       <text x="180" y="156" fontSize="15.5" fill="#475569" textAnchor="middle">Na⁺ : ion spectateur (il ne réagit pas)</text>
       <text x="180" y="184" fontSize="16" fill="#0f172a" textAnchor="middle"><tspan fontStyle="italic">K</tspan> ≈ 1,6 × 10⁹ ≫ 1</text>
@@ -113,7 +113,7 @@ export function SvgIndicateur() {
     <rect x="38" y={Y(b)} width="306" height={Y(a) - Y(b)} fill="none" stroke={c} strokeDasharray="4 3"/>
     <text x="46" y={Y((a + b) / 2) + 5} fontSize="15.5" fontWeight="700" fill={c}>{t} {ok ? '✓' : '✗'}</text></g>);
   return (
-    <svg viewBox="0 0 360 276" role="img" aria-label="Courbe de titrage de l’acide éthanoïque avec deux zones de virage : le bleu de bromothymol, de pH 6,0 à 7,6, ne contient pas le pH à l’équivalence 8,7 et ne convient pas ; le bleu de thymol, de pH 8,0 à 9,6, le contient et convient" style={stl}>
+    <svg viewBox="0 0 360 288" role="img" aria-label="Courbe de titrage de l’acide éthanoïque avec deux zones de virage : le bleu de bromothymol, de pH 6,0 à 7,6, ne contient pas le pH à l’équivalence 8,7 et ne convient pas ; le bleu de thymol, de pH 8,0 à 9,6, le contient et convient" style={stl}>
       <line x1="38" y1="200" x2="344" y2="200" stroke="#94a3b8"/><line x1="38" y1="20" x2="38" y2="200" stroke="#94a3b8"/>
       {[0, 7, 14].map(p => <text key={p} x="32" y={Y(p) + 5} fontSize="15.5" textAnchor="end" fill="#334155">{p}</text>)}
       <text x="190" y="222" fontSize="15.5" textAnchor="middle" fill="#334155">V<Sub>B</Sub> (mL)</text>
@@ -123,6 +123,6 @@ export function SvgIndicateur() {
       <circle cx={X(16)} cy={Y(pHe)} r="5.5" fill={COL.orange} stroke="#0f172a"/>
       <text x={X(16) + 10} y={Y(pHe) + 5} fontSize="15.5" fontWeight="700" fill={COL.orange}>pH<Sub>E</Sub> = 8,7</text>
       <text x="190" y="248" fontSize="16" fontWeight="700" fill="#0f172a" textAnchor="middle">la zone de virage doit contenir pH<Sub>E</Sub></text>
-      <text x="190" y="268" fontSize="15.5" fill="#334155" textAnchor="middle">(pH à l’équivalence)</text>
+      <text x="190" y="277" fontSize="15.5" fill="#334155" textAnchor="middle">(pH à l’équivalence)</text>
     </svg>);
 }
