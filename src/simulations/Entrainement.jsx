@@ -71,6 +71,9 @@ const CSS_EN = `
   .en-aide > summary { cursor:pointer; padding:10px 0; min-height:24px; font-weight:700; color:var(--bleu); }
   .en-etape { margin:20px 0 8px; font:800 13px Inter,system-ui,sans-serif; letter-spacing:.06em; text-transform:uppercase; color:var(--txt2); }
   .en-niveaux { display:flex; flex-wrap:wrap; gap:8px; }
+  .en-menu { display:none; width:100%; min-height:52px; padding:0 14px; border-radius:14px; border:2px solid var(--bord); background:#fff; color:var(--txt); font:700 16px Inter,system-ui,sans-serif; }
+  @media (max-width:640px) { .en-niveaux.avec-menu { display:none; } .en-menu { display:block; } }
+  .en-conseil { border:1px solid var(--bord); border-left:5px solid #f59e0b; border-radius:12px; background:#fffaf0; }
   .en-niv { flex:1 1 76px; min-height:48px; padding:0 14px; border-radius:16px; border:2px solid var(--bord); background:#fff; color:var(--txt); font:800 16px Inter,system-ui,sans-serif; cursor:pointer; }
   .en-niv[aria-pressed="true"] { background:var(--bleu); border-color:var(--bleu); color:#fff; box-shadow:0 4px 12px rgba(11,79,148,.25); }
   .en-niv.tous { flex:1 1 100%; min-height:40px; font-size:14px; font-weight:700; border-style:dashed; color:var(--txt2); }
@@ -224,10 +227,10 @@ function ExosDeSimulation({ simId, exos, ctx, naviguer }) {
         ? <p style={{ fontSize: 14, color: KIT.txt2, lineHeight: 1.5, margin: '6px 0 0' }}>Il n’y a pas encore d’exercice rattaché précisément à cette simulation. Tu peux travailler sur le thème du chapitre, plus bas.</p>
         : <>
           <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 10 }}>{liste.length} exercice{liste.length > 1 ? 's' : ''} directement liés à cette simulation · {nbFaits(liste)} réussi{nbFaits(liste) > 1 ? 's' : ''}</div>
-          {conseil && <div data-conseil style={{ ...styleBoite, border: 'none', borderRadius: 22, padding: '14px 16px', background: ROSE, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
+          {conseil && <div data-conseil className="en-conseil" style={{ padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
             <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 800, color: '#ffd68a', letterSpacing: 0.5 }}><Pic n="arrow"/>{conseil.raison === 'nouveau' ? 'COMMENCE PAR' : 'POUR VISER LES 3 ÉTOILES'}</div>
-              <div style={{ fontWeight: 800, color: 'white', fontSize: 16, fontFamily: TITRE_B }}>{conseil.exo.comp} · {conseil.exo.titre.replace(/^[^—]*— /, '')}</div>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: '#92400e', letterSpacing: 0.5 }}><Pic n="arrow"/>{conseil.raison === 'nouveau' ? 'COMMENCE PAR' : 'POUR VISER LES 3 ÉTOILES'}</div>
+              <div style={{ fontWeight: 800, color: KIT.txt, fontSize: 16, fontFamily: TITRE_B }}>{conseil.exo.comp} · {conseil.exo.titre.replace(/^[^—]*— /, '')}</div>
             </div>
             <button onClick={() => ouvrir(conseil.exo)} style={{ background: ORANGE_B, color: '#1b2b3a', border: 'none', borderRadius: 999, padding: '10px 20px', fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>Y aller ▶</button>
           </div>}
@@ -325,11 +328,11 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
         <div style={{ height: 10, borderRadius: 5, background: TEAL_B, width: `${av.max ? (100 * av.etoiles) / av.max : 0}%` }} />
       </div>}
       {exosChap.length === 0 || themeOuvert ? null : conseil ? (
-        <div data-conseil style={{ ...styleBoite, border: 'none', borderRadius: 22, padding: '16px 18px', background: ROSE, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
+        <div data-conseil className="en-conseil" style={{ padding: '14px 16px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginBottom: 14 }}>
           <div style={{ flex: 1, minWidth: 220 }}>
-            <div style={{ fontSize: 12.5, fontWeight: 800, color: '#ffd68a', letterSpacing: 0.5 }}><Pic n="arrow"/>TON PROCHAIN EXERCICE CONSEILLÉ</div>
-            <div style={{ fontWeight: 800, color: 'white', margin: '2px 0', fontSize: 16, fontFamily: TITRE_B }}>{conseil.exo.comp} · {conseil.exo.titre}</div>
-            <div style={{ fontSize: 13, color: '#dbe8f7' }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: '#92400e', letterSpacing: 0.5 }}><Pic n="arrow"/>TON PROCHAIN EXERCICE CONSEILLÉ</div>
+            <div style={{ fontWeight: 800, color: KIT.txt, margin: '2px 0', fontSize: 16, fontFamily: TITRE_B }}>{conseil.exo.comp} · {conseil.exo.titre}</div>
+            <div style={{ fontSize: 13, color: KIT.txt2 }}>
               {conseil.raison === 'nouveau' ? 'Tu ne l’as pas encore réussi : on commence par la compétence où tu as le moins avancé dans ce chapitre.' : `Tu l’as réussi avec ${conseil.etoiles} étoile${conseil.etoiles > 1 ? 's' : ''} : vise les 3 étoiles.`}
             </div>
           </div>
@@ -488,14 +491,23 @@ export function SimulationEntrainement({ naviguer }) {
 
       <section data-niveaux>
         <h3 className="en-etape">1 · Je suis en…</h3>
-        <div role="group" aria-label="Mon niveau" className="en-niveaux">
+        <select className="en-menu" aria-label="Mon niveau" data-menu-niveau value={niveau || ''} onChange={ev => { if (ev.target.value) { setNiveauChoisi(ev.target.value); setEns(''); setChapChoisi(undefined); } }}>
+          {!niveau && <option value="">Choisis ton niveau…</option>}
+          {NIVEAUX_CHAPITRES.map(n => <option key={n.key} value={n.key}>{n.label}</option>)}
+          <option value="tous">Tous les niveaux</option>
+        </select>
+        <div role="group" aria-label="Mon niveau" className="en-niveaux avec-menu">
           {NIVEAUX_CHAPITRES.map(n => <button key={n.key} type="button" className="en-niv" data-niveau={n.key} aria-pressed={niveau === n.key} onClick={() => { setNiveauChoisi(n.key); setEns(''); setChapChoisi(undefined); }}>{n.label}</button>)}
           <button type="button" className="en-niv tous" data-niveau="tous" aria-pressed={niveau === 'tous'} onClick={() => { setNiveauChoisi('tous'); setEns(''); setChapChoisi(undefined); }}>Voir tous les niveaux</button>
         </div>
         {enseignements.length > 0 && (
           <div data-enseignements>
             <h4 className="en-etape" style={{ margin: '14px 0 6px' }}>Mon enseignement</h4>
-            <div role="group" aria-label="Mon enseignement" className="en-niveaux">
+            <select className="en-menu" aria-label="Mon enseignement" data-menu-ens value={ensValide} onChange={ev => { setEns(ev.target.value); setChapChoisi(undefined); }}>
+              <option value="">Tous</option>
+              {enseignements.map(e => <option key={e.key} value={e.key}>{e.label}</option>)}
+            </select>
+            <div role="group" aria-label="Mon enseignement" className="en-niveaux avec-menu">
               <button type="button" className="en-niv" data-ens="tous" aria-pressed={!ensValide} onClick={() => { setEns(''); setChapChoisi(undefined); }}>Tous</button>
               {enseignements.map(e => <button key={e.key} type="button" className="en-niv" data-ens={e.key} aria-pressed={ensValide === e.key} onClick={() => { setEns(e.key); setChapChoisi(undefined); }}>{e.label}</button>)}
             </div>
