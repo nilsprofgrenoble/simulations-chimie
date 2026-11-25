@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { KIT } from "../commun";
 import { Schema as SchemaLentilleMince } from "./lentilleMinceSchema";
+import { Spectres, Caracteristique } from "./SchemasOndes2gt.jsx";
 
 // ====================================================
 //  SCHÉMAS DE SECONDE : circuits électriques, optique (miroir, dioptre, lentille), mouvements
@@ -431,4 +432,4 @@ function EchelleSites({ rayon = 0.30, reponse = false }) {
     </div>);
 }
 
-export const DESSINS_SECONDE = { circuit: Circuit, optique: Optique, mouvement: Mouvement, mailles: CircuitMailles, molecule: Molecule, ampoule: Ampoule, maille: Maille, echelleSites: EchelleSites };
+export const DESSINS_SECONDE = { spectres: Spectres, caracteristique: Caracteristique, circuit: Circuit, optique: Optique, mouvement: Mouvement, mailles: CircuitMailles, molecule: Molecule, ampoule: Ampoule, maille: Maille, echelleSites: EchelleSites };
