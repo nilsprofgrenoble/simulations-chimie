@@ -48,11 +48,11 @@ const FSecond = <Formule><msup><mi>x</mi><mn>2</mn></msup><mo>+</mo>{KA}<mo>·</
 
 // ---------- QCM du parcours (exportés pour le contrôle de la longueur des options) ----------
 const QCM_PARCOURS = {
-  hcl: { options: ['presque rien : la transformation est quasi-totale', 'environ la moitié : les deux sens de la réaction se compensent', 'presque tout : HCl ne réagit presque pas avec l’eau', 'cela dépend de la valeur de la concentration apportée C'], bonne: 0 },
+  hcl: { options: ['presque rien : la transformation de HCl est quasi-totale', 'environ la moitié : les deux sens de la réaction se compensent', 'presque tout : HCl ne réagit presque pas avec l’eau', 'cela dépend de la valeur de la concentration apportée C'], bonne: 0 },
   eth: { options: ['limitée : la plupart des molécules restent sous forme CH₃COOH', 'quasi-totale : comme pour HCl, il ne reste presque plus de CH₃COOH', 'nulle : l’acide éthanoïque ne réagit pas du tout avec l’eau', 'complète : l’eau est en très grand excès, donc tout réagit'], bonne: 0 },
-  phfaible: { options: ['faible : son pH est supérieur à −log C', 'fort : son pH est supérieur à 0, donc il réagit totalement', 'faible : son pH est inférieur à la valeur de −log C', 'indécidable : il faudrait connaître la valeur de K_A'], bonne: 0 },
-  dilu: { options: ['augmente : l’acide réagit davantage', 'diminue : il y a moins d’acide à transformer', 'reste égal : c’est une propriété de l’acide seul', 'passe à 1 : la solution diluée devient un acide fort'], bonne: 0 },
-  ka: { options: ['CH₃COOH + H₂O ⇌ CH₃COO⁻ + H₃O⁺', 'CH₃COO⁻ + H₂O ⇌ CH₃COOH + HO⁻ (réaction inverse)', '2 H₂O ⇌ H₃O⁺ + HO⁻ (eau avec elle-même)', 'CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O (avec la soude)'], bonne: 0 },
+  phfaible: { options: ['faible : son pH est supérieur à −log C, réaction limitée', 'fort : son pH est supérieur à 0, donc il réagit totalement', 'faible : son pH est inférieur à la valeur de −log C', 'indécidable : il faudrait connaître la valeur de K_A'], bonne: 0 },
+  dilu: { options: ['augmente : une plus grande part de l’acide réagit', 'diminue : il y a moins d’acide à transformer', 'reste égal : c’est une propriété de l’acide seul', 'passe à 1 : la solution diluée devient un acide fort'], bonne: 0 },
+  ka: { options: ['CH₃COOH + H₂O ⇌ CH₃COO⁻ + H₃O⁺ (avec l’eau)', 'CH₃COO⁻ + H₂O ⇌ CH₃COOH + HO⁻ (réaction inverse)', '2 H₂O ⇌ H₃O⁺ + HO⁻ (eau avec elle-même)', 'CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O (avec la soude)'], bonne: 0 },
   compar: { options: ['l’acide méthanoïque : plus petit pK_A, plus grand τ', 'l’acide benzoïque : pK_A intermédiaire, pH intermédiaire', 'l’acide éthanoïque : plus grand pK_A, plus petit pH', 'on ne peut pas comparer : les trois acides sont faibles'], bonne: 0 },
   second: { options: ['x² + 1,7×10⁻⁵·x − 3,4×10⁻⁷ = 0', 'x² − 1,7×10⁻⁵·x − 3,4×10⁻⁷ = 0', 'x² + 1,7×10⁻⁵·x − 1,7×10⁻⁵ = 0', 'x² + 3,4×10⁻⁷·x − 1,7×10⁻⁵ = 0'], bonne: 0 },
 };
