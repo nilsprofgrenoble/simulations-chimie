@@ -21,7 +21,7 @@ const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const melange = t => { const a = [...t]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const nouvelleGraine = () => 1 + Math.floor(Math.random() * 900000);
-const PRESET = { type: 'A', c0: 40.0, k: 0.150, t: 0, tang: false, sigma: 0, graine: 7, dt: 4, sel: 0, niv: false, modele: false };
+const PRESET = { type: 'A', c0: M.C0_DEFAUT, k: M.K_DEFAUT, t: 0, tang: false, sigma: 0, graine: 7, dt: 4, sel: 0, niv: false, modele: false };
 const SIGMA_GUIDE = 0.4, SIGMA_DEFI = 0.3;
 const COL = { bleu: '#0369a1', orange: '#b45309', vert: '#15803d', rouge: '#b91c1c', gris: '#64748b', violet: '#6d28d9' };
 const Sub = ({ children }) => <tspan baselineShift="sub" fontSize="0.75em">{children}</tspan>;

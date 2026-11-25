@@ -150,38 +150,39 @@ function SvgFronts() {
     <svg viewBox="0 0 360 200" role="img" aria-label="Un émetteur se déplace vers la droite : les fronts d’onde sont resserrés devant lui (longueur d’onde plus petite, fréquence reçue plus grande) et espacés derrière lui (longueur d’onde plus grande, fréquence reçue plus petite)" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
       {F.map(f => <circle key={f.k} cx={sx + (f.cx - xs) * U} cy={y0} r={f.r * U} fill="none" stroke={COL.bleu} strokeWidth="2"/>)}
       <circle cx={sx} cy={y0} r="6" fill={COL.orange}/><line x1={sx + 10} y1={y0 - 12} x2={sx + 38} y2={y0 - 12} stroke={COL.orange} strokeWidth="2.5"/><polygon points={`${sx + 38},${y0 - 17} ${sx + 47},${y0 - 12} ${sx + 38},${y0 - 7}`} fill={COL.orange}/>
-      <line x1={sx + dev[2]} y1={y0 + 30} x2={sx + dev[1]} y2={y0 + 30} stroke={COL.vert} strokeWidth="2.5"/><text x={(2 * sx + dev[1] + dev[2]) / 2} y={y0 + 46} fontSize="11.5" fontWeight="700" fill={COL.vert} textAnchor="middle">λ devant (petit)</text>
-      <line x1={sx + der[1]} y1={y0 + 30} x2={sx + der[0]} y2={y0 + 30} stroke={COL.rouge} strokeWidth="2.5"/><text x={(2 * sx + der[0] + der[1]) / 2} y={y0 + 46} fontSize="11.5" fontWeight="700" fill={COL.rouge} textAnchor="middle">λ derrière (grand)</text>
-      <text x="268" y="26" fontSize="12.5" fontWeight="700" fill={COL.vert} textAnchor="middle">devant : f reçue ↑</text><text x="100" y="26" fontSize="12.5" fontWeight="700" fill={COL.rouge} textAnchor="middle">derrière : f reçue ↓</text>
-      <text x="180" y="192" fontSize="11.5" fill="#334155" textAnchor="middle">f = c / λ : fronts serrés ⇒ λ petite ⇒ f grande</text>
+      <line x1={sx + dev[2]} y1={y0 + 30} x2={sx + dev[1]} y2={y0 + 30} stroke={COL.vert} strokeWidth="2.5"/><text x={(2 * sx + dev[1] + dev[2]) / 2} y={y0 + 46} fontSize="15" fontWeight="700" fill={COL.vert} textAnchor="middle">λ devant (petit)</text>
+      <line x1={sx + der[1]} y1={y0 + 30} x2={sx + der[0]} y2={y0 + 30} stroke={COL.rouge} strokeWidth="2.5"/><text x={(2 * sx + der[0] + der[1]) / 2} y={y0 + 46} fontSize="15" fontWeight="700" fill={COL.rouge} textAnchor="middle">λ derrière (grand)</text>
+      <text x="268" y="26" fontSize="15" fontWeight="700" fill={COL.vert} textAnchor="middle">devant : f reçue ↑</text><text x="100" y="26" fontSize="15" fontWeight="700" fill={COL.rouge} textAnchor="middle">derrière : f reçue ↓</text>
+      <text x="180" y="192" fontSize="15" fill="#334155" textAnchor="middle">f = c / λ : fronts serrés ⇒ λ petite ⇒ f grande</text>
     </svg>);
 }
 function SvgEtablir() {
   // deux émissions successives : S1 (front 1, rayon c·Te) et S2 situé v·Te plus loin ; l'écart entre le front 1 et S2 vaut (c − v)·Te
   const x1 = 40, x2 = 100, R0 = 190, y = 92;
   return (
-    <svg viewBox="0 0 360 190" role="img" aria-label="Deux émissions successives d’un émetteur qui avance vers la droite : le premier front est un cercle de rayon c fois T_e centré sur la première position ; la seconde position est plus loin de v fois T_e ; la distance entre le second point d’émission et le premier front, devant l’émetteur, vaut c moins v, fois T_e" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
+    <svg viewBox="0 0 360 214" role="img" aria-label="Deux émissions successives d’un émetteur qui avance vers la droite : le premier front est un cercle de rayon c fois T_e centré sur la première position ; la seconde position est plus loin de v fois T_e ; la distance entre le second point d’émission et le premier front, devant l’émetteur, vaut c moins v, fois T_e" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
       <line x1="10" y1={y} x2="350" y2={y} stroke="#cbd5e1" strokeDasharray="4 4"/>
       <circle cx={x1} cy={y} r={R0} fill="none" stroke={COL.bleu} strokeWidth="2"/>
       <circle cx={x1} cy={y} r="5" fill={COL.gris}/><circle cx={x2} cy={y} r="6" fill={COL.orange}/>
-      <text x={x1} y={y + 22} fontSize="12" fontWeight="700" fill="#334155" textAnchor="middle">S₁</text><text x={x2} y={y + 22} fontSize="12" fontWeight="700" fill={COL.orange} textAnchor="middle">S₂</text>
-      <text x="22" y="26" fontSize="11.5" fill={COL.bleu} fontWeight="700">front 1 (émis en S₁)</text>
-      <line x1={x1} y1={y - 22} x2={x2} y2={y - 22} stroke={COL.orange} strokeWidth="2.5"/><text x={(x1 + x2) / 2} y={y - 28} fontSize="12" fontWeight="700" fill={COL.orange} textAnchor="middle">v·T<tspan baselineShift="sub" fontSize="0.75em">e</tspan></text>
-      <line x1={x2} y1={y + 46} x2={x1 + R0} y2={y + 46} stroke={COL.vert} strokeWidth="2.5"/><text x={(x2 + x1 + R0) / 2} y={y + 64} fontSize="12.5" fontWeight="700" fill={COL.vert} textAnchor="middle">λ<tspan baselineShift="sub" fontSize="0.75em">A</tspan> = (c − v)·T<tspan baselineShift="sub" fontSize="0.75em">e</tspan></text>
-      <line x1={x1} y1={y + 82} x2={x1 + R0} y2={y + 82} stroke={COL.gris} strokeWidth="2"/><text x={x1 + R0 / 2} y={y + 98} fontSize="12" fill="#334155" textAnchor="middle">c·T<tspan baselineShift="sub" fontSize="0.75em">e</tspan> (distance parcourue par le front 1)</text>
+      <text x={x1} y={y + 22} fontSize="15" fontWeight="700" fill="#334155" textAnchor="middle">S₁</text><text x={x2} y={y + 22} fontSize="15" fontWeight="700" fill={COL.orange} textAnchor="middle">S₂</text>
+      <text x="22" y="26" fontSize="15" fill={COL.bleu} fontWeight="700">front 1 (émis en S₁)</text>
+      <line x1={x1} y1={y - 22} x2={x2} y2={y - 22} stroke={COL.orange} strokeWidth="2.5"/><text x={(x1 + x2) / 2} y={y - 28} fontSize="15" fontWeight="700" fill={COL.orange} textAnchor="middle">v·T<tspan baselineShift="sub" fontSize="0.8em">e</tspan></text>
+      <line x1={x2} y1={y + 46} x2={x1 + R0} y2={y + 46} stroke={COL.vert} strokeWidth="2.5"/><text x={(x2 + x1 + R0) / 2} y={y + 64} fontSize="15" fontWeight="700" fill={COL.vert} textAnchor="middle">λ<tspan baselineShift="sub" fontSize="0.8em">A</tspan> = (c − v)·T<tspan baselineShift="sub" fontSize="0.8em">e</tspan></text>
+      <line x1={x1} y1={y + 82} x2={x1 + R0} y2={y + 82} stroke={COL.gris} strokeWidth="2"/><text x={x1 + R0 / 2} y={y + 98} fontSize="15" fill="#334155" textAnchor="middle">c·T<tspan baselineShift="sub" fontSize="0.8em">e</tspan> (rayon du front 1)</text>
     </svg>);
 }
 const picPath = (centre, f0, f1, T, X, yB, h) => { const L = []; for (let i = 0; i <= 200; i++) L.push(f0 + (f1 - f0) * i / 200); const fin = 0.05 / T; for (let k = -80; k <= 80; k++) L.push(centre + k * fin); const S = L.filter(f => f >= f0 && f <= f1).sort((a, b) => a - b); return `M${S.map(f => `${X(f).toFixed(1)},${(yB - h * D.intensitePic(f, centre, T)).toFixed(1)}`).join(' L')}`; };
 function SvgDecalage() {
   const X = f => 20 + (f - 0) / 40 * 320, yB = 118;
   return (
-    <svg viewBox="0 0 360 170" role="img" aria-label="Spectre : le pic gris est la fréquence émise, le pic bleu plus à droite est la fréquence reçue ; l’écart entre les deux est le décalage delta f, proportionnel à la vitesse" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
+    <svg viewBox="0 0 360 206" role="img" aria-label="Spectre : le pic gris est la fréquence émise, le pic bleu plus à droite est la fréquence reçue ; l’écart entre les deux est le décalage delta f, proportionnel à la vitesse" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
       <line x1="14" y1={yB} x2="346" y2={yB} stroke="#94a3b8" strokeWidth="1.2"/>
       <path d={picPath(12, 0, 40, 1 / 1.6, X, yB, 70)} fill="none" stroke={COL.gris} strokeWidth="2" strokeDasharray="5 3"/><path d={picPath(24, 0, 40, 1 / 1.6, X, yB, 70)} fill="none" stroke={COL.bleu} strokeWidth="2.4"/>
-      <text x={X(12)} y="38" fontSize="13" fontWeight="700" fill={COL.gris} textAnchor="middle">{FE}</text><text x={X(24)} y="38" fontSize="13" fontWeight="700" fill={COL.bleu} textAnchor="middle">{FR}</text>
-      <line x1={X(12)} y1="52" x2={X(24)} y2="52" stroke={COL.orange} strokeWidth="2.5"/><polygon points={`${X(24)},47 ${X(24) + 8},52 ${X(24)},57`} fill={COL.orange}/><text x={(X(12) + X(24)) / 2} y="46" fontSize="13" fontWeight="700" fill={COL.orange} textAnchor="middle">δf</text>
-      <text x="180" y="146" fontSize="12" fill="#334155" textAnchor="middle">δf = |{FR} − {FE}| ; si v ≪ c : δf = {FE} × v / c</text>
-      <text x="180" y="163" fontSize="12" fontWeight="700" fill="#0f172a" textAnchor="middle">v = c × δf / {FE}</text>
+      <text x={X(12)} y="38" fontSize="15" fontWeight="700" fill={COL.gris} textAnchor="middle">{FE}</text><text x={X(24)} y="38" fontSize="15" fontWeight="700" fill={COL.bleu} textAnchor="middle">{FR}</text>
+      <line x1={X(12)} y1="52" x2={X(24)} y2="52" stroke={COL.orange} strokeWidth="2.5"/><polygon points={`${X(24)},47 ${X(24) + 8},52 ${X(24)},57`} fill={COL.orange}/><text x={(X(12) + X(24)) / 2} y="46" fontSize="15" fontWeight="700" fill={COL.orange} textAnchor="middle">δf</text>
+      <text x="180" y="132" fontSize="15" fill="#334155" textAnchor="middle">δf = |{FR} − {FE}|</text>
+      <text x="180" y="162" fontSize="15" fill="#334155" textAnchor="middle">si v ≪ c : δf = {FE} × v / c</text>
+      <text x="180" y="188" fontSize="15" fontWeight="700" fill="#0f172a" textAnchor="middle">v = c × δf / {FE}</text>
     </svg>);
 }
 function SvgSens() {
@@ -189,33 +190,33 @@ function SvgSens() {
   const panneau = (y, titre, centre, coul) => (<g>
     <line x1="14" y1={y + 56} x2="346" y2={y + 56} stroke="#94a3b8" strokeWidth="1.2"/>
     <path d={picPath(20, 0, 40, 1 / 1.6, X, y + 56, 40)} fill="none" stroke={COL.gris} strokeWidth="2" strokeDasharray="5 3"/><path d={picPath(centre, 0, 40, 1 / 1.6, X, y + 56, 40)} fill="none" stroke={coul} strokeWidth="2.4"/>
-    <text x="18" y={y + 12} fontSize="12" fontWeight="700" fill="#0f172a">{titre}</text></g>);
+    <text x="18" y={y + 12} fontSize="15" fontWeight="700" fill="#0f172a">{titre}</text></g>);
   return (
-    <svg viewBox="0 0 360 190" role="img" aria-label="Deux spectres : quand l’émetteur se rapproche, le pic se décale vers les fréquences plus grandes ; quand il s’éloigne, vers les fréquences plus petites ; le décalage est à peu près le même dans les deux cas" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
-      {panneau(0, <>se rapproche : {FR} &gt; {FE} (pic à droite)</>, 29, COL.vert)}{panneau(94, <>s’éloigne : {FR} &lt; {FE} (pic à gauche)</>, 11, COL.rouge)}
-      <text x={X(20)} y="182" fontSize="11.5" fill={COL.gris} textAnchor="middle">{FE} (gris)</text>
+    <svg viewBox="0 -8 360 214" role="img" aria-label="Deux spectres : quand l’émetteur se rapproche, le pic se décale vers les fréquences plus grandes ; quand il s’éloigne, vers les fréquences plus petites ; le décalage est à peu près le même dans les deux cas" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
+      {panneau(0, <>se rapproche : {FR} &gt; {FE}</>, 29, COL.vert)}{panneau(94, <>s’éloigne : {FR} &lt; {FE}</>, 11, COL.rouge)}
+      <text x={X(20)} y="184" fontSize="15" fill={COL.gris} textAnchor="middle">{FE} (gris)</text>
     </svg>);
 }
 function SvgResolution() {
   const X = (f, n) => 12 + (f + 5) / 10 * 156 + n * 176, yB = 96;
-  const bloc = (n, T, titre, sous, coul) => (<g>
+  const bloc = (n, T, titre, sous, sous2, coul) => (<g>
     <line x1={X(-5, n)} y1={yB} x2={X(5, n)} y2={yB} stroke="#94a3b8" strokeWidth="1.2"/>
     <path d={picPath(-1.2, -5, 5, T, f => X(f, n), yB, 60)} fill="none" stroke={COL.gris} strokeWidth="2" strokeDasharray="5 3"/><path d={picPath(1.2, -5, 5, T, f => X(f, n), yB, 60)} fill="none" stroke={coul} strokeWidth="2.4"/>
-    <text x={X(0, n)} y="22" fontSize="12" fontWeight="700" fill="#0f172a" textAnchor="middle">{titre}</text><text x={X(0, n)} y="114" fontSize="11.5" fill="#334155" textAnchor="middle">{sous}</text></g>);
+    <text x={X(0, n)} y="22" fontSize="15" fontWeight="700" fill="#0f172a" textAnchor="middle">{titre}</text><text x={X(0, n)} y="114" fontSize="15" fill="#334155" textAnchor="middle">{sous}</text><text x={X(0, n)} y="132" fontSize="15" fill="#334155" textAnchor="middle">{sous2}</text></g>);
   return (
-    <svg viewBox="0 0 360 150" role="img" aria-label="Deux enregistrements du même décalage de 2,4 hertz : avec une durée de 0,5 seconde les deux pics sont larges et se chevauchent, avec une durée de 2 secondes ils sont fins et bien séparés" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
-      {bloc(0, 0.5, 'durée 0,5 s', 'largeur 1/T = 2 Hz : confondus', COL.rouge)}{bloc(1, 2, 'durée 2 s', 'largeur 1/T = 0,5 Hz : séparés', COL.vert)}
-      <text x="180" y="140" fontSize="11.5" fontWeight="700" fill="#0f172a" textAnchor="middle">séparer deux pics : δf supérieur à 1/T</text>
+    <svg viewBox="0 0 360 170" role="img" aria-label="Deux enregistrements du même décalage de 2,4 hertz : avec une durée de 0,5 seconde les deux pics sont larges et se chevauchent, avec une durée de 2 secondes ils sont fins et bien séparés" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
+      {bloc(0, 0.5, 'durée 0,5 s', 'largeur 1/T = 2 Hz', 'pics confondus', COL.rouge)}{bloc(1, 2, 'durée 2 s', 'largeur 1/T = 0,5 Hz', 'pics séparés', COL.vert)}
+      <text x="180" y="160" fontSize="15" fontWeight="700" fill="#0f172a" textAnchor="middle">séparer deux pics : δf supérieur à 1/T</text>
     </svg>);
 }
 function SvgChaine() {
-  const boite = (x, t1, t2, c) => (<g><rect x={x} y="22" width="76" height="52" rx="8" fill="white" stroke={c} strokeWidth="2"/><text x={x + 38} y="44" fontSize="11.5" fontWeight="700" fill="#0f172a" textAnchor="middle">{t1}</text><text x={x + 38} y="60" fontSize="11" fill="#334155" textAnchor="middle">{t2}</text></g>);
+  const boite = (x, t1, t2, c) => (<g><rect x={x} y="22" width="76" height="52" rx="8" fill="white" stroke={c} strokeWidth="2"/><text x={x + 38} y="44" fontSize="15" fontWeight="700" fill="#0f172a" textAnchor="middle">{t1}</text><text x={x + 38} y="62" fontSize="15" fill="#334155" textAnchor="middle">{t2}</text></g>);
   const fl = x => <g><line x1={x} y1="48" x2={x + 14} y2="48" stroke="#334155" strokeWidth="2"/><polygon points={`${x + 14},43 ${x + 21},48 ${x + 14},53`} fill="#334155"/></g>;
   return (
     <svg viewBox="0 0 360 110" role="img" aria-label="Chaîne de mesure : l’émetteur envoie une onde de fréquence connue, le mouvement la décale, le spectre donne f_r, on en tire le décalage puis la vitesse" style={{ width: '100%', maxWidth: 360, height: 'auto', display: 'block' }}>
-      {boite(4, 'émetteur', <>{FE} connue</>, COL.bleu)}{fl(82)}{boite(104, 'mouvement', <>{FR} ≠ {FE}</>, COL.orange)}{fl(182)}{boite(204, 'spectre', 'on lit f_r', COL.bleu)}{fl(282)}
-      <text x="322" y="44" fontSize="11.5" fontWeight="700" fill={COL.vert} textAnchor="middle">δf</text><text x="322" y="60" fontSize="11.5" fontWeight="700" fill={COL.vert} textAnchor="middle">puis v</text>
-      <text x="180" y="98" fontSize="12" fill="#334155" textAnchor="middle">v = c × δf / {FE}, valable si v ≪ c</text>
+      {boite(4, 'émetteur', <>{FE} connue</>, COL.bleu)}{fl(82)}{boite(104, 'mouvement', <>{FR} ≠ {FE}</>, COL.orange)}{fl(182)}{boite(204, 'spectre', <>lire {FR}</>, COL.bleu)}{fl(282)}
+      <text x="322" y="42" fontSize="15" fontWeight="700" fill={COL.vert} textAnchor="middle">δf</text><text x="322" y="62" fontSize="15" fontWeight="700" fill={COL.vert} textAnchor="middle">puis v</text>
+      <text x="180" y="98" fontSize="15" fill="#334155" textAnchor="middle">v = c × δf / {FE}, valable si v ≪ c</text>
     </svg>);
 }
 

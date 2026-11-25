@@ -77,7 +77,7 @@ function CourbeN({ P, th, ctx, tmax, t, pts, afficherA, niv, tang, modele, ligne
   const unite = dat ? 'ans' : 'jours';
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={cadreGraphe} role="img"
-      aria-label={`${dat ? 'Pourcentage de carbone 14 restant' : 'Nombre de noyaux restants (en millions)'} en fonction du temps, de ${dat ? '100 pour cent' : nbf(P.c0 / 1e6, 0) + ' millions'} à t égal 0, divisé par 2 toutes les demi-vies de ${nbf(th, dat ? 0 : 1)} ${unite}. ${pts ? 'Des points de mesure de l’activité, dispersés autour de la courbe, sont tracés.' : ''} Le curseur est à t égal ${nbf(t, dat ? 0 : 1)} ${unite}.`}>
+      aria-label={`${dat ? 'Pourcentage de carbone 14 restant' : 'Nombre de noyaux restants (en millions)'} en fonction du temps, de ${dat ? '100 pour cent' : nbf(P.c0 / 1e6, 0) + ' millions'} à t égal 0${masque ? ', la courbe décroît' : `, divisé par 2 toutes les demi-vies de ${nbf(th, dat ? 0 : 1)} ${unite}`}. ${pts ? 'Des points de mesure de l’activité, dispersés autour de la courbe, sont tracés.' : ''} Le curseur est à t égal ${nbf(t, dat ? 0 : 1)} ${unite}.`}>
       <defs><clipPath id="ra-clip"><rect x={mx} y={my - 4} width={W - mx - mr + 2} height={bas - my + 4}/></clipPath></defs>
       <line x1={mx} y1={bas} x2={W - mr} y2={bas} stroke="#94a3b8"/><line x1={mx} y1={my} x2={mx} y2={bas} stroke="#94a3b8"/>
       {ticksX.map((u, i) => <text key={u} x={X(u)} y={bas + 20} fontSize="16" textAnchor={i === ticksX.length - 1 ? 'end' : 'middle'} fill="#334155">{dat ? fmtMilliers(u) : nbf(u, th % 1 ? 1 : 0)}</text>)}
@@ -169,14 +169,14 @@ export function SimulationRadioactivite() {
   const TOUTES = [
     { id: 'hasard', titre: 'Des noyaux qui se désintègrent', focus: ['scene'],
       texte: <>Voici un petit échantillon de <strong>100 noyaux d’iode 131</strong>, tous identiques et intacts (ronds gris). Un noyau radioactif peut se <strong>désintégrer</strong> : le rond devient orange.</>,
-      tache: { type: 'qcm', q: 'Peut-on prévoir lequel de ces 100 noyaux se désintégrera en premier ?', options: ['non : chaque noyau se désintègre au hasard', 'oui : le noyau le plus ancien se désintègre toujours le premier', 'oui : les noyaux du centre partent avant ceux du bord'], bonne: 0,
+      tache: { type: 'qcm', q: 'Peut-on prévoir lequel de ces 100 noyaux se désintégrera en premier ?', options: ['non : chaque noyau se désintègre au hasard, sans aucun ordre', 'oui : le noyau le plus ancien se désintègre toujours le premier', 'oui : les noyaux du centre partent avant ceux du bord'], bonne: 0,
         expl: 'Les noyaux sont identiques et indépendants : aucun n’est « plus fragile » qu’un autre, et aucun ne « vieillit ». On ne peut prévoir ni lequel ni quand ; seule la probabilité de désintégration par unité de temps est connue.', indice: 'Ces 100 noyaux sont identiques : qu’est-ce qui pourrait distinguer l’un d’eux ?' } },
     { id: 'essai', titre: 'Laisser passer une demi-vie', focus: ['scene'],
       texte: <>La <strong>demi-vie</strong> de l’iode 131 est <em>t</em><sub>½</sub> = 8,0{NB}jours : c’est la durée au bout de laquelle, en moyenne, la moitié des noyaux d’un échantillon s’est désintégrée. Cliquez sur « Laisser passer 8 jours » sous les noyaux.</>,
       tache: { type: 'action', ok: ti.tn === 8 && ti.graines.length >= 1, label: 'Laisser passer 8 jours', faire: () => setT({ tn: 8, nSc: 100, graines: [{ g: nouvelleGraine(), n: 100, t: 8 }] }), consigne: 'Cliquez sur « Laisser passer 8 jours » (sous les noyaux)' } },
     { id: 'repetes', titre: 'On recommence', focus: ['scene', 'mesures'],
       texte: <>Le bouton « Nouvel essai » refait l’expérience avec <strong>100 autres noyaux identiques</strong>, toujours pendant 8,0{NB}jours. Le tableau garde les derniers résultats : cliquez au moins trois fois sur le bouton, puis répondez.</>,
-      tache: { type: 'qcm', q: 'Après 8,0 jours, le nombre de noyaux restants sur 100 est…', options: ['voisin de 50, mais différent d’un essai à l’autre', 'toujours exactement 50 : c’est la définition de la demi-vie', 'quelconque entre 0 et 100, sans lien avec la demi-vie'], bonne: 0, bloque: bloqueRepetes,
+      tache: { type: 'qcm', q: 'Après 8,0 jours, le nombre de noyaux restants sur 100 est…', options: ['voisin de 50, mais variable d’un essai à l’autre : hasard', 'toujours exactement 50 : c’est la définition de la demi-vie', 'quelconque entre 0 et 100, sans lien avec la demi-vie'], bonne: 0, bloque: bloqueRepetes,
         expl: 'La demi-vie donne la valeur moyenne (50 sur 100), mais chaque essai est un tirage au hasard : on obtient 50 « à quelques noyaux près », avec un écart typique de l’ordre de 5.', indice: 'Regardez les résultats du tableau : sont-ils tous égaux ? sont-ils très éloignés de 50 ?' } },
     { id: 'grands', titre: 'Avec beaucoup plus de noyaux', focus: ['scene', 'mesures'],
       texte: <>On refait l’expérience avec un plus grand nombre de noyaux : choisissez <strong>10 000</strong> puis <strong>1 000 000</strong> noyaux (boutons sous les noyaux), cliquez sur « Nouvel essai » plusieurs fois, et comparez les pourcentages de noyaux restants après 8,0{NB}jours.</>,
@@ -196,11 +196,11 @@ export function SimulationRadioactivite() {
         </ul></> },
     { id: 'solution', titre: 'La loi de décroissance', focus: ['courbe', 'mesures'],
       texte: <>Le nombre moyen de noyaux vérifie {FdN}Un échantillon d’iode 131 contient à <em>t</em> = 0 : <em>N</em><sub>0</sub> = 4,0 × 10⁷ noyaux (40 millions). Le graphique montre <em>N</em>(<em>t</em>) ; déplacez le curseur de temps pour lire <em>N</em>. La fonction qui vérifie cette équation avec <em>N</em>(0) = <em>N</em><sub>0</sub> est donnée par la loi de décroissance.</>,
-      tache: { type: 'qcm', q: 'Quelle fonction vérifie dN/dt = −λ·N avec N(0) = N₀ ?', options: ['N(t) = N₀·e^(−λt) : sa dérivée vaut −λ·N(t)', 'N(t) = N₀ − λ·t : sa dérivée est constante, égale à −λ', 'N(t) = N₀·e^(+λt) : elle croît avec le temps', 'N(t) = N₀ / (1 + λt) : une décroissance plus lente'], bonne: 0,
+      tache: { type: 'qcm', q: 'Quelle fonction vérifie dN/dt = −λ·N avec N(0) = N₀ ?', options: ['N(t) = N₀·e^(−λt) : sa dérivée vaut exactement −λ·N(t)', 'N(t) = N₀ − λ·t : sa dérivée est constante, égale à −λ', 'N(t) = N₀·e^(+λt) : elle croît avec le temps', 'N(t) = N₀ / (1 + λt) : une décroissance plus lente'], bonne: 0,
         expl: 'On dérive N₀·e^(−λt) : −λ·N₀·e^(−λt) = −λ·N, et N(0) = N₀·e⁰ = N₀. N₀ − λt a pour dérivée −λ (constante) ; N₀·e^(λt) croît ; N₀/(1 + λt) a pour dérivée −λ·N₀/(1 + λt)², qui n’est pas −λ·N.', indice: 'Dérivez chaque proposition et comparez avec −λ·N.' } },
     { id: 'demi', titre: 'La demi-vie', focus: ['courbe'],
       texte: <>Les traits en pointillés marquent <em>N</em><sub>0</sub>/2, <em>N</em><sub>0</sub>/4 et <em>N</em><sub>0</sub>/8. À l’instant <em>t</em><sub>½</sub>, il reste la moitié des noyaux : <em>N</em>(<em>t</em><sub>½</sub>) = <em>N</em><sub>0</sub>/2, soit <em>N</em><sub>0</sub>·e<sup>−λ·<em>t</em><sub>½</sub></sup> = <em>N</em><sub>0</sub>/2.</>,
-      tache: { type: 'qcm', q: 'Quelle relation en déduit-on entre λ et t½ ?', options: ['λ·t½ = ln 2, donc t½ = ln 2 / λ', 'λ·t½ = 1/2, donc t½ = 1 / (2λ)', 'λ = t½ / ln 2', 't½ = 2 / λ'], bonne: 0,
+      tache: { type: 'qcm', q: 'Quelle relation en déduit-on entre λ et t½ ?', options: ['λ·t½ = ln 2, donc t½ = ln 2 / λ', 'λ·t½ = 1/2, donc t½ = 1 / (2λ)', 'λ = t½ / ln 2 : on a inversé le rapport', 't½ = 2 / λ'], bonne: 0,
         expl: 'e^(−λ·t½) = 1/2 ; on prend le logarithme népérien : −λ·t½ = ln(1/2) = −ln 2, donc t½ = frac(ln 2|λ). La demi-vie ne dépend pas de N₀ : λ est une caractéristique du noyau.', indice: 'Divisez par N₀, puis appliquez ln aux deux membres : ln(e^x) = x et ln(1/2) = −ln 2.' } },
     { id: 'lambda', titre: 'La constante radioactive λ', focus: ['mesures'],
       texte: <>On a établi <em>t</em><sub>½</sub> = {avecIndices('frac(ln 2|λ)')}. Pour l’iode 131, <em>t</em><sub>½</sub> = 8,0{NB}jours.</>,

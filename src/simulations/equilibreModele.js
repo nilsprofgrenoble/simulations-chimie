@@ -20,7 +20,6 @@ export const SYSTEMES = {
   oh: { id: 'oh', K: 1.7e9, noms: { A: 'CH₃COOH', B: 'HO⁻', C: 'CH₃COO⁻', D: null }, solvant: true,
     logK: logK(PKA.ethanoique, PKA.eau) },
 };
-export const K_AC = SYSTEMES.ac.K, K_OH = SYSTEMES.oh.K;
 
 // quotient de réaction pour la composition { a, b, c, d } (mol/L) ; produit d inexistant pour le système 'oh'
 export function qr(sys, { a, b, c, d = 0 }) {
