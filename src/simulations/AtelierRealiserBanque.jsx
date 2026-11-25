@@ -3421,6 +3421,54 @@ function genPremierPrincipeTG() {
     retenir: ['Premier principe : ΔU = W + Q, avec W et Q les énergies reçues (positives si reçues, négatives si cédées).', 'Système incompressible, sans changement d’état : ΔU = C × ΔT avec C = m × c (C en J·K⁻¹, c en J·kg⁻¹·K⁻¹, m en kg).', 'Une puissance est une énergie par seconde : Q = P × durée, la durée étant en secondes.', 'Température finale : θ_f = θ_i + ΔT avec ΔT = frac(ΔU|C) ; un écart de 1 °C est un écart de 1 K.'] };
 }
 
+function genTransfertsThermTG() {
+  // Transferts thermiques (TG, sim 235). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const r2 = x => Number(x.toPrecision(2));
+  const bon = x => Math.abs(r2(x) - x) / Math.abs(x) <= 0.03;
+  const EL = [{ nom: 'une fenêtre à simple vitrage', R: 0.11 }, { nom: 'une fenêtre à double vitrage', R: 0.24 }, { nom: 'un mur non isolé', R: 0.050 }, { nom: 'un mur isolé', R: 0.30 }];
+  // q1 : φ = Q / Δt
+  let Q1, t1;
+  for (;;) { Q1 = tire([36, 60, 90, 120, 180, 240]); t1 = tire([2, 5, 10, 15, 20]); const p = Q1 * 1000 / (t1 * 60); if (p >= 40 && p <= 600 && bon(p)) break; }
+  const p1 = Q1 * 1000 / (t1 * 60);
+  const q1 = { id: 'tht0', type: 'num', q: <>Un mur laisse passer une énergie <b>Q = {Q1}{NB}kJ</b> pendant <b>{t1}{NB}min</b> (régime permanent). Calculez le flux thermique φ à travers le mur (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: p1, tolRel: 0.06, csMin: 2,
+    aide: 'φ = Q divisé par Δt, avec Q en joules (1 kJ = 1000 J) et Δt en secondes (1 min = 60 s).',
+    pieges: [[Q1 / (t1 * 60), 'Q n’a pas été converti en joules : 1 kJ = 1000 J.'], [Q1 * 1000 / t1, 'La durée n’a pas été convertie en secondes : 1 min = 60 s.'], [(t1 * 60) / (Q1 * 1000), 'Le quotient est à l’envers : φ = Q divisé par Δt.']],
+    expl: <>Q = {Q1} kJ = {f(Q1 * 1000, 0)} J ; Δt = {t1} min = {f(t1 * 60, 0)} s ; φ = {avecIndices(`frac(Q|Δt)`)} = {avecIndices(`frac(${f(Q1 * 1000, 0)}|${f(t1 * 60, 0)})`)} = <b>{f(p1, 0)}{NB}W</b>.</> };
+  // q2 : φ = ΔT / Rth
+  let E2, Ti2, Te2, p2;
+  for (;;) { E2 = tire(EL); Ti2 = tire([19, 20, 21, 22]); Te2 = tire([-8, -5, 0, 2, 5, 8]); p2 = (Ti2 - Te2) / E2.R; if (p2 >= 40 && p2 <= 900 && bon(p2)) break; }
+  const q2 = { id: 'tht1', type: 'num', q: <>Pour {E2.nom} de résistance thermique <b>R<sub>th</sub> = {f(E2.R, E2.R < 0.1 ? 3 : 2)}{NB}K·W⁻¹</b>, l’intérieur est à <b>{Ti2}{NB}°C</b> et l’extérieur à <b>{f(Te2, 0)}{NB}°C</b> (régime permanent). Calculez le flux thermique φ (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: p2, tolRel: 0.06, csMin: 2,
+    aide: 'φ = ΔT divisé par R_th, avec ΔT = température intérieure − température extérieure (en K ; 1 °C d’écart = 1 K).',
+    pieges: [[(Ti2 - Te2) * E2.R, 'Le flux est ΔT divisé par R_th, pas multiplié par R_th.'], [E2.R / (Ti2 - Te2), 'Le quotient est à l’envers : φ = ΔT divisé par R_th, avec ΔT au numérateur.'], [Ti2 / E2.R, 'Il faut l’écart ΔT = θ_int − θ_ext, pas la température intérieure.']],
+    expl: <>ΔT = {Ti2} − ({f(Te2, 0)}) = {Ti2 - Te2} K ; φ = {avecIndices('frac(ΔT|R_th)')} = {avecIndices(`frac(${Ti2 - Te2}|${f(E2.R, E2.R < 0.1 ? 3 : 2)})`)} = <b>{f(p2, 0)}{NB}W</b>.</> };
+  // q3 : Rth = ΔT / φ
+  let dT3, p3, R3;
+  for (;;) { dT3 = tire([10, 12, 15, 18, 20, 25]); p3 = tire([60, 100, 150, 200, 300, 400, 600]); R3 = dT3 / p3; if (R3 >= 0.02 && R3 <= 0.5 && bon(R3)) break; }
+  const q3 = { id: 'tht2', type: 'num', q: <>Un appareil mesure un flux thermique <b>φ = {p3}{NB}W</b> à travers une paroi dont les deux faces sont séparées par un écart de température <b>ΔT = {dT3}{NB}K</b> (régime permanent). Calculez la résistance thermique R<sub>th</sub> de la paroi (en K·W⁻¹, 2 chiffres significatifs).</>, unite: 'K·W⁻¹', vrai: R3, tolRel: 0.06, csMin: 2,
+    aide: 'On isole R_th dans φ = ΔT divisé par R_th : R_th = ΔT divisé par φ.',
+    pieges: [[p3 / dT3, 'Le quotient est à l’envers : R_th = ΔT divisé par φ, avec φ au dénominateur.'], [dT3 * p3, 'On ne multiplie pas : R_th = ΔT divisé par φ.']],
+    expl: <>R<sub>th</sub> = {avecIndices('frac(ΔT|φ)')} = {avecIndices(`frac(${dT3}|${p3})`)} = <b>{f(R3, 3)}{NB}K·W⁻¹</b>.</> };
+  // q4 : E = φ × Δt, en kWh
+  let p4, h4, E4;
+  for (;;) { p4 = tire([80, 100, 150, 200, 300, 450]); h4 = tire([2, 4, 5, 8, 10, 12]); E4 = p4 * h4 / 1000; if (E4 >= 0.2 && E4 <= 5 && bon(E4)) break; }
+  const q4 = { id: 'tht3', type: 'num', q: <>Une paroi laisse passer un flux thermique <b>φ = {p4}{NB}W</b> pendant <b>{h4}{NB}h</b>. Calculez l’énergie transférée (en kWh, 2 chiffres significatifs).</>, unite: 'kWh', vrai: E4, tolRel: 0.06, csMin: 2,
+    aide: 'E = φ × Δt : avec φ en kW (divisez les watts par 1000) et Δt en heures, E est directement en kWh.',
+    pieges: [[p4 * h4, 'Ce résultat est en Wh : divisez par 1000 pour obtenir des kWh.'], [p4 * h4 * 3600, 'Ce résultat est en joules : pour des kWh, divisez par 3,6 × 10⁶ (ou gardez les heures et les kilowatts).'], [p4 / h4 / 1000, 'On multiplie le flux par la durée : E = φ × Δt.']],
+    expl: <>φ = {p4} W = {f(p4 / 1000, 3)} kW ; E = φ × Δt = {f(p4 / 1000, 3)} × {h4} = <b>{f(E4, 2)}{NB}kWh</b>.</> };
+  // q5 : même paroi, nouvel écart de température : φ' = φ × ΔT' / ΔT
+  let p5, a5, b5, p5n;
+  for (;;) { p5 = tire([60, 100, 150, 200, 300]); a5 = tire([10, 12, 15, 20]); b5 = tire([6, 8, 16, 24, 30]); if (a5 === b5) continue; p5n = p5 * b5 / a5; if (p5n >= 30 && p5n <= 700 && bon(p5n)) break; }
+  const q5 = { id: 'tht4', type: 'num', q: <>Une paroi laisse passer un flux <b>φ = {p5}{NB}W</b> quand l’écart de température entre ses faces est <b>ΔT = {a5}{NB}K</b>. Sa résistance thermique ne change pas. Quel est le flux φ′ quand l’écart devient <b>ΔT′ = {b5}{NB}K</b> ? (en W, 2 chiffres significatifs)</>, unite: 'W', vrai: p5n, tolRel: 0.06, csMin: 2,
+    aide: 'Le flux est proportionnel à ΔT quand R_th est constante : φ′ = φ × (ΔT′ divisé par ΔT) ; ou calculez d’abord R_th = ΔT divisé par φ, puis φ′ = ΔT′ divisé par R_th.',
+    pieges: [[p5 * a5 / b5, 'Le rapport est à l’envers : le flux est proportionnel à ΔT, donc φ′ = φ × ΔT′ divisé par ΔT.'], [p5 * b5, 'Il ne faut pas multiplier φ par ΔT′ : φ′ = φ × (ΔT′ divisé par ΔT).'], [p5 + (b5 - a5), 'Le flux n’augmente pas de la différence des écarts : il est proportionnel à ΔT.']],
+    expl: <>R<sub>th</sub> = {avecIndices(`frac(${a5}|${p5})`)} = {f(a5 / p5, 4)} K·W⁻¹ ; φ′ = {avecIndices('frac(ΔT′|R_th)')} = {avecIndices(`frac(${b5}|${f(a5 / p5, 4)})`)} = <b>{f(p5n, 0)}{NB}W</b> (ou φ′ = {p5} × {avecIndices(`frac(${b5}|${a5})`)}).</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Transferts thermiques : flux thermique φ = Q divisé par Δt, résistance thermique d’une paroi φ = ΔT divisé par R_th (R_th donnée), énergie E = φ × Δt. Régime permanent, paroi traversée dans un seul sens.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Flux thermique : φ = Q divisé par Δt (W), avec Q en joules et Δt en secondes.', 'Paroi en régime permanent : φ = ΔT divisé par R_th, R_th en K·W⁻¹ ; ΔT est l’écart entre les deux faces (1 °C d’écart = 1 K).', 'Énergie transférée : E = φ × Δt ; en kWh, φ en kW et Δt en heures (1 kWh = 3,6 × 10⁶ J).', 'Plus R_th est grande, plus la paroi isole ; à R_th constante, le flux est proportionnel à ΔT.'] };
+}
+
 function genEcoulementTG() {
   // Écoulement d'un fluide (TG, sim 214). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -4921,6 +4969,7 @@ export const FAMILLES = [
   { id: 'thm-calcul', groupe: 'Formules', titre: 'Loi de Newton et thermostat : temps caractéristique, flux thermique, variation et évolution de la température, durée pour atteindre une température (TG)', gen: genThermostatTG, domaine: 'Loi de Newton et thermostat : température d’un système au cours du temps' },
   { id: 'gpf-calcul', groupe: 'Formules', titre: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température (TG)', gen: genGazParfaitTG, domaine: 'Gaz parfait : équation d’état et limites du modèle' },
   { id: 'pp1-calcul', groupe: 'Formules', titre: 'Premier principe : variation d’énergie interne, capacité thermique et température finale (TG)', gen: genPremierPrincipeTG, domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie' },
+  { id: 'tht-calcul', groupe: 'Formules', titre: 'Transferts thermiques : flux, résistance thermique d’une paroi, énergie transférée et nouvel écart de température (TG)', gen: genTransfertsThermTG, domaine: 'Transferts thermiques et bilan de la Terre (TG)' },
   { id: 'ber-calcul', groupe: 'Formules', titre: 'Écoulement d’un fluide : débit volumique, vitesse dans un col, différence de pression, vitesse de vidange et colonnes d’un Venturi (TG)', gen: genEcoulementTG, domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi' },
   { id: 'arc-calcul', groupe: 'Formules', titre: 'Poussée d’Archimède : poussée, poids apparent, fraction immergée, masse posée sur un flotteur et masse volumique d’un liquide (TG)', gen: genArchimedeTG, domaine: 'Poussée d’Archimède : origine, expression et flottaison' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },

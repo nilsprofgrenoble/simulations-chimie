@@ -5151,6 +5151,23 @@ export const ENONCES = [
     },
   },
   {
+    id: 'tht-sapp-paroi', domaine: 'Transferts thermiques et bilan de la Terre (TG)', titre: 'Les pertes d’une fenêtre', noms: ['Flux thermique à travers la fenêtre', 'Énergie perdue pendant la durée'],
+    gen: () => ({ g: tire([{ nom: 'à simple vitrage', R: 0.11 }, { nom: 'à double vitrage', R: 0.24 }]), Ti: tire([19, 20, 21]), Te: tire([-5, 0, 3, 5]), h: tire([5, 8, 10, 12]), prix: tire([0.18, 0.20, 0.25]) }),
+    build: (p, q) => {
+      const dT = p.Ti - p.Te, phi = dT / p.g.R;
+      const tokens = { R: tok(`${nb(p.g.R, 2)} K·W⁻¹`, 'Résistance thermique de la fenêtre', p.g.R, 'K·W⁻¹'), Ti: tok(`${p.Ti} °C`, 'Température intérieure', p.Ti, '°C'), Te: tok(`${String(p.Te).replace('-', '−')} °C`, 'Température extérieure', p.Te, '°C'), h: tok(`${p.h} h`, 'Durée', p.h, 'h'), prix: tok(`${nb(p.prix, 2)} €·kWh⁻¹`, 'Prix de l’énergie', p.prix, '€·kWh⁻¹') };
+      const debut = ['Une fenêtre ', p.g.nom, ' a une résistance thermique ', T('R'), '. La pièce est à ', T('Ti'), ' et l’extérieur à ', T('Te'), ' (régime permanent). Cette situation dure ', T('h'), ', avec une énergie facturée ', T('prix'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le flux thermique à travers la fenêtre ?'], utiles: ['R', 'Ti', 'Te'],
+        raisons: { h: 'La durée ne sert pas à calculer le flux (une puissance) : elle sert pour l’énergie transférée.', prix: 'Le prix de l’énergie ne sert pas à calculer un flux thermique.' },
+        cherche: { bonne: 'Le flux thermique φ à travers la fenêtre (en W)', faux: ['L’énergie perdue pendant la durée (en kWh)', 'Le coût de l’énergie perdue (en €)', 'La résistance thermique de la fenêtre (en K·W⁻¹)'] },
+        manque: null, solution: { txt: 'φ = frac(ΔT|R_th), avec ΔT = θ_int − θ_ext', val: phi, u: 'W' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle énergie la fenêtre laisse-t-elle passer pendant cette durée ?'], utiles: ['R', 'Ti', 'Te', 'h'],
+        raisons: { prix: 'Le prix sert à calculer un coût, pas l’énergie elle-même.' },
+        cherche: { bonne: 'L’énergie perdue pendant la durée (en kWh)', faux: ['Le flux thermique à travers la fenêtre (en W)', 'Le coût de l’énergie perdue (en €)', 'L’écart de température entre les faces (en K)'] },
+        manque: null, solution: { txt: 'E = φ × Δt, avec φ = frac(ΔT|R_th), en kWh', val: phi * p.h / 1000, u: 'kWh' } };
+    },
+  },
+  {
     id: 'ber-sapp-venturi', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'De l’eau dans un tuyau à col', noms: ['Vitesse dans le col', 'Différence de pression entre l’entrée et le col'],
     gen: () => { const [dA, dB] = tire([[25, 12], [25, 16], [32, 16], [32, 20], [40, 20], [40, 25]]); return { dA, dB, vA: tire([0.5, 0.8, 1.0, 1.2]), L: tire([1.2, 1.5, 2.0]), th: tire([12, 15, 18]), PrA: tire([6, 8, 10]) }; },
     build: (p, q) => {

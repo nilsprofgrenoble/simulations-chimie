@@ -5343,6 +5343,28 @@ export const PLAUSIBLES = [
       F('Cohérent : 56 °C est inférieur à 100 °C, donc toute valeur inférieure à 100 °C est correcte', 'Le verdict est juste, pas le raisonnement : 21 °C serait aussi inférieur à 100 °C. Il faut comparer à ce qu’on attend pour 30 kJ sur 0,20 kg d’eau : environ 36 K d’échauffement.'),
       F('Pas cohérent : la plaque de 500 W devrait chauffer l’eau de 500 K', 'Une puissance en watts n’est pas une température : 500 W pendant 60 s font 30 kJ, qui élèvent 0,20 kg d’eau d’environ 36 K.'),
     ] }),
+
+  // ───────────────────────────── Transferts thermiques (TG, sim 230) : flux, énergie et résistance thermique
+  P({ id: 'tht-val-unite', domaine: 'Transferts thermiques et bilan de la Terre (TG)', niveau: 2, titre: 'Énergie perdue pendant une nuit', plausible: false,
+    enonce: 'Une fenêtre laisse passer un flux de 150 W pendant 10 h. Un élève annonce : « E = φ × Δt = 150 × 10 = 1500 kWh ».',
+    reperes: [['Consommation électrique d’un foyer', 'environ 10 kWh par jour'], ['Un radiateur de 1000 W allumé 1 h', '1 kWh'], ['Facture d’électricité mensuelle d’un foyer', 'quelques centaines de kWh']],
+    ver: '150 W × 10 h = 1500 Wh = 1,5 kWh (1 kWh = 1000 Wh). Le résultat de l’élève est 1000 fois trop grand : 1500 kWh sont plusieurs mois de consommation d’un foyer.',
+    q2: 'Que penser de ce résultat ?',
+    options: [
+      V('invraisemblable : 1500 est en Wh, soit 1,5 kWh', 'Avec φ en watts et Δt en heures, le produit est en wattheures : 1500 Wh = 1,5 kWh. Il faut diviser par 1000 pour obtenir des kWh.'),
+      F('plausible : un flux de 150 W pendant 10 h est une grosse énergie', 'Une fenêtre qui perd 150 W pendant une nuit perd 1,5 kWh, environ un seizième de la consommation d’un foyer pendant 24 h : rien d’énorme.'),
+      F('invraisemblable : la durée devrait être en secondes', 'Les secondes donneraient des joules (5,4 × 10⁶ J). Pour des kWh, on garde les heures et on convertit les watts en kilowatts.'),
+    ] }),
+  P({ id: 'tht-val-resistance', domaine: 'Transferts thermiques et bilan de la Terre (TG)', niveau: 2, titre: 'Résistance thermique d’un mur mesurée', plausible: true,
+    enonce: 'Un mur séparant une pièce à 20 °C d’un extérieur à 5 °C laisse passer un flux de 300 W. Un élève calcule : « R_th = frac(ΔT|φ) = frac(15|300) = 0,050 K·W⁻¹ ».',
+    reperes: [['Mur de parpaing non isolé (10 m²)', 'R_th de l’ordre de 0,05 K·W⁻¹'], ['Mur bien isolé (10 m²)', 'R_th de l’ordre de 0,3 K·W⁻¹'], ['Une grande R_th', 'un bon isolant, un petit flux']],
+    ver: 'ΔT = 20 − 5 = 15 K ; R_th = 15 divisé par 300 = 0,050 K·W⁻¹ : valeur plausible pour un mur non isolé (un petit nombre, car le flux est grand pour un écart de seulement 15 K).',
+    q2: 'Quel raisonnement est correct ?',
+    options: [
+      V('Cohérent : 15 K pour 300 W font 0,05 K par watt, un mur peu isolant', 'R_th = ΔT divisé par φ = 15 divisé par 300 = 0,050 K·W⁻¹ : c’est l’ordre de grandeur d’un mur non isolé.'),
+      F('Cohérent : toute valeur de R_th inférieure à 1 est correcte', 'Le verdict est juste, pas le raisonnement : une valeur de 0,0005 serait aussi inférieure à 1. Il faut refaire le quotient ΔT divisé par φ : 0,050.'),
+      F('Pas cohérent : R_th devrait être de l’ordre de 300 K·W⁻¹', 'Une résistance thermique de mur est de l’ordre de 0,05 à 1 K·W⁻¹ : 300 correspondrait à une paroi quasi parfaitement isolante.'),
+    ] }),
   P({ id: 'ber-val-debit', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', niveau: 2, titre: 'Vitesse de l’eau dans un tuyau domestique', plausible: false,
     ...presenter({ contexte: 'Un élève calcule la vitesse de l’eau dans un tuyau.', liste: [['Diamètre intérieur du tuyau', 'd = 20 mm'], ['Débit volumique', '20 L·min⁻¹']], suite: 'Il annonce : « v = 1 060 m·s⁻¹ ».' }),
     reperes: [['Débit en SI', '20 L·min⁻¹ = 20 × 10⁻³ m³ pour 60 s'], ['Section', 'S = π × d² divisé par 4 ≈ 3,1 × 10⁻⁴ m²'], ['Tuyau d’eau domestique', 'vitesse de l’ordre de 1 à 3 m·s⁻¹']],

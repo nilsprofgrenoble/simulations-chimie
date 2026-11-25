@@ -7105,6 +7105,16 @@ export const PREVOIR = [
       F('les échauffements sont égaux, car Q est le même', 'À Q égal, ΔU est le même, mais ΔT = ΔU divisé par C dépend de la masse (C = m × c) : les échauffements ne sont pas égaux.'),
       F('l’échauffement est quatre fois plus petit dans le récipient de 2,0 kg', 'ΔT est inversement proportionnel à m (C = m × c est proportionnelle à m) : doubler m divise ΔT par 2 et non par 4.'),
     ] },
+
+  // ───────────────────────────── Transferts thermiques (TG, sim 230) : modes de transfert, vide d’une bouteille isotherme, comparaison de deux murs
+  { id: 'tht-ana-double', domaine: 'Transferts thermiques et bilan de la Terre (TG)', titre: 'Un mur isolé et un mur qui ne l’est pas',
+    ...presenter({ contexte: 'Deux murs de même surface séparent la même pièce du même extérieur : l’écart de température ΔT est le même. Leurs résistances thermiques sont données.', liste: [['Mur non isolé', 'R_th = 0,050 K·W⁻¹'], ['Mur isolé', 'R_th = 0,30 K·W⁻¹']] }),
+    q: 'Comparez les flux thermiques à travers les deux murs.', options: [
+      V('le flux est 6 fois plus petit à travers le mur isolé', 'φ = ΔT divisé par R_th : à ΔT égal, le flux est inversement proportionnel à R_th. Le mur isolé a une R_th 6 fois plus grande (0,30 divisé par 0,050), donc un flux 6 fois plus petit.'),
+      F('le flux est 6 fois plus grand à travers le mur isolé', 'C’est l’inverse : une grande résistance thermique s’oppose au passage de l’énergie, donc le flux est plus petit à travers le mur isolé.'),
+      F('les flux sont égaux, car ΔT est le même', 'ΔT est le même, mais φ = ΔT divisé par R_th dépend aussi de R_th : les flux ne sont pas égaux.'),
+      F('le flux est 0,3 fois plus petit à travers le mur isolé', 'Le rapport des flux est le rapport inverse des résistances thermiques : 0,050 divisé par 0,30 ≈ 0,17 (soit 6 fois plus petit), pas 0,3.'),
+    ] },
   // ───────────────────────────── Écoulement d'un fluide (TG, sim 214) : prévoir l'effet d'un rétrécissement, d'un col plus étroit, de la masse volumique
   { id: 'ber-ana-section', domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi', titre: 'Un tuyau d’eau qui se rétrécit',
     ...presenter({ schema: { type: 'venturi', rapport: 0.5, simple: true }, contexte: 'Un tuyau d’eau se raccorde à un tuyau horizontal plus étroit. L’écoulement est permanent et l’eau est supposée sans viscosité.', liste: [['Diamètre du premier tuyau', '30 mm'], ['Diamètre du second tuyau', '15 mm']] }), q: 'Comment se comparent la vitesse et la pression de l’eau dans le tuyau de 15 mm, par rapport au tuyau de 30 mm ?', options: [

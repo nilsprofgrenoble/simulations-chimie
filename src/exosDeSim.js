@@ -122,6 +122,7 @@ export const EXOS_DE_SIM = {
   174: [/(^|\.)rc-/, /plausible\.rc-/],                                                                              // Circuit RC : charge et décharge d’un condensateur (TG)
   215: [/(^|\.)gpf-/, /plausible\.gpf-/],                                                                           // Gaz parfait : équation d’état et limites du modèle (TG)
   216: [/(^|\.)pp1-/, /plausible\.pp1-/],                                                                           // Premier principe : énergie interne, transferts et bilan d’énergie (TG)
+  235: [/(^|\.)tht-/, /plausible\.tht-/],                                                                           // Transferts thermiques : modes, flux et résistance thermique (TG)
   212: [/(^|\.)thm-/, /plausible\.thm-/],                                                                           // Loi de Newton et thermostat : température d’un système au cours du temps (TG)
   214: [/(^|\.)ber-/, /plausible\.ber-/],                                                                           // Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi (TG)
   213: [/(^|\.)arc-/, /plausible\.arc-/],                                                                           // Poussée d’Archimède : origine, expression et flottaison (TG)
