@@ -3410,7 +3410,7 @@ export const PREVOIR = [
       F('voisin de 10 000 × 0,56 = 5 600, valeur maximale observée pour 100 noyaux', 'La valeur moyenne reste N₀/2 = 5 000 : c’est la valeur autour de laquelle les essais se répartissent, quel que soit N₀.'),
     ] },
   { id: 'equ-ana-non-totale', domaine: 'Équilibre chimique : Qr, K et taux d’avancement', titre: 'Transformation totale ou non totale ?',
-    enonce: 'Une transformation modélisée par A + B ⇌ C + D part de 0,10 mol/L de A et de B, sans produit. À l’état final, on mesure [A] = [B] = 0,030 mol/L et [C] = [D] = 0,070 mol/L.', q: 'Cette transformation est…', options: [
+    ...presenter({ contexte: 'Une transformation modélisée par A + B ⇌ C + D est menée en solution, sans produit au départ.', liste: [['Concentration initiale de A et de B', '0,10 mol/L chacun'], ['Concentration finale de A et de B', '0,030 mol/L chacun'], ['Concentration finale de C et de D', '0,070 mol/L chacun']] }), q: 'Cette transformation est…', options: [
       V('non totale : A et B sont encore présents à l’état final', 'Les deux réactifs subsistent (0,030 mol/L chacun) : l’avancement final est inférieur à l’avancement maximal, donc τ = 0,070 / 0,10 = 0,70 < 1 : la transformation est non totale.'),
       F('totale : les produits sont plus abondants que les réactifs', 'Ce n’est pas l’abondance relative qui compte : une transformation est totale si un réactif a disparu, ce qui n’est pas le cas (0,030 mol/L de A et de B).'),
       F('totale : les concentrations ne varient plus à l’état final', 'Des concentrations constantes caractérisent tout état final (équilibre dynamique), total ou non ; ce qui distingue une transformation totale, c’est la disparition d’un réactif.'),
@@ -3444,9 +3444,16 @@ export const PREVOIR = [
       F('les deux sont non totales, car τ est compris entre 0 et 1', 'τ = 1 est la valeur maximale possible et correspond à une transformation totale.'),
       F('dans 2, la moitié environ du réactif limitant a réagi', 'τ = 0,35 signifie que 35 % de l’avancement maximal est atteint, soit un peu plus du tiers, pas la moitié.'),
     ] },
+  { id: 'etf-k-pka', domaine: 'Équilibre chimique : Qr, K et taux d’avancement', titre: 'Constante d’une réaction acide-base : lire les pKA',
+    ...presenter({ contexte: 'On mélange de l’acide méthanoïque HCOOH et de l’ammoniac NH₃. La transformation est modélisée par HCOOH + NH₃ ⇌ HCOO⁻ + NH₄⁺. Relation fournie : pour la réaction entre l’acide d’un couple et la base d’un autre, K = K_A(couple de l’acide) / K_A(couple de la base).', liste: [['pK_A du couple HCOOH / HCOO⁻', '3,75'], ['pK_A du couple NH₄⁺ / NH₃', '9,20']] }), q: 'Quelle est la valeur de K, et que dit-elle de la transformation ?', options: [
+      V('K ≈ 2,8 × 10⁵ : la transformation est quasi totale', 'K = K_A(HCOOH) / K_A(NH₄⁺) = 10^(−3,75) / 10^(−9,20) = 10^(9,20 − 3,75) = 10^5,45 ≈ 2,8 × 10⁵. K est très grande : à l’état final, il reste très peu de réactifs.'),
+      F('K ≈ 3,5 × 10⁻⁶ : la transformation est très limitée', 'C’est le rapport inversé : K_A de l’acide doit être au numérateur. Ici l’acide HCOOH est bien plus fort que NH₄⁺, donc K est très supérieure à 1.'),
+      F('K ≈ 9 × 10¹² : la transformation est quasi totale', 'On a additionné les pK_A (3,75 + 9,20 = 12,95) au lieu de les soustraire : K dépend de l’écart entre les pK_A, 5,45 unités.'),
+      F('K ≈ 5,45 : la transformation est non totale', '5,45 est l’écart des pK_A, pas la constante : K = 10^5,45 ≈ 2,8 × 10⁵. Une constante aussi grande correspond à une transformation quasi totale.'),
+    ] },
   { id: 'fab-ana-fort-faible', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Acide fort ou acide faible : ce que dit le pH',
-    enonce: 'Deux solutions d’acides différents ont la même concentration apportée, 0,010 mol/L. L’acide chlorhydrique donne un pH égal à 2,00 ; l’acide X donne un pH égal à 3,10.', q: 'On peut en conclure que l’acide X est…', options: [
-      V('faible : son pH est supérieur à −log C = 2,00', 'Pour C = 0,010 mol/L, un acide fort donne pH = −log C = 2,00. Ici [H₃O⁺] = 10⁻³·¹ = 7,9 × 10⁻⁴ mol/L est inférieure à C : l’acide n’a réagi que partiellement (τ ≈ 0,08).'),
+    ...presenter({ contexte: 'On mesure, à la même température, le pH de deux solutions d’acides différents, de même concentration apportée.', liste: [['Concentration apportée', '0,010 mol/L'], ['pH de l’acide chlorhydrique', '2,00'], ['pH de l’acide X', '3,10']] }), q: 'On peut en conclure que l’acide X est…', options: [
+      V('faible : son pH est supérieur à −log C = 2,00 (acide fort)', 'Pour C = 0,010 mol/L, un acide fort donne pH = −log C = 2,00. Ici [H₃O⁺] = 10⁻³·¹ = 7,9 × 10⁻⁴ mol/L est inférieure à C : l’acide n’a réagi que partiellement (τ ≈ 0,08).'),
       F('fort : son pH est proche de celui de l’acide chlorhydrique', 'Un acide fort a exactement pH = −log C = 2,00. Un écart de 1,1 unité de pH est énorme : [H₃O⁺] est environ 13 fois plus petite.'),
       F('fort : un pH inférieur à 7 est propre aux acides forts', 'Tout acide, même faible, donne un pH inférieur à 7 : le test du caractère fort compare le pH mesuré à −log C.'),
       F('faible, mais plus dilué que la solution d’acide chlorhydrique', 'Les deux solutions ont la même concentration apportée (0,010 mol/L) : la différence de pH vient de la force de l’acide, pas de la concentration.'),
@@ -3467,10 +3474,10 @@ export const PREVOIR = [
     ] },
   { id: 'fab-ana-equation', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Quelle équation pour la constante d’acidité ?',
     enonce: 'Le couple ion ammonium / ammoniac NH₄⁺ / NH₃ a pour constante d’acidité K_A.', q: 'Quelle équation de réaction est associée à K_A de ce couple ?', options: [
-      V('NH₄⁺ + H₂O ⇌ NH₃ + H₃O⁺', 'K_A est associée à la réaction de l’acide du couple (NH₄⁺) avec l’eau : K_A = [NH₃]·[H₃O⁺] / [NH₄⁺].'),
-      F('NH₃ + H₂O ⇌ NH₄⁺ + HO⁻ (réaction de la base avec l’eau)', 'C’est la réaction de la base NH₃ avec l’eau ; sa constante vaut K_e / K_A, pas K_A.'),
-      F('2 H₂O ⇌ H₃O⁺ + HO⁻ (autoprotolyse de l’eau)', 'Cette équation est associée au produit ionique de l’eau K_e, pas à K_A.'),
-      F('NH₄⁺ + HO⁻ → NH₃ + H₂O (réaction avec la soude)', 'C’est la réaction de l’ion ammonium avec une base forte, quasi-totale : sa constante est très grande, ce n’est pas K_A.'),
+      V('NH₄⁺ + H₂O ⇌ NH₃ + H₃O⁺ (acide + eau)', 'K_A est associée à la réaction de l’acide du couple (NH₄⁺) avec l’eau : K_A = [NH₃]·[H₃O⁺] / [NH₄⁺].'),
+      F('NH₃ + H₂O ⇌ NH₄⁺ + HO⁻ (la base avec l’eau)', 'C’est la réaction de la base NH₃ avec l’eau ; sa constante vaut K_e / K_A, pas K_A.'),
+      F('2 H₂O ⇌ H₃O⁺ + HO⁻ (autoprotolyse)', 'Cette équation est associée au produit ionique de l’eau K_e, pas à K_A.'),
+      F('NH₄⁺ + HO⁻ → NH₃ + H₂O (avec la soude)', 'C’est la réaction de l’ion ammonium avec une base forte, quasi-totale : sa constante est très grande, ce n’est pas K_A.'),
     ] },
   { id: 'fab-ana-ke', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Le produit ionique de l’eau quand le pH change',
     enonce: 'À 25 °C, une solution aqueuse a un pH égal à 4,0. On rappelle K_e = [H₃O⁺]·[HO⁻] = 1,0 × 10⁻¹⁴.', q: 'On dilue la solution avec de l’eau et son pH passe à 5,0. La concentration en ions hydroxyde HO⁻…', options: [
@@ -3479,9 +3486,16 @@ export const PREVOIR = [
       F('ne change pas, car elle ne dépend que de la constante K_e', 'K_e est constant, mais [HO⁻] = K_e / [H₃O⁺] dépend de [H₃O⁺], qui a changé.'),
       F('est multipliée par 5, comme la valeur du pH qui passe de 4 à 5', 'Le pH est un logarithme : une unité de pH correspond à un facteur 10 sur les concentrations.'),
     ] },
+  { id: 'etf-bases-force', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Comparer deux bases faibles',
+    ...presenter({ contexte: 'On compare deux solutions de bases faibles, de même concentration apportée et à la même température.', liste: [['Ammoniac NH₃', 'pK_A(NH₄⁺ / NH₃) = 9,20'], ['Méthylamine CH₃NH₂', 'pK_A(CH₃NH₃⁺ / CH₃NH₂) = 10,6']] }), q: 'Par rapport à la solution d’ammoniac, celle de méthylamine a…', options: [
+      V('un pH plus élevé et un taux d’avancement plus grand', 'Un pK_A plus grand signifie un acide conjugué plus faible, donc une base plus forte : elle capte davantage de H⁺ à l’eau, forme plus d’ions HO⁻ (pH plus élevé) et τ est plus grand.'),
+      F('un pH plus bas, car un pK_A plus grand signifie une base plus faible', 'C’est l’inverse : plus le pK_A du couple est grand, plus sa base est forte, donc plus il se forme d’ions HO⁻ et plus le pH est élevé.'),
+      F('le même pH, car ces deux bases sont toutes les deux faibles', 'Deux bases faibles n’ont pas la même force : leurs pK_A diffèrent de 1,4 unité, donc leurs pH aussi.'),
+      F('un pH plus élevé, mais le même taux d’avancement final', 'Plus d’ions HO⁻ formés à la même concentration apportée correspond à un taux d’avancement plus grand, pas au même.'),
+    ] },
   { id: 'pdi-ana-predominance', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Quelle forme du couple prédomine ?',
     enonce: 'On considère le couple de l’acide méthanoïque et de l’ion méthanoate, HCOOH / HCOO⁻, de pK_A = 3,75. Le pH d’une solution est égal à 3,0.', q: 'Dans cette solution, quelle forme du couple prédomine ?', options: [
-      V('HCOOH, car le pH est inférieur au pK_A', 'pH = 3,0 est inférieur à pK_A = 3,75 : frac([HCOO⁻]|[HCOOH]) = 10^(3,0 − 3,75) ≈ 0,18, inférieur à 1. La forme acide HCOOH est la plus abondante (environ 85 %).'),
+      V('HCOOH, car le pH est inférieur au pK_A (3,0 < 3,75)', 'pH = 3,0 est inférieur à pK_A = 3,75 : frac([HCOO⁻]|[HCOOH]) = 10^(3,0 − 3,75) ≈ 0,18, inférieur à 1. La forme acide HCOOH est la plus abondante (environ 85 %).'),
       F('HCOO⁻, car la solution est acide donc la base domine', 'C’est l’inverse : à pH inférieur au pK_A, c’est la forme acide qui domine ; la base ne domine qu’au-dessus de pK_A.'),
       F('HCOO⁻, car le pH est inférieur à 7 donc la base domine', 'Le critère n’est pas la comparaison à 7 mais la comparaison au pK_A du couple : ici pH < 3,75, donc la forme acide domine.'),
       F('aucune, car le pH n’est pas égal au pK_A du couple', 'Les deux formes coexistent toujours ; l’une est plus abondante que l’autre sauf à pH = pK_A, où elles sont à 50 % chacune.'),
@@ -3498,17 +3512,17 @@ export const PREVOIR = [
       V('l’acide du couple 1 est plus fort : son pK_A est plus petit', 'Les courbes se croisent à pH = pK_A : pK_A,1 = 3,75 < pK_A,2 = 9,20, donc K_A,1 est bien plus grand : l’acide 1 réagit davantage avec l’eau.'),
       F('l’acide du couple 2 est plus fort : son pK_A est plus grand', 'Un pK_A plus grand correspond à un K_A plus petit, donc à un acide plus faible.'),
       F('les deux acides ont la même force : les croisements sont à 50 %', 'Les deux croisements sont à 50 %, mais à des pH différents : ce sont ces pH (les pK_A) qui permettent de comparer la force des acides.'),
-      F('le couple 1 est neutre car son pH de croisement est proche de 4', 'Un couple n’est pas « neutre » ; seul un pK_A proche de 7 dénoterait un acide ni fort ni faible, ce qui n’a pas de sens ici.'),
+      F('le couple 1 est neutre car son pH de croisement est proche de 4', 'Un couple n’est pas « neutre » : le pH de croisement est le pK_A du couple (ici 3,75), et c’est la comparaison des pK_A (3,75 contre 9,20) qui renseigne sur la force des acides.'),
     ] },
   { id: 'pdi-ana-indicateur', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Choisir un indicateur coloré',
-    enonce: 'On titre une solution d’ammoniac (base faible) par de l’acide chlorhydrique : le pH à l’équivalence vaut 5,3. Zones de virage (pK_A ± 1) : jaune de méthyle 2,5 – 4,5 ; vert de bromocrésol 3,6 – 5,6 ; bleu de bromothymol 5,8 – 7,8 ; bleu de thymol 7,8 – 9,8.', q: 'Quel indicateur coloré permet de repérer l’équivalence ?', options: [
+    ...presenter({ contexte: 'On titre une solution d’ammoniac (base faible) par de l’acide chlorhydrique. Le pH à l’équivalence vaut 5,3. Les zones de virage des indicateurs sont de la forme pK_A ± 1.', liste: [['Jaune de méthyle', 'zone de virage 2,5 – 4,5'], ['Vert de bromocrésol', 'zone de virage 3,6 – 5,6'], ['Bleu de bromothymol', 'zone de virage 5,8 – 7,8'], ['Bleu de thymol', 'zone de virage 7,8 – 9,8']] }), q: 'Quel indicateur coloré permet de repérer l’équivalence ?', options: [
       V('le vert de bromocrésol : 5,3 est dans sa zone de virage', 'Seule la zone 3,6 – 5,6 contient pH = 5,3 : le changement de couleur a lieu à l’équivalence.'),
       F('le bleu de bromothymol : sa zone est autour du pH neutre', 'La zone 5,8 – 7,8 ne contient pas 5,3 : le virage serait atteint trop tard, après l’équivalence. Le choix dépend du titrage, pas du pH neutre.'),
       F('le jaune de méthyle : l’ammoniac et l’acide sont deux espèces acides', 'La zone 2,5 – 4,5 est trop acide : le virage aurait lieu avant l’équivalence.'),
       F('le bleu de thymol : l’ammoniac est une base, donc un virage basique', 'La zone 7,8 – 9,8 est trop basique par rapport à pH = 5,3 : le choix repose sur le pH à l’équivalence.'),
     ] },
   { id: 'tmp-ana-propriete', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Que montre cette expérience sur le tampon ?',
-    enonce: 'Dans 100 mL d’une solution contenant de l’acide éthanoïque et de l’éthanoate de sodium en quantités égales, on verse 10 mL d’acide chlorhydrique à 0,10 mol/L : le pH passe de 4,76 à 4,67. Le même ajout dans 100 mL d’eau pure fait passer le pH de 7,0 à 2,0.', q: 'Quelle propriété d’une solution tampon cette expérience illustre-t-elle ?', options: [
+    ...presenter({ contexte: 'On verse 10 mL d’acide chlorhydrique à 0,10 mol/L dans 100 mL de chacun de deux liquides : une solution contenant 0,10 mol/L d’acide éthanoïque et 0,10 mol/L d’éthanoate de sodium, puis de l’eau pure.', liste: [['Solution d’acide éthanoïque et d’éthanoate de sodium', 'pH : 4,76 avant, 4,67 après'], ['Eau pure', 'pH : 7,0 avant, 2,0 après']] }), q: 'Quelle propriété d’une solution tampon cette expérience illustre-t-elle ?', options: [
       V('son pH varie très peu quand on ajoute un peu d’acide', 'Le pH du tampon baisse de 0,09 unité seulement, contre environ 5 pour l’eau pure : c’est la propriété essentielle d’une solution tampon.'),
       F('son pH reste égal à 7 quelle que soit la quantité d’acide', 'Un tampon n’a pas un pH de 7 : son pH est voisin du pK_A de son couple (ici 4,76) et il varie un peu à chaque ajout.'),
       F('son pH ne varie jamais, car il est fixé par le pK_A', 'Le pH varie légèrement (4,76 → 4,67) : il est seulement très stable, et le tampon s’épuise pour un ajout trop grand.'),
@@ -3529,7 +3543,7 @@ export const PREVOIR = [
       F('CH₃COO⁻ + H₂O → CH₃COOH + HO⁻', 'Cette réaction produit des HO⁻ au lieu d’en consommer ; elle est très limitée et n’explique pas la stabilité du pH.'),
     ] },
   { id: 'tmp-ana-dilution', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Diluer une solution tampon',
-    enonce: 'Une solution tampon contient 10 mmol de CH₃COOH et 10 mmol de CH₃COO⁻ dans 100 mL (pH = 4,76). On ajoute 900 mL d’eau pure.', q: 'Pourquoi le pH reste-t-il voisin de 4,76 ?', options: [
+    ...presenter({ contexte: 'Une solution tampon de 100 mL contient les deux formes d’un même couple acide-base. On ajoute de l’eau pure.', liste: [['Quantité de CH₃COOH', '10 mmol'], ['Quantité de CH₃COO⁻', '10 mmol'], ['pH initial', '4,76'], ['Volume d’eau pure ajoutée', '900 mL']] }), q: 'Pourquoi le pH reste-t-il voisin de 4,76 ?', options: [
       V('le rapport [CH₃COO⁻] / [CH₃COOH] reste égal à 1', 'Les deux concentrations sont divisées par 10 : leur rapport ne change pas, donc le pH reste voisin du pK_A = 4,76.'),
       F('le pH d’un tampon ne dépend d’aucune concentration', 'Le pH dépend du rapport des deux concentrations : il est conservé ici car ce rapport est conservé, mais il changerait si ce rapport changeait.'),
       F('l’eau ajoutée est neutre, donc elle ne change pas le pH', 'Une eau neutre modifie en général le pH d’une solution acide en la diluant : ici le pH est conservé car le rapport des deux formes l’est.'),
@@ -3544,7 +3558,7 @@ export const PREVOIR = [
     ] },
   { id: 'aam-ana-domaine', domaine: 'Acides α-aminés : forme selon le pH', titre: 'Où le zwitterion domine-t-il ?',
     enonce: 'Pour l’alanine, pK_A1 = 2,3 et pK_A2 = 9,7. Un élève dit que la forme zwitterion domine quand le pH est supérieur à 7 (« solution basique »).', q: 'Quelle est la bonne lecture du diagramme de prédominance ?', options: [
-      V('le zwitterion domine entre pH 2,3 et pH 9,7', 'Les frontières sont aux deux pK_A : le domaine du zwitterion s’étend de pK_A1 à pK_A2, ce qui inclut pH = 7 mais n’est pas limité à pH > 7.'),
+      V('le zwitterion domine sur l’intervalle de pH 2,3 à 9,7', 'Les frontières sont aux deux pK_A : le domaine du zwitterion s’étend de pK_A1 à pK_A2, ce qui inclut pH = 7 mais n’est pas limité à pH > 7.'),
       F('le zwitterion domine au-dessus de pH 7, comme toute base', 'Le critère n’est pas la comparaison à 7 mais la position par rapport à pK_A1 et pK_A2 : au-dessus de 9,7, c’est l’anion qui domine.'),
       F('le zwitterion domine seulement à pH = 6, le milieu de l’intervalle', 'Un domaine est un intervalle de pH, pas une valeur unique : le zwitterion domine sur tout l’intervalle entre les deux frontières.'),
       F('le zwitterion domine au-dessous de pH 2,3', 'En dessous de pK_A1, c’est le cation qui domine : le groupe –COOH n’a pas encore cédé son H⁺.'),
@@ -3879,7 +3893,7 @@ export const PREVOIR = [
       F('ne bougent pas : seuls les ions se déplacent', 'Dans les fils et les lames, ce sont bien des électrons qui circulent ; les ions circulent dans les solutions.'),
     ] },
   { id: 'ely-ana-tension', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Un générateur trop faible',
-    enonce: 'Une pile zinc-cuivre a une tension à vide de 1,10 V. Pour la recharger, un élève la relie à un générateur réglé sur 0,80 V, borne + du générateur sur le pôle + de la pile.', q: 'Que se passe-t-il ?', options: [
+    ...presenter({ contexte: 'Pour recharger une pile zinc-cuivre, un élève la relie à un générateur, borne + du générateur sur le pôle + de la pile.', liste: [['Tension à vide de la pile', '1,10 V'], ['Tension réglée sur le générateur', '0,80 V']] }), q: 'Que se passe-t-il ?', options: [
       V('la pile débite toujours, sens spontané', 'La tension du générateur (0,80 V) est inférieure à la tension à vide (1,10 V) : c’est la pile qui impose le sens du courant ; elle continue de s’user.'),
       F('la pile se recharge, mais plus lentement', 'Pour recharger, le générateur doit imposer le sens inverse : il faut une tension supérieure à la tension à vide.'),
       F('aucun courant ne circule dans le circuit', 'Il n’y a aucun courant seulement si la tension du générateur compense exactement la tension à vide.'),
@@ -3893,7 +3907,7 @@ export const PREVOIR = [
       F('la cathode, et elle devient le pôle −', 'Une électrode où le métal se dissout est le siège d’une oxydation : c’est l’anode.'),
     ] },
   { id: 'ely-ana-intensite', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Doubler l’intensité',
-    enonce: 'Une électrolyse dépose du cuivre sur une cathode pendant 20 min avec une intensité constante de 0,50 A. On recommence pendant la même durée avec une intensité de 1,0 A.', q: 'La masse de cuivre déposé…', options: [
+    ...presenter({ contexte: 'On dépose du cuivre sur une cathode par électrolyse. On admet que tout le courant sert au dépôt de cuivre.', liste: [['Première expérience', '0,50 A pendant 20 min'], ['Seconde expérience', '1,0 A pendant 20 min']] }), q: 'La masse de cuivre déposé…', options: [
       V('double, car la charge passée double', 'Q = I × Δt double ; n(e⁻) = Q ÷ F double, donc la quantité de cuivre déposé et sa masse doublent aussi.'),
       F('ne change pas, car la durée est la même', 'La durée est la même, mais l’intensité double : il passe deux fois plus d’électrons.'),
       F('est divisée par deux, car le courant va plus vite', 'Plus d’intensité signifie plus de charge passée en un même temps, donc plus de métal déposé.'),
@@ -3901,8 +3915,8 @@ export const PREVOIR = [
     ] },
   { id: 'ely-ana-qr', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Le quotient de réaction pendant une électrolyse',
     enonce: 'La réaction Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s) a pour constante K ≈ 10³⁷. On impose avec un générateur la transformation inverse : du zinc se dépose et du cuivre se dissout.', q: 'Pendant l’électrolyse, Qr = [Zn²⁺] ÷ [Cu²⁺]…', options: [
-      V('diminue : il s’éloigne de K', '[Zn²⁺] diminue et [Cu²⁺] augmente : Qr diminue et s’éloigne de K, ce qui n’est possible qu’avec l’énergie du générateur.'),
-      F('augmente : il se rapproche de K', 'C’est ce qui se passe quand la pile débite spontanément ; ici la transformation est inverse.'),
+      V('diminue : il s’éloigne de la valeur de K', '[Zn²⁺] diminue et [Cu²⁺] augmente : Qr diminue et s’éloigne de K, ce qui n’est possible qu’avec l’énergie du générateur.'),
+      F('augmente : il se rapproche de la valeur de K', 'C’est ce qui se passe quand la pile débite spontanément ; ici la transformation est inverse.'),
       F('reste égal à K pendant toute l’électrolyse', 'Qr = K correspond à l’équilibre ; ici le système en est très loin et s’en éloigne encore.'),
       F('ne change pas, car K ne dépend que de T', 'K ne dépend que de la température, mais Qr dépend des concentrations, qui changent.'),
     ] },

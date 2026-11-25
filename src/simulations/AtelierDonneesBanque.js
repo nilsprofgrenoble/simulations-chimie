@@ -542,7 +542,7 @@ export const ENONCES = [
   // ───────────────────────────── Équilibre chimique (TG) : Qr, K, taux d'avancement final
   {
     id: 'equ-sapp-qr', domaine: 'Équilibre chimique : Qr, K et taux d’avancement', titre: 'Quotient de réaction et taux d’avancement d’un mélange acide-base', noms: ['Quotient de réaction du mélange', 'Taux d’avancement final'],
-    gen: () => { const v = [0.050, 0.10, 0.20, 0.40], c0 = tire([0.10, 0.20, 0.40]); return { a: tire(v), b: tire(v), c: tire(v), d: tire(v), K: tire([0.10, 5.0, 25]), V: tire([100, 250, 500]), c0, cf: c0 * tire([0.25, 0.5, 0.75]) }; },
+    gen: () => { const v = [0.050, 0.10, 0.20, 0.40], c0 = tire([0.10, 0.20, 0.40]), K = tire([0.10, 5.0, 25]), tf = Math.sqrt(K) / (1 + Math.sqrt(K)); /* état final cohérent avec K : (τ / (1 − τ))² = K */ return { a: tire(v), b: tire(v), c: tire(v), d: tire(v), K, V: tire([100, 250, 500]), c0, cf: Math.round(c0 * tf * 1000) / 1000 }; },
     build: (p, q) => {
       const tokens = {
         K: tok(`${nb(p.K)}`, 'Constante d’équilibre de la réaction à la température de l’expérience', p.K, ''),
@@ -1137,7 +1137,7 @@ export const ENONCES = [
   },
   {
     id: 'tmp-sapp-prepa', domaine: 'Force des acides et des bases : Ka et tampon', titre: 'Préparer un tampon de pH donné', noms: ['Rapport des quantités à introduire', 'Quantité de base A⁻ à introduire'],
-    gen: () => { const pKa = tire([4.76, 9.20]), d = tire([-0.7, -0.5, -0.3, 0.3, 0.5, 0.7]); return { pKa, pH: Math.round((pKa + d) * 10) / 10, nAH: tire([10, 20, 25, 50]), V: tire([100, 250, 500]), Cs: tire([0.10, 0.50, 1.0]) }; },
+    gen: () => { for (;;) { const pKa = tire([4.76, 9.20]), d = tire([-0.7, -0.5, -0.3, 0.3, 0.5, 0.7]), pH = Math.round((pKa + d) * 10) / 10, nAH = tire([10, 20, 25, 50]), V = tire([100, 250, 500]), Cs = tire([0.10, 0.50, 1.0]); /* le volume de solution de base à verser doit tenir dans le tampon à préparer */ if (nAH * 10 ** (pH - pKa) / Cs <= 0.5 * V) return { pKa, pH, nAH, V, Cs }; } },
     build: (p, q) => {
       const tokens = {
         pKa: tok(`${nb(p.pKa, 2)}`, 'pKA du couple acide-base choisi', p.pKa, ''),
