@@ -36,7 +36,7 @@ export function SimulationDispersion() {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
-  const [vie, setVie] = useState({ m: 0, E: 0, x: 0, g: 0, dose: 0 });                                  // scène du parcours (TiO₂)
+  const [vie, setVie] = useState({ m: 0, E: 0, x: 0, g: 0, dose: 0 });                                  // scène du parcours (mouillage : noir de carbone ; ensuite TiO₂)
   const [ex, setEx] = useState({ solide: 'tio2', m: 0.3, E: 0.5, x: 0, g: 0, dose: 0.1 });               // exploration
   const [ouv, setOuv] = useState({});
   const [suiviD, noterD] = useCompteurDefi(), [suiviG, noterG] = useCompteurDefi();
@@ -48,18 +48,18 @@ export function SimulationDispersion() {
   // ---------- parcours ----------
   const ETAPES = [
     { id: 'mouillage', titre: 'Pourquoi une poudre fait-elle des grumeaux ?', focus: ['scene'],
-      texte: <>Pour fabriquer une peinture, on met en suspension des poudres (pigment TiO₂, charges) dans l’eau : c’est l’étape d’<strong>empâtage</strong>. Une poudre sèche versée dans l’eau ne se disperse pas toute seule : elle forme des <strong>grumeaux</strong>. L’eau mouille d’abord la surface de l’amas de grains. Observez le cœur de l’amas.</>,
+      texte: <>Pour fabriquer une peinture, on met en suspension des poudres (pigment TiO₂, charges) dans l’eau : c’est l’étape d’<strong>empâtage</strong>. Une poudre sèche versée dans l’eau ne se disperse pas toute seule : elle forme des <strong>grumeaux</strong>. Avec un pigment <strong>hydrophobe</strong> comme le <strong>noir de carbone</strong> (peinture noire), l’eau ne mouille que la surface de l’amas de grains. Observez le cœur de l’amas.</>,
       tache: { type: 'qcm', q: 'Pourquoi le cœur de l’amas reste-t-il sec ?', ...QCM.mouillage,
         expl: 'L’eau mouille d’abord la surface de l’amas. Tant que l’air des pores entre les grains n’est pas chassé, le liquide ne pénètre pas : l’amas reste sec au cœur et se comporte comme une seule grosse particule.', indice: 'Regardez les grains au centre de l’amas et les bulles blanches.' } },
     { id: 'mouillant-action', titre: 'Mouiller : remplacer l’air par le liquide', focus: ['scene', 'curseur'],
-      texte: <>Le <strong>mouillage</strong> consiste à remplacer l’interface solide-air par une interface solide-liquide. On y aide avec un <strong>agent mouillant</strong>, un tensioactif qui abaisse la tension superficielle du liquide. Ajoutez de l’agent mouillant avec le curseur jusqu’à ce que le liquide ait chassé l’air du cœur de l’amas.</>,
+      texte: <>Le <strong>mouillage</strong> consiste à remplacer l’interface solide-air par une interface solide-liquide. Un pigment hydrophobe n’est pas mouillé par l’eau seule : on y aide avec un <strong>agent mouillant</strong>, un tensioactif qui abaisse la tension superficielle du liquide. Ajoutez de l’agent mouillant avec le curseur jusqu’à ce que le liquide ait chassé l’air du cœur de l’amas de noir de carbone.</>,
       tache: { type: 'action', ok: vie.m >= 0.8, consigne: 'Ajouter assez d’agent mouillant pour que le liquide pénètre jusqu’au cœur de l’amas' } },
     { id: 'mouillant-q', titre: 'Le rôle de l’agent mouillant', focus: ['scene'],
-      texte: <>Le liquide a maintenant pénétré l’amas. Un agent mouillant est un tensioactif : sa partie lipophile s’adsorbe sur le solide et sa partie hydrophile reste dans l’eau.</>,
+      texte: <>Le liquide a maintenant pénétré l’amas de noir de carbone. Un agent mouillant est un tensioactif : sa partie lipophile s’adsorbe sur le solide hydrophobe et sa partie hydrophile reste dans l’eau.</>,
       tache: { type: 'qcm', q: 'Quelle propriété du liquide l’agent mouillant modifie-t-il ?', ...QCM.mouillant,
         expl: 'En abaissant la tension superficielle de l’eau, l’agent mouillant permet au liquide de s’étaler sur le solide et de pénétrer entre les grains, ce qui chasse l’air. Il ne dissout pas le solide et ne sert pas à repousser les grains (c’est le rôle du dispersant).', indice: 'Pensez à ce qu’un tensioactif fait à l’interface eau-air.' } },
     { id: 'empatage', titre: 'L’empâtage : dans quel ordre ajouter les ingrédients ?', focus: ['scene'],
-      texte: <>Voici la cuve d’<strong>empâtage</strong> d’une peinture. L’<strong>eau</strong>, le <strong>dispersant</strong> et l’<strong>antimousse</strong> sont déjà dans la cuve. On ajoute ensuite les <strong>poudres</strong> sous très forte agitation (disperseur à pale rapide). La pâte est alors très chargée en poudre, donc épaisse : elle transmet un fort cisaillement aux agglomérats.</>,
+      texte: <>Voici la cuve d’<strong>empâtage</strong> d’une peinture blanche. L’<strong>eau</strong>, le <strong>dispersant</strong> et l’<strong>antimousse</strong> sont déjà dans la cuve. On ajoute ensuite les <strong>poudres</strong> sous très forte agitation (disperseur à pale rapide). Le TiO₂, hydrophile, est mouillé par l’eau sans agent mouillant : on s’en passe, car un tensioactif de plus ferait mousser sous cette agitation. La pâte est très chargée en poudre, donc épaisse : elle transmet un fort cisaillement aux agglomérats.</>,
       tache: { type: 'qcm', q: 'Dans quel ordre prépare-t-on l’empâtage ?', ...QCM.empatage,
         expl: 'Le dispersant doit déjà être dans l’eau pour s’adsorber sur les grains dès qu’ils sont mouillés ; l’antimousse limite la mousse créée par la forte agitation. Les poudres arrivent en dernier, sous forte agitation : une pâte épaisse transmet un fort cisaillement qui casse les agglomérats.', indice: 'Que doit-il déjà y avoir dans la cuve quand les grains arrivent ?' } },
     { id: 'dispersion', titre: 'Disperser : casser les agglomérats', focus: ['scene', 'curseur'],
@@ -196,7 +196,7 @@ export function SimulationDispersion() {
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', margin: '6px 0', fontSize: 14 }}><label htmlFor={id}>{lab}</label>
       <input id={id} value={val} inputMode="decimal" onKeyDown={ev => ev.key === 'Enter' && document.getElementById('di-verif')?.click()} onChange={ev => set(ev.target.value)} style={{ width: 100, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${KIT.bord}`, fontSize: 15 }}/>{unite}</div>);
   const conditions = d => [
-    ['Agent mouillant', d.etat.m > 0.5 ? 'présent' : 'aucun'], ['Disperseur', d.etat.E > 0.5 ? 'vitesse élevée, 10 min' : 'vitesse faible, 1 min'],
+    ['Agent mouillant', d.solide.m0 > 0.5 ? 'non utilisé (pigment hydrophile)' : d.etat.m > 0.5 ? 'présent' : 'aucun'], ['Disperseur', d.etat.E > 0.5 ? 'vitesse élevée, 10 min' : 'vitesse faible, 1 min'],
     ['Dispersant', d.etat.x > 0 ? `${fr(d.etat.x, 2)} % de matière active sur pigment` : 'aucun'], ['Broyage', d.etat.g > 0.3 ? 'poudre broyée' : 'poudre non broyée'],
   ];
   const voletDefi = defi && (
@@ -255,7 +255,7 @@ export function SimulationDispersion() {
       <label htmlFor="di-sol" style={libelle}>Poudre à mettre en suspension dans l’eau</label>
       <select id="di-sol" value={ex.solide} onChange={ev => majEx({ solide: ev.target.value })} style={selectStyle}>{M.SOLIDES.map(s => <option key={s.id} value={s.id}>{s.nom}</option>)}</select>
       <Section titre={`Mouillage et dispersion : mouillant ${fr(ex.m, 2)}, énergie ${fr(ex.E, 2)}`} ouvert={!!ouv.md} onBascule={() => bascule('md')}>
-        {curs('di-xm', `Agent mouillant : ${fr(ex.m, 2)}`, ex.m, 0, 1, 0.05, 'm', 'Sans mouillage, l’air reste piégé et l’énergie du disperseur est mal transmise.')}
+        {curs('di-xm', `Agent mouillant : ${fr(ex.m, 2)}`, ex.m, 0, 1, 0.05, 'm', SO.m0 > 0.5 ? 'Pigment hydrophile : l’eau le mouille déjà presque seule, l’agent mouillant change peu de chose.' : 'Pigment hydrophobe : sans agent mouillant, l’air reste piégé et l’énergie du disperseur est mal transmise.')}
         {curs('di-xe', `Énergie de dispersion : ${fr(ex.E, 2)}`, ex.E, 0, 1, 0.05, 'E', 'Un disperseur casse les agglomérats, pas les particules primaires.')}
       </Section>
       <Section titre={`Dispersant : ${fr(ex.x, 2)} % · broyage ${fr(ex.g, 2)}`} ouvert={!!ouv.ds} onBascule={() => bascule('ds')}>
@@ -266,7 +266,7 @@ export function SimulationDispersion() {
   const scenes = (
     <div style={styleBoite}>
       {enExplore && <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mouillage et distribution de tailles</div>}
-      <SvgMouillage m={ex.m}/>
+      <SvgMouillage m={M.mouillageEff(SO, ex.m)}/>
       <div style={{ height: 8 }}/>
       <SvgDistribution q={qEx} qRef={qExBrut} nom={`du ${SO.court}`}/>
     </div>);
@@ -277,7 +277,7 @@ export function SimulationDispersion() {
       <LigneMesure nom="Étendue (D90 − D10) ÷ D50" valeur={fr(M.etendue(qEx), 1)}/>
       <LigneMesure nom="Part de masse au-delà de 5 µm" valeur={pc(agEx)} couleur={agEx <= M.AGGLO_MAX ? COL.vert : COL.rouge}/>
       <LigneMesure nom={`Conformité (D50 ≤ ${fr(M.D50_SPEC, 1)} µm, agglomérats ≤ ${fr(M.AGGLO_MAX * 100, 0)} %)`} valeur={conforme ? 'conforme' : 'non conforme'} couleur={conforme ? COL.vert : COL.rouge}/>
-      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>La courbe grise en tirets est la poudre brute (sans mouillage ni dispersion).</div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>La courbe grise en tirets est la poudre brute (avant dispersion).</div>
     </div>);
   const sectionDosage = enExplore && (
     <Section titre="Dosage du dispersant : viscosité de la pâte" ouvert={!!ouv.dos} onBascule={() => bascule('dos')}>
@@ -286,7 +286,7 @@ export function SimulationDispersion() {
     </Section>);
   const aEssayer = (
     <ul style={liste}>
-      <li>TiO₂ : mettez le mouillage à 0 et l’énergie au maximum. Les agglomérats disparaissent-ils ?</li>
+      <li>Noir de carbone : mettez l’agent mouillant à 0 puis l’énergie au maximum. Les agglomérats disparaissent-ils ? Recommencez avec le TiO₂ et comparez.</li>
       <li>Mettez mouillage et énergie au maximum, sans dispersant : que reste-t-il au-delà de 5 µm ? Puis ajoutez 0,20 % de dispersant.</li>
       <li>Avec tout au maximum, comparez le D50 sans broyage et avec broyage complet.</li>
       <li>Passez à l’oxyde de fer : sa distribution brute est plus étalée. Est-il plus facile ou plus difficile à rendre conforme ?</li>
@@ -295,7 +295,7 @@ export function SimulationDispersion() {
   const retenirExplore = (
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
-        <li>Mouiller : l’agent mouillant (tensioactif) abaisse la tension superficielle et chasse l’air des amas</li>
+        <li>Mouiller : l’eau chasse l’air des amas ; un pigment hydrophobe demande un agent mouillant (tensioactif qui abaisse la tension superficielle), un pigment hydrophile comme TiO₂ s’en passe</li>
         <li>Disperser : l’énergie mécanique casse les agglomérats ; broyer : réduire les particules primaires</li>
         <li>Stabiliser : un dispersant empêche le recollage (électrostatique, stérique ou électro-stérique)</li>
         <li>Contrôle : distribution granulométrique sans agglomérats (D90 bas, pas de second pic)</li>
@@ -307,9 +307,9 @@ export function SimulationDispersion() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Modèle qualitatif</strong> : la poudre est un mélange de particules primaires et d’agglomérats (deux distributions log-normales). Les ordres de grandeur du pigment (D50 de l’ordre du µm, agglomérats de 10 à 20 µm) s’inspirent de distributions mesurées au granulomètre laser ; les valeurs de la simulation sont indicatives.</li>
-      <li><strong>Mouillage et énergie</strong> : sans agent mouillant, une partie seulement de l’énergie du disperseur atteint les agglomérats (hypothèse du modèle). Le disperseur ne casse que les agglomérats ; le broyage seul modifie la taille des particules primaires.</li>
+      <li><strong>Mouillage et énergie</strong> : un pigment hydrophile (TiO₂, oxyde de fer) est mouillé par l’eau presque seule ; un pigment hydrophobe (noir de carbone) ne l’est qu’avec un agent mouillant. Sans mouillage, une partie seulement de l’énergie du disperseur atteint les agglomérats (hypothèse du modèle). Le disperseur ne casse que les agglomérats ; le broyage seul modifie la taille des particules primaires.</li>
       <li><strong>Dispersant</strong> : l’adsorption est décrite par une saturation (type Langmuir) ; le dosage optimal et la viscosité sont qualitatifs (dosage usuel d’un polyacrylate : de l’ordre de 0,1 à 0,3 % de matière active sur pigment). Les polycarboxylates agissent par effet électro-stérique, les polyacrylates et naphtalènes sulfonés surtout par effet électrostatique.</li>
-      <li><strong>Hors modèle</strong> : l’antimousse et la mousse formée par la forte agitation (voir la simulation sur les mousses), la taille des cristallites de TiO₂ (0,2 à 0,3 µm : on décrit ici la poudre mal dispersée), l’effet de la température, du pH et de la salinité (voir la simulation précédente), la rhéologie complète de la pâte (la viscosité n’est donnée qu’en fonction du dosage). La granulométrie laser mesure un diamètre équivalent de sphère.</li>
+      <li><strong>Hors modèle</strong> : l’antimousse et la mousse formée par la forte agitation (selon le produit, l’antimousse s’ajoute dès l’empâtage ou à la dilution : voir la fiche technique ; voir aussi la simulation sur les mousses), la taille des cristallites de TiO₂ (0,2 à 0,3 µm : on décrit ici la poudre mal dispersée), l’effet de la température, du pH et de la salinité (voir la simulation précédente), la rhéologie complète de la pâte (la viscosité n’est donnée qu’en fonction du dosage). La granulométrie laser mesure un diamètre équivalent de sphère.</li>
       <li><strong>Spécifications</strong> : D50 ≤ 1,1 µm et moins de 12 % de masse au-delà de 5 µm sont des seuils illustratifs pour les défis, pas des normes.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);

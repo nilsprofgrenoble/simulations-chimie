@@ -1064,9 +1064,9 @@ export const PLAUSIBLES = [
       F('l’écart entre D50 et D90, qui serait sans lien avec la dispersion', 'Cet écart renseigne au contraire sur l’homogénéité de la suspension.'),
     ] }),
   P({ id: 'disp-val-energie-suffit', domaine: 'Mouiller, disperser, stabiliser une suspension', niveau: 2, titre: 'Dispersion sans agent mouillant', plausible: false,
-    enonce: 'Une poudre forme des grumeaux dans l’eau. Un élève propose : « inutile d’ajouter un agent mouillant, il suffit de disperser plus fort : l’énergie cassera les amas. »',
+    enonce: 'Une poudre hydrophobe (noir de carbone) forme des grumeaux dans l’eau. Un élève propose : « inutile d’ajouter un agent mouillant, il suffit de disperser plus fort : l’énergie cassera les amas. »',
     reperes: [['Air piégé', 'le liquide ne pénètre pas les amas'], ['Énergie', 'une partie seulement atteint les grains'], ['Mouillage', 'remplace l’air par le liquide']],
-    ver: 'Tant que l’air reste emprisonné, le liquide ne pénètre pas les amas et une partie de l’énergie est perdue. L’agent mouillant est nécessaire avant de disperser : l’énergie seule est moins efficace.',
+    ver: 'Tant que l’air reste emprisonné, le liquide ne pénètre pas les amas et une partie de l’énergie est perdue. Pour une poudre hydrophobe, l’agent mouillant est nécessaire avant de disperser : l’énergie seule est moins efficace. (Une poudre hydrophile comme TiO₂ se mouille presque seule.)',
     q2: 'Quelle erreur contient ce raisonnement ?',
     options: [
       F('il oublie que l’énergie de dispersion est toujours nuisible', 'L’énergie est utile : elle casse les amas une fois le mouillage assuré.'),
