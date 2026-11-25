@@ -10,6 +10,7 @@ import { ANALYSE_BTS_VAL } from './analyseBtsExos.js';
 import { ITT_VAL } from './itt3Exos.js';
 import { TGPB_VAL } from './tgPhysiqueBExos.js';
 import { TSTLB_VAL } from './tstlBExos.js';
+import { BTSB_VAL } from './exosBtsB.js';
 // ====================================================
 //  BANQUE DE L'ATELIER « VALIDER » (compétence VAL : juger la vraisemblance d'un résultat, le comparer à une référence)
 // ====================================================
@@ -866,9 +867,9 @@ export const PLAUSIBLES = [
     ver: 'Au-dessus de la CMC, la concentration en monomères libres reste égale à la CMC, soit 8 mmol/L dans les deux solutions. Le tensioactif en excès forme davantage de micelles.',
     q2: 'Quelle erreur explique son raisonnement ?',
     options: [
-      V('il oublie qu’au-dessus de la CMC le tensioactif ajouté forme des micelles, les monomères libres restant à 8 mmol/L', 'Les deux solutions contiennent 8 mmol/L de monomères libres ; seule la quantité de micelles augmente.'),
-      F('il confond la CMC et la concentration totale en tensioactif', 'Il a bien lu les concentrations totales ; c’est leur lien avec les monomères libres qui est faux.'),
-      F('il a oublié que la CMC dépend de la concentration', 'La CMC est une propriété du tensioactif (à température et milieu donnés), elle ne dépend pas de la concentration préparée.'),
+      V('il oublie que le tensioactif ajouté au-dessus de la CMC forme des micelles', 'Les deux solutions contiennent 8 mmol/L de monomères libres ; seule la quantité de micelles augmente.'),
+      F('il confond la CMC et la concentration totale en tensioactif de chaque solution', 'Il a bien lu les concentrations totales ; c’est leur lien avec les monomères libres qui est faux.'),
+      F('il a oublié que la CMC augmente avec la concentration préparée', 'La CMC est une propriété du tensioactif (à température et milieu donnés), elle ne dépend pas de la concentration préparée.'),
     ] }),
   P({ id: 'tens-val-micelles', domaine: 'Tensioactifs : de la structure à la CMC', niveau: 1, titre: 'Concentration engagée dans les micelles', plausible: true,
     enonce: 'Une solution contient 20 mmol/L d’un tensioactif de CMC 8 mmol/L. Un élève affirme : « environ 12 mmol/L de tensioactif sont engagés dans des micelles. »',
@@ -876,9 +877,9 @@ export const PLAUSIBLES = [
     ver: 'Les monomères libres sont à 8 mmol/L ; le reste, 20 − 8 = 12 mmol/L, est dans les micelles. Le résultat est cohérent.',
     q2: 'Quel raisonnement permet de le vérifier rapidement ?',
     options: [
-      V('20 − 8 : la concentration totale moins les monomères libres, égaux à la CMC', 'Tout ce qui dépasse la CMC forme des micelles : 20 − 8 = 12 mmol/L.'),
-      F('20 divisé par 8 : il y a environ 2,5 micelles', 'Ce rapport n’a pas d’unité de concentration : il compare la concentration à la CMC mais ne donne pas la concentration dans les micelles.'),
-      F('8 : toute la CMC est engagée dans les micelles', 'À la CMC, 8 mmol/L correspond aux monomères libres, pas aux micelles.'),
+      V('20 − 8 : concentration totale moins monomères libres (égaux à la CMC)', 'Tout ce qui dépasse la CMC forme des micelles : 20 − 8 = 12 mmol/L.'),
+      F('20 divisé par 8 : le rapport donne environ 2,5 mmol/L de micelles', 'Ce rapport n’a pas d’unité de concentration : il compare la concentration à la CMC mais ne donne pas la concentration dans les micelles.'),
+      F('8 : toute la concentration correspondant à la CMC est engagée dans les micelles', 'À la CMC, 8 mmol/L correspond aux monomères libres, pas aux micelles.'),
     ] }),
   P({ id: 'chtens-val-savon-amphotere', domaine: 'Charge des tensioactifs selon le pH', niveau: 1, titre: 'Le savon est-il un zwitterionique ?', plausible: false,
     enonce: 'Un élève affirme : « le palmitate de sodium, un savon, est un zwitterionique (amphotère) : sa tête est chargée − à pH 9, mais elle devient neutre à pH 2, donc sa charge change avec le pH. »',
@@ -886,9 +887,9 @@ export const PLAUSIBLES = [
     ver: 'Un zwitterionique doit pouvoir porter les deux sortes de charges, + et −. La tête du savon n’est jamais positive : elle est soit négative, soit neutre. C’est un tensioactif anionique.',
     q2: 'Quelle erreur explique son raisonnement ?',
     options: [
-      V('il confond « la charge disparaît selon le pH » avec « la tête porte les deux sortes de charges »', 'Pour un zwitterionique, on compte les sortes de charges possibles (+ et −). Le savon n’en a qu’une, − ; elle peut seulement disparaître.'),
-      F('il a oublié que le carboxylate perd sa charge en milieu acide', 'Il l’a bien noté : la tête est neutre à pH 2. Le problème est la conclusion qu’il en tire sur la famille.'),
-      F('il a confondu le pH 10 et le pH 4 dans son raisonnement', 'Les deux pH sont bien associés aux bonnes formes (COO⁻ à pH 9, COOH à pH 2) : l’erreur porte sur la définition du zwitterionique.'),
+      V('il confond « la charge disparaît » avec « la tête porte les deux sortes de charges »', 'Pour un zwitterionique, on compte les sortes de charges possibles (+ et −). Le savon n’en a qu’une, − ; elle peut seulement disparaître.'),
+      F('il a oublié que le carboxylate perd sa charge en milieu acide, à pH inférieur au pKa', 'Il l’a bien noté : la tête est neutre à pH 2. Le problème est la conclusion qu’il en tire sur la famille.'),
+      F('il a confondu les pH 9 et 2 : COO⁻ à pH 2 et COOH à pH 9', 'Les deux pH sont bien associés aux bonnes formes (COO⁻ à pH 9, COOH à pH 2) : l’erreur porte sur la définition du zwitterionique.'),
     ] }),
   P({ id: 'chtens-val-nonionique-ph', domaine: 'Charge des tensioactifs selon le pH', niveau: 1, titre: 'Émulsion stabilisée par un non ionique et pH', plausible: true,
     enonce: 'Deux émulsions sont stabilisées, l’une par le palmitate de sodium (un savon), l’autre par le dodécanol éthoxylé (non ionique). Un élève affirme : « si l’on passe de pH 9 à pH 3, l’émulsion au savon risque de se déstabiliser, alors que celle au non ionique garde sa stabilité due à ce tensioactif. »',
@@ -906,8 +907,8 @@ export const PLAUSIBLES = [
     ver: 'Le bromure est un contre-ion libre dans l’eau, sans chaîne : il ne fait pas partie de la tête. La tête n’a qu’une sorte de charge, +. Le tensioactif est cationique.',
     q2: 'Quelle erreur explique son raisonnement ?',
     options: [
-      V('il compte le contre-ion comme une charge de la tête, alors qu’il est séparé de l’ion à longue queue', 'Le Br⁻ se détache dans l’eau : seul l’ion à longue queue détermine la famille, ici un cation.'),
-      F('il oublie que l’azote porte une charge positive dans cette formule', 'Il l’a bien notée : c’est même ce qui rend le tensioactif cationique. L’erreur vient du bromure.'),
+      V('il compte le contre-ion comme une charge de la tête, alors qu’il s’en sépare dans l’eau', 'Le Br⁻ se détache dans l’eau : seul l’ion à longue queue détermine la famille, ici un cation.'),
+      F('il oublie que l’azote porte une charge positive dans cette formule, ce qui rend la tête cationique', 'Il l’a bien notée : c’est même ce qui rend le tensioactif cationique. L’erreur vient du bromure.'),
       F('il confond tensioactif cationique et tensioactif non ionique', 'Il n’a pas fait cette confusion : il conclut à un zwitterionique à cause des deux ions de la formule.'),
     ] }),
   P({ id: 'semul-val-conduct-faible', domaine: 'Sens de l’émulsion et épaississement', niveau: 1, titre: 'Une crème à 4 µS/cm : forcément E/H ?', plausible: false,
@@ -916,8 +917,8 @@ export const PLAUSIBLES = [
     ver: 'Une phase aqueuse presque sans ions conduit très peu, elle aussi : 4 µS/cm est compatible avec une H/E faite d’eau déminéralisée. Une valeur faible ne suffit pas pour conclure à une E/H.',
     q2: 'Quel test pourrait lever le doute ?',
     options: [
-      V('le test de dilution : une goutte dans l’eau, puis une dans l’huile', 'Il ne dépend pas de la présence d’ions : il renseigne sur la phase continue.'),
-      F('refaire la mesure avec une sonde plus profonde', 'Le problème n’est pas la sonde : une eau sans ions conduit peu, quelle que soit la profondeur.'),
+      V('le test de dilution, dans l’eau puis dans l’huile', 'Il ne dépend pas de la présence d’ions : il renseigne sur la phase continue.'),
+      F('refaire la mesure avec une sonde plus profonde et plus longtemps', 'Le problème n’est pas la sonde : une eau sans ions conduit peu, quelle que soit la profondeur.'),
       F('ajouter du sel dans l’huile pour la rendre conductrice', 'Le sel ne se dissout pas dans l’huile, et on modifierait l’échantillon.'),
     ] }),
   P({ id: 'semul-val-epaissir-eh', domaine: 'Sens de l’émulsion et épaississement', niveau: 1, titre: 'Épaissir une crème E/H avec de l’eau', plausible: true,
@@ -926,9 +927,9 @@ export const PLAUSIBLES = [
     ver: 'L’eau est la phase dispersée d’une émulsion E/H : en ajouter augmente la fraction de 30 % à 100 mL sur 240 mL, soit environ 42 %. Le volume total augmente aussi : le calcul en tient compte. L’annonce est cohérente.',
     q2: 'Quel raisonnement permet de le vérifier rapidement ?',
     options: [
-      V('60 mL + 40 mL d’eau sur 200 mL + 40 mL au total : environ 0,42, plus qu’avant', 'Le numérateur et le dénominateur augmentent de 40 mL : la fraction passe de 0,30 à 0,42.'),
-      F('40 mL d’eau sur 200 mL au total : 20 %, ce qui diminue la fraction', 'Il faut compter toute l’eau (60 + 40 mL) et le nouveau volume total (240 mL).'),
-      F('l’eau est la phase continue : l’ajouter dilue la crème', 'Dans une E/H, l’eau forme les gouttes : c’est la phase dispersée.'),
+      V('60 + 40 mL d’eau sur 240 mL au total : environ 0,42, plus qu’avant', 'Le numérateur et le dénominateur augmentent de 40 mL : la fraction passe de 0,30 à 0,42.'),
+      F('40 mL d’eau sur 200 mL de crème : 20 %, ce qui diminue la fraction d’eau', 'Il faut compter toute l’eau (60 + 40 mL) et le nouveau volume total (240 mL).'),
+      F('l’eau est la phase continue de cette crème : l’ajouter dilue la crème', 'Dans une E/H, l’eau forme les gouttes : c’est la phase dispersée.'),
     ] }),
   P({ id: 'semul-val-violet', domaine: 'Sens de l’émulsion et épaississement', niveau: 2, titre: 'Deux colorations qui se contredisent', plausible: false,
     enonce: 'Sur deux prélèvements de la même crème, un élève observe au microscope : avec le rouge Soudan, des gouttes rouges dans un fond blanc ; avec le bleu de méthylène, des gouttes bleues dans un fond blanc. Il écrit : « la crème est à la fois H/E et E/H, donc les deux sens sont possibles. »',
@@ -936,9 +937,9 @@ export const PLAUSIBLES = [
     ver: 'Des gouttes rouges signifient de l’huile dispersée (H/E) ; des gouttes bleues signifient de l’eau dispersée (E/H). Ces deux observations ne peuvent pas venir de la même émulsion simple : il faut refaire les prélèvements ou vérifier les colorants, et non conclure que les deux sens coexistent.',
     q2: 'Quelle erreur explique son raisonnement ?',
     options: [
-      V('il accepte deux résultats incompatibles au lieu de chercher l’erreur : une émulsion simple a une seule phase continue', 'Une émulsion simple n’a qu’un sens. Deux colorations contradictoires signalent un problème de manipulation ou de lecture.'),
-      F('il confond le rouge Soudan avec un colorant de l’eau', 'Le rouge Soudan colore bien l’huile ; l’erreur porte sur l’interprétation des deux résultats.'),
-      F('il a lu les couleurs comme un signe de forte conductivité', 'La couleur ne dit rien de la conductivité : ce sont deux tests indépendants.'),
+      V('il accepte deux résultats incompatibles : une émulsion simple a un seul sens', 'Une émulsion simple n’a qu’un sens. Deux colorations contradictoires signalent un problème de manipulation ou de lecture.'),
+      F('il confond le rouge Soudan, colorant de l’huile, avec un colorant de l’eau', 'Le rouge Soudan colore bien l’huile ; l’erreur porte sur l’interprétation des deux résultats.'),
+      F('il a lu les couleurs des gouttes comme un signe de forte conductivité de la crème', 'La couleur ne dit rien de la conductivité : ce sont deux tests indépendants.'),
     ] }),
   P({ id: 'semul-val-dilution-eau', domaine: 'Sens de l’émulsion et épaississement', niveau: 1, titre: 'La goutte se disperse dans l’eau : l’eau est dispersée ?', plausible: false,
     enonce: 'Une goutte d’émulsion déposée dans l’eau s’y disperse. Un élève affirme : « l’eau est donc la phase dispersée de cette émulsion. »',
@@ -946,9 +947,9 @@ export const PLAUSIBLES = [
     ver: 'La goutte se disperse dans l’eau parce que l’eau est miscible avec la phase continue : la phase continue est l’eau, et l’émulsion est H/E. L’eau n’est pas la phase dispersée.',
     q2: 'Quelle erreur explique son raisonnement ?',
     options: [
-      V('il confond phase dispersée et phase continue : l’eau qui disperse la goutte est miscible avec la phase continue', 'Le liquide qui disperse la goutte est miscible avec ce qui l’entoure, c’est-à-dire la phase continue.'),
-      F('il a oublié que l’huile est plus légère que l’eau', 'La masse volumique n’intervient pas dans le test de dilution.'),
-      F('il a confondu rouge Soudan et bleu de méthylène', 'Aucun colorant n’est utilisé dans le test de dilution.'),
+      V('il confond dispersée et continue : l’eau qui disperse la goutte est continue', 'Le liquide qui disperse la goutte est miscible avec ce qui l’entoure, c’est-à-dire la phase continue.'),
+      F('il a oublié que l’huile est plus légère que l’eau, donc que la goutte flotte', 'La masse volumique n’intervient pas dans le test de dilution.'),
+      F('il a confondu le rouge Soudan et le bleu de méthylène lors de la coloration', 'Aucun colorant n’est utilisé dans le test de dilution.'),
     ] }),
   P({ id: 'inst-val-stokes-diametre', domaine: 'Instabilités des émulsions', niveau: 1, titre: 'Une vitesse de crémage calculée avec le diamètre', plausible: false,
     enonce: 'Des gouttes d’huile de rayon 2 µm montent dans une phase aqueuse de viscosité 2 mPa·s, avec Δρ = 80 kg/m³. Un élève calcule v = 2Δρ g r² / (9η) en prenant r = 4 µm et annonce : « la vitesse de montée est d’environ 1,4 µm/s ».',
@@ -2325,9 +2326,9 @@ export const PLAUSIBLES = [
     ver: 'Le HLB d’un mélange est compris entre 4,3 et 15,0. Le milieu de cet intervalle est 9,65 : pour viser 10, un peu plus de la moitié du mélange doit être du Tween 80, ce qui est le cas (53 %). Calcul : 0,53 × 15,0 + 0,47 × 4,3 ≈ 7,95 + 2,02 = 9,97, soit 10,0. Le résultat est cohérent (sous l’hypothèse d’additivité, qui reste une approximation).',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : le HLB est entre 4,3 et 15,0, et 10 est un peu au-dessus du milieu (9,65), il faut donc un peu plus de 50 % de Tween 80, soit 53 %', 'La moyenne pondérée 0,53 × 15,0 + 0,47 × 4,3 ≈ 10,0 confirme ce raisonnement de proportion.'),
-      F('Cohérent : la moyenne simple (15,0 + 4,3) / 2 = 9,65 est proche de 10, quelles que soient les proportions du mélange', 'Les fractions comptent : un mélange à 10 % de Tween 80 donnerait HLB ≈ 5,4. Le verdict est juste, mais il faut pondérer : 0,53 × 15,0 + 0,47 × 4,3 ≈ 10,0.'),
-      F('Pas cohérent : 0,53 × 15,0 + 0,47 × 4,3 = 7,95 + 20,2 ≈ 28, valeur supérieure à 15,0, ce qui est impossible', '0,47 × 4,3 = 2,02 et non 20,2 (erreur de virgule) : on obtient 7,95 + 2,02 = 9,97, valeur intermédiaire entre 4,3 et 15,0.'),
+      V('Cohérent : 10 est un peu au-dessus du milieu (9,65) de l’intervalle 4,3 à 15,0, donc il faut un peu plus de 50 % de Tween 80, soit 53 %', 'La moyenne pondérée 0,53 × 15,0 + 0,47 × 4,3 ≈ 10,0 confirme ce raisonnement de proportion.'),
+      F('Cohérent : la moyenne simple (15,0 + 4,3) / 2 = 9,65 est proche de 10, quelles que soient les proportions du mélange, donc la composition importe peu', 'Les fractions comptent : un mélange à 10 % de Tween 80 donnerait HLB ≈ 5,4. Le verdict est juste, mais il faut pondérer : 0,53 × 15,0 + 0,47 × 4,3 ≈ 10,0.'),
+      F('Pas cohérent : 0,53 × 15,0 + 0,47 × 4,3 = 7,95 + 20,2 ≈ 28, valeur supérieure à 15,0, ce qui est impossible pour un mélange de ces deux tensioactifs', '0,47 × 4,3 = 2,02 et non 20,2 (erreur de virgule) : on obtient 7,95 + 2,02 = 9,97, valeur intermédiaire entre 4,3 et 15,0.'),
     ] }),
   P({ id: 'for-hansen-ra-sans-racine', domaine: 'Formulation', niveau: 2, titre: 'Distance Ra de Hansen sans racine', plausible: false,
     ...presenter({ contexte: 'On compare l’acétone à un polymère de rayon de solubilité R₀ = 6,0 MPa^½. La distance de Hansen est Ra² = 4(δD1 − δD2)² + (δP1 − δP2)² + (δH1 − δH2)².', liste: [['Polymère', 'δD = 16,0 ; δP = 9,0 ; δH = 8,0 (MPa^½)'], ['Acétone', 'δD = 15,5 ; δP = 10,4 ; δH = 7,0 (MPa^½)']], suite: 'Un élève calcule 4 × 0,5² + 1,4² + 1,0² = 3,96 et écrit : « Ra = 3,96 MPa^½, donc RED = 3,96 / 6,0 = 0,66. »' }),
@@ -2345,7 +2346,7 @@ export const PLAUSIBLES = [
     ver: 'Ra est une distance : elle est au moins égale au plus grand écart, ici ΔδH = 11,4. Le résultat 11,4 est donc cohérent, car les écarts en δD et δP sont très petits. Calcul : 4 × 0,2² + 0,2² + 11,4² = 0,16 + 0,04 + 129,96 = 130,16, soit Ra ≈ 11,41 et RED ≈ 1,90. Comme RED est nettement supérieur à 1, l’éthanol est hors de la sphère : la conclusion est cohérente.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : Ra est au moins égal à l’écart de δH (11,4), très supérieur à R₀ = 6,0 : le solvant est forcément hors de la sphère', 'Quels que soient les autres écarts, Ra ≥ 11,4 donc RED ≥ 1,9. Le calcul complet donne bien 11,41.'),
+      V('Cohérent : Ra est au moins égal à l’écart de δH (11,4), très supérieur à R₀ = 6,0 : hors de la sphère', 'Quels que soient les autres écarts, Ra ≥ 11,4 donc RED ≥ 1,9. Le calcul complet donne bien 11,41.'),
       F('Cohérent : les paramètres de l’éthanol sont proches de ceux du polymère pour δD et δP, donc c’est un bon solvant', 'Les trois composantes comptent : l’écart de 11,4 sur δH suffit à placer l’éthanol loin du polymère (RED ≈ 1,9).'),
       F('Pas cohérent : un écart de 11,4 est supérieur à R₀, donc le calcul de Ra doit contenir une erreur', 'Il n’y a pas d’erreur : Ra peut être bien supérieur à R₀, c’est précisément le cas d’un solvant hors de la sphère (RED > 1).'),
     ] }),
@@ -2355,7 +2356,7 @@ export const PLAUSIBLES = [
     ver: 'On ne moyenne pas les RED : on moyenne d’abord les paramètres, puis on calcule le RED du mélange. Ici : δD = 16,0 ; δP = (18,0 + 0,0) / 2 = 9,0 ; δH = 8,0. Le mélange est exactement au centre de la sphère du polymère : Ra = 0 et RED = 0. Deux mauvais solvants situés de part et d’autre de la sphère peuvent donc donner un très bon solvant.',
     q2: 'Quelle explication est la plus probable ?',
     options: [
-      V('L’élève a moyenné les RED au lieu des paramètres de Hansen : le mélange (16,0 ; 9,0 ; 8,0) coïncide avec le centre de la sphère, RED = 0', 'Ra n’est pas linéaire en fonction de la composition : la distance du mélange peut être bien plus petite que la moyenne des distances.'),
+      V('L’élève a moyenné les RED au lieu des paramètres : le mélange (16,0 ; 9,0 ; 8,0) est au centre de la sphère, RED = 0', 'Ra n’est pas linéaire en fonction de la composition : la distance du mélange peut être bien plus petite que la moyenne des distances.'),
       F('L’élève a oublié de pondérer par les fractions volumiques', 'Les deux fractions valent 50 %, donc la pondération ne change pas la moyenne : l’erreur est de moyenner les RED, et non les paramètres.'),
       F('Le raisonnement est correct : un mélange ne peut pas dissoudre un polymère que ses deux constituants ne dissolvent pas', 'Faux : c’est tout l’intérêt des mélanges de solvants. Si la sphère se trouve entre les deux, le mélange est dedans.'),
     ] }),
@@ -2365,9 +2366,9 @@ export const PLAUSIBLES = [
     ver: 'La première moitié est vraisemblable : plus d’anti-peau protège mieux le pot. La seconde ne l’est pas : l’anti-peau freine le siccatif, il ne peut donc pas accélérer le séchage. Dans le film, il doit d’abord s’évaporer avant que le siccatif soit pleinement actif : avec deux fois plus d’anti-peau, le séchage démarre plus tard. Le compromis du formulateur est justement de gagner en stabilité dans le pot au prix d’un séchage plus lent.',
     q2: 'Quelle explication est la plus probable ?',
     options: [
-      V('L’élève oublie que l’anti-peau freine le siccatif : plus d’anti-peau protège le pot mais ralentit le séchage', 'Le même mécanisme (brider le siccatif) explique à la fois la protection du pot et le séchage plus lent du film.'),
-      F('L’élève a raison : l’anti-peau étant volatil, il s’évapore et accélère le séchage', 'Son évaporation ne fait que lever l’inhibition du siccatif : elle ne peut pas rendre le séchage plus rapide qu’en l’absence d’anti-peau.'),
-      F('L’élève a raison sur le pot, mais le séchage ne dépend que de l’épaisseur du film', 'L’épaisseur joue (l’anti-peau s’évapore plus vite d’un film mince), mais le séchage dépend aussi de la quantité d’anti-peau et de siccatif.'),
+      V('L’élève oublie que l’anti-peau freine le siccatif : il protège le pot mais ralentit le séchage', 'Le même mécanisme (brider le siccatif) explique à la fois la protection du pot et le séchage plus lent du film.'),
+      F('L’élève a raison : l’anti-peau étant volatil, il s’évapore et accélère donc le séchage du film', 'Son évaporation ne fait que lever l’inhibition du siccatif : elle ne peut pas rendre le séchage plus rapide qu’en l’absence d’anti-peau.'),
+      F('L’élève a raison sur le pot, mais le séchage ne dépend que de l’épaisseur du film appliqué', 'L’épaisseur joue (l’anti-peau s’évapore plus vite d’un film mince), mais le séchage dépend aussi de la quantité d’anti-peau et de siccatif.'),
     ] }),
   P({ id: 'met-ei-rapport-inverse', domaine: 'Métrologie', niveau: 2, titre: 'Concentration par étalon interne : rapport à l’envers', plausible: false,
     ...presenter({ contexte: 'On dose un analyte par chromatographie avec un étalon interne, introduit à 2,0 g·L⁻¹ dans l’échantillon. Le facteur de réponse de l’analyte par rapport à l’étalon interne vaut 1,00.', liste: [['Aire du pic de l’analyte', '12 500 u.a.'], ['Aire du pic de l’étalon interne', '25 000 u.a.']], suite: 'Un élève calcule C(analyte) = 2,0 × 25 000 / 12 500 = 4,0 g·L⁻¹.' }),
@@ -4397,6 +4398,7 @@ export const PLAUSIBLES = [
   ...ITT_VAL,
   ...TGPB_VAL,
   ...TSTLB_VAL,
+  ...BTSB_VAL,
   // ───────────────────────────── Changement d'état (2GT, sim 195)
   P({ id: 'etat2gt-val-glacon-grammes', domaine: 'Changement d’état (2GT)', niveau: 1, titre: 'Fondre un glaçon de 20 g', plausible: false,
     enonce: 'Un élève calcule l’énergie pour faire fondre un glaçon de 20 g, avec L = 334 kJ/kg : « E = 20 × 334 = 6 680 kJ ».',
