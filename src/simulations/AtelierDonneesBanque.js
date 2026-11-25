@@ -3836,12 +3836,12 @@ export const ENONCES = [
         F: tok(`${nb(F, 0)} N`, 'Norme de la force pressante exercée par le gaz sur le piston', F, 'N'),
       };
       const raisons = { V: 'Le volume du gaz ne sert pas à calculer la force pressante : celle-ci dépend de la pression et de la surface.', th: 'La température n’intervient pas ici : la pression du gaz est déjà donnée.', m: 'La masse du piston n’est pas la force pressante du gaz : elle ne sert pas à calculer F = P × S.' };
-      if (q === 0) return { tokens, derivees: ['P en pascals : 1 bar = 10⁵ Pa', 'S en mètres carrés : 1 cm² = 10⁻⁴ m²'],
+      if (q === 0) return { tokens, derivees: [],
         texte: ['Dans une seringue bouchée, un gaz de volume ', T('V'), ' est à la température ', T('th'), ' et à la pression ', T('P'), '. Le piston, de masse ', T('m'), ', a une face de surface ', T('S'), '. Quelle est la norme de la force pressante exercée par le gaz sur le piston ?'],
         utiles: ['P', 'S'], raisons,
         cherche: { bonne: 'La norme de la force pressante exercée par le gaz sur le piston (en N)', faux: ['La pression de l’air extérieur (en Pa)', 'Le poids du piston (en N)', 'Le volume du gaz après compression (en mL)'] },
         manque: null, solution: { txt: 'F = P × S, avec P en Pa et S en m²', val: F, u: 'N' } };
-      return { tokens, derivees: ['S en mètres carrés : 1 cm² = 10⁻⁴ m²'],
+      return { tokens, derivees: [],
         texte: ['Le gaz d’une seringue (volume ', T('V'), ', salle à ', T('th'), ') exerce sur la face du piston, de surface ', T('S'), ', une force pressante de norme ', T('F'), '. Quelle est la pression du gaz ?'],
         utiles: ['F', 'S'], raisons: { V: raisons.V, th: 'La température n’intervient pas ici : on connaît directement la force et la surface.' },
         cherche: { bonne: 'La pression du gaz enfermé (en Pa)', faux: ['La surface du piston (en m²)', 'La force de l’air extérieur sur le piston (en N)', 'Le volume du gaz (en mL)'] },
@@ -3869,12 +3869,12 @@ export const ENONCES = [
       };
       const raisons = { S: 'La surface du piston ne sert pas dans la loi de Mariotte : elle relie la pression à la force, pas la pression au volume.', dt: 'La durée de la compression n’intervient pas : on compare l’état initial et l’état final, à température constante.', th: 'La température est constante : elle garantit que la loi de Mariotte s’applique, mais sa valeur ne sert pas au calcul.' };
       const debut = ['Une seringue bouchée contient du gaz à la température constante ', T('th'), ', à la pression ', T('P1'), ' pour un volume ', T('V1'), '. On pousse le piston pendant ', T('dt'), ' ; la face du piston a pour surface ', T('S'), '. '];
-      if (q === 0) return { tokens, derivees: ['les volumes restent en mL, les pressions en bar : aucune conversion'],
+      if (q === 0) return { tokens, derivees: [],
         texte: [...debut, 'Le volume final est ', T('V2'), '. Quelle est la pression finale du gaz ?'],
         utiles: ['P1', 'V1', 'V2'], raisons,
         cherche: { bonne: 'La pression finale du gaz (en bar)', faux: ['La force pressante sur le piston (en N)', 'La quantité de matière de gaz (en mol)', 'Le volume final du gaz (en mL)'] },
         manque: null, solution: { txt: 'P₂ = frac(P₁ × V₁|V₂), à température et quantité de gaz constantes', val: p.P2, u: 'bar' } };
-      return { tokens, derivees: ['les volumes restent en mL, les pressions en bar : aucune conversion'],
+      return { tokens, derivees: [],
         texte: [...debut, 'On s’arrête quand la pression atteint ', T('P2'), '. Quel est alors le volume du gaz ?'],
         utiles: ['P1', 'V1', 'P2'], raisons,
         cherche: { bonne: 'Le volume final du gaz (en mL)', faux: ['La pression finale du gaz (en bar)', 'La force pressante sur le piston (en N)', 'La surface du piston (en m²)'] },
@@ -3905,12 +3905,12 @@ export const ENONCES = [
         S: 'La pression à une profondeur donnée ne dépend pas de la superficie de la piscine ni de la forme du récipient.',
         th: 'Dans ce modèle, la masse volumique de l’eau est supposée constante : la température ne change pas le calcul.',
       };
-      if (q === 0) return { tokens, derivees: ['conversion : 1 hPa = 100 Pa'],
+      if (q === 0) return { tokens, derivees: [],
         texte: ['Une piscine d’eau douce, de masse volumique ', T('rho'), ', contient un volume ', T('V'), ' d’eau à ', T('th'), ' ; la surface de l’eau mesure ', T('S'), '. Un manomètre est posé à ', T('h'), ' sous la surface. À la surface, la pression est ', T('Patm'), ' et l’intensité de la pesanteur vaut ', T('g'), '. Quelle pression absolue le manomètre indique-t-il ?'],
         utiles: ['rho', 'g', 'h', 'Patm'], raisons,
         cherche: { bonne: 'La pression absolue P au niveau du manomètre (en hPa)', faux: ['La force pressante sur le fond de la piscine (en N)', 'La masse d’eau de la piscine (en kg)', 'La profondeur de la piscine (en m)'] },
         manque: null, solution: { txt: 'P = P_atm + ρ·g·h', val: p.Patm * 100 + 1000 * 9.81 * p.h, u: 'Pa' } };
-      return { tokens, derivees: ['conversion : 1 hPa = 100 Pa'],
+      return { tokens, derivees: [],
         texte: ['Une piscine d’eau douce, de masse volumique ', T('rho'), ', contient un volume ', T('V'), ' d’eau à ', T('th'), ' ; la surface de l’eau mesure ', T('S'), '. Un manomètre posé sous la surface indique la pression absolue ', T('P'), '. À la surface, la pression est ', T('Patm'), ' et l’intensité de la pesanteur vaut ', T('g'), '. À quelle profondeur se trouve-t-il ?'],
         utiles: ['rho', 'g', 'P', 'Patm'], raisons,
         cherche: { bonne: 'La profondeur h du manomètre (en m)', faux: ['La pression relative en surface (en hPa)', 'Le volume d’eau situé au-dessus du manomètre (en m³)', 'La masse volumique de l’eau (en kg·m⁻³)'] },
@@ -5157,6 +5157,92 @@ export const ENONCES = [
         manque: null, solution: { txt: 'Π = ρ_eau × V × g, avec V converti en m³ (cube totalement immergé)', val: p.rhoE * p.V * 1e-6 * 9.8, u: 'N' } };
     },
   },
+  // ───────────────────────────── Lot 2 (1G) : énergie électrique et mouvement d'un système
+  {
+    id: 'ene-charge-sapp', domaine: 'Énergie électrique', titre: 'Un courant dans un fil : charge et électrons', noms: ['Charge qui traverse le fil', 'Nombre d’électrons'],
+    gen: () => ({ I: tire([20, 50, 80, 150, 250]), dmin: tire([2, 5, 10, 20]), U: tire([3, 6, 9, 12]), L: tire([30, 60, 120]) }),
+    build: epure((p, q) => {
+      const tokens = {
+        I: tok(`${p.I} mA`, 'Intensité du courant continu', p.I / 1000, 'A'),
+        d: tok(`${p.dmin} min`, 'Durée de passage du courant', p.dmin * 60, 's'),
+        U: tok(`${p.U} V`, 'Tension du générateur', p.U, 'V'),
+        L: tok(`${p.L} cm`, 'Longueur du fil', p.L / 100, 'm'),
+        e: tok('e = 1,602 × 10⁻¹⁹ C', 'Charge élémentaire (valeur absolue de la charge d’un électron)', 1.602e-19, 'C'),
+      };
+      const Q = p.I / 1000 * p.dmin * 60;
+      const raisons = { U: 'La tension du générateur n’intervient pas : la charge qui traverse une section se calcule avec l’intensité et la durée.', L: 'La longueur du fil ne sert pas : on s’intéresse à la charge qui traverse une section du fil, quelle que soit sa longueur.' };
+      const debut = ['Un fil de ', T('L'), ' de long est relié à un générateur de ', T('U'), '. Il est parcouru par un courant continu d’intensité ', T('I'), ' pendant ', T('d'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle charge électrique a traversé une section du fil pendant cette durée ?'],
+        utiles: ['I', 'd'], raisons,
+        cherche: { bonne: 'La charge électrique Δq qui a traversé la section (en C)', faux: ['L’énergie électrique transférée par le générateur (en J)', 'Le nombre d’électrons qui ont traversé la section', 'La puissance électrique du générateur (en W)'] },
+        manque: null, solution: { txt: 'Δq = I × Δt, avec I en A et Δt en s', val: Q, u: 'C' } };
+      return { tokens, derivees: [{ id: 'q', nom: 'Charge Δq qui a traversé la section', expr: 'Δq = I × Δt', val: Q, u: 'C' }],
+        texte: [...debut, 'La valeur absolue de la charge d’un électron est ', T('e'), '. Combien d’électrons ont traversé une section du fil pendant cette durée ?'],
+        utiles: ['I', 'd', 'e'], raisons,
+        cherche: { bonne: 'Le nombre N d’électrons qui ont traversé la section', faux: ['La charge électrique Δq qui a traversé la section (en C)', 'La masse des électrons qui ont traversé la section (en kg)', 'La durée de passage d’un électron dans le fil (en s)'] },
+        manque: null, solution: { txt: 'N = Δq / e, avec Δq = I × Δt', val: Q / 1.602e-19, u: 'électrons' } };
+    }),
+  },
+  {
+    id: 'mec-deltav-sapp', domaine: 'Mécanique', titre: 'Une poussée sur un chariot', noms: ['Variation de vitesse'],
+    gen: () => ({ m: tire([200, 250, 400, 500]), F: tire([0.15, 0.25, 0.35, 0.45]), dt: tire([50, 80, 120, 200]), v0: tire([0.3, 0.6, 0.9]) }),
+    build: epure(p => {
+      const tokens = {
+        m: tok(`${p.m} g`, 'Masse du chariot', p.m / 1000, 'kg'),
+        v0: tok(`${nb(p.v0, 1)} m·s⁻¹`, 'Valeur de la vitesse initiale du chariot', p.v0, 'm·s⁻¹'),
+        F: tok(`${nb(p.F, 2)} N`, 'Valeur de la force horizontale constante', p.F, 'N'),
+        dt: tok(`${p.dt} ms`, 'Durée de la poussée', p.dt / 1000, 's'),
+      };
+      return { tokens, derivees: [],
+        texte: ['Un chariot de ', T('m'), ' roule sans frottement sur un rail horizontal à la vitesse ', T('v0'), '. On le pousse dans le sens de son mouvement avec une force horizontale constante de ', T('F'), ' pendant ', T('dt'), ' (le poids et la réaction du rail se compensent). Quelle est la variation de la valeur de sa vitesse pendant cette poussée ?'],
+        utiles: ['m', 'F', 'dt'], raisons: { v0: 'La vitesse initiale ne change pas la variation de vitesse : Δv ≈ (ΣF / m) × Δt ne dépend que de la force, de la masse et de la durée.' },
+        cherche: { bonne: 'La variation Δv de la valeur de la vitesse (en m·s⁻¹)', faux: ['La valeur de la vitesse finale du chariot (en m·s⁻¹)', 'L’accélération moyenne du chariot (en m·s⁻²)', 'Le travail de la force pendant la poussée (en J)'] },
+        manque: null, solution: { txt: 'Δv ≈ ΣF × Δt / m (en unités SI)', val: p.F * (p.dt / 1000) / (p.m / 1000), u: 'm·s⁻¹' } };
+    }),
+  },
+  {
+    id: 'mec-force-sapp', domaine: 'Mécanique', titre: 'Un palet qui accélère', noms: ['Valeur de la somme des forces'],
+    gen: () => { const v1 = tire([0.2, 0.4, 0.6]), dv = tire([0.1, 0.3, 0.5]); return { m: tire([150, 200, 300, 400]), v1, v2: Math.round((v1 + dv) * 10) / 10, dt: tire([40, 50, 100, 250]), L: tire([1.2, 1.5, 2.0]) }; },
+    build: epure(p => {
+      const dv = p.v2 - p.v1;
+      const tokens = {
+        m: tok(`${p.m} g`, 'Masse du palet', p.m / 1000, 'kg'),
+        v1: tok(`${nb(p.v1, 1)} m·s⁻¹`, 'Valeur de la vitesse initiale', p.v1, 'm·s⁻¹'),
+        v2: tok(`${nb(p.v2, 1)} m·s⁻¹`, 'Valeur de la vitesse finale', p.v2, 'm·s⁻¹'),
+        dt: tok(`${p.dt} ms`, 'Durée du souffle', p.dt / 1000, 's'),
+        L: tok(`${nb(p.L, 1)} m`, 'Longueur de la table', p.L, 'm'),
+      };
+      return { tokens, derivees: [{ id: 'dv', nom: 'Variation Δv de la valeur de la vitesse', expr: 'Δv = v₂ − v₁', val: dv, u: 'm·s⁻¹' }],
+        texte: ['Un palet de ', T('m'), ' glisse sans frottement sur une table horizontale de ', T('L'), ' de long. Un souffle d’air, dirigé dans le sens du mouvement, fait passer sa vitesse de ', T('v1'), ' à ', T('v2'), ' en ', T('dt'), '. Quelle est la valeur de la somme des forces horizontales qui s’exercent sur le palet pendant ce souffle ?'],
+        utiles: ['m', 'v1', 'v2', 'dt'], raisons: { L: 'La longueur de la table ne sert pas : on connaît directement la variation de vitesse et sa durée.' },
+        cherche: { bonne: 'La valeur de la somme des forces ΣF (en N)', faux: ['La variation Δv de la valeur de la vitesse (en m·s⁻¹)', 'Le poids du palet (en N)', 'L’énergie cinétique finale du palet (en J)'] },
+        manque: null, solution: { txt: 'ΣF ≈ m × Δv / Δt, avec Δv = v₂ − v₁ (unités SI)', val: (p.m / 1000) * dv / (p.dt / 1000), u: 'N' } };
+    }),
+  },
+  {
+    id: 'ene-pile-sapp', domaine: 'Énergie électrique', titre: 'Deux points de fonctionnement d’une pile réelle', noms: ['Résistance interne', 'Force électromotrice'],
+    gen: () => { let E, r, I1, I2; do { E = tire([3.0, 4.5, 6.0, 9.0]); r = tire([0.5, 1.0, 1.5, 2.0, 3.0]); I1 = tire([100, 200]); I2 = tire([500, 600, 800]); } while (E - r * I2 / 1000 < 0.6 * E); return { E, r, I1, I2, U1: Math.round((E - r * I1 / 1000) * 100) / 100, U2: Math.round((E - r * I2 / 1000) * 100) / 100, C: tire([1500, 2000, 2800]) }; },
+    build: epure((p, q) => {
+      const tokens = {
+        I1: tok(`${p.I1} mA`, 'Intensité du courant, premier point', p.I1 / 1000, 'A'),
+        U1: tok(`${nb(p.U1, 2)} V`, 'Tension aux bornes de la pile, premier point', p.U1, 'V'),
+        I2: tok(`${p.I2} mA`, 'Intensité du courant, second point', p.I2 / 1000, 'A'),
+        U2: tok(`${nb(p.U2, 2)} V`, 'Tension aux bornes de la pile, second point', p.U2, 'V'),
+        C: tok(`${nb(p.C)} mAh`, 'Capacité de la pile', p.C, 'mAh'),
+      };
+      const rI = { id: 'r', nom: 'Résistance interne r de la pile', expr: 'r = (U₁ − U₂) / (I₂ − I₁)', val: p.r, u: 'Ω' };
+      const raisons = { C: 'La capacité de la pile (charge stockée) ne sert pas à déterminer sa force électromotrice ni sa résistance interne.' };
+      const debut = ['Une pile réelle est modélisée par U = E − r × I. Quand elle débite ', T('I1'), ', la tension à ses bornes vaut ', T('U1'), ' ; quand elle débite ', T('I2'), ', elle vaut ', T('U2'), '. La pile a une capacité de ', T('C'), '. '];
+      if (q === 0) return { tokens, derivees: [{ id: 'dU', nom: 'Écart de tension U₁ − U₂', expr: 'ΔU = U₁ − U₂', val: p.U1 - p.U2, u: 'V' }, { id: 'dI', nom: 'Écart d’intensité I₂ − I₁', expr: 'ΔI = I₂ − I₁', val: (p.I2 - p.I1) / 1000, u: 'A' }],
+        texte: [...debut, 'Quelle est la résistance interne r de la pile ?'], utiles: ['I1', 'U1', 'I2', 'U2'], raisons,
+        cherche: { bonne: 'La résistance interne r de la pile (en Ω)', faux: ['La force électromotrice E de la pile (en V)', 'La puissance fournie par la pile (en W)', 'La durée de fonctionnement de la pile (en h)'] },
+        manque: null, solution: { txt: 'r = (U₁ − U₂) / (I₂ − I₁)', val: p.r, u: 'Ω' } };
+      return { tokens, derivees: [rI],
+        texte: [...debut, 'Quelle est la force électromotrice E de la pile ?'], utiles: ['I1', 'U1', 'I2', 'U2'], raisons,
+        cherche: { bonne: 'La force électromotrice E de la pile (en V)', faux: ['La résistance interne r de la pile (en Ω)', 'La tension de la pile pour I = 1 A (en V)', 'La charge stockée dans la pile (en C)'] },
+        manque: null, solution: { txt: 'E = U₁ + r × I₁', val: p.E, u: 'V' } };
+    }),
+  },
 ];
 
 // Mélange reproductible (pour que l’ordre des propositions ne change pas à chaque affichage)
@@ -5199,6 +5285,10 @@ const SYMBOLES = {
   dissol2: { M: 'M', T: '', Ve: 'V_eau', m: 'm', Vf: 'V', c: 'c' },
   ener2: { P: 'P', d: 'Δt', prix: 'prix', R: 'R', I: 'I', L: 'ℓ' },
   meca2: { m: 'm', v: 'v', L: 'ℓ', F: 'F', d: 'd', a: 'α', mt: 'm' },
+  'ene-charge-sapp': { I: 'I', d: 'Δt', U: 'U', L: 'ℓ', e: 'e' },
+  'ene-pile-sapp': { I1: 'I₁', U1: 'U₁', I2: 'I₂', U2: 'U₂', C: 'C' },
+  'mec-deltav-sapp': { m: 'm', v0: 'v₀', F: 'ΣF', dt: 'Δt' },
+  'mec-force-sapp': { m: 'm', v1: 'v₁', v2: 'v₂', dt: 'Δt', L: 'L' },
   distil: { V: 'V', x: 'x', y: 'y', Vd: 'V_distillat', Te: 'θ_éb', P: 'P' },
   cristal: { me: 'm_eau', mb: 'm_bécher', s60: 's₆₀', s20: 's₂₀', dur: 'Δt' },
   'phot1g-sapp-photon': { lam: 'λ', c: 'c', h: 'h', P: 'P', d: 'd', t: 'Δt' },

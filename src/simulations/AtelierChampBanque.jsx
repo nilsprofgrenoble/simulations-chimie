@@ -43,8 +43,8 @@ function Plaques({ titre, charge }) {
 }
 export const CHAMPS = [
   { id: 'lignes-sortantes', domaine: 'Interactions et champs', titre: 'Lignes de champ qui sortent d’un objet',
-    enonce: 'Voici les lignes d’un champ électrostatique autour d’un petit objet chargé. Les flèches indiquent le sens du champ : elles s’éloignent de l’objet.',
-    figure: <Radial sortant signe="" titre="Lignes de champ : les flèches s’éloignent du centre"/>,
+    enonce: 'Voici les lignes du champ électrostatique autour d’un petit objet chargé. Les flèches indiquent le sens du champ.',
+    figure: <Radial sortant signe="" titre="Lignes de champ autour d’un petit objet chargé"/>,
     q: 'Cet objet porte…', options: [
       V('une charge positive', 'Par convention, les lignes de champ électrostatique « partent » des charges positives (elles s’en éloignent) et « arrivent » sur les charges négatives.'),
       F('une charge négative', 'Pour une charge négative, les flèches seraient dirigées VERS l’objet.'),
@@ -52,8 +52,8 @@ export const CHAMPS = [
       F('on ne peut pas le savoir', 'Le sens des flèches suffit : elles s’éloignent, donc la charge est positive.'),
     ] },
   { id: 'lignes-entrantes', domaine: 'Interactions et champs', titre: 'Lignes de champ qui arrivent sur un objet',
-    enonce: 'Voici les lignes d’un champ autour d’un objet sphérique. Les flèches indiquent le sens du champ : elles se dirigent vers le centre de l’objet.',
-    figure: <Radial sortant={false} signe="" titre="Lignes de champ : les flèches convergent vers le centre"/>,
+    enonce: 'Voici les lignes d’un champ autour d’un objet sphérique. Les flèches indiquent le sens du champ.',
+    figure: <Radial sortant={false} signe="" titre="Lignes de champ autour d’un objet sphérique"/>,
     q: 'Ce schéma peut représenter…', options: [
       V('le champ de gravitation d’une planète, ou le champ électrostatique d’une charge négative', 'Dans les deux cas les lignes sont dirigées vers le centre : la gravitation est toujours attractive, et une charge négative « attire » les lignes de champ électrostatique.'),
       F('le champ électrostatique d’une charge positive seulement', 'Pour une charge positive, les flèches s’éloigneraient du centre.'),
@@ -61,7 +61,7 @@ export const CHAMPS = [
       F('un champ nul', 'Un champ nul n’aurait aucune ligne de champ.'),
     ] },
   { id: 'champ-uniforme', domaine: 'Interactions et champs', titre: 'Entre deux plaques',
-    enonce: 'Entre deux plaques parallèles reliées à un générateur, on a dessiné les lignes du champ électrique. Elles sont parallèles, régulièrement espacées, et dirigées de la plaque + vers la plaque −.',
+    enonce: 'Entre deux plaques parallèles reliées à un générateur, on a dessiné les lignes du champ électrique (les flèches indiquent le sens du champ).',
     figure: <Plaques titre="Entre les plaques chargées"/>,
     q: 'Ce champ est…', options: [
       V('uniforme : même direction, même sens et même valeur en tout point entre les plaques', 'Des lignes parallèles et régulièrement espacées traduisent un champ uniforme.'),
