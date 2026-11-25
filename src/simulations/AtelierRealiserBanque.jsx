@@ -2728,6 +2728,49 @@ function genLasEnergie() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['Q = φ × Δt ; Δt = Q ÷ φ (J, W, s).', 'Flux ×k à énergie égale : durée ÷k.'] };
 }
+// ---------- Batterie : énergie disponible et durée de fonctionnement (TSTL, PCM) ----------
+function genBatEnergie() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const U = tire([3.7, 6, 12]), Qs = tire([2.5, 4, 5, 7, 10]), k = tire([2, 3]);
+  const E = U * Qs, EJ = E * 3600, E2 = U * (k * Qs);
+  const intro = `Un accumulateur a une tension à vide U = ${nbF(U, U % 1 ? 1 : 0)}${NB}V et une capacité Qs = ${nbF(Qs, Qs % 1 ? 1 : 0)}${NB}Ah.`;
+  const q1 = { id: 'b0', type: 'num', q: <>Calculez l’<b>énergie disponible</b> E = Qs × U (en Wh, 2 chiffres significatifs).</>, unite: 'Wh', vrai: E, tolRel: 0.05, csMin: 2,
+    aide: 'E = Qs × U : capacité en Ah multipliée par tension en V, le résultat est en Wh.',
+    pieges: [[Qs / U, 'Il faut multiplier la capacité par la tension, pas les diviser.'], [EJ, 'Cette valeur est en joules : le résultat est demandé en Wh.']],
+    expl: <>E = {nbF(Qs, Qs % 1 ? 1 : 0)} × {nbF(U, U % 1 ? 1 : 0)} = <b>{pvFmt(E)}{NB}Wh</b>.</> };
+  const q2 = { id: 'b1', type: 'num', q: <>Avec E = {pvFmt(E)}{NB}Wh, calculez cette <b>énergie en joules</b> (1 Wh = 3 600 J, 2 chiffres significatifs).</>, unite: 'J', vrai: EJ, tolRel: 0.05, csMin: 2,
+    aide: '1 Wh = 3 600 J : multipliez l’énergie en Wh par 3 600.',
+    pieges: [[E * 60, 'Une heure vaut 3 600 s (pas 60 s) : 1 Wh = 3 600 J.'], [E / 3600, 'Il faut multiplier par 3 600 pour passer des Wh aux J, pas diviser.']],
+    expl: <>E = {pvFmt(E)} × 3 600 = <b>{pvFmt(EJ)}{NB}J</b>.</> };
+  const q3 = { id: 'b2', type: 'num', q: <>On remplace l’accumulateur par un autre de même tension mais de capacité {k} fois plus grande. Quelle est sa <b>énergie disponible</b> ? (en Wh, 2 chiffres significatifs)</>, unite: 'Wh', vrai: E2, tolRel: 0.05, csMin: 2,
+    aide: 'À tension égale, l’énergie est proportionnelle à la capacité : E = Qs × U.',
+    pieges: [[E, 'La capacité a été multipliée : l’énergie l’est aussi (E = Qs × U).']],
+    expl: <>E = {pvFmt(k * Qs)} × {nbF(U, U % 1 ? 1 : 0)} = <b>{pvFmt(E2)}{NB}Wh</b> : {k} fois plus grande.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['E = Qs × U (Ah × V = Wh) ; 1 Wh = 3 600 J.', 'À tension égale, énergie proportionnelle à la capacité.'] };
+}
+function genBatDuree() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const U = tire([6, 12]), Qs = tire([2.5, 4, 5, 7, 8]), Pw = tire([5, 10, 15, 20]), k = tire([2, 3]);
+  const I = Pw / U, dt = Qs / I, dt2 = Qs / (k * I);
+  const intro = `Un accumulateur de tension ${U}${NB}V et de capacité ${nbF(Qs, Qs % 1 ? 1 : 0)}${NB}Ah alimente un récepteur de puissance ${Pw}${NB}W.`;
+  const q1 = { id: 'd0', type: 'num', q: <>Calculez l’<b>intensité</b> I = P ÷ U du courant débité (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
+    aide: 'I = P ÷ U : puissance en W divisée par tension en V, le résultat est en A.',
+    pieges: [[U / Pw, 'Le rapport est inversé : I = P ÷ U.'], [Pw * U, 'Il faut diviser la puissance par la tension, pas les multiplier.']],
+    expl: <>I = {Pw} ÷ {U} = <b>{pvFmt(I)}{NB}A</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>Avec I = {pvFmt(I)}{NB}A, calculez la <b>durée de fonctionnement</b> Δt = Qs ÷ I (en h, 2 chiffres significatifs).</>, unite: 'h', vrai: dt, tolRel: 0.05, csMin: 2,
+    aide: 'Δt = Qs ÷ I : capacité en Ah divisée par intensité en A, le résultat est en h.',
+    pieges: [[Qs * I, 'Il faut diviser la capacité par l’intensité, pas les multiplier.'], [I / Qs, 'Le rapport est inversé : Δt = Qs ÷ I.']],
+    expl: <>Δt = {nbF(Qs, Qs % 1 ? 1 : 0)} ÷ {pvFmt(I)} = <b>{pvFmt(dt)}{NB}h</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>On remplace le récepteur par un récepteur {k} fois plus puissant ({k * Pw}{NB}W), sous la même tension. Quelle est la nouvelle <b>durée</b> ? (en h, 2 chiffres significatifs)</>, unite: 'h', vrai: dt2, tolRel: 0.05, csMin: 2,
+    aide: 'Même batterie : Δt = Qs ÷ I, avec une intensité plus grande.',
+    pieges: [[dt * k, `Un récepteur plus puissant demande plus de courant : la durée est divisée par ${k}, pas multipliée.`]],
+    expl: <>Δt = {nbF(Qs, Qs % 1 ? 1 : 0)} ÷ {pvFmt(k * I)} = <b>{pvFmt(dt2)}{NB}h</b> : {k} fois plus courte.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['I = P ÷ U ; Δt = Qs ÷ I = E ÷ P (h, Ah, A, Wh, W).', 'Puissance ×k : intensité ×k et durée ÷k.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -4908,6 +4951,8 @@ export const FAMILLES = [
   { id: 'pve-distance', groupe: 'Formules', titre: 'Panneau photovoltaïque : placer le panneau à la bonne distance (terminale STL)', gen: genPveDistance, domaine: 'Panneau photovoltaïque : éclairement et distance à la source' },
   { id: 'las-eclairement', groupe: 'Formules', titre: 'Faisceau laser : section, éclairement et limite pour l’œil (terminale STL)', gen: genLasEclairement, domaine: 'Laser : éclairement, énergie reçue et sécurité' },
   { id: 'las-energie', groupe: 'Formules', titre: 'Laser de gravure : énergie, flux et durée d’exposition (terminale STL)', gen: genLasEnergie, domaine: 'Laser : éclairement, énergie reçue et sécurité' },
+  { id: 'bat-energie', groupe: 'Formules', titre: 'Accumulateur : énergie disponible en Wh et en J (terminale STL)', gen: genBatEnergie, domaine: 'Batterie : énergie disponible et durée de fonctionnement' },
+  { id: 'bat-duree', groupe: 'Formules', titre: 'Accumulateur : intensité et durée de fonctionnement (terminale STL)', gen: genBatDuree, domaine: 'Batterie : énergie disponible et durée de fonctionnement' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
