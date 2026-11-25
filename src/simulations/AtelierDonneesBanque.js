@@ -54,6 +54,8 @@ const sci3 = x => { const [m, e] = Number(x).toExponential(2).split('e'); return
 export const nb = (x, d = null) => (d == null
   ? (x !== 0 && (Math.abs(x) < 1e-3 || Math.abs(x) >= 1e7) ? sci3(x) : Number(x).toLocaleString('fr-FR', { maximumSignificantDigits: 4 }))
   : Number(x).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d }));
+// Sujet de la phrase d'un énoncé d'extraction (article et nature du composé corrects)
+const SUJET_EXT = { benz: 'L’acide benzoïque', phenol: 'Le phénol (acide faible)', aniline: 'L’aniline (base faible)', tea: 'La triéthylamine (base faible)' };
 const NB = s => s.replace(/ /g, ' ');                       // espace insécable : une donnée ne se coupe pas en fin de ligne
 const sg = x => (x < 0 ? '−' + nb(Math.abs(x)) : nb(x));          // nombre avec « vrai » signe moins
 const T = id => ({ t: id });
@@ -712,7 +714,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'ab-acf-sapp-ph', domaine: 'Acides et bases', titre: 'pH et taux d’avancement d’un acide faible', noms: ['pH de la solution', 'Taux d’avancement de la réaction avec l’eau'],
+    id: 'ab-acf-sapp-ph', domaine: 'Acides et bases', titre: 'pH et coefficient de dissociation d’un acide faible', noms: ['pH de la solution', 'Coefficient de dissociation dans l’eau'],
     gen: () => { for (;;) { const pKa = tire([3.8, 4.2, 4.7, 4.9]), C = tire([0.01, 0.02, 0.05, 0.1]); if (Math.abs(AB.pHAcideFaibleApprox(C, pKa) - AB.pH({ C, pKas: [pKa] })) < 0.02) return { pKa, C, V: tire([50, 100, 250]) }; } },
     build: (p, q) => {
       const pH = AB.pHAcideFaibleApprox(p.C, p.pKa);
@@ -723,13 +725,13 @@ export const ENONCES = [
         T: tok('25 °C', 'Température de la solution', 25, '°C'),
       };
       const debut = ['On prépare ', T('V'), ' de solution d’un acide faible AH de concentration ', T('C'), ' à ', T('T'), '. Le pKa du couple AH / A⁻ vaut ', T('pKa'), '. '];
-      const raisons = { V: 'Le volume ne change ni le pH ni le taux d’avancement : seule la concentration compte.', T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
+      const raisons = { V: 'Le volume ne change ni le pH ni le coefficient de dissociation : seule la concentration compte.', T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le pH de la solution ?'], utiles: ['pKa', 'C'], raisons,
-        cherche: { bonne: 'Le pH de la solution (sans unité)', faux: ['La concentration en ions H₃O⁺ (en mol/L)', 'Le taux d’avancement de la réaction avec l’eau (sans unité)', 'Le pH d’un acide fort de même concentration (sans unité)'] },
+        cherche: { bonne: 'Le pH de la solution (sans unité)', faux: ['La concentration en ions H₃O⁺ (en mol/L)', 'Le coefficient de dissociation α (sans unité)', 'Le pH d’un acide fort de même concentration (sans unité)'] },
         manque: null, solution: { txt: 'pH = ½ × (pKa − log C)', val: pH, u: '' } };
-      return { tokens, derivees: ['pH = ½ × (pKa − log C)', '[H₃O⁺] = 10^(−pH)'], texte: [...debut, 'Quel est le taux d’avancement τ de la réaction de l’acide avec l’eau ?'], utiles: ['pKa', 'C'], raisons,
-        cherche: { bonne: 'Le taux d’avancement τ (sans unité)', faux: ['Le pH de la solution (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)', 'La concentration en ions A⁻ (en mol/L)'] },
-        manque: null, solution: { txt: 'τ = [H₃O⁺] divisé par C', val: 10 ** -pH / p.C, u: '' } };
+      return { tokens, derivees: ['pH = ½ × (pKa − log C)', '[H₃O⁺] = 10^(−pH)'], texte: [...debut, 'Quel est le coefficient de dissociation α de l’acide ?'], utiles: ['pKa', 'C'], raisons,
+        cherche: { bonne: 'Le coefficient de dissociation α (sans unité)', faux: ['Le pH de la solution (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)', 'La concentration en ions A⁻ (en mol/L)'] },
+        manque: null, solution: { txt: 'α = [H₃O⁺] divisé par C', val: 10 ** -pH / p.C, u: '' } };
     },
   },
   {
@@ -906,7 +908,7 @@ export const ENONCES = [
         Ve: tok(`${p.Ve} mL`, 'Volume de phase aqueuse', p.Ve, 'mL'),
         Vo: tok(`${Vo} mL`, 'Volume de solvant organique', Vo, 'mL'),
       };
-      const debut = [acide ? 'L’acide ' : 'La base ', e.nom, ' (', acide ? 'couple HA / A⁻' : 'couple BH⁺ / B', ', pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' d’un solvant organique non miscible. Le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
+      const debut = [SUJET_EXT[e.id], ' (', acide ? 'couple HA / A⁻' : 'couple BH⁺ / B', ', pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' d’un solvant organique non miscible. Le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
       const raisons = { Ve: 'Les volumes ne servent que pour la part extraite : ils n’interviennent pas dans α.', Vo: 'Les volumes ne servent que pour la part extraite : ils n’interviennent pas dans α.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle fraction du composé est sous forme neutre dans la phase aqueuse ?'],
         utiles: ['pKa', 'pH'], raisons: { ...raisons, K: 'Le coefficient de partage K intervient pour D, pas pour la fraction α.' },
@@ -930,7 +932,7 @@ export const ENONCES = [
         Ve: tok(`${p.Ve} mL`, 'Volume de phase aqueuse', p.Ve, 'mL'),
         Vo: tok(`${Vo} mL`, 'Volume de solvant organique à chaque contact', Vo, 'mL'),
       };
-      const debut = [acide ? 'L’acide ' : 'La base ', e.nom, ' (pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' de solvant organique ; le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
+      const debut = [SUJET_EXT[e.id], ' (pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' de solvant organique ; le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
       if (q === 0) return { tokens, derivees: ['D = K × α, avec α la fraction de forme neutre', 'r = Vorg divisé par Veau'], texte: [...debut, 'Quelle part du composé est extraite en un seul contact ?'],
         utiles: ['K', 'pKa', 'pH', 'Ve', 'Vo'], raisons: {},
         cherche: { bonne: 'La part extraite en un contact (en %)', faux: ['Le rapport de distribution D (sans unité)', 'La part restant dans l’eau (en %)', 'La fraction α de forme neutre (sans unité)'] },
@@ -1995,7 +1997,7 @@ export const ENONCES = [
   // ───────────────────────────── 0 quinquies. Chiralité et configuration R/S (TSTL, PCM)
   {
     id: 'chir-halogenes', domaine: 'Configuration absolue R/S', titre: 'Classer les groupes d’un carbone asymétrique (halogènes)', noms: ['Priorité 1', 'Priorité 3'],
-    gen: () => { const at = [['F', 9], ['Cl', 17], ['Br', 35], ['I', 53]]; const L = [...at].sort(() => Math.random() - 0.5).slice(0, 3); return { L, M: tire([120, 165, 200, 255]), Teb: tire([40, 80, 110]) }; },
+    gen: () => { const at = [['F', 9, 19.0], ['Cl', 17, 35.5], ['Br', 35, 79.9], ['I', 53, 126.9]]; const L = [...at].sort(() => Math.random() - 0.5).slice(0, 3); return { L, M: Math.round(13.0 + L.reduce((t, a) => t + a[2], 0)), Teb: tire([2, 5, 10, 20]) }; },
     build: (p, q) => {
       const tri = [...p.L].sort((a, b) => b[1] - a[1]);
       const tokens = {
@@ -2003,36 +2005,36 @@ export const ENONCES = [
         b: tok(`Z = ${p.L[1][1]}`, `Numéro atomique de ${p.L[1][0]}`, p.L[1][1], ''),
         c: tok(`Z = ${p.L[2][1]}`, `Numéro atomique de ${p.L[2][0]}`, p.L[2][1], ''),
         M: tok(`${p.M} g/mol`, 'Masse molaire de la molécule', p.M, 'g/mol'),
-        Teb: tok(`${p.Teb} °C`, 'Température d’ébullition', p.Teb, '°C'),
+        Teb: tok(`${p.Teb} g`, 'Masse de l’échantillon préparé', p.Teb, 'g'),
       };
-      const debut = ['Un carbone asymétrique est lié à un atome d’hydrogène et à trois atomes d’halogène : ', p.L[0][0], ' (', T('a'), '), ', p.L[1][0], ' (', T('b'), ') et ', p.L[2][0], ' (', T('c'), '). La molécule a une masse molaire de ', T('M'), ' et bout à ', T('Teb'), '. On classe les quatre groupes avec les règles de Cahn, Ingold et Prelog. '];
-      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', Teb: 'La température d’ébullition ne sert pas à classer les groupes.' };
+      const debut = ['Un carbone asymétrique est lié à un atome d’hydrogène et à trois atomes d’halogène : ', p.L[0][0], ' (', T('a'), '), ', p.L[1][0], ' (', T('b'), ') et ', p.L[2][0], ' (', T('c'), '). La molécule a une masse molaire de ', T('M'), ' ; on en a préparé ', T('Teb'), '. On classe les quatre groupes avec les règles de Cahn, Ingold et Prelog. '];
+      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', Teb: 'La masse de l’échantillon ne sert pas à classer les groupes.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome de priorité 1 ?'], utiles: ['a', 'b', 'c'], raisons,
         cherche: { bonne: 'Le numéro atomique Z de l’atome de priorité 1 (sans unité)', faux: ['La masse molaire de la molécule (en g/mol)', 'La somme des trois numéros atomiques (sans unité)', 'Le nombre de groupes différents autour du carbone (sans unité)'] },
         manque: null, solution: { txt: 'priorité 1 = plus grand Z', val: tri[0][1], u: '' } };
       return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome de priorité 3 ?'], utiles: ['a', 'b', 'c'], raisons,
-        cherche: { bonne: 'Le numéro atomique Z de l’atome de priorité 3 (sans unité)', faux: ['La température d’ébullition de la molécule (en °C)', 'Le numéro atomique de l’atome de priorité 1 (sans unité)', 'Le numéro atomique de l’hydrogène (sans unité)'] },
+        cherche: { bonne: 'Le numéro atomique Z de l’atome de priorité 3 (sans unité)', faux: ['La masse de l’échantillon préparé (en g)', 'Le numéro atomique de l’atome de priorité 1 (sans unité)', 'Le numéro atomique de l’hydrogène (sans unité)'] },
         manque: null, solution: { txt: 'priorité 3 = plus petit Z des trois (H est le n°4)', val: tri[2][1], u: '' } };
     },
   },
   {
     id: 'chir-heteroatomes', domaine: 'Configuration absolue R/S', titre: 'Classer les groupes d’un carbone asymétrique (O, N, C)', noms: ['Priorité 1', 'Priorité 3'],
-    gen: () => ({ M: tire([75, 89, 105, 119]), F: tire([150, 190, 230, 260]) }),
+    gen: () => ({ M: 75, F: 173 }),   // valeurs réelles du 2-aminopropan-1-ol (M ≈ 75 g/mol ; ébullition vers 173 °C)
     build: (p, q) => {
       const tokens = {
         o: tok('Z = 8', 'Numéro atomique de O', 8, ''),
         n: tok('Z = 7', 'Numéro atomique de N', 7, ''),
         c: tok('Z = 6', 'Numéro atomique de C', 6, ''),
         M: tok(`${p.M} g/mol`, 'Masse molaire', p.M, 'g/mol'),
-        F: tok(`${p.F} °C`, 'Température de fusion', p.F, '°C'),
+        F: tok(`${p.F} °C`, 'Température d’ébullition', p.F, '°C'),
       };
-      const debut = ['Dans une molécule de formule CH₃–CH(NH₂)–CH₂OH, le carbone asymétrique est lié à un groupe NH₂ (atome lié : N, ', T('n'), '), à un groupe CH₂OH (atome lié : C, ', T('c'), '), à un groupe CH₃ (atome lié : C) et à H. L’atome O a pour numéro atomique ', T('o'), '. La molécule a une masse molaire de ', T('M'), ' et fond à ', T('F'), '. '];
-      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', F: 'La température de fusion ne sert pas à classer les groupes.' };
+      const debut = ['Dans une molécule de formule CH₃–CH(NH₂)–CH₂OH, le carbone asymétrique est lié à un groupe NH₂ (atome lié : N, ', T('n'), '), à un groupe CH₂OH (atome lié : C, ', T('c'), '), à un groupe CH₃ (atome lié : C) et à H. L’atome O a pour numéro atomique ', T('o'), '. La molécule a une masse molaire de ', T('M'), ' et bout vers ', T('F'), '. '];
+      const raisons = { M: 'La masse molaire ne sert pas à classer les groupes.', F: 'La température d’ébullition ne sert pas à classer les groupes.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le numéro atomique de l’atome lié au C* du groupe de priorité 1 ?'], utiles: ['n', 'c'], raisons: { ...raisons, o: 'L’atome O n’est pas lié directement au C* : il est dans le groupe CH₂OH, au deuxième rang.' },
         cherche: { bonne: 'Le numéro atomique Z de l’atome lié au C* dans le groupe de priorité 1 (sans unité)', faux: ['Le numéro atomique de l’atome O du groupe CH₂OH (sans unité)', 'La masse molaire de la molécule (en g/mol)', 'Le numéro atomique de H (sans unité)'] },
         manque: null, solution: { txt: 'NH₂ : l’atome lié est N, Z = 7, le plus grand des atomes liés (N, C, C, H)', val: 7, u: '' } };
       return { tokens, derivees: [], texte: [...debut, 'CH₂OH et CH₃ sont tous deux liés par C : quel est le numéro atomique de l’atome commun qui les met à égalité ?'], utiles: ['c'], raisons: { ...raisons, n: 'N est l’atome lié de NH₂, groupe déjà classé 1er.', o: 'O est un voisin du carbone de CH₂OH : il sert au deuxième rang, pas à l’égalité.' },
-        cherche: { bonne: 'Le numéro atomique Z de l’atome lié qui est le même pour CH₂OH et CH₃ (sans unité)', faux: ['Le numéro atomique de l’atome O (sans unité)', 'Le numéro atomique de N (sans unité)', 'La température de fusion de la molécule (en °C)'] },
+        cherche: { bonne: 'Le numéro atomique Z de l’atome lié qui est le même pour CH₂OH et CH₃ (sans unité)', faux: ['Le numéro atomique de l’atome O (sans unité)', 'Le numéro atomique de N (sans unité)', 'La température d’ébullition de la molécule (en °C)'] },
         manque: null, solution: { txt: 'C : Z = 6, pour CH₂OH et CH₃ ; on compare ensuite leurs voisins', val: 6, u: '' } };
     },
   },
@@ -2461,7 +2463,7 @@ export const ENONCES = [
         dur: tok(`${p.dur} min`, 'Durée de la série', p.dur, 'min'),
       };
       const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions.\n\nLe volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
-        '.\n\nLa burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '. On élargit l’incertitude avec ', T('k'), ', valeur prise par convention : elle donne un niveau de confiance proche de 95 % si les mesures sont indépendantes et suivent une loi normale (hypothèses faites ici). Le niveau réel est un peu plus faible pour un petit nombre de mesures (un facteur de Student serait plus rigoureux) ; on garde ici la valeur conventionnelle. '];
+        '.\n\nLa burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '.\n\nOn élargit l’incertitude avec ', T('k'), ' (convention : niveau de confiance voisin de 95 % si les mesures sont indépendantes et suivent une loi normale, hypothèses faites ici ; un peu moins pour un petit nombre de mesures). '];
       const ur = p.res / Math.sqrt(6), pc = (Math.sqrt(1 + (ur / u) ** 2) - 1) * 100;   // deux lectures de burette, loi rectangulaire : u_res = r / (2√3) par lecture
       const rRes0 = `La résolution de la burette est une autre source d’incertitude (type B) : pour deux lectures, u_res = r / √6 ≈ ${nb(ur, 3)} mL. Ajoutée en quadrature à u ≈ ${nb(u, 3)} mL, elle ne la modifierait que d’environ ${nb(pc, 1)} % : négligeable devant la dispersion, donc on se limite ici à l’incertitude de type A, u = s / √n.`;
       const rRes = q === 0 ? rRes0 : q === 1 ? rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'on calcule U = k × u avec l’incertitude de type A seule.') : rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'l’intervalle x̄ ± U se calcule avec l’incertitude de type A seule.');

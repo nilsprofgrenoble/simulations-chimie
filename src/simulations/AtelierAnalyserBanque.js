@@ -1680,7 +1680,7 @@ export const HYPOTHESES = [
   // ── Acides et bases / Synthèse organique ──
   { id: 'ab-hyp-henderson', domaine: 'Acides et bases', titre: 'Solution tampon : relation de Henderson-Hasselbalch',
     ...presenter({ contexte: 'Pour prévoir le pH d’une solution tampon contenant l’acide éthanoïque AH et l’ion éthanoate A⁻, on utilise la relation pH = pKa + log([A⁻] / [AH]) en remplaçant les concentrations à l’équilibre par les concentrations introduites.' }), options: [
-      V('AH est un acide faible : il réagit très peu avec l’eau, donc [AH] reste voisine de la concentration introduite', 'La relation est exacte avec les concentrations à l’équilibre. On peut y mettre les concentrations introduites parce que la réaction de AH avec l’eau est très limitée (dans un tampon, τ est très petit, de l’ordre de 0,1 % ou moins).'),
+      V('AH est un acide faible : il réagit très peu avec l’eau, donc [AH] reste voisine de la concentration introduite', 'La relation est exacte avec les concentrations à l’équilibre. On peut y mettre les concentrations introduites parce que la réaction de AH avec l’eau est très limitée (dans un tampon, α est très petit, de l’ordre de 0,1 % ou moins).'),
       V('A⁻ est une base faible : [A⁻] reste voisine de la concentration introduite', 'Pour la même raison, A⁻ réagit très peu avec l’eau : sa quantité n’est pas modifiée de façon sensible.'),
       V('Les solutions sont assez diluées pour que les activités soient égales aux concentrations', 'La constante Kₐ s’écrit avec des activités ; pour l’écrire avec des concentrations, il faut que la solution soit diluée (de l’ordre de 10⁻¹ mol·L⁻¹ ou moins).'),
       F('Le volume total de la solution doit être connu avec précision', 'Le rapport [A⁻] / [AH] est égal au rapport des quantités de matière n(A⁻) / n(AH) : le volume se simplifie et n’intervient pas dans le calcul.'),
@@ -1689,12 +1689,12 @@ export const HYPOTHESES = [
     ] },
   { id: 'ab-hyp-ph-acide-faible', domaine: 'Acides et bases', titre: 'pH d’un acide faible : la formule pH = ½(pKa − log C)',
     ...presenter({ contexte: 'On calcule le pH d’une solution d’acide faible AH de concentration apportée C = 1,0×10⁻² mol·L⁻¹ (pKa = 4,8) par la relation pH = ½ (pKa − log C).' }), options: [
-      V('L’acide est peu dissocié : [AH] ≈ C', 'La relation vient de Kₐ = [H₃O⁺]² / [AH] avec [AH] ≈ C. C’est valable si τ est petit (ici τ ≈ 4 %).'),
+      V('L’acide est peu dissocié : [AH] ≈ C', 'La relation vient de Kₐ = [H₃O⁺]² / [AH] avec [AH] ≈ C. C’est valable si α est petit (ici α ≈ 4 %).'),
       V('Les ions H₃O⁺ proviennent uniquement de la réaction de l’acide avec l’eau : [H₃O⁺] = [A⁻]', 'La conservation de la charge donne [H₃O⁺] = [A⁻] + [HO⁻] ; on néglige [HO⁻], donc l’autoprotolyse de l’eau. C’est justifié car [H₃O⁺] ≈ 4×10⁻⁴ mol·L⁻¹ ≫ 10⁻⁷ mol·L⁻¹.'),
       V('Les activités sont assimilées aux concentrations (solution diluée)', 'Kₐ est définie avec des activités ; avec des concentrations de l’ordre de 10⁻² mol·L⁻¹, l’approximation est raisonnable.'),
-      F('Le taux d’avancement final est égal à 1', 'Si τ = 1, l’acide serait fort et on aurait pH = − log C. La relation ne s’applique qu’aux acides faibles, de τ petit.'),
+      F('Le coefficient de dissociation α est égal à 1', 'Si α = 1, l’acide serait fort et on aurait pH = − log C. La relation ne s’applique qu’aux acides faibles, de α petit.'),
       F('La solution doit contenir aussi la base conjuguée A⁻ en grande quantité', 'Ce serait une solution tampon, pour laquelle on utiliserait pH = pKa + log([A⁻] / [AH]). Ici, A⁻ n’est formé que par la réaction avec l’eau.'),
-      F('La température doit être de 100 °C', 'Les valeurs de pKa données correspondent à 25 °C : c’est cette température qu’il faut supposer, pas 100 °C.'),
+      F('Le pH de la solution doit être proche de 7', 'C’est le contraire : la relation suppose [H₃O⁺] ≫ 10⁻⁷ mol·L⁻¹, pour que l’autoprotolyse de l’eau soit négligeable. Ici le pH vaut environ 3,4.'),
     ] },
   { id: 'est-hyp-rendement', domaine: 'Synthèse organique', titre: 'Calculer le rendement d’une estérification : hypothèses',
     ...presenter({ contexte: 'À l’issue d’une synthèse d’éthanoate de butyle, on pèse l’ester purifié et on calcule le rendement η = n(ester obtenu) / n(ester attendu), avec n(ester attendu) = n(réactif limitant).' }), options: [
@@ -2055,6 +2055,13 @@ export const PREVOIR = [
       F('u diminue et l’écart à la référence disparaît', 'Les erreurs positives et négatives s’annulent seulement pour les erreurs aléatoires ; le décalage de +0,5 est toujours du même signe.'),
       V('u diminue et l’écart à la référence reste voisin de 0,5', 'u = s/√n diminue avec n, mais le décalage constant reste dans la moyenne : l’écart ne diminue pas, d’où un risque d’incompatibilité avec la référence.'),
       F('u reste identique et l’écart à la référence reste voisin de 0,5', 'u = s/√n diminue quand n augmente ; seul l’écart dû au décalage reste.'),
+    ] },
+  { id: 'mes-prevoir-biais-repetitions', domaine: 'Mesure et incertitudes', titre: 'Répéter une mesure faussée par un biais',
+    enonce: 'Une balance mal réglée affiche toujours 0,20 g de trop. Un technicien pèse 100 fois le même échantillon et calcule la moyenne et l’incertitude-type de type A de cette série.', q: 'Que peut-on prévoir ?', options: [
+      V('l’incertitude de type A diminue, mais l’écart de 0,20 g sur la moyenne reste', 'Répéter les mesures réduit l’effet des erreurs aléatoires, pas celui d’une erreur systématique : le biais de 0,20 g est le même à chaque pesée.'),
+      F('l’incertitude de type A diminue et la moyenne se rapproche de la valeur vraie', 'La moyenne de 100 valeurs faussées de 0,20 g reste faussée de 0,20 g : répéter ne corrige pas le biais.'),
+      F('l’incertitude de type A est nulle, puisque toutes les pesées sont décalées pareillement', 'L’incertitude de type A mesure la dispersion des valeurs, pas leur justesse ; des pesées jamais parfaitement identiques gardent une dispersion.'),
+      F('l’incertitude de type A augmente, car il y a plus de mesures fausses', 'Avec plus de mesures, u = s / √n diminue ; le biais n’entre pas dans la dispersion.'),
     ] },
   { id: 'distance-double', domaine: 'Contrôle des systèmes', titre: 'Boussole deux fois plus loin',
     enonce: 'On éloigne la boussole d’un aimant en doublant la distance (champ de l’aimant en 1/r³).', q: 'Le champ de l’aimant est…', options: [
@@ -2555,8 +2562,22 @@ export const PREVOIR = [
       F('l’image est superposable seulement si on retourne la molécule', 'Retourner la molécule ne change pas la réponse : elle est identique à son image.'),
       F('on ne peut rien prévoir sans calculer la configuration R ou S', 'La symétrie suffit : le carbone central n’étant pas asymétrique, il n’y a pas de configuration R ou S à calculer.'),
     ] },
+  { id: 'chir-ana-cram-lecture', domaine: 'Chiralité et carbone asymétrique', titre: 'Lire une représentation de Cram',
+    enonce: 'Un carbone tétraédrique est dessiné en représentation de Cram : deux liaisons sont tracées en trait plein dans le plan de la feuille, une troisième en coin plein, et la quatrième en pointillés.', q: 'Où se trouvent les groupes liés par le coin plein et par les pointillés ?', options: [
+      V('le coin plein vers l’observateur, les pointillés derrière la feuille', 'Le coin plein s’élargit vers l’observateur : le groupe est en avant du plan. Les pointillés s’éloignent de l’observateur : le groupe est en arrière.'),
+      F('le coin plein derrière la feuille, les pointillés vers l’observateur', 'C’est l’inverse : le coin plein représente une liaison qui sort de la feuille vers l’observateur.'),
+      F('les deux groupes sont devant la feuille, de part et d’autre', 'Un seul groupe est en avant : les pointillés indiquent un groupe qui s’éloigne de l’observateur.'),
+      F('les deux groupes sont dans le plan de la feuille, comme les traits pleins', 'Seuls les traits pleins sont dans le plan : le coin et les pointillés représentent des liaisons hors du plan.'),
+    ] },
+  { id: 'chir-ana-echange-groupes', domaine: 'Configuration absolue R/S', titre: 'Échanger deux groupes sur un carbone asymétrique',
+    enonce: 'Un carbone asymétrique a pour configuration R. On échange, sur ce même carbone, la place de deux de ses quatre groupes, sans rien changer d’autre.', q: 'Que devient la configuration de ce carbone ?', options: [
+      V('elle devient S : on obtient l’énantiomère', 'Échanger deux groupes revient à passer à l’image dans un miroir : le sens de rotation 1 → 2 → 3 s’inverse, R devient S.'),
+      F('elle reste R : seul l’ordre de dessin a changé', 'La place des groupes dans l’espace a changé : la molécule obtenue n’est plus superposable à la première.'),
+      F('elle reste R, car les priorités CIP des groupes sont inchangées', 'Les priorités CIP ne changent pas, mais le sens de lecture 1 → 2 → 3 est inversé : R devient S.'),
+      F('elle devient S seulement si le groupe de plus faible priorité est déplacé', 'Quels que soient les deux groupes échangés, le résultat est le même : R devient S.'),
+    ] },
   { id: 'dissoc-ana-dilution', domaine: 'Acide faible, coefficient de dissociation et Ka', titre: 'Diluer un acide faible',
-    enonce: 'Une solution d’acide faible, de concentration en soluté apporté C₀ = 0,10 mol/L, est diluée 100 fois (C₀ = 1,0×10⁻³ mol/L), à température constante. On s’intéresse au coefficient de dissociation α = [A⁻] divisé par C₀.', q: 'Que devient α quand on dilue ?', options: [
+    enonce: 'Une solution d’acide faible, de concentration en soluté apporté C = 0,10 mol/L, est diluée 100 fois (la concentration devient C′ = 1,0×10⁻³ mol/L), à température constante. On s’intéresse au coefficient de dissociation α = [A⁻] divisé par la concentration en soluté apporté.', q: 'Que devient α quand on dilue ?', options: [
       V('il augmente : une part plus grande de l’acide réagit', 'Plus la solution est diluée, plus l’acide faible réagit en proportion avec l’eau : α augmente, tout en restant inférieur à 1.'),
       F('il diminue : il y a moins de molécules d’acide à transformer', 'Il y a moins de molécules au total, mais la part qui réagit est plus grande : le rapport [A⁻] divisé par C₀ augmente.'),
       F('il ne change pas : α ne dépend que de l’acide choisi', 'Ce qui ne dépend que du couple, c’est Ka. Le coefficient α dépend aussi de la concentration.'),
@@ -2703,11 +2724,11 @@ export const PREVOIR = [
       F('prendre un pH égal au pKa : toute la base est alors sous forme B', 'À pH égal au pKa, la moitié seulement est sous forme B : l’extraction reste incomplète.'),
     ] },
   { id: 'extrac-ana-passes', domaine: 'Extraction acide-base : choix du pH', titre: 'Une grande extraction ou deux petites ?',
-    enonce: 'Pour extraire un composé d’une phase aqueuse de pH fixé, on dispose de 100 mL de solvant organique neuf. Première méthode : un seul contact avec les 100 mL. Seconde méthode : deux contacts successifs avec 50 mL de solvant neuf chacun.', q: 'Quelle méthode laisse le moins de composé dans l’eau ?', options: [
-      V('deux fois 50 mL : le reste est multiplié à chaque contact', 'Avec D le rapport de distribution et r le rapport des volumes, 1 divisé par (1 + D × r) est un facteur de réduction à chaque contact : (1 + D)² dépasse 1 + 2D, donc deux petits contacts valent mieux.'),
+    enonce: 'Pour extraire un composé d’une phase aqueuse de pH fixé, on dispose de 100 mL de solvant organique neuf. Première méthode : un seul contact avec les 100 mL. Seconde méthode : deux contacts successifs avec 50 mL de solvant neuf chacun. On note x = D × V(solvant) / V(eau) la valeur du rapport de distribution pour 50 mL de solvant (D > 0).', q: 'Quelle méthode laisse le moins de composé dans l’eau ?', options: [
+      V('deux fois 50 mL : chaque portion de solvant est neuve', 'Après deux contacts de 50 mL, la part restant dans l’eau est 1 / (1 + x)² ; après un seul contact de 100 mL, elle est 1 / (1 + 2x). Comme (1 + x)² = 1 + 2x + x² est plus grand que 1 + 2x, le reste est plus petit avec deux petits contacts.'),
       F('100 mL en une fois : plus de solvant, donc meilleure extraction', 'À volume total égal, découper le solvant en deux portions donne un meilleur résultat, car chaque portion est neuve.'),
       F('les deux méthodes sont équivalentes : le volume total est le même', 'Le volume total est le même, mais les résultats diffèrent : le reste après deux contacts est plus faible.'),
-      F('aucune des deux : on ne peut jamais extraire plus de la moitié', 'Un seul contact peut extraire plus de la moitié dès que D × r dépasse 1, et plusieurs contacts font tendre le reste vers zéro.'),
+      F('aucune des deux : on ne peut jamais extraire plus de la moitié', 'Un seul contact extrait plus de la moitié dès que x dépasse 1/2, et plusieurs contacts font tendre le reste vers zéro.'),
     ] },
   { id: 'extrac-ana-melange', domaine: 'Extraction acide-base : choix du pH', titre: 'Séparer un acide d’un composé neutre',
     enonce: 'Un solvant organique contient de l’acide benzoïque HA (pKa = 4,2) et un composé neutre N, qui n’est ni acide ni basique. On ajoute de l’eau de pH 12 (hydroxyde de sodium), on agite puis on laisse décanter.', q: 'Où se trouvent les deux composés après la décantation ?', options: [
@@ -2719,8 +2740,8 @@ export const PREVOIR = [
   { id: 'stereo-ana-enantiomere', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'L’énantiomère d’un stéréoisomère',
     enonce: 'Une molécule possède deux carbones asymétriques C2 et C3. Un de ses stéréoisomères a pour configuration (2R,3S).', q: 'Quelle est la configuration de son énantiomère ?', options: [
       V('(2S,3R) : les deux carbones sont inversés', 'L’énantiomère est l’image dans un miroir : la configuration de chaque carbone asymétrique est inversée.'),
-      F('(2R,3R) : seul le carbone C3 est inversé, il est inversé et C2 garde sa lettre', 'Inverser un seul carbone donne un diastéréoisomère, pas un énantiomère.'),
-      F('(2S,3S) : seul le carbone C2 est inversé, et C3 garde sa lettre', 'Inverser un seul carbone donne un diastéréoisomère, pas un énantiomère.'),
+      F('(2R,3R) : seul le carbone C3 est inversé, C2 garde sa lettre', 'Inverser un seul carbone donne un diastéréoisomère, pas un énantiomère.'),
+      F('(2S,3S) : seul le carbone C2 est inversé, C3 garde sa lettre', 'Inverser un seul carbone donne un diastéréoisomère, pas un énantiomère.'),
       F('(2R,3S) : une image dans un miroir garde les mêmes lettres', 'C’est la même molécule : le miroir inverse R et S sur chaque carbone asymétrique.'),
     ] },
   { id: 'stereo-ana-trois-centres', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'Inverser un seul carbone sur trois',
@@ -2744,6 +2765,13 @@ export const PREVOIR = [
       F('E : le brome est plus gros que le méthyle, donc E quel que soit le dessin', 'La taille n’intervient pas : seule compte la position relative des groupes prioritaires.'),
       F('on ne peut pas conclure : il manque la température d’ébullition de la molécule', 'La configuration se lit sur le dessin avec les priorités, sans aucune donnée thermique.'),
     ] },
+  { id: 'stereo-ana-ze-oppose', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'Groupes prioritaires de part et d’autre',
+    enonce: 'Sur une double liaison C=C, chaque carbone porte un groupe prioritaire et un groupe moins prioritaire (règles CIP). Les deux groupes prioritaires sont situés de part et d’autre de la double liaison.', q: 'Quelle est la configuration de l’alcène ?', options: [
+      V('E : les deux groupes prioritaires sont de côtés opposés', 'La configuration E (entgegen, « opposé ») correspond à deux groupes prioritaires de part et d’autre de la double liaison.'),
+      F('Z : les deux groupes prioritaires sont de côtés opposés', 'Z (zusammen, « ensemble ») correspond à deux groupes prioritaires du même côté de la double liaison.'),
+      F('on ne peut pas savoir sans connaître les masses molaires des groupes', 'Les priorités CIP sont déjà données : la position relative des deux groupes prioritaires suffit à conclure.'),
+      F('cela dépend de la rotation autour de la double liaison', 'La double liaison ne permet pas la rotation à température ambiante : la configuration E ou Z est fixée.'),
+    ] },
   { id: 'stereo-ana-proprietes', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'Énantiomères ou diastéréoisomères : mêmes propriétés ?',
     enonce: 'On dispose de trois stéréoisomères d’une même molécule : A et B sont énantiomères, A et C sont diastéréoisomères. On mesure leur température de fusion et leur pouvoir rotatoire.', q: 'Que peut-on prévoir sans faire de mesure ?', options: [
       V('A et B ont la même température de fusion ; A et C en ont deux différentes', 'Deux énantiomères ont les mêmes propriétés physiques ; deux diastéréoisomères ont des propriétés physiques différentes.'),
@@ -2757,6 +2785,13 @@ export const PREVOIR = [
       F('4 : chacun des deux carbones asymétriques peut être R ou S, soit 2 × 2', 'Avec deux carbones identiquement substitués, (R,S) et (S,R) sont superposables : on ne compte que 3 formes distinctes.'),
       F('2 : une forme et son énantiomère, comme pour une molécule à un seul C*', 'Il y a (R,R), (S,S) et la forme méso : 3 stéréoisomères au total.'),
       F('1 : la molécule a un plan de symétrie, donc une seule forme existe', 'Seule la forme (R,S) est achirale ; (R,R) et (S,S) sont chirales, ce qui fait 3 formes au total.'),
+    ] },
+  { id: 'stereo-ana-recepteur', domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E', titre: 'Deux énantiomères, deux effets',
+    enonce: 'Un énantiomère d’un principe actif soulage un patient, alors que son énantiomère n’a aucun effet thérapeutique. Les récepteurs biologiques sont eux-mêmes des molécules chirales.', q: 'Pourquoi les deux énantiomères n’ont-ils pas le même effet ?', options: [
+      V('un récepteur chiral reconnaît différemment deux énantiomères', 'Un récepteur chiral interagit avec chaque énantiomère de façon différente, comme une main droite avec un gant droit ou gauche.'),
+      F('les deux énantiomères n’ont pas la même formule brute', 'Deux énantiomères ont la même formule brute et le même enchaînement d’atomes : seule la disposition dans l’espace diffère.'),
+      F('les deux énantiomères n’ont pas la même température de fusion', 'Dans un milieu non chiral, deux énantiomères ont les mêmes propriétés physiques, dont la température de fusion.'),
+      F('un seul des deux énantiomères peut se dissoudre dans l’eau', 'Dans l’eau, deux énantiomères ont la même solubilité : l’écart d’effet vient de la reconnaissance par le récepteur.'),
     ] },
   { id: 'tens-ana-famille', domaine: 'Tensioactifs : de la structure à la CMC', titre: 'Famille d’un tensioactif selon sa tête',
     enonce: 'La tête hydrophile d’un tensioactif porte une charge positive sur l’atome d’azote et une charge négative sur un groupe sulfonate ; la charge totale de la molécule est nulle.', q: 'À quelle famille appartient ce tensioactif ?', options: [
@@ -4774,6 +4809,13 @@ export const PREVOIR = [
       F('0,25 %', 'On a oublié la racine : 0,16 + 0,09 = 0,25 est un carré (en %²), pas une incertitude. Il faut en prendre la racine carrée, soit 0,5 %.'),
       F('0,1 %', 'Elle correspond à la différence 0,4 − 0,3. Diviser par V ne soustrait pas les incertitudes relatives : pour des erreurs indépendantes, elles se composent comme pour un produit, jamais en se retranchant.'),
     ] },
+  { id: 'mes-prevoir-resolution', domaine: 'Mesure et incertitudes', titre: 'Incertitude de type B due à la résolution',
+    ...presenter({ contexte: 'On lit une masse sur une balance à affichage numérique, qui indique 12,34 g. La résolution (dernier chiffre affiché) est de 0,01 g.', liste: [['Demi-largeur de l’intervalle de lecture', 'a = 0,005 g'], ['Relation fournie', 'u = a / √3 (loi uniforme)']] }), q: 'Quelle incertitude-type de type B due à la lecture retient-on ?', options: [
+      V('u = 0,003 g, soit 0,005 / √3 arrondi', 'On applique la relation fournie : u = 0,005 / 1,73 ≈ 0,0029 g, soit 0,003 g avec un chiffre significatif.'),
+      F('u = 0,005 g, la demi-largeur elle-même', 'La demi-largeur est a : l’incertitude-type s’obtient en divisant a par √3, soit une valeur plus petite.'),
+      F('u = 0,01 g, la résolution de la balance', 'La résolution est la largeur de l’intervalle : il faut prendre sa moitié a puis diviser par √3.'),
+      F('u = 0,009 g, soit 0,005 × √3', 'On a multiplié par √3 au lieu de diviser : l’incertitude-type est plus petite que la demi-largeur.'),
+    ] },
   { id: 'ctl-prev-pwm-puissance', domaine: 'Contrôle des systèmes', titre: 'Chauffer par PWM',
     ...presenter({ contexte: 'Une résistance chauffante est alimentée par l’intermédiaire d’un transistor utilisé comme interrupteur (passant ou bloqué, sans chute de tension), que commande un signal PWM de la carte.', liste: [['Résistance chauffante', '25 Ω (constante)'], ['Tension d’alimentation', '5,0 V'], ['Rapport cyclique', 'passe de 20 % à 40 %'], ['Fréquence du PWM', 'très grande devant la vitesse d’évolution de la température']] }), q: 'La puissance électrique moyenne dissipée dans la résistance est…', options: [
       F('multipliée par 4', 'Ce résultat vient d’un calcul faux : P = U_moy² / R avec U_moy = 0,2 × 5 = 1 V puis 2 V donne 0,04 W puis 0,16 W. Mais la tension aux bornes de la résistance n’est jamais égale à sa moyenne : elle vaut 5,0 V ou 0 V, et la puissance moyenne est la moyenne de u² / R, pas U_moy² / R.'),
@@ -4931,15 +4973,15 @@ export const PREVOIR = [
     ] },
   // ── Acides et bases ──
   { id: 'ab-dilution-acide-faible', domaine: 'Acides et bases', titre: 'Diluer un acide faible 10 fois',
-    ...presenter({ contexte: 'On dispose d’une solution d’acide éthanoïque (pKa = 4,8) de concentration apportée C = 1,0×10⁻² mol·L⁻¹, dont le pH est 3,4 et le taux d’avancement final τ = 3,9 %. On la dilue 10 fois avec de l’eau distillée.', liste: [['Avant dilution', 'C = 1,0×10⁻² mol·L⁻¹'], ['Après dilution', 'C = 1,0×10⁻³ mol·L⁻¹']] }), q: 'Après la dilution, le pH et le taux d’avancement τ de l’acide…', options: [
-      V('le pH augmente de moins d’une unité (3,4 → 3,9) et τ augmente (3,9 % → 11,8 %)', 'Un acide faible réagit davantage avec l’eau quand il est dilué : τ passe de 3,9 % à 11,8 %. [H₃O⁺] ne diminue donc que d’un facteur voisin de √10, et non de 10 : le pH n’augmente que d’environ 0,5 unité (3,41 → 3,93).'),
-      F('le pH augmente d’une unité (3,4 → 4,4) et τ ne change pas', 'Ce comportement est celui d’un acide fort, totalement dissocié (τ = 100 % avant et après), pour lequel [H₃O⁺] = C est divisée par 10. L’acide éthanoïque est faible : sa dissociation dépend de la concentration.'),
-      F('le pH augmente de moins d’une unité et τ diminue', 'Le pH augmente bien d’environ 0,5 unité, mais τ augmente : en diluant, le quotient de réaction diminue (Qr < K) et le système évolue dans le sens de la dissociation de l’acide.'),
+    ...presenter({ contexte: 'On dispose d’une solution d’acide éthanoïque (pKa = 4,8) de concentration apportée C = 1,0×10⁻² mol·L⁻¹, dont le pH est 3,4 et le coefficient de dissociation α = 3,9 %. On la dilue 10 fois avec de l’eau distillée.', liste: [['Avant dilution', 'C = 1,0×10⁻² mol·L⁻¹'], ['Après dilution', 'C = 1,0×10⁻³ mol·L⁻¹']] }), q: 'Après la dilution, le pH et le taux d’avancement α de l’acide…', options: [
+      V('le pH augmente de moins d’une unité (3,4 → 3,9) et α augmente (3,9 % → 11,8 %)', 'Un acide faible réagit davantage avec l’eau quand il est dilué : α passe de 3,9 % à 11,8 %. [H₃O⁺] ne diminue donc que d’un facteur voisin de √10, et non de 10 : le pH n’augmente que d’environ 0,5 unité (3,41 → 3,93).'),
+      F('le pH augmente d’une unité (3,4 → 4,4) et α ne change pas', 'Ce comportement est celui d’un acide fort, totalement dissocié (α = 100 % avant et après), pour lequel [H₃O⁺] = C est divisée par 10. L’acide éthanoïque est faible : sa dissociation dépend de la concentration.'),
+      F('le pH augmente de moins d’une unité et α diminue', 'Le pH augmente bien d’environ 0,5 unité, mais α augmente : en diluant, le quotient de réaction diminue (Qr < K) et le système évolue dans le sens de la dissociation de l’acide.'),
       F('le pH ne change pas car le rapport [A⁻]/[AH] est fixé par le pKa', 'Le rapport [A⁻]/[AH] = Kₐ / [H₃O⁺] est fixé par le pKa pour un pH donné, mais le pH lui-même change quand la solution est diluée : [H₃O⁺] diminue.'),
     ] },
   { id: 'ab-acide-fort-faible-meme-c', domaine: 'Acides et bases', titre: 'Acide fort et acide faible à la même concentration',
     ...presenter({ contexte: 'On prépare deux solutions de même concentration apportée C = 1,0×10⁻² mol·L⁻¹ : l’une d’acide chlorhydrique (acide fort), l’autre d’acide éthanoïque (acide faible, pKa = 4,8). On mesure leur pH.', liste: [['Solution 1', 'acide chlorhydrique'], ['Solution 2', 'acide éthanoïque']] }), q: 'Quelle prévision est correcte ?', options: [
-      V('pH₂ > pH₁ : l’acide éthanoïque ne réagit que partiellement avec l’eau, donc [H₃O⁺] est inférieure à C', 'Acide chlorhydrique : [H₃O⁺] = C, pH = 2,0. Acide éthanoïque : seule une petite fraction (τ ≈ 4 %) réagit, [H₃O⁺] ≈ 4×10⁻⁴ mol·L⁻¹, pH ≈ 3,4.'),
+      V('pH₂ > pH₁ : l’acide éthanoïque ne réagit que partiellement avec l’eau, donc [H₃O⁺] est inférieure à C', 'Acide chlorhydrique : [H₃O⁺] = C, pH = 2,0. Acide éthanoïque : seule une petite fraction (α ≈ 4 %) réagit, [H₃O⁺] ≈ 4×10⁻⁴ mol·L⁻¹, pH ≈ 3,4.'),
       F('pH₁ = pH₂ : à concentration égale, les deux acides apportent autant d’ions H₃O⁺', 'La concentration apportée n’est pas la concentration en ions H₃O⁺ obtenue : un acide faible ne se dissocie que partiellement.'),
       F('pH₂ < pH₁ : la molécule d’acide éthanoïque contient plus d’atomes d’hydrogène', 'Le nombre d’atomes d’hydrogène ne décide pas de l’acidité : c’est la facilité avec laquelle l’acide cède un proton à l’eau (pKa) qui compte.'),
       F('on ne peut rien prévoir sans connaître le volume de chaque solution', 'Le pH ne dépend pas du volume prélevé, mais de la concentration et de la force de l’acide.'),
@@ -4979,6 +5021,20 @@ export const PREVOIR = [
       F('HA²⁻, car pH est supérieur à pKa₁', 'Pour que HA²⁻ prédomine, il faut pH > pKa₂ = 4,8.'),
       F('A³⁻, car la solution contient trois protons à céder', 'A³⁻ ne prédomine que pour pH > pKa₃ = 6,4. Ici le pH est inférieur à pKa₂ : le deuxième proton n’est pas majoritairement cédé.'),
     ] },
+  { id: 'ab-ana-polyacide-pka', domaine: 'Acides et bases', titre: 'Un triacide : l’acide phosphorique',
+    enonce: 'L’acide phosphorique H₃PO₄ est un triacide, dont les trois couples ont pour pKa 2,1 (H₃PO₄ / H₂PO₄⁻), 7,2 (H₂PO₄⁻ / HPO₄²⁻) et 12,3 (HPO₄²⁻ / PO₄³⁻). On prépare une solution de pH = 7,2.', q: 'Que peut-on prévoir sur la composition de cette solution ?', options: [
+      V('H₂PO₄⁻ et HPO₄²⁻ sont en concentrations égales', 'Le pH est égal au pKa du couple H₂PO₄⁻ / HPO₄²⁻ : les deux formes sont à égalité, et elles dominent devant H₃PO₄ et PO₄³⁻.'),
+      F('H₃PO₄ prédomine, car c’est l’acide de départ', 'H₃PO₄ prédomine seulement pour un pH inférieur à 2,1 : à pH = 7,2 il est très minoritaire.'),
+      F('les trois acides sont en concentrations égales', 'Les concentrations de deux formes ne sont égales que si le pH est égal au pKa de leur couple, ici seulement pour H₂PO₄⁻ et HPO₄²⁻.'),
+      F('PO₄³⁻ prédomine, car c’est la base la plus forte', 'PO₄³⁻ prédomine seulement pour un pH supérieur à 12,3 : à pH = 7,2 il est très minoritaire.'),
+    ] },
+  { id: 'ab-ana-soude-dilution', domaine: 'Acides et bases', titre: 'Diluer une solution de base forte',
+    enonce: 'Une solution de soude (hydroxyde de sodium, base forte) de concentration 1,0×10⁻² mol/L a un pH de 12,0 à 25 °C. On la dilue 10 fois avec de l’eau distillée.', q: 'Que devient son pH ?', options: [
+      V('il diminue d’une unité : il passe à 11,0', 'La concentration en HO⁻ est divisée par 10, donc [H₃O⁺] = Ke / [HO⁻] est multipliée par 10 : le pH diminue d’une unité.'),
+      F('il augmente d’une unité : il passe à 13,0', 'Diluer une base la rend moins basique : le pH se rapproche de 7, il ne s’en éloigne pas.'),
+      F('il est divisé par 10 : il passe à 1,2', 'Le pH est un logarithme : diviser la concentration par 10 change le pH d’une unité, pas d’un facteur 10.'),
+      F('il ne change pas, car la soude est une base forte', 'Une base forte est totalement dissociée, mais sa concentration en HO⁻ diminue avec la dilution, donc le pH aussi.'),
+    ] },
   // ── Synthèse organique ──
   { id: 'est-exces-alcool-rendement', domaine: 'Synthèse organique', titre: 'Excès d’alcool dans une estérification',
     ...presenter({ contexte: 'On réalise l’estérification de l’acide éthanoïque par le butan-1-ol, avec catalyseur, à l’équilibre. Avec des quantités de matière égales (0,26 mol de chaque), le rendement par rapport au réactif limitant est de 67 %. On recommence avec la même quantité d’acide mais 3 fois plus de moles d’alcool.', liste: [['Expérience 1', 'n(acide) = n(alcool) = 0,26 mol'], ['Expérience 2', 'n(acide) = 0,26 mol ; n(alcool) = 0,78 mol'], ['Constante d’équilibre', 'K = 4,0']] }), q: 'Dans l’expérience 2, à l’équilibre, le rendement par rapport à l’acide est…', options: [
@@ -5001,6 +5057,13 @@ export const PREVOIR = [
       F('le cyclohexane réagit avec l’acide, ce qui consomme l’eau', 'Le cyclohexane est un solvant inerte : il sert uniquement à entraîner l’eau sous forme d’hétéroazéotrope.'),
       F('l’eau se sépare quand même dans le tube gradué, car elle est plus dense que le cyclohexane', 'La séparation des deux liquides dans le tube gradué n’a lieu que si l’eau y arrive, donc après vaporisation et condensation.'),
     ] },
+  { id: 'syn-ana-chimie-verte', domaine: 'Synthèse organique', titre: 'Choisir entre deux protocoles de synthèse',
+    enonce: 'Deux protocoles donnent le même ester. Le protocole A donne un rendement de 85 % dans un solvant chloré toxique, à 80 °C. Le protocole B donne un rendement de 82 % sans solvant, à 25 °C, avec un catalyseur récupérable.', q: 'Quel protocole le chimiste industriel privilégie-t-il, et pourquoi ?', options: [
+      V('B : rendement proche, moins d’énergie et de déchets', 'Les 3 points d’écart de rendement sont faibles devant les gains : pas de solvant toxique, pas de chauffage, catalyseur réutilisable (principes de la chimie verte).'),
+      F('A : seul le rendement compte pour comparer deux protocoles', 'Le rendement n’est pas le seul critère : le coût, l’énergie et l’impact sur l’environnement comptent aussi.'),
+      F('A : un solvant chloré améliore toujours la sécurité du procédé', 'Un solvant chloré toxique augmente les risques et les déchets : il va à l’encontre de la chimie verte.'),
+      F('B : un catalyseur récupérable fait passer le rendement à 100 %', 'Un catalyseur accélère la réaction, il ne déplace pas l’équilibre : le rendement reste à 82 %.'),
+    ] },
   { id: 'est-eau-initiale', domaine: 'Synthèse organique', titre: 'De l’eau dans le mélange de départ',
     ...presenter({ contexte: 'Un mélange équimolaire d’acide éthanoïque et de butan-1-ol (0,26 mol de chaque) donne, avec catalyseur et à l’équilibre, un rendement de 67 %. On refait l’expérience avec les mêmes quantités, mais en utilisant une solution d’acide contenant déjà 0,10 mol d’eau.', liste: [['Quantités d’acide et d’alcool', '0,26 mol chacun'], ['Eau ajoutée au départ', '0,10 mol']] }), q: 'Le rendement à l’équilibre sera…', options: [
       V('plus faible : l’eau initiale augmente le quotient de réaction et le système évolue moins loin dans le sens direct', 'Qr initial n’est plus nul. L’équilibre est atteint pour un avancement plus petit : x(x + 0,10) = 4(0,26 − x)², soit x ≈ 0,159 mol et un rendement d’environ 61 %.'),
@@ -5014,6 +5077,13 @@ export const PREVOIR = [
       F('tous les rapports frontaux augmentent', 'C’est le contraire : on rend l’éluant moins capable de déplacer les espèces polaires adsorbées sur la silice.'),
       F('l’ordre des taches s’inverse', 'L’ordre de polarité des espèces est une propriété des molécules (liaisons hydrogène avec la silice), pas de l’éluant.'),
       F('rien ne change, car le Rf est une propriété caractéristique de l’espèce', 'Le Rf caractérise une espèce pour un éluant et une plaque donnés : en changeant l’éluant, on change les Rf.'),
+    ] },
+  { id: 'est-ccm-polarite', domaine: 'Synthèse organique', titre: 'Où migre l’ester sur la plaque de CCM ?',
+    enonce: 'On suit une estérification par chromatographie sur couche mince (plaque de silice, phase stationnaire polaire ; éluant peu polaire). On dépose le mélange réactionnel à côté de l’acide carboxylique de départ. L’ester formé est moins polaire que l’acide.', q: 'Que peut-on prévoir sur la plaque révélée ?', options: [
+      V('la tache de l’ester est plus haute que celle de l’acide', 'L’ester, moins polaire, est moins retenu par la silice polaire : il est entraîné plus loin par l’éluant, son rapport frontal est plus grand.'),
+      F('la tache de l’ester est plus basse que celle de l’acide', 'Ce serait le cas d’une espèce plus polaire : l’ester, moins polaire, est moins retenu sur la silice.'),
+      F('les deux taches sont à la même hauteur, car elles viennent du même mélange', 'Deux espèces de polarités différentes migrent à des vitesses différentes : leurs taches sont à des hauteurs différentes.'),
+      F('l’ester ne migre pas, car il n’est pas soluble dans l’éluant', 'Un composé peu polaire est très soluble dans un éluant peu polaire : l’ester migre facilement.'),
     ] },
   // ── Chimie organique (1re spé) : nomenclature et groupes caractéristiques ──
   { id: 'org-isomeres', domaine: 'Chimie organique', titre: 'Déplacer le groupe –OH sur la chaîne',
