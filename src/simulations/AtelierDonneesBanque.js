@@ -3364,6 +3364,32 @@ export const ENONCES = [
     },
   },
   {
+    id: 'ondEcho', domaine: 'Ondes', titre: 'Une sonde échographique', noms: ['Profondeur d’une interface', 'Retard d’un écho'],
+    gen: () => ({ f: tire([3, 5, 7.5]), v: tire([1480, 1540, 1570]), d: tire([4, 6, 8, 10, 12]), P: tire([50, 100, 150]) }),
+    build: (p, q) => {
+      const dt = Math.round(2 * p.d * 1e-2 / p.v * 1e6);                 // retard de l’écho en µs, arrondi à la microseconde
+      const tokens = {
+        f: tok(`${nb(p.f, 1)} MHz`, 'Fréquence des ultrasons émis', p.f, 'MHz'),
+        v: tok(`${nb(p.v, 0)} m/s`, 'Célérité des ultrasons dans les tissus mous', p.v, 'm·s⁻¹'),
+        P: tok(`${p.P} W`, 'Puissance électrique de l’appareil', p.P, 'W'),
+      };
+      const raisons = { f: 'La fréquence fixe la finesse des détails visibles (la résolution), pas la durée du trajet de l’impulsion.', P: 'La puissance de l’appareil n’intervient pas dans le calcul d’une profondeur ou d’un retard.' };
+      const debut = ['Une sonde échographique, utilisée à la fréquence ', T('f'), ', envoie une impulsion ultrasonore dans les tissus mous (appareil de puissance ', T('P'), '). La célérité des ultrasons y est ', T('v'), '. '];
+      if (q === 0) {
+        tokens.dt = tok(`${dt} µs`, 'Durée entre l’émission de l’impulsion et la réception de l’écho', dt, 'µs');
+        return { tokens, derivees: [], texte: [...debut, 'Un écho est reçu ', T('dt'), ' après l’émission : il provient d’une interface entre deux organes. À quelle profondeur se trouve cette interface ?'],
+          utiles: ['v', 'dt'], raisons,
+          cherche: { bonne: 'La profondeur d de l’interface (en cm)', faux: ['Le trajet total aller-retour de l’impulsion (en cm)', 'La longueur d’onde des ultrasons (en mm)', 'La fréquence de l’écho reçu (en MHz)'] },
+          manque: null, solution: { txt: 'd = v × Δt / 2 : l’impulsion fait un aller-retour', val: p.v * dt * 1e-6 / 2 * 100, u: 'cm' } };
+      }
+      tokens.d = tok(`${p.d} cm`, 'Profondeur de l’interface entre deux organes', p.d, 'cm');
+      return { tokens, derivees: [], texte: [...debut, 'Une interface entre deux organes se trouve à ', T('d'), ' de la sonde. Quel retard présente l’écho de cette interface par rapport à l’émission ?'],
+        utiles: ['v', 'd'], raisons,
+        cherche: { bonne: 'Le retard Δt de l’écho (en µs)', faux: ['La profondeur de l’interface (en cm)', 'La période des ultrasons émis (en µs)', 'La vitesse de l’écho au retour (en m/s)'] },
+        manque: null, solution: { txt: 'Δt = 2d / v : l’impulsion fait un aller-retour', val: 2 * p.d * 1e-2 / p.v * 1e6, u: 'µs' } };
+    },
+  },
+  {
     id: 'abTampon', domaine: 'Acides et bases', titre: 'Solution tampon : pH et concentration', noms: ['pH du tampon', 'Concentration en ion éthanoate'],
     gen: () => ({ m1: tire([1.50, 3.00, 6.00]), m2: tire([2.05, 4.10, 8.20, 12.30]), V: tire([100, 200, 250, 500]), pKa: 4.8, Mh: 60.05, Mn: 82.03, prix: tire([4, 6, 9]) }),
     build: (p, q) => {
