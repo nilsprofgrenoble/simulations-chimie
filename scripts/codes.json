@@ -2582,5 +2582,14 @@
  "37:prevoir:mdisp-ana-solide-stable": "ANA1184",
  "77:plausible:mdisp-val-brouillard": "VAL696",
  "77:plausible:mdisp-val-colloide": "VAL697",
- "77:plausible:mdisp-val-floc-coal": "VAL698"
+ "77:plausible:mdisp-val-floc-coal": "VAL698",
+ "34:cel-sapp-seuil.0": "SAPP550",
+ "34:cel-sapp-seuil.1": "SAPP551",
+ "37:prevoir:cel-ana-seuil": "ANA1185",
+ "37:prevoir:cel-ana-exces": "ANA1186",
+ "37:prevoir:cel-ana-chaleur": "ANA1187",
+ "77:plausible:cel-val-longueur": "VAL699",
+ "77:plausible:cel-val-rendement": "VAL700",
+ "77:plausible:cel-val-puissance": "VAL701",
+ "36:cel-calcul": "REA154"
 }

@@ -1,0 +1,6 @@
+// QCM du parcours « Cellule photovoltaïque » (sim 242). La bonne réponse est l'option 0 (mélangée à l'affichage) ; jamais la plus longue (contrôle : pvcTirages.test.mjs).
+export const QCM_PARCOURS = {
+  photon: { options: ['il libère un électron, qui peut circuler dans le circuit', 'il se transforme en un autre photon, d’énergie plus faible, qui est réfléchi', 'il chauffe la cellule, et c’est la chaleur seule qui crée le courant', 'il est absorbé sans aucun effet : seuls les photons réfléchis comptent'], bonne: 0 },
+  limites: { options: ['des photons ne sont pas absorbés et l’énergie en excès des autres est perdue en chaleur', 'la lumière du Soleil contient trop de photons, que la cellule ne peut pas tous absorber à la fois', 'le silicium absorbe les photons mais ne libère jamais d’électron, sauf avec une lumière laser', 'toute l’énergie lumineuse est convertie ; les pertes viennent uniquement des fils du circuit'], bonne: 0 },
+  comparer: { options: ['elle est doublée : P_reçue double et le rendement est inchangé', 'elle reste la même : le rendement ne dépend pas de la lumière reçue', 'elle est multipliée par quatre : l’éclairement intervient au carré', 'elle est divisée par deux : la cellule sature quand la lumière est forte'], bonne: 0 },
+};

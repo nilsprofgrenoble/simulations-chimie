@@ -102,7 +102,7 @@ export const COUVERTURE = [
     { th: OND, t: 'Interférences de deux ondes', e: 'ok', chap: 'tg-ondes' },
     { th: OND, t: 'Effet Doppler', e: 'ok', chap: 'tg-ondes' },
     { th: OND, t: 'Lunette astronomique afocale', e: 'ok', chap: 'tg-images-photons' },
-    { th: OND, t: 'Photons : effet photoélectrique, cellule photovoltaïque', e: 'avenir' },
+    { th: OND, t: 'Photons : effet photoélectrique, cellule photovoltaïque', e: 'partiel', chap: 'tg-images-photons', reste: 'effet photoélectrique (bilan d’énergie, énergie cinétique des électrons)' },
     { th: OND, t: 'Dynamique d’un circuit RC', e: 'ok', chap: 'tg-circuit-rc' },
   ] },
 

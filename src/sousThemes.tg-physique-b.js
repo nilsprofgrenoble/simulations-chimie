@@ -14,7 +14,9 @@ export default {
     { id: 'photoelectrique', nom: 'L’effet photoélectrique', capacite: 'Interpréter l’effet photoélectrique avec le modèle particulaire de la lumière ; établir par un bilan d’énergie la relation entre l’énergie cinétique des électrons éjectés et la fréquence.',
       refs: ['37:prevoir:pho-ana-seuil', '37:prevoir:pho-ana-intensite', '37:prevoir:pho-ana-frequence', '77:plausible:pho-val-energie-photon', '77:plausible:pho-val-ec-ok'] },
     { id: 'photovoltaique', nom: 'Photons et cellule photovoltaïque', capacite: 'Citer des applications de l’interaction photon-matière (capteurs, cellules photovoltaïques, DEL…) ; déterminer le rendement d’une cellule photovoltaïque.',
-      refs: ['37:prevoir:pho-ana-applications', '34:pho-sapp-panneau', '77:plausible:pho-val-rendement', '77:plausible:pho-val-rendement-ok'] },
+      refs: ['37:prevoir:pho-ana-applications', '34:pho-sapp-panneau', '77:plausible:pho-val-rendement', '77:plausible:pho-val-rendement-ok', '37:prevoir:cel-ana-chaleur', '77:plausible:cel-val-rendement', '77:plausible:cel-val-puissance', '36:cel-calcul'] },
+    { id: 'cellule-photon', nom: 'Absorption d’un photon : énergie et seuil', capacite: 'Expliquer qualitativement le fonctionnement d’une cellule photoélectrique ; exploiter l’énergie d’un photon (E = h c / λ) et l’énergie seuil du matériau pour savoir si un photon est absorbé.',
+      refs: ['37:prevoir:cel-ana-seuil', '37:prevoir:cel-ana-exces', '77:plausible:cel-val-longueur', '34:cel-sapp-seuil.0', '34:cel-sapp-seuil.1'] },
   ],
   'tg-circuit-rc': [
     { id: 'courant', nom: 'Intensité du courant et charge', capacite: 'Relier l’intensité d’un courant électrique au débit de charges, en régime variable.',
