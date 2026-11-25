@@ -1,0 +1,33 @@
+// QCM du parcours guidé de la simulation 223 (HLB requis et mélange d'émulsifiants).
+// Ordre FIXE : place de la bonne réponse choisie à la main (équilibrée, jamais deux fois de suite à la même place), jamais la plus longue.
+const mk = (pos, bonne, ...autres) => ({ ordreFixe: true, bonne: pos, options: [...autres.slice(0, pos), bonne, ...autres.slice(pos)] });
+export const QCM = {
+  echelle: mk(1, 'Plutôt lipophile : il se place bien dans l’huile',
+    'Très hydrophile : il se dissout surtout dans l’eau',
+    'Ni l’un ni l’autre : le HLB ne dit rien de l’affinité',
+    'Ionique : sa tête est chargée'),
+  sens: mk(3, 'Le Tween 80, de HLB élevé, pour une émulsion H/E',
+    'Le Span 80, de HLB faible, pour une émulsion H/E',
+    'Le Tween 80, pour une émulsion E/H',
+    'Aucun des deux : un seul HLB convient à toute émulsion'),
+  rhlb: mk(0, 'Le Tween 85, de HLB 11,0, le plus proche de 10',
+    'Le Span 80, de HLB 4,3, car l’huile est lipophile',
+    'Le Tween 80, de HLB 15,0, le plus hydrophile possible',
+    'Le Tween 20, de HLB 16,7, qui émulsionne tout'),
+  rhlbEH: mk(2, 'Un HLB voisin de 4 : valeur requise pour une E/H',
+    'Un HLB voisin de 10, valeur requise pour les deux sens',
+    'Un HLB voisin de 15, car l’eau est la phase dispersée',
+    'Un HLB nul : une E/H s’obtient sans émulsifiant'),
+  limite: mk(1, 'Non : le mélange reste entre 4,3 et 4,7',
+    'Oui : il suffit de forcer sur la quantité de Span 80',
+    'Oui : on additionne les deux HLB',
+    'Non : un mélange de deux émulsifiants ne s’étudie pas'),
+  diag: mk(3, 'Ajouter un émulsifiant plus hydrophile, pour monter le HLB',
+    'Ajouter un émulsifiant plus lipophile, pour baisser encore le HLB',
+    'Doubler la masse d’émulsifiant sans changer le mélange',
+    'Ajouter de l’huile pour que l’émulsion devienne plus fluide'),
+  limites: mk(0, 'Ils sont mesurés par essais et varient selon les sources',
+    'Ils sont calculés exactement par un modèle, sans aucune incertitude',
+    'Ils ne dépendent ni de l’huile ni du sens de l’émulsion',
+    'Ils sont les mêmes pour tous les tensioactifs, ioniques compris'),
+};
