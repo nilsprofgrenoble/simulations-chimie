@@ -207,6 +207,8 @@ export function SimulationDosageEtalonnage() {
   const cInjVraie = T === TECHNIQUES.clhp ? teneur / 100 * CREME.m * 1000 / CREME.vFiole * 1000 / 1000 : T.cEch;   // mg/L injectés
   const cAttendue = T === TECHNIQUES.clhp ? (enDefi ? null : 5 / 100 * CREME.m * 1000 / CREME.vFiole) : T.cEch * (0.85 + 0.3 * rng(graine)());
   const verif = verifierGamme(T, volumes, cAttendue);
+  // la gamme proposée au départ est déjà valide : en parcours guidé, l'élève doit en construire une lui-même (au moins une valeur changée)
+  const gammeChoisie = T !== TECHNIQUES.clhp || JSON.stringify(volumes) !== JSON.stringify([10, 20, 30, 40, 50]);
   const donnees = mes.actif ? mes[mes.actif] : null;
   const reg = donnees ? regression(donnees.x, donnees.y) : null;
   const echMoy = mes.ech ? (mes.ech[0] + mes.ech[1]) / 2 : null;
@@ -305,7 +307,7 @@ export function SimulationDosageEtalonnage() {
           `C = frac(${sci(mCafAtt)} mg|${fmt(CREME.vFiole / 1000, 3)} L) = ${sci(cMereAtt)} mg/L.`],
         pieges: [[mCafAtt / CREME.vFiole, 'Le volume doit être en litres : 100 mL = 0,100 L. Ici, il est resté en mL.'],
           [mCafAtt / CREME.m, 'On divise par le volume de la fiole (100 mL = 0,100 L), pas par la masse de crème.']], indice: "Divisez la masse de caféine attendue par le volume de la fiole (en L)." } },
-    { id: 'dilution', titre: 'Diluer d’un facteur 1000', focus: ['ech'],
+    { id: 'dilution', titre: 'Diluer d’un facteur 1000', focus: [],
       texte: <>S<sub>éch-mère</sub> est bien trop concentrée pour la gamme : on la dilue d'un facteur 1000. Deux façons de faire :
         <br/>A : {DILUTIONS.A.nom} ;<br/>B : {DILUTIONS.B.nom}.</>,
       tache: { type: 'qcm', q: 'Quelle dilution est la plus précise ?', options: ['B : deux prélèvements de 1 mL à la pipette jaugée (≈ 1 % au total) font un peu mieux qu’un prélèvement de 20 µL à la micropipette (≈ 2 à 3 %)', 'A : une seule étape, donc une seule erreur', 'Les deux se valent exactement'], bonne: 0,
@@ -328,9 +330,9 @@ export function SimulationDosageEtalonnage() {
           [1.0 / TECHNIQUES.clhp.cRef * 1000, 'Vous avez oublié de multiplier par le volume de la fiole (20 mL) : V = frac(C × V_fiole|C_ref).'],
           [TECHNIQUES.clhp.cRef * TECHNIQUES.clhp.vFiole / 1.0, 'Formule à l’envers : on cherche V = frac(C × V_fiole|C_ref) (et non frac(C_ref × V_fiole|C)).']], indice: "La quantité de matière se conserve à la dilution : C_ref × V_prélevé = C_étalon × V_fiole." } },
     { id: 'gamme', titre: 'Concevoir la gamme', focus: ['gamme'],
-      texte: <>Dans le cadre « Ma gamme », choisissez le nombre d'étalons et le volume prélevé pour chacun. Les vérifications s'affichent en direct : il faut
+      texte: <>Dans le cadre « Ma gamme », la gamme affichée n'est qu'un point de départ : à vous de choisir le nombre d'étalons et le volume prélevé pour chacun (changez au moins une valeur). Les vérifications s'affichent en direct : il faut
         encadrer les {fmt(cInjAtt, 2)} mg/L attendus, de préférence vers le milieu de la gamme.</>,
-      tache: { type: 'action', ok: verif.valide, consigne: verif.valide ? '✅ Gamme valide' : 'Corrigez la gamme jusqu’à ce que toutes les vérifications passent.' } },
+      tache: { type: 'action', ok: verif.valide && gammeChoisie, consigne: !gammeChoisie ? 'Construisez votre gamme : changez au moins un volume ou le nombre d’étalons.' : verif.valide ? '✅ Gamme valide' : 'Corrigez la gamme jusqu’à ce que toutes les vérifications passent.' } },
     { id: 'repetitions', titre: 'Les répétitions', focus: ['gamme'],
       retenirTitre: 'À RETENIR : PRÉPARER LA GAMME D’ÉTALONS',
       retenir: <>
@@ -397,7 +399,7 @@ export function SimulationDosageEtalonnage() {
         <FFisher/>
         {puces(<>Si F &gt; F<sub>critique</sub>, les écarts à la droite sont trop grands pour être dus au hasard : la linéarité est rejetée (risque de 5 %).</>, <>Le test n’est valable qu’avec des <strong>fioles indépendantes</strong> : avec la même fiole, il rejette à tort.</>)}
       </>,
-      texte: <>Choisissez la dilution B, puis cliquez sur « Préparer et injecter l'échantillon » (deux injections).</>,
+      texte: <>Dans le cadre « L'échantillon de crème », choisissez la dilution B (la plus précise, étape 5), puis cliquez sur « Préparer et injecter l'échantillon » (deux injections).</>,
       tache: { type: 'action', ok: !!mes.ech, consigne: mes.ech ? '✅ Échantillon mesuré' : 'Mesurez l’échantillon.' } },
     { id: 'cEch', titre: 'La concentration injectée', focus: ['stats'],
       texte: <>On utilise la droite : C = frac(A − b|a), avec A la moyenne des deux injections{echMoy != null ? ` (${fmt(echMoy, 2)})` : ''}{reg ? `, et a = ${fmt(reg.a, 3)}, b = ${fmt(reg.b, 3)} (droite d'étalonnage, lue dans « Exploitation »)` : ''}.</>,
@@ -587,10 +589,10 @@ export function SimulationDosageEtalonnage() {
       {!E.reg && nTot >= 1 && <div style={{ fontSize: 13, color: '#b45309', marginTop: 6 }}>Pas encore assez de points pour tracer la droite.</div>}
     </div>
   );
-  const blocEch = vu('dilution') && (T === TECHNIQUES.clhp) && (
+  const blocEch = vu('echantillon') && (T === TECHNIQUES.clhp) && (
     <div style={{ ...styleBoite, ...cadre('ech') }} data-apparait={`${idx('echantillon')}`}>
       <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>L'échantillon de crème</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6 }}>{fmt(CREME.m, 2)} g de crème dans une fiole de 100 mL (S<sub>éch-mère</sub>), puis dilution d'un facteur 1000 :</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt, marginBottom: 6 }}>{fmt(CREME.m, 2)} g de crème dans une fiole de 100 mL (S<sub>éch-mère</sub>). Avant l'injection, on la dilue d'un facteur 1000 ; choisissez le schéma de dilution : il fixe la précision de la préparation (≈ {fmt(DILUTIONS.A.uRel * 100, 1)} % pour A, ≈ {fmt(DILUTIONS.B.uRel * 100, 1)} % pour B), qui se retrouve dans la dispersion du résultat.</div>
       {Object.entries(DILUTIONS).map(([k, d]) => (
         <label key={k} style={{ display: 'flex', gap: 6, fontSize: 13.5, color: KIT.txt, marginBottom: 4 }}>
           <input type="radio" name="dilution" checked={dilution === k} onChange={() => setDilution(k)}/> <strong>{k}</strong> : {d.nom}</label>
