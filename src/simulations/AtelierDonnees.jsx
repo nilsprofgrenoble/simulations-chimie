@@ -37,6 +37,17 @@ const stagesDe = ex => ['cherche', 'sel', 'tab', ...(ex.b.derivees && ex.b.deriv
 const repVide = () => ({ cherche: null, sel: [], tab: {}, der: {}, manque: null });
 const propositions = (o, graine) => melange([o.bonne, ...o.faux], graine);
 
+// Le schéma de ces énoncés reprend toutes les valeurs du texte : montré d'emblée, il dispenserait de lire l'énoncé (et de le comprendre : c'est le but de la compétence S'APP).
+// Il est donc proposé comme indice, à la demande de l'élève.
+function SchemaEnIndice({ schema }) {
+  const [vu, setVu] = useState(false);
+  return (
+    <div style={{ margin: '8px 0' }}>
+      {vu ? <Visuel schema={schema}/>
+        : <button type="button" data-indice-schema onClick={() => setVu(true)} style={stylePetitBouton(false)}><Pic n="bulb"/>Indice : voir un schéma de la situation</button>}
+    </div>);
+}
+
 // ── Énoncé avec données cliquables ──
 function Texte({ ex, sel, onToggle, marque }) {
   const style = id => {
@@ -71,7 +82,7 @@ function Texte({ ex, sel, onToggle, marque }) {
           ))}
         </p>
       ))}
-      {ex.b.schema && <div style={{ margin: '8px 0' }}><Visuel schema={ex.b.schema}/></div>}
+      {ex.b.schema && <SchemaEnIndice schema={ex.b.schema}/>}
       {question && <div data-question style={{ marginTop: 8, fontSize: 16, fontWeight: 700, lineHeight: 1.5, color: KIT.txt, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 8, padding: '8px 12px' }}>{avecIndices(question)}</div>}
     </div>
   );
