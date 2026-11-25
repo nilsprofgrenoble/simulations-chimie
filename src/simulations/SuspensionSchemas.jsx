@@ -68,31 +68,36 @@ export function SvgZeta({ solide, pH, c = 0, sel = 'NaCl', disp = false, montreP
 }
 
 // ---------- cartes « À retenir » (viewBox 300 de large) ----------
-function Grain({ x, y, s, r = 17, nom }) {
+function Grain({ x, y, s, r = 17, nom, cotes = [0, 1, 2, 3] }) {
   const col = s === '+' ? C.plus : s === '−' ? C.moins : C.gris, sym = s === '+' ? '+' : '−';
   return <g><circle cx={x} cy={y} r={r} fill={C.part} stroke={C.partTr} strokeWidth="2.5"/>
-    {s !== '0' && [[0, -r - 8], [r + 8, 0], [0, r + 8], [-r - 8, 0]].map(([dx, dy], k) => <text key={k} x={x + dx} y={y + dy + 5} fontSize="15" fontWeight="700" textAnchor="middle" fill={col} fontFamily="inherit">{sym}</text>)}
+    {s !== '0' && [[0, -r - 8], [r + 9, 0], [0, r + 8], [-r - 9, 0]].map(([dx, dy], k) => cotes.includes(k) && <text key={k} x={x + dx} y={y + dy + 5} fontSize="15" fontWeight="700" textAnchor="middle" fill={col} fontFamily="inherit">{sym}</text>)}
     {nom && T(x, y + 5, nom, { size: 12.5, gras: true })}</g>;
 }
 export function SvgCarteCharge() {
-  return base(300, 170, 'charge de surface d’un oxyde selon le pH : positive sous le point isoélectrique, nulle au point isoélectrique, négative au-dessus', <>
-    <Grain x={50} y={62} s="+" nom="M–OH₂⁺"/><Grain x={150} y={62} s="0" nom="M–OH"/><Grain x={250} y={62} s="−" nom="M–O⁻"/>
-    {T(50, 110, 'pH < PIE', { size: 13, gras: true, fill: C.plus })}{T(150, 110, 'pH = PIE', { size: 13, gras: true, fill: C.orange })}{T(250, 110, 'pH > PIE', { size: 13, gras: true, fill: C.moins })}
-    {T(50, 127, 'M–OH + H⁺', { size: 12 })}{T(238, 127, 'M–OH → M–O⁻ + H⁺', { size: 12 })}
-    <line x1="30" y1="150" x2="262" y2="150" stroke={C.trait} strokeWidth="2"/><polygon points="270,150 258,144 258,156" fill={C.trait}/>{T(150, 166, 'pH croissant', { size: 12.5, fill: C.gris })}
+  return base(300, 196, 'charge de surface d’un oxyde selon le pH : positive sous le point isoélectrique, nulle au point isoélectrique, négative au-dessus', <>
+    <Grain x={50} y={44} s="+" r={20}/><Grain x={150} y={44} s="0" r={20}/><Grain x={250} y={44} s="−" r={20}/>
+    {T(50, 98, 'M–OH₂⁺', { size: 14, gras: true })}{T(150, 98, 'M–OH', { size: 14, gras: true })}{T(250, 98, 'M–O⁻', { size: 14, gras: true })}
+    {T(50, 122, 'pH < PIE', { size: 13.5, gras: true, fill: C.plus })}{T(150, 122, 'pH = PIE', { size: 13.5, gras: true, fill: C.orange })}{T(250, 122, 'pH > PIE', { size: 13.5, gras: true, fill: C.moins })}
+    {T(6, 142, 'M–OH + H⁺ → M–OH₂⁺', { size: 12, anchor: 'start' })}{T(294, 142, 'M–OH → M–O⁻ + H⁺', { size: 12, anchor: 'end' })}
+    <line x1="30" y1="166" x2="262" y2="166" stroke={C.trait} strokeWidth="2"/><polygon points="272,166 260,160 260,172" fill={C.trait}/>{T(150, 188, 'pH croissant', { size: 12.5, fill: C.gris })}
   </>, 320);
 }
+const Fleche = ({ x1, x2, y, col }) => <g><line x1={x1} y1={y} x2={x2} y2={y} stroke={col} strokeWidth="3"/><polygon points={x2 > x1 ? `${x2 + 7},${y} ${x2 - 3},${y - 6} ${x2 - 3},${y + 6}` : `${x2 - 7},${y} ${x2 + 3},${y - 6} ${x2 + 3},${y + 6}`} fill={col}/></g>;
 export function SvgCarteSel() {
-  return base(300, 170, 'effet du sel : sans sel, les particules chargées se repoussent grâce à leur couche de contre-ions épaisse ; avec du sel, la couche est écrasée et les particules s’agglomèrent', <>
+  const ions = [[188, 40, 1], [226, 34, 0], [262, 44, 1], [184, 128, 0], [212, 150, 1], [262, 126, 0], [172, 84, 0], [276, 84, 1], [222, 112, 0]];
+  return base(300, 196, 'effet du sel : sans sel, les particules chargées se repoussent grâce à leur épaisse couche de contre-ions ; avec du sel, la couche est écrasée par les ions et les particules s’agglomèrent', <>
     {T(75, 16, 'Sans sel', { size: 14, gras: true, fill: C.vert })}{T(225, 16, 'Avec sel', { size: 14, gras: true, fill: C.rouge })}
-    <line x1="150" y1="26" x2="150" y2="160" stroke="#cbd5e1" strokeDasharray="4 4"/>
-    <circle cx="42" cy="84" r="38" fill="none" stroke={C.gris} strokeDasharray="3 3"/><circle cx="108" cy="84" r="38" fill="none" stroke={C.gris} strokeDasharray="3 3"/>
-    <Grain x={42} y={84} s="−" r={15} nom=""/><Grain x={108} y={84} s="−" r={15} nom=""/>
-    {T(75, 146, 'répulsion', { size: 13, gras: true, fill: C.vert })}
-    <circle cx="204" cy="84" r="20" fill="none" stroke={C.gris} strokeDasharray="3 3"/><circle cx="238" cy="84" r="20" fill="none" stroke={C.gris} strokeDasharray="3 3"/>
-    <Grain x={204} y={84} s="−" r={15} nom=""/><Grain x={238} y={84} s="−" r={15} nom=""/>
-    {[[190, 50], [256, 112], [221, 126], [250, 52]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="4" fill={i % 2 ? '#64748b' : '#94a3b8'}/>)}
-    {T(221, 146, 'agglomération', { size: 13, gras: true, fill: C.rouge })}
+    <line x1="150" y1="26" x2="150" y2="186" stroke="#cbd5e1" strokeDasharray="4 4"/>
+    <circle cx="38" cy="84" r="34" fill="#eff6ff" stroke={C.gris} strokeDasharray="3 3"/><circle cx="112" cy="84" r="34" fill="#eff6ff" stroke={C.gris} strokeDasharray="3 3"/>
+    <Grain x={38} y={84} s="−" r={14} cotes={[0, 2, 3]}/><Grain x={112} y={84} s="−" r={14} cotes={[0, 1, 2]}/>
+    <Fleche x1={64} x2={50} y={140} col={C.vert}/><Fleche x1={86} x2={100} y={140} col={C.vert}/>
+    {T(75, 170, 'elles se repoussent', { size: 13, gras: true, fill: C.vert })}
+    {ions.map(([x, y, k], i) => <g key={i}><circle cx={x} cy={y} r="8" fill={k ? "#64748b" : "#94a3b8"}/>{T(x, y + 4.5, k ? "+" : "−", { size: 12, fill: "white", gras: true })}</g>)}
+    <circle cx="207" cy="84" r="20" fill="#eff6ff" stroke={C.gris} strokeDasharray="3 3"/><circle cx="237" cy="84" r="20" fill="#eff6ff" stroke={C.gris} strokeDasharray="3 3"/>
+    <Grain x={207} y={84} s="−" r={14} cotes={[0, 2, 3]}/><Grain x={237} y={84} s="−" r={14} cotes={[0, 1, 2]}/>
+    <Fleche x1={178} x2={192} y={158} col={C.rouge}/><Fleche x1={266} x2={252} y={158} col={C.rouge}/>
+    {T(225, 180, 'elles s’agglomèrent', { size: 13, gras: true, fill: C.rouge })}
   </>, 320);
 }
 export function SvgCarteBilanSusp() {
