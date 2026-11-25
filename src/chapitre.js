@@ -14,12 +14,17 @@ export const ORDRE_COMP = ["S'APP", 'ANA', 'REA', 'VAL'];
 
 // Exercices à thème du chapitre (hors calcul REA, transversal)
 // chap : un chapitre (champs domaines, hors, ajouts : voir chapitres.js) ou, par compatibilité, la simple liste de ses domaines
-const cleDans = (cle, liste) => liste.some(r => cle === r || cle.startsWith(`${r}.`));
+export const cleDans = (cle, liste) => liste.some(r => cle === r || cle.startsWith(`${r}.`));
 export const exosDuChapitre = (exos, chap) => {
   const c = Array.isArray(chap) ? { domaines: chap } : (chap || {});
   if (!c.domaines?.length) return [];
-  const hors = c.hors || [], ajouts = c.ajouts || [];
-  return exos.filter(e => e.comp !== 'REA' && !cleDans(e.cle, hors) && (c.domaines.includes(e.domaine) || cleDans(e.cle, ajouts)));
+  const hors = c.hors || [], ajouts = c.ajouts || [], audela = c.audela || [];
+  return exos.filter(e => e.comp !== 'REA' && !cleDans(e.cle, hors) && !cleDans(e.cle, audela) && (c.domaines.includes(e.domaine) || cleDans(e.cle, ajouts)));
+};
+// Exercices « au-delà du programme » du chapitre (champ audela de chapitres.js) : gardés, signalés, rangés à part pour l'élève qui veut aller plus loin
+export const exosAuDela = (exos, chap) => {
+  const audela = (chap && chap.audela) || [];
+  return audela.length ? exos.filter(e => cleDans(e.cle, audela)) : [];
 };
 export const exosCalcul = exos => exos.filter(e => e.comp === 'REA');
 
