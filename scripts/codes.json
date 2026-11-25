@@ -2536,5 +2536,9 @@
  "77:plausible:jou-val-puissance": "VAL685",
  "77:plausible:jou-val-energie": "VAL686",
  "36:jou-puissance": "REA147",
- "36:jou-cable": "REA148"
+ "36:jou-cable": "REA148",
+ "37:prevoir:ter-ana-planetes": "ANA1164",
+ "77:plausible:ter-val-quart": "VAL687",
+ "77:plausible:ter-val-mars": "VAL688",
+ "36:ter-calcul": "REA149"
 }

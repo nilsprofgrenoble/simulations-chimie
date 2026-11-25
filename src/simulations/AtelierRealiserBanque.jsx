@@ -3570,6 +3570,53 @@ function genTransfertsThermTG() {
     retenir: ['Flux thermique : φ = Q divisé par Δt (W), avec Q en joules et Δt en secondes.', 'Paroi en régime permanent : φ = ΔT divisé par R_th, R_th en K·W⁻¹ ; ΔT est l’écart entre les deux faces (1 °C d’écart = 1 K).', 'Énergie transférée : E = φ × Δt ; en kWh, φ en kW et Δt en heures (1 kWh = 3,6 × 10⁶ J).', 'Plus R_th est grande, plus la paroi isole ; à R_th constante, le flux est proportionnel à ΔT.'] };
 }
 
+function genTerreTG() {
+  // Bilan thermique Terre-atmosphère (TG, sim 236). Pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %). σ = 5,67×10⁻⁸ W·m⁻²·K⁻⁴ (donnée).
+  const SG = 5.67e-8;
+  const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
+  const f = (x, k) => Number(x).toFixed(k).replace('.', ',').replace('-', '−');
+  const r2 = x => Number(x.toPrecision(2));
+  const bon = x => Math.abs(r2(x) - x) / Math.abs(x) <= 0.03;
+  const donnee = <>σ = 5,67 × 10⁻⁸{NB}W·m⁻²·K⁻⁴</>;
+  // q1 : P_abs = (1 − A) S0 / 4
+  let S1, A1, P1;
+  for (;;) { S1 = tire([586, 1000, 1361, 1700, 2000, 2601]); A1 = tire([0.10, 0.20, 0.25, 0.30, 0.40, 0.50, 0.77]); P1 = (1 - A1) * S1 / 4; if (P1 >= 60 && P1 <= 600 && bon(P1)) break; }
+  const q1 = { id: 'ter0', type: 'num', q: <>Une planète reçoit <b>S₀ = {S1}{NB}W·m⁻²</b> face au Soleil et son albédo est <b>A = {f(A1, 2)}</b>. Calculez la puissance absorbée P<sub>abs</sub> par mètre carré de sa surface (en W·m⁻², 2 chiffres significatifs).</>, unite: 'W·m⁻²', vrai: P1, tolRel: 0.06, csMin: 2,
+    aide: 'P_abs = (1 − A) × S₀ divisé par 4 : (1 − A) est la part absorbée ; le 4 vient de la surface de la sphère (4 π R²) comparée à celle du disque éclairé (π R²).',
+    pieges: [[S1 / 4, 'La part réfléchie n’est pas retirée : il faut multiplier par (1 − A).'], [(1 - A1) * S1, 'Le facteur 4 est oublié : la puissance reçue se répartit sur toute la sphère.'], [A1 * S1 / 4, 'Ce résultat est la puissance réfléchie : la puissance absorbée correspond à (1 − A).']],
+    expl: <>P<sub>abs</sub> = {avecIndices(`frac((1 − ${f(A1, 2)}) × ${S1}|4)`)} = <b>{f(P1, 0)}{NB}W·m⁻²</b>.</> };
+  // q2 : P_émise = σ T⁴ (θ en °C)
+  let th2, E2;
+  for (;;) { th2 = tire([-20, -10, 0, 7, 15, 20, 27, 37, 50]); E2 = SG * (th2 + 273) ** 4; if (bon(E2)) break; }
+  const q2 = { id: 'ter1', type: 'num', q: <>Une surface est à la température <b>θ = {f(th2, 0)}{NB}°C</b>. D’après la loi de Stefan-Boltzmann, la puissance émise par mètre carré est P<sub>émise</sub> = σ × T⁴, avec T en kelvins et {donnee}. Calculez P<sub>émise</sub> (en W·m⁻², 2 chiffres significatifs).</>, unite: 'W·m⁻²', vrai: E2, tolRel: 0.06, csMin: 2,
+    aide: 'Convertissez d’abord : T (K) = θ (°C) + 273 ; puis élevez T à la puissance 4 et multipliez par σ.',
+    pieges: [[SG * th2 ** 4, 'La température doit être en kelvins : T = θ + 273.'], [SG * (th2 + 273), 'T est à la puissance 4 : P_émise = σ × T⁴.'], [SG * (th2 + 273) ** 2, 'T est à la puissance 4, pas 2.']],
+    expl: <>T = {f(th2, 0)} + 273 = {th2 + 273} K ; P<sub>émise</sub> = σ × T⁴ = 5,67×10⁻⁸ × {th2 + 273}⁴ = <b>{f(E2, 0)}{NB}W·m⁻²</b>.</> };
+  // q3 : T à partir de P_abs
+  const P3 = tire([100, 120, 150, 200, 240, 300, 350, 400]), T3 = (P3 / SG) ** 0.25;
+  const q3 = { id: 'ter2', type: 'num', q: <>À l’équilibre, la puissance émise σ × T⁴ est égale à la puissance absorbée, ici <b>P<sub>abs</sub> = {P3}{NB}W·m⁻²</b> ({donnee}). Calculez la température d’équilibre T (en K, 3 chiffres significatifs).</>, unite: 'K', vrai: T3, tolRel: 0.03, csMin: 3,
+    aide: 'σ × T⁴ = P_abs donne T⁴ = P_abs divisé par σ ; puis T est la racine quatrième (deux fois la touche √).',
+    pieges: [[P3 / SG, 'Il manque la racine quatrième : P_abs divisé par σ donne T⁴, pas T.'], [Math.sqrt(P3 / SG), 'Il faut une racine quatrième : une seule racine carrée ne suffit pas.'], [T3 - 273, 'Ce résultat est en °C : la température d’équilibre se calcule et s’exprime en kelvins.']],
+    expl: <>T⁴ = {avecIndices(`frac(${P3}|5,67×10⁻⁸)`)} = {f(P3 / SG, 0)} K⁴ ; T = <b>{f(T3, 0)}{NB}K</b>.</> };
+  // q4 : T à partir de S0 et A (deux étapes)
+  let S4, A4, T4;
+  for (;;) { S4 = tire([586, 1000, 1361, 1700, 2000]); A4 = tire([0.10, 0.20, 0.25, 0.30, 0.40, 0.50]); const p = (1 - A4) * S4 / 4; T4 = (p / SG) ** 0.25; if (p >= 80 && p <= 600) break; }
+  const q4 = { id: 'ter3', type: 'num', q: <>Une planète sans atmosphère reçoit <b>S₀ = {S4}{NB}W·m⁻²</b> face au Soleil et a pour albédo <b>A = {f(A4, 2)}</b> ({donnee}). Calculez sa température d’équilibre T (en K, 3 chiffres significatifs).</>, unite: 'K', vrai: T4, tolRel: 0.03, csMin: 3,
+    aide: 'D’abord P_abs = (1 − A) × S₀ divisé par 4 ; puis σ × T⁴ = P_abs, donc T = racine quatrième de (P_abs divisé par σ).',
+    pieges: [[T4 * Math.SQRT2, 'Le facteur 4 est oublié dans la puissance absorbée : P_abs = (1 − A) × S₀ divisé par 4.'], [T4 - 273, 'Ce résultat est en °C : la température d’équilibre s’exprime en kelvins.'], [((1 - A4) * S4 / 4 / SG), 'Il manque la racine quatrième : P_abs divisé par σ donne T⁴, pas T.']],
+    expl: <>P<sub>abs</sub> = {avecIndices(`frac((1 − ${f(A4, 2)}) × ${S4}|4)`)} = {f((1 - A4) * S4 / 4, 1)} W·m⁻² ; T = ({f((1 - A4) * S4 / 4, 1)} / 5,67×10⁻⁸)<sup>1/4</sup> = <b>{f(T4, 0)}{NB}K</b>.</> };
+  // q5 : part absorbée pour une température d'équilibre donnée
+  let S5, T5, x5;
+  for (;;) { S5 = tire([1000, 1361, 1700, 2000]); T5 = tire([240, 250, 255, 260, 270, 280, 290]); x5 = 4 * SG * T5 ** 4 / S5; if (x5 >= 0.35 && x5 <= 0.9 && bon(x5)) break; }
+  const q5 = { id: 'ter4', type: 'num', q: <>Une planète sans atmosphère, qui reçoit <b>S₀ = {S5}{NB}W·m⁻²</b> face au Soleil, a une température d’équilibre <b>T = {T5}{NB}K</b> ({donnee}). Quelle fraction (1 − A) du rayonnement reçu est absorbée ? (nombre sans unité, 2 chiffres significatifs)</>, unite: '', vrai: x5, tolRel: 0.06, csMin: 2,
+    aide: 'À l’équilibre, σ × T⁴ = (1 − A) × S₀ divisé par 4 : on isole (1 − A) = 4 × σ × T⁴ divisé par S₀.',
+    pieges: [[x5 / 4, 'Le facteur 4 est oublié : (1 − A) = 4 × σ × T⁴ divisé par S₀.'], [1 - x5, 'Ce résultat est l’albédo A (part réfléchie) ; la question porte sur la part absorbée 1 − A.']],
+    expl: <>σ × T⁴ = 5,67×10⁻⁸ × {T5}⁴ = {f(SG * T5 ** 4, 0)} W·m⁻² ; 1 − A = {avecIndices(`frac(4 × ${f(SG * T5 ** 4, 0)}|${S5})`)} = <b>{f(x5, 2)}</b> (soit A = {f(1 - x5, 2)}).</> };
+  [q1, q2, q3, q4, q5].forEach(tolOk);
+  return { intro: 'Bilan thermique d’une planète sans atmosphère : puissance absorbée P_abs = (1 − A) × S₀ divisé par 4, puissance émise σ × T⁴ (loi de Stefan-Boltzmann donnée), équilibre σ × T⁴ = P_abs. T en kelvins.', questions: [q1, q2, q3, q4, q5],
+    retenir: ['Puissance absorbée par m² de surface : P_abs = (1 − A) × S₀ divisé par 4 (A albédo, S₀ puissance reçue face au Soleil).', 'Loi de Stefan-Boltzmann (donnée) : P_émise = σ × T⁴, avec T en kelvins (T = θ + 273).', 'À l’équilibre, P_émise = P_abs, donc T = racine quatrième de (P_abs divisé par σ).', 'La température observée est supérieure à celle du calcul sans atmosphère : l’écart traduit l’effet de serre.'] };
+}
+
 function genEcoulementTG() {
   // Écoulement d'un fluide (TG, sim 214). Données écrites en décimales fixes (comme l'élève les lit) ; pièges conservés seulement hors de 1,5 × la tolérance (plancher 8 %).
   const tolOk = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 1.5 * q.tolRel * Math.abs(q.vrai), 0.08 * Math.abs(q.vrai))); };
@@ -5075,6 +5122,7 @@ export const FAMILLES = [
   { id: 'gpf-calcul', groupe: 'Formules', titre: 'Gaz parfait : quantité de matière, pression, comparaison de deux états, masse volumique et température (TG)', gen: genGazParfaitTG, domaine: 'Gaz parfait : équation d’état et limites du modèle' },
   { id: 'pp1-calcul', groupe: 'Formules', titre: 'Premier principe : variation d’énergie interne, capacité thermique et température finale (TG)', gen: genPremierPrincipeTG, domaine: 'Premier principe : énergie interne, transferts et bilan d’énergie' },
   { id: 'tht-calcul', groupe: 'Formules', titre: 'Transferts thermiques : flux, résistance thermique d’une paroi, énergie transférée et nouvel écart de température (TG)', gen: genTransfertsThermTG, domaine: 'Transferts thermiques et bilan de la Terre (TG)' },
+  { id: 'ter-calcul', groupe: 'Formules', titre: 'Bilan thermique d’une planète : puissance absorbée, loi de Stefan-Boltzmann, température d’équilibre (TG)', gen: genTerreTG, domaine: 'Transferts thermiques et bilan de la Terre (TG)' },
   { id: 'ber-calcul', groupe: 'Formules', titre: 'Écoulement d’un fluide : débit volumique, vitesse dans un col, différence de pression, vitesse de vidange et colonnes d’un Venturi (TG)', gen: genEcoulementTG, domaine: 'Écoulement d’un fluide : débit, relation de Bernoulli et effet Venturi' },
   { id: 'arc-calcul', groupe: 'Formules', titre: 'Poussée d’Archimède : poussée, poids apparent, fraction immergée, masse posée sur un flotteur et masse volumique d’un liquide (TG)', gen: genArchimedeTG, domaine: 'Poussée d’Archimède : origine, expression et flottaison' },
   { id: 'lun-calcul', groupe: 'Formules', titre: 'Lunette afocale : grossissement, distance entre les lentilles, oculaire et angle du faisceau émergent (TG)', gen: genLunetteTG, domaine: 'Lunette afocale : schéma, faisceau et grossissement' },
