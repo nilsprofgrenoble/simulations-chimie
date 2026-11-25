@@ -2,6 +2,7 @@ import { presenter } from './presenter.js';
 import { OEIL2GT_VAL } from './oeilReduit2gtExos.js';
 import { OSG2GT_VAL } from './ondesSignaux2gtExos.js';
 import { NOY2GT_VAL } from './noyauAtome2gtExos.js';
+import { ONDES1G_VAL } from './ondes1gExos.js';
 import { NUC2GT_VAL } from './nucleaire2gtExos.js';
 import { MAT2GT_VAL } from './matiere2gtExos.js';
 import { RHC_VAL } from './rheoCourbesExos.js';
@@ -572,9 +573,9 @@ export const PLAUSIBLES = [
     ver: 'Un objet à 30 cm, au-delà du foyer (f′ = 10 cm), donne une image réelle, du côté opposé : OA′ doit être positif. Le bon calcul : 1/OA′ = 1/f′ + 1/OA = 1/10 − 1/30 = 2/30, soit OA′ = +15 cm.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
-      V('il a inversé le signe de 1/f′ en réécrivant la relation de conjugaison', 'La relation 1/OA′ − 1/OA = 1/f′ donne 1/OA′ = 1/OA + 1/f′, et non 1/OA − 1/f′. Avec son écriture : 1/OA′ = −1/30 − 1/10 = −4/30, soit OA′ = −7,5 cm.'),
+      V('il a changé le signe de 1/f′ en réécrivant la relation', 'La relation 1/OA′ − 1/OA = 1/f′ donne 1/OA′ = 1/OA + 1/f′, et non 1/OA − 1/f′. Avec son écriture : 1/OA′ = −1/30 − 1/10 = −4/30, soit OA′ = −7,5 cm.'),
       F('il a oublié de convertir les centimètres en mètres', 'Les trois longueurs sont en cm : le résultat est alors lui aussi en cm, sans erreur de conversion.'),
-      F('il a pris OA = +30 cm au lieu de −30 cm', 'Avec OA = +30 cm et la bonne relation, on trouverait 1/10 + 1/30 = 4/30, soit OA′ = +7,5 cm : un résultat positif, pas −7,5 cm.'),
+      F('il a pris OA = +30 cm au lieu de OA = −30 cm pour l’objet', 'Avec OA = +30 cm et la bonne relation, on trouverait 1/10 + 1/30 = 4/30, soit OA′ = +7,5 cm : un résultat positif, pas −7,5 cm.'),
     ] }),
   P({ id: 'lum1-val-grandissement', domaine: 'Lentille mince', niveau: 1, titre: 'Grandissement d’une image réelle', plausible: true,
     enonce: 'Une lentille convergente a une distance focale f′ = 10 cm. Un objet de hauteur AB = 2,0 cm est placé à 15 cm devant la lentille (OA = −15 cm). Un élève trouve OA′ = +30 cm, γ = −2 et une image de hauteur 4,0 cm, renversée.',
@@ -582,7 +583,7 @@ export const PLAUSIBLES = [
     ver: 'Objet à 15 cm, entre f′ = 10 cm et 2f′ = 20 cm : l’image est réelle, renversée et agrandie. 1/OA′ = 1/10 − 1/15 = 1/30 donc OA′ = +30 cm ; γ = 30/(−15) = −2 ; A′B′ = γ × AB = −4,0 cm (renversée, 4,0 cm de haut). Le résultat est cohérent.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : l’objet est entre f′ et 2f′, donc l’image est réelle, renversée, agrandie ; γ = −2 et A′B′ = −4,0 cm', 'Les trois résultats sont cohérents avec la relation de conjugaison et avec la règle qualitative (objet entre f′ et 2f′).'),
+      V('Cohérent : objet entre f′ et 2f′, image réelle, renversée, agrandie', 'Les trois résultats sont cohérents avec la relation de conjugaison et avec la règle qualitative (objet entre f′ et 2f′).'),
       F('Pas cohérent : une image réelle est toujours plus petite que l’objet', 'Une image réelle est agrandie quand l’objet est entre f′ et 2f′ ; elle n’est plus petite que si l’objet est au-delà de 2f′.'),
       F('Pas cohérent : γ négatif est impossible, un grandissement est toujours positif', 'Le signe de γ indique le sens de l’image : négatif pour une image renversée, positif pour une image droite.'),
     ] }),
@@ -592,7 +593,7 @@ export const PLAUSIBLES = [
     ver: 'L’image est bien droite et agrandie (OA′ = −10 cm, γ = +2), mais elle est virtuelle : elle se trouve du côté de l’objet, à 10 cm devant la lentille. On ne peut pas la recueillir sur un écran, on l’observe en regardant à travers la lentille.',
     q2: 'Quelle erreur explique le mieux cette affirmation ?',
     options: [
-      V('il a oublié qu’une image virtuelle ne se forme pas sur un écran : OA′ = −10 cm est devant la lentille', 'Le signe négatif de OA′ indique une image du côté de l’objet : aucun rayon n’y arrive réellement, un écran n’y verrait rien.'),
+      V('il a oublié qu’une image virtuelle ne se recueille pas sur un écran', 'Le signe négatif de OA′ indique une image du côté de l’objet : aucun rayon n’y arrive réellement, un écran n’y verrait rien.'),
       F('il a confondu l’image agrandie avec une image plus petite que l’objet', 'Il a raison sur ce point : γ = +2, l’image est bien deux fois plus grande.'),
       F('il a utilisé une relation de conjugaison avec f′ négatif', 'Pour une lentille convergente f′ est positif ; ici f′ = +10 cm convient et donne OA′ = −10 cm.'),
     ] }),
@@ -622,7 +623,7 @@ export const PLAUSIBLES = [
     ver: '20 cm ÷ 0,40 s = 50 cm/s, c’est-à-dire 0,50 m/s. Écrire 50 m/s est cent fois trop grand : 50 m/s font 180 km/h, bien plus vite qu’une voiture sur autoroute, impossible pour une corde secouée à la main.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
-      V('il a gardé le nombre obtenu en cm/s mais l’a écrit en m/s', 'Le quotient 20 ÷ 0,40 = 50 est bon, mais λ était en centimètres : le résultat est en cm/s, soit 0,50 m/s.'),
+      V('il a écrit en m/s un résultat obtenu en cm/s', 'Le quotient 20 ÷ 0,40 = 50 est bon, mais λ était en centimètres : le résultat est en cm/s, soit 0,50 m/s.'),
       F('il a multiplié λ par T au lieu de diviser', 'Avec 20 × 0,40 on trouverait 8, pas 50 : le calcul numérique de l’élève est donc bien une division.'),
       F('il a mesuré λ entre une crête et un creux voisins', 'Il aurait lu λ = 10 cm et trouvé c = 25 cm/s, pas 50 : le nombre 50 vient bien de 20 ÷ 0,40.'),
     ] }),
@@ -4336,6 +4337,7 @@ export const PLAUSIBLES = [
   ...OEIL2GT_VAL,
   ...OSG2GT_VAL,
   ...NOY2GT_VAL,
+  ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
   ...RHC_VAL,

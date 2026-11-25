@@ -9,6 +9,7 @@ import { presenter } from './presenter.js';
 import { OEIL2GT_ANA } from './oeilReduit2gtExos.js';
 import { OSG2GT_ANA } from './ondesSignaux2gtExos.js';
 import { NOY2GT_ANA } from './noyauAtome2gtExos.js';
+import { ONDES1G_ANA } from './ondes1gExos.js';
 import { NUC2GT_ANA } from './nucleaire2gtExos.js';
 import { MAT2GT_ANA } from './matiere2gtExos.js';
 import { RHC_ANA } from './rheoCourbesExos.js';
@@ -2378,31 +2379,31 @@ export const PREVOIR = [
     enonce: 'Une lentille mince convergente a une distance focale f′ = 10 cm. Un objet est placé à 15 cm devant la lentille (OA = −15 cm). La relation de conjugaison donne OA′ = +30 cm. On rappelle le grandissement γ = OA′ / OA.', q: 'L’image obtenue est…', options: [
       V('renversée et deux fois plus grande que l’objet', 'γ = OA′ / OA = 30 / (−15) = −2 : |γ| = 2 donne une image deux fois plus grande, et γ < 0 une image renversée.'),
       F('droite et deux fois plus grande que l’objet', 'Le signe compte : γ = −2 est négatif, ce qui signifie une image renversée. Une image droite aurait γ > 0.'),
-      F('renversée et deux fois plus petite que l’objet', 'Le sens est bon, pas la taille : |γ| = 30/15 = 2 est supérieur à 1, l’image est agrandie.'),
+      F('renversée, mais deux fois plus petite que l’objet', 'Le sens est bon, pas la taille : |γ| = 30/15 = 2 est supérieur à 1, l’image est agrandie.'),
       F('renversée et de même taille que l’objet', 'Une image de même taille (|γ| = 1) s’obtient pour un objet placé à 2f′ = 20 cm, pas à 15 cm.'),
     ] },
   { id: 'lum1-virtuelle-loupe', domaine: 'Lentille mince', titre: 'Objet entre la lentille et le foyer : la loupe',
     schema: { type: 'optique', cas: 'conjugaison', d: 5, f: 10, apres: { reponse: true } },
     enonce: 'Une lentille mince convergente a une distance focale f′ = 10 cm. Un objet est placé à 5 cm devant la lentille (OA = −5 cm), donc entre la lentille et le foyer objet F. On utilise la relation de conjugaison et le grandissement.', q: 'L’image obtenue est…', options: [
-      V('virtuelle, droite et deux fois plus grande, impossible à recueillir sur un écran', '1/OA′ = 1/10 − 1/5 = −1/10, donc OA′ = −10 cm (image virtuelle, du côté de l’objet) ; γ = OA′ / OA = (−10)/(−5) = +2 : image droite et agrandie. Des rayons qui ne se croisent que par leurs prolongements ne forment pas d’image sur un écran.'),
+      V('virtuelle, droite et deux fois plus grande : pas sur un écran', '1/OA′ = 1/10 − 1/5 = −1/10, donc OA′ = −10 cm (image virtuelle, du côté de l’objet) ; γ = OA′ / OA = (−10)/(−5) = +2 : image droite et agrandie. Des rayons qui ne se croisent que par leurs prolongements ne forment pas d’image sur un écran.'),
       F('réelle, renversée, formée à 10 cm derrière la lentille', 'OA′ = +10 cm serait le résultat d’un oubli de signe. Ici 1/OA′ = 1/10 − 1/5 est négatif : l’image est virtuelle.'),
       F('virtuelle, mais renversée et deux fois plus petite', 'OA′ = −10 cm est juste, mais γ = (−10)/(−5) = +2 : le signe est positif (image droite) et |γ| > 1 (image agrandie).'),
-      F('réelle, droite et agrandie, nette sur un écran placé à 10 cm', 'Une image réelle de l’objet est toujours renversée avec une lentille mince convergente, et un objet entre O et F ne donne pas d’image réelle.'),
+      F('réelle, droite et agrandie, nette sur un écran placé à 10 cm de la lentille', 'Une image réelle de l’objet est toujours renversée avec une lentille mince convergente, et un objet entre O et F ne donne pas d’image réelle.'),
     ] },
   { id: 'lum1-objet-au-foyer', domaine: 'Lentille mince', titre: 'Objet placé au foyer objet',
     schema: { type: 'optique', cas: 'conjugaison', d: 10, f: 10, apres: { reponse: false } },
     enonce: 'Une lentille mince convergente a une distance focale f′ = 10 cm. Un objet est placé exactement à 10 cm devant la lentille (OA = −10 cm), donc au foyer objet F. On cherche à obtenir son image sur un écran en déplaçant celui-ci.', q: 'Que se passe-t-il ?', options: [
-      V('les rayons ressortent parallèles : l’image est « à l’infini », aucune position d’écran ne la rend nette', '1/OA′ = 1/10 − 1/10 = 0 : OA′ est infini. Les rayons issus de B ressortent parallèles entre eux et ne se croisent jamais, ni derrière la lentille ni par leurs prolongements.'),
+      V('les rayons ressortent parallèles : aucune image nette sur l’écran', '1/OA′ = 1/10 − 1/10 = 0 : OA′ est infini. Les rayons issus de B ressortent parallèles entre eux et ne se croisent jamais, ni derrière la lentille ni par leurs prolongements.'),
       F('l’image se forme au foyer image F′, à 10 cm derrière la lentille', 'F′ est le point où convergent des rayons arrivant parallèles à l’axe (objet très éloigné), pas l’image d’un objet placé en F.'),
       F('l’image se forme à 20 cm derrière la lentille, de même taille que l’objet', 'Ce cas correspond à un objet placé à 2f′ = 20 cm de la lentille, pas à f′ = 10 cm.'),
-      F('on obtient une image virtuelle droite et agrandie', 'Il faut un objet plus près que le foyer (entre O et F) pour cela. Au foyer exactement, l’image est rejetée à l’infini.'),
+      F('on obtient une image virtuelle, droite et agrandie, comme avec une loupe', 'Il faut un objet plus près que le foyer (entre O et F) pour cela. Au foyer exactement, l’image est rejetée à l’infini.'),
     ] },
   { id: 'ond1g-periode-frequence-lambda', domaine: 'Ondes mécaniques périodiques', titre: 'On double la fréquence de la source',
     enonce: 'Une source secoue l’extrémité d’une corde et crée une onde sinusoïdale qui se propage le long de la corde. La tension de la corde ne change pas pendant l’expérience. On double la fréquence de la source.', q: 'Que devient la longueur d’onde λ ?', options: [
       V('elle est divisée par 2, car c ne change pas et λ = c ÷ f', 'La célérité c est imposée par la corde, donc elle ne change pas. Comme λ = c × T = c ÷ f, doubler f divise λ par 2 : les crêtes sont deux fois plus rapprochées.'),
       F('elle est multipliée par 2, car f est plus grande', 'C’est l’inverse : λ = c ÷ f diminue quand la fréquence augmente (la période est divisée par 2).'),
       F('elle ne change pas, car la corde est la même', 'La corde fixe la célérité c, pas la longueur d’onde. Comme λ = c × T et que T change, λ change aussi.'),
-      F('on ne peut pas savoir, car il faut connaître l’amplitude', 'L’amplitude ne joue aucun rôle dans λ = c ÷ f : avec c inchangée et f doublée, on peut conclure sans la connaître.'),
+      F('on ne peut pas savoir, car il faudrait connaître l’amplitude de l’onde', 'L’amplitude ne joue aucun rôle dans λ = c ÷ f : avec c inchangée et f doublée, on peut conclure sans la connaître.'),
     ] },
   { id: 'ond1g-periode-milieu', domaine: 'Ondes mécaniques périodiques', titre: 'Une onde change de corde',
     enonce: 'Une onde sinusoïdale de fréquence 5 Hz est produite par une source. Elle se propage d’abord le long d’une corde peu tendue, puis on remplace cette corde par une corde très tendue : la célérité de l’onde y est plus grande. La source est la même.', q: 'Que devient l’onde dans la corde très tendue ?', options: [
@@ -2419,10 +2420,11 @@ export const PREVOIR = [
       F('les deux points n’oscillent pas avec la même période', 'Les deux points oscillent avec la même période, car ils reçoivent la même onde : leurs courbes se comparent, avec un décalage dans le temps.'),
     ] },
   { id: 'ond1g-periode-lecture-T', domaine: 'Ondes mécaniques périodiques', titre: 'Lire la période sur un enregistrement',
+    schema: { type: 'onde', cas: 'enregistrement', n: 3 },
     enonce: 'On enregistre le mouvement d’un point d’une corde au passage d’une onde sinusoïdale. Le graphique y(t) montre exactement 3 oscillations complètes entre l’instant t = 0 et l’instant t = 1,5 s.', q: 'Quelle est la période T de l’onde ?', options: [
       V('0,50 s, soit une fréquence de 2,0 Hz', 'Trois motifs complets en 1,5 s : chacun dure T = 1,5 ÷ 3 = 0,50 s, et f = 1 ÷ T = 2,0 Hz.'),
       F('4,5 s, soit une fréquence de 0,22 Hz', 'Vous avez multiplié 3 par 1,5 : la durée d’un seul motif est la durée totale divisée par le nombre de motifs.'),
-      F('1,5 s, soit une fréquence de 0,67 Hz', '1,5 s est la durée totale de l’enregistrement, qui contient 3 motifs : la période est la durée d’un seul motif.'),
+      F('1,5 s, soit une fréquence d’environ 0,67 Hz', '1,5 s est la durée totale de l’enregistrement, qui contient 3 motifs : la période est la durée d’un seul motif.'),
       F('3,0 s, soit une fréquence de 0,33 Hz', 'Cette valeur correspond à la durée de 6 motifs. Ici 3 motifs durent 1,5 s, donc un seul dure 0,50 s.'),
     ] },
   { id: 'oeil-accommodation-sens', domaine: 'Œil et loupe', titre: 'Œil au repos et œil qui accommode',
@@ -5491,7 +5493,7 @@ export const PREVOIR = [
     ] },
   // ───────────────────────────── Mesure et incertitudes (1G)
   { id: 'mes1g-ana-n-quadruple', domaine: 'Mesure et incertitudes (1G)', titre: 'Quadrupler le nombre de mesures d’une série',
-    enonce: 'Un élève mesure la durée d’une chute avec un chronomètre à main. Sa série de 9 mesures a un écart-type expérimental s = 0,12 s. Il refait une série de 36 mesures, dans les mêmes conditions et avec le même chronomètre. On rappelle l’incertitude-type de type A de la moyenne : u = s / √N.', q: 'L’incertitude-type u de la moyenne, par rapport à celle de la première série, est…', options: [
+    enonce: 'Un élève mesure la durée d’une chute avec un chronomètre à main. Sa série de 9 mesures a un écart-type expérimental s = 0,12 s. Il refait une série de 36 mesures indépendantes, dans les mêmes conditions et avec le même chronomètre. On rappelle l’incertitude-type de type A de la moyenne : u = s / √N.', q: 'L’incertitude-type u de la moyenne, par rapport à celle de la première série, est…', options: [
       V('deux fois plus petite : N est multiplié par 4 et u varie comme 1 / √N', 'Avec s inchangé, u passe de s / √9 = s / 3 à s / √36 = s / 6 : elle est divisée par 2 (0,040 s puis 0,020 s).'),
       F('quatre fois plus petite : N est multiplié par 4, donc u est divisée par 4', 'Le nombre de mesures est multiplié par 4, mais u dépend de √N : elle est divisée par √4 = 2, pas par 4.'),
       F('identique : les mesures sont faites avec le même chronomètre à main', 'L’instrument fixe s, pas u : la moyenne de plus de mesures est mieux connue, donc u diminue quand N augmente.'),
@@ -5519,7 +5521,7 @@ export const PREVOIR = [
       F('une moyenne x̄ très différente : la cellule change la durée des oscillations', 'Le dispositif ne change pas la durée du pendule ; il agit surtout sur la dispersion des mesures, pas sur leur valeur centrale.'),
     ] },
   { id: 'mes1g-ana-typeb-intervalle', domaine: 'Mesure et incertitudes (1G)', titre: 'Un intervalle de netteté deux fois plus large',
-    enonce: 'Pour mesurer la distance focale d’une lentille, on cherche la position de l’écran qui donne une image nette. Avec la lentille A, l’image paraît nette sur un intervalle de largeur 8 mm ; avec la lentille B, sur un intervalle de largeur 16 mm. Pour chacune, on suppose toutes les positions de l’intervalle équiprobables et on évalue l’incertitude-type de type B : u = a / √3, où a est la demi-largeur.', q: 'Le rapport u(B) / u(A) vaut…', options: [
+    enonce: 'On cherche la position de l’écran qui donne l’image nette d’une lentille. Avec la lentille A, l’image paraît nette sur un intervalle de largeur 8 mm ; avec la lentille B, sur 16 mm. On suppose toutes les positions de l’intervalle équiprobables et on évalue l’incertitude-type de type B : u = a / √3, où a est la demi-largeur.', q: 'Le rapport u(B) / u(A) vaut…', options: [
       V('2 : la demi-largeur a double, donc u double', 'a(A) = 4 mm et a(B) = 8 mm : u(A) = 2,3 mm et u(B) = 4,6 mm. Le facteur √3 est le même, il disparaît dans le rapport.'),
       F('√2 : l’incertitude varie comme la racine de la largeur', 'La racine intervient seulement au dénominateur (√3, un nombre fixe) : u est proportionnelle à a, donc elle double.'),
       F('1 : le facteur √3 est le même pour les deux lentilles', 'Le facteur √3 est le même, mais a ne l’est pas : u = a / √3 est proportionnelle à la demi-largeur, qui double.'),
@@ -5989,6 +5991,7 @@ export const PREVOIR = [
   ...OEIL2GT_ANA,
   ...OSG2GT_ANA,
   ...NOY2GT_ANA,
+  ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,
   ...RHC_ANA,

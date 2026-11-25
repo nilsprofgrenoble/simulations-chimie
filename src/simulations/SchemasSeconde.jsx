@@ -227,7 +227,7 @@ function Lentille({ cas = 'parallele', f = '', reponse = false }) {
 function BancLentille({ d = 12, f = 8, hObj = 3, reponse = false, ecran = false }) {
   return (
     <div style={boite} data-schema="lentille-conjugaison">
-      <SchemaLentilleMince d={d} f={f} hObj={hObj} k={Math.min(10, 125 / Math.max(d, f * 2.2))} x0={Math.max(125, 20 + d * Math.min(10, 125 / Math.max(d, f * 2.2)))} image={reponse} ecran={reponse && ecran} large={360} haut={170} y0={85}
+      <SchemaLentilleMince d={d} f={f} hObj={hObj} k={Math.min(10, 125 / Math.max(d, f * 2.2))} x0={Math.max(125, 20 + d * Math.min(10, 125 / Math.max(d, f * 2.2)))} image={reponse} ecran={reponse && ecran} large={360} haut={170} y0={85} fs={16}
         label={`Lentille mince convergente de distance focale ${f} cm ; objet à ${d} cm de la lentille`}/>
     </div>);
 }
@@ -432,4 +432,38 @@ function EchelleSites({ rayon = 0.30, reponse = false }) {
     </div>);
 }
 
-export const DESSINS_SECONDE = { spectres: Spectres, caracteristique: Caracteristique, circuit: Circuit, optique: Optique, mouvement: Mouvement, mailles: CircuitMailles, molecule: Molecule, ampoule: Ampoule, maille: Maille, echelleSites: EchelleSites };
+// ── Ondes (1G) : représentations spatiale (photographie) et temporelle (enregistrement) d'une onde sinusoïdale ──
+// cas : 'photo-enregistrement' (deux documents, sans valeur) | 'cretes' (photographie, n crêtes numérotées) | 'enregistrement' (y(t), n oscillations)
+// Schéma neutre : aucune valeur chiffrée, seulement les axes, leur nom et la forme de la courbe. Texte de 16 dans un viewBox de 480.
+function Onde({ cas = 'photo-enregistrement', n = 3 }) {
+  const A = 36, X0 = 56, X1 = 456;
+  const courbe = y0 => Array.from({ length: 161 }, (_, i) => { const t = i / 160; return `${(X0 + (X1 - X0) * t).toFixed(1)},${(y0 + A * Math.cos(2 * Math.PI * n * t)).toFixed(1)}`; }).join(' ');
+  const Panneau = ({ y0, titre, axe, cretes = false }) => (
+    <g>
+      <text x="8" y={y0 - A - 26} fontSize="20" fontWeight="700" fill={TR}>{titre}</text>
+      <line x1={X0} y1={y0 - A - 10} x2={X0} y2={y0 + A + 10} stroke={GRIS} strokeWidth="1.8"/>
+      <line x1={X0} y1={y0} x2={X1 + 14} y2={y0} stroke={GRIS} strokeWidth="1.8"/>
+      <polygon points={`${X1 + 20},${y0} ${X1 + 11},${y0 - 5} ${X1 + 11},${y0 + 5}`} fill={GRIS}/>
+      <text x={X0 - 8} y={y0 - A - 8} fontSize="20" fontWeight="700" fill={TR} textAnchor="end">y</text>
+      <text x={X1 + 14} y={y0 + 28} fontSize="20" fontWeight="700" fill={TR} textAnchor="end">{axe}</text>
+      <polyline points={courbe(y0)} fill="none" stroke={BLEU} strokeWidth="2.6" strokeLinejoin="round"/>
+      {cretes && Array.from({ length: n }, (_, k) => { const x = X0 + (X1 - X0) * (k + 0.5) / n; return (
+        <g key={k}><circle cx={x} cy={y0 - A} r="4.5" fill={ORANGE}/><text x={x} y={y0 - A - 12} fontSize="20" fontWeight="700" fill={ORANGE} textAnchor="middle">{k + 1}</text></g>); })}
+    </g>);
+  if (cas === 'photo-enregistrement') return (
+    <div style={boite} data-schema="onde-photo-enregistrement">
+      <svg viewBox="0 0 480 304" style={svgStyle} role="img" aria-label="Deux documents sur une corde parcourue par une onde sinusoïdale : en haut une photographie (y en fonction de la position x), en bas l’enregistrement d’un point (y en fonction du temps t)">
+        <Panneau y0={104} titre="Photographie, à un instant donné" axe="x"/>
+        <Panneau y0={250} titre="Enregistrement d’un seul point" axe="t"/>
+      </svg>
+    </div>);
+  const photo = cas === 'cretes';
+  return (
+    <div style={boite} data-schema={`onde-${cas}`}>
+      <svg viewBox="0 0 480 160" style={svgStyle} role="img" aria-label={photo ? `Photographie d’une corde parcourue par une onde sinusoïdale, avec ${n} crêtes consécutives numérotées` : `Enregistrement du mouvement d’un point d’une corde : ${n} oscillations complètes`}>
+        <Panneau y0={104} titre={photo ? 'Photographie de la corde' : 'Enregistrement d’un point'} axe={photo ? 'x' : 't'} cretes={photo}/>
+      </svg>
+    </div>);
+}
+
+export const DESSINS_SECONDE = { spectres: Spectres, caracteristique: Caracteristique, circuit: Circuit, optique: Optique, mouvement: Mouvement, mailles: CircuitMailles, molecule: Molecule, ampoule: Ampoule, maille: Maille, echelleSites: EchelleSites, onde: Onde };

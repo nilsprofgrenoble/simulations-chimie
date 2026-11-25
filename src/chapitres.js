@@ -50,7 +50,7 @@ export const CHAPITRES = [
   { id: 'ondes-meca', niveau: '1G', rubrique: 'Ondes et signaux', label: '🌊 Ondes mécaniques', sims: [150, 151], domaines: ['Ondes mécaniques : célérité et retard', 'Ondes mécaniques périodiques'] },
   { id: '1g-couleurs', niveau: '1G', rubrique: 'Ondes et signaux', label: '🎨 Couleurs : lumières, filtres et couleur des objets', sims: [160], domaines: ['Couleurs : synthèses additive et soustractive, couleur des objets'] },
   { id: '1g-lentille', niveau: '1G', rubrique: 'Ondes et signaux', label: '🔍 Image donnée par une lentille mince', sims: [115], domaines: ['Lentille mince'] },
-  { id: '1g-mesure', niveau: '1G', rubrique: 'Mesure et incertitudes', label: '📏 Mesure et incertitudes', sims: [161], domaines: ['Mesure et incertitudes (1G)'] },
+  { id: '1g-mesure', niveau: '1G', rubrique: 'Mesure et incertitudes', label: '📏 Mesure et incertitudes', sims: [161], domaines: ['Mesure et incertitudes (1G)'], ajouts: ['37:prevoir:dispersion-double', '77:plausible:u-moyenne-ok', '77:plausible:u-nulle'] },
   { id: '1g-lumiere', niveau: '1G', rubrique: 'Ondes et signaux', label: '🌈 Modèles de la lumière', sims: [164, 165], domaines: ['Domaines spectraux et énergie d’un photon', 'Niveaux d’énergie : absorption, émission et spectres de raies'] },
 
   // TG : un chapitre = une partie numérotée du programme de terminale (la rubrique est le thème du programme) ; plusieurs simulations par chapitre.
