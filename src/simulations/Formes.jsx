@@ -8,11 +8,11 @@ import * as M from "./formesModele";
 import { QCM } from "./formesQcm";
 import { SceneFormes, SvgEc, SvgConv, SvgU, SvgEtot } from "./FormesSchemas";
 
-const SIM_ID = 243, CLE_GUIDE = 'formes-guide-v1';
+const SIM_ID = 244, CLE_GUIDE = 'formes-guide-v1';
 declarerDefis(SIM_ID, [['glisse', 'Le bloc qui ralentit'], ['chute', 'La bille en chute']]);
 
 // ====================================================
-//  SIM 243 — FORMES D'ÉNERGIE STOCKÉE : CINÉTIQUE, POTENTIELLE, INTERNE (TSTL, enseignement PCM, partie « Énergie »).
+//  SIM 244 — FORMES D'ÉNERGIE STOCKÉE : CINÉTIQUE, POTENTIELLE, INTERNE (TSTL, enseignement PCM, partie « Énergie »).
 //  Une seule idée : un système stocke de l'énergie sous trois formes (Ec, Ep, U) dont la somme est l'énergie totale ; l'énergie change de forme (Ec ↔ Ep, Ec → U) sans que l'énergie totale varie, sauf transfert reçu.
 //  Aucune situation du Moodle : bille en chute, bloc qui glisse, eau chauffée au repos (valeurs inventées). Ep de pesanteur donnée, sans formule (vue à la séquence suivante).
 //  Capacités visées (jamais affichées) : identifier les formes d'énergie stockée ; Ec = ½mv² ; Etot = Ec + Ep + U ; changement de forme ; conservation de l'énergie.

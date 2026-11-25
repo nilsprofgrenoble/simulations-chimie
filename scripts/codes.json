@@ -2625,5 +2625,17 @@
  "37:prevoir:wins-ana-iv": "ANA1202",
  "77:plausible:wins-val-sel": "VAL710",
  "77:plausible:wins-val-masse": "VAL711",
- "77:plausible:wins-val-optimum": "VAL712"
+ "77:plausible:wins-val-optimum": "VAL712",
+ "34:frm-sapp-glisse.0": "SAPP558",
+ "34:frm-sapp-glisse.1": "SAPP559",
+ "34:frm-sapp-chute.0": "SAPP560",
+ "34:frm-sapp-chute.1": "SAPP561",
+ "37:prevoir:frm-ana-sommet": "ANA1203",
+ "37:prevoir:frm-ana-vitesse": "ANA1204",
+ "37:prevoir:frm-ana-frottement": "ANA1205",
+ "37:prevoir:frm-ana-total": "ANA1206",
+ "77:plausible:frm-val-bilan": "VAL713",
+ "77:plausible:frm-val-chute": "VAL714",
+ "36:frm-glisse": "REA157",
+ "36:frm-chute": "REA158"
 }

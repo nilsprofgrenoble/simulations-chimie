@@ -421,7 +421,7 @@ const SIMULATIONS = [
     component: SimulationChaine },
   { id:238, label:"Conservation de l’énergie : bilan et signe des transferts", niveau:"TSTL", icon:"⚖️", color:"#0f766e",
     component: SimulationSigne },
-  { id:243, label:"Formes d’énergie stockée : cinétique, potentielle, interne", niveau:"TSTL", icon:"🎢", color:"#b45309",
+  { id:244, label:"Formes d’énergie stockée : cinétique, potentielle, interne", niveau:"TSTL", icon:"🎢", color:"#b45309",
     component: SimulationFormes },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
