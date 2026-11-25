@@ -2494,5 +2494,17 @@
  "77:plausible:pve-val-correct": "VAL677",
  "77:plausible:pve-val-loi": "VAL678",
  "36:pve-eclairement": "REA140",
- "36:pve-distance": "REA141"
+ "36:pve-distance": "REA141",
+ "34:las-sapp-eclair.0": "SAPP528",
+ "34:las-sapp-eclair.1": "SAPP529",
+ "34:las-sapp-duree.0": "SAPP530",
+ "34:las-sapp-duree.1": "SAPP531",
+ "37:prevoir:las-ana-diametre": "ANA1151",
+ "37:prevoir:las-ana-flux": "ANA1152",
+ "37:prevoir:las-ana-duree": "ANA1153",
+ "37:prevoir:las-ana-distance": "ANA1154",
+ "77:plausible:las-val-section": "VAL679",
+ "77:plausible:las-val-energie": "VAL680",
+ "36:las-eclairement": "REA142",
+ "36:las-energie": "REA143"
 }

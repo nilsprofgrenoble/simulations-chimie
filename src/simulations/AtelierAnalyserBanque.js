@@ -1,3 +1,4 @@
+import { LAS_ANA } from './laserExos.js';
 import { PVE_ANA } from './panneauEclairementExos.js';
 // ====================================================
 //  BANQUE DE L'ATELIER « ANALYSER » (compétence S'APP : analyser)
@@ -6352,6 +6353,7 @@ export const PREVOIR = [
   ...PVC_ANA,
   ...PVR_ANA,
   ...PVE_ANA,
+  ...LAS_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,
