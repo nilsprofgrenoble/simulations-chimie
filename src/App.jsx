@@ -132,6 +132,7 @@ const SimulationConstanteAcideConductimetrie = paresseux(() => import("./simulat
 const SimulationPotentielNernst = paresseux(() => import("./simulations/PotentielNernst"), "SimulationPotentielNernst");
 const SimulationSensEvolution = paresseux(() => import("./simulations/SensEvolution"), "SimulationSensEvolution");
 const SimulationMilieuAcideBasique = paresseux(() => import("./simulations/MilieuAcideBasique"), "SimulationMilieuAcideBasique");
+const SimulationTitrageRedoxDirect = paresseux(() => import("./simulations/TitrageRedoxDirect"), "SimulationTitrageRedoxDirect");
 const SimulationAllureTitrageConductimetrique = paresseux(() => import("./simulations/AllureTitrageConductimetrique"), "SimulationAllureTitrageConductimetrique");
 const SimulationEtalonnageProtocole = paresseux(() => import("./simulations/EtalonnageProtocole"), "SimulationEtalonnageProtocole");
 const SimulationEtalonnage = paresseux(() => import("./simulations/Etalonnage"), "SimulationEtalonnage");
@@ -387,6 +388,7 @@ const SIMULATIONS = [
   { id:292, label:"Potentiel d’un couple : électrode de référence (ESH) et relation de Nernst", niveau:"TSTL", icon:"🔋", color:"#b45309", component: SimulationPotentielNernst },
   { id:293, label:"Sens d’évolution : Qr, K et potentiels standards", niveau:"TSTL", icon:"⚖️", color:"#b45309", component: SimulationSensEvolution },
   { id:294, label:"Équations en milieu acide ou basique", niveau:"TSTL", icon:"🧪", color:"#be185d", component: SimulationMilieuAcideBasique },
+  { id:295, label:"Titrage redox direct : eau oxygénée et permanganate", niveau:"TSTL", icon:"🧪", color:"#86198f", component: SimulationTitrageRedoxDirect },
   { id:136, label:"Dosage conductimétrique par étalonnage : conductance, constante de cellule et courbe d’étalonnage", niveau:"TG", icon:"📈", color:"#0369a1", component: SimulationEtalonnage },
   { id:167, label:"Mouvement circulaire : le repère de Frenet, vitesse et accélération", niveau:"TG", icon:"🎡", color:"#b91c1c", component: SimulationFrenet },
   { id:169, label:"Spectroscopie UV-visible : identifier une espèce, puis la doser", niveau:"TG", icon:"🔆", color:"#6d28d9", component: SimulationUvVisible },

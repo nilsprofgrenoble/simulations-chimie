@@ -2940,5 +2940,17 @@
  "77:plausible:lmt-val-energie-ir": "VAL770",
  "77:plausible:lmt-val-absorbance": "VAL771",
  "77:plausible:lmt-val-rotation": "VAL772",
- "36:lmt-calcul": "REA202"
+ "36:lmt-calcul": "REA202",
+ "34:tcr-sapp-quantites.0": "SAPP647",
+ "34:tcr-sapp-quantites.1": "SAPP648",
+ "34:tcr-sapp-concentration.0": "SAPP649",
+ "34:tcr-sapp-concentration.1": "SAPP650",
+ "37:prevoir:tcr-ana-teinte": "ANA1323",
+ "37:prevoir:tcr-ana-sansacide": "ANA1324",
+ "37:prevoir:tcr-ana-concentration": "ANA1325",
+ "37:prevoir:tcr-ana-prise": "ANA1326",
+ "77:plausible:tcr-val-rapport": "VAL773",
+ "77:plausible:tcr-val-incolore": "VAL774",
+ "36:tcr-dosage-calcul": "REA203",
+ "36:tcr-bilan-calcul": "REA204"
 }
