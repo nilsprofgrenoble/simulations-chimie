@@ -1,6 +1,6 @@
 // Test du modèle 3D de l'E2 : node src/simulations/e23dModele.test.mjs
 import assert from 'node:assert';
-import { etat } from './e23dModele.js';
+import { etat, etatE1 } from './e23dModele.js';
 let n = 0; const ok = (c, m) => { n++; assert(c, m); };
 const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], len = a => Math.hypot(...a), sub = (a, b) => a.map((x, i) => x - b[i]);
 const e0 = etat(0);
@@ -21,4 +21,13 @@ ok(e1.opCH === 0 && e1.opBr === 0 && e1.opBH === 1 && e1.opPi === 1, 'liaisons e
 for (let i = 0; i <= 50; i++) { const e = etat(i / 50); for (const [r, c] of [[e.rb[0], e.cb], [e.rb[1], e.cb], [e.rc[0], e.ca], [e.rc[1], e.ca]]) ok(Math.abs(len(sub(r, c)) - 1.5) < 1e-9, 'liaison C–R constante'); }
 // la base ne traverse jamais le carbone
 for (let i = 0; i <= 50; i++) { const e = etat(i / 50); ok(len(sub(e.base, e.cb)) > 1.5, 'la base reste loin de Cβ'); }
+// E1 : le carbocation (Cα plan, Cβ encore tétraédrique) existe avant l'arrivée de la base
+const c = etatE1(0.5);
+ok(c.dirsC.every(v => Math.abs(v[1]) < 1e-9), 'E1 : carbocation plan sur Cα');
+ok(c.dirsB.every(v => Math.abs(v[1]) > 0.4), 'E1 : Cβ encore tétraédrique');
+ok(c.opBr === 0 && len(sub(c.br, c.ca)) > 3.5 && c.opCH === 1 && c.opBH === 0 && c.brParti && !c.baseLiee, 'E1 : Br parti, H pas encore arraché');
+ok(len(sub(c.base, c.H)) > 2.7, 'E1 : la base est encore loin avant la 2e étape');
+for (let i = 0; i <= 50; i++) { const e = etatE1(i / 50); if (i / 50 < 0.5) ok(len(sub(e.base, e.H)) > 2.7 && e.opPi === 0, 'E1 : pas de liaison π avant le carbocation'); ok(Math.abs(len(sub(e.rb[0], e.cb)) - 1.5) < 1e-9 && Math.abs(len(sub(e.rc[1], e.ca)) - 1.5) < 1e-9, 'E1 : liaisons C–R constantes'); }
+const f1 = etatE1(1), g1 = etat(1);
+ok(len(sub(f1.base, g1.base)) < 1e-9 && len(sub(f1.H, g1.H)) < 1e-9 && f1.opPi === 1 && f1.opCH === 0 && f1.baseLiee, 'E1 et E2 aboutissent au même produit');
 console.log(`e23dModele : ${n} vérifications OK`);

@@ -16,6 +16,13 @@ const SIM_ID = 95;
 declarerDefis(SIM_ID, [['principal', 'Substitution ou élimination']]);
 
 const TOUS = ['SN2', 'SN1', 'E2', 'E1'];
+// Conditions qui rendent chaque mécanisme possible (pour expliquer pourquoi un mécanisme est négligeable)
+const CONDITION = {
+  SN2: 'il faut un nucléophile assez fort et un carbone peu encombré (primaire, ou secondaire avec peu d’encombrement).',
+  SN1: 'il faut un carbocation assez stable (substrat tertiaire ou secondaire) et un réactif faible, sans base forte (ici l’eau).',
+  E2: 'il faut une base forte ; plus le substrat est encombré et la température élevée, plus l’élimination l’emporte.',
+  E1: 'il faut les mêmes conditions que la SN1 : un substrat tertiaire ou secondaire dans un solvant polaire protique (eau), sans base forte ; le chauffage favorise E1 par rapport à SN1.',
+};
 const COUL = { SN2: '#0284c7', SN1: '#0891b2', E2: '#ea580c', E1: '#c2410c' };
 const NOIR = '#0f172a', BRUN = '#9a3412';
 
@@ -193,7 +200,7 @@ export function SimulationSubstitutionElimination() {
   const examine = q.reaction ? (exam && TOUS.includes(exam) ? exam : q.dominant) : null;
   const regler = (s, r, c) => { setSub(s); setRe(r); if (c !== undefined) setChaud(c); setExam(null); setU(0); setLecture(false); };
   const S = SUBSTRATS[sub], R = REACTIFS[re];
-  const peut3D = examine === 'SN1' || examine === 'SN2' || examine === 'E2';
+  const peut3D = examine === 'SN1' || examine === 'SN2' || examine === 'E2' || examine === 'E1';
   const ongletActif = onglet === '3d' && !peut3D ? 'meca' : onglet;
   const negligeable = !!examine && !mecas.includes(examine);
 
@@ -247,10 +254,10 @@ export function SimulationSubstitutionElimination() {
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Mécanisme examiné :</span>
           {TOUS.map(m => <button key={m} onClick={() => { setExam(m); setU(0); setLecture(false); }} aria-pressed={m === examine} title={mecas.includes(m) ? undefined : 'Négligeable dans ces conditions'} style={{ ...stylePetitBouton(m === examine, COUL[m]), opacity: mecas.includes(m) || m === examine ? 1 : 0.6 }}>{m}{mecas.includes(m) ? '' : ' (≈ 0 %)'}</button>)}
         </div>
-        {negligeable && <div style={{ ...styleBoite, fontSize: 13.5, color: '#92400e', background: '#fffbeb', borderColor: '#fcd34d' }}>Ce mécanisme est <strong>négligeable</strong> avec ce substrat et ce réactif : regardez sa barrière dans le profil d’énergie, plus haute que celle du mécanisme dominant.</div>}
+        {negligeable && <div style={{ ...styleBoite, fontSize: 13.5, color: '#92400e', background: '#fffbeb', borderColor: '#fcd34d' }}>Ce mécanisme est <strong>négligeable</strong> avec ce substrat et ce réactif : {CONDITION[examine]} Comparez sa barrière à celle du mécanisme dominant dans le profil d’énergie.</div>}
         <OngletsVue onglets={[['meca', 'Mécanisme en 2D (flèches courbes)'], ...(peut3D ? [['3d', 'Mécanisme en 3D (dans l’espace)']] : [])]} actif={ongletActif} onChange={setOnglet} />
         {ongletActif === 'meca' && <SnEquation meca={examine} sub={sub} re={re} u={u} />}
-        {ongletActif === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}>{examine === 'E2' ? <E23D u={u} base={R.court} /> : <Sn3D meca={examine} u={u} sub={sub} re={re} />}</Suspense>}
+        {ongletActif === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}>{examine === 'E2' || examine === 'E1' ? <E23D u={u} meca={examine} base={R.court} /> : <Sn3D meca={examine} u={u} sub={sub} re={re} />}</Suspense>}
         <BarreLecture lecture={lecture} setLecture={setLecture} u={u} setU={setU} />
         <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }} aria-live="polite">{etatMeca(examine, u, sub)}</div>
         <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Profil d’énergie du mécanisme {examine}</div>
