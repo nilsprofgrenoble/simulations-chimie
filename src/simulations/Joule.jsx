@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./jouleModele";
 import { QCM } from "./jouleQcm";
+import { JouleExplore } from "./JouleExplore";
 import { SceneJoule, SvgOhm, SvgPuissanceJoule, SvgEnergieJoule, SvgConversion, SvgPertesCable, SvgHauteTension } from "./JouleSchemas";
 
 const SIM_ID = 232, CLE_GUIDE = 'joule-guide-v1';
@@ -355,10 +356,15 @@ export function SimulationJoule() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="jou-ex">
-          {scene}
-          <div className="jou-reg">{reglages}</div>
-          {mesures}
+        <JouleExplore ti={ti} setTi={setTi}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : U = ${ti.U} V · R = ${ti.R} Ω · ${ti.r > 0 ? `câble ${nbf(ti.r, 1)} Ω` : 'sans câble'} · ${ti.dt} min`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="jou-ex">
+              {scene}
+              <div className="jou-reg">{reglages}</div>
+              {mesures}
+            </div>
+          </Section>
         </div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
