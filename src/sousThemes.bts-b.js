@@ -149,4 +149,9 @@ export default {
     { id: 'isoreponses', nom: 'Courbes isoréponses : choisir ses conditions', capacite: 'Exploiter des courbes isoréponses pour choisir les conditions de formulation.',
       refs: [...A('pmel-iso-resserrees', 'pfac-iso-fenetre'), ...VV('pfac-iso-extrapolation')] },
   ],
+  // ───────────────────────── S8 · Formulation : aspect, mesurer les couleurs ───
+  'bts-couleur-mesurer': [
+    { id: 'cielab', nom: 'Couleur : lire L*a*b* et calculer un écart', capacite: 'Aspect : relier la couleur à la teinte, la luminosité et la saturation ; évaluer un écart colorimétrique à partir de (L*, a*, b*) et (L*, C*, h) ; exploiter une tolérance.',
+      refs: [...A('lab-ana-axes', 'lab-ana-gris', 'lab-ana-chroma', 'lab-ana-deltae', 'lab-ana-signe', 'lab-ana-tol'), ...VV('lab-val-somme', 'lab-val-angle', 'lab-val-cmc')] },
+  ],
 };

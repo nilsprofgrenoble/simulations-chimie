@@ -213,6 +213,7 @@ const SimulationMouillage = paresseux(() => import("./simulations/Mouillage"), "
 const SimulationMilieuxDisperses = paresseux(() => import("./simulations/MilieuxDisperses"), "SimulationMilieuxDisperses");
 const SimulationWinsor = paresseux(() => import("./simulations/Winsor"), "SimulationWinsor");
 const SimulationTernaire = paresseux(() => import("./simulations/Ternaire"), "SimulationTernaire");
+const SimulationCielab = paresseux(() => import("./simulations/Cielab"), "SimulationCielab");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationPanneauPhotovoltaique = paresseux(() => import("./simulations/PanneauPhotovoltaique"), "SimulationPanneauPhotovoltaique");
 const SimulationPanneauRendement = paresseux(() => import("./simulations/PanneauRendement"), "SimulationPanneauRendement");
@@ -621,6 +622,7 @@ const SIMULATIONS = [
   { id:237, label:"Milieux dispersés : types et causes d’instabilité", niveau:"BTS", icon:"🌫️", color:"#0369a1", component: SimulationMilieuxDisperses },
   { id:243, label:"Microémulsions : types de Winsor et effet du sel", niveau:"BTS", icon:"🧪", color:"#0e7490", component: SimulationWinsor },
   { id:246, label:"Diagramme ternaire des microémulsions", niveau:"BTS", icon:"🔺", color:"#7c3aed", component: SimulationTernaire },
+  { id:247, label:"Couleur : L*, a*, b* et écart de couleur", niveau:"BTS", icon:"🎨", color:"#0891b2", component: SimulationCielab },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
