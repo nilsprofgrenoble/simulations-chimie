@@ -3707,6 +3707,27 @@ export const PREVOIR = [
       V('non : le point à 500 nm est en dehors du triangle des primaires', 'Un mélange de trois lumières reste dans le triangle de leurs points : les couleurs hors du triangle ne sont pas reproductibles.'),
       F('non : 500 nm est un pourpre, que l’écran ne produit pas', 'Les pourpres ne sont pas sur la courbe : 500 nm est un bleu-vert, sur la courbe.'),
     ] },
+  { id: 'app-ana-cuve', domaine: 'Spectrophotomètre UV-visible : appareil, cuve et blanc', titre: 'Quelle cuve pour mesurer à 280 nm ?',
+    enonce: 'On veut doser une espèce qui absorbe à 280 nm, dans l’ultraviolet, avec un spectrophotomètre UV-visible.', q: 'Quelle cuve faut-il utiliser ?', options: [
+      F('une cuve en verre ordinaire, comme dans le visible', 'Le verre ordinaire absorbe lui-même l’UV en dessous de 320 à 340 nm : la mesure serait faussée.'),
+      F('une cuve en plastique jetable (polystyrène)', 'Ce plastique absorbe l’UV en dessous de 300 à 340 nm environ : il convient au visible seulement.'),
+      V('une cuve en quartz, transparente dans l’UV', 'Le quartz laisse passer l’UV dès 190 nm environ : il convient à toute la plage 200 à 800 nm.'),
+      F('n’importe quelle cuve, la matière ne joue aucun rôle', 'La cuve est traversée par la lumière : si elle absorbe à la longueur d’onde de mesure, A est faussée.'),
+    ] },
+  { id: 'app-ana-lampe', domaine: 'Spectrophotomètre UV-visible : appareil, cuve et blanc', titre: 'Les lampes d’un spectrophotomètre',
+    enonce: 'Un spectrophotomètre balaie les longueurs d’onde de 200 à 800 nm. Une seule lampe ne couvre pas tout ce domaine avec une intensité suffisante.', q: 'Quelle est la solution adoptée ?', options: [
+      F('une lampe au tungstène-halogène seule, très intense dans l’UV', 'La lampe au tungstène-halogène est peu intense sous 350 nm environ.'),
+      F('une lampe au deutérium seule, utilisée jusqu’à 800 nm', 'La lampe au deutérium émet surtout dans l’UV, jusqu’à 400 nm environ.'),
+      F('un laser accordable de 200 à 800 nm', 'Les appareils de laboratoire usuels n’utilisent pas de laser accordable : ils emploient deux lampes.'),
+      V('deutérium pour l’UV, tungstène-halogène pour le visible', 'Deux lampes se relaient, avec un changement vers 350 nm.'),
+    ] },
+  { id: 'app-ana-blanc', domaine: 'Spectrophotomètre UV-visible : appareil, cuve et blanc', titre: 'Quel blanc pour un dosage avec un réactif coloré ?',
+    enonce: 'Pour doser une espèce, on la fait réagir avec un réactif en excès qui forme un complexe coloré. Le réactif seul absorbe aussi à la longueur d’onde de mesure. Toutes les solutions (étalons et échantillon) contiennent la même quantité de réactif.', q: 'Quelle solution faut-il placer dans la cuve pour faire le blanc ?', options: [
+      F('de l’eau distillée seule, sans aucun réactif', 'L’eau seule ne contient pas le réactif : son absorbance serait comptée dans toutes les mesures.'),
+      F('la solution étalon la plus concentrée en espèce à doser', 'Le blanc doit ne contenir aucune espèce à doser.'),
+      V('solvant et réactif, sans l’espèce à doser', 'On supprime ainsi l’absorbance du réactif, de la cuve et du solvant : A ne dépend plus que du complexe.'),
+      F('la cuve vide, sans aucun liquide à l’intérieur', 'La cuve vide ne compense ni le solvant ni le réactif.'),
+    ] },
   { id: 'chro-ana-couleur', domaine: 'UV-visible : couleur, conjugaison et auxochromes', titre: 'La couleur d’une solution qui absorbe le vert',
     enonce: 'Le spectre UV-visible d’une solution ne présente, dans le visible, qu’une seule bande d’absorption, centrée vers 530 nm (lumière verte).', q: 'Quelle est la couleur la plus probable de la solution ?', options: [
       F('verte, car elle absorbe la lumière verte', 'La lumière verte est absorbée : elle n’est pas transmise, donc la solution ne paraît pas verte.'),

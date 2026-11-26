@@ -3018,5 +3018,10 @@
  "77:plausible:chro-val-complementaire": "VAL787",
  "77:plausible:chro-val-incolore": "VAL788",
  "77:plausible:chro-val-auxochrome": "VAL789",
- "36:chro-calcul": "REA213"
+ "36:chro-calcul": "REA213",
+ "37:prevoir:app-ana-cuve": "ANA1354",
+ "37:prevoir:app-ana-lampe": "ANA1355",
+ "37:prevoir:app-ana-blanc": "ANA1356",
+ "77:plausible:app-val-blanc": "VAL790",
+ "77:plausible:app-val-linearite": "VAL791"
 }
