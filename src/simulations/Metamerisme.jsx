@@ -226,7 +226,7 @@ export function SimulationMetamerisme() {
       <div role="group" aria-label="Lampe de la cabine" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
         {M.SOURCES.map(id => <button key={id} onClick={() => setEx(x => ({ ...x, lampe: id }))} aria-pressed={ex.lampe === id} style={{ ...stylePetitBouton(ex.lampe === id, '#d97706'), minHeight: 42, flex: '1 1 90px' }}>{id === 'D65' ? '☀️ Jour (D65)' : id === 'A' ? '💡 Incandescence (A)' : '🔦 Tube (F2)'}</button>)}
       </div>
-      <SvgCabine lampe={ex.lampe} css1={M.couleurSous(pX.r1, ex.lampe)} css2={M.couleurSous(pX.r2, ex.lampe)}/>
+      <SvgCabine lampe={ex.lampe} css1={M.couleurSous(pX.r1, ex.lampe)} css2={M.couleurSous(pX.r2, ex.lampe)} cssBlanc={M.couleurSous(new Array(pX.r1.length).fill(1), ex.lampe)}/>
       <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: KIT.txt }}><strong>{verdictLampe}</strong> sous cette lampe (ΔE*ab = {fr(eX[ex.lampe], 2)}). Si vous distinguez mal les couleurs, fiez-vous à ce nombre : c’est la mesure, pas l’impression.</div>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, margin: '12px 0 2px' }}>Pourquoi ? Les courbes de réflectance</div>
       <div style={{ fontSize: 13, color: KIT.txt2 }}>E1 et E2 renvoient la lumière différemment (courbes différentes), mais de façon équivalente pour l’œil sous la lumière du jour. Sous une autre lampe, ce n’est plus le cas.</div>
