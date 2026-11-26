@@ -5,6 +5,7 @@ import { Pic } from "../Pictos";
 import * as M from "./synthCouleurModele";
 import { QCM } from "./synthCouleurQcm";
 import { SvgSpectre, SvgCones, BarresCones, SvgCarteCones, SvgCarteAdditive, SvgCarteSoustractive, SvgCarteChoix } from "./SyntheseSchemas";
+import { SceneLampes, SceneCoupe, SceneFiltres } from "./SyntheseScenes";
 
 const C = M.C, SIM_ID = 299, CLE_GUIDE = 'syn-guide-v1';
 declarerDefis(SIM_ID, [['appariement', 'Reproduire une lumière avec les trois lampes'], ['recette', 'Retrouver une teinte avec des pigments']]);
@@ -139,31 +140,31 @@ export function SimulationSyntheseCouleurs() {
   const RSB = M.reflPeinture({ jaune: vie.pj, cyan: vie.pc }), labM = lab(RM), labMoy = lab(RMOY), labKM = lab(RKM);
   const dpO = DEUT.co, dpV = DEUT.cg;
   const sceneGuide = !enGuide ? null
-    : sc === 'lampes' ? <><Ligne><Pastille css={M.cssLumiere(mixV)} nom="couleur de la lumière obtenue" hauteur={30}/></Ligne>{spectresLampes(vie.r, vie.v, vie.b)}</>
+    : sc === 'lampes' ? <><SceneLampes r={vie.r} v={vie.v} b={vie.b}/><div style={{ height: 6 }}/>{spectresLampes(vie.r, vie.v, vie.b)}</>
     : sc === 'jaune' ? <><Ligne><Pastille css={M.cssLumiere(SP_MIX)} nom="rouge + verte" hauteur={30}/><Pastille css={M.cssLumiere(SP_JAUNE)} nom="monochromatique 580 nm" hauteur={30}/></Ligne>
         <SvgSpectre ymax={32} yTitre="intensité" label="Spectres du mélange rouge et vert, et de la lumière de 580 nm" courbes={[{ v: SP_MIX, col: COL.orange, w: 2.6, fill: COL.orange, nom: 'rouge + verte', l: 625, dy: -7 }, { v: SP_JAUNE, col: '#4c1d95', w: 2.6, nom: '580 nm', l: 580, dy: -6 }]}/></>
     : sc === 'cones' ? <><SvgCones marques={[{ l: 580, txt: '580 nm' }]}/><div style={{ height: 8 }}/><BarresCones a={JAUNE.mix} b={JAUNE.mono} nomA="rouge + verte" nomB="580 nm" ymax={60}/></>
-    : sc === 'appar' ? <><Ligne><Pastille css={M.cssLumiere(mixV)} nom="mes lampes" hauteur={28}/><Pastille css={M.cssLumiere(SP_JAUNE)} nom="580 nm" hauteur={28}/></Ligne><BarresCones a={repV} b={CIBLE} nomA="mes lampes" nomB="580 nm" ymax={60}/></>
-    : sc === 'compl' ? <><Ligne><Pastille css={M.cssLumiere(mixV)} nom="lumière obtenue" hauteur={30}/><Pastille css="#ffffff" nom="blanc D65" hauteur={30}/></Ligne>{spectresLampes(vie.r, vie.v, vie.b)}</>
+    : sc === 'appar' ? <><SceneLampes r={vie.r} v={vie.v} b={vie.b}/><Ligne><Pastille css={M.cssLumiere(mixV)} nom="mélange rouge + verte" hauteur={28}/><Pastille css={M.cssLumiere(SP_JAUNE)} nom="lumière jaune de 580 nm" hauteur={28}/></Ligne><BarresCones a={repV} b={CIBLE} nomA="rouge + verte" nomB="580 nm" ymax={60}/></>
+    : sc === 'compl' ? <><SceneLampes r={vie.r} v={vie.v} b={vie.b}/><Ligne><Pastille css={M.cssLumiere(mixV)} nom="lumière obtenue" hauteur={30}/><Pastille css="#ffffff" nom="blanc D65" hauteur={30}/></Ligne>{spectresLampes(vie.r, vie.v, vie.b)}</>
     : sc === 'anomalie' ? <><Ligne><Pastille css={M.cssLumiere(DEUT.orange)} nom="orange, 610 nm" hauteur={28}/><Pastille css={M.cssLumiere(DEUT.vert)} nom="vert-jaune, 545 nm" hauteur={28}/></Ligne>
         <BarresCones a={dpO} b={dpV} nomA="orange" nomB="vert-jaune" ymax={60} masqueM={vie.oeil === 'sansM'} label="Réponses des cônes aux deux lumières"/>
         {vie.oeil === 'sansM' && <div style={{ fontSize: 13.5, color: COL.rouge, marginTop: 4, fontWeight: 700, textAlign: 'center' }}>Sans cônes M, les deux lumières ne diffèrent plus que par un nombre égal : elles sont confondues.</div>}</>
-    : sc === 'filtre' ? <><Ligne><Pastille css="#ffffff" nom="lampe blanche" hauteur={28}/><Pastille css={M.cssFiltre(Tf)} nom="après le filtre" hauteur={28}/></Ligne>
+    : sc === 'filtre' ? <><SceneFiltres filtres={[{ nom: `filtre ${vie.filtre} (${pct(vie.cf)})`, T: Tf, col: COUL_FILTRE[vie.filtre] }]}/><Ligne><Pastille css="#ffffff" nom="lampe blanche" hauteur={28}/><Pastille css={M.cssFiltre(Tf)} nom="après le filtre" hauteur={28}/></Ligne>
         <SvgSpectre graduations yTitre="transmittance" label="Transmittance du filtre" courbes={[{ v: Tf, col: COUL_FILTRE[vie.filtre], w: 3, fill: COUL_FILTRE[vie.filtre], nom: '', l: 600 }]}/></>
-    : sc === 'serie' ? <><Ligne><Pastille css={M.cssFiltre(Tj1)} nom="filtre jaune" hauteur={26}/><Pastille css={M.cssFiltre(Tc1)} nom="filtre cyan" hauteur={26}/><Pastille css={M.cssFiltre(Tjc1)} nom="les deux" hauteur={26}/></Ligne>
+    : sc === 'serie' ? <><SceneFiltres filtres={[{ nom: 'filtre jaune', T: Tj1, col: COUL_FILTRE.jaune }, { nom: 'filtre cyan', T: Tc1, col: COUL_FILTRE.cyan }]}/><Ligne><Pastille css={M.cssFiltre(Tj1)} nom="filtre jaune" hauteur={26}/><Pastille css={M.cssFiltre(Tc1)} nom="filtre cyan" hauteur={26}/><Pastille css={M.cssFiltre(Tjc1)} nom="les deux" hauteur={26}/></Ligne>
         <SvgSpectre graduations yTitre="transmittance" marques={[{ l: LAM_SERIE, txt: `${LAM_SERIE} nm` }]} label="Transmittance des filtres jaune et cyan, et des deux en série"
           courbes={[{ v: Tj1, col: COUL_FILTRE.jaune, w: 2.4, dash: '7 4', nom: 'jaune', l: 640, dy: -8 }, { v: Tc1, col: COUL_FILTRE.cyan, w: 2.4, dash: '2 3', nom: 'cyan', l: 440, dy: -8 }, { v: Tjc1, col: COL.vert, w: 3.4, fill: COL.vert, nom: 'les deux', l: 560, dy: -8 }]}/></>
-    : sc === 'peinture' ? <><Ligne><Pastille css={patch(RJ)} nom="pigment jaune" hauteur={26}/><Pastille css={patch(RC)} nom="pigment cyan" hauteur={26}/><Pastille css={patch(RSB)} nom="mélange" hauteur={26}/></Ligne>
+    : sc === 'peinture' ? <><SceneCoupe R={RSB} css={patch(RSB)} pig={{ jaune: vie.pj, cyan: vie.pc }}/><Ligne><Pastille css={patch(RJ)} nom="pigment jaune" hauteur={26}/><Pastille css={patch(RC)} nom="pigment cyan" hauteur={26}/><Pastille css={patch(RSB)} nom="mélange" hauteur={26}/></Ligne>
         <SvgSpectre graduations yTitre="réflectance" label="Réflectance des pigments jaune et cyan, et du mélange" courbes={[{ v: RJ, col: COUL_FILTRE.jaune, w: 2.2, dash: '7 4', nom: 'jaune', l: 640, dy: -8 }, { v: RC, col: COUL_FILTRE.cyan, w: 2.2, dash: '2 3', nom: 'cyan', l: 440, dy: -8 }, { v: RSB, col: COL.vert, w: 3.4, fill: COL.vert, nom: 'mélange', l: 540, dy: -8 }]}/></>
     : sc === 'moyenne' ? <><Ligne><Pastille css={patch(RMOY)} nom="moyenne des réflectances" hauteur={30}/><Pastille css={patch(RKM)} nom="calcul par K/S" hauteur={30}/></Ligne>
         <SvgSpectre graduations yTitre="réflectance" label="Réflectance du mélange : moyenne et Kubelka-Munk" courbes={[{ v: RMOY, col: COL.gris, w: 2.6, dash: '7 4', nom: 'moyenne', l: 540, dy: -8 }, { v: RKM, col: COL.vert, w: 3.4, fill: COL.vert, nom: 'K/S', l: 540, dy: 16 }]}/></>
-    : sc === 'blanc' ? <><Ligne><Pastille css={patch(RSB)} nom="sans blanc" hauteur={28}/><Pastille css={patch(RM)} nom="avec le blanc" hauteur={28}/></Ligne>
+    : sc === 'blanc' ? <><SceneCoupe R={RM} css={patch(RM)} pig={{ jaune: vie.pj, cyan: vie.pc, blanc: vie.pb }}/><Ligne><Pastille css={patch(RSB)} nom="sans blanc" hauteur={28}/><Pastille css={patch(RM)} nom="avec le blanc" hauteur={28}/></Ligne>
         <SvgSpectre graduations yTitre="réflectance" label="Réflectance du mélange vert avec du pigment blanc" courbes={[{ v: RSB, col: COL.gris, w: 2.2, dash: '7 4', nom: 'sans blanc', l: 540, dy: 16 }, { v: RM, col: COL.vert, w: 3.4, fill: COL.vert, nom: 'avec blanc', l: 540, dy: -8 }]}/></>
     : null;
   const MES_GUIDE = {
     jaune: [['x ; y, rouge + verte', `${fr(M.chroma(SP_MIX).x, 3)} ; ${fr(M.chroma(SP_MIX).y, 3)}`], ['x ; y, 580 nm', `${fr(M.chroma(SP_JAUNE).x, 3)} ; ${fr(M.chroma(SP_JAUNE).y, 3)}`]],
     cones: [['Réponses L ; M ; S, rouge + verte', `${fr(JAUNE.mix.L, 1)} ; ${fr(JAUNE.mix.M, 1)} ; ${fr(JAUNE.mix.S, 1)}`], ['Réponses L ; M ; S, 580 nm', `${fr(JAUNE.mono.L, 1)} ; ${fr(JAUNE.mono.M, 1)} ; ${fr(JAUNE.mono.S, 1)}`]],
-    appar: [['L ; M ; S, mes lampes', `${fr(repV.L, 1)} ; ${fr(repV.M, 1)} ; ${fr(repV.S, 1)}`], ['L ; M ; S, 580 nm', `${fr(CIBLE.L, 1)} ; ${fr(CIBLE.M, 1)} ; ${fr(CIBLE.S, 1)}`]],
+    appar: [['L ; M ; S, rouge + verte', `${fr(repV.L, 1)} ; ${fr(repV.M, 1)} ; ${fr(repV.S, 1)}`], ['L ; M ; S, 580 nm', `${fr(CIBLE.L, 1)} ; ${fr(CIBLE.M, 1)} ; ${fr(CIBLE.S, 1)}`]],
     compl: [['x ; y de la lumière', `${fr(cV.x, 3)} ; ${fr(cV.y, 3)}`], ['x ; y du blanc D65', '0,313 ; 0,329']],
     anomalie: [['L ; M ; S, orange', `${fr(dpO.L, 1)} ; ${fr(dpO.M, 1)} ; ${fr(dpO.S, 1)}`], ['L ; M ; S, vert-jaune', `${fr(dpV.L, 1)} ; ${fr(dpV.M, 1)} ; ${fr(dpV.S, 1)}`], ['Dominante, œil normal', `${dominante(DEUT.orange)} et ${dominante(DEUT.vert)}`]],
     serie: [['T à 510 nm, filtre jaune', fr(arr2(TJ), 2)], ['T à 510 nm, filtre cyan', fr(arr2(TC), 2)]],
@@ -221,7 +222,7 @@ export function SimulationSyntheseCouleurs() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.kind === 'appariement' ? 'Défi : reproduire une lumière avec les trois lampes' : 'Défi : retrouver une teinte avec des pigments'}</div>
       {defi.kind === 'appariement' ? <>
         <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>La lumière cible a pour coordonnées <strong>x = {fr(defi.x, 3)}</strong>, <strong>y = {fr(defi.y, 3)}</strong> et pour luminance <strong>Y = {fr(defi.Y, 0)}</strong>. Réglez les trois lampes pour obtenir x et y à 0,012 près et Y à 6 % près.</div>
-        <Ligne><Pastille css={C.cssXY(defi.x, defi.y, defi.Y)} nom="cible" hauteur={34}/><Pastille css={M.cssLumiere(M.spectreRVB(defi.dr, defi.dv, defi.db))} nom="mes lampes" hauteur={34}/></Ligne>
+        <Ligne><Pastille css={C.cssXY(defi.x, defi.y, defi.Y)} nom="cible" hauteur={34}/><Pastille css={M.cssLumiere(M.spectreRVB(defi.dr, defi.dv, defi.db))} nom="ma lumière" hauteur={34}/></Ligne>
         {curs('sy-dr', `Lampe rouge : ${pct(defi.dr)}`, defi.dr, 0, 1, 0.01, ev => maj({ dr: parseFloat(ev.target.value) }), null, COL.rouge)}
         {curs('sy-dv', `Lampe verte : ${pct(defi.dv)}`, defi.dv, 0, 1, 0.01, ev => maj({ dv: parseFloat(ev.target.value) }), null, COL.vert)}
         {curs('sy-db', `Lampe bleue : ${pct(defi.db)}`, defi.db, 0, 1, 0.01, ev => maj({ db: parseFloat(ev.target.value) }), null, COL.bleu)}
@@ -295,15 +296,18 @@ export function SimulationSyntheseCouleurs() {
         {[['lumieres', 'Lumières (additive)'], ['pigments', 'Filtres et peintures (soustractive)']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, vol: k }))} aria-pressed={ex.vol === k} style={stylePetitBouton(ex.vol === k, '#7c3aed')}>{l}</button>)}
       </div>
       {lumieres ? <>
+        <SceneLampes r={ex.r} v={ex.v} b={ex.b}/>
         <Ligne><Pastille css={M.cssLumiere(spE)} nom="lumière obtenue" hauteur={28}/>{spCible && <Pastille css={M.cssLumiere(spCible)} nom={`monochromatique ${n0(ex.lamCible)} nm`} hauteur={28}/>}</Ligne>
         <SvgSpectre ymax={Math.max(24, spCible ? 32 : 0)} yTitre="intensité" label="Spectre de la lumière obtenue"
           courbes={[{ v: M.spectreRVB(ex.r, 0, 0), col: COL.rouge, w: 1.6, dash: '5 3' }, { v: M.spectreRVB(0, ex.v, 0), col: COL.vert, w: 1.6, dash: '5 3' }, { v: M.spectreRVB(0, 0, ex.b), col: COL.bleu, w: 1.6, dash: '5 3' }, ...(spCible ? [{ v: spCible, col: '#4c1d95', w: 2.4 }] : []), { v: spE, col: '#0f172a', w: 3, fill: '#94a3b8', fillOpacity: 0.3 }]}/>
         <div style={{ height: 8 }}/>
-        <BarresCones a={repE} b={repCible ?? undefined} nomA="mes lampes" nomB={`${n0(ex.lamCible)} nm`} ymax={60}/></>
+        <BarresCones a={repE} b={repCible ?? undefined} nomA="lumière obtenue" nomB={`${n0(ex.lamCible)} nm`} ymax={60}/></>
       : ex.support === 'filtre' ? <>
+        <SceneFiltres filtres={[['jaune', ex.pj], ['magenta', ex.pm], ['cyan', ex.pc]].filter(([, c]) => c > 0.001).map(([n, c]) => ({ nom: `filtre ${n} (${pct(c)})`, T: M.transmittance({ [n]: c }), col: COUL_FILTRE[n] }))}/>
         <Ligne><Pastille css="#ffffff" nom="lampe blanche" hauteur={28}/><Pastille css={M.cssFiltre(filtreEx)} nom="après les filtres" hauteur={28}/></Ligne>
         <SvgSpectre graduations yTitre="transmittance" label="Transmittance des filtres" courbes={[{ v: M.transmittance({ jaune: ex.pj }), col: COUL_FILTRE.jaune, w: 1.6, dash: '5 3' }, { v: M.transmittance({ magenta: ex.pm }), col: COUL_FILTRE.magenta, w: 1.6, dash: '5 3' }, { v: M.transmittance({ cyan: ex.pc }), col: COUL_FILTRE.cyan, w: 1.6, dash: '5 3' }, { v: filtreEx, col: '#0f172a', w: 3, fill: '#94a3b8', fillOpacity: 0.3 }]}/></>
       : <>
+        <SceneCoupe R={REx} css={patch(REx)} pig={{ jaune: ex.pj, magenta: ex.pm, cyan: ex.pc, blanc: ex.pb, noir: ex.pn }}/>
         <Ligne><Pastille css={patch(REx)} nom={ex.modele === 'moy' ? 'mélange (moyenne : modèle faux)' : 'mélange'} hauteur={28}/></Ligne>
         <SvgSpectre graduations yTitre="réflectance" label="Réflectance du mélange de pigments" courbes={[{ v: REx, col: '#0f172a', w: 3, fill: '#94a3b8', fillOpacity: 0.3 }]}/></>}
     </div>);
