@@ -54,6 +54,8 @@ const TACHES_FAMILLE = {
   '36:ab-pred-rea-rapport': () => ['rapport des concentrations', 'pKa', 'conservation de la matière'], '36:ab-pred-rea-pka': () => ['pKa', 'rapport des concentrations', 'prédominance'],
   '36:ab-tamp-rea-melange': () => ['solution tampon', 'quantité de matière versée', 'pKa'], '36:ab-tamp-rea-ajout': () => ['solution tampon', 'conservation de la matière', 'pKa'],
   '36:pdi-calcul': () => ['couple acide-base', 'prédominance', 'distribution', 'forme basique'],
+  '36:cdp-calcul': () => ['quantité restante', 'relation à l’équivalence', 'concentration d’une solution', 'masse dans un volume'],
+  '36:cdp-sigma-calcul': () => ['loi de Kohlrausch', 'conductivité d’une solution', 'titrage conductimétrique', 'quantité formée'],
   '36:cdt-calcul': () => ['loi de Kohlrausch', 'conductivité d’une solution', 'titrage conductimétrique', 'volume équivalent'],
   '36:uvv-calcul': () => ['loi de Beer-Lambert', 'concentration d’une solution', 'dilution', 'conversion d’unités', 'masse molaire'],
   '36:irt-calcul': () => ['nombre d’onde et longueur d’onde', 'données tabulées', 'conversion d’unités'],

@@ -2697,5 +2697,17 @@
  "77:plausible:pdt-val-signe": "VAL729",
  "77:plausible:pdt-val-chemin": "VAL730",
  "36:pdt-poids": "REA161",
- "36:pdt-frott": "REA162"
+ "36:pdt-frott": "REA162",
+ "34:cdp-sapp-equiv.0": "SAPP570",
+ "34:cdp-sapp-equiv.1": "SAPP571",
+ "34:cdp-sapp-sigma.0": "SAPP572",
+ "34:cdp-sapp-sigma.1": "SAPP573",
+ "37:prevoir:cdp-ana-spectateurs": "ANA1239",
+ "37:prevoir:cdp-ana-allure": "ANA1240",
+ "37:prevoir:cdp-ana-apres-precip": "ANA1241",
+ "37:prevoir:cdp-ana-concentre": "ANA1242",
+ "77:plausible:cdp-val-zero": "VAL731",
+ "77:plausible:cdp-val-volume": "VAL732",
+ "36:cdp-calcul": "REA163",
+ "36:cdp-sigma-calcul": "REA164"
 }

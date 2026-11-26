@@ -3538,6 +3538,63 @@ function genConductimetrieTG() {
     retenir: ['Loi de Kohlrausch : σ = Σ λ × c, avec c en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³) et λ en mS·m²·mol⁻¹.', 'Une solution diluée seulement : au-delà de 10 mol·m⁻³ environ, la loi n’est plus valable.', 'La rupture de pente de la courbe repère le volume équivalent : c_A × V_A = c_B × V_E.', 'Après l’équivalence, les ions HO⁻ versés en excès restent en solution : n(HO⁻) = c_B × V_B − c_A × V_A.'] };
 }
 
+// ---------- Titrage conductimétrique par précipitation (TSTL) : deux familles ----------
+const TP_I = { Na: { f: 'Na⁺', l: 5.0, nom: 'chlorure de sodium', M: 58.5 }, K: { f: 'K⁺', l: 7.4, nom: 'chlorure de potassium', M: 74.6 }, Cl: 7.6, NO3: 7.1, Ag: 6.2 };
+const tpTol = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
+function genPrecipitationTSTL() {
+  const cat = tire(['Na', 'K']), C = TP_I[cat], VA = 20.0, cB = tire([0.050, 0.100]);
+  const cA = tire([0.020, 0.030, 0.040, 0.050]), VE = cA * VA / cB;
+  const V1 = Math.round(tire([0.25, 0.5, 0.75]) * VE * 10) / 10, nR = cA * VA - cB * V1;
+  const q1 = { id: 'p0', type: 'num', q: <>On dose <b>{nb(VA, 3)}{NB}mL</b> d’une eau salée contenant des ions chlorure à <b>{nb(cA, 3)}{NB}mol/L</b> par du nitrate d’argent à <b>{nb(cB, 3)}{NB}mol/L</b> (Ag⁺ + Cl⁻ → AgCl(s), transformation totale). On a versé <b>{nb(V1, 3)}{NB}mL</b>, avant l’équivalence. Quelle quantité d’ions Cl⁻ reste-t-il en solution (en mmol, 2 chiffres significatifs) ?</>, unite: 'mmol', vrai: nR, tolRel: 0.05, csMin: 2,
+    aide: 'n(Cl⁻) restant = n(Cl⁻) initial − n(Ag⁺) versé, avec n = c × V (mol/L × mL = mmol) : un Ag⁺ fait précipiter un Cl⁻.',
+    pieges: [[cA * VA, 'C’est la quantité de Cl⁻ au départ : une partie a déjà précipité avec les Ag⁺ versés.'], [cB * V1, 'C’est la quantité d’Ag⁺ versée, pas celle de Cl⁻ restante.'], [cA * VA + cB * V1, 'Il faut retrancher la quantité d’Ag⁺ versée, pas l’ajouter.']],
+    expl: <>n(Cl⁻) initial = {nb(cA, 3)} × {nb(VA, 3)} = {nb(cA * VA, 3)}{NB}mmol ; n(Ag⁺) versé = {nb(cB, 3)} × {nb(V1, 3)} = {nb(cB * V1, 3)}{NB}mmol ; reste = <b>{nb(nR, 3)}{NB}mmol</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>Le suivi de la conductivité montre une rupture de pente (coude des deux droites) pour un volume versé V<sub>E</sub> = <b>{nb(VE, 3)}{NB}mL</b>, avec la même solution d’argent à <b>{nb(cB, 3)}{NB}mol/L</b> et une prise d’essai de <b>{nb(VA, 3)}{NB}mL</b>. Calculez la concentration en ions chlorure de l’eau salée (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: cA, tolRel: 0.05, csMin: 2,
+    aide: 'À l’équivalence, un Ag⁺ pour un Cl⁻ : c(Ag⁺) × V_E = c(Cl⁻) × V_A.',
+    pieges: [[cB * VA / VE, 'Le rapport des volumes est inversé : c(Cl⁻) = c(Ag⁺) × V_E / V_A.'], [cB * VE, 'C’est la quantité d’Ag⁺ versée en mmol ; divisez-la par la prise d’essai V_A.'], [cB * VE / (VA + 180), 'Il faut diviser par la prise d’essai (20,0 mL) : l’eau ajoutée ne change pas la quantité de Cl⁻.']],
+    expl: <>c(Cl⁻) = {avecIndices(`frac(${nb(cB, 3)} × ${nb(VE, 3)}|${nb(VA, 3)})`)} = <b>{nb(cA, 4)}{NB}mol/L</b>.</> };
+  const tm = cA * C.M;
+  const q3 = { id: 'p2', type: 'num', q: <>On suppose que les ions chlorure de l’eau proviennent uniquement du {C.nom} ({cat === 'Na' ? 'NaCl' : 'KCl'}, M = <b>{nb(C.M, 3)}{NB}g/mol</b>) et que leur concentration est <b>{nb(cA, 3)}{NB}mol/L</b>. Calculez la masse de sel par litre d’eau (en g/L, 2 chiffres significatifs).</>, unite: 'g/L', vrai: tm, tolRel: 0.05, csMin: 2,
+    aide: 'Concentration massique = concentration molaire × masse molaire (mol/L × g/mol = g/L).',
+    pieges: [[cA / C.M, 'Il faut multiplier par la masse molaire, pas diviser.'], [cA * C.M * 1000, 'Vous avez multiplié par 1 000 : c est déjà en mol/L et on veut des g/L.'], [cA, 'C’est la concentration en mol/L ; multipliez-la par la masse molaire.']],
+    expl: <>t = c × M = {nb(cA, 3)} × {nb(C.M, 3)} = <b>{nb(tm, 3)}{NB}g/L</b>.</> };
+  const mAg = 143.3 * cA * VA;
+  const q4 = { id: 'p3', type: 'num', q: <>On a versé du nitrate d’argent en excès (au-delà de l’équivalence) sur <b>{nb(VA, 3)}{NB}mL</b> d’eau à <b>{nb(cA, 3)}{NB}mol/L</b> en chlorure. Quelle masse de précipité AgCl(s) s’est formée (en mg, 2 chiffres significatifs) ? M(AgCl) = <b>143,3{NB}g/mol</b>.</>, unite: 'mg', vrai: mAg, tolRel: 0.05, csMin: 2,
+    aide: 'Le précipité est limité par les ions Cl⁻ : n(AgCl) = n(Cl⁻) initial = c × V (mmol) ; puis m = n × M (mmol × g/mol = mg).',
+    pieges: [[cA * VA, 'C’est la quantité de AgCl en mmol ; multipliez-la par la masse molaire pour obtenir des mg.'], [mAg / 1000, 'Ce résultat est en g ; la question demande des mg (× 1 000).'], [cA * VA / 143.3, 'Il faut multiplier par la masse molaire, pas diviser.']],
+    expl: <>n(AgCl) = n(Cl⁻) = {nb(cA, 3)} × {nb(VA, 3)} = {nb(cA * VA, 3)}{NB}mmol ; m = {nb(cA * VA, 3)} × 143,3 = <b>{nb(mAg, 3)}{NB}mg</b>.</> };
+  [q1, q2, q3, q4].forEach(tpTol);
+  return { intro: 'Dosage des ions chlorure par le nitrate d’argent : quantité restante, volume équivalent, masse de sel et masse de précipité.', questions: [q1, q2, q3, q4],
+    retenir: ['Ag⁺ + Cl⁻ → AgCl(s) : un Ag⁺ pour un Cl⁻, le précipité sort de la solution.', 'À l’équivalence : c(Ag⁺) × V_E = c(Cl⁻) × V_A (V_A = prise d’essai, pas le volume du bécher).', 'Concentration massique = concentration molaire × masse molaire.', 'La quantité de précipité est fixée par le réactif limitant : les ions Cl⁻ si l’argent est en excès.'] };
+}
+function genSigmaPrecipTSTL() {
+  const cat = tire(['Na', 'K']), C = TP_I[cat], VA = 20.0, cA = tire([0.020, 0.030, 0.040, 0.050]), cB = tire([0.050, 0.100]), eau = tire([150, 180, 190]), Vt = VA + eau, VE = cA * VA / cB;
+  const intro = <>Conductivités ioniques molaires à 25 °C : λ({C.f}) = <b>{nb(C.l, 2)}</b> ; λ(Cl⁻) = <b>{nb(TP_I.Cl, 2)}</b> ; λ(NO₃⁻) = <b>{nb(TP_I.NO3, 2)}</b> ; λ(Ag⁺) = <b>{nb(TP_I.Ag, 2)}</b> mS·m²·mol⁻¹. On dose <b>{nb(VA, 3)}{NB}mL</b> d’une eau contenant du {C.nom} à <b>{nb(cA, 3)}{NB}mol/L</b>, diluée à <b>{Vt}{NB}mL</b> au total (volume supposé constant), par du nitrate d’argent à <b>{nb(cB, 3)}{NB}mol/L</b>.</>;
+  const s0 = (C.l + TP_I.Cl) * cA * VA / Vt * 1000;
+  const q1 = { id: 'g0', type: 'num', q: <>{intro} Calculez la conductivité σ avant l’ajout d’argent (en mS·m⁻¹, 2 chiffres significatifs).</>, unite: 'mS·m⁻¹', vrai: s0, tolRel: 0.05, csMin: 2,
+    aide: 'Concentration de chaque ion = cA × V_A / V_total, à convertir en mol·m⁻³ (× 1 000) ; σ = (λ(cation) + λ(Cl⁻)) × c.',
+    pieges: [[(C.l + TP_I.Cl) * cA * 1000, 'Vous avez utilisé la concentration de la prise d’essai : la solution est diluée dans le bécher (c = cA × V_A / V_total).'], [s0 / 1000, 'Vous avez gardé c en mol/L : convertissez en mol·m⁻³ (× 1 000).'], [TP_I.Cl * cA * VA / Vt * 1000, 'Il manque la contribution du cation : les deux ions contribuent à σ.']],
+    expl: <>c = {nb(cA, 3)} × {nb(VA, 3)} / {Vt} = {nb(cA * VA / Vt * 1000, 3)}{NB}mol·m⁻³ ; σ = ({nb(C.l, 2)} + {nb(TP_I.Cl, 2)}) × {nb(cA * VA / Vt * 1000, 3)} = <b>{nb(s0, 3)}{NB}mS·m⁻¹</b>.</> };
+  const se = (C.l + TP_I.NO3) * cA * VA / Vt * 1000;
+  const q2 = { id: 'g1', type: 'num', q: <>{intro} Calculez la conductivité σ à l’équivalence (en mS·m⁻¹, 2 chiffres significatifs).</>, unite: 'mS·m⁻¹', vrai: se, tolRel: 0.05, csMin: 2,
+    aide: 'À l’équivalence, il reste le cation et NO₃⁻, chacun à la concentration cA × V_A / V_total (un NO₃⁻ versé pour chaque Cl⁻ disparu).',
+    pieges: [[s0, 'C’est σ au départ : à l’équivalence, NO₃⁻ a remplacé Cl⁻ (λ(NO₃⁻) ≠ λ(Cl⁻)).'], [0, 'σ n’est pas nulle : les ions spectateurs (cation et NO₃⁻) restent dissous.'], [(C.l + TP_I.NO3 + TP_I.Ag) * cA * VA / Vt * 1000, 'À l’équivalence, il n’y a pas d’ions Ag⁺ en excès : retirez leur contribution.']],
+    expl: <>[{C.f}] = [NO₃⁻] = {nb(cA * VA / Vt * 1000, 3)}{NB}mol·m⁻³ ; σ = ({nb(C.l, 2)} + {nb(TP_I.NO3, 2)}) × {nb(cA * VA / Vt * 1000, 3)} = <b>{nb(se, 3)}{NB}mS·m⁻¹</b>.</> };
+  const VB = VE + tire([4, 6, 8]), nAgEx = cB * VB - cA * VA, sa = (C.l * cA * VA + TP_I.NO3 * cB * VB + TP_I.Ag * nAgEx) / Vt * 1000;
+  const q3 = { id: 'g2', type: 'num', q: <>{intro} On a versé <b>{nb(VB, 3)}{NB}mL</b> d’argent, soit après l’équivalence. Calculez la conductivité σ (en mS·m⁻¹, 2 chiffres significatifs).</>, unite: 'mS·m⁻¹', vrai: sa, tolRel: 0.05, csMin: 2,
+    aide: 'Après l’équivalence : cation (cA × V_A), NO₃⁻ (c(Ag⁺) × V_B, tout l’argent versé) et Ag⁺ en excès (c(Ag⁺) × V_B − cA × V_A), en mmol ; σ = 1 000 × Σ λ × n / V_total.',
+    pieges: [[se, 'C’est σ à l’équivalence : il faut ajouter la contribution des Ag⁺ et des NO₃⁻ versés depuis.'], [(C.l * cA * VA + TP_I.NO3 * cB * VB) / Vt * 1000, 'Il manque la contribution des ions Ag⁺ en excès.'], [(C.l * cA * VA + TP_I.NO3 * cA * VA + TP_I.Ag * nAgEx) / Vt * 1000, 'Tout le nitrate versé reste en solution : n(NO₃⁻) = c(Ag⁺) × V_B, pas seulement celui de l’équivalence.']],
+    expl: <>n({C.f}) = {nb(cA * VA, 3)}{NB}mmol ; n(NO₃⁻) = {nb(cB * VB, 3)}{NB}mmol ; n(Ag⁺) en excès = {nb(nAgEx, 3)}{NB}mmol ; σ = 1 000 × ({nb(C.l, 2)} × {nb(cA * VA, 3)} + {nb(TP_I.NO3, 2)} × {nb(cB * VB, 3)} + {nb(TP_I.Ag, 2)} × {nb(nAgEx, 3)}) / {Vt} = <b>{nb(sa, 3)}{NB}mS·m⁻¹</b>.</> };
+  const pa = (TP_I.Ag + TP_I.NO3) * cB * 1000 / Vt;
+  const q4 = { id: 'g3', type: 'num', q: <>{intro} De combien σ augmente-t-elle par mL d’argent versé après l’équivalence (en mS·m⁻¹ par mL, 2 chiffres significatifs) ?</>, unite: 'mS·m⁻¹ par mL', vrai: pa, tolRel: 0.05, csMin: 2,
+    aide: 'Chaque mL apporte c(Ag⁺) mmol d’Ag⁺ et autant de NO₃⁻, sans rien retirer : Δσ = (λ(Ag⁺) + λ(NO₃⁻)) × c(Ag⁺) × 1 000 / V_total.',
+    pieges: [[(TP_I.NO3 - TP_I.Cl) * cB * 1000 / Vt, 'Cette variation est celle d’avant l’équivalence (NO₃⁻ remplace Cl⁻) ; après, rien n’est retiré.'], [(TP_I.Ag + TP_I.NO3) * cB / Vt, 'Convertissez la concentration en mol·m⁻³ (× 1 000).'], [TP_I.Ag * cB * 1000 / Vt, 'Il manque la contribution de NO₃⁻ : Ag⁺ et NO₃⁻ s’accumulent ensemble.']],
+    expl: <>Δσ = ({nb(TP_I.Ag, 2)} + {nb(TP_I.NO3, 2)}) × {nb(cB, 3)} × 1 000 / {Vt} = <b>{nb(pa, 3)}{NB}mS·m⁻¹ par mL</b>.</> };
+  [q1, q2, q3, q4].forEach(tpTol);
+  return { intro: 'Dosage des ions chlorure par le nitrate d’argent : conductivité au départ, à l’équivalence, après l’équivalence et pente.', questions: [q1, q2, q3, q4],
+    retenir: ['Au départ : σ = (λ(cation) + λ(Cl⁻)) × c, avec c = cA × V_A / V_total en mol·m⁻³.', 'À l’équivalence : il reste le cation et NO₃⁻ ; σ est minimale mais non nulle.', 'Après l’équivalence : Ag⁺ en excès et NO₃⁻ s’accumulent ; σ augmente nettement.', 'Chaque mL versé après l’équivalence ajoute (λ(Ag⁺) + λ(NO₃⁻)) × c(Ag⁺) × 1 000 / V_total à σ.'] };
+}
+
 function genEtalonnageTG() {
   const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c] || c)).join('')}`; };
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
@@ -5508,6 +5565,8 @@ export const FAMILLES = [
   { id: 'tmp-calcul', groupe: 'Formules', titre: 'Solution tampon : ajout d’acide, bilan de matière et pH du tampon (TG)', gen: genTamponTG, domaine: 'Force des acides et des bases : Ka et tampon' },
   { id: 'aam-calcul', groupe: 'Formules', titre: 'Acides α-aminés : rapport des formes, pourcentages et pH pour une proportion (TG)', gen: genAminoAcidesTG, domaine: 'Acides α-aminés : forme selon le pH' },
   { id: 'cdt-calcul', groupe: 'Formules', titre: 'Conductimétrie : loi de Kohlrausch, concentration, volume équivalent et bilan après l’équivalence (TG)', gen: genConductimetrieTG, domaine: 'Conductimétrie : conductivité et titrage' },
+  { id: 'cdp-calcul', groupe: 'Formules', titre: 'Dosage des chlorures par précipitation : quantité restante, volume équivalent, masse de sel et masse de précipité (TSTL)', gen: genPrecipitationTSTL, domaine: 'Titrage conductimétrique par précipitation' },
+  { id: 'cdp-sigma-calcul', groupe: 'Formules', titre: 'Dosage des chlorures par précipitation : conductivité au départ, à l’équivalence, après l’équivalence et pente (TSTL)', gen: genSigmaPrecipTSTL, domaine: 'Titrage conductimétrique par précipitation' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },

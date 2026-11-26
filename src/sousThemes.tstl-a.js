@@ -47,6 +47,14 @@ export default {
     { id: 'titrage', nom: 'Titrage acide-base : équivalence et indicateur coloré', capacite: 'Définir l’équivalence, exploiter la demi-équivalence et choisir un indicateur coloré adapté au titrage.',
       refs: ['34:titph-ca', '34:titph-compo', '37:prevoir:ab-choix-indicateur-acide-faible', '37:prevoir:ab-demi-equivalence', '37:prevoir:titph-apres-eq', '37:prevoir:titph-phe-benz', '37:prevoir:titph-indic-benz', '77:plausible:ab-ph-equivalence-ok', '77:plausible:titph-val-phe', '77:plausible:titph-val-ca', '77:compat:ab-pka-demi-equivalence'] },
   ],
+  'tstl-conductivite': [
+    { id: 'precip-equation', nom: 'Titrage par précipitation : réaction, ions spectateurs et équivalence', capacite: 'Écrire l’équation de réaction d’un titrage par précipitation, identifier les ions présents avant, à et après l’équivalence, et utiliser la relation à l’équivalence.',
+      refs: ['37:prevoir:cdp-ana-spectateurs', '37:prevoir:cdp-ana-apres-precip', '77:plausible:cdp-val-zero', '77:plausible:cdp-val-volume', '34:cdp-sapp-equiv', '36:cdp-calcul'] },
+    { id: 'precip-allure', nom: 'Allure de la courbe de conductivité et rupture de pente', capacite: 'Prévoir l’allure de σ en fonction du volume versé à partir des conductivités ioniques molaires et déterminer le volume équivalent par la rupture de pente.',
+      refs: ['37:prevoir:cdp-ana-allure', '34:cdp-sapp-sigma', '36:cdp-sigma-calcul'] },
+    { id: 'precip-kohlrausch', nom: 'Loi de Kohlrausch et domaine de validité', capacite: 'Utiliser la loi de Kohlrausch σ = Σ λ c pour des solutions suffisamment diluées et en connaître la limite.',
+      refs: ['37:prevoir:cdp-ana-concentre'] },
+  ],
   'tstl-synthese-organique': [
     { id: 'esterification', nom: 'Estérification : équilibre, réactif limitant et rendement', capacite: 'Déterminer le rendement d’une estérification et identifier les facteurs qui déplacent l’équilibre (excès, élimination d’un produit, catalyseur).',
       refs: ['34:estRendement', '37:hypothese:est-hyp-rendement', '37:prevoir:est-exces-alcool-rendement', '37:prevoir:est-catalyseur-equilibre', '37:prevoir:est-dean-stark-bain-froid', '37:prevoir:est-eau-initiale', '77:plausible:est-rendement-superieur-100', '77:compat:est-rendement-equilibre'] },

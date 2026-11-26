@@ -1,5 +1,6 @@
 // Courtes descriptions des simulations, affichées en infobulle dans le menu de l'en-tête (clé : titre de la simulation).
 export const DESCRIPTIONS = {
+  "Titrage conductimétrique par précipitation : doser les ions chlorure": "Ag⁺ + Cl⁻ → AgCl(s) : burette, cellule et précipité animés, tableau des quantités, relation à l’équivalence c(Ag⁺) × V_E = c(Cl⁻) × V_A, allure de σ (avant presque plate, minimum, forte hausse) et rupture de pente par deux droites. Parcours en 13 étapes, exploration (cation, concentration, dilution) et deux défis.",
   "Statique des fluides : pression et profondeur": "Dans un liquide au repos, la pression augmente avec la profondeur : P_B − P_A = ρ·g·(z_A − z_B), pression absolue, ordre de grandeur, force sur une paroi, droite P(h).",
   "Mesure et incertitudes : variabilité, types A et B": "Une mesure varie : histogramme, moyenne, écart-type ; incertitude-type de type A (s/√N) et de type B (a/√3) ; écrire le résultat et le comparer à une référence.",
   "Couleurs : lumières, filtres et couleur des objets": "Synthèse additive (lampes R, V, B) et soustractive (filtres) ; couleurs complémentaires ; couleur d’un objet selon la lumière : absorption, diffusion, transmission. Modèle à trois bandes.",
