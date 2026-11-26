@@ -9,6 +9,7 @@ import { QCM_PARCOURS as Q } from "./vecteursVAQcm";
 import { SceneChrono, GraphesVA, SvgVitesseCarte, SvgAccelerationCarte, SvgSensCarte, SvgSigneCarte, SvgDeriveesCarte, SvgCaracteriserCarte } from "./vecteursVASchemas";
 import { SceneCirculaire, SvgCirculaireCarte } from "./VecteursVAStlSchemas";
 import { QCM_STL } from "./vecteursVAStlQcm";
+import { VAExplore } from "./VAExplore";
 const SIM_ID = 264, CLE_GUIDE = 'vecteurs-va-tstl-guide-v1';
 declarerDefis(SIM_ID, [['chrono', 'Lire l’accélération sur une chronophotographie'], ['derive', 'De x(t) à l’accélération et à l’arrêt']]);
 // ====================================================
@@ -311,29 +312,7 @@ export function SimulationVecteursVAStl() {
   const vE = M.vitesseApprochee(PE, selE, tauOk), aE = M.accelerationApprochee(PE, selE, tauOk), vX = M.vitesseExacte(mvE, selE * tauOk), aX = M.accelerationExacte(mvE, selE * tauOk);
   const deux = mvE.layout === 'plan';
   const xy = (o, d = 1) => (deux ? `(${nbf(o.x, d)} ; ${nbf(o.y, d)})` : nbf(o.x, d));
-  const bascule = (cle, lib) => <button key={cle} onClick={() => setEx(s => ({ ...s, [cle]: !s[cle] }))} aria-pressed={ex[cle]} style={stylePetitBouton(ex[cle], '#0b4f94')}>{ex[cle] ? '✓ ' : ''}{lib}</button>;
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={titreCarte}>Réglages de l’expérience</div>
-      <div style={aide}>Choisissez un mouvement et le pas τ entre deux photos, puis déplacez le curseur pour étudier un point.</div>
-      <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>Mouvement
-        <select value={ex.mv} onChange={e => setMv(e.target.value)} style={{ ...menu, marginTop: 2 }}>{M.ORDRE_MOUVEMENTS.map(id => <option key={id} value={id}>{M.MOUVEMENTS[id].nom}</option>)}</select>
-      </label>
-      <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>Pas τ entre deux photos
-        <select value={tauOk} onChange={e => setEx(s => ({ ...s, tau: Number(e.target.value) }))} style={{ ...menu, marginTop: 2 }}>{mvE.taus.map(t => <option key={t} value={t}>{nbf(t, 1)} s</option>)}</select>
-      </label>
-      <Curseur nom="Point étudié (numéro i)" valeur={selE} onChange={v => setEx(s => ({ ...s, sel: v }))} min={2} max={N - 2} pas={1} couleur="#c2410c"/>
-      <div style={{ ...aide, marginTop: 4 }}>Vecteurs affichés sur la figure :</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{bascule('v', 'vitesse')}{bascule('a', 'accélération')}{bascule('om', 'position (OM)')}</div>
-      <div style={{ ...aide, marginTop: 8, marginBottom: 0 }}>{mvE.note}</div>
-    </div>);
-  const boxExplore = enExplore && (
-    <div style={styleBoite}>
-      <div style={titreCarte}>{mvE.nom}</div>
-      <div style={aide}>{mvE.court}. {mvE.formule}. Points pris toutes les τ = {nbf(tauOk, 1)}{NB}s ; le point n° i correspond à la date t = i × τ. Le point étudié est entouré.</div>
-      <SceneChrono mv={mvE} P={PE} tau={tauOk} E={EE} montrerV={ex.v} montrerA={ex.a} om={ex.om ? selE : null} sel={selE}
-        aria={`Chronophotographie : ${mvE.nom}, points de 0 à ${N} pris toutes les ${nbf(tauOk, 1)} secondes. Point étudié : ${selE}.`}/>
-    </div>);
+  const animee = enExplore && <VAExplore ex={ex} setEx={setEx} setMv={setMv} mv={mvE} tau={tauOk}/>;
   const mesures = enExplore && (
     <div style={styleBoite}>
       <div style={titreCarte}>{avecIndices(`Mesures au point M_${selE}`)}</div>
@@ -393,7 +372,7 @@ export function SimulationVecteursVAStl() {
         .va-col { display: flex; flex-direction: column; gap: 12px; }
         .va-ex { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
         @media (min-width: 901px) { .va-l1.cote .va-carte { order: 2; } .va-l1.cote .va-main { order: 1; }
-          .va-ex { grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); } .va-ex > * { grid-column: 1; } .va-ex > .va-ctrl { grid-column: 2; grid-row: 1 / span 6; } }
+          .va-ex { grid-template-columns: minmax(0, 1fr); } }
         @media (max-width: 900px) { .va-l1.cote { grid-template-columns: minmax(0, 1fr); } }
         @media (prefers-reduced-motion: no-preference) { .va-in { animation: va-fondu 0.35s ease-out; } @keyframes va-fondu { from { opacity: 0; } to { opacity: 1; } } }
       `}</style>
@@ -411,8 +390,7 @@ export function SimulationVecteursVAStl() {
         </div>
       </div>}
       {enExplore && <div className="va-ex">
-        <div>{boxExplore}</div>
-        <div className="va-ctrl">{reglages}</div>
+        <div>{animee}</div>
         <div>{mesures}</div>
         <div>{tableau}</div>
         <div>{graphes}</div>
