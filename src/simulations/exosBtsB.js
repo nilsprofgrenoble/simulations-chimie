@@ -572,14 +572,34 @@ export const BTSB_SIT = [
         enonce: `Dans une flamme à 2 500 K, on veut doser le ${nom} (${sym}) par émission. Sa raie de résonance est à ${nb(lam, 1)} nm. Constante : h·c = 1240 eV·nm.`,
         etapes: [
           { id: 'E', titre: 'Écart d’énergie', q: 'Calculer l’écart d’énergie entre les deux niveaux de la transition, en eV.', aide: 'E(eV) = 1240 / λ(nm).',
-            type: 'saisie', champs: [{ id: 'E', lib: 'E', u: 'eV', vrai: Number(E.toFixed(2)), tol: 0.03 }],
+            type: 'saisie', champs: [{ id: 'E', lib: 'E', u: 'eV', vrai: Number(E.toFixed(2)), tol: 0.05 }],
             expl: `E = 1240 / ${nb(lam, 1)} = ${nb(E, 2)} eV.` },
           { id: 'excites', titre: 'Atomes excités', q: `Pour cet écart d’énergie (${nb(E, 2)} eV), combien d’atomes sont excités dans la flamme, parmi 10 000 atomes libres ?`, aide: 'La proportion d’atomes excités suit exp(−E / kT) : elle chute très vite quand E augmente. Repère : pour 2,1 eV à 2 500 K, environ 2 atomes sur 10 000.',
             o: ok
-              ? [F('moins d’un atome sur un million : le signal est inexploitable', 'À 1,6 à 2,1 eV, quelques atomes sur 10 000 sont excités : le signal est mesurable.'), V('quelques atomes sur 10 000 (de 1 à 20) : le signal est mesurable', 'Avec un écart d’énergie inférieur à 2,1 eV, la flamme excite assez d’atomes pour une mesure.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')]
-              : [F('quelques atomes sur 10 000 : le signal est mesurable', 'L’écart d’énergie est beaucoup plus grand que pour le sodium : il y a des millions de fois moins d’atomes excités.'), V('moins d’un atome sur un million : le signal est inexploitable', 'Avec plus de 3 eV d’écart d’énergie, presque aucun atome n’est excité : on utilise plutôt l’absorption atomique.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')] },
+              ? [F('moins d’un atome sur un million : le signal est inexploitable', 'À 1,6 à 2,1 eV, quelques atomes sur 10 000 sont excités : le signal est mesurable.'), V('quelques atomes sur 10 000 : le signal est mesurable', 'Avec un écart d’énergie inférieur à 2,1 eV, la flamme excite assez d’atomes pour une mesure.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')]
+              : [F('quelques atomes sur 10 000 : le signal est mesurable', 'L’écart d’énergie est beaucoup plus grand que pour le sodium : il y a des millions de fois moins d’atomes excités.'), V('moins d’un atome sur un million : signal nul', 'Avec plus de 3 eV d’écart d’énergie, presque aucun atome n’est excité : on utilise plutôt l’absorption atomique.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')] },
         ],
         retenir: ['Plus l’écart d’énergie de la raie est grand, moins la flamme excite d’atomes.', 'L’émission de flamme convient à Na, K, Li ; l’absorption atomique aux autres éléments.'],
+      };
+    },
+  },
+  {
+    id: 'icp-sapp-source', domaine: 'Spectrométrie d’émission à plasma (ICP)', niveau: 2, titre: 'Flamme ou plasma pour cet élément ?',
+    construire: () => {
+      const T = [['sodium', 'Na', 589.0, 1], ['potassium', 'K', 766.5, 1], ['zinc', 'Zn', 213.9, 0], ['fer', 'Fe', 248.3, 0], ['cuivre', 'Cu', 324.8, 0]];
+      const [nom, sym, lam, ok] = tire(T), E = 1240 / lam;
+      return {
+        enonce: `On veut doser le ${nom} (${sym}) par spectrométrie d’émission atomique. Sa raie est à ${nb(lam, 1)} nm. Constante : h·c = 1240 eV·nm. Une flamme atteint environ 2 500 K, un plasma d’argon environ 6 500 K.`,
+        etapes: [
+          { id: 'E', titre: 'Écart d’énergie', q: 'Calculer l’écart d’énergie entre les deux niveaux de la transition, en eV.', aide: 'E(eV) = 1240 / λ(nm).',
+            type: 'saisie', champs: [{ id: 'E', lib: 'E', u: 'eV', vrai: Number(E.toFixed(2)), tol: 0.05 }],
+            expl: `E = 1240 / ${nb(lam, 1)} = ${nb(E, 2)} eV.` },
+          { id: 'source', titre: 'Choix de la source', q: 'Quelle source d’excitation convient pour cette raie ?', aide: 'Repère : une flamme suffit pour un écart d’énergie inférieur à environ 2,2 eV (sodium : 2,10 eV) ; au-delà il y a trop peu d’atomes excités et il faut un plasma.',
+            o: ok
+              ? [F('un plasma est indispensable pour tous les éléments', 'Pour une raie peu énergétique, la flamme excite assez d’atomes : le plasma n’est pas indispensable.'), V('une flamme suffit, l’écart d’énergie est faible', 'Avec moins de 2,2 eV, la flamme excite assez d’atomes pour un signal mesurable.'), F('aucune source thermique ne convient', 'Les sources thermiques conviennent : la flamme ou le plasma excitent ces atomes.')]
+              : [F('une flamme suffit pour tous les éléments', 'Avec un écart d’énergie aussi grand, une flamme n’excite presque aucun atome : le signal est nul.'), V('un plasma : l’écart d’énergie est grand', 'À 6 500 K, le plasma fournit assez d’énergie pour exciter ces atomes.'), F('aucune source thermique ne convient', 'Le plasma est une source thermique et convient parfaitement.')] },
+        ],
+        retenir: ['Plus l’écart d’énergie de la raie est grand, plus il faut un milieu chaud pour exciter les atomes.', 'Une flamme convient à Na et K ; le plasma d’argon excite presque tous les éléments, raies UV comprises.'],
       };
     },
   },
