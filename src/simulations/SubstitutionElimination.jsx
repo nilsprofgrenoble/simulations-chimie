@@ -1,10 +1,13 @@
 // Substitution ou élimination ? (BTS) : SN1, SN2, E1, E2 sur des halogénoalcanes en C4.
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { FDeuxVoies, FClasse, FEtapes, FStereo, FTemperature, FPrevoir } from "./SNSchemas";
 import { SUBSTRATS, REACTIFS, MECA, proportions, profil, energieEn, barriere } from "./snModele";
+
+// Vue 3D de la stéréochimie (substrat secondaire, SN1 ou SN2) : three.js, chargée à la demande
+const Sn3D = lazy(() => import("./Sn3D"));
 
 const SIM_ID = 95;
 declarerDefis(SIM_ID, [['principal', 'Substitution ou élimination']]);
@@ -119,10 +122,10 @@ function etapesGuide(st, regler) {
     { titre: 'Le substrat secondaire et la stéréochimie',
       retenirTitre: 'À RETENIR : UNE ÉTAPE OU DEUX ?',
       retenir: <><FEtapes/><ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}><li><strong>SN2 et E2</strong> : une étape, un seul état de transition. <strong>SN1 et E1</strong> : deux étapes, avec un <strong>carbocation</strong> entre les deux : un intermédiaire (creux), pas un état de transition (sommet).</li><li>Stabilité du carbocation : <strong>tertiaire &gt; secondaire &gt; primaire</strong> (énergies illustratives de la simulation : 55, 85 et 160 kJ·mol⁻¹).</li><li>Un carbocation peut se réarranger : voir la simulation « Transposition de carbocation ».</li></ul></>,
-      texte: <>Le 2-bromobutane est <strong>chiral</strong> (le carbone lié à Br est asymétrique). Place-toi sur ce substrat avec l'eau et observe l'étape 2 du mécanisme : le nucléophile arrive sur le carbocation <strong>plan</strong>.</>,
+      texte: <>Le 2-bromobutane est <strong>chiral</strong> (le carbone lié à Br est asymétrique). Place-toi sur ce substrat avec l'eau et observe l'étape 2 du mécanisme : le nucléophile arrive sur le carbocation <strong>plan</strong>. Sous le curseur, la <strong>vue 3D</strong> montre le carbone : fais-la tourner et avance la réaction.</>,
       tache: { ...le_faire('sec', 'H2O', false, 'Choisis le 2-bromobutane et l’eau à 25 °C.'), } },
     { titre: 'SN1 ou SN2 : conséquence sur la configuration',
-      texte: <>Rappel : en SN2, le nucléophile attaque par l'arrière (inversion). En SN1, le carbocation est plan.</>,
+      texte: <>Rappel : en SN2, le nucléophile attaque par l'arrière (inversion). En SN1, le carbocation est plan. Dans « Mécanisme examiné », choisis SN2 puis SN1 et regarde la vue 3D : la lettre R ou S du carbone est donnée au début et à la fin.</>,
       tache: { type: 'qcm', q: 'Partant du (R)-2-bromobutane pur, quel est le produit d’une SN1 ?', options: ['Le (S)-butan-2-ol pur (inversion)', 'Le (R)-butan-2-ol pur (rétention)', 'Un mélange racémique de butan-2-ol (R et S)'], bonne: 2, indice: 'Le nucléophile peut attaquer le carbocation plan sur ses deux faces.', expl: <>Le carbocation est plan, achiral : l'attaque est possible sur les deux faces avec la même probabilité. On obtient un <strong>racémique</strong>, alors qu'une SN2 donnerait l'énantiomère inversé (S), pur.</> } },
     { titre: 'L\'effet de la température',
       retenirTitre: 'À RETENIR : LES MARQUEURS DES MÉCANISMES',
@@ -268,6 +271,8 @@ export function SimulationSubstitutionElimination() {
           <input type="range" min={0} max={1000} step={1} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(+e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ flex: 1 }} />
         </div>
         <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }} aria-live="polite">{etatMeca(examine, u, sub)}</div>
+        {sub === 'sec' && (examine === 'SN1' || examine === 'SN2') && (
+          <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Sn3D meca={examine} u={u} /></Suspense>)}
       </>) : (
         <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}><strong>Pratiquement aucune réaction.</strong> Le substrat primaire ne forme pas de carbocation stable, et l'eau est un trop faible nucléophile pour une SN2 : il faut une base ou un nucléophile plus fort.</div>
       )}
