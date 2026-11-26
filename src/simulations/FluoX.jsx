@@ -4,9 +4,9 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { Pic } from "../Pictos";
 import * as M from "./frxModele";
 import { QCM } from "./frxQcm";
-import { SceneAtomeAnim, SceneHistoX, CommandesTirages } from "./FrxTirages";
+import { SceneAtomeAnim, SceneHistoX, CommandesTirages, TableScenarios } from "./FrxTirages";
 import { useTiragesX, useProgres } from "./frxTiragesHook";
-import { texteAtome, legendePhase } from "./frxTirages";
+import { texteAtome, legendePhase, scenario } from "./frxTirages";
 import { SceneAtome, SceneSpectreX, SceneEtalonnage, SceneAppareil, SvgCarteTransitions, SvgCarteMoseley, SvgCarteBilanFrx } from "./FrxSchemas";
 
 const SIM_ID = 302, CLE_GUIDE = 'frx-guide-v1';
@@ -39,7 +39,7 @@ export function SimulationFluoX() {
   const [vie, setVie] = useState(() => ({ ...BASE }));
   const [ex, setEx] = useState({ onglet: 'atome', el: 'Fe', E: 9, ech: 'laiton', raie: 'Cu' });
   const [ouv, setOuv] = useState({});
-  const tir = useTiragesX(), progT = useProgres(tir.t.etat.nEnv * 1000 + tir.rejeu % 1000, tir.t.vitesse === 'lent' ? 4500 : 2800, tir.anime);
+  const tir = useTiragesX(), progT = useProgres(tir.t.etat.nEnv * 1000 + tir.rejeu % 1000, tir.dureeAnim, tir.anime);
   const [suiviE, noterE] = useCompteurDefi(), [suiviD, noterD] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('element');
   const enGuide = mode === 'guide', enExplore = mode === 'explore', enDefi = mode === 'defi';
@@ -202,10 +202,10 @@ export function SimulationFluoX() {
     <div style={styleBoite}>
       {pilules}
       {ex.onglet === 'tirages' ? <>
-        <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#4c1d95', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{tir.t.etat.lot > 1 ? 'Un lot d’atomes est trop rapide pour être animé : le bilan est ci-dessous. Pour voir chaque atome, utilisez « 1 atome » ou « Lecture ».' : legendePhase(tir.t.etat.dernier, progT)}</div>
+        <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#4c1d95', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{tir.t.etat.lot > 1 ? 'Les atomes défilent trop vite pour être animés un par un : voici le bilan du dernier paquet. « × 10 » et « × 100 » montrent chaque atome.' : legendePhase(tir.t.etat.dernier, progT)}</div>
         <SceneAtomeAnim d={tir.t.etat.lot > 1 ? null : tir.t.etat.dernier} p={tir.t.etat.lot > 1 ? 1 : progT}/>
-        <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{tir.t.etat.lot > 1 ? `Bilan du lot de ${tir.t.etat.lotRes.n} atomes : ${tir.t.etat.lotRes.ion} électrons K éjectés, dont ${tir.t.etat.lotRes.ka} photons Kα, ${tir.t.etat.lotRes.kb} photons Kβ et ${tir.t.etat.lotRes.auger} effets Auger (sans photon X).` : `${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.`}</div>
-        <SceneHistoX etat={tir.t.etat} params={tir.t} el={tir.el} courbe={tir.t.courbe}/><div style={{ marginTop: 10 }}><CommandesTirages tir={tir}/></div></>
+        <div role="status" aria-live={tir.lecture ? 'off' : 'polite'} style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{tir.t.etat.lot > 1 ? `Bilan du dernier paquet de ${tir.t.etat.lotRes.n} atomes : ${tir.t.etat.lotRes.ion} électrons K éjectés, dont ${tir.t.etat.lotRes.ka} photons Kα, ${tir.t.etat.lotRes.kb} photons Kβ et ${tir.t.etat.lotRes.auger} effets Auger (sans photon X).` : `${tir.t.etat.dernier ? `Scénario ${scenario(tir.t.etat.dernier) + 1} sur 5 : ` : ''}${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.`}</div>
+        <SceneHistoX etat={tir.t.etat} params={tir.t} el={tir.el} courbe={tir.t.courbe}/><div style={{ marginTop: 10 }}><CommandesTirages tir={tir}/></div><div style={{ marginTop: 14 }}><TableScenarios etat={tir.t.etat} params={tir.t} el={tir.el} marquer={tir.t.etat.lot === 1}/></div></>
       : ex.onglet === 'atome' ? <><SceneAtome etat={ionE ? 'saut2' : 'repos'} photon={ex.E} photonLabel={`${fr(ex.E, 1)} keV`} raies={[`Kα ${fr(el.Ka, 2)} keV`, `Kβ ${fr(el.Kb, 2)} keV`]}/><div style={{ height: 6 }}/>
         <SceneSpectreX comp={ionE ? [{ s: el.s, w: 10 }] : []} yMax={3600} marques={[[el.EK, `seuil K ${fr(el.EK, 2)}`, '#7c3aed', el.EK <= ex.E ? 'end' : 'start'], [ex.E, 'photon X', '#2563eb', el.EK <= ex.E ? 'start' : 'end']]}/></>
         : <SceneSpectreX comp={ech.comp} echelle="log" titre={ech.nom.split(' (')[0].toLowerCase()} etiquettes={ech.comp.map(c => [M.element(c.s).Ka, c.s, 0, 'middle'])} marques={[[elR.Ka, `${fr(elR.Ka, 2)}`]]}/>}
@@ -214,10 +214,8 @@ export function SimulationFluoX() {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       {ex.onglet === 'tirages' ? <>
-        <LigneMesure nom="Atomes irradiés" valeur={`${tir.t.etat.nEnv}`}/><LigneMesure nom="Électrons K éjectés" valeur={`${tir.t.etat.nIon}`}/>
-        <LigneMesure nom="Photons Kα (L → K)" valeur={`${tir.t.etat.nKa}`}/><LigneMesure nom="Photons Kβ (M → K)" valeur={`${tir.t.etat.nKb}`}/>
-        <LigneMesure nom="Effet Auger (pas de photon X)" valeur={`${tir.t.etat.nAuger}`}/>
-        <LigneMesure nom="Photons X détectés par atome irradié" valeur={tir.t.etat.nEnv ? `${fr(100 * (tir.t.etat.nKa + tir.t.etat.nKb) / tir.t.etat.nEnv, 1)}${NB}%` : '—'}/></>
+        <div style={{ marginTop: 6 }}><LigneMesure nom="Atomes irradiés" valeur={`${tir.t.etat.nEnv}`}/>
+        <LigneMesure nom="Photons X détectés par atome irradié" valeur={tir.t.etat.nEnv ? `${fr(100 * (tir.t.etat.nKa + tir.t.etat.nKb) / tir.t.etat.nEnv, 1)}${NB}%` : '—'}/></div></>
       : ex.onglet === 'atome' ? <>
         <LigneMesure nom="Numéro atomique Z" valeur={`${el.Z}`}/><LigneMesure nom="Seuil K (énergie de liaison)" valeur={`${fr(el.EK, 2)}${NB}keV`}/>
         <LigneMesure nom="Niveau L" valeur={`${fr(M.niveauL(el), 2)}${NB}keV`}/><LigneMesure nom="Raie Kα = E_K − E_L" valeur={`${fr(el.Ka, 2)}${NB}keV`}/>

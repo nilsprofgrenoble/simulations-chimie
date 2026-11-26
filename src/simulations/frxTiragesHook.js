@@ -20,23 +20,36 @@ export function useProgres(cle, duree, anime) {
 }
 
 const INIT = { el: 'Fe', E: 9, w: 100, courbe: false, vitesse: 'lent' };
+// Cadence de lecture : atomes lancés par tick (par) toutes les `periode` ms. Un atome à la fois = animation ; un paquet = pas d'animation individuelle.
+const CAD_LOT = { 10: { periode: 1300, par: 1 }, 100: { periode: 260, par: 1 }, 1000: { periode: 100, par: 10 } };
+const CAD_LECTURE = { lent: { periode: 5000, par: 1 }, normal: { periode: 3000, par: 1 }, rapide: { periode: 100, par: 5 } };
 export function useTiragesX(init) {
   const [t, setT] = useState(() => ({ ...INIT, ...init, etat: X.etatVide() }));
-  const [lecture, setLecture] = useState(false);
+  const [play, setPlay] = useState(null);                       // { restant, periode, par } ou null
   const [rejeu, setRejeu] = useState(0);
   const el = element(t.el);
-  const lancer = k => setT(s => ({ ...s, etat: X.lancer(s.etat, element(s.el), s, k, Math.random) }));
-  const regler = patch => setT(s => ({ ...s, ...patch, etat: ['el', 'E', 'w'].some(c => c in patch && patch[c] !== s[c]) ? X.etatVide() : s.etat }));
-  const effacer = () => setT(s => ({ ...s, etat: X.etatVide() }));
-  const reinit = cfg => { setLecture(false); setT({ ...INIT, ...cfg, etat: X.etatVide() }); };
+  const tirer = k => setT(s => ({ ...s, etat: X.lancer(s.etat, element(s.el), s, k, Math.random) }));
+  const lancer = k => {
+    if (k === 1) { setPlay(null); tirer(1); return; }
+    const c = CAD_LOT[k]; tirer(c.par); setPlay(k - c.par > 0 ? { restant: k - c.par, ...c } : null);
+  };
+  const basculeLecture = () => setPlay(p => (p ? null : { restant: Infinity, ...CAD_LECTURE[t.vitesse] }));
+  const arreter = () => setPlay(null);
+  const regler = patch => {
+    if ('vitesse' in patch) setPlay(p => (p && p.restant === Infinity ? { restant: Infinity, ...CAD_LECTURE[patch.vitesse] } : p));
+    setT(s => ({ ...s, ...patch, etat: ['el', 'E', 'w'].some(c => c in patch && patch[c] !== s[c]) ? X.etatVide() : s.etat }));
+  };
+  const effacer = () => { setPlay(null); setT(s => ({ ...s, etat: X.etatVide() })); };
+  const reinit = cfg => { setPlay(null); setT({ ...INIT, ...cfg, etat: X.etatVide() }); };
   const rejouer = () => setRejeu(r => r + 1);
   const plein = t.etat.nEnv >= X.MAX_ATOMES;
-  const periode = t.vitesse === 'lent' ? 5000 : t.vitesse === 'normal' ? 3000 : 60;
+  const actif = !!play && !plein, periode = play?.periode, par = play?.par;
   useEffect(() => {
-    if (!lecture || plein) return undefined;
-    const id = setInterval(() => setT(s => ({ ...s, etat: X.lancer(s.etat, element(s.el), s, s.vitesse === 'rapide' ? 4 : 1, Math.random) })), periode);
+    if (!actif) return undefined;
+    const id = setInterval(() => { tirer(par); setPlay(p => (p && p.restant - par > 0 ? { ...p, restant: p.restant - par } : null)); }, periode);
     return () => clearInterval(id);
-  }, [lecture, plein, periode]);
+  }, [actif, periode, par]);
   const anime = t.etat.lot === 1 && !reduitMouvement();
-  return { t, el, rejeu, rejouer, lancer, regler, effacer, reinit, lecture: lecture && !plein, setLecture, plein, anime };
+  const dureeAnim = actif && par === 1 ? Math.round(periode * 0.88) : t.vitesse === 'lent' ? 4500 : 2800;
+  return { t, el, rejeu, rejouer, lancer, regler, effacer, reinit, lecture: actif, restant: play?.restant ?? 0, basculeLecture, arreter, plein, anime, dureeAnim };
 }

@@ -76,21 +76,48 @@ export function SceneHistoX({ etat, params, el, courbe = false }) {
 }
 
 export function CommandesTirages({ tir }) {
-  const b = k => <button key={k} onClick={() => { tir.setLecture(false); tir.lancer(k); }} disabled={tir.plein} style={{ ...styleBouton(false), opacity: tir.plein ? 0.5 : 1 }}>{k === 1 ? '1 atome (animé)' : `× ${k}`}</button>;
+  const b = k => <button key={k} onClick={() => tir.lancer(k)} disabled={tir.plein} style={{ ...styleBouton(false), opacity: tir.plein ? 0.5 : 1 }}>{k === 1 ? '1 atome' : `× ${k}`}</button>;
   const vit = [['lent', 'Lent'], ['normal', 'Normal'], ['rapide', 'Rapide']];
+  const occupe = !tir.t.etat.nEnv || tir.t.etat.lot > 1 || tir.lecture;
   return (<div>
-    <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Irradier des atomes</div>
+    <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>Irradier des atomes</div>
+    <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Les atomes défilent un par un : « × 10 » dure une dizaine de secondes. Au-delà (× 1000), ils sont groupés et seul le bilan s’affiche.</div>
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {[1, 10, 100, 1000].map(b)}
-      <button onClick={() => tir.setLecture(l => !l)} disabled={tir.plein} aria-pressed={tir.lecture} style={styleBouton(tir.lecture, '#16a34a')}>{tir.lecture ? '⏸ Pause' : '▶ Lecture'}</button>
-      <button onClick={() => tir.rejouer()} disabled={!tir.t.etat.nEnv || tir.t.etat.lot > 1 || tir.lecture} style={{ ...styleBouton(false), opacity: !tir.t.etat.nEnv || tir.t.etat.lot > 1 || tir.lecture ? 0.5 : 1 }}>↻ Rejouer</button>
-      <button onClick={() => { tir.setLecture(false); tir.effacer(); }} style={styleBouton(false)}>Effacer</button>
+      <button onClick={tir.basculeLecture} disabled={tir.plein} aria-pressed={tir.lecture} style={styleBouton(tir.lecture, '#16a34a')}>{tir.lecture ? '⏸ Pause' : '▶ Lecture'}</button>
+      <button onClick={() => tir.rejouer()} disabled={occupe} style={{ ...styleBouton(false), opacity: occupe ? 0.5 : 1 }}>↻ Rejouer</button>
+      <button onClick={tir.effacer} style={styleBouton(false)}>Effacer</button>
     </div>
+    {tir.lecture && Number.isFinite(tir.restant) && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 6 }}>Encore {tir.restant} atome{tir.restant > 1 ? 's' : ''} à irradier (Pause pour arrêter).</div>}
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
-      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Vitesse de la lecture :</span>
+      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Vitesse de « Lecture » :</span>
       {vit.map(([k, l]) => <button key={k} onClick={() => tir.regler({ vitesse: k })} aria-pressed={tir.t.vitesse === k} style={styleBouton(tir.t.vitesse === k, '#334155')}>{l}</button>)}
     </div>
     {tir.plein && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6 }}>Maximum atteint ({X.MAX_ATOMES.toLocaleString('fr-FR')} atomes) : effacez pour recommencer.</div>}
   </div>);
 }
 
+// ---------- tableau des cinq scénarios : probabilité attendue et nombre d'atomes obtenus ; le scénario du dernier atome est marqué ----------
+const NB = '\u00a0';
+const frp = v => (100 * v).toFixed(v < 0.1 ? 1 : 0).replace('.', ',') + NB + '%';
+export function TableScenarios({ etat, params, el, marquer }) {
+  const pr = X.probas(el, params), obs = [etat.nAutre, etat.nPasIon, etat.nKa, etat.nKb, etat.nAuger], cur = marquer ? X.scenario(etat.dernier) : -1;
+  const lignes = [
+    ['Le photon frappe un autre atome', 'aucune raie de ' + el.nom],
+    [params.E < el.EK ? 'Photon d’énergie inférieure au seuil K' : 'Il frappe un atome de ' + el.nom + ' mais n’éjecte pas d’électron K', 'aucune raie'],
+    ['Électron K éjecté, un électron L comble la lacune', 'photon Kα émis'],
+    ['Électron K éjecté, un électron M comble la lacune', 'photon Kβ émis'],
+    ['Électron K éjecté, énergie perdue par effet Auger', 'aucun photon X'],
+  ];
+  return (<div>
+    <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>Cinq scénarios possibles pour un photon X</div>
+    <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.45, marginBottom: 6 }}>Chaque atome irradié suit l’un d’eux, tiré au hasard. Colonnes : probabilité prévue, nombre d’atomes obtenus. Le signe ◄ marque le scénario du dernier atome.</div>
+    <div role="table" aria-label="Scénarios possibles pour un photon X">
+      {lignes.map(([nom, suite], i) => (<div role="row" key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 52px 48px', gap: 6, alignItems: 'center', padding: '5px 6px', borderLeft: cur === i ? '4px solid #7c3aed' : '4px solid transparent', background: cur === i ? '#f5f3ff' : 'transparent', borderBottom: `1px dashed ${KIT.bord}`, fontSize: 13.5, lineHeight: 1.35, color: KIT.txt }}>
+        <div role="cell"><strong>{i + 1}.</strong> {nom} <span style={{ color: KIT.txt2 }}>→ {suite}</span>{cur === i && <strong style={{ color: '#7c3aed' }}> ◄</strong>}</div>
+        <div role="cell" style={{ textAlign: 'right', fontFamily: 'monospace' }} title="probabilité prévue">{frp(pr[i])}</div>
+        <div role="cell" style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 700 }} title="atomes obtenus">{obs[i]}</div>
+      </div>))}
+    </div>
+  </div>);
+}

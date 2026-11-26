@@ -31,4 +31,9 @@ ok(e.nIon > 0 && eA.nKa + eA.nKb < e.nKa + e.nKb, 'moins de photons X avec Al');
 ok(T.lancer(e, Fe, { E: 9, w: 100 }, 100000, mulberry(6)).nEnv === T.MAX_ATOMES, 'plafond');
 ok(/seuil/.test(T.texteAtome({ cible: true, ion: false }, Fe, 5)) && /Auger/.test(T.texteAtome({ cible: true, ion: true, voie: 'auger' }, Fe, 9)) && /Kα/.test(T.texteAtome({ cible: true, ion: true, voie: 'ka', Edet: 6.41 }, Fe, 9)));
 { const l = T.lancer(T.etatVide(), Fe, { E: 9, w: 100 }, 10, mulberry(7)); ok(l.lotRes.n === 10 && l.lotRes.ion === l.nIon && l.lotRes.ion >= l.lotRes.ka + l.lotRes.kb + l.lotRes.auger - 0 && l.lotRes.ka + l.lotRes.kb + l.lotRes.auger === l.lotRes.ion, 'résumé du lot'); }
+{ const pr = T.probas(Fe, { E: 9, w: 50 }), ee = T.lancer(T.etatVide(), Fe, { E: 9, w: 50 }, 20000, mulberry(8));
+  ok(Math.abs(somme(pr) - 1) < 1e-12, 'probabilités de somme 1'); const obs = [ee.nAutre, ee.nPasIon, ee.nKa, ee.nKb, ee.nAuger];
+  ok(somme(obs) === ee.nEnv, 'scénarios exhaustifs'); obs.forEach((c, i) => ok(Math.abs(c / ee.nEnv - pr[i]) < 0.012, 'scénario ' + i + ' : ' + c / ee.nEnv + ' vs ' + pr[i]));
+  const sous = T.probas(Fe, { E: 5, w: 100 }); ok(sous[0] === 0 && sous[1] === 1 && sous[2] + sous[3] + sous[4] === 0, 'sous le seuil');
+  ok(T.scenario(null) === -1 && T.scenario({ cible: false }) === 0 && T.scenario({ cible: true, ion: false }) === 1 && T.scenario({ cible: true, ion: true, voie: 'kb' }) === 3, 'index de scénario'); }
 console.log('Tirages sim 302 :', n, 'vérifications réussies.');
