@@ -231,6 +231,7 @@ const SimulationLumiereMatiere = paresseux(() => import("./simulations/LumiereMa
 const SimulationFluorescence = paresseux(() => import("./simulations/Fluorescence"), "SimulationFluorescence");
 const SimulationChromophores = paresseux(() => import("./simulations/Chromophores"), "SimulationChromophores");
 const SimulationFluoX = paresseux(() => import("./simulations/FluoX"), "SimulationFluoX");
+const SimulationFlamme = paresseux(() => import("./simulations/Flamme"), "SimulationFlamme");
 const SimulationInfrarouge = paresseux(() => import("./simulations/Infrarouge"), "SimulationInfrarouge");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationPanneauPhotovoltaique = paresseux(() => import("./simulations/PanneauPhotovoltaique"), "SimulationPanneauPhotovoltaique");
@@ -705,6 +706,7 @@ const SIMULATIONS = [
   { id:301, label:"Fluorescence et phosphorescence : Perrin-Jablonski", niveau:"BTS", icon:"💡", color:"#16a34a", component: SimulationFluorescence },
   { id:302, label:"Fluorescence X : de la lacune à la raie de l’élément", niveau:"BTS", icon:"☢️", color:"#7c3aed", component: SimulationFluoX },
   { id:303, label:"UV-visible : couleur, conjugaison et auxochromes", niveau:"BTS", icon:"🌈", color:"#7c3aed", component: SimulationChromophores },
+  { id:313, label:"Atomes dans une flamme : émission (SEF) et absorption (SAA)", niveau:"BTS", icon:"🔥", color:"#d97706", component: SimulationFlamme },
   { id:304, label:"Infrarouge : de la liaison-ressort au spectre", niveau:"BTS", icon:"🔬", color:"#0f766e", component: SimulationInfrarouge },
   { id:305, label:"Piles : polarité, équation de fonctionnement et durée", niveau:"TSTL", icon:"🔋", color:"#b45309", component: SimulationPilePcm },
   { id:306, label:"RMN du proton : attribuer un spectre", niveau:"TSTL", icon:"🧲", color:"#0f766e", component: SimulationRmnStl },

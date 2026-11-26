@@ -29,6 +29,7 @@ import { tirageBandeIR as tirageBandeIRBTS } from "./lumMatExos";
 import { tirageStokes as tirageStokesBTS } from "./fluoExos";
 import { tirageHooke as tirageHookeBTS } from "./hookExos";
 import { tirageFrx as tirageFrxBTS } from "./frxExos";
+import { tirageFlamme as tirageFlammeBTS } from "./flammeExos";
 import { tirageChromo as tirageChromoBTS } from "./chromoExos";
 import { tirageLab as tirageLabBTS, tirageXyy as tirageXyyBTS, tirageFiltres as tirageFiltresBTS } from "./couleurExos";
 import { tirageCalcul as tirageTransfertsHTG } from "./brnExos";
@@ -5874,6 +5875,7 @@ function genFiltresBTS() { return enrichir(tirageFiltresBTS(tire)); }
 function genBandeIRBTS() { return enrichir(tirageBandeIRBTS(tire)); }
 function genStokesBTS() { return enrichir(tirageStokesBTS(tire)); }
 function genFrxBTS() { return enrichir(tirageFrxBTS(tire)); }
+function genFlammeBTS() { return enrichir(tirageFlammeBTS(tire)); }
 function genHookeBTS() { return enrichir(tirageHookeBTS(tire)); }
 function genChromoBTS() { return enrichir(tirageChromoBTS(tire)); }
 
@@ -7103,6 +7105,7 @@ export const FAMILLES = [
   { id: 'lmt-calcul', groupe: 'Formules', titre: 'Spectroscopie : d’une bande infrarouge à l’énergie du photon (BTS)', gen: genBandeIRBTS, domaine: 'Photons, niveaux d’énergie et domaines spectraux' },
   { id: 'fluo-calcul', groupe: 'Formules', titre: 'Fluorescence : énergie perdue entre l’absorption et l’émission (BTS)', gen: genStokesBTS, domaine: 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski' },
   { id: 'frx-calcul', groupe: 'Formules', titre: 'Fluorescence X : de la raie Kα à la teneur (BTS)', gen: genFrxBTS, domaine: 'Fluorescence X : de la lacune à la raie de l’élément' },
+  { id: 'flm-calcul', groupe: 'Formules', titre: 'Atomes dans une flamme : énergie, absorbance et concentration (BTS)', gen: genFlammeBTS, domaine: 'Atomes dans une flamme : émission et absorption atomiques' },
   { id: 'hook-calcul', groupe: 'Formules', titre: 'Infrarouge : de la loi de Hooke à l’énergie du photon absorbé (BTS)', gen: genHookeBTS, domaine: 'Infrarouge : de la liaison-ressort au spectre' },
   { id: 'chro-calcul', groupe: 'Formules', titre: 'UV-visible : absorbance, concentration, énergie du photon et transmittance (BTS)', gen: genChromoBTS, domaine: 'UV-visible : couleur, conjugaison et auxochromes' },
   { id: 'chc-calcul', groupe: 'Formules', titre: 'Modifier la chaîne carbonée : atomes de carbone d’un produit, rendement global, masse de produit et masse de réactif (TG)', gen: genChaineCTG, domaine: 'Modification de la chaîne carbonée' },

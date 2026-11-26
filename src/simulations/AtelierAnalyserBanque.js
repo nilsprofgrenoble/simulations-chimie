@@ -3854,6 +3854,27 @@ export const PREVOIR = [
       V('environ 5 %, car l’intensité est proportionnelle à la teneur', 'I est proportionnelle à w : 1350 / 2700 = 0,5, donc 5 %.'),
       F('on ne peut pas conclure sans refaire un spectre complet', 'Une seule raie et un étalon suffisent si la matrice est comparable.'),
     ] },
+  { id: 'flm-ana-elements', domaine: 'Atomes dans une flamme : émission et absorption atomiques', titre: 'Quels éléments en émission de flamme ?',
+    enonce: 'Une flamme air-acétylène (environ 2 200 °C) est utilisée pour l’émission. Raies de résonance : Na 589 nm ; K 767 nm ; Cu 325 nm ; Mg 285 nm.', q: 'Quels éléments peut-on doser par émission de flamme avec cette flamme ?', options: [
+      V('Na et K, dont les raies correspondent aux plus faibles écarts d’énergie', 'Il y a assez d’atomes excités par la chaleur pour des raies de faible énergie (589 et 767 nm).'),
+      F('Cu et Mg, car leurs raies ultraviolettes sont plus énergétiques', 'Plus l’écart d’énergie est grand, moins la flamme excite d’atomes : le signal est quasi nul.'),
+      F('les quatre, car la flamme est assez chaude pour exciter tous les atomes', 'Même à 2 500 K, la grande majorité des atomes reste au niveau fondamental.'),
+      F('aucun : l’émission de flamme exige un plasma d’argon', 'La flamme suffit pour les éléments à raie peu énergétique ; le plasma sert aux autres éléments.'),
+    ] },
+  { id: 'flm-ana-beer', domaine: 'Atomes dans une flamme : émission et absorption atomiques', titre: 'Doubler la concentration en absorption',
+    enonce: 'En absorption atomique, une solution de cuivre donne une absorbance de 0,12, dans le domaine linéaire. On prépare une solution deux fois plus concentrée.', q: 'Quelle absorbance prévoit-on ?', options: [
+      F('0,06, car plus de cuivre laisse passer plus de lumière', 'Plus d’atomes absorbent davantage : l’absorbance augmente avec la concentration.'),
+      F('0,14, car l’absorbance ne varie que de 0,02', 'L’absorbance n’augmente pas d’une quantité fixe : elle est proportionnelle à la concentration.'),
+      V('0,24, car l’absorbance est proportionnelle à la concentration', 'Dans le domaine linéaire, A = k·c : doubler c double A.'),
+      F('0,12, car la flamme impose l’absorbance maximale', 'La flamme ne fixe pas l’absorbance : elle dépend de la concentration en atomes libres.'),
+    ] },
+  { id: 'flm-ana-calcium', domaine: 'Atomes dans une flamme : émission et absorption atomiques', titre: 'Un signal faible pour le calcium',
+    enonce: 'Le dosage du calcium en absorption atomique dans une flamme air-propane donne un signal faible et peu reproductible. Le calcium forme des composés très stables dans la flamme.', q: 'Quelle modification est la plus pertinente ?', options: [
+      F('utiliser une lampe au sodium, plus lumineuse', 'La lampe doit contenir l’élément dosé : seule la raie du calcium est absorbée.'),
+      F('refroidir la flamme pour limiter les pertes', 'Une flamme plus froide atomise encore moins : le signal baisserait.'),
+      V('utiliser une flamme plus chaude (protoxyde d’azote-acétylène)', 'Une flamme plus chaude casse les composés stables et libère davantage d’atomes de calcium.'),
+      F('doubler la longueur d’onde de la mesure', 'La longueur d’onde est celle de la raie du calcium (422,7 nm) : on ne la change pas.'),
+    ] },
   { id: 'hook-ana-rigidite', domaine: 'Infrarouge : de la liaison-ressort au spectre', titre: 'Simple, double ou triple liaison',
     enonce: 'Un spectre IR présente deux bandes d’élongation de liaisons carbone-carbone : l’une vers 1650 cm⁻¹ et l’autre vers 2200 cm⁻¹. Les deux liaisons relient deux atomes de carbone.', q: 'Quelle est l’attribution la plus probable ?', options: [
       F('1650 cm⁻¹ : triple liaison C≡C ; 2200 cm⁻¹ : double liaison C=C', 'C’est inversé : la triple liaison, plus rigide (k plus grand), absorbe à un nombre d’onde plus élevé.'),

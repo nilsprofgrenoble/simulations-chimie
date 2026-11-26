@@ -564,6 +564,26 @@ export const BTSB_SIT = [
     },
   },
   {
+    id: 'flm-sapp-excites', domaine: 'Atomes dans une flamme : émission et absorption atomiques', niveau: 2, titre: 'Peut-on doser cet élément par émission de flamme ?',
+    construire: () => {
+      const T = [['sodium', 'Na', 589.0, 1], ['lithium', 'Li', 670.8, 1], ['potassium', 'K', 766.5, 1], ['cuivre', 'Cu', 324.8, 0], ['magnésium', 'Mg', 285.2, 0]];
+      const [nom, sym, lam, ok] = tire(T), E = 1240 / lam;
+      return {
+        enonce: `Dans une flamme à 2 500 K, on veut doser le ${nom} (${sym}) par émission. Sa raie de résonance est à ${nb(lam, 1)} nm. Constante : h·c = 1240 eV·nm.`,
+        etapes: [
+          { id: 'E', titre: 'Écart d’énergie', q: 'Calculer l’écart d’énergie entre les deux niveaux de la transition, en eV.', aide: 'E(eV) = 1240 / λ(nm).',
+            type: 'saisie', champs: [{ id: 'E', lib: 'E', u: 'eV', vrai: Number(E.toFixed(2)), tol: 0.03 }],
+            expl: `E = 1240 / ${nb(lam, 1)} = ${nb(E, 2)} eV.` },
+          { id: 'excites', titre: 'Atomes excités', q: `Pour cet écart d’énergie (${nb(E, 2)} eV), combien d’atomes sont excités dans la flamme, parmi 10 000 atomes libres ?`, aide: 'La proportion d’atomes excités suit exp(−E / kT) : elle chute très vite quand E augmente. Repère : pour 2,1 eV à 2 500 K, environ 2 atomes sur 10 000.',
+            o: ok
+              ? [F('moins d’un atome sur un million : le signal est inexploitable', 'À 1,6 à 2,1 eV, quelques atomes sur 10 000 sont excités : le signal est mesurable.'), V('quelques atomes sur 10 000 (de 1 à 20) : le signal est mesurable', 'Avec un écart d’énergie inférieur à 2,1 eV, la flamme excite assez d’atomes pour une mesure.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')]
+              : [F('quelques atomes sur 10 000 : le signal est mesurable', 'L’écart d’énergie est beaucoup plus grand que pour le sodium : il y a des millions de fois moins d’atomes excités.'), V('moins d’un atome sur un million : le signal est inexploitable', 'Avec plus de 3 eV d’écart d’énergie, presque aucun atome n’est excité : on utilise plutôt l’absorption atomique.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')] },
+        ],
+        retenir: ['Plus l’écart d’énergie de la raie est grand, moins la flamme excite d’atomes.', 'L’émission de flamme convient à Na, K, Li ; l’absorption atomique aux autres éléments.'],
+      };
+    },
+  },
+  {
     id: 'hook-sapp-bande', domaine: D_HOOK, niveau: 2, titre: 'Attribuer une bande à une liaison',
     construire: () => {
       const l = tire([['C', 'H', 480, 'C–H', 2950], ['O', 'H', 780, 'O–H libre', 3620], ['C', 'O', 1200, 'C=O', 1715]]);
