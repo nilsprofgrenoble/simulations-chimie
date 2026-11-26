@@ -299,10 +299,10 @@ export function SimulationEtalonnageProtocole() {
       </> : <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : dosage par étalonnage d’une solution</div>
         <div style={{ ...lbl, marginBottom: 8 }}>Les étalons sont préparés par dilution d’une solution mère à <strong>{defi.c0}{NB}mmol/L</strong> dans des fioles jaugées de <strong>{nbf(defi.vf, 1)}{NB}mL</strong> ; on a prélevé les volumes V<sub>p</sub> du tableau et mesuré la conductance G ({M.SOLUTES[defi.id].nom}, cellule de constante k = {defi.k}{NB}m⁻¹, 25 °C).</div>
-        <table style={{ borderCollapse: 'collapse', fontSize: 14, margin: '0 0 8px', color: KIT.txt }}>
-          <thead><tr><th style={{ border: `1px solid ${KIT.bord}`, padding: '4px 10px', background: '#f1f5f9' }}>V<sub>p</sub> (mL)</th>{defi.vps.map(v => <td key={v} style={{ border: `1px solid ${KIT.bord}`, padding: '4px 10px', textAlign: 'right' }}>{nbf(v, 2)}</td>)}</tr>
-            <tr><th style={{ border: `1px solid ${KIT.bord}`, padding: '4px 10px', background: '#f1f5f9' }}>G (mS)</th>{defi.pts.map((p, i) => <td key={i} style={{ border: `1px solid ${KIT.bord}`, padding: '4px 10px', textAlign: 'right' }}>{g3(p.G)}</td>)}</tr></thead>
-        </table>
+        <div style={{ overflowX: 'auto', margin: '0 0 8px' }}><table style={{ borderCollapse: 'collapse', fontSize: 14, color: KIT.txt }}>
+          <thead><tr><th style={{ border: `1px solid ${KIT.bord}`, padding: '4px 10px', background: '#f1f5f9' }}>V<sub>p</sub> (mL)</th>{defi.vps.map(v => <td key={v} style={{ border: `1px solid ${KIT.bord}`, padding: '4px 6px', textAlign: 'right' }}>{nbf(v, 2)}</td>)}</tr>
+            <tr><th style={{ border: `1px solid ${KIT.bord}`, padding: '4px 10px', background: '#f1f5f9' }}>G (mS)</th>{defi.pts.map((p, i) => <td key={i} style={{ border: `1px solid ${KIT.bord}`, padding: '4px 6px', textAlign: 'right' }}>{g3(p.G)}</td>)}</tr></thead>
+        </table></div>
         <div style={{ ...lbl, marginBottom: 8 }}>La solution à doser X est diluée <strong>{defi.F} fois</strong> ; la conductance de la solution diluée X′ est <strong>G′ = {g3(defi.Gd)}{NB}mS</strong>. Quelle est la concentration de X, en mol/L (2 chiffres significatifs) ?</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>c(X) =</span>
