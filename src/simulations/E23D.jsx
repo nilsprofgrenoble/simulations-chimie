@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { etat as etatE2, etatE1 } from "./e23dModele";
-import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer, ajouterBase, ajouterCharge } from "./scene3d";
+import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer, ajouterBase, ajouterCharge, brancherGestes } from "./scene3d";
 import { KIT, stylePetitBouton } from "../commun";
 
 const DIST0 = 23, DIST_MIN = 8, DIST_MAX = 38;
@@ -35,25 +35,15 @@ export default function E23D({ u, meca = 'E2', re = 'HO' }) {
       camera.updateProjectionMatrix(); s.current.sale = true;
     };
     const ro = new ResizeObserver(taille); ro.observe(el); taille();
-    let dernier = null;
-    const bas = ev => { dernier = [ev.clientX, ev.clientY]; el.setPointerCapture?.(ev.pointerId); };
-    const deplace = ev => {
-      if (!dernier) return;
-      const dx = ev.clientX - dernier[0], dy = ev.clientY - dernier[1]; dernier = [ev.clientX, ev.clientY];
-      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx * 0.011).premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * 0.011));
-      racine.quaternion.premultiply(q).normalize(); s.current.sale = true;
-    };
-    const haut = () => { dernier = null; };
-    const molette = ev => { ev.preventDefault(); s.current.dist = Math.min(DIST_MAX, Math.max(DIST_MIN, s.current.dist * (ev.deltaY > 0 ? 1.1 : 0.9))); taille(); };
-    el.addEventListener('wheel', molette, { passive: false });
-    el.addEventListener('pointerdown', bas); el.addEventListener('pointermove', deplace); el.addEventListener('pointerup', haut); el.addEventListener('pointercancel', haut);
+    const dessus = brancherGestes(el, {
+      tourner: (dx, dy) => { const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx * 0.011).premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * 0.011)); racine.quaternion.premultiply(q).normalize(); s.current.sale = true; },
+      zoomer: f => { s.current.dist = Math.min(DIST_MAX, Math.max(DIST_MIN, s.current.dist * f)); taille(); } });
     let raf;
     const boucle = () => { raf = requestAnimationFrame(boucle); if (s.current.sale) { renderer.render(scene, camera); s.current.sale = false; } };
     boucle();
     return () => {
       cancelAnimationFrame(raf); ro.disconnect();
-      el.removeEventListener('wheel', molette);
-      el.removeEventListener('pointerdown', bas); el.removeEventListener('pointermove', deplace); el.removeEventListener('pointerup', haut); el.removeEventListener('pointercancel', haut);
+      dessus();
       liberer(scene); renderer.dispose();
       if (renderer.domElement.parentNode === el) el.removeChild(renderer.domElement);
     };
