@@ -31,6 +31,7 @@ const D_COUL_XYY = 'Couleur : lire le diagramme de chromaticité';
 const D_COUL_MTM = 'Couleur : éclairage, réflectance et métamérisme';
 const D_COUL_ADS = 'Couleur : synthèses additive et soustractive';
 const D_LUM = 'Photons, niveaux d’énergie et domaines spectraux';
+const D_FLUO = 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski';
 
 // ──────────────────────────────────────────────── ANA : prévoir sans calculer ────────────────────────────────────────────────
 export const BTSB_ANA = [
@@ -514,6 +515,29 @@ export const BTSB_SIT = [
               V('Les transmittances se multiplient, les absorbances s’additionnent', 'T = T₁ × T₂ et A = A₁ + A₂, puisque A = −log₁₀(T).')] },
         ],
         retenir: ['Deux filtres en série : T = T₁ × T₂ et A = A₁ + A₂ (A = −log₁₀ T).', 'Un filtre jaune et un filtre cyan en série ne laissent passer que le vert : chaque filtre soustrait une couleur.'],
+      };
+    },
+  },
+  {
+    id: 'fluo-sapp-lueur', domaine: D_FLUO, niveau: 2, titre: 'Une lueur qui persiste sous une lampe UV',
+    construire: () => {
+      const la = tire([350, 365, 380]), le = tire([500, 520, 540]), dE = 1243 / la - 1243 / le, dE2 = Number(dE.toPrecision(2)), part = (1 - la / le) * 100;
+      return {
+        enonce: `Un objet est éclairé par une lampe UV de ${la} nm. On coupe la lampe : l’objet émet une lueur verte vers ${le} nm, qui persiste environ 10 s. On utilise E(eV) × λ(nm) = 1243.`,
+        etapes: [
+          { id: 'nature', titre: 'Nature de l’émission', q: 'De quel phénomène s’agit-il ?', aide: 'Comparez la durée de la lueur (10 s) aux durées de la fluorescence et de la phosphorescence.',
+            o: [F('De la fluorescence, qui dure environ 10⁻⁹ s', 'Une durée de 10 s est bien trop longue pour de la fluorescence.'),
+              V('De la phosphorescence, par retour lent de T₁ à S₀', 'Une lueur de plusieurs secondes après l’arrêt de la lampe est de la phosphorescence (10⁻² à 10² s).'),
+              F('De la relaxation vibrationnelle de la molécule', 'La relaxation vibrationnelle est très rapide (10⁻¹² s) et sans émission de lumière.')] },
+          { id: 'perte', titre: 'Énergie perdue', q: 'Calculer l’énergie perdue entre le photon UV absorbé et le photon émis.', aide: 'E = 1243 / λ pour chaque photon, puis différence.',
+            type: 'saisie', champs: [{ id: 'dE', lib: 'Énergie perdue', u: 'eV', vrai: dE2, tol: 0.06 }],
+            expl: `E(abs) = 1243 / ${la} ≈ ${nb(1243 / la, 2)} eV ; E(émis) = 1243 / ${le} ≈ ${nb(1243 / le, 2)} eV ; perte ≈ ${nb(dE, 2)} eV, soit ${nb(part, 0)} % de l’énergie absorbée.` },
+          { id: 'chemin', titre: 'Chemin suivi', q: 'Quel chemin, dans le diagramme de Perrin-Jablonski, mène à cette lueur ?', aide: 'La phosphorescence part de l’état triplet.',
+            o: [F('Absorption, puis retour direct de S₁ à S₀', 'Ce chemin correspond à la fluorescence, trop brève ici.'),
+              F('Absorption, conversion interne de S₂ à S₁, puis émission de S₁', 'Cette suite mène aussi à la fluorescence, pas à une lueur de 10 s.'),
+              V('Absorption, relaxation, croisement intersystème de S₁ à T₁, puis retour de T₁ à S₀', 'Le CIS peuple T₁ (de spin différent), d’où le retour lent avec émission.')] },
+        ],
+        retenir: ['Une lueur qui dure après l’arrêt de l’excitation est de la phosphorescence : retour lent T₁ → S₀ (10⁻² à 10² s).', 'L’énergie perdue avant l’émission est E(abs) − E(émis), avec E(eV) × λ(nm) = 1243.'],
       };
     },
   },

@@ -1,14 +1,10 @@
 // Schémas de la simulation 300 « Photons, niveaux d'énergie et domaines spectraux ». SVG, largeur 100 % plafonnée.
 import { C } from "./synthCouleurModele";
 import { niveauH, raieH } from "./lumMatModele";
+import { K, T, fr, flecheV, svgStyle } from "./schemaOutils";
 
-const K = { txt: '#0f172a', gris: '#64748b', clair: '#cbd5e1', el: '#7c3aed', vib: '#b45309', rot: '#0f766e', rouge: '#b91c1c', vert: '#15803d', bleu: '#1d4ed8' };
-const T = (x, y, s, o = {}) => <text key={`${x}-${y}-${s}`} x={x} y={y} fontSize={o.size ?? 12} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? K.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit" stroke={o.halo ? '#fff' : 'none'} strokeWidth={o.halo ? 3 : 0} paintOrder="stroke">{s}</text>;
-const fr = (v, d = 1) => v.toFixed(d).replace('.', ',').replace('-', '−');
 const couleurLam = l => (l >= 400 && l <= 700 ? C.cssXYNormalise(C.pointLieu(l).x, C.pointLieu(l).y) : l < 400 ? '#6d28d9' : '#7f1d1d');
 const Frac = (x, y, n, d, o = {}) => [T(x, y - 4, n, { size: o.size ?? 13, ...o }), <line key={`f${x}${y}`} x1={x - (o.l ?? 9)} y1={y} x2={x + (o.l ?? 9)} y2={y} stroke={o.fill ?? K.txt} strokeWidth="1.3"/>, T(x, y + 13, d, { size: o.size ?? 13, ...o })];
-const flecheV = (x, y1, y2, col, w, op = 1, id) => (<g key={id} opacity={op}><line x1={x} y1={y1} x2={x} y2={y2 + (y2 < y1 ? 6 : -6)} stroke={col} strokeWidth={w}/><polygon points={y2 < y1 ? `${x - 5},${y2 + 9} ${x + 5},${y2 + 9} ${x},${y2}` : `${x - 5},${y2 - 9} ${x + 5},${y2 - 9} ${x},${y2}`} fill={col}/></g>);
-const svgStyle = { display: 'block', maxWidth: 480, margin: '0 auto' };
 
 // ---------- échelle des longueurs d'onde (log) ----------
 const BANDES = [[100, 400, '#c4b5fd', 'UV'], [400, 780, null, 'visible'], [780, 2500, '#fecaca', 'proche IR'], [2500, 20000, '#fdba74', 'IR moyen'], [20000, 1e7, '#99f6e4', 'IR lointain, micro-ondes']];
@@ -126,3 +122,4 @@ export function SvgCarteBilan() {
       {c.length > 14 ? [L(236, 54 + i * 36, c.split(' ').slice(0, Math.ceil(c.split(' ').length / 2)).join(' ')), L(236, 69 + i * 36, c.split(' ').slice(Math.ceil(c.split(' ').length / 2)).join(' '))] : L(236, 60 + i * 36, c)}</g>)}
   </>);
 }
+

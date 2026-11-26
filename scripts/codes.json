@@ -2964,5 +2964,15 @@
  "77:plausible:eul-val-a0": "VAL775",
  "77:plausible:eul-val-euler": "VAL776",
  "36:eul-lim": "REA205",
- "36:eul-pas": "REA206"
+ "36:eul-pas": "REA206",
+ "34:fluo-sapp-lueur": "SAPP655",
+ "37:prevoir:fluo-ana-uv-visible": "ANA1331",
+ "37:prevoir:fluo-ana-etoiles": "ANA1332",
+ "37:prevoir:fluo-ana-diagramme": "ANA1333",
+ "37:prevoir:fluo-ana-cis": "ANA1334",
+ "37:prevoir:fluo-ana-spectre": "ANA1335",
+ "77:plausible:fluo-val-persistance": "VAL777",
+ "77:plausible:fluo-val-energie-emise": "VAL778",
+ "77:plausible:fluo-val-rv-lumiere": "VAL779",
+ "36:fluo-calcul": "REA207"
 }
