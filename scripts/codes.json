@@ -2757,5 +2757,17 @@
  "77:plausible:chh-val-masse": "VAL739",
  "77:plausible:chh-val-frott": "VAL740",
  "36:chh-vitesse": "REA171",
- "36:chh-frott": "REA172"
+ "36:chh-frott": "REA172",
+ "34:lpg-sapp-vitesses.0": "SAPP590",
+ "34:lpg-sapp-vitesses.1": "SAPP591",
+ "34:lpg-sapp-hmin.0": "SAPP592",
+ "34:lpg-sapp-hmin.1": "SAPP593",
+ "37:prevoir:lpg-ana-masse": "ANA1259",
+ "37:prevoir:lpg-ana-bas-haut": "ANA1260",
+ "37:prevoir:lpg-ana-rayon": "ANA1261",
+ "37:prevoir:lpg-ana-hmin": "ANA1262",
+ "77:plausible:lpg-val-sommet": "VAL741",
+ "77:plausible:lpg-val-hmin": "VAL742",
+ "36:lpg-vitesse": "REA173",
+ "36:lpg-hmin": "REA174"
 }
