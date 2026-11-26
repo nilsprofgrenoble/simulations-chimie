@@ -8,7 +8,7 @@ import { KIT, stylePetitBouton } from "../commun";
 
 const DIST0 = 24, DIST_MIN = 9, DIST_MAX = 40;
 
-export default function Br3D({ alc, face, syn, u }) {
+export default function Br3D({ alc, face, syn, u, devoiler = true }) {
   const hote = useRef(null);
   const s = useRef({});
   const [erreur, setErreur] = useState(null);
@@ -120,7 +120,7 @@ export default function Br3D({ alc, face, syn, u }) {
       </div>
       <div style={{ textAlign: 'center', fontSize: 13, color: KIT.txt2, margin: '6px 0' }}>Faites glisser pour tourner, molette ou boutons pour zoomer (le plan gris est celui de l’alcène) ; avancez la réaction avec le curseur. Le Br⁻ qui attaque est un autre ion Br⁻ de la solution : celui formé à la première étape est du côté du pont et ne peut pas attaquer de ce côté.</div>
       {fini && <div role="status" aria-live="polite" style={{ textAlign: 'center', fontSize: 14.5, fontWeight: 800, color: '#0f172a' }}>
-        Produit : ({nums[0]}{e.lettres[0]},{nums[1]}{e.lettres[1]}) — un Br au-dessus du plan, l’autre en dessous : addition anti
+        {devoiler ? <>Produit : ({nums[0]}{e.lettres[0]},{nums[1]}{e.lettres[1]}) — </> : null}un Br au-dessus du plan, l’autre en dessous : addition anti
       </div>}
       {syn && u > 0.5 && <div role="status" aria-live="polite" style={{ textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#b91c1c' }}>Br⁻ ne peut pas arriver du côté du pont : il reste à distance.</div>}
     </div>

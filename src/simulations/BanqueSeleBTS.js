@@ -33,6 +33,7 @@ export const EXERCICES = [
       const a = tire(brut), re = tire(['Br2', 'OsO4']), A = ALCENES[a], R = REACTIFS[re], X = resultat(a, re);
       const rac = X.resultat === 'racémique';
       return {
+        schema: { type: 'add3d', alc: a, re },
         enonce: `On fait réagir le ${A.nom} avec ${R.nom} (addition ${R.mode}). Le produit est le ${X.produit}, qui possède deux carbones asymétriques.`,
         etapes: [
           { id: 'res', titre: 'Le résultat', q: 'Quel est le résultat stéréochimique ?', aide: 'Anti sur (Z) → racémique ; anti sur (E) → méso ; syn : l\'inverse.',

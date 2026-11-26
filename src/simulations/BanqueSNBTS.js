@@ -89,6 +89,7 @@ export const EXERCICES = [
       const sn1 = m === 'SN1';
       const cond = sn1 ? 'dans l\'eau et l\'éthanol, sans base ajoutée, ce qui favorise le carbocation' : 'par HO⁻ à température modérée avec un nucléophile fort, ce qui favorise une attaque en une étape';
       return {
+        schema: { type: 'sn3d', meca: m, re: sn1 ? 'H2O' : 'HO' },
         enonce: `On part du ${conf}-2-bromobutane, énantiomère pur. Il subit une substitution ${m} ${cond}. Le carbone lié à Br est le seul carbone asymétrique.`,
         etapes: [
           { id: 'geo', titre: 'L\'attaque du nucléophile', q: `Dans la ${m}, comment le nucléophile attaque-t-il le carbone ?`,

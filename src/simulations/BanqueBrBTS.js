@@ -57,6 +57,7 @@ export const EXERCICES = [
     construire: () => {
       const A = ALCENES[tire(['Z', 'E'])], z = A.cle === 'Z';
       return {
+        schema: { type: 'br3d', alc: A.cle },
         enonce: `On fait réagir le ${A.nom} avec Br₂. La réaction est une addition anti, et les deux faces de l'alcène sont attaquées avec la même probabilité. Le produit est le 2,3-dibromobutane (deux carbones asymétriques).`,
         etapes: [
           { id: 'res', titre: 'Le produit', q: 'Quel est le résultat stéréochimique ?',
@@ -81,6 +82,7 @@ export const EXERCICES = [
     construire: () => {
       const A = ALCENES.cyclo;
       return {
+        schema: { type: 'br3d', alc: 'cyclo' },
         enonce: `Le cyclohexène réagit avec Br₂ pour donner le ${A.produit}. L'addition est anti.`,
         etapes: [
           { id: 'cfg', titre: 'La configuration relative', q: 'Quel stéréoisomère se forme ?',
