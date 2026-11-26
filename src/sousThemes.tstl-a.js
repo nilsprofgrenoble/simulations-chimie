@@ -8,6 +8,12 @@ export default {
       refs: ['34:rmns-sapp-integration', '77:plausible:rmns-val-integration'] },
     { id: 'rmn-attribuer', nom: 'Multiplicité et attribution des signaux', capacite: 'Attribuer les signaux d’un spectre RMN aux protons d’une molécule donnée (nombre de voisins, règle des n + 1).',
       refs: ['37:prevoir:rmns-ana-multiplicite', '77:plausible:rmns-val-attribution'] },
+    { id: 'uv-energie-photon', nom: 'Énergie d’un photon et longueur d’onde', capacite: 'Relier l’énergie d’un photon et la longueur d’onde du rayonnement (E = h c / λ) pour interpréter l’interaction lumière-matière.',
+      refs: ['37:prevoir:uvs-ana-energie', '77:plausible:uvs-val-energie', '34:uvs-sapp-energie'] },
+    { id: 'ir-identifier', nom: 'Identifier ou confirmer une structure avec un spectre IR', capacite: 'Identifier ou confirmer une structure à partir d’un spectre infrarouge et de données tabulées.',
+      refs: ['37:prevoir:uvs-ana-ir-ester', '37:prevoir:uvs-ana-oxydation', '77:plausible:uvs-val-ir'] },
+    { id: 'uv-etalonnage', nom: 'Droite d’étalonnage et concentration', capacite: 'Déterminer une concentration à l’aide d’une droite d’étalonnage établie par spectrophotométrie.',
+      refs: ['37:prevoir:uvs-ana-lambdamax', '77:plausible:uvs-val-etalonnage', '34:uvs-sapp-etalonnage'] },
   ],
   'tstl-pcm-oxydoreduction': [
     { id: 'pile-polarite', nom: 'Polarité, anode et cathode, sens des porteurs', capacite: 'Lire la polarité d’une pile avec un voltmètre, identifier anode et cathode et indiquer le sens de circulation des électrons et des ions.',

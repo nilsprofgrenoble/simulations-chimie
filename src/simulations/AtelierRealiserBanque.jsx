@@ -3673,6 +3673,71 @@ function genRmnIntegration() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Nombre de H d’un signal = N × h ÷ H (H : hauteur totale des paliers ; N : nombre total de H).', 'n H voisins donnent un signal de n + 1 raies.'] };
 }
+// UV-visible et IR (terminale STL) : énergie d'un photon (E = h c / λ) ; droite d'étalonnage et concentration.
+function genUvEnergie() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const fr = x => String(x).replace('.', ',');
+  const H = 6.63e-34, C = 3.00e8, EV = 1.60e-19;
+  const lam = tire([250, 300, 350, 400, 450, 500, 550, 600, 650, 700]);
+  const nu = C / (lam * 1e-9), EJ = H * nu, Eev = EJ / EV;
+  const don = `h = 6,63×10⁻³⁴${NB}J·s ; c = 3,00×10⁸${NB}m·s⁻¹ ; 1${NB}eV = 1,60×10⁻¹⁹${NB}J`;
+  const intro = `Un colorant absorbe un rayonnement monochromatique de longueur d’onde λ = ${lam}${NB}nm dans le vide. Données : ${don}.`;
+  const q1 = { id: 'ue0', type: 'num', q: <>Quelle est la <b>fréquence ν</b> de ce rayonnement (en 10¹⁴{NB}Hz, 3 chiffres significatifs) ?</>, unite: '×10¹⁴ Hz', vrai: nu / 1e14, tolRel: 0.02, csMin: 3,
+    aide: 'ν = c ÷ λ, avec λ en mètres (1 nm = 10⁻⁹ m).',
+    pieges: [[C / lam / 1e14, 'Vous n’avez pas converti λ en mètres : 1 nm = 10⁻⁹ m.'], [C * lam * 1e-9 / 1e14, 'La fréquence est c ÷ λ (et non c × λ).']],
+    expl: <>ν = c ÷ λ = {fr('3,00×10⁸')} ÷ ({lam}×10⁻⁹) = <b>{nbF(nu / 1e14, 2)}×10¹⁴{NB}Hz</b>.</> };
+  const q2 = { id: 'ue1', type: 'num', q: <>Quelle est l’<b>énergie E d’un photon</b> de ce rayonnement (en 10⁻¹⁹{NB}J, 3 chiffres significatifs) ?</>, unite: '×10⁻¹⁹ J', vrai: EJ / 1e-19, tolRel: 0.02, csMin: 3,
+    aide: 'E = h × ν, ou E = h × c ÷ λ, avec λ en mètres.',
+    pieges: [[EJ * 1e9 / 1e-19, 'Vous n’avez pas converti λ en mètres : 1 nm = 10⁻⁹ m.'], [EJ / EV / 1e-19, 'Vous avez donné E en eV : ici, la réponse est attendue en 10⁻¹⁹ J.']],
+    expl: <>E = h × ν = 6,63×10⁻³⁴ × {nbF(nu / 1e14, 2)}×10¹⁴ = <b>{nbF(EJ / 1e-19, 2)}×10⁻¹⁹{NB}J</b>.</> };
+  const q3 = { id: 'ue2', type: 'num', q: <>Exprimez cette énergie en <b>électronvolts</b> (3 chiffres significatifs).</>, unite: 'eV', vrai: Eev, tolRel: 0.02, csMin: 3,
+    aide: 'On divise l’énergie en joules par 1,60×10⁻¹⁹ J (valeur d’un eV).',
+    pieges: [[EJ / 1e-19, 'Vous n’avez pas converti les joules en électronvolts : divisez par 1,60×10⁻¹⁹ J.']],
+    expl: <>E = {nbF(EJ / 1e-19, 2)}×10⁻¹⁹ ÷ 1,60×10⁻¹⁹ = <b>{nbF(Eev, 2)}{NB}eV</b>.</> };
+  const q4 = { id: 'ue3', type: 'num', q: <>On remplace ce rayonnement par un rayonnement de longueur d’onde <b>{2 * lam}{NB}nm</b> (le double). Quelle est l’énergie d’un photon de ce nouveau rayonnement (en eV, 3 chiffres significatifs) ?</>, unite: 'eV', vrai: Eev / 2, tolRel: 0.02, csMin: 3,
+    aide: 'E est inversement proportionnelle à λ : si λ double, E est divisée par 2.',
+    pieges: [[Eev * 2, 'Plus la longueur d’onde est grande, plus l’énergie du photon est petite : E est divisée par 2, pas multipliée.'], [Eev, 'E dépend de λ : si λ double, E change.']],
+    expl: <>E′ = h c ÷ (2λ) = E ÷ 2 = {nbF(Eev, 2)} ÷ 2 = <b>{nbF(Eev / 2, 2)}{NB}eV</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['E = h × ν = h × c ÷ λ, avec λ en mètres et E en joules.', '1 eV = 1,60×10⁻¹⁹ J : E (eV) = E (J) ÷ 1,60×10⁻¹⁹.', 'Plus la longueur d’onde est courte, plus le photon est énergétique (UV > visible > IR).'] };
+}
+function genUvEtalonnage() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const fr = x => String(x).replace('.', ',');
+  // pas d'étalon : c0 ; pente k0 (L/mg) ; l'absorbance du dernier étalon reste entre 0,45 et 1,0 (domaine de validité de la loi de Beer-Lambert)
+  const COMBOS = []; [0.5, 1.0, 2.0, 4.0, 5.0].forEach(cc => [0.05, 0.08, 0.1, 0.12, 0.15, 0.2, 0.25, 0.4].forEach(kk => { const a5 = 5 * cc * kk; if (a5 >= 0.45 && a5 <= 0.95) COMBOS.push([cc, kk]); }));
+  const [c0, k0] = tire(COMBOS);   // k0 en L/mg
+  const cs = [1, 2, 3, 4, 5].map(i => i * c0);
+  const A = cs.map(c => Math.round(k0 * c * (1 + (Math.random() - 0.5) * 0.03) * 1000) / 1000);
+  const k = (A[4] - A[0]) / (cs[4] - cs[0]);
+  let F, Ax, Vm, cd, cm, mm;
+  do {
+    F = tire([5, 10, 20]); Ax = tire([0.5, 0.6, 0.7, 0.8].map(r => Math.round(r * A[4] * 1000) / 1000)); Vm = tire([50, 100, 250]);
+    cd = Ax / k; cm = cd * F; mm = cm * Vm / 1000;
+  } while (new Set([k, cd, cm, mm].map(x => Number(x.toPrecision(2)))).size < 4);
+  const lignes = cs.map((c, i) => `${fr(c.toFixed(1))}${NB}mg/L → A = ${fr(A[i].toFixed(3))}`).join(' ; ');
+  const intro = `Pour doser un colorant par spectrophotométrie à sa longueur d’onde d’absorption maximale, on mesure l’absorbance de cinq solutions étalons : ${lignes}. La droite d’étalonnage passe par l’origine : A = k × c. Une solution mère est diluée ${F} fois ; la solution diluée a une absorbance A = ${fr(Ax.toFixed(3))}. La solution mère a un volume de ${Vm}${NB}mL.`;
+  const q1 = { id: 'ee0', type: 'num', q: <>Quel est le <b>coefficient directeur k</b> de la droite d’étalonnage (en L/mg, 2 chiffres significatifs) ? On utilise le premier et le dernier étalon.</>, unite: 'L/mg', vrai: k, tolRel: 0.05, csMin: 2,
+    aide: 'k = (A₅ − A₁) ÷ (c₅ − c₁), avec c en mg/L : on obtient k en L/mg.',
+    pieges: [[1 / k, 'Vous avez calculé c ÷ A : le coefficient directeur est A ÷ c (variation de A divisée par variation de c).'], [(A[4] - A[0]), 'Il faut diviser la variation d’absorbance par la variation de concentration.']],
+    expl: <>k = ({fr(A[4].toFixed(3))} − {fr(A[0].toFixed(3))}) ÷ ({fr(cs[4].toFixed(1))} − {fr(cs[0].toFixed(1))}) = <b>{nbF(k, 3)}{NB}L/mg</b>.</> };
+  const q2 = { id: 'ee1', type: 'num', q: <>Quelle est la <b>concentration de la solution diluée</b> (en mg/L, 2 chiffres significatifs) ?</>, unite: 'mg/L', vrai: cd, tolRel: 0.06, csMin: 2,
+    aide: 'A = k × c, donc c = A ÷ k.',
+    pieges: [[Ax * k, 'Il faut diviser l’absorbance par k : c = A ÷ k.'], [cm, 'Vous avez déjà tenu compte de la dilution : ici on demande la concentration de la solution diluée.']],
+    expl: <>c′ = A ÷ k = {fr(Ax.toFixed(3))} ÷ {nbF(k, 3)} = <b>{nbF(cd, 1)}{NB}mg/L</b>. Cette valeur est bien comprise entre les étalons extrêmes ({fr(cs[0].toFixed(1))} et {fr(cs[4].toFixed(1))}{NB}mg/L).</> };
+  const q3 = { id: 'ee2', type: 'num', q: <>Quelle est la <b>concentration de la solution mère</b> (en mg/L, 2 chiffres significatifs) ?</>, unite: 'mg/L', vrai: cm, tolRel: 0.06, csMin: 2,
+    aide: 'La solution mère est F fois plus concentrée que la solution diluée.',
+    pieges: [[cd, 'Vous avez oublié la dilution : la solution mère est F fois plus concentrée.'], [cd / F, 'Il faut multiplier par F (et non diviser) : la mère est plus concentrée.']],
+    expl: <>c = F × c′ = {F} × {nbF(cd, 1)} = <b>{pvFmt(cm, 1)}{NB}mg/L</b>.</> };
+  const q4 = { id: 'ee3', type: 'num', q: <>Quelle <b>masse de colorant</b> contient la solution mère (en mg, 2 chiffres significatifs) ?</>, unite: 'mg', vrai: mm, tolRel: 0.06, csMin: 2,
+    aide: 'm = c × V, avec V en litres (1 mL = 10⁻³ L).',
+    pieges: [[cm * Vm, 'Vous n’avez pas converti le volume en litres : 1 mL = 10⁻³ L.'], [cm, 'Il faut multiplier la concentration par le volume de la solution mère.']],
+    expl: <>m = c × V = {pvFmt(cm, 1)} × {Vm}×10⁻³ = <b>{pvFmt(mm, 1)}{NB}mg</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Droite d’étalonnage : A = k × c ; k est la pente de la droite A en fonction de c.', 'On lit A de la solution inconnue ; c = A ÷ k, à condition que A soit dans la gamme des étalons.', 'Concentration de la solution mère = concentration de la solution diluée × facteur de dilution.'] };
+}
 function genPileSerie() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   const fr = x => String(x).replace('.', ',');
@@ -6718,6 +6783,8 @@ export const FAMILLES = [
   { id: 'fvi-tau', groupe: 'Formules', titre: 'Chute avec frottement visqueux : constante de temps et régime transitoire (terminale STL)', gen: genFviTau, domaine: 'Chute avec frottement visqueux' },
   { id: 'eul-lim', groupe: 'Formules', titre: 'Chute avec poussée d’Archimède : accélération initiale et vitesse limite (terminale STL)', gen: genEulLimite, domaine: 'Équation différentielle et méthode d’Euler' },
   { id: 'eul-pas', groupe: 'Formules', titre: 'Chute avec frottement : méthode d’Euler, deux pas (terminale STL)', gen: genEulPas, domaine: 'Équation différentielle et méthode d’Euler' },
+  { id: 'uv-energie', groupe: 'Formules', titre: 'Photon, longueur d’onde et énergie : E = h c / λ (terminale STL)', gen: genUvEnergie, domaine: 'Spectroscopies UV-visible et infrarouge : énergie, identification et dosage' },
+  { id: 'uv-etalonnage', groupe: 'Formules', titre: 'Droite d’étalonnage : pente, concentration et masse (terminale STL)', gen: genUvEtalonnage, domaine: 'Spectroscopies UV-visible et infrarouge : énergie, identification et dosage' },
   { id: 'rmn-int', groupe: 'Formules', titre: 'Spectre RMN du proton : intégration, nombre de H et voisins (terminale STL)', gen: genRmnIntegration, domaine: 'RMN du proton : attribuer et identifier' },
   { id: 'pil-cap', groupe: 'Formules', titre: 'Pile : réactif limitant, quantité d’électricité et durée (terminale STL)', gen: genPileCapacite, domaine: 'Piles : polarité, équation de fonctionnement et durée' },
   { id: 'pil-ser', groupe: 'Formules', titre: 'Piles en série : tension, quantité d’électricité et durée (terminale STL)', gen: genPileSerie, domaine: 'Piles : polarité, équation de fonctionnement et durée' },
