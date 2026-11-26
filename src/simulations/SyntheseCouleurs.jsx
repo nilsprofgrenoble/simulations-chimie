@@ -28,6 +28,11 @@ const libelle = { display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.
 const ORDRE = ['lampes', 'jaune', 'cones', 'appar', 'compl', 'anomalie', 'filtre', 'serie', 'peinture', 'moyenne', 'blanc', 'modele', 'bilan'];
 const BASE = { r: 1, v: 0, b: 0, pj: 0.5, pc: 0.5, pb: 0, filtre: 'jaune', cf: 0.8, oeil: 'normal' };
 const DEPART = { lampes: { r: 1, v: 0, b: 0 }, appar: { r: 0.3, v: 0.3, b: 0 }, compl: { r: 1, v: 1, b: 0.3 }, filtre: { filtre: 'jaune', cf: 0.8 }, peinture: { pj: 0.5, pc: 0.5 }, blanc: { pj: 0.5, pc: 0.5, pb: 0 } };
+const EXEMPLES = {
+  lumieres: [{ nom: 'Rouge + verte : du jaune', v: { r: 1, v: 1, b: 0 } }, { nom: 'Rouge + bleue : du magenta', v: { r: 1, v: 0, b: 1 } }, { nom: 'Verte + bleue : du cyan', v: { r: 0, v: 1, b: 1 } }, { nom: 'Les trois : du blanc', v: { r: 1, v: 1, b: 1 } }],
+  filtre: [{ nom: 'Jaune + cyan : du vert', v: { pj: 0.8, pc: 0.8 } }, { nom: 'Jaune + magenta : du rouge', v: { pj: 0.8, pm: 0.8 } }, { nom: 'Cyan + magenta : du bleu', v: { pc: 0.8, pm: 0.8 } }, { nom: 'Les trois : presque noir', v: { pj: 0.8, pm: 0.8, pc: 0.8 } }],
+  peinture: [{ nom: 'Jaune + cyan : du vert', v: { pj: 0.5, pc: 0.5 } }, { nom: 'Jaune + magenta : du rouge', v: { pj: 0.5, pm: 0.5 } }, { nom: 'Cyan + magenta : du bleu-violet', v: { pc: 0.5, pm: 0.5 } }, { nom: 'Les trois : presque noir', v: { pj: 0.4, pm: 0.4, pc: 0.4 } }, { nom: 'Cyan + blanc : un bleu clair', v: { pc: 0.4, pb: 0.6 } }],
+};
 const COUL_FILTRE = { jaune: '#b45309', magenta: '#a21caf', cyan: '#0e7490' };
 const NOMS_PIG = { jaune: 'jaune', magenta: 'magenta', cyan: 'cyan' };
 const LAMBDAS = M.LAMBDAS, iL = l => LAMBDAS.indexOf(l);
@@ -149,7 +154,7 @@ export function SimulationSyntheseCouleurs() {
     : sc === 'anomalie' ? <><Ligne><Pastille css={M.cssLumiere(DEUT.orange)} nom="orange, 610 nm" hauteur={28}/><Pastille css={M.cssLumiere(DEUT.vert)} nom="vert-jaune, 545 nm" hauteur={28}/></Ligne>
         <BarresCones a={dpO} b={dpV} nomA="orange" nomB="vert-jaune" ymax={60} masqueM={vie.oeil === 'sansM'} label="Réponses des cônes aux deux lumières"/>
         {vie.oeil === 'sansM' && <div style={{ fontSize: 13.5, color: COL.rouge, marginTop: 4, fontWeight: 700, textAlign: 'center' }}>Sans cônes M, les deux lumières ne diffèrent plus que par un nombre égal : elles sont confondues.</div>}</>
-    : sc === 'filtre' ? <><SceneFiltres filtres={[{ nom: `filtre ${vie.filtre} (${pct(vie.cf)})`, T: Tf, col: COUL_FILTRE[vie.filtre] }]}/><Ligne><Pastille css="#ffffff" nom="lampe blanche" hauteur={28}/><Pastille css={M.cssFiltre(Tf)} nom="après le filtre" hauteur={28}/></Ligne>
+    : sc === 'filtre' ? <><SceneFiltres filtres={[{ nom: `filtre ${vie.filtre} (${pct(vie.cf)})`, T: Tf, col: COUL_FILTRE[vie.filtre] }]}/>
         <SvgSpectre graduations yTitre="transmittance" label="Transmittance du filtre" courbes={[{ v: Tf, col: COUL_FILTRE[vie.filtre], w: 3, fill: COUL_FILTRE[vie.filtre], nom: '', l: 600 }]}/></>
     : sc === 'serie' ? <><SceneFiltres filtres={[{ nom: 'filtre jaune', T: Tj1, col: COUL_FILTRE.jaune }, { nom: 'filtre cyan', T: Tc1, col: COUL_FILTRE.cyan }]}/><Ligne><Pastille css={M.cssFiltre(Tj1)} nom="filtre jaune" hauteur={26}/><Pastille css={M.cssFiltre(Tc1)} nom="filtre cyan" hauteur={26}/><Pastille css={M.cssFiltre(Tjc1)} nom="les deux" hauteur={26}/></Ligne>
         <SvgSpectre graduations yTitre="transmittance" marques={[{ l: LAM_SERIE, txt: `${LAM_SERIE} nm` }]} label="Transmittance des filtres jaune et cyan, et des deux en série"
@@ -272,6 +277,7 @@ export function SimulationSyntheseCouleurs() {
         : ex.support === 'filtre' ? 'Chaque curseur règle la concentration d’un colorant dans un filtre placé devant une lampe blanche. Les absorbances s’additionnent : les transmittances se multiplient.'
         : 'Chaque curseur règle la concentration d’un pigment dans une couche de peinture. Les K/S s’additionnent ; le blanc ajoute de la diffusion ; le noir de l’absorption.'}</div>
       {lumieres ? <>
+        {selecteur('sy-exl', 'Essayer un exemple', '', ev => { const x = EXEMPLES.lumieres[ev.target.value]; if (x) setEx(e => ({ ...e, ...x.v })); }, EXEMPLES.lumieres.map((x, i) => ({ id: i, nom: x.nom })), 'Choisir…')}
         {curs('sy-er', `Lampe rouge : ${pct(ex.r)}`, ex.r, 0, 1, 0.01, setE('r'), null, COL.rouge)}
         {curs('sy-ev', `Lampe verte : ${pct(ex.v)}`, ex.v, 0, 1, 0.01, setE('v'), null, COL.vert)}
         {curs('sy-eb', `Lampe bleue : ${pct(ex.b)}`, ex.b, 0, 1, 0.01, setE('b'), null, COL.bleu)}
@@ -280,36 +286,48 @@ export function SimulationSyntheseCouleurs() {
           {ex.cible ? curs('sy-el', `Longueur d’onde : ${n0(ex.lamCible)} nm`, ex.lamCible, 450, 650, 5, setE('lamCible'), 'Essayez de la reproduire avec les trois lampes.') : null}
         </Section></>
       : <>
-        {selecteur('sy-sup', 'Support', ex.support, ev => setEx(e => ({ ...e, support: ev.target.value })), [{ id: 'peinture', nom: 'Couche de peinture (réflectance)' }, { id: 'filtre', nom: 'Filtre devant une lampe (transmittance)' }])}
+        {selecteur('sy-exemple', 'Essayer un exemple', '', ev => { const x = EXEMPLES[ex.support][ev.target.value]; if (x) setEx(e => ({ ...e, pj: 0, pm: 0, pc: 0, pb: 0, pn: 0, ...x.v })); }, EXEMPLES[ex.support].map((x, i) => ({ id: i, nom: x.nom })), 'Choisir…')}
         {curs('sy-pj', `Jaune : ${pct(ex.pj)}`, ex.pj, 0, 1, 0.01, setE('pj'), null, COL.orange)}
         {curs('sy-pm', `Magenta : ${pct(ex.pm)}`, ex.pm, 0, 1, 0.01, setE('pm'), null, '#a21caf')}
         {curs('sy-pc', `Cyan : ${pct(ex.pc)}`, ex.pc, 0, 1, 0.01, setE('pc'), null, '#0e7490')}
         {ex.support === 'peinture' && <>
-          {curs('sy-pb', `Blanc : ${pct(ex.pb)}`, ex.pb, 0, 1, 0.01, setE('pb'), null, COL.gris)}
-          {curs('sy-pn', `Noir : ${pct(ex.pn)}`, ex.pn, 0, 1, 0.01, setE('pn'), null, '#0f172a')}
-          {selecteur('sy-mod', 'Calcul du mélange', ex.modele, ev => setEx(e => ({ ...e, modele: ev.target.value })), [{ id: 'ks', nom: 'Additivité de K/S (Kubelka-Munk)' }, { id: 'moy', nom: 'Moyenne des réflectances (modèle faux, pour comparer)' }])}</>}
+          <Section titre={`Blanc ${pct(ex.pb)} · noir ${pct(ex.pn)}`} ouvert={!!ouv.bn} onBascule={() => bascule('bn')}>
+            {curs('sy-pb', `Blanc : ${pct(ex.pb)}`, ex.pb, 0, 1, 0.01, setE('pb'), 'Le blanc diffuse la lumière : la peinture s’éclaircit.', COL.gris)}
+            {curs('sy-pn', `Noir : ${pct(ex.pn)}`, ex.pn, 0, 1, 0.01, setE('pn'), 'Le noir absorbe toutes les longueurs d’onde.', '#0f172a')}</Section>
+          <Section titre={ex.modele === 'moy' ? 'Calcul : moyenne des réflectances (faux)' : 'Calcul : additivité de K/S'} ouvert={!!ouv.mod} onBascule={() => bascule('mod')}>
+            {selecteur('sy-mod', 'Calcul du mélange', ex.modele, ev => setEx(e => ({ ...e, modele: ev.target.value })), [{ id: 'ks', nom: 'Additivité de K/S (Kubelka-Munk)' }, { id: 'moy', nom: 'Moyenne des réflectances (modèle faux, pour comparer)' }])}</Section></>}
         <button onClick={() => setEx(e => ({ ...e, pj: 0, pm: 0, pc: 0, pb: 0, pn: 0 }))} style={{ ...styleBouton(false), marginTop: 10 }}>Tout remettre à zéro</button></>}
     </div>);
-  const voletExplore = (
+  const pilules = (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+      {[['lumieres', 'Lumières'], ['filtre', 'Filtres'], ['peinture', 'Peintures']].map(([k, l]) => {
+        const actif = k === 'lumieres' ? lumieres : !lumieres && ex.support === k;
+        return <button key={k} onClick={() => setEx(e => ({ ...e, vol: k === 'lumieres' ? 'lumieres' : 'pigments', support: k === 'lumieres' ? e.support : k }))} aria-pressed={actif} style={stylePetitBouton(actif, '#7c3aed')}>{l}</button>;
+      })}
+      <div style={{ fontSize: 12.5, color: KIT.txt2, alignSelf: 'center' }}>{lumieres ? 'Synthèse additive : on ajoute des lumières.' : 'Synthèse soustractive : on retire de la lumière.'}</div>
+    </div>);
+  const filtresEx = [['jaune', ex.pj], ['magenta', ex.pm], ['cyan', ex.pc]].filter(([, c]) => c > 0.001).map(([n, c]) => ({ nom: `filtre ${n} (${pct(c)})`, T: M.transmittance({ [n]: c }), col: COUL_FILTRE[n] }));
+  const voletScene = (
     <div style={styleBoite}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {[['lumieres', 'Lumières (additive)'], ['pigments', 'Filtres et peintures (soustractive)']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, vol: k }))} aria-pressed={ex.vol === k} style={stylePetitBouton(ex.vol === k, '#7c3aed')}>{l}</button>)}
-      </div>
+      {pilules}
       {lumieres ? <>
         <SceneLampes r={ex.r} v={ex.v} b={ex.b}/>
-        <Ligne><Pastille css={M.cssLumiere(spE)} nom="lumière obtenue" hauteur={28}/>{spCible && <Pastille css={M.cssLumiere(spCible)} nom={`monochromatique ${n0(ex.lamCible)} nm`} hauteur={28}/>}</Ligne>
+        {spCible && <Ligne><Pastille css={M.cssLumiere(spE)} nom="lumière obtenue" hauteur={28}/><Pastille css={M.cssLumiere(spCible)} nom={`monochromatique ${n0(ex.lamCible)} nm`} hauteur={28}/></Ligne>}</>
+      : ex.support === 'filtre' ? <SceneFiltres filtres={filtresEx}/>
+      : <>
+        <SceneCoupe R={REx} css={patch(REx)} pig={{ jaune: ex.pj, magenta: ex.pm, cyan: ex.pc, blanc: ex.pb, noir: ex.pn }}/>
+        {ex.modele === 'moy' && <div style={{ fontSize: 13.5, color: COL.rouge, fontWeight: 700, textAlign: 'center', marginTop: 6 }}>Calcul par moyenne des réflectances : modèle faux, pour comparer.</div>}</>}
+    </div>);
+  const voletCourbes = (
+    <div style={styleBoite}>
+      {lumieres ? <>
         <SvgSpectre ymax={Math.max(24, spCible ? 32 : 0)} yTitre="intensité" label="Spectre de la lumière obtenue"
           courbes={[{ v: M.spectreRVB(ex.r, 0, 0), col: COL.rouge, w: 1.6, dash: '5 3' }, { v: M.spectreRVB(0, ex.v, 0), col: COL.vert, w: 1.6, dash: '5 3' }, { v: M.spectreRVB(0, 0, ex.b), col: COL.bleu, w: 1.6, dash: '5 3' }, ...(spCible ? [{ v: spCible, col: '#4c1d95', w: 2.4 }] : []), { v: spE, col: '#0f172a', w: 3, fill: '#94a3b8', fillOpacity: 0.3 }]}/>
         <div style={{ height: 8 }}/>
         <BarresCones a={repE} b={repCible ?? undefined} nomA="lumière obtenue" nomB={`${n0(ex.lamCible)} nm`} ymax={60}/></>
-      : ex.support === 'filtre' ? <>
-        <SceneFiltres filtres={[['jaune', ex.pj], ['magenta', ex.pm], ['cyan', ex.pc]].filter(([, c]) => c > 0.001).map(([n, c]) => ({ nom: `filtre ${n} (${pct(c)})`, T: M.transmittance({ [n]: c }), col: COUL_FILTRE[n] }))}/>
-        <Ligne><Pastille css="#ffffff" nom="lampe blanche" hauteur={28}/><Pastille css={M.cssFiltre(filtreEx)} nom="après les filtres" hauteur={28}/></Ligne>
-        <SvgSpectre graduations yTitre="transmittance" label="Transmittance des filtres" courbes={[{ v: M.transmittance({ jaune: ex.pj }), col: COUL_FILTRE.jaune, w: 1.6, dash: '5 3' }, { v: M.transmittance({ magenta: ex.pm }), col: COUL_FILTRE.magenta, w: 1.6, dash: '5 3' }, { v: M.transmittance({ cyan: ex.pc }), col: COUL_FILTRE.cyan, w: 1.6, dash: '5 3' }, { v: filtreEx, col: '#0f172a', w: 3, fill: '#94a3b8', fillOpacity: 0.3 }]}/></>
-      : <>
-        <SceneCoupe R={REx} css={patch(REx)} pig={{ jaune: ex.pj, magenta: ex.pm, cyan: ex.pc, blanc: ex.pb, noir: ex.pn }}/>
-        <Ligne><Pastille css={patch(REx)} nom={ex.modele === 'moy' ? 'mélange (moyenne : modèle faux)' : 'mélange'} hauteur={28}/></Ligne>
-        <SvgSpectre graduations yTitre="réflectance" label="Réflectance du mélange de pigments" courbes={[{ v: REx, col: '#0f172a', w: 3, fill: '#94a3b8', fillOpacity: 0.3 }]}/></>}
+      : ex.support === 'filtre' ?
+        <SvgSpectre graduations yTitre="transmittance" label="Transmittance des filtres" courbes={[{ v: M.transmittance({ jaune: ex.pj }), col: COUL_FILTRE.jaune, w: 1.6, dash: '5 3' }, { v: M.transmittance({ magenta: ex.pm }), col: COUL_FILTRE.magenta, w: 1.6, dash: '5 3' }, { v: M.transmittance({ cyan: ex.pc }), col: COUL_FILTRE.cyan, w: 1.6, dash: '5 3' }, { v: filtreEx, col: '#0f172a', w: 3, fill: '#94a3b8', fillOpacity: 0.3 }]}/>
+      : <SvgSpectre graduations yTitre="réflectance" label="Réflectance du mélange de pigments" courbes={[{ v: REx, col: '#0f172a', w: 3, fill: '#94a3b8', fillOpacity: 0.3 }]}/>}
     </div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
@@ -379,7 +397,7 @@ export function SimulationSyntheseCouleurs() {
           .sy-l1.cote .sy-carte { order: 2; } .sy-l1.cote .sy-main { order: 1; }
           .sy-ex { grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); }
           .sy-ex > * { grid-column: 1; }
-          .sy-ex > .sy-reg { grid-column: 2; grid-row: 1 / span 2; }
+          .sy-ex > .sy-reg { grid-column: 2; grid-row: 1 / span 3; }
         }
         @media (max-width: 900px) { .sy-l1.cote { grid-template-columns: minmax(0, 1fr); } }
         @media (prefers-reduced-motion: no-preference) { .sy-in { animation: sy-fondu 0.35s ease-out; } @keyframes sy-fondu { from { opacity: 0; } to { opacity: 1; } } }
@@ -403,8 +421,9 @@ export function SimulationSyntheseCouleurs() {
       {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.kind}`} etat={defi.kind === 'appariement' ? suiviA : suiviR}/></div>}
       {enExplore && <>
         <div className="sy-ex">
-          {voletExplore}
+          {voletScene}
           <div className="sy-reg">{reglagesExplore}</div>
+          {voletCourbes}
           {mesuresEx}
         </div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
