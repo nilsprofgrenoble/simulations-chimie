@@ -111,7 +111,7 @@ export const COUVERTURE = [
     { th: MESURE, t: 'Incertitudes de type A et B, sources d’erreurs, incertitudes composées, justesse et fidélité', e: 'partiel', chap: 'tstl-mesure', reste: 'incertitude de type B, sources d’erreurs, incertitudes composées, justesse et fidélité' },
     { th: 'Chimie et développement durable', t: 'Solubilité : quotient de réaction, constante Ks, précipitation sélective', e: 'avenir' },
     { th: 'Chimie et développement durable', t: 'Acides et bases : Ka, pKa, pH, tampon, titrages', e: 'ok', chap: 'tstl-acides-bases' },
-    { th: 'Chimie et développement durable', t: 'Conductivité : loi de Kohlrausch, dosage et titrage conductimétriques', e: 'partiel', chap: 'tstl-conductivite', reste: 'dosage par étalonnage' },
+    { th: 'Chimie et développement durable', t: 'Conductivité : loi de Kohlrausch, dosage et titrage conductimétriques', e: 'ok', chap: 'tstl-conductivite' },
     { th: 'Chimie et développement durable', t: 'Oxydo-réduction : potentiel, relation de Nernst, titrages redox', e: 'avenir' },
     { th: 'Chimie et développement durable', t: 'Électrolyse et électrosynthèse', e: 'avenir' },
     { th: 'Chimie et développement durable', t: 'Rendement et optimisation d’une synthèse, chimie verte', e: 'ok', chap: 'tstl-synthese-organique' },

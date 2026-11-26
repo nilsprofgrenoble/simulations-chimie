@@ -1481,6 +1481,54 @@ export const ENONCES = [
         manque: null, solution: { txt: `${a.ap} apparaissent, rien ne disparaît côté ions : Δσ = (λ(${a.f1}) + λ(${a.f2})) × cB × 1 000 / Vt`, val: (a.l1 + a.l2) * pas, u: 'mS·m⁻¹ par mL' } };
     },
   },
+  {
+    id: 'cet-sapp-dilution', domaine: 'Dosage par étalonnage conductimétrique', titre: 'Dosage par étalonnage : facteur de dilution et concentration de la solution à doser', noms: ['Facteur de dilution de la solution à doser', 'Concentration de la solution à doser'],
+    gen: () => { const [Vp, Vf] = tire([[10, 100], [25, 250], [5, 100], [10, 200], [25, 500], [20, 500], [10, 250], [5, 250], [10, 500]]); return { Vp, Vf, a: tire([0.100, 0.120, 0.150, 0.180, 0.240]), cD: tire([3.5, 4.5, 5.5, 6.5, 7.5]), k: tire([50, 80, 100, 150]), sel: tire(['nitrate de sodium (Na⁺ + NO₃⁻)', 'chlorure de sodium (Na⁺ + Cl⁻)', 'éthanoate de sodium (CH₃COO⁻ + Na⁺)']) }; },
+    build: (p, q) => {
+      const F = p.Vf / p.Vp, G = Number((p.a * p.cD).toPrecision(3)), cL = G / p.a;
+      const tokens = {
+        Vp: tok(`${nb(p.Vp, 1)} mL`, 'Volume de la solution à doser prélevé à la pipette', p.Vp, 'mL'),
+        Vf: tok(`${nb(p.Vf, 1)} mL`, 'Volume de la fiole jaugée utilisée pour la dilution', p.Vf, 'mL'),
+        a: tok(`${nb(p.a, 3)} mS par mmol/L`, 'Coefficient directeur de la droite d’étalonnage G = a × c', p.a, 'mS par mmol/L'),
+        G: tok(`${nb(G, 3)} mS`, 'Conductance mesurée pour la solution diluée', G, 'mS'),
+        k: tok(`${p.k} m⁻¹`, 'Constante de la cellule de conductimétrie', p.k, 'm⁻¹'),
+        T: tok('25 °C', 'Température des étalons et de la solution mesurée', 25, '°C'),
+      };
+      const debut = ['On dose une solution X de ', p.sel, ' par étalonnage conductimétrique. On prélève ', T('Vp'), ' de X à la pipette jaugée, qu’on complète avec de l’eau distillée dans une fiole jaugée de ', T('Vf'), ' (solution diluée X′). Étalons et solution X′ sont mesurés à ', T('T'), ' avec la même cellule, de constante ', T('k'), '. La droite d’étalonnage a pour coefficient directeur ', T('a'), ' ; la solution X′ donne une conductance ', T('G'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le facteur de dilution F de la solution à doser ?'],
+        utiles: ['Vp', 'Vf'], raisons: { a: 'Le coefficient directeur sert à lire la concentration sur la droite, pas à calculer le facteur de dilution.', G: 'La conductance sert à lire la concentration de X′, pas à calculer F.', k: 'La constante de cellule est déjà contenue dans le coefficient directeur a.', T: 'La température est la même pour tous : elle n’intervient pas dans le calcul de F.' },
+        cherche: { bonne: 'Le facteur de dilution F (sans unité)', faux: ['La concentration de la solution diluée X′ (en mmol/L)', 'Le volume d’eau ajouté dans la fiole (en mL)', 'La concentration de la solution à doser X (en mmol/L)'] },
+        manque: null, solution: { txt: 'F = Vf / Vp', val: F, u: '' } };
+      return { tokens, derivees: [{ id: 'F', nom: 'Facteur de dilution', expr: 'Vf / Vp', val: F, u: '' }, { id: 'cD', nom: 'Concentration de la solution diluée X′ lue sur la droite', expr: 'G / a', val: cL, u: 'mmol/L' }], texte: [...debut, 'Quelle est la concentration de la solution à doser X (en mmol/L) ?'],
+        utiles: ['Vp', 'Vf', 'a', 'G'], raisons: { k: 'La constante de cellule est déjà contenue dans le coefficient directeur a : on n’en a pas besoin.', T: 'La température est la même pour tous : elle n’intervient pas dans le calcul.' },
+        cherche: { bonne: 'La concentration de la solution à doser X (en mmol/L)', faux: ['La concentration de la solution diluée X′ (en mmol/L)', 'Le facteur de dilution (sans unité)', 'La constante de cellule (en m⁻¹)'] },
+        manque: null, solution: { txt: 'c(X′) = G / a, puis c(X) = F × c(X′) avec F = Vf / Vp', val: F * cL, u: 'mmol/L' } };
+    },
+  },
+  {
+    id: 'cet-sapp-gamme', domaine: 'Dosage par étalonnage conductimétrique', titre: 'Préparer un étalon par dilution et en déduire le coefficient directeur', noms: ['Concentration de l’étalon', 'Coefficient directeur de la droite d’étalonnage'],
+    gen: () => { const c0 = tire([50, 100, 200]), Vf = tire([100, 200, 250]); const cands = [2, 4, 5, 8, 10].filter(c => { const v = c * Vf / c0; return v >= 1 && v <= 50 && Math.abs(v * 10 - Math.round(v * 10)) < 1e-9; }); const c = tire(cands.length ? cands : [4]); return { c0, Vf, c, Vp: c * Vf / c0, k: tire([50, 80, 100, 150]), Sl: tire([12.1, 12.6]) }; },
+    build: (p, q) => {
+      const G = Number((p.Sl * p.c / p.k * (1 - 0.002 * p.c)).toPrecision(3)), a = G / p.c;
+      const tokens = {
+        c0: tok(`${p.c0} mmol/L`, 'Concentration de la solution mère', p.c0, 'mmol/L'),
+        Vp: tok(`${nb(p.Vp, 1)} mL`, 'Volume de solution mère prélevé à la pipette', p.Vp, 'mL'),
+        Vf: tok(`${nb(p.Vf, 1)} mL`, 'Volume de la fiole jaugée', p.Vf, 'mL'),
+        G: tok(`${nb(G, 3)} mS`, 'Conductance mesurée pour cet étalon', G, 'mS'),
+        k: tok(`${p.k} m⁻¹`, 'Constante de la cellule de conductimétrie', p.k, 'm⁻¹'),
+        T: tok('25 °C', 'Température de la mesure', 25, '°C'),
+      };
+      const debut = ['Pour étalonner une cellule de conductimétrie, on prélève ', T('Vp'), ' d’une solution mère à ', T('c0'), ' qu’on complète avec de l’eau distillée dans une fiole jaugée de ', T('Vf'), '. La mesure à ', T('T'), ', avec une cellule de constante ', T('k'), ', donne une conductance ', T('G'), ' pour cet étalon. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration de l’étalon préparé (en mmol/L) ?'],
+        utiles: ['c0', 'Vp', 'Vf'], raisons: { G: 'La conductance est une mesure faite sur l’étalon : elle ne sert pas à calculer sa concentration par dilution.', k: 'La constante de cellule relie G à la conductivité, pas la concentration au protocole de dilution.', T: 'La température n’intervient pas dans le calcul d’une dilution.' },
+        cherche: { bonne: 'La concentration de l’étalon (en mmol/L)', faux: ['Le facteur de dilution (sans unité)', 'La conductivité de l’étalon (en mS·m⁻¹)', 'La quantité de matière prélevée (en µmol)'] },
+        manque: null, solution: { txt: 'c₀ × Vp = c × Vf, donc c = c₀ × Vp / Vf', val: p.c, u: 'mmol/L' } };
+      return { tokens, derivees: [{ id: 'c', nom: 'Concentration de l’étalon', expr: 'c₀ × Vp / Vf', val: p.c, u: 'mmol/L' }], texte: [...debut, 'Quel est le coefficient directeur a de la droite d’étalonnage G = a × c (en mS par mmol/L), en supposant que la droite passe par l’origine ?'],
+        utiles: ['c0', 'Vp', 'Vf', 'G'], raisons: { k: 'La constante de cellule est déjà incluse dans la conductance mesurée : le coefficient directeur se calcule directement avec G et c.', T: 'La température est la même pour tous les points : elle n’intervient pas dans le calcul de a.' },
+        cherche: { bonne: 'Le coefficient directeur a de la droite d’étalonnage (en mS par mmol/L)', faux: ['La concentration de l’étalon (en mmol/L)', 'La conductivité de l’étalon (en mS·m⁻¹)', 'La constante de cellule (en m⁻¹)'] },
+        manque: null, solution: { txt: 'a = G / c : la droite passe par l’origine et par le point de l’étalon', val: a, u: 'mS par mmol/L' } };
+    },
+  },
   // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule
   {
     id: 'etl-sapp-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Constante de cellule et conductivité d’une solution', noms: ['Constante de la cellule', 'Conductivité d’une solution à partir de sa conductance'],

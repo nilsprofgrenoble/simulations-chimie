@@ -66,6 +66,12 @@ export default {
       refs: ['37:prevoir:acd-ana-faible-equiv', '37:prevoir:acd-ana-pente-apres', '34:acd-sapp-faible', '36:acd-faible-calcul'] },
     { id: 'acd-dilution', nom: 'Eau ajoutée, volume total et calcul d’une pente', capacite: 'Utiliser la loi de Kohlrausch pour calculer la variation de conductivité par mL de titrant versé, en tenant compte du volume total de la solution.',
       refs: ['37:prevoir:acd-ana-eau', '77:plausible:acd-val-volume'] },
+    { id: 'cet-gamme', nom: 'Préparer les étalons par dilution et caractériser la cellule', capacite: 'Concevoir le protocole d’un dosage par étalonnage conductimétrique : étalons préparés par dilution dans le domaine de validité, conductance, conductivité et constante de cellule.',
+      refs: ['37:prevoir:cet-ana-cellule', '77:plausible:cet-val-gamme', '34:cet-sapp-gamme', '36:cet-gamme-calcul'] },
+    { id: 'cet-dilution', nom: 'Diluer la solution à doser et remonter à sa concentration', capacite: 'Exploiter une droite d’étalonnage pour déterminer une concentration, en diluant la solution à doser pour rester dans le domaine de validité de la loi de Kohlrausch.',
+      refs: ['37:prevoir:cet-ana-hors-domaine', '37:prevoir:cet-ana-trop-dilue', '77:plausible:cet-val-facteur', '34:cet-sapp-dilution', '36:cet-dosage-calcul'] },
+    { id: 'cet-conditions', nom: 'Mêmes conditions de mesure : température', capacite: 'Identifier les conditions à respecter pour un dosage par étalonnage (même cellule, même soluté, même température).',
+      refs: ['37:prevoir:cet-ana-temperature'] },
   ],
   'tstl-synthese-organique': [
     { id: 'esterification', nom: 'Estérification : équilibre, réactif limitant et rendement', capacite: 'Déterminer le rendement d’une estérification et identifier les facteurs qui déplacent l’équilibre (excès, élimination d’un produit, catalyseur).',

@@ -3962,6 +3962,64 @@ function genFaibleTitrageTSTLBase() {
   return { intro: 'Titrage d’un acide faible ou d’une base faible : volume équivalent, pentes avant et après l’équivalence, et rupture de pente.', questions: [q1, q2, q3, q4],
     retenir: ['VE : cB × VE = cA × VA.', 'Avant l’équivalence, aucun ion ne disparaît : deux ions apparaissent, la pente est faible.', 'Après l’équivalence, les deux ions du titrant s’accumulent : la pente est plus forte (rupture de pente).', 'Le rapport des pentes ne dépend que des λ, pas des concentrations.'] };
 }
+function genGammeEtalonsTSTL() {
+  for (let k = 0; ; k++) { const g = genGammeEtalonsTSTLBase(), v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; }
+}
+function genGammeEtalonsTSTLBase() {
+  const c0 = tire([50, 100, 200]), Vf = tire([100, 200, 250]);
+  const cands = [2, 4, 5, 8, 10].filter(c => { const v = c * Vf / c0; return v >= 1 && v <= 50 && Math.abs(v * 10 - Math.round(v * 10)) < 1e-9; });
+  const c = tire(cands), reste = cands.filter(x => x !== c), c2 = tire(reste.length ? reste : [c === 4 ? 8 : 4]);
+  const Vp = c * Vf / c0, Vp2 = c2 * Vf / c0, F = Vf / Vp, S = tire([1.0, 1.5, 2.0, 2.5]), L = tire([1.0, 1.2, 1.5, 2.0, 2.4]), kc = 100 * L / S;
+  const intro = <>On prépare des étalons de nitrate de sodium par dilution d’une solution mère de concentration <b>{c0}{NB}mmol/L</b>, dans des fiole jaugées de <b>{Vf}{NB}mL</b>. Les plaques de la cellule de conductimétrie ont une surface <b>S = {nbF(S, 1)}{NB}cm²</b> et sont distantes de <b>L = {nbF(L, 1)}{NB}cm</b>.</>;
+  const q1 = { id: 'g0', type: 'num', q: <>{intro} On prélève <b>{nb(Vp, 3)}{NB}mL</b> de solution mère pour préparer un étalon. Quelle est sa concentration (en mmol/L, 2 chiffres significatifs) ?</>, unite: 'mmol/L', vrai: c, tolRel: 0.02, csMin: 2,
+    aide: 'La quantité de matière prélevée se retrouve dans la fiole : c₀ × Vp = c × Vf.',
+    pieges: [[c0 * Vf / Vp, 'Vous avez calculé c₀ × Vf / Vp : la solution est diluée, elle est moins concentrée que la solution mère.'], [c0 * Vp, 'Il manque la division par le volume de la fiole Vf : c = c₀ × Vp / Vf.'], [Vp / Vf, 'Il manque c₀ : c = c₀ × Vp / Vf.']],
+    expl: <>c = c₀ × Vp / Vf = {c0} × {nb(Vp, 3)} / {Vf} = <b>{nb(c, 2)}{NB}mmol/L</b>.</> };
+  const q2 = { id: 'g1', type: 'num', q: <>{intro} On prélève <b>{nb(Vp, 3)}{NB}mL</b> de solution mère. Quel est le facteur de dilution F (sans unité, 2 chiffres significatifs) ?</>, unite: '', vrai: F, tolRel: 0.02, csMin: 2,
+    aide: 'F = Vf / Vp : volume de la fiole divisé par volume prélevé.',
+    pieges: [[Vp / Vf, 'Le rapport est inversé : F = Vf / Vp, plus grand que 1.'], [Vf - Vp, 'F est un rapport de volumes, pas un volume d’eau ajouté.']],
+    expl: <>F = Vf / Vp = {Vf} / {nb(Vp, 3)} = <b>{nb(F, 2)}</b>.</> };
+  const q3 = { id: 'g2', type: 'num', q: <>{intro} Quel volume de solution mère faut-il prélever pour préparer un étalon de <b>{nb(c2, 2)}{NB}mmol/L</b> (en mL, 2 chiffres significatifs) ?</>, unite: 'mL', vrai: Vp2, tolRel: 0.02, csMin: 2,
+    aide: 'c₀ × Vp = c × Vf : isolez Vp.',
+    pieges: [[c0 * Vf / c2, 'Vous avez inversé le rapport : Vp = c × Vf / c₀.'], [c2 * Vf / c0 / 10, 'Vérifiez les unités : toutes les concentrations sont en mmol/L et les volumes en mL.'], [c2 * c0 / Vf, 'Il manque Vf au numérateur : Vp = c × Vf / c₀.']],
+    expl: <>Vp = c × Vf / c₀ = {nb(c2, 2)} × {Vf} / {c0} = <b>{nb(Vp2, 3)}{NB}mL</b>.</> };
+  const q4 = { id: 'g3', type: 'num', q: <>{intro} Calculez la constante k de la cellule (en m⁻¹, 2 chiffres significatifs).</>, unite: 'm⁻¹', vrai: kc, tolRel: 0.02, csMin: 2,
+    aide: 'k = L / S, avec L en mètres et S en m² (1 cm = 10⁻² m ; 1 cm² = 10⁻⁴ m²).',
+    pieges: [[L / S, 'Vous avez gardé les centimètres : k est ici en cm⁻¹. Pour des m⁻¹, multipliez par 100.'], [100 * S / L, 'Vous avez calculé S / L : la constante de cellule est L / S.']],
+    expl: <>k = L / S = {nbF(L, 1)}×10⁻² / ({nbF(S, 1)}×10⁻⁴) = <b>{nb(kc, 2)}{NB}m⁻¹</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Préparation d’une gamme d’étalons par dilution : concentration obtenue, facteur de dilution, volume à prélever, constante de cellule.', questions: [q1, q2, q3, q4],
+    retenir: ['Dilution : c₀ × Vp = c × Vf (la quantité de matière prélevée se conserve).', 'Facteur de dilution : F = Vf / Vp = c₀ / c.', 'Tous les étalons doivent être dans le domaine de validité : c ≤ 10 mmol/L.', 'Constante de cellule : k = L / S, avec L en m et S en m² (1 cm⁻¹ = 100 m⁻¹).'] };
+}
+function genDosageEtalonnageTSTL() {
+  for (let k = 0; ; k++) { const g = genDosageEtalonnageTSTLBase(), v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; }
+}
+function genDosageEtalonnageTSTLBase() {
+  const a = tire([0.100, 0.120, 0.150, 0.180, 0.240]), F = tire([10, 20, 25, 50]), cD = tire([3.5, 4.5, 5.5, 6.5, 7.5]), G = Number((a * cD).toPrecision(3)), cL = G / a, cX = F * cL / 1000;
+  const cAppr = tire([0.10, 0.20, 0.30, 0.50, 0.60, 0.80, 1.0]), Fc = cAppr * 1000 / 5.0;
+  const dT = tire([5, 10, -5, -10]), cE = tire([3.0, 4.0, 5.0, 6.0, 7.0].filter(x => Math.abs(x - cL) > 0.4)), fT = 1 + 0.02 * dT, Gt = Number((a * cE * fT).toPrecision(3));
+  const intro = <>On dose une solution X de nitrate de sodium par étalonnage conductimétrique. La droite d’étalonnage G = a × c (c en mmol/L, G en mS) a pour coefficient directeur <b>a = {nbF(a, 3)}{NB}mS par mmol/L</b>. On dilue X <b>{F} fois</b> et on mesure, dans les mêmes conditions que les étalons (25 °C), la conductance de la solution diluée X′ : <b>G′ = {nbF(G, 3)}{NB}mS</b>.</>;
+  const q1 = { id: 'd0', type: 'num', q: <>{intro} Quelle est la concentration c(X′) de la solution diluée (en mmol/L, 2 chiffres significatifs) ?</>, unite: 'mmol/L', vrai: cL, tolRel: 0.03, csMin: 2,
+    aide: 'G′ = a × c(X′) : isolez c(X′).',
+    pieges: [[G * a, 'Vous avez multiplié G′ par a : G′ = a × c(X′), donc c(X′) = G′ / a.'], [a / G, 'Vous avez calculé a / G′ : il faut G′ / a.']],
+    expl: <>c(X′) = G′ / a = {nbF(G, 3)} / {nbF(a, 3)} = <b>{nb(cL, 2)}{NB}mmol/L</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>{intro} Quelle est la concentration de la solution à doser X (en mol/L, 2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: cX, tolRel: 0.03, csMin: 2,
+    aide: 'Calculez c(X′) = G′ / a, puis c(X) = F × c(X′), et convertissez en mol/L (1 mol/L = 1 000 mmol/L).',
+    pieges: [[F * cL, 'Valeur en mmol/L : on demande des mol/L (÷ 1 000).'], [cL / 1000, 'Vous avez oublié le facteur de dilution F : c(X′) n’est pas c(X).'], [cL / F / 1000, 'Vous avez divisé par F : X est plus concentrée que X′, il faut multiplier.']],
+    expl: <>c(X) = F × c(X′) = {F} × {nb(cL, 2)} = {nb(F * cL, 3)} mmol/L, soit <b>{nb(cX, 2)}{NB}mol/L</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>Une solution à doser Y est annoncée à environ <b>{nbF(cAppr, 2)}{NB}mol/L</b>. Les étalons vont de 2 à 10 mmol/L. Quel facteur de dilution F faut-il choisir pour que la solution diluée soit à environ <b>5,0{NB}mmol/L</b>, au milieu de la gamme (sans unité) ?</>, unite: '', vrai: Fc, tolRel: 0.03, csMin: 2,
+    aide: 'c(Y′) = c(Y) / F : isolez F après avoir converti c(Y) en mmol/L (1 mol/L = 1 000 mmol/L).',
+    pieges: [[cAppr / 5.0, 'Convertissez d’abord c(Y) en mmol/L : 1 mol/L = 1 000 mmol/L.'], [5.0 / (cAppr * 1000), 'Le rapport est inversé : F = c(Y) / c(Y′), plus grand que 1.']],
+    expl: <>F = c(Y) / c(Y′) = {nb(cAppr * 1000, 3)} mmol/L / 5,0 mmol/L = <b>{nb(Fc, 2)}</b>.</> };
+  const q4 = { id: 'd3', type: 'num', q: <>Avec la même droite (a = {nbF(a, 3)}{NB}mS par mmol/L, tracée à 25 °C), on mesure une autre solution diluée Z′ à une température <b>{Math.abs(dT)}{NB}°C {dT > 0 ? 'au-dessus' : 'en dessous'} de 25 °C</b> : G = <b>{nbF(Gt, 3)}{NB}mS</b>. La conductivité varie d’environ 2 % par °C. Quelle est la concentration réelle de Z′ (en mmol/L, 2 chiffres significatifs) ?</>, unite: 'mmol/L', vrai: cE, tolRel: 0.04, csMin: 2,
+    aide: 'Ramenez d’abord la conductance à 25 °C : G(25 °C) = G / (1 + 0,02 × écart de température), puis c = G(25 °C) / a.',
+    pieges: [[Gt / a, 'Vous avez lu la concentration sans corriger la température : à une autre température, G n’est pas celle de 25 °C.'], [Gt * (1 + 0.02 * dT) / a, 'La correction est à l’envers : si la solution est plus chaude, G est trop grande et il faut la diminuer.']],
+    expl: <>G(25 °C) = G / (1 + 0,02 × {dT > 0 ? '' : '(−'}{Math.abs(dT)}{dT > 0 ? '' : ')'}) = {nbF(Gt / fT, 3)} mS ; c = G(25 °C) / a = <b>{nb(cE, 2)}{NB}mmol/L</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Dosage par étalonnage avec dilution : concentration de la solution diluée, concentration de la solution à doser, choix du facteur de dilution, effet de la température.', questions: [q1, q2, q3, q4],
+    retenir: ['c(X′) = G′ / a (lecture sur la droite d’étalonnage).', 'c(X) = F × c(X′).', 'On choisit F pour que X′ soit vers le milieu de la gamme d’étalons (2 à 10 mmol/L).', 'Mêmes conditions pour tous : cellule, soluté, température (σ varie d’environ 2 % par °C).'] };
+}
+
 function genEtalonnageTG() {
   const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c] || c)).join('')}`; };
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
@@ -5948,6 +6006,8 @@ export const FAMILLES = [
   { id: 'kcd-ka-calcul', groupe: 'Formules', titre: 'Acide faible : du taux d’avancement à la concentration en ions, à la conductivité, à K et au pKa (TSTL)', gen: genKaTauTSTL, domaine: 'Constante d’un acide faible par conductimétrie' },
   { id: 'acd-pente-calcul', groupe: 'Formules', titre: 'Titrage acide fort / base forte : volume équivalent, pentes de la courbe de conductivité et conductivité à l’équivalence (TSTL)', gen: genPenteTitrageTSTL, domaine: 'Allure d’une courbe de titrage conductimétrique' },
   { id: 'acd-faible-calcul', groupe: 'Formules', titre: 'Titrage d’un acide ou d’une base faible : volume équivalent et pentes de la courbe de conductivité (TSTL)', gen: genFaibleTitrageTSTL, domaine: 'Allure d’une courbe de titrage conductimétrique' },
+  { id: 'cet-gamme-calcul', groupe: 'Formules', titre: 'Gamme d’étalons préparée par dilution : concentration, facteur de dilution, volume à prélever et constante de cellule (TSTL)', gen: genGammeEtalonsTSTL, domaine: 'Dosage par étalonnage conductimétrique' },
+  { id: 'cet-dosage-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage avec dilution : concentration de la solution diluée, de la solution à doser, facteur de dilution et température (TSTL)', gen: genDosageEtalonnageTSTL, domaine: 'Dosage par étalonnage conductimétrique' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },
