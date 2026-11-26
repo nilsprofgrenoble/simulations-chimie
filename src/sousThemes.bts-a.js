@@ -74,6 +74,10 @@ export default {
       refs: ['34:chro-sapp-indicateur', ...['chro-ana-couleur', 'chro-ana-incolore', 'chro-ana-conjugaison', 'chro-ana-effets', 'chro-ana-auxochrome'].map(A), ...['chro-val-complementaire', 'chro-val-incolore', 'chro-val-auxochrome'].map(Vp), '36:chro-calcul'] },
     { id: 'uv-appareil', nom: 'Spectrophotomètre UV-visible : appareil, cuve et blanc', capacite: 'Décrire les éléments d’un spectrophotomètre UV-visible ; choisir la cuve et la lampe selon le domaine de longueurs d’onde ; réaliser le blanc ; rester dans le domaine de validité de la loi de Beer-Lambert.',
       refs: [...['app-ana-cuve', 'app-ana-lampe', 'app-ana-blanc'].map(A), ...['app-val-blanc', 'app-val-linearite'].map(Vp)] },
+    { id: 'ir-comparer', nom: 'Comparer des spectres IR et décrire l’appareil', capacite: 'Comparer les caractéristiques d’une espèce synthétisée avec celles d’une espèce commerciale en interprétant des spectres IR (transformation, espèce attendue, impuretés) ; expliquer succinctement le fonctionnement d’un spectrophotomètre IR.',
+      refs: [...['irc-ana-esterification', 'irc-ana-impurete-eau', 'irc-ana-superposable', 'irc-ana-appareil', 'irc-ana-fond'].map(A), ...['irc-val-pur', 'irc-val-memes-groupes'].map(Vp)] },
+    { id: 'fluo-spectrofluorimetrie', nom: 'Spectrofluorimétrie : spectres d’excitation et d’émission', capacite: 'Différencier spectre d’excitation de fluorescence et spectre d’émission de fluorescence ; exploiter des mesures en spectrofluorimétrie.',
+      refs: [...['spf-ana-emission', 'spf-ana-excitation', 'spf-ana-position', 'spf-ana-concentration'].map(A), ...['spf-val-detection', 'spf-val-deux-spectres'].map(Vp)] },
   ],
   'bts-rmn': [
     { id: 'appareil', nom: 'L’appareil, le solvant et la référence', capacite: 'Adopter une attitude appropriée à proximité de champs magnétiques intenses ; connaître le rôle du solvant deutéré et du TMS.',
