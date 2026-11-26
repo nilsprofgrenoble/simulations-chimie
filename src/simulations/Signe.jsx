@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./signeModele";
+import { SigneExplore } from "./SigneExplore";
 import { QCM } from "./signeQcm";
 import { SceneBilan, SvgSigne, SvgEquation, SvgDeltaT, SvgModes, SvgBilanSigne } from "./SigneSchemas";
 
@@ -357,10 +358,15 @@ export function SimulationSigne() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="sgn-ex">
-          {scene}
-          <div className="sgn-reg">{reglages}</div>
-          {mesures}
+        <SigneExplore ti={ti} setTi={setTi}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : ${sysX.nom} · W = ${ti.W} J · ${Math.round(100 * ti.f)} % cédé à l’air`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="sgn-ex">
+              {scene}
+              <div className="sgn-reg">{reglages}</div>
+              {mesures}
+            </div>
+          </Section>
         </div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
