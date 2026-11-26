@@ -60,6 +60,12 @@ export default {
       refs: ['37:prevoir:kcd-ana-K-compare', '34:kcd-sapp-K', '36:kcd-ka-calcul'] },
     { id: 'kcd-dilution', nom: 'Effet de la dilution : K constante, τ et σ qui varient', capacite: 'Prévoir l’effet d’une dilution sur la conductivité et le taux d’avancement final, et savoir que K ne dépend que de la température.',
       refs: ['37:prevoir:kcd-ana-sigma-dilution', '77:plausible:kcd-val-K-dilution'] },
+    { id: 'acd-ions', nom: 'Ions qui disparaissent, apparaissent ou restent : prévoir le sens de variation de σ', capacite: 'Prévoir l’allure d’une courbe de titrage conductimétrique à partir des ions présents, des ions spectateurs et des conductivités ioniques molaires.',
+      refs: ['37:prevoir:acd-ana-minimum', '77:plausible:acd-val-signe', '34:acd-sapp-pente', '36:acd-pente-calcul'] },
+    { id: 'acd-faible', nom: 'Acide ou base faibles : deux pentes et rupture de pente', capacite: 'Distinguer la courbe de titrage conductimétrique d’un acide ou d’une base faibles (rupture de pente) de celle d’un acide ou d’une base forts (minimum) et déterminer le volume équivalent.',
+      refs: ['37:prevoir:acd-ana-faible-equiv', '37:prevoir:acd-ana-pente-apres', '34:acd-sapp-faible', '36:acd-faible-calcul'] },
+    { id: 'acd-dilution', nom: 'Eau ajoutée, volume total et calcul d’une pente', capacite: 'Utiliser la loi de Kohlrausch pour calculer la variation de conductivité par mL de titrant versé, en tenant compte du volume total de la solution.',
+      refs: ['37:prevoir:acd-ana-eau', '77:plausible:acd-val-volume'] },
   ],
   'tstl-synthese-organique': [
     { id: 'esterification', nom: 'Estérification : équilibre, réactif limitant et rendement', capacite: 'Déterminer le rendement d’une estérification et identifier les facteurs qui déplacent l’équilibre (excès, élimination d’un produit, catalyseur).',

@@ -2769,5 +2769,17 @@
  "77:plausible:lpg-val-sommet": "VAL741",
  "77:plausible:lpg-val-hmin": "VAL742",
  "36:lpg-vitesse": "REA173",
- "36:lpg-hmin": "REA174"
+ "36:lpg-hmin": "REA174",
+ "34:acd-sapp-pente.0": "SAPP594",
+ "34:acd-sapp-pente.1": "SAPP595",
+ "34:acd-sapp-faible.0": "SAPP596",
+ "34:acd-sapp-faible.1": "SAPP597",
+ "37:prevoir:acd-ana-minimum": "ANA1263",
+ "37:prevoir:acd-ana-faible-equiv": "ANA1264",
+ "37:prevoir:acd-ana-pente-apres": "ANA1265",
+ "37:prevoir:acd-ana-eau": "ANA1266",
+ "77:plausible:acd-val-signe": "VAL743",
+ "77:plausible:acd-val-volume": "VAL744",
+ "36:acd-pente-calcul": "REA175",
+ "36:acd-faible-calcul": "REA176"
 }
