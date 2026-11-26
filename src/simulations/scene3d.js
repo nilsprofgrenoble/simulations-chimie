@@ -67,3 +67,25 @@ export function ajouterBase(contenu, re, O, a, p, lie, angleFinal, nomLie = null
   const et = etiquette(nomLie && lie > 0.5 ? nomLie : m.nom, 0, couleurNom); et.position.copy(vec(O)).add(new THREE.Vector3(0, 1.3, 0)); contenu.add(et);
   return m;
 }
+
+// Gestes sur le canevas 3D : un doigt (ou la souris) fait tourner, DEUX doigts pincés zooment (sans faire tourner), molette = zoom.
+// tourner(dx, dy) ; zoomer(f) multiplie la distance de la caméra par f (< 1 : on se rapproche) ; debut() est appelé à chaque nouveau contact.
+export function brancherGestes(el, { tourner, zoomer, debut }) {
+  const pts = new Map(); let d0 = 0;
+  const ecart = () => { const [a, b] = [...pts.values()]; return Math.hypot(a[0] - b[0], a[1] - b[1]); };
+  const bas = ev => { pts.set(ev.pointerId, [ev.clientX, ev.clientY]); try { el.setPointerCapture?.(ev.pointerId); } catch { /* contact synthétique */ } debut?.(); if (pts.size === 2) d0 = ecart(); };
+  const deplace = ev => {
+    const p = pts.get(ev.pointerId); if (!p) return;
+    const dx = ev.clientX - p[0], dy = ev.clientY - p[1]; pts.set(ev.pointerId, [ev.clientX, ev.clientY]);
+    if (pts.size === 1) tourner(dx, dy);
+    else if (pts.size === 2) { const d = ecart(); if (zoomer && d0 > 0 && d > 0) zoomer(d0 / d); d0 = d; }
+  };
+  const haut = ev => { pts.delete(ev.pointerId); d0 = pts.size === 2 ? ecart() : 0; };
+  const molette = ev => { ev.preventDefault(); zoomer?.(ev.deltaY > 0 ? 1.1 : 0.9); };
+  el.addEventListener('pointerdown', bas); el.addEventListener('pointermove', deplace); el.addEventListener('pointerup', haut); el.addEventListener('pointercancel', haut);
+  el.addEventListener('wheel', molette, { passive: false });
+  return () => {
+    el.removeEventListener('pointerdown', bas); el.removeEventListener('pointermove', deplace); el.removeEventListener('pointerup', haut); el.removeEventListener('pointercancel', haut);
+    el.removeEventListener('wheel', molette);
+  };
+}

@@ -6,7 +6,7 @@ import * as THREE from "three";
 import * as M from "./chiraliteModele";
 import * as V from "./carbone3dModele";
 import { COUL_RANG } from "./ChiraliteSchema";
-import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer } from "./scene3d";
+import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer, brancherGestes } from "./scene3d";
 import { KIT, stylePetitBouton } from "../commun";
 
 const L_LIAISON = 1.5;                                             // longueur de dessin d'une liaison C–X (non à l'échelle)
@@ -54,23 +54,17 @@ export default function Carbone3D({ mol, c, aff, rangs = false, miroir = false, 
     const taille = () => {
       const w = el.clientWidth || 300, h = el.clientHeight || 300;
       renderer.setSize(w, h, false); camera.aspect = w / h;
-      camera.position.z = (etat.current.zBase || 11) * Math.max(1, 1.12 / camera.aspect);      // écran étroit : on recule pour que les étiquettes ne soient pas coupées
+      camera.position.z = (etat.current.zBase || 11) * (etat.current.zf || 1) * Math.max(1, 1.12 / camera.aspect);      // écran étroit : on recule pour que les étiquettes ne soient pas coupées
       camera.updateProjectionMatrix(); demander();
     };
     etat.current.taille = taille;
     const ro = new ResizeObserver(taille); ro.observe(el); taille();
 
     // Rotation à la souris / au doigt : trackball simple autour des axes de l'écran
-    let dernier = null;
-    const bas = e => { dernier = [e.clientX, e.clientY]; etat.current.anim = null; el.setPointerCapture?.(e.pointerId); };
-    const deplace = e => {
-      if (!dernier) return;
-      const dx = e.clientX - dernier[0], dy = e.clientY - dernier[1]; dernier = [e.clientX, e.clientY];
-      const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx * 0.011).premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * 0.011));
-      racine.quaternion.premultiply(q).normalize(); demander(); etat.current.lire?.();
-    };
-    const haut = () => { dernier = null; };
-    el.addEventListener('pointerdown', bas); el.addEventListener('pointermove', deplace); el.addEventListener('pointerup', haut); el.addEventListener('pointercancel', haut);
+    const dessus = brancherGestes(el, {
+      debut: () => { etat.current.anim = null; },
+      tourner: (dx, dy) => { const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), dx * 0.011).premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), dy * 0.011)); racine.quaternion.premultiply(q).normalize(); demander(); etat.current.lire?.(); },
+      zoomer: f => { etat.current.zf = Math.min(1.8, Math.max(0.5, (etat.current.zf || 1) * f)); taille(); demander(); } });
 
     let raf;
     const boucle = () => {
@@ -87,7 +81,7 @@ export default function Carbone3D({ mol, c, aff, rangs = false, miroir = false, 
     boucle();
     return () => {
       cancelAnimationFrame(raf); ro.disconnect();
-      el.removeEventListener('pointerdown', bas); el.removeEventListener('pointermove', deplace); el.removeEventListener('pointerup', haut); el.removeEventListener('pointercancel', haut);
+      dessus();
       liberer(scene);
       renderer.dispose();
       if (renderer.domElement.parentNode === el) el.removeChild(renderer.domElement);
