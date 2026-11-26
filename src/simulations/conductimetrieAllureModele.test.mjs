@@ -45,5 +45,20 @@ for (const t of M.ORDRE_TITRAGES) { const tot = Object.values(M.maxPoints(t)).re
 // pire arrondi (2 chiffres significatifs) sur les pentes : 8 % suffisent
 let pire = 0; for (const t of M.ORDRE_TITRAGES) for (const eau of M.EAU) for (const v of [M.penteAvant(t, eau), M.penteApres(t, eau)]) pire = Math.max(pire, Math.abs(Number(v.toPrecision(2)) - v) / Math.abs(v));
 ok(pire < 0.06, 'arrondi pente ' + pire);
+// dosage réel : σ' = σ mesurée × facteur de dilution ; affine loin de V_E ; régression et intersection
+for (const tt of M.ORDRE_TITRAGES) for (const cA of M.CONC_A) for (const eau of M.EAU) {
+  const VE = M.volumeEquivalent(tt, cA);
+  for (let v = 0; v <= 25; v += 0.5) {
+    ok(proche(M.sigmaMesuree(tt, cA, v, eau) * M.facteurDilution(v, eau), M.sigmaCorrigee(tt, cA, v, eau), 1e-9), 'corrigée');
+    if (Math.abs(v - VE) >= M.ZONE_ARRONDI + 1.5) ok(Math.abs(M.sigmaCorrigee(tt, cA, v, eau) - M.sigma(tt, cA, v, eau)) < 0.0035 * Math.max(M.sigma(tt, cA, 0, eau), M.sigma(tt, cA, 25, eau)), 'affine loin de VE');
+  }
+  const g = [], d = []; for (let v = 0; v <= 25; v += 0.5) { const p = { x: v, y: M.sigmaCorrigee(tt, cA, v, eau) }; if (v <= VE - 2.5) g.push(p); else if (v >= VE + 2.5) d.push(p); }
+  if (g.length >= 2 && d.length >= 2) { const VEm = M.abscisseIntersection(M.regression(g), M.regression(d)); ok(Math.abs(VEm - VE) < 0.12, `intersection ${tt} ${cA} ${eau} : ${VEm} vs ${VE}`); }
+  // avec les points proches de V_E, l'écart augmente
+  const pg = [], pd = []; for (let v = 0; v <= 25; v += 0.5) { const p = { x: v, y: M.sigmaCorrigee(tt, cA, v, eau) }; if (v <= VE) pg.push(p); else pd.push(p); }
+  if (pg.length >= 2 && pd.length >= 2 && !(tt === 'precip' && cA === 0.04)) ok(Math.abs(M.abscisseIntersection(M.regression(pg), M.regression(pd)) - VE) > 0.01, 'zone arrondie perceptible');
+}
+ok(M.regression([{ x: 0, y: 1 }]) === null && M.regression([{ x: 1, y: 1 }, { x: 1, y: 2 }]) === null, 'régression dégénérée');
+const rg = M.regression([{ x: 0, y: 1 }, { x: 1, y: 3 }, { x: 2, y: 5 }]); ok(proche(rg.a, 2) && proche(rg.b, 1) && proche(rg.r2, 1), 'régression exacte');
 console.log(`conductimetrieAllureModele : ${n} contrôles ${bad ? 'DONT ' + bad + ' ÉCHECS' : 'OK'} (pire arrondi 2 c.s. sur une pente : ${(100 * pire).toFixed(1)} %)`);
 process.exit(bad ? 1 : 0);
