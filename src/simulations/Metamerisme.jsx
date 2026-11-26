@@ -46,6 +46,8 @@ const DE = () => <msubsup><mi>ΔE</mi><mi>ab</mi><mo>*</mo></msubsup>;
 const FormProd = () => <><mi>I</mi><mo>=</mo><mi>S</mi><mo>×</mo><mi>R</mi></>;
 const FormDE = () => <><DE/><mo>=</mo><msqrt><Pa><mi>Δ</mi><Sx l="L"/></Pa><mo>+</mo><Pa><mi>Δ</mi><Sx l="a"/></Pa><mo>+</mo><Pa><mi>Δ</mi><Sx l="b"/></Pa></msqrt></>;
 const Pastille = ({ css, nom, hauteur = 44 }) => (<div style={{ flex: 1, minWidth: 0 }}><div aria-hidden="true" style={{ height: hauteur, borderRadius: 8, background: css, border: '1.5px solid #334155' }}/>{nom && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 3, textAlign: 'center' }}>{nom}</div>}</div>);
+/** Deux échantillons accolés en une seule plaque coupée en deux : une petite différence de couleur se voit bien mieux qu'entre deux pastilles séparées. */
+const Plaque = ({ c1, c2, n1 = 'E1', n2 = 'E2', hauteur = 44 }) => (<div style={{ width: '100%' }}><div aria-hidden="true" style={{ display: 'flex', height: hauteur, borderRadius: 8, overflow: 'hidden', border: '1.5px solid #334155' }}><div style={{ flex: 1, background: c1 }}/><div style={{ flex: 1, background: c2 }}/></div><div style={{ display: 'flex', fontSize: 13, color: KIT.txt2, marginTop: 3 }}><span style={{ flex: 1, textAlign: 'center' }}>{n1}</span><span style={{ flex: 1, textAlign: 'center' }}>{n2}</span></div></div>);
 const rangee = ch => <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>{ch}</div>;
 const specR = (courbes, label) => <SvgSpectre courbes={courbes} ymax={1} yTicks={[0, 0.5, 1]} fmtY={v => fr(v, 1)} label={label} yTitre="R"/>;
 const verdictPaire = (e65, eA, eF) => (e65 < 1 && Math.max(eA, eF) > 2 ? 'métamères' : Math.max(e65, eA, eF) < 1 ? 'identiques sous toutes les lampes' : 'déjà différents sous la lumière du jour');
@@ -92,7 +94,7 @@ export function SimulationMetamerisme() {
         </ul></>,
       texte: <>Deux échantillons, <strong>E1</strong> et <strong>E2</strong>, sont fabriqués avec des pigments différents. Sous la lumière du jour D65, ils paraissent de la même couleur. Changez de source et comparez-les.</>,
       tache: { type: 'qcm', q: 'Sous la lampe A, les deux échantillons…', ...QCM.metamerie,
-        expl: 'Deux échantillons de même couleur sous D65 peuvent avoir des couleurs différentes sous une autre lampe : c’est le métamérisme. On dit que E1 et E2 sont des métamères.', indice: 'Choisissez la source A dans la liste et regardez si les deux pastilles sont encore identiques.' } },
+        expl: 'Deux échantillons de même couleur sous D65 peuvent avoir des couleurs différentes sous une autre lampe : c’est le métamérisme. On dit que E1 et E2 sont des métamères.', indice: 'Choisissez la source A dans la liste et regardez si les deux moitiés de la plaque sont encore de la même couleur (la ligne « Colorimètre » vous le dit aussi).' } },
     { id: 'courbes', titre: 'Pourquoi la même couleur avec deux courbes ?', focus: ['scene'],
       texte: <>Voici les courbes de réflectance des deux échantillons : <strong>E1</strong> en trait plein, <strong>E2</strong> en pointillés. Elles sont <strong>différentes</strong>. Pourtant, sous la lumière du jour, l’œil leur associe les mêmes valeurs X, Y, Z : il ne « voit » pas la courbe entière, seulement trois nombres.</>,
       tache: { type: 'qcm', q: 'Pourquoi deux courbes différentes peuvent-elles donner la même couleur sous D65 ?', ...QCM.courbes,
@@ -132,15 +134,15 @@ export function SimulationMetamerisme() {
   const eP = id => M.ecartSous(E1, E2, id);
   const grillePaire = () => <div style={{ display: 'grid', gap: 8 }}>{M.SOURCES.map(id => <div key={id}>
     <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 3 }}>{M.NOMS_SOURCES[id]} : ΔE*ab = {fr(eP(id), 1)}</div>
-    {rangee([<Pastille key="a" css={M.couleurSous(E1, id)} nom="E1" hauteur={30}/>, <Pastille key="b" css={M.couleurSous(E2, id)} nom="E2" hauteur={30}/>])}</div>)}</div>;
+    <Plaque c1={M.couleurSous(E1, id)} c2={M.couleurSous(E2, id)} hauteur={30}/></div>)}</div>;
   const sceneGuide = !enGuide ? null
     : sc === 'sources' ? <SvgSpectre courbes={[{ v: M.spd(vie.src), col: COL.bleu, nom: M.NOMS_SOURCES[vie.src] }]} ymax={250} yTicks={[0, 100, 200]} remplir label={`Spectre de la source ${vie.src}`} yTitre="S"/>
     : sc === 'reflectance' ? <>{rangee([<Pastille key="p" css={M.couleurSous(refObj, 'D65')} nom="couleur en lumière du jour" hauteur={30}/>])}{specR([{ v: refObj, col: COL.rouge }], 'Courbe de réflectance de l’objet')}</>
     : sc === 'produit' ? <SvgSpectre courbes={[{ v: M.spd('D65').map(v => v / 150), col: COL.bleu, nom: 'Source S' }, { v: M.OBJETS.rouge, col: COL.rouge, nom: 'Réflectance R' }, { v: M.renvoyee(M.OBJETS.rouge, 'D65').map(v => v / 150), col: COL.orange, nom: 'Renvoyée S × R' }]} ymax={1.5} yTicks={[0, 0.5, 1]} fmtY={v => fr(v, 1)} marque={620} label="Source, réflectance et lumière renvoyée"/>
     : sc === 'eclairage' ? <>{rangee(M.SOURCES.map(id => <Pastille key={id} css={M.couleurSous(refObj, id)} nom={COURT[id]} hauteur={64}/>))}</>
-    : sc === 'metamerie' ? <>{rangee([<Pastille key="a" css={M.couleurSous(E1, vie.src)} nom="E1" hauteur={80}/>, <Pastille key="b" css={M.couleurSous(E2, vie.src)} nom="E2" hauteur={80}/>])}</>
+    : sc === 'metamerie' ? <><Plaque c1={M.couleurSous(E1, vie.src)} c2={M.couleurSous(E2, vie.src)} hauteur={80}/><div style={{ marginTop: 6, fontSize: 13.5, color: KIT.txt }}>Colorimètre : {eP(vie.src) <= 1 ? 'E1 et E2 sont indiscernables' : 'E1 et E2 sont différents'} sous cette lampe. <span style={{ color: KIT.txt2 }}>(Il donne la réponse même si l’on distingue mal les couleurs.)</span></div></>
     : sc === 'courbes' ? specR([{ v: E1, col: COL.bleu, nom: 'E1' }, { v: E2, col: COL.orange, nom: 'E2', trait: '6 3' }], 'Courbes de réflectance de E1 et E2')
-    : sc === 'ecart' ? <>{rangee([<Pastille key="a" css={M.couleurSous(E1, 'A')} nom="E1 sous la lampe A" hauteur={60}/>, <Pastille key="b" css={M.couleurSous(E2, 'A')} nom="E2 sous la lampe A" hauteur={60}/>])}</>
+    : sc === 'ecart' ? <Plaque c1={M.couleurSous(E1, 'A')} c2={M.couleurSous(E2, 'A')} n1="E1 sous la lampe A" n2="E2 sous la lampe A" hauteur={60}/>
     : sc === 'controle' ? grillePaire()
     : null;
   const MES_GUIDE = {
