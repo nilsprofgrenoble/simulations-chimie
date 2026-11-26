@@ -2931,7 +2931,6 @@
  "77:plausible:fvi-val-tau": "VAL769",
  "36:fvi-vlim": "REA200",
  "36:fvi-tau": "REA201",
-<<<<<<< HEAD
  "34:lmt-sapp-bande": "SAPP646",
  "37:prevoir:lmt-ana-energie": "ANA1318",
  "37:prevoir:lmt-ana-vibration": "ANA1319",
@@ -2953,19 +2952,17 @@
  "77:plausible:tcr-val-rapport": "VAL773",
  "77:plausible:tcr-val-incolore": "VAL774",
  "36:tcr-dosage-calcul": "REA203",
- "36:tcr-bilan-calcul": "REA204"
-=======
- "34:eul-sapp-lim.0": "SAPP646",
- "34:eul-sapp-lim.1": "SAPP647",
- "34:eul-sapp-euler.0": "SAPP648",
- "34:eul-sapp-euler.1": "SAPP649",
- "37:prevoir:eul-ana-poussee": "ANA1318",
- "37:prevoir:eul-ana-vlim": "ANA1319",
- "37:prevoir:eul-ana-euler": "ANA1320",
- "37:prevoir:eul-ana-pas": "ANA1321",
- "77:plausible:eul-val-a0": "VAL770",
- "77:plausible:eul-val-euler": "VAL771",
- "36:eul-lim": "REA202",
- "36:eul-pas": "REA203"
->>>>>>> 93aa3cd (Sim 271 : chute avec frottement visqueux (2), équation différentielle et méthode d'Euler)
+ "36:tcr-bilan-calcul": "REA204",
+ "34:eul-sapp-lim.0": "SAPP651",
+ "34:eul-sapp-lim.1": "SAPP652",
+ "34:eul-sapp-euler.0": "SAPP653",
+ "34:eul-sapp-euler.1": "SAPP654",
+ "37:prevoir:eul-ana-poussee": "ANA1327",
+ "37:prevoir:eul-ana-vlim": "ANA1328",
+ "37:prevoir:eul-ana-euler": "ANA1329",
+ "37:prevoir:eul-ana-pas": "ANA1330",
+ "77:plausible:eul-val-a0": "VAL775",
+ "77:plausible:eul-val-euler": "VAL776",
+ "36:eul-lim": "REA205",
+ "36:eul-pas": "REA206"
 }
