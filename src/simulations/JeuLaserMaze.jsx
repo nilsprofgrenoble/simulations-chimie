@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo } from "react";
-import { NIVEAUX, MATERIAUX, tracer, reglageInitial, segmentMiroir, sommetsBloc, etoiles } from "./laserMazeModele";
+import { NIVEAUX, MATERIAUX, LASERS, indice, nomCouleur, teinteLambda, tracer, reglageInitial, segmentMiroir, sommetsBloc, etoiles } from "./laserMazeModele";
 import { chapitresDuJeu, allerChapitre } from "../chapitres";
 
 // ====================================================
@@ -86,6 +86,7 @@ function Niveau({ niv, onGagne, onSuivant, dernier }) {
     setReglage(nouveau); geste(nouveau, !serie);
   };
   const materiau = (id, mat) => { const nouveau = { ...reglage, mats: { ...reglage.mats, [id]: mat } }; setReglage(nouveau); geste(nouveau); };
+  const couleur = l => { const nv = { ...reglage, lambda: l }; setReglage(nv); geste(nv); };
   const recommencer = () => { setReglage(reglageInitial(niv)); setGestes(0); setGain(null); };
 
   const pointeur = ev => {
@@ -116,9 +117,18 @@ function Niveau({ niv, onGagne, onSuivant, dernier }) {
     else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowDown') { ev.preventDefault(); tourner(el.id, -pas, ev.timeStamp); }
   };
 
-  const couleurRayon = tr.atteint ? '#16a34a' : C.laser;
-  const halo = tr.atteint ? '#4ade80' : '#fb7185';
-  const chemin = tr.points.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ');
+  const colore = !!(niv.source.choix || niv.source.blanc);
+  const cibles = niv.cibles || [niv.cible];
+  const pts = r => r.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ');
+  // lumière blanche : le tronc commun (avant la première séparation) est dessiné en blanc, puis chaque couleur à part
+  const tronc = (() => {
+    if (!niv.source.blanc) return 1;
+    const R = tr.rayons;
+    let k = 1;
+    while (R.every(r => r.points[k] && Math.abs(r.points[k][0] - R[0].points[k][0]) < 1e-6 && Math.abs(r.points[k][1] - R[0].points[k][1]) < 1e-6)) k++;
+    return k;
+  })();
+  const lasersLed = niv.source.blanc ? '#ffffff' : colore ? teinteLambda(reglage.lambda) : C.laser;
   const a0 = niv.source.a;
 
   return (
@@ -153,7 +163,7 @@ function Niveau({ niv, onGagne, onSuivant, dernier }) {
         {/* blocs transparents */}
         {niv.blocs.map(b => {
           const v = sommetsBloc(b, reglage.angles[b.id]), pts = v.map(p => p.join(',')).join(' '), actif = sel === b.id;
-          const n = MATERIAUX[reglage.mats[b.id]].n;
+          const n = indice(reglage.mats[b.id], tr.lambdaSuivi);
           return (
             <g key={b.id} className="lm-el" tabIndex={0} role="slider" aria-label={`${b.nom} (${MATERIAUX[reglage.mats[b.id]].nom}), orientation ${reglage.angles[b.id]} degrés. Flèches : tourner de 1 degré, avec Maj : 5 degrés.`}
               aria-valuemin={0} aria-valuemax={359} aria-valuenow={reglage.angles[b.id]} onKeyDown={ev => clavier(ev, { ...b, genre: 'bloc' })} onFocus={() => setSel(b.id)}
@@ -193,22 +203,40 @@ function Niveau({ niv, onGagne, onSuivant, dernier }) {
         })}
 
         {/* rayon */}
-        <polyline points={chemin} fill="none" stroke={halo} strokeWidth="11" strokeOpacity=".45" strokeLinejoin="round" strokeLinecap="round" filter="url(#lm-lueur)" style={{ pointerEvents: 'none' }} />
-        <polyline points={chemin} fill="none" stroke={couleurRayon} strokeWidth="3.4" strokeLinejoin="round" strokeLinecap="round" style={{ pointerEvents: 'none' }} />
+        {tr.rayons.map(r => {
+          const col = colore ? teinteLambda(r.lambda) : (tr.atteint ? '#16a34a' : C.laser);
+          const halo = colore ? col : (tr.atteint ? '#4ade80' : '#fb7185');
+          const debut = niv.source.blanc ? tronc - 1 : 0, ch = pts(r.points.slice(debut));
+          return (
+            <g key={r.lambda} style={{ pointerEvents: 'none' }}>
+              <polyline points={ch} fill="none" stroke={halo} strokeWidth="10" strokeOpacity=".3" strokeLinejoin="round" strokeLinecap="round" filter="url(#lm-lueur)" />
+              <polyline points={ch} fill="none" stroke={col} strokeWidth={niv.source.blanc ? 2.6 : 3.4} strokeLinejoin="round" strokeLinecap="round" />
+            </g>);
+        })}
+        {niv.source.blanc && (
+          <g style={{ pointerEvents: 'none' }}>
+            <polyline points={pts(tr.rayons[0].points.slice(0, tronc))} fill="none" stroke="#64748b" strokeWidth="7" strokeLinejoin="round" strokeLinecap="round" />
+            <polyline points={pts(tr.rayons[0].points.slice(0, tronc))} fill="none" stroke="#ffffff" strokeWidth="3.6" strokeLinejoin="round" strokeLinecap="round" />
+          </g>)}
 
         {/* source : pointeur laser */}
         <g transform={`translate(${niv.source.x} ${niv.source.y}) rotate(${a0})`} style={{ pointerEvents: 'none' }}>
           <rect x="-40" y="-13" width="42" height="26" rx="7" fill="url(#lm-corps)" stroke="#27466f" strokeWidth="1.5" />
           <rect x="-34" y="-8" width="14" height="5" rx="2.5" fill="#fff" fillOpacity=".5" />
-          <rect x="2" y="-6" width="9" height="12" rx="3" fill="#334155" /><circle cx="-26" cy="5" r="3.5" fill={C.laser} />
+          <rect x="2" y="-6" width="9" height="12" rx="3" fill="#334155" /><circle cx="-26" cy="5" r="3.5" fill={lasersLed} stroke="#475569" strokeWidth="1" />
         </g>
 
-        {/* cible */}
-        <g style={{ pointerEvents: 'none' }} className={tr.atteint ? 'lm-cible-ok' : undefined}>
-          <circle cx={niv.cible.x} cy={niv.cible.y} r={niv.cible.r} fill={tr.atteint ? '#dcfce7' : '#ffeccc'} stroke={tr.atteint ? '#16a34a' : C.ambre} strokeWidth="4" />
-          <circle cx={niv.cible.x} cy={niv.cible.y} r={niv.cible.r * 0.62} fill="#fff" stroke={tr.atteint ? '#16a34a' : C.ambre} strokeWidth="2.5" />
-          <circle cx={niv.cible.x} cy={niv.cible.y} r={niv.cible.r * 0.26} fill={tr.atteint ? '#16a34a' : C.laser} />
-        </g>
+        {/* cibles */}
+        {cibles.map((c, k) => {
+          const ok = tr.atteintes[k], teinte = c.bande ? teinteLambda((c.bande[0] + c.bande[1]) / 2) : C.ambre, bord = ok ? '#16a34a' : teinte;
+          return (
+            <g key={k} style={{ pointerEvents: 'none' }} className={ok ? 'lm-cible-ok' : undefined}>
+              <circle cx={c.x} cy={c.y} r={c.r} fill={ok ? '#dcfce7' : c.bande ? '#fff' : '#ffeccc'} stroke={bord} strokeWidth="4" />
+              <circle cx={c.x} cy={c.y} r={c.r * 0.62} fill={c.bande ? teinte : '#fff'} fillOpacity={c.bande ? 0.25 : 1} stroke={bord} strokeWidth="2.5" />
+              <circle cx={c.x} cy={c.y} r={c.r * 0.26} fill={ok ? '#16a34a' : c.bande ? teinte : C.laser} />
+              {c.nom && <text x={c.x > 560 ? c.x - c.r - 8 : c.x + c.r + 8} textAnchor={c.x > 560 ? 'end' : 'start'} y={c.y + 5} fontSize="16" fontWeight="800" fill={ok ? '#14532d' : teinte} paintOrder="stroke" stroke="#fbfdff" strokeWidth="4">cible {c.nom}</text>}
+            </g>);
+        })}
 
         {tr.atteint && gain && (
           <g className="lm-gagne" aria-hidden="true" style={{ pointerEvents: 'none' }}>
@@ -223,12 +251,20 @@ function Niveau({ niv, onGagne, onSuivant, dernier }) {
             <div style={{ fontWeight: 800, fontSize: 18, fontFamily: TITRE, color: '#14532d' }}>🎯 Cible touchée ! <span style={{ color: C.ambre }}>{'★'.repeat(gain.e)}{'☆'.repeat(3 - gain.e)}</span></div>
             <div style={{ fontSize: 14, color: '#166534', margin: '2px 0 8px' }}>En {gain.g} réglage{gain.g > 1 ? 's' : ''} (3 étoiles à {niv.par} réglages ou moins).</div>
             {!dernier && <button type="button" className="lm-suite" onClick={onSuivant}>Niveau suivant ▶</button>}
-            {dernier && <span style={{ fontSize: 15, fontWeight: 700 }}>Dernier niveau de la démo : bravo ! 🎉</span>}
+            {dernier && <span style={{ fontSize: 15, fontWeight: 700 }}>Dernier niveau : bravo, tu maîtrises la lumière ! 🎉</span>}
           </div>)}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 10, marginTop: 10 }}>
         <section aria-label="Réglage" style={carte}>
+          {niv.source.choix && (
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Couleur du laser</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {LASERS.map(l => <button key={l.lambda} type="button" className="lm-btn" aria-pressed={reglage.lambda === l.lambda} onClick={() => couleur(l.lambda)}><span aria-hidden="true" style={{ color: reglage.lambda === l.lambda ? '#fff' : teinteLambda(l.lambda) }}>●</span> {l.nom} · {l.lambda} nm</button>)}
+              </div>
+            </div>)}
+          {niv.source.blanc && <div style={{ fontSize: 13.5, color: C.doux, marginBottom: 8, lineHeight: 1.45 }}>⚪ Lumière blanche : un mélange de couleurs de 430 nm (violet) à 670 nm (rouge), ici représenté par 7 rayons.</div>}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
             {elements.map(e => <button key={e.id} type="button" className="lm-btn" aria-pressed={sel === e.id} onClick={() => setSel(e.id)}>{e.nom}</button>)}
           </div>
@@ -241,7 +277,7 @@ function Niveau({ niv, onGagne, onSuivant, dernier }) {
             <div style={{ marginTop: 10 }}>
               <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Matériau du prisme</div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {Object.entries(MATERIAUX).map(([k, m]) => <button key={k} type="button" className="lm-btn" aria-pressed={reglage.mats[elSel.id] === k} onClick={() => materiau(elSel.id, k)}>{m.nom} (n = {f2(m.n)})</button>)}
+                {Object.entries(MATERIAUX).map(([k, m]) => <button key={k} type="button" className="lm-btn" aria-pressed={reglage.mats[elSel.id] === k} onClick={() => materiau(elSel.id, k)}>{m.nom} (n ≈ {f2(m.n)})</button>)}
               </div>
             </div>)}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 12, flexWrap: 'wrap' }}>
@@ -255,6 +291,7 @@ function Niveau({ niv, onGagne, onSuivant, dernier }) {
             <b style={{ fontFamily: TITRE, fontSize: 16 }}>📐 Rapporteur</b>
             <button type="button" className="lm-btn" style={{ marginLeft: 'auto', minHeight: 32, fontSize: 13 }} aria-pressed={angles} onClick={() => setAngles(a => !a)}>{angles ? 'Angles affichés' : 'Angles masqués'}</button>
           </div>
+          {angles && colore && <div style={{ fontSize: 14, marginBottom: 4 }}>Rayon suivi : <b style={{ color: teinteLambda(tr.lambdaSuivi) }}>{nomCouleur(tr.lambdaSuivi)} ({tr.lambdaSuivi} nm)</b></div>}
           {!angles && <div style={{ color: C.doux, fontSize: 14.5 }}>Mode expert : à toi de prévoir les angles !</div>}
           {angles && tr.evts.length === 0 && <div style={{ color: C.doux, fontSize: 14.5 }}>Le laser ne rencontre encore aucun élément.</div>}
           {angles && tr.evts.map((e, k) => (
@@ -269,11 +306,13 @@ function Niveau({ niv, onGagne, onSuivant, dernier }) {
       <details style={{ ...carte, marginTop: 10, padding: '8px 16px' }}>
         <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Hypothèses du modèle</summary>
         <ul style={{ margin: '6px 0 2px', paddingLeft: 20, fontSize: 14, color: C.doux, lineHeight: 1.55 }}>
-          <li>Le faisceau est très fin et d’une seule couleur : l’indice de réfraction ne dépend pas de la couleur (pas de dispersion).</li>
+          <li>Le faisceau est très fin. Un laser est monochromatique ; la lumière blanche est représentée par 7 rayons de longueurs d’onde différentes.</li>
+          <li>Dispersion : l’indice dépend de la longueur d’onde, n(λ) = n₅₈₉ + D × ((589/λ)² − 1) (modèle simple). Le coefficient D est <b>volontairement exagéré</b> (environ ×3 à ×5) pour que l’étalement du spectre soit bien visible ; dans la réalité, il est bien plus faible.</li>
+          <li>Les couleurs affichées sont des teintes approchées (la couleur perçue dépend aussi de l’écran).</li>
           <li>Les miroirs sont plans et parfaits : toute la lumière est réfléchie.</li>
           <li>À l’interface air/verre, on ne suit que le rayon réfracté : la petite partie réfléchie est négligée (sauf en réflexion totale, où elle est la seule).</li>
           <li>Les angles sont mesurés par rapport à la normale (pointillés) et affichés au degré près.</li>
-          <li>Indices utilisés : air 1,00 ; eau 1,33 ; verre 1,50 ; diamant 2,42 (valeurs usuelles, arrondies).</li>
+          <li>Indices à 589 nm (jaune) : air 1,00 ; eau 1,33 ; verre 1,50 ; diamant 2,42 (valeurs usuelles, arrondies).</li>
         </ul>
       </details>
     </div>);

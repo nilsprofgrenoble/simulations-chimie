@@ -41,15 +41,15 @@ export function solutions(cmd, etapesMax = 2) {
 
 // Missions : 1 étape (concentration mère fixe), 1 étape (concentrations mères variées), 2 étapes obligatoires.
 // « temps » : secondes avant l'explosion au départ ; chaque commande réussie fait gagner BONUS_REUSSITE secondes, chaque essai raté ou indice en fait perdre.
-export const BONUS_REUSSITE = 10, PENALITE_ECHEC = 8, COUT_INDICE = 10;
+export const BONUS_REUSSITE = 8, PENALITE_ECHEC = 6, COUT_INDICE = 8;
 export const SERVICES = [
-  { id: 1, nom: 'Le ballon chauffe', icone: '🌡️', nb: 5, etapesMax: 1, temps: 210, etapesTxt: 'une étape',
+  { id: 1, nom: 'Le ballon chauffe', icone: '🌡️', nb: 4, etapesMax: 1, temps: 60, etapesTxt: 'une étape',
     histoire: "Dans le labo, le ballon de synthèse sous la paillasse monte en température : la réaction s'emballe ! Le protocole d'urgence demande des solutions précises de l'inhibiteur, à partir de la solution mère S₀ (1,0 mol/L). Prépare-les avant que le ballon n'explose.",
     C0: [1], Ct: [0.5, 0.25, 0.2, 0.1, 0.05, 0.04, 0.02, 0.01] },
-  { id: 2, nom: 'Stock en désordre', icone: '🧴', nb: 6, etapesMax: 1, temps: 200, etapesTxt: 'une étape',
+  { id: 2, nom: 'Stock en désordre', icone: '🧴', nb: 5, etapesMax: 1, temps: 70, etapesTxt: 'une étape',
     histoire: "Le ballon est reparti de plus belle. Dans l'armoire, plusieurs flacons de solution mère ont des concentrations différentes : lis bien l'étiquette de départ avant de choisir ta pipette !",
     C0: [0.2, 0.5, 1, 2], Ct: [0.5, 0.25, 0.2, 0.1, 0.05, 0.04, 0.02, 0.01, 0.2, 0.4, 0.08] },
-  { id: 3, nom: 'Réaction critique', icone: '⚠️', nb: 4, etapesMax: 2, temps: 240, etapesTxt: 'deux étapes',
+  { id: 3, nom: 'Réaction critique', icone: '⚠️', nb: 3, etapesMax: 2, temps: 90, etapesTxt: 'deux étapes',
     histoire: "Alerte maximale : l'inhibiteur doit être extrêmement dilué, et aucune pipette ne permet de le faire en une seule étape. Prépare une solution intermédiaire, puis dilue-la encore. Chaque seconde compte !",
     C0: [0.5, 1, 2], Ct: [0.001, 0.002, 0.0005, 0.004, 0.005, 0.0004, 0.0002, 0.0025] },
 ];
