@@ -3,6 +3,8 @@ import { LogoPaillasse } from "./Logo";
 import { ACCENT, ACCENT_CLAIR, TEXTE, TEXTE2, BORDURE } from "./theme";
 import { Pic, Emo, AvecPicto } from "./Pictos";
 import { allerChapitre } from "./chapitres";
+import { jeuOuvert } from "./simulations/jeuxVisibles";
+import { JEUX_CATALOGUE } from "./simulations/jeuxCatalogue";
 import { SaisieCode } from "./SaisieCode";
 import { useSimsValidees, PastilleFaite } from "./simsValidees";
 
@@ -100,7 +102,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
   ) : (
     <div key={k} style={{ minWidth: 0 }}>
       {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/>{g.chap && <button data-page-chapitre-lien={g.chap} onClick={() => allerChap(g.chap)} title="Simulations et exercices d’entraînement de ce chapitre" style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12.5, fontFamily: 'inherit', textDecoration: 'underline' }}><span aria-hidden="true">📚</span> Page du chapitre : simulations + exercices <span aria-hidden="true">▶</span></button>}</div>}
-      {g.avenirItems ? avenirListe(g) : g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}</div>}
+      {g.avenirItems ? avenirListe(g) : g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}{(g.jeux || []).filter(id => jeuOuvert(id, !!profil?.admin) && JEUX_CATALOGUE[id]).map(id => lienSim({ id, icon: JEUX_CATALOGUE[id].icone, label: `${JEUX_CATALOGUE[id].nom} (jeu)`, desc: JEUX_CATALOGUE[id].accroche }))}</div>}
     </div>
   );
   // Les rubriques (intitulés « entete ») se replient : on découpe la liste à plat en sections « intitulé + chapitres qui suivent »
