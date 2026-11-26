@@ -3728,11 +3728,11 @@ export const PREVOIR = [
       F('du blanc, car les deux lumières sont complémentaires', 'Elles ne sont pas complémentaires, et leur mélange n’est pas en cause ici.'),
     ] },
   { id: 'ads-ana-filtres-serie', domaine: 'Couleur : synthèses additive et soustractive', titre: 'Deux filtres l’un derrière l’autre',
-    enonce: 'À 510 nm, un filtre jaune a une transmittance de 0,47 et un filtre cyan de 0,97. On les place l’un derrière l’autre devant une lampe blanche.', q: 'Quelle est la transmittance de l’ensemble à 510 nm ?', options: [
-      F('0,97, celle du filtre le plus transparent', 'Le filtre jaune retire aussi de la lumière : l’ensemble est plus absorbant que chacun.'),
-      V('0,46, le produit', 'Le premier filtre laisse passer 47 % ; le second en laisse passer 97 % : T = 0,47 × 0,97 ≈ 0,46.'),
-      F('1,44, la somme des deux transmittances', 'Une transmittance ne dépasse jamais 1 : on ne peut pas additionner des fractions de lumière transmise.'),
-      F('0,72, la moyenne des deux transmittances', 'Le second filtre ne reçoit que la lumière sortie du premier : on multiplie.'),
+    enonce: 'À 550 nm, un filtre jaune a une transmittance de 0,93 et un filtre cyan de 0,83. On les place l’un derrière l’autre devant une lampe blanche.', q: 'Quelle est la transmittance de l’ensemble à 550 nm ?', options: [
+      F('0,93, celle du filtre le plus transparent', 'Le filtre cyan retire aussi de la lumière : l’ensemble est plus absorbant que chacun.'),
+      V('0,77, le produit', 'Le premier filtre laisse passer 93 % ; le second en laisse passer 83 % de ce qui reste : T = 0,93 × 0,83 ≈ 0,77.'),
+      F('1,76, la somme des deux transmittances', 'Une transmittance ne dépasse jamais 1 : on ne peut pas additionner des fractions de lumière transmise.'),
+      F('0,88, la moyenne des deux transmittances', 'Le second filtre ne reçoit que la lumière sortie du premier : on multiplie.'),
     ] },
   { id: 'ads-ana-filtres-rouge', domaine: 'Couleur : synthèses additive et soustractive', titre: 'Jaune et magenta en série',
     enonce: 'Un filtre jaune absorbe surtout le bleu ; un filtre magenta absorbe surtout le vert. On place les deux l’un derrière l’autre devant une lampe blanche.', q: 'Quelle couleur de lumière sort de l’ensemble ?', options: [
@@ -3742,11 +3742,11 @@ export const PREVOIR = [
       F('du vert, car le jaune contient du vert', 'Le vert est justement absorbé par le magenta.'),
     ] },
   { id: 'ads-ana-blanc-peinture', domaine: 'Couleur : synthèses additive et soustractive', titre: 'Éclaircir une peinture verte',
-    enonce: 'On ajoute peu à peu du pigment blanc, qui diffuse la lumière sans l’absorber, à une peinture verte.', q: 'Comment évoluent la luminosité L* et la saturation C* de la peinture ?', options: [
+    enonce: 'On ajoute peu à peu du pigment blanc, qui diffuse la lumière sans l’absorber, à une peinture verte.', q: 'Comment évoluent la luminosité L* et le chroma C* (l’intensité de la couleur) de la peinture ?', options: [
       F('L* diminue et C* augmente', 'Le blanc renvoie de la lumière : la peinture devient plus claire, pas plus sombre.'),
-      F('L* et C* augmentent tous les deux', 'La couleur est diluée dans le blanc : elle devient moins saturée.'),
-      F('L* et C* ne changent pas, seule la teinte change', 'La teinte reste verte, mais la luminosité et la saturation changent.'),
-      V('L* augmente et C* diminue', 'Plus de lumière renvoyée à toutes les longueurs d’onde : plus claire, mais moins saturée.'),
+      F('L* et C* augmentent tous les deux', 'La couleur est diluée dans le blanc : elle devient moins intense (C* plus petit).'),
+      F('L* et C* ne changent pas, seule la teinte change', 'La teinte reste verte, mais la luminosité et le chroma changent.'),
+      V('L* augmente et C* diminue', 'Plus de lumière renvoyée à toutes les longueurs d’onde : plus claire, mais moins intense.'),
     ] },
   { id: 'mtm-ana-sources', domaine: 'Couleur : éclairage, réflectance et métamérisme', titre: 'Reconnaître une source par son spectre',
     enonce: 'Le spectre d’émission d’une source de lumière blanche est formé de quelques pics étroits séparés par des zones où la puissance émise est très faible.', q: 'De quel type de source s’agit-il le plus probablement ?', options: [

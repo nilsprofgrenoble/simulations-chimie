@@ -102,7 +102,7 @@ export function SceneCoupe({ R, pig = {}, css = '#999', label = 'Coupe d’une c
     <line x1="0" y1={Y0} x2="340" y2={Y0} stroke="#334155" strokeWidth="1.8"/><line x1="0" y1={Y1} x2="340" y2={Y1} stroke="#475569" strokeWidth="1.2"/>
     {Tx(8, Y0 - 6, 'air', { size: 11.5, anchor: 'start', fill: K.gris })}
     {Tx(8, Y0 + 16, 'peinture', { size: 11.5, anchor: 'start', gras: true, fill: '#fff', halo: '#0f172a' })}
-    {Tx(8, Y1 + 18, 'support blanc', { size: 11.5, anchor: 'start', fill: '#475569' })}
+    {Tx(8, Y1 + 18, 'support (sans effet : couche opaque)', { size: 11.5, anchor: 'start', fill: '#475569' })}
     {CANAUX.map((c, i) => {
       const x = COLX[i], Rc = aLambda(R, c.l), A = 1 - Rc, yFond = Y0 + 20 + 40 * A;
       return <g key={c.l}>
