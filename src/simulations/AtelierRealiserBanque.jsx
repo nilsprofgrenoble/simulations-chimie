@@ -3508,6 +3508,50 @@ function genNwrFrott() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['ΣF = m a ; sur l’axe horizontal, ΣF = F − f.', 'Sans frottement, toute la poussée sert à accélérer le chariot : a = F ÷ m.'] };
 }
+function genClpSommet() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const RAD = Math.PI / 180; let v0, a, vy, tS, H;
+  do { v0 = tire([12, 15, 18, 20, 25]); a = tire([30, 35, 40, 50, 55, 60]); vy = v0 * Math.sin(a * RAD); tS = vy / 9.8; H = vy * vy / 19.6; }
+  while (new Set([vy, tS, H].map(x => Number(x.toPrecision(2)))).size < 3);
+  const intro = `Un projectile est lancé du sol avec une vitesse initiale de ${v0}${NB}m/s, inclinée de ${a}° au-dessus de l’horizontale. On néglige l’air (chute libre, g = 9,8${NB}m/s²). La calculatrice doit être réglée en degrés.`;
+  const q1 = { id: 'c0', type: 'num', q: <>Quelle est la <b>composante verticale v₀ᵧ</b> de la vitesse initiale (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vy, tolRel: 0.05, csMin: 2,
+    aide: 'v₀ᵧ = v₀ sin α (le sinus pour la composante verticale), calculatrice en degrés.',
+    pieges: [[v0 * Math.cos(a * RAD), 'C’est la composante horizontale v₀ cos α : la composante verticale utilise le sinus.']],
+    expl: <>v₀ᵧ = {v0} × sin {a}° = <b>{pvFmt(vy)}{NB}m/s</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>Quelle est la <b>durée de la montée</b> jusqu’au sommet (en s, 2 chiffres significatifs) ?</>, unite: 's', vrai: tS, tolRel: 0.05, csMin: 2,
+    aide: 'Au sommet vᵧ = 0 : t_S = v₀ᵧ ÷ g.',
+    pieges: [[vy * 9.8, 'On divise v₀ᵧ par g : t_S = v₀ᵧ ÷ g.'], [v0 / 9.8, 'Utilisez la composante verticale v₀ᵧ et non la vitesse initiale v₀.']],
+    expl: <>t_S = v₀ᵧ ÷ g = {pvFmt(vy)} ÷ 9,8 = <b>{pvFmt(tS)}{NB}s</b>.</> };
+  const q3 = { id: 'c2', type: 'num', q: <>Quelle est la <b>hauteur maximale</b> atteinte (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: H, tolRel: 0.05, csMin: 2,
+    aide: 'H = v₀ᵧ² ÷ (2 g).',
+    pieges: [[vy * vy / 9.8, 'Il manque le facteur 2 : H = v₀ᵧ² ÷ (2 g).'], [vy / 19.6, 'v₀ᵧ doit être élevée au carré : H = v₀ᵧ² ÷ (2 g).']],
+    expl: <>H = v₀ᵧ² ÷ (2 g) = {pvFmt(vy)}² ÷ 19,6 = <b>{pvFmt(H)}{NB}m</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['v₀ᵧ = v₀ sin α ; au sommet vᵧ = 0, donc t_S = v₀ᵧ ÷ g.', 'H = v₀ᵧ² ÷ (2 g) : la hauteur ne dépend pas de la masse.'] };
+}
+function genClpPortee() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const RAD = Math.PI / 180; let v0, a, vx, tv, D;
+  do { v0 = tire([12, 15, 18, 20, 25]); a = tire([30, 35, 40, 50, 55, 60]); vx = v0 * Math.cos(a * RAD); tv = 2 * v0 * Math.sin(a * RAD) / 9.8; D = vx * tv; }
+  while (new Set([vx, tv, D].map(x => Number(x.toPrecision(2)))).size < 3);
+  const intro = `Un projectile est lancé du sol avec une vitesse initiale de ${v0}${NB}m/s, inclinée de ${a}° au-dessus de l’horizontale. Il retombe au sol. On néglige l’air (chute libre, g = 9,8${NB}m/s²). La calculatrice doit être réglée en degrés.`;
+  const q1 = { id: 'c0', type: 'num', q: <>Quelle est la <b>vitesse horizontale vₓ</b> du projectile (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vx, tolRel: 0.05, csMin: 2,
+    aide: 'vₓ = v₀ cos α, constante pendant tout le vol ; calculatrice en degrés.',
+    pieges: [[v0 * Math.sin(a * RAD), 'C’est la composante verticale v₀ sin α : la composante horizontale utilise le cosinus.']],
+    expl: <>vₓ = {v0} × cos {a}° = <b>{pvFmt(vx)}{NB}m/s</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>Quelle est la <b>durée du vol</b> (en s, 2 chiffres significatifs) ?</>, unite: 's', vrai: tv, tolRel: 0.05, csMin: 2,
+    aide: 'Durée du vol = 2 t_S, avec t_S = v₀ sin α ÷ g.',
+    pieges: [[tv / 2, 'C’est la durée de la montée : la durée du vol est le double.']],
+    expl: <>Durée = 2 v₀ sin α ÷ g = 2 × {v0} × sin {a}° ÷ 9,8 = <b>{pvFmt(tv)}{NB}s</b>.</> };
+  const q3 = { id: 'c2', type: 'num', q: <>Quelle est la <b>portée</b> du tir (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: D, tolRel: 0.05, csMin: 2,
+    aide: 'Mouvement uniforme à l’horizontale : D = vₓ × durée du vol.',
+    pieges: [[v0 * tv, 'À l’horizontale, il faut la composante vₓ = v₀ cos α et non v₀.'], [vx * tv / 2, 'Utilisez la durée du vol entier (2 t_S), pas seulement la montée.']],
+    expl: <>D = vₓ × durée = {pvFmt(vx)} × {pvFmt(tv)} = <b>{pvFmt(D)}{NB}m</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['vₓ = v₀ cos α est constante ; la durée du vol est 2 t_S.', 'D = vₓ × 2 t_S = v₀² sin(2α) ÷ g.'] };
+}
 function genCelChamp() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   let U, dcm, E, E2, E3;
@@ -6262,6 +6306,8 @@ export const FAMILLES = [
   { id: 'chel-force', groupe: 'Formules', titre: 'Force sur une particule chargée entre deux armatures : F = |q| E (terminale STL)', gen: genCelForce, domaine: 'Champ et force électrostatiques' },
   { id: 'nwr-acc', groupe: 'Formules', titre: 'Somme des forces et accélération d’un chariot : ΣF = m a (terminale STL)', gen: genNwrAcc, domaine: 'Bilan des forces et lois de Newton' },
   { id: 'nwr-frott', groupe: 'Formules', titre: 'Frottement d’après l’accélération mesurée : ΣF = m a (terminale STL)', gen: genNwrFrott, domaine: 'Bilan des forces et lois de Newton' },
+  { id: 'clp-sommet', groupe: 'Formules', titre: 'Chute libre plane : composante verticale, durée de la montée et hauteur maximale (terminale STL)', gen: genClpSommet, domaine: 'Chute libre plane' },
+  { id: 'clp-portee', groupe: 'Formules', titre: 'Chute libre plane : vitesse horizontale, durée du vol et portée (terminale STL)', gen: genClpPortee, domaine: 'Chute libre plane' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

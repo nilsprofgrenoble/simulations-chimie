@@ -46,6 +46,8 @@ export default {
       refs: ['34:chel-sapp-champ', '34:chel-sapp-force', '37:prevoir:chel-ana-polarite', '37:prevoir:chel-ana-distance', '37:prevoir:chel-ana-signe', '37:prevoir:chel-ana-position', '77:plausible:chel-val-champ', '77:plausible:chel-val-force'] },
     { id: 'newton-rect', nom: 'Bilan des forces et lois de Newton sur un mouvement rectiligne', capacite: 'Faire le bilan des forces sur un système, calculer leur somme, appliquer ΣF = m a, le principe d’inertie et les actions réciproques sur un mouvement rectiligne.',
       refs: ['34:nwr-sapp-acc', '34:nwr-sapp-frott', '37:prevoir:nwr-ana-inertie', '37:prevoir:nwr-ana-masse', '37:prevoir:nwr-ana-ralenti', '37:prevoir:nwr-ana-reciproque', '77:plausible:nwr-val-acc', '77:plausible:nwr-val-inertie'] },
+    { id: 'chute-libre-plane', nom: 'Chute libre plane : sommet et portée', capacite: 'Établir et exploiter les lois horaires d’un projectile en chute libre : accélération, vitesses, sommet, hauteur maximale, portée.',
+      refs: ['34:clp-sapp-sommet', '34:clp-sapp-portee', '37:prevoir:clp-ana-acc', '37:prevoir:clp-ana-vitesse', '37:prevoir:clp-ana-angle', '37:prevoir:clp-ana-double', '77:plausible:clp-val-hauteur', '77:plausible:clp-val-portee'] },
   ],
   'tstl-acides-bases': [
     { id: 'ph-fort', nom: 'pH d’un acide fort ou d’une base forte, dilution', capacite: 'Estimer le pH d’une solution d’acide fort ou de base forte et prévoir l’effet d’une dilution.',

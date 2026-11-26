@@ -243,6 +243,7 @@ const SimulationFlipper = paresseux(() => import("./simulations/Flipper"), "Simu
 const SimulationGravitation = paresseux(() => import("./simulations/Gravitation"), "SimulationGravitation");
 const SimulationChampElec = paresseux(() => import("./simulations/ChampElec"), "SimulationChampElec");
 const SimulationNewtonRect = paresseux(() => import("./simulations/NewtonRect"), "SimulationNewtonRect");
+const SimulationChutePlane = paresseux(() => import("./simulations/ChutePlane"), "SimulationChutePlane");
 const SimulationPenteXt = paresseux(() => import("./simulations/PenteXt"), "SimulationPenteXt");
 const SimulationVecteursVAStl = paresseux(() => import("./simulations/VecteursVAStl"), "SimulationVecteursVAStl");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
@@ -474,6 +475,7 @@ const SIMULATIONS = [
   { id:266, label:"Gravitation et poids : force entre deux corps, intensité de pesanteur", niveau:"TSTL", icon:"🌍", color:"#0e7490", component: SimulationGravitation },
   { id:267, label:"Champ et force électrostatiques entre deux armatures : E = U/d, F = qE", niveau:"TSTL", icon:"⚡", color:"#7c3aed", component: SimulationChampElec },
   { id:268, label:"Bilan des forces et lois de Newton sur un mouvement rectiligne : ΣF = m a", niveau:"TSTL", icon:"🛷", color:"#0b4f94", component: SimulationNewtonRect },
+  { id:269, label:"Chute libre plane : accélération (0 ; −g), sommet, portée et angle de tir", niveau:"TSTL", icon:"🏹", color:"#0b4f94", component: SimulationChutePlane },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
