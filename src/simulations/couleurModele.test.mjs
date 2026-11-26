@@ -59,4 +59,12 @@ const m = C.melange(C.pointLieu(620), C.pointLieu(530), 0.5); pres(m.x, (0.6915 
 ok(C.lireChromaticite(m.x, m.y).dominante > 560 && C.lireChromaticite(m.x, m.y).dominante < 580, 'rouge + vert à parts égales = jaune-vert');
 // intérieur du diagramme
 ok(C.dansDiagramme(0.3127, 0.329) && !C.dansDiagramme(0.7, 0.8) && !C.dansDiagramme(0.1, 0.05) && C.dansDiagramme(0.5, 0.4), 'dansDiagramme');
+// couleur affichable : toujours dans le gamut, même L* et même teinte
+{ for (const lab of [{ L: 45, a: 60, b: 0 }, { L: 45, a: -60, b: 30 }, { L: 80, a: 20, b: -60 }, { L: 30, a: 0, b: 55 }, { L: 45, a: 7, b: -24 }]) {
+    const q = C.srgbAffichable(lab); ok(!q.hors, 'affichable : dans le gamut');
+    const lh = C.lch(lab); if (lh.C > 1) { /* teinte conservée */ ok(q.r >= 0 && q.r <= 255, 'canal r'); }
+  }
+  ok(C.srgbAffichable({ L: 45, a: 7, b: -24 }).ecrete === false, 'couleur déjà affichable : inchangée');
+  ok(C.srgbAffichable({ L: 45, a: 110, b: 0 }).ecrete === true, 'couleur trop vive : approchée');
+  const e = C.srgbAffichable({ L: 45, a: 110, b: 0 }), f = C.srgbAffichable({ L: 45, a: 130, b: 0 }); ok(e.r === f.r && e.g === f.g && e.b === f.b, 'au-delà du bord : même couleur de bord'); }
 console.log(`couleurModele (suite) : ${n} vérifications OK`);

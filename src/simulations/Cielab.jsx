@@ -54,7 +54,7 @@ export function SimulationCielab({ plotlyReady }) {
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [vie, setVie] = useState(() => DEPART[ORDRE[Math.min(guide.etape ?? 0, ORDRE.length - 1)]] ?? (TOUS_LOT.includes(ORDRE[Math.min(guide.etape ?? 0, ORDRE.length - 1)]) ? M.LOT0 : ETAT0));
-  const [ex, setEx] = useState({ cible: M.CIBLE, lot: M.LOT0, preset: 'bleu', echelle: 'large', autres: false, vue3d: 'proche', tolE: 1.5, tolC: 1 });
+  const [ex, setEx] = useState({ cible: M.CIBLE, lot: M.LOT0, preset: 'bleu', vue: '2d', coord: 'lab', lfond: null, echelle: 'large', autres: false, vue3d: 'proche', tolE: 1.5, tolC: 1 });
   const [ouv, setOuv] = useState({});
   const [suiviE, noterE] = useCompteurDefi(), [suiviL, noterL] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('ecart');
@@ -257,55 +257,77 @@ export function SimulationCielab({ plotlyReady }) {
 
   // ---------- exploration ----------
   const ecX = C.ecartCylindrique(ex.lot, ex.cible), eX = C.deltaE76(ex.lot, ex.cible), cmcX = C.deltaCMC(ex.lot, ex.cible);
+  const coordLch = ex.coord === 'lch';
+  const lcC = C.lch(ex.cible), lcL = C.lch(ex.lot), dhLot = Math.max(-40, Math.min(40, ((lcL.h - lcC.h + 540) % 360) - 180));
   const setLot = k => ev => setEx(x => ({ ...x, lot: { ...x.lot, [k]: parseFloat(ev.target.value) } }));
+  const setLotLch = k => ev => { const v = parseFloat(ev.target.value); setEx(x => { const c = C.lch(x.cible), l = C.lch(x.lot); return { ...x, lot: C.labDeLch(k === 'L' ? { ...l, L: v } : k === 'C' ? { ...l, C: v } : { ...l, h: c.h + v }) }; }); };
   const setCible = k => ev => setEx(x => ({ ...x, preset: 'perso', cible: { ...x.cible, [k]: parseFloat(ev.target.value) } }));
+  const setCibleLch = k => ev => { const v = parseFloat(ev.target.value); setEx(x => ({ ...x, preset: 'perso', cible: C.labDeLch({ ...C.lch(x.cible), [k]: v }) })); };
   const choisirPreset = ev => { const p = PRESETS.find(q => q.id === ev.target.value); if (p) setEx(x => ({ ...x, preset: p.id, cible: p.lab, lot: { L: p.lab.L - 1, a: p.lab.a + 2, b: p.lab.b - 2 } })); };
-  const resume = l => `L* ${fr(l.L, 0)} · a* ${fr(l.a, 0)} · b* ${fr(l.b, 0)}`;
+  const resume = l => (coordLch ? `L* ${fr(l.L, 0)} · C* ${fr(C.lch(l).C, 0)} · h ${fr(C.lch(l).h, 0)}°` : `L* ${fr(l.L, 0)} · a* ${fr(l.a, 0)} · b* ${fr(l.b, 0)}`);
   const reglagesExplore = enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 3 }}>Coordonnées utilisées</div>
+      <div role="group" aria-label="Système de coordonnées" style={{ display: 'flex', gap: 8 }}>
+        {[['lab', 'L*a*b*'], ['lch', 'L*C*h']].map(([k, n]) => <button key={k} onClick={() => setEx(x => ({ ...x, coord: k }))} aria-pressed={ex.coord === k} style={{ ...stylePetitBouton(ex.coord === k, '#0e7490'), minHeight: 40, flex: 1 }}>{n}</button>)}
+      </div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 3, lineHeight: 1.45 }}>{coordLch ? 'Cylindriques : saturation C* et angle de teinte h, à la place de a* et b*.' : 'Cartésiennes : a* (vert → rouge) et b* (bleu → jaune).'} Ce sont les mêmes couleurs, écrites autrement.</div>
       {selecteur('cl-xp', 'Cible (teinte à reproduire)', ex.preset === 'perso' ? '' : ex.preset, choisirPreset, PRESETS, ex.preset === 'perso' ? 'Cible personnalisée' : null)}
       <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 2 }}>Choisir une cible place un lot proche, à 3 unités d’écart.</div>
       <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, margin: '10px 0 0' }}>Le lot</div>
       {curs('cl-xl', `Luminosité L* : ${fr(ex.lot.L, 1)}`, ex.lot.L, Math.max(0, ex.cible.L - 6), Math.min(100, ex.cible.L + 6), 0.5, setLot('L'))}
-      {curs('cl-xa', `a* : ${fr(ex.lot.a, 1)}`, ex.lot.a, ex.cible.a - 6, ex.cible.a + 6, 0.5, setLot('a'))}
-      {curs('cl-xb', `b* : ${fr(ex.lot.b, 1)}`, ex.lot.b, ex.cible.b - 6, ex.cible.b + 6, 0.5, setLot('b'))}
+      {!coordLch && curs('cl-xa', `a* : ${fr(ex.lot.a, 1)}`, ex.lot.a, ex.cible.a - 6, ex.cible.a + 6, 0.5, setLot('a'))}
+      {!coordLch && curs('cl-xb', `b* : ${fr(ex.lot.b, 1)}`, ex.lot.b, ex.cible.b - 6, ex.cible.b + 6, 0.5, setLot('b'))}
+      {coordLch && curs('cl-xc', `Saturation C* : ${fr(lcL.C, 1)}`, Math.min(Math.max(lcL.C, Math.max(0, lcC.C - 6)), lcC.C + 6), Math.max(0, lcC.C - 6), lcC.C + 6, 0.5, setLotLch('C'))}
+      {coordLch && curs('cl-xh', `Teinte h : ${fr(lcL.h, 1)}° (${sg(dhLot)}° par rapport à la cible)`, dhLot, -40, 40, 1, setLotLch('h'))}
       <Section titre={`Régler la cible (${resume(ex.cible)})`} ouvert={!!ouv.cible} onBascule={() => bascule('cible')}>
         {curs('cl-xcl', `Cible, L* : ${fr(ex.cible.L, 0)}`, ex.cible.L, 15, 95, 1, setCible('L'))}
-        {curs('cl-xca', `Cible, a* : ${fr(ex.cible.a, 0)}`, ex.cible.a, -50, 50, 1, setCible('a'))}
-        {curs('cl-xcb', `Cible, b* : ${fr(ex.cible.b, 0)}`, ex.cible.b, -50, 50, 1, setCible('b'))}
+        {!coordLch && curs('cl-xca', `Cible, a* : ${fr(ex.cible.a, 0)}`, ex.cible.a, -50, 50, 1, setCible('a'))}
+        {!coordLch && curs('cl-xcb', `Cible, b* : ${fr(ex.cible.b, 0)}`, ex.cible.b, -50, 50, 1, setCible('b'))}
+        {coordLch && curs('cl-xcc', `Cible, saturation C* : ${fr(lcC.C, 0)}`, Math.round(lcC.C), 0, 70, 1, setCibleLch('C'))}
+        {coordLch && curs('cl-xch', `Cible, teinte h : ${fr(lcC.h, 0)}°`, Math.round(lcC.h) % 360, 0, 359, 1, setCibleLch('h'))}
       </Section>
       <Section titre={`Tolérances (ΔE*ab ≤ ${fr(ex.tolE, 1)} ; CMC ≤ ${fr(ex.tolC, 1)})`} ouvert={!!ouv.tol} onBascule={() => bascule('tol')}>
         {curs('cl-xte', `Tolérance sur ΔE*ab : ${fr(ex.tolE, 1)}`, ex.tolE, 0.5, 4, 0.1, ev => setEx(x => ({ ...x, tolE: parseFloat(ev.target.value) })), 'Cercle violet sur le plan.')}
         {curs('cl-xtc', `Tolérance CMC(2:1) : ${fr(ex.tolC, 1)}`, ex.tolC, 0.5, 2.5, 0.1, ev => setEx(x => ({ ...x, tolC: parseFloat(ev.target.value) })), 'Ellipse verte sur le plan.')}
       </Section>
     </div>);
-  const planLarge = ex.echelle === 'large';
-  const planEx = (
+  const planLarge = ex.echelle === 'large', lf = ex.lfond ?? Math.round(ex.cible.L);
+  const vue2D = (<>
+    <div style={{ marginTop: 4 }}><SvgPlanAB lfond={lf} zoom={planLarge ? null : { centre: ex.cible, demi: 7 }} repere={planLarge && !coordLch} axesLch={!planLarge && coordLch}
+      autres={planLarge && ex.autres ? { positions: M.POSITIONS_ELLIPSES, tolC: ex.tolC, k: M.AGRANDI } : null}
+      pts={[{ lab: ex.cible, nom: 'Cible', col: '#0f172a', cyl: planLarge && coordLch ? true : false }, { lab: ex.lot, nom: 'Lot', col: COL.orange, cyl: planLarge && coordLch ? 'fin' : false }]}
+      tol={{ cible: ex.cible, tolE: ex.tolE, tolCMC: ex.tolC }}/></div>
+<div style={{ marginTop: 4 }}>
+    {selecteur('cl-xe', 'Échelle du plan a*b*', ex.echelle, ev => setEx(x => ({ ...x, echelle: ev.target.value })), [{ id: 'large', nom: 'Plan entier (±60)' }, { id: 'zoom', nom: 'Agrandi autour de la cible (±7)' }])}
+    {planLarge && <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: KIT.txt, margin: '8px 0 2px', minHeight: 32, cursor: 'pointer' }}>
+      <input type="checkbox" checked={ex.autres} onChange={ev => setEx(x => ({ ...x, autres: ev.target.checked }))} style={{ width: 18, height: 18 }}/>Montrer d’autres ellipses CMC (agrandies ×{M.AGRANDI})</label>}
+    {curs('cl-xf', `Luminosité L* du fond coloré : ${lf}`, lf, 10, 95, 1, ev => setEx(x => ({ ...x, lfond: parseInt(ev.target.value, 10) })), 'Le plan montre les couleurs d’une seule luminosité à la fois. Le jaune est très vif à L* élevé, le bleu à L* faible.')}
+    {ex.lfond != null && <button onClick={() => setEx(x => ({ ...x, lfond: null }))} style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>Revenir à la luminosité de la cible (L* = {fr(ex.cible.L, 0)})</button>}
+    </div>
+    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
+      Cercle violet : tolérance sur ΔE*ab. Ellipse verte : tolérance CMC (zone d’écarts acceptés autour de la cible). Fond : les couleurs de la luminosité L* choisie ; les cercles blancs marquent la saturation C* = 20, 40 et 60.
+      {planLarge && !coordLch && ' La flèche C* indique le sens de la saturation (distance au centre), l’arc h celui de la teinte (angle depuis +a*).'}
+      {planLarge && coordLch && ' Traits : la saturation C* est la distance au centre, l’arc orange est l’angle de teinte h (en pointillés, le lot).'}
+      {!planLarge && coordLch && ' Les pointillés sont les axes locaux de la cible : +C* vers l’extérieur (saturation), +H* le long du cercle (teinte).'}
+      {planLarge && ex.autres && <> Les autres ellipses CMC sont agrandies {M.AGRANDI} fois pour être visibles : près du gris elles sont presque rondes et petites ; plus la couleur est saturée, plus elles sont grandes et allongées vers l’extérieur (la saturation est tolérée plus que la teinte).</>}
+      {' '}Beaucoup de couleurs saturées n’existent pas sur un écran : là, on affiche la couleur la plus vive possible de même luminosité et de même teinte, donc les bords paraissent moins saturés qu’ils ne le sont.
+    </div>
+  </>);
+  const vue3D = (<>
+    <div style={{ marginTop: 4 }}><VueLab3D plotlyReady={plotlyReady} cible={ex.cible} lot={ex.lot} tolE={ex.tolE} tolC={ex.tolC} mode={ex.vue3d}/></div>
+    {selecteur('cl-x3', 'Échelle de la vue 3D', ex.vue3d, ev => setEx(x => ({ ...x, vue3d: ev.target.value })), [{ id: 'proche', nom: 'Autour de la cible (tailles réelles)' }, { id: 'entier', nom: 'Espace entier (ellipsoïdes agrandis)' }])}
+    <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5, margin: '4px 0 6px' }}>Faites tourner la vue avec la souris ou le doigt. Le plan coloré est celui de la luminosité L* de la cible ; la hauteur est L*. {ex.vue3d === 'proche' ? 'La sphère violette est la tolérance sur ΔE*ab, l’ellipsoïde vert la tolérance CMC : à la même valeur, l’ellipsoïde est étiré selon la saturation et la luminosité, et resserré selon la teinte.' : 'Les ellipsoïdes CMC sont agrandis ×' + M.AGRANDI + ' : ils changent de taille et d’orientation selon la couleur.'}</div>
+  </>);
+  const vueEx = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Cible et lot</div>
-      <SvgPastilles cible={ex.cible} lot={ex.lot}/>
-      <div style={{ marginTop: 8 }}>
-        {selecteur('cl-xe', 'Échelle du plan a*b*', ex.echelle, ev => setEx(x => ({ ...x, echelle: ev.target.value })), [{ id: 'large', nom: 'Plan entier (±60)' }, { id: 'zoom', nom: 'Agrandi autour de la cible (±7)' }])}
+      <SvgPastilles cible={ex.cible} lot={ex.lot} cyl={coordLch}/>
+      <div role="group" aria-label="Choix de la vue" style={{ display: 'flex', gap: 8, margin: '12px 0 4px', flexWrap: 'wrap' }}>
+        {[['2d', '🎨 Plan a*b* (2D)'], ['3d', '🧊 Espace L*a*b* (3D)']].map(([k, n]) => <button key={k} onClick={() => setEx(x => ({ ...x, vue: k }))} aria-pressed={ex.vue === k} style={{ ...stylePetitBouton(ex.vue === k, '#0e7490'), minHeight: 44, flex: '1 1 150px', fontSize: 14.5 }}>{n}</button>)}
       </div>
-      {planLarge && <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: KIT.txt, margin: '8px 0 2px', minHeight: 32, cursor: 'pointer' }}>
-        <input type="checkbox" checked={ex.autres} onChange={ev => setEx(x => ({ ...x, autres: ev.target.checked }))} style={{ width: 18, height: 18 }}/>Montrer d’autres ellipses CMC (agrandies ×{M.AGRANDI})</label>}
-      <SvgPlanAB lfond={Math.round(ex.cible.L)} zoom={planLarge ? null : { centre: ex.cible, demi: 7 }} repere={planLarge}
-        autres={planLarge && ex.autres ? { positions: M.POSITIONS_ELLIPSES, tolC: ex.tolC, k: M.AGRANDI } : null}
-        pts={[{ lab: ex.cible, nom: 'Cible', col: '#0f172a' }, { lab: ex.lot, nom: 'Lot', col: COL.orange }]}
-        tol={{ cible: ex.cible, tolE: ex.tolE, tolCMC: ex.tolC }}/>
-      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
-        Cercle violet : tolérance sur ΔE*ab. Ellipse verte : tolérance CMC (zone d’écarts acceptés autour de la cible). Fond : les couleurs de même luminosité L* que la cible ; les cercles blancs marquent la saturation C* = 20, 40 et 60. Dans le plan entier, la flèche C* indique le sens de la saturation (distance au centre) et l’arc h celui de la teinte (angle depuis +a*).
-        {planLarge && ex.autres && <> Les autres ellipses CMC sont agrandies {M.AGRANDI} fois pour être visibles : près du gris elles sont presque rondes et petites ; plus la couleur est saturée, plus elles sont grandes et allongées vers l’extérieur (la saturation est tolérée plus que la teinte).</>}
-        {planLarge && ' Les couleurs trop vives pour l’écran sont approchées.'}
-      </div>
-    </div>);
-  const vue3D = (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Vue 3D : l’espace L*a*b*</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5, marginBottom: 6 }}>Faites tourner la vue avec la souris ou le doigt. Le plan coloré est celui de la luminosité L* de la cible ; la hauteur est L*. {ex.vue3d === 'proche' ? 'La sphère violette est la tolérance sur ΔE*ab, l’ellipsoïde vert la tolérance CMC : à la même valeur, l’ellipsoïde est étiré selon la saturation et la luminosité, et resserré selon la teinte.' : 'Les ellipsoïdes CMC sont agrandis ×' + M.AGRANDI + ' : ils changent de taille et d’orientation selon la couleur.'}</div>
-      {selecteur('cl-x3', 'Échelle de la vue 3D', ex.vue3d, ev => setEx(x => ({ ...x, vue3d: ev.target.value })), [{ id: 'proche', nom: 'Autour de la cible (tailles réelles)' }, { id: 'entier', nom: 'Espace entier (ellipsoïdes agrandis)' }])}
-      <div style={{ marginTop: 8 }}><VueLab3D plotlyReady={plotlyReady} cible={ex.cible} lot={ex.lot} tolE={ex.tolE} tolC={ex.tolC} mode={ex.vue3d}/></div>
+      {ex.vue === '2d' ? vue2D : vue3D}
     </div>);
   const parallele = (
     <Section titre="Parallèle avec Hansen : l’écart entre deux points" ouvert={ouv.hansen !== false} onBascule={() => setOuv(o => ({ ...o, hansen: o.hansen === false }))}>
@@ -337,12 +359,14 @@ export function SimulationCielab({ plotlyReady }) {
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Les écarts lot − cible</div>
       <LigneMesure nom="ΔL* (luminosité)" valeur={sg(ecX.dL)}/>
-      <LigneMesure nom="Δa* · Δb*" valeur={`${sg(ex.lot.a - ex.cible.a)} · ${sg(ex.lot.b - ex.cible.b)}`}/>
-      <LigneMesure nom="ΔC* (saturation)" valeur={sg(ecX.dC)}/>
-      <LigneMesure nom="ΔH* (teinte)" valeur={sg(ecX.dH)}/>
+      {!coordLch && <LigneMesure nom="Δa* (vert → rouge)" valeur={sg(ex.lot.a - ex.cible.a)}/>}
+      {!coordLch && <LigneMesure nom="Δb* (bleu → jaune)" valeur={sg(ex.lot.b - ex.cible.b)}/>}
+      {coordLch && <LigneMesure nom="ΔC* (saturation)" valeur={sg(ecX.dC)}/>}
+      {coordLch && <LigneMesure nom="ΔH* (teinte)" valeur={sg(ecX.dH)}/>}
       <LigneMesure nom="ΔE*ab" valeur={fr(eX, 2)} couleur={eX <= ex.tolE ? COL.vert : COL.rouge}/>
       <LigneMesure nom="ΔE*ab ÷ tolérance (comme le RED)" valeur={fr(eX / ex.tolE, 2)} couleur={eX <= ex.tolE ? COL.vert : COL.rouge}/>
       <LigneMesure nom="Écart CMC(2:1)" valeur={fr(cmcX, 2)} couleur={cmcX <= ex.tolC ? COL.vert : COL.rouge}/>
+      <div style={{ marginTop: 6, fontSize: 13, lineHeight: 1.5, color: KIT.txt2 }}>{coordLch ? <>Avec ΔL*, ΔC* et ΔH* on retrouve le même ΔE*ab : ΔE*ab² = ΔL*² + ΔC*² + ΔH*².</> : <>ΔE*ab² = ΔL*² + Δa*² + Δb*². En L*C*h, on obtient le même ΔE*ab avec ΔL*, ΔC*, ΔH*.</>}</div>
       <div style={{ marginTop: 6, fontSize: 14, lineHeight: 1.5, color: KIT.txt }}>Verdict ΔE*ab : <strong>{eX <= ex.tolE ? 'conforme' : 'hors tolérance'}</strong> · verdict CMC : <strong>{cmcX <= ex.tolC ? 'conforme' : 'hors tolérance'}</strong></div>
     </div>);
   const aEssayer = (
@@ -351,6 +375,8 @@ export function SimulationCielab({ plotlyReady }) {
       <li>Trouvez deux lots de même ΔE*ab, l’un accepté par la tolérance CMC et l’autre refusé. Dans quelle direction s’écartent-ils ?</li>
       <li>Choisissez la cible grise : que vaut sa saturation ? Que devient l’ellipse CMC ?</li>
       <li>Réglez ΔL* seul : la tolérance CMC (2:1) tolère-t-elle plus ou moins d’écart de luminosité que de saturation ?</li>
+      <li>Passez en coordonnées L*C*h : que deviennent les curseurs du lot ? Changez seulement h : de quoi s’écarte le lot, et la tolérance CMC l’accepte-t-elle ?</li>
+      <li>Dans le plan, changez la luminosité du fond : à quelle luminosité le jaune est-il le plus vif ? Et le bleu ?</li>
       <li>Cochez « Montrer d’autres ellipses CMC » : où sont-elles les plus grandes ? Dans quelle direction sont-elles allongées ?</li>
       <li>Dans la vue 3D, tournez jusqu’à voir la sphère et l’ellipsoïde de profil : dans quelle direction l’ellipsoïde dépasse-t-il de la sphère ?</li>
     </ul>);
@@ -420,10 +446,9 @@ export function SimulationCielab({ plotlyReady }) {
       {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.kind}`} etat={defi.kind === 'ecart' ? suiviE : suiviL}/></div>}
       {enExplore && <>
         <div className="cl-ex">
-          {planEx}
+          {vueEx}
           <div className="cl-reg">{reglagesExplore}</div>
           {mesuresEx}
-          {vue3D}
         </div>
         {parallele}
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
