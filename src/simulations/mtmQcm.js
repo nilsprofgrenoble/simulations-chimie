@@ -18,7 +18,7 @@ export const QCM = {
     'Ils restent identiques : deux couleurs égales le restent sous toutes les lampes',
     'Ils sont tous deux plus foncés, mais restent identiques entre eux',
     'On ne peut rien dire : une lampe ne change pas la couleur d’un objet'),
-  courbes: mk(0, 'Elles se croisent plusieurs fois et leurs écarts se compensent',
+  courbes: mk(0, 'Elles se croisent plusieurs fois (au moins trois) et leurs écarts se compensent',
     'Elles sont proches partout : les différences entre les courbes sont trop petites pour qu’on les voie',
     'L’œil ne voit que la hauteur moyenne des courbes, quelle que soit leur forme',
     'Elles ont la même aire : l’œil mesure seulement l’aire sous la courbe'),

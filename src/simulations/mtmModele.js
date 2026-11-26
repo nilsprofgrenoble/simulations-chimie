@@ -33,33 +33,44 @@ function inv3(m) {
   const [[a, b, c], [d, e, f], [g, h, i]] = m, det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
   return [[(e * i - f * h), (c * h - b * i), (b * f - c * e)], [(f * g - d * i), (a * i - c * g), (c * d - a * f)], [(d * h - e * g), (b * g - a * h), (a * e - b * d)]].map(r => r.map(v => v / det));
 }
-/** Retire d'un vecteur sa partie « visible » : ce qui reste ne change ni X, ni Y, ni Z sous D65. */
-function noyau(v) {
-  const G = A65.map(r => A65.map(q => r.reduce((s, x, i) => s + x * q[i], 0))), Gi = inv3(G), Av = A65.map(r => r.reduce((s, x, i) => s + x * v[i], 0));
-  const coef = Gi.map(r => r.reduce((s, x, j) => s + x * Av[j], 0));
-  return v.map((x, i) => x - A65.reduce((s, r, j) => s + coef[j] * r[i], 0));
-}
-const norme = v => { const m = Math.max(...v.map(Math.abs)); return v.map(x => x / m); };
 export const BASES = {
   beige: cv(l => 0.30 + 0.15 * sig(l, 560, 40)),
   gris: cv(() => 0.40),
   brun: cv(l => 0.55 - 0.25 * sig(l, 500, 40)),
 };
 export const NOMS_BASES = { beige: 'Beige', gris: 'Gris moyen', brun: 'Brun clair' };
-export const AMPLITUDE = 0.10;
-/** Forme δ (max |δ| = 1) choisie parmi des sinusoïdes de périodes différentes : celle qui sépare le plus les deux échantillons sous la lampe A. */
-export const DELTA = (() => {
+/** Amplitude maximale de δ pour s = 1 (réflectance), choisie par base pour que l'écart sous la lampe A soit d'environ 4 à 5 unités de ΔE*ab. */
+export const AMPLITUDES = { beige: 0.12, gris: 0.12, brun: 0.17 };
+// Le deuxième échantillon E2 est un pigment à courbe LISSE : un fond de 0,05, une marche (bord d'absorption) et deux bosses, c'est-à-dire
+// R2 = 0,05 + c1·marche(λ) + c2·bosse1(λ) + c3·bosse2(λ). Les trois coefficients sont calculés pour que X, Y, Z sous D65 soient EXACTEMENT ceux de E1 (système 3 × 3).
+// Une paire métamère impose au moins trois croisements des courbes (δ = R2 − R1 est orthogonal aux trois fonctions colorimétriques pondérées par D65) :
+// on retient donc, parmi les formes lisses possibles, celles qui se croisent exactement trois fois et qui séparent le plus les deux échantillons sous A.
+const croisements = d => { let n = 0, prec = 0; for (const x of d) { if (Math.abs(x) < 2e-4) continue; const sg = Math.sign(x); if (prec && sg !== prec) n++; prec = sg; } return n; };
+/** Nombre d'extrema locaux d'une courbe (une courbe de pigment lisse en a peu). */
+const extrema = v => { let n = 0; for (let i = 1; i < v.length - 1; i++) if ((v[i] - v[i - 1]) * (v[i + 1] - v[i]) < -1e-9) n++; return n; };
+/** Forme δ (max |δ| = 1) de la paire associée à une courbe de base, et ses caractéristiques. */
+function chercherDelta(r1, AMPLITUDE) {
+  const FOND = 0.05, cibleXYZ = A65.map(r => r.reduce((s, x, i) => s + x * (r1[i] - FOND), 0));
   let meilleur = null;
-  for (const P of [80, 100, 120, 150, 200, 260]) for (const ph of [0, Math.PI / 2, Math.PI, 3 * Math.PI / 2]) {
-    const d = norme(noyau(cv(l => Math.cos(2 * Math.PI * (l - 380) / P + ph)))), r1 = BASES.beige, r2 = r1.map((x, i) => x + AMPLITUDE * d[i]);
-    if (Math.min(...r2) < 0.03 || Math.max(...r2) > 0.97) continue;
-    const e = ecartSous(r1, r2, 'A') + 0.5 * ecartSous(r1, r2, 'F2');
-    if (!meilleur || e > meilleur.e) meilleur = { e, d, P, ph };
+  for (let c = 420; c <= 660; c += 20) for (const w of [14, 22, 34]) for (let m = 430; m <= 650; m += 20) for (const v of [45, 65]) for (let m2 = m + 80; m2 <= 650; m2 += 20) for (const v2 of [45, 65]) {
+    const U = [cv(l => sig(l, c, w)), cv(l => bosse(l, m, v)), cv(l => bosse(l, m2, v2))];
+    const Mx = A65.map(r => U.map(u => r.reduce((s, x, i) => s + x * u[i], 0))), det = Mx[0][0] * (Mx[1][1] * Mx[2][2] - Mx[1][2] * Mx[2][1]) - Mx[0][1] * (Mx[1][0] * Mx[2][2] - Mx[1][2] * Mx[2][0]) + Mx[0][2] * (Mx[1][0] * Mx[2][1] - Mx[1][1] * Mx[2][0]);
+    if (Math.abs(det) < 1e-4 * Mx.flat().reduce((s, x) => s + Math.abs(x), 0) ** 3 / 27) continue;
+    const co = inv3(Mx).map(r => r.reduce((s, v3, j) => s + v3 * cibleXYZ[j], 0));
+    if (co.some(x => x < 0.02)) continue; // chaque pigment ajoute de la réflectance (coefficients positifs)
+    const r2 = r1.map((_, i) => FOND + co[0] * U[0][i] + co[1] * U[1][i] + co[2] * U[2][i]), dl = r2.map((x, i) => x - r1[i]), mx = Math.max(...dl.map(Math.abs));
+    if (mx < 0.03 || mx > 0.6 || croisements(dl) !== 3) continue;
+    const d = dl.map(x => x / mx), lo = r1.map((x, i) => x + 2.5 * AMPLITUDE * d[i]);
+    if ([0.5, 1, 1.5, 2, 2.5].some(f => extrema(r1.map((x, i) => x + f * AMPLITUDE * d[i])) > 3)) continue;
+    if (Math.min(...lo) < 0.03 || Math.max(...lo) > 0.95) continue;
+    const r2s = r1.map((x, i) => x + AMPLITUDE * d[i]), e = (ecartSous(r1, r2s, 'A') + 0.5 * ecartSous(r1, r2s, 'F2')) / 1.5;
+    if (!meilleur || e > meilleur.e) meilleur = { e, d, c, w, m, v, m2, v2 };
   }
-  return meilleur.d;
-})();
-/** Deuxième échantillon : même couleur que `base` sous D65 pour tout s, de plus en plus différent sous les autres lampes quand s augmente. */
-export const paire = (base = 'beige', s = 1) => ({ r1: BASES[base], r2: BASES[base].map((x, i) => x + s * AMPLITUDE * DELTA[i]) });
+  return meilleur;
+}
+export const DELTAS = Object.fromEntries(Object.entries(BASES).map(([id, r]) => [id, chercherDelta(r, AMPLITUDES[id])]));
+/** Deuxième échantillon : même couleur que `base` sous D65 pour tout s, de plus en plus différent sous les autres lampes quand s augmente (s = 1 : écart de référence). */
+export const paire = (base = 'beige', s = 1) => ({ r1: BASES[base], r2: BASES[base].map((x, i) => x + s * AMPLITUDES[base] * DELTAS[base].d[i]) });
 export const PAIRE = paire('beige', 1);
 
 // ---------- défis ----------
