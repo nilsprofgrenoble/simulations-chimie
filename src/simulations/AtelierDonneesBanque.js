@@ -16,6 +16,7 @@ import { RPM_SAPP } from './radPcmExos.js';
 import { RMNS_SAPP } from './rmnStlExos.js';
 import { UVS_SAPP } from './uvirStlExos.js';
 import { KSQ_SAPP } from './ksqExos.js';
+import { HYD_SAPP } from './hydExos.js';
 import { CLP_SAPP } from "./chutePlaneExos.js";
 import { NWR_SAPP } from "./newtonRectExos.js";
 import { MTR_SAPP } from "./modesTransfertExos.js";
@@ -5637,6 +5638,7 @@ export const ENONCES = [
   ...RMNS_SAPP,
   ...UVS_SAPP,
   ...KSQ_SAPP,
+  ...HYD_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,

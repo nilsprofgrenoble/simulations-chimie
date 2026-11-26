@@ -3102,5 +3102,17 @@
  "77:plausible:rpm-val-lambda": "VAL807",
  "77:plausible:rpm-val-activite": "VAL808",
  "36:rpm-loi": "REA222",
- "36:rpm-act": "REA223"
+ "36:rpm-act": "REA223",
+ "34:hyd-sapp-seuil.0": "SAPP685",
+ "34:hyd-sapp-seuil.1": "SAPP686",
+ "34:hyd-sapp-fenetre.0": "SAPP687",
+ "34:hyd-sapp-fenetre.1": "SAPP688",
+ "37:prevoir:hyd-ana-expression": "ANA1390",
+ "37:prevoir:hyd-ana-premier": "ANA1391",
+ "37:prevoir:hyd-ana-dilution": "ANA1392",
+ "37:prevoir:hyd-ana-fenetre": "ANA1393",
+ "77:plausible:hyd-val-poh": "VAL809",
+ "77:plausible:hyd-val-racine": "VAL810",
+ "36:hyd-seuil": "REA224",
+ "36:hyd-fenetre": "REA225"
 }

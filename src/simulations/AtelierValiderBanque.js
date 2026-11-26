@@ -14,6 +14,7 @@ import { RPM_VAL } from './radPcmExos.js';
 import { RMNS_VAL } from './rmnStlExos.js';
 import { UVS_VAL } from './uvirStlExos.js';
 import { KSQ_VAL } from './ksqExos.js';
+import { HYD_VAL } from './hydExos.js';
 import { CLP_VAL } from './chutePlaneExos.js';
 import { NWR_VAL } from './newtonRectExos.js';
 import { MTR_VAL } from './modesTransfertExos.js';
@@ -5177,6 +5178,7 @@ export const PLAUSIBLES = [
   ...RMNS_VAL,
   ...UVS_VAL,
   ...KSQ_VAL,
+  ...HYD_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
