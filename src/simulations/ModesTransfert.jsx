@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./modesTransfertModele";
+import { ModesTransfertExplore } from "./ModesTransfertExplore";
 import { QCM } from "./modesTransfertQcm";
 import { SceneMode, SvgTravail, SvgThermique, SvgArbre, SvgSigneW } from "./ModesTransfertSchemas";
 
@@ -320,10 +321,15 @@ export function SimulationModesTransfert() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="mtr-ex">
-          {scene}
-          <div className="mtr-reg">{reglages}</div>
-          {mesures}
+        <ModesTransfertExplore ti={ti} setTi={setTi} indices={INDICE_MODE}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : ${sit.texte.replace(/\.$/, '')}`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="mtr-ex">
+              {scene}
+              <div className="mtr-reg">{reglages}</div>
+              {mesures}
+            </div>
+          </Section>
         </div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
