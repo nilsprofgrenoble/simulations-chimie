@@ -252,7 +252,8 @@ export function SimulationXyy() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Diagramme de chromaticité</div>
       <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}><Pastille css={css(L1)} nom="lumière 1" hauteur={26}/><Pastille css={css(MX)} nom="mélange" hauteur={26}/><Pastille css={css(L2)} nom="lumière 2" hauteur={26}/></div>
       <SvgChroma triangle={ex.triangle} lignes={[{ a: L1, b: L2, col: '#0f172a', w: 2, dash: '' }]}
-        pts={[{ ...L1, nom: '1', col: COL.orange, dx: 10, dy: -8 }, { ...L2, nom: '2', col: COL.bleu, dx: 10, dy: -8 }, { ...MX, nom: 'mélange', col: '#0f172a', creux: true, dx: 11, dy: 18 }]}/>
+        pts={[{ ...L1, nom: '1', col: '#0f172a', dx: 9, dy: 20, anchor: 'start' }, { ...L2, nom: '2', col: '#0f172a', dx: 12, dy: 5, anchor: 'start' }, { ...MX, nom: 'mélange', col: '#0f172a', creux: true, dx: -12, dy: 20, anchor: 'end' }]}/>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>1 et 2 : vos deux lumières. Trait plein : tous les mélanges possibles de ces deux lumières. Pointillés : le triangle des couleurs qu’un écran sait afficher (R, V, B). W : le blanc.</div>
     </div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
