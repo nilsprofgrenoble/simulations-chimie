@@ -3008,5 +3008,15 @@
  "77:plausible:tix-val-rapport": "VAL785",
  "77:plausible:tix-val-equivalence": "VAL786",
  "36:tix-dosage-calcul": "REA211",
- "36:tix-prevoir-calcul": "REA212"
+ "36:tix-prevoir-calcul": "REA212",
+ "34:chro-sapp-indicateur": "SAPP665",
+ "37:prevoir:chro-ana-couleur": "ANA1349",
+ "37:prevoir:chro-ana-incolore": "ANA1350",
+ "37:prevoir:chro-ana-conjugaison": "ANA1351",
+ "37:prevoir:chro-ana-effets": "ANA1352",
+ "37:prevoir:chro-ana-auxochrome": "ANA1353",
+ "77:plausible:chro-val-complementaire": "VAL787",
+ "77:plausible:chro-val-incolore": "VAL788",
+ "77:plausible:chro-val-auxochrome": "VAL789",
+ "36:chro-calcul": "REA213"
 }

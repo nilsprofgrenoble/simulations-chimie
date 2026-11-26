@@ -229,6 +229,7 @@ const SimulationMetamerisme = paresseux(() => import("./simulations/Metamerisme"
 const SimulationSyntheseCouleurs = paresseux(() => import("./simulations/SyntheseCouleurs"), "SimulationSyntheseCouleurs");
 const SimulationLumiereMatiere = paresseux(() => import("./simulations/LumiereMatiere"), "SimulationLumiereMatiere");
 const SimulationFluorescence = paresseux(() => import("./simulations/Fluorescence"), "SimulationFluorescence");
+const SimulationChromophores = paresseux(() => import("./simulations/Chromophores"), "SimulationChromophores");
 const SimulationInfrarouge = paresseux(() => import("./simulations/Infrarouge"), "SimulationInfrarouge");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationPanneauPhotovoltaique = paresseux(() => import("./simulations/PanneauPhotovoltaique"), "SimulationPanneauPhotovoltaique");
@@ -693,6 +694,7 @@ const SIMULATIONS = [
   { id:299, label:"Synthèse additive et synthèse soustractive : mélanger lumières, filtres et pigments", niveau:"BTS", icon:"🎨", color:"#c026d3", component: SimulationSyntheseCouleurs },
   { id:300, label:"Photons, niveaux d’énergie et domaines spectraux", niveau:"BTS", icon:"⚛️", color:"#7c3aed", component: SimulationLumiereMatiere },
   { id:301, label:"Fluorescence et phosphorescence : Perrin-Jablonski", niveau:"BTS", icon:"💡", color:"#16a34a", component: SimulationFluorescence },
+  { id:303, label:"UV-visible : couleur, conjugaison et auxochromes", niveau:"BTS", icon:"🌈", color:"#7c3aed", component: SimulationChromophores },
   { id:304, label:"Infrarouge : de la liaison-ressort au spectre", niveau:"BTS", icon:"🔬", color:"#0f766e", component: SimulationInfrarouge },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });

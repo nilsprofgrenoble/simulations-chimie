@@ -31,6 +31,7 @@ const D_COUL_XYY = 'Couleur : lire le diagramme de chromaticité';
 const D_COUL_MTM = 'Couleur : éclairage, réflectance et métamérisme';
 const D_COUL_ADS = 'Couleur : synthèses additive et soustractive';
 const D_LUM = 'Photons, niveaux d’énergie et domaines spectraux';
+const D_CHRO = 'UV-visible : couleur, conjugaison et auxochromes';
 const D_HOOK = 'Infrarouge : de la liaison-ressort au spectre';
 const D_FLUO = 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski';
 
@@ -516,6 +517,29 @@ export const BTSB_SIT = [
               V('Les transmittances se multiplient, les absorbances s’additionnent', 'T = T₁ × T₂ et A = A₁ + A₂, puisque A = −log₁₀(T).')] },
         ],
         retenir: ['Deux filtres en série : T = T₁ × T₂ et A = A₁ + A₂ (A = −log₁₀ T).', 'Un filtre jaune et un filtre cyan en série ne laissent passer que le vert : chaque filtre soustrait une couleur.'],
+      };
+    },
+  },
+  {
+    id: 'chro-sapp-indicateur', domaine: D_CHRO, niveau: 2, titre: 'Un indicateur coloré : le 4-nitrophénol',
+    construire: () => {
+      const l = tire([0.5, 1.0, 2.0]), c = tire([1, 1.5, 2, 2.5]), A = 18000 * l * c * 1e-5, A2 = Number(A.toPrecision(2));
+      return {
+        enonce: `En milieu basique, le 4-nitrophénol devient l’ion 4-nitrophénolate, jaune. On mesure son spectre UV-visible : maximum d’absorption à 400 nm, ε = 18 000 L·mol⁻¹·cm⁻¹. La solution étudiée a pour concentration c = ${nb(c, c % 1 ? 1 : 0)}·10⁻⁵ mol/L dans une cuve de longueur ${nb(l, 1)} cm. Le 4-nitrophénol seul absorbe à 317 nm.`,
+        etapes: [
+          { id: 'lumiere', titre: 'Lumière absorbée', q: 'Quelle lumière l’ion 4-nitrophénolate absorbe-t-il surtout ?', aide: 'La solution est jaune : la couleur perçue est la complémentaire de la couleur absorbée.',
+            o: [F('jaune, car la solution est jaune', 'Une solution jaune transmet le jaune : elle absorbe sa complémentaire, la lumière bleu-violet.'),
+              V('bleu-violet, vers 400 nm', 'La complémentaire du jaune est le bleu : la bande est vers 400 nm.'),
+              F('rouge, car 400 nm est proche du rouge', '400 nm correspond au violet, loin du rouge (vers 700 nm).')] },
+          { id: 'absorbance', titre: 'Absorbance', q: 'Calculer l’absorbance A de la solution au maximum.', aide: 'A = ε × l × c, avec c en mol/L.',
+            type: 'saisie', champs: [{ id: 'A', lib: 'A', u: '', vrai: A2, tol: 0.05 }],
+            expl: `A = 18 000 × ${nb(l, 1)} × ${nb(c, c % 1 ? 1 : 0)}·10⁻⁵ = ${nb(A, 2)}.` },
+          { id: 'effet', titre: 'Effet observé', q: 'Du 4-nitrophénol (317 nm) à l’ion (400 nm), la bande subit un effet…', aide: 'Comparez les deux longueurs d’onde du maximum.',
+            o: [F('hypsochrome', 'Un effet hypsochrome est un déplacement vers les petites longueurs d’onde : 400 nm est plus grand que 317 nm.'),
+              V('bathochrome', 'λmax augmente de 317 à 400 nm : effet bathochrome, la solution devient jaune.'),
+              F('hypochrome', 'Hypochrome concerne l’intensité (ε diminue), pas le déplacement de la bande.')] },
+        ],
+        retenir: ['Couleur perçue = complémentaire de la couleur absorbée.', 'A = ε·l·c ; effet bathochrome = λmax qui augmente.'],
       };
     },
   },
