@@ -1741,6 +1741,49 @@ export const ENONCES = [
     },
   },
   {
+    id: 'tix-sapp-chaine', domaine: 'Titrage indirect', titre: 'Titrage indirect : du thiosulfate à l’eau de Javel', noms: ['Quantité de diiode dosée', 'Quantité d’ions hypochlorite dans la prise d’essai'],
+    gen: () => ({ cB: tire([0.0500, 0.0800, 0.1000]), VA: tire([10, 20, 25]), Ve: tire([8.6, 9.8, 11.4, 12.6, 14.2, 16.4, 18.8]) }),
+    build: (p, q) => {
+      const nI2 = p.cB * p.Ve / 2, cs = x => String(x).replace('.', ',');
+      const tokens = {
+        cB: tok(`${cs((p.cB * 100).toFixed(2))}×10⁻² mol/L`, 'Concentration du thiosulfate dans la burette', p.cB, 'mol/L'), Ve: tok(`${cs(p.Ve)} mL`, 'Volume de thiosulfate versé à l’équivalence', p.Ve, 'mL'),
+        VA: tok(`${p.VA} mL`, 'Volume d’eau de Javel diluée prélevé', p.VA, 'mL'), rap: tok('1 I₂ pour 2 S₂O₃²⁻', 'Coefficients de l’équation de titrage du diiode', 2, ''),
+        rap1: tok('1 ClO⁻ pour 1 I₂', 'Coefficients de l’équation de formation du diiode', 1, ''), nI2: tok(`${nb(nI2)} mmol`, 'Quantité de diiode dosée', nI2, 'mmol'),
+      };
+      const debut = ['On dose ', T('VA'), ' d’eau de Javel diluée. Un excès d’iodure transforme tous les ions ClO⁻ en diiode (', T('rap1'), '), qu’on titre avec du thiosulfate de concentration ', T('cB'), ' (', T('rap'), '). Le bleu de l’empois d’amidon disparaît après avoir versé ', T('Ve'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de diiode a-t-on dosée ?'], utiles: ['cB', 'Ve', 'rap'],
+        raisons: { VA: 'Le volume d’eau de Javel prélevé intervient pour la concentration, pas pour la quantité de diiode.', rap1: 'Ce rapport relie ensuite le diiode aux ions ClO⁻ de l’eau de Javel.' },
+        cherche: { bonne: 'La quantité de diiode dosée à l’équivalence (en mmol)', faux: ['La quantité de thiosulfate versée à l’équivalence (en mmol)', 'La concentration de l’eau de Javel diluée (en mol/L)', 'Le volume de diiode formé (en mL)'] },
+        manque: null, solution: { txt: 'n(I₂) = c_B × V_E / 2', val: nI2, u: 'mmol' } };
+      return { tokens, derivees: [{ id: 'nI2', nom: 'Quantité de diiode dosée', expr: 'c_B × V_E / 2', val: nI2, u: 'mmol' }], texte: [...debut, 'Quelle quantité d’ions hypochlorite contenait la prise d’essai ?'], utiles: ['cB', 'Ve', 'rap', 'rap1'],
+        raisons: { VA: 'Le volume prélevé servira pour la concentration, pas pour la quantité d’ions hypochlorite.' },
+        cherche: { bonne: 'La quantité d’ions ClO⁻ dans la prise d’essai (en mmol)', faux: ['La quantité d’ions iodure introduits en excès (en mmol)', 'La concentration en ions ClO⁻ de la prise d’essai (en mol/L)', 'La quantité de thiosulfate versée (en mmol)'] },
+        manque: null, solution: { txt: 'n(ClO⁻) = n(I₂) = c_B × V_E / 2', val: nI2, u: 'mmol' } };
+    },
+  },
+  {
+    id: 'tix-sapp-concentration', domaine: 'Titrage indirect', titre: 'Titrage indirect : concentration de l’eau de Javel', noms: ['Concentration de la solution diluée', 'Concentration de l’eau de Javel du commerce'],
+    gen: () => ({ cB: tire([0.0500, 0.0800, 0.1000]), VA: tire([20, 25]), Ve: tire([8.6, 9.8, 11.4, 12.6, 14.2, 16.4]), dil: tire([10, 20]) }),
+    build: (p, q) => {
+      const nI2 = p.cB * p.Ve / 2, cA = nI2 / p.VA, c0 = p.dil * cA, cs = x => String(x).replace('.', ',');
+      const tokens = {
+        cB: tok(`${cs((p.cB * 100).toFixed(2))}×10⁻² mol/L`, 'Concentration du thiosulfate dans la burette', p.cB, 'mol/L'), Ve: tok(`${cs(p.Ve)} mL`, 'Volume de thiosulfate versé à l’équivalence', p.Ve, 'mL'),
+        VA: tok(`${p.VA} mL`, 'Volume de solution diluée prélevé', p.VA, 'mL'), dil: tok(`${p.dil} fois`, 'Dilution de l’eau de Javel du commerce', p.dil, ''),
+        rap: tok('1 I₂ pour 2 S₂O₃²⁻', 'Coefficients de l’équation de titrage du diiode', 2, ''), rap1: tok('1 ClO⁻ pour 1 I₂', 'Coefficients de l’équation de formation du diiode', 1, ''),
+        cA: tok(`${nb(cA)} mol/L`, 'Concentration de la solution diluée', cA, 'mol/L'),
+      };
+      const debut = ['On dilue ', T('dil'), ' une eau de Javel du commerce, puis on dose ', T('VA'), ' de la solution diluée : un excès d’iodure forme du diiode (', T('rap1'), '), titré par du thiosulfate de concentration ', T('cB'), ' (', T('rap'), '). Le bleu de l’amidon disparaît après avoir versé ', T('Ve'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration en ions ClO⁻ de la solution diluée ?'], utiles: ['cB', 'Ve', 'VA', 'rap', 'rap1'],
+        raisons: { dil: 'La dilution intervient ensuite, pour passer à l’eau de Javel du commerce.' },
+        cherche: { bonne: 'La concentration c_A de la solution diluée (en mol/L)', faux: ['La concentration de l’eau de Javel du commerce (en mol/L)', 'La quantité de thiosulfate versée (en mmol)', 'La concentration du diiode formé dans l’erlenmeyer (en mol/L)'] },
+        manque: null, solution: { txt: 'c_A = c_B × V_E / (2 × V_A)', val: cA, u: 'mol/L' } };
+      return { tokens, derivees: [{ id: 'cA', nom: 'Concentration de la solution diluée', expr: 'c_B × V_E / (2 × V_A)', val: cA, u: 'mol/L' }], texte: [...debut, 'Quelle est la concentration en ions ClO⁻ de l’eau de Javel du commerce ?'], utiles: ['cB', 'Ve', 'VA', 'rap', 'rap1', 'dil'],
+        raisons: {},
+        cherche: { bonne: 'La concentration c₀ de l’eau de Javel du commerce (en mol/L)', faux: ['La concentration de la solution diluée (en mol/L)', 'La quantité d’ions ClO⁻ dans la prise d’essai (en mmol)', 'Le volume d’eau de Javel à prélever (en mL)'] },
+        manque: null, solution: { txt: 'c₀ = dilution × c_A', val: c0, u: 'mol/L' } };
+    },
+  },
+  {
     id: 'tcr-sapp-quantites', domaine: 'Titrage redox direct', titre: 'Dosage au permanganate : quantités de matière à l’équivalence', noms: ['Quantité de permanganate versée à l’équivalence', 'Quantité d’eau oxygénée dans l’erlenmeyer'],
     gen: () => ({ cB: tire([0.0100, 0.0150, 0.0200, 0.0250]), VA: tire([10, 20, 25]), Ve: tire([9.4, 11.8, 13.6, 15.2, 17.9, 19.3, 21.1]), Vac: tire([5, 10]) }),
     build: (p, q) => {

@@ -206,5 +206,9 @@ export default {
       refs: ['37:prevoir:tpt-ana-saut', '37:prevoir:tpt-ana-reference', '77:plausible:tpt-val-maximum', '34:tpt-sapp-derivee', '36:tpt-potentiel-calcul'] },
     { id: 'tpt-standard', nom: 'Déterminer un potentiel standard et une concentration par potentiométrie', capacite: 'Déterminer un potentiel standard à partir d’une courbe de titrage potentiométrique ; déterminer une concentration à l’aide des données d’un titrage direct.',
       refs: ['37:prevoir:tpt-ana-demi', '37:prevoir:tpt-ana-concentration', '77:plausible:tpt-val-standard', '34:tpt-sapp-concentration', '36:tpt-dosage-calcul'] },
+    { id: 'tix-principe', nom: 'Comprendre le principe d’un titrage indirect', capacite: 'Comprendre le principe d’un titrage indirect : transformer l’espèce à doser en une espèce que l’on sait titrer (excès de réactif, étapes explicitées).',
+      refs: ['37:prevoir:tix-ana-amidon', '37:prevoir:tix-ana-iodure', '77:plausible:tix-val-equivalence', '36:tix-prevoir-calcul'] },
+    { id: 'tix-calcul', nom: 'Déterminer une concentration à l’aide d’un titrage indirect', capacite: 'Déterminer une concentration à l’aide des données d’un titrage indirect (étapes explicitées : coefficients des deux équations, dilution).',
+      refs: ['37:prevoir:tix-ana-titrant', '37:prevoir:tix-ana-debut', '77:plausible:tix-val-rapport', '34:tix-sapp-chaine', '34:tix-sapp-concentration', '36:tix-dosage-calcul'] },
   ],
 };
