@@ -8,7 +8,9 @@ import { SUBSTRATS, REACTIFS, MECA, proportions, profil, energieEn, barriere } f
 
 // Vue 3D de la stéréochimie (substrat secondaire, SN1 ou SN2) : three.js, chargée à la demande
 const Sn3D = lazy(() => import("./Sn3D"));
+const E23D = lazy(() => import("./E23D"));
 import SnEquation from "./SnEquation";
+import { OngletsVue, BarreLecture } from "./ongletsSim";
 
 const SIM_ID = 95;
 declarerDefis(SIM_ID, [['principal', 'Substitution ou élimination']]);
@@ -216,7 +218,7 @@ export function SimulationSubstitutionElimination() {
   const examine = q.reaction ? (exam && mecas.includes(exam) ? exam : q.dominant) : null;
   const regler = (s, r, c) => { setSub(s); setRe(r); if (c !== undefined) setChaud(c); setExam(null); setU(0); setLecture(false); };
   const S = SUBSTRATS[sub], R = REACTIFS[re];
-  const peut3D = examine === 'SN1' || examine === 'SN2';
+  const peut3D = examine === 'SN1' || examine === 'SN2' || examine === 'E2';
   const ongletActif = onglet === '3d' && !peut3D ? 'meca' : onglet;
 
   useEffect(() => {
@@ -269,17 +271,11 @@ export function SimulationSubstitutionElimination() {
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Mécanisme examiné :</span>
           {mecas.map(m => <button key={m} onClick={() => { setExam(m); setU(0); setLecture(false); }} style={stylePetitBouton(m === examine, COUL[m])}>{m}</button>)}
         </div>
-        <div role="tablist" aria-label="Représentation du mécanisme" style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {[['meca', 'Équation et mécanisme'], ...(peut3D ? [['3d', 'Dans l’espace (3D)']] : []), ['energie', 'Profil d’énergie']].map(([id, nom]) => (
-            <button key={id} role="tab" aria-selected={ongletActif === id} onClick={() => setOnglet(id)} style={{ ...stylePetitBouton(ongletActif === id, '#0f172a'), fontSize: 14, padding: '7px 12px' }}>{id === '3d' ? '🧊 ' : ''}{nom}</button>))}
-        </div>
+        <OngletsVue onglets={[['meca', 'Équation et mécanisme'], ...(peut3D ? [['3d', 'Dans l’espace (3D)']] : []), ['energie', 'Profil d’énergie']]} actif={ongletActif} onChange={setOnglet} />
         {ongletActif === 'meca' && <SnEquation meca={examine} sub={sub} re={re} u={u} />}
         {ongletActif === 'energie' && <Profil meca={examine} sub={sub} re={re} u={u} />}
-        {ongletActif === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Sn3D meca={examine} u={u} sub={sub} re={re} /></Suspense>}
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <button onClick={() => { if (u >= 0.999) setU(0); setLecture(l => !l); }} style={styleBouton(true, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
-          <input type="range" min={0} max={1000} step={1} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(+e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ flex: 1 }} />
-        </div>
+        {ongletActif === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}>{examine === 'E2' ? <E23D u={u} base={R.court} /> : <Sn3D meca={examine} u={u} sub={sub} re={re} />}</Suspense>}
+        <BarreLecture lecture={lecture} setLecture={setLecture} u={u} setU={setU} />
         <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }} aria-live="polite">{etatMeca(examine, u, sub)}</div>
       </>) : (
         <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}><strong>Pratiquement aucune réaction.</strong> Le substrat primaire ne forme pas de carbocation stable, et l'eau est un trop faible nucléophile pour une SN2 : il faut une base ou un nucléophile plus fort.</div>
