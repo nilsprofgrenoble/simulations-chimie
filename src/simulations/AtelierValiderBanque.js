@@ -4,6 +4,7 @@ import { DFR_VAL } from './freinageExos.js';
 import { CHH_VAL } from './chuteExos.js';
 import { LPG_VAL } from './loopingExos.js';
 import { FLP_VAL } from './flipperExos.js';
+import { PXT_VAL } from './penteXtExos.js';
 import { MTR_VAL } from './modesTransfertExos.js';
 import { FRM_VAL } from './formesExos.js';
 import { CHA_VAL } from './chaineExos.js';
@@ -4802,6 +4803,7 @@ export const PLAUSIBLES = [
   ...CHH_VAL,
   ...LPG_VAL,
   ...FLP_VAL,
+  ...PXT_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
