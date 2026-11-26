@@ -273,7 +273,7 @@ export function SimulationSubstitutionElimination() {
           {[['meca', 'Équation et mécanisme'], ...(peut3D ? [['3d', 'Dans l’espace (3D)']] : []), ['energie', 'Profil d’énergie']].map(([id, nom]) => (
             <button key={id} role="tab" aria-selected={ongletActif === id} onClick={() => setOnglet(id)} style={{ ...stylePetitBouton(ongletActif === id, '#0f172a'), fontSize: 14, padding: '7px 12px' }}>{id === '3d' ? '🧊 ' : ''}{nom}</button>))}
         </div>
-        {ongletActif === 'meca' && <SnEquation meca={examine} sub={sub} re={re} />}
+        {ongletActif === 'meca' && <SnEquation meca={examine} sub={sub} re={re} u={u} />}
         {ongletActif === 'energie' && <Profil meca={examine} sub={sub} re={re} u={u} />}
         {ongletActif === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Sn3D meca={examine} u={u} sub={sub} re={re} /></Suspense>}
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
