@@ -155,7 +155,7 @@ export const COUVERTURE = [
     { th: 'Transformation de la matière', t: 'Cinétique : loi de vitesse, ordre 0 et 1, temps de demi-réaction', e: 'avenir' },
     { th: 'Transformation de la matière', t: 'Radioactivité : types, loi de décroissance, activité', e: 'avenir' },
     { th: MVT, t: 'Mouvements : coordonnées de l’accélération', e: 'ok', chap: 'tstl-pcm-mouvements' },
-    { th: MVT, t: 'Interactions : force électrostatique, lois de Newton, chute avec frottement visqueux', e: 'avenir' },
+    { th: MVT, t: 'Interactions : force électrostatique, lois de Newton, chute avec frottement visqueux', e: 'partiel', chap: 'tstl-pcm-mouvements', reste: 'lois de Newton, chute libre plane, chute avec frottement visqueux' },
     { th: NRJ, t: 'Chaînes énergétiques, conservation de l’énergie, rendement', e: 'ok', chap: 'tstl-pcm-energie' },
     { th: NRJ, t: 'Énergie mécanique', e: 'ok', chap: 'tstl-pcm-energie', reste: '' },
     { th: NRJ, t: 'Énergie chimique : enthalpie, loi de Hess, pouvoir calorifique', e: 'avenir' },
