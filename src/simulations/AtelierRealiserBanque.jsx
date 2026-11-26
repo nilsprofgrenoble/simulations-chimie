@@ -3059,6 +3059,65 @@ function genModesDepart() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Ec = ½ × m × v² : doubler la vitesse multiplie Ec par 4.', 'P = |W| ÷ Δt : à énergie égale, une durée double divise la puissance par 2.'] };
 }
+// ---------- Travail du poids selon le trajet et frottement sur un aller-retour (TSTL, PCM) ----------
+function genPdtPoids() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8; let m, zA, zB, zC, vA, WAB, WBC, WAC, EcC, vC;
+  do {
+    m = tire([1, 2, 3, 4, 5]); zA = tire([1, 1.5, 2, 2.5]); zB = tire([0, 0.5]); zC = tire([0.8, 1.2, 1.6]); vA = tire([2, 3, 4]);
+    WAB = m * g * (zA - zB); WBC = m * g * (zB - zC); WAC = m * g * (zA - zC); EcC = 0.5 * m * vA * vA + WAC; vC = Math.sqrt(2 * EcC / m);
+  } while (zA <= zB || zC <= zB || zC === zA || EcC <= 0.5 || new Set([WAB, WBC, WAC, vC].map(v => Number(v.toPrecision(3)))).size < 4);
+  const z = v => String(v).replace('.', ',');
+  const intro = `Un chariot de masse ${m}${NB}kg quitte un point A d’altitude ${z(zA)}${NB}m avec la vitesse ${vA}${NB}m/s, descend jusqu’à un point B d’altitude ${z(zB)}${NB}m, puis remonte jusqu’à un point C d’altitude ${z(zC)}${NB}m. Les frottements sont négligeables et g = 9,8${NB}N/kg. On étudie le système « le chariot ».`;
+  const q1 = { id: 'p0', type: 'num', q: <>Calculez le <b>travail du poids</b> sur le trajet A → B (en J, avec son signe, 2 chiffres significatifs).</>, unite: 'J', vrai: WAB, tolRel: 0.05, csMin: 2,
+    aide: 'W(P) = m × g × (z départ − z arrivée) : positif si le chariot descend.',
+    pieges: [[-WAB, 'Le signe est inversé : le chariot descend, le travail du poids est positif.'], [m * (zA - zB), 'Il manque la valeur de g (9,8 N/kg).']],
+    expl: <>W(P) = {m} × 9,8 × ({z(zA)} − {z(zB)}) = <b>+{pvFmt(WAB)}{NB}J</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>Calculez le <b>travail du poids</b> sur le trajet B → C (en J, avec son signe, 2 chiffres significatifs).</>, unite: 'J', vrai: WBC, tolRel: 0.05, csMin: 2,
+    aide: 'Même formule : le chariot monte, le résultat est négatif.',
+    pieges: [[-WBC, 'Le signe est inversé : le chariot monte, le travail du poids est négatif.'], [WAC, 'Ces altitudes sont celles de A et de C ; le chariot part ici de B.']],
+    expl: <>W(P) = {m} × 9,8 × ({z(zB)} − {z(zC)}) = <b>{pvFmt(WBC)}{NB}J</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Calculez le <b>travail du poids</b> sur le trajet complet A → C (en J, avec son signe, 2 chiffres significatifs).</>, unite: 'J', vrai: WAC, tolRel: 0.05, csMin: 2,
+    aide: 'Additionnez les deux travaux avec leur signe, ou utilisez directement les altitudes de A et de C.',
+    pieges: [[Math.abs(WAB) + Math.abs(WBC), 'On additionne ici des valeurs absolues ; il faut tenir compte du signe de chaque travail.'], [WAB, 'Il manque le travail de la deuxième portion, B → C.']],
+    expl: <>W(P) = {pvFmt(WAB)} + ({pvFmt(WBC)}) = <b>{WAC > 0 ? '+' : ''}{pvFmt(WAC)}{NB}J</b>, ou directement m g (z<sub>A</sub> − z<sub>C</sub>).</> };
+  const q4 = { id: 'p3', type: 'num', q: <>Quelle est la <b>vitesse du chariot en C</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vC, tolRel: 0.05, csMin: 2,
+    aide: 'ΔEc = somme des travaux : ½ m v<sub>C</sub>² = ½ m v<sub>A</sub>² + W(P), la réaction ne travaille pas.',
+    pieges: [[vA, 'C’est la vitesse en A : le poids a un travail non nul entre A et C.'], [Math.sqrt(Math.max(vA * vA - 2 * WAC / m, 0)), 'Le signe du travail du poids est mal pris en compte.']],
+    expl: <>½ m v<sub>C</sub>² = ½ × {m} × {vA}² + ({pvFmt(WAC)}) donc v<sub>C</sub> = <b>{pvFmt(vC)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['W(P) = m × g × (z départ − z arrivée) : moteur en descente, résistant en montée ; il ne dépend que des altitudes.', 'ΔEc = somme des travaux : la réaction du rail, perpendiculaire, ne travaille pas.'] };
+}
+function genPdtFrott() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, v0, f, L, Ec0, Wf, Ec1, v1;
+  do {
+    m = tire([0.5, 1, 2]); v0 = tire([3, 4, 5, 6]); f = tire([0.5, 1, 2]); L = tire([1, 2, 3]);
+    Ec0 = 0.5 * m * v0 * v0; Wf = -2 * f * L; Ec1 = Ec0 + Wf; v1 = Math.sqrt(2 * Ec1 / m);
+  } while (v0 * v0 - 4 * f * L / m < 4 || new Set([Ec0, Wf, Ec1, v1].map(v => Number(v.toPrecision(3)))).size < 4);
+  const z = v => String(v).replace('.', ',');
+  const intro = `Un palet de masse ${z(m)}${NB}kg est lancé à la vitesse ${v0}${NB}m/s sur un rail horizontal. Il glisse jusqu’à un butoir situé à ${L}${NB}m, rebondit sans perdre d’énergie et revient à son point de lancement. Un frottement de valeur constante ${z(f)}${NB}N s’oppose à son mouvement. Le rail est horizontal : le poids ne travaille pas.`;
+  const q1 = { id: 'f0', type: 'num', q: <>Calculez l’<b>énergie cinétique au lancement</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec0, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v².',
+    pieges: [[m * v0 * v0, 'Il manque le facteur ½ : Ec = ½ × m × v².']],
+    expl: <>Ec = ½ × {z(m)} × {v0}² = <b>{pvFmt(Ec0)}{NB}J</b>.</> };
+  const q2 = { id: 'f1', type: 'num', q: <>Calculez le <b>travail de la force de frottement</b> sur l’aller-retour (en J, avec son signe, 2 chiffres significatifs).</>, unite: 'J', vrai: Wf, tolRel: 0.05, csMin: 2,
+    aide: 'W(f) = − f × distance parcourue ; l’aller-retour fait 2 × L.',
+    pieges: [[-Wf, 'Le frottement est opposé au mouvement : son travail est négatif.'], [-f * L, 'La distance parcourue est celle de l’aller et du retour : 2 × L.']],
+    expl: <>W(f) = − {z(f)} × (2 × {L}) = <b>{pvFmt(Wf)}{NB}J</b>.</> };
+  const q3 = { id: 'f2', type: 'num', q: <>Calculez l’<b>énergie cinétique du palet à son retour</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec1, tolRel: 0.05, csMin: 2,
+    aide: 'ΔEc = somme des travaux : le poids ne travaille pas, seul le frottement compte.',
+    pieges: [[Ec0, 'Le frottement a retiré de l’énergie : l’énergie cinétique a diminué.'], [Ec0 - f * L, 'Le palet fait un aller et un retour : le frottement agit sur 2 × L.']],
+    expl: <>Ec = {pvFmt(Ec0)} + ({pvFmt(Wf)}) = <b>{pvFmt(Ec1)}{NB}J</b>.</> };
+  const q4 = { id: 'f3', type: 'num', q: <>Quelle est la <b>vitesse du palet à son retour</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v1, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v², donc v = √(2 × Ec ÷ m).',
+    pieges: [[v0, 'C’est la vitesse au lancement : le frottement l’a fait diminuer.'], [Ec1 / m, 'Il faut doubler l’énergie et prendre la racine : v = √(2 Ec ÷ m).']],
+    expl: <>v = √(2 × {pvFmt(Ec1)} ÷ {z(m)}) = <b>{pvFmt(v1)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Le travail du frottement est toujours négatif et proportionnel à la distance parcourue, aller et retour compris.', 'Sur un aller-retour horizontal, seul le frottement fait varier l’énergie cinétique.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5395,6 +5454,8 @@ export const FAMILLES = [
   { id: 'frm-chute', groupe: 'Formules', titre: 'Bille en chute libre : énergie cinétique, vitesse et part d’énergie convertie (terminale STL)', gen: genFormesChute, domaine: 'Formes d’énergie stockée : cinétique, potentielle, interne' },
   { id: 'mtr-freine', groupe: 'Formules', titre: 'Chariot freiné : énergies cinétiques, travail algébrique et puissance du transfert (terminale STL)', gen: genModesFreine, domaine: 'Travail ou transfert thermique : classer les transferts d’énergie' },
   { id: 'mtr-depart', groupe: 'Formules', titre: 'Chariot poussé depuis l’arrêt : travail reçu, puissance et effet d’une vitesse ou d’une durée doublée (terminale STL)', gen: genModesDepart, domaine: 'Travail ou transfert thermique : classer les transferts d’énergie' },
+  { id: 'pdt-poids', groupe: 'Formules', titre: 'Chariot sur un rail : travaux du poids sur trois trajets et vitesse en C (terminale STL)', gen: genPdtPoids, domaine: 'Travail du poids : moteur, résistant ou nul selon le trajet' },
+  { id: 'pdt-frott', groupe: 'Formules', titre: 'Palet avec frottement : travail du frottement, énergie et vitesse au retour (terminale STL)', gen: genPdtFrott, domaine: 'Travail du poids : moteur, résistant ou nul selon le trajet' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

@@ -15,7 +15,7 @@
 //  chap = chapitre du menu qui la traite (si ok ou partiel), reste = ce qui manque (si partiel).
 //  Le BTS n'a pas de barre : son référentiel n'est pas décliné ici au même niveau de détail.
 // ═══════════════════════════════════════════════════════════════════════════
-export const DATE_COUVERTURE = '25 novembre 2026';
+export const DATE_COUVERTURE = '26 novembre 2026';
 
 export const ETATS = { ok: 1, partiel: 0.5, avenir: 0 };
 
@@ -157,7 +157,7 @@ export const COUVERTURE = [
     { th: MVT, t: 'Mouvements : coordonnées de l’accélération', e: 'avenir' },
     { th: MVT, t: 'Interactions : force électrostatique, lois de Newton, chute avec frottement visqueux', e: 'avenir' },
     { th: NRJ, t: 'Chaînes énergétiques, conservation de l’énergie, rendement', e: 'ok', chap: 'tstl-pcm-energie' },
-    { th: NRJ, t: 'Énergie mécanique', e: 'avenir' },
+    { th: NRJ, t: 'Énergie mécanique', e: 'partiel', chap: 'tstl-pcm-energie', reste: 'courbes d’énergie, énergie potentielle, théorème de l’énergie mécanique, applications (freinage, chute, looping, jeu de force, flipper)' },
     { th: NRJ, t: 'Énergie chimique : enthalpie, loi de Hess, pouvoir calorifique', e: 'avenir' },
     { th: NRJ, t: 'Énergie électrique : puissance, effet Joule, piles et accumulateurs', e: 'ok', chap: 'tstl-pcm-energie' },
     { th: NRJ, t: 'Énergie et ondes : flux, éclairement, panneau photovoltaïque, laser', e: 'ok', chap: 'tstl-pcm-energie' },
