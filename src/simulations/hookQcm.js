@@ -1,0 +1,28 @@
+// QCM du parcours guidé de la simulation 304. Ordre FIXE : place de la bonne réponse choisie à la main, jamais la plus longue.
+const mk = (pos, bonne, ...autres) => ({ ordreFixe: true, bonne: pos, options: [...autres.slice(0, pos), bonne, ...autres.slice(pos)] });
+export const QCM = {
+  ressort: mk(1, 'augmente : une liaison plus rigide vibre plus vite',
+    'diminue : une liaison plus rigide vibre plus lentement',
+    'ne change pas : seule la masse des atomes compte',
+    'devient nulle car la liaison ne bouge plus'),
+  masse: mk(2, 'les atomes légers vibrent plus vite : μ est petite',
+    'les atomes lourds vibrent plus vite : μ est grande',
+    'l’hydrogène a la plus grande raideur de toutes les liaisons',
+    'les liaisons avec l’hydrogène sont toujours doubles'),
+  multiplicite: mk(0, 'C≡C, la liaison la plus rigide',
+    'C–C, la liaison la plus courte',
+    'C=C, car sa masse réduite est la plus grande',
+    'les trois à la même valeur, les atomes étant les mêmes'),
+  conjugaison: mk(1, 'un peu plus bas, de 10 à 30 cm⁻¹ environ',
+    'un peu plus haut, de 10 à 30 cm⁻¹ environ',
+    'exactement au même endroit que pour une cétone non conjuguée',
+    'à plus de 500 cm⁻¹ de la valeur non conjuguée'),
+  hydrogene: mk(2, 'large et décalée vers 3200 à 3400 cm⁻¹',
+    'fine et décalée vers 3800 cm⁻¹',
+    'fine et située vers 3620 cm⁻¹, comme une liaison libre',
+    'absente du spectre, car la liaison est bloquée'),
+  zones: mk(1, 'au-dessus de 1500 cm⁻¹, pour les groupes caractéristiques',
+    'sous 1500 cm⁻¹, dans la zone d’empreinte, pour tout identifier',
+    'sous 1500 cm⁻¹ seulement, car les bandes y sont plus fines',
+    'dans toute la zone avec la même fiabilité'),
+};

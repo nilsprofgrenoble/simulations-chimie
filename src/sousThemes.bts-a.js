@@ -68,6 +68,8 @@ export default {
       refs: ['34:lmt-sapp-bande', ...['lmt-ana-energie', 'lmt-ana-vibration', 'lmt-ana-hierarchie', 'lmt-ana-spectre-ir', 'lmt-ana-extinction'].map(A), ...['lmt-val-energie-ir', 'lmt-val-absorbance', 'lmt-val-rotation'].map(Vp), '36:lmt-calcul'] },
     { id: 'fluo-perrin', nom: 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski', capacite: 'Différencier fluorescence et phosphorescence ; décrire à l’aide du diagramme de Perrin-Jablonski l’absorption, la relaxation vibrationnelle, la conversion interne, le croisement intersystème, la fluorescence et la phosphorescence.',
       refs: ['34:fluo-sapp-lueur', ...['fluo-ana-uv-visible', 'fluo-ana-etoiles', 'fluo-ana-diagramme', 'fluo-ana-cis', 'fluo-ana-spectre'].map(A), ...['fluo-val-persistance', 'fluo-val-energie-emise', 'fluo-val-rv-lumiere'].map(Vp), '36:fluo-calcul'] },
+    { id: 'ir-hooke', nom: 'Infrarouge : de la liaison-ressort au spectre', capacite: 'Relier le nombre d’onde d’une bande d’absorption IR à la nature de la liaison (rigidité, masses des atomes, loi de Hooke), à la conjugaison et à la liaison hydrogène ; repérer les groupes caractéristiques et la zone d’empreinte.',
+      refs: ['34:hook-sapp-bande', ...['hook-ana-rigidite', 'hook-ana-masse', 'hook-ana-conjugaison', 'hook-ana-oh', 'hook-ana-zones'].map(A), ...['hook-val-masse', 'hook-val-oh-lie', 'hook-val-conjugaison'].map(Vp), '36:hook-calcul'] },
   ],
   'bts-rmn': [
     { id: 'appareil', nom: 'L’appareil, le solvant et la référence', capacite: 'Adopter une attitude appropriée à proximité de champs magnétiques intenses ; connaître le rôle du solvant deutéré et du TMS.',

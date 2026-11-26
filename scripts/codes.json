@@ -2986,5 +2986,15 @@
  "77:plausible:tpt-val-standard": "VAL780",
  "77:plausible:tpt-val-maximum": "VAL781",
  "36:tpt-dosage-calcul": "REA208",
- "36:tpt-potentiel-calcul": "REA209"
+ "36:tpt-potentiel-calcul": "REA209",
+ "34:hook-sapp-bande": "SAPP660",
+ "37:prevoir:hook-ana-rigidite": "ANA1340",
+ "37:prevoir:hook-ana-masse": "ANA1341",
+ "37:prevoir:hook-ana-conjugaison": "ANA1342",
+ "37:prevoir:hook-ana-oh": "ANA1343",
+ "37:prevoir:hook-ana-zones": "ANA1344",
+ "77:plausible:hook-val-masse": "VAL782",
+ "77:plausible:hook-val-oh-lie": "VAL783",
+ "77:plausible:hook-val-conjugaison": "VAL784",
+ "36:hook-calcul": "REA210"
 }
