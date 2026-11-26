@@ -52,3 +52,37 @@ export function lotsTolerance(cible = CIBLE, d = 1.5) {
   const c = C.lch(cible);
   return { enC: C.labDeLch({ L: cible.L, C: c.C + d, h: c.h }), enH: C.labDeLch({ L: cible.L, C: c.C, h: c.h + d * 180 / Math.PI / c.C }) };
 }
+
+// ---------- vue 3D et ellipses multiples (exploration) ----------
+/** Maillage (a*, b*, L*) de la sphère de rayon r autour de centre {L, a, b} : domaine ΔE*ab ≤ r. */
+export function maillageSphere(centre, r, nu = 40, nv = 20) {
+  const X = [], Y = [], Z = [];
+  for (let i = 0; i < nv; i++) {
+    const ph = Math.PI * i / (nv - 1), xr = [], yr = [], zr = [];
+    for (let j = 0; j < nu; j++) { const th = 2 * Math.PI * j / (nu - 1); xr.push(centre.a + r * Math.sin(ph) * Math.cos(th)); yr.push(centre.b + r * Math.sin(ph) * Math.sin(th)); zr.push(centre.L + r * Math.cos(ph)); }
+    X.push(xr); Y.push(yr); Z.push(zr);
+  }
+  return { x: X, y: Y, z: Z };
+}
+/** Maillage (a*, b*, L*) de l'ellipsoïde de tolérance CMC(2:1) de valeur tol autour de la cible, agrandi du facteur k (k = 1 : taille réelle).
+ *  Axes : rC dans la direction radiale (saturation), rH dans la direction tangentielle (teinte), rL suivant L*. */
+export function maillageEllipsoide(centre, tol, k = 1, nu = 40, nv = 20) {
+  const e = C.ellipseCMC(centre, tol), h = e.angle * Math.PI / 180, X = [], Y = [], Z = [];
+  for (let i = 0; i < nv; i++) {
+    const ph = Math.PI * i / (nv - 1), xr = [], yr = [], zr = [];
+    for (let j = 0; j < nu; j++) {
+      const th = 2 * Math.PI * j / (nu - 1), uC = k * e.rC * Math.sin(ph) * Math.cos(th), uH = k * e.rH * Math.sin(ph) * Math.sin(th);
+      xr.push(centre.a + uC * Math.cos(h) - uH * Math.sin(h)); yr.push(centre.b + uC * Math.sin(h) + uH * Math.cos(h)); zr.push(centre.L + k * e.rL * Math.cos(ph));
+    }
+    X.push(xr); Y.push(yr); Z.push(zr);
+  }
+  return { x: X, y: Y, z: Z };
+}
+/** Positions (a*, b*) où l'on dessine des ellipses CMC pour montrer qu'elles changent de taille et d'orientation : le gris, puis deux anneaux de saturation C* = 25 et 50. */
+export const POSITIONS_ELLIPSES = (() => {
+  const p = [{ a: 0, b: 0 }];
+  for (const [c, hs] of [[25, [0, 90, 180, 270]], [50, [45, 135, 225, 315]]]) for (const h of hs) p.push({ a: Math.round(c * Math.cos(h * Math.PI / 180) * 10) / 10, b: Math.round(c * Math.sin(h * Math.PI / 180) * 10) / 10 });
+  return p;
+})();
+/** Facteur d'agrandissement des ellipses CMC dessinées à la taille de tout le plan (sinon elles seraient trop petites pour être vues). */
+export const AGRANDI = 4;

@@ -20,4 +20,4 @@ export const chargerJsPDF = () => (window.jspdf ? Promise.resolve() : chargerScr
 
 // Simulations qui dessinent des graphiques Plotly (liste établie en suivant les importations de chaque simulation).
 // Si l’on crée une nouvelle simulation qui utilise Plotly, ajouter son identifiant ici.
-export const SIMS_PLOTLY = new Set([3, 4, 7, 8, 9, 13, 15, 26, 29]);
+export const SIMS_PLOTLY = new Set([3, 4, 7, 8, 9, 13, 15, 26, 29, 247]);
