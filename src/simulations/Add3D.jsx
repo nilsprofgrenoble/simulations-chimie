@@ -11,7 +11,7 @@ import { KIT, stylePetitBouton } from "../commun";
 const DIST0 = 16, DIST_MIN = 7, DIST_MAX = 34;
 const COUL = { Os: 0x7c3aed };
 
-export default function Add3D({ alc, re, u }) {
+export default function Add3D({ alc, re, u, devoiler = true }) {
   const hote = useRef(null);
   const s = useRef({});
   const [erreur, setErreur] = useState(null);
@@ -116,7 +116,7 @@ export default function Add3D({ alc, re, u }) {
       <div style={{ textAlign: 'center', fontSize: 13, color: KIT.txt2, margin: '6px 0' }}>Faites glisser pour tourner (ou pincez pour zoomer) ; le plan gris est celui de l’alcène. Avancez la réaction avec le curseur. L’autre face donnerait l’image dans un miroir.</div>
       {fini && <div role="status" aria-live="polite" style={{ textAlign: 'center', fontSize: 14.5, fontWeight: 800, color: '#0f172a' }}>
         {R.mode === 'syn' ? 'Les deux groupes ajoutés sont du même côté du plan : addition syn' : 'Un groupe au-dessus du plan, l’autre en dessous : addition anti'}
-        {' — '}{b.texte}
+        {devoiler && <>{' — '}{b.texte}</>}
       </div>}
     </div>
   );

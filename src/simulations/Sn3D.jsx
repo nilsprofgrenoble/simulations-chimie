@@ -7,12 +7,12 @@ import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer, ajouterBase
 import { KIT, stylePetitBouton } from "../commun";
 
 
-export default function Sn3D({ meca, u, sub = 'sec', re = 'HO' }) {
+export default function Sn3D({ meca, u, sub = 'sec', re = 'HO', devoiler = true }) {
   const hote = useRef(null);
   const s = useRef({});
   const [erreur, setErreur] = useState(null);
   const [face, setFace] = useState('droite');
-  const e = etatSN(meca, u, face), conf = sub === 'sec' ? configuration(e) : null;
+  const e = etatSN(meca, u, face), conf = sub === 'sec' && devoiler ? configuration(e) : null;
 
   useEffect(() => {
     const el = hote.current;
@@ -93,7 +93,7 @@ export default function Sn3D({ meca, u, sub = 'sec', re = 'HO' }) {
   const nomSub = { sec: '2-bromobutane', prim: '1-bromobutane', tert: '2-bromo-2-méthylpropane' }[sub];
   const texte = conf ? (e.lgLie ? `(${conf})-2-bromobutane` : `(${conf})-butan-2-ol`)
     : e.plan ? (meca === 'SN2' ? 'État de transition : les trois groupes sont dans un plan' : 'Carbocation : les trois groupes sont dans un plan')
-      : sub !== 'sec' && e.lgLie ? nomSub : sub !== 'sec' && e.nuLie ? 'Produit de substitution formé' : 'Le carbone est en cours de transformation…';
+      : (sub !== 'sec' || !devoiler) && e.lgLie ? nomSub : (sub !== 'sec' || !devoiler) && e.nuLie ? 'Produit de substitution formé' : 'Le carbone est en cours de transformation…';
   return (
     <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: 8 }}>
       <div ref={hote} role="img" aria-label={`Vue 3D de la ${meca} sur le ${nomSub}, à tourner à la souris ou au doigt`}
@@ -105,8 +105,8 @@ export default function Sn3D({ meca, u, sub = 'sec', re = 'HO' }) {
         <button onClick={() => setFace('droite')} aria-pressed={face === 'droite'} style={stylePetitBouton(face === 'droite', '#0891b2')}>de l’autre côté</button>
       </div>}
       <div role="status" aria-live="polite" style={{ textAlign: 'center', fontSize: 14.5, fontWeight: 800, color: conf ? '#0f172a' : '#b45309' }}>{texte}</div>
-      {meca === 'SN2' && u >= 0.99 && <div style={{ textAlign: 'center', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}>Le nucléophile est arrivé par l’arrière : les trois autres groupes se sont retournés, comme un parapluie par le vent.{sub === 'sec' ? <> La configuration est <strong>inversée</strong>.</> : ' Ce carbone n’est pas asymétrique : l’inversion n’a pas de conséquence sur le nom du produit.'}</div>}
-      {meca === 'SN1' && u >= 0.99 && <div style={{ textAlign: 'center', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}>{sub === 'sec' ? <>Les deux faces du carbocation sont attaquées avec la même probabilité : on obtient les <strong>deux énantiomères</strong> (mélange racémique). Changez de face pour voir l’autre.</> : 'Le carbocation est plan : le nucléophile peut l’attaquer des deux côtés. Ce carbone n’est pas asymétrique : les deux attaques donnent le même produit.'}</div>}
+      {devoiler && meca === 'SN2' && u >= 0.99 && <div style={{ textAlign: 'center', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}>Le nucléophile est arrivé par l’arrière : les trois autres groupes se sont retournés, comme un parapluie par le vent.{sub === 'sec' ? <> La configuration est <strong>inversée</strong>.</> : ' Ce carbone n’est pas asymétrique : l’inversion n’a pas de conséquence sur le nom du produit.'}</div>}
+      {devoiler && meca === 'SN1' && u >= 0.99 && <div style={{ textAlign: 'center', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}>{sub === 'sec' ? <>Les deux faces du carbocation sont attaquées avec la même probabilité : on obtient les <strong>deux énantiomères</strong> (mélange racémique). Changez de face pour voir l’autre.</> : 'Le carbocation est plan : le nucléophile peut l’attaquer des deux côtés. Ce carbone n’est pas asymétrique : les deux attaques donnent le même produit.'}</div>}
     </div>
   );
 }
