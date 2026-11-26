@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./gravitationModele";
 import { QCM } from "./gravitationQcm";
+import { GravExplore } from "./GravExplore";
 import { SceneDeuxCorps, GrapheG, SvgForcesCarte, SvgPoidsCarte, SvgAltitudeCarte } from "./GravitationSchemas";
 
 const SIM_ID = 266, CLE_GUIDE = 'gravitation-guide-v1';
@@ -115,29 +116,11 @@ export function SimulationGravitation() {
   };
 
   // ════════════════ EXPLORATION ════════════════
-  const cE = M.CORPS[ex.c], g0 = M.gAlt(cE.M, cE.R), rrE = ex.rr, gE = g0 / (rrE * rrE), hE = (rrE - 1) * cE.R / 1e3, FE = M.force(cE.M, ex.m, rrE * cE.R);
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      <LigneMesure nom="Altitude h" valeur={`${nbf(hE, 0)}${NB}km`}/>
-      <LigneMesure nom="Intensité de pesanteur g" valeur={`${nbf(gE, 2)}${NB}N/kg`} couleur="#c2410c"/>
-      <LigneMesure nom="g au sol, sur cet astre" valeur={`${nbf(g0, 2)}${NB}N/kg`}/>
-      <LigneMesure nom={`Poids d’un objet de ${ex.m} kg`} valeur={`${nbf(M.poids(ex.m, gE), 1)}${NB}N`} couleur="#0b4f94"/>
-      <LigneMesure nom="Force gravitationnelle de l’astre" valeur={`${nbf(FE, 1)}${NB}N`}/>
-      <div style={{ marginTop: 6, fontSize: 14, color: KIT.txt2, lineHeight: 1.5 }}>La force gravitationnelle de l’astre sur l’objet est égale à son poids : F = G M m ÷ (R + h)² = m g.</div>
-    </div>);
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="grv-c" label="Astre" valeur={ex.c} onChange={v => setEx(s => ({ ...s, c: v }))} options={M.ORDRE.map(k => [k, M.CORPS[k].nomS])}/>
-      <Sel id="grv-m" label="Masse de l’objet" valeur={ex.m} onChange={v => setEx(s => ({ ...s, m: Number(v) }))} options={[[10, '10 kg'], [50, '50 kg'], [70, '70 kg'], [200, '200 kg']]}/>
-      <Curseur nom="Distance au centre de l’astre (en rayons R)" valeur={rrE} onChange={v => setEx(s => ({ ...s, rr: v }))} min={1} max={3} pas={0.1} unite="R" decimales={1} couleur="#0e7490"/>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>1,0 R : à la surface. Comparez les astres, puis éloignez l’objet : g diminue comme 1/distance², sans jamais s’annuler.</div>
-    </div>);
+  const animee = enExplore && <GravExplore ex={ex} setEx={setEx}/>;
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? `g en fonction de la distance au centre : ${cE.nomS}` : 'Les deux corps et leurs forces'}</div>
-      {enExplore ? <GrapheG g0={g0} rr={rrE}/> : idEtape === 'fin' ? <GrapheG g0={PG.gT} rr={1.0628}/> : <SceneDeuxCorps {...SC[idEtape]}/>}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Les deux corps et leurs forces</div>
+      {idEtape === 'fin' ? <GrapheG g0={PG.gT} rr={1.0628}/> : <SceneDeuxCorps {...SC[idEtape]}/>}
     </div>);
 
   // ════════════════ DÉFIS ════════════════
@@ -261,11 +244,7 @@ export function SimulationGravitation() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="grv-ex">
-          {scene}
-          <div className="grv-reg">{reglages}</div>
-          {mesures}
-        </div>
+        <div className="grv-ex">{animee}</div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
