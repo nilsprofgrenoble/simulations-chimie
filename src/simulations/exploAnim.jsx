@@ -11,7 +11,7 @@ import { NB } from "./Distillation";
 // ====================================================
 export const COL = { Ec: '#0369a1', Epp: '#c2410c', Em: '#6d28d9', v: '#15803d', ink: '#0f172a', gris: '#475569', rouge: '#dc2626' };
 export const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
-export const J = v => `${nbf(v, Math.abs(v) < 0.1 ? 3 : Math.abs(v) < 100 ? 2 : 0)}${NB}J`;
+export const J = v => Math.abs(v) >= 1e4 ? `${nbf(v / 1000, Math.abs(v) < 1e5 ? 1 : 0)}${NB}kJ` : `${nbf(v, Math.abs(v) < 0.1 ? 3 : Math.abs(v) < 100 ? 2 : 0)}${NB}J`;
 export const FPS = 120;
 
 export const Seg = ({ label, valeur, options, onChange }) => (
@@ -102,7 +102,7 @@ export function BarresEnergie({ q, E0, Emax, x = 14, y = 6, titre = 'Énergies (
           <rect x={xb} y={40} width="34" height={hb} rx="5" fill="#f1f5f9"/>
           <rect x={xb} y={40 + hb - h} width="34" height={h} rx="5" fill={c}/>
           {n === 'Em' && <rect x={xb - 2} y={40 + hb - hh(E0)} width="38" height={hh(E0)} rx="6" fill="none" stroke={c} strokeWidth="1.5" strokeDasharray="4 3"/>}
-          <text x={xb + 17} y={40 + hb - h - 6} textAnchor="middle" fontSize="14" fontWeight="700" fill={c} stroke="#fff" strokeWidth="3" paintOrder="stroke">{nbf(v, Math.abs(v) < 0.1 ? 3 : Math.abs(v) < 100 ? 2 : 0)}</text>
+          <text x={xb + 17} y={40 + hb - h - 6} textAnchor="middle" fontSize="14" fontWeight="700" fill={c} stroke="#fff" strokeWidth="3" paintOrder="stroke">{Math.abs(v) >= 1e4 ? `${nbf(v / 1000, v < 1e5 ? 1 : 0)}k` : nbf(v, Math.abs(v) < 0.1 ? 3 : Math.abs(v) < 100 ? 2 : 0)}</text>
           <text x={xb + 17} y="172" textAnchor="middle" fontSize="17" fontWeight="700" fill={c}>{n}</text>
         </g>);
       })}
@@ -139,7 +139,7 @@ export function GrapheTemps({ frames, tFin, t, Emax, etroit, cles = [['Ec', COL.
         })}
         <line x1={xc} x2={xc} y1="30" y2="168" stroke="#94a3b8" strokeWidth="1.5"/>
         <text x="370" y="204" textAnchor="middle" fontSize={15 * F} fill="#475569">temps (s) · durée : {nbf(tFin, 1)} s</text>
-        <text x="50" y="40" textAnchor="end" fontSize={15 * F} fill="#475569">{Emax >= 1000 ? `${nbf(Emax / 1000, 1)} kJ` : `${nbf(Emax, Emax < 10 ? 1 : 0)} J`}</text><text x="50" y="172" textAnchor="end" fontSize={15 * F} fill="#475569">0</text>
+        <text x="50" y="40" textAnchor="end" fontSize={15 * F} fill="#475569">{Emax >= 1000 ? `${nbf(Emax / 1000, Emax >= 1e5 ? 0 : 1)} kJ` : `${nbf(Emax, Emax < 10 ? 1 : 0)} J`}</text><text x="50" y="172" textAnchor="end" fontSize={15 * F} fill="#475569">0</text>
         {cles.map(([n, c], i) => <g key={n}><line x1={470 + i * 75} x2={492 + i * 75} y1="14" y2="14" stroke={c} strokeWidth="4"/><text x={497 + i * 75} y="19" fontSize={15 * F} fontWeight="700" fill={c}>{n}</text></g>)}
       </svg>
     </div>);
