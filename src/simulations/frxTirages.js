@@ -19,12 +19,13 @@ export function atome(el, E, w, rnd) {
   const r = ratioKb(el), kb = rnd() < r / (1 + r);
   return { cible: true, ion: true, voie: kb ? 'kb' : 'ka', Edet: (kb ? el.Kb : el.Ka) + SIGMA * normale(rnd) };
 }
-export const etatVide = () => ({ nEnv: 0, nCible: 0, nIon: 0, nKa: 0, nKb: 0, nAuger: 0, h: new Array(NBINS).fill(0), dernier: null, lot: 1 });
+export const etatVide = () => ({ nEnv: 0, nCible: 0, nAutre: 0, nPasIon: 0, nIon: 0, nKa: 0, nKb: 0, nAuger: 0, h: new Array(NBINS).fill(0), dernier: null, lot: 1 });
 export function lancer(etat, el, params, k, rnd) {
   const e = { ...etat, h: etat.h.slice(), lot: k };
   for (let j = 0; j < k && e.nEnv < MAX_ATOMES; j++) {
     const a = atome(el, params.E, params.w, rnd); e.nEnv++;
-    if (a.cible) e.nCible++;
+    if (a.cible) e.nCible++; else e.nAutre++;
+    if (a.cible && !a.ion) e.nPasIon++;
     if (a.ion) e.nIon++;
     if (a.voie === 'auger') e.nAuger++;
     if (a.voie === 'ka' || a.voie === 'kb') { if (a.voie === 'ka') e.nKa++; else e.nKb++; const i = indice(a.Edet); if (i >= 0) e.h[i]++; }
@@ -42,6 +43,12 @@ export function attendu(el, params, etat) {
   for (let i = 0; i < NBINS; i++) { const E = centre(i); out[i] = nRad * ((1 - pKb) * dens(E, el.Ka) + pKb * dens(E, el.Kb)) * PAS; }
   return out;
 }
+// Probabilités des cinq scénarios possibles pour un photon X : [autre atome, pas d'électron K éjecté, Kα, Kβ, Auger]
+export function probas(el, params) {
+  const t = params.w / 100, pi = params.E >= el.EK ? P_ION : 0, r = ratioKb(el), rad = t * pi * el.om;
+  return [1 - t, t * (1 - pi), rad / (1 + r), rad * r / (1 + r), t * pi * (1 - el.om)];
+}
+export const scenario = d => (!d ? -1 : !d.cible ? 0 : !d.ion ? 1 : d.voie === 'ka' ? 2 : d.voie === 'kb' ? 3 : 4);
 export const partRadiative = el => el.om;
 const NB = ' ';
 export function texteAtome(d, el, E) {
