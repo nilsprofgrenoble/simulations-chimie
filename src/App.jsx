@@ -655,7 +655,7 @@ const SIMULATIONS = [
   { id:243, label:"Microémulsions : types de Winsor et effet du sel", niveau:"BTS", icon:"🧪", color:"#0e7490", component: SimulationWinsor },
   { id:246, label:"Diagramme ternaire des microémulsions", niveau:"BTS", icon:"🔺", color:"#7c3aed", component: SimulationTernaire },
   { id:247, label:"Couleur : L*, a*, b* et écart de couleur", niveau:"BTS", icon:"🎨", color:"#0891b2", component: SimulationCielab },
-  { id:248, label:"Diagramme de chromaticité : lire et mélanger les couleurs", niveau:"BTS", icon:"🌈", color:"#7c3aed", component: SimulationXyy },
+  { id:248, label:"Diagramme de chromaticité : lire les couleurs", niveau:"BTS", icon:"🌈", color:"#7c3aed", component: SimulationXyy },
   { id:249, label:"Éclairage et métamérisme", niveau:"BTS", icon:"💡", color:"#d97706", component: SimulationMetamerisme },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
