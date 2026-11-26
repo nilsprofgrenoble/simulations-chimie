@@ -1,5 +1,5 @@
 // Schémas de la simulation « Couleur : L*, a*, b* et écart de couleur ». SVG, textes de 10,5 à 16, largeur 100 % plafonnée.
-import { cssDeLab, srgb, xyzDeLab, lch, ellipseCMC } from "./couleurModele";
+import { cssDeLab, srgb, srgbAffichable, xyzDeLab, lch, ellipseCMC } from "./couleurModele";
 
 const K = { txt: '#0f172a', gris: '#64748b', cible: '#0f172a', lot: '#c2410c', vert: '#15803d', rouge: '#b91c1c', jaune: '#a16207', bleu: '#1d4ed8', orange: '#b45309', violet: '#7c3aed' };
 const T = (x, y, s, o = {}) => <text key={`${x}-${y}-${s}`} x={x} y={y} fontSize={o.size ?? 12} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? K.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit" {...(o.halo ? { stroke: '#ffffff', strokeWidth: 3, paintOrder: 'stroke', strokeLinejoin: 'round' } : {})}>{s}</text>;
@@ -21,8 +21,8 @@ export function SvgLuminosite({ lab }) {
 }
 
 // ---------- Deux pastilles côte à côte (cible, lot) ----------
-export function SvgPastilles({ cible, lot, nomLot = 'Lot' }) {
-  const et = l => `L* ${n0(l.L)} · a* ${n0(l.a)} · b* ${n0(l.b)}`;
+export function SvgPastilles({ cible, lot, nomLot = 'Lot', cyl = false }) {
+  const et = l => (cyl ? `L* ${n0(l.L)} · C* ${n0(lch(l).C)} · h ${n0(lch(l).h)}°` : `L* ${n0(l.L)} · a* ${n0(l.a)} · b* ${n0(l.b)}`);
   return base(320, 120, 'Couleur de la cible et du lot, côte à côte', <>
     <rect x={20} y={8} width={140} height={64} fill={cssDeLab(cible)}/><rect x={160} y={8} width={140} height={64} fill={cssDeLab(lot)}/>
     <rect x={20} y={8} width={280} height={64} fill="none" stroke="#334155" strokeWidth="1.5"/>
@@ -33,7 +33,7 @@ export function SvgPastilles({ cible, lot, nomLot = 'Lot' }) {
 
 // ---------- Plan a*b* ----------
 // pts : [{ lab, nom, col, plein, cyl }] ; zoom : { centre:{a,b}, demi } pour agrandir autour de la cible ; tol : { cible, tolE, tolCMC } pour dessiner les zones de tolérance
-// Fond coloré du plan a*b* : image (canvas) des couleurs à L* fixe ; les couleurs trop vives pour l'écran sont approchées (écrêtées canal par canal).
+// Fond coloré du plan a*b* : image (canvas) des couleurs à L* fixe ; les couleurs trop vives pour l'écran sont approchées (saturation réduite, L* et teinte conservés).
 const cacheFond = new Map();
 function fondImage(L, c0, demi, n) {
   if (typeof document === 'undefined') return null;
@@ -43,7 +43,7 @@ function fondImage(L, c0, demi, n) {
   const g = cv.getContext('2d'); if (!g) return null;
   const im = g.createImageData(n, n);
   for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
-    const a = c0.a - demi + (i + 0.5) * 2 * demi / n, b = c0.b + demi - (j + 0.5) * 2 * demi / n, c = srgb(xyzDeLab({ L, a, b })), k = 4 * (j * n + i);
+    const a = c0.a - demi + (i + 0.5) * 2 * demi / n, b = c0.b + demi - (j + 0.5) * 2 * demi / n, c = srgbAffichable({ L, a, b }), k = 4 * (j * n + i);
     im.data[k] = c.r; im.data[k + 1] = c.g; im.data[k + 2] = c.b; im.data[k + 3] = 255;
   }
   g.putImageData(im, 0, 0);
@@ -57,7 +57,7 @@ const halo = { halo: true };
 // ---------- Plan a*b* ----------
 // Plan entier (±60) : disque de couleurs à L* fixe, cercles de saturation C* = 20, 40, 60. Plan agrandi (zoom) : même fond coloré autour de la cible.
 // repere : flèches « teinte h » et « saturation C* » ; autres : ellipses CMC en plusieurs endroits (agrandies ×AGRANDI) ; tol : cercle ΔE*ab et ellipse CMC autour de la cible.
-export function SvgPlanAB({ pts = [], lfond = 60, zoom = null, tol = null, axes = true, noms = true, repere = false, autres = null }) {
+export function SvgPlanAB({ pts = [], lfond = 60, zoom = null, tol = null, axes = true, noms = true, repere = false, autres = null, axesLch = false }) {
   const X0 = 38, Y0 = 14, W = 308, cx = X0 + W / 2, cy = Y0 + W / 2;
   const demi = zoom ? zoom.demi : 60, s = (W / 2) / demi, c0 = zoom ? zoom.centre : { a: 0, b: 0 };
   const px = a => cx + (a - c0.a) * s, py = b => cy - (b - c0.b) * s;
@@ -109,6 +109,16 @@ export function SvgPlanAB({ pts = [], lfond = 60, zoom = null, tol = null, axes 
       els.push(el(true), el(false), <circle key={`c${p.a}${p.b}`} cx={X} cy={Y} r="1.8" fill="#0f172a"/>);
     }
   }
+  if (zoom && axesLch) { // axes locaux : saturation C* (radial) et teinte H* (tangent), centrés sur la cible
+    const h = lch(zoom.centre).h * Math.PI / 180, X = px(zoom.centre.a), Y = py(zoom.centre.b);
+    const dirs = [[Math.cos(h), -Math.sin(h), '+C*'], [-Math.sin(h), -Math.cos(h), '+H*']];
+    els.push(<defs key="dz"><clipPath id="cl-cadre"><rect x={X0} y={Y0} width={W} height={W}/></clipPath></defs>);
+    for (const [dx, dy, nom] of dirs) {
+      const tx = dx > 0 ? (X0 + W - X) / dx : dx < 0 ? (X0 - X) / dx : 1e9, ty = dy > 0 ? (Y0 + W - Y) / dy : dy < 0 ? (Y0 - Y) / dy : 1e9, t = Math.min(tx, ty);
+      els.push(<line key={'al' + nom} x1={X - dx * W} y1={Y - dy * W} x2={X + dx * W} y2={Y + dy * W} stroke="#0f172a" strokeWidth="1.6" strokeDasharray="6 4" clipPath="url(#cl-cadre)"/>);
+      els.push(T(X + dx * (t - 22), Y + dy * (t - 22) + 4, nom, { size: 12.5, gras: true, ...halo }));
+    }
+  }
   if (tol) { // zones de tolérance autour de la cible : sphère ΔE*ab (cercle) et ellipsoïde CMC (ellipse), dans le plan a*b*
     const e = ellipseCMC(tol.cible, tol.tolCMC);
     els.push(<circle key="tolE" cx={px(tol.cible.a)} cy={py(tol.cible.b)} r={tol.tolE * s} fill="none" stroke={K.violet} strokeWidth="2" strokeDasharray="5 4"/>);
@@ -118,9 +128,10 @@ export function SvgPlanAB({ pts = [], lfond = 60, zoom = null, tol = null, axes 
     const x = px(p.lab.a), y = py(p.lab.b), col = p.col ?? K.cible;
     if (p.cyl && !zoom) {
       const c = lch(p.lab), r = 34, a1 = Math.min(c.h, 360 - c.h) * Math.PI / 180, sens = c.h <= 180 ? 0 : 1;
-      els.push(<line key={'C' + p.nom} x1={cx} y1={cy} x2={x} y2={y} stroke="#0f172a" strokeWidth="2.2"/>);
+      const fin = p.cyl === 'fin';
+      els.push(<line key={'C' + p.nom} x1={cx} y1={cy} x2={x} y2={y} stroke="#0f172a" strokeWidth={fin ? 1.2 : 2.2} strokeDasharray={fin ? '4 3' : undefined}/>);
       if (c.h > 2 && c.h < 358) els.push(<path key={'h' + p.nom} d={`M ${cx + r} ${cy} A ${r} ${r} 0 0 ${sens} ${cx + r * Math.cos(a1)} ${cy + (c.h <= 180 ? -1 : 1) * r * Math.sin(a1)}`} fill="none" stroke={K.orange} strokeWidth="2.5"/>);
-      els.push(T((cx + x) / 2 + (y < cy ? 12 : -12), (cy + y) / 2 - 6, 'C*', { size: 13, gras: true, ...halo }), T(cx + r + 10, cy + (c.h <= 180 ? -8 : 17), 'h', { size: 13, gras: true, fill: K.orange, anchor: 'start', ...halo }));
+      if (!fin) els.push(T((cx + x) / 2 + (y < cy ? 12 : -12), (cy + y) / 2 - 6, 'C*', { size: 13, gras: true, ...halo }), T(cx + r + 10, cy + (c.h <= 180 ? -8 : 17), 'h', { size: 13, gras: true, fill: K.orange, anchor: 'start', ...halo }));
     }
     els.push(<circle key={'p' + p.nom} cx={x} cy={y} r={zoom ? 6.5 : 7.5} fill={p.plein === false ? 'none' : col} stroke={p.plein === false ? col : '#fff'} strokeWidth={p.plein === false ? 3 : 2}/>);
     if (noms && p.nom) els.push(T(x + (x > X0 + W - 70 ? -11 : 11), y + (p.nom === 'Lot' ? 19 : -9), p.nom, { size: 11.5, gras: true, fill: col, anchor: x > X0 + W - 70 ? 'end' : 'start', ...halo }));

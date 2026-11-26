@@ -1,14 +1,14 @@
 // Vue 3D de l'espace L*a*b* (exploration de la simulation 247), sur le modèle de la sphère 3D de Hansen : on la fait tourner avec la souris ou le doigt.
 // Deux échelles : « autour de la cible » (la sphère ΔE*ab et l'ellipsoïde CMC à leur vraie taille) et « espace entier » (disque de couleurs et ellipsoïdes CMC agrandis).
 import { useEffect, useRef } from "react";
-import { srgb, xyzDeLab } from "./couleurModele";
+import { srgbAffichable } from "./couleurModele";
 import * as M from "./cielabModele";
 
 // Plan coloré (couleurs à L* fixe) : maillage polaire de centre (a0, b0) et de rayon R, une couleur par sommet.
 function planCouleur(L, a0, b0, R, nr, na) {
   const x = [], y = [], z = [], col = [], I = [], J = [], K = [];
   for (let r = 0; r <= nr; r++) for (let k = 0; k < (r === 0 ? 1 : na); k++) {
-    const rho = R * r / nr, th = 2 * Math.PI * k / na, a = a0 + rho * Math.cos(th), b = b0 + rho * Math.sin(th), c = srgb(xyzDeLab({ L, a, b })), t = [c.r, c.g, c.b];
+    const rho = R * r / nr, th = 2 * Math.PI * k / na, a = a0 + rho * Math.cos(th), b = b0 + rho * Math.sin(th), c = srgbAffichable({ L, a, b }), t = [c.r, c.g, c.b];
     x.push(a); y.push(b); z.push(L); col.push(`rgb(${t[0]},${t[1]},${t[2]})`);
   }
   const idx = (r, k) => (r === 0 ? 0 : 1 + (r - 1) * na + (k % na));

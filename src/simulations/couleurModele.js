@@ -84,6 +84,15 @@ export function srgb({ X, Y, Z }) {
   const c = lin.map(v => Math.round(255 * gam(Math.min(1, Math.max(0, v)))));
   return { r: c[0], g: c[1], b: c[2], hors, css: `rgb(${c[0]}, ${c[1]}, ${c[2]})` };
 }
+/** Couleur affichable la plus proche d'une couleur L*a*b* trop vive pour l'écran : on réduit la saturation en gardant la luminosité L* et la teinte h
+ *  (au lieu d'écrêter chaque canal, qui décale la teinte). Renvoie la même structure que srgb, avec ecrete = true si la couleur a été approchée. */
+export function srgbAffichable(lab) {
+  const c = srgb(xyzDeLab(lab));
+  if (!c.hors) return { ...c, ecrete: false };
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 9; i++) { const t = (lo + hi) / 2; if (srgb(xyzDeLab({ L: lab.L, a: lab.a * t, b: lab.b * t })).hors) hi = t; else lo = t; }
+  return { ...srgb(xyzDeLab({ L: lab.L, a: lab.a * lo, b: lab.b * lo })), ecrete: true };
+}
 export const cssDeLab = l => srgb(xyzDeLab(l)).css;
 /** Couleur d'un objet de réflectance refl sous l'illuminant id, affichée SANS adaptation chromatique (le blanc de l'écran reste D65). */
 export const cssObjet = (refl, id) => srgb(xyz(refl, id)).css;
