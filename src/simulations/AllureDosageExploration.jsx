@@ -22,6 +22,7 @@ const pasNice = m => (m > 150 ? 50 : m > 60 ? 20 : m > 30 ? 10 : m > 12 ? 5 : 2)
 const X0 = 56, PX = 13.2, vDe = xv => Math.max(0, Math.min(M.V_BURETTE, (xv - X0) / PX));
 function GraphiqueDosage({ pts, fits, VEm, yMax, montrerSm, bornes, actif, onBornes, onCree }) {
   const X = v => X0 + PX * v, Y = s => 216 - 196 * Math.min(Math.max(s, 0), yMax) / yMax;
+  const Yl = s => 216 - 196 * s / yMax;     // sans écrêtage : les droites sortent du cadre (coupées par le clipPath) sans se déformer
   const svgRef = useRef(null), drag = useRef(null);
   const pas = pasNice(yMax), grad = []; for (let g = 0; g <= yMax + 1e-9; g += pas) grad.push(g);
   const vDuPointeur = e => { const r = svgRef.current.getBoundingClientRect(); return vDe((e.clientX - r.left) * 400 / r.width); };
@@ -48,7 +49,7 @@ function GraphiqueDosage({ pts, fits, VEm, yMax, montrerSm, bornes, actif, onBor
   const ligne = (d, c, i) => {
     if (!d) return null;
     const dessus = pts.filter(p => p.g === i + 1).map(p => p.VB), x0 = Math.min(...dessus), x1 = Math.max(...dessus);
-    const seg = (a, b) => `${X(a).toFixed(1)},${Y(d.a * a + d.b).toFixed(1)} ${X(b).toFixed(1)},${Y(d.a * b + d.b).toFixed(1)}`;
+    const seg = (a, b) => `${X(a).toFixed(1)},${Yl(d.a * a + d.b).toFixed(1)} ${X(b).toFixed(1)},${Yl(d.a * b + d.b).toFixed(1)}`;
     return <g key={i}><polyline points={seg(0, M.V_BURETTE)} fill="none" stroke={c} strokeWidth="1.8" strokeDasharray="5 4" opacity="0.8"/>
       <polyline points={seg(x0, x1)} fill="none" stroke={c} strokeWidth="3.2"/></g>;
   };
