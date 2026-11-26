@@ -1,8 +1,8 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { FIOLES, PIPETTES, SERVICES, BONUS_REUSSITE, PENALITE_ECHEC, COUT_INDICE, commandesDuService, realiser, retour, correction, fmtC, fmtF, teinte, urgence, temperature, etoilesMission } from "./cuisineDilutionModele";
 import { LaboScene, STYLE_LABO } from "./LaboScene";
 import { chapitresDuJeu, allerChapitre } from "../chapitres";
-import { enregistrerJeu } from "./jeuxScores";
+import { jeuDebut, jeuScore } from "./jeuxScores";
 
 // ====================================================
 //  SIM 291 : URGENCE AU LABO — DILUTIONS (jeu, 2GT → 1G). Scénario : le ballon de réaction sous la paillasse s'emballe ; avant l'explosion,
@@ -57,7 +57,7 @@ export function SimulationCuisineDilution({ naviguer }) {
   const [detente, setDetente] = useState(false);
   const [rec, setRec] = useState(lire);
   const chap = chapitresDuJeu(291)[0];
-  const fini = (service, etoiles, reste) => { if (reste != null) enregistrerJeu('urgence', service.id, etoiles, reste); setRec(r => { const o = { ...r, [service.id]: Math.max(r[service.id] || 0, etoiles) }; ecrire(o); return o; }); };
+  const fini = (service, etoiles, reste) => { if (reste != null) jeuScore('urgence', service.id, etoiles, reste); setRec(r => { const o = { ...r, [service.id]: Math.max(r[service.id] || 0, etoiles) }; ecrire(o); return o; }); };
   return (
     <div style={{ maxWidth: 940, margin: '0 auto', color: C.texte, fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'left' }}>
       <style>{STYLE}</style>
@@ -118,6 +118,10 @@ function Mission({ service, graine, detente, onFin, onMenu }) {
   const cmd = cmds[i];
   const boom = !detente && reste <= 0 && (phase === 'jeu' || phase === 'ok' || phase === 'rate') && phase !== 'fin';
   const enCours = phase === 'jeu' && !detente && !boom;
+  const parti = useRef(false);
+  useEffect(() => {
+    if (phase === 'jeu' && !detente && !parti.current) { parti.current = true; jeuDebut('urgence', service.id); }   // début de partie noté par le serveur
+  }, [phase, detente, service.id]);
   useEffect(() => {
     if (!enCours) return undefined;
     const id = setInterval(() => setReste(r => Math.max(0, r - 0.25)), 250);
