@@ -8,6 +8,10 @@ import { SceneRessort, SceneSpectreIR, SvgCarteHooke, SvgCarteZones, SvgCarteBil
 import { SceneMolecule, BarreAnim } from "./HookAnim";
 import { reduitMouvement } from "./hookHorloge";
 import * as H from "./hookModes";
+import { SceneCuveIR, SceneSpectreTir, PanneauScenariosIR, CommandesTiragesIR } from "./HookTirages";
+import { useTiragesIR } from "./hookTiragesHook";
+import { useProgres } from "./frxTiragesHook";
+import { legendePhase, scenarioVisible, evenementDemo, scenario, texteEvenement, indice as indiceT, estimee, probaTransmis } from "./hookTirages";
 
 const SIM_ID = 304, CLE_GUIDE = 'ir-guide-v1';
 declarerDefis(SIM_ID, [['hooke', 'Du ressort au nombre d’onde'], ['bande', 'Attribuer une bande']]);
@@ -45,8 +49,13 @@ export function SimulationInfrarouge() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const idDe = g => ORDRE[Math.min(g.etape ?? 0, ORDRE.length - 1)];
   const [vie, setVie] = useState(() => ({ ...BASE, ...(DEPART[idDe(guide)] ?? {}) }));
-  const [ex, setEx] = useState({ onglet: 'liaison', liaison: 'CO2', k: 1200, mol: 'propanone', bande: 0, x: 0, mol2: 'H2O', mode2: 'sym' });
+  const [ex, setEx] = useState({ onglet: 'liaison', liaison: 'CO2', k: 1200, mol: 'propanone', sous: 'schema', bande: 0, x: 0, mol2: 'H2O', mode2: 'sym' });
   const [anime, setAnime] = useState(() => !reduitMouvement());
+  const tir = useTiragesIR();
+  const demoEv = tir.demo ? evenementDemo(tir.demo.sc, tir.mol) : null;
+  const progAuto = useProgres(tir.demo ? 1000000 + tir.demo.cle : tir.t.etat.nEnv * 1000 + tir.rejeu % 1000, tir.demo ? tir.dureeDemo : tir.dureeAnim, tir.demo ? !reduitMouvement() : tir.anime);
+  const progT = tir.manuel ?? progAuto, lotT = !demoEv && tir.t.etat.lot > 1;
+  const dAff = demoEv ?? (lotT ? null : tir.t.etat.dernier), pAff = lotT ? 1 : progT;
   const [ouv, setOuv] = useState({});
   const [suiviH, noterH] = useCompteurDefi(), [suiviB, noterB] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('hooke');
@@ -198,16 +207,22 @@ export function SimulationInfrarouge() {
   const noteRot = `Animation ralentie ${sci(tours2 / H.TOURS_ANIM, 0)} fois : la molécule fait environ ${sci(tours2, 1)} tours par seconde en réalité, 0,5 ici. Au même ralenti que les vibrations (${sci(M.ralenti(1000), 0)}), elle ferait un tour en ${fr(1 / M.fAnim(md2.sigma), 0)}${NB}s.`;
   const reglagesExplore = enExplore && (
     <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'liaison' ? 'Réglez la liaison' : ex.onglet === 'spectre' ? 'Choisissez une molécule' : ex.onglet === 'molecules' ? 'Choisissez une molécule et un mouvement' : 'Faites varier la concentration'}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'liaison' ? 'Réglez la liaison' : ex.onglet === 'spectre' ? (ex.sous === 'tirages' ? 'Réglez l’échantillon et la source' : 'Choisissez une molécule') : ex.onglet === 'molecules' ? 'Choisissez une molécule et un mouvement' : 'Faites varier la concentration'}</div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ex.onglet === 'liaison' ? 'Choisissez une liaison, puis modifiez sa raideur : le nombre d’onde calculé par la loi de Hooke est comparé à la valeur tabulée.'
+        : ex.onglet === 'spectre' && ex.sous === 'tirages' ? 'Chaque photon traverse l’échantillon ou y est absorbé, au hasard : la probabilité d’être absorbé est 1 − T(σ). Le spectre se trace en comptant les photons transmis.'
         : ex.onglet === 'spectre' ? 'Spectres schématiques en transmittance. Choisissez une bande : sa liaison et son énergie sont indiquées dans les mesures.'
         : ex.onglet === 'molecules' ? 'Regardez les atomes bouger et la jauge : le point suit la variation du moment dipolaire. Sans variation, pas de bande IR.'
         : 'Plus l’alcool est concentré, plus les groupes O–H sont liés entre eux par liaison hydrogène.'}</div>
       {ex.onglet === 'liaison' && <>
         {selecteur('ir-el', 'Liaison', ex.liaison, ev => { const l = M.liaison(ev.target.value); setEx(e => ({ ...e, liaison: l.id, k: l.k })); }, M.LIAISONS.map(l => ({ id: l.id, nom: l.nom })))}
         {curs('ir-ek', `Raideur k : ${ex.k} N/m`, ex.k, 100, 1800, 20, ev => setEx(e => ({ ...e, k: parseInt(ev.target.value, 10) })), 'Réglé sur la valeur typique de la liaison choisie.')}</>}
-      {ex.onglet === 'spectre' && <>
-        {selecteur('ir-em', 'Molécule', ex.mol, ev => setEx(e => ({ ...e, mol: ev.target.value, bande: 0 })), Object.entries(M.MOLECULES).map(([id, m]) => ({ id, nom: m.nom })))}
+      {ex.onglet === 'spectre' && ex.sous === 'tirages' && <>
+        {selecteur('ir-tm', 'Molécule', ex.mol, ev => { setEx(e => ({ ...e, mol: ev.target.value, bande: 0 })); tir.regler({ mol: ev.target.value }); }, Object.entries(M.MOLECULES).map(([id, m]) => ({ id, nom: m.nom })))}
+        {selecteur('ir-tmode', 'Nombre d’onde des photons', tir.t.mode, ev => tir.regler({ mode: ev.target.value }), [{ id: 'hasard', nom: 'Tiré au hasard entre 500 et 4000 cm⁻¹' }, { id: 'choisi', nom: 'Choisi par vous' }])}
+        {tir.t.mode === 'choisi' && curs('ir-ts', `σ des photons : ${tir.t.sigma} cm⁻¹`, tir.t.sigma, 500, 4000, 5, ev => tir.regler({ sigma: parseInt(ev.target.value, 10) }), 'Placez σ sur une bande pour voir presque tous les photons absorbés, entre deux bandes pour les voir traverser.')}
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10, fontSize: 14, color: KIT.txt }}><input type="checkbox" checked={tir.t.courbe} onChange={ev => tir.regler({ courbe: ev.target.checked })} style={{ width: 20, height: 20 }}/>Afficher le spectre attendu (pointillés)</label></>}
+      {ex.onglet === 'spectre' && ex.sous !== 'tirages' && <>
+        {selecteur('ir-em', 'Molécule', ex.mol, ev => { setEx(e => ({ ...e, mol: ev.target.value, bande: 0 })); tir.regler({ mol: ev.target.value }); }, Object.entries(M.MOLECULES).map(([id, m]) => ({ id, nom: m.nom })))}
         {selecteur('ir-eb', 'Bande étudiée', ex.bande, ev => setEx(e => ({ ...e, bande: parseInt(ev.target.value, 10) })), molec.bandes.map((b, i) => ({ id: i, nom: `${b.sigma} cm⁻¹${b.lie ? ' : ' + M.liaison(b.lie).nom : ''}` })))}</>}
       {ex.onglet === 'molecules' && <>
         {selecteur('ir-m2', 'Molécule', ex.mol2, ev => setEx(e => ({ ...e, mol2: ev.target.value, mode2: H.MOLS[ev.target.value].modes[0].id })), Object.values(H.MOLS).map(m => ({ id: m.id, nom: m.nom })))}
@@ -218,10 +233,23 @@ export function SimulationInfrarouge() {
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
       {[['liaison', 'Une liaison'], ['spectre', 'Un spectre'], ['hydrogene', 'Liaison hydrogène'], ['molecules', 'Molécules en mouvement']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, onglet: k }))} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#0f766e')}>{l}</button>)}
     </div>);
+  const sousPilules = ex.onglet === 'spectre' && (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Afficher :</span>
+      {[['schema', 'Spectre schématique'], ['tirages', 'Tirages au hasard']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, sous: k }))} aria-pressed={ex.sous === k} style={stylePetitBouton(ex.sous === k, '#334155')}>{l}</button>)}
+    </div>);
   const voletScene = (
     <div style={styleBoite}>
-      {pilules}
+      {pilules}{sousPilules}
       {ex.onglet === 'liaison' ? <><SceneRessort a={at(lia.a, M.MASSE[lia.a])} b={at(lia.b, M.MASSE[lia.b])} k={ex.k} anime={anime}/><div style={{ height: 6 }}/><SceneSpectreIR bandes={[{ sigma: sigE, larg: lia.larg, prof: 0.8 }]} marque={lia.tab}/><BarreAnim anime={anime} onBascule={() => setAnime(a => !a)} note={noteAnim}/></>
+        : ex.onglet === 'spectre' && ex.sous === 'tirages' ? <>
+          <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#115e59', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{lotT ? 'Les photons défilent trop vite pour être animés un par un : voici le bilan du dernier paquet. « × 10 » et « × 100 » montrent chaque photon.' : (demoEv ? 'Scénario seul. ' : '') + legendePhase(dAff, pAff)}</div>
+          <div className="ir-at">
+            <SceneCuveIR d={dAff} p={pAff}/>
+            <PanneauScenariosIR etat={tir.t.etat} params={tir.t} mol={tir.mol} courant={lotT ? -1 : scenarioVisible(dAff, pAff)} demo={tir.demo} prog={progT} tir={tir}/>
+          </div>
+          <div role="status" aria-live={tir.lecture ? 'off' : 'polite'} style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{lotT ? `Bilan du dernier paquet de ${tir.t.etat.lotRes.n} photons : ${tir.t.etat.lotRes.abs} absorbés, ${tir.t.etat.lotRes.n - tir.t.etat.lotRes.abs} transmis.` : `${dAff ? `Scénario ${scenario(dAff) + 1} sur 2 : ` : ''}${texteEvenement(dAff)}.`}</div>
+          <SceneSpectreTir etat={tir.t.etat} mol={tir.mol} params={tir.t}/><div style={{ marginTop: 10 }}><CommandesTiragesIR tir={tir}/></div></>
         : ex.onglet === 'spectre' ? <SceneSpectreIR bandes={molec.bandes} marque={bd.sigma}/>
         : ex.onglet === 'molecules' ? <>
           <SceneMolecule molId={mol2.id} modeId={md2.id} anime={anime}/><div style={{ height: 6 }}/>
@@ -238,6 +266,14 @@ export function SimulationInfrarouge() {
         <LigneMesure nom="σ tabulé (repère rouge)" valeur={fsig(lia.tab)}/><LigneMesure nom="Longueur d’onde" valeur={`${fr(M.lamUm(sigE), 2)}${NB}µm`}/>
         <LigneMesure nom="Énergie du photon" valeur={`${fr(sigE * 1.2431e-4, 3)}${NB}eV`}/>
         <LigneMesure nom="Fréquence ν = c·σ" valeur={`${sci(M.nuHz(sigE), 2)}${NB}Hz`}/><LigneMesure nom="Période T = 1/ν" valeur={`${fr(M.periodeFs(sigE), 1)}${NB}fs`}/></>
+      : ex.onglet === 'spectre' && ex.sous === 'tirages' ? <>
+        <LigneMesure nom="Photons envoyés" valeur={`${tir.t.etat.nEnv}`}/><LigneMesure nom="Photons absorbés" valeur={`${tir.t.etat.nAbs}`}/>
+        <LigneMesure nom="Photons transmis (comptés)" valeur={`${tir.t.etat.nEnv - tir.t.etat.nAbs}`}/>
+        <LigneMesure nom="Transmis / envoyés (tous σ)" valeur={tir.t.etat.nEnv ? `${fr(100 * (tir.t.etat.nEnv - tir.t.etat.nAbs) / tir.t.etat.nEnv, 0)}${NB}%` : '—'}/>
+        {tir.t.mode === 'choisi' && (() => { const i = indiceT(tir.t.sigma), n = tir.t.etat.env[i], te = estimee(tir.t.etat, i); return <>
+          <LigneMesure nom={`Photons envoyés vers ${tir.t.sigma}${NB}cm⁻¹ (case de 25)`} valeur={`${n}`}/>
+          <LigneMesure nom="Transmittance mesurée (transmis / envoyés)" valeur={te == null ? '—' : `${fr(te, 0)}${NB}%`}/>
+          <LigneMesure nom="Transmittance du spectre schématique" valeur={`${fr(100 * probaTransmis(tir.mol, tir.t), 0)}${NB}%`}/></>; })()}</>
       : ex.onglet === 'spectre' ? <>
         <LigneMesure nom="Nombre d’onde" valeur={fsig(bd.sigma)}/><LigneMesure nom="Liaison" valeur={bd.lie ? M.liaison(bd.lie).nom : 'zone d’empreinte (non attribuée)'}/>
         <LigneMesure nom="Aspect de la bande" valeur={bd.large ? 'large' : 'fine'}/><LigneMesure nom="Transmittance au minimum" valeur={`${fr(100 * M.transmittance(molec.bandes, bd.sigma), 0)}${NB}%`}/>
@@ -258,6 +294,8 @@ export function SimulationInfrarouge() {
       <li>Une liaison : comparez C–H, C–O et O–H. Qui absorbe le plus haut ? Qui a la plus petite masse réduite ?</li>
       <li>Une liaison : pour C≡C, réglez k comme celui d’une double puis d’une simple liaison. Que devient σ ?</li>
       <li>Un spectre : cherchez la bande C=O dans les trois molécules qui en ont. Quel effet a la conjugaison ?</li>
+      <li>Tirages : envoyez 100 puis 1000 photons au hasard. Que devient le spectre quand le nombre de photons augmente ? Pourquoi ?</li>
+      <li>Tirages : choisissez σ sur la bande C=O de la propanone puis entre deux bandes. Quelle fraction des photons est transmise dans chaque cas ?</li>
       <li>Un spectre : l’éthanol pur et l’éthanol dilué diffèrent-ils au-dessus ou en dessous de 1500 cm⁻¹ ?</li>
       <li>Liaison hydrogène : à quelle part de O–H liés la bande libre devient-elle presque invisible ?</li>
       <li>Molécules en mouvement : comparez les trois mouvements de CO₂ puis de H₂O. Lesquels donnent une bande ? Pourquoi N₂ n’absorbe-t-il pas ?</li>
@@ -280,6 +318,7 @@ export function SimulationInfrarouge() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Modèle</strong> : oscillateur harmonique à deux masses, σ = (1/2πc)·√(k/μ). Il donne l’ordre de grandeur (écarts de quelques % avec les valeurs tabulées) mais ignore l’anharmonicité et le couplage entre liaisons.</li>
       <li><strong>Raideurs</strong> : valeurs typiques arrondies (par exemple 1200 N/m pour C=O, 480 N/m pour C–H) ; elles varient avec l’environnement de la liaison.</li>
+      <li><strong>Tirages</strong> : chaque photon est absorbé avec la probabilité 1 − T(σ), T étant la transmittance du spectre schématique ; photons indépendants, une seule absorption par photon, détecteur parfait, pas de diffusion. Le spectre se trace case par case (25 cm⁻¹) en comptant transmis / envoyés ; avec peu de photons il est bruité (écart relatif d’environ 1/√N).</li>
       <li><strong>Constantes</strong> : c = 3,00·10⁸ m/s ; u = 1,66·10⁻²⁷ kg ; E(eV) = 1,243·10⁻⁴ × σ(cm⁻¹).</li>
       <li><strong>Spectres</strong> : schématiques (bandes gaussiennes, intensités et largeurs choisies pour l’illustration) ; en vrai, les bandes ont des profils plus complexes.</li>
       <li><strong>Liaison hydrogène</strong> : modélisée par une bande large centrée sur 3340 cm⁻¹ dont l’intensité croît avec la part de O–H liés ; la position exacte dépend du composé.</li>
@@ -294,6 +333,10 @@ export function SimulationInfrarouge() {
         .ir-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
         .ir-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .ir-col { display: flex; flex-direction: column; gap: 12px; }
+        .ir-at { display: grid; gap: 10px; align-items: start; grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 901px) { .ir-at { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
+        .ir-sc { transition: background 0.3s, transform 0.3s; } .ir-sc.on { transform: scale(1.02); font-weight: 600; }
+        @media (prefers-reduced-motion: reduce) { .ir-sc { transition: none; } .ir-sc.on { transform: none; } }
         .ir-ex { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
         @media (min-width: 901px) {
           .ir-l1.cote .ir-carte { order: 2; } .ir-l1.cote .ir-main { order: 1; }
