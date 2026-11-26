@@ -18,6 +18,8 @@ const o = S.ouvrirQuart(m, 45); ok(o.I.length < m.I.length && o.I.length > m.I.l
 for (let t = 0; t < o.I.length; t += 7) { const p = [o.I[t], o.J[t], o.K[t]]; const cx = (m.x[p[0]] + m.x[p[1]] + m.x[p[2]]) / 3, cy = (m.y[p[0]] + m.y[p[1]] + m.y[p[2]]) / 3, cz = (m.z[p[0]] + m.z[p[1]] + m.z[p[2]]) / 3; ok(!(cx > 0 && cy < 0 && cz > 45), 'aucun triangle restant dans le quart ouvert'); }
 const dm = S.ouvrirDemi(m, 45); ok(dm.I.length < o.I.length && dm.I.length > m.I.length * 0.4, 'moitié avant retirée');
 for (let t = 0; t < dm.I.length; t += 7) { const p = [dm.I[t], dm.J[t], dm.K[t]]; const cy = (m.y[p[0]] + m.y[p[1]] + m.y[p[2]]) / 3, cz = (m.z[p[0]] + m.z[p[1]] + m.z[p[2]]) / 3; ok(!(cy < 0 && cz > 45), 'aucun triangle restant dans la moitié avant ouverte'); }
+const mb = S.moitieBasse(m, 45); ok(mb.I.length > 0 && mb.I.length < m.I.length, 'moitié basse partielle');
+for (let t = 0; t < mb.I.length; t += 5) ok((m.z[mb.I[t]] + m.z[mb.J[t]] + m.z[mb.K[t]]) / 3 <= 45, 'rien au-dessus de L0');
 // faces de coupe et disque
 for (const f of [S.faceCoupe(270, 45), S.faceCoupe(0, 45)]) { ok(f.x.length === 21 * 17 && f.col.length === f.x.length, 'face de coupe : sommets et couleurs'); ok(Math.min(...f.z) === 45 && Math.max(...f.z) === 100, 'face de coupe : de L0 à 100'); }
 const d = S.disqueCoupe(45); ok(d.z.every(v => v === 45) && d.x.length === 1 + 72 * 14, 'disque de coupe horizontal');

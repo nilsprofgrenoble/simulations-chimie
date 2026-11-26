@@ -31,23 +31,23 @@ export function VueLab3D({ plotlyReady, cible, lot, tolE, tolC, mode = 'entier',
     const proche = mode === 'proche', L0 = Math.round(cible.L);
     if (!proche) { // espace entier : le solide des couleurs d'un écran (gamut sRGB), ouvert dans un quart, avec le disque de coupe à la luminosité de la cible
       if (!solideCache) solideCache = SO.surfaceSolide(28);
-      const sol = SO.ouvrirDemi(solideCache, L0), k = M.AGRANDI;
+      const sol = SO.moitieBasse(solideCache, L0), k = M.AGRANDI;
       const maille = (m, lum, nom) => ({ type: 'mesh3d', x: m.x, y: m.y, z: m.z, i: m.I, j: m.J, k: m.K, vertexcolor: m.col, flatshading: false, lighting: lum, hoverinfo: 'skip', name: nom, showlegend: false });
       const plat = { ambient: 1, diffuse: 0, specular: 0, fresnel: 0 };
       const ligne = (c, couleur, largeur) => ({ type: 'scatter3d', mode: 'lines', x: c.x, y: c.y, z: c.z, line: { color: couleur, width: largeur }, hoverinfo: 'skip', showlegend: false });
       const tx = (x, y, z, t) => ({ x, y, z, text: t });
-      const etiq = [tx(108, 0, L0, '+a* rouge'), tx(-108, 0, L0, '−a* vert'), tx(0, 112, L0, '+b* jaune'), tx(0, -122, L0, '−b* bleu'), tx(0, 0, 109, 'L* = 100 blanc'), tx(0, 0, -6, 'L* = 0 noir')];
+      const etiq = [tx(88, 0, L0, '+a*'), tx(-86, 0, L0, '−a*'), tx(0, 98, L0, '+b*'), tx(0, -98, L0, '−b*'), tx(0, 0, L0 + 30, 'L* (clair ↑)')];
       const ellipses = SO.contoursEllipses(SO.positionsEllipses(L0), L0, tolC, k, L0 + 0.5), ellCible = SO.contoursEllipses([{ a: cible.a, b: cible.b }], cible.L, tolC, k, L0 + 0.8);
-      const dat = [maille(sol, { ambient: 0.82, diffuse: 0.35, specular: 0.05, roughness: 0.9, fresnel: 0.1 }, 'Solide'), maille(SO.faceCoupe(0, L0), plat, 'Coupe a+'), maille(SO.faceCoupe(180, L0), plat, 'Coupe a-'), maille(SO.disqueCoupe(L0), plat, 'Disque'),
+      const dat = [maille(sol, { ambient: 0.82, diffuse: 0.35, specular: 0.05, roughness: 0.9, fresnel: 0.1 }, 'Solide'), maille(SO.disqueCoupe(L0), plat, 'Disque'),
         ligne(ellipses, '#0f172a', 2), ligne(ellCible, '#15803d', 5),
-        ligne({ x: [-100, 100], y: [0, 0], z: [L0 + 0.6, L0 + 0.6] }, '#0f172a', 2), ligne({ x: [0, 0], y: [-112, 108], z: [L0 + 0.6, L0 + 0.6] }, '#0f172a', 2), ligne({ x: [0, 0], y: [0, 0], z: [-4, 106] }, '#0f172a', 4),
+        ligne({ x: [-80, 80], y: [0, 0], z: [L0 + 0.6, L0 + 0.6] }, '#0f172a', 2), ligne({ x: [0, 0], y: [-92, 92], z: [L0 + 0.6, L0 + 0.6] }, '#0f172a', 2), ligne({ x: [0, 0], y: [0, 0], z: [-4, L0 + 26] }, '#0f172a', 4),
         { type: 'scatter3d', mode: 'text', x: etiq.map(e => e.x), y: etiq.map(e => e.y), z: etiq.map(e => e.z), text: etiq.map(e => e.text), textfont: { size: 12, color: '#0f172a' }, hoverinfo: 'skip', showlegend: false },
         { type: 'scatter3d', mode: 'markers', x: [cible.a], y: [cible.b], z: [L0 + 1], marker: { color: '#0f172a', size: 6, line: { color: '#fff', width: 1 } }, hovertext: [`Cible<br>L* ${cible.L.toFixed(1)} · a* ${cible.a.toFixed(1)} · b* ${cible.b.toFixed(1)}`], hoverinfo: 'text', showlegend: false },
         { type: 'scatter3d', mode: 'markers', x: [lot.a], y: [lot.b], z: [lot.L], marker: { color: '#c2410c', size: 6, line: { color: '#fff', width: 1 } }, hovertext: [`Lot<br>L* ${lot.L.toFixed(1)} · a* ${lot.a.toFixed(1)} · b* ${lot.b.toFixed(1)}`], hoverinfo: 'text', showlegend: false }];
       const nu = { showticklabels: false, showgrid: false, zeroline: false, showbackground: false, showline: false, title: '' };
       Plotly.react(el, dat, { margin: { l: 0, r: 0, b: 0, t: 0 }, paper_bgcolor: 'white', showlegend: false, font: { size: 12, color: '#0f172a' },
-        scene: { aspectmode: 'manual', aspectratio: { x: 1, y: 1, z: 0.85 }, xaxis: { ...nu, range: [-125, 125] }, yaxis: { ...nu, range: [-135, 135] }, zaxis: { ...nu, range: [-10, 114] }, dragmode: 'orbit',
-          camera: { eye: { x: 0.3, y: -1.45, z: 1.05 }, center: { x: 0, y: 0, z: -0.05 } } } }, { displayModeBar: false, responsive: true });
+        scene: { aspectmode: 'manual', aspectratio: { x: 1, y: 1, z: 0.6 }, xaxis: { ...nu, range: [-92, 92] }, yaxis: { ...nu, range: [-105, 105] }, zaxis: { ...nu, range: [-10, L0 + 34] }, dragmode: 'orbit',
+          camera: { eye: { x: 0.2, y: -1.3, z: 1.35 }, center: { x: 0, y: 0, z: -0.1 } } } }, { displayModeBar: false, responsive: true });
       return;
     }
     // échelle de la vue proche : assez large pour voir toute la sphère, l'ellipsoïde et le lot (jamais plus large que nécessaire, pour que la sphère se voie)
