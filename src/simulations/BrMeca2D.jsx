@@ -17,7 +17,16 @@ function Liaison({ a, b, type = 'plan', op = 1, c = ENC }) {
   return <line x1={a[0]} y1={a[1]} x2={b[0]} y2={b[1]} stroke={c} strokeWidth={2.4} strokeLinecap="round" opacity={op} />;
 }
 const T = ({ p, dx = 0, dy = 5, children, c = ENC, s = 17 }) => <text x={p[0] + dx} y={p[1] + dy} fontSize={s} fontWeight="700" fill={c} textAnchor="middle">{children}</text>;
-const Courbe = ({ d, op = 1 }) => (op < 0.03 ? null : <path d={d} fill="none" stroke={ROUGE} strokeWidth={2.4} markerEnd="url(#pointeBr)" opacity={op} />);
+// Flèche courbe qui se dessine progressivement (t de 0 à 1) du donneur a vers l'accepteur b ; k : bombement (px, signe = côté)
+function Fl({ a, b, k = 24, t = 1, op = 1 }) {
+  if (t < 0.04 || op < 0.03) return null;
+  const dx = b[0] - a[0], dy = b[1] - a[1], n = Math.hypot(dx, dy) || 1;
+  const c = [(a[0] + b[0]) / 2 - dy / n * k, (a[1] + b[1]) / 2 + dx / n * k];
+  const m = (p, q, r) => p + (q - p) * r;
+  const c1 = [m(a[0], c[0], t), m(a[1], c[1], t)];                                   // sous-courbe de Bézier de 0 à t
+  const e = [m(m(a[0], c[0], t), m(c[0], b[0], t), t), m(m(a[1], c[1], t), m(c[1], b[1], t), t)];
+  return <path d={`M${a[0]},${a[1]} Q${c1[0]},${c1[1]} ${e[0]},${e[1]}`} fill="none" stroke={ROUGE} strokeWidth={2.4} strokeLinecap="round" markerEnd="url(#pointeBr)" opacity={op} />;
+}
 
 export default function BrMeca2D({ alc, face, syn, u }) {
   const l3 = etat3D(alc, face, 1).lettres, P = plan2D(alc, face, l3);
@@ -39,7 +48,6 @@ export default function BrMeca2D({ alc, face, syn, u }) {
   const liePont = u >= 0.3;
   const opPontNon = liePont ? Math.min(1, formation * 2) : 0;
   const opPontAtt = liePont ? (syn ? opPontNon : opPontNon * (1 - attaque)) : 0;
-  const opFlecheStep1 = 1 - seg(u, 0.3, 0.5), opFlecheStep2 = u < 0.55 ? 0 : seg(u, 0.55, 0.65) * (1 - seg(u, 0.9, 0.98));
   const libelleBr = u < 0.35 ? 'Br' : 'Br⁻';
   const labelPont = u < 0.35 ? 'Br' : u < 0.95 || syn ? 'Br⁺' : 'Br';
   const lienProduitNon = !syn && attaque > 0.85;
@@ -67,11 +75,14 @@ export default function BrMeca2D({ alc, face, syn, u }) {
           <circle cx={brm[0]} cy={brm[1]} r={13} fill={!syn && attaque > 0.9 ? '#fff7ed' : '#f0fdf4'} stroke={!syn && attaque > 0.9 ? BRUN : VERT} strokeWidth={1.6} /><T p={brm} c={!syn && attaque > 0.9 ? BRUN : VERT} s={13}>{!syn && attaque > 0.9 ? 'Br' : 'Br⁻'}</T>
           {syn && attaque > 0.25 && <T p={[brm[0], brm[1] - 22]} c={ROUGE} s={20}>✗</T>}
         </>}
-        {/* flèches courbes : étape 1 (π → Br, Br–Br → Br⁻) puis étape 2 (Br⁻ → C, C–Br⁺ → Br⁺) */}
-        <Courbe op={opFlecheStep1} d={`M${C2[0] + 40},${C2[1] - 2} Q${C2[0] + 36},${brn0[1] + 34} ${brn0[0] - 3},${brn0[1] + 15}`} />
-        {u < 0.35 && <Courbe op={opFlecheStep1} d={`M${(brn0[0] + brfDebut[0]) / 2 + 2},${(brn0[1] + brfDebut[1]) / 2 - 4} Q${brfDebut[0] + 10},${brfDebut[1] - 18} ${brfDebut[0] + 14},${brfDebut[1] - 4}`} />}
-        {!syn && <Courbe op={opFlecheStep2} d={`M${brm ? brm[0] - sx * 10 : 0},${brm ? brm[1] - 10 : 0} Q${att[0] + sx * 40},${att[1] + 26} ${att[0] + sx * 4},${att[1] + 14}`} />}
-        {!syn && <Courbe op={opFlecheStep2} d={`M${(mid[0] + att[0]) / 2 + 4},${(mid[1] + att[1]) / 2 - 2} Q${mid[0] + sx * 28},${mid[1] - 2} ${mid[0] + sx * 14},${mid[1] + 2}`} />}
+        {/* flèches courbes : elles se dessinent, suivent les atomes, puis s'estompent */}
+        {/* étape 1 : le doublet π attaque Br (le plus proche), la liaison Br–Br se rompt vers l'autre Br */}
+        <Fl a={[(C2[0] + C3[0]) / 2, C2[1] - 5]} b={[brn0[0] - 1, brn0[1] + 14]} k={-22} t={seg(u, 0.04, 0.3)} op={1 - seg(u, 0.36, 0.5)} />
+        {u < 0.35 && <Fl a={[(brn0[0] + brfDebut[0]) / 2, (brn0[1] + brfDebut[1]) / 2 - 3]} b={[brfDebut[0] + 2, brfDebut[1] - 15]} k={14} t={seg(u, 0.12, 0.32)} op={1 - seg(u, 0.3, 0.35)} />}
+        {u >= 0.35 && u < 0.7 && <Fl a={[brn[0] + 12, brn[1] - 6]} b={[brf[0] - 15, brf[1] - 2]} k={-12} t={1} op={1 - seg(u, 0.38, 0.52)} />}
+        {/* étape 2 : le doublet de Br⁻ attaque le carbone par l'arrière, la liaison C–Br⁺ se rompt vers Br⁺ */}
+        {!syn && brm && <Fl a={[brm[0] - sx * 11, brm[1] - 9]} b={[att[0] + sx * 3, att[1] + 15]} k={sx * 20} t={seg(u, 0.55, 0.8)} op={1 - seg(u, 0.93, 0.99)} />}
+        {!syn && <Fl a={[(brn[0] + att[0]) / 2, (brn[1] + att[1]) / 2 - 3]} b={[brn[0] + sx * 12, brn[1] + 8]} k={sx * 14} t={seg(u, 0.62, 0.85)} op={u < 0.55 ? 0 : 1 - seg(u, 0.93, 0.99)} />}
         {/* produit : lettres lues sur le dessin */}
         {!syn && u >= 0.999 && <><T p={[C2[0], 160]} c={KIT.txt} s={14}>{`(${alc === 'cyclo' ? '1' : '2'}${P.lettres[0]},${alc === 'cyclo' ? '2' : '3'}${P.lettres[1]})`}</T></>}
       </svg>

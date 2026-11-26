@@ -1,18 +1,18 @@
 // Vue 3D (three.js) de l'élimination E2 : H et Br anti-périplanaires, la base arrache H, la double liaison C=C se forme dans le plan (x, z).
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import { etat as etatE2 } from "./e23dModele";
+import { etat as etatE2, etatE1 } from "./e23dModele";
 import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer } from "./scene3d";
 import { KIT, stylePetitBouton } from "../commun";
 
 const DIST0 = 19, DIST_MIN = 8, DIST_MAX = 34;
 const COUL_BASE = 0x2563eb;
 
-export default function E23D({ u, base = 'HO⁻' }) {
+export default function E23D({ u, meca = 'E2', base = 'HO⁻' }) {
   const hote = useRef(null);
   const s = useRef({});
   const [erreur, setErreur] = useState(null);
-  const e = etatE2(u);
+  const e = meca === 'E1' ? etatE1(u) : etatE2(u);
 
   useEffect(() => {
     const el = hote.current;
@@ -83,24 +83,33 @@ export default function E23D({ u, base = 'HO⁻' }) {
     for (const [c, rs] of [[e.cb, e.rb], [e.ca, e.rc]]) rs.forEach(r => { lien(c, r); sphere(r, 0.42, 0x475569); nom(r, 'R', '#475569', r.map((t, i) => t - c[i])); });
     // H : lié à Cβ puis à la base
     sphere(e.H, RAYON_EL.H, COUL_EL.H); lien(e.cb, e.H, e.opCH, 0.07, partielle(e.opCH));
-    if (u < 0.6) nom(e.H, 'H', '#475569', [-0.6, 0.3, 0.8]);
+    if (!e.baseLiee) nom(e.H, 'H', '#475569', [-0.6, 0.3, 0.8]);
     // base
     sphere(e.base, 0.42, COUL_BASE); lien(e.base, e.H, e.opBH, 0.07, partielle(e.opBH));
-    nom(e.base, u > 0.6 ? base.replace('⁻', '') : base, '#1d4ed8', [0, 1, 0]);
+    nom(e.base, e.baseLiee ? base.replace('⁻', '') : base, '#1d4ed8', [0, 1, 0]);
     // Br
     sphere(e.br, RAYON_EL.Br, COUL_EL.Br); lien(e.ca, e.br, e.opBr, 0.075, partielle(e.opBr));
-    nom(e.br, u > 0.55 ? 'Br⁻' : 'Br', '#9a3412', [0, -1, 0]);
+    nom(e.br, e.brParti ? 'Br⁻' : 'Br', '#9a3412', [0, -1, 0]);
+    // E1 : plan du carbocation (trois groupes autour de Cα) avant l'arrivée de la base
+    if (meca === 'E1' && e.fa > 0.5 && e.fb < 0.5) {
+      const disque = new THREE.Mesh(new THREE.CircleGeometry(2.0, 40), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }));
+      disque.rotation.x = Math.PI / 2; disque.position.copy(vec(e.ca)); contenu.add(disque);
+    }
     // plan de l'alcène une fois formé
-    if (e.f > 0.5) {
+    if (e.fb > 0.5) {
       const plan = new THREE.Mesh(new THREE.PlaneGeometry(6, 4), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.16 * e.f, side: THREE.DoubleSide, depthWrite: false }));
       plan.rotation.x = Math.PI / 2; contenu.add(plan);
     }
     st.sale = true;
-  }, [u, base]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [u, base, meca]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const zoomer = f => { const st = s.current; if (!st.camera) return; st.dist = f === 0 ? DIST0 : Math.min(DIST_MAX, Math.max(DIST_MIN, st.dist * f)); st.camera.position.z = st.dist * Math.max(1, 1.3 / st.camera.aspect); st.camera.updateProjectionMatrix(); st.sale = true; };
   if (erreur) return <div style={{ padding: 16, fontSize: 14, color: '#b45309' }}>{erreur}</div>;
-  const texte = u < 0.3 ? 'H (en haut) et Br (en bas) sont de part et d’autre de la liaison C–C : ils sont anti-périplanaires.'
+  const texte = meca === 'E1' ? (u < 0.12 ? 'Étape 1 (lente) : la liaison C–Br se polarise. H est en haut, Br en bas.'
+    : u < 0.5 ? 'Br est parti seul : il reste un carbocation plan. La base n’est pas encore intervenue.'
+      : u < 0.97 ? 'Étape 2 (rapide) : la base arrache H, voisin du carbone chargé, et la liaison π se forme.'
+        : 'La double liaison C=C est plane : les quatre groupes R sont dans le plan gris.')
+    : u < 0.3 ? 'H (en haut) et Br (en bas) sont de part et d’autre de la liaison C–C : ils sont anti-périplanaires.'
     : u < 0.8 ? 'La base arrache H, Br part : les groupes R s’aplatissent, la liaison π se forme.'
       : 'La double liaison C=C est plane : les quatre groupes R sont dans le plan gris.';
   return (
