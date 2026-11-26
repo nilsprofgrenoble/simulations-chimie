@@ -272,6 +272,8 @@ const SimulationEscapeKepler = paresseux(() => import("./simulations/EscapeKeple
 const SimulationEscapeAqua = paresseux(() => import("./simulations/EscapeAqua"), "SimulationEscapeAqua");
 const SimulationHistoireLabo = paresseux(() => import("./simulations/HistoireLabo"), "SimulationHistoireLabo");
 const SimulationHistoirePercutafeine = paresseux(() => import("./simulations/HistoirePercutafeine"), "SimulationHistoirePercutafeine");
+const SimulationLaserMaze = paresseux(() => import("./simulations/JeuLaserMaze"), "SimulationLaserMaze");
+const SimulationCuisineDilution = paresseux(() => import("./simulations/JeuCuisineDilution"), "SimulationCuisineDilution");
 const SimulationGrapheur = paresseux(() => import("./simulations/Grapheur"), "SimulationGrapheur");
 
 // ============================================================
@@ -642,6 +644,9 @@ const SIMULATIONS = [
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
   // Histoire à choix « Contre-typer la Percutaféine » (BTS, d'après le TP / CCF4 gel à la caféine) : hors menu, ?sim=113
   { id:113, label:"Contre-typage de la Percutaféine (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧴", color:"#0f766e", component: SimulationHistoirePercutafeine },
+  // Jeux en démonstration (réservés à l'administrateur, comme Kepler et Aqua) : Laser Maze (optique) et Service en cuisine (dilutions) ; ?sim=290 et ?sim=291
+  { id:290, label:"Laser Maze (jeu, optique géométrique)", niveau:"COMPTE", icon:"🔦", color:"#0a1530", component: SimulationLaserMaze },
+  { id:291, label:"Service en cuisine : dilutions (jeu)", niveau:"COMPTE", icon:"🍽️", color:"#2a1d10", component: SimulationCuisineDilution },
   // Grapheur (tableau → nuage de points → modèle → écarts → hypothèses) : outil hors menu, ouvert par son lien (?sim=124), en attendant la relecture de Nils
   { id:124, label:"Grapheur de mesures", niveau:"COMPTE", icon:"📈", color:"#1d4ed8", component: SimulationGrapheur },
   { id:146, label:"Tensioactifs : de la structure à la CMC", niveau:"BTS", icon:"🫧", color:"#0369a1", component: SimulationTensioactifs },
@@ -675,7 +680,7 @@ const MENUS_ENTETE = [
 ];
 // Tant que les jeux ne sont pas aboutis, seul l'administrateur (professeur admin) les voit : menu, cartes, liens directs. Les autres ne voient rien.
 import { JEUX_VISIBLES, JEUX_PUBLICS } from "./simulations/jeuxVisibles";
-const JEUX_IDS = [79, 80, 81, 113];   // jeux : affichage immersif (sans en-tête ni pied de page)
+const JEUX_IDS = [79, 80, 81, 113, 290, 291];   // jeux : affichage immersif (sans en-tête ni pied de page)
 // Outils en préparation : visibles seulement du professeur administrateur (menu « Outils » et lien direct). Liste dans src/brouillons.js (124 : Grapheur de mesures).
 import { OUTILS_BROUILLON } from "./brouillons";
 const OUTILS_ADMIN_IDS = OUTILS_BROUILLON;
@@ -684,6 +689,8 @@ const FONDS_JEUX = {
   80: "linear-gradient(180deg, #0b3b5e 0%, #082a45 50%, #04182a 100%)",
   81: "radial-gradient(ellipse at 50% 20%, rgba(255,255,255,.12), rgba(0,0,0,.45) 85%), repeating-linear-gradient(90deg, #7a5a40 0 7px, #6f5037 7px 10px, #7f5f45 10px 19px, #694c34 19px 21px)",
   113: "radial-gradient(ellipse at 50% 20%, rgba(255,255,255,.14), rgba(0,0,0,.45) 85%), linear-gradient(160deg, #0f4c5c 0%, #0b2f3a 60%, #071c24 100%)",
+  290: "radial-gradient(ellipse at 50% 0%, #1b2a5c 0%, #070d24 60%, #03060f 100%)",
+  291: "radial-gradient(ellipse at 50% 10%, #3b2814 0%, #1b1209 70%, #100a04 100%)",
 };
 const ORDRE_COMP = [38, 34, 35, 37, 36, 77];
 function construireMenus() {
