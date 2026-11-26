@@ -3049,5 +3049,14 @@
  "77:plausible:pilp-val-q": "VAL796",
  "77:plausible:pilp-val-duree": "VAL797",
  "36:pil-cap": "REA214",
- "36:pil-ser": "REA215"
+ "36:pil-ser": "REA215",
+ "34:rmns-sapp-integration.0": "SAPP670",
+ "34:rmns-sapp-integration.1": "SAPP671",
+ "37:prevoir:rmns-ana-signaux": "ANA1371",
+ "37:prevoir:rmns-ana-multiplicite": "ANA1372",
+ "37:prevoir:rmns-ana-delta": "ANA1373",
+ "37:prevoir:rmns-ana-isomere": "ANA1374",
+ "77:plausible:rmns-val-integration": "VAL798",
+ "77:plausible:rmns-val-attribution": "VAL799",
+ "36:rmn-int": "REA216"
 }
