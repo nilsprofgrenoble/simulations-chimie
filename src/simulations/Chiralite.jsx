@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices, indicesProfond } from "../commun";
 
@@ -8,6 +8,9 @@ import { tire } from "./Travail";
 import * as M from "./chiraliteModele";
 import { Cram, VueAxe, COUL_GROUPE } from "./ChiraliteSchema";
 import { FICHES } from "./ChiraliteFiches";
+
+// Vue 3D du carbone (three.js, chargée à la demande) : l'élève tourne la molécule et place le groupe n°4 derrière.
+const Carbone3D = lazy(() => import("./Carbone3D"));
 
 const ID_CHIRALITE = 137, ID_CONFIG_RS = 145;
 declarerDefis(ID_CHIRALITE, [['nasym', 'Compter les carbones asymétriques'], ['chirale', 'Dire si une molécule est chirale']]);
@@ -95,6 +98,7 @@ function SimulationBase({ partie }) {
   const [guide, setGuide] = useEtatPersistant(p1 ? 'chiralite-guide-v2' : 'chiralite-rs-guide-v1', { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState(p1 ? 'nasym' : 'rs');
   const [hypoOuv, setHypoOuv] = useState(false), [molOuv, setMolOuv] = useState(false), [axeOuv, setAxeOuv] = useState(false);
+  const [choix3D, setChoix3D] = useState(null);      // null : vue par défaut de l'étape ; true / false : choix de l'élève (Dessin ou Vue 3D)
   const [P, setP] = useState(P0);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const m = MO(P.id), chaine = !!m.chaine;
@@ -188,8 +192,8 @@ function SimulationBase({ partie }) {
       texte: <>Classez les groupes du C* de l’<strong>acide 2-aminobutanoïque</strong>, CH₃CH₂–CH(NH₂)–COOH. Cliquez sur le n°1, puis le n°2, puis le n°3. Pour départager <strong>COOH</strong> (O, O, O) et <strong>CH₂CH₃</strong> (C, H, H), comparez leurs voisins.</>,
       tache: { type: 'action', ok: enGuide && P.clics.length >= 3, consigne: 'Cliquez sur les groupes dans l’ordre de priorité : 1, 2, 3.' } },
     { id: 'axe', titre: 'Regarder depuis l’axe C → 4', sc: 'axe', focus: ['scene', 'reglages'], depart: dep({ id: 'aminobutanoique', aff: A_ALA, rangs: true }),
-      texte: <>Pour trouver R ou S, on regarde la molécule <strong>depuis le côté opposé au groupe n°4</strong> : le groupe n°4 doit être <strong>derrière</strong> le carbone, loin de vous. Faites glisser le curseur « Tourner la molécule » jusqu’à 100 %. À la fin, le groupe n°4 est caché derrière le carbone et on voit les groupes 1, 2 et 3 autour de lui.</>,
-      tache: { type: 'action', ok: enGuide && P.t >= 0.99, consigne: 'Amenez le curseur « Tourner la molécule » à 100 %.' } },
+      texte: <>Pour trouver R ou S, on regarde la molécule <strong>depuis le côté opposé au groupe n°4</strong> : le groupe n°4 doit être <strong>derrière</strong> le carbone, loin de vous. Dans la vue 3D, <strong>faites glisser</strong> la molécule pour la tourner, puis cliquez sur « Placer le n°4 derrière ». (Avec le bouton « Dessin », utilisez le curseur « Tourner la molécule » jusqu’à 100 %.) À la fin, le groupe n°4 est caché derrière le carbone et on voit les groupes 1, 2 et 3 autour de lui.</>,
+      tache: { type: 'action', ok: enGuide && P.t >= 0.99, consigne: 'Cliquez sur « Placer le n°4 derrière » (ou, avec « Dessin », amenez le curseur « Tourner la molécule » à 100 %).' } },
     { id: 'sens', titre: 'Le sens de rotation 1 → 2 → 3', sc: 'axe', focus: ['scene'], depart: dep({ id: 'aminobutanoique', aff: A_ALA, rangs: true, t: 1, fleche: true }),
       texte: <>La flèche relie 1 → 2 → 3 : elle tourne dans le sens {M.sensDansLAxe(MO('aminobutanoique').g, cen(MO('aminobutanoique')), A_ALA) === 'horaire' ? 'des aiguilles d’une montre (horaire)' : 'inverse des aiguilles d’une montre (antihoraire)'}. Règle : sens <strong>horaire</strong> ⇒ configuration <strong>R</strong> (du latin rectus, « droit ») ; sens <strong>antihoraire</strong> ⇒ configuration <strong>S</strong> (sinister, « gauche »).</>,
       tache: { type: 'qcm', q: 'Quelle est la configuration de cette molécule d’acide 2-aminobutanoïque ?', options: CONF_ALA === 'R' ? ['R : sens horaire', 'S : la flèche tourne dans le sens horaire', 'S : la flèche tourne dans le sens inverse', 'on ne peut pas le dire sans calcul'] : ['S : sens inverse', 'R : la flèche tourne dans le sens inverse', 'R : la flèche tourne dans le sens horaire', 'on ne peut pas le dire sans calcul'], bonne: 0,
@@ -346,21 +350,36 @@ function SimulationBase({ partie }) {
   const cramChaine = chaine && <Cram mol={m} affs={affs} rangs={rangsAff} ariaLabel={`Représentation de Cram de ${m.nom}, deux carbones C2 et C3`}/>;
   const vueAxe = <VueAxe mol={m} c={c} aff={aff} t={P.t} avecRangs fleche={P.fleche} ariaLabel={`Vue de ${m.nom} depuis l’axe du carbone vers le groupe de priorité 4`}/>;
   const montrerAxe = enGuide ? scE === 'axe' : P.axe;
+  // Vue 3D : proposée partout où la scène montre le dessin de Cram (sauf quand l'élève doit cliquer sur le dessin) ; par défaut seulement à l'étape « axe » et en exploration de la partie 2
+  const peut3D = enExplore || (enGuide && ['cram', 'miroir', 'axe'].includes(scE) && !clicsActifs);
+  const vue3D = peut3D && (choix3D !== null ? choix3D : (enGuide ? idE === 'axe' : !p1));
+  const vue3DEl = (
+    <Suspense fallback={<div style={{ padding: 20, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}>
+      <Carbone3D mol={m} c={c} aff={aff} rangs={!!rangsAff} miroir={!chaine && P.miroir} fleche={P.fleche} devoiler={enExplore}
+        onAxe={enGuide && idE === 'axe' ? () => maj({ t: 1 }) : undefined} nom={`Vue 3D de ${m.nom}, à tourner à la souris ou au doigt`}/>
+    </Suspense>);
+  const bascule3D = peut3D && (
+    <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 8 }} role="group" aria-label="Type de vue">
+      <button onClick={() => setChoix3D(false)} aria-pressed={!vue3D} style={stylePetitBouton(!vue3D, '#0f766e')}>Dessin</button>
+      <button onClick={() => setChoix3D(true)} aria-pressed={vue3D} style={stylePetitBouton(vue3D, '#0f766e')}>Vue 3D</button>
+    </div>);
   const sceneContenu = (() => {
     if (enGuide) {
       if (scE === 'vis') return <Helices/>;
       if (scE === 'z') return <TableZ/>;
       if (scE === 'formule') return <div style={{ display: 'grid', gap: 6, justifyContent: 'center', fontSize: 20, fontWeight: 700, color: KIT.txt, textAlign: 'center' }}><div>CH₃–CHCl–COOH</div><div>CH₃–CH₂–OH</div><div>H₂N–CH₂–COOH</div><div>CH₃CH₂–CHCl–CH₂CH₃</div></div>;
+      if (vue3D) return vue3DEl;
       if (scE === 'axe') return vueAxe;
       if (scE === 'chaine') return cramChaine;
       return cramPair;
     }
+    if (vue3D) return vue3DEl;
     return <div style={{ display: 'grid', gap: 10 }}>{chaine ? cramChaine : cramPair}{montrerAxe && vueAxe}</div>;
   })();
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {enDefi && defi ? (['nasym', 'chirale'].includes(defi.type) ? <div style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, color: KIT.txt, padding: '30px 6px', overflowWrap: 'anywhere' }}>{dm.semi}</div>
-        : <Cram mol={dm} affs={[defi.aff]} rangs={defi.rangs ? rangsDe(dm, cen(dm)) : null} ariaLabel={`Représentation de Cram de ${dm.nom}`}/>) : sceneContenu}
+        : <Cram mol={dm} affs={[defi.aff]} rangs={defi.rangs ? rangsDe(dm, cen(dm)) : null} ariaLabel={`Représentation de Cram de ${dm.nom}`}/>) : <>{bascule3D}{sceneContenu}</>}
       {clicsActifs && P.err && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#dc2626', lineHeight: 1.45 }}>{P.err}</div>}
       {clicsActifs && P.clics.length >= 3 && <div role="status" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#15803d' }}>✓ Classement trouvé : {ordreTxt(m, c)}</div>}
     </div>);
@@ -430,7 +449,7 @@ function SimulationBase({ partie }) {
     <div style={{ ...styleBoite, ...cadre('reglages') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       {['miroir-cram', 'inverse'].includes(idE) && caseA('Afficher l’image dans un miroir', P.miroir, v => maj({ miroir: v }))}
-      {idE === 'axe' && <Curseur nom="Tourner la molécule" valeur={P.t * 100} onChange={v => maj({ t: v / 100 })} min={0} max={100} pas={1} unite="%" decimales={0} couleur="#0f172a"/>}
+      {idE === 'axe' && !vue3D && <Curseur nom="Tourner la molécule" valeur={P.t * 100} onChange={v => maj({ t: v / 100 })} min={0} max={100} pas={1} unite="%" decimales={0} couleur="#0f172a"/>}
       {idE === 'deux-action' && boutonsEchange}
     </div>);
   const reglagesDefi = defi && defi.type === 'cram' && (
@@ -487,7 +506,7 @@ function SimulationBase({ partie }) {
           <div className={`ch-pri${mode !== 'explore' ? ' pile' : ''}`}>
             {scene}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {enGuide ? (['miroir-cram', 'inverse', 'axe', 'deux-action'].includes(idE) && reglagesGuide) : enDefi ? reglagesDefi : reglagesExplore}
+              {enGuide ? (['miroir-cram', 'inverse', 'axe', 'deux-action'].includes(idE) && !(idE === 'axe' && vue3D) && reglagesGuide) : enDefi ? reglagesDefi : reglagesExplore}
               {(enExplore || (enGuide && (p1 ? depuis('asym') && scE !== 'vis' : depuis('deux')))) && mesures}
             </div>
           </div>
