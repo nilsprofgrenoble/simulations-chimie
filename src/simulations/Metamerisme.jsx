@@ -56,7 +56,7 @@ export function SimulationMetamerisme() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const idDe = g => ORDRE[Math.min(g.etape ?? 0, ORDRE.length - 1)];
   const [vie, setVie] = useState(() => ({ ...BASE, ...(DEPART[idDe(guide)] ?? {}) }));
-  const [ex, setEx] = useState({ base: 'beige', s: 1, lampe: 'D65' });
+  const [ex, setEx] = useState({ base: 'beige', s: 2, lampe: 'D65' });
   const [ouv, setOuv] = useState({});
   const [suiviC, noterC] = useCompteurDefi(), [suiviM, noterM] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('couleur');
@@ -216,9 +216,9 @@ export function SimulationMetamerisme() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
       <div style={{ fontSize: 13, color: KIT.txt2 }}>Ici, E2 est un échantillon construit pour avoir la même couleur que E1 sous la lumière du jour. Faites varier l’écart entre leurs courbes, puis changez de lampe dans la cabine : à partir de quel écart voit-on la différence sous la lampe A ?</div>
       {selecteur('mt-xb', 'Couleur de E1', ex.base, ev => setEx(x => ({ ...x, base: ev.target.value })), OPT_BASE)}
-      {curs('mt-xs', `Écart entre les deux courbes : ${n0(ex.s * 100)} %`, ex.s, 0, 1, 0.01, ev => setEx(x => ({ ...x, s: parseFloat(ev.target.value) })), '0 % : courbes identiques ; 100 % : écart maximal.')}
+      {curs('mt-xs', `Écart entre les deux courbes : ${n0(ex.s * 100)} %`, ex.s, 0, 2.5, 0.01, ev => setEx(x => ({ ...x, s: parseFloat(ev.target.value) })), '0 % : courbes identiques. Plus l’écart est grand, plus la différence sous la lampe A ou F2 est visible (100 % : écart de référence du parcours).')}
     </div>);
-  const verdictLampe = eX[ex.lampe] <= 1 ? 'E1 et E2 sont indiscernables' : eX[ex.lampe] <= 3 ? 'E1 et E2 sont un peu différents' : 'E1 et E2 sont nettement différents';
+  const verdictLampe = eX[ex.lampe] <= 1 ? 'E1 et E2 sont indiscernables' : eX[ex.lampe] <= 3 ? 'E1 et E2 sont à peine différents' : eX[ex.lampe] <= 7 ? 'E1 et E2 sont différents (visible côte à côte)' : 'E1 et E2 sont nettement différents';
   const planEx = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Cabine à lumière : E1 et E2 sous la lampe de votre choix</div>
