@@ -5,6 +5,7 @@ import { Pic } from "../Pictos";
 import * as M from "./chromoModele";
 import { QCM } from "./chromoQcm";
 import { SceneCuveSpectre, SvgCarteCouleur, SvgCarteConjugaison, SvgCarteEffets } from "./ChromoSchemas";
+import { FormulesMolecules, FormulePolyene } from "./ChromoFormules";
 
 const SIM_ID = 303, CLE_GUIDE = 'chromo-guide-v1';
 declarerDefis(SIM_ID, [['couleur', 'Couleur d’une solution'], ['effet', 'Nommer l’effet']]);
@@ -203,7 +204,10 @@ export function SimulationChromophores() {
   const sceneEx = ex.onglet === 'bande' ? <SceneCuveSpectre bandes={[{ lam: ex.lam, eps: 10000 }]} css={M.cssSolution(ex.lam)}/>
     : ex.onglet === 'polyene' ? <SceneCuveSpectre bandes={[bandePoly(ex.n)]} css={M.cssSolution(M.lamPolyene(ex.n))} ymax={160000}/>
     : <SceneCuveSpectre bandes={[...(ex.comparer ? [bande(ex.ref, true)] : []), bande(ex.mol)]} css={M.cssSolution(A_.lam)}/>;
-  const voletScene = (<div style={styleBoite}>{pilules}{sceneEx}</div>);
+  const NOMS_MOL = Object.fromEntries(Object.values(M.MOLS).map(m => [m.id, m.nom]));
+  const formules = ex.onglet === 'molecule' ? <FormulesMolecules ids={ex.comparer ? [ex.ref, ex.mol] : [ex.mol]} noms={NOMS_MOL} reference={ex.comparer ? ex.ref : null}/>
+    : ex.onglet === 'polyene' ? <FormulePolyene n={ex.n} nom={polyNom(ex.n)} note={ex.n === 11 ? ' Seule la chaîne conjuguée est dessinée (le β-carotène porte aussi des groupes méthyle et un cycle à chaque extrémité).' : ''}/> : null;
+  const voletScene = (<div style={styleBoite}>{pilules}{formules}{sceneEx}</div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
