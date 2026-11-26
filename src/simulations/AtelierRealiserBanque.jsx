@@ -3711,6 +3711,58 @@ function genSigmaPrecipTSTL() {
     retenir: ['Au départ : σ = (λ(cation) + λ(Cl⁻)) × c, avec c = cA × V_A / V_total en mol·m⁻³.', 'À l’équivalence : il reste le cation et NO₃⁻ ; σ est minimale mais non nulle.', 'Après l’équivalence : Ag⁺ en excès et NO₃⁻ s’accumulent ; σ augmente nettement.', 'Chaque mL versé après l’équivalence ajoute (λ(Ag⁺) + λ(NO₃⁻)) × c(Ag⁺) × 1 000 / V_total à σ.'] };
 }
 
+const KC_AC = { HCOOH: { nom: 'acide méthanoïque', f: 'HCOOH', base: 'HCOO⁻', lA: 5.46, pKa: 3.75 }, C2H5COOH: { nom: 'acide propanoïque', f: 'C₂H₅COOH', base: 'C₂H₅COO⁻', lA: 3.58, pKa: 4.87 } };
+const kcTol = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && v2 > 0 && Math.abs(v2 - q.vrai) > 1.2 * q.tolRel * Math.abs(q.vrai)); };
+const kcSci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c])).join('')}`; };
+function genConstanteAcideTSTL() {
+  const ac = KC_AC[tire(['HCOOH', 'C2H5COOH'])], c = tire([0.0030, 0.0060, 0.012, 0.025, 0.040]), Kt = 10 ** -ac.pKa, x0 = (-Kt + Math.sqrt(Kt * Kt + 4 * Kt * c)) / 2;
+  const L = 35.0 + ac.lA, sig = Number((L * x0 * 1000).toPrecision(3)), x = sig / L / 1000, HA = c - x, K = x * x / HA, tau = 100 * x / c;
+  const intro = <>Une solution d’{ac.nom} ({ac.f}), de concentration apportée c = <b>{kcSci(c)}{NB}mol/L</b>, a une conductivité σ = <b>{nb(sig, 3)}{NB}mS·m⁻¹</b> à 25 °C. Données : λ(H₃O⁺) = <b>35,0</b> et λ({ac.base}) = <b>{nb(ac.lA, 3)}</b> mS·m²·mol⁻¹ ; on néglige les ions HO⁻.</>;
+  const q1 = { id: 'k0', type: 'num', q: <>{intro} Calculez la concentration en ions H₃O⁺ à l’équilibre (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: x, tolRel: 0.05, csMin: 2,
+    aide: 'σ = (λ(H₃O⁺) + λ(A⁻)) × [H₃O⁺] : isolez [H₃O⁺] (en mol·m⁻³), puis convertissez en mol/L (÷ 1 000).',
+    pieges: [[x * 1000, 'Votre résultat est en mol·m⁻³ : divisez par 1 000 pour obtenir des mol/L.'], [sig / 35.0 / 1000, 'Il faut diviser par la somme λ(H₃O⁺) + λ(A⁻) : les deux ions conduisent le courant.'], [sig * L / 1000, 'Il faut diviser σ par la somme des λ, non la multiplier.']],
+    expl: <>[H₃O⁺] = σ / (λ(H₃O⁺) + λ({ac.base})) = {nb(sig, 3)} / {nb(L, 4)} = {nb(sig / L, 3)}{NB}mol·m⁻³ = <b>{kcSci(x)}{NB}mol/L</b>.</> };
+  const q2 = { id: 'k1', type: 'num', q: <>{intro} On a trouvé [H₃O⁺] = [{ac.base}] = <b>{kcSci(x)}{NB}mol/L</b>. Calculez la concentration en acide {ac.f} restant à l’équilibre (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: HA, tolRel: 0.05, csMin: 2,
+    aide: 'Tableau d’avancement en concentrations : [HA] = c − x, où x est la concentration en ions formés.',
+    pieges: [[c, 'C’est la concentration apportée, avant réaction : retranchez x.'], [c + x, 'Il faut retrancher x à c, non l’ajouter : la molécule qui réagit disparaît.'], [x, 'C’est [H₃O⁺] : on demande l’acide restant, c − x.']],
+    expl: <>[{ac.f}] = c − x = {kcSci(c)} − {kcSci(x)} = <b>{kcSci(HA, 3)}{NB}mol/L</b>.</> };
+  const q3 = { id: 'k2', type: 'num', q: <>{intro} Calculez la constante d’équilibre K de la réaction de l’acide avec l’eau (sans unité, 2 chiffres significatifs ; gardez 3 chiffres dans les calculs intermédiaires).</>, unite: '', vrai: K, tolRel: 0.10, csMin: 2,
+    aide: 'K = [A⁻] × [H₃O⁺] / [HA] = x² / (c − x) avec x = σ / (λ(H₃O⁺) + λ(A⁻)) converti en mol/L.',
+    pieges: [[x * x, 'C’est le numérateur seul : divisez par c − x.'], [x / HA, 'Il manque le carré : [A⁻] et [H₃O⁺] sont deux facteurs égaux à x.'], [x * x / c, 'Au dénominateur, il faut c − x, la concentration restante, et non c.'], [1 / K, 'Le rapport est inversé : les produits sont au numérateur.']],
+    expl: <>K = x² / (c − x) = ({kcSci(x, 3)})² / {kcSci(HA, 3)} = <b>{kcSci(K)}</b>.</> };
+  const q4 = { id: 'k3', type: 'num', q: <>{intro} Calculez le taux d’avancement final τ (en %, 2 chiffres significatifs).</>, unite: '%', vrai: tau, tolRel: 0.05, csMin: 2,
+    aide: 'τ = x / c, avec x et c en mol/L, puis multipliez par 100.',
+    pieges: [[tau / 100, 'Ce résultat est une fraction : multipliez par 100 pour l’exprimer en pourcentage.'], [100 * x / HA, 'Il faut diviser par c, la concentration apportée, non par c − x.'], [sig / L / c * 100, 'Votre x est resté en mol·m⁻³ : convertissez en mol/L avant de diviser par c.']],
+    expl: <>τ = x / c = {kcSci(x)} / {kcSci(c)} = <b>{nb(tau, 2)}{NB}%</b>.</> };
+  [q1, q2, q3, q4].forEach(kcTol);
+  return { intro: 'Acide faible : de la conductivité à la concentration en ions, à l’acide restant, à la constante K et au taux d’avancement final.', questions: [q1, q2, q3, q4],
+    retenir: ['[H₃O⁺] = [A⁻] = x = σ / (λ(H₃O⁺) + λ(A⁻)), en mol·m⁻³ puis ÷ 1 000 pour obtenir des mol/L.', 'Tableau d’avancement : [HA] = c − x.', 'K = x² / (c − x), sans unité.', 'τ = x / c : part des molécules introduites qui ont réagi.'] };
+}
+function genKaTauTSTL() {
+  const ac = KC_AC[tire(['HCOOH', 'C2H5COOH'])], c = tire([0.0030, 0.0060, 0.012, 0.025, 0.040]), Kt = 10 ** -ac.pKa, x0 = (-Kt + Math.sqrt(Kt * Kt + 4 * Kt * c)) / 2;
+  const tau = Number((100 * x0 / c).toPrecision(2)), x = tau / 100 * c, L = 35.0 + ac.lA, sig = L * x * 1000, K = x * x / (c - x), pKa = -Math.log10(K);
+  const intro = <>On étudie l’{ac.nom} ({ac.f}) à 25 °C, de concentration apportée c = <b>{kcSci(c)}{NB}mol/L</b> ; son taux d’avancement final vaut <b>{nb(tau, 2)}{NB}%</b>. Données : λ(H₃O⁺) = <b>35,0</b> et λ({ac.base}) = <b>{nb(ac.lA, 3)}</b> mS·m²·mol⁻¹ ; on néglige les ions HO⁻.</>;
+  const q1 = { id: 't0', type: 'num', q: <>{intro} Calculez la concentration en ions H₃O⁺ à l’équilibre (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: x, tolRel: 0.05, csMin: 2,
+    aide: 'τ = x / c, donc x = τ × c (τ en fraction : 6,5 % = 0,065).',
+    pieges: [[tau * c, 'Le taux est en pourcentage : écrivez-le en fraction (÷ 100) avant de multiplier par c.'], [c / (tau / 100), 'Il faut multiplier c par τ, non diviser.'], [tau / 100, 'Il faut multiplier par c : x = τ × c.']],
+    expl: <>x = τ × c = {nb(tau / 100, 4)} × {kcSci(c)} = <b>{kcSci(x)}{NB}mol/L</b>.</> };
+  const q2 = { id: 't1', type: 'num', q: <>{intro} Dans la solution, [H₃O⁺] = [{ac.base}] = <b>{kcSci(x)}{NB}mol/L</b>. Calculez la conductivité σ de la solution (en mS·m⁻¹, 2 chiffres significatifs).</>, unite: 'mS·m⁻¹', vrai: sig, tolRel: 0.05, csMin: 2,
+    aide: 'σ = (λ(H₃O⁺) + λ(A⁻)) × [H₃O⁺], avec [H₃O⁺] en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³).',
+    pieges: [[sig / 1000, 'Vous avez gardé [H₃O⁺] en mol/L : convertissez-la en mol·m⁻³ (× 1 000).'], [35.0 * x * 1000, 'Il faut aussi la contribution de l’ion A⁻ : σ = (λ(H₃O⁺) + λ(A⁻)) × [H₃O⁺].'], [L * c * 1000, 'On utilise la concentration en ions x, non la concentration apportée c.']],
+    expl: <>σ = (35,0 + {nb(ac.lA, 3)}) × {nb(x * 1000, 3)} = <b>{nb(sig, 3)}{NB}mS·m⁻¹</b>.</> };
+  const q3 = { id: 't2', type: 'num', q: <>{intro} Calculez la constante d’équilibre K de la réaction de l’acide avec l’eau (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: K, tolRel: 0.10, csMin: 2,
+    aide: 'K = x² / (c − x), avec x = τ × c.',
+    pieges: [[x * x, 'C’est le numérateur seul : divisez par c − x.'], [x * x / c, 'Au dénominateur, il faut c − x, non c.'], [x / (c - x), 'Il manque le carré : K = x² / (c − x).']],
+    expl: <>x = {kcSci(x)} mol/L ; K = x² / (c − x) = {kcSci(x * x, 3)} / {kcSci(c - x, 3)} = <b>{kcSci(K)}</b>.</> };
+  const q4 = { id: 't3', type: 'num', q: <>{intro} La constante d’équilibre vaut K = <b>{kcSci(K)}</b>. Calculez le pK<sub>a</sub> = −log K du couple (2 décimales).</>, unite: '', vrai: pKa, tolRel: 0.02, csMin: 2,
+    aide: 'Pour cette réaction, K est la constante d’acidité Ka du couple : pKa = −log Ka (touche log de la calculatrice).',
+    pieges: [[K, 'C’est K lui-même : le pKa est son opposé du logarithme décimal.'], [Math.log10(K), 'Le signe est à corriger : pKa = −log Ka est positif pour un acide faible.'], [-Math.log(K), 'Il faut le logarithme décimal (log), non le logarithme népérien (ln).']],
+    expl: <>pK<sub>a</sub> = −log({kcSci(K)}) = <b>{nb(pKa, 2)}</b>.</> };
+  [q1, q2, q3, q4].forEach(kcTol);
+  return { intro: 'Acide faible : du taux d’avancement final à la concentration en ions, à la conductivité, à la constante K et au pKa.', questions: [q1, q2, q3, q4],
+    retenir: ['x = τ × c (τ en fraction) : concentration en ions H₃O⁺ et en base conjuguée.', 'σ = (λ(H₃O⁺) + λ(A⁻)) × x, avec x en mol·m⁻³.', 'K = x² / (c − x), constante d’acidité du couple.', 'pKa = −log Ka.'] };
+}
+
 function genEtalonnageTG() {
   const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c] || c)).join('')}`; };
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
@@ -5687,6 +5739,8 @@ export const FAMILLES = [
   { id: 'cdt-calcul', groupe: 'Formules', titre: 'Conductimétrie : loi de Kohlrausch, concentration, volume équivalent et bilan après l’équivalence (TG)', gen: genConductimetrieTG, domaine: 'Conductimétrie : conductivité et titrage' },
   { id: 'cdp-calcul', groupe: 'Formules', titre: 'Dosage des chlorures par précipitation : quantité restante, volume équivalent, masse de sel et masse de précipité (TSTL)', gen: genPrecipitationTSTL, domaine: 'Titrage conductimétrique par précipitation' },
   { id: 'cdp-sigma-calcul', groupe: 'Formules', titre: 'Dosage des chlorures par précipitation : conductivité au départ, à l’équivalence, après l’équivalence et pente (TSTL)', gen: genSigmaPrecipTSTL, domaine: 'Titrage conductimétrique par précipitation' },
+  { id: 'kcd-calcul', groupe: 'Formules', titre: 'Constante d’un acide faible par conductimétrie : concentration en ions, acide restant, constante K et taux d’avancement (TSTL)', gen: genConstanteAcideTSTL, domaine: 'Constante d’un acide faible par conductimétrie' },
+  { id: 'kcd-ka-calcul', groupe: 'Formules', titre: 'Acide faible : du taux d’avancement à la concentration en ions, à la conductivité, à K et au pKa (TSTL)', gen: genKaTauTSTL, domaine: 'Constante d’un acide faible par conductimétrie' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },

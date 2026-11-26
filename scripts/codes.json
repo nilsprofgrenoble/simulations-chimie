@@ -2733,5 +2733,17 @@
  "77:plausible:dfr-val-conv": "VAL735",
  "77:plausible:dfr-val-cycliste": "VAL736",
  "36:dfr-arret": "REA167",
- "36:dfr-force": "REA168"
+ "36:dfr-force": "REA168",
+ "34:kcd-sapp-x.0": "SAPP582",
+ "34:kcd-sapp-x.1": "SAPP583",
+ "34:kcd-sapp-K.0": "SAPP584",
+ "34:kcd-sapp-K.1": "SAPP585",
+ "37:prevoir:kcd-ana-majoritaire": "ANA1251",
+ "37:prevoir:kcd-ana-sigma-dilution": "ANA1252",
+ "37:prevoir:kcd-ana-K-compare": "ANA1253",
+ "37:prevoir:kcd-ana-hydroxyde": "ANA1254",
+ "77:plausible:kcd-val-tau": "VAL737",
+ "77:plausible:kcd-val-K-dilution": "VAL738",
+ "36:kcd-calcul": "REA169",
+ "36:kcd-ka-calcul": "REA170"
 }
