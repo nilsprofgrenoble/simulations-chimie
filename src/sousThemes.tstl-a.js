@@ -202,5 +202,9 @@ export default {
       refs: ['37:prevoir:tcr-ana-teinte', '37:prevoir:tcr-ana-sansacide', '77:plausible:tcr-val-incolore', '36:tcr-bilan-calcul'] },
     { id: 'tcr-calcul', nom: 'Déterminer une concentration à l’aide d’un titrage direct', capacite: 'Déterminer une concentration à l’aide des données d’un titrage direct (relation à l’équivalence, coefficients de l’équation, dilution).',
       refs: ['37:prevoir:tcr-ana-concentration', '37:prevoir:tcr-ana-prise', '77:plausible:tcr-val-rapport', '34:tcr-sapp-quantites', '34:tcr-sapp-concentration', '36:tcr-dosage-calcul'] },
+    { id: 'tpt-courbe', nom: 'Interpréter la courbe d’un titrage potentiométrique', capacite: 'Interpréter l’allure d’une courbe de titrage potentiométrique (saut de potentiel, équivalence par la méthode de la dérivée).',
+      refs: ['37:prevoir:tpt-ana-saut', '37:prevoir:tpt-ana-reference', '77:plausible:tpt-val-maximum', '34:tpt-sapp-derivee', '36:tpt-potentiel-calcul'] },
+    { id: 'tpt-standard', nom: 'Déterminer un potentiel standard et une concentration par potentiométrie', capacite: 'Déterminer un potentiel standard à partir d’une courbe de titrage potentiométrique ; déterminer une concentration à l’aide des données d’un titrage direct.',
+      refs: ['37:prevoir:tpt-ana-demi', '37:prevoir:tpt-ana-concentration', '77:plausible:tpt-val-standard', '34:tpt-sapp-concentration', '36:tpt-dosage-calcul'] },
   ],
 };

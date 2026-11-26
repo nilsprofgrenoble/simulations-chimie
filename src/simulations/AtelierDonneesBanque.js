@@ -1699,6 +1699,48 @@ export const ENONCES = [
     },
   },
   {
+    id: 'tpt-sapp-derivee', domaine: 'Titrage potentiométrique', titre: 'Titrage potentiométrique : dérivée entre deux points voisins', noms: ['Pente de la courbe entre les deux points', 'Volume moyen de l’intervalle'],
+    gen: () => ({ V1: tire([10.4, 11.0, 11.6, 12.0, 12.4, 12.8, 13.4]), E1: tire([0.86, 0.91, 0.96, 1.02, 1.08, 1.14]), dE: tire([0.03, 0.05, 0.08, 0.11, 0.15, 0.19]), cB: tire([0.0500, 0.0800, 0.1000]) }),
+    build: (p, q) => {
+      const V2 = Math.round((p.V1 + 0.2) * 10) / 10, E2 = Math.round((p.E1 + p.dE) * 100) / 100, pente = (E2 - p.E1) / 0.2, Vm = Math.round((p.V1 + V2) / 2 * 100) / 100, cs = x => String(x).replace('.', ',');
+      const tokens = {
+        V1: tok(`${cs(p.V1)} mL`, 'Volume de cérium(IV) versé au premier point', p.V1, 'mL'), E1: tok(`${cs(p.E1.toFixed(2))} V`, 'Potentiel mesuré au premier point', p.E1, 'V'),
+        V2: tok(`${cs(V2)} mL`, 'Volume de cérium(IV) versé au second point', V2, 'mL'), E2: tok(`${cs(E2.toFixed(2))} V`, 'Potentiel mesuré au second point', E2, 'V'),
+        cB: tok(`${cs((p.cB * 100).toFixed(2))}×10⁻² mol/L`, 'Concentration du cérium(IV) dans la burette', p.cB, 'mol/L'), ref: tok('0,245 V', 'Potentiel de l’électrode de référence', 0.245, 'V'),
+      };
+      const debut = ['Dans un titrage potentiométrique, on relève le potentiel E de la solution après chaque ajout de cérium(IV) de concentration ', T('cB'), ' (électrode de référence à ', T('ref'), '). Deux mesures voisines donnent : E = ', T('E1'), ' pour V = ', T('V1'), ', puis E = ', T('E2'), ' pour V = ', T('V2'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la pente dE/dV entre ces deux points (méthode de la dérivée) ?'], utiles: ['E1', 'E2', 'V1', 'V2'],
+        raisons: { cB: 'La concentration du titrant n’intervient pas dans la pente entre deux mesures.', ref: 'Le potentiel de référence est le même aux deux points : il n’intervient pas dans la variation de E.' },
+        cherche: { bonne: 'La pente dE/dV entre les deux points (en V/mL)', faux: ['Le potentiel moyen entre les deux points (en V)', 'La quantité de cérium(IV) versée entre les deux points (en mmol)', 'Le volume équivalent du dosage (en mL)'] },
+        manque: null, solution: { txt: 'dE/dV ≈ (E₂ − E₁) / (V₂ − V₁)', val: pente, u: 'V/mL' } };
+      return { tokens, derivees: [], texte: [...debut, 'À quel volume moyen associe-t-on cette pente, pour tracer la courbe dérivée ?'], utiles: ['V1', 'V2'],
+        raisons: { E1: 'Le volume moyen ne dépend que des volumes versés.', E2: 'Le volume moyen ne dépend que des volumes versés.', cB: 'La concentration du titrant n’intervient pas dans le volume moyen.', ref: 'Le potentiel de référence n’intervient pas dans le volume moyen.' },
+        cherche: { bonne: 'Le volume moyen de l’intervalle (en mL)', faux: ['Le volume équivalent du dosage (en mL)', 'Le volume de la prise d’essai (en mL)', 'L’écart entre les deux volumes versés (en mL)'] },
+        manque: null, solution: { txt: 'V moyen = (V₁ + V₂) / 2', val: Vm, u: 'mL' } };
+    },
+  },
+  {
+    id: 'tpt-sapp-concentration', domaine: 'Titrage potentiométrique', titre: 'Titrage potentiométrique : concentration du fer(II)', noms: ['Quantité de cérium(IV) versée à l’équivalence', 'Concentration de la solution de fer(II)'],
+    gen: () => ({ cB: tire([0.0500, 0.0800, 0.1000]), VA: tire([10, 20, 25]), Ve: tire([8.6, 9.8, 11.4, 12.6, 14.2, 16.4, 18.8]) }),
+    build: (p, q) => {
+      const nB = p.cB * p.Ve, cA = nB / p.VA, cs = x => String(x).replace('.', ',');
+      const tokens = {
+        cB: tok(`${cs((p.cB * 100).toFixed(2))}×10⁻² mol/L`, 'Concentration du cérium(IV) dans la burette', p.cB, 'mol/L'), Ve: tok(`${cs(p.Ve)} mL`, 'Volume équivalent repéré par la méthode de la dérivée', p.Ve, 'mL'),
+        VA: tok(`${p.VA} mL`, 'Volume de la solution de fer(II) prélevé', p.VA, 'mL'), rap: tok('1 Ce⁴⁺ pour 1 Fe²⁺', 'Coefficients de l’équation de titrage', 1, ''),
+        Eref: tok('0,245 V', 'Potentiel de l’électrode de référence', 0.245, 'V'), E0: tok('0,77 V', 'Potentiel lu à la demi-équivalence', 0.77, 'V'), nB: tok(`${nb(nB)} mmol`, 'Quantité de cérium(IV) versée à l’équivalence', nB, 'mmol'),
+      };
+      const debut = ['On dose ', T('VA'), ' d’une solution de fer(II) par du cérium(IV) de concentration ', T('cB'), '. L’équation du titrage ', T('rap'), ' est totale. La méthode de la dérivée donne ', T('Ve'), '. Le potentiel lu à la demi-équivalence est ', T('E0'), ' (électrode de référence à ', T('Eref'), '). '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de cérium(IV) a-t-on versée jusqu’à l’équivalence ?'], utiles: ['cB', 'Ve'],
+        raisons: { VA: 'Le volume de fer(II) prélevé intervient pour la concentration, pas pour la quantité de cérium versée.', rap: 'Le rapport des coefficients relie ensuite la quantité de fer(II) à celle du cérium.', Eref: 'Le potentiel de référence n’intervient pas dans les quantités de matière.', E0: 'Le potentiel standard ne sert pas à calculer des quantités de matière.' },
+        cherche: { bonne: 'La quantité de cérium(IV) versée à l’équivalence (en mmol)', faux: ['La concentration de la solution de fer(II) (en mol/L)', 'La quantité de fer(III) formée au début du dosage (en mmol)', 'Le potentiel à l’équivalence (en V)'] },
+        manque: null, solution: { txt: 'n(Ce⁴⁺) = c_B × V_E', val: nB, u: 'mmol' } };
+      return { tokens, derivees: [{ id: 'nB', nom: 'Quantité de cérium(IV) versée', expr: 'c_B × V_E', val: nB, u: 'mmol' }], texte: [...debut, 'Quelle est la concentration de la solution de fer(II) ?'], utiles: ['cB', 'Ve', 'VA', 'rap'],
+        raisons: { Eref: 'Le potentiel de référence n’intervient pas dans le calcul d’une concentration.', E0: 'Le potentiel standard ne sert pas à calculer une concentration.' },
+        cherche: { bonne: 'La concentration c_A de la solution de fer(II) (en mol/L)', faux: ['La quantité de fer(II) dosée (en mmol)', 'La concentration du cérium(IV) à l’équivalence (en mol/L)', 'Le volume de fer(II) à prélever (en mL)'] },
+        manque: null, solution: { txt: 'c_A = c_B × V_E / V_A', val: cA, u: 'mol/L' } };
+    },
+  },
+  {
     id: 'tcr-sapp-quantites', domaine: 'Titrage redox direct', titre: 'Dosage au permanganate : quantités de matière à l’équivalence', noms: ['Quantité de permanganate versée à l’équivalence', 'Quantité d’eau oxygénée dans l’erlenmeyer'],
     gen: () => ({ cB: tire([0.0100, 0.0150, 0.0200, 0.0250]), VA: tire([10, 20, 25]), Ve: tire([9.4, 11.8, 13.6, 15.2, 17.9, 19.3, 21.1]), Vac: tire([5, 10]) }),
     build: (p, q) => {

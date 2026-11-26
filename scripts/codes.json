@@ -2974,5 +2974,17 @@
  "77:plausible:fluo-val-persistance": "VAL777",
  "77:plausible:fluo-val-energie-emise": "VAL778",
  "77:plausible:fluo-val-rv-lumiere": "VAL779",
- "36:fluo-calcul": "REA207"
+ "36:fluo-calcul": "REA207",
+ "34:tpt-sapp-derivee.0": "SAPP656",
+ "34:tpt-sapp-derivee.1": "SAPP657",
+ "34:tpt-sapp-concentration.0": "SAPP658",
+ "34:tpt-sapp-concentration.1": "SAPP659",
+ "37:prevoir:tpt-ana-saut": "ANA1336",
+ "37:prevoir:tpt-ana-demi": "ANA1337",
+ "37:prevoir:tpt-ana-reference": "ANA1338",
+ "37:prevoir:tpt-ana-concentration": "ANA1339",
+ "77:plausible:tpt-val-standard": "VAL780",
+ "77:plausible:tpt-val-maximum": "VAL781",
+ "36:tpt-dosage-calcul": "REA208",
+ "36:tpt-potentiel-calcul": "REA209"
 }
