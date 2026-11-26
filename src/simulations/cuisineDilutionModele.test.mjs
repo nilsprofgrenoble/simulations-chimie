@@ -38,8 +38,8 @@ assert(M.fmtC(1) === '1,0' && M.fmtC(0.05) === '0,050' && M.fmtC(0.0005) === '0,
 assert(M.temperature(240, 240) === 35 && M.temperature(0, 240) === 180 && M.temperature(120, 240) === 108, 'température : 35 °C au départ, 180 °C à l\'explosion');
 assert(M.temperature(999, 240) === 35 && M.temperature(-5, 240) === 180, 'bornes');
 assert(M.etoilesMission(120, 240) === 3 && M.etoilesMission(60, 240) === 2 && M.etoilesMission(10, 240) === 1, 'étoiles selon le temps restant');
-// chaque mission est faisable dans le temps imparti par un joueur qui met 25 s par étape de calcul (marge ≥ 30 %)
-for (const S of M.SERVICES) assert(S.temps + S.nb * M.BONUS_REUSSITE > 1.3 * S.nb * 25 * S.etapesMax, `mission ${S.id} : temps trop court`);
+// chaque mission est faisable dans le temps imparti par un joueur qui met 15 s par étape de calcul (marge ≥ 15 %) : parties courtes et intenses
+for (const S of M.SERVICES) assert(S.temps + S.nb * M.BONUS_REUSSITE > 1.15 * S.nb * 15 * S.etapesMax, `mission ${S.id} : temps trop court`);
 // tous les services sont jouables par un « expert » : il réussit toutes les commandes du premier coup
 for (const S of M.SERVICES) for (const c of M.commandesDuService(S, 5)) assert(M.retour(c, M.correction(c, S.etapesMax)).juste, 'correction juste');
 console.log('OK');

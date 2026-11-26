@@ -51,30 +51,51 @@ const vide = { source: { x: 100, y: 250, a: 0 }, cible: { x: -999, y: -999, r: 1
   }
 }
 
+// 3 bis. Dispersion : n décroît quand λ croît (violet plus dévié que rouge), n(589 nm) = n tabulé ; la lumière blanche donne 7 rayons qui se séparent dans le prisme
+{
+  for (const m of Object.keys(M.MATERIAUX)) {
+    assert(Math.abs(M.indice(m, 589) - M.MATERIAUX[m].n) < 1e-12, `n(589) = n tabulé pour ${m}`);
+    assert(M.indice(m, 430) > M.indice(m, 550) && M.indice(m, 550) > M.indice(m, 670), `n décroît avec λ (${m})`);
+  }
+  const niv = { source: { x: 70, y: 440, a: 0, blanc: true }, cible: { x: -9, y: -9, r: 1 }, murs: [], miroirs: [], blocs: [{ id: 'b', type: 'prisme', c: 170, x: 300, y: 440, mat: 'verre' }] };
+  const tr = M.tracer(niv, { angles: { b: 100 }, mats: { b: 'verre' } });
+  assert(tr.rayons.length === 7, 'lumière blanche : 7 rayons');
+  const yFin = r => r.points[r.points.length - 1][1];
+  assert(yFin(tr.rayons[0]) !== yFin(tr.rayons[6]), 'les couleurs ne finissent pas au même endroit');
+  const e = l => M.tracerRayon(niv, { angles: { b: 100 }, mats: { b: 'verre' } }, l).evts[0];
+  assert(e(430).i2 < e(670).i2, 'le violet est plus réfracté (i₂ plus petit) que le rouge');
+  assert(Math.abs(Math.sin(rad(e(430).i1)) - M.indice('verre', 430) * Math.sin(rad(e(430).i2))) < 1e-9, 'Snell-Descartes avec n(λ)');
+  // cible colorée : un rayon d'une autre couleur est absorbé sans compter
+  const n2 = { ...niv, cible: undefined, cibles: [{ x: 700, y: 226, r: 20, bande: [440, 495] }] };
+  const rb = M.tracerRayon(n2, { angles: { b: 100 }, mats: { b: 'verre' } }, 450), rr = M.tracerRayon(n2, { angles: { b: 100 }, mats: { b: 'verre' } }, 650);
+  assert(rb.atteintes[0] && !rr.atteintes[0], 'cible bleue : atteinte par le bleu, pas par le rouge');
+}
+
 // 4. Chaque niveau : non résolu au départ, et résoluble (recherche exhaustive au pas de 5°, puis robustesse au degré)
-const solved = (niv, ang, mats) => M.tracer(niv, { angles: ang, mats }).atteint;
+const solved = (niv, ang, mats, lambda) => M.tracer(niv, { angles: ang, mats, lambda }).atteint;
 for (const niv of M.NIVEAUX) {
   const r0 = M.reglageInitial(niv);
   assert(!M.tracer(niv, r0).atteint, `niveau ${niv.id} : déjà résolu au départ`);
   const ids = [...niv.miroirs, ...niv.blocs].map(e => e.id);
   const matsListes = niv.blocs.some(b => b.choix) ? Object.keys(M.MATERIAUX) : [null];
   const sols = [];
+  const lambdas = niv.source.choix ? M.LASERS.map(l => l.lambda) : [undefined];
   const rec = (k, ang, mat) => {
-    if (k === ids.length) { const mats = {}; niv.blocs.forEach(b => { mats[b.id] = mat || b.mat; }); if (solved(niv, ang, mats)) sols.push({ ang: { ...ang }, mats }); return; }
+    if (k === ids.length) { const mats = {}; niv.blocs.forEach(b => { mats[b.id] = mat || b.mat; }); for (const lambda of lambdas) if (solved(niv, ang, mats, lambda)) sols.push({ ang: { ...ang }, mats, lambda }); return; }
     const id = ids[k], isMir = niv.miroirs.some(m => m.id === id), plage = isMir ? 180 : 360;
     for (let a = 0; a < plage; a += 5) { ang[id] = a; rec(k + 1, ang, mat); }
   };
   for (const mat of matsListes) rec(0, {}, mat);
   assert(sols.length > 0, `niveau ${niv.id} : aucune solution`);
   // aucun raccourci : dans toute solution, chaque miroir (et chaque bloc) doit servir
-  const utilise = s => { const ev = M.tracer(niv, { angles: s.ang, mats: s.mats }).evts; return ids.every(id => ev.some(e => e.id === id)); };
+  const utilise = s => { const ev = M.tracer(niv, { angles: s.ang, mats: s.mats, lambda: s.lambda }).evts; return ids.every(id => ev.some(e => e.id === id)); };
   const raccourcis = sols.filter(s => !utilise(s));
   assert(raccourcis.length === 0, `niveau ${niv.id} : ${raccourcis.length} solutions avec un élément inutile, ex. ${JSON.stringify(raccourcis[0])}`);
   // largeur de la bande de solutions (en degrés, autour d'une solution) : la meilleure solution doit tolérer au moins 2° sur chaque élément (réglage au degré près, flèches du clavier incluses)
-  const bande = (s, id) => { let n = 1; for (const sgn of [1, -1]) for (let k = 1; k < 40; k++) { const a = { ...s.ang, [id]: s.ang[id] + sgn * k }; if (solved(niv, a, s.mats)) n++; else break; } return n; };
+  const bande = (s, id) => { let n = 1; for (const sgn of [1, -1]) for (let k = 1; k < 40; k++) { const a = { ...s.ang, [id]: s.ang[id] + sgn * k }; if (solved(niv, a, s.mats, s.lambda)) n++; else break; } return n; };
   let meilleure = null, minMeilleure = -1;
   for (const s of sols.slice(0, 400)) { const larg = {}; let mn = 99; for (const id of ids) { larg[id] = bande(s, id); mn = Math.min(mn, larg[id]); } if (mn > minMeilleure) { minMeilleure = mn; meilleure = { s, larg }; } }
-  console.log(`niveau ${niv.id} « ${niv.titre} » : ${sols.length} solutions (pas de 5°) ; meilleure bande (°) :`, JSON.stringify(meilleure.larg), JSON.stringify(meilleure.s.ang), JSON.stringify(meilleure.s.mats));
+  console.log(`niveau ${niv.id} « ${niv.titre} » : ${sols.length} solutions (pas de 5°) ; meilleure bande (°) :`, JSON.stringify(meilleure.larg), JSON.stringify(meilleure.s.ang), JSON.stringify(meilleure.s.mats), meilleure.s.lambda ?? '');
   assert(minMeilleure >= 2, `niveau ${niv.id} : même la meilleure solution est trop pointue (${minMeilleure}°)`);
 }
 console.log('OK');
