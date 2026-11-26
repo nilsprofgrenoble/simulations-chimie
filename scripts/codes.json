@@ -2685,5 +2685,17 @@
  "37:prevoir:mtm-ana-controle": "ANA1234",
  "77:plausible:mtm-val-courbes": "VAL726",
  "77:plausible:mtm-val-identiques": "VAL727",
- "77:plausible:mtm-val-ecart": "VAL728"
+ "77:plausible:mtm-val-ecart": "VAL728",
+ "34:pdt-sapp-descente.0": "SAPP566",
+ "34:pdt-sapp-descente.1": "SAPP567",
+ "34:pdt-sapp-frott.0": "SAPP568",
+ "34:pdt-sapp-frott.1": "SAPP569",
+ "37:prevoir:pdt-ana-monte": "ANA1235",
+ "37:prevoir:pdt-ana-boucle": "ANA1236",
+ "37:prevoir:pdt-ana-cercle": "ANA1237",
+ "37:prevoir:pdt-ana-frott": "ANA1238",
+ "77:plausible:pdt-val-signe": "VAL729",
+ "77:plausible:pdt-val-chemin": "VAL730",
+ "36:pdt-poids": "REA161",
+ "36:pdt-frott": "REA162"
 }
