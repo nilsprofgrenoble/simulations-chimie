@@ -70,22 +70,31 @@ export function ajouterBase(contenu, re, O, a, p, lie, angleFinal, nomLie = null
 
 // Gestes sur le canevas 3D : un doigt (ou la souris) fait tourner, DEUX doigts pincés zooment (sans faire tourner), molette = zoom.
 // tourner(dx, dy) ; zoomer(f) multiplie la distance de la caméra par f (< 1 : on se rapproche) ; debut() est appelé à chaque nouveau contact.
+// Souris / stylet : événements « pointer » ; doigts : événements « touch » (plus fiables que pointer pour le pincement sur téléphone).
 export function brancherGestes(el, { tourner, zoomer, debut }) {
-  const pts = new Map(); let d0 = 0;
-  const ecart = () => { const [a, b] = [...pts.values()]; return Math.hypot(a[0] - b[0], a[1] - b[1]); };
-  const bas = ev => { pts.set(ev.pointerId, [ev.clientX, ev.clientY]); try { el.setPointerCapture?.(ev.pointerId); } catch { /* contact synthétique */ } debut?.(); if (pts.size === 2) d0 = ecart(); };
-  const deplace = ev => {
-    const p = pts.get(ev.pointerId); if (!p) return;
-    const dx = ev.clientX - p[0], dy = ev.clientY - p[1]; pts.set(ev.pointerId, [ev.clientX, ev.clientY]);
-    if (pts.size === 1) tourner(dx, dy);
-    else if (pts.size === 2) { const d = ecart(); if (zoomer && d0 > 0 && d > 0) zoomer(d0 / d); d0 = d; }
+  let dernier = null;
+  const bas = ev => { if (ev.pointerType === 'touch') return; dernier = [ev.clientX, ev.clientY]; try { el.setPointerCapture?.(ev.pointerId); } catch { /* sans effet */ } debut?.(); };
+  const deplace = ev => { if (ev.pointerType === 'touch' || !dernier) return; tourner(ev.clientX - dernier[0], ev.clientY - dernier[1]); dernier = [ev.clientX, ev.clientY]; };
+  const haut = ev => { if (ev.pointerType !== 'touch') dernier = null; };
+  let doigts = [], d0 = 0;
+  const lire = ev => [...ev.touches].map(t => [t.clientX, t.clientY]);
+  const ecart = d => Math.hypot(d[0][0] - d[1][0], d[0][1] - d[1][1]);
+  const tdebut = ev => { ev.preventDefault(); doigts = lire(ev); if (doigts.length === 2) d0 = ecart(doigts); debut?.(); };
+  const tbouge = ev => {
+    ev.preventDefault(); const n = lire(ev);
+    if (n.length === 1 && doigts.length === 1) tourner(n[0][0] - doigts[0][0], n[0][1] - doigts[0][1]);
+    else if (n.length === 2 && doigts.length === 2) { const d = ecart(n); if (zoomer && d0 > 0 && d > 0) zoomer(d0 / d); d0 = d; }
+    doigts = n; if (n.length === 2) d0 = ecart(n);
   };
-  const haut = ev => { pts.delete(ev.pointerId); d0 = pts.size === 2 ? ecart() : 0; };
+  const tfin = ev => { ev.preventDefault?.(); doigts = lire(ev); d0 = doigts.length === 2 ? ecart(doigts) : 0; };
   const molette = ev => { ev.preventDefault(); zoomer?.(ev.deltaY > 0 ? 1.1 : 0.9); };
+  const opt = { passive: false };
   el.addEventListener('pointerdown', bas); el.addEventListener('pointermove', deplace); el.addEventListener('pointerup', haut); el.addEventListener('pointercancel', haut);
-  el.addEventListener('wheel', molette, { passive: false });
+  el.addEventListener('touchstart', tdebut, opt); el.addEventListener('touchmove', tbouge, opt); el.addEventListener('touchend', tfin, opt); el.addEventListener('touchcancel', tfin, opt);
+  el.addEventListener('wheel', molette, opt);
   return () => {
     el.removeEventListener('pointerdown', bas); el.removeEventListener('pointermove', deplace); el.removeEventListener('pointerup', haut); el.removeEventListener('pointercancel', haut);
+    el.removeEventListener('touchstart', tdebut); el.removeEventListener('touchmove', tbouge); el.removeEventListener('touchend', tfin); el.removeEventListener('touchcancel', tfin);
     el.removeEventListener('wheel', molette);
   };
 }

@@ -39,7 +39,14 @@ function Liaison({ x0, y0, x1, y1, type = 'plan', op = 1, c = ENC }) {
 }
 const fond = (x, y, r = 12) => <circle cx={x} cy={y} r={r} fill="#f8fafc" />;
 const FLOU = u => 1 - seg(u, 0.55, 0.75);          // les flèches courbes s'estompent quand les liaisons sont faites
-function Courbe({ d, op = 1 }) { return op < 0.03 ? null : <path d={d} fill="none" stroke={ARC} strokeWidth={2.4} markerEnd="url(#pointe)" opacity={op} />; }
+// Flèche courbe (Bézier quadratique « M départ Q contrôle arrivée ») qui se dessine progressivement : t de 0 (rien) à 1 (flèche complète)
+function Courbe({ d, op = 1, t = 1 }) {
+  if (op < 0.03 || t < 0.04) return null;
+  const [x0, y0, cx, cy, x1, y1] = d.match(/-?\d+(?:\.\d+)?/g).map(Number);
+  const m = (p, q, r) => p + (q - p) * r;
+  const px = m(x0, cx, t), py = m(y0, cy, t), ex = m(px, m(cx, x1, t), t), ey = m(py, m(cy, y1, t), t);     // sous-courbe de 0 à t
+  return <path d={`M${x0},${y0} Q${px},${py} ${ex},${ey}`} fill="none" stroke={ARC} strokeWidth={2.4} strokeLinecap="round" markerEnd="url(#pointe)" opacity={op} />;
+}
 
 // SN2 animée : Nu arrive par l'arrière, Br part, les trois R se retournent (parapluie)
 function AnimSN2({ N, u }) {
@@ -60,8 +67,8 @@ function AnimSN2({ N, u }) {
       <T x={r1[0]} y={r1[1] - 3} s={13} c={GR}>R¹</T><T x={r2[0] - 4} y={r2[1] + 14} s={13} c={GR}>R²</T><T x={r3[0] + 4} y={r3[1] + 14} s={13} c={GR}>R³</T>
       {fond(cx, cy - 1)}<T x={cx} y={cy + 5}>C</T>
       <T x={nuX} y={cy + 5} c="#1d4ed8">{nuLabel}</T><T x={brX} y={cy + 5} c={BRUN}>{brLabel}</T>
-      <Courbe op={op} d={`M${nuX + 14},${cy - 14} Q${(nuX + cx) / 2},${cy - 52} ${cx - 8},${cy - 16}`} />
-      <Courbe op={op} d={`M${(cx + brX) / 2 - 4},${cy - 8} Q${(cx + brX) / 2 + 14},${cy - 40} ${brX - 6},${cy - 16}`} />
+      <Courbe op={op} t={seg(u, 0.02, 0.3)} d={`M${nuX + 14},${cy - 14} Q${(nuX + cx) / 2},${cy - 52} ${cx - 8},${cy - 16}`} />
+      <Courbe op={op} t={seg(u, 0.25, 0.5)} d={`M${(cx + brX) / 2 - 4},${cy - 8} Q${(cx + brX) / 2 + 14},${cy - 40} ${brX - 6},${cy - 16}`} />
     </Schema>);
 }
 
@@ -72,7 +79,7 @@ function AnimElim({ N, u, e1 = false }) {
     : { g: seg(u, 0.1, 0.6), fCb: seg(u, 0.3, 0.8), fCa: seg(u, 0.3, 0.8), d: seg(u, 0.35, 0.9), h: 1 - seg(u, 0.3, 0.6), br: 1 - seg(u, 0.3, 0.6), bh: [0.2, 0.6], lim: 0.6, brLab: 0.55 };
   const g = E.g, cb = [215, 76], ca = [285, 76];
   const H = [200 - 26 * g, 38 - 14 * g], B = [96 + 44 * g, 12 + 2 * g], Br = [306 + 40 * E.d, 116 + 6 * E.d];
-  const opA = e1 ? seg(u, 0.5, 0.6) * (1 - seg(u, 0.9, 1)) : FLOU(u), opBr = e1 ? 1 - seg(u, 0.3, 0.45) : FLOU(u);
+  const opA = e1 ? 1 - seg(u, 0.9, 1) : 1 - seg(u, 0.7, 0.9), opBr = e1 ? 1 - seg(u, 0.3, 0.45) : opA;
   const hOp = E.h, brOp = E.br;
   const R = [[190, 108, 'coin', 'R'], [168, 70, 'arriere', 'R']], R2 = [[312, 38, 'coin', 'R'], [334, 72, 'arriere', 'R']];
   const subs = (c, lst, f) => lst.map(([x, y, t, l], k) => (<g key={`${c[0]}${k}`}>
@@ -88,9 +95,9 @@ function AnimElim({ N, u, e1 = false }) {
       {fond(cb[0], cb[1] - 1)}<T x={cb[0]} y={cb[1] + 5}>C</T>{fond(ca[0], ca[1] - 1)}<T x={ca[0]} y={ca[1] + 5}>{e1 && u > 0.4 && E.fCb < 0.5 ? 'C⁺' : 'C'}</T>
       <T x={H[0]} y={H[1] + 5} s={15}>{u > E.lim && N === 'H₂O' ? '' : 'H'}</T>
       <T x={B[0]} y={B[1] + 5} c="#1d4ed8">{u > E.lim ? (N === 'H₂O' ? 'H₃O⁺' : N.replace('⁻', '')) : N}</T><T x={Br[0]} y={Br[1] + 5} c={BRUN}>{u > E.brLab ? 'Br⁻' : 'Br'}</T>
-      <Courbe op={opA} d={`M${B[0] + 14},${B[1] - 6} Q${(B[0] + H[0]) / 2 + 6},${B[1] - 22} ${H[0] - 3},${H[1] - 8}`} />
-      <Courbe op={opA} d={`M${(cb[0] + H[0]) / 2 + 3},${(cb[1] + H[1]) / 2} Q${cb[0] + 46},${cb[1] - 48} ${(cb[0] + ca[0]) / 2 + 1},${cb[1] - 4}`} />
-      <Courbe op={opBr} d={`M${(ca[0] + Br[0]) / 2 - 2},${(ca[1] + Br[1]) / 2 - 8} Q${Br[0] + 6},${(ca[1] + Br[1]) / 2 - 22} ${Br[0] - 2},${Br[1] - 20}`} />
+      <Courbe op={opA} t={e1 ? seg(u, 0.5, 0.68) : seg(u, 0.02, 0.25)} d={`M${B[0] + 14},${B[1] - 6} Q${(B[0] + H[0]) / 2 + 6},${B[1] - 22} ${H[0] - 3},${H[1] - 8}`} />
+      <Courbe op={opA} t={e1 ? seg(u, 0.62, 0.82) : seg(u, 0.2, 0.45)} d={`M${(cb[0] + H[0]) / 2 + 3},${(cb[1] + H[1]) / 2} Q${cb[0] + 46},${cb[1] - 48} ${(cb[0] + ca[0]) / 2 + 1},${cb[1] - 4}`} />
+      <Courbe op={opBr} t={e1 ? seg(u, 0.02, 0.25) : seg(u, 0.4, 0.6)} d={`M${(ca[0] + Br[0]) / 2 - 2},${(ca[1] + Br[1]) / 2 - 8} Q${Br[0] + 6},${(ca[1] + Br[1]) / 2 - 22} ${Br[0] - 2},${Br[1] - 20}`} />
     </Schema>);
 }
 // SN1 animée : Br part (carbocation plan), puis le nucléophile attaque l'une des deux faces (ici la face opposée à Br, comme dans la vue 3D)
@@ -110,8 +117,8 @@ function AnimSN1({ N, u }) {
       <T x={r1[0]} y={r1[1] - 3} s={13} c={GR}>R¹</T><T x={r2[0] - 4} y={r2[1] + 14} s={13} c={GR}>R²</T><T x={r3[0] + 4} y={r3[1] + 14} s={13} c={GR}>R³</T>
       {fond(cx, cy - 1)}<T x={cx} y={cy + 5}>{cation ? 'C⁺' : 'C'}</T>
       <T x={brX} y={cy + 5} c={BRUN}>{u > 0.3 ? 'Br⁻' : 'Br'}</T><T x={nuX} y={cy + 5} c="#1d4ed8">{u > 0.75 ? nuProd(N) : N}</T>
-      <Courbe op={opBr} d={`M${(cx + brX) / 2 + 4},${cy - 8} Q${(cx + brX) / 2 - 14},${cy - 40} ${brX + 6},${cy - 16}`} />
-      <Courbe op={opNu} d={`M${nuX - 14},${cy - 14} Q${(nuX + cx) / 2},${cy - 52} ${cx + 8},${cy - 16}`} />
+      <Courbe op={opBr} t={seg(u, 0.02, 0.3)} d={`M${(cx + brX) / 2 + 4},${cy - 8} Q${(cx + brX) / 2 - 14},${cy - 40} ${brX + 6},${cy - 16}`} />
+      <Courbe op={opNu} t={seg(u, 0.5, 0.75)} d={`M${nuX - 14},${cy - 14} Q${(nuX + cx) / 2},${cy - 52} ${cx + 8},${cy - 16}`} />
     </Schema>);
 }
 const nuProd = N => (N === 'H₂O' ? 'H₂O⁺' : N.replace('⁻', ''));
