@@ -40,6 +40,8 @@ export default {
       refs: ['37:mouvement:vac-ana-freinage', '37:mouvement:vac-ana-deux', '37:mouvement:vac-ana-mrua', '77:plausible:vac-val-mrua'] },
     { id: 'graphique-xt', nom: 'Lire une vitesse sur un graphique x(t)', capacite: 'Exploiter un graphique de la position en fonction du temps : vitesse moyenne (pente de la corde) et vitesse à un instant (pente de la tangente), signe de la vitesse.',
       refs: ['34:pxt-sapp-droite', '34:pxt-sapp-tangente', '37:prevoir:pxt-ana-pente', '37:prevoir:pxt-ana-signe', '37:prevoir:pxt-ana-corde', '37:prevoir:pxt-ana-plat', '77:plausible:pxt-val-pente', '77:plausible:pxt-val-signe'] },
+    { id: 'gravitation-poids', nom: 'Gravitation et poids', capacite: 'Exploiter l’expression de la force d’interaction gravitationnelle entre deux corps, et celle du poids P = m g ; distinguer masse et poids.',
+      refs: ['34:grv-sapp-force', '34:grv-sapp-poids', '37:prevoir:grv-ana-reciproque', '37:prevoir:grv-ana-distance', '37:prevoir:grv-ana-masse', '37:prevoir:grv-ana-altitude', '77:plausible:grv-val-force', '77:plausible:grv-val-poids'] },
   ],
   'tstl-acides-bases': [
     { id: 'ph-fort', nom: 'pH d’un acide fort ou d’une base forte, dilution', capacite: 'Estimer le pH d’une solution d’acide fort ou de base forte et prévoir l’effet d’une dilution.',
