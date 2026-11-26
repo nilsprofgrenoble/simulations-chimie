@@ -4,6 +4,9 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { Pic } from "../Pictos";
 import * as M from "./frxModele";
 import { QCM } from "./frxQcm";
+import { SceneAtomeAnim, SceneHistoX, CommandesTirages } from "./FrxTirages";
+import { useTiragesX, useProgres } from "./frxTiragesHook";
+import { texteAtome } from "./frxTirages";
 import { SceneAtome, SceneSpectreX, SceneEtalonnage, SceneAppareil, SvgCarteTransitions, SvgCarteMoseley, SvgCarteBilanFrx } from "./FrxSchemas";
 
 const SIM_ID = 302, CLE_GUIDE = 'frx-guide-v1';
@@ -36,6 +39,7 @@ export function SimulationFluoX() {
   const [vie, setVie] = useState(() => ({ ...BASE }));
   const [ex, setEx] = useState({ onglet: 'atome', el: 'Fe', E: 9, ech: 'laiton', raie: 'Cu' });
   const [ouv, setOuv] = useState({});
+  const tir = useTiragesX(), progT = useProgres(tir.t.etat.nEnv, tir.t.vitesse === 'lent' ? 2400 : 1200, tir.anime);
   const [suiviE, noterE] = useCompteurDefi(), [suiviD, noterD] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('element');
   const enGuide = mode === 'guide', enExplore = mode === 'explore', enDefi = mode === 'defi';
@@ -175,30 +179,44 @@ export function SimulationFluoX() {
   const raieOk = ech.comp.find(c => c.s === ex.raie) ?? ech.comp[0], elR = M.element(raieOk.s);
   const reglagesExplore = enExplore && (
     <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'atome' ? 'Choisissez un élément et un photon X' : 'Choisissez un échantillon'}</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ex.onglet === 'atome' ? 'Si le photon atteint le seuil K de l’élément, il éjecte un électron K et l’atome émet ses raies Kα et Kβ.' : 'Spectre en échelle logarithmique pour voir à la fois les éléments majeurs et les traces. Choisissez une raie pour lire son énergie et son intensité.'}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'atome' ? 'Choisissez un élément et un photon X' : ex.onglet === 'tirages' ? 'Réglez l’échantillon puis irradiez des atomes' : 'Choisissez un échantillon'}</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ex.onglet === 'tirages' ? 'Chaque atome touché par un photon X réagit au hasard. Chaque photon X émis qui arrive au détecteur ajoute un coup au spectre.' : ex.onglet === 'atome' ? 'Si le photon atteint le seuil K de l’élément, il éjecte un électron K et l’atome émet ses raies Kα et Kβ.' : 'Spectre en échelle logarithmique pour voir à la fois les éléments majeurs et les traces. Choisissez une raie pour lire son énergie et son intensité.'}</div>
       {ex.onglet === 'atome' && <>
         {selecteur('fx-el', 'Élément', ex.el, ev => setEx(e => ({ ...e, el: ev.target.value })), M.ELEMENTS.map(e => ({ id: e.s, nom: `${e.nom} (Z = ${e.Z})` })))}
         {curs('fx-ee', `Énergie du photon X incident : ${fr(ex.E, 1)} keV`, ex.E, 0.5, 12, 0.1, ev => setEx(e => ({ ...e, E: parseFloat(ev.target.value) })), 'Le repère violet du spectre est le seuil K de l’élément.')}</>}
+      {ex.onglet === 'tirages' && <>
+        {selecteur('fx-te', 'Élément étudié', tir.t.el, ev => tir.regler({ el: ev.target.value }), M.ELEMENTS.map(e => ({ id: e.s, nom: `${e.nom} (Z = ${e.Z})` })))}
+        {curs('fx-tE', `Énergie du photon X incident : ${fr(tir.t.E, 1)} keV`, tir.t.E, 0.5, 12, 0.1, ev => tir.regler({ E: parseFloat(ev.target.value) }), `Seuil K de l’élément : ${fr(tir.el.EK, 2)} keV.`)}
+        {selecteur('fx-tw', 'Proportion d’atomes de l’élément dans l’échantillon', String(tir.t.w), ev => tir.regler({ w: parseFloat(ev.target.value) }), [5, 10, 20, 50, 100].map(w => ({ id: String(w), nom: `${w} %` })))}
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10, fontSize: 14, color: KIT.txt }}><input type="checkbox" checked={tir.t.courbe} onChange={ev => tir.regler({ courbe: ev.target.checked })} style={{ width: 20, height: 20 }}/>Afficher la forme attendue (courbe en pointillés)</label></>}
       {ex.onglet === 'echantillon' && <>
         {selecteur('fx-ec', 'Échantillon', ex.ech, ev => setEx(e => ({ ...e, ech: ev.target.value, raie: M.ECHANTILLONS[ev.target.value].comp[0].s })), Object.entries(M.ECHANTILLONS).map(([id, m]) => ({ id, nom: m.nom })))}
         {selecteur('fx-er', 'Raie étudiée (Kα)', raieOk.s, ev => setEx(e => ({ ...e, raie: ev.target.value })), ech.comp.map(c => ({ id: c.s, nom: `${M.element(c.s).nom} (${c.s})` })))}</>}
     </div>);
   const pilules = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      {[['atome', 'Un atome'], ['echantillon', 'Un échantillon']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, onglet: k }))} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#7c3aed')}>{l}</button>)}
+      {[['atome', 'Un atome'], ['echantillon', 'Un échantillon'], ['tirages', 'Tirages']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, onglet: k }))} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#7c3aed')}>{l}</button>)}
     </div>);
   const voletScene = (
     <div style={styleBoite}>
       {pilules}
-      {ex.onglet === 'atome' ? <><SceneAtome etat={ionE ? 'saut2' : 'repos'} photon={ex.E} photonLabel={`${fr(ex.E, 1)} keV`} raies={[`Kα ${fr(el.Ka, 2)} keV`, `Kβ ${fr(el.Kb, 2)} keV`]}/><div style={{ height: 6 }}/>
+      {ex.onglet === 'tirages' ? <>
+        <SceneAtomeAnim d={tir.t.etat.dernier} p={progT}/>
+        <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{tir.t.etat.lot > 1 ? `Dernier atome du lot : ${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.` : `${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.`}</div>
+        <SceneHistoX etat={tir.t.etat} params={tir.t} el={tir.el} courbe={tir.t.courbe}/><div style={{ marginTop: 10 }}><CommandesTirages tir={tir}/></div></>
+      : ex.onglet === 'atome' ? <><SceneAtome etat={ionE ? 'saut2' : 'repos'} photon={ex.E} photonLabel={`${fr(ex.E, 1)} keV`} raies={[`Kα ${fr(el.Ka, 2)} keV`, `Kβ ${fr(el.Kb, 2)} keV`]}/><div style={{ height: 6 }}/>
         <SceneSpectreX comp={ionE ? [{ s: el.s, w: 10 }] : []} yMax={3600} marques={[[el.EK, `seuil K ${fr(el.EK, 2)}`, '#7c3aed', el.EK <= ex.E ? 'end' : 'start'], [ex.E, 'photon X', '#2563eb', el.EK <= ex.E ? 'start' : 'end']]}/></>
         : <SceneSpectreX comp={ech.comp} echelle="log" titre={ech.nom.split(' (')[0].toLowerCase()} etiquettes={ech.comp.map(c => [M.element(c.s).Ka, c.s, 0, 'middle'])} marques={[[elR.Ka, `${fr(elR.Ka, 2)}`]]}/>}
     </div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      {ex.onglet === 'atome' ? <>
+      {ex.onglet === 'tirages' ? <>
+        <LigneMesure nom="Atomes irradiés" valeur={`${tir.t.etat.nEnv}`}/><LigneMesure nom="Électrons K éjectés" valeur={`${tir.t.etat.nIon}`}/>
+        <LigneMesure nom="Photons Kα (L → K)" valeur={`${tir.t.etat.nKa}`}/><LigneMesure nom="Photons Kβ (M → K)" valeur={`${tir.t.etat.nKb}`}/>
+        <LigneMesure nom="Effet Auger (pas de photon X)" valeur={`${tir.t.etat.nAuger}`}/>
+        <LigneMesure nom="Photons X détectés par atome irradié" valeur={tir.t.etat.nEnv ? `${fr(100 * (tir.t.etat.nKa + tir.t.etat.nKb) / tir.t.etat.nEnv, 1)}${NB}%` : '—'}/></>
+      : ex.onglet === 'atome' ? <>
         <LigneMesure nom="Numéro atomique Z" valeur={`${el.Z}`}/><LigneMesure nom="Seuil K (énergie de liaison)" valeur={`${fr(el.EK, 2)}${NB}keV`}/>
         <LigneMesure nom="Niveau L" valeur={`${fr(M.niveauL(el), 2)}${NB}keV`}/><LigneMesure nom="Raie Kα = E_K − E_L" valeur={`${fr(el.Ka, 2)}${NB}keV`}/>
         <LigneMesure nom="Raie Kβ" valeur={`${fr(el.Kb, 2)}${NB}keV`}/><LigneMesure nom="Longueur d’onde de Kα" valeur={`${fr(M.lamNm(el.Ka), 3)}${NB}nm`}/>
@@ -214,6 +232,9 @@ export function SimulationFluoX() {
       <li>Un atome : pour le fer, cherchez l’énergie minimale du photon qui fait apparaître les raies. À quoi correspond-elle ?</li>
       <li>Un atome : comparez Kα du calcium, du fer et du zinc. Vérifiez la formule de Moseley.</li>
       <li>Un échantillon : dans l’acier, quel élément a le pic le plus haut ? Est-ce celui de plus grande énergie ?</li>
+      <li>Tirages : à 9 keV, fer à 100 %, irradiez 1000 atomes. Quelle fraction donne un photon Kα ? Quelle fraction donne un photon Kβ ?</li>
+      <li>Tirages : doublez la proportion de l’élément. Que devient la hauteur du pic Kα pour le même nombre d’atomes irradiés ? Reliez-le au dosage.</li>
+      <li>Tirages : choisissez l’aluminium. Pourquoi voit-on si peu de photons X ? (cherchez la ligne « Effet Auger »)</li>
       <li>Un échantillon : dans le ciment, quel élément très présent n’apparaît pas sur le spectre ? Pourquoi ?</li>
     </ul>);
   const retenirExplore = (
@@ -232,6 +253,7 @@ export function SimulationFluoX() {
       <li><strong>Valeurs</strong> : énergies de seuil et de raies K tabulées, arrondies (keV). Kα = E<sub>K</sub> − E<sub>L</sub> et Kβ = E<sub>K</sub> − E<sub>M</sub>.</li>
       <li><strong>Spectres</strong> : schématiques (pics gaussiens de largeur 70 keV·10⁻³, fond continu simplifié). Intensité de Kβ prise à 15 % de Kα (3 % pour les éléments légers).</li>
       <li><strong>Quantification</strong> : intensité nette (fond soustrait) proportionnelle à la teneur, avec des sensibilités schématiques (coups/s par % massique). Hors modèle : effets de matrice, absorption, raies L, pics somme et d’échappement, superposition de raies.</li>
+      <li><strong>Tirages</strong> : chaque atome irradié est tiré au hasard. Il appartient à l’élément avec la probabilité égale à la proportion choisie ; un photon d’énergie au moins égale au seuil K éjecte un électron K avec la probabilité fixée à 0,6 (valeur schématique) ; la lacune émet un photon X avec la probabilité du rendement de fluorescence de l’élément (sinon effet Auger) ; Kβ est tiré à 15 % de Kα (3 % pour les éléments légers). Les énergies détectées sont étalées par la résolution du détecteur (écart-type 0,07 keV). Simplifications : tous les photons émis sont détectés, pas d’absorption ni de fond continu, pas d’autres raies que Kα et Kβ.</li>
       <li><strong>Constantes</strong> : h·c = 1,243 keV·nm ; Moseley : Kα ≈ (3/4) × 13,6 eV × (Z − 1)² (précision d’environ 2 % pour Z de 13 à 30).</li>
       <li><strong>Échantillons</strong> : compositions types, teneurs en % massique des éléments détectés ; l’oxygène et les éléments légers ne sont pas vus.</li>
     </ul>);
