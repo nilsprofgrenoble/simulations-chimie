@@ -99,8 +99,8 @@ export function AnimAddition({ alc, re, u, face = 'dessus', syn = false, hauteur
   }
 
   return (
-    <svg viewBox="0 0 360 270" role="img" aria-label={`Animation en perspective : addition sur ${alc}`} style={{ width: '100%', height: hauteur, display: 'block', background: '#fbfdff', borderRadius: 10 }}>
-      <text x={8} y={m > 0 ? 16 : 262} fontSize={12} fill={KIT.txt2}>face d'attaque du réactif</text>
+    <svg viewBox={`0 ${m > 0 ? 0 : 30} 360 270`} role="img" aria-label={`Animation en perspective : addition sur ${alc}`} style={{ width: '100%', height: hauteur, display: 'block', background: '#fbfdff', borderRadius: 10 }}>
+      <text x={8} y={m > 0 ? 16 : 292} fontSize={12} fill={KIT.txt2}>face d'attaque du réactif</text>
       <text x={8} y={m > 0 ? 262 : 16} fontSize={12} fill={KIT.txt2}>face opposée</text>
       {elements}{bas}{haut}
     </svg>);
