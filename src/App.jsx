@@ -278,6 +278,7 @@ const SimulationHistoireLabo = paresseux(() => import("./simulations/HistoireLab
 const SimulationHistoirePercutafeine = paresseux(() => import("./simulations/HistoirePercutafeine"), "SimulationHistoirePercutafeine");
 const SimulationLaserMaze = paresseux(() => import("./simulations/JeuLaserMaze"), "SimulationLaserMaze");
 const SimulationCuisineDilution = paresseux(() => import("./simulations/JeuCuisineDilution"), "SimulationCuisineDilution");
+const SimulationPompier = paresseux(() => import("./simulations/JeuPompier"), "SimulationPompier");
 const SimulationGrapheur = paresseux(() => import("./simulations/Grapheur"), "SimulationGrapheur");
 
 // ============================================================
@@ -654,6 +655,7 @@ const SIMULATIONS = [
   // Jeux en démonstration (réservés à l'administrateur, comme Kepler et Aqua) : Laser Maze (optique) et Service en cuisine (dilutions) ; ?sim=290 et ?sim=291
   { id:290, label:"Laser Maze (jeu, optique géométrique)", niveau:"COMPTE", icon:"🔦", color:"#0b4f94", component: SimulationLaserMaze },
   { id:291, label:"Urgence au labo : dilutions (jeu)", niveau:"COMPTE", icon:"🧪", color:"#c2410c", component: SimulationCuisineDilution },
+  { id:296, label:"Pompiers : de la lance à la pression (jeu)", niveau:"COMPTE", icon:"🚒", color:"#c2410c", component: SimulationPompier },
   // Grapheur (tableau → nuage de points → modèle → écarts → hypothèses) : outil hors menu, ouvert par son lien (?sim=124), en attendant la relecture de Nils
   { id:124, label:"Grapheur de mesures", niveau:"COMPTE", icon:"📈", color:"#1d4ed8", component: SimulationGrapheur },
   { id:146, label:"Tensioactifs : de la structure à la CMC", niveau:"BTS", icon:"🫧", color:"#0369a1", component: SimulationTensioactifs },
@@ -688,8 +690,8 @@ const MENUS_ENTETE = [
 ];
 // Tant que les jeux ne sont pas aboutis, seul l'administrateur (professeur admin) les voit : menu, cartes, liens directs. Les autres ne voient rien.
 import { JEUX_VISIBLES, JEUX_PUBLICS } from "./simulations/jeuxVisibles";
-const JEUX_IDS = [79, 80, 81, 113, 290, 291];   // jeux : visibles seulement selon jeuxVisibles.js ; affichage immersif (sans en-tête ni pied de page), sauf les jeux clairs ci-dessous
-const JEUX_CLAIRS = [290, 291];   // jeux « aux couleurs du site » : page ordinaire (en-tête, calculatrice, pied de page), pas de décor sombre
+const JEUX_IDS = [79, 80, 81, 113, 290, 291, 296];   // jeux : visibles seulement selon jeuxVisibles.js ; affichage immersif (sans en-tête ni pied de page), sauf les jeux clairs ci-dessous
+const JEUX_CLAIRS = [290, 291, 296];   // jeux « aux couleurs du site » : page ordinaire (en-tête, calculatrice, pied de page), pas de décor sombre
 // Outils en préparation : visibles seulement du professeur administrateur (menu « Outils » et lien direct). Liste dans src/brouillons.js (124 : Grapheur de mesures).
 import { OUTILS_BROUILLON } from "./brouillons";
 const OUTILS_ADMIN_IDS = OUTILS_BROUILLON;
