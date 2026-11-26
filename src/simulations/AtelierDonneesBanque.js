@@ -10,6 +10,7 @@ import { PXT_SAPP } from "./penteXtExos.js";
 import { GRV_SAPP } from "./gravitationExos.js";
 import { CEL_SAPP } from "./champElecExos.js";
 import { FVI_SAPP } from "./chuteVisqueuseExos.js";
+import { EUL_SAPP } from './eulerChuteExos.js';
 import { CLP_SAPP } from "./chutePlaneExos.js";
 import { NWR_SAPP } from "./newtonRectExos.js";
 import { MTR_SAPP } from "./modesTransfertExos.js";
@@ -5540,6 +5541,7 @@ export const ENONCES = [
   ...NWR_SAPP,
   ...CLP_SAPP,
   ...FVI_SAPP,
+  ...EUL_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,

@@ -248,6 +248,7 @@ const SimulationChampElec = paresseux(() => import("./simulations/ChampElec"), "
 const SimulationNewtonRect = paresseux(() => import("./simulations/NewtonRect"), "SimulationNewtonRect");
 const SimulationChutePlane = paresseux(() => import("./simulations/ChutePlane"), "SimulationChutePlane");
 const SimulationChuteVisqueuse = paresseux(() => import("./simulations/ChuteVisqueuse"), "SimulationChuteVisqueuse");
+const SimulationEulerChute = paresseux(() => import("./simulations/EulerChute"), "SimulationEulerChute");
 const SimulationPenteXt = paresseux(() => import("./simulations/PenteXt"), "SimulationPenteXt");
 const SimulationVecteursVAStl = paresseux(() => import("./simulations/VecteursVAStl"), "SimulationVecteursVAStl");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
@@ -483,6 +484,7 @@ const SIMULATIONS = [
   { id:268, label:"Bilan des forces et lois de Newton sur un mouvement rectiligne : ΣF = m a", niveau:"TSTL", icon:"🛷", color:"#0b4f94", component: SimulationNewtonRect },
   { id:269, label:"Chute libre plane : accélération (0 ; −g), sommet, portée et angle de tir", niveau:"TSTL", icon:"🏹", color:"#0b4f94", component: SimulationChutePlane },
   { id:270, label:"Chute avec frottement visqueux (1) : régimes transitoire et permanent, vitesse limite, constante de temps", niveau:"TSTL", icon:"🍯", color:"#0b4f94", component: SimulationChuteVisqueuse },
+  { id:271, label:"Chute avec frottement visqueux (2) : équation différentielle et méthode d’Euler", niveau:"TSTL", icon:"📈", color:"#0b4f94", component: SimulationEulerChute },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",

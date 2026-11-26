@@ -3556,6 +3556,56 @@ function genFviTau() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['τ = m ÷ k ; le régime permanent est atteint au bout d’environ 5 τ.', 'À t = τ, la vitesse atteint 63 % de la vitesse limite v_lim = m g ÷ k.'] };
 }
+function genEulLimite() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, mf, k, A, vl, Pi;
+  do { m = tire([1.0, 2.0, 2.5, 4.0]); mf = tire([0.2, 0.4, 0.5]); k = tire([2.0, 2.5, 4.0, 5.0]); A = 9.8 * (1 - mf / m); vl = (m - mf) * 9.8 / k; Pi = mf * 9.8; }
+  while (mf > 0.45 * m || new Set([A, vl, Pi].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un objet de masse ${fr(m.toFixed(1))}${NB}kg est lâché sans vitesse dans un fluide. Il déplace une masse de fluide m_f = ${fr(mf.toFixed(1))}${NB}kg ; le frottement vaut f = k v avec k = ${fr(k.toFixed(1))}${NB}kg/s ; g = 9,8${NB}N/kg.`;
+  const q1 = { id: 'l0', type: 'num', q: <>Quelle est la <b>valeur de la poussée d’Archimède</b> Π = m_f g (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: Pi, tolRel: 0.05, csMin: 2,
+    aide: 'Π = m_f g : poids du fluide déplacé.',
+    pieges: [[m * 9.8, 'C’est le poids de l’objet : la poussée est le poids du fluide déplacé, m_f g.']],
+    expl: <>Π = m_f g = {fr(mf.toFixed(1))} × 9,8 = <b>{pvFmt(Pi)}{NB}N</b>.</> };
+  const q2 = { id: 'l1', type: 'num', q: <>Quelle est l’<b>accélération à l’instant du lâcher</b> (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: A, tolRel: 0.05, csMin: 2,
+    aide: 'À t = 0, f = 0 : m a = m g − m_f g, soit A = g (1 − m_f ÷ m).',
+    pieges: [[9.8, 'Il faut tenir compte de la poussée : A = g (1 − m_f ÷ m).']],
+    expl: <>A = g (1 − m_f ÷ m) = 9,8 × (1 − {fr(mf.toFixed(1))} ÷ {fr(m.toFixed(1))}) = <b>{pvFmt(A)}{NB}m/s²</b>.</> };
+  const q3 = { id: 'l2', type: 'num', q: <>Quelle est la <b>vitesse limite</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vl, tolRel: 0.05, csMin: 2,
+    aide: 'En régime permanent : k v_lim = (m − m_f) g.',
+    pieges: [[m * 9.8 / k, 'Il faut retrancher la poussée : v_lim = (m − m_f) g ÷ k.']],
+    expl: <>v_lim = (m − m_f) g ÷ k = ({fr(m.toFixed(1))} − {fr(mf.toFixed(1))}) × 9,8 ÷ {fr(k.toFixed(1))} = <b>{pvFmt(vl)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Poids − poussée − frottement : m dv/dt = m g − m_f g − k v.', 'A = g (1 − m_f ÷ m) ; v_lim = (m − m_f) g ÷ k.'] };
+}
+function genEulPas() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, mf, k, dt, A, tau, v1, a1, v2;
+  do { m = tire([1.0, 2.0, 2.5, 4.0]); mf = tire([0.2, 0.4, 0.5]); k = tire([2.0, 2.5, 4.0, 5.0]); dt = tire([0.1, 0.2, 0.25, 0.5]); A = 9.8 * (1 - mf / m); tau = m / k; v1 = A * dt; a1 = A - v1 / tau; v2 = v1 + a1 * dt; }
+  while (mf > 0.45 * m || dt > 0.6 * tau || new Set([A, v1, a1, v2].map(x => Number(x.toPrecision(2)))).size < 4);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un objet de masse ${fr(m.toFixed(1))}${NB}kg est lâché sans vitesse dans un fluide ; masse de fluide déplacé m_f = ${fr(mf.toFixed(1))}${NB}kg, frottement f = k v avec k = ${fr(k.toFixed(1))}${NB}kg/s, g = 9,8${NB}N/kg. On calcule la vitesse par la méthode d’Euler avec un pas Δt = ${fr(dt.toFixed(2))}${NB}s.`;
+  const q1 = { id: 'e0', type: 'num', q: <>Quelle est l’<b>accélération initiale</b> A (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: A, tolRel: 0.05, csMin: 2,
+    aide: 'A = g (1 − m_f ÷ m).',
+    pieges: [[9.8, 'Il faut tenir compte de la poussée : A = g (1 − m_f ÷ m).']],
+    expl: <>A = 9,8 × (1 − {fr(mf.toFixed(1))} ÷ {fr(m.toFixed(1))}) = <b>{pvFmt(A)}{NB}m/s²</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>Quelle est la <b>vitesse v₁</b> à la date t = Δt (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v1, tolRel: 0.05, csMin: 2,
+    aide: 'v₁ = v₀ + A × Δt avec v₀ = 0.',
+    pieges: [[A / dt, 'On multiplie l’accélération par le pas : v₁ = A × Δt.']],
+    expl: <>v₁ = 0 + {pvFmt(A)} × {fr(dt.toFixed(2))} = <b>{pvFmt(v1)}{NB}m/s</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>Quelle est l’<b>accélération a₁</b> à la date Δt (en m/s², 2 chiffres significatifs) ? On a τ = m ÷ k.</>, unite: 'm/s²', vrai: a1, tolRel: 0.05, csMin: 2,
+    aide: 'a₁ = A − v₁ ÷ τ avec τ = m ÷ k.',
+    pieges: [[A, 'L’accélération a changé : on retranche v₁ ÷ τ.']],
+    expl: <>τ = {fr(m.toFixed(1))} ÷ {fr(k.toFixed(1))} = {pvFmt(tau)} s ; a₁ = {pvFmt(A)} − {pvFmt(v1)} ÷ {pvFmt(tau)} = <b>{pvFmt(a1)}{NB}m/s²</b>.</> };
+  const q4 = { id: 'e3', type: 'num', q: <>Quelle est la <b>vitesse v₂</b> à la date 2 Δt (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v2, tolRel: 0.06, csMin: 2,
+    aide: 'v₂ = v₁ + a₁ × Δt.',
+    pieges: [[v1 + A * dt, 'Utilisez l’accélération recalculée a₁, pas A.']],
+    expl: <>v₂ = {pvFmt(v1)} + {pvFmt(a1)} × {fr(dt.toFixed(2))} = <b>{pvFmt(v2)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Euler : a_i = A − v_i ÷ τ puis v_(i+1) = v_i + a_i Δt.', 'Un pas petit devant τ donne une approximation fidèle de la solution exacte.'] };
+}
 function genClpSommet() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   const RAD = Math.PI / 180; let v0, a, vy, tS, H;
@@ -6462,6 +6512,8 @@ export const FAMILLES = [
   { id: 'clp-portee', groupe: 'Formules', titre: 'Chute libre plane : vitesse horizontale, durée du vol et portée (terminale STL)', gen: genClpPortee, domaine: 'Chute libre plane' },
   { id: 'fvi-vlim', groupe: 'Formules', titre: 'Chute avec frottement visqueux : poids, vitesse limite et frottement (terminale STL)', gen: genFviVlim, domaine: 'Chute avec frottement visqueux' },
   { id: 'fvi-tau', groupe: 'Formules', titre: 'Chute avec frottement visqueux : constante de temps et régime transitoire (terminale STL)', gen: genFviTau, domaine: 'Chute avec frottement visqueux' },
+  { id: 'eul-lim', groupe: 'Formules', titre: 'Chute avec poussée d’Archimède : accélération initiale et vitesse limite (terminale STL)', gen: genEulLimite, domaine: 'Équation différentielle et méthode d’Euler' },
+  { id: 'eul-pas', groupe: 'Formules', titre: 'Chute avec frottement : méthode d’Euler, deux pas (terminale STL)', gen: genEulPas, domaine: 'Équation différentielle et méthode d’Euler' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
