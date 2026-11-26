@@ -27,8 +27,8 @@ export function ScenePile({ paire = ['zn', 'cu'], borneV = null, lu = null, char
         <rect x={i ? 252 : 42} y="176" width="106" height="67" fill={METAUX[cote[i]].couleur} clipPath={`url(#pp-${i ? 'd' : 'g'})`}/>
         <rect x={i ? 250 : 40} y="150" width="110" height="95" rx="10" fill="none" stroke="#94a3b8" strokeWidth="3"/>
         <rect x={xm[i] - largeur(i) / 2} y="92" width={largeur(i)} height="140" rx="2" fill={METAUX[cote[i]].metal} stroke="#334155" strokeWidth="1.4"/>
-        <text x={i ? 336 : 62} y="204" textAnchor="middle" fontSize="15" fontWeight="700" fill="#0f172a">{METAUX[cote[i]].ion.replace(/⁺/g, '⁺').replace(/²/g, '²')}</text>
-        <text x={i ? 336 : 62} y="226" textAnchor="middle" fontSize="15" fontWeight="800" fill="#334155">{METAUX[cote[i]].m}</text></g>)}
+        <text x={i ? 336 : 62} y={demi ? 197 : 204} textAnchor="middle" fontSize="15" fontWeight="700" fill="#0f172a">{METAUX[cote[i]].ion.replace(/⁺/g, '⁺').replace(/²/g, '²')}</text>
+        <text x={i ? 336 : 62} y={demi ? 234 : 226} textAnchor="middle" fontSize="15" fontWeight="800" fill="#334155">{METAUX[cote[i]].m}</text></g>)}
       {/* pont salin */}
       <path d="M125 190 V140 Q125 130 135 130 H265 Q275 130 275 140 V190" fill="none" stroke="#b45309" strokeWidth="15" strokeLinecap="round"/>
       <path d="M125 190 V140 Q125 130 135 130 H265 Q275 130 275 140 V190" fill="none" stroke="#fde68a" strokeWidth="10" strokeLinecap="round"/>
@@ -66,6 +66,9 @@ export function ScenePile({ paire = ['zn', 'cu'], borneV = null, lu = null, char
           const eq = (ox ? demiOx(id) : demiRed(id)).replace(/\((s|aq)\)/g, '');
           const x1 = i === 0 ? 105 : 250, x2 = i === 0 ? 148 : 295, sd = dir > 0 ? 1 : -1;
           return <g key={i}>
+            {(() => { const xl = i ? 336 : 62, bx = xl + (i ? 13 : -13), col = ox ? C.orange : C.vert, ya = ox ? 205 : 223, yb = ox ? 223 : 205;
+              return <g><path d={`M${xl} ${yb} Q${bx} 214 ${xl} ${ya}`} fill="none" stroke={col} strokeWidth="2.8" strokeLinecap="round"/>
+                <polygon points={ox ? `${xl},203 ${xl - 5},211 ${xl + 5},211` : `${xl},225 ${xl - 5},217 ${xl + 5},217`} fill={col}/></g>; })()}
             <text x={xm[i]} y="292" textAnchor="middle" fontSize="14" fontWeight="800" fill={ox ? C.orange : C.vert}>{eq}</text>
             <line x1={xe} y1={ox ? 86 : 62} x2={xe} y2={ox ? 66 : 82} stroke={BLEU} strokeWidth="3"/>
             <polygon points={ox ? `${xe},60 ${xe - 5},70 ${xe + 5},70` : `${xe},88 ${xe - 5},78 ${xe + 5},78`} fill={BLEU}/>
