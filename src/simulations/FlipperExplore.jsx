@@ -27,7 +27,7 @@ const Seg = ({ label, valeur, options, onChange }) => (
 export function FlipperExplore() {
   const [p, setP] = useState({ m: 0.08, h: 0.8, deg: 30, f: 0, v0: 5.5 });
   const [t, setT] = useState(0), [joue, setJoue] = useState(false), [vit, setVit] = useState(1);
-  const [aTouche, setATouche] = useState(false);
+  const [aTouche, setATouche] = useState(false), [garde, setGarde] = useState('v');
   const [ouv, setOuv] = useState(false);
   const svgRef = useRef(null), drag = useRef(null), raf = useRef(0), boite = useRef(null);
   const [etroit, setEtroit] = useState(false);
@@ -247,10 +247,16 @@ export function FlipperExplore() {
             onChange={ev => { setJoue(false); setT(Number(ev.target.value)); setATouche(true); }} style={{ width: '100%', minHeight: 32 }}/>
         </label>
         <Seg label="Vitesse de lecture" valeur={vit} onChange={setVit} options={[[1, '×1'], [0.5, '×½'], [0.25, '×¼']]}/>
-        <Seg label="Masse" valeur={p.m} onChange={v => regler({ m: v })} options={[[0.05, '50 g'], [0.08, '80 g'], [0.15, '150 g']]}/>
+        <Seg label="Masse" valeur={p.m} onChange={v => regler(garde === 'E' ? { m: v, v0: Number(Math.min(Math.sqrt(2 * (0.5 * p.m * p.v0 * p.v0) / v), V_MAX).toFixed(2)) } : { m: v })} options={[[0.05, '50 g'], [0.08, '80 g'], [0.15, '150 g']]}/>
       </div>
       <div className="flx-ctrl" style={{ maxWidth: 920, margin: '10px auto 0', gridTemplateColumns: 'minmax(0, 1fr)' }}>
         <Seg label="Frottement sur la rampe" valeur={p.f} onChange={v => regler({ f: v })} options={[[0, 'aucun'], [0.03, 'faible'], [0.08, 'fort']]}/>
+      </div>
+
+      <div style={{ ...styleBoite, maxWidth: 920, margin: '10px auto 0' }}>
+        <Curseur nom="Énergie mécanique au départ Em" valeur={Number((0.5 * p.m * p.v0 * p.v0).toFixed(2))} onChange={e => regler({ v0: Number(Math.min(Math.sqrt(2 * e / p.m), V_MAX).toFixed(2)) })} min={0} max={Number((0.5 * p.m * V_MAX * V_MAX).toFixed(2))} pas={0.01} unite="J" decimales={2} couleur={COL.Em}/>
+        <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5, marginBottom: 8 }}>Au départ, toute l’énergie est cinétique : Em = ½ × m × v0², soit v0 = {nbf(p.v0, 2)} m/s pour {nbf(p.m * 1000, 0)} g. Tu peux aussi la régler en tirant la bille.</div>
+        <Seg label="Quand je change la masse, je garde constant(e)" valeur={garde} onChange={setGarde} options={[['v', 'la vitesse v0'], ['E', 'l’énergie Em']]}/>
       </div>
 
       <div className="flx-chips" style={{ maxWidth: 920, margin: '10px auto 0' }}>
@@ -265,17 +271,17 @@ export function FlipperExplore() {
       <div style={{ ...styleBoite, maxWidth: 920, margin: '10px auto 0' }}>
         <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Les énergies au cours du temps</div>
         <svg viewBox="0 0 700 210" style={{ width: '100%', display: 'block' }} role="img" aria-label="Graphique : énergie cinétique, potentielle et mécanique de la bille en fonction du temps ; il se trace pendant le mouvement.">
-          <rect x="56" y="12" width="628" height="156" rx="6" fill="#fafcff" stroke="#e2e8f0"/>
-          {[0, 0.5, 1].map(g => <g key={g}><line x1="56" x2="684" y1={168 - g * 150 / 1.0} y2={168 - g * 150 / 1.0} stroke="#e2e8f0"/></g>)}
+          <rect x="56" y="30" width="628" height="138" rx="6" fill="#fafcff" stroke="#e2e8f0"/>
+          {[0, 0.5, 1].map(g => <g key={g}><line x1="56" x2="684" y1={168 - g * 132} y2={168 - g * 132} stroke="#e2e8f0"/></g>)}
           {[['Ec', COL.Ec], ['Epp', COL.Epp], ['Em', COL.Em]].map(([n, c]) => {
             const pts = []; const pasG = 3, fin2 = Math.min(Math.round(t * FPS), tr.frames.length - 1);
-            for (let i = 0; i <= fin2; i += pasG) { const f = tr.frames[i]; pts.push(`${(56 + 628 * f.t / Math.max(tr.tFin, 0.01)).toFixed(1)},${(168 - Math.min(f[n] / Emax, 1) * 150).toFixed(1)}`); }
+            for (let i = 0; i <= fin2; i += pasG) { const f = tr.frames[i]; pts.push(`${(56 + 628 * f.t / Math.max(tr.tFin, 0.01)).toFixed(1)},${(168 - Math.min(f[n] / Emax, 1) * 132).toFixed(1)}`); }
             return <polyline key={n} points={pts.join(' ')} fill="none" stroke={c} strokeWidth={n === 'Em' ? 3.5 : 3} strokeLinejoin="round" strokeDasharray={n === 'Em' ? '9 5' : undefined}/>;
           })}
-          <line x1={56 + 628 * Math.min(t / Math.max(tr.tFin, 0.01), 1)} x2={56 + 628 * Math.min(t / Math.max(tr.tFin, 0.01), 1)} y1="12" y2="168" stroke="#94a3b8" strokeWidth="1.5"/>
+          <line x1={56 + 628 * Math.min(t / Math.max(tr.tFin, 0.01), 1)} x2={56 + 628 * Math.min(t / Math.max(tr.tFin, 0.01), 1)} y1="30" y2="168" stroke="#94a3b8" strokeWidth="1.5"/>
           <text x="370" y="204" textAnchor="middle" fontSize={15 * (etroit ? 1.35 : 1)} fill="#475569">temps (s) · durée du tir : {nbf(tr.tFin, 1)} s</text>
-          <text x="50" y="22" textAnchor="end" fontSize={15 * (etroit ? 1.35 : 1)} fill="#475569">{nbf(Emax, 1)} J</text><text x="50" y="172" textAnchor="end" fontSize={15 * (etroit ? 1.35 : 1)} fill="#475569">0</text>
-          {[['Ec', COL.Ec, 470], ['Epp', COL.Epp, 540], ['Em', COL.Em, 620]].map(([n, c, x]) => <g key={n}><line x1={x} x2={x + 22} y1="30" y2="30" stroke={c} strokeWidth="4"/><text x={x + 27} y="35" fontSize={15 * (etroit ? 1.35 : 1)} fontWeight="700" fill={c}>{n}</text></g>)}
+          <text x="50" y="40" textAnchor="end" fontSize={15 * (etroit ? 1.35 : 1)} fill="#475569">{nbf(Emax, 1)} J</text><text x="50" y="172" textAnchor="end" fontSize={15 * (etroit ? 1.35 : 1)} fill="#475569">0</text>
+          {[['Ec', COL.Ec, 470], ['Epp', COL.Epp, 540], ['Em', COL.Em, 620]].map(([n, c, x]) => <g key={n}><line x1={x} x2={x + 22} y1="14" y2="14" stroke={c} strokeWidth="4"/><text x={x + 27} y="19" fontSize={15 * (etroit ? 1.35 : 1)} fontWeight="700" fill={c}>{n}</text></g>)}
         </svg>
       </div>
 
