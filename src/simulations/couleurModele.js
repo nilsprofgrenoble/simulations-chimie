@@ -140,3 +140,21 @@ export function cssXYNormalise(x, y) {
   const m = Math.max(...v) || 1, e = v.map(u => Math.round(255 * gam(Math.max(0, u / m))));
   return `rgb(${e[0]}, ${e[1]}, ${e[2]})`;
 }
+
+/** Point pourpre de longueur d'onde complémentaire lamC (entre 493 et 566 nm environ) et de pureté p (0 : blanc, 1 : sur la droite des pourpres). */
+export function pointPourpre(lamC, p, w = BLANC_XY) {
+  const L = pointLieu(lamC), n = Math.hypot(w.x - L.x, w.y - L.y), d = { x: (w.x - L.x) / n, y: (w.y - L.y) / n }, f = frontiere(w, d);
+  return { x: w.x + p * (f.x - w.x), y: w.y + p * (f.y - w.y) };
+}
+/** Mélange additif de deux lumières de chromaticités P1 et P2 : le point du mélange est sur le segment P1P2.
+ *  w = part de la lumière 2 dans le mélange, exprimée en X + Y + Z (0 : lumière 1 seule, 1 : lumière 2 seule). */
+export function melange(P1, P2, w) { return { x: (1 - w) * P1.x + w * P2.x, y: (1 - w) * P1.y + w * P2.y }; }
+/** Le point (x, y) est-il à l'intérieur du diagramme (couleur physiquement possible) ? */
+export function dansDiagramme(x, y) {
+  const poly = LIEU; let dedans = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.y > y) !== (b.y > y) && x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x) dedans = !dedans;
+  }
+  return dedans;
+}

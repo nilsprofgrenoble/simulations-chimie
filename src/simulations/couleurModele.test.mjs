@@ -49,3 +49,14 @@ ok(C.dansTriangle(C.BLANC_XY, C.PRIMAIRES_SRGB), 'blanc dans gamut'); ok(!C.dans
 // réflectance : objet blanc parfait sous A = blanc de A ; objet gris moyen → Y = 50
 const gris = new Array(C.NB).fill(0.5); pres(C.xyz(gris, 'A').Y, 50, 1e-9, 'gris 50 %'); pres(C.lab(C.xyz(gris, 'A'), C.blancDe('A')).a, 0, 1e-9, 'gris neutre sous A');
 console.log(`couleurModele : ${n} vérifications OK`);
+// pourpres : la complémentaire lue sur le point construit est celle demandée ; le point est entre le blanc et la droite des pourpres
+for (const lc of [500, 520, 540, 560]) for (const p of [0.3, 0.6, 0.9]) {
+  const P = C.pointPourpre(lc, p), l = C.lireChromaticite(P.x, P.y);
+  ok(l.pourpre && l.dominante == null, `pourpre ${lc}/${p}`); pres(l.complementaire, lc, 0.6, `complémentaire ${lc}/${p}`); pres(l.purete, p, 1e-6, `pureté pourpre ${lc}/${p}`); ok(C.dansDiagramme(P.x, P.y), `pourpre dans le diagramme ${lc}`);
+}
+// mélange : segment, barycentre
+const m = C.melange(C.pointLieu(620), C.pointLieu(530), 0.5); pres(m.x, (0.6915 + 0.1547) / 2, 2e-3, 'x mélange rouge + vert'); pres(m.y, (0.3083 + 0.8059) / 2, 2e-3, 'y mélange rouge + vert');
+ok(C.lireChromaticite(m.x, m.y).dominante > 560 && C.lireChromaticite(m.x, m.y).dominante < 580, 'rouge + vert à parts égales = jaune-vert');
+// intérieur du diagramme
+ok(C.dansDiagramme(0.3127, 0.329) && !C.dansDiagramme(0.7, 0.8) && !C.dansDiagramme(0.1, 0.05) && C.dansDiagramme(0.5, 0.4), 'dansDiagramme');
+console.log(`couleurModele (suite) : ${n} vérifications OK`);
