@@ -218,14 +218,15 @@ export function SimulationStereoisomeres() {
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => {
     setV3dD(false);
-    if (type === 'relation') { const t = M.tirageRelation(); setDefi({ ...t, reps: { rel: '', nb: '' }, verifie: false }); }
+    if (type === 'relation') { const t = M.tirageRelation(); setDefi({ ...t, reps: { rel: '', nb: '', a0: '', a1: '', b0: '', b1: '' }, verifie: false }); }
     else setDefi({ ...M.tirageZE(), reps: { z1: '', z2: '' }, verifie: false });
   };
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); }
   function choisirDefi(t) { setTypeDefi(t); nouveauDefi(t); }
   const verifier = () => {
     if (defi.type === 'relation') {
-      const nb = lireNombre(defi.reps.nb), ok = defi.reps.rel === defi.rel && isFinite(nb) && nb === M.nbStereo(defi.n);
+      const nb = lireNombre(defi.reps.nb), r = defi.reps, confOk = r.a0 === defi.a.desc[0] && r.a1 === defi.a.desc[1] && r.b0 === defi.b.desc[0] && r.b1 === defi.b.desc[1];
+      const ok = confOk && r.rel === defi.rel && isFinite(nb) && nb === M.nbStereo(defi.n);
       setDefi(x => ({ ...x, verifie: true, ok })); noterR(ok);
     } else {
       const ok = defi.reps.z1 === M.geometrieZE(defi.h1) && defi.reps.z2 === M.geometrieZE(defi.h2);
@@ -235,9 +236,9 @@ export function SimulationStereoisomeres() {
   const lbl = { fontSize: 14, color: KIT.txt, lineHeight: 1.5 };
   const selectStyle = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
   const libelle = { display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '0 0 3px' };
-  const selDefi = (cle, aria, options, ok) => (
+  const selDefi = (cle, aria, options, ok, larg = 150) => (
     <select value={defi.reps[cle]} aria-label={aria} onChange={e2 => setDefi(d => ({ ...d, reps: { ...d.reps, [cle]: e2.target.value }, verifie: false }))}
-      style={{ ...selectStyle, width: 'auto', minWidth: 150, border: `1.5px solid ${defi.verifie ? (ok ? '#15803d' : '#dc2626') : KIT.bord}` }}>
+      style={{ ...selectStyle, width: 'auto', minWidth: larg, border: `1.5px solid ${defi.verifie ? (ok ? '#15803d' : '#dc2626') : KIT.bord}` }}>
       <option value="">Choisir…</option>{options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
     </select>);
   // B est dessiné soit tel quel, soit retourné gauche-droite (dessin de son énantiomère, reflété : même molécule) ; toujours retourné quand A et B sont identiques
@@ -252,6 +253,11 @@ export function SimulationStereoisomeres() {
       {defi.type === 'relation' ? <>
         <div style={{ ...lbl, marginBottom: 8 }}>La molécule <strong>{defi.m.nom}</strong> ({defi.m.semi}) a deux carbones asymétriques. On a dessiné deux stéréoisomères <strong>A</strong> et <strong>B</strong> (le dessin de B peut être retourné). Déterminez la configuration R ou S de chaque carbone, puis la relation entre A et B.</div>
         <CoupleCram mol={defi.m} ariaLabel="Les stéréoisomères A et B" items={[{ affs: defi.a.affs, legende: 'A' }, dessinB]}/>
+        {[['A', 'a', defi.a], ['B', 'b', defi.b]].map(([L, k, st]) => (
+          <div key={L} style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
+            <span style={{ fontWeight: 700 }}>Configuration de {L} :</span>
+            {[0, 1].map(j => <span key={j} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>{defi.m.nomsCentres[j]}{selDefi(k + j, `Configuration du carbone ${defi.m.nomsCentres[j]} de ${L}`, [['R', 'R'], ['S', 'S']], defi.reps[k + j] === st.desc[j], 80)}</span>)}
+          </div>))}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>A et B sont :</span>{selDefi('rel', 'Relation entre A et B', Object.entries(REL), defi.ok || defi.reps.rel === defi.rel)}
         </div>
