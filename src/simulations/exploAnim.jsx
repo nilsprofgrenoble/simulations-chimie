@@ -133,14 +133,14 @@ export function GrapheTemps({ frames, tFin, t, Emax, etroit, cles = [['Ec', COL.
       <svg viewBox="0 0 700 210" style={{ width: '100%', display: 'block' }} role="img" aria-label="Graphique : énergie cinétique, potentielle et mécanique en fonction du temps ; il se trace pendant le mouvement.">
         <rect x="56" y="30" width="628" height="138" rx="6" fill="#fafcff" stroke="#e2e8f0"/>
         {[0.5, 1].map(g => <line key={g} x1="56" x2="684" y1={168 - g * 132} y2={168 - g * 132} stroke="#e2e8f0"/>)}
-        {cles.map(([n, c]) => {
+        {cles.map(([n, c, tir]) => {
           const pts = []; for (let i = 0; i <= fin2; i += 3) { const f = frames[i]; pts.push(`${(56 + 628 * f.t / T).toFixed(1)},${(168 - Math.min(Math.max(f[n], 0) / Emax, 1) * 132).toFixed(1)}`); }
-          return <polyline key={n} points={pts.join(' ')} fill="none" stroke={c} strokeWidth={n === 'Em' ? 3.5 : 3} strokeLinejoin="round" strokeDasharray={n === 'Em' ? '9 5' : undefined}/>;
+          return <polyline key={n} points={pts.join(' ')} fill="none" stroke={c} strokeWidth={tir ?? n === 'Em' ? 3.5 : 3} strokeLinejoin="round" strokeDasharray={tir ?? n === 'Em' ? '9 5' : undefined}/>;
         })}
         <line x1={xc} x2={xc} y1="30" y2="168" stroke="#94a3b8" strokeWidth="1.5"/>
         <text x="370" y="204" textAnchor="middle" fontSize={15 * F} fill="#475569">temps (s) · durée : {nbf(tFin, 1)} s</text>
         <text x="50" y="40" textAnchor="end" fontSize={15 * F} fill="#475569">{Emax >= 1000 ? `${nbf(Emax / 1000, Emax >= 1e5 ? 0 : 1)} kJ` : `${nbf(Emax, Emax < 10 ? 1 : 0)} J`}</text><text x="50" y="172" textAnchor="end" fontSize={15 * F} fill="#475569">0</text>
-        {cles.map(([n, c], i) => <g key={n}><line x1={470 + i * 75} x2={492 + i * 75} y1="14" y2="14" stroke={c} strokeWidth="4"/><text x={497 + i * 75} y="19" fontSize={15 * F} fontWeight="700" fill={c}>{n}</text></g>)}
+        {cles.map(([n, c], i) => <g key={n}><line x1={(cles.length > 3 ? 395 : 470) + i * 75} x2={(cles.length > 3 ? 417 : 492) + i * 75} y1="14" y2="14" stroke={c} strokeWidth="4"/><text x={(cles.length > 3 ? 422 : 497) + i * 75} y="19" fontSize={15 * F} fontWeight="700" fill={c}>{n}</text></g>)}
       </svg>
     </div>);
 }
