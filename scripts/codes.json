@@ -3133,5 +3133,12 @@
  "37:prevoir:flm-ana-calcium": "ANA1400",
  "77:plausible:flm-val-lampe": "VAL813",
  "77:plausible:flm-val-temperature": "VAL814",
- "36:flm-calcul": "REA228"
+ "36:flm-calcul": "REA228",
+ "34:icp-sapp-source": "SAPP694",
+ "37:prevoir:icp-ana-plasma": "ANA1401",
+ "37:prevoir:icp-ana-poly": "ANA1402",
+ "37:prevoir:icp-ana-dilution": "ANA1403",
+ "77:plausible:icp-val-temperature": "VAL815",
+ "77:plausible:icp-val-lampe": "VAL816",
+ "36:icp-calcul": "REA229"
 }
