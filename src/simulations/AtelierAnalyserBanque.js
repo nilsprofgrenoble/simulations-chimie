@@ -3829,6 +3829,27 @@ export const PREVOIR = [
       F('une liaison C–C simple en bout de chaîne', 'Une simple liaison C–C n’a pas d’électrons capables de se conjuguer.'),
       F('un groupe –CH₂– entre deux chromophores isolés', 'Il sépare les chromophores et empêche leur conjugaison : il ne joue pas ce rôle.'),
     ] },
+  { id: 'frx-ana-seuil', domaine: 'Fluorescence X : de la lacune à la raie de l’élément', titre: 'Un photon trop peu énergétique',
+    enonce: 'Un échantillon de fer, dont l’électron de la couche K est lié avec une énergie de 7,11 keV, est irradié par des photons X de 6,0 keV.', q: 'Observe-t-on la raie Kα du fer (6,40 keV) ?', options: [
+      V('non : le photon n’a pas assez d’énergie pour éjecter un électron K', 'Sans lacune en K, aucune raie K ne peut être émise : le photon doit atteindre au moins 7,11 keV.'),
+      F('oui : toute énergie suffit à exciter les atomes, la raie est seulement moins intense', 'Il existe un seuil : en dessous de l’énergie de liaison K, l’électron n’est pas éjecté et aucune raie K n’apparaît.'),
+      F('oui, mais elle est émise à 6,0 keV, l’énergie du photon incident', 'L’énergie de la raie ne dépend pas de celle du photon incident : elle vaut E_K − E_L, propre à l’élément.'),
+      F('oui, car 6,0 keV dépasse l’énergie de la raie Kα de 6,40 keV', '6,0 keV est inférieur à 6,40 keV et surtout à 7,11 keV, le seuil à atteindre pour créer la lacune.'),
+    ] },
+  { id: 'frx-ana-laiton', domaine: 'Fluorescence X : de la lacune à la raie de l’élément', titre: 'Quels éléments dans cet alliage ?',
+    enonce: 'Le spectre de fluorescence X d’un alliage présente deux pics intenses, à 8,05 keV et à 8,64 keV. Raies Kα tabulées (keV) : Fe 6,40 ; Ni 7,48 ; Cu 8,05 ; Zn 8,64. Le Kβ du cuivre est à 8,91 keV.', q: 'Que peut-on en conclure ?', options: [
+      F('l’alliage contient seulement du cuivre : le second pic est sa raie Kβ', 'Le Kβ du cuivre est à 8,91 keV et moins intense : le pic à 8,64 keV est la raie Kα du zinc.'),
+      V('l’alliage contient du cuivre et du zinc, identifiés par l’énergie des pics', 'L’énergie d’une raie est propre à l’élément : 8,05 keV pour Cu et 8,64 keV pour Zn.'),
+      F('l’alliage contient du fer et du nickel, dont les raies sont voisines', 'Les raies de Fe (6,40 keV) et de Ni (7,48 keV) sont à des énergies différentes de celles observées.'),
+      F('on ne peut rien conclure sans connaître l’énergie du tube à rayons X', 'Les raies ne dépendent que de l’élément, pas du tube, dès que le seuil K est dépassé.'),
+    ] },
+  { id: 'frx-ana-intensite', domaine: 'Fluorescence X : de la lacune à la raie de l’élément', titre: 'Hauteur du pic et teneur',
+    enonce: 'Un étalon d’acier à 10 % de nickel donne une raie Kα du nickel de 2700 coups/s (intensité nette). Un échantillon de même matrice donne 1350 coups/s pour la même raie.', q: 'Quelle est la teneur en nickel de l’échantillon ?', options: [
+      F('10 %, car c’est le même élément que dans l’étalon', 'L’énergie du pic identifie l’élément ; c’est sa hauteur qui renseigne sur la teneur.'),
+      F('20 %, car l’intensité est inversement proportionnelle à la teneur', 'L’intensité nette est proportionnelle à la teneur : moitié moins de coups, moitié moins de nickel.'),
+      V('environ 5 %, car l’intensité est proportionnelle à la teneur', 'I est proportionnelle à w : 1350 / 2700 = 0,5, donc 5 %.'),
+      F('on ne peut pas conclure sans refaire un spectre complet', 'Une seule raie et un étalon suffisent si la matrice est comparable.'),
+    ] },
   { id: 'hook-ana-rigidite', domaine: 'Infrarouge : de la liaison-ressort au spectre', titre: 'Simple, double ou triple liaison',
     enonce: 'Un spectre IR présente deux bandes d’élongation de liaisons carbone-carbone : l’une vers 1650 cm⁻¹ et l’autre vers 2200 cm⁻¹. Les deux liaisons relient deux atomes de carbone.', q: 'Quelle est l’attribution la plus probable ?', options: [
       F('1650 cm⁻¹ : triple liaison C≡C ; 2200 cm⁻¹ : double liaison C=C', 'C’est inversé : la triple liaison, plus rigide (k plus grand), absorbe à un nombre d’onde plus élevé.'),

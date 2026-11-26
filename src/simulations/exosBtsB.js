@@ -544,6 +544,26 @@ export const BTSB_SIT = [
     },
   },
   {
+    id: 'frx-sapp-element', domaine: 'Fluorescence X : de la lacune à la raie de l’élément', niveau: 2, titre: 'Identifier un élément par sa raie Kα',
+    construire: () => {
+      const T = [['calcium', 'Ca', 3.69, 4.04, 0.35], ['titane', 'Ti', 4.51, 4.97, 0.45], ['chrome', 'Cr', 5.41, 5.99, 0.57], ['fer', 'Fe', 6.40, 7.11, 0.71], ['nickel', 'Ni', 7.48, 8.33, 0.85], ['cuivre', 'Cu', 8.05, 8.98, 0.93]];
+      const [nom, sym, Ka, EK, EL] = tire(T), autres = T.filter(x => x[1] !== sym).sort((a, b) => Math.abs(a[2] - Ka) - Math.abs(b[2] - Ka)).slice(0, 2);
+      return {
+        enonce: `Un échantillon inconnu est irradié par des rayons X. Ses énergies de liaison sont E_K = ${nb(EK, 2)} keV (couche K) et E_L = ${nb(EL, 2)} keV (couche L). Raies Kα tabulées (keV) : ${T.map(x => x[1] + ' ' + nb(x[2], 2)).join(' ; ')}.`,
+        etapes: [
+          { id: 'ka', titre: 'Énergie de la raie', q: 'Calculer l’énergie de la raie Kα émise quand un électron L comble la lacune K, en keV.', aide: 'E(Kα) = E_K − E_L.',
+            type: 'saisie', champs: [{ id: 'ka', lib: 'E(Kα)', u: 'keV', vrai: Number((EK - EL).toFixed(2)), tol: 0.03 }],
+            expl: `E(Kα) = ${nb(EK, 2)} − ${nb(EL, 2)} = ${nb(EK - EL, 2)} keV.` },
+          { id: 'attribution', titre: 'Attribution', q: `La raie vaut ${nb(EK - EL, 2)} keV. De quel élément s’agit-il ?`, aide: 'Comparez avec les raies Kα tabulées.',
+            o: [F(`${autres[0][0]} (${autres[0][1]}), dont la raie Kα est à ${nb(autres[0][2], 2)} keV`, 'Cette valeur tabulée est différente de la raie calculée.'),
+              V(`${nom} (${sym}), dont la raie Kα est à ${nb(Ka, 2)} keV`, 'La raie calculée coïncide avec la valeur tabulée de cet élément.'),
+              F(`${autres[1][0]} (${autres[1][1]}), dont la raie Kα est à ${nb(autres[1][2], 2)} keV`, 'Cette valeur tabulée est différente de la raie calculée.')] },
+        ],
+        retenir: ['E(Kα) = E_K − E_L : l’énergie de la raie est une signature de l’élément.', 'La hauteur du pic, elle, renseigne sur la teneur.'],
+      };
+    },
+  },
+  {
     id: 'hook-sapp-bande', domaine: D_HOOK, niveau: 2, titre: 'Attribuer une bande à une liaison',
     construire: () => {
       const l = tire([['C', 'H', 480, 'C–H', 2950], ['O', 'H', 780, 'O–H libre', 3620], ['C', 'O', 1200, 'C=O', 1715]]);

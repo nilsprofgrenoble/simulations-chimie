@@ -3071,5 +3071,12 @@
  "77:plausible:uvs-val-etalonnage": "VAL801",
  "77:plausible:uvs-val-ir": "VAL802",
  "36:uv-energie": "REA217",
- "36:uv-etalonnage": "REA218"
+ "36:uv-etalonnage": "REA218",
+ "34:frx-sapp-element": "SAPP676",
+ "37:prevoir:frx-ana-seuil": "ANA1379",
+ "37:prevoir:frx-ana-laiton": "ANA1380",
+ "37:prevoir:frx-ana-intensite": "ANA1381",
+ "77:plausible:frx-val-energie": "VAL803",
+ "77:plausible:frx-val-technique": "VAL804",
+ "36:frx-calcul": "REA219"
 }
