@@ -1366,7 +1366,7 @@ export const PLAUSIBLES = [
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il moyenne les réflectances au lieu d’ajouter les K/S', 'La grandeur qui s’additionne est K/S, pas R. La moyenne de R donnerait un résultat trop clair.'),
-      F('le jaune et le cyan ne peuvent pas se mélanger dans un même pot', 'Les deux peintures se mélangent bien : le mélange absorbe le bleu et le rouge, et renvoie du vert.'),
+      F('il aurait dû multiplier les réflectances au lieu de les moyenner', 'Le produit des réflectances n’est pas non plus le bon modèle : ce sont les pouvoirs absorbants K/S qui s’additionnent.'),
       F('une réflectance ne dépend pas de la longueur d’onde', 'Une réflectance se mesure justement pour chaque longueur d’onde.'),
     ] }),
   P({ id: 'ads-val-filtres-somme', domaine: 'Couleur : synthèses additive et soustractive', niveau: 2, titre: 'Deux filtres en série', plausible: false,
@@ -1375,7 +1375,7 @@ export const PLAUSIBLES = [
     ver: 'Le second filtre reçoit seulement la lumière que le premier a laissée passer : T = 0,60 × 0,50 = 0,30, soit 30 % de la lumière incidente. Une transmittance supérieure à 1 est impossible pour un filtre passif.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      F('les deux transmittances sont trop faibles pour un filtre', 'Ces valeurs sont tout à fait ordinaires pour des filtres colorés.'),
+      F('il aurait dû soustraire les transmittances : 0,60 − 0,50 = 0,10', 'Soustraire n’a pas de sens : le second filtre agit sur la lumière que le premier a laissée passer, on multiplie.'),
       V('il ajoute les transmittances au lieu de les multiplier', 'En série, T = T₁ × T₂ = 0,30. Le résultat 1,10 est d’ailleurs impossible.'),
       F('il doit diviser la somme par deux pour obtenir la moyenne des deux', 'La moyenne ne convient pas non plus : le second filtre agit sur la lumière déjà filtrée.'),
     ] }),

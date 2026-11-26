@@ -7,7 +7,7 @@ export const QCM = {
     'le produit des deux spectres : presque aucune lumière',
     'celui de la lampe la plus intense seulement'),
   jaune: mk(0, 'Des spectres très différents peuvent donner la même couleur',
-    'Le jaune est une couleur de lumière qui ne peut pas être fabriquée par mélange',
+    'Deux lumières de même couleur ont forcément le même spectre',
     'Les deux lumières ont en fait le même spectre, que le graphique déforme',
     'L’œil mesure précisément la longueur d’onde de chaque lumière'),
   cones: mk(3, 'Les deux lumières donnent à peu près les mêmes réponses L, M et S',
@@ -35,7 +35,7 @@ export const QCM = {
     'L* et C* augmentent : la couleur est plus claire et plus vive',
     'L* et C* ne changent pas : seule la teinte h change'),
   modele: mk(2, 'deux projecteurs de scène, un rouge et un vert, éclairent le même mur',
-    'on place deux filtres colorés l’un derrière l’autre devant une lampe blanche',
+    'un projecteur de scène éclaire le mur à travers une gélatine jaune',
     'on mélange deux peintures dans un même pot',
     'on dépose une encre jaune sur une encre cyan'),
 };
