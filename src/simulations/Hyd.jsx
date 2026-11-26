@@ -12,7 +12,7 @@ import { useEtroit, useLecture, StyleAnim } from "./exploAnim";
 import { usePhase, reduitMouvement } from "./hookHorloge";
 
 // ====================================================
-// SIM 310 — « Précipitation sélective des hydroxydes selon le pH » (terminale STL, SPCL, Chimie et développement durable : solubilité).
+// SIM 311 — « Précipitation sélective des hydroxydes selon le pH » (terminale STL, SPCL, Chimie et développement durable : solubilité).
 //  Une idée : un hydroxyde M(OH)n précipite quand [HO⁻] atteint (Ks ÷ c)^(1/n), c'est-à-dire à partir d'un pH précis ; deux cations se séparent si une « fenêtre » de pH existe entre la fin de précipitation du premier
 //  (convention : 1,0×10⁻⁵ mol/L restant) et le début de précipitation du second.
 //  Capacités visées (jamais affichées à l'élève) : calculer le pH de début de précipitation d'un hydroxyde ; comparer des pH de précipitation pour prévoir l'ordre et la possibilité d'une séparation.
@@ -25,7 +25,7 @@ const sci1 = x => M.sciNb(x, 1), sci2 = x => M.sciNb(x, 2);
 const ph1 = v => M.phTxt(v);
 const BLEU = '#0369a1';
 const C = M.CATS, CR = C.Cr, NI = C.Ni, MN = C.Mn, MG = C.Mg;
-const SIM_ID = 310, CLE_GUIDE = 'hyd-guide-v1';
+const SIM_ID = 311, CLE_GUIDE = 'hyd-guide-v1';
 declarerDefis(SIM_ID, [['separer', 'Choisir le pH qui sépare deux cations'], ['debut', 'Calculer le pH de début de précipitation']]);
 const IDS = ['dissolution', 'ohseuil', 'phdebut', 'exposant', 'axe', 'fin', 'fenetre', 'etroite', 'chevauche', 'conc', 'protocole', 'bilan'];
 const ULS = { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 };

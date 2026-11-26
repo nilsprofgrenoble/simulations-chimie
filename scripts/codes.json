@@ -3114,5 +3114,17 @@
  "77:plausible:hyd-val-poh": "VAL809",
  "77:plausible:hyd-val-racine": "VAL810",
  "36:hyd-seuil": "REA224",
- "36:hyd-fenetre": "REA225"
+ "36:hyd-fenetre": "REA225",
+ "34:tsol-sapp-cristaux.0": "SAPP689",
+ "34:tsol-sapp-cristaux.1": "SAPP690",
+ "34:tsol-sapp-eaumin.0": "SAPP691",
+ "34:tsol-sapp-eaumin.1": "SAPP692",
+ "37:prevoir:tsol-ana-refroidir": "ANA1394",
+ "37:prevoir:tsol-ana-chauffer": "ANA1395",
+ "37:prevoir:tsol-ana-eau": "ANA1396",
+ "37:prevoir:tsol-ana-proportion": "ANA1397",
+ "77:plausible:tsol-val-eau": "VAL811",
+ "77:plausible:tsol-val-rendement": "VAL812",
+ "36:tsol-cristal": "REA226",
+ "36:tsol-eau": "REA227"
 }

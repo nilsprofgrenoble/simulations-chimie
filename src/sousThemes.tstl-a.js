@@ -12,6 +12,10 @@ export default {
       refs: ['37:prevoir:hyd-ana-expression', '37:prevoir:hyd-ana-dilution', '77:plausible:hyd-val-poh', '77:plausible:hyd-val-racine', '34:hyd-sapp-seuil', '36:hyd-seuil'] },
     { id: 'hyd-separation', nom: 'Séparer des cations par le pH', capacite: 'Comparer des pH de précipitation pour prévoir l’ordre de précipitation et la possibilité d’une séparation.',
       refs: ['37:prevoir:hyd-ana-premier', '37:prevoir:hyd-ana-fenetre', '34:hyd-sapp-fenetre', '36:hyd-fenetre'] },
+    { id: 'tsol-courbe', nom: 'Lire une courbe de solubilité et reconnaître la saturation', capacite: 'Exploiter une courbe de solubilité pour prévoir si une solution est saturée et comment la température modifie la dissolution.',
+      refs: ['37:prevoir:tsol-ana-refroidir', '37:prevoir:tsol-ana-chauffer', '34:tsol-sapp-cristaux'] },
+    { id: 'tsol-recristallisation', nom: 'Masse de cristaux, eau minimale et rendement', capacite: 'Déterminer la masse de solide qui cristallise, la masse d’eau minimale et le rendement d’une recristallisation.',
+      refs: ['37:prevoir:tsol-ana-eau', '37:prevoir:tsol-ana-proportion', '77:plausible:tsol-val-eau', '77:plausible:tsol-val-rendement', '34:tsol-sapp-eaumin', '36:tsol-cristal', '36:tsol-eau'] },
   ],
   'tstl-spectroscopies': [
     { id: 'rmn-signaux', nom: 'Compter les signaux et repérer leur position', capacite: 'Prévoir le nombre de signaux d’un spectre RMN du proton et situer un signal avec une banque de déplacements chimiques.',
