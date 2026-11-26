@@ -2745,5 +2745,17 @@
  "77:plausible:kcd-val-tau": "VAL737",
  "77:plausible:kcd-val-K-dilution": "VAL738",
  "36:kcd-calcul": "REA169",
- "36:kcd-ka-calcul": "REA170"
+ "36:kcd-ka-calcul": "REA170",
+ "34:chh-sapp-vitesse.0": "SAPP586",
+ "34:chh-sapp-vitesse.1": "SAPP587",
+ "34:chh-sapp-frott.0": "SAPP588",
+ "34:chh-sapp-frott.1": "SAPP589",
+ "37:prevoir:chh-ana-masse": "ANA1255",
+ "37:prevoir:chh-ana-hauteur": "ANA1256",
+ "37:prevoir:chh-ana-trajet": "ANA1257",
+ "37:prevoir:chh-ana-frott": "ANA1258",
+ "77:plausible:chh-val-masse": "VAL739",
+ "77:plausible:chh-val-frott": "VAL740",
+ "36:chh-vitesse": "REA171",
+ "36:chh-frott": "REA172"
 }
