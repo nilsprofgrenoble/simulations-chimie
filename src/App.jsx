@@ -257,6 +257,7 @@ const SimulationPilePcm = paresseux(() => import("./simulations/PilePcm"), "Simu
 const SimulationRmnStl = paresseux(() => import("./simulations/RmnStl"), "SimulationRmnStl");
 const SimulationUvVisibleStl = paresseux(() => import("./simulations/UvVisStl"), "SimulationUvVisibleStl");
 const SimulationIrStl = paresseux(() => import("./simulations/IrStl"), "SimulationIrStl");
+const SimulationKsq = paresseux(() => import("./simulations/Ksq"), "SimulationKsq");
 const SimulationChuteVisqueuse = paresseux(() => import("./simulations/ChuteVisqueuseDuo"), "SimulationChuteVisqueuseDuo");
 const SimulationPenteXt = paresseux(() => import("./simulations/PenteXt"), "SimulationPenteXt");
 const SimulationVecteursVAStl = paresseux(() => import("./simulations/VecteursVAStl"), "SimulationVecteursVAStl");
@@ -706,6 +707,7 @@ const SIMULATIONS = [
   { id:306, label:"RMN du proton : attribuer un spectre", niveau:"TSTL", icon:"🧲", color:"#0f766e", component: SimulationRmnStl },
   { id:307, label:"UV-visible : énergie, identification et dosage par étalonnage", niveau:"TSTL", icon:"🔆", color:"#6d28d9", component: SimulationUvVisibleStl },
   { id:308, label:"Infrarouge : énergie des photons, bandes et structures", niveau:"TSTL", icon:"🔬", color:"#0f766e", component: SimulationIrStl },
+  { id:309, label:"Dissoudre ou précipiter ? Qr, Ks et solution saturée", niveau:"TSTL", icon:"🧊", color:"#0369a1", component: SimulationKsq },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
