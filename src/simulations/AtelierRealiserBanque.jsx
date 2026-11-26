@@ -3325,6 +3325,54 @@ function genLpgHmin() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['Condition de contact au sommet (admise) : v ≥ √(g R).', 'Sans frottement, la hauteur minimale de départ est H = 2,5 R.'] };
 }
+function genFlpHauteur() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8; let m, v, a, Ec, h, L;
+  do { m = tire([0.05, 0.08, 0.1, 0.15]); v = tire([2, 3, 4, 5]); a = tire([20, 30, 45]); Ec = 0.5 * m * v * v; h = v * v / (2 * g); L = h / Math.sin(a * Math.PI / 180); }
+  while (new Set([Ec, h, L].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un lanceur éjecte au pied d’une rampe inclinée de ${a}${NB}°, avec la vitesse ${v}${NB}m/s, une bille de masse ${fr(m)}${NB}kg. La rampe est assez haute pour que la bille s’arrête avant son sommet. On néglige les frottements, g = 9,8${NB}N/kg.`;
+  const q1 = { id: 'f0', type: 'num', q: <>Quelle est l’<b>énergie cinétique de la bille à l’éjection</b> (en J, 2 chiffres significatifs) ?</>, unite: 'J', vrai: Ec, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v², avec m en kg.',
+    pieges: [[m * v * v, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v, 'La vitesse est au carré dans Ec = ½ × m × v².']],
+    expl: <>Ec = ½ × {fr(m)} × {v}² = <b>{pvFmt(Ec)}{NB}J</b>.</> };
+  const q2 = { id: 'f1', type: 'num', q: <>Quelle est la <b>hauteur maximale</b> atteinte par la bille (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: h, tolRel: 0.05, csMin: 2,
+    aide: 'Em conservée : ½ m v² = m g h, donc h = v² ÷ (2 g).',
+    pieges: [[v * v / g, 'Il manque le facteur 2 : h = v² ÷ (2 × g).'], [Math.sqrt(2 * g * v), 'La hauteur est v² ÷ (2 g), sans racine.']],
+    expl: <>h = {v}² ÷ (2 × 9,8) = <b>{pvFmt(h)}{NB}m</b>.</> };
+  const q3 = { id: 'f2', type: 'num', q: <>Quelle <b>distance</b> la bille parcourt-elle <b>sur la rampe</b> avant de s’arrêter (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: L, tolRel: 0.05, csMin: 2,
+    aide: 'La hauteur atteinte h et la distance L sur la rampe sont liées par h = L × sin α.',
+    pieges: [[h, 'C’est la hauteur atteinte ; la distance sur la rampe inclinée est plus grande : L = h ÷ sin α.'], [h * Math.sin(a * Math.PI / 180), 'Il faut diviser par sin α, pas multiplier : L = h ÷ sin α.']],
+    expl: <>L = {pvFmt(h)} ÷ sin {a}° = <b>{pvFmt(L)}{NB}m</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Sans frottement, la hauteur atteinte est h = v² ÷ (2 g), sans la masse ni l’angle.', 'La distance parcourue sur la rampe est L = h ÷ sin α.'] };
+}
+function genFlpVmin() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8; let m, h, a, f, v1, v2, v3, v0;
+  do { m = tire([0.05, 0.08, 0.1, 0.15]); h = tire([0.4, 0.5, 0.6, 0.8, 1.0]); a = tire([20, 30, 45]); f = tire([0.03, 0.05, 0.08]);
+    v1 = Math.sqrt(2 * g * h); v2 = Math.sqrt(2 * g * h + 2 * f * (h / Math.sin(a * Math.PI / 180)) / m); v0 = Math.ceil(v2 + 0.5); v3 = Math.sqrt(v0 * v0 - 2 * g * h); }
+  while (v2 - v1 < 0.15 || v3 < 1 || v0 > 7 || new Set([v1, v2, v3].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const L = h / Math.sin(a * Math.PI / 180);
+  const intro = `Une bille de masse ${fr(m)}${NB}kg est éjectée au pied d’une rampe inclinée de ${a}${NB}°, dont le haut est à la hauteur ${fr(h)}${NB}m. g = 9,8${NB}N/kg.`;
+  const q1 = { id: 'v0', type: 'num', q: <>Sans frottement, quelle est la <b>vitesse d’éjection minimale</b> pour atteindre le haut de la rampe (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v1, tolRel: 0.05, csMin: 2,
+    aide: '½ m v² = m g h, donc v = √(2 × g × h).',
+    pieges: [[2 * g * h, 'Il manque la racine carrée : v² = 2 g h.'], [Math.sqrt(g * h), 'Il manque le facteur 2 : v² = 2 × g × h.']],
+    expl: <>v = √(2 × 9,8 × {fr(h)}) = <b>{pvFmt(v1)}{NB}m/s</b>.</> };
+  const q2 = { id: 'v1', type: 'num', q: <>La rampe exerce maintenant une force de frottement constante de <b>{fr(f)}{NB}N</b>. Quelle est la <b>vitesse d’éjection minimale</b> pour atteindre le haut (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v2, tolRel: 0.05, csMin: 2,
+    aide: '½ m v² = m g h + f × L, avec L = h ÷ sin α la distance parcourue sur la rampe.',
+    pieges: [[v1, 'C’est la vitesse sans frottement : il faut ajouter l’énergie dissipée f × L.'], [Math.sqrt(2 * g * h + 2 * f * h / m), 'Le frottement agit sur la distance L = h ÷ sin α le long de la rampe, pas sur la hauteur h.']],
+    expl: <>L = {fr(h)} ÷ sin {a}° = {pvFmt(L)}{NB}m ; v = √(2 × 9,8 × {fr(h)} + 2 × {fr(f)} × {pvFmt(L)} ÷ {fr(m)}) = <b>{pvFmt(v2)}{NB}m/s</b>.</> };
+  const q3 = { id: 'v2', type: 'num', q: <>Sans frottement, la bille est éjectée à <b>{v0}{NB}m/s</b>. Quelle est sa <b>vitesse en haut de la rampe</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v3, tolRel: 0.05, csMin: 2,
+    aide: '½ m v0² = m g h + ½ m v², donc v = √(v0² − 2 g h).',
+    pieges: [[v0, 'C’est la vitesse d’éjection : en montant de h, la bille a perdu de la vitesse.'], [Math.sqrt(v0 * v0 - g * h), 'Il manque le facteur 2 : v² = v0² − 2 × g × h.']],
+    expl: <>v = √({v0}² − 2 × 9,8 × {fr(h)}) = <b>{pvFmt(v3)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Sans frottement : v minimale = √(2 g h), sans la masse ni l’angle.', 'Avec frottement : ½ m v² = m g h + f × L ; la rampe douce (longue) dissipe plus.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5840,6 +5888,8 @@ export const FAMILLES = [
   { id: 'chh-frott', groupe: 'Formules', titre: 'Rampe avec frottement : énergie dissipée et force moyenne (terminale STL)', gen: genChhFrott, domaine: 'Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne' },
   { id: 'lpg-vitesse', groupe: 'Formules', titre: 'Looping : vitesse en bas, à mi-hauteur et au sommet (terminale STL)', gen: genLpgVitesse, domaine: 'Looping : vitesse en chaque point et hauteur minimale de départ' },
   { id: 'lpg-hmin', groupe: 'Formules', titre: 'Looping : vitesse minimale au sommet et hauteur minimale de départ (terminale STL)', gen: genLpgHmin, domaine: 'Looping : vitesse en chaque point et hauteur minimale de départ' },
+  { id: 'flp-hauteur', groupe: 'Formules', titre: 'Flipper : énergie, hauteur atteinte et distance sur la rampe (terminale STL)', gen: genFlpHauteur, domaine: 'Flipper : vitesse d’éjection minimale pour atteindre le haut de la rampe' },
+  { id: 'flp-vmin', groupe: 'Formules', titre: 'Flipper : vitesse d’éjection minimale, avec et sans frottement (terminale STL)', gen: genFlpVmin, domaine: 'Flipper : vitesse d’éjection minimale pour atteindre le haut de la rampe' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

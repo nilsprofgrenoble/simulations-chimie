@@ -3,6 +3,7 @@ import { LCV_SAPP } from "./lancerChuteExos.js";
 import { DFR_SAPP } from "./freinageExos.js";
 import { CHH_SAPP } from "./chuteExos.js";
 import { LPG_SAPP } from "./loopingExos.js";
+import { FLP_SAPP } from "./flipperExos.js";
 import { MTR_SAPP } from "./modesTransfertExos.js";
 import { FRM_SAPP } from "./formesExos.js";
 import { CHA_SAPP } from "./chaineExos.js";
@@ -5265,6 +5266,7 @@ export const ENONCES = [
   ...DFR_SAPP,
   ...CHH_SAPP,
   ...LPG_SAPP,
+  ...FLP_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,
