@@ -18,7 +18,7 @@ export function ChampElecExplore({ ex, setEx }) {
   const etroit = useEtroit(boite), [ouvert, setOuvert] = useState(false);
   const [pos, setPos] = useState({ fx: 0.5, fy: 0.5 });
   const L = useLecture(T, false);
-  const Fm = etroit ? 2 : 1, H = etroit ? 450 : 410;
+  const Fm = etroit ? 2 : 1, H = etroit ? 470 : 410;
   const U = ex.U, dcm = ex.d, q = ex.q * M.E_CHARGE, sg = M.sensForce(q);
   const XB = XA + dcm * PXCM, E = M.champ(U, dcm / 100), F = M.force(q, E);
   const span = XB - XA - 40, lf = Math.min(F * SCALE_F, 230), tronque = F * SCALE_F > 230;
@@ -94,10 +94,11 @@ export function ChampElecExplore({ ex, setEx }) {
         {/* poignée d : barre de l'armature droite */}
         {poignee(XB + 6, Y0 + (Y1 - Y0) / 2 + 20, 11, 'Distance d entre les armatures', 1, 6, dcm, `${nbf(dcm, 1)} centimètres`, 'plaque')}
         {/* curseur de tension */}
-        <line x1={RAIL0} y1={H - 26} x2={RAIL1} y2={H - 26} stroke="#c4b5fd" strokeWidth="8" strokeLinecap="round"/><line x1={RAIL0} y1={H - 26} x2={Uslider} y2={H - 26} stroke="#7c3aed" strokeWidth="8" strokeLinecap="round"/>
-        <text x={RAIL0 - 12} y={H - 21} textAnchor="end" fontSize={14 * Fm} fontWeight="700" fill="#475569">{UMIN} V</text><text x={RAIL1 + 12} y={H - 21} textAnchor="start" fontSize={14 * Fm} fontWeight="700" fill="#475569">{UMAX} V</text>
-        <text x={(RAIL0 + RAIL1) / 2} y={H - 40} textAnchor="middle" fontSize={14 * Fm} fontWeight="700" fill="#475569">tension U du générateur</text>
-        {poignee(Uslider, H - 26, 11, 'Tension U du générateur', UMIN, UMAX, U, `${U} volts`, 'tension')}
+        <rect x={RAIL0 - 14} y={H - 30 - 30} width={RAIL1 - RAIL0 + 28} height={60} rx="30" fill="transparent" style={{ cursor: 'pointer', touchAction: 'none' }} onPointerDown={ev => { debut('tension')(ev); bouge(ev); }} onPointerMove={bouge} onPointerUp={fait} onPointerCancel={fait}/>
+        <line x1={RAIL0} y1={H - 30} x2={RAIL1} y2={H - 30} stroke="#c4b5fd" strokeWidth={etroit ? 12 : 8} strokeLinecap="round" pointerEvents="none"/><line x1={RAIL0} y1={H - 30} x2={Uslider} y2={H - 30} stroke="#7c3aed" strokeWidth={etroit ? 12 : 8} strokeLinecap="round" pointerEvents="none"/>
+        <text x={RAIL0 - 12} y={H - 25} textAnchor="end" fontSize={14 * Fm} fontWeight="700" fill="#475569">{UMIN} V</text><text x={RAIL1 + 12} y={H - 25} textAnchor="start" fontSize={14 * Fm} fontWeight="700" fill="#475569">{UMAX} V</text>
+        <text x={(RAIL0 + RAIL1) / 2} y={H - 56} textAnchor="middle" fontSize={14 * Fm} fontWeight="700" fill="#475569">tension U du générateur</text>
+        {poignee(Uslider, H - 30, etroit ? 17 : 11, 'Tension U du générateur', UMIN, UMAX, U, `${U} volts`, 'tension', etroit ? 42 : 26)}
       </svg>
       <div role="status" aria-live="polite" style={{ minHeight: 44, margin: '10px auto 0', maxWidth: 920, fontSize: 15, lineHeight: 1.5, fontWeight: L.fin ? 700 : 400, color: L.fin ? '#15803d' : KIT.txt2 }}>{message}</div>
       <BarreLecture L={L} tFin={T} libelle="▶ Lâcher"/>
