@@ -232,6 +232,7 @@ const SimulationModesTransfert = paresseux(() => import("./simulations/ModesTran
 const SimulationPoidsTrajet = paresseux(() => import("./simulations/PoidsTrajet"), "SimulationPoidsTrajet");
 const SimulationLancerChute = paresseux(() => import("./simulations/LancerChute"), "SimulationLancerChute");
 const SimulationFreinage = paresseux(() => import("./simulations/Freinage"), "SimulationFreinage");
+const SimulationChute = paresseux(() => import("./simulations/Chute"), "SimulationChute");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
 const SimulationCircuits = paresseux(() => import("./simulations/Circuits"), "SimulationCircuits");
 const SimulationLoiOhm = paresseux(() => import("./simulations/LoiOhm"), "SimulationLoiOhm");
@@ -443,6 +444,8 @@ const SIMULATIONS = [
     component: SimulationLancerChute },
   { id:260, label:"Distance de freinage : énergie cinétique et travail de la force de freinage", niveau:"TSTL", icon:"🚗", color:"#c2410c",
     component: SimulationFreinage },
+  { id:261, label:"Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne", niveau:"TSTL", icon:"🛝", color:"#7c3aed",
+    component: SimulationChute },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",
