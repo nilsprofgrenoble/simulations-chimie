@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useId } from "react";
 import { fmt, sci, lireNombre, useEtatPersistant, KIT, stylePetitBouton, styleBoite, Curseur, ORANGE_GUIDE, Cadre } from "../commun";
 import { Formule } from "./Avancement";
 
@@ -47,81 +47,107 @@ export function ContexteBanc({ erlen, burette, equations }) {
   );
 }
 
-// Le montage : potence, burette graduée avec zoom de lecture, erlenmeyer, agitateur magnétique, repères 1-2-3
-// etiquetteBurette : texte ou contenu (titrant) ; etiquetteErlen : contenu de l'erlenmeyer (facultatif) ; reperes : repères 1-2-3 à légender ; legendeCouleur : encadré « couleur de la solution »
+// Le montage (standard « scène de dosage » du site) : potence, burette graduée avec zoom de lecture, goutte qui tombe, erlenmeyer sur fond blanc et agitateur,
+// repères 1-2-3, sonde (pH-mètre, conductimètre) et encadré de teinte.
+// etiquetteBurette : texte ou contenu (titrant) ; etiquetteErlen : contenu de l'erlenmeyer (facultatif) ; reperes : repères 1-2-3 à légender ; legendeCouleur : encadré « teinte de la solution »
 export function SchemaBurette({ V2, ouvert, coul, indicateur, hl = () => false, etiquetteBurette = 'S₂O₃²⁻', etiquetteErlen = null, reperes = true, legendeCouleur = true, sonde = null }) {
-  const yB0 = 30, yB1 = 230;                       // burette : 0 mL en haut, 25 mL en bas
-  const yNivB = yB0 + V2 / V_BURETTE * (yB1 - yB0);
-  const coule = ouvert;
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const yB0 = 46, yB1 = 226, yNiv = yB0 + V2 / V_BURETTE * (yB1 - yB0);
+  const ySurf = 372 - (V2 / V_BURETTE) * 10, yBout = 292;
+  const FLACON = 'M 250 298 L 250 332 Q 250 342 244 350 L 202 394 Q 196 400 205 400 L 335 400 Q 344 400 338 394 L 296 350 Q 290 342 290 332 L 290 298';
+  const COUL_B = '#bfdbfe';
+  const lcd = sonde || null;
   return (
-    <svg viewBox="0 -14 640 394" role="img" aria-label="Montage du titrage : burette, erlenmeyer, agitateur magnétique"
-      style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
+    <svg viewBox="0 0 640 440" role="img" aria-label="Montage du titrage : burette, erlenmeyer, agitateur magnétique"
+      style={{ width: '100%', height: 'auto', display: 'block', background: '#f1f5f9', borderRadius: 10, border: `1px solid ${KIT.bord}` }}>
+      <defs>
+        <clipPath id={`${id}f`}><path d={`${FLACON} Z`}/></clipPath>
+        <linearGradient id={`${id}v`} x1="0" x2="1"><stop offset="0" stopColor="#fff" stopOpacity="0.5"/><stop offset="1" stopColor="#fff" stopOpacity="0"/></linearGradient>
+      </defs>
       {/* potence */}
-      <rect x="150" y="350" width="260" height="10" fill="#94a3b8"/><rect x="330" y="20" width="8" height="332" fill="#94a3b8"/>
-      <rect x="250" y="120" width="86" height="8" fill="#94a3b8"/>
+      <rect x="120" y="420" width="512" height="12" rx="3" fill="#94a3b8"/><rect x="620" y="24" width="10" height="398" fill="#94a3b8"/>
+      <rect x="262" y="131" width="360" height="8" fill="#94a3b8"/><rect x="254" y="124" width="36" height="22" rx="5" fill="#64748b"/>
       {/* burette */}
-      <rect x="236" y={yB0 - 12} width="24" height={yB1 - yB0 + 12} fill="#f8fafc" stroke={KIT.txt} strokeWidth="2"/>
-      <rect x="238" y={yNivB} width="20" height={yB1 - yNivB} fill="#e0f2fe"/>
+      <rect x="258" y="30" width="24" height={yB1 - 30} fill="#fff" stroke={KIT.txt} strokeWidth="2"/>
+      <rect x="260" y={yNiv} width="20" height={yB1 - yNiv} fill={COUL_B}/>
+      <rect x="263" y={yNiv} width="4" height={yB1 - yNiv} fill="#fff" opacity="0.5"/>
+      <path d={`M 260 ${yNiv} Q 270 ${yNiv + 4} 280 ${yNiv}`} fill="none" stroke="#1e3a8a" strokeWidth="1.6"/>
       {Array.from({ length: 26 }, (_, k) => k).map(v => {
         const y = yB0 + v / V_BURETTE * (yB1 - yB0);
-        return <g key={v}><line x1={260} y1={y} x2={v % 5 === 0 ? 270 : 265} y2={y} stroke={KIT.txt} strokeWidth="1"/>
-          {v % 5 === 0 && <text x="274" y={y + 8} fontSize="22" fill={KIT.txt}>{v}</text>}</g>;
+        return <g key={v}><line x1="282" y1={y} x2={v % 5 === 0 ? 296 : 289} y2={y} stroke={KIT.txt} strokeWidth="1"/>
+          {v % 5 === 0 && <text x="300" y={y + 7} fontSize="20" fill={KIT.txt}>{v}</text>}</g>;
       })}
-      <path d={`M 236 ${yB1} L 244 ${yB1 + 22} L 252 ${yB1 + 22} L 260 ${yB1} Z`} fill="#e0f2fe" stroke={KIT.txt} strokeWidth="2"/>
-      <rect x="240" y={yB1 + 22} width="16" height="8" rx="2" fill={ouvert ? '#16a34a' : '#dc2626'}/>
-      <line x1="248" y1={yB1 + 30} x2="248" y2={yB1 + 44} stroke={KIT.txt} strokeWidth="3"/>
-      {coule && [0, 1, 2].map(k => <circle key={k} cx="248" cy={yB1 + 48} r="2.5" fill="#7dd3fc"><animate attributeName="cy" from={yB1 + 46} to={yB1 + 78} dur="0.45s" begin={`${k * 0.15}s`} repeatCount="indefinite"/></circle>)}
+      <path d={`M 258 ${yB1} L 266 ${yB1 + 20} L 274 ${yB1 + 20} L 282 ${yB1} Z`} fill={V2 < V_BURETTE ? COUL_B : '#fff'} stroke={KIT.txt} strokeWidth="2"/>
+      <rect x="262" y={yB1 + 20} width="16" height="10" rx="2" fill="#cbd5e1" stroke={KIT.txt}/>
+      <rect x="278" y={yB1 + 22} width="28" height="6" rx="3" fill={ouvert ? '#15803d' : '#b91c1c'} transform={ouvert ? `rotate(-90 278 ${yB1 + 25})` : undefined}/>
+      <path d={`M 266 ${yB1 + 30} L 266 ${yBout - 12} L 270 ${yBout} L 274 ${yBout - 12} L 274 ${yB1 + 30} Z`} fill={V2 < V_BURETTE ? COUL_B : '#fff'} stroke={KIT.txt} strokeWidth="1.8"/>
+      <rect x="262" y="38" width="3" height={yB1 - 44} fill={`url(#${id}v)`} opacity="0.6"/>
+      {/* étiquette de la burette */}
       {typeof etiquetteBurette === 'string'
-        ? <text x="214" y={yB0 - 18} fontSize="20" fill={KIT.txt2} textAnchor="middle">{etiquetteBurette}</text>
-        : <foreignObject x="346" y="8" width="290" height="150"><div style={{ fontSize: 22, color: KIT.txt, lineHeight: 1.25 }}>{etiquetteBurette}</div></foreignObject>}
-      {etiquetteErlen && <foreignObject x="346" y="246" width="290" height="130"><div style={{ fontSize: 21, color: KIT.txt, lineHeight: 1.25 }}>{etiquetteErlen}</div></foreignObject>}
+        ? <g><text x="346" y="40" fontSize="20" fontWeight="700" fill={KIT.txt2}>Burette</text>{etiquetteBurette === '?' ? <text x="346" y="84" fontSize="40" fontWeight="800" fill={ORANGE_GUIDE}>?</text> : <text x="346" y="68" fontSize="19.5" fill={KIT.txt}>{etiquetteBurette}</text>}</g>
+        : <foreignObject x="346" y="22" width="270" height="110"><div style={{ fontSize: 20, color: KIT.txt, lineHeight: 1.3 }}>{etiquetteBurette}</div></foreignObject>}
       {/* zoom de lecture */}
       {(() => {
-        const z0 = 110, zy = 40, zh = 130, zw = 56, mlParPx = 2 / zh, Yz = v => zy + zh / 2 + (v - V2) / mlParPx;
+        const z0 = 70, zy = 56, zh = 150, zw = 62, mlParPx = 2 / zh, Yz = v => zy + zh / 2 + (v - V2) / mlParPx;
         return <g>
-          <rect x={z0} y={zy} width={zw} height={zh} fill="#f8fafc" stroke={KIT.txt} strokeWidth="1.5"/>
-          <rect x={z0} y={Math.max(zy, Math.min(zy + zh, Yz(V2)))} width={zw} height={Math.max(0, zy + zh - Math.max(zy, Yz(V2)))} fill="#e0f2fe"/>
+          <rect x={z0} y={zy} width={zw} height={zh} fill="#fff" stroke={KIT.txt} strokeWidth="1.5"/>
+          <rect x={z0 + 1} y={Math.max(zy, Math.min(zy + zh, Yz(V2)))} width={zw - 2} height={Math.max(0, zy + zh - Math.max(zy, Yz(V2)))} fill={COUL_B}/>
           {Array.from({ length: 41 }, (_, k) => Math.round(V2 * 10) / 10 - 2 + k * 0.1).map(v => {
             const y = Yz(v); if (y < zy || y > zy + zh || v < -0.001 || v > V_BURETTE + 0.001) return null;
             const r10 = Math.round(v * 10);
-            return <g key={r10}><line x1={z0 + zw - (r10 % 10 === 0 ? 18 : r10 % 5 === 0 ? 13 : 8)} y1={y} x2={z0 + zw} y2={y} stroke={KIT.txt}/>
+            return <g key={r10}><line x1={z0 + zw - (r10 % 10 === 0 ? 20 : r10 % 5 === 0 ? 14 : 8)} y1={y} x2={z0 + zw} y2={y} stroke={r10 % 5 === 0 ? '#1e3a8a' : '#93c5fd'} strokeWidth="1.4"/>
               {r10 % 10 === 0 && <text x={z0 - 4} y={y + 7} fontSize="20" fill={KIT.txt} textAnchor="end">{r10 / 10}</text>}</g>;
           })}
-          <path d={`M ${z0} ${Yz(V2) - 2} Q ${z0 + zw / 2} ${Yz(V2) + 6} ${z0 + zw} ${Yz(V2) - 2}`} fill="none" stroke="#0284c7" strokeWidth="2"/>
-          <text x={z0 + zw / 2} y={zy - 8} fontSize="20" fill={KIT.txt2} textAnchor="middle">zoom (mL)</text>
-          <line x1={z0 + zw} y1={zy + zh / 2} x2="236" y2={yNivB} stroke="#94a3b8" strokeDasharray="3 3"/>
+          <path d={`M ${z0} ${Yz(V2) - 2} Q ${z0 + zw / 2} ${Yz(V2) + 7} ${z0 + zw} ${Yz(V2) - 2}`} fill="none" stroke="#1e3a8a" strokeWidth="2"/>
+          <line x1={z0 - 8} y1={zy + zh / 2} x2={z0 + zw + 8} y2={zy + zh / 2} stroke="#dc2626" strokeWidth="1.5" strokeDasharray="4 3"/>
+          <text x={z0 + zw / 2} y={zy - 22} fontSize="20" fill={KIT.txt2} textAnchor="middle">zoom (mL)</text>
+          <line x1={z0 + zw} y1={zy + zh / 2} x2="258" y2={yNiv} stroke="#94a3b8" strokeDasharray="3 3"/>
         </g>;
       })()}
-      {/* erlenmeyer et agitateur */}
-      <rect x="196" y="320" width="104" height="30" rx="5" fill="#e2e8f0" stroke={KIT.txt} strokeWidth="1.5"/>
-      <circle cx="222" cy="335" r="5" fill="none" stroke={KIT.txt}/><circle cx="240" cy="335" r="5" fill="none" stroke={KIT.txt}/>
-      <path d="M 234 266 L 234 280 L 206 318 L 290 318 L 262 280 L 262 266 Z" fill="white" stroke={KIT.txt} strokeWidth="2"/>
-      <path d="M 224 296 L 272 296 L 287 316 L 209 316 Z" fill={coul}/>
-      <rect x="240" y="311" width="16" height="4" rx="2" fill="white" stroke={KIT.txt2}>
-        <animateTransform attributeName="transform" type="rotate" from="0 248 313" to="360 248 313" dur="0.6s" repeatCount="indefinite"/>
-      </rect>
-      {/* repères à légender */}
-      {reperes && [[290, 80, '1'], [300, 300, '2'], [312, 335, '3']].map(([x, y, n]) => (
-        <g key={n}><line x1={x - 22} y1={y} x2={x + 16} y2={y} stroke={KIT.txt2} strokeDasharray="4 3"/>
-          <circle cx={x + 28} cy={y} r="15" fill="white" stroke={ORANGE_GUIDE} strokeWidth="2"/><text x={x + 28} y={y + 7} fontSize="21" fontWeight="800" fill={KIT.txt} textAnchor="middle">{n}</text></g>
-      ))}
-      {/* sonde d'un pH-mètre (titrage pH-métrique) : sonde plongée dans la solution, câble et afficheur */}
-      {sonde && <g>
-        <path d="M 350 190 Q 330 232 276 262 L 270 302" fill="none" stroke={KIT.txt2} strokeWidth="2.5" strokeLinecap="round"/>
-        <rect x="266" y="296" width="8" height="16" rx="3" fill="#fde68a" stroke={KIT.txt}/>
-        <rect x="350" y="160" width="160" height="62" rx="6" fill="#0f172a"/>
-        <text x="430" y="182" fontSize="18" textAnchor="middle" fill="#94a3b8">{sonde.nom || 'pH-mètre'}</text>
-        <text x="430" y="212" fontSize="26" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="ui-monospace, monospace">{sonde.valeur}</text>
+      {/* fond blanc, agitateur, erlenmeyer */}
+      <rect x="176" y="290" width="188" height="110" rx="10" fill="#fff" stroke="#cbd5e1"/>
+      <rect x="186" y="400" width="168" height="20" rx="4" fill="#e2e8f0" stroke={KIT.txt} strokeWidth="1.5"/>
+      <circle cx="208" cy="410" r="5" fill="none" stroke={KIT.txt}/><circle cx="332" cy="410" r="4" fill="#22c55e"/>
+      <g clipPath={`url(#${id}f)`}>
+        <rect x="190" y={ySurf} width="160" height={402 - ySurf} fill={coul}/>
+        <rect x="257" y="388" width="26" height="6" rx="3" fill="#fff" stroke="#64748b">
+          <animate attributeName="width" values="26;6;26" dur="0.5s" repeatCount="indefinite"/><animate attributeName="x" values="257;267;257" dur="0.5s" repeatCount="indefinite"/></rect>
+      </g>
+      <line x1="230" y1={ySurf} x2="310" y2={ySurf} stroke="#fff" strokeOpacity="0.55" clipPath={`url(#${id}f)`}/>
+      <path d={FLACON} fill="none" stroke={KIT.txt} strokeWidth="2.5" strokeLinejoin="round"/>
+      <rect x="246" y="294" width="48" height="7" rx="2" fill="none" stroke={KIT.txt} strokeWidth="2"/>
+      <path d="M 254 304 L 254 330" stroke="#fff" strokeWidth="3.5" opacity="0.7"/>
+      {/* gouttes */}
+      {ouvert && [0, 1, 2].map(k => <circle key={k} cx="270" cy={yBout + 4} r="3.4" fill="#60a5fa"><animate attributeName="cy" from={yBout + 3} to={ySurf - 2} dur="0.5s" begin={`${k * 0.17}s`} repeatCount="indefinite"/></circle>)}
+      {ouvert && <ellipse cx="270" cy={ySurf} rx="6" ry="2" fill="none" stroke="#1d4ed8" strokeWidth="1.5" opacity="0.7"><animate attributeName="rx" values="4;24" dur="0.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.8;0" dur="0.5s" repeatCount="indefinite"/></ellipse>}
+      {/* contenu de l'erlenmeyer */}
+      {etiquetteErlen
+        ? <foreignObject x="372" y="284" width="238" height="130"><div style={{ fontSize: 18.5, color: KIT.txt, lineHeight: 1.3 }}>{etiquetteErlen}</div></foreignObject>
+        : <text x="372" y="298" fontSize="20" fontWeight="700" fill={KIT.txt2}>Erlenmeyer</text>}
+      {/* sonde (pH-mètre, conductimètre) : électrode dans la solution, câble et afficheur */}
+      {lcd && <g>
+        <path d="M 288 304 Q 322 302 334 262 L 346 236" fill="none" stroke={KIT.txt2} strokeWidth="2.5" strokeLinecap="round"/>
+        <rect x="279" y="300" width="8" height="66" rx="3" fill="#e2e8f0" stroke={KIT.txt} strokeWidth="1.5"/><ellipse cx="283" cy="369" rx="6" ry="7" fill="#fde68a" stroke={KIT.txt} strokeWidth="1.5"/>
+        <rect x="346" y="150" width="264" height="108" rx="10" fill="#0f172a"/>
+        <text x="478" y="178" fontSize="20" textAnchor="middle" fill="#94a3b8">{lcd.nom || 'pH-mètre'}</text>
+        <text x="478" y="231" fontSize="40" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="ui-monospace, monospace">{lcd.valeur}</text>
       </g>}
-      {/* légende de couleur */}
-      {legendeCouleur && <>
-        <text x="470" y="284" fontSize="20" fontWeight="700" fill={KIT.txt} textAnchor="middle">couleur de la solution</text>
-        <rect x="430" y="294" width="80" height="34" rx="6" fill={coul} stroke={KIT.txt}/>
-        <text x="470" y="356" fontSize="20" fill={KIT.txt2} textAnchor="middle">{indicateur || 'sans indicateur'}</text>
-      </>}
-      <Cadre actif={hl('burette')} x={204} y={8} w={90} h={270}/>
-      <Cadre actif={hl('erlen')} x={198} y={260} w={100} h={60}/>
-      <Cadre actif={hl('agitateur')} x={190} y={318} w={116} h={36}/>
+      {/* teinte de la solution */}
+      {legendeCouleur && !lcd && <g>
+        <rect x="346" y="150" width="264" height="108" rx="10" fill="#fff" stroke={KIT.bord}/>
+        <text x="360" y="174" fontSize="20" fontWeight="700" fill={KIT.txt}>teinte de la solution</text>
+        <rect x="360" y="190" width="64" height="44" rx="8" fill={coul} stroke={KIT.txt}/>
+        <text x="438" y="218" fontSize="20" fill={KIT.txt2}>{indicateur || 'sans indicateur'}</text>
+        <text x="360" y="251" fontSize="17" fill={KIT.txt2}>fond blanc : on voit mieux</text>
+      </g>}
+      {/* repères à légender (parcours guidé) */}
+      {reperes && [[180, 150, '1', 256, 150], [150, 350, '2', 238, 350], [150, 410, '3', 184, 410]].map(([x, y, n, xe, ye]) => (
+        <g key={n}><line x1={x + 15} y1={y} x2={xe} y2={ye} stroke={KIT.txt2} strokeDasharray="4 3"/>
+          <circle cx={x} cy={y} r="15" fill="#fff" stroke={ORANGE_GUIDE} strokeWidth="2"/><text x={x} y={y + 7} fontSize="21" fontWeight="800" fill={KIT.txt} textAnchor="middle">{n}</text></g>
+      ))}
+      <Cadre actif={hl('burette')} x={204} y={20} w={110} h={282}/>
+      <Cadre actif={hl('erlen')} x={176} y={288} w={190} h={114}/>
+      <Cadre actif={hl('agitateur')} x={180} y={398} w={180} h={26}/>
     </svg>
   );
 }
