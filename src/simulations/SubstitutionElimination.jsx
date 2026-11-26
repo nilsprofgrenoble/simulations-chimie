@@ -8,6 +8,7 @@ import { SUBSTRATS, REACTIFS, MECA, proportions, profil, energieEn, barriere } f
 
 // Vue 3D de la stéréochimie (substrat secondaire, SN1 ou SN2) : three.js, chargée à la demande
 const Sn3D = lazy(() => import("./Sn3D"));
+import SnEquation from "./SnEquation";
 
 const SIM_ID = 95;
 declarerDefis(SIM_ID, [['principal', 'Substitution ou élimination']]);
@@ -265,14 +266,15 @@ export function SimulationSubstitutionElimination() {
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Mécanisme examiné :</span>
           {mecas.map(m => <button key={m} onClick={() => { setExam(m); setU(0); setLecture(false); }} style={stylePetitBouton(m === examine, COUL[m])}>{m}</button>)}
         </div>
+        <SnEquation meca={examine} sub={sub} re={re} />
         <Profil meca={examine} sub={sub} re={re} u={u} />
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <button onClick={() => { if (u >= 0.999) setU(0); setLecture(l => !l); }} style={styleBouton(true, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
           <input type="range" min={0} max={1000} step={1} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(+e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ flex: 1 }} />
         </div>
         <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }} aria-live="polite">{etatMeca(examine, u, sub)}</div>
-        {sub === 'sec' && (examine === 'SN1' || examine === 'SN2') && (
-          <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Sn3D meca={examine} u={u} /></Suspense>)}
+        {(examine === 'SN1' || examine === 'SN2') && (
+          <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Sn3D meca={examine} u={u} sub={sub} re={re} /></Suspense>)}
       </>) : (
         <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}><strong>Pratiquement aucune réaction.</strong> Le substrat primaire ne forme pas de carbocation stable, et l'eau est un trop faible nucléophile pour une SN2 : il faut une base ou un nucléophile plus fort.</div>
       )}
