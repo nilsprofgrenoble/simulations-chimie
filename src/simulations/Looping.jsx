@@ -1,10 +1,11 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./loopingModele";
+import { LoopingExplore } from "./LoopingExplore";
 import { QCM } from "./loopingQcm";
 import { SceneLooping, GrapheLooping, SvgVitesseZ, SvgContact, SvgFrottLoop } from "./LoopingSchemas";
 
@@ -18,7 +19,6 @@ declarerDefis(SIM_ID, [['sommet', 'Vitesse au sommet du looping'], ['hmin', 'Hau
 //  Modèle : loopingModele.js (test node). QCM : loopingQcm.js. Schémas : LoopingSchemas.jsx. Situation et valeurs inventées (aucune du Moodle).
 // ====================================================
 const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
-const sp = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
 const PG = M.PARCOURS;
 const puces = { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 };
 const liste = { margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 };
@@ -37,7 +37,6 @@ export function SimulationLooping() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('sommet');
   const [ouv, setOuv] = useState({});
-  const [ex, setEx] = useState({ m: 200, H: 10, R: 3, f: 0, u: 0.5 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
@@ -122,43 +121,11 @@ export function SimulationLooping() {
     depart: { p: 0 }, bas: { p: 0.5 }, sommet: { p: 0.75, repereTop: true }, vsommet: { p: 0.75, repereTop: true }, masse: { p: 0.62 }, mi: { p: 0.625 },
     contact: { p: 0.75, repereTop: true }, hmin: { p: 0.75, repereTop: true }, trop: { p: 0.7, H: PG.H2 }, frott: { p: 0.25 }, fin: { p: 0.3 } };
 
-  // ════════════════ EXPLORATION ════════════════
-  const { m: mz, H: Hz, R: Rz, f: fz } = ex, vmin = M.vitesseMin(Rz);
-  const pr = useMemo(() => M.profil({ m: mz, H: Hz, R: Rz, f: fz, n: 72 }), [mz, Hz, Rz, fz]);
-  const k = Math.round(ex.u * (pr.pts.length - 1)), pt = pr.pts[k], Epp = mz * M.G * pt.z;
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures à la position choisie</div>
-      <LigneMesure nom="Altitude z" valeur={`${nbf(pt.z, 2)}${NB}m`}/>
-      <LigneMesure nom="Vitesse" valeur={`${nbf(pt.v, 1)}${NB}m/s`} couleur="#0369a1"/>
-      <LigneMesure nom="Énergie cinétique Ec" valeur={`${sp(pt.Ec)}${NB}J`}/>
-      <LigneMesure nom="Énergie potentielle Epp" valeur={`${sp(Epp)}${NB}J`}/>
-      <LigneMesure nom="Énergie mécanique Em" valeur={`${sp(pt.Em)}${NB}J`} couleur="#6d28d9"/>
-      <LigneMesure nom="Vitesse minimale au sommet √(g R)" valeur={`${nbf(vmin, 1)}${NB}m/s`} couleur="#15803d"/>
-      <div style={{ marginTop: 6, fontSize: 14, fontWeight: 700, color: pr.contact ? '#15803d' : '#b91c1c', lineHeight: 1.5 }}>
-        {!pr.arrive ? 'Le wagon n’atteint pas le sommet : il manque de l’énergie.' : pr.contact ? `Au sommet : v = ${nbf(pr.vTop, 1)} m/s ≥ ${nbf(vmin, 1)} m/s : il reste en contact.` : `Au sommet : v = ${nbf(pr.vTop, 1)} m/s < ${nbf(vmin, 1)} m/s : il décroche.`}</div>
-    </div>);
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="lpg-m" label="Masse du wagon" valeur={ex.m} onChange={v => setEx(s => ({ ...s, m: Number(v) }))} options={[100, 200, 500].map(v => [v, `${v} kg`])}/>
-      <Sel id="lpg-h" label="Hauteur de départ H" valeur={ex.H} onChange={v => setEx(s => ({ ...s, H: Number(v) }))} options={[6, 8, 10, 12, 15].map(v => [v, `${v} m`])}/>
-      <Sel id="lpg-r" label="Rayon du looping R" valeur={ex.R} onChange={v => setEx(s => ({ ...s, R: Number(v) }))} options={[2, 3, 4, 5].map(v => [v, `${v} m`])}/>
-      <Sel id="lpg-f" label="Frottement le long du parcours" valeur={ex.f} onChange={v => setEx(s => ({ ...s, f: Number(v) }))} options={[[0, 'aucun (négligé)'], [20, 'faible : 20 N'], [50, 'moyen : 50 N'], [100, 'fort : 100 N']]}/>
-      <Curseur nom="Position dans le looping" valeur={Math.round(ex.u * 100)} onChange={v => setEx(s => ({ ...s, u: v / 100 }))} min={0} max={100} pas={2} unite="%" decimales={0} couleur="#475569"/>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>0 % : point le plus bas ; 50 % : sommet ; 100 % : retour en bas. Cherchez la plus petite hauteur H pour laquelle le wagon passe le sommet.</div>
-    </div>);
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? 'Le wagon dans le looping' : 'La situation étudiée'}</div>
-      {enExplore ? <SceneLooping H={Hz} R={Rz} p={0.5 + 0.5 * ex.u} repereTop/> : <SceneLooping {...{ H: PG.H, R: PG.R }} {...SC[idEtape]}/>}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La situation étudiée</div>
+      <SceneLooping {...{ H: PG.H, R: PG.R }} {...SC[idEtape]}/>
     </div>);
-  const graphe = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La vitesse pendant le looping</div>
-      <GrapheLooping pr={pr} vmin={vmin} u={ex.u}/>
-    </div>);
-
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => setDefi(type === 'sommet' ? { ...M.tirageDefiA(), type, reps: { v: '' }, verifie: false, corr: false } : { ...M.tirageDefiB(), type, reps: { h: '' }, verifie: false, corr: false });
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); }
@@ -242,11 +209,12 @@ export function SimulationLooping() {
     </span>);
   const aEssayer = (
     <ul style={liste}>
+      <li>Soulevez le wagon plus haut sur la pente puis lâchez-le : que devient sa vitesse en bas ? au sommet ?</li>
       <li>Sans frottement, changez la masse : la vitesse au sommet change-t-elle ?</li>
       <li>Pour R = 3 m, diminuez la hauteur H jusqu’à ce que le wagon décroche. À quelle hauteur ? Comparez à 2,5 R.</li>
       <li>Doublez le rayon (3 m → 5 m, ou 2 m → 4 m) : que devient la hauteur minimale ?</li>
       <li>Ajoutez un frottement : la hauteur minimale augmente-t-elle ou diminue-t-elle ?</li>
-      <li>Déplacez la position dans le looping : où la vitesse est-elle la plus petite ? la plus grande ?</li>
+      <li>Regardez la flèche de la piste (force de contact) et les barres d’énergie : où la vitesse est-elle la plus petite ? la plus grande ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -287,12 +255,8 @@ export function SimulationLooping() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="lpg-ex">
-          {scene}
-          <div className="lpg-reg">{reglages}</div>
-          {graphe}
-          {mesures}
-        </div>
+        <LoopingExplore/>
+        <div style={{ height: 12 }}/>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
