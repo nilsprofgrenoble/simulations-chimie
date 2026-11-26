@@ -33,6 +33,16 @@ export default {
     { id: 'pile-duree', nom: 'Durée de fonctionnement et association en série', capacite: 'Calculer la durée de fonctionnement Δt = Q ÷ i d’une pile et prévoir l’effet de l’intensité ou d’une association en série.',
       refs: ['34:pilp-sapp-duree', '37:prevoir:pilp-ana-intensite', '77:plausible:pilp-val-duree'] },
   ],
+  'tstl-pcm-radioactivite': [
+    { id: 'rad-types', nom: 'Types de radioactivité et équations de désintégration', capacite: 'Définir les radioactivités α, β⁻, β⁺ et l’émission γ, et écrire l’équation d’une réaction nucléaire avec les lois de conservation du nombre de nucléons et de la charge.',
+      refs: ['37:prevoir:rpm-ana-type'] },
+    { id: 'rad-loi', nom: 'Loi de décroissance, constante λ et demi-vie', capacite: 'Interpréter dN = −λ N dt, exploiter la loi de décroissance, définir la demi-vie et relier λ à t½.',
+      refs: ['37:prevoir:rpm-ana-lambda', '37:prevoir:rpm-ana-fraction', '77:plausible:rpm-val-lambda', '34:rpm-sapp-loi'] },
+    { id: 'rad-activite', nom: 'Activité et comptage', capacite: 'Définir l’activité et le becquerel, calculer A = λ N et exploiter les données d’un appareil de comptage.',
+      refs: ['77:plausible:rpm-val-activite', '34:rpm-sapp-activite'] },
+    { id: 'rad-protection', nom: 'Protection contre les rayonnements', capacite: 'Choisir des modalités de protection (distance, écran, durée) adaptées au rayonnement émis.',
+      refs: ['37:prevoir:rpm-ana-protection'] },
+  ],
   'tstl-pcm-structure-spatiale': [
     { id: 'chiralite', nom: 'Molécule chirale et carbone asymétrique', capacite: 'Reconnaître un carbone asymétrique et prévoir la chiralité d’une molécule (plan de symétrie, image dans un miroir).',
       refs: ['37:prevoir:chir-asym-aminopropanol', '37:prevoir:chir-pas-asym-chloropentane', '37:prevoir:chir-ana-remplacer', '37:prevoir:chir-ana-plan-symetrie', '77:plausible:chir-val-pentane', '77:plausible:chir-val-ethanol', '34:chir-miroir-distance'] },

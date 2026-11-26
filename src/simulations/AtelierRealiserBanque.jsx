@@ -3814,6 +3814,53 @@ function genPileSerie() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['En série : tensions additionnées, même charge Q traversant chaque pile.', 'Durée : Δt = Q ÷ i, inchangée par l’association en série.'] };
 }
+function genRadLoi() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const fr = x => String(x).replace('.', ',');
+  const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' })[c]).join('')}`; };
+  let th, N0, t, f, l, Nr, tf;
+  do { th = tire([2, 3, 4, 6, 8, 12, 24]); N0 = tire([2.0e6, 5.0e6, 8.0e6]); t = tire([5, 10, 15, 20, 30, 36, 48]); f = tire([0.10, 0.20, 0.05, 0.30]); l = Math.LN2 / th; Nr = N0 * Math.exp(-l * t); tf = Math.log(1 / f) / l; }
+  while (Math.abs(t / th - Math.round(t / th)) < 0.1 || t / th > 6 || t / th < 0.5 || new Set([l, Nr, tf].map(x => Number(x.toPrecision(2)))).size < 3);
+  const intro = `Un échantillon contient ${sci(N0, 2)} noyaux d’un noyau radioactif de demi-vie ${th}${NB}h au départ (instant t = 0). On suppose qu’aucun noyau radioactif n’est ajouté ni formé par ailleurs (pas de filiation) ; ln 2 = 0,693.`;
+  const q1 = { id: 'rl0', type: 'num', q: <>Quelle est la <b>constante de désintégration λ</b> (en h⁻¹, 2 chiffres significatifs) ?</>, unite: 'h⁻¹', vrai: l, tolRel: 0.03, csMin: 2,
+    aide: 'λ = ln 2 ÷ t½.',
+    pieges: [[th / Math.LN2, 'On divise ln 2 par t½ : λ = ln 2 ÷ t½, pas l’inverse.'], [1 / th, 'Il manque ln 2 : λ = ln 2 ÷ t½.']],
+    expl: <>λ = ln 2 ÷ t½ = 0,693 ÷ {th} = <b>{pvFmt(l)}{NB}h⁻¹</b>.</> };
+  const q2 = { id: 'rl1', type: 'num', q: <>Combien reste-t-il de noyaux radioactifs au bout de <b>{t}{NB}h</b> (en noyaux, 2 chiffres significatifs) ?</>, unite: 'noyaux', vrai: Nr, tolRel: 0.04, csMin: 2,
+    aide: 'N(t) = N₀ exp(−λt), avec λ en h⁻¹ et t en h.',
+    pieges: [[N0 * Math.exp(-t / th), 'Il faut λ = ln 2 ÷ t½ dans l’exponentielle, pas 1 ÷ t½.'], [N0 - N0 * l * t, 'La décroissance est exponentielle : N = N₀ exp(−λt), pas une droite.'], [N0 * (1 - Math.exp(-l * t)), 'Cela correspond aux noyaux désintégrés ; il reste N₀ exp(−λt).']],
+    expl: <>N = N₀ e<sup>−λt</sup> = {sci(N0, 2)} × e<sup>−{pvFmt(l)} × {t}</sup> = <b>{sci(Nr, 2)}{NB}noyaux</b>.</> };
+  const q3 = { id: 'rl2', type: 'num', q: <>Au bout de quelle durée ne reste-t-il que <b>{fr(Math.round(f * 100))}{NB}%</b> des noyaux initiaux (en h, 2 chiffres significatifs) ?</>, unite: 'h', vrai: tf, tolRel: 0.04, csMin: 2,
+    aide: 'N ÷ N₀ = exp(−λt) donne t = ln(N₀ ÷ N) ÷ λ.',
+    pieges: [[th * Math.log(1 / f), 'Il faut diviser par λ : t = ln(N₀ ÷ N) ÷ λ, et non multiplier par t½ sans ln 2.'], [Math.log(1 / f) * l, 'On divise ln(N₀ ÷ N) par λ.']],
+    expl: <>t = ln(1 ÷ {fr(f)}) ÷ λ = {pvFmt(Math.log(1 / f))} ÷ {pvFmt(l)} = <b>{pvFmt(tf)}{NB}h</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['λ = ln 2 ÷ t½ ; N(t) = N₀ exp(−λt) ; t = ln(N₀ ÷ N) ÷ λ.', 'Après n demi-vies, il reste N₀ ÷ 2ⁿ.'] };
+}
+function genRadActivite() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' })[c]).join('')}`; };
+  let th, N, t, dt, ls, A0, At, n;
+  do { th = tire([2, 4, 6, 8, 12]); N = tire([2.0e9, 4.0e9, 6.0e9, 8.0e9]); t = tire([3, 5, 9, 10, 15, 20]); dt = tire([30, 60, 120]); ls = Math.LN2 / (th * 3600); A0 = ls * N; At = A0 * Math.exp(-ls * t * 3600); n = At * dt; }
+  while (Math.abs(t / th - Math.round(t / th)) < 0.1 || t / th > 5 || new Set([A0, At, n].map(x => Number(x.toPrecision(2)))).size < 3);
+  const intro = `Un échantillon contient ${sci(N, 2)} noyaux radioactifs de demi-vie ${th}${NB}h à l’instant t = 0 (ln 2 = 0,693 ; 1 h = 3 600 s). Un compteur idéal détecte toutes les désintégrations.`;
+  const q1 = { id: 'ra0', type: 'num', q: <>Quelle est l’<b>activité initiale A₀</b> de l’échantillon (en Bq, 2 chiffres significatifs) ?</>, unite: 'Bq', vrai: A0, tolRel: 0.03, csMin: 2,
+    aide: 'A = λ N avec λ en s⁻¹ : λ = ln 2 ÷ (t½ en secondes).',
+    pieges: [[(Math.LN2 / th) * N, 'λ doit être en s⁻¹ : convertissez la demi-vie en secondes (× 3 600) avant de calculer A = λ N.'], [ls * N * 3600, 'Vous avez des désintégrations par heure : A en Bq est par seconde.']],
+    expl: <>λ = ln 2 ÷ ({th} × 3 600) = {sci(ls, 2)}{NB}s⁻¹ ; A₀ = λ N = <b>{sci(A0, 2)}{NB}Bq</b>.</> };
+  const q2 = { id: 'ra1', type: 'num', q: <>Quelle est l’<b>activité au bout de {t}{NB}h</b> (en Bq, 2 chiffres significatifs) ?</>, unite: 'Bq', vrai: At, tolRel: 0.05, csMin: 2,
+    aide: 'A(t) = A₀ exp(−λt) : λ et t dans la même unité de temps.',
+    pieges: [[A0 * Math.exp(-ls * t), 'λ est en s⁻¹ : exprimez aussi t en secondes (× 3 600).'], [A0 / 2 ** Math.floor(t / th), 'La durée n’est pas un nombre entier de demi-vies : utilisez A(t) = A₀ exp(−λt).']],
+    expl: <>A = A₀ e<sup>−λt</sup> avec λ t = {pvFmt(Math.LN2 * t / th)} : A = <b>{sci(At, 2)}{NB}Bq</b>.</> };
+  const q3 = { id: 'ra2', type: 'num', q: <>À ce moment, quel <b>nombre de désintégrations</b> le compteur enregistre-t-il pendant <b>{dt}{NB}s</b> (2 chiffres significatifs) ?</>, unite: 'désintégrations', vrai: n, tolRel: 0.05, csMin: 2,
+    aide: 'n = A × Δt, avec l’activité A(t) trouvée à la question précédente.',
+    pieges: [[A0 * dt, 'Utilisez l’activité au bout de la durée donnée, pas l’activité initiale.'], [At / dt, 'On multiplie : n = A × Δt, pas une division.']],
+    expl: <>n = A × Δt = {sci(At, 2)} × {dt} = <b>{sci(n, 2)}</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['A = λ N (Bq avec λ en s⁻¹) ; A(t) = A₀ exp(−λt).', 'Nombre de désintégrations comptées : n = A × Δt.'] };
+}
 function genClpSommet() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   const RAD = Math.PI / 180; let v0, a, vy, tS, H;
@@ -6839,6 +6886,8 @@ export const FAMILLES = [
   { id: 'fvi-tau', groupe: 'Formules', titre: 'Chute avec frottement visqueux : constante de temps et régime transitoire (terminale STL)', gen: genFviTau, domaine: 'Chute avec frottement visqueux' },
   { id: 'eul-lim', groupe: 'Formules', titre: 'Chute avec poussée d’Archimède : accélération initiale et vitesse limite (terminale STL)', gen: genEulLimite, domaine: 'Équation différentielle et méthode d’Euler' },
   { id: 'eul-pas', groupe: 'Formules', titre: 'Chute avec frottement : méthode d’Euler, deux pas (terminale STL)', gen: genEulPas, domaine: 'Équation différentielle et méthode d’Euler' },
+  { id: 'rpm-loi', groupe: 'Formules', titre: 'Radioactivité : constante λ, noyaux restants et durée (terminale STL)', gen: genRadLoi, domaine: 'Radioactivité : désintégrations, loi de décroissance et activité' },
+  { id: 'rpm-act', groupe: 'Formules', titre: 'Radioactivité : activité et comptage (terminale STL)', gen: genRadActivite, domaine: 'Radioactivité : désintégrations, loi de décroissance et activité' },
   { id: 'uv-energie', groupe: 'Formules', titre: 'Photon, longueur d’onde et énergie : E = h c / λ (terminale STL)', gen: genUvEnergie, domaine: 'Spectroscopies UV-visible et infrarouge : énergie, identification et dosage' },
   { id: 'uv-etalonnage', groupe: 'Formules', titre: 'Droite d’étalonnage : pente, concentration et masse (terminale STL)', gen: genUvEtalonnage, domaine: 'Spectroscopies UV-visible et infrarouge : énergie, identification et dosage' },
   { id: 'rmn-int', groupe: 'Formules', titre: 'Spectre RMN du proton : intégration, nombre de H et voisins (terminale STL)', gen: genRmnIntegration, domaine: 'RMN du proton : attribuer et identifier' },

@@ -254,6 +254,7 @@ const SimulationChampElec = paresseux(() => import("./simulations/ChampElec"), "
 const SimulationNewtonRect = paresseux(() => import("./simulations/NewtonRect"), "SimulationNewtonRect");
 const SimulationChutePlane = paresseux(() => import("./simulations/ChutePlane"), "SimulationChutePlane");
 const SimulationPilePcm = paresseux(() => import("./simulations/PilePcm"), "SimulationPilePcm");
+const SimulationRadPcm = paresseux(() => import("./simulations/RadPcm"), "SimulationRadPcm");
 const SimulationRmnStl = paresseux(() => import("./simulations/RmnStl"), "SimulationRmnStl");
 const SimulationUvVisibleStl = paresseux(() => import("./simulations/UvVisStl"), "SimulationUvVisibleStl");
 const SimulationIrStl = paresseux(() => import("./simulations/IrStl"), "SimulationIrStl");
@@ -707,7 +708,11 @@ const SIMULATIONS = [
   { id:306, label:"RMN du proton : attribuer un spectre", niveau:"TSTL", icon:"🧲", color:"#0f766e", component: SimulationRmnStl },
   { id:307, label:"UV-visible : énergie, identification et dosage par étalonnage", niveau:"TSTL", icon:"🔆", color:"#6d28d9", component: SimulationUvVisibleStl },
   { id:308, label:"Infrarouge : énergie des photons, bandes et structures", niveau:"TSTL", icon:"🔬", color:"#0f766e", component: SimulationIrStl },
+<<<<<<< HEAD
   { id:309, label:"Dissoudre ou précipiter ? Qr, Ks et solution saturée", niveau:"TSTL", icon:"🧊", color:"#0369a1", component: SimulationKsq },
+=======
+  { id:309, label:"Radioactivité : désintégrations, loi de décroissance et activité", niveau:"TSTL", icon:"☢️", color:"#b45309", component: SimulationRadPcm },
+>>>>>>> 0490efc (Simulation 309 : radioactivité en PCM (types, loi de décroissance, activité, protection) avec exercices)
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 

@@ -153,7 +153,7 @@ export const COUVERTURE = [
     { th: 'Transformation de la matière', t: 'Réactions acido-basiques : Ka, coefficient de dissociation, tampon, CO₂ dissous, extraction', e: 'ok', chap: 'tstl-pcm-reactions-acido-basiques' },
     { th: 'Transformation de la matière', t: 'Oxydo-réduction : nombre d’oxydation, demi-réactions, pile, quantité d’électricité', e: 'partiel', chap: 'tstl-pcm-oxydoreduction', reste: 'nombre d’oxydation' },
     { th: 'Transformation de la matière', t: 'Cinétique : loi de vitesse, ordre 0 et 1, temps de demi-réaction', e: 'avenir' },
-    { th: 'Transformation de la matière', t: 'Radioactivité : types, loi de décroissance, activité', e: 'avenir' },
+    { th: 'Transformation de la matière', t: 'Radioactivité : types, loi de décroissance, activité', e: 'ok', chap: 'tstl-pcm-radioactivite' },
     { th: MVT, t: 'Mouvements : coordonnées de l’accélération', e: 'ok', chap: 'tstl-pcm-mouvements' },
     { th: MVT, t: 'Interactions : force électrostatique, lois de Newton, chute avec frottement visqueux', e: 'ok', chap: 'tstl-pcm-mouvements' },
     { th: NRJ, t: 'Chaînes énergétiques, conservation de l’énergie, rendement', e: 'ok', chap: 'tstl-pcm-energie' },
