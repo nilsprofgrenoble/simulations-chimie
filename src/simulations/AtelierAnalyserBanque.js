@@ -2,6 +2,7 @@ import { PDT_ANA } from './poidsTrajetExos.js';
 import { LCV_ANA } from './lancerChuteExos.js';
 import { DFR_ANA } from './freinageExos.js';
 import { CHH_ANA } from './chuteExos.js';
+import { LPG_ANA } from './loopingExos.js';
 import { MTR_ANA } from './modesTransfertExos.js';
 import { FRM_ANA } from './formesExos.js';
 import { CHA_ANA } from './chaineExos.js';
@@ -6728,6 +6729,7 @@ export const PREVOIR = [
   ...LCV_ANA,
   ...DFR_ANA,
   ...CHH_ANA,
+  ...LPG_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,

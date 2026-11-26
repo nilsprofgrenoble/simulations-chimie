@@ -3282,6 +3282,49 @@ function genChhFrott() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['ΔEm = W(f) < 0 : l’énergie dissipée est la différence entre l’énergie du départ et celle de l’arrivée.', 'Le travail du frottement est − f × longueur parcourue, alors que celui du poids ne dépend que de la hauteur.'] };
 }
+// ---------- Looping : vitesse en chaque point et hauteur minimale de départ (TSTL, PCM) ----------
+function genLpgVitesse() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8; let m, H, R, vb, vt, vm;
+  do { m = tire([150, 200, 300, 500]); R = tire([2, 3, 4, 5]); H = tire([8, 10, 12, 15]); vb = Math.sqrt(2 * g * H); vt = Math.sqrt(2 * g * (H - 2 * R)); vm = Math.sqrt(2 * g * (H - R)); }
+  while (H < 2.6 * R || new Set([vb, vt, vm].map(x => Number(x.toPrecision(3)))).size < 3);
+  const intro = `Un wagon de masse ${m}${NB}kg est lâché sans vitesse d’une hauteur ${H}${NB}m au-dessus du point le plus bas d’un looping circulaire de rayon ${R}${NB}m. On néglige les frottements, g = 9,8${NB}N/kg et l’origine des altitudes est le point le plus bas.`;
+  const q1 = { id: 'l0', type: 'num', q: <>Quelle est la <b>vitesse du wagon au point le plus bas</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vb, tolRel: 0.05, csMin: 2,
+    aide: 'Em est conservée : m × g × H = ½ × m × v², donc v = √(2 × g × H).',
+    pieges: [[2 * g * H, 'Il manque la racine carrée : v² = 2 g H.'], [Math.sqrt(g * H), 'Il manque le facteur 2 : v² = 2 × g × H.']],
+    expl: <>v = √(2 × 9,8 × {H}) = <b>{pvFmt(vb)}{NB}m/s</b>.</> };
+  const q2 = { id: 'l1', type: 'num', q: <>Quelle est la <b>vitesse du wagon à la hauteur R = {R}{NB}m</b> dans le looping (au niveau du centre du cercle), en m/s (2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vm, tolRel: 0.05, csMin: 2,
+    aide: 'm g H = m g z + ½ m v² avec z = R : v = √(2 × g × (H − R)).',
+    pieges: [[vb, 'C’est la vitesse au point le plus bas : à l’altitude R, le wagon a déjà gagné de l’énergie potentielle.'], [vt, 'C’est la vitesse au sommet (altitude 2R), pas à l’altitude R.']],
+    expl: <>v = √(2 × 9,8 × ({H} − {R})) = <b>{pvFmt(vm)}{NB}m/s</b>.</> };
+  const q3 = { id: 'l2', type: 'num', q: <>Quelle est la <b>vitesse du wagon au sommet du looping</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vt, tolRel: 0.05, csMin: 2,
+    aide: 'Le sommet est à l’altitude 2R : v = √(2 × g × (H − 2R)).',
+    pieges: [[vb, 'C’est la vitesse au point le plus bas : au sommet l’altitude est 2R.'], [vm, 'C’est la vitesse à l’altitude R ; le sommet est à 2R.']],
+    expl: <>v = √(2 × 9,8 × ({H} − 2 × {R})) = <b>{pvFmt(vt)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Sans frottement, v = √(2 g (H − z)) à l’altitude z : plus l’altitude est grande, plus la vitesse est petite.', 'La masse ne joue aucun rôle dans la vitesse.'] };
+}
+function genLpgHmin() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8, R = tire([2, 3, 4, 5, 6]), vmin = Math.sqrt(g * R), H = 2.5 * R, H2 = 2.5 * (R * 2);
+  const intro = `Un wagon est lâché sans vitesse du haut d’une pente qui mène à un looping circulaire de rayon ${R}${NB}m. On néglige les frottements, g = 9,8${NB}N/kg ; l’origine des altitudes est le point le plus bas. On admet que le wagon reste en contact avec le rail au sommet si sa vitesse y est au moins √(g × R).`;
+  const q1 = { id: 'h0', type: 'num', q: <>Quelle est la <b>vitesse minimale au sommet</b> du looping (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vmin, tolRel: 0.05, csMin: 2,
+    aide: 'v minimale = √(g × R).',
+    pieges: [[g * R, 'Il manque la racine carrée : v = √(g × R).'], [Math.sqrt(2 * g * R), 'Il n’y a pas de facteur 2 dans la condition de contact : v = √(g × R).']],
+    expl: <>v = √(9,8 × {R}) = <b>{pvFmt(vmin)}{NB}m/s</b>.</> };
+  const q2 = { id: 'h1', type: 'num', q: <>Quelle est la <b>hauteur minimale de départ</b> pour passer le looping (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: H, tolRel: 0.05, csMin: 2,
+    aide: 'm g H = m g (2R) + ½ m v², avec v² = g R : H = 2R + R ÷ 2.',
+    pieges: [[2 * R, 'À cette hauteur le wagon arrive au sommet avec une vitesse nulle : il faut aussi l’énergie cinétique ½ m v².'], [vmin * vmin / (2 * g), 'C’est seulement la hauteur correspondant à la vitesse minimale ; il faut ajouter l’altitude du sommet, 2R.']],
+    expl: <>H = 2 × {R} + {R} ÷ 2 = <b>{pvFmt(H)}{NB}m</b>.</> };
+  const q3 = { id: 'h2', type: 'num', q: <>Quelle serait la <b>hauteur minimale de départ</b> pour un looping de rayon <b>deux fois plus grand</b> (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: H2, tolRel: 0.05, csMin: 2,
+    aide: 'H minimale = 2,5 × R est proportionnelle au rayon.',
+    pieges: [[H, 'Le rayon a doublé : la hauteur minimale double aussi.'], [4 * H, 'La hauteur minimale est proportionnelle à R, pas à R².']],
+    expl: <>H = 2,5 × (2 × {R}) = <b>{pvFmt(H2)}{NB}m</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Condition de contact au sommet (admise) : v ≥ √(g R).', 'Sans frottement, la hauteur minimale de départ est H = 2,5 R.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5735,6 +5778,8 @@ export const FAMILLES = [
   { id: 'dfr-force', groupe: 'Formules', titre: 'Freinage : force de freinage nécessaire pour s’arrêter avant un obstacle (terminale STL)', gen: genDfrForce, domaine: 'Distance de freinage : énergie cinétique et travail de la force de freinage' },
   { id: 'chh-vitesse', groupe: 'Formules', titre: 'Caisse lâchée sur une rampe : énergie potentielle et vitesse d’arrivée (terminale STL)', gen: genChhVitesse, domaine: 'Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne' },
   { id: 'chh-frott', groupe: 'Formules', titre: 'Rampe avec frottement : énergie dissipée et force moyenne (terminale STL)', gen: genChhFrott, domaine: 'Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne' },
+  { id: 'lpg-vitesse', groupe: 'Formules', titre: 'Looping : vitesse en bas, à mi-hauteur et au sommet (terminale STL)', gen: genLpgVitesse, domaine: 'Looping : vitesse en chaque point et hauteur minimale de départ' },
+  { id: 'lpg-hmin', groupe: 'Formules', titre: 'Looping : vitesse minimale au sommet et hauteur minimale de départ (terminale STL)', gen: genLpgHmin, domaine: 'Looping : vitesse en chaque point et hauteur minimale de départ' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
