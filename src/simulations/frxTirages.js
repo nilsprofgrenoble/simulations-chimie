@@ -50,3 +50,15 @@ export function texteAtome(d, el, E) {
   if (d.voie === 'auger') return 'électron K éjecté, lacune comblée sans photon X (effet Auger : l’énergie éjecte un autre électron)';
   return `électron K éjecté, ${d.voie === 'ka' ? 'un électron L' : 'un électron M'} comble la lacune : photon ${d.voie === 'ka' ? 'Kα' : 'Kβ'} détecté à ${String(d.Edet.toFixed(2)).replace('.', ',')}${NB}keV`;
 }
+
+// Légende numérotée qui suit l'animation de l'atome (p : progression de 0 à 1)
+export function legendePhase(d, p) {
+  if (!d) return 'Cliquez sur « 1 atome » : un photon X va frapper un atome.';
+  if (!d.cible) return p < 0.9 ? 'Le photon X traverse l’échantillon sans toucher d’atome de l’élément étudié.' : 'Aucun atome de l’élément touché : rien n’est émis.';
+  if (!d.ion) return p < 0.9 ? 'Le photon X passe près de l’atome mais n’éjecte aucun électron K.' : 'Aucun électron K éjecté : aucune raie.';
+  if (p < 0.25) return '1. Le photon X arrive sur l’atome.';
+  if (p < 0.5) return '2. Il éjecte un électron K : il reste une lacune (cercle pointillé).';
+  if (p < 0.75) return d.voie === 'kb' ? '3. Un électron M saute dans la lacune K.' : '3. Un électron L saute dans la lacune K.';
+  if (d.voie === 'auger') return '4. L’énergie libérée éjecte un autre électron (effet Auger) : aucun photon X.';
+  return `4. L’atome émet un photon X : raie ${d.voie === 'ka' ? 'Kα' : 'Kβ'} (c’est ce photon que détecte l’appareil).`;
+}

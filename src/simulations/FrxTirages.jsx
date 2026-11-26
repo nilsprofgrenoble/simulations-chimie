@@ -44,7 +44,7 @@ export function SceneAtomeAnim({ d, p }) {
     {ion && p > 0.5 && fluo && <g>{lacune(...part, 'lc')}{T(part[0] + 10, part[1] - 8, voie === 'ka' ? 'lacune L' : 'lacune M', { size: 12, gras: true, fill: '#dc2626', anchor: 'start', halo: true })}</g>}
     {ion && p > 0.5 && voie === 'auger' && <g>{lacune(...L30, 'la1')}{p > 0.75 && lacune(...L75, 'la2')}{T(L30[0] + 10, L30[1] - 8, 'lacunes L', { size: 12, gras: true, fill: '#dc2626', anchor: 'start', halo: true })}</g>}
     {/* photon incident */}
-    {p < 1 && !debut && xph > 12 && <g>{onde(Math.max(8, xph - 70), ion ? K30[1] : CY + 6, xph, ion ? K30[1] : CY + 6, COL.ph)}{T(34, (ion ? K30[1] : CY + 6) - 14, 'photon X', { size: 13, gras: true, fill: COL.ph, anchor: 'start', halo: true })}</g>}
+    {p < (ion ? 0.25 : 1) && !debut && xph > 12 && <g>{onde(Math.max(8, xph - 70), ion ? K30[1] : CY + 6, xph, ion ? K30[1] : CY + 6, COL.ph)}{T(34, (ion ? K30[1] : CY + 6) - 14, 'photon X', { size: 13, gras: true, fill: COL.ph, anchor: 'start', halo: true })}</g>}
     {/* photon X émis ou électron Auger */}
     {fluo && p > 0.75 && (() => { const u = seg(p, 0.75, 1), c = voie === 'ka' ? COL.ka : COL.kb, y0 = CY + (voie === 'ka' ? -4 : 6), y1 = CY + (voie === 'ka' ? -4 : 62), x2 = lerp(CX + 34, 326, u), y2 = lerp(y0, y1, u);
       return <g>{onde(CX + 34, y0, x2, y2, c)}{u > 0.5 && T(334, y1 + (voie === 'ka' ? -8 : 20), voie === 'ka' ? 'Kα' : 'Kβ', { size: 14, gras: true, fill: c, anchor: 'end' })}</g>; })()}
@@ -83,6 +83,7 @@ export function CommandesTirages({ tir }) {
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
       {[1, 10, 100, 1000].map(b)}
       <button onClick={() => tir.setLecture(l => !l)} disabled={tir.plein} aria-pressed={tir.lecture} style={styleBouton(tir.lecture, '#16a34a')}>{tir.lecture ? '⏸ Pause' : '▶ Lecture'}</button>
+      <button onClick={() => tir.rejouer()} disabled={!tir.t.etat.nEnv || tir.t.etat.lot > 1 || tir.lecture} style={{ ...styleBouton(false), opacity: !tir.t.etat.nEnv || tir.t.etat.lot > 1 || tir.lecture ? 0.5 : 1 }}>↻ Rejouer</button>
       <button onClick={() => { tir.setLecture(false); tir.effacer(); }} style={styleBouton(false)}>Effacer</button>
     </div>
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
@@ -92,3 +93,4 @@ export function CommandesTirages({ tir }) {
     {tir.plein && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6 }}>Maximum atteint ({X.MAX_ATOMES.toLocaleString('fr-FR')} atomes) : effacez pour recommencer.</div>}
   </div>);
 }
+

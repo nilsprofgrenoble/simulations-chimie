@@ -23,18 +23,20 @@ const INIT = { el: 'Fe', E: 9, w: 20, courbe: false, vitesse: 'lent' };
 export function useTiragesX(init) {
   const [t, setT] = useState(() => ({ ...INIT, ...init, etat: X.etatVide() }));
   const [lecture, setLecture] = useState(false);
+  const [rejeu, setRejeu] = useState(0);
   const el = element(t.el);
   const lancer = k => setT(s => ({ ...s, etat: X.lancer(s.etat, element(s.el), s, k, Math.random) }));
   const regler = patch => setT(s => ({ ...s, ...patch, etat: ['el', 'E', 'w'].some(c => c in patch && patch[c] !== s[c]) ? X.etatVide() : s.etat }));
   const effacer = () => setT(s => ({ ...s, etat: X.etatVide() }));
   const reinit = cfg => { setLecture(false); setT({ ...INIT, ...cfg, etat: X.etatVide() }); };
+  const rejouer = () => setRejeu(r => r + 1);
   const plein = t.etat.nEnv >= X.MAX_ATOMES;
-  const periode = t.vitesse === 'lent' ? 2400 : t.vitesse === 'normal' ? 1300 : 60;
+  const periode = t.vitesse === 'lent' ? 5000 : t.vitesse === 'normal' ? 3000 : 60;
   useEffect(() => {
     if (!lecture || plein) return undefined;
     const id = setInterval(() => setT(s => ({ ...s, etat: X.lancer(s.etat, element(s.el), s, s.vitesse === 'rapide' ? 4 : 1, Math.random) })), periode);
     return () => clearInterval(id);
   }, [lecture, plein, periode]);
   const anime = t.etat.lot === 1 && !reduitMouvement();
-  return { t, el, lancer, regler, effacer, reinit, lecture: lecture && !plein, setLecture, plein, anime };
+  return { t, el, rejeu, rejouer, lancer, regler, effacer, reinit, lecture: lecture && !plein, setLecture, plein, anime };
 }
