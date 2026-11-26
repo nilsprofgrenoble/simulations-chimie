@@ -54,7 +54,7 @@ export function SimulationCielab({ plotlyReady }) {
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [vie, setVie] = useState(() => DEPART[ORDRE[Math.min(guide.etape ?? 0, ORDRE.length - 1)]] ?? (TOUS_LOT.includes(ORDRE[Math.min(guide.etape ?? 0, ORDRE.length - 1)]) ? M.LOT0 : ETAT0));
-  const [ex, setEx] = useState({ cible: M.CIBLE, lot: M.LOT0, preset: 'bleu', vue: '2d', coord: 'lab', lfond: null, echelle: 'large', autres: false, vue3d: 'proche', tolE: 1.5, tolC: 1 });
+  const [ex, setEx] = useState({ cible: M.CIBLE, lot: M.LOT0, preset: 'bleu', vue: '2d', coord: 'lab', lfond: null, echelle: 'large', autres: false, vue3d: 'entier', tolE: 1.5, tolC: 1 });
   const [ouv, setOuv] = useState({});
   const [suiviE, noterE] = useCompteurDefi(), [suiviL, noterL] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('ecart');
@@ -289,7 +289,7 @@ export function SimulationCielab({ plotlyReady }) {
     {curs('cl-xf', `Luminosité L* du fond coloré : ${lf}`, lf, 10, 95, 1, ev => setEx(x => ({ ...x, lfond: parseInt(ev.target.value, 10) })), 'Le plan montre les couleurs d’une seule luminosité à la fois. Le jaune est très vif à L* élevé, le bleu à L* faible.')}
     {ex.lfond != null && <button onClick={() => setEx(x => ({ ...x, lfond: null }))} style={{ ...stylePetitBouton(false, '#334155'), marginTop: 6 }}>Revenir à la luminosité de la cible (L* = {fr(ex.cible.L, 0)})</button>}
   </>) : (<>
-    {selecteur('cl-x3', 'Échelle de la vue 3D', ex.vue3d, ev => setEx(x => ({ ...x, vue3d: ev.target.value })), [{ id: 'proche', nom: 'Autour de la cible (tailles réelles)' }, { id: 'entier', nom: 'Espace entier (ellipsoïdes agrandis)' }])}
+    <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Dans la vue 3D, l’échelle se choisit avec les deux boutons placés au-dessus de la figure : tout l’espace des couleurs, ou un zoom sur la cible. La tolérance ΔE*ab et la tolérance CMC se règlent dans « Tolérances ».</div>
   </>);
   const legendeVue = ex.vue === '2d' ? (<div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
     <p style={{ margin: '0 0 6px' }}>Chaque point du plan est une couleur : a* va du vert au rouge, b* du bleu au jaune, et la saturation C* augmente en s’éloignant du centre (cercles blancs : 20, 40, 60). Le fond montre les couleurs d’une seule luminosité L*.</p>
@@ -300,23 +300,31 @@ export function SimulationCielab({ plotlyReady }) {
     {planLarge && ex.autres && <p style={{ margin: '0 0 6px' }}>Les autres ellipses CMC sont agrandies {M.AGRANDI} fois pour être visibles : près du gris elles sont presque rondes et petites ; plus la couleur est saturée, plus elles sont grandes et allongées vers l’extérieur (la saturation est tolérée plus que la teinte).</p>}
     <p style={{ margin: 0 }}>Beaucoup de couleurs saturées n’existent pas sur un écran : là, on affiche la couleur la plus vive possible de même luminosité et de même teinte, donc les bords paraissent moins saturés qu’ils ne le sont.</p></div>)
   : (<div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
-    <p style={{ margin: '0 0 6px' }}>Faites tourner la vue avec le doigt ou la souris. L’axe vertical est la luminosité L*.</p>
-    {ex.vue3d === 'proche' ? <>
+    <p style={{ margin: '0 0 6px' }}>Faites tourner la vue avec le doigt ou la souris. L’axe vertical est la luminosité L* (0 : noir, 100 : blanc) ; a* va du vert au rouge, b* du bleu au jaune.</p>
+    {ex.vue3d === 'entier' ? <>
+      <p style={{ margin: '0 0 6px' }}>Le solide coloré est l’ensemble des couleurs qu’un écran sait afficher (sRGB), rangées dans l’espace L*a*b*. Ce n’est pas une sphère : sa forme irrégulière vient des couleurs que l’écran ne peut pas produire (par exemple, les verts et les bleus très saturés ou les jaunes très foncés).</p>
+      <p style={{ margin: '0 0 6px' }}>On l’a ouvert dans un quart pour voir l’intérieur. Le disque est la coupe à la luminosité L* de la cible : c’est le plan a*b* de la vue 2D.</p>
+      <p style={{ margin: 0 }}>Les petites ellipses sont des tolérances CMC (de valeur {fr(ex.tolC, 1)}), agrandies ×{M.AGRANDI} pour être visibles : leur taille et leur orientation changent avec la couleur. L’ellipse verte épaisse est celle de la cible. Utilisez « Zoom sur la cible » pour voir la sphère ΔE*ab et l’ellipsoïde CMC.</p></> : <>
       <p style={{ margin: '0 0 6px' }}>La <strong>sphère violette</strong> est l’ensemble des couleurs à moins de ΔE*ab = {fr(ex.tolE, 1)} de la cible. L’<strong>ellipsoïde vert</strong> est la zone acceptée par la tolérance CMC : à la même valeur, il est plus étiré (saturation, luminosité) et plus étroit (teinte).</p>
-      <p style={{ margin: 0 }}>Le plan coloré en bas porte les couleurs de la luminosité L* de la cible ; les contours violet et vert posés dessus sont les « ombres » de la sphère et de l’ellipsoïde : ce sont le cercle et l’ellipse du plan 2D. Le lot est le point orange : il est conforme s’il est dans la zone.</p></> :
-      <p style={{ margin: 0 }}>Le disque coloré est le plan a*b* à la luminosité L* de la cible. Les ellipsoïdes CMC sont agrandis ×{M.AGRANDI} pour être visibles : ils changent de taille et d’orientation selon la couleur.</p>}
+      <p style={{ margin: 0 }}>Le plan coloré en bas porte les couleurs de la luminosité L* de la cible ; les contours violet et vert posés dessus sont les « ombres » de la sphère et de l’ellipsoïde : ce sont le cercle et l’ellipse du plan 2D. Le lot est le point orange : il est conforme s’il est dans la zone.</p></>}
     </div>);
   const vueEx = (
     <div style={styleBoite}>
       <div role="group" aria-label="Choix de la vue" style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
         {[['2d', '🎨 Plan 2D'], ['3d', '🧊 Vue 3D']].map(([k, n]) => <button key={k} onClick={() => setEx(x => ({ ...x, vue: k }))} aria-pressed={ex.vue === k} style={{ ...stylePetitBouton(ex.vue === k, '#0e7490'), minHeight: 46, flex: 1, fontSize: 15 }}>{n}</button>)}
       </div>
+      {ex.vue === '3d' && <div role="group" aria-label="Échelle de la vue 3D" style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        {[['entier', '🌐 Tout l’espace'], ['proche', '🔍 Zoom sur la cible']].map(([k, n]) => <button key={k} onClick={() => setEx(x => ({ ...x, vue3d: k }))} aria-pressed={ex.vue3d === k} style={{ ...stylePetitBouton(ex.vue3d === k, '#7c3aed'), minHeight: 42, flex: 1, fontSize: 14 }}>{n}</button>)}
+      </div>}
       {ex.vue === '2d'
         ? <SvgPlanAB lfond={lf} zoom={planLarge ? null : { centre: ex.cible, demi: 7 }} repere={planLarge && !coordLch} axesLch={!planLarge && coordLch}
             autres={planLarge && ex.autres ? { positions: M.POSITIONS_ELLIPSES, tolC: ex.tolC, k: M.AGRANDI } : null}
             pts={[{ lab: ex.cible, nom: 'Cible', col: '#0f172a', cyl: planLarge && coordLch ? true : false }, { lab: ex.lot, nom: 'Lot', col: COL.orange, cyl: planLarge && coordLch ? 'fin' : false }]}
             tol={{ cible: ex.cible, tolE: ex.tolE, tolCMC: ex.tolC }}/>
         : <VueLab3D plotlyReady={plotlyReady} cible={ex.cible} lot={ex.lot} tolE={ex.tolE} tolC={ex.tolC} mode={ex.vue3d}/>}
+      {ex.vue === '3d' && <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5, marginTop: 6 }}>{ex.vue3d === 'entier'
+        ? <>Le solide est l’ensemble des couleurs d’un écran ; le disque est la coupe à la luminosité de la cible, avec des ellipses de tolérance CMC (agrandies ×{M.AGRANDI}). Touchez et glissez pour tourner.</>
+        : <>Sphère violette : tolérance ΔE*ab. Ellipsoïde vert : tolérance CMC. Point orange : le lot. Touchez et glissez pour tourner.</>}</div>}
     </div>);
   // état du contrôle : les deux couleurs et le verdict, sous la figure
   const statut = (
