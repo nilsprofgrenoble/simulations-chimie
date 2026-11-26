@@ -3079,7 +3079,6 @@
  "77:plausible:frx-val-energie": "VAL803",
  "77:plausible:frx-val-technique": "VAL804",
  "36:frx-calcul": "REA219",
-<<<<<<< HEAD
  "34:ksq-sapp-melange.0": "SAPP677",
  "34:ksq-sapp-melange.1": "SAPP678",
  "34:ksq-sapp-solubilite.0": "SAPP679",
@@ -3091,19 +3090,17 @@
  "77:plausible:ksq-val-comparer": "VAL805",
  "77:plausible:ksq-val-dilution": "VAL806",
  "36:ksq-ks": "REA220",
- "36:ksq-melange": "REA221"
-=======
- "34:rpm-sapp-loi.0": "SAPP677",
- "34:rpm-sapp-loi.1": "SAPP678",
- "34:rpm-sapp-activite.0": "SAPP679",
- "34:rpm-sapp-activite.1": "SAPP680",
- "37:prevoir:rpm-ana-type": "ANA1382",
- "37:prevoir:rpm-ana-lambda": "ANA1383",
- "37:prevoir:rpm-ana-fraction": "ANA1384",
- "37:prevoir:rpm-ana-protection": "ANA1385",
- "77:plausible:rpm-val-lambda": "VAL805",
- "77:plausible:rpm-val-activite": "VAL806",
- "36:rpm-loi": "REA220",
- "36:rpm-act": "REA221"
->>>>>>> 0490efc (Simulation 309 : radioactivité en PCM (types, loi de décroissance, activité, protection) avec exercices)
+ "36:ksq-melange": "REA221",
+ "34:rpm-sapp-loi.0": "SAPP681",
+ "34:rpm-sapp-loi.1": "SAPP682",
+ "34:rpm-sapp-activite.0": "SAPP683",
+ "34:rpm-sapp-activite.1": "SAPP684",
+ "37:prevoir:rpm-ana-type": "ANA1386",
+ "37:prevoir:rpm-ana-lambda": "ANA1387",
+ "37:prevoir:rpm-ana-fraction": "ANA1388",
+ "37:prevoir:rpm-ana-protection": "ANA1389",
+ "77:plausible:rpm-val-lambda": "VAL807",
+ "77:plausible:rpm-val-activite": "VAL808",
+ "36:rpm-loi": "REA222",
+ "36:rpm-act": "REA223"
 }
