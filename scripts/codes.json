@@ -2793,5 +2793,17 @@
  "77:plausible:flp-val-hauteur": "VAL745",
  "77:plausible:flp-val-vmin": "VAL746",
  "36:flp-hauteur": "REA177",
- "36:flp-vmin": "REA178"
+ "36:flp-vmin": "REA178",
+ "34:cet-sapp-dilution.0": "SAPP602",
+ "34:cet-sapp-dilution.1": "SAPP603",
+ "34:cet-sapp-gamme.0": "SAPP604",
+ "34:cet-sapp-gamme.1": "SAPP605",
+ "37:prevoir:cet-ana-cellule": "ANA1271",
+ "37:prevoir:cet-ana-hors-domaine": "ANA1272",
+ "37:prevoir:cet-ana-trop-dilue": "ANA1273",
+ "37:prevoir:cet-ana-temperature": "ANA1274",
+ "77:plausible:cet-val-facteur": "VAL747",
+ "77:plausible:cet-val-gamme": "VAL748",
+ "36:cet-gamme-calcul": "REA179",
+ "36:cet-dosage-calcul": "REA180"
 }
