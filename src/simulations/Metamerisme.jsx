@@ -5,7 +5,7 @@ import { Pic } from "../Pictos";
 import * as C from "./couleurModele";
 import * as M from "./mtmModele";
 import { QCM } from "./mtmQcm";
-import { SvgSpectre, SvgCarteChaine, SvgCarteMeta } from "./MtmSchemas";
+import { SvgSpectre, SvgCarteChaine, SvgCarteMeta, SvgCabine } from "./MtmSchemas";
 
 
 const SIM_ID = 249, CLE_GUIDE = 'mtm-guide-v1';
@@ -56,7 +56,7 @@ export function SimulationMetamerisme() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const idDe = g => ORDRE[Math.min(g.etape ?? 0, ORDRE.length - 1)];
   const [vie, setVie] = useState(() => ({ ...BASE, ...(DEPART[idDe(guide)] ?? {}) }));
-  const [ex, setEx] = useState({ base: 'beige', s: 1 });
+  const [ex, setEx] = useState({ base: 'beige', s: 1, lampe: 'D65' });
   const [ouv, setOuv] = useState({});
   const [suiviC, noterC] = useCompteurDefi(), [suiviM, noterM] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('couleur');
@@ -214,17 +214,23 @@ export function SimulationMetamerisme() {
   const reglagesExplore = enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <div style={{ fontSize: 13, color: KIT.txt2 }}>On compare un échantillon E1 et un échantillon E2 dont la courbe est modifiée de façon à ne rien changer sous D65.</div>
+      <div style={{ fontSize: 13, color: KIT.txt2 }}>Ici, E2 est un échantillon construit pour avoir la même couleur que E1 sous la lumière du jour. Faites varier l’écart entre leurs courbes, puis changez de lampe dans la cabine : à partir de quel écart voit-on la différence sous la lampe A ?</div>
       {selecteur('mt-xb', 'Couleur de E1', ex.base, ev => setEx(x => ({ ...x, base: ev.target.value })), OPT_BASE)}
       {curs('mt-xs', `Écart entre les deux courbes : ${n0(ex.s * 100)} %`, ex.s, 0, 1, 0.01, ev => setEx(x => ({ ...x, s: parseFloat(ev.target.value) })), '0 % : courbes identiques ; 100 % : écart maximal.')}
     </div>);
+  const verdictLampe = eX[ex.lampe] <= 1 ? 'E1 et E2 sont indiscernables' : eX[ex.lampe] <= 3 ? 'E1 et E2 sont un peu différents' : 'E1 et E2 sont nettement différents';
   const planEx = (
     <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Réflectance de E1 et de E2</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Cabine à lumière : E1 et E2 sous la lampe de votre choix</div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Comme dans l’industrie, on contrôle une couleur dans une cabine, sous plusieurs lampes. Choisissez la lampe.</div>
+      <div role="group" aria-label="Lampe de la cabine" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+        {M.SOURCES.map(id => <button key={id} onClick={() => setEx(x => ({ ...x, lampe: id }))} aria-pressed={ex.lampe === id} style={{ ...stylePetitBouton(ex.lampe === id, '#d97706'), minHeight: 42, flex: '1 1 90px' }}>{id === 'D65' ? '☀️ Jour (D65)' : id === 'A' ? '💡 Incandescence (A)' : '🔦 Tube (F2)'}</button>)}
+      </div>
+      <SvgCabine lampe={ex.lampe} css1={M.couleurSous(pX.r1, ex.lampe)} css2={M.couleurSous(pX.r2, ex.lampe)}/>
+      <div style={{ marginTop: 8, fontSize: 14, lineHeight: 1.5, color: KIT.txt }}><strong>{verdictLampe}</strong> sous cette lampe (ΔE*ab = {fr(eX[ex.lampe], 2)}). Si vous distinguez mal les couleurs, fiez-vous à ce nombre : c’est la mesure, pas l’impression.</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, margin: '12px 0 2px' }}>Pourquoi ? Les courbes de réflectance</div>
+      <div style={{ fontSize: 13, color: KIT.txt2 }}>E1 et E2 renvoient la lumière différemment (courbes différentes), mais de façon équivalente pour l’œil sous la lumière du jour. Sous une autre lampe, ce n’est plus le cas.</div>
       {specR([{ v: pX.r1, col: COL.bleu, nom: 'E1' }, { v: pX.r2, col: COL.orange, nom: 'E2', trait: '6 3' }], 'Courbes de réflectance de E1 et E2')}
-      <div style={{ display: 'grid', gap: 6, marginTop: 8 }}>{M.SOURCES.map(id => <div key={id}>
-        <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 2 }}>{M.NOMS_SOURCES[id]}</div>
-        {rangee([<Pastille key="a" css={M.couleurSous(pX.r1, id)} nom="E1" hauteur={26}/>, <Pastille key="b" css={M.couleurSous(pX.r2, id)} nom="E2" hauteur={26}/>])}</div>)}</div>
     </div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>

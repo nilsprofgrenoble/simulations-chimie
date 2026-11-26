@@ -60,3 +60,22 @@ export function SvgCarteMeta() {
     {T(150, 160, 'couleurs différentes sous la lampe A', { size: 12.5, gras: true, fill: K.rouge })}
   </>, 340);
 }
+
+const LAMPES = { D65: { halo: '#dbeafe', cone: '#bfdbfe', nom: 'Lumière du jour (D65)' }, A: { halo: '#fde68a', cone: '#fcd34d', nom: 'Lampe à incandescence (A)' }, F2: { halo: '#ecfccb', cone: '#d9f99d', nom: 'Tube fluorescent (F2)' } };
+/** Cabine à lumière : une lampe au plafond (au choix), deux échantillons posés sur le plan de travail. css1, css2 : couleurs affichées de E1 et E2 sous la lampe choisie. */
+export function SvgCabine({ lampe, css1, css2 }) {
+  const L = LAMPES[lampe];
+  return base(300, 206, 'Cabine à lumière : deux échantillons E1 et E2 éclairés par la lampe choisie', <>
+    <rect x={14} y={8} width={272} height={168} rx={8} fill="#475569" stroke="#1e293b" strokeWidth="2"/>
+    <rect x={22} y={16} width={256} height={142} rx={4} fill="#cbd5e1"/>
+    <rect x={30} y={22} width={240} height={14} rx={4} fill="#1e293b"/>
+    <ellipse cx={150} cy={36} rx={50} ry={7} fill={L.halo} stroke="#0f172a" strokeWidth="1.5"/>
+    <polygon points="105,38 195,38 250,128 50,128" fill={L.cone} opacity="0.55"/>
+    <rect x={22} y={128} width={256} height={30} fill="#94a3b8"/>
+    <rect x={62} y={104} width={66} height={44} rx={4} fill={css1} stroke="#0f172a" strokeWidth="2"/>
+    <rect x={172} y={104} width={66} height={44} rx={4} fill={css2} stroke="#0f172a" strokeWidth="2"/>
+    {T(95, 170, 'E1', { size: 15, gras: true, fill: '#fff' })}{T(205, 170, 'E2', { size: 15, gras: true, fill: '#fff' })}
+    {T(150, 58, L.nom, { size: 13, gras: true, halo: true })}
+    {T(150, 198, 'cabine à lumière (contrôle visuel)', { size: 12, fill: K.gris })}
+  </>, 340);
+}
