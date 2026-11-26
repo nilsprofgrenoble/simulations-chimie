@@ -5,6 +5,9 @@ import { Pic } from "../Pictos";
 import * as M from "./fluoModele";
 import { QCM } from "./fluoQcm";
 import { SceneJablonski, SceneEmission, SceneSpectresFluo, SvgCarteJablonski, SvgCarteTemps, SvgCarteBilanFluo } from "./FluoSchemas";
+import { SceneVibronique, SceneHistogramme, CommandesTirages } from "./FluoTirages";
+import { useTirages } from "./fluoTiragesHook";
+import * as X from "./fluoTirages";
 
 const SIM_ID = 301, CLE_GUIDE = 'fluo-guide-v1';
 declarerDefis(SIM_ID, [['stokes', 'Énergie perdue entre absorption et émission'], ['duree', 'Quelle lumière après l’arrêt ?']]);
@@ -21,7 +24,8 @@ const NB = '\u00a0';
 const fr = (v, d = 1) => v.toFixed(d).replace('.', ',').replace('-', '−');
 const selectStyle = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
 const libelle = { display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '0 0 3px' };
-const ORDRE = ['absorption', 'relaxation', 'fluo', 'stokes', 'cis', 'phos', 'temps', 'ecart', 'spectres', 'tri', 'bilan'];
+const ORDRE = ['absorption', 'relaxation', 'fluo', 'stokes', 'cis', 'phos', 'temps', 'ecart', 'spectres', 'tri', 'tirem', 'raies', 'kasha', 'tirex', 'bilan'];
+const ETAPES_TIRAGES = ['tirem', 'raies', 'kasha', 'tirex'];
 const BASE = { te: -9 };
 const DEPART = { temps: { te: -9 } };
 const arrondi3 = v => Number(Number(v).toPrecision(3));
@@ -38,6 +42,7 @@ export function SimulationFluorescence() {
   const idDe = g => ORDRE[Math.min(g.etape ?? 0, ORDRE.length - 1)];
   const [vie, setVie] = useState(() => ({ ...BASE, ...(DEPART[idDe(guide)] ?? {}) }));
   const [ex, setEx] = useState({ onglet: 'diagramme', proc: '', mol: 'B', te: -9 });
+  const tg = useTirages({}), te = useTirages({});
   const [ouv, setOuv] = useState({});
   const [suiviS, noterS] = useCompteurDefi(), [suiviD, noterD] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('stokes');
@@ -90,10 +95,25 @@ export function SimulationFluorescence() {
       texte: <>On éclaire un échantillon, puis on coupe la lampe. Deux secondes plus tard, l’échantillon émet encore une lueur verte. L’intensité de chaque émission est schématisée ci-dessous à t = 2{NB}s.</>,
       tache: { type: 'qcm', q: 'Cette lueur est celle…', ...QCM.tri,
         expl: 'Deux secondes après l’arrêt, la fluorescence (durée de l’ordre de la nanoseconde) est éteinte depuis longtemps : une lueur persistante est de la phosphorescence.', indice: 'Comparez 2 s aux durées caractéristiques de chaque émission.' } },
+    { id: 'tirem', titre: 'Un spectre d’émission, photon après photon', focus: ['scene', 'curseur', 'mesures'],
+      texte: <>Voici la molécule A, avec les sous-niveaux de vibration de S₀ et de S₁. Chaque clic envoie des photons de 350{NB}nm. Le hasard décide si un photon est absorbé ; la molécule perd de l’énergie par relaxation vibrationnelle (RV), puis émet un photon en retombant sur <strong>un sous-niveau de vibration de S₀ tiré au hasard</strong>. Chaque photon émis ajoute un coup à sa longueur d’onde : le <strong>spectre d’émission</strong> se trace petit à petit. Les flèches du dernier photon sont en trait épais.</>,
+      tache: { type: 'action', ok: tg.t.etat.nEnv >= 100, label: 'Envoyer au moins 100 photons', faire: () => tg.lancer(100), consigne: 'Envoyez au moins 100 photons avec les boutons sous le schéma' } },
+    { id: 'raies', titre: 'Pourquoi plusieurs pics ?', focus: ['scene', 'curseur', 'mesures'],
+      texte: <>Le spectre d’émission n’est pas un pic unique : il comporte plusieurs pics espacés. Complétez-le jusqu’à environ 500 photons si besoin, puis comparez les pics aux flèches de fluorescence du diagramme : la flèche la plus utilisée correspond au pic le plus haut. La courbe pointillée, qu’on peut afficher en exploration, montre ce que donnerait un très grand nombre de photons.</>,
+      tache: { type: 'qcm', q: 'Que représente chaque pic du spectre d’émission ?', ...QCM.raies,
+        expl: 'Les pics correspondent aux retours de S₁ (bas du niveau) vers les différents sous-niveaux de vibration de S₀. Chaque retour émet un photon d’énergie différente ; l’écart entre deux pics voisins est de l’ordre de l’écart entre deux sous-niveaux de vibration (ici 0,2 eV).', indice: 'Comparez le nombre de flèches de fluorescence et le nombre de pics.' } },
+    { id: 'kasha', titre: 'Et si l’on excite à une autre longueur d’onde ?', focus: ['scene', 'curseur', 'mesures'],
+      texte: <>Les photons de 331{NB}nm sont plus énergétiques que ceux de 350{NB}nm : ils portent la molécule sur un autre sous-niveau de S₁. Envoyez 300 photons à 350{NB}nm, notez l’allure du spectre d’émission, puis changez la longueur d’onde d’excitation à 331{NB}nm (le spectre est effacé à chaque changement) et envoyez 300 photons. Observez les deux spectres.</>,
+      tache: { type: 'qcm', q: 'Quand on change la longueur d’onde d’excitation (dans la bande d’absorption), le spectre d’émission…', ...QCM.kasha,
+        expl: 'La molécule redescend toujours jusqu’au bas de S₁ par relaxation vibrationnelle avant d’émettre (règle de Kasha) : elle « oublie » comment elle a été excitée. Le spectre d’émission ne dépend donc pas de la longueur d’onde d’excitation ; seul le nombre de photons absorbés change.', indice: 'Regardez où partent les flèches de fluorescence : toujours du même niveau.' } },
+    { id: 'tirex', titre: 'Le spectre d’excitation', focus: ['scene', 'curseur', 'mesures'],
+      texte: <>On fixe maintenant la <strong>détection</strong> sur la fluorescence, vers 450{NB}nm, et on fait varier la longueur d’onde d’<strong>excitation</strong>. Chaque photon envoyé a une longueur d’onde tirée au hasard entre 290 et 410{NB}nm ; on ajoute un coup à cette longueur d’onde lorsqu’un photon de fluorescence est détecté dans la fenêtre pointillée. Envoyez environ 2 000 photons (le bouton × 1000 est pratique).</>,
+      tache: { type: 'qcm', q: 'Le spectre d’excitation obtenu ressemble…', ...QCM.tirex,
+        expl: 'Un coup n’est compté que si le photon d’excitation est absorbé, puis qu’un photon de fluorescence est détecté : le nombre de coups à chaque longueur d’onde est proportionnel à l’absorption. Le spectre d’excitation a donc l’allure du spectre d’absorption de la molécule.', indice: 'Pour être détecté, il faut d’abord que le photon d’excitation soit absorbé.' } },
     { id: 'bilan', titre: 'Le bilan : le diagramme de Perrin-Jablonski', focus: [],
       retenirTitre: 'À retenir : fluorescence et phosphorescence', retenir: <><SvgCarteBilanFluo/>
         <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>Absorption, RV et CI : très rapides (≤ 10⁻¹² s) ; RV et CI sont non radiatives.</li><li>Fluorescence : S₁ → S₀, 10⁻⁹ s ; phosphorescence : T₁ → S₀, lente, après un CIS.</li></ul></>,
-      texte: <>Vous savez décrire les processus d’un diagramme de Perrin-Jablonski, distinguer fluorescence et phosphorescence par leur origine et leur durée, et prévoir le décalage vers les grandes longueurs d’onde. En exploration, étudiez deux molécules et l’évolution après l’arrêt de la lumière ; les défis testent le calcul de l’énergie perdue et l’identification de la lumière émise. Pour la suite : la spectrofluorimétrie.</> },
+      texte: <>Vous savez décrire les processus d’un diagramme de Perrin-Jablonski, distinguer fluorescence et phosphorescence par leur origine et leur durée, et prévoir le décalage vers les grandes longueurs d’onde. En exploration, étudiez deux molécules et l’évolution après l’arrêt de la lumière ; les défis testent le calcul de l’énergie perdue et l’identification de la lumière émise. Les tirages de photons relient les transitions du diagramme à l’allure des spectres : émission (λ d’excitation fixée) et excitation (λ de détection fixée). Pour la suite : la spectrofluorimétrie.</> },
   ];
   const etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? ORDRE[etape] : null;
   const hl = id => enGuide && ETAPES[etape].focus.includes(id);
@@ -101,7 +121,12 @@ export function SimulationFluorescence() {
   const setEtatGuide = v => {
     const nv = typeof v === 'function' ? v(guide) : v;
     const ni = Math.min(nv.etape, ORDRE.length - 1);
-    if (ni !== Math.min(guide.etape, ORDRE.length - 1)) setVie(() => ({ ...BASE, ...(DEPART[ORDRE[ni]] ?? {}) }));
+    if (ni !== Math.min(guide.etape, ORDRE.length - 1)) {
+      setVie(() => ({ ...BASE, ...(DEPART[ORDRE[ni]] ?? {}) }));
+      tg.setLecture(false);
+      if (ORDRE[ni] === 'tirem' || ORDRE[ni] === 'kasha') tg.reinit({});
+      if (ORDRE[ni] === 'tirex') tg.reinit({ mode: 'excitation', lamEm: 450 });
+    }
     setGuide(nv);
   };
   const sc = idE;
@@ -109,10 +134,13 @@ export function SimulationFluorescence() {
   const sceneGuide = !enGuide ? null
     : sc in ACTIFS ? <SceneJablonski actif={ACTIFS[sc]} durees={sc !== 'stokes' && sc !== 'ecart'}/>
     : sc === 'temps' ? <><SceneJablonski actif={null} etat={M.etatDominant(B, tV)}/><div style={{ height: 6 }}/><SceneEmission mol={B} t={tV}/></>
+    : ETAPES_TIRAGES.includes(sc) ? <>{tg.t.mode === 'emission' && <SceneVibronique mol={X.MOLS_T.A} dernier={tg.t.etat.dernier}/>}{tg.t.mode === 'emission' && <div style={{ height: 6 }}/>}<SceneHistogramme etat={tg.t.etat} params={tg.t} mol={X.MOLS_T.A}/></>
     : sc === 'spectres' ? <SceneSpectresFluo mol={A}/>
     : sc === 'tri' ? <SceneEmission mol={B} t={2}/>
     : null;
-  const MES_GUIDE = { temps: [['Temps depuis la coupure', txtT(tV)], ['État peuplé', ST[M.etatDominant(B, tV)]], ['Lumière émise', M.classeEmission(B, tV)]] };
+  const Eg = tg.t.etat, sommeEx = Eg.ex.reduce((a, b) => a + b, 0);
+  const MES_TIR = [['Photons envoyés', String(Eg.nEnv)], ['Photons absorbés', String(Eg.nAbs)], [tg.t.mode === 'excitation' ? 'Photons détectés' : 'Photons de fluorescence', String(tg.t.mode === 'excitation' ? sommeEx : Eg.nFl)], ...(tg.t.mode === 'emission' ? [['Dernier photon', X.texteEvenement(Eg.dernier, 'emission')]] : [])];
+  const MES_GUIDE = { temps: [['Temps depuis la coupure', txtT(tV)], ['État peuplé', ST[M.etatDominant(B, tV)]], ['Lumière émise', M.classeEmission(B, tV)]], tirem: MES_TIR, raies: MES_TIR, kasha: MES_TIR, tirex: MES_TIR };
   const lignesGuide = enGuide ? (MES_GUIDE[sc] ?? []) : [];
   const curs = (id, lab_, val, min, max, step, onCh, aide) => (<div style={{ marginTop: 8 }}>
     <label htmlFor={id} style={libelle}>{lab_}</label>
@@ -122,11 +150,15 @@ export function SimulationFluorescence() {
     <label htmlFor={id} style={libelle}>{lab_}</label>
     <select id={id} value={val} onChange={onCh} style={selectStyle}>{vide && <option value="">{vide}</option>}{options.map(o => <option key={o.id} value={o.id}>{o.nom}</option>)}</select></div>);
   const curseurTemps = (id, te, onT) => curs(id, `Temps écoulé : ${txtT(10 ** te)}`, te, -15, 3, 1, ev => onT(parseInt(ev.target.value, 10)), 'Échelle logarithmique, de 10⁻¹⁵ s à 10³ s.');
-  const curseurGuide = enGuide && sc === 'temps' ? <div style={{ ...styleBoite, ...cadre('curseur') }}>{curseurTemps('fl-te', vie.te, te => setVie(v => ({ ...v, te })))}</div> : null;
+  const curseurGuide = enGuide && sc === 'temps' ? <div style={{ ...styleBoite, ...cadre('curseur') }}>{curseurTemps('fl-te', vie.te, te => setVie(v => ({ ...v, te })))}</div>
+    : enGuide && ETAPES_TIRAGES.includes(sc) ? <div style={{ ...styleBoite, ...cadre('curseur') }}>
+      <CommandesTirages tir={tg}/>
+      {sc === 'kasha' && curs('fl-gexc', `Longueur d’onde d’excitation : ${tg.t.lamExc} nm`, tg.t.lamExc, 300, 410, 1, ev => tg.regler({ lamExc: parseInt(ev.target.value, 10) }), 'Le spectre est effacé à chaque changement. Pic d’absorption à 350 nm.')}
+    </div> : null;
 
   // ---------- défis ----------
   const nouveauDefi = kind => setDefi(kind === 'stokes' ? { ...M.tirageDefiStokes(Math.random), rep1: '', verifie: false } : { ...M.tirageDefiDuree(Math.random), rep1: '', verifie: false });
-  const changerMode = md => { if (md === 'defi' && !defi) nouveauDefi(typeDefi); setMode(md); };
+  const changerMode = md => { if (md === 'defi' && !defi) nouveauDefi(typeDefi); tg.setLecture(false); te.setLecture(false); setMode(md); };
   const choisirDefi = tp => { setTypeDefi(tp); nouveauDefi(tp); };
   const maj = f => setDefi(x => ({ ...x, ...f, verifie: false }));
   const verifier = () => {
@@ -167,8 +199,21 @@ export function SimulationFluorescence() {
 
   // ---------- exploration ----------
   const mol = M.MOLS[ex.mol], tE = 10 ** ex.te, pr = M.PROCESSUS.find(p => p.id === ex.proc);
+  const MT = X.MOLS_T[te.t.mode ? te.t.mol : 'A'], Ee = te.t.etat, sommeExE = Ee.ex.reduce((a, b) => a + b, 0), excE = te.t.mode === 'excitation';
   const aucun = ex.proc === '' ? null : ex.proc === 'rv' ? ['rv'] : ex.proc === 'ci' ? ['ci'] : ex.proc;
-  const reglagesExplore = enExplore && (
+  const reglagesTirages = (
+    <div style={styleBoite}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Tirages de photons</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Chaque photon est un tirage au hasard : absorbé ou non, puis émis par un chemin du diagramme. Chaque photon détecté ajoute un coup au spectre.</div>
+      {selecteur('fl-tm', 'Ce que l’on trace', te.t.mode, ev => te.regler({ mode: ev.target.value }), [{ id: 'emission', nom: 'Émission (λ d’excitation fixée)' }, { id: 'excitation', nom: 'Excitation (λ de détection fixée)' }])}
+      {selecteur('fl-tmol', 'Molécule', te.t.mol, ev => te.regler({ mol: ev.target.value, lamEm: Math.round(X.lamMaxEmission(X.MOLS_T[ev.target.value]) / 5) * 5 }), Object.values(X.MOLS_T))}
+      {excE ? curs('fl-tlem', `Longueur d’onde de détection : ${te.t.lamEm} nm (fenêtre ± ${X.FENETRE} nm)`, te.t.lamEm, 380, 580, 5, ev => te.regler({ lamEm: parseInt(ev.target.value, 10) }), 'Le spectre est effacé à chaque changement. Les photons d’excitation sont tirés entre 290 et 410 nm.')
+        : curs('fl-tlex', `Longueur d’onde d’excitation : ${te.t.lamExc} nm`, te.t.lamExc, 300, 410, 1, ev => te.regler({ lamExc: parseInt(ev.target.value, 10) }), 'Le spectre est effacé à chaque changement. Le maximum d’absorption est à 350 nm.')}
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 14, color: KIT.txt, cursor: 'pointer' }}>
+        <input type="checkbox" checked={te.t.courbe} onChange={ev => te.regler({ courbe: ev.target.checked })} style={{ width: 20, height: 20 }}/>Afficher la courbe attendue (pointillés)</label>
+      <div style={{ marginTop: 10 }}><CommandesTirages tir={te}/></div>
+    </div>);
+  const reglagesExplore = enExplore && ex.onglet === 'tirages' ? reglagesTirages : enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'diagramme' ? 'Choisissez un processus' : ex.onglet === 'temps' ? 'Faites passer le temps' : 'Choisissez la molécule'}</div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ex.onglet === 'diagramme' ? 'Le processus choisi est mis en valeur sur le diagramme ; les durées sont des ordres de grandeur.'
@@ -180,19 +225,26 @@ export function SimulationFluorescence() {
     </div>);
   const pilules = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['spectres', 'Les spectres']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, onglet: k }))} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
+      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['spectres', 'Les spectres'], ['tirages', 'Tirages au hasard']].map(([k, l]) => <button key={k} onClick={() => { if (k !== 'tirages') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
     </div>);
   const voletScene = (
     <div style={styleBoite}>
       {pilules}
       {ex.onglet === 'diagramme' ? <SceneJablonski actif={aucun} durees/>
         : ex.onglet === 'temps' ? <><SceneJablonski actif={null} etat={M.etatDominant(mol, tE)}/><div style={{ height: 6 }}/><SceneEmission mol={mol} t={tE}/></>
+        : ex.onglet === 'tirages' ? <>{te.t.mode === 'emission' && <SceneVibronique mol={MT} dernier={te.t.etat.dernier}/>}{te.t.mode === 'emission' && <div style={{ height: 6 }}/>}<SceneHistogramme etat={te.t.etat} params={te.t} mol={MT} courbe={te.t.courbe}/></>
         : <SceneSpectresFluo mol={mol}/>}
     </div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      {ex.onglet === 'diagramme' ? (pr ? <>
+      {ex.onglet === 'tirages' ? <>
+        <LigneMesure nom="Photons envoyés" valeur={String(Ee.nEnv)}/><LigneMesure nom="Photons absorbés" valeur={`${Ee.nAbs}${Ee.nEnv ? ` (${fr(100 * Ee.nAbs / Ee.nEnv, 0)}${NB}%)` : ''}`}/>
+        <LigneMesure nom={excE ? 'Photons détectés' : 'Photons de fluorescence'} valeur={String(excE ? sommeExE : Ee.nFl)}/>
+        {!excE && MT.T && <LigneMesure nom="Photons de phosphorescence" valeur={String(Ee.nPh)}/>}
+        {!excE && Ee.nAbs >= 30 && <LigneMesure nom="Fluorescence détectée / photons absorbés" valeur={`${fr(100 * Ee.nFl / Ee.nAbs, 0)}${NB}%`}/>}
+        {!excE && <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, paddingTop: 6 }}><strong>Dernier photon : </strong>{X.texteEvenement(Ee.dernier, 'emission')}</div>}</>
+      : ex.onglet === 'diagramme' ? (pr ? <>
         <LigneMesure nom="Processus" valeur={pr.nom}/><LigneMesure nom="Durée typique" valeur={pr.duree}/>
         <LigneMesure nom="Photon émis ou absorbé" valeur={pr.radiatif ? 'oui' : 'non'}/><LigneMesure nom="Description" valeur={pr.desc}/></>
         : <LigneMesure nom="Processus" valeur="choisissez-en un"/>)
@@ -214,6 +266,9 @@ export function SimulationFluorescence() {
       <li>Après l’arrêt : avec la molécule A, à quel temps la lumière a-t-elle disparu ? Et avec la molécule B ?</li>
       <li>Après l’arrêt : avec B, cherchez l’intervalle de temps où l’on ne voit que la phosphorescence.</li>
       <li>Spectres : comparez les deux molécules. Laquelle perd le plus d’énergie avant d’émettre ?</li>
+      <li>Tirages (émission) : envoyez 1 000 photons à 350 nm, puis à 331 nm. Les spectres d’émission diffèrent-ils ? Pourquoi ?</li>
+      <li>Tirages : excitez à 375 nm, entre deux pics d’absorption. Que devient la part de photons absorbés ?</li>
+      <li>Tirages (excitation) : détectez à 450 nm, puis à 420 nm (molécule B) : comparez les spectres d’excitation obtenus.</li>
       <li>Spectres : la phosphorescence de B est-elle à une longueur d’onde plus petite ou plus grande que sa fluorescence ? Que dit le diagramme ?</li>
     </ul>);
   const retenirExplore = (
@@ -224,6 +279,8 @@ export function SimulationFluorescence() {
         <li>CIS : S₁ → T₁, changement de spin ; phosphorescence : T₁ → S₀, de 10⁻² à 10² s</li>
         <li>λ d’émission &gt; λ d’absorption : décalage vers les grandes longueurs d’onde</li>
         <li>E(eV) × λ(nm) ≈ 1243 : l’énergie perdue est la différence des énergies des deux photons</li>
+        <li>Spectre d’émission (λ d’excitation fixée) : les pics sont les retours vers les sous-niveaux de vibration de S₀ ; sa forme ne dépend pas de λ d’excitation</li>
+        <li>Spectre d’excitation (λ de détection fixée) : il a l’allure du spectre d’absorption</li>
       </ul>
     </ARetenir>);
   const hypotheses = (
@@ -232,13 +289,14 @@ export function SimulationFluorescence() {
       <li><strong>Molécules A et B</strong> : schématiques. Durées de vie : S₁ 5 ns (A) ou 2 ns (B) ; T₁ 1 s (B). Décroissance exponentielle, émission jugée visible au-dessus de 1 % de l’intensité initiale.</li>
       <li><strong>Énergies</strong> : E(eV) × λ(nm) = 1243 (constantes arrondies). L’énergie du photon émis est assimilée à un écart entre niveaux, en négligeant la relaxation vibrationnelle dans l’état d’arrivée.</li>
       <li><strong>Spectres</strong> : allures gaussiennes schématiques, de largeur arbitraire ; les intensités relatives ne sont pas à l’échelle.</li>
-      <li><strong>Hors modèle</strong> : désactivation non radiative S₁ → S₀, extinction de fluorescence (quenching), rendement quantique, règles de sélection détaillées.</li>
+      <li><strong>Tirages</strong> : modèle vibronique schématique à 5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon à l’absorption et à l’émission (spectres en image miroir) ; écart entre sous-niveaux 0,20 eV (A) ou 0,15 eV (B) ; raies élargies de 0,05 eV ; molécule initialement au niveau v = 0 de S₀ ; relaxation vibrationnelle complète avant émission (règle de Kasha) ; probabilité d’absorption au sommet d’une raie : 90 % ; rendements fixés (A : 70 % de fluorescence ; B : 15 % de fluorescence, 60 % de croisement intersystème, puis 55 % de phosphorescence). Les nombres de photons sont des tirages aléatoires : deux séries ne donnent jamais exactement le même spectre.</li>
+      <li><strong>Hors modèle</strong> : désactivation non radiative S₁ → S₀ détaillée, extinction de fluorescence (quenching), effets de solvant, règles de sélection détaillées.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
   const mesuresGuide = enGuide && lignesGuide.length > 0 && (
     <div style={{ ...styleBoite, ...cadre('mesures') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      {lignesGuide.map(([n, v]) => <LigneMesure key={n} nom={n} valeur={v}/>)}
+      {lignesGuide.map(([n, v]) => n === 'Dernier photon' ? <div key={n} style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, paddingTop: 6 }}><strong>Dernier photon : </strong>{v}</div> : <LigneMesure key={n} nom={n} valeur={v}/>)}
     </div>);
   const sceneBloc = sceneGuide && <div style={{ ...styleBoite, ...cadre('scene') }}>{sceneGuide}</div>;
 

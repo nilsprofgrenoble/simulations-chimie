@@ -30,3 +30,17 @@ export const QCM = {
     'de la relaxation vibrationnelle, qui émet de la lumière visible',
     'de l’absorption, qui se poursuit après l’arrêt'),
 };
+Object.assign(QCM, {
+  raies: mk(3, 'un retour de S₁ vers un autre sous-niveau de S₀',
+    'un photon émis par une molécule d’un autre type',
+    'une absorption vers un sous-niveau de vibration de S₂',
+    'un croisement intersystème vers un sous-niveau de T₁'),
+  kasha: mk(1, 'garde la même forme et les mêmes positions des pics',
+    'se décale de la même quantité que la longueur d’onde d’excitation',
+    'change de forme : les pics les plus hauts ne sont plus les mêmes',
+    'disparaît dès qu’on s’écarte du maximum d’absorption'),
+  tirex: mk(0, 'au spectre d’absorption, avec les mêmes pics',
+    'au spectre d’émission, avec des pics vers 450 nm et au-delà',
+    'à une droite horizontale : tous les photons comptent pareil',
+    'à un pic unique à 450 nm, la longueur d’onde de détection'),
+});
