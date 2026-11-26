@@ -39,3 +39,10 @@ export const tirageDefiBande = rnd => {
   const choix = [...opts, l].sort((a, b) => a.id.localeCompare(b.id));
   return { kind: 'bande', l, sigma, choix };
 };
+// ---------- fréquence de vibration et animation ----------
+// ν = c·σ (σ en cm⁻¹ → m⁻¹ : × 100). L'animation est ralentie d'un facteur constant : 1 oscillation par seconde pour 1000 cm⁻¹.
+export const nuHz = sigma => CL * sigma * 100;
+export const periodeFs = sigma => 1e15 / nuHz(sigma);
+export const HZ_ANIM_PAR_CM = 1 / 1000;
+export const fAnim = sigma => sigma * HZ_ANIM_PAR_CM;
+export const ralenti = sigma => nuHz(sigma) / fAnim(sigma);

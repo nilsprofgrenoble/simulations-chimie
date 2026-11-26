@@ -1,28 +1,30 @@
 // Schémas de la simulation 304 « Infrarouge : de la liaison-ressort au spectre ». SVG, largeur 100 % plafonnée.
 import { K, T, svgStyle } from "./schemaOutils";
-import { transmittance } from "./hookModele";
+import { transmittance, sigmaHooke, masseReduite, fAnim } from "./hookModele";
+import { usePhase } from "./hookHorloge";
+import { COLA, rayon } from "./hookAtomes";
 
-const COLA = { H: '#e2e8f0', C: '#475569', N: '#2563eb', O: '#dc2626' };
 const carte = { display: 'block', width: '100%', maxWidth: 320, margin: '0 auto' };
 const frac = (x, y, n, d, o = {}) => [T(x, y - 4, n, { size: o.size ?? 14, ...o }), <line key={`f${x}${y}`} x1={x - 11} y1={y} x2={x + 11} y2={y} stroke={o.fill ?? K.txt} strokeWidth="1.4"/>, T(x, y + 14, d, { size: o.size ?? 14, ...o })];
 const racine = (x, y, w, h, c = K.txt) => <path key={`r${x}${y}`} d={`M${x},${y} l4,-3 l5,${h} l6,${-h - 6} h${w}`} fill="none" stroke={c} strokeWidth="1.5"/>;
-const rayon = m => 11 + 3.2 * Math.sqrt(m);
 
-// ---------- deux atomes reliés par un ressort ----------
-export function SceneRessort({ a, b, k = 500, vibre = true }) {
-  const ra = rayon(a.m), rb = rayon(b.m), xa = 90, xb = 250, ya = 70, ep = 1.2 + k / 500;
+// ---------- deux atomes reliés par un ressort (animé : 1 oscillation par seconde pour 1000 cm⁻¹, centre de masse immobile) ----------
+export function SceneRessort({ a, b, k = 500, vibre = true, anime = false }) {
+  const sig = sigmaHooke(k, masseReduite(a.m, b.m)), ph = usePhase(fAnim(sig), anime && vibre);
+  const ra = rayon(a.m), rb = rayon(b.m), xa0 = 90, xb0 = 250, ya = 70, ep = 1.2 + k / 500, tot = a.m + b.m;
+  const dep = vibre && anime ? 16 * Math.sin(ph) : 0, xa = xa0 - dep * b.m / tot, xb = xb0 + dep * a.m / tot;
   const x1 = xa + ra, x2 = xb - rb, n = 9, pts = []; for (let i = 0; i <= n; i++) pts.push(`${(x1 + (x2 - x1) * i / n).toFixed(1)},${(ya + (i % 2 ? 11 : -11) * (i === 0 || i === n ? 0 : 1)).toFixed(1)}`);
-  const atome = (x, r, at) => <g key={at.lab}><circle cx={x} cy={ya} r={r} fill={COLA[at.lab] ?? '#94a3b8'} stroke="#0f172a" strokeWidth="1.6"/>{T(x, ya + 5, at.lab, { size: 14, gras: true, fill: ['H'].includes(at.lab) ? K.txt : '#fff' })}{T(x, ya + r + 16, `${at.m} u`, { size: 12, fill: K.gris })}</g>;
+  const atome = (x, r, at) => <g><circle cx={x} cy={ya} r={r} fill={COLA[at.lab] ?? '#94a3b8'} stroke="#0f172a" strokeWidth="1.6"/>{T(x, ya + 5, at.lab, { size: 14, gras: true, fill: ['H'].includes(at.lab) ? K.txt : '#fff' })}{T(x, ya + r + 16, `${at.m} u`, { size: 12, fill: K.gris })}</g>;
   return (<svg role="img" aria-label="Deux atomes reliés par un ressort : modèle d'une liaison qui vibre" viewBox="0 0 340 150" width="100%" style={svgStyle}>
     <polyline points={pts.join(' ')} fill="none" stroke="#0f766e" strokeWidth={ep}/>{atome(xa, ra, a)}{atome(xb, rb, b)}
-    {vibre && <g>{T(xa - 2, 24, '←', { size: 18, fill: K.gris })}{T(xa + 26, 24, '→', { size: 18, fill: K.gris })}{T(xb - 26, 24, '←', { size: 18, fill: K.gris })}{T(xb + 2, 24, '→', { size: 18, fill: K.gris })}</g>}
+    {vibre && !anime && <g>{T(xa0 - 2, 24, '←', { size: 18, fill: K.gris })}{T(xa0 + 26, 24, '→', { size: 18, fill: K.gris })}{T(xb0 - 26, 24, '←', { size: 18, fill: K.gris })}{T(xb0 + 2, 24, '→', { size: 18, fill: K.gris })}</g>}
     {T(170, 138, `ressort de raideur k = ${k} N/m`, { size: 12.5, fill: '#0f766e', gras: true })}
   </svg>);
 }
 
 // ---------- spectre infrarouge en transmittance (σ décroissant de gauche à droite) ----------
 const SX0 = 30, SX1 = 330, S0 = 4000, S1 = 500, sx = s => SX0 + (S0 - s) / (S0 - S1) * (SX1 - SX0), sy = t => 150 - t * 110;
-export function SceneSpectreIR({ bandes, marque = null, etiquettes = [] }) {
+export function SceneSpectreIR({ bandes, marque = null, etiquettes = [], marqueLabel = null, marqueCouleur = '#dc2626' }) {
   let d = ''; for (let s = S0; s >= S1; s -= 6) d += `${d ? 'L' : 'M'}${sx(s).toFixed(1)},${sy(transmittance(bandes, s)).toFixed(1)}`;
   return (<svg role="img" aria-label="Spectre infrarouge schématique : transmittance en fonction du nombre d'onde" viewBox="0 0 340 196" width="100%" style={svgStyle}>
     <rect x={sx(1500)} y="36" width={sx(S1) - sx(1500)} height="114" fill="#fef3c7" opacity=".55"/>{T((sx(1500) + sx(S1)) / 2, 50, 'empreinte', { size: 11, fill: '#92400e' })}
@@ -31,7 +33,7 @@ export function SceneSpectreIR({ bandes, marque = null, etiquettes = [] }) {
     {T(SX1, 186, 'nombre d’onde σ (cm⁻¹)', { anchor: 'end', size: 11, fill: K.gris })}{T(SX0 + 4, 28, 'T', { size: 12, gras: true, anchor: 'start' })}
     <path d={d} fill="none" stroke="#1d4ed8" strokeWidth="2.2"/>
     {etiquettes.map(([s, txt, dy = 0, anc = 'middle']) => T(sx(s), sy(transmittance(bandes, s)) + 14 + dy, txt, { size: 11.5, gras: true, fill: '#0f172a', anchor: anc, halo: true }))}
-    {marque != null && <g><line x1={sx(marque)} y1="34" x2={sx(marque)} y2="150" stroke="#dc2626" strokeDasharray="4 3" strokeWidth="1.6"/>{T(sx(marque), 30, `${Math.round(marque)}`, { size: 12, gras: true, fill: '#dc2626' })}</g>}
+    {marque != null && <g><line x1={sx(marque)} y1="34" x2={sx(marque)} y2="150" stroke={marqueCouleur} strokeDasharray="4 3" strokeWidth="1.6"/>{T(sx(marque), 30, marqueLabel ?? `${Math.round(marque)}`, { size: 12, gras: true, fill: marqueCouleur })}</g>}
   </svg>);
 }
 
