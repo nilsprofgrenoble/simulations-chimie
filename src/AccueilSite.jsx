@@ -6,6 +6,7 @@ import { ACCENT } from "./theme";
 import { Pic } from "./Pictos";
 import { CHAPITRES as TOUS_CHAPITRES, NIVEAUX_CHAPITRES, SIMS_HORS_MENU } from "./chapitres";
 import { BarresCouverture, ResteACouvrir } from "./Couverture";
+import { RubriquesBTS } from "./RubriquesBTS";
 const CHAPITRES = TOUS_CHAPITRES.map(c => ({ ...c, sims: c.sims.filter(id => !SIMS_HORS_MENU.has(id)) })).filter(c => c.sims.length > 0);
 
 // ============================================================
@@ -99,9 +100,12 @@ function NiveauxParNiveau({ onStart, niveaux, classes, sansEmoji }) {
               {n.key === 'BTS' && <p className="ab-precis">Référentiel du BTS Métiers de la chimie ; utilisable en IUT selon vos programmes locaux.</p>}
               <p className="ab-nb">{nb} simulation{nb > 1 ? 's' : ''} · {chaps.length} chapitre{chaps.length > 1 ? 's' : ''}</p>
               <BarresCouverture niveau={n.key} />
-              <ul className="ab-puces">
-                {chaps.map(c => <li key={c.id}><button type="button" onClick={() => onStart(c.sims[0])}>{sansEmoji(c.label)}</button></li>)}
-              </ul>
+              {n.key === 'BTS'
+                ? <RubriquesBTS chaps={chaps} sansEmoji={sansEmoji} onStart={onStart} />
+                : (
+                  <ul className="ab-puces">
+                    {chaps.map(c => <li key={c.id}><button type="button" onClick={() => onStart(c.sims[0])}>{sansEmoji(c.label)}</button></li>)}
+                  </ul>)}
               <ResteACouvrir niveau={n.key} />
             </section>
           );
