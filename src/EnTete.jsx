@@ -102,7 +102,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
   ) : (
     <div key={k} style={{ minWidth: 0 }}>
       {g.label && <div style={{ fontSize: 14.5, fontWeight: 800, color: TXT, background: ACCENT_CLAIR, borderLeft: `4px solid ${VERT}`, borderRadius: 6, padding: '5px 10px', margin: '6px 0 4px', lineHeight: 1.3 }}><AvecPicto texte={g.label}/>{g.chap && <button data-page-chapitre-lien={g.chap} onClick={() => allerChap(g.chap)} title="Simulations et exercices d’entraînement de ce chapitre" style={{ display: 'block', marginTop: 3, padding: 0, border: 'none', background: 'none', cursor: 'pointer', color: VERT, fontWeight: 800, fontSize: 12.5, fontFamily: 'inherit', textDecoration: 'underline' }}><span aria-hidden="true">📚</span> Page du chapitre : simulations + exercices <span aria-hidden="true">▶</span></button>}</div>}
-      {g.avenirItems ? avenirListe(g) : g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}{(g.jeux || []).filter(id => jeuOuvert(id, !!profil?.admin) && JEUX_CATALOGUE[id]).map(id => lienSim({ id, icon: JEUX_CATALOGUE[id].icone, label: `${JEUX_CATALOGUE[id].nom} (jeu)`, desc: JEUX_CATALOGUE[id].accroche }))}</div>}
+      {g.avenirItems ? avenirListe(g) : g.contenu ? <div style={{ marginLeft: g.label ? 8 : 0 }}>{g.contenu({ aller })}</div> : <div style={{ display: 'flex', flexDirection: 'column', marginLeft: g.label ? 8 : 0 }}>{g.sims.map(s => lienSim(s))}{(g.plusLoin || []).length > 0 && <details data-plus-loin open={g.plusLoin.some(x => x.id === activeId) || undefined} style={{ marginTop: 2 }}><summary style={{ cursor: 'pointer', fontSize: 13, fontWeight: 700, color: TXT2, padding: '6px 10px', minHeight: 44, boxSizing: 'border-box', display: 'flex', alignItems: 'center' }}>▸ 🚀 Pour aller plus loin ({g.plusLoin.length})</summary>{g.plusLoin.map(s => lienSim(s))}</details>}{(g.jeux || []).filter(id => jeuOuvert(id, !!profil?.admin) && JEUX_CATALOGUE[id]).map(id => lienSim({ id, icon: JEUX_CATALOGUE[id].icone, label: `${JEUX_CATALOGUE[id].nom} (jeu)`, desc: JEUX_CATALOGUE[id].accroche }))}</div>}
     </div>
   );
   // Les rubriques (intitulés « entete ») se replient : on découpe la liste à plat en sections « intitulé + chapitres qui suivent »
@@ -118,7 +118,7 @@ export function EnTete({ menus, simulations, activeId, niveauActif, naviguer, se
       const cle = `${m.key}|${sec.entete}`;
       const nbSims = sec.groupes.reduce((n, g) => n + (g.sims?.length || 0) + (g.avenirItems?.length || 0), 0);
       const avenir = sec.groupes.some(g => g.avenirItems);
-      const contientActif = sec.groupes.some(g => g.sims?.some(x => x.id === activeId));
+      const contientActif = sec.groupes.some(g => g.sims?.some(x => x.id === activeId) || g.plusLoin?.some(x => x.id === activeId));
       const deplie = rubriquesOuvertes[cle] ?? contientActif;
       return [
         <div key={`${cle}-t`} role="heading" aria-level={3} style={{ gridColumn: '1 / -1', borderBottom: `2px solid ${BORD}`, marginTop: i ? 8 : 0 }}>
