@@ -28,7 +28,6 @@ export const pct = x => 100 * x;
 export const predominante = (pH, pKa) => (Math.abs(pH - pKa) < 1e-9 ? 'egal' : pH < pKa ? 'AH' : 'A');
 // concentrations des deux formes pour une concentration totale C du couple
 export const concBase = (C, pH, pKa) => C * fracBase(pH, pKa);
-export const concAcide = (C, pH, pKa) => C * fracAcide(pH, pKa);
 // pH auquel la fraction de forme basique vaut p (0 < p < 1) : [A⁻]/[AH] = p/(1−p)
 export const pHPourFraction = (p, pKa) => pKa + Math.log10(p / (1 - p));
 // courbes du diagramme de distribution

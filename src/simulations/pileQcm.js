@@ -12,7 +12,7 @@ export const QCM_PARCOURS = {
     'pour que les deux solutions gardent la même concentration',
     'pour que le voltmètre mesure la tension de chaque bécher seul'], bonne: 0 },
   pont: { options: [
-    'il ferme le circuit : des ions s’y déplacent, pas des électrons',
+    'il ferme le circuit : des ions s’y déplacent, mais pas des électrons',
     'il transporte les électrons d’un bécher à l’autre, par la solution',
     'il fournit l’énergie de la pile grâce aux ions K⁺ et NO₃⁻ qu’il contient',
     'il mélange lentement les deux solutions pour qu’elles réagissent'], bonne: 0 },
@@ -33,7 +33,7 @@ export const QCM_PARCOURS = {
     'les électrons traversent le pont salin du bécher du zinc vers celui du cuivre',
     'aucun ion ne bouge : le pont salin sert seulement à séparer les deux béchers'], bonne: 0 },
   usure: { options: [
-    'les ions Cu²⁺ sont épuisés : Q_r a atteint K',
+    'les ions Cu²⁺ sont épuisés : le quotient Q_r a atteint K',
     'la lame de zinc est entièrement consommée par la réaction',
     'le pont salin s’est vidé de tous ses ions K⁺ et NO₃⁻',
     'les électrons de la lame de cuivre sont tous partis'], bonne: 0 },
