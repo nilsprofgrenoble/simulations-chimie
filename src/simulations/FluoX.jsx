@@ -6,7 +6,7 @@ import * as M from "./frxModele";
 import { QCM } from "./frxQcm";
 import { SceneAtomeAnim, SceneHistoX, CommandesTirages } from "./FrxTirages";
 import { useTiragesX, useProgres } from "./frxTiragesHook";
-import { texteAtome } from "./frxTirages";
+import { texteAtome, legendePhase } from "./frxTirages";
 import { SceneAtome, SceneSpectreX, SceneEtalonnage, SceneAppareil, SvgCarteTransitions, SvgCarteMoseley, SvgCarteBilanFrx } from "./FrxSchemas";
 
 const SIM_ID = 302, CLE_GUIDE = 'frx-guide-v1';
@@ -39,7 +39,7 @@ export function SimulationFluoX() {
   const [vie, setVie] = useState(() => ({ ...BASE }));
   const [ex, setEx] = useState({ onglet: 'atome', el: 'Fe', E: 9, ech: 'laiton', raie: 'Cu' });
   const [ouv, setOuv] = useState({});
-  const tir = useTiragesX(), progT = useProgres(tir.t.etat.nEnv, tir.t.vitesse === 'lent' ? 2400 : 1200, tir.anime);
+  const tir = useTiragesX(), progT = useProgres(tir.t.etat.nEnv * 1000 + tir.rejeu % 1000, tir.t.vitesse === 'lent' ? 4500 : 2800, tir.anime);
   const [suiviE, noterE] = useCompteurDefi(), [suiviD, noterD] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('element');
   const enGuide = mode === 'guide', enExplore = mode === 'explore', enDefi = mode === 'defi';
@@ -201,6 +201,7 @@ export function SimulationFluoX() {
     <div style={styleBoite}>
       {pilules}
       {ex.onglet === 'tirages' ? <>
+        <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#4c1d95', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{tir.t.etat.lot > 1 ? 'Lot de plusieurs atomes : voici le dernier.' : legendePhase(tir.t.etat.dernier, progT)}</div>
         <SceneAtomeAnim d={tir.t.etat.dernier} p={progT}/>
         <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{tir.t.etat.lot > 1 ? `Dernier atome du lot : ${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.` : `${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.`}</div>
         <SceneHistoX etat={tir.t.etat} params={tir.t} el={tir.el} courbe={tir.t.courbe}/><div style={{ marginTop: 10 }}><CommandesTirages tir={tir}/></div></>
