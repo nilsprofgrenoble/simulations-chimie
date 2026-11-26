@@ -3509,6 +3509,52 @@ function genNwrFrott() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['ΣF = m a ; sur l’axe horizontal, ΣF = F − f.', 'Sans frottement, toute la poussée sert à accélérer le chariot : a = F ÷ m.'] };
 }
+function genFviVlim() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, k, Pw, vl, f2;
+  do { m = tire([1.0, 2.0, 2.5, 4.0, 5.0]); k = tire([2.0, 2.5, 4.0, 5.0, 8.0]); Pw = m * 9.8; vl = Pw / k; f2 = Pw / 2; }
+  while (new Set([Pw, vl, f2].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un objet de masse ${fr(m.toFixed(1))}${NB}kg est lâché sans vitesse dans un fluide visqueux. Le frottement vaut f = k v avec k = ${fr(k.toFixed(1))}${NB}kg/s ; g = 9,8${NB}N/kg ; on néglige la poussée d’Archimède.`;
+  const q1 = { id: 'v0', type: 'num', q: <>Quelle est la <b>valeur du poids</b> de l’objet (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: Pw, tolRel: 0.05, csMin: 2,
+    aide: 'P = m g, avec m en kg et g = 9,8 N/kg.',
+    pieges: [[m / 9.8, 'On multiplie la masse par g : P = m g.']],
+    expl: <>P = m g = {fr(m.toFixed(1))} × 9,8 = <b>{pvFmt(Pw)}{NB}N</b>.</> };
+  const q2 = { id: 'v1', type: 'num', q: <>Quelle est la <b>vitesse limite</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vl, tolRel: 0.05, csMin: 2,
+    aide: 'En régime permanent f = P : k v_lim = m g, donc v_lim = m g ÷ k.',
+    pieges: [[m / k, 'C’est la constante de temps m ÷ k : il manque g, v_lim = m g ÷ k.'], [Pw * k, 'On divise par k : v_lim = m g ÷ k.']],
+    expl: <>v_lim = m g ÷ k = {pvFmt(Pw)} ÷ {fr(k.toFixed(1))} = <b>{pvFmt(vl)}{NB}m/s</b>.</> };
+  const q3 = { id: 'v2', type: 'num', q: <>À un instant du régime transitoire, la vitesse vaut la moitié de la vitesse limite. Quelle est alors la <b>valeur du frottement</b> (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: f2, tolRel: 0.05, csMin: 2,
+    aide: 'f = k v : si v est divisée par 2, f est la moitié de f = P (valeur en régime permanent).',
+    pieges: [[Pw, 'C’est la valeur en régime permanent (v = v_lim) : ici la vitesse est la moitié.']],
+    expl: <>f = k v = {fr(k.toFixed(1))} × {pvFmt(vl / 2)} = <b>{pvFmt(f2)}{NB}N</b> (la moitié du poids).</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Régime permanent : f = P, soit k v_lim = m g, donc v_lim = m g ÷ k.', 'f = k v : le frottement est proportionnel à la vitesse.'] };
+}
+function genFviTau() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, k, tau, t5, v63;
+  do { m = tire([1.0, 2.0, 2.5, 4.0, 5.0]); k = tire([2.0, 2.5, 4.0, 5.0, 8.0]); tau = m / k; t5 = 5 * tau; v63 = 0.63 * m * 9.8 / k; }
+  while (new Set([tau, t5, v63].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un objet de masse ${fr(m.toFixed(1))}${NB}kg est lâché sans vitesse dans un fluide visqueux. Le frottement vaut f = k v avec k = ${fr(k.toFixed(1))}${NB}kg/s ; g = 9,8${NB}N/kg ; on néglige la poussée d’Archimède.`;
+  const q1 = { id: 't0', type: 'num', q: <>Quelle est la <b>constante de temps</b> τ (en s, 2 chiffres significatifs) ?</>, unite: 's', vrai: tau, tolRel: 0.05, csMin: 2,
+    aide: 'τ = m ÷ k, avec m en kg et k en kg/s.',
+    pieges: [[k / m, 'Le quotient est inversé : τ = m ÷ k.']],
+    expl: <>τ = m ÷ k = {fr(m.toFixed(1))} ÷ {fr(k.toFixed(1))} = <b>{pvFmt(tau)}{NB}s</b>.</> };
+  const q2 = { id: 't1', type: 'num', q: <>On considère le régime permanent atteint au bout de 5 τ. Quelle est la <b>durée du régime transitoire</b> (en s, 2 chiffres significatifs) ?</>, unite: 's', vrai: t5, tolRel: 0.05, csMin: 2,
+    aide: 'Durée ≈ 5 τ.',
+    pieges: [[tau, 'C’est τ : la durée du régime transitoire est 5 τ.']],
+    expl: <>5 τ = 5 × {pvFmt(tau)} = <b>{pvFmt(t5)}{NB}s</b>.</> };
+  const q3 = { id: 't2', type: 'num', q: <>Quelle est la <b>vitesse à la date t = τ</b> (en m/s, 2 chiffres significatifs) ? À cette date, la vitesse atteint 63 % de la vitesse limite.</>, unite: 'm/s', vrai: v63, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez v_lim = m g ÷ k, puis multipliez par 0,63.',
+    pieges: [[m * 9.8 / k, 'C’est v_lim : à t = τ la vitesse n’atteint que 63 % de v_lim.']],
+    expl: <>v_lim = {fr(m.toFixed(1))} × 9,8 ÷ {fr(k.toFixed(1))} = {pvFmt(m * 9.8 / k)} m/s ; v(τ) = 0,63 × {pvFmt(m * 9.8 / k)} = <b>{pvFmt(v63)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['τ = m ÷ k ; le régime permanent est atteint au bout d’environ 5 τ.', 'À t = τ, la vitesse atteint 63 % de la vitesse limite v_lim = m g ÷ k.'] };
+}
 function genClpSommet() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   const RAD = Math.PI / 180; let v0, a, vy, tS, H;
@@ -6349,6 +6395,8 @@ export const FAMILLES = [
   { id: 'nwr-frott', groupe: 'Formules', titre: 'Frottement d’après l’accélération mesurée : ΣF = m a (terminale STL)', gen: genNwrFrott, domaine: 'Bilan des forces et lois de Newton' },
   { id: 'clp-sommet', groupe: 'Formules', titre: 'Chute libre plane : composante verticale, durée de la montée et hauteur maximale (terminale STL)', gen: genClpSommet, domaine: 'Chute libre plane' },
   { id: 'clp-portee', groupe: 'Formules', titre: 'Chute libre plane : vitesse horizontale, durée du vol et portée (terminale STL)', gen: genClpPortee, domaine: 'Chute libre plane' },
+  { id: 'fvi-vlim', groupe: 'Formules', titre: 'Chute avec frottement visqueux : poids, vitesse limite et frottement (terminale STL)', gen: genFviVlim, domaine: 'Chute avec frottement visqueux' },
+  { id: 'fvi-tau', groupe: 'Formules', titre: 'Chute avec frottement visqueux : constante de temps et régime transitoire (terminale STL)', gen: genFviTau, domaine: 'Chute avec frottement visqueux' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

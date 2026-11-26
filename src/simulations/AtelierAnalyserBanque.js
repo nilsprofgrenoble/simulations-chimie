@@ -7,6 +7,7 @@ import { FLP_ANA } from './flipperExos.js';
 import { PXT_ANA } from './penteXtExos.js';
 import { GRV_ANA } from './gravitationExos.js';
 import { CEL_ANA } from './champElecExos.js';
+import { FVI_ANA } from './chuteVisqueuseExos.js';
 import { CLP_ANA } from './chutePlaneExos.js';
 import { NWR_ANA } from './newtonRectExos.js';
 import { MTR_ANA } from './modesTransfertExos.js';
@@ -6935,6 +6936,7 @@ export const PREVOIR = [
   ...CEL_ANA,
   ...NWR_ANA,
   ...CLP_ANA,
+  ...FVI_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,
