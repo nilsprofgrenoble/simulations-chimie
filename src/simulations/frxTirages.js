@@ -30,6 +30,7 @@ export function lancer(etat, el, params, k, rnd) {
     if (a.voie === 'ka' || a.voie === 'kb') { if (a.voie === 'ka') e.nKa++; else e.nKb++; const i = indice(a.Edet); if (i >= 0) e.h[i]++; }
     e.dernier = a;
   }
+  e.lotRes = { n: e.nEnv - etat.nEnv, ion: e.nIon - etat.nIon, ka: e.nKa - etat.nKa, kb: e.nKb - etat.nKb, auger: e.nAuger - etat.nAuger };
   return e;
 }
 // Comptes attendus par case (pour la courbe de comparaison) : nEnv atomes irradiés

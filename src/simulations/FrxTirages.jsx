@@ -76,7 +76,7 @@ export function SceneHistoX({ etat, params, el, courbe = false }) {
 }
 
 export function CommandesTirages({ tir }) {
-  const b = k => <button key={k} onClick={() => { tir.setLecture(false); tir.lancer(k); }} disabled={tir.plein} style={{ ...styleBouton(false), opacity: tir.plein ? 0.5 : 1 }}>{k === 1 ? '1 atome' : `× ${k}`}</button>;
+  const b = k => <button key={k} onClick={() => { tir.setLecture(false); tir.lancer(k); }} disabled={tir.plein} style={{ ...styleBouton(false), opacity: tir.plein ? 0.5 : 1 }}>{k === 1 ? '1 atome (animé)' : `× ${k}`}</button>;
   const vit = [['lent', 'Lent'], ['normal', 'Normal'], ['rapide', 'Rapide']];
   return (<div>
     <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Irradier des atomes</div>

@@ -30,4 +30,5 @@ ok(e.nIon > 0 && eA.nKa + eA.nKb < e.nKa + e.nKb, 'moins de photons X avec Al');
 // plafond et texte
 ok(T.lancer(e, Fe, { E: 9, w: 100 }, 100000, mulberry(6)).nEnv === T.MAX_ATOMES, 'plafond');
 ok(/seuil/.test(T.texteAtome({ cible: true, ion: false }, Fe, 5)) && /Auger/.test(T.texteAtome({ cible: true, ion: true, voie: 'auger' }, Fe, 9)) && /Kα/.test(T.texteAtome({ cible: true, ion: true, voie: 'ka', Edet: 6.41 }, Fe, 9)));
+{ const l = T.lancer(T.etatVide(), Fe, { E: 9, w: 100 }, 10, mulberry(7)); ok(l.lotRes.n === 10 && l.lotRes.ion === l.nIon && l.lotRes.ion >= l.lotRes.ka + l.lotRes.kb + l.lotRes.auger - 0 && l.lotRes.ka + l.lotRes.kb + l.lotRes.auger === l.lotRes.ion, 'résumé du lot'); }
 console.log('Tirages sim 302 :', n, 'vérifications réussies.');
