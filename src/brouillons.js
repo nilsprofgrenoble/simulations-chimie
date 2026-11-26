@@ -7,9 +7,9 @@
 // Module pur (aucune dépendance au navigateur) : lu par l'application, par vite.config.js (pages statiques, plan du site),
 // par scripts/catalogue.mjs et par le test src/brouillons.test.mjs.
 
-// Jeux (escape games, histoires à choix, jeux d'arcade) : 79 Kepler, 80 Aqua, 81 Une journée au labo, 290 Laser Maze, 291 Service en cuisine : dilutions.
+// Jeux (escape games, histoires à choix, jeux d'arcade) : 79 Kepler, 80 Aqua, 81 Une journée au labo, (290 Laser Maze et 291 Urgence au labo : dilutions ont été publiés le 26/11/2026.)
 // Leur interrupteur général est dans src/simulations/jeuxVisibles.js (le jeu 113, Percutaféine, y est ouvert à tous exprès).
-export const JEUX_BROUILLON = [79, 80, 81, 290, 291];
+export const JEUX_BROUILLON = [79, 80, 81];
 
 // Outils (menu « Outils », visible du seul administrateur) : 124 Grapheur de mesures.
 export const OUTILS_BROUILLON = [124];
