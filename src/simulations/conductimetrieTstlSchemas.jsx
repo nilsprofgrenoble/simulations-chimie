@@ -5,6 +5,7 @@
 //  Scène : viewBox de 400, textes de 13 à 20. Cartes « À retenir » : viewBox de 400, police ≥ 16.
 // ====================================================
 import { IONS, V_BURETTE, quantites } from './conductimetrieTstlModele';
+import { SceneBecher } from './sceneBecher';
 
 const COL = { bleu: '#0369a1', vert: '#15803d', orange: '#b45309', rouge: '#b91c1c', violet: '#7c3aed', gris: '#64748b', txt: '#0f172a', turq: '#0d9488' };
 const stl = { width: '100%', maxWidth: 440, height: 'auto', display: 'block', margin: '0 auto 6px', background: 'white', borderRadius: 8 };
@@ -25,8 +26,6 @@ const Pt = ({ x, y, couleur, signe, r = 6.2 }) => { const a = r * 0.5, w = Math.
   return (<g><circle cx={x} cy={y} r={r} fill={couleur} stroke="#fff" strokeWidth="0.8"/>
     <line x1={x - a} y1={y} x2={x + a} y2={y} stroke="#fff" strokeWidth={w}/>{signe > 0 && <line x1={x} y1={y - a} x2={x} y2={y + a} stroke="#fff" strokeWidth={w}/>}</g>); };
 
-const Cadre = ({ actif, x, y, w, h }) => (actif ? <rect x={x} y={y} width={w} height={h} rx="8" fill="none" stroke="#f59e0b" strokeWidth="3" strokeDasharray="7 5"/> : null);
-
 // ---------- scène animée du titrage ----------
 //  cA : concentration en Cl⁻ de la prise d'essai ; VB : volume versé ; ouvert : le robinet goutte ; lecture : texte du conductimètre (null : « — »)
 //  montrer : { ions, precipite, cellule } pour la progressivité ; hl(id) pour les encadrés orange
@@ -43,61 +42,22 @@ export function SceneTitrage({ cA, VB, cation = 'Na', ouvert = false, lecture = 
     for (let i = 0; i < Math.min(nbAg, 10); i++) dots.push({ k: 'a' + i, p: place('cl', i), coul: IONS.Ag.couleur, sg: 1, r: 5.6 });
     for (let i = 0; i < Math.min(nbNO3, 13); i++) dots.push({ k: 'n' + i, p: place('no3', i), coul: IONS.NO3.couleur, sg: -1, r: 7.4 });
   }
-  const yB0 = 44, pasB = 3.1, yNiv = yB0 + pasB * Math.min(VB, V_BURETTE);
+  const contenu = <g>
+    {dots.map(d => <Pt key={d.k} x={d.p[0]} y={d.p[1]} couleur={d.coul} signe={d.sg} r={d.r}/>)}
+    {precipite && GRAINS.slice(0, nbPrec).map(([x, y], i) => <circle key={i} cx={x} cy={y} r="6.4" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1.6"/>)}
+  </g>;
+  const leg = ions ? [
+    { f: IONS[cation].f, rendu: (x, y) => <Pt x={x} y={y} couleur={IONS[cation].couleur} signe={1} r={6}/> },
+    { f: 'Cl⁻', rendu: (x, y) => <Pt x={x} y={y} couleur={IONS.Cl.couleur} signe={-1} r={7.4}/> },
+    { f: 'NO₃⁻', rendu: (x, y) => <Pt x={x} y={y} couleur={IONS.NO3.couleur} signe={-1} r={7.4}/> },
+    { f: 'Ag⁺', rendu: (x, y) => <Pt x={x} y={y} couleur={IONS.Ag.couleur} signe={1} r={6}/> },
+    { f: 'AgCl(s)', rendu: (x, y) => <circle cx={x} cy={y} r="6.4" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1.6"/> }] : [];
+  const etiqPrec = precipite && nbPrec > 0 && <g><line x1="318" y1="446" x2="394" y2="452" stroke="#94a3b8" strokeDasharray="3 3"/><text x="398" y="458" fontSize="17" fontWeight="700" fill={COL.txt}>AgCl(s)</text></g>;
   return (
-    <svg viewBox="0 0 400 352" style={{ ...stl, maxWidth: 480 }} role="img"
-      aria-label={`Montage du titrage : burette contenant la solution de nitrate d’argent, bécher agité contenant la solution de chlorure${cellule ? ', cellule de conductimétrie reliée à un conductimètre' : ''}. Équation de la réaction : Ag+ + Cl- donne AgCl solide.${lecture ? ` Le conductimètre affiche ${lecture}.` : ''}`}>
-      {/* équation de la réaction, toujours visible */}
-      <rect x="60" y="4" width="280" height="30" rx="8" fill="#f5f3ff" stroke="#c4b5fd" strokeWidth="2"/>
-      <text x="200" y="26" fontSize="19" fontWeight="700" textAnchor="middle" fill={COL.txt}>Ag⁺ + Cl⁻ → AgCl(s)</text>
-      {/* burette */}
-      <rect x="150" y={yB0 - 6} width="16" height="84" rx="2" fill="#fff" stroke="#475569" strokeWidth="2"/>
-      <rect x="151" y={yNiv} width="14" height={yB0 + 78 - yNiv} fill="#e9d5ff"/>
-      {[0, 10, 20].map(v => <g key={v}><line x1="166" y1={yB0 + pasB * v} x2="172" y2={yB0 + pasB * v} stroke="#475569" strokeWidth="1.5"/><text x="176" y={yB0 + pasB * v + 5} fontSize="13" fill={COL.txt}>{v}</text></g>)}
-      <path d="M153 122 L163 122 L160 134 L156 134 Z" fill="#475569"/>
-      <rect x="154" y="128" width="8" height="5" rx="1" fill={ouvert ? '#16a34a' : '#dc2626'}/>
-      {ouvert && anime && [0, 1, 2].map(k => <circle key={k} cx="158" cy="140" r="2.8" fill="#c4b5fd"><animate attributeName="cy" from="138" to="172" dur="0.5s" begin={`${k * 0.17}s`} repeatCount="indefinite"/></circle>)}
-      {ouvert && !anime && <circle cx="158" cy="150" r="2.8" fill="#c4b5fd"/>}
-      <text x="8" y="56" fontSize="15" fontWeight="700" fill={COL.violet}>burette :</text>
-      <text x="8" y="74" fontSize="15" fontWeight="700" fill={COL.violet}>Ag⁺ + NO₃⁻</text>
-      <text x="8" y="92" fontSize="14" fill={COL.txt}>5,0×10⁻² mol/L</text>
-      <text x="8" y="116" fontSize="14" fill={COL.txt}>versé :</text><text x="8" y="134" fontSize="15" fontWeight="700" fill={COL.txt}>{fr(VB)} mL</text>
-      {/* conductimètre et cellule */}
-      {cellule && <g>
-        <rect x="266" y="44" width="128" height="60" rx="8" fill="#e2e8f0" stroke="#64748b" strokeWidth="2"/>
-        <rect x="274" y="50" width="112" height="28" rx="4" fill="#0f172a"/>
-        <text x="330" y="71" fontSize="18" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="monospace">{lecture || '— — —'}</text>
-        <text x="330" y="96" fontSize="14" textAnchor="middle" fill={COL.txt}>conductimètre</text>
-        <path d="M266 80 Q240 90 240 130" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round"/>
-        <rect x="233" y="128" width="14" height="96" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="2"/>
-        <rect x="236" y="206" width="3" height="22" fill="#94a3b8"/><rect x="241" y="206" width="3" height="22" fill="#94a3b8"/>
-        <text x="306" y="148" fontSize="14" fill={COL.txt}>cellule</text>
-        <line x1="296" y1="144" x2="250" y2="152" stroke="#94a3b8" strokeDasharray="3 3"/></g>}
-      {/* bécher */}
-      <path d="M95 150 L95 296 Q95 302 101 302 L259 302 Q265 302 265 296 L265 150" fill="none" stroke="#475569" strokeWidth="3"/>
-      <path d="M98 172 L98 296 Q98 299 101 299 L259 299 Q262 299 262 296 L262 172 Z" fill="#dbeafe" opacity="0.7"/>
-      {/* ions */}
-      {dots.map(d => <Pt key={d.k} x={d.p[0]} y={d.p[1]} couleur={d.coul} signe={d.sg} r={d.r}/>)}
-      {/* précipité */}
-      {precipite && GRAINS.slice(0, nbPrec).map(([x, y], i) => <circle key={i} cx={x} cy={y} r="6.4" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1.6"/>)}
-      {precipite && nbPrec > 0 && <g><line x1="268" y1="284" x2="222" y2="286" stroke="#94a3b8" strokeDasharray="3 3"/><text x="272" y="290" fontSize="14" fontWeight="700" fill={COL.txt}>AgCl(s)</text></g>}
-      {/* agitateur magnétique */}
-      <rect x="170" y="291" width="24" height="6" rx="3" fill="#fff" stroke="#64748b" strokeWidth="1.5">
-        {anime && <animateTransform attributeName="transform" type="rotate" from="0 182 294" to="360 182 294" dur="0.9s" repeatCount="indefinite"/>}</rect>
-      <rect x="88" y="304" width="184" height="16" rx="5" fill="#e2e8f0" stroke="#64748b" strokeWidth="1.5"/>
-      <text x="180" y="316" fontSize="13" textAnchor="middle" fill={COL.txt}>agitateur magnétique</text>
-      {/* légende */}
-      {ions && <g fontSize="14" fill={COL.txt}>
-        <circle cx="14" cy="338" r="5.2" fill={IONS[cation].couleur}/><text x="24" y="343">{IONS[cation].f}</text>
-        <circle cx="76" cy="338" r="6.4" fill={IONS.Cl.couleur}/><text x="87" y="343">Cl⁻</text>
-        <circle cx="132" cy="338" r="6.4" fill={IONS.NO3.couleur}/><text x="143" y="343">NO₃⁻</text>
-        <circle cx="200" cy="338" r="5.2" fill={IONS.Ag.couleur}/><text x="210" y="343">Ag⁺</text>
-        <circle cx="258" cy="338" r="6" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1.6"/><text x="269" y="343">AgCl(s)</text></g>}
-      <Cadre actif={hl('burette')} x={144} y={34} w={50} h={104}/>
-      <Cadre actif={hl('becher')} x={88} y={148} w={184} h={158}/>
-      <Cadre actif={hl('cellule')} x={226} y={120} w={28} h={112}/>
-      <Cadre actif={hl('lecture')} x={262} y={40} w={136} h={68}/>
-    </svg>);
+    <SceneBecher Vmax={V_BURETTE} V={VB} ouvert={ouvert} anime={anime} hl={hl} legende={leg} extra={etiqPrec}
+      aria={`Montage du titrage : burette contenant la solution de nitrate d’argent, bécher agité contenant la solution de chlorure${cellule ? ', cellule de conductimétrie reliée à un conductimètre' : ''}. Équation de la réaction : Ag+ + Cl- donne AgCl solide.`}
+      burette={{ lignes: [{ t: 'burette :', gras: true, coul: COL.violet }, { t: 'Ag⁺ + NO₃⁻', gras: true, coul: COL.violet }, { t: '5,0×10⁻² mol/L' }, { t: `versé : ${fr(VB)} mL`, gras: true }] }}
+      zone={{ x: 98, y: 172, w: 164, h: 127 }} ions={contenu} cellule={cellule ? { lecture } : null} equation="Ag⁺ + Cl⁻ → AgCl(s)"/>);
 }
 
 // ---------- graphique σ = f(V) du titrage ----------
