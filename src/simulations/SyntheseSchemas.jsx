@@ -1,5 +1,5 @@
 // Schémas de la simulation « Synthèse additive et synthèse soustractive ». SVG, textes de 10,5 à 16, largeur 100 % plafonnée.
-import { LAMBDAS, CONES, spectreRVB, transmittance, C } from "./synthCouleurModele";
+import { LAMBDAS, CONES, spectreRVB, C } from "./synthCouleurModele";
 
 const K = { txt: '#0f172a', gris: '#64748b', clair: '#cbd5e1', violet: '#7c3aed', orange: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1d4ed8' };
 const T = (x, y, s, o = {}) => <text key={`${x}-${y}-${s}`} x={x} y={y} fontSize={o.size ?? 12} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? K.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit" stroke={o.halo ? '#fff' : 'none'} strokeWidth={o.halo ? 3 : 0} paintOrder="stroke">{s}</text>;
@@ -86,8 +86,6 @@ export function BarresCones({ a, b, nomA = 'lumière 1', nomB = 'lumière 2', ym
 }
 
 // ---------- Cartes « À retenir » ----------
-const flecheDef = <defs><marker id="syn-fl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0f172a"/></marker></defs>;
-const fleche = (x1, y1, x2, y2) => <line key={`f${x1}${y1}`} x1={x1} y1={y1} x2={x2} y2={y2} stroke="#0f172a" strokeWidth="2" markerEnd="url(#syn-fl)"/>;
 const mini = (v, col, x, y, w, h, key) => {   // petit spectre rempli (v : tableau sur LAMBDAS)
   const pts = v.slice(i400, i700 + 1), m = Math.max(...pts) || 1;
   const p = pts.map((u, i) => `${x + i / (pts.length - 1) * w},${y + h - u / m * h}`);
@@ -105,39 +103,7 @@ export function SvgCarteCones() {
       {T(150, 86, 'mêmes réponses L, M, S : même couleur', { size: 13, gras: true, fill: K.orange })}
     </svg></div>;
 }
-/** Synthèse additive : on ajoute des lumières ; primaires R, V, B ; complémentaires. */
-export function SvgCarteAdditive() {
-  const cols = ['#b91c1c', '#15803d', '#1d4ed8'], sp = [spectreRVB(1, 0, 0), spectreRVB(0, 1, 0), spectreRVB(0, 0, 1)];
-  return <svg role="img" aria-label="Synthèse additive : les spectres de trois lampes s'ajoutent, l'œil ne garde que trois réponses" viewBox="0 0 300 258" width="100%" style={{ display: 'block', maxWidth: 320, margin: '0 auto' }}>
-    {flecheDef}
-    {T(150, 17, 'Synthèse additive : on ajoute des lumières', { size: 14, gras: true })}
-    {sp.map((s, k) => mini(s, cols[k], 12 + k * 98, 28, 80, 38, 'a' + k))}
-    {['rouge', 'verte', 'bleue'].map((n, k) => T(52 + k * 98, 82, n, { size: 13, fill: cols[k], gras: true }))}
-    {T(101, 52, '+', { size: 22, gras: true })}{T(199, 52, '+', { size: 22, gras: true })}
-    {fleche(150, 90, 150, 108)}
-    {T(150, 126, 'l’œil ne garde que 3 nombres (L, M, S)', { size: 13.5, gras: true })}
-    {fleche(150, 134, 150, 150)}
-    <rect x="14" y="154" width="272" height="96" rx="8" fill="#f8fafc" stroke={K.clair}/>
-    {T(150, 174, 'primaires : rouge, vert, bleu', { size: 13.5, gras: true })}
-    {T(150, 193, 'jaune = rouge + vert', { size: 13 })}
-    {T(150, 210, 'magenta = rouge + bleu', { size: 13 })}
-    {T(150, 227, 'cyan = vert + bleu', { size: 13 })}
-    {T(150, 244, 'rouge + vert + bleu = blanc', { size: 13, gras: true })}
-  </svg>;
-}
-/** Synthèse soustractive : on retire de la lumière ; les absorbances s'ajoutent, les transmittances se multiplient. */
-export function SvgCarteSoustractive() {
-  const tj = transmittance({ jaune: 0.8 }), tc = transmittance({ cyan: 0.8 }), tp = tj.map((v, i) => v * tc[i]);
-  return <div><SvgSpectre carte graduations label="Deux filtres en série : la transmittance du système est le produit des transmittances" yTitre="transmittance"
-    courbes={[{ v: tj, col: '#b45309', nom: 'jaune', l: 640, dy: -8, dash: '7 4' }, { v: tc, col: '#0e7490', nom: 'cyan', l: 440, dy: -8, dash: '2 3' }, { v: tp, col: '#15803d', nom: 'jaune + cyan', l: 540, dy: -8, w: 3.4, fill: '#15803d' }]}/>
-    <svg role="img" aria-label="Règles de la synthèse soustractive" viewBox="0 0 300 92" width="100%" style={{ display: 'block', maxWidth: 320, margin: '2px auto 0' }}>
-      {T(150, 16, 'Synthèse soustractive : on retire de la lumière', { size: 13.5, gras: true })}
-      {T(150, 32, 'filtres : T = T₁ × T₂', { size: 12.5 })}
-      {T(150, 47, 'absorbances (ou K/S) : on les additionne', { size: 12.5 })}
-      {T(150, 68, 'primaires : cyan, magenta, jaune', { size: 13, gras: true, fill: K.orange })}
-      {T(150, 85, 'C + M + J : presque noir', { size: 12.5 })}
-    </svg></div>;
-}
+export { SvgCarteAdditive, SvgCarteSoustractive } from "./SyntheseCartes";
 /** Quel modèle choisir ? Tableau comparatif. */
 export function SvgCarteChoix() {
   const L = (x, y, s, o = {}) => T(x, y, s, { size: 12.5, ...o });

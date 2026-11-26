@@ -2,18 +2,14 @@
 // vue en coupe d'une peinture, filtres traversés par la lumière. SVG, textes de 11 à 14, largeur 100 % plafonnée.
 import { useId } from "react";
 import { LAMBDAS, spectreRVB, cssLumiere, cssFiltre } from "./synthCouleurModele";
+import { pc, Tx, aLambda, CANAUX, COLX } from "./syntheseOutils";
 
 const K = { txt: '#0f172a', gris: '#64748b', clair: '#cbd5e1' };
 const NB = ' ';
-const pc = v => `${Math.round(Math.max(0, Math.min(1, v)) * 100)}${NB}%`;
-const Tx = (x, y, s, o = {}) => <text x={x} y={y} fontSize={o.size ?? 12} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? K.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit" stroke={o.halo ?? 'none'} strokeWidth={o.halo ? 2.4 : 0} paintOrder="stroke" strokeLinejoin="round">{s}</text>;
-const aLambda = (arr, l) => arr[LAMBDAS.indexOf(l)] ?? 0;
 
 /** Trois canaux représentatifs de la lumière blanche (le spectre entier est dans le graphique en dessous). */
-const CANAUX = [{ l: 450, nom: 'bleu', col: '#2563eb' }, { l: 540, nom: 'vert', col: '#16a34a' }, { l: 620, nom: 'rouge', col: '#dc2626' }];
-const COLX = [100, 195, 290];
 
-function Fleche({ x, y1, y2, w, col, op = 1, tirets }) {
+export function Fleche({ x, y1, y2, w, col, op = 1, tirets }) {
   const s = Math.sign(y2 - y1) || 1, h = Math.min(11, w * 1.5 + 4), ww = Math.max(1.6, w);
   return <g opacity={op}><line x1={x} y1={y1} x2={x} y2={y2 - s * h} stroke={col} strokeWidth={ww} strokeDasharray={tirets ? '3 3' : ''}/>
     <polygon points={`${x - ww / 2 - 3},${y2 - s * h} ${x + ww / 2 + 3},${y2 - s * h} ${x},${y2}`} fill={col}/></g>;
@@ -73,7 +69,7 @@ function BarreParts({ id, x, y, part, col, w = 70 }) {
 }
 
 /** Petit symbole de chaleur (la lumière absorbée échauffe le matériau). */
-const Chaleur = ({ x, y, op = 1 }) => <path d={`M${x - 9},${y} q3,-5 6,0 t6,0 t6,0`} fill="none" stroke="#b45309" strokeWidth="1.8" strokeLinecap="round" opacity={op}/>;
+export const Chaleur = ({ x, y, op = 1 }) => <path d={`M${x - 9},${y} q3,-5 6,0 t6,0 t6,0`} fill="none" stroke="#b45309" strokeWidth="1.8" strokeLinecap="round" opacity={op}/>;
 
 // ---------- coupe d'une couche de peinture ----------
 const PIG = { jaune: '#facc15', magenta: '#d946ef', cyan: '#22d3ee', blanc: '#ffffff', noir: '#1f2937' };
