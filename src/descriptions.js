@@ -156,4 +156,5 @@ export const DESCRIPTIONS = {
   "Lasure alkyde : séchage oxydant et peau en pot": "Du film humide au film dur : évaporation du white spirit puis réticulation par le dioxygène (siccatif), sur une échelle de temps logarithmique de 1 minute à 3 mois. Rôle de l’anti-peau (DEHA) et formation de la peau dans le pot fermé ; carte du compromis séchage rapide / pot sans peau ; parcours guidé et défi.",
   "Mouillage : tension superficielle, angle de contact, tension critique": "Une goutte sur une surface : tension superficielle, angle de contact (loi de Young), tension critique de Zisman, mouillage et étalement.",
   "Éclairage et métamérisme": "Deux échantillons identiques sous une lampe, différents sous une autre : illuminant, réflectance, métamérisme et écart de couleur ΔE.",
+  "Synthèse additive et synthèse soustractive : mélanger lumières, filtres et pigments": "Additionner des lumières (cônes L, M, S, métamérisme, daltonisme) ou en retirer avec des filtres et des pigments (transmittance, Kubelka-Munk). Parcours guidé, exploration et deux défis.",
 };
