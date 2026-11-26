@@ -61,21 +61,31 @@ export function SvgCarteMeta() {
   </>, 340);
 }
 
-const LAMPES = { D65: { halo: '#dbeafe', cone: '#bfdbfe', nom: 'Lumière du jour (D65)' }, A: { halo: '#fde68a', cone: '#fcd34d', nom: 'Lampe à incandescence (A)' }, F2: { halo: '#ecfccb', cone: '#d9f99d', nom: 'Tube fluorescent (F2)' } };
-/** Cabine à lumière : une lampe au plafond (au choix), deux échantillons posés sur le plan de travail. css1, css2 : couleurs affichées de E1 et E2 sous la lampe choisie. */
-export function SvgCabine({ lampe, css1, css2 }) {
-  const L = LAMPES[lampe];
-  return base(300, 206, 'Cabine à lumière : deux échantillons E1 et E2 éclairés par la lampe choisie', <>
-    <rect x={14} y={8} width={272} height={168} rx={8} fill="#475569" stroke="#1e293b" strokeWidth="2"/>
-    <rect x={22} y={16} width={256} height={142} rx={4} fill="#cbd5e1"/>
-    <rect x={30} y={22} width={240} height={14} rx={4} fill="#1e293b"/>
-    <ellipse cx={150} cy={36} rx={50} ry={7} fill={L.halo} stroke="#0f172a" strokeWidth="1.5"/>
-    <polygon points="105,38 195,38 250,128 50,128" fill={L.cone} opacity="0.55"/>
-    <rect x={22} y={128} width={256} height={30} fill="#94a3b8"/>
-    <rect x={62} y={104} width={66} height={44} rx={4} fill={css1} stroke="#0f172a" strokeWidth="2"/>
-    <rect x={172} y={104} width={66} height={44} rx={4} fill={css2} stroke="#0f172a" strokeWidth="2"/>
-    {T(95, 170, 'E1', { size: 15, gras: true, fill: '#fff' })}{T(205, 170, 'E2', { size: 15, gras: true, fill: '#fff' })}
-    {T(150, 58, L.nom, { size: 13, gras: true, halo: true })}
-    {T(150, 198, 'cabine à lumière (contrôle visuel)', { size: 12, fill: K.gris })}
-  </>, 340);
+const LAMPES = { D65: { lueur: '#e0f2fe', nom: 'Lumière du jour (D65)' }, A: { lueur: '#fde68a', nom: 'Lampe à incandescence (A)' }, F2: { lueur: '#ecfccb', nom: 'Tube fluorescent (F2)' } };
+/** Cabine à lumière (contrôle visuel industriel) : parois gris neutre, lampe au plafond, trois voyants, deux échantillons et une carte blanche de référence. css1, css2, cssBlanc : couleurs affichées sous la lampe choisie. */
+export function SvgCabine({ lampe, css1, css2, cssBlanc }) {
+  const L = LAMPES[lampe], ids = ['D65', 'A', 'F2'], noms = ['D65', 'A', 'F2'];
+  return base(320, 250, 'Cabine à lumière : échantillons E1 et E2 et carte blanche, éclairés par la lampe choisie', <>
+    <defs>
+      <radialGradient id="cab-lueur" cx="50%" cy="0%" r="95%"><stop offset="0" stopColor={L.lueur} stopOpacity="0.95"/><stop offset="1" stopColor={L.lueur} stopOpacity="0.18"/></radialGradient>
+      <linearGradient id="cab-sol" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#9aa3ad"/><stop offset="1" stopColor="#7b8591"/></linearGradient>
+    </defs>
+    <polygon points="12,14 308,14 308,198 12,198" fill="#2b323b"/>
+    <polygon points="40,36 280,36 280,150 40,150" fill="#b8bfc7"/>
+    <polygon points="12,14 40,36 40,150 12,198" fill="#8f98a2"/>
+    <polygon points="308,14 280,36 280,150 308,198" fill="#8f98a2"/>
+    <polygon points="12,14 308,14 280,36 40,36" fill="#d7dce1"/>
+    <polygon points="40,150 280,150 308,198 12,198" fill="url(#cab-sol)"/>
+    <polygon points="12,14 308,14 308,198 12,198" fill="url(#cab-lueur)"/>
+    <rect x={92} y={20} width={136} height={10} rx={5} fill="#f8fafc" stroke="#0f172a" strokeWidth="1.5"/>
+    <rect x={98} y={22.5} width={124} height={5} rx={2.5} fill={L.lueur} stroke={L.lueur}/>
+    <ellipse cx={72} cy={176} rx={32} ry={7} fill="#000" opacity="0.18"/><ellipse cx={160} cy={176} rx={32} ry={7} fill="#000" opacity="0.18"/><ellipse cx={248} cy={176} rx={32} ry={7} fill="#000" opacity="0.18"/>
+    {[[72, css1, 'E1'], [160, css2, 'E2'], [248, cssBlanc, 'Blanc']].map(([cx, c, nom]) => <g key={nom}>
+      <rect x={cx - 30} y={104} width={60} height={68} rx={3} fill={c} stroke="#0f172a" strokeWidth="2"/>
+      <rect x={cx - 30} y={104} width={60} height={68} rx={3} fill="none" stroke="#fff" strokeWidth="1" opacity="0.45"/>
+      {T(cx, 94, nom, { size: 14, gras: true, halo: true })}
+    </g>)}
+    <rect x={12} y={198} width={296} height={34} rx={6} fill="#1e293b"/>
+    {ids.map((id, k) => <g key={id}><circle cx={60 + k * 100} cy={215} r={7} fill={id === lampe ? LAMPES[id].lueur : '#475569'} stroke="#f8fafc" strokeWidth="1.5"/>{T(60 + k * 100, 244, noms[k], { size: 12, gras: id === lampe, fill: id === lampe ? '#0f172a' : K.gris })}</g>)}
+  </>, 360);
 }

@@ -650,7 +650,7 @@ const SIMULATIONS = [
   { id:246, label:"Diagramme ternaire des microémulsions", niveau:"BTS", icon:"🔺", color:"#7c3aed", component: SimulationTernaire },
   { id:247, label:"Couleur : L*, a*, b* et écart de couleur", niveau:"BTS", icon:"🎨", color:"#0891b2", component: SimulationCielab },
   { id:248, label:"Diagramme de chromaticité : lire et mélanger les couleurs", niveau:"BTS", icon:"🌈", color:"#7c3aed", component: SimulationXyy },
-  { id:249, label:"Éclairage et métamérisme : même couleur, autre lampe", niveau:"BTS", icon:"💡", color:"#d97706", component: SimulationMetamerisme },
+  { id:249, label:"Éclairage et métamérisme", niveau:"BTS", icon:"💡", color:"#d97706", component: SimulationMetamerisme },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
