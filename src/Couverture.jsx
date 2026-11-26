@@ -1,5 +1,5 @@
 import "./Couverture.css";
-import { bilan, couverturesDuNiveau, DATE_COUVERTURE } from "./couverture";
+import { bilan, couverturesDuNiveau } from "./couverture";
 
 // ============================================================
 //  COUVERTURE DES PROGRAMMES, sur l'accueil (une carte par niveau).
@@ -31,7 +31,6 @@ export function BarresCouverture({ niveau }) {
           </div>
         );
       })}
-      <p className="cv-note">Estimation au {DATE_COUVERTURE} : chaque partie du programme officiel compte pour 1 si elle est couverte, ½ si elle l’est en partie.</p>
     </div>
   );
 }
