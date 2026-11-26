@@ -2996,5 +2996,17 @@
  "77:plausible:hook-val-masse": "VAL782",
  "77:plausible:hook-val-oh-lie": "VAL783",
  "77:plausible:hook-val-conjugaison": "VAL784",
- "36:hook-calcul": "REA210"
+ "36:hook-calcul": "REA210",
+ "34:tix-sapp-chaine.0": "SAPP661",
+ "34:tix-sapp-chaine.1": "SAPP662",
+ "34:tix-sapp-concentration.0": "SAPP663",
+ "34:tix-sapp-concentration.1": "SAPP664",
+ "37:prevoir:tix-ana-amidon": "ANA1345",
+ "37:prevoir:tix-ana-iodure": "ANA1346",
+ "37:prevoir:tix-ana-titrant": "ANA1347",
+ "37:prevoir:tix-ana-debut": "ANA1348",
+ "77:plausible:tix-val-rapport": "VAL785",
+ "77:plausible:tix-val-equivalence": "VAL786",
+ "36:tix-dosage-calcul": "REA211",
+ "36:tix-prevoir-calcul": "REA212"
 }

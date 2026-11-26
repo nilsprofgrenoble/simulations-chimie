@@ -4556,6 +4556,61 @@ function genTptPotentielBase() {
     retenir: ['E = U + E(référence), avec E(référence) = 0,245 V pour l’ECS.', 'Avant l’équivalence : E = E°(Fe³⁺/Fe²⁺) + 0,06 log([Fe³⁺]/[Fe²⁺]).', 'Après l’équivalence : E = E°(Ce⁴⁺/Ce³⁺) + 0,06 log([Ce⁴⁺]/[Ce³⁺]).', 'À V_E/2 : E = E° du fer ; à 2 V_E : E = E° du cérium.'] };
 }
 
+function genTixDosage() {
+  for (let k = 0; ; k++) { const g = genTixDosageBase(); const v = g.questions.map(q => q.vrai.toPrecision(3)); if (new Set(v).size === v.length || k > 80) return g; }
+}
+function genTixDosageBase() {
+  const cB = tire([0.0500, 0.0800, 0.1000]), VA = tire([20, 25]), Ve = tire([8.6, 9.8, 11.4, 12.6, 14.2, 16.4]), dil = tire([10, 20]);
+  const nS = cB * Ve, nI = nS / 2, cA = nI / VA, c0 = dil * cA, tm = c0 * 51.5;
+  const intro = <>On dilue <b>{dil}{NB}fois</b> une eau de Javel du commerce, puis on dose <b>{VA}{NB}mL</b> de la solution diluée : un excès d’iodure et de l’acide transforment les ions ClO⁻ en diiode (ClO⁻ + 2 I⁻ + 2 H⁺ → I₂ + Cl⁻ + H₂O), titré par du thiosulfate de concentration <b>{sciF(cB, 2)}{NB}mol/L</b> (I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻). Le bleu de l’empois d’amidon disparaît après avoir versé <b>V<sub>E</sub> = {nb(Ve, 1)}{NB}mL</b>.</>;
+  const q1 = { id: 'd0', type: 'num', q: <>{intro} Quelle quantité de thiosulfate a été versée à l’équivalence (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nS, tolRel: 0.03, csMin: 2,
+    aide: 'n(S₂O₃²⁻) = c_B × V_E : avec c_B en mol/L et V_E en mL, le produit est en mmol.',
+    pieges: [[nS * 1000, 'Vous avez donné des µmol : mol/L × mL donne des mmol.'], [nS / 1000, 'Vous avez donné des mol : mol/L × mL donne des mmol.'], [cB / Ve, 'Vous avez divisé : c_B se multiplie par V_E.']],
+    expl: <>n(S₂O₃²⁻) = {sciF(cB, 2)} × {nb(Ve, 1)} = <b>{nb(nS, 3)}{NB}mmol</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>{intro} Quelle quantité de diiode a été dosée (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nI, tolRel: 0.03, csMin: 2,
+    aide: 'I₂ + 2 S₂O₃²⁻ : 2 ions thiosulfate pour 1 diiode, donc n(I₂) = n(S₂O₃²⁻) / 2.',
+    pieges: [[nS, 'Vous avez gardé la quantité de thiosulfate : 2 S₂O₃²⁻ réagissent avec 1 I₂.'], [2 * nS, 'Vous avez multiplié par 2 : le diiode est la moitié du thiosulfate.'], [nS / 4, 'Vous avez divisé par 4 : une seule division par 2 suffit.']],
+    expl: <>n(I₂) = n(S₂O₃²⁻) / 2 = {nb(nS, 3)} / 2 = <b>{nb(nI, 3)}{NB}mmol</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>{intro} Quelle est la concentration c<sub>A</sub> en ions ClO⁻ de la solution diluée (en mol/L, 3 chiffres significatifs) ?</>, unite: 'mol/L', vrai: cA, tolRel: 0.03, csMin: 2,
+    aide: 'n(ClO⁻) = n(I₂) (1 pour 1) ; puis c_A = n(ClO⁻) / V_A.',
+    pieges: [[nI, 'Vous avez donné la quantité de matière : divisez par le volume V_A prélevé.'], [VA / nI, 'Vous avez inversé le calcul : c_A = n / V_A.'], [nS / VA, 'Vous avez oublié de diviser par 2 pour passer du thiosulfate au diiode.']],
+    expl: <>n(ClO⁻) = n(I₂) = {nb(nI, 3)} mmol ; c<sub>A</sub> = {nb(nI, 3)} / {VA} = <b>{nb(cA, 4)}{NB}mol/L</b>.</> };
+  const q4 = { id: 'd3', type: 'num', q: <>{intro} La masse molaire de l’ion ClO⁻ est 51,5 g/mol. Quel est le titre massique en ions ClO⁻ de l’eau de Javel du commerce (en g/L, 3 chiffres significatifs) ?</>, unite: 'g/L', vrai: tm, tolRel: 0.03, csMin: 2,
+    aide: 'Calculez c_A, puis c₀ = dilution × c_A, puis le titre massique = c₀ × M.',
+    pieges: [[c0, 'Vous avez donné la concentration molaire c₀ : multipliez par la masse molaire M.'], [tm / dil, 'Vous avez oublié la dilution : l’eau de Javel du commerce est plus concentrée que la solution dosée.'], [2 * tm, 'Vous avez oublié de diviser par 2 pour passer du thiosulfate au diiode.']],
+    expl: <>c<sub>0</sub> = {dil} × {nb(cA, 4)} = {nb(c0, 3)} mol/L ; titre massique = {nb(c0, 3)} × 51,5 = <b>{nb(tm, 3)}{NB}g/L</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Titrage indirect d’une eau de Javel : thiosulfate versé, diiode dosé, concentration de la solution diluée et titre massique de l’eau de Javel du commerce.', questions: [q1, q2, q3, q4],
+    retenir: ['n(S₂O₃²⁻) = c_B × V_E (mol/L × mL = mmol).', 'n(I₂) = n(S₂O₃²⁻) / 2 ; n(ClO⁻) = n(I₂).', 'c_A = n(ClO⁻) / V_A ; c₀ = dilution × c_A.', 'Titre massique = c₀ × M.'] };
+}
+function genTixPrevoir() {
+  for (let k = 0; ; k++) { const g = genTixPrevoirBase(); if (g && new Set(g.questions.map(q => q.vrai.toPrecision(3))).size === g.questions.length) return g; if (k > 200) return g; }
+}
+function genTixPrevoirBase() {
+  const cA = tire([0.020, 0.030, 0.040, 0.050]), VA = tire([10, 20, 25]), cB = tire([0.0500, 0.1000, 0.2000]), VKI = tire([10, 15]);
+  const nA = cA * VA, nCons = 2 * nA, nKI = 0.50 * VKI, nRest = nKI - nCons, Ve = 2 * nA / cB;
+  if (Ve < 5 || Ve > 24 || nRest <= 0) return null;
+  const intro = <>On veut doser <b>{VA}{NB}mL</b> d’eau de Javel diluée, de concentration en ions ClO⁻ voisine de <b>{nbF(cA, 3)}{NB}mol/L</b>. On ajoute <b>{VKI}{NB}mL</b> d’iodure de potassium à <b>0,50{NB}mol/L</b> et de l’acide (ClO⁻ + 2 I⁻ + 2 H⁺ → I₂ + Cl⁻ + H₂O), puis on dose le diiode par du thiosulfate à <b>{sciF(cB, 2)}{NB}mol/L</b> (I₂ + 2 S₂O₃²⁻ → 2 I⁻ + S₄O₆²⁻).</>;
+  const q1 = { id: 'd0', type: 'num', q: <>{intro} Quelle quantité d’ions ClO⁻ contient la prise d’essai (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nA, tolRel: 0.03, csMin: 2,
+    aide: 'n(ClO⁻) = c × V : avec c en mol/L et V en mL, le produit est en mmol.',
+    pieges: [[nA * 1000, 'Vous avez donné des µmol : mol/L × mL donne des mmol.'], [nA / 1000, 'Vous avez donné des mol : mol/L × mL donne des mmol.'], [cA / VA, 'Vous avez divisé : la quantité s’obtient en multipliant c par V.']],
+    expl: <>n(ClO⁻) = {nbF(cA, 3)} × {VA} = <b>{nb(nA, 3)}{NB}mmol</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>{intro} Quelle quantité d’ions iodure est consommée pour transformer tous les ions ClO⁻ (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nCons, tolRel: 0.03, csMin: 2,
+    aide: 'ClO⁻ + 2 I⁻ + 2 H⁺ → I₂ + … : 1 ClO⁻ consomme 2 I⁻, donc n(I⁻) consommé = 2 × n(ClO⁻).',
+    pieges: [[nA, 'Vous avez oublié le coefficient 2 : 1 ClO⁻ consomme 2 I⁻.'], [nA / 2, 'Vous avez divisé par 2 : il faut 2 I⁻ par ClO⁻, donc multiplier par 2.']],
+    expl: <>n(I⁻) consommé = 2 × {nb(nA, 3)} = <b>{nb(nCons, 3)}{NB}mmol</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>{intro} Quelle quantité d’ions iodure reste en excès après la réaction (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nRest, tolRel: 0.03, csMin: 2,
+    aide: 'n(I⁻) introduit = c × V = 0,50 × V_KI ; on retranche la quantité consommée, 2 × n(ClO⁻).',
+    pieges: [[nKI, 'C’est la quantité d’iodure introduite : il faut retrancher celle qui a été consommée.'], [nKI - nA, 'Vous n’avez retranché qu’un I⁻ par ClO⁻ : il en faut 2.']],
+    expl: <>n(I⁻) introduit = 0,50 × {VKI} = {nb(nKI, 3)} mmol ; excès = {nb(nKI, 3)} − {nb(nCons, 3)} = <b>{nb(nRest, 3)}{NB}mmol</b>. L’iodure est bien en excès : tous les ClO⁻ réagissent.</> };
+  const q4 = { id: 'd3', type: 'num', q: <>{intro} Quel volume équivalent de thiosulfate attend-on (en mL, 3 chiffres significatifs) ?</>, unite: 'mL', vrai: Ve, tolRel: 0.03, csMin: 2,
+    aide: 'n(I₂) = n(ClO⁻) ; n(S₂O₃²⁻) = 2 × n(I₂) ; V_E = n(S₂O₃²⁻) / c_B (mmol divisé par mol/L donne mL).',
+    pieges: [[nA / cB, 'Vous avez oublié le facteur 2 : 1 I₂ réagit avec 2 S₂O₃²⁻.'], [nA / (2 * cB), 'Vous avez divisé par 2 au lieu de multiplier : il faut 2 ions thiosulfate par diiode.']],
+    expl: <>n(I₂) = n(ClO⁻) = {nb(nA, 3)} mmol ; n(S₂O₃²⁻) = 2 × {nb(nA, 3)} = {nb(nCons, 3)} mmol ; V<sub>E</sub> = {nb(nCons, 3)} / {sciF(cB, 2)} = <b>{nb(Ve, 1)}{NB}mL</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Préparer un titrage indirect : quantité d’ions hypochlorite, iodure consommé et en excès, volume équivalent attendu.', questions: [q1, q2, q3, q4],
+    retenir: ['n(ClO⁻) = c × V (mol/L × mL = mmol).', '1 ClO⁻ consomme 2 I⁻ ; l’iodure doit être en excès.', 'n(I₂) = n(ClO⁻) ; n(S₂O₃²⁻) = 2 × n(I₂).', 'V_E = n(S₂O₃²⁻) / c_B.'] };
+}
 function genMabDemi() {
   for (let k = 0; ; k++) { const g = genMabDemiBase(); const v = g.questions.map(q => q.vrai); if (new Set(v).size === v.length || k > 80) return g; }
 }
@@ -6642,6 +6697,8 @@ export const FAMILLES = [
   { id: 'mab-reaction-calcul', groupe: 'Formules', titre: 'Équation de réaction en milieu acide ou basique : électrons échangés et coefficients (TSTL)', gen: genMabReaction, domaine: 'Équations en milieu acide ou basique' },
   { id: 'tcr-dosage-calcul', groupe: 'Formules', titre: 'Dosage par le permanganate : quantités de matière, concentration diluée et concentration du commerce (TSTL)', gen: genTcrDosage, domaine: 'Titrage redox direct' },
   { id: 'tcr-bilan-calcul', groupe: 'Formules', titre: 'Dosage par le permanganate : volume équivalent et bilan de matière avant ou après l’équivalence (TSTL)', gen: genTcrAvantApres, domaine: 'Titrage redox direct' },
+  { id: 'tix-dosage-calcul', groupe: 'Formules', titre: 'Titrage indirect d’une eau de Javel : thiosulfate versé, diiode dosé, concentration et titre massique (TSTL)', gen: genTixDosage, domaine: 'Titrage indirect' },
+  { id: 'tix-prevoir-calcul', groupe: 'Formules', titre: 'Titrage indirect d’une eau de Javel : iodure consommé et en excès, volume équivalent attendu (TSTL)', gen: genTixPrevoir, domaine: 'Titrage indirect' },
   { id: 'tpt-dosage-calcul', groupe: 'Formules', titre: 'Titrage potentiométrique : quantité de cérium(IV), concentration du fer(II) et volume équivalent d’une autre prise (TSTL)', gen: genTptDosage, domaine: 'Titrage potentiométrique' },
   { id: 'tpt-potentiel-calcul', groupe: 'Formules', titre: 'Titrage potentiométrique : tension, potentiel avant et après l’équivalence (TSTL)', gen: genTptPotentiel, domaine: 'Titrage potentiométrique' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
