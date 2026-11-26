@@ -47,7 +47,7 @@ export function PilePcmExplore({ ex, setEx }) {
         </div>
         <Seg label="Intensité débitée" valeur={ie} onChange={v => change('ie', v)} options={[20, 50, 100].map(x => [x, `${x} mA`])}/>
       </div>
-      <ScenePile svgRef={svgRef} paire={paire} borneV={jeu ? null : borneV} lu={lu} charge={jeu ? 'lampe' : 'volt'} poles={jeu} noms={jeu} flux={false} phase={phase} usure={f} plusSide={plusSide} iTexte={`i = ${ie} mA`} allumee={jeu && !usee} maxWidth={460} aria={aria}>
+      <ScenePile svgRef={svgRef} paire={paire} borneV={jeu ? null : borneV} lu={lu} charge={jeu ? 'lampe' : 'volt'} poles={jeu} noms={jeu} flux={false} demi={jeu} phase={phase} usure={f} plusSide={plusSide} iTexte={`i = ${ie} mA`} allumee={jeu && !usee} maxWidth={460} aria={aria}>
         {!jeu && <g className="xa-poignee" role="slider" tabIndex={0} aria-label="Borne V du voltmètre : flèches gauche et droite pour la placer sur l’électrode de gauche ou de droite" aria-valuemin={0} aria-valuemax={1} aria-valuenow={borneV === 'g' ? 0 : 1} aria-valuetext={`borne V côté ${borneV === 'g' ? 'gauche' : 'droit'}`} onPointerDown={debut} onPointerMove={bouge} onPointerUp={fait} onPointerCancel={fait} onKeyDown={clavier}>
           <rect x="50" y="56" width="300" height="46" fill="transparent"/>
           <rect className="xa-anneau" x={xV - grip / 2} y="62" width={grip} height="30" rx="15" fill="#fff" stroke="#dc2626" strokeWidth="3.5"/>

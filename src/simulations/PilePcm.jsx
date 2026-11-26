@@ -35,7 +35,7 @@ const SCENES = {
   electrons: { paire: ['zn', 'cu'], borneV: 'd', lu: 1.10, poles: true, noms: true, plusSide: 'd' },
   ions: { paire: ['zn', 'cu'], borneV: 'd', lu: 1.10, poles: true, noms: true, plusSide: 'd' },
   demieq: { paire: ['zn', 'cu'], charge: 'dipole', poles: true, noms: true, flux: true, plusSide: 'd' },
-  equation: { paire: ['zn', 'ag'], charge: 'dipole', poles: true, noms: true, flux: true, plusSide: 'd' },
+  equation: { paire: ['zn', 'ag'], charge: 'dipole', poles: true, noms: true, flux: true, demi: true, plusSide: 'd' },
   ne: { paire: ['zn', 'cu'], charge: 'lampe', poles: true, noms: true, plusSide: 'd' },
   Q: { paire: ['zn', 'cu'], charge: 'lampe', poles: true, noms: true, plusSide: 'd' },
   duree: { paire: ['zn', 'cu'], charge: 'lampe', poles: true, noms: true, plusSide: 'd', iTexte: 'i = 20 mA' },

@@ -1,6 +1,6 @@
 // Schémas de la simulation 305 (piles, TSTL) : pile à deux demi-piles et pont salin (voltmètre, dipôle ou lampe), cartes « À retenir ».
 import { C } from './vecteursVASchemas';
-import { METAUX } from './pilePcmModele';
+import { METAUX, demiOx, demiRed } from './pilePcmModele';
 const stl = { userSelect: "none", WebkitUserSelect: "none",  width: '100%', height: 'auto', display: 'block', margin: '0 auto 6px', background: '#fff', borderRadius: 8 };
 const ROUGE = '#dc2626', BLEU = '#1d4ed8';
 const fmtU = u => `${u > 0 ? '+' : u < 0 ? '−' : ''}${Math.abs(u).toFixed(2).replace('.', ',')} V`;
@@ -10,7 +10,7 @@ const Fleche = ({ x, y, sens = 1, c, w = 3 }) => <polygon points={`${x + sens * 
 
 // paire = [id gauche, id droite] ; borneV : 'g' | 'd' | null ; lu : tension affichée (nombre signé) ; charge : 'volt' | 'dipole' | 'lampe'
 // poles : signes + et − ; noms : anode / cathode ; flux : flèches d'électrons, de courant et d'ions ; phase ∈ [0 ; 1[ : points mobiles (animation) ; usure ∈ [0 ; 1] : lames
-export function ScenePile({ paire = ['zn', 'cu'], borneV = null, lu = null, charge = 'volt', poles: avecPoles = false, noms = false, flux = false, phase = null, usure = 0, plusSide = null, iTexte = null, allumee = true, maxWidth = 420, aria, svgRef = null, children = null }) {
+export function ScenePile({ paire = ['zn', 'cu'], borneV = null, lu = null, charge = 'volt', poles: avecPoles = false, noms = false, flux = false, demi = false, phase = null, usure = 0, plusSide = null, iTexte = null, allumee = true, maxWidth = 420, aria, svgRef = null, children = null }) {
   const [a, b] = paire, A = METAUX[a], B = METAUX[b];
   const xm = [95, 305];   // plusSide : côté du pôle +, nécessaire pour poles/noms/flux
   const idx = side => (side === 'g' ? 0 : 1), plus = plusSide ? idx(plusSide) : null, moins = plusSide ? 1 - plus : null;
@@ -21,7 +21,7 @@ export function ScenePile({ paire = ['zn', 'cu'], borneV = null, lu = null, char
   const largeur = i => (i === moins ? Math.max(5, 14 * (1 - 0.65 * usure)) : i === plus ? 14 + 12 * usure : 14);
   const cote = [a, b];
   return (
-    <svg ref={svgRef} viewBox="0 0 400 275" role="img" style={{ ...stl, maxWidth, border: `1px solid ${C.clair}` }} aria-label={aria || `Pile formée de deux demi-piles reliées par un pont salin : ${A.lame} dans ${A.sol} à gauche, ${B.lame} dans ${B.sol} à droite${borneV ? `, avec un voltmètre branché (borne V du côté ${borneV === 'g' ? 'gauche' : 'droit'})${lu !== null ? `, qui affiche ${fmtU(lu)}` : ''}` : ''}.`}>
+    <svg ref={svgRef} viewBox={`0 0 400 ${demi ? 304 : 275}`} role="img" style={{ ...stl, maxWidth, border: `1px solid ${C.clair}` }} aria-label={aria || `Pile formée de deux demi-piles reliées par un pont salin : ${A.lame} dans ${A.sol} à gauche, ${B.lame} dans ${B.sol} à droite${borneV ? `, avec un voltmètre branché (borne V du côté ${borneV === 'g' ? 'gauche' : 'droit'})${lu !== null ? `, qui affiche ${fmtU(lu)}` : ''}` : ''}.`}>
       <defs><clipPath id="pp-g"><rect x="42" y="176" width="106" height="67" rx="8"/></clipPath><clipPath id="pp-d"><rect x="252" y="176" width="106" height="67" rx="8"/></clipPath></defs>
       {[0, 1].map(i => <g key={i}>
         <rect x={i ? 252 : 42} y="176" width="106" height="67" fill={METAUX[cote[i]].couleur} clipPath={`url(#pp-${i ? 'd' : 'g'})`}/>
@@ -45,19 +45,38 @@ export function ScenePile({ paire = ['zn', 'cu'], borneV = null, lu = null, char
           {borneV && <g fontSize="11" fontWeight="800"><circle cx="158" cy="52" r="5" fill={borneV === 'g' ? ROUGE : '#111827'}/><circle cx="242" cy="52" r="5" fill={borneV === 'd' ? ROUGE : '#111827'}/>
             <text x="150" y="28" textAnchor="middle" fill={borneV === 'g' ? ROUGE : '#111827'}>{borneV === 'g' ? 'V' : 'COM'}</text><text x="250" y="28" textAnchor="middle" fill={borneV === 'd' ? ROUGE : '#111827'}>{borneV === 'd' ? 'V' : 'COM'}</text></g>}
         </g>}
-      {lampe && iTexte && <text x="200" y="22" textAnchor="middle" fontSize="13" fontWeight="800" fill={C.violet}>{iTexte}</text>}
+      {lampe && iTexte && !demi && <text x="200" y="22" textAnchor="middle" fontSize="13" fontWeight="800" fill={C.violet}>{iTexte}</text>}
       {/* pôles */}
       {avecPoles && plus !== null && [0, 1].map(i => <g key={i}><circle cx={xm[i] + (i ? 22 : -22)} cy="74" r="11" fill={i === plus ? ROUGE : BLEU} stroke="#fff" strokeWidth="1.5"/><text x={xm[i] + (i ? 22 : -22)} y="80" textAnchor="middle" fontSize="19" fontWeight="800" fill="#fff">{i === plus ? '+' : '−'}</text></g>)}
       {/* anode / cathode */}
-      {noms && plus !== null && [0, 1].map(i => <text key={i} x={xm[i]} y="266" textAnchor="middle" fontSize="15" fontWeight="800" fill={i === plus ? C.vert : C.orange}>{i === plus ? 'cathode · réduction' : 'anode · oxydation'}</text>)}
+      {noms && plus !== null && [0, 1].map(i => <text key={i} x={xm[i]} y="268" textAnchor="middle" fontSize="15" fontWeight="800" fill={i === plus ? C.vert : C.orange}>{i === plus ? 'cathode · réduction' : 'anode · oxydation'}</text>)}
       {/* flèches : électrons (bleu, du − vers le +) et courant (violet, du + vers le −) */}
       {flux && plus !== null && <g>
+        {!demi && <>
         <text x={dir > 0 ? 126 : 274} y="40" textAnchor="middle" fontSize="13" fontWeight="800" fill={BLEU}>e⁻</text>
         <Fleche x={dir > 0 ? 126 : 274} y={46} sens={dir} c={BLEU}/>
         <text x={dir > 0 ? 274 : 126} y="82" textAnchor="middle" fontSize="13" fontWeight="800" fill={C.violet}>courant</text>
         <Fleche x={dir > 0 ? 274 : 126} y={63} sens={-dir} c={C.violet}/>
+        </>}
         <g><line x1="168" y1="95" x2={plus === 1 ? 228 : 172} y2="95" stroke={C.orange} strokeWidth="3"/><Fleche x={plus === 1 ? 232 : 168} y={95} sens={dir} c={C.orange}/><text x={plus === 1 ? 160 : 240} y="99" textAnchor={plus === 1 ? 'end' : 'start'} fontSize="12" fontWeight="800" fill={C.orange}>ions +</text></g>
         <g><line x1="172" y1="109" x2="228" y2="109" stroke={C.gris} strokeWidth="3"/><Fleche x={plus === 1 ? 168 : 232} y={109} sens={-dir} c={C.gris}/><text x={plus === 1 ? 240 : 160} y="113" textAnchor={plus === 1 ? 'start' : 'end'} fontSize="12" fontWeight="800" fill={C.gris}>ions −</text></g></g>}
+      {/* demi-équations aux électrodes, électrons dans le fil, sens conventionnel du courant */}
+      {demi && plus !== null && <g>
+        {[0, 1].map(i => { const id = cote[i], ox = i === moins, e = METAUX[id].z, xe = i ? xm[i] - 10 : xm[i] + 10, sg = i ? -1 : 1;
+          const eq = (ox ? demiOx(id) : demiRed(id)).replace(/\((s|aq)\)/g, '');
+          const x1 = i === 0 ? 105 : 250, x2 = i === 0 ? 148 : 295, sd = dir > 0 ? 1 : -1;
+          return <g key={i}>
+            <text x={xm[i]} y="292" textAnchor="middle" fontSize="14" fontWeight="800" fill={ox ? C.orange : C.vert}>{eq}</text>
+            <line x1={xe} y1={ox ? 86 : 62} x2={xe} y2={ox ? 66 : 82} stroke={BLEU} strokeWidth="3"/>
+            <polygon points={ox ? `${xe},60 ${xe - 5},70 ${xe + 5},70` : `${xe},88 ${xe - 5},78 ${xe + 5},78`} fill={BLEU}/>
+            <text x={xe + sg * 8} y="80" textAnchor={sg > 0 ? 'start' : 'end'} fontSize="13" fontWeight="800" fill={BLEU}>{e > 1 ? `${e} e⁻` : 'e⁻'}</text>
+            <line x1={sd > 0 ? x1 : x2} y1="44" x2={sd > 0 ? x2 - 6 : x1 + 6} y2="44" stroke={BLEU} strokeWidth="3"/>
+            <polygon points={sd > 0 ? `${x2},44 ${x2 - 10},39 ${x2 - 10},49` : `${x1},44 ${x1 + 10},39 ${x1 + 10},49`} fill={BLEU}/>
+            <text x={(x1 + x2) / 2} y="37" textAnchor="middle" fontSize="13" fontWeight="800" fill={BLEU}>e⁻</text></g>; })}
+        <line x1={dir > 0 ? 300 : 100} y1="16" x2={dir > 0 ? 112 : 288} y2="16" stroke={C.violet} strokeWidth="3.5"/>
+        <polygon points={dir > 0 ? '100,16 112,10 112,22' : '300,16 288,10 288,22'} fill={C.violet}/>
+        <text x="200" y="11" textAnchor="middle" fontSize="12.5" fontWeight="800" fill={C.violet}>sens conventionnel du courant</text>
+      </g>}
       {/* animation : électrons dans le fil, ions dans le pont salin */}
       {phase !== null && plus !== null && <g>
         {[0, 1, 2, 3].map(k => { const s = (phase + k / 4) % 1; const [x, y] = pos(pM, s), [x2, y2] = pos(pP, s); return <g key={k}><circle cx={x} cy={y} r="4.6" fill={BLEU} stroke="#fff" strokeWidth="1.4"/><circle cx={x2} cy={y2} r="4.6" fill={BLEU} stroke="#fff" strokeWidth="1.4"/></g>; })}
