@@ -26,6 +26,10 @@ const D_RHE = 'Rhéologie';
 const D_TENS = 'Tensioactifs : de la structure à la CMC';
 const D_DISP = 'Mouiller, disperser, stabiliser une suspension';
 const D_PLANS = 'Plans';
+const D_COUL_LAB = 'Couleur : lire L*a*b* et calculer un écart';
+const D_COUL_XYY = 'Couleur : lire le diagramme de chromaticité';
+const D_COUL_MTM = 'Couleur : éclairage, réflectance et métamérisme';
+const D_COUL_ADS = 'Couleur : synthèses additive et soustractive';
 
 // ──────────────────────────────────────────────── ANA : prévoir sans calculer ────────────────────────────────────────────────
 export const BTSB_ANA = [
@@ -407,6 +411,108 @@ export const BTSB_SIT = [
             expl: `${M} / ${pee} = ${nb(M / pee, 3)} éq d’époxy ; m(durcisseur) = ${nb(M / pee, 3)} × ${peh} ≈ ${nb(m, 1)} g.` },
         ],
         retenir: ['Dosage d’un bicomposant : autant d’équivalents de durcisseur que de résine. m(durcisseur) = m(résine) × PEH / PEE.'],
+      };
+    },
+  },
+  // ───────────── Couleur (BTS, chapitre « Aspect ») : sims 247, 248, 249 et 299 ─────────────
+  {
+    id: 'lab-sapp-tolerance', domaine: D_COUL_LAB, niveau: 2, titre: 'Un lot de peinture est-il dans la tolérance de couleur ?',
+    construire: () => {
+      const [Lc, ac, bc] = tire([[45, 7, -24], [60, 32, 18], [35, -18, 12], [70, -25, 35], [50, 45, 25], [55, 20, -30]]);
+      let dL, da, db, dE, tol;
+      do { dL = tire([-2, -1, 1, 2, 3]); da = tire([-3, -2, 2, 3, 4]); db = tire([-3, -2, 2, 3, 4]); tol = tire([2, 3]); dE = Math.sqrt(dL * dL + da * da + db * db); } while (Math.abs(dE - tol) < 0.4);
+      const ok = dE <= tol, sg = (n) => (n < 0 ? '−' : '') + Math.abs(n);
+      return {
+        enonce: `Un laboratoire contrôle la couleur d’un lot de peinture. Le cahier des charges impose ΔE*ab ≤ ${nb(tol, 1)} entre le lot et la couleur cible. On admet que la mesure est faite dans les mêmes conditions (même éclairage, même géométrie) pour la cible et pour le lot.`,
+        tableau: { entetes: ['', 'L*', 'a*', 'b*'], lignes: [['Cible', sg(Lc), sg(ac), sg(bc)], ['Lot', sg(Lc + dL), sg(ac + da), sg(bc + db)]] },
+        etapes: [
+          { id: 'formule', titre: 'Le critère à calculer', q: 'Quelle grandeur faut-il calculer pour comparer le lot à la cible ?', aide: 'Les trois coordonnées L*, a* et b* décrivent la couleur ; l’écart total tient compte des trois.',
+            o: [F('La différence entre les deux valeurs de L*, car la luminosité domine', 'Le critère ΔE*ab tient compte des trois coordonnées, pas seulement de L*.'),
+              V('ΔE*ab, racine carrée de la somme des carrés des trois écarts', 'ΔE*ab = √(ΔL*² + Δa*² + Δb*²) : les trois écarts se combinent comme les côtés d’un triangle dans l’espace L*a*b*.'),
+              F('La somme des trois écarts ΔL* + Δa* + Δb*', 'Les écarts de signes opposés se compenseraient : il faut additionner leurs carrés, puis prendre la racine.')] },
+          { id: 'calc', titre: 'L’écart ΔE*ab', q: 'Calculer ΔE*ab entre le lot et la cible.', aide: 'Calcule ΔL*, Δa* et Δb* (lot moins cible), additionne leurs carrés, puis prends la racine carrée.',
+            type: 'saisie', champs: [{ id: 'de', lib: 'ΔE*ab', u: '', vrai: dE, tol: 0.05 }],
+            expl: `ΔL* = ${sg(dL)}, Δa* = ${sg(da)}, Δb* = ${sg(db)} ; ΔE*ab = √(${dL * dL} + ${da * da} + ${db * db}) = √${dL * dL + da * da + db * db} ≈ ${nb(dE, 1)}.` },
+          { id: 'concl', titre: 'La conclusion', q: 'Que conclure vis-à-vis du cahier des charges ?', aide: `Compare ΔE*ab ≈ ${nb(dE, 1)} à la tolérance ${nb(tol, 1)}.`,
+            o: [V(ok ? `Le lot est conforme : ${nb(dE, 1)} est inférieur à ${nb(tol, 1)}` : `Le lot est refusé : ${nb(dE, 1)} dépasse ${nb(tol, 1)}`, `ΔE*ab ≈ ${nb(dE, 1)} ${ok ? '≤' : '>'} ${nb(tol, 1)}.`),
+              F(ok ? `Le lot est refusé : un écart de ${nb(dE, 1)} est déjà visible` : `Le lot est conforme : la couleur est presque identique`, `C’est l’inverse : on compare ΔE*ab = ${nb(dE, 1)} à la tolérance ${nb(tol, 1)}, pas à l’impression visuelle.`),
+              F('On ne peut pas conclure sans connaître la teinte du lot', 'Le critère ΔE*ab ≤ tolérance suffit pour décider : il mesure déjà l’écart de teinte, de luminosité et de saturation.')] },
+        ],
+        retenir: ['ΔE*ab = √(ΔL*² + Δa*² + Δb*²) : on additionne les carrés des écarts, jamais les écarts eux-mêmes.', 'Un lot est conforme si ΔE*ab est inférieur ou égal à la tolérance du cahier des charges.'],
+      };
+    },
+  },
+  {
+    id: 'xyy-sapp-purete', domaine: D_COUL_XYY, niveau: 2, titre: 'Pureté d’une couleur et pigment à ajouter',
+    construire: () => {
+      const lam = tire([480, 520, 580, 600]), WD = tire([0.28, 0.32, 0.36, 0.4]), p = tire([0.3, 0.4, 0.5, 0.6, 0.7]);
+      const WP = Number((p * WD).toFixed(2)), pur = WP / WD;
+      return {
+        enonce: `Sur le diagramme de chromaticité CIE 1931, on repère une couleur P de peinture. Le blanc de référence est noté W. La droite WP prolongée coupe le lieu spectral au point D, qui correspond à la longueur d’onde dominante ${lam}${' '}nm. Les distances relevées sur le diagramme sont données ci-dessous.`,
+        tableau: { entetes: ['Segment', 'Longueur sur le diagramme'], lignes: [['W → P', nb(WP, 2)], ['W → D', nb(WD, 2)]] },
+        etapes: [
+          { id: 'domi', titre: 'Longueur d’onde dominante', q: `Que signifie « longueur d’onde dominante ${lam}${' '}nm » pour la couleur P ?`, aide: 'Le point D est situé sur le lieu spectral, là où la droite WP le rencontre.',
+            o: [F('P est un mélange de toutes les longueurs d’onde à poids égal', 'Un tel mélange serait proche du blanc W ; la longueur d’onde dominante désigne la teinte.'),
+              F(`P ne contient que de la lumière de ${lam}${' '}nm`, 'Ce serait le cas d’un point D lui-même, sur le lieu spectral : P est à l’intérieur du diagramme.'),
+              V(`P est une lumière de ${lam}${' '}nm mélangée à du blanc`, 'P se situe sur le segment WD : c’est un mélange de blanc W et de la lumière monochromatique D.')] },
+          { id: 'purete', titre: 'La pureté d’excitation', q: 'Calculer la pureté d’excitation de P, rapport entre WP et WD.', aide: 'Pureté = WP / WD : 0 au blanc, 1 sur le lieu spectral.',
+            type: 'saisie', champs: [{ id: 'pur', lib: 'Pureté', u: '', vrai: pur, tol: 0.06 }],
+            expl: `Pureté = WP / WD = ${nb(WP, 2)} / ${nb(WD, 2)} ≈ ${nb(pur, 2)}.` },
+          { id: 'deplacer', titre: 'Rendre la couleur plus saturée', q: 'Un client veut la même teinte, mais plus saturée. Que faire sur le diagramme ?', aide: 'Plus la couleur est pure, plus elle est proche du lieu spectral.',
+            o: [V('Déplacer P le long de WD, en s’éloignant du blanc vers D', 'On garde la même droite (même teinte) et on augmente la pureté : en pratique, plus de pigment et moins de blanc.'),
+              F('Déplacer P vers W, pour se rapprocher du blanc de référence', 'Ce serait diminuer la pureté : la couleur deviendrait plus pâle.'),
+              F(`Changer la longueur d’onde dominante pour passer à ${lam < 550 ? lam + 60 : lam - 60}${' '}nm`, 'Changer de longueur d’onde dominante change la teinte, alors que le client la veut identique.')] },
+        ],
+        retenir: ['Longueur d’onde dominante = teinte ; pureté = WP / WD = éloignement du blanc vers le lieu spectral.', 'À teinte constante, une couleur plus saturée s’éloigne du blanc le long de la droite WD.'],
+      };
+    },
+  },
+  {
+    id: 'mtm-sapp-eclairage', domaine: D_COUL_MTM, niveau: 2, titre: 'Deux pièces assorties au labo, pas en magasin',
+    construire: () => {
+      const dD = tire([0.5, 0.8, 1.0]), dA = tire([3.5, 4.2, 5.1, 6.0]), diff = Number((dA - dD).toFixed(1));
+      return {
+        enonce: `Un fabricant assortit une coque en plastique et une pièce peinte. Sous la lumière du jour normalisée (illuminant D65), un spectrocolorimètre mesure un écart de couleur très faible. Sous une lampe à incandescence (illuminant A), l’écart devient visible. Les deux pièces n’ont pas la même composition en pigments. Les écarts ΔE*ab mesurés sont :`,
+        tableau: { entetes: ['Éclairage', 'ΔE*ab entre les deux pièces'], lignes: [['Lumière du jour (D65)', nb(dD, 1)], ['Lampe à incandescence (A)', nb(dA, 1)]] },
+        etapes: [
+          { id: 'phen', titre: 'Le phénomène', q: 'Comment appelle-t-on le fait que deux couleurs paraissent identiques sous un éclairage et différentes sous un autre ?', aide: 'Les deux pièces ont des pigments différents, donc des courbes de réflectance différentes.',
+            o: [F('Le contraste simultané', 'Il décrit l’influence des couleurs voisines sur la perception, pas l’effet d’un changement d’éclairage.'),
+              V('Le métamérisme', 'Deux couleurs de réflectances différentes peuvent donner la même couleur sous un éclairage et pas sous un autre.'),
+              F('La fluorescence', 'La fluorescence est une réémission de lumière par le matériau, qui n’explique pas ce changement selon l’éclairage.')] },
+          { id: 'diff', titre: 'L’écart supplémentaire', q: 'De combien l’écart ΔE*ab augmente-t-il quand on passe de la lumière du jour à la lampe à incandescence ?', aide: 'Soustrais l’écart sous D65 à l’écart sous A.',
+            type: 'saisie', champs: [{ id: 'diff', lib: 'Augmentation de ΔE*ab', u: '', vrai: diff, tol: 0.05 }],
+            expl: `${nb(dA, 1)} − ${nb(dD, 1)} = ${nb(diff, 1)}.` },
+          { id: 'prat', titre: 'La bonne pratique', q: 'Comment éviter la mauvaise surprise chez le client ?', aide: 'Le client regardera la pièce sous plusieurs éclairages : lumière du jour, éclairage de magasin, lampe domestique.',
+            o: [F('Contrôler la couleur uniquement sous D65, l’éclairage de référence normalisé', 'Sous D65 seul, le défaut reste invisible : c’est exactement le piège du métamérisme.'),
+              F('Choisir un spectrocolorimètre plus précis sous D65', 'Plus de précision sous D65 ne révèle rien sur l’écart sous un autre éclairage.'),
+              V('Contrôler sous plusieurs éclairages et rapprocher les pigments', 'Un contrôle sous D65 et A révèle le métamérisme ; des pigments proches donnent des réflectances proches, donc moins de métamérisme.')] },
+        ],
+        retenir: ['Le métamérisme : même couleur sous un éclairage, couleurs différentes sous un autre, car les réflectances diffèrent.', 'On contrôle sous plusieurs éclairages (D65 et A au minimum), pas sous un seul.'],
+      };
+    },
+  },
+  {
+    id: 'ads-sapp-filtres', domaine: D_COUL_ADS, niveau: 2, titre: 'Deux filtres colorés l’un derrière l’autre',
+    construire: () => {
+      const paire = tire([['jaune', 'cyan', 'vert', 'bleu', 'rouge'], ['jaune', 'magenta', 'rouge', 'bleu', 'vert'], ['cyan', 'magenta', 'bleu', 'rouge', 'vert']]);
+      const [f1, f2, res, abs1] = paire, T1 = tire([0.8, 0.7, 0.6]), T2 = tire([0.9, 0.5, 0.4]), Tt = Number((T1 * T2).toFixed(2));
+      const art = (c) => (c === 'rouge' ? 'le rouge' : c === 'vert' ? 'le vert' : 'le bleu');
+      return {
+        enonce: `Une lampe blanche éclaire successivement un filtre ${f1} puis un filtre ${f2}. À la longueur d’onde de la couleur qui traverse les deux filtres, leurs transmittances valent T₁ = ${nb(T1, 2)} et T₂ = ${nb(T2, 2)}. On néglige les réflexions sur les faces des filtres.`,
+        etapes: [
+          { id: 'couleur', titre: 'La couleur obtenue', q: `Quelle couleur de lumière sort de l’ensemble des deux filtres ${f1} et ${f2} ?`, aide: 'Un filtre ne laisse passer que sa couleur et ses voisines : le jaune laisse passer le vert et le rouge, le cyan le bleu et le vert, le magenta le bleu et le rouge.',
+            o: [F(`${art(abs1)[0].toUpperCase() + art(abs1).slice(1)}`, `${art(abs1)[0].toUpperCase() + art(abs1).slice(1)} est arrêté par l’un des deux filtres, donc il ne ressort pas.`),
+              V(`${art(res)[0].toUpperCase() + art(res).slice(1)}`, `C’est la seule des trois couleurs de base que les deux filtres laissent passer : un filtre ${f1} et un filtre ${f2} absorbent chacun une couleur différente.`),
+              F('Du blanc, puisque la lampe est blanche', 'Chaque filtre soustrait une partie du spectre : l’ensemble ne laisse passer qu’une seule couleur.')] },
+          { id: 'trans', titre: 'La transmittance totale', q: 'Calculer la transmittance T de l’ensemble des deux filtres pour cette couleur.', aide: 'La lumière traverse les deux filtres l’un après l’autre : T = T₁ × T₂.',
+            type: 'saisie', champs: [{ id: 'T', lib: 'T', u: '', vrai: T1 * T2, tol: 0.06 }],
+            expl: `T = T₁ × T₂ = ${nb(T1, 2)} × ${nb(T2, 2)} ≈ ${nb(Tt, 2)}.` },
+          { id: 'absorb', titre: 'Absorbance et transmittance', q: 'Pour deux filtres en série, quelle règle est correcte ?', aide: 'L’absorbance est A = −log₁₀(T) : un logarithme transforme un produit en somme.',
+            o: [F('Les transmittances s’additionnent et les absorbances se multiplient entre elles', 'C’est l’inverse de la règle correcte.'),
+              F('Les absorbances et les transmittances s’additionnent', 'Seules les absorbances s’additionnent ; les transmittances se multiplient.'),
+              V('Les transmittances se multiplient, les absorbances s’additionnent', 'T = T₁ × T₂ et A = A₁ + A₂, puisque A = −log₁₀(T).')] },
+        ],
+        retenir: ['Deux filtres en série : T = T₁ × T₂ et A = A₁ + A₂ (A = −log₁₀ T).', 'Un filtre jaune et un filtre cyan en série ne laissent passer que le vert : chaque filtre soustrait une couleur.'],
       };
     },
   },
