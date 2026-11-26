@@ -54,7 +54,7 @@ export function ScenePanneau({ ox, oy, svgRef, E, onE, U, I, R, anim, touche, on
   const cellule = (c, r) => { const q = [pt(c / 3 + 0.012, r / 2 + 0.03), pt((c + 1) / 3 - 0.012, r / 2 + 0.03), pt((c + 1) / 3 - 0.012, (r + 1) / 2 - 0.03), pt(c / 3 + 0.012, (r + 1) / 2 - 0.03)]; return q.map(z => z.join(',')).join(' '); };
   const rgb = mix([30, 58, 138], [56, 189, 248], frac);
   const nPh = Math.max(2, Math.round(E / 140));
-  const vit = 14 + Math.min(I * 1000, 260) * 0.55;                                 // I en A → mA
+  const vit = I < 1e-6 ? 0 : 14 + Math.min(I * 1000, 260) * 0.55;                                 // I en A → mA
   const charges = Array.from({ length: Math.floor(LONG / 30) }, (_, k) => pointSur(k * 30 + anim * vit));
   const mA = v => `${(v * 1000).toFixed(v * 1000 < 10 ? 1 : 0).replace('.', ',')}`;
 
