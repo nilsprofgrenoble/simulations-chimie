@@ -1,10 +1,11 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./flipperModele";
+import { FlipperExplore } from "./FlipperExplore";
 import { QCM } from "./flipperQcm";
 import { SceneFlipper, GrapheFlipper, SvgConversion, SvgVminFlip, SvgFrottFlip } from "./FlipperSchemas";
 
@@ -38,7 +39,6 @@ export function SimulationFlipper() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('sans');
   const [ouv, setOuv] = useState({});
-  const [ex, setEx] = useState({ m: 0.08, h: 0.8, deg: 30, f: 0, v0: 4.2, u: 1 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
   const fr = x => String(x).replace('.', ',');
@@ -129,46 +129,11 @@ export function SimulationFlipper() {
     depart: { h: 0.8, deg: 30, pL: 0 }, haut: { h: 1.2, deg: 30, pL: 0.38 }, masse: { h: 1.2, deg: 30, pL: 0.38 }, angle: { h: 1.2, deg: 60, pL: 0.38 }, longueur: { h: 0.8, deg: 30, pL: 0.57 },
     vmin: { h: 0.8, deg: 30, pL: 1 }, trop: { h: 0.8, deg: 30, pL: 0.57 }, vhaut: { h: 0.8, deg: 30, pL: 1 }, frott: { h: 0.8, deg: 30, pL: 0.3 }, vfrott: { h: 0.8, deg: 30, pL: 1 }, angfrott: { h: 0.8, deg: 60, pL: 1 }, fin: { h: 0.8, deg: 30, pL: 0.6 } };
 
-  // ════════════════ EXPLORATION ════════════════
-  const { m: mz, h: hz, deg: dz, f: fz, v0: vz } = ex;
-  const pr = useMemo(() => M.profil({ m: mz, h: hz, deg: dz, f: fz, v0: vz, n: 60 }), [mz, hz, dz, fz, vz]);
-  const k = Math.round(ex.u * (pr.pts.length - 1)), pt = pr.pts[k], vminS = M.vitesseMinSans(hz), vminF = M.vitesseMinFrott({ m: mz, h: hz, deg: dz, f: fz });
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures à la position choisie</div>
-      <LigneMesure nom="Distance sur la rampe" valeur={`${nbf(pt.s, 2)}${NB}m`}/>
-      <LigneMesure nom="Altitude z" valeur={`${nbf(pt.z, 2)}${NB}m`}/>
-      <LigneMesure nom="Vitesse" valeur={`${nbf(pt.v, 2)}${NB}m/s`} couleur="#0369a1"/>
-      <LigneMesure nom="Énergie cinétique Ec" valeur={`${nbf(pt.Ec, 3)}${NB}J`} couleur="#0369a1"/>
-      <LigneMesure nom="Énergie potentielle Epp" valeur={`${nbf(pt.Epp, 3)}${NB}J`} couleur="#c2410c"/>
-      <LigneMesure nom="Énergie mécanique Em" valeur={`${nbf(pt.Em, 3)}${NB}J`} couleur="#6d28d9"/>
-      <LigneMesure nom="Vitesse minimale, sans frottement" valeur={`${nbf(vminS, 2)}${NB}m/s`} couleur="#15803d"/>
-      {fz > 0 && <LigneMesure nom="Vitesse minimale, avec ce frottement" valeur={`${nbf(vminF, 2)}${NB}m/s`} couleur="#15803d"/>}
-      <div style={{ marginTop: 6, fontSize: 14, fontWeight: 700, color: pr.arrive ? '#15803d' : '#b91c1c', lineHeight: 1.5 }}>
-        {pr.arrive ? `La bille atteint le haut de la rampe avec la vitesse ${nbf(pr.vHaut, 2)} m/s.` : `La bille n’atteint pas le haut : elle s’arrête à ${nbf(pr.hMax, 2)} m de hauteur (rampe : ${nbf(hz, 2)} m).`}</div>
-    </div>);
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="flp-m" label="Masse de la bille" valeur={ex.m} onChange={v => setEx(s => ({ ...s, m: Number(v) }))} options={[[0.05, '50 g'], [0.08, '80 g'], [0.15, '150 g']]}/>
-      <Sel id="flp-h" label="Hauteur du haut de la rampe h" valeur={ex.h} onChange={v => setEx(s => ({ ...s, h: Number(v) }))} options={[0.4, 0.6, 0.8, 1.0, 1.2].map(v => [v, `${fr(v.toFixed(1))} m`])}/>
-      <Sel id="flp-a" label="Angle de la rampe α" valeur={ex.deg} onChange={v => setEx(s => ({ ...s, deg: Number(v) }))} options={[15, 20, 30, 45, 60].map(v => [v, `${v}°`])}/>
-      <Sel id="flp-f" label="Frottement sur la rampe" valeur={ex.f} onChange={v => setEx(s => ({ ...s, f: Number(v) }))} options={[[0, 'aucun (négligé)'], [0.03, 'faible : 0,03 N'], [0.05, 'moyen : 0,05 N'], [0.08, 'fort : 0,08 N']]}/>
-      <Curseur nom="Vitesse d’éjection v0" valeur={ex.v0} onChange={v => setEx(s => ({ ...s, v0: v }))} min={1} max={6} pas={0.2} unite="m/s" decimales={1} couleur="#0369a1"/>
-      <Curseur nom="Position sur la rampe" valeur={Math.round(ex.u * 100)} onChange={v => setEx(s => ({ ...s, u: v / 100 }))} min={0} max={100} pas={2} unite="%" decimales={0} couleur="#475569"/>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>0 % : pied de la rampe ; 100 % : point le plus haut atteint. Cherchez la plus petite vitesse v0 qui permet d’atteindre le haut.</div>
-    </div>);
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? 'La bille sur la rampe' : 'La situation étudiée'}</div>
-      {enExplore ? <SceneFlipper h={hz} deg={dz} pL={Math.min(pt.s / pr.L, 1)}/> : <SceneFlipper {...SC[idEtape]}/>}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La situation étudiée</div>
+      <SceneFlipper {...SC[idEtape]}/>
     </div>);
-  const graphe = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Les énergies pendant la montée</div>
-      <GrapheFlipper pr={pr} u={ex.u}/>
-    </div>);
-
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => setDefi(type === 'sans' ? { ...M.tirageDefiA(), type, reps: { v: '' }, verifie: false, corr: false } : { ...M.tirageDefiB(), type, reps: { v: '' }, verifie: false, corr: false });
   function changerMode(md) { setMode(md); if (md === 'defi' && !defi) nouveauDefi(typeDefi); }
@@ -238,11 +203,12 @@ export function SimulationFlipper() {
     </span>);
   const aEssayer = (
     <ul style={liste}>
-      <li>Sans frottement, changez la masse puis l’angle : la hauteur atteinte change-t-elle ?</li>
+      <li>Tirez la bille vers la gauche puis lâchez-la : plus le ressort est comprimé, plus la vitesse d’éjection est grande. Que devient l’énergie cinétique au pied de la rampe ?</li>
+      <li>Sans frottement, changez la masse puis l’angle (saisissez le haut de la rampe) : la hauteur atteinte change-t-elle ?</li>
       <li>Réglez la hauteur h de la rampe, puis cherchez la plus petite vitesse v0 qui permet d’atteindre le haut. Comparez à √(2 g h).</li>
       <li>Doublez la vitesse d’éjection quand la bille s’arrête avant le haut : la hauteur atteinte est-elle doublée ?</li>
       <li>Ajoutez un frottement : la vitesse minimale augmente-t-elle ? Est-ce pareil sur une rampe de 15° et de 60° ?</li>
-      <li>Regardez le graphique : que devient Em avec frottement ? Sans frottement ?</li>
+      <li>Regardez le graphique et les barres d’énergie : que devient Em avec frottement ? Sans frottement ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -283,12 +249,8 @@ export function SimulationFlipper() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="flp-ex">
-          {scene}
-          <div className="flp-reg">{reglages}</div>
-          {graphe}
-          {mesures}
-        </div>
+        <FlipperExplore/>
+        <div style={{ height: 12 }}/>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
