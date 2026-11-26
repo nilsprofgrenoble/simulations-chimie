@@ -10,6 +10,12 @@ import { COL, courbe } from "./irTabCourbes";
 import { SpectreIR, FIntervalles, FLireBande, FOhNh, FMethode, FEsterification } from "./irTabSchemas";
 import { SvgEnergieCarte } from "./uvVisStlSchemas";
 import { energieEv, energieJ } from "./uvVisStlModele";
+import { SceneLiaisonStl, SvgVibrationCarte } from "./irStlAnim";
+import { LIAISONS_VIB, liaisonVib, QCM_VIB, MOLS_VIB } from "./irStlVibCte.js";
+import { SceneMolecule, BarreAnim } from "./HookAnim";
+import { SceneSpectreIR } from "./HookSchemas";
+import { reduitMouvement } from "./hookHorloge";
+import * as H from "./hookModes";
 
 const SIM_ID = 308, CLE_GUIDE = 'irtstl-guide-v1';
 declarerDefis(SIM_ID, [['identifier', 'Identifier une espèce parmi quatre candidates'], ['associer', 'Associer chaque bande à une liaison']]);
@@ -24,13 +30,13 @@ declarerDefis(SIM_ID, [['identifier', 'Identifier une espèce parmi quatre candi
 const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
 // nombres de 4 chiffres écrits sans séparateur (convention des tableaux de spectroscopie), séparateur insécable à partir de 5 chiffres
 const mil = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, (m, i, str) => (str.length > 4 ? NB : ''));
-const IDS = ['sigma', 'energie', 'lire', 'tableau', 'ch', 'alcool', 'acide', 'amine', 'combiner', 'espece', 'suivi', 'conclure', 'bilan'];
+const IDS = ['sigma', 'energie', 'vibration', 'lire', 'tableau', 'ch', 'alcool', 'acide', 'amine', 'combiner', 'espece', 'suivi', 'conclure', 'bilan'];
 const E5 = energieEv(5000), EJ5 = energieJ(5000);        // photon de λ = 5,00 µm
 const sci = (x, d = 2) => { const e = Math.floor(Math.log10(Math.abs(x))), m = x / Math.pow(10, e); return `${nbf(m, d)}×10${[...String(e)].map(ch => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[ch])).join('')}`; };
 const MOL = M.MOLECULES;
 const ULS = { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 };
 // lignes du tableau visibles à chaque étape (on accumule) : un groupe à la fois
-const LIGNES_ETAPE = [[], [], [], ['co_ester', 'co_ald_cet', 'co_acide', 'co_amide'], ['ch_tet', 'oh_alcool', 'oh_acide', 'nh'], [], [], [], [], ['ch_trig', 'ch_ald', 'cc'], [], [], []];
+const LIGNES_ETAPE = [[], [], [], [], ['co_ester', 'co_ald_cet', 'co_acide', 'co_amide'], ['ch_tet', 'oh_alcool', 'oh_acide', 'nh'], [], [], [], [], ['ch_trig', 'ch_ald', 'cc'], [], [], []];
 const lignesVues = idx => { const v = new Set(); for (let i = 0; i <= idx; i++) LIGNES_ETAPE[i].forEach(x => v.add(x)); return M.TABLE.filter(r => v.has(r.id)); };
 const SIG1 = M.minimumBande(MOL.propanone, 1715, 40);          // valeur attendue à l'étape 1 : minimum de la bande C=O de l'échantillon A
 
@@ -61,6 +67,8 @@ export function SimulationIrStl() {
   const [hypoOuv, setHypoOuv] = useState(false);
   const [ouv, setOuv] = useState({ table: false, aide: false, essayer: false, retenir: false, tableDefi: true, compare: false });
   const [ex, setEx] = useState({ mol: 'propanone', mol2: '', curs: 1715, hach: false });
+  const [anime, setAnime] = useState(() => !reduitMouvement());
+  const [vibLiaison, setVibLiaison] = useState('CH'), [vm, setVm] = useState({ mol: 'CO2', mode: 'antisym' });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const etape = guide.etape, idx = enGuide ? Math.min(etape, IDS.length - 1) : -1;
   const idE = IDS[Math.max(idx, 0)];
@@ -79,12 +87,23 @@ export function SimulationIrStl() {
         calcul: () => ['λ = 5,00 µm = 5,00×10⁻⁶ m.', `E = frac(h × c|λ) = frac(6,63×10⁻³⁴ × 3,00×10⁸|5,00×10⁻⁶) = ${sci(EJ5, 2)} J.`, `E = frac(${sci(EJ5, 2)}|1,60×10⁻¹⁹) = ${nbf(E5, 3)} eV.`],
         pieges: [[EJ5 / 1e-20, 'Vous avez donné E en 10⁻²⁰ J : divisez par 1,60×10⁻¹⁹ J pour obtenir des électronvolts.'], [E5 * 1e6, 'Vous n’avez pas converti λ en mètres : 1 µm = 10⁻⁶ m.']],
         expl: `E = frac(h × c|λ) = ${sci(EJ5, 2)} J = ${nbf(E5, 3)} eV.`, indice: 'Convertissez λ en mètres (1 µm = 10⁻⁶ m), calculez E = h × c ÷ λ en joules, puis divisez par 1,60×10⁻¹⁹ pour les eV.' } },
-    { id: 'lire', titre: 'Lire la position d’une bande',
+    { id: 'vibration', titre: 'Une liaison qui vibre',
       retenirTitre: 'À RETENIR : LE PHOTON INFRAROUGE',
       retenir: <><SvgEnergieCarte/><ul style={ULS}>
         <li>Nombre d’onde <strong>σ = 1 ÷ λ</strong> (cm⁻¹) ; énergie d’un photon <strong>E = h × c ÷ λ</strong>. Un photon IR est bien moins énergétique qu’un photon visible ou UV.</li>
         <li>Exemple : à λ = 5,00 µm (σ = 2000 cm⁻¹), E ≈ {nbf(E5, 2)} eV, contre environ 3 eV dans le visible bleu : le photon IR fait <strong>vibrer</strong> les liaisons, le photon UV-visible fait changer d’état les électrons.</li>
         <li>Moyen de s’en souvenir : <strong>« grand nombre d’onde, grande énergie »</strong>. Idée fausse : « une grande longueur d’onde, c’est plus d’énergie ». Vrai : l’énergie varie en 1 ÷ λ.</li></ul></>,
+      texte: <>Un photon infrarouge n’a pas assez d’énergie pour modifier les électrons d’une molécule, mais il peut mettre ses <strong>liaisons en vibration</strong> : on peut les imaginer comme deux atomes reliés par un ressort. Une liaison absorbe les photons dont l’énergie correspond à sa vibration : cela donne une <strong>bande d’absorption</strong>, à un nombre d’onde σ propre à chaque liaison. Choisissez la liaison C–H, puis la liaison C=O, et comparez la vibration et la position de la bande.</>,
+      tache: { type: 'qcm', q: 'Les photons absorbés par la liaison C–H (σ ≈ 2950 cm⁻¹) sont, par rapport à ceux de la liaison C=O (σ ≈ 1715 cm⁻¹)…', ...QCM_VIB,
+        expl: `Comme E = h × c ÷ λ et σ = 1 ÷ λ, l’énergie d’un photon est proportionnelle à σ : environ ${nbf(energieEv(1e7 / 2950), 2)} eV pour C–H contre ${nbf(energieEv(1e7 / 1715), 2)} eV pour C=O. Le grand nombre d’onde de C–H correspond à une vibration plus rapide (atome H léger) et à des photons plus énergétiques.`,
+        indice: 'Rappelez-vous E = h × c ÷ λ et σ = 1 ÷ λ : quand σ augmente, que fait E ?' } },
+    { id: 'lire', titre: 'Lire la position d’une bande',
+      retenirTitre: 'À RETENIR : UNE LIAISON QUI VIBRE',
+      retenir: <><SvgVibrationCarte/><ul style={ULS}>
+        <li>Une liaison se comporte comme un <strong>ressort</strong> entre deux atomes : elle vibre.</li>
+        <li>Elle absorbe les photons IR dont l’énergie correspond à sa vibration : c’est une <strong>bande d’absorption</strong>, à un σ propre à chaque liaison.</li>
+        <li>Exemples : C–H vers 2950 cm⁻¹ ({nbf(energieEv(1e7 / 2950), 2)} eV par photon), C=O vers 1715 cm⁻¹ ({nbf(energieEv(1e7 / 1715), 2)} eV).</li>
+        <li>Idée fausse : « l’animation montre la vraie vitesse ». Vrai : elle est ralentie environ 3×10¹³ fois.</li></ul></>,
       texte: <>Un spectromètre infrarouge a enregistré le spectre d’un liquide pur, l’échantillon A. Le spectre donne la transmittance T en fonction du nombre d’onde σ ; une <strong>bande d’absorption</strong> est un creux. Une bande est très marquée au-dessus de 1500{NB}cm⁻¹.</>,
       tache: { type: 'num', q: 'Lisez le nombre d’onde σ du minimum de cette bande (une petite graduation vaut 100 cm⁻¹).', unite: 'cm⁻¹', vrai: SIG1, tol: 0.025, affiche: v => mil(v), cs: 2, carnet: false,
         calcul: () => ['Le creux le plus profond au-dessus de 1500 cm⁻¹ se trouve entre les graduations 1700 et 1800, tout près de 1700.', 'On lit σ ≈ 1715 cm⁻¹, à ± 30 cm⁻¹ près : c’est la précision d’une lecture sur ce graphique.'],
@@ -267,6 +286,19 @@ export function SimulationIrStl() {
         <li>On exploite la zone au-dessus de 1500 cm⁻¹ (groupes caractéristiques) ; sous 1500 cm⁻¹, c’est l’empreinte digitale.</li>
         <li>Pour une espèce, on regarde toutes les bandes : un seul groupe ne suffit pas toujours (C=O existe dans plusieurs familles).</li></ul>)}
     </Section>);
+  const NOTE_ANIM = 'Animation ralentie environ 30 000 milliards de fois (3×10¹³) : la vraie vibration est bien trop rapide pour être vue.';
+  const modesVib = H.MOLS[vm.mol].modes.filter(m => !m.rot), mdV = H.mode(vm.mol, modesVib.some(m => m.id === vm.mode) ? vm.mode : modesVib[0].id), actV = H.actifIR(vm.mol, mdV.id);
+  const panneauVib = (
+    <Section titre={`Pour aller plus loin : molécules en vibration (${{ H2O: 'H₂O', CO2: 'CO₂', HCl: 'HCl', N2: 'N₂' }[vm.mol]}, ${mdV.nom})`} ouvert={ouv.vib} onBascule={() => setOuv(o => ({ ...o, vib: !o.vib }))}>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Choisissez une molécule et un mouvement de vibration : le point de la jauge indique si le moment dipolaire de la molécule varie. Sans variation, il n’y a pas de bande sur le spectre.</div>
+      <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, marginBottom: 6 }}>Molécule
+        <select value={vm.mol} onChange={e => setVm({ mol: e.target.value, mode: H.MOLS[e.target.value].modes.filter(m => !m.rot)[0].id })} style={{ ...menu, marginTop: 2 }}>{MOLS_VIB.map(k => <option key={k} value={k}>{H.MOLS[k].nom}</option>)}</select></label>
+      <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>Mouvement
+        <select value={mdV.id} onChange={e => setVm(s => ({ ...s, mode: e.target.value }))} style={{ ...menu, marginTop: 2 }}>{modesVib.map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}</select></label>
+      <SceneMolecule molId={vm.mol} modeId={mdV.id} anime={anime}/><div style={{ height: 6 }}/>
+      <SceneSpectreIR bandes={H.bandesMolecule(vm.mol)} marque={mdV.sigma} marqueLabel={actV ? null : `${mdV.sigma} · aucune bande`} marqueCouleur={actV ? '#dc2626' : '#64748b'}/>
+      <BarreAnim anime={anime} onBascule={() => setAnime(a => !a)} note={NOTE_ANIM}/>
+    </Section>);
   const tableExplore = (
     <Section titre={`Données tabulées (${M.TABLE.length} lignes : liaison, intervalle, allure)`} ouvert={ouv.table} onBascule={() => setOuv(o => ({ ...o, table: !o.table }))}>
       <TableauIR lignes={M.TABLE} surligne={dansTab.map(r => r.id)}/>
@@ -301,6 +333,7 @@ export function SimulationIrStl() {
       <li><strong>Valeurs tabulées = intervalles typiques</strong> : la position réelle d’une bande varie avec la molécule et son environnement ; les intervalles de plusieurs lignes se recouvrent (par exemple C=O de l’ester, de l’aldéhyde et de la cétone entre 1735 et 1740 cm⁻¹).</li>
       <li><strong>Spectre simplifié</strong> : seules les bandes principales sont tracées, sans couplages ni harmoniques ; d’autres bandes réelles (par exemple la déformation N–H d’une amine vers 1600 cm⁻¹) ne sont pas représentées. Les bandes C–H sont regroupées en une ou deux bandes.</li>
       <li><strong>Échantillon pur en phase condensée</strong> (liquide) : les liaisons O–H et N–H sont « liées » (liaisons hydrogène), d’où des bandes larges. En solution diluée ou en phase gazeuse, la bande O–H d’un alcool devient fine et se déplace vers 3600 cm⁻¹ ; ce cas n’est pas traité ici.</li>
+      <li><strong>Vibrations animées</strong> : une liaison est représentée par deux atomes reliés par un ressort (modèle qualitatif) ; l’animation est ralentie d’un facteur environ 3×10¹³ et les amplitudes sont exagérées. Les mouvements de H₂O, CO₂, HCl et N₂ (volet « Pour aller plus loin », au-delà du programme) sont dessinés d’après la symétrie, avec des charges partielles arbitraires : la jauge dit si le moment dipolaire varie, pas l’intensité de la bande.</li>
       <li><strong>Zone exploitée</strong> : au-dessus de 1500 cm⁻¹ (groupes caractéristiques). La zone sous 1500 cm⁻¹ (empreinte digitale) est citée, mais on ne l’interprète pas.</li>
       <li><strong>Une espèce se déduit de l’ensemble des bandes</strong> : C=O existe dans plusieurs familles ; le tableau seul ne tranche pas toujours (intervalles qui se recouvrent), on s’aide des autres bandes ou d’informations sur l’échantillon.</li>
       <li><strong>Suivi d’une transformation</strong> : qualitatif, sur le produit purifié (lavé et séché). Dans un mélange réactionnel brut, l’eau formée et les réactifs restants montreraient encore des bandes O–H. Le spectre ne donne pas ici de rendement ni de quantités.</li>
@@ -313,10 +346,19 @@ export function SimulationIrStl() {
     lire: () => [courbe(MOL.propanone, 'échantillon A')], tableau: () => [courbe(MOL.propanone, 'échantillon A')], ch: () => [courbe(MOL.propanone, 'échantillon A')],
     alcool: () => [courbe(MOL.ethanol, 'échantillon B')], acide: () => [courbe(MOL.acide, 'échantillon C')], amine: () => [courbe(MOL.ethylamine, 'échantillon D')], combiner: () => [courbe(MOL.acide, 'échantillon C')],
     espece: () => [courbe(MOL.ethanal, 'échantillon E')],
-    sigma: () => [], energie: () => [],
+    sigma: () => [], energie: () => [], vibration: () => [],
     suivi: () => [courbe(MOL.acide, 'acide éthanoïque'), courbe(MOL.ethanol, 'éthanol', 'tirets')],
     conclure: () => [courbe(MOL.acide, 'acide éthanoïque'), courbe(MOL.ester, 'produit isolé', 'tirets')], bilan: () => [courbe(MOL.acide, 'acide éthanoïque'), courbe(MOL.ester, 'produit isolé', 'tirets')],
   };
+  const liaV = liaisonVib(vibLiaison);
+  const sceneVib = enGuide && idE === 'vibration' && (
+    <div style={styleBoite}>
+      <label htmlFor="irs-liaison" style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '0 0 3px' }}>Liaison étudiée</label>
+      <select id="irs-liaison" value={vibLiaison} onChange={e => setVibLiaison(e.target.value)} style={{ ...menu, marginBottom: 8 }}>{LIAISONS_VIB.map(l => <option key={l.id} value={l.id}>{l.nom}</option>)}</select>
+      <SceneLiaisonStl liaison={liaV} anime={anime}/><div style={{ height: 6 }}/>
+      <SceneSpectreIR bandes={[{ sigma: liaV.sigma, larg: liaV.larg, prof: liaV.prof }]} marque={liaV.sigma}/>
+      <BarreAnim anime={anime} onBascule={() => setAnime(a => !a)} note={NOTE_ANIM}/>
+    </div>);
   const spectreG = enGuide && idx >= IDS.indexOf('lire') && (
     <div style={{ ...styleBoite, padding: 6 }}>
       <SpectreIR courbes={COURBES_GUIDE[idE]()} empreinte={idx >= IDS.indexOf('espece')} titre={`Spectre infrarouge, étape ${idx + 1}`}/>
@@ -349,6 +391,7 @@ export function SimulationIrStl() {
         <div className="irt-main">
           {enDefi && defi && <div style={styleBoite}>{indicesProfond(voletDefi)}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'identifier' ? suiviI : suiviA}/></div>}
           {enGuide && <div className="irt-col">
+            {sceneVib && <div className="irt-in" key="vib">{sceneVib}</div>}
             <div className="irt-in" key={`s${idE}`}>{spectreG}</div>
             {tableG && <div className="irt-in" key={`t${idx}`}>{tableG}</div>}
           </div>}
@@ -359,6 +402,7 @@ export function SimulationIrStl() {
         <div className="irt-ctrl">{reglagesEx}</div>
         <div>{mesuresEx}</div>
         <div>{tableExplore}</div>
+        <div>{panneauVib}</div>
         <div>{aideLire}</div>
         <div>{aEssayer}</div>
         <div>{retenirExplore}</div>
