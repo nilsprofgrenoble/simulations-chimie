@@ -19,7 +19,7 @@ export function useProgres(cle, duree, anime) {
   return !anime || cle === 0 ? 1 : s.cle === cle ? s.p : 0;
 }
 
-const INIT = { el: 'Fe', E: 9, w: 20, courbe: false, vitesse: 'lent' };
+const INIT = { el: 'Fe', E: 9, w: 100, courbe: false, vitesse: 'lent' };
 export function useTiragesX(init) {
   const [t, setT] = useState(() => ({ ...INIT, ...init, etat: X.etatVide() }));
   const [lecture, setLecture] = useState(false);

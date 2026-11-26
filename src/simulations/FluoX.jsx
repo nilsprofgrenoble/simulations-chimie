@@ -187,7 +187,8 @@ export function SimulationFluoX() {
       {ex.onglet === 'tirages' && <>
         {selecteur('fx-te', 'Élément étudié', tir.t.el, ev => tir.regler({ el: ev.target.value }), M.ELEMENTS.map(e => ({ id: e.s, nom: `${e.nom} (Z = ${e.Z})` })))}
         {curs('fx-tE', `Énergie du photon X incident : ${fr(tir.t.E, 1)} keV`, tir.t.E, 0.5, 12, 0.1, ev => tir.regler({ E: parseFloat(ev.target.value) }), `Seuil K de l’élément : ${fr(tir.el.EK, 2)} keV.`)}
-        {selecteur('fx-tw', 'Proportion d’atomes de l’élément dans l’échantillon', String(tir.t.w), ev => tir.regler({ w: parseFloat(ev.target.value) }), [5, 10, 20, 50, 100].map(w => ({ id: String(w), nom: `${w} %` })))}
+        {selecteur('fx-tw', `Teneur en ${tir.el.nom} de l’échantillon (atomes de ${tir.el.nom} sur 100)`, String(tir.t.w), ev => tir.regler({ w: parseFloat(ev.target.value) }), [5, 10, 20, 50, 100].map(w => ({ id: String(w), nom: `${w} %` })))}
+        <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 3 }}>À 100 %, tous les atomes sont ceux de l’élément. Si la teneur baisse, beaucoup de photons X frappent d’autres atomes : le pic grandit plus lentement.</div>
         <label style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10, fontSize: 14, color: KIT.txt }}><input type="checkbox" checked={tir.t.courbe} onChange={ev => tir.regler({ courbe: ev.target.checked })} style={{ width: 20, height: 20 }}/>Afficher la forme attendue (courbe en pointillés)</label></>}
       {ex.onglet === 'echantillon' && <>
         {selecteur('fx-ec', 'Échantillon', ex.ech, ev => setEx(e => ({ ...e, ech: ev.target.value, raie: M.ECHANTILLONS[ev.target.value].comp[0].s })), Object.entries(M.ECHANTILLONS).map(([id, m]) => ({ id, nom: m.nom })))}
@@ -201,9 +202,9 @@ export function SimulationFluoX() {
     <div style={styleBoite}>
       {pilules}
       {ex.onglet === 'tirages' ? <>
-        <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#4c1d95', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{tir.t.etat.lot > 1 ? 'Lot de plusieurs atomes : voici le dernier.' : legendePhase(tir.t.etat.dernier, progT)}</div>
-        <SceneAtomeAnim d={tir.t.etat.dernier} p={progT}/>
-        <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{tir.t.etat.lot > 1 ? `Dernier atome du lot : ${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.` : `${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.`}</div>
+        <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#4c1d95', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{tir.t.etat.lot > 1 ? 'Un lot d’atomes est trop rapide pour être animé : le bilan est ci-dessous. Pour voir chaque atome, utilisez « 1 atome » ou « Lecture ».' : legendePhase(tir.t.etat.dernier, progT)}</div>
+        <SceneAtomeAnim d={tir.t.etat.lot > 1 ? null : tir.t.etat.dernier} p={tir.t.etat.lot > 1 ? 1 : progT}/>
+        <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{tir.t.etat.lot > 1 ? `Bilan du lot de ${tir.t.etat.lotRes.n} atomes : ${tir.t.etat.lotRes.ion} électrons K éjectés, dont ${tir.t.etat.lotRes.ka} photons Kα, ${tir.t.etat.lotRes.kb} photons Kβ et ${tir.t.etat.lotRes.auger} effets Auger (sans photon X).` : `${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.`}</div>
         <SceneHistoX etat={tir.t.etat} params={tir.t} el={tir.el} courbe={tir.t.courbe}/><div style={{ marginTop: 10 }}><CommandesTirages tir={tir}/></div></>
       : ex.onglet === 'atome' ? <><SceneAtome etat={ionE ? 'saut2' : 'repos'} photon={ex.E} photonLabel={`${fr(ex.E, 1)} keV`} raies={[`Kα ${fr(el.Ka, 2)} keV`, `Kβ ${fr(el.Kb, 2)} keV`]}/><div style={{ height: 6 }}/>
         <SceneSpectreX comp={ionE ? [{ s: el.s, w: 10 }] : []} yMax={3600} marques={[[el.EK, `seuil K ${fr(el.EK, 2)}`, '#7c3aed', el.EK <= ex.E ? 'end' : 'start'], [ex.E, 'photon X', '#2563eb', el.EK <= ex.E ? 'start' : 'end']]}/></>
