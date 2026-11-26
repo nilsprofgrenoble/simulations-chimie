@@ -2817,5 +2817,17 @@
  "77:plausible:pxt-val-pente": "VAL749",
  "77:plausible:pxt-val-signe": "VAL750",
  "36:pxt-droite": "REA181",
- "36:pxt-corde": "REA182"
+ "36:pxt-corde": "REA182",
+ "34:grv-sapp-force.0": "SAPP610",
+ "34:grv-sapp-force.1": "SAPP611",
+ "34:grv-sapp-poids.0": "SAPP612",
+ "34:grv-sapp-poids.1": "SAPP613",
+ "37:prevoir:grv-ana-reciproque": "ANA1279",
+ "37:prevoir:grv-ana-distance": "ANA1280",
+ "37:prevoir:grv-ana-masse": "ANA1281",
+ "37:prevoir:grv-ana-altitude": "ANA1282",
+ "77:plausible:grv-val-force": "VAL751",
+ "77:plausible:grv-val-poids": "VAL752",
+ "36:grv-force": "REA183",
+ "36:grv-poids": "REA184"
 }

@@ -237,6 +237,7 @@ const SimulationFreinage = paresseux(() => import("./simulations/Freinage"), "Si
 const SimulationChute = paresseux(() => import("./simulations/Chute"), "SimulationChute");
 const SimulationLooping = paresseux(() => import("./simulations/Looping"), "SimulationLooping");
 const SimulationFlipper = paresseux(() => import("./simulations/Flipper"), "SimulationFlipper");
+const SimulationGravitation = paresseux(() => import("./simulations/Gravitation"), "SimulationGravitation");
 const SimulationPenteXt = paresseux(() => import("./simulations/PenteXt"), "SimulationPenteXt");
 const SimulationVecteursVAStl = paresseux(() => import("./simulations/VecteursVAStl"), "SimulationVecteursVAStl");
 const SimulationSpectres = paresseux(() => import("./simulations/Spectres"), "SimulationSpectres");
@@ -460,6 +461,7 @@ const SIMULATIONS = [
     component: SimulationFlipper },
   { id:264, label:"Vitesse et accélération d’un mobile : des positions aux dérivées", niveau:"TSTL", icon:"🏎️", color:"#0b4f94", component: SimulationVecteursVAStl },
   { id:265, label:"Lire une vitesse sur un graphique x(t)", niveau:"TSTL", icon:"📈", color:"#7c3aed", component: SimulationPenteXt },
+  { id:266, label:"Gravitation et poids : force entre deux corps, intensité de pesanteur", niveau:"TSTL", icon:"🌍", color:"#0e7490", component: SimulationGravitation },
   { id:87, label:"Son : spectre, hauteur, timbre et niveau sonore", niveau:"TSTL", icon:"🔊", color:"#0e7490",
     component: SimulationSon },
   { id:88, label:"Échographe : écho, célérité et résolution", niveau:"TSTL", icon:"🩻", color:"#0891b2",

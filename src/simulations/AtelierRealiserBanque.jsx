@@ -3415,6 +3415,51 @@ function genPxtCorde() {
   return { intro, questions: [q1, q2],
     retenir: ['Vitesse moyenne = pente de la corde ; vitesse à une date = pente de la tangente = dérivée de x(t).', 'Pour une courbe qui se redresse, la corde est plus raide que la tangente au début de l’intervalle.'] };
 }
+function genGrvForce() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const GG = 6.67e-11; let m1, m2, d, F, F2, F3;
+  do { m1 = tire([500, 800, 1000, 1500, 2000]); m2 = tire([500, 1000, 2000]); d = tire([1, 2, 3]); F = GG * m1 * m2 / (d * d) * 1e6; F2 = F / 4; F3 = F * 3; }
+  while (new Set([F, F2, F3].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Deux blocs de masses ${m1}${NB}kg et ${m2}${NB}kg sont séparés de ${d}${NB}m (centre à centre). G = 6,67×10⁻¹¹${NB}N·m²·kg⁻².`;
+  const q1 = { id: 'g0', type: 'num', q: <>Quelle est la <b>valeur de la force gravitationnelle</b> entre les deux blocs (en µN, 2 chiffres significatifs) ?</>, unite: 'µN', vrai: F, tolRel: 0.05, csMin: 2,
+    aide: 'F = G × m_A × m_B ÷ d². Le résultat est en N : multipliez par 10⁶ pour l’exprimer en µN.',
+    pieges: [[F * d, 'La distance doit être élevée au carré : F = G × m_A × m_B ÷ d².'], [F / 1e6, 'Le résultat est en N : 1 N = 10⁶ µN.']],
+    expl: <>F = 6,67×10⁻¹¹ × {m1} × {m2} ÷ {d}² = <b>{pvFmt(F)}{NB}µN</b>.</> };
+  const q2 = { id: 'g1', type: 'num', q: <>On <b>double la distance</b> entre les blocs. Quelle est la nouvelle valeur de la force (en µN, 2 chiffres significatifs) ?</>, unite: 'µN', vrai: F2, tolRel: 0.05, csMin: 2,
+    aide: 'F varie comme 1/d² : doubler d divise F par 4.',
+    pieges: [[F / 2, 'La distance est au carré : doubler d divise F par 2² = 4, pas par 2.']],
+    expl: <>F′ = F ÷ 2² = {pvFmt(F)} ÷ 4 = <b>{pvFmt(F2)}{NB}µN</b>.</> };
+  const q3 = { id: 'g2', type: 'num', q: <>Revenons à la distance de {d}{NB}m et <b>triplons la masse</b> du premier bloc. Quelle est la nouvelle valeur de la force (en µN, 2 chiffres significatifs) ?</>, unite: 'µN', vrai: F3, tolRel: 0.05, csMin: 2,
+    aide: 'F est proportionnelle au produit des masses : tripler une masse triple F.',
+    pieges: [[F * 9, 'La masse n’est pas au carré : tripler m_A multiplie F par 3, pas par 9.']],
+    expl: <>F′ = 3 × {pvFmt(F)} = <b>{pvFmt(F3)}{NB}µN</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['F = G × m_A × m_B ÷ d² : proportionnelle aux masses, inversement proportionnelle au carré de la distance.', 'Les deux forces d’interaction ont la même valeur et des sens opposés.'] };
+}
+function genGrvPoids() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const GG = 6.67e-11; let M, R, m, g, P, g2;
+  do { M = tire([2, 3, 4, 5, 8, 10]); R = tire([2, 3, 4, 5]); m = tire([40, 50, 60, 80]); g = GG * M * 1e23 / (R * R * 1e12); P = m * g; g2 = g / 4; }
+  while (g < 1.5 || new Set([g, P, g2].map(x => Number(x.toPrecision(2)))).size < 3);
+  const intro = `Une planète a pour masse ${M}×10²³${NB}kg et pour rayon ${R}×10⁶${NB}m. G = 6,67×10⁻¹¹${NB}N·m²·kg⁻².`;
+  const q1 = { id: 'p0', type: 'num', q: <>Quelle est l’<b>intensité de pesanteur à la surface</b> de la planète (en N/kg, 2 chiffres significatifs) ?</>, unite: 'N/kg', vrai: g, tolRel: 0.05, csMin: 2,
+    aide: 'g = G × M ÷ R², avec M en kg et R en m.',
+    pieges: [[GG * M * 1e23 / (R * 1e6), 'Le rayon doit être élevé au carré : g = G × M ÷ R².']],
+    expl: <>g = 6,67×10⁻¹¹ × {M}×10²³ ÷ ({R}×10⁶)² = <b>{pvFmt(g)}{NB}N/kg</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>Quel est le <b>poids d’un objet de {m}{NB}kg</b> posé à la surface (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: P, tolRel: 0.05, csMin: 2,
+    aide: 'P = m × g.',
+    pieges: [[g, 'C’est l’intensité de pesanteur g : le poids est P = m × g.'], [m / g, 'Il faut multiplier la masse par g, pas la diviser.']],
+    expl: <>P = {m} × {pvFmt(g)} = <b>{pvFmt(P)}{NB}N</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Quelle est l’<b>intensité de pesanteur à une altitude égale au rayon</b> de la planète (distance au centre : 2 R), en N/kg (2 chiffres significatifs) ?</>, unite: 'N/kg', vrai: g2, tolRel: 0.05, csMin: 2,
+    aide: 'g = G × M ÷ (distance au centre)² : la distance au centre est doublée.',
+    pieges: [[g / 2, 'La distance est au carré : doubler la distance divise g par 4, pas par 2.']],
+    expl: <>g′ = g ÷ 2² = {pvFmt(g)} ÷ 4 = <b>{pvFmt(g2)}{NB}N/kg</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['g = G × M ÷ R² à la surface ; g diminue quand on s’éloigne du centre.', 'Le poids est P = m × g ; la masse ne change pas d’un astre à l’autre.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5992,6 +6037,8 @@ export const FAMILLES = [
   { id: 'flp-vmin', groupe: 'Formules', titre: 'Flipper : vitesse d’éjection minimale, avec et sans frottement (terminale STL)', gen: genFlpVmin, domaine: 'Flipper : vitesse d’éjection minimale pour atteindre le haut de la rampe' },
   { id: 'pxt-droite', groupe: 'Formules', titre: 'Vitesse lue sur une droite x(t), position à une date ultérieure (terminale STL)', gen: genPxtDroite, domaine: 'Lire une vitesse sur un graphique x(t)' },
   { id: 'pxt-corde', groupe: 'Formules', titre: 'Vitesse moyenne (corde) et vitesse à une date (tangente) (terminale STL)', gen: genPxtCorde, domaine: 'Lire une vitesse sur un graphique x(t)' },
+  { id: 'grv-force', groupe: 'Formules', titre: 'Force gravitationnelle entre deux blocs : valeur, distance, masse (terminale STL)', gen: genGrvForce, domaine: 'Gravitation et poids' },
+  { id: 'grv-poids', groupe: 'Formules', titre: 'Intensité de pesanteur et poids sur une planète (terminale STL)', gen: genGrvPoids, domaine: 'Gravitation et poids' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
