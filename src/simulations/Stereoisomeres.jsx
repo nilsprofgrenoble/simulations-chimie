@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./stereoisomeresModele";
 import { QCM, MOL, A, IMG, AUTRE, AUTRE2, nom, MESO, MESO_RS } from "./stereoisomeresQcm";
+import Couple3D from "./Couple3D";
 import { CoupleCram, SceneAlcene, ListeAlcenes, SvgNombre, SvgRelations, SvgBio, SvgZE, SvgArbre } from "./StereoisomeresSchemas";
 
 const SIM_ID = 144, CLE_GUIDE = 'stereoisomeres-guide-v1';
@@ -53,7 +54,7 @@ export function SimulationStereoisomeres() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('relation');
   const [ouv, setOuv] = useState({});
-  const [ti, setTi] = useState({ mode: 'c', mol: 'chlorohydroxy', a: 'RS', b: 'RR', miroirA: false, alc: 'pent2ene', h: [true, true], rangs: false });
+  const [ti, setTi] = useState({ mode: 'c', mol: 'chlorohydroxy', a: 'RS', b: 'RR', miroirA: false, alc: 'pent2ene', h: [true, true], rangs: false, v3d: false });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
@@ -283,13 +284,19 @@ export function SimulationStereoisomeres() {
   const mx = M.parId2(ti.mol), stX = M.stereoisomeres(mx), sa = stX.find(s => s.id === ti.a) ?? stX[0], sb = stX.find(s => s.id === ti.b) ?? stX[1];
   const am = M.parIdAlc(ti.alc), hX = am.ze ? ti.h : [true, true];
   const relX = M.relation(sa.desc, sb.desc);
-  const gScene = ti.mode === 'c'
+  const gScene = ti.mode === 'c' && ti.v3d
+    ? <Couple3D mol={mx} options={[{ lettre: 'A', s: sa }, { lettre: 'B', s: sb }]} />
+    : ti.mode === 'c'
     ? <CoupleCram mol={mx} ariaLabel="Deux stéréoisomères" items={[{ affs: sa.affs, legende: `A : ${nomDe(mx, sa)}` }, ...(ti.miroirA ? [{ affs: sa.affs, miroir: true, legende: 'Image de A dans un miroir', pointille: true }] : []), { affs: sb.affs, legende: `B : ${nomDe(mx, sb)}` }]}/>
     : <SceneAlcene m={am} haut={hX} rangs={ti.rangs} relier={ti.rangs && am.ze} verdict={ti.rangs && am.ze ? M.geometrieZE(hX) : null}/>;
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enGuide ? (idE === 'bio' || idE === 'bilan' ? '' : 'Les molécules') : (ti.mode === 'c' ? 'Deux stéréoisomères en perspective de Cram' : 'Double liaison C=C')}</div>
       {enExplore && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>{ti.mode === 'c' ? 'Choisissez deux stéréoisomères A et B de la même molécule : la relation entre eux est donnée dans Mesures.' : 'Placez les groupes de la double liaison : la configuration Z ou E apparaît dans Mesures si chaque carbone porte deux groupes différents.'}</div>}
+      {enExplore && ti.mode === 'c' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+        <button onClick={() => setTi(x => ({ ...x, v3d: false }))} aria-pressed={!ti.v3d} style={stylePetitBouton(!ti.v3d, '#0369a1')}>Dessin de Cram</button>
+        <button onClick={() => setTi(x => ({ ...x, v3d: true }))} aria-pressed={ti.v3d} style={stylePetitBouton(ti.v3d, '#0f766e')}>Vue 3D (dans l’espace)</button>
+      </div>}
       {enGuide ? sceneGuide : gScene}
     </div>);
   const selMol = (id, val, set, options) => (<>
