@@ -4499,6 +4499,62 @@ function genTcrAvantApresBase() {
     retenir: ['Avant l’équivalence, le permanganate versé est entièrement consommé : H₂O₂ restant = initial − 5/2 × n(MnO₄⁻) versée.', 'Après l’équivalence, H₂O₂ est épuisé : MnO₄⁻ en excès = versé − 2/5 × n(H₂O₂) initiale, et la solution est rose.', 'Volume équivalent : V_E = (2/5 × n(H₂O₂)) / c_B.']};
 }
 
+// ───────────── Titrage potentiométrique (TSTL, sim 297) : fer(II) dosé par le cérium(IV)
+function genTptDosage() {
+  for (let k = 0; ; k++) { const g = genTptDosageBase(); const v = g.questions.map(q => q.vrai); if (new Set(v.map(x => x.toPrecision(3))).size === v.length || k > 80) return g; }
+}
+function genTptDosageBase() {
+  const cB = tire([0.0500, 0.0800, 0.1000]), VA = tire([10, 20, 25]), Ve = tire([8.6, 9.8, 11.4, 12.6, 14.2, 16.4, 18.8]), VA2 = tire([5, 15, 30].filter(v => v !== VA));
+  const nB = cB * Ve, cA = nB / VA, Ve2 = cA * VA2 / cB, rho = cA * 55.8;
+  const intro = <>On dose <b>{VA}{NB}mL</b> d’une solution de fer(II) par du cérium(IV) de concentration <b>{sciF(cB, 2)}{NB}mol/L</b>, en suivant le potentiel avec une électrode de platine. L’équation du titrage est Ce⁴⁺ + Fe²⁺ → Ce³⁺ + Fe³⁺, et la méthode de la dérivée donne un volume équivalent <b>V<sub>E</sub> = {nb(Ve, 1)}{NB}mL</b>.</>;
+  const q1 = { id: 'd0', type: 'num', q: <>{intro} Quelle quantité de cérium(IV) a été versée à l’équivalence (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nB, tolRel: 0.03, csMin: 2,
+    aide: 'n(Ce⁴⁺) = c_B × V_E : avec c_B en mol/L et V_E en mL, le produit est en mmol.',
+    pieges: [[nB * 1000, 'Vous avez donné des µmol : mol/L × mL donne des mmol.'], [nB / 1000, 'Vous avez donné des mol : mol/L × mL donne des mmol.'], [cB / Ve, 'Vous avez divisé : c_B se multiplie par V_E.']],
+    expl: <>n(Ce⁴⁺) = {sciF(cB, 2)} × {nb(Ve, 1)} = <b>{nb(nB, 3)}{NB}mmol</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>{intro} Quelle est la concentration c<sub>A</sub> de la solution de fer(II) (en mol/L, 3 chiffres significatifs) ?</>, unite: 'mol/L', vrai: cA, tolRel: 0.03, csMin: 2,
+    aide: 'À l’équivalence n(Fe²⁺) = n(Ce⁴⁺) (1 pour 1) ; puis c_A = n(Fe²⁺) / V_A.',
+    pieges: [[nB, 'Vous avez donné la quantité de matière : divisez par le volume V_A prélevé.'], [VA / nB, 'Vous avez inversé le calcul : c_A = n / V_A.'], [2 * cA, 'Vous avez multiplié par 2 : ici 1 Ce⁴⁺ réagit avec 1 Fe²⁺.']],
+    expl: <>c<sub>A</sub> = n(Fe²⁺) / V<sub>A</sub> = {nb(nB, 3)} / {VA} = <b>{nb(cA, 4)}{NB}mol/L</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>{intro} La masse molaire du fer est 55,8 g/mol. Quelle est la concentration massique en fer(II) de la solution (en g/L, 3 chiffres significatifs) ?</>, unite: 'g/L', vrai: rho, tolRel: 0.03, csMin: 2,
+    aide: 'Calculez d’abord c_A = c_B × V_E / V_A, puis ρ = c_A × M.',
+    pieges: [[cA, 'Vous avez donné la concentration molaire : multipliez par la masse molaire M.'], [nB * 55.8, 'Vous avez multiplié la quantité de matière (mmol) par M : il faut la concentration c_A.']],
+    expl: <>ρ = c<sub>A</sub> × M = {nb(cA, 4)} × 55,8 = <b>{nb(rho, 2)}{NB}g/L</b>.</> };
+  const q4 = { id: 'd3', type: 'num', q: <>{intro} On recommence le dosage avec une prise de <b>{VA2}{NB}mL</b> de la même solution de fer(II). Quel volume équivalent attend-on (en mL, 3 chiffres significatifs) ?</>, unite: 'mL', vrai: Ve2, tolRel: 0.03, csMin: 2,
+    aide: 'V_E est proportionnel au volume prélevé : V_E = c_A × V_A / c_B, avec c_A déterminée à la première question.',
+    pieges: [[Ve, 'Vous avez gardé le premier volume équivalent : il est proportionnel à la prise d’essai.'], [Ve * VA / VA2, 'Vous avez inversé le rapport des prises d’essai : V_E augmente avec V_A.']],
+    expl: <>c<sub>A</sub> = {nb(cA, 4)} mol/L ; V<sub>E</sub>′ = c<sub>A</sub> × V<sub>A</sub>′ / c<sub>B</sub> = {nb(cA, 4)} × {VA2} / {sciF(cB, 2)} = <b>{nb(Ve2, 1)}{NB}mL</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Dosage potentiométrique du fer(II) : quantité de cérium(IV) versée, concentration molaire et massique, volume équivalent d’une autre prise d’essai.', questions: [q1, q2, q3, q4],
+    retenir: ['n(Ce⁴⁺) = c_B × V_E (mol/L × mL = mmol).', 'n(Fe²⁺) = n(Ce⁴⁺) : 1 pour 1.', 'c_A = n(Fe²⁺) / V_A ; ρ = c_A × M.', 'V_E est proportionnel à la prise d’essai V_A.'] };
+}
+function genTptPotentiel() {
+  for (let k = 0; ; k++) { const g = genTptPotentielBase(), v = g.questions.map(q => q.vrai.toPrecision(3)); if (new Set(v).size === v.length || k > 60) return g; }
+}
+function genTptPotentielBase() {
+  const FR = [0.1, 0.25, 0.75, 0.9], f = tire(FR), g = tire(FR.filter(v => v !== f)), x = tire([1.1, 1.25, 1.5, 3]), Eref = 0.245, U0 = tire([0.30, 0.34, 0.36, 0.40]);
+  const E1 = 0.77 + 0.06 * lg10(f / (1 - f)), E3 = 0.77 + 0.06 * lg10(g / (1 - g)), E2 = 1.44 + 0.06 * lg10(x - 1), U1 = E3 - Eref, Eini = U0 + Eref;
+  const intro = <>On dose du fer(II) par du cérium(IV) en suivant le potentiel d’une électrode de platine, avec une électrode de référence à <b>0,245{NB}V</b>. Données (25 °C) : E°(Fe³⁺/Fe²⁺) = <b>0,77{NB}V</b> ; E°(Ce⁴⁺/Ce³⁺) = <b>1,44{NB}V</b> ; E = E° + 0,06 log([Ox]/[Red]) pour un électron échangé.</>;
+  const q1 = { id: 'p0', type: 'num', q: <>{intro} Avant tout ajout, le voltmètre indique U = <b>{nbF(U0, 2)}{NB}V</b>. Quel est le potentiel E de la solution (en V, 2 chiffres après la virgule) ?</>, unite: 'V', vrai: Eini, tolRel: 0.02, csMin: 2,
+    aide: 'U = E(Pt) − E(référence) : E = U + 0,245.',
+    pieges: [[U0, 'C’est la tension U : le potentiel E vaut U + 0,245 V.'], [U0 - Eref, 'Vous avez soustrait 0,245 V : E = U + E(référence).']],
+    expl: <>E = U + 0,245 = {nbF(U0, 2)} + 0,245 = <b>{nbF(Eini, 3)}{NB}V</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>{intro} On est avant l’équivalence : il a réagi la fraction <b>{nbF(f * 100, 0)}{NB}%</b> du fer(II), donc [Fe³⁺]/[Fe²⁺] = {nbF(f, 2)} / {nbF(1 - f, 2)}. Quel est le potentiel E (en V, 3 chiffres significatifs) ?</>, unite: 'V', vrai: E1, tolRel: 0.02, csMin: 2,
+    aide: 'E = 0,77 + 0,06 × log([Fe³⁺]/[Fe²⁺]) : calculez le rapport, puis son logarithme décimal.',
+    pieges: [[0.77, 'Vous avez donné E° : le rapport [Fe³⁺]/[Fe²⁺] n’est pas égal à 1, le logarithme n’est pas nul.'], [0.77 - 0.06 * lg10(f / (1 - f)), 'Signe du logarithme inversé : [Fe³⁺] est le numérateur (forme oxydée).'], [U1, 'C’est la tension U au voltmètre : on demande le potentiel E.']],
+    expl: <>E = 0,77 + 0,06 × log({nbF(f, 2)} / {nbF(1 - f, 2)}) = <b>{nbF(E1, 3)}{NB}V</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>{intro} Le voltmètre indique U = <b>{nbF(U1, 3)}{NB}V</b> avant l’équivalence. Quel potentiel E (en V, 3 chiffres significatifs) correspond à cette tension ?</>, unite: 'V', vrai: E3, tolRel: 0.02, csMin: 2,
+    aide: 'E = U + E(référence) = U + 0,245.',
+    pieges: [[U1 - Eref, 'Vous avez soustrait 0,245 V : E = U + 0,245.'], [U1, 'C’est la tension lue : le potentiel E vaut U + 0,245 V.']],
+    expl: <>E = {nbF(U1, 3)} + 0,245 = <b>{nbF(E3, 3)}{NB}V</b>.</> };
+  const q4 = { id: 'p3', type: 'num', q: <>{intro} Après l’équivalence, on a versé <b>{nbF(x, 2)}</b> fois le volume équivalent : [Ce⁴⁺]/[Ce³⁺] = {nbF(x - 1, 2)} (l’excès de Ce⁴⁺ rapporté à la quantité de Ce³⁺ formée). Quel est le potentiel E (en V, 3 chiffres significatifs) ?</>, unite: 'V', vrai: E2, tolRel: 0.02, csMin: 2,
+    aide: 'Après l’équivalence c’est le couple du cérium qui fixe E : E = 1,44 + 0,06 × log([Ce⁴⁺]/[Ce³⁺]).',
+    pieges: [[1.44, 'Vous avez donné E° : le rapport [Ce⁴⁺]/[Ce³⁺] n’est pas égal à 1.'], [0.77 + 0.06 * lg10(x - 1), 'Vous avez utilisé E°(Fe³⁺/Fe²⁺) : après l’équivalence, c’est E°(Ce⁴⁺/Ce³⁺) = 1,44 V.']],
+    expl: <>E = 1,44 + 0,06 × log({nbF(x - 1, 2)}) = <b>{nbF(E2, 3)}{NB}V</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Potentiel d’un titrage potentiométrique : passage de la tension au potentiel, potentiel avant et après l’équivalence par la relation de Nernst.', questions: [q1, q2, q3, q4],
+    retenir: ['E = U + E(référence), avec E(référence) = 0,245 V pour l’ECS.', 'Avant l’équivalence : E = E°(Fe³⁺/Fe²⁺) + 0,06 log([Fe³⁺]/[Fe²⁺]).', 'Après l’équivalence : E = E°(Ce⁴⁺/Ce³⁺) + 0,06 log([Ce⁴⁺]/[Ce³⁺]).', 'À V_E/2 : E = E° du fer ; à 2 V_E : E = E° du cérium.'] };
+}
+
 function genMabDemi() {
   for (let k = 0; ; k++) { const g = genMabDemiBase(); const v = g.questions.map(q => q.vrai); if (new Set(v).size === v.length || k > 80) return g; }
 }
@@ -6584,6 +6640,8 @@ export const FAMILLES = [
   { id: 'mab-reaction-calcul', groupe: 'Formules', titre: 'Équation de réaction en milieu acide ou basique : électrons échangés et coefficients (TSTL)', gen: genMabReaction, domaine: 'Équations en milieu acide ou basique' },
   { id: 'tcr-dosage-calcul', groupe: 'Formules', titre: 'Dosage par le permanganate : quantités de matière, concentration diluée et concentration du commerce (TSTL)', gen: genTcrDosage, domaine: 'Titrage redox direct' },
   { id: 'tcr-bilan-calcul', groupe: 'Formules', titre: 'Dosage par le permanganate : volume équivalent et bilan de matière avant ou après l’équivalence (TSTL)', gen: genTcrAvantApres, domaine: 'Titrage redox direct' },
+  { id: 'tpt-dosage-calcul', groupe: 'Formules', titre: 'Titrage potentiométrique : quantité de cérium(IV), concentration du fer(II) et volume équivalent d’une autre prise (TSTL)', gen: genTptDosage, domaine: 'Titrage potentiométrique' },
+  { id: 'tpt-potentiel-calcul', groupe: 'Formules', titre: 'Titrage potentiométrique : tension, potentiel avant et après l’équivalence (TSTL)', gen: genTptPotentiel, domaine: 'Titrage potentiométrique' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },
