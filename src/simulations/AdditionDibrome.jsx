@@ -8,10 +8,13 @@ import { puces } from "./Travail";
 import { FTest, FBromonium, FAnti, FRacemique, FMeso, FBilanBr } from "./BrSchemas";
 import { ALCENES, activiteOptique } from "./brModele";
 import { AnimAddition } from "./AnimAddition";
-import { OngletsVue, BarreLecture } from "./ongletsSim";
+import { OngletsVue, BarreLecture, ProfilEnergie } from "./ongletsSim";
 
 // Vue 3D (three.js), chargée à la demande : le pont bromonium et l'attaque anti vus dans l'espace
 const Br3D = lazy(() => import("./Br3D"));
+import BrMeca2D from "./BrMeca2D";
+// Allure qualitative du profil (deux étapes, ion bromonium intermédiaire) : pas de valeurs numériques
+const PROFIL_BR = [['réactifs', 0], ['ET₁', 55], ['bromonium', 25], ['ET₂', 45], ['produit', -70]];
 
 const EQUATION = { Z: 'CH₃CH=CHCH₃ + Br₂ → CH₃CHBrCHBrCH₃', E: 'CH₃CH=CHCH₃ + Br₂ → CH₃CHBrCHBrCH₃', cyclo: 'C₆H₁₀ + Br₂ → C₆H₁₀Br₂ (1,2-dibromocyclohexane)' };
 
@@ -159,18 +162,17 @@ export function SimulationAdditionDibrome() {
           <button onClick={() => { setSyn(true); setU(0); }} style={stylePetitBouton(syn, ROUGE)}>même face que le pont</button>
         </div>
       </div>
-      <OngletsVue onglets={[['meca', 'Équation et mécanisme'], ['persp', 'Perspective'], ['3d', 'Dans l’espace (3D)']]} actif={onglet} onChange={setOnglet} />
-      {onglet === 'meca' && (
-        <div style={{ background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: '8px 10px' }}>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Équation de la réaction (addition anti)</div>
-          <div style={{ fontSize: 15.5, fontWeight: 700, color: KIT.txt, margin: '4px 0', lineHeight: 1.5 }}>{EQUATION[alc]}</div>
-          <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '6px 0 2px' }}>Mécanisme en deux étapes</div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}><div style={{ flex: '1 1 240px', maxWidth: 330 }}><FBromonium /></div><div style={{ flex: '1 1 240px', maxWidth: 330 }}><FAnti /></div></div>
-        </div>)}
+      <OngletsVue onglets={[['meca', 'Mécanisme en 2D (flèches courbes)'], ['persp', 'Perspective (plan de l’alcène)'], ['3d', 'Mécanisme en 3D (dans l’espace)']]} actif={onglet} onChange={setOnglet} />
+      {onglet === 'meca' && (<>
+        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, lineHeight: 1.5 }}>{EQUATION[alc]}</div>
+        <BrMeca2D alc={alc} face={face} syn={syn} u={u} />
+      </>)}
       {onglet === 'persp' && <AnimAddition alc={alc} re="Br2" u={u} face={face} syn={syn} />}
       {onglet === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Br3D alc={alc} face={face} syn={syn} u={u} /></Suspense>}
       <BarreLecture lecture={lecture} setLecture={setLecture} u={u} setU={setU} />
       <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }} aria-live="polite">{etat(u, syn)}</div>
+      <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Profil d’énergie (allure qualitative, sans valeurs)</div>
+      <ProfilEnergie pts={PROFIL_BR} valeurs={false} couleur="#9a3412" u={u} aria="Profil d'énergie qualitatif de l'addition de Br₂ : deux états de transition, ion bromonium intermédiaire" />
       {fini && <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }}>
         Produit : <strong>{A.produit}</strong>. Les deux Br sont de part et d'autre du plan : addition <strong>anti</strong>.
         {A.resultat === 'racémique' ? <> Cette face donne l'énantiomère <strong>{enantio}</strong> ; l'autre face donne l'autre énantiomère, en proportion égale : <strong>mélange racémique</strong>.</> : <> Quelle que soit la face, on obtient le même composé <strong>méso {A.descripteurs[0]}</strong>.</>}

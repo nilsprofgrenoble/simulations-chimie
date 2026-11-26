@@ -4,17 +4,18 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
 import { FDeuxVoies, FClasse, FEtapes, FStereo, FTemperature, FPrevoir } from "./SNSchemas";
-import { SUBSTRATS, REACTIFS, MECA, proportions, profil, energieEn, barriere } from "./snModele";
+import { SUBSTRATS, REACTIFS, MECA, proportions, profil, barriere } from "./snModele";
 
 // Vue 3D de la stéréochimie (substrat secondaire, SN1 ou SN2) : three.js, chargée à la demande
 const Sn3D = lazy(() => import("./Sn3D"));
 const E23D = lazy(() => import("./E23D"));
 import SnEquation from "./SnEquation";
-import { OngletsVue, BarreLecture } from "./ongletsSim";
+import { OngletsVue, BarreLecture, ProfilEnergie } from "./ongletsSim";
 
 const SIM_ID = 95;
 declarerDefis(SIM_ID, [['principal', 'Substitution ou élimination']]);
 
+const TOUS = ['SN2', 'SN1', 'E2', 'E1'];
 const COUL = { SN2: '#0284c7', SN1: '#0891b2', E2: '#ea580c', E1: '#c2410c' };
 const NOIR = '#0f172a', BRUN = '#9a3412';
 
@@ -37,32 +38,6 @@ function Substrat({ cle }) {
       {L}
       <line x1={x1} y1={y1} x2={x2 - ux * cut} y2={y2 - uy * cut} stroke={BRUN} strokeWidth={2.4} strokeLinecap="round" />
       <text x={x2} y={y2 + 5} fontSize={15} fontWeight="800" fill={BRUN} textAnchor="middle">Br</text>
-    </svg>);
-}
-
-// ── Profil d'énergie du mécanisme examiné, avec une bille ──
-function Profil({ meca, sub, re, u }) {
-  const { pts } = profil(meca, sub, re);
-  const W = 360, H = 220, gx = 40, gy = 14, gw = W - gx - 12, gh = H - gy - 34, Emin = -50, Emax = 180;
-  const X = x => gx + x * gw, Y = e => gy + (1 - (e - Emin) / (Emax - Emin)) * gh;
-  let d = '';
-  for (let i = 0; i <= 120; i++) { const x = i / 120; d += `${i ? 'L' : 'M'}${X(x).toFixed(1)},${Y(energieEn(pts, x)).toFixed(1)} `; }
-  const n = pts.length - 1;
-  return (
-    <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Profil d'énergie du mécanisme ${meca}`} style={{ width: '100%', display: 'block', background: '#fbfdff', borderRadius: 10 }}>
-      <line x1={gx} y1={gy} x2={gx} y2={gy + gh} stroke="#64748b" /><line x1={gx} y1={gy + gh} x2={gx + gw} y2={gy + gh} stroke="#64748b" />
-      <line x1={gx} y1={Y(0)} x2={gx + gw} y2={Y(0)} stroke="#cbd5e1" strokeDasharray="4 3" />
-      <text x={6} y={gy + 8} fontSize={11} fill={KIT.txt2}>Énergie</text>
-      <text x={gx + gw} y={H - 6} fontSize={11} fill={KIT.txt2} textAnchor="end">avancement de la réaction →</text>
-      <path d={d} fill="none" stroke={COUL[meca]} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" />
-      {pts.map(([nom, e], i) => {
-        const x = i / n, haut = nom.startsWith('ET');
-        return (<g key={nom}>
-          <text x={X(x)} y={haut ? Y(e) - 22 : Y(e) + 16} fontSize={11} fill={KIT.txt2} textAnchor={i === 0 ? 'start' : i === n ? 'end' : 'middle'}>{nom}</text>
-          <text x={X(x)} y={haut ? Y(e) - 9 : Y(e) + 29} fontSize={11} fontWeight="700" fill={KIT.txt} textAnchor={i === 0 ? 'start' : i === n ? 'end' : 'middle'}>{String(e).replace('-', '−')}</text>
-        </g>);
-      })}
-      <circle cx={X(u)} cy={Y(energieEn(pts, u))} r={7} fill="#f59e0b" stroke="white" strokeWidth={2} />
     </svg>);
 }
 
@@ -215,11 +190,12 @@ export function SimulationSubstitutionElimination() {
 
   const q = proportions(sub, re, chaud);
   const mecas = q.reaction ? Object.keys(q.p).filter(m => q.p[m] > 0) : [];
-  const examine = q.reaction ? (exam && mecas.includes(exam) ? exam : q.dominant) : null;
+  const examine = q.reaction ? (exam && TOUS.includes(exam) ? exam : q.dominant) : null;
   const regler = (s, r, c) => { setSub(s); setRe(r); if (c !== undefined) setChaud(c); setExam(null); setU(0); setLecture(false); };
   const S = SUBSTRATS[sub], R = REACTIFS[re];
   const peut3D = examine === 'SN1' || examine === 'SN2' || examine === 'E2';
   const ongletActif = onglet === '3d' && !peut3D ? 'meca' : onglet;
+  const negligeable = !!examine && !mecas.includes(examine);
 
   useEffect(() => {
     if (!lecture) return;
@@ -269,14 +245,16 @@ export function SimulationSubstitutionElimination() {
         </div>
         <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt }}>Mécanisme examiné :</span>
-          {mecas.map(m => <button key={m} onClick={() => { setExam(m); setU(0); setLecture(false); }} style={stylePetitBouton(m === examine, COUL[m])}>{m}</button>)}
+          {TOUS.map(m => <button key={m} onClick={() => { setExam(m); setU(0); setLecture(false); }} aria-pressed={m === examine} title={mecas.includes(m) ? undefined : 'Négligeable dans ces conditions'} style={{ ...stylePetitBouton(m === examine, COUL[m]), opacity: mecas.includes(m) || m === examine ? 1 : 0.6 }}>{m}{mecas.includes(m) ? '' : ' (≈ 0 %)'}</button>)}
         </div>
-        <OngletsVue onglets={[['meca', 'Équation et mécanisme'], ...(peut3D ? [['3d', 'Dans l’espace (3D)']] : []), ['energie', 'Profil d’énergie']]} actif={ongletActif} onChange={setOnglet} />
+        {negligeable && <div style={{ ...styleBoite, fontSize: 13.5, color: '#92400e', background: '#fffbeb', borderColor: '#fcd34d' }}>Ce mécanisme est <strong>négligeable</strong> avec ce substrat et ce réactif : regardez sa barrière dans le profil d’énergie, plus haute que celle du mécanisme dominant.</div>}
+        <OngletsVue onglets={[['meca', 'Mécanisme en 2D (flèches courbes)'], ...(peut3D ? [['3d', 'Mécanisme en 3D (dans l’espace)']] : [])]} actif={ongletActif} onChange={setOnglet} />
         {ongletActif === 'meca' && <SnEquation meca={examine} sub={sub} re={re} u={u} />}
-        {ongletActif === 'energie' && <Profil meca={examine} sub={sub} re={re} u={u} />}
         {ongletActif === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}>{examine === 'E2' ? <E23D u={u} base={R.court} /> : <Sn3D meca={examine} u={u} sub={sub} re={re} />}</Suspense>}
         <BarreLecture lecture={lecture} setLecture={setLecture} u={u} setU={setU} />
         <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }} aria-live="polite">{etatMeca(examine, u, sub)}</div>
+        <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Profil d’énergie du mécanisme {examine}</div>
+        <ProfilEnergie bornes={[-50, 215]} pts={profil(examine, sub, re).pts} couleur={COUL[examine]} u={u} aria={`Profil d'énergie du mécanisme ${examine}`} />
       </>) : (
         <div style={{ ...styleBoite, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}><strong>Pratiquement aucune réaction.</strong> Le substrat primaire ne forme pas de carbocation stable, et l'eau est un trop faible nucléophile pour une SN2 : il faut une base ou un nucléophile plus fort.</div>
       )}
