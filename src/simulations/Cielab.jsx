@@ -302,8 +302,8 @@ export function SimulationCielab({ plotlyReady }) {
   : (<div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.55 }}>
     <p style={{ margin: '0 0 6px' }}>Faites tourner la vue avec le doigt ou la souris. L’axe vertical est la luminosité L* (0 : noir, 100 : blanc) ; a* va du vert au rouge, b* du bleu au jaune.</p>
     {ex.vue3d === 'entier' ? <>
-      <p style={{ margin: '0 0 6px' }}>Le solide coloré est l’ensemble des couleurs qu’un écran sait afficher (sRGB), rangées dans l’espace L*a*b*. Ce n’est pas une sphère : sa forme irrégulière vient des couleurs que l’écran ne peut pas produire (par exemple, les verts et les bleus très saturés ou les jaunes très foncés).</p>
-      <p style={{ margin: '0 0 6px' }}>On l’a ouvert dans un quart pour voir l’intérieur. Le disque est la coupe à la luminosité L* de la cible : c’est le plan a*b* de la vue 2D.</p>
+      <p style={{ margin: '0 0 6px' }}>La sphère est une représentation de l’espace des couleurs, comme dans les manuels : le blanc en haut, le noir en bas, les couleurs vives sur le pourtour. C’est un repère : en réalité, les couleurs qu’un écran sait afficher forment un volume irrégulier, et l’échelle verticale est resserrée pour que la sphère paraisse ronde.</p>
+      <p style={{ margin: '0 0 6px' }}>Le disque coloré à l’intérieur est le plan a*b* à la luminosité L* de la cible : c’est le plan de la vue 2D. La teinte tourne autour de l’axe L*, la saturation augmente du centre vers le bord.</p>
       <p style={{ margin: 0 }}>Les petites ellipses sont des tolérances CMC (de valeur {fr(ex.tolC, 1)}), agrandies ×{M.AGRANDI} pour être visibles : leur taille et leur orientation changent avec la couleur. L’ellipse verte épaisse est celle de la cible. Utilisez « Zoom sur la cible » pour voir la sphère ΔE*ab et l’ellipsoïde CMC.</p></> : <>
       <p style={{ margin: '0 0 6px' }}>La <strong>sphère violette</strong> est l’ensemble des couleurs à moins de ΔE*ab = {fr(ex.tolE, 1)} de la cible. L’<strong>ellipsoïde vert</strong> est la zone acceptée par la tolérance CMC : à la même valeur, il est plus étiré (saturation, luminosité) et plus étroit (teinte).</p>
       <p style={{ margin: 0 }}>Le plan coloré en bas porte les couleurs de la luminosité L* de la cible ; les contours violet et vert posés dessus sont les « ombres » de la sphère et de l’ellipsoïde : ce sont le cercle et l’ellipse du plan 2D. Le lot est le point orange : il est conforme s’il est dans la zone.</p></>}
@@ -323,7 +323,7 @@ export function SimulationCielab({ plotlyReady }) {
             tol={{ cible: ex.cible, tolE: ex.tolE, tolCMC: ex.tolC }}/>
         : <VueLab3D plotlyReady={plotlyReady} cible={ex.cible} lot={ex.lot} tolE={ex.tolE} tolC={ex.tolC} mode={ex.vue3d}/>}
       {ex.vue === '3d' && <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5, marginTop: 6 }}>{ex.vue3d === 'entier'
-        ? <>Le solide est l’ensemble des couleurs d’un écran, coupé à la luminosité de la cible (on ne garde que la partie plus sombre). Le disque coloré est la coupe, avec des ellipses de tolérance CMC (agrandies ×{M.AGRANDI}). +a* : vers le rouge, −a* : vers le vert, +b* : vers le jaune, −b* : vers le bleu. Touchez et glissez pour tourner.</>
+        ? <>Sphère des couleurs, coupée par le plan a*b* à la luminosité de la cible, avec des ellipses de tolérance CMC (agrandies ×{M.AGRANDI}). Touchez et glissez pour tourner.</>
         : <>Sphère violette : tolérance ΔE*ab. Ellipsoïde vert : tolérance CMC. Point orange : le lot. Touchez et glissez pour tourner.</>}</div>}
     </div>);
   // état du contrôle : les deux couleurs et le verdict, sous la figure
@@ -425,6 +425,7 @@ export function SimulationCielab({ plotlyReady }) {
       <li><strong>Tolérance CMC(2:1)</strong> : formule de Clarke, McDonald et Rigg (1984) avec l = 2 et c = 1 (réglage usuel pour juger l’acceptabilité). Elle remplace la sphère de tolérance par une ellipsoïde dont les axes dépendent de la couleur de la cible.</li>
       <li><strong>Couleurs à l’écran</strong> : conversion en sRGB (blanc D65), sans calibrage de votre écran. Les couleurs de l’écran sont indicatives ; ce sont les nombres qui font foi. Une couleur trop vive pour l’écran est écrêtée (approchée) sur le fond du plan et dans la vue 3D.</li>
       <li><strong>Valeurs illustratives</strong> : cible, lots et tolérances (ΔE*ab ≤ 1,5 ; CMC ≤ 1,0) sont inventés pour l’exercice. Le cahier des charges réel fixe ses propres valeurs ; « environ 1 » comme plus petit écart perceptible est un ordre de grandeur, qui dépend de l’observateur et de la couleur.</li>
+      <li><strong>Sphère de la vue 3D</strong> : représentation schématique de l’espace L*a*b* (rayon 60 en a* et b*, L* de 0 à 100, échelle verticale resserrée pour qu’elle paraisse ronde). Ce n’est pas une limite physique : des couleurs existent au-delà (C* &gt; 60), et beaucoup de points de la sphère ne sont pas affichables sur un écran.</li>
       <li><strong>Parallèle avec Hansen</strong> : c’est une analogie de méthode (distance pondérée comparée à un rayon), pas une équivalence physique : les grandeurs, les unités et l’origine des seuils sont différentes. La vue 3D à l’échelle de la cible garde les tailles réelles ; les ellipses et ellipsoïdes de l’espace entier sont agrandis ×4 pour être visibles, et dessinés à la luminosité L* de la cible.</li>
       <li><strong>Hors modèle</strong> : géométrie de mesure et brillance, changement d’illuminant (voir la simulation sur le métamérisme), autres formules d’écart (CIEDE2000), incertitude de l’appareil.</li>
     </ul>);
