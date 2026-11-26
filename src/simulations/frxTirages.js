@@ -1,0 +1,52 @@
+// Tirages de la simulation 302 : chaque atome irradié est un événement au hasard (touché ou non, ionisé en K ou non, photon X ou électron Auger) ;
+// chaque photon X détecté ajoute un coup au spectre. Fonctions pures (le hasard est fourni par `rnd`), testées par frxTirages.test.mjs.
+// Hypothèses : seuls les atomes de l'élément étudié (proportion w/100) peuvent être ionisés ; probabilité d'ionisation K de 0,6 pour un photon d'énergie ≥ E_K ;
+// rendement de fluorescence K de l'élément (tabulé, `om`) ; sinon effet Auger (aucun photon X) ; Kβ/Kα selon ratioKb ; pics élargis par la résolution du détecteur (SIGMA).
+import { ratioKb, SIGMA } from './frxModele.js';
+
+export const P_ION = 0.6;
+export const MAX_ATOMES = 20000;
+export const XMAX = 12, PAS = 0.1, NBINS = Math.round(XMAX / PAS);
+const normale = rnd => Math.sqrt(-2 * Math.log(1 - rnd())) * Math.cos(2 * Math.PI * rnd());
+export const indice = E => { const i = Math.floor(E / PAS); return i >= 0 && i < NBINS ? i : -1; };
+export const centre = i => (i + 0.5) * PAS;
+
+// Un atome irradié : w = proportion d'atomes de l'élément (% en nombre, schématique : assimilée à la teneur)
+export function atome(el, E, w, rnd) {
+  if (rnd() >= w / 100) return { cible: false };
+  if (E < el.EK || rnd() >= P_ION) return { cible: true, ion: false };
+  if (rnd() >= el.om) return { cible: true, ion: true, voie: 'auger' };
+  const r = ratioKb(el), kb = rnd() < r / (1 + r);
+  return { cible: true, ion: true, voie: kb ? 'kb' : 'ka', Edet: (kb ? el.Kb : el.Ka) + SIGMA * normale(rnd) };
+}
+export const etatVide = () => ({ nEnv: 0, nCible: 0, nIon: 0, nKa: 0, nKb: 0, nAuger: 0, h: new Array(NBINS).fill(0), dernier: null, lot: 1 });
+export function lancer(etat, el, params, k, rnd) {
+  const e = { ...etat, h: etat.h.slice(), lot: k };
+  for (let j = 0; j < k && e.nEnv < MAX_ATOMES; j++) {
+    const a = atome(el, params.E, params.w, rnd); e.nEnv++;
+    if (a.cible) e.nCible++;
+    if (a.ion) e.nIon++;
+    if (a.voie === 'auger') e.nAuger++;
+    if (a.voie === 'ka' || a.voie === 'kb') { if (a.voie === 'ka') e.nKa++; else e.nKb++; const i = indice(a.Edet); if (i >= 0) e.h[i]++; }
+    e.dernier = a;
+  }
+  return e;
+}
+// Comptes attendus par case (pour la courbe de comparaison) : nEnv atomes irradiés
+export function attendu(el, params, etat) {
+  const out = new Array(NBINS).fill(0);
+  if (params.E < el.EK) return out;
+  const nRad = etat.nEnv * (params.w / 100) * P_ION * el.om, r = ratioKb(el), pKb = r / (1 + r);
+  const dens = (E, c) => Math.exp(-0.5 * ((E - c) / SIGMA) ** 2) / (SIGMA * Math.sqrt(2 * Math.PI));
+  for (let i = 0; i < NBINS; i++) { const E = centre(i); out[i] = nRad * ((1 - pKb) * dens(E, el.Ka) + pKb * dens(E, el.Kb)) * PAS; }
+  return out;
+}
+export const partRadiative = el => el.om;
+const NB = ' ';
+export function texteAtome(d, el, E) {
+  if (!d) return 'aucun atome irradié';
+  if (!d.cible) return 'photon X sur un atome d’un autre élément : pas de raie de ' + el.nom;
+  if (!d.ion) return E < el.EK ? 'photon X d’énergie inférieure au seuil K : aucun électron K éjecté' : 'photon X non absorbé par un électron K : aucun électron K éjecté';
+  if (d.voie === 'auger') return 'électron K éjecté, lacune comblée sans photon X (effet Auger : l’énergie éjecte un autre électron)';
+  return `électron K éjecté, ${d.voie === 'ka' ? 'un électron L' : 'un électron M'} comble la lacune : photon ${d.voie === 'ka' ? 'Kα' : 'Kβ'} détecté à ${String(d.Edet.toFixed(2)).replace('.', ',')}${NB}keV`;
+}
