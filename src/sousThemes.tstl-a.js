@@ -167,4 +167,14 @@ export default {
     { id: 'laser-energie', nom: 'Énergie reçue, durée d’exposition et sécurité', capacite: 'Établir et exploiter la relation entre énergie reçue, flux et durée d’exposition ; exploiter une norme pour déterminer la durée maximale d’exposition.',
       refs: ['34:las-sapp-duree', '37:prevoir:las-ana-flux', '37:prevoir:las-ana-duree', '77:plausible:las-val-energie'] },
   ],
+  'tstl-oxydoreduction': [
+    { id: 'nrn-esh', nom: 'Électrode de référence : tension à vide et potentiel d’un couple', capacite: 'Définir l’électrode standard à hydrogène comme demi-pile de référence et interpréter la tension à vide d’une pile comme le potentiel du couple étudié.',
+      refs: ['37:prevoir:nrn-ana-esh', '77:plausible:nrn-val-signe'] },
+    { id: 'nrn-calcul', nom: 'Calculer un potentiel avec la relation de Nernst', capacite: 'Déterminer le potentiel d’un couple par la relation de Nernst, la composition de la solution étant donnée (solide, deux espèces dissoutes, ions H⁺).',
+      refs: ['77:plausible:nrn-val-log', '34:nrn-sapp-nernst', '34:nrn-sapp-fer', '36:nrn-calcul'] },
+    { id: 'nrn-influence', nom: 'Prévoir l’influence de la concentration et du pH sur le potentiel', capacite: 'Prévoir l’évolution du potentiel d’un couple quand la concentration d’une espèce ou le pH varie ; relier la pente de E = f(log c) à 0,06 / n.',
+      refs: ['37:prevoir:nrn-ana-dilution', '37:prevoir:nrn-ana-n', '37:prevoir:nrn-ana-ph'] },
+    { id: 'nrn-inverse', nom: 'Déduire une concentration ou un pH d’une tension mesurée', capacite: 'Exploiter la relation de Nernst pour déterminer une concentration, un rapport de concentrations ou un pH à partir d’une tension à vide.',
+      refs: ['36:nrn-inverse-calcul'] },
+  ],
 };

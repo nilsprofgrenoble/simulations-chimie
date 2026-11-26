@@ -1531,6 +1531,55 @@ export const ENONCES = [
         manque: null, solution: { txt: 'a = G / c : la droite passe par l’origine et par le point de l’étalon', val: a, u: 'mS par mmol/L' } };
     },
   },
+  {
+    id: 'nrn-sapp-nernst', domaine: 'Potentiel et relation de Nernst', titre: 'Demi-pile métallique : potentiel du couple et concentration inconnue', noms: ['Potentiel du couple', 'Concentration de la solution'],
+    gen: () => ({ id: tire(['cu', 'zn', 'ag']), c: tire([0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5]), V: tire([50, 100, 200]) }),
+    build: (p, q) => {
+      const D = { cu: { ox: 'Cu²⁺', m: 'cuivre', E0: 0.34, n: 2, demi: 'Cu²⁺ + 2 e⁻ = Cu' }, zn: { ox: 'Zn²⁺', m: 'zinc', E0: -0.76, n: 2, demi: 'Zn²⁺ + 2 e⁻ = Zn' }, ag: { ox: 'Ag⁺', m: 'argent', E0: 0.80, n: 1, demi: 'Ag⁺ + e⁻ = Ag' } }[p.id];
+      const lg = Math.log10(p.c), E = D.E0 + 0.06 / D.n * lg, Em = Number(E.toFixed(3)), lgM = (Em - D.E0) * D.n / 0.06, cM = Math.pow(10, lgM);
+      const tokens = {
+        c: tok(`${sciR(p.c)} mol/L`, `Concentration en ${D.ox} de la solution`, p.c, 'mol/L'),
+        Em: tok(`${sg(Em)} V`, 'Tension à vide mesurée entre l’ESH et la demi-pile', Em, 'V'),
+        E0: tok(`${sg(D.E0)} V`, `Potentiel standard du couple ${D.ox} / ${D.m === 'cuivre' ? 'Cu' : D.m === 'zinc' ? 'Zn' : 'Ag'}`, D.E0, 'V'),
+        n: tok(`${D.n} électron${D.n > 1 ? 's' : ''}`, `Nombre d’électrons de la demi-équation ${D.demi}`, D.n, ''),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+        V: tok(`${p.V} mL`, 'Volume de solution dans le bécher', p.V, 'mL'),
+      };
+      const debut = ['Une lame de ', D.m, ' plonge dans une solution contenant des ions ', D.ox, '. On l’associe à l’électrode standard à hydrogène (ESH) par un pont salin et on mesure la tension à vide. Demi-équation : ', D.demi, ' ; potentiel standard ', T('E0'), ' ; température ', T('T'), ' ; volume de solution ', T('V'), '. '];
+      if (q === 0) return { tokens: { c: tokens.c, E0: tokens.E0, n: tokens.n, T: tokens.T, V: tokens.V }, derivees: [{ id: 'lg', nom: `Logarithme décimal de la concentration en ${D.ox}`, expr: 'log c', val: lg, u: '' }], texte: [...debut, 'La concentration en ', D.ox, ' est ', T('c'), ' (nombre d’électrons : ', T('n'), '). Quel est le potentiel du couple (en V) ?'],
+        utiles: ['c', 'E0', 'n'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation de Nernst, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas dans le potentiel : E dépend des concentrations, pas des quantités.' },
+        cherche: { bonne: 'Le potentiel E du couple (en V)', faux: ['La tension aux bornes d’une pile (en V) lorsqu’elle débite', 'Le potentiel standard du couple (en V)', 'La concentration de la solution (en mol/L)'] },
+        manque: null, solution: { txt: 'E = E° + (0,06 / n) × log c (le métal solide vaut 1)', val: E, u: 'V' } };
+      return { tokens: { Em: tokens.Em, E0: tokens.E0, n: tokens.n, T: tokens.T, V: tokens.V }, derivees: [{ id: 'lg', nom: `Logarithme décimal de la concentration en ${D.ox}`, expr: '(E − E°) × n / 0,06', val: lgM, u: '' }], texte: [...debut, 'La tension mesurée vaut ', T('Em'), ' (nombre d’électrons : ', T('n'), '). Quelle est la concentration en ', D.ox, ' de la solution (en mol/L) ?'],
+        utiles: ['Em', 'E0', 'n'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation de Nernst, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : E dépend de la concentration, pas du volume.' },
+        cherche: { bonne: `La concentration en ${D.ox} (en mol/L)`, faux: ['Le logarithme de la concentration (sans unité)', 'Le potentiel standard du couple (en V)', 'La quantité de matière d’ions dans le bécher (en mmol)'] },
+        manque: null, solution: { txt: 'log c = (E − E°) × n / 0,06, puis c = 10^(log c)', val: cM, u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'nrn-sapp-fer', domaine: 'Potentiel et relation de Nernst', titre: 'Couple Fe³⁺ / Fe²⁺ : potentiel et rapport des concentrations', noms: ['Potentiel du couple', 'Rapport des concentrations'],
+    gen: () => { const cr = tire([0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1]), r = tire([0.1, 0.2, 0.5, 2, 5, 10, 20, 50]); return { cRed: cr, ratio: r, S: tire([1.0, 2.0, 4.0]) }; },
+    build: (p, q) => {
+      const E0 = 0.77, cOx = p.cRed * p.ratio, E = E0 + 0.06 * Math.log10(p.ratio), Em = Number(E.toFixed(3)), rM = Math.pow(10, (Em - E0) / 0.06);
+      const tokens = {
+        cOx: tok(`${sciR(cOx)} mol/L`, 'Concentration en Fe³⁺', cOx, 'mol/L'),
+        cRed: tok(`${sciR(p.cRed)} mol/L`, 'Concentration en Fe²⁺', p.cRed, 'mol/L'),
+        Em: tok(`${sg(Em)} V`, 'Tension à vide mesurée entre l’ESH et la demi-pile', Em, 'V'),
+        E0: tok('0,77 V', 'Potentiel standard du couple Fe³⁺ / Fe²⁺', E0, 'V'),
+        n: tok('1 électron', 'Nombre d’électrons de la demi-équation Fe³⁺ + e⁻ = Fe²⁺', 1, ''),
+        S: tok(`${nb(p.S, 1)} cm²`, 'Surface de l’électrode de platine', p.S, 'cm²'),
+      };
+      const debut = ['Une électrode de platine plonge dans une solution contenant les ions Fe³⁺ et Fe²⁺ ; on l’associe à l’électrode standard à hydrogène (ESH) par un pont salin et on mesure la tension à vide à 25 °C. Demi-équation : Fe³⁺ + e⁻ = Fe²⁺ (', T('n'), ') ; potentiel standard ', T('E0'), ' ; électrode de surface ', T('S'), '. '];
+      if (q === 0) return { tokens: { cOx: tokens.cOx, cRed: tokens.cRed, E0: tokens.E0, n: tokens.n, S: tokens.S }, derivees: [{ id: 'r', nom: 'Rapport [Fe³⁺] / [Fe²⁺]', expr: '[Fe³⁺] / [Fe²⁺]', val: p.ratio, u: '' }], texte: [...debut, 'La solution contient [Fe³⁺] = ', T('cOx'), ' et [Fe²⁺] = ', T('cRed'), '. Quel est le potentiel du couple (en V) ?'],
+        utiles: ['cOx', 'cRed', 'E0', 'n'], raisons: { S: 'La surface de l’électrode n’intervient pas : à vide, aucun courant ne passe et E ne dépend que des concentrations.' },
+        cherche: { bonne: 'Le potentiel E du couple (en V)', faux: ['La différence entre les concentrations des deux ions (en mol/L)', 'Le potentiel standard du couple (en V)', 'L’intensité du courant à vide (en mA)'] },
+        manque: null, solution: { txt: 'E = E° + (0,06 / n) × log([Fe³⁺] / [Fe²⁺])', val: E, u: 'V' } };
+      return { tokens: { Em: tokens.Em, E0: tokens.E0, n: tokens.n, S: tokens.S }, derivees: [{ id: 'lr', nom: 'Logarithme décimal du rapport', expr: '(E − E°) × n / 0,06', val: (Em - E0) / 0.06, u: '' }], texte: [...debut, 'La tension mesurée vaut ', T('Em'), '. Quel est le rapport [Fe³⁺] / [Fe²⁺] dans la solution (sans unité) ?'],
+        utiles: ['Em', 'E0', 'n'], raisons: { S: 'La surface de l’électrode n’intervient pas : à vide, aucun courant ne passe et E ne dépend que des concentrations.' },
+        cherche: { bonne: 'Le rapport [Fe³⁺] / [Fe²⁺] (sans unité)', faux: ['Le logarithme de ce rapport (sans unité)', 'La concentration en Fe³⁺ (en mol/L)', 'Le potentiel standard du couple (en V)'] },
+        manque: null, solution: { txt: 'log([Fe³⁺] / [Fe²⁺]) = (E − E°) × n / 0,06, puis le rapport = 10^(ce logarithme)', val: rM, u: '' } };
+    },
+  },
   // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule
   {
     id: 'etl-sapp-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Constante de cellule et conductivité d’une solution', noms: ['Constante de la cellule', 'Conductivité d’une solution à partir de sa conductance'],

@@ -4107,6 +4107,70 @@ function genDosageEtalonnageTSTLBase() {
     retenir: ['c(X′) = G′ / a (lecture sur la droite d’étalonnage).', 'c(X) = F × c(X′).', 'On choisit F pour que X′ soit vers le milieu de la gamme d’étalons (2 à 10 mmol/L).', 'Mêmes conditions pour tous : cellule, soluté, température (σ varie d’environ 2 % par °C).'] };
 }
 
+// ───────────── Potentiel d'un couple, relation de Nernst (terminale STL, SPCL, oxydo-réduction) ─────────────
+const E_COUPLES = { cu: { ox: 'Cu²⁺', m: 'Cu', E0: 0.34, n: 2 }, zn: { ox: 'Zn²⁺', m: 'Zn', E0: -0.76, n: 2 }, ag: { ox: 'Ag⁺', m: 'Ag', E0: 0.80, n: 1 } };
+const nbS = x => (x < 0 ? '−' : '') + nbF(Math.abs(x), 2);                 // potentiel avec le vrai signe moins
+const CONC_NRN = [0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5];
+const lg10 = x => Math.log(x) / Math.LN10;
+function genNernstTSTL() {
+  for (let k = 0; ; k++) { const g = genNernstTSTLBase(), v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; }
+}
+function genNernstTSTLBase() {
+  const id = tire(['cu', 'zn', 'ag']), D = E_COUPLES[id], c = tire(CONC_NRN), E = D.E0 + 0.06 / D.n * lg10(c);
+  let cO, cR; do { cO = tire(CONC_NRN); cR = tire(CONC_NRN); } while (cO === cR);
+  const E2 = 0.77 + 0.06 * lg10(cO / cR), pH = tire([0, 1, 2, 3]), cM = tire([0.005, 0.01, 0.02, 0.05]), E3 = 1.51 + 0.06 / 5 * (lg10(cM / cM) - 8 * pH);
+  const intro = <>Les potentiels sont mesurés à 25 °C par rapport à l’électrode standard à hydrogène (ESH) ; on utilise E = E° + (0,06 / n) × log( [Ox] [H⁺]<sup>β</sup> / [Red] ), le solide valant 1.</>;
+  const q1 = { id: 'n0', type: 'num', q: <>{intro} Une lame de {D.m === 'Cu' ? 'cuivre' : D.m === 'Zn' ? 'zinc' : 'argent'} plonge dans une solution de {D.ox} à <b>{sciF(c, 1)}{NB}mol/L</b>, avec E°({D.ox} / {D.m}) = <b>{nbS(D.E0)}{NB}V</b> et n = <b>{D.n}</b>. Quel est le potentiel E du couple (en V, 2 chiffres significatifs) ?</>, unite: 'V', vrai: E, tolRel: 0.03, csMin: 2,
+    aide: 'Le métal solide vaut 1 : E = E° + (0,06 / n) × log [Ox]. Calculez log de la concentration avec la calculatrice.',
+    pieges: [[D.E0, 'Vous avez donné E° : le terme (0,06 / n) × log [Ox] n’est pas nul quand [Ox] ≠ 1 mol/L.'], [D.E0 + 0.06 * lg10(c), 'Vous avez oublié de diviser 0,06 par n : le coefficient est 0,06 / n.'], [D.E0 - 0.06 / D.n * lg10(c), 'Signe du logarithme inversé : pour [Ox] < 1 mol/L, log [Ox] est négatif et E est inférieur à E°.']],
+    expl: <>E = {nbS(D.E0)} + (0,06 / {D.n}) × log({sciF(c, 1)}) = {nbS(D.E0)} + {nbF(0.06 / D.n, 3)} × ({nbS(lg10(c))}) = <b>{nbS(E)}{NB}V</b>.</> };
+  const q2 = { id: 'n1', type: 'num', q: <>{intro} Dans le couple Fe³⁺ / Fe²⁺ (E° = <b>0,77{NB}V</b>, n = <b>1</b>), la solution contient [Fe³⁺] = <b>{sciF(cO, 1)}{NB}mol/L</b> et [Fe²⁺] = <b>{sciF(cR, 1)}{NB}mol/L</b>. Quel est le potentiel E du couple (en V, 2 chiffres significatifs) ?</>, unite: 'V', vrai: E2, tolRel: 0.03, csMin: 2,
+    aide: 'Les deux espèces sont dissoutes : E = E° + (0,06 / n) × log([Fe³⁺] / [Fe²⁺]), avec l’oxydant au numérateur.',
+    pieges: [[0.77, 'Vous avez donné E° : le quotient [Fe³⁺] / [Fe²⁺] n’est pas égal à 1.'], [0.77 - 0.06 * lg10(cO / cR), 'Le quotient est inversé : c’est [Ox] / [Red], donc [Fe³⁺] / [Fe²⁺].']],
+    expl: <>Quotient = {sciF(cO, 1)} / {sciF(cR, 1)} = {nb(cO / cR, 2)} ; E = 0,77 + 0,06 × log({nb(cO / cR, 2)}) = <b>{nbF(E2, 2)}{NB}V</b>.</> };
+  const q3 = { id: 'n2', type: 'num', q: <>{intro} Dans le couple MnO₄⁻ + 8 H⁺ + 5 e⁻ = Mn²⁺ + 4 H₂O (E° = <b>1,51{NB}V</b>, n = <b>5</b>), on a [MnO₄⁻] = [Mn²⁺] = <b>{sciF(cM, 1)}{NB}mol/L</b> et <b>pH = {pH}</b> (donc [H⁺] = 10<sup>−{pH}</sup> mol/L). Quel est le potentiel E (en V, 3 chiffres significatifs) ?</>, unite: 'V', vrai: E3, tolRel: 0.01, csMin: 3,
+    aide: 'Le rapport [MnO₄⁻] / [Mn²⁺] vaut 1 : il reste le terme en H⁺, avec l’exposant 8 : log([H⁺]⁸) = −8 pH.',
+    pieges: [[1.51, 'Vous avez oublié le terme en H⁺ : [H⁺]⁸ = 10^(−8 pH) n’est pas égal à 1 dès que pH ≠ 0.'], [1.51 - 0.012 * pH, 'Vous avez pris l’exposant 1 pour [H⁺] : l’exposant est le coefficient 8 de la demi-équation.'], [1.51 - 0.06 * 8 * pH, 'Vous avez oublié de diviser 0,06 par n (n = 5).']],
+    expl: <>E = 1,51 + (0,06 / 5) × log([H⁺]⁸) = 1,51 − 0,012 × 8 × {pH} = <b>{nbF(E3, 3)}{NB}V</b>.</> };
+  const q4 = { id: 'n3', type: 'num', q: <>{intro} Pour le couple {D.ox} / {D.m} (n = <b>{D.n}</b>), on dilue la solution <b>10 fois</b>. De combien varie le potentiel E, en valeur absolue (en V, 2 chiffres significatifs) ?</>, unite: 'V', vrai: 0.06 / D.n, tolRel: 0.03, csMin: 2,
+    aide: 'Diluer 10 fois diminue log [Ox] de 1 : la variation de E est (0,06 / n) × 1.',
+    pieges: [[0.06 * D.n, 'Le nombre d’électrons n est au dénominateur : la variation vaut 0,06 / n.'], [0.06 / D.n / 10, 'Vous avez divisé la variation par 10 : c’est le logarithme de la dilution (1 décade) qu’il faut prendre.'], [0.06 / D.n * 10, 'E n’est pas proportionnel à la concentration : il varie comme son logarithme.']],
+    expl: <>Δ E = (0,06 / n) × Δ(log c) = 0,06 / {D.n} × 1 = <b>{nbF(0.06 / D.n, 3)}{NB}V</b> (E diminue).</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Relation de Nernst à 25 °C : potentiel d’un couple métallique, d’un couple dont les deux espèces sont dissoutes, d’un couple avec des ions H⁺, effet d’une dilution.', questions: [q1, q2, q3, q4],
+    retenir: ['Nernst (25 °C) : E = E° + (0,06 / n) × log([Ox] [H⁺]^β / [Red]) ; un solide vaut 1.', 'Plus [Ox] est grand, plus E est grand ; diluer 10 fois fait varier E de 0,06 / n.', 'Avec H⁺ du côté de l’oxydant : E varie de −0,06 × β / n par unité de pH.', 'Le potentiel s’exprime avec la référence ESH : E(ESH) = 0,00 V.'] };
+}
+function genNernstInverseTSTL() {
+  for (let k = 0; ; k++) { const g = genNernstInverseTSTLBase(), v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; }
+}
+function genNernstInverseTSTLBase() {
+  const id = tire(['cu', 'zn', 'ag']), D = E_COUPLES[id], c = tire(CONC_NRN), Em = Number((D.E0 + 0.06 / D.n * lg10(c)).toFixed(3)), cx = Math.pow(10, (Em - D.E0) * D.n / 0.06);
+  const r = tire([0.1, 0.2, 0.5, 2, 5, 10, 20, 50]), Ef = Number((0.77 + 0.06 * lg10(r)).toFixed(3)), rx = Math.pow(10, (Ef - 0.77) / 0.06);
+  const pH = tire([1, 2, 3]), Epm = Number((1.51 - 0.06 * 8 / 5 * pH).toFixed(3)), pHx = (1.51 - Epm) * 5 / (0.06 * 8);
+  const id4 = tire(['cu', 'ag']), D4 = E_COUPLES[id4], c4 = tire(CONC_NRN), E4 = D4.E0 + 0.06 / D4.n * lg10(c4);
+  const intro = <>Les tensions sont mesurées à vide, à 25 °C, entre l’électrode standard à hydrogène (ESH, potentiel 0,00 V) et la demi-pile étudiée ; on utilise E = E° + (0,06 / n) × log( [Ox] [H⁺]<sup>β</sup> / [Red] ).</>;
+  const q1 = { id: 'i0', type: 'num', q: <>{intro} Une lame de {D.m === 'Cu' ? 'cuivre' : D.m === 'Zn' ? 'zinc' : 'argent'} plonge dans une solution de {D.ox} de concentration inconnue ; la tension mesurée vaut <b>{nbS(Em)}{NB}V</b>, avec E°({D.ox} / {D.m}) = <b>{nbS(D.E0)}{NB}V</b> et n = <b>{D.n}</b>. Quelle est la concentration en {D.ox} (en mol/L, 2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: cx, tolRel: 0.15, csMin: 2,
+    aide: 'Isolez log [Ox] : log [Ox] = (E − E°) × n / 0,06 ; puis [Ox] = 10 puissance ce nombre.',
+    pieges: [[(Em - D.E0) * D.n / 0.06, 'Vous avez donné log [Ox] : la concentration est 10 à la puissance ce nombre.'], [Math.pow(10, (Em - D.E0) / 0.06), 'Vous avez oublié de multiplier par n : log [Ox] = (E − E°) × n / 0,06.'], [Math.pow(10, -(Em - D.E0) * D.n / 0.06), 'Signe inversé : si E < E°, la concentration est inférieure à 1 mol/L.']],
+    expl: <>log [{D.ox}] = ({nbS(Em)} − ({nbS(D.E0)})) × {D.n} / 0,06 = {nbS((Em - D.E0) * D.n / 0.06)} ; [{D.ox}] = <b>{sciF(cx, 2)}{NB}mol/L</b>.</> };
+  const q2 = { id: 'i1', type: 'num', q: <>{intro} Dans le couple Fe³⁺ / Fe²⁺ (E° = <b>0,77{NB}V</b>, n = <b>1</b>), la tension mesurée vaut <b>{nbF(Ef, 3)}{NB}V</b>. Quel est le rapport [Fe³⁺] / [Fe²⁺] (sans unité, 2 chiffres significatifs) ?</>, unite: '', vrai: rx, tolRel: 0.12, csMin: 2,
+    aide: 'log([Fe³⁺] / [Fe²⁺]) = (E − E°) × n / 0,06 ; le rapport est 10 puissance ce nombre.',
+    pieges: [[(Ef - 0.77) / 0.06, 'Vous avez donné le logarithme du rapport : le rapport est 10 à la puissance ce nombre.'], [1 / rx, 'Vous avez inversé le rapport : c’est [Ox] / [Red] = [Fe³⁺] / [Fe²⁺].']],
+    expl: <>log(rapport) = ({nbF(Ef, 3)} − 0,77) / 0,06 = {nbS((Ef - 0.77) / 0.06)} ; rapport = <b>{nb(rx, 2)}</b>.</> };
+  const q3 = { id: 'i2', type: 'num', q: <>{intro} Dans le couple MnO₄⁻ + 8 H⁺ + 5 e⁻ = Mn²⁺ + 4 H₂O (E° = <b>1,51{NB}V</b>, n = <b>5</b>), avec [MnO₄⁻] = [Mn²⁺], la tension mesurée vaut <b>{nbF(Epm, 3)}{NB}V</b>. Quel est le pH de la solution (2 chiffres significatifs) ?</>, unite: '', vrai: pHx, tolRel: 0.05, csMin: 2,
+    aide: 'Le rapport des concentrations vaut 1 : E = E° − (0,06 × 8 / 5) × pH ; isolez pH.',
+    pieges: [[(1.51 - Epm) * 5 / 0.06, 'Il manque le coefficient 8 de H⁺ : E = E° − (0,06 × 8 / n) × pH avec n = 5.'], [(1.51 - Epm) / (0.06 * 8 / 5) * 10, 'Vérifiez l’ordre de grandeur : un pH est un nombre de l’ordre de 0 à 14.']],
+    expl: <>pH = (E° − E) × n / (0,06 × 8) = (1,51 − {nbF(Epm, 3)}) × 5 / 0,48 = <b>{nb(pHx, 2)}</b>.</> };
+  const q4 = { id: 'i3', type: 'num', q: <>{intro} Une pile est formée de l’ESH et de la demi-pile {D4.ox} / {D4.m} (E° = <b>{nbS(D4.E0)}{NB}V</b>, n = <b>{D4.n}</b>) avec [{D4.ox}] = <b>{sciF(c4, 1)}{NB}mol/L</b>. Quelle tension à vide mesure-t-on (en V, 2 chiffres significatifs) ?</>, unite: 'V', vrai: E4, tolRel: 0.03, csMin: 2,
+    aide: 'fem = E(couple) − E(ESH) = E(couple) puisque E(ESH) = 0,00 V ; calculez E avec la relation de Nernst.',
+    pieges: [[D4.E0, 'Vous avez donné E° : [Ox] n’est pas à 1 mol/L, le terme logarithmique n’est pas nul.'], [D4.E0 + 0.06 * lg10(c4), 'Vous avez oublié de diviser 0,06 par n : le coefficient est 0,06 / n.']],
+    expl: <>fem = E = {nbS(D4.E0)} + (0,06 / {D4.n}) × log({sciF(c4, 1)}) = <b>{nbS(E4)}{NB}V</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Tensions à vide d’une pile avec l’ESH : concentration inconnue, rapport des concentrations, pH, tension attendue.', questions: [q1, q2, q3, q4],
+    retenir: ['fem = E(couple) − E(ESH) = E(couple) (E(ESH) = 0,00 V).', 'On isole log c : log c = (E − E°) × n / 0,06, puis c = 10^(log c).', 'Avec des ions H⁺ : E varie de −0,06 × β / n par unité de pH.', 'Une tension mesurée au millivolt donne une concentration à environ 10 % près (le coefficient 0,06 est arrondi).'] };
+}
+
+
 function genEtalonnageTG() {
   const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c] || c)).join('')}`; };
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
@@ -6099,6 +6163,8 @@ export const FAMILLES = [
   { id: 'acd-faible-calcul', groupe: 'Formules', titre: 'Titrage d’un acide ou d’une base faible : volume équivalent et pentes de la courbe de conductivité (TSTL)', gen: genFaibleTitrageTSTL, domaine: 'Allure d’une courbe de titrage conductimétrique' },
   { id: 'cet-gamme-calcul', groupe: 'Formules', titre: 'Gamme d’étalons préparée par dilution : concentration, facteur de dilution, volume à prélever et constante de cellule (TSTL)', gen: genGammeEtalonsTSTL, domaine: 'Dosage par étalonnage conductimétrique' },
   { id: 'cet-dosage-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage avec dilution : concentration de la solution diluée, de la solution à doser, facteur de dilution et température (TSTL)', gen: genDosageEtalonnageTSTL, domaine: 'Dosage par étalonnage conductimétrique' },
+  { id: 'nrn-calcul', groupe: 'Formules', titre: 'Relation de Nernst : potentiel d’un couple métallique, de Fe³⁺ / Fe²⁺, avec des ions H⁺, et effet d’une dilution (TSTL)', gen: genNernstTSTL, domaine: 'Potentiel et relation de Nernst' },
+  { id: 'nrn-inverse-calcul', groupe: 'Formules', titre: 'Pile avec l’ESH : concentration inconnue, rapport des concentrations, pH et tension à vide (TSTL)', gen: genNernstInverseTSTL, domaine: 'Potentiel et relation de Nernst' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },
