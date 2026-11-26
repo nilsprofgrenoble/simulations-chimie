@@ -1,10 +1,11 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./rampeModele";
+import { ChuteExplore } from "./ChuteExplore";
 import { QCM } from "./chuteQcm";
 import { SceneRampe, GrapheRampe, SvgConserv, SvgIndep, SvgFrott } from "./ChuteSchemas";
 
@@ -37,7 +38,6 @@ export function SimulationChute() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('vitesse');
   const [ouv, setOuv] = useState({});
-  const [ex, setEx] = useState({ m: 2, h: 5, s: 0.5, f: 0, u: 0.4 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
@@ -128,45 +128,11 @@ export function SimulationChute() {
     depart: { u: 0 }, epp: { u: 0 }, conserv: { u: 0.5, v: 0.6 }, vitesse: { u: 1, v: 1 }, masse: { u: 0.5, v: 0.6 }, forme: { u: 0.5, v: 0.6, h: 5, L: 20 }, hauteur: { u: 0.5, v: 0.8, h: 20, L: 40 },
     frott: { u: 0.5, v: 0.4, frott: true }, ecfin: { u: 1, v: 0.8, frott: true }, wf: { u: 1, v: 0.8, frott: true }, fmoy: { u: 0.6, v: 0.5, frott: true }, fin: { u: 0.6, v: 0.5, frott: true } };
 
-  // ════════════════ EXPLORATION ════════════════
-  const { m: mz, h: hz, s: sz, f: fz } = ex, Lz = hz / sz;
-  const pr = useMemo(() => M.profil({ m: mz, h: hz, L: hz / sz, f: fz, n: 60 }), [mz, hz, sz, fz]);
-  const k = Math.round(ex.u * (pr.pts.length - 1)), pt = pr.pts[k], Ed = M.energiePot(mz, hz) - pt.Em;
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures à l’instant choisi</div>
-      <LigneMesure nom="Longueur de la rampe L" valeur={`${nbf(Lz, 1)}${NB}m`}/>
-      <LigneMesure nom="Distance parcourue" valeur={`${nbf(pt.s, 1)}${NB}m`}/>
-      <LigneMesure nom="Altitude z" valeur={`${nbf(pt.z, 2)}${NB}m`}/>
-      <LigneMesure nom="Vitesse" valeur={`${nbf(pt.v, 1)}${NB}m/s`}/>
-      <LigneMesure nom="Énergie potentielle Epp" valeur={`${nbf(pt.Epp, 1)}${NB}J`} couleur="#b45309"/>
-      <LigneMesure nom="Énergie cinétique Ec" valeur={`${nbf(pt.Ec, 1)}${NB}J`} couleur="#0369a1"/>
-      <LigneMesure nom="Énergie mécanique Em" valeur={`${nbf(pt.Em, 1)}${NB}J`} couleur="#6d28d9"/>
-      {fz > 0 && pr.glisse && <LigneMesure nom="Énergie dissipée depuis le départ" valeur={`${nbf(Ed, 1)}${NB}J`} couleur="#b91c1c"/>}
-    </div>);
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="chh-m" label="Masse de l’objet" valeur={ex.m} onChange={v => setEx(s => ({ ...s, m: Number(v) }))} options={[1, 2, 5, 10].map(v => [v, `${v} kg`])}/>
-      <Sel id="chh-h" label="Hauteur de départ h" valeur={ex.h} onChange={v => setEx(s => ({ ...s, h: Number(v) }))} options={[2, 5, 10, 20].map(v => [v, `${v} m`])}/>
-      <Sel id="chh-s" label="Inclinaison de la rampe" valeur={ex.s} onChange={v => setEx(s => ({ ...s, s: Number(v) }))} options={[[0.2, 'douce (rampe longue)'], [0.5, 'moyenne'], [0.8, 'raide (rampe courte)']]}/>
-      <Sel id="chh-f" label="Force de frottement" valeur={ex.f} onChange={v => setEx(s => ({ ...s, f: Number(v) }))} options={[[0, 'aucune (frottement négligé)'], [1, '1 N'], [3, '3 N'], [8, '8 N']]}/>
-      <Curseur nom="Avancée sur la rampe" valeur={Math.round(ex.u * 100)} onChange={v => setEx(s => ({ ...s, u: v / 100 }))} min={0} max={100} pas={2} unite="%" decimales={0} couleur="#475569"/>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Faites glisser l’objet : les points du graphique et les mesures suivent. Changez un réglage à la fois (masse, forme de la rampe, hauteur, frottement) et regardez la vitesse en bas.</div>
-    </div>);
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? 'La caisse sur sa rampe' : 'La situation étudiée'}</div>
-      {enExplore
-        ? <SceneRampe u={pr.glisse ? ex.u : 0} h={hz} L={Lz} v={pr.glisse ? Math.min(1, pt.v / 16) : 0} frott={fz > 0}/>
-        : <SceneRampe {...SC[idEtape]}/>}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La situation étudiée</div>
+      <SceneRampe {...SC[idEtape]}/>
     </div>);
-  const graphe = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Les trois énergies pendant la descente</div>
-      {pr.glisse ? <GrapheRampe pr={pr} u={ex.u}/> : <div style={{ ...lbl, color: '#b91c1c', fontWeight: 700 }}>L’objet ne glisse pas : le frottement est trop grand pour cette inclinaison (la composante du poids le long de la rampe est plus petite que f).</div>}
-    </div>);
-
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => {
     if (type === 'vitesse') setDefi({ ...M.tirageDefiA(), type, reps: { v: '' }, verifie: false, corr: false });
@@ -253,11 +219,11 @@ export function SimulationChute() {
     </span>);
   const aEssayer = (
     <ul style={liste}>
-      <li>Sans frottement, changez la masse puis l’inclinaison de la rampe : que devient la vitesse en bas ?</li>
+      <li>Lâchez la caisse (clic sur elle). Sans frottement, changez la masse puis l’inclinaison de la rampe (saisissez le haut) : que devient la vitesse en bas ?</li>
       <li>Doublez la hauteur : par combien la vitesse est-elle multipliée ? Et pour une hauteur multipliée par 4 (5 m → 20 m) ?</li>
       <li>Ajoutez un frottement de 3 N : comparez Em au départ et en bas. Où est passée la différence ?</li>
       <li>Avec le même frottement, une rampe douce (longue) dissipe-t-elle plus ou moins d’énergie qu’une rampe raide (courte) ?</li>
-      <li>Choisissez la rampe douce avec 8 N de frottement : que se passe-t-il ?</li>
+      <li>Choisissez la rampe douce avec 8 N de frottement : que se passe-t-il ? Et sur le sol, après la rampe : où va l’énergie ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -298,12 +264,8 @@ export function SimulationChute() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="chh-ex">
-          {scene}
-          <div className="chh-reg">{reglages}</div>
-          {graphe}
-          {mesures}
-        </div>
+        <ChuteExplore/>
+        <div style={{ height: 12 }}/>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
