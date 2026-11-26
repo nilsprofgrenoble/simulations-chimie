@@ -151,7 +151,7 @@ export const COUVERTURE = [
     { th: MESURE, t: 'Incertitudes de type A et B, sources d’erreurs, justesse et fidélité', e: 'partiel', chap: 'tstl-mesure', reste: 'incertitude de type B, sources d’erreurs, incertitudes composées, justesse et fidélité' },
     { th: 'Constitution de la matière', t: 'Structure spatiale : chiralité, énantiomères, diastéréoisomères, configuration R/S, Z et E', e: 'ok', chap: 'tstl-pcm-structure-spatiale' },
     { th: 'Transformation de la matière', t: 'Réactions acido-basiques : Ka, coefficient de dissociation, tampon, CO₂ dissous, extraction', e: 'ok', chap: 'tstl-pcm-reactions-acido-basiques' },
-    { th: 'Transformation de la matière', t: 'Oxydo-réduction : nombre d’oxydation, demi-réactions, pile, quantité d’électricité', e: 'avenir' },
+    { th: 'Transformation de la matière', t: 'Oxydo-réduction : nombre d’oxydation, demi-réactions, pile, quantité d’électricité', e: 'partiel', chap: 'tstl-pcm-oxydoreduction', reste: 'nombre d’oxydation' },
     { th: 'Transformation de la matière', t: 'Cinétique : loi de vitesse, ordre 0 et 1, temps de demi-réaction', e: 'avenir' },
     { th: 'Transformation de la matière', t: 'Radioactivité : types, loi de décroissance, activité', e: 'avenir' },
     { th: MVT, t: 'Mouvements : coordonnées de l’accélération', e: 'ok', chap: 'tstl-pcm-mouvements' },

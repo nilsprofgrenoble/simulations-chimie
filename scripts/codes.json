@@ -3036,5 +3036,18 @@
  "77:plausible:irc-val-pur": "VAL792",
  "77:plausible:irc-val-memes-groupes": "VAL793",
  "77:plausible:spf-val-detection": "VAL794",
- "77:plausible:spf-val-deux-spectres": "VAL795"
+ "77:plausible:spf-val-deux-spectres": "VAL795",
+ "34:pilp-sapp-q.0": "SAPP666",
+ "34:pilp-sapp-q.1": "SAPP667",
+ "34:pilp-sapp-duree.0": "SAPP668",
+ "34:pilp-sapp-duree.1": "SAPP669",
+ "37:prevoir:pilp-ana-pole": "ANA1366",
+ "37:prevoir:pilp-ana-electrons": "ANA1367",
+ "37:prevoir:pilp-ana-pont": "ANA1368",
+ "37:prevoir:pilp-ana-intensite": "ANA1369",
+ "37:prevoir:pilp-ana-equation": "ANA1370",
+ "77:plausible:pilp-val-q": "VAL796",
+ "77:plausible:pilp-val-duree": "VAL797",
+ "36:pil-cap": "REA214",
+ "36:pil-ser": "REA215"
 }

@@ -252,6 +252,7 @@ const SimulationGravitation = paresseux(() => import("./simulations/Gravitation"
 const SimulationChampElec = paresseux(() => import("./simulations/ChampElec"), "SimulationChampElec");
 const SimulationNewtonRect = paresseux(() => import("./simulations/NewtonRect"), "SimulationNewtonRect");
 const SimulationChutePlane = paresseux(() => import("./simulations/ChutePlane"), "SimulationChutePlane");
+const SimulationPilePcm = paresseux(() => import("./simulations/PilePcm"), "SimulationPilePcm");
 const SimulationChuteVisqueuse = paresseux(() => import("./simulations/ChuteVisqueuseDuo"), "SimulationChuteVisqueuseDuo");
 const SimulationPenteXt = paresseux(() => import("./simulations/PenteXt"), "SimulationPenteXt");
 const SimulationVecteursVAStl = paresseux(() => import("./simulations/VecteursVAStl"), "SimulationVecteursVAStl");
@@ -696,6 +697,7 @@ const SIMULATIONS = [
   { id:301, label:"Fluorescence et phosphorescence : Perrin-Jablonski", niveau:"BTS", icon:"💡", color:"#16a34a", component: SimulationFluorescence },
   { id:303, label:"UV-visible : couleur, conjugaison et auxochromes", niveau:"BTS", icon:"🌈", color:"#7c3aed", component: SimulationChromophores },
   { id:304, label:"Infrarouge : de la liaison-ressort au spectre", niveau:"BTS", icon:"🔬", color:"#0f766e", component: SimulationInfrarouge },
+  { id:305, label:"Piles : polarité, équation de fonctionnement et durée", niveau:"TSTL", icon:"🔋", color:"#b45309", component: SimulationPilePcm },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
