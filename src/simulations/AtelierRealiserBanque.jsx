@@ -1,5 +1,6 @@
 import { Frac, FormuleEnLigne, avecIndices, lireNombre, nbCS } from "../commun";
 import { METAUX as PILP_METAUX } from './pilePcmModele.js';
+import { MOLS as RMNS_MOLS, NOMS_MULT as RMNS_MULT } from './rmnStlModele.js';
 import * as SEV from "./sensEvolutionModele.js";
 import * as MAB from "./mabModele.js";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
@@ -3640,6 +3641,38 @@ function genPileCapacite() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['n(e⁻) = z × n du réactif limitant ; Q = n(e⁻) × F, avec F = 96 500 C/mol.', 'Δt = Q ÷ i, avec i en ampères ; ÷ 3 600 pour des heures.'] };
 }
+function genRmnIntegration() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const fr = x => String(x).replace('.', ',');
+  const mols = RMNS_MOLS.filter(m => m.liste.length >= 3 && m.liste.length <= 4 && m.liste.filter(x => x.nv >= 1).length >= 2);
+  let m, k, h, H, i1, i2, i3;
+  do {
+    m = tire(mols); k = tire([4, 5, 6, 8]);
+    h = m.liste.map(x => Math.round(x.n * k * (1 + (Math.random() - 0.5) * 0.03) * 10) / 10); H = h.reduce((s, v) => s + v, 0);
+    const avecVoisins = m.liste.map((x, i) => (x.nv >= 1 ? i : -1)).filter(i => i >= 0);
+    i1 = tire(m.liste.map((_, i) => i)); i2 = tire(m.liste.map((_, i) => i).filter(i => i !== i1)); i3 = tire(avecVoisins);
+  } while (m.liste[i1].n === m.liste[i2].n || m.liste[i3].nv === m.liste[i3].n);
+  const paliers = m.liste.map((x, i) => `${fr(h[i].toFixed(1))}${NB}mm (δ = ${fr(x.d.toFixed(2))}${NB}ppm)`).join(', ');
+  const intro = `Le spectre RMN ¹H d’un composé de formule brute ${m.brute} (${m.N}${NB}H au total) est enregistré à 400${NB}MHz. Les paliers de la courbe d’intégration, de la gauche vers la droite, mesurent : ${paliers}.`;
+  const q1 = { id: 'ri0', type: 'num', q: <>Quelle est la <b>hauteur totale H</b> des paliers (en mm) ?</>, unite: 'mm', vrai: H, tolRel: 0.01, csMin: 2,
+    aide: 'On additionne les hauteurs de tous les paliers.', pieges: [[h[0], 'Il faut additionner tous les paliers, pas seulement le premier.']],
+    expl: <>H = {h.map(v => fr(v.toFixed(1))).join(' + ')} = <b>{fr(H.toFixed(1))}{NB}mm</b>.</> };
+  const nH = i => m.N * h[i] / H;
+  const q2 = { id: 'ri1', type: 'num', q: <>Combien de H représente le <b>signal à {fr(m.liste[i1].d.toFixed(2))}{NB}ppm</b> ? (nombre entier)</>, unite: 'H', vrai: m.liste[i1].n, tolRel: 0.001, csMin: 1,
+    aide: 'nombre de H = N × h ÷ H ; arrondissez à l’entier le plus proche.',
+    pieges: [[h[i1], 'Ce n’est pas la hauteur : nombre de H = N × h ÷ H.'], [h[i1] / H, 'Il faut multiplier par N (le nombre total de H de la molécule).']],
+    expl: <>nombre de H = N × h ÷ H = {m.N} × {fr(h[i1].toFixed(1))} ÷ {fr(H.toFixed(1))} = {fr(nH(i1).toFixed(2))}, soit <b>{m.liste[i1].n}{NB}H</b>.</> };
+  const q3 = { id: 'ri2', type: 'num', q: <>Combien de H représente le <b>signal à {fr(m.liste[i2].d.toFixed(2))}{NB}ppm</b> ? (nombre entier)</>, unite: 'H', vrai: m.liste[i2].n, tolRel: 0.001, csMin: 1,
+    aide: 'nombre de H = N × h ÷ H ; arrondissez à l’entier le plus proche.',
+    pieges: [[h[i2], 'Ce n’est pas la hauteur : nombre de H = N × h ÷ H.'], [h[i2] / H, 'Il faut multiplier par N (le nombre total de H de la molécule).']],
+    expl: <>nombre de H = N × h ÷ H = {m.N} × {fr(h[i2].toFixed(1))} ÷ {fr(H.toFixed(1))} = {fr(nH(i2).toFixed(2))}, soit <b>{m.liste[i2].n}{NB}H</b>.</> };
+  const q4 = { id: 'ri3', type: 'num', q: <>Le signal à {fr(m.liste[i3].d.toFixed(2))}{NB}ppm est un <b>{RMNS_MULT[m.liste[i3].mult]}</b> : combien de <b>H voisins</b> n le groupe a-t-il ?</>, unite: 'H', vrai: m.liste[i3].nv, tolRel: 0.001, csMin: 1,
+    aide: 'Un signal de n + 1 raies correspond à n H voisins.', pieges: [[m.liste[i3].nv + 1, 'Le nombre de raies vaut n + 1 : le nombre de H voisins est une unité de moins.']],
+    expl: <>Un {RMNS_MULT[m.liste[i3].mult]} compte {m.liste[i3].nv + 1} raies : n + 1 = {m.liste[i3].nv + 1}, donc <b>n = {m.liste[i3].nv}</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Nombre de H d’un signal = N × h ÷ H (H : hauteur totale des paliers ; N : nombre total de H).', 'n H voisins donnent un signal de n + 1 raies.'] };
+}
 function genPileSerie() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   const fr = x => String(x).replace('.', ',');
@@ -6685,6 +6718,7 @@ export const FAMILLES = [
   { id: 'fvi-tau', groupe: 'Formules', titre: 'Chute avec frottement visqueux : constante de temps et régime transitoire (terminale STL)', gen: genFviTau, domaine: 'Chute avec frottement visqueux' },
   { id: 'eul-lim', groupe: 'Formules', titre: 'Chute avec poussée d’Archimède : accélération initiale et vitesse limite (terminale STL)', gen: genEulLimite, domaine: 'Équation différentielle et méthode d’Euler' },
   { id: 'eul-pas', groupe: 'Formules', titre: 'Chute avec frottement : méthode d’Euler, deux pas (terminale STL)', gen: genEulPas, domaine: 'Équation différentielle et méthode d’Euler' },
+  { id: 'rmn-int', groupe: 'Formules', titre: 'Spectre RMN du proton : intégration, nombre de H et voisins (terminale STL)', gen: genRmnIntegration, domaine: 'RMN du proton : attribuer et identifier' },
   { id: 'pil-cap', groupe: 'Formules', titre: 'Pile : réactif limitant, quantité d’électricité et durée (terminale STL)', gen: genPileCapacite, domaine: 'Piles : polarité, équation de fonctionnement et durée' },
   { id: 'pil-ser', groupe: 'Formules', titre: 'Piles en série : tension, quantité d’électricité et durée (terminale STL)', gen: genPileSerie, domaine: 'Piles : polarité, équation de fonctionnement et durée' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },

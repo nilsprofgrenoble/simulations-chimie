@@ -171,4 +171,5 @@ export const DESCRIPTIONS = {
   "Éclairage et métamérisme": "Deux échantillons identiques sous une lampe, différents sous une autre : illuminant, réflectance, métamérisme et écart de couleur ΔE.",
   "Synthèse additive et synthèse soustractive : mélanger lumières, filtres et pigments": "Additionner des lumières (cônes L, M, S, métamérisme, daltonisme) ou en retirer avec des filtres et des pigments (transmittance, Kubelka-Munk). Parcours guidé, exploration et deux défis.",
   "Piles : polarité, équation de fonctionnement et durée": "Une pile cuivre | zinc ou zinc | argent : polarité lue au voltmètre, anode et cathode, sens des électrons et des ions, équation de fonctionnement, quantité d’électricité Q = n(e⁻) F et durée Q = i Δt.",
+  "RMN du proton : attribuer un spectre": "Un spectre RMN du proton et une banque de déplacements chimiques : compter les signaux, lire δ, l’intégration et la multiplicité (n + 1) pour attribuer chaque signal à un groupe de H, puis identifier ou confirmer une structure. Parcours guidé, exploration et deux défis.",
 };

@@ -1,6 +1,14 @@
 // Sous-thèmes des chapitres TSTL « Structure spatiale », « Réactions acido-basiques » (PCM), « Acides et bases », « Synthèse organique » et « Mesure et incertitudes » (SPCL), à intégrer dans SOUS_THEMES (src/sousThemes.js).
 // Même structure que SOUS_THEMES ; références = clés de progression des exercices (voir sousThemes.js).
 export default {
+  'tstl-spectroscopies': [
+    { id: 'rmn-signaux', nom: 'Compter les signaux et repérer leur position', capacite: 'Prévoir le nombre de signaux d’un spectre RMN du proton et situer un signal avec une banque de déplacements chimiques.',
+      refs: ['37:prevoir:rmns-ana-signaux', '37:prevoir:rmns-ana-delta', '37:prevoir:rmns-ana-isomere'] },
+    { id: 'rmn-integration', nom: 'Intégration et nombre de H par signal', capacite: 'Déduire le nombre de protons de chaque signal à partir de la courbe d’intégration.',
+      refs: ['34:rmns-sapp-integration', '77:plausible:rmns-val-integration'] },
+    { id: 'rmn-attribuer', nom: 'Multiplicité et attribution des signaux', capacite: 'Attribuer les signaux d’un spectre RMN aux protons d’une molécule donnée (nombre de voisins, règle des n + 1).',
+      refs: ['37:prevoir:rmns-ana-multiplicite', '77:plausible:rmns-val-attribution'] },
+  ],
   'tstl-pcm-oxydoreduction': [
     { id: 'pile-polarite', nom: 'Polarité, anode et cathode, sens des porteurs', capacite: 'Lire la polarité d’une pile avec un voltmètre, identifier anode et cathode et indiquer le sens de circulation des électrons et des ions.',
       refs: ['37:prevoir:pilp-ana-pole', '37:prevoir:pilp-ana-electrons', '37:prevoir:pilp-ana-pont'] },
