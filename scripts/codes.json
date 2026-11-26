@@ -3058,5 +3058,18 @@
  "37:prevoir:rmns-ana-isomere": "ANA1374",
  "77:plausible:rmns-val-integration": "VAL798",
  "77:plausible:rmns-val-attribution": "VAL799",
- "36:rmn-int": "REA216"
+ "36:rmn-int": "REA216",
+ "34:uvs-sapp-energie.0": "SAPP672",
+ "34:uvs-sapp-energie.1": "SAPP673",
+ "34:uvs-sapp-etalonnage.0": "SAPP674",
+ "34:uvs-sapp-etalonnage.1": "SAPP675",
+ "37:prevoir:uvs-ana-energie": "ANA1375",
+ "37:prevoir:uvs-ana-ir-ester": "ANA1376",
+ "37:prevoir:uvs-ana-oxydation": "ANA1377",
+ "37:prevoir:uvs-ana-lambdamax": "ANA1378",
+ "77:plausible:uvs-val-energie": "VAL800",
+ "77:plausible:uvs-val-etalonnage": "VAL801",
+ "77:plausible:uvs-val-ir": "VAL802",
+ "36:uv-energie": "REA217",
+ "36:uv-etalonnage": "REA218"
 }

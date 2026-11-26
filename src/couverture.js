@@ -116,7 +116,7 @@ export const COUVERTURE = [
     { th: 'Chimie et développement durable', t: 'Électrolyse et électrosynthèse', e: 'avenir' },
     { th: 'Chimie et développement durable', t: 'Rendement et optimisation d’une synthèse, chimie verte', e: 'ok', chap: 'tstl-synthese-organique' },
     { th: 'Chimie et développement durable', t: 'Synthèses : estérification, Dean-Stark, chromatographie', e: 'ok', chap: 'tstl-synthese-organique' },
-    { th: 'Chimie et développement durable', t: 'Spectroscopies UV-visible, infrarouge et RMN', e: 'partiel', chap: 'tstl-spectroscopies', reste: 'UV-visible et infrarouge (exercices TSTL à venir)' },
+    { th: 'Chimie et développement durable', t: 'Spectroscopies UV-visible, infrarouge et RMN', e: 'ok', chap: 'tstl-spectroscopies' },
     { th: 'Chimie et développement durable', t: 'Mécanismes réactionnels et stéréochimie', e: 'partiel', chap: 'tstl-synthese-organique', reste: 'mésomérie, loi de Biot et excès énantiomérique, stabilité des intermédiaires' },
     { th: 'Ondes', t: 'Oscillateurs : oscillations libres, amorties, résonance', e: 'avenir' },
     { th: 'Ondes', t: 'Ondes progressives sinusoïdales et acoustique', e: 'partiel', chap: 'tstl-ondes', reste: 'périodicités spatiale et temporelle, puissance et amplitude' },
