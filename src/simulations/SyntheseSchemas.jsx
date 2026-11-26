@@ -8,6 +8,24 @@ const bande = LAMBDAS.slice(i400, i700 + 1);
 const fr = (v, d = 1) => v.toFixed(d).replace('.', ',');
 const couleurLambda = l => C.cssXYNormalise(C.pointLieu(l).x, C.pointLieu(l).y);
 
+
+/** Chemin lisse (spline cubique monotone, sans dépassement) passant par les points [x, y]. */
+const cheminLisse = pts => {
+  const n = pts.length; if (n < 3) return 'M' + pts.map(p => p.join(',')).join(' L');
+  const dx = [], m = [], t = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = pts[i + 1][0] - pts[i][0]; m[i] = (pts[i + 1][1] - pts[i][1]) / dx[i]; }
+  t[0] = m[0]; t[n - 1] = m[n - 2];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
+  for (let i = 0; i < n - 1; i++) {
+    if (m[i] === 0) { t[i] = 0; t[i + 1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i + 1] / m[i], h = a * a + b * b;
+    if (h > 9) { const k = 3 / Math.sqrt(h); t[i] = k * a * m[i]; t[i + 1] = k * b * m[i]; }
+  }
+  let d = `M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < n - 1; i++) { const h = dx[i] / 3; d += ` C${(pts[i][0] + h).toFixed(1)},${(pts[i][1] + h * t[i]).toFixed(1)} ${(pts[i + 1][0] - h).toFixed(1)},${(pts[i + 1][1] - h * t[i + 1]).toFixed(1)} ${pts[i + 1][0].toFixed(1)},${pts[i + 1][1].toFixed(1)}`; }
+  return d;
+};
+
 // ---------- courbes en fonction de la longueur d'onde ----------
 const X0 = 40, X1 = 324, YB = 150, YH = 32;
 const lx = l => X0 + (l - 400) / 300 * (X1 - X0);
@@ -27,9 +45,10 @@ export function SvgSpectre({ courbes = [], ymax = 1, yTitre = '', graduations = 
   els.push(T((X0 + X1) / 2, YB + (bandeCouleur ? 43 : 33), 'longueur d’onde (nm)', { size: 12, fill: K.gris }));
   for (const m of marques) els.push(<line key={'m' + m.l} x1={lx(m.l)} y1={YH - 2} x2={lx(m.l)} y2={YB} stroke={K.txt} strokeWidth="1.4" strokeDasharray="4 3"/>, m.txt ? T(lx(m.l) + 4, YH - 4, m.txt, { size: 12, anchor: 'start', gras: true }) : null);
   courbes.forEach((c, k) => {
-    const pts = c.v.slice(i400, i700 + 1).map((v, i) => `${lx(bande[i])},${py(v)}`);
-    if (c.fill) els.push(<polygon key={'f' + k} points={`${lx(400)},${YB} ${pts.join(' ')} ${lx(700)},${YB}`} fill={c.fill} fillOpacity={c.fillOpacity ?? 0.28} stroke="none"/>);
-    els.push(<polyline key={'c' + k} points={pts.join(' ')} fill="none" stroke={c.col ?? K.txt} strokeWidth={c.w ?? 2.6} strokeDasharray={c.dash ?? ''} strokeLinejoin="round" strokeLinecap="round"/>);
+    const pts = c.v.slice(i400, i700 + 1).map((v, i) => [lx(bande[i]), py(v)]);
+    const d = cheminLisse(pts);
+    if (c.fill) els.push(<path key={'f' + k} d={`${d} L${lx(700)},${YB} L${lx(400)},${YB} Z`} fill={c.fill} fillOpacity={c.fillOpacity ?? 0.28} stroke="none"/>);
+    els.push(<path key={'c' + k} d={d} fill="none" stroke={c.col ?? K.txt} strokeWidth={c.w ?? 2.6} strokeDasharray={c.dash ?? ''} strokeLinejoin="round" strokeLinecap="round"/>);
     if (c.nom) {
       const arg = c.l ?? bande[c.v.slice(i400, i700 + 1).indexOf(Math.max(...c.v.slice(i400, i700 + 1)))], i = LAMBDAS.indexOf(Math.round(arg / 10) * 10);
       els.push(T(lx(arg) + (c.dx ?? 0), py(c.v[i] ?? 0) + (c.dy ?? -7), c.nom, { size: 12.5, gras: true, fill: c.col ?? K.txt, anchor: c.anchor ?? 'middle', halo: true }));
