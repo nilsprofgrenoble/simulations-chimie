@@ -55,6 +55,7 @@ export function SimulationStereoisomeres() {
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('relation');
   const [ouv, setOuv] = useState({});
   const [ti, setTi] = useState({ mode: 'c', mol: 'chlorohydroxy', a: 'RS', b: 'RR', miroirA: false, alc: 'pent2ene', h: [true, true], rangs: false, v3d: false });
+  const [v3dG, setV3dG] = useState(false), [v3dD, setV3dD] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
@@ -198,10 +199,25 @@ export function SimulationStereoisomeres() {
     ze2: [['Priorité 1', 'Br et Cl', COL.rouge]],
   };
   const lignesGuide = enGuide ? (MES[idE] ?? []) : [];
-  const sceneGuide = enGuide && SC[idE] ? SC[idE]() : null;
+  // 3D disponible dans certaines étapes (bascule « Dessin de Cram / Vue 3D ») ; les lettres ne sont jamais données avant la question
+  const OPT3D = {
+    deux: { options: [{ lettre: 'A', s: A }] },
+    miroir: { options: [{ lettre: 'A', s: A }], miroir: true, devoiler: false },
+    enantio: { options: [{ lettre: 'A', s: A }, { lettre: 'B', s: IMG }] },
+    diast: { options: [{ lettre: 'A', s: A }, { lettre: 'C', s: AUTRE }] },
+  };
+  const o3 = enGuide ? OPT3D[idE] : null;
+  const sceneGuide = enGuide && SC[idE] ? (o3 ? <>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+      <button onClick={() => setV3dG(false)} aria-pressed={!v3dG} style={stylePetitBouton(!v3dG, '#0369a1')}>Dessin de Cram</button>
+      <button onClick={() => setV3dG(true)} aria-pressed={v3dG} style={stylePetitBouton(v3dG, '#0f766e')}>Vue 3D (dans l’espace)</button>
+    </div>
+    {v3dG ? <Couple3D key={idE} mol={MOL} options={o3.options} miroir={!!o3.miroir} devoiler={o3.devoiler !== false}/> : SC[idE]()}
+  </> : SC[idE]()) : null;
 
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => {
+    setV3dD(false);
     if (type === 'relation') { const t = M.tirageRelation(); setDefi({ ...t, reps: { rel: '', nb: '' }, verifie: false }); }
     else setDefi({ ...M.tirageZE(), reps: { z1: '', z2: '' }, verifie: false });
   };
@@ -234,6 +250,10 @@ export function SimulationStereoisomeres() {
         <div style={{ ...lbl, marginBottom: 8 }}>La molécule <strong>{defi.m.nom}</strong> ({defi.m.semi}) a deux carbones asymétriques. Le stéréoisomère <strong>A</strong> est <strong>{M.nomDesc(defi.m, defi.a.desc)}</strong> et le stéréoisomère <strong>B</strong> est <strong>{M.nomDesc(defi.m, defi.b.desc)}</strong>.</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>A et B sont :</span>{selDefi('rel', 'Relation entre A et B', Object.entries(REL), defi.ok || defi.reps.rel === defi.rel)}
+        </div>
+        <div style={{ marginBottom: 8 }}>
+          <button onClick={() => setV3dD(v => !v)} aria-expanded={v3dD} style={stylePetitBouton(v3dD, '#0f766e')}>{v3dD ? 'Masquer la vue 3D' : 'Voir A et B en 3D (dans l’espace)'}</button>
+          {v3dD && <div style={{ marginTop: 8 }}><Couple3D key={`${defi.m.id}${defi.a.id}${defi.b.id}`} mol={defi.m} options={[{ lettre: 'A', s: defi.a }, { lettre: 'B', s: defi.b }]}/></div>}
         </div>
         <div style={{ ...lbl, marginBottom: 8 }}>Une autre molécule a <strong>{defi.n} carbones asymétriques</strong> (sans composé méso).</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>

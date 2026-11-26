@@ -25,4 +25,10 @@ ok(etat('SN2', 0.5).nuLie !== etat('SN2', 0.5).lgLie || true, 'SN2 : transition'
 for (const m of ['SN1', 'SN2']) for (let i = 0; i <= 50; i++) etat(m, i / 50).subs.forEach(s => ok(Math.abs(Math.hypot(...s) - 1.5) < 1e-9, 'longueur de liaison constante'));
 for (const m of ['SN1', 'SN2']) for (let i = 0; i <= 100; i++) { const e = etat(m, i / 100); ok(e.lgOp >= 0 && e.lgOp <= 1 && e.nuOp >= 0 && e.nuOp <= 1, 'opacités dans [0, 1]'); }
 ok(etat('SN2', 0).lgOp === 1 && etat('SN2', 0).nuOp === 0 && etat('SN2', 1).nuOp === 1 && etat('SN2', 1).lgOp === 0, 'SN2 : liaisons de départ et d’arrivée');
+// CAT : carbocation déjà plan au départ, Br⁻ attaque une face ou l'autre : deux énantiomères, jamais de groupe partant
+ok(etat('CAT', 0, 'droite').plan && etat('CAT', 0, 'droite').sansLg && !etat('CAT', 0, 'droite').lgLie, 'CAT : carbocation plan au départ, sans groupe partant');
+ok(etat('CAT', 0, 'droite').nuOp === 0 && etat('CAT', 1, 'droite').nuOp === 1 && etat('CAT', 1, 'droite').nuLie, 'CAT : Br lié à la fin');
+ok(configuration(etat('CAT', 1, 'gauche')) !== configuration(etat('CAT', 1, 'droite')) && ['R', 'S'].includes(configuration(etat('CAT', 1, 'droite'))), 'CAT : deux faces, deux énantiomères');
+ok(configuration(etat('CAT', 0, 'droite')) === null, 'CAT : pas de configuration pour le carbocation');
+for (let i = 0; i <= 50; i++) etat('CAT', i / 50, i % 2 ? 'gauche' : 'droite').subs.forEach(s => ok(Math.abs(Math.hypot(...s) - 1.5) < 1e-9, 'CAT : longueur de liaison constante'));
 console.log(`sn3dModele : ${n} vérifications OK`);

@@ -193,8 +193,8 @@ export const EXERCICES = [
   {
     id: 'meca-racemique', domaine: DOM, niveau: 2, titre: 'Pourquoi le 2-bromobutane est un mélange racémique',
     construire: () => ({
-      enonce: 'L\'addition de HBr sur le but-2-ène conduit au 2-bromobutane CH₃–CHBr–CH₂–CH₃ en passant par un carbocation plan. Le dessin montre les deux produits possibles : Br arrive soit devant le plan du carbocation (coin plein), soit derrière (traits). Les carbones sont numérotés de 1 à 4.',
-      schema: [{ type: 'meca', u: 1, face: 1, fleches: false, numC: true, legende: 'Br arrive par l\'avant' }, { type: 'meca', u: 1, face: -1, fleches: false, numC: true, legende: 'Br arrive par l\'arrière' }],
+      enonce: 'L\'addition de HBr sur le but-2-ène conduit au 2-bromobutane CH₃–CHBr–CH₂–CH₃ en passant par un carbocation plan. Le dessin montre les deux produits possibles : Br arrive soit devant le plan du carbocation (coin plein), soit derrière (traits). Les carbones sont numérotés de 1 à 4. La vue 3D montre le carbocation plan et l\'attaque de Br⁻ : tournez-la pour voir les deux produits.',
+      schema: [{ type: 'meca', u: 1, face: 1, fleches: false, numC: true, legende: 'Br arrive par l\'avant' }, { type: 'meca', u: 1, face: -1, fleches: false, numC: true, legende: 'Br arrive par l\'arrière' }, { type: 'cat3d', groupes: [['CH₂CH₃', 'C'], ['CH₃', 'C'], ['H', 'H']], produit: '2-bromobutane' }],
       etapes: [
         { id: 'asym', titre: 'Le carbone asymétrique', q: 'Quel carbone du 2-bromobutane est asymétrique ?',
           aide: 'Un carbone asymétrique porte quatre groupes tous différents.',

@@ -25,3 +25,4 @@ function Anime({ children }) {
 export const Add3DExo = ({ alc, re }) => <Anime>{u => <Add3D alc={alc} re={re} u={u} devoiler={false} />}</Anime>;
 export const Br3DExo = ({ alc, face = 'dessus' }) => <Anime>{u => <Br3D alc={alc} face={face} syn={false} u={u} devoiler={false} />}</Anime>;
 export const Sn3DExo = ({ meca, re }) => <Anime>{u => <Sn3D meca={meca} u={u} sub="sec" re={re} devoiler={false} />}</Anime>;
+export const Cat3DExo = ({ groupes, produit }) => <Anime>{u => <Sn3D meca="CAT" u={u} groupes={groupes} produit={produit} devoiler={false} />}</Anime>;
