@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./formesModele";
+import { FormesExplore } from "./FormesExplore";
 import { QCM } from "./formesQcm";
 import { SceneFormes, SvgEc, SvgConv, SvgU, SvgEtot } from "./FormesSchemas";
 
@@ -41,7 +42,6 @@ export function SimulationFormes() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('glisse');
   const [ouv, setOuv] = useState({});
-  const [ti, setTi] = useState({ sit: 'chute', p: 0.5, m: 0.5, H: 2, v0: 3, Q: 800 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
@@ -142,10 +142,6 @@ export function SimulationFormes() {
     return { sit: 'chute', p: 0.5, o: ch, bars: true };
   })();
   const sceneProps = (() => {
-    if (enExplore) {
-      const o = ti.sit === 'chute' ? { m: ti.m, H: ti.H } : ti.sit === 'glisse' ? { m: ti.m, v0: ti.v0 } : { m: 0.2, Q: ti.Q };
-      return { sit: ti.sit, p: ti.p, o, bars: true, vals: true };
-    }
     return { ...sceneGuide, vals: true };
   })();
   const eS = M.etat(sceneProps.sit, sceneProps.p, sceneProps.o);
@@ -265,38 +261,11 @@ export function SimulationFormes() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{M.SITUATIONS.find(s => s.id === sceneProps.sit).nom}</div>
       <SceneFormes sit={sceneProps.sit} p={sceneProps.p} e={eS} m={sceneProps.o.m} H={sceneProps.o.H} v0={sceneProps.o.v0} bars={sceneProps.bars} vals={sceneProps.vals} ligne={sceneProps.sit === 'chauffe' ? 'apport maximal' : 'énergie totale au départ'}/>
     </div>);
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="frm-s" label="Situation" valeur={ti.sit} onChange={v => setTi(s => ({ ...s, sit: v, m: v === 'chute' ? 0.5 : v === 'glisse' ? 2 : s.m }))} options={M.SITUATIONS.map(s => [s.id, s.nom])}/>
-      <Sel id="frm-p" label={ti.sit === 'chute' ? 'Avancement de la chute' : ti.sit === 'glisse' ? 'Vitesse perdue par le bloc' : 'Avancement du chauffage'} valeur={ti.p} onChange={v => setTi(s => ({ ...s, p: Number(v) }))} options={M.PAS.map(v => [v, ti.sit === 'chute' ? (v === 0 ? 'au départ (lâchée)' : v === 1 ? 'juste avant le sol' : `${Math.round(100 * v)} % de la hauteur parcourue`) : `${Math.round(100 * v)} %`])}/>
-      {ti.sit === 'chute' && <>
-        <Sel id="frm-m" label="Masse de la bille" valeur={ti.m} onChange={v => setTi(s => ({ ...s, m: Number(v) }))} options={[0.2, 0.5, 1].map(v => [v, `${nbf(v, 1)} kg`])}/>
-        <Sel id="frm-h" label="Hauteur de lâcher" valeur={ti.H} onChange={v => setTi(s => ({ ...s, H: Number(v) }))} options={[1, 2, 3].map(v => [v, `${v} m`])}/></>}
-      {ti.sit === 'glisse' && <>
-        <Sel id="frm-m" label="Masse du bloc" valeur={ti.m} onChange={v => setTi(s => ({ ...s, m: Number(v) }))} options={[1, 2, 3].map(v => [v, `${v} kg`])}/>
-        <Sel id="frm-v" label="Vitesse initiale" valeur={ti.v0} onChange={v => setTi(s => ({ ...s, v0: Number(v) }))} options={[3, 4, 5].map(v => [v, `${v} m/s`])}/></>}
-      {ti.sit === 'chauffe' && <Sel id="frm-q" label="Énergie reçue au maximum" valeur={ti.Q} onChange={v => setTi(s => ({ ...s, Q: Number(v) }))} options={[400, 800, 1200].map(v => [v, `${v} J`])}/>}
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ti.sit === 'chute' ? 'Pendant la chute, l’énergie potentielle (orange) devient de l’énergie cinétique (bleu) : la hauteur totale de la colonne ne change pas.' : ti.sit === 'glisse' ? 'Le bloc ralentit : l’énergie cinétique (bleu) devient énergie interne (rouge) ; la hauteur totale de la colonne ne change pas.' : 'L’eau ne bouge pas : seule l’énergie interne (rouge) augmente, car elle reçoit de l’énergie.'}</div>
-    </div>);
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Énergies stockées</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>Ec et Ep sont les valeurs stockées ; l’énergie interne est donnée par sa variation depuis le début.</div>
-      <LigneMesure nom="Énergie cinétique Ec" valeur={`${nbf(eS.Ec, 1)}${NB}J`} couleur={COL.bleu}/>
-      <LigneMesure nom="Énergie potentielle Ep" valeur={`${nbf(eS.Ep, 1)}${NB}J`} couleur={COL.orange}/>
-      <LigneMesure nom="Énergie interne gagnée ΔU" valeur={`${nbf(eS.dU, 1)}${NB}J`} couleur={COL.rouge}/>
-      <LigneMesure nom="Somme Ec + Ep + ΔU" valeur={`${nbf(M.total(eS), 1)}${NB}J`} couleur={COL.violet}/>
-      {ti.sit !== 'chauffe' && <LigneMesure nom="Vitesse v" valeur={`${nbf(eS.v, 1)}${NB}m/s`}/>}
-      {ti.sit === 'chauffe' && <LigneMesure nom="Variation de température ΔT" valeur={`+${nbf(eS.dT, 1)}${NB}K`}/>}
-      <LigneMesure nom="Énergie reçue de l’extérieur" valeur={`${nbf(eS.recu, 1)}${NB}J`}/>
-    </div>);
-
   const aEssayer = (
     <ul style={liste}>
-      <li>Chute : placez l’avancement à 0 %, 50 % puis 100 % : que deviennent Ec, Ep et la somme ?</li>
+      <li>Chute : lâchez la bille (clic) et regardez les colonnes Ec, Ep et la somme pendant la chute : que deviennent-elles ?</li>
       <li>Chute : doublez la masse de la bille. Les énergies changent-elles ? Et la hauteur totale de la colonne ?</li>
-      <li>Bloc : augmentez la vitesse initiale de 3 à 6 m/s (en passant par 4 et 5). Par combien Ec est-elle multipliée ?</li>
+      <li>Bloc : tirez la flèche verte pour passer de 3 à 6 m/s (en passant par 4 et 5). Par combien Ec est-elle multipliée ?</li>
       <li>Bloc : quand il s’est arrêté, où est passée l’énergie cinétique ?</li>
       <li>Eau : quelle énergie varie ? La somme Ec + Ep + ΔU est-elle constante ici ? Pourquoi ?</li>
     </ul>);
@@ -339,11 +308,8 @@ export function SimulationFormes() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="frm-ex">
-          {scene}
-          <div className="frm-reg">{reglages}</div>
-          {mesures}
-        </div>
+        <FormesExplore/>
+        <div style={{ height: 12 }}/>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
