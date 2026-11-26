@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./poidsTrajetModele";
+import { PoidsExplore } from "./PoidsExplore";
 import { QCM } from "./poidsTrajetQcm";
 import { SceneRail, SvgPoids, SvgPerp, SvgIndep, SvgBilan } from "./PoidsTrajetSchemas";
 
@@ -19,12 +20,10 @@ declarerDefis(SIM_ID, [['signes', 'Moteur, nul ou résistant'], ['calcul', 'Trav
 //  Modèle : poidsTrajetModele.js (test node). QCM : poidsTrajetQcm.js. Schémas : PoidsTrajetSchemas.jsx. Situation inventée (aucune du Moodle).
 // ====================================================
 const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
-const sg = (v, d = 1) => (Math.abs(v) < 0.05 && d === 1 ? '' : v > 0 ? '+' : '−') + nbf(Math.abs(v), d);
 const fmt2 = v => String(Number(Number(v).toPrecision(2))).replace('.', ',');
 const COL = { bleu: '#0369a1', orange: '#b45309', vert: '#15803d', rouge: '#b91c1c', gris: '#475569', violet: '#6d28d9' };
 const PG = M.PARCOURS;
 const zTxt = id => `${nbf(M.pt(id).z, 1)}${NB}m`;
-const natCouleur = n => n === 'moteur' ? COL.vert : n === 'résistant' ? COL.rouge : COL.gris;
 
 const puces = { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 };
 const liste = { margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 };
@@ -68,7 +67,6 @@ export function SimulationPoidsTrajet() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('signes');
   const [ouv, setOuv] = useState({});
-  const [ti, setTi] = useState({ dep: 'A', arr: 'E', m: 2, frott: false, u: 0 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
@@ -256,46 +254,13 @@ export function SimulationPoidsTrajet() {
   const [sd, sa, su] = SCENE[idEtape];
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? 'Le rail et le chariot' : 'La situation étudiée'}</div>
-      {enExplore ? <SceneRail dep={ti.dep} arr={ti.arr !== ti.dep ? ti.arr : null} u={ti.u} frott={ti.frott}/> : <SceneRail dep={sd} arr={sa} u={su} frott={idEtape === 'frott'}/>}
-    </div>);
-
-  // exploration
-  const trajOK = ti.arr !== ti.dep;
-  const ch = trajOK ? M.chemin(ti.dep, ti.arr) : null, kk = ch ? Math.round(ti.u * (ch.length - 1)) : 0;
-  const zc = ch ? ch[kk].z : M.pt(ti.dep).z, sc = ch ? ch[kk].s : 0;
-  const Wp = M.travailPoids(ti.m, M.pt(ti.dep).z, zc), Wr = ti.frott ? M.travailFrottement(M.F_FROTT, sc) : 0, Wt = Wp + Wr;
-  const natP = M.nature(Math.abs(Wp) < 0.05 ? 0 : Wp), natR = M.nature(Math.abs(Wr) < 0.05 ? 0 : Wr), natT = Math.abs(Wt) < 0.05 ? 'ne varie pas' : Wt > 0 ? 'augmente' : 'diminue';
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="pdt-d" label="Point de départ" valeur={ti.dep} onChange={v => setTi(s => ({ ...s, dep: v, u: 0 }))} options={OPT_PTS}/>
-      <Sel id="pdt-a" label="Point d’arrivée" valeur={ti.arr} onChange={v => setTi(s => ({ ...s, arr: v, u: 0 }))} options={OPT_PTS}/>
-      <Sel id="pdt-m" label="Masse du chariot" valeur={ti.m} onChange={v => setTi(s => ({ ...s, m: Number(v) }))} options={[1, 2, 3, 5].map(v => [v, `${v} kg`])}/>
-      <Sel id="pdt-r" label="Réaction du rail" valeur={ti.frott ? 'f' : 'p'} onChange={v => setTi(s => ({ ...s, frott: v === 'f' }))} options={[['p', 'perpendiculaire au rail (sans frottement)'], ['f', `avec frottement (f = ${nbf(M.F_FROTT, 1)} N)`]]}/>
-      <Curseur nom="Avancement du chariot" valeur={Math.round(ti.u * 100)} onChange={v => setTi(s => ({ ...s, u: v / 100 }))} min={0} max={100} pas={2} unite="%" decimales={0} couleur="#475569"/>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Choisissez un départ et une arrivée, puis faites avancer le chariot : les travaux sont comptés depuis le départ.</div>
-    </div>);
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Travaux depuis le départ</div>
-      {!trajOK ? <div style={{ ...lbl, color: KIT.txt2 }}>Choisissez deux points différents pour obtenir un trajet.</div> : <>
-        <LigneMesure nom="Altitude du chariot" valeur={`${nbf(zc, 2)}${NB}m`}/>
-        <LigneMesure nom="Travail du poids" valeur={`${sg(Wp)}${NB}J (${natP})`} couleur={natCouleur(natP)}/>
-        <LigneMesure nom="Travail de la réaction" valeur={`${sg(Wr)}${NB}J (${natR})`} couleur={natCouleur(natR)}/>
-        <LigneMesure nom="Somme des travaux" valeur={`${sg(Wt)}${NB}J`}/>
-        <LigneMesure nom="Énergie cinétique" valeur={natT}/>
-      </>}
-    </div>);
-  const graphe = enExplore && trajOK && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Travaux cumulés selon l’avancement</div>
-      <GrapheTravaux m={ti.m} dep={ti.dep} arr={ti.arr} frott={ti.frott} u={ti.u}/>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La situation étudiée</div>
+      <SceneRail dep={sd} arr={sa} u={su} frott={idEtape === 'frott'}/>
     </div>);
 
   const aEssayer = (
     <ul style={liste}>
-      <li>Choisissez A → E : que vaut le travail du poids à la fin ? Et au milieu du trajet ?</li>
+      <li>Cliquez sur le chariot (départ A, arrivée E) : que vaut le travail du poids à la fin ? Et au milieu du trajet ?</li>
       <li>Échangez le départ et l’arrivée : que devient le signe du travail du poids ?</li>
       <li>Avec frottement, comparez le travail du poids et celui de la réaction sur A → B puis sur B → A.</li>
       <li>Doublez la masse : quelles grandeurs changent, et lesquelles ne changent pas ?</li>
@@ -341,12 +306,8 @@ export function SimulationPoidsTrajet() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="pdt-ex">
-          {scene}
-          <div className="pdt-reg">{reglages}</div>
-          {mesures}
-          {graphe}
-        </div>
+        <PoidsExplore/>
+        <div style={{ height: 12 }}/>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
