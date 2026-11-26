@@ -3462,6 +3462,52 @@ function genGrvPoids() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['g = G × M ÷ R² à la surface ; g diminue quand on s’éloigne du centre.', 'Le poids est P = m × g ; la masse ne change pas d’un astre à l’autre.'] };
 }
+function genNwrAcc() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, f, F, S, a, a2;
+  do { m = tire([2.0, 2.5, 4.0, 5.0]); f = tire([2, 3, 4, 6]); F = f + tire([4, 6, 8, 10, 12]); S = F - f; a = S / m; a2 = a / 2; }
+  while (new Set([S, a, a2].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un chariot de masse ${fr(m.toFixed(1))}${NB}kg glisse sur un rail horizontal. Il est poussé vers la droite par une force de ${F}${NB}N ; le rail exerce un frottement de ${f}${NB}N vers la gauche. Le poids et la réaction se compensent.`;
+  const q1 = { id: 'n0', type: 'num', q: <>Quelle est la <b>valeur de la somme des forces</b> sur l’axe horizontal (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: S, tolRel: 0.05, csMin: 2,
+    aide: 'Le frottement s’oppose à la poussée : ΣF = F − f.',
+    pieges: [[F + f, 'Le frottement est de sens opposé à la poussée : on le soustrait au lieu de l’ajouter.'], [F, 'N’oubliez pas le frottement : ΣF = F − f.']],
+    expl: <>ΣF = {F} − {f} = <b>{pvFmt(S)}{NB}N</b>, vers la droite.</> };
+  const q2 = { id: 'n1', type: 'num', q: <>Quelle est l’<b>accélération</b> du chariot (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: a, tolRel: 0.05, csMin: 2,
+    aide: 'ΣF = m a, donc a = ΣF ÷ m, avec ΣF en N et m en kg.',
+    pieges: [[F / m, 'Utilisez la somme des forces ΣF, pas la poussée seule.'], [S * m, 'On divise ΣF par la masse : a = ΣF ÷ m.']],
+    expl: <>a = ΣF ÷ m = {pvFmt(S)} ÷ {fr(m.toFixed(1))} = <b>{pvFmt(a)}{NB}m/s²</b>.</> };
+  const q3 = { id: 'n2', type: 'num', q: <>On remplace le chariot par un chariot de <b>masse double</b>, soumis aux mêmes forces. Quelle est la nouvelle accélération (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: a2, tolRel: 0.05, csMin: 2,
+    aide: 'a = ΣF ÷ m : doubler la masse divise a par 2.',
+    pieges: [[a * 2, 'Une masse plus grande donne une accélération plus petite : a est divisée par 2.'], [a / 4, 'La masse n’est pas au carré : a est divisée par 2, pas par 4.']],
+    expl: <>a′ = a ÷ 2 = {pvFmt(a)} ÷ 2 = <b>{pvFmt(a2)}{NB}m/s²</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['ΣF = F − f sur l’axe horizontal (le poids et la réaction se compensent) ; a = ΣF ÷ m.', 'À même somme des forces, une masse double donne une accélération deux fois plus petite.'] };
+}
+function genNwrFrott() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, a, f, F, S, a0;
+  do { f = tire([2, 3, 4, 5]); m = tire([2.0, 4.0, 5.0]); a = tire([0.5, 1.0, 1.5, 2.0]); S = m * a; F = f + S; a0 = F / m; }
+  while (new Set([S, f, a0].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un chariot de masse ${fr(m.toFixed(1))}${NB}kg glisse sur un rail horizontal, poussé vers la droite par une force de ${fr(F)}${NB}N. On mesure une accélération de ${fr(a.toFixed(1))}${NB}m/s² vers la droite. Le poids et la réaction se compensent.`;
+  const q1 = { id: 'n0', type: 'num', q: <>Quelle est la <b>valeur de la somme des forces</b> sur le chariot (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: S, tolRel: 0.05, csMin: 2,
+    aide: 'Deuxième loi de Newton : ΣF = m × a, avec m en kg et a en m/s².',
+    pieges: [[F, 'La poussée n’est qu’une des forces : la somme des forces vaut m × a.'], [m / a, 'On multiplie la masse par l’accélération : ΣF = m × a.']],
+    expl: <>ΣF = m × a = {fr(m.toFixed(1))} × {fr(a.toFixed(1))} = <b>{pvFmt(S)}{NB}N</b>.</> };
+  const q2 = { id: 'n1', type: 'num', q: <>Quelle est la <b>valeur de la force de frottement</b> (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: f, tolRel: 0.05, csMin: 2,
+    aide: 'ΣF = F − f, donc f = F − ΣF.',
+    pieges: [[F + S, 'Le frottement s’oppose à la poussée : f = F − ΣF (et non F + ΣF).'], [S, 'ΣF = m a est la somme des forces ; le frottement est ce qui manque : f = F − ΣF.']],
+    expl: <>f = F − ΣF = {fr(F)} − {pvFmt(S)} = <b>{pvFmt(f)}{NB}N</b>.</> };
+  const q3 = { id: 'n2', type: 'num', q: <>On <b>supprime le frottement</b> (même poussée). Quelle serait l’accélération du chariot (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: a0, tolRel: 0.05, csMin: 2,
+    aide: 'Sans frottement, ΣF = F : a = F ÷ m.',
+    pieges: [[a, 'Sans frottement, la somme des forces est la poussée seule : a = F ÷ m.']],
+    expl: <>a = F ÷ m = {fr(F)} ÷ {fr(m.toFixed(1))} = <b>{pvFmt(a0)}{NB}m/s²</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['ΣF = m a ; sur l’axe horizontal, ΣF = F − f.', 'Sans frottement, toute la poussée sert à accélérer le chariot : a = F ÷ m.'] };
+}
 function genCelChamp() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   let U, dcm, E, E2, E3;
@@ -6214,6 +6260,8 @@ export const FAMILLES = [
   { id: 'grv-poids', groupe: 'Formules', titre: 'Intensité de pesanteur et poids sur une planète (terminale STL)', gen: genGrvPoids, domaine: 'Gravitation et poids' },
   { id: 'chel-champ', groupe: 'Formules', titre: 'Champ électrostatique entre deux armatures : E = U ÷ d (terminale STL)', gen: genCelChamp, domaine: 'Champ et force électrostatiques' },
   { id: 'chel-force', groupe: 'Formules', titre: 'Force sur une particule chargée entre deux armatures : F = |q| E (terminale STL)', gen: genCelForce, domaine: 'Champ et force électrostatiques' },
+  { id: 'nwr-acc', groupe: 'Formules', titre: 'Somme des forces et accélération d’un chariot : ΣF = m a (terminale STL)', gen: genNwrAcc, domaine: 'Bilan des forces et lois de Newton' },
+  { id: 'nwr-frott', groupe: 'Formules', titre: 'Frottement d’après l’accélération mesurée : ΣF = m a (terminale STL)', gen: genNwrFrott, domaine: 'Bilan des forces et lois de Newton' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
