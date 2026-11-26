@@ -12,6 +12,7 @@ import { EUL_ANA } from './eulerChuteExos.js';
 import { PILP_ANA } from './pilePcmExos.js';
 import { RMNS_ANA } from './rmnStlExos.js';
 import { UVS_ANA } from './uvirStlExos.js';
+import { KSQ_ANA } from './ksqExos.js';
 import { CLP_ANA } from './chutePlaneExos.js';
 import { NWR_ANA } from './newtonRectExos.js';
 import { MTR_ANA } from './modesTransfertExos.js';
@@ -7274,6 +7275,7 @@ export const PREVOIR = [
   ...PILP_ANA,
   ...RMNS_ANA,
   ...UVS_ANA,
+  ...KSQ_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,

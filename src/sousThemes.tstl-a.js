@@ -1,6 +1,14 @@
 // Sous-thèmes des chapitres TSTL « Structure spatiale », « Réactions acido-basiques » (PCM), « Acides et bases », « Synthèse organique » et « Mesure et incertitudes » (SPCL), à intégrer dans SOUS_THEMES (src/sousThemes.js).
 // Même structure que SOUS_THEMES ; références = clés de progression des exercices (voir sousThemes.js).
 export default {
+  'tstl-solubilite': [
+    { id: 'ks-expression', nom: 'Équation de dissolution et expression de Ks', capacite: 'Écrire l’équation de dissolution d’un sel peu soluble et exprimer la constante Ks.',
+      refs: ['37:prevoir:ksq-ana-expression', '34:ksq-sapp-solubilite'] },
+    { id: 'qr-ks', nom: 'Comparer Qr à Ks : précipité ou non', capacite: 'Calculer le quotient de réaction (après dilution) et le comparer à Ks pour prévoir l’évolution d’un système.',
+      refs: ['37:prevoir:ksq-ana-sens', '37:prevoir:ksq-ana-dilution', '77:plausible:ksq-val-dilution', '34:ksq-sapp-melange', '36:ksq-melange'] },
+    { id: 'solubilite', nom: 'Solubilité et Ks', capacite: 'Relier solubilité (mol/L et g/L) et produit de solubilité Ks, et comparer des solubilités.',
+      refs: ['37:prevoir:ksq-ana-comparer', '77:plausible:ksq-val-comparer', '36:ksq-ks'] },
+  ],
   'tstl-spectroscopies': [
     { id: 'rmn-signaux', nom: 'Compter les signaux et repérer leur position', capacite: 'Prévoir le nombre de signaux d’un spectre RMN du proton et situer un signal avec une banque de déplacements chimiques.',
       refs: ['37:prevoir:rmns-ana-signaux', '37:prevoir:rmns-ana-delta', '37:prevoir:rmns-ana-isomere'] },

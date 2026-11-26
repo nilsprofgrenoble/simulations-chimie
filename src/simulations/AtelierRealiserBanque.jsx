@@ -45,6 +45,7 @@ import * as RL from "./reactifLimitantModele";
 import * as KEP from "./satellitesModele";
 import * as CL from "./couleursModele";
 import * as PH from "./photonModele";
+import * as KQ from "./ksqModele";
 import * as PM from "./pressionModele";
 import * as SF from "./statiqueFluidesModele";
 import * as AB from "./acidesBasesModele";
@@ -2338,6 +2339,57 @@ function genTampstlAjout() {
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Un acide fort consomme la base A⁻ et forme AH ; une base forte consomme AH et forme A⁻ (réactions quasi totales).', 'pH = pKa + log(frac(n(A⁻)|n(AH))) avec les quantités après la réaction.', 'Le tampon est épuisé si l’ajout dépasse la quantité du réactif.'] };
+}
+
+// ---------- Solubilité (CDD) : Ks, concentrations saturées, mélange et Qr (sim 309) ----------
+const eqKsq = s => `${s.f}(s) ⇌ ${s.a > 1 ? s.a + ' ' : ''}${s.cation} + ${s.b > 1 ? s.b + ' ' : ''}${s.anion}`;
+const supKsq = n => (n > 1 ? KQ.sup(n) : '');
+function genKsqKs() {
+  const s = KQ.SELS[tire(KQ.ORDRE_SELS)], so = Number((KQ.solubilite(s) * (0.7 + Math.random() * 0.8)).toPrecision(2)), cc = s.a * so, ca = s.b * so, Ks = Math.pow(cc, s.a) * Math.pow(ca, s.b), gl = so * s.M;
+  const sS = KQ.sciNb(so, 2), cS = KQ.sciNb(cc, 2), aS = KQ.sciNb(ca, 2), Mt = `${String(s.M).replace('.', ',')}${NB}g/mol`;
+  const intro = `Une solution saturée de ${s.nom} ${s.f} est préparée à 25${NB}°C : ${eqKsq(s)}. Sa solubilité vaut s = ${sS}${NB}mol/L. Masse molaire : ${Mt}.`;
+  const q1 = { id: 'k0', type: 'num', q: <>Quelle est la concentration des ions <b>{s.cation}</b> dans la solution saturée, en mol/L (2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: cc, tolRel: 0.05, csMin: 2,
+    aide: `Le coefficient de ${s.cation} dans l’équation est ${s.a} : chaque formule dissoute libère ${s.a} ion${s.a > 1 ? 's' : ''} ${s.cation}, donc [${s.cation}] = ${s.a} × s.`,
+    pieges: [[so * s.b, `Vous avez utilisé le coefficient de l’autre ion (${s.b}) : le coefficient de ${s.cation} est ${s.a}.`], [so * so, 'Une concentration ne se calcule pas avec s au carré : [ion] = coefficient × s.']],
+    expl: <>[{s.cation}] = {s.a} × {sS} = <b>{cS}{NB}mol/L</b>.</> };
+  const q2 = { id: 'k1', type: 'num', q: <>Quelle est la concentration des ions <b>{s.anion}</b>, en mol/L (2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: ca, tolRel: 0.05, csMin: 2,
+    aide: `Le coefficient de ${s.anion} dans l’équation est ${s.b} : [${s.anion}] = ${s.b} × s.`,
+    pieges: [[so * s.a, `Vous avez utilisé le coefficient de l’autre ion (${s.a}) : le coefficient de ${s.anion} est ${s.b}.`], [cc * ca, 'C’est un produit de concentrations : on demande une seule concentration.']],
+    expl: <>[{s.anion}] = {s.b} × {sS} = <b>{aS}{NB}mol/L</b>.</> };
+  const q3 = { id: 'k2', type: 'num', q: <>Avec [{s.cation}] = {cS}{NB}mol/L et [{s.anion}] = {aS}{NB}mol/L, calculez <b>Ks</b> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: Ks, tolRel: 0.08, csMin: 2,
+    aide: `Ks = [${s.cation}]${supKsq(s.a)} × [${s.anion}]${supKsq(s.b)} : chaque concentration est élevée à la puissance de son coefficient.`,
+    pieges: [[cc * ca, 'Vous avez oublié les exposants : chaque concentration est élevée à la puissance de son coefficient stœchiométrique.'], [cc + ca, 'Ks est un produit, pas une somme.'], [so * so, 'Ks ne vaut pas s² pour ce sel : utilisez les concentrations des ions avec leurs exposants.']],
+    expl: <>Ks = [{s.cation}]{supKsq(s.a)} × [{s.anion}]{supKsq(s.b)} = {cS}{supKsq(s.a)} × {aS}{supKsq(s.b)} ≈ <b>{KQ.sciNb(Ks, 1)}</b>.</> };
+  const q4 = { id: 'k3', type: 'num', q: <>Exprimez la solubilité s = {sS}{NB}mol/L en <b>g/L</b> (2 chiffres significatifs).</>, unite: 'g/L', vrai: gl, tolRel: 0.05, csMin: 2,
+    aide: 'Masse par litre = quantité par litre × masse molaire : g/L = mol/L × g/mol.',
+    pieges: [[so / s.M, 'Vous avez divisé par la masse molaire : pour passer de mol/L à g/L, on multiplie.'], [so, 'Vous n’avez pas converti : la valeur reste en mol/L.']],
+    expl: <>s (g/L) = {sS} × {String(s.M).replace('.', ',')} ≈ <b>{KQ.sciNb(gl, 1)}{NB}g/L</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Solution saturée : [ion] = coefficient × s ; Ks = produit des concentrations, chacune à la puissance de son coefficient.', 'g/L = mol/L × masse molaire (g/mol).', 'Ks dépend de la température (25 °C ici), pas des quantités de solide.'] };
+}
+function genKsqMelange() {
+  const d = KQ.tirageDefiPrecip(), s = KQ.SELS[d.sel], m = d.m, ratio = d.q / d.Ks, prec = d.verdict === 'precipite';
+  const c1S = KQ.sciNb(d.c1, 2), c2S = KQ.sciNb(d.c2, 2), m1S = KQ.sciNb(m.c1, 2), m2S = KQ.sciNb(m.c2, 2), KsS = KQ.sciNb(d.Ks, 2);
+  const intro = `On mélange ${d.V1}${NB}mL d’une solution d’ions ${s.cation} à ${c1S}${NB}mol/L et ${d.V2}${NB}mL d’une solution d’ions ${s.anion} à ${c2S}${NB}mol/L (volumes additifs). Équilibre de dissolution : ${eqKsq(s)}, avec Ks = ${KsS} à 25${NB}°C.`;
+  const q1 = { id: 'm0', type: 'num', q: <>Quelle est la concentration des ions <b>{s.cation}</b> juste après le mélange, en mol/L (2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: m.c1, tolRel: 0.05, csMin: 2,
+    aide: `Dilution : c finale = c de départ × V de la solution ÷ volume total (${d.V1} + ${d.V2} = ${d.Vt} mL).`,
+    pieges: [[d.c1, 'Vous n’avez pas tenu compte de la dilution : le volume total est la somme des deux volumes.'], [d.c1 * d.V1 / d.V2, 'Le volume au dénominateur est le volume total (somme des deux), pas celui de l’autre solution.']],
+    expl: <>[{s.cation}] = {c1S} × {d.V1} ÷ {d.Vt} = <b>{m1S}{NB}mol/L</b>.</> };
+  const q2 = { id: 'm1', type: 'num', q: <>Quelle est la concentration des ions <b>{s.anion}</b> juste après le mélange, en mol/L (2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: m.c2, tolRel: 0.05, csMin: 2,
+    aide: `Même méthode : c2 × V2 ÷ (V1 + V2) avec V2 = ${d.V2} mL.`,
+    pieges: [[d.c2, 'Vous n’avez pas tenu compte de la dilution : le volume total est la somme des deux volumes.'], [d.c2 * d.V2 / d.V1, 'Le volume au dénominateur est le volume total (somme des deux), pas celui de l’autre solution.']],
+    expl: <>[{s.anion}] = {c2S} × {d.V2} ÷ {d.Vt} = <b>{m2S}{NB}mol/L</b>.</> };
+  const q3 = { id: 'm2', type: 'num', q: <>Avec [{s.cation}] = {m1S}{NB}mol/L et [{s.anion}] = {m2S}{NB}mol/L, calculez le quotient de réaction <b>Qr</b> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: d.q, tolRel: 0.08, csMin: 2,
+    aide: `Qr a la même expression que Ks : [${s.cation}]${supKsq(s.a)} × [${s.anion}]${supKsq(s.b)}.`,
+    pieges: [[d.qSansExposant, 'Vous avez oublié les exposants (coefficients stœchiométriques).'], [m.c1 + m.c2, 'Qr est un produit, pas une somme.'], [d.qSansDilution, 'Vous avez utilisé les concentrations de départ : utilisez celles de l’énoncé juste après le mélange.']],
+    expl: <>Qr = {m1S}{supKsq(s.a)} × {m2S}{supKsq(s.b)} ≈ <b>{KQ.sciNb(d.q, 1)}</b>.</> };
+  const q4 = { id: 'm3', type: 'qcm', q: <>Qr ≈ {KQ.sciNb(d.q, 2)} et Ks = {KsS}. Que se passe-t-il ?</>, options: ['Un précipité se forme', 'Il n’y a pas de précipité', 'La solution est exactement saturée'], bonne: prec ? 0 : 1,
+    aide: 'Comparez Qr à Ks : Qr > Ks, précipité ; Qr < Ks, pas de précipité ; Qr = Ks, solution saturée.',
+    expl: <>Qr ≈ {KQ.sciNb(d.q, 2)} est {prec ? 'supérieur' : 'inférieur'} à Ks = {KsS} (rapport {ratio >= 10 || ratio < 0.1 ? KQ.sciNb(ratio, 1) : nbF(ratio, 2)}) : {prec ? 'un précipité se forme jusqu’à ce que Qr = Ks.' : 'il n’y a pas de précipité, la solution n’est pas saturée.'}</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Après un mélange : concentration = c de départ × V ÷ volume total.', 'Qr = produit des concentrations à la puissance des coefficients (même expression que Ks).', 'Qr > Ks : précipité ; Qr < Ks : pas de précipité ; Qr = Ks : solution saturée.'] };
 }
 // ---------- Acides et bases (CDD) : pH d'un acide, pKa et prédominance, tampon ----------
 const dist10 = v => v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(Math.abs(x), Math.abs(y))));
@@ -6727,6 +6779,8 @@ export const FAMILLES = [
   { id: 'predo-beer', groupe: 'Formules', titre: 'Indicateur coloré : spectrophotométrie et pKa (terminale STL)', gen: genPredoBeer, domaine: 'pH, pKa et diagramme de prédominance' },
   { id: 'tampstl-prepa', groupe: 'Formules', titre: 'Préparer une solution tampon de pH donné (terminale STL)', gen: genTampstlPrepa, domaine: 'Solution tampon : choix du couple et préparation' },
   { id: 'tampstl-ajout', groupe: 'Formules', titre: 'pH d’un tampon après un ajout d’acide ou de base (terminale STL)', gen: genTampstlAjout, domaine: 'Solution tampon : choix du couple et préparation' },
+  { id: 'ksq-ks', groupe: 'Formules', titre: 'Solution saturée : concentrations des ions, Ks et solubilité (terminale STL)', gen: genKsqKs, domaine: 'Ks, quotient de réaction et solubilité' },
+  { id: 'ksq-melange', groupe: 'Formules', titre: 'Mélange de deux solutions : concentrations, Qr et précipitation (terminale STL)', gen: genKsqMelange, domaine: 'Ks, quotient de réaction et solubilité' },
   { id: 'ab-acf-rea-ph', groupe: 'Formules', titre: 'pH d’un acide fort et d’un acide faible', gen: genAbAcfPh, domaine: 'Acides et bases' },
   { id: 'ab-acf-rea-dilution', groupe: 'Formules', titre: 'Diluer un acide faible : pH avant et après', gen: genAbAcfDilution, domaine: 'Acides et bases' },
   { id: 'ab-pred-rea-rapport', groupe: 'Formules', titre: 'Concentrations des deux formes d’un couple selon le pH', gen: genAbPredRapport, domaine: 'Acides et bases' },
