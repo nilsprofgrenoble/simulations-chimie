@@ -2676,5 +2676,14 @@
  "37:prevoir:xyy-ana-ecran": "ANA1228",
  "77:plausible:xyy-val-dominante": "VAL723",
  "77:plausible:xyy-val-melange": "VAL724",
- "77:plausible:xyy-val-ecran": "VAL725"
+ "77:plausible:xyy-val-ecran": "VAL725",
+ "37:prevoir:mtm-ana-sources": "ANA1229",
+ "37:prevoir:mtm-ana-reflectance": "ANA1230",
+ "37:prevoir:mtm-ana-produit": "ANA1231",
+ "37:prevoir:mtm-ana-eclairage": "ANA1232",
+ "37:prevoir:mtm-ana-metamere": "ANA1233",
+ "37:prevoir:mtm-ana-controle": "ANA1234",
+ "77:plausible:mtm-val-courbes": "VAL726",
+ "77:plausible:mtm-val-identiques": "VAL727",
+ "77:plausible:mtm-val-ecart": "VAL728"
 }

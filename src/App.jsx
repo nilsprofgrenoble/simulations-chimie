@@ -215,6 +215,7 @@ const SimulationWinsor = paresseux(() => import("./simulations/Winsor"), "Simula
 const SimulationTernaire = paresseux(() => import("./simulations/Ternaire"), "SimulationTernaire");
 const SimulationCielab = paresseux(() => import("./simulations/Cielab"), "SimulationCielab");
 const SimulationXyy = paresseux(() => import("./simulations/Xyy"), "SimulationXyy");
+const SimulationMetamerisme = paresseux(() => import("./simulations/Metamerisme"), "SimulationMetamerisme");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationPanneauPhotovoltaique = paresseux(() => import("./simulations/PanneauPhotovoltaique"), "SimulationPanneauPhotovoltaique");
 const SimulationPanneauRendement = paresseux(() => import("./simulations/PanneauRendement"), "SimulationPanneauRendement");
@@ -625,6 +626,7 @@ const SIMULATIONS = [
   { id:246, label:"Diagramme ternaire des microémulsions", niveau:"BTS", icon:"🔺", color:"#7c3aed", component: SimulationTernaire },
   { id:247, label:"Couleur : L*, a*, b* et écart de couleur", niveau:"BTS", icon:"🎨", color:"#0891b2", component: SimulationCielab },
   { id:248, label:"Diagramme de chromaticité : lire et mélanger les couleurs", niveau:"BTS", icon:"🌈", color:"#7c3aed", component: SimulationXyy },
+  { id:249, label:"Éclairage et métamérisme : pourquoi une couleur change de lampe", niveau:"BTS", icon:"💡", color:"#d97706", component: SimulationMetamerisme },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 

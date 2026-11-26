@@ -149,6 +149,11 @@ export default {
     { id: 'isoreponses', nom: 'Courbes isoréponses : choisir ses conditions', capacite: 'Exploiter des courbes isoréponses pour choisir les conditions de formulation.',
       refs: [...A('pmel-iso-resserrees', 'pfac-iso-fenetre'), ...VV('pfac-iso-extrapolation')] },
   ],
+  // ───────────────────────── S8 · Formulation : aspect, produire les couleurs ───
+  'bts-couleur-produire': [
+    { id: 'metamerisme', nom: 'Couleur : éclairage, réflectance et métamérisme', capacite: 'Aspect : distinguer des sources de lumière à partir de leurs spectres ; relier la couleur d’un objet à sa courbe de réflectance ; expliquer le métamérisme (causes et conséquences).',
+      refs: [...A('mtm-ana-sources', 'mtm-ana-reflectance', 'mtm-ana-produit', 'mtm-ana-eclairage', 'mtm-ana-metamere', 'mtm-ana-controle'), ...VV('mtm-val-courbes', 'mtm-val-identiques', 'mtm-val-ecart')] },
+  ],
   // ───────────────────────── S8 · Formulation : aspect, mesurer les couleurs ───
   'bts-couleur-mesurer': [
     { id: 'xyy', nom: 'Couleur : lire le diagramme de chromaticité', capacite: 'Aspect : repérer une couleur sur le diagramme de chromaticité ; en déduire longueur d’onde dominante, pureté et complémentaire ; prévoir le mélange de deux lumières et le domaine reproductible par un écran.',
