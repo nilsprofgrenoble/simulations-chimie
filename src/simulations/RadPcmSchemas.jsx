@@ -1,4 +1,4 @@
-// Schémas de la simulation 309 (radioactivité, TSTL) : désintégration d'un noyau (nucléons dessinés un à un), graphes de décroissance, points-noyaux, compteur,
+// Schémas de la simulation 310 (radioactivité, TSTL) : désintégration d'un noyau (nucléons dessinés un à un), graphes de décroissance, points-noyaux, compteur,
 // sources d'activité en échelle logarithmique, protection, cartes « À retenir ».
 import { C } from './vecteursVASchemas';
 import * as M from './radPcmModele';

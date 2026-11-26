@@ -1,5 +1,5 @@
 // ====================================================
-//  Modèle de la simulation 309 « Radioactivité : désintégrations, loi de décroissance et activité » (TSTL, enseignement PCM, séquence 6).
+//  Modèle de la simulation 310 « Radioactivité : désintégrations, loi de décroissance et activité » (TSTL, enseignement PCM, séquence 6).
 //  Réutilise SANS les modifier : rdaModele.js (liste de noyaux réels et lois de conservation, sim 184 TG) et radioactiviteModele.js (tirages au hasard, sim 123 TG).
 //  Hypothèses de travail (rappelées dans la simulation) : noyaux identiques et indépendants (probabilité λ dt de se désintégrer pendant dt, quel que soit l'âge) ;
 //  N grand pour que la valeur moyenne décrive l'échantillon ; noyaux fils non radioactifs dans la fenêtre étudiée ; compteur idéal (il compte toutes les désintégrations).

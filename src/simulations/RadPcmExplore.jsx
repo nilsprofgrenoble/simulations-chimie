@@ -6,7 +6,7 @@ import { SceneNoyau, PointsNoyaux, GrapheDecroissance, SceneProtection } from ".
 import { COL, nbf, useEtroit, useLecture, StyleAnim, BarreLecture, Chips, Seg } from "./exploAnim";
 
 // ====================================================
-//  Partie animée de l'exploration de la simulation 309 (radioactivité, TSTL) : trois vues.
+//  Partie animée de l'exploration de la simulation 310 (radioactivité, TSTL) : trois vues.
 //  « Un noyau » : le noyau père émet sa particule, le noyau fils apparaît, les sommes de A et de Z s'affichent.
 //  « Beaucoup de noyaux » : chaque noyau se désintègre au hasard ; la courbe suit la loi N₀ e^(−λt) quand N est grand ; pas d'Euler au choix.
 //  « Se protéger » : rayonnement, écran, distance et durée d'exposition (indication qualitative).

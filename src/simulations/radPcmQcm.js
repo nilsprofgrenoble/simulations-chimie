@@ -1,4 +1,4 @@
-// QCM du parcours guidé de la simulation 309 (radioactivité, TSTL). La bonne réponse est en tête ici (bonne: 0) et n'est jamais la plus longue.
+// QCM du parcours guidé de la simulation 310 (radioactivité, TSTL). La bonne réponse est en tête ici (bonne: 0) et n'est jamais la plus longue.
 export const QCM = {
   noyau: { options: ['27 protons et 33 neutrons', '27 protons et 60 neutrons, car A est le nombre de neutrons', '60 protons et 27 neutrons', '33 protons et 27 neutrons, car Z compte les neutrons'], bonne: 0 },
   alpha: { options: ['un noyau d’hélium ⁴₂He, de 4 nucléons', 'un électron, émis par un neutron du noyau', 'un positon, émis par un proton du noyau', 'un photon, qui emporte seulement de l’énergie'], bonne: 0 },

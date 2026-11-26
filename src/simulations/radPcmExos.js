@@ -1,4 +1,4 @@
-// Exercices ANA, VAL et S'APP de la simulation 309 « Radioactivité : désintégrations, loi de décroissance et activité » (TSTL, PCM, séquence 6). Préfixe : rpm-.
+// Exercices ANA, VAL et S'APP de la simulation 310 « Radioactivité : désintégrations, loi de décroissance et activité » (TSTL, PCM, séquence 6). Préfixe : rpm-.
 // Capacités visées (jamais affichées) : types de radioactivité et conservation, constante λ et demi-vie, loi de décroissance, activité en becquerels, protection.
 // Situations originales : aucun des noyaux ni des situations des documents du cours.
 import { LN2 } from './radPcmModele.js';

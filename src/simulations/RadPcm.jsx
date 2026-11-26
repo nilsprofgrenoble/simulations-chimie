@@ -9,11 +9,11 @@ import { QCM } from "./radPcmQcm";
 import { RadPcmExplore, NoyauGuide, PopGuide, EulerGuide, CourbeGuide, ProtGuide } from "./RadPcmExplore";
 import { SceneNoyau, GrapheDecroissance, GrapheLn, SceneCompteur, SceneSources, SvgTypesCarte, SvgConservationCarte, SvgLoiCarte, SvgActiviteCarte, SvgProtectionCarte } from "./RadPcmSchemas";
 
-const SIM_ID = 309, CLE_GUIDE = 'rad-pcm-guide-v1', CLE_P2 = 'rad-pcm-guide-p2', CLE_CHOIX = 'rad-pcm-parcours';
+const SIM_ID = 310, CLE_GUIDE = 'rad-pcm-guide-v1', CLE_P2 = 'rad-pcm-guide-p2', CLE_CHOIX = 'rad-pcm-parcours';
 declarerDefis(SIM_ID, [['equation', 'Identifier le type de radioactivité ou compléter une équation'], ['comptage', 'Exploiter des mesures de comptage : demi-vie et durée']]);
 
 // ====================================================
-//  SIM 309 — RADIOACTIVITÉ : DÉSINTÉGRATIONS, LOI DE DÉCROISSANCE ET ACTIVITÉ (TSTL, enseignement PCM, séquence 6).
+//  SIM 310 — RADIOACTIVITÉ : DÉSINTÉGRATIONS, LOI DE DÉCROISSANCE ET ACTIVITÉ (TSTL, enseignement PCM, séquence 6).
 //  Deux parcours courts. 1) Types de radioactivité (α, β⁻, β⁺, γ) et lois de conservation. 2) Hasard, dN = −λ N dt, loi de décroissance et analogie avec l'ordre 1,
 //  demi-vie, activité et comptage, modélisation (ln A), comparaison de sources, protection, applications.
 //  Capacités visées (jamais affichées) : définir α, β⁻, β⁺, γ ; écrire une équation nucléaire ; interpréter dN = −λ N dt ; établir la loi et l'analogie avec l'ordre 1 ;
