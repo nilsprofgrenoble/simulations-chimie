@@ -46,6 +46,7 @@ import * as KEP from "./satellitesModele";
 import * as CL from "./couleursModele";
 import * as PH from "./photonModele";
 import * as KQ from "./ksqModele";
+import * as HY from "./hydModele";
 import * as PM from "./pressionModele";
 import * as SF from "./statiqueFluidesModele";
 import * as AB from "./acidesBasesModele";
@@ -2390,6 +2391,52 @@ function genKsqMelange() {
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Après un mélange : concentration = c de départ × V ÷ volume total.', 'Qr = produit des concentrations à la puissance des coefficients (même expression que Ks).', 'Qr > Ks : précipité ; Qr < Ks : pas de précipité ; Qr = Ks : solution saturée.'] };
+}
+
+// ---------- Hydroxydes (CDD) : pH de début et de fin de précipitation, fenêtre de séparation (sim 310) ----------
+const eqHyd = cat => `${cat.solide}(s) ⇌ ${cat.ion} + ${cat.n} HO⁻`;
+const phNb = v => HY.nbf(v, 1);
+function genHydSeuil() {
+  const cat = HY.CATS[tire(HY.ORDRE)], c = tire([0.0010, 0.0050, 0.010, 0.050]), oh = HY.ohSeuil(cat, c), ph = HY.phDe(oh), phF = HY.phFin(cat), n = cat.n;
+  const cS = HY.sciNb(c, 1), KsS = HY.sciNb(cat.Ks, 2), ohS = HY.sciNb(oh, 2);
+  const intro = `Une solution contient des ions ${cat.ion} à ${cS}${NB}mol/L. On y ajoute de la soude, à 25${NB}°C. Équation : ${eqHyd(cat)}, avec Ks = ${KsS}. On considère la précipitation quasi totale quand il reste 1,0×10⁻⁵${NB}mol/L d’ions ${cat.ion}.`;
+  const q1 = { id: 'h0', type: 'num', q: <>Quelle est la concentration en ions <b>HO⁻</b> au début de la précipitation de {cat.solide}, en mol/L (2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: oh, tolRel: 0.05, csMin: 2,
+    aide: `Ks = [${cat.ion}] × [HO⁻]${HY.sup(n)} : [HO⁻] = ${n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ c).`,
+    pieges: [[cat.Ks / c, `Vous avez oublié la ${n === 2 ? 'racine carrée' : 'racine cubique'} : Ks = c × [HO⁻]${HY.sup(n)}, donc [HO⁻] = (Ks ÷ c)^(1/${n}).`], [Math.pow(cat.Ks, 1 / n), 'Vous avez oublié de diviser Ks par la concentration c de l’ion métallique.']],
+    expl: <>[HO⁻]{HY.sup(n)} = Ks ÷ c = {HY.sciNb(cat.Ks / c, 2)}, donc [HO⁻] = <b>{ohS}{NB}mol/L</b>.</> };
+  const q2 = { id: 'h1', type: 'num', q: <>En déduire le <b>pH de début de précipitation</b> (pH = 14 + log [HO⁻]).</>, unite: '', vrai: ph, tolRel: 0.02, csMin: 2,
+    aide: 'pH = 14 + log [HO⁻] (à 25 °C, pH + pOH = 14).',
+    pieges: [[14 - ph, `Vous avez donné le pOH (${phNb(14 - ph)}) : le pH vaut 14 − pOH.`], [HY.phDe(cat.Ks / c), 'Vous avez oublié la racine : utilisez la valeur de [HO⁻] calculée à la question précédente.']],
+    expl: <>pH = 14 + log ({ohS}) ≈ <b>{phNb(ph)}</b>.</> };
+  const q3 = { id: 'h2', type: 'num', q: <>Quel est le <b>pH de fin de précipitation</b> (il reste 1,0×10⁻⁵{NB}mol/L d’ions {cat.ion}) ?</>, unite: '', vrai: phF, tolRel: 0.02, csMin: 2,
+    aide: `Même méthode avec c = 1,0×10⁻⁵ mol/L : [HO⁻] = ${n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ 1,0×10⁻⁵), puis pH = 14 + log [HO⁻].`,
+    pieges: [[ph, 'Vous avez redonné le pH de début : pour la fin, remplacez c par 1,0×10⁻⁵ mol/L.'], [14 - phF, 'Vous avez donné le pOH : le pH vaut 14 − pOH.']],
+    expl: <>[HO⁻] = {n === 2 ? '√' : '∛'}({HY.sciNb(cat.Ks / HY.C_FIN, 2)}) = {HY.sciNb(HY.ohSeuil(cat, HY.C_FIN), 2)}{NB}mol/L, donc pH ≈ <b>{phNb(phF)}</b>.</> };
+  const regimes = [[ph - 0.8, 0], [(ph + phF) / 2, 1], [phF + 0.5, 2]], [phT, rg] = tire(regimes);
+  const q4 = { id: 'h3', type: 'qcm', q: <>À pH {phNb(phT)}, que se passe-t-il dans la solution ?</>, options: ['Aucun précipité : le pH est inférieur au pH de début', 'Précipitation en cours : il reste des ions en solution', 'Précipitation quasi totale : il reste moins de 1,0×10⁻⁵ mol/L'], bonne: rg,
+    aide: `Comparez ce pH au pH de début (${phNb(ph)}) et au pH de fin (${phNb(phF)}) de précipitation.`,
+    expl: <>pH de début {phNb(ph)}, pH de fin {phNb(phF)} : à pH {phNb(phT)}, {rg === 0 ? 'on est avant le début, rien ne précipite.' : rg === 1 ? 'on est entre le début et la fin, la précipitation est en cours.' : 'on est au-delà de la fin, la précipitation est quasi totale.'}</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3, q4], retenir: ['[HO⁻] de début = (Ks ÷ c)^(1/n) ; pH = 14 + log [HO⁻].', 'Fin de précipitation : même calcul avec c = 1,0×10⁻⁵ mol/L.', 'Plus la solution est diluée, plus le pH de début est élevé.'] };
+}
+function genHydFenetre() {
+  const a = tire(HY.ORDRE); let b = tire(HY.ORDRE); while (b === a) b = tire(HY.ORDRE);
+  const cA = tire([0.0010, 0.010, 0.10]), cB = tire([0.0010, 0.010, 0.10]), w = HY.fenetre(HY.CATS[a], cA, HY.CATS[b], cB), P = w.premier, S = w.second;
+  const cat4 = !w.ok ? 3 : w.largeur < HY.LARGEUR_MIN ? 2 : w.largeur < 1 ? 1 : 0;
+  const intro = `Une solution contient des ions ${P.ion} à ${HY.sciNb(w.cPremier, 1)}${NB}mol/L et des ions ${S.ion} à ${HY.sciNb(w.cSecond, 1)}${NB}mol/L. On veut les séparer en précipitant l’un en hydroxyde par ajout de soude, à 25${NB}°C. Ks(${P.solide}) = ${HY.sciNb(P.Ks, 2)} ; Ks(${S.solide}) = ${HY.sciNb(S.Ks, 2)}. Précipitation quasi totale : il reste 1,0×10⁻⁵${NB}mol/L d’ions.`;
+  const q1 = { id: 'f0', type: 'num', q: <>Quel est le <b>pH de fin de précipitation</b> de {P.solide} ?</>, unite: '', vrai: HY.phFin(P), tolRel: 0.02, csMin: 2,
+    aide: `[HO⁻] = ${P.n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ 1,0×10⁻⁵), puis pH = 14 + log [HO⁻].`,
+    pieges: [[HY.phDebut(P, w.cPremier), 'Vous avez calculé le pH de début : pour la fin, utilisez 1,0×10⁻⁵ mol/L à la place de la concentration de départ.'], [14 - HY.phFin(P), 'Vous avez donné le pOH : le pH vaut 14 − pOH.']],
+    expl: <>pH de fin = 14 + log ({P.n === 2 ? '√' : '∛'}({HY.sciNb(P.Ks / HY.C_FIN, 2)})) ≈ <b>{phNb(HY.phFin(P))}</b>.</> };
+  const q2 = { id: 'f1', type: 'num', q: <>Quel est le <b>pH de début de précipitation</b> de {S.solide} ?</>, unite: '', vrai: w.hi, tolRel: 0.02, csMin: 2,
+    aide: `[HO⁻] = ${S.n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ c) avec c = ${HY.sciNb(w.cSecond, 1)} mol/L, puis pH = 14 + log [HO⁻].`,
+    pieges: [[HY.phFin(S), 'Vous avez calculé le pH de fin : pour le début, utilisez la concentration de départ de la solution.'], [14 - w.hi, 'Vous avez donné le pOH : le pH vaut 14 − pOH.']],
+    expl: <>pH de début = 14 + log ({S.n === 2 ? '√' : '∛'}({HY.sciNb(S.Ks / w.cSecond, 2)})) ≈ <b>{phNb(w.hi)}</b>.</> };
+  const q3 = { id: 'f2', type: 'qcm', q: <>Peut-on séparer {P.ion} et {S.ion} par le pH ?</>, options: ['Oui : la fenêtre de pH dépasse une unité', 'Oui, mais la fenêtre est étroite (entre 0,3 et 1 unité)', 'Non en pratique : la fenêtre est plus étroite que 0,3 unité', 'Non : les deux zones de précipitation se chevauchent'], bonne: cat4,
+    aide: `Comparez le pH de fin de précipitation de ${P.solide} (${phNb(w.lo)}) et le pH de début de ${S.solide} (${phNb(w.hi)}).`,
+    expl: <>Fenêtre : de pH {phNb(w.lo)} (fin de {P.solide}) à pH {phNb(w.hi)} (début de {S.solide}), soit {w.ok ? `${HY.nbf(w.largeur, 2)} unité de pH` : 'une fenêtre négative : les zones se chevauchent'}. {cat4 === 0 ? 'Séparation facile.' : cat4 === 1 ? 'Séparation possible mais délicate.' : cat4 === 2 ? 'Impossible de régler le pH avec une telle précision.' : 'Séparation impossible.'}</> };
+  filtrer([q1, q2]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Fenêtre de séparation = du pH de fin du premier hydroxyde au pH de début du second.', 'Si la fenêtre est négative, les zones se chevauchent : aucune séparation par le pH.', 'Une fenêtre inférieure à environ 0,3 unité de pH est inutilisable en pratique.'] };
 }
 // ---------- Acides et bases (CDD) : pH d'un acide, pKa et prédominance, tampon ----------
 const dist10 = v => v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(Math.abs(x), Math.abs(y))));
@@ -6828,6 +6875,8 @@ export const FAMILLES = [
   { id: 'tampstl-ajout', groupe: 'Formules', titre: 'pH d’un tampon après un ajout d’acide ou de base (terminale STL)', gen: genTampstlAjout, domaine: 'Solution tampon : choix du couple et préparation' },
   { id: 'ksq-ks', groupe: 'Formules', titre: 'Solution saturée : concentrations des ions, Ks et solubilité (terminale STL)', gen: genKsqKs, domaine: 'Ks, quotient de réaction et solubilité' },
   { id: 'ksq-melange', groupe: 'Formules', titre: 'Mélange de deux solutions : concentrations, Qr et précipitation (terminale STL)', gen: genKsqMelange, domaine: 'Ks, quotient de réaction et solubilité' },
+  { id: 'hyd-seuil', groupe: 'Formules', titre: 'Hydroxyde : [HO⁻] et pH de début et de fin de précipitation (terminale STL)', gen: genHydSeuil, domaine: 'Précipitation des hydroxydes et pH' },
+  { id: 'hyd-fenetre', groupe: 'Formules', titre: 'Séparer deux cations par le pH : fenêtre de séparation (terminale STL)', gen: genHydFenetre, domaine: 'Précipitation des hydroxydes et pH' },
   { id: 'ab-acf-rea-ph', groupe: 'Formules', titre: 'pH d’un acide fort et d’un acide faible', gen: genAbAcfPh, domaine: 'Acides et bases' },
   { id: 'ab-acf-rea-dilution', groupe: 'Formules', titre: 'Diluer un acide faible : pH avant et après', gen: genAbAcfDilution, domaine: 'Acides et bases' },
   { id: 'ab-pred-rea-rapport', groupe: 'Formules', titre: 'Concentrations des deux formes d’un couple selon le pH', gen: genAbPredRapport, domaine: 'Acides et bases' },

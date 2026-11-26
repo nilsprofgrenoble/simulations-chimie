@@ -8,6 +8,10 @@ export default {
       refs: ['37:prevoir:ksq-ana-sens', '37:prevoir:ksq-ana-dilution', '77:plausible:ksq-val-dilution', '34:ksq-sapp-melange', '36:ksq-melange'] },
     { id: 'solubilite', nom: 'Solubilité et Ks', capacite: 'Relier solubilité (mol/L et g/L) et produit de solubilité Ks, et comparer des solubilités.',
       refs: ['37:prevoir:ksq-ana-comparer', '77:plausible:ksq-val-comparer', '36:ksq-ks'] },
+    { id: 'hyd-ph', nom: 'pH de début et de fin de précipitation d’un hydroxyde', capacite: 'Calculer le pH de début de précipitation d’un hydroxyde à partir de Ks et de la concentration.',
+      refs: ['37:prevoir:hyd-ana-expression', '37:prevoir:hyd-ana-dilution', '77:plausible:hyd-val-poh', '77:plausible:hyd-val-racine', '34:hyd-sapp-seuil', '36:hyd-seuil'] },
+    { id: 'hyd-separation', nom: 'Séparer des cations par le pH', capacite: 'Comparer des pH de précipitation pour prévoir l’ordre de précipitation et la possibilité d’une séparation.',
+      refs: ['37:prevoir:hyd-ana-premier', '37:prevoir:hyd-ana-fenetre', '34:hyd-sapp-fenetre', '36:hyd-fenetre'] },
   ],
   'tstl-spectroscopies': [
     { id: 'rmn-signaux', nom: 'Compter les signaux et repérer leur position', capacite: 'Prévoir le nombre de signaux d’un spectre RMN du proton et situer un signal avec une banque de déplacements chimiques.',
