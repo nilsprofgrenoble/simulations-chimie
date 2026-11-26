@@ -2781,5 +2781,17 @@
  "77:plausible:acd-val-signe": "VAL743",
  "77:plausible:acd-val-volume": "VAL744",
  "36:acd-pente-calcul": "REA175",
- "36:acd-faible-calcul": "REA176"
+ "36:acd-faible-calcul": "REA176",
+ "34:flp-sapp-hauteur.0": "SAPP598",
+ "34:flp-sapp-hauteur.1": "SAPP599",
+ "34:flp-sapp-vmin.0": "SAPP600",
+ "34:flp-sapp-vmin.1": "SAPP601",
+ "37:prevoir:flp-ana-masse": "ANA1267",
+ "37:prevoir:flp-ana-vitesse": "ANA1268",
+ "37:prevoir:flp-ana-angle": "ANA1269",
+ "37:prevoir:flp-ana-frott": "ANA1270",
+ "77:plausible:flp-val-hauteur": "VAL745",
+ "77:plausible:flp-val-vmin": "VAL746",
+ "36:flp-hauteur": "REA177",
+ "36:flp-vmin": "REA178"
 }
