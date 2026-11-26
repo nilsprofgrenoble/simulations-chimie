@@ -25,4 +25,8 @@ export const QCM = {
     'sous 1500 cm⁻¹, dans la zone d’empreinte, pour tout identifier',
     'sous 1500 cm⁻¹ seulement, car les bandes y sont plus fines',
     'dans toute la zone avec la même fiabilité'),
+  co2: mk(3, 'le moment dipolaire de la molécule reste nul pendant le mouvement',
+    'la fréquence de ce mouvement est en dehors du domaine infrarouge',
+    'la liaison C=O est trop rigide pour que les atomes puissent vibrer',
+    'les deux atomes d’oxygène restent immobiles pendant ce mouvement'),
 };
