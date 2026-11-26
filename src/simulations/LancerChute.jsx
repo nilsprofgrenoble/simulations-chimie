@@ -1,10 +1,11 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./lancerChuteModele";
+import { LancerExplore } from "./LancerExplore";
 import { QCM } from "./lancerChuteQcm";
 import { SceneLancer, GrapheEnergies, SvgEnergies, SvgSans, SvgAvec } from "./LancerChuteSchemas";
 
@@ -41,7 +42,6 @@ export function SimulationLancerChute() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('courbes');
   const [ouv, setOuv] = useState({});
-  const [ex, setEx] = useState({ obj: 'tennis', v0: 15, frott: false, ref: 'lancement', u: 0.3 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
@@ -131,46 +131,11 @@ export function SimulationLancerChute() {
     epp0: { z: 0, v: PG.v0 }, ec0: { z: 0, v: PG.v0 }, sommet: { z: PG.hMax, v: 0 }, conserv: { z: 3.4, v: 4 }, hmax: { z: PG.hMax, v: 0 },
     mi: { z: PG.zMi, v: 7, cote: '2,5 m' }, retour: { z: 0, v: -PG.v0 }, frott: { z: 2.2, v: 7, frott: true }, hfrott: { z: 2.2, v: 7, frott: true }, wf: { z: 0, v: -PG.vR, frott: true }, fin: { z: 3.4, v: 3, frott: true } };
 
-  // ════════════════ EXPLORATION ════════════════
-  const o = M.objet(ex.obj), { obj, v0: vz, frott: fz } = ex;
-  const sim = useMemo(() => { const ob = M.objet(obj); return M.vol({ m: ob.m, k: ob.k, v0: vz, frott: fz, n: 120 }); }, [obj, vz, fz]);
-  const zRef = ex.ref === 'toit' ? ZREF : 0, k = Math.round(ex.u * (sim.pts.length - 1)), pt = sim.pts[k], e = M.energies(o.m, pt.z, pt.v, zRef), e0 = M.energies(o.m, 0, vz, zRef);
-  const hSans = M.hauteurSansFrott(vz);
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures à l’instant choisi</div>
-      <LigneMesure nom="Temps écoulé" valeur={`${nbf(pt.t, 2)}${NB}s`}/>
-      <LigneMesure nom="Altitude z" valeur={`${nbf(pt.z, 2)}${NB}m`}/>
-      <LigneMesure nom="Vitesse" valeur={`${nbf(Math.abs(pt.v), 1)}${NB}m/s (${pt.v > 0.05 ? 'montée' : pt.v < -0.05 ? 'descente' : 'sommet'})`}/>
-      <LigneMesure nom="Énergie cinétique Ec" valeur={`${nbf(e.Ec, 2)}${NB}J`} couleur="#0369a1"/>
-      <LigneMesure nom="Énergie potentielle Epp" valeur={`${moins(nbf(e.Epp, 2))}${NB}J`} couleur="#b45309"/>
-      <LigneMesure nom="Énergie mécanique Em" valeur={`${moins(nbf(e.Em, 2))}${NB}J`} couleur="#6d28d9"/>
-      <LigneMesure nom="Altitude maximale du vol" valeur={`${nbf(sim.hMax, 2)}${NB}m`}/>
-      {fz && <LigneMesure nom="Em perdue depuis le lancement" valeur={`${nbf(e0.Em - e.Em, 2)}${NB}J`} couleur="#b91c1c"/>}
-    </div>);
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="lcv-o" label="Objet lancé" valeur={ex.obj} onChange={v => setEx(s => ({ ...s, obj: v }))} options={M.OBJETS.map(x => [x.id, `${x.nom} (${Math.round(x.m * 1000)} g)`])}/>
-      <Sel id="lcv-v" label="Vitesse de lancement" valeur={ex.v0} onChange={v => setEx(s => ({ ...s, v0: Number(v) }))} options={[8, 10, 12, 15, 20].map(v => [v, `${v} m/s`])}/>
-      <Sel id="lcv-f" label="Frottement de l’air" valeur={ex.frott ? 'avec' : 'sans'} onChange={v => setEx(s => ({ ...s, frott: v === 'avec' }))} options={[['sans', 'négligé (poids seul)'], ['avec', 'pris en compte (force k × v²)']]}/>
-      <Sel id="lcv-r" label="Origine z = 0 des altitudes" valeur={ex.ref} onChange={v => setEx(s => ({ ...s, ref: v }))} options={[['lancement', 'au point de lancement'], ['toit', `${ZREF} m au-dessus du point de lancement`]]}/>
-      <Curseur nom="Instant du vol" valeur={Math.round(ex.u * 100)} onChange={v => setEx(s => ({ ...s, u: v / 100 }))} min={0} max={100} pas={2} unite="%" decimales={0} couleur="#475569"/>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Déplacez l’instant : la balle, les points du graphique et les mesures suivent. Changer l’origine des altitudes décale Epp et Em, pas Ec.</div>
-    </div>);
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? 'La balle pendant le vol' : 'La situation étudiée'}</div>
-      {enExplore
-        ? <SceneLancer z={pt.z} zEch={Math.max(hSans * 1.08, 1)} v={pt.v} frott={fz} hRef={fz ? hSans : null}/>
-        : <SceneLancer {...SC[idEtape]} zEch={5.6}/>}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La situation étudiée</div>
+      <SceneLancer {...SC[idEtape]} zEch={5.6}/>
     </div>);
-  const graphe = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Les trois énergies au cours du vol</div>
-      <GrapheEnergies pts={sim.pts} m={o.m} zRef={zRef} u={ex.u} em0={fz}/>
-    </div>);
-
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => {
     if (type === 'courbes') { const t = M.tirageDefiA(), ob = M.objet(t.obj), s = M.vol({ m: ob.m, k: ob.k, v0: t.v0, frott: t.frott, n: 60 }); setDefi({ ...t, type, pts: s.pts, reps: { a: '', b: '', c: '' }, verifie: false, corr: false }); }
@@ -309,12 +274,8 @@ export function SimulationLancerChute() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="lcv-ex">
-          {scene}
-          <div className="lcv-reg">{reglages}</div>
-          {graphe}
-          {mesures}
-        </div>
+        <LancerExplore/>
+        <div style={{ height: 12 }}/>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
