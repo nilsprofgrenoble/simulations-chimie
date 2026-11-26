@@ -8,7 +8,7 @@
 //  Couleurs : bleu = donnée, orange = grandeur à repérer, vert = bon, rouge = piège, gris = texte secondaire. Une couleur par espèce (ESP).
 //  Les animations s'arrêtent si `anime` est faux (mouvement réduit).
 // ====================================================
-import { fr, concTexte, log10, paire, H2O2, pow10, puissanceTexte } from './sensEvolutionModele.js';
+import { fr, concTexte, log10, paire, H2O2, pow10, puissanceTexte, sens } from './sensEvolutionModele.js';
 
 const COL = { bleu: '#0369a1', vert: '#15803d', orange: '#b45309', rouge: '#b91c1c', gris: '#64748b', txt: '#0f172a' };
 const stl = { width: '100%', maxWidth: 440, height: 'auto', display: 'block', margin: '0 auto 6px', background: 'white', borderRadius: 8 };
@@ -74,10 +74,39 @@ const Cristaux = ({ x, w, dep, espece, anime }) => {
 
 // ---------- scène : la réaction dans le bécher ----------
 //  p : paire de couples ; c : concentrations courantes ; dir : 'direct' | 'inverse' | null (sens dans lequel on fait évoluer) ; dep ∈ [0, 1] : état d'avancement du dessin
-export function SceneReaction({ p, c, dir = null, dep = 0, anime = true, valeurs = true }) {
+const COL_OX = '#b45309', COL_RED = '#0369a1', COL_E = '#ca8a04';
+const nomLame = m => `lame ${/^[AEIOUY]/.test(m) ? 'd’' : 'de '}${m}`;
+// les deux demi-réactions du sens d'évolution (oxydation d'abord) et l'emplacement de chacune
+function demiReactions(p, sensEff, xs) {
+  const dr = sensEff === 'direct', solides = p.solides;
+  const H = [{ cp: p.ox1, gagne: dr, coef: p.a }, { cp: p.red2, gagne: !dr, coef: p.b }].map(h => {
+    const { cp, gagne } = h, reactif = gagne ? cp.ox : cp.red, produit = gagne ? cp.red : cp.ox, idx = cp.redSolide ? solides.indexOf(cp.red) : -1;
+    const x = idx >= 0 ? xs[idx] : xs[0];
+    const cote = xs.length === 1 ? (cp.redSolide ? -1 : 1) : (x < 200 ? -1 : 1);
+    const e = `${cp.n > 1 ? cp.n + ' ' : ''}e⁻`, eq = gagne ? `${reactif} + ${e} → ${produit}` : `${reactif} → ${produit} + ${e}`;
+    return { ...h, reactif, produit, x, cote, eq: h.coef > 1 ? `${h.coef} × ( ${eq} )` : eq, entrant: gagne ? cp.redSolide : false, lieu: cp.redSolide ? `sur la ${nomLame(cp.red)}` : `à la surface de la ${nomLame(solides[0])}` };
+  });
+  return [H.find(h => !h.gagne), H.find(h => h.gagne)];
+}
+const FlecheIon = ({ h, anime }) => {
+  const col = h.gagne ? COL_RED : COL_OX, y = 190, bord = h.x + h.cote * 14, loin = h.x + h.cote * 58;
+  const [x1, x2] = h.entrant ? [loin, bord] : [bord, loin], sg = Math.sign(x2 - x1);
+  return (<g>
+    <line x1={x1} y1={y} x2={x2 - sg * 8} y2={y} stroke={col} strokeWidth="2.8" strokeLinecap="round" strokeDasharray="7 5">
+      {anime && <animate attributeName="stroke-dashoffset" from={sg > 0 ? 12 : -12} to="0" dur="1.1s" repeatCount="indefinite"/>}</line>
+    <polygon points={`${x2},${y} ${x2 - sg * 11},${y - 6} ${x2 - sg * 11},${y + 6}`} fill={col}/>
+    <text x={h.x + h.cote * 50} y={y - 11} fontSize="11.5" fontWeight="700" textAnchor="middle" fill={col} stroke="#fff" strokeWidth="3.4" paintOrder="stroke">{h.reactif} → {h.produit}</text>
+  </g>);
+};
+const BadgeNum = ({ x, y, n, col }) => (<g><circle cx={x} cy={y} r="9" fill={col} stroke="#fff" strokeWidth="1.6"/><text x={x} y={y + 4.4} fontSize="12.5" fontWeight="700" textAnchor="middle" fill="#fff">{n}</text></g>);
+
+export function SceneReaction({ p, c, dir = null, dep = 0, anime = true, valeurs = true, reactions = false, equilibre = false }) {
   const BX = 64, BW = 272, BY = 64, BH = 226, NIV = 108, PW = 18;
   const solides = p.solides, nSol = solides.length;
   const xs = nSol === 2 ? [150, 250] : [200];
+  const sensEff = dir || (reactions ? sens(p, c) : null), nul = !reactions || !sensEff || sensEff === 'equilibre' || equilibre;
+  const demi = reactions && !nul ? demiReactions(p, sensEff, xs) : null;
+  const hauteurPanneau = !reactions ? 0 : nul ? 56 : 112;
   const produit = dir === 'direct' ? (p.especes.find(s => s.role === 'red1')) : dir === 'inverse' ? (p.especes.find(s => s.role === 'red2')) : null;
   const consomme = dir === 'direct' ? (p.especes.find(s => s.role === 'red2')) : dir === 'inverse' ? (p.especes.find(s => s.role === 'ox1')) : null;
   const dis = p.dissoutes;
@@ -85,7 +114,7 @@ export function SceneReaction({ p, c, dir = null, dep = 0, anime = true, valeurs
   const lignes = dis.map((e, i) => ({ e, i, slots: libres.filter((_, k) => k % dis.length === i).slice(0, 8) }));
   const posLeg = dis.length === 3 ? [72, 200, 328] : dis.length === 2 ? [120, 280] : [200];
   return (
-    <svg viewBox="0 0 400 356" style={stl} role="img" aria-label={`Bécher contenant ${dis.join(', ')} en solution et ${solides.join(' et ')} sous forme solide : ${dis.map(e => `[${e}] = ${concTexte(c[e])} mol/L`).join(', ')}.${dir ? (dir === 'direct' ? ' La réaction évolue dans le sens direct.' : ' La réaction évolue dans le sens inverse.') : ''}`}>
+    <svg viewBox={!reactions ? '0 0 400 356' : demi ? `0 -40 400 ${396 + hauteurPanneau}` : '0 0 400 408'} style={stl} role="img" aria-label={`Bécher contenant ${dis.join(', ')} en solution et ${solides.join(' et ')} sous forme solide : ${dis.map(e => `[${e}] = ${concTexte(c[e])} mol/L`).join(', ')}.${dir ? (dir === 'direct' ? ' La réaction évolue dans le sens direct.' : ' La réaction évolue dans le sens inverse.') : ''}${demi ? ` Oxydation : ${demi[0].eq}, ${demi[0].lieu}. Réduction : ${demi[1].eq}, ${demi[1].lieu}. Les électrons passent de l’oxydation à la réduction.` : reactions ? (equilibre ? ' À l’équilibre, les réactions directe et inverse se compensent.' : ' Système à l’équilibre : aucune évolution.') : ''}`}>
       <Defs/>
       <rect x="0" y="290" width="400" height="66" fill="url(#s-table)"/><ellipse cx="200" cy="292" rx="150" ry="5" fill="#94a3b8" opacity="0.25"/><line x1="0" y1="290" x2="400" y2="290" stroke="#cbd5e1" strokeWidth="2"/>
       <Becher x={BX} y={BY} w={BW} h={BH} niveau={NIV} id="r">
@@ -106,12 +135,39 @@ export function SceneReaction({ p, c, dir = null, dep = 0, anime = true, valeurs
       {lignes.map(({ e, i, slots }) => slots.map(([x, y], k) => (
         <g key={`${e}${k}`} style={{ opacity: k < nbDots(c[e]) ? 1 : 0, transition: anime ? 'opacity .5s ease' : 'none' }}>
           <Vib k={i * 7 + k} anime={anime}><Ion x={x} y={y} couleur={ESP[e].c} signe={ESP[e].z} r={6}/></Vib></g>)))}
+      {/* demi-réactions : où elles ont lieu */}
+      {demi && <g>
+        {demi.map(h => <FlecheIon key={h.cp.id} h={h} anime={anime}/>)}
+        {(() => {
+          const [o, d] = demi, un = xs.length === 1, xo = un ? o.x + o.cote * 30 : o.x, xd = un ? d.x + d.cote * 30 : d.x, mid = (xo + xd) / 2, ang = Math.atan2(39, xd - mid) * 180 / Math.PI;
+          return (<g>
+            <path d={`M${xo} 5 Q${mid} -34 ${xd} 5`} fill="none" stroke={COL_E} strokeWidth="2.6" strokeLinecap="round" strokeDasharray="6 5">
+              {anime && <animate attributeName="stroke-dashoffset" from={xd > xo ? 11 : -11} to="0" dur="1s" repeatCount="indefinite"/>}</path>
+            <polygon points="0,0 -10,-5.5 -10,5.5" fill={COL_E} transform={`translate(${xd} 5) rotate(${ang})`}/>
+            <circle cx={mid} cy="-14.5" r="9.5" fill="#fef9c3" stroke={COL_E} strokeWidth="1.6"/><text x={mid} y="-10.5" fontSize="11" fontWeight="700" textAnchor="middle" fill="#854d0e">e⁻</text>
+            <BadgeNum x={xo} y={14} n="1" col={COL_OX}/><BadgeNum x={xd} y={14} n="2" col={COL_RED}/>
+          </g>);
+        })()}
+      </g>}
       {/* légende des concentrations */}
       {valeurs && dis.map((e, i) => (<g key={e}>
         <Ion x={posLeg[i] - 44} y={317} couleur={ESP[e].c} signe={ESP[e].z} r={7}/>
         <text x={posLeg[i] - 32} y="316" fontSize="15" fontWeight="700" fill={ESP[e].c}>{e}</text>
         <text x={posLeg[i] - 32} y="334" fontSize="13" fontWeight="700" fill={COL.txt}>{concTexte(c[e])} mol/L</text>
       </g>))}
+      {reactions && <g>
+        {demi ? demi.map((h, k) => { const y = 352 + k * 54, col = k ? COL_RED : COL_OX;
+          return (<g key={h.cp.id}>
+            <rect x="12" y={y} width="376" height="48" rx="10" fill={k ? '#eff6ff' : '#fff7ed'} stroke={col} strokeWidth="1.6"/>
+            <BadgeNum x={36} y={y + 24} n={k + 1} col={col}/>
+            <text x="56" y={y + 20} fontSize="13.5" fontWeight="700" fill={col}>{k ? 'Réduction' : 'Oxydation'} : {h.gagne ? 'le réactif gagne' : 'le réactif perd'} des électrons</text>
+            <text x="56" y={y + 40} fontSize="15" fontWeight="700" fill={COL.txt}>{h.eq}</text>
+            <text x="376" y={y + 40} fontSize="11.5" textAnchor="end" fill={COL.gris}>{h.lieu}</text>
+          </g>); })
+          : <g><rect x="12" y="352" width="376" height="48" rx="10" fill="#f8fafc" stroke="#94a3b8" strokeWidth="1.6"/>
+            <text x="200" y="372" fontSize="13.5" fontWeight="700" textAnchor="middle" fill={COL.txt}>{equilibre ? 'À l’équilibre, les réactions directe et inverse' : 'Système à l’équilibre : aucune évolution,'}</text>
+            <text x="200" y="391" fontSize="13.5" fontWeight="700" textAnchor="middle" fill={COL.txt}>{equilibre ? 'se produisent à la même vitesse : plus d’évolution.' : 'les deux réactions se compensent.'}</text></g>}
+      </g>}
     </svg>);
 }
 

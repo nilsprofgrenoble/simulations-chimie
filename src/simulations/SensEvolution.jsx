@@ -74,7 +74,7 @@ export function SimulationSensEvolution() {
   const [ouv, setOuv] = useState({ essayer: false, retenir: false, h2o2: false });
   const [reduit] = useState(mouvementReduit);
   const anim = useAnimation(reduit);
-  const [cat, setCat] = useState(false);
+  const [cat, setCat] = useState(false), [voirReac, setVoirReac] = useState(false);
   const [ex, setEx] = useState({ a: 'cu', b: 'ag', c: M.concParDefaut(M.paire('cu', 'ag')) });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const { tau, marche, lancer, remise } = anim;
@@ -139,7 +139,7 @@ export function SimulationSensEvolution() {
           <li><strong>Qr {'<'} K</strong> : sens direct ; <strong>Qr = K</strong> : équilibre ; <strong>Qr {'>'} K</strong> : sens inverse. Qr évolue toujours vers K.</li>
           <li>Moyen de s’en souvenir : <strong>« Qr plus petit que K : on avance »</strong>. Idée fausse : « le système évolue vers l’équilibre en annulant Qr » : il évolue vers Qr = K, pas vers zéro.</li>
         </Ul></>,
-      texte: <>Lancez l’évolution : Ag⁺ réagit avec le cuivre, de l’argent se dépose sur la lame d’argent, la lame de cuivre s’amincit et la solution se teinte en bleu avec Cu²⁺. Suivez la bille bleue Qr sur l’axe : elle avance vers K et s’arrête quand Qr = K. L’animation est schématique : sa durée n’a pas de signification physique.</>,
+      texte: <>Lancez l’évolution : Ag⁺ réagit avec le cuivre, de l’argent se dépose sur la lame d’argent, la lame de cuivre s’amincit et la solution se teinte en bleu avec Cu²⁺. Suivez la bille bleue Qr sur l’axe : elle avance vers K et s’arrête quand Qr = K. L’animation est schématique : sa durée n’a pas de signification physique. Le bouton « Voir les réactions » (au-dessus du schéma) montre où ont lieu l’oxydation et la réduction.</>,
       tache: { type: 'action', ok: tau >= 1, label: marche ? 'Évolution en cours…' : tau >= 1 ? 'Évolution terminée' : 'Laisser évoluer', faire: () => { if (!marche) lancer(); }, consigne: 'Lancez l’évolution et attendez que Qr atteigne K' } },
     { id: 'inverse', titre: 'Quand le sens inverse l’emporte',
       texte: <>Autre cas : les couples <strong>Ag⁺ / Ag</strong> (E° = 0,80 V) et <strong>Fe³⁺ / Fe²⁺</strong> (E° = 0,77 V, avec Fe³⁺ + e⁻ ⇌ Fe²⁺). Ag⁺ est l’oxydant du plus grand E° : la règle du γ prévoit Ag⁺ + Fe²⁺ ⇌ Ag + Fe³⁺, avec N = 1 et log K = 1 × (0,80 − 0,77) / 0,06 = 0,50, soit <strong>K = 3,2</strong>. Le bécher (solution acide, lame d’argent) contient : [Ag⁺] = 0,010 mol/L, [Fe²⁺] = 0,10 mol/L et [Fe³⁺] = 0,10 mol/L. Qr = [Fe³⁺] / ( [Ag⁺] × [Fe²⁺] ) (les solides valent 1).</>,
@@ -298,6 +298,7 @@ export function SimulationSensEvolution() {
       <li><strong>Animation schématique :</strong> la concentration du réactif limitant décroît de façon exponentielle jusqu’à l’équilibre ; la durée affichée n’a aucune valeur physique, et le modèle ne décrit pas la cinétique.</li>
       <li><strong>Solutions acides :</strong> pour Fe³⁺ / Fe²⁺ on suppose une solution suffisamment acide pour qu’aucun hydroxyde de fer ne précipite et que les ions ne soient pas oxydés par l’air.</li>
       <li><strong>Eau oxygénée :</strong> E°(H₂O₂ / H₂O) = 1,78 V et E°(O₂ / H₂O₂) = 0,68 V (valeurs tabulées arrondies) ; les ions H⁺ s’éliminent dans 2 H₂O₂ → O₂ + 2 H₂O, K ≈ 5×10³⁶. La stabilité du flacon est un blocage cinétique ; le catalyseur MnO₂ accélère la réaction sans modifier K.</li>
+      <li><strong>Option « Voir les réactions » :</strong> les deux demi-réactions sont dessinées chacune sur la lame de son couple pour repérer où ont lieu l’oxydation et la réduction. Dans un seul bécher, sans fil, la réaction se produit en réalité à la surface du métal réducteur (l’argent se dépose sur le cuivre) ; la simulation de la pile sépare réellement les deux demi-piles.</li>
       <li><strong>Schéma :</strong> chaque point représente une quantité relative d’ions (échelle logarithmique de 1 mmol/L à 1 mol/L) ; les cristaux d’argent sont schématiques.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
@@ -382,7 +383,13 @@ export function SimulationSensEvolution() {
   const dirEx = tau > 0 && sensEx !== 'equilibre' ? sensEx : null;
   const sceneEx = { p: pEx, c: etEx.c, dir: dirEx, dep: depOf(evEx, tau) };
   const sc = enGuide ? sit : enExplore ? sceneEx : sceneDefi;
-  const boxScene = sc && (<div style={styleBoite}><SceneReaction p={sc.p} c={sc.c} dir={sc.dir} dep={sc.dep} anime={!reduit}/></div>);
+  const peutReac = enGuide ? (reussie || !['echelle', 'equation', 'sens', 'inverse', 'potentiels'].includes(idE)) : enExplore ? true : !!(dd && dd.verifie);
+  const reacOn = voirReac && peutReac, equilibreAtteint = (enGuide ? idE === 'evolue' : enExplore) && tau >= 1;
+  const boxScene = sc && (<div style={styleBoite}>
+    {peutReac && <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+      <button type="button" aria-pressed={voirReac} onClick={() => setVoirReac(v => !v)} style={{ ...stylePetitBouton(voirReac, '#b45309'), minHeight: 40 }}>{voirReac ? 'Masquer les réactions' : 'Voir les réactions'}</button>
+      <span style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.4 }}>{voirReac ? 'Oxydation (1) et réduction (2) : où elles ont lieu.' : 'Affiche les deux demi-réactions sur le schéma.'}</span></div>}
+    <SceneReaction p={sc.p} c={sc.c} dir={sc.dir} dep={sc.dep} anime={!reduit} reactions={reacOn} equilibre={reacOn && equilibreAtteint}/></div>);
   const jaugeDefi = dd && dd.type === 'sens' ? { logK: dd.p.logK, logQ: M.logQ(dd.p, dd.c), ...(() => { const [lo, hi] = plageJauge(M.logQ(dd.p, dd.c), dd.p.logK); return { lo, hi }; })(), montrerQ: !!dd.verifie, zones: !!dd.verifie, fleche: !!dd.verifie } : null;
   const jaugeEx = { logK: pEx.logK, logQ: etEx.logQ, lo: loEx, hi: hiEx, zones: true, fleche: tau < 1 && sensEx !== 'equilibre' };
   const jg = enGuide ? jaugeG : enExplore ? jaugeEx : jaugeDefi;
