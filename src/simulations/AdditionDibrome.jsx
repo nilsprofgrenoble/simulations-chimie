@@ -8,15 +8,16 @@ import { puces } from "./Travail";
 import { FTest, FBromonium, FAnti, FRacemique, FMeso, FBilanBr } from "./BrSchemas";
 import { ALCENES, activiteOptique } from "./brModele";
 import { AnimAddition } from "./AnimAddition";
+import { OngletsVue, BarreLecture } from "./ongletsSim";
 
 // Vue 3D (three.js), chargée à la demande : le pont bromonium et l'attaque anti vus dans l'espace
 const Br3D = lazy(() => import("./Br3D"));
 
+const EQUATION = { Z: 'CH₃CH=CHCH₃ + Br₂ → CH₃CHBrCHBrCH₃', E: 'CH₃CH=CHCH₃ + Br₂ → CH₃CHBrCHBrCH₃', cyclo: 'C₆H₁₀ + Br₂ → C₆H₁₀Br₂ (1,2-dibromocyclohexane)' };
+
 const SIM_ID = 96;
 declarerDefis(SIM_ID, [['principal', 'Addition du dibrome']]);
 const NOIR = '#0f172a', BRUN = '#9a3412', BLEU = '#1d4ed8', ROUGE = '#dc2626';
-const lerp = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t));
-const seg = (u, a, b) => Math.max(0, Math.min(1, (u - a) / (b - a)));
 
 function etat(u, syn) {
   if (u < 0.35) return <>Le dibrome Br₂, <strong>polarisable</strong>, s'approche de la double liaison C=C, riche en électrons (nucléophile). La molécule Br–Br se polarise.</>;
@@ -113,6 +114,7 @@ export function SimulationAdditionDibrome() {
   const [face, setFace] = useState('dessus');
   const [syn, setSyn] = useState(false);
   const [u, setU] = useState(0);
+  const [onglet, setOnglet] = useState('meca');
   const [lecture, setLecture] = useState(false);
   const [df, setDf] = useState(() => defi());
   const [hypoOuv, setHypoOuv] = useState(false);
@@ -157,12 +159,17 @@ export function SimulationAdditionDibrome() {
           <button onClick={() => { setSyn(true); setU(0); }} style={stylePetitBouton(syn, ROUGE)}>même face que le pont</button>
         </div>
       </div>
-      <AnimAddition alc={alc} re="Br2" u={u} face={face} syn={syn} />
-      <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Br3D alc={alc} face={face} syn={syn} u={u} /></Suspense>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-        <button onClick={() => { if (u >= 0.999) setU(0); setLecture(l => !l); }} style={styleBouton(true, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
-        <input type="range" min={0} max={1000} step={1} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(+e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ flex: 1 }} />
-      </div>
+      <OngletsVue onglets={[['meca', 'Équation et mécanisme'], ['persp', 'Perspective'], ['3d', 'Dans l’espace (3D)']]} actif={onglet} onChange={setOnglet} />
+      {onglet === 'meca' && (
+        <div style={{ background: '#f8fafc', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: '8px 10px' }}>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Équation de la réaction (addition anti)</div>
+          <div style={{ fontSize: 15.5, fontWeight: 700, color: KIT.txt, margin: '4px 0', lineHeight: 1.5 }}>{EQUATION[alc]}</div>
+          <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '6px 0 2px' }}>Mécanisme en deux étapes</div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}><div style={{ flex: '1 1 240px', maxWidth: 330 }}><FBromonium /></div><div style={{ flex: '1 1 240px', maxWidth: 330 }}><FAnti /></div></div>
+        </div>)}
+      {onglet === 'persp' && <AnimAddition alc={alc} re="Br2" u={u} face={face} syn={syn} />}
+      {onglet === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Br3D alc={alc} face={face} syn={syn} u={u} /></Suspense>}
+      <BarreLecture lecture={lecture} setLecture={setLecture} u={u} setU={setU} />
       <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }} aria-live="polite">{etat(u, syn)}</div>
       {fini && <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }}>
         Produit : <strong>{A.produit}</strong>. Les deux Br sont de part et d'autre du plan : addition <strong>anti</strong>.
