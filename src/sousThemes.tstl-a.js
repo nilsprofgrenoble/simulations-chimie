@@ -31,6 +31,14 @@ export default {
     { id: 'extraction', nom: 'Extraction acide-base : choix du pH', capacite: 'Choisir le pH d’extraction d’un acide ou d’une base et comparer plusieurs extractions successives.',
       refs: ['34:extrac-sapp-distrib', '34:extrac-sapp-passes', '37:prevoir:extrac-ana-acide', '37:prevoir:extrac-ana-base', '37:prevoir:extrac-ana-passes', '37:prevoir:extrac-ana-melange', '77:plausible:extrac-val-pH', '77:plausible:extrac-val-passes'] },
   ],
+  'tstl-pcm-mouvements': [
+    { id: 'derivees', nom: 'Vitesse et accélération : dériver la position', capacite: 'Déterminer les coordonnées du vecteur vitesse et du vecteur accélération à partir de x(t) et de y(t), par dérivation.',
+      refs: ['36:vac-calcul', '34:vac-sapp-derivee', '37:prevoir:vac-ana-tangente', '37:prevoir:vac-ana-polynome', '77:plausible:vac-val-derivee', '77:plausible:vac-val-ordre'] },
+    { id: 'chronophoto', nom: 'Vitesse et accélération d’après des positions', capacite: 'Exploiter un tableau de positions pour déterminer des coordonnées approchées de la vitesse et de l’accélération.',
+      refs: ['34:vac-sapp-chrono', '37:mouvement:vac-ana-sommet', '77:plausible:vac-val-signe'] },
+    { id: 'rectilignes', nom: 'L’accélération des mouvements rectilignes', capacite: 'Caractériser l’accélération d’un mouvement rectiligne, rectiligne uniforme ou uniformément accéléré (sens de a par rapport à v).',
+      refs: ['37:mouvement:vac-ana-freinage', '37:mouvement:vac-ana-deux', '37:mouvement:vac-ana-mrua', '77:plausible:vac-val-mrua'] },
+  ],
   'tstl-acides-bases': [
     { id: 'ph-fort', nom: 'pH d’un acide fort ou d’une base forte, dilution', capacite: 'Estimer le pH d’une solution d’acide fort ou de base forte et prévoir l’effet d’une dilution.',
       refs: ['34:ab-acf-sapp-dilution', '34:phc-ph-hcl', '34:phc-dilution-ph', '37:prevoir:ab-ana-soude-dilution', '37:prevoir:phc-dilution-facteur', '37:prevoir:phc-comparer-ph', '77:plausible:phc-val-signe', '77:plausible:phc-val-dilution'] },
@@ -136,6 +144,8 @@ export default {
       refs: ['34:lcv-sapp-hauteur', '34:lcv-sapp-frott', '37:prevoir:lcv-ana-ref', '37:prevoir:lcv-ana-conserv', '37:prevoir:lcv-ana-frott', '37:prevoir:lcv-ana-courbes', '77:plausible:lcv-val-hmax', '77:plausible:lcv-val-perte'] },
     { id: 'distance-freinage', nom: 'Distance de freinage : théorème de l’énergie cinétique', capacite: 'Appliquer le théorème de l’énergie cinétique à un véhicule qui freine : travail d’une force constante (nul si la force est perpendiculaire au déplacement), distance d’arrêt, effet de la vitesse, de la masse, de la force de freinage et de la pente.',
       refs: ['34:dfr-sapp-arret', '34:dfr-sapp-force', '37:prevoir:dfr-ana-vitesse', '37:prevoir:dfr-ana-masse', '37:prevoir:dfr-ana-travail', '37:prevoir:dfr-ana-pente', '77:plausible:dfr-val-conv', '77:plausible:dfr-val-cycliste'] },
+    { id: 'chute-hauteur', nom: 'Chute d’une hauteur h : vitesse d’arrivée et force de frottement', capacite: 'Exploiter la conservation de l’énergie mécanique pour déterminer la vitesse d’arrivée d’un corps en chute ; avec un frottement, utiliser la perte d’énergie mécanique pour estimer la valeur de la force.',
+      refs: ['34:chh-sapp-vitesse', '34:chh-sapp-frott', '37:prevoir:chh-ana-masse', '37:prevoir:chh-ana-hauteur', '37:prevoir:chh-ana-trajet', '37:prevoir:chh-ana-frott', '77:plausible:chh-val-masse', '77:plausible:chh-val-frott'] },
     { id: 'looping', nom: 'Looping : vitesse en chaque point et hauteur minimale', capacite: 'Exploiter la conservation de l’énergie mécanique pour déterminer la vitesse d’un système en un point de sa trajectoire (indépendante de la masse) ; déterminer la hauteur minimale de départ pour franchir un looping, la condition de contact au sommet étant donnée.',
       refs: ['34:lpg-sapp-vitesses', '34:lpg-sapp-hmin', '37:prevoir:lpg-ana-masse', '37:prevoir:lpg-ana-bas-haut', '37:prevoir:lpg-ana-rayon', '37:prevoir:lpg-ana-hmin', '77:plausible:lpg-val-sommet', '77:plausible:lpg-val-hmin'] },
     { id: 'flipper', nom: 'Flipper : vitesse d’éjection minimale', capacite: 'Exploiter la conservation de l’énergie mécanique pour déterminer la hauteur atteinte et la vitesse minimale pour atteindre le haut d’une rampe ; utiliser la variation de l’énergie mécanique pour tenir compte du travail d’une force de frottement constante.',
