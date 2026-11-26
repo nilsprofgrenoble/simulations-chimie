@@ -72,6 +72,8 @@ export default {
       refs: ['34:hook-sapp-bande', ...['hook-ana-rigidite', 'hook-ana-masse', 'hook-ana-conjugaison', 'hook-ana-oh', 'hook-ana-zones'].map(A), ...['hook-val-masse', 'hook-val-oh-lie', 'hook-val-conjugaison'].map(Vp), '36:hook-calcul'] },
     { id: 'uv-chromophores', nom: 'UV-visible : couleur, conjugaison et auxochromes', capacite: 'Relier la couleur d’une espèce à la longueur d’onde du maximum d’absorption ; relier λmax à la conjugaison (chromophores) ; nommer les effets bathochrome, hypsochrome, hyperchrome et hypochrome, notamment ceux des auxochromes.',
       refs: ['34:chro-sapp-indicateur', ...['chro-ana-couleur', 'chro-ana-incolore', 'chro-ana-conjugaison', 'chro-ana-effets', 'chro-ana-auxochrome'].map(A), ...['chro-val-complementaire', 'chro-val-incolore', 'chro-val-auxochrome'].map(Vp), '36:chro-calcul'] },
+    { id: 'uv-appareil', nom: 'Spectrophotomètre UV-visible : appareil, cuve et blanc', capacite: 'Décrire les éléments d’un spectrophotomètre UV-visible ; choisir la cuve et la lampe selon le domaine de longueurs d’onde ; réaliser le blanc ; rester dans le domaine de validité de la loi de Beer-Lambert.',
+      refs: [...['app-ana-cuve', 'app-ana-lampe', 'app-ana-blanc'].map(A), ...['app-val-blanc', 'app-val-linearite'].map(Vp)] },
   ],
   'bts-rmn': [
     { id: 'appareil', nom: 'L’appareil, le solvant et la référence', capacite: 'Adopter une attitude appropriée à proximité de champs magnétiques intenses ; connaître le rôle du solvant deutéré et du TMS.',
