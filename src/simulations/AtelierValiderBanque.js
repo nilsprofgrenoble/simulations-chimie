@@ -8,6 +8,7 @@ import { PXT_VAL } from './penteXtExos.js';
 import { GRV_VAL } from './gravitationExos.js';
 import { CEL_VAL } from './champElecExos.js';
 import { FVI_VAL } from './chuteVisqueuseExos.js';
+import { EUL_VAL } from './eulerChuteExos.js';
 import { CLP_VAL } from './chutePlaneExos.js';
 import { NWR_VAL } from './newtonRectExos.js';
 import { MTR_VAL } from './modesTransfertExos.js';
@@ -4955,6 +4956,7 @@ export const PLAUSIBLES = [
   ...NWR_VAL,
   ...CLP_VAL,
   ...FVI_VAL,
+  ...EUL_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,

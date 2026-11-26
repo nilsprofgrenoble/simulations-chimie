@@ -50,6 +50,8 @@ export default {
       refs: ['34:clp-sapp-sommet', '34:clp-sapp-portee', '37:prevoir:clp-ana-acc', '37:prevoir:clp-ana-vitesse', '37:prevoir:clp-ana-angle', '37:prevoir:clp-ana-double', '77:plausible:clp-val-hauteur', '77:plausible:clp-val-portee'] },
     { id: 'chute-visqueuse', nom: 'Chute avec frottement visqueux : vitesse limite et constante de temps', capacite: 'Exploiter les régimes transitoire et permanent d’une chute avec frottement fluide : vitesse limite, constante de temps, effet de la masse et du coefficient de frottement.',
       refs: ['34:fvi-sapp-vlim', '34:fvi-sapp-tau', '37:prevoir:fvi-ana-depart', '37:prevoir:fvi-ana-permanent', '37:prevoir:fvi-ana-masse', '37:prevoir:fvi-ana-tau', '77:plausible:fvi-val-vlim', '77:plausible:fvi-val-tau'] },
+    { id: 'euler-chute', nom: 'Équation différentielle de la chute et méthode d’Euler', capacite: 'Établir l’équation différentielle d’une chute avec poussée d’Archimède et frottement, en déduire la vitesse limite, et résoudre par la méthode d’Euler en discutant le pas.',
+      refs: ['34:eul-sapp-lim', '34:eul-sapp-euler', '37:prevoir:eul-ana-poussee', '37:prevoir:eul-ana-vlim', '37:prevoir:eul-ana-euler', '37:prevoir:eul-ana-pas', '77:plausible:eul-val-a0', '77:plausible:eul-val-euler'] },
   ],
   'tstl-acides-bases': [
     { id: 'ph-fort', nom: 'pH d’un acide fort ou d’une base forte, dilution', capacite: 'Estimer le pH d’une solution d’acide fort ou de base forte et prévoir l’effet d’une dilution.',
