@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./batterieModele";
+import { BatterieExplore } from "./BatterieExplore";
 import { QCM } from "./batterieQcm";
 import { SceneBatterie, SvgCharge, SvgCapacite, SvgFiche, SvgEnergieDispo, SvgDureeRecepteur, SvgCapaciteEnergie } from "./BatterieSchemas";
 
@@ -379,10 +380,15 @@ export function SimulationBatterie() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="bat-ex">
-          {scene}
-          <div className="bat-reg">{reglages}</div>
-          {mesures}
+        <BatterieExplore ti={ti} setTi={setTi}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : ${bat.nom} · récepteur de ${ti.P} W`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="bat-ex">
+              {scene}
+              <div className="bat-reg">{reglages}</div>
+              {mesures}
+            </div>
+          </Section>
         </div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
