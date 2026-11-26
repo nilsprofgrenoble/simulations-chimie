@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./penteXtModele";
 import { QCM } from "./penteXtQcm";
+import { PenteExplore } from "./PenteExplore";
 import { GrapheXT, SvgPenteCarte, SvgCordeCarte, SvgSommetCarte } from "./PenteXtSchemas";
 
 const SIM_ID = 265, CLE_GUIDE = 'pente-xt-guide-v1';
@@ -123,38 +124,11 @@ export function SimulationPenteXt() {
   const grapheDe = s => { const b = bornes(s.c); return <GrapheXT fn={s.c.x} tmax={s.c.tmax} xmin={b.xmin} xmax={b.xmax} corde={s.corde} tangente={s.tangente} points={s.points || []} repere={s.repere ?? null}
     aria={`Graphique de la position x en fonction de la date t : ${s.c.nom}.${s.corde ? ' Une corde relie deux points de la courbe.' : ''}${s.tangente ? ' Une tangente est tracée.' : ''}`}/>; };
 
-  // ════════════════ EXPLORATION ════════════════
-  const cE = M.COURBES[ex.c], tE = Math.min(ex.t, cE.tmax - 0.5), dtE = Math.min(ex.dt, cE.tmax - tE), tcE = Math.max(dtE, 0.1);
-  const vm = M.vMoy(cE, tE, tE + tcE), vi = cE.v(tE);
-  const bE = bornes(cE);
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      <LigneMesure nom={`Position x à t = ${nbf(tE, 1)} s`} valeur={`${nbf(cE.x(tE), 2)}${NB}m`}/>
-      <LigneMesure nom={`Position x à t + Δt = ${nbf(tE + tcE, 1)} s`} valeur={`${nbf(cE.x(tE + tcE), 2)}${NB}m`}/>
-      <LigneMesure nom="Vitesse moyenne (pente de la corde)" valeur={`${nbf(vm, 2)}${NB}m/s`} couleur="#c2410c"/>
-      <LigneMesure nom="Vitesse à la date t (pente de la tangente)" valeur={`${nbf(vi, 2)}${NB}m/s`} couleur="#0b4f94"/>
-      <LigneMesure nom="Écart entre les deux" valeur={`${nbf(vm - vi, 2)}${NB}m/s`}/>
-      <div style={{ marginTop: 6, fontSize: 14, fontWeight: 700, color: vi === 0 ? '#b91c1c' : '#0b4f94', lineHeight: 1.5 }}>
-        {vi === 0 ? 'La tangente est horizontale : la vitesse est nulle à cette date.' : vi > 0 ? 'La tangente monte : la vitesse est positive (déplacement vers les x croissants).' : 'La tangente descend : la vitesse est négative (déplacement vers les x décroissants).'}</div>
-    </div>);
-  const basc = (cle, lib, coul) => <button key={cle} onClick={() => setEx(s => ({ ...s, [cle]: !s[cle] }))} aria-pressed={ex[cle]} style={stylePetitBouton(ex[cle], coul)}>{ex[cle] ? '✓ ' : ''}{lib}</button>;
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="pxt-c" label="Mouvement" valeur={ex.c} onChange={v => setEx(s => ({ ...s, c: v, t: Math.min(s.t, M.COURBES[v].tmax - 0.5) }))} options={M.ORDRE.map(k => [k, M.COURBES[k].nom])}/>
-      <Curseur nom="Date t" valeur={tE} onChange={v => setEx(s => ({ ...s, t: v }))} min={0} max={cE.tmax - 0.5} pas={0.5} unite="s" decimales={1} couleur="#0b4f94"/>
-      <Curseur nom="Écart Δt de la corde" valeur={tcE} onChange={v => setEx(s => ({ ...s, dt: v }))} min={0.1} max={Math.max(0.2, cE.tmax - tE)} pas={0.1} unite="s" decimales={1} couleur="#c2410c"/>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 6 }}>{basc('corde', 'corde', '#c2410c')}{basc('tang', 'tangente', '#0b4f94')}</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Diminuez Δt : la corde (orange) se rapproche de la tangente (bleue) et la vitesse moyenne de la vitesse à la date t.</div>
-    </div>);
+  const animee = enExplore && <PenteExplore ex={ex} setEx={setEx}/>;
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? cE.nom : 'Graphique de la position x en fonction de la date t'}</div>
-      {enExplore
-        ? <GrapheXT fn={cE.x} tmax={cE.tmax} xmin={bE.xmin} xmax={bE.xmax} corde={ex.corde ? [tE, tE + tcE] : null} tangente={ex.tang ? { t0: tE, v: vi } : null} repere={tE}
-            aria={`Graphique x(t) : ${cE.nom}. Date étudiée ${nbf(tE, 1)} secondes, vitesse à cette date ${nbf(vi, 2)} mètres par seconde, vitesse moyenne ${nbf(vm, 2)}.`}/>
-        : grapheDe(SC[idEtape])}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Graphique de la position x en fonction de la date t</div>
+      {grapheDe(SC[idEtape])}
     </div>);
 
   // ════════════════ DÉFIS ════════════════
@@ -284,11 +258,7 @@ export function SimulationPenteXt() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="pxt-ex">
-          {scene}
-          <div className="pxt-reg">{reglages}</div>
-          {mesures}
-        </div>
+        <div className="pxt-ex">{animee}</div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
