@@ -240,6 +240,9 @@ export function SimulationStereoisomeres() {
       style={{ ...selectStyle, width: 'auto', minWidth: 150, border: `1.5px solid ${defi.verifie ? (ok ? '#15803d' : '#dc2626') : KIT.bord}` }}>
       <option value="">Choisir…</option>{options.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
     </select>);
+  // B est dessiné soit tel quel, soit retourné gauche-droite (dessin de son énantiomère, reflété : même molécule) ; toujours retourné quand A et B sont identiques
+  const enantB = defi?.type === 'relation' ? M.stereoisomeres(defi.m).find(x => M.relation(defi.b.desc, x.desc) === 'enantiomeres') : null;
+  const dessinB = defi?.type === 'relation' ? (enantB && (defi.miroirB || defi.rel === 'identiques') ? { affs: enantB.affs, miroir: true, legende: 'B' } : { affs: defi.b.affs, legende: 'B' }) : null;
   const voletDefi = defi && (
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
@@ -247,13 +250,14 @@ export function SimulationStereoisomeres() {
       </div>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.type === 'relation' ? 'Défi : la relation entre deux stéréoisomères' : 'Défi : Z ou E ?'}</div>
       {defi.type === 'relation' ? <>
-        <div style={{ ...lbl, marginBottom: 8 }}>La molécule <strong>{defi.m.nom}</strong> ({defi.m.semi}) a deux carbones asymétriques. Le stéréoisomère <strong>A</strong> est <strong>{M.nomDesc(defi.m, defi.a.desc)}</strong> et le stéréoisomère <strong>B</strong> est <strong>{M.nomDesc(defi.m, defi.b.desc)}</strong>.</div>
+        <div style={{ ...lbl, marginBottom: 8 }}>La molécule <strong>{defi.m.nom}</strong> ({defi.m.semi}) a deux carbones asymétriques. On a dessiné deux stéréoisomères <strong>A</strong> et <strong>B</strong> (le dessin de B peut être retourné). Déterminez la configuration R ou S de chaque carbone, puis la relation entre A et B.</div>
+        <CoupleCram mol={defi.m} ariaLabel="Les stéréoisomères A et B" items={[{ affs: defi.a.affs, legende: 'A' }, dessinB]}/>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
           <span>A et B sont :</span>{selDefi('rel', 'Relation entre A et B', Object.entries(REL), defi.ok || defi.reps.rel === defi.rel)}
         </div>
         <div style={{ marginBottom: 8 }}>
-          <button onClick={() => setV3dD(v => !v)} aria-expanded={v3dD} style={stylePetitBouton(v3dD, '#0f766e')}>{v3dD ? 'Masquer la vue 3D' : 'Voir A et B en 3D (dans l’espace)'}</button>
-          {v3dD && <div style={{ marginTop: 8 }}><Couple3D key={`${defi.m.id}${defi.a.id}${defi.b.id}`} mol={defi.m} options={[{ lettre: 'A', s: defi.a }, { lettre: 'B', s: defi.b }]}/></div>}
+          <button onClick={() => setV3dD(v => !v)} aria-expanded={v3dD} style={stylePetitBouton(v3dD, '#0f766e')}>{v3dD ? 'Masquer la vue 3D' : 'Aide : voir A et B en 3D (n°4 derrière)'}</button>
+          {v3dD && <div style={{ marginTop: 8 }}><Couple3D key={`${defi.m.id}${defi.a.id}${defi.b.id}`} mol={defi.m} devoiler={false} options={[{ lettre: 'A', s: defi.a, etiquette: 'Molécule A' }, { lettre: 'B', s: defi.b, etiquette: 'Molécule B' }]}/></div>}
         </div>
         <div style={{ ...lbl, marginBottom: 8 }}>Une autre molécule a <strong>{defi.n} carbones asymétriques</strong> (sans composé méso).</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
