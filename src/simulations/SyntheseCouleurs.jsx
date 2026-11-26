@@ -25,9 +25,9 @@ const n0 = v => String(Math.round(v)).replace('-', '−');
 const pct = v => `${n0(v * 100)} %`;
 const selectStyle = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
 const libelle = { display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '0 0 3px' };
-const ORDRE = ['lampes', 'jaune', 'cones', 'appar', 'compl', 'anomalie', 'filtre', 'serie', 'peinture', 'moyenne', 'blanc', 'modele', 'bilan'];
+const ORDRE = ['lampes', 'spectre', 'jaune', 'cones', 'appar', 'compl', 'anomalie', 'filtre', 'serie', 'peinture', 'pigments', 'moyenne', 'blanc', 'modele', 'bilan'];
 const BASE = { r: 1, v: 0, b: 0, pj: 0.5, pc: 0.5, pb: 0, filtre: 'jaune', cf: 0.8, oeil: 'normal' };
-const DEPART = { lampes: { r: 1, v: 0, b: 0 }, appar: { r: 0.3, v: 0.3, b: 0 }, compl: { r: 1, v: 1, b: 0.3 }, filtre: { filtre: 'jaune', cf: 0.8 }, peinture: { pj: 0.5, pc: 0.5 }, blanc: { pj: 0.5, pc: 0.5, pb: 0 } };
+const DEPART = { lampes: { r: 1, v: 0, b: 0 }, spectre: { r: 1, v: 0, b: 0 }, pigments: { pj: 0.5, pc: 0.5 }, appar: { r: 0.3, v: 0.3, b: 0 }, compl: { r: 1, v: 1, b: 0.3 }, filtre: { filtre: 'jaune', cf: 0.8 }, peinture: { pj: 0.5, pc: 0.5 }, blanc: { pj: 0.5, pc: 0.5, pb: 0 } };
 const EXEMPLES = {
   lumieres: [{ nom: 'Rouge + verte : du jaune', v: { r: 1, v: 1, b: 0 } }, { nom: 'Rouge + bleue : du magenta', v: { r: 1, v: 0, b: 1 } }, { nom: 'Verte + bleue : du cyan', v: { r: 0, v: 1, b: 1 } }, { nom: 'Les trois : du blanc', v: { r: 1, v: 1, b: 1 } }],
   filtre: [{ nom: 'Jaune + cyan : du vert', v: { pj: 0.8, pc: 0.8 } }, { nom: 'Jaune + magenta : du rouge', v: { pj: 0.8, pm: 0.8 } }, { nom: 'Cyan + magenta : du bleu', v: { pc: 0.8, pm: 0.8 } }, { nom: 'Les trois : presque noir', v: { pj: 0.8, pm: 0.8, pc: 0.8 } }],
@@ -62,10 +62,14 @@ export function SimulationSyntheseCouleurs() {
   // ---------- parcours ----------
   const mixV = M.spectreRVB(vie.r, vie.v, vie.b), repV = M.reponses(mixV);
   const okAppar = Math.abs(repV.L - CIBLE.L) <= 0.04 * CIBLE.L && Math.abs(repV.M - CIBLE.M) <= 0.04 * CIBLE.M && Math.abs(repV.S - CIBLE.S) <= 2;
+  const okMagenta = vie.r >= 0.8 && vie.b >= 0.8 && vie.v <= 0.1;
   const cW = C.BLANC_XY, cV = M.chroma(mixV), okCompl = Math.abs(cV.x - cW.x) <= 0.012 && Math.abs(cV.y - cW.y) <= 0.012;
   const ETAPES = [
-    { id: 'lampes', titre: 'Trois lampes, un spectre', focus: ['scene', 'curseur'],
-      texte: <>Trois <strong>projecteurs</strong>, un <strong>rouge</strong>, un <strong>vert</strong>, un <strong>bleu</strong>, éclairent le même endroit d’un écran dans le noir : là où les faisceaux se superposent, on voit la couleur des recouvrements. Une <strong>lampe à LED</strong> n’émet pas toutes les longueurs d’onde : son <strong>spectre</strong> (graphique) montre la lumière émise pour chaque longueur d’onde. Réglez les intensités, regardez les zones de recouvrement (R+V, R+B, V+B, R+V+B) et la courbe noire : le spectre de la lumière obtenue.</>,
+    { id: 'lampes', titre: 'Trois projecteurs sur un écran', focus: ['scene', 'curseur'],
+      texte: <>Trois <strong>projecteurs</strong>, un <strong>rouge</strong>, un <strong>vert</strong>, un <strong>bleu</strong>, éclairent le même endroit d’un écran dans le noir. Réglez leur intensité avec les curseurs et regardez, sur l’écran, la couleur des zones de recouvrement (R+V, R+B, V+B, R+V+B).</>,
+      tache: { type: 'action', ok: okMagenta, label: 'Faire apparaître du magenta (R+B)', faire: () => setVie(v => ({ ...v, r: 1, v: 0, b: 1 })), consigne: 'Allumez la lampe rouge et la lampe bleue à fond, et éteignez la lampe verte' } },
+    { id: 'spectre', titre: 'Le spectre de la lumière obtenue', focus: ['scene', 'curseur'],
+      texte: <>Une <strong>lampe à LED</strong> n’émet pas toutes les longueurs d’onde : son <strong>spectre</strong> (graphique) montre la lumière émise pour chaque longueur d’onde. Réglez les intensités avec les curseurs et regardez la courbe noire : le spectre de la lumière obtenue en allumant plusieurs lampes à la fois.</>,
       tache: { type: 'qcm', q: 'On allume seulement les lampes rouge et verte. Le spectre de la lumière obtenue est…', ...QCM.lampes,
         expl: 'Quand on superpose des lumières, leurs spectres s’additionnent longueur d’onde par longueur d’onde : on garde les deux bosses, rouge et verte. C’est le principe de la synthèse additive.', indice: 'Allumez uniquement le rouge et le vert avec les curseurs et regardez la courbe noire.' } },
     { id: 'jaune', titre: 'Deux lumières jaunes ?', focus: ['scene', 'mesures'],
@@ -99,8 +103,12 @@ export function SimulationSyntheseCouleurs() {
         calcul: () => [`Chaque filtre transmet une fraction de la lumière qui arrive sur lui : T₁ = ${fr(arr2(TJ), 2)} puis T₂ = ${fr(arr2(TC), 2)}.`, `T = T₁ × T₂ = ${fr(arr2(TJ), 2)} × ${fr(arr2(TC), 2)} ≈ ${fr(arr2(TJ) * arr2(TC), 2)}. Hypothèse : on néglige les réflexions sur les faces des filtres.`],
         pieges: [[arr2(TJ) + arr2(TC), 'Vous avez additionné les transmittances. Les transmittances se multiplient (les absorbances, elles, s’additionnent).'], [(arr2(TJ) + arr2(TC)) / 2, 'Vous avez fait la moyenne. La lumière passe d’abord le premier filtre, puis le second : on multiplie.'], [arr2(TC), 'Vous avez gardé la transmittance du filtre cyan seul : le filtre jaune retire aussi de la lumière.'], [arr2(TJ), 'Vous avez gardé la transmittance du filtre jaune seul : le filtre cyan retire aussi de la lumière.']],
         expl: 'La lumière qui sort du premier filtre est ensuite réduite par le second : on multiplie les transmittances, T = T₁ × T₂. Les deux filtres absorbent chacun une partie différente du spectre, il ne reste que le vert.', indice: 'Le second filtre ne reçoit que la fraction T₁ de la lumière, et n’en transmet la fraction T₂.' } },
-    { id: 'peinture', titre: 'Une peinture : des pigments qui absorbent et diffusent', focus: ['scene', 'curseur', 'mesures'],
-      texte: <>Une couche de peinture n’est pas un filtre : la lumière y entre, est <strong>diffusée</strong> par les pigments (les billes de la coupe), en partie <strong>absorbée</strong> (hachures) et ressort vers l’œil (flèches renvoyées). Sa couleur dépend de sa <strong>réflectance</strong> R(λ), calculée par la théorie de <strong>Kubelka-Munk</strong> à partir de l’absorption et de la diffusion de la couche. Hypothèses : couche opaque, diffusion identique pour les pigments colorés. Mélangez un pigment jaune et un pigment cyan : regardez la réflectance du mélange (courbe verte).</>,
+    { id: 'peinture', titre: 'Une peinture : lumière renvoyée et absorbée', focus: ['scene', 'curseur'],
+      texte: <>Une couche de peinture n’est pas un filtre : la lumière y entre, est <strong>diffusée</strong> par les pigments (les billes de la coupe), en partie <strong>absorbée</strong> (hachures) et ressort vers l’œil (flèches renvoyées). Le schéma suit trois couleurs de la lumière blanche. La part de lumière renvoyée à chaque longueur d’onde est la <strong>réflectance</strong> R(λ) : elle fixe la couleur de la peinture. Faites varier la quantité de pigment.</>,
+      tache: { type: 'qcm', q: 'Sur le schéma, la flèche renvoyée est plus fine que la flèche incidente. Où est passée la lumière manquante ?', ...QCM.absorbee,
+        expl: 'La part de lumière qui n’est pas renvoyée vers l’œil est absorbée par les pigments : elle est convertie en chaleur. La couche est opaque, rien ne traverse. Plus un pigment absorbe une couleur, plus la flèche renvoyée correspondante est fine.', indice: 'Regardez la partie hachurée du schéma et la ligne « absorbé ».' } },
+    { id: 'pigments', titre: 'Mélanger deux pigments', focus: ['scene', 'curseur', 'mesures'],
+      texte: <>Chaque pigment a sa courbe de réflectance R(λ). Celle du mélange est calculée par la théorie de <strong>Kubelka-Munk</strong> à partir de l’absorption et de la diffusion de la couche. Hypothèses : couche opaque, diffusion identique pour les pigments colorés. Mélangez un pigment jaune et un pigment cyan : regardez la réflectance du mélange (courbe verte).</>,
       tache: { type: 'qcm', q: 'Quand on mélange deux pigments, quelle grandeur s’additionne ?', ...QCM.peinture,
         expl: 'Théorie de Kubelka-Munk : R se déduit du rapport K/S (absorption sur diffusion). Comme la diffusion est la même pour les pigments colorés, ce sont leurs pouvoirs absorbants K/S, pondérés par les concentrations, qui s’additionnent. La réflectance, elle, ne s’additionne pas : elle se déduit du K/S total. Le mélange jaune + cyan absorbe le bleu et le rouge : il ne reste que le vert.', indice: 'Pensez aux absorbances des filtres : ce qui s’additionne, c’est ce qui est absorbé.' } },
     { id: 'moyenne', titre: 'Pourquoi pas la moyenne des réflectances ?',
@@ -145,7 +153,9 @@ export function SimulationSyntheseCouleurs() {
   const RSB = M.reflPeinture({ jaune: vie.pj, cyan: vie.pc }), labM = lab(RM), labMoy = lab(RMOY), labKM = lab(RKM);
   const dpO = DEUT.co, dpV = DEUT.cg;
   const sceneGuide = !enGuide ? null
-    : sc === 'lampes' ? <><SceneLampes r={vie.r} v={vie.v} b={vie.b}/><div style={{ height: 6 }}/>{spectresLampes(vie.r, vie.v, vie.b)}</>
+    : sc === 'lampes' ? <SceneLampes r={vie.r} v={vie.v} b={vie.b}/>
+    : sc === 'spectre' ? <><SceneLampes r={vie.r} v={vie.v} b={vie.b}/><div style={{ height: 6 }}/>{spectresLampes(vie.r, vie.v, vie.b)}</>
+    : sc === 'peinture' ? <SceneCoupe R={RSB} css={patch(RSB)} pig={{ jaune: vie.pj, cyan: vie.pc }}/>
     : sc === 'jaune' ? <><Ligne><Pastille css={M.cssLumiere(SP_MIX)} nom="rouge + verte" hauteur={30}/><Pastille css={M.cssLumiere(SP_JAUNE)} nom="monochromatique 580 nm" hauteur={30}/></Ligne>
         <SvgSpectre ymax={32} yTitre="intensité" label="Spectres du mélange rouge et vert, et de la lumière de 580 nm" courbes={[{ v: SP_MIX, col: COL.orange, w: 2.6, fill: COL.orange, nom: 'rouge + verte', l: 625, dy: -7 }, { v: SP_JAUNE, col: '#4c1d95', w: 2.6, nom: '580 nm', l: 580, dy: -6 }]}/></>
     : sc === 'cones' ? <><SvgCones marques={[{ l: 580, txt: '580 nm' }]}/><div style={{ height: 8 }}/><BarresCones a={JAUNE.mix} b={JAUNE.mono} nomA="rouge + verte" nomB="580 nm" ymax={60}/></>
@@ -159,7 +169,7 @@ export function SimulationSyntheseCouleurs() {
     : sc === 'serie' ? <><SceneFiltres filtres={[{ nom: 'filtre jaune', T: Tj1, col: COUL_FILTRE.jaune }, { nom: 'filtre cyan', T: Tc1, col: COUL_FILTRE.cyan }]}/><Ligne><Pastille css={M.cssFiltre(Tj1)} nom="filtre jaune" hauteur={26}/><Pastille css={M.cssFiltre(Tc1)} nom="filtre cyan" hauteur={26}/><Pastille css={M.cssFiltre(Tjc1)} nom="les deux" hauteur={26}/></Ligne>
         <SvgSpectre graduations yTitre="transmittance" marques={[{ l: LAM_SERIE, txt: `${LAM_SERIE} nm` }]} label="Transmittance des filtres jaune et cyan, et des deux en série"
           courbes={[{ v: Tj1, col: COUL_FILTRE.jaune, w: 2.4, dash: '7 4', nom: 'jaune', l: 640, dy: -8 }, { v: Tc1, col: COUL_FILTRE.cyan, w: 2.4, dash: '2 3', nom: 'cyan', l: 440, dy: -8 }, { v: Tjc1, col: COL.vert, w: 3.4, fill: COL.vert, nom: 'les deux', l: 560, dy: -8 }]}/></>
-    : sc === 'peinture' ? <><SceneCoupe R={RSB} css={patch(RSB)} pig={{ jaune: vie.pj, cyan: vie.pc }}/><Ligne><Pastille css={patch(RJ)} nom="pigment jaune" hauteur={26}/><Pastille css={patch(RC)} nom="pigment cyan" hauteur={26}/><Pastille css={patch(RSB)} nom="mélange" hauteur={26}/></Ligne>
+    : sc === 'pigments' ? <><SceneCoupe R={RSB} css={patch(RSB)} pig={{ jaune: vie.pj, cyan: vie.pc }}/><Ligne><Pastille css={patch(RJ)} nom="pigment jaune" hauteur={26}/><Pastille css={patch(RC)} nom="pigment cyan" hauteur={26}/><Pastille css={patch(RSB)} nom="mélange" hauteur={26}/></Ligne>
         <SvgSpectre graduations yTitre="réflectance" label="Réflectance des pigments jaune et cyan, et du mélange" courbes={[{ v: RJ, col: COUL_FILTRE.jaune, w: 2.2, dash: '7 4', nom: 'jaune', l: 640, dy: -8 }, { v: RC, col: COUL_FILTRE.cyan, w: 2.2, dash: '2 3', nom: 'cyan', l: 440, dy: -8 }, { v: RSB, col: COL.vert, w: 3.4, fill: COL.vert, nom: 'mélange', l: 540, dy: -8 }]}/></>
     : sc === 'moyenne' ? <><Ligne><Pastille css={patch(RMOY)} nom="moyenne des réflectances" hauteur={30}/><Pastille css={patch(RKM)} nom="calcul par K/S" hauteur={30}/></Ligne>
         <SvgSpectre graduations yTitre="réflectance" label="Réflectance du mélange : moyenne et Kubelka-Munk" courbes={[{ v: RMOY, col: COL.gris, w: 2.6, dash: '7 4', nom: 'moyenne', l: 540, dy: -8 }, { v: RKM, col: COL.vert, w: 3.4, fill: COL.vert, nom: 'K/S', l: 540, dy: 16 }]}/></>
@@ -173,7 +183,7 @@ export function SimulationSyntheseCouleurs() {
     compl: [['x ; y de la lumière', `${fr(cV.x, 3)} ; ${fr(cV.y, 3)}`], ['x ; y du blanc D65', '0,313 ; 0,329']],
     anomalie: [['L ; M ; S, orange', `${fr(dpO.L, 1)} ; ${fr(dpO.M, 1)} ; ${fr(dpO.S, 1)}`], ['L ; M ; S, vert', `${fr(dpV.L, 1)} ; ${fr(dpV.M, 1)} ; ${fr(dpV.S, 1)}`], ['Dominante, œil normal', `${dominante(DEUT.orange)} et ${dominante(DEUT.vert)}`]],
     serie: [[`T à ${LAM_SERIE} nm, filtre jaune`, fr(arr2(TJ), 2)], [`T à ${LAM_SERIE} nm, filtre cyan`, fr(arr2(TC), 2)]],
-    peinture: [['L* ; a* ; b* du mélange', `${fr(lab(RSB).L)} ; ${fr(lab(RSB).a)} ; ${fr(lab(RSB).b)}`]],
+    pigments: [['L* ; a* ; b* du mélange', `${fr(lab(RSB).L)} ; ${fr(lab(RSB).a)} ; ${fr(lab(RSB).b)}`]],
     moyenne: [['L* ; C*, moyenne des réflectances', `${fr(labMoy.L)} ; ${fr(chroma(labMoy))}`], ['L* ; C*, calcul par K/S', `${fr(labKM.L)} ; ${fr(chroma(labKM))}`]],
     blanc: [['Blanc ajouté', pct(vie.pb)], ['L* ; C*, sans blanc', `${fr(lab(RSB).L)} ; ${fr(chroma(lab(RSB)))}`], ['L* ; C*, avec le blanc', `${fr(labM.L)} ; ${fr(chroma(labM))}`]],
   };
@@ -186,12 +196,12 @@ export function SimulationSyntheseCouleurs() {
     <label htmlFor={id} style={libelle}>{lab_}</label>
     <select id={id} value={val} onChange={onCh} style={selectStyle}>{vide && <option value="">{vide}</option>}{options.map(o => <option key={o.id} value={o.id}>{o.nom}</option>)}</select></div>);
   const setV = k => ev => setVie(s => ({ ...s, [k]: parseFloat(ev.target.value) }));
-  const curseurGuide = enGuide && ['lampes', 'appar', 'compl', 'anomalie', 'filtre', 'peinture', 'blanc'].includes(sc) ? (
+  const curseurGuide = enGuide && ['lampes', 'spectre', 'appar', 'compl', 'anomalie', 'filtre', 'peinture', 'pigments', 'blanc'].includes(sc) ? (
     <div style={{ ...styleBoite, ...cadre('curseur') }}>
-      {(sc === 'lampes' || sc === 'appar') && <>
+      {(sc === 'lampes' || sc === 'spectre' || sc === 'appar') && <>
         {curs('sy-r', `Lampe rouge : ${pct(vie.r)}`, vie.r, 0, 1, 0.01, setV('r'), null, COL.rouge)}
         {curs('sy-v', `Lampe verte : ${pct(vie.v)}`, vie.v, 0, 1, 0.01, setV('v'), null, COL.vert)}
-        {sc === 'lampes' && curs('sy-b', `Lampe bleue : ${pct(vie.b)}`, vie.b, 0, 1, 0.01, setV('b'), null, COL.bleu)}
+        {(sc === 'lampes' || sc === 'spectre') && curs('sy-b', `Lampe bleue : ${pct(vie.b)}`, vie.b, 0, 1, 0.01, setV('b'), null, COL.bleu)}
         {sc === 'appar' && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6 }}>La lampe bleue reste éteinte. Les barres des deux lumières se lisent cône par cône.</div>}</>}
       {sc === 'compl' && <>
         <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5 }}>Lampes rouge et verte : à fond (jaune).</div>
@@ -199,7 +209,7 @@ export function SimulationSyntheseCouleurs() {
       {sc === 'anomalie' && <><div style={libelle}>Œil</div><div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{[['normal', 'Œil normal (L, M, S)'], ['sansM', 'Sans cônes M (deutéranope)']].map(([id, l]) => <button key={id} onClick={() => setVie(v => ({ ...v, oeil: id }))} aria-pressed={vie.oeil === id} style={stylePetitBouton(vie.oeil === id, '#7c3aed')}>{l}</button>)}</div></>}
       {sc === 'filtre' && <>{selecteur('sy-filtre', 'Filtre', vie.filtre, ev => setVie(v => ({ ...v, filtre: ev.target.value })), [{ id: 'jaune', nom: 'Filtre jaune' }, { id: 'magenta', nom: 'Filtre magenta' }, { id: 'cyan', nom: 'Filtre cyan' }])}
         {curs('sy-cf', `Concentration du filtre : ${pct(vie.cf)}`, vie.cf, 0, 1, 0.01, setV('cf'), '0 % : pas de filtre.')}</>}
-      {sc === 'peinture' && <>
+      {(sc === 'peinture' || sc === 'pigments') && <>
         {curs('sy-pj', `Pigment jaune : ${pct(vie.pj)}`, vie.pj, 0, 1, 0.01, setV('pj'), null, COL.orange)}
         {curs('sy-pc', `Pigment cyan : ${pct(vie.pc)}`, vie.pc, 0, 1, 0.01, setV('pc'), null, '#0e7490')}</>}
       {sc === 'blanc' && curs('sy-pb', `Pigment blanc : ${pct(vie.pb)}`, vie.pb, 0, 1, 0.01, setV('pb'), '50 % de jaune et 50 % de cyan, avec du blanc en plus.', COL.gris)}
