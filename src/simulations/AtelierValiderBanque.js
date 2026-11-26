@@ -1,5 +1,6 @@
 import { PDT_VAL } from './poidsTrajetExos.js';
 import { LCV_VAL } from './lancerChuteExos.js';
+import { DFR_VAL } from './freinageExos.js';
 import { MTR_VAL } from './modesTransfertExos.js';
 import { FRM_VAL } from './formesExos.js';
 import { CHA_VAL } from './chaineExos.js';
@@ -4734,6 +4735,7 @@ export const PLAUSIBLES = [
   ...MTR_VAL,
   ...PDT_VAL,
   ...LCV_VAL,
+  ...DFR_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
