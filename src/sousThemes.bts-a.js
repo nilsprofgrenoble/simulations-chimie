@@ -66,6 +66,8 @@ export default {
   'bts-spectro': [
     { id: 'photons-niveaux', nom: 'Photons, niveaux d’énergie et domaines spectraux', capacite: 'Associer émission, absorption ou diffusion à un flux de photons ; associer un domaine spectral à la nature de la transition (électronique, vibrationnelle, rotationnelle) ; établir un schéma d’absorption et d’émission entre niveaux d’énergie ; associer à chaque spectroscopie l’ordre de grandeur de l’énergie échangée ; distinguer spectre d’absorbance et de transmittance, absorption et extinction.',
       refs: ['34:lmt-sapp-bande', ...['lmt-ana-energie', 'lmt-ana-vibration', 'lmt-ana-hierarchie', 'lmt-ana-spectre-ir', 'lmt-ana-extinction'].map(A), ...['lmt-val-energie-ir', 'lmt-val-absorbance', 'lmt-val-rotation'].map(Vp), '36:lmt-calcul'] },
+    { id: 'fluo-perrin', nom: 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski', capacite: 'Différencier fluorescence et phosphorescence ; décrire à l’aide du diagramme de Perrin-Jablonski l’absorption, la relaxation vibrationnelle, la conversion interne, le croisement intersystème, la fluorescence et la phosphorescence.',
+      refs: ['34:fluo-sapp-lueur', ...['fluo-ana-uv-visible', 'fluo-ana-etoiles', 'fluo-ana-diagramme', 'fluo-ana-cis', 'fluo-ana-spectre'].map(A), ...['fluo-val-persistance', 'fluo-val-energie-emise', 'fluo-val-rv-lumiere'].map(Vp), '36:fluo-calcul'] },
   ],
   'bts-rmn': [
     { id: 'appareil', nom: 'L’appareil, le solvant et la référence', capacite: 'Adopter une attitude appropriée à proximité de champs magnétiques intenses ; connaître le rôle du solvant deutéré et du TMS.',
