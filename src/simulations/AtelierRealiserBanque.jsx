@@ -3461,6 +3461,52 @@ function genGrvPoids() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['g = G × M ÷ R² à la surface ; g diminue quand on s’éloigne du centre.', 'Le poids est P = m × g ; la masse ne change pas d’un astre à l’autre.'] };
 }
+function genCelChamp() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let U, dcm, E, E2, E3;
+  do { U = tire([60, 120, 150, 200, 240, 300, 400]); dcm = tire([1.5, 2.0, 2.5, 3.0, 4.0, 5.0]); E = U / (dcm / 100) / 1e3; E2 = E / 2; E3 = E * 3; }
+  while (new Set([E, E2, E3].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Deux armatures planes parallèles, distantes de ${fr(dcm)}${NB}cm, sont reliées aux bornes d’un générateur qui impose la tension ${U}${NB}V.`;
+  const q1 = { id: 'c0', type: 'num', q: <>Quelle est la <b>valeur du champ électrostatique</b> entre les armatures (en kV/m, 2 chiffres significatifs) ?</>, unite: 'kV/m', vrai: E, tolRel: 0.05, csMin: 2,
+    aide: 'E = U ÷ d, avec d en mètres (1 cm = 0,01 m). Le résultat est en V/m : divisez par 1 000 pour les kV/m.',
+    pieges: [[E * 10, 'La distance doit être en mètres avant de diviser : 1 cm = 0,01 m.'], [E * 1e3, 'Ce résultat est en V/m : 1 kV/m = 1 000 V/m.']],
+    expl: <>E = U ÷ d = {U} ÷ {fr(dcm / 100)} = <b>{pvFmt(E)}{NB}kV/m</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>On <b>double la distance</b> entre les armatures, la tension restant la même. Quelle est la nouvelle valeur du champ (en kV/m, 2 chiffres significatifs) ?</>, unite: 'kV/m', vrai: E2, tolRel: 0.05, csMin: 2,
+    aide: 'E = U ÷ d : doubler d divise E par 2.',
+    pieges: [[E / 4, 'La distance n’est pas au carré : doubler d divise E par 2, pas par 4.']],
+    expl: <>E′ = E ÷ 2 = {pvFmt(E)} ÷ 2 = <b>{pvFmt(E2)}{NB}kV/m</b>.</> };
+  const q3 = { id: 'c2', type: 'num', q: <>Revenons à la distance de {fr(dcm)}{NB}cm et <b>triplons la tension</b>. Quelle est la nouvelle valeur du champ (en kV/m, 2 chiffres significatifs) ?</>, unite: 'kV/m', vrai: E3, tolRel: 0.05, csMin: 2,
+    aide: 'E est proportionnelle à U : tripler U triple E.',
+    pieges: [[E * 9, 'La tension n’est pas au carré : tripler U multiplie E par 3, pas par 9.']],
+    expl: <>E′ = 3 × {pvFmt(E)} = <b>{pvFmt(E3)}{NB}kV/m</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['E = U ÷ d : champ uniforme entre deux armatures planes, de l’armature + vers l’armature −.', 'E est proportionnelle à U et inversement proportionnelle à d.'] };
+}
+function genCelForce() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const EC = 1.6e-19; let n, Ek, dcm, F, F2, U;
+  do { n = tire([1, 2, 3]); Ek = tire([4, 5, 8, 10, 12, 15]); dcm = tire([2.0, 2.5, 4.0, 5.0]); F = n * EC * Ek * 1e3 * 1e15; F2 = 2 * F; U = Ek * 1e3 * dcm / 100; }
+  while (new Set([F, F2, U].map(x => Number(x.toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un ion de charge +${n} × 1,6×10⁻¹⁹${NB}C est placé entre deux armatures planes parallèles distantes de ${fr(dcm)}${NB}cm, entre lesquelles le champ vaut ${Ek}${NB}kV/m.`;
+  const q1 = { id: 'f0', type: 'num', q: <>Quelle est la <b>valeur de la force électrostatique</b> sur l’ion (en 10⁻¹⁵{NB}N, 2 chiffres significatifs) ?</>, unite: '×10⁻¹⁵ N', vrai: F, tolRel: 0.05, csMin: 2,
+    aide: 'F = |q| × E, avec E en V/m (1 kV/m = 1 000 V/m).',
+    pieges: [[F / 1e3, 'E doit être en V/m : 1 kV/m = 1 000 V/m.'], [F / n, 'La charge vaut ' + n + ' × 1,6×10⁻¹⁹ C : n’oubliez pas le facteur ' + n + '.']],
+    expl: <>F = {n} × 1,6×10⁻¹⁹ × {Ek}×10³ = <b>{pvFmt(F)}{NB}×10⁻¹⁵{NB}N</b>.</> };
+  const q2 = { id: 'f1', type: 'num', q: <>On <b>double la charge</b> de l’ion (même champ). Quelle est la nouvelle valeur de la force (en 10⁻¹⁵{NB}N, 2 chiffres significatifs) ?</>, unite: '×10⁻¹⁵ N', vrai: F2, tolRel: 0.05, csMin: 2,
+    aide: 'F = |q| × E est proportionnelle à |q| : doubler q double F.',
+    pieges: [[F * 4, 'La charge n’est pas au carré : doubler q multiplie F par 2, pas par 4.']],
+    expl: <>F′ = 2 × {pvFmt(F)} = <b>{pvFmt(F2)}{NB}×10⁻¹⁵{NB}N</b>.</> };
+  const q3 = { id: 'f2', type: 'num', q: <>Quelle est la <b>tension</b> entre les armatures (en V, 2 chiffres significatifs) ?</>, unite: 'V', vrai: U, tolRel: 0.05, csMin: 2,
+    aide: 'U = E × d, avec E en V/m et d en mètres (1 cm = 0,01 m).',
+    pieges: [[Ek * 1e3 * dcm, 'La distance doit être en mètres : ' + fr(dcm) + ' cm = ' + fr(dcm / 100) + ' m.'], [Ek * dcm / 100, 'E doit être en V/m : 1 kV/m = 1 000 V/m.']],
+    expl: <>U = E × d = {Ek}×10³ × {fr(dcm / 100)} = <b>{pvFmt(U)}{NB}V</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['F = |q| × E ; q > 0 : F a le sens de E ; q < 0 : F a le sens opposé.', 'U = E × d relie le champ à la tension et à la distance entre les armatures.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -6159,6 +6205,8 @@ export const FAMILLES = [
   { id: 'pxt-corde', groupe: 'Formules', titre: 'Vitesse moyenne (corde) et vitesse à une date (tangente) (terminale STL)', gen: genPxtCorde, domaine: 'Lire une vitesse sur un graphique x(t)' },
   { id: 'grv-force', groupe: 'Formules', titre: 'Force gravitationnelle entre deux blocs : valeur, distance, masse (terminale STL)', gen: genGrvForce, domaine: 'Gravitation et poids' },
   { id: 'grv-poids', groupe: 'Formules', titre: 'Intensité de pesanteur et poids sur une planète (terminale STL)', gen: genGrvPoids, domaine: 'Gravitation et poids' },
+  { id: 'chel-champ', groupe: 'Formules', titre: 'Champ électrostatique entre deux armatures : E = U ÷ d (terminale STL)', gen: genCelChamp, domaine: 'Champ et force électrostatiques' },
+  { id: 'chel-force', groupe: 'Formules', titre: 'Force sur une particule chargée entre deux armatures : F = |q| E (terminale STL)', gen: genCelForce, domaine: 'Champ et force électrostatiques' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
