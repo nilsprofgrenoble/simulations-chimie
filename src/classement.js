@@ -14,6 +14,10 @@ export const LAMES = [
     sous: 'Nombre de défis et de parcours guidés de simulations réussis.' },
   { code: 'regularite', titre: 'Régularité', icone: '📅', unite: ['semaine', 'semaines'], couleur: '#0f766e', fond: '#ccfbf1',
     sous: 'Nombre de semaines différentes où l’élève a travaillé sur le site : travailler un peu, souvent, ça paie.' },
+  { code: 'laser', titre: 'Laser Maze', icone: '🔦', unite: ['étoile', 'étoiles'], couleur: '#0369a1', fond: '#e0f2fe',
+    sous: 'Jeu Laser Maze : total des étoiles obtenues sur les 8 niveaux (3 étoiles si tu réussis avec peu de pièces posées).' },
+  { code: 'urgence', titre: 'Urgence au labo', icone: '🧪', unite: ['seconde d’avance', 'secondes d’avance'], couleur: '#b91c1c', fond: '#fee2e2',
+    sous: 'Jeu Urgence au labo : total des secondes qu’il te restait avant l’explosion, sur les 3 missions réussies. Rejoue pour faire mieux !' },
 ];
 
 export const libelleScore = (lame, n) => `${n} ${n > 1 ? lame.unite[1] : lame.unite[0]}`;
