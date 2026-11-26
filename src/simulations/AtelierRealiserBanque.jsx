@@ -3854,6 +3854,66 @@ function genKaTauTSTL() {
     retenir: ['x = τ × c (τ en fraction) : concentration en ions H₃O⁺ et en base conjuguée.', 'σ = (λ(H₃O⁺) + λ(A⁻)) × x, avec x en mol·m⁻³.', 'K = x² / (c − x), constante d’acidité du couple.', 'pKa = −log Ka.'] };
 }
 
+const acTol = q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && v2 > 0 && Math.abs(v2 - q.vrai) > 1.2 * q.tolRel * Math.abs(q.vrai)); };
+const AT_L = { H3O: 35.0, HO: 19.9, Na: 5.0, Cl: 7.6, AcO: 4.1, NH4: 7.4 };
+function genPenteTitrageTSTL() {
+  for (let k = 0; ; k++) { const g = genPenteTitrageTSTLBase(), v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; }
+}
+function genPenteTitrageTSTLBase() {
+  const acide = tire([true, false]), cA = tire([0.020, 0.030, 0.040, 0.050]), VA = tire([10.0, 20.0, 25.0]), cB = tire([0.100, 0.200]), eau = tire([150, 180, 190]), Vt = VA + eau, pas = cB * 1000 / Vt;
+  const d = acide ? { esp: 'd’acide chlorhydrique (H₃O⁺ + Cl⁻)', tit: 'de la soude (Na⁺ + HO⁻)', dis: 'H₃O⁺', app: 'Na⁺', ld: AT_L.H3O, la: AT_L.Na, sp: 'Cl⁻', lsp: AT_L.Cl, s0: AT_L.H3O + AT_L.Cl, ap2: ['Na⁺', 'HO⁻'], lap: AT_L.Na + AT_L.HO }
+    : { esp: 'de soude (Na⁺ + HO⁻)', tit: 'd’acide chlorhydrique (H₃O⁺ + Cl⁻)', dis: 'HO⁻', app: 'Cl⁻', ld: AT_L.HO, la: AT_L.Cl, sp: 'Na⁺', lsp: AT_L.Na, s0: AT_L.Na + AT_L.HO, ap2: ['H₃O⁺', 'Cl⁻'], lap: AT_L.H3O + AT_L.Cl };
+  const VE = cA * VA / cB, pa = (d.ld - d.la) * pas, pp = d.lap * pas, sig0 = d.s0 * cA * VA / Vt * 1000, sigE = sig0 - pa * VE;
+  const intro = <>On titre une prise d’essai de <b>{nb(VA, 3)}{NB}mL</b> {d.esp}, de concentration <b>{kcSci(cA)}{NB}mol/L</b>, par {d.tit} de concentration <b>{nb(cB, 3)}{NB}mol/L</b>, en suivant la conductivité. Le bécher contient <b>{Vt}{NB}mL</b> de solution (prise d’essai et eau), volume supposé constant. Données (mS·m²·mol⁻¹, 25 °C) : λ(H₃O⁺) = <b>35,0</b> ; λ(HO⁻) = <b>19,9</b> ; λ(Na⁺) = <b>5,0</b> ; λ(Cl⁻) = <b>7,6</b>.</>;
+  const q1 = { id: 'p0', type: 'num', q: <>{intro} Calculez le volume équivalent (en mL, 2 chiffres significatifs).</>, unite: 'mL', vrai: VE, tolRel: 0.03, csMin: 2,
+    aide: 'À l’équivalence, la quantité de titrant versée est égale à la quantité initiale d’espèce titrée : cB × VE = cA × VA.',
+    pieges: [[cA * VA, 'C’est la quantité de matière (en mmol) : divisez-la par cB pour obtenir un volume.'], [cB * VA / cA, 'Le rapport est inversé : VE = cA × VA / cB.'], [cA * Vt / cB, 'Le volume à utiliser est celui de la prise d’essai VA, non le volume total du bécher.']],
+    expl: <>VE = cA × VA / cB = {kcSci(cA)} × {nb(VA, 3)} / {nb(cB, 3)} = <b>{nb(VE, 3)}{NB}mL</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>{intro} Avant l’équivalence, σ diminue à chaque mL de titrant versé. De combien diminue-t-elle par mL (valeur positive, en mS·m⁻¹ par mL, 2 chiffres significatifs) ?</>, unite: 'mS·m⁻¹ par mL', vrai: pa, tolRel: 0.05, csMin: 2,
+    aide: 'Chaque mL change la concentration de chaque ion de cB × 1 000 / Vt (mol·m⁻³). L’ion qui disparaît fait baisser σ, celui qui apparaît la fait monter : comparez leurs λ.',
+    pieges: [[d.ld * pas, `Vous n’avez compté que ${d.dis} qui disparaît : il faut ajouter λ(${d.app}) de l’ion qui apparaît.`], [(d.ld - d.la), 'Il manque la variation de concentration par mL : multipliez par cB × 1 000 / Vt.'], [d.la * pas, `Vous n’avez compté que ${d.app} qui apparaît : ${d.dis} disparaît, avec un λ bien plus grand.`]],
+    expl: <>Variation de concentration : {nb(cB, 3)} × 1 000 / {Vt} = {nb(pas, 3)}{NB}mol·m⁻³ par mL. {d.dis} disparaît, {d.app} apparaît : Δσ = {nb(pas, 3)} × ({nbF(d.la, 1)} − {nbF(d.ld, 1)}) = −{nb(pa, 3)}, soit une baisse de <b>{nb(pa, 3)}{NB}mS·m⁻¹ par mL</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>{intro} Après l’équivalence, σ augmente. De combien augmente-t-elle par mL de titrant versé (en mS·m⁻¹ par mL, 2 chiffres significatifs) ?</>, unite: 'mS·m⁻¹ par mL', vrai: pp, tolRel: 0.05, csMin: 2,
+    aide: 'Après l’équivalence, aucun ion ne disparaît : les deux ions du titrant s’accumulent, chacun de cB × 1 000 / Vt par mL.',
+    pieges: [[pp / pas, 'Il manque la variation de concentration par mL : multipliez par cB × 1 000 / Vt.'], [AT_L[d.ap2[0] === 'Na⁺' ? 'Na' : 'H3O'] * pas, `Vous n’avez compté qu’un seul ion (${d.ap2[0]}) : ${d.ap2[1]} s’accumule aussi.`], [(d.lap - d.ld) * pas, 'Après l’équivalence, l’ion de la première espèce a disparu : on n’en retranche rien.']],
+    expl: <>Δσ = {nb(pas, 3)} × ({nbF(d.lap, 1)}) = <b>{nb(pp, 3)}{NB}mS·m⁻¹ par mL</b>, somme des λ de {d.ap2[0]} et {d.ap2[1]} × {nb(pas, 3)}.</> };
+  const q4 = { id: 'p3', type: 'num', q: <>{intro} Calculez la conductivité σ à l’équivalence (en mS·m⁻¹, 2 chiffres significatifs). Indice : σ au départ vaut (λ(cation) + λ(anion)) × concentration dans le bécher.</>, unite: 'mS·m⁻¹', vrai: sigE, tolRel: 0.05, csMin: 2,
+    aide: 'σ(0) = (somme des λ des deux ions de la prise d’essai) × cA × VA / Vt × 1 000 ; puis retranchez la baisse par mL multipliée par VE.',
+    pieges: [[sig0, 'C’est σ au départ : à l’équivalence, il faut retrancher la baisse accumulée jusqu’à VE.'], [d.lsp * cA * VA / Vt * 1000 * 2, 'À l’équivalence, il reste le spectateur de la prise d’essai et l’ion du titrant, pas deux fois le même ion.']],
+    expl: <>σ(0) = {nbF(d.s0, 1)} × {nb(cA * VA / Vt * 1000, 3)} = {nb(sig0, 3)} ; σ(VE) = σ(0) − {nb(pa, 3)} × {nb(VE, 3)} = <b>{nb(sigE, 3)}{NB}mS·m⁻¹</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Titrage d’un acide fort par une base forte (ou l’inverse) : volume équivalent, pente avant et après l’équivalence, conductivité à l’équivalence.', questions: [q1, q2, q3, q4],
+    retenir: ['VE : cB × VE = cA × VA.', 'Chaque mL change la concentration de chaque ion de cB × 1 000 / Vt (mol·m⁻³).', 'Pente = variation de concentration × (Σ λ des ions apparus − Σ λ des ions disparus), avant puis après l’équivalence.', 'σ à l’équivalence = σ au départ + pente avant × VE (courbe en V : minimum).'] };
+}
+function genFaibleTitrageTSTL() {
+  for (let k = 0; ; k++) { const g = genFaibleTitrageTSTLBase(), v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; }
+}
+function genFaibleTitrageTSTLBase() {
+  const acide = tire([true, false]), cA = tire([0.020, 0.030, 0.040, 0.050]), VA = tire([10.0, 20.0, 25.0]), cB = tire([0.100, 0.200]), eau = tire([150, 180, 190]), Vt = VA + eau, pas = cB * 1000 / Vt;
+  const d = acide ? { esp: 'd’acide éthanoïque CH₃COOH', tit: 'de la soude (Na⁺ + HO⁻)', f1: 'CH₃COO⁻', l1: AT_L.AcO, f2: 'Na⁺', l2: AT_L.Na, ap: ['Na⁺', 'HO⁻'], lap: AT_L.Na + AT_L.HO }
+    : { esp: 'd’ammoniac NH₃', tit: 'd’acide chlorhydrique (H₃O⁺ + Cl⁻)', f1: 'NH₄⁺', l1: AT_L.NH4, f2: 'Cl⁻', l2: AT_L.Cl, ap: ['H₃O⁺', 'Cl⁻'], lap: AT_L.H3O + AT_L.Cl };
+  const VE = cA * VA / cB, pa = (d.l1 + d.l2) * pas, pp = d.lap * pas, rap = pp / pa;
+  const intro = <>On titre une prise d’essai de <b>{nb(VA, 3)}{NB}mL</b> {d.esp}, de concentration <b>{kcSci(cA)}{NB}mol/L</b>, par {d.tit} de concentration <b>{nb(cB, 3)}{NB}mol/L</b>, en suivant la conductivité. Le bécher contient <b>{Vt}{NB}mL</b> de solution (prise d’essai et eau), volume supposé constant ; les ions présents au départ sont négligés. Données (mS·m²·mol⁻¹, 25 °C) : λ({d.f1}) = <b>{nbF(d.l1, 1)}</b> ; λ({d.f2}) = <b>{nbF(d.l2, 1)}</b> ; λ(H₃O⁺) = <b>35,0</b> ; λ(HO⁻) = <b>19,9</b>.</>;
+  const q1 = { id: 'f0', type: 'num', q: <>{intro} Calculez le volume équivalent (en mL, 2 chiffres significatifs).</>, unite: 'mL', vrai: VE, tolRel: 0.03, csMin: 2,
+    aide: 'cB × VE = cA × VA : une mole de titrant réagit avec une mole d’espèce titrée.',
+    pieges: [[cA * VA, 'C’est la quantité de matière (en mmol) : divisez-la par cB pour obtenir un volume.'], [cB * VA / cA, 'Le rapport est inversé : VE = cA × VA / cB.'], [cA * Vt / cB, 'Le volume à utiliser est celui de la prise d’essai VA, non le volume total du bécher.']],
+    expl: <>VE = cA × VA / cB = {kcSci(cA)} × {nb(VA, 3)} / {nb(cB, 3)} = <b>{nb(VE, 3)}{NB}mL</b>.</> };
+  const q2 = { id: 'f1', type: 'num', q: <>{intro} Avant l’équivalence, deux ions apparaissent et aucun ne disparaît. De combien σ augmente-t-elle par mL versé (en mS·m⁻¹ par mL, 2 chiffres significatifs) ?</>, unite: 'mS·m⁻¹ par mL', vrai: pa, tolRel: 0.05, csMin: 2,
+    aide: 'Chaque mL ajoute cB × 1 000 / Vt (mol·m⁻³) de chacun des deux ions formés : Δσ = (λ(ion 1) + λ(ion 2)) × cB × 1 000 / Vt.',
+    pieges: [[d.l1 * pas, `Vous n’avez compté que ${d.f1} : ${d.f2} apparaît aussi.`], [d.l2 * pas, `Vous n’avez compté que ${d.f2} : ${d.f1} apparaît aussi.`], [d.l1 + d.l2, 'Il manque la variation de concentration par mL : multipliez par cB × 1 000 / Vt.']],
+    expl: <>Δσ = ({nbF(d.l1, 1)} + {nbF(d.l2, 1)}) × {nb(cB, 3)} × 1 000 / {Vt} = <b>{nb(pa, 3)}{NB}mS·m⁻¹ par mL</b>.</> };
+  const q3 = { id: 'f2', type: 'num', q: <>{intro} Après l’équivalence, les deux ions du titrant ({d.ap[0]} et {d.ap[1]}) s’accumulent. De combien σ augmente-t-elle par mL versé (en mS·m⁻¹ par mL, 2 chiffres significatifs) ?</>, unite: 'mS·m⁻¹ par mL', vrai: pp, tolRel: 0.05, csMin: 2,
+    aide: 'Après l’équivalence : Δσ = (λ(ion 1) + λ(ion 2)) × cB × 1 000 / Vt, avec les deux ions du titrant.',
+    pieges: [[d.lap, 'Il manque la variation de concentration par mL : multipliez par cB × 1 000 / Vt.'], [pa, 'C’est la pente d’avant l’équivalence : après, les ions qui s’accumulent sont ceux du titrant.']],
+    expl: <>Δσ = {nbF(d.lap, 1)} × {nb(cB, 3)} × 1 000 / {Vt} = <b>{nb(pp, 3)}{NB}mS·m⁻¹ par mL</b>.</> };
+  const q4 = { id: 'f3', type: 'num', q: <>{intro} Combien de fois la pente après l’équivalence est-elle plus grande que la pente avant l’équivalence (sans unité, 2 chiffres significatifs) ?</>, unite: '', vrai: rap, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez la pente avant et la pente après, puis leur rapport : la variation de concentration par mL se simplifie.',
+    pieges: [[1 / rap, 'Le rapport est inversé : on demande pente après / pente avant.'], [pp - pa, 'On demande un rapport, pas une différence.']],
+    expl: <>Rapport = pente après / pente avant = {nbF(d.lap, 1)} / {nbF(d.l1 + d.l2, 1)} = <b>{nb(rap, 2)}</b>. La variation de concentration par mL se simplifie : le rapport ne dépend que des λ.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Titrage d’un acide faible ou d’une base faible : volume équivalent, pentes avant et après l’équivalence, et rupture de pente.', questions: [q1, q2, q3, q4],
+    retenir: ['VE : cB × VE = cA × VA.', 'Avant l’équivalence, aucun ion ne disparaît : deux ions apparaissent, la pente est faible.', 'Après l’équivalence, les deux ions du titrant s’accumulent : la pente est plus forte (rupture de pente).', 'Le rapport des pentes ne dépend que des λ, pas des concentrations.'] };
+}
 function genEtalonnageTG() {
   const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c] || c)).join('')}`; };
   const tolOk = (q) => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > Math.max(1e-9, 0.06 * Math.abs(q.vrai))); };
@@ -5836,6 +5896,8 @@ export const FAMILLES = [
   { id: 'cdp-sigma-calcul', groupe: 'Formules', titre: 'Dosage des chlorures par précipitation : conductivité au départ, à l’équivalence, après l’équivalence et pente (TSTL)', gen: genSigmaPrecipTSTL, domaine: 'Titrage conductimétrique par précipitation' },
   { id: 'kcd-calcul', groupe: 'Formules', titre: 'Constante d’un acide faible par conductimétrie : concentration en ions, acide restant, constante K et taux d’avancement (TSTL)', gen: genConstanteAcideTSTL, domaine: 'Constante d’un acide faible par conductimétrie' },
   { id: 'kcd-ka-calcul', groupe: 'Formules', titre: 'Acide faible : du taux d’avancement à la concentration en ions, à la conductivité, à K et au pKa (TSTL)', gen: genKaTauTSTL, domaine: 'Constante d’un acide faible par conductimétrie' },
+  { id: 'acd-pente-calcul', groupe: 'Formules', titre: 'Titrage acide fort / base forte : volume équivalent, pentes de la courbe de conductivité et conductivité à l’équivalence (TSTL)', gen: genPenteTitrageTSTL, domaine: 'Allure d’une courbe de titrage conductimétrique' },
+  { id: 'acd-faible-calcul', groupe: 'Formules', titre: 'Titrage d’un acide ou d’une base faible : volume équivalent et pentes de la courbe de conductivité (TSTL)', gen: genFaibleTitrageTSTL, domaine: 'Allure d’une courbe de titrage conductimétrique' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },

@@ -1418,6 +1418,68 @@ export const ENONCES = [
         manque: null, solution: { txt: 'τ = x / c, multiplié par 100 pour l’exprimer en pourcentage', val: 100 * p.x / p.c, u: '%' } };
     },
   },
+  {
+    id: 'acd-sapp-pente', domaine: 'Allure d’une courbe de titrage conductimétrique', titre: 'Acide fort et base forte : variation de σ avant et après l’équivalence', noms: ['Variation de σ par mL versé avant l’équivalence', 'Variation de σ par mL versé après l’équivalence'],
+    gen: () => ({ cas: tire(['acide', 'base']), cA: tire([0.020, 0.030, 0.040, 0.050]), cB: tire([0.100, 0.200]), eau: tire([150, 180, 190]) }),
+    build: (p, q) => {
+      const Vt = 20.0 + p.eau, acide = p.cas === 'acide', pas = p.cB * 1000 / Vt;
+      const tokens = {
+        lH: tok('35,0 mS·m²·mol⁻¹', 'Conductivité ionique molaire de H₃O⁺ à 25 °C', 35.0, 'mS·m²·mol⁻¹'),
+        lO: tok('19,9 mS·m²·mol⁻¹', 'Conductivité ionique molaire de HO⁻ à 25 °C', 19.9, 'mS·m²·mol⁻¹'),
+        lN: tok('5,0 mS·m²·mol⁻¹', 'Conductivité ionique molaire de Na⁺ à 25 °C', 5.0, 'mS·m²·mol⁻¹'),
+        lC: tok('7,6 mS·m²·mol⁻¹', 'Conductivité ionique molaire de Cl⁻ à 25 °C', 7.6, 'mS·m²·mol⁻¹'),
+        cA: tok(`${nb(p.cA, 3)} mol/L`, acide ? 'Concentration en acide chlorhydrique de la prise d’essai' : 'Concentration en soude de la prise d’essai', p.cA, 'mol/L'),
+        cB: tok(`${nb(p.cB, 3)} mol/L`, acide ? 'Concentration de la soude versée' : 'Concentration de l’acide chlorhydrique versé', p.cB, 'mol/L'),
+        Vt: tok(`${Vt} mL`, 'Volume de la solution dans le bécher (prise d’essai de 20,0 mL et eau), supposé constant', Vt, 'mL'),
+      };
+      const debut = acide
+        ? ['On titre une prise d’essai de 20,0 mL d’acide chlorhydrique (H₃O⁺ + Cl⁻) de concentration ', T('cA'), ' par de la soude (Na⁺ + HO⁻) à ', T('cB'), '. Le bécher contient ', T('Vt'), ' de solution, volume supposé constant. Données : λ(H₃O⁺) = ', T('lH'), ', λ(HO⁻) = ', T('lO'), ', λ(Na⁺) = ', T('lN'), ', λ(Cl⁻) = ', T('lC'), '. ']
+        : ['On titre une prise d’essai de 20,0 mL de soude (Na⁺ + HO⁻) de concentration ', T('cA'), ' par de l’acide chlorhydrique (H₃O⁺ + Cl⁻) à ', T('cB'), '. Le bécher contient ', T('Vt'), ' de solution, volume supposé constant. Données : λ(H₃O⁺) = ', T('lH'), ', λ(HO⁻) = ', T('lO'), ', λ(Na⁺) = ', T('lN'), ', λ(Cl⁻) = ', T('lC'), '. '];
+      const cherche = av => ({ bonne: `La variation de σ par mL versé ${av ? 'avant' : 'après'} l’équivalence, avec son signe (en mS·m⁻¹ par mL)`, faux: ['La conductivité σ au départ (en mS·m⁻¹)', 'La variation de concentration d’un ion par mL versé (en mol·m⁻³ par mL)', 'La quantité d’ions versée par mL (en mmol)'] });
+      const calcul = (av, sol, lib) => ({ txt: `${lib} ; chaque mL versé change la concentration de chaque ion de cB × 1 000 / Vt mol·m⁻³ (cB mmol dans Vt mL)`, val: sol, u: 'mS·m⁻¹ par mL' });
+      if (q === 0) {
+        if (acide) return { tokens, derivees: [{ id: 'dc', nom: 'Variation de concentration d’un ion par mL versé', expr: 'cB × 1 000 / Vt', val: pas, u: 'mol·m⁻³ par mL' }], texte: [...debut, 'De combien σ varie-t-elle par mL de soude versé avant l’équivalence ? (valeur algébrique, négative si σ baisse)'],
+          utiles: ['lH', 'lN', 'cB', 'Vt'], raisons: { lO: 'Avant l’équivalence, les ions HO⁻ versés sont consommés aussitôt : il n’y en a pas dans le bécher.', lC: 'Cl⁻ est un ion spectateur : sa quantité ne change pas, il ne modifie pas σ.', cA: 'La concentration de la prise d’essai fixe le volume équivalent, pas la pente.' },
+          cherche: cherche(true), manque: null, solution: calcul(true, pas * (5.0 - 35.0), 'Δσ = (λ(Na⁺) − λ(H₃O⁺)) × variation de concentration : Na⁺ apparaît, H₃O⁺ disparaît') };
+        return { tokens, derivees: [{ id: 'dc', nom: 'Variation de concentration d’un ion par mL versé', expr: 'cB × 1 000 / Vt', val: pas, u: 'mol·m⁻³ par mL' }], texte: [...debut, 'De combien σ varie-t-elle par mL d’acide versé avant l’équivalence ? (valeur algébrique, négative si σ baisse)'],
+          utiles: ['lO', 'lC', 'cB', 'Vt'], raisons: { lH: 'Avant l’équivalence, les ions H₃O⁺ versés sont consommés aussitôt : il n’y en a pas dans le bécher.', lN: 'Na⁺ est un ion spectateur : sa quantité ne change pas, il ne modifie pas σ.', cA: 'La concentration de la prise d’essai fixe le volume équivalent, pas la pente.' },
+          cherche: cherche(true), manque: null, solution: calcul(true, pas * (7.6 - 19.9), 'Δσ = (λ(Cl⁻) − λ(HO⁻)) × variation de concentration : Cl⁻ apparaît, HO⁻ disparaît') };
+      }
+      if (acide) return { tokens, derivees: [], texte: [...debut, 'De combien σ varie-t-elle par mL de soude versé après l’équivalence ?'],
+        utiles: ['lN', 'lO', 'cB', 'Vt'], raisons: { lH: 'Après l’équivalence, il ne reste plus de H₃O⁺ : aucun ion H₃O⁺ ne disparaît ni n’apparaît.', lC: 'Cl⁻ est un ion spectateur : sa quantité ne change pas.', cA: 'La concentration de la prise d’essai fixe le volume équivalent, pas la pente.' },
+        cherche: cherche(false), manque: null, solution: calcul(false, pas * (5.0 + 19.9), 'Δσ = (λ(Na⁺) + λ(HO⁻)) × variation de concentration : Na⁺ et HO⁻ s’accumulent') };
+      return { tokens, derivees: [], texte: [...debut, 'De combien σ varie-t-elle par mL d’acide versé après l’équivalence ?'],
+        utiles: ['lH', 'lC', 'cB', 'Vt'], raisons: { lO: 'Après l’équivalence, il ne reste plus de HO⁻ : aucun ion HO⁻ ne disparaît ni n’apparaît.', lN: 'Na⁺ est un ion spectateur : sa quantité ne change pas.', cA: 'La concentration de la prise d’essai fixe le volume équivalent, pas la pente.' },
+        cherche: cherche(false), manque: null, solution: calcul(false, pas * (35.0 + 7.6), 'Δσ = (λ(H₃O⁺) + λ(Cl⁻)) × variation de concentration : H₃O⁺ et Cl⁻ s’accumulent') };
+    },
+  },
+  {
+    id: 'acd-sapp-faible', domaine: 'Allure d’une courbe de titrage conductimétrique', titre: 'Acide faible ou base faible : volume équivalent et variation de σ avant l’équivalence', noms: ['Volume équivalent', 'Variation de σ par mL versé avant l’équivalence'],
+    gen: () => ({ cas: tire(['acide', 'base']), cA: tire([0.020, 0.030, 0.040, 0.050]), VA: tire([10.0, 20.0, 25.0]), cB: tire([0.100, 0.200]), eau: tire([150, 180, 190]) }),
+    build: (p, q) => {
+      const Vt = p.VA + p.eau, acide = p.cas === 'acide', pas = p.cB * 1000 / Vt;
+      const a = acide ? { n: 'd’acide éthanoïque CH₃COOH', tit: 'de la soude (Na⁺ + HO⁻)', l1: 4.1, l2: 5.0, f1: 'CH₃COO⁻', f2: 'Na⁺', ld: 19.9, fd: 'HO⁻', cn: 'Concentration en acide éthanoïque de la prise d’essai', ct: 'Concentration de la soude versée', ap: 'Les ions CH₃COO⁻ et Na⁺' }
+        : { n: 'd’ammoniac NH₃', tit: 'de l’acide chlorhydrique (H₃O⁺ + Cl⁻)', l1: 7.4, l2: 7.6, f1: 'NH₄⁺', f2: 'Cl⁻', ld: 35.0, fd: 'H₃O⁺', cn: 'Concentration en ammoniac de la prise d’essai', ct: 'Concentration de l’acide chlorhydrique versé', ap: 'Les ions NH₄⁺ et Cl⁻' };
+      const tokens = {
+        VA: tok(`${nb(p.VA, 1)} mL`, 'Volume de la prise d’essai', p.VA, 'mL'),
+        cA: tok(`${nb(p.cA, 3)} mol/L`, a.cn, p.cA, 'mol/L'),
+        cB: tok(`${nb(p.cB, 3)} mol/L`, a.ct, p.cB, 'mol/L'),
+        Vt: tok(`${Vt} mL`, 'Volume de la solution dans le bécher (prise d’essai et eau), supposé constant', Vt, 'mL'),
+        l1: tok(`${nb(a.l1, 1)} mS·m²·mol⁻¹`, `Conductivité ionique molaire de ${a.f1} à 25 °C`, a.l1, 'mS·m²·mol⁻¹'),
+        l2: tok(`${nb(a.l2, 1)} mS·m²·mol⁻¹`, `Conductivité ionique molaire de ${a.f2} à 25 °C`, a.l2, 'mS·m²·mol⁻¹'),
+        ld: tok(`${nb(a.ld, 1)} mS·m²·mol⁻¹`, `Conductivité ionique molaire de ${a.fd} à 25 °C`, a.ld, 'mS·m²·mol⁻¹'),
+      };
+      const debut = ['On titre ', T('VA'), ' ', a.n, ' (', T('cA'), ') par ', a.tit, ' à ', T('cB'), ', en suivant la conductivité. Le bécher contient ', T('Vt'), ' de solution, volume supposé constant ; les ions présents au départ sont négligés. Données : λ(', a.f1, ') = ', T('l1'), ', λ(', a.f2, ') = ', T('l2'), ', λ(', a.fd, ') = ', T('ld'), '. '];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel volume de titrant faut-il verser pour atteindre l’équivalence ?'],
+        utiles: ['VA', 'cA', 'cB'], raisons: { Vt: 'Le volume de la solution dilue les ions mais ne change pas leur quantité : il ne sert pas au calcul du volume équivalent.', l1: 'Les conductivités ioniques servent à prévoir l’allure de la courbe, pas à calculer le volume équivalent.', l2: 'Les conductivités ioniques servent à prévoir l’allure de la courbe, pas à calculer le volume équivalent.', ld: 'Les conductivités ioniques servent à prévoir l’allure de la courbe, pas à calculer le volume équivalent.' },
+        cherche: { bonne: 'Le volume équivalent VE (en mL)', faux: ['La quantité de matière à doser (en mmol)', 'La concentration après dilution (en mol/L)', 'La variation de σ par mL versé (en mS·m⁻¹ par mL)'] },
+        manque: null, solution: { txt: 'cB × VE = cA × VA (une mole de titrant pour une mole d’espèce titrée), donc VE = cA × VA / cB', val: p.cA * p.VA / p.cB, u: 'mL' } };
+      return { tokens, derivees: [{ id: 'dc', nom: 'Variation de concentration d’un ion par mL versé', expr: 'cB × 1 000 / Vt', val: pas, u: 'mol·m⁻³ par mL' }], texte: [...debut, 'De combien σ augmente-t-elle par mL versé avant l’équivalence ?'],
+        utiles: ['l1', 'l2', 'cB', 'Vt'], raisons: { ld: `Avant l’équivalence, ${a.fd} est consommé dès qu’il est versé ou n’existe pas dans le bécher : il n’intervient pas.`, cA: 'La concentration de la prise d’essai fixe le volume équivalent, pas la pente.', VA: 'Le volume de la prise d’essai fixe le volume équivalent, pas la pente.' },
+        cherche: { bonne: 'La variation de σ par mL versé avant l’équivalence (en mS·m⁻¹ par mL)', faux: ['La conductivité σ à l’équivalence (en mS·m⁻¹)', 'La variation de concentration d’un ion par mL versé (en mol·m⁻³ par mL)', 'Le volume équivalent (en mL)'] },
+        manque: null, solution: { txt: `${a.ap} apparaissent, rien ne disparaît côté ions : Δσ = (λ(${a.f1}) + λ(${a.f2})) × cB × 1 000 / Vt`, val: (a.l1 + a.l2) * pas, u: 'mS·m⁻¹ par mL' } };
+    },
+  },
   // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule
   {
     id: 'etl-sapp-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Constante de cellule et conductivité d’une solution', noms: ['Constante de la cellule', 'Conductivité d’une solution à partir de sa conductance'],
