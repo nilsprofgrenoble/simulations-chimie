@@ -28,8 +28,8 @@ export const EXOS_DE_SIM = {
   243: [/(^|\.)wins-/, /plausible\.wins-/],   // Microémulsions : types de Winsor et effet du sel (BTS)
   246: [/(^|\.)tern-/, /plausible\.tern-/],   // Microémulsions : lire un diagramme ternaire (BTS)
   247: [/(^|\.)lab-/, /plausible\.lab-/],   // Couleur : lire L*a*b* et calculer un écart (BTS)
-  248: [/(^|\.)xyy-/, /plausible\.xyy-/],   // Couleur : lire le diagramme de chromaticité (BTS)
-  299: [/(^|\.)ads-/, /plausible\.ads-/],   // Couleur : synthèses additive et soustractive (BTS)
+  248: [/(^|\.)xyy-(?!ana-complem|ana-melange|val-melange)/, /plausible\.xyy-(?!val-melange)/],   // Couleur : lire le diagramme de chromaticité (BTS)
+  299: [/(^|\.)ads-/, /plausible\.ads-/, /(^|\.)xyy-(ana-complem|ana-melange)/, /plausible\.xyy-val-melange/],   // Couleur : synthèses additive et soustractive (BTS)
   249: [/(^|\.)mtm-/, /plausible\.mtm-/],   // Couleur : éclairage, réflectance et métamérisme (BTS)
   101: [/for-lasure-/],                                                                                                 // Lasure alkyde
   // ── BTS · Synthèse organique (un thème d'exercices par simulation) ──
