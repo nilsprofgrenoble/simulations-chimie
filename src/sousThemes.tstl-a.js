@@ -176,5 +176,11 @@ export default {
       refs: ['37:prevoir:nrn-ana-dilution', '37:prevoir:nrn-ana-n', '37:prevoir:nrn-ana-ph'] },
     { id: 'nrn-inverse', nom: 'Déduire une concentration ou un pH d’une tension mesurée', capacite: 'Exploiter la relation de Nernst pour déterminer une concentration, un rapport de concentrations ou un pH à partir d’une tension à vide.',
       refs: ['36:nrn-inverse-calcul'] },
+    { id: 'sev-k', nom: 'Calculer la constante d’équilibre avec les potentiels standards', capacite: 'Écrire l’équation d’une réaction d’oxydo-réduction avec la règle du gamma et calculer sa constante d’équilibre à partir des potentiels standards des deux couples.',
+      refs: ['37:prevoir:sev-ana-gamma', '37:prevoir:sev-ana-coef', '34:sev-sapp-k', '36:sev-calcul', '77:plausible:sev-val-logk'] },
+    { id: 'sev-sens', nom: 'Prévoir le sens d’évolution avec Qr et K', capacite: 'Prévoir le sens d’évolution spontanée d’un système en comparant son quotient de réaction à la constante d’équilibre, ou les potentiels de Nernst des deux couples.',
+      refs: ['37:prevoir:sev-ana-dilution', '34:sev-sapp-qr', '36:sev-qr-calcul', '77:plausible:sev-val-qr'] },
+    { id: 'sev-cinetique', nom: 'Confronter la prévision à l’expérience', capacite: 'Confronter le sens d’évolution prévu aux résultats expérimentaux pour repérer un blocage cinétique ; distinguer constante d’équilibre et vitesse.',
+      refs: ['37:prevoir:sev-ana-cinetique'] },
   ],
 };

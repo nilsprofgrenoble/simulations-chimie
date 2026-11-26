@@ -1,4 +1,5 @@
 import { PDT_SAPP } from "./poidsTrajetExos.js";
+import * as SEV from "./sensEvolutionModele.js";
 import { LCV_SAPP } from "./lancerChuteExos.js";
 import { DFR_SAPP } from "./freinageExos.js";
 import { CHH_SAPP } from "./chuteExos.js";
@@ -1578,6 +1579,64 @@ export const ENONCES = [
         utiles: ['Em', 'E0', 'n'], raisons: { S: 'La surface de l’électrode n’intervient pas : à vide, aucun courant ne passe et E ne dépend que des concentrations.' },
         cherche: { bonne: 'Le rapport [Fe³⁺] / [Fe²⁺] (sans unité)', faux: ['Le logarithme de ce rapport (sans unité)', 'La concentration en Fe³⁺ (en mol/L)', 'Le potentiel standard du couple (en V)'] },
         manque: null, solution: { txt: 'log([Fe³⁺] / [Fe²⁺]) = (E − E°) × n / 0,06, puis le rapport = 10^(ce logarithme)', val: rM, u: '' } };
+    },
+  },
+  {
+    id: 'sev-sapp-k', domaine: 'Sens d’évolution en oxydo-réduction', titre: 'Constante d’équilibre d’une réaction d’oxydo-réduction : log K et écart de potentiels', noms: ['Constante d’équilibre de la réaction', 'Écart de potentiels standards'],
+    gen: () => { const [a, b] = tire(SEV.PAIRES); return { a, b, V: tire([50, 100, 200]) }; },
+    build: (p, q) => {
+      const P = SEV.paire(p.a, p.b), lkM = Number(P.logK.toFixed(1)), dE = lkM * 0.06 / P.N;
+      const tokens = {
+        E1: tok(`${sg(P.ox1.E0)} V`, `Potentiel standard du couple ${P.ox1.nom} (le plus grand)`, P.ox1.E0, 'V'),
+        E2: tok(`${sg(P.red2.E0)} V`, `Potentiel standard du couple ${P.red2.nom}`, P.red2.E0, 'V'),
+        n1: tok(`${P.ox1.n} électron${P.ox1.n > 1 ? 's' : ''}`, `Nombre d’électrons de la demi-équation du couple ${P.ox1.nom}`, P.ox1.n, ''),
+        n2: tok(`${P.red2.n} électron${P.red2.n > 1 ? 's' : ''}`, `Nombre d’électrons de la demi-équation du couple ${P.red2.nom}`, P.red2.n, ''),
+        lk: tok(nb(lkM, 1), 'Logarithme décimal de la constante d’équilibre de la réaction', lkM, ''),
+        N: tok(`${P.N} électron${P.N > 1 ? 's' : ''}`, 'Nombre d’électrons échangés dans l’équation écrite', P.N, ''),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+        V: tok(`${p.V} mL`, 'Volume de solution dans le bécher', p.V, 'mL'),
+      };
+      const debut = [`Dans un bécher de `, T('V'), `, à `, T('T'), `, on met en présence les couples ${P.ox1.nom} (potentiel standard `, T('E1'), `, `, T('n1'), `) et ${P.red2.nom} (potentiel standard `, T('E2'), `, `, T('n2'), `). La réaction spontanée s’écrit ${SEV.equationTexte(P, false)}. `];
+      if (q === 0) return { tokens: { E1: tokens.E1, E2: tokens.E2, n1: tokens.n1, n2: tokens.n2, T: tokens.T, V: tokens.V }, derivees: [{ id: 'N', nom: 'Nombre d’électrons échangés dans l’équation écrite', expr: 'ppcm(n₁, n₂)', val: P.N, u: '' }], texte: [...debut, 'Quel est le logarithme décimal log K de la constante d’équilibre de cette réaction (sans unité) ?'],
+        utiles: ['E1', 'E2', 'n1', 'n2'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : K ne dépend que des potentiels standards et de l’équation.' },
+        cherche: { bonne: 'Le logarithme décimal de la constante d’équilibre (sans unité)', faux: ['Le quotient de réaction à l’état initial (sans unité)', 'Le potentiel d’un couple dans la solution (en V)', 'La quantité d’électrons échangés (en mmol)'] },
+        manque: null, solution: { txt: 'N = ppcm(n₁, n₂) ; log K = N × (E°₁ − E°₂) / 0,06', val: P.logK, u: '' } };
+      return { tokens: { lk: tokens.lk, N: tokens.N, T: tokens.T, V: tokens.V }, derivees: [{ id: 'lk0', nom: 'Produit de log K par 0,06', expr: 'log K × 0,06', val: lkM * 0.06, u: '' }], texte: [`Dans un bécher de `, T('V'), `, à `, T('T'), `, la réaction ${SEV.equationTexte(P, false)} (`, T('N'), ` échangés) a pour logarithme de constante d’équilibre log K = `, T('lk'), `. Quel est l’écart E°₁ − E°₂ entre les potentiels standards des deux couples (en V) ?`],
+        utiles: ['lk', 'N'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : K ne dépend que des potentiels et de l’équation.' },
+        cherche: { bonne: 'L’écart des potentiels standards E°₁ − E°₂ (en V)', faux: ['La constante d’équilibre K (sans unité)', 'Le potentiel d’un couple dans la solution (en V)', 'Le nombre d’électrons échangés (sans unité)'] },
+        manque: null, solution: { txt: 'E°₁ − E°₂ = 0,06 × log K / N', val: dE, u: 'V' } };
+    },
+  },
+  {
+    id: 'sev-sapp-qr', domaine: 'Sens d’évolution en oxydo-réduction', titre: 'Quotient de réaction et écart des potentiels de Nernst', noms: ['Quotient de réaction', 'Écart des potentiels des deux couples'],
+    gen: () => {
+      for (let k = 0; ; k++) {
+        const [a, b] = tire(SEV.PAIRES), P = SEV.paire(a, b), c = {}; for (const e of P.dissoutes) c[e] = tire([0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5]);
+        const lkM = Number(P.logK.toFixed(1)), lq = SEV.logQ(P, c), val = 0.06 / P.N * (lkM - Math.log10(Number(Math.pow(10, lq).toPrecision(2))));
+        if ((Math.abs(val) >= 0.03 && Math.abs(lq - lkM) >= 0.4) || k > 200) return { a, b, c, V: tire([50, 100, 200]) };
+      }
+    },
+    build: (p, q) => {
+      const P = SEV.paire(p.a, p.b), lkM = Number(P.logK.toFixed(1)), lq = SEV.logQ(P, p.c), QrM = Number(Math.pow(10, lq).toPrecision(2)), dE = 0.06 / P.N * (lkM - Math.log10(QrM));
+      const tokens = {
+        lk: tok(nb(lkM, 1), 'Logarithme décimal de la constante d’équilibre de la réaction', lkM, ''),
+        N: tok(`${P.N} électron${P.N > 1 ? 's' : ''}`, 'Nombre d’électrons échangés dans l’équation écrite', P.N, ''),
+        Qr: tok(nb(QrM), 'Quotient de réaction du système', QrM, ''),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+        V: tok(`${p.V} mL`, 'Volume de solution dans le bécher', p.V, 'mL'),
+      };
+      P.dissoutes.forEach((e, i) => { tokens['c' + i] = tok(`${sciR(p.c[e])} mol/L`, `Concentration en ${e}`, p.c[e], 'mol/L'); });
+      const ids = P.dissoutes.map((e, i) => 'c' + i), concTxt = P.dissoutes.flatMap((e, i) => [i ? ', ' : '', `[${e}] = `, T('c' + i)]).filter(x => x !== '');
+      const solides = P.solides.length ? ` (${P.solides.join(' et ')} solide${P.solides.length > 1 ? 's' : ''}, en excès)` : '';
+      const debut = [`Dans un bécher de `, T('V'), `, à `, T('T'), `, la réaction ${SEV.equationTexte(P, false)}${solides} a pour constante d’équilibre log K = `, T('lk'), ` (`, T('N'), ` échangés). `];
+      if (q === 0) return { tokens: Object.fromEntries([...ids, 'T', 'V'].map(i => [i, tokens[i]])), derivees: [{ id: 'lq', nom: 'Logarithme décimal du quotient de réaction', expr: 'log Qr', val: lq, u: '' }], texte: [`Dans un bécher de `, T('V'), `, à `, T('T'), `, on étudie ${SEV.equationTexte(P, false)}${solides}. La solution contient `, ...concTxt, `. Quel est le quotient de réaction Qr de ce système (sans unité) ?`],
+        utiles: ids, raisons: { T: 'La température n’intervient pas dans le calcul d’un quotient de réaction.', V: 'Le volume de solution n’intervient pas : Qr se calcule avec les concentrations.' },
+        cherche: { bonne: 'Le quotient de réaction Qr (sans unité)', faux: ['La constante d’équilibre K (sans unité)', 'La quantité d’ions dans le bécher (en mmol)', 'Le potentiel d’un couple dans la solution (en V)'] },
+        manque: null, solution: { txt: 'Qr = [produits]^coef / [réactifs]^coef (les solides valent 1)', val: Math.pow(10, lq), u: '' } };
+      return { tokens: { lk: tokens.lk, N: tokens.N, Qr: tokens.Qr, T: tokens.T, V: tokens.V }, derivees: [{ id: 'rap', nom: 'Logarithme décimal de K / Qr', expr: 'log K − log Qr', val: lkM - Math.log10(QrM), u: '' }], texte: [...debut, `Le quotient de réaction du système vaut Qr = `, T('Qr'), `. Quelle est la différence E₁ − E₂ entre les potentiels de Nernst des deux couples (en V, avec son signe) ?`],
+        utiles: ['lk', 'N', 'Qr'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : E₁ − E₂ dépend de K et de Qr.' },
+        cherche: { bonne: 'La différence E₁ − E₂ des potentiels de Nernst (en V)', faux: ['La constante d’équilibre K (sans unité)', 'Le potentiel standard d’un couple (en V)', 'Le rapport Qr / K (sans unité)'] },
+        manque: null, solution: { txt: 'E₁ − E₂ = (0,06 / N) × log(K / Qr)', val: dE, u: 'V' } };
     },
   },
   // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule

@@ -1,4 +1,5 @@
 import { Frac, FormuleEnLigne, avecIndices, lireNombre, nbCS } from "../commun";
+import * as SEV from "./sensEvolutionModele.js";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
 import { indice as indiceTopo } from "./topoModele";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
@@ -4170,6 +4171,61 @@ function genNernstInverseTSTLBase() {
     retenir: ['fem = E(couple) − E(ESH) = E(couple) (E(ESH) = 0,00 V).', 'On isole log c : log c = (E − E°) × n / 0,06, puis c = 10^(log c).', 'Avec des ions H⁺ : E varie de −0,06 × β / n par unité de pH.', 'Une tension mesurée au millivolt donne une concentration à environ 10 % près (le coefficient 0,06 est arrondi).'] };
 }
 
+// ───────────── Sens d'évolution en oxydo-réduction : constante K et quotient Qr (terminale STL, SPCL) ─────────────
+function genSensKTSTL() {
+  for (let k = 0; ; k++) { const g = genSensKTSTLBase(), v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; }
+}
+function genSensKTSTLBase() {
+  const [a, b] = tire(SEV.PAIRES), P = SEV.paire(a, b), n1 = P.ox1.n, n2 = P.red2.n, dE = P.ox1.E0 - P.red2.E0, lk = P.logK, K = P.K;
+  const eq = SEV.equationTexte(P, false);
+  const intro = <>Les couples sont {P.ox1.nom} (E° = <b>{nbS(P.ox1.E0)}{NB}V</b>, n = <b>{n1}</b>) et {P.red2.nom} (E° = <b>{nbS(P.red2.E0)}{NB}V</b>, n = <b>{n2}</b>) ; à 25 °C, la réaction spontanée s’écrit {eq} et log K = N × (E°₁ − E°₂) / 0,06.</>;
+  const q1 = { id: 's0', type: 'num', q: <>{intro} Combien d’électrons N sont échangés dans l’équation écrite ?</>, unite: '', vrai: P.N, tolRel: 0.001, csMin: 1,
+    aide: 'N est le plus petit multiple commun de n₁ et n₂ : les électrons cédés par le réducteur doivent être captés par l’oxydant.',
+    pieges: [[n1 * n2, 'Vous avez multiplié n₁ par n₂ : on cherche le plus petit multiple commun, pas leur produit.'], [n1 + n2, 'Vous avez additionné n₁ et n₂ : N est le plus petit multiple commun.']],
+    expl: <>N = ppcm({n1} ; {n2}) = <b>{P.N}</b> : l’équation {eq} échange {P.N} électron{P.N > 1 ? 's' : ''}.</> };
+  const q2 = { id: 's1', type: 'num', q: <>{intro} Quel est log K (3 chiffres significatifs) ?</>, unite: '', vrai: lk, tolRel: 0.03, csMin: 2,
+    aide: 'log K = N × (E°₁ − E°₂) / 0,06 : E°₁ est le plus grand des deux potentiels ; calculez d’abord la différence, en volts.',
+    pieges: [[dE / 0.06, 'Vous avez oublié N : log K = N × (E°₁ − E°₂) / 0,06.'], [n1 * dE / 0.06, `Vous avez pris N = ${n1} : N est le nombre d’électrons de l’équation écrite, ici ${P.N}.`], [lk * 0.06 * 0.06, 'Vous avez multiplié par 0,06 au lieu de diviser.']],
+    expl: <>log K = {P.N} × ({nbS(P.ox1.E0)} − ({nbS(P.red2.E0)})) / 0,06 = {P.N} × {nbF(dE, 2)} / 0,06 = <b>{nbF(lk, 1)}</b>.</> };
+  const q3 = { id: 's2', type: 'num', q: <>{intro} Quelle est la constante d’équilibre K de cette réaction (sans unité, 2 chiffres significatifs) ?</>, unite: '', vrai: K, tolRel: 0.15, csMin: 2,
+    aide: 'Calculez log K, puis K = 10 puissance log K (touche 10ˣ de la calculatrice).',
+    pieges: [[lk, 'Vous avez donné log K : K est 10 à la puissance ce nombre.'], [Math.pow(10, dE / 0.06), 'Vous avez oublié N : log K = N × (E°₁ − E°₂) / 0,06.']],
+    expl: <>K = 10<sup>{nbF(lk, 1)}</sup> = <b>{sciF(K, 2)}</b> (un ordre de grandeur : les E° sont connus au centivolt).</> };
+  const q4 = { id: 's3', type: 'num', q: <>{intro} Quelle est la constante K′ de la réaction écrite en sens inverse (sans unité, 2 chiffres significatifs) ?</>, unite: '', vrai: 1 / K, tolRel: 0.15, csMin: 2,
+    aide: 'Pour l’équation inverse, K′ = 1 / K : log K′ = − log K.',
+    pieges: [[K, 'Vous avez donné K : la constante de la réaction inverse est son inverse, 1 / K.'], [lk, 'Vous avez donné log K : K′ = 1 / K = 10 puissance (− log K).']],
+    expl: <>K′ = 1 / K = 10<sup>−{nbF(lk, 1)}</sup> = <b>{sciF(1 / K, 2)}</b>.</> };
+  [q1, q2, q3, q4].forEach(acTol);
+  return { intro: 'Constante d’équilibre d’une réaction d’oxydo-réduction : nombre d’électrons échangés, log K, K et constante de la réaction inverse.', questions: [q1, q2, q3, q4],
+    retenir: ['log K = N × (E°₁ − E°₂) / 0,06 (25 °C), avec E°₁ > E°₂ et N le nombre d’électrons de l’équation écrite.', 'N = ppcm(n₁, n₂) : les électrons cédés sont tous captés.', 'K′ = 1 / K pour l’équation inverse ; K > 10⁴ : transformation quasi totale.', 'K est un ordre de grandeur (E° au centivolt) : 2 chiffres significatifs suffisent.'] };
+}
+function genSensQrTSTL() {
+  for (let k = 0; ; k++) { const g = genSensQrTSTLBase(); if (g) { const v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; } }
+}
+function genSensQrTSTLBase() {
+  const [a, b] = tire(SEV.PAIRES), P = SEV.paire(a, b), c = {}; for (const e of P.dissoutes) c[e] = tire(CONC_NRN);
+  const lkM = Number(P.logK.toFixed(1)), lq = SEV.logQ(P, c), Qr = Math.pow(10, lq), dE = 0.06 / P.N * (lkM - lq), rap = Qr / Math.pow(10, lkM);
+  if (Math.abs(lq - lkM) < 0.4 || Math.abs(dE) < 0.03) return null;
+  const eq = SEV.equationTexte(P, false), sans = P.especes.filter(x => !x.solide).reduce((s, x) => s * Math.pow(c[x.e], Math.sign(x.coef)), 1);
+  const concTxt = P.dissoutes.map((e, i) => <span key={e}>{i ? ', ' : ''}[{e}] = <b>{sciF(c[e], 1)}{NB}mol/L</b></span>);
+  const intro = <>On étudie, à 25 °C, la réaction {eq}{P.solides.length ? <> ({P.solides.join(' et ')} solide{P.solides.length > 1 ? 's' : ''}, en excès)</> : null}, avec log K = <b>{nbF(lkM, 1)}</b> et N = <b>{P.N}</b>. La solution contient {concTxt}.</>;
+  const q1 = { id: 'r0', type: 'num', q: <>{intro} Quel est le quotient de réaction Qr (sans unité, 2 chiffres significatifs) ?</>, unite: '', vrai: Qr, tolRel: 0.05, csMin: 2,
+    aide: 'Qr = [produits]^coef / [réactifs]^coef ; les solides valent 1 ; chaque concentration est élevée à la puissance de son coefficient.',
+    pieges: [[1 / Qr, 'Le quotient est inversé : produits au numérateur, réactifs au dénominateur.'], [sans, 'Vérifiez les exposants : chaque concentration est élevée à la puissance de son coefficient dans l’équation.']],
+    expl: <>Qr = {P.especes.filter(x => !x.solide && x.coef > 0).map(x => `[${x.e}]${x.coef > 1 ? '^' + x.coef : ''}`).join(' × ')} / ( {P.especes.filter(x => !x.solide && x.coef < 0).map(x => `[${x.e}]${x.coef < -1 ? '^' + (-x.coef) : ''}`).join(' × ')} ) = <b>{sciF(Qr, 2)}</b>.</> };
+  const q2 = { id: 'r1', type: 'num', q: <>{intro} Quel est le rapport Qr / K (sans unité, 2 chiffres significatifs) ? Servez-vous de log K = {nbF(lkM, 1)}.</>, unite: '', vrai: rap, tolRel: 0.15, csMin: 2,
+    aide: 'Calculez Qr, puis K = 10 puissance log K, puis le rapport : s’il est inférieur à 1, le système évolue dans le sens direct.',
+    pieges: [[1 / rap, 'Le rapport est inversé : on demande Qr / K, avec Qr au numérateur.'], [Qr, 'Vous avez donné Qr : il faut le diviser par K.']],
+    expl: <>Qr / K = {sciF(Qr, 2)} / 10<sup>{nbF(lkM, 1)}</sup> = <b>{sciF(rap, 2)}</b> : {rap < 1 ? 'Qr est inférieur à K, le système évolue dans le sens direct' : 'Qr est supérieur à K, le système évolue dans le sens inverse'}.</> };
+  const q3 = { id: 'r2', type: 'num', q: <>{intro} Quelle est la différence E₁ − E₂ entre les potentiels de Nernst des deux couples (en V, avec son signe, 2 chiffres significatifs) ?</>, unite: 'V', vrai: dE, tolRel: 0.1, csMin: 2,
+    aide: 'E₁ − E₂ = (0,06 / N) × log(K / Qr) = (0,06 / N) × (log K − log Qr) ; calculez log Qr avec la calculatrice.',
+    pieges: [[-dE, 'Signe inversé : E₁ − E₂ est positif quand Qr < K (sens direct), négatif quand Qr > K.'], [0.06 * (lkM - lq), 'Vous avez oublié de diviser par N : E₁ − E₂ = (0,06 / N) × log(K / Qr).']],
+    expl: <>E₁ − E₂ = (0,06 / {P.N}) × ({nbF(lkM, 1)} − ({nbS(lq)})) = <b>{nbS(dE)}{NB}V</b> : {dE > 0 ? 'positif, sens direct' : 'négatif, sens inverse'}.</> };
+  [q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([v2]) => isFinite(v2) && Math.abs(v2 - q.vrai) > 1.2 * q.tolRel * Math.abs(q.vrai)); });
+  return { intro: 'Quotient de réaction, comparaison avec K et écart des potentiels de Nernst : prévoir le sens d’évolution.', questions: [q1, q2, q3],
+    retenir: ['Qr = [produits]^coef / [réactifs]^coef (solides : 1) ; Qr < K : sens direct ; Qr > K : sens inverse.', 'Qr / K < 1 : sens direct ; Qr / K > 1 : sens inverse ; Qr = K : équilibre.', 'E₁ − E₂ = (0,06 / N) × log(K / Qr) : positif dans le sens direct, nul à l’équilibre.', 'K et Qr donnent le sens d’évolution, jamais la vitesse.'] };
+}
+
 
 function genEtalonnageTG() {
   const sci = (x, cs = 2) => { const [a, e] = Number(x).toExponential(cs - 1).split('e'); return `${a.replace('.', ',')}${NB}×${NB}10${[...String(Number(e))].map(c => ({ '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }[c] || c)).join('')}`; };
@@ -6165,6 +6221,8 @@ export const FAMILLES = [
   { id: 'cet-dosage-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage avec dilution : concentration de la solution diluée, de la solution à doser, facteur de dilution et température (TSTL)', gen: genDosageEtalonnageTSTL, domaine: 'Dosage par étalonnage conductimétrique' },
   { id: 'nrn-calcul', groupe: 'Formules', titre: 'Relation de Nernst : potentiel d’un couple métallique, de Fe³⁺ / Fe²⁺, avec des ions H⁺, et effet d’une dilution (TSTL)', gen: genNernstTSTL, domaine: 'Potentiel et relation de Nernst' },
   { id: 'nrn-inverse-calcul', groupe: 'Formules', titre: 'Pile avec l’ESH : concentration inconnue, rapport des concentrations, pH et tension à vide (TSTL)', gen: genNernstInverseTSTL, domaine: 'Potentiel et relation de Nernst' },
+  { id: 'sev-calcul', groupe: 'Formules', titre: 'Constante d’équilibre d’une réaction d’oxydo-réduction : nombre d’électrons, log K, K et réaction inverse (TSTL)', gen: genSensKTSTL, domaine: 'Sens d’évolution en oxydo-réduction' },
+  { id: 'sev-qr-calcul', groupe: 'Formules', titre: 'Quotient de réaction, rapport Qr / K et écart des potentiels de Nernst pour prévoir le sens (TSTL)', gen: genSensQrTSTL, domaine: 'Sens d’évolution en oxydo-réduction' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },

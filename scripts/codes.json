@@ -2851,5 +2851,17 @@
  "77:plausible:nrn-val-signe": "VAL756",
  "77:plausible:nrn-val-log": "VAL757",
  "36:nrn-calcul": "REA185",
- "36:nrn-inverse-calcul": "REA186"
+ "36:nrn-inverse-calcul": "REA186",
+ "34:sev-sapp-k.0": "SAPP618",
+ "34:sev-sapp-k.1": "SAPP619",
+ "34:sev-sapp-qr.0": "SAPP620",
+ "34:sev-sapp-qr.1": "SAPP621",
+ "37:prevoir:sev-ana-gamma": "ANA1294",
+ "37:prevoir:sev-ana-coef": "ANA1295",
+ "37:prevoir:sev-ana-dilution": "ANA1296",
+ "37:prevoir:sev-ana-cinetique": "ANA1297",
+ "77:plausible:sev-val-qr": "VAL758",
+ "77:plausible:sev-val-logk": "VAL759",
+ "36:sev-calcul": "REA187",
+ "36:sev-qr-calcul": "REA188"
 }
