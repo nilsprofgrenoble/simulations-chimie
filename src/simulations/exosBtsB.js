@@ -31,6 +31,7 @@ const D_COUL_XYY = 'Couleur : lire le diagramme de chromaticité';
 const D_COUL_MTM = 'Couleur : éclairage, réflectance et métamérisme';
 const D_COUL_ADS = 'Couleur : synthèses additive et soustractive';
 const D_LUM = 'Photons, niveaux d’énergie et domaines spectraux';
+const D_HOOK = 'Infrarouge : de la liaison-ressort au spectre';
 const D_FLUO = 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski';
 
 // ──────────────────────────────────────────────── ANA : prévoir sans calculer ────────────────────────────────────────────────
@@ -515,6 +516,29 @@ export const BTSB_SIT = [
               V('Les transmittances se multiplient, les absorbances s’additionnent', 'T = T₁ × T₂ et A = A₁ + A₂, puisque A = −log₁₀(T).')] },
         ],
         retenir: ['Deux filtres en série : T = T₁ × T₂ et A = A₁ + A₂ (A = −log₁₀ T).', 'Un filtre jaune et un filtre cyan en série ne laissent passer que le vert : chaque filtre soustrait une couleur.'],
+      };
+    },
+  },
+  {
+    id: 'hook-sapp-bande', domaine: D_HOOK, niveau: 2, titre: 'Attribuer une bande à une liaison',
+    construire: () => {
+      const l = tire([['C', 'H', 480, 'C–H', 2950], ['O', 'H', 780, 'O–H libre', 3620], ['C', 'O', 1200, 'C=O', 1715]]);
+      const [a, b, k, nom, tab] = l, ma = { C: 12, O: 16, H: 1 }[a], mb = { C: 12, O: 16, H: 1 }[b], mu = ma * mb / (ma + mb), mu3 = Number(mu.toPrecision(3)), sig = Math.sqrt(k / (mu3 * 1.66e-27)) / (2 * Math.PI * 3e8 * 100), sig2 = Number(sig.toPrecision(3));
+      return {
+        enonce: `Un modèle représente une liaison par deux atomes de masses ${ma} u (${a}) et ${mb} u (${b}) reliés par un ressort de raideur k = ${k} N/m. On cherche à quelle bande d’un spectre IR elle correspond. Constantes : u = 1,66·10⁻²⁷ kg ; c = 3,00·10⁸ m/s.`,
+        etapes: [
+          { id: 'mu', titre: 'Masse réduite', q: 'Calculer la masse réduite μ de la liaison, en u.', aide: 'μ = m₁·m₂ / (m₁ + m₂).',
+            type: 'saisie', champs: [{ id: 'mu', lib: 'μ', u: 'u', vrai: mu, tol: 0.05 }],
+            expl: `μ = (${ma} × ${mb}) / (${ma} + ${mb}) ≈ ${nb(mu, 2)} u.` },
+          { id: 'sigma', titre: 'Nombre d’onde', q: `Avec μ = ${nb(mu3, 2)} u, calculer le nombre d’onde σ de la bande, en cm⁻¹.`, aide: 'σ = √(k/μ) / (2π·c) avec μ en kg et σ en m⁻¹, puis conversion en cm⁻¹ (÷ 100).',
+            type: 'saisie', champs: [{ id: 'sigma', lib: 'σ', u: 'cm⁻¹', vrai: sig2, tol: 0.05 }],
+            expl: `μ = ${nb(mu3 * 1.66, 2)}·10⁻²⁷ kg ; σ = √(k/μ) / (2πc) ≈ ${nb(sig, 0)} cm⁻¹.` },
+          { id: 'attribution', titre: 'Attribution', q: `Une bande est observée vers ${tab} cm⁻¹. À quelle liaison l’attribuer ?`, aide: 'Comparez avec le nombre d’onde calculé à l’étape précédente.',
+            o: [F(nom === 'C–H' ? 'O–H libre' : 'C–H', 'Le nombre d’onde calculé pour cette liaison est très différent de celui de la bande observée.'),
+              V(`${nom}, dont la loi de Hooke donne environ ${nb(sig, 0)} cm⁻¹`, 'Le calcul avec ces masses et cette raideur redonne l’ordre de grandeur de la bande observée.'),
+              F('C–C, qui absorbe vers 1000 cm⁻¹', 'Une liaison C–C absorbe vers 1000 cm⁻¹, trop bas pour cette bande.')] },
+        ],
+        retenir: ['σ = √(k/μ) / (2π·c) : le calcul de Hooke redonne l’ordre de grandeur de la bande observée.', 'Atomes légers (H) ou liaison rigide (C=O, C≡C) : nombre d’onde élevé.'],
       };
     },
   },
