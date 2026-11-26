@@ -71,45 +71,95 @@ export function attaque(m, reg) {
   else if (!ok.debit) verdict = 'debit';
   // portée utile maximale à la même hauteur (pour l'affichage) : dx tel que FACTEUR_AIR·v_j² = g·(dh + √(dx² + dh²))
   const r = Math.max(0, utile / G - dh), porteeMax = r * r - dh * dh > 0 ? Math.sqrt(r * r - dh * dh) : 0;
-  return { ...h, xLance, dx, dh, qMin, requis, utile, porteeMax, ok, verdict, reussi: verdict === 'ok' };
+  const actifs = m.actifs || CONDITIONS;
+  const reussi = actifs.every(c => (c === 'pression' ? ok.pressionHaute && ok.pressionBasse : ok[c === 'secu' ? 'securite' : c]));
+  return { ...h, xLance, dx, dh, qMin, requis, utile, porteeMax, ok, verdict, reussi };
 }
 
-// Missions (pPompe en bar ; plage de pression à la lance [pMin ; pMax] en bar ; foyer à distFeu m du camion et hFeu m au-dessus ; puissance du feu en MW)
+// Niveaux. pPompe en bar ; plage de pression à la lance [pMin ; pMax] en bar ; foyer à distFeu m du camion et hFeu m au-dessus ; puissance du feu en MW.
+//  fixe : réglages imposés (verrouillés) dans les niveaux d'apprentissage ; depart : réglage initial des autres ; actifs : conditions affichées (les autres sont toujours
+//  satisfaites par construction, vérifié par le test) ; astuce : l'explication physique de l'indice ; qcm : « question du capitaine » (étoile bonus).
 export const MISSIONS = [
-  { id: 1, nom: 'Poubelle en feu', icone: '🗑️', temps: 'Jour', pPompe: 8, pMin: 5, pMax: 8, distFeu: 45, hFeu: 0, zLance: 0, coudes: 0, puissanceMW: 1.2,
-    histoire: "Une benne à ordures brûle au bout de la rue. Déroule les tuyaux et règle la lance : ni trop mou, ni trop violent.",
-    retenir: "La pompe fournit une pression ; une partie est perdue dans le tuyau. Plus de longueur, ou un diamètre plus petit, et la pression à la lance baisse." },
-  { id: 2, nom: 'Voiture dans le virage', icone: '🚗', temps: 'Soir', pPompe: 8, pMin: 5, pMax: 8, distFeu: 60, hFeu: 0, zLance: 0, coudes: 2, puissanceMW: 2.5,
-    histoire: "Une voiture brûle derrière deux virages. Chaque coude du tuyau coûte de la pression : compte-les.",
-    retenir: "Les pertes de charge dépendent de la vitesse : ΔP = (λ·L/D + n·K) × ½ρv². Les coudes ajoutent des pertes singulières." },
-  { id: 3, nom: 'Entrepôt', icone: '🏭', temps: 'Nuit', pPompe: 9, pMin: 5, pMax: 8, distFeu: 90, hFeu: 0, zLance: 0, coudes: 2, puissanceMW: 4.5,
-    histoire: "Un entrepôt de palettes flambe : il faut beaucoup d'eau, et le foyer est loin. Attention : un tuyau trop large ne perd presque rien et la lance devient incontrôlable.",
-    retenir: "Il faut un compromis : un tuyau très large perd très peu (pression à la lance trop forte), un tuyau très étroit perd trop (jet mou). Diamètre, longueur et débit se règlent ensemble." },
-  { id: 4, nom: 'Foyer au 4ᵉ étage', icone: '🏢', temps: 'Nuit', pPompe: 8, pMin: 6, pMax: 9, distFeu: 50, hFeu: 12, zLance: 0, coudes: 0, puissanceMW: 3,
-    histoire: "Les flammes sortent par une fenêtre, 12 m au-dessus de la rue. Le jet doit monter : il lui faut de la vitesse, donc de la pression à la lance.",
+  { id: 1, nom: 'Où poser la lance ?', icone: '📏', temps: 'Jour', appren: true, pPompe: 8, pMin: 4, pMax: 8, distFeu: 70, hFeu: 0, zLance: 0, coudes: 0, puissanceMW: 1.2,
+    fixe: { dMm: 70, qLmin: 300 }, depart: { nTuyaux: 1 }, actifs: ['portee', 'secu'],
+    objectif: "Pose la lance dans la bande verte : assez près pour que le jet atteigne le feu, assez loin pour ne pas être brûlé.",
+    histoire: "Une benne à ordures brûle au bout de la rue. Tu choisis combien de tuyaux dérouler : chaque tuyau fait 20 m.",
+    astuce: "Le jet part avec la vitesse v donnée par la pression : ½·ρ·v² = P. Plus la pression est grande, plus il porte loin. Ici la pression ne change presque pas : seule la position de la lance compte.",
+    qcm: { q: "Pour que le jet porte plus loin, il faut surtout…", options: ["une pression plus grande à la lance", "un tuyau plus long", "un tuyau plus étroit"], bonne: 0, expl: "La vitesse du jet vient de la pression à la lance : ½·ρ·v² = P." },
+    retenir: "Le jet sort à la vitesse donnée par la pression à la lance : ½·ρ·v² = P. Il porte d'autant plus loin que la pression est grande." },
+  { id: 2, nom: 'Quel diamètre ?', icone: '⭕', temps: 'Jour', appren: true, pPompe: 8, pMin: 4.5, pMax: 6.5, distFeu: 70, hFeu: 0, zLance: 0, coudes: 0, puissanceMW: 1.2,
+    fixe: { nTuyaux: 3, qLmin: 500 }, depart: { dMm: 70 }, actifs: ['pression'],
+    objectif: "Choisis le diamètre pour que la pression à la lance soit dans la zone verte du manomètre (4,5 à 6,5 bar).",
+    histoire: "Même incendie. Cette fois la longueur (60 m) et le débit (500 L/min) sont imposés : seul le diamètre est libre.",
+    astuce: "À débit constant, l'eau va d'autant plus vite que le tuyau est étroit : v = Q/S. Et les pertes de charge grandissent avec v². Un tuyau étroit « mange » beaucoup de pression, un tuyau large presque aucune.",
+    qcm: { q: "À débit constant, quand le diamètre du tuyau diminue, la vitesse de l'eau…", options: ["augmente", "diminue", "ne change pas"], bonne: 0, expl: "v = Q/S : la section S diminue, donc v augmente (comme 1/D²)." },
+    retenir: "À débit fixé, v = Q/S varie comme 1/D². Les pertes de charge dépendent de v² : un tuyau étroit perd beaucoup de pression, un tuyau large presque rien." },
+  { id: 3, nom: 'Quel débit ?', icone: '💧', temps: 'Soir', appren: true, pPompe: 9, pMin: 5, pMax: 8, distFeu: 70, hFeu: 0, zLance: 0, coudes: 0, puissanceMW: 4.5,
+    fixe: { dMm: 45, nTuyaux: 3 }, depart: { qLmin: 100 }, actifs: ['pression', 'debit'],
+    objectif: "Règle le débit : il faut assez d'eau pour le feu (voyant « eau ») sans faire chuter la pression sous la zone verte.",
+    histoire: "Un feu plus gros : 4,5 MW. Tuyau et longueur sont imposés (DN 45, 60 m). Plus d'eau éteint mieux, mais…",
+    astuce: "Plus le débit est grand, plus l'eau va vite, et les pertes de charge augmentent bien plus vite que le débit (environ comme Q^1,75) : la pression à la lance s'effondre.",
+    qcm: { q: "Si on double le débit dans le même tuyau, les pertes de charge sont multipliées par environ…", options: ["2", "3 à 4", "elles ne changent pas"], bonne: 1, expl: "Les pertes dépendent de v² (et de λ), donc d'environ Q^1,75 : doubler le débit les multiplie par 3 à 4." },
+    retenir: "Les pertes de charge augmentent plus vite que le débit (≈ Q^1,75) : il faut trouver un compromis entre assez d'eau et assez de pression." },
+  { id: 4, nom: 'Voiture dans le virage', icone: '🚗', temps: 'Soir', pPompe: 8, pMin: 5, pMax: 8, distFeu: 60, hFeu: 0, zLance: 0, coudes: 2, puissanceMW: 2.5,
+    actifs: ['pression', 'portee', 'debit', 'secu'],
+    objectif: "Règle les trois curseurs pour mettre tous les voyants au vert.",
+    histoire: "Une voiture brûle derrière deux virages. Chaque coude du tuyau coûte de la pression.",
+    astuce: "Chaque coude ajoute une perte de charge n·K·½ρv² avec K = 0,9. Les coudes pèsent d'autant plus que l'eau va vite.",
+    qcm: { q: "La perte de charge due à un coude est proportionnelle à…", options: ["½·ρ·v²", "la longueur du tuyau", "la vitesse v seule"], bonne: 0, expl: "ΔP = K·½·ρ·v² : une perte singulière suit l'énergie cinétique de l'eau." },
+    retenir: "Pertes de charge totales : ΔP = (λ·L/D + n·K) × ½ρv². Les coudes ajoutent des pertes singulières." },
+  { id: 5, nom: 'Foyer au 4ᵉ étage', icone: '🏢', temps: 'Nuit', pPompe: 8, pMin: 6, pMax: 9, distFeu: 50, hFeu: 12, zLance: 0, coudes: 0, puissanceMW: 3,
+    actifs: ['pression', 'portee', 'debit', 'secu'],
+    objectif: "Les flammes sortent à 12 m de haut : le jet doit monter jusqu'à la fenêtre.",
+    histoire: "Les flammes sortent par une fenêtre, 12 m au-dessus de la rue. Plus il faut monter, plus il faut de vitesse au jet.",
+    astuce: "Pour monter à 12 m, le jet doit être plus rapide : il lui faut plus de pression à la lance, donc moins de pertes dans le tuyau, et une lance plus proche du mur.",
+    qcm: { q: "Pour que le jet monte plus haut, il faut…", options: ["plus de pression à la lance", "moins de pression à la lance", "un tuyau plus long"], bonne: 0, expl: "½·ρ·v² = P : la vitesse du jet, donc sa hauteur, vient de la pression à la lance." },
     retenir: "Au bout de la lance, ½ρv_j² = P_lance : plus la pression est grande, plus le jet est rapide, donc plus il monte et porte loin." },
-  { id: 5, nom: "Grande échelle", icone: '🪜', temps: 'Aube', pPompe: 10, pMin: 5, pMax: 8, distFeu: 45, hFeu: 22, zLance: 18, coudes: 1, puissanceMW: 6,
+  { id: 6, nom: 'Grande échelle', icone: '🪜', temps: 'Aube', pPompe: 10, pMin: 5, pMax: 8, distFeu: 45, hFeu: 22, zLance: 18, coudes: 1, puissanceMW: 6,
+    actifs: ['pression', 'portee', 'debit', 'secu'],
+    objectif: "La lance est sur l'échelle, à 18 m du sol : monter l'eau coûte de la pression.",
     histoire: "La lance est montée sur l'échelle aérienne, 18 m au-dessus du camion. Monter l'eau coûte de la pression : ρ·g·z.",
+    astuce: "Monter l'eau de z mètres coûte ρ·g·z : environ 1 bar tous les 10 m. Cette perte ne dépend ni du diamètre ni du débit.",
+    qcm: { q: "Monter la lance de 18 m coûte à peu près…", options: ["1,8 bar", "0,18 bar", "18 bar"], bonne: 0, expl: "ρ·g·z = 1000 × 9,81 × 18 ≈ 1,8 × 10⁵ Pa = 1,8 bar." },
     retenir: "Bernoulli avec dénivelé : P_pompe = P_lance + ρ·g·z + ΔP_charge. 10 m de hauteur d'eau coûtent environ 1 bar." },
-  { id: 6, nom: 'Raffinerie', icone: '🛢️', temps: 'Nuit', pPompe: 8, pMin: 5, pMax: 8, distFeu: 110, hFeu: 4, zLance: 0, coudes: 3, puissanceMW: 9,
+  { id: 7, nom: 'Entrepôt', icone: '🏭', temps: 'Nuit', pPompe: 9, pMin: 5, pMax: 8, distFeu: 90, hFeu: 0, zLance: 0, coudes: 2, puissanceMW: 4.5,
+    actifs: ['pression', 'portee', 'debit', 'secu'],
+    objectif: "Beaucoup d'eau, un foyer loin : attention, un tuyau trop large donne une pression trop forte.",
+    histoire: "Un entrepôt de palettes flambe : il faut beaucoup d'eau, et le foyer est loin. Un tuyau trop large ne perd presque rien et la lance devient incontrôlable.",
+    astuce: "Si le tuyau ne perd presque rien, la pression à la lance reste proche de celle de la pompe : trop forte. Il faut un compromis entre diamètre, longueur et débit.",
+    qcm: { q: "Pourquoi un tuyau très large peut-il donner une pression trop forte à la lance ?", options: ["il perd très peu de pression par frottement", "il fait monter la pression de la pompe", "il augmente le débit tout seul"], bonne: 0, expl: "Les pertes de charge diminuent avec le diamètre : presque toute la pression de la pompe arrive à la lance." },
+    retenir: "Un tuyau très large perd très peu (pression à la lance trop forte), un tuyau très étroit perd trop (jet mou). Diamètre, longueur et débit se règlent ensemble." },
+  { id: 8, nom: 'Raffinerie', icone: '🛢️', temps: 'Nuit', pPompe: 8, pMin: 5, pMax: 8, distFeu: 110, hFeu: 4, zLance: 0, coudes: 3, puissanceMW: 9,
+    actifs: ['pression', 'portee', 'debit', 'secu'],
+    objectif: "Un énorme débit à amener très loin : tout se joue sur le diamètre.",
     histoire: "Un réservoir d'hydrocarbures brûle, très loin. Il faut un énorme débit : tout se joue sur le diamètre et la longueur.",
+    astuce: "À très grand débit, un petit tuyau perd toute la pression. Seul un tuyau large laisse arriver assez de pression à la lance.",
+    qcm: { q: "À très grand débit, quel tuyau limite le mieux les pertes de charge ?", options: ["le plus large (DN 110)", "le plus étroit (DN 45)", "ça ne dépend pas du diamètre"], bonne: 0, expl: "Pour un même débit, v = Q/S est la plus petite dans le tuyau le plus large : très peu de pertes." },
     retenir: "À grand débit, les pertes de charge explosent (≈ Q^1,75) : seul un tuyau large permet d'amener assez d'eau, et de la pression, jusqu'à la lance." },
 ];
 
-// Réglage de départ commun : diamètre 70, un tuyau, débit minimal (toujours insuffisant : il faut agir)
+// Réglage de départ commun : diamètre 70, un tuyau, débit minimal (jamais gagnant : il faut agir) ; les réglages verrouillés d'un niveau s'y ajoutent
 export const REGLAGE_DEPART = { dMm: 70, nTuyaux: 1, qLmin: 100 };
+export const reglageDepart = m => ({ ...REGLAGE_DEPART, ...(m.depart || {}), ...(m.fixe || {}) });
+export const estLibre = (m, cle) => !(m.fixe && cle in m.fixe);
+export const CONDITIONS = ['pression', 'portee', 'debit', 'secu'];
+// Un niveau est gagné quand toutes ses conditions affichées sont remplies (a = résultat de attaque())
+export const conditionsRemplies = (m, a) => (m.actifs || CONDITIONS).every(c => (c === 'pression' ? a.ok.pressionHaute && a.ok.pressionBasse : a.ok[c === 'secu' ? 'securite' : c]));
 
 export const mission = id => MISSIONS.find(m => m.id === id);
 
-// Toutes les attaques réussies d'une mission (grille DN × nombre de tuyaux × débit) : pour les tests et pour la correction
+// Toutes les attaques réussies d'un niveau (grille DN × nombre de tuyaux × débit, en respectant les réglages verrouillés) : pour les tests et la correction
 export function solutions(m) {
   const res = [];
-  for (const dMm of DIAMETRES) for (let nTuyaux = 1; nTuyaux <= N_MAX; nTuyaux++) for (let qLmin = DEBIT_MIN; qLmin <= DEBIT_MAX; qLmin += DEBIT_PAS) {
+  const ds = m.fixe && 'dMm' in m.fixe ? [m.fixe.dMm] : DIAMETRES;
+  const ns = m.fixe && 'nTuyaux' in m.fixe ? [m.fixe.nTuyaux] : Array.from({ length: N_MAX }, (_, i) => i + 1);
+  const qs = []; for (let q = DEBIT_MIN; q <= DEBIT_MAX; q += DEBIT_PAS) qs.push(m.fixe && 'qLmin' in m.fixe ? m.fixe.qLmin : q);
+  for (const dMm of ds) for (const nTuyaux of ns) for (const qLmin of [...new Set(qs)]) {
     const a = attaque(m, { dMm, nTuyaux, qLmin });
     if (a.reussi) res.push({ dMm, nTuyaux, qLmin, pLanceBar: a.pLanceBar });
   }
   return res;
 }
 
-// Étoiles : 3 à la première attaque réussie, 2 à la deuxième, 1 ensuite (avec ou sans indice : pas de pénalité)
-export const etoilesAttaques = nbAttaques => (nbAttaques <= 1 ? 3 : nbAttaques === 2 ? 2 : 1);
+// Étoiles d'un niveau : 1 pour avoir gagné, +1 sans avoir demandé l'indice, +1 si la question du capitaine est juste du premier coup
+export const etoilesNiveau = ({ indice, qcmJuste }) => 1 + (indice ? 0 : 1) + (qcmJuste ? 1 : 0);

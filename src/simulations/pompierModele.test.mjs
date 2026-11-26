@@ -47,34 +47,49 @@ assert(Math.abs(M.energieUtileParLitre() - eu) < 1e-6, 'énergie utile par litre
 assert(M.debitMini(1) === Math.ceil(1e6 / eu * 60));
 assert(M.debitMini(9) > M.debitMini(1) * 8.9);
 
-// 9. Verdicts
-const m3 = M.mission(3);
-assert(M.attaque(m3, { dMm: 70, nTuyaux: 8, qLmin: 500 }).verdict === 'brule', 'tuyau trop long : trop près du foyer');
-assert(M.attaque(m3, { dMm: 110, nTuyaux: 4, qLmin: 500 }).verdict === 'haute', 'tuyau large : pression trop forte');
-assert(M.attaque(m3, { dMm: 45, nTuyaux: 4, qLmin: 1000 }).verdict === 'basse', 'tuyau étroit : pression trop faible');
-assert(M.attaque(m3, { dMm: 45, nTuyaux: 4, qLmin: 450 }).verdict === 'ok');
-assert(M.attaque(m3, { dMm: 70, nTuyaux: 4, qLmin: 450 }).verdict === 'haute', 'DN 70 : encore trop de pression à ce débit');
-assert(M.attaque(m3, { dMm: 70, nTuyaux: 4, qLmin: 900 }).verdict === 'ok', 'DN 70 : il faut beaucoup de débit pour perdre assez de pression');
-assert(M.attaque(m3, { dMm: 45, nTuyaux: 4, qLmin: 400 }).verdict === 'debit', 'débit insuffisant');
-assert(M.attaque(m3, { dMm: 70, nTuyaux: 1, qLmin: 450 }).verdict !== 'ok', 'trop loin du foyer');
-assert(M.attaque(M.mission(4), { dMm: 70, nTuyaux: 1, qLmin: 500 }).verdict === 'court' || M.attaque(M.mission(4), { dMm: 70, nTuyaux: 1, qLmin: 500 }).verdict === 'haute');
+// 9. Verdicts (niveau 7 « Entrepôt » : foyer à 90 m, pompe 9 bar, plage 5 à 8 bar, 4,5 MW)
+const m7 = M.mission(7);
+assert(M.attaque(m7, { dMm: 70, nTuyaux: 8, qLmin: 500 }).verdict === 'brule', 'tuyau trop long : trop près du foyer');
+assert(M.attaque(m7, { dMm: 110, nTuyaux: 4, qLmin: 500 }).verdict === 'haute', 'tuyau large : pression trop forte');
+assert(M.attaque(m7, { dMm: 45, nTuyaux: 4, qLmin: 1000 }).verdict === 'basse', 'tuyau étroit : pression trop faible');
+assert(M.attaque(m7, { dMm: 45, nTuyaux: 4, qLmin: 450 }).verdict === 'ok');
+assert(M.attaque(m7, { dMm: 70, nTuyaux: 4, qLmin: 450 }).verdict === 'haute', 'DN 70 : encore trop de pression à ce débit');
+assert(M.attaque(m7, { dMm: 70, nTuyaux: 4, qLmin: 900 }).verdict === 'ok', 'DN 70 : il faut beaucoup de débit pour perdre assez de pression');
+assert(M.attaque(m7, { dMm: 45, nTuyaux: 4, qLmin: 400 }).verdict === 'debit', 'débit insuffisant');
+assert(M.attaque(m7, { dMm: 45, nTuyaux: 1, qLmin: 450 }).verdict !== 'ok', 'trop loin du foyer');
 
-// 10. Missions : départ toujours insuffisant, solutions en nombre raisonnable, diamètres variés au fil des missions
+// 10. Niveaux : départ jamais gagnant, solutions en nombre raisonnable, réglages verrouillés respectés, une seule idée par niveau d'apprentissage
 const total = M.DIAMETRES.length * M.N_MAX * ((M.DEBIT_MAX - M.DEBIT_MIN) / M.DEBIT_PAS + 1);
 const dnUtiles = new Set();
+assert(M.MISSIONS.length === 8 && M.MISSIONS.filter(m => m.appren).length === 3);
 for (const m of M.MISSIONS) {
-  assert(!M.attaque(m, M.REGLAGE_DEPART).reussi, `mission ${m.id} : le réglage de départ ne doit pas gagner`);
-  assert(M.debitMini(m.puissanceMW) > M.DEBIT_MIN, `mission ${m.id} : débit de départ insuffisant`);
+  const dep = M.reglageDepart(m);
+  assert(!M.attaque(m, dep).reussi, `niveau ${m.id} : le réglage de départ ne doit pas gagner`);
+  for (const k of Object.keys(m.fixe || {})) assert(dep[k] === m.fixe[k] && !M.estLibre(m, k), `niveau ${m.id} : ${k} verrouillé`);
   const s = M.solutions(m);
-  assert(s.length >= 3, `mission ${m.id} : au moins 3 solutions (${s.length})`);
-  assert(s.length <= 0.15 * total, `mission ${m.id} : pas trop de solutions (${s.length})`);
+  assert(s.length >= (m.appren ? 1 : 3), `niveau ${m.id} : solutions (${s.length})`);
+  assert(s.length <= 0.15 * total, `niveau ${m.id} : pas trop de solutions (${s.length})`);
   assert(s.every(x => x.pLanceBar >= m.pMin - 1e-9 && x.pLanceBar <= m.pMax + 1e-9), 'pression dans la plage');
+  assert(m.qcm && m.qcm.options.length === 3 && m.qcm.bonne >= 0 && m.qcm.bonne < 3 && m.qcm.expl && m.astuce && m.objectif && m.retenir && m.histoire);
   s.forEach(x => dnUtiles.add(x.dMm));
+  // les conditions masquées d'un niveau d'apprentissage sont toujours remplies quand les conditions affichées le sont : gagner = toutes les conditions du modèle
+  const ds = M.estLibre(m, 'dMm') ? M.DIAMETRES : [m.fixe.dMm], ns = M.estLibre(m, 'nTuyaux') ? Array.from({ length: M.N_MAX }, (_, i) => i + 1) : [m.fixe.nTuyaux];
+  for (const dMm of ds) for (const nTuyaux of ns) for (let qLmin = M.DEBIT_MIN; qLmin <= M.DEBIT_MAX; qLmin += M.DEBIT_PAS) {
+    const reg = { dMm, nTuyaux, qLmin: M.estLibre(m, 'qLmin') ? qLmin : m.fixe.qLmin };
+    const a = M.attaque(m, reg);
+    if (a.reussi) assert(Object.values(a.ok).every(Boolean), `niveau ${m.id} : condition masquée non remplie pour ${JSON.stringify(reg)}`);
+    assert(M.conditionsRemplies(m, a) === a.reussi);
+  }
 }
-assert(M.solutions(M.mission(6)).every(x => x.dMm > 45), 'raffinerie : le DN 45 ne suffit pas');
-assert(M.solutions(M.mission(3)).every(x => x.dMm < 110), 'entrepôt : le DN 110 donne trop de pression');
 assert(dnUtiles.size === 3);
+// idées isolées : niveau 1 = deux positions possibles ; niveau 2 = un seul diamètre ; niveau 3 = plage de débits
+assert(M.solutions(M.mission(1)).map(x => x.nTuyaux).join() === '2,3');
+assert(M.solutions(M.mission(2)).length === 1 && M.solutions(M.mission(2))[0].dMm === 45);
+assert(M.solutions(M.mission(3)).length >= 3 && M.solutions(M.mission(3)).every(x => x.qLmin >= M.debitMini(4.5)));
+assert(M.solutions(M.mission(8)).every(x => x.dMm > 45), 'raffinerie : le DN 45 ne suffit pas');
+assert(M.solutions(M.mission(7)).every(x => x.dMm < 110), 'entrepôt : le DN 110 donne trop de pression');
 
-// 11. Étoiles
-assert(M.etoilesAttaques(1) === 3 && M.etoilesAttaques(2) === 2 && M.etoilesAttaques(3) === 1 && M.etoilesAttaques(9) === 1);
+// 11. Étoiles : 1 pour gagner, +1 sans indice, +1 si la question du capitaine est juste du premier coup
+assert(M.etoilesNiveau({ indice: false, qcmJuste: true }) === 3 && M.etoilesNiveau({ indice: false, qcmJuste: false }) === 2);
+assert(M.etoilesNiveau({ indice: true, qcmJuste: true }) === 2 && M.etoilesNiveau({ indice: true, qcmJuste: false }) === 1);
 console.log('pompierModele : OK');
