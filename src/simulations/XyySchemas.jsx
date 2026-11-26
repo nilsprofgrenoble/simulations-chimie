@@ -1,5 +1,6 @@
 // Schémas de la simulation « Le diagramme de chromaticité xy ». SVG, textes de 10,5 à 16, largeur 100 % plafonnée.
-import { LIEU, pointLieu, cssXYNormalise, PRIMAIRES_SRGB, BLANC_XY } from "./couleurModele";
+import { LIEU, pointLieu, cssXYNormalise, PRIMAIRES_SRGB, BLANC_XY, lireChromaticite } from "./couleurModele";
+import { blancIll } from "./xyyModele";
 
 const K = { txt: '#0f172a', gris: '#64748b', violet: '#7c3aed', orange: '#b45309', rouge: '#b91c1c', vert: '#15803d', bleu: '#1d4ed8' };
 const X0 = 40, Y0 = 18, S = 390, XMAX = 0.75, YMAX = 0.85;
@@ -89,11 +90,16 @@ export function SvgCarteCompl() {
     pts={[{ ...A, nom: 'λ₁', col: K.bleu, dx: -10, dy: 4, anchor: 'end' }, { ...B, nom: 'λ₂', col: K.orange, dx: 10, dy: -6 }, { ...Pq, nom: 'pourpre', col: '#a21caf', dx: 11, dy: 20 }, { ...L, nom: 'λc', col: K.vert, dx: 10, dy: -8 }]}
     notes={[{ x: 0.74, y: 0.80, txt: 'sur une même droite', col: '#0f172a', anchor: 'end' }, { x: 0.74, y: 0.745, txt: 'passant par W', col: '#0f172a', anchor: 'end' }]}/>;
 }
-/** Synthèse : triangle de l'écran et mélange de deux lumières sur un segment. */
+/** Même point P, deux blancs de référence : D65 (trait plein) et A (pointillés) donnent deux lectures différentes. */
+export function SvgCarteBlanc() {
+  const WA = blancIll('A'), P = { x: 0.47, y: 0.386 }, lD = lireChromaticite(P.x, P.y), lA = lireChromaticite(P.x, P.y, WA);
+  return <SvgChroma carte ticks={false} label="Un même point P lu avec deux blancs de référence différents, D65 et A"
+    lignes={[{ a: BLANC_XY, b: lD.frontiere, col: '#0f172a', w: 2.5 }, ...(lA.frontiere ? [{ a: WA, b: lA.frontiere, col: K.orange, w: 2.5, dash: '6 4' }] : [])]}
+    pts={[{ ...P, nom: 'P', col: '#0f172a', dx: 10, dy: 20 }, { ...WA, nom: 'W (A)', col: K.orange, creux: true, dx: -9, dy: -9, anchor: 'end' }]}
+    notes={[{ x: 0.74, y: 0.80, txt: 'même point P,', col: '#0f172a', anchor: 'end' }, { x: 0.74, y: 0.745, txt: 'autre blanc, autre lecture', col: '#0f172a', anchor: 'end' }]}/>;
+}
+/** Synthèse : le triangle des primaires de l'écran. */
 export function SvgCarteBilan() {
-  const { R, G, B } = PRIMAIRES_SRGB, M = { x: (R.x + G.x) / 2, y: (R.y + G.y) / 2 };
-  return <SvgChroma carte triangle blanc={false} label="Le triangle des primaires d'un écran et le mélange de deux lumières sur un segment"
-    lignes={[{ a: R, b: G, col: K.orange, w: 3 }]}
-    pts={[{ ...M, nom: 'mélange', col: K.orange, creux: true, dx: 12, dy: -2 }]}
+  return <SvgChroma carte triangle blanc={false} label="Le triangle des primaires d'un écran : seules les couleurs de l'intérieur sont reproductibles"
     notes={[{ x: 0.74, y: 0.80, txt: 'un écran ne reproduit que', col: '#0f172a', anchor: 'end' }, { x: 0.74, y: 0.745, txt: 'l’intérieur du triangle', col: '#0f172a', anchor: 'end' }]}/>;
 }
