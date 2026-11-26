@@ -120,7 +120,7 @@ export function SimulationSyntheseCouleurs() {
     { id: 'bilan', titre: 'Le bilan : additive et soustractive', focus: [],
       retenirTitre: 'À retenir : choisir le modèle', retenir: <><SvgCarteChoix/>
         <ul style={puces}><li>Additive : on ajoute des lumières ; l’œil ne garde que trois nombres (L, M, S).</li><li>Soustractive : on retire de la lumière ; on additionne les absorptions (A, K/S).</li><li>Même couleur ne veut pas dire même spectre.</li></ul></>,
-      texte: <>Vous savez expliquer le résultat d’un mélange de lumières, relier la synthèse additive aux trois types de cônes et au daltonisme, puis expliquer le mélange de filtres et de pigments (additivité de l’absorption, rôle du blanc). En exploration, mélangez lumières, filtres et peintures ; les défis testent la reproduction d’une lumière et d’une teinte.</> },
+      texte: <>Vous savez expliquer le résultat d’un mélange de lumières, relier la synthèse additive aux trois types de cônes et au daltonisme, puis expliquer le mélange de filtres et de pigments (additivité de l’absorption, rôle du blanc). En exploration, mélangez lumières, filtres et peintures ; les défis testent la reproduction d’une lumière et d’une teinte. Pour voir comment une couleur change avec la lampe (métamérisme), voir la simulation « Éclairage et métamérisme ».</> },
   ];
   const IDS = ORDRE, etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? IDS[etape] : null;
   const hl = id => enGuide && ETAPES[etape].focus.includes(id);

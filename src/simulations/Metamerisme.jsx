@@ -117,7 +117,7 @@ export function SimulationMetamerisme() {
           <li>Deux courbes de réflectance différentes peuvent donner les mêmes X, Y, Z sous une lampe.</li>
           <li>Sous une autre lampe, leurs couleurs diffèrent : c’est le métamérisme, qu’on détecte en contrôlant sous plusieurs illuminants.</li>
         </ul></>,
-      texte: <>Vous savez distinguer des sources de lumière par leur spectre, relier la couleur d’un objet à sa courbe de réflectance, et expliquer pourquoi deux échantillons identiques sous une lampe peuvent différer sous une autre. En exploration, vous pouvez faire varier l’écart entre les deux courbes ; les défis testent la lecture des courbes.</> },
+      texte: <>Vous savez distinguer des sources de lumière par leur spectre, relier la couleur d’un objet à sa courbe de réflectance, et expliquer pourquoi deux échantillons identiques sous une lampe peuvent différer sous une autre. En exploration, vous pouvez faire varier l’écart entre les deux courbes ; les défis testent la lecture des courbes. Pour produire les couleurs avec des lumières, des filtres ou des pigments, voir la simulation « Synthèse additive et synthèse soustractive ».</> },
   ];
   const IDS = ORDRE, etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? IDS[etape] : null;
   const hl = id => enGuide && ETAPES[etape].focus.includes(id);
