@@ -257,7 +257,7 @@ export function SimulationSubstitutionElimination() {
         {negligeable && <div style={{ ...styleBoite, fontSize: 13.5, color: '#92400e', background: '#fffbeb', borderColor: '#fcd34d' }}>Ce mécanisme est <strong>négligeable</strong> avec ce substrat et ce réactif : {CONDITION[examine]} Comparez sa barrière à celle du mécanisme dominant dans le profil d’énergie.</div>}
         <OngletsVue onglets={[['meca', 'Mécanisme en 2D (flèches courbes)'], ...(peut3D ? [['3d', 'Mécanisme en 3D (dans l’espace)']] : [])]} actif={ongletActif} onChange={setOnglet} />
         {ongletActif === 'meca' && <SnEquation meca={examine} sub={sub} re={re} u={u} />}
-        {ongletActif === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}>{examine === 'E2' || examine === 'E1' ? <E23D u={u} meca={examine} base={R.court} /> : <Sn3D meca={examine} u={u} sub={sub} re={re} />}</Suspense>}
+        {ongletActif === '3d' && <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}>{examine === 'E2' || examine === 'E1' ? <E23D u={u} meca={examine} re={re} /> : <Sn3D meca={examine} u={u} sub={sub} re={re} />}</Suspense>}
         <BarreLecture lecture={lecture} setLecture={setLecture} u={u} setU={setU} />
         <div style={{ ...styleBoite, fontSize: 14, color: KIT.txt, lineHeight: 1.55 }} aria-live="polite">{etatMeca(examine, u, sub)}</div>
         <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Profil d’énergie du mécanisme {examine}</div>

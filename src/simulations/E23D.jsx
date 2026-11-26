@@ -2,13 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { etat as etatE2, etatE1 } from "./e23dModele";
-import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer } from "./scene3d";
+import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer, ajouterBase, ajouterCharge } from "./scene3d";
 import { KIT, stylePetitBouton } from "../commun";
 
-const DIST0 = 19, DIST_MIN = 8, DIST_MAX = 34;
-const COUL_BASE = 0x2563eb;
+const DIST0 = 23, DIST_MIN = 8, DIST_MAX = 38;
 
-export default function E23D({ u, meca = 'E2', base = 'HO⁻' }) {
+export default function E23D({ u, meca = 'E2', re = 'HO' }) {
   const hote = useRef(null);
   const s = useRef({});
   const [erreur, setErreur] = useState(null);
@@ -84,12 +83,14 @@ export default function E23D({ u, meca = 'E2', base = 'HO⁻' }) {
     // H : lié à Cβ puis à la base
     sphere(e.H, RAYON_EL.H, COUL_EL.H); lien(e.cb, e.H, e.opCH, 0.07, partielle(e.opCH));
     if (!e.baseLiee) nom(e.H, 'H', '#475569', [-0.6, 0.3, 0.8]);
-    // base
-    sphere(e.base, 0.42, COUL_BASE); lien(e.base, e.H, e.opBH, 0.07, partielle(e.opBH));
-    nom(e.base, e.baseLiee ? base.replace('⁻', '') : base, '#1d4ed8', [0, 1, 0]);
+    // base : atomes réels (O, H…) et charge ; son O est du côté de H, ses H s'éloignent de lui
+    ajouterBase(contenu, re, e.base, [0, 1, 0], [0, 0, 1], e.opBH, 75.5);
+    lien(e.base, e.H, e.opBH, 0.07, partielle(e.opBH));
     // Br
     sphere(e.br, RAYON_EL.Br, COUL_EL.Br); lien(e.ca, e.br, e.opBr, 0.075, partielle(e.opBr));
-    nom(e.br, e.brParti ? 'Br⁻' : 'Br', '#9a3412', [0, -1, 0]);
+    nom(e.br, e.brParti ? 'Br⁻' : 'Br', '#9a3412', [0, -1.6, 0]);
+    if (e.brParti) ajouterCharge(contenu, e.br, '−', 0.85);
+    if (meca === 'E1' && e.brParti && !e.baseLiee && e.fb < 0.5) ajouterCharge(contenu, e.ca, '+', 0.8);     // carbocation
     // E1 : plan du carbocation (trois groupes autour de Cα) avant l'arrivée de la base
     if (meca === 'E1' && e.fa > 0.5 && e.fb < 0.5) {
       const disque = new THREE.Mesh(new THREE.CircleGeometry(2.0, 40), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }));
@@ -101,7 +102,7 @@ export default function E23D({ u, meca = 'E2', base = 'HO⁻' }) {
       plan.rotation.x = Math.PI / 2; contenu.add(plan);
     }
     st.sale = true;
-  }, [u, base, meca]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [u, re, meca]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   const zoomer = f => { const st = s.current; if (!st.camera) return; st.dist = f === 0 ? DIST0 : Math.min(DIST_MAX, Math.max(DIST_MIN, st.dist * f)); st.camera.position.z = st.dist * Math.max(1, 1.3 / st.camera.aspect); st.camera.updateProjectionMatrix(); st.sale = true; };
   if (erreur) return <div style={{ padding: 16, fontSize: 14, color: '#b45309' }}>{erreur}</div>;
