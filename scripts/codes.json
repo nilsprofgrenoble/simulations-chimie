@@ -3023,5 +3023,18 @@
  "37:prevoir:app-ana-lampe": "ANA1355",
  "37:prevoir:app-ana-blanc": "ANA1356",
  "77:plausible:app-val-blanc": "VAL790",
- "77:plausible:app-val-linearite": "VAL791"
+ "77:plausible:app-val-linearite": "VAL791",
+ "37:prevoir:irc-ana-esterification": "ANA1357",
+ "37:prevoir:irc-ana-impurete-eau": "ANA1358",
+ "37:prevoir:irc-ana-superposable": "ANA1359",
+ "37:prevoir:irc-ana-appareil": "ANA1360",
+ "37:prevoir:irc-ana-fond": "ANA1361",
+ "37:prevoir:spf-ana-emission": "ANA1362",
+ "37:prevoir:spf-ana-excitation": "ANA1363",
+ "37:prevoir:spf-ana-position": "ANA1364",
+ "37:prevoir:spf-ana-concentration": "ANA1365",
+ "77:plausible:irc-val-pur": "VAL792",
+ "77:plausible:irc-val-memes-groupes": "VAL793",
+ "77:plausible:spf-val-detection": "VAL794",
+ "77:plausible:spf-val-deux-spectres": "VAL795"
 }
