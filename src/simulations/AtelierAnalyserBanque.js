@@ -2677,6 +2677,7 @@ export const PREVOIR = [
       F('ils sont à égalité : on ne peut pas les classer', 'La différence apparaît dès le deuxième voisin : O (COOH) contre H (CH₂OH).'),
     ] },
   { id: 'chir-h-devant', domaine: 'Configuration absolue R/S', titre: 'Le groupe n°4 est devant',
+    schema: { type: 'cram3d', mol: 'lactique', n4: 'devant', legende: 'Tournez la molécule : où est le groupe de priorité 4 (la pastille 4) ?' },
     enonce: 'Sur un dessin de Cram, le groupe de priorité 4 est dessiné en coin plein (vers l’observateur). En suivant 1 → 2 → 3 sur le dessin, on tourne dans le sens antihoraire.', q: 'Quelle est la configuration du carbone asymétrique ?', options: [
       V('R : on inverse la lettre lue, car le n°4 est devant', 'Le sens lu est antihoraire (S si le n°4 était derrière) ; comme il est devant, la configuration réelle est l’inverse : R.'),
       F('S : le sens antihoraire donne toujours S', 'C’est vrai seulement quand le n°4 est derrière ; ici il est devant.'),
@@ -2684,6 +2685,7 @@ export const PREVOIR = [
       F('R : le n°4 est devant, donc les groupes 1, 2 et 3 ne tournent pas', 'Ils tournent toujours ; c’est la lecture du sens qui est à inverser quand le n°4 est devant.'),
     ] },
   { id: 'chir-miroir-R', domaine: 'Configuration absolue R/S', titre: 'L’image dans un miroir',
+    schema: { type: 'cram3d', mol: 'lactique', conf: 'R', miroir: true, legende: 'Une molécule et son image dans un miroir : tournez-les pour les comparer.' },
     enonce: 'Une molécule chirale a la configuration R au niveau de son seul carbone asymétrique. On dessine son image dans un miroir.', q: 'Quelle est la configuration de cette image ?', options: [
       V('S : l’image a la configuration opposée', 'Dans le miroir, deux groupes sont échangés : le sens 1 → 2 → 3 s’inverse, donc R devient S.'),
       F('R : l’image est identique à la molécule', 'Une molécule chirale n’est pas superposable à son image : elles ne peuvent pas être identiques.'),
@@ -2705,6 +2707,7 @@ export const PREVOIR = [
       F('on ne peut rien prévoir sans calculer la configuration R ou S', 'La symétrie suffit : le carbone central n’étant pas asymétrique, il n’y a pas de configuration R ou S à calculer.'),
     ] },
   { id: 'chir-ana-cram-lecture', domaine: 'Chiralité et carbone asymétrique', titre: 'Lire une représentation de Cram',
+    schema: { type: 'cram3d', mol: 'lactique', n4: 'derriere', legende: 'La même représentation de Cram, vue dans l’espace : tournez-la pour voir les liaisons devant et derrière la feuille.' },
     enonce: 'Un carbone tétraédrique est dessiné en représentation de Cram : deux liaisons sont tracées en trait plein dans le plan de la feuille, une troisième en coin plein, et la quatrième en pointillés.', q: 'Où se trouvent les groupes liés par le coin plein et par les pointillés ?', options: [
       V('le coin plein vers l’observateur, les pointillés derrière la feuille', 'Le coin plein s’élargit vers l’observateur : le groupe est en avant du plan. Les pointillés s’éloignent de l’observateur : le groupe est en arrière.'),
       F('le coin plein derrière la feuille, les pointillés vers l’observateur', 'C’est l’inverse : le coin plein représente une liaison qui sort de la feuille vers l’observateur.'),

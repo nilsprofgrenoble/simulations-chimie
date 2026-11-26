@@ -1,5 +1,5 @@
 // Sélectivités stéréochimiques (BTS) : addition syn ou anti, stéréosélectivité, stéréospécificité.
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
@@ -8,12 +8,13 @@ import { puces } from "./Travail";
 import { FSynAnti, FButene, FSelectif, FInclusion } from "./SelSchemas";
 import { ALCENES, REACTIFS, RES, resultat, NOM_TYPE } from "./seleModele";
 import { AnimAddition } from "./AnimAddition";
+import { OngletsVue } from "./ongletsSim";
+
+const Add3D = lazy(() => import("./Add3D"));
 
 const SIM_ID = 98;
 declarerDefis(SIM_ID, [['principal', 'Syn ou anti, sélectivités']]);
 const NOIR = '#0f172a', BRUN = '#9a3412', BLEU = '#1d4ed8', VERT = '#15803d', ROUGE = '#dc2626', VIOLET = '#7c3aed';
-const lerp = (a, b, t) => a + (b - a) * Math.max(0, Math.min(1, t));
-const seg = (u, a, b) => Math.max(0, Math.min(1, (u - a) / (b - a)));
 const COUL = { Br2: BRUN, OsO4: VIOLET, H2: VERT };
 
 function texteEtat(re, u) {
@@ -108,6 +109,7 @@ export function SimulationSyntheseStereo() {
   const [lecture, setLecture] = useState(false);
   const [df, setDf] = useState(() => defi());
   const [hypoOuv, setHypoOuv] = useState(false);
+  const [vue, setVue] = useState('anim');
   const regler = (a, r) => { setAlc(a); setRe(r); setU(0); setLecture(false); };
   const X = resultat(alc, re), R = REACTIFS[re], A = ALCENES[alc];
 
@@ -136,7 +138,10 @@ export function SimulationSyntheseStereo() {
             {Object.values(REACTIFS).map(r => <option key={r.cle} value={r.cle}>{r.nom}</option>)}</select></label>
         <div style={{ fontSize: 13.5, color: KIT.txt }}>Mode d'addition : <strong style={{ color: COUL[re] }}>{R.mode}</strong> ({R.inter}).</div>
       </div>
-      <AnimAddition alc={alc} re={re} u={u} />
+      <OngletsVue actif={vue} onChange={setVue} onglets={[['anim', 'Animation en coupe'], ['3d', 'Vue 3D (dans l’espace)']]} />
+      {vue === '3d'
+        ? <Suspense fallback={<div style={{ padding: 20, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Add3D alc={alc} re={re} u={u} /></Suspense>
+        : <AnimAddition alc={alc} re={re} u={u} />}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button onClick={() => { if (u >= 0.999) setU(0); setLecture(l => !l); }} style={styleBouton(true, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
         <input type="range" min={0} max={1000} step={1} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(+e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ flex: 1 }} />
