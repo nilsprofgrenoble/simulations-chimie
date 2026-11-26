@@ -225,11 +225,16 @@ export function SimulationFluorescence() {
     </div>);
   const pilules = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['spectres', 'Les spectres'], ['tirages', 'Tirages au hasard']].map(([k, l]) => <button key={k} onClick={() => { if (k !== 'tirages') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
+      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['spectres', 'Les spectres']].map(([k, l]) => <button key={k} onClick={() => { if (k === 'diagramme' || k === 'temps') te.setLecture(false); setEx(e => ({ ...e, onglet: k === 'spectres' && e.onglet === 'tirages' ? 'tirages' : k })); }} aria-pressed={k === 'spectres' ? (ex.onglet === 'spectres' || ex.onglet === 'tirages') : ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
+    </div>);
+  const sousPilules = (ex.onglet === 'spectres' || ex.onglet === 'tirages') && (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
+      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Afficher :</span>
+      {[['spectres', 'Spectres schématiques'], ['tirages', 'Tirages au hasard']].map(([k, l]) => <button key={k} onClick={() => { if (k === 'spectres') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#334155')}>{l}</button>)}
     </div>);
   const voletScene = (
     <div style={styleBoite}>
-      {pilules}
+      {pilules}{sousPilules}
       {ex.onglet === 'diagramme' ? <SceneJablonski actif={aucun} durees/>
         : ex.onglet === 'temps' ? <><SceneJablonski actif={null} etat={M.etatDominant(mol, tE)}/><div style={{ height: 6 }}/><SceneEmission mol={mol} t={tE}/></>
         : ex.onglet === 'tirages' ? <>{te.t.mode === 'emission' && <SceneVibronique mol={MT} dernier={te.t.etat.dernier}/>}{te.t.mode === 'emission' && <div style={{ height: 6 }}/>}<SceneHistogramme etat={te.t.etat} params={te.t} mol={MT} courbe={te.t.courbe}/></>
