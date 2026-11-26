@@ -3234,6 +3234,54 @@ function genDfrForce() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['Pour s’arrêter sur une distance D, il faut F = ½ m v² ÷ D : plus la masse est grande, plus la force nécessaire l’est.', 'Le travail de la force de freinage est négatif : il fait passer l’énergie cinétique à zéro.'] };
 }
+// ---------- Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne (TSTL, PCM) ----------
+function genChhVitesse() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8; let m, h, L, Epp, v, h2, v2;
+  do { m = tire([2, 3, 5, 8]); h = tire([2, 3, 4, 5, 8]); L = tire([6, 8, 10, 12]); Epp = m * g * h; v = Math.sqrt(2 * g * h); h2 = 4 * h; v2 = Math.sqrt(2 * g * h2); } while (new Set([Epp, v, v2].map(x => Number(x.toPrecision(3)))).size < 3);
+  const intro = `Une caisse de masse ${m}${NB}kg est lâchée sans vitesse du haut d’une rampe de longueur ${L}${NB}m, dont le haut est à ${h}${NB}m au-dessus du bas. On néglige les frottements, g = 9,8${NB}N/kg et l’origine des altitudes est au bas de la rampe.`;
+  const q1 = { id: 'v0', type: 'num', q: <>Calculez l’<b>énergie potentielle de pesanteur de la caisse au départ</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Epp, tolRel: 0.05, csMin: 2,
+    aide: 'Epp = m × g × z, avec z = h : la longueur de la rampe ne sert pas.',
+    pieges: [[m * g * L, 'L’altitude est la hauteur h au-dessus du bas, pas la longueur de la rampe.'], [m * h, 'Il manque la valeur de g : Epp = m × g × z.']],
+    expl: <>Epp = {m} × 9,8 × {h} = <b>{pvFmt(Epp)}{NB}J</b>.</> };
+  const q2 = { id: 'v1', type: 'num', q: <>Quelle est la <b>vitesse de la caisse en bas de la rampe</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v, tolRel: 0.05, csMin: 2,
+    aide: 'Em est conservée : m × g × h = ½ × m × v², donc v = √(2 × g × h).',
+    pieges: [[2 * g * h, 'Il manque la racine carrée : v² = 2 g h.'], [Math.sqrt(2 * g * L), 'C’est la hauteur h qui compte, pas la longueur de la rampe.']],
+    expl: <>v = √(2 × 9,8 × {h}) = <b>{pvFmt(v)}{NB}m/s</b>.</> };
+  const q3 = { id: 'v2', type: 'num', q: <>On lâche la caisse d’une hauteur <b>4 fois plus grande</b>, soit {h2}{NB}m. Quelle est sa <b>vitesse d’arrivée</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v2, tolRel: 0.05, csMin: 2,
+    aide: 'v = √(2 × g × h) : la hauteur est multipliée par 4, la vitesse par √4 = 2.',
+    pieges: [[4 * v, 'La vitesse est proportionnelle à √h : multiplier h par 4 multiplie v par 2, pas par 4.']],
+    expl: <>v = √(2 × 9,8 × {h2}) = <b>{pvFmt(v2)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Sans frottement, m g h = ½ m v² : v = √(2 g h), indépendante de la masse et de la forme de la rampe.', 'Multiplier la hauteur par 4 multiplie la vitesse par 2.'] };
+}
+function genChhFrott() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8; let m, h, L, vR, Ep, Ec, dE, f, pc;
+  do { m = tire([2, 3, 5]); h = tire([3, 4, 5, 6]); L = tire([8, 10, 12]); vR = tire([4.0, 5.0, 6.0, 7.0]); Ep = m * g * h; Ec = 0.5 * m * vR * vR; dE = Ep - Ec; f = dE / L; pc = 100 * dE / Ep; }
+  while (dE < 5 || new Set([Ec, dE, f, pc].map(x => Number(x.toPrecision(3)))).size < 4);
+  const intro = `Une caisse de masse ${m}${NB}kg est lâchée sans vitesse du haut d’une rampe de longueur ${L}${NB}m, dont le haut est à ${h}${NB}m au-dessus du bas. Elle arrive en bas à la vitesse ${String(vR.toFixed(1)).replace('.', ',')}${NB}m/s : la rampe exerce un frottement. g = 9,8${NB}N/kg, origine des altitudes au bas de la rampe.`;
+  const q1 = { id: 'w0', type: 'num', q: <>Calculez l’<b>énergie cinétique de la caisse en bas</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v².',
+    pieges: [[m * vR * vR, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [Ep, 'C’est l’énergie potentielle du départ ; calculez Ec avec la vitesse mesurée.']],
+    expl: <>Ec = ½ × {m} × {String(vR.toFixed(1)).replace('.', ',')}² = <b>{pvFmt(Ec)}{NB}J</b>.</> };
+  const q2 = { id: 'w1', type: 'num', q: <>Quelle <b>énergie a été dissipée</b> par le frottement le long de la rampe (en J, 2 chiffres significatifs) ?</>, unite: 'J', vrai: dE, tolRel: 0.05, csMin: 2,
+    aide: 'Em(haut) = Epp = m × g × h ; Em(bas) = Ec ; énergie dissipée = Em(haut) − Em(bas).',
+    pieges: [[Ep, 'C’est l’énergie du départ ; il faut en retirer l’énergie cinétique d’arrivée.'], [Ec, 'C’est l’énergie cinétique d’arrivée ; l’énergie dissipée est la différence Epp − Ec.']],
+    expl: <>Epp = {m} × 9,8 × {h} = {pvFmt(Ep)}{NB}J ; énergie dissipée = {pvFmt(Ep)} − {pvFmt(Ec)} = <b>{pvFmt(dE)}{NB}J</b>.</> };
+  const q3 = { id: 'w2', type: 'num', q: <>Quelle est la <b>valeur moyenne de la force de frottement</b> (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: f, tolRel: 0.05, csMin: 2,
+    aide: 'W(f) = − f × L : la longueur parcourue sur la rampe est L, pas la hauteur h.',
+    pieges: [[dE / h, 'Le frottement agit sur la longueur L de la rampe, pas sur la hauteur h.']],
+    expl: <>f = {pvFmt(dE)} ÷ {L} = <b>{pvFmt(f)}{NB}N</b>.</> };
+  const q4 = { id: 'w3', type: 'num', q: <>Quelle <b>part de l’énergie initiale</b> a été dissipée (en %, 2 chiffres significatifs) ?</>, unite: '%', vrai: pc, tolRel: 0.05, csMin: 2,
+    aide: 'Part dissipée = énergie dissipée ÷ énergie du départ (Epp), × 100.',
+    pieges: [[100 * dE / Ec, 'Il faut diviser par l’énergie du départ, Epp, pas par l’énergie d’arrivée.']],
+    expl: <>{pvFmt(dE)} ÷ {pvFmt(Ep)} × 100 = <b>{pvFmt(pc)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['ΔEm = W(f) < 0 : l’énergie dissipée est la différence entre l’énergie du départ et celle de l’arrivée.', 'Le travail du frottement est − f × longueur parcourue, alors que celui du poids ne dépend que de la hauteur.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5685,6 +5733,8 @@ export const FAMILLES = [
   { id: 'lcv-frott', groupe: 'Formules', titre: 'Balle lancée avec frottement : énergie dissipée et force moyenne (terminale STL)', gen: genLcvFrott, domaine: 'Lancer vers le haut et chute : courbes d’énergie' },
   { id: 'dfr-arret', groupe: 'Formules', titre: 'Freinage : énergie cinétique et distance d’arrêt (terminale STL)', gen: genDfrArret, domaine: 'Distance de freinage : énergie cinétique et travail de la force de freinage' },
   { id: 'dfr-force', groupe: 'Formules', titre: 'Freinage : force de freinage nécessaire pour s’arrêter avant un obstacle (terminale STL)', gen: genDfrForce, domaine: 'Distance de freinage : énergie cinétique et travail de la force de freinage' },
+  { id: 'chh-vitesse', groupe: 'Formules', titre: 'Caisse lâchée sur une rampe : énergie potentielle et vitesse d’arrivée (terminale STL)', gen: genChhVitesse, domaine: 'Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne' },
+  { id: 'chh-frott', groupe: 'Formules', titre: 'Rampe avec frottement : énergie dissipée et force moyenne (terminale STL)', gen: genChhFrott, domaine: 'Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

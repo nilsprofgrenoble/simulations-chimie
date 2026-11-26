@@ -1,6 +1,7 @@
 import { PDT_SAPP } from "./poidsTrajetExos.js";
 import { LCV_SAPP } from "./lancerChuteExos.js";
 import { DFR_SAPP } from "./freinageExos.js";
+import { CHH_SAPP } from "./chuteExos.js";
 import { MTR_SAPP } from "./modesTransfertExos.js";
 import { FRM_SAPP } from "./formesExos.js";
 import { CHA_SAPP } from "./chaineExos.js";
@@ -5199,6 +5200,7 @@ export const ENONCES = [
   ...PDT_SAPP,
   ...LCV_SAPP,
   ...DFR_SAPP,
+  ...CHH_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,
