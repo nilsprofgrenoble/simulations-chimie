@@ -2875,5 +2875,12 @@
  "77:plausible:chel-val-champ": "VAL760",
  "77:plausible:chel-val-force": "VAL761",
  "36:chel-champ": "REA189",
- "36:chel-force": "REA190"
+ "36:chel-force": "REA190",
+ "34:lab-sapp-tolerance": "SAPP626",
+ "34:xyy-sapp-purete": "SAPP627",
+ "34:mtm-sapp-eclairage": "SAPP628",
+ "34:ads-sapp-filtres": "SAPP629",
+ "36:lab-calcul": "REA191",
+ "36:xyy-calcul": "REA192",
+ "36:ads-calcul": "REA193"
 }
