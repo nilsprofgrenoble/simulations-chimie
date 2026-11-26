@@ -127,6 +127,7 @@ const SimulationPile = paresseux(() => import("./simulations/Pile"), "Simulation
 const SimulationElectrolyse = paresseux(() => import("./simulations/Electrolyse"), "SimulationElectrolyse");
 const SimulationAminoAcides = paresseux(() => import("./simulations/AminoAcides"), "SimulationAminoAcides");
 const SimulationConductimetrie = paresseux(() => import("./simulations/Conductimetrie"), "SimulationConductimetrie");
+const SimulationTitragePrecipitation = paresseux(() => import("./simulations/TitragePrecipitation"), "SimulationTitragePrecipitation");
 const SimulationEtalonnage = paresseux(() => import("./simulations/Etalonnage"), "SimulationEtalonnage");
 const SimulationUvVisible = paresseux(() => import("./simulations/UvVisible"), "SimulationUvVisible");
 const SimulationIrTabulees = paresseux(() => import("./simulations/IrTabulees"), "SimulationIrTabulees");
@@ -356,6 +357,7 @@ const SIMULATIONS = [
   { id:133, label:"Électrolyse et accumulateur : forcer le sens d’évolution d’un système", niveau:"TG", icon:"⚡", color:"#b45309", component: SimulationElectrolyse },
   { id:134, label:"Acides α-aminés : forme selon le pH", niveau:"TG", icon:"🧬", color:"#0f766e", component: SimulationAminoAcides },
   { id:135, label:"Conductimétrie : conductivité d’une solution et titrage conductimétrique", niveau:"TG", icon:"🔌", color:"#0369a1", component: SimulationConductimetrie },
+  { id:255, label:"Titrage conductimétrique par précipitation : doser les ions chlorure", niveau:"TSTL", icon:"⚪", color:"#7c3aed", component: SimulationTitragePrecipitation },
   { id:136, label:"Dosage conductimétrique par étalonnage : conductance, constante de cellule et courbe d’étalonnage", niveau:"TG", icon:"📈", color:"#0369a1", component: SimulationEtalonnage },
   { id:167, label:"Mouvement circulaire : le repère de Frenet, vitesse et accélération", niveau:"TG", icon:"🎡", color:"#b91c1c", component: SimulationFrenet },
   { id:169, label:"Spectroscopie UV-visible : identifier une espèce, puis la doser", niveau:"TG", icon:"🔆", color:"#6d28d9", component: SimulationUvVisible },

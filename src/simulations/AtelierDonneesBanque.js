@@ -1317,6 +1317,51 @@ export const ENONCES = [
         manque: null, solution: { txt: '[HO⁻] = (cB × VB − cA × VA) / (VA + volume d’eau + VB) ; mmol / mL = mol/L', val: reste / Vt, u: 'mol/L' } };
     },
   },
+  {
+    id: 'cdp-sapp-equiv', domaine: 'Titrage conductimétrique par précipitation', titre: 'Dosage des ions chlorure : volume équivalent et précipité formé', noms: ['Volume équivalent', 'Quantité de précipité AgCl formée'],
+    gen: () => ({ cA: tire([0.020, 0.030, 0.040, 0.050]), VA: tire([10.0, 20.0, 25.0]), cB: tire([0.050, 0.100]), eau: tire([150, 180, 190]) }),
+    build: (p, q) => {
+      const tokens = {
+        VA: tok(`${nb(p.VA, 1)} mL`, 'Volume de la prise d’essai d’eau salée', p.VA, 'mL'),
+        cA: tok(`${nb(p.cA, 3)} mol/L`, 'Concentration en ions chlorure de la prise d’essai', p.cA, 'mol/L'),
+        cB: tok(`${nb(p.cB, 3)} mol/L`, 'Concentration de la solution de nitrate d’argent', p.cB, 'mol/L'),
+        eau: tok(`${p.eau} mL`, 'Volume d’eau ajouté avant le dosage', p.eau, 'mL'),
+      };
+      const debut = ['On dose une prise d’essai de ', T('VA'), ' d’une eau salée, de concentration en ions chlorure ', T('cA'), ', diluée dans ', T('eau'), ' d’eau, par une solution de nitrate d’argent de concentration ', T('cB'), ', en suivant la conductivité. '];
+      if (q === 0) return { tokens, derivees: [{ id: 'nCl', nom: 'Quantité d’ions Cl⁻ à doser', expr: 'n(Cl⁻) = cA × VA', val: p.cA * p.VA, u: 'mmol' }], texte: [...debut, 'Quel volume de nitrate d’argent faut-il verser pour atteindre l’équivalence ?'],
+        utiles: ['VA', 'cA', 'cB'], raisons: { eau: 'L’eau ajoutée dilue les ions chlorure mais ne change pas leur quantité : elle ne sert pas au calcul du volume équivalent.' },
+        cherche: { bonne: 'Le volume équivalent VE (en mL)', faux: ['La quantité d’ions Cl⁻ à doser (en mmol)', 'La concentration des ions chlorure après dilution (en mol/L)', 'La masse de précipité formée (en mg)'] },
+        manque: null, solution: { txt: 'cB × VE = cA × VA (un Ag⁺ pour un Cl⁻), donc VE = cA × VA / cB', val: p.cA * p.VA / p.cB, u: 'mL' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de chlorure d’argent AgCl(s) s’est formée à l’équivalence ?'],
+        utiles: ['VA', 'cA'], raisons: { cB: 'La concentration du titrant sert à trouver le volume équivalent ; la quantité de précipité vient de la quantité de Cl⁻ dosée.', eau: 'L’eau ajoutée ne change pas la quantité de Cl⁻ : elle n’intervient pas.' },
+        cherche: { bonne: 'La quantité de AgCl(s) formée (en mmol)', faux: ['La concentration en AgCl dans le bécher (en mol/L)', 'La quantité d’ions Ag⁺ restants (en mmol)', 'Le volume équivalent (en mL)'] },
+        manque: null, solution: { txt: 'n(AgCl) = n(Cl⁻) initial = cA × VA (mol/L × mL = mmol)', val: p.cA * p.VA, u: 'mmol' } };
+    },
+  },
+  {
+    id: 'cdp-sapp-sigma', domaine: 'Titrage conductimétrique par précipitation', titre: 'Dosage des chlorures : conductivité à l’équivalence et pente après', noms: ['Conductivité à l’équivalence', 'Variation de σ par mL versé après l’équivalence'],
+    gen: () => { const cat = tire([['Na⁺', 5.0], ['K⁺', 7.4]]); return { cat, cA: tire([0.020, 0.030, 0.040, 0.050]), cB: tire([0.050, 0.100]), eau: tire([150, 180, 190]) }; },
+    build: (p, q) => {
+      const VA = 20.0, Vt = VA + p.eau, lAg = 6.2, lNO3 = 7.1;
+      const tokens = {
+        lc: tok(`${nb(p.cat[1], 1)} mS·m²·mol⁻¹`, `Conductivité ionique molaire de ${p.cat[0]} à 25 °C`, p.cat[1], 'mS·m²·mol⁻¹'),
+        lN: tok(`${nb(lNO3, 1)} mS·m²·mol⁻¹`, 'Conductivité ionique molaire de NO₃⁻ à 25 °C', lNO3, 'mS·m²·mol⁻¹'),
+        lA: tok(`${nb(lAg, 1)} mS·m²·mol⁻¹`, 'Conductivité ionique molaire de Ag⁺ à 25 °C', lAg, 'mS·m²·mol⁻¹'),
+        cA: tok(`${nb(p.cA, 3)} mol/L`, 'Concentration en ions chlorure de la prise d’essai', p.cA, 'mol/L'),
+        cB: tok(`${nb(p.cB, 3)} mol/L`, 'Concentration de la solution de nitrate d’argent', p.cB, 'mol/L'),
+        Vt: tok(`${Vt} mL`, 'Volume de la solution dans le bécher (prise d’essai de 20,0 mL et eau), supposé constant', Vt, 'mL'),
+      };
+      const debut = ['On dose les ions chlorure de ', T('cA'), ' d’une prise d’essai de 20,0 mL (cation spectateur ', p.cat[0], ') par du nitrate d’argent à ', T('cB'), '. Le bécher contient ', T('Vt'), ' de solution, volume supposé constant. Données : λ(', p.cat[0], ') = ', T('lc'), ', λ(NO₃⁻) = ', T('lN'), ', λ(Ag⁺) = ', T('lA'), '. '];
+      if (q === 0) return { tokens, derivees: [{ id: 'cm', nom: 'Concentration des ions spectateurs à l’équivalence', expr: 'cA × 20,0 / Vt × 1 000', val: p.cA * VA / Vt * 1000, u: 'mol·m⁻³' }], texte: [...debut, 'Quelle est la conductivité σ à l’équivalence ?'],
+        utiles: ['lc', 'lN', 'cA', 'Vt'], raisons: { lA: 'À l’équivalence, il ne reste plus d’ions Ag⁺ en excès : leur contribution est nulle.', cB: 'La concentration du titrant fixe le volume équivalent, pas la concentration des ions spectateurs dans le bécher.' },
+        cherche: { bonne: 'La conductivité σ à l’équivalence (en mS·m⁻¹)', faux: ['La conductivité σ au départ (en mS·m⁻¹)', 'La concentration des ions spectateurs (en mol/L)', 'La variation de σ par mL versé (en mS·m⁻¹ par mL)'] },
+        manque: null, solution: { txt: 'σ = (λ(cation) + λ(NO₃⁻)) × [cation], avec [cation] = [NO₃⁻] = cA × 20,0 / Vt en mol·m⁻³', val: (p.cat[1] + lNO3) * p.cA * VA / Vt * 1000, u: 'mS·m⁻¹' } };
+      return { tokens, derivees: [], texte: [...debut, 'De combien σ augmente-t-elle par mL de nitrate d’argent versé, après l’équivalence ?'],
+        utiles: ['lA', 'lN', 'cB', 'Vt'], raisons: { lc: 'Après l’équivalence, la quantité du cation spectateur ne change plus : il ne contribue pas à la variation de σ.', cA: 'La concentration en chlorure fixe le volume équivalent, pas la pente après l’équivalence.' },
+        cherche: { bonne: 'La variation de σ par mL versé (en mS·m⁻¹ par mL)', faux: ['La conductivité σ à l’équivalence (en mS·m⁻¹)', 'La quantité d’ions Ag⁺ versée par mL (en mmol)', 'La concentration en ions Ag⁺ dans le bécher (en mol/L)'] },
+        manque: null, solution: { txt: 'Δσ par mL = (λ(Ag⁺) + λ(NO₃⁻)) × cB × 1 000 / Vt (chaque mL apporte cB mmol de chaque ion)', val: (lAg + lNO3) * p.cB * 1000 / Vt, u: 'mS·m⁻¹ par mL' } };
+    },
+  },
   // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule
   {
     id: 'etl-sapp-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Constante de cellule et conductivité d’une solution', noms: ['Constante de la cellule', 'Conductivité d’une solution à partir de sa conductance'],
