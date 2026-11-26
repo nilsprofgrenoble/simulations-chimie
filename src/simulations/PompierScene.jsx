@@ -132,8 +132,13 @@ export function PompierScene({ m, a, etat, tentative }) {
       {/* zone de chaleur autour du foyer */}
       <ellipse cx={xF} cy={SOL} rx={DIST_SECU * s} ry="14" fill={tropPres ? '#dc2626' : '#f97316'} opacity={tropPres ? 0.4 : 0.18} />
       <line x1={xF - DIST_SECU * s} y1={SOL + 4} x2={xF - DIST_SECU * s} y2={SOL - 16} stroke="#f97316" strokeWidth="2" strokeDasharray="4 4" />
-      <text x={xF - DIST_SECU * s} y={SOL - 20} fontSize="12" fontWeight="700" fill={nuit ? '#fdba74' : '#9a3412'} textAnchor="middle">zone de chaleur ({DIST_SECU} m)</text>
+      <text x={Math.min(xF - DIST_SECU * s, 860)} y={SOL - 20} fontSize="12" fontWeight="700" fill={nuit ? '#fdba74' : '#9a3412'} textAnchor="middle">zone de chaleur ({DIST_SECU} m)</text>
 
+      {/* bande verte : où la lance peut être posée avec la pression actuelle (assez près pour que le jet porte, assez loin de la chaleur) */}
+      {(m.actifs || []).includes('portee') && a.porteeMax >= DIST_SECU && (() => {
+        const x1 = Math.max(X0 + 8, xF - a.porteeMax * s), x2 = xF - DIST_SECU * s;
+        return x2 > x1 ? (<g aria-hidden="true"><rect x={x1} y={SOL + 1} width={x2 - x1} height="13" rx="6" fill="#22c55e" opacity=".75" /><text x={(x1 + x2) / 2} y={SOL + 72} textAnchor="middle" fontSize="13" fontWeight="800" fill="#bbf7d0" stroke="#14532d" strokeWidth="4" paintOrder="stroke">bonne place pour la lance</text></g>) : null;
+      })()}
       <Decor m={m} x={xF} s={s} />
       <Flammes x={xF} y={m.id === 5 || m.id === 4 ? yF + 10 : (m.id === 6 ? yF + 2 : SOL - (m.id === 1 ? 40 : m.id === 2 ? 38 : m.id === 3 ? 8 * s * 0.55 : 0))}
         l={m.id === 3 ? 110 : m.id >= 4 ? 70 : 60} h={m.id === 3 ? 86 : m.id >= 4 ? 70 : 62} k={eteint ? 0 : 1} vapeur={eteint} />
