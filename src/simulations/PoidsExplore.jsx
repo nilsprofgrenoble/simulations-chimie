@@ -82,7 +82,7 @@ export function PoidsExplore() {
         {trace.length > 1 && <path d={trace.join(' ')} fill="none" stroke={COL.Em} strokeWidth="6" strokeLinecap="round" opacity="0.5"/>}
         {PTS.map(c => <g key={c.id}>
           <circle cx={px(c.x)} cy={py(c.z)} r="5.5" fill="white" stroke="#0f172a" strokeWidth="2.5"/>
-          <text x={px(c.x)} y={py(c.z) + 34} textAnchor="middle" fontSize={15 * Fm} fontWeight="800" fill="#0f172a" stroke="#f1f5f9" strokeWidth="3.5" paintOrder="stroke">{c.id} · {nbf(c.z, 1)} m</text>
+          <text x={px(c.x)} y={py(c.z) + (c.z >= 1 ? 56 : 34)} textAnchor="middle" fontSize={15 * Fm} fontWeight="800" fill="#0f172a" stroke="#f1f5f9" strokeWidth="3.5" paintOrder="stroke">{c.id} · {nbf(c.z, 1)} m</text>
         </g>)}
         {/* drapeaux */}
         {[['dep', A, COL.v, 'départ'], ['arr', B, COL.rouge, 'arrivée']].map(([type, c, col, nom]) => {
