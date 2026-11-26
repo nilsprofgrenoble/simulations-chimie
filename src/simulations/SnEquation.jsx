@@ -91,7 +91,7 @@ function AnimElim({ N, u, e1 = false }) {
       {subs(cb, R, E.fCb)}{subs(ca, R2, E.fCa)}
       <Liaison x0={cb[0]} y0={cb[1]} x1={H[0]} y1={H[1] + 10} type={hOp > 0.9 ? 'plan' : 'partielle'} op={hOp < 0.05 ? 0 : Math.max(hOp, 0.5)} />
       <Liaison x0={ca[0]} y0={ca[1]} x1={Br[0] - 8} y1={Br[1] - 14} type={brOp > 0.9 ? 'plan' : 'partielle'} op={brOp < 0.05 ? 0 : Math.max(brOp, 0.5)} />
-      <Liaison x0={B[0] + 22} y0={B[1] + 3} x1={H[0] - 8} y1={H[1] + 1} type={u < E.bh[1] ? 'partielle' : 'plan'} op={seg(u, E.bh[0], E.bh[1])} />
+      <Liaison x0={B[0] + 22} y0={B[1] + 3} x1={H[0] - 8} y1={H[1] + 1} type={u < E.bh[1] ? 'partielle' : 'plan'} op={u > E.lim && N === 'H₂O' ? 0 : seg(u, E.bh[0], E.bh[1])} />
       {fond(cb[0], cb[1] - 1)}<T x={cb[0]} y={cb[1] + 5}>C</T>{fond(ca[0], ca[1] - 1)}<T x={ca[0]} y={ca[1] + 5}>{e1 && u > 0.4 && E.fCb < 0.5 ? 'C⁺' : 'C'}</T>
       <T x={H[0]} y={H[1] + 5} s={15}>{u > E.lim && N === 'H₂O' ? '' : 'H'}</T>
       <T x={B[0]} y={B[1] + 5} c="#1d4ed8">{u > E.lim ? (N === 'H₂O' ? 'H₃O⁺' : N.replace('⁻', '')) : N}</T><T x={Br[0]} y={Br[1] + 5} c={BRUN}>{u > E.brLab ? 'Br⁻' : 'Br'}</T>
