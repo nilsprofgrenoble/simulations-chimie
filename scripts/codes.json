@@ -2805,5 +2805,17 @@
  "77:plausible:cet-val-facteur": "VAL747",
  "77:plausible:cet-val-gamme": "VAL748",
  "36:cet-gamme-calcul": "REA179",
- "36:cet-dosage-calcul": "REA180"
+ "36:cet-dosage-calcul": "REA180",
+ "34:pxt-sapp-droite.0": "SAPP606",
+ "34:pxt-sapp-droite.1": "SAPP607",
+ "34:pxt-sapp-tangente.0": "SAPP608",
+ "34:pxt-sapp-tangente.1": "SAPP609",
+ "37:prevoir:pxt-ana-pente": "ANA1275",
+ "37:prevoir:pxt-ana-signe": "ANA1276",
+ "37:prevoir:pxt-ana-corde": "ANA1277",
+ "37:prevoir:pxt-ana-plat": "ANA1278",
+ "77:plausible:pxt-val-pente": "VAL749",
+ "77:plausible:pxt-val-signe": "VAL750",
+ "36:pxt-droite": "REA181",
+ "36:pxt-corde": "REA182"
 }

@@ -3373,6 +3373,48 @@ function genFlpVmin() {
   return { intro, questions: [q1, q2, q3],
     retenir: ['Sans frottement : v minimale = √(2 g h), sans la masse ni l’angle.', 'Avec frottement : ½ m v² = m g h + f × L ; la rampe douce (longue) dissipe plus.'] };
 }
+function genPxtDroite() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let t1, t2, x1, v, x2, t3, x3;
+  do { t1 = tire([1, 2, 3]); t2 = t1 + tire([2, 3, 4]); v = tire([1.5, 2, 2.5, 3, 4]) * tire([1, 1, -1]); x1 = tire([10, 12, 15, 20]); x2 = x1 + v * (t2 - t1); t3 = t2 + tire([2, 3, 4]); x3 = x2 + v * (t3 - t2); }
+  while (x2 <= 0 || x3 <= 0 || new Set([v, x3, x2 - x1].map(x => Number(Math.abs(x).toPrecision(2)))).size < 3);
+  const fr = x => String(x).replace('.', ',');
+  const intro = `Un chariot se déplace à vitesse constante sur un rail. Sur la droite de sa position x en fonction du temps, on lit : x = ${fr(x1)}${NB}m à la date ${t1}${NB}s et x = ${fr(x2)}${NB}m à la date ${t2}${NB}s.`;
+  const q1 = { id: 'p0', type: 'num', q: <>Quelle est la <b>coordonnée de la vitesse</b> du chariot, avec son signe (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v, tolRel: 0.05, csMin: 2,
+    aide: 'La vitesse est la pente de la droite : v = (x₂ − x₁) ÷ (t₂ − t₁).',
+    pieges: [[(x2 - x1) / t2, 'La durée est t₂ − t₁, pas la date t₂ seule.'], [-v, 'Vérifiez le signe : il est celui de x₂ − x₁.']],
+    expl: <>v = ({fr(x2)} − {fr(x1)}) ÷ ({t2} − {t1}) = <b>{pvFmt(v)}{NB}m/s</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>Quelle est la <b>distance parcourue</b> par le chariot entre les dates {t1}{NB}s et {t2}{NB}s (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: Math.abs(x2 - x1), tolRel: 0.05, csMin: 2,
+    aide: 'La distance est la valeur absolue de la variation de position |x₂ − x₁|.',
+    pieges: [[x2, 'C’est la position à la date t₂, pas la distance parcourue.']],
+    expl: <>|{fr(x2)} − {fr(x1)}| = <b>{pvFmt(Math.abs(x2 - x1))}{NB}m</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Le mouvement reste uniforme. Quelle est la <b>position</b> du chariot à la date {t3}{NB}s (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: x3, tolRel: 0.05, csMin: 2,
+    aide: 'x(t₃) = x₂ + v × (t₃ − t₂).',
+    pieges: [[v * (t3 - t2), 'Il faut ajouter la position x₂ : x(t₃) = x₂ + v × (t₃ − t₂).'], [x2 + v * t3, 'La durée à utiliser est t₃ − t₂, à partir de la date t₂.']],
+    expl: <>x = {fr(x2)} + ({pvFmt(v)}) × ({t3} − {t2}) = <b>{pvFmt(x3)}{NB}m</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['La vitesse d’un mouvement uniforme est la pente de la droite x(t) : v = Δx ÷ Δt.', 'Le signe de v dit dans quel sens le mobile se déplace sur l’axe.'] };
+}
+function genPxtCorde() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let a, b, t0, dt, x, vm, vi;
+  do { a = tire([1, 2, 3]); b = tire([1, 2, 3]); t0 = tire([2, 3, 4]); dt = tire([1, 2]); x = t => 0.5 * a * t * t + b * t; vm = (x(t0 + dt) - x(t0)) / dt; vi = b + a * t0; }
+  while (Math.abs(vm - vi) < 0.4 || Number(vm.toPrecision(2)) === Number(vi.toPrecision(2)));
+  const fr = x2 => String(x2).replace('.', ',');
+  const intro = `La position d’un mobile sur un rail est x(t) = ${fr((a / 2).toFixed(2))} t² + ${b} t (x en m, t en s).`;
+  const q1 = { id: 'c0', type: 'num', q: <>Quelle est la <b>vitesse moyenne</b> du mobile entre les dates {t0}{NB}s et {t0 + dt}{NB}s (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vm, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez x aux deux dates, puis (x₂ − x₁) ÷ (t₂ − t₁).',
+    pieges: [[vi, 'C’est la vitesse à la date t₀ (pente de la tangente) : ici on demande la vitesse moyenne (pente de la corde).']],
+    expl: <>x({t0}) = {pvFmt(x(t0))}{NB}m, x({t0 + dt}) = {pvFmt(x(t0 + dt))}{NB}m ; v moyenne = <b>{pvFmt(vm)}{NB}m/s</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>Quelle est la <b>vitesse à la date {t0}{NB}s</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vi, tolRel: 0.05, csMin: 2,
+    aide: 'La vitesse est la dérivée de x(t) : (t²)′ = 2t et (t)′ = 1.',
+    pieges: [[vm, 'C’est la vitesse moyenne entre deux dates : la vitesse à une date est la dérivée de x(t).'], [x(t0), 'C’est la position à cette date, pas la vitesse.']],
+    expl: <>v(t) = {fr(a)} t + {b}, donc v({t0}) = <b>{pvFmt(vi)}{NB}m/s</b>.</> };
+  filtrer([q1, q2]);
+  return { intro, questions: [q1, q2],
+    retenir: ['Vitesse moyenne = pente de la corde ; vitesse à une date = pente de la tangente = dérivée de x(t).', 'Pour une courbe qui se redresse, la corde est plus raide que la tangente au début de l’intervalle.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5948,6 +5990,8 @@ export const FAMILLES = [
   { id: 'lpg-hmin', groupe: 'Formules', titre: 'Looping : vitesse minimale au sommet et hauteur minimale de départ (terminale STL)', gen: genLpgHmin, domaine: 'Looping : vitesse en chaque point et hauteur minimale de départ' },
   { id: 'flp-hauteur', groupe: 'Formules', titre: 'Flipper : énergie, hauteur atteinte et distance sur la rampe (terminale STL)', gen: genFlpHauteur, domaine: 'Flipper : vitesse d’éjection minimale pour atteindre le haut de la rampe' },
   { id: 'flp-vmin', groupe: 'Formules', titre: 'Flipper : vitesse d’éjection minimale, avec et sans frottement (terminale STL)', gen: genFlpVmin, domaine: 'Flipper : vitesse d’éjection minimale pour atteindre le haut de la rampe' },
+  { id: 'pxt-droite', groupe: 'Formules', titre: 'Vitesse lue sur une droite x(t), position à une date ultérieure (terminale STL)', gen: genPxtDroite, domaine: 'Lire une vitesse sur un graphique x(t)' },
+  { id: 'pxt-corde', groupe: 'Formules', titre: 'Vitesse moyenne (corde) et vitesse à une date (tangente) (terminale STL)', gen: genPxtCorde, domaine: 'Lire une vitesse sur un graphique x(t)' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
