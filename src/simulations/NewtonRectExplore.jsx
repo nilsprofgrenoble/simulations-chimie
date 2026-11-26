@@ -23,10 +23,12 @@ export function NewtonRectExplore({ ex, setEx }) {
   const im = imageA(frames, L.t), vmax = useMemo(() => frames.reduce((a, i) => Math.max(a, Math.abs(i.v)), 1), [frames]);
   const { x, v, a, fr, S } = im;
   const dx = Math.max(Math.min(S * SC, W / 2 - 24), -(W / 2 - 24));
-  const xp = F >= 0 ? CX + DEMI + F * SC : CX - DEMI + F * SC;   // bout de la flèche de poussée (poignée)
-  const debut = ev => { ev.stopPropagation(); ev.currentTarget.setPointerCapture(ev.pointerId); drag.current = true; L.setTouche(true); };
+  const base = F >= 0 ? CX + DEMI : CX - DEMI, xp = base + F * SC;   // origine et bout de la flèche de poussée (la pointe reste une vraie pointe de vecteur)
+  const gripLarg = etroit ? 54 : 40, gripH = etroit ? 38 : 28, lf = Math.abs(F) * SC;
+  const gx = lf >= gripLarg + 26 ? base + 0.4 * (xp - base) : base + (F >= 0 ? 1 : -1) * (lf + gripLarg / 2 + 12);   // la poignée est sur la hampe (ou à côté si la flèche est courte)
+  const debut = ev => { ev.stopPropagation(); ev.currentTarget.setPointerCapture(ev.pointerId); drag.current = { off: coordSvg(svgRef.current, ev).X - xp }; L.setTouche(true); };
   const bouge = ev => {
-    if (!drag.current) return; const { X } = coordSvg(svgRef.current, ev);
+    const d = drag.current; if (!d) return; const X = coordSvg(svgRef.current, ev).X - d.off;   // on garde l'écart entre le doigt et le bout de la flèche
     const Fn = X >= CX ? Math.max(0, (X - CX - DEMI) / SC) : Math.min(0, (X - CX + DEMI) / SC);
     L.reset(); setEx(s => ({ ...s, F: Math.max(-FMAX, Math.min(FMAX, Math.round(Fn))) }));
   };
@@ -42,7 +44,7 @@ export function NewtonRectExplore({ ex, setEx }) {
   };
   const etat = (!L.touche && !L.joue && L.t === 0) ? 0 : L.joue || L.t > 0 ? 2 : 1;
   const bilan = S > 1e-9 ? `ΣF = ${nbf(S, 1)} N vers la droite : la vitesse augmente (a = ${nbf(a, 2)} m/s²).` : S < -1e-9 ? `ΣF = ${nbf(Math.abs(S), 1)} N vers la gauche : la vitesse diminue (a = ${nbf(a, 2)} m/s²).` : v === 0 && F !== 0 ? 'Le frottement compense exactement la poussée : ΣF = 0 et le chariot reste immobile.' : v === 0 ? 'Aucune force horizontale : ΣF = 0, le chariot est immobile.' : 'ΣF = 0 : la vitesse reste constante (principe d’inertie).';
-  const message = etat === 0 ? 'Saisis la flèche bleue de la poussée F : tire-la vers la droite, ou passe à gauche du chariot pour pousser en arrière. Choisis masse, frottement et vitesse initiale, puis « Lancer ».' : etat === 1 ? 'Le bilan est prêt : appuie sur « Lancer » pour voir le chariot bouger et la vitesse v(t) se tracer.' : bilan;
+  const message = etat === 0 ? 'Saisis la poignée sur la flèche bleue de la poussée F : tire-la vers la droite pour allonger la flèche, ou passe à gauche du chariot pour pousser en arrière. Choisis masse, frottement et vitesse initiale, puis « Lancer ».' : etat === 1 ? 'Le bilan est prêt : appuie sur « Lancer » pour voir le chariot bouger et la vitesse v(t) se tracer.' : bilan;
   const aria = `Scène animée : un chariot de ${m} kilogrammes sur un rail, poussée de ${Math.abs(F)} newtons vers ${F >= 0 ? 'la droite' : 'la gauche'}, frottement de ${f} newtons, vitesse initiale ${v0} mètre par seconde. Somme des forces ${nbf(S, 1)} newtons, accélération ${nbf(a, 2)} mètres par seconde carrée, vitesse ${nbf(v, 1)} mètres par seconde.`;
 
   // graphique v(t)
@@ -73,17 +75,20 @@ export function NewtonRectExplore({ ex, setEx }) {
         <circle cx={CX - DEMI + (etroit ? 20 : 30)} cy={SOL - 9} r="11" fill="#e2e8f0" stroke="#475569" strokeWidth="3"/><circle cx={CX + DEMI - (etroit ? 20 : 30)} cy={SOL - 9} r="11" fill="#e2e8f0" stroke="#475569" strokeWidth="3"/>
         <text x={CX - (etroit ? 14 : 0)} y={YC + 8} textAnchor="middle" fontSize={20 * Fm * 0.8} fontWeight="800" fill="#0b4f94">{m} kg</text>
         {/* somme des forces */}
-        {Math.abs(dx) > 3 ? <g>{arr(CX, CX + dx, YC - dS, '#6d28d9', 9)}<text x={CX + dx / 2} y={YC - dS - 10} textAnchor="middle" fontSize={19 * Fm} fontWeight="800" fill="#6d28d9" stroke="#fff" strokeWidth="4" paintOrder="stroke">ΣF = {nbf(S, 1)} N</text></g>
+        {Math.abs(dx) > 3 ? <g>{arr(CX, CX + dx, YC - dS, '#6d28d9', 9)}<text x={CX + dx / 2} y={YC - dS - 10} textAnchor="middle" fontSize={19 * Fm} fontWeight="800" fill="#6d28d9" stroke="#fff" strokeWidth="4" paintOrder="stroke">ΣF = {nbf(S, 1).replace("-", "−")} N</text></g>
           : <text x={CX} y={YC - dS - 10} textAnchor="middle" fontSize={19 * Fm} fontWeight="800" fill="#6d28d9" stroke="#fff" strokeWidth="4" paintOrder="stroke">ΣF = 0</text>}
         {/* frottement */}
         {Math.abs(fr) > 1e-9 && <g>{arr(fr < 0 ? CX - DEMI : CX + DEMI, (fr < 0 ? CX - DEMI : CX + DEMI) + fr * SC, YC + 22, '#dc2626', 7)}
           <text x={(fr < 0 ? CX - DEMI : CX + DEMI) + fr * SC + (fr < 0 ? -10 : 10)} y={YC + 22 + 6 * Fm} textAnchor={fr < 0 ? 'end' : 'start'} fontSize={17 * Fm} fontWeight="800" fill="#b91c1c" stroke="#fff" strokeWidth="4" paintOrder="stroke">f = {nbf(Math.abs(fr), 1)} N</text></g>}
         {/* poussée + poignée */}
         {F !== 0 && <g>{arr(F >= 0 ? CX + DEMI : CX - DEMI, xp, YC - 10, '#0b4f94', 8)}</g>}
-        <text x={F >= 0 ? CX + DEMI + Math.max(F * SC, 20) / 2 : CX - DEMI + Math.min(F * SC, -20) / 2} y={YC - 30 - (etroit ? 12 : 0)} textAnchor="middle" fontSize={19 * Fm} fontWeight="800" fill="#0b4f94" stroke="#fff" strokeWidth="4" paintOrder="stroke">F = {nbf(Math.abs(F), 0)} N</text>
+        <text x={lf >= gripLarg + 26 ? base + 0.75 * (xp - base) : gx} y={YC - 34 - (etroit ? 10 : 0)} textAnchor="middle" fontSize={19 * Fm} fontWeight="800" fill="#0b4f94" stroke="#fff" strokeWidth="4" paintOrder="stroke">F = {nbf(Math.abs(F), 0)} N</text>
         <g className="xa-poignee" role="slider" tabIndex={0} aria-label="Poussée F exercée sur le chariot" aria-valuemin={-FMAX} aria-valuemax={FMAX} aria-valuenow={F} aria-valuetext={`${Math.abs(F)} newtons vers ${F >= 0 ? 'la droite' : 'la gauche'}`} onPointerDown={debut} onPointerMove={bouge} onPointerUp={fait} onPointerCancel={fait} onKeyDown={clavier}>
-          <circle cx={xp} cy={YC - 10} r={etroit ? 44 : 28} fill="transparent"/><circle className="xa-anneau" cx={xp} cy={YC - 10} r={etroit ? 20 : 13} fill="#fff" stroke="#0b4f94" strokeWidth="4"/>
-          {!L.touche && <circle className="xa-pulse" cx={xp} cy={YC - 10} r={etroit ? 24 : 16} fill="none" stroke="#0b4f94" strokeWidth="3"/>}
+          <rect x={Math.min(base, xp) - 12} y={YC - 10 - (etroit ? 34 : 22)} width={Math.max(Math.abs(xp - base), gripLarg) + 24} height={etroit ? 68 : 44} fill="transparent"/>
+          <rect className="xa-anneau" x={gx - gripLarg / 2} y={YC - 10 - gripH / 2} width={gripLarg} height={gripH} rx={gripH / 2} fill="#fff" stroke="#0b4f94" strokeWidth="3.5"/>
+          <polyline points={`${gx - 4},${YC - 10 - 6} ${gx - 10},${YC - 10} ${gx - 4},${YC - 10 + 6}`} fill="none" stroke="#0b4f94" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points={`${gx + 4},${YC - 10 - 6} ${gx + 10},${YC - 10} ${gx + 4},${YC - 10 + 6}`} fill="none" stroke="#0b4f94" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          {!L.touche && <rect className="xa-pulse" x={gx - gripLarg / 2 - 3} y={YC - 10 - gripH / 2 - 3} width={gripLarg + 6} height={gripH + 6} rx={gripH / 2 + 3} fill="none" stroke="#0b4f94" strokeWidth="3"/>}
         </g>
         {/* poids et réaction : flèches verticales égales (elles se compensent) */}
         <g stroke="#15803d" strokeWidth="5" strokeLinecap="round" fill="#15803d">
