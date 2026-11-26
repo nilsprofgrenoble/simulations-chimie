@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./panneauEclairementModele";
+import { PanneauEclairementExplore } from "./PanneauEclairementExplore";
 import { QCM } from "./panneauEclairementQcm";
 import { SceneEclairement, GrapheE, SvgSphere, SvgEclair, SvgLoi, SvgChaine, SvgDistance, SvgLimite } from "./PanneauEclairementSchemas";
 
@@ -423,12 +424,17 @@ export function SimulationPanneauEclairement() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="pe-ex">
-          {scene}
-          <div className="pe-reg">{reglages}</div>
-          {mesures}
+        <PanneauEclairementExplore ti={ti} setTi={setTi}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : Φ = ${ti.phi} W · d = ${String(ti.d).replace('.', ',')} m · S = ${String(ti.S).replace('.', ',')} cm²`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="pe-ex">
+              {scene}
+              <div className="pe-reg">{reglages}</div>
+              {mesures}
+            </div>
+            {graphE}
+          </Section>
         </div>
-        <Section titre="Éclairement selon la distance" ouvert={!!ouv.graphe} onBascule={() => bascule('graphe')}>{graphE}</Section>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
