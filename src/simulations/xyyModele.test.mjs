@@ -41,4 +41,9 @@ for (const id of ['D65', 'A', 'F2']) { const w = M.blancIll(id); ok(C.dansDiagra
 // le point du parcours (590 nm, 0,60 sous D65) devient un pourpre sous A ; un bleu (480 nm) garde sa dominante mais gagne en pureté
 const lA = M.lecture(M.PT_LECTURE.x, M.PT_LECTURE.y, wA); ok(lA.pourpre && lA.purete < 0.2, 'point du parcours : pourpre sous A'); pres(lA.complementaire, 514, 1, 'complémentaire sous A');
 const bleu = C.pointDeDominante(480, 0.6), bA = M.lecture(bleu.x, bleu.y, wA); ok(!bA.pourpre, 'bleu non pourpre sous A'); pres(bA.dominante, 481, 1, 'bleu : dominante sous A'); pres(bA.purete, 0.74, 0.01, 'bleu : pureté sous A');
+// adaptation de Bradford : le blanc source devient le blanc d'affichage ; identité si les blancs sont les mêmes
+for (const id of ['A', 'F2']) { const w = M.blancIll(id), q = M.adapter(w, w, M.W); pres(q.x, M.W.x, 1e-9, 'blanc ' + id + ' devient W x'); pres(q.y, M.W.y, 1e-9, 'blanc ' + id + ' devient W y'); }
+{ const p0 = { x: 0.47, y: 0.386 }, q = M.adapter(p0, M.W, M.W); pres(q.x, p0.x, 1e-9, 'identité x'); pres(q.y, p0.y, 1e-9, 'identité y');
+  const a = M.adapter(p0, wA, M.W); ok(Math.hypot(a.x - M.W.x, a.y - M.W.y) < Math.hypot(p0.x - M.W.x, p0.y - M.W.y), 'sous A, l’orange se rapproche du blanc perçu');
+  const back = M.adapter(a, M.W, wA); pres(back.x, p0.x, 1e-9, 'aller-retour x'); pres(back.y, p0.y, 1e-9, 'aller-retour y'); }
 console.log(`xyyModele : ${n} vérifications OK (${nbP} pourpres, ${nbR} reproductibles, ${nbN} non)`);

@@ -249,6 +249,7 @@ export function SimulationXyy() {
 
   // ---------- exploration : on place un point sur le diagramme ----------
   const wEx = M.blancIll(ex.ill), lx = M.lecture(ex.x, ex.y, wEx);
+  const pPercu = M.adapter(ex, wEx, M.W);   // couleur correspondante : œil adapté à l'illuminant choisi, vue sur un écran dont le blanc est D65
   const placerPoint = (x, y) => {   // hors du diagramme : on ramène le point vers le blanc, jusqu'à la frontière
     let t = 1; if (!C.dansDiagramme(x, y)) { let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (C.dansDiagramme(wEx.x + m * (x - wEx.x), wEx.y + m * (y - wEx.y))) lo = m; else hi = m; } t = lo * 0.995; }
     setEx(e => ({ ...e, x: wEx.x + t * (x - wEx.x), y: wEx.y + t * (y - wEx.y) }));
@@ -258,14 +259,14 @@ export function SimulationXyy() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Placez un point</div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Touchez ou glissez sur le diagramme (ou utilisez les flèches du clavier) : le point <strong>P</strong> se place où vous voulez et le tableau « Lecture du point » se met à jour. La droite part du blanc W, passe par P et rejoint la courbe en D.</div>
       {selecteur('xy-ill', 'Blanc de référence (illuminant)', ex.ill, ev => setEx(x => ({ ...x, ill: ev.target.value })), M.ILLUMS)}
-      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Le blanc W devient celui de l’illuminant choisi : le point P ne bouge pas, mais sa dominante, sa complémentaire et sa pureté sont relues par rapport à ce blanc. Les couleurs dessinées restent celles de D65.</div>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>Le blanc W devient celui de l’illuminant choisi : le point P ne bouge pas, mais sa dominante, sa complémentaire et sa pureté sont relues par rapport à ce blanc. Le fond du diagramme reste celui de D65 ; au-dessus du diagramme, une seconde pastille montre la couleur de P perçue par un œil adapté à l’illuminant choisi.</div>
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 14, color: KIT.txt, minHeight: 42 }}><input type="checkbox" checked={ex.triangle} onChange={ev => setEx(x => ({ ...x, triangle: ev.target.checked }))} style={{ width: 20, height: 20 }}/>Afficher le triangle d’un écran (primaires sRGB)</label>
       <button onClick={() => setEx(x => ({ ...x, x: wEx.x + 0.002, y: wEx.y + 0.002 }))} style={styleBouton(false)}>Revenir au blanc</button>
     </div>);
   const planEx = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Diagramme de chromaticité</div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}><Pastille css={css(ex)} nom="couleur du point P (approchée)" hauteur={26}/></div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}><Pastille css={css(ex)} nom={ex.ill === 'D65' ? 'couleur du point P (approchée)' : 'P vu sous D65'} hauteur={26}/>{ex.ill !== 'D65' && <Pastille css={css(pPercu)} nom={`P perçu, œil adapté à ${ex.ill}`} hauteur={26}/>}</div>
       <SvgChroma triangle={ex.triangle} w={wEx} nomBlanc={ex.ill === 'D65' ? 'W' : `W (${ex.ill})`} onPoint={placerPoint} onTouche={(dx, dy) => placerPoint(ex.x + dx, ex.y + dy)} label="Diagramme de chromaticité xy : touchez pour placer le point P"
         lignes={[...(lx.oppose ? [{ a: wEx, b: lx.oppose, col: '#0f172a', w: 1.8, dash: '6 4' }] : []), ...(lx.frontiere ? [{ a: wEx, b: lx.frontiere, col: '#0f172a', w: 2.2 }] : [])]}
         pts={[...(lx.frontiere && !lx.pourpre ? [{ x: lx.frontiere.x, y: lx.frontiere.y, nom: 'D', col: '#0f172a', creux: true, dx: 10, dy: -8 }] : []), ...(lx.oppose && !lx.oppose.pourpre ? [{ x: lx.oppose.x, y: lx.oppose.y, nom: 'C', col: '#0f172a', creux: true, dx: -10, dy: 14, anchor: 'end' }] : []), { x: ex.x, y: ex.y, nom: 'P', col: '#0f172a', dx: 11, dy: 18 }]}/>
@@ -276,6 +277,7 @@ export function SimulationXyy() {
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Lecture du point</div>
       <LigneMesure nom="x ; y" valeur={`${fr(ex.x, 3)} ; ${fr(ex.y, 3)}`}/>
       <LigneMesure nom="Blanc de référence" valeur={`${ex.ill} : ${fr(wEx.x, 3)} ; ${fr(wEx.y, 3)}`}/>
+      {ex.ill !== 'D65' && <LigneMesure nom={`x ; y perçus (œil adapté à ${ex.ill})`} valeur={`${fr(pPercu.x, 3)} ; ${fr(pPercu.y, 3)}`}/>}
       <LigneMesure nom="Longueur d’onde dominante" valeur={lx.blanc ? 'aucune (blanc)' : lx.pourpre ? 'aucune (pourpre)' : `${n0(lx.dominante)} nm`}/>
       <LigneMesure nom="Longueur d’onde complémentaire" valeur={lx.complementaire != null ? `${n0(lx.complementaire)} nm` : 'aucune'}/>
       <LigneMesure nom="Pureté d’excitation" valeur={fr(lx.purete, 2)}/>
@@ -307,7 +309,7 @@ export function SimulationXyy() {
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Diagramme</strong> : CIE 1931, observateur standard 2° ; x = X / (X + Y + Z), y = Y / (X + Y + Z). La courbe est calculée à partir des fonctions colorimétriques de la CIE (pas de 5 nm, lecture interpolée entre points).</li>
-      <li><strong>Point blanc</strong> : W = (0,313 ; 0,329), celui de l’illuminant D65 (lumière du jour). La longueur d’onde dominante et la pureté dépendent du blanc de référence choisi : l’exploration propose aussi A (lampe à incandescence : 0,448 ; 0,408) et F2 (tube fluorescent : 0,388 ; 0,393), calculés avec les tables de la CIE. Le point P garde ses coordonnées (x ; y) quand on change d’illuminant : seule la lecture change, sans modèle d’adaptation chromatique de l’œil.</li>
+      <li><strong>Point blanc</strong> : W = (0,313 ; 0,329), celui de l’illuminant D65 (lumière du jour). La longueur d’onde dominante et la pureté dépendent du blanc de référence choisi : l’exploration propose aussi A (lampe à incandescence : 0,448 ; 0,408) et F2 (tube fluorescent : 0,388 ; 0,393), calculés avec les tables de la CIE. Le point P garde ses coordonnées (x ; y) quand on change d’illuminant : la lecture (dominante, pureté) change. La pastille « perçue » applique l’adaptation chromatique de Bradford (modèle approché de l’adaptation de l’œil au blanc de l’illuminant, la luminance n’est pas représentée) ; la lecture sur le diagramme n’en dépend pas.</li>
       <li><strong>Mélange de lumières</strong> : mélange additif. Le point du mélange est le barycentre des deux points, pondéré par la part de chaque lumière exprimée en X + Y + Z ; « quantités égales » veut dire parts égales dans cette somme, pas puissances égales.</li>
       <li><strong>Couleurs du fond</strong> : indicatives. Un écran ne sait pas afficher toutes les couleurs du diagramme ; en dehors de son triangle, la couleur dessinée est approchée (moins saturée). Seules les coordonnées font foi.</li>
       <li><strong>Écran</strong> : primaires de la norme sRGB (R : 0,64 ; 0,33, V : 0,30 ; 0,60, B : 0,15 ; 0,06). Les écrans réels, plus récents, ont parfois un triangle plus grand.</li>

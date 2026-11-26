@@ -14,6 +14,20 @@ export function partBlanc(P1, P2) {
 /** Illuminants proposés comme blanc de référence (tables CIE du modèle de couleur) et leur point blanc (x ; y). */
 export const ILLUMS = [{ id: 'D65', nom: 'D65 : lumière du jour' }, { id: 'A', nom: 'A : lampe à incandescence' }, { id: 'F2', nom: 'F2 : tube fluorescent' }];
 export const blancIll = id => { const w = C.xyY(C.blancDe(id)); return { x: w.x, y: w.y }; };
+/** Adaptation chromatique de Bradford : chromaticité sous laquelle un œil adapté au blanc wSrc perçoit un stimulus de chromaticité p,
+ *  exprimée par rapport au blanc d'affichage wDst (couleur « correspondante »). Modèle approché, la luminance n'est pas représentée. */
+const BRAD = [[0.8951, 0.2664, -0.1614], [-0.7502, 1.7135, 0.0367], [0.0389, -0.0685, 1.0296]];
+const mul = (m, v) => m.map(r => r[0] * v[0] + r[1] * v[1] + r[2] * v[2]);
+function inv3(m) {
+  const [[a, b, c], [d, e, f], [g, h, i]] = m, A = e * i - f * h, B = -(d * i - f * g), Cc = d * h - e * g, det = a * A + b * B + c * Cc;
+  return [[A / det, -(b * i - c * h) / det, (b * f - c * e) / det], [B / det, (a * i - c * g) / det, -(a * f - c * d) / det], [Cc / det, -(a * h - b * g) / det, (a * e - b * d) / det]];
+}
+const xyz1 = q => [q.x / q.y, 1, (1 - q.x - q.y) / q.y];
+export function adapter(p, wSrc, wDst) {
+  const r = mul(BRAD, xyz1(p)), s = mul(BRAD, xyz1(wSrc)), d = mul(BRAD, xyz1(wDst));
+  const [X, Y, Z] = mul(inv3(BRAD), [r[0] * d[0] / s[0], r[1] * d[1] / s[1], r[2] * d[2] / s[2]]), t = X + Y + Z;
+  return { x: X / t, y: Y / t };
+}
 /** Lecture complète d'un point : tout ce que le diagramme permet de dire. */
 export function lecture(x, y, w = W) {
   const l = C.lireChromaticite(x, y, w);
