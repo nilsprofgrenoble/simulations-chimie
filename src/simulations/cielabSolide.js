@@ -62,6 +62,16 @@ export function ouvrirDemi(m, L0) {
   }
   return { ...m, I, J, K };
 }
+/** Garde seulement la partie du solide située sous la luminosité L0 : le disque de coupe devient le dessus de cette « coupe » du solide. */
+export function moitieBasse(m, L0) {
+  const I = [], J = [], K = [];
+  for (let t = 0; t < m.I.length; t++) {
+    const p = [m.I[t], m.J[t], m.K[t]];
+    if ((m.z[p[0]] + m.z[p[1]] + m.z[p[2]]) / 3 > L0) continue;
+    I.push(p[0]); J.push(p[1]); K.push(p[2]);
+  }
+  return { ...m, I, J, K };
+}
 /** Face de coupe verticale : demi-plan d'azimut thetaDeg, de la luminosité L0 à 100. */
 export function faceCoupe(thetaDeg, L0, nL = 20, nr = 16) {
   const x = [], y = [], z = [], col = [], c = Math.cos(thetaDeg * Math.PI / 180), s = Math.sin(thetaDeg * Math.PI / 180);

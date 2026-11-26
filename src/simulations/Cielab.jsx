@@ -323,7 +323,7 @@ export function SimulationCielab({ plotlyReady }) {
             tol={{ cible: ex.cible, tolE: ex.tolE, tolCMC: ex.tolC }}/>
         : <VueLab3D plotlyReady={plotlyReady} cible={ex.cible} lot={ex.lot} tolE={ex.tolE} tolC={ex.tolC} mode={ex.vue3d}/>}
       {ex.vue === '3d' && <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.5, marginTop: 6 }}>{ex.vue3d === 'entier'
-        ? <>Le solide est l’ensemble des couleurs d’un écran ; le disque est la coupe à la luminosité de la cible, avec des ellipses de tolérance CMC (agrandies ×{M.AGRANDI}). Touchez et glissez pour tourner.</>
+        ? <>Le solide est l’ensemble des couleurs d’un écran, coupé à la luminosité de la cible (on ne garde que la partie plus sombre). Le disque coloré est la coupe, avec des ellipses de tolérance CMC (agrandies ×{M.AGRANDI}). +a* : vers le rouge, −a* : vers le vert, +b* : vers le jaune, −b* : vers le bleu. Touchez et glissez pour tourner.</>
         : <>Sphère violette : tolérance ΔE*ab. Ellipsoïde vert : tolérance CMC. Point orange : le lot. Touchez et glissez pour tourner.</>}</div>}
     </div>);
   // état du contrôle : les deux couleurs et le verdict, sous la figure
