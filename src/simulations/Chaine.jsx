@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./chaineModele";
 import { QCM } from "./chaineQcm";
+import { ChaineExplore } from "./ChaineExplore";
 import { SceneChaine, SvgConvertisseur, SvgConservation, SvgRendement, SvgSerie, SvgUtile, SvgBilanChaine } from "./ChaineEnergieSchemas";
 
 const SIM_ID = 233, CLE_GUIDE = 'chaine-guide-v1';
@@ -377,10 +378,15 @@ export function SimulationChaine() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="cha-ex">
-          {scene}
-          <div className="cha-reg">{reglages}</div>
-          {mesures}
+        <ChaineExplore ti={ti} setTi={setTi}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : ${app1.nom} · ${ti.Pr} W · ${ti.dt} min${app2 ? ` · après ${app2.nom}` : ''}`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="cha-ex">
+              {scene}
+              <div className="cha-reg">{reglages}</div>
+              {mesures}
+            </div>
+          </Section>
         </div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
