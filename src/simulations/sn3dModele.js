@@ -12,6 +12,7 @@ const mul = (v, a) => v.map(t => t * a);
 
 // Position des groupes selon l'avancement u ∈ [0, 1].
 //  meca 'SN2' : le nucléophile arrive par la droite pendant que Br part par la gauche ; le parapluie des 3 groupes se retourne.
+//  meca 'CAT' : (addition de HBr) le carbocation est déjà plan à u = 0 ; Br⁻ l'attaque par une face ou l'autre (pas de groupe partant).
 //  meca 'SN1' : Br part (u de 0 à 0,4), le carbocation est plan (u ≈ 0,5), puis le nucléophile attaque la face 'gauche' (celle de Br : rétention)
 //               ou la face 'droite' (opposée : inversion), les deux étant également probables.
 export function etat(meca, u, face = 'droite') {
@@ -25,6 +26,13 @@ export function etat(meca, u, face = 'droite') {
     lgLie = u < 0.5; nuLie = u >= 0.5;
     lgOp = u < 0.5 ? 1 - 0.6 * seg(u, 0.2, 0.5) : 0.4 * (1 - seg(u, 0.5, 0.8));      // liaisons partielles à l'état de transition
     nuOp = u < 0.5 ? 0.4 * seg(u, 0.2, 0.5) : 0.4 + 0.6 * seg(u, 0.5, 0.8);
+  } else if (meca === 'CAT') {
+    // carbocation déjà formé (addition de HBr : H⁺ s'est fixé sur l'alcène) : il est plan, Br⁻ arrive par la face 'droite' ou 'gauche'
+    const cote = face === 'droite' ? 1 : -1, repliement = seg(u, 0.4, 0.95);
+    xSub = -cote * penche * repliement;
+    lg = [-LOIN, 0, 0]; nu = [cote * (LG0 + (LOIN - LG0) * (1 - seg(u, 0.05, 0.95))), 0, 0];
+    lgLie = false; nuLie = u > 0.75; lgOp = 0; nuOp = seg(u, 0.6, 0.9);
+    return { subs: [0, 1, 2].map(k => mul(dirSub(xSub, k), LG0)), lg, nu, lgLie, nuLie, lgOp, nuOp, xSub, plan: Math.abs(xSub) < 0.04, sansLg: true };
   } else {
     const aplat = seg(u, 0.2, 0.5), repliement = seg(u, 0.6, 0.95);
     const cote = face === 'droite' ? 1 : -1;                       // côté d'où arrive le nucléophile

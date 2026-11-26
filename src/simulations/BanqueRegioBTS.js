@@ -56,10 +56,10 @@ const NOUVEAUX = [
 
 // ── Régiosélectivité et chiralité ──
 const CHIRAL = [
-  { nom: 'le but-1-ène', f: 'CH₃–CH₂–CH=CH₂', p: 'le 2-bromobutane', ch: true, subs: 'H, CH₃, CH₂CH₃ et Br' },
-  { nom: 'le pent-1-ène', f: 'CH₃–CH₂–CH₂–CH=CH₂', p: 'le 2-bromopentane', ch: true, subs: 'H, CH₃, CH₂CH₂CH₃ et Br' },
-  { nom: 'le propène', f: 'CH₃–CH=CH₂', p: 'le 2-bromopropane', ch: false, subs: 'H, CH₃, CH₃ et Br (deux groupes identiques)' },
-  { nom: 'le 2-méthylbut-1-ène', f: 'CH₂=C(CH₃)–CH₂–CH₃', p: 'le 2-bromo-2-méthylbutane', ch: false, subs: 'CH₃, CH₃, CH₂CH₃ et Br (deux groupes identiques)' },
+  { nom: 'le but-1-ène', f: 'CH₃–CH₂–CH=CH₂', p: 'le 2-bromobutane', g: [['CH₂CH₃', 'C'], ['CH₃', 'C'], ['H', 'H']], ch: true, subs: 'H, CH₃, CH₂CH₃ et Br' },
+  { nom: 'le pent-1-ène', f: 'CH₃–CH₂–CH₂–CH=CH₂', p: 'le 2-bromopentane', g: [['CH₂CH₂CH₃', 'C'], ['CH₃', 'C'], ['H', 'H']], ch: true, subs: 'H, CH₃, CH₂CH₂CH₃ et Br' },
+  { nom: 'le propène', f: 'CH₃–CH=CH₂', p: 'le 2-bromopropane', g: [['CH₃', 'C'], ['CH₃', 'C'], ['H', 'H']], ch: false, subs: 'H, CH₃, CH₃ et Br (deux groupes identiques)' },
+  { nom: 'le 2-méthylbut-1-ène', f: 'CH₂=C(CH₃)–CH₂–CH₃', p: 'le 2-bromo-2-méthylbutane', g: [['CH₃', 'C'], ['CH₃', 'C'], ['CH₂CH₃', 'C']], ch: false, subs: 'CH₃, CH₃, CH₂CH₃ et Br (deux groupes identiques)' },
 ];
 
 export const EXERCICES = [
@@ -220,7 +220,8 @@ export const EXERCICES = [
     construire: () => {
       const a = tire(CHIRAL);
       return {
-        enonce: `On fait réagir ${a.nom} (${a.f}) avec HBr (mécanisme ionique). Le produit majoritaire est ${a.p}. Le carbocation intermédiaire est plan : Br⁻ peut l'attaquer avec la même probabilité des deux côtés du plan.`,
+        enonce: `On fait réagir ${a.nom} (${a.f}) avec HBr (mécanisme ionique). Le produit majoritaire est ${a.p}. Le carbocation intermédiaire est plan : Br⁻ peut l'attaquer avec la même probabilité des deux côtés du plan. La vue 3D montre ce carbocation plan et l'attaque de Br⁻ par chaque face : tournez-la pour observer le produit.`,
+        schema: { type: 'cat3d', groupes: a.g, produit: a.p.replace(/^(le|la) /, '') },
         etapes: [
           { id: 'asym', titre: 'Le carbone portant Br', q: `Le carbone qui porte Br dans ${a.p} est lié à ${a.subs}. Est-il asymétrique ?`,
             aide: 'Un carbone asymétrique est lié à quatre atomes ou groupes d\'atomes tous différents.',

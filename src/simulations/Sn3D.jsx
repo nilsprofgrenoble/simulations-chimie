@@ -7,7 +7,8 @@ import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer, ajouterBase
 import { KIT, stylePetitBouton } from "../commun";
 
 
-export default function Sn3D({ meca, u, sub = 'sec', re = 'HO', devoiler = true }) {
+// meca : 'SN2' | 'SN1' | 'CAT' (carbocation plan attaqué par Br⁻, addition de HBr) ; groupes : [[étiquette, élément], ×3] pour d'autres carbocations ; produit : nom du produit formé (CAT)
+export default function Sn3D({ meca, u, sub = 'sec', re = 'HO', devoiler = true, groupes: groupesPerso, produit }) {
   const hote = useRef(null);
   const s = useRef({});
   const [erreur, setErreur] = useState(null);
@@ -67,38 +68,49 @@ export default function Sn3D({ meca, u, sub = 'sec', re = 'HO', devoiler = true 
     };
     const noyau = new THREE.Mesh(new THREE.SphereGeometry(0.42, 28, 20), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 }));
     contenu.add(noyau);
-    const groupes = { sec: [['CH₂CH₃', 'C'], ['CH₃', 'C'], ['H', 'H']], prim: [['C₃H₇', 'C'], ['H', 'H'], ['H', 'H']], tert: [['CH₃', 'C'], ['CH₃', 'C'], ['CH₃', 'C']] }[sub];
+    const groupes = groupesPerso ?? { sec: [['CH₂CH₃', 'C'], ['CH₃', 'C'], ['H', 'H']], prim: [['C₃H₇', 'C'], ['H', 'H'], ['H', 'H']], tert: [['CH₃', 'C'], ['CH₃', 'C'], ['CH₃', 'C']] }[sub];
     e.subs.forEach((p, k) => {
       sphere(p, groupes[k][1]); liaison(p, 1);
       const et = etiquette(groupes[k][0]); const d = vec(p).normalize(); et.position.copy(vec(p).addScaledVector(d, 0.95)); contenu.add(et);
     });
-    // groupe partant : Br
-    sphere(e.lg, 'Br'); liaison(e.lg, e.lgOp);
-    const eb = etiquette('Br', 0, '#9a3412'); eb.position.copy(vec(e.lg)).add(new THREE.Vector3(0, 0.95, 0)); contenu.add(eb);
+    // groupe partant : Br (absent quand le carbocation est déjà formé)
+    if (!e.sansLg) {
+      sphere(e.lg, 'Br'); liaison(e.lg, e.lgOp);
+      const eb = etiquette('Br', 0, '#9a3412'); eb.position.copy(vec(e.lg)).add(new THREE.Vector3(0, 0.95, 0)); contenu.add(eb);
+    }
     // nucléophile : atomes réels et charge ; ses H s'éloignent du carbone (côté +x), O face au carbone
-    ajouterBase(contenu, re, e.nu, [1, 0, 0], [0, 0, 1], e.nuOp, 71, { HO: 'OH', tBuO: 'OtBu', H2O: 'OH₂⁺' }[re]);
+    if (meca === 'CAT') {
+      sphere(e.nu, 'Br');
+      const eb2 = etiquette('Br', 0, '#9a3412'); eb2.position.copy(vec(e.nu)).add(new THREE.Vector3(0, 0.95, 0)); contenu.add(eb2);
+      if (e.nuOp < 0.5) ajouterCharge(contenu, e.nu, '−', 0.85);
+    } else ajouterBase(contenu, re, e.nu, [1, 0, 0], [0, 0, 1], e.nuOp, 71, { HO: 'OH', tBuO: 'OtBu', H2O: 'OH₂⁺' }[re]);
     liaison(e.nu, e.nuOp);
     // charges : Br⁻ une fois parti, carbocation (SN1) quand Br est parti et le nucléophile pas encore lié
-    if (e.lgOp < 0.5) ajouterCharge(contenu, e.lg, '−', 0.85);
-    if (meca === 'SN1' && !e.lgLie && !e.nuLie) ajouterCharge(contenu, [0, 0, 0], '+', 0.75);
+    if (!e.sansLg && e.lgOp < 0.5) ajouterCharge(contenu, e.lg, '−', 0.85);
+    if ((meca === 'SN1' || meca === 'CAT') && !e.lgLie && !e.nuLie) ajouterCharge(contenu, [0, 0, 0], '+', 0.75);
     // plan des trois groupes quand ils sont dans un plan perpendiculaire à l'axe
     if (e.plan) {
       const pl = new THREE.Mesh(new THREE.CircleGeometry(2.0, 40), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }));
       pl.rotation.y = Math.PI / 2; contenu.add(pl);
     }
     st.sale = true;
-  }, [e.xSub, e.lg[0], e.nu[0], e.lgOp, e.nuOp, e.plan, e.lgLie, e.nuLie, sub, re]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [e.xSub, e.lg[0], e.nu[0], e.lgOp, e.nuOp, e.plan, e.lgLie, e.nuLie, sub, re, groupesPerso?.map(g => g[0]).join('|')]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   if (erreur) return <div style={{ padding: 16, fontSize: 14, color: '#b45309' }}>{erreur}</div>;
   const nomSub = { sec: '2-bromobutane', prim: '1-bromobutane', tert: '2-bromo-2-méthylpropane' }[sub];
-  const texte = conf ? (e.lgLie ? `(${conf})-2-bromobutane` : `(${conf})-butan-2-ol`)
+  const texte = meca === 'CAT' ? (e.nuLie ? `${produit ?? 'Produit'} formé` : e.plan ? 'Carbocation : les trois groupes sont dans un plan' : 'Br⁻ se rapproche du carbocation…') : conf ? (e.lgLie ? `(${conf})-2-bromobutane` : `(${conf})-butan-2-ol`)
     : e.plan ? (meca === 'SN2' ? 'État de transition : les trois groupes sont dans un plan' : 'Carbocation : les trois groupes sont dans un plan')
       : (sub !== 'sec' || !devoiler) && e.lgLie ? nomSub : (sub !== 'sec' || !devoiler) && e.nuLie ? 'Produit de substitution formé' : 'Le carbone est en cours de transformation…';
   return (
     <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: 8 }}>
-      <div ref={hote} role="img" aria-label={`Vue 3D de la ${meca} sur le ${nomSub}, à tourner à la souris ou au doigt`}
+      <div ref={hote} role="img" aria-label={meca === 'CAT' ? 'Vue 3D d’un carbocation plan attaqué par l’ion bromure, à tourner à la souris ou au doigt' : `Vue 3D de la ${meca} sur le ${nomSub}, à tourner à la souris ou au doigt`}
         style={{ width: '100%', height: 280, borderRadius: 10, background: 'linear-gradient(#f8fafc,#e2e8f0)', touchAction: 'none', cursor: 'grab' }} />
       <div style={{ textAlign: 'center', fontSize: 13, color: KIT.txt2, margin: '6px 0' }}>Faites glisser pour tourner la molécule ; avancez la réaction avec le curseur.</div>
+      {meca === 'CAT' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt, alignSelf: 'center' }}>Br⁻ attaque :</span>
+        <button onClick={() => setFace('gauche')} aria-pressed={face === 'gauche'} style={stylePetitBouton(face === 'gauche', '#0891b2')}>par une face</button>
+        <button onClick={() => setFace('droite')} aria-pressed={face === 'droite'} style={stylePetitBouton(face === 'droite', '#0891b2')}>par l’autre face</button>
+      </div>}
       {meca === 'SN1' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 6 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt, alignSelf: 'center' }}>Le nucléophile attaque :</span>
         <button onClick={() => setFace('gauche')} aria-pressed={face === 'gauche'} style={stylePetitBouton(face === 'gauche', '#0891b2')}>du côté où Br est parti</button>
