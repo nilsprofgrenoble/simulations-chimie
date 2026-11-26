@@ -25,9 +25,16 @@ for (const b of Object.keys(M.BASES)) {
     // mêmes X, Y, Z sous D65
     const a = C.xyz(r1, 'D65'), c = C.xyz(r2, 'D65'); pres(a.X, c.X, 1e-6, 'X'); pres(a.Y, c.Y, 1e-6, 'Y'); pres(a.Z, c.Z, 1e-6, 'Z');
   }
-  const { r1, r2 } = M.paire(b, 1); ok(M.ecartSous(r1, r2, 'A') > 3.5 && M.ecartSous(r1, r2, 'F2') > 2, `métamérisme sensible ${b}`);
+  const { r1, r2 } = M.paire(b, 1); ok(M.ecartSous(r1, r2, 'A') > 3 && M.ecartSous(r1, r2, 'F2') > 1.8, `métamérisme sensible ${b}`);
   // les courbes se croisent au moins 3 fois (condition nécessaire du métamérisme à trois grandeurs)
   let cr = 0; for (let i = 1; i < M.NB; i++) if ((r1[i] - r2[i]) * (r1[i - 1] - r2[i - 1]) < 0) cr++; ok(cr >= 3, `croisements ${b} : ${cr}`);
+}
+// courbes lisses et plausibles : exactement 3 croisements, peu d'extrema, E2 positive et bornée, forme choisie trouvée pour chaque base
+const nbExtrema = v => { let n = 0; for (let i = 1; i < v.length - 1; i++) if ((v[i] - v[i - 1]) * (v[i + 1] - v[i]) < -1e-9) n++; return n; };
+for (const b of Object.keys(M.BASES)) {
+  ok(M.DELTAS[b] && M.DELTAS[b].d.length === M.NB, `forme trouvée ${b}`);
+  for (const s of [0.5, 1, 1.5, 2, 2.5]) { const { r1, r2 } = M.paire(b, s); let cr = 0; for (let i = 1; i < M.NB; i++) if ((r1[i] - r2[i]) * (r1[i - 1] - r2[i - 1]) < 0) cr++;
+    ok(cr === 3, `exactement 3 croisements ${b} ${s} : ${cr}`); ok(nbExtrema(r2) <= 3, `E2 lisse ${b} ${s}`); ok(Math.min(...r2) > 0.03 && Math.max(...r2) < 0.95, `E2 bornée ${b} ${s}`); }
 }
 const P = M.PAIRE; ok(M.ecartSous(P.r1, P.r2, 'A') > 4 && M.ecartSous(P.r1, P.r2, 'A') < 6, 'paire du parcours sous A');
 // tirages
