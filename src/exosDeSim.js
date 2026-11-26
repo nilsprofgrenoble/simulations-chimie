@@ -29,6 +29,7 @@ export const EXOS_DE_SIM = {
   246: [/(^|\.)tern-/, /plausible\.tern-/],   // Microémulsions : lire un diagramme ternaire (BTS)
   247: [/(^|\.)lab-/, /plausible\.lab-/],   // Couleur : lire L*a*b* et calculer un écart (BTS)
   248: [/(^|\.)xyy-(?!ana-complem|ana-melange|val-melange)/, /plausible\.xyy-(?!val-melange)/],   // Couleur : lire le diagramme de chromaticité (BTS)
+  300: [/(^|\.)lmt-/, /plausible\.lmt-/],   // Photons, niveaux d’énergie et domaines spectraux (BTS Analyse)
   299: [/(^|\.)ads-/, /plausible\.ads-/, /(^|\.)xyy-(ana-complem|ana-melange)/, /plausible\.xyy-val-melange/],   // Couleur : synthèses additive et soustractive (BTS)
   249: [/(^|\.)mtm-/, /plausible\.mtm-/],   // Couleur : éclairage, réflectance et métamérisme (BTS)
   101: [/for-lasure-/],                                                                                                 // Lasure alkyde

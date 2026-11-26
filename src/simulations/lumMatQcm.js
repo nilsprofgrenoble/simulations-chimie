@@ -1,0 +1,28 @@
+// QCM du parcours guidé de la simulation 300. Ordre FIXE : place de la bonne réponse choisie à la main, jamais la plus longue.
+const mk = (pos, bonne, ...autres) => ({ ordreFixe: true, bonne: pos, options: [...autres.slice(0, pos), bonne, ...autres.slice(pos)] });
+export const QCM = {
+  photon: mk(1, 'augmente, car E est inversement proportionnelle à λ',
+    'diminue, car l’énergie est proportionnelle à la longueur d’onde',
+    'ne change pas : l’énergie ne dépend que de l’intensité de la lumière',
+    'augmente, car E est proportionnelle à λ, à cause du facteur h·c'),
+  domaines: mk(2, 'l’infrarouge, entre 500 et 4000 cm⁻¹ environ',
+    'l’ultraviolet, dont les photons sont assez énergétiques pour tout exciter',
+    'le visible, dont les photons ont la même énergie que les vibrations',
+    'les rayons X, car ils sont les plus énergétiques de tous les rayonnements'),
+  niveaux: mk(0, 'E rot ≪ E vib ≪ E él',
+    'E él ≪ E vib ≪ E rot',
+    'E vib ≪ E rot ≪ E él',
+    'E rot ≈ E vib ≈ E él'),
+  interactions: mk(3, 'diffusent la lumière dans toutes les directions, plus le bleu que le rouge',
+    'absorbent le rouge et ne laissent passer que le bleu, comme un filtre',
+    'émettent de la lumière bleue après avoir été excitées par le Soleil',
+    'réfléchissent la lumière du Soleil comme le ferait un miroir de grande taille'),
+  spectres: mk(1, 'un creux : la transmittance diminue à la longueur d’onde absorbée',
+    'un pic vers le haut : la transmittance augmente quand la lumière est absorbée',
+    'une ligne horizontale : un spectre IR ne montre aucune bande',
+    'un pic vers le haut, comme une bande d’absorbance du spectre UV-visible'),
+  extinction: mk(2, 'l’absorption et la diffusion : la lumière subit les deux',
+    'l’absorption seule, car la diffusion est toujours négligeable',
+    'l’émission de lumière par l’échantillon après son excitation',
+    'la disparition totale de la lumière, avec une absorbance infinie'),
+};

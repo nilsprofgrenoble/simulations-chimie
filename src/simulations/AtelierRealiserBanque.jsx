@@ -23,6 +23,7 @@ import * as DM from "./dissolutionModele";
 import { tirageCalcul as tirageMecanismesTG } from "./mrxExos";
 import { tirageCalcul as tirageStrategieTG } from "./strExos";
 import { tirageCalcul as tirageChaineCTG } from "./chcExos";
+import { tirageBandeIR as tirageBandeIRBTS } from "./lumMatExos";
 import { tirageLab as tirageLabBTS, tirageXyy as tirageXyyBTS, tirageFiltres as tirageFiltresBTS } from "./couleurExos";
 import { tirageCalcul as tirageTransfertsHTG } from "./brnExos";
 import * as ME from "./mesureModele";
@@ -5301,6 +5302,7 @@ const enrichir = e => { e.questions.forEach(q => { q.expl = <>{avecIndices(q.exp
 function genLabBTS() { return enrichir(tirageLabBTS(tire)); }
 function genXyyBTS() { return enrichir(tirageXyyBTS(tire)); }
 function genFiltresBTS() { return enrichir(tirageFiltresBTS(tire)); }
+function genBandeIRBTS() { return enrichir(tirageBandeIRBTS(tire)); }
 
 // ───────── Modifier la chaîne carbonée (TG, sim 241) : tirage pur dans chcExos.js (testé par chcExos.test.mjs) ─────────
 function genChaineCTG() { const e = tirageChaineCTG(tire); e.questions.forEach(q => { q.expl = <>{avecIndices(q.expl)}</>; }); return e; }
@@ -6504,6 +6506,7 @@ export const FAMILLES = [
   { id: 'lab-calcul', groupe: 'Formules', titre: 'Couleur : chroma, angle de teinte et écart ΔE*ab à partir de L*a*b* (BTS)', gen: genLabBTS, domaine: 'Couleur : lire L*a*b* et calculer un écart' },
   { id: 'xyy-calcul', groupe: 'Formules', titre: 'Couleur : distances et pureté d’excitation sur le diagramme de chromaticité (BTS)', gen: genXyyBTS, domaine: 'Couleur : lire le diagramme de chromaticité' },
   { id: 'ads-calcul', groupe: 'Formules', titre: 'Couleur : deux filtres en série, absorbance et transmittance (BTS)', gen: genFiltresBTS, domaine: 'Couleur : synthèses additive et soustractive' },
+  { id: 'lmt-calcul', groupe: 'Formules', titre: 'Spectroscopie : d’une bande infrarouge à l’énergie du photon (BTS)', gen: genBandeIRBTS, domaine: 'Photons, niveaux d’énergie et domaines spectraux' },
   { id: 'chc-calcul', groupe: 'Formules', titre: 'Modifier la chaîne carbonée : atomes de carbone d’un produit, rendement global, masse de produit et masse de réactif (TG)', gen: genChaineCTG, domaine: 'Modification de la chaîne carbonée' },
   { id: 'mrx-calcul', groupe: 'Formules', titre: 'Mécanismes réactionnels : atomes d’un acte, chocs efficaces, part efficace et bilan d’un mécanisme (TG)', gen: genMecanismesTG, domaine: 'Mécanismes réactionnels et flèches courbes' },
   { id: 'brn-calcul', groupe: 'Formules', titre: 'Transferts de H⁺ : électrons de valence, doublets, doublets non liants et charge dans une équation acide-base (TG)', gen: genTransfertsHTG, domaine: 'Transferts de H⁺ : acides carboxyliques, amines et leurs formes conjuguées' },

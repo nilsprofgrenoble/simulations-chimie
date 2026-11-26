@@ -30,6 +30,7 @@ const D_COUL_LAB = 'Couleur : lire L*a*b* et calculer un écart';
 const D_COUL_XYY = 'Couleur : lire le diagramme de chromaticité';
 const D_COUL_MTM = 'Couleur : éclairage, réflectance et métamérisme';
 const D_COUL_ADS = 'Couleur : synthèses additive et soustractive';
+const D_LUM = 'Photons, niveaux d’énergie et domaines spectraux';
 
 // ──────────────────────────────────────────────── ANA : prévoir sans calculer ────────────────────────────────────────────────
 export const BTSB_ANA = [
@@ -513,6 +514,32 @@ export const BTSB_SIT = [
               V('Les transmittances se multiplient, les absorbances s’additionnent', 'T = T₁ × T₂ et A = A₁ + A₂, puisque A = −log₁₀(T).')] },
         ],
         retenir: ['Deux filtres en série : T = T₁ × T₂ et A = A₁ + A₂ (A = −log₁₀ T).', 'Un filtre jaune et un filtre cyan en série ne laissent passer que le vert : chaque filtre soustrait une couleur.'],
+      };
+    },
+  },
+  {
+    id: 'lmt-sapp-bande', domaine: D_LUM, niveau: 2, titre: 'Identifier une bande dans un spectre infrarouge',
+    construire: () => {
+      const sig = tire([1715, 1740, 1680, 2250, 3350]), lam = 1e4 / sig, EeV = 6.63e-34 * 3e8 * sig * 100 / 1.6e-19, E2 = Number(EeV.toPrecision(2));
+      return {
+        enonce: `Le spectre infrarouge d’un échantillon, tracé en transmittance T en fonction du nombre d’onde σ, présente un creux intense à σ = ${nb(sig, 0)} cm⁻¹. Constantes : h = 6,63·10⁻³⁴ J·s ; c = 3,00·10⁸ m/s ; 1 eV = 1,60·10⁻¹⁹ J.`,
+        etapes: [
+          { id: 'lecture', titre: 'Lire le spectre', q: 'Que traduit ce creux de transmittance ?', aide: 'Un creux signifie que peu de lumière traverse l’échantillon.',
+            o: [F('L’échantillon émet des photons à ce nombre d’onde', 'Une émission augmenterait le signal au lieu de le diminuer.'),
+              V('Les photons de ce nombre d’onde sont absorbés', 'Moins de lumière transmise : le rayonnement est absorbé à ce nombre d’onde, par un mouvement de vibration de liaison.'),
+              F('La lampe de l’appareil est défaillante à ce nombre d’onde', 'Le spectre est corrigé d’un blanc : le creux vient de l’échantillon.')] },
+          { id: 'lam', titre: 'Longueur d’onde', q: 'Calculer la longueur d’onde λ correspondante, en micromètres.', aide: 'σ = 1/λ avec λ en cm ; 1 µm = 10⁻⁴ cm, donc λ(µm) = 10 000 / σ(cm⁻¹).',
+            type: 'saisie', champs: [{ id: 'lam', lib: 'λ', u: 'µm', vrai: lam, tol: 0.05 }],
+            expl: `λ = 10 000 / ${nb(sig, 0)} ≈ ${nb(lam, 2)} µm : infrarouge moyen (2,5 à 20 µm).` },
+          { id: 'E', titre: 'Énergie du photon', q: 'Calculer l’énergie E du photon absorbé, en électronvolts.', aide: 'E = h·c·σ avec σ en m⁻¹ (1 cm⁻¹ = 100 m⁻¹), puis division par 1,60·10⁻¹⁹ pour passer des joules aux électronvolts.',
+            type: 'saisie', champs: [{ id: 'E', lib: 'E', u: 'eV', vrai: E2, tol: 0.06 }],
+            expl: `E = h·c·σ = 6,63·10⁻³⁴ × 3,00·10⁸ × ${nb(sig * 100, 0)} ≈ ${nb(EeV * 1.6e-19 / 1e-20, 1)}·10⁻²⁰ J, soit ${nb(EeV, 2)} eV.` },
+          { id: 'ordre', titre: 'Nature de la transition', q: 'Que peut-on conclure de cet ordre de grandeur ?', aide: 'Vibration : 0,06 à 0,5 eV ; transition électronique : 1 à 10 eV.',
+            o: [F('Une transition électronique, comme en UV-visible', 'Une transition électronique demande plusieurs eV : ici l’énergie est dix fois plus faible.'),
+              F('Une transition de rotation pure de la molécule', 'La rotation correspond à moins de 0,01 eV : l’énergie est ici trop élevée.'),
+              V('Une transition entre niveaux de vibration d’une liaison', 'Entre 0,06 et 0,5 eV : c’est la plage des vibrations de liaison, observées en infrarouge.')] },
+        ],
+        retenir: ['σ(cm⁻¹) = 10 000 / λ(µm) ; E = h·c·σ.', 'En spectroscopie infrarouge, un creux de transmittance est une bande d’absorption : le photon absorbé fait vibrer une liaison (0,06 à 0,5 eV).'],
       };
     },
   },

@@ -2930,5 +2930,15 @@
  "77:plausible:fvi-val-vlim": "VAL768",
  "77:plausible:fvi-val-tau": "VAL769",
  "36:fvi-vlim": "REA200",
- "36:fvi-tau": "REA201"
+ "36:fvi-tau": "REA201",
+ "34:lmt-sapp-bande": "SAPP646",
+ "37:prevoir:lmt-ana-energie": "ANA1318",
+ "37:prevoir:lmt-ana-vibration": "ANA1319",
+ "37:prevoir:lmt-ana-hierarchie": "ANA1320",
+ "37:prevoir:lmt-ana-spectre-ir": "ANA1321",
+ "37:prevoir:lmt-ana-extinction": "ANA1322",
+ "77:plausible:lmt-val-energie-ir": "VAL770",
+ "77:plausible:lmt-val-absorbance": "VAL771",
+ "77:plausible:lmt-val-rotation": "VAL772",
+ "36:lmt-calcul": "REA202"
 }

@@ -224,6 +224,7 @@ const SimulationCielab = paresseux(() => import("./simulations/Cielab"), "Simula
 const SimulationXyy = paresseux(() => import("./simulations/Xyy"), "SimulationXyy");
 const SimulationMetamerisme = paresseux(() => import("./simulations/Metamerisme"), "SimulationMetamerisme");
 const SimulationSyntheseCouleurs = paresseux(() => import("./simulations/SyntheseCouleurs"), "SimulationSyntheseCouleurs");
+const SimulationLumiereMatiere = paresseux(() => import("./simulations/LumiereMatiere"), "SimulationLumiereMatiere");
 const SimulationStereoisomeres = paresseux(() => import("./simulations/Stereoisomeres"), "SimulationStereoisomeres");
 const SimulationPanneauPhotovoltaique = paresseux(() => import("./simulations/PanneauPhotovoltaique"), "SimulationPanneauPhotovoltaique");
 const SimulationPanneauRendement = paresseux(() => import("./simulations/PanneauRendement"), "SimulationPanneauRendement");
@@ -682,6 +683,7 @@ const SIMULATIONS = [
   { id:248, label:"Diagramme de chromaticité : lire les couleurs", niveau:"BTS", icon:"🌈", color:"#7c3aed", component: SimulationXyy },
   { id:249, label:"Éclairage et métamérisme", niveau:"BTS", icon:"💡", color:"#d97706", component: SimulationMetamerisme },
   { id:299, label:"Synthèse additive et synthèse soustractive : mélanger lumières, filtres et pigments", niveau:"BTS", icon:"🎨", color:"#c026d3", component: SimulationSyntheseCouleurs },
+  { id:300, label:"Photons, niveaux d’énergie et domaines spectraux", niveau:"BTS", icon:"⚛️", color:"#7c3aed", component: SimulationLumiereMatiere },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
 
