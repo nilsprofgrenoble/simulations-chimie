@@ -15,7 +15,7 @@ const COUL_G = ['#0369a1', '#15803d', '#7c3aed'];
 const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
 const sci = (v, d = 1) => { const SUP = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' }; const [m, e] = Number(v).toExponential(d).split('e'); return `${m.replace('.', ',')}×10${[...String(Number(e))].map(c => SUP[c]).join('')}`; };
 const gauss = () => { let u = 0, v = 0; while (u === 0) u = Math.random(); while (v === 0) v = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
-const pasNice = m => (m > 150 ? 50 : m > 60 ? 20 : m > 30 ? 10 : m > 12 ? 5 : 2);
+const pasNice = M.pasNice;
 
 // ---------- graphique σ' = f(V) : points, zones de modélisation glissables, droites, intersection ----------
 //  bornes : { 1: [a, b] | null, 2: [a, b] | null } en mL ; actif : droite en cours de délimitation (1 ou 2) ; onBornes(nouvellesBornes)
@@ -79,6 +79,38 @@ function GraphiqueDosage({ pts, fits, VEm, yMax, montrerSm, bornes, actif, onBor
     </svg>);
 }
 
+// ---------- bloc de modélisation (graphique σ', zones glissables, saisie des bornes) : partagé par l'exploration et le parcours guidé ----------
+const aideSt = { fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 };
+const menuSt = { font: 'inherit', fontSize: 15, padding: '8px 10px', minHeight: 42, borderRadius: 10, border: `1px solid ${KIT.bord}`, background: '#fff', color: KIT.txt, width: '100%', boxSizing: 'border-box' };
+export function BlocModelisation({ lignes, d1, d2, VEm, yMax, bornes, setBornes, actif, setActif, montrerSm, setMontrerSm, Vd, titre = true }) {
+  const aide = aideSt, menu = menuSt, titreCarte = { fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 };
+  const maj = (k, cote, val) => { const v = Math.max(0, Math.min(M.V_BURETTE, Number(String(val).replace(',', '.')))); if (!isFinite(v)) return;
+    const b = bornes[k] ? [...bornes[k]] : [0, v]; b[cote] = v; setBornes(s => ({ ...s, [k]: [Math.min(b[0], b[1]), Math.max(b[0], b[1])] })); };
+  return (
+    <div style={styleBoite}>
+      {titre && <div style={titreCarte}>{avecIndices("σ' = σ × (V₀ + V) / V₀ en fonction du volume versé")}</div>}
+      <div style={aide}>On trace σ' : la conductivité <strong>corrigée de la dilution</strong> (V<sub>0</sub> = {nbf(Vd, 0)} mL, volume de départ). Sans cette correction, la courbe s’incurve et les portions ne sont plus des droites.</div>
+      <div style={{ ...aide, color: KIT.txt, fontWeight: 700 }}>Modéliser : choisissez la droite, puis faites glisser sur le graphique pour délimiter les points à utiliser (poignées pour ajuster).</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+        {[1, 2].map(k => <button key={k} type="button" aria-pressed={actif === k} onClick={() => setActif(k)} style={{ ...stylePetitBouton(actif === k, COUL_G[k]), minHeight: 42 }}>Droite {k} : {k === 1 ? 'avant' : 'après'} la rupture</button>)}
+        <button type="button" onClick={() => setBornes({ 1: null, 2: null })} style={{ ...styleBouton(false), minHeight: 42 }}>Effacer les zones</button>
+      </div>
+      <GraphiqueDosage pts={lignes} fits={[d1, d2]} VEm={VEm} yMax={yMax} montrerSm={montrerSm} bornes={bornes} actif={actif} onBornes={setBornes} onCree={k => setActif(k === 1 && !bornes[2] ? 2 : k)}/>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, margin: '8px 0' }}>
+        {[1, 2].map(k => <div key={k} style={{ fontSize: 13.5, color: KIT.txt }}>
+          <div style={{ fontWeight: 700, color: COUL_G[k] }}>Zone de la droite {k} (mL)</div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>de
+            <input type="number" inputMode="decimal" min="0" max="25" step="0.5" value={bornes[k] ? bornes[k][0] : ''} placeholder="—" aria-label={`Début de la zone de la droite ${k}, en mL`} onChange={e => e.target.value !== '' && maj(k, 0, e.target.value)} style={{ ...menu, width: 84, minHeight: 40 }}/>
+            à <input type="number" inputMode="decimal" min="0" max="25" step="0.5" value={bornes[k] ? bornes[k][1] : ''} placeholder="—" aria-label={`Fin de la zone de la droite ${k}, en mL`} onChange={e => e.target.value !== '' && maj(k, 1, e.target.value)} style={{ ...menu, width: 84, minHeight: 40 }}/></div></div>)}
+      </div>
+      <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, color: KIT.txt, minHeight: 42 }}>
+        <input type="checkbox" checked={montrerSm} onChange={e => setMontrerSm(e.target.checked)} style={{ width: 20, height: 20 }}/>Afficher aussi σ non corrigée (ronds gris, avant correction)</label>
+      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13.5, color: KIT.txt }}>
+        {[[0, 'point non utilisé'], [1, 'point de la droite 1'], [2, 'point de la droite 2']].map(([g, l]) => <span key={g} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 11, height: 11, borderRadius: 6, background: COUL_G[g], display: 'inline-block' }}/>{l}</span>)}
+      </div>
+    </div>);
+}
+
 export function ExplorationDosage({ aEssayer, retenir, panneauHypo, sectionLambda, reduit }) {
   const [ti, setTi] = useState({ t: 'fortSoude', cA: 0.040, eau: M.EAU_DEFAUT });
   const [pas, setPas] = useState(1);
@@ -89,9 +121,7 @@ export function ExplorationDosage({ aEssayer, retenir, panneauHypo, sectionLambd
   const idSuiv = useRef(1), minuteur = useRef(null);
   const { t, cA, eau } = ti, T = M.TITRAGES[t], VE = M.volumeEquivalent(t, cA), Vd = M.Vdepart(eau), F = v => M.facteurDilution(v, eau);
   const vb = pts.length ? Math.max(...pts.map(p => p.VB)) : 0;
-  const dedans = (v, k) => bornes[k] && v >= bornes[k][0] - 1e-6 && v <= bornes[k][1] + 1e-6;
-  const groupe = v => (dedans(v, 1) ? 1 : dedans(v, 2) ? 2 : 0);
-  const lignes = pts.map(p => ({ ...p, sp: p.sm * F(p.VB), g: groupe(p.VB) })).sort((a, b) => a.VB - b.VB);
+  const { lignes, g1, g2, d1, d2, VEm } = M.ajuster(pts.map(p => ({ ...p, sp: p.sm * F(p.VB) })), bornes);
   const mesure = v => { const s = M.sigmaMesuree(t, cA, v, eau); return bruit ? Math.max(0, s * (1 + Math.max(-2, Math.min(2, gauss())) * 0.005)) : s; };
   const reinit = f => { setPts([]); setBornes({ 1: null, 2: null }); setTi(s => ({ ...s, ...f })); };
   const ajouter = liste => {
@@ -101,11 +131,9 @@ export function ExplorationDosage({ aEssayer, retenir, panneauHypo, sectionLambd
   const suivant = pts.length === 0 ? 0 : Number((vb + pas).toFixed(3));
   const peutVerser = suivant <= M.V_BURETTE + 1e-9 && !pts.some(p => Math.abs(p.VB - suivant) < 1e-6);
   const toutVerser = () => { const l = []; for (let v = pts.length ? suivant : 0; v <= M.V_BURETTE + 1e-9; v += pas) l.push(Number(v.toFixed(3))); if (l.length) ajouter(l); };
-  const g1 = lignes.filter(p => p.g === 1).map(p => ({ x: p.VB, y: p.sp })), g2 = lignes.filter(p => p.g === 2).map(p => ({ x: p.VB, y: p.sp }));
-  const d1 = M.regression(g1), d2 = M.regression(g2), VEm = d1 && d2 ? M.abscisseIntersection(d1, d2) : null;
   const sigmaLue = pts.length ? lignes.find(p => p.VB === vb)?.sm ?? M.sigmaMesuree(t, cA, 0, eau) : M.sigmaMesuree(t, cA, 0, eau);
   const lecture = `${nbf(sigmaLue, sigmaLue >= 100 ? 0 : 1)} mS/m`;
-  const yM = Math.max(M.sigma(t, cA, 0, eau), M.sigma(t, cA, M.V_BURETTE, eau), M.sigmaEquivalence(t, cA, eau)) * 1.12, st = pasNice(yM), yMax = Math.max(st * 2, Math.ceil(yM / st) * st);
+  const yMax = M.yMaxDosage(t, cA, eau);
 
   // ---------- diagnostic de la modélisation ----------
   const messages = [];
@@ -161,31 +189,7 @@ export function ExplorationDosage({ aEssayer, retenir, panneauHypo, sectionLambd
       <div style={aide}>La burette verse le titrant dans le bécher ; chaque point coloré représente 0,1 mmol d’un ion. Le conductimètre affiche σ <strong>mesurée</strong> : elle baisse aussi par dilution, ce qu’on corrigera sur le graphique.</div>
       <SceneAllure t={t} cA={cA} VB={vb} lecture={lecture} anime={!reduit} coule={coule} montrer={{ equation: true, cellule: true, ions: true, burette: true, legende: true }}/>
     </div>);
-  const maj = (k, cote, val) => { const v = Math.max(0, Math.min(M.V_BURETTE, Number(String(val).replace(',', '.')))); if (!isFinite(v)) return;
-    const b = bornes[k] ? [...bornes[k]] : [0, v]; b[cote] = v; setBornes(s => ({ ...s, [k]: [Math.min(b[0], b[1]), Math.max(b[0], b[1])] })); };
-  const graphe = (
-    <div style={styleBoite}>
-      <div style={titreCarte}>{avecIndices("σ' = σ × (V₀ + V) / V₀ en fonction du volume versé")}</div>
-      <div style={aide}>On trace σ' : la conductivité <strong>corrigée de la dilution</strong> (V<sub>0</sub> = {nbf(Vd, 0)} mL, volume de départ). Sans cette correction, la courbe s’incurve et les portions ne sont plus des droites.</div>
-      <div style={{ ...aide, color: KIT.txt, fontWeight: 700 }}>Modéliser : choisissez la droite, puis faites glisser sur le graphique pour délimiter les points à utiliser (poignées pour ajuster).</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {[1, 2].map(k => <button key={k} type="button" aria-pressed={actif === k} onClick={() => setActif(k)} style={{ ...stylePetitBouton(actif === k, COUL_G[k]), minHeight: 42 }}>Droite {k} : {k === 1 ? 'avant' : 'après'} la rupture</button>)}
-        <button type="button" onClick={() => setBornes({ 1: null, 2: null })} style={{ ...styleBouton(false), minHeight: 42 }}>Effacer les zones</button>
-      </div>
-      <GraphiqueDosage pts={lignes} fits={[d1, d2]} VEm={VEm} yMax={yMax} montrerSm={montrerSm} bornes={bornes} actif={actif} onBornes={setBornes} onCree={k => setActif(k === 1 && !bornes[2] ? 2 : k)}/>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, margin: '8px 0' }}>
-        {[1, 2].map(k => <div key={k} style={{ fontSize: 13.5, color: KIT.txt }}>
-          <div style={{ fontWeight: 700, color: COUL_G[k] }}>Zone de la droite {k} (mL)</div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>de
-            <input type="number" inputMode="decimal" min="0" max="25" step="0.5" value={bornes[k] ? bornes[k][0] : ''} placeholder="—" aria-label={`Début de la zone de la droite ${k}, en mL`} onChange={e => e.target.value !== '' && maj(k, 0, e.target.value)} style={{ ...menu, width: 84, minHeight: 40 }}/>
-            à <input type="number" inputMode="decimal" min="0" max="25" step="0.5" value={bornes[k] ? bornes[k][1] : ''} placeholder="—" aria-label={`Fin de la zone de la droite ${k}, en mL`} onChange={e => e.target.value !== '' && maj(k, 1, e.target.value)} style={{ ...menu, width: 84, minHeight: 40 }}/></div></div>)}
-      </div>
-      <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 14, color: KIT.txt, minHeight: 42 }}>
-        <input type="checkbox" checked={montrerSm} onChange={e => setMontrerSm(e.target.checked)} style={{ width: 20, height: 20 }}/>Afficher aussi σ non corrigée (ronds gris, avant correction)</label>
-      <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13.5, color: KIT.txt }}>
-        {[[0, 'point non utilisé'], [1, 'point de la droite 1'], [2, 'point de la droite 2']].map(([g, l]) => <span key={g} style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><span style={{ width: 11, height: 11, borderRadius: 6, background: COUL_G[g], display: 'inline-block' }}/>{l}</span>)}
-      </div>
-    </div>);
+  const graphe = <BlocModelisation {...{ lignes, d1, d2, VEm, yMax, bornes, setBornes, actif, setActif, montrerSm, setMontrerSm, Vd }}/>;
   const tableau = (
     <div style={styleBoite}>
       <Section titre={<span><span style={{ display: 'block' }}>Tableau de mesures</span><span style={{ display: 'block', fontSize: 13, fontWeight: 400, color: KIT.txt2, marginTop: 2 }}>{lignes.length ? `${lignes.length} points · droite 1 : ${g1.length} · droite 2 : ${g2.length}` : 'aucune mesure pour le moment'}</span></span>} ouvert={ouv.table} onBascule={() => setOuv(o => ({ ...o, table: !o.table }))}>
