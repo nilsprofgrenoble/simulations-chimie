@@ -59,7 +59,7 @@ export function useLecture(tFin, auto = true) {
   const reset = useCallback(() => { setJoue(false); setT(0); }, []);
   return { t, setT, joue, setJoue, vit, setVit, fin, demarrer, reset, touche, setTouche };
 }
-export const imageA = (frames, t) => frames[Math.max(0, Math.min(frames.length - 1, Math.round(t * FPS)))];
+export const imageA = (frames, t) => { const d = frames[frames.length - 1]; return t >= d.t - 1e-9 ? d : frames[Math.max(0, Math.min(frames.length - 1, Math.round(t * FPS)))]; };
 
 // Coordonnées SVG d'un événement souris / doigt
 export function coordSvg(svg, ev) { const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY; const m = pt.matrixTransform(svg.getScreenCTM().inverse()); return { X: m.x, Y: m.y }; }
