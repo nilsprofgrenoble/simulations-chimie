@@ -39,10 +39,11 @@ export function etat(alc, face, u, syn = false, ca = null) {
   const brn0 = [0, s * 1.45, 0];
   const brnFin = [cx[iB], s * 1.75, 0];
   const approche = 1 - seg(u, 0.05, 0.35);
-  let brn = u < 0.35 ? [0, s * (1.45 + 3.2 * approche), 0] : brn0.map((t, k) => t + (brnFin[k] - t) * f);
+  let brn = u < 0.35 ? [0, s * (1.45 + 2.4 * approche), 0] : brn0.map((t, k) => t + (brnFin[k] - t) * f);
   let brf;
-  if (u < 0.35) brf = [brn[0], brn[1] + s * 1.7, 0];
-  else { const d = seg(u, 0.35, 0.7); brf = [brn0[0] + 3.4 * (iB === 1 ? 1 : -1) * d, s * (1.45 + 1.7 + 0.2 * d), 0]; }
+  const dirB = iB === 1 ? 1 : -1;      // Br₂ est incliné : le Br éloigné est un peu décalé, pour qu'on voie les deux atomes
+  if (u < 0.35) brf = [brn[0] + 1.1 * dirB, brn[1] + s * 1.45, 0];
+  else { const d = seg(u, 0.35, 0.7); brf = [1.1 * dirB + (3.4 - 1.1) * dirB * d, s * (1.45 + 1.45 + 0.45 * d), 0]; }
   const haut = s * 4.9 - 2.2 * s * seg(u, 0.55, 0.8) + (syn ? 2.2 * s * seg(u, 0.85, 1) : 0);
   const brm = u < 0.5 ? null : syn ? [cx[iA], haut, 0] : [cx[iA], -s * (1.75 + 3.2 * (1 - seg(u, 0.55, 0.95))), 0];
   const opPont = [pont, pont];                                  // liaisons du pont avec C2 et C3

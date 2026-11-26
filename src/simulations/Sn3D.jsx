@@ -8,12 +8,14 @@ import { KIT, stylePetitBouton } from "../commun";
 
 const COUL_NU = 0x2563eb;
 
-export default function Sn3D({ meca, u }) {
+const NU_LIE = { HO: 'OH', tBuO: 'OtBu', H2O: 'OH₂⁺' }, NU_LIBRE = { HO: 'HO⁻', tBuO: 'tBuO⁻', H2O: 'H₂O' };
+
+export default function Sn3D({ meca, u, sub = 'sec', re = 'HO' }) {
   const hote = useRef(null);
   const s = useRef({});
   const [erreur, setErreur] = useState(null);
   const [face, setFace] = useState('droite');
-  const e = etatSN(meca, u, face), conf = configuration(e);
+  const e = etatSN(meca, u, face), conf = sub === 'sec' ? configuration(e) : null;
 
   useEffect(() => {
     const el = hote.current;
@@ -75,7 +77,7 @@ export default function Sn3D({ meca, u }) {
     };
     const noyau = new THREE.Mesh(new THREE.SphereGeometry(0.42, 28, 20), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 }));
     contenu.add(noyau);
-    const groupes = [['CH₂CH₃', 'C'], ['CH₃', 'C'], ['H', 'H']];
+    const groupes = { sec: [['CH₂CH₃', 'C'], ['CH₃', 'C'], ['H', 'H']], prim: [['C₃H₇', 'C'], ['H', 'H'], ['H', 'H']], tert: [['CH₃', 'C'], ['CH₃', 'C'], ['CH₃', 'C']] }[sub];
     e.subs.forEach((p, k) => {
       sphere(p, groupes[k][1]); liaison(p, 1);
       const et = etiquette(groupes[k][0]); const d = vec(p).normalize(); et.position.copy(vec(p).addScaledVector(d, 0.95)); contenu.add(et);
@@ -85,22 +87,23 @@ export default function Sn3D({ meca, u }) {
     const eb = etiquette('Br', 0, '#9a3412'); eb.position.copy(vec(e.lg)).add(new THREE.Vector3(0, 0.95, 0)); contenu.add(eb);
     // nucléophile
     sphere(e.nu, 'O', COUL_NU, 0.4); liaison(e.nu, e.nuOp);
-    const en = etiquette(e.nuOp > 0.7 ? 'OH' : 'Nu', 0, '#1d4ed8'); en.position.copy(vec(e.nu)).add(new THREE.Vector3(0, 0.95, 0)); contenu.add(en);
+    const en = etiquette(e.nuOp > 0.7 ? NU_LIE[re] : NU_LIBRE[re], 0, '#1d4ed8'); en.position.copy(vec(e.nu)).add(new THREE.Vector3(0, 0.95, 0)); contenu.add(en);
     // plan des trois groupes quand ils sont dans un plan perpendiculaire à l'axe
     if (e.plan) {
       const pl = new THREE.Mesh(new THREE.CircleGeometry(2.0, 40), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }));
       pl.rotation.y = Math.PI / 2; contenu.add(pl);
     }
     st.sale = true;
-  }, [e.xSub, e.lg[0], e.nu[0], e.lgOp, e.nuOp, e.plan]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [e.xSub, e.lg[0], e.nu[0], e.lgOp, e.nuOp, e.plan, sub, re]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   if (erreur) return <div style={{ padding: 16, fontSize: 14, color: '#b45309' }}>{erreur}</div>;
+  const nomSub = { sec: '2-bromobutane', prim: '1-bromobutane', tert: '2-bromo-2-méthylpropane' }[sub];
   const texte = conf ? (e.lgLie ? `(${conf})-2-bromobutane` : `(${conf})-butan-2-ol`)
     : e.plan ? (meca === 'SN2' ? 'État de transition : les trois groupes sont dans un plan' : 'Carbocation : les trois groupes sont dans un plan')
-      : 'Le carbone est en cours de transformation…';
+      : sub !== 'sec' && e.lgLie ? nomSub : sub !== 'sec' && e.nuLie ? 'Produit de substitution formé' : 'Le carbone est en cours de transformation…';
   return (
     <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: 8 }}>
-      <div ref={hote} role="img" aria-label={`Vue 3D de la ${meca} sur le 2-bromobutane, à tourner à la souris ou au doigt`}
+      <div ref={hote} role="img" aria-label={`Vue 3D de la ${meca} sur le ${nomSub}, à tourner à la souris ou au doigt`}
         style={{ width: '100%', height: 280, borderRadius: 10, background: 'linear-gradient(#f8fafc,#e2e8f0)', touchAction: 'none', cursor: 'grab' }} />
       <div style={{ textAlign: 'center', fontSize: 13, color: KIT.txt2, margin: '6px 0' }}>Faites glisser pour tourner la molécule ; avancez la réaction avec le curseur.</div>
       {meca === 'SN1' && <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center', marginBottom: 6 }}>
@@ -109,8 +112,8 @@ export default function Sn3D({ meca, u }) {
         <button onClick={() => setFace('droite')} aria-pressed={face === 'droite'} style={stylePetitBouton(face === 'droite', '#0891b2')}>de l’autre côté</button>
       </div>}
       <div role="status" aria-live="polite" style={{ textAlign: 'center', fontSize: 14.5, fontWeight: 800, color: conf ? '#0f172a' : '#b45309' }}>{texte}</div>
-      {meca === 'SN2' && u >= 0.99 && <div style={{ textAlign: 'center', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}>Le nucléophile est arrivé par l’arrière : la configuration est <strong>inversée</strong>, comme un parapluie retourné par le vent.</div>}
-      {meca === 'SN1' && u >= 0.99 && <div style={{ textAlign: 'center', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}>Les deux faces du carbocation sont attaquées avec la même probabilité : on obtient les <strong>deux énantiomères</strong> (mélange racémique). Changez de face pour voir l’autre.</div>}
+      {meca === 'SN2' && u >= 0.99 && <div style={{ textAlign: 'center', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}>Le nucléophile est arrivé par l’arrière : les trois autres groupes se sont retournés, comme un parapluie par le vent.{sub === 'sec' ? <> La configuration est <strong>inversée</strong>.</> : ' Ce carbone n’est pas asymétrique : l’inversion n’a pas de conséquence sur le nom du produit.'}</div>}
+      {meca === 'SN1' && u >= 0.99 && <div style={{ textAlign: 'center', fontSize: 13.5, color: KIT.txt, marginTop: 4 }}>{sub === 'sec' ? <>Les deux faces du carbocation sont attaquées avec la même probabilité : on obtient les <strong>deux énantiomères</strong> (mélange racémique). Changez de face pour voir l’autre.</> : 'Le carbocation est plan : le nucléophile peut l’attaquer des deux côtés. Ce carbone n’est pas asymétrique : les deux attaques donnent le même produit.'}</div>}
     </div>
   );
 }

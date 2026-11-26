@@ -4,15 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { etat as etatBr } from "./br3dModele";
 import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer } from "./scene3d";
-import { KIT } from "../commun";
+import { KIT, stylePetitBouton } from "../commun";
+
+const DIST0 = 24, DIST_MIN = 9, DIST_MAX = 40;
 
 export default function Br3D({ alc, face, syn, u }) {
   const hote = useRef(null);
   const s = useRef({});
   const [erreur, setErreur] = useState(null);
   const e = etatBr(alc, face, u, syn);
+  const zoomer = f => { const st = s.current; if (!st.camera) return; st.dist = f === 0 ? DIST0 : Math.min(DIST_MAX, Math.max(DIST_MIN, st.dist * f)); st.camera.position.z = st.dist * Math.max(1, 1.3 / st.camera.aspect); st.camera.updateProjectionMatrix(); st.sale = true; };
 
   useEffect(() => {
+   
     const el = hote.current;
     let renderer;
     try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true }); } catch { Promise.resolve().then(() => setErreur('Votre navigateur ne permet pas l’affichage 3D.')); return; }
@@ -26,11 +30,11 @@ export default function Br3D({ alc, face, syn, u }) {
     const racine = new THREE.Group(); scene.add(racine);
     racine.quaternion.setFromEuler(new THREE.Euler(0.22, -0.55, 0));      // vue de trois quarts : on voit l'alcène « de côté »
     const contenu = new THREE.Group(); racine.add(contenu);
-    s.current = { renderer, scene, camera, racine, contenu, sale: true };
+    s.current = { renderer, scene, camera, racine, contenu, sale: true, dist: DIST0 };
     const taille = () => {
       const w = el.clientWidth || 300, h = el.clientHeight || 300;
       renderer.setSize(w, h, false); camera.aspect = w / h;
-      camera.position.set(0, 0, 17 * Math.max(1, 1.3 / camera.aspect)); camera.lookAt(0, 0, 0);
+      camera.position.set(0, 0, s.current.dist * Math.max(1, 1.3 / camera.aspect)); camera.lookAt(0, 0, 0);
       camera.updateProjectionMatrix(); s.current.sale = true;
     };
     const ro = new ResizeObserver(taille); ro.observe(el); taille();
@@ -43,12 +47,15 @@ export default function Br3D({ alc, face, syn, u }) {
       racine.quaternion.premultiply(q).normalize(); s.current.sale = true;
     };
     const haut = () => { dernier = null; };
+    const molette = ev => { ev.preventDefault(); s.current.dist = Math.min(DIST_MAX, Math.max(DIST_MIN, s.current.dist * (ev.deltaY > 0 ? 1.1 : 0.9))); taille(); };
+    el.addEventListener('wheel', molette, { passive: false });
     el.addEventListener('pointerdown', bas); el.addEventListener('pointermove', deplace); el.addEventListener('pointerup', haut); el.addEventListener('pointercancel', haut);
     let raf;
     const boucle = () => { raf = requestAnimationFrame(boucle); if (s.current.sale) { renderer.render(scene, camera); s.current.sale = false; } };
     boucle();
     return () => {
       cancelAnimationFrame(raf); ro.disconnect();
+      el.removeEventListener('wheel', molette);
       el.removeEventListener('pointerdown', bas); el.removeEventListener('pointermove', deplace); el.removeEventListener('pointerup', haut); el.removeEventListener('pointercancel', haut);
       liberer(scene); renderer.dispose();
       if (renderer.domElement.parentNode === el) el.removeChild(renderer.domElement);
@@ -59,6 +66,7 @@ export default function Br3D({ alc, face, syn, u }) {
     const st = s.current; if (!st.scene) return;
     const { contenu } = st;
     while (contenu.children.length) liberer(contenu.children.pop());
+    contenu.position.y = -(face === 'dessus' ? 1 : -1) * 0.9 * (u < 0.55 ? 1 : 0.5);   // centre la vue entre l'alcène et le dibrome qui arrive
     const sphere = (p, el, r, coul) => {
       const m = new THREE.Mesh(new THREE.SphereGeometry(r ?? RAYON_EL[el], 28, 20), new THREE.MeshStandardMaterial({ color: coul ?? COUL_EL[el], roughness: 0.45 }));
       m.position.copy(vec(p)); contenu.add(m);
@@ -110,8 +118,13 @@ export default function Br3D({ alc, face, syn, u }) {
   return (
     <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 10, padding: 8 }}>
       <div ref={hote} role="img" aria-label="Vue 3D de l’addition de Br₂ sur l’alcène, à tourner à la souris ou au doigt"
-        style={{ width: '100%', height: 300, borderRadius: 10, background: 'linear-gradient(#f8fafc,#e2e8f0)', touchAction: 'none', cursor: 'grab' }} />
-      <div style={{ textAlign: 'center', fontSize: 13, color: KIT.txt2, margin: '6px 0' }}>Faites glisser pour tourner (le plan gris est celui de l’alcène) ; avancez la réaction avec le curseur.</div>
+        style={{ width: '100%', height: 340, borderRadius: 10, background: 'linear-gradient(#f8fafc,#e2e8f0)', touchAction: 'none', cursor: 'grab' }} />
+      <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 6 }}>
+        <button onClick={() => zoomer(0.8)} aria-label="Zoomer" style={stylePetitBouton(false, '#475569')}>＋ Zoom</button>
+        <button onClick={() => zoomer(1.25)} aria-label="Dézoomer" style={stylePetitBouton(false, '#475569')}>－ Dézoom</button>
+        <button onClick={() => zoomer(0)} aria-label="Vue d’ensemble" style={stylePetitBouton(false, '#475569')}>Vue d’ensemble</button>
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 13, color: KIT.txt2, margin: '6px 0' }}>Faites glisser pour tourner, molette ou boutons pour zoomer (le plan gris est celui de l’alcène) ; avancez la réaction avec le curseur. Le Br⁻ qui attaque est un autre ion Br⁻ de la solution : celui formé à la première étape est du côté du pont et ne peut pas attaquer de ce côté.</div>
       {fini && <div role="status" aria-live="polite" style={{ textAlign: 'center', fontSize: 14.5, fontWeight: 800, color: '#0f172a' }}>
         Produit : ({nums[0]}{e.lettres[0]},{nums[1]}{e.lettres[1]}) — un Br au-dessus du plan, l’autre en dessous : addition anti
       </div>}
