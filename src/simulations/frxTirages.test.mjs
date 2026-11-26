@@ -36,4 +36,6 @@ ok(/seuil/.test(T.texteAtome({ cible: true, ion: false }, Fe, 5)) && /Auger/.tes
   ok(somme(obs) === ee.nEnv, 'scénarios exhaustifs'); obs.forEach((c, i) => ok(Math.abs(c / ee.nEnv - pr[i]) < 0.012, 'scénario ' + i + ' : ' + c / ee.nEnv + ' vs ' + pr[i]));
   const sous = T.probas(Fe, { E: 5, w: 100 }); ok(sous[0] === 0 && sous[1] === 1 && sous[2] + sous[3] + sous[4] === 0, 'sous le seuil');
   ok(T.scenario(null) === -1 && T.scenario({ cible: false }) === 0 && T.scenario({ cible: true, ion: false }) === 1 && T.scenario({ cible: true, ion: true, voie: 'kb' }) === 3, 'index de scénario'); }
+ok([0, 1, 2, 3, 4].every(i => T.scenario(T.evenementDemo(i, Fe)) === i) && T.evenementDemo(3, Fe).Edet === Fe.Kb, 'événements de démonstration');
+ok(T.scenarioVisible(T.evenementDemo(2, Fe), 0.3) === -1 && T.scenarioVisible(T.evenementDemo(2, Fe), 0.6) === 2 && T.scenarioVisible(T.evenementDemo(4, Fe), 0.6) === -1 && T.scenarioVisible(T.evenementDemo(4, Fe), 0.8) === 4 && T.scenarioVisible(T.evenementDemo(0, Fe), 0.2) === 0 && T.scenarioVisible(null, 1) === -1, 'scénario allumé');
 console.log('Tirages sim 302 :', n, 'vérifications réussies.');

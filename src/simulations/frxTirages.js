@@ -70,3 +70,7 @@ export function legendePhase(d, p) {
   if (d.voie === 'auger') return '4. L’énergie libérée éjecte un autre électron (effet Auger) : aucun photon X.';
   return `4. L’atome émet un photon X : raie ${d.voie === 'ka' ? 'Kα' : 'Kβ'} (c’est ce photon que détecte l’appareil).`;
 }
+// Événement imposé pour la démonstration d'un scénario (aucun tirage, aucun comptage)
+export const evenementDemo = (sc, el) => [{ cible: false }, { cible: true, ion: false }, { cible: true, ion: true, voie: 'ka', Edet: el.Ka }, { cible: true, ion: true, voie: 'kb', Edet: el.Kb }, { cible: true, ion: true, voie: 'auger' }][sc];
+// Scénario « allumé » dans l'encart : il s'allume quand l'animation permet de le reconnaître (Kα ou Kβ à l'étape 3, Auger à l'étape 4)
+export const scenarioVisible = (d, p) => { const sc = scenario(d); return sc < 0 ? -1 : sc <= 1 ? (p > 0 ? sc : -1) : sc <= 3 ? (p >= 0.5 ? sc : -1) : (p >= 0.75 ? sc : -1); };

@@ -27,21 +27,25 @@ export function useTiragesX(init) {
   const [t, setT] = useState(() => ({ ...INIT, ...init, etat: X.etatVide() }));
   const [play, setPlay] = useState(null);                       // { restant, periode, par } ou null
   const [rejeu, setRejeu] = useState(0);
+  const [demo, setDemo] = useState(null), [manuel, setManuel] = useState(null), [vitDemo, setVitDemo] = useState('lent');   // démonstration d'un scénario seul
   const el = element(t.el);
   const tirer = k => setT(s => ({ ...s, etat: X.lancer(s.etat, element(s.el), s, k, Math.random) }));
+  const quitterDemo = () => { setDemo(null); setManuel(null); };
+  const jouerScenario = sc => { setPlay(null); setManuel(null); setDemo(d => ({ sc, cle: (d?.cle ?? 0) + 1 })); };
   const lancer = k => {
+    quitterDemo();
     if (k === 1) { setPlay(null); tirer(1); return; }
     const c = CAD_LOT[k]; tirer(c.par); setPlay(k - c.par > 0 ? { restant: k - c.par, ...c } : null);
   };
-  const basculeLecture = () => setPlay(p => (p ? null : { restant: Infinity, ...CAD_LECTURE[t.vitesse] }));
+  const basculeLecture = () => { quitterDemo(); setPlay(p => (p ? null : { restant: Infinity, ...CAD_LECTURE[t.vitesse] })); };
   const arreter = () => setPlay(null);
   const regler = patch => {
     if ('vitesse' in patch) setPlay(p => (p && p.restant === Infinity ? { restant: Infinity, ...CAD_LECTURE[patch.vitesse] } : p));
     setT(s => ({ ...s, ...patch, etat: ['el', 'E', 'w'].some(c => c in patch && patch[c] !== s[c]) ? X.etatVide() : s.etat }));
   };
-  const effacer = () => { setPlay(null); setT(s => ({ ...s, etat: X.etatVide() })); };
+  const effacer = () => { quitterDemo(); setPlay(null); setT(s => ({ ...s, etat: X.etatVide() })); };
   const reinit = cfg => { setPlay(null); setT({ ...INIT, ...cfg, etat: X.etatVide() }); };
-  const rejouer = () => setRejeu(r => r + 1);
+  const rejouer = () => (demo ? jouerScenario(demo.sc) : setRejeu(r => r + 1));
   const plein = t.etat.nEnv >= X.MAX_ATOMES;
   const actif = !!play && !plein, periode = play?.periode, par = play?.par;
   useEffect(() => {
@@ -51,5 +55,6 @@ export function useTiragesX(init) {
   }, [actif, periode, par]);
   const anime = t.etat.lot === 1 && !reduitMouvement();
   const dureeAnim = actif && par === 1 ? Math.round(periode * 0.88) : t.vitesse === 'lent' ? 4500 : 2800;
-  return { t, el, rejeu, rejouer, lancer, regler, effacer, reinit, lecture: actif, restant: play?.restant ?? 0, basculeLecture, arreter, plein, anime, dureeAnim };
+  const dureeDemo = { normal: 4500, lent: 10000, tres: 22000 }[vitDemo];
+  return { demo, manuel, setManuel, vitDemo, setVitDemo, dureeDemo, jouerScenario, quitterDemo, t, el, rejeu, rejouer, lancer, regler, effacer, reinit, lecture: actif, restant: play?.restant ?? 0, basculeLecture, arreter, plein, anime, dureeAnim };
 }
