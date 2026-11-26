@@ -106,6 +106,22 @@ export function regression(pts) {
 }
 export const abscisseIntersection = (d1, d2) => (Math.abs(d1.a - d2.a) < 1e-9 ? null : (d2.b - d1.b) / (d1.a - d2.a));
 
+// ajustement affine des deux zones : lignes brutes [{ id, VB, sm, sp }] → lignes avec groupe (0, 1, 2), régressions, intersection
+export function ajuster(brutes, bornes) {
+  const dedans = (v, k) => bornes[k] && v >= bornes[k][0] - 1e-6 && v <= bornes[k][1] + 1e-6;
+  const lignes = brutes.map(p => ({ ...p, g: dedans(p.VB, 1) ? 1 : dedans(p.VB, 2) ? 2 : 0 })).sort((a, b) => a.VB - b.VB);
+  const g1 = lignes.filter(p => p.g === 1).map(p => ({ x: p.VB, y: p.sp })), g2 = lignes.filter(p => p.g === 2).map(p => ({ x: p.VB, y: p.sp }));
+  const d1 = regression(g1), d2 = regression(g2);
+  return { lignes, g1, g2, d1, d2, VEm: d1 && d2 ? abscisseIntersection(d1, d2) : null };
+}
+// mesures du parcours guidé : un point par mL, incertitude de ± 0,4 % reproductible (suite pseudo-aléatoire fixe)
+export function mesuresGuide(t, cA, eau) {
+  let g = 7; const al = () => { g = (g * 1103515245 + 12345) % 2147483648; return g / 2147483648; };
+  const out = []; for (let v = 0; v <= V_BURETTE; v += 1) { const sm = sigmaMesuree(t, cA, v, eau) * (1 + (al() - 0.5) * 0.008); out.push({ id: v, VB: v, sm, sp: sm * facteurDilution(v, eau) }); }
+  return out;
+}
+export const pasNice = m => (m > 150 ? 50 : m > 60 ? 20 : m > 30 ? 10 : m > 12 ? 5 : 2);
+export const yMaxDosage = (t, cA, eau) => { const yM = Math.max(sigma(t, cA, 0, eau), sigma(t, cA, V_BURETTE, eau), sigmaEquivalence(t, cA, eau)) * 1.12, st = pasNice(yM); return Math.max(st * 2, Math.ceil(yM / st) * st); };
 // type de variation d'une pente : 'baisse', 'quasi-constante', 'hausse' (seuil : |σ'| < 3 % de la pente après l'équivalence)
 export function allure(pente, penteRef) { return Math.abs(pente) < 0.06 * Math.abs(penteRef) ? 'quasi-constante' : pente < 0 ? 'baisse' : 'hausse'; }
 export const forme = t => ({ avant: allure(lambdaAvant(t), lambdaApres(t)), apres: allure(lambdaApres(t), lambdaApres(t)) });

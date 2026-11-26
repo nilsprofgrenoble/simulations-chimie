@@ -6,8 +6,8 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./conductimetrieAllureModele";
 import { QCM_PARCOURS as Q } from "./conductimetrieAllureQcm";
-import { ExplorationDosage } from "./AllureDosageExploration";
-import { SceneAllure, GraphiqueAllure, MiniCourbe, SvgIonsCarte, SvgPenteCarte, SvgVCarte, SvgFaibleCarte, SvgRecapCarte } from "./conductimetrieAllureSchemas";
+import { ExplorationDosage, BlocModelisation } from "./AllureDosageExploration";
+import { SceneAllure, GraphiqueAllure, MiniCourbe, SvgIonsCarte, SvgPenteCarte, SvgVCarte, SvgFaibleCarte, SvgRecapCarte, SvgDilutionCarte, SvgDroitesCarte } from "./conductimetrieAllureSchemas";
 
 const SIM_ID = 257, CLE_GUIDE = 'allure-titrage-conductimetrique-tstl-guide-v1';
 declarerDefis(SIM_ID, [['associer', 'Associer chaque titrage à sa courbe'], ['pente', 'Pente d’une courbe de titrage conductimétrique']]);
@@ -35,10 +35,14 @@ const V_MAX = M.V_BURETTE;
 const CA = 0.040, VA = M.VA0, EAU = M.EAU_DEFAUT;
 const T1 = 'fortSoude', T2 = 'faibleSoude', T3 = 'soudeAcide', T4 = 'precip', T5 = 'ammoniacAcide';
 const VE1 = M.volumeEquivalent(T1, CA), PAS = M.pasConc(T1, EAU), PA1 = M.penteAvant(T1, EAU), PP1 = M.penteApres(T1, EAU), S01 = M.sigma0(T1, CA, EAU), SEQ1 = M.sigmaEquivalence(T1, CA, EAU);
+// données du dosage « réel » des deux étapes de modélisation : acide inconnu (même méthode), un point par mL
+const CA_INC = 0.036, MES = M.mesuresGuide(T1, CA_INC, EAU), V_DIL = 12;
+const SM_DIL = Number(MES[V_DIL].sm.toFixed(1)), F_DIL = M.facteurDilution(V_DIL, EAU), SP_DIL = SM_DIL * F_DIL;
+const YMAX_MOD = M.yMaxDosage(T1, CA_INC, EAU);
 const PA2 = M.penteAvant(T2, EAU), VE4 = M.volumeEquivalent(T4, CA);
-const IDS = ['pourquoi', 'spectateur', 'avant', 'apres', 'allure', 'equiv', 'verif', 'faible', 'faiblePente', 'inverse', 'precip', 'comparer', 'bilan'];
-const TITRAGE_DE = { pourquoi: T1, spectateur: T1, avant: T1, apres: T1, allure: T1, equiv: T1, verif: T1, faible: T2, faiblePente: T2, inverse: T3, precip: T4, comparer: T5, bilan: T1 };
-const IONS_VUS = { pourquoi: [], spectateur: [], avant: ['H3O', 'Na', 'HO', 'Cl'], apres: ['H3O', 'Na', 'HO', 'Cl'], allure: ['H3O', 'Na', 'HO', 'Cl'], equiv: ['H3O', 'Na', 'HO', 'Cl'], verif: ['H3O', 'Na', 'HO', 'Cl'],
+const IDS = ['pourquoi', 'spectateur', 'avant', 'apres', 'allure', 'equiv', 'verif', 'dilution', 'droites', 'faible', 'faiblePente', 'inverse', 'precip', 'comparer', 'bilan'];
+const TITRAGE_DE = { pourquoi: T1, spectateur: T1, avant: T1, apres: T1, allure: T1, equiv: T1, verif: T1, dilution: T1, droites: T1, faible: T2, faiblePente: T2, inverse: T3, precip: T4, comparer: T5, bilan: T1 };
+const IONS_VUS = { pourquoi: [], spectateur: [], avant: ['H3O', 'Na', 'HO', 'Cl'], apres: ['H3O', 'Na', 'HO', 'Cl'], allure: ['H3O', 'Na', 'HO', 'Cl'], equiv: ['H3O', 'Na', 'HO', 'Cl'], verif: ['H3O', 'Na', 'HO', 'Cl'], dilution: [], droites: [],
   faible: ['AcO', 'Na'], faiblePente: ['AcO', 'Na'], inverse: ['H3O', 'Na', 'HO', 'Cl'], precip: ['Na', 'Cl', 'Ag', 'NO3'], comparer: ['NH4', 'H3O', 'Cl'], bilan: [] };
 const yMaxPour = liste => {
   const m = Math.max(...liste.flatMap(({ t, cA, eau }) => [M.sigma(t, cA, 0, eau), M.sigma(t, cA, V_MAX, eau), M.sigmaEquivalence(t, cA, eau)])), pas = m > 150 ? 50 : m > 60 ? 20 : 10;
@@ -70,6 +74,7 @@ export function SimulationAllureTitrageConductimetrique() {
   const [hypoOuv, setHypoOuv] = useState(false);
   const [ouv, setOuv] = useState({ lambda: false, essayer: false, retenir: false });
   const [vbs, setVbs] = useState({});
+  const [bornes, setBornes] = useState({ 1: null, 2: null }), [actifMod, setActifMod] = useState(1), [montrerSm, setMontrerSm] = useState(false);
   const [joue, setJoue] = useState(false);
   const [reduit] = useState(mouvementReduit);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
@@ -79,6 +84,11 @@ export function SimulationAllureTitrageConductimetrique() {
   const etape = guide.etape, idE = enGuide ? IDS[Math.min(etape, IDS.length - 1)] : null;
   const rang = id => IDS.indexOf(id);
   const reussie = !!(guide.reussies && guide.reussies[etape]);
+  const modele = M.ajuster(MES, bornes);
+  const { VEm: VEmod } = modele;
+  const VE_INC = M.volumeEquivalent(T1, CA_INC);
+  const modOk = VEmod != null && modele.g1.length >= 3 && modele.g2.length >= 3 && !modele.lignes.some(p => p.g > 0 && M.dansZoneArrondi(p.VB, VE_INC)) && !modele.lignes.some(p => (p.g === 1 && p.VB > VEmod) || (p.g === 2 && p.VB < VEmod));
+  const VEmArr = modOk ? Number(VEmod.toFixed(1)) : null;
   // ---------- situation affichée ----------
   const cleVb = enGuide ? idE : enDefi ? 'defi' : 'explore';
   const vb = vbs[cleVb] ?? 0;
@@ -167,7 +177,36 @@ export function SimulationAllureTitrageConductimetrique() {
         pieges: [[S01, 'C’est σ au départ (0 mL versé) : placez le curseur sur le volume équivalent.']],
         expl: `À V = ${nbf(VE1, 1)} mL, le conductimètre indique ${nbf(SEQ1, 1)} mS/m : c’est le minimum de la courbe en V.`,
         indice: 'Placez le curseur sur la valeur de V_E trouvée à l’étape précédente, puis lisez l’afficheur du conductimètre.' } },
+    { id: 'dilution', titre: 'La dilution fausse la mesure', focus: [],
+      texte: <>En vrai, on ne suit pas la courbe sur un curseur : on verse la burette par pas de 1&nbsp;mL et on lit σ après chaque ajout. On dose maintenant <strong>un acide fort de concentration inconnue</strong> (V<sub>A</sub>&nbsp;=&nbsp;20,0&nbsp;mL, 180&nbsp;mL d’eau, soude à 0,100&nbsp;mol/L). Problème : chaque mL versé <strong>dilue</strong> la solution, donc σ lue baisse même quand le nombre d’ions ne change pas. On corrige en multipliant par le facteur de dilution (V<sub>0</sub>&nbsp;+&nbsp;V)&nbsp;/&nbsp;V<sub>0</sub>, où V<sub>0</sub>&nbsp;=&nbsp;200&nbsp;mL est le volume au départ. Après V&nbsp;=&nbsp;{V_DIL}&nbsp;mL de soude versés, le conductimètre indique σ&nbsp;=&nbsp;{nbf(SM_DIL, 1)}&nbsp;mS·m⁻¹.</>,
+      tache: { type: 'num', q: 'Conductivité corrigée σ′ = σ × (V₀ + V) / V₀ à V = 12 mL', unite: 'mS·m⁻¹', vrai: SP_DIL, tol: 0.015, affiche: v => nbf(v, 1), cs: 3,
+        calcul: () => [`Facteur de dilution : (200 + ${V_DIL}) / 200 = ${nbf(F_DIL, 2)}.`, `σ′ = ${nbf(SM_DIL, 1)} × ${nbf(F_DIL, 2)} = ${nbf(SP_DIL, 1)} mS·m⁻¹.`],
+        pieges: [[SM_DIL, 'C’est σ lue : multipliez-la par le facteur de dilution (V₀ + V) / V₀.'], [SM_DIL / F_DIL, 'Il faut multiplier par le facteur de dilution, pas diviser.'], [SM_DIL * V_DIL / 200, 'Le facteur est (V₀ + V) / V₀ : n’oubliez pas d’ajouter V₀ = 200 mL.']],
+        expl: `σ′ = σ × (V₀ + V) / V₀ = ${nbf(SM_DIL, 1)} × 212 / 200 = ${nbf(SP_DIL, 1)} mS·m⁻¹.`,
+        indice: 'Le facteur (V₀ + V) / V₀ est plus grand que 1 : σ′ est donc plus grande que σ. Ici V₀ = 200 mL et V = 12 mL.' } },
+    { id: 'droites', titre: 'Deux droites pour trouver V_E', focus: [],
+      retenirTitre: 'À retenir : corriger la dilution',
+      retenir: <>
+        <SvgDilutionCarte/>
+        <Ul>
+          <li>Verser du titrant <strong>dilue</strong> : σ lue sous-estime la conductivité due aux ions. On trace σ′&nbsp;=&nbsp;σ&nbsp;×&nbsp;(V<sub>0</sub>&nbsp;+&nbsp;V)&nbsp;/&nbsp;V<sub>0</sub>, ce qui redonne des <strong>droites</strong> de part et d’autre de l’équivalence.</li>
+          <li>Moyen de s’en souvenir : <strong>« σ′ corrige, V₀ + V sur V₀ »</strong> ; le facteur est toujours supérieur à 1.</li>
+        </Ul></>,
+      texte: <>Les 26 mesures corrigées sont tracées (σ′ en fonction de V). Près de l’équivalence, la courbe réelle est <strong>arrondie</strong> : on ne s’y fie pas. Faites <strong>glisser sur le graphique</strong> pour délimiter une zone de points avant la rupture de pente (droite 1), puis une zone après (droite 2) : au moins 3 points chacune, et aucun point proche de la rupture. Les deux droites ajustées se croisent en V<sub>E</sub>.</>,
+      tache: { type: 'num', q: 'Concentration c_A de l’acide dosé, avec V_E lu à l’intersection (c_B = 0,100 mol/L, V_A = 20,0 mL)', unite: 'mol/L', vrai: VEmArr != null ? 0.1 * VEmArr / 20 : 0.036, tol: 0.04, affiche: v => nbf(v, 3), cs: 2,
+        bloque: modOk ? null : 'Délimitez d’abord deux zones correctes sur le graphique (au moins 3 points par droite, loin de la rupture de pente) : V_E s’affichera alors.',
+        calcul: () => [`À l’équivalence : c_B × V_E = c_A × V_A, donc c_A = c_B × V_E / V_A.`, `c_A = 0,100 × ${nbf(VEmArr ?? 7.2, 1)} / 20,0 = ${nbf(0.1 * (VEmArr ?? 7.2) / 20, 3)} mol/L.`],
+        pieges: [[0.1 * (VEmArr ?? 7.2), 'Il faut diviser par V_A = 20,0 mL : c_A = c_B × V_E / V_A.'], [0.1 * 20 / (VEmArr ?? 7.2), 'Le rapport est inversé : c_A = c_B × V_E / V_A.']],
+        expl: `c_A = c_B × V_E / V_A = 0,100 × ${nbf(VEmArr ?? 7.2, 1)} / 20,0 = ${nbf(0.1 * (VEmArr ?? 7.2) / 20, 3)} mol/L.`,
+        indice: 'Relation à l’équivalence : c_B × V_E = c_A × V_A. Lisez V_E sur le graphique (en mL) et gardez V_A en mL : le résultat sort en mol/L.' } },
     { id: 'faible', titre: 'Un acide faible par la soude', focus: ['equation', 'becher'],
+      retenirTitre: 'À retenir : modéliser par deux droites',
+      retenir: <>
+        <SvgDroitesCarte/>
+        <Ul>
+          <li>On modélise <strong>chaque branche par une droite</strong> (régression affine) avec des points <strong>loin de la rupture de pente</strong> ; le volume équivalent est l’<strong>abscisse de l’intersection</strong>, puis c<sub>A</sub>&nbsp;=&nbsp;c<sub>B</sub>&nbsp;×&nbsp;V<sub>E</sub>&nbsp;/&nbsp;V<sub>A</sub>.</li>
+          <li>Moyen de s’en souvenir : <strong>« deux droites, une intersection, loin du coude »</strong>.</li>
+        </Ul></>,
       texte: <>Autre titrage, même méthode. On titre 20,0&nbsp;mL d’<strong>acide éthanoïque</strong> CH₃COOH (un acide faible), c<sub>A</sub>&nbsp;=&nbsp;4,0×10⁻²&nbsp;mol/L, additionnés de 180&nbsp;mL d’eau, par la même soude à 0,100&nbsp;mol/L. L’acide faible est presque entièrement sous forme de <strong>molécules</strong> (en gris) : on néglige les rares ions déjà présents. La réaction de titrage CH₃COOH + HO⁻ → CH₃COO⁻ + H₂O fait disparaître une molécule (qui ne conduit pas) et apparaître un ion CH₃COO⁻ (λ&nbsp;=&nbsp;{Lf('AcO')}&nbsp;mS·m²·mol⁻¹), en plus de Na⁺ apporté par la burette. Prévoyez avant de regarder la mesure : le conductimètre s’affichera quand vous aurez répondu.</>,
       tache: { type: 'qcm', q: 'Avant l’équivalence, comment évolue la conductivité σ ?', ...Q.faible,
         expl: 'Chaque HO⁻ versé fait disparaître une molécule neutre et apparaître deux ions : CH₃COO⁻ et Na⁺. Aucun ion ne disparaît : σ augmente. Comme λ(CH₃COO⁻) et λ(Na⁺) sont petits, l’augmentation est lente.',
@@ -345,7 +384,8 @@ export function SimulationAllureTitrageConductimetrique() {
     </div>);
   const courbesAff = [{ pts: ptsDe(t, cA, eau), couleur: COL.bleu }];
   const yMax = yMaxPour([{ t, cA, eau }]);
-  const grapheOk = enGuide && (idE === 'verif' || (rang(idE) > rang('verif') && idE !== 'bilan' && reussie));
+  const etMod = enGuide && (idE === 'dilution' || idE === 'droites');
+  const grapheOk = enGuide && !etMod && (idE === 'verif' || (rang(idE) > rang('verif') && idE !== 'bilan' && reussie));
   const veVisible = enGuide && rang(idE) >= rang('equiv') + 1 && (idE === 'verif' || reussie);
   const boxGraphe = grapheOk && (
     <div style={styleBoite}>
@@ -414,10 +454,11 @@ export function SimulationAllureTitrageConductimetrique() {
         <div className="al-main">
           {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.type}`} etat={defi.type === 'associer' ? suiviA : suiviP}/></div>}
           <div className="al-col">
-            {(enGuide || (enDefi && defi && defi.type === 'pente')) && <div className="al-in">{boxScene}</div>}
-            {(enGuide || (enDefi && defi && defi.type === 'pente')) && <div className="al-in">{boxCurseur}</div>}
+            {((enGuide && !etMod) || (enDefi && defi && defi.type === 'pente')) && <div className="al-in">{boxScene}</div>}
+            {((enGuide && !etMod) || (enDefi && defi && defi.type === 'pente')) && <div className="al-in">{boxCurseur}</div>}
+            {enGuide && idE === 'droites' && <div className="al-in"><BlocModelisation lignes={modele.lignes} d1={modele.d1} d2={modele.d2} VEm={VEmod} yMax={YMAX_MOD} bornes={bornes} setBornes={setBornes} actif={actifMod} setActif={setActifMod} montrerSm={montrerSm} setMontrerSm={setMontrerSm} Vd={M.Vdepart(EAU)}/></div>}
             {enGuide && boxGraphe && <div className="al-in">{boxGraphe}</div>}
-            {tableLambda && enGuide && <div className="al-in">{tableLambda}</div>}
+            {tableLambda && enGuide && !etMod && <div className="al-in">{tableLambda}</div>}
             {enDefi && defi && defi.type === 'pente' && <div>{tableLambda}</div>}
             {enDefi && defi && defi.type === 'associer' && <div>{tableLambda}</div>}
             {enDefi && <div>{panneauHypo}</div>}

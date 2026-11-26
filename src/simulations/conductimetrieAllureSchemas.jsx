@@ -229,6 +229,51 @@ const Axes = ({ x0 = 40, y0 = 214, x1 = 380, y1 = 40 }) => (
   <g><line x1={x0} y1={y0} x2={x1} y2={y0} stroke={COL.gris} strokeWidth="2"/><line x1={x0} y1={y0} x2={x0} y2={y1} stroke={COL.gris} strokeWidth="2"/>
     <text x={x1} y={y0 + 22} fontSize="15" textAnchor="end" fill={COL.gris}>volume versé</text><text x={x0 + 6} y={y1 + 6} fontSize="15" fill={COL.gris}>σ</text></g>);
 
+// carte dilution : même quantité d'ions dans un plus grand volume
+export function SvgDilutionCarte() {
+  const bec = (x, y, w, h, niveau, pts, etiquette, sous) => (
+    <g>
+      <rect x={x} y={y + h - niveau} width={w} height={niveau} fill="#dbeafe" opacity="0.85"/>
+      <path d={`M${x} ${y} L${x} ${y + h} Q${x} ${y + h + 6} ${x + 6} ${y + h + 6} L${x + w - 6} ${y + h + 6} Q${x + w} ${y + h + 6} ${x + w} ${y + h} L${x + w} ${y}`} fill="none" stroke="#475569" strokeWidth="3" strokeLinecap="round"/>
+      {pts.map(([dx, dy], k) => <circle key={k} cx={x + dx} cy={y + h - niveau + dy} r="5.5" fill={k % 2 ? COL.rouge : COL.bleu}/>)}
+      <text x={x + w / 2} y={y + h + 28} fontSize="15" fontWeight="700" textAnchor="middle" fill={COL.txt}>{etiquette}</text>
+      <text x={x + w / 2} y={y + h + 46} fontSize="14" textAnchor="middle" fill={COL.gris}>{sous}</text>
+    </g>);
+  return (
+    <Carte label="Quand on verse le titrant, le volume de la solution augmente : la même quantité d’ions est répartie dans un plus grand volume, donc la conductivité mesurée baisse. On corrige en multipliant σ par le facteur de dilution (V0 plus V) sur V0.">
+      <text x="200" y="24" fontSize="17" fontWeight="700" textAnchor="middle" fill={COL.txt}>La dilution fait baisser σ mesurée</text>
+      {bec(40, 44, 108, 92, 70, [[22, 20], [60, 14], [86, 32], [36, 46], [72, 52], [94, 60]], 'V₀', 'σ plus grande')}
+      {bec(252, 44, 108, 92, 92, [[16, 14], [88, 22], [52, 44], [26, 68], [82, 74], [60, 84]], 'V₀ + V', 'σ plus petite')}
+      <line x1="164" y1="96" x2="236" y2="96" stroke={COL.orange} strokeWidth="4" strokeLinecap="round"/><polygon points="236,86 252,96 236,106" fill={COL.orange}/>
+      <text x="200" y="82" fontSize="14" fontWeight="700" textAnchor="middle" fill={COL.orange}>on verse</text>
+      <text x="200" y="224" fontSize="14" textAnchor="middle" fill={COL.txt}>mêmes ions, volume plus grand</text>
+      <Boite x={50} y={234} w={300} h={44} fill="#fff7ed" stroke="#fdba74"/>
+      <text x="200" y="262" fontSize="18" fontWeight="700" textAnchor="middle" fill={COL.orange}>σ′ = σ × (V₀ + V) / V₀</text>
+    </Carte>);
+}
+
+// carte modélisation : deux droites, points loin de la rupture
+export function SvgDroitesCarte() {
+  const g = [[56, 64], [84, 83], [112, 102], [140, 121], [260, 135], [288, 108], [316, 82], [344, 56]];
+  return (
+    <Carte label="Modélisation par deux droites : on trace σ′ en fonction du volume, on choisit des points de part et d’autre de la rupture de pente en évitant ceux qui sont proches de l’équivalence, on ajuste une droite sur chaque branche et leur intersection donne le volume équivalent.">
+      <text x="200" y="24" fontSize="17" fontWeight="700" textAnchor="middle" fill={COL.txt}>Deux droites, loin de la rupture</text>
+      <Axes y0={200} y1={38}/>
+      <rect x="150" y="44" width="100" height="156" fill="#fee2e2" opacity="0.7"/>
+      <text x="200" y="62" fontSize="14" fontWeight="700" textAnchor="middle" fill={COL.rouge}>points arrondis</text>
+      <text x="200" y="78" fontSize="14" fontWeight="700" textAnchor="middle" fill={COL.rouge}>à ne pas prendre</text>
+      <line x1="46" y1="59" x2="220" y2="159" stroke={COL.vert} strokeWidth="3" strokeDasharray="7 4"/>
+      <line x1="180" y1="159" x2="354" y2="43" stroke={COL.bleu} strokeWidth="3" strokeDasharray="7 4"/>
+      {g.map(([x, y], k) => <circle key={k} cx={x} cy={y + 2} r="5.5" fill={k < 4 ? COL.vert : COL.bleu}/>)}
+      <line x1="200" y1="159" x2="200" y2="200" stroke={COL.orange} strokeWidth="2.5" strokeDasharray="5 4"/>
+      <circle cx="200" cy="159" r="6" fill={COL.orange}/>
+      <text x="208" y="192" fontSize="15" fontWeight="700" fill={COL.orange}>V<tspan fontSize="11" dy="3">E</tspan></text>
+      <text x="200" y="240" fontSize="16" fontWeight="700" textAnchor="middle" fill={COL.vert}>V<tspan fontSize="11" dy="3">E</tspan><tspan dy="-3"> = intersection des deux droites</tspan></text>
+      <text x="200" y="264" fontSize="14" textAnchor="middle" fill={COL.gris}>au moins 3 points sur chaque branche</text>
+      <text x="200" y="282" fontSize="14" textAnchor="middle" fill={COL.gris}>σ′ : conductivité corrigée de la dilution</text>
+    </Carte>);
+}
+
 // carte 3 : courbe en V (forme générique, sans nombre)
 export function SvgVCarte() {
   return (
