@@ -2667,5 +2667,14 @@
  "37:prevoir:lab-ana-tol": "ANA1222",
  "77:plausible:lab-val-somme": "VAL720",
  "77:plausible:lab-val-angle": "VAL721",
- "77:plausible:lab-val-cmc": "VAL722"
+ "77:plausible:lab-val-cmc": "VAL722",
+ "37:prevoir:xyy-ana-lieu": "ANA1223",
+ "37:prevoir:xyy-ana-pourpre": "ANA1224",
+ "37:prevoir:xyy-ana-purete": "ANA1225",
+ "37:prevoir:xyy-ana-complem": "ANA1226",
+ "37:prevoir:xyy-ana-melange": "ANA1227",
+ "37:prevoir:xyy-ana-ecran": "ANA1228",
+ "77:plausible:xyy-val-dominante": "VAL723",
+ "77:plausible:xyy-val-melange": "VAL724",
+ "77:plausible:xyy-val-ecran": "VAL725"
 }
