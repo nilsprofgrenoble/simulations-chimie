@@ -6,6 +6,7 @@ import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./conductimetrieAllureModele";
 import { QCM_PARCOURS as Q } from "./conductimetrieAllureQcm";
+import { ExplorationDosage } from "./AllureDosageExploration";
 import { SceneAllure, GraphiqueAllure, MiniCourbe, SvgIonsCarte, SvgPenteCarte, SvgVCarte, SvgFaibleCarte, SvgRecapCarte } from "./conductimetrieAllureSchemas";
 
 const SIM_ID = 257, CLE_GUIDE = 'allure-titrage-conductimetrique-tstl-guide-v1';
@@ -67,15 +68,12 @@ export function SimulationAllureTitrageConductimetrique() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('associer');
   const [hypoOuv, setHypoOuv] = useState(false);
-  const [ouv, setOuv] = useState({ lambda: false, gardee: false, essayer: false, retenir: false });
-  const [ti, setTi] = useState({ t: 'fortSoude', cA: 0.040, eau: M.EAU_DEFAUT });
-  const [gardee, setGardee] = useState(null);
+  const [ouv, setOuv] = useState({ lambda: false, essayer: false, retenir: false });
   const [vbs, setVbs] = useState({});
   const [joue, setJoue] = useState(false);
   const [reduit] = useState(mouvementReduit);
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const dd = enDefi && defi ? defi : null;
-  const setT = f => { setTi(s => ({ ...s, ...f })); setJoue(false); };
 
   // ---------- étapes du parcours ----------
   const etape = guide.etape, idE = enGuide ? IDS[Math.min(etape, IDS.length - 1)] : null;
@@ -90,13 +88,13 @@ export function SimulationAllureTitrageConductimetrique() {
     const h = setInterval(() => setVbs(s => { const v = Math.min(V_MAX, (s[cleVb] ?? 0) + 0.5); if (v >= V_MAX) setJoue(false); return { ...s, [cleVb]: v }; }), 150);
     return () => clearInterval(h);
   }, [joue, cleVb]);
-  const t = enGuide ? TITRAGE_DE[idE] : dd ? (dd.type === 'pente' ? dd.t : 'fortSoude') : ti.t;
-  const cA = enGuide ? CA : dd ? (dd.cA ?? CA) : ti.cA;
-  const eau = enGuide ? EAU : dd ? (dd.eau ?? EAU) : ti.eau;
+  const t = enGuide ? TITRAGE_DE[idE] : dd ? (dd.type === 'pente' ? dd.t : 'fortSoude') : 'fortSoude';
+  const cA = enGuide ? CA : dd ? (dd.cA ?? CA) : CA;
+  const eau = enGuide ? EAU : dd ? (dd.eau ?? EAU) : EAU;
   const T = M.TITRAGES[t];
   const sig = M.sigma(t, cA, vb, eau), VE = M.volumeEquivalent(t, cA);
   // le conductimètre et le graphique : jamais avant la question qui demande de prévoir
-  const lectureVisible = enGuide ? (idE === 'verif' || (rang(idE) > rang('verif') && idE !== 'bilan' && reussie) || idE === 'bilan') : enExplore;
+  const lectureVisible = enGuide ? (idE === 'verif' || (rang(idE) > rang('verif') && idE !== 'bilan' && reussie) || idE === 'bilan') : false;
   const lecture = lectureVisible ? `${nbf(sig, sig >= 100 ? 0 : 1)} mS/m` : null;
   const ionsLambda = enGuide ? IONS_VUS[idE] : enDefi ? M.ORDRE_IONS : null;
 
@@ -318,6 +316,7 @@ export function SimulationAllureTitrageConductimetrique() {
       <li><strong>Température constante : 25 °C</strong> ; les conductivités ioniques molaires λ sont des valeurs usuelles arrondies au dixième (données du problème), supposées constantes. Le conductimètre est idéal et affiche directement σ.</li>
       <li><strong>Loi de Kohlrausch</strong> : σ = Σ λ × c, valable pour une solution <strong>diluée</strong> (ions à moins de 10 mol·m⁻³, soit 1,0×10⁻² mol/L). Ici les concentrations ioniques atteignent au plus 12,5 mol·m⁻³ à l’extrémité de certaines courbes (25 mL versés) : léger dépassement, sans conséquence pour l’allure.</li>
       <li><strong>Sans dilution</strong> (comme le programme l’autorise) : le volume de la solution est pris constant, égal au volume de départ (prise d’essai + eau, 200 ou 300 mL). En réalité, 25 mL ajoutés à 200 mL diluent d’environ 11 % : la courbe réelle s’incurve un peu après l’équivalence. C’est pourquoi on ajoute de l’eau avant le titrage.</li>
+      <li><strong>Exploration : dilution réelle</strong>. Le conductimètre affiche σ mesurée, abaissée par la dilution (volume V<sub>0</sub> + V). On trace σ' = σ × (V<sub>0</sub> + V) / V<sub>0</sub>, avec V<sub>0</sub> = prise d’essai + eau : c’est exactement la grandeur « sans dilution » des autres modes. Autour de V<sub>E</sub> (à moins de 1,5 mL), la courbe est arrondie (hypothèse du modèle : bosse gaussienne de 0,9 mL de large, de hauteur 6 % de σ' maximale), ce qui oblige à écarter ces points. L’incertitude de mesure optionnelle est de ± 0,5 % (loi normale tronquée à ± 2 écarts-types, une mesure indépendante par palier).</li>
       <li><strong>Transformation de titrage totale et rapide</strong> ; l’équivalence est repérée au changement de pente. Les droites du modèle sont idéales : une courbe mesurée est un peu arrondie autour de l’équivalence.</li>
       <li><strong>Acide faible et base faible</strong> : les ions déjà présents au départ (dissociation partielle) sont négligés ; σ de départ est prise nulle. En réalité, elle part d’une petite valeur non nulle et peut baisser très légèrement au tout début ; le reste de la courbe est bien décrit par la droite d’avant l’équivalence.</li>
       <li><strong>Précipitation</strong> : le chlorure d’argent est supposé totalement insoluble et ne contribue pas à σ ; la solubilité résiduelle est négligée.</li>
@@ -337,7 +336,6 @@ export function SimulationAllureTitrageConductimetrique() {
   const montrerScene = enGuide ? { equation: rang(idE) >= rang('spectateur'), cellule: true, ions: true, burette: true, legende: true } : { equation: true, cellule: !(dd && dd.type === 'pente'), ions: true, burette: true, legende: true };
   const boxScene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      {enExplore && <div style={aide}>Une burette verse le titrant dans le bécher ; chaque point est 0,1 mmol d’un ion (molécule neutre en gris). La cellule et le conductimètre donnent σ ; le graphique montre σ en fonction du volume versé.</div>}
       <SceneAllure t={t} cA={cA} VB={vb} lecture={lecture} anime={!reduit} montrer={montrerScene} hl={hl}/>
     </div>);
   const boxCurseur = (
@@ -346,15 +344,13 @@ export function SimulationAllureTitrageConductimetrique() {
       <button type="button" onClick={() => { if (joue) setJoue(false); else { if (vb >= V_MAX) setVb(0); setJoue(true); } }} style={{ ...styleBouton(false), minHeight: 42 }}>{joue ? 'Pause' : (vb >= V_MAX ? 'Recommencer' : 'Verser la burette')}</button>
     </div>);
   const courbesAff = [{ pts: ptsDe(t, cA, eau), couleur: COL.bleu }];
-  const courbeGardee = enExplore && gardee ? { pts: ptsDe(gardee.t, gardee.cA, gardee.eau), couleur: '#94a3b8' } : null;
-  const yMax = yMaxPour([{ t, cA, eau }, ...(enExplore && gardee ? [gardee] : [])]);
-  const grapheOk = enGuide ? (idE === 'verif' || (rang(idE) > rang('verif') && idE !== 'bilan' && reussie)) : enExplore;
-  const veVisible = enGuide ? (rang(idE) >= rang('equiv') + 1 && (idE === 'verif' || reussie)) : enExplore;
+  const yMax = yMaxPour([{ t, cA, eau }]);
+  const grapheOk = enGuide && (idE === 'verif' || (rang(idE) > rang('verif') && idE !== 'bilan' && reussie));
+  const veVisible = enGuide && rang(idE) >= rang('equiv') + 1 && (idE === 'verif' || reussie);
   const boxGraphe = grapheOk && (
     <div style={styleBoite}>
       <div style={titreCarte}>Conductivité en fonction du volume versé</div>
-      {enExplore && <div style={aide}>La courbe bleue est tracée jusqu’au volume versé ; le point rouge suit le curseur. {gardee ? 'La courbe grise est la courbe gardée pour comparer.' : ''}</div>}
-      <GraphiqueAllure courbes={enExplore ? [...(courbeGardee ? [courbeGardee] : []), { ...courbesAff[0], pts: courbesAff[0].pts }] : courbesAff} marqueur={{ VB: vb, sigma: sig }} VE={veVisible ? VE : null} yMax={yMax} jusqua={enExplore ? V_MAX : vb} titre={`Courbe de titrage : ${T.titre}`}/>
+      <GraphiqueAllure courbes={courbesAff} marqueur={{ VB: vb, sigma: sig }} VE={veVisible ? VE : null} yMax={yMax} jusqua={vb} titre={`Courbe de titrage : ${T.titre}`}/>
     </div>);
   const lignesLambda = (ionsLambda || []).map(i => [F(i), L(i)]);
   const tableLambda = lignesLambda.length > 0 && (
@@ -366,53 +362,6 @@ export function SimulationAllureTitrageConductimetrique() {
       </div>
     </div>);
 
-  // ---------- réglages (exploration) ----------
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={titreCarte}>Réglages du titrage</div>
-      <div style={aide}>Choisissez le titrage, la concentration de l’espèce titrée et le volume d’eau ajouté : le schéma, la courbe et les grandeurs se mettent à jour.</div>
-      <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>Titrage
-        <select value={ti.t} onChange={e => setT({ t: e.target.value })} style={{ ...menu, marginTop: 2 }}>
-          {M.ORDRE_TITRAGES.map(id => <option key={id} value={id}>{M.TITRAGES[id].titre}</option>)}
-        </select>
-      </label>
-      <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>Concentration de l’espèce titrée c<sub>A</sub>
-        <select value={ti.cA} onChange={e => setT({ cA: Number(e.target.value) })} style={{ ...menu, marginTop: 2 }}>
-          {M.CONC_A.map(v => <option key={v} value={v}>{sci(v, 1)} mol/L</option>)}
-        </select>
-      </label>
-      <label style={{ display: 'block', fontSize: 13, color: KIT.txt2, marginBottom: 8 }}>Eau ajoutée avant le titrage
-        <select value={ti.eau} onChange={e => setT({ eau: Number(e.target.value) })} style={{ ...menu, marginTop: 2 }}>
-          {M.EAU.map(v => <option key={v} value={v}>{v} mL (volume de départ {M.Vdepart(v)} mL)</option>)}
-        </select>
-      </label>
-      <div style={{ ...aide, marginBottom: 0 }}>Prise d’essai : 20,0 mL. Titrant à {nbf(T.cB, 3)} mol/L.</div>
-    </div>);
-
-  // ---------- mesures ----------
-  const q = M.quantites(t, cA, vb), Vd = M.Vdepart(eau), conc = n => 1000 * n / Vd;
-  const pa = M.penteAvant(t, eau), pp = M.penteApres(t, eau);
-  const mot = { baisse: 'baisse', hausse: 'monte', 'quasi-constante': 'quasi constante' };
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={titreCarte}>Mesures et grandeurs calculées</div>
-      <div style={aide}>À partir de la composition ionique à chaque volume versé, on calcule σ (loi de Kohlrausch) et les deux pentes.</div>
-      <LigneMesure nom="Conductivité σ" valeur={`${nbf(sig, 1)}${NB}mS·m⁻¹`} couleur={COL.bleu}/>
-      <LigneMesure nom={avecIndices('Volume équivalent V_E')} valeur={`${nbf(VE, 1)}${NB}mL`} couleur={COL.orange}/>
-      <LigneMesure nom={vb <= VE ? 'Avant l’équivalence' : 'Après l’équivalence'} valeur={vb === VE ? 'à l’équivalence' : `${nbf(Math.abs(VE - vb), 1)}${NB}mL ${vb <= VE ? 'avant' : 'après'}`}/>
-      {Object.entries(q.ions).filter(([, n]) => n > 1e-9).map(([i, n]) => <LigneMesure key={i} nom={avecIndices(`[${F(i)}]`)} valeur={`${nbf(conc(n), 2)}${NB}mol·m⁻³`}/>)}
-      {t !== 'precip' && T.neutre && <LigneMesure nom={avecIndices(`[${T.neutre}]`)} valeur={`${nbf(conc(q.neutre), 2)}${NB}mol·m⁻³`}/>}
-      <LigneMesure nom="Pente avant l’équivalence" valeur={`${signe(pa, Math.abs(pa) < 1 ? 3 : 2)}${NB}mS·m⁻¹ par mL (${mot[M.forme(t).avant]})`} couleur={COL.vert}/>
-      <LigneMesure nom="Pente après l’équivalence" valeur={`${signe(pp, 2)}${NB}mS·m⁻¹ par mL (${mot[M.forme(t).apres]})`} couleur={COL.vert}/>
-    </div>);
-  const sectionGardee = enExplore && (
-    <Section titre={<span><span style={{ display: 'block' }}>Comparer deux courbes</span><span style={{ display: 'block', fontSize: 13, fontWeight: 400, color: KIT.txt2, marginTop: 2 }}>{gardee ? `courbe grise : ${M.TITRAGES[gardee.t].court}` : 'aucune courbe gardée'}</span></span>} ouvert={ouv.gardee} onBascule={() => setOuv(o => ({ ...o, gardee: !o.gardee }))}>
-      <div style={aide}>Gardez la courbe actuelle (elle devient grise), puis changez le titrage ou la concentration : les deux courbes sont tracées sur le même graphique.</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <button type="button" onClick={() => setGardee({ t, cA, eau })} style={{ ...styleBouton(false), minHeight: 42 }}>Garder cette courbe</button>
-        {gardee && <button type="button" onClick={() => setGardee(null)} style={{ ...styleBouton(false), minHeight: 42 }}>Effacer la courbe grise</button>}
-      </div>
-    </Section>);
   const sectionLambda = enExplore && (
     <Section titre="Données : conductivités ioniques molaires" ouvert={ouv.lambda} onBascule={() => setOuv(o => ({ ...o, lambda: !o.lambda }))}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 18px', fontSize: 16, color: KIT.txt }}>
@@ -423,11 +372,11 @@ export function SimulationAllureTitrageConductimetrique() {
   const aEssayer = (
     <Section titre="À essayer (questions pour explorer)" ouvert={ouv.essayer} onBascule={() => setOuv(o => ({ ...o, essayer: !o.essayer }))}>
       <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-        <li>Pour chaque titrage, versez la burette et notez quels ions disparaissent, apparaissent ou restent : la pente avant l’équivalence a-t-elle le signe que vous attendiez ?</li>
-        <li>Doublez c<sub>A</sub> : que devient V<sub>E</sub> ? Les pentes changent-elles ? Pourquoi ?</li>
-        <li>Passez de 180 à 280 mL d’eau : quelles grandeurs changent (σ de départ, pentes, V<sub>E</sub>) ?</li>
-        <li>Gardez la courbe de l’acide fort et affichez celle de l’acide faible : où se trouvent leurs équivalences ? Comment les reconnaître ?</li>
-        <li>Pour la précipitation, pourquoi la courbe est-elle presque plate avant l’équivalence ? Que se passe-t-il si λ(NO₃⁻) était très différent de λ(Cl⁻) ?</li>
+        <li>Versez tout le titrage de l’acide fort par paliers de 1 mL, affichez σ non corrigée (ronds gris) : pourquoi s’incurve-t-elle après l’équivalence, alors que σ' reste formée de deux droites ?</li>
+        <li>Modélisez d’abord avec <strong>tous</strong> les points (droite 1 jusqu’à V<sub>E</sub>, droite 2 après), puis sans les points proches de l’équivalence : comment varie le volume équivalent trouvé ? Quel est le meilleur choix ?</li>
+        <li>Combien de points faut-il sur chaque branche ? Essayez avec 2 points, puis 5 : l’écart sur V<sub>E</sub> change-t-il ? Activez l’incertitude de mesure pour voir son effet.</li>
+        <li>Refaites l’exercice pour l’acide faible (pente faible puis forte) et pour la précipitation (presque plate puis montante) : la méthode des deux droites reste-t-elle valable ?</li>
+        <li>Doublez c<sub>A</sub> : que deviennent V<sub>E</sub> et les pentes ? Retrouvez c<sub>A</sub> à partir du V<sub>E</sub> modélisé.</li>
       </ul>
     </Section>);
   const retenirExplore = (
@@ -435,10 +384,10 @@ export function SimulationAllureTitrageConductimetrique() {
       <ARetenir titre="IDÉES CLÉS" sansFiche>
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
           <li>σ = Σ λ × c (loi de Kohlrausch) : seuls les ions dont la quantité change font varier σ ; les ions spectateurs n’y changent rien</li>
-          <li>{avecIndices('Pente = c_B × 1 mL / V_départ × (Σ λ apparus − Σ λ disparus)')}, calculée avant puis après l’équivalence</li>
-          <li>{avecIndices('Équivalence : c_B × V_E = c_A × V_A')}, repérée au changement de pente</li>
+          <li>{avecIndices("Dilution : on trace σ' = σ × (V₀ + V) / V₀, qui est formée de deux droites ; V₀ = prise d’essai + eau")}</li>
+          <li>On modélise <strong>chaque branche</strong> par une droite affine (au moins 3 points, loin de l’équivalence) ; V<sub>E</sub> est l’abscisse de leur intersection</li>
+          <li>{avecIndices('Équivalence : c_B × V_E = c_A × V_A')}, repérée à la rupture de pente ; <strong>pas de point proche de l’équivalence</strong> (courbe arrondie)</li>
           <li>Acide ou base forts : courbe en V ; acide ou base faibles : pente faible puis forte ; précipitation : presque plate puis montante</li>
-          <li>H₃O⁺ et HO⁻ ont les plus grands λ : ils dominent la pente quand ils apparaissent ou disparaissent</li>
         </ul>
       </ARetenir>
     </Section>);
@@ -476,15 +425,7 @@ export function SimulationAllureTitrageConductimetrique() {
         </div>
       </div>}
       {enExplore && <div className="al-ex">
-        <div>{boxScene}</div>
-        <div className="al-ctrl">{reglages}{boxCurseur}</div>
-        <div>{boxGraphe}</div>
-        <div>{mesures}</div>
-        <div>{sectionGardee}</div>
-        <div>{sectionLambda}</div>
-        <div>{aEssayer}</div>
-        <div>{retenirExplore}</div>
-        <div>{panneauHypo}</div>
+        <ExplorationDosage aEssayer={aEssayer} retenir={retenirExplore} panneauHypo={panneauHypo} sectionLambda={sectionLambda} reduit={reduit}/>
       </div>}
       {enGuide && idE === 'bilan' && <div style={{ marginBottom: 12 }}>{panneauHypo}</div>}
     </div>

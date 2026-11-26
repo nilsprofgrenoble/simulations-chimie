@@ -81,6 +81,31 @@ export function quantites(t, cA, VB, VA = VA0) {
   const neutre = T.neutre ? (t === 'precip' ? Math.min(nB, nE) : Math.max(0, nE - nB)) : 0;
   return { ions: q, neutre, nA, nB, nE };
 }
+// ---------- dosage « réel » (exploration) : dilution, σ' corrigée, arrondi de la courbe autour de l'équivalence, modélisation affine ----------
+//  Mesure réelle : le volume augmente de V_B, donc σ mesurée = Σ λ n / (V0 + V_B) baisse par dilution. On corrige : σ' = σ × (V0 + V_B) / V0 = Σ λ n / V0, qui est affine par morceaux.
+//  V0 = volume de départ (prise d'essai + eau). Autour de l'équivalence, la réaction n'est plus totale et la courbe réelle s'arrondit (hypothèse du modèle : bosse gaussienne
+//  de largeur 0,9 mL, de hauteur 6 % de σ' maximale) : les points à moins de 1,5 mL de V_E ne sont pas sur les droites.
+export const LARGEUR_ARRONDI = 0.9;      // mL
+export const ZONE_ARRONDI = 1.5;         // mL : à ne pas utiliser pour les droites
+export const facteurDilution = (VB, eau = EAU_DEFAUT, VA = VA0) => (Vdepart(eau, VA) + VB) / Vdepart(eau, VA);
+export const hauteurArrondi = (t, cA, eau = EAU_DEFAUT, VA = VA0) => 0.06 * Math.max(sigma(t, cA, 0, eau, VA), sigma(t, cA, V_BURETTE, eau, VA));
+export function sigmaCorrigee(t, cA, VB, eau = EAU_DEFAUT, VA = VA0) {
+  const VE = volumeEquivalent(t, cA, VA);
+  return sigma(t, cA, VB, eau, VA) + hauteurArrondi(t, cA, eau, VA) * Math.exp(-(((VB - VE) / LARGEUR_ARRONDI) ** 2));
+}
+export const sigmaMesuree = (t, cA, VB, eau = EAU_DEFAUT, VA = VA0) => sigmaCorrigee(t, cA, VB, eau, VA) / facteurDilution(VB, eau, VA);
+export const dansZoneArrondi = (VB, VE) => Math.abs(VB - VE) < ZONE_ARRONDI;
+// régression affine y = a x + b par moindres carrés ; pts : [{ x, y }] ; null si moins de 2 points ou abscisses identiques
+export function regression(pts) {
+  const n = pts.length; if (n < 2) return null;
+  const mx = pts.reduce((s, p) => s + p.x, 0) / n, my = pts.reduce((s, p) => s + p.y, 0) / n;
+  const sxx = pts.reduce((s, p) => s + (p.x - mx) ** 2, 0), sxy = pts.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0), syy = pts.reduce((s, p) => s + (p.y - my) ** 2, 0);
+  if (sxx < 1e-12) return null;
+  const a = sxy / sxx, b = my - a * mx;
+  return { a, b, n, r2: syy < 1e-12 ? 1 : (sxy * sxy) / (sxx * syy) };
+}
+export const abscisseIntersection = (d1, d2) => (Math.abs(d1.a - d2.a) < 1e-9 ? null : (d2.b - d1.b) / (d1.a - d2.a));
+
 // type de variation d'une pente : 'baisse', 'quasi-constante', 'hausse' (seuil : |σ'| < 3 % de la pente après l'équivalence)
 export function allure(pente, penteRef) { return Math.abs(pente) < 0.06 * Math.abs(penteRef) ? 'quasi-constante' : pente < 0 ? 'baisse' : 'hausse'; }
 export const forme = t => ({ avant: allure(lambdaAvant(t), lambdaApres(t)), apres: allure(lambdaApres(t), lambdaApres(t)) });

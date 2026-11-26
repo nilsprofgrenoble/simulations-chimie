@@ -34,9 +34,12 @@ const GRAINS = [[40, 304], [58, 305], [76, 304], [94, 305], [112, 304], [50, 296
 const IonDe = ({ id, x, y, r }) => <Ion x={x} y={y} couleur={IONS[id].couleur} signe={IONS[id].z} r={r}/>;
 const rayon = id => (IONS[id].z > 0 ? 5.8 : 6.6);
 
-// ---------- scène : burette, bécher, cellule, conductimètre ----------
-//  t : titrage ; cA : concentration de l'espèce titrée ; VB : volume versé ; lecture : texte du conductimètre ; montrer : { equation, ions, cellule, burette, legende }
-export function SceneAllure({ t, cA, VB = 0, lecture = null, anime = true, montrer = {}, hl = () => false }) {
+// ---------- scène : burette graduée avec zoom de lecture, bécher agité, cellule, conductimètre, potence ----------
+//  t : titrage ; cA : concentration de l'espèce titrée ; VB : volume versé ; lecture : texte du conductimètre ; coule : goutte en train de tomber (défaut : VB entre 0 et le maximum)
+//  montrer : { equation, ions, cellule, burette, legende }. viewBox de 400 × 442, textes de 13 à 18.
+const DY = 66;                                  // décalage vertical du bécher (il est dessiné sous la burette)
+const coupe = txt => { const m = txt.split(' '); return txt.length > 10 && m.length > 1 ? [m[0], m.slice(1).join(' ')] : [txt]; };
+export function SceneAllure({ t, cA, VB = 0, lecture = null, anime = true, coule = null, montrer = {}, hl = () => false }) {
   const { equation = true, ions = true, cellule = true, burette = true, legende = true } = montrer;
   const T = TITRAGES[t], q = quantites(t, cA, VB), al = alloc(t), items = [];
   const place = (k, n, type) => { const [o, m] = al[k] || [0, 0]; for (let i = 0; i < Math.min(n, m); i++) items.push({ k: k + i, p: SLOTS[o + i], type, id: k }); };
@@ -48,66 +51,92 @@ export function SceneAllure({ t, cA, VB = 0, lecture = null, anime = true, montr
   const ionsLegende = [...new Set([...Object.keys(T.depart), ...Object.keys(T.avant), ...Object.keys(T.apres)])].filter(i => IONS[i]).sort((a, b) => ['H3O', 'HO', 'Na', 'Cl', 'NO3', 'Ag', 'AcO', 'NH4'].indexOf(a) - ['H3O', 'HO', 'Na', 'Cl', 'NO3', 'Ag', 'AcO', 'NH4'].indexOf(b));
   const entrees = [...ionsLegende.map(i => ({ id: i, f: IONS[i].f })), ...(T.neutre ? [{ id: 'N', f: T.neutre }] : [])];
   const dx = 400 / Math.max(entrees.length, 1);
-  const niveau = 112 * (1 - Math.min(VB, V_BURETTE) / V_BURETTE);           // hauteur du liquide dans la burette
+  const yB0 = 48, yB1 = 188, V = Math.min(VB, V_BURETTE), yNiv = yB0 + V / V_BURETTE * (yB1 - yB0);
+  const goutte = coule == null ? (anime && VB > 0 && VB < V_BURETTE) : coule && anime;
+  const nomL = coupe(T.titrant), nomA = coupe(T.analyte);
   const eq = T.reaction;
-  const mots = T.titrant.split(' '), nomL = T.titrant.length > 10 && mots.length > 1 ? [mots[0], mots.slice(1).join(' ')] : [T.titrant];
+  // zoom de lecture : fenêtre de ± 1 mL autour du niveau, graduée au dixième de mL
+  const zx = 6, zy = 58, zw = 56, zh = 100, mlPx = 2 / zh, Yz = v => zy + zh / 2 + (v - V) / mlPx;
   return (
-    <svg viewBox={cellule || equation ? '0 0 400 372' : '0 30 400 342'} style={{ ...stl, maxWidth: 480 }} role="img"
-      aria-label={`Burette de ${T.titrant} (${T.fTitrant}) au-dessus d’un bécher contenant ${T.analyte}${cellule ? ', avec une cellule de conductimétrie reliée à un conductimètre' : ''}. Volume versé : ${fr(VB)} mL.${ions ? ' Les points colorés représentent les ions dissous.' : ''}`}>
+    <svg viewBox={cellule || equation ? '0 0 400 442' : '0 38 400 404'} style={{ ...stl, maxWidth: 480 }} role="img"
+      aria-label={`Burette graduée de ${T.titrant} (${T.fTitrant}) au-dessus d’un bécher contenant ${T.analyte}${cellule ? ', avec une cellule de conductimétrie reliée à un conductimètre' : ''}. Volume versé : ${fr(VB)} mL.${ions ? ' Les points colorés représentent les ions dissous.' : ''}`}>
       {equation && <g>
         <rect x="14" y="4" width="372" height="30" rx="8" fill="#f5f3ff" stroke="#c4b5fd" strokeWidth="2"/>
         <text x="200" y="25" fontSize={eq.length > 26 ? 16 : 18} fontWeight="700" textAnchor="middle" fill={COL.txt}>{eq}</text></g>}
-      {/* burette */}
+      {/* paillasse et potence */}
+      <rect x="8" y="400" width="384" height="8" rx="3" fill="#cbd5e1"/>
+      <rect x="258" y="38" width="8" height="364" rx="2" fill="#94a3b8"/>
+      <rect x="258" y="396" width="28" height="6" rx="2" fill="#94a3b8"/>
       {burette && <g>
-        <rect x="108" y="44" width="16" height="112" rx="3" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
-        <rect x="110" y={44 + (112 - niveau)} width="12" height={niveau} fill="#bfdbfe"/>
-        <rect x="112" y="156" width="8" height="12" fill="#cbd5e1" stroke="#475569" strokeWidth="1.5"/>
-        <rect x="104" y="159" width="16" height="5" rx="2" fill="#f59e0b"/>
-        {anime && VB > 0 && VB < V_BURETTE && <circle cx="116" cy="172" r="3.2" fill="#60a5fa"><animate attributeName="cy" values="170;186;186" dur="1.1s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;1;0" dur="1.1s" repeatCount="indefinite"/></circle>}
-        <text x="14" y="58" fontSize="14" fill={COL.gris}>burette :</text>
-        {nomL.map((l, i) => <text key={i} x="14" y={77 + 17 * i} fontSize="14" fontWeight="700" fill={COL.txt}>{l}</text>)}
-        <text x="14" y={77 + 17 * nomL.length} fontSize="14" fill={COL.txt}>{T.fTitrant}</text>
-        <text x="14" y={77 + 17 * nomL.length + 17} fontSize="14" fill={COL.txt}>{fr(T.cB, 3)} mol/L</text>
-        <text x="134" y="118" fontSize="14" fontWeight="700" fill={COL.bleu}>V = {fr(VB)} mL</text></g>}
+        <rect x="118" y="154" width="142" height="7" rx="2" fill="#94a3b8"/>
+        <rect x="102" y="150" width="22" height="15" rx="3" fill="#64748b"/>
+        {/* zoom de lecture */}
+        <rect x={zx} y={zy} width={zw} height={zh} rx="4" fill="#f8fafc" stroke="#475569" strokeWidth="1.8"/>
+        <rect x={zx + 1} y={Math.max(zy, Math.min(zy + zh, Yz(V)))} width={zw - 2} height={Math.max(0, zy + zh - Math.max(zy, Yz(V)))} fill="#dbeafe"/>
+        {Array.from({ length: 41 }, (_, k) => Math.round(V * 10) / 10 - 2 + k * 0.1).map(v => {
+          const y = Yz(v), r10 = Math.round(v * 10); if (y < zy + 2 || y > zy + zh - 2 || v < -0.001 || v > V_BURETTE + 0.001) return null;
+          return <g key={r10}><line x1={zx + zw - (r10 % 10 === 0 ? 18 : r10 % 5 === 0 ? 13 : 8)} y1={y} x2={zx + zw} y2={y} stroke="#334155" strokeWidth="1.3"/>
+            {r10 % 10 === 0 && <text x={zx + 5} y={y + 5} fontSize="14" fontWeight="700" fill={COL.txt}>{r10 / 10}</text>}</g>;
+        })}
+        <path d={`M ${zx + 1} ${Yz(V) - 2} Q ${zx + zw / 2} ${Yz(V) + 7} ${zx + zw - 1} ${Yz(V) - 2}`} fill="none" stroke="#0369a1" strokeWidth="2.4"/>
+        <text x={zx + zw / 2} y={zy - 8} fontSize="13" fill={COL.gris} textAnchor="middle">zoom (mL)</text>
+        <line x1={zx + zw} y1={zy + zh / 2} x2="96" y2={yNiv} stroke="#94a3b8" strokeDasharray="3 3"/>
+        {/* burette */}
+        <rect x="96" y={yB0 - 8} width="24" height={yB1 - yB0 + 8} rx="3" fill="#f8fafc" stroke="#475569" strokeWidth="2"/>
+        <rect x="98" y={yNiv} width="20" height={yB1 - yNiv} fill="#bfdbfe"/>
+        {Array.from({ length: 26 }, (_, v) => { const y = yB0 + v / V_BURETTE * (yB1 - yB0);
+          return <g key={v}><line x1="96" y1={y} x2={v % 5 === 0 ? 87 : 91} y2={y} stroke="#334155" strokeWidth="1.2"/>
+            {v % 5 === 0 && <text x="84" y={y + 5} fontSize="13" textAnchor="end" fill={COL.txt} stroke="#fff" strokeWidth="3" paintOrder="stroke">{v}</text>}</g>; })}
+        <path d={`M 96 ${yB1} L 104 ${yB1 + 20} L 112 ${yB1 + 20} L 120 ${yB1} Z`} fill="#bfdbfe" stroke="#475569" strokeWidth="2"/>
+        <rect x="100" y={yB1 + 20} width="16" height="8" rx="2" fill={goutte ? '#16a34a' : '#dc2626'}/>
+        <line x1="108" y1={yB1 + 28} x2="108" y2={yB1 + 38} stroke="#475569" strokeWidth="3"/>
+        {goutte && <circle cx="108" cy={yB1 + 42} r="3.4" fill="#60a5fa"><animate attributeName="cy" values={`${yB1 + 42};${yB1 + 62};${yB1 + 62}`} dur="0.9s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;1;0" dur="0.9s" repeatCount="indefinite"/></circle>}
+        <text x="130" y="60" fontSize="13" fill={COL.gris}>burette :</text>
+        {nomL.map((l, i) => <text key={i} x="130" y={77 + 16 * i} fontSize="13.5" fontWeight="700" fill={COL.txt}>{l}</text>)}
+        <text x="130" y={77 + 16 * nomL.length} fontSize="13.5" fill={COL.txt}>{T.fTitrant}</text>
+        <text x="130" y={77 + 16 * nomL.length + 16} fontSize="13.5" fill={COL.txt}>{fr(T.cB, 3)} mol/L</text>
+        <text x="130" y="146" fontSize="15" fontWeight="700" fill={COL.bleu}>V = {fr(VB)} mL</text></g>}
       {/* conductimètre et cellule */}
       {cellule && <g>
-        <rect x="266" y="46" width="128" height="60" rx="8" fill="#e2e8f0" stroke="#64748b" strokeWidth="2"/>
-        <rect x="274" y="52" width="112" height="28" rx="4" fill="#0f172a"/>
-        <text x="330" y="73" fontSize="17" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="monospace">{lecture || '— — —'}</text>
-        <text x="330" y="98" fontSize="14" textAnchor="middle" fill={COL.txt}>conductimètre</text>
-        <path d="M266 82 Q244 92 236 140" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round"/>
-        <rect x="229" y="138" width="14" height="108" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="2"/>
-        <rect x="232" y="226" width="3" height="24" fill="#94a3b8"/><rect x="237" y="226" width="3" height="24" fill="#94a3b8"/>
-        <text x="300" y="150" fontSize="14" fill={COL.txt}>cellule</text>
-        <line x1="296" y1="146" x2="246" y2="162" stroke="#94a3b8" strokeDasharray="3 3"/></g>}
+        <rect x="278" y="44" width="116" height="62" rx="8" fill="#e2e8f0" stroke="#64748b" strokeWidth="2"/>
+        <rect x="285" y="50" width="102" height="28" rx="4" fill="#0f172a"/>
+        <text x="336" y="70" fontSize="15" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="monospace">{lecture || '— — —'}</text>
+        <text x="336" y="97" fontSize="13.5" textAnchor="middle" fill={COL.txt}>conductimètre</text>
+        <path d="M278 88 Q246 108 236 204" fill="none" stroke="#475569" strokeWidth="2.5" strokeLinecap="round"/>
+        <rect x="229" y="204" width="14" height="108" rx="3" fill="#e2e8f0" stroke="#475569" strokeWidth="2"/>
+        <rect x="232" y="292" width="3" height="24" fill="#94a3b8"/><rect x="237" y="292" width="3" height="24" fill="#94a3b8"/>
+        <text x="274" y="276" fontSize="13.5" fill={COL.txt}>cellule</text>
+        <line x1="272" y1="272" x2="246" y2="262" stroke="#94a3b8" strokeDasharray="3 3"/></g>}
       {/* prise d'essai */}
       <g>
-        <text x="266" y="196" fontSize="14" fill={COL.gris}>prise d’essai :</text>
-        <text x="266" y="215" fontSize="14" fontWeight="700" fill={COL.txt}>{T.analyte}</text>
-        <text x="266" y="234" fontSize="14" fontWeight="700" fill={COL.bleu}>{T.fAnalyte}</text>
-        <text x="266" y="254" fontSize="14" fontWeight="700" fill={COL.txt}>c = {fr(cA, 3)} mol/L</text>
-        <text x="266" y="272" fontSize="14" fill={COL.txt}>V = {fr(VA0)} mL + eau</text>
+        <text x="274" y="136" fontSize="13" fill={COL.gris}>prise d’essai :</text>
+        {nomA.map((l, i) => <text key={i} x="274" y={153 + 16 * i} fontSize="13.5" fontWeight="700" fill={COL.txt}>{l}</text>)}
+        <text x="274" y={153 + 16 * nomA.length} fontSize="13.5" fontWeight="700" fill={COL.bleu}>{T.fAnalyte}</text>
+        <text x="274" y={153 + 16 * nomA.length + 16} fontSize="13.5" fill={COL.txt}>c = {fr(cA, 3)} mol/L</text>
+        <text x="274" y={153 + 16 * nomA.length + 32} fontSize="13.5" fill={COL.txt}>{fr(VA0)} mL + eau</text>
       </g>
-      {/* bécher */}
-      <path d="M16 170 L16 310 Q16 316 22 316 L252 316 Q258 316 258 310 L258 170" fill="none" stroke="#475569" strokeWidth="3"/>
-      <path d="M19 180 L19 308 Q19 313 23 313 L251 313 Q255 313 255 308 L255 180 Z" fill="#dbeafe" opacity="0.7"/>
-      {grains > 0 && GRAINS.slice(0, grains).map((g, i) => <circle key={'g' + i} cx={g[0]} cy={g[1] + 3} r="5.2" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1.6"/>)}
-      {items.map((d, i) => (
-        <Vib key={d.k} k={i} anime={anime}>
-          {d.type === 'mol' ? <Mol x={d.p[0]} y={d.p[1]} r={5.2}/> : <IonDe id={d.id} x={d.p[0]} y={d.p[1]} r={rayon(d.id)}/>}
-        </Vib>))}
-      <rect x="110" y="304" width="24" height="6" rx="3" fill="#fff" stroke="#64748b" strokeWidth="1.5">
-        {anime && <animateTransform attributeName="transform" type="rotate" from="0 122 307" to="360 122 307" dur="0.9s" repeatCount="indefinite"/>}</rect>
-      <rect x="10" y="318" width="244" height="16" rx="5" fill="#e2e8f0" stroke="#64748b" strokeWidth="1.5"/>
-      <text x="132" y="330" fontSize="13" textAnchor="middle" fill={COL.txt}>agitateur magnétique</text>
+      {/* bécher, ions, agitateur */}
+      <g transform={`translate(0 ${DY})`}>
+        <path d="M16 170 L16 310 Q16 316 22 316 L252 316 Q258 316 258 310 L258 170" fill="none" stroke="#475569" strokeWidth="3"/>
+        <path d="M19 180 L19 308 Q19 313 23 313 L251 313 Q255 313 255 308 L255 180 Z" fill="#dbeafe" opacity="0.7"/>
+        {grains > 0 && GRAINS.slice(0, grains).map((g, i) => <circle key={'g' + i} cx={g[0]} cy={g[1] + 3} r="5.2" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1.6"/>)}
+        {items.map((d, i) => (
+          <Vib key={d.k} k={i} anime={anime}>
+            {d.type === 'mol' ? <Mol x={d.p[0]} y={d.p[1]} r={5.2}/> : <IonDe id={d.id} x={d.p[0]} y={d.p[1]} r={rayon(d.id)}/>}
+          </Vib>))}
+        <rect x="110" y="304" width="24" height="6" rx="3" fill="#fff" stroke="#64748b" strokeWidth="1.5">
+          {anime && <animateTransform attributeName="transform" type="rotate" from="0 122 307" to="360 122 307" dur="0.9s" repeatCount="indefinite"/>}</rect>
+        <rect x="10" y="318" width="244" height="16" rx="5" fill="#e2e8f0" stroke="#64748b" strokeWidth="1.5"/>
+        <text x="132" y="330" fontSize="13" textAnchor="middle" fill={COL.txt}>agitateur magnétique</text>
+      </g>
       {legende && ions && <g fontSize="14" fill={COL.txt}>
         {entrees.map((e, i) => <g key={e.id}>
-          {e.id === 'N' ? (t === 'precip' ? <circle cx={dx * i + 14} cy={356} r="5.2" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1.6"/> : <Mol x={dx * i + 12} y={356} r={5}/>) : <IonDe id={e.id} x={dx * i + 14} y={356} r={IONS[e.id].z > 0 ? 6 : 7}/>}
-          <text x={dx * i + 26} y="361" fontSize={e.f.length > 6 ? 13 : 14}>{e.f}</text></g>)}</g>}
-      <Cadre actif={hl('burette')} x={8} y={38} w={178} h={124}/>
-      <Cadre actif={hl('becher')} x={8} y={166} w={252} h={156}/>
-      <Cadre actif={hl('cellule')} x={224} y={134} w={26} h={118}/>
-      <Cadre actif={hl('lecture')} x={262} y={42} w={136} h={68}/>
+          {e.id === 'N' ? (t === 'precip' ? <circle cx={dx * i + 14} cy={428} r="5.2" fill="#f1f5f9" stroke="#94a3b8" strokeWidth="1.6"/> : <Mol x={dx * i + 12} y={428} r={5}/>) : <IonDe id={e.id} x={dx * i + 14} y={428} r={IONS[e.id].z > 0 ? 6 : 7}/>}
+          <text x={dx * i + 26} y="433" fontSize={e.f.length > 6 ? 13 : 14}>{e.f}</text></g>)}</g>}
+      <Cadre actif={hl('burette')} x={2} y={38} w={218} h={230}/>
+      <Cadre actif={hl('becher')} x={8} y={232} w={252} h={164}/>
+      <Cadre actif={hl('cellule')} x={224} y={200} w={26} h={122}/>
+      <Cadre actif={hl('lecture')} x={274} y={40} w={124} h={70}/>
       <Cadre actif={hl('equation')} x={10} y={0} w={380} h={38}/>
     </svg>);
 }
