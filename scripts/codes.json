@@ -2894,5 +2894,17 @@
  "77:plausible:nwr-val-acc": "VAL762",
  "77:plausible:nwr-val-inertie": "VAL763",
  "36:nwr-acc": "REA194",
- "36:nwr-frott": "REA195"
+ "36:nwr-frott": "REA195",
+ "34:clp-sapp-sommet.0": "SAPP634",
+ "34:clp-sapp-sommet.1": "SAPP635",
+ "34:clp-sapp-portee.0": "SAPP636",
+ "34:clp-sapp-portee.1": "SAPP637",
+ "37:prevoir:clp-ana-acc": "ANA1306",
+ "37:prevoir:clp-ana-vitesse": "ANA1307",
+ "37:prevoir:clp-ana-angle": "ANA1308",
+ "37:prevoir:clp-ana-double": "ANA1309",
+ "77:plausible:clp-val-hauteur": "VAL764",
+ "77:plausible:clp-val-portee": "VAL765",
+ "36:clp-sommet": "REA196",
+ "36:clp-portee": "REA197"
 }
