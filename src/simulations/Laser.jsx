@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./laserModele";
+import { LaserExplore } from "./LaserExplore";
 import { QCM } from "./laserQcm";
 import { SceneLaser, SvgProprietes, SvgSection, SvgDistLaser, SvgEnergie, SvgNorme, SvgClasses } from "./LaserSchemas";
 
@@ -391,10 +392,15 @@ export function SimulationLaser() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="las-ex">
-          {scene}
-          <div className="las-reg">{reglages}</div>
-          {mesures}
+        <LaserExplore ti={ti} setTi={setTi}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : ${ti.mw} mW · D = ${ti.D} mm · L = ${String(ti.L).replace('.', ',')} m`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="las-ex">
+              {scene}
+              <div className="las-reg">{reglages}</div>
+              {mesures}
+            </div>
+          </Section>
         </div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
