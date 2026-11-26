@@ -9,11 +9,11 @@ import { QCM } from "./eulerChuteQcm";
 import { EulerChuteExplore } from "./EulerChuteExplore";
 import { SceneBilan, SceneEuler, SvgEquationCarte, SvgEulerCarte, SvgPasCarte } from "./EulerChuteSchemas";
 
-const SIM_ID = 271, CLE_GUIDE = 'euler-chute-guide-v1';
+const SIM_ID = 270, CLE_GUIDE = 'euler-chute-guide-v1';
 declarerDefis(SIM_ID, [['limite', 'Accélération initiale et vitesse limite avec la poussée d’Archimède'], ['euler', 'Deux pas de la méthode d’Euler']]);
 
 // ====================================================
-//  SIM 271 — CHUTE AVEC FROTTEMENT VISQUEUX (2) : ÉQUATION DIFFÉRENTIELLE ET MÉTHODE D'EULER (TSTL, enseignement PCM, partie « Interactions »).
+//  SIM 270, partie 2 (ex-sim 271) — CHUTE AVEC FROTTEMENT VISQUEUX (2) : ÉQUATION DIFFÉRENTIELLE ET MÉTHODE D'EULER (TSTL, enseignement PCM, partie « Interactions »).
 //  Une seule idée : m dv/dt = m g − m_f g − k v ; v_lim = (m − m_f) g ÷ k ; résolution approchée pas à pas v_(i+1) = v_i + a_i Δt ; effet du pas.
 //  Capacités visées (jamais affichées) : établir l'équation différentielle du mouvement ; en déduire v_lim et τ ; résoudre numériquement par la méthode d'Euler. Objet lâché dans un fluide : situation générique inventée.
 //  Modèle : eulerChuteModele.js (test node). QCM : eulerChuteQcm.js. Schémas : EulerChuteSchemas.jsx. Exploration animée : EulerChuteExplore.jsx.
