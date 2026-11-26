@@ -4385,6 +4385,69 @@ function genSensKTSTLBase() {
     retenir: ['log K = N × (E°₁ − E°₂) / 0,06 (25 °C), avec E°₁ > E°₂ et N le nombre d’électrons de l’équation écrite.', 'N = ppcm(n₁, n₂) : les électrons cédés sont tous captés.', 'K′ = 1 / K pour l’équation inverse ; K > 10⁴ : transformation quasi totale.', 'K est un ordre de grandeur (E° au centivolt) : 2 chiffres significatifs suffisent.'] };
 }
 // ───────────────────────────── Équations d'oxydo-réduction en milieu acide ou basique (TSTL, sim 294)
+// ───────────── Titrage redox direct (TSTL, sim 295) : eau oxygénée ou acide oxalique dosés par le permanganate en milieu acide
+function genTcrDosage() {
+  for (let k = 0; ; k++) { const g = genTcrDosageBase(); const v = g.questions.map(q => q.vrai); if (new Set(v.map(x => x.toPrecision(3))).size === v.length || k > 80) return g; }
+}
+function genTcrDosageBase() {
+  const esp = tire([{ nom: 'eau oxygénée H₂O₂', court: 'H₂O₂', dil: [10, 20, 50], lim: [0.4, 1.4] }, { nom: 'acide oxalique H₂C₂O₄ (détachant)', court: 'H₂C₂O₄', dil: [10, 20], lim: [0.3, 1.0] }]);
+  let cB, VA, Ve, dil, c0;
+  for (let k = 0; k < 500; k++) {
+    cB = tire([0.0100, 0.0150, 0.0200, 0.0250, 0.0400]); VA = tire([10, 20, 25]); Ve = tire([9.4, 11.8, 13.6, 15.2, 17.9, 19.3, 21.1]); dil = tire(esp.dil);
+    c0 = 2.5 * cB * Ve * dil / VA; if (c0 >= esp.lim[0] && c0 <= esp.lim[1]) break;
+  }
+  const nB = cB * Ve, nA = 2.5 * nB, cA = nA / VA, cBt = sciF(cB, 3);
+  const eq = esp.court === 'H₂O₂' ? '2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O' : '2 MnO₄⁻ + 5 H₂C₂O₄ + 6 H⁺ → 2 Mn²⁺ + 10 CO₂ + 8 H₂O';
+  const intro = <>On dose {VA}{NB}mL d’une solution de {esp.nom}, obtenue en diluant {dil} fois la solution du commerce, avec du permanganate de potassium de concentration <b>{cBt}{NB}mol/L</b>, en milieu acide. L’équation du titrage est {eq}. La teinte rose persiste après avoir versé <b>{nb(Ve, 3)}{NB}mL</b>.</>;
+  const q0 = { id: 'd0', type: 'num', q: <>{intro} Quelle quantité de permanganate a été versée jusqu’à l’équivalence (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nB, tolRel: 0.01, csMin: 3,
+    aide: 'n(MnO₄⁻) = c_B × V_E : avec un volume en mL et une concentration en mol/L, le produit est en mmol.',
+    pieges: [[nB * 1000, 'Vous avez donné des µmol : mol/L × mL donne des mmol.'], [nB / 1000, 'Vous avez donné des mol : mol/L × mL donne des mmol.']],
+    expl: <>n(MnO₄⁻) = c_B × V_E = {cBt} × {nb(Ve, 3)} = <b>{nb(nB, 3)}{NB}mmol</b>.</> };
+  const q1 = { id: 'd1', type: 'num', q: <>{intro} Quelle quantité de {esp.court} contenaient les {VA}{NB}mL prélevés (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nA, tolRel: 0.015, csMin: 3,
+    aide: 'D’après l’équation, 5 molécules de réducteur réagissent avec 2 ions MnO₄⁻ : n(réducteur) = 5/2 × n(MnO₄⁻).',
+    pieges: [[0.4 * nB, 'Vous avez multiplié par 2/5 : le rapport est 5/2.'], [nB, 'Vous avez oublié les coefficients de l’équation : n(réducteur) = 5/2 × n(MnO₄⁻).'], [5 * nB, 'Vous avez multiplié par 5 : le rapport est 5/2.']],
+    expl: <>n({esp.court}) = 5/2 × {nb(nB, 3)} = <b>{nb(nA, 3)}{NB}mmol</b>.</> };
+  const q2 = { id: 'd2', type: 'num', q: <>{intro} Quelle est la concentration de la solution diluée (en mol/L, 3 chiffres significatifs) ?</>, unite: 'mol/L', vrai: cA, tolRel: 0.02, csMin: 3,
+    aide: 'c_A = n(réducteur) / V_A : mmol divisées par mL donnent des mol/L.',
+    pieges: [[nA, 'Vous avez donné la quantité de matière : il faut la diviser par le volume prélevé V_A.'], [0.4 * nB / VA, 'Vous avez utilisé le rapport 2/5 : n(réducteur) = 5/2 × n(MnO₄⁻).'], [nB / VA, 'Vous avez oublié les coefficients de l’équation (5/2).']],
+    expl: <>c_A = {nb(nA, 3)} / {VA} = <b>{nb(cA, 3)}{NB}mol/L</b>.</> };
+  const q3 = { id: 'd3', type: 'num', q: <>{intro} Quelle est la concentration de la solution du commerce (en mol/L, 3 chiffres significatifs) ?</>, unite: 'mol/L', vrai: c0, tolRel: 0.02, csMin: 3,
+    aide: 'La solution dosée est diluée : c_0 = (facteur de dilution) × c_A, avec c_A = (5/2 × c_B × V_E) / V_A.',
+    pieges: [[cA, 'Vous avez donné la concentration de la solution diluée : multipliez par le facteur de dilution.'], [cA / dil, 'Vous avez divisé par le facteur de dilution : la solution du commerce est plus concentrée.'], [0.4 * cB * Ve * dil / VA, 'Vous avez utilisé le rapport 2/5 : n(réducteur) = 5/2 × n(MnO₄⁻).']],
+    expl: <>c_0 = {dil} × {nb(cA, 3)} = <b>{nb(c0, 3)}{NB}mol/L</b>.</> };
+  [q0, q1, q2, q3].forEach(acTol);
+  return { intro: 'Dosage direct par le permanganate en milieu acide : de V_E à la concentration de la solution du commerce.', questions: [q0, q1, q2, q3],
+    retenir: ['À l’équivalence, n(MnO₄⁻) = c_B × V_E et n(réducteur) = 5/2 × n(MnO₄⁻) (5 pour 2 dans l’équation).', 'c_A = n(réducteur) / V_A, puis on multiplie par le facteur de dilution.', 'Volumes en mL et concentrations en mol/L : les quantités sortent en mmol.']};
+}
+function genTcrAvantApres() {
+  for (let k = 0; ; k++) { const g = genTcrAvantApresBase(); if (g && (new Set(g.questions.map(q => q.vrai.toPrecision(3))).size === g.questions.length || k > 80)) return g; }
+}
+function genTcrAvantApresBase() {
+  const cB = tire([0.0150, 0.0200, 0.0250]), VA = tire([10, 20]), cA = tire([0.035, 0.048, 0.062, 0.075, 0.090]), nA = cA * VA, Ve = 0.4 * nA / cB;
+  if (Ve < 8 || Ve > 20) return null;
+  const apres = Math.random() < 0.5, V = apres ? Math.round((Ve + 3 + Math.random() * 3) * 10) / 10 : Math.round(Ve * (0.3 + Math.random() * 0.4) * 10) / 10;
+  if (V > 25) return null;
+  const nB = cB * V, reste = nA - 2.5 * nB, exces = nB - 0.4 * nA, cBt = sciF(cB, 3);
+  const intro = <>On dose {VA}{NB}mL d’eau oxygénée de concentration <b>{nb(cA, 3)}{NB}mol/L</b> avec du permanganate de potassium de concentration <b>{cBt}{NB}mol/L</b>, en milieu acide (2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O). On a versé <b>{nb(V, 3)}{NB}mL</b> de permanganate.</>;
+  const q0 = { id: 'a0', type: 'num', q: <>{intro} Quelle quantité d’eau oxygénée l’erlenmeyer contenait-il au départ (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nA, tolRel: 0.01, csMin: 3,
+    aide: 'n = c × V : une concentration en mol/L par un volume en mL donne des mmol.', pieges: [[cA / VA, 'Vous avez divisé au lieu de multiplier : n = c × V.']], expl: <>n(H₂O₂) = {nb(cA, 3)} × {VA} = <b>{nb(nA, 3)}{NB}mmol</b>.</> };
+  const q1 = { id: 'a1', type: 'num', q: <>{intro} Quel est le volume équivalent (en mL, 3 chiffres significatifs) ?</>, unite: 'mL', vrai: Ve, tolRel: 0.02, csMin: 3,
+    aide: 'À l’équivalence, n(MnO₄⁻) = 2/5 × n(H₂O₂) = c_B × V_E : isolez V_E.', pieges: [[2.5 * nA / cB, 'Vous avez utilisé le rapport 5/2 : il faut 2/5 de MnO₄⁻ par H₂O₂.'], [nA / cB, 'Vous avez oublié les coefficients de l’équation (2/5).']],
+    expl: <>V_E = (2/5 × {nb(nA, 3)}) / {cBt} = <b>{nb(Ve, 3)}{NB}mL</b>.</> };
+  const q2 = { id: 'a2', type: 'num', q: <>{intro} Quelle quantité de permanganate a-t-on versée (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: nB, tolRel: 0.01, csMin: 3,
+    aide: 'n(MnO₄⁻) = c_B × V versé (mmol, avec des mL).', pieges: [[nB * 1000, 'Vous avez donné des µmol : mol/L × mL donne des mmol.']], expl: <>n(MnO₄⁻) = {cBt} × {nb(V, 3)} = <b>{nb(nB, 3)}{NB}mmol</b>.</> };
+  const q3 = apres
+    ? { id: 'a3', type: 'num', q: <>{intro} L’équivalence est dépassée. Quelle quantité de permanganate reste-t-il en excès (en mmol, 2 chiffres significatifs) ?</>, unite: 'mmol', vrai: exces, tolRel: 0.05, csMin: 2,
+      aide: 'En excès = versé − consommé, avec n(MnO₄⁻) consommée = 2/5 × n(H₂O₂) initiale.', pieges: [[nB, 'C’est la quantité versée : retirez celle qui a réagi (2/5 × n(H₂O₂) initiale).'], [nB - 2.5 * nA, 'Vous avez utilisé 5/2 pour le permanganate : la quantité consommée est 2/5 × n(H₂O₂).']],
+      expl: <>Consommé : 2/5 × {nb(nA, 3)} = {nb(0.4 * nA, 3)} mmol ; en excès : {nb(nB, 3)} − {nb(0.4 * nA, 3)} = <b>{nb(exces, 2)}{NB}mmol</b>.</> }
+    : { id: 'a3', type: 'num', q: <>{intro} L’équivalence n’est pas atteinte. Quelle quantité d’eau oxygénée reste-t-il dans l’erlenmeyer (en mmol, 3 chiffres significatifs) ?</>, unite: 'mmol', vrai: reste, tolRel: 0.02, csMin: 3,
+      aide: 'Restant = initial − consommé, avec n(H₂O₂) consommée = 5/2 × n(MnO₄⁻) versée.', pieges: [[nA - nB, 'Vous avez oublié les coefficients : 1 MnO₄⁻ consomme 5/2 H₂O₂.'], [nA - 0.4 * nB, 'Vous avez utilisé 2/5 : H₂O₂ consommée = 5/2 × n(MnO₄⁻).']],
+      expl: <>Consommé : 5/2 × {nb(nB, 3)} = {nb(2.5 * nB, 3)} mmol ; restant : {nb(nA, 3)} − {nb(2.5 * nB, 3)} = <b>{nb(reste, 3)}{NB}mmol</b>.</> };
+  [q0, q1, q2, q3].forEach(acTol);
+  return { intro: 'Dosage au permanganate : volume équivalent et bilan de matière avant ou après l’équivalence.', questions: [q0, q1, q2, q3],
+    retenir: ['Avant l’équivalence, le permanganate versé est entièrement consommé : H₂O₂ restant = initial − 5/2 × n(MnO₄⁻) versée.', 'Après l’équivalence, H₂O₂ est épuisé : MnO₄⁻ en excès = versé − 2/5 × n(H₂O₂) initiale, et la solution est rose.', 'Volume équivalent : V_E = (2/5 × n(H₂O₂)) / c_B.']};
+}
+
 function genMabDemi() {
   for (let k = 0; ; k++) { const g = genMabDemiBase(); const v = g.questions.map(q => q.vrai); if (new Set(v).size === v.length || k > 80) return g; }
 }
@@ -6465,6 +6528,8 @@ export const FAMILLES = [
   { id: 'sev-qr-calcul', groupe: 'Formules', titre: 'Quotient de réaction, rapport Qr / K et écart des potentiels de Nernst pour prévoir le sens (TSTL)', gen: genSensQrTSTL, domaine: 'Sens d’évolution en oxydo-réduction' },
   { id: 'mab-demi-calcul', groupe: 'Formules', titre: 'Demi-équation en milieu acide : électrons, ions H⁺, molécules H₂O et charges (TSTL)', gen: genMabDemi, domaine: 'Équations en milieu acide ou basique' },
   { id: 'mab-reaction-calcul', groupe: 'Formules', titre: 'Équation de réaction en milieu acide ou basique : électrons échangés et coefficients (TSTL)', gen: genMabReaction, domaine: 'Équations en milieu acide ou basique' },
+  { id: 'tcr-dosage-calcul', groupe: 'Formules', titre: 'Dosage par le permanganate : quantités de matière, concentration diluée et concentration du commerce (TSTL)', gen: genTcrDosage, domaine: 'Titrage redox direct' },
+  { id: 'tcr-bilan-calcul', groupe: 'Formules', titre: 'Dosage par le permanganate : volume équivalent et bilan de matière avant ou après l’équivalence (TSTL)', gen: genTcrAvantApres, domaine: 'Titrage redox direct' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },

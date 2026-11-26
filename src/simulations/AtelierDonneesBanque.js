@@ -1697,6 +1697,57 @@ export const ENONCES = [
         manque: null, solution: { txt: 'H₂O restantes = nombre de H⁺ − nombre de H₂O du milieu acide', val: net, u: '' } };
     },
   },
+  {
+    id: 'tcr-sapp-quantites', domaine: 'Titrage redox direct', titre: 'Dosage au permanganate : quantités de matière à l’équivalence', noms: ['Quantité de permanganate versée à l’équivalence', 'Quantité d’eau oxygénée dans l’erlenmeyer'],
+    gen: () => ({ cB: tire([0.0100, 0.0150, 0.0200, 0.0250]), VA: tire([10, 20, 25]), Ve: tire([9.4, 11.8, 13.6, 15.2, 17.9, 19.3, 21.1]), Vac: tire([5, 10]) }),
+    build: (p, q) => {
+      const nB = p.cB * p.Ve, nA = 2.5 * nB, cs = x => String(x).replace('.', ',');
+      const cBt = `${cs((p.cB * 100).toFixed(2))}×10⁻² mol/L`;
+      const tokens = {
+        cB: tok(cBt, 'Concentration du permanganate de potassium dans la burette', p.cB, 'mol/L'),
+        Ve: tok(`${cs(p.Ve)} mL`, 'Volume de permanganate versé à l’équivalence', p.Ve, 'mL'),
+        VA: tok(`${p.VA} mL`, 'Volume d’eau oxygénée diluée prélevé', p.VA, 'mL'),
+        Vac: tok(`${p.Vac} mL`, 'Volume d’acide sulfurique ajouté dans l’erlenmeyer', p.Vac, 'mL'),
+        rap: tok('5 H₂O₂ pour 2 MnO₄⁻', 'Coefficients de l’équation de titrage', 2.5, ''),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+        nB: tok(`${nb(nB)} mmol`, 'Quantité de permanganate versée à l’équivalence', nB, 'mmol'),
+      };
+      const debut = [`On dose `, T('VA'), ` d’eau oxygénée diluée, acidifiée avec `, T('Vac'), ` d’acide sulfurique, à `, T('T'), `, avec du permanganate de potassium de concentration `, T('cB'), `. L’équation du titrage s’écrit 2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O : `, T('rap'), `. La teinte rose persiste après avoir versé `, T('Ve'), `. `];
+      if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de permanganate a été versée jusqu’à l’équivalence ?'], utiles: ['cB', 'Ve'],
+        raisons: { VA: 'Le volume d’eau oxygénée prélevé intervient pour la concentration, pas pour la quantité de permanganate versée.', Vac: 'L’acide est en excès : son volume n’intervient pas dans la quantité de permanganate.', rap: 'Le rapport des coefficients relie ensuite la quantité d’eau oxygénée à celle du permanganate.', T: 'La température n’intervient pas dans ce calcul.' },
+        cherche: { bonne: 'La quantité de permanganate versée à l’équivalence (en mmol)', faux: ['La quantité d’eau oxygénée dans l’erlenmeyer (en mmol)', 'La concentration de l’eau oxygénée diluée (en mol/L)', 'Le volume de permanganate à verser (en mL)'] },
+        manque: null, solution: { txt: 'n(MnO₄⁻) = c_B × V_E', val: nB, u: 'mmol' } };
+      return { tokens, derivees: [{ id: 'nB', nom: 'Quantité de permanganate versée à l’équivalence', expr: 'c_B × V_E', val: nB, u: 'mmol' }], texte: [...debut, 'Quelle quantité d’eau oxygénée contenaient les ', T('VA'), ' prélevés ?'],
+        utiles: ['cB', 'Ve', 'rap'], raisons: { VA: 'Le volume prélevé donne la concentration, pas la quantité d’eau oxygénée dosée.', Vac: 'L’acide est en excès : son volume n’intervient pas dans la quantité d’eau oxygénée.', T: 'La température n’intervient pas dans ce calcul.' },
+        cherche: { bonne: 'La quantité d’eau oxygénée dans l’erlenmeyer (en mmol)', faux: ['La quantité de permanganate versée (en mmol)', 'La concentration de l’eau oxygénée diluée (en mol/L)', 'La masse d’eau oxygénée dosée (en g)'] },
+        manque: null, solution: { txt: 'n(H₂O₂) = 5/2 × c_B × V_E', val: nA, u: 'mmol' } };
+    },
+  },
+  {
+    id: 'tcr-sapp-concentration', domaine: 'Titrage redox direct', titre: 'Dosage au permanganate : concentration de l’eau oxygénée du commerce', noms: ['Concentration de l’eau oxygénée diluée', 'Concentration de l’eau oxygénée du commerce'],
+    gen: () => { for (let k = 0; k < 500; k++) { const p = { cB: tire([0.0100, 0.0150, 0.0200, 0.0250]), VA: tire([10, 20, 25]), Ve: tire([9.4, 11.8, 13.6, 15.2, 17.9, 19.3, 21.1]), dil: tire([10, 20, 50]) }; const c0 = 2.5 * p.cB * p.Ve * p.dil / p.VA; if (c0 > 0.35 && c0 < 1.5) return p; } return { cB: 0.02, VA: 10, Ve: 17.9, dil: 10 }; },
+    build: (p, q) => {
+      const cA = 2.5 * p.cB * p.Ve / p.VA, c0 = cA * p.dil, cs = x => String(x).replace('.', ',');
+      const tokens = {
+        cB: tok(`${cs((p.cB * 100).toFixed(2))}×10⁻² mol/L`, 'Concentration du permanganate de potassium dans la burette', p.cB, 'mol/L'),
+        Ve: tok(`${cs(p.Ve)} mL`, 'Volume de permanganate versé à l’équivalence', p.Ve, 'mL'),
+        VA: tok(`${p.VA} mL`, 'Volume d’eau oxygénée diluée prélevé', p.VA, 'mL'),
+        dil: tok(`${p.dil} fois`, 'Facteur de dilution de l’eau oxygénée du commerce', p.dil, ''),
+        rap: tok('5 H₂O₂ pour 2 MnO₄⁻', 'Coefficients de l’équation de titrage', 2.5, ''),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+        cA: tok(`${nb(cA)} mol/L`, 'Concentration de l’eau oxygénée diluée', cA, 'mol/L'),
+      };
+      const debut = [`On dose `, T('VA'), ` d’une eau oxygénée obtenue en diluant `, T('dil'), ` l’eau oxygénée d’un désinfectant, à `, T('T'), `, avec du permanganate de potassium de concentration `, T('cB'), ` en milieu acide (équation : 2 MnO₄⁻ + 5 H₂O₂ + 6 H⁺ → 2 Mn²⁺ + 5 O₂ + 8 H₂O, soit `, T('rap'), `). La teinte rose persiste après `, T('Ve'), ` de permanganate versé. `];
+      if (q === 0) return { tokens, derivees: [{ id: 'nB', nom: 'Quantité de permanganate versée', expr: 'c_B × V_E', val: p.cB * p.Ve, u: 'mmol' }, { id: 'nA', nom: 'Quantité d’eau oxygénée dosée', expr: '5/2 × n(MnO₄⁻)', val: 2.5 * p.cB * p.Ve, u: 'mmol' }], texte: [...debut, 'Quelle est la concentration de l’eau oxygénée diluée, c_A ?'],
+        utiles: ['cB', 'Ve', 'rap', 'VA'], raisons: { dil: 'La dilution intervient ensuite, pour passer à l’eau oxygénée du commerce.', T: 'La température n’intervient pas dans ce calcul.' },
+        cherche: { bonne: 'La concentration c_A de l’eau oxygénée diluée (en mol/L)', faux: ['La concentration c_0 de l’eau oxygénée du commerce (en mol/L)', 'La quantité d’eau oxygénée dosée (en mmol)', 'Le titre massique de l’eau oxygénée diluée (en g/L)'] },
+        manque: null, solution: { txt: 'c_A = (5/2 × c_B × V_E) / V_A', val: cA, u: 'mol/L' } };
+      return { tokens, derivees: [], texte: [...debut, 'On a calculé c_A = ', T('cA'), '. Quelle est la concentration de l’eau oxygénée du désinfectant ?'], utiles: ['cA', 'dil'],
+        raisons: { cB: 'La concentration en permanganate a déjà servi à calculer c_A.', Ve: 'Le volume équivalent a déjà servi à calculer c_A.', VA: 'Le volume prélevé a déjà servi à calculer c_A.', rap: 'Le rapport des coefficients a déjà servi à calculer c_A.', T: 'La température n’intervient pas dans ce calcul.' },
+        cherche: { bonne: 'La concentration c_0 de l’eau oxygénée du commerce (en mol/L)', faux: ['La concentration c_A de l’eau oxygénée diluée (en mol/L)', 'La quantité d’eau oxygénée dosée (en mmol)', 'La concentration du permanganate (en mol/L)'] },
+        manque: null, solution: { txt: 'c_0 = facteur de dilution × c_A', val: c0, u: 'mol/L' } };
+    },
+  },
   // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule
   {
     id: 'etl-sapp-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Constante de cellule et conductivité d’une solution', noms: ['Constante de la cellule', 'Conductivité d’une solution à partir de sa conductance'],

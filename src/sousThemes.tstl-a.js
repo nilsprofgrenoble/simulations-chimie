@@ -196,5 +196,9 @@ export default {
       refs: ['37:prevoir:mab-ana-basique', '77:plausible:mab-val-hydroxyde', '34:mab-sapp-basique'] },
     { id: 'mab-reaction', nom: 'Écrire l’équation d’une réaction d’oxydo-réduction', capacite: 'Écrire l’équation d’une réaction d’oxydo-réduction en milieu acide ou basique à partir des demi-équations (multiplier, additionner, simplifier).',
       refs: ['37:prevoir:mab-ana-ph', '37:prevoir:mab-ana-fehling', '36:mab-reaction-calcul'] },
+    { id: 'tcr-reperer', nom: 'Repérer l’équivalence d’un titrage redox par changement de couleur', capacite: 'Repérer l’équivalence d’un titrage direct (teinte persistante du réactif titrant) et connaître le rôle du milieu acide.',
+      refs: ['37:prevoir:tcr-ana-teinte', '37:prevoir:tcr-ana-sansacide', '77:plausible:tcr-val-incolore', '36:tcr-bilan-calcul'] },
+    { id: 'tcr-calcul', nom: 'Déterminer une concentration à l’aide d’un titrage direct', capacite: 'Déterminer une concentration à l’aide des données d’un titrage direct (relation à l’équivalence, coefficients de l’équation, dilution).',
+      refs: ['37:prevoir:tcr-ana-concentration', '37:prevoir:tcr-ana-prise', '77:plausible:tcr-val-rapport', '34:tcr-sapp-quantites', '34:tcr-sapp-concentration', '36:tcr-dosage-calcul'] },
   ],
 };
