@@ -54,6 +54,12 @@ export default {
       refs: ['37:prevoir:cdp-ana-allure', '34:cdp-sapp-sigma', '36:cdp-sigma-calcul'] },
     { id: 'precip-kohlrausch', nom: 'Loi de Kohlrausch et domaine de validité', capacite: 'Utiliser la loi de Kohlrausch σ = Σ λ c pour des solutions suffisamment diluées et en connaître la limite.',
       refs: ['37:prevoir:cdp-ana-concentre'] },
+    { id: 'kcd-ions', nom: 'Acide faible : de la conductivité à la concentration en ions', capacite: 'Exploiter la loi de Kohlrausch pour déterminer la concentration en ions d’une solution d’acide faible, et dresser le bilan des espèces à l’équilibre.',
+      refs: ['37:prevoir:kcd-ana-majoritaire', '37:prevoir:kcd-ana-hydroxyde', '77:plausible:kcd-val-tau', '34:kcd-sapp-x', '36:kcd-calcul'] },
+    { id: 'kcd-constante', nom: 'Constante d’équilibre et taux d’avancement final', capacite: 'Déterminer la valeur d’une constante d’équilibre à partir de mesures conductimétriques (tableau d’avancement, K, τ) et la comparer à la valeur tabulée.',
+      refs: ['37:prevoir:kcd-ana-K-compare', '34:kcd-sapp-K', '36:kcd-ka-calcul'] },
+    { id: 'kcd-dilution', nom: 'Effet de la dilution : K constante, τ et σ qui varient', capacite: 'Prévoir l’effet d’une dilution sur la conductivité et le taux d’avancement final, et savoir que K ne dépend que de la température.',
+      refs: ['37:prevoir:kcd-ana-sigma-dilution', '77:plausible:kcd-val-K-dilution'] },
   ],
   'tstl-synthese-organique': [
     { id: 'esterification', nom: 'Estérification : équilibre, réactif limitant et rendement', capacite: 'Déterminer le rendement d’une estérification et identifier les facteurs qui déplacent l’équilibre (excès, élimination d’un produit, catalyseur).',

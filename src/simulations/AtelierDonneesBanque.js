@@ -1364,6 +1364,58 @@ export const ENONCES = [
         manque: null, solution: { txt: 'Δσ par mL = (λ(Ag⁺) + λ(NO₃⁻)) × cB × 1 000 / Vt (chaque mL apporte cB mmol de chaque ion)', val: (lAg + lNO3) * p.cB * 1000 / Vt, u: 'mS·m⁻¹ par mL' } };
     },
   },
+  {
+    id: 'kcd-sapp-x', domaine: 'Constante d’un acide faible par conductimétrie', titre: 'Acide faible : concentration en ions et acide restant à partir de la conductivité', noms: ['Concentration en ions H₃O⁺ à l’équilibre', 'Concentration en acide restant'],
+    gen: () => {
+      const ac = tire([{ nom: 'acide méthanoïque', f: 'HCOOH', base: 'HCOO⁻', lA: 5.46, pKa: 3.75 }, { nom: 'acide propanoïque', f: 'C₂H₅COOH', base: 'C₂H₅COO⁻', lA: 3.58, pKa: 4.87 }]);
+      const c = tire([0.0030, 0.0060, 0.012, 0.025, 0.040]), K = 10 ** -ac.pKa, x = (-K + Math.sqrt(K * K + 4 * K * c)) / 2;
+      return { ac, c, sig: Number(((35.0 + ac.lA) * x * 1000).toPrecision(3)) };
+    },
+    build: (p, q) => {
+      const L = 35.0 + p.ac.lA, x = p.sig / L / 1000;
+      const tokens = {
+        sig: tok(`${nb(p.sig)} mS·m⁻¹`, 'Conductivité de la solution à 25 °C', p.sig, 'mS·m⁻¹'),
+        c: tok(`${sciR(p.c)} mol/L`, 'Concentration apportée en acide', p.c, 'mol/L'),
+        lH: tok('35,0 mS·m²·mol⁻¹', 'Conductivité ionique molaire de H₃O⁺', 35.0, 'mS·m²·mol⁻¹'),
+        lA: tok(`${nb(p.ac.lA, 2)} mS·m²·mol⁻¹`, `Conductivité ionique molaire de ${p.ac.base}`, p.ac.lA, 'mS·m²·mol⁻¹'),
+        pKa: tok(`${nb(p.ac.pKa, 2)}`, 'pKa du couple acide/base (valeur tabulée)', p.ac.pKa, ''),
+      };
+      const debut = ['Une solution d’', p.ac.nom, ' (', p.ac.f, '), de concentration apportée ', T('c'), ', a une conductivité ', T('sig'), ' à 25 °C. On néglige les ions HO⁻. Données : λ(H₃O⁺) = ', T('lH'), ', λ(', p.ac.base, ') = ', T('lA'), ' ; le pKa du couple ', p.ac.f, ' / ', p.ac.base, ' vaut ', T('pKa'), '. '];
+      const der = [{ id: 'S', nom: 'Somme des conductivités ioniques molaires', expr: 'λ(H₃O⁺) + λ(A⁻)', val: L, u: 'mS·m²·mol⁻¹' }];
+      if (q === 0) return { tokens, derivees: der, texte: [...debut, 'Quelle est la concentration en ions H₃O⁺ à l’équilibre ?'],
+        utiles: ['sig', 'lH', 'lA'], raisons: { c: 'La concentration apportée ne sert pas à trouver [H₃O⁺] : elle se déduit de σ et des λ.', pKa: 'Le pKa est une valeur tabulée : on ne s’en sert pas pour exploiter la mesure de σ.' },
+        cherche: { bonne: 'La concentration en H₃O⁺ (en mol/L)', faux: ['La concentration en acide restant (en mol/L)', 'La constante d’équilibre K (sans unité)', 'Le taux d’avancement final (en %)'] },
+        manque: null, solution: { txt: 'σ = (λ(H₃O⁺) + λ(A⁻)) × [H₃O⁺] ; [H₃O⁺] en mol·m⁻³, puis ÷ 1 000 pour obtenir des mol/L', val: x, u: 'mol/L' } };
+      return { tokens, derivees: [...der, { id: 'x', nom: 'Concentration en ions H₃O⁺ à l’équilibre', expr: 'σ / (λ(H₃O⁺) + λ(A⁻))', val: x, u: 'mol/L' }], texte: [...debut, 'Quelle est la concentration en acide HA restant à l’équilibre ?'],
+        utiles: ['sig', 'lH', 'lA', 'c'], raisons: { pKa: 'Le pKa n’intervient pas dans un bilan de matière : il se compare à la valeur de K calculée.' },
+        cherche: { bonne: 'La concentration en acide restant HA (en mol/L)', faux: ['La concentration en ions H₃O⁺ (en mol/L)', 'La concentration apportée c (en mol/L)', 'La constante d’équilibre K (sans unité)'] },
+        manque: null, solution: { txt: '[HA] = c − [H₃O⁺] (tableau d’avancement : chaque H₃O⁺ formé a consommé une molécule HA)', val: p.c - x, u: 'mol/L' } };
+    },
+  },
+  {
+    id: 'kcd-sapp-K', domaine: 'Constante d’un acide faible par conductimétrie', titre: 'Acide faible : constante d’équilibre et taux d’avancement final', noms: ['Constante d’équilibre K', 'Taux d’avancement final'],
+    gen: () => {
+      const ac = tire([{ nom: 'acide méthanoïque', f: 'HCOOH', base: 'HCOO⁻', pKa: 3.75 }, { nom: 'acide propanoïque', f: 'C₂H₅COOH', base: 'C₂H₅COO⁻', pKa: 4.87 }]);
+      const c = tire([0.0030, 0.0060, 0.012, 0.025, 0.040]), Kt = 10 ** -ac.pKa, x0 = (-Kt + Math.sqrt(Kt * Kt + 4 * Kt * c)) / 2;
+      return { ac, c, x: Number(x0.toPrecision(2)), V: tire([50, 100, 200]) };
+    },
+    build: (p, q) => {
+      const tokens = {
+        x: tok(`${sciR(p.x)} mol/L`, 'Concentration en ions H₃O⁺ à l’équilibre', p.x, 'mol/L'),
+        c: tok(`${sciR(p.c)} mol/L`, 'Concentration apportée en acide', p.c, 'mol/L'),
+        V: tok(`${p.V} mL`, 'Volume de la solution préparée', p.V, 'mL'),
+      };
+      const debut = ['On prépare ', T('V'), ' d’une solution d’', p.ac.nom, ' (', p.ac.f, ') de concentration apportée ', T('c'), '. À 25 °C, la conductimétrie donne, à l’équilibre, ', T('x'), ' en ions H₃O⁺ (et autant en ', p.ac.base, '). '];
+      if (q === 0) return { tokens, derivees: [{ id: 'HA', nom: 'Concentration en acide restant', expr: 'c − x', val: p.c - p.x, u: 'mol/L' }], texte: [...debut, 'Quelle est la constante d’équilibre K de la réaction de l’acide avec l’eau ?'],
+        utiles: ['x', 'c'], raisons: { V: 'K se calcule avec des concentrations : le volume de la solution n’intervient pas.' },
+        cherche: { bonne: 'La constante d’équilibre K (sans unité)', faux: ['Le taux d’avancement final (en %)', 'La concentration en acide restant (en mol/L)', 'La quantité de matière d’acide introduite (en mmol)'] },
+        manque: null, solution: { txt: 'K = [A⁻] × [H₃O⁺] / [HA] = x² / (c − x)', val: p.x * p.x / (p.c - p.x), u: '' } };
+      return { tokens, derivees: [], texte: [...debut, 'Quel est le taux d’avancement final de la réaction ?'],
+        utiles: ['x', 'c'], raisons: { V: 'Le taux d’avancement est un rapport de deux concentrations : le volume se simplifie.' },
+        cherche: { bonne: 'Le taux d’avancement final τ (en %)', faux: ['La constante d’équilibre K (sans unité)', 'La concentration en acide restant (en mol/L)', 'La quantité d’ions formés (en mmol)'] },
+        manque: null, solution: { txt: 'τ = x / c, multiplié par 100 pour l’exprimer en pourcentage', val: 100 * p.x / p.c, u: '%' } };
+    },
+  },
   // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule
   {
     id: 'etl-sapp-cellule', domaine: 'Conductimétrie : étalonnage et conductance', titre: 'Constante de cellule et conductivité d’une solution', noms: ['Constante de la cellule', 'Conductivité d’une solution à partir de sa conductance'],
