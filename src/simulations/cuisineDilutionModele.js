@@ -1,5 +1,5 @@
-// Modèle du jeu « Service en cuisine : dilutions » (sim 291).
-// Une commande = préparer un volume Vt d'une solution de concentration Ct à partir d'une solution mère C0, avec de la verrerie jaugée.
+// Modèle du jeu « Urgence au labo : dilutions » (sim 291).
+// Scénario : un ballon de réaction s'emballe ; chaque commande = une solution à préparer pour le calmer. Une commande = préparer un volume Vt d'une solution de concentration Ct à partir d'une solution mère C0, avec de la verrerie jaugée.
 // Hypothèses (rappelées dans le jeu) : verrerie jaugée parfaite (pas d'incertitude), prélèvement exact, volumes additifs (pas de contraction),
 // solution parfaitement homogène après agitation, dilution idéale. Une étape = prélever p (pipette jaugée) et compléter jusqu'au trait dans une fiole jaugée f.
 // Loi de dilution : C × p = C' × f (conservation de la quantité de matière), donc C' = C × p / f et le facteur de dilution est F = C / C' = f / p.
@@ -39,11 +39,19 @@ export function solutions(cmd, etapesMax = 2) {
   return sols;
 }
 
-// Services : 1 étape (concentration mère fixe), 1 étape (concentrations mères variées), 2 étapes obligatoires
+// Missions : 1 étape (concentration mère fixe), 1 étape (concentrations mères variées), 2 étapes obligatoires.
+// « temps » : secondes avant l'explosion au départ ; chaque commande réussie fait gagner BONUS_REUSSITE secondes, chaque essai raté ou indice en fait perdre.
+export const BONUS_REUSSITE = 10, PENALITE_ECHEC = 8, COUT_INDICE = 10;
 export const SERVICES = [
-  { id: 1, nom: 'Mise en route', icone: '🥄', nb: 5, etapesMax: 1, patience: 60, textes: "Une solution mère à 1,0 mol/L. Choisis la pipette et la fiole.", C0: [1], Ct: [0.5, 0.25, 0.2, 0.1, 0.05, 0.04, 0.02, 0.01] },
-  { id: 2, nom: 'Coup de feu', icone: '🔥', nb: 6, etapesMax: 1, patience: 45, textes: "Plusieurs solutions mères et moins de temps : attention à la concentration de départ.", C0: [0.2, 0.5, 1, 2], Ct: [0.5, 0.25, 0.2, 0.1, 0.05, 0.04, 0.02, 0.01, 0.2, 0.4, 0.08] },
-  { id: 3, nom: 'Haute dilution', icone: '🧪', nb: 4, etapesMax: 2, patience: 90, textes: "Impossible en une seule étape : prépare une solution intermédiaire.", C0: [0.5, 1, 2], Ct: [0.001, 0.002, 0.0005, 0.004, 0.005, 0.0004, 0.0002, 0.0025] },
+  { id: 1, nom: 'Le ballon chauffe', icone: '🌡️', nb: 5, etapesMax: 1, temps: 210, etapesTxt: 'une étape',
+    histoire: "Dans le labo, le ballon de synthèse sous la paillasse monte en température : la réaction s'emballe ! Le protocole d'urgence demande des solutions précises de l'inhibiteur, à partir de la solution mère S₀ (1,0 mol/L). Prépare-les avant que le ballon n'explose.",
+    C0: [1], Ct: [0.5, 0.25, 0.2, 0.1, 0.05, 0.04, 0.02, 0.01] },
+  { id: 2, nom: 'Stock en désordre', icone: '🧴', nb: 6, etapesMax: 1, temps: 200, etapesTxt: 'une étape',
+    histoire: "Le ballon est reparti de plus belle. Dans l'armoire, plusieurs flacons de solution mère ont des concentrations différentes : lis bien l'étiquette de départ avant de choisir ta pipette !",
+    C0: [0.2, 0.5, 1, 2], Ct: [0.5, 0.25, 0.2, 0.1, 0.05, 0.04, 0.02, 0.01, 0.2, 0.4, 0.08] },
+  { id: 3, nom: 'Réaction critique', icone: '⚠️', nb: 4, etapesMax: 2, temps: 240, etapesTxt: 'deux étapes',
+    histoire: "Alerte maximale : l'inhibiteur doit être extrêmement dilué, et aucune pipette ne permet de le faire en une seule étape. Prépare une solution intermédiaire, puis dilue-la encore. Chaque seconde compte !",
+    C0: [0.5, 1, 2], Ct: [0.001, 0.002, 0.0005, 0.004, 0.005, 0.0004, 0.0002, 0.0025] },
 ];
 
 // Commandes d'un service, reproductibles (même graine = mêmes commandes). Chaque commande est réalisable avec la verrerie du plateau
@@ -91,6 +99,10 @@ export const fmtF = x => x.toLocaleString('fr-FR', { maximumSignificantDigits: 4
 // Intensité de la teinte d'un colorant (illustration : plus la solution est concentrée, plus elle est foncée)
 export const teinte = C => Math.max(0.04, Math.min(0.95, 1 - Math.pow(10, -C * 1.2)));
 
-// Score d'une commande réussie : 100 points, bonus de rapidité, malus d'indices et de tentatives ratées, bonus de série
-export const points = ({ restant, patience, essais, indices, serie, detente }) =>
-  Math.max(20, 100 + (detente ? 0 : Math.round(40 * Math.max(0, restant) / patience)) - 25 * essais - 20 * indices) + 10 * Math.min(serie, 5);
+// Température du ballon (illustration) : 35 °C au calme, 180 °C à l'explosion ; elle suit le temps restant.
+export const TEMP_MIN = 35, TEMP_MAX = 180;
+export const urgence = (reste, temps0) => 1 - Math.max(0, Math.min(1, reste / temps0));
+export const temperature = (reste, temps0) => Math.round(TEMP_MIN + (TEMP_MAX - TEMP_MIN) * urgence(reste, temps0));
+
+// Étoiles d'une mission réussie, selon la part du temps initial qui reste : ≥ 50 % → 3, ≥ 20 % → 2, sinon 1
+export const etoilesMission = (reste, temps0) => (reste / temps0 >= 0.5 ? 3 : reste / temps0 >= 0.2 ? 2 : 1);

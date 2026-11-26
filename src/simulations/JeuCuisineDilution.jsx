@@ -1,180 +1,232 @@
 import { useState, useMemo, useEffect } from "react";
-import { FIOLES, PIPETTES, SERVICES, commandesDuService, realiser, retour, correction, fmtC, fmtF, teinte, points } from "./cuisineDilutionModele";
+import { FIOLES, PIPETTES, SERVICES, BONUS_REUSSITE, PENALITE_ECHEC, COUT_INDICE, commandesDuService, realiser, retour, correction, fmtC, fmtF, teinte, urgence, temperature, etoilesMission } from "./cuisineDilutionModele";
+import { LaboScene, STYLE_LABO } from "./LaboScene";
+import { chapitresDuJeu, allerChapitre } from "../chapitres";
 
 // ====================================================
-//  SIM 291 : SERVICE EN CUISINE — DILUTIONS (jeu, 2GT → 1G). Des commandes arrivent : choisis pipette et fiole jaugées
-//  pour préparer la bonne concentration avant que le client parte. Hors menu : réservé à l'administrateur (jeuxVisibles.js) ; ?sim=291.
-//  Modèle et tests : cuisineDilutionModele.js.
+//  SIM 291 : URGENCE AU LABO — DILUTIONS (jeu, 2GT → 1G). Scénario : le ballon de réaction sous la paillasse s'emballe ; avant l'explosion,
+//  il faut préparer à la pipette et à la fiole jaugées les solutions d'inhibiteur demandées (loi de dilution, facteur de dilution).
+//  Page ordinaire aux couleurs de la Paillasse virtuelle (la calculatrice flottante du site reste disponible). Réservé à l'administrateur tant que
+//  le jeu n'est pas ouvert (jeuxVisibles.js) ; ?sim=291 ; carte « Jouer » sur les chapitres 2GT Solutions et 1G Évolution (chapitres.js, champ « jeux »).
+//  Modèle et tests : cuisineDilutionModele.js. Fiction : aucune manipulation réelle de ce type ne se fait dans l'urgence.
 // ====================================================
-const C = { fond: '#1b1209', panneau: '#2a1d10', bord: '#5b4128', texte: '#fff4e0', doux: '#d9c0a0', ambre: '#ffc15a', vert: '#3be29a', rouge: '#ff6b6b', bleu: '#38b6ff', encre: '#2b1a08' };
-const CLE = 'cuisine-dilution-v1';
+const C = { fond: '#f4f8fc', panneau: '#ffffff', bord: '#d5dfeb', texte: '#0f172a', doux: '#475569', ambre: '#f5a31a', ambreTxt: '#b45309', vert: '#15803d', rouge: '#dc2626', bleu: '#0b4f94', verre: '#2b8fd6' };
+const TITRE = "'Outfit', 'Inter', sans-serif";
+const CLE = 'urgence-labo-v1';
 const lire = () => { try { return JSON.parse(window.localStorage.getItem(CLE) || '{}'); } catch { return {}; } };
 const ecrire = o => { try { window.localStorage.setItem(CLE, JSON.stringify(o)); } catch { /* sans stockage : records gardés pour la séance seulement */ } };
-const GRAINE_JOUR = () => Math.floor(Date.now() / 86400000);   // ordre des commandes différent chaque jour (appelé seulement dans un gestionnaire)
+const GRAINE_JOUR = () => Math.floor(Date.now() / 86400000);   // appelé seulement dans un gestionnaire
+const mmss = s => { const t = Math.max(0, Math.ceil(s)); return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`; };
+const ouvrirCalculatrice = () => { const b = document.querySelector('[data-calculatrice-bouton]'); if (b) b.click(); };
 
 const STYLE = `
-@keyframes cd-pop{0%{transform:scale(.94);opacity:0}100%{transform:none;opacity:1}}
-.cd-pop{animation:cd-pop .3s ease-out}
-.cd-btn{min-height:44px;padding:0 14px;border-radius:14px;border:2px solid ${C.bord};background:${C.panneau};color:${C.texte};font:800 15px Inter,system-ui,sans-serif;cursor:pointer}
-.cd-btn:hover{border-color:${C.ambre}}.cd-btn:focus-visible{outline:3px solid #fff;outline-offset:2px}
-.cd-btn[aria-pressed=true]{background:${C.ambre};color:${C.encre};border-color:${C.ambre}}
-.cd-btn:disabled{opacity:.45;cursor:not-allowed}
-.cd-grand{min-height:52px;padding:0 24px;border-radius:999px;border:none;background:${C.ambre};color:${C.encre};font:800 17px Inter,system-ui,sans-serif;cursor:pointer}
-.cd-grand:disabled{opacity:.45;cursor:not-allowed}.cd-grand:focus-visible{outline:3px solid #fff;outline-offset:2px}
-@media (prefers-reduced-motion:reduce){.cd-pop{animation:none}}
+@keyframes ul-pop{0%{transform:scale(.95);opacity:0}100%{transform:none;opacity:1}}
+.ul-pop{animation:ul-pop .3s ease-out}
+.ul-mob{display:flex}@media (min-width:700px){.ul-mob{display:none}}
+.ul-btn{min-height:44px;padding:0 14px;border-radius:14px;border:1.5px solid ${C.bord};background:#fff;color:#334155;font:700 15px Inter,system-ui,sans-serif;cursor:pointer}
+.ul-btn:hover{border-color:${C.bleu};color:${C.bleu}}.ul-btn:focus-visible{outline:3px solid ${C.ambre};outline-offset:2px}
+.ul-btn[aria-pressed=true]{background:${C.bleu};color:#fff;border-color:${C.bleu}}
+.ul-btn:disabled{opacity:.45;cursor:not-allowed}
+.ul-grand{min-height:50px;padding:0 24px;border-radius:999px;border:none;background:${C.ambre};color:#1b2b3a;font:800 16px Inter,system-ui,sans-serif;cursor:pointer}
+.ul-grand:disabled{opacity:.45;cursor:not-allowed}.ul-grand:focus-visible{outline:3px solid ${C.bleu};outline-offset:2px}
+@media (prefers-reduced-motion:reduce){.ul-pop{animation:none}}
+${STYLE_LABO}
 `;
+const carte = { background: C.panneau, border: `1px solid ${C.bord}`, borderRadius: 20, padding: '12px 16px' };
 
 // Fiole jaugée (dessin) remplie d'un colorant bleu dont la teinte suit la concentration
-function Fiole({ V, conc, titre, largeur = 84 }) {
-  const a = conc == null ? 0 : teinte(conc);
+function Fiole({ V, conc, titre, largeur = 78 }) {
+  const a = conc == null ? 0 : teinte(conc), id = `ul-f-${titre.replace(/\W/g, '')}`;
+  const d = 'M34 6 H50 V40 C70 50 78 66 78 82 C78 100 64 108 42 108 C20 108 6 100 6 82 C6 66 14 50 34 40 Z';
   return (
     <figure style={{ margin: 0, textAlign: 'center', width: largeur }}>
       <svg viewBox="0 0 84 112" width={largeur} role="img" aria-label={`${titre} : fiole${typeof V === 'number' ? ` de ${V} mL` : ''}${conc == null ? ', vide' : `, concentration ${fmtC(conc)} mol/L`}`}>
-        <defs><clipPath id={`cd-f-${titre.replace(/\W/g, '')}`}><path d="M34 6 H50 V40 C70 50 78 66 78 82 C78 100 64 108 42 108 C20 108 6 100 6 82 C6 66 14 50 34 40 Z" /></clipPath></defs>
-        <path d="M34 6 H50 V40 C70 50 78 66 78 82 C78 100 64 108 42 108 C20 108 6 100 6 82 C6 66 14 50 34 40 Z" fill="rgba(255,255,255,.06)" />
-        <g clipPath={`url(#cd-f-${titre.replace(/\W/g, '')})`}><rect x="0" y="22" width="84" height="100" fill={C.bleu} fillOpacity={a} /></g>
-        <path d="M34 6 H50 V40 C70 50 78 66 78 82 C78 100 64 108 42 108 C20 108 6 100 6 82 C6 66 14 50 34 40 Z" fill="none" stroke="#e7d7bd" strokeWidth="2.5" strokeLinejoin="round" />
-        <line x1="31" y1="22" x2="53" y2="22" stroke="#ff6b6b" strokeWidth="2" />
-        <text x="42" y="90" textAnchor="middle" fontSize="13" fontWeight="800" fill="#fff4e0" style={{ paintOrder: 'stroke' }} stroke="#1b1209" strokeWidth="3">{typeof V === 'number' ? `${V} mL` : V}</text>
+        <defs><clipPath id={id}><path d={d} /></clipPath></defs>
+        <path d={d} fill="#f1f7fc" />
+        <g clipPath={`url(#${id})`}><rect x="0" y="22" width="84" height="100" fill={C.verre} fillOpacity={a} /></g>
+        <path d={d} fill="none" stroke="#7c93ab" strokeWidth="2.5" strokeLinejoin="round" />
+        <line x1="31" y1="22" x2="53" y2="22" stroke="#dc2626" strokeWidth="2" />
+        <text x="42" y="90" textAnchor="middle" fontSize="13" fontWeight="800" fill="#0f172a" style={{ paintOrder: 'stroke' }} stroke="#fff" strokeWidth="3">{typeof V === 'number' ? `${V} mL` : V}</text>
       </svg>
       <figcaption style={{ fontSize: 12.5, color: C.doux, lineHeight: 1.3 }}>{titre}{conc != null && <><br /><b style={{ color: C.texte }}>{fmtC(conc)} mol/L</b></>}</figcaption>
     </figure>);
 }
 
-export function SimulationCuisineDilution() {
+export function SimulationCuisineDilution({ naviguer }) {
   const [ecran, setEcran] = useState(null);      // null = menu ; sinon { service, graine }
   const [detente, setDetente] = useState(false);
   const [rec, setRec] = useState(lire);
-  const fini = (service, score, etoiles) => setRec(r => { const o = { ...r, [service.id]: { score: Math.max(r[service.id]?.score || 0, score), etoiles: Math.max(r[service.id]?.etoiles || 0, etoiles) } }; ecrire(o); return o; });
+  const chap = chapitresDuJeu(291)[0];
+  const fini = (service, etoiles) => setRec(r => { const o = { ...r, [service.id]: Math.max(r[service.id] || 0, etoiles) }; ecrire(o); return o; });
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', color: C.texte, fontFamily: 'Inter, system-ui, sans-serif' }}>
+    <div style={{ maxWidth: 940, margin: '0 auto', color: C.texte, fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'left' }}>
       <style>{STYLE}</style>
-      <header style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-        <h1 style={{ margin: 0, font: "800 24px Outfit, Inter, sans-serif", color: C.texte }}>🍽️ Service en cuisine : dilutions</h1>
-        {ecran && <button type="button" className="cd-btn" style={{ marginLeft: 'auto', minHeight: 36 }} onClick={() => setEcran(null)}>← Menu</button>}
+      <header style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 10 }}>
+        <h1 style={{ margin: 0, font: `800 28px ${TITRE}`, color: C.bleu }}>🧪 Urgence au labo</h1>
+        <span style={{ color: C.doux, fontSize: 14.5 }}>Dilutions sous pression</span>
+        <span style={{ marginLeft: 'auto', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {chap && naviguer && <button type="button" className="ul-btn" onClick={() => allerChapitre(naviguer, chap.id)}>📚 Chapitre et exercices</button>}
+          {ecran && <button type="button" className="ul-btn" onClick={() => setEcran(null)}>← Missions</button>}
+        </span>
       </header>
       {!ecran && (
         <div>
-          <p style={{ margin: '0 0 10px', fontSize: 15.5, lineHeight: 1.55, color: C.doux }}>
-            Tu es le chef du labo-cuisine : les clients commandent des solutions de concentration précise. Pour chaque commande, choisis <b style={{ color: C.texte }}>la pipette jaugée</b> pour prélever la solution mère et <b style={{ color: C.texte }}>la fiole jaugée</b> pour la diluer jusqu'au trait. Sers vite, et juste !
+          <LaboScene etat="calme" u={0.05} temp={35} stock="1,0" />
+          <p style={{ margin: '12px 0 10px', fontSize: 15.5, lineHeight: 1.6 }}>
+            Une réaction s'emballe dans le ballon, <b>sous la paillasse</b> ! Pour la calmer, il faut préparer en urgence des solutions d'<b>inhibiteur</b> de concentrations précises, par dilution de la solution mère S₀. Pour chaque demande, choisis la <b>pipette jaugée</b> (prélèvement) et la <b>fiole jaugée</b> (dilution jusqu'au trait). Chaque solution réussie refroidit le ballon et te fait gagner du temps. Tu peux utiliser la <b>calculatrice</b> (bouton 🧮 en bas de l'écran).
           </p>
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '0 0 12px', fontSize: 15 }}>
             <input type="checkbox" checked={detente} onChange={ev => setDetente(ev.target.checked)} style={{ width: 20, height: 20 }} />
-            Mode détente (sans chronomètre)
+            Mode détente (sans compte à rebours : le ballon ne risque rien)
           </label>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 12 }}>
             {SERVICES.map(s => (
-              <section key={s.id} aria-label={`Service ${s.id}`} style={{ background: C.panneau, border: `1.5px solid ${C.bord}`, borderRadius: 18, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <div style={{ font: "800 18px Outfit, Inter, sans-serif" }}>{s.icone} Service {s.id} · {s.nom}</div>
-                <div style={{ fontSize: 14, color: C.doux, lineHeight: 1.45, flex: 1 }}>{s.textes} <span style={{ whiteSpace: 'nowrap' }}>({s.nb} commandes)</span></div>
-                <div style={{ fontSize: 13.5, color: C.ambre }}>{rec[s.id] ? <>Record : {rec[s.id].score} pts · {'★'.repeat(rec[s.id].etoiles)}{'☆'.repeat(3 - rec[s.id].etoiles)}</> : 'Pas encore joué'}</div>
-                <button type="button" className="cd-grand" onClick={() => setEcran({ service: s, graine: GRAINE_JOUR() + Math.floor(Math.random() * 1000) })}>Ouvrir le service ▶</button>
+              <section key={s.id} aria-label={`Mission ${s.id}`} style={{ ...carte, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ font: `800 18px ${TITRE}`, color: C.bleu }}>{s.icone} Mission {s.id} · {s.nom}</div>
+                <div style={{ fontSize: 14, color: C.doux, lineHeight: 1.45, flex: 1 }}>{s.nb} solutions à préparer, en {s.etapesTxt}. {!detente && <>Temps : {mmss(s.temps)}.</>}</div>
+                <div style={{ fontSize: 13.5, color: C.ambreTxt, fontWeight: 700 }}>{rec[s.id] ? <>Meilleur résultat : {'★'.repeat(rec[s.id])}{'☆'.repeat(3 - rec[s.id])}</> : 'Pas encore tentée'}</div>
+                <button type="button" className="ul-grand" onClick={() => setEcran({ service: s, graine: GRAINE_JOUR() + Math.floor(Math.random() * 1000) })}>Lancer la mission ▶</button>
               </section>))}
           </div>
-          <details style={{ marginTop: 14, background: C.panneau, border: `1px solid ${C.bord}`, borderRadius: 14, padding: '8px 14px' }}>
+          <details style={{ ...carte, marginTop: 12, padding: '8px 16px' }}>
             <summary style={{ cursor: 'pointer', fontWeight: 700 }}>Hypothèses du modèle</summary>
-            <ul style={{ margin: '6px 0 2px', paddingLeft: 20, fontSize: 13.5, color: C.doux, lineHeight: 1.55 }}>
+            <ul style={{ margin: '6px 0 2px', paddingLeft: 20, fontSize: 14, color: C.doux, lineHeight: 1.55 }}>
+              <li>Scénario fictif : en vrai, on ne prépare jamais des solutions dans la précipitation, et on ne manipule pas près d'un ballon qui chauffe.</li>
               <li>La verrerie jaugée est supposée parfaite : on ne tient pas compte de son incertitude (en vrai, elle compte !).</li>
               <li>Les volumes sont supposés additifs et le mélange parfaitement homogène après agitation.</li>
               <li>Le prélèvement à la pipette est exact et la fiole est complétée exactement au trait de jauge.</li>
-              <li>On travaille avec des solutions diluées : l'état « dilué » ne change pas la nature de la solution mère.</li>
-              <li>La teinte bleue est une illustration : plus la solution est concentrée, plus elle est foncée.</li>
+              <li>La teinte bleue et la température du ballon sont des illustrations (la température suit le temps restant, pas une vraie cinétique).</li>
             </ul>
           </details>
         </div>)}
-      {ecran && <Service key={ecran.graine + '-' + ecran.service.id} service={ecran.service} graine={ecran.graine} detente={detente} onFin={fini} onMenu={() => setEcran(null)} />}
+      {ecran && <Mission key={ecran.graine + '-' + ecran.service.id} service={ecran.service} graine={ecran.graine} detente={detente} onFin={fini} onMenu={() => setEcran(null)} />}
     </div>);
 }
 
-function Service({ service, graine, detente, onFin, onMenu }) {
+function Mission({ service, graine, detente, onFin, onMenu }) {
   const cmds = useMemo(() => commandesDuService(service, graine), [service, graine]);
+  const seuil = Math.ceil(cmds.length * 0.6);
   const [i, setI] = useState(0);
   const [etapes, setEtapes] = useState([{ p: null, f: null }]);
   const [essais, setEssais] = useState(0);
   const [indices, setIndices] = useState(0);
-  const [ecoule, setEcoule] = useState(0);
-  const [phase, setPhase] = useState('jeu');          // jeu | ok | rate
+  const [reste, setReste] = useState(service.temps);
+  const [phase, setPhase] = useState('intro');        // intro | jeu | verse | ok | rate | fin
   const [msg, setMsg] = useState(null);
-  const [score, setScore] = useState(0);
-  const [serie, setSerie] = useState(0);
-  const [resultats, setResultats] = useState([]);     // un booléen par commande terminée
-  const [bilan, setBilan] = useState(null);
+  const [resultats, setResultats] = useState([]);
+  const [delta, setDelta] = useState(null);
   const cmd = cmds[i];
-  const patience = service.patience;
-  const expire = !detente && ecoule >= patience;
+  const boom = !detente && reste <= 0 && (phase === 'jeu' || phase === 'ok' || phase === 'rate') && phase !== 'fin';
+  const enCours = phase === 'jeu' && !detente && !boom;
   useEffect(() => {
-    if (phase !== 'jeu' || detente || expire || bilan) return undefined;
-    const id = setInterval(() => setEcoule(e => e + 0.25), 250);
+    if (!enCours) return undefined;
+    const id = setInterval(() => setReste(r => Math.max(0, r - 0.25)), 250);
     return () => clearInterval(id);
-  }, [phase, detente, expire, i, bilan]);
+  }, [enCours]);
+  useEffect(() => {
+    if (phase !== 'verse') return undefined;
+    const id = setTimeout(() => setPhase('ok'), 2200);
+    return () => clearTimeout(id);
+  }, [phase]);
 
-  const restant = Math.max(0, patience - ecoule);
+  const u = detente ? 0.08 : urgence(reste, service.temps);
+  const temp = detente ? 35 : temperature(reste, service.temps);
   const choisi = (k, cle, v) => setEtapes(es => es.map((e, j) => (j === k ? { ...e, [cle]: e[cle] === v ? null : v } : e)));
   const complet = etapes.every(e => e.p && e.f);
   const concIntermediaire = k => { const r = realiser(cmd.C0, etapes.slice(0, k)); return r.ok ? { C: r.C, V: r.V } : null; };
+  const perdre = s => setReste(r => Math.max(0, r - s));
 
   const servir = () => {
     const rt = retour(cmd, etapes);
     if (rt.juste) {
-      const pts = points({ restant, patience, essais, indices, serie, detente });
-      setScore(s => s + pts); setSerie(s => s + 1); setMsg({ ...rt, pts }); setPhase('ok');
+      const apres = Math.min(service.temps, reste + BONUS_REUSSITE);
+      setDelta(Math.max(0, temperature(reste, service.temps) - temperature(apres, service.temps)));
+      setReste(apres); setMsg(rt); setPhase('verse');
     } else {
       const e = essais + 1;
-      setEssais(e); setSerie(0); setMsg(rt);
+      setEssais(e); setMsg(rt);
+      if (!detente) perdre(PENALITE_ECHEC);
       if (e >= 3) setPhase('rate');
     }
   };
   const suivant = reussi => {
     const res = [...resultats, reussi];
-    if (!reussi) setSerie(0);
+    setResultats(res);
     if (i + 1 >= cmds.length) {
-      const ok = res.filter(Boolean).length, part = ok / cmds.length, etoiles = part === 1 ? 3 : part >= 0.6 ? 2 : 1;
-      setResultats(res); setBilan({ ok, etoiles }); onFin(service, score, etoiles);
+      const ok = res.filter(Boolean).length;
+      if (ok >= seuil) onFin(service, detente ? 1 : etoilesMission(reste, service.temps));
+      setPhase('fin');
       return;
     }
-    setResultats(res); setI(i + 1); setEtapes([{ p: null, f: null }]); setEssais(0); setIndices(0); setEcoule(0); setPhase('jeu'); setMsg(null);
+    setI(i + 1); setEtapes([{ p: null, f: null }]); setEssais(0); setIndices(0); setPhase('jeu'); setMsg(null); setDelta(null);
   };
 
-  if (bilan) {
+  const ok = resultats.filter(Boolean).length;
+  const etatScene = boom ? 'boom' : phase === 'fin' ? (ok >= seuil ? 'sauve' : 'boom') : phase === 'verse' ? 'verse' : phase === 'intro' ? 'calme' : 'jeu';
+  const scene = <LaboScene u={u} etat={etatScene} temp={temp} temps={detente || phase === 'intro' ? '' : mmss(reste)} stock={cmd ? fmtC(cmd.C0) : '1,0'} beaker={phase === 'verse' && msg ? { V: cmd.Vt, conc: msg.C } : null} delta={delta} />;
+
+  if (phase === 'intro') {
     return (
-      <div className="cd-pop" style={{ background: C.panneau, border: `1.5px solid ${C.bord}`, borderRadius: 18, padding: '18px 18px 16px' }}>
-        <div style={{ font: "800 22px Outfit, Inter, sans-serif" }}>Service terminé ! <span style={{ color: C.ambre }}>{'★'.repeat(bilan.etoiles)}{'☆'.repeat(3 - bilan.etoiles)}</span></div>
-        <p style={{ fontSize: 16, margin: '8px 0' }}>{bilan.ok} commande{bilan.ok > 1 ? 's' : ''} réussie{bilan.ok > 1 ? 's' : ''} sur {cmds.length} · <b style={{ color: C.ambre }}>{score} points</b></p>
-        <div style={{ background: C.fond, borderRadius: 12, padding: '10px 14px', fontSize: 14.5, lineHeight: 1.6 }}>
-          <b>À retenir</b><br />
-          • Pendant une dilution, la quantité de matière ne change pas : <b>C₀ × V<sub>prélevé</sub> = C × V<sub>fiole</sub></b>.<br />
-          • Le facteur de dilution est <b>F = C₀ / C = V<sub>fiole</sub> / V<sub>prélevé</sub></b>.<br />
-          • Pour une dilution en deux temps, les facteurs se multiplient : <b>F = F₁ × F₂</b>.
-        </div>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-          <button type="button" className="cd-grand" onClick={onMenu}>Retour au menu</button>
-        </div>
+      <div>
+        {scene}
+        <section className="ul-pop" style={{ ...carte, marginTop: 10 }}>
+          <div style={{ font: `800 20px ${TITRE}`, color: C.bleu }}>{service.icone} Mission {service.id} · {service.nom}</div>
+          <p style={{ fontSize: 15.5, lineHeight: 1.6, margin: '6px 0' }}>{service.histoire}</p>
+          <p style={{ fontSize: 14.5, color: C.doux, margin: '0 0 10px', lineHeight: 1.5 }}>
+            {cmds.length} solutions à préparer ({seuil} au minimum pour maîtriser la réaction). {detente ? 'Mode détente : pas de compte à rebours.' : <>Tu disposes de <b>{mmss(service.temps)}</b> ; chaque solution réussie ajoute {BONUS_REUSSITE} s, chaque erreur en retire {PENALITE_ECHEC}, chaque indice {COUT_INDICE}.</>}
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button type="button" className="ul-grand" onClick={() => setPhase('jeu')}>{detente ? 'Commencer ▶' : 'Démarrer le compte à rebours ▶'}</button>
+            <button type="button" className="ul-btn" onClick={ouvrirCalculatrice}>🧮 Calculatrice</button>
+          </div>
+        </section>
+      </div>);
+  }
+
+  if (phase === 'fin') {
+    const gagne = ok >= seuil, et = detente ? 0 : etoilesMission(reste, service.temps);
+    return (
+      <div>
+        {scene}
+        <section className="ul-pop" style={{ ...carte, marginTop: 10, borderColor: gagne ? '#16a34a' : '#dc2626' }}>
+          <div style={{ font: `800 22px ${TITRE}`, color: gagne ? '#14532d' : '#991b1b' }}>
+            {gagne ? '✅ Réaction maîtrisée !' : '💥 Pas assez de solutions…'} {gagne && !detente && <span style={{ color: C.ambre }}>{'★'.repeat(et)}{'☆'.repeat(3 - et)}</span>}
+          </div>
+          <p style={{ fontSize: 16, margin: '8px 0' }}>{ok} solution{ok > 1 ? 's' : ''} réussie{ok > 1 ? 's' : ''} sur {cmds.length}{!detente && gagne ? <> · il restait {mmss(reste)}</> : null}.</p>
+          <div style={{ background: '#eef5fc', borderRadius: 14, padding: '10px 14px', fontSize: 14.5, lineHeight: 1.65 }}>
+            <b>À retenir</b><br />
+            • Pendant une dilution, la quantité de matière ne change pas : <b>C₀ × V<sub>prélevé</sub> = C × V<sub>fiole</sub></b>.<br />
+            • Le facteur de dilution est <b>F = C₀ / C = V<sub>fiole</sub> / V<sub>prélevé</sub></b>.<br />
+            • Pour une dilution en deux temps, les facteurs se multiplient : <b>F = F₁ × F₂</b>.
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+            <button type="button" className="ul-grand" onClick={onMenu}>Retour aux missions</button>
+          </div>
+        </section>
       </div>);
   }
 
   const F = cmd.C0 / cmd.Ct;
-  const sol = (phase === 'rate' || expire) ? correction(cmd, service.etapesMax) : null;
+  const sol = (phase === 'rate' || boom) ? correction(cmd, service.etapesMax) : null;
   return (
     <div>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginBottom: 8, fontSize: 14.5 }}>
-        <b>Service {service.id} · {service.nom}</b>
-        <span style={{ color: C.doux }}>Commande {i + 1} / {cmds.length}</span>
-        <span style={{ marginLeft: 'auto', color: C.ambre, fontWeight: 800 }}>{score} pts{serie >= 2 ? ` · série ×${serie}` : ''}</span>
+      {!detente && <div className="ul-mob" aria-hidden="true" style={{ justifyContent: 'space-between', alignItems: 'center', margin: '0 0 6px', padding: '6px 14px', borderRadius: 14, background: '#fff', border: `1px solid ${C.bord}`, font: `800 20px ${TITRE}` }}><span style={{ color: u > 0.75 ? C.rouge : u > 0.5 ? C.ambreTxt : C.vert }}>⏱ {mmss(reste)}</span><span>🌡️ {temp} °C</span></div>}
+      {scene}
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', margin: '10px 0 8px', fontSize: 14.5 }}>
+        <b>Mission {service.id} · {service.nom}</b>
+        <span style={{ color: C.doux }}>Solution {i + 1} / {cmds.length}</span>
+        <button type="button" className="ul-btn" style={{ marginLeft: 'auto', minHeight: 38 }} onClick={ouvrirCalculatrice}>🧮 Calculatrice</button>
       </div>
 
-      {/* ticket */}
-      <section aria-label="Commande" style={{ background: '#fff8e8', color: C.encre, borderRadius: 14, padding: '12px 16px', boxShadow: '0 4px 14px rgba(0,0,0,.35)', marginBottom: 10 }}>
-        <div style={{ font: "800 13px Inter, sans-serif", letterSpacing: '.08em', textTransform: 'uppercase', color: '#92400e' }}>Table {cmd.table}</div>
-        <div style={{ fontSize: 18, fontWeight: 800, margin: '2px 0' }}>{cmd.Vt} mL de solution à {fmtC(cmd.Ct)} mol/L</div>
-        <div style={{ fontSize: 14.5 }}>à préparer à partir de la solution mère S₀ : <b>{fmtC(cmd.C0)} mol/L</b>{service.etapesMax > 1 ? ' (une seule étape ne suffira pas)' : ''}.</div>
-        {!detente && (
-          <div role="progressbar" aria-label="Patience du client" aria-valuemin={0} aria-valuemax={patience} aria-valuenow={Math.round(restant)} style={{ marginTop: 8, height: 10, borderRadius: 999, background: '#e8d9b8', overflow: 'hidden' }}>
-            <div style={{ height: '100%', width: `${100 * restant / patience}%`, background: restant / patience > 0.4 ? '#16a34a' : restant / patience > 0.2 ? '#d97706' : '#dc2626', transition: 'width .25s linear' }} />
-          </div>)}
+      {/* bon de commande */}
+      <section aria-label="Demande" style={{ background: '#fffaf0', border: `1.5px solid ${C.ambre}`, borderRadius: 18, padding: '12px 16px', marginBottom: 10 }}>
+        <div style={{ font: '800 12.5px Inter, sans-serif', letterSpacing: '.08em', textTransform: 'uppercase', color: C.ambreTxt }}>Protocole d'urgence · solution n° {cmd.table}</div>
+        <div style={{ fontSize: 18, fontWeight: 800, margin: '2px 0' }}>{cmd.Vt} mL d'inhibiteur à {fmtC(cmd.Ct)} mol/L</div>
+        <div style={{ fontSize: 14.5 }}>À préparer à partir de la solution mère S₀ : <b>{fmtC(cmd.C0)} mol/L</b>{service.etapesMax > 1 ? ' (une seule étape ne suffira pas)' : ''}.</div>
       </section>
 
-      {phase === 'jeu' && !expire && (
-        <section aria-label="Plan de travail" style={{ background: C.panneau, border: `1.5px solid ${C.bord}`, borderRadius: 18, padding: '12px 14px' }}>
+      {phase === 'jeu' && !boom && (
+        <section aria-label="Plan de travail" style={carte}>
           {etapes.map((e, k) => {
             const src = k === 0 ? { C: cmd.C0, V: null } : concIntermediaire(k);
             return (
@@ -183,48 +235,52 @@ function Service({ service, graine, detente, onFin, onMenu }) {
                 <div style={{ flex: '1 1 260px', minWidth: 0 }}>
                   <div style={{ fontWeight: 800, marginBottom: 6 }}>Étape {k + 1} : je prélève… <span style={{ fontWeight: 500, color: C.doux }}>(pipette jaugée)</span></div>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-                    {PIPETTES.map(p => <button key={p} type="button" className="cd-btn" aria-pressed={e.p === p} onClick={() => choisi(k, 'p', p)}>{p} mL</button>)}
+                    {PIPETTES.map(p => <button key={p} type="button" className="ul-btn" aria-pressed={e.p === p} onClick={() => choisi(k, 'p', p)}>{p} mL</button>)}
                   </div>
                   <div style={{ fontWeight: 800, marginBottom: 6 }}>…et je complète jusqu'au trait dans une fiole de <span style={{ fontWeight: 500, color: C.doux }}>(fiole jaugée)</span></div>
                   <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {FIOLES.map(f => <button key={f} type="button" className="cd-btn" aria-pressed={e.f === f} onClick={() => choisi(k, 'f', f)}>{f} mL</button>)}
+                    {FIOLES.map(f => <button key={f} type="button" className="ul-btn" aria-pressed={e.f === f} onClick={() => choisi(k, 'f', f)}>{f} mL</button>)}
                   </div>
-                  {k > 0 && <button type="button" className="cd-btn" style={{ minHeight: 34, marginTop: 8, fontSize: 13 }} onClick={() => setEtapes(es => es.slice(0, k))}>✕ Supprimer cette étape</button>}
+                  {k > 0 && <button type="button" className="ul-btn" style={{ minHeight: 34, marginTop: 8, fontSize: 13 }} onClick={() => setEtapes(es => es.slice(0, k))}>✕ Supprimer cette étape</button>}
                 </div>
               </div>);
           })}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 12 }}>
-            <button type="button" className="cd-grand" disabled={!complet} onClick={servir}>Servir 🍽️</button>
-            {etapes.length < service.etapesMax && <button type="button" className="cd-btn" onClick={() => setEtapes(es => [...es, { p: null, f: null }])}>＋ Ajouter une étape (dilution en deux temps)</button>}
-            <button type="button" className="cd-btn" disabled={indices >= 2} onClick={() => setIndices(n => n + 1)} style={{ marginLeft: 'auto' }}>💡 Indice (−20 pts)</button>
+            <button type="button" className="ul-grand" disabled={!complet} onClick={servir}>Verser dans le ballon 🧪</button>
+            {etapes.length < service.etapesMax && <button type="button" className="ul-btn" onClick={() => setEtapes(es => [...es, { p: null, f: null }])}>＋ Ajouter une étape (dilution en deux temps)</button>}
+            <button type="button" className="ul-btn" disabled={indices >= 2} onClick={() => { setIndices(n => n + 1); if (!detente) perdre(COUT_INDICE); }} style={{ marginLeft: 'auto' }}>💡 Indice{detente ? '' : ` (−${COUT_INDICE} s)`}</button>
           </div>
-          {indices >= 1 && <div className="cd-pop" style={{ marginTop: 10, padding: '8px 12px', borderRadius: 10, background: C.fond, fontSize: 14.5, lineHeight: 1.55 }}>
+          {indices >= 1 && <div className="ul-pop" style={{ marginTop: 10, padding: '8px 12px', borderRadius: 12, background: '#eef5fc', fontSize: 14.5, lineHeight: 1.55 }}>
             Facteur de dilution : <b>F = C₀ / C = {fmtC(cmd.C0)} / {fmtC(cmd.Ct)} = {fmtF(F)}</b>.
             {indices >= 2 && (service.etapesMax === 1
               ? <> Volume à prélever = V<sub>fiole</sub> / F = {cmd.Vt} / {fmtF(F)} = <b>{fmtF(cmd.Vt / F)} mL</b>.</>
               : <> En deux étapes, F = F₁ × F₂ : choisis deux facteurs dont le produit vaut {fmtF(F)} (ex. un facteur de {fmtF(Math.sqrt(F))} environ pour chaque étape).</>)}
           </div>}
-          {msg && !msg.juste && <div role="alert" className="cd-pop" style={{ marginTop: 10, padding: '10px 12px', borderRadius: 10, background: '#4b1d1d', border: `1.5px solid ${C.rouge}`, fontSize: 14.5, lineHeight: 1.5 }}>
-            ❌ {msg.texte}{msg.C != null && <> Tu as obtenu <b>{fmtC(msg.C)} mol/L</b> au lieu de {fmtC(cmd.Ct)} mol/L.</>} <span style={{ color: C.doux }}>(essai {essais} / 3)</span>
+          {msg && !msg.juste && <div role="alert" className="ul-pop" style={{ marginTop: 10, padding: '10px 12px', borderRadius: 12, background: '#fef2f2', border: `1.5px solid ${C.rouge}`, fontSize: 14.5, lineHeight: 1.5 }}>
+            ❌ {msg.texte}{msg.C != null && <> Tu as obtenu <b>{fmtC(msg.C)} mol/L</b> au lieu de {fmtC(cmd.Ct)} mol/L.</>} <span style={{ color: C.doux }}>(essai {essais} / 3{detente ? '' : `, −${PENALITE_ECHEC} s`})</span>
           </div>}
         </section>)}
 
-      {phase === 'ok' && (
-        <section className="cd-pop" aria-live="polite" style={{ background: '#0b3b2a', border: `1.5px solid ${C.vert}`, borderRadius: 18, padding: '14px 16px' }}>
-          <div style={{ fontWeight: 800, fontSize: 18 }}>✅ Commande servie ! <span style={{ color: C.ambre }}>+{msg.pts} pts</span></div>
+      {phase === 'verse' && <div aria-live="polite" className="ul-pop" style={{ ...carte, borderColor: '#16a34a', background: '#ecfdf3', fontWeight: 800 }}>🧪 Tu verses la solution dans le ballon…</div>}
+
+      {phase === 'ok' && !boom && (
+        <section className="ul-pop" aria-live="polite" style={{ ...carte, background: '#ecfdf3', borderColor: '#16a34a' }}>
+          <div style={{ fontWeight: 800, fontSize: 18, color: '#14532d' }}>✅ Solution conforme ! Le ballon refroidit{detente ? '' : <span style={{ color: C.ambreTxt }}> (+{BONUS_REUSSITE} s)</span>}</div>
           <Recap cmd={cmd} etapes={etapes} />
           <div style={{ display: 'flex', gap: 16, marginTop: 10 }}><Fiole V={cmd.Vt} conc={cmd.Ct} titre="Demandée" /><Fiole V={cmd.Vt} conc={msg.C} titre="Obtenue" /></div>
-          <button type="button" className="cd-grand" style={{ marginTop: 12 }} onClick={() => suivant(true)}>{i + 1 >= cmds.length ? 'Voir le bilan ▶' : 'Commande suivante ▶'}</button>
+          <button type="button" className="ul-grand" style={{ marginTop: 12 }} onClick={() => suivant(true)}>{i + 1 >= cmds.length ? 'Voir le bilan ▶' : 'Solution suivante ▶'}</button>
         </section>)}
 
-      {(phase === 'rate' || (expire && phase === 'jeu')) && (
-        <section className="cd-pop" aria-live="polite" style={{ background: '#4b1d1d', border: `1.5px solid ${C.rouge}`, borderRadius: 18, padding: '14px 16px' }}>
-          <div style={{ fontWeight: 800, fontSize: 18 }}>{expire && phase === 'jeu' ? '⏰ Le client est parti…' : '😕 Commande ratée'}</div>
+      {(phase === 'rate' || (boom && phase !== 'fin')) && (
+        <section className="ul-pop" aria-live="polite" style={{ ...carte, background: '#fef2f2', borderColor: C.rouge }}>
+          <div style={{ fontWeight: 800, fontSize: 18, color: '#991b1b' }}>{boom ? '💥 Le ballon a explosé… trop tard !' : '😕 Solution ratée'}</div>
           {sol && <>
             <p style={{ margin: '6px 0 0', fontSize: 14.5 }}>Une préparation possible :</p>
             <Recap cmd={cmd} etapes={sol} />
           </>}
-          <button type="button" className="cd-grand" style={{ marginTop: 12 }} onClick={() => suivant(false)}>{i + 1 >= cmds.length ? 'Voir le bilan ▶' : 'Commande suivante ▶'}</button>
+          {boom
+            ? <button type="button" className="ul-grand" style={{ marginTop: 12 }} onClick={onMenu}>Retour aux missions</button>
+            : <button type="button" className="ul-grand" style={{ marginTop: 12 }} onClick={() => suivant(false)}>{i + 1 >= cmds.length ? 'Voir le bilan ▶' : 'Solution suivante ▶'}</button>}
         </section>)}
     </div>);
 }

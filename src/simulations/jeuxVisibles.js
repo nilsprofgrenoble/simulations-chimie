@@ -5,3 +5,6 @@ export const JEUX_VISIBLES = false;
 // Jeux ouverts à tous même quand JEUX_VISIBLES est false : ils apparaissent dans le menu « Jeux » et sur la page « Je m'entraîne », en accès direct (sans code) ; les autres jeux restent masqués.
 // 113 : Contre-typer la Percutaféine (code PERCU).
 export const JEUX_PUBLICS = [113];
+
+// Un jeu est-il visible pour ce visiteur ? (interrupteur général, administrateur, ou jeu ouvert à tous). Même règle que le menu « Jeux » et les liens directs.
+export const jeuOuvert = (id, admin) => JEUX_VISIBLES || !!admin || JEUX_PUBLICS.includes(id);
