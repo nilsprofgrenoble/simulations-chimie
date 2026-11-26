@@ -47,6 +47,7 @@ import * as CL from "./couleursModele";
 import * as PH from "./photonModele";
 import * as KQ from "./ksqModele";
 import * as HY from "./hydModele";
+import * as TS from "./tsolModele";
 import * as PM from "./pressionModele";
 import * as SF from "./statiqueFluidesModele";
 import * as AB from "./acidesBasesModele";
@@ -2437,6 +2438,48 @@ function genHydFenetre() {
     expl: <>Fenêtre : de pH {phNb(w.lo)} (fin de {P.solide}) à pH {phNb(w.hi)} (début de {S.solide}), soit {w.ok ? `${HY.nbf(w.largeur, 2)} unité de pH` : 'une fenêtre négative : les zones se chevauchent'}. {cat4 === 0 ? 'Séparation facile.' : cat4 === 1 ? 'Séparation possible mais délicate.' : cat4 === 2 ? 'Impossible de régler le pH avec une telle précision.' : 'Séparation impossible.'}</> };
   filtrer([q1, q2]);
   return { intro, questions: [q1, q2, q3], retenir: ['Fenêtre de séparation = du pH de fin du premier hydroxyde au pH de début du second.', 'Si la fenêtre est négative, les zones se chevauchent : aucune séparation par le pH.', 'Une fenêtre inférieure à environ 0,3 unité de pH est inutilisable en pratique.'] };
+}
+function genTsolCristal() {
+  const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
+  const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
+  const intro = `On prépare une solution saturée de chlorure d’ammonium NH₄Cl dans ${mEau}${NB}g d’eau à ${T1}${NB}°C, puis on la refroidit à ${T2}${NB}°C. Solubilité de NH₄Cl (en g pour 100 g d’eau) : ${g(s1)}${NB}g à ${T1}${NB}°C et ${g(s2)}${NB}g à ${T2}${NB}°C.`;
+  const q1 = { id: 't0', type: 'num', q: <>Quelle masse de NH₄Cl est <b>dissoute</b> dans la solution saturée à {T1}{NB}°C, en g ?</>, unite: 'g', vrai: m1, tolRel: 0.03, csMin: 2,
+    aide: 'La solubilité est donnée pour 100 g d’eau : m = s × m(eau) ÷ 100.',
+    pieges: [[s1, `Vous avez donné la solubilité pour 100 g d’eau : il y a ici ${mEau}${NB}g d’eau, multipliez par ${mEau} ÷ 100.`]],
+    expl: <>m = {g(s1)} × {mEau} ÷ 100 = <b>{g(m1)}{NB}g</b>.</> };
+  const q2 = { id: 't1', type: 'num', q: <>Quelle masse de NH₄Cl reste <b>dissoute</b> à {T2}{NB}°C dans ces {mEau}{NB}g d’eau, en g ?</>, unite: 'g', vrai: m2, tolRel: 0.03, csMin: 2,
+    aide: 'Même calcul avec la solubilité à la température finale.',
+    pieges: [[m1, `Vous avez repris la masse dissoute à ${T1}${NB}°C : à ${T2}${NB}°C c’est la solubilité de cette température qui compte.`], [s2, `Vous avez donné la solubilité pour 100 g d’eau : multipliez par ${mEau} ÷ 100.`]],
+    expl: <>m = {g(s2)} × {mEau} ÷ 100 = <b>{g(m2)}{NB}g</b>.</> };
+  const q3 = { id: 't2', type: 'num', q: <>Quelle masse de <b>cristaux</b> se dépose pendant le refroidissement, en g ?</>, unite: 'g', vrai: cr, tolRel: 0.03, csMin: 2,
+    aide: 'Cristaux = masse dissoute à chaud − masse qui reste dissoute à froid.',
+    pieges: [[m1, 'Vous avez donné la masse dissoute à chaud : les cristaux sont ce qui ne reste plus dissous à froid.'], [m2, 'Vous avez donné la masse qui reste dissoute à froid : les cristaux sont la différence avec la masse dissoute à chaud.'], [s1 - s2, `Vous avez calculé pour 100 g d’eau : multipliez par ${mEau} ÷ 100.`]],
+    expl: <>{g(m1)} − {g(m2)} = <b>{g(cr)}{NB}g</b> de cristaux.</> };
+  const q4 = { id: 't3', type: 'num', q: <>Quel est le <b>rendement théorique</b> de la recristallisation (masse de cristaux ÷ masse dissoute à chaud), en % ?</>, unite: '%', vrai: eta, tolRel: 0.03, csMin: 2,
+    aide: 'η = (s(T₁) − s(T₂)) ÷ s(T₁), ou cristaux ÷ masse dissoute à chaud.',
+    pieges: [[(s1 - s2) / s2 * 100, 'Vous avez divisé par la solubilité à froid : on divise par la masse dissoute à chaud, au départ.']],
+    expl: <>η = {g(cr)} ÷ {g(m1)} ≈ <b>{TS.nbf(eta, 0)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4], retenir: ['Solubilité s : masse maximale dissoute dans 100 g d’eau.', 'Cristaux = (s(T₁) − s(T₂)) × m(eau) ÷ 100.', 'η = (s(T₁) − s(T₂)) ÷ s(T₁).'] };
+}
+function genTsolEau() {
+  const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20]), m = tire([40, 60, 80, 120, 150]);
+  const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), eau = 100 * m / s1, reste = s2 * eau / 100, cr = m - reste, g = v => TS.nbf(v, 1);
+  const intro = `On purifie ${m}${NB}g de chlorure d’ammonium impur par recristallisation : dissolution à ${T1}${NB}°C dans le minimum d’eau, puis refroidissement à ${T2}${NB}°C. Solubilité de NH₄Cl (en g pour 100 g d’eau) : ${g(s1)}${NB}g à ${T1}${NB}°C et ${g(s2)}${NB}g à ${T2}${NB}°C.`;
+  const q1 = { id: 'e0', type: 'num', q: <>Quelle est la masse d’<b>eau minimale</b> nécessaire pour dissoudre tout le solide à {T1}{NB}°C, en g ?</>, unite: 'g', vrai: eau, tolRel: 0.03, csMin: 2,
+    aide: 'm(eau) = 100 × m(solide) ÷ s(T₁) : plus s est grande, moins il faut d’eau.',
+    pieges: [[m * s1 / 100, 'Vous avez multiplié par s au lieu de diviser : plus s est grande, moins il faut d’eau.'], [m / s1, 'Vous avez oublié le facteur 100 : s est donnée pour 100 g d’eau.']],
+    expl: <>m(eau) = 100 × {m} ÷ {g(s1)} = <b>{g(eau)}{NB}g</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>Quelle masse de NH₄Cl reste <b>dissoute</b> dans cette eau à {T2}{NB}°C, en g ?</>, unite: 'g', vrai: reste, tolRel: 0.03, csMin: 2,
+    aide: 'm dissoute à froid = s(T₂) × m(eau) ÷ 100, avec la masse d’eau de la question précédente.',
+    pieges: [[s2, 'Vous avez donné la solubilité pour 100 g d’eau : utilisez la masse d’eau calculée avant.'], [s2 * m / 100, 'Vous avez utilisé la masse de solide au lieu de la masse d’eau.']],
+    expl: <>m = {g(s2)} × {g(eau)} ÷ 100 = <b>{g(reste)}{NB}g</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>Quelle masse de <b>cristaux purs</b> récupère-t-on en refroidissant à {T2}{NB}°C, en g ?</>, unite: 'g', vrai: cr, tolRel: 0.03, csMin: 2,
+    aide: 'Cristaux = masse totale dissoute − masse qui reste dissoute à froid.',
+    pieges: [[reste, 'Vous avez donné la masse qui reste en solution : les cristaux sont ce qui n’y reste pas.'], [m, 'Vous avez redonné la masse de départ : une partie du solide reste dissous à froid.']],
+    expl: <>{m} − {g(reste)} = <b>{g(cr)}{NB}g</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['m(eau) minimale = 100 × m(solide) ÷ s(T).', 'Ce qui reste dissous à froid : s(T₂) × m(eau) ÷ 100.', 'Dissoudre à chaud dans le minimum d’eau, cristalliser à froid.'] };
 }
 // ---------- Acides et bases (CDD) : pH d'un acide, pKa et prédominance, tampon ----------
 const dist10 = v => v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(Math.abs(x), Math.abs(y))));
@@ -6877,6 +6920,8 @@ export const FAMILLES = [
   { id: 'ksq-melange', groupe: 'Formules', titre: 'Mélange de deux solutions : concentrations, Qr et précipitation (terminale STL)', gen: genKsqMelange, domaine: 'Ks, quotient de réaction et solubilité' },
   { id: 'hyd-seuil', groupe: 'Formules', titre: 'Hydroxyde : [HO⁻] et pH de début et de fin de précipitation (terminale STL)', gen: genHydSeuil, domaine: 'Précipitation des hydroxydes et pH' },
   { id: 'hyd-fenetre', groupe: 'Formules', titre: 'Séparer deux cations par le pH : fenêtre de séparation (terminale STL)', gen: genHydFenetre, domaine: 'Précipitation des hydroxydes et pH' },
+  { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },
+  { id: 'tsol-eau', groupe: 'Formules', titre: 'Recristallisation : eau minimale et masse de cristaux (terminale STL)', gen: genTsolEau, domaine: 'Solubilité, température et recristallisation' },
   { id: 'ab-acf-rea-ph', groupe: 'Formules', titre: 'pH d’un acide fort et d’un acide faible', gen: genAbAcfPh, domaine: 'Acides et bases' },
   { id: 'ab-acf-rea-dilution', groupe: 'Formules', titre: 'Diluer un acide faible : pH avant et après', gen: genAbAcfDilution, domaine: 'Acides et bases' },
   { id: 'ab-pred-rea-rapport', groupe: 'Formules', titre: 'Concentrations des deux formes d’un couple selon le pH', gen: genAbPredRapport, domaine: 'Acides et bases' },

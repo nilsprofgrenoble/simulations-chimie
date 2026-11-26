@@ -15,7 +15,7 @@
 //  chap = chapitre du menu qui la traite (si ok ou partiel), reste = ce qui manque (si partiel).
 //  Le BTS n'a pas de barre : son référentiel n'est pas décliné ici au même niveau de détail.
 // ═══════════════════════════════════════════════════════════════════════════
-export const DATE_COUVERTURE = '26 novembre 2026';
+export const DATE_COUVERTURE = '27 novembre 2026';
 
 export const ETATS = { ok: 1, partiel: 0.5, avenir: 0 };
 
@@ -109,7 +109,7 @@ export const COUVERTURE = [
   // ───────────────── Terminale STL : SPCL (sciences physiques et chimiques en laboratoire) ─────────────────
   { id: 'TSTL-SPCL', niveau: 'TSTL', label: 'SPCL', parties: [
     { th: MESURE, t: 'Incertitudes de type A et B, sources d’erreurs, incertitudes composées, justesse et fidélité', e: 'partiel', chap: 'tstl-mesure', reste: 'incertitude de type B, sources d’erreurs, incertitudes composées, justesse et fidélité' },
-    { th: 'Chimie et développement durable', t: 'Solubilité : quotient de réaction, constante Ks, précipitation sélective', e: 'partiel', chap: 'tstl-solubilite', reste: 'Effet de la température et recristallisation (simulation 311 à venir).' },
+    { th: 'Chimie et développement durable', t: 'Solubilité : quotient de réaction, constante Ks, précipitation sélective, température', e: 'ok', chap: 'tstl-solubilite' },
     { th: 'Chimie et développement durable', t: 'Acides et bases : Ka, pKa, pH, tampon, titrages', e: 'ok', chap: 'tstl-acides-bases' },
     { th: 'Chimie et développement durable', t: 'Conductivité : loi de Kohlrausch, dosage et titrage conductimétriques', e: 'ok', chap: 'tstl-conductivite' },
     { th: 'Chimie et développement durable', t: 'Oxydo-réduction : potentiel, relation de Nernst, titrages redox', e: 'ok', chap: 'tstl-oxydoreduction' },
