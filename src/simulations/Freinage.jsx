@@ -1,10 +1,11 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./freinageModele";
+import { FreinageExplore } from "./FreinageExplore";
 import { QCM } from "./freinageQcm";
 import { SceneFreinage, GrapheFreinage, SvgTheoreme, SvgProportion, SvgPente } from "./FreinageSchemas";
 
@@ -18,7 +19,6 @@ declarerDefis(SIM_ID, [['distance', 'Distance d’arrêt d’un véhicule'], ['v
 //  Modèle : freinageModele.js (test node). QCM : freinageQcm.js. Schémas : FreinageSchemas.jsx. Situation et valeurs inventées (aucune du Moodle).
 // ====================================================
 const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
-const moins = s => s.replace('-', '−');
 const sp = n => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
 const PG = M.PARCOURS;
 const puces = { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 };
@@ -38,7 +38,6 @@ export function SimulationFreinage() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('distance');
   const [ouv, setOuv] = useState({});
-  const [ex, setEx] = useState({ m: 1000, vkmh: 72, F: 8000, p: 0, u: 0.4 });
   const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
 
@@ -133,47 +132,11 @@ export function SimulationFreinage() {
     frein: { u: 0.3, v: 0.7 }, conv: { u: 0, v: 1, force: false }, ec0: { u: 0, v: 1, force: false }, arret: { u: 1, v: 0 }, theoreme: { u: 0.5, v: 0.5, poids: true }, dist: { u: 0.6, v: 0.45 },
     v2: { u: 0.4, v: 0.8 }, double: { u: 0.3, v: 0.9 }, masse: { u: 0.3, v: 0.7 }, mouille: { u: 0.3, v: 0.7 }, descente: { u: 0.3, v: 0.7, p: -0.05, poids: true }, pente: { u: 0.4, v: 0.6, p: -0.05, poids: true }, fin: { u: 0.5, v: 0.5 } };
 
-  // ════════════════ EXPLORATION ════════════════
-  const { m: mz, vkmh: vkz, F: Fz, p: pz } = ex, vz = M.kmhEnMs(vkz);
-  const pr = useMemo(() => M.profil({ m: mz, v0: vz, F: Fz, p: pz, n: 60 }), [mz, vz, Fz, pz]);
-  const arrete = isFinite(pr.d), k = arrete ? Math.round(ex.u * (pr.pts.length - 1)) : 0, pt = arrete ? pr.pts[k] : null;
-  const mesures = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures à l’instant choisi</div>
-      <LigneMesure nom="Vitesse au début du freinage" valeur={`${nbf(vz, 1)}${NB}m/s`}/>
-      <LigneMesure nom="Énergie cinétique au début" valeur={`${nbf(M.energieCin(mz, vz) / 1000, 0)}${NB}kJ`} couleur="#0369a1"/>
-      {arrete ? <>
-        <LigneMesure nom="Distance d’arrêt" valeur={`${nbf(pr.d, 1)}${NB}m`} couleur="#6d28d9"/>
-        <LigneMesure nom="Distance déjà parcourue" valeur={`${nbf(pt.x, 1)}${NB}m`}/>
-        <LigneMesure nom="Vitesse à cet instant" valeur={`${nbf(pt.v, 1)}${NB}m/s`}/>
-        <LigneMesure nom="Énergie cinétique Ec" valeur={`${nbf(pt.Ec / 1000, 1)}${NB}kJ`} couleur="#0369a1"/>
-        <LigneMesure nom="Travail de la force de freinage" valeur={`${moins(nbf(pt.WF / 1000, 1))}${NB}kJ`} couleur="#c2410c"/>
-        {pz !== 0 && <LigneMesure nom="Travail du poids" valeur={`${moins(nbf(pt.WP / 1000, 1))}${NB}kJ`} couleur="#15803d"/>}
-      </> : <div style={{ fontSize: 14, color: '#b91c1c', lineHeight: 1.5, fontWeight: 700 }}>Le véhicule ne s’arrête pas : dans cette descente, la composante du poids est plus grande que la force de freinage.</div>}
-    </div>);
-  const reglages = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <Sel id="dfr-m" label="Masse du véhicule" valeur={ex.m} onChange={v => setEx(s => ({ ...s, m: Number(v) }))} options={[500, 1000, 2000, 5000].map(v => [v, `${sp(v)} kg`])}/>
-      <Sel id="dfr-v" label="Vitesse au début du freinage" valeur={ex.vkmh} onChange={v => setEx(s => ({ ...s, vkmh: Number(v) }))} options={[30, 50, 72, 90, 110, 130].map(v => [v, `${v} km/h`])}/>
-      <Sel id="dfr-f" label="Force de freinage" valeur={ex.F} onChange={v => setEx(s => ({ ...s, F: Number(v) }))} options={[[2000, '2 000 N (très faible)'], [4000, '4 000 N (route mouillée ou verglacée)'], [8000, '8 000 N (route sèche)'], [16000, '16 000 N (freinage très efficace)']]}/>
-      <Sel id="dfr-p" label="Pente de la route" valeur={ex.p} onChange={v => setEx(s => ({ ...s, p: Number(v) }))} options={[[-0.1, 'descente de 10 %'], [-0.05, 'descente de 5 %'], [0, 'horizontale'], [0.05, 'montée de 5 %'], [0.1, 'montée de 10 %']]}/>
-      <Curseur nom="Avancée pendant le freinage" valeur={Math.round(ex.u * 100)} onChange={v => setEx(s => ({ ...s, u: v / 100 }))} min={0} max={100} pas={2} unite="%" decimales={0} couleur="#475569"/>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Avancez dans le freinage : le véhicule, les points du graphique et les mesures suivent. Changez un réglage à la fois pour voir ce qui fait varier la distance d’arrêt.</div>
-    </div>);
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>{enExplore ? 'Le véhicule qui freine' : 'La situation étudiée'}</div>
-      {enExplore
-        ? <SceneFreinage u={arrete ? ex.u : 0} p={pz} v={arrete ? Math.max(0, pt.v / vz) : 1} cote={arrete && ex.u > 0.02 ? `${nbf(pt.x, 1)} m` : null} poids={pz !== 0}/>
-        : <SceneFreinage {...SC[idEtape]}/>}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>La situation étudiée</div>
+      <SceneFreinage {...SC[idEtape]}/>
     </div>);
-  const graphe = enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Énergie cinétique et travaux pendant le freinage</div>
-      {arrete ? <GrapheFreinage pr={pr} u={ex.u}/> : <div style={{ ...lbl, color: '#b91c1c' }}>Pas de graphique : le véhicule ne s’arrête pas.</div>}
-    </div>);
-
   // ════════════════ DÉFIS ════════════════
   const nouveauDefi = type => {
     if (type === 'distance') setDefi({ ...M.tirageDefiA(), type, reps: { d: '' }, verifie: false, corr: false });
@@ -261,11 +224,11 @@ export function SimulationFreinage() {
     </span>);
   const aEssayer = (
     <ul style={liste}>
-      <li>Passez de 30 à 90 km/h : la vitesse est multipliée par 3. Par combien la distance d’arrêt est-elle multipliée ?</li>
+      <li>Cliquez sur la voiture. Passez de 30 à 90 km/h (tirez la flèche verte) : la vitesse est multipliée par 3. Par combien la distance d’arrêt est-elle multipliée ?</li>
       <li>Doublez la masse : comparez avec ce que donne un doublement de la vitesse.</li>
       <li>Réduisez la force de freinage (route mouillée) : comment varie la distance ?</li>
       <li>Choisissez une montée puis une descente : quel est le signe du travail du poids dans chaque cas ?</li>
-      <li>Camion de 5 000 kg, descente de 10 % et force de 2 000 N : que se passe-t-il ?</li>
+      <li>Camion de 5 000 kg, descente de 10 % et force de 2 000 N : que se passe-t-il ? Placez le mur plus près ou plus loin : à quelle vitesse la voiture le heurte-t-elle ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -306,12 +269,8 @@ export function SimulationFreinage() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="dfr-ex">
-          {scene}
-          <div className="dfr-reg">{reglages}</div>
-          {graphe}
-          {mesures}
-        </div>
+        <FreinageExplore/>
+        <div style={{ height: 12 }}/>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
