@@ -48,6 +48,8 @@ export default {
       refs: ['34:nwr-sapp-acc', '34:nwr-sapp-frott', '37:prevoir:nwr-ana-inertie', '37:prevoir:nwr-ana-masse', '37:prevoir:nwr-ana-ralenti', '37:prevoir:nwr-ana-reciproque', '77:plausible:nwr-val-acc', '77:plausible:nwr-val-inertie'] },
     { id: 'chute-libre-plane', nom: 'Chute libre plane : sommet et portée', capacite: 'Établir et exploiter les lois horaires d’un projectile en chute libre : accélération, vitesses, sommet, hauteur maximale, portée.',
       refs: ['34:clp-sapp-sommet', '34:clp-sapp-portee', '37:prevoir:clp-ana-acc', '37:prevoir:clp-ana-vitesse', '37:prevoir:clp-ana-angle', '37:prevoir:clp-ana-double', '77:plausible:clp-val-hauteur', '77:plausible:clp-val-portee'] },
+    { id: 'chute-visqueuse', nom: 'Chute avec frottement visqueux : vitesse limite et constante de temps', capacite: 'Exploiter les régimes transitoire et permanent d’une chute avec frottement fluide : vitesse limite, constante de temps, effet de la masse et du coefficient de frottement.',
+      refs: ['34:fvi-sapp-vlim', '34:fvi-sapp-tau', '37:prevoir:fvi-ana-depart', '37:prevoir:fvi-ana-permanent', '37:prevoir:fvi-ana-masse', '37:prevoir:fvi-ana-tau', '77:plausible:fvi-val-vlim', '77:plausible:fvi-val-tau'] },
   ],
   'tstl-acides-bases': [
     { id: 'ph-fort', nom: 'pH d’un acide fort ou d’une base forte, dilution', capacite: 'Estimer le pH d’une solution d’acide fort ou de base forte et prévoir l’effet d’une dilution.',
