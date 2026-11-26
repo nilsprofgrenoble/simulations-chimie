@@ -3126,5 +3126,12 @@
  "77:plausible:tsol-val-eau": "VAL811",
  "77:plausible:tsol-val-rendement": "VAL812",
  "36:tsol-cristal": "REA226",
- "36:tsol-eau": "REA227"
+ "36:tsol-eau": "REA227",
+ "34:flm-sapp-excites": "SAPP693",
+ "37:prevoir:flm-ana-elements": "ANA1398",
+ "37:prevoir:flm-ana-beer": "ANA1399",
+ "37:prevoir:flm-ana-calcium": "ANA1400",
+ "77:plausible:flm-val-lampe": "VAL813",
+ "77:plausible:flm-val-temperature": "VAL814",
+ "36:flm-calcul": "REA228"
 }

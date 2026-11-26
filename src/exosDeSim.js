@@ -31,6 +31,7 @@ export const EXOS_DE_SIM = {
   248: [/(^|\.)xyy-(?!ana-complem|ana-melange|val-melange)/, /plausible\.xyy-(?!val-melange)/],   // Couleur : lire le diagramme de chromaticité (BTS)
   303: [/(^|\.)chro-/, /plausible\.chro-/],   // UV-visible : couleur, conjugaison et auxochromes (BTS Analyse)
   302: [/(^|\.)frx-/, /plausible\.frx-/],   // Fluorescence X (BTS Analyse)
+  313: [/(^|\.)flm-/, /plausible\.flm-/],   // Atomes dans une flamme : SEF et SAA (BTS Analyse)
   304: [/(^|\.)hook-/, /plausible\.hook-/, /(^|\.)irc-/, /plausible\.irc-/],   // Infrarouge : de la liaison-ressort au spectre (BTS Analyse)
   301: [/(^|\.)spf-/, /plausible\.spf-/, /(^|\.)fluo-/, /plausible\.fluo-/],   // Fluorescence et phosphorescence : Perrin-Jablonski (BTS Analyse)
   300: [/(^|\.)lmt-/, /plausible\.lmt-/],   // Photons, niveaux d’énergie et domaines spectraux (BTS Analyse)
