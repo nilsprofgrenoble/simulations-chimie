@@ -1,3 +1,4 @@
+import { PanneauExplore } from "./PanneauExplore";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
@@ -449,11 +450,16 @@ export function SimulationPanneauPhotovoltaique() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="pv-ex">
-          {scene}
-          <div className="pv-reg">{reglages}</div>
-          {graphI}
-          {mesures}
+        <PanneauExplore ti={ti} setTi={setTi}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : ${p.nom.replace(/ \(.*\)/, '')} · E = ${ti.E} W/m² · R = ${isFinite(ti.R) ? `${ti.R} Ω` : 'circuit ouvert'}`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="pv-ex">
+              {scene}
+              <div className="pv-reg">{reglages}</div>
+              {graphI}
+              {mesures}
+            </div>
+          </Section>
         </div>
         <Section titre="Puissance fournie selon la tension" ouvert={!!ouv.graphe} onBascule={() => bascule('graphe')}>
           <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6, lineHeight: 1.5 }}>La puissance P = U × I est nulle pour U = 0 et pour U = Uco ; elle passe par un maximum entre les deux.</div>
