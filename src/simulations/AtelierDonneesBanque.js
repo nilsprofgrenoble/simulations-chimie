@@ -7,6 +7,7 @@ import { LPG_SAPP } from "./loopingExos.js";
 import { FLP_SAPP } from "./flipperExos.js";
 import { PXT_SAPP } from "./penteXtExos.js";
 import { GRV_SAPP } from "./gravitationExos.js";
+import { CEL_SAPP } from "./champElecExos.js";
 import { MTR_SAPP } from "./modesTransfertExos.js";
 import { FRM_SAPP } from "./formesExos.js";
 import { CHA_SAPP } from "./chaineExos.js";
@@ -5427,6 +5428,7 @@ export const ENONCES = [
   ...FLP_SAPP,
   ...PXT_SAPP,
   ...GRV_SAPP,
+  ...CEL_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,

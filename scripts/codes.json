@@ -2863,5 +2863,17 @@
  "77:plausible:sev-val-qr": "VAL758",
  "77:plausible:sev-val-logk": "VAL759",
  "36:sev-calcul": "REA187",
- "36:sev-qr-calcul": "REA188"
+ "36:sev-qr-calcul": "REA188",
+ "34:chel-sapp-champ.0": "SAPP622",
+ "34:chel-sapp-champ.1": "SAPP623",
+ "34:chel-sapp-force.0": "SAPP624",
+ "34:chel-sapp-force.1": "SAPP625",
+ "37:prevoir:chel-ana-polarite": "ANA1298",
+ "37:prevoir:chel-ana-distance": "ANA1299",
+ "37:prevoir:chel-ana-signe": "ANA1300",
+ "37:prevoir:chel-ana-position": "ANA1301",
+ "77:plausible:chel-val-champ": "VAL760",
+ "77:plausible:chel-val-force": "VAL761",
+ "36:chel-champ": "REA189",
+ "36:chel-force": "REA190"
 }

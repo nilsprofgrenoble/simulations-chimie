@@ -42,6 +42,8 @@ export default {
       refs: ['34:pxt-sapp-droite', '34:pxt-sapp-tangente', '37:prevoir:pxt-ana-pente', '37:prevoir:pxt-ana-signe', '37:prevoir:pxt-ana-corde', '37:prevoir:pxt-ana-plat', '77:plausible:pxt-val-pente', '77:plausible:pxt-val-signe'] },
     { id: 'gravitation-poids', nom: 'Gravitation et poids', capacite: 'Exploiter l’expression de la force d’interaction gravitationnelle entre deux corps, et celle du poids P = m g ; distinguer masse et poids.',
       refs: ['34:grv-sapp-force', '34:grv-sapp-poids', '37:prevoir:grv-ana-reciproque', '37:prevoir:grv-ana-distance', '37:prevoir:grv-ana-masse', '37:prevoir:grv-ana-altitude', '77:plausible:grv-val-force', '77:plausible:grv-val-poids'] },
+    { id: 'champ-force-elec', nom: 'Champ et force électrostatiques entre deux armatures', capacite: 'Caractériser le champ entre deux armatures planes (sens, E = U ÷ d) et exploiter la relation F = q E (valeur, sens selon le signe de la charge).',
+      refs: ['34:chel-sapp-champ', '34:chel-sapp-force', '37:prevoir:chel-ana-polarite', '37:prevoir:chel-ana-distance', '37:prevoir:chel-ana-signe', '37:prevoir:chel-ana-position', '77:plausible:chel-val-champ', '77:plausible:chel-val-force'] },
   ],
   'tstl-acides-bases': [
     { id: 'ph-fort', nom: 'pH d’un acide fort ou d’une base forte, dilution', capacite: 'Estimer le pH d’une solution d’acide fort ou de base forte et prévoir l’effet d’une dilution.',
