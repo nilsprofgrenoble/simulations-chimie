@@ -63,13 +63,14 @@ export function deltaCMC(ech, ref, l = 2, c = 1) {
   const SH = SC * (F * T + 1 - F);
   return Math.sqrt((d.dL / (l * SL)) ** 2 + (d.dC / (c * SC)) ** 2 + (d.dH / SH) ** 2);
 }
-/** Demi-axes (dans le plan a*b*, en unités de a*b*) de l'ellipse de tolérance CMC de valeur tol autour de la référence : suivant la saturation (C*) et suivant la teinte (H*). */
-export function ellipseCMC(ref, tol, c = 1) {
+/** Demi-axes de l'ellipsoïde de tolérance CMC(l:c) de valeur tol autour de la référence : suivant la saturation (rC), la teinte (rH) et la luminosité (rL). L'ellipse du plan a*b* a pour demi-axes rC et rH. */
+export function ellipseCMC(ref, tol, c = 1, l = 2) {
   const A = lch(ref), SC = 0.0638 * A.C / (1 + 0.0131 * A.C) + 0.638;
+  const SL = A.L < 16 ? 0.511 : 0.040975 * A.L / (1 + 0.01765 * A.L);
   const F = Math.sqrt(A.C ** 4 / (A.C ** 4 + 1900)), h = A.h;
   const T = (h >= 164 && h <= 345) ? 0.56 + Math.abs(0.2 * Math.cos((h + 168) * Math.PI / 180)) : 0.36 + Math.abs(0.4 * Math.cos((h + 35) * Math.PI / 180));
   const SH = SC * (F * T + 1 - F);
-  return { rC: tol * c * SC, rH: tol * SH, angle: A.h };
+  return { rC: tol * c * SC, rH: tol * SH, rL: tol * l * SL, angle: A.h };
 }
 
 // ---------- affichage sRGB (primaires et blanc D65) ----------

@@ -5,6 +5,7 @@ import { Pic } from "../Pictos";
 import * as C from "./couleurModele";
 import * as M from "./cielabModele";
 import { QCM } from "./cielabQcm";
+import { VueLab3D } from "./Cielab3D";
 import { SvgLuminosite, SvgPastilles, SvgPlanAB, SvgCarteAB, SvgCarteCyl, SvgCarteEcart, SvgCarteTolerance } from "./CielabSchemas";
 
 const SIM_ID = 247, CLE_GUIDE = 'cielab-guide-v1';
@@ -40,14 +41,20 @@ const FormC = () => <><Sx l="C"/><mo>=</mo><msqrt><Car l="a"/><mo>+</mo><Car l="
 const FormH = () => <><mi>h</mi><mo>=</mo><mi>arctan</mi><mo lspace="0.2em" rspace="0.2em">⁡</mo><mfrac><Sx l="b"/><Sx l="a"/></mfrac></>;
 const DE = () => <msubsup><mi>ΔE</mi><mi>ab</mi><mo>*</mo></msubsup>;
 const FormDE = () => <><DE/><mo>=</mo><msqrt><DCar l="L"/><mo>+</mo><DCar l="a"/><mo>+</mo><DCar l="b"/></msqrt></>;
+const Dd = ({ t }) => <mrow><mi>Δ</mi><msub><mi>δ</mi><mi>{t}</mi></msub></mrow>;
+const Pc = ({ children }) => <msup><mrow><mo stretchy="false">(</mo>{children}<mo stretchy="false">)</mo></mrow><mn>2</mn></msup>;
+const FormRa = () => <><msup><mi>Ra</mi><mn>2</mn></msup><mo>=</mo><mn>4</mn><Pc><Dd t="d"/></Pc><mo>+</mo><Pc><Dd t="p"/></Pc><mo>+</mo><Pc><Dd t="h"/></Pc></>;
+const FormDE2 = () => <><msup><mrow><mo stretchy="false">(</mo><DE/><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mo>=</mo><DCar l="L"/><mo>+</mo><DCar l="a"/><mo>+</mo><DCar l="b"/></>;
+const Fr = ({ num, den }) => <msup><mrow><mo stretchy="false">(</mo><mfrac>{num}{den}</mfrac><mo stretchy="false">)</mo></mrow><mn>2</mn></msup>;
+const FormCMC = () => <><msubsup><mi>ΔE</mi><mi>CMC</mi><mn>2</mn></msubsup><mo>=</mo><Fr num={<Dx l="L"/>} den={<mrow><mi>l</mi><msub><mi>S</mi><mi>L</mi></msub></mrow>}/><mo>+</mo><Fr num={<Dx l="C"/>} den={<mrow><mi>c</mi><msub><mi>S</mi><mi>C</mi></msub></mrow>}/><mo>+</mo><Fr num={<Dx l="H"/>} den={<msub><mi>S</mi><mi>H</mi></msub>}/></>;
 const sg = v => (v >= 0 ? '+' : '−') + fr(Math.abs(v), 1).replace('-', '');
 
-export function SimulationCielab() {
+export function SimulationCielab({ plotlyReady }) {
   const [mode, setMode] = useState(() => modeOuverture(CLE_GUIDE));
   useSignalerMode(mode);
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const [vie, setVie] = useState(() => DEPART[ORDRE[Math.min(guide.etape ?? 0, ORDRE.length - 1)]] ?? (TOUS_LOT.includes(ORDRE[Math.min(guide.etape ?? 0, ORDRE.length - 1)]) ? M.LOT0 : ETAT0));
-  const [ex, setEx] = useState({ cible: M.CIBLE, lot: M.LOT0, preset: 'bleu', echelle: 'zoom', tolE: 1.5, tolC: 1 });
+  const [ex, setEx] = useState({ cible: M.CIBLE, lot: M.LOT0, preset: 'bleu', echelle: 'large', autres: false, vue3d: 'proche', tolE: 1.5, tolC: 1 });
   const [ouv, setOuv] = useState({});
   const [suiviE, noterE] = useCompteurDefi(), [suiviL, noterL] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('ecart');
@@ -137,7 +144,7 @@ export function SimulationCielab() {
           <li>Deux lots de même ΔE*ab ne sont pas équivalents : l’œil tolère moins d’écart de teinte que de saturation.</li>
           <li>La tolérance CMC remplace la sphère par une ellipsoïde ; l’écart se lit alors avec ΔL*, ΔC*, ΔH*.</li>
         </ul></>,
-      texte: <>Vous savez lire L*, a*, b*, C* et h, calculer l’écart ΔE*ab entre un lot et la cible, décrire le sens de l’écart et le comparer à la tolérance du cahier des charges. En exploration, vous pouvez régler la cible, le lot et les tolérances ; les défis testent le calcul et la lecture des écarts.</> },
+      texte: <>Vous savez lire L*, a*, b*, C* et h, calculer l’écart ΔE*ab entre un lot et la cible, décrire le sens de l’écart et le comparer à la tolérance du cahier des charges. En exploration, vous pouvez régler la cible, le lot et les tolérances, faire tourner l’espace L*a*b* en 3D et comparer ces formules à celles de la sphère de Hansen (même idée : une distance pondérée comparée à un rayon) ; les défis testent le calcul et la lecture des écarts.</> },
   ];
   const IDS = ORDRE, etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? IDS[etape] : null;
   const hl = id => enGuide && ETAPES[etape].focus.includes(id);
@@ -273,18 +280,59 @@ export function SimulationCielab() {
         {curs('cl-xtc', `Tolérance CMC(2:1) : ${fr(ex.tolC, 1)}`, ex.tolC, 0.5, 2.5, 0.1, ev => setEx(x => ({ ...x, tolC: parseFloat(ev.target.value) })), 'Ellipse verte sur le plan.')}
       </Section>
     </div>);
+  const planLarge = ex.echelle === 'large';
   const planEx = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Cible et lot</div>
       <SvgPastilles cible={ex.cible} lot={ex.lot}/>
       <div style={{ marginTop: 8 }}>
-        {selecteur('cl-xe', 'Échelle du plan a*b*', ex.echelle, ev => setEx(x => ({ ...x, echelle: ev.target.value })), [{ id: 'zoom', nom: 'Agrandi autour de la cible (±7)' }, { id: 'large', nom: 'Plan entier (±60)' }])}
+        {selecteur('cl-xe', 'Échelle du plan a*b*', ex.echelle, ev => setEx(x => ({ ...x, echelle: ev.target.value })), [{ id: 'large', nom: 'Plan entier (±60)' }, { id: 'zoom', nom: 'Agrandi autour de la cible (±7)' }])}
       </div>
-      <SvgPlanAB lfond={Math.round(ex.cible.L)} zoom={ex.echelle === 'zoom' ? { centre: ex.cible, demi: 7 } : null}
-        pts={[{ lab: ex.cible, nom: 'Cible', col: '#0f172a', cyl: ex.echelle !== 'zoom' }, { lab: ex.lot, nom: 'Lot', col: COL.orange }]}
-        tol={ex.echelle === 'zoom' ? { cible: ex.cible, tolE: ex.tolE, tolCMC: ex.tolC } : null}/>
-      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>{ex.echelle === 'zoom' ? 'Cercle violet : tolérance sur ΔE*ab. Ellipse verte : tolérance CMC (zone d’écarts acceptés autour de la cible).' : 'Les couleurs grisées du fond sont hors de ce que l’écran sait afficher.'}</div>
+      {planLarge && <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, color: KIT.txt, margin: '8px 0 2px', minHeight: 32, cursor: 'pointer' }}>
+        <input type="checkbox" checked={ex.autres} onChange={ev => setEx(x => ({ ...x, autres: ev.target.checked }))} style={{ width: 18, height: 18 }}/>Montrer d’autres ellipses CMC (agrandies ×{M.AGRANDI})</label>}
+      <SvgPlanAB lfond={Math.round(ex.cible.L)} zoom={planLarge ? null : { centre: ex.cible, demi: 7 }} repere={planLarge}
+        autres={planLarge && ex.autres ? { positions: M.POSITIONS_ELLIPSES, tolC: ex.tolC, k: M.AGRANDI } : null}
+        pts={[{ lab: ex.cible, nom: 'Cible', col: '#0f172a' }, { lab: ex.lot, nom: 'Lot', col: COL.orange }]}
+        tol={{ cible: ex.cible, tolE: ex.tolE, tolCMC: ex.tolC }}/>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
+        Cercle violet : tolérance sur ΔE*ab. Ellipse verte : tolérance CMC (zone d’écarts acceptés autour de la cible). Fond : les couleurs de même luminosité L* que la cible ; les cercles blancs marquent la saturation C* = 20, 40 et 60. Dans le plan entier, la flèche C* indique le sens de la saturation (distance au centre) et l’arc h celui de la teinte (angle depuis +a*).
+        {planLarge && ex.autres && <> Les autres ellipses CMC sont agrandies {M.AGRANDI} fois pour être visibles : près du gris elles sont presque rondes et petites ; plus la couleur est saturée, plus elles sont grandes et allongées vers l’extérieur (la saturation est tolérée plus que la teinte).</>}
+        {planLarge && ' Les couleurs trop vives pour l’écran sont approchées.'}
+      </div>
     </div>);
+  const vue3D = (
+    <div style={styleBoite}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Vue 3D : l’espace L*a*b*</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5, marginBottom: 6 }}>Faites tourner la vue avec la souris ou le doigt. Le plan coloré est celui de la luminosité L* de la cible ; la hauteur est L*. {ex.vue3d === 'proche' ? 'La sphère violette est la tolérance sur ΔE*ab, l’ellipsoïde vert la tolérance CMC : à la même valeur, l’ellipsoïde est étiré selon la saturation et la luminosité, et resserré selon la teinte.' : 'Les ellipsoïdes CMC sont agrandis ×' + M.AGRANDI + ' : ils changent de taille et d’orientation selon la couleur.'}</div>
+      {selecteur('cl-x3', 'Échelle de la vue 3D', ex.vue3d, ev => setEx(x => ({ ...x, vue3d: ev.target.value })), [{ id: 'proche', nom: 'Autour de la cible (tailles réelles)' }, { id: 'entier', nom: 'Espace entier (ellipsoïdes agrandis)' }])}
+      <div style={{ marginTop: 8 }}><VueLab3D plotlyReady={plotlyReady} cible={ex.cible} lot={ex.lot} tolE={ex.tolE} tolC={ex.tolC} mode={ex.vue3d}/></div>
+    </div>);
+  const parallele = (
+    <Section titre="Parallèle avec Hansen : l’écart entre deux points" ouvert={ouv.hansen !== false} onBascule={() => setOuv(o => ({ ...o, hansen: o.hansen === false }))}>
+      <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.55, marginBottom: 8 }}>La simulation « Paramètres de solubilité de Hansen » et celle-ci reposent sur la <strong>même idée</strong> : un objet (un solvant, une couleur) est un point dans un espace à 3 coordonnées ; on mesure sa <strong>distance</strong> à une référence (un polymère, une cible) et on la compare à un <strong>rayon acceptable</strong>.</div>
+      <div className="cl-par">
+        <div style={{ border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '8px 10px', background: 'white' }}>
+          <div style={{ fontWeight: 700, color: '#6a4c93', fontSize: 14.5 }}>Hansen : solubilité</div>
+          <div style={{ fontSize: 13.5, lineHeight: 1.55, color: KIT.txt }}>Un point : (δ<sub>d</sub>, δ<sub>p</sub>, δ<sub>h</sub>)<br/>Distance au polymère :</div>
+          <Formule><FormRa/></Formule>
+          <div style={{ fontSize: 13.5, lineHeight: 1.55, color: KIT.txt }}>Le facteur 4 est constant : il équivaut à tracer 2δ<sub>d</sub>, et le domaine de solubilité devient une <strong>sphère de rayon R<sub>0</sub></strong>.<br/>Verdict : <strong>RED = Ra / R<sub>0</sub> &lt; 1</strong>, le solvant dissout.<br/>R<sub>0</sub> est ajusté sur des essais de solubilité.</div>
+        </div>
+        <div style={{ border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '8px 10px', background: 'white' }}>
+          <div style={{ fontWeight: 700, color: '#0e7490', fontSize: 14.5 }}>Couleur : écart de teinte</div>
+          <div style={{ fontSize: 13.5, lineHeight: 1.55, color: KIT.txt }}>Un point : (L*, a*, b*)<br/>Distance à la cible :</div>
+          <Formule><FormDE2/></Formule>
+          <div style={{ fontSize: 13.5, lineHeight: 1.55, color: KIT.txt }}>Sans pondération, le domaine acceptable est une <strong>sphère de rayon égal à la tolérance</strong>.<br/>Verdict : <strong>ΔE*ab / tolérance ≤ 1</strong>, le lot est conforme (comme RED &lt; 1).<br/>La tolérance vient du cahier des charges.</div>
+        </div>
+      </div>
+      <div style={{ fontSize: 13.5, lineHeight: 1.55, color: KIT.txt, margin: '8px 0 2px' }}>Avec la tolérance <strong>CMC</strong>, on retrouve l’astuce du facteur 4 : on <strong>pondère chaque coordonnée</strong> pour que le domaine acceptable redevienne une sphère de rayon 1 :</div>
+      <Formule><FormCMC/></Formule>
+      <ul style={{ ...liste, fontSize: 13.5, marginTop: 2 }}>
+        <li><strong>Pareil</strong> : on pondère les écarts, puis on compare une distance à un rayon. Dans les deux cas, la pondération vient d’observations (essais de solubilité, jugements visuels) et non d’une loi établie.</li>
+        <li><strong>Différent</strong> : chez Hansen la pondération est la même partout (4, 1, 1). En CMC, S<sub>L</sub>, S<sub>C</sub> et S<sub>H</sub> dépendent de la couleur de la cible : c’est pourquoi les ellipses n’ont pas la même forme partout.</li>
+        <li><strong>Différent</strong> : R<sub>0</sub> décrit une propriété du polymère ; la tolérance décrit une exigence du client.</li>
+      </ul>
+      <div style={{ fontSize: 13.5, lineHeight: 1.55, color: KIT.txt, marginTop: 4 }}>Votre lot : ΔE*ab = <strong>{fr(eX, 2)}</strong> pour une tolérance de <strong>{fr(ex.tolE, 1)}</strong>, soit un rapport de <strong style={{ color: eX <= ex.tolE ? COL.vert : COL.rouge }}>{fr(eX / ex.tolE, 2)}</strong> : {eX <= ex.tolE ? 'à l’intérieur de la sphère, comme un solvant de RED inférieur à 1.' : 'à l’extérieur de la sphère, comme un solvant de RED supérieur à 1.'}</div>
+    </Section>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Les écarts lot − cible</div>
@@ -293,6 +341,7 @@ export function SimulationCielab() {
       <LigneMesure nom="ΔC* (saturation)" valeur={sg(ecX.dC)}/>
       <LigneMesure nom="ΔH* (teinte)" valeur={sg(ecX.dH)}/>
       <LigneMesure nom="ΔE*ab" valeur={fr(eX, 2)} couleur={eX <= ex.tolE ? COL.vert : COL.rouge}/>
+      <LigneMesure nom="ΔE*ab ÷ tolérance (comme le RED)" valeur={fr(eX / ex.tolE, 2)} couleur={eX <= ex.tolE ? COL.vert : COL.rouge}/>
       <LigneMesure nom="Écart CMC(2:1)" valeur={fr(cmcX, 2)} couleur={cmcX <= ex.tolC ? COL.vert : COL.rouge}/>
       <div style={{ marginTop: 6, fontSize: 14, lineHeight: 1.5, color: KIT.txt }}>Verdict ΔE*ab : <strong>{eX <= ex.tolE ? 'conforme' : 'hors tolérance'}</strong> · verdict CMC : <strong>{cmcX <= ex.tolC ? 'conforme' : 'hors tolérance'}</strong></div>
     </div>);
@@ -302,6 +351,8 @@ export function SimulationCielab() {
       <li>Trouvez deux lots de même ΔE*ab, l’un accepté par la tolérance CMC et l’autre refusé. Dans quelle direction s’écartent-ils ?</li>
       <li>Choisissez la cible grise : que vaut sa saturation ? Que devient l’ellipse CMC ?</li>
       <li>Réglez ΔL* seul : la tolérance CMC (2:1) tolère-t-elle plus ou moins d’écart de luminosité que de saturation ?</li>
+      <li>Cochez « Montrer d’autres ellipses CMC » : où sont-elles les plus grandes ? Dans quelle direction sont-elles allongées ?</li>
+      <li>Dans la vue 3D, tournez jusqu’à voir la sphère et l’ellipsoïde de profil : dans quelle direction l’ellipsoïde dépasse-t-il de la sphère ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -311,6 +362,7 @@ export function SimulationCielab() {
         <li>ΔE*ab = √(ΔL*² + Δa*² + Δb*²), toujours calculé lot − cible pour les signes</li>
         <li>Le cahier des charges fixe la tolérance maximale sur l’écart</li>
         <li>La tolérance CMC est une ellipsoïde : l’œil tolère moins d’écart de teinte que de saturation</li>
+        <li>Comme chez Hansen : on pondère les écarts, puis on compare une distance à un rayon (RED = Ra / R<sub>0</sub>, ΔE*ab / tolérance)</li>
       </ul>
     </ARetenir>);
 
@@ -319,8 +371,9 @@ export function SimulationCielab() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Espace de couleur</strong> : CIELAB (CIE 1976), observateur standard 2°, illuminant D65. ΔE*ab est la distance euclidienne dans l’espace L*a*b* ; ΔH* est défini par ΔE*ab² = ΔL*² + ΔC*² + ΔH*², signé selon le sens de variation de h.</li>
       <li><strong>Tolérance CMC(2:1)</strong> : formule de Clarke, McDonald et Rigg (1984) avec l = 2 et c = 1 (réglage usuel pour juger l’acceptabilité). Elle remplace la sphère de tolérance par une ellipsoïde dont les axes dépendent de la couleur de la cible.</li>
-      <li><strong>Couleurs à l’écran</strong> : conversion en sRGB (blanc D65), sans calibrage de votre écran. Les couleurs de l’écran sont indicatives ; ce sont les nombres qui font foi. Une couleur trop vive pour l’écran est écrêtée, et grisée sur le fond du plan.</li>
+      <li><strong>Couleurs à l’écran</strong> : conversion en sRGB (blanc D65), sans calibrage de votre écran. Les couleurs de l’écran sont indicatives ; ce sont les nombres qui font foi. Une couleur trop vive pour l’écran est écrêtée (approchée) sur le fond du plan et dans la vue 3D.</li>
       <li><strong>Valeurs illustratives</strong> : cible, lots et tolérances (ΔE*ab ≤ 1,5 ; CMC ≤ 1,0) sont inventés pour l’exercice. Le cahier des charges réel fixe ses propres valeurs ; « environ 1 » comme plus petit écart perceptible est un ordre de grandeur, qui dépend de l’observateur et de la couleur.</li>
+      <li><strong>Parallèle avec Hansen</strong> : c’est une analogie de méthode (distance pondérée comparée à un rayon), pas une équivalence physique : les grandeurs, les unités et l’origine des seuils sont différentes. La vue 3D à l’échelle de la cible garde les tailles réelles ; les ellipses et ellipsoïdes de l’espace entier sont agrandis ×4 pour être visibles, et dessinés à la luminosité L* de la cible.</li>
       <li><strong>Hors modèle</strong> : géométrie de mesure et brillance, changement d’illuminant (voir la simulation sur le métamérisme), autres formules d’écart (CIEDE2000), incertitude de l’appareil.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
@@ -336,6 +389,7 @@ export function SimulationCielab() {
       <style>{`
         .cl-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
         .cl-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
+        .cl-par { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
         .cl-col { display: flex; flex-direction: column; gap: 12px; }
         .cl-ex { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
         @media (min-width: 901px) {
@@ -369,7 +423,9 @@ export function SimulationCielab() {
           {planEx}
           <div className="cl-reg">{reglagesExplore}</div>
           {mesuresEx}
+          {vue3D}
         </div>
+        {parallele}
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}

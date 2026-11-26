@@ -2,7 +2,7 @@
 import { cssDeLab, srgb, xyzDeLab, lch, ellipseCMC } from "./couleurModele";
 
 const K = { txt: '#0f172a', gris: '#64748b', cible: '#0f172a', lot: '#c2410c', vert: '#15803d', rouge: '#b91c1c', jaune: '#a16207', bleu: '#1d4ed8', orange: '#b45309', violet: '#7c3aed' };
-const T = (x, y, s, o = {}) => <text key={`${x}-${y}-${s}`} x={x} y={y} fontSize={o.size ?? 12} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? K.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit">{s}</text>;
+const T = (x, y, s, o = {}) => <text key={`${x}-${y}-${s}`} x={x} y={y} fontSize={o.size ?? 12} fontWeight={o.gras ? 700 : 400} fill={o.fill ?? K.txt} textAnchor={o.anchor ?? 'middle'} fontFamily="inherit" {...(o.halo ? { stroke: '#ffffff', strokeWidth: 3, paintOrder: 'stroke', strokeLinejoin: 'round' } : {})}>{s}</text>;
 const base = (w, h, label, children, max = 400) => <svg role="img" aria-label={label} viewBox={`0 0 ${w} ${h}`} width="100%" style={{ display: 'block', maxWidth: max, margin: '0 auto' }}>{children}</svg>;
 const n0 = v => String(Math.round(v)).replace('-', '−');
 const gris = L => srgb(xyzDeLab({ L, a: 0, b: 0 })).css;
@@ -33,35 +33,81 @@ export function SvgPastilles({ cible, lot, nomLot = 'Lot' }) {
 
 // ---------- Plan a*b* ----------
 // pts : [{ lab, nom, col, plein, cyl }] ; zoom : { centre:{a,b}, demi } pour agrandir autour de la cible ; tol : { cible, tolE, tolCMC } pour dessiner les zones de tolérance
-export function SvgPlanAB({ pts = [], lfond = 60, zoom = null, tol = null, axes = true, noms = true }) {
+// Fond coloré du plan a*b* : image (canvas) des couleurs à L* fixe ; les couleurs trop vives pour l'écran sont approchées (écrêtées canal par canal).
+const cacheFond = new Map();
+function fondImage(L, c0, demi, n) {
+  if (typeof document === 'undefined') return null;
+  const cle = `${L}|${c0.a.toFixed(2)}|${c0.b.toFixed(2)}|${demi}|${n}`;
+  if (cacheFond.has(cle)) return cacheFond.get(cle);
+  const cv = document.createElement('canvas'); cv.width = n; cv.height = n;
+  const g = cv.getContext('2d'); if (!g) return null;
+  const im = g.createImageData(n, n);
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
+    const a = c0.a - demi + (i + 0.5) * 2 * demi / n, b = c0.b + demi - (j + 0.5) * 2 * demi / n, c = srgb(xyzDeLab({ L, a, b })), k = 4 * (j * n + i);
+    im.data[k] = c.r; im.data[k + 1] = c.g; im.data[k + 2] = c.b; im.data[k + 3] = 255;
+  }
+  g.putImageData(im, 0, 0);
+  const url = cv.toDataURL();
+  if (cacheFond.size > 40) cacheFond.clear();
+  cacheFond.set(cle, url);
+  return url;
+}
+const halo = { halo: true };
+
+// ---------- Plan a*b* ----------
+// Plan entier (±60) : disque de couleurs à L* fixe, cercles de saturation C* = 20, 40, 60. Plan agrandi (zoom) : même fond coloré autour de la cible.
+// repere : flèches « teinte h » et « saturation C* » ; autres : ellipses CMC en plusieurs endroits (agrandies ×AGRANDI) ; tol : cercle ΔE*ab et ellipse CMC autour de la cible.
+export function SvgPlanAB({ pts = [], lfond = 60, zoom = null, tol = null, axes = true, noms = true, repere = false, autres = null }) {
   const X0 = 38, Y0 = 14, W = 308, cx = X0 + W / 2, cy = Y0 + W / 2;
   const demi = zoom ? zoom.demi : 60, s = (W / 2) / demi, c0 = zoom ? zoom.centre : { a: 0, b: 0 };
   const px = a => cx + (a - c0.a) * s, py = b => cy - (b - c0.b) * s;
   const els = [];
+  const img = fondImage(lfond, c0, demi, zoom ? 56 : 120);
   if (!zoom) {
-    const pas = 6, n = Math.round(2 * demi / pas);
-    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
-      const a = -demi + (i + 0.5) * pas, b = demi - (j + 0.5) * pas, c = srgb(xyzDeLab({ L: lfond, a, b }));
-      els.push(<rect key={`${i}-${j}`} x={X0 + i * (W / n)} y={Y0 + j * (W / n)} width={W / n + 0.4} height={W / n + 0.4} fill={c.hors ? '#e2e8f0' : c.css}/>);
-    }
+    els.push(<defs key="defs"><clipPath id="cl-disque"><circle cx={cx} cy={cy} r={W / 2}/></clipPath></defs>);
+    els.push(<rect key="fond" x={X0} y={Y0} width={W} height={W} fill="#f8fafc"/>);
+    if (img) els.push(<image key="img" href={img} x={X0} y={Y0} width={W} height={W} preserveAspectRatio="none" clipPath="url(#cl-disque)"/>);
+    for (const r of [20, 40, 60]) els.push(<circle key={'r' + r} cx={cx} cy={cy} r={r * s} fill="none" stroke="#ffffff" strokeOpacity="0.8" strokeWidth={r === 60 ? 1.6 : 0.9}/>);
   } else {
     els.push(<rect key="fond" x={X0} y={Y0} width={W} height={W} fill="#f8fafc"/>);
+    if (img) els.push(<image key="img" href={img} x={X0} y={Y0} width={W} height={W} preserveAspectRatio="none"/>);
     for (let k = -Math.floor(demi); k <= Math.floor(demi); k++) {
       const a = Math.round(c0.a) + k, b = Math.round(c0.b) + k;
-      if (Math.abs(a - c0.a) <= demi) els.push(<line key={'ga' + k} x1={px(a)} y1={Y0} x2={px(a)} y2={Y0 + W} stroke="#cbd5e1" strokeWidth="0.7"/>);
-      if (Math.abs(b - c0.b) <= demi) els.push(<line key={'gb' + k} x1={X0} y1={py(b)} x2={X0 + W} y2={py(b)} stroke="#cbd5e1" strokeWidth="0.7"/>);
+      if (Math.abs(a - c0.a) <= demi) els.push(<line key={'ga' + k} x1={px(a)} y1={Y0} x2={px(a)} y2={Y0 + W} stroke="#ffffff" strokeOpacity="0.55" strokeWidth="0.7"/>);
+      if (Math.abs(b - c0.b) <= demi) els.push(<line key={'gb' + k} x1={X0} y1={py(b)} x2={X0 + W} y2={py(b)} stroke="#ffffff" strokeOpacity="0.55" strokeWidth="0.7"/>);
     }
   }
   els.push(<rect key="cadre" x={X0} y={Y0} width={W} height={W} fill="none" stroke="#334155" strokeWidth="1.5"/>);
   if (axes && !zoom) {
     els.push(<line key="ax" x1={X0} y1={cy} x2={X0 + W} y2={cy} stroke="#0f172a" strokeWidth="1.3"/>, <line key="ay" x1={cx} y1={Y0} x2={cx} y2={Y0 + W} stroke="#0f172a" strokeWidth="1.3"/>);
-    els.push(T(X0 + W - 3, cy - 5, '+a*', { size: 12, gras: true, anchor: 'end' }), T(X0 + 3, cy - 5, '−a*', { size: 12, gras: true, anchor: 'start' }), T(cx + 5, Y0 + 12, '+b*', { size: 12, gras: true, anchor: 'start' }), T(cx + 5, Y0 + W - 5, '−b*', { size: 12, gras: true, anchor: 'start' }));
-    els.push(T(X0 + W - 3, cy + 15, 'rouge', { size: 10.5, anchor: 'end' }), T(X0 + 3, cy + 15, 'vert', { size: 10.5, anchor: 'start' }), T(cx - 5, Y0 + 12, 'jaune', { size: 10.5, anchor: 'end' }), T(cx - 5, Y0 + W - 5, 'bleu', { size: 10.5, anchor: 'end' }));
+    for (const v of [20, 40]) els.push(T(cx + v * s, cy + 13, n0(v), { size: 10, fill: '#0f172a', ...halo }), T(cx + 4, cy - v * s + 4, n0(v), { size: 10, fill: '#0f172a', anchor: 'start', ...halo }));
+    els.push(T(X0 + W - 3, cy - 5, '+a*', { size: 12, gras: true, anchor: 'end', ...halo }), T(X0 + 3, cy - 5, '−a*', { size: 12, gras: true, anchor: 'start', ...halo }), T(cx - 5, Y0 + 12, '+b*', { size: 12, gras: true, anchor: 'end', ...halo }), T(cx - 5, Y0 + W - 5, '−b*', { size: 12, gras: true, anchor: 'end', ...halo }));
+    els.push(T(X0 + W - 3, cy + 27, 'rouge', { size: 10.5, anchor: 'end', ...halo }), T(X0 + 3, cy + 27, 'vert', { size: 10.5, anchor: 'start', ...halo }), T(cx + 5, Y0 + 24, 'jaune', { size: 10.5, anchor: 'start', ...halo }), T(cx + 5, Y0 + W - 5, 'bleu', { size: 10.5, anchor: 'start', ...halo }));
+  }
+  if (repere && !zoom) { // flèches de saturation C* (radiale) et de teinte h (arc), dans le quart bas-gauche
+    const ang = d => d * Math.PI / 180, pt = (r, d) => [cx + r * s * Math.cos(ang(d)), cy - r * s * Math.sin(ang(d))];
+    const [x1, y1] = pt(52, 225), [ax, ay] = pt(46, 218), [bx, by] = pt(46, 232);
+    els.push(<g key="rep" stroke="#0f172a" strokeWidth="2" fill="none" strokeLinecap="round">
+      <line x1={cx} y1={cy} x2={x1} y2={y1}/><polyline points={`${ax},${ay} ${x1},${y1} ${bx},${by}`}/>
+    </g>);
+    const [h1x, h1y] = pt(38, 195), [h2x, h2y] = pt(38, 262), [ex, ey] = pt(38, 262), [fx, fy] = pt(38, 252), [gx, gy] = pt(33, 258);
+    els.push(<g key="rep2" stroke="#0f172a" strokeWidth="2" fill="none" strokeLinecap="round">
+      <path d={`M ${h1x} ${h1y} A ${38 * s} ${38 * s} 0 0 0 ${h2x} ${h2y}`}/><polyline points={`${fx},${fy} ${ex},${ey} ${gx},${gy}`}/>
+    </g>);
+    const [lhx, lhy] = pt(45, 197);
+    els.push(T(x1 - 12, y1 + 4, 'C*', { size: 14, gras: true, anchor: 'end', ...halo }), T(lhx - 6, lhy + 4, 'h', { size: 14, gras: true, anchor: 'end', ...halo }));
   }
   if (zoom) { // repères de graduation : valeurs de a* en bas, de b* à gauche
     for (const k of [-1, 0, 1]) { const a = Math.round(c0.a + k * demi / 1.5), b = Math.round(c0.b + k * demi / 1.5);
       els.push(T(px(a), Y0 + W + 14, n0(a), { size: 10.5, fill: K.gris }), T(X0 - 4, py(b) + 4, n0(b), { size: 10.5, fill: K.gris, anchor: 'end' })); }
     els.push(T(X0 + W / 2, Y0 + W + 28, 'a*', { size: 11, gras: true, fill: K.gris }), T(10, Y0 + W / 2, 'b*', { size: 11, gras: true, fill: K.gris }));
+  }
+  if (autres && !zoom) { // ellipses CMC en plusieurs endroits du plan (agrandies) : taille et orientation changent avec la couleur
+    for (const p of autres.positions) {
+      const e = ellipseCMC({ L: lfond, a: p.a, b: p.b }, autres.tolC), X = px(p.a), Y = py(p.b), k = autres.k;
+      const el = rot => <ellipse key={`e${p.a}${p.b}${rot}`} cx={X} cy={Y} rx={e.rC * k * s} ry={e.rH * k * s} transform={`rotate(${-e.angle} ${X} ${Y})`} fill="none" stroke={rot ? '#ffffff' : '#0f172a'} strokeWidth={rot ? 3.6 : 1.5}/>;
+      els.push(el(true), el(false), <circle key={`c${p.a}${p.b}`} cx={X} cy={Y} r="1.8" fill="#0f172a"/>);
+    }
   }
   if (tol) { // zones de tolérance autour de la cible : sphère ΔE*ab (cercle) et ellipsoïde CMC (ellipse), dans le plan a*b*
     const e = ellipseCMC(tol.cible, tol.tolCMC);
@@ -74,10 +120,10 @@ export function SvgPlanAB({ pts = [], lfond = 60, zoom = null, tol = null, axes 
       const c = lch(p.lab), r = 34, a1 = Math.min(c.h, 360 - c.h) * Math.PI / 180, sens = c.h <= 180 ? 0 : 1;
       els.push(<line key={'C' + p.nom} x1={cx} y1={cy} x2={x} y2={y} stroke="#0f172a" strokeWidth="2.2"/>);
       if (c.h > 2 && c.h < 358) els.push(<path key={'h' + p.nom} d={`M ${cx + r} ${cy} A ${r} ${r} 0 0 ${sens} ${cx + r * Math.cos(a1)} ${cy + (c.h <= 180 ? -1 : 1) * r * Math.sin(a1)}`} fill="none" stroke={K.orange} strokeWidth="2.5"/>);
-      els.push(T((cx + x) / 2 + (y < cy ? 12 : -12), (cy + y) / 2 - 6, 'C*', { size: 13, gras: true }), T(cx + r + 10, cy + (c.h <= 180 ? -8 : 17), 'h', { size: 13, gras: true, fill: K.orange, anchor: 'start' }));
+      els.push(T((cx + x) / 2 + (y < cy ? 12 : -12), (cy + y) / 2 - 6, 'C*', { size: 13, gras: true, ...halo }), T(cx + r + 10, cy + (c.h <= 180 ? -8 : 17), 'h', { size: 13, gras: true, fill: K.orange, anchor: 'start', ...halo }));
     }
     els.push(<circle key={'p' + p.nom} cx={x} cy={y} r={zoom ? 6.5 : 7.5} fill={p.plein === false ? 'none' : col} stroke={p.plein === false ? col : '#fff'} strokeWidth={p.plein === false ? 3 : 2}/>);
-    if (noms && p.nom) els.push(T(x + (x > X0 + W - 70 ? -11 : 11), y - 9, p.nom, { size: 11.5, gras: true, fill: col, anchor: x > X0 + W - 70 ? 'end' : 'start' }));
+    if (noms && p.nom) els.push(T(x + (x > X0 + W - 70 ? -11 : 11), y + (p.nom === 'Lot' ? 19 : -9), p.nom, { size: 11.5, gras: true, fill: col, anchor: x > X0 + W - 70 ? 'end' : 'start', ...halo }));
   }
   return base(360, zoom ? 372 : 358, zoom ? 'Plan a*b*, agrandi autour de la cible' : 'Plan a*b* (couleurs à L* fixe)', els, 400);
 }

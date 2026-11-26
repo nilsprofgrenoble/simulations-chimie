@@ -20,4 +20,14 @@ for (let k = 0; k < 400; k++) {
   ok(M.enGamut(q.cible) && M.enGamut(q.lot), 'gamut');
   const l = M.tirageLecture(rnd), ds = M.description(l.lot, l.cible); ok(ds.lum === l.lum && ds.sat === l.sat && Math.abs(C.ecartCylindrique(l.lot, l.cible).dC) >= 1.2, `tirageLecture ${k}`);
 }
+// ellipsoïde CMC : axes et maillage
+{ const e = C.ellipseCMC(M.CIBLE, 1); ok(e.rC > e.rH && e.rL > 0, 'axes CMC : saturation > teinte');
+  pres(e.rL, 2 * (0.040975 * 45 / (1 + 0.01765 * 45)), 1e-9, 'rL = l·SL');
+  const g = C.ellipseCMC({ L: 55, a: 0, b: 0 }, 1); pres(g.rC, g.rH, 1e-9, 'gris : ellipse = cercle');
+  const m = M.maillageEllipsoide(M.CIBLE, 1);
+  for (let i = 0; i < m.x.length; i += 3) for (let j = 0; j < m.x[i].length; j += 5) { const pt = { L: m.z[i][j], a: m.x[i][j], b: m.y[i][j] }; pres(C.deltaCMC(pt, M.CIBLE), 1, 0.04, `point ${i},${j} sur l’ellipsoïde CMC = 1`); }
+  const s = M.maillageSphere(M.CIBLE, 1.5);
+  for (let i = 0; i < s.x.length; i += 3) for (let j = 0; j < s.x[i].length; j += 5) pres(C.deltaE76({ L: s.z[i][j], a: s.x[i][j], b: s.y[i][j] }, M.CIBLE), 1.5, 1e-9, 'point sur la sphère ΔE = 1,5');
+  const m4 = M.maillageEllipsoide(M.CIBLE, 1, 4); pres(m4.z[0][0] - M.CIBLE.L, 4 * e.rL, 1e-9, 'agrandissement ×4 sur L*');
+  ok(M.POSITIONS_ELLIPSES.length === 9, '9 positions d’ellipses'); }
 console.log(`cielabModele : ${n} vérifications OK`);
