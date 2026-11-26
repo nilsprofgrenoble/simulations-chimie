@@ -1361,8 +1361,8 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'ads-val-peintures-moyenne', domaine: 'Couleur : synthèses additive et soustractive', niveau: 2, titre: 'Mélanger du jaune et du cyan', plausible: false,
     enonce: 'Un élève prévoit la couleur d’un mélange de peinture jaune et de peinture cyan : « La réflectance du mélange est la moyenne des réflectances des deux peintures, à chaque longueur d’onde. »',
-    reperes: [['Mélange de pigments', 'les rapports K/S s’additionnent'], ['Réflectance', 'se déduit de K/S du mélange']],
-    ver: 'Dans une couche de peinture, ce sont les pouvoirs absorbants (K/S) des pigments qui s’additionnent, pas les réflectances. La réflectance du mélange s’en déduit ensuite. Une moyenne de réflectances donnerait un vert beaucoup trop pâle : le mélange réel est plus sombre, car chaque pigment absorbe là où il est absorbant.',
+    reperes: [['Mélange de pigments', 'à diffusion égale, les rapports K/S s’additionnent'], ['Réflectance', 'se déduit de K/S du mélange']],
+    ver: 'Dans une couche opaque de peinture dont les pigments diffusent de la même façon, ce sont les pouvoirs absorbants (K/S) qui s’additionnent, pas les réflectances. La réflectance du mélange s’en déduit ensuite. Une moyenne de réflectances donnerait un vert beaucoup trop pâle : le mélange réel est plus sombre, car chaque pigment absorbe là où il est absorbant.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il moyenne les réflectances au lieu d’ajouter les K/S', 'La grandeur qui s’additionne est K/S, pas R. La moyenne de R donnerait un résultat trop clair.'),
@@ -1381,8 +1381,8 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'ads-val-ecran-jaune', domaine: 'Couleur : synthèses additive et soustractive', niveau: 2, titre: 'Le jaune d’un écran', plausible: false,
     enonce: 'Un élève regarde une zone jaune sur l’écran d’un ordinateur et affirme : « Cet écran émet de la lumière jaune, de longueur d’onde voisine de 580 nm. »',
-    reperes: [['Sous-pixels d’un écran', 'rouge, vert, bleu seulement'], ['Même couleur', 'mêmes réponses des cônes L, M et S']],
-    ver: 'L’écran n’a que des sous-pixels rouge, vert et bleu. Pour afficher du jaune, il allume les sous-pixels rouge et vert : l’œil reçoit des lumières de 610 nm et de 540 nm environ, et aucune à 580 nm. Les cônes L et M réagissent comme à une vraie lumière jaune : c’est une synthèse additive.',
+    reperes: [['Sous-pixels d’un écran', 'en général rouge, vert, bleu'], ['Même couleur', 'mêmes réponses des cônes L, M et S']],
+    ver: 'L’écran a, en général, des sous-pixels rouge, vert et bleu. Pour afficher du jaune, il allume les sous-pixels rouge et vert : l’œil reçoit des lumières de 610 nm et de 540 nm environ, et pratiquement aucune à 580 nm. Les cônes L et M réagissent comme à une vraie lumière jaune : c’est une synthèse additive.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       F('un écran ne sait pas afficher de couleur jaune du tout', 'Il affiche très bien du jaune, mais d’une autre manière.'),
