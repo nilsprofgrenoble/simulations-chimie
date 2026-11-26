@@ -4723,6 +4723,35 @@ export const PREVOIR = [
       F('K est si grand que le mélange est déjà à l’équilibre, tout en eau', 'Aucune eau ne s’est formée : le système n’est pas à l’équilibre, il en est très loin (Qr ≪ K).'),
       F('la réaction est impossible : un mélange à l’équilibre sans eau', 'Avec K très grand, l’équilibre contiendrait presque uniquement de l’eau : l’absence d’eau montre que l’équilibre n’est pas atteint.'),
     ] },
+  // ───────────────────────────── Équations d'oxydo-réduction en milieu acide ou basique (TSTL, sim 294)
+  { id: 'mab-ana-basique', domaine: 'Équations en milieu acide ou basique', titre: 'Écrire en milieu basique la demi-équation de l’eau de Javel',
+    enonce: 'En milieu acide, la demi-équation du couple ClO⁻ / Cl⁻ s’écrit ClO⁻ + 2 H⁺ + 2 e⁻ = Cl⁻ + H₂O. On souhaite l’écrire en milieu basique, par exemple dans une solution d’eau de Javel.', q: 'Que prévoit-on pour la demi-équation en milieu basique ?', options: [
+      V('toujours 2 électrons, plus aucun ion H⁺, et des ions HO⁻ apparaissent à droite', 'On ajoute 2 HO⁻ des deux côtés : H⁺ + HO⁻ donne H₂O, ce qui supprime les H⁺ ; les électrons ne changent pas, et 2 HO⁻ figurent à droite : ClO⁻ + H₂O + 2 e⁻ = Cl⁻ + 2 HO⁻.'),
+      F('2 électrons de moins, car le milieu basique est moins oxydant que le milieu acide', 'Le nombre d’électrons dépend du couple, pas du milieu : on conserve les 2 e⁻ en passant au milieu basique.'),
+      F('la même écriture, car les ions H⁺ sont aussi présents dans une solution basique', 'En milieu basique les ions H⁺ sont presque absents : on ne les écrit plus et on utilise des HO⁻.'),
+      F('2 ions H⁺ en moins à gauche et rien d’autre : les charges restent équilibrées', 'Retirer 2 H⁺ sans autre changement déséquilibre les atomes et les charges : on ajoute aussi 2 HO⁻ des deux côtés pour former H₂O.'),
+    ] },
+  { id: 'mab-ana-simplif', domaine: 'Équations en milieu acide ou basique', titre: 'Simplifier les ions H⁺ d’une somme de demi-équations',
+    enonce: 'Après multiplication des demi-équations pour égaliser les électrons, on les additionne : on trouve 12 ions H⁺ à gauche et 8 ions H⁺ à droite, avec d’autres espèces sans lien avec H⁺. Les électrons ont déjà disparu.', q: 'Que prévoit-on pour les ions H⁺ de l’équation de réaction simplifiée ?', options: [
+      V('il reste 4 ions H⁺ à gauche (12 − 8) et plus aucun H⁺ à droite : ils se compensent', 'Les ions H⁺ présents des deux côtés se compensent : on soustrait le plus petit nombre (8) aux deux membres, donc 12 − 8 = 4 H⁺ restent à gauche.'),
+      F('on garde 12 ions H⁺ à gauche et 8 à droite : ils font partie des réactifs et des produits', 'Une même espèce ne figure pas des deux côtés de l’équation simplifiée : il faut soustraire.'),
+      F('il reste 20 ions H⁺, à gauche, car on additionne les deux nombres', 'On additionne les demi-équations, pas les nombres d’ions des deux membres : un H⁺ à droite compense un H⁺ à gauche.'),
+      F('il reste 4 ions H⁺, à droite, car c’est le membre qui en compte le moins', 'Les H⁺ qui restent sont dans le membre qui en avait le plus, ici la gauche : 12 − 8 = 4 à gauche.'),
+    ] },
+  { id: 'mab-ana-ph', domaine: 'Équations en milieu acide ou basique', titre: 'Le pH d’une solution de permanganate et de sulfite',
+    enonce: 'En milieu basique, des ions permanganate MnO₄⁻ oxydent des ions sulfite SO₃²⁻ : 2 MnO₄⁻ + 3 SO₃²⁻ + H₂O → 2 MnO₂ + 3 SO₄²⁻ + 2 HO⁻. La solution initiale contient peu d’ions HO⁻ (pH légèrement basique).', q: 'Que prévoit-on pour le pH au cours de cette transformation ?', options: [
+      V('il augmente, car la transformation produit des ions HO⁻ (2 pour 2 MnO₄⁻)', 'L’équation montre que 2 HO⁻ se forment : la concentration en HO⁻ augmente donc, ainsi que le pH, si le milieu n’est pas tamponné.'),
+      F('il diminue, car l’oxydation d’une espèce libère des ions H⁺', 'Aucun H⁺ ne figure dans l’équation en milieu basique : la réaction forme des HO⁻, qui font monter le pH.'),
+      F('il ne change pas, car l’eau consommée compense exactement les ions HO⁻ formés', 'L’eau (solvant) ne fixe pas le pH : 1 H₂O consommée pour 2 HO⁻ formés laisse un excès de HO⁻.'),
+      F('il diminue, car les ions MnO₄⁻ consommés sont des oxydants très acides', 'L’ion permanganate n’est pas un acide : ce qui fixe le pH ici, ce sont les HO⁻ formés, qui l’augmentent.'),
+    ] },
+  { id: 'mab-ana-fehling', domaine: 'Équations en milieu acide ou basique', titre: 'Le test de la liqueur de Fehling en milieu acide',
+    enonce: 'Le test à la liqueur de Fehling d’une aldéhyde (RCHO) correspond à l’équation 2 Cu²⁺ + RCHO + 5 HO⁻ → Cu₂O + RCOO⁻ + 3 H₂O. Un élève acidifie fortement la solution avant d’ajouter la liqueur.', q: 'Que prévoit-on pour la formation du précipité rouge de Cu₂O ?', options: [
+      V('elle est empêchée : les ions HO⁻, réactifs de l’équation, sont consommés par l’acide', 'Les HO⁻ sont des réactifs (coefficient 5) : en milieu acide, ils réagissent avec H⁺ pour former H₂O et ne sont plus disponibles pour cette équation.'),
+      F('elle est favorisée : les ions H⁺ apportent les atomes d’hydrogène des produits', 'Aucun H⁺ ne figure dans l’équation de ce milieu : en l’acidifiant, on consomme les HO⁻ réactifs, ce qui défavorise la réaction.'),
+      F('elle n’est pas modifiée : les ions HO⁻ ne sont pas des réactifs, ils servent de solvant', 'Les HO⁻ figurent dans les réactifs avec le coefficient 5 : ce sont des réactifs, pas un solvant.'),
+      F('elle a lieu plus vite, car les électrons échangés sont plus nombreux en milieu acide', 'Le nombre d’électrons échangés est fixé par les couples (2 ici) et ne dépend pas du milieu ; en l’acidifiant on supprime les HO⁻ réactifs.'),
+    ] },
   { id: 'cmp-cdt-avant-equiv', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Avant l’équivalence : pourquoi σ diminue-t-elle ?',
     ...presenter({ contexte: 'On titre de l’acide chlorhydrique par de la soude en suivant la conductivité σ. Avant l’équivalence, chaque ion HO⁻ versé réagit avec un ion H₃O⁺ et un ion Na⁺ apparaît. On suppose le volume total à peu près constant (solution diluée avant le titrage).', liste: [['λ(H₃O⁺)', '35,0 mS·m²·mol⁻¹'], ['λ(Na⁺)', '5,0 mS·m²·mol⁻¹'], ['λ(Cl⁻)', '7,6 mS·m²·mol⁻¹']] }), q: 'Avant l’équivalence, la conductivité σ…', options: [
       V('diminue, car H₃O⁺ est remplacé par Na⁺, moins conducteur', 'Le nombre d’ions ne change presque pas, mais chaque H₃O⁺ (λ = 35,0) est remplacé par un Na⁺ (λ = 5,0) : σ = Σ λ × c diminue. Les ions Cl⁻ sont spectateurs : leur concentration ne varie pas.'),

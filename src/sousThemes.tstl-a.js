@@ -188,5 +188,11 @@ export default {
       refs: ['37:prevoir:sev-ana-dilution', '34:sev-sapp-qr', '36:sev-qr-calcul', '77:plausible:sev-val-qr'] },
     { id: 'sev-cinetique', nom: 'Confronter la prévision à l’expérience', capacite: 'Confronter le sens d’évolution prévu aux résultats expérimentaux pour repérer un blocage cinétique ; distinguer constante d’équilibre et vitesse.',
       refs: ['37:prevoir:sev-ana-cinetique'] },
+    { id: 'mab-demi', nom: 'Écrire une demi-équation en milieu acide', capacite: 'Écrire la demi-équation d’un couple oxydant/réducteur en équilibrant les éléments, l’oxygène avec H₂O, l’hydrogène avec H⁺ et les charges avec e⁻.',
+      refs: ['37:prevoir:mab-ana-simplif', '77:plausible:mab-val-chrome', '34:mab-sapp-electrons', '36:mab-demi-calcul'] },
+    { id: 'mab-basique', nom: 'Écrire une demi-équation en milieu basique', capacite: 'Écrire la demi-équation d’un couple en milieu basique en ajoutant autant d’ions HO⁻ que d’ions H⁺, des deux côtés.',
+      refs: ['37:prevoir:mab-ana-basique', '77:plausible:mab-val-hydroxyde', '34:mab-sapp-basique'] },
+    { id: 'mab-reaction', nom: 'Écrire l’équation d’une réaction d’oxydo-réduction', capacite: 'Écrire l’équation d’une réaction d’oxydo-réduction en milieu acide ou basique à partir des demi-équations (multiplier, additionner, simplifier).',
+      refs: ['37:prevoir:mab-ana-ph', '37:prevoir:mab-ana-fehling', '36:mab-reaction-calcul'] },
   ],
 };

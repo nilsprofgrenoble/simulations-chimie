@@ -1,5 +1,6 @@
 import { Frac, FormuleEnLigne, avecIndices, lireNombre, nbCS } from "../commun";
 import * as SEV from "./sensEvolutionModele.js";
+import * as MAB from "./mabModele.js";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
 import { indice as indiceTopo } from "./topoModele";
 import { FigureVecteurs, Vec } from "./FigureVecteurs";
@@ -4336,6 +4337,46 @@ function genSensKTSTLBase() {
   return { intro: 'Constante d’équilibre d’une réaction d’oxydo-réduction : nombre d’électrons échangés, log K, K et constante de la réaction inverse.', questions: [q1, q2, q3, q4],
     retenir: ['log K = N × (E°₁ − E°₂) / 0,06 (25 °C), avec E°₁ > E°₂ et N le nombre d’électrons de l’équation écrite.', 'N = ppcm(n₁, n₂) : les électrons cédés sont tous captés.', 'K′ = 1 / K pour l’équation inverse ; K > 10⁴ : transformation quasi totale.', 'K est un ordre de grandeur (E° au centivolt) : 2 chiffres significatifs suffisent.'] };
 }
+// ───────────────────────────── Équations d'oxydo-réduction en milieu acide ou basique (TSTL, sim 294)
+function genMabDemi() {
+  for (let k = 0; ; k++) { const g = genMabDemiBase(); const v = g.questions.map(q => q.vrai); if (new Set(v).size === v.length || k > 80) return g; }
+}
+function genMabDemiBase() {
+  const id = tire(MAB.COUPLES_REA), d = MAB.demiEquation(id), A = d.acide, w = MAB.coefDe(A.gauche, 'H2O') + MAB.coefDe(A.droite, 'H2O');
+  const cg = d.a * MAB.ESPECES[d.ox].q + d.h, som = [...A.gauche, ...A.droite].reduce((s, [, c]) => s + c, 0), eq = MAB.demiTxt(d, 'acide');
+  const intro = <>On établit, en milieu acide, la demi-équation du couple {MAB.coupleTxt(id)} (écrite Ox + n e⁻ = Red) par la méthode : élément, O avec H₂O, H avec H⁺, charges avec e⁻.</>;
+  const POOL = [
+    { id: 'n', q: 'Combien d’électrons figurent dans la demi-équation ?', vrai: d.n, aide: 'Après avoir équilibré O et H, comparez la charge des deux membres : le nombre d’électrons est leur différence.', pieges: [[cg, 'C’est la charge à gauche avant les électrons : il faut la ramener à la charge de droite.']], expl: <>Charge à gauche avant e⁻ : {cg} ; charge à droite : {d.b * MAB.ESPECES[d.red].q}. Il faut <b>{d.n}</b> électrons : {eq}.</> },
+    { id: 'h', q: 'Combien d’ions H⁺ la demi-équation compte-t-elle ?', vrai: d.h, aide: 'Équilibrez d’abord O avec des molécules H₂O, puis comptez les atomes d’hydrogène à compenser avec H⁺.', pieges: [[w, 'C’est le nombre de molécules H₂O : chacune contient 2 atomes H à compenser avec des H⁺.']], expl: <>{eq} : il y a <b>{d.h}</b> ions H⁺.</> },
+    { id: 'w', q: 'Combien de molécules H₂O la demi-équation compte-t-elle ?', vrai: w, aide: 'Comptez les atomes d’oxygène de l’oxydant et du réducteur (une fois l’élément principal équilibré) : chaque H₂O apporte un atome O.', pieges: [[2 * w, 'Vous avez compté les atomes d’hydrogène des H₂O : chaque molécule d’eau apporte un seul atome d’oxygène.']], expl: <>{eq} : <b>{w}</b> molécules H₂O.</> },
+    { id: 'cg', q: 'Quelle est la charge totale du membre de gauche avant d’ajouter les électrons ?', vrai: cg, aide: 'Additionnez les charges des espèces de gauche (oxydant avec son coefficient, ions H⁺), les électrons n’étant pas encore écrits.', pieges: [[d.h, 'Vous n’avez compté que les ions H⁺ : ajoutez la charge de l’oxydant (avec son coefficient).']], expl: <>Charge de l’oxydant : {d.a * MAB.ESPECES[d.ox].q} ; {d.h} H⁺ : +{d.h}. Total : <b>{cg}</b>.</> },
+    { id: 'som', q: 'Quelle est la somme des coefficients de la demi-équation (électrons compris) ?', vrai: som, aide: 'Écrivez la demi-équation complète, puis additionnez les coefficients des deux membres (un coefficient 1 n’est pas écrit mais compte).', pieges: [[som - d.n, 'Vous avez oublié de compter les électrons.'], [som - 2, 'Un coefficient 1 non écrit compte pour 1.']], expl: <>{eq} : {[...A.gauche, ...A.droite].map(([, c]) => c).join(' + ')} = <b>{som}</b>.</> },
+  ];
+  // quatre questions aux réponses toutes différentes
+  const choix = []; for (const q of POOL.sort(() => Math.random() - 0.5)) if (!choix.some(c => c.vrai === q.vrai) && choix.length < 4) choix.push(q);
+  const qs = choix.map((c, i) => ({ id: `d${i}`, type: 'num', q: <>{intro} {c.q}</>, unite: '', vrai: c.vrai, tolRel: 0.001, csMin: 1, aide: c.aide, pieges: c.pieges.filter(([x]) => x !== c.vrai && x > 0), expl: c.expl }));
+  qs.forEach(acTol);
+  return { intro: 'Demi-équation d’un couple en milieu acide : électrons, ions H⁺, molécules H₂O, charges.', questions: qs,
+    retenir: ['Méthode en quatre temps : élément principal, O avec H₂O, H avec H⁺, charges avec e⁻.', 'Une demi-équation est juste si les atomes de chaque élément et la charge totale sont les mêmes des deux côtés.', 'Les électrons se placent du côté de l’oxydant : Ox + n e⁻ = Red.'] };
+}
+function genMabReaction() {
+  for (let k = 0; ; k++) { const g = genMabReactionBase(); const v = g.questions.map(q => q.vrai); if (new Set(v).size === v.length || k > 80) return g; }
+}
+function genMabReactionBase() {
+  const idR = tire(MAB.REACTIONS_REA), t = MAB.REACTIONS.find(x => x.id === idR), r = MAB.reaction(t.ox, t.red, t.milieu), F = r.final, mil = t.milieu === 'basique' ? 'basique' : 'acide';
+  const eqs = <>Réduction : {MAB.demiTxt(r.d1, mil)} ; oxydation du réducteur de l’autre couple : {MAB.demiTxt(r.d2, mil)} (écrite dans le sens Ox + n e⁻ = Red).</>;
+  const intro = <>En milieu {mil}, l’oxydant du couple {MAB.coupleTxt(t.ox, mil)} réagit avec le réducteur du couple {MAB.coupleTxt(t.red, mil)}. {eqs}</>;
+  const coef = id => MAB.coefDe(F.reactifs, id) + MAB.coefDe(F.produits, id);
+  const avant = id => MAB.coefDe(r.somme.reactifs, id) + MAB.coefDe(r.somme.produits, id);
+  const eqTxt = MAB.equationTxt(F);
+  const POOL = [{ id: 'N', q: 'Combien d’électrons sont échangés dans l’équation de réaction ?', vrai: r.N, aide: 'Le nombre d’électrons captés doit être égal au nombre d’électrons cédés : cherchez le plus petit multiple commun des deux nombres d’électrons.', pieges: [[r.n1 * r.n2, 'Vous avez multiplié les deux nombres d’électrons : on cherche leur plus petit multiple commun.'], [r.n1 + r.n2, 'Vous avez additionné les deux nombres d’électrons : on cherche leur plus petit multiple commun.']], expl: <>Le plus petit multiple commun de {r.n1} et {r.n2} est <b>{r.N}</b> : l’équation est {eqTxt}.</> }];
+  for (const [id] of [...F.reactifs, ...F.produits]) if (id !== 'em') POOL.push({ id, q: <>Quel est le coefficient de {MAB.texte(id)} dans l’équation de réaction simplifiée ?</>, vrai: coef(id), aide: 'Multipliez les demi-équations pour égaliser les électrons, additionnez, puis simplifiez les espèces présentes des deux côtés (H₂O, H⁺, HO⁻).', pieges: [[avant(id), 'C’est le coefficient avant simplification : les espèces présentes des deux côtés se compensent.'], [r.N, 'C’est le nombre d’électrons échangés, pas le coefficient de cette espèce.']], expl: <>Équation : {eqTxt}. Coefficient de {MAB.texte(id)} : <b>{coef(id)}</b>.</> });
+  const choix = []; for (const q of POOL.sort(() => Math.random() - 0.5)) if (!choix.some(c => c.vrai === q.vrai) && choix.length < 4) choix.push(q);
+  const qs = choix.map((c, i) => ({ id: `e${i}`, type: 'num', q: <>{intro} {c.q}</>, unite: '', vrai: c.vrai, tolRel: 0.001, csMin: 1, aide: c.aide, pieges: c.pieges.filter(([x]) => x !== c.vrai && x > 0), expl: c.expl }));
+  qs.forEach(acTol);
+  return { intro: 'Équation de réaction d’oxydo-réduction : électrons échangés et coefficients après simplification.', questions: qs,
+    retenir: ['On multiplie les demi-équations pour égaliser les électrons, on additionne, puis on simplifie H₂O, H⁺ ou HO⁻ présents des deux côtés.', 'Une équation de réaction ne contient aucun électron et conserve les atomes et la charge.', 'En milieu acide on écrit H⁺ et H₂O ; en milieu basique HO⁻ et H₂O, jamais H⁺ et HO⁻ ensemble.'] };
+}
 function genSensQrTSTL() {
   for (let k = 0; ; k++) { const g = genSensQrTSTLBase(); if (g) { const v = g.questions.map(q => q.vrai.toPrecision(2)); if (new Set(v).size === v.length || k > 60) return g; } }
 }
@@ -6372,6 +6413,8 @@ export const FAMILLES = [
   { id: 'nrn-inverse-calcul', groupe: 'Formules', titre: 'Pile avec l’ESH : concentration inconnue, rapport des concentrations, pH et tension à vide (TSTL)', gen: genNernstInverseTSTL, domaine: 'Potentiel et relation de Nernst' },
   { id: 'sev-calcul', groupe: 'Formules', titre: 'Constante d’équilibre d’une réaction d’oxydo-réduction : nombre d’électrons, log K, K et réaction inverse (TSTL)', gen: genSensKTSTL, domaine: 'Sens d’évolution en oxydo-réduction' },
   { id: 'sev-qr-calcul', groupe: 'Formules', titre: 'Quotient de réaction, rapport Qr / K et écart des potentiels de Nernst pour prévoir le sens (TSTL)', gen: genSensQrTSTL, domaine: 'Sens d’évolution en oxydo-réduction' },
+  { id: 'mab-demi-calcul', groupe: 'Formules', titre: 'Demi-équation en milieu acide : électrons, ions H⁺, molécules H₂O et charges (TSTL)', gen: genMabDemi, domaine: 'Équations en milieu acide ou basique' },
+  { id: 'mab-reaction-calcul', groupe: 'Formules', titre: 'Équation de réaction en milieu acide ou basique : électrons échangés et coefficients (TSTL)', gen: genMabReaction, domaine: 'Équations en milieu acide ou basique' },
   { id: 'etl-calcul', groupe: 'Formules', titre: 'Dosage par étalonnage : constante de cellule, conductivité, droite d’étalonnage et dilution (TG)', gen: genEtalonnageTG, domaine: 'Conductimétrie : étalonnage et conductance' },
   { id: 'fre-calcul', groupe: 'Formules', titre: 'Mouvement circulaire : accélération dans le repère de Frenet, vitesse, composantes et norme (TG)', gen: genFrenetTG, domaine: 'Mouvement circulaire et repère de Frenet' },
   { id: 'top-calcul', groupe: 'Formules', titre: 'Formules topologiques : nombre d’hydrogènes d’après le squelette, liaisons C–H et masse molaire (TG)', gen: genTopoTG, domaine: 'Formules topologiques et isomérie de constitution' },

@@ -2906,5 +2906,17 @@
  "77:plausible:clp-val-hauteur": "VAL764",
  "77:plausible:clp-val-portee": "VAL765",
  "36:clp-sommet": "REA196",
- "36:clp-portee": "REA197"
+ "36:clp-portee": "REA197",
+ "34:mab-sapp-electrons.0": "SAPP638",
+ "34:mab-sapp-electrons.1": "SAPP639",
+ "34:mab-sapp-basique.0": "SAPP640",
+ "34:mab-sapp-basique.1": "SAPP641",
+ "37:prevoir:mab-ana-basique": "ANA1310",
+ "37:prevoir:mab-ana-simplif": "ANA1311",
+ "37:prevoir:mab-ana-ph": "ANA1312",
+ "37:prevoir:mab-ana-fehling": "ANA1313",
+ "77:plausible:mab-val-chrome": "VAL766",
+ "77:plausible:mab-val-hydroxyde": "VAL767",
+ "36:mab-demi-calcul": "REA198",
+ "36:mab-reaction-calcul": "REA199"
 }
