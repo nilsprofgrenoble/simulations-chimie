@@ -3678,14 +3678,14 @@ export const PREVOIR = [
       F('0,42 : la somme WP + WD', 'La pureté est un rapport de distances, pas une somme.'),
       V('0,40 : WP / WD = 0,12 / 0,30', 'La pureté compare la distance du blanc au point à celle du blanc à la courbe, dans la même direction.'),
     ] },
-  { id: 'xyy-ana-complem', domaine: 'Couleur : lire le diagramme de chromaticité', titre: 'Deux lumières complémentaires',
+  { id: 'xyy-ana-complem', domaine: 'Couleur : synthèses additive et soustractive', titre: 'Deux lumières complémentaires',
     enonce: 'La longueur d’onde complémentaire de 480 nm (bleu) est voisine de 578 nm (jaune). On mélange ces deux lumières dans les bonnes proportions.', q: 'Quelle est la couleur du mélange ?', options: [
       F('verte, vers 530 nm : la moyenne des deux longueurs d’onde', 'Un mélange de lumières ne se place pas à la moyenne des longueurs d’onde : il se place sur le segment qui joint les deux points.'),
       V('blanche : le point du mélange est le point blanc W', 'Deux lumières complémentaires sont alignées avec W : pour de bonnes proportions, le mélange tombe sur W.'),
       F('pourpre, car le bleu et le jaune sont aux extrémités du spectre', 'Bleu et jaune ne sont pas aux extrémités : le segment qui les joint passe par le blanc, loin de la droite des pourpres.'),
       F('jaune, car la longueur d’onde la plus grande l’emporte', 'Aucune des deux ne l’emporte : cela dépend des proportions, et la bonne proportion donne du blanc.'),
     ] },
-  { id: 'xyy-ana-melange', domaine: 'Couleur : lire le diagramme de chromaticité', titre: 'Mélange de deux primaires',
+  { id: 'xyy-ana-melange', domaine: 'Couleur : synthèses additive et soustractive', titre: 'Mélange de deux primaires',
     enonce: 'Un écran mélange à quantités égales sa lumière rouge, de coordonnées (0,64 ; 0,33), et sa lumière bleue, de coordonnées (0,15 ; 0,06).', q: 'Quelles sont les coordonnées du mélange ?', options: [
       V('(0,395 ; 0,195) : le milieu du segment', 'À quantités égales, le point est au milieu du segment : on fait la moyenne des abscisses, puis des ordonnées.'),
       F('(0,79 ; 0,39) : la somme des coordonnées', 'Une somme de coordonnées ne peut pas convenir : x et y sont des proportions inférieures à 1.'),
@@ -3694,7 +3694,7 @@ export const PREVOIR = [
     ] },
   { id: 'xyy-ana-ecran', domaine: 'Couleur : lire le diagramme de chromaticité', titre: 'Un écran et le vert d’un laser',
     enonce: 'Un écran fabrique ses couleurs avec trois lumières, rouge, verte et bleue (primaires sRGB). On veut lui faire afficher la lumière d’un laser de longueur d’onde 500 nm.', q: 'L’écran peut-il la reproduire exactement ?', options: [
-      F('oui : 500 nm est entre le vert et le bleu, il suffit de les mélanger', 'Un mélange de vert et de bleu est sur le segment qui joint ces primaires, à l’intérieur de la courbe : moins saturé que 500 nm.'),
+      F('oui : 500 nm est entre le vert et le bleu, il suffit d’allumer ces deux primaires', 'Ces deux primaires allumées ensemble donnent un point sur le segment qui joint ces primaires, à l’intérieur de la courbe : moins saturé que 500 nm.'),
       F('oui, en augmentant la luminosité de l’écran', 'La luminosité (Y) ne déplace pas le point (x ; y) : elle ne rend pas la couleur plus saturée.'),
       V('non : le point à 500 nm est en dehors du triangle des primaires', 'Un mélange de trois lumières reste dans le triangle de leurs points : les couleurs hors du triangle ne sont pas reproductibles.'),
       F('non : 500 nm est un pourpre, que l’écran ne produit pas', 'Les pourpres ne sont pas sur la courbe : 500 nm est un bleu-vert, sur la courbe.'),

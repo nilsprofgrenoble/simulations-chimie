@@ -1329,7 +1329,7 @@ export const PLAUSIBLES = [
       V('il a prolongé la droite du mauvais côté et lu la longueur d’onde complémentaire', 'La dominante se lit du côté du point P, pas de l’autre côté du blanc.'),
       F('il aurait dû partir du coin (0 ; 0) du diagramme', 'Le point de départ est le blanc de référence W, pas l’origine du repère.'),
     ] }),
-  P({ id: 'xyy-val-melange', domaine: 'Couleur : lire le diagramme de chromaticité', niveau: 2, titre: 'Mélange de rouge et de bleu', plausible: false,
+  P({ id: 'xyy-val-melange', domaine: 'Couleur : synthèses additive et soustractive', niveau: 2, titre: 'Mélange de rouge et de bleu', plausible: false,
     enonce: 'Un élève mélange à quantités égales une lumière rouge de 700 nm et une lumière bleue de 450 nm. Il affirme : « le mélange a pour longueur d’onde dominante environ 575 nm, la moyenne des deux : c’est du jaune ».',
     reperes: [['Mélange de deux lumières', 'point sur le segment qui les joint'], ['Rouge et violet', 'mélange dans la zone des pourpres']],
     ver: 'Le point du mélange est au milieu du segment qui joint les points des deux lumières : ici (0,45 ; 0,14). La droite du blanc à ce point rencontre la droite des pourpres : c’est un pourpre, sans longueur d’onde dominante (sa complémentaire est environ 510 nm). On ne moyenne pas les longueurs d’onde.',
