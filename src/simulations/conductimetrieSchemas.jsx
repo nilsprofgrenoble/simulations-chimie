@@ -5,6 +5,7 @@
 //  Les points de la scène sont un schéma : un point = une même quantité de matière (0,1 mmol), sans échelle affichée.
 // ====================================================
 import { IONS, V_BURETTE } from './conductimetrieModele';
+import { SceneBecher } from './sceneBecher';
 
 const COL = { bleu: '#0369a1', vert: '#15803d', orange: '#b45309', rouge: '#b91c1c', violet: '#7c3aed', gris: '#64748b', txt: '#0f172a' };
 const stl = { width: '100%', maxWidth: 440, height: 'auto', display: 'block', margin: '0 auto 6px', background: 'white', borderRadius: 8 };
@@ -30,50 +31,18 @@ export function SceneConductimetrie({ points, anionId = 'Cl', lecture = null, ce
   const ordre = [['anion', IONS[anionId].couleur, -1], ['Na', IONS.Na.couleur, 1], ['H3O', IONS.H3O.couleur, 1], ['HO', IONS.HO.couleur, -1], ['acide', '#94a3b8', 0]];
   const dots = []; let k = 0;
   for (const [id, coul, sg] of ordre) for (let i = 0; i < (points[id] || 0) && k < SLOTS.length; i++, k++) dots.push({ id, coul, sg, r: R[id] || R.anion, p: SLOTS[k] });
-  const niveauBurette = burette ? 18 + 3.9 * Math.min(burette.VB, V_BURETTE) : 0;
   const leg = legende.map(id => (id === 'anion' ? { id, f: IONS[anionId].f, c: IONS[anionId].couleur, sg: -1 } : id === 'acide' ? { id, f: acideLegende || 'molécule d’acide', c: '#94a3b8', sg: 0 } : { id, f: IONS[id].f, c: IONS[id].couleur, sg: IONS[id].z }));
   const ariaIons = leg.map(l => l.f).join(', ');
   const compact = !cellule && !burette;          // premier écran : seulement le bécher et ses ions
+  const contenu = <g>{dots.map((d, i) => d.id === 'acide'
+    ? <rect key={i} x={d.p[0] - 6.5} y={d.p[1] - 4} width="13" height="8" rx="3" fill={d.coul} stroke="#fff" strokeWidth="0.8"/>
+    : <Point key={i} x={d.p[0]} y={d.p[1]} couleur={d.coul} signe={d.sg} r={d.r}/>)}</g>;
+  const legSvg = leg.map(l => ({ f: l.f, rendu: (x, y) => (l.sg === 0 ? <rect x={x - 6} y={y - 4} width="13" height="8" rx="3" fill={l.c}/> : <Point x={x} y={y} couleur={l.c} signe={l.sg} r={R[l.id] || R.anion}/>) }));
   return (
-    <svg viewBox={compact ? '0 78 400 228' : '0 0 400 306'} style={{ ...stl, maxWidth: 480 }} role="img"
-      aria-label={`Bécher contenant une solution avec des ions (${ariaIons}), une cellule de conductimétrie plongée dans la solution, reliée à un conductimètre qui affiche ${lecture ? lecture : 'rien pour le moment'}${burette ? `, et une burette de soude dont on a versé ${fr(burette.VB)} mL` : ''}.`}>
-      {titre && <text x="8" y={compact ? 100 : 22} fontSize="17" fontWeight="700" fill={COL.txt}>{titre}</text>}
-      {/* conductimètre */}
-      {cellule && <g>
-        <rect x="262" y="8" width="132" height="62" rx="8" fill="#e2e8f0" stroke="#64748b" strokeWidth="2"/>
-        <rect x="270" y="14" width="116" height="30" rx="4" fill="#0f172a"/>
-        <text x="328" y="36" fontSize="20" fontWeight="700" textAnchor="middle" fill="#86efac" fontFamily="monospace">{lecture || '— — —'}</text>
-        <text x="328" y="62" fontSize="15" textAnchor="middle" fill={COL.txt}>conductimètre</text></g>}
-      {/* bécher */}
-      <path d="M95 122 L95 250 Q95 256 101 256 L259 256 Q265 256 265 250 L265 122" fill="none" stroke="#475569" strokeWidth="3"/>
-      <path d="M98 152 L98 250 Q98 253 101 253 L259 253 Q262 253 262 250 L262 152 Z" fill="#dbeafe" opacity="0.75"/>
-      {/* burette */}
-      {burette && <g>
-        <rect x="124" y="8" width="16" height="96" rx="2" fill="#fff" stroke="#475569" strokeWidth="2"/>
-        <rect x="125" y={niveauBurette} width="14" height={104 - niveauBurette} fill="#e9d5ff"/>
-        <path d="M129 104 L135 104 L133 118 L131 118 Z" fill="#475569"/>
-        {[0, 10, 20].map(v => <g key={v}><line x1="122" y1={18 + 3.9 * v} x2="128" y2={18 + 3.9 * v} stroke="#475569" strokeWidth="1.5"/><text x="118" y={23 + 3.9 * v} fontSize="15" textAnchor="end" fill={COL.txt}>{v}</text></g>)}
-        <text x="8" y="40" fontSize="16" fontWeight="700" fill={COL.violet}>burette :</text><text x="8" y="58" fontSize="16" fontWeight="700" fill={COL.violet}>soude</text><text x="8" y="76" fontSize="16" fill={COL.txt}>0,100 mol/L</text>
-        <text x="8" y="98" fontSize="16" fill={COL.txt}>versé :</text><text x="8" y="116" fontSize="16" fontWeight="700" fill={COL.txt}>{fr(burette.VB)} mL</text>
-      </g>}
-      {/* ions et molécules */}
-      {dots.map((d, i) => d.id === 'acide'
-        ? <rect key={i} x={d.p[0] - 6.5} y={d.p[1] - 4} width="13" height="8" rx="3" fill={d.coul} stroke="#fff" strokeWidth="0.8"/>
-        : <Point key={i} x={d.p[0]} y={d.p[1]} couleur={d.coul} signe={d.sg} r={d.r}/>)}
-      {/* cellule de conductimétrie : câble, poignée, manchon de verre, deux plaques de platine noires */}
-      {cellule && <g>
-        <path d="M235 96 C235 60 262 78 300 70" fill="none" stroke="#334155" strokeWidth="3"/>
-        <rect x="227" y="96" width="16" height="32" rx="3" fill="#475569"/>
-        <rect x="222" y="126" width="26" height="92" rx="4" fill="#f8fafc" fillOpacity="0.7" stroke="#64748b" strokeWidth="1.8"/>
-        <rect x="229" y="176" width="5" height="38" fill="#0f172a"/><rect x="236" y="176" width="5" height="38" fill="#0f172a"/>
-        {[134, 146, 158].map(y => <line key={y} x1="225" y1={y} x2="245" y2={y} stroke="#94a3b8" strokeWidth="1.5"/>)}
-        <text x="272" y="178" fontSize="15" fill={COL.txt}>cellule de</text><text x="272" y="196" fontSize="15" fill={COL.txt}>conductimétrie</text>
-        <line x1="268" y1="174" x2="250" y2="190" stroke={COL.gris} strokeWidth="1.5"/>
-      </g>}
-      {/* légende */}
-      {leg.map((l, i) => { const x = 10 + (i % 3) * 130, y = 276 + Math.floor(i / 3) * 18;
-        return <g key={l.id}>{l.sg === 0 ? <rect x={x} y={y - 9} width="13" height="8" rx="3" fill={l.c}/> : <Point x={x + 8} y={y - 5} couleur={l.c} signe={l.sg} r={R[l.id] || R.anion}/>}<text x={x + 22} y={y} fontSize="16" fill={COL.txt}>{l.f}</text></g>; })}
-    </svg>);
+    <SceneBecher Vmax={V_BURETTE} V={burette ? burette.VB : 0} compact={compact} legende={legSvg} equation={titre || null}
+      aria={`Bécher contenant une solution avec des ions (${ariaIons}), une cellule de conductimétrie plongée dans la solution, reliée à un conductimètre qui affiche ${lecture ? lecture : 'rien pour le moment'}${burette ? ', et une burette de soude au-dessus du bécher' : ''}.`}
+      burette={burette ? { lignes: [{ t: 'burette :', gras: true, coul: COL.violet }, { t: 'soude', gras: true, coul: COL.violet }, { t: '0,100 mol/L' }, { t: `versé : ${fr(burette.VB)} mL`, gras: true }] } : null}
+      zone={{ x: 98, y: 152, w: 164, h: 101 }} ions={contenu} cellule={cellule ? { lecture } : null}/>);
 }
 
 // ---------- graphique σ = f(V_B) ----------
