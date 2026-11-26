@@ -1,5 +1,6 @@
 import { PDT_SAPP } from "./poidsTrajetExos.js";
 import * as SEV from "./sensEvolutionModele.js";
+import * as MAB from "./mabModele.js";
 import { LCV_SAPP } from "./lancerChuteExos.js";
 import { DFR_SAPP } from "./freinageExos.js";
 import { CHH_SAPP } from "./chuteExos.js";
@@ -1640,6 +1641,59 @@ export const ENONCES = [
         utiles: ['lk', 'N', 'Qr'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : E₁ − E₂ dépend de K et de Qr.' },
         cherche: { bonne: 'La différence E₁ − E₂ des potentiels de Nernst (en V)', faux: ['La constante d’équilibre K (sans unité)', 'Le potentiel standard d’un couple (en V)', 'Le rapport Qr / K (sans unité)'] },
         manque: null, solution: { txt: 'E₁ − E₂ = (0,06 / N) × log(K / Qr)', val: dE, u: 'V' } };
+    },
+  },
+  // ───────────────────────────── Équations d'oxydo-réduction en milieu acide ou basique (TSTL, sim 294)
+  {
+    id: 'mab-sapp-electrons', domaine: 'Équations en milieu acide ou basique', titre: 'Demi-équation : bilan des charges pour trouver les électrons ou les ions H⁺', noms: ['Nombre d’électrons de la demi-équation', 'Nombre d’ions H⁺ de la demi-équation'],
+    gen: () => ({ c: tire(MAB.COUPLES_SAPP), V: tire([50, 100, 200]) }),
+    build: (p, q) => {
+      const d = MAB.demiEquation(p.c), st = d.stades.find(x => x.cle === 'hydrogene'), cOx = d.a * MAB.ESPECES[d.ox].q, cRed = d.b * MAB.ESPECES[d.red].q, h = d.h, w = d.w, n = d.n;
+      const ch = x => (x > 0 ? `+${x}` : x < 0 ? `−${Math.abs(x)}` : '0');
+      const tokens = {
+        cOx: tok(ch(cOx), `Charge totale de l’oxydant ${MAB.texte(d.ox)} écrit à gauche`, cOx, ''),
+        cRed: tok(ch(cRed), `Charge totale du réducteur ${MAB.texte(d.red)} écrit à droite`, cRed, ''),
+        h: tok(`${h} ions H⁺`, 'Nombre d’ions H⁺ écrits à gauche', h, ''),
+        w: tok(`${w} molécules H₂O`, 'Nombre de molécules d’eau écrites', w, ''),
+        n: tok(`${n} électrons`, 'Nombre d’électrons de la demi-équation', n, ''),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+        V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
+      };
+      const debut = [`Dans un bécher de `, T('V'), `, à `, T('T'), `, on établit en milieu acide la demi-équation du couple ${MAB.coupleTxt(p.c)}. Après équilibrage de O avec H₂O et de H avec H⁺, on a écrit ${MAB.membre(st.gauche)} = ${MAB.membre(st.droite)} : les charges ne sont pas encore équilibrées. L’oxydant porte la charge totale `, T('cOx'), `, le réducteur `, T('cRed'), `, il y a `, T('h'), ` et `, T('w'), `. `];
+      const raisons = { T: 'La température n’intervient pas dans un bilan de charges.', V: 'Le volume de solution n’intervient pas dans l’équation d’une demi-réaction.', w: 'Les molécules d’eau sont neutres : elles ne changent pas la charge totale.' };
+      if (q === 0) return { tokens: { cOx: tokens.cOx, cRed: tokens.cRed, h: tokens.h, w: tokens.w, T: tokens.T, V: tokens.V }, derivees: [{ id: 'cg', nom: 'Charge totale du membre de gauche avant ajout des électrons', expr: 'charge de l’oxydant + nombre de H⁺', val: cOx + h, u: '' }], texte: [...debut, 'Combien d’électrons faut-il ajouter à gauche ?'],
+        utiles: ['cOx', 'cRed', 'h'], raisons: { T: raisons.T, V: raisons.V, w: raisons.w },
+        cherche: { bonne: 'Le nombre d’électrons à ajouter (sans unité)', faux: ['Le nombre de molécules d’eau à ajouter (sans unité)', 'La charge totale de l’équation finale (sans unité)', 'La quantité d’ions H⁺ dans le bécher (en mmol)'] },
+        manque: null, solution: { txt: 'n = (charge de l’oxydant + nombre de H⁺) − charge du réducteur', val: n, u: '' } };
+      return { tokens: { cOx: tokens.cOx, cRed: tokens.cRed, n: tokens.n, w: tokens.w, T: tokens.T, V: tokens.V }, derivees: [{ id: 'cd', nom: 'Charge du membre de droite (égale à celle de gauche après ajout des électrons)', expr: 'charge du réducteur', val: cRed, u: '' }],
+        texte: [`Dans un bécher de `, T('V'), `, à `, T('T'), `, on établit en milieu acide la demi-équation du couple ${MAB.coupleTxt(p.c)} : ${MAB.membre(d.stades.find(x => x.cle === 'oxygene').gauche)} + ... H⁺ + `, T('n'), ` = ${MAB.membre(d.stades.find(x => x.cle === 'oxygene').droite)}. L’oxydant porte la charge totale `, T('cOx'), `, le réducteur `, T('cRed'), `, et la demi-équation compte `, T('w'), `. Combien d’ions H⁺ faut-il écrire à gauche pour que les charges soient égales ?`],
+        utiles: ['cOx', 'cRed', 'n'], raisons: { T: raisons.T, V: raisons.V, w: raisons.w },
+        cherche: { bonne: 'Le nombre d’ions H⁺ à écrire à gauche (sans unité)', faux: ['Le nombre d’électrons de la demi-équation (sans unité)', 'Le nombre de molécules d’eau à droite (sans unité)', 'La concentration en ions H⁺ de la solution (en mol/L)'] },
+        manque: null, solution: { txt: 'nombre de H⁺ = charge du réducteur + n − charge de l’oxydant', val: h, u: '' } };
+    },
+  },
+  {
+    id: 'mab-sapp-basique', domaine: 'Équations en milieu acide ou basique', titre: 'Demi-équation en milieu basique : nombre de HO⁻ et de H₂O', noms: ['Nombre d’ions HO⁻ de la demi-équation en milieu basique', 'Nombre de molécules H₂O de la demi-équation en milieu basique'],
+    gen: () => ({ c: tire(MAB.COUPLES_BASIQUE), V: tire([50, 100, 200]) }),
+    build: (p, q) => {
+      const d = MAB.demiEquation(p.c), h = d.k, w = MAB.coefDe(d.acide.droite, 'H2O') + MAB.coefDe(d.acide.gauche, 'H2O'), net = h - w, n = d.n;
+      const tokens = {
+        h: tok(`${h} ions H⁺`, 'Nombre d’ions H⁺ de la demi-équation écrite en milieu acide', h, ''),
+        w: tok(w ? `${w} molécules H₂O` : 'aucune molécule H₂O', 'Nombre de molécules d’eau de la demi-équation écrite en milieu acide (côté droit)', w, ''),
+        n: tok(`${n} électrons`, 'Nombre d’électrons de la demi-équation', n, ''),
+        T: tok('25 °C', 'Température de la solution', 25, '°C'),
+        V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
+      };
+      const debut = [`Dans un bécher de `, T('V'), `, à `, T('T'), `, la demi-équation du couple ${MAB.coupleTxt(p.c)} s’écrit en milieu acide ${MAB.demiTxt(d, 'acide')}, avec `, T('h'), `, `, T('w'), ` et `, T('n'), `. On la réécrit en milieu basique : on ajoute des ions HO⁻ des deux côtés, H⁺ + HO⁻ donne H₂O, puis on simplifie. `];
+      const raisons = { T: 'La température n’intervient pas dans l’écriture d’une demi-équation.', V: 'Le volume de solution n’intervient pas dans l’écriture d’une demi-équation.', n: 'Le nombre d’électrons ne change pas quand on passe du milieu acide au milieu basique.' };
+      if (q === 0) return { tokens: { h: tokens.h, w: tokens.w, n: tokens.n, T: tokens.T, V: tokens.V }, derivees: [{ id: 'oh', nom: 'Nombre d’ions HO⁻ ajoutés des deux côtés', expr: 'nombre de H⁺', val: h, u: '' }], texte: [...debut, 'Combien d’ions HO⁻ la demi-équation en milieu basique compte-t-elle (après simplification) ?'],
+        utiles: ['h'], raisons: { T: raisons.T, V: raisons.V, n: raisons.n, w: 'Le nombre de molécules d’eau change le nombre de H₂O après simplification, mais pas celui des ions HO⁻.' },
+        cherche: { bonne: 'Le nombre d’ions HO⁻ de la demi-équation en milieu basique (sans unité)', faux: ['Le nombre d’ions H⁺ restant en milieu basique (sans unité)', 'La concentration en HO⁻ de la solution (en mol/L)', 'Le nombre de molécules d’eau en milieu basique (sans unité)'] },
+        manque: null, solution: { txt: 'on ajoute autant de HO⁻ que de H⁺ : nombre de HO⁻ = nombre de H⁺', val: h, u: '' } };
+      return { tokens: { h: tokens.h, w: tokens.w, n: tokens.n, T: tokens.T, V: tokens.V }, derivees: [{ id: 'eau', nom: 'Molécules H₂O formées par H⁺ + HO⁻', expr: 'nombre de H⁺', val: h, u: '' }], texte: [...debut, 'Combien de molécules H₂O reste-t-il dans la demi-équation en milieu basique, après simplification ?'],
+        utiles: ['h', 'w'], raisons: { T: raisons.T, V: raisons.V, n: raisons.n },
+        cherche: { bonne: 'Le nombre de molécules H₂O après simplification (sans unité)', faux: ['Le nombre d’ions HO⁻ de la demi-équation (sans unité)', 'Le nombre de molécules H₂O formées avant simplification (sans unité)', 'La masse d’eau dans le bécher (en g)'] },
+        manque: null, solution: { txt: 'H₂O restantes = nombre de H⁺ − nombre de H₂O du milieu acide', val: net, u: '' } };
     },
   },
   // ───────────────────────────── Conductimétrie (TG, sim 136) : étalonnage, conductance et constante de cellule
