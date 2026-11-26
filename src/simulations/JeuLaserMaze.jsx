@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import { NIVEAUX, MATERIAUX, LASERS, indice, nomCouleur, teinteLambda, tracer, reglageInitial, segmentMiroir, sommetsBloc, etoiles } from "./laserMazeModele";
 import { chapitresDuJeu, allerChapitre } from "../chapitres";
+import { enregistrerJeu } from "./jeuxScores";
 
 // ====================================================
 //  SIM 290 : LASER MAZE (jeu, 2GT → 1G). Oriente miroirs, lame de verre et prisme pour envoyer le laser sur la cible.
@@ -38,7 +39,7 @@ export function SimulationLaserMaze({ naviguer }) {
   const [sauv, setSauv] = useState(lireEtoiles);
   const niv = NIVEAUX[idx];
   const chap = chapitresDuJeu(290)[0];
-  const gagne = e => setSauv(s => { const n = { ...s, [niv.id]: Math.max(s[niv.id] || 0, e) }; ecrireEtoiles(n); return n; });
+  const gagne = e => { enregistrerJeu('laser', niv.id, e, 0); setSauv(s => { const n = { ...s, [niv.id]: Math.max(s[niv.id] || 0, e) }; ecrireEtoiles(n); return n; }); };
   const total = NIVEAUX.reduce((a, n) => a + (sauv[n.id] || 0), 0);
   return (
     <div style={{ maxWidth: 940, margin: '0 auto', color: C.texte, fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'left' }}>

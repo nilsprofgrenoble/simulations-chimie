@@ -2,12 +2,12 @@ import { useState, useMemo, useEffect } from "react";
 import { FIOLES, PIPETTES, SERVICES, BONUS_REUSSITE, PENALITE_ECHEC, COUT_INDICE, commandesDuService, realiser, retour, correction, fmtC, fmtF, teinte, urgence, temperature, etoilesMission } from "./cuisineDilutionModele";
 import { LaboScene, STYLE_LABO } from "./LaboScene";
 import { chapitresDuJeu, allerChapitre } from "../chapitres";
+import { enregistrerJeu } from "./jeuxScores";
 
 // ====================================================
 //  SIM 291 : URGENCE AU LABO — DILUTIONS (jeu, 2GT → 1G). Scénario : le ballon de réaction sous la paillasse s'emballe ; avant l'explosion,
 //  il faut préparer à la pipette et à la fiole jaugées les solutions d'inhibiteur demandées (loi de dilution, facteur de dilution).
-//  Page ordinaire aux couleurs de la Paillasse virtuelle (la calculatrice flottante du site reste disponible). Réservé à l'administrateur tant que
-//  le jeu n'est pas ouvert (jeuxVisibles.js) ; ?sim=291 ; carte « Jouer » sur les chapitres 2GT Solutions et 1G Évolution (chapitres.js, champ « jeux »).
+//  Page ordinaire aux couleurs de la Paillasse virtuelle (la calculatrice flottante du site reste disponible). Ouvert à tous (jeuxVisibles.js) ; scores envoyés au classement par jeuxScores.js ; ?sim=291 ; carte « Jouer » sur les chapitres 2GT Solutions et 1G Évolution (chapitres.js, champ « jeux »).
 //  Modèle et tests : cuisineDilutionModele.js. Fiction : aucune manipulation réelle de ce type ne se fait dans l'urgence.
 // ====================================================
 const C = { fond: '#f4f8fc', panneau: '#ffffff', bord: '#d5dfeb', texte: '#0f172a', doux: '#475569', ambre: '#f5a31a', ambreTxt: '#b45309', vert: '#15803d', rouge: '#dc2626', bleu: '#0b4f94', verre: '#2b8fd6' };
@@ -57,7 +57,7 @@ export function SimulationCuisineDilution({ naviguer }) {
   const [detente, setDetente] = useState(false);
   const [rec, setRec] = useState(lire);
   const chap = chapitresDuJeu(291)[0];
-  const fini = (service, etoiles) => setRec(r => { const o = { ...r, [service.id]: Math.max(r[service.id] || 0, etoiles) }; ecrire(o); return o; });
+  const fini = (service, etoiles, reste) => { if (reste != null) enregistrerJeu('urgence', service.id, etoiles, reste); setRec(r => { const o = { ...r, [service.id]: Math.max(r[service.id] || 0, etoiles) }; ecrire(o); return o; }); };
   return (
     <div style={{ maxWidth: 940, margin: '0 auto', color: C.texte, fontFamily: 'Inter, system-ui, sans-serif', textAlign: 'left' }}>
       <style>{STYLE}</style>
@@ -154,7 +154,7 @@ function Mission({ service, graine, detente, onFin, onMenu }) {
     setResultats(res);
     if (i + 1 >= cmds.length) {
       const ok = res.filter(Boolean).length;
-      if (ok >= seuil) onFin(service, detente ? 1 : etoilesMission(reste, service.temps));
+      if (ok >= seuil) onFin(service, detente ? 1 : etoilesMission(reste, service.temps), detente ? null : reste);
       setPhase('fin');
       return;
     }
