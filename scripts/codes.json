@@ -2709,5 +2709,17 @@
  "77:plausible:cdp-val-zero": "VAL731",
  "77:plausible:cdp-val-volume": "VAL732",
  "36:cdp-calcul": "REA163",
- "36:cdp-sigma-calcul": "REA164"
+ "36:cdp-sigma-calcul": "REA164",
+ "34:lcv-sapp-hauteur.0": "SAPP574",
+ "34:lcv-sapp-hauteur.1": "SAPP575",
+ "34:lcv-sapp-frott.0": "SAPP576",
+ "34:lcv-sapp-frott.1": "SAPP577",
+ "37:prevoir:lcv-ana-ref": "ANA1243",
+ "37:prevoir:lcv-ana-conserv": "ANA1244",
+ "37:prevoir:lcv-ana-frott": "ANA1245",
+ "37:prevoir:lcv-ana-courbes": "ANA1246",
+ "77:plausible:lcv-val-hmax": "VAL733",
+ "77:plausible:lcv-val-perte": "VAL734",
+ "36:lcv-energie": "REA165",
+ "36:lcv-frott": "REA166"
 }

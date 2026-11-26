@@ -3118,6 +3118,66 @@ function genPdtFrott() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Le travail du frottement est toujours négatif et proportionnel à la distance parcourue, aller et retour compris.', 'Sur un aller-retour horizontal, seul le frottement fait varier l’énergie cinétique.'] };
 }
+// ---------- Lancer vers le haut : énergies cinétique, potentielle et mécanique, avec et sans frottement (TSTL, PCM) ----------
+function genLcvEnergie() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8; let m, v0, z, Ec0, h, EcZ, vZ;
+  do {
+    m = tire([0.10, 0.20, 0.50, 1.0]); v0 = tire([6, 8, 10, 12]); z = tire([1, 1.5, 2, 2.5, 3]);
+    Ec0 = 0.5 * m * v0 * v0; h = v0 * v0 / (2 * g); EcZ = Ec0 - m * g * z; vZ = Math.sqrt(2 * EcZ / m);
+  } while (z >= 0.9 * h || EcZ < 0.1 * Ec0 || new Set([Ec0, h, EcZ, vZ].map(v => Number(v.toPrecision(3)))).size < 4);
+  const f = v => String(v).replace('.', ',');
+  const intro = `Une balle de masse ${f(m.toFixed(2))}${NB}kg est lancée verticalement vers le haut, depuis le sol, à la vitesse ${v0}${NB}m/s. On néglige les frottements de l’air, on prend g = 9,8${NB}N/kg et l’origine des altitudes au point de lancement. On étudie le système « la balle ».`;
+  const q1 = { id: 'l0', type: 'num', q: <>Calculez l’<b>énergie cinétique au lancement</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec0, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v².',
+    pieges: [[m * v0 * v0, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v0, 'La vitesse doit être élevée au carré.']],
+    expl: <>Ec = ½ × {f(m.toFixed(2))} × {v0}² = <b>{pvFmt(Ec0)}{NB}J</b>.</> };
+  const q2 = { id: 'l1', type: 'num', q: <>Quelle est l’<b>altitude maximale</b> atteinte par la balle (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: h, tolRel: 0.05, csMin: 2,
+    aide: 'Au sommet Ec = 0 et Em = Epp = m × g × z<sub>max</sub> ; Em est égale à l’énergie cinétique du lancement.',
+    pieges: [[Ec0 / m, 'Il manque la valeur de g : Epp = m × g × z.'], [Ec0 / g, 'Il manque la masse de la balle : Epp = m × g × z.']],
+    expl: <>z<sub>max</sub> = Em ÷ (m g) = {pvFmt(Ec0)} ÷ ({f(m.toFixed(2))} × 9,8) = <b>{pvFmt(h)}{NB}m</b>.</> };
+  const q3 = { id: 'l2', type: 'num', q: <>Calculez l’<b>énergie cinétique à l’altitude z = {f(z)}{NB}m</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: EcZ, tolRel: 0.05, csMin: 2,
+    aide: 'Em = Ec + Epp reste constante : Ec = Em − m × g × z.',
+    pieges: [[m * g * z, 'Cette valeur est l’énergie potentielle Epp ; l’énergie cinétique est Em − Epp.'], [Ec0, 'C’est l’énergie mécanique : il faut en retirer l’énergie potentielle.']],
+    expl: <>Ec = {pvFmt(Ec0)} − {f(m.toFixed(2))} × 9,8 × {f(z)} = <b>{pvFmt(EcZ)}{NB}J</b>.</> };
+  const q4 = { id: 'l3', type: 'num', q: <>Quelle est la <b>vitesse de la balle à cette altitude</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vZ, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v², donc v = √(2 × Ec ÷ m).',
+    pieges: [[v0, 'C’est la vitesse au lancement : elle a diminué depuis.'], [EcZ / m, 'Il faut doubler l’énergie et prendre la racine : v = √(2 Ec ÷ m).']],
+    expl: <>v = √(2 × {pvFmt(EcZ)} ÷ {f(m.toFixed(2))}) = <b>{pvFmt(vZ)}{NB}m/s</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Sans frottement, Em = Ec + Epp est constante : Ec = Em − m × g × z.', 'Au sommet, v = 0 : toute l’énergie est potentielle, Epp = m × g × z<sub>max</sub> = ½ m v<sub>0</sub>².'] };
+}
+function genLcvFrott() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const g = 9.8; let m, v0, ff, h, v1, dE, Wf, pc, fm;
+  do {
+    m = tire([0.20, 0.30, 0.50]); v0 = tire([10, 12, 15]); ff = tire([0.2, 0.3, 0.5]);
+    h = Math.round(10 * 0.5 * m * v0 * v0 / (m * g + ff)) / 10; v1 = Math.round(10 * Math.sqrt(2 * (m * g - ff) * (0.5 * m * v0 * v0 / (m * g + ff)) / m)) / 10;
+    dE = 0.5 * m * (v0 * v0 - v1 * v1); Wf = -dE; pc = 100 * dE / (0.5 * m * v0 * v0); fm = dE / (2 * h);
+  } while (new Set([dE, pc, fm, v1].map(v => Number(v.toPrecision(3)))).size < 4);
+  const f = v => String(v).replace('.', ',');
+  const intro = `Une balle de masse ${f(m.toFixed(2))}${NB}kg est lancée verticalement vers le haut, depuis le sol, à la vitesse ${v0}${NB}m/s. Elle atteint l’altitude maximale ${f(h.toFixed(1))}${NB}m, puis retombe et touche le sol à la vitesse ${f(v1.toFixed(1))}${NB}m/s : l’air exerce un frottement. Au sol (z = 0), l’énergie potentielle de pesanteur est nulle.`;
+  const q1 = { id: 'g0', type: 'num', q: <>Calculez l’<b>énergie mécanique dissipée</b> pendant tout le vol (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: dE, tolRel: 0.05, csMin: 2,
+    aide: 'Au sol Em = Ec aux deux instants : énergie dissipée = ½ m v₀² − ½ m v₁².',
+    pieges: [[0.5 * m * v0 * v0, 'C’est l’énergie du lancement seulement ; il faut en retirer l’énergie au retour.'], [0.5 * m * (v0 - v1), 'Les vitesses doivent être élevées au carré avant de les soustraire.']],
+    expl: <>ΔE = ½ × {f(m.toFixed(2))} × ({v0}² − {f(v1.toFixed(1))}²) = <b>{pvFmt(dE)}{NB}J</b>.</> };
+  const q2 = { id: 'g1', type: 'num', q: <>Quel est le <b>travail de la force de frottement</b> sur le vol complet (en J, avec son signe, 2 chiffres significatifs) ?</>, unite: 'J', vrai: Wf, tolRel: 0.05, csMin: 2,
+    aide: 'ΔEm = W(f) : le frottement retire de l’énergie, son travail est négatif.',
+    pieges: [[dE, 'Le signe est inversé : le frottement retire de l’énergie, son travail est négatif.']],
+    expl: <>W(f) = ΔEm = <b>{pvFmt(Wf)}{NB}J</b>.</> };
+  const q3 = { id: 'g2', type: 'num', q: <>Quelle <b>part de l’énergie mécanique initiale</b> a été dissipée (en %, 2 chiffres significatifs) ?</>, unite: '%', vrai: pc, tolRel: 0.05, csMin: 2,
+    aide: 'Part dissipée = énergie dissipée ÷ énergie mécanique au lancement (= ½ m v₀²), × 100.',
+    pieges: [[100 * (v0 - v1) / v0, 'Ec est proportionnelle au carré de la vitesse : il faut comparer les énergies, pas les vitesses.']],
+    expl: <>{pvFmt(dE)} ÷ {pvFmt(0.5 * m * v0 * v0)} × 100 = <b>{pvFmt(pc)}{NB}%</b>.</> };
+  const q4 = { id: 'g3', type: 'num', q: <>Quelle est la <b>valeur moyenne de la force de frottement</b> (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: fm, tolRel: 0.08, csMin: 2,
+    aide: 'W(f) = − f × distance parcourue ; la balle monte de h puis redescend de h : distance = 2 × h.',
+    pieges: [[dE / h, 'La balle parcourt la hauteur à la montée et à la descente : la distance vaut 2 × h.']],
+    expl: <>f = {pvFmt(dE)} ÷ (2 × {f(h.toFixed(1))}) = <b>{pvFmt(fm)}{NB}N</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['ΔEm = W(f) < 0 : avec frottement, l’énergie mécanique diminue de l’énergie dissipée.', 'Ec est proportionnelle à v² : une vitesse qui baisse de 17 % fait baisser Ec d’environ 31 %.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5513,6 +5573,8 @@ export const FAMILLES = [
   { id: 'mtr-depart', groupe: 'Formules', titre: 'Chariot poussé depuis l’arrêt : travail reçu, puissance et effet d’une vitesse ou d’une durée doublée (terminale STL)', gen: genModesDepart, domaine: 'Travail ou transfert thermique : classer les transferts d’énergie' },
   { id: 'pdt-poids', groupe: 'Formules', titre: 'Chariot sur un rail : travaux du poids sur trois trajets et vitesse en C (terminale STL)', gen: genPdtPoids, domaine: 'Travail du poids : moteur, résistant ou nul selon le trajet' },
   { id: 'pdt-frott', groupe: 'Formules', titre: 'Palet avec frottement : travail du frottement, énergie et vitesse au retour (terminale STL)', gen: genPdtFrott, domaine: 'Travail du poids : moteur, résistant ou nul selon le trajet' },
+  { id: 'lcv-energie', groupe: 'Formules', titre: 'Balle lancée vers le haut : énergies et altitude du sommet (terminale STL)', gen: genLcvEnergie, domaine: 'Lancer vers le haut et chute : courbes d’énergie' },
+  { id: 'lcv-frott', groupe: 'Formules', titre: 'Balle lancée avec frottement : énergie dissipée et force moyenne (terminale STL)', gen: genLcvFrott, domaine: 'Lancer vers le haut et chute : courbes d’énergie' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
