@@ -1,5 +1,5 @@
 // Addition de Br₂ sur un alcène (BTS) : ion bromonium, addition anti, stéréospécificité.
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
@@ -8,6 +8,9 @@ import { puces } from "./Travail";
 import { FTest, FBromonium, FAnti, FRacemique, FMeso, FBilanBr } from "./BrSchemas";
 import { ALCENES, activiteOptique } from "./brModele";
 import { AnimAddition } from "./AnimAddition";
+
+// Vue 3D (three.js), chargée à la demande : le pont bromonium et l'attaque anti vus dans l'espace
+const Br3D = lazy(() => import("./Br3D"));
 
 const SIM_ID = 96;
 declarerDefis(SIM_ID, [['principal', 'Addition du dibrome']]);
@@ -36,7 +39,7 @@ function etapesGuide(st, regler) {
         {puces(<>L’eau de dibrome est <strong>brune</strong> ; elle se <strong>décolore</strong> en présence d’une double liaison C=C : Br₂ s’additionne et il n’en reste plus.</>, <>Elle reste brune avec un composé à liaisons simples seulement : le test est <strong>caractéristique des alcènes</strong>.</>)}
       </>,
       tache: ici('Z') },
-    { titre: 'Un pont bromonium', texte: <>Lance l'animation. Br₂ ne se fixe pas simplement sur un carbone : le doublet π attaque Br et forme un <strong>pont à trois chaînons</strong>, l'ion bromonium, qui est un intermédiaire.</>,
+    { titre: 'Un pont bromonium', texte: <>Lance l'animation, puis regarde la <strong>vue 3D</strong> en dessous (fais-la tourner pour voir l'alcène de côté). Br₂ ne se fixe pas simplement sur un carbone : le doublet π attaque Br et forme un <strong>pont à trois chaînons</strong>, l'ion bromonium, qui est un intermédiaire.</>,
       tache: { type: 'qcm', q: 'Pourquoi le pont bromonium est-il formé d’un seul côté du plan de l’alcène ?', options: ['Br₂ arrive par une face de l’alcène : le pont se forme de ce côté', 'Br⁺ passe à travers le plan de l’alcène', 'Les deux Br s’additionnent en même temps sur les deux faces'], bonne: 0, indice: 'Br₂ s’approche de la liaison π par le haut ou par le bas.', expl: <>Br₂ s'approche de la double liaison par <strong>une face</strong> : Br⁺ forme le pont de ce côté, et Br⁻ part. Cela décide de la suite : une face est occupée, l'autre est libre.</> } },
     { titre: 'L’attaque de Br⁻', texte: <>Dans la seconde étape, Br⁻ ouvre le pont. Teste dans la simulation : choisis « même face que le pont » puis « face opposée ».</>,
       retenirTitre: 'À RETENIR : L’ION BROMONIUM',
@@ -155,6 +158,7 @@ export function SimulationAdditionDibrome() {
         </div>
       </div>
       <AnimAddition alc={alc} re="Br2" u={u} face={face} syn={syn} />
+      <Suspense fallback={<div style={{ padding: 16, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Br3D alc={alc} face={face} syn={syn} u={u} /></Suspense>
       <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
         <button onClick={() => { if (u >= 0.999) setU(0); setLecture(l => !l); }} style={styleBouton(true, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Lecture'}</button>
         <input type="range" min={0} max={1000} step={1} value={Math.round(u * 1000)} onChange={e => { setLecture(false); setU(+e.target.value / 1000); }} aria-label="Avancement de la réaction" style={{ flex: 1 }} />

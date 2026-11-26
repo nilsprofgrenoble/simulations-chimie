@@ -123,7 +123,7 @@ function SimulationBase({ partie }) {
       tache: { type: 'qcm', q: 'Quel objet est chiral ?', options: ['une main', 'un ballon', 'un verre', 'une règle plate'], bonne: 0,
         indice: 'Cherchez l’objet dont l’image dans un miroir n’est pas le même objet : il existe une version « droite » et une version « gauche ».', expl: 'Il existe une main droite et une main gauche, différentes. Un ballon, un verre ou une règle plate sont identiques à leur image.' } },
     { id: 'cram', titre: 'Dessiner une molécule dans l’espace', sc: 'cram', focus: ['scene'], depart: dep({ id: 'lactique', aff: A_LAC }),
-      texte: <>Une molécule est un objet en trois dimensions, mais la feuille n’en a que deux. Pour dessiner l’espace, on utilise la <strong>représentation de Cram</strong> : le carbone est au centre, un <strong>trait plein</strong> est dans le plan de la feuille, un <strong>coin plein</strong> pointe <strong>vers vous</strong> (devant la feuille) et des <strong>tirets</strong> partent <strong>vers l’arrière</strong>. Voici l’acide lactique : le groupe CH₃ est dessiné avec un coin plein.</>,
+      texte: <>Une molécule est un objet en trois dimensions, mais la feuille n’en a que deux. Pour dessiner l’espace, on utilise la <strong>représentation de Cram</strong> : le carbone est au centre, un <strong>trait plein</strong> est dans le plan de la feuille, un <strong>coin plein</strong> pointe <strong>vers vous</strong> (devant la feuille) et des <strong>tirets</strong> partent <strong>vers l’arrière</strong>. Voici l’acide lactique : le groupe CH₃ est dessiné avec un coin plein. La <strong>vue 3D</strong> montre la vraie molécule : faites-la tourner avec le doigt ou la souris, la feuille grisée est celle du dessin (le bouton « Dessin » ramène la représentation de Cram).</>,
       tache: { type: 'qcm', q: 'Où se trouve le groupe CH₃ par rapport à la feuille ?', options: ['devant la feuille, vers l’observateur', 'derrière la feuille, loin de l’observateur', 'dans le plan de la feuille, comme un trait plein', 'à l’intérieur de l’atome de carbone'], bonne: 0,
         indice: 'Le coin plein est large du côté du groupe : il « sort » de la feuille vers vous.', expl: 'Le coin plein indique que la liaison C–CH₃ est dirigée vers l’observateur : le groupe CH₃ est devant la feuille. Les tirets, eux, indiquent un groupe derrière.' } },
     { id: 'quatre', titre: 'Quatre liaisons', sc: 'cram', focus: ['scene'], depart: null,
@@ -208,7 +208,7 @@ function SimulationBase({ partie }) {
       tache: { type: 'qcm', q: 'Quelle est la configuration de ce 2-aminopropan-1-ol ?', ...qcmRS(CONF_DIR),
         indice: 'Le n°4 est derrière : lisez 1 → 2 → 3 directement sur le dessin.', expl: `Le n°4 est en tirets, donc la lecture directe est valable : 1 → 2 → 3 tourne dans le sens ${CONF_DIR === 'R' ? 'horaire : R' : 'antihoraire : S'}.` } },
     { id: 'h-devant', titre: 'Quand le n°4 est devant', sc: 'cram', focus: ['scene'], depart: dep({ id: 'bromochloropropane', aff: A_DEV, rangs: true }),
-      texte: <>Ici le groupe n°4 (H) est en <strong>coin plein</strong> : il est <strong>devant</strong>, on le regarde de son côté, ce qui <strong>inverse</strong> le sens apparent. Astuce : on lit 1 → 2 → 3 sur le dessin, puis on <strong>inverse</strong> la lettre. Si le sens lu est horaire, la configuration est S ; s’il est antihoraire, elle est R.</>,
+      texte: <>Ici le groupe n°4 (H) est en <strong>coin plein</strong> : il est <strong>devant</strong>, on le regarde de son côté, ce qui <strong>inverse</strong> le sens apparent. Astuce : on lit 1 → 2 → 3 sur le dessin, puis on <strong>inverse</strong> la lettre. Si le sens lu est horaire, la configuration est S ; s’il est antihoraire, elle est R. En vue 3D, tournez la molécule : tant que le n°4 est devant, le message sous la figure vous prévient que la lecture est à l’envers ; cliquez sur « Placer le n°4 derrière » pour vérifier.</>,
       tache: { type: 'qcm', q: 'Quelle est la configuration de ce 2-bromo-1-chloropropane ?',
         options: [`${CONF_DEV} : sens lu ${sensDe(M.inverse(CONF_DEV))}, puis lettre inversée`, `${M.inverse(CONF_DEV)} : sens lu ${sensDe(M.inverse(CONF_DEV))}, lecture directe, sans inversion`, `${M.inverse(CONF_DEV)} : sens lu ${sensDe(CONF_DEV)}, puis lettre inversée`, `${CONF_DEV} : sens lu ${sensDe(CONF_DEV)}, lecture directe, sans inversion`], bonne: 0,
         indice: 'Lisez le sens sur le dessin, puis inversez la lettre parce que le n°4 est devant.', expl: `Le n°4 est devant : le sens lu est ${CONF_DEV === 'R' ? 'antihoraire' : 'horaire'} et la configuration est l’inverse de ce qu’on lirait : ${CONF_DEV}.` } },
@@ -278,7 +278,7 @@ function SimulationBase({ partie }) {
       </div>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.type === 'rs' ? 'Défi : quelle est la configuration ?' : defi.type === 'cram' ? `Défi : obtenez la configuration ${defi.cible}` : defi.type === 'chirale' ? 'Défi : cette molécule est-elle chirale ?' : 'Défi : combien de carbones asymétriques ?'}</div>
       <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 8, lineHeight: 1.5 }}>
-        {defi.type === 'rs' && <>Voici <strong>{dm.nom}</strong> en représentation de Cram. Classez les groupes du C* avec les règles CIP, puis choisissez la configuration du carbone : <strong>R</strong> ou <strong>S</strong>.</>}
+        {defi.type === 'rs' && <>Voici <strong>{dm.nom}</strong> en représentation de Cram (le bouton « Vue 3D » permet de la tourner). Classez les groupes du C* avec les règles CIP, puis choisissez la configuration du carbone : <strong>R</strong> ou <strong>S</strong>.</>}
         {defi.type === 'cram' && <>Voici <strong>{dm.nom}</strong>. Avec les boutons, échangez des groupes pour obtenir la configuration <strong>{defi.cible}</strong>, puis cliquez sur « Vérifier ».</>}
         {defi.type === 'nasym' && <>Voici la formule semi-développée de <strong>{dm.nom}</strong> : <strong style={{ fontFamily: 'monospace', fontSize: 16 }}>{dm.semi}</strong>. Comptez les carbones asymétriques (n’oubliez pas les atomes H).</>}
         {defi.type === 'chirale' && <>Voici la formule semi-développée de <strong>{dm.nom}</strong> : <strong style={{ fontFamily: 'monospace', fontSize: 16 }}>{dm.semi}</strong>. On admet qu’elle n’a ni axe, ni plan, ni centre de symétrie quand elle possède un C*. Est-elle chirale ?</>}
@@ -352,13 +352,15 @@ function SimulationBase({ partie }) {
   const montrerAxe = enGuide ? scE === 'axe' : P.axe;
   // Vue 3D : proposée partout où la scène montre le dessin de Cram (sauf quand l'élève doit cliquer sur le dessin) ; par défaut seulement à l'étape « axe » et en exploration de la partie 2
   const peut3D = enExplore || (enGuide && ['cram', 'miroir', 'axe'].includes(scE) && !clicsActifs);
-  const vue3D = peut3D && (choix3D !== null ? choix3D : (enGuide ? idE === 'axe' : !p1));
+  const IDS_3D_DEFAUT = p1 ? ['cram', 'miroir-cram', 'miroir-q', 'symetrie'] : ['axe', 'sens', 'lire1', 'cram-direct', 'h-devant', 'inverse'];   // étapes où la vue 3D s'ouvre d'elle-même
+  const peut3DDefi = enDefi && !!defi && ['rs', 'cram'].includes(defi.type);
+  const vue3D = (peut3D || peut3DDefi) && (choix3D !== null ? choix3D : (enGuide ? IDS_3D_DEFAUT.includes(idE) : enExplore ? !p1 : false));
   const vue3DEl = (
     <Suspense fallback={<div style={{ padding: 20, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}>
       <Carbone3D mol={m} c={c} aff={aff} rangs={!!rangsAff} miroir={!chaine && P.miroir} fleche={P.fleche} devoiler={enExplore}
         onAxe={enGuide && idE === 'axe' ? () => maj({ t: 1 }) : undefined} nom={`Vue 3D de ${m.nom}, à tourner à la souris ou au doigt`}/>
     </Suspense>);
-  const bascule3D = peut3D && (
+  const bascule3D = (peut3D || peut3DDefi) && (
     <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 8 }} role="group" aria-label="Type de vue">
       <button onClick={() => setChoix3D(false)} aria-pressed={!vue3D} style={stylePetitBouton(!vue3D, '#0f766e')}>Dessin</button>
       <button onClick={() => setChoix3D(true)} aria-pressed={vue3D} style={stylePetitBouton(vue3D, '#0f766e')}>Vue 3D</button>
@@ -379,7 +381,9 @@ function SimulationBase({ partie }) {
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {enDefi && defi ? (['nasym', 'chirale'].includes(defi.type) ? <div style={{ textAlign: 'center', fontSize: 20, fontWeight: 800, color: KIT.txt, padding: '30px 6px', overflowWrap: 'anywhere' }}>{dm.semi}</div>
-        : <Cram mol={dm} affs={[defi.aff]} rangs={defi.rangs ? rangsDe(dm, cen(dm)) : null} ariaLabel={`Représentation de Cram de ${dm.nom}`}/>) : <>{bascule3D}{sceneContenu}</>}
+        : <>{bascule3D}{vue3D
+          ? <Suspense fallback={<div style={{ padding: 20, fontSize: 14, textAlign: 'center' }}>Chargement de la 3D…</div>}><Carbone3D mol={dm} c={cen(dm)} aff={defi.aff} rangs={!!defi.rangs} devoiler={false} nom={`Vue 3D de ${dm.nom}, à tourner à la souris ou au doigt`}/></Suspense>
+          : <Cram mol={dm} affs={[defi.aff]} rangs={defi.rangs ? rangsDe(dm, cen(dm)) : null} ariaLabel={`Représentation de Cram de ${dm.nom}`}/>}</>) : <>{bascule3D}{sceneContenu}</>}
       {clicsActifs && P.err && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#dc2626', lineHeight: 1.45 }}>{P.err}</div>}
       {clicsActifs && P.clics.length >= 3 && <div role="status" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, color: '#15803d' }}>✓ Classement trouvé : {ordreTxt(m, c)}</div>}
     </div>);

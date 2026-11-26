@@ -6,46 +6,13 @@ import * as THREE from "three";
 import * as M from "./chiraliteModele";
 import * as V from "./carbone3dModele";
 import { COUL_RANG } from "./ChiraliteSchema";
+import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer } from "./scene3d";
 import { KIT, stylePetitBouton } from "../commun";
 
 const L_LIAISON = 1.5;                                             // longueur de dessin d'une liaison C–X (non à l'échelle)
-const COUL_EL = { H: 0xf8fafc, C: 0x475569, O: 0xdc2626, N: 0x2563eb, Cl: 0x16a34a, Br: 0x9a3412, F: 0x65a30d, S: 0xca8a04, I: 0x7e22ce };
-const RAYON_EL = { H: 0.26, C: 0.4, O: 0.36, N: 0.36, F: 0.3, Cl: 0.46, S: 0.46, Br: 0.52, I: 0.56 };
 const I3 = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
-
-const vec = p => new THREE.Vector3(p[0], p[1], p[2]);
 const matriceDe = R => new THREE.Matrix4().set(R[0][0], R[0][1], R[0][2], 0, R[1][0], R[1][1], R[1][2], 0, R[2][0], R[2][1], R[2][2], 0, 0, 0, 0, 1);
 const lignesDe = q => { const e = new THREE.Matrix4().makeRotationFromQuaternion(q).elements; return [0, 1, 2].map(r => [0, 1, 2].map(c => e[c * 4 + r])); };
-
-function placerCylindre(m, a, b, ep) {
-  const d = new THREE.Vector3().subVectors(b, a), L = d.length();
-  m.position.copy(a).addScaledVector(d, 0.5);
-  m.scale.set(ep, Math.max(L, 1e-4), ep);
-  m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize());
-}
-
-// Étiquette (sprite) : pastille de priorité (si demandée) + texte du groupe
-function etiquette(texte, rang) {
-  const cv = document.createElement('canvas'); const ctx = cv.getContext('2d');
-  const police = '800 54px Nunito, system-ui, sans-serif';
-  ctx.font = police;
-  const tw = Math.ceil(ctx.measureText(texte).width), pastille = rang ? 74 : 0, W = tw + 44 + pastille, H = 92;
-  cv.width = W; cv.height = H;
-  ctx.font = police;
-  ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.strokeStyle = rang ? COUL_RANG[rang] : '#94a3b8'; ctx.lineWidth = 5;
-  ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(3, 3, W - 6, H - 6, 22); else ctx.rect(3, 3, W - 6, H - 6); ctx.fill(); ctx.stroke();
-  let x = 22;
-  if (rang) {
-    ctx.fillStyle = COUL_RANG[rang]; ctx.beginPath(); ctx.arc(x + 26, H / 2, 27, 0, 2 * Math.PI); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(rang), x + 26, H / 2 + 3);
-    x += 62;
-  }
-  ctx.fillStyle = rang ? COUL_RANG[rang] : '#0f172a'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(texte, x, H / 2 + 3);
-  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
-  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false }));
-  sp.scale.set(0.0105 * W, 0.0105 * H, 1);
-  return sp;
-}
 
 // Props :
 //   mol, c, aff : molécule, carbone étudié et disposition (comme dans Chiralite.jsx)
@@ -121,7 +88,7 @@ export default function Carbone3D({ mol, c, aff, rangs = false, miroir = false, 
     return () => {
       cancelAnimationFrame(raf); ro.disconnect();
       el.removeEventListener('pointerdown', bas); el.removeEventListener('pointermove', deplace); el.removeEventListener('pointerup', haut); el.removeEventListener('pointercancel', haut);
-      scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { m.map?.dispose(); m.dispose(); }); });
+      liberer(scene);
       renderer.dispose();
       if (renderer.domElement.parentNode === el) el.removeChild(renderer.domElement);
     };
@@ -133,8 +100,7 @@ export default function Carbone3D({ mol, c, aff, rangs = false, miroir = false, 
     if (!s.scene) return;
     const { contenu } = s;
     while (contenu.children.length) {
-      const o = contenu.children.pop();
-      o.traverse(x => { if (x.geometry) x.geometry.dispose(); if (x.material) (Array.isArray(x.material) ? x.material : [x.material]).forEach(m => { m.map?.dispose(); m.dispose(); }); });
+      liberer(contenu.children.pop());
     }
     s.zBase = miroir ? 13.5 : 11; s.taille?.();
     const js = M.EMPLACEMENTS.map(e => aff[e]);
