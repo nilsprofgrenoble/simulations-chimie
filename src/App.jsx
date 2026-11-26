@@ -718,7 +718,7 @@ function construireMenus() {
       rubrique = c.rubrique || rubrique;
       if (c.sousRubrique && c.sousRubrique !== sousRubrique) groupes.push({ sousEntete: c.sousRubrique, sims: [] });   // intertitre léger sous la rubrique
       sousRubrique = c.sousRubrique || sousRubrique;
-      { const sims = c.sims.filter(id => !SIMS_HORS_MENU.has(id)).map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche); if (sims.length) groupes.push({ label: c.label, chap: c.id, sims }); }
+      { const sims = c.sims.filter(id => !SIMS_HORS_MENU.has(id)).map(id => SIMULATIONS.find(s => s.id === id)).filter(Boolean).map(fiche); if (sims.length) groupes.push({ label: c.label, chap: c.id, sims, jeux: c.jeux || [] }); }
     });
     // Parties du programme pas encore couvertes : section repliée « Pas encore couvert », en grisé (estimation, voir couverture.js)
     const reste = resteDuNiveau(m.key);
