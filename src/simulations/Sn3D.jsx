@@ -3,12 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { etat as etatSN, configuration } from "./sn3dModele";
-import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer } from "./scene3d";
+import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer, ajouterBase, ajouterCharge } from "./scene3d";
 import { KIT, stylePetitBouton } from "../commun";
 
-const COUL_NU = 0x2563eb;
-
-const NU_LIE = { HO: 'OH', tBuO: 'OtBu', H2O: 'OH₂⁺' }, NU_LIBRE = { HO: 'HO⁻', tBuO: 'tBuO⁻', H2O: 'H₂O' };
 
 export default function Sn3D({ meca, u, sub = 'sec', re = 'HO' }) {
   const hote = useRef(null);
@@ -85,16 +82,19 @@ export default function Sn3D({ meca, u, sub = 'sec', re = 'HO' }) {
     // groupe partant : Br
     sphere(e.lg, 'Br'); liaison(e.lg, e.lgOp);
     const eb = etiquette('Br', 0, '#9a3412'); eb.position.copy(vec(e.lg)).add(new THREE.Vector3(0, 0.95, 0)); contenu.add(eb);
-    // nucléophile
-    sphere(e.nu, 'O', COUL_NU, 0.4); liaison(e.nu, e.nuOp);
-    const en = etiquette(e.nuOp > 0.7 ? NU_LIE[re] : NU_LIBRE[re], 0, '#1d4ed8'); en.position.copy(vec(e.nu)).add(new THREE.Vector3(0, 0.95, 0)); contenu.add(en);
+    // nucléophile : atomes réels et charge ; ses H s'éloignent du carbone (côté +x), O face au carbone
+    ajouterBase(contenu, re, e.nu, [1, 0, 0], [0, 0, 1], e.nuOp, 71, { HO: 'OH', tBuO: 'OtBu', H2O: 'OH₂⁺' }[re]);
+    liaison(e.nu, e.nuOp);
+    // charges : Br⁻ une fois parti, carbocation (SN1) quand Br est parti et le nucléophile pas encore lié
+    if (e.lgOp < 0.5) ajouterCharge(contenu, e.lg, '−', 0.85);
+    if (meca === 'SN1' && !e.lgLie && !e.nuLie) ajouterCharge(contenu, [0, 0, 0], '+', 0.75);
     // plan des trois groupes quand ils sont dans un plan perpendiculaire à l'axe
     if (e.plan) {
       const pl = new THREE.Mesh(new THREE.CircleGeometry(2.0, 40), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false }));
       pl.rotation.y = Math.PI / 2; contenu.add(pl);
     }
     st.sale = true;
-  }, [e.xSub, e.lg[0], e.nu[0], e.lgOp, e.nuOp, e.plan, sub, re]);   // eslint-disable-line react-hooks/exhaustive-deps
+  }, [e.xSub, e.lg[0], e.nu[0], e.lgOp, e.nuOp, e.plan, e.lgLie, e.nuLie, sub, re]);   // eslint-disable-line react-hooks/exhaustive-deps
 
   if (erreur) return <div style={{ padding: 16, fontSize: 14, color: '#b45309' }}>{erreur}</div>;
   const nomSub = { sec: '2-bromobutane', prim: '1-bromobutane', tert: '2-bromo-2-méthylpropane' }[sub];

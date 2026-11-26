@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { etat as etatBr } from "./br3dModele";
-import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer } from "./scene3d";
+import { vec, COUL_EL, RAYON_EL, placerCylindre, etiquette, liberer, ajouterCharge } from "./scene3d";
 import { KIT, stylePetitBouton } from "../commun";
 
 const DIST0 = 24, DIST_MIN = 9, DIST_MAX = 40;
@@ -102,12 +102,16 @@ export default function Br3D({ alc, face, syn, u }) {
     if (u < 0.35) { sphere(e.brf, 'Br'); lien(e.brn, e.brf, 1); nom(e.brf, 'Br', '#9a3412'); }
     else { sphere(e.brf, 'Br'); nom(e.brf, 'Br⁻', '#9a3412'); }
     lien(e.brn, e.carbones[0], e.opPont[0]); lien(e.brn, e.carbones[1], e.opPont[1]);
+    // charges : Br⁺ du pont bromonium, Br⁻ parti, Br⁻ qui attaque
+    if (u >= 0.4 && !e.brnLie) ajouterCharge(contenu, e.brn, '+', 0.85);
+    if (u >= 0.4) ajouterCharge(contenu, e.brf, '−', 0.85);
     if (e.brm) {
       const m = new THREE.Mesh(new THREE.SphereGeometry(RAYON_EL.Br, 28, 20), new THREE.MeshStandardMaterial({ color: COUL_EL.Br, roughness: 0.45, transparent: true, opacity: syn ? 0.6 : 1 }));
       m.position.copy(vec(e.brm)); contenu.add(m);
       nom(e.brm, 'Br⁻', '#9a3412', e.brm[1] > 0 ? 0.95 : -0.95);
       const ca = e.carbones[e.attaque === 'C2' ? 0 : 1];
       lien(e.brm, ca, e.opBrm);
+      if (e.opBrm < 0.9) ajouterCharge(contenu, e.brm, '−', 0.85);
     }
     st.sale = true;
   }, [alc, face, syn, u]);   // eslint-disable-line react-hooks/exhaustive-deps
