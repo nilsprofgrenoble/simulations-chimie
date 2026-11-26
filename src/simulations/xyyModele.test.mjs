@@ -32,4 +32,13 @@ for (let k = 0; k < 400; k++) {
 ok(nbP > 80 && nbP < 260, 'pourpres présents ' + nbP); ok(nbR > 80 && nbN > 80, `reproductible oui/non équilibré ${nbR}/${nbN}`);
 // marge : un point du bord vaut 0, le blanc est loin du bord
 pres(M.marge(M.P.R), 0, 1e-9, 'marge sommet'); ok(M.marge(M.W) > 0.05, 'marge blanc');
+// blanc de référence : D65 = W ; A et F2 déplacent le blanc, et la lecture avec w est cohérente
+const wA = M.blancIll('A'), wF = M.blancIll('F2');
+pres(M.blancIll('D65').x, M.W.x, 1e-9, 'D65 = W'); pres(wA.x, 0.4476, 1e-3, 'x de A'); pres(wA.y, 0.4075, 1e-3, 'y de A'); pres(wF.x, 0.3881, 1e-3, 'x de F2');
+for (const id of ['D65', 'A', 'F2']) { const w = M.blancIll(id); ok(C.dansDiagramme(w.x, w.y), 'blanc ' + id + ' dans le diagramme');
+  const r = M.lecture(w.x + 1e-3, w.y + 1e-3, w); ok(r.purete < 0.05, 'pureté ~ 0 au blanc ' + id);
+  const p = C.pointDeDominante(500, 0.5, w), q = M.lecture(p.x, p.y, w); pres(q.dominante, 500, 0.6, 'dominante sous ' + id); pres(q.purete, 0.5, 1e-3, 'pureté sous ' + id); }
+// le point du parcours (590 nm, 0,60 sous D65) devient un pourpre sous A ; un bleu (480 nm) garde sa dominante mais gagne en pureté
+const lA = M.lecture(M.PT_LECTURE.x, M.PT_LECTURE.y, wA); ok(lA.pourpre && lA.purete < 0.2, 'point du parcours : pourpre sous A'); pres(lA.complementaire, 514, 1, 'complémentaire sous A');
+const bleu = C.pointDeDominante(480, 0.6), bA = M.lecture(bleu.x, bleu.y, wA); ok(!bA.pourpre, 'bleu non pourpre sous A'); pres(bA.dominante, 481, 1, 'bleu : dominante sous A'); pres(bA.purete, 0.74, 0.01, 'bleu : pureté sous A');
 console.log(`xyyModele : ${n} vérifications OK (${nbP} pourpres, ${nbR} reproductibles, ${nbN} non)`);

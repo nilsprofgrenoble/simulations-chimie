@@ -11,9 +11,12 @@ export function partBlanc(P1, P2) {
   const dx = P2.x - P1.x, dy = P2.y - P1.y;
   return ((W.x - P1.x) * dx + (W.y - P1.y) * dy) / (dx * dx + dy * dy);
 }
+/** Illuminants proposés comme blanc de référence (tables CIE du modèle de couleur) et leur point blanc (x ; y). */
+export const ILLUMS = [{ id: 'D65', nom: 'D65 : lumière du jour' }, { id: 'A', nom: 'A : lampe à incandescence' }, { id: 'F2', nom: 'F2 : tube fluorescent' }];
+export const blancIll = id => { const w = C.xyY(C.blancDe(id)); return { x: w.x, y: w.y }; };
 /** Lecture complète d'un point : tout ce que le diagramme permet de dire. */
-export function lecture(x, y) {
-  const l = C.lireChromaticite(x, y);
+export function lecture(x, y, w = W) {
+  const l = C.lireChromaticite(x, y, w);
   return { ...l, dansEcran: C.dansTriangle({ x, y }, P), dansDiagramme: C.dansDiagramme(x, y), teinte: C.nomTeinte(l.dominante) };
 }
 /** Lumière définie par une longueur d'onde et une pureté (mélange de monochromatique et de blanc). */

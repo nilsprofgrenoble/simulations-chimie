@@ -22,4 +22,12 @@ export const QCM = {
     'Seulement leur teinte : x et y fixent la clarté, pas la couleur',
     'Leur saturation, car Y mesure la pureté de la couleur',
     'Rien : x et y suffisent à décrire complètement une couleur'),
+  illum: mk(3, 'P devient un pourpre : il n’a plus de longueur d’onde dominante',
+    'Rien ne change : P n’a pas bougé, donc sa dominante reste 590 nm',
+    'La dominante change un peu, mais P reste lu comme une lumière monochromatique',
+    'P sort du diagramme, car la lampe A ne contient pas assez de bleu'),
+  illum2: mk(0, 'La dominante change à peine, mais la pureté augmente',
+    'La dominante passe à environ 580 nm, car la lampe A est orangée',
+    'La pureté diminue, car la lampe A éclaire moins le bleu',
+    'Rien ne change : le bleu ne dépend pas du blanc de référence'),
 };

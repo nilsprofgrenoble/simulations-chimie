@@ -22,7 +22,7 @@ const polyLieu = LIEU.map(p => `${px(p.x)},${py(p.y)}`).join(' ');
 /** Diagramme de chromaticité xy (CIE 1931).
  *  pts : [{ x, y, nom, col, creux, dx, dy, anchor }] ; lignes : [{ a, b, col, dash, w }] ; notes : [{ x, y, txt, col, anchor, size }] (coordonnées du diagramme)
  *  triangle : dessine le triangle des primaires de l'écran ; pourpres : met en valeur la droite des pourpres ; carte : version simplifiée pour les cartes « À retenir ». */
-export function SvgChroma({ pts = [], lignes = [], notes = [], triangle = false, pourpres = false, carte = false, blanc = true, ticks = true, label = 'Diagramme de chromaticité xy', onPoint, onTouche }) {
+export function SvgChroma({ pts = [], lignes = [], notes = [], triangle = false, pourpres = false, carte = false, blanc = true, ticks = true, label = 'Diagramme de chromaticité xy', onPoint, onTouche, w, nomBlanc = 'W' }) {
   // Diagramme interactif : toucher ou glisser place un point ; les flèches du clavier le déplacent
   const placer = ev => { const r = ev.currentTarget.getBoundingClientRect(); onPoint(((ev.clientX - r.left) / r.width * 340 - X0) / S, YMAX - ((ev.clientY - r.top) / r.height * 382 - Y0) / S); };
   const interactif = onPoint ? {
@@ -62,7 +62,7 @@ export function SvgChroma({ pts = [], lignes = [], notes = [], triangle = false,
     for (const [p, n] of [[R, 'R'], [G, 'V'], [B, 'B']]) els.push(<circle key={'pr' + n} cx={px(p.x)} cy={py(p.y)} r={5} fill="#0f172a" stroke="#fff" strokeWidth="1.5"/>, T(px(p.x) + (n === 'R' ? 11 : n === 'V' ? 11 : -11), py(p.y) + (n === 'B' ? 16 : 0), n, { size: fs, gras: true, anchor: n === 'B' ? 'end' : 'start', halo: true }));
   }
   for (const l of lignes) els.push(<line key={`l${l.a.x}-${l.b.x}-${l.a.y}`} x1={px(l.a.x)} y1={py(l.a.y)} x2={px(l.b.x)} y2={py(l.b.y)} stroke={l.col ?? '#0f172a'} strokeWidth={l.w ?? 2} strokeDasharray={l.dash ?? ''} strokeLinecap="round"/>);
-  if (blanc) els.push(<circle key="blanc" cx={px(BLANC_XY.x)} cy={py(BLANC_XY.y)} r={5.5} fill="#fff" stroke="#0f172a" strokeWidth="2"/>, T(px(BLANC_XY.x) - 9, py(BLANC_XY.y) + 17, 'W', { size: fs, gras: true, anchor: 'end', halo: true }));
+  if (blanc) els.push(<circle key="blanc" cx={px((w ?? BLANC_XY).x)} cy={py((w ?? BLANC_XY).y)} r={5.5} fill="#fff" stroke="#0f172a" strokeWidth="2"/>, T(px((w ?? BLANC_XY).x) - 9, py((w ?? BLANC_XY).y) + 17, nomBlanc, { size: fs, gras: true, anchor: 'end', halo: true }));
   for (const p of pts) {
     const c = p.col ?? '#0f172a', X = px(p.x), Y = py(p.y);
     els.push(<circle key={'p' + p.nom + p.x} cx={X} cy={Y} r={6.5} fill={p.creux ? 'none' : c} stroke={p.creux ? c : '#fff'} strokeWidth={p.creux ? 3 : 2}/>);
