@@ -79,12 +79,12 @@ export function SvgCabine({ lampe, css1, css2, cssBlanc }) {
     <polygon points="12,14 308,14 308,198 12,198" fill="url(#cab-lueur)"/>
     <rect x={92} y={20} width={136} height={10} rx={5} fill="#f8fafc" stroke="#0f172a" strokeWidth="1.5"/>
     <rect x={98} y={22.5} width={124} height={5} rx={2.5} fill={L.lueur} stroke={L.lueur}/>
-    <ellipse cx={72} cy={176} rx={32} ry={7} fill="#000" opacity="0.18"/><ellipse cx={160} cy={176} rx={32} ry={7} fill="#000" opacity="0.18"/><ellipse cx={248} cy={176} rx={32} ry={7} fill="#000" opacity="0.18"/>
-    {[[72, css1, 'E1'], [160, css2, 'E2'], [248, cssBlanc, 'Blanc']].map(([cx, c, nom]) => <g key={nom}>
-      <rect x={cx - 30} y={104} width={60} height={68} rx={3} fill={c} stroke="#0f172a" strokeWidth="2"/>
-      <rect x={cx - 30} y={104} width={60} height={68} rx={3} fill="none" stroke="#fff" strokeWidth="1" opacity="0.45"/>
-      {T(cx, 94, nom, { size: 14, gras: true, halo: true })}
+    <ellipse cx={110} cy={176} rx={72} ry={7} fill="#000" opacity="0.18"/><ellipse cx={240} cy={176} rx={40} ry={7} fill="#000" opacity="0.18"/>
+    {[[50, 60, css1, 'E1'], [110, 60, css2, 'E2'], [200, 80, cssBlanc, 'Blanc']].map(([x, w, c, nom]) => <g key={nom}>
+      <rect x={x} y={104} width={w} height={68} fill={c}/>
+      {T(x + w / 2, 94, nom, { size: 14, gras: true, halo: true })}
     </g>)}
+    <rect x={50} y={104} width={120} height={68} rx={2} fill="none" stroke="#0f172a" strokeWidth="2"/><rect x={200} y={104} width={80} height={68} rx={2} fill="none" stroke="#0f172a" strokeWidth="2"/>
     <rect x={12} y={198} width={296} height={34} rx={6} fill="#1e293b"/>
     {ids.map((id, k) => <g key={id}><circle cx={60 + k * 100} cy={215} r={7} fill={id === lampe ? LAMPES[id].lueur : '#475569'} stroke="#f8fafc" strokeWidth="1.5"/>{T(60 + k * 100, 244, noms[k], { size: 12, gras: id === lampe, fill: id === lampe ? '#0f172a' : K.gris })}</g>)}
   </>, 360);
