@@ -170,4 +170,5 @@ export const DESCRIPTIONS = {
   "Mouillage : tension superficielle, angle de contact, tension critique": "Une goutte sur une surface : tension superficielle, angle de contact (loi de Young), tension critique de Zisman, mouillage et étalement.",
   "Éclairage et métamérisme": "Deux échantillons identiques sous une lampe, différents sous une autre : illuminant, réflectance, métamérisme et écart de couleur ΔE.",
   "Synthèse additive et synthèse soustractive : mélanger lumières, filtres et pigments": "Additionner des lumières (cônes L, M, S, métamérisme, daltonisme) ou en retirer avec des filtres et des pigments (transmittance, Kubelka-Munk). Parcours guidé, exploration et deux défis.",
+  "Piles : polarité, équation de fonctionnement et durée": "Une pile cuivre | zinc ou zinc | argent : polarité lue au voltmètre, anode et cathode, sens des électrons et des ions, équation de fonctionnement, quantité d’électricité Q = n(e⁻) F et durée Q = i Δt.",
 };

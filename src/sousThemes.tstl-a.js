@@ -1,6 +1,16 @@
 // Sous-thèmes des chapitres TSTL « Structure spatiale », « Réactions acido-basiques » (PCM), « Acides et bases », « Synthèse organique » et « Mesure et incertitudes » (SPCL), à intégrer dans SOUS_THEMES (src/sousThemes.js).
 // Même structure que SOUS_THEMES ; références = clés de progression des exercices (voir sousThemes.js).
 export default {
+  'tstl-pcm-oxydoreduction': [
+    { id: 'pile-polarite', nom: 'Polarité, anode et cathode, sens des porteurs', capacite: 'Lire la polarité d’une pile avec un voltmètre, identifier anode et cathode et indiquer le sens de circulation des électrons et des ions.',
+      refs: ['37:prevoir:pilp-ana-pole', '37:prevoir:pilp-ana-electrons', '37:prevoir:pilp-ana-pont'] },
+    { id: 'pile-equation', nom: 'Équation de fonctionnement', capacite: 'Écrire l’équation de fonctionnement d’une pile à partir des demi-équations des couples.',
+      refs: ['37:prevoir:pilp-ana-equation'] },
+    { id: 'pile-charge', nom: 'Quantité d’électricité et réactif limitant', capacite: 'Déterminer la quantité d’électricité Q = n(e⁻) F débitée par une pile à partir du réactif limitant.',
+      refs: ['34:pilp-sapp-q', '77:plausible:pilp-val-q'] },
+    { id: 'pile-duree', nom: 'Durée de fonctionnement et association en série', capacite: 'Calculer la durée de fonctionnement Δt = Q ÷ i d’une pile et prévoir l’effet de l’intensité ou d’une association en série.',
+      refs: ['34:pilp-sapp-duree', '37:prevoir:pilp-ana-intensite', '77:plausible:pilp-val-duree'] },
+  ],
   'tstl-pcm-structure-spatiale': [
     { id: 'chiralite', nom: 'Molécule chirale et carbone asymétrique', capacite: 'Reconnaître un carbone asymétrique et prévoir la chiralité d’une molécule (plan de symétrie, image dans un miroir).',
       refs: ['37:prevoir:chir-asym-aminopropanol', '37:prevoir:chir-pas-asym-chloropentane', '37:prevoir:chir-ana-remplacer', '37:prevoir:chir-ana-plan-symetrie', '77:plausible:chir-val-pentane', '77:plausible:chir-val-ethanol', '34:chir-miroir-distance'] },

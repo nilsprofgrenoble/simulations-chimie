@@ -1,4 +1,5 @@
 import { Frac, FormuleEnLigne, avecIndices, lireNombre, nbCS } from "../commun";
+import { METAUX as PILP_METAUX } from './pilePcmModele.js';
 import * as SEV from "./sensEvolutionModele.js";
 import * as MAB from "./mabModele.js";
 import { Chaine, ConvPrefixe, facteurK, analyser } from "./DebitsFluides";
@@ -3609,6 +3610,59 @@ function genEulPas() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Euler : a_i = A − v_i ÷ τ puis v_(i+1) = v_i + a_i Δt.', 'Un pas petit devant τ donne une approximation fidèle de la solution exacte.'] };
 }
+function genPileCapacite() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const fr = x => String(x).replace('.', ',');
+  let A, C, c, Vm, m, I, nIon, nMet, ne, Q, dt;
+  do {
+    A = tire(['zn', 'fe']); C = tire(['cu', 'ag']); c = tire([0.05, 0.10, 0.15, 0.20]); Vm = tire([50, 100, 150, 200]); m = tire([0.2, 0.3, 0.5, 1.0, 2.0, 3.0]); I = tire([20, 50, 100]);
+    nIon = c * Vm / 1000; nMet = m / PILP_METAUX[A].M; ne = Math.min(PILP_METAUX[C].z * nIon, PILP_METAUX[A].z * nMet); Q = ne * 96500; dt = Q / (I / 1000) / 3600;
+  } while (Math.max(PILP_METAUX[C].z * nIon, PILP_METAUX[A].z * nMet) / ne < 1.3 || new Set([nIon, nMet, Q, dt].map(x => Number(x.toPrecision(2)))).size < 4);
+  const a = PILP_METAUX[A], k = PILP_METAUX[C];
+  const intro = `Une pile est formée d’une lame de ${a.nom.toLowerCase()} de masse ${fr(m.toFixed(1))}${NB}g (M = ${fr(a.M)}${NB}g/mol) plongée dans sa solution, et d’une demi-pile contenant ${Vm}${NB}mL de solution d’ions ${k.ion} à ${fr(c.toFixed(2))}${NB}mol/L. Équation de fonctionnement : ${a.m} + ${k.z === 1 ? '2 ' : ''}${k.ion} → ${a.ion} + ${k.z === 1 ? '2 ' : ''}${k.m}. Chaque ${k.ion} capte ${k.z}${NB}e⁻ ; chaque atome de ${a.nom.toLowerCase()} en libère ${a.z}. La pile débite un courant de ${I}${NB}mA jusqu’à usure complète (F = 96${NB}500${NB}C/mol).`;
+  const q1 = { id: 'pc0', type: 'num', q: <>Quelle est la <b>quantité d’ions {k.ion}</b> (en mol, 2 chiffres significatifs) ?</>, unite: 'mol', vrai: nIon, tolRel: 0.05, csMin: 2,
+    aide: 'n = c × V, avec V en litres.',
+    pieges: [[c * Vm, 'Convertissez le volume en litres : n = c × V avec V en L.']],
+    expl: <>n({k.ion}) = c × V = {fr(c.toFixed(2))} × {fr((Vm / 1000).toFixed(3))} = <b>{pvFmt(nIon)}{NB}mol</b>.</> };
+  const q2 = { id: 'pc1', type: 'num', q: <>Quelle est la <b>quantité de {a.nom.toLowerCase()}</b> (en mol, 2 chiffres significatifs) ?</>, unite: 'mol', vrai: nMet, tolRel: 0.05, csMin: 2,
+    aide: 'n = m ÷ M.',
+    pieges: [[m * a.M, 'On divise la masse par la masse molaire : n = m ÷ M.']],
+    expl: <>n({a.nom.toLowerCase()}) = m ÷ M = {fr(m.toFixed(1))} ÷ {fr(a.M)} = <b>{pvFmt(nMet)}{NB}mol</b>.</> };
+  const q3 = { id: 'pc2', type: 'num', q: <>Quelle est la <b>quantité d’électricité Q</b> que la pile peut débiter (en C, 2 chiffres significatifs) ?</>, unite: 'C', vrai: Q, tolRel: 0.06, csMin: 2,
+    aide: 'n(e⁻) = z × n pour chaque réactif ; le plus petit n(e⁻) est celui du réactif limitant ; Q = n(e⁻) × F.',
+    pieges: [[(PILP_METAUX[C].z * nIon === ne ? PILP_METAUX[A].z * nMet : PILP_METAUX[C].z * nIon) * 96500, 'Vous avez pris l’autre réactif : le réactif limitant donne le plus petit n(e⁻).'], [Q / (ne === PILP_METAUX[C].z * nIon ? k.z : a.z), 'Il manque le nombre d’électrons échangés par ion ou par atome : n(e⁻) = z × n.']],
+    expl: <>n(e⁻) possible : {k.z} × {pvFmt(nIon)} = {pvFmt(k.z * nIon)} mol (ions) ou {a.z} × {pvFmt(nMet)} = {pvFmt(a.z * nMet)} mol ({a.nom.toLowerCase()}) ; le plus petit l’emporte : n(e⁻) = {pvFmt(ne)} mol ; Q = n(e⁻) × F = <b>{pvFmt(Q)}{NB}C</b>.</> };
+  const q4 = { id: 'pc3', type: 'num', q: <>Quelle est la <b>durée de fonctionnement</b> Δt (en heures, 2 chiffres significatifs) ?</>, unite: 'h', vrai: dt, tolRel: 0.08, csMin: 2,
+    aide: 'Δt = Q ÷ i avec i en ampères, puis ÷ 3 600 pour des heures.',
+    pieges: [[Q / (I / 1000), 'Le résultat est en secondes : divisez par 3 600 pour avoir des heures.'], [Q / I / 3600, 'Convertissez i en ampères : mA ÷ 1 000.']],
+    expl: <>Δt = Q ÷ i = {pvFmt(Q)} ÷ {fr((I / 1000).toFixed(3))} = {pvFmt(Q / (I / 1000))} s, soit <b>{pvFmt(dt)}{NB}h</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['n(e⁻) = z × n du réactif limitant ; Q = n(e⁻) × F, avec F = 96 500 C/mol.', 'Δt = Q ÷ i, avec i en ampères ; ÷ 3 600 pour des heures.'] };
+}
+function genPileSerie() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  const fr = x => String(x).replace('.', ',');
+  let n, Q, I, U, dt;
+  do { n = tire([2, 3, 4]); Q = tire([600, 900, 1200, 1800, 2400, 3000]); I = tire([20, 25, 40, 50, 100]); U = tire([1.05, 1.10, 1.12]); dt = Q / (I / 1000) / 3600; }
+  while (new Set([Q, n * Q, dt, n * dt, n * U].map(x => Number(x.toPrecision(2)))).size < 5);
+  const intro = `Une pile cuivre / zinc peut débiter une quantité d’électricité Q = ${Q}${NB}C ; sa tension à vide est ${fr(U.toFixed(2))}${NB}V. On associe ${n} piles identiques et neuves en série (le pôle + de chacune relié au pôle − de la suivante) pour alimenter un récepteur qui impose un courant constant de ${I}${NB}mA jusqu’à usure complète.`;
+  const q1 = { id: 'ps0', type: 'num', q: <>Quelle est la <b>tension à vide de l’association</b> (en V, 2 chiffres significatifs) ?</>, unite: 'V', vrai: n * U, tolRel: 0.04, csMin: 2,
+    aide: 'En série, les tensions s’additionnent.',
+    pieges: [[U, 'En série les tensions s’additionnent : il faut multiplier par le nombre de piles.']],
+    expl: <>U = {n} × {fr(U.toFixed(2))} = <b>{pvFmt(n * U)}{NB}V</b>.</> };
+  const q2 = { id: 'ps1', type: 'num', q: <>Quelle est la <b>quantité d’électricité débitée par chaque pile</b> (en C) ?</>, unite: 'C', vrai: Q, tolRel: 0.03, csMin: 2,
+    aide: 'Le même courant traverse toutes les piles en série.',
+    pieges: [[n * Q, 'En série, la même charge traverse chaque pile : Q ne s’additionne pas.']],
+    expl: <>La même charge traverse chaque pile : <b>{Q}{NB}C</b> pour chacune.</> };
+  const q3 = { id: 'ps2', type: 'num', q: <>Quelle est la <b>durée de fonctionnement</b> de l’association (en heures, 2 chiffres significatifs) ?</>, unite: 'h', vrai: dt, tolRel: 0.06, csMin: 2,
+    aide: 'Δt = Q ÷ i avec i en ampères ; ÷ 3 600 pour des heures.',
+    pieges: [[n * dt, 'La durée ne se multiplie pas par le nombre de piles : chacune débite la même charge Q.'], [Q / (I / 1000), 'Le résultat est en secondes : divisez par 3 600 pour des heures.']],
+    expl: <>Δt = Q ÷ i = {Q} ÷ {fr((I / 1000).toFixed(3))} = {pvFmt(Q / (I / 1000))} s, soit <b>{pvFmt(dt)}{NB}h</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['En série : tensions additionnées, même charge Q traversant chaque pile.', 'Durée : Δt = Q ÷ i, inchangée par l’association en série.'] };
+}
 function genClpSommet() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   const RAD = Math.PI / 180; let v0, a, vy, tS, H;
@@ -6631,6 +6685,8 @@ export const FAMILLES = [
   { id: 'fvi-tau', groupe: 'Formules', titre: 'Chute avec frottement visqueux : constante de temps et régime transitoire (terminale STL)', gen: genFviTau, domaine: 'Chute avec frottement visqueux' },
   { id: 'eul-lim', groupe: 'Formules', titre: 'Chute avec poussée d’Archimède : accélération initiale et vitesse limite (terminale STL)', gen: genEulLimite, domaine: 'Équation différentielle et méthode d’Euler' },
   { id: 'eul-pas', groupe: 'Formules', titre: 'Chute avec frottement : méthode d’Euler, deux pas (terminale STL)', gen: genEulPas, domaine: 'Équation différentielle et méthode d’Euler' },
+  { id: 'pil-cap', groupe: 'Formules', titre: 'Pile : réactif limitant, quantité d’électricité et durée (terminale STL)', gen: genPileCapacite, domaine: 'Piles : polarité, équation de fonctionnement et durée' },
+  { id: 'pil-ser', groupe: 'Formules', titre: 'Piles en série : tension, quantité d’électricité et durée (terminale STL)', gen: genPileSerie, domaine: 'Piles : polarité, équation de fonctionnement et durée' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },
