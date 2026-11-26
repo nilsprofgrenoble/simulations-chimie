@@ -43,7 +43,7 @@ export function SimulationXyy() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const idDe = g => ORDRE[Math.min(g.etape ?? 0, ORDRE.length - 1)];
   const [vie, setVie] = useState(() => ({ ...BASE, ...(DEPART[idDe(guide)] ?? {}) }));
-  const [ex, setEx] = useState({ lam1: 620, pur1: 1, lam2: 520, pur2: 1, w: 0.5, triangle: true });
+  const [ex, setEx] = useState(() => ({ ...C.pointDeDominante(560, 0.6), triangle: true }));
   const [ouv, setOuv] = useState({});
   const [suiviD, noterD] = useCompteurDefi(), [suiviN, noterN] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('dominante');
@@ -231,45 +231,44 @@ export function SimulationXyy() {
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#7c3aed')}><Pic n="target"/>Défis</button>
     </span>);
 
-  // ---------- exploration ----------
-  const L1 = M.lumiere(ex.lam1, ex.pur1), L2 = M.lumiere(ex.lam2, ex.pur2), MX = C.melange(L1, L2, ex.w), lx = M.lecture(MX.x, MX.y);
-  const setE = k => ev => setEx(x => ({ ...x, [k]: parseFloat(ev.target.value) }));
+  // ---------- exploration : on place un point sur le diagramme ----------
+  const lx = M.lecture(ex.x, ex.y);
+  const placerPoint = (x, y) => {   // hors du diagramme : on ramène le point vers le blanc, jusqu'à la frontière
+    let t = 1; if (!C.dansDiagramme(x, y)) { let lo = 0, hi = 1; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2; if (C.dansDiagramme(M.W.x + m * (x - M.W.x), M.W.y + m * (y - M.W.y))) lo = m; else hi = m; } t = lo * 0.995; }
+    setEx(e => ({ ...e, x: M.W.x + t * (x - M.W.x), y: M.W.y + t * (y - M.W.y) }));
+  };
   const reglagesExplore = enExplore && (
     <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Réglages</div>
-      <div style={{ fontSize: 13, color: KIT.txt2 }}>Deux lumières, chacune de longueur d’onde choisie ; on règle la part de la seconde dans le mélange.</div>
-      {curs('xy-xl1', `Lumière 1 : ${n0(ex.lam1)} nm`, ex.lam1, 400, 700, 5, setE('lam1'))}
-      {curs('xy-xl2', `Lumière 2 : ${n0(ex.lam2)} nm`, ex.lam2, 400, 700, 5, setE('lam2'))}
-      {curs('xy-xw', `Part de la lumière 2 : ${n0(ex.w * 100)} %`, ex.w, 0, 1, 0.01, setE('w'), 'Parts exprimées en X + Y + Z (voir les hypothèses).')}
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Placez un point</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Touchez ou glissez sur le diagramme (ou utilisez les flèches du clavier) : le point <strong>P</strong> se place où vous voulez et le tableau « Lecture du point » se met à jour. La droite part du blanc W, passe par P et rejoint la courbe en D.</div>
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 14, color: KIT.txt, minHeight: 42 }}><input type="checkbox" checked={ex.triangle} onChange={ev => setEx(x => ({ ...x, triangle: ev.target.checked }))} style={{ width: 20, height: 20 }}/>Afficher le triangle d’un écran (primaires sRGB)</label>
-      <Section titre={`Pureté des lumières (${n0(ex.pur1 * 100)} % ; ${n0(ex.pur2 * 100)} %)`} ouvert={!!ouv.pur} onBascule={() => bascule('pur')}>
-        {curs('xy-xp1', `Pureté de la lumière 1 : ${n0(ex.pur1 * 100)} %`, ex.pur1, 0.1, 1, 0.01, setE('pur1'), '100 % : lumière monochromatique ; moins : lumière mélangée à du blanc.')}
-        {curs('xy-xp2', `Pureté de la lumière 2 : ${n0(ex.pur2 * 100)} %`, ex.pur2, 0.1, 1, 0.01, setE('pur2'))}
-      </Section>
+      <button onClick={() => setEx(x => ({ ...x, x: M.W.x + 0.002, y: M.W.y + 0.002 }))} style={styleBouton(false)}>Revenir au blanc</button>
     </div>);
   const planEx = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Diagramme de chromaticité</div>
-      <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}><Pastille css={css(L1)} nom="lumière 1" hauteur={26}/><Pastille css={css(MX)} nom="mélange" hauteur={26}/><Pastille css={css(L2)} nom="lumière 2" hauteur={26}/></div>
-      <SvgChroma triangle={ex.triangle} lignes={[{ a: L1, b: L2, col: '#0f172a', w: 2, dash: '' }]}
-        pts={[{ ...L1, nom: '1', col: '#0f172a', dx: 9, dy: 20, anchor: 'start' }, { ...L2, nom: '2', col: '#0f172a', dx: 12, dy: 5, anchor: 'start' }, { ...MX, nom: 'mélange', col: '#0f172a', creux: true, dx: -12, dy: 20, anchor: 'end' }]}/>
-      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>1 et 2 : vos deux lumières. Trait plein : tous les mélanges possibles de ces deux lumières. Pointillés : le triangle des couleurs qu’un écran sait afficher (R, V, B). W : le blanc.</div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}><Pastille css={css(ex)} nom="couleur du point P (approchée)" hauteur={26}/></div>
+      <SvgChroma triangle={ex.triangle} onPoint={placerPoint} onTouche={(dx, dy) => placerPoint(ex.x + dx, ex.y + dy)} label="Diagramme de chromaticité xy : touchez pour placer le point P"
+        lignes={[...(lx.oppose ? [{ a: M.W, b: lx.oppose, col: '#0f172a', w: 1.8, dash: '6 4' }] : []), ...(lx.frontiere ? [{ a: M.W, b: lx.frontiere, col: '#0f172a', w: 2.2 }] : [])]}
+        pts={[...(lx.frontiere && !lx.pourpre ? [{ x: lx.frontiere.x, y: lx.frontiere.y, nom: 'D', col: '#0f172a', creux: true, dx: 10, dy: -8 }] : []), ...(lx.oppose && !lx.oppose.pourpre ? [{ x: lx.oppose.x, y: lx.oppose.y, nom: 'C', col: '#0f172a', creux: true, dx: -10, dy: 14, anchor: 'end' }] : []), { x: ex.x, y: ex.y, nom: 'P', col: '#0f172a', dx: 11, dy: 18 }]}/>
+      <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>P : votre point. Trait plein : de W vers la courbe, en passant par P (D = longueur d’onde dominante). Pointillés : de l’autre côté du blanc (C = longueur d’onde complémentaire). W : le blanc.</div>
     </div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Le mélange</div>
-      <LigneMesure nom="x ; y" valeur={`${fr(MX.x, 3)} ; ${fr(MX.y, 3)}`}/>
-      <LigneMesure nom={lx.pourpre ? 'Longueur d’onde dominante' : 'Longueur d’onde dominante'} valeur={lx.pourpre ? 'aucune (pourpre)' : `${n0(lx.dominante)} nm`}/>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Lecture du point</div>
+      <LigneMesure nom="x ; y" valeur={`${fr(ex.x, 3)} ; ${fr(ex.y, 3)}`}/>
+      <LigneMesure nom="Longueur d’onde dominante" valeur={lx.blanc ? 'aucune (blanc)' : lx.pourpre ? 'aucune (pourpre)' : `${n0(lx.dominante)} nm`}/>
       <LigneMesure nom="Longueur d’onde complémentaire" valeur={lx.complementaire != null ? `${n0(lx.complementaire)} nm` : 'aucune'}/>
       <LigneMesure nom="Pureté d’excitation" valeur={fr(lx.purete, 2)}/>
       <LigneMesure nom="Affichable sur un écran sRGB" valeur={lx.dansEcran ? 'oui' : 'non'} couleur={lx.dansEcran ? COL.vert : COL.rouge}/>
     </div>);
   const aEssayer = (
     <ul style={liste}>
-      <li>Mélangez 620 nm et 490 nm : où se place le mélange ? Pour quelle part passe-t-il près du blanc ?</li>
-      <li>Choisissez deux lumières vertes et rouges très écartées : le mélange est-il toujours sur la courbe ?</li>
-      <li>Prenez la lumière 1 à 450 nm et la lumière 2 à 650 nm : que devient la longueur d’onde dominante ? Quelle couleur lit-on ?</li>
-      <li>Cherchez une lumière monochromatique que l’écran ne peut pas afficher. Dans quelle zone de la courbe se trouvent-elles ?</li>
+      <li>Placez P près de la courbe, dans le vert, puis dans le rouge : que deviennent la dominante et la pureté ?</li>
+      <li>Rapprochez P du blanc W : que devient la pureté ? Que devient la couleur de la pastille ?</li>
+      <li>Placez P dans la zone des pourpres (près de la droite du bas) : que lit-on à la place de la dominante ?</li>
+      <li>Cherchez des points que l’écran ne peut pas afficher. Dans quelle zone du diagramme se trouvent-ils ?</li>
+      <li>Placez P sur la droite qui joint W à un point de la courbe, de part et d’autre de W : que remarquez-vous sur les deux longueurs d’onde lues ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>

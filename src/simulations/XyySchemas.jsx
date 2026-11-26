@@ -22,7 +22,13 @@ const polyLieu = LIEU.map(p => `${px(p.x)},${py(p.y)}`).join(' ');
 /** Diagramme de chromaticité xy (CIE 1931).
  *  pts : [{ x, y, nom, col, creux, dx, dy, anchor }] ; lignes : [{ a, b, col, dash, w }] ; notes : [{ x, y, txt, col, anchor, size }] (coordonnées du diagramme)
  *  triangle : dessine le triangle des primaires de l'écran ; pourpres : met en valeur la droite des pourpres ; carte : version simplifiée pour les cartes « À retenir ». */
-export function SvgChroma({ pts = [], lignes = [], notes = [], triangle = false, pourpres = false, carte = false, blanc = true, ticks = true, label = 'Diagramme de chromaticité xy' }) {
+export function SvgChroma({ pts = [], lignes = [], notes = [], triangle = false, pourpres = false, carte = false, blanc = true, ticks = true, label = 'Diagramme de chromaticité xy', onPoint, onTouche }) {
+  // Diagramme interactif : toucher ou glisser place un point ; les flèches du clavier le déplacent
+  const placer = ev => { const r = ev.currentTarget.getBoundingClientRect(); onPoint(((ev.clientX - r.left) / r.width * 340 - X0) / S, YMAX - ((ev.clientY - r.top) / r.height * 382 - Y0) / S); };
+  const interactif = onPoint ? {
+    tabIndex: 0, onPointerDown: ev => { ev.currentTarget.setPointerCapture?.(ev.pointerId); placer(ev); }, onPointerMove: ev => { if (ev.buttons === 1) placer(ev); },
+    onKeyDown: ev => { const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[ev.key]; if (d && onTouche) { ev.preventDefault(); onTouche(d[0] * 0.01, d[1] * 0.01); } },
+    style: { display: 'block', maxWidth: 360, margin: '0 auto', touchAction: 'none', cursor: 'crosshair' } } : null;
   const els = [], f = fond(), fs = carte ? 13.5 : 11.5;
   els.push(<rect key="cadre0" x={X0} y={Y0} width={XMAX * S} height={YMAX * S} fill="#f8fafc"/>);
   for (const v of [0.2, 0.4, 0.6]) els.push(<line key={'gx' + v} x1={px(v)} y1={Y0} x2={px(v)} y2={py(0)} stroke="#e2e8f0" strokeWidth="1"/>);
@@ -63,7 +69,7 @@ export function SvgChroma({ pts = [], lignes = [], notes = [], triangle = false,
     if (p.nom) els.push(T(X + (p.dx ?? 11), Y + (p.dy ?? -9), p.nom, { size: fs, gras: true, fill: c, anchor: p.anchor ?? 'start', halo: true }));
   }
   for (const n of notes) els.push(T(px(n.x), py(n.y), n.txt, { size: n.size ?? fs, fill: n.col ?? K.txt, anchor: n.anchor ?? 'middle', gras: true, halo: true }));
-  return <svg role="img" aria-label={label} viewBox="0 0 340 382" width="100%" style={{ display: 'block', maxWidth: carte ? 320 : 360, margin: '0 auto' }}>{els}</svg>;
+  return <svg role={onPoint ? 'application' : 'img'} aria-label={label} viewBox="0 0 340 382" width="100%" style={{ display: 'block', maxWidth: carte ? 320 : 360, margin: '0 auto' }} {...interactif}>{els}</svg>;
 }
 
 // ---------- Cartes « À retenir » ----------
