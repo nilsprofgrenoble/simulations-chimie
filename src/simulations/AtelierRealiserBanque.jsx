@@ -3178,6 +3178,62 @@ function genLcvFrott() {
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['ΔEm = W(f) < 0 : avec frottement, l’énergie mécanique diminue de l’énergie dissipée.', 'Ec est proportionnelle à v² : une vitesse qui baisse de 17 % fait baisser Ec d’environ 31 %.'] };
 }
+// ---------- Distance de freinage : énergie cinétique et travail de la force de freinage (TSTL, PCM) ----------
+function genDfrArret() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, vk, F, v, Ec, d, d2, vk2;
+  do {
+    m = tire([800, 1000, 1200, 1500]); vk = tire([36, 54, 72, 90, 108]); F = tire([5000, 6000, 8000, 10000]);
+    v = vk / 3.6; Ec = 0.5 * m * v * v; d = Ec / F; vk2 = vk * 2; d2 = 4 * d;
+  } while (d < 8 || d > 90 || new Set([Ec, d, d2].map(x => Number(x.toPrecision(3)))).size < 3);
+  const f = x => String(x).replace('.', ',');
+  const sp = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const intro = `Une voiture de masse ${sp(m)}${NB}kg roule à ${vk}${NB}km/h sur une route droite et horizontale. Elle freine jusqu’à l’arrêt : seule la force de freinage, constante et de valeur ${sp(F)}${NB}N, travaille. On étudie le système « la voiture ».`;
+  const q1 = { id: 'a0', type: 'num', q: <>Calculez l’<b>énergie cinétique de la voiture avant le freinage</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec, tolRel: 0.05, csMin: 2,
+    aide: 'Convertissez d’abord la vitesse en m/s (÷ 3,6), puis Ec = ½ × m × v².',
+    pieges: [[0.5 * m * vk * vk, 'La vitesse doit être convertie de km/h en m/s avant de calculer.'], [m * v * v, 'Il manque le facteur ½ : Ec = ½ × m × v².']],
+    expl: <>v = {vk} ÷ 3,6 = {pvFmt(v)}{NB}m/s ; Ec = ½ × {sp(m)} × {pvFmt(v)}² = <b>{pvFmt(Ec)}{NB}J</b>.</> };
+  const q2 = { id: 'a1', type: 'num', q: <>Quelle est la <b>distance d’arrêt</b> (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: d, tolRel: 0.05, csMin: 2,
+    aide: 'ΔEc = somme des travaux : 0 − Ec = − F × d, donc d = Ec ÷ F.',
+    pieges: [[Ec / (2 * F), 'Le facteur ½ est déjà compris dans l’énergie cinétique : ne le comptez pas deux fois.'], [Ec * F, 'Le travail de la force de freinage vaut − F × d : la distance s’obtient en divisant Ec par F.']],
+    expl: <>d = {pvFmt(Ec)} ÷ {sp(F)} = <b>{pvFmt(d)}{NB}m</b>.</> };
+  const q3 = { id: 'a2', type: 'num', q: <>Quel est le <b>travail de la force de freinage</b> pendant tout le freinage (en J, avec son signe, 2 chiffres significatifs) ?</>, unite: 'J', vrai: -Ec, tolRel: 0.05, csMin: 2,
+    aide: 'ΔEc = W(F) : l’énergie cinétique passe de Ec à 0.',
+    pieges: [[Ec, 'La force de freinage est opposée au déplacement : son travail est négatif.']],
+    expl: <>W(F) = 0 − {pvFmt(Ec)} = <b>{pvFmt(-Ec)}{NB}J</b>.</> };
+  const q4 = { id: 'a3', type: 'num', q: <>Le conducteur roulait en réalité à {vk2}{NB}km/h (le double), avec la même force. Quelle serait la <b>distance d’arrêt</b> (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: d2, tolRel: 0.05, csMin: 2,
+    aide: 'Ec est proportionnelle à v² : doubler la vitesse multiplie l’énergie, donc la distance, par 4.',
+    pieges: [[2 * d, 'La distance est proportionnelle au carré de la vitesse : doubler v multiplie d par 4, pas par 2.']],
+    expl: <>d = 4 × {pvFmt(d)} = <b>{pvFmt(d2)}{NB}m</b>.</> };
+  filtrer([q1, q2, q3, q4]);
+  return { intro, questions: [q1, q2, q3, q4],
+    retenir: ['Le théorème de l’énergie cinétique donne la distance d’arrêt : d = ½ m v² ÷ F (v en m/s).', 'Doubler la vitesse multiplie la distance d’arrêt par 4.'] };
+}
+function genDfrForce() {
+  const tire = t => t[Math.floor(Math.random() * t.length)];
+  let m, v, D, Ec, F, a, m2, F2;
+  do {
+    m = tire([800, 1000, 1200, 1500]); v = tire([10, 15, 20, 25]); D = tire([20, 30, 40, 50, 60]);
+    Ec = 0.5 * m * v * v; F = Ec / D; m2 = m * 2; F2 = F * 2;
+  } while (F < 1500 || F > 12000 || new Set([Ec, F, F2].map(x => Number(x.toPrecision(3)))).size < 3);
+  const sp = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  const intro = `Un véhicule de masse ${sp(m)}${NB}kg roule à ${v}${NB}m/s sur une route droite et horizontale. Le conducteur freine : un obstacle fixe se trouve à ${D}${NB}m devant lui au moment où il commence à freiner. On suppose la force de freinage constante, seule force à travailler.`;
+  const q1 = { id: 'b0', type: 'num', q: <>Calculez l’<b>énergie cinétique à dissiper</b> pour arrêter le véhicule (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec, tolRel: 0.05, csMin: 2,
+    aide: 'Ec = ½ × m × v² avec v en m/s.',
+    pieges: [[m * v * v, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v, 'La vitesse doit être élevée au carré.']],
+    expl: <>Ec = ½ × {sp(m)} × {v}² = <b>{pvFmt(Ec)}{NB}J</b>.</> };
+  const q2 = { id: 'b1', type: 'num', q: <>Quelle est la <b>force de freinage minimale</b> qui permet de s’arrêter juste avant l’obstacle (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: F, tolRel: 0.05, csMin: 2,
+    aide: '0 − Ec = − F × D, donc F = Ec ÷ D.',
+    pieges: [[Ec * D, 'Le travail de la force de freinage vaut − F × D : la force s’obtient en divisant Ec par D.'], [m * v / D, 'Cette expression n’est pas homogène à une force : utilisez l’énergie cinétique, Ec ÷ D.']],
+    expl: <>F = {pvFmt(Ec)} ÷ {D} = <b>{pvFmt(F)}{NB}N</b>.</> };
+  const q3 = { id: 'b2', type: 'num', q: <>Le véhicule est chargé : sa masse devient {sp(m2)}{NB}kg, à la même vitesse. Quelle force de freinage faut-il pour s’arrêter sur la même distance (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: F2, tolRel: 0.05, csMin: 2,
+    aide: 'À v et D fixés, F = ½ m v² ÷ D est proportionnelle à la masse.',
+    pieges: [[F, 'La masse a doublé : l’énergie à dissiper a doublé, donc la force aussi.'], [4 * F, 'La masse intervient à la puissance 1 dans Ec, pas au carré.']],
+    expl: <>F = 2 × {pvFmt(F)} = <b>{pvFmt(F2)}{NB}N</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3],
+    retenir: ['Pour s’arrêter sur une distance D, il faut F = ½ m v² ÷ D : plus la masse est grande, plus la force nécessaire l’est.', 'Le travail de la force de freinage est négatif : il fait passer l’énergie cinétique à zéro.'] };
+}
 // ---------- Extraction acide-base (TSTL, PCM) ----------
 function tirageExtracPartage() {
   for (let k = 0; k < 800; k++) {
@@ -5575,6 +5631,8 @@ export const FAMILLES = [
   { id: 'pdt-frott', groupe: 'Formules', titre: 'Palet avec frottement : travail du frottement, énergie et vitesse au retour (terminale STL)', gen: genPdtFrott, domaine: 'Travail du poids : moteur, résistant ou nul selon le trajet' },
   { id: 'lcv-energie', groupe: 'Formules', titre: 'Balle lancée vers le haut : énergies et altitude du sommet (terminale STL)', gen: genLcvEnergie, domaine: 'Lancer vers le haut et chute : courbes d’énergie' },
   { id: 'lcv-frott', groupe: 'Formules', titre: 'Balle lancée avec frottement : énergie dissipée et force moyenne (terminale STL)', gen: genLcvFrott, domaine: 'Lancer vers le haut et chute : courbes d’énergie' },
+  { id: 'dfr-arret', groupe: 'Formules', titre: 'Freinage : énergie cinétique et distance d’arrêt (terminale STL)', gen: genDfrArret, domaine: 'Distance de freinage : énergie cinétique et travail de la force de freinage' },
+  { id: 'dfr-force', groupe: 'Formules', titre: 'Freinage : force de freinage nécessaire pour s’arrêter avant un obstacle (terminale STL)', gen: genDfrForce, domaine: 'Distance de freinage : énergie cinétique et travail de la force de freinage' },
   { id: 'stereo-nombre', groupe: 'Formules', titre: 'Stéréoisomères : nombre de stéréoisomères, d’énantiomères et de diastéréoisomères (terminale STL)', gen: genStereoNombre, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'stereo-racemique', groupe: 'Formules', titre: 'Mélange racémique : masse d’énantiomère actif (terminale STL)', gen: genStereoRacemique, domaine: 'Stéréoisomères : énantiomères, diastéréoisomères, Z et E' },
   { id: 'tens-libres-micelles', groupe: 'Formules', titre: 'Tensioactif au-dessus de la CMC : monomères libres, micelles et pourcentage (BTS)', gen: genTensLibres, domaine: 'Tensioactifs : de la structure à la CMC' },

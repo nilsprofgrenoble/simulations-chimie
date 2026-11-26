@@ -2721,5 +2721,17 @@
  "77:plausible:lcv-val-hmax": "VAL733",
  "77:plausible:lcv-val-perte": "VAL734",
  "36:lcv-energie": "REA165",
- "36:lcv-frott": "REA166"
+ "36:lcv-frott": "REA166",
+ "34:dfr-sapp-arret.0": "SAPP578",
+ "34:dfr-sapp-arret.1": "SAPP579",
+ "34:dfr-sapp-force.0": "SAPP580",
+ "34:dfr-sapp-force.1": "SAPP581",
+ "37:prevoir:dfr-ana-vitesse": "ANA1247",
+ "37:prevoir:dfr-ana-masse": "ANA1248",
+ "37:prevoir:dfr-ana-travail": "ANA1249",
+ "37:prevoir:dfr-ana-pente": "ANA1250",
+ "77:plausible:dfr-val-conv": "VAL735",
+ "77:plausible:dfr-val-cycliste": "VAL736",
+ "36:dfr-arret": "REA167",
+ "36:dfr-force": "REA168"
 }
