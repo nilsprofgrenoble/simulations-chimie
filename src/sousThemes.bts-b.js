@@ -151,6 +151,8 @@ export default {
   ],
   // ───────────────────────── S8 · Formulation : aspect, produire les couleurs ───
   'bts-couleur-produire': [
+    { id: 'synthese-couleurs', nom: 'Couleur : synthèses additive et soustractive', capacite: 'Aspect : expliquer le résultat du mélange de lumières colorées (primaires, complémentaires) et de teintes (synthèse soustractive) ; relier la perception de la couleur à la théorie de Young et aux anomalies de la vision des couleurs.',
+      refs: [...A('ads-ana-jaune', 'ads-ana-magenta', 'ads-ana-meme-couleur', 'ads-ana-daltonisme', 'ads-ana-filtres-serie', 'ads-ana-filtres-rouge', 'ads-ana-blanc-peinture'), ...VV('ads-val-peintures-moyenne', 'ads-val-filtres-somme', 'ads-val-ecran-jaune')] },
     { id: 'metamerisme', nom: 'Couleur : éclairage, réflectance et métamérisme', capacite: 'Aspect : distinguer des sources de lumière à partir de leurs spectres ; relier la couleur d’un objet à sa courbe de réflectance ; expliquer le métamérisme (causes et conséquences).',
       refs: [...A('mtm-ana-sources', 'mtm-ana-reflectance', 'mtm-ana-produit', 'mtm-ana-eclairage', 'mtm-ana-metamere', 'mtm-ana-controle'), ...VV('mtm-val-courbes', 'mtm-val-identiques', 'mtm-val-ecart')] },
   ],

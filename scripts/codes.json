@@ -2829,5 +2829,15 @@
  "77:plausible:grv-val-force": "VAL751",
  "77:plausible:grv-val-poids": "VAL752",
  "36:grv-force": "REA183",
- "36:grv-poids": "REA184"
+ "36:grv-poids": "REA184",
+ "37:prevoir:ads-ana-jaune": "ANA1283",
+ "37:prevoir:ads-ana-magenta": "ANA1284",
+ "37:prevoir:ads-ana-meme-couleur": "ANA1285",
+ "37:prevoir:ads-ana-daltonisme": "ANA1286",
+ "37:prevoir:ads-ana-filtres-serie": "ANA1287",
+ "37:prevoir:ads-ana-filtres-rouge": "ANA1288",
+ "37:prevoir:ads-ana-blanc-peinture": "ANA1289",
+ "77:plausible:ads-val-peintures-moyenne": "VAL753",
+ "77:plausible:ads-val-filtres-somme": "VAL754",
+ "77:plausible:ads-val-ecran-jaune": "VAL755"
 }
