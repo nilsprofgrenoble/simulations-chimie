@@ -2658,5 +2658,14 @@
  "37:prevoir:tern-ana-dilution": "ANA1216",
  "77:plausible:tern-val-exces": "VAL717",
  "77:plausible:tern-val-sel": "VAL718",
- "77:plausible:tern-val-dilution": "VAL719"
+ "77:plausible:tern-val-dilution": "VAL719",
+ "37:prevoir:lab-ana-axes": "ANA1217",
+ "37:prevoir:lab-ana-gris": "ANA1218",
+ "37:prevoir:lab-ana-chroma": "ANA1219",
+ "37:prevoir:lab-ana-deltae": "ANA1220",
+ "37:prevoir:lab-ana-signe": "ANA1221",
+ "37:prevoir:lab-ana-tol": "ANA1222",
+ "77:plausible:lab-val-somme": "VAL720",
+ "77:plausible:lab-val-angle": "VAL721",
+ "77:plausible:lab-val-cmc": "VAL722"
 }
