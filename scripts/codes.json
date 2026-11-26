@@ -2882,5 +2882,17 @@
  "34:ads-sapp-filtres": "SAPP629",
  "36:lab-calcul": "REA191",
  "36:xyy-calcul": "REA192",
- "36:ads-calcul": "REA193"
+ "36:ads-calcul": "REA193",
+ "34:nwr-sapp-acc.0": "SAPP630",
+ "34:nwr-sapp-acc.1": "SAPP631",
+ "34:nwr-sapp-frott.0": "SAPP632",
+ "34:nwr-sapp-frott.1": "SAPP633",
+ "37:prevoir:nwr-ana-inertie": "ANA1302",
+ "37:prevoir:nwr-ana-masse": "ANA1303",
+ "37:prevoir:nwr-ana-ralenti": "ANA1304",
+ "37:prevoir:nwr-ana-reciproque": "ANA1305",
+ "77:plausible:nwr-val-acc": "VAL762",
+ "77:plausible:nwr-val-inertie": "VAL763",
+ "36:nwr-acc": "REA194",
+ "36:nwr-frott": "REA195"
 }

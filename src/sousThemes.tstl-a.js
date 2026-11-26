@@ -44,6 +44,8 @@ export default {
       refs: ['34:grv-sapp-force', '34:grv-sapp-poids', '37:prevoir:grv-ana-reciproque', '37:prevoir:grv-ana-distance', '37:prevoir:grv-ana-masse', '37:prevoir:grv-ana-altitude', '77:plausible:grv-val-force', '77:plausible:grv-val-poids'] },
     { id: 'champ-force-elec', nom: 'Champ et force électrostatiques entre deux armatures', capacite: 'Caractériser le champ entre deux armatures planes (sens, E = U ÷ d) et exploiter la relation F = q E (valeur, sens selon le signe de la charge).',
       refs: ['34:chel-sapp-champ', '34:chel-sapp-force', '37:prevoir:chel-ana-polarite', '37:prevoir:chel-ana-distance', '37:prevoir:chel-ana-signe', '37:prevoir:chel-ana-position', '77:plausible:chel-val-champ', '77:plausible:chel-val-force'] },
+    { id: 'newton-rect', nom: 'Bilan des forces et lois de Newton sur un mouvement rectiligne', capacite: 'Faire le bilan des forces sur un système, calculer leur somme, appliquer ΣF = m a, le principe d’inertie et les actions réciproques sur un mouvement rectiligne.',
+      refs: ['34:nwr-sapp-acc', '34:nwr-sapp-frott', '37:prevoir:nwr-ana-inertie', '37:prevoir:nwr-ana-masse', '37:prevoir:nwr-ana-ralenti', '37:prevoir:nwr-ana-reciproque', '77:plausible:nwr-val-acc', '77:plausible:nwr-val-inertie'] },
   ],
   'tstl-acides-bases': [
     { id: 'ph-fort', nom: 'pH d’un acide fort ou d’une base forte, dilution', capacite: 'Estimer le pH d’une solution d’acide fort ou de base forte et prévoir l’effet d’une dilution.',
