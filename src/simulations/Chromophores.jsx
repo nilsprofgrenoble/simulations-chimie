@@ -6,6 +6,11 @@ import * as M from "./chromoModele";
 import { QCM } from "./chromoQcm";
 import { SceneCuveSpectre, SvgCarteCouleur, SvgCarteConjugaison, SvgCarteEffets } from "./ChromoSchemas";
 import { FormulesMolecules, FormulePolyene } from "./ChromoFormules";
+import { useTiragesUV } from "./chromoTiragesHook";
+import { useProgres } from "./frxTiragesHook";
+import { reduitMouvement } from "./hookHorloge";
+import { evenementDemo, legendePhase, scenarioVisible, scenario as scenarioDe, texteEvenement, absorbanceCase, absorbanceEstimee, indice as indiceT, domaine, energieEV } from "./chromoTirages";
+import { SceneCuveUV, SceneSpectreTirUV, PanneauScenariosUV, CommandesTiragesUV } from "./ChromoTirages";
 
 const SIM_ID = 303, CLE_GUIDE = 'chromo-guide-v1';
 declarerDefis(SIM_ID, [['couleur', 'Couleur d’une solution'], ['effet', 'Nommer l’effet']]);
@@ -38,8 +43,14 @@ export function SimulationChromophores() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const idDe = g => ORDRE[Math.min(g.etape ?? 0, ORDRE.length - 1)];
   const [vie, setVie] = useState(() => ({ ...BASE, ...(DEPART[idDe(guide)] ?? {}) }));
-  const [ex, setEx] = useState({ onglet: 'bande', lam: 450, n: 6, mol: 'nitrophenolate', ref: 'nitrophenol', comparer: false });
+  const [ex, setEx] = useState({ onglet: 'bande', sous: 'schema', lam: 450, n: 6, mol: 'nitrophenolate', ref: 'nitrophenol', comparer: false });
   const [ouv, setOuv] = useState({});
+  const tir = useTiragesUV(ex.lam);
+  const demoEv = tir.demo ? evenementDemo(tir.demo.sc, tir.params) : null;
+  const progAuto = useProgres(tir.demo ? 1000000 + tir.demo.cle : tir.etat.nEnv * 1000 + tir.rejeu % 1000, tir.demo ? tir.dureeDemo : tir.dureeAnim, tir.demo ? !reduitMouvement() : tir.anime);
+  const progT = tir.manuel ?? progAuto, lotT = !demoEv && tir.etat.lot > 1;
+  const dAff = demoEv ?? (lotT ? null : tir.etat.dernier), pAff = lotT ? 1 : progT;
+  const tirOn = ex.onglet === 'bande' && ex.sous === 'tirages';
   const [suiviC, noterC] = useCompteurDefi(), [suiviE, noterE] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('couleur');
   const enGuide = mode === 'guide', enExplore = mode === 'explore', enDefi = mode === 'defi';
@@ -187,11 +198,17 @@ export function SimulationChromophores() {
   const lamEx = ex.onglet === 'bande' ? ex.lam : ex.onglet === 'polyene' ? M.lamPolyene(ex.n) : A_.lam;
   const reglagesExplore = enExplore && (
     <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'bande' ? 'Déplacez la bande' : ex.onglet === 'polyene' ? 'Allongez la conjugaison' : 'Choisissez une molécule'}</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ex.onglet === 'bande' ? 'Placez le maximum d’absorption où vous voulez : la cuve prend la couleur de la lumière transmise.'
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'bande' ? (tirOn ? 'Réglez la solution et la lampe' : 'Déplacez la bande') : ex.onglet === 'polyene' ? 'Allongez la conjugaison' : 'Choisissez une molécule'}</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ex.onglet === 'bande' && tirOn ? 'Chaque photon traverse la solution ou y est absorbé, au hasard : la probabilité d’être absorbé est 1 − 10^(−A). Le spectre se trace en comptant les photons transmis.'
+        : ex.onglet === 'bande' ? 'Placez le maximum d’absorption où vous voulez : la cuve prend la couleur de la lumière transmise.'
         : ex.onglet === 'polyene' ? 'Un polyène a n doubles liaisons C=C conjuguées : λmax et ε grandissent avec n.'
         : 'Spectres schématiques à partir des λmax et ε usuels. Comparez avec une molécule de référence (tirets).'}</div>
       {ex.onglet === 'bande' && curs('ch-el', `λmax : ${ex.lam} nm`, ex.lam, 250, 750, 5, ev => setEx(e => ({ ...e, lam: parseInt(ev.target.value, 10) })), 'En dessous de 380 nm, la bande est dans l’UV.')}
+      {tirOn && <>
+        {selecteur('ch-ta', 'Absorbance au maximum (concentration)', String(tir.t.amax), ev => tir.regler({ amax: parseFloat(ev.target.value) }), [{ id: '0.3', nom: 'A = 0,3 (solution diluée)' }, { id: '1', nom: 'A = 1 (valeur usuelle)' }, { id: '2', nom: 'A = 2 (solution concentrée)' }])}
+        {selecteur('ch-tm', 'Longueur d’onde des photons', tir.t.mode, ev => tir.regler({ mode: ev.target.value }), [{ id: 'hasard', nom: 'Tirée au hasard entre 200 et 800 nm' }, { id: 'choisi', nom: 'Choisie par vous' }])}
+        {tir.t.mode === 'choisi' && curs('ch-tl', `λ des photons : ${tir.t.lamChoisi} nm`, tir.t.lamChoisi, 200, 800, 5, ev => tir.regler({ lamChoisi: parseInt(ev.target.value, 10) }), 'Placez λ sur le maximum de la bande pour voir presque tous les photons absorbés, loin de la bande pour les voir traverser.')}
+        <label style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 10, fontSize: 14, color: KIT.txt }}><input type="checkbox" checked={tir.t.courbe} onChange={ev => tir.regler({ courbe: ev.target.checked })} style={{ width: 20, height: 20 }}/>Afficher le spectre attendu (pointillés)</label></>}
       {ex.onglet === 'polyene' && curs('ch-en', `n = ${ex.n} C=C conjuguées`, ex.n, 1, 11, 1, ev => setEx(e => ({ ...e, n: parseInt(ev.target.value, 10) })), 'Valeurs de référence pour n = 1 à 6 et n = 11 ; entre les deux, interpolation.')}
       {ex.onglet === 'molecule' && <>
         {selecteur('ch-em', 'Molécule', ex.mol, ev => setEx(e => ({ ...e, mol: ev.target.value })), Object.values(M.MOLS).map(m => ({ id: m.id, nom: m.nom })))}
@@ -201,17 +218,39 @@ export function SimulationChromophores() {
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
       {[['bande', 'Une bande'], ['polyene', 'Polyènes'], ['molecule', 'Molécules']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, onglet: k }))} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#7c3aed')}>{l}</button>)}
     </div>);
-  const sceneEx = ex.onglet === 'bande' ? <SceneCuveSpectre bandes={[{ lam: ex.lam, eps: 10000 }]} css={M.cssSolution(ex.lam)}/>
+  const sousPilules = ex.onglet === 'bande' && (
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10, alignItems: 'center' }}>
+      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Afficher :</span>
+      {[['schema', 'Spectre schématique'], ['tirages', 'Tirages au hasard']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, sous: k }))} aria-pressed={ex.sous === k} style={stylePetitBouton(ex.sous === k, '#334155')}>{l}</button>)}
+    </div>);
+  const sceneTirages = (<>
+    <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#5b21b6', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{lotT ? 'Les photons défilent trop vite pour être animés un par un : voici le bilan du dernier paquet. « × 10 » et « × 100 » montrent chaque photon.' : (demoEv ? 'Scénario seul. ' : '') + legendePhase(dAff, pAff)}</div>
+    <div className="ch-at">
+      <SceneCuveUV d={dAff} p={pAff} css={M.cssSolution(ex.lam)}/>
+      <PanneauScenariosUV etat={tir.etat} params={tir.params} courant={lotT ? -1 : scenarioVisible(dAff, pAff)} demo={tir.demo} prog={progT} tir={tir}/>
+    </div>
+    <div role="status" aria-live={tir.lecture ? 'off' : 'polite'} style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{lotT ? `Bilan du dernier paquet de ${tir.etat.lotRes.n} photons : ${tir.etat.lotRes.abs} absorbés, ${tir.etat.lotRes.n - tir.etat.lotRes.abs} transmis.` : `${dAff ? `Scénario ${scenarioDe(dAff) + 1} sur 2 : ` : ''}${texteEvenement(dAff)}.`}</div>
+    <SceneSpectreTirUV etat={tir.etat} params={tir.params}/><div style={{ marginTop: 10 }}><CommandesTiragesUV tir={tir}/></div></>);
+  const sceneEx = tirOn ? sceneTirages : ex.onglet === 'bande' ? <SceneCuveSpectre bandes={[{ lam: ex.lam, eps: 10000 }]} css={M.cssSolution(ex.lam)}/>
     : ex.onglet === 'polyene' ? <SceneCuveSpectre bandes={[bandePoly(ex.n)]} css={M.cssSolution(M.lamPolyene(ex.n))} ymax={160000}/>
     : <SceneCuveSpectre bandes={[...(ex.comparer ? [bande(ex.ref, true)] : []), bande(ex.mol)]} css={M.cssSolution(A_.lam)}/>;
   const NOMS_MOL = Object.fromEntries(Object.values(M.MOLS).map(m => [m.id, m.nom]));
   const formules = ex.onglet === 'molecule' ? <FormulesMolecules ids={ex.comparer ? [ex.ref, ex.mol] : [ex.mol]} noms={NOMS_MOL} reference={ex.comparer ? ex.ref : null}/>
     : ex.onglet === 'polyene' ? <FormulePolyene n={ex.n} nom={polyNom(ex.n)} note={ex.n === 11 ? ' Seule la chaîne conjuguée est dessinée (le β-carotène porte aussi des groupes méthyle et un cycle à chaque extrémité).' : ''}/> : null;
-  const voletScene = (<div style={styleBoite}>{pilules}{formules}{sceneEx}</div>);
+  const voletScene = (<div style={styleBoite}>{pilules}{sousPilules}{formules}{sceneEx}</div>);
   const mesuresEx = enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       <LigneMesure nom="λmax" valeur={`${Math.round(lamEx)}${NB}nm`}/>
+      {tirOn && <>
+        <LigneMesure nom="Photons envoyés" valeur={`${tir.etat.nEnv}`}/><LigneMesure nom="Photons absorbés" valeur={`${tir.etat.nAbs}`}/>
+        <LigneMesure nom="Photons transmis (comptés)" valeur={`${tir.etat.nEnv - tir.etat.nAbs}`}/>
+        <LigneMesure nom="Transmis / envoyés (toutes λ)" valeur={tir.etat.nEnv ? `${fr(100 * (tir.etat.nEnv - tir.etat.nAbs) / tir.etat.nEnv, 0)}${NB}%` : '—'}/>
+        {tir.t.mode === 'choisi' && (() => { const i = indiceT(tir.t.lamChoisi), n = tir.etat.env[i], a = absorbanceEstimee(tir.etat, i); return <>
+          <LigneMesure nom={`Photons envoyés vers ${tir.t.lamChoisi}${NB}nm (case de 5)`} valeur={`${n}`}/>
+          <LigneMesure nom="Absorbance mesurée −log(transmis/envoyés)" valeur={a == null ? '—' : fr(a, 2)}/>
+          <LigneMesure nom="Absorbance du spectre schématique" valeur={fr(absorbanceCase(tir.params, i), 2)}/>
+          <LigneMesure nom="Domaine et énergie du photon" valeur={`${domaine(tir.t.lamChoisi)}, ${fr(energieEV(tir.t.lamChoisi), 2)}${NB}eV`}/></>; })()}</>}
       {ex.onglet === 'polyene' && <><LigneMesure nom="Composé" valeur={polyNom(ex.n)}/><LigneMesure nom="ε au maximum" valeur={`${M.epsPolyene(ex.n)}${NB}L·mol⁻¹·cm⁻¹`}/></>}
       {ex.onglet === 'molecule' && <><LigneMesure nom="ε au maximum" valeur={`${A_.eps}${NB}L·mol⁻¹·cm⁻¹`}/>
         {ex.comparer && <><LigneMesure nom="Déplacement par rapport à la référence" valeur={`${M.effetLambda(R_.lam, A_.lam)} (${A_.lam - R_.lam >= 0 ? '+' : '−'}${Math.abs(A_.lam - R_.lam)}${NB}nm)`}/><LigneMesure nom="Intensité par rapport à la référence" valeur={`${M.effetEps(R_.eps, A_.eps)} (×${fr(A_.eps / R_.eps, 2)})`}/></>}</>}
@@ -222,6 +261,8 @@ export function SimulationChromophores() {
     <ul style={liste}>
       <li>Une bande : placez λmax à 450 puis à 530 nm. Quelle est la couleur de la solution dans chaque cas ?</li>
       <li>Une bande : à partir de quelle valeur de λmax la solution cesse-t-elle d’être incolore ?</li>
+      <li>Tirages : envoyez 1000 photons. À quelle longueur d’onde l’absorbance mesurée est-elle maximale ? Comparez avec λmax.</li>
+      <li>Tirages : passez de A = 0,3 à A = 2. Que change-t-on dans la proportion de photons absorbés au maximum ?</li>
       <li>Polyènes : pour quel n la cuve se colore-t-elle ? De quelle couleur ?</li>
       <li>Molécules : comparez le phénol et l’ion phénolate. Quels effets observez-vous ?</li>
       <li>Molécules : comparez l’aniline et l’ion anilinium ; que se passe-t-il quand on acidifie ?</li>
@@ -244,6 +285,7 @@ export function SimulationChromophores() {
       <li><strong>Polyènes</strong> : valeurs de référence pour n = 1 à 6 et n = 11 (β-carotène) ; entre n = 6 et n = 11, interpolation linéaire illustrative ; ε en loi empirique 10 000 + 12 000 (n − 1).</li>
       <li><strong>Couleur</strong> : calculée pour une solution dont l’absorbance au maximum vaut 1 (concentration ajustée), sous lumière blanche D65 ; la couleur perçue dépend aussi de l’œil et de l’éclairage.</li>
       <li><strong>Incolore</strong> : la bande ne déborde pas sur le visible (λmax + 2,5 σ &lt; 380 nm).</li>
+      <li><strong>Tirages</strong> : chaque photon est absorbé avec la probabilité 1 − 10^(−A(λ)) (loi de Beer-Lambert), indépendamment des autres ; une seule absorption par photon, ni diffusion ni fluorescence, détecteur parfait. L’absorbance estimée −log(transmis / envoyés) fluctue d’autant plus que peu de photons sont envoyés (et vaut au plus 2,3 quand aucun photon n’est transmis). La couleur de la cuve est celle d’une solution d’absorbance 1 au maximum, quel que soit le réglage de concentration.</li>
       <li><strong>Hors modèle</strong> : transitions n → π* faibles, effets de solvant détaillés, fluorescence, équilibres acido-basiques en solution réelle.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
@@ -254,6 +296,10 @@ export function SimulationChromophores() {
         .ch-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
         .ch-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .ch-col { display: flex; flex-direction: column; gap: 12px; }
+        .ch-at { display: grid; gap: 10px; align-items: start; grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 901px) { .ch-at { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
+        .ch-sc { transition: background 0.3s, transform 0.3s; } .ch-sc.on { transform: scale(1.02); font-weight: 600; }
+        @media (prefers-reduced-motion: reduce) { .ch-sc { transition: none; } .ch-sc.on { transform: none; } }
         .ch-ex { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
         @media (min-width: 901px) {
           .ch-l1.cote .ch-carte { order: 2; } .ch-l1.cote .ch-main { order: 1; }
