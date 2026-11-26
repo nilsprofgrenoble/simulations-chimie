@@ -10,6 +10,7 @@ import { CEL_ANA } from './champElecExos.js';
 import { FVI_ANA } from './chuteVisqueuseExos.js';
 import { EUL_ANA } from './eulerChuteExos.js';
 import { PILP_ANA } from './pilePcmExos.js';
+import { RPM_ANA } from './radPcmExos.js';
 import { RMNS_ANA } from './rmnStlExos.js';
 import { UVS_ANA } from './uvirStlExos.js';
 import { KSQ_ANA } from './ksqExos.js';
@@ -7273,6 +7274,7 @@ export const PREVOIR = [
   ...FVI_ANA,
   ...EUL_ANA,
   ...PILP_ANA,
+  ...RPM_ANA,
   ...RMNS_ANA,
   ...UVS_ANA,
   ...KSQ_ANA,

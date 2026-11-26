@@ -3090,5 +3090,17 @@
  "77:plausible:ksq-val-comparer": "VAL805",
  "77:plausible:ksq-val-dilution": "VAL806",
  "36:ksq-ks": "REA220",
- "36:ksq-melange": "REA221"
+ "36:ksq-melange": "REA221",
+ "34:rpm-sapp-loi.0": "SAPP681",
+ "34:rpm-sapp-loi.1": "SAPP682",
+ "34:rpm-sapp-activite.0": "SAPP683",
+ "34:rpm-sapp-activite.1": "SAPP684",
+ "37:prevoir:rpm-ana-type": "ANA1386",
+ "37:prevoir:rpm-ana-lambda": "ANA1387",
+ "37:prevoir:rpm-ana-fraction": "ANA1388",
+ "37:prevoir:rpm-ana-protection": "ANA1389",
+ "77:plausible:rpm-val-lambda": "VAL807",
+ "77:plausible:rpm-val-activite": "VAL808",
+ "36:rpm-loi": "REA222",
+ "36:rpm-act": "REA223"
 }

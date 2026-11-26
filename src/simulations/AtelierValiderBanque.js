@@ -10,6 +10,7 @@ import { CEL_VAL } from './champElecExos.js';
 import { FVI_VAL } from './chuteVisqueuseExos.js';
 import { EUL_VAL } from './eulerChuteExos.js';
 import { PILP_VAL } from './pilePcmExos.js';
+import { RPM_VAL } from './radPcmExos.js';
 import { RMNS_VAL } from './rmnStlExos.js';
 import { UVS_VAL } from './uvirStlExos.js';
 import { KSQ_VAL } from './ksqExos.js';
@@ -5172,6 +5173,7 @@ export const PLAUSIBLES = [
   ...FVI_VAL,
   ...EUL_VAL,
   ...PILP_VAL,
+  ...RPM_VAL,
   ...RMNS_VAL,
   ...UVS_VAL,
   ...KSQ_VAL,

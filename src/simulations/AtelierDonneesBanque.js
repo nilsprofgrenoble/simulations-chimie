@@ -12,6 +12,7 @@ import { CEL_SAPP } from "./champElecExos.js";
 import { FVI_SAPP } from "./chuteVisqueuseExos.js";
 import { EUL_SAPP } from './eulerChuteExos.js';
 import { PILP_SAPP } from './pilePcmExos.js';
+import { RPM_SAPP } from './radPcmExos.js';
 import { RMNS_SAPP } from './rmnStlExos.js';
 import { UVS_SAPP } from './uvirStlExos.js';
 import { KSQ_SAPP } from './ksqExos.js';
@@ -5632,6 +5633,7 @@ export const ENONCES = [
   ...FVI_SAPP,
   ...EUL_SAPP,
   ...PILP_SAPP,
+  ...RPM_SAPP,
   ...RMNS_SAPP,
   ...UVS_SAPP,
   ...KSQ_SAPP,
