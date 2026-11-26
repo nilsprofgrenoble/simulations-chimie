@@ -6,7 +6,8 @@ import * as M from "./frxModele";
 import { QCM } from "./frxQcm";
 import { SceneAtomeAnim, SceneHistoX, CommandesTirages, TableScenarios } from "./FrxTirages";
 import { useTiragesX, useProgres } from "./frxTiragesHook";
-import { texteAtome, legendePhase, scenario } from "./frxTirages";
+import { texteAtome, legendePhase, scenario, scenarioVisible, evenementDemo } from "./frxTirages";
+import { reduitMouvement } from "./hookHorloge";
 import { SceneAtome, SceneSpectreX, SceneEtalonnage, SceneAppareil, SvgCarteTransitions, SvgCarteMoseley, SvgCarteBilanFrx } from "./FrxSchemas";
 
 const SIM_ID = 302, CLE_GUIDE = 'frx-guide-v1';
@@ -39,7 +40,11 @@ export function SimulationFluoX() {
   const [vie, setVie] = useState(() => ({ ...BASE }));
   const [ex, setEx] = useState({ onglet: 'atome', el: 'Fe', E: 9, ech: 'laiton', raie: 'Cu' });
   const [ouv, setOuv] = useState({});
-  const tir = useTiragesX(), progT = useProgres(tir.t.etat.nEnv * 1000 + tir.rejeu % 1000, tir.dureeAnim, tir.anime);
+  const tir = useTiragesX();
+  const demoEv = tir.demo ? evenementDemo(tir.demo.sc, tir.el) : null;
+  const progAuto = useProgres(tir.demo ? 1000000 + tir.demo.cle : tir.t.etat.nEnv * 1000 + tir.rejeu % 1000, tir.demo ? tir.dureeDemo : tir.dureeAnim, tir.demo ? !reduitMouvement() : tir.anime);
+  const progT = tir.manuel ?? progAuto, lotT = !demoEv && tir.t.etat.lot > 1;
+  const dAff = demoEv ?? (lotT ? null : tir.t.etat.dernier), pAff = lotT ? 1 : progT;
   const [suiviE, noterE] = useCompteurDefi(), [suiviD, noterD] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('element');
   const enGuide = mode === 'guide', enExplore = mode === 'explore', enDefi = mode === 'defi';
@@ -202,10 +207,13 @@ export function SimulationFluoX() {
     <div style={styleBoite}>
       {pilules}
       {ex.onglet === 'tirages' ? <>
-        <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#4c1d95', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{tir.t.etat.lot > 1 ? 'Les atomes défilent trop vite pour être animés un par un : voici le bilan du dernier paquet. « × 10 » et « × 100 » montrent chaque atome.' : legendePhase(tir.t.etat.dernier, progT)}</div>
-        <SceneAtomeAnim d={tir.t.etat.lot > 1 ? null : tir.t.etat.dernier} p={tir.t.etat.lot > 1 ? 1 : progT}/>
-        <div role="status" aria-live={tir.lecture ? 'off' : 'polite'} style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{tir.t.etat.lot > 1 ? `Bilan du dernier paquet de ${tir.t.etat.lotRes.n} atomes : ${tir.t.etat.lotRes.ion} électrons K éjectés, dont ${tir.t.etat.lotRes.ka} photons Kα, ${tir.t.etat.lotRes.kb} photons Kβ et ${tir.t.etat.lotRes.auger} effets Auger (sans photon X).` : `${tir.t.etat.dernier ? `Scénario ${scenario(tir.t.etat.dernier) + 1} sur 5 : ` : ''}${texteAtome(tir.t.etat.dernier, tir.el, tir.t.E)}.`}</div>
-        <SceneHistoX etat={tir.t.etat} params={tir.t} el={tir.el} courbe={tir.t.courbe}/><div style={{ marginTop: 10 }}><CommandesTirages tir={tir}/></div><div style={{ marginTop: 14 }}><TableScenarios etat={tir.t.etat} params={tir.t} el={tir.el} marquer={tir.t.etat.lot === 1}/></div></>
+        <div aria-hidden="true" style={{ fontSize: 14.5, fontWeight: 700, color: '#4c1d95', minHeight: 44, lineHeight: 1.4, marginBottom: 4 }}>{lotT ? 'Les atomes défilent trop vite pour être animés un par un : voici le bilan du dernier paquet. « × 10 » et « × 100 » montrent chaque atome.' : (demoEv ? 'Scénario seul. ' : '') + legendePhase(dAff, pAff)}</div>
+        <div className="fx-at">
+          <SceneAtomeAnim d={dAff} p={pAff}/>
+          <TableScenarios etat={tir.t.etat} params={tir.t} el={tir.el} courant={lotT ? -1 : scenarioVisible(dAff, pAff)} demo={tir.demo} prog={progT} tir={tir}/>
+        </div>
+        <div role="status" aria-live={tir.lecture ? 'off' : 'polite'} style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, margin: '4px 0 8px', minHeight: 42 }}>{lotT ? `Bilan du dernier paquet de ${tir.t.etat.lotRes.n} atomes : ${tir.t.etat.lotRes.ion} électrons K éjectés, dont ${tir.t.etat.lotRes.ka} photons Kα, ${tir.t.etat.lotRes.kb} photons Kβ et ${tir.t.etat.lotRes.auger} effets Auger (sans photon X).` : `${demoEv ? `Scénario ${tir.demo.sc + 1} sur 5 : ` : dAff ? `Scénario ${scenario(dAff) + 1} sur 5 : ` : ''}${texteAtome(dAff, tir.el, tir.t.E)}.`}</div>
+        <SceneHistoX etat={tir.t.etat} params={tir.t} el={tir.el} courbe={tir.t.courbe}/><div style={{ marginTop: 10 }}><CommandesTirages tir={tir}/></div></>
       : ex.onglet === 'atome' ? <><SceneAtome etat={ionE ? 'saut2' : 'repos'} photon={ex.E} photonLabel={`${fr(ex.E, 1)} keV`} raies={[`Kα ${fr(el.Ka, 2)} keV`, `Kβ ${fr(el.Kb, 2)} keV`]}/><div style={{ height: 6 }}/>
         <SceneSpectreX comp={ionE ? [{ s: el.s, w: 10 }] : []} yMax={3600} marques={[[el.EK, `seuil K ${fr(el.EK, 2)}`, '#7c3aed', el.EK <= ex.E ? 'end' : 'start'], [ex.E, 'photon X', '#2563eb', el.EK <= ex.E ? 'start' : 'end']]}/></>
         : <SceneSpectreX comp={ech.comp} echelle="log" titre={ech.nom.split(' (')[0].toLowerCase()} etiquettes={ech.comp.map(c => [M.element(c.s).Ka, c.s, 0, 'middle'])} marques={[[elR.Ka, `${fr(elR.Ka, 2)}`]]}/>}
@@ -272,6 +280,10 @@ export function SimulationFluoX() {
           .fx-ex > * { grid-column: 1; }
           .fx-ex > .fx-reg { grid-column: 2; grid-row: 1 / span 2; }
         }
+        .fx-at { display: grid; gap: 10px; align-items: start; grid-template-columns: minmax(0, 1fr); }
+        @media (min-width: 901px) { .fx-at { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
+        .fx-sc { transition: background 0.3s, transform 0.3s; } .fx-sc.on { transform: scale(1.02); font-weight: 600; }
+        @media (prefers-reduced-motion: reduce) { .fx-sc { transition: none; } .fx-sc.on { transform: none; } }
         @media (max-width: 900px) { .fx-l1.cote { grid-template-columns: minmax(0, 1fr); } }
         @media (prefers-reduced-motion: no-preference) { .fx-in { animation: fx-fondu 0.35s ease-out; } @keyframes fx-fondu { from { opacity: 0; } to { opacity: 1; } } }
       `}</style>

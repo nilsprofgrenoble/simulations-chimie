@@ -43,6 +43,7 @@ export function SceneAtomeAnim({ d, p }) {
     {ion && p > 0.5 && eM(lerp(part[0], K30[0], seg(p, 0.5, 0.75)), lerp(part[1], K30[1], seg(p, 0.5, 0.75)), 'comble')}
     {ion && p > 0.5 && fluo && <g>{lacune(...part, 'lc')}{T(part[0] + 10, part[1] - 8, voie === 'ka' ? 'lacune L' : 'lacune M', { size: 12, gras: true, fill: '#dc2626', anchor: 'start', halo: true })}</g>}
     {ion && p > 0.5 && voie === 'auger' && <g>{lacune(...L30, 'la1')}{p > 0.75 && lacune(...L75, 'la2')}{T(L30[0] + 10, L30[1] - 8, 'lacunes L', { size: 12, gras: true, fill: '#dc2626', anchor: 'start', halo: true })}</g>}
+    {d && !d.cible && p > 0.15 && T(CX, 16, 'atome d’un autre élément : rien ne se passe', { size: 13, gras: true, fill: K.gris, halo: true })}
     {/* photon incident */}
     {p < (ion ? 0.25 : 1) && !debut && xph > 12 && <g>{onde(Math.max(8, xph - 70), ion ? K30[1] : CY + 6, xph, ion ? K30[1] : CY + 6, COL.ph)}{T(34, (ion ? K30[1] : CY + 6) - 14, 'photon X', { size: 13, gras: true, fill: COL.ph, anchor: 'start', halo: true })}</g>}
     {/* photon X émis ou électron Auger */}
@@ -97,27 +98,45 @@ export function CommandesTirages({ tir }) {
   </div>);
 }
 
-// ---------- tableau des cinq scénarios : probabilité attendue et nombre d'atomes obtenus ; le scénario du dernier atome est marqué ----------
+// ---------- encart des cinq scénarios : s'allume avec l'animation ; un clic joue le scénario seul (au ralenti si on veut) ----------
 const NB = '\u00a0';
 const frp = v => (100 * v).toFixed(v < 0.1 ? 1 : 0).replace('.', ',') + NB + '%';
-export function TableScenarios({ etat, params, el, marquer }) {
-  const pr = X.probas(el, params), obs = [etat.nAutre, etat.nPasIon, etat.nKa, etat.nKb, etat.nAuger], cur = marquer ? X.scenario(etat.dernier) : -1;
+export function TableScenarios({ etat, params, el, courant, demo, prog, tir }) {
+  const pr = X.probas(el, params), obs = [etat.nAutre, etat.nPasIon, etat.nKa, etat.nKb, etat.nAuger];
   const lignes = [
-    ['Le photon frappe un autre atome', 'aucune raie de ' + el.nom],
-    [params.E < el.EK ? 'Photon d’énergie inférieure au seuil K' : 'Il frappe un atome de ' + el.nom + ' mais n’éjecte pas d’électron K', 'aucune raie'],
-    ['Électron K éjecté, un électron L comble la lacune', 'photon Kα émis'],
-    ['Électron K éjecté, un électron M comble la lacune', 'photon Kβ émis'],
-    ['Électron K éjecté, énergie perdue par effet Auger', 'aucun photon X'],
+    ['Autre atome touché', 'aucune raie'],
+    [params.E < el.EK ? 'Photon sous le seuil K' : 'Pas d’électron K éjecté', 'aucune raie'],
+    ['Électron K éjecté, un électron L comble la lacune', 'photon Kα'],
+    ['Électron K éjecté, un électron M comble la lacune', 'photon Kβ'],
+    ['Électron K éjecté, effet Auger', 'aucun photon X'],
   ];
+  const possible = i => i < 2 || params.E >= el.EK;
+  const vit = [['normal', 'Normal'], ['lent', 'Ralenti'], ['tres', 'Très ralenti']];
   return (<div>
-    <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>Cinq scénarios possibles pour un photon X</div>
-    <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.45, marginBottom: 6 }}>Chaque atome irradié suit l’un d’eux, tiré au hasard. Colonnes : probabilité prévue, nombre d’atomes obtenus. Le signe ◄ marque le scénario du dernier atome.</div>
-    <div role="table" aria-label="Scénarios possibles pour un photon X">
-      {lignes.map(([nom, suite], i) => (<div role="row" key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 52px 48px', gap: 6, alignItems: 'center', padding: '5px 6px', borderLeft: cur === i ? '4px solid #7c3aed' : '4px solid transparent', background: cur === i ? '#f5f3ff' : 'transparent', borderBottom: `1px dashed ${KIT.bord}`, fontSize: 13.5, lineHeight: 1.35, color: KIT.txt }}>
-        <div role="cell"><strong>{i + 1}.</strong> {nom} <span style={{ color: KIT.txt2 }}>→ {suite}</span>{cur === i && <strong style={{ color: '#7c3aed' }}> ◄</strong>}</div>
-        <div role="cell" style={{ textAlign: 'right', fontFamily: 'monospace' }} title="probabilité prévue">{frp(pr[i])}</div>
-        <div role="cell" style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 700 }} title="atomes obtenus">{obs[i]}</div>
-      </div>))}
+    <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>Cinq scénarios possibles</div>
+    <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.45, marginBottom: 6 }}>Le scénario observé s’allume (◄). Touchez une ligne pour le voir seul. Colonnes : probabilité prévue, atomes obtenus.</div>
+    <div role="list" aria-label="Scénarios possibles pour un photon X">
+      {lignes.map(([nom, suite], i) => { const on = courant === i, choisi = demo?.sc === i, ok = possible(i); return (
+        <button role="listitem" key={i} className={`fx-sc${on ? ' on' : ''}`} onClick={() => tir.jouerScenario(i)} disabled={!ok} aria-label={`Voir le scénario ${i + 1} : ${nom}, ${suite}`}
+          style={{ display: 'grid', gridTemplateColumns: '22px minmax(0, 1fr) 48px 40px', gap: 4, alignItems: 'center', width: '100%', textAlign: 'left', cursor: ok ? 'pointer' : 'not-allowed', opacity: ok ? 1 : 0.45, padding: '5px 6px', margin: 0, borderTop: 'none', borderRight: 'none', borderBottom: `1px dashed ${KIT.bord}`, borderLeft: on ? '5px solid #7c3aed' : '5px solid transparent', background: on ? '#ede9fe' : 'transparent', fontSize: 13.5, lineHeight: 1.3, color: KIT.txt, fontFamily: 'inherit', outline: choisi ? '2px solid #7c3aed' : 'none', outlineOffset: -2 }}>
+          <span aria-hidden="true" style={{ fontWeight: 700 }}>{on ? '◄' : '▶'}</span>
+          <span><strong>{i + 1}.</strong> {nom} <span style={{ color: KIT.txt2 }}>→ {suite}</span>{!ok && ' (impossible : énergie trop faible)'}</span>
+          <span style={{ textAlign: 'right', fontFamily: 'monospace' }} title="probabilité prévue">{frp(pr[i])}</span>
+          <span style={{ textAlign: 'right', fontFamily: 'monospace', fontWeight: 700 }} title="atomes obtenus">{obs[i]}</span>
+        </button>); })}
     </div>
+    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Démonstration :</span>
+      {vit.map(([k, l]) => <button key={k} onClick={() => tir.setVitDemo(k)} aria-pressed={tir.vitDemo === k} style={styleBouton(tir.vitDemo === k, '#334155')}>{l}</button>)}
+    </div>
+    {demo && <div style={{ marginTop: 8 }}>
+      <label htmlFor="fx-av" style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt, marginBottom: 2 }}>Scénario {demo.sc + 1} seul (aucun comptage) : avancement</label>
+      <input id="fx-av" type="range" min="0" max="100" step="1" value={Math.round(prog * 100)} onChange={ev => tir.setManuel(parseInt(ev.target.value, 10) / 100)} aria-label="Avancement de l’animation" style={{ width: '100%', accentColor: '#7c3aed' }}/>
+      <div style={{ fontSize: 13, color: KIT.txt2 }}>Glissez le curseur pour avancer ou reculer image par image.</div>
+      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+        <button onClick={() => tir.jouerScenario(demo.sc)} style={styleBouton(true, '#7c3aed')}>↻ Rejouer ce scénario</button>
+        <button onClick={tir.quitterDemo} style={styleBouton(false)}>Revenir aux tirages</button>
+      </div>
+    </div>}
   </div>);
 }
