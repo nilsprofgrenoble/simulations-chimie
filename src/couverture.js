@@ -157,10 +157,10 @@ export const COUVERTURE = [
     { th: MVT, t: 'Mouvements : coordonnées de l’accélération', e: 'ok', chap: 'tstl-pcm-mouvements' },
     { th: MVT, t: 'Interactions : force électrostatique, lois de Newton, chute avec frottement visqueux', e: 'ok', chap: 'tstl-pcm-mouvements' },
     { th: NRJ, t: 'Chaînes énergétiques, conservation de l’énergie, rendement', e: 'ok', chap: 'tstl-pcm-energie' },
-    { th: NRJ, t: 'Énergie mécanique', e: 'ok', chap: 'tstl-pcm-energie', reste: '' },
+    { th: NRJ, t: 'Énergie mécanique', e: 'ok', chap: 'tstl-pcm-energie-mecanique', reste: '' },
     { th: NRJ, t: 'Énergie chimique : enthalpie, loi de Hess, pouvoir calorifique', e: 'avenir' },
-    { th: NRJ, t: 'Énergie électrique : puissance, effet Joule, piles et accumulateurs', e: 'ok', chap: 'tstl-pcm-energie' },
-    { th: NRJ, t: 'Énergie et ondes : flux, éclairement, panneau photovoltaïque, laser', e: 'ok', chap: 'tstl-pcm-energie' },
+    { th: NRJ, t: 'Énergie électrique : puissance, effet Joule, piles et accumulateurs', e: 'ok', chap: 'tstl-pcm-energie-electrique' },
+    { th: NRJ, t: 'Énergie et ondes : flux, éclairement, panneau photovoltaïque, laser', e: 'ok', chap: 'tstl-pcm-energie-ondes' },
   ] },
 ];
 

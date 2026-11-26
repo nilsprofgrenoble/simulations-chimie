@@ -300,6 +300,7 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
   const admin = !!useSession()?.profil?.admin;
   const { themes, autres } = repartir(exosChap, c.id);
   const auDela = exosAuDela(exos, c);
+  const boutonSim = id => <button key={id} data-sim={id} className="en-sim" onClick={() => naviguer(id)}>{nomsSim[id] || `Simulation ${id}`}{validees.has(String(id)) ? <PastilleFaite taille={18} /> : <span aria-hidden="true">▶</span>}</button>;
   const [stOuvert, setStOuvert] = useState(null);
   const themeOuvert = themes.find(t => t.st.id === stOuvert) || null;
   const listesCompetences = L0 => ['S\'APP', 'ANA', 'VAL'].map(code => {
@@ -321,8 +322,12 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
         <div data-sims-chapitre style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: KIT.txt, margin: '0 0 8px', fontFamily: TITRE_B }}><Pic n="testtube"/>Les simulations du chapitre</div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {c.sims.map(id => <button key={id} data-sim={id} className="en-sim" onClick={() => naviguer(id)}>{nomsSim[id] || `Simulation ${id}`}{validees.has(String(id)) ? <PastilleFaite taille={18} /> : <span aria-hidden="true">▶</span>}</button>)}
+            {c.sims.filter(id => !(c.simsAudela || []).includes(id)).map(boutonSim)}
           </div>
+          {(c.simsAudela || []).length > 0 && <details data-sims-plus-loin style={{ marginTop: 8 }}>
+            <summary style={{ cursor: 'pointer', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, minHeight: 44, display: 'flex', alignItems: 'center' }}>▸ 🚀 Pour aller plus loin : {c.simsAudela.length} simulation{c.simsAudela.length > 1 ? 's' : ''} d’application</summary>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{c.simsAudela.map(boutonSim)}</div>
+          </details>}
         </div>)}
       {(c.jeux || []).filter(id => jeuOuvert(id, admin)).map(id => { const j = JEUX_CATALOGUE[id]; return j && (
         <div key={id} data-jeu-chapitre={id} style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', margin: '0 0 14px', padding: '12px 14px', borderRadius: 20, border: `1.5px solid ${j.couleur}`, background: '#fff8ec' }}>
