@@ -17,6 +17,8 @@ import { ENSEIGNEMENTS, chapitresDe as chapitresNiveauEns } from "../parcoursCom
 import { exosDeSim, EXOS_DE_SIM } from "../exosDeSim";
 import { Pic } from "../Pictos";
 import { useSimsValidees, PastilleFaite } from "../simsValidees";
+import { jeuOuvert } from "./jeuxVisibles";
+import { JEUX_CATALOGUE } from "./jeuxCatalogue";
 
 const ROSE = '#0b4f94';   // bleu Blocs (ancien rose)
 const ORANGE_B = '#f5a31a', TEAL_B = '#2cc4ae', BORD_B = '#d5dfeb', TITRE_B = "'Outfit', 'Inter', sans-serif";
@@ -295,6 +297,7 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
   const exosChap = exosDuChapitre(exos, c), av = avancementChapitre(exosChap, etoilesDe), conseil = exosChap.length ? prochainExercice(exosChap, etoilesDe) : null;
   const enCours = idsEnCours.includes(c.id);
   const validees = useSimsValidees(c.id);
+  const admin = !!useSession()?.profil?.admin;
   const { themes, autres } = repartir(exosChap, c.id);
   const auDela = exosAuDela(exos, c);
   const [stOuvert, setStOuvert] = useState(null);
@@ -321,6 +324,16 @@ function DetailChapitre({ c, exos, ctx, naviguer, sansTitre }) {
             {c.sims.map(id => <button key={id} data-sim={id} className="en-sim" onClick={() => naviguer(id)}>{nomsSim[id] || `Simulation ${id}`}{validees.has(String(id)) ? <PastilleFaite taille={18} /> : <span aria-hidden="true">▶</span>}</button>)}
           </div>
         </div>)}
+      {(c.jeux || []).filter(id => jeuOuvert(id, admin)).map(id => { const j = JEUX_CATALOGUE[id]; return j && (
+        <div key={id} data-jeu-chapitre={id} style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', margin: '0 0 14px', padding: '12px 14px', borderRadius: 20, border: `1.5px solid ${j.couleur}`, background: '#fff8ec' }}>
+          <span aria-hidden="true" style={{ flex: 'none', width: 48, height: 48, borderRadius: 16, background: j.couleur, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>{j.icone}</span>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 800, color: '#92400e', letterSpacing: 0.5 }}>🎮 JOUER POUR S’ENTRAÎNER</div>
+            <div style={{ fontWeight: 800, color: KIT.txt, fontSize: 16, fontFamily: TITRE_B }}>{j.nom}</div>
+            <div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.45 }}>{j.accroche} <i>({j.savoir})</i></div>
+          </div>
+          <button onClick={() => naviguer(id)} style={{ background: ORANGE_B, color: '#1b2b3a', border: 'none', borderRadius: 999, padding: '10px 20px', fontWeight: 800, fontSize: 15, cursor: 'pointer' }}>Jouer ▶</button>
+        </div>); })}
       {exosChap.length > 0 && <div style={{ height: 10, borderRadius: 5, background: '#e6edf5', marginBottom: 14 }} role="progressbar" aria-valuemin={0} aria-valuemax={av.max} aria-valuenow={av.etoiles} aria-label="Étoiles gagnées dans le chapitre">
         <div style={{ height: 10, borderRadius: 5, background: TEAL_B, width: `${av.max ? (100 * av.etoiles) / av.max : 0}%` }} />
       </div>}

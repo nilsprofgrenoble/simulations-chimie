@@ -34,10 +34,12 @@ assert(M.retour(cmd, [{ p: 5, f: 200 }]).texte.includes('100 mL'), 'mauvais volu
 assert(M.correction(cmd, 1)[0].p === 5, 'correction');
 assert(M.fmtC(1) === '1,0' && M.fmtC(0.05) === '0,050' && M.fmtC(0.0005) === '0,00050', 'chiffres significatifs');
 
-// 4. Score : jamais négatif, la rapidité et la série comptent, les indices coûtent
-const base = { restant: 30, patience: 60, essais: 0, indices: 0, serie: 0, detente: false };
-assert(M.points(base) === 120 && M.points({ ...base, indices: 1 }) === 100 && M.points({ ...base, essais: 3, indices: 2 }) >= 20, 'score');
-assert(M.points({ ...base, serie: 3 }) === 150 && M.points({ ...base, detente: true }) === 100, 'série et mode détente');
+// 4. Températures et étoiles : cohérentes avec le temps restant
+assert(M.temperature(240, 240) === 35 && M.temperature(0, 240) === 180 && M.temperature(120, 240) === 108, 'température : 35 °C au départ, 180 °C à l\'explosion');
+assert(M.temperature(999, 240) === 35 && M.temperature(-5, 240) === 180, 'bornes');
+assert(M.etoilesMission(120, 240) === 3 && M.etoilesMission(60, 240) === 2 && M.etoilesMission(10, 240) === 1, 'étoiles selon le temps restant');
+// chaque mission est faisable dans le temps imparti par un joueur qui met 25 s par étape de calcul (marge ≥ 30 %)
+for (const S of M.SERVICES) assert(S.temps + S.nb * M.BONUS_REUSSITE > 1.3 * S.nb * 25 * S.etapesMax, `mission ${S.id} : temps trop court`);
 // tous les services sont jouables par un « expert » : il réussit toutes les commandes du premier coup
 for (const S of M.SERVICES) for (const c of M.commandesDuService(S, 5)) assert(M.retour(c, M.correction(c, S.etapesMax)).juste, 'correction juste');
 console.log('OK');
