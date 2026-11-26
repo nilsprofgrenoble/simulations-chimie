@@ -5,6 +5,7 @@ import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePet
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as R from "./panneauRendementModele";
+import { PanneauRendementExplore } from "./PanneauRendementExplore";
 import { QCM } from "./panneauRendementQcm";
 import { SceneCircuit, GrapheP, affInstrument } from "./PanneauPhotovoltaiqueSchemas";
 import { BarreBilan, SvgPlum, SvgBilan, SvgPointFonct, SvgFacteurs, SvgDimension } from "./PanneauRendementSchemas";
@@ -452,11 +453,16 @@ export function SimulationPanneauRendement() {
         </div>
       </div>}
       {enExplore && <>
-        <div className="pr-ex">
-          {scene}
-          <div className="pr-reg">{reglages}</div>
-          {mesures}
-          {barre}
+        <PanneauRendementExplore ti={ti} setTi={setTi}/>
+        <div style={{ margin: '12px 0' }}>
+          <Section titre={`Réglages précis et mesures : ${R.PANNEAUX[ti.pan].nom.replace(/ \(.*\)/, '')} · E = ${ti.E} W/m² · R = ${isFinite(ti.R) ? `${ti.R} Ω` : 'circuit ouvert'}`} ouvert={!!ouv.precis} onBascule={() => bascule('precis')}>
+            <div className="pr-ex">
+              {scene}
+              <div className="pr-reg">{reglages}</div>
+              {mesures}
+              {barre}
+            </div>
+          </Section>
         </div>
         <Section titre="Puissance électrique selon la tension" ouvert={!!ouv.graphe} onBascule={() => bascule('graphe')}>{graphP}</Section>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
