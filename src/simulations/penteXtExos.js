@@ -40,7 +40,7 @@ export const PXT_ANA = [
 export const PXT_VAL = [
   P({ id: 'pxt-val-pente', domaine: DOM, niveau: 1, titre: 'Vitesse lue sur une droite : un écart de dates mal calculé', plausible: false,
     enonce: 'Un élève lit sur la droite x(t) d’un chariot : x = 4 m à la date 1 s et x = 10 m à la date 4 s. Il écrit : « v = Δx ÷ Δt = (10 − 4) ÷ 4 = 1,5 m/s. »',
-    reperes: [['Position à 1 s', '4 m'], ['Position à 4 s', '10 m'], ['Ordre de grandeur', 'un chariot sur un rail : de l’ordre de 1 à 3 m/s']],
+    reperes: [['Ordre de grandeur', 'un chariot sur un rail : de l’ordre de 1 à 3 m/s']],
     ver: 'La durée écoulée est Δt = 4 − 1 = 3 s, et non 4 s : v = 6 ÷ 3 = 2,0 m/s.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [

@@ -413,7 +413,7 @@ export const TGPB_VAL = [
     ] }),
   P({ id: 'gpf-val-limites-co2', domaine: DOM_GPF, niveau: 3, titre: 'Dioxyde de carbone comprimé à 100 bar', plausible: false,
     ...presenter({ contexte: 'Une bouteille de 1,0 L contient du dioxyde de carbone (M = 44 g·mol⁻¹) à 20 °C sous 100 bar. Un élève applique l’équation d’état du gaz parfait :', suite: '« n = P·V / (R·T) = 1,0×10⁷ × 1,0×10⁻³ / (8,314 × 293) = 4,1 mol, donc une masse de 180 g de gaz ».' }),
-    reperes: [['À 20 °C', 'le dioxyde de carbone se liquéfie à partir de 57 bar environ'], ['Dioxyde de carbone liquide', 'masse volumique de l’ordre de 0,8 g·mL⁻¹'], ['Modèle du gaz parfait', 'valable si interactions et volume des molécules sont négligeables']],
+    reperes: [['À 20 °C', 'le dioxyde de carbone se liquéfie à partir de 57 bar environ'], ['Dioxyde de carbone liquide', 'masse volumique de l’ordre de 0,8 g·mL⁻¹']],
     ver: 'Le calcul est juste dans le modèle, mais le modèle ne s’applique pas : à 100 bar et 20 °C, le dioxyde de carbone est liquide (environ 0,8 kg dans 1 L), pas un gaz parfait. La valeur de 180 g est donc fausse d’un facteur environ 5.',
     q2: 'Que penser de ce résultat ?',
     options: [
@@ -453,7 +453,7 @@ export const TGPB_VAL = [
     ] }),
   P({ id: 'ter-val-quart', domaine: DOM_TRANSFERTS, niveau: 2, titre: 'Terre sans atmosphère : 360 K ?', plausible: false,
     ...presenter({ contexte: 'Pour la Terre sans atmosphère (S₀ = 1361 W·m⁻², albédo A = 0,30, σ = 5,67×10⁻⁸ W·m⁻²·K⁻⁴), un élève calcule :', suite: '« P_abs = (1 − A) × S₀ = 953 W·m⁻² ; σ × T⁴ = P_abs donc T = 360 K, soit 87 °C ».' }),
-    reperes: [['Température moyenne observée de la Terre', 'environ 15 °C (288 K)'], ['Température d’ébullition de l’eau', '100 °C'], ['Surface d’une sphère', '4 fois celle du disque de même rayon']],
+    reperes: [['Température moyenne observée de la Terre', 'environ 15 °C (288 K)'], ['Température d’ébullition de l’eau', '100 °C']],
     ver: 'Il manque la division par 4 : par mètre carré de surface, la puissance absorbée est (1 − A) × S₀ divisé par 4 ≈ 238 W·m⁻², d’où T ≈ 255 K, soit environ −18 °C. Un résultat de 87 °C serait supérieur à la température réelle, alors que ce modèle sans atmosphère donne une valeur plus basse.',
     q2: 'Que penser de ce résultat ?',
     options: [

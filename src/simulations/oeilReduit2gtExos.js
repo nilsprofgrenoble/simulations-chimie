@@ -82,7 +82,7 @@ export const OEIL2GT_VAL = [
     ] }),
   P({ id: 'oeil2gt-val-focale-proche', domaine: DOM, niveau: 2, titre: 'La focale pour voir de près', plausible: false,
     enonce: 'Au repos, la distance focale du cristallin est f′ = 17,0 mm. Pour voir net un objet à 25 cm, un élève annonce : « le cristallin se bombe et sa distance focale passe à f′ = 18,5 mm ».',
-    reperes: [['Au repos', 'f′ = 17,0 mm, objet très loin'], ['Plus bombé', 'plus de déviation des rayons, donc une distance focale plus courte'], ['Valeur de repère', 'à 25 cm, f′ est d’environ 16 mm']],
+    reperes: [['Au repos', 'f′ = 17,0 mm, objet très loin'], ['Cristallin plus bombé', 'déviation plus forte des rayons']],
     ver: 'Un cristallin plus bombé a une distance focale plus courte : f′ doit passer sous 17,0 mm (environ 15,9 mm à 25 cm). Une valeur de 18,5 mm correspond à un cristallin plus aplati qu’au repos.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [

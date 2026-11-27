@@ -116,7 +116,7 @@ const VAL_MES = [
     ] }),
   P({ id: 'mes-bts-carte-tendance', domaine: MES, niveau: 2, titre: 'Sept points du même côté de la cible', plausible: false,
     enonce: 'Sur une carte de contrôle, les sept derniers points sont tous au-dessus de la cible, mais tous à l’intérieur des limites de surveillance. Un opérateur conclut : « aucun point hors limite, tout va bien ».',
-    reperes: [['Règle de décision adoptée ici', 'sept points consécutifs du même côté de la cible signalent une dérive à vérifier'], ['Hypothèse', 'sans dérive, chaque point est au-dessus ou au-dessous de la cible avec la même probabilité']],
+    reperes: [['Hypothèse', 'sans dérive, chaque point est au-dessus ou au-dessous de la cible avec la même probabilité'], ['Carte de contrôle', 'les limites de surveillance encadrent la cible']],
     ver: 'Sans dérive, sept points du même côté (haut ou bas) arrivent avec une probabilité d’environ 1 sur 64 : c’est un signal de dérive, même si aucune limite n’est franchie.',
     q2: 'Quelle décision est la plus adaptée ?', options: [
       V('Vérifier l’appareillage : la règle signale une dérive sans point hors limite', 'Les règles de décision tiennent compte des séries de points.'),
@@ -303,7 +303,7 @@ const ANA_ETA = [
 const VAL_ETA = [
   P({ id: 'dosage-cond-unite-faux', domaine: ETA, niveau: 2, titre: 'Conductivité d’une solution de KCl', plausible: false,
     enonce: 'Une solution de KCl à 0,010 mol·L⁻¹ a une conductivité de 1 413 µS·cm⁻¹. Un élève convertit en 1,41 S·m⁻¹.',
-    reperes: [['Conversion', '1 µS·cm⁻¹ = 10⁻⁴ S·m⁻¹'], ['Eau de mer', '≈ 5 S·m⁻¹'], ['Eau du robinet', '≈ 0,05 S·m⁻¹']],
+    reperes: [['Eau de mer', '≈ 5 S·m⁻¹'], ['Eau du robinet', '≈ 0,05 S·m⁻¹'], ['Unités', 'µS·cm⁻¹ et S·m⁻¹']],
     ver: '1 413 µS·cm⁻¹ = 0,1413 S·m⁻¹. La valeur 1,41 S·m⁻¹ est dix fois trop grande, ce qui est incohérent pour une solution à 0,010 mol·L⁻¹.',
     q2: 'Quelle erreur explique le mieux ce résultat ?', options: [
       V('Il a pris 1 µS·cm⁻¹ = 10⁻³ S·m⁻¹ au lieu de 10⁻⁴ S·m⁻¹', 'Erreur d’une puissance de 10.'),
@@ -427,7 +427,7 @@ const ANA_SEL = [
 const VAL_SEL = [
   P({ id: 'sel-protection-acetal', domaine: 'Chimiosélectivité (BTS)', niveau: 3, titre: 'Déprotéger un acétal', plausible: false,
     enonce: 'Pour réduire l’ester d’un composé cétonique par LiAlH₄, on protège la cétone en acétal, puis on propose de déprotéger l’acétal par de la soude aqueuse concentrée.',
-    reperes: [['Acétal', 'stable en milieu basique, hydrolysé en milieu acide aqueux']],
+    reperes: [['Réduction par LiAlH₄', 'réduit les esters et les cétones ; ne réduit pas les acétals']],
     ver: 'La protection est judicieuse (l’acétal n’est pas réduit par LiAlH₄), mais la déprotection se fait en milieu acide aqueux : la soude ne régénère pas la cétone.',
     q2: 'Quelle critique est correcte ?', options: [
       V('Il faut déprotéger en milieu acide aqueux ; l’acétal résiste aux bases', 'La soude ne l’hydrolyse pas.'),
