@@ -10,6 +10,7 @@ import { FBragg, FExtinctions, FRapports, FModele, FDensite } from "./DrxSchemas
 import { BLEU, VERMILLON, VIOLET, GRIS, VERT, alea } from "./elecOutils";
 import { Curseur, VoletDefiGen } from "./elecCommun";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 
 // ====================================================
 //  SIM 73 — DIFFRACTION DES RAYONS X : IDENTIFIER UNE STRUCTURE CUBIQUE (BTS Métiers de la chimie, analyse cristallographique)
@@ -59,13 +60,18 @@ function Diffractogramme({ liste, pts, releves, onClic, titre }) {
 }
 
 // ---------- loi de Bragg : géométrie et interférences ----------
-function SchemaBragg({ th, d }) {
+function SchemaBragg({ th, d, p = null }) {
   const W = 560, H = 230, D = d * 300, y0 = 70, xc = 280, t = rad(th), Lr = Math.min(250, (y0 - 30) / Math.sin(t));
   const u = [Math.cos(t), Math.sin(t)], v = [Math.cos(t), -Math.sin(t)];
   const A = [xc, y0], Bp = [xc, y0 + D];
   const rayon = (P, c, dash) => <g><line x1={P[0] - Lr * u[0]} y1={P[1] - Lr * u[1]} x2={P[0]} y2={P[1]} stroke={c} strokeWidth="2.5" strokeDasharray={dash}/>
     <line x1={P[0]} y1={P[1]} x2={P[0] + Lr * v[0]} y2={P[1] + Lr * v[1]} stroke={c} strokeWidth="2.5" strokeDasharray={dash}/></g>;
   const s = D * Math.sin(t), fin = [Bp[0] - s * u[0], Bp[1] - s * u[1]], fout = [Bp[0] + s * v[0], Bp[1] + s * v[1]];
+  // rejeu : un paquet de rayons X (un par plan) arrive, est diffusé, repart ; le rayon du plan 2 a un retard proportionnel à δ
+  const photon = (P, c, lag, k) => { if (p == null) return null; const q = ((p - lag) % 1 + 1) % 1, a = q < 0.5, f = a ? q * 2 : (q - 0.5) * 2;
+    const x = a ? P[0] - Lr * u[0] * (1 - f) : P[0] + Lr * v[0] * f, y = a ? P[1] - Lr * u[1] * (1 - f) : P[1] + Lr * v[1] * f;
+    return <circle key={k} cx={x} cy={y} r="6.5" fill={c} stroke="#0f172a" strokeWidth="1.2"/>; };
+  const lag2 = Math.min(0.25, (2 * s) / (2 * Lr));
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Loi de Bragg : deux rayons réfléchis par deux plans atomiques voisins" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: W }}>
       {[0, 1, 2].map(k => <g key={k}>{Array.from({ length: 12 }, (_, i) => <circle key={i} cx={30 + i * 46 + (k % 2) * 0} cy={y0 + k * D} r="6" fill="#94a3b8"/>)}
@@ -74,6 +80,7 @@ function SchemaBragg({ th, d }) {
       <line x1={A[0]} y1={A[1]} x2={fin[0]} y2={fin[1]} stroke="#64748b" strokeDasharray="3 3"/><line x1={A[0]} y1={A[1]} x2={fout[0]} y2={fout[1]} stroke="#64748b" strokeDasharray="3 3"/>
       <line x1={fin[0]} y1={fin[1]} x2={Bp[0]} y2={Bp[1]} stroke="#ea580c" strokeWidth="6" strokeLinecap="round" opacity="0.85"/>
       <line x1={Bp[0]} y1={Bp[1]} x2={fout[0]} y2={fout[1]} stroke="#ea580c" strokeWidth="6" strokeLinecap="round" opacity="0.85"/>
+      {photon(A, '#38bdf8', 0, 'p1')}{photon(Bp, '#a78bfa', lag2, 'p2')}
       <line x1={xc + 70} y1={y0} x2={xc + 70} y2={y0 + D} stroke="#0f172a" strokeWidth="1.5" markerEnd="url(#fl)" markerStart="url(#fl)"/>
       <defs><marker id="fl" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="#0f172a"/></marker></defs>
       <text x={xc + 76} y={y0 + D / 2 + 4} fontSize="13" fontWeight="800">d</text>
@@ -83,10 +90,10 @@ function SchemaBragg({ th, d }) {
       <text x={14} y={H - 10} fontSize="12.5" fontWeight="700" fill="#c2410c">▬ chemin en plus pour le rayon du plan 2 : δ = 2 d sin θ</text>
     </svg>);
 }
-function Ondes({ dl }) {
+function Ondes({ dl, ph = 0 }) {
   const W = 560, H = 150, Lw = 80, A = 22, y1 = 44, y2 = 112;
-  const onde = (ph, a) => Array.from({ length: 141 }, (_, i) => { const x = 20 + i * 3.7; return `${x},${y1 + 0 - a * Math.sin(2 * Math.PI * (x / Lw) - ph)}`; }).join(' ');
-  const somme = Array.from({ length: 141 }, (_, i) => { const x = 20 + i * 3.7; return `${x},${y2 - (A / 2) * (Math.sin(2 * Math.PI * x / Lw) + Math.sin(2 * Math.PI * x / Lw - 2 * Math.PI * dl))}`; }).join(' ');
+  const phT = ph, onde = (ph, a) => Array.from({ length: 141 }, (_, i) => { const x = 20 + i * 3.7; return `${x},${y1 + 0 - a * Math.sin(2 * Math.PI * (x / Lw) - ph - phT)}`; }).join(' ');
+  const somme = Array.from({ length: 141 }, (_, i) => { const x = 20 + i * 3.7; return `${x},${y2 - (A / 2) * (Math.sin(2 * Math.PI * x / Lw - ph) + Math.sin(2 * Math.PI * x / Lw - ph - 2 * Math.PI * dl))}`; }).join(' ');
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Les deux ondes diffractées et leur somme" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: W, marginTop: 6 }}>
       <polyline fill="none" stroke={BLEU} strokeWidth="2.2" points={onde(0, A * 0.9)}/>
@@ -160,6 +167,7 @@ export function SimulationDiffractionRX() {
   const [B, setB] = useState({ th: 12, d: 0.22 });
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(4, true), animB = enExplore && (LA.joue || LA.t > 0) ? LA.t : null;
 
   const cleAff = enDefi && defi.type === 'inconnu' ? defi.cle : cle;
   const cleRel = enDefi && defi.type === 'inconnu' ? `defi-${defi.cle}` : cle;
@@ -370,8 +378,9 @@ export function SimulationDiffractionRX() {
     </div>);
   const atelierBragg = (
     <div>
-      <SchemaBragg th={B.th} d={B.d}/>
-      <Ondes dl={dl}/>
+      <SchemaBragg th={B.th} d={B.d} p={animB == null ? null : animB / 2}/>
+      <Ondes dl={dl} ph={animB == null ? 0 : animB * Math.PI}/>
+      {enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>Lance la lecture : un rayon X arrive sur chaque plan, est diffusé et repart. Les ondes se déplacent ; quand elles sont en phase, leur somme est grande (pic de diffraction).</div><Commandes L={LA}/></div>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginTop: 8 }}>
         <Curseur nom="Angle θ" val={B.th} min={5} max={80} pas={0.1} set={v => setB(b => ({ ...b, th: v }))} unite="°" fmt={v => fr(v, 1)}/>
         <Curseur nom="Distance d entre plans" val={B.d} min={0.1} max={0.4} pas={0.005} set={v => setB(b => ({ ...b, d: v }))} unite=" nm" fmt={v => fr(v, 3)}/></div>
