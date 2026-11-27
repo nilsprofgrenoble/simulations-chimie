@@ -39,7 +39,7 @@ const choix = (actif, etat) => ({
   ...(etat === 'manque' ? { background: 'white', border: `2px dashed ${ORANGE_GUIDE}`, color: KIT.txt } : {}),
 });
 
-function Qcm({ o, perm, val, set, chk, vu }) {
+function Qcm({ o, perm, val, set, chk, vu, cacher }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
       {perm.map(i => {
@@ -47,7 +47,7 @@ function Qcm({ o, perm, val, set, chk, vu }) {
         return (
           <div key={`${i}-${o[i][0]}`}>
             <button data-ok={attrTest(o[i][1] ? 'true' : 'false')} onClick={() => set(i)} style={{ ...choix(val === i && !etat, etat), width: '100%' }}>{T(o[i][0])}</button>
-            {((chk && val === i) || vu) && <Expl ok={o[i][1]}>{o[i][1] ? '✔ ' : '✘ '}{T(o[i][2])}</Expl>}
+            {!cacher && ((chk && val === i) || vu) && <Expl ok={o[i][1]}>{o[i][1] ? '✔ ' : '✘ '}{T(o[i][2])}</Expl>}
           </div>);
       })}
     </div>);
@@ -132,7 +132,7 @@ function ExerciceVal({ fam, it, entete, navigation, naviguer, suivantExo }) {
       <div key={e.id} data-etape={e.id} style={styleBoite}>
         <div style={{ fontSize: 12.5, fontWeight: 800, color: COULEUR, letterSpacing: 0.3, textTransform: 'uppercase' }}>{`Étape ${k + 1} / ${etapes.length} — `}{e.titre}</div>
         <div style={{ fontWeight: 700, fontSize: 14.5, color: KIT.txt, margin: '4px 0 8px', lineHeight: 1.5 }}>{T(e.q)}</div>
-        {e.type === 'qcm' && <Qcm o={e.o} perm={perms[e.id]} val={rep[e.id]} set={i => majRep(e.id, i)} chk={c} vu={v}/>}
+        {e.type === 'qcm' && <Qcm o={e.o} perm={perms[e.id]} val={rep[e.id]} set={i => majRep(e.id, i)} chk={c} vu={v} cacher={fam === 'plausible' && e.id === 'verdict' && !v && !fini}/>}
         {e.type === 'num' && <Saisie e={e} val={rep[e.id]} set={x => majRep(e.id, x)} chk={c} vu={v}/>}
         {aide[e.id] && <div data-aide style={{ fontSize: 13.5, color: '#92400e', background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 6, padding: '4px 8px', marginTop: 6 }}><Pic n="bulb"/>{T(e.aide)}</div>}
         {c && <Verdict ok={r.ok}>{r.ok ? 'Bravo !' : 'Pas encore.'}{!r.ok && r.msg ? <span style={{ fontWeight: 500, color: KIT.txt }}> {T(r.msg)}</span> : null}</Verdict>}
