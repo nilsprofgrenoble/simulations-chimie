@@ -44,5 +44,8 @@ export function populations(mol, t) {
   const s1 = Math.exp(-t / mol.tauS1), phi = PHI_CIS[mol.id] ?? 0;
   const t1 = mol.tauT1 ? phi * (1 - s1) * Math.exp(-t / mol.tauT1) : 0;
   const chaud = 1 - r, S1 = r * s1, T1 = r * t1;
-  return { chaud, S1, T1, S0: Math.max(0, 1 - chaud - S1 - T1), fluo: S1, phos: phi ? T1 / phi : 0 };
+  // flF, flP : photons émis par décade de temps (dN/d log t), rapportés à leur maximum. C'est ce que montrent les grains qui tombent
+  // sur une échelle logarithmique : maximum vers t = τ, presque rien tant que t ≪ τ (les molécules attendent) ou t ≫ τ (niveau vide).
+  const flF = S1 * (t / mol.tauS1) * Math.E, flP = phi && mol.tauT1 ? (T1 / phi) * (t / mol.tauT1) * Math.E : 0;
+  return { chaud, S1, T1, S0: Math.max(0, 1 - chaud - S1 - T1), fluo: S1, phos: phi ? T1 / phi : 0, flF, flP };
 }
