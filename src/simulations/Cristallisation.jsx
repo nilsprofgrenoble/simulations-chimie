@@ -2,7 +2,7 @@ import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuvertu
 import { useState, useEffect, useRef } from "react";
 import { TabBtn, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, Formule, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
-import { SOLUB, solubilite, tempDeSolub } from "./cristallisationModele";
+import { SOLUB, solubilite, tempDeSolub, pSatEau } from "./cristallisationModele";
 import { SceneSolubilite } from "./TsolScene";
 import { useEtroit, StyleAnim, Chips } from "./exploAnim";
 import { usePhase, reduitMouvement } from "./hookHorloge";
@@ -29,8 +29,11 @@ function SceneCristal({ T, setT, mSolute, mEau, evap, graphe, ecart, lecture, en
       <StyleAnim/>
       <div style={{ maxWidth: graphe ? undefined : 440, margin: '0 auto' }}>
         <SceneSolubilite solide={KNO3} m={mSolute} mEau={mEau} T={T} setT={v => { arreter(); setTouche(true); setT(v); }} etroit={etroit} touche={touche || enCours} svgRef={svgRef} aria={aria} phase={phase}
-          dir={enCours ? (evap ? 'chaud' : 'froid') : null} vapeur={enCours && evap} niveau={evap ? mEau / 100 : 1} lecture={!!lecture && graphe} pointEtat={graphe} regions={graphe} becher graphe={graphe} ecart={ecart}/>
+          dir={enCours ? (evap ? 'chaud' : 'froid') : null} vapeur={enCours && evap} niveau={evap ? mEau / 100 : 1} vide={evap ? pSatEau(T) : null} lecture={!!lecture && graphe} pointEtat={graphe} regions={graphe} becher graphe={graphe} ecart={ecart}/>
       </div>
+      {evap && <div style={{ margin: '8px 4px 0', padding: '8px 12px', borderRadius: 10, background: '#ecfeff', border: '1.5px solid #67e8f9', fontSize: 14, lineHeight: 1.5, color: KIT.txt }}>
+        <strong>Pourquoi une pompe à vide ?</strong> L’eau bout à 100 °C seulement sous la pression atmosphérique (101 kPa). Quand on <strong>baisse la pression</strong>, elle bout à une température plus basse : à {Math.round(T)} °C, il suffit que la pression descende à <strong>{Math.round(pSatEau(T))} kPa</strong>. On évapore l’eau sans chauffer la solution à 100 °C.
+      </div>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '8px 4px 2px', flexWrap: 'wrap' }}>
         <button type="button" onClick={enCours ? arreter : lancer} style={{ ...styleBouton(true, evap ? '#b45309' : '#0369a1'), minHeight: 44 }}>{enCours ? '⏸ Pause' : evap ? '▶ Évaporer l’eau' : '▶ Refroidir la solution'}</button>
         <span style={{ fontSize: 13.5, color: KIT.txt2, flex: '1 1 200px', lineHeight: 1.45 }}>{graphe ? 'Lancez l’animation, ou faites glisser la poignée rouge sur l’axe des températures : le bécher et le point sur le diagramme suivent.' : 'Lancez l’animation pour voir ce qui se passe dans le bécher.'}</span>
@@ -142,7 +145,7 @@ export function Simulation7() {
         expl: `m(cristaux) = 100 − ${fmt(s20, 1)} = ${fmt(c20, 1)} g, soit ${fmt(c20, 1)} % du sel introduit. Même à 0 °C, on ne récupère jamais tout : ${fmt(solubilite(0), 1)} g restent dissous.`, indice: "Rendement = masse de cristaux ÷ masse introduite × 100 : η = frac(m(cristaux)|m(introduit)) × 100." } },
     { id: 'evap', titre: 'Cristalliser par évaporation', focus: ['mode', 'params'],
       retenirTitre: 'À RETENIR : RENDEMENT', retenir: <FicheRendement/>,
-      texte: <>Autre procédé : on garde la température constante et on <strong>évapore l'eau</strong> (sous pression réduite, pour ne pas chauffer). On part de 50 g de KNO₃ dans 100 g d'eau, à 60 °C.</>,
+      texte: <>Autre procédé : on garde la température constante et on <strong>évapore l'eau</strong> sous <strong>pression réduite</strong> : une pompe à vide abaisse la pression au-dessus de la solution, et l’eau s’évapore (elle bout) à 60 °C au lieu de 100 °C, sans chauffer davantage. Le manomètre du schéma indique cette pression. On part de 50 g de KNO₃ dans 100 g d'eau, à 60 °C.</>,
       tache: { type: 'action', ok: modeEv, label: 'Passer en évaporation (60 °C, 50 g)', faire: () => { setTypeCr('evaporation'); setT(60); setMSolute(50); setMEau(100); },
         consigne: modeEv ? null : 'Mode « Par évaporation », T = 60 °C, soluté 50 g' } },
     { id: 'concentrer', titre: 'Évaporer concentre la solution', focus: ['params', 'bilan'],
@@ -275,6 +278,8 @@ export function Simulation7() {
       <li><strong>Solubilité</strong> : valeurs tabulées de KNO₃ dans l'eau pure tous les 10 °C, avec une interpolation linéaire entre deux valeurs (les lectures graphiques sont donc approchées). Pas d'impuretés ni d'autres ions en solution.</li>
       <li><strong>Équilibre</strong> : à chaque température, l'équilibre est atteint. Dès que la solution est saturée, l'excès cristallise aussitôt : on ignore la sursaturation (solution métastable) et la cinétique de cristallisation.</li>
       <li><strong>Cristaux</strong> : KNO₃ pur et anhydre. Les cristaux ne retiennent pas de solution (pas d'eau-mère), et la masse récupérée est supposée entièrement séparée du liquide.</li>
+      <li><strong>Pression</strong> : l'évaporation à température constante (inférieure à 100 °C) se fait sous pression réduite ; la pression indiquée par le manomètre est la pression de vapeur saturante de l'eau à la température choisie (tables de vapeur d'eau, valeurs arrondies, interpolation linéaire tous les 10 °C).</li>
+      <li><strong>Pression</strong> : l'évaporation à température constante inférieure à 100 °C se fait sous pression réduite ; la pression du manomètre est la pression de vapeur saturante de l'eau à la température choisie (tables de vapeur d'eau, valeurs arrondies, interpolation linéaire tous les 10 °C).</li>
       <li><strong>Masses</strong> : le sel est exprimé en g pour 100 g d'eau de départ. En refroidissement, la masse d'eau reste égale à 100 g. En évaporation, la température est constante, seule l'eau s'évapore (KNO₃ n'est pas volatil) et il en reste la masse indiquée.</li>
       <li><strong>Diagramme</strong> : le point représente la composition globale (tout le sel introduit, pour 100 g de l'eau restante) ; en présence de cristaux, le point de la solution saturée est sur la courbe et l'écart vertical représente la masse de cristaux.</li>
     </ul>
