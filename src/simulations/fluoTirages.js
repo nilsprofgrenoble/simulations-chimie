@@ -2,11 +2,11 @@
 // Fonctions pures (le hasard est fourni par `rnd`), testées par fluoTirages.test.mjs.
 // Hypothèses : structure vibronique schématique (5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon pour l'absorption et l'émission,
 // donc spectres d'allure « image miroir ») ; la molécule part toujours du niveau le plus bas de S₀ ; règle de Kasha (relaxation vibrationnelle complète
-// jusqu'au bas de S₁ avant toute émission) ; raies élargies par une gaussienne de largeur 0,05 eV ; E(eV) × λ(nm) = 1243.
+// jusqu'au bas de S₁ avant toute émission) ; bandes élargies par une gaussienne de largeur 0,14 eV (sous-niveaux de vibration non résolus) ; E(eV) × λ(nm) = 1243.
 import { gauss } from './fluoModele.js';
 
 export const HC = 1243;
-export const SIG = 0.05;                                   // largeur (écart-type, eV) de chaque raie vibronique
+export const SIG = 0.14;                                   // largeur (écart-type, eV) de chaque bande vibronique : en solution, les sous-niveaux de vibration ne sont plus résolus
 export const FC = [0.08, 0.22, 0.36, 0.22, 0.12];          // poids des transitions vers v = 0 … 4 (somme = 1) ; maximum pour v = 2
 export const NV = FC.length;
 export const BORNES = { lam0: 290, lam1: 600, pas: 5 };
@@ -20,8 +20,8 @@ export const MAX_PHOTONS = 20000;
 // A : maxima 350 nm (absorption) et 450 nm (fluorescence), comme la molécule A du reste de la simulation.
 // B : 350 nm, 420 nm (fluorescence) et 520 nm (phosphorescence), comme la molécule B.
 export const MOLS_T = {
-  A: { id: 'A', nom: 'Molécule A (fluorescente)', E00: 3.157, hw: 0.197, rend: { fluo: 0.7, cis: 0 }, T: null },
-  B: { id: 'B', nom: 'Molécule B (phosphorescente)', E00: 3.256, hw: 0.148, rend: { fluo: 0.15, cis: 0.6 }, T: { E00: 2.686, phos: 0.55 } },
+  A: { id: 'A', nom: 'Molécule A (fluorescente)', E00: 3.133, hw: 0.207, rend: { fluo: 0.7, cis: 0 }, T: null },
+  B: { id: 'B', nom: 'Molécule B (phosphorescente)', E00: 3.24, hw: 0.154, rend: { fluo: 0.15, cis: 0.6 }, T: { E00: 2.661, phos: 0.55 } },
 };
 export const lamDe = E => HC / E;
 export const energieDe = lam => HC / lam;
