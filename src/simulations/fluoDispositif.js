@@ -2,7 +2,7 @@
 // Structure vibronique schématique (fluoTirages.js) : un seul mode de vibration, 5 sous-niveaux, mêmes facteurs de Franck-Condon à l'absorption
 // et à l'émission, règle de Kasha, E(eV) × λ(nm) = 1243.
 // Deux réglages « physiques » (objet opt) :
-//  - sig : largeur (écart-type, eV) de chaque raie vibronique, selon les CONDITIONS (gaz froid : raies ; solvant apolaire : structure ; solution : bande) ;
+//  - sig : largeur (écart-type, eV) de chaque raie vibronique, selon les CONDITIONS (molécule isolée en phase gazeuse : raies ; solvant apolaire : structure ; solution : bande) ;
 //  - fente : bande passante des monochromateurs (nm) ; le signal observé est la moyenne du spectre vrai sur cette bande passante
 //    (intensités ramenées à la largeur de fente : seul l'effet sur la résolution est montré).
 // Intensités relatives : chaque spectre est ramené au maximum du spectre vrai (sans effet de fente), mêmes conditions.
@@ -16,7 +16,7 @@ export const MODES = [
   { id: 'ph', nom: 'Phosphorescence' },
 ];
 export const CONDITIONS = {
-  gaz: { id: 'gaz', nom: 'Raies (gaz très froid)', court: 'Raies', sig: 0.012, cause: 'Raies (gaz très froid) : molécules isolées et très froides : chaque transition donne une raie fine. Ici, un seul mode de vibration : on voit une raie par sous-niveau.' },
+  gaz: { id: 'gaz', nom: 'Raies (molécule isolée, en phase gazeuse)', court: 'Raies', sig: 0.012, cause: 'Raies (molécule isolée, en phase gazeuse) : sans solvant autour, aucun élargissement : chaque transition donne une raie fine. Ici, un seul mode de vibration : on voit une raie par sous-niveau.' },
   rigide: { id: 'rigide', nom: 'Structure (solvant apolaire)', court: 'Structure', sig: 0.05, cause: 'Structure : molécule rigide (type anthracène ou pyrène) dans un solvant apolaire : chaque raie s’élargit, mais la structure vibrationnelle reste visible.' },
   solution: { id: 'solution', nom: 'Bande (solution usuelle)', court: 'Bande', sig: X.SIG, cause: 'Bande (solution usuelle) : chaque molécule a un entourage de solvant différent et une vraie molécule a de nombreux modes de vibration ; les raies se fondent en une bande.' },
 };
