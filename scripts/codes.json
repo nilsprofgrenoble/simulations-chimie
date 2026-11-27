@@ -3179,5 +3179,17 @@
  "36:amp-decalage": "REA235",
  "37:prevoir:spf-ana-pyrene": "ANA1416",
  "37:prevoir:spf-ana-fentes": "ANA1417",
- "77:plausible:spf-val-melange": "VAL823"
+ "77:plausible:spf-val-melange": "VAL823",
+ "34:biot-sapp-alpha.0": "SAPP707",
+ "34:biot-sapp-alpha.1": "SAPP708",
+ "34:biot-sapp-ee.0": "SAPP709",
+ "34:biot-sapp-ee.1": "SAPP710",
+ "37:prevoir:biot-ana-longueur": "ANA1418",
+ "37:prevoir:biot-ana-dilution": "ANA1419",
+ "37:prevoir:biot-ana-racemique": "ANA1420",
+ "37:prevoir:biot-ana-enantiomere": "ANA1421",
+ "77:plausible:biot-val-cm": "VAL824",
+ "77:plausible:biot-val-ee": "VAL825",
+ "36:biot-alpha": "REA236",
+ "36:biot-ee": "REA237"
 }
