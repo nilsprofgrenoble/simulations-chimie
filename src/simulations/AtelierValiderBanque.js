@@ -1505,7 +1505,7 @@ export const PLAUSIBLES = [
   P({ id: 'flm-val-temperature', domaine: 'Atomes dans une flamme : émission et absorption atomiques', niveau: 2, titre: 'Une flamme un peu plus chaude, un signal presque identique ?', plausible: false,
     enonce: 'Un élève affirme : « En émission de flamme, si la température de la flamme augmente de 10 %, l’intensité de la raie du sodium augmente d’environ 10 % seulement. »',
     reperes: [['Proportion d’atomes excités', '(g*/g₀) · exp(−E / kT)'], ['Sodium', 'E = 2,10 eV']],
-    ver: 'La proportion d’atomes excités varie en exp(−E/kT) : une hausse de 10 % de la température multiplie le signal par un facteur bien supérieur (environ 3 pour le sodium de 2 500 K à 2 750 K). L’émission de flamme est très sensible à la température.',
+    ver: 'La proportion d’atomes excités varie en exp(−E/kT) : une hausse de 10 % de la température multiplie le signal par un facteur bien supérieur (environ 2,4 pour le sodium de 2 500 K à 2 750 K). L’émission de flamme est très sensible à la température.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('le signal varie exponentiellement avec la température', 'exp(−E/kT) croît très vite avec T : un petit écart de température change beaucoup le signal.'),

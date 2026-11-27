@@ -152,6 +152,6 @@ export function SvgCartePopulation() {
     <rect x="20" y="30" width="260" height="30" fill="#e2e8f0" stroke={K.gris}/><rect x="278" y="30" width="3" height="30" fill="#d97706"/>
     {T(150, 50, 'au fondamental : environ 9 998', { size: 13, gras: true })}
     <line x1="279" y1="62" x2="279" y2="84" stroke="#d97706" strokeWidth="1.8"/>{T(279, 98, '≈ 2 excités', { size: 12.5, gras: true, fill: '#92400e', anchor: 'end' })}
-    {T(150, 122, 'L’absorption part du grand nombre', { size: 12 })}{T(150, 137, 'd’atomes au fondamental : elle est', { size: 12 })}{T(150, 151, 'plus sensible que l’émission.', { size: 12, gras: true })}
+    {T(150, 122, 'L’absorption part du grand nombre', { size: 12 })}{T(150, 137, 'd’atomes au fondamental : elle ne', { size: 12 })}{T(150, 151, 'dépend pas de l’excitation thermique.', { size: 12, gras: true })}
   </svg>);
 }

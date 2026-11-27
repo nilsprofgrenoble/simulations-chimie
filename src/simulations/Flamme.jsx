@@ -60,7 +60,7 @@ export function SimulationFlamme() {
       tache: { type: 'qcm', q: 'Après évaporation du solvant (désolvatation), il reste…', ...QCM.desolv,
         expl: 'Le solvant s’évapore : la goutte rétrécit et laisse un petit grain solide du sel dissous. Ce grain fond et se vaporise ensuite plus haut dans la flamme.', indice: 'Regardez la taille de la goutte quand elle monte dans la flamme, puis ce qui reste à la fin de l’étape 2.' } },
     { id: 'atomi', titre: 'La flamme fabrique des atomes libres', focus: ['scene', 'curseur'],
-      texte: <>Le grain fond, se vaporise en <strong>molécules gazeuses</strong> (NaCl), puis la chaleur les casse : on obtient des <strong>atomes libres</strong>. Ce sont eux, et eux seuls, qui absorbent ou émettent aux longueurs d’onde de la spectrométrie atomique.</>,
+      texte: <>Le grain fond, se vaporise en <strong>molécules gazeuses</strong> (NaCl), puis la chaleur les casse : on obtient des <strong>atomes libres</strong>. Ce sont eux qui absorbent ou émettent aux longueurs d’onde étroites des raies de la spectrométrie atomique.</>,
       tache: { type: 'qcm', q: 'La chaleur de la flamme donne des atomes libres parce qu’elle…', ...QCM.atomi,
         expl: 'La chaleur apporte l’énergie nécessaire pour rompre la liaison entre l’atome de sodium et celui de chlore : c’est l’atomisation.', indice: 'Regardez ce qui arrive à la molécule NaCl dans la dernière zone de la flamme.' } },
     { id: 'niveaux', titre: 'Un atome, deux niveaux d’énergie', focus: ['scene', 'curseur'],
@@ -80,7 +80,7 @@ export function SimulationFlamme() {
     { id: 'cuivre', titre: 'Et pour une raie dans l’ultraviolet ?', focus: ['scene', 'curseur', 'mesures'],
       texte: <>Le cuivre a sa raie à <strong>324,8{NB}nm</strong> (ultraviolet) : l’écart d’énergie est de 3,82{NB}eV, bien plus grand que pour le sodium (2,10{NB}eV). Voici 10 000 atomes de cuivre dans la même flamme.</>,
       tache: { type: 'qcm', q: 'En émission de flamme, l’intensité de la raie du cuivre est…', ...QCM.cuivre,
-        expl: 'Plus l’écart d’énergie est grand, moins les chocs thermiques peuvent exciter d’atomes : pour le cuivre, il y en a des millions de fois moins que pour le sodium. La SEF convient aux éléments à raie peu énergétique (Na, K, Li) ; pour le cuivre il faut une autre méthode.', indice: 'Comparez le nombre d’atomes allumés pour le cuivre et pour le sodium à la même température.' } },
+        expl: 'Plus l’écart d’énergie est grand, moins les chocs thermiques peuvent exciter d’atomes : à 2 500 K, il y en a environ 4 000 fois moins pour le cuivre que pour le sodium. La SEF convient aux éléments à raie peu énergétique (Na, K, Li) ; pour le cuivre il faut une autre méthode.', indice: 'Comparez le nombre d’atomes allumés pour le cuivre et pour le sodium à la même température.' } },
     { id: 'absorption', titre: 'Absorption : une lampe éclaire la flamme', retenirTitre: 'À retenir : émission ou absorption', retenir: <SvgCarteDeux/>, focus: ['scene', 'curseur'],
       texte: <>En <strong>absorption atomique</strong> (SAA), on envoie dans la flamme la lumière d’une <strong>lampe à cathode creuse</strong> contenant l’élément à doser. Les atomes de la flamme <strong>retirent</strong> des photons du faisceau ; le détecteur reçoit moins de lumière.</>,
       tache: { type: 'qcm', q: 'La lampe contient l’élément à doser parce que…', ...QCM.lampe,
@@ -91,10 +91,10 @@ export function SimulationFlamme() {
         calcul: () => ['T = I / I₀ = 2000 / 10 000 = 0,20.', 'A = −log(0,20) = 0,70.', 'Hypothèse : chaque photon absorbé l’est une seule fois, sans diffusion ni émission parasite.'],
         pieges: [[0.2, 'Vous avez donné T : l’absorbance est A = −log T.'], [1.61, 'Vous avez utilisé le logarithme népérien : A = −log T avec le logarithme décimal.'], [-0.699, 'Une absorbance est positive : A = −log T avec T < 1.']],
         expl: 'T = 0,20 donc A = −log(0,20) ≈ 0,70 : 80 % des photons ont été absorbés.', indice: 'Calculez d’abord T = I / I₀, puis A = −log T (touche log).' } },
-    { id: 'sensible', titre: 'Pourquoi l’absorption est plus sensible', retenirTitre: 'À retenir : qui peut absorber ?', retenir: <SvgCartePopulation/>, focus: ['scene', 'curseur'],
+    { id: 'sensible', titre: 'Qui peut absorber ? Presque tous les atomes', retenirTitre: 'À retenir : qui peut absorber ?', retenir: <SvgCartePopulation/>, focus: ['scene', 'curseur'],
       texte: <>Reprenez l’instantané : dans la flamme, presque tous les atomes sont au niveau fondamental. Regardez un atome qui reçoit un photon de la lampe (même écart d’énergie que la raie).</>,
       tache: { type: 'qcm', q: 'Les atomes qui absorbent la lumière de la lampe sont ceux qui sont…', ...QCM.sensible,
-        expl: 'L’absorption part du niveau fondamental, occupé par presque tous les atomes (même à 3 000 K). L’émission, elle, ne vient que des rares atomes excités : c’est pourquoi la SAA est plus sensible, et qu’elle convient aussi aux éléments à raie ultraviolette comme le cuivre.', indice: 'Dans l’instantané, quelle catégorie d’atomes est la plus nombreuse ?' } },
+        expl: 'L’absorption part du niveau fondamental, occupé par presque tous les atomes (même à 3 000 K). L’émission, elle, ne vient que des rares atomes excités, dont le nombre dépend très fortement de la température. C’est pourquoi la SAA convient aussi aux éléments à raie ultraviolette comme le cuivre, et que son signal dépend peu de l’excitation thermique (l’atomisation, elle, dépend de la flamme). (Pour Na, K et Li, l’émission de flamme reste pourtant très sensible : « plus sensible » dépend de l’élément.)', indice: 'Dans l’instantané, quelle catégorie d’atomes est la plus nombreuse ?' } },
     { id: 'etalonnage', titre: 'Étalonner : de l’absorbance à la concentration', focus: ['scene'],
       texte: <>On mesure l’absorbance d’étalons de sodium. Un étalon à <strong>1,0{NB}mg/L</strong> donne A = 0,40. L’échantillon (marqué en orange) donne <strong>A = 0,25</strong>.</>,
       tache: { type: 'num', q: 'Concentration en sodium de l’échantillon', unite: 'mg/L', vrai: 0.625, tol: 0.05, affiche: v => fr(v, 2), cs: 2,
@@ -111,7 +111,7 @@ export function SimulationFlamme() {
         expl: 'La raie du cuivre est dans l’ultraviolet : très peu d’atomes sont excités dans une flamme, l’émission est donc quasi nulle. L’absorption atomique, qui part du niveau fondamental, mesure très bien le cuivre.', indice: 'Souvenez-vous de la comparaison faite avec le sodium.' } },
     { id: 'bilan', titre: 'Le bilan : deux façons d’utiliser la flamme', focus: [],
       retenirTitre: 'À retenir : flamme, émission, absorption', retenir: <><SvgCarteDeux/>
-        <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>Nébulisation, désolvatation, vaporisation, atomisation : on obtient des atomes libres.</li><li>SEF : la flamme excite les atomes, qui émettent ; seuls les éléments à raie peu énergétique (Na, K, Li) s’y prêtent.</li><li>SAA : une lampe à cathode creuse de l’élément ; A = −log(I / I₀) ; plus sensible car les atomes partent du fondamental.</li><li>Étalonnage : signal proportionnel à la concentration (domaine linéaire).</li></ul></>,
+        <ul style={{ margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 }}><li>Nébulisation, désolvatation, vaporisation, atomisation : on obtient des atomes libres.</li><li>SEF : la flamme excite les atomes, qui émettent ; seuls les éléments à raie peu énergétique (Na, K, Li) s’y prêtent.</li><li>SAA : une lampe à cathode creuse de l’élément ; A = −log(I / I₀) ; presque tous les atomes partent du fondamental, donc la méthode convient aux raies UV et dépend peu de l’excitation thermique.</li><li>Étalonnage : signal proportionnel à la concentration (domaine linéaire).</li></ul></>,
       texte: <>Vous savez décrire le trajet d’un échantillon dans la flamme, distinguer émission et absorption, exploiter un étalonnage et choisir la technique. En exploration, envoyez des photons un par un, photographiez les atomes de la flamme et changez d’élément ou de flamme ; deux défis vous attendent.</> },
   ];
   const etape = Math.min(guide.etape, ETAPES.length - 1), idE = enGuide ? ORDRE[etape] : null;
@@ -211,7 +211,7 @@ export function SimulationFlamme() {
         {selecteur('fm-em', 'Technique', ex.methode, ev => setEx(e => ({ ...e, methode: ev.target.value })), [{ id: 'absorption', nom: 'Absorption atomique (SAA)' }, { id: 'emission', nom: 'Émission de flamme (SEF)' }])}
         {selecteur('fm-ee', 'Élément', ex.el, ev => setEx(e => ({ ...e, el: ev.target.value, c: M.element(ev.target.value).cmax / 2.5 })), M.ELEMENTS.map(e => ({ id: e.s, nom: `${e.nom} (${Math.round(e.lam)} nm)` })))}
         {selecteur('fm-ef', 'Flamme', ex.fl, ev => setEx(e => ({ ...e, fl: ev.target.value })), M.FLAMMES.map(f => ({ id: f.id, nom: `${f.nom} (≈ ${f.tC} °C)` })))}
-        {curs('fm-ec', `Concentration de l’échantillon : ${fr(cE, 1)} mg/L`, cE, 0, +(elE.cmax * 1.6).toFixed(1), +(elE.cmax / 50).toFixed(2), ev => setEx(e => ({ ...e, c: parseFloat(ev.target.value) })), 'Au-delà de la plage d’étalonnage, la courbe s’écarte de la droite.')}</>}
+        {curs('fm-ec', `Concentration de l’échantillon : ${fr(cE, 1)} mg/L`, cE, 0, +(elE.cmax * 1.6).toFixed(1), +(elE.cmax / 50).toFixed(2), ev => setEx(e => ({ ...e, c: parseFloat(ev.target.value) })), 'La courbe s’écarte de plus en plus de la droite en fin de plage et au-delà.')}</>}
       {ex.onglet === 'trajet' && <div style={{ marginTop: 8 }}>{barreAnim}</div>}
     </div>);
   const pilules = (
@@ -273,7 +273,7 @@ export function SimulationFlamme() {
         <li>Flamme : nébulisation, désolvatation, vaporisation, atomisation → atomes libres</li>
         <li>SEF : atomes excités par la flamme, puis photon émis ; I ∝ c, intensité très sensible à T (Boltzmann)</li>
         <li>SAA : lampe à cathode creuse de l’élément ; A = −log(I / I₀) ∝ c (Beer-Lambert)</li>
-        <li>La SAA part du niveau fondamental : plus sensible et valable pour les raies UV (Cu, Mg)</li>
+        <li>La SAA part du niveau fondamental : valable pour les raies UV (Cu, Mg), peu dépendante de l’excitation thermique ; pour Na, K, Li, la SEF reste très performante</li>
         <li>E(eV) = 1240 / λ(nm) ; flamme plus chaude : atomisation plus complète (Ca)</li>
       </ul>
     </ARetenir>);
@@ -282,7 +282,7 @@ export function SimulationFlamme() {
       <li><strong>Valeurs</strong> : ordres de grandeur arrondis (raies de résonance, températures de flamme : air-propane ≈ 2 200 K, air-acétylène ≈ 2 500 K, protoxyde d’azote-acétylène ≈ 3 000 K). Aucune ne remplace les données d’un constructeur ou d’un TP.</li>
       <li><strong>Excitation thermique</strong> : proportion d’atomes excités = (g*/g₀) · exp(−E / kT) (loi de Boltzmann), avec g*/g₀ = 3 pour Na, Li, K, Ca, Mg (les composantes du doublet sont confondues) et 2 pour Cu ; équilibre thermique supposé.</li>
       <li><strong>Atomisation</strong> : fraction d’atomes libres donnée par élément et par flamme, valeurs illustratives (Ca et Mg sont réfractaires : peu d’atomes libres dans les flammes froides).</li>
-      <li><strong>Signaux</strong> : absorbance proportionnelle à la concentration et aux atomes libres, avec une légère courbure en fin de plage ; intensité d’émission proportionnelle à c × (atomes libres) × (atomes excités), avec autoabsorption en fin de plage. Unités arbitraires pour l’émission (100 pour 1 mg/L de sodium dans la flamme air-acétylène).</li>
+      <li><strong>Signaux</strong> : absorbance proportionnelle à la concentration et aux atomes libres, avec une courbure en fin de plage (la courbe passe environ 25 % sous la droite à la concentration maximale de la plage) ; intensité d’émission proportionnelle à c × (atomes libres) × (atomes excités), avec autoabsorption en fin de plage. Les absorbances atteignent 1 à 1,6 pour le sodium et le lithium en fin de plage, au-delà de la zone où un appareil réel reste précis. Unités arbitraires pour l’émission (100 pour 1 mg/L de sodium dans la flamme air-acétylène).</li>
       <li><strong>Tirages</strong> : en absorption, chaque photon est absorbé avec la probabilité 1 − 10^(−A), indépendamment des autres ; en émission, chaque atome libre d’un instantané de 10 000 est excité avec la probabilité de Boltzmann. Un atome excité émet un photon (rendement 1).</li>
       <li><strong>Hors modèle</strong> : ionisation (alcalins dans les flammes chaudes), interférences chimiques et spectrales, élargissement des raies, émission du fond, correction du fond, flammes riches ou pauvres, four en graphite.</li>
     </ul>);
