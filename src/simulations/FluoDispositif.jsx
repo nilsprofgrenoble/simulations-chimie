@@ -1,221 +1,242 @@
-// Vue « Dispositif et spectre » de la simulation 301 : un photon traverse le dispositif (lampe, monochromateurs, échantillon, détecteur),
-// le diagramme de Perrin-Jablonski montre la transition en jeu et le spectre se trace pendant que le monochromateur balaie.
-// Rien n'est codé par la seule couleur : noms écrits, styles de trait, « balayé » / « fixé » sous chaque monochromateur.
-import { useState, useEffect } from "react";
-import { K, T, fr } from "./schemaOutils";
-import * as M from "./fluoModele";
-import { SceneSpectresFluo } from "./FluoSchemas";
+// Vue « Du photon au spectre » de la simulation 301 : trois panneaux visibles en même temps.
+// ① le montage (vue de dessus : lampe, monochromateurs, cuve, détecteur dans l'axe et détecteur à 90°),
+// ② la molécule : diagramme d'énergie À L'ÉCHELLE (eV), longueur de chaque flèche = énergie du photon,
+// ③ le spectre enregistré point par point pendant le balayage ; les repères d'excitation et de détection se font glisser.
+// Rien n'est codé par la seule couleur : noms écrits, valeurs en nm et en eV, traits pleins / tiretés.
+import { useState, useEffect, useRef } from "react";
+import { K, T } from "./schemaOutils";
 import * as X from "./fluoTirages";
 import * as D from "./fluoDispositif";
-import { SceneVibronique } from "./FluoTirages";
 import { reduitMouvement } from "./hookHorloge";
-import { KIT, styleBouton, styleBoite, LigneMesure } from "../commun";
+import { KIT, stylePetitBouton, styleBouton } from "../commun";
 
-const COL = { abs: '#7c3aed', fluo: '#15803d', phos: '#b91c1c', nr: '#64748b' };
 const NB = ' ';
-const DUREE_PHOTON = 2600, DUREE_BALAYAGE = 14000;
-const selectStyle = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
-const libelle = { display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, margin: '0 0 3px' };
-const svgBloc = { display: 'block', width: '100%', maxWidth: 480, margin: '0 auto' };
+const fr2 = v => v.toFixed(2).replace('.', ',').replace('-', '−');
 const nm = l => `${Math.round(l)}${NB}nm`;
-
-const SUP = { id: 'sup', nom: 'Absorption + émission' };
-const HINT = {
-  sup: 'Les deux spectres de la même molécule sur un même graphique : la bande d’émission est décalée vers les grandes longueurs d’onde par rapport à la bande d’absorption (décalage de Stokes). Comparez les deux molécules.',
-  abs: 'Détecteur dans l’axe de la lampe : il reçoit la lumière qui n’a pas été absorbée. La bande d’absorption rassemble les transitions de S₀ vers les sous-niveaux de vibration de S₁, trop proches pour être séparés en solution.',
-  em: 'Détecteur à 90° : il ne reçoit que la lumière émise par l’échantillon, pas le faisceau. L’excitation est fixée ; on balaie le monochromateur de détection : la bande d’émission rassemble les retours vers les sous-niveaux de vibration de S₀.',
-  ex: 'Détecteur à 90°, réglé sur la fluorescence. On balaie la longueur d’onde d’excitation : le signal est le plus fort quand le photon est absorbé, donc le spectre d’excitation a l’allure du spectre d’absorption.',
-  ph: 'La lampe est coupée : la fluorescence s’est éteinte, seule la phosphorescence (T₁ → S₀) arrive encore au détecteur à 90°. On balaie le monochromateur de détection.',
+const eV = l => `${fr2(X.HC / l)}${NB}eV`;
+const COLC = { abs: '#7c3aed', ex: '#7c3aed', em: '#15803d', ph: '#b91c1c' };
+const MODES = [['abs', 'Absorption'], ['em', 'Émission'], ['ex', 'Excitation'], ['ph', 'Phosphorescence']];
+const SCAN = { abs: [285, 430], ex: [285, 430], em: [370, 640], ph: [400, 640] };     // λ balayée
+const FIXE = { em: [290, 420], ph: [290, 420], ex: [380, 600] };                      // λ fixée
+const DUREE = 9000;
+const TITRE = {
+  abs: 'Spectre d’absorption',
+  em: f => `Spectre d’émission (exc. ${nm(f)})`,
+  ex: f => `Spectre d’excitation (dét. ${nm(f)})`,
+  ph: () => 'Spectre de phosphorescence',
 };
-const AXE_X = { abs: 'λ d’excitation (nm)', ex: 'λ d’excitation (nm)', em: 'λ d’émission détectée (nm)', ph: 'λ d’émission détectée (nm)' };
+const defautFixe = (mode, mol) => (mode === 'ex' ? Math.round(X.lamMaxEmission(mol) / 5) * 5 : 350);
+const marquer = (pts, a, b) => { const o = { ...pts }; for (let k = Math.ceil(Math.min(a, b)); k <= Math.floor(Math.max(a, b)); k++) o[k] = 1; o[Math.round(b)] = 1; return o; };
+const valeur = (mode, mol, l, f) => (mode === 'abs' ? D.absorbance(mol, l) : D.signal(mol, mode, l, f));
+const picDe = (mode, mol, f) => { let b = SCAN[mode][0], m = -1; for (let l = SCAN[mode][0]; l <= SCAN[mode][1]; l++) { const v = valeur(mode, mol, l, f); if (v > m) { m = v; b = l; } } return b; };
+const plein = mode => marquer({}, SCAN[mode][0], SCAN[mode][1]);
 
-// horloge en millisecondes, qui avance tant que `actif`
-function useHorloge(actif) {
-  const [t, setT] = useState(0);
-  useEffect(() => {
-    if (!actif) return undefined;
-    let id, last = null;
-    const f = ts => { if (last != null) setT(v => v + (ts - last)); last = ts; id = requestAnimationFrame(f); };
-    id = requestAnimationFrame(f);
-    return () => cancelAnimationFrame(id);
-  }, [actif]);
-  return t;
-}
+// ---------- petits dessins ----------
+const flecheV = (x, y1, y2, col, w, dash, k) => { const s = y2 < y1 ? 1 : -1;
+  return <g key={k}><line x1={x} y1={y1} x2={x} y2={y2 + s * 9} stroke={col} strokeWidth={w} strokeDasharray={dash}/><polygon points={`${x},${y2} ${x - 6},${y2 + s * 12} ${x + 6},${y2 + s * 12}`} fill={col}/></g>; };
+const ondule = (x, y1, y2, col, k) => { if (Math.abs(y2 - y1) < 6) return null; let d = `M${x},${y1}`; const n = Math.max(2, Math.floor(Math.abs(y2 - y1) / 6)), dy = (y2 - y1) / n;
+  for (let i = 1; i <= n; i++) d += ` L${x + (i % 2 ? 4 : -4)},${y1 + dy * i - (i === n ? 0 : 0)}`;
+  return <g key={k}><path d={d} fill="none" stroke={col} strokeWidth="1.8"/><polygon points={`${x},${y2 + 1} ${x - 4},${y2 - 7} ${x + 4},${y2 - 7}`} fill={col}/></g>; };
 
-const texteTransitions = t => {
-  const p = [];
-  if (t.abs >= 0) p.push(`absorption S₀ v${NB}=${NB}0 → S₁ v′${NB}=${NB}${t.abs}`);
-  if (t.fluo >= 0) p.push(`fluorescence S₁ v′${NB}=${NB}0 → S₀ v${NB}=${NB}${t.fluo}`);
-  if (t.phos >= 0) p.push(`phosphorescence T₁ → S₀ v${NB}=${NB}${t.phos}`);
-  return p.length ? p.join(' ; ') : 'aucune raie à cette longueur d’onde : signal très faible';
-};
-
-// ---------- le dispositif ----------
-function SceneMontage({ mode, lamB, fixe, p, ev }) {
-  const abs = mode === 'abs', ph = mode === 'ph', CX = 204, CY = 100;
-  const lamExc = abs || mode === 'ex' ? lamB : fixe, lamDet = mode === 'ex' ? fixe : lamB;
-  const excBalaye = abs || mode === 'ex';
-  const colEm = ev.voie === 'phos' ? COL.phos : COL.fluo;
-  const lit = p != null && ev.passe && p > 0.92;
-  let photon = null;
-  if (p != null) {
-    const T1 = 0.32, E0 = ph ? 0.1 : 0.5, E1 = E0 + 0.22, E2 = E1 + 0.2;
-    const els = [];
-    if (!ph) {
-      if (p < T1) els.push(<circle key="d" cx={44 + (CX - 44) * p / T1} cy={CY} r="5" fill={COL.abs} stroke="#fff" strokeWidth="1.5"/>);
-      else if (!ev.absorbe) {
-        const x1 = abs ? 330 : 276, q = Math.min(1, (p - T1) / ((abs ? 0.75 : 0.6) - T1));
-        els.push(<circle key="d" cx={CX + (x1 - CX) * q} cy={CY} r="5" fill={COL.abs} stroke="#fff" strokeWidth="1.5" opacity={!abs && q >= 1 ? 0.35 : 1}/>);
-      } else if (p < E0 + 0.05) {
-        const q = (p - T1) / (0.55 - T1);
-        els.push(<circle key="r" cx={CX} cy={CY} r={4 + 18 * q} fill="none" stroke={COL.abs} strokeWidth="2.4" opacity={Math.max(0, 1 - q * 0.7)}/>);
-      }
-    }
-    if (ev.absorbe && (ph || p >= E0) && !abs && (ev.voie === 'fluo' || ev.voie === 'phos')) {
-      const q1 = Math.min(1, Math.max(0, (p - E0) / (E1 - E0))), y = CY + 46 * q1;
-      if (ev.passe) { const q2 = Math.min(1, Math.max(0, (p - E1) / (E2 - E1))); els.push(<circle key="e" cx={CX} cy={q2 > 0 ? 148 + 52 * q2 : y} r="5" fill={colEm} stroke="#fff" strokeWidth="1.5"/>); }
-      else { els.push(<circle key="e" cx={CX} cy={y} r="5" fill={colEm} stroke="#fff" strokeWidth="1.5" opacity={q1 >= 1 ? 0.4 : 1}/>); if (q1 >= 1) els.push(T(CX + 22, 143, '✕ arrêté', { anchor: 'start', size: 12, fill: COL.phos, gras: true, halo: true })); }
-    }
-    if (ev.absorbe && (ev.voie === 'nr' || ev.voie === 'nrT') && (ph || p > 0.5)) els.push(T(CX + 26, CY + 4, 'chaleur', { anchor: 'start', size: 12, fill: COL.nr, gras: true, halo: true }));
-    photon = els;
-  }
-  return (<svg role="img" aria-label={`Dispositif expérimental : lampe, monochromateur d’excitation réglé sur ${nm(lamExc)}, échantillon, ${abs ? 'détecteur placé dans l’axe' : `monochromateur de détection réglé sur ${nm(lamDet)} puis détecteur à 90 degrés`}`} viewBox="0 0 400 226" style={svgBloc}>
-    {/* faisceau */}
-    {!ph && <><line x1="44" y1={CY} x2="64" y2={CY} stroke="#c4b5fd" strokeWidth="3"/><line x1="112" y1={CY} x2={CX - 18} y2={CY} stroke="#c4b5fd" strokeWidth="3"/>{abs ? <line x1={CX + 18} y1={CY} x2="316" y2={CY} stroke="#c4b5fd" strokeWidth="3"/> : <line x1={CX + 18} y1={CY} x2="276" y2={CY} stroke="#c4b5fd" strokeWidth="3" strokeDasharray="2 5"/>}</>}
-    {/* lampe */}
-    <rect x="14" y="84" width="30" height="32" rx="6" fill={ph ? '#e2e8f0' : '#fde68a'} stroke="#334155" strokeWidth="2"/>
-    {T(29, 134, 'lampe', { size: 12, gras: true })}{ph && T(29, 148, 'coupée', { size: 12, fill: COL.phos, gras: true })}
-    {/* monochromateur d'excitation */}
-    <rect x="64" y="82" width="48" height="36" rx="6" fill="#ede9fe" stroke={COL.abs} strokeWidth="2.2"/><line x1="76" y1="108" x2="100" y2="92" stroke={COL.abs} strokeWidth="2"/>
-    {T(88, 74, 'mono. d’excitation', { size: 12, gras: true, fill: COL.abs })}
-    {!ph && <>{T(88, 134, nm(lamExc), { size: 12.5, gras: true, fill: COL.abs })}{T(88, 148, excBalaye ? 'balayé' : 'fixé', { size: 12, fill: K.gris })}</>}
-    {ph && <>{T(88, 134, nm(lamExc), { size: 12.5, fill: K.gris, gras: true })}{T(88, 148, 'avant l’arrêt', { size: 12, fill: K.gris })}</>}
-    {/* échantillon */}
-    <rect x={CX - 18} y="66" width="36" height="68" rx="4" fill={ph ? '#fee2e2' : '#dcfce7'} stroke="#334155" strokeWidth="2"/><rect x={CX - 18} y="66" width="36" height="14" rx="3" fill="#fff" opacity=".6"/>
-    {T(CX, 58, 'échantillon', { size: 12, gras: true })}
-    {/* détecteur dans l'axe ou à 90° */}
-    {abs ? <>
-      <rect x="316" y="86" width="34" height="28" rx="5" fill={lit || (p != null && !ev.absorbe && p > 0.75) ? '#bbf7d0' : '#f1f5f9'} stroke="#334155" strokeWidth="2"/>
-      {T(333, 132, 'détecteur', { size: 12, gras: true })}{T(333, 146, 'dans l’axe', { size: 12, fill: K.gris })}
-      {T(200, 212, 'il mesure la lumière transmise', { size: 12.5, fill: K.gris })}</> : <>
-      <line x1={CX} y1="134" x2={CX} y2="146" stroke="#94a3b8" strokeWidth="3" strokeDasharray="2 4"/>
-      <rect x={CX - 24} y="146" width="48" height="28" rx="6" fill="#dcfce7" stroke={ph ? COL.phos : COL.fluo} strokeWidth="2.2"/><line x1={CX - 12} y1="166" x2={CX + 12} y2="154" stroke={ph ? COL.phos : COL.fluo} strokeWidth="2"/>
-      {T(CX + 32, 158, 'mono. de détection', { anchor: 'start', size: 12, gras: true, fill: ph ? COL.phos : COL.fluo })}
-      {T(CX + 32, 172, `${nm(lamDet)} (${mode === 'ex' ? 'fixé' : 'balayé'})`, { anchor: 'start', size: 12.5, gras: true })}
-      <line x1={CX} y1="174" x2={CX} y2="190" stroke="#94a3b8" strokeWidth="3" strokeDasharray="2 4"/>
-      <rect x={CX - 18} y="190" width="36" height="26" rx="5" fill={lit ? '#bbf7d0' : '#f1f5f9'} stroke="#334155" strokeWidth="2"/>
-      {T(CX + 28, 208, 'détecteur à 90°', { anchor: 'start', size: 12, gras: true })}</>}
-    {photon}
+// ---------- ① le montage ----------
+function Montage({ mode, mol, lamExc, lamDet, sig, A }) {
+  const abs = mode === 'abs', ph = mode === 'ph', cExc = D.couleurLam(lamExc), cDet = D.couleurLam(lamDet);
+  const lamGlow = ph ? X.lamDe(mol.T.E00 - 2 * mol.hw) : X.lamMaxEmission(mol), cGlow = D.couleurLam(lamGlow);
+  const glow = ph ? 0.6 : abs ? 0.35 * D.absRel(mol, lamExc) : D.absRel(mol, lamExc);
+  const trans = abs ? Math.max(0.12, 10 ** -A) : 0.9;
+  const off = 0.3, CX = 226, CY = 120;
+  const lcd = (x, y, txt, on) => <g opacity={on ? 1 : off}><rect x={x} y={y} width="84" height="30" rx="6" fill="#0f172a"/>{T(x + 42, y + 21, txt, { size: 17, gras: true, fill: '#86efac' })}</g>;
+  return (<svg role="img" viewBox="0 44 400 290" style={{ display: 'block', width: '100%' }}
+    aria-label={`Montage vu de dessus. ${ph ? 'Lampe coupée.' : `Excitation à ${nm(lamExc)}.`} ${abs ? `Détecteur dans l’axe : absorbance ${fr2(A)}.` : `Détecteur à 90° réglé sur ${nm(lamDet)} : signal ${Math.round(100 * sig)} %.`}`}>
+    <defs><radialGradient id="fl-glow"><stop offset="0" stopColor={cGlow} stopOpacity=".9"/><stop offset="1" stopColor={cGlow} stopOpacity="0"/></radialGradient>
+      <radialGradient id="fl-lampe"><stop offset="0" stopColor="#fffbeb"/><stop offset=".6" stopColor="#fde68a"/><stop offset="1" stopColor="#f59e0b"/></radialGradient></defs>
+    {!ph && <><line x1="47" y1={CY} x2="64" y2={CY} stroke="#fde68a" strokeWidth="5"/>
+      <line className="fl-flux" x1="148" y1={CY} x2={CX - 22} y2={CY} stroke={cExc} strokeWidth="5" strokeDasharray="7 6"/>
+      <line className="fl-flux" x1={CX + 22} y1={CY} x2="328" y2={CY} stroke={cExc} strokeWidth="5" strokeDasharray="7 6" opacity={trans * (abs ? 1 : off + 0.1)}/></>}
+    {!abs && <><line className="fl-flux-v" x1={CX} y1={CY + 22} x2={CX} y2="190" stroke={cGlow} strokeWidth="4" strokeDasharray="5 6" opacity={Math.max(0.15, glow)}/>
+      <line className="fl-flux-v" x1={CX} y1="232" x2={CX} y2="266" stroke={cDet} strokeWidth="4" strokeDasharray="5 6" opacity={0.12 + 0.88 * sig}/></>}
+    <circle cx="30" cy={CY} r="17" fill={ph ? '#e2e8f0' : 'url(#fl-lampe)'} stroke="#334155" strokeWidth="2"/><path d={`M23,${CY + 4} q3.5,-10 7,0 q3.5,10 7,0`} fill="none" stroke={ph ? '#94a3b8' : '#b45309'} strokeWidth="1.6"/>
+    {T(30, 158, 'lampe', { size: 16, gras: true })}{ph && T(30, 176, 'coupée', { size: 16, gras: true, fill: K.rouge })}
+    <rect x="64" y="98" width="84" height="44" rx="7" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="2"/>
+    {[0, 1, 2, 3, 4, 5].map(i => <line key={i} x1={82 + i * 9} y1="110" x2={90 + i * 9} y2="130" stroke="#7c3aed" strokeWidth="1.6"/>)}
+    {T(106, 70, 'monochromateur', { size: 15, gras: true, fill: '#6d28d9' })}{T(106, 88, 'd’excitation', { size: 15, gras: true, fill: '#6d28d9' })}
+    {!ph && <>{T(106, 164, nm(lamExc), { size: 17, gras: true, fill: '#6d28d9' })}{T(106, 182, mode === 'abs' || mode === 'ex' ? 'balayé' : 'fixé', { size: 15, fill: K.gris })}</>}
+    {!abs && glow > 0.03 && <circle cx={CX} cy={CY} r="40" fill="url(#fl-glow)" opacity={Math.min(1, glow + 0.15)}/>}
+    {!abs && glow > 0.03 && [0, 45, 90, 135, 180, 225, 270, 315].map(a => { const r = Math.PI * a / 180; return <line key={a} x1={CX + 25 * Math.cos(r)} y1={CY + 25 * Math.sin(r)} x2={CX + 35 * Math.cos(r)} y2={CY + 35 * Math.sin(r)} stroke={cGlow} strokeWidth="2.4" opacity={Math.min(1, glow + 0.2)}/>; })}
+    <rect x={CX - 22} y={CY - 22} width="44" height="44" rx="4" fill={abs ? '#f5f3ff' : '#f0fdf4'} stroke="#334155" strokeWidth="2.2"/>
+    {T(192, 176, 'cuve', { size: 16, gras: true, anchor: 'end' })}
+    <g opacity={abs ? 1 : off}><rect x="328" y="104" width="40" height="32" rx="6" fill="#e2e8f0" stroke="#334155" strokeWidth="2"/><circle cx="340" cy={CY} r="6" fill="#334155"/>
+      {T(348, 158, 'détecteur', { size: 16, gras: true })}{T(348, 176, 'dans l’axe', { size: 15 })}</g>
+    {lcd(306, 58, abs ? `A = ${fr2(A)}` : '—', abs)}
+    <g opacity={abs ? off : 1}><rect x="192" y="190" width="68" height="42" rx="7" fill="#f0fdf4" stroke="#15803d" strokeWidth="2"/>
+      {[0, 1, 2, 3, 4].map(i => <line key={i} x1={208 + i * 9} y1="201" x2={216 + i * 9} y2="221" stroke="#15803d" strokeWidth="1.6"/>)}
+      {T(268, 204, 'monochromateur', { size: 15, gras: true, anchor: 'start', fill: '#166534' })}{T(268, 221, 'de détection', { size: 15, gras: true, anchor: 'start', fill: '#166534' })}
+      {!abs && T(268, 244, `${nm(lamDet)} · ${mode === 'ex' ? 'fixé' : 'balayé'}`, { size: 16, gras: true, anchor: 'start' })}
+      <rect x="208" y="266" width="36" height="30" rx="6" fill="#e2e8f0" stroke="#334155" strokeWidth="2"/><circle cx={CX} cy="281" r="6" fill="#334155"/>
+      {T(252, 287, 'détecteur à 90°', { size: 16, gras: true, anchor: 'start' })}</g>
+    {lcd(112, 266, abs ? '—' : `${Math.round(100 * sig)} %`, !abs)}
+    {T(200, 326, abs ? 'Il mesure ce qui traverse : A = log(I₀ / I)' : 'À 90°, il ne reçoit que la lumière émise', { size: 15, fill: K.gris })}
   </svg>);
 }
 
-// ---------- le spectre qui se trace ----------
-const X0 = 46, X1 = 388, Y0 = 162, H = 112;
-function SceneSpectre({ mol, mode, lamB, fixe, courbe, balaye }) {
-  const [lo, hi] = D.DOMAINE[mode], x = l => X0 + (l - lo) / (hi - lo) * (X1 - X0), y = s => Y0 - H * s;
-  const sMax = Math.max(...courbe.map(c => c.s)), faible = sMax < 0.05;
-  const trace = pts => pts.map((c, i) => `${i ? 'L' : 'M'}${x(c.lam).toFixed(1)},${y(c.s).toFixed(1)}`).join('');
-  const jusque = courbe.filter(c => c.lam <= lamB), sNow = D.signal(mol, mode, lamB, fixe);
-  const colC = mode === 'ph' ? COL.phos : mode === 'em' ? COL.fluo : COL.abs;
-  const grad = [];
-  for (let l = Math.ceil(lo / 50) * 50; l <= hi; l += 50) grad.push(l);
-  return (<svg role="img" aria-label={`Spectre ${mode === 'abs' ? 'd’absorption' : mode === 'ex' ? 'd’excitation' : mode === 'em' ? 'd’émission' : 'de phosphorescence'} de la molécule ${mol.id} : signal relatif ${Math.round(100 * sNow)} pour cent à ${Math.round(lamB)} nanomètres`} viewBox="0 0 400 206" style={svgBloc}>
-    {T(X0 - 6, 12, 'signal relatif', { anchor: 'start', size: 12.5, fill: K.gris, gras: true })}
-    <line x1={X0} y1={Y0} x2={X1} y2={Y0} stroke={K.gris}/><line x1={X0} y1={Y0} x2={X0} y2={Y0 - H - 6} stroke={K.gris}/>
-    {grad.map(l => <g key={l}><line x1={x(l)} y1={Y0} x2={x(l)} y2={Y0 + 5} stroke={K.gris}/>{T(x(l), Y0 + 19, String(l), { size: 12.5, fill: K.gris })}</g>)}
-    {T(X1, Y0 + 36, AXE_X[mode], { anchor: 'end', size: 12.5, fill: K.gris })}
-    {!faible && <path d={trace(courbe)} fill="none" stroke={colC} strokeWidth={balaye ? 1.4 : 2.6} strokeDasharray={balaye ? '2 3' : undefined} opacity={balaye ? 0.6 : 1}/>}
-    {!faible && balaye && jusque.length > 1 && <path d={trace(jusque)} fill="none" stroke={colC} strokeWidth="2.8"/>}
-    <line x1={x(lamB)} y1={Y0} x2={x(lamB)} y2={Y0 - H - 4} stroke={K.txt} strokeWidth="1.6" strokeDasharray="4 3"/>
-    {!faible && <circle cx={x(lamB)} cy={y(sNow)} r="5" fill={colC} stroke="#fff" strokeWidth="1.8"/>}
-    {faible && T((X0 + X1) / 2, Y0 - H / 2, mol.T || mode !== 'ph' ? 'λ fixée hors des raies d’absorption : presque aucun photon absorbé' : 'cette molécule ne phosphoresce pas', { size: 12.5, fill: K.gris })}
+// ---------- ② la molécule : diagramme à l'échelle ----------
+const yE = E => 292 - E * 55;
+function Molecule({ mode, mol, lamExc, lamDet, sig }) {
+  const E00 = mol.E00, hw = mol.hw, ET = mol.T?.E00, ph = mode === 'ph';
+  const Eexc = X.HC / lamExc, Edet = X.HC / lamDet;
+  const absorbe = !ph && D.absRel(mol, lamExc) > 0.03;
+  const emet = mode !== 'abs' && sig > 0.02 && (ph || absorbe);
+  const voie = ph ? 'phos' : D.emissionDominante(mol, lamDet);
+  const Edep = voie === 'phos' ? ET : E00, Earr = Edep - Edet;
+  const niveaux = (x1, x2, E0, id) => [0, 1, 2, 3, 4].map(v => <line key={id + v} x1={x1} x2={x2} y1={yE(E0 + v * hw)} y2={yE(E0 + v * hw)} stroke={v ? '#94a3b8' : '#0f172a'} strokeWidth={v ? 1.1 : 2.6}/>);
+  const XA = 88, XF = 240, XP = 322;
+  const lab = (x, y, l1, l2, col, anchor = 'start') => <g key={l1}>{T(x, y, l1, { size: 16, gras: true, fill: col, anchor, halo: true })}{T(x, y + 19, l2, { size: 15, fill: K.txt, anchor, halo: true })}</g>;
+  return (<svg role="img" viewBox="0 0 420 320" style={{ display: 'block', width: '100%' }}
+    aria-label={`Diagramme d’énergie à l’échelle de la molécule ${mol.id}. ${absorbe ? `Absorption d’un photon de ${eV(lamExc)}.` : ph ? '' : 'Pas d’absorption à cette longueur d’onde.'} ${emet ? `Émission d’un photon de ${eV(lamDet)}.` : ''}`}>
+    <line x1="40" y1="296" x2="40" y2="40" stroke={K.gris} strokeWidth="1.5"/><polygon points="40,32 35,44 45,44" fill={K.gris}/>
+    {T(40, 22, 'E (eV)', { size: 16, gras: true })}
+    {[0, 1, 2, 3, 4].map(e => <g key={e}><line x1="36" x2="40" y1={yE(e)} y2={yE(e)} stroke={K.gris}/>{T(31, yE(e) + 5, String(e), { size: 15, fill: K.gris, anchor: 'end' })}</g>)}
+    {niveaux(72, 392, 0, 's0')}{T(398, yE(0) + 5, 'S₀', { size: 16, gras: true, anchor: 'start' })}
+    {niveaux(72, 252, E00, 's1')}{T(66, yE(E00) + 6, 'S₁', { size: 16, gras: true, anchor: 'end' })}
+    {ET != null && <>{niveaux(270, 392, ET, 't1')}{T(398, yE(ET) + 5, 'T₁', { size: 16, gras: true, anchor: 'start' })}</>}
+    {T(252, yE(E00 + 4 * hw) - 7, 'niveaux de vibration', { size: 14, fill: K.gris, anchor: 'end' })}
+    {/* absorption */}
+    {!ph && (absorbe ? <>{flecheV(XA, yE(0), yE(Eexc), D.couleurLam(lamExc, 0.7), 4.5, null, 'a')}{ondule(XA + 26, yE(Eexc), yE(E00), K.gris, 'rv1')}
+      {Eexc - E00 > 0.1 && T(XA + 34, yE((Eexc + E00) / 2) + 5, 'RV', { size: 15, gras: true, fill: K.gris, anchor: 'start' })}
+      {lab(XA + 8, 170, 'absorption', `${eV(lamExc)} · ${nm(lamExc)}`, '#6d28d9')}</>
+      : <>{flecheV(XA, yE(0), yE(Eexc), '#94a3b8', 3, '5 4', 'a')}{lab(XA + 8, 170, '✕ pas absorbé', `aucun niveau à ${eV(lamExc)}`, K.rouge)}</>)}
+    {/* croisement intersystème */}
+    {ET != null && (ph || (emet && voie === 'phos')) && <><line x1={XF + 10} y1={yE(E00)} x2={XP - 26} y2={yE(ET) - 4} stroke="#c2410c" strokeWidth="2.4" strokeDasharray="6 4"/><polygon points={`${XP - 22},${yE(ET)} ${XP - 34},${yE(ET) - 3} ${XP - 28},${yE(ET) - 12}`} fill="#c2410c"/>
+      {T((XF + XP) / 2 - 4, yE((E00 + ET) / 2) - 8, 'CIS', { size: 15, gras: true, fill: '#c2410c', halo: true })}</>}
+    {/* émission */}
+    {emet && <>{flecheV(voie === 'phos' ? XP : XF, yE(Edep), yE(Math.max(0, Earr)), D.couleurLam(lamDet, 0.7), 4.5, voie === 'phos' ? '8 4' : null, 'e')}
+      {ondule((voie === 'phos' ? XP : XF) + 24, yE(Math.max(0, Earr)), yE(0), K.gris, 'rv2')}
+      {voie === 'phos' ? lab(XP - 8, 214, 'phosphorescence', `${eV(lamDet)} · ${nm(lamDet)}`, '#b91c1c', 'end')
+        : lab(XF + 8, 214, 'fluorescence', `${eV(lamDet)} · ${nm(lamDet)}`, '#15803d')}</>}
+    {mode !== 'abs' && !emet && (ph || absorbe) && T(300, 214, `aucun photon émis à ${nm(lamDet)}`, { size: 15, fill: K.gris, halo: true })}
+    {ph && T(60, 170, 'lampe coupée : pas d’absorption', { size: 15, fill: K.gris, anchor: 'start' })}
+  </svg>);
+}
+
+// ---------- ③ le spectre ----------
+const AX0 = 280, AX1 = 650, PX0 = 48, PX1 = 404, YB = 232, PH = 170;
+const xL = l => PX0 + (l - AX0) / (AX1 - AX0) * (PX1 - PX0), lX = x => AX0 + (x - PX0) / (PX1 - PX0) * (AX1 - AX0);
+function Spectre({ mode, mol, lamS, lamF, pts, onDrag, onKey, invite }) {
+  const abs = mode === 'abs', yMax = abs ? 0.9 : 1.1, y = v => YB - PH * v / yMax;
+  const val = l => (abs ? D.absorbance(mol, l) : D.signal(mol, mode, l, lamF));
+  const cles = Object.keys(pts).map(Number).sort((a, b) => a - b), segs = [];
+  for (const k of cles) { const s = segs[segs.length - 1]; if (s && k - s[s.length - 1] <= 1) s.push(k); else segs.push([k]); }
+  const trace = s => s.map((l, i) => `${i ? 'L' : 'M'}${xL(l).toFixed(1)},${y(val(l)).toFixed(1)}`).join('');
+  const stops = []; for (let l = AX0; l <= AX1; l += 10) stops.push(<stop key={l} offset={(l - AX0) / (AX1 - AX0)} stopColor={l < 380 ? '#c4b5fd' : D.couleurLam(l)}/>);
+  const bandeAbs = []; for (let l = 285; l <= 430; l += 2) bandeAbs.push(`${l === 285 ? 'M' : 'L'}${xL(l).toFixed(1)},${(YB - 0.55 * PH * D.absRel(mol, l)).toFixed(1)}`);
+  const lamExcM = abs || mode === 'ex' ? lamS : lamF, lamDetM = mode === 'ex' ? lamF : lamS;
+  const repere = (l, rang, nom, quoi, balaye) => { const x = xL(l), col = D.couleurLam(l, 0.7), tx = Math.min(372, Math.max(80, x));
+    return (<g key={quoi} role="slider" tabIndex={0} aria-label={`${nom}, ${balaye ? 'balayée' : 'fixée'}`} aria-valuemin={quoi === 's' ? SCAN[mode][0] : FIXE[mode][0]} aria-valuemax={quoi === 's' ? SCAN[mode][1] : FIXE[mode][1]} aria-valuenow={Math.round(l)} aria-valuetext={`${nm(l)}, ${eV(l)}`}
+      onKeyDown={e => onKey(quoi, e)} style={{ cursor: 'ew-resize', outline: 'none' }}>
+      <line x1={x} y1={YB} x2={x} y2={rang ? 54 : 34} stroke={col} strokeWidth="2.2" strokeDasharray={balaye ? '5 4' : null}/>
+      <rect x={tx - 56} y={rang ? 37 : 13} width="112" height="25" rx="12.5" fill="#fff" stroke={col} strokeWidth="2"/>
+      {T(tx, rang ? 55 : 31, `${nom} ${nm(l)}`, { size: 15, gras: true })}
+      <circle cx={x} cy={YB} r="7" fill={col} stroke="#fff" strokeWidth="2" className={balaye && invite ? 'fl-pulse' : undefined}/>
+      <rect x={x - 20} y={rang ? 36 : 14} width="40" height={YB - (rang ? 36 : 14) + 10} fill="transparent"/></g>); };
+  return (<svg role="img" viewBox="0 0 420 296" style={{ display: 'block', width: '100%', touchAction: 'none' }} onPointerDown={e => onDrag('down', e)} onPointerMove={e => onDrag('move', e)} onPointerUp={e => onDrag('up', e)} onPointerCancel={e => onDrag('up', e)}
+    aria-label={`${abs ? 'Spectre d’absorption' : 'Spectre'} de la molécule ${mol.id}, enregistré de ${cles.length ? nm(cles[0]) : '—'} à ${cles.length ? nm(cles[cles.length - 1]) : '—'}`}>
+    <defs><linearGradient id={`fl-spg-${mode}`} gradientUnits="userSpaceOnUse" x1={PX0} x2={PX1} y1="0" y2="0">{stops}</linearGradient></defs>
+    <line x1={PX0} y1={YB} x2={PX1} y2={YB} stroke={K.gris}/><line x1={PX0} y1={YB} x2={PX0} y2={YB - PH - 6} stroke={K.gris}/>
+    <rect x={PX0} y={YB + 3} width={PX1 - PX0} height="9" fill={`url(#fl-spg-${mode})`} opacity=".9"/>
+    {T((xL(AX0) + xL(380)) / 2, YB + 11, 'UV', { size: 12, gras: true, fill: '#fff' })}{T((xL(380) + PX1) / 2, YB + 11, 'visible', { size: 12, gras: true, fill: '#fff' })}
+    {[300, 400, 500, 600].map(l => <g key={l}><line x1={xL(l)} y1={YB + 12} x2={xL(l)} y2={YB + 17} stroke={K.gris}/>{T(xL(l), YB + 32, String(l), { size: 15, fill: K.gris })}</g>)}
+    {T(PX1, YB + 54, 'longueur d’onde λ (nm)', { size: 15, fill: K.gris, anchor: 'end' })}
+    {(abs ? [0, 0.4, 0.8] : [0, 0.5, 1]).map(v => <g key={v}><line x1={PX0 - 4} y1={y(v)} x2={PX0} y2={y(v)} stroke={K.gris}/>{T(PX0 - 7, y(v) + 5, String(v).replace('.', ','), { size: 15, fill: K.gris, anchor: 'end' })}</g>)}
+    <text x="14" y={YB - PH / 2} fontSize="15" fill={K.gris} textAnchor="middle" transform={`rotate(-90 14 ${YB - PH / 2})`} fontFamily="inherit">{abs ? 'absorbance A' : 'intensité relative'}</text>
+    {!abs && <><path d={`${bandeAbs.join('')} L${xL(430)},${YB} L${xL(285)},${YB} Z`} fill="#ede9fe" stroke="#c4b5fd" strokeDasharray="4 3"/>{mode !== 'ex' && T(xL(345), YB - 0.55 * PH - 6, 'absorption', { size: 14, fill: '#7c3aed', halo: true })}</>}
+    {segs.map((s, i) => s.length > 1 && <path key={'f' + i} d={`${trace(s)} L${xL(s[s.length - 1])},${YB} L${xL(s[0])},${YB} Z`} fill={`url(#fl-spg-${mode})`} opacity=".35"/>)}
+    {segs.map((s, i) => s.length > 1 && <path key={'t' + i} d={trace(s)} fill="none" stroke={COLC[mode]} strokeWidth="3" strokeLinejoin="round"/>)}
+    {!cles.length && T((PX0 + PX1) / 2, YB - PH / 2, 'Lancez l’enregistrement', { size: 15, fill: K.gris })}
+    {!abs && mode !== 'ph' && repere(lamExcM, 1, 'exc.', mode === 'ex' ? 's' : 'f', mode === 'ex')}
+    {abs ? repere(lamExcM, 0, 'exc.', 's', true) : repere(lamDetM, 0, 'dét.', mode === 'ex' ? 'f' : 's', mode !== 'ex')}
+    <circle cx={xL(lamS)} cy={y(val(lamS))} r="5.5" fill={COLC[mode]} stroke="#fff" strokeWidth="2"/>
   </svg>);
 }
 
 // ---------- vue complète ----------
 export function VueDispositif() {
-  const [d, setD] = useState({ mode: 'abs', mol: 'A', lamBal: 350, fixe: 350 });
-  const [lecture, setLecture] = useState(false), [balaye, setBalaye] = useState(false);
-  const tP = useHorloge(lecture), tB = useHorloge(balaye);
-  const sup = d.mode === 'sup', mm = sup ? 'abs' : d.mode;
-  const mol = X.MOLS_T[d.mol], [lo, hi] = D.DOMAINE[mm];
-  const lamB = balaye ? lo + ((tB % DUREE_BALAYAGE) / DUREE_BALAYAGE) * (hi - lo) : d.lamBal;
-  const idx = Math.floor(tP / DUREE_PHOTON), p = lecture ? (tP % DUREE_PHOTON) / DUREE_PHOTON : null;
-  const ev = D.evenement(mol, mm, lamB, d.fixe, idx);
-  const trans = D.transitions(mol, mm, lamB, d.fixe);
-  const courbe = D.courbe(mol, mm, d.fixe);
-  const dernier = lecture ? ev : (trans.abs >= 0 || trans.fluo >= 0 || trans.phos >= 0)
-    ? { absorbe: true, vAbs: trans.abs, voie: trans.fluo >= 0 ? 'fluo' : trans.phos >= 0 ? 'phos' : undefined, v: trans.fluo >= 0 ? trans.fluo : trans.phos } : null;
-  const sNow = D.signal(mol, mm, lamB, d.fixe);
-  const changerMode = mode => { setBalaye(false); setD(s => ({ ...s, mode, lamBal: D.lamDefaut(mode, X.MOLS_T[s.mol]), fixe: D.fixeDefaut(mode, X.MOLS_T[s.mol]) })); };
-  const changerMol = id => { setBalaye(false); setD(s => { const m = X.MOLS_T[id], mode = D.modeValide(s.mode, m) ? s.mode : 'em'; return { ...s, mol: id, mode, lamBal: D.lamDefaut(mode, m), fixe: D.fixeDefaut(mode, m) }; }); };
-  const basculeBalayage = () => { if (balaye) setD(s => ({ ...s, lamBal: Math.round(lamB) })); setBalaye(b => !b); };
-  const sansMouvement = reduitMouvement();
-  const [fLo, fHi] = d.mode === 'ex' ? [380, 580] : [300, 410];
-  const nomBal = d.mode === 'abs' || d.mode === 'ex' ? 'λ d’excitation' : 'λ de détection';
-  const nomFixe = d.mode === 'ex' ? 'λ de détection (fixée)' : 'λ d’excitation (fixée)';
-  const selects = (<>
-    <div style={{ marginTop: 8 }}><label htmlFor="fl-dm" style={libelle}>Type de spectre</label>
-      <select id="fl-dm" value={d.mode} onChange={ev2 => changerMode(ev2.target.value)} style={selectStyle}>{[...D.MODES, SUP].map(m => <option key={m.id} value={m.id} disabled={!D.modeValide(m.id, mol)}>{m.nom}{D.modeValide(m.id, mol) ? '' : ' (molécule B)'}</option>)}</select></div>
-    <div style={{ marginTop: 8 }}><label htmlFor="fl-dmol" style={libelle}>Molécule</label>
-      <select id="fl-dmol" value={d.mol} onChange={ev2 => changerMol(ev2.target.value)} style={selectStyle}>{Object.values(X.MOLS_T).map(m => <option key={m.id} value={m.id}>{m.nom}</option>)}</select></div></>);
-  const style = (<style>{`
-      .fl-dp { display: grid; gap: 12px; grid-template-columns: minmax(0, 1fr); grid-template-areas: "hint" "montage" "spectre" "regl" "diag" "mes"; }
-      .fl-dp.sup { grid-template-areas: "hint" "spectre" "regl" "mes"; }
-      .fl-dp > * { min-width: 0; }
-      @media (min-width: 901px) { .fl-dp { grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); grid-template-areas: "hint hint" "montage regl" "diag regl" "spectre mes"; }
-        .fl-dp.sup { grid-template-areas: "hint hint" "spectre regl" "spectre mes"; } }
-    `}</style>);
-  if (sup) {
-    const ms = M.MOLS[d.mol];
-    return (<div className="fl-dp sup">{style}
-      <div style={{ gridArea: 'hint', fontSize: 14, color: KIT.txt, lineHeight: 1.55 }}>{HINT.sup}</div>
-      <div style={{ gridArea: 'spectre' }}><SceneSpectresFluo mol={ms}/></div>
-      <div style={{ gridArea: 'regl', ...styleBoite }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Choisissez la mesure</div>
-        <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Choisissez un autre type de spectre pour voir le montage, le diagramme et le tracé pas à pas.</div>{selects}</div>
-      <div style={{ gridArea: 'mes', ...styleBoite }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-        <LigneMesure nom="Maximum d’absorption" valeur={`${ms.lamAbs}${NB}nm (${fr(M.energie(ms.lamAbs), 2)}${NB}eV)`}/>
-        <LigneMesure nom="Maximum de fluorescence" valeur={`${ms.lamFluo}${NB}nm (${fr(M.energie(ms.lamFluo), 2)}${NB}eV)`}/>
-        <LigneMesure nom="Énergie perdue" valeur={`${fr(M.decalageStokes(ms.lamAbs, ms.lamFluo), 2)}${NB}eV`}/>
-        <LigneMesure nom="Part de l’énergie perdue" valeur={`${fr(100 * M.partPerdue(ms.lamAbs, ms.lamFluo), 0)}${NB}%`}/>
-        {ms.lamPhos && <LigneMesure nom="Maximum de phosphorescence" valeur={`${ms.lamPhos}${NB}nm (${fr(M.energie(ms.lamPhos), 2)}${NB}eV)`}/>}
-      </div></div>);
-  }
-  return (<div className="fl-dp">{style}
-    <div style={{ gridArea: 'hint', fontSize: 14, color: KIT.txt, lineHeight: 1.55 }}>{HINT[d.mode]}</div>
-    <div style={{ gridArea: 'montage' }}><SceneMontage mode={d.mode} lamB={lamB} fixe={d.fixe} p={p} ev={ev}/></div>
-    <div style={{ gridArea: 'diag' }}>
-      <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 2 }}>La transition en jeu sur le diagramme</div>
-      <SceneVibronique mol={mol} dernier={dernier}/>
-    </div>
-    <div style={{ gridArea: 'spectre' }}>
-      <div style={{ fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 2 }}>Le spectre obtenu</div>
-      <SceneSpectre mol={mol} mode={d.mode} lamB={lamB} fixe={d.fixe} courbe={courbe} balaye={balaye}/>
-    </div>
-    <div style={{ gridArea: 'regl', ...styleBoite }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Choisissez la mesure</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Déplacez la longueur d’onde ou lancez le balayage : le détecteur, le diagramme et le spectre bougent ensemble.</div>
-      {selects}
-      <div style={{ marginTop: 8 }}><label htmlFor="fl-dl" style={libelle}>{nomBal} : {nm(lamB)}</label>
-        <input id="fl-dl" type="range" min={lo} max={hi} step="1" value={Math.round(lamB)} disabled={balaye} onChange={ev2 => setD(s => ({ ...s, lamBal: parseInt(ev2.target.value, 10) }))} style={{ width: '100%', accentColor: '#16a34a' }}/></div>
-      {d.mode !== 'abs' && <div style={{ marginTop: 8 }}><label htmlFor="fl-df" style={libelle}>{d.mode === 'ph' ? 'λ d’excitation avant l’arrêt' : nomFixe} : {nm(d.fixe)}</label>
-        <input id="fl-df" type="range" min={fLo} max={fHi} step={d.mode === 'ex' ? 5 : 1} value={d.fixe} onChange={ev2 => setD(s => ({ ...s, fixe: parseInt(ev2.target.value, 10) }))} style={{ width: '100%', accentColor: '#16a34a' }}/></div>}
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-        <button onClick={() => setLecture(l => !l)} aria-pressed={lecture} style={styleBouton(lecture, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Photon par photon'}</button>
-        <button onClick={basculeBalayage} aria-pressed={balaye} style={styleBouton(balaye, '#16a34a')}>{balaye ? '⏸ Arrêter le balayage' : '↔ Balayer le spectre'}</button>
+  const reduit = reduitMouvement();
+  const [mode, setMode] = useState('abs'), [molId, setMolId] = useState('A');
+  const mol = X.MOLS_T[molId];
+  const [lamF, setLamF] = useState(350);
+  const [acq, setAcq] = useState(() => (reduit ? { lamS: 350, pts: plein('abs') } : { lamS: SCAN.abs[0], pts: {} }));
+  const [scan, setScan] = useState(!reduit), [invite, setInvite] = useState(true);
+  const pos = useRef(SCAN.abs[0]), drag = useRef(null);
+  const lamS = acq.lamS;
+  useEffect(() => {
+    if (!scan) return undefined;
+    const [lo, hi] = SCAN[mode]; let id, last = null;
+    const f = ts => {
+      if (last != null) { const prev = pos.current, l = Math.min(hi, prev + (ts - last) / DUREE * (hi - lo)); pos.current = l; setAcq(a => ({ lamS: l, pts: marquer(a.pts, prev, l) })); if (l >= hi) { const m = picDe(mode, mol, lamF); pos.current = m; setAcq(a => ({ ...a, lamS: m })); setScan(false); return; } }
+      last = ts; id = requestAnimationFrame(f);
+    };
+    id = requestAnimationFrame(f);
+    return () => cancelAnimationFrame(id);
+  }, [scan, mode, mol, lamF]);
+  const enregistrer = (md = mode) => { const lo = SCAN[md][0]; if (reduit) { setAcq({ lamS: 350 <= SCAN[md][1] && 350 >= lo ? 350 : lo, pts: plein(md) }); return; } pos.current = lo; setAcq({ lamS: lo, pts: {} }); setScan(true); };
+  const choisirMode = (md, m = mol) => { setScan(false); setMode(md); setLamF(defautFixe(md, m)); if (md === 'ph' || md === 'em') setAcq({ lamS: SCAN[md][0], pts: {} }); enregistrer(md); };
+  const choisirMol = id => { const m = X.MOLS_T[id]; setMolId(id); choisirMode(mode === 'ph' && !m.T ? 'em' : mode, m); };
+  const clamp = (l, [a, b]) => Math.min(b, Math.max(a, l));
+  const bouger = (quoi, l) => {
+    setInvite(false);
+    if (quoi === 's') { const v = clamp(l, SCAN[mode]); setAcq(a => ({ lamS: v, pts: marquer(a.pts, a.lamS, v) })); }
+    else { setLamF(Math.round(clamp(l, FIXE[mode]))); setAcq(a => ({ ...a, pts: {} })); }
+  };
+  const onDrag = (t, e) => {
+    const svg = e.currentTarget, r = svg.getBoundingClientRect(), l = lX((e.clientX - r.left) * 420 / r.width);
+    if (t === 'down') {
+      setScan(false);
+      const cand = mode === 'abs' || mode === 'ph' ? ['s'] : ['s', 'f'];
+      drag.current = cand.reduce((b, q) => (Math.abs((q === 's' ? lamS : lamF) - l) < Math.abs((b === 's' ? lamS : lamF) - l) ? q : b), cand[0]);
+      svg.setPointerCapture?.(e.pointerId); bouger(drag.current, l);
+    } else if (t === 'move' && drag.current) bouger(drag.current, l);
+    else if (t === 'up' && drag.current) { const q = drag.current; drag.current = null; if (q === 'f') enregistrer(); }
+  };
+  const onKey = (quoi, e) => { const d = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[e.key]; if (!d) return; e.preventDefault(); setScan(false); bouger(quoi, (quoi === 's' ? lamS : lamF) + d * (e.shiftKey ? 10 : 1)); };
+  const lamExc = mode === 'abs' || mode === 'ex' ? lamS : lamF, lamDet = mode === 'ex' ? lamF : lamS;
+  const sig = mode === 'abs' ? 0 : D.signal(mol, mode, lamS, lamF), A = D.absorbance(mol, lamExc);
+  const absorbe = D.absRel(mol, lamExc) > 0.03;
+  const phrase = mode === 'abs'
+    ? (absorbe ? `À ${nm(lamExc)}, le photon (${eV(lamExc)}) a assez d’énergie pour porter la molécule de S₀ dans S₁ : il est absorbé, le détecteur reçoit moins de lumière (A = ${fr2(A)}).` : `À ${nm(lamExc)}, le photon (${eV(lamExc)}) ne correspond à aucun écart S₀ → S₁ : il traverse la cuve (A ≈ 0).`)
+    : mode === 'ph' ? `Lampe coupée : seules les molécules restées dans T₁ émettent encore. À ${nm(lamDet)} (${eV(lamDet)}), le détecteur reçoit ${Math.round(100 * sig)} % du maximum.`
+    : !absorbe ? `L’excitation à ${nm(lamExc)} n’est presque pas absorbée : la molécule n’est pas excitée, rien n’est émis.`
+    : `Photon de ${nm(lamExc)} absorbé, puis relaxation jusqu’au bas de ${D.emissionDominante(mol, lamDet) === 'phos' ? 'T₁' : 'S₁'} et émission. À ${nm(lamDet)} (${eV(lamDet)}), le détecteur à 90° reçoit ${Math.round(100 * sig)} % du maximum.`;
+  const titre = mode === 'abs' ? TITRE.abs : TITRE[mode](lamF);
+  const panneau = (n, t, enfant) => (<div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '8px 8px 4px' }}>
+    <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, margin: '0 0 2px 4px' }}><span style={{ display: 'inline-block', width: 22, height: 22, lineHeight: '22px', borderRadius: 11, background: '#16a34a', color: '#fff', textAlign: 'center', fontSize: 13, marginRight: 6 }}>{n}</span>{t}</div>{enfant}</div>);
+  return (<div>
+    <style>{`
+      .fl-pv { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+      @media (min-width: 900px) { .fl-pv { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+      @media (prefers-reduced-motion: no-preference) {
+        .fl-flux { animation: fl-flux 0.9s linear infinite; } .fl-flux-v { animation: fl-flux 0.9s linear infinite; }
+        @keyframes fl-flux { to { stroke-dashoffset: -13; } }
+        .fl-pulse { animation: fl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+        @keyframes fl-pulse { 50% { transform: scale(1.6); } } }
+    `}</style>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+      <div role="group" aria-label="Type de spectre" style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+        {MODES.map(([k, l]) => <button key={k} onClick={() => choisirMode(k)} disabled={k === 'ph' && !mol.T} aria-pressed={mode === k} title={k === 'ph' && !mol.T ? 'Molécule B seulement' : undefined} style={{ ...stylePetitBouton(mode === k, '#16a34a'), opacity: k === 'ph' && !mol.T ? 0.45 : 1 }}>{l}</button>)}
       </div>
-      {sansMouvement && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6 }}>Animations réduites dans votre système : utilisez le curseur de longueur d’onde.</div>}
-      <div role="status" aria-live="off" style={{ marginTop: 10, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, minHeight: 60 }}>
-        <strong>{lecture ? `Photon n° ${idx + 1} : ` : 'Transition en jeu : '}</strong>{lecture ? D.texteEvenement(ev, d.mode) : texteTransitions(trans)}</div>
+      <div role="group" aria-label="Molécule" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Molécule</span>
+        {[['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => choisirMol(k)} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>)}
+      </div>
     </div>
-    <div style={{ gridArea: 'mes', ...styleBoite }}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      <LigneMesure nom="Détecteur" valeur={d.mode === 'abs' ? 'dans l’axe (lumière transmise)' : 'à 90° (lumière émise)'}/>
-      <LigneMesure nom={nomBal} valeur={nm(lamB)}/>
-      {d.mode !== 'abs' && <LigneMesure nom={d.mode === 'ph' ? 'λ d’excitation avant l’arrêt' : nomFixe} valeur={nm(d.fixe)}/>}
-      <LigneMesure nom="Signal relatif" valeur={`${Math.round(100 * sNow)}${NB}%`}/>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+      <button onClick={() => (scan ? setScan(false) : enregistrer())} aria-pressed={scan} style={styleBouton(scan, '#16a34a')}>{scan ? '⏸ Pause' : '▶ Enregistrer le spectre'}</button>
+      <div role="status" aria-live="off" style={{ flex: '1 1 320px', fontSize: 14, color: KIT.txt, lineHeight: 1.45 }}>{phrase}</div>
     </div>
+    <div className="fl-pv">
+      {panneau(1, 'Le montage', <Montage mode={mode} mol={mol} lamExc={lamExc} lamDet={lamDet} sig={sig} A={A}/>)}
+      {panneau(2, 'Dans la molécule', <Molecule mode={mode} mol={mol} lamExc={lamExc} lamDet={lamDet} sig={sig}/>)}
+      {panneau(3, titre, <Spectre mode={mode} mol={mol} lamS={lamS} lamF={lamF} pts={acq.pts} onDrag={onDrag} onKey={onKey} invite={invite}/>)}
+    </div>
+    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser les repères « exc. » (excitation) et « dét. » (détection) sur le spectre. La longueur de chaque flèche du diagramme est l’énergie du photon : E (eV) = 1243 / λ (nm).</div>
   </div>);
 }
