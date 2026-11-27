@@ -3759,6 +3759,20 @@ export const PREVOIR = [
       F('le spectre d’absorption', 'Un spectre d’absorption se mesure avec un spectrophotomètre, en transmission.'),
       F('le spectre de transmittance de la solution', 'On mesure ici de la lumière émise par la solution et non celle qui la traverse.'),
     ] },
+  { id: 'spf-ana-pyrene', domaine: 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski', titre: 'Le pyrène, sonde de polarité',
+    enonce: 'Le spectre d’émission du pyrène en solution diluée présente plusieurs bosses étroites, numérotées de I à V. Le rapport des hauteurs des bosses I et III, noté I/III, vaut environ 0,6 dans le cyclohexane (apolaire) et environ 1,3 dans le méthanol (polaire). On mesure I/III = 1,8 pour du pyrène placé dans un milieu inconnu.', q: 'Que peut-on en déduire ?', options: [
+      F('le pyrène est plus concentré que dans les deux solvants de référence', 'I/III compare deux bosses du même spectre : la concentration change les deux hauteurs dans la même proportion.'),
+      F('la lampe d’excitation est plus intense que lors des mesures de référence', 'Une lampe plus intense augmente toutes les bosses dans la même proportion : le rapport ne change pas.'),
+      V('l’entourage du pyrène est plus polaire que le méthanol', 'I/III augmente avec la polarité du solvant : 1,8 est au-delà de la valeur du méthanol, donc l’entourage est encore plus polaire.'),
+      F('le pyrène phosphoresce dans ce milieu au lieu de fluorescer', 'Les bosses I et III appartiennent toutes deux au même spectre de fluorescence.'),
+    ] },
+  { id: 'spf-ana-fentes', domaine: 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski', titre: 'Des fentes trop larges',
+    enonce: 'On enregistre le spectre d’émission de l’anthracène dans le cyclohexane. Avec une bande passante de 1 nm, il présente plusieurs bosses espacées d’environ 20 nm. Avec une bande passante de 20 nm, on obtient une bande presque lisse.', q: 'Comment expliquer cette différence ?', options: [
+      F('la molécule change de structure quand on élargit les fentes', 'L’échantillon est le même : seul l’appareil a changé de réglage.'),
+      V('l’appareil moyenne le signal sur 20 nm, l’écart entre deux bosses', 'Chaque point est une moyenne sur la bande passante : sur 20 nm, les bosses voisines se fondent en une bande.'),
+      F('les fentes larges chauffent l’échantillon, ce qui élargit ses raies', 'La largeur des fentes ne change pas la température de la solution.'),
+      F('avec des fentes fines, l’appareil fait apparaître des bosses fictives', 'Les bosses existent : elles viennent des sous-niveaux de vibration de S₀.'),
+    ] },
   { id: 'spf-ana-excitation', domaine: 'Fluorescence et phosphorescence : diagramme de Perrin-Jablonski', titre: 'Tracer un spectre d’excitation',
     enonce: 'On veut enregistrer le spectre d’excitation de fluorescence d’une espèce dont le maximum d’émission est à 450 nm.', q: 'Comment procède-t-on ?', options: [
       F('on fixe l’excitation à 350 nm et on balaie la détection', 'C’est la procédure du spectre d’émission.'),

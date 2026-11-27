@@ -3176,5 +3176,8 @@
  "77:plausible:amp-val-gain": "VAL821",
  "77:plausible:amp-val-sat": "VAL822",
  "36:amp-gain": "REA234",
- "36:amp-decalage": "REA235"
+ "36:amp-decalage": "REA235",
+ "37:prevoir:spf-ana-pyrene": "ANA1416",
+ "37:prevoir:spf-ana-fentes": "ANA1417",
+ "77:plausible:spf-val-melange": "VAL823"
 }
