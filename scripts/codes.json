@@ -3140,5 +3140,17 @@
  "37:prevoir:icp-ana-dilution": "ANA1403",
  "77:plausible:icp-val-temperature": "VAL815",
  "77:plausible:icp-val-lampe": "VAL816",
- "36:icp-calcul": "REA229"
+ "36:icp-calcul": "REA229",
+ "34:filt-sapp-gain.0": "SAPP695",
+ "34:filt-sapp-gain.1": "SAPP696",
+ "34:filt-sapp-coupure.0": "SAPP697",
+ "34:filt-sapp-coupure.1": "SAPP698",
+ "37:prevoir:filt-ana-nature": "ANA1404",
+ "37:prevoir:filt-ana-compare": "ANA1405",
+ "37:prevoir:filt-ana-capa": "ANA1406",
+ "37:prevoir:filt-ana-bande": "ANA1407",
+ "77:plausible:filt-val-amp": "VAL817",
+ "77:plausible:filt-val-fc": "VAL818",
+ "36:filt-amp": "REA230",
+ "36:filt-coupure": "REA231"
 }

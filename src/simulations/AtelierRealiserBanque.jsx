@@ -50,6 +50,7 @@ import * as PH from "./photonModele";
 import * as KQ from "./ksqModele";
 import * as HY from "./hydModele";
 import * as TS from "./tsolModele";
+import * as FM from "./filtreModele";
 import * as PM from "./pressionModele";
 import * as SF from "./statiqueFluidesModele";
 import * as AB from "./acidesBasesModele";
@@ -2440,6 +2441,47 @@ function genHydFenetre() {
     expl: <>Fenêtre : de pH {phNb(w.lo)} (fin de {P.solide}) à pH {phNb(w.hi)} (début de {S.solide}), soit {w.ok ? `${HY.nbf(w.largeur, 2)} unité de pH` : 'une fenêtre négative : les zones se chevauchent'}. {cat4 === 0 ? 'Séparation facile.' : cat4 === 1 ? 'Séparation possible mais délicate.' : cat4 === 2 ? 'Impossible de régler le pH avec une telle précision.' : 'Séparation impossible.'}</> };
   filtrer([q1, q2]);
   return { intro, questions: [q1, q2, q3], retenir: ['Fenêtre de séparation = du pH de fin du premier hydroxyde au pH de début du second.', 'Si la fenêtre est négative, les zones se chevauchent : aucune séparation par le pH.', 'Une fenêtre inférieure à environ 0,3 unité de pH est inutilisable en pratique.'] };
+}
+function genFiltAmp() {
+  const ue = tire([2, 3, 4, 5]), A0 = tire([0.2, 0.25, 0.4, 0.5, 0.6, 0.75]), us = Math.round(ue * A0 * 100) / 100, A = us / ue, ue2 = tire([1, 1.5, 2.5, 6]), us2 = A * ue2, f = tire([200, 500, 2000, 5000]);
+  const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
+  const intro = `Un filtre RC passif est alimenté par une tension sinusoïdale de fréquence ${f}${NB}Hz. À l’oscilloscope, on mesure Ue,max = ${ue}${NB}V et Us,max = ${g(us)}${NB}V.`;
+  const q1 = { id: 'a0', type: 'num', q: <>Quel est le <b>facteur d’amplification</b> A du filtre à cette fréquence ?</>, unite: '', vrai: A, tolRel: 0.03, csMin: 2,
+    aide: 'A = Us,max ÷ Ue,max (rapport des amplitudes, sans unité).',
+    pieges: [[us, 'Vous avez donné Us,max (en V) : A est le rapport Us,max ÷ Ue,max, sans unité.'], [1 / A, 'Vous avez calculé Ue,max ÷ Us,max, à l’envers : un filtre passif atténue, donc A ≤ 1.']],
+    expl: <>A = {g(us)} ÷ {ue} = <b>{g(A)}</b>.</> };
+  const q2 = { id: 'a1', type: 'num', q: <>De quel pourcentage l’amplitude du signal est-elle <b>réduite</b> par le filtre à cette fréquence ?</>, unite: '%', vrai: (1 - A) * 100, tolRel: 0.03, csMin: 2,
+    aide: 'Réduction = (1 − A) × 100.',
+    pieges: [[A * 100, 'Vous avez donné le pourcentage conservé (A × 100) : la réduction est ce qui est perdu, (1 − A) × 100.']],
+    expl: <>(1 − {g(A)}) × 100 = <b>{g1((1 - A) * 100)}{NB}%</b>.</> };
+  const q3 = { id: 'a2', type: 'num', q: <>À la même fréquence, on applique Ue,max′ = {g1(ue2)}{NB}V. Quelle est l’amplitude <b>Us,max′</b> de la sortie, en V ?</>, unite: 'V', vrai: us2, tolRel: 0.03, csMin: 2,
+    aide: 'A ne change pas à fréquence fixée : Us,max′ = A × Ue,max′.',
+    pieges: [[A, 'Vous avez donné A, sans unité : Us,max′ = A × Ue,max′.'], [us, 'Vous avez repris la sortie précédente : l’entrée a changé, la sortie aussi.']],
+    expl: <>Us,max′ = {g(A)} × {g1(ue2)} = <b>{g(us2)}{NB}V</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['A = Us,max ÷ Ue,max, sans unité, A ≤ 1 pour un filtre passif.', 'À fréquence fixée, A est constant : Us,max = A × Ue,max.'] };
+}
+function genFiltCoupure() {
+  const Amax = tire([1, 2, 5]), nat = tire(['bas', 'haut']), fc = tire([300, 800, 1500, 3000]), ue = tire([0.5, 1, 2, 3]);
+  const fr = [fc / 8, fc / 3, fc * 1.5, fc * 4, fc * 12].map(x => Math.round(x / 10) * 10);
+  const Ar = fr.map(x => Math.round(FM.gain(nat, x, fc) * Amax * 100) / 100);
+  const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
+  const nb = Ar.filter(a => a >= 0.7 * Amax).length, Ac = Amax / Math.SQRT2, usc = Ac * ue;
+  const intro = `On mesure le facteur d’amplification d’un filtre pour cinq fréquences : ${fr.map((x, i) => `${x}${NB}Hz → A = ${g(Ar[i])}`).join(' ; ')}. Le facteur d’amplification maximal est Amax = ${Amax}. On applique une tension d’amplitude Ue,max = ${g1(ue)}${NB}V.`;
+  const q1 = { id: 'c0', type: 'num', q: <>Quelle est la valeur de A à la <b>fréquence de coupure</b> fc ?</>, unite: '', vrai: Ac, tolRel: 0.03, csMin: 2,
+    aide: 'À fc : A = Amax ÷ √2 ≈ 0,7 × Amax.',
+    pieges: [[Amax, 'Amax est la valeur maximale de A : à fc, A vaut Amax ÷ √2.'], [Amax / 2, 'Vous avez divisé par 2 : à fc, A = Amax ÷ √2 ≈ 0,7 × Amax.']],
+    expl: <>A(fc) = {Amax} ÷ √2 = <b>{g(Ac)}</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>Combien de ces cinq fréquences sont dans la <b>bande passante</b> du filtre ?</>, unite: '', vrai: nb, tolRel: 0, csMin: 1,
+    aide: 'Bande passante : A ≥ 0,7 × Amax. Comptez les fréquences du tableau pour lesquelles A atteint ce seuil.',
+    pieges: [[5 - nb, 'Vous avez compté les fréquences atténuées : on demande celles qui sont dans la bande passante.']],
+    expl: <>Seuil : 0,7 × {Amax} = {g(0.7 * Amax)}. Il y a <b>{nb}</b> fréquence{nb > 1 ? 's' : ''} avec A au moins égal à ce seuil.</> };
+  const q3 = { id: 'c2', type: 'num', q: <>Quelle est l’amplitude de la tension de sortie <b>à la fréquence de coupure</b>, en V ?</>, unite: 'V', vrai: usc, tolRel: 0.03, csMin: 2,
+    aide: 'Us,max = A(fc) × Ue,max, avec A(fc) = Amax ÷ √2.',
+    pieges: [[Amax * ue, 'Vous avez utilisé Amax : à fc, A = Amax ÷ √2.']],
+    expl: <>Us,max = {g(Ac)} × {g1(ue)} = <b>{g(usc)}{NB}V</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['À fc : A = Amax ÷ √2 ≈ 0,7 × Amax.', 'Bande passante : fréquences pour lesquelles A ≥ 0,7 × Amax.'] };
 }
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
@@ -6924,6 +6966,8 @@ export const FAMILLES = [
   { id: 'ksq-melange', groupe: 'Formules', titre: 'Mélange de deux solutions : concentrations, Qr et précipitation (terminale STL)', gen: genKsqMelange, domaine: 'Ks, quotient de réaction et solubilité' },
   { id: 'hyd-seuil', groupe: 'Formules', titre: 'Hydroxyde : [HO⁻] et pH de début et de fin de précipitation (terminale STL)', gen: genHydSeuil, domaine: 'Précipitation des hydroxydes et pH' },
   { id: 'hyd-fenetre', groupe: 'Formules', titre: 'Séparer deux cations par le pH : fenêtre de séparation (terminale STL)', gen: genHydFenetre, domaine: 'Précipitation des hydroxydes et pH' },
+  { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
+  { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },
   { id: 'tsol-eau', groupe: 'Formules', titre: 'Recristallisation : eau minimale et masse de cristaux (terminale STL)', gen: genTsolEau, domaine: 'Solubilité, température et recristallisation' },
   { id: 'ab-acf-rea-ph', groupe: 'Formules', titre: 'pH d’un acide fort et d’un acide faible', gen: genAbAcfPh, domaine: 'Acides et bases' },

@@ -16,6 +16,7 @@ import { UVS_VAL } from './uvirStlExos.js';
 import { KSQ_VAL } from './ksqExos.js';
 import { HYD_VAL } from './hydExos.js';
 import { TSOL_VAL } from './tsolExos.js';
+import { FILT_VAL } from './filtreExos.js';
 import { CLP_VAL } from './chutePlaneExos.js';
 import { NWR_VAL } from './newtonRectExos.js';
 import { MTR_VAL } from './modesTransfertExos.js';
@@ -5221,6 +5222,7 @@ export const PLAUSIBLES = [
   ...KSQ_VAL,
   ...HYD_VAL,
   ...TSOL_VAL,
+  ...FILT_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
