@@ -3191,5 +3191,17 @@
  "77:plausible:biot-val-cm": "VAL824",
  "77:plausible:biot-val-ee": "VAL825",
  "36:biot-alpha": "REA236",
- "36:biot-ee": "REA237"
+ "36:biot-ee": "REA237",
+ "34:meso-sapp-electrons.0": "SAPP711",
+ "34:meso-sapp-electrons.1": "SAPP712",
+ "34:meso-sapp-hybride.0": "SAPP713",
+ "34:meso-sapp-hybride.1": "SAPP714",
+ "37:prevoir:meso-ana-invariants": "ANA1422",
+ "37:prevoir:meso-ana-carbonate": "ANA1423",
+ "37:prevoir:meso-ana-allyle": "ANA1424",
+ "37:prevoir:meso-ana-enolate": "ANA1425",
+ "77:plausible:meso-val-octet": "VAL826",
+ "77:plausible:meso-val-probable": "VAL827",
+ "36:meso-formelle": "REA238",
+ "36:meso-hybride": "REA239"
 }
