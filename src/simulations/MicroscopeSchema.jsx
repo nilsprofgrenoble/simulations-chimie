@@ -1,6 +1,7 @@
 import * as M from "./microscopeModele";
 import { FormeOeil, C } from "./oeilLoupeSchema";
 import { nbf } from "./Travail";
+import { CouchePhotons, Poignee } from "./lentilleMinceAnim";
 
 // Schéma de principe du microscope (objectif + oculaire) : TSTL, simulation 118 et cartes « À retenir ».
 // Le schéma est NON à l'échelle (objet, image intermédiaire et angles agrandis ; distances compressées) mais géométriquement cohérent :
@@ -15,10 +16,10 @@ export const COUL = { obj: '#0f172a', inter: '#b45309', rayon1: '#0072b2', rayon
 const LV = 350, X1 = 190, KS = 6;
 
 // AB : taille réelle de l'objet (µm) → hauteur dessinée (5 à 14 px, non à l'échelle) ; cotes : { p (mm), A1B1 (mm) } ou null pour alléger le schéma.
-export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, AB = 20, cotes = null, montre = {}, large = 740, label }) {
+export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, AB = 20, cotes = null, montre = {}, large = 740, label, lum = null, poignee = null, refSvg = null }) {
   const { inter = true, F2 = true, statut = true, theta = false, noms = true } = montre;
   const H0 = 5 + (clamp(AB, M.AB_MIN, M.AB_MAX) - M.AB_MIN) / (M.AB_MAX - M.AB_MIN) * 9;
-  const fk = etroit() ? 2.1 : 1, fs = 13.5 * fk, haut = fk > 1 ? (cotes ? 440 : 400) : (cotes ? 285 : 260), y0 = haut / 2;
+  const fk = etroit() ? 2.1 : 1, fs = 13.5 * fk, haut = (fk > 1 ? (cotes ? 440 : 400) : (cotes ? 285 : 260)) + (poignee ? 60 : 0), y0 = haut / 2;
   const X2 = X1 + LV, f1v = 40 + 1.5 * f1, f2v = 40 + 1.6 * f2, qF = LV - f2v;
   const sv = clamp(s * KS, -60, Math.min(60, f2v - 22)), q = qF + sv, p = f1v * q / (q - f1v);
   const X0 = X1 - p, XA1 = X1 + q, XF2 = X2 - f2v, XE = X2 + f2v;
@@ -45,7 +46,7 @@ export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, AB = 20, cotes = nul
       {noms && <text x={x} y={y0 - hLen - 14} textAnchor="middle" fontSize={fs} fontWeight="800" fill={c}>{nom}</text>}
     </g>);
   return (
-    <svg viewBox={`0 0 ${large} ${haut}`} role="img" aria-label={label || `Microscope : l’objectif de distance focale ${fr(f1, 0)} millimètres donne de l’objet une image intermédiaire réelle et renversée ; l’oculaire de distance focale ${fr(f2, 0)} millimètres la regarde comme une loupe`}
+    <svg ref={refSvg} viewBox={`0 0 ${large} ${haut}`} role="img" aria-label={label || `Microscope : l’objectif de distance focale ${fr(f1, 0)} millimètres donne de l’objet une image intermédiaire réelle et renversée ; l’oculaire de distance focale ${fr(f2, 0)} millimètres la regarde comme une loupe`}
       style={{ width: '100%', height: 'auto', display: 'block', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 10 }}>
       <line x1="8" y1={y0} x2={large - 8} y2={y0} stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="8 4"/>
       {/* plan focal objet de l'oculaire */}
@@ -82,6 +83,18 @@ export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, AB = 20, cotes = nul
       {mapOk && <circle cx={XRet} cy={Y(yP)} r="3.6" fill={COUL.ok} stroke="#fff" strokeWidth="1.2"/>}
       {theta && mapOk && <g><line x1={XE} y1={y0} x2={XE - 120} y2={Y(-chef * 120)} stroke={COUL.theta} strokeWidth="1.8" strokeDasharray="2 3"/>
         <text x={XE - 128} y={Y(-chef * 120) - 6} textAnchor="end" fontSize={fs + 2} fontWeight="800" fill={COUL.theta}>θ₂</text></g>}
+      {lum && (() => {
+        const b1 = [XRet, mapOk ? Y(yP) : Y(hh1 + o1 * (f2v + eLen))], b2 = [XRet, mapOk ? Y(yP) : Y(hh2 + o2 * (f2v + eLen))];
+        return <CouchePhotons chemins={[{ c: COUL.rayon1, pts: [...r1, b1] }, { c: COUL.rayon2, pts: [...r2, b2] }]} lum={{ ...lum, k: fk > 1 ? 1.8 : 1 }}/>;
+      })()}
+      {poignee && <Poignee x={X0} y={y0 + (fk > 1 ? 175 : 138)} g={fk > 1 ? 1.9 : 1} coul={COUL.obj} label="Molette : distance objet–objectif (en mm)" valeur={poignee.p} vmin={poignee.vmin} vmax={poignee.vmax} texte={`${fr(poignee.p, 2)} mm`} touche={poignee.touche} onToucher={poignee.onToucher} pas={0.05}
+        lire={e => {
+          const r = refSvg.current.getBoundingClientRect(), x = (e.clientX - r.left) * large / r.width, pv = X1 - x;
+          if (pv <= f1v + 1) return poignee.vmin;
+          const qv = pv * f1v / (pv - f1v), sx = (qv - qF) / KS, qr = f1 + M.DELTA + sx;
+          return qr > f1 + 0.01 ? f1 * qr / (qr - f1) : poignee.vmax;
+        }}
+        set={poignee.set} zones={[[X0 - 28 * (fk > 1 ? 1.9 : 1), y0 - 40, 56 * (fk > 1 ? 1.9 : 1), 80]]}/>}
       {statut && <text x={large / 2} y={fk > 1 ? 30 : 22} textAnchor="middle" fontSize={fs} fontWeight="800" fill={mapOk ? COUL.ok : COUL.ko}>{fk > 1 ? (mapOk ? 'image à l’infini : au point' : 'image floue : pas au point') : txtStatut}</text>}
       <text x="12" y={haut - 10} fontSize={11 * (fk > 1 ? 1.9 : 1)} fontWeight="700" fill="#64748b">{fk > 1 ? 'schéma non à l’échelle' : 'schéma non à l’échelle : objet, images, angles et distances modifiés pour la lisibilité'}</text>
     </svg>);
