@@ -121,9 +121,68 @@ const phrase = (mol, lt, P) => {
   if (P.phos > 0.01) return `La fluorescence est éteinte. Des molécules sont piégées dans T₁ : le retour T₁ → S₀ change le spin, il est lent, d’où la phosphorescence${lt > Math.log10(0.05) ? ', visible à l’œil après l’arrêt du flash' : ''}.`;
   return 'Toutes les molécules sont revenues dans S₀ : l’échantillon n’émet plus rien.';
 };
+
+// ---------- temps réel : la lampe éclaire en continu, puis on l'arrête ----------
+// À vitesse réelle, la fluorescence (quelques ns) suit la lampe sans retard visible : elle disparaît dès qu'on coupe l'excitation.
+// La phosphorescence (T₁, durée de vie de l'ordre de la seconde) monte et s'éteint avec la constante de temps τ(T₁), sans changer d'échelle.
+const NS = 120, DT = 100;                                   // 120 échantillons toutes les 0,1 s : fenêtre glissante de 12 s
+function VueReel({ mol }) {
+  const B = !!mol.tauT1, init = () => Array.from({ length: NS }, () => ({ l: 1, f: 1, p: B ? 1 : 0 }));
+  const [lampe, setLampe] = useState(true), [h, setH] = useState(init), lampeRef = useRef(true), dern = useRef(0);
+  useEffect(() => {
+    dern.current = performance.now();
+    const id = setInterval(() => { const n = performance.now(), dt = (n - dern.current) / 1000; dern.current = n;
+      setH(a => { const q = a[a.length - 1], on = lampeRef.current, p = B ? q.p + ((on ? 1 : 0) - q.p) * (1 - Math.exp(-dt / mol.tauT1)) : 0; return [...a.slice(1), { l: on ? 1 : 0, f: on ? 1 : 0, p }]; }); }, DT);
+    return () => clearInterval(id);
+  }, [mol, B]);
+  const bascule = () => { const on = !lampeRef.current; lampeRef.current = on; setLampe(on);
+    setH(a => { const q = a[a.length - 1]; return [...a.slice(1), { l: on ? 1 : 0, f: on ? 1 : 0, p: q.p }]; }); };
+  const cF = couleurLam(mol.lamFluo), cP = B ? couleurLam(mol.lamPhos) : '#000', q = h[h.length - 1];
+  const vu = lampe ? 'la lampe et la fluorescence' : q.p > 0.05 ? 'la phosphorescence seule' : 'rien';
+  const X0 = 22, X1 = 410, YB2 = 204, PH2 = 130, x = i => X0 + i / (NS - 1) * (X1 - X0), y = v => YB2 - PH2 * v;
+  const ligne = k => h.map((e, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(e[k]).toFixed(1)}`).join('');
+  const bandes = []; h.forEach((e, i) => { if (e.l && i < NS - 1) bandes.push(<rect key={i} x={x(i)} y="34" width={x(i + 1) - x(i) + 0.6} height="14" fill="#a78bfa"/>); });
+  return (<div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+      <button onClick={bascule} aria-pressed={!lampe} style={styleBouton(!lampe, '#7c3aed')}>{lampe ? '⏹ Arrêter l’excitation' : '💡 Rallumer la lampe'}</button>
+      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Vitesse réelle : une seconde à l’écran dure une seconde.</span></div>
+    <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: '6.2em' }}>
+      {lampe ? <>La lampe UV éclaire en continu : on voit la lampe et la lueur de fluorescence, qui est émise {B ? 'en même temps que' : 'tant que dure'} l’excitation{B ? ', avec une lueur de phosphorescence qui se met en place en une seconde environ' : ''}. Cliquez sur « Arrêter l’excitation ».</>
+        : <>La fluorescence s’éteint en même temps que la lampe : sa durée de vie ({Math.round(mol.tauS1 * 1e9)}{NB}ns) est des millions de fois trop courte pour que l’œil voie une trace.{B ? ' La phosphorescence, elle, persiste et s’éteint en quelques secondes : T₁ se vide lentement car le retour T₁ → S₀ est « interdit » (changement de spin).' : ' Cette molécule ne phosphoresce pas : l’échantillon est tout de suite noir.'}</>}</div>
+    <div className="fl-pr">
+      <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '8px 8px 4px' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, margin: '0 0 2px 4px' }}>L’échantillon, tel qu’on le voit</div>
+        <svg role="img" viewBox="0 0 300 250" style={{ display: 'block', width: '100%', maxWidth: 330, margin: '0 auto' }}
+          aria-label={`Échantillon : lampe ${lampe ? 'allumée' : 'éteinte'}, on voit ${vu}.`}>
+          <defs><radialGradient id="fl-rf"><stop offset="0" stopColor={cF} stopOpacity="1"/><stop offset="1" stopColor={cF} stopOpacity="0"/></radialGradient>
+            <radialGradient id="fl-rp"><stop offset="0" stopColor={cP} stopOpacity="1"/><stop offset="1" stopColor={cP} stopOpacity="0"/></radialGradient></defs>
+          <rect x="0" y="0" width="300" height="250" rx="14" fill="#0f172a"/>
+          <g opacity={lampe ? 1 : 0.4}><rect x="18" y="104" width="44" height="34" rx="6" fill={lampe ? '#ede9fe' : '#334155'} stroke="#a78bfa" strokeWidth="2"/>
+            {T(40, 160, 'lampe UV', { size: 14, gras: true, fill: '#e2e8f0' })}{T(40, 177, '350 nm', { size: 14, fill: '#cbd5e1' })}</g>
+          {lampe && <line x1="62" y1="121" x2="136" y2="121" stroke="#a78bfa" strokeWidth="6" opacity=".9"/>}
+          <circle cx="170" cy="121" r="78" fill="url(#fl-rf)" opacity={Math.min(1, q.f * 0.95)}/>
+          {B && <circle cx="170" cy="121" r="78" fill="url(#fl-rp)" opacity={Math.min(1, q.p * 0.85)}/>}
+          <rect x="136" y="56" width="68" height="132" rx="5" fill="#ffffff" fillOpacity=".08" stroke="#e2e8f0" strokeWidth="2.4"/>
+          <rect x="138" y="84" width="64" height="102" fill="#e0f2fe" fillOpacity=".18"/>
+          {T(170, 220, `on voit : ${vu}`, { size: 15, gras: true, fill: '#f8fafc' })}</svg></div>
+      <div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '8px 8px 4px' }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, margin: '0 0 2px 4px' }}>Ce qui est émis, au fil des 12 dernières secondes</div>
+        <svg role="img" viewBox="0 0 430 250" style={{ display: 'block', width: '100%' }} aria-label="Intensités relatives de fluorescence et de phosphorescence sur les 12 dernières secondes, échelle linéaire.">
+          {T(X0, 28, 'lampe allumée', { size: 13, fill: '#6d28d9', anchor: 'start', gras: true })}{bandes}
+          <line x1={X0} y1={YB2} x2={X1} y2={YB2} stroke="#94a3b8" strokeWidth="1.4"/><line x1={X0} y1={y(1)} x2={X1} y2={y(1)} stroke="#e2e8f0" strokeWidth="1" strokeDasharray="4 4"/>
+          {B && <path d={ligne('p')} fill="none" stroke={COL.phos} strokeWidth="6" strokeLinejoin="round"/>}
+          <path d={ligne('f')} fill="none" stroke={COL.fluo} strokeWidth="2.4" strokeLinejoin="round"/>
+          {T(X0, YB2 + 20, 'il y a 12 s', { size: 13.5, fill: K.gris, anchor: 'start' })}{T(X1, YB2 + 20, 'maintenant', { size: 13.5, fill: K.gris, anchor: 'end', gras: true })}
+          <rect x="22" y="228" width="12" height="12" rx="2" fill={COL.fluo}/>{T(40, 239, 'fluorescence', { size: 13.5, anchor: 'start' })}
+          {B ? <><rect x="150" y="228" width="12" height="12" rx="2" fill={COL.phos}/>{T(168, 239, 'phosphorescence', { size: 13.5, anchor: 'start' })}</> : T(150, 239, 'cette molécule ne phosphoresce pas', { size: 13.5, anchor: 'start', fill: K.gris })}
+        </svg></div></div>
+    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>La courbe défile : la fluorescence suit la lampe sans le moindre retard visible (échelle de 10⁻⁹ s), alors que la phosphorescence met environ une seconde à s’installer puis à disparaître. L’échelle logarithmique de l’autre vue sert justement à voir ces deux durées sur un même graphique.</div>
+  </div>);
+}
+
 export function VueTemps({ lt0, molFixe, onLt }) {
   const reduit = reduitMouvement();
-  const [molId, setMolId] = useState(molFixe ?? 'B'), [lt, setLt] = useState(lt0 ?? (reduit ? -9 : LT0)), [joue, setJoue] = useState(false), [sel, setSel] = useState(''), [invite, setInvite] = useState(true);
+  const [molId, setMolId] = useState(molFixe ?? 'B'), [lt, setLt] = useState(lt0 ?? (reduit ? -9 : LT0)), [joue, setJoue] = useState(false), [sel, setSel] = useState(''), [invite, setInvite] = useState(true), [reel, setReel] = useState(false);
   const mol = M.MOLS[molId], P = M.populations(mol, 10 ** lt), pos = useRef(lt0 ?? LT0);
   useEffect(() => { onLt?.(lt); }, [lt, onLt]);
   useEffect(() => {
@@ -141,9 +200,18 @@ export function VueTemps({ lt0, molFixe, onLt }) {
   return (<div>
     <style>{`
       .fl-pt { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
-      @media (min-width: 900px) { .fl-pt { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1.15fr); } }
+      .fl-pr { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+      @media (min-width: 900px) { .fl-pr { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); } .fl-pt { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1.15fr); } }
       @media (prefers-reduced-motion: no-preference) { .fl-pulse { animation: fl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes fl-pulse { 50% { transform: scale(1.4); } } }
     `}</style>
+    {!molFixe && <div role="group" aria-label="Échelle de temps" style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center', marginBottom: 8 }}>
+      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Échelle de temps</span>
+      {[[false, 'Logarithmique (de 10⁻¹⁵ s à 10³ s)'], [true, 'Temps réel (lampe allumée)']].map(([r, l]) => <button key={l} onClick={() => { setJoue(false); setReel(r); }} aria-pressed={reel === r} style={stylePetitBouton(reel === r, '#334155')}>{l}</button>)}</div>}
+    {reel ? <>
+      {!molFixe && <div role="group" aria-label="Molécule" style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 8 }}>
+        <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Molécule</span>
+        {[['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => { setMolId(k); setSel(''); }} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>)}</div>}
+      <VueReel key={mol.id} mol={mol}/></> : <>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
       <button onClick={lancer} aria-pressed={joue} style={styleBouton(joue, '#16a34a')}>{joue ? '⏸ Pause' : lt > LT0 + 0.01 && lt < LT1 - 0.01 ? '▶ Reprendre' : '▶ Flash à t = 0'}</button>
       <button onClick={() => { setJoue(false); setInvite(true); pos.current = LT0; setLt(LT0); }} disabled={lt <= LT0 + 0.01 && !joue} style={styleBouton(false, '#334155')}>↺ Revenir au début</button>
@@ -161,5 +229,6 @@ export function VueTemps({ lt0, molFixe, onLt }) {
       {panneau(3, 'Les émissions au cours du temps', <Courbes mol={mol} lt={lt} onLt={regler} invite={invite && !joue}/>)}
     </div>
     <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser l’instant t sur le graphique (une graduation = 1 000 fois plus de temps). Les disques noirs du diagramme représentent les molécules excitées par le flash. Touchez un processus du diagramme pour sa définition.</div>
+    </>}
   </div>);
 }
