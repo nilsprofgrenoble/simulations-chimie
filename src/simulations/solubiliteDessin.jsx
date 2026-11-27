@@ -7,6 +7,7 @@
 //    en l'absence de l'un et de l'autre, les molécules s'empilent côte à côte (dispersion).
 //  Coordonnées en « longueurs de liaison » (1 = liaison C–C), axe y vers le haut.
 // ====================================================
+import { createContext, useContext } from "react";
 import { ESPECES, ANA, complementaire } from './solubiliteModele';
 
 const TAU = 2 * Math.PI;
@@ -154,6 +155,10 @@ function dirLibre(M, i, extra = []) {
 const estPolaireH = (M, i) => { const a = M.at[i]; if (a.el === 'O' || a.el === 'N') return true; if (a.el !== 'H') return false; const o = M.at[M.vois[i][0]]; return !!o && (o.el === 'O' || o.el === 'N'); };
 
 // mols : molécules disposées ; lignes : interactions ; opts : doublets, halos, charges ('toutes' | 'inter' | null)
+// exploration : les interactions « vivent » (traits qui défilent) et les ions du cristal vibrent ; fourni par la simulation 53
+// eslint-disable-next-line react-refresh/only-export-components
+export const VieCtx = createContext(false);
+const vieClasse = vie => (vie ? 'sd-vie' : undefined);
 export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, halos = false, charges = null, legende = null, actif = null, onSurvol = null }) {
   const bx = boite(mols), s = Math.min(W / (bx.x1 - bx.x0), H / (bx.y1 - bx.y0), smax);
   const ox = (W - (bx.x1 - bx.x0) * s) / 2 - bx.x0 * s, oy = (H - (bx.y1 - bx.y0) * s) / 2 + bx.y1 * s;
@@ -199,7 +204,7 @@ export function Scene({ mols, lignes = [], W, H, smax = 34, doublets = true, hal
     const r = fs * 0.6; x1 += ux * r; y1 += uy * r; x2 -= ux * r * 1.5; y2 -= uy * r * 1.5;
     const on = present && actif === l.t, dim = present && actif !== l.t, f = on ? 1.7 : 1;
     const trait = l.t === 'd' ? <polyline points={chemin(x1, y1, x2, y2)} fill="none" stroke={COUL_INTER.d} strokeWidth={1.6 * f}/>
-      : <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER[l.t]} strokeWidth={(l.t === 'h' ? 3 : 2.6) * f} strokeDasharray={l.t === 'i' ? '1 4' : l.t === 'h' ? '5 3' : '2 4'} strokeLinecap="round"/>;
+      : <line className="sd-fil" x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER[l.t]} strokeWidth={(l.t === 'h' ? 3 : 2.6) * f} strokeDasharray={l.t === 'i' ? '1 4' : l.t === 'h' ? '5 3' : '2 4'} strokeLinecap="round"/>;
     elems.push(<g key={`i${k}`} opacity={dim ? 0.18 : 1}>
       {on && <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={COUL_INTER[l.t]} strokeWidth="11" opacity="0.22" strokeLinecap="round"/>}
       {trait}
@@ -225,9 +230,10 @@ export function FormuleSVG({ id, W = 300, charges = true, halos = true }) {
 }
 
 export function PaireSVG({ a, b, titre, sous, W = 360, H = 140, actif = null, onSurvol = null }) {
+  const vie = useContext(VieCtx);
   const { mols, lignes } = disposerPaire(a, b, W, H - 18);
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`${titre} : ${ESPECES[a].nom} et ${ESPECES[b].nom}`}>
+    <svg className={vieClasse(vie)} viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`${titre} : ${ESPECES[a].nom} et ${ESPECES[b].nom}`}>
       <g transform="translate(0,0)"><Scene mols={mols} lignes={lignes} W={W} H={H - 18} smax={40} charges="inter" actif={actif} onSurvol={onSurvol}/></g>
       <text x="6" y={H - 4} fontSize="16" fontWeight="700" fill="#0f172a">{titre}</text>
       <text x={W - 6} y={H - 4} textAnchor="end" fontSize="15" fill="#475569">{sous}</text>
@@ -267,9 +273,10 @@ function coquille(solv, signe, n = 4) {
   return { mols, lignes };
 }
 export function SolvateSVG({ solv, W = 360, H = 190, actif = null, onSurvol = null }) {
+  const vie = useContext(VieCtx);
   const a = coquille(solv, 1), b = coquille(solv, -1), w = W / 2;
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`Ions Na⁺ et Cl⁻ entourés de ${ESPECES[solv].nom}`}>
+    <svg className={vieClasse(vie)} viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label={`Ions Na⁺ et Cl⁻ entourés de ${ESPECES[solv].nom}`}>
       <Scene mols={a.mols} lignes={a.lignes} W={w} H={H - 18} smax={24} charges="inter" actif={actif} onSurvol={onSurvol}/>
       <g transform={`translate(${w},0)`}><Scene mols={b.mols} lignes={b.lignes} W={w} H={H - 18} smax={24} charges="inter" actif={actif} onSurvol={onSurvol}/></g>
       <line x1={w} y1="8" x2={w} y2={H - 22} stroke="#e2e8f0"/>
@@ -278,12 +285,12 @@ export function SolvateSVG({ solv, W = 360, H = 190, actif = null, onSurvol = nu
     </svg>);
 }
 export function CristalSVG({ W = 360, H = 150 }) {
-  const ions = [];
-  for (let i = 0; i < 6; i++) for (let j = 0; j < 3; j++) { const na = (i + j) % 2 === 0; ions.push(<g key={`${i}-${j}`}>
+  const vie = useContext(VieCtx), ions = [];
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 3; j++) { const na = (i + j) % 2 === 0; ions.push(<g key={`${i}-${j}`} className="sd-ion" style={{ animationDelay: `${((i * 3 + j * 5) % 7) * -0.26}s` }}>
     <circle cx={70 + i * 44} cy={22 + j * 40} r={na ? 13 : 18} fill={na ? '#fde68a' : '#bbf7d0'} stroke={na ? '#b45309' : '#15803d'} strokeWidth="1.5"/>
     <text x={70 + i * 44} y={26 + j * 40} textAnchor="middle" fontSize="15" fontWeight="800" fill="#0f172a">{na ? 'Na⁺' : 'Cl⁻'}</text></g>); }
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Cristal de chlorure de sodium">
+    <svg className={vieClasse(vie)} viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', display: 'block', background: '#fafaf9', borderRadius: 8 }} role="img" aria-label="Cristal de chlorure de sodium">
       {ions}<text x="6" y={H - 4} fontSize="16" fontWeight="700" fill="#0f172a">cristal : chaque ion entouré d’ions de signe opposé</text>
     </svg>);
 }
