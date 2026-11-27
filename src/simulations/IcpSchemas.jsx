@@ -33,21 +33,22 @@ export function SceneTorche({ p }) {
 // ---------- polychromateur : un photon traverse la fente, est dévié par le réseau selon λ, arrive sur son pixel (p de 0 à 1) ----------
 export function ScenePolychromateur({ lam, p }) {
   const col = lam ? couleurOnde(lam) : '#64748b', th = lam ? M.angleReseau(lam) : 0, xd = lam ? 36 + (lam - 200) / 600 * 270 : 170;
-  const x1 = p < 0.4 ? lerp(34, 146, p / 0.4) : 146, y1 = 62;
-  const xg = 146, yg = 62, xp = p < 0.4 ? null : lerp(xg, xd, seg(p, 0.4, 0.95)), yp = p < 0.4 ? null : lerp(yg, 168, seg(p, 0.4, 0.95));
-  return (<svg role="img" aria-label="Polychromateur : la lumière du plasma passe par une fente, un réseau la disperse selon la longueur d'onde, et un détecteur à plusieurs pixels la mesure" viewBox="0 0 340 214" width="100%" style={svgStyle}>
-    <rect x="3" y="40" width="56" height="44" rx="8" fill="#fce7f3" stroke="#be185d" strokeWidth="1.8"/>{T(31, 60, 'plasma', { size: 12, gras: true })}{T(31, 74, 'ICP', { size: 12, gras: true })}
-    <line x1="80" y1="46" x2="80" y2="56" stroke="#0f172a" strokeWidth="3"/><line x1="80" y1="68" x2="80" y2="78" stroke="#0f172a" strokeWidth="3"/>{T(80, 94, 'fente', { size: 11.5 })}
-    <polygon points="128,50 164,58 164,74 128,80" fill="#ede9fe" stroke="#6d28d9" strokeWidth="1.8"/>{T(146, 42, 'réseau', { size: 12, gras: true })}
+  const xg = 156, yg = 82, x1 = p < 0.4 ? lerp(66, xg, p / 0.4) : xg;
+  const xp = p < 0.4 ? null : lerp(xg, xd, seg(p, 0.4, 0.95)), yp = p < 0.4 ? null : lerp(yg, 170, seg(p, 0.4, 0.95));
+  return (<svg role="img" aria-label="Polychromateur : la lumière du plasma passe par une fente, un réseau la disperse selon la longueur d'onde, et un détecteur à plusieurs pixels la mesure" viewBox="0 0 340 224" width="100%" style={svgStyle}>
+    <rect x="4" y="58" width="58" height="48" rx="8" fill="#fce7f3" stroke="#be185d" strokeWidth="1.8"/>{T(33, 79, 'plasma', { size: 12, gras: true })}{T(33, 94, 'ICP', { size: 12, gras: true })}
+    <line x1="62" y1={yg} x2={xg} y2={yg} stroke="#94a3b8" strokeWidth="2" strokeDasharray="5 4"/>
+    <line x1="92" y1="60" x2="92" y2="75" stroke="#0f172a" strokeWidth="4"/><line x1="92" y1="89" x2="92" y2="104" stroke="#0f172a" strokeWidth="4"/>{T(92, 122, 'fente', { size: 12 })}
+    <g transform={`rotate(-32 ${xg} ${yg})`}><rect x={xg - 5} y={yg - 20} width="10" height="40" rx="2" fill="#ede9fe" stroke="#6d28d9" strokeWidth="1.8"/>{[-14, -7, 0, 7, 14].map(d => <line key={d} x1={xg - 5} y1={yg + d} x2={xg + 5} y2={yg + d} stroke="#6d28d9" strokeWidth="1.2"/>)}</g>
+    {T(xg, 46, 'réseau', { size: 12, gras: true })}
     <rect x="30" y="170" width="280" height="14" fill="#f1f5f9" stroke="#15803d" strokeWidth="1.6"/>
     {Array.from({ length: 28 }, (_, i) => <line key={i} x1={36 + i * 10} y1="170" x2={36 + i * 10} y2="184" stroke="#cbd5e1"/>)}
-    {T(170, 204, 'détecteur à pixels : un pixel par longueur d’onde', { size: 12, fill: K.gris })}
-    {lam && p < 0.4 && <circle cx={x1} cy={y1} r="5" fill={col} stroke="#0f172a" strokeWidth="1.2"/>}
+    {T(170, 216, 'détecteur à pixels : un pixel par longueur d’onde', { size: 12, fill: K.gris })}
+    {lam && p < 0.4 && <circle cx={x1} cy={yg} r="5" fill={col} stroke="#0f172a" strokeWidth="1.2"/>}
     {lam && p >= 0.4 && <g><line x1={xg} y1={yg} x2={xp} y2={yp} stroke={col} strokeWidth="2.2"/><circle cx={xp} cy={yp} r="5" fill={col} stroke="#0f172a" strokeWidth="1.2"/></g>}
-    {lam && p >= 0.4 && T(Math.min(Math.max(xp, 50), 290), 158, `${Math.round(lam)} nm`, { size: 12.5, gras: true, halo: true })}
-    {lam && p >= 0.95 && <rect x={xd - 5} y="169" width="10" height="16" fill={col} stroke="#0f172a" strokeWidth="1.4"/>}
-    {!lam && T(200, 120, 'En attente d’un photon', { size: 12.5, fill: K.gris })}
-    {lam && T(228, 40, `θ ≈ ${Math.round(th)}° pour ${Math.round(lam)} nm`, { size: 11.5, fill: K.gris })}
+    {lam && p >= 0.95 && <g><rect x={xd - 5} y="169" width="10" height="16" fill={col} stroke="#0f172a" strokeWidth="1.4"/>{T(Math.min(Math.max(xd, 36), 304), 202, `${Math.round(lam)} nm`, { size: 12.5, gras: true })}</g>}
+    {!lam && T(230, 130, 'En attente d’un photon', { size: 12.5, fill: K.gris })}
+    {lam && T(334, 24, `θ ≈ ${Math.round(th)}° pour ${Math.round(lam)} nm`, { size: 11.5, fill: K.gris, anchor: 'end' })}
   </svg>);
 }
 
