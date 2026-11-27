@@ -173,7 +173,7 @@ Rapports : un fichier par chapitre dans audit/rapports-exos/.
 | ANA1205 | TSTL | Chaînes énergétiques, conservation et transferts | Analyser | Prévoir sans calculer — Un patineur qui s’arrête | audité | 16 |
 | REA158 | TSTL | Chaînes énergétiques, conservation et transferts | Réaliser | Bille en chute libre : énergie cinétique, vitesse et part d’énergie co | audité | 8 |
 | SAPP558 | TSTL | Chaînes énergétiques, conservation et transferts | S'approprier | Bloc qui ralentit sur un sol horizontal : énergie cinétique et énergie | audité | 16 |
-| VAL690 | TSTL | Chaînes énergétiques, conservation et transferts | Valider | Ça paraît plausible ? — Un chargeur et un moteur en série | audité | 8 |
+| VAL690 | TSTL | Chaînes énergétiques, conservation et transferts | Valider | Ça paraît plausible ? — Un chargeur et un moteur en série | corrigé | 8 |
 | ANA1242 | TSTL | Conductivité et titrages conductimétriques | Analyser | Prévoir sans calculer — Dosage sans eau ajoutée : solution trop concen | audité | 16 |
 | REA170 | TSTL | Conductivité et titrages conductimétriques | Réaliser | Acide faible : du taux d’avancement à la concentration en ions, à la c | audité | 8 |
 | SAPP595 | TSTL | Conductivité et titrages conductimétriques | S'approprier | Acide fort et base forte : variation de σ avant et après l’équivalence | audité | 16 |
@@ -191,11 +191,11 @@ Rapports : un fichier par chapitre dans audit/rapports-exos/.
 | ANA1142 | TSTL | Énergie électrique : puissance, effet Joule, batterie e | Analyser | Prévoir sans calculer — Un éclairement divisé par deux | audité | 12 |
 | REA146 | TSTL | Énergie électrique : puissance, effet Joule, batterie e | Réaliser | Accumulateur : intensité et durée de fonctionnement (terminale STL) | audité | 6 |
 | SAPP519 | TSTL | Énergie électrique : puissance, effet Joule, batterie e | S'approprier | Courant et puissance à un autre éclairement — Puissance maximale au no | audité | 12 |
-| VAL684 | TSTL | Énergie électrique : puissance, effet Joule, batterie e | Valider | Ça paraît plausible ? — Durée de fonctionnement d’un accumulateur | audité | 6 |
+| VAL684 | TSTL | Énergie électrique : puissance, effet Joule, batterie e | Valider | Ça paraît plausible ? — Durée de fonctionnement d’un accumulateur | corrigé | 6 |
 | ANA1153 | TSTL | Énergie et ondes : flux, éclairement, rendement et lase | Analyser | Prévoir sans calculer — Une exposition deux fois plus longue | audité | 12 |
 | REA138 | TSTL | Énergie et ondes : flux, éclairement, rendement et lase | Réaliser | Panneau photovoltaïque : puissance reçue, rendement et pertes (termina | audité | 6 |
 | SAPP526 | TSTL | Énergie et ondes : flux, éclairement, rendement et lase | S'approprier | Puissance fournie par un panneau éclairé — Puissance lumineuse reçue | audité | 12 |
-| VAL676 | TSTL | Énergie et ondes : flux, éclairement, rendement et lase | Valider | Ça paraît plausible ? — Rendement mesuré sur un panneau de laboratoire | audité | 6 |
+| VAL676 | TSTL | Énergie et ondes : flux, éclairement, rendement et lase | Valider | Ça paraît plausible ? — Rendement mesuré sur un panneau de laboratoire | corrigé | 6 |
 | ANA1250 | TSTL | Énergie mécanique : travail, conservation et frottement | Analyser | Prévoir sans calculer — Freiner dans une montée | audité | 24 |
 | REA168 | TSTL | Énergie mécanique : travail, conservation et frottement | Réaliser | Freinage : force de freinage nécessaire pour s’arrêter avant un obstac | audité | 12 |
 | SAPP593 | TSTL | Énergie mécanique : travail, conservation et frottement | S'approprier | Franchir le looping : vitesse minimale et hauteur de départ — Hauteur  | audité | 24 |

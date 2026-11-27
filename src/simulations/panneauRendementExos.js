@@ -54,7 +54,7 @@ export const PVR_VAL = [
     ] }),
   P({ id: 'pvr-val-eta', domaine: DOM, niveau: 2, titre: 'Rendement mesuré sur un panneau de laboratoire', plausible: true,
     enonce: 'Un panneau de 37,5 cm² est éclairé sous 1000 W/m². À la résistance qui donne la puissance maximale, un voltmètre indique U = 3,1 V et un ampèremètre I = 187 mA. L’élève calcule un rendement d’environ 15 %.',
-    reperes: [['Éclairement E', '1000 W/m²'], ['Surface S', '37,5 cm², soit 0,00375 m²'], ['Plum = E × S', '3,75 W'], ['Pél = U × I', '3,1 V × 0,187 A ≈ 0,58 W']],
+    reperes: [['Conversion', '1 cm² = 10⁻⁴ m² ; 1 mA = 10⁻³ A'], ['Puissances', 'Plum = E × S (lumière reçue) ; Pél = U × I (électricité fournie)']],
     ver: 'Plum = 1000 × 0,00375 = 3,75 W ; Pél = 3,1 × 0,187 ≈ 0,58 W ; η = 0,58 ÷ 3,75 ≈ 0,155, soit environ 15 %. Cette valeur est plausible pour un panneau au silicium (de l’ordre de 15 à 25 %).',
     q2: 'Quelle part de la lumière reçue est alors perdue ?',
     options: [

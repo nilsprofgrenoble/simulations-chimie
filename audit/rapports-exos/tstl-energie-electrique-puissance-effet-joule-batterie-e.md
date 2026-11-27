@@ -24,5 +24,5 @@ Exercices dans la même case : 12.
 ## VAL684 · Valider · Ça paraît plausible ? — Durée de fonctionnement d’un accumulateur
 Exercices dans la même case : 6.
 
-- **Bloquant** (didactique) `VALREPERES` : Les repères contiennent la solution : « Δt = Qs ÷ I = 2,0 ÷ 0,50 = 4,0 h » et « valeur de l'élève 0,25 h (16 fois trop courte) » ; de plus Qs et I redoublent l'énoncé (redite).
+- **Bloquant** (didactique) `VALREPERES` : (corrigé au lot 1) Les repères contiennent la solution : « Δt = Qs ÷ I = 2,0 ÷ 0,50 = 4,0 h » et « valeur de l'élève 0,25 h (16 fois trop courte) » ; de plus Qs et I redoublent l'énoncé (redite).
 - **Important** (didactique) `VALFUITE` : L’explication complète s’affiche dès le verdict, avant l’étape « Quelle erreur ? » : l’élève la lit au lieu de chercher.
