@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
@@ -7,6 +7,8 @@ import { Pic } from "../Pictos";
 import { puces, nbf, tire } from "./Travail";
 import * as M from "./oeilLoupeModele";
 import { SchemaOeil, SchemaAngle, SchemaLoupe, FormeOeil, C } from "./oeilLoupeSchema";
+import { useHorloge, Commandes, T_BOUCLE } from "./lentilleMinceAnim";
+import { StyleAnim } from "./exploAnim";
 
 const SIM_ID = 117;
 declarerDefis(SIM_ID, [['accomm', 'Mettre l’œil au point'], ['theta', 'Calculer un diamètre apparent'], ['gross', 'Grossissement d’une loupe']]);
@@ -143,6 +145,21 @@ const FICHES = {
 // ====================================================
 //  COMPOSANT
 // ====================================================
+// exploration animée : photons le long des rayons ; objet saisissable (loupe : position OA ; diamètre apparent : distance D)
+function SceneAnimee({ vue, schema, setD, setDl }) {
+  const L = useHorloge(T_BOUCLE, true), [touche, setTouche] = useState(false), ref = useRef(null);
+  const lum = { t: L.t, mode: 'boucle' }, tch = () => setTouche(true);
+  const consigne = vue === 'oeil' ? 'Les photons arrivent au même point de la rétine quand l’image est nette ; sinon ils s’étalent.' : 'Saisissez l’objet (le rond ↔ sous lui) pour le déplacer : la lumière suit.';
+  return (
+    <div><StyleAnim/>
+      {vue === 'oeil' && <SchemaOeil {...schema} lum={lum}/>}
+      {vue === 'angle' && <SchemaAngle {...schema} lum={lum} refSvg={ref} poignee={{ vmin: M.D_MIN, vmax: 150, touche, onToucher: tch, set: v => setD(Math.round(Math.max(M.D_MIN, Math.min(150, v)) / 5) * 5) }}/>}
+      {vue === 'loupe' && <SchemaLoupe {...schema} lum={lum} refSvg={ref} poignee={{ touche, onToucher: tch, set: v => setDl(Math.round(Math.max(M.DL_MIN, Math.min(M.DL_MAX, -v)) * 10) / 10) }}/>}
+      <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 2px', lineHeight: 1.45 }}>{consigne}</div>
+      <Commandes L={L}/>
+    </div>);
+}
+
 export function SimulationOeilLoupe() {
   const [mode, setMode] = useState(() => modeOuverture('oeil-loupe-guide-v1'));
   useSignalerMode(mode);
@@ -399,9 +416,13 @@ export function SimulationOeilLoupe() {
   // ════════════════ SCÈNE ════════════════
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      {vue === 'oeil' && <SchemaOeil D={Dc} fe={feEff} rayons etiquettes/>}
-      {vue === 'angle' && <SchemaAngle D={PE.D} AB={PE.AB} fantome={(enExplore && fantome) || idE === 'diam'} texte={enExplore} nomAB={PE.AB < 0.1 ? `écart ${fm(PE.AB * 10, 2)}${NB}mm` : `AB = ${fm(PE.AB, 1)}${NB}cm`}/>}
-      {vue === 'loupe' && <SchemaLoupe d={PE.dl} f={PE.fl} AB={M.AB_LOUPE} rayons etiquettes theta={enExplore || (enGuide && depuis('theta0'))}/>}
+      {(() => {
+        const sch = { oeil: { D: Dc, fe: feEff, rayons: true, etiquettes: true },
+          angle: { D: PE.D, AB: PE.AB, fantome: (enExplore && fantome) || idE === 'diam', texte: enExplore, nomAB: PE.AB < 0.1 ? `écart ${fm(PE.AB * 10, 2)}${NB}mm` : `AB = ${fm(PE.AB, 1)}${NB}cm` },
+          loupe: { d: PE.dl, f: PE.fl, AB: M.AB_LOUPE, rayons: true, etiquettes: true, theta: enExplore || (enGuide && depuis('theta0')) } };
+        if (enExplore) return <SceneAnimee vue={vue} schema={sch[vue]} setD={v => setP(p => ({ ...p, D: v, inf: false }))} setDl={v => setP(p => ({ ...p, dl: v }))}/>;
+        return (<>{vue === 'oeil' && <SchemaOeil {...sch.oeil}/>}{vue === 'angle' && <SchemaAngle {...sch.angle}/>}{vue === 'loupe' && <SchemaLoupe {...sch.loupe}/>}</>);
+      })()}
     </div>);
   const aEssayer = indicesProfond(
     <div style={styleBoite}>

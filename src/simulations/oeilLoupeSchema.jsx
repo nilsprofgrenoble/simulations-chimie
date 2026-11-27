@@ -1,6 +1,7 @@
 import * as M from "./oeilLoupeModele";
 import { NB } from "./Distillation";
 import { nbf } from "./Travail";
+import { CouchePhotons, Poignee } from "./lentilleMinceAnim";
 
 // Schémas de l'œil réduit, du diamètre apparent et de la loupe (TSTL) : simulation 116, cartes « À retenir » et schémas d'énoncés.
 // Toutes les positions viennent de oeilLoupeModele.js : le schéma ne peut pas contredire le calcul.
@@ -25,7 +26,7 @@ export function FormeOeil({ xL, y0, k, fe = M.L_OEIL, nomRetine = true, couleurR
 }
 
 // ────────────────────────── L'œil réduit (échelle réelle dans l'œil) ──────────────────────────
-export function SchemaOeil({ D = 25, fe = M.L_OEIL, large = 700, haut: hautProp = 300, k = 10.5, xL = 395, rayons = true, etiquettes = true, label, compact = false, dp = 5 }) {
+export function SchemaOeil({ D = 25, fe = M.L_OEIL, large = 700, haut: hautProp = 300, k = 10.5, xL = 395, rayons = true, etiquettes = true, label, compact = false, dp = 5, lum = null }) {
   const haut = !compact && large === 700 && etroit() ? 390 : hautProp;
   const y0 = haut / 2, X = x => xL + k * x, Y = y => y0 - k * y, XR = X(M.L_OEIL);
   const inf = !isFinite(D), Dmm = D * 10, AB = M.AB_OEIL;
@@ -38,7 +39,7 @@ export function SchemaOeil({ D = 25, fe = M.L_OEIL, large = 700, haut: hautProp 
     const sOut = (yBp - yl) / OAp, yRet = yl + sOut * M.L_OEIL;
     const xmm = (xDeb - xL) / k;
     const prolonge = OAp > M.L_OEIL && X(OAp) < large - 6;
-    return { yRet, g: (
+    return { yRet, c, pts: [[xDeb, Y(yl + sIn * xmm)], [X(0), Y(yl)], [XR, Y(yRet)]], g: (
       <g key={cle}>
         <polyline points={`${xDeb},${Y(yl + sIn * xmm)} ${X(0)},${Y(yl)} ${XR},${Y(yRet)}`} fill="none" stroke={c} strokeWidth={sw} strokeLinejoin="round"/>
         {prolonge && <line x1={XR} y1={Y(yRet)} x2={X(OAp)} y2={Y(yBp)} stroke={c} strokeWidth="1.6" strokeDasharray="4 3" opacity="0.8"/>}
@@ -53,6 +54,7 @@ export function SchemaOeil({ D = 25, fe = M.L_OEIL, large = 700, haut: hautProp 
       <line x1="8" y1={y0} x2={large - 8} y2={y0} stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="8 4"/>
       <FormeOeil xL={xL} y0={y0} k={k} fe={fe}/>
       {R.map(r => r.g)}
+      {lum && <CouchePhotons chemins={R.map(r => ({ c: r.c, pts: r.pts }))} lum={{ ...lum, k: !compact && large === 700 && etroit() ? 1.8 : 1 }}/>}
       {rayons && !nette && <line x1={XR + 3} y1={Y(yh)} x2={XR + 3} y2={Y(yb2)} stroke={C.flou} strokeWidth="5" opacity="0.75"/>}
       {rayons && nette && <g><line x1={XR + 3} y1={y0} x2={XR + 3} y2={Y(yBp)} stroke={C.img} strokeWidth="3.5"/>{fl(XR + 3, Y(yBp), yBp < 0 ? 90 : -90, C.img, 5)}</g>}
       {rayons && OAp > 0 && X(OAp) < large - 6 && !compact && <circle cx={X(OAp)} cy={Y(yBp)} r="3.2" fill={nette ? C.img : C.flou}/>}
@@ -96,7 +98,8 @@ export function SchemaOeil({ D = 25, fe = M.L_OEIL, large = 700, haut: hautProp 
 
 // ────────────────────────── Diamètre apparent ──────────────────────────
 // Un objet AB (hauteur agrandie à l'écran) vu depuis l'œil à la distance D ; objet fantôme facultatif à 25 cm.
-export function SchemaAngle({ D = 50, AB = 2, fantome = false, label, large = 700, haut = 230, texte = true, sc: scProp, nomAB }) {
+export function SchemaAngle({ D = 50, AB = 2, fantome = false, label, large = 700, haut: hautProp = 230, texte = true, sc: scProp, nomAB, lum = null, poignee = null, refSvg = null }) {
+  const haut = hautProp + (poignee ? 50 : 0);
   const xe = large - (large === 700 ? 100 : 62), y0 = haut / 2 + 6, sc = scProp || (large === 700 ? Math.min(3.4, 520 / Math.max(D, 25)) : (large - 200) / 300), ha = Math.min(large === 700 ? 95 : 44, Math.max(14, AB * 18));
   const xo = xe - sc * D, th = M.diametreApproche(AB, D);
   const arc = (xo2, c) => { const a = Math.atan2(ha, xe - xo2), r = 56; return <path d={`M${xe - r},${y0} A${r},${r} 0 0 1 ${xe - r * Math.cos(a)},${y0 - r * Math.sin(a)}`} fill="none" stroke={c} strokeWidth="2"/>; };
@@ -110,7 +113,7 @@ export function SchemaAngle({ D = 50, AB = 2, fantome = false, label, large = 70
       {nomAB && c === C.obj && <text x={x} y={y0 - ha - 12} textAnchor="middle" fontSize={fs} fontWeight="800" fill={c}>{nomAB}</text>}
     </g>);
   return (
-    <svg viewBox={`0 0 ${large} ${haut}`} role="img" aria-label={label || `Un objet de hauteur ${fr(AB)} cm vu à ${fr(D, 0)} cm : le diamètre apparent est l’angle θ entre les deux rayons issus des extrémités de l’objet et arrivant dans l’œil`}
+    <svg ref={refSvg} viewBox={`0 0 ${large} ${haut}`} role="img" aria-label={label || `Un objet de hauteur ${fr(AB)} cm vu à ${fr(D, 0)} cm : le diamètre apparent est l’angle θ entre les deux rayons issus des extrémités de l’objet et arrivant dans l’œil`}
       style={{ width: '100%', maxWidth: large === 700 ? 'none' : 380, height: 'auto', display: 'block', margin: large === 700 ? 0 : '6px auto', background: '#fff', border: large === 700 ? '1.5px solid #cbd5e1' : 'none', borderRadius: 10 }}>
       <line x1="8" y1={y0} x2={large - 8} y2={y0} stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="8 4"/>
       {fantome && D !== 25 && objet(xe - sc * 25, '#94a3b8', `à 25${NB}cm`, '5 3', fs + 6)}
@@ -119,6 +122,9 @@ export function SchemaAngle({ D = 50, AB = 2, fantome = false, label, large = 70
       <text x={xe - 66} y={y0 - 5} textAnchor="end" fontSize={fs + 2} fontWeight="800" fill={C.theta}>θ</text>
       <FormeOeil xL={xe} y0={y0} k={large === 700 ? 4.6 : 3.4} fe={M.L_OEIL}/>
       <text x={xe + 6} y={y0 - 6.8 * (large === 700 ? 4.6 : 3.4) - 6} textAnchor="middle" fontSize={fs} fontWeight="800" fill={C.txt}>œil</text>
+      {lum && <CouchePhotons chemins={[{ c: C.theta, pts: [[xo, y0 - ha], [xe, y0]] }, { c: C.obj, pts: [[xo, y0], [xe, y0]] }]} lum={{ ...lum, impact: false, k: fk > 1 ? 1.8 : 1 }}/>}
+      {poignee && <Poignee x={xo} y={y0 + (fk > 1 ? 82 : 62)} g={fk > 1 ? 1.9 : 1} coul={C.obj} label="Objet : distance D à l’œil (en cm)" valeur={D} vmin={poignee.vmin} vmax={poignee.vmax} texte={`${fr(D, 0)} cm`} touche={poignee.touche} onToucher={poignee.onToucher} pas={5}
+        lire={e => { const r = refSvg.current.getBoundingClientRect(); return (xe - (e.clientX - r.left) * large / r.width) / sc; }} set={poignee.set} zones={[[xo - 24 * (fk > 1 ? 1.9 : 1), y0 - ha - 10, 48 * (fk > 1 ? 1.9 : 1), ha + 30]]}/>}
       {texte && <text x="12" y="18" fontSize={fs} fill="#64748b" fontWeight="700">échelle verticale agrandie</text>}
       {texte && <text x="12" y={haut - 10} fontSize={fs + 1} fontWeight="800" fill={C.theta}>{`θ ≈ AB / D = ${fr(AB * 10, AB * 10 < 1 ? 2 : 0)}${NB}mm ÷ ${fr(D * 10, 0)}${NB}mm = ${fr(th * 1000, th * 1000 < 1 ? 2 : 0)}${NB}mrad`}</text>}
     </svg>);
@@ -128,7 +134,8 @@ export function SchemaAngle({ D = 50, AB = 2, fantome = false, label, large = 70
 const LARG = 700, HAUT = 330, KX = 22, X0 = 330, YA = 172, KY = 50;
 const KO = 4.8;                                    // échelle de l'œil (px par mm) derrière la loupe
 const px = x => X0 + KX * x, py = y => YA - KY * y;
-export function SchemaLoupe({ d, f, AB = M.AB_LOUPE, rayons = true, foyers = true, etiquettes = true, theta = true, oeil = true, label }) {
+export function SchemaLoupe({ d, f, AB = M.AB_LOUPE, rayons = true, foyers = true, etiquettes = true, theta = true, oeil = true, label, lum = null, poignee = null, refSvg = null }) {
+  const HT = HAUT + (poignee ? 50 : 0);
   const fk = etroit() ? 2.1 : 1;
   const im = M.imageLoupe(d, f), R = M.rayonsLoupe(d, f, AB), e = 1.2;
   const oeilVisible = oeil && im.nature !== 'reelle';
@@ -145,10 +152,11 @@ export function SchemaLoupe({ d, f, AB = M.AB_LOUPE, rayons = true, foyers = tru
   };
   const aff = !inf && px(im.OAp) > 8 && px(im.OAp) < LARG - 8;
   return (
-    <svg viewBox={`0 0 ${LARG} ${HAUT}`} width="100%" role="img" aria-label={label || `Loupe de distance focale ${fr(f)} cm, objet à ${fr(d)} cm de la loupe, œil juste derrière la loupe`}
+    <svg ref={refSvg} viewBox={`0 0 ${LARG} ${HT}`} width="100%" role="img" aria-label={label || `Loupe de distance focale ${fr(f)} cm, objet à ${fr(d)} cm de la loupe, œil juste derrière la loupe`}
       style={{ display: 'block', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 10 }}>
       <line x1="8" y1={YA} x2={LARG - 8} y2={YA} stroke="#0f172a" strokeWidth="1.4" strokeDasharray="10 5"/>
       {rayons && <g>{trace(R.r1, C.r1, 'r1')}{trace(R.r2, C.r2, 'r2')}</g>}
+      {lum && rayons && <CouchePhotons chemins={[[R.r1, C.r1], [R.r2, C.r2]].filter(([r]) => r).map(([r, c]) => { const [B, Lp] = r.avant, pente = r.dir[1] / r.dir[0], xf = oeilVisible ? e - 0.35 : 17; return { c, pts: [[px(B[0]), py(B[1])], [px(0), py(Lp[1])], [px(xf), py(Lp[1] + pente * xf)]] }; })} lum={{ ...lum, impact: false, k: fk > 1 ? 1.8 : 1 }}/>}
       {/* loupe */}
       <line x1={px(0)} y1={YA - 135} x2={px(0)} y2={YA + 135} stroke={C.lent} strokeWidth="4.5"/>
       <polygon points={`${px(0)},${YA - 142} ${px(0) - 8},${YA - 124} ${px(0) + 8},${YA - 124}`} fill={C.lent}/><polygon points={`${px(0)},${YA + 142} ${px(0) - 8},${YA + 124} ${px(0) + 8},${YA + 124}`} fill={C.lent}/>
@@ -195,6 +203,8 @@ export function SchemaLoupe({ d, f, AB = M.AB_LOUPE, rayons = true, foyers = tru
           </g>);
         })()}
       </g>}
-      <text x="12" y={HAUT - 10} fontSize={11.5 * fk} fontWeight="700" fill="#64748b">{fk > 1 ? 'échelle verticale agrandie' : 'échelle verticale agrandie · F, F′ : foyers de la loupe · œil contre la loupe'}</text>
+      {poignee && <Poignee x={px(-d)} y={YA + (fk > 1 ? 140 : 122)} g={fk > 1 ? 1.9 : 1} coul={C.obj} label="Objet : position OA sur l’axe (en cm)" valeur={-d} vmin={-M.DL_MAX} vmax={-M.DL_MIN} texte={`OA = −${fr(d)} cm`} touche={poignee.touche} onToucher={poignee.onToucher} pas={0.5}
+        lire={e => { const r = refSvg.current.getBoundingClientRect(); return (((e.clientX - r.left) * LARG / r.width) - X0) / KX; }} set={poignee.set} zones={[[px(-d) - 30 * (fk > 1 ? 1.9 : 1), YA - 80, 60 * (fk > 1 ? 1.9 : 1), 100]]}/>}
+      <text x="12" y={HT - 10} fontSize={11.5 * fk} fontWeight="700" fill="#64748b">{fk > 1 ? 'échelle verticale agrandie' : 'échelle verticale agrandie · F, F′ : foyers de la loupe · œil contre la loupe'}</text>
     </svg>);
 }
