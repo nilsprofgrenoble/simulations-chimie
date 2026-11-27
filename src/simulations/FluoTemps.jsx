@@ -138,14 +138,26 @@ function Echantillon({ mol, lt, P }) {
 // ---------- ③ intensités en fonction du temps ----------
 const PX0 = 48, PX1 = 410, YB = 214, PH = 160;
 const xT = lt => PX0 + (lt - LT0) / (LT1 - LT0) * (PX1 - PX0), ltX = x => LT0 + (x - PX0) / (PX1 - PX0) * (LT1 - LT0);
-function Courbes({ mol, lt, onLt, invite }) {
+function Courbes({ mol, lt, onLt, invite, vif }) {
+  // le curseur suit le temps image par image (les nombres affichés, eux, avancent par paliers)
+  const gC = useRef(null), dF = useRef(null), dP = useRef(null), ltR = useRef(lt), vifR = useRef(vif);
+  useEffect(() => { ltR.current = lt; vifR.current = vif; });
+  useEffect(() => {
+    let id;
+    const f = () => { const v = vifR.current, l = v?.joue && v.pos ? v.pos.current : ltR.current, Q = M.populations(mol, 10 ** l), yy = w => YB - PH * w;
+      if (gC.current) { gC.current.setAttribute('transform', `translate(${xT(l).toFixed(1)} 0)`); gC.current.setAttribute('visibility', 'visible'); }
+      dF.current?.setAttribute('cy', yy(Q.flF).toFixed(1)); dP.current?.setAttribute('cy', yy(Q.flP).toFixed(1));
+      id = requestAnimationFrame(f); };
+    id = requestAnimationFrame(f);
+    return () => cancelAnimationFrame(id);
+  }, [mol]);
   const y = v => YB - PH * v;
   const pts = f => { let d = ''; for (let l = LT0; l <= LT1 + 1e-9; l += 0.05) d += `${d ? 'L' : 'M'}${xT(l).toFixed(1)},${y(f(M.populations(mol, 10 ** l))).toFixed(1)}`; return d; };
   const drag = useRef(false);
   const ev = (t, e) => { if (t === 'down') { drag.current = true; e.currentTarget.setPointerCapture?.(e.pointerId); } if (t === 'up') { drag.current = false; return; } if (!drag.current) return;
     const r = e.currentTarget.getBoundingClientRect(); onLt(Math.min(LT1, Math.max(LT0, ltX((e.clientX - r.left) * 430 / r.width)))); };
   const marques = [[-15, 'abs.', COL.abs], [-12, 'RV, CI', COL.nr], [Math.log10(mol.tauS1), 'fluo.', COL.fluo], ...(mol.tauT1 ? [[Math.log10(mol.tauT1), 'phospho.', COL.phos]] : [])];
-  const P = M.populations(mol, 10 ** lt), x = xT(lt);
+  const P = M.populations(mol, 10 ** lt);
   return (<svg role="img" viewBox="0 0 430 320" style={{ display: 'block', width: '100%', touchAction: 'none' }}
     onPointerDown={e => ev('down', e)} onPointerMove={e => ev('move', e)} onPointerUp={e => ev('up', e)} onPointerCancel={e => ev('up', e)}
     aria-label={`Photons émis par graduation de temps, échelle logarithmique ; curseur à ${txtT(lt)}`}>
@@ -161,12 +173,12 @@ function Courbes({ mol, lt, onLt, invite }) {
     {mol.tauT1 && T(xT(Math.log10(mol.tauT1)) - 12, y(0.88), 'phosphorescence', { size: 14, gras: true, fill: COL.phos, anchor: 'end', halo: true })}
     {marques.map(([l, n, c]) => <g key={n}><circle cx={xT(l)} cy={YB + 58} r="4.5" fill={c}/>{T(Math.min(PX1 - 30, Math.max(PX0 + 14, xT(l))), YB + 76, n, { size: 13.5, gras: true, fill: c })}</g>)}
     <rect x={PX0} y={YB + 90} width="12" height="12" fill="#fde68a"/>{T(PX0 + 18, YB + 101, 'durées perçues par l’œil (plus de 0,05 s)', { size: 13.5, fill: '#92400e', anchor: 'start' })}
-    <line x1={x} y1={YB} x2={x} y2={YB - PH - 10} stroke="#0f172a" strokeWidth="2"/>
-    <circle cx={x} cy={y(P.flF)} r="5" fill={COL.fluo} stroke="#fff" strokeWidth="1.8"/>{mol.tauT1 && <circle cx={x} cy={y(P.flP)} r="5" fill={COL.phos} stroke="#fff" strokeWidth="1.8"/>}
+    <g ref={gC} visibility="hidden"><line x1="0" y1={YB} x2="0" y2={YB - PH - 10} stroke="#0f172a" strokeWidth="2"/>
+    <circle ref={dF} cx="0" cy={YB} r="5" fill={COL.fluo} stroke="#fff" strokeWidth="1.8"/>{mol.tauT1 && <circle ref={dP} cx="0" cy={YB} r="5" fill={COL.phos} stroke="#fff" strokeWidth="1.8"/>}
     <g role="slider" tabIndex={0} aria-label="Instant t" aria-valuemin={LT0} aria-valuemax={LT1} aria-valuenow={Math.round(lt * 10) / 10} aria-valuetext={txtT(lt)} style={{ cursor: 'ew-resize', outline: 'none' }}
       onKeyDown={e => { const d = { ArrowLeft: -0.25, ArrowRight: 0.25, ArrowDown: -0.25, ArrowUp: 0.25 }[e.key]; if (d) { e.preventDefault(); onLt(Math.min(LT1, Math.max(LT0, lt + d * (e.shiftKey ? 4 : 1)))); } }}>
-      <rect x={x - 22} y={YB - PH - 30} width="44" height={PH + 44} fill="transparent"/>
-      <circle cx={x} cy={YB - PH - 16} r="9" fill="#0f172a" stroke="#fff" strokeWidth="2" className={invite ? 'fl-pulse' : undefined}/></g>
+      <rect x="-22" y={YB - PH - 30} width="44" height={PH + 44} fill="transparent"/>
+      <circle cx="0" cy={YB - PH - 16} r="9" fill="#0f172a" stroke="#fff" strokeWidth="2" className={invite ? 'fl-pulse' : undefined}/></g></g>
   </svg>);
 }
 
@@ -285,7 +297,7 @@ export function VueTemps({ lt0, molFixe, onLt }) {
     <div className="fl-pt">
       {panneau(1, 'Le diagramme de Perrin-Jablonski', <Diagramme mol={mol} lt={lt} P={P} sel={sel} onSel={setSel} vif={{ pos, joue }}/>)}
       {panneau(2, 'L’échantillon', <Echantillon mol={mol} lt={lt} P={P}/>)}
-      {panneau(3, 'Les émissions au cours du temps', <Courbes mol={mol} lt={lt} onLt={regler} invite={invite && !joue}/>)}
+      {panneau(3, 'Les émissions au cours du temps', <Courbes mol={mol} lt={lt} onLt={regler} invite={invite && !joue} vif={{ pos, joue }}/>)}
     </div>
     <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser l’instant t sur le graphique (une graduation = 1 000 fois plus de temps) ; la courbe compte les photons émis à chaque instant, c’est-à-dire les grains qui tombent. Chaque grain noir du diagramme est une molécule excitée par le flash (60 sont représentées, au repos dans S₀ avant le flash) : l’instant de son retour est tiré au hasard, l’animation ralentit quand des grains changent de niveau, et l’on voit les grains s’écouler le long des flèches : vers le bas de S₁, puis vers S₀ (en vert, fluorescence) ou vers T₁ (en orange) d’où ils retombent plus tard (en rouge, phosphorescence). Touchez un processus du diagramme pour sa définition.</div>
     </>}
