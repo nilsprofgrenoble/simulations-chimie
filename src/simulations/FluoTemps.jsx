@@ -17,6 +17,31 @@ const txtT = lt => { const e = Math.floor(lt + 1e-9), m = 10 ** (lt - e); const 
   return mr >= 9.95 ? `10${sup(e + 1)}${NB}s` : mr < 1.05 ? `10${sup(e)}${NB}s` : `${String(mr).replace('.', ',')}${NB}×${NB}10${sup(e)}${NB}s`; };
 const pct = v => `${v >= 0.995 ? 100 : v < 0.01 && v > 0 ? '< 1' : Math.round(100 * v)}${NB}%`;
 
+
+// ---------- grains : chaque molécule excitée est un grain dont l'instant de retour est tiré au hasard ----------
+// Tirage reproductible (graine = molécule) : relaxation entre 10⁻¹³ et 10⁻¹² s, sortie de S₁ de loi exponentielle (τ(S₁)),
+// puis croisement intersystème vers T₁ avec la probabilité PHI_CIS, sortie de T₁ de loi exponentielle (τ(T₁)).
+const NG = 60, LARG = 0.6;                                    // nombre de grains ; durée (en décades) d'une chute
+const ZONES = [(i) => [104 + (i % 14) * 6.2, 79 - Math.floor(i / 14) * 6.4], (i) => [104 + (i % 14) * 6.2, 147 - Math.floor(i / 14) * 6.4],
+  (i) => [262 + (i % 14) * 9.5, 196 - Math.floor(i / 14) * 6.4], (i) => [70 + (i % 24) * 13.5, 286 - Math.floor(i / 24) * 6.4]];   // S₂ (haut), bas de S₁, T₁, S₀
+const cacheG = {};
+function grains(mol) {
+  if (cacheG[mol.id]) return cacheG[mol.id];
+  let a = 7919 * (mol.id.charCodeAt(0) + 3); const u = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  const phi = M.PHI_CIS[mol.id] ?? 0, g = [];
+  for (let i = 0; i < NG; i++) {
+    const lr = -13 + u(), tx = 10 ** lr - mol.tauS1 * Math.log(1 - u()), st = [{ z: 0, t: -99 }, { z: 1, t: lr }];
+    if (mol.tauT1 && u() < phi) { st.push({ z: 2, t: Math.log10(tx) }); st.push({ z: 3, t: Math.log10(tx - mol.tauT1 * Math.log(1 - u())) }); }
+    else st.push({ z: 3, t: Math.log10(tx) });
+    g.push(st);
+  }
+  return (cacheG[mol.id] = g);
+}
+const posGrain = (st, i, lt) => { let k = st.length - 1; while (k > 0 && lt < st[k].t) k--;
+  const [x1, y1] = ZONES[st[k].z](i); if (k === 0) return [x1, y1];
+  const [x0, y0] = ZONES[st[k - 1].z](i), q = Math.min(1, Math.max(0, (lt - st[k].t) / LARG)), e = q * q * (3 - 2 * q);
+  return [x0 + (x1 - x0) * e, y0 + (y1 - y0) * e]; };
+
 // ---------- ① diagramme ----------
 const flV = (x, y1, y2, col, w, dash) => { const s = y2 < y1 ? 1 : -1;
   return <><line x1={x} y1={y1} x2={x} y2={y2 + s * 9} stroke={col} strokeWidth={w} strokeDasharray={dash}/><polygon points={`${x},${y2} ${x - 6},${y2 + s * 12} ${x + 6},${y2 + s * 12}`} fill={col}/></>; };
@@ -32,7 +57,7 @@ function Diagramme({ mol, lt, P, sel, onSel }) {
     return (<g key={id} opacity={on ? 1 : 0.22} style={{ cursor: 'pointer' }} onClick={() => onSel(sel === id ? '' : id)} role="button" tabIndex={0} aria-pressed={sel === id}
       aria-label={M.PROCESSUS.find(p => p.id === id).nom} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onSel(sel === id ? '' : id))}>
       {enfant}{lab}</g>); };
-  const bulle = (x, y, p, k) => p > 0.004 && <circle key={k} cx={x} cy={y} r={4 + 13 * Math.sqrt(p)} fill="#0f172a" opacity=".82" stroke="#fff" strokeWidth="2"/>;
+  const gr = grains(mol);
   return (<svg role="img" viewBox="0 0 430 320" style={{ display: 'block', width: '100%' }}
     aria-label={`Diagramme de Perrin-Jablonski à t = ${txtT(lt)}. Molécules excitées : niveaux de vibration élevés ${pct(P.chaud)}, bas de S1 ${pct(P.S1)}${B ? `, T1 ${pct(P.T1)}` : ''}, revenues dans S0 ${pct(P.S0)}.`}>
     {T(10, 22, 'E', { size: 16, gras: true, anchor: 'start' })}<line x1="14" y1="300" x2="14" y2="34" stroke={K.gris} strokeWidth="1.4"/><polygon points="14,28 10,38 18,38" fill={K.gris}/>
@@ -47,7 +72,7 @@ function Diagramme({ mol, lt, P, sel, onSel }) {
     {g('fluo', <>{flV(190, 152, 288, COL.fluo, 4.2)}</>, T(198, 230, 'fluorescence', { size: 15, gras: true, fill: COL.fluo, anchor: 'start', halo: true }))}
     {B && g('cis', <><line x1="206" y1="152" x2="248" y2="178" stroke={COL.cis} strokeWidth="2.6" strokeDasharray="6 4"/><polygon points="254,182 241,180 247,170" fill={COL.cis}/></>, T(232, 152, 'CIS', { size: 14, gras: true, fill: COL.cis, anchor: 'start', halo: true }))}
     {B && g('phos', <>{flV(346, 202, 288, COL.phos, 4.2, '9 4')}</>, T(338, 256, 'phosphorescence', { size: 15, gras: true, fill: COL.phos, anchor: 'end', halo: true }))}
-    {bulle(112, 66, P.chaud, 'c')}{bulle(110, 142, P.S1, 's1p')}{B && bulle(310, 192, P.T1, 't1p')}{bulle(250, 282, P.S0, 's0p')}
+    {gr.map((st, i) => { const [x, y] = posGrain(st, i, lt); return <circle key={i} className="fl-gr" cx="0" cy="0" r="2.9" fill="#0f172a" stroke="#fff" strokeWidth="1.2" style={{ transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)` }}/>; })}
   </svg>);
 }
 
@@ -200,6 +225,7 @@ export function VueTemps({ lt0, molFixe, onLt }) {
   return (<div>
     <style>{`
       .fl-pt { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+      .fl-gr { transition: transform .35s ease-out; } @media (prefers-reduced-motion: reduce) { .fl-gr { transition: none; } }
       .fl-pr { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
       @media (min-width: 900px) { .fl-pr { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); } .fl-pt { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1.15fr); } }
       @media (prefers-reduced-motion: no-preference) { .fl-pulse { animation: fl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes fl-pulse { 50% { transform: scale(1.4); } } }
@@ -228,7 +254,7 @@ export function VueTemps({ lt0, molFixe, onLt }) {
       {panneau(2, 'L’échantillon', <Echantillon mol={mol} lt={lt} P={P}/>)}
       {panneau(3, 'Les émissions au cours du temps', <Courbes mol={mol} lt={lt} onLt={regler} invite={invite && !joue}/>)}
     </div>
-    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser l’instant t sur le graphique (une graduation = 1 000 fois plus de temps). Les disques noirs du diagramme représentent les molécules excitées par le flash. Touchez un processus du diagramme pour sa définition.</div>
+    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser l’instant t sur le graphique (une graduation = 1 000 fois plus de temps). Chaque grain noir du diagramme est une molécule excitée par le flash (60 sont représentées) : l’instant de son retour est tiré au hasard, et l’on voit les grains « couler » de S₂ vers S₁, puis vers S₀ ou T₁. Touchez un processus du diagramme pour sa définition.</div>
     </>}
   </div>);
 }
