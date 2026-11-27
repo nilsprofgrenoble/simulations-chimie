@@ -40,7 +40,7 @@ export function SimulationEsterification({ naviguer }) {
   const [rx, setRx] = useState(PRESET_RX);
   const [cc, setCc] = useState(PRESET_CCM);
   const [bl, setBl] = useState(PRESET_BL);
-  const enGuide = mode === 'guide', enDefi = mode === 'defi';
+  const enGuide = mode === 'guide', enDefi = mode === 'defi', enExplore = mode === 'explore';
   const dd = enDefi && defi ? defi : null;
   const sceneEff = dd ? (dd.type === 'ccm' ? 'ccm' : dd.type === 'equilibre' ? 'reaction' : 'calcul') : scene;
 
@@ -297,8 +297,16 @@ export function SimulationEsterification({ naviguer }) {
     const fleche = (x, y, c = '#94a3b8') => <polygon points={`${x},${y - 9} ${x + 7},${y + 3} ${x - 7},${y + 3}`} fill={c}/>;
     const lbl = (x, y, t, o = {}) => <text x={x} y={y} fontSize="13" fill={o.c || '#0f172a'} fontWeight={o.b ? 700 : 400} textAnchor={o.a || 'start'}>{t}</text>;
     return (
-      <svg viewBox="0 0 570 420" style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
+      <svg viewBox="0 0 570 420" className={enExplore ? 'es-vie' : undefined} style={{ width: '100%', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }} role="img"
         aria-label={`Schéma du montage de chauffage à reflux${ds ? ' avec Dean-Stark' : ''} : ballon dans un chauffe-ballon, ${ds ? 'tube de Dean-Stark gradué, ' : ''}réfrigérant à eau.${ds ? ` Le tube gradué contient ${nbf(volEau, 1)} millilitres d’eau.` : ''}`}>
+        <style>{`@media (prefers-reduced-motion: no-preference) {
+          .es-vie .es-bul { animation: es-monte 1.8s ease-in infinite; }
+          .es-vie .es-vap { animation: es-vap 1.6s ease-out infinite; }
+          .es-vie .es-gtt { animation: es-tombe 1.4s ease-in infinite; }
+          @keyframes es-monte { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-34px); opacity: 0; } }
+          @keyframes es-vap { from { transform: translateY(14px); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(-14px); opacity: 0; } }
+          @keyframes es-tombe { from { transform: translateY(-10px); opacity: 0; } 30% { opacity: 1; } to { transform: translateY(14px); opacity: 0.2; } }
+        }`}</style>
         <defs><clipPath id="es-ballon"><circle cx="300" cy="300" r="60"/></clipPath></defs>
         {/* potence et pinces */}
         <rect x="30" y="402" width="150" height="10" rx="3" fill="#64748b"/><rect x="74" y="22" width="12" height="382" fill="#94a3b8"/>
@@ -312,7 +320,7 @@ export function SimulationEsterification({ naviguer }) {
         <rect x="236" y="288" width="128" height="80" fill="#fde68a" opacity="0.85" clipPath="url(#es-ballon)"/>
         <path d="M240,288 Q270,282 300,288 T360,288" fill="none" stroke="#d97706" strokeWidth="1.5" clipPath="url(#es-ballon)"/>
         <circle cx="300" cy="300" r="60" fill="none" stroke="#475569" strokeWidth="2.5"/>
-        {chaud && [[272, 330], [292, 320], [316, 334], [334, 322], [304, 346]].map(([x, y], k) => <circle key={k} cx={x} cy={y} r="3.2" fill="white" stroke="#d97706" strokeWidth="1"/>)}
+        {chaud && [[272, 330], [292, 320], [316, 334], [334, 322], [304, 346]].map(([x, y], k) => <circle key={k} className="es-bul" style={{ animationDelay: `${-k * 0.36}s` }} cx={x} cy={y} r="3.2" fill="white" stroke="#d97706" strokeWidth="1"/>)}
         <circle cx="318" cy="352" r="3" fill="#a16207"/><circle cx="276" cy="350" r="3" fill="#a16207"/>
         <path d="M232,318 A68,68 0 0 0 368,318 L368,384 L232,384 Z" fill="#cbd5e1" stroke="#475569" strokeWidth="2"/>
         {chaud && <g stroke="#ea580c" strokeWidth="2.2" strokeLinecap="round"><path d="M262,372 q4,-6 0,-12"/><path d="M300,374 q4,-6 0,-12"/><path d="M338,372 q4,-6 0,-12"/></g>}
@@ -329,8 +337,8 @@ export function SimulationEsterification({ naviguer }) {
         {lbl(240, 34, 'sortie d’eau', { c: '#2563eb', a: 'end', b: true })}{lbl(240, 50, '(par le haut)', { c: '#2563eb', a: 'end' })}
         {lbl(336, 64, 'réfrigérant', { b: true })}{lbl(336, 80, 'à eau', {})}
         {/* vapeurs et condensat */}
-        {chaud && <g>{fleche(300, 230)}{fleche(300, 205)}{fleche(300, 180)}</g>}
-        {chaud && !ds && [[300, 168], [300, 196]].map(([x, y], k) => <circle key={k} cx={x} cy={y} r="3.5" fill="#60a5fa"/>)}
+        {chaud && <g>{[230, 205, 180].map((y, k) => <g key={k} className="es-vap" style={{ animationDelay: `${-k * 0.5}s` }}>{fleche(300, y)}</g>)}</g>}
+        {chaud && !ds && [[300, 168], [300, 196]].map(([x, y], k) => <circle key={k} className="es-gtt" style={{ animationDelay: `${-k * 0.7}s` }} cx={x} cy={y} r="3.5" fill="#60a5fa"/>)}
         {/* Dean-Stark */}
         {ds ? <g>
           {verre(313, 180, 373, 192, 'a1')}{verre(373, 211, 313, 220, 'a2')}
@@ -339,7 +347,7 @@ export function SimulationEsterification({ naviguer }) {
           <rect x="373.5" y={yBas - hEau} width="29" height={hEau} fill="#3b82f6" opacity="0.9"/>
           <rect x="382" y="298" width="12" height="14" fill="#94a3b8" stroke="#475569"/><line x1="376" y1="308" x2="400" y2="308" stroke="#475569" strokeWidth="3"/>
           {[0, 4, 8, 12].map(v => <g key={v}><line x1="404" y1={yBas - 7 * v} x2="414" y2={yBas - 7 * v} stroke="#0f172a" strokeWidth="1.4"/>{lbl(418, yBas - 7 * v + 4, `${v} mL`, { c: '#334155' })}</g>)}
-          {chaud && <g><circle cx="390" cy="198" r="3.2" fill="#60a5fa"/><circle cx="390" cy="212" r="3.2" fill="#60a5fa" opacity="0.6"/></g>}
+          {chaud && <g><circle className="es-gtt" cx="390" cy="198" r="3.2" fill="#60a5fa"/><circle className="es-gtt" style={{ animationDelay: '-0.7s' }} cx="390" cy="212" r="3.2" fill="#60a5fa" opacity="0.6"/></g>}
           {lbl(412, 178, 'tube de', { b: true })}{lbl(412, 194, 'Dean-Stark', { b: true })}
           {lbl(462, 236, 'cyclohexane', { c: '#854d0e' })}{lbl(462, 252, '(au-dessus)', { c: '#854d0e' })}
           {lbl(462, 280, 'eau', { c: '#1d4ed8', b: true })}{lbl(462, 296, '(en dessous)', { c: '#1d4ed8' })}
