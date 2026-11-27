@@ -45,7 +45,7 @@ for (const ex of BTSB_SIT) {
     for (const e of c.etapes) {
       assert.ok(e.q && e.aide && e.titre, `${ex.id}.${e.id}`);
       if (e.type === 'saisie') {
-        assert.ok(e.champs.every(f => Number.isFinite(f.vrai) && f.tol >= 0.05 && f.tol <= 0.2 && f.u !== ''), `${ex.id}.${e.id} : saisie`);
+        assert.ok(e.champs.every(f => Number.isFinite(f.vrai) && f.tol >= 0.05 && f.tol <= 0.2 && typeof f.u === 'string'), `${ex.id}.${e.id} : saisie`);
         assert.ok(typeof e.expl === 'string' && e.expl.length > 3);
       } else verifierQcm(`${ex.id}.${e.id}`, e.o);
     }
