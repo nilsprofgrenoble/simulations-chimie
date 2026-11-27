@@ -40,7 +40,7 @@ export const LPG_ANA = [
 export const LPG_VAL = [
   P({ id: 'lpg-val-sommet', domaine: DOM, niveau: 1, titre: 'Vitesse au sommet : une altitude oubliée', plausible: false,
     enonce: 'Un élève calcule la vitesse au sommet d’un looping de rayon 3,0 m pour un wagon lâché sans vitesse d’une hauteur de 12 m : « m g H = ½ m v², donc v = √(2 g H) = √(2 × 9,8 × 12) ≈ 15 m/s. » Le wagon est à 6,0 m d’altitude au sommet.',
-    reperes: [['Hauteur de départ', '12 m'], ['Altitude du sommet', '6,0 m'], ['g', '9,8 N/kg'], ['Ordre de grandeur', 'la vitesse au sommet est plus petite que celle en bas (15 m/s)']],
+    reperes: [['g', '9,8 N/kg']],
     ver: 'Au sommet, le wagon a déjà gagné 6,0 m d’altitude : m g H = m g (2R) + ½ m v², donc v = √(2 g (H − 2R)) = √(2 × 9,8 × 6,0) ≈ 11 m/s. Les 15 m/s sont la vitesse au point le plus bas.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [

@@ -238,7 +238,7 @@ export const TSTLB_VAL = [
     ] }),
   P({ id: 'reg-val-pi-sature', domaine: 'Régulation', niveau: 3, titre: 'Un PI et une pompe trop petite', plausible: false,
     ...presenter({ contexte: 'Un réservoir est régulé en niveau par un régulateur PI (boucle stable en fonctionnement normal).', liste: [['Consigne de niveau', '2,00 m'], ['Débit maximal de la pompe', '60 m³·h⁻¹'], ['Soutirage', 'passe brusquement de 20 à 70 m³·h⁻¹, puis reste constant']], suite: 'Un élève affirme : « Le régulateur est un PI : après un temps assez long, le niveau sera revenu à 2,00 m. »' }),
-    reperes: [['Pompe', 'débit proportionnel à la commande Y, de 0 (Y = 0 %) à 60 m³·h⁻¹ (Y = 100 %), pas davantage'], ['Niveau stable', 'il faut un débit d’entrée égal au soutirage'], ['Action intégrale', 'fait varier la commande tant que l’écart n’est pas nul, dans la limite de 0 à 100 %']],
+    reperes: [['Pompe', 'débit proportionnel à la commande Y, de 0 (Y = 0 %) à 60 m³·h⁻¹ (Y = 100 %)'], ['Action intégrale', 'fait varier la commande tant que l’écart n’est pas nul']],
     ver: 'Pour que le niveau se stabilise, la pompe devrait fournir 70 m³·h⁻¹. Or elle ne peut pas dépasser 60 m³·h⁻¹ : la commande reste bloquée à 100 % et le réservoir se vide de 10 m³·h⁻¹ en continu. L’action intégrale ne peut pas annuler l’écart quand la commande est saturée.',
     q2: 'Quel raisonnement est correct ?',
     options: [

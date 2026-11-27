@@ -74,7 +74,7 @@ export const RHC_VAL = [
     ] }),
   P({ id: 'rhc-val-newtonienne', domaine: DOM, niveau: 2, titre: 'Peinture A : newtonienne ?', plausible: false,
     enonce: 'Pour la peinture A, on mesure η = 18 290 mPa·s à γ̇ = 1 s⁻¹ et η = 874 mPa·s à γ̇ = 300 s⁻¹. Un élève conclut : « La peinture est newtonienne, car sa viscosité reste de l’ordre de plusieurs centaines de mPa·s ».',
-    reperes: [['Fluide newtonien', 'viscosité constante, quel que soit γ̇'], ['Rapport des viscosités', 'η(1 s⁻¹) / η(300 s⁻¹)'], ['Fluide rhéofluidifiant', 'η diminue quand γ̇ augmente']],
+    reperes: [['Fluide newtonien', 'la viscosité ne dépend pas du gradient de vitesse γ̇']],
     ver: 'La viscosité est divisée par 18 290 / 874 ≈ 21 entre 1 et 300 s⁻¹ : elle n’est pas constante. La peinture est rhéofluidifiante (pseudoplastique), pas newtonienne.',
     q2: 'Quelle est l’erreur de raisonnement ?',
     options: [

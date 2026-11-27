@@ -401,7 +401,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'champ-terre-mT', domaine: 'Contrôle des systèmes', niveau: 1, titre: 'Champ magnétique terrestre', plausible: false,
     enonce: 'Un élève mesure le champ magnétique terrestre avec un teslamètre et annonce B = 50 mT.',
-    reperes: [['Champ terrestre', 'quelques dizaines de µT'], ['Aimant de réfrigérateur', '≈ 5 mT'], ['Aimant droit (à 3 cm)', '≈ 20 mT']],
+    reperes: [['Champ terrestre', '≈ 5 × 10⁻⁵ T'], ['Aimant de réfrigérateur', '≈ 5 × 10⁻³ T'], ['Aimant droit (à 3 cm)', '≈ 2 × 10⁻² T']],
     ver: '50 mT est plus fort qu’un aimant droit (20 mT à 3 cm). Le champ terrestre est environ 1 000 fois plus faible (1 mT = 1 000 µT) : 50 µT.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -688,7 +688,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'microsc-val-grossissement', domaine: 'Microscope', niveau: 1, titre: 'Grossissement d’un microscope', plausible: false,
     enonce: 'Un microscope a pour intervalle optique Δ = 160 mm, pour objectif f₁′ = 10 mm et pour oculaire f₂′ = 25 mm. Il est mis au point. Un élève écrit : « G = Δ / f₁′ = 160 / 10 = 16, donc le microscope grossit 16 fois ».',
-    reperes: [['Grandissement de l’objectif', '|γ₁| = Δ / f₁′'], ['Grossissement de l’oculaire (loupe)', 'dm / f₂′, avec dm = 250 mm'], ['Grossissement du microscope', 'G = θ₂ / θ₀ = |γ₁| × dm / f₂′']],
+    reperes: [['Mise au point', 'l’image finale est à l’infini : l’œil n’accommode pas'], ['Distance minimale de vision distincte', 'dm = 250 mm'], ['Ordre de grandeur', 'un microscope optique grossit de quelques dizaines à quelques centaines de fois']],
     ver: 'Le microscope a deux étages : G = |γ₁| × dm / f₂′ = 16 × 250 / 25 = 160, et non 16.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -1110,7 +1110,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'disp-val-agglo-d50', domaine: 'Mouiller, disperser, stabiliser une suspension', niveau: 1, titre: 'D50 bas : suspension homogène ?', plausible: false,
     enonce: 'Un technicien mesure un D50 de 0,9 µm sur une pâte d’empâtage de peinture, conforme à la spécification (D50 ≤ 1,1 µm). Il conclut : « la suspension est bien dispersée, sans agglomérats. » Le D90 mesuré est de 14 µm.',
-    reperes: [['D50', 'diamètre médian : la moitié du volume est en dessous'], ['D90', '90 % du volume est en dessous'], ['Agglomérats', 'au-delà de 5 µm']],
+    reperes: [['D50', 'diamètre médian : la moitié du volume est en dessous'], ['D90', '90 % du volume est en dessous'], ['Particule primaire du pigment', 'quelques dixièmes de µm']],
     ver: 'Le D50 ne dit rien des 10 % les plus gros. Avec un D90 de 14 µm, au moins 10 % du volume est au-delà de cette taille : des agglomérats subsistent. La conclusion n’est pas justifiée.',
     q2: 'Quelle donnée contredit la conclusion ?',
     options: [
@@ -1190,7 +1190,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'angc-val-young', domaine: 'Mouillage : tension superficielle, angle de contact, tension critique', niveau: 2, titre: 'Travail d’adhésion de l’eau sur le PE', plausible: false,
     enonce: 'Un élève calcule le travail d’adhésion de l’eau (γ = 72,8 mN/m) sur le polyéthylène (θ = 96°) avec W = γ (1 − cos θ). Il trouve W = 80,4 mJ/m².',
-    reperes: [['Young-Dupré', 'W = γ (1 + cos θ)'], ['cos 96°', '≈ −0,105'], ['Ordre de grandeur', 'W reste inférieur à 2γ (≈ 146 mJ/m²)']],
+    reperes: [['cos 96°', '≈ −0,105'], ['Ordre de grandeur', 'W reste inférieur à 2γ (≈ 146 mJ/m²)']],
     ver: 'La relation de Young-Dupré est W = γ (1 + cos θ). Avec cos 96° ≈ −0,105 : W = 72,8 × 0,895 ≈ 65,2 mJ/m². La valeur 80,4 mJ/m² vient du signe inversé : (1 − cos θ).',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -1340,7 +1340,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'xyy-val-dominante', domaine: 'Couleur : lire le diagramme de chromaticité', niveau: 2, titre: 'Lire une longueur d’onde dominante', plausible: false,
     enonce: 'Un élève veut trouver la longueur d’onde dominante d’une couleur orangée, de point P. Il trace la droite de P vers le blanc W, la prolonge au-delà de W jusqu’à la courbe et lit 489 nm. Il conclut : « la longueur d’onde dominante de cette couleur est 489 nm, un bleu-vert ».',
-    reperes: [['Du côté de P', 'longueur d’onde dominante'], ['De l’autre côté de W', 'longueur d’onde complémentaire']],
+    reperes: [['Longueur d’onde dominante', 'valeur en nm lue sur la courbe du lieu spectral'], ['Diagramme de chromaticité', 'le blanc W est au centre ; les couleurs saturées sont sur la courbe']],
     ver: 'La longueur d’onde dominante se lit en prolongeant la droite du blanc vers le point P et au-delà, jusqu’à la courbe, de son côté. En prolongeant de l’autre côté du blanc, l’élève a lu la longueur d’onde complémentaire. Une couleur orangée a une dominante d’environ 590 nm.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
@@ -1460,7 +1460,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'chro-val-incolore', domaine: 'UV-visible : couleur, conjugaison et auxochromes', niveau: 2, titre: 'Incolore, donc sans absorption ?', plausible: false,
     enonce: 'Un élève écrit : « Le buta-1,3-diène est incolore, donc il n’absorbe aucune lumière : son spectre UV-visible est une droite à zéro. »',
-    reperes: [['Domaine visible', '380 à 780 nm'], ['Buta-1,3-diène', 'λmax = 217 nm']],
+    reperes: [['Domaine visible', '380 à 780 nm'], ['Domaine ultraviolet', '200 à 380 nm']],
     ver: 'Une espèce incolore n’absorbe pas dans le visible, mais elle peut très bien absorber dans l’UV : le buta-1,3-diène a une bande à 217 nm.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
@@ -1670,7 +1670,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'mtm-val-ecart', domaine: 'Couleur : éclairage, réflectance et métamérisme', niveau: 2, titre: 'Un contrôle sous une seule lampe', plausible: false,
     enonce: 'Un formulateur mesure l’écart entre une peinture fabriquée et sa cible sous D65 seulement : ΔE*ab = 0,2. Il écrit : « L’écart est négligeable : les deux teintes sont donc identiques sous n’importe quelle lampe, et la peinture est validée. »',
-    reperes: [['Écart nul sous D65', 'ne garantit rien sous A ou F2'], ['Contrôle usuel', 'au moins deux illuminants']],
+    reperes: [['Illuminants usuels', 'D65 (lumière du jour), A (incandescence), F2 (fluorescent)'], ['ΔE*ab', 'écart entre deux couleurs, pour un illuminant donné']],
     ver: 'Un écart faible sous D65 ne dit rien sur l’écart sous une autre lampe : si la peinture et la cible ont des courbes de réflectance différentes, elles peuvent être métamères et très différentes sous A ou F2. Il faut mesurer aussi sous un second illuminant.',
     q2: 'Quelle est l’erreur du formulateur ?',
     options: [
@@ -1891,7 +1891,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'ccm-val-rf', domaine: 'Synthèse et rendement', niveau: 2, titre: 'Rf d’une tache de CCM', plausible: false,
     enonce: 'Sur une plaque, le front est à 5,0 cm de la ligne de dépôt et une tache à 2,0 cm. Un élève écrit Rf = D ÷ d = 5,0 ÷ 2,0 = 2,5.',
-    reperes: [['Rf', 'd ÷ D (tache sur front, depuis la ligne de dépôt)'], ['Valeurs possibles', '0 < Rf < 1, sans unité'], ['Tache la plus haute', 'proche du front : Rf proche de 1']],
+    reperes: [['Rf', 'rapport de deux distances mesurées depuis la ligne de dépôt, sans unité'], ['Position d’une tache', 'toujours entre la ligne de dépôt et le front de l’éluant']],
     ver: 'Un Rf ne peut pas dépasser 1 : une tache ne peut pas aller plus loin que le front de l’éluant. L’élève a inversé le rapport : Rf = d ÷ D = 2,0 ÷ 5,0 = 0,40.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -1971,7 +1971,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'cinv-val-k', domaine: 'Cinétique : vitesse volumique et ordre 1', niveau: 2, titre: 'Constante de vitesse déduite des demi-réactions', plausible: true,
     enonce: 'Pour une transformation totale, c = 0,200 mol/L à t = 0, 0,100 mol/L à t = 8,0 min et 0,050 mol/L à t = 16,0 min. Un élève constate que les deux demi-réactions durent 8,0 min chacune, conclut à une loi d’ordre 1 et calcule k = ln 2 / t½ = 0,693 / 8,0 = 0,087 min⁻¹.',
-    reperes: [['Ordre 1', 't½ constant et t½ = ln 2 / k'], ['Valeur de ln 2', '≈ 0,693'], ['Unité de k', 'min⁻¹ (inverse d’un temps)']],
+    reperes: [['Valeur de ln 2', '≈ 0,693'], ['Demi-réaction', 'durée au bout de laquelle la concentration est divisée par 2']],
     ver: 'Les deux demi-réactions (0,200 → 0,100 puis 0,100 → 0,050) durent 8,0 min : t½ est constant, ce qui est compatible avec l’ordre 1. k = ln 2 / t½ = 0,693 / 8,0 = 0,087 min⁻¹ : valeur et unité cohérentes (inverse d’un temps).',
     q2: 'Quel raisonnement est correct ?',
     options: [
@@ -2081,7 +2081,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'fab-val-impossible', domaine: 'Force des acides et des bases : Ka et tampon', niveau: 2, titre: 'Un pH trop bas pour la concentration apportée', plausible: false,
     enonce: 'On mesure le pH d’une solution d’acide chlorhydrique de concentration apportée C = 0,010 mol/L et on trouve 1,30. Un élève annonce : « c’est cohérent, il suffit que l’acide soit assez fort ».',
-    reperes: [['Acide fort', 'pH = −log C, soit 2,00 pour C = 0,010 mol/L'], ['Limite', 'une molécule d’acide donne au plus un ion oxonium : [H₃O⁺] ≤ C'], ['Taux d’avancement', 'τ = [H₃O⁺] / C ne peut pas dépasser 1']],
+    reperes: [['Définition du pH', 'pH = −log [H₃O⁺]'], ['Acide fort', 'réaction totale avec l’eau']],
     ver: 'pH = 1,30 correspond à [H₃O⁺] = 10⁻¹·³ = 0,050 mol/L, soit 5 fois la concentration apportée : impossible, car chaque molécule d’acide produit au plus un ion oxonium (τ ≤ 1). Pour HCl à 0,010 mol/L, on attend pH = 2,00.',
     q2: 'Quel raisonnement est correct ?',
     options: [
@@ -2391,7 +2391,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'sev-val-logk', domaine: 'Sens d’évolution en oxydo-réduction', niveau: 2, titre: 'Une constante calculée avec un écart de potentiels négatif', plausible: false,
     enonce: 'Pour Cu²⁺ + Zn → Cu + Zn²⁺, un élève écrit : « log K = 2 × (E°(Zn²⁺ / Zn) − E°(Cu²⁺ / Cu)) / 0,06 = 2 × (−0,76 − 0,34) / 0,06 = −36,7. K est minuscule : cette réaction ne se produit pas. »',
-    reperes: [['Constante d’équilibre', 'log K = N × (E°₁ − E°₂) / 0,06, avec E°₁ le plus grand des deux potentiels'], ['Potentiels standards', 'E°(Cu²⁺ / Cu) = 0,34 V ; E°(Zn²⁺ / Zn) = −0,76 V'], ['Ordre de grandeur', 'oxydant fort + réducteur fort : K très grand (supérieur à 10⁴)']],
+    reperes: [['Constante d’équilibre', 'log K = N × (E°₁ − E°₂) / 0,06'], ['Potentiels standards', 'E°(Cu²⁺ / Cu) = 0,34 V ; E°(Zn²⁺ / Zn) = −0,76 V']],
     ver: 'L’oxydant qui réagit (Cu²⁺, E° = 0,34 V) a le plus grand potentiel : log K = 2 × (0,34 − (−0,76)) / 0,06 = +36,7, soit K ≈ 5×10³⁶. L’élève a soustrait dans le mauvais ordre et trouvé −36,7 : c’est la réaction inverse qui a ce K minuscule. Selon la règle du gamma, la réaction écrite se produit bien.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
@@ -2512,7 +2512,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'fre-val-conversion', domaine: 'Mouvement circulaire et repère de Frenet', niveau: 2, titre: 'Accélération d’une voiture dans un virage', plausible: false,
     ...presenter({ contexte: 'Une voiture roule à vitesse de norme constante dans un virage circulaire.', liste: [['Vitesse', 'v = 72 km/h'], ['Rayon du virage', 'R = 100 m']], suite: 'Un élève calcule : « a = frac(v²|R) = frac(72²|100) = 52 m/s² ».' }),
-    reperes: [['Intensité de la pesanteur', 'g ≈ 9,8 m/s²'], ['Virage de route pris normalement', 'a de l’ordre de 2 à 5 m/s²'], ['Conversion', '72 km/h = 20 m/s']],
+    reperes: [['Intensité de la pesanteur', 'g ≈ 9,8 m/s²'], ['Virage de route pris normalement', 'a de l’ordre de 2 à 5 m/s²'], ['Unité SI de la vitesse', 'm/s']],
     ver: '52 m/s² font plus de 5 fois g : aucune voiture ne reste sur la route avec une telle accélération. L’élève a gardé v en km/h : avec v = 20 m/s, a = frac(20²|100) = 4,0 m/s².',
     q2: 'Quelle est l’erreur la plus probable ?',
     options: [
@@ -2692,7 +2692,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'icc-val-somme', domaine: 'Incertitudes-types composées et comparaison à une valeur de référence', niveau: 2, titre: 'Incertitude d’une masse obtenue par différence de deux pesées', plausible: false,
     enonce: 'On pèse une coupelle seule, m₁ = 12,4 g, puis la coupelle avec un échantillon, m₂ = 81,4 g. Chaque pesée a une incertitude-type de 0,03 g (les deux pesées sont indépendantes). L’élève écrit : « m = m₂ − m₁ = 69,0 g et u(m) = u(m₁) + u(m₂) = 0,06 g ».',
-    reperes: [['Formule fournie pour une différence', 'u(m) = √(u(m₁)² + u(m₂)²)'], ['Une seule pesée', 'u = 0,03 g'], ['Deux pesées indépendantes', 'u(m) plus grande que 0,03 g, mais plus petite que 0,06 g']],
+    reperes: [['Une seule pesée', 'u = 0,03 g'], ['Ordre de grandeur', 'l’incertitude d’une différence de deux pesées reste du même ordre que celle d’une pesée']],
     ver: 'Pour une différence (ou une somme) de grandeurs indépendantes, les incertitudes-types se composent en quadrature : u(m) = √(0,03² + 0,03²) = 0,042 g, et non 0,06 g. Additionner directement les incertitudes surestime u(m), puisque les deux erreurs ne s’ajoutent pas toujours dans le même sens.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
@@ -2732,7 +2732,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'cpl-val-champ', domaine: 'Particule chargée dans un condensateur plan', niveau: 2, titre: 'Champ entre deux plaques', plausible: false,
     ...presenter({ contexte: 'Deux plaques parallèles forment un condensateur plan.', liste: [['Distance entre les plaques', 'd = 2,0 cm'], ['Tension entre les plaques', 'U = 400 V']], suite: 'Un élève calcule : « E = frac(U|d) = frac(400|2,0) = 2,0 × 10² V/m ».' }),
-    reperes: [['Unité du champ', 'V/m : d doit être en mètres'], ['Conversion', '2,0 cm = 2,0 × 10⁻² m'], ['Ordre de grandeur', 'quelques 10⁴ V/m pour quelques centaines de volts et quelques cm']],
+    reperes: [['Unité du champ', 'V/m'], ['Ordre de grandeur', 'quelques 10⁴ V/m pour quelques centaines de volts et quelques cm']],
     ver: 'Avec d = 2,0 × 10⁻² m, E = frac(400|2,0 × 10⁻²) = 2,0 × 10⁴ V/m : l’élève a oublié de convertir d en mètres, son résultat est cent fois trop petit (c’est un champ en V/cm).',
     q2: 'Que penser de ce résultat ?',
     options: [
@@ -2979,7 +2979,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'cri-val-masse-volumique-unite', domaine: 'Analyse cristallographique', niveau: 2, titre: 'Masse volumique du cuivre à partir de a et de M', plausible: false,
     enonce: 'Pour du cuivre (CFC, M = 63,5 g·mol⁻¹, a = 361 pm), un élève écrit a = 3,61×10⁻¹⁰ cm. Il calcule ρ = 4 × 63,5 / (6,02×10²³ × a³) et trouve ρ = 8,97×10⁶ g·cm⁻³.',
-    reperes: [['Eau', '1,00 g·cm⁻³'], ['Mercure', '13,6 g·cm⁻³'], ['Osmium (le plus dense des éléments)', '22,6 g·cm⁻³']],
+    reperes: [['Eau', '1,00 g·cm⁻³'], ['Mercure', '13,6 g·cm⁻³'], ['Osmium (le plus dense des éléments)', '22,6 g·cm⁻³'], ['Préfixes', '1 pm = 10⁻¹² m ; 1 cm = 10⁻² m']],
     ver: '8,97×10⁶ g·cm⁻³ dépasse de près de 400 000 fois celle de l’osmium, le plus dense des éléments. 3,61×10⁻¹⁰ est la valeur de a en mètres : en centimètres, a = 3,61×10⁻⁸ cm.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -3149,7 +3149,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'for-hansen-ra-sans-racine', domaine: 'Formulation', niveau: 2, titre: 'Distance Ra de Hansen sans racine', plausible: false,
     ...presenter({ contexte: 'On compare l’acétone à un polymère de rayon de solubilité R₀ = 6,0 MPa^½. La distance de Hansen est Ra² = 4(δD1 − δD2)² + (δP1 − δP2)² + (δH1 − δH2)².', liste: [['Polymère', 'δD = 16,0 ; δP = 9,0 ; δH = 8,0 (MPa^½)'], ['Acétone', 'δD = 15,5 ; δP = 10,4 ; δH = 7,0 (MPa^½)']], suite: 'Un élève calcule 4 × 0,5² + 1,4² + 1,0² = 3,96 et écrit : « Ra = 3,96 MPa^½, donc RED = 3,96 / 6,0 = 0,66. »' }),
-    reperes: [['Écarts entre l’acétone et le polymère', 'δD : 0,5 ; δP : 1,4 ; δH : 1,0 (MPa^½)'], ['Distance de Hansen', 'Ra = √[4(ΔδD)² + (ΔδP)² + (ΔδH)²]'], ['Majoration', 'Ra ≤ 2|ΔδD| + |ΔδP| + |ΔδH|']],
+    reperes: [['Distance de Hansen', 'Ra = √[4(ΔδD)² + (ΔδP)² + (ΔδH)²]'], ['Majoration', 'Ra ≤ 2|ΔδD| + |ΔδP| + |ΔδH|']],
     ver: 'La somme 4 × 0,5² + 1,4² + 1,0² = 3,96 est la valeur de Ra², pas de Ra : il manque la racine carrée. On le voit avec la majoration : Ra ne peut pas dépasser 2 × 0,5 + 1,4 + 1,0 = 3,4, et 3,96 est supérieur. Le bon résultat est Ra = √3,96 ≈ 1,99 MPa^½, soit RED ≈ 0,33 (le solvant est bien dans la sphère, mais bien plus près de son centre que ne le dit l’élève).',
     q2: 'Quelle explication est la plus probable ?',
     options: [
@@ -3189,7 +3189,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'met-ei-rapport-inverse', domaine: 'Métrologie', niveau: 2, titre: 'Concentration par étalon interne : rapport à l’envers', plausible: false,
     ...presenter({ contexte: 'On dose un analyte par chromatographie avec un étalon interne, introduit à 2,0 g·L⁻¹ dans l’échantillon. Le facteur de réponse de l’analyte par rapport à l’étalon interne vaut 1,00.', liste: [['Aire du pic de l’analyte', '12 500 u.a.'], ['Aire du pic de l’étalon interne', '25 000 u.a.']], suite: 'Un élève calcule C(analyte) = 2,0 × 25 000 / 12 500 = 4,0 g·L⁻¹.' }),
-    reperes: [['Relation (facteur de réponse égal à 1)', 'C(analyte) / C(étalon) = A(analyte) / A(étalon)'], ['Facteur de réponse', '1,00 : à concentrations égales, les deux pics ont la même aire']],
+    reperes: [['Étalon interne', 'substance ajoutée en quantité connue dans l’échantillon, pour comparer les aires'], ['Aire d’un pic', 'proportionnelle à la quantité injectée de la substance (au facteur de réponse près)']],
     ver: 'Comme le facteur de réponse vaut 1, des aires dans le rapport 1 pour 2 correspondent à des concentrations dans le même rapport : l’aire de l’analyte est la moitié de celle de l’étalon interne, donc sa concentration est la moitié, soit 1,0 g·L⁻¹. Le résultat de l’élève (4,0 g·L⁻¹, soit le double de l’étalon) est incohérent : il a inversé le rapport des aires.',
     q2: 'Quelle explication est la plus probable ?',
     options: [
@@ -3259,7 +3259,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'iE-eau-ph7-ok', domaine: 'Chimie', niveau: 2, titre: 'Mur d’oxydation de l’eau à pH 7', plausible: true,
     ...presenter({ contexte: 'Le mur d’oxydation de l’eau correspond au couple O₂ / H₂O : O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O. Sur un diagramme, on observe qu’il est à 1,23 V par rapport à l’électrode standard à hydrogène pour un pH de 0.', liste: [['pH de la solution étudiée', '7']], suite: 'Un élève affirme : « À pH = 7, le mur d’oxydation de l’eau se trouve à un potentiel plus bas qu’à pH = 0. »' }),
-    reperes: [['Demi-équation', 'O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O'], ['Effet du pH', 'H⁺ est du côté de l’oxydant : moins il y en a (pH plus grand), plus le potentiel du couple est bas']],
+    reperes: [['Demi-équation', 'O₂ + 4 H⁺ + 4 e⁻ = 2 H₂O'], ['Diagramme E-pH', 'la frontière d’un couple dont l’oxydant échange des H⁺ est une droite inclinée']],
     ver: 'Dans la demi-équation, H⁺ est du côté de l’oxydant. Quand le pH augmente, la concentration en H⁺ diminue et le potentiel du couple diminue (la droite du diagramme E-pH a une pente négative). Le mur d’oxydation est donc plus bas à pH 7 qu’à pH 0 : l’affirmation est cohérente.',
     q2: 'Quel raisonnement est correct ?',
     options: [
@@ -3392,7 +3392,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'crist-recristallisation-ok', domaine: 'Évaporation et cristallisation', niveau: 3, titre: 'Rendement élevé d’une recristallisation', plausible: true,
     ...presenter({ contexte: 'On purifie de l’acide benzoïque par recristallisation dans l’eau : dissolution dans la plus petite masse d’eau bouillante possible (solution saturée à 100 °C, impuretés insolubles retirées à chaud sans perte), puis refroidissement à 20 °C et essorage, sans lavage. On néglige l’eau évaporée.', liste: [['Masse initiale d’acide benzoïque', '5,00 g'], ['Masse de cristaux purs et secs pesée', '4,60 g']], suite: 'L’élève en déduit un rendement de 92 %.' }),
-    reperes: [['Solubilité de l’acide benzoïque dans l’eau', '5,6 g pour 100 g d’eau à 100 °C ; 0,30 g pour 100 g d’eau à 20 °C (valeurs arrondies)'], ['Rendement', 'η = masse obtenue / masse initiale d’acide benzoïque'], ['Pertes', 'l’acide benzoïque reste dissous dans les eaux-mères à 20 °C jusqu’à la solubilité']],
+    reperes: [['Solubilité de l’acide benzoïque dans l’eau', '5,6 g pour 100 g d’eau à 100 °C ; 0,30 g pour 100 g d’eau à 20 °C (valeurs arrondies)'], ['Rendement', 'η = masse obtenue / masse initiale d’acide benzoïque']],
     ver: 'Eau minimale : 5,00 / 5,6 × 100 ≈ 89,3 g. À 20 °C, 89,3 g d’eau gardent dissous 0,30 × 89,3 / 100 ≈ 0,27 g. Il peut donc cristalliser au plus 5,00 − 0,27 ≈ 4,73 g, soit un rendement maximal de 94,6 %. Avec 4,60 g (92 %), l’élève est un peu sous ce maximum : le résultat est cohérent, même s’il paraît élevé pour une recristallisation.',
     q2: 'Quel raisonnement est correct ?',
     options: [
@@ -3598,7 +3598,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'mes-composante-negligeable-ok', domaine: 'Mesure et incertitudes', niveau: 3, titre: 'Une pesée qui ne compte presque pas', plausible: true,
     enonce: 'On détermine une masse volumique par ρ = m / V, avec m = 12,50 g (u(m)/m = 0,1 %) et V = 10,0 mL mesuré à l’éprouvette (u(V)/V = 2,0 %). Un élève trouve u(ρ)/ρ = 2,0 % et en conclut que la pesée contribue très peu à l’incertitude.',
-    reperes: [['Composition pour un quotient', 'u(ρ)/ρ = √[(u(m)/m)² + (u(V)/V)²]'], ['Carrés', '0,1² = 0,01 ; 2,0² = 4,0'], ['Hypothèses', 'erreurs sur m et V indépendantes, incertitudes relatives petites (propagation au premier ordre), toutes exprimées en incertitudes-types']],
+    reperes: [['Composition pour un quotient', 'u(ρ)/ρ = √[(u(m)/m)² + (u(V)/V)²]'], ['Hypothèses', 'erreurs sur m et V indépendantes, incertitudes relatives petites (propagation au premier ordre), toutes exprimées en incertitudes-types']],
     ver: 'u(ρ)/ρ = √(0,01 + 4,0) = √4,01 ≈ 2,002 %, soit 2,0 % à ce niveau d’arrondi. En quadrature, la composante la plus grande domine : améliorer la balance serait inutile, il faudrait mesurer V avec une verrerie plus précise.',
     q2: 'Quel raisonnement est correct ?',
     options: [
@@ -4041,7 +4041,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'pfac-val-sature', domaine: 'Plans', niveau: 3, titre: 'Un modèle parfait sur 8 essais', plausible: false,
     ...presenter({ contexte: 'Plan 2³ du flan au chocolat : 8 essais, mesure de la viscosité. Un élève ajuste le modèle complet à 8 coefficients : constante, 3 effets principaux, 3 interactions doubles et 1 interaction triple.', suite: 'Il constate que tous les résidus sont nuls et conclut : « le modèle est parfait, R² = 1, tous les effets sont donc significatifs et la prévision est exacte ».' }),
-    reperes: [['Nombre d’essais', 'n = 8'], ['Nombre de coefficients', 'p = 8'], ['Degrés de liberté', 'n − p = 0']],
+    reperes: [['Coefficients d’un modèle', 'autant que de termes : constante, effets principaux, interactions'], ['Résidu', 'écart entre une mesure et la valeur prédite par le modèle']],
     ver: 'Avec 8 coefficients pour 8 essais, le modèle passe forcément par tous les points, quelles que soient les mesures : R² = 1 est automatique. Il reste 0 degré de liberté, donc aucune estimation du bruit et aucun test de significativité possible. Pour juger, il faut retirer les interactions négligeables ou répéter des essais.',
     q2: 'Que penser de cette conclusion ?',
     options: [
@@ -4266,7 +4266,7 @@ export const PLAUSIBLES = [
 
   P({ id: 'diss1g-val-conversion-ml', domaine: 'Dissolution d’un solide ionique : équation et concentration des ions', niveau: 2, titre: 'Concentration en ions chlorure d’une solution de sel', plausible: false,
     enonce: 'On dissout 2,92 g de chlorure de sodium NaCl (M = 58,5 g/mol) dans une fiole jaugée de 250 mL, complétée jusqu’au trait de jauge. Un élève calcule n = m / M = 0,0499 mol, puis c = n / V = 0,0499 / 250 = 2,0 × 10⁻⁴ mol/L, et annonce : « [Cl⁻] = 2,0 × 10⁻⁴ mol/L, car le coefficient de Cl⁻ vaut 1 ».',
-    reperes: [['Équation', 'NaCl(s) → Na⁺(aq) + Cl⁻(aq) : coefficient 1'], ['Soluté apporté', 'c = n / V, V en litres'], ['Volume', '250 mL est un quart de litre']],
+    reperes: [['Équation de dissolution', 'NaCl(s) → Na⁺(aq) + Cl⁻(aq)'], ['Concentration en soluté apporté', 'c = n / V'], ['Ordre de grandeur', 'une solution de laboratoire courante : 0,01 à 1 mol/L']],
     ver: 'Le raisonnement sur le coefficient est juste, mais 0,0499 mol dans un quart de litre ne peut pas donner une concentration aussi faible : il faut convertir 250 mL en 0,250 L. Alors c = 0,0499 / 0,250 = 0,200 mol/L et [Cl⁻] = c = 0,200 mol/L.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -4276,7 +4276,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'lewis1g-val-ammonium', domaine: 'Schéma de Lewis des molécules et des ions', niveau: 1, titre: 'Doublets de l’ion ammonium NH₄⁺', plausible: false,
     enonce: 'Un élève cherche le nombre d’électrons de valence de l’ion ammonium NH₄⁺ (l’azote en a 5, chaque hydrogène 1). Il annonce : « il y a 9 électrons de valence, donc 4,5 doublets à placer ».',
-    reperes: [['Un doublet', 'contient 2 électrons : leur nombre est un entier'], ['Un cation', 'a perdu des électrons par rapport aux atomes seuls'], ['Électrons à répartir', 'se déduisent des électrons de valence des atomes et de la charge de l’ion']],
+    reperes: [['Électrons de valence', 'H : 1 ; N : 5'], ['Doublet', 'paire d’électrons, liante ou non liante']],
     ver: 'Un nombre de doublets doit être entier : 4,5 doublets n’a pas de sens. L’élève n’a pas retiré l’électron perdu par l’ion (charge +1) : n_T = 9 − 1 = 8 électrons, soit 4 doublets.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -4499,7 +4499,7 @@ export const PLAUSIBLES = [
   // ───────────────────────────── Mesure et incertitudes (1G)
   P({ id: 'mes1g-val-u-egale-s', domaine: 'Mesure et incertitudes (1G)', niveau: 1, titre: 'Incertitude de la moyenne de 25 mesures', plausible: false,
     enonce: 'Un élève mesure 25 fois la durée de chute d’une bille. Il trouve une moyenne de 0,64 s et un écart-type expérimental s = 0,10 s. Il écrit : « l’incertitude-type de type A de la moyenne est u = 0,10 s ».',
-    reperes: [['Type A', 'u = frac(s|sqrt(N)), pour N mesures indépendantes'], ['N', '25 mesures : √25 = 5'], ['Ordre de grandeur', 'u est plus petite que s quand N > 1']],
+    reperes: [['Écart-type expérimental s', 'dispersion d’une mesure isolée'], ['Incertitude-type de type A', 'évalue la qualité de la moyenne de N mesures indépendantes']],
     ver: 'L’élève a confondu s, qui décrit la dispersion d’UNE mesure, et u, qui décrit la moyenne de N mesures. u = frac(s|sqrt(N)) = 0,10 / 5 = 0,020 s : la moyenne est bien mieux connue qu’une mesure isolée.',
     q2: 'Quelle erreur explique le mieux cette valeur de u ?',
     options: [
@@ -4670,7 +4670,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'comb1g-val-liaisons-ch4', domaine: 'Combustions : énergie de réaction et énergies de liaison', niveau: 1, titre: 'Liaisons rompues dans le méthane', plausible: false,
     enonce: 'Pour estimer l’énergie à fournir pour rompre les liaisons des réactifs dans CH₄ + 2 O₂, un élève écrit : « CH₄ a 3 liaisons C–H et il y a 2 O=O : 3 × 413 + 2 × 498 = 2 235 kJ/mol ».',
-    reperes: [['Atome de carbone', 'forme 4 liaisons'], ['Molécule CH₄', 'carbone au centre, 4 atomes H autour'], ['Données', 'D(C–H) = 413 kJ/mol ; D(O=O) = 498 kJ/mol']],
+    reperes: [['Données', 'D(C–H) = 413 kJ/mol ; D(O=O) = 498 kJ/mol'], ['Électrons de valence', 'C : 4 ; H : 1']],
     ver: 'Le carbone forme toujours 4 liaisons : CH₄ contient 4 liaisons C–H. L’énergie correcte est 4 × 413 + 2 × 498 = 2 648 kJ/mol ; en comptant 3 liaisons, il oublie 413 kJ/mol.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -4702,7 +4702,7 @@ export const PLAUSIBLES = [
   P({ id: 'top-val-nombre', domaine: 'Formules topologiques et isomérie de constitution', niveau: 2, titre: 'Combien d’isomères de C₄H₁₀ ?',
     plausible: false,
     enonce: 'Un élève cherche les isomères de constitution de C₄H₁₀ et en propose trois : le butane, le 2-méthylpropane et le « 3-méthylpropane ».',
-    reperes: [['Numérotation d’une chaîne', 'on choisit le sens qui donne le plus petit numéro'], ['Chaîne de 3 carbones : propane', 'les carbones 1 et 3 sont en bout de chaîne'], ['Isomères de constitution', 'enchaînements d’atomes différents']],
+    reperes: [['Nomenclature', 'le nom indique la plus longue chaîne carbonée et la position des ramifications'], ['Isomères de constitution', 'même formule brute, enchaînements d’atomes différents']],
     ver: 'Une ramification sur le carbone 3 d’une chaîne de 3 carbones est une ramification en bout de chaîne : en réalité la chaîne compte 4 carbones (butane). Le « 3-méthylpropane » est le 2-méthylpropane numéroté de l’autre bout, la même molécule : C₄H₁₀ n’a que 2 isomères.',
     q2: 'Que penser de la liste de l’élève ?',
     options: [
@@ -5285,7 +5285,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'etat2gt-val-solidification-ok', domaine: 'Changement d’état (2GT)', niveau: 1, titre: 'L’eau qui gèle dans le congélateur', plausible: true,
     enonce: 'Un élève écrit : « 0,30 kg d’eau liquide se solidifient dans un congélateur. La solidification est exothermique : l’eau cède environ 100 kJ au milieu ». Il utilise L = 334 kJ/kg.',
-    reperes: [['Énergie massique', '334 kJ/kg, même valeur que la fusion'], ['Masse', '0,30 kg'], ['Calcul', 'E = 0,30 × 334 ≈ 100 kJ']],
+    reperes: [['Énergie massique de fusion de l’eau', '334 kJ/kg'], ['Solidification', 'changement d’état inverse de la fusion']],
     ver: 'E = m × L = 0,30 × 334 = 100,2 kJ, soit environ 100 kJ. La solidification est le changement inverse de la fusion : l’eau cède de l’énergie au milieu, donc exothermique. L’élève a raison.',
     q2: 'Quelle vérification confirme son affirmation ?',
     options: [
@@ -5530,7 +5530,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'mes2gt-var-val-cent-mesures', domaine: 'Variabilité de la mesure (2GT)', niveau: 2, titre: 'Dix fois plus de mesures, dix fois moins d’écart-type ?', plausible: false,
     enonce: 'Avec 10 mesures à la main, l’écart-type de la durée de chute d’une bille est de 0,05 s. Un élève refait 100 mesures dans les mêmes conditions et annonce : « avec 10 fois plus de mesures, mon écart-type est maintenant de 0,005 s ».',
-    reperes: [['Écart-type', 'largeur de la série, due à l’instrument et au protocole'], ['Même instrument, même protocole', 'même dispersion attendue'], ['Valeur attendue avec 100 mesures', 'de l’ordre de 0,05 s']],
+    reperes: [['Écart-type', 'mesure de la dispersion de la série'], ['Sources de dispersion', 'geste de l’opérateur, temps de réaction']],
     ver: 'Avec le même chronomètre et le même protocole, l’écart-type reste de l’ordre de 0,05 s, même avec 100 mesures : la valeur 0,005 s n’est pas plausible.',
     q2: 'Quelle erreur explique le mieux cette affirmation ?',
     options: [
@@ -5682,7 +5682,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'son2gt-emis-val-avion', domaine: 'Son : émission et propagation (2GT)', niveau: 2, titre: 'Un avion de ligne plus rapide que le son ?', plausible: false,
     enonce: 'Un article affirme : « un avion de ligne qui vole à 900 km/h dépasse largement la vitesse du son, qui est de 340 m/s ».',
-    reperes: [['Le son dans l’air', '340 m/s ≈ 1 200 km/h'], ['Conversion', 'km/h → m/s : ÷ 3,6'], ['Pour comparer', 'écrire les deux vitesses dans la même unité']],
+    reperes: [['Le son dans l’air', '340 m/s']],
     ver: '900 km/h ÷ 3,6 = 250 m/s, c’est moins que 340 m/s : l’avion est plus lent que le son. L’article a comparé 900 et 340 sans tenir compte des unités différentes.',
     q2: 'Quelle est l’erreur de l’article ?',
     options: [
@@ -5969,7 +5969,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'pur2gt-val-acetone-ok', domaine: 'Corps purs et mélanges (2GT)', niveau: 1, titre: 'Un flacon identifié à 56,5 °C',
     enonce: 'Un liquide pur bout à 56,5 °C (thermomètre précis à ± 1 °C). Un élève conclut : « c’est de l’acétone (référence 56 °C), car l’écart de 0,5 °C est inférieur à 1 °C ; l’éthanol (78 °C), le cyclohexane (81 °C) et l’eau (100 °C) sont beaucoup trop loin ».',
-    reperes: [['Valeur lue', '56,5 °C ± 1 °C'], ['Références', 'acétone 56 °C ; éthanol 78 °C ; cyclohexane 81 °C ; eau 100 °C'], ['Règle', 'compatible si écart < précision']],
+    reperes: [['Valeur lue', '56,5 °C ± 1 °C'], ['Références', 'acétone 56 °C ; éthanol 78 °C ; cyclohexane 81 °C ; eau 100 °C']],
     ver: 'Écarts : acétone 0,5 °C (inférieur à 1 °C) ; éthanol 21,5 °C ; cyclohexane 24,5 °C ; eau 43,5 °C (tous bien supérieurs à 1 °C). Seule l’acétone est compatible : le raisonnement de l’élève est correct.',
     q2: 'Quelle vérification confirme sa conclusion ?',
     options: [
@@ -6235,7 +6235,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'arc-val-unite', domaine: 'Poussée d’Archimède : origine, expression et flottaison', niveau: 2, titre: 'Poussée sur un cube d’un litre', plausible: false,
     ...presenter({ contexte: 'Un cube est totalement immergé dans l’eau douce.', liste: [['Volume du cube', '1,0 L'], ['Masse volumique de l’eau', '1 000 kg·m⁻³'], ['Intensité de la pesanteur', 'g = 9,8 m/s²']], suite: 'Un élève calcule : « Π = 1 000 × 1,0 × 9,8 = 9 800 N, soit le poids d’une tonne. »' }),
-    reperes: [['Ordre de grandeur', '1 L d’eau a une masse de 1 kg'], ['Unités', '1 L = 10⁻³ m³'], ['Poids de 1 kg', 'environ 10 N']],
+    reperes: [['Ordre de grandeur', '1 L d’eau a une masse de 1 kg'], ['Poids de 1 kg', 'environ 10 N']],
     ver: 'Le volume doit être en m³ : 1,0 L = 1,0 × 10⁻³ m³, donc Π = 1 000 × 1,0 × 10⁻³ × 9,8 = 9,8 N, soit le poids de 1 L d’eau (1 kg). Le résultat de l’élève est 1 000 fois trop grand.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
@@ -6306,7 +6306,7 @@ export const PLAUSIBLES = [
     ] }),
   P({ id: 'mec-deltav-val', domaine: 'Mécanique', niveau: 2, titre: 'Variation de vitesse d’un chariot poussé', plausible: false,
     enonce: 'Un chariot de masse m = 0,50 kg, sur un rail horizontal sans frottement, est poussé par une force constante de valeur 0,20 N pendant Δt = 0,10 s. Un élève calcule la variation de sa vitesse : Δv = ΣF × m × Δt = 0,20 × 0,50 × 0,10 = 0,010 m·s⁻¹.',
-    reperes: [['Relation approchée', 'Δv ≈ (ΣF / m) × Δt'], ['Rôle de la masse', 'à force égale, plus la masse est grande, plus Δv est petit'], ['Accélération moyenne ici', 'ΣF / m = 0,40 m·s⁻²']],
+    reperes: [['Accélération moyenne', 'a = Δv / Δt'], ['Ordre de grandeur', 'une poussée de 0,2 N sur un chariot de 0,5 kg donne des vitesses de l’ordre du cm/s à quelques dm/s']],
     ver: 'La masse doit diviser : Δv = ΣF × Δt / m = 0,20 × 0,10 / 0,50 = 0,040 m·s⁻¹. L’élève a multiplié par m, ce qui contredit le rôle de la masse : un chariot plus massif varie moins en vitesse, pas plus.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [

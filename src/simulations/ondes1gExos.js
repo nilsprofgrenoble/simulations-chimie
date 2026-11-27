@@ -151,7 +151,7 @@ export const ONDES1G_ANA = [
 export const ONDES1G_VAL = [
   P({ id: 'ond1g-celerite-val-localiser', domaine: D_CEL, niveau: 2, titre: 'Distance d’un séisme à partir de deux stations', plausible: false,
     enonce: 'Un séisme, la station A et la station B sont alignés dans cet ordre, avec AB = 12 km. La station B enregistre l’onde 2,4 s après la station A. La célérité est c = 5,0 km/s. Un élève écrit : « c × Δt = 5,0 × 2,4 = 12 km, donc le séisme s’est produit à 12 km de la station A ».',
-    reperes: [['Retard Δt entre A et B', 'durée que met l’onde pour aller de A à B (et non du séisme à A)'], ['Relation', 'distance = c × durée de propagation'], ['Distance du séisme à A', 'elle se déduit d’une durée comptée depuis le séisme']],
+    reperes: [['Relation', 'distance = c × durée de propagation']],
     ver: 'Le produit c × Δt = 12 km est bien la distance AB entre les deux stations : le retard est la durée de propagation de A à B. Il ne dit rien sur la distance du séisme à A : il faudrait la durée écoulée depuis le séisme, ou une troisième station.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
@@ -221,7 +221,7 @@ export const ONDES1G_VAL = [
     ] }),
   P({ id: 'lum1-val-test-relation', domaine: D_LEN, niveau: 2, titre: 'Tester la relation de conjugaison', plausible: true,
     enonce: 'Pour tester la relation de conjugaison, un élève mesure, sur un banc d’optique, deux couples de positions pour la même lentille : OA = −40 cm et OA′ = +24 cm, puis OA = −30 cm et OA′ = +30 cm. Il calcule 1/OA′ − 1/OA dans chaque cas et conclut : « la relation est vérifiée, avec f′ ≈ 15 cm ».',
-    reperes: [['Relation de conjugaison', '1/OA′ − 1/OA = 1/f′, avec f′ constante pour une lentille donnée'], ['Test', '1/OA′ − 1/OA doit avoir la même valeur pour toutes les positions'], ['Positions lues', 'à ± 1 cm : de petits écarts sont normaux']],
+    reperes: [['Relation de conjugaison', '1/OA′ − 1/OA = 1/f′, avec f′ constante pour une lentille donnée'], ['Positions lues', 'à ± 1 cm : de petits écarts sont normaux']],
     ver: 'Premier couple : 1/24 + 1/40 = 8/120 = 1/15. Second couple : 1/30 + 1/30 = 2/30 = 1/15. Les deux couples donnent la même valeur, f′ = 15 cm : la relation est vérifiée, aux incertitudes de lecture près.',
     q2: 'Quel raisonnement est correct ?',
     options: [

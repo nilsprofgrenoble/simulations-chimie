@@ -42,7 +42,7 @@ export const RPM_ANA = [
 export const RPM_VAL = [
   P({ id: 'rpm-val-lambda', domaine: DOM, niveau: 2, titre: 'Constante de désintégration d’un noyau', plausible: false,
     enonce: 'Un noyau radioactif a une demi-vie t½ = 5,0 h. Un élève écrit : « λ = t½ ÷ ln 2 = 5,0 ÷ 0,693 = 7,2 h⁻¹. »',
-    reperes: [['Demi-vie t½', '5,0 h'], ['ln 2', '0,693']],
+    reperes: [['Valeur de ln 2', '0,693'], ['Demi-vie', 'durée au bout de laquelle la moitié des noyaux a disparu']],
     ver: 'La relation est λ = ln 2 ÷ t½ = 0,693 ÷ 5,0 = 0,14 h⁻¹. Un résultat de 7,2 h⁻¹ signifierait que la moitié des noyaux disparaît en moins d’une dizaine de minutes, ce qui contredit une demi-vie de 5 h.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [

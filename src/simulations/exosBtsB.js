@@ -196,7 +196,7 @@ export const BTSB_ANA = [
 export const BTSB_VAL = [
   P({ id: 'tr-val-addition-substitution', domaine: D_TR, niveau: 2, titre: 'Hydratation d’un alcène : addition ou substitution ?', plausible: false,
     enonce: 'On étudie CH₃–CH=CH₂ + H₂O → CH₃–CH(OH)–CH₃, en milieu acide. Un élève écrit : « C’est une substitution, car un groupe OH apparaît dans le produit. »',
-    reperes: [['Substitution', 'un groupe est remplacé par un autre sur le même atome'], ['Addition', 'des atomes se fixent sur une liaison multiple, qui devient simple']],
+    reperes: [['Substitution', 'un groupe est remplacé par un autre sur le même atome'], ['Addition', 'des atomes se fixent sur une liaison multiple']],
     ver: 'Aucun groupe n’est remplacé : H et OH se fixent de part et d’autre de la double liaison C=C, qui devient simple. C’est une addition (hydratation de l’alcène). Dans une substitution, un groupe partant disparaîtrait du réactif.',
     q2: 'Quelle observation montre l’erreur ?',
     options: [
@@ -218,7 +218,7 @@ export const BTSB_VAL = [
     ...presenter({ contexte: 'À partir du carbocation allylique (énergie 20 kJ·mol⁻¹, réactifs = 0), le profil d’énergie indique, pour chaque voie :',
       liste: [['Voie 1,2', 'barrière à franchir depuis le carbocation : 10 kJ·mol⁻¹ ; produit à −60 kJ·mol⁻¹'], ['Voie 1,4', 'barrière à franchir depuis le carbocation : 14 kJ·mol⁻¹ ; produit à −68 kJ·mol⁻¹']],
       suite: 'Un élève écrit : « Le produit 1,4 est le plus stable, donc c’est aussi le plus rapide à se former : à 0 °C et en quelques secondes, il domine. »' }),
-    reperes: [['Produit cinétique', 'celui dont la barrière de formation est la plus basse'], ['Produit thermodynamique', 'celui dont l’énergie est la plus basse']],
+    reperes: [['Produit cinétique', 'celui qui se forme le plus vite'], ['Produit thermodynamique', 'celui dont l’énergie est la plus basse']],
     ver: 'La stabilité (énergie du produit) et la vitesse (hauteur de la barrière) sont deux notions distinctes. Ici, la barrière du produit 1,2 (10 kJ·mol⁻¹) est plus basse que celle du produit 1,4 (14 kJ·mol⁻¹) : à 0 °C et sur un temps court, aucun produit ne se retransforme et le plus rapide, le 1,2, domine. Le 1,4, plus stable, ne domine qu’à l’équilibre (température plus élevée, temps long).',
     q2: 'Quelle est l’erreur de raisonnement ?',
     options: [
@@ -250,7 +250,7 @@ export const BTSB_VAL = [
     ] }),
   P({ id: 'sec-val-photo-ombre', domaine: D_SEC, niveau: 2, titre: 'Vernis UV dans les creux d’une pièce', plausible: false,
     enonce: 'Un vernis photoréticulable sèche en quelques secondes sous une lampe UV sur des panneaux plats. Un formulateur écrit : « Sur une pièce moulée très creuse, il séchera aussi vite partout, même dans les creux que la lampe n’éclaire pas, puisque c’est le même vernis. »',
-    reperes: [['Photoréticulation', 'le photoinitiateur absorbe les UV et produit des espèces réactives qui déclenchent la réticulation'], ['Sans rayonnement', 'pas d’espèces réactives, donc pas de réticulation rapide']],
+    reperes: [['Photoinitiateur', 'absorbe les UV et déclenche la réaction de réticulation'], ['Lampe UV', 'éclaire les surfaces qui lui font face']],
     ver: 'La réaction est déclenchée par le rayonnement : là où les UV n’arrivent pas, le photoinitiateur ne produit rien et le vernis reste liquide ou collant. C’est une limite classique du séchage UV sur les pièces de forme complexe.',
     q2: 'Quelle est l’erreur de raisonnement ?',
     options: [

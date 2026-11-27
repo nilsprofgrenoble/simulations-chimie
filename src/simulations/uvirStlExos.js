@@ -41,7 +41,7 @@ export const UVS_ANA = [
 export const UVS_VAL = [
   P({ id: 'uvs-val-energie', domaine: DOM, niveau: 2, titre: 'Énergie d’un photon visible', plausible: false,
     enonce: 'Un photon visible a une longueur d’onde de 500 nm. Un élève calcule son énergie : « E = h c / λ = 6,63×10⁻³⁴ × 3,00×10⁸ / 500 = 4,0×10⁻²⁸ J. »',
-    reperes: [['Longueur d’onde', '500 nm'], ['h', '6,63×10⁻³⁴ J·s'], ['c', '3,00×10⁸ m/s']],
+    reperes: [['Constante de Planck', 'h = 6,63×10⁻³⁴ J·s'], ['Célérité de la lumière', 'c = 3,00×10⁸ m/s']],
     ver: 'Avec λ = 5,00×10⁻⁷ m : E = 1,99×10⁻²⁵ ÷ 5,00×10⁻⁷ = 4,0×10⁻¹⁹ J, soit environ 2,5 eV : 10⁹ fois plus que le résultat de l’élève.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [

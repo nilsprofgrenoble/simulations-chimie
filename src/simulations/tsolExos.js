@@ -43,7 +43,7 @@ export const TSOL_ANA = [
 export const TSOL_VAL = [
   P({ id: 'tsol-val-eau', domaine: DOM, niveau: 2, titre: 'Masse de cristaux et masse d’eau', plausible: false,
     enonce: 'Une solution saturée de chlorure d’ammonium est préparée à 80 °C avec 200 g d’eau, puis refroidie à 20 °C. Un élève calcule : « s(80 °C) − s(20 °C) = 65,6 − 37,2 = 28,4 g de cristaux. »',
-    reperes: [['s(80 °C)', '65,6 g pour 100 g d’eau'], ['s(20 °C)', '37,2 g pour 100 g d’eau'], ['Masse d’eau', '200 g']],
+    reperes: [['Solubilité du chlorure d’ammonium', '80 °C : 65,6 g ; 20 °C : 37,2 g (masses dissoutes à saturation, d’après les tables)']],
     ver: 'Les solubilités sont données pour 100 g d’eau : il faut multiplier la différence par m(eau) ÷ 100 = 2. Les cristaux pèsent 28,4 × 2 = 56,8 g. Le résultat de l’élève correspond à 100 g d’eau seulement.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [

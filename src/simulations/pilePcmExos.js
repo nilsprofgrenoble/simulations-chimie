@@ -48,7 +48,7 @@ export const PILP_ANA = [
 export const PILP_VAL = [
   P({ id: 'pilp-val-q', domaine: DOM, niveau: 2, titre: 'Quantité d’électricité d’une pile cuivre / zinc', plausible: false,
     enonce: 'Dans une pile, la demi-pile de cuivre contient 50 mL de solution d’ions Cu²⁺ à 0,20 mol/L ; la lame de zinc, de 3,0 g, est en large excès. L’équation de fonctionnement est Zn + Cu²⁺ → Zn²⁺ + Cu. Un élève écrit : « Cu²⁺ est le réactif limitant, n(Cu²⁺) = 0,20 × 0,050 = 0,010 mol, donc n(e⁻) = 0,010 mol et Q = 0,010 × 96 500 = 965 C. »',
-    reperes: [['Cu²⁺', '50 mL à 0,20 mol/L'], ['Lame de zinc', '3,0 g (excès)'], ['F', '96 500 C/mol']],
+    reperes: [['Constante de Faraday', 'F = 96 500 C/mol']],
     ver: 'Chaque ion Cu²⁺ capte 2 électrons : n(e⁻) = 2 × 0,010 = 0,020 mol, donc Q = 0,020 × 96 500 = 1 930 C, le double du résultat de l’élève.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [

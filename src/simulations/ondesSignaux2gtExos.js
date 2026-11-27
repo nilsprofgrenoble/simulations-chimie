@@ -175,7 +175,7 @@ export const OSG2GT_VAL = [
     ] }),
   P({ id: 'cir2gt-val-lampe-ohm', domaine: CIR, niveau: 2, titre: 'Une lampe est-elle un résistor ohmique ?', plausible: false,
     enonce: 'Un élève mesure, pour une lampe à filament, les couples (tension ; intensité) suivants : (2,0 V ; 0,10 A), (4,0 V ; 0,16 A) et (6,0 V ; 0,20 A). Il écrit : « la lampe est un résistor ohmique de résistance R = 20 Ω ».',
-    reperes: [['Résistor ohmique', 'U = R × I : le rapport U ÷ I est le même pour toutes les mesures'], ['Calcul', 'R = U ÷ I (en Ω, avec U en V et I en A)'], ['Lampe à filament', 'sa résistance augmente quand le filament chauffe']],
+    reperes: [['Résistor ohmique', 'la tension est proportionnelle à l’intensité : U = R × I avec R constante'], ['Lampe à filament', 'le filament chauffe quand il est traversé par un courant']],
     ver: 'Pour un résistor ohmique, U ÷ I est constant. Ici : 2,0 ÷ 0,10 = 20 Ω ; 4,0 ÷ 0,16 = 25 Ω ; 6,0 ÷ 0,20 = 30 Ω. Les trois valeurs sont différentes : U et I ne sont pas proportionnelles, la lampe n’est pas un résistor ohmique.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [

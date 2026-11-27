@@ -326,3 +326,4 @@ Rapports : un fichier par chapitre dans audit/rapports-exos/.
 - Lot 7 : SAPP184 (le projecteur agrandit désormais).
 
 Restent à faire ou à décider : repères des autres VAL qui donnent la règle (une cinquantaine), schémas manquants (138 des exercices audités), formules restantes écrites en texte, VAL344 / REA62 / SAPP25 (hors programme), ANA332 (niveau), ANA912 (arrondi), « pèse » (SAPP377 et plus de 150 occurrences).
+- Lot 8 (27/11/2026) : repères des exercices « Vrai ou faux ? » (VAL) réécrits pour ne plus révéler la formule appliquée, la valeur attendue ou l’erreur de l’élève : 55 exercices (VAL108, 169, 173, 180, 192, 202, 213, 223, 226, 289, 29, 300, 321, 335, 349, 352, 377, 422, 424, 432, 443, 464, 478, 499, 518, 550, 589, 592, 599, 617, 619, 620, 622, 629, 635, 644, 646, 649, 667, 67, 687, 691, 723, 728, 741, 749, 759, 788, 796, 800, 807, 811, 90…). Les repères ne gardent que constantes, définitions et ordres de grandeur.
