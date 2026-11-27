@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, IndiceDefi } from "../commun";
@@ -33,7 +34,8 @@ const LANCERS = [[0, 'Lâchée sans vitesse'], [5.88, 'Lancée vers le haut à 5
 const dessin = p => chute({ v0: p.v0, g: gDe(p.ast), tau: p.tau });
 
 // ---------- scène : chronophotographie verticale ----------
-function Scene({ d, vis, k = N_PTS - 1, sel = 3 }) {
+function Scene({ d, vis, k: kProp = N_PTS - 1, sel = 3, anim = null }) {
+  const k = anim ? Math.min(kProp, Math.floor(anim.t / d.tau + 1e-9)) : kProp;
   const H = 470, top = 40, bas = H - 30, ymax = Math.max(0, ...d.y) + 0.3, ymin = Math.min(0, ...d.y) - 0.3;
   const Y = y => top + (ymax - y) / (ymax - ymin) * (bas - top), X = i => 86 + i * 29;
   const pas = [0.5, 1, 2, 5, 10, 20].find(p => (ymax - ymin) / p <= 8) || 20;
@@ -53,6 +55,8 @@ function Scene({ d, vis, k = N_PTS - 1, sel = 3 }) {
       {vis.vec && vsel !== null && (Math.abs(vsel) < 0.05
         ? <g><TV x={X(sel) + 12} y={Y(d.y[sel]) - 6} c={BLEU} s={18} halo>v</TV><text x={X(sel) + 30} y={Y(d.y[sel]) - 6} fontSize="16" fontWeight="800" fill={BLEU} stroke="#fff" strokeWidth="3" paintOrder="stroke">= 0</text></g>
         : <TV x={X(sel) + 8} y={Y(d.y[sel]) - vsel * sv / 2 + 5} c={BLEU} s={18} halo>v</TV>)}
+      {anim && (() => { const tm = (d.N - 1) * d.tau, tt = Math.min(anim.t, tm), yb = d.v0 * tt - 0.5 * d.g * tt * tt, vb = d.v0 - d.g * tt, xb = 86 + tt / d.tau * 29;
+        return <g><circle cx={xb} cy={Y(yb)} r="9" fill="#f59e0b" stroke={NOIR} strokeWidth="2.2"/>{Math.abs(vb * sv) > 3 && <Fl x1={xb + (xb > 300 ? -15 : 15)} y1={Y(yb)} x2={xb + (xb > 300 ? -15 : 15)} y2={Y(yb) - vb * sv} c="#0369a1" w={3}/>}</g>; })()}
       <text x="180" y={H - 8} fontSize="13" fill={GRIS} textAnchor="middle">dates t en secondes (en haut) · hauteur y en mètres</text>
     </svg>);
 }
@@ -311,13 +315,14 @@ export function SimulationChuteLibre() {
   ];
   const etape = ETAPES[Math.min(guide.etape, ETAPES.length - 1)];
   const dG = dessin(etape.scn), dE = dessin(P);
+  const LA = useHorloge((dE.N - 1) * dE.tau + 1.2, true), animE = enExplore && (LA.joue || LA.t > 0) ? LA : null;
 
   // ════════════════ PANNEAUX ════════════════
   const aide = { fontSize: 12.5, color: KIT.txt2, fontWeight: 400, display: 'block', lineHeight: 1.4 };
-  const planche = (d, vis, kk, ss, setSS) => (
+  const planche = (d, vis, kk, ss, setSS, anim = null) => (
     <div style={styleBoite}>
       <div className="cl-l">
-        <Scene d={d} vis={vis} k={kk} sel={ss}/>
+        <Scene d={d} vis={vis} k={kk} sel={ss} anim={anim}/>
         <div>
           {vis.cons && ss >= 1 && ss + 2 <= kk && <Construction d={d} i={ss} force={!!vis.force}/>}
           {vis.cons && ss >= 1 && ss + 2 <= kk && <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Variation de vitesse entre {fr(d.t[ss], 1)} s et {fr(d.t[ss + 1], 1)} s (points M{ss} et M{ss + 1}).</div>}
@@ -399,7 +404,7 @@ export function SimulationChuteLibre() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {enDefi && <div style={styleBoite}><VoletDefi defi={defi} setDefi={setDefi} changerType={t2 => setDefi(nouveauDefi(t2, defi))}/></div>}
           {enGuide && planche(dG, etape.vis, N_PTS - 1, etape.sel, null)}
-          {enExplore && <>{planche(dE, { pts: 1, vec: 1, cons: 1, force: 1 }, k, sel, setSel)}<div style={styleBoite}>{lecture}<div style={{ marginTop: 10 }}>{reglagesExplo}</div></div></>}
+          {enExplore && <>{planche(dE, { pts: 1, vec: 1, cons: 1, force: 1 }, k, sel, setSel, animE)}<div style={{ ...styleBoite, padding: '8px 12px' }}><div style={{ fontSize: 13, color: KIT.txt2, lineHeight: 1.45 }}>Regardez la balle tomber : un point reste à chaque intervalle de temps, la flèche bleue est sa vitesse.</div><Commandes L={LA}/><input type="range" aria-label="Instant de la chute" min={0} max={(dE.N - 1) * dE.tau} step={0.01} value={Math.min(LA.t, (dE.N - 1) * dE.tau)} onChange={e => { LA.setJoue(false); LA.setT(+e.target.value); }} style={{ width: '100%', marginTop: 6 }}/></div><div style={styleBoite}>{lecture}<div style={{ marginTop: 10 }}>{reglagesExplo}</div></div></>}
         </div>
         {enGuide ? <CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/> : enDefi ? panneauHypo : null}
       </div>
