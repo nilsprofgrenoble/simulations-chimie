@@ -2,6 +2,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { useState, Children, Fragment, cloneElement, isValidElement } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, Vec, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, lireProgression, fmt, sci, IndiceDefi } from "../commun";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { FicheConstruireDv, FicheDvForce, FicheInertie, FicheMasse, FichePlusieursForces, FichePasDt, FicheEuler, FicheVetDv, FicheLune } from "./MouvementSystemeFiches";
 
 // ====================================================
@@ -245,7 +246,8 @@ export function SimulationMouvementSysteme() {
   const etatInit = id => ({ id, ...SCEN[id].def, k: 1, i: 5, bruit: 0, aff: { v: true, dv: false, F: false, cmp: false }, etape: 0 });
   const [sc, setSc] = useState(() => ({ ...etatInit('chute'), ef: 1 }));
   const [hypoOuv, setHypoOuv] = useState(false);
-  const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
+  const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(5.6, true), uA = enExplore && (LA.joue || LA.t > 0) ? Math.min(1, LA.t / 4.6) : null;
   const maj = patch => setSc(s => ({ ...s, ...patch }));
   const choisir = id => setSc(s => ({ ...s, ...etatInit(id), aff: s.aff }));
 
@@ -468,6 +470,7 @@ export function SimulationMouvementSysteme() {
           <text x={X(0)} y={Y(0) + 26} textAnchor="middle" fontSize="21" fontWeight="700" fill="#0369a1">Terre</text></g>}
         {(() => { let lx = -1e9, ly = -1e9; return A.pts.map((p, j) => { const px = X(p.x), py = Y(p.y); if (j > 0 && Math.hypot(px - lx, py - ly) < 36) return null; lx = px; ly = py; return <text key={`l${j}`} x={X(p.x) - 12} y={Y(p.y) - 7} textAnchor="end" fontSize="22" fill={GRIS}>A<tspan fontSize="17" dy="3">{j}</tspan></text>; }); })()}
         {A.pts.map((p, j) => croix(X(p.x), Y(p.y), `c${j}`, j === i - k || j === i || j === i + k))}
+        {uA !== null && (() => { const e = S.exact(uA * (S.N - 1) * S.tau); return <circle cx={X(e.x)} cy={Y(e.y)} r="10" fill="#f59e0b" fillOpacity="0.9" stroke={NOIR} strokeWidth="2.2"/>; })()}
         {/* flèches vitesse */}
         {aff.v && !figee && A.v.map((v, j) => v && <Fleche key={`v${j}`} x1={X(A.pts[j].x) + dec(10)[0]} y1={Y(A.pts[j].y) + dec(10)[1]}
           x2={X(A.pts[j].x) + dec(10)[0] + v.x * kv} y2={Y(A.pts[j].y) + dec(10)[1] - v.y * kv} col={VERT} w={j === i - k || j === i + k ? 3 : 2} op={pas > 0 && j !== i - k && j !== i + k ? 0.35 : 1}/>)}
@@ -510,6 +513,7 @@ export function SimulationMouvementSysteme() {
         <polyline points={trajE.map(p => `${X(p.x)},${Y(p.y)}`).join(' ')} fill="none" stroke={ORANGE} strokeWidth="2.2"/>
         {trajE.map((p, q) => (trajE.length <= 60 || q % Math.ceil(trajE.length / 60) === 0) && <circle key={`e${q}`} cx={X(p.x)} cy={Y(p.y)} r="2.6" fill={ORANGE}/>)}
         {ex.map((p, j) => croix(X(p.x), Y(p.y), `x${j}`, false))}
+        {uA !== null && (() => { const e = S.exact(uA * (S.N - 1) * S.tau), q = trajE[Math.min(trajE.length - 1, Math.round(uA * (trajE.length - 1)))]; return <g><circle cx={X(e.x)} cy={Y(e.y)} r="10" fill="#60a5fa" stroke={NOIR} strokeWidth="2.2"/><circle cx={X(q.x)} cy={Y(q.y)} r="7" fill={ORANGE} stroke={NOIR} strokeWidth="2"/></g>; })()}
         <text x={W - 10} y="20" textAnchor="end" fontSize="22" fontWeight="700" fill={NOIR}>{SCEN[eff.id].label}</text>
         <g transform={`translate(14,${H - 62})`}><rect x="-6" y="-22" width={420} height="76" rx="6" fill="white" opacity="0.85" stroke="#e2e8f0"/>
           <path d="M-3,-3 L3,3 M-3,3 L3,-3" transform="translate(4,0)" stroke={BLEU} strokeWidth="2"/><text x="16" y="6" fontSize="20" fill={NOIR}>mouvement exact (chronophotographie)</text>
@@ -551,6 +555,7 @@ export function SimulationMouvementSysteme() {
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
       {ongletAff === 'euler' ? scEuler : scChrono}
+      {enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>{ongletAff === 'euler' ? 'Le point bleu suit le vrai mouvement, le point orange suit le calcul par pas : ils s’écartent quand le pas est grand.' : 'Le rond orange est le système en mouvement : les croix sont les positions notées à chaque image.'}</div><Commandes L={LA}/></div>}
       {zoom}
       {idxDeep(<div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
         Système : {S.aff}. Positions A_[i] obtenues par un modèle (référentiel galiléen), une image toutes les τ.
