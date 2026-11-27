@@ -122,6 +122,7 @@ function Molecule({ mol, ph, lamExc, lamDet, absorbe, voie, emet, sigE, chaleur 
 const AX0 = 280, AX1 = 650, PX0 = 48, PX1 = 404;
 const YT = 108, HT = 66, YB = 318, PH = 150;
 const xL = l => PX0 + (l - AX0) / (AX1 - AX0) * (PX1 - PX0), lX = x => AX0 + (x - PX0) / (PX1 - PX0) * (AX1 - AX0);
+const raie = (l, fente, col) => { const w = Math.max(6, xL(l + fente / 2) - xL(l - fente / 2)); return <rect x={xL(l) - w / 2} y="30" width={w} height={YT - 30} rx="2" fill={col} opacity=".9"/>; };
 const chemin = (pts, y) => pts.map((p, i) => `${i ? 'L' : 'M'}${xL(p.lam).toFixed(1)},${y(p.s).toFixed(1)}`).join('');
 function Spectre({ mode, mol, opt, lamS, lamF, grille, pts, comptage, compte, onDrag, onKey, invite }) {
   const abs = mode === 'abs', yMax = abs ? 0.9 : 1.1, y = v => YB - PH * Math.min(v, yMax * 1.02) / yMax, yt = v => YT - HT * v;
@@ -137,18 +138,18 @@ function Spectre({ mode, mol, opt, lamS, lamF, grille, pts, comptage, compte, on
       {T(398, 102, `à ${nm(lamS)} : A = log(I₀ / I) = ${fr2(-Math.log10(Tt))}`, { size: 14.5, gras: true, anchor: 'end' })}</g>;
   } else if (mode === 'em') {
     const f = D.forme(mol, 'abs', opt), col = D.couleurLam(lamF, 0.7);
-    haut = <g><path d={`${chemin(f, yt)} L${xL(f[f.length - 1].lam)},${YT} L${xL(f[0].lam)},${YT} Z`} fill="#ede9fe" stroke="#7c3aed" strokeWidth="1.6"/>
-      {T(PX1, 126, '↑ bande d’absorption', { size: 13.5, fill: '#6d28d9', anchor: 'end', gras: true })}
-      <line x1={xL(lamF)} y1={YT} x2={xL(lamF)} y2="30" stroke={col} strokeWidth="2.4"/><circle cx={xL(lamF)} cy={yt(D.absRel(mol, lamF, opt))} r="5" fill={col} stroke="#fff" strokeWidth="2"/>
+    haut = <g><path d={`${chemin(f, yt)} L${xL(f[f.length - 1].lam)},${YT} L${xL(f[0].lam)},${YT} Z`} fill="#ede9fe" fillOpacity=".55" stroke="#7c3aed" strokeOpacity=".7" strokeWidth="1.6" strokeDasharray="5 4"/>
+      {T(PX1, 126, '↑ spectre d’absorption de la molécule (pointillé)', { size: 13.5, fill: '#6d28d9', anchor: 'end', gras: true })}
+      {raie(lamF, opt.fente, col)}<circle cx={xL(lamF)} cy={yt(D.absRel(mol, lamF, opt))} r="5" fill={col} stroke="#fff" strokeWidth="2"/>
       {pill(xL(lamF), 22, `exc. ${nm(lamF)}`, col, 'pf')}</g>;
   } else {
     const f = D.forme(mol, 'em', opt), k = mode === 'ex' ? D.absRel(mol, comptage && compte.dernier?.lamIn ? compte.dernier.lamIn : lamS, opt) : 1;
     const g = f.map(p => ({ lam: p.lam, s: p.s * k }));
     haut = <g>
-      <path d={`${chemin(g, yt)} L${xL(g[g.length - 1].lam)},${YT} L${xL(g[0].lam)},${YT} Z`} fill={mode === 'ph' ? '#f1f5f9' : '#dcfce7'} stroke={mode === 'ph' ? '#94a3b8' : '#15803d'} strokeWidth="1.6" strokeDasharray={mode === 'ph' ? '4 3' : null}/>
+      <path d={`${chemin(g, yt)} L${xL(g[g.length - 1].lam)},${YT} L${xL(g[0].lam)},${YT} Z`} fill={mode === 'ph' ? '#f1f5f9' : '#dcfce7'} fillOpacity={mode === 'ex' ? 0.55 : 1} stroke={mode === 'ph' ? '#94a3b8' : '#15803d'} strokeOpacity={mode === 'ex' ? 0.7 : 1} strokeWidth="1.6" strokeDasharray={mode === 'ph' ? '4 3' : mode === 'ex' ? '5 4' : null}/>
       {mode === 'ph' && <path d={chemin(D.forme(mol, 'ph', opt), yt)} fill="none" stroke="#b91c1c" strokeWidth="2.2"/>}
-      {T(PX1, 126, mode === 'ex' ? '↑ émission obtenue pour cette excitation' : '↑ lampe allumée (gris), coupée (rouge)', { size: 13.5, fill: mode === 'ex' ? '#166534' : K.txt, anchor: 'end', gras: true })}
-      {mode === 'ex' && <><rect x={xL(lamF - opt.fente / 2) - 1} y="30" width={Math.max(3, xL(lamF + opt.fente / 2) - xL(lamF - opt.fente / 2)) + 2} height={YT - 30} fill="#f97316" opacity=".25" stroke="#ea580c" strokeWidth="1.5"/>
+      {T(PX1, 126, mode === 'ex' ? '↑ émission de la molécule (pointillé) : on ne mesure qu’un point' : '↑ lampe allumée (gris), coupée (rouge)', { size: 13.5, fill: mode === 'ex' ? '#166534' : K.txt, anchor: 'end', gras: true })}
+      {mode === 'ex' && <>{raie(lamF, opt.fente, '#ea580c')}
         <circle cx={xL(lamF)} cy={yt(k * D.emRel(mol, lamF, opt))} r="5.5" fill="#ea580c" stroke="#fff" strokeWidth="2"/>{pill(xL(lamF), 22, `dét. ${nm(lamF)}`, '#ea580c', 'pf')}</>}</g>;
   }
   let bas;
