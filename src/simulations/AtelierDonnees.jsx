@@ -100,6 +100,17 @@ const Correction = ({ children }) => (
 
 // Les deux types d'exercices (énoncés à données cliquables, situations à étapes) partagent la même liste de choix
 // Une situation à comprendre (S'APP) : entête et navigation fournis par le parcours (AtelierSapp.jsx)
+// Retour diagnostique : nomme la grandeur choisie et compare son unité à celle que demande l'énoncé (sans donner la réponse).
+const uniteDe = t => { const m = /\(([^()]*)\)\s*$/.exec(t || ''); return m ? m[1].trim() : ''; };
+function messageCherche(choisie, bonne) {
+  const nom = String(choisie || '').replace(/\s*\([^()]*\)\s*$/, '');
+  const uc = uniteDe(choisie), ub = uniteDe(bonne);
+  if (!nom) return 'Choisissez une proposition.';
+  const suite = uc && ub && uc !== ub
+    ? `Cette grandeur s’exprime en ${uc}, alors que la dernière phrase de l’énoncé demande une grandeur en ${ub}.`
+    : 'Son unité est la même que celle de la grandeur demandée, mais ce n’est pas la même grandeur : relisez la dernière phrase de l’énoncé.';
+  return `« ${nom} » n’est pas ce que demande l’énoncé. ${suite}`;
+}
 export function ExerciceSituation({ id, entete, navigation }) {
   const def = SITUATIONS.find(x => x.id === id);
   return (
@@ -159,7 +170,7 @@ export function ExerciceDonnees({ id, q, entete, navigation }) {
               style={{ ...styleBouton(rep.cherche === o, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{avecIndices(o)}</button>
           ))}
         </div>
-        {chk.cherche && <Verdict ok={okEtape.cherche}>{okEtape.cherche ? 'Oui, c’est bien la grandeur cherchée.' : 'Pas tout à fait : relisez la dernière phrase de l’énoncé et regardez l’unité demandée.'}</Verdict>}
+        {chk.cherche && <Verdict ok={okEtape.cherche}>{okEtape.cherche ? 'Oui, c’est bien la grandeur cherchée.' : messageCherche(rep.cherche, ex.b.cherche.bonne)}</Verdict>}
         {vu.cherche && <Correction>Réponse : {avecIndices(ex.b.cherche.bonne)}</Correction>}
         {barre('cherche', stages.indexOf('cherche'))}
       </div>),
