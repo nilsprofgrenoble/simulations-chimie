@@ -71,7 +71,7 @@ const ROUGE = '#dc2626', BLEU = '#2563eb', VIOLET = '#7e22ce';
 
 // ════════════════ SCHÉMA DE LA PAROI ════════════════
 const W = 760, XG = 106, XD = 654;
-function Schema({ sol, titre }) {
+function Schema({ sol, titre, anim = false }) {
   const wTot = sol.L.reduce((a, l) => a + l.w, 0);
   let x = XG;
   const rects = sol.L.map((l, i) => { const w = l.w / wTot * (XD - XG), r = { ...l, x, w, i }; x += w; return r; });
@@ -79,6 +79,8 @@ function Schema({ sol, titre }) {
   const fl = (cx, d) => <polygon key={cx} points={d ? `${cx - 9},${26 - 6} ${cx + 9},26 ${cx - 9},${26 + 6}` : `${cx + 9},${26 - 6} ${cx - 9},26 ${cx + 9},${26 + 6}`} fill="white" stroke={VIOLET} strokeWidth="1.5"/>;
   return (
     <svg viewBox={`0 0 ${W} 176`} style={{ width: '100%', display: 'block' }} role="img" aria-label={titre || 'Coupe de la paroi'}>
+      {anim && <style>{`@media (prefers-reduced-motion: no-preference) { .pa-chaleur { animation: pa-chaleur 3.2s linear infinite; }
+        @keyframes pa-chaleur { 0% { transform: translateX(0); opacity: 0; } 8% { opacity: 1; } 92% { opacity: 1; } 100% { transform: translateX(${chaud ? XD - XG - 24 : -(XD - XG - 24)}px); opacity: 0; } } }`}</style>}
       <line x1={XG + 40} x2={XD - 40} y1="26" y2="26" stroke={VIOLET} strokeWidth="1.5" strokeDasharray="6 5"/>
       {[0.3, 0.5, 0.7].map(f => fl(XG + f * (XD - XG), chaud))}
       <text x={(XG + XD) / 2} y="16" fontSize="12.5" fill={VIOLET} fontWeight="700" textAnchor="middle">sens du transfert thermique</text>
@@ -87,6 +89,7 @@ function Schema({ sol, titre }) {
           <rect x={r.x} y={yT} width={r.w + 0.5} height={yB - yT} fill={r.coul} stroke="#475569" strokeWidth="1.2" strokeDasharray={r.film ? '3 3' : 'none'}/>
           {r.w > 16 && <text x={r.x + r.w / 2} y={(yT + yB) / 2 + 5} fontSize="14" fontWeight="700" fill="#1e293b" textAnchor="middle">{r.i + 1}</text>}
         </g>))}
+      {anim && [0, 1, 2, 3, 4, 5].map(k => <circle key={k} className="pa-chaleur" cx={chaud ? XG + 12 : XD - 12} cy={yT + 12 + (k % 3) * 28} r="5" fill="#f97316" stroke="#fff" strokeWidth="1" style={{ animationDelay: `${-k * 0.53}s` }}/>)}
       <text x={XG - 8} y={yT + 14} fontSize="13" fontWeight="700" fill={ROUGE} textAnchor="end">intérieur</text>
       <text x={XG - 8} y={yT + 32} fontSize="13" fill={ROUGE} textAnchor="end">T<tspan fontSize="10" dy="3">int</tspan><tspan dy="-3"> = {t1(sol.Ti)} °C</tspan></text>
       <text x={XD + 8} y={yT + 14} fontSize="13" fontWeight="700" fill={BLEU}>extérieur</text>
@@ -439,7 +442,8 @@ export function SimulationParoi() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ ...styleBoite, ...cadre('schema'), ...cadre('donnees') }}>
         <div style={{ fontWeight: 700, fontSize: 14, color: KIT.txt, marginBottom: 6 }}>La paroi</div>
-        <Schema sol={sol}/>
+        <Schema sol={sol} anim={mode === 'explore'}/>
+        {mode === 'explore' && <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45, marginTop: 4 }}>Les points orange représentent la chaleur qui traverse la paroi, du côté chaud vers le côté froid.</div>}
         <Legende sol={sol}/>
         {enGuide && <div style={{ fontSize: 13.5, color: KIT.txt, marginTop: 6 }}>Données : T<Sub c="int"/> = {G.Ti} °C ; T<Sub c="ext"/> = {G.Te} °C ; S = {G.S} m².</div>}
         {enGuide && etape >= iEt('verif') && etape <= iEt('verif') && (
