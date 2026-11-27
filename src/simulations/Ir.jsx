@@ -1,5 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
+import { usePhase, reduitMouvement } from "./hookHorloge";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, IndiceDefi, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
@@ -16,6 +17,33 @@ declarerDefis(SIM_ID, [['sigma', 'Lire le nombre d’onde d’une bande']]);
 // ====================================================
 const cel = (h) => ({ border: `1px solid ${KIT.bord}`, padding: '2px 8px', textAlign: 'center', background: h ? '#f1f5f9' : 'transparent' });
 const M = I.MOLECULES;
+
+// ---------- une liaison qui vibre : pourquoi chaque liaison absorbe à son nombre d'onde (qualitatif) ----------
+const LIAISONS = { OH: { nom: 'O–H', sigma: 3300, a: 'O', b: 'H', ma: 16, mb: 1, ca: '#fca5a5', cb: '#e2e8f0', ra: 20, rb: 13 },
+  CH: { nom: 'C–H', sigma: 2900, a: 'C', b: 'H', ma: 12, mb: 1, ca: '#cbd5e1', cb: '#e2e8f0', ra: 19, rb: 13 },
+  CO: { nom: 'C=O', sigma: 1715, a: 'C', b: 'O', ma: 12, mb: 16, ca: '#cbd5e1', cb: '#fca5a5', ra: 19, rb: 20 } };
+function LiaisonVibre() {
+  const [cle, setCle] = useState('OH'), [marche, setMarche] = useState(() => !reduitMouvement());
+  const L = LIAISONS[cle], ph = usePhase(L.sigma / 4000 * 1.6, marche, 0);
+  const s = marche ? Math.sin(ph) : 0, tot = L.ma + L.mb, xa0 = 110, xb0 = 210, amp = 22;
+  const xa = xa0 - amp * s * (L.mb / tot) * 1.6, xb = xb0 + amp * s * (L.ma / tot) * 1.6;
+  const ressort = (x1, x2) => { const n = 8, pts = [[x1, 60]]; for (let i = 1; i < n; i++) pts.push([x1 + (x2 - x1) * i / n, 60 + (i % 2 ? -9 : 9)]); pts.push([x2, 60]); return pts.map(q => q.join(',')).join(' '); };
+  return (
+    <div style={styleBoite}>
+      <div style={{ fontSize: 14, color: KIT.txt, marginBottom: 6, lineHeight: 1.5 }}>Une liaison se comporte comme un ressort qui s’allonge et se raccourcit. <strong>Plus elle est forte et plus les atomes sont légers, plus elle vibre vite</strong> : elle absorbe alors à un nombre d’onde plus grand.</div>
+      <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 6 }}>Liaison
+        <select value={cle} onChange={e => setCle(e.target.value)} aria-label="Liaison qui vibre" style={{ display: 'block', width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt, marginTop: 2 }}>
+          {Object.entries(LIAISONS).map(([k, l]) => <option key={k} value={k}>{l.nom} (bande vers {l.sigma} cm⁻¹)</option>)}</select></label>
+      <svg viewBox="0 0 320 110" width="100%" role="img" aria-label={`Liaison ${L.nom} qui vibre comme un ressort`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 420 }}>
+        <polyline points={ressort(xa + L.ra, xb - L.rb)} fill="none" stroke="#475569" strokeWidth="3" strokeLinejoin="round"/>
+        <circle cx={xa} cy="60" r={L.ra} fill={L.ca} stroke="#0f172a" strokeWidth="1.8"/><text x={xa} y="66" textAnchor="middle" fontSize="17" fontWeight="800" fill="#0f172a">{L.a}</text>
+        <circle cx={xb} cy="60" r={L.rb} fill={L.cb} stroke="#0f172a" strokeWidth="1.8"/><text x={xb} y="66" textAnchor="middle" fontSize="16" fontWeight="800" fill="#0f172a">{L.b}</text>
+        <text x="160" y="20" textAnchor="middle" fontSize="14" fontWeight="800" fill="#b45309">σ ≈ {L.sigma} cm⁻¹</text>
+        <text x="160" y="100" textAnchor="middle" fontSize="12" fill="#64748b">schéma qualitatif (la vibration réelle est bien plus rapide)</text>
+      </svg>
+      <div style={{ marginTop: 6 }}><button onClick={() => setMarche(m => !m)} style={stylePetitBouton(marche, '#0369a1')}>{marche ? '⏸ Pause' : '▶ Faire vibrer'}</button></div>
+    </div>);
+}
 
 // ---------- schéma de principe : I0 → échantillon → I ----------
 const SchemaPrincipe = () => (
@@ -238,6 +266,7 @@ export function SimulationIr() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }} role="group" aria-label="Que voulez-vous explorer ?">{[['oxydation', 'Suivre une oxydation'], ['mystere', 'Composé mystère'], ['comparer', 'Comparer deux spectres']].map(([k, n]) => <button key={k} onClick={() => setSousExp(k)} aria-pressed={sousExp === k} style={stylePetitBouton(sousExp === k, '#0f766e')}>{n}</button>)}</div>
       {sousExp === 'oxydation' ? exploreOxydation : sousExp === 'mystere' ? exploreMystere : exploreComparer}
+      <LiaisonVibre/>
     </div>);
 
   const hypotheses = indicesProfond(
