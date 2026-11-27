@@ -32,3 +32,17 @@ export const classeEmission = (mol, t) => { const f = visibleFluo(mol, t), p = v
 export const gauss = (x, c, s) => Math.exp(-0.5 * ((x - c) / s) ** 2);
 export const tirageDefiStokes = rnd => { const lamAbs = 300 + 10 * Math.floor(rnd() * 11), lamEm = lamAbs + [40, 50, 60, 80, 100, 120][Math.floor(rnd() * 6)]; return { kind: 'stokes', lamAbs, lamEm, dE: decalageStokes(lamAbs, lamEm) }; };
 export const tirageDefiDuree = rnd => { const mol = MOLS.B, t = [[1e-9, '1 ns'], [3e-8, '30 ns'], [1e-6, '1 µs'], [2e-3, '2 ms'], [0.5, '0,5 s'], [30, '30 s']][Math.floor(rnd() * 6)]; return { kind: 'duree', t: t[0], txt: t[1], rep: classeEmission(mol, t[0]) }; };
+
+// ---------- vue « Le diagramme dans le temps » : molécules excitées par un flash à t = 0 ----------
+// Populations (fractions des molécules excitées par le flash) à l'instant t (s). Avant 10⁻¹³ s : niveaux de vibration élevés (« chaud ») ;
+// relaxation vibrationnelle et conversion interne achevées vers 10⁻¹² s ; puis S₁ se vide avec la durée de vie tauS1 (fluorescence, et CIS pour B) ;
+// T₁ se remplit (part phiCIS) et se vide avec tauT1 (phosphorescence). Intensités relatives : fluorescence ∝ population du bas de S₁,
+// phosphorescence ∝ population de T₁ (rapportée à son maximum possible phiCIS).
+export const PHI_CIS = { A: 0, B: 0.6 };
+export function populations(mol, t) {
+  const lt = Math.log10(Math.max(t, 1e-16)), r = Math.min(1, Math.max(0, lt + 13));     // r : part relaxée (0 à 10⁻¹³ s, 1 à 10⁻¹² s)
+  const s1 = Math.exp(-t / mol.tauS1), phi = PHI_CIS[mol.id] ?? 0;
+  const t1 = mol.tauT1 ? phi * (1 - s1) * Math.exp(-t / mol.tauT1) : 0;
+  const chaud = 1 - r, S1 = r * s1, T1 = r * t1;
+  return { chaud, S1, T1, S0: Math.max(0, 1 - chaud - S1 - T1), fluo: S1, phos: phi ? T1 / phi : 0 };
+}

@@ -5,10 +5,11 @@ import { Pic } from "../Pictos";
 import * as M from "./fluoModele";
 import { QCM } from "./fluoQcm";
 import { SceneJablonski, SceneEmission, SceneSpectresFluo, SvgCarteJablonski, SvgCarteTemps, SvgCarteBilanFluo } from "./FluoSchemas";
-import { SceneVibronique, SceneHistogramme, CommandesTirages } from "./FluoTirages";
+import { SceneVibronique, SceneHistogramme, CommandesTirages, VueTirages } from "./FluoTirages";
 import { useTirages } from "./fluoTiragesHook";
 import * as X from "./fluoTirages";
 import { VueDispositif } from "./FluoDispositif";
+import { VueTemps } from "./FluoTemps";
 import * as D from "./fluoDispositif";
 
 const SIM_ID = 301, CLE_GUIDE = 'fluo-guide-v1';
@@ -43,7 +44,7 @@ export function SimulationFluorescence() {
   const [guide, setGuide] = useEtatPersistant(CLE_GUIDE, { etape: 0, reps: {}, verifs: {}, reussies: {} });
   const idDe = g => ORDRE[Math.min(g.etape ?? 0, ORDRE.length - 1)];
   const [vie, setVie] = useState(() => ({ ...BASE, ...(DEPART[idDe(guide)] ?? {}) }));
-  const [ex, setEx] = useState({ onglet: 'diagramme', proc: '', mol: 'B', te: -9 });
+  const [ex, setEx] = useState({ onglet: 'temps' });
   const tg = useTirages({}), te = useTirages({});
   const [ouv, setOuv] = useState({});
   const [suiviS, noterS] = useCompteurDefi(), [suiviD, noterD] = useCompteurDefi(), [suiviP, noterP] = useCompteurDefi();
@@ -204,76 +205,27 @@ export function SimulationFluorescence() {
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#16a34a')}><Pic n="target"/>Défis</button>
     </span>);
 
-  // ---------- exploration ----------
-  const mol = M.MOLS[ex.mol], tE = 10 ** ex.te, pr = M.PROCESSUS.find(p => p.id === ex.proc);
-  const MT = X.MOLS_T[te.t.mode ? te.t.mol : 'A'], Ee = te.t.etat, sommeExE = Ee.ex.reduce((a, b) => a + b, 0), excE = te.t.mode === 'excitation';
-  const aucun = ex.proc === '' ? null : ex.proc === 'rv' ? ['rv'] : ex.proc === 'ci' ? ['ci'] : ex.proc;
-  const reglagesTirages = (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Tirages de photons</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Chaque photon est un tirage au hasard : absorbé ou non, puis émis par un chemin du diagramme. Chaque photon détecté ajoute un coup au spectre.</div>
-      {selecteur('fl-tm', 'Ce que l’on trace', te.t.mode, ev => te.regler({ mode: ev.target.value }), [{ id: 'emission', nom: 'Émission (λ d’excitation fixée)' }, { id: 'excitation', nom: 'Excitation (λ de détection fixée)' }])}
-      {selecteur('fl-tmol', 'Molécule', te.t.mol, ev => te.regler({ mol: ev.target.value, lamEm: Math.round(X.lamMaxEmission(X.MOLS_T[ev.target.value]) / 5) * 5 }), Object.values(X.MOLS_T))}
-      {excE ? curs('fl-tlem', `Longueur d’onde de détection : ${te.t.lamEm} nm (fenêtre ± ${X.FENETRE} nm)`, te.t.lamEm, 380, 580, 5, ev => te.regler({ lamEm: parseInt(ev.target.value, 10) }), 'Le spectre est effacé à chaque changement. Les photons d’excitation sont tirés entre 290 et 410 nm.')
-        : curs('fl-tlex', `Longueur d’onde d’excitation : ${te.t.lamExc} nm`, te.t.lamExc, 300, 410, 1, ev => te.regler({ lamExc: parseInt(ev.target.value, 10) }), 'Le spectre est effacé à chaque changement. Le maximum d’absorption est à 350 nm.')}
-      <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10, fontSize: 14, color: KIT.txt, cursor: 'pointer' }}>
-        <input type="checkbox" checked={te.t.courbe} onChange={ev => te.regler({ courbe: ev.target.checked })} style={{ width: 20, height: 20 }}/>Afficher la courbe attendue (pointillés)</label>
-      <div style={{ marginTop: 10 }}><CommandesTirages tir={te}/></div>
-    </div>);
-  const reglagesExplore = enExplore && ex.onglet === 'dispositif' ? null : enExplore && ex.onglet === 'tirages' ? reglagesTirages : enExplore && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'diagramme' ? 'Choisissez un processus' : ex.onglet === 'temps' ? 'Faites passer le temps' : 'Choisissez la molécule'}</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ex.onglet === 'diagramme' ? 'Le processus choisi est mis en valeur sur le diagramme ; les durées sont des ordres de grandeur.'
-        : ex.onglet === 'temps' ? 'Le curseur règle le temps écoulé depuis l’arrêt de l’excitation. Le point noir indique l’état le plus peuplé, les barres l’intensité de chaque émission.'
-        : 'Les spectres sont schématiques. Comparez la position des maxima d’absorption et d’émission.'}</div>
-      {ex.onglet === 'diagramme' && selecteur('fl-ep', 'Processus', ex.proc, ev => setEx(e => ({ ...e, proc: ev.target.value })), M.PROCESSUS.map(p => ({ id: p.id, nom: p.nom })), 'Tous les processus')}
-      {ex.onglet !== 'diagramme' && selecteur('fl-em', 'Molécule', ex.mol, ev => setEx(e => ({ ...e, mol: ev.target.value })), Object.values(M.MOLS))}
-      {ex.onglet === 'temps' && curseurTemps('fl-ete', ex.te, te => setEx(e => ({ ...e, te })))}
-    </div>);
+  // ---------- exploration : trois vues, chacune « tout visible d'un coup » ----------
   const pilules = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['dispositif', 'Du photon au spectre'], ['tirages', 'Tirages au hasard']].map(([k, l]) => <button key={k} onClick={() => { if (k !== 'tirages') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
+      {[['temps', 'Le diagramme dans le temps'], ['dispositif', 'Du photon au spectre'], ['tirages', 'Photon par photon']].map(([k, l]) => <button key={k} onClick={() => { if (k !== 'tirages') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
     </div>);
   const voletScene = (
     <div style={styleBoite}>
       {pilules}
-      {ex.onglet === 'dispositif' ? <VueDispositif/>
-        : ex.onglet === 'diagramme' ? <SceneJablonski actif={aucun} durees/>
-        : ex.onglet === 'temps' ? <><SceneJablonski actif={null} etat={M.etatDominant(mol, tE)}/><div style={{ height: 6 }}/><SceneEmission mol={mol} t={tE}/></>
-        : <>{te.t.mode === 'emission' && <SceneVibronique mol={MT} dernier={te.t.etat.dernier}/>}{te.t.mode === 'emission' && <div style={{ height: 6 }}/>}<SceneHistogramme etat={te.t.etat} params={te.t} mol={MT} courbe={te.t.courbe}/></>}
-    </div>);
-  const mesuresEx = enExplore && ex.onglet !== 'dispositif' && (
-    <div style={styleBoite}>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-      {ex.onglet === 'tirages' ? <>
-        <LigneMesure nom="Photons envoyés" valeur={String(Ee.nEnv)}/><LigneMesure nom="Photons absorbés" valeur={`${Ee.nAbs}${Ee.nEnv ? ` (${fr(100 * Ee.nAbs / Ee.nEnv, 0)}${NB}%)` : ''}`}/>
-        <LigneMesure nom={excE ? 'Photons détectés' : 'Photons de fluorescence'} valeur={String(excE ? sommeExE : Ee.nFl)}/>
-        {!excE && MT.T && <LigneMesure nom="Photons de phosphorescence" valeur={String(Ee.nPh)}/>}
-        {!excE && Ee.nAbs >= 30 && <LigneMesure nom="Fluorescence détectée / photons absorbés" valeur={`${fr(100 * Ee.nFl / Ee.nAbs, 0)}${NB}%`}/>}
-        {!excE && <div style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, paddingTop: 6 }}><strong>Dernier photon : </strong>{X.texteEvenement(Ee.dernier, 'emission')}</div>}</>
-      : ex.onglet === 'diagramme' ? (pr ? <>
-        <LigneMesure nom="Processus" valeur={pr.nom}/><LigneMesure nom="Durée typique" valeur={pr.duree}/>
-        <LigneMesure nom="Photon émis ou absorbé" valeur={pr.radiatif ? 'oui' : 'non'}/><LigneMesure nom="Description" valeur={pr.desc}/></>
-        : <LigneMesure nom="Processus" valeur="choisissez-en un"/>)
-      : <>
-        <LigneMesure nom="Temps depuis la coupure" valeur={txtT(tE)}/><LigneMesure nom="État le plus peuplé" valeur={ST[M.etatDominant(mol, tE)]}/>
-        <LigneMesure nom="Fluorescence" valeur={`${fr(100 * M.intensiteFluo(mol, tE), M.intensiteFluo(mol, tE) < 0.1 ? 3 : 0)}${NB}%`}/>
-        <LigneMesure nom="Phosphorescence" valeur={mol.tauT1 ? `${fr(100 * M.intensitePhos(mol, tE) / 0.6, M.intensitePhos(mol, tE) < 0.06 ? 3 : 0)}${NB}%` : 'aucune'}/>
-        <LigneMesure nom="Lumière émise" valeur={M.classeEmission(mol, tE)}/></>}
+      {ex.onglet === 'dispositif' ? <VueDispositif/> : ex.onglet === 'tirages' ? <VueTirages tir={te}/> : <VueTemps/>}
     </div>);
   const aEssayer = (
     <ul style={liste}>
-      <li>Diagramme : parcourez les processus. Lesquels émettent un photon ? Lesquels sont les plus rapides ?</li>
-      <li>Après l’arrêt : avec la molécule A, à quel temps la lumière a-t-elle disparu ? Et avec la molécule B ?</li>
-      <li>Après l’arrêt : avec B, cherchez l’intervalle de temps où l’on ne voit que la phosphorescence.</li>
-      <li>Du photon au spectre : en « Émission », comparez la bande enregistrée à la bande d’absorption (en pâle), pour les deux molécules. Laquelle perd le plus d’énergie avant d’émettre ?</li>
-      <li>Tirages (émission) : envoyez 1 000 photons à 350 nm, puis à 331 nm. Les spectres d’émission diffèrent-ils ? Pourquoi ?</li>
-      <li>Tirages : excitez à 410 nm, en bord de bande d’absorption. Que devient la part de photons absorbés ?</li>
-      <li>Tirages (excitation) : détectez à 450 nm, puis à 420 nm (molécule B) : comparez les spectres d’excitation obtenus.</li>
+      <li>Le diagramme dans le temps : lancez le flash avec A puis avec B. À partir de quel instant ne reste-t-il que la phosphorescence ?</li>
+      <li>Le diagramme dans le temps : touchez chaque processus du diagramme. Lesquels émettent un photon ? Lesquels sont les plus rapides ?</li>
+      <li>Le diagramme dans le temps : pourquoi l’œil voit-il la phosphorescence après l’arrêt, mais jamais la fluorescence s’éteindre ?</li>
       <li>Du photon au spectre : passez d’« Absorption » à « Émission » : quel détecteur sert ? Pourquoi ne mesure-t-on pas l’émission dans l’axe du faisceau ?</li>
+      <li>Du photon au spectre : en « Émission », comparez la flèche d’absorption et la flèche d’émission du diagramme. Laquelle est la plus longue ? Que devient l’énergie manquante ?</li>
       <li>Du photon au spectre : en « Excitation », la courbe enregistrée suit-elle la bande d’absorption ? Pourquoi ?</li>
-      <li>Du photon au spectre : enregistrez le spectre d’émission de B, puis choisissez « Phosphorescence ». Quelle émission reste après l’arrêt de la lampe ?</li>
-      <li>Du photon au spectre : la phosphorescence de B est-elle à une longueur d’onde plus petite ou plus grande que sa fluorescence ? Que dit le diagramme ?</li>
+      <li>Du photon au spectre : avec B, la phosphorescence est-elle à une longueur d’onde plus petite ou plus grande que la fluorescence ? Que dit le diagramme ?</li>
+      <li>Photon par photon : envoyez 1 000 photons à 350 nm, puis à 331 nm. Les spectres d’émission diffèrent-ils ? Pourquoi ?</li>
+      <li>Photon par photon : excitez à 410 nm, en bord de bande d’absorption. Que devient la part de photons absorbés ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -289,11 +241,12 @@ export function SimulationFluorescence() {
     </ARetenir>);
   const hypotheses = (
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
+      <li><strong>Le diagramme dans le temps</strong> : flash très bref à t = 0 ; on suit les molécules excitées par le flash ; relaxation achevée vers 10⁻¹² s ; S₁ se vide avec sa durée de vie (fluorescence, et croisement intersystème pour B avec une part de 60 %), T₁ se vide avec 1 s (phosphorescence) ; intensités relatives proportionnelles aux populations ; l’œil ne perçoit pas les durées inférieures à quelques centièmes de seconde.</li>
       <li><strong>Durées</strong> : ordres de grandeur du cours (absorption 10⁻¹⁵ s, RV et CI 10⁻¹² s, CIS 10⁻⁸ s, fluorescence 10⁻⁹ s, phosphorescence 10⁻² à 10² s) ; elles varient beaucoup selon la molécule et le milieu.</li>
       <li><strong>Molécules A et B</strong> : schématiques. Durées de vie : S₁ 5 ns (A) ou 2 ns (B) ; T₁ 1 s (B). Décroissance exponentielle, émission jugée visible au-dessus de 1 % de l’intensité initiale.</li>
       <li><strong>Énergies</strong> : E(eV) × λ(nm) = 1243 (constantes arrondies). L’énergie du photon émis est assimilée à un écart entre niveaux, en négligeant la relaxation vibrationnelle dans l’état d’arrivée.</li>
       <li><strong>Spectres</strong> : allures gaussiennes schématiques, de largeur arbitraire ; les intensités relatives ne sont pas à l’échelle.</li>
-      <li><strong>Tirages</strong> : modèle vibronique schématique à 5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon à l’absorption et à l’émission (spectres en image miroir) ; écart entre sous-niveaux 0,21 eV (A) ou 0,15 eV (B) ; chaque transition élargie en bande (écart-type 0,14 eV : en solution, les sous-niveaux de vibration ne sont pas résolus, on observe des bandes) ; molécule initialement au niveau v = 0 de S₀ ; relaxation vibrationnelle complète avant émission (règle de Kasha) ; probabilité d’absorption au sommet de la bande : 90 % ; rendements fixés (A : 70 % de fluorescence ; B : 15 % de fluorescence, 60 % de croisement intersystème, puis 55 % de phosphorescence). Les nombres de photons sont des tirages aléatoires : deux séries ne donnent jamais exactement le même spectre.</li>
+      <li><strong>Photon par photon</strong> : modèle vibronique schématique à 5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon à l’absorption et à l’émission (spectres en image miroir) ; écart entre sous-niveaux 0,21 eV (A) ou 0,15 eV (B) ; chaque transition élargie en bande (écart-type 0,14 eV : en solution, les sous-niveaux de vibration ne sont pas résolus, on observe des bandes) ; molécule initialement au niveau v = 0 de S₀ ; relaxation vibrationnelle complète avant émission (règle de Kasha) ; probabilité d’absorption au sommet de la bande : 90 % ; rendements fixés (A : 70 % de fluorescence ; B : 15 % de fluorescence, 60 % de croisement intersystème, puis 55 % de phosphorescence). Les nombres de photons sont des tirages aléatoires : deux séries ne donnent jamais exactement le même spectre.</li>
       <li><strong>Du photon au spectre</strong> : montage schématique vu de dessus (monochromateurs de fente ± 6 nm) ; diagramme d’énergie à l’échelle, la longueur de chaque flèche est l’énergie du photon (E = 1243 / λ) ; bandes de largeur 0,14 eV ; en absorption, absorbance maximale 0,8 (cuve de 1 cm) ; en fluorimétrie, solution diluée (A &lt; 0,1) : le signal est proportionnel à l’absorbance à λ d’excitation, d’où un spectre d’excitation qui a la forme de la bande d’absorption ; intensités relatives, sans bruit ; couleurs des faisceaux = couleurs réelles (UV représenté en violet) ; en phosphorescence, la population de T₁ à l’arrêt n’est pas modélisée.</li>
       <li><strong>Hors modèle</strong> : désactivation non radiative S₁ → S₀ détaillée, extinction de fluorescence (quenching), effets de solvant, règles de sélection détaillées.</li>
     </ul>);
@@ -340,11 +293,7 @@ export function SimulationFluorescence() {
       </div>}
       {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.kind}`} etat={defi.kind === 'stokes' ? suiviS : defi.kind === 'dispositif' ? suiviP : suiviD}/></div>}
       {enExplore && <>
-        <div className={`fl-ex${ex.onglet === 'dispositif' ? ' pleine' : ''}`}>
-          {voletScene}
-          {reglagesExplore && <div className="fl-reg">{reglagesExplore}</div>}
-          {mesuresEx}
-        </div>
+        <div className="fl-ex pleine">{voletScene}</div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
         <Section titre="À retenir" ouvert={!!ouv.retenir} onBascule={() => bascule('retenir')}>{retenirExplore}</Section>
       </>}
