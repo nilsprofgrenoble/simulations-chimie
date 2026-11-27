@@ -157,7 +157,7 @@ export const BTSB_ANA = [
       F('Il augmente fortement la viscosité de l’eau et retient les bulles à l’intérieur', 'Retenir les bulles ferait persister la mousse : ce n’est pas ce que l’on cherche.'),
     ] },
   // ── Mouillage ──
-  { id: 'disp-ana-angle', domaine: D_DISP, titre: 'Lire un angle de raccordement',
+  { id: 'disp-ana-angle', domaine: D_DISP, titre: 'Lire un angle de raccordement', schema: { type: 'goutteAngle' },
     enonce: 'On dépose une goutte d’eau sur trois supports. Sur le support 1, elle s’étale complètement (θ = 0°) ; sur le support 2, elle forme un angle de raccordement θ = 40° ; sur le support 3, elle reste presque sphérique (θ = 120°).',
     q: 'Comment classer ces trois situations ?', options: [
       V('1 : mouillage total ; 2 : mouillage partiel ; 3 : non-mouillage', 'Plus l’angle est petit, mieux le liquide s’étale : 0° est un mouillage total, 40° un mouillage partiel, et au-delà de 90° la goutte perle (non-mouillage).'),

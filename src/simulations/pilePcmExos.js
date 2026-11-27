@@ -15,7 +15,7 @@ export const PILP_ANA = [
       F('aucune : le signe − montre que la pile est défectueuse', 'Le signe renseigne seulement sur l’orientation du branchement.'),
       F('on ne peut pas le savoir sans connaître les couples', 'Le signe de la tension suffit à repérer les pôles.'),
     ] },
-  { id: 'pilp-ana-electrons', domaine: DOM, titre: 'Sens de circulation des électrons',
+  { id: 'pilp-ana-electrons', domaine: DOM, titre: 'Sens de circulation des électrons', schema: { type: 'pileLampe' },
     enonce: 'Une pile zinc / argent débite dans une lampe. Le zinc est le pôle −, l’argent est le pôle +. Les deux demi-piles sont reliées par un pont salin et la lampe est branchée entre les deux lames par des fils de cuivre.', q: 'Dans les fils, les électrons circulent :', options: [
       V('de la lame de zinc vers la lame d’argent, à travers la lampe', 'Les électrons quittent l’anode (pôle −, zinc) et gagnent la cathode (pôle +, argent). Le courant conventionnel va en sens inverse.'),
       F('de la lame d’argent vers la lame de zinc, à travers la lampe', 'Ce serait le sens du courant conventionnel, pas celui des électrons.'),
