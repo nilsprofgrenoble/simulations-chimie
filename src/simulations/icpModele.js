@@ -16,8 +16,10 @@ export const centre = i => LAM_MIN + (i + 0.5) * PAS;
 // proportion d'atomes libres excités : Boltzmann, bornée par f/(1+f) quand la population excitée n'est plus négligeable
 export const fraction = (r, T) => { const f = r.g * Math.exp(-energieEV(r.lam) / (KB * T)); return f / (1 + f); };
 export const pourDixMille = (r, T) => 1e4 * fraction(r, T);
-// ionisation (équilibre de Saha, densité électronique 10²¹ m⁻³ dans le plasma, 10¹⁷ m⁻³ dans une flamme) : seuls les atomes neutres émettent la raie atomique
-export const NE = T => (T < 4000 ? 1e17 : 1e21);
+// ionisation (équilibre de Saha) : seuls les atomes neutres émettent la raie atomique.
+// Densité électronique : 10¹⁷ m⁻³ dans une flamme (2 500 K), 10²¹ m⁻³ dans le plasma (6 500 K), interpolée en échelle logarithmique entre les deux
+// (une marche à 4 000 K multipliait brusquement l'intensité du sodium par environ 1 700 : défaut corrigé le 27/11/2026).
+export const NE = T => 10 ** (17 + 4 * Math.min(1, Math.max(0, (T - T_FLAMME) / (T_PLASMA - T_FLAMME))));
 export const fractionNeutre = (r, T) => { const S = 2.415e21 * T ** 1.5 * r.gi * Math.exp(-r.Ei / (KB * T)); return 1 / (1 + S / NE(T)); };
 // échantillon type : éléments à la même concentration (1 mg/L) ; poids d'une raie = c × atomes neutres × proportion excitée
 export const ECH = ['Na', 'Ca', 'Mg', 'Cu', 'Fe', 'Zn'];
@@ -42,9 +44,12 @@ export function lancer(etat, T, k, rnd, liste = ECH) {
   for (let j = 0; j < k && e.n < MAX_PHOTONS; j++) { const ph = photon(T, rnd, liste); e.n++; e.h[indice(ph.lam)]++; e.par[ph.s] = (e.par[ph.s] ?? 0) + 1; e.dernier = ph; }
   return e;
 }
-// gamme dynamique : signal ICP proportionnel à c sur plusieurs décades ; absorbance de la SAA (cuivre, flamme air-acétylène) linéaire jusqu'à environ 10 mg/L
+// gamme dynamique : signal ICP proportionnel à c sur plusieurs décades.
+// Absorbance mesurée en SAA (cuivre, flamme air-acétylène) : loi de Beer-Lambert A = K_SAA·c, limitée par la lumière parasite du monochromateur
+// (fraction S_PARASITE de la lumière qui atteint le détecteur sans traverser la flamme) : écart à la droite inférieur à 5 % jusqu'à 10 mg/L, puis plafond voisin de 2,3.
+export const K_SAA = 0.15 * 0.85, S_PARASITE = 0.005;
 export const signalICP = c => 1000 * c / (1 + c / 5000);
-export const absorbanceSAA = c => 0.15 * 0.85 * c / (1 + c / 30);
+export const absorbanceSAA = c => -Math.log10((10 ** (-K_SAA * c) + S_PARASITE) / (1 + S_PARASITE));
 export const plageICP = [0.001, 1000], plageSAA = [0.05, 10];
 export const horsPlageSAA = c => c > plageSAA[1];
 // dispersion par un réseau : sin θ = k·λ / a (ordre 1) ; réseau de 1200 traits/mm (a = 0,8333 µm), incidence normale → angle en degrés

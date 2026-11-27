@@ -546,7 +546,7 @@ export const BTSB_SIT = [
   {
     id: 'frx-sapp-element', domaine: 'Fluorescence X : de la lacune à la raie de l’élément', niveau: 2, titre: 'Identifier un élément par sa raie Kα',
     construire: () => {
-      const T = [['calcium', 'Ca', 3.69, 4.04, 0.35], ['titane', 'Ti', 4.51, 4.97, 0.45], ['chrome', 'Cr', 5.41, 5.99, 0.57], ['fer', 'Fe', 6.40, 7.11, 0.71], ['nickel', 'Ni', 7.48, 8.33, 0.85], ['cuivre', 'Cu', 8.05, 8.98, 0.93]];
+      const T = [['calcium', 'Ca', 3.69, 4.04, 0.35], ['titane', 'Ti', 4.51, 4.97, 0.46], ['chrome', 'Cr', 5.41, 5.99, 0.58], ['fer', 'Fe', 6.40, 7.11, 0.71], ['nickel', 'Ni', 7.48, 8.33, 0.85], ['cuivre', 'Cu', 8.05, 8.98, 0.93]];
       const [nom, sym, Ka, EK, EL] = tire(T), autres = T.filter(x => x[1] !== sym).sort((a, b) => Math.abs(a[2] - Ka) - Math.abs(b[2] - Ka)).slice(0, 2);
       return {
         enonce: `Un échantillon inconnu est irradié par des rayons X. Ses énergies de liaison sont E_K = ${nb(EK, 2)} keV (couche K) et E_L = ${nb(EL, 2)} keV (couche L). Raies Kα tabulées (keV) : ${T.map(x => x[1] + ' ' + nb(x[2], 2)).join(' ; ')}.`,
@@ -577,7 +577,7 @@ export const BTSB_SIT = [
           { id: 'excites', titre: 'Atomes excités', q: `Pour cet écart d’énergie (${nb(E, 2)} eV), combien d’atomes sont excités dans la flamme, parmi 10 000 atomes libres ?`, aide: 'La proportion d’atomes excités suit exp(−E / kT) : elle chute très vite quand E augmente. Repère : pour 2,1 eV à 2 500 K, environ 2 atomes sur 10 000.',
             o: ok
               ? [F('moins d’un atome sur un million : le signal est inexploitable', 'À 1,6 à 2,1 eV, quelques atomes sur 10 000 sont excités : le signal est mesurable.'), V('quelques atomes sur 10 000 : le signal est mesurable', 'Avec un écart d’énergie inférieur à 2,1 eV, la flamme excite assez d’atomes pour une mesure.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')]
-              : [F('quelques atomes sur 10 000 : le signal est mesurable', 'L’écart d’énergie est beaucoup plus grand que pour le sodium : il y a des millions de fois moins d’atomes excités.'), V('moins d’un atome sur un million : signal nul', 'Avec plus de 3 eV d’écart d’énergie, presque aucun atome n’est excité : on utilise plutôt l’absorption atomique.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')] },
+              : [F('quelques atomes sur 10 000 : le signal est mesurable', 'L’écart d’énergie est beaucoup plus grand que pour le sodium : il y a des milliers de fois moins d’atomes excités.'), V('moins d’un atome sur un million : signal nul', 'Avec plus de 3 eV d’écart d’énergie, presque aucun atome n’est excité : on utilise plutôt l’absorption atomique.'), F('environ la moitié des atomes', 'Même à 3 000 K, l’immense majorité des atomes reste au fondamental.')] },
         ],
         retenir: ['Plus l’écart d’énergie de la raie est grand, moins la flamme excite d’atomes.', 'L’émission de flamme convient à Na, K, Li ; l’absorption atomique aux autres éléments.'],
       };

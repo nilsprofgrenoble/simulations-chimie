@@ -17,7 +17,7 @@ export const QCM = {
     'plus basse en énergie : Kα diminue quand Z augmente',
     'identique : Kα ne dépend pas de l’élément',
     'plus élevée seulement si la teneur de l’élément est grande'),
-  legers: mk(2, 'sa raie très peu énergétique est absorbée par l’air et rare',
+  legers: mk(2, 'sa raie, très peu énergétique, est absorbée par l’air et les photons X sont rares',
     'il n’a pas d’électron K, donc aucune raie ne peut être émise',
     'sa raie est trop énergétique pour être mesurée par le détecteur',
     'il est présent en trop faible quantité dans tous les échantillons'),

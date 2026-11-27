@@ -23,7 +23,14 @@ ok(M.lancer(e, M.T_PLASMA, 100, rnd).n === M.MAX_PHOTONS, 'plafond');
 let ef = M.lancer(M.etatVide(M.T_FLAMME), M.T_FLAMME, 5000, rnd); ok((ef.par.Na ?? 0) / 5000 > 0.95, 'flamme : presque tous les photons viennent du sodium');
 // gamme dynamique
 ok(Math.abs(M.signalICP(100) / M.signalICP(1) - 100) < 3 && Math.abs(M.signalICP(0.01) / M.signalICP(0.001) - 10) < 0.01, 'ICP linéaire sur plusieurs décades');
-ok(M.absorbanceSAA(100) < 4 && M.absorbanceSAA(100) / M.absorbanceSAA(1) < 40 && M.absorbanceSAA(20) / M.absorbanceSAA(2) < 8.2 && M.absorbanceSAA(2) > 0.2, 'SAA : courbure et saturation');
+ok(M.absorbanceSAA(100) < 2.5 && M.absorbanceSAA(100) > 2 && M.absorbanceSAA(2) > 0.2, 'SAA : plafond dû à la lumière parasite');
+ok(M.absorbanceSAA(10) > 0.95 * M.K_SAA * 10 && M.absorbanceSAA(0.05) > 0.99 * M.K_SAA * 0.05, 'SAA : droite à moins de 5 % jusqu\'à 10 mg/L (plage annoncée)');
+ok(M.absorbanceSAA(20) < 0.9 * M.K_SAA * 20, 'SAA : l\'absorbance quitte nettement la droite au-delà de la plage');
+// densité électronique : pas de marche entre la flamme et le plasma (défaut corrigé : saut ×1 700 de la raie du sodium à 4 000 K)
+for (let T = M.T_MIN; T < M.T_MAX; T += 50) for (const r of M.RAIES) { const a = M.fractionNeutre(r, T), b = M.fractionNeutre(r, T + 50); ok(b / a < 1.6 && a / b < 1.6, `${r.s} : fraction d'atomes neutres continue en T (${T} K)`); }
+ok(M.NE(M.T_FLAMME) === 1e17 && Math.abs(M.NE(M.T_PLASMA) / 1e21 - 1) < 1e-9 && M.NE(2000) === 1e17 && Math.abs(M.NE(9000) / 1e21 - 1) < 1e-9, 'densité électronique : 10¹⁷ (flamme) à 10²¹ m⁻³ (plasma)');
+// la raie atomique du sodium passe par un maximum puis diminue aux très hautes températures (ionisation)
+ok(M.poidsRaie(M.raie('Na'), 9000) < M.poidsRaie(M.raie('Na'), 6500) && M.poidsRaie(M.raie('Zn'), 9000) < M.poidsRaie(M.raie('Zn'), 7000), 'trop chaud : l\'ionisation réduit les raies atomiques');
 ok(M.horsPlageSAA(50) && !M.horsPlageSAA(5), 'plage de la SAA');
 ok(M.angleReseau(300) < M.angleReseau(600) && M.angleReseau(600) < M.angleReseau(800), 'dispersion du réseau croissante');
 ok(Math.abs(M.angleReseau(589) - 44.9) < 0.5 && M.angleReseau(800) < 80 && M.angleReseau(200) > 10, 'angles du réseau 1200 traits/mm');

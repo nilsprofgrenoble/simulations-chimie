@@ -74,13 +74,13 @@ export function SceneGamme({ c }) {
   const sA = v => 214 + v / 100 * 112, yA = v => 156 - M.absorbanceSAA(v) / 3.2 * 110;
   const ptsA = Array.from({ length: 51 }, (_, i) => { const v = 2 * i; return `${i ? 'L' : 'M'}${sA(v).toFixed(1)},${yA(v).toFixed(1)}`; }).join('');
   const hors = M.horsPlageSAA(c);
-  return (<svg role="img" aria-label="Gamme de dosage : l'ICP reste proportionnelle sur six décades, l'absorbance de l'absorption atomique sature au-delà de quelques mg/L" viewBox="0 0 340 226" width="100%" style={svgStyle}>
+  return (<svg role="img" aria-label="Gamme de dosage : le signal de l'ICP reste proportionnel sur plusieurs décades, l'absorbance de l'absorption atomique s'écarte de la droite au-delà de 10 mg/L environ" viewBox="0 0 340 226" width="100%" style={svgStyle}>
     {T(95, 14, 'ICP (échelles log)', { size: 13, gras: true })}{T(270, 14, 'SAA (linéaire)', { size: 13, gras: true })}
     <line x1="40" y1="156" x2="152" y2="156" stroke={K.gris}/><line x1="40" y1="156" x2="40" y2="40" stroke={K.gris}/><line x1={icp(0.001)} y1={ys(0.001)} x2={icp(1000)} y2={ys(1000)} stroke="#be185d" strokeWidth="2.4"/>
     {[0.001, 0.1, 10, 1000].map(v => <g key={v}><line x1={icp(v)} y1="156" x2={icp(v)} y2="161" stroke={K.gris}/>{T(icp(v), 174, String(v).replace('.', ','), { size: 11.5, fill: K.gris })}</g>)}
     {T(96, 192, 'c (mg/L)', { size: 12, fill: K.gris })}{T(46, 36, 'signal', { size: 12, fill: K.gris, anchor: 'start' })}
     <line x1="214" y1="156" x2="326" y2="156" stroke={K.gris}/><line x1="214" y1="156" x2="214" y2="40" stroke={K.gris}/><path d={ptsA} fill="none" stroke="#1d4ed8" strokeWidth="2.4"/>
-    <line x1="214" y1="156" x2={sA(30)} y2={156 + (yA(10) - 156) / 10 * 30} stroke="#64748b" strokeDasharray="2 4" strokeWidth="1.3"/>
+    <line x1="214" y1="156" x2={sA(25)} y2={156 - M.K_SAA * 25 / 3.2 * 110} stroke="#64748b" strokeDasharray="2 4" strokeWidth="1.3"/>
     {[0, 50, 100].map(v => <g key={v}><line x1={sA(v)} y1="156" x2={sA(v)} y2="161" stroke={K.gris}/>{T(sA(v), 174, String(v), { size: 11.5, fill: K.gris })}</g>)}
     {T(270, 192, 'c (mg/L)', { size: 12, fill: K.gris })}{T(220, 36, 'A', { size: 12, fill: K.gris, anchor: 'start' })}
     {c > 0 && <g><circle cx={icp(Math.max(c, 0.001))} cy={ys(Math.max(c, 0.001))} r="5" fill="#b45309" stroke="#fff" strokeWidth="1.2"/><circle cx={sA(Math.min(c, 100))} cy={yA(Math.min(c, 100))} r="5" fill={hors ? '#dc2626' : '#b45309'} stroke="#fff" strokeWidth="1.2"/>
@@ -94,7 +94,7 @@ export function SvgCarteComparaison() {
   return (<svg role="img" aria-label="Comparaison flamme et plasma : température, éléments détectables, gamme" viewBox="0 0 300 150" width="100%" style={{ ...svgStyle, maxWidth: 320 }}>
     {T(160, 16, 'Flamme', { size: 13.5, gras: true })}{T(246, 16, 'Plasma ICP', { size: 13.5, gras: true })}
     <line x1="10" y1="24" x2="290" y2="24" stroke={K.clair}/>
-    {ligne(44, 'Température', '≈ 2 500 K', '≈ 6 500 K')}{ligne(68, 'Éléments', 'Na, K (SEF)', 'presque tous')}{ligne(92, 'Éléments à la fois', 'un seul', 'plusieurs')}{ligne(116, 'Gamme', '≈ 2 décades', '≈ 6 décades')}
+    {ligne(44, 'Température', '≈ 2 500 K', '≈ 6 500 K')}{ligne(68, 'Éléments', 'Na, K (SEF)', 'presque tous')}{ligne(92, 'Éléments à la fois', 'un seul', 'plusieurs')}{ligne(116, 'Gamme', '≈ 2 décades', '4 à 6 décades')}
     {T(150, 140, 'plus chaud : plus d’atomes excités', { size: 12, fill: K.gris, gras: true })}
   </svg>);
 }
