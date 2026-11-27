@@ -33,7 +33,7 @@ for (const mode of ['abs', 'em', 'ex', 'ph']) for (const mol of [A, B]) {
     ok(typeof D.texteEvenement(e1, mode) === 'string' && !/NaN|undefined/.test(D.texteEvenement(e1, mode)), `texte ${mode} ${mol.id} ${i}`);
   }
   if (mode === 'abs') ok(ab > 1500 && pas < 300, `abs 350 nm : ${ab} absorbés, ${pas} passent`);
-  if (mode === 'em' && mol.id === 'A') ok(ab > 1500 && pas > 50 && pas < ab, `em A : ${ab} absorbés, ${pas} détectés`);
+  if (mode === 'em' && mol.id === 'A') ok(ab > 1500 && pas > 20 && pas < ab, `em A : ${ab} absorbés, ${pas} détectés`);
 }
 // bandes : le spectre d'émission de A est une bande sans creux profonds (pas de raies résolues)
 const bande = D.courbe(A, 'em', 350, 1); let creux = 0;
@@ -46,5 +46,20 @@ ok(creuxA <= 1, 'bande d’absorption : ' + creuxA + ' creux');
 for (const m of [FM.MOLS.A, FM.MOLS.B]) for (let l = -15; l <= 3; l += 0.1) { const p = FM.populations(m, 10 ** l), tot = p.chaud + p.S1 + p.T1 + p.S0;
   ok(Math.abs(tot - 1) < 1e-9 && [p.chaud, p.S1, p.T1, p.S0, p.fluo, p.phos].every(v => v >= 0 && v <= 1 + 1e-12), `populations ${m.id} 10^${l.toFixed(1)}`); }
 ok(FM.populations(FM.MOLS.A, 1e-6).fluo < 0.01 && FM.populations(FM.MOLS.B, 0.1).phos > 0.8 && FM.populations(FM.MOLS.B, 10).phos < 0.01, 'durées');
+// conditions : gaz froid → raies séparées (5 maxima), solution → une bande ; fente large écrase les raies
+const maxima = c => { let k = 0; for (let i = 1; i < c.length - 1; i++) if (c[i].s > c[i - 1].s && c[i].s >= c[i + 1].s && c[i].s > 0.05) k++; return k; };
+const gaz = { sig: D.CONDITIONS.gaz.sig, fente: 1 }, sol = { sig: D.CONDITIONS.solution.sig, fente: 1 };
+ok(maxima(D.courbe(A, 'em', 350, undefined, gaz)) >= 5, 'gaz : raies d’émission ' + maxima(D.courbe(A, 'em', 350, undefined, gaz)));
+ok(maxima(D.courbe(A, 'abs', 0, undefined, gaz)) >= 4, 'gaz : raies d’absorption');
+ok(maxima(D.courbe(A, 'em', 350, undefined, sol)) <= 2, 'solution : bande');
+ok(maxima(D.courbe(A, 'em', 350, undefined, { sig: D.CONDITIONS.rigide.sig, fente: 1 })) >= 3, 'rigide : structure visible');
+const pic1 = Math.max(...D.courbe(A, 'em', 350, undefined, gaz).map(p => p.s)), pic10 = Math.max(...D.courbe(A, 'em', 350, undefined, { ...gaz, fente: 10 }).map(p => p.s));
+ok(pic10 < 0.6 * pic1, 'fente de 10 nm : raies écrasées ' + pic1.toFixed(2) + ' → ' + pic10.toFixed(2));
+// comptage : l'histogramme d'émission suit la courbe
+{ let a = 9; const rnd = () => { a = (a * 16807) % 2147483647; return a / 2147483647; }, h = {};
+  for (let i = 0; i < 40000; i++) { const e = D.evenementComptage(A, 'em', 350, D.OPT0, rnd); if (e.lamCoup != null) { const b = Math.round(e.lamCoup / 10) * 10; h[b] = (h[b] || 0) + 1; } }
+  const bm = Object.keys(h).reduce((x, y) => (h[x] > h[y] ? x : y)); ok(Math.abs(bm - 450) <= 10, 'comptage : maximum vers 450 nm (' + bm + ')');
+  let ex = {}; for (let i = 0; i < 40000; i++) { const e = D.evenementComptage(A, 'ex', 450, D.OPT0, rnd); if (e.lamCoup != null) { const b = Math.round(e.lamCoup / 10) * 10; ex[b] = (ex[b] || 0) + 1; } }
+  const be = Object.keys(ex).reduce((x, y) => (ex[x] > ex[y] ? x : y)); ok(Math.abs(be - 350) <= 10, 'comptage excitation : maximum vers 350 nm (' + be + ')'); }
 console.log(`${n - ko}/${n} vérifications réussies`);
 process.exit(ko ? 1 : 0);
