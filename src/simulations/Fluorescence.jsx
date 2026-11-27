@@ -8,6 +8,7 @@ import { SceneJablonski, SceneEmission, SceneSpectresFluo, SvgCarteJablonski, Sv
 import { SceneVibronique, SceneHistogramme, CommandesTirages } from "./FluoTirages";
 import { useTirages } from "./fluoTiragesHook";
 import * as X from "./fluoTirages";
+import { VueDispositif } from "./FluoDispositif";
 
 const SIM_ID = 301, CLE_GUIDE = 'fluo-guide-v1';
 declarerDefis(SIM_ID, [['stokes', 'Énergie perdue entre absorption et émission'], ['duree', 'Quelle lumière après l’arrêt ?']]);
@@ -213,7 +214,7 @@ export function SimulationFluorescence() {
         <input type="checkbox" checked={te.t.courbe} onChange={ev => te.regler({ courbe: ev.target.checked })} style={{ width: 20, height: 20 }}/>Afficher la courbe attendue (pointillés)</label>
       <div style={{ marginTop: 10 }}><CommandesTirages tir={te}/></div>
     </div>);
-  const reglagesExplore = enExplore && ex.onglet === 'tirages' ? reglagesTirages : enExplore && (
+  const reglagesExplore = enExplore && ex.onglet === 'dispositif' ? null : enExplore && ex.onglet === 'tirages' ? reglagesTirages : enExplore && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>{ex.onglet === 'diagramme' ? 'Choisissez un processus' : ex.onglet === 'temps' ? 'Faites passer le temps' : 'Choisissez la molécule'}</div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>{ex.onglet === 'diagramme' ? 'Le processus choisi est mis en valeur sur le diagramme ; les durées sont des ordres de grandeur.'
@@ -225,22 +226,23 @@ export function SimulationFluorescence() {
     </div>);
   const pilules = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['spectres', 'Les spectres']].map(([k, l]) => <button key={k} onClick={() => { if (k === 'diagramme' || k === 'temps') te.setLecture(false); setEx(e => ({ ...e, onglet: k === 'spectres' && e.onglet === 'tirages' ? 'tirages' : k })); }} aria-pressed={k === 'spectres' ? (ex.onglet === 'spectres' || ex.onglet === 'tirages') : ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
+      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['spectres', 'Les spectres']].map(([k, l]) => <button key={k} onClick={() => { if (k === 'diagramme' || k === 'temps') te.setLecture(false); setEx(e => ({ ...e, onglet: k === 'spectres' && (e.onglet === 'tirages' || e.onglet === 'dispositif') ? e.onglet : k })); }} aria-pressed={k === 'spectres' ? ['spectres', 'tirages', 'dispositif'].includes(ex.onglet) : ex.onglet === k} style={stylePetitBouton(k === 'spectres' ? ['spectres', 'tirages', 'dispositif'].includes(ex.onglet) : ex.onglet === k, '#16a34a')}>{l}</button>)}
     </div>);
-  const sousPilules = (ex.onglet === 'spectres' || ex.onglet === 'tirages') && (
+  const sousPilules = ['spectres', 'tirages', 'dispositif'].includes(ex.onglet) && (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
       <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Afficher :</span>
-      {[['spectres', 'Spectres schématiques'], ['tirages', 'Tirages au hasard']].map(([k, l]) => <button key={k} onClick={() => { if (k === 'spectres') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#334155')}>{l}</button>)}
+      {[['spectres', 'Spectres schématiques'], ['tirages', 'Tirages au hasard'], ['dispositif', 'Dispositif et spectre']].map(([k, l]) => <button key={k} onClick={() => { if (k === 'spectres') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#334155')}>{l}</button>)}
     </div>);
   const voletScene = (
     <div style={styleBoite}>
       {pilules}{sousPilules}
-      {ex.onglet === 'diagramme' ? <SceneJablonski actif={aucun} durees/>
+      {ex.onglet === 'dispositif' ? <VueDispositif/>
+        : ex.onglet === 'diagramme' ? <SceneJablonski actif={aucun} durees/>
         : ex.onglet === 'temps' ? <><SceneJablonski actif={null} etat={M.etatDominant(mol, tE)}/><div style={{ height: 6 }}/><SceneEmission mol={mol} t={tE}/></>
         : ex.onglet === 'tirages' ? <>{te.t.mode === 'emission' && <SceneVibronique mol={MT} dernier={te.t.etat.dernier}/>}{te.t.mode === 'emission' && <div style={{ height: 6 }}/>}<SceneHistogramme etat={te.t.etat} params={te.t} mol={MT} courbe={te.t.courbe}/></>
         : <SceneSpectresFluo mol={mol}/>}
     </div>);
-  const mesuresEx = enExplore && (
+  const mesuresEx = enExplore && ex.onglet !== 'dispositif' && (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
       {ex.onglet === 'tirages' ? <>
@@ -274,6 +276,8 @@ export function SimulationFluorescence() {
       <li>Tirages (émission) : envoyez 1 000 photons à 350 nm, puis à 331 nm. Les spectres d’émission diffèrent-ils ? Pourquoi ?</li>
       <li>Tirages : excitez à 375 nm, entre deux pics d’absorption. Que devient la part de photons absorbés ?</li>
       <li>Tirages (excitation) : détectez à 450 nm, puis à 420 nm (molécule B) : comparez les spectres d’excitation obtenus.</li>
+      <li>Dispositif et spectre : en émission puis en absorption, comparez la place du détecteur (à 90° ou dans l’axe) et lancez « Photon par photon ». Pourquoi ne mesure-t-on pas l’émission dans l’axe du faisceau ?</li>
+      <li>Dispositif et spectre : balayez le spectre d’émission de B, puis choisissez « Phosphorescence ». Quelle émission reste après l’arrêt de la lampe ?</li>
       <li>Spectres : la phosphorescence de B est-elle à une longueur d’onde plus petite ou plus grande que sa fluorescence ? Que dit le diagramme ?</li>
     </ul>);
   const retenirExplore = (
@@ -295,6 +299,7 @@ export function SimulationFluorescence() {
       <li><strong>Énergies</strong> : E(eV) × λ(nm) = 1243 (constantes arrondies). L’énergie du photon émis est assimilée à un écart entre niveaux, en négligeant la relaxation vibrationnelle dans l’état d’arrivée.</li>
       <li><strong>Spectres</strong> : allures gaussiennes schématiques, de largeur arbitraire ; les intensités relatives ne sont pas à l’échelle.</li>
       <li><strong>Tirages</strong> : modèle vibronique schématique à 5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon à l’absorption et à l’émission (spectres en image miroir) ; écart entre sous-niveaux 0,20 eV (A) ou 0,15 eV (B) ; raies élargies de 0,05 eV ; molécule initialement au niveau v = 0 de S₀ ; relaxation vibrationnelle complète avant émission (règle de Kasha) ; probabilité d’absorption au sommet d’une raie : 90 % ; rendements fixés (A : 70 % de fluorescence ; B : 15 % de fluorescence, 60 % de croisement intersystème, puis 55 % de phosphorescence). Les nombres de photons sont des tirages aléatoires : deux séries ne donnent jamais exactement le même spectre.</li>
+      <li><strong>Dispositif et spectre</strong> : montage schématique (lampe, monochromateurs de fente ± 6 nm, échantillon, détecteur) ; les courbes sont les spectres attendus, sans bruit, normalisés à 1 ; chaque photon animé est un tirage reproductible du même modèle que les tirages ; en phosphorescence, la molécule est supposée excitée avant l’arrêt de la lampe et la part de molécules dans T₁ n’est pas modélisée.</li>
       <li><strong>Hors modèle</strong> : désactivation non radiative S₁ → S₀ détaillée, extinction de fluorescence (quenching), effets de solvant, règles de sélection détaillées.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
@@ -317,6 +322,7 @@ export function SimulationFluorescence() {
           .fl-ex { grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); }
           .fl-ex > * { grid-column: 1; }
           .fl-ex > .fl-reg { grid-column: 2; grid-row: 1 / span 2; }
+          .fl-ex.pleine { grid-template-columns: minmax(0, 1fr); }
         }
         @media (max-width: 900px) { .fl-l1.cote { grid-template-columns: minmax(0, 1fr); } }
         @media (prefers-reduced-motion: no-preference) { .fl-in { animation: fl-fondu 0.35s ease-out; } @keyframes fl-fondu { from { opacity: 0; } to { opacity: 1; } } }
@@ -339,9 +345,9 @@ export function SimulationFluorescence() {
       </div>}
       {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.kind}`} etat={defi.kind === 'stokes' ? suiviS : suiviD}/></div>}
       {enExplore && <>
-        <div className="fl-ex">
+        <div className={`fl-ex${ex.onglet === 'dispositif' ? ' pleine' : ''}`}>
           {voletScene}
-          <div className="fl-reg">{reglagesExplore}</div>
+          {reglagesExplore && <div className="fl-reg">{reglagesExplore}</div>}
           {mesuresEx}
         </div>
         <Section titre="À essayer" ouvert={!!ouv.essayer} onBascule={() => bascule('essayer')}>{aEssayer}</Section>
