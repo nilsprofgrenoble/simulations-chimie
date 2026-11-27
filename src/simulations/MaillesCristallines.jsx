@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { reduitMouvement } from "./hookHorloge";
 import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, sci, ORANGE_GUIDE, avecIndices } from "../commun";
 import { ECHANTILLONS, POS, STRUCT, METAUX_PAR_STRUCT, compacite, masseVol, fermer, denombrer, cleLigne, FR, SITES, formSite, rSite,
@@ -193,6 +194,7 @@ export function SimulationMailles() {
   const [ins, setIns] = useState(null);
   const [ion, setIon] = useState('NaCl');
   const [vue, setVue] = useState({ yaw: 28, pitch: 22 });
+  const [tourne, setTourne] = useState(false);
   const [echelle, setEchelle] = useState(0.5);
   const [contact, setContact] = useState(false);
   const [parts, setParts] = useState(true);
@@ -200,6 +202,12 @@ export function SimulationMailles() {
   const [surlig, setSurlig] = useState(null);
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  // rotation automatique de la maille (exploration seulement, désactivée si l'élève préfère moins de mouvement)
+  useEffect(() => {
+    if (!tourne || !enExplore) return undefined;
+    const id = setInterval(() => setVue(o => { let yaw = o.yaw + 1.2; if (yaw > 180) yaw -= 360; return { ...o, yaw }; }), 40);
+    return () => clearInterval(id);
+  }, [tourne, enExplore]);
 
   const sc = atelier === 'maille' ? sceneMaille(met) : atelier === 'sites' ? sceneSites(hote, site, ins) : sceneIon(ion);
   const voir = o => {
@@ -404,6 +412,9 @@ export function SimulationMailles() {
       <div className={`mail-vue${enExplore ? ' large' : ''}`}><div>
       <Vue3D sph={sc.sph} seg={contact ? sc.seg : null} vue={vue} setVue={setVue} echelle={echelle} surlig={surlig} parts={parts}
         titre={`Maille ${atelier === 'maille' ? sc.st.nom + ' du ' + sc.e.nom : atelier === 'sites' ? 'du ' + sc.h.nom : 'de ' + sc.c.formule}`}/>
+ {enExplore && <div style={{ marginTop: 6, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        <button onClick={() => { if (reduitMouvement()) setVue(o => ({ ...o, yaw: o.yaw + 45 })); else setTourne(t => !t); }} style={stylePetitBouton(tourne, '#0369a1')}>{tourne ? '⏸ Arrêter la rotation' : '↻ Faire tourner la maille'}</button>
+        <span style={{ fontSize: 12.5, color: KIT.txt2 }}>Tu peux aussi la faire tourner avec le doigt ou la souris.</span></div>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Rotation" val={vue.yaw} min={-180} max={180} pas={1} set={v => setVue(o => ({ ...o, yaw: v }))} unite="°" fmt={v => String(Math.round(v))}/>
         <Curseur nom="Inclinaison" val={vue.pitch} min={0} max={85} pas={1} set={v => setVue(o => ({ ...o, pitch: v }))} unite="°" fmt={v => String(Math.round(v))}/>
