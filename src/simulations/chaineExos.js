@@ -50,7 +50,7 @@ export const CHA_VAL = [
     ] }),
   P({ id: 'cha-val-serie', domaine: DOM, niveau: 2, titre: 'Un chargeur et un moteur en série', plausible: false,
     enonce: 'Un chargeur de rendement 80 % alimente un moteur de rendement 70 %. Un élève affirme que le rendement de l’ensemble vaut 75 %, « la moyenne des deux ».',
-    reperes: [['Rendement du chargeur', '80 % = 0,80'], ['Rendement du moteur', '70 % = 0,70'], ['η global = η₁ × η₂', '0,80 × 0,70 = 0,56'], ['Valeur de l’élève', '75 % (trop grande)']],
+    reperes: [['Rendement', 'rapport de l’énergie utile à l’énergie reçue : toujours inférieur ou égal à 1'], ['Chaîne en série', 'l’énergie utile du premier appareil est l’énergie reçue du second']],
     ver: 'Les rendements se multiplient : 0,80 × 0,70 = 0,56, soit 56 %. L’élève ne peut pas trouver 75 %, supérieur au plus petit des deux rendements : sa valeur n’est pas plausible.',
     q2: 'Quelle est la cause de l’erreur ?',
     options: [

@@ -51,7 +51,7 @@ export const BAT_VAL = [
     ] }),
   P({ id: 'bat-val-duree', domaine: DOM, niveau: 2, titre: 'Durée de fonctionnement d’un accumulateur', plausible: false,
     enonce: 'Un accumulateur de capacité 2,0 Ah alimente un récepteur qui demande 0,50 A. Un élève écrit : « Δt = I ÷ Qs = 0,50 ÷ 2,0 = 0,25 h, soit 15 minutes ».',
-    reperes: [['Capacité Qs', '2,0 Ah'], ['Intensité I', '0,50 A'], ['Δt = Qs ÷ I', '2,0 ÷ 0,50 = 4,0 h'], ['Valeur de l’élève', '0,25 h (16 fois trop courte)']],
+    reperes: [['Unité de la capacité', 'l’ampère-heure : 1 Ah = 1 A débité pendant 1 h'], ['Ordre de grandeur', 'un récepteur qui consomme 0,5 A vide une batterie de quelques ampères-heures en plusieurs heures']],
     ver: 'La durée est Δt = Qs ÷ I = 2,0 ÷ 0,50 = 4,0 h. L’élève a inversé le rapport : 15 minutes est 16 fois trop court. Ce n’est pas plausible : un courant de 0,50 A pendant 4 h transporte bien 2,0 Ah.',
     q2: 'Quelle est la cause de l’écart ?',
     options: [

@@ -24,5 +24,5 @@ Exercices dans la même case : 16.
 ## VAL690 · Valider · Ça paraît plausible ? — Un chargeur et un moteur en série
 Exercices dans la même case : 8.
 
-- **Bloquant** (didactique) `VALREPERES` : Les repères contiennent la solution complète : « η global = η₁ × η₂ = 0,80 × 0,70 = 0,56 » et « valeur de l'élève 75 % (trop grande) ». Plus rien à juger ; ne garder que « rendement du chargeur 80 % », « rendement du moteur 70 % » est de toute façon dans l'énoncé (redite).
+- **Bloquant** (didactique) `VALREPERES` : (corrigé au lot 1) Les repères contiennent la solution complète : « η global = η₁ × η₂ = 0,80 × 0,70 = 0,56 » et « valeur de l'élève 75 % (trop grande) ». Plus rien à juger ; ne garder que « rendement du chargeur 80 % », « rendement du moteur 70 % » est de toute façon dans l'énoncé (redite).
 - **Important** (didactique) `VALFUITE` : L’explication complète s’affiche dès le verdict, avant l’étape « Quelle erreur ? » : l’élève la lit au lieu de chercher.

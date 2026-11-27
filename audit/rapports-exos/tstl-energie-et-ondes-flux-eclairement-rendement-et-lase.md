@@ -24,5 +24,5 @@ Exercices dans la même case : 12.
 ## VAL676 · Valider · Ça paraît plausible ? — Rendement mesuré sur un panneau de laboratoire
 Exercices dans la même case : 6.
 
-- **Bloquant** (réponses) : Incohérence : l'étape 1 corrigée affiche ✘ alors que la valeur de l'élève (15 %) est correcte ; l'explication dit « plausible » — le retour du tirage « résultat juste » doit être vérifié. Les repères donnent déjà Plum = 3,75 W. Vérifier la paire -ok (Plausible attendu = bonne réponse).
+- **Important** (didactique) `VALREPERES` : Les repères donnaient Plum et Pél déjà calculés (corrigé au lot 1). Faux bloquant : le retour « Pas encore » était exact, le verdict attendu étant « Plausible ».
 - **Important** (didactique) `VALFUITE` : L’explication complète s’affiche dès le verdict, avant l’étape « Quelle erreur ? » : l’élève la lit au lieu de chercher.
