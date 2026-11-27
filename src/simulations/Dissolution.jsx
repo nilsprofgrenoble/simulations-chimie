@@ -5,6 +5,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
 import { Fiole } from "./solutionsVue";
 import { fr, SOLUTES, soluteDe, concentration, massePeser, dissolution, teinte } from "./solutionsModele";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { FicheVocab, FicheConc, FicheTriangle, FicheProtocole, FicheSolub } from "./DissolutionFiches";
 
 // ====================================================
@@ -24,14 +25,19 @@ const TITRES = { masse: 'Masse à peser', conc: 'Concentration en masse', sature
 const VERT = '#15803d', ORANGE = '#b45309';
 const alea = l => l[Math.floor(Math.random() * l.length)];
 const VOLUMES = [50, 100, 200, 250, 500];
+const SEL = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
+const Choix = ({ nom, val, set, options }) => <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 8 }}>{nom}<select value={val} onChange={e => set(e.target.value)} aria-label={nom} style={{ ...SEL, marginTop: 2 }}>{options.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>;
 const DEFAUT = { sol: 'KMnO4', V: 250, m: 0.1 };
 
-function Dissolution({ P }) {
+function Dissolution({ P, anim = null }) {
   const s = soluteDe(P.sol), d = dissolution(P.m, P.V, s.sol), t = d.t;
-  const pts = P.m <= 0 ? 0 : Math.round(60 + 160 * Math.pow(d.dissous / d.max, 0.3));
+  // rejeu (exploration) : le solide du fond se dissout peu à peu, les points se répandent et la couleur se renforce
+  const f0 = anim ? Math.min(1, anim.t / 4.5) : 1, f = 1 - (1 - f0) * (1 - f0);
+  const ptsFin = P.m <= 0 ? 0 : Math.round(60 + 160 * Math.pow(d.dissous / d.max, 0.3)), pts = Math.round(ptsFin * f);
+  const solFin = d.sature ? Math.min(1, 0.3 + d.solide / d.max) : 0, solide = anim && P.m > 0 ? solFin + (Math.max(solFin, 0.5) - solFin) * (1 - f) : solFin;
   return (
     <svg viewBox="0 0 560 300" width="100%" role="img" aria-label={`Fiole de ${P.V} mL contenant ${fr(P.m, 2)} g de ${s.nom}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
-      <Fiole cx={122} niveau={1} couleur={s.couleur} alpha={teinte(s.id === 'KMnO4' ? t : t / 40)} pts={pts} solide={d.sature ? Math.min(1, 0.3 + d.solide / d.max) : 0} volume={P.V} id="d" pale couleurPts={s.point}/>
+      <Fiole cx={122} niveau={1} couleur={s.couleur} alpha={teinte(s.id === 'KMnO4' ? t * f : t * f / 40)} pts={pts} solide={solide} volume={P.V} id="d" pale couleurPts={s.point}/>
       <g fontSize="14" fill="#0f172a">
         <text x="248" y="36" fontWeight="800">Soluté : {s.court}</text><text x="248" y="54" fontSize="12.5" fill={KIT.txt2}>{s.nom}</text>
         <text x="248" y="76">Solvant : eau</text>
@@ -160,6 +166,7 @@ export function SimulationDissolution() {
   const [proto, setProto] = useState({ n: 0, msg: null, err: 0 });
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(6.5, true), animD = enExplore && (LA.joue || LA.t > 0) ? LA : null;
   const s = soluteDe(P.sol);
   const Pdefi = enDefi && defi.type === 'sature' && defi.verifie ? { sol: defi.sol, V: defi.V, m: defi.m } : null;
 
@@ -231,11 +238,8 @@ export function SimulationDissolution() {
   const maxM = Math.round(s.sol * P.V / 1000 * 1.6 * 100) / 100, pasM = maxM > 30 ? 0.5 : maxM > 3 ? 0.05 : 0.01;
   const controles = (
     <div style={{ marginTop: 8 }}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Soluté :</span>
-        {SOLUTES.map(x => <button key={x.id} onClick={() => setP(p => ({ ...p, sol: x.id, m: Math.min(p.m, Math.round(x.sol * p.V / 1000 * 1.6 * 100) / 100) }))} style={stylePetitBouton(P.sol === x.id, '#0b4f94')}>{x.court}</button>)}
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2, marginLeft: 8 }}>Fiole :</span>
-        {[50, 100, 250, 500].map(v => <button key={v} onClick={() => setP(p => ({ ...p, V: v }))} style={stylePetitBouton(P.V === v, '#0b4f94')}>{v} mL</button>)}</div>
+      <Choix nom="Soluté" val={P.sol} set={v => setP(p => { const x = SOLUTES.find(y => y.id === v); return { ...p, sol: v, m: Math.min(p.m, Math.round(x.sol * p.V / 1000 * 1.6 * 100) / 100) }; })} options={SOLUTES.map(x => [x.id, x.court])}/>
+      <Choix nom="Fiole jaugée" val={P.V} set={v => setP(p => ({ ...p, V: +v }))} options={[50, 100, 250, 500].map(v => [v, `${v} mL`])}/>
       <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Masse pesée : <strong>{fr(P.m, 2)} g</strong>
         <input type="range" min="0" max={maxM} step={pasM} value={Math.min(P.m, maxM)} aria-label="Masse de soluté en grammes" onChange={e => setP(p => ({ ...p, m: +e.target.value }))} style={{ width: '100%' }}/></label>
       <label style={{ fontSize: 13.5, fontWeight: 600 }}>ou tapez la masse : <input type="number" min="0" step="0.01" value={P.m} aria-label="Masse tapée en grammes" onChange={e => setP(p => ({ ...p, m: Math.max(0, +e.target.value || 0) }))} style={{ width: 80, padding: '3px 6px' }}/> g</label>
@@ -251,10 +255,8 @@ export function SimulationDissolution() {
   const panneauHypo = <div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>;
   const planche = (
     <div style={styleBoite}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Atelier :</span>
-        {[['dissolution', '🧪 Dissoudre'], ['protocole', '🥼 Protocole de la fiole']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>
-      {atelier === 'dissolution' ? <><Dissolution P={P}/>{controles}</> : <><Protocole P={P} proto={proto} setProto={setProto}/>{controles}</>}
+      <Choix nom="Atelier" val={atelier} set={setAtelier} options={[['dissolution', '🧪 Dissoudre'], ['protocole', '🥼 Protocole de la fiole']]}/>
+      {atelier === 'dissolution' ? <><Dissolution P={P} anim={animD}/>{enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>Regardez le solide se dissoudre : les particules se répartissent dans toute la solution, qui se colore.</div><Commandes L={LA}/></div>}{controles}</> : <><Protocole P={P} proto={proto} setProto={setProto}/>{controles}</>}
     </div>);
   const aEssayer = (
     <div style={styleBoite}>
