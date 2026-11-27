@@ -83,7 +83,7 @@ export default {
     { id: 'ir-comparer', nom: 'Comparer des spectres IR et décrire l’appareil', capacite: 'Comparer les caractéristiques d’une espèce synthétisée avec celles d’une espèce commerciale en interprétant des spectres IR (transformation, espèce attendue, impuretés) ; expliquer succinctement le fonctionnement d’un spectrophotomètre IR.',
       refs: [...['irc-ana-esterification', 'irc-ana-impurete-eau', 'irc-ana-superposable', 'irc-ana-appareil', 'irc-ana-fond'].map(A), ...['irc-val-pur', 'irc-val-memes-groupes'].map(Vp)] },
     { id: 'fluo-spectrofluorimetrie', nom: 'Spectrofluorimétrie : spectres d’excitation et d’émission', capacite: 'Différencier spectre d’excitation de fluorescence et spectre d’émission de fluorescence ; exploiter des mesures en spectrofluorimétrie.',
-      refs: [...['spf-ana-emission', 'spf-ana-excitation', 'spf-ana-position', 'spf-ana-concentration'].map(A), ...['spf-val-detection', 'spf-val-deux-spectres'].map(Vp)] },
+      refs: [...['spf-ana-emission', 'spf-ana-excitation', 'spf-ana-position', 'spf-ana-concentration', 'spf-ana-pyrene', 'spf-ana-fentes'].map(A), ...['spf-val-detection', 'spf-val-deux-spectres', 'spf-val-melange'].map(Vp)] },
   ],
   'bts-rmn': [
     { id: 'appareil', nom: 'L’appareil, le solvant et la référence', capacite: 'Adopter une attitude appropriée à proximité de champs magnétiques intenses ; connaître le rôle du solvant deutéré et du TMS.',

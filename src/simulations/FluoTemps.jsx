@@ -121,10 +121,11 @@ const phrase = (mol, lt, P) => {
   if (P.phos > 0.01) return `La fluorescence est éteinte. ${pct(P.T1)} des molécules sont piégées dans T₁ : le retour T₁ → S₀ change le spin, il est lent, d’où la phosphorescence${lt > Math.log10(0.05) ? ', visible à l’œil après l’arrêt du flash' : ''}.`;
   return 'Toutes les molécules sont revenues dans S₀ : l’échantillon n’émet plus rien.';
 };
-export function VueTemps() {
+export function VueTemps({ lt0, molFixe, onLt }) {
   const reduit = reduitMouvement();
-  const [molId, setMolId] = useState('B'), [lt, setLt] = useState(reduit ? -9 : LT0), [joue, setJoue] = useState(!reduit), [sel, setSel] = useState(''), [invite, setInvite] = useState(true);
-  const mol = M.MOLS[molId], P = M.populations(mol, 10 ** lt), pos = useRef(LT0);
+  const [molId, setMolId] = useState(molFixe ?? 'B'), [lt, setLt] = useState(lt0 ?? (reduit ? -9 : LT0)), [joue, setJoue] = useState(lt0 == null && !reduit), [sel, setSel] = useState(''), [invite, setInvite] = useState(true);
+  const mol = M.MOLS[molId], P = M.populations(mol, 10 ** lt), pos = useRef(lt0 ?? LT0);
+  useEffect(() => { onLt?.(lt); }, [lt, onLt]);
   useEffect(() => {
     if (!joue) return undefined;
     let id, last = null;
@@ -145,10 +146,10 @@ export function VueTemps() {
     `}</style>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
       <button onClick={lancer} aria-pressed={joue} style={styleBouton(joue, '#16a34a')}>{joue ? '⏸ Pause' : '▶ Flash à t = 0'}</button>
-      <div role="group" aria-label="Molécule" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+      {!molFixe && <div role="group" aria-label="Molécule" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
         <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Molécule</span>
         {[['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => { setMolId(k); setSel(''); }} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>)}
-      </div>
+      </div>}
       <span style={{ fontSize: 15, fontWeight: 700, color: KIT.txt }}>t = {txtT(lt)}</span>
     </div>
     <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: 42 }}>

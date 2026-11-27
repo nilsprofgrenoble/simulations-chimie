@@ -8,7 +8,7 @@ import { K, T } from "./schemaOutils";
 import * as X from "./fluoTirages";
 import * as D from "./fluoDispositif";
 import { reduitMouvement } from "./hookHorloge";
-import { KIT, stylePetitBouton, styleBouton } from "../commun";
+import { KIT, stylePetitBouton, styleBouton, Section } from "../commun";
 
 const NB = ' ';
 const fr2 = v => v.toFixed(2).replace('.', ',').replace('-', '−');
@@ -196,15 +196,18 @@ function Spectre({ mode, mol, opt, lamS, lamF, grille, pts, comptage, compte, on
 
 // ---------- vue complète ----------
 const groupe = (titre, enfant) => (<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}><span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700, marginRight: 2 }}>{titre}</span>{enfant}</div>);
-export function VueDispositif() {
-  const reduit = reduitMouvement();
-  const [mode, setMode] = useState('abs'), [molId, setMolId] = useState('A'), [cond, setCond] = useState('solution'), [fente, setFente] = useState(5);
-  const [comptage, setComptage] = useState(false), [compte, setCompte] = useState(COMPTE0), [lecture, setLecture] = useState(false);
+// guide (parcours guidé) : { mode, mol, comptage, conditions, onCompte } ; les réglages non utiles à l'étape sont cachés
+export function VueDispositif({ guide = null }) {
+  const reduit = reduitMouvement(), md0 = guide?.mode ?? 'abs', cp0 = !!guide?.comptage;
+  const [mode, setMode] = useState(md0), [molId, setMolId] = useState(guide?.mol ?? 'A'), [cond, setCond] = useState('solution'), [fente, setFente] = useState(5);
+  const [comptage, setComptage] = useState(cp0), [compte, setCompte] = useState(COMPTE0), [lecture, setLecture] = useState(false), [ouvReg, setOuvReg] = useState(false);
   const mol = X.MOLS_T[molId], sigC = D.CONDITIONS[cond].sig, opt = { sig: sigC, fente }, pas = D.pasDe(sigC);
-  const [lamF, setLamF] = useState(350);
-  const [acq, setAcq] = useState(() => (reduit ? { lamS: 350, pts: plein('abs', D.pasDe(D.OPT0.sig)) } : { lamS: SCAN.abs[0], pts: {} }));
-  const [scan, setScan] = useState(!reduit), [invite, setInvite] = useState(true);
-  const pos = useRef(SCAN.abs[0]), drag = useRef(null);
+  const [lamF, setLamF] = useState(() => D.fixeDefaut(md0, X.MOLS_T[guide?.mol ?? 'A']));
+  const [acq, setAcq] = useState(() => (reduit && !cp0 ? { lamS: Math.max(SCAN[md0][0], Math.min(SCAN[md0][1], 350)), pts: plein(md0, D.pasDe(D.OPT0.sig)) } : { lamS: SCAN[md0][0], pts: {} }));
+  const [scan, setScan] = useState(!reduit && !cp0), [invite, setInvite] = useState(true);
+  const pos = useRef(SCAN[md0][0]), drag = useRef(null);
+  const onCompte = guide?.onCompte;
+  useEffect(() => { onCompte?.(compte.n); }, [compte.n, onCompte]);
   const lamS = acq.lamS, grille = D.courbe(mol, mode, lamF, pas, opt);
   useEffect(() => {
     if (!scan) return undefined;
@@ -280,18 +283,19 @@ export function VueDispositif() {
         .fl-pulse { animation: fl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes fl-pulse { 50% { transform: scale(1.6); } } }
     `}</style>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+      {!guide && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         {groupe('Spectre', MODES.map(([k, l]) => { const off = (k === 'ph' && !mol.T) || (k === 'abs' && comptage);
           return <button key={k} onClick={() => choisirMode(k)} disabled={off} aria-pressed={mode === k} title={k === 'ph' && !mol.T ? 'Molécule B seulement' : k === 'abs' && comptage ? 'En absorption, on compare deux intensités : passez en « Intensité »' : undefined} style={{ ...stylePetitBouton(mode === k, '#16a34a'), opacity: off ? 0.45 : 1 }}>{l}</button>; }))}
         {groupe('Molécule', [['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => choisirMol(k)} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>))}
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+      </div>}
+      {(!guide || guide.conditions) && (() => { const reg = <><div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
         {groupe('Échantillon', Object.values(D.CONDITIONS).map(c => <button key={c.id} onClick={() => choisirCond(c.id)} aria-pressed={cond === c.id} style={stylePetitBouton(cond === c.id, '#0f766e')}>{c.court}</button>))}
         {groupe('Fentes', D.FENTES.map(f => <button key={f} onClick={() => choisirFente(f)} aria-pressed={fente === f} title="bande passante des monochromateurs" style={stylePetitBouton(fente === f, '#0f766e')}>{f}{NB}nm</button>))}
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.45 }}>{D.CONDITIONS[cond].cause}{fente >= 10 && cond !== 'solution' ? ' Avec des fentes de 10 nm, l’appareil écrase une partie de cette structure : elle existe, mais on ne la voit plus.' : ''}</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.45, marginTop: 4 }}>{D.CONDITIONS[cond].cause}{fente >= 10 && cond !== 'solution' ? ' Avec des fentes de 10 nm, l’appareil écrase une partie de cette structure : elle existe, mais on ne la voit plus.' : ''}</div></>;
+        return guide ? <div>{reg}</div> : <Section titre={`Échantillon et appareil : ${D.CONDITIONS[cond].court} · fentes ${fente}${NB}nm`} ouvert={ouvReg} onBascule={() => setOuvReg(o => !o)}><div style={{ padding: '0 10px 8px' }}>{reg}</div></Section>; })()}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-        {groupe('Mesure', [[false, 'Intensité (balayage)'], [true, 'Compter les photons']].map(([c, l]) => <button key={l} onClick={() => choisirComptage(c)} aria-pressed={comptage === c} style={stylePetitBouton(comptage === c, '#334155')}>{l}</button>))}
+        {!guide && groupe('Mesure', [[false, 'Intensité (balayage)'], [true, 'Compter les photons']].map(([c, l]) => <button key={l} onClick={() => choisirComptage(c)} aria-pressed={comptage === c} style={stylePetitBouton(comptage === c, '#334155')}>{l}</button>))}
         {comptage ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
           {[1, 100, 1000, 10000].map(k => <button key={k} onClick={() => envoyer(k)} style={stylePetitBouton(false)}>{k === 1 ? '1 photon' : `× ${k.toLocaleString('fr-FR')}`}</button>)}
           <button onClick={() => setLecture(l => !l)} aria-pressed={lecture} style={stylePetitBouton(lecture, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Un par un'}</button>
