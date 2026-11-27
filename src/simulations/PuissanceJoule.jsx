@@ -3,7 +3,8 @@ import { useSignalerMode, declarerDefis, modeOuverture } from "../suivi";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireNombre, proche, avecIndices } from "../commun";
 import { fr, chauffe, C_EAU } from "./elecModele";
-import { BLEU, VERMILLON, alea } from "./elecOutils";
+import { BLEU, VERMILLON, alea, usePhase, pointsSurFil } from "./elecOutils";
+import { reduitMouvement } from "./hookHorloge";
 import { Curseur, VoletDefiGen, Graphe } from "./elecCommun";
 import { Pic } from "../Pictos";
 import { SchemaChaine, SchemaUI, SchemaJoule, SchemaRendement, SchemaCalo, SchemaBilan } from "./PuissanceJouleSchemas";
@@ -100,6 +101,10 @@ export function SimulationPuissanceJoule() {
   const [Ca, setCa] = useState({ U: 12.34, I: 1.98, m: 0.2, pertes: true, t: 300 });
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const [anim, setAnim] = useState(() => !reduitMouvement()), ph = usePhase(enExplore && anim), mv = enExplore && anim ? ph : null;
+  const commandeAnim = enExplore && <button type="button" onClick={() => setAnim(a => !a)} style={{ ...stylePetitBouton(false), marginTop: 6 }}>{anim ? '⏸ Arrêter le mouvement' : '▶ Voir le mouvement'}</button>;
+  // grains de chaleur qui s'éloignent d'un point (dx, dy) : n grains, hauteur h
+  const chaleur = (x0, w, y0, h, n, cle) => mv === null ? null : Array.from({ length: n }, (_, k) => { const f = ((mv * 0.45 + k / n) % 1); return <circle key={cle + k} cx={x0 + ((k * 0.618) % 1) * w} cy={y0 + f * h} r="4" fill={VERMILLON} opacity={(1 - f) * 0.85}/>; });
   const voir = (at, p) => { setAtelier(at); if (p) { if (at === 'dipole') setA(a => ({ ...a, ...p })); if (at === 'joule') setJ(j => ({ ...j, ...p })); if (at === 'rendement') setRd(r => ({ ...r, ...p })); if (at === 'ligne') setL(l => ({ ...l, ...p })); } };
 
   // calculs
@@ -286,8 +291,12 @@ export function SimulationPuissanceJoule() {
         <text x="280" y="82" fontSize="27" fontWeight="800" textAnchor="middle">R = {J.R} Ω</text>
         <text x="280" y="28" fontSize="20" fontWeight="800" textAnchor="middle" fill={VERMILLON}>chaleur dégagée : {fP(Pj)}</text>
         <text x="95" y="62" fontSize="20" fontWeight="800" textAnchor="middle" fill={VERMILLON}>I = {fr(J.I, 2)} A →</text><text x="465" y="62" fontSize="20" fontWeight="800" textAnchor="middle" fill={BLEU}>U = {fr(Uj, 1)} V</text>
-        <text x="280" y="150" fontSize="20" fontWeight="700" textAnchor="middle" fill={GRIS_T}>plus la puissance est grande, plus il rougit</text>
+        {mv !== null && pointsSurFil([[20, 75], [540, 75]], -(30 + 40 * J.I), mv, 26).map(([x, y], k) => (x > 170 && x < 390) || x < 40 || x > 520 ? null : <circle key={'e' + k} cx={x} cy={y} r="4.5" fill={BLEU} stroke="#fff" strokeWidth="1"/>)}
+        {mv !== null && pointsSurFil([[170, 100], [390, 100]], -(30 + 40 * J.I), mv, 22).map(([x, y], k) => <circle key={'r' + k} cx={x} cy={y + Math.sin(mv * 9 + k * 2) * 3.5} r="4" fill={BLEU} opacity="0.8"/>)}
+        {chaleur(176, 208, 112, 30, 2 + Math.round(8 * Math.min(1, Pj / 150)), 'ch')}
+        <text x="280" y="158" fontSize="20" fontWeight="700" textAnchor="middle" fill={GRIS_T}>plus la puissance est grande, plus il rougit</text>
       </svg>
+      {commandeAnim}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Résistance R" val={J.R} min={5} max={100} pas={1} set={v => setJ(j => ({ ...j, R: v }))} unite=" Ω"/>
         <Curseur nom="Intensité I" val={J.I} min={0.1} max={3} pas={0.1} set={v => setJ(j => ({ ...j, I: v }))} unite=" A"/>
@@ -305,8 +314,11 @@ export function SimulationPuissanceJoule() {
         <line x1="124" y1="61" x2="436" y2="61" stroke="#0f172a" strokeWidth={Math.max(2, Math.min(8, IL / 400))}/>
         <text x="280" y="48" fontSize="20" fontWeight="800" textAnchor="middle" fill={VERMILLON}>I = {fr(IL, 0)} A</text>
         <text x="280" y="96" fontSize="19.5" fontWeight="700" textAnchor="middle" fill={GRIS_T}>ligne de {L.L} km : r = {fr(rL, 0)} Ω</text>
+        {mv !== null && pointsSurFil([[124, 61], [436, 61]], 30 + 130 * Math.min(1, IL / 5000), mv, 24).map(([x, y], k) => <circle key={'l' + k} cx={x} cy={y} r="4.5" fill={BLEU} stroke="#fff" strokeWidth="1"/>)}
+        {chaleur(140, 280, 64, 16, 1 + Math.round(9 * Math.min(1, pcL / 40)), 'cl')}
         <text x="280" y="124" fontSize="19.5" fontWeight="800" textAnchor="middle" fill={pcL > 10 ? VERMILLON : BLEU}>pertes : {fr(PjL, 2)} MW ({fr(Math.min(pcL, 999), 1)} %)</text>
       </svg>
+      {commandeAnim}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Puissance transportée P" val={L.P} min={10} max={200} pas={10} set={v => setL(l => ({ ...l, P: v }))} unite=" MW"/>
         <Curseur nom="Tension de la ligne U" val={L.U} min={20} max={400} pas={10} set={v => setL(l => ({ ...l, U: v }))} unite=" kV"/>
