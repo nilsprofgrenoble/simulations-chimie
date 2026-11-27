@@ -22,7 +22,7 @@ const ETAPES = {
   abs: ['On balaie la longueur d’onde de la lampe.', 'À chaque λ, on compare la lumière avant la cuve (I₀) et après (I).', 'On trace A = log(I₀ / I) : le spectre d’absorption.'],
   em: ['On fixe l’excitation dans la bande d’absorption (en haut).', 'On balaie le monochromateur de détection.', 'On trace l’intensité émise à chaque λ : le spectre d’émission.'],
   ex: ['On fixe la détection sur une couleur émise (λ dét., en haut).', 'On balaie la longueur d’onde de la lampe : la molécule émet toujours la même bande, plus ou moins intense.', 'On trace la hauteur lue à λ dét. : elle suit l’absorption.'],
-  ph: ['Un flash excite l’échantillon, puis la lampe s’éteint.', 'On attend un court délai : la fluorescence (quelques ns) est déjà finie.', 'On balaie la détection pendant que T₁ se vide : seul le spectre de phosphorescence est enregistré.'],
+  ph: ['Un flash de 350 nm excite l’échantillon, puis la lampe s’éteint.', 'On attend un court délai (frise du montage) : la fluorescence, qui dure quelques ns, est déjà finie.', 'On balaie la détection pendant que T₁ se vide : on enregistre le spectre de phosphorescence seul.'],
 };
 const ETAPES_C = {
   em: ['On fixe l’excitation (en haut).', 'Chaque photon émis traverse le réseau et tombe sur le pixel de sa longueur d’onde.', 'Chaque pixel compte ses photons : le spectre se construit.'],
@@ -62,7 +62,16 @@ function Montage({ mode, mol, lamExc, lamDet, sig, A, comptage, nCoups, opt }) {
     <rect x="64" y="98" width="84" height="44" rx="7" fill="#f5f3ff" stroke="#7c3aed" strokeWidth="2"/>
     {[0, 1, 2, 3, 4, 5].map(i => <line key={i} x1={82 + i * 9} y1="110" x2={90 + i * 9} y2="130" stroke="#7c3aed" strokeWidth="1.6"/>)}
     {T(106, 70, 'monochromateur', { size: 15, gras: true, fill: '#6d28d9' })}{T(106, 88, 'd’excitation', { size: 15, gras: true, fill: '#6d28d9' })}
-    {!ph && <>{T(106, 164, lamExc == null ? '—' : nm(lamExc), { size: 17, gras: true, fill: '#6d28d9' })}{T(106, 182, mode === 'abs' || mode === 'ex' ? (comptage ? 'au hasard' : 'balayé') : 'fixé', { size: 15, fill: K.gris })}</>}
+    {ph ? <>{T(106, 164, nm(lamExc ?? 350), { size: 17, gras: true, fill: '#6d28d9' })}{T(106, 182, 'flash', { size: 15, fill: K.gris })}</>
+      : <>{T(106, 164, lamExc == null ? '—' : nm(lamExc), { size: 17, gras: true, fill: '#6d28d9' })}{T(106, 182, mode === 'abs' || mode === 'ex' ? (comptage ? 'au hasard' : 'balayé') : 'fixé', { size: 15, fill: K.gris })}</>}
+    {ph && (() => { const x0 = 14, x1 = 182, yb = 250, xd = 70, yp = x => yb - 26 * Math.exp(-(x - x0 - 4) / 70);
+      let d = `M${x0 + 2},${yb} L${x0 + 4},${yp(x0 + 4)}`; for (let x = x0 + 8; x <= x1 - 6; x += 6) d += ` L${x},${yp(x).toFixed(1)}`;
+      return <g><rect x={xd} y="212" width={x1 - 6 - xd} height={yb - 212} fill="#f97316" opacity=".14" stroke="#ea580c" strokeDasharray="4 3"/>
+        <rect x={x0 - 1} y="210" width="4" height={yb - 210} fill="#7c3aed"/><path d={d} fill="none" stroke="#b91c1c" strokeWidth="2.2"/>
+        <path d={`M${x0 + 2},${yb} L${x0 + 4},${yb - 36} L${x0 + 8},${yb - 3} L${x0 + 11},${yb}`} fill="#bbf7d0" stroke="#15803d" strokeWidth="1.8"/>
+        <line x1={x0} y1={yb} x2={x1} y2={yb} stroke="#334155" strokeWidth="1.4"/><polygon points={`${x1 + 6},${yb} ${x1 - 2},${yb - 4} ${x1 - 2},${yb + 4}`} fill="#334155"/>
+        {T(x0 - 2, 204, 'flash', { size: 13, gras: true, fill: '#6d28d9', anchor: 'start' })}{T((xd + x1) / 2, 228, 'mesure', { size: 13, gras: true, fill: '#c2410c' })}
+        {T(x0 + 34, 222, 'attente', { size: 12.5, fill: K.gris })}{T(x1 + 4, yb + 13, 'temps', { size: 13, fill: K.gris, anchor: 'end' })}</g>; })()}
     {!abs && glow > 0.03 && <circle cx={CX} cy={CY} r="40" fill="url(#fl-glow)" opacity={Math.min(1, glow + 0.15)}/>}
     {!abs && glow > 0.03 && [0, 45, 90, 135, 180, 225, 270, 315].map(a => { const r = Math.PI * a / 180; return <line key={a} x1={CX + 25 * Math.cos(r)} y1={CY + 25 * Math.sin(r)} x2={CX + 35 * Math.cos(r)} y2={CY + 35 * Math.sin(r)} stroke={cGlow} strokeWidth="2.4" opacity={Math.min(1, glow + 0.2)}/>; })}
     <rect x={CX - 22} y={CY - 22} width="44" height="44" rx="4" fill={abs ? '#f5f3ff' : '#f0fdf4'} stroke="#334155" strokeWidth="2.2"/>
@@ -144,19 +153,15 @@ function Spectre({ mode, mol, opt, lamS, lamF, grille, pts, comptage, compte, on
       {raie(lamF, opt.fente, col)}<circle cx={xL(lamF)} cy={yt(D.absRel(mol, lamF, opt))} r="5" fill={col} stroke="#fff" strokeWidth="2"/>
       {pill(xL(lamF), 22, `exc. ${nm(lamF)}`, col, 'pf')}</g>;
   } else if (mode === 'ph') {
-    const x0 = PX0 + 10, xd = PX0 + 0.3 * (PX1 - PX0), yb = YT, h = 64, hp = 0.5 * h;
-    const yp = x => yb - hp * Math.exp(-(x - x0 - 4) / (0.5 * (PX1 - x0)));
-    let dp = `M${x0},${yb} L${x0 + 4},${yp(x0 + 4)}`; for (let x = x0 + 8; x <= PX1; x += 6) dp += ` L${x},${yp(x).toFixed(1)}`;
+    const fF = D.forme(mol, 'fl', opt), fP = D.forme(mol, 'ph', opt), zone = (f, y) => `${chemin(f, y)} L${xL(f[f.length - 1].lam)},${YT} L${xL(f[0].lam)},${YT} Z`;
+    const lF = 350, cF = D.couleurLam(lF, 0.7);
     haut = <g>
-      <rect x={xd} y="34" width={PX1 - xd} height={yb - 34} fill="#f97316" opacity=".12" stroke="#ea580c" strokeWidth="1.5" strokeDasharray="5 4"/>
-      {T(PX1 - 6, 50, 'fenêtre de mesure, après un délai', { size: 13.5, fill: '#c2410c', anchor: 'end', gras: true })}
-      <rect x={x0 - 3} y="34" width="6" height={yb - 34} rx="2" fill="#7c3aed"/>{T(x0, 26, 'flash', { size: 13.5, fill: '#6d28d9', gras: true })}
-      <path d={dp} fill="none" stroke="#b91c1c" strokeWidth="2.6"/>
-      <path d={`M${x0 + 1},${yb} L${x0 + 3},${yb - 0.95 * h} L${x0 + 9},${yb - 6} L${x0 + 16},${yb}`} fill="#bbf7d0" stroke="#15803d" strokeWidth="2.2"/>
-      {T(x0 + 14, 66, 'fluorescence (ns)', { size: 13.5, fill: '#15803d', anchor: 'start', gras: true, halo: true })}
-      {T(PX1 - 4, yp(PX1 - 4) - 8, 'phosphorescence (lente)', { size: 13.5, fill: '#b91c1c', anchor: 'end', gras: true, halo: true })}
-      <line x1={PX0} y1={yb} x2={PX1} y2={yb} stroke="#94a3b8" strokeWidth="1.2"/>
-      {T(PX1, 126, '↑ en fonction du temps : on mesure après la fluorescence', { size: 13.5, fill: K.txt, anchor: 'end', gras: true })}</g>;
+      <path d={zone(fP, yt)} fill="#fee2e2" fillOpacity=".8" stroke="#b91c1c" strokeWidth="2.2"/>
+      <path d={chemin(fF, yt)} fill="none" stroke="#64748b" strokeWidth="1.8" strokeDasharray="5 4"/>
+      {raie(lF, opt.fente, cF)}{pill(xL(lF), 22, 'flash 350 nm', cF, 'pf')}
+      {T(xL(383), 58, 'fluorescence', { size: 13, fill: '#475569', gras: true, anchor: 'start', halo: true })}{T(xL(383), 74, '(déjà éteinte)', { size: 13, fill: '#475569', anchor: 'start', halo: true })}
+      {T(PX1 - 2, 70, 'phosphorescence', { size: 13, fill: '#b91c1c', gras: true, anchor: 'end', halo: true })}
+      {T(PX1, 126, '↑ au moment de la mesure, seule la phosphorescence reste', { size: 13.5, fill: K.txt, anchor: 'end', gras: true })}</g>;
   } else {
     const f = D.forme(mol, 'em', opt), k = mode === 'ex' ? D.absRel(mol, comptage && compte.dernier?.lamIn ? compte.dernier.lamIn : lamS, opt) : 1;
     const g = f.map(p => ({ lam: p.lam, s: p.s * k }));
