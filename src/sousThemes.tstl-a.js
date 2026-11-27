@@ -162,6 +162,10 @@ export default {
       refs: ['37:prevoir:biot-ana-longueur', '37:prevoir:biot-ana-dilution', '37:prevoir:biot-ana-racemique', '37:prevoir:biot-ana-enantiomere', '77:plausible:biot-val-cm', '77:plausible:biot-val-ee', '34:biot-sapp-alpha', '34:biot-sapp-ee', '36:biot-alpha', '36:biot-ee'] },
     { id: 'mesomerie', nom: 'Mésomérie : formes limites, hybride et forme la plus probable', capacite: 'Identifier les formes mésomères de molécules ou d’ions simples en exploitant des schémas de Lewis fournis.',
       refs: ['37:prevoir:meso-ana-invariants', '37:prevoir:meso-ana-carbonate', '37:prevoir:meso-ana-allyle', '37:prevoir:meso-ana-enolate', '77:plausible:meso-val-octet', '77:plausible:meso-val-probable', '34:meso-sapp-electrons', '34:meso-sapp-hybride', '36:meso-formelle', '36:meso-hybride'] },
+    { id: 'geometrie-intermediaires', nom: 'Géométrie des carbocations, carbanions et radicaux', capacite: 'Prévoir la géométrie d’un carbocation et d’un carbanion à partir de la méthode VSEPR.',
+      refs: ['37:prevoir:sta-ana-geometrie', '77:plausible:sta-val-plan', '34:sta-sapp-electrons', '36:sta-electrons'] },
+    { id: 'stabilite-produit-majoritaire', nom: 'Stabilité des intermédiaires et produit majoritaire', capacite: 'Comparer la stabilité de carbocations et de carbanions pour interpréter le produit majoritaire d’un mécanisme fourni.',
+      refs: ['37:prevoir:sta-ana-cations', '37:prevoir:sta-ana-attracteur', '37:prevoir:sta-ana-majoritaire', '77:plausible:sta-val-tertiaire', '34:sta-sapp-classe', '36:sta-donneurs'] },
   ],
   'tstl-mesure': [
     { id: 'type-A', nom: 'Série de mesures : incertitude-type de type A', capacite: 'Évaluer l’incertitude-type de type A d’une série de mesures répétées et prévoir l’effet du nombre de mesures et de la dispersion.',

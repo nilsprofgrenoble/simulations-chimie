@@ -2650,6 +2650,54 @@ function genMesoHybride() {
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3], retenir: ['Pour des formes équivalentes : ordre moyen et charge moyenne = moyenne simple sur toutes les écritures.', 'Dans l’hybride, la charge est répartie (δ) et les liaisons sont intermédiaires.'] };
 }
+function genStaElectrons() {
+  const CAS = [
+    { nom: 'carbocation', nl: 3, lp: 0, ec: 0, desc: 'un carbocation : son atome de carbone est lié par trois liaisons simples, sans doublet non liant ni électron célibataire' },
+    { nom: 'carbanion', nl: 3, lp: 1, ec: 0, desc: 'un carbanion : son atome de carbone est lié par trois liaisons simples et porte un doublet non liant' },
+    { nom: 'radical', nl: 3, lp: 0, ec: 1, desc: 'un radical : son atome de carbone est lié par trois liaisons simples et porte un électron célibataire' },
+  ];
+  const c = tire(CAS), elec = 2 * c.nl + 2 * c.lp + c.ec, grp = c.nl + c.lp, qf = 4 - 2 * c.lp - c.ec - c.nl;
+  const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v);
+  const intro = `On étudie ${c.desc}.`;
+  const q1 = { id: 's0', type: 'num', q: <>Combien d’<b>électrons</b> entourent le carbone (liaisons, doublet non liant et électron célibataire compris) ?</>, unite: '', vrai: elec, tolRel: 0.03, csMin: 1,
+    aide: 'Chaque liaison compte pour 2 électrons autour du carbone, chaque doublet non liant pour 2, chaque électron célibataire pour 1.',
+    pieges: [[2 * c.nl, 'Vous n’avez compté que les électrons des liaisons.'], [elec + 2, 'Vous avez compté un doublet ou un électron de trop.']].filter(pg => pg[0] !== elec && pg[0] > 0),
+    expl: <>{c.nl} × 2 + {c.lp} × 2 + {c.ec} = <b>{elec}</b> électrons.</> };
+  const q2 = { id: 's1', type: 'num', q: <>Combien de <b>groupes d’électrons</b> (liaisons et doublets non liants) entourent le carbone, selon la méthode VSEPR ?</>, unite: '', vrai: grp, tolRel: 0.03, csMin: 1,
+    aide: 'Groupes d’électrons = liaisons + doublets non liants (un électron célibataire n’est pas compté comme un doublet).',
+    pieges: [[elec, 'Vous avez donné le nombre d’électrons : comptez les groupes (une liaison = un groupe).']].filter(pg => pg[0] !== grp),
+    expl: <>{c.nl} liaisons + {c.lp} doublet{c.lp > 1 ? 's' : ''} non liant{c.lp > 1 ? 's' : ''} = <b>{grp}</b> groupes{grp === 3 ? ' : AX₃E₀, géométrie trigonale plane' : ' : AX₃E₁, géométrie pyramidale'}.</> };
+  const q3 = { id: 's2', type: 'num', q: <>Quelle est la <b>charge formelle</b> du carbone (avec son signe) ?</>, unite: 'e', vrai: qf, tolRel: 0.03, csMin: 1,
+    aide: 'Charge formelle = 4 (électrons de valence du carbone) − (2 × doublets non liants + électrons célibataires) − nombre de liaisons.',
+    pieges: [[-qf, 'Le signe est à revoir.']].filter(pg => pg[0] !== qf),
+    expl: <>Charge formelle = 4 − (2 × {c.lp} + {c.ec}) − {c.nl} = <b>{sg(qf)}</b>.</> };
+  const qs = qf === 0 ? [q1, q2] : [q1, q2, q3];
+  filtrer(qs);
+  return { intro, questions: qs, retenir: ['Carbocation : 6 électrons autour de C, AX₃E₀, plan. Carbanion : 8 électrons, AX₃E₁, pyramidal. Radical : 7 électrons.', 'Groupes d’électrons = liaisons + doublets non liants.'] };
+}
+function genStaDonneurs() {
+  let a, b;
+  do { a = tire([0, 1, 2, 3]); b = tire([0, 1, 2, 3]); } while (a + b > 3 || a === b);
+  const h = 3 - a - b, att = tire(['Cl', 'C≡N']);
+  const liste = [a ? `${a} groupe${a > 1 ? 's' : ''} CH₃ (donneur${a > 1 ? 's' : ''})` : null, b ? `${b} groupe${b > 1 ? 's' : ''} ${att} (attracteur${b > 1 ? 's' : ''})` : null, h ? `${h} atome${h > 1 ? 's' : ''} d’hydrogène` : null].filter(Boolean).join(', ');
+  const intro = `Le carbone central d’un intermédiaire est lié à ${liste}. On définit l’indice de stabilité d’un carbocation par : nombre de groupes donneurs − nombre de groupes attracteurs (un indice plus grand = plus stable).`;
+  const ic = a - b;
+  const q1 = { id: 'd0', type: 'num', q: <>Quel est l’<b>indice de stabilité du carbocation</b> ? (avec son signe)</>, unite: '', vrai: ic, tolRel: 0.03, csMin: 1,
+    aide: 'Indice = nombre de groupes donneurs (CH₃) − nombre de groupes attracteurs.',
+    pieges: [[-ic, 'Le signe est inversé : les donneurs comptent positivement pour un carbocation.'], [a + b, 'Les attracteurs se retranchent : indice = donneurs − attracteurs.']].filter(pg => pg[0] !== ic && pg[0] !== 0),
+    expl: <>Indice = {a} − {b} = <b>{ic > 0 ? '+' : ic < 0 ? '−' : ''}{Math.abs(ic)}</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>Pour le <b>carbanion</b> de mêmes substituants, l’indice vaut : attracteurs − donneurs. Quelle est sa valeur ? (avec son signe)</>, unite: '', vrai: -ic, tolRel: 0.03, csMin: 1,
+    aide: 'Pour un carbanion, les rôles sont inversés : indice = attracteurs − donneurs.',
+    pieges: [[ic, 'Pour un carbanion, ce sont les attracteurs qui stabilisent : inversez le signe.']].filter(pg => pg[0] !== -ic && pg[0] !== 0),
+    expl: <>Indice = {b} − {a} = <b>{-ic > 0 ? '+' : '−'}{Math.abs(ic)}</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>Quelle est la <b>classe</b> du carbocation (nombre de groupes alkyles CH₃ liés au carbone) ?</>, unite: '', vrai: a, tolRel: 0.03, csMin: 1,
+    aide: 'La classe est le nombre de groupes alkyles liés au carbone chargé.',
+    pieges: [[b, 'Vous avez compté les attracteurs : la classe compte les groupes alkyles.']].filter(pg => pg[0] !== a),
+    expl: <>La classe est le nombre de groupes alkyles : <b>{a}</b>.</> };
+  const qs = [q1, q2]; if (a > 0 && a !== ic && a !== -ic) qs.push(q3);
+  filtrer(qs);
+  return { intro, questions: qs, retenir: ['Carbocation : stabilisé par les donneurs, déstabilisé par les attracteurs.', 'Carbanion : stabilisé par les attracteurs, déstabilisé par les donneurs (ordre inversé).'] };
+}
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
@@ -7141,6 +7189,8 @@ export const FAMILLES = [
   { id: 'biot-ee', groupe: 'Formules', titre: 'Mélange d’énantiomères : excès énantiomérique et pouvoir rotatoire (terminale STL)', gen: genBiotEE, domaine: 'Pouvoir rotatoire et loi de Biot' },
   { id: 'meso-formelle', groupe: 'Formules', titre: 'Charge formelle et octet d’un atome dans une écriture de Lewis (terminale STL)', gen: genMesoFormelle, domaine: 'Mésomérie' },
   { id: 'meso-hybride', groupe: 'Formules', titre: 'Hybride de résonance : formes, ordre de liaison et charge moyens (terminale STL)', gen: genMesoHybride, domaine: 'Mésomérie' },
+  { id: 'sta-electrons', groupe: 'Formules', titre: 'Électrons, groupes d’électrons et charge formelle du carbone d’un intermédiaire (terminale STL)', gen: genStaElectrons, domaine: 'Stabilité des intermédiaires' },
+  { id: 'sta-donneurs', groupe: 'Formules', titre: 'Indice de stabilité d’un carbocation et d’un carbanion : donneurs et attracteurs (terminale STL)', gen: genStaDonneurs, domaine: 'Stabilité des intermédiaires' },
   { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },

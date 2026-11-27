@@ -3203,5 +3203,17 @@
  "77:plausible:meso-val-octet": "VAL826",
  "77:plausible:meso-val-probable": "VAL827",
  "36:meso-formelle": "REA238",
- "36:meso-hybride": "REA239"
+ "36:meso-hybride": "REA239",
+ "34:sta-sapp-electrons.0": "SAPP715",
+ "34:sta-sapp-electrons.1": "SAPP716",
+ "34:sta-sapp-classe.0": "SAPP717",
+ "34:sta-sapp-classe.1": "SAPP718",
+ "37:prevoir:sta-ana-geometrie": "ANA1426",
+ "37:prevoir:sta-ana-cations": "ANA1427",
+ "37:prevoir:sta-ana-attracteur": "ANA1428",
+ "37:prevoir:sta-ana-majoritaire": "ANA1429",
+ "77:plausible:sta-val-plan": "VAL828",
+ "77:plausible:sta-val-tertiaire": "VAL829",
+ "36:sta-electrons": "REA240",
+ "36:sta-donneurs": "REA241"
 }
