@@ -19,6 +19,7 @@ import { TSOL_ANA } from './tsolExos.js';
 import { FILT_ANA } from './filtreExos.js';
 import { GAB_ANA } from './gabExos.js';
 import { AMP_ANA } from './ampExos.js';
+import { BIOT_ANA } from './biotExos.js';
 import { CLP_ANA } from './chutePlaneExos.js';
 import { NWR_ANA } from './newtonRectExos.js';
 import { MTR_ANA } from './modesTransfertExos.js';
@@ -7344,6 +7345,7 @@ export const PREVOIR = [
   ...FILT_ANA,
   ...GAB_ANA,
   ...AMP_ANA,
+  ...BIOT_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,

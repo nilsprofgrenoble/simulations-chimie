@@ -158,6 +158,8 @@ export default {
       refs: ['34:meca-stabilite', '34:meca-mesomerie', '34:meca-geometrie'] },
     { id: 'meca-stereo', nom: 'Mécanisme et stéréochimie', capacite: 'Relier un mécanisme à la stéréochimie des produits (mélange racémique, excès énantiomérique).',
       refs: ['34:meca-racemique', '34:meca-stereo-relations', '34:meca-biot'] },
+    { id: 'biot-polarimetre', nom: 'Pouvoir rotatoire, loi de Biot et excès énantiomérique', capacite: 'Exploiter la loi de Biot et déterminer l’excès énantiomérique d’un mélange à partir de la valeur de son pouvoir rotatoire.',
+      refs: ['37:prevoir:biot-ana-longueur', '37:prevoir:biot-ana-dilution', '37:prevoir:biot-ana-racemique', '37:prevoir:biot-ana-enantiomere', '77:plausible:biot-val-cm', '77:plausible:biot-val-ee', '34:biot-sapp-alpha', '34:biot-sapp-ee', '36:biot-alpha', '36:biot-ee'] },
   ],
   'tstl-mesure': [
     { id: 'type-A', nom: 'Série de mesures : incertitude-type de type A', capacite: 'Évaluer l’incertitude-type de type A d’une série de mesures répétées et prévoir l’effet du nombre de mesures et de la dispersion.',

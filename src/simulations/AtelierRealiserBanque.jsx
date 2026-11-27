@@ -2561,6 +2561,45 @@ function genAmpDecalage() {
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3], retenir: ['Us = A × Ue + Vdc : la tension continue décale tout le signal.', 'Pour que tout le signal tienne dans la plage, Vdc − A × Ue,max ≥ 0 et Vdc + A × Ue,max ≤ 5 V.'] };
 }
+function genBiotAlpha() {
+  const A = tire([44, 50, 60]), Lc = tire([15, 20, 25, 30]), C = tire([0.04, 0.05, 0.08, 0.1, 0.12, 0.15, 0.2]), L = Lc / 10, alpha = A * L * C, k = tire([0.5, 1.5, 2]);
+  const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1), a2 = alpha * k, C2 = C * k;
+  const intro = `Un énantiomère dextrogyre pur, de pouvoir rotatoire spécifique [α] = +${A}${NB}°·dm⁻¹·g⁻¹·mL, est dissous à la concentration C = ${g(C)}${NB}g/mL. La solution est placée dans une cuve de longueur ${Lc}${NB}cm.`;
+  const q1 = { id: 'b0', type: 'num', q: <>Quel est le <b>pouvoir rotatoire α</b> mesuré, en ° ?</>, unite: '°', vrai: alpha, tolRel: 0.03, csMin: 2,
+    aide: 'Loi de Biot : α = [α] × L × C, avec L en décimètres (1 dm = 10 cm) et C en g/mL.',
+    pieges: [[alpha * 10, 'Vous avez utilisé L en centimètres : la loi de Biot demande des décimètres (1 dm = 10 cm).'], [A * C, 'Vous avez oublié la longueur L de la cuve : α = [α] × L × C.']],
+    expl: <>L = {Lc}{NB}cm = {g1(L)}{NB}dm ; α = {A} × {g1(L)} × {g(C)} = <b>+{g(alpha)}{NB}°</b>.</> };
+  const q2 = { id: 'b1', type: 'num', q: <>On dilue la solution pour diviser sa concentration par 2, puis on mesure dans la même cuve. Quel est le nouveau <b>pouvoir rotatoire</b>, en ° ?</>, unite: '°', vrai: alpha / 2, tolRel: 0.03, csMin: 2,
+    aide: 'α est proportionnel à la concentration C : C divisée par 2, α divisé par 2.',
+    pieges: [[alpha, 'Vous avez redonné la valeur avant dilution : α diminue quand C diminue.'], [alpha * 2, 'Vous avez multiplié par 2 : une dilution diminue α.']],
+    expl: <>α est proportionnel à C : α = {g(alpha)} ÷ 2 = <b>+{g(alpha / 2)}{NB}°</b>.</> };
+  const q3 = { id: 'b2', type: 'num', q: <>Dans la même cuve, une autre solution du même énantiomère pur donne α = +{g(a2)}{NB}°. Quelle est sa <b>concentration</b>, en g/mL ?</>, unite: 'g/mL', vrai: C2, tolRel: 0.03, csMin: 2,
+    aide: 'C = α ÷ ([α] × L), avec L en décimètres.',
+    pieges: [[a2 / A, 'Vous avez oublié de diviser par la longueur L de la cuve : C = α ÷ ([α] × L).'], [a2 / (A * Lc), 'Vous avez utilisé L en centimètres : convertissez-la en décimètres.']],
+    expl: <>C = {g(a2)} ÷ ({A} × {g1(L)}) = <b>{g(C2)}{NB}g/mL</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['α = [α] × L × C : L en décimètres, C en g/mL.', 'α est proportionnel à L et à C ; pour retrouver C : C = α ÷ ([α] × L).'] };
+}
+function genBiotEE() {
+  const A = tire([44, 50, 60]), L = tire([1, 2]), C = tire([0.1, 0.2]), apur = A * L * C, ee = tire([20, 40, 50, 60, 80]), s = tire([1, -1]);
+  const sg = s > 0 ? '(+)' : '(−)', autre = s > 0 ? '(−)' : '(+)', maj = (100 + ee) / 2, mino = (100 - ee) / 2;
+  const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1), g0 = v => FM.nbf(v, 0), sgn = v => (v > 0 ? '+' : '−') + g(Math.abs(v));
+  const intro = `Un mélange des deux énantiomères d’un composé chiral (pouvoir rotatoire spécifique ±${A}${NB}°·dm⁻¹·g⁻¹·mL pour chacun des énantiomères purs) contient ${g0(maj)}${NB}% de l’énantiomère ${sg} et ${g0(mino)}${NB}% de l’énantiomère ${autre}. Il est placé dans une cuve de ${L * 10}${NB}cm, à la concentration totale C = ${g1(C)}${NB}g/mL.`;
+  const q1 = { id: 'e0', type: 'num', q: <>Quel est l’<b>excès énantiomérique</b> du mélange, en % ?</>, unite: '%', vrai: ee, tolRel: 0.03, csMin: 2,
+    aide: 'e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100.',
+    pieges: [[maj, 'Vous avez donné la proportion de l’énantiomère majoritaire. L’excès est la différence entre les deux proportions.'], [ee / 100, 'Votre valeur est une fraction : multipliez par 100 pour l’exprimer en %.']],
+    expl: <>e.e. = |{g0(maj)} − {g0(mino)}| ÷ 100 × 100 = <b>{g0(ee)}{NB}%</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>Quel pouvoir rotatoire <b>α</b> mesure-t-on pour ce mélange, en ° (avec son signe) ?</>, unite: '°', vrai: s * ee / 100 * apur, tolRel: 0.03, csMin: 2,
+    aide: 'α = e.e. × α de l’énantiomère pur, avec le signe de l’énantiomère en excès. α pur = [α] × L × C (L en dm).',
+    pieges: [[s * apur, 'Vous avez donné α de l’énantiomère pur : le mélange tourne moins, d’un facteur e.e.'], [-s * ee / 100 * apur, 'Le signe de α est celui de l’énantiomère en excès.']],
+    expl: <>α pur = {A} × {g1(L)} × {g1(C)} = {g(apur)}{NB}° ; α = {g0(ee)}{NB}% × {g(apur)} = <b>{sgn(s * ee / 100 * apur)}{NB}°</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>Quelle est la <b>concentration</b> de l’énantiomère minoritaire {autre}, en g/mL ?</>, unite: 'g/mL', vrai: C * mino / 100, tolRel: 0.03, csMin: 2,
+    aide: 'Concentration de l’énantiomère minoritaire = C × (sa proportion).',
+    pieges: [[C * maj / 100, 'Vous avez donné la concentration de l’énantiomère majoritaire.'], [C * ee / 100, 'Vous avez multiplié par l’excès énantiomérique, qui n’est pas la proportion de l’énantiomère minoritaire.']],
+    expl: <>{g1(C)} × {g0(mino)} ÷ 100 = <b>{FM.nbf(C * mino / 100, 3)}{NB}g/mL</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100 : 0 % pour un racémique, 100 % pour un énantiomère pur.', 'α = e.e. × α de l’énantiomère pur, au signe de l’énantiomère en excès.'] };
+}
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
@@ -7048,6 +7087,8 @@ export const FAMILLES = [
   { id: 'gab-cascade', groupe: 'Formules', titre: 'Passe-bande en cascade : facteur d’amplification (terminale STL)', gen: genGabCascade, domaine: 'Filtrage et amplification de tension' },
   { id: 'amp-gain', groupe: 'Formules', titre: 'Amplificateur : tension de sortie et plage du CAN (terminale STL)', gen: genAmpGain, domaine: 'Filtrage et amplification de tension' },
   { id: 'amp-decalage', groupe: 'Formules', titre: 'Tension continue ajoutée : centrer un signal dans la plage du CAN (terminale STL)', gen: genAmpDecalage, domaine: 'Filtrage et amplification de tension' },
+  { id: 'biot-alpha', groupe: 'Formules', titre: 'Loi de Biot : pouvoir rotatoire, dilution et concentration (terminale STL)', gen: genBiotAlpha, domaine: 'Pouvoir rotatoire et loi de Biot' },
+  { id: 'biot-ee', groupe: 'Formules', titre: 'Mélange d’énantiomères : excès énantiomérique et pouvoir rotatoire (terminale STL)', gen: genBiotEE, domaine: 'Pouvoir rotatoire et loi de Biot' },
   { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },
