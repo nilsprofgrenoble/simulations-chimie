@@ -17,6 +17,26 @@ const onde = (x1, y, x2, col, haut = 4.5) => {
 };
 const ElecPt = ({ x, y }) => <g><circle cx={x} cy={y} r="6.5" fill="#2563eb" stroke="#fff" strokeWidth="1.3"/>{T(x, y + 3.6, '−', { size: 11, fill: '#fff', gras: true })}</g>;
 
+
+// ---------- flamme vivante : légère oscillation du sommet et intensité qui varie (CSS, sans re-rendu) ----------
+const CSS_FLAMME = `
+@keyframes flm-vacille { 0%,100% { transform: skewX(0deg) scale(1, 1); } 22% { transform: skewX(2.4deg) scale(1.012, 1.035); } 48% { transform: skewX(-1.8deg) scale(0.99, 0.972); } 73% { transform: skewX(1.5deg) scale(1.015, 1.02); } }
+@keyframes flm-intensite { 0%,100% { opacity: 0.66; } 20% { opacity: 0.84; } 45% { opacity: 0.7; } 70% { opacity: 0.9; } }
+@keyframes flm-coeur { 0%,100% { opacity: 0.55; } 30% { opacity: 0.9; } 60% { opacity: 0.65; } 85% { opacity: 0.95; } }
+.flm-corps, .flm-milieu, .flm-coeur { transform-box: fill-box; transform-origin: 50% 100%; }
+.flm-corps { animation: flm-vacille 2.4s ease-in-out infinite, flm-intensite 1.3s ease-in-out infinite; }
+.flm-milieu { animation: flm-vacille 1.8s ease-in-out infinite reverse, flm-intensite 0.95s ease-in-out infinite; }
+.flm-coeur { animation: flm-vacille 1.3s ease-in-out infinite, flm-coeur 0.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .flm-corps, .flm-milieu, .flm-coeur { animation: none; } }`;
+const FlammeVivante = ({ d, bx, by }) => {
+  const anim = !reduitMouvement(), cl = c => (anim ? c : undefined), at = (kx, ky) => `translate(${bx},${by}) scale(${kx},${ky}) translate(${-bx},${-by})`;
+  return (<g>{anim && <style>{CSS_FLAMME}</style>}
+    <path className={cl('flm-corps')} d={d} fill="#fef3c7" stroke="#d97706" strokeWidth="1.6" opacity={anim ? undefined : 0.8}/>
+    <g transform={at(0.66, 0.7)}><path className={cl('flm-milieu')} d={d} fill="#fde68a" opacity={anim ? undefined : 0.7}/></g>
+    <g transform={at(0.36, 0.42)}><path className={cl('flm-coeur')} d={d} fill="#fffbeb" opacity={anim ? undefined : 0.85}/></g>
+  </g>);
+};
+
 // ---------- trajet : p de 0 à 1 le long de la flamme ----------
 export function SceneTrajet({ p, el }) {
   const st = M.etapeDe(p), u = (p * 4) % 1, y = 192 - 158 * p, x = 150 + 7 * Math.sin(p * 17);
@@ -28,7 +48,7 @@ export function SceneTrajet({ p, el }) {
     : <g><line x1={x - 6} y1={y} x2={x + 6} y2={y} stroke="#334155" strokeWidth="3"/><circle cx={x - 8} cy={y} r="7.5" fill="#fde68a" stroke="#92400e" strokeWidth="1.6"/><circle cx={x + 9} cy={y} r="6.5" fill="#bbf7d0" stroke="#166534" strokeWidth="1.6"/>{T(x - 8, y + 3.6, el.s, { size: 9, gras: true })}</g>;
   else { const dd = lerp(6, 26, u); corps = <g><circle cx={x - dd} cy={y} r="8" fill="#fde68a" stroke="#92400e" strokeWidth="1.8"/>{T(x - dd, y + 3.8, el.s, { size: 10, gras: true })}{Array.from({ length: nCl(el) }, (_, i) => <g key={i}><circle cx={x + dd + 7 * i * 1.5} cy={y - (i ? 11 : 0)} r="6" fill="#bbf7d0" stroke="#166534" strokeWidth="1.6"/>{T(x + dd + 7 * i * 1.5, y - (i ? 11 : 0) + 3.2, 'Cl', { size: 8, gras: true })}</g>)}</g>; }
   return (<svg role="img" aria-label="Trajet d'une goutte de solution dans la flamme : nébulisation, désolvatation, vaporisation, atomisation" viewBox="0 0 340 226" width="100%" style={svgStyle}>
-    <path d="M150,208 C108,170 118,120 138,86 C148,66 140,44 160,12 C168,38 196,52 190,90 C204,122 210,170 170,208 Z" fill="#fef3c7" stroke="#d97706" strokeWidth="1.6" opacity="0.75"/>
+    <FlammeVivante d="M150,208 C108,170 118,120 138,86 C148,66 140,44 160,12 C168,38 196,52 190,90 C204,122 210,170 170,208 Z" bx={160} by={208}/>
     <rect x="132" y="206" width="56" height="14" rx="3" fill="#94a3b8"/>{T(160, 217, 'brûleur', { size: 10.5, fill: '#fff', gras: true })}
     {[0, 1, 2, 3].map(i => { const act = i === st; return <g key={i}><line x1="20" y1={192 - 158 * i / 4 - 158 / 8} x2="320" y2={192 - 158 * i / 4 - 158 / 8} stroke={K.clair} strokeDasharray="3 4" opacity={i ? 1 : 0}/>
       {T(214, 192 - 158 * (i + 0.5) / 4 + 4, `${act ? '◄ ' : ''}${i + 1}. ${M.ETAPES_TRAJET[i].nom}`, { anchor: 'start', size: 12.5, gras: act, fill: act ? '#92400e' : K.gris })}</g>; })}
@@ -86,7 +106,7 @@ export function SceneDispositif({ mode, el, p }) {
   const out = [0, 0.33, 0.66].map(o => (p + o) % 1);
   return (<svg role="img" aria-label={abs ? "Dispositif d'absorption atomique : lampe, flamme, monochromateur, détecteur" : "Dispositif d'émission de flamme : flamme, monochromateur, détecteur"} viewBox="0 0 340 150" width="100%" style={svgStyle}>
     {abs && <g><rect x="8" y="52" width="60" height="44" rx="8" fill="#fef9c3" stroke="#a16207" strokeWidth="1.8"/>{T(38, 71, 'lampe', { size: 12, gras: true })}{T(38, 86, `à ${el.s}`, { size: 12, gras: true })}</g>}
-    <path d="M128,106 C106,86 112,62 124,48 C128,38 124,28 134,14 C139,28 152,36 148,50 C158,64 160,88 142,106 Z" fill="#fef3c7" stroke="#d97706" strokeWidth="1.6"/>{T(136, 124, 'flamme', { size: 12, gras: true })}
+    <FlammeVivante d="M128,106 C106,86 112,62 124,48 C128,38 124,28 134,14 C139,28 152,36 148,50 C158,64 160,88 142,106 Z" bx={135} by={106}/>{T(136, 124, 'flamme', { size: 12, gras: true })}
     <rect x="190" y="52" width="76" height="44" rx="8" fill="#ede9fe" stroke="#6d28d9" strokeWidth="1.8"/>{T(228, 71, 'mono-', { size: 12, gras: true })}{T(228, 86, 'chromateur', { size: 11, gras: true })}
     <rect x="292" y="52" width="44" height="44" rx="8" fill="#f1f5f9" stroke="#15803d" strokeWidth="1.8"/>{T(314, 71, 'détec-', { size: 11.5, gras: true })}{T(314, 86, 'teur', { size: 11.5, gras: true })}
     {abs ? photons.map((u, i) => <g key={i}>{u < 0.5 ? <circle cx={lerp(72, 124, u / 0.5)} cy="74" r="4.2" fill={col} stroke="#0f172a" strokeWidth="1.1"/> : u > 0.62 && i % 2 === 0 ? <circle cx={lerp(150, 192, seg(u, 0.62, 1))} cy="74" r="4.2" fill={col} stroke="#0f172a" strokeWidth="1.1"/> : null}</g>) : null}
