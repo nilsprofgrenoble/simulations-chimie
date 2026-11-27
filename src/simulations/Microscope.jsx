@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
@@ -7,6 +7,8 @@ import { Pic } from "../Pictos";
 import { puces, nbf, tire } from "./Travail";
 import * as M from "./microscopeModele";
 import { SchemaMicroscope, COUL } from "./MicroscopeSchema";
+import { useHorloge, Commandes, T_BOUCLE } from "./lentilleMinceAnim";
+import { StyleAnim } from "./exploAnim";
 import { C } from "./oeilLoupeSchema";
 
 const SIM_ID = 118;
@@ -171,6 +173,17 @@ const FICHES = {
 // ====================================================
 //  COMPOSANT
 // ====================================================
+// exploration animée : photons le long des deux rayons (même point de la rétine si l'image est à l'infini), molette saisissable sur l'objet
+function SceneAnimee({ schema, p, vmin, vmax, setP }) {
+  const L = useHorloge(T_BOUCLE, true), [touche, setTouche] = useState(false), ref = useRef(null);
+  return (
+    <div><StyleAnim/>
+      <SchemaMicroscope {...schema} lum={{ t: L.t, mode: 'boucle' }} refSvg={ref} poignee={{ p, vmin, vmax, touche, onToucher: () => setTouche(true), set: v => setP(Math.max(vmin, Math.min(vmax, v))) }}/>
+      <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 2px', lineHeight: 1.45 }}>Saisissez l’<strong>objet</strong> (le rond <strong>↔</strong> sous lui) et déplacez-le, comme avec la molette : les photons arrivent au même point de la rétine quand la mise au point est faite.</div>
+      <Commandes L={L}/>
+    </div>);
+}
+
 export function SimulationMicroscope() {
   const [mode, setMode] = useState(() => modeOuverture('microscope-guide-v1'));
   useSignalerMode(mode);
@@ -402,7 +415,10 @@ export function SimulationMicroscope() {
   // ════════════════ SCÈNE ════════════════
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <SchemaMicroscope s={s} f1={f1} f2={f2} AB={PE.AB} cotes={enExplore && cotesOn ? { p, A1B1 } : null} montre={{ inter: !enGuide || depuis('inter'), F2: !enGuide || depuis('map'), statut: !enGuide || depuis('map'), theta: enExplore || (enGuide && depuis('theta2')), noms: true }}/>
+      {(() => {
+        const schema = { s, f1, f2, AB: PE.AB, cotes: enExplore && cotesOn ? { p, A1B1 } : null, montre: { inter: !enGuide || depuis('inter'), F2: !enGuide || depuis('map'), statut: !enGuide || depuis('map'), theta: enExplore || (enGuide && depuis('theta2')), noms: true } };
+        return enExplore ? <SceneAnimee schema={schema} p={p} vmin={4} vmax={26} setP={v => maj({ pg: Math.round((v - PE.pf) * 20) / 20 })}/> : <SchemaMicroscope {...schema}/>;
+      })()}
     </div>);
   const aEssayer = indicesProfond(
     <div style={styleBoite}>
