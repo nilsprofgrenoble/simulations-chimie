@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, ExempleResolu, lireProgression, IndiceDefi } from "../commun";
@@ -97,7 +98,9 @@ const TEINTE = { H: '#f1f5f9', C: '#d6d3d1', N: '#dbeafe', O: '#fee2e2', F: '#ec
 const COR_A = '#d55e00', COR_B = '#0072b2', ENCRE = '#0f172a';       // orange / bleu : lisibles par les daltoniens
 const ANGLES = Array.from({ length: 8 }, (_, k) => (k * 45 - 90) * Math.PI / 180);
 const ecart = (a, b) => { let d = Math.abs(a - b) % (2 * Math.PI); return d > Math.PI ? 2 * Math.PI - d : d; };
-function Planche({ mol, atomes, analyse, onAtome, onDeplacer, titre, rendu = 'tirets' }) {
+function Planche({ mol: mol0, atomes, analyse, onAtome, onDeplacer, titre, rendu = 'tirets', agite = null }) {
+  // agitation (exploration) : chaque atome oscille très légèrement autour de sa position, les liaisons suivent ; le modèle n'est pas modifié
+  const mol = agite == null ? mol0 : { ...mol0, pos: mol0.pos.map((p, i) => p ? { ...p, x: p.x + 2.2 * Math.sin(agite * 6.1 + i * 1.9), y: p.y + 2.2 * Math.cos(agite * 5.3 + i * 2.7) } : p) };
   const eMode = rendu === 'electrons';
   const svg = useRef(null), drag = useRef(null);
   const pt = e => { const r = svg.current.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; };
@@ -271,6 +274,7 @@ export function SimulationAtomesMolecules() {
   const [hypoOuv, setHypoOuv] = useState(false);
   const [rendu, setRendu] = useState('tirets');          // 'electrons' (points et ovales) | 'tirets' (notation de Lewis)
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(6, true), agiteT = enExplore && (LA.joue || LA.t > 0) ? LA.t : null;
 
   const atelierEff = enDefi ? (defi.type === 'lewis' ? 'mol' : defi.type === 'ion' ? 'ion' : 'aucun') : atelier;
   const molEff = enDefi && defi.type === 'lewis' && defi.solution ? { ...molRef(defi.id), pos: mol.pos } : mol;
@@ -465,7 +469,7 @@ export function SimulationAtomesMolecules() {
   const selA = mol.sel !== null ? analyse.par[mol.sel] : null;
   const plancheDefi = (
     <div>
-      <Planche rendu={rendu} mol={molEff} atomes={atomes} analyse={analyse} onAtome={cliquerAtome} onDeplacer={deplacer} titre={`Schéma de ${moleculeDe(molEff.id).formule}`}/>
+      <Planche agite={agiteT} rendu={rendu} mol={molEff} atomes={atomes} analyse={analyse} onAtome={cliquerAtome} onDeplacer={deplacer} titre={`Schéma de ${moleculeDe(molEff.id).formule}`}/>
       {rendu === 'electrons' && <div style={{ marginTop: 4, fontSize: 12.5, color: KIT.txt2 }}>● Chaque point est un électron de valence. Dans un ovale, deux électrons sont <strong>appariés</strong> en doublet. Dans une liaison, l’électron <span style={{ color: COR_A, fontWeight: 700 }}>orange</span> vient d’un atome et l’électron <span style={{ color: COR_B, fontWeight: 700 }}>bleu</span> de l’autre.</div>}
       <div style={{ marginTop: 6, fontSize: 14, lineHeight: 1.5 }}>{verdictMol}{dernierMsg && !analyse.ok && <div style={{ color: KIT.txt, marginTop: 2 }}>💬 {dernierMsg}</div>}</div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8, alignItems: 'center' }}>
@@ -475,6 +479,7 @@ export function SimulationAtomesMolecules() {
         <button onClick={ranger} style={stylePetitBouton(false, '#334155')}>📐 Ranger le schéma</button>
         <button onClick={() => setRendu(r => (r === 'electrons' ? 'tirets' : 'electrons'))} style={stylePetitBouton(false, '#475569')} aria-label="Changer de représentation">{rendu === 'electrons' ? '● Électrons → voir les tirets' : '— Tirets → voir les électrons'}</button>
         {enExplore && <button onClick={autoDoublets} style={stylePetitBouton(false, '#4338ca')}>✨ Placer les doublets non liants pour moi</button>}
+        {enExplore && <div style={{ flexBasis: '100%' }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>Agitation : les atomes bougent un peu autour de leur place, mais les liaisons restent en place (la molécule n’est pas figée).</div><Commandes L={LA}/></div>}
         <span style={{ fontSize: 13, color: KIT.txt2 }}>{selA ? `Atome sélectionné : ${selA.sym}` : 'Cliquez sur un atome pour le sélectionner (glissez-le pour le déplacer).'}</span>
       </div>
     </div>);
