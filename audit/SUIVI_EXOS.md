@@ -313,3 +313,16 @@ Rapports : un fichier par chapitre dans audit/rapports-exos/.
 | ANA1002 | BTS | Titrages et électrochimie | Analyser | Prévoir sans calculer — Conductivité pendant un titrage par précipitat | audité | 6 |
 | VAL619 | BTS | Titrages et électrochimie | Valider | Ça paraît plausible ? — Dureté d’une eau du robinet | audité | 2 |
 | REA7 | tous | tous chapitres | Réaliser | Unités au carré, au cube (cm², mm³, L) | audité | 12 |
+
+
+## Corrections faites après l'audit (27/11/2026)
+
+- Lot 1 : VAL690, VAL684, VAL676 (repères sans la solution).
+- Lot 2 : tous les VAL (l'explication du verdict attend la fin de l'étape « Quelle erreur ? »).
+- Lot 3 : S'APP (retour de l'étape « Que demande l'énoncé ? » qui nomme la grandeur choisie et compare l'unité) ; REA (« réponse attendue » en notation scientifique quand les zéros cachent les chiffres significatifs : REA168, REA194 et voisins).
+- Lot 4 : formules en vraies fractions et racines (ANA43, ANA45, ANA1077 et exercices voisins ; la racine carrée s'écrit `sqrt(...)` dans les textes).
+- Lot 5 : vrais exposants dans les énoncés S'APP (SAPP684), apostrophes typographiques dans les banques BTS (SAPP150, SAPP153, SAPP142), signe moins des énergies de cinétique, tournure de SAPP684.
+- Lot 6 : schémas neutres pour ANA1095 et ANA1367.
+- Lot 7 : SAPP184 (le projecteur agrandit désormais).
+
+Restent à faire ou à décider : repères des autres VAL qui donnent la règle (une cinquantaine), schémas manquants (138 des exercices audités), formules restantes écrites en texte, VAL344 / REA62 / SAPP25 (hors programme), ANA332 (niveau), ANA912 (arrondi), « pèse » (SAPP377 et plus de 150 occurrences).

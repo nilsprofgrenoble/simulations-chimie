@@ -110,7 +110,7 @@ export const ENONCES = [
   // ───────────────────────────── 0. Projecteur de diapositives (1G : lentille mince)
   {
     id: 'lum1-projecteur', domaine: 'Lentille mince', titre: 'Un projecteur de diapositives', noms: ['Position de l’écran', 'Hauteur de l’image'],
-    gen: () => { const f = tire([80, 100, 120]), k = tire([1.5, 2, 3]); return { f, d: Math.round(f * k / 10), AB: tire([24, 36]), P: tire([150, 250]) }; },
+    gen: () => { const f = tire([80, 100, 120]), k = tire([1.2, 1.3, 1.5]); return { f, d: Math.round(f * k / 10), AB: tire([24, 36]), P: tire([150, 250]) }; },
     build: (p, q) => {
       const f = p.f / 1000, d = p.d / 100, OA = -d, OAp = 1 / (1 / f + 1 / OA), gam = OAp / OA, AB = p.AB / 1000;
       const tokens = {
