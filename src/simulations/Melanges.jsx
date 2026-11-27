@@ -3,6 +3,7 @@ import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suiv
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, ExempleResolu, lireProgression, avecIndices, IndiceDefi } from "../commun";
 import { fr, LIQUIDES, COLORANTS, miscible, goutte, D_HUILE, SHA, shaEau, D_EAU } from "./solutionsModele";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { FicheMisc, FicheRho, FicheSuperpose, FicheMelange, FicheSha, FicheBilanMel } from "./MelangesFiches";
 
 // ====================================================
@@ -23,29 +24,39 @@ const TITRES = { tubes: 'Prévoir un mélange', superposer: 'Qui flotte ?', gout
 const VERT = '#15803d', ORANGE = '#b45309';
 const COUL_LIQ = { eau: '#93c5fd', huile: '#fcd34d', alcool: '#e2e8f0' };
 const COUL_COL = { bleu: '#0072b2', rouge: '#d55e00' };
+const SEL = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
+const Choix = ({ nom, val, set, options }) => <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 8 }}>{nom}<select value={val} onChange={e => set(e.target.value)} aria-label={nom} style={{ ...SEL, marginTop: 2 }}>{options.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>;
 const alea = l => l[Math.floor(Math.random() * l.length)];
 const nom = id => LIQUIDES[id].nom;
 
 // ---------- tube à essais : miscibilité et colorants ----------
-function Tube({ t, l1, l2, cols }) {
+function Tube({ t, l1, l2, cols, anim = null }) {
   const un = !l2 || l2 === l1, homog = un || miscible(l1, l2);
   const couches = un ? [l1] : homog ? ['eau+alcool'] : [l1, l2].sort((a, b) => LIQUIDES[a].d - LIQUIDES[b].d);   // du haut vers le bas
   const hH = 120, y0 = 70, h = un || homog ? hH : hH / 2;
   const actifs = Object.keys(cols).filter(d => cols[d]);
   const solDans = (d, c) => (c === 'eau+alcool' ? COLORANTS[d].soluble.eau || COLORANTS[d].soluble.alcool : COLORANTS[d].soluble[c]);
   const coul = c => c === 'eau+alcool' ? '#bfdbfe' : COUL_LIQ[c];
+  // rejeu (exploration) : on agite (0,8–2,4 s), l'émulsion se forme, puis les liquides non miscibles se séparent (2,4–5,2 s)
+  const tt = anim ? anim.t : null, het = !un && !homog;
+  const agite = tt !== null && het && tt > 0.8 && tt < 2.4, mel = tt === null || !het ? 0 : tt < 0.8 ? 0 : tt < 2.4 ? 1 : Math.max(0, 1 - (tt - 2.4) / 2.8);
+  const ang = agite ? Math.sin((tt - 0.8) * 22) * 7 : 0;
   return (
     <svg viewBox="0 0 560 270" width="100%" role="img" aria-label={`Tube à essais contenant ${nom(l1)}${un ? '' : ' et ' + nom(l2)}`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <clipPath id="tb"><path d="M 110 40 L 110 190 A 40 40 0 0 0 190 190 L 190 40 Z"/></clipPath>
+      <g transform={`rotate(${ang.toFixed(2)} 150 60)`}>
       <g clipPath="url(#tb)">
         {couches.map((c, k) => <g key={c}>
-          <rect x="100" y={y0 + k * h} width="100" height={h + (k === couches.length - 1 ? 80 : 0)} fill={coul(c)} opacity="0.85"/>
+          <rect x="100" y={y0 + k * h} width="100" height={h + (k === couches.length - 1 ? 80 : 0)} fill={coul(c)} opacity={0.85 * (1 - mel)}/>
           {actifs.filter(d => solDans(d, c)).map((d, j, arr) => <rect key={d} x="100" y={y0 + k * h} width="100" height={h + (k === couches.length - 1 ? 80 : 0)} fill={COUL_COL[d]} opacity={arr.length > 1 ? 0.45 : 0.62}/>)}
         </g>)}
+        {mel > 0 && <g><rect x="100" y={y0} width="100" height={hH + 80} fill="#e2e8f0" opacity={0.9 * mel}/>
+          {Array.from({ length: 16 }, (_, k) => <circle key={k} cx={116 + (k * 37) % 70 + Math.sin(tt * 6 + k) * 4} cy={y0 + 8 + (k * 53) % (hH + 50) + Math.cos(tt * 5 + k) * 4} r={4 + k % 3} fill={coul(k % 2 ? couches[0] : couches[1])} opacity={0.85 * mel}/>)}</g>}
         {actifs.map((d, j) => { const sol = couches.some(c => solDans(d, c));
           return !sol ? <g key={d}>{[0, 1, 2, 3].map(k => <circle key={k} cx={130 + k * 12 + j * 6} cy={216 - (k % 2) * 4} r="3.5" fill={COUL_COL[d]}/>)}</g> : null; })}
       </g>
       <path d="M 110 40 L 110 190 A 40 40 0 0 0 190 190 L 190 40" fill="none" stroke="#0f172a" strokeWidth="3.5"/>
+      </g>
       <g fontSize="13" fill="#0f172a">
         {couches.map((c, k) => <text key={c} x="218" y={y0 + k * h + h / 2 + 4} fontWeight="700">{c === 'eau+alcool' ? 'eau + alcool (un seul liquide)' : nom(c)}{!homog && !un && k === 0 ? ' (en haut)' : ''}{!homog && !un && k === 1 ? ' (en bas)' : ''}</text>)}
         <text x="218" y="40" fontSize="15" fontWeight="800" fill={homog ? VERT : ORANGE}>Mélange {un ? 'd’un seul liquide' : homog ? 'homogène' : 'hétérogène'}</text>
@@ -56,9 +67,11 @@ function Tube({ t, l1, l2, cols }) {
 }
 
 // ---------- bécher de Marie Curie ----------
-function Becher({ Ve, Va, masque }) {
+function Becher({ Ve, Va, masque, anim = null }) {
   const g = goutte(Ve, Va), Vt = Ve + Va, haut = Math.min(200, 120 + Vt * 1.6), top = 232 - haut, bas = 232;
-  const cy = top + 12 + g.frac * (haut - 40), plat = g.etat !== 'suspendue' && (g.frac <= 0.12 || g.frac >= 0.88);
+  const cyFin = top + 12 + g.frac * (haut - 40), cyMil = top + haut / 2 - 8, ea = anim ? Math.min(1, anim.t / 2.6) : 1, ee = 1 - (1 - ea) * (1 - ea);
+  // rejeu : la goutte est lâchée au milieu puis monte, descend ou reste suspendue (léger balancement)
+  const cy = anim ? cyMil + (cyFin - cyMil) * ee + (g.etat === 'suspendue' ? Math.sin(anim.t * 3) * 3 : 0) : cyFin, plat = g.etat !== 'suspendue' && (g.frac <= 0.12 || g.frac >= 0.88) && (!anim || ea >= 1);
   const coul = '#d55e00';
   return (
     <svg viewBox="0 0 640 270" width="100%" role="img" aria-label={`Bécher : ${fr(Ve, 1)} mL d’eau et ${fr(Va, 1)} mL d’alcool avec une goutte d’huile`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
@@ -170,6 +183,7 @@ export function SimulationMelanges() {
   const [S, setS] = useState({ e: 60, h: 2, g: 1 });
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(6.4, true), animM = enExplore && (LA.joue || LA.t > 0) ? LA : null;
   const g = goutte(G.Ve, G.Va);
 
   const bouton = (label, faire) => <button onClick={faire} style={{ ...styleBouton(true, '#4338ca'), margin: '6px 0' }}>{label}</button>;
@@ -250,11 +264,9 @@ export function SimulationMelanges() {
   function lancer(type) { const d = nouveauDefi(type); setDefi(d); if (type === 'goutte') setG({ Ve: d.Ve, Va: 0 }); }
   function changerMode(md) { setMode(md); if (md === 'defi') lancer(defi ? defi.type : 'tubes'); }
 
-  const liquidesBtn = (cle, aucun) => <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-    <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>{cle === 'l1' ? 'Liquide 1 :' : 'Liquide 2 :'}</span>
-    {Object.keys(LIQUIDES).map(k => <button key={k} onClick={() => setT(x => ({ ...x, [cle]: k }))} style={stylePetitBouton(T[cle] === k, '#0b4f94')}>{nom(k)}</button>)}
-    {aucun && <button onClick={() => setT(x => ({ ...x, l2: null }))} style={stylePetitBouton(!T.l2, '#0b4f94')}>aucun</button>}</div>;
-  const preset = (n, a, b) => <button key={n} onClick={() => setT({ l1: a, l2: b, bleu: false, rouge: false })} style={stylePetitBouton(T.l1 === a && T.l2 === b, '#7c3aed')}>{n}</button>;
+  const liquidesBtn = (cle, aucun) => <Choix nom={cle === 'l1' ? 'Liquide 1' : 'Liquide 2'} val={T[cle] || ''} set={v => setT(x => ({ ...x, [cle]: v || null }))} options={[...(aucun ? [['', 'aucun']] : []), ...Object.keys(LIQUIDES).map(k => [k, nom(k)])]}/>;
+  const PRESETS = [['A', 'huile', 'eau', 'A : huile + eau'], ['B', 'huile', 'alcool', 'B : huile + alcool'], ['C', 'eau', 'alcool', 'C : eau + alcool']];
+  const presetSel = <Choix nom="Tubes du TP" val={(PRESETS.find(p => T.l1 === p[1] && T.l2 === p[2]) || ['perso'])[0]} set={v => { const p = PRESETS.find(q => q[0] === v); if (p) setT({ l1: p[1], l2: p[2], bleu: false, rouge: false }); }} options={[...PRESETS.map(p => [p[0], p[3]]), ['perso', 'mon choix (liquides ci-dessous)']]}/>;
   const sliderGoutte = (verrou) => (
     <div style={{ marginTop: 8 }}>
       {!verrou && <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>Volume d’eau : <strong>{G.Ve} mL</strong>
@@ -276,16 +288,15 @@ export function SimulationMelanges() {
   const defiG = enDefi && defi.type === 'goutte', defiT = enDefi && defi.type === 'tubes' && defi.verifie;
   const planche = (
     <div style={styleBoite}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Atelier :</span>
-        {[['tubes', '🧪 Tubes à essais'], ['goutte', '💧 Goutte d’huile'], ['sha', '🧴 Solution hydro-alcoolique']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>
+      <Choix nom="Atelier" val={atelier} set={setAtelier} options={[['tubes', '🧪 Tubes à essais'], ['goutte', '💧 Goutte d’huile'], ['sha', '🧴 Solution hydro-alcoolique']]}/>
       {atelier === 'tubes' && <>
-        <Tube t={`Tube : ${nom(T.l1)}${T.l2 ? ' + ' + nom(T.l2) : ''}`} l1={T.l1} l2={T.l2} cols={{ bleu: T.bleu, rouge: T.rouge }}/>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Tubes du TP :</span>{preset('A : huile + eau', 'huile', 'eau')}{preset('B : huile + alcool', 'huile', 'alcool')}{preset('C : eau + alcool', 'eau', 'alcool')}</div>
+        <Tube t={`Tube : ${nom(T.l1)}${T.l2 ? ' + ' + nom(T.l2) : ''}`} l1={T.l1} l2={T.l2} cols={{ bleu: T.bleu, rouge: T.rouge }} anim={animM}/>
+        {enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>Le tube est agité puis laissé au repos : les liquides non miscibles se séparent en deux couches, les miscibles restent un seul liquide.</div><Commandes L={LA}/></div>}
+        <div style={{ marginTop: 8 }}>{presetSel}</div>
         <div style={{ marginTop: 6, display: 'flex', flexDirection: 'column', gap: 4 }}>{liquidesBtn('l1', false)}{liquidesBtn('l2', true)}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Ajouter un colorant :</span>
             {Object.keys(COLORANTS).map(k => <button key={k} onClick={() => setT(x => ({ ...x, [k]: !x[k] }))} style={stylePetitBouton(T[k], COUL_COL[k])}>{T[k] ? '✓ ' : ''}{COLORANTS[k].nom}</button>)}</div></div></>}
-      {atelier === 'goutte' && <><Becher Ve={G.Ve} Va={G.Va} masque={false}/>{sliderGoutte(false)}</>}
+      {atelier === 'goutte' && <><Becher Ve={G.Ve} Va={G.Va} masque={false} anim={animM}/>{enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>La goutte est lâchée au milieu : elle monte, descend ou reste suspendue selon la densité du mélange.</div><Commandes L={LA}/></div>}{sliderGoutte(false)}</>}
       {atelier === 'sha' && <Sha s={S} setS={setS}/>}
     </div>);
   const aEssayer = (
