@@ -17,7 +17,7 @@ const eV = l => `${fr2(X.HC / l)}${NB}eV`;
 const COLC = { abs: '#7c3aed', ex: '#7c3aed', em: '#15803d', ph: '#b91c1c' };
 const MODES = [['abs', 'Absorption'], ['em', 'Émission'], ['ex', 'Excitation'], ['ph', 'Phosphorescence']];
 const SCAN = D.SCAN, FIXE = { em: [290, 420], ph: [290, 420], ex: [380, 600] };
-const DUREE = 9000;
+const DUREE = 14000, PAS_AFF = 2;                                   // balayage lent ; l'affichage avance par pas de 2 nm
 const ETAPES = {
   abs: ['On balaie la longueur d’onde de la lampe.', 'À chaque λ, on compare la lumière avant la cuve (I₀) et après (I).', 'On trace A = log(I₀ / I) : le spectre d’absorption.'],
   em: ['On fixe l’excitation dans la bande d’absorption (en haut).', 'On balaie le monochromateur de détection.', 'On trace l’intensité émise à chaque λ : le spectre d’émission.'],
@@ -205,7 +205,7 @@ export function VueDispositif({ guide = null }) {
   const [lamF, setLamF] = useState(() => D.fixeDefaut(md0, X.MOLS_T[guide?.mol ?? 'A']));
   const [acq, setAcq] = useState(() => (reduit && !cp0 ? { lamS: Math.max(SCAN[md0][0], Math.min(SCAN[md0][1], 350)), pts: plein(md0, D.pasDe(D.OPT0.sig)) } : { lamS: SCAN[md0][0], pts: {} }));
   const [scan, setScan] = useState(!reduit && !cp0), [invite, setInvite] = useState(true);
-  const pos = useRef(SCAN[md0][0]), drag = useRef(null);
+  const pos = useRef(SCAN[md0][0]), posAff = useRef(SCAN[md0][0]), drag = useRef(null);
   const onCompte = guide?.onCompte;
   useEffect(() => { onCompte?.(compte.n); }, [compte.n, onCompte]);
   const lamS = acq.lamS, grille = D.courbe(mol, mode, lamF, pas, opt);
@@ -213,7 +213,8 @@ export function VueDispositif({ guide = null }) {
     if (!scan) return undefined;
     const [lo, hi] = SCAN[mode], o = { sig: sigC, fente }, p = D.pasDe(sigC), g = D.courbe(mol, mode, lamF, p, o); let id, last = null;
     const f = ts => {
-      if (last != null) { const prev = pos.current, l = Math.min(hi, prev + (ts - last) / DUREE * (hi - lo)); pos.current = l; setAcq(a => ({ lamS: l, pts: marquer(a.pts, prev, l, lo, p) }));
+      if (last != null) { const l = Math.min(hi, pos.current + (ts - last) / DUREE * (hi - lo)); pos.current = l;
+        if (Math.round(l / PAS_AFF) !== Math.round(posAff.current / PAS_AFF) || l >= hi) { const prev = posAff.current; posAff.current = l; setAcq(a => ({ lamS: Math.round(l / PAS_AFF) * PAS_AFF, pts: marquer(a.pts, prev, l, lo, p) })); }
         if (l >= hi) { const m = g.reduce((b, q) => (q.s > b.s ? q : b), g[0]).lam; pos.current = m; setAcq(a => ({ ...a, lamS: m })); setScan(false); return; } }
       last = ts; id = requestAnimationFrame(f);
     };
@@ -227,8 +228,8 @@ export function VueDispositif({ guide = null }) {
   });
   const envoyerRef = useRef(envoyer);
   useEffect(() => { envoyerRef.current = envoyer; });
-  useEffect(() => { if (!lecture || !comptage) return undefined; const id = setInterval(() => envoyerRef.current(1), 160); return () => clearInterval(id); }, [lecture, comptage]);
-  const enregistrer = (md = mode, s = sigC) => { const lo = SCAN[md][0], p = D.pasDe(s); if (reduit) { setAcq({ lamS: Math.min(SCAN[md][1], Math.max(lo, 350)), pts: plein(md, p) }); return; } pos.current = lo; setAcq({ lamS: lo, pts: {} }); setScan(true); };
+  useEffect(() => { if (!lecture || !comptage) return undefined; const id = setInterval(() => envoyerRef.current(1), 900); return () => clearInterval(id); }, [lecture, comptage]);
+  const enregistrer = (md = mode, s = sigC) => { const lo = SCAN[md][0], p = D.pasDe(s); if (reduit) { setAcq({ lamS: Math.min(SCAN[md][1], Math.max(lo, 350)), pts: plein(md, p) }); return; } pos.current = lo; posAff.current = lo; setAcq({ lamS: lo, pts: {} }); setScan(true); };
   const relancer = (md, s) => { setCompte(COMPTE0); setLecture(false); setScan(false); if (!comptage) enregistrer(md, s); };
   const choisirMode = (md, m = mol) => { setScan(false); setMode(md); setLamF(D.fixeDefaut(md, m)); setCompte(COMPTE0); setLecture(false); if (!comptage) enregistrer(md); };
   const choisirMol = id => { const m = X.MOLS_T[id]; setMolId(id); choisirMode(mode === 'ph' && !m.T ? 'em' : mode, m); };
@@ -260,7 +261,8 @@ export function VueDispositif({ guide = null }) {
   const emet = comptage ? !!dern?.lamOut : mode !== 'abs' && sig > 0.02 && (mode === 'ph' || absorbe);
   const voie = comptage ? dern?.voie : mode === 'ph' ? 'phos' : D.emissionDominante(mol, lamDet ?? 450, opt);
   const nCoups = Object.values(compte.coups).reduce((a, b) => a + b, 0);
-  const phrase = comptage
+  const phrase = scan ? 'Enregistrement en cours : le repère du bas avance, et chaque mesure ajoute un point au spectre. Les valeurs s’affichent à la fin du balayage.'
+    : comptage
     ? (dern ? `Photon n° ${compte.n} : ${D.texteEvenement(dern, mode)}.` : 'Envoyez des photons un par un, puis par paquets : chaque photon suit un chemin du diagramme, tiré au hasard.')
     : mode === 'abs'
       ? (absorbe ? `À ${nm(lamExc)}, le photon (${eV(lamExc)}) peut porter la molécule de S₀ dans S₁ : il est absorbé, le détecteur reçoit moins de lumière (A = ${fr2(A)}).` : `À ${nm(lamExc)}, le photon (${eV(lamExc)}) ne correspond à aucun écart S₀ → S₁ : il traverse la cuve (A ≈ 0).`)
@@ -297,7 +299,7 @@ export function VueDispositif({ guide = null }) {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
         {!guide && groupe('Mesure', [[false, 'Intensité (balayage)'], [true, 'Compter les photons']].map(([c, l]) => <button key={l} onClick={() => choisirComptage(c)} aria-pressed={comptage === c} style={stylePetitBouton(comptage === c, '#334155')}>{l}</button>))}
         {comptage ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          {[1, 100, 1000, 10000].map(k => <button key={k} onClick={() => envoyer(k)} style={stylePetitBouton(false)}>{k === 1 ? '1 photon' : `× ${k.toLocaleString('fr-FR')}`}</button>)}
+          {[1, 100, 1000, 10000, ...(mode === 'ex' ? [100000] : [])].map(k => <button key={k} onClick={() => envoyer(k)} style={stylePetitBouton(false)}>{k === 1 ? '1 photon' : `× ${k.toLocaleString('fr-FR')}`}</button>)}
           <button onClick={() => setLecture(l => !l)} aria-pressed={lecture} style={stylePetitBouton(lecture, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Un par un'}</button>
           <button onClick={() => { setLecture(false); setCompte(COMPTE0); }} style={stylePetitBouton(false)}>Effacer</button></div>
           : <button onClick={() => (scan ? setScan(false) : enregistrer())} aria-pressed={scan} style={styleBouton(scan, '#16a34a')}>{scan ? '⏸ Pause' : '▶ Enregistrer le spectre'}</button>}
@@ -305,7 +307,7 @@ export function VueDispositif({ guide = null }) {
     </div>
     <div className="fl-et">{etapes.map((t, i) => <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '6px 8px', fontSize: 13.5, color: KIT.txt, lineHeight: 1.4 }}>
       <span style={{ flex: '0 0 auto', width: 20, height: 20, lineHeight: '20px', borderRadius: 10, background: '#15803d', color: '#fff', textAlign: 'center', fontSize: 12, fontWeight: 700 }}>{i + 1}</span>{t}</div>)}</div>
-    <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: 40 }}>{phrase}</div>
+    <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: '4.4em' }}>{phrase}</div>
     <div className="fl-pv">
       {panneau('①', 'Le montage', <Montage mode={mode} mol={mol} lamExc={lamExc} lamDet={lamDet} sig={sig} A={A} comptage={comptage} nCoups={nCoups} opt={opt}/>)}
       {panneau('②', 'Dans la molécule', <Molecule mol={mol} ph={mode === 'ph'} lamExc={mode === 'ph' ? null : lamExc} lamDet={lamDet} absorbe={absorbe} voie={voie} emet={emet} sigE={sigC} chaleur={comptage && dern?.absorbe && (dern.voie === 'nr' || dern.voie === 'nrT')}/>)}

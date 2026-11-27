@@ -11,7 +11,7 @@ import { KIT, stylePetitBouton, styleBouton } from "../commun";
 
 const NB = ' ';
 const COL = { abs: '#7c3aed', fluo: '#15803d', phos: '#b91c1c', cis: '#c2410c', nr: '#64748b' };
-const LT0 = -15, LT1 = 3, DUREE = 14000;
+const LT0 = -15, LT1 = 3, DUREE = 24000, PAS_LT = 0.25;            // l'affichage avance par quarts de décade (environ 3 fois par seconde)
 const sup = n => String(n).replace('-', '⁻').replace(/\d/g, c => '⁰¹²³⁴⁵⁶⁷⁸⁹'[c]);
 const txtT = lt => { const e = Math.floor(lt + 1e-9), m = 10 ** (lt - e); const mr = Math.round(m * 10) / 10;
   return mr >= 9.95 ? `10${sup(e + 1)}${NB}s` : mr < 1.05 ? `10${sup(e)}${NB}s` : `${String(mr).replace('.', ',')}${NB}×${NB}10${sup(e)}${NB}s`; };
@@ -117,8 +117,8 @@ function Courbes({ mol, lt, onLt, invite }) {
 const phrase = (mol, lt, P) => {
   if (lt < -13.5) return 'Le flash est absorbé en 10⁻¹⁵ s environ : les molécules montent dans des niveaux de vibration élevés de S₁ ou de S₂.';
   if (lt < -11.5) return 'Relaxation vibrationnelle et conversion interne (≈ 10⁻¹² s) : les molécules descendent au bas de S₁ sans émettre de photon (chaleur cédée au solvant).';
-  if (P.fluo > 0.01) return `${pct(P.S1)} des molécules sont encore au bas de S₁ et émettent la fluorescence (durée de vie ${Math.round(mol.tauS1 * 1e9)}${NB}ns)${mol.tauT1 ? ` ; ${pct(P.T1)} sont déjà passées dans T₁ par croisement intersystème` : ''}.`;
-  if (P.phos > 0.01) return `La fluorescence est éteinte. ${pct(P.T1)} des molécules sont piégées dans T₁ : le retour T₁ → S₀ change le spin, il est lent, d’où la phosphorescence${lt > Math.log10(0.05) ? ', visible à l’œil après l’arrêt du flash' : ''}.`;
+  if (P.fluo > 0.01) return `Les molécules attendent au bas de S₁ (durée de vie ${Math.round(mol.tauS1 * 1e9)}${NB}ns) et le quittent en émettant la fluorescence${mol.tauT1 ? ', ou en passant dans T₁ par croisement intersystème' : ''}.`;
+  if (P.phos > 0.01) return `La fluorescence est éteinte. Des molécules sont piégées dans T₁ : le retour T₁ → S₀ change le spin, il est lent, d’où la phosphorescence${lt > Math.log10(0.05) ? ', visible à l’œil après l’arrêt du flash' : ''}.`;
   return 'Toutes les molécules sont revenues dans S₀ : l’échantillon n’émet plus rien.';
 };
 export function VueTemps({ lt0, molFixe, onLt }) {
@@ -129,7 +129,7 @@ export function VueTemps({ lt0, molFixe, onLt }) {
   useEffect(() => {
     if (!joue) return undefined;
     let id, last = null;
-    const f = ts => { if (last != null) { const l = Math.min(LT1, pos.current + (ts - last) / DUREE * (LT1 - LT0)); pos.current = l; setLt(l); if (l >= LT1) { setJoue(false); return; } } last = ts; id = requestAnimationFrame(f); };
+    const f = ts => { if (last != null) { const l = Math.min(LT1, pos.current + (ts - last) / DUREE * (LT1 - LT0)); pos.current = l; const q = Math.round(l / PAS_LT) * PAS_LT; setLt(v => (v === q ? v : q)); if (l >= LT1) { setJoue(false); return; } } last = ts; id = requestAnimationFrame(f); };
     id = requestAnimationFrame(f);
     return () => cancelAnimationFrame(id);
   }, [joue]);
@@ -150,9 +150,9 @@ export function VueTemps({ lt0, molFixe, onLt }) {
         <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Molécule</span>
         {[['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => { setMolId(k); setSel(''); }} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>)}
       </div>}
-      <span style={{ fontSize: 15, fontWeight: 700, color: KIT.txt }}>t = {txtT(lt)}</span>
+      <span style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, fontVariantNumeric: 'tabular-nums', minWidth: '9.5em' }}>t = {txtT(lt)}</span>
     </div>
-    <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: 42 }}>
+    <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: '4.4em' }}>
       {pr ? <><strong>{pr.nom}</strong> ({pr.duree}, {pr.radiatif ? 'avec' : 'sans'} photon) : {pr.desc}.</> : phrase(mol, lt, P)}</div>
     <div className="fl-pt">
       {panneau(1, 'Le diagramme de Perrin-Jablonski', <Diagramme mol={mol} lt={lt} P={P} sel={sel} onSel={setSel}/>)}
