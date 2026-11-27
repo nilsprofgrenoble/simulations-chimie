@@ -212,7 +212,7 @@ export const Vec = ({ n }) => <math style={{ fontSize: '1.05em' }}><mover><mi>{n
 // Les indices « pK_A » y sont aussi transformés. Les textes de part et d'autre restent du texte normal.
 function fermante(t, i) { let d = 0; for (let k = i; k < t.length; k++) { if (t[k] === '(') d++; else if (t[k] === ')' && --d === 0) return k; } return -1; }
 function mathTexte(t, cle = 'm') {
-  const out = []; let dernier = 0, k = 0, m; const re = /frac\(|10\^\(|([A-Za-zΔ]+)_([A-Za-zÀ-ÿ0-9−½]+)/g;
+  const out = []; let dernier = 0, k = 0, m; const re = /frac\(|10\^\(|sqrt\(|([A-Za-zΔ]+)_([A-Za-zÀ-ÿ0-9−½]+)/g;
   const txt = (x) => { if (x) out.push(<mtext key={`${cle}t${k++}`}>{x.replace(/ /g, '\u00a0')}</mtext>); };
   while ((m = re.exec(t))) {
     if (m[0] === 'frac(') {
@@ -222,6 +222,11 @@ function mathTexte(t, cle = 'm') {
       if (coupe < 0) continue;
       txt(t.slice(dernier, m.index));
       out.push(<mfrac key={`${cle}f${k++}`}><mrow>{mathTexte(dedans.slice(0, coupe), `${cle}n${k}`)}</mrow><mrow>{mathTexte(dedans.slice(coupe + 1), `${cle}d${k}`)}</mrow></mfrac>);
+      dernier = f + 1; re.lastIndex = dernier;
+    } else if (m[0] === 'sqrt(') {
+      const f = fermante(t, m.index + 4); if (f < 0) continue;
+      txt(t.slice(dernier, m.index));
+      out.push(<msqrt key={`${cle}q${k++}`}><mrow>{mathTexte(t.slice(m.index + 5, f), `${cle}r${k}`)}</mrow></msqrt>);
       dernier = f + 1; re.lastIndex = dernier;
     } else if (m[0] === '10^(') {
       const f = fermante(t, m.index + 3); if (f < 0) continue;
@@ -236,12 +241,12 @@ function mathTexte(t, cle = 'm') {
   txt(t.slice(dernier));
   return out;
 }
-const RE_MATHS = /frac\(|10\^\(/;
+const RE_MATHS = /frac\(|10\^\(|sqrt\(/;
 function avecMaths(t) {
   const out = []; let reste = t, k = 0;
   while (reste) {
     const m = RE_MATHS.exec(reste); if (!m) { out.push(<span key={`r${k++}`}>{avecIndices(reste)}</span>); break; }
-    const ouvre = m.index + (m[0] === 'frac(' ? 4 : 3), f = fermante(reste, ouvre);
+    const ouvre = m.index + (m[0] === '10^(' ? 3 : 4), f = fermante(reste, ouvre);
     if (f < 0) { out.push(<span key={`r${k++}`}>{avecIndices(reste)}</span>); break; }
     if (m.index > 0) out.push(<span key={`r${k++}`}>{avecIndices(reste.slice(0, m.index))}</span>);
     if (m[0] === 'frac(') {

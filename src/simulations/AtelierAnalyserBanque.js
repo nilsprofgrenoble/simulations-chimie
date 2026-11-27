@@ -734,11 +734,11 @@ export const PROBLEMES = [
       ['température 22 °C', false, 'Elle ne change ni l’écart ni l’incertitude-type dans cet exercice.'],
     ],
     relations: { options: [
-      V('u = s / √n : l’incertitude-type de la moyenne', 'La moyenne de n mesures est plus précise qu’une mesure seule, d’un facteur √n.'),
+      V('u = frac(s|sqrt(n)) : l’incertitude-type de la moyenne', 'La moyenne de n mesures est plus précise qu’une mesure seule, d’un facteur √n.'),
       V('compatible si |moyenne − référence| ≤ 2·u', 'C’est le critère de l’énoncé.'),
       F('u = s', 's décrit la dispersion d’une mesure isolée, pas la précision de la moyenne.'),
-      F('u = s × √n', 'Ce serait plus grand que s : répéter les mesures dégraderait la précision, ce qui est absurde.'),
-      F('u = s / n', 'Le facteur de réduction est √n, pas n.'),
+      F('u = s × sqrt(n)', 'Ce serait plus grand que s : répéter les mesures dégraderait la précision, ce qui est absurde.'),
+      F('u = frac(s|n)', 'Le facteur de réduction est √n, pas n.'),
     ] },
     hypotheses: { options: [
       V('Les 10 mesures sont indépendantes et faites dans les mêmes conditions', 'C’est ce qui autorise à utiliser u = s/√n.'),
@@ -764,7 +764,7 @@ export const PROBLEMES = [
       F('Oui : 0,8 mL est inférieur à 2·s = 1,8 mL', 'On a comparé à 2·s au lieu de 2·u : s est la dispersion d’une mesure isolée, pas l’incertitude de la moyenne.'),
       F('Oui : 0,8 mL est inférieur à s = 0,9 mL', 'Le critère utilise l’incertitude-type de la moyenne u, pas l’écart-type s.'),
     ] },
-    retenir: ['Incertitude-type de la moyenne : u = s / √n.', 'Compatibilité avec une référence : |x̄ − x_ref| ≤ 2·u, sinon chercher une cause d’écart.'],
+    retenir: ['Incertitude-type de la moyenne : u = frac(s|sqrt(n)).', 'Compatibilité avec une référence : |x̄ − x_ref| ≤ 2·u, sinon chercher une cause d’écart.'],
   },
   {
     id: 'nombre-mesures', domaine: 'Mesure et incertitudes', titre: 'Combien de mesures répéter ?',
@@ -782,9 +782,9 @@ export const PROBLEMES = [
       ['6 mesures préalables', false, 'Elles ont servi à estimer s (avec environ 30 % d’incertitude relative sur s) : n = 16 est donc un ordre de grandeur, à prendre avec une marge. Leur nombre n’entre pas dans le calcul de n.'],
     ],
     relations: { options: [
-      V('u = s / √n, donc n = (s / u)²', 'On isole n : √n = s/u, puis on élève au carré.'),
-      F('u = s / n, donc n = s / u', 'Le facteur de réduction est √n, pas n : il faudrait beaucoup moins de mesures que nécessaire.'),
-      F('u = s × √n', 'Répéter les mesures augmenterait u : absurde.'),
+      V('u = frac(s|sqrt(n)), donc n = (s / u)²', 'On isole n : √n = s/u, puis on élève au carré.'),
+      F('u = frac(s|n), donc n = s / u', 'Le facteur de réduction est √n, pas n : il faudrait beaucoup moins de mesures que nécessaire.'),
+      F('u = s × sqrt(n)', 'Répéter les mesures augmenterait u : absurde.'),
       F('n = s / u²', 'Erreur d’isolation : u = s/√n donne n = s²/u².'),
     ] },
     hypotheses: { options: [
@@ -1276,10 +1276,10 @@ export const RELATIONS = [
   { id: 'incertitude-type-A', domaine: 'Mesure et incertitudes', titre: 'Incertitude-type d’une moyenne',
     enonce: 'On a mesuré 9 fois la même grandeur : écart-type expérimental s = 0,6 g. On cherche l’incertitude-type u de la moyenne.',
     q: 'Quelle relation permet de répondre ?', options: [
-      V('u = s / √n', 'La moyenne de n mesures est plus précise qu’une seule d’un facteur √n : ici u = 0,6/3 = 0,2 g.'),
+      V('u = frac(s|sqrt(n))', 'La moyenne de n mesures est plus précise qu’une seule d’un facteur √n : ici u = 0,6/3 = 0,2 g.'),
       F('u = s', 's est la dispersion d’une mesure isolée, pas l’incertitude de la moyenne.'),
-      F('u = s × √n', 'Cela donnerait une incertitude plus grande que s : répéter les mesures la dégraderait.'),
-      F('u = s / n', 'Le facteur est √n, pas n.'),
+      F('u = s × sqrt(n)', 'Cela donnerait une incertitude plus grande que s : répéter les mesures la dégraderait.'),
+      F('u = frac(s|n)', 'Le facteur est √n, pas n.'),
     ] },
   { id: 'compatibilite', domaine: 'Mesure et incertitudes', titre: 'Compatibilité avec une valeur de référence',
     enonce: 'Une mesure x = 4,93 g·L⁻¹ avec une incertitude-type u = 0,04 g·L⁻¹ est comparée à une référence x_ref = 5,00 g·L⁻¹.',
@@ -1292,9 +1292,9 @@ export const RELATIONS = [
   { id: 'frequence-pas', domaine: 'Contrôle des systèmes', titre: 'Vitesse et fréquence de pas',
     enonce: 'Un moteur de N = 200 pas par tour reçoit f pas par seconde. On cherche sa vitesse n en tours par minute.',
     q: 'Quelle relation permet de répondre ?', options: [
-      V('n = 60 × f / N', 'f/N donne des tours par seconde ; × 60 pour passer en tours par minute.'),
-      F('n = f × N / 60', 'f × N est un nombre de pas au carré par seconde : on divise f par N, on ne les multiplie pas.'),
-      F('n = f / N', 'Il manque la conversion des secondes en minutes.'),
+      V('n = frac(60 × f|N)', 'f/N donne des tours par seconde ; × 60 pour passer en tours par minute.'),
+      F('n = frac(f × N|60)', 'f × N est un nombre de pas au carré par seconde : on divise f par N, on ne les multiplie pas.'),
+      F('n = frac(f|N)', 'Il manque la conversion des secondes en minutes.'),
       F('n = 1,8 × f', 'Cela donnerait des degrés par seconde (le pas vaut 1,8° pour 200 pas par tour), pas des tr/min.'),
     ] },
   { id: 'champ-aimant-distance', domaine: 'Contrôle des systèmes', titre: 'Champ d’un aimant et distance',
@@ -1577,11 +1577,11 @@ export const HYPOTHESES = [
       F('La température initiale du capteur vaut exactement 20 °C', 'Le temps de réponse à 5 % ne dépend pas des températures de départ et d’arrivée.'),
     ] },
   { id: 'type-A', domaine: 'Mesure et incertitudes', titre: 'Incertitude-type d’une série de mesures',
-    enonce: 'On estime l’incertitude-type de la moyenne de n mesures répétées par u = s / √n.', options: [
+    enonce: 'On estime l’incertitude-type de la moyenne de n mesures répétées par u = frac(s|sqrt(n)).', options: [
       V('Les mesures sont indépendantes et faites dans les mêmes conditions', 'Sinon la dispersion observée ne reflète pas l’incertitude de la moyenne.'),
       V('Il n’y a pas d’erreur systématique non corrigée', 'u ne décrit que le hasard : un décalage constant n’est pas détecté par la dispersion.'),
       V('n est assez grand pour que s estime bien la dispersion', 'Avec 3 ou 4 mesures, s est très imprécis.'),
-      F('Les mesures suivent une loi normale, quel que soit n', 'Pas nécessaire pour calculer u = s / √n. La loi normale intervient pour associer un niveau de confiance à u (par exemple 95 % avec k = 2) ; pour un petit n, on utilise plutôt la loi de Student.'),
+      F('Les mesures suivent une loi normale, quel que soit n', 'Pas nécessaire pour calculer u = frac(s|sqrt(n)). La loi normale intervient pour associer un niveau de confiance à u (par exemple 95 % avec k = 2) ; pour un petit n, on utilise plutôt la loi de Student.'),
       F('La valeur vraie de la grandeur mesurée est connue à l’avance', 'Au contraire : on ne la connaît pas, c’est pour cela qu’on estime une incertitude.'),
       F('Toutes les mesures donnent exactement la même valeur', 'Alors s = 0 et u = 0 : c’est le signe d’une résolution trop grossière, pas d’une mesure parfaite.'),
     ] },
@@ -1594,7 +1594,7 @@ export const HYPOTHESES = [
       F('Le résultat est écrit avec le bon nombre de chiffres', 'L’écriture du résultat ne change pas la décision.'),
     ] },
   { id: 'pas-complet', domaine: 'Contrôle des systèmes', titre: 'Vitesse d’un moteur pas à pas',
-    enonce: 'On calcule la vitesse d’un moteur pas à pas avec n = 60 × f / N à partir de la fréquence de pas f programmée.', options: [
+    enonce: 'On calcule la vitesse d’un moteur pas à pas avec n = frac(60 × f|N) à partir de la fréquence de pas f programmée.', options: [
       V('Le rotor suit chaque pas : aucun pas n’est perdu', 'Si des pas sont perdus, la vitesse réelle est plus faible que celle calculée.'),
       V('Tous les pas ont le même angle (pas complet, ou micro-pas réguliers)', 'Sinon le nombre N de pas par tour n’est pas constant.'),
       V('La fréquence de pas est constante (ou on travaille en moyenne)', 'La relation donne la vitesse instantanée avec la fréquence instantanée ; si la fréquence varie, on obtient seulement une vitesse moyenne à partir de la fréquence moyenne.'),
@@ -2164,7 +2164,7 @@ export const PREVOIR = [
       V('l’incertitude de type A diminue, mais l’écart de 0,20 g sur la moyenne reste', 'Répéter les mesures réduit l’effet des erreurs aléatoires, pas celui d’une erreur systématique : le biais de 0,20 g est le même à chaque pesée.'),
       F('l’incertitude de type A diminue et la moyenne se rapproche de la valeur vraie', 'La moyenne de 100 valeurs faussées de 0,20 g reste faussée de 0,20 g : répéter ne corrige pas le biais.'),
       F('l’incertitude de type A est nulle, puisque toutes les pesées sont décalées pareillement', 'L’incertitude de type A mesure la dispersion des valeurs, pas leur justesse ; des pesées jamais parfaitement identiques gardent une dispersion.'),
-      F('l’incertitude de type A augmente, car il y a plus de mesures fausses', 'Avec plus de mesures, u = s / √n diminue ; le biais n’entre pas dans la dispersion.'),
+      F('l’incertitude de type A augmente, car il y a plus de mesures fausses', 'Avec plus de mesures, u = frac(s|sqrt(n)) diminue ; le biais n’entre pas dans la dispersion.'),
     ] },
   { id: 'distance-double', domaine: 'Contrôle des systèmes', titre: 'Boussole deux fois plus loin',
     enonce: 'On éloigne la boussole d’un aimant en doublant la distance (champ de l’aimant en 1/r³).', q: 'Le champ de l’aimant est…', options: [
@@ -6802,7 +6802,7 @@ export const PREVOIR = [
     ] },
   // ───────────────────────────── Mesure et incertitudes (1G)
   { id: 'mes1g-ana-n-quadruple', domaine: 'Mesure et incertitudes (1G)', titre: 'Quadrupler le nombre de mesures d’une série',
-    enonce: 'Un élève mesure la durée d’une chute avec un chronomètre à main. Sa série de 9 mesures a un écart-type expérimental s = 0,12 s. Il refait une série de 36 mesures indépendantes, dans les mêmes conditions et avec le même chronomètre. On rappelle l’incertitude-type de type A de la moyenne : u = s / √N.', q: 'L’incertitude-type u de la moyenne, par rapport à celle de la première série, est…', options: [
+    enonce: 'Un élève mesure la durée d’une chute avec un chronomètre à main. Sa série de 9 mesures a un écart-type expérimental s = 0,12 s. Il refait une série de 36 mesures indépendantes, dans les mêmes conditions et avec le même chronomètre. On rappelle l’incertitude-type de type A de la moyenne : u = frac(s|sqrt(N)).', q: 'L’incertitude-type u de la moyenne, par rapport à celle de la première série, est…', options: [
       V('deux fois plus petite : N est multiplié par 4 et u varie comme 1 / √N', 'Avec s inchangé, u passe de s / √9 = s / 3 à s / √36 = s / 6 : elle est divisée par 2 (0,040 s puis 0,020 s).'),
       F('quatre fois plus petite : N est multiplié par 4, donc u est divisée par 4', 'Le nombre de mesures est multiplié par 4, mais u dépend de √N : elle est divisée par √4 = 2, pas par 4.'),
       F('identique : les mesures sont faites avec le même chronomètre à main', 'L’instrument fixe s, pas u : la moyenne de plus de mesures est mieux connue, donc u diminue quand N augmente.'),
@@ -6810,13 +6810,13 @@ export const PREVOIR = [
     ] },
   { id: 'mes1g-ana-s-et-n', domaine: 'Mesure et incertitudes (1G)', titre: 'L’écart-type quand N augmente',
     enonce: 'Un élève mesure 10 fois la longueur d’une feuille avec une règle graduée en millimètres et trouve un écart-type s. Il décide de faire 100 mesures, dans les mêmes conditions et avec la même règle.', q: 'L’écart-type s de la nouvelle série est probablement…', options: [
-      V('du même ordre : s décrit la dispersion d’UNE mesure, pas celle de la moyenne', 'Faire plus de mesures n’étale ni ne resserre chacune d’elles : s reste du même ordre (il est seulement mieux estimé). C’est u = s / √N qui diminue.'),
+      V('du même ordre : s décrit la dispersion d’UNE mesure, pas celle de la moyenne', 'Faire plus de mesures n’étale ni ne resserre chacune d’elles : s reste du même ordre (il est seulement mieux estimé). C’est u = frac(s|sqrt(N)) qui diminue.'),
       F('dix fois plus petit : avec dix fois plus de mesures, la dispersion diminue', 'C’est l’incertitude u de la moyenne qui diminue (en 1 / √N, soit environ 3 fois pour 10 fois plus de mesures), pas la dispersion d’une mesure.'),
       F('dix fois plus grand : avec plus de mesures, il y a plus d’écarts à cumuler', 's est une moyenne quadratique des écarts (divisée par N − 1) : il ne s’additionne pas et ne grandit pas avec N.'),
-      F('à peu près trois fois plus petit : s diminue en 1 / √N, comme l’incertitude u', 'La dépendance en 1 / √N concerne l’incertitude de la moyenne u = s / √N, pas s lui-même.'),
+      F('à peu près trois fois plus petit : s diminue en 1 / √N, comme l’incertitude u', 'La dépendance en 1 / √N concerne l’incertitude de la moyenne u = frac(s|sqrt(N)), pas s lui-même.'),
     ] },
   { id: 'mes1g-ana-systematique', domaine: 'Mesure et incertitudes (1G)', titre: 'Mille pesées avec une balance décalée',
-    enonce: 'Une balance mal tarée indique toujours 5 mg de trop. On pèse 1 000 fois une masse marquée de 20,000 g et on calcule la moyenne x̄ et l’incertitude-type de type A u = s / √N.', q: 'Par rapport à une série de 10 pesées, avec 1 000 pesées…', options: [
+    enonce: 'Une balance mal tarée indique toujours 5 mg de trop. On pèse 1 000 fois une masse marquée de 20,000 g et on calcule la moyenne x̄ et l’incertitude-type de type A u = frac(s|sqrt(N)).', q: 'Par rapport à une série de 10 pesées, avec 1 000 pesées…', options: [
       V('u est beaucoup plus petite, mais x̄ reste décalée d’environ 5 mg par rapport à 20,000 g', 'Plus de mesures réduisent u, mais le décalage est le même à chaque pesée : il ne se compense pas dans la moyenne. Un type A très petit ne prouve pas que la mesure est juste.'),
       F('u et l’écart entre x̄ et 20,000 g deviennent tous deux très petits : la moyenne corrige la balance', 'La moyenne atténue les variations aléatoires, pas un décalage systématique : l’écart à la référence reste d’environ 5 mg.'),
       F('u reste la même et l’écart entre x̄ et 20,000 g diminue : la balance se corrige avec N', 'C’est l’inverse : u diminue avec N (en 1 / √N), alors que le décalage de la balance reste le même à chaque pesée.'),
@@ -6824,7 +6824,7 @@ export const PREVOIR = [
     ] },
   { id: 'mes1g-ana-protocole', domaine: 'Mesure et incertitudes (1G)', titre: 'Chronomètre à la main ou cellule',
     enonce: 'On chronomètre 10 oscillations d’un pendule : d’abord avec un chronomètre déclenché à la main, puis avec un dispositif où une cellule photoélectrique lance et arrête le chronomètre. Dans les deux cas, on fait 15 mesures dans les mêmes conditions.', q: 'Pour la série faite avec la cellule, par rapport à la série faite à la main, on s’attend à…', options: [
-      V('un écart-type s plus petit : on réduit fortement la part due au geste', 'Le déclenchement à la main varie à chaque essai : c’est une source de dispersion. La cellule la réduit fortement, donc s diminue ; u = s / √N diminue aussi, à N identique.'),
+      V('un écart-type s plus petit : on réduit fortement la part due au geste', 'Le déclenchement à la main varie à chaque essai : c’est une source de dispersion. La cellule la réduit fortement, donc s diminue ; u = frac(s|sqrt(N)) diminue aussi, à N identique.'),
       F('un écart-type s identique : la dispersion ne dépend que du pendule', 'Le pendule est le même, mais la dispersion des mesures dépend aussi de l’instrument et du protocole : le geste de l’opérateur y contribue.'),
       F('un écart-type s plus grand : un dispositif plus compliqué ajoute des erreurs', 'Une cellule déclenche à un repère fixe : elle réduit nettement la variation d’un essai à l’autre.'),
       F('une moyenne x̄ très différente : la cellule change la durée des oscillations', 'Le dispositif ne change pas la durée du pendule ; il agit surtout sur la dispersion des mesures, pas sur leur valeur centrale.'),
