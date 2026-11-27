@@ -52,6 +52,8 @@ function Bilan({ Pe, rho, utile, pertes }) {
     </svg>);
 }
 const GRIS_T = '#475569';
+const SEL = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
+const Choix = ({ nom, val, set, options }) => <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 8 }}>{nom}<select value={val} onChange={e => set(e.target.value)} aria-label={nom} style={{ ...SEL, marginTop: 2 }}>{options.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>;
 
 // ---------- défis ----------
 function nouveauDefi(type) {
@@ -274,9 +276,8 @@ export function SimulationPuissanceJoule() {
 
   const atelierDipole = (
     <div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Appareil :</span>
-        {APPAREILS.map(([n, p], k) => <button key={n} onClick={() => setA(a => ({ ...a, k }))} style={stylePetitBouton(A.k === k, '#0b4f94')}>{n} ({p} W)</button>)}</div>
-      <div style={{ marginTop: 8 }}><Curseur nom="Durée de fonctionnement Δt" val={A.dt} min={1} max={1440} pas={1} set={v => setA(a => ({ ...a, dt: v }))} unite=" min" fmt={v => `${v} (${fr(v / 60, 2)} h)`}/></div>
+      <Choix nom="Appareil" val={A.k} set={v => setA(a => ({ ...a, k: +v }))} options={APPAREILS.map(([n, p], k) => [k, `${n} (${p} W)`])}/>
+      <div style={{ marginTop: 8 }}><Curseur nom="Durée de fonctionnement Δt" val={A.dt} min={1} max={1440} pas={1} set={v => setA(a => ({ ...a, dt: v }))} unite="" fmt={v => `${v} min (${fr(v / 60, 2)} h)`}/></div>
       {carte('', <>
         <div>Tension du secteur U = {U_SECTEUR} V ; puissance P = <strong>{PA} W</strong></div>
         <div>Intensité : I = {avecIndices('frac(P|U)')} = {PA} / {U_SECTEUR} = <strong>{PA / U_SECTEUR < 1 ? `${fr(IA * 1000, 1)} mA` : `${fr(IA, 2)} A`}</strong></div>
@@ -330,9 +331,7 @@ export function SimulationPuissanceJoule() {
     </div>);
   const atelierRend = (
     <div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Convertisseur :</span>
-        {CONVERTISSEURS.map(c => <button key={c[0]} onClick={() => setRd(r => ({ ...r, k: c[0] }))} style={stylePetitBouton(Rd.k === c[0], '#0b4f94')}>{c[1]}</button>)}
-        <button onClick={() => setRd(r => ({ ...r, k: 'perso' }))} style={stylePetitBouton(Rd.k === 'perso', '#7b2d8e')}>à régler</button></div>
+      <Choix nom="Convertisseur" val={Rd.k} set={v => setRd(r => ({ ...r, k: v }))} options={[...CONVERTISSEURS.map(c => [c[0], c[1]]), ['perso', 'à régler']]}/>
       <Bilan Pe={Rd.Pe} rho={rho} utile={conv ? conv[3] : 'puissance utile'} pertes={conv ? conv[4] : 'chaleur'}/>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 }}>
         <Curseur nom="Puissance électrique reçue" val={Rd.Pe} min={10} max={1000} pas={10} set={v => setRd(r => ({ ...r, Pe: v }))} unite=" W"/>
@@ -359,9 +358,7 @@ export function SimulationPuissanceJoule() {
     </div>);
   const planche = (
     <div style={styleBoite}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Atelier :</span>
-        {[['dipole', '🔌 Puissance et coût'], ['joule', '🔥 Effet Joule'], ['ligne', '🗼 Pertes en ligne'], ['rendement', '⚖️ Rendement'], ['calo', '🧪 Chauffer de l’eau']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>
+      <Choix nom="Atelier" val={atelier} set={setAtelier} options={[['dipole', '🔌 Puissance et coût'], ['joule', '🔥 Effet Joule'], ['ligne', '🗼 Pertes en ligne'], ['rendement', '⚖️ Rendement'], ['calo', '🧪 Chauffer de l’eau']]}/>
       {atelier === 'dipole' && atelierDipole}{atelier === 'joule' && atelierJoule}{atelier === 'ligne' && atelierLigne}{atelier === 'rendement' && atelierRend}{atelier === 'calo' && atelierCalo}
     </div>);
   const aEssayer = (
