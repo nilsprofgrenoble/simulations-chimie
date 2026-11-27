@@ -5,7 +5,7 @@ import { FicheVocab, FicheInteractions, FichePolarite, FicheNaCl, FicheExtractio
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, ARetenir, lireProgression, IndiceDefi } from "../commun";
 import { ESPECES, ANA, ORDRE_LIQ, ORDRE_SOL, TYPES, bilan, partPolaire, BATTERIE, RT, NACL, SEUIL_LIQ, SEUIL_SOL, SEUIL_ION } from "./solubiliteModele";
-import { FormuleSVG, PaireSVG, SolvateSVG, CristalSVG, typesPaire, typesIon } from "./solubiliteDessin";
+import { FormuleSVG, PaireSVG, SolvateSVG, CristalSVG, typesPaire, typesIon, VieCtx } from "./solubiliteDessin";
 import { Pic } from "../Pictos";
 
 const COUL_INTER = { h: '#2563eb', p: '#ea580c', d: '#6b7280' };
@@ -610,9 +610,17 @@ export function SimulationSolubilite({ naviguer }) {
       <button onClick={() => changerMode('explore')} style={styleBouton(true, '#334155')}><Pic n="search"/>Explorer</button>
       <button onClick={() => changerMode('defi')} style={styleBouton(true, '#0ea5e9')}><Pic n="target"/>Défis</button></span>);
 
+  const enExplore = mode === 'explore';
   return (
+    <VieCtx.Provider value={enExplore}>
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       <style>{`
+        @media (prefers-reduced-motion: no-preference) {
+          .sd-vie .sd-fil { animation: sd-fil 1.3s linear infinite; }
+          .sd-vie .sd-ion { animation: sd-vib 1.9s ease-in-out infinite; }
+        }
+        @keyframes sd-fil { to { stroke-dashoffset: -14; } }
+        @keyframes sd-vib { 0%, 100% { transform: translate(0, 0); } 25% { transform: translate(2px, -1.4px); } 50% { transform: translate(-1.2px, 2px); } 75% { transform: translate(-2px, -1.2px); } }
         .sl-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
         .sl-l1.cote { grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr); }
         .sl-col { display: flex; flex-direction: column; gap: 12px; }
@@ -649,5 +657,6 @@ export function SimulationSolubilite({ naviguer }) {
       {!enDefi && apresEtape('ehn') && <div className="sl-l2">{panneauHypo}</div>}
       {mode === 'explore' && <div className="sl-l2">{aEssayer}{retenir}</div>}
     </div>
+    </VieCtx.Provider>
   );
 }
