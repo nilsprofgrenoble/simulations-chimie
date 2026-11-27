@@ -99,11 +99,13 @@ function CourbeEtalonnage({ points, inconnue, modele, unite, cMax, aMax }) {
 }
 
 // ════════════════ LE SPECTROPHOTOMÈTRE (schéma) ════════════════
-function SchemaSpectro({ lambda, couleurSol, A, enMesure }) {
+function SchemaSpectro({ lambda, couleurSol, A, enMesure, anim = false }) {
   const coulF = couleurLambda(lambda);
   const sortie = Math.pow(10, -Math.max(0, A || 0));
   return (
     <svg viewBox="0 0 620 160" role="img" aria-label="Principe du spectrophotomètre" style={{ width: '100%', height: 'auto', display: 'block', background: 'white', borderRadius: 8, border: `1px solid ${KIT.bord}` }}>
+      {anim && <style>{`@media (prefers-reduced-motion: no-preference) { .bl-ph { animation: bl-ph 2.4s linear infinite; }
+        @keyframes bl-ph { 0% { transform: translateX(0); opacity: 1; } 57% { transform: translateX(186px); opacity: 1; } 71% { transform: translateX(230px); opacity: var(--o); } 100% { transform: translateX(324px); opacity: var(--o); } } }`}</style>}
       <rect x="14" y="48" width="70" height="54" rx="8" fill="#334155"/><circle cx="72" cy="75" r="10" fill="#fde68a"/>
       <text x="49" y="126" fontSize="22" fill={KIT.txt} textAnchor="middle">source</text>
       <polygon points="120,48 160,75 120,102" fill="#e0f2fe" stroke={KIT.txt}/>
@@ -114,6 +116,7 @@ function SchemaSpectro({ lambda, couleurSol, A, enMesure }) {
       <rect x="282" y="40" width="44" height="70" fill={couleurSol} stroke={KIT.txt} strokeWidth="2"/>
       <text x="304" y="126" fontSize="22" fill={KIT.txt} textAnchor="middle">cuve</text><text x="304" y="148" fontSize="22" fill={KIT.txt} textAnchor="middle">L = 1 cm</text>
       <line x1="326" y1="75" x2="420" y2="75" stroke={coulF} strokeWidth="6" opacity={0.15 + 0.85 * sortie}/>
+      {anim && [0, 1, 2, 3, 4].map(k => <circle key={k} className="bl-ph" cx="96" cy="75" r="5.5" fill={coulF} stroke="#0f172a" strokeWidth="0.8" style={{ animationDelay: `${-k * 0.48}s`, '--o': 0.15 + 0.85 * sortie }}/>)}
       <rect x="420" y="50" width="40" height="50" rx="4" fill="#1e293b"/>
       <text x="430" y="126" fontSize="22" fill={KIT.txt} textAnchor="middle">détecteur</text>
       <rect x="502" y="40" width="88" height="48" rx="5" fill="#0f172a"/>
@@ -542,7 +545,7 @@ export function BeerLambert1G() {
           <div style={styleBoite}>
             <div style={{ fontWeight: 700, fontSize: 15, color: KIT.txt, marginBottom: 6 }}>
               {mode === 'explore' ? 'Le spectrophotomètre' : enDefi ? 'Une solution inconnue' : 'Exemple : le dosage des ions cuivre(II) de la bouillie bordelaise'}</div>
-            <SchemaSpectro lambda={lambda} couleurSol={couleurDansAppareil} A={Aaffiche} enMesure={mode === 'explore' || (vu('eau') && (blanc || !!spectreVu[cuve]))}/>
+            <SchemaSpectro anim={mode === 'explore'} lambda={lambda} couleurSol={couleurDansAppareil} A={Aaffiche} enMesure={mode === 'explore' || (vu('eau') && (blanc || !!spectreVu[cuve]))}/>
             {mode !== 'explore' && vu('oeil') && <>
               <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 8 }}>Les cuves {vu('eau') ? '(cliquez pour placer une cuve dans l’appareil)' : ''} :</div>
               {rangee}
