@@ -6,7 +6,7 @@ import { SOLUB, solubilite, tempDeSolub, pSatEau } from "./cristallisationModele
 import { SceneSolubilite } from "./TsolScene";
 import { useEtroit, StyleAnim, Chips } from "./exploAnim";
 import { usePhase, reduitMouvement } from "./hookHorloge";
-import { FicheSolubilite, FicheBilan, FichePremiersCristaux, FicheRendement, FicheEvaporation, FicheProcede } from "./CristallisationFiches";
+import { FicheSolubilite, FicheBilan, FichePremiersCristaux, FicheRendement, FicheEvaporation, FicheProcede, FichePression } from "./CristallisationFiches";
 
 const SIM_ID = 7;
 const NB = '\u00a0';
@@ -21,7 +21,7 @@ const INDICE_Q = {"s": "Pas de calcul : lisez l’ordonnée de la courbe à la t
 const KNO3 = { id: 'kno3', nom: 'nitrate de potassium', formule: 'KNO₃', T: SOLUB.map(p => p[0]), s: SOLUB.map(p => p[1]), col: '#0e7490', colS: '#a5f3fc', ymax: 250, pasY: 50, sens: 'croissante' };
 
 // Scène animée : bécher (glaçons ou plaque chauffante et vapeur, niveau d'eau, ions et cristaux) et, dès qu'il est introduit, diagramme de solubilité avec poignée de température.
-function SceneCristal({ T, setT, mSolute, mEau, evap, graphe, ecart, lecture, enCours, lancer, arreter, touche, setTouche }) {
+function SceneCristal({ T, setT, mSolute, mEau, evap, graphe, ecart, lecture, explique, enCours, lancer, arreter, touche, setTouche }) {
   const svgRef = useRef(null), boite = useRef(null), etroit = useEtroit(boite), anime = !reduitMouvement(), phase = usePhase(0.8, anime);
   const aria = `Bécher contenant ${mEau} g d’eau et ${mSolute} g de nitrate de potassium à ${Math.round(T)} °C${graphe ? ', avec le diagramme de solubilité et une poignée rouge pour régler la température' : ''}.`;
   return (
@@ -31,7 +31,7 @@ function SceneCristal({ T, setT, mSolute, mEau, evap, graphe, ecart, lecture, en
         <SceneSolubilite solide={KNO3} m={mSolute} mEau={mEau} T={T} setT={v => { arreter(); setTouche(true); setT(v); }} etroit={etroit} touche={touche || enCours} svgRef={svgRef} aria={aria} phase={phase}
           dir={enCours ? (evap ? 'chaud' : 'froid') : null} vapeur={enCours && evap} niveau={evap ? mEau / 100 : 1} vide={evap ? pSatEau(T) : null} lecture={!!lecture && graphe} pointEtat={graphe} regions={graphe} becher graphe={graphe} ecart={ecart}/>
       </div>
-      {evap && <div style={{ margin: '8px 4px 0', padding: '8px 12px', borderRadius: 10, background: '#ecfeff', border: '1.5px solid #67e8f9', fontSize: 14, lineHeight: 1.5, color: KIT.txt }}>
+      {evap && explique && <div style={{ margin: '8px 4px 0', padding: '8px 12px', borderRadius: 10, background: '#ecfeff', border: '1.5px solid #67e8f9', fontSize: 14, lineHeight: 1.5, color: KIT.txt }}>
         <strong>Pourquoi une pompe à vide ?</strong> L’eau bout à 100 °C seulement sous la pression atmosphérique (101 kPa). Quand on <strong>baisse la pression</strong>, elle bout à une température plus basse : à {Math.round(T)} °C, il suffit que la pression descende à <strong>{Math.round(pSatEau(T))} kPa</strong>. On évapore l’eau sans chauffer la solution à 100 °C.
       </div>}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '8px 4px 2px', flexWrap: 'wrap' }}>
@@ -148,7 +148,12 @@ export function Simulation7() {
       texte: <>Autre procédé : on garde la température constante et on <strong>évapore l'eau</strong> sous <strong>pression réduite</strong> : une pompe à vide abaisse la pression au-dessus de la solution, et l’eau s’évapore (elle bout) à 60 °C au lieu de 100 °C, sans chauffer davantage. Le manomètre du schéma indique cette pression. On part de 50 g de KNO₃ dans 100 g d'eau, à 60 °C.</>,
       tache: { type: 'action', ok: modeEv, label: 'Passer en évaporation (60 °C, 50 g)', faire: () => { setTypeCr('evaporation'); setT(60); setMSolute(50); setMEau(100); },
         consigne: modeEv ? null : 'Mode « Par évaporation », T = 60 °C, soluté 50 g' } },
+    { id: 'pression', titre: 'Pourquoi une pompe à vide ?', focus: ['becher'],
+      texte: <>Regardez le schéma : le bécher est fermé et relié à une pompe à vide. Le manomètre indique la pression au-dessus de la solution (à 60 °C, <strong>{fmt(pSatEau(60), 0)} kPa</strong>), bien plus basse que la pression atmosphérique (101 kPa). Lancez l'animation « Évaporer l'eau » pour voir l'eau bouillir à 60 °C.</>,
+      tache: { type: 'qcm', q: 'Pourquoi baisse-t-on la pression pour évaporer l’eau à 60 °C ?', options: ['Pour que l’eau bouille à une température plus basse que 100 °C', 'Pour aspirer le sel dissous hors du bécher', 'Pour refroidir la solution en dessous de 60 °C', 'Pour que l’eau bouille à plus de 100 °C'], bonne: 0,
+        expl: 'Plus la pression est basse, plus l’eau bout à une température basse : à 20 kPa, elle bout à 60 °C. On évapore l’eau sans chauffer à 100 °C, et le sel reste dans le bécher.', indice: 'Pensez à l’eau qui bout à 100 °C sous la pression atmosphérique : que change-t-on quand on baisse la pression ?' } },
     { id: 'concentrer', titre: 'Évaporer concentre la solution', focus: ['params', 'bilan'],
+      retenirTitre: 'À retenir : évaporer sous pression réduite', retenir: <FichePression/>,
       texte: <>On part toujours de 50 g de KNO₃ dans 100 g d'eau, à 60 °C. Avec le curseur, réduisez la masse d'eau restante à <strong>70 g</strong> et regardez, dans le bilan de matière, la masse de sel dissoute et la concentration de la solution (en g de sel pour 100 g d'eau).</>,
       tache: { type: 'qcm', q: 'Quand on évapore de l’eau, avant l’apparition de cristaux…', options: ['la masse de sel reste la même : la solution se concentre', 'la masse de sel diminue : la solution se dilue davantage', 'la masse de sel augmente : la solution se concentre aussi'], bonne: 0,
         expl: 'Le sel ne s’évapore pas : sa masse ne change pas, mais elle est dissoute dans moins d’eau. La concentration augmente jusqu’à la saturation ; au-delà, le sel en excès cristallise.', indice: "Qu’est-ce qui s’en va pendant l’évaporation : le sel ou l’eau ?" } },
@@ -175,11 +180,9 @@ export function Simulation7() {
         expl: 'Quand la courbe de solubilité est presque horizontale, refroidir ne diminue presque pas la quantité de sel dissous. Il faut retirer de l’eau, comme dans les marais salants.', indice: "Regardez la courbe de NaCl : varie-t-elle beaucoup avec la température ?" } },
     { id: 'hypotheses', titre: 'Sur quoi repose ce modèle ?', focus: ['hypo'],
       retenirTitre: 'À RETENIR : QUEL PROCÉDÉ ?', retenir: <FicheProcede/>,
-      texte: <>Lisez l'encadré « Hypothèses de travail ».</>,
+      texte: <>Lisez l'encadré « Hypothèses de travail ». Vous savez maintenant lire un diagramme de solubilité, trouver la température d'apparition des cristaux et calculer la masse obtenue par refroidissement ou par évaporation sous pression réduite. En exploration libre, changez la masse de sel ou la température pour d'autres cas.</>,
       tache: { type: 'qcm', q: 'Quelle hypothèse est faite sur la solution ?', options: ['À chaque température, l’équilibre est atteint : dès que la solution est saturée, l’excès cristallise (pas de sursaturation)', 'Les cristaux obtenus contiennent de l’eau', 'La solubilité de KNO₃ ne dépend pas de la température'], bonne: 0,
         expl: 'Dans la réalité, une solution peut rester sursaturée (métastable) tant qu’aucun germe cristallin ne se forme ; le modèle ne le décrit pas.', indice: "Pensez au temps laissé à la solution et au risque de sursaturation." } },
-    { id: 'bravo', titre: 'Bravo !', focus: [],
-      texte: <>Vous savez lire un diagramme de solubilité, trouver la température d'apparition des cristaux et calculer la masse obtenue par refroidissement ou par évaporation. En exploration libre, changez la masse de sel ou la température pour d'autres cas.</>, tache: null },
   ];
   const idx = id => ETAPES.findIndex(e => e.id === id);
   const passe = id => !enGuide || etape > idx(id);
@@ -335,7 +338,7 @@ export function Simulation7() {
       {/* Scène animée : bécher (toujours) + diagramme de solubilité (dès l'étape qui l'introduit) */}
       <div style={{ ...styleBoite, ...cadre('becher'), ...cadre('diagramme'), padding: 6 }}>
         <SceneCristal T={T} setT={setT} mSolute={mSolute} mEau={mEauEff} evap={typeCr === 'evaporation'} graphe={vis.diagramme} lancer={lancer} arreter={arreter} enCours={enCours}
-          ecart={passe('cristaux40')} lecture={!enGuide} touche={touche} setTouche={setTouche}/>
+          ecart={passe('cristaux40')} lecture={!enGuide} explique={passe('pression')} touche={touche} setTouche={setTouche}/>
       </div>
 
       {/* Réglages + bilan de matière */}
