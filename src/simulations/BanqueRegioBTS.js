@@ -1,14 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════════
-//  BANQUE D'EXERCICES « RÉGIOSÉLECTIVITÉ » (BTS Métiers de la chimie)
+//  BANQUE D’EXERCICES « RÉGIOSÉLECTIVITÉ » (BTS Métiers de la chimie)
 //  Même format que AtelierSituationsBanque.js (exercices à étapes : QCM et saisies, une aide par étape, nombres tirés au hasard).
 //  Compétences visées (chimie organique, addition électrophile sur les alcènes) :
 //   • Reconnaître un alcène symétrique ou dissymétrique et prévoir le nombre de produits       → regio-nombre
 //   • Écrire un carbocation intermédiaire et le classer (primaire, secondaire, tertiaire)      → regio-carbocation
 //   • Comparer la stabilité de carbocations (effet donneur des groupes alkyle)                 → regio-stabilite
 //   • Prévoir le produit majoritaire (règle de Markovnikov expliquée par le mécanisme)        → regio-produit
-//   • Exploiter un profil d'énergie à deux voies, loi d'Arrhenius, effet de la température    → regio-barrieres
+//   • Exploiter un profil d’énergie à deux voies, loi d’Arrhenius, effet de la température    → regio-barrieres
 //   • Relier régiosélectivité et stéréochimie (carbone asymétrique, mélange racémique)         → regio-chiral
-//  Les valeurs d'énergie sont des ordres de grandeur, comme dans la simulation « Régiosélectivité de l'addition de HBr ».
+//  Les valeurs d’énergie sont des ordres de grandeur, comme dans la simulation « Régiosélectivité de l’addition de HBr ».
 // ═══════════════════════════════════════════════════════════════════════════
 
 const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -20,7 +20,7 @@ const DOM = 'Régiosélectivité (BTS)';
 const melange = t => t.map(v => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
 const CL = { primaire: 1, secondaire: 2, tertiaire: 3 };
 
-// ── Nombre de produits d'addition de HBr ──
+// ── Nombre de produits d’addition de HBr ──
 const NOMBRE = [
   { nom: 'le but-2-ène', f: 'CH₃–CH=CH–CH₃', cas: 'sym', prod: ['le 2-bromobutane'], note: 'Les deux carbones de la double liaison portent chacun un H et un CH₃ : ils sont équivalents.' },
   { nom: 'l\'hex-3-ène', f: 'CH₃–CH₂–CH=CH–CH₂–CH₃', cas: 'sym', prod: ['le 3-bromohexane'], note: 'Les deux carbones de la double liaison portent chacun un H et un éthyle : ils sont équivalents.' },
@@ -36,7 +36,7 @@ const ALCENES = [
   { nom: 'le 2-méthylprop-1-ène', f: '(CH₃)₂C=CH₂', H1: { c: 'C2', cat: '(CH₃)₃C⁺', cl: 'tertiaire' }, H2: { c: 'C1', cat: '(CH₃)₂CH–CH₂⁺', cl: 'primaire' } },
   { nom: 'le 2-méthylbut-2-ène', f: '(CH₃)₂C=CH–CH₃', H1: { c: 'C3', cat: '(CH₃)₂CH–CH⁺–CH₃', cl: 'secondaire' }, H2: { c: 'C2', cat: '(CH₃)₂C⁺–CH₂–CH₃', cl: 'tertiaire' } },
 ];
-// H1 : carbocation obtenu quand H se fixe sur le carbone « de gauche » (C1, ou C2 pour le méthylbutène) ; H2 : sur l'autre
+// H1 : carbocation obtenu quand H se fixe sur le carbone « de gauche » (C1, ou C2 pour le méthylbutène) ; H2 : sur l’autre
 const CARBONE_H = [['C1', 'C2'], ['C1', 'C2'], ['C1', 'C2'], ['C2', 'C3']];
 
 // ── Stabilité ──
@@ -69,11 +69,11 @@ export const EXERCICES = [
     construire: () => {
       const a = tire(NOMBRE), n = a.prod.length;
       return {
-        enonce: `On fait réagir ${a.nom} (${a.f}) avec le bromure d'hydrogène HBr, sans peroxydes (mécanisme ionique en deux étapes, passant par un carbocation).`,
+        enonce: `On fait réagir ${a.nom} (${a.f}) avec le bromure d’hydrogène HBr, sans peroxydes (mécanisme ionique en deux étapes, passant par un carbocation).`,
         etapes: [
-          { id: 'nb', titre: 'Le nombre de produits', q: `Combien de produits d'addition différents (isomères de constitution) peut-on écrire ?`,
+          { id: 'nb', titre: 'Le nombre de produits', q: `Combien de produits d’addition différents (isomères de constitution) peut-on écrire ?`,
             aide: 'Regardez si les deux carbones de la double liaison sont équivalents : si oui, H et Br donnent le même produit quel que soit le carbone choisi.',
-            o: [V(n === 1 ? 'Un seul' : 'Deux', n === 1 ? `${a.note} Un seul produit est possible : ${a.prod[0]}.` : `${a.note} Br peut se fixer sur l'un ou l'autre carbone : ${a.prod[0]} ou ${a.prod[1]}.`),
+            o: [V(n === 1 ? 'Un seul' : 'Deux', n === 1 ? `${a.note} Un seul produit est possible : ${a.prod[0]}.` : `${a.note} Br peut se fixer sur l’un ou l’autre carbone : ${a.prod[0]} ou ${a.prod[1]}.`),
               F(n === 1 ? 'Deux' : 'Un seul', n === 1 ? 'Les deux carbones de la double liaison sont équivalents : H sur l\'un et Br sur l\'autre ou l\'inverse donnent la même molécule.' : 'Les deux carbones de la double liaison ne sont pas équivalents : on obtient deux isomères de constitution.'),
               F('Trois', 'La double liaison n\'a que deux carbones : H et Br ne peuvent se placer que de deux façons.')] },
           { id: 'cat', titre: 'Les carbocations', q: n === 1 ? 'Combien de carbocations différents peut-on former à l\'étape 1 ?' : `Les deux carbocations possibles sont-ils de même classe (primaire, secondaire, tertiaire) ?`,
@@ -82,7 +82,7 @@ export const EXERCICES = [
               ? [V('Un seul', 'Les deux carbones étant équivalents, un seul carbocation peut se former.'), F('Deux, de stabilités différentes', 'Il n\'y a qu\'un carbocation possible : pas de compétition entre deux voies.'), F('Aucun : l\'alcène réagit sans intermédiaire', 'Le mécanisme passe par un carbocation, intermédiaire de l\'étape 1.')]
               : a.cA === a.cB
                 ? [V('Oui : les deux sont secondaires', 'Chaque carbone chargé + est lié à deux carbones : les deux carbocations sont secondaires, de stabilité voisine.'), F('Non : l\'un est tertiaire', 'Aucun des deux carbocations n\'est tertiaire ici.'), F('Non : l\'un est primaire', 'Aucun des deux carbocations n\'est primaire ici.')]
-                : [V(`Non : un ${a.cA} et un ${a.cB}`, `L'un est ${a.cA}, l'autre ${a.cB} : leurs stabilités sont différentes.`), F('Oui : les deux sont de même classe', 'Les deux carbones n\'ont pas le même nombre de carbones voisins : les classes diffèrent.'), F(`Non : un ${a.cA === 'tertiaire' ? 'primaire' : 'tertiaire'} et un ${a.cB}`, 'Recomptez les carbones liés au carbone chargé + dans chaque carbocation.')] },
+                : [V(`Non : un ${a.cA} et un ${a.cB}`, `L’un est ${a.cA}, l’autre ${a.cB} : leurs stabilités sont différentes.`), F('Oui : les deux sont de même classe', 'Les deux carbones n\'ont pas le même nombre de carbones voisins : les classes diffèrent.'), F(`Non : un ${a.cA === 'tertiaire' ? 'primaire' : 'tertiaire'} et un ${a.cB}`, 'Recomptez les carbones liés au carbone chargé + dans chaque carbocation.')] },
           { id: 'sel', titre: 'La conclusion', q: 'Que peut-on dire de la composition du mélange obtenu ?',
             aide: 'Si les deux carbocations ont des stabilités différentes, la voie la plus stable est la plus rapide.',
             o: [a.cas === 'sym' ? V('Un seul produit : la question de la régiosélectivité ne se pose pas', `Un seul produit est possible (${a.prod[0]}).`) : F('Un seul produit : la question de la régiosélectivité ne se pose pas', 'Deux produits sont possibles : la question se pose.'),
@@ -102,12 +102,12 @@ export const EXERCICES = [
       const voie = Math.random() < 0.5 ? 'H1' : 'H2', v = a[voie], w = a[voie === 'H1' ? 'H2' : 'H1'];
       const cH = CARBONE_H[i][voie === 'H1' ? 0 : 1];
       return {
-        enonce: `À l'étape 1 de l'addition de HBr sur ${a.nom} (${a.f}), le doublet de la liaison π attaque l'atome H (δ+) de HBr. L'atome H se fixe sur le carbone ${cH} de la double liaison.`,
+        enonce: `À l’étape 1 de l’addition de HBr sur ${a.nom} (${a.f}), le doublet de la liaison π attaque l’atome H (δ+) de HBr. L’atome H se fixe sur le carbone ${cH} de la double liaison.`,
         etapes: [
           { id: 'ou', titre: 'La charge +', q: `Sur quel carbone se trouve la charge + du carbocation formé ?`,
             aide: 'Le carbone qui reçoit H utilise le doublet π ; l\'autre carbone de la double liaison perd sa part de ce doublet.',
-            o: [V(`Sur ${v.c}`, `${cH} reçoit H grâce au doublet π ; ${v.c}, qui n'en reçoit plus sa part, n'a plus que 6 électrons : il porte la charge +.`),
-              F(`Sur ${cH}`, `${cH} vient de se lier à H : il garde 8 électrons, la charge + est sur l'autre carbone de la double liaison.`),
+            o: [V(`Sur ${v.c}`, `${cH} reçoit H grâce au doublet π ; ${v.c}, qui n’en reçoit plus sa part, n’a plus que 6 électrons : il porte la charge +.`),
+              F(`Sur ${cH}`, `${cH} vient de se lier à H : il garde 8 électrons, la charge + est sur l’autre carbone de la double liaison.`),
               F('Sur l\'atome de brome', 'Br est encore dans HBr à ce stade (puis il devient l\'ion Br⁻, chargé −).')] },
           { id: 'formule', titre: 'La formule du carbocation', q: 'Quelle est la formule du carbocation formé ?',
             aide: 'Ajoutez H sur le carbone indiqué, transformez la double liaison en liaison simple et placez la charge + sur l\'autre carbone.',
@@ -159,17 +159,17 @@ export const EXERCICES = [
     construire: () => {
       const a = tire(NOUVEAUX);
       return {
-        enonce: `On fait réagir ${a.nom} (${a.f}) avec HBr (mécanisme ionique, sans peroxydes). On suppose qu'aucune transposition du carbocation n'a lieu.`,
+        enonce: `On fait réagir ${a.nom} (${a.f}) avec HBr (mécanisme ionique, sans peroxydes). On suppose qu’aucune transposition du carbocation n’a lieu.`,
         etapes: [
           { id: 'carb', titre: 'Le carbocation le plus stable', q: 'Quel carbocation intermédiaire est le plus stable ?',
             aide: 'Écrivez les deux carbocations possibles (H sur l\'un ou l\'autre carbone de la double liaison) et comptez les carbones voisins du carbone chargé +.',
             o: [V(`Le carbocation ${a.cM}`, `Le carbocation ${a.cM} est plus stable que le ${a.cm} : il se forme plus vite.`),
               F(`Le carbocation ${a.cm}`, `Le carbocation ${a.cm} a moins de groupes alkyle donneurs que le ${a.cM}.`),
               F('Les deux ont la même stabilité', `Le carbocation ${a.cM} et le carbocation ${a.cm} diffèrent par leur classe : leurs stabilités ne sont pas égales.`)] },
-          { id: 'h', titre: 'Où se fixe H ?', q: `Sur quel carbone de la double liaison l'atome H se fixe-t-il majoritairement ?`,
+          { id: 'h', titre: 'Où se fixe H ?', q: `Sur quel carbone de la double liaison l’atome H se fixe-t-il majoritairement ?`,
             aide: 'H se fixe sur le carbone qui n\'est pas celui qui portera la charge + dans le carbocation le plus stable.',
-            o: [V(`Sur ${a.hC}`, `H se fixe sur ${a.hC} : la charge + apparaît sur l'autre carbone de la double liaison, qui forme le carbocation ${a.cM}. C'est le carbone qui portait déjà le plus d'atomes H (règle de Markovnikov).`),
-              F(`Sur l'autre carbone de la double liaison`, `H se fixerait alors de l'autre côté et conduirait au carbocation ${a.cm}, moins stable.`),
+            o: [V(`Sur ${a.hC}`, `H se fixe sur ${a.hC} : la charge + apparaît sur l’autre carbone de la double liaison, qui forme le carbocation ${a.cM}. C’est le carbone qui portait déjà le plus d’atomes H (règle de Markovnikov).`),
+              F(`Sur l’autre carbone de la double liaison`, `H se fixerait alors de l’autre côté et conduirait au carbocation ${a.cm}, moins stable.`),
               F('Sur un carbone qui ne fait pas partie de la double liaison', 'L\'addition a lieu sur les deux carbones de la double liaison C=C.')] },
           { id: 'prod', titre: 'Le produit majoritaire', q: 'Quel est le produit majoritaire ?',
             aide: 'Br⁻ se fixe sur le carbone chargé + du carbocation le plus stable.',
@@ -182,14 +182,14 @@ export const EXERCICES = [
     },
   },
 
-  // ── R5 : deux barrières, loi d'Arrhenius ──
+  // ── R5 : deux barrières, loi d’Arrhenius ──
   {
     id: 'regio-barrieres', domaine: DOM, niveau: 2, titre: 'Lire un profil à deux voies : barrières et proportions',
     construire: () => {
       const EA = tire([85, 90, 95, 100]), d = tire([6, 8, 10, 12]), T = tire([273, 298, 323, 350]);
       const EB = EA + d, r = Math.exp(d * 1000 / (8.314 * T)), p = 100 * r / (1 + r);
       return {
-        enonce: `Pour un alcène dissymétrique, l'addition de HBr suit deux voies qui passent par deux carbocations différents. L'étape 1 est l'étape lente. Les énergies d'activation sont E_a(A) = ${EA} kJ·mol⁻¹ pour la voie A (produit A) et E_a(B) = ${EB} kJ·mol⁻¹ pour la voie B (produit B). La réaction est sous contrôle cinétique à T = ${T} K. Le rapport des vitesses des deux voies vaut v_A / v_B = exp[(E_a(B) − E_a(A)) / (R·T)], avec R = 8,314 J·mol⁻¹·K⁻¹.`,
+        enonce: `Pour un alcène dissymétrique, l’addition de HBr suit deux voies qui passent par deux carbocations différents. L’étape 1 est l’étape lente. Les énergies d’activation sont E_a(A) = ${EA} kJ·mol⁻¹ pour la voie A (produit A) et E_a(B) = ${EB} kJ·mol⁻¹ pour la voie B (produit B). La réaction est sous contrôle cinétique à T = ${T} K. Le rapport des vitesses des deux voies vaut v_A / v_B = exp[(E_a(B) − E_a(A)) / (R·T)], avec R = 8,314 J·mol⁻¹·K⁻¹.`,
         etapes: [
           { id: 'ecart', titre: 'L\'écart des barrières', q: 'Quelle est la différence E_a(B) − E_a(A) ?',
             aide: 'Soustrayez les deux énergies d\'activation (même unité : kJ·mol⁻¹).',
@@ -220,13 +220,13 @@ export const EXERCICES = [
     construire: () => {
       const a = tire(CHIRAL);
       return {
-        enonce: `On fait réagir ${a.nom} (${a.f}) avec HBr (mécanisme ionique). Le produit majoritaire est ${a.p}. Le carbocation intermédiaire est plan : Br⁻ peut l'attaquer avec la même probabilité des deux côtés du plan. La vue 3D montre ce carbocation plan et l'attaque de Br⁻ par chaque face : tournez-la pour observer le produit.`,
+        enonce: `On fait réagir ${a.nom} (${a.f}) avec HBr (mécanisme ionique). Le produit majoritaire est ${a.p}. Le carbocation intermédiaire est plan : Br⁻ peut l’attaquer avec la même probabilité des deux côtés du plan. La vue 3D montre ce carbocation plan et l’attaque de Br⁻ par chaque face : tournez-la pour observer le produit.`,
         schema: { type: 'cat3d', groupes: a.g, produit: a.p.replace(/^(le|la) /, '') },
         etapes: [
           { id: 'asym', titre: 'Le carbone portant Br', q: `Le carbone qui porte Br dans ${a.p} est lié à ${a.subs}. Est-il asymétrique ?`,
             aide: 'Un carbone asymétrique est lié à quatre atomes ou groupes d\'atomes tous différents.',
             o: [a.ch ? V('Oui : quatre groupes différents', `Ses quatre substituants (${a.subs}) sont tous différents : carbone asymétrique, la molécule est chirale.`) : F('Oui : quatre groupes différents', 'Deux de ses substituants sont identiques : ce carbone n\'est pas asymétrique.'),
-              !a.ch ? V('Non : deux groupes sont identiques', `Deux substituants sont identiques (${a.subs}) : ce carbone n'est pas asymétrique, la molécule est achirale.`) : F('Non : deux groupes sont identiques', 'Les quatre substituants sont différents : le carbone est asymétrique.'),
+              !a.ch ? V('Non : deux groupes sont identiques', `Deux substituants sont identiques (${a.subs}) : ce carbone n’est pas asymétrique, la molécule est achirale.`) : F('Non : deux groupes sont identiques', 'Les quatre substituants sont différents : le carbone est asymétrique.'),
               F('On ne peut pas savoir sans connaître le mécanisme', 'La structure du produit suffit pour savoir si un carbone est asymétrique.')] },
           { id: 'forme', titre: 'Ce qu\'on obtient', q: 'Quel est le résultat de l\'attaque de Br⁻ sur les deux faces du carbocation plan ?',
             aide: a.ch ? 'Deux faces équivalentes donnent des quantités égales des deux configurations possibles.' : 'Si le carbone n\'est pas asymétrique, les deux attaques donnent-elles des molécules différentes ?',

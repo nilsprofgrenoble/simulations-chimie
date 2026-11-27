@@ -24,7 +24,7 @@ export const RPM_ANA = [
       F('on ne peut pas comparer sans connaître le nombre de noyaux', 'La relation λ = ln 2 ÷ t½ suffit pour comparer deux noyaux.'),
     ] },
   { id: 'rpm-ana-fraction', domaine: DOM, titre: 'Après plusieurs demi-vies',
-    enonce: 'Un échantillon contient au départ N₀ noyaux d’un noyau radioactif de demi-vie t½. On le laisse décroître pendant une durée égale à 3 t½, sans autre apport de noyaux radioactifs.', q: 'À la fin de cette durée, la proportion de noyaux restants est environ :', options: [
+    enonce: 'Un échantillon contient au départ N₀ noyaux radioactifs identiques, de demi-vie t½. On le laisse décroître pendant une durée égale à 3 t½, sans autre apport de noyaux radioactifs.', q: 'À la fin de cette durée, la proportion de noyaux restants est environ :', options: [
       V('un huitième (12,5 %)', 'Chaque demi-vie divise N par 2 : N₀ ÷ 2, N₀ ÷ 4 puis N₀ ÷ 8.'),
       F('un sixième (17 %)', 'On ne perd pas la moitié de N₀ trois fois de façon indépendante : chaque fois on divise le reste par 2.'),
       F('plus rien : au bout de 3 t½ tout est désintégré', 'Il reste toujours des noyaux : N décroît selon une exponentielle, sans jamais s’annuler en un temps fini.'),
@@ -79,7 +79,7 @@ export const RPM_SAPP = [
         th: tok(`${p.th} h`, 'Demi-vie du noyau', p.th, 'h'), N0: tok(`${sci(p.N0, 1)} noyaux`, 'Nombre initial de noyaux', p.N0, ''), t: tok(`${p.t} h`, 'Durée écoulée', p.t, 'h'), T: tok(`${p.T} °C`, 'Température de l’échantillon', p.T, '°C'),
       };
       const l = LN2 / p.th, N = p.N0 * Math.exp(-l * p.t);
-      const debut = ['Un échantillon contient ', T('N0'), ' d’un noyau radioactif de demi-vie ', T('th'), '. L’échantillon est conservé à ', T('T'), ' pendant ', T('t'), '. ', 'On suppose qu’aucun noyau radioactif n’est ajouté. '];
+      const debut = ['Un échantillon contient ', T('N0'), ' radioactifs identiques, de demi-vie ', T('th'), '. L’échantillon est conservé à ', T('T'), ' pendant ', T('t'), '. ', 'On suppose qu’aucun noyau radioactif n’est ajouté. '];
       if (q === 0) return { tokens, derivees: ['λ = ln 2 ÷ t½'], texte: [...debut, 'Quelle est la constante de désintégration λ, en h⁻¹ ?'], utiles: ['th'],
         raisons: { N0: 'Le nombre initial de noyaux ne change pas λ : c’est une propriété du noyau.', t: 'La durée écoulée ne sert pas à calculer λ.', T: 'La température ne modifie pas la décroissance radioactive.' },
         cherche: { bonne: 'La constante de désintégration λ (en h⁻¹)', faux: ['Le nombre de noyaux restants', 'L’activité de l’échantillon (en Bq)', 'La durée pour que la moitié des noyaux disparaisse'] },
@@ -98,7 +98,7 @@ export const RPM_SAPP = [
         th: tok(`${p.th} h`, 'Demi-vie du noyau', p.th, 'h'), N: tok(`${sci(p.N, 1)} noyaux`, 'Nombre de noyaux radioactifs', p.N, ''), dt: tok(`${p.dt} s`, 'Durée de comptage', p.dt, 's'), m: tok(`${fr(p.m.toFixed(1))} g`, 'Masse de l’échantillon', p.m, 'g'),
       };
       const l = LN2 / p.th / 3600, A = l * p.N, n = A * p.dt;
-      const debut = ['Un échantillon de masse ', T('m'), ' contient ', T('N'), ' d’un noyau radioactif de demi-vie ', T('th'), '. Un compteur idéal détecte toutes les désintégrations. On suppose l’activité constante pendant la mesure. '];
+      const debut = ['Un échantillon de masse ', T('m'), ' contient ', T('N'), ' radioactifs identiques, de demi-vie ', T('th'), '. Un compteur idéal détecte toutes les désintégrations. On suppose l’activité constante pendant la mesure. '];
       if (q === 0) return { tokens, derivees: ['λ = ln 2 ÷ t½, en s⁻¹', 'A = λ N'], texte: [...debut, 'Quelle est l’activité A de l’échantillon, en Bq ?'], utiles: ['th', 'N'],
         raisons: { m: 'La masse de l’échantillon ne sert pas : on connaît déjà le nombre de noyaux.', dt: 'La durée de comptage servira pour le nombre de désintégrations comptées, pas pour l’activité.' },
         cherche: { bonne: 'L’activité de l’échantillon (en Bq)', faux: ['Le nombre de désintégrations comptées', 'La constante de désintégration λ (en h⁻¹)', 'Le nombre de noyaux restants après une demi-vie'] },

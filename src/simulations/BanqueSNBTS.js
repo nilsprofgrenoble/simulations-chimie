@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
-//  BANQUE D'EXERCICES « SUBSTITUTION OU ÉLIMINATION » (BTS Métiers de la chimie)
+//  BANQUE D’EXERCICES « SUBSTITUTION OU ÉLIMINATION » (BTS Métiers de la chimie)
 //  Même format que AtelierSituationsBanque.js. Valeurs issues de snModele.js (ordres de grandeur annoncés).
 //  Compétences visées (mécanismes en chimie organique) :
 //   • Prévoir le mécanisme dominant selon la classe du substrat et la nature du réactif   → sn-meca
-//   • Relier mécanisme, nombre d'étapes et loi de vitesse (ordre 1 ou 2)                  → sn-ordre
+//   • Relier mécanisme, nombre d’étapes et loi de vitesse (ordre 1 ou 2)                  → sn-ordre
 //   • Prévoir la stéréochimie du produit (inversion ou racémique)                         → sn-stereo
-//   • Choisir les conditions pour obtenir l'alcène ou le produit de substitution          → sn-conditions
-//   • Lire un profil d'énergie (état de transition, intermédiaire, barrière)              → sn-profil
+//   • Choisir les conditions pour obtenir l’alcène ou le produit de substitution          → sn-conditions
+//   • Lire un profil d’énergie (état de transition, intermédiaire, barrière)              → sn-profil
 // ═══════════════════════════════════════════════════════════════════════════
 import { SUBSTRATS, REACTIFS, MECA, proportions, barriere, profil } from './snModele.js';
 
@@ -34,13 +34,13 @@ export const EXERCICES = [
           { id: 'cat', titre: 'Substitution ou élimination ?', q: 'Quelle transformation est majoritaire ?',
             aide: 'Substitution : on forme l\'alcool. Élimination : on forme l\'alcène.',
             o: [V(dom.startsWith('S') ? 'La substitution (alcool)' : 'L\'élimination (alcène)', `${R.court} avec un substrat ${S.classe} : ${POURQUOI[dom]}.`),
-              F(dom.startsWith('S') ? 'L\'élimination (alcène)' : 'La substitution (alcool)', `Dans ces conditions, c'est l'autre transformation qui domine (${POURQUOI[dom]}).`),
+              F(dom.startsWith('S') ? 'L\'élimination (alcène)' : 'La substitution (alcool)', `Dans ces conditions, c’est l’autre transformation qui domine (${POURQUOI[dom]}).`),
               F('Aucune réaction', 'La réaction a lieu : le substrat réagit dans ces conditions.')] },
           { id: 'meca', titre: 'Le mécanisme', q: 'Quel est le mécanisme dominant ?',
             aide: 'Tertiaire : pas de SN2. Base forte : mécanisme bimoléculaire. Sans base forte : carbocation.',
             o: [V(`${dom} (${MECA[dom].long})`, `${dom} : ${POURQUOI[dom]}.`),
-              F(`${autres[0]} (${MECA[autres[0]].long})`, `Ce n'est pas le mécanisme dominant : ${POURQUOI[dom]}.`),
-              F(`${autres[1]} (${MECA[autres[1]].long})`, `Ce n'est pas le mécanisme dominant : ${POURQUOI[dom]}.`)] },
+              F(`${autres[0]} (${MECA[autres[0]].long})`, `Ce n’est pas le mécanisme dominant : ${POURQUOI[dom]}.`),
+              F(`${autres[1]} (${MECA[autres[1]].long})`, `Ce n’est pas le mécanisme dominant : ${POURQUOI[dom]}.`)] },
           { id: 'pct', titre: 'La proportion', q: 'Quel pourcentage environ de produit majoritaire attend-on (ordre de grandeur) ?',
             aide: 'Utilise la simulation « Substitution ou élimination » pour reproduire la situation.',
             type: 'saisie', champs: [{ id: 'pct', lib: 'Produit majoritaire', u: '%', vrai: Math.max(q.substitution, q.elimination), tol: 0.1 }],
@@ -59,14 +59,14 @@ export const EXERCICES = [
       const facteur = tire([2, 3, 4]);
       const attendu = M.ordre === 2 ? facteur : 1;
       return {
-        enonce: `Une réaction d'un halogénoalcane RBr suit un mécanisme ${m} (${M.long}).`,
+        enonce: `Une réaction d’un halogénoalcane RBr suit un mécanisme ${m} (${M.long}).`,
         etapes: [
-          { id: 'et', titre: 'Le nombre d\'étapes', q: `Combien d'étapes élémentaires comporte le mécanisme ${m} ?`,
+          { id: 'et', titre: 'Le nombre d\'étapes', q: `Combien d’étapes élémentaires comporte le mécanisme ${m} ?`,
             aide: 'SN2 et E2 : état de transition unique. SN1 et E1 : intermédiaire (carbocation).',
             o: [V(un ? 'Une seule étape, avec un seul état de transition' : 'Deux étapes, avec un carbocation intermédiaire', un ? `${m} se déroule en une étape : le nucléophile ou la base attaque pendant que Br⁻ part.` : `${m} commence par la rupture de C–Br, qui donne le carbocation, puis une étape rapide.`),
               F(un ? 'Deux étapes, avec un carbocation intermédiaire' : 'Une seule étape, avec un seul état de transition', un ? 'Il n\'y a pas de carbocation dans ce mécanisme concerté.' : 'Ce mécanisme passe par un carbocation : il y a deux étapes.'),
               F('Trois étapes ou plus', 'Les mécanismes SN1, SN2, E1 et E2 comptent une ou deux étapes.')] },
-          { id: 'ordre', titre: 'L\'ordre global', q: `Quel est l'ordre global de la loi de vitesse pour ${m} ?`,
+          { id: 'ordre', titre: 'L\'ordre global', q: `Quel est l’ordre global de la loi de vitesse pour ${m} ?`,
             aide: 'La vitesse est celle de l\'étape lente (ou de l\'étape unique).',
             o: [V(`Ordre ${M.ordre} : ${M.loi}`, M.ordre === 2 ? 'Le substrat et le réactif (nucléophile ou base) interviennent dans l\'état de transition unique.' : 'L\'étape lente (rupture de C–Br) ne fait intervenir que le substrat.'),
               F(`Ordre ${3 - M.ordre}`, M.ordre === 2 ? 'Les deux réactifs participent à l\'étape unique : l\'ordre est 2.' : 'Le réactif n\'intervient qu\'après l\'étape lente : l\'ordre est 1.'),
@@ -74,7 +74,7 @@ export const EXERCICES = [
           { id: 'x', titre: 'Un changement de concentration', q: `On multiplie la concentration du réactif (nucléophile ou base) par ${facteur}, celle du substrat restant inchangée. Par quel facteur la vitesse est-elle multipliée ?`,
             aide: M.ordre === 2 ? 'v = k·[RBr]·[réactif] : la vitesse est proportionnelle à la concentration du réactif.' : 'v = k·[RBr] : la concentration du réactif n\'intervient pas.',
             type: 'saisie', champs: [{ id: 'x', lib: 'Facteur de variation de la vitesse', u: '', vrai: attendu, tol: 0.02 }],
-            expl: M.ordre === 2 ? `v = k·[RBr]·[B] : multiplier [B] par ${facteur} multiplie v par ${facteur}.` : `v = k·[RBr] : [B] n'apparaît pas, la vitesse est inchangée (facteur 1).` },
+            expl: M.ordre === 2 ? `v = k·[RBr]·[B] : multiplier [B] par ${facteur} multiplie v par ${facteur}.` : `v = k·[RBr] : [B] n’apparaît pas, la vitesse est inchangée (facteur 1).` },
         ],
         retenir: ['SN2 et E2 : une étape, ordre global 2 (v = k·[RBr]·[Nu]). SN1 et E1 : deux étapes, ordre 1 (v = k·[RBr]) car l\'étape lente ne fait intervenir que le substrat.'],
       };
@@ -152,7 +152,7 @@ export const EXERCICES = [
       const Ea = barriere(m, s, re);
       const noms = P.map(x => `${x[0]} ${x[1]} kJ·mol⁻¹`).join(' ; ');
       return {
-        enonce: `Le profil d'énergie d'une réaction d'un halogénoalcane présente les points suivants : ${noms}. (Les énergies sont données par rapport aux réactifs, en ordre de grandeur.)`,
+        enonce: `Le profil d’énergie d’une réaction d’un halogénoalcane présente les points suivants : ${noms}. (Les énergies sont données par rapport aux réactifs, en ordre de grandeur.)`,
         etapes: [
           { id: 'et', titre: 'Les étapes', q: 'Combien d\'étapes élémentaires ce profil présente-t-il ?',
             aide: 'Comptez les états de transition (maxima) du profil.',

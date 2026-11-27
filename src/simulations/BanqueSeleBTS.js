@@ -1,4 +1,4 @@
-// Banque d'exercices « Syn, anti et sélectivités » (BTS Métiers de la chimie).
+// Banque d’exercices « Syn, anti et sélectivités » (BTS Métiers de la chimie).
 // Programme : « Sélectivité : chimiosélectivité, régiosélectivité, stéréosélectivité, stéréospécificité, syn, anti ».
 //   se-mode, se-produit, se-comparer, se-vocabulaire
 import { ALCENES, REACTIFS, resultat } from './seleModele.js';
