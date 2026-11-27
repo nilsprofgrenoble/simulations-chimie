@@ -21,7 +21,7 @@ export const fixeDefaut = (mode, mol) => (mode === 'ex' ? Math.round(lamsRaies(m
 export const modeValide = (mode, mol) => !(mode === 'ph' && !mol.T);
 
 // ---------- spectres attendus : BANDES (largeur 0,14 eV), intensités relatives (0 à 1) ----------
-export const SIGB = 0.14;
+export const SIGB = X.SIG;
 const gE = (E, E0) => gauss(E, E0, SIGB);
 const densAbs = (mol, E) => X.raiesAbs(mol).reduce((s, E0, v) => s + X.FC[v] * gE(E, E0), 0);
 const pdfB = (raies, E) => raies.reduce((s, E0, v) => s + X.FC[v] * gE(E, E0) / (SIGB * Math.sqrt(2 * Math.PI)), 0);
