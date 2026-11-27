@@ -5,6 +5,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
 import { NB } from "./Distillation";
 import { FicheGravitation, FichePoids, FicheChamps, FicheChampE, FicheForceQE, FicheBilanChamp } from "./ChampForceFiches";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 
 // ====================================================
 //  SIM 48 — CHAMP ET FORCE : champ de gravitation de la Terre, champ électrostatique d'une charge ponctuelle,
@@ -266,7 +267,8 @@ export function SimulationChampForce() {
   const [q, setQ] = useState(2);
   const [aff, setAff] = useState({ grille: true, lignes: true, u: false });
   const [hypoOuv, setHypoOuv] = useState(false);
-  const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
+  const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(3.6, true), uA = enExplore && (LA.joue || LA.t > 0) ? LA.t / 3.6 : null, deca = k => ((k * 0.37) % 1 + 1) % 1;
   const svgRef = useRef(null), glisse = useRef(false);
 
   const terre = src === 'terre';
@@ -502,14 +504,16 @@ export function SimulationChampForce() {
         const [x1, y1] = versPx(vue, r1 * sx, r1 * sy), [x2, y2] = versPx(vue, r2 * sx, r2 * sy);
         const rm = r1 + (r2 - r1) * (oDans ? 0.55 : 0.5), [xm, ym] = versPx(vue, rm * sx, rm * sy);
         L.push(<g key={`l${k}`}><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={BLEU} strokeWidth="1.2" opacity="0.45"/>
-          {fleche(xm, ym, -sx, sy, 10, BLEU, 1.2, `fl${k}`)}</g>);
+          {fleche(xm, ym, -sx, sy, 10, BLEU, 1.2, `fl${k}`)}
+          {uA !== null && (() => { const f = 1 - (uA + deca(k)) % 1; return <circle cx={x1 + (x2 - x1) * f} cy={y1 + (y2 - y1) * f} r="4" fill="#1d4ed8" stroke="white" strokeWidth="1"/>; })()}</g>);
       }
     } else {
       for (let k = 0; k < 16; k++) {
         const a = k / 16 * 2 * Math.PI, sx = Math.cos(a), sy = Math.sin(a), sens = Qn > 0 ? 1 : -1;
         const [x1, y1] = versPx(vue, R0 * sx, R0 * sy), [x2, y2] = versPx(vue, 0.5 * sx, 0.5 * sy);
         L.push(<g key={`l${k}`}><line x1={x1} y1={y1} x2={x2} y2={y2} stroke={BLEU} strokeWidth="1.2" opacity="0.45"/>
-          {[0.055, 0.15].map(r => { const [xa, ya] = versPx(vue, r * sx, r * sy); return fleche(xa, ya, sens * sx, -sens * sy, 10, BLEU, 1.2, `f${k}${r}`); })}</g>);
+          {[0.055, 0.15].map(r => { const [xa, ya] = versPx(vue, r * sx, r * sy); return fleche(xa, ya, sens * sx, -sens * sy, 10, BLEU, 1.2, `f${k}${r}`); })}
+          {uA !== null && [0, 0.5].map(o => { const g = (uA + o + deca(k)) % 1, f = sens > 0 ? g : 1 - g; return <circle key={`p${o}`} cx={x1 + (x2 - x1) * f} cy={y1 + (y2 - y1) * f} r="4" fill={sens > 0 ? ROUGE : BLEU} stroke="white" strokeWidth="1"/>; })}</g>);
       }
     }
     svgLignes = L;
@@ -590,6 +594,7 @@ export function SimulationChampForce() {
         role="img" aria-label={terre ? 'La Terre, son champ de gravitation et un objet M que l’on peut déplacer' : 'Une boule chargée, son champ électrostatique et une charge test M que l’on peut déplacer'}>
         {svgLignes}{svgSource}{svgGrille}{objet}{echelle}
       </svg>
+      {enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>Les points glissent le long des lignes de champ, dans le sens du champ{terre ? ' (vers la Terre)' : Qn > 0 ? ' (ils s’éloignent de la charge positive)' : ' (ils se dirigent vers la charge négative)'}.</div><Commandes L={LA}/></div>}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
         Cliquez ou faites glisser pour déplacer M. <span style={{ color: '#64748b', fontWeight: 700 }}>Flèches grises</span> : le champ en différents points (à l’échelle dans cette vue).
         {' '}<span style={{ color: BLEU, fontWeight: 700 }}>Traits bleus</span> : lignes de champ. <span style={{ color: VERT, fontWeight: 700 }}>Vert</span> : le champ en M.
