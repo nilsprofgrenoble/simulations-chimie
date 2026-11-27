@@ -40,3 +40,15 @@ export function etat(mSolute, mEau, T) {
 
 // Évaporation à T constante : masse d'eau restante à laquelle la solution devient saturée
 export const eauSaturation = (mSolute, T) => mSolute / solubilite(T) * 100;
+
+// Pression de vapeur saturante de l'eau (kPa) : l'eau bout à la température T quand la pression de l'air au-dessus d'elle descend à cette valeur.
+// Valeurs usuelles tabulées tous les 10 °C (tables de vapeur d'eau), interpolation linéaire entre deux valeurs.
+export const P_SAT_EAU = [[0, 0.61], [10, 1.23], [20, 2.34], [30, 4.25], [40, 7.38], [50, 12.35], [60, 19.94], [70, 31.19], [80, 47.39], [90, 70.14], [100, 101.3]];
+export const pSatEau = temp => {
+  const t = Math.max(0, Math.min(100, temp));
+  for (let i = 0; i < P_SAT_EAU.length - 1; i++) {
+    const [t1, p1] = P_SAT_EAU[i], [t2, p2] = P_SAT_EAU[i + 1];
+    if (t <= t2) return p1 + (p2 - p1) * (t - t1) / (t2 - t1);
+  }
+  return P_SAT_EAU[P_SAT_EAU.length - 1][1];
+};

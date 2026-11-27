@@ -44,3 +44,8 @@ assert(M.etat(50, 80, 60).concentration > M.etat(50, 100, 60).concentration);
 const dNaCl = M.SOLUB_NACL[M.SOLUB_NACL.length - 1][1] - M.SOLUB_NACL[0][1];
 assert(dNaCl < 5, 'NaCl varie très peu');
 console.log('cristallisationModele : OK');
+
+// pression de vapeur saturante de l'eau : 19,94 kPa à 60 °C, 101,3 kPa à 100 °C, croissante
+import { pSatEau as _p } from "./cristallisationModele.js";
+if (Math.abs(_p(60) - 19.94) > 1e-9 || Math.abs(_p(100) - 101.3) > 1e-9 || !(_p(65) > _p(60) && _p(65) < _p(70))) { console.error("pSatEau : valeurs incorrectes"); process.exit(1); }
+console.log("OK : pression de vapeur saturante de l'eau");

@@ -25,8 +25,9 @@ function layout(etroit, becher, graphe = true) {
     : { W: 700, H: 330, fs: 1, B: null, G: { x0: 80, x1: 672, yT: 36, yB: 260 } };
 }
 
-export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touche = true, svgRef, aria, phase = 0, dir = null, lecture = false, pointEtat = true, regions = true, becher = true, graphe = true, niveau = 1, vapeur = false, ecart = false }) {
-  const id = useId().replace(/:/g, ''), so = solide, { W, H, fs, B, G } = layout(etroit, becher, graphe);
+export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touche = true, svgRef, aria, phase = 0, dir = null, lecture = false, pointEtat = true, regions = true, becher = true, graphe = true, niveau = 1, vapeur = false, ecart = false, vide = null }) {
+  const id = useId().replace(/:/g, ''), so = solide, { W, H: H0, fs, B, G } = layout(etroit, becher, graphe);
+  const dy0 = B && vide != null ? 92 : 0, H = H0 + dy0;
   const xT = t => G.x0 + clamp(t, 0, 100) / 100 * (G.x1 - G.x0), yS = s => G.yB - clamp(s, 0, so.ymax) / so.ymax * (G.yB - G.yT);
   const e = M.etat(so, T, m, mEau), w = m / mEau * 100, sT = M.sol(so, T), xc = xT(T);
   const courbe = []; for (let t = 0; t <= 100; t += 2) courbe.push(`${xT(t).toFixed(1)},${yS(M.sol(so, t)).toFixed(1)}`);
@@ -67,6 +68,7 @@ export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touc
         {B && <clipPath id={`${id}m`}><path d={`${bord} Z`}/></clipPath>}
         <filter id={`${id}o`} x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#0f172a" floodOpacity="0.2"/></filter>
       </defs>
+      <g transform={`translate(0,${dy0})`}>
       {B && <g>
         {/* plaque chauffante / bain froid */}
         <rect x={B.bx - 12} y={B.bB + 3} width={B.bw + 24} height="14" rx="4" fill="#475569"/>
@@ -77,14 +79,36 @@ export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touc
             <rect x={B.bx} y={yL} width={B.bw} height={B.bB - yL + 10} fill={`url(#${id}b)`}/>
             <line x1={B.bx} x2={B.bx + B.bw} y1={yL} y2={yL} stroke="#38bdf8" strokeWidth="2" opacity="0.8"/>
             {ions.map(o => { const p = pos(o.k, 1); return <circle key={o.k} cx={p.x} cy={p.y} r={6 * Math.max(1, fs * 0.95)} fill={so.col} stroke="#fff" strokeWidth="1.6" opacity={o.op * 0.9}/>; })}
+            {vide != null && vapeur && [0, 1, 2, 3, 4, 5, 6].map(k => { const u = ((phase * 0.4 + k * 0.9) % (2 * Math.PI)) / (2 * Math.PI); return <circle key={`bb${k}`} cx={B.bx + 34 + ((k * 47) % (B.bw - 68)) + 3 * Math.sin(phase * 2 + k)} cy={B.bB - 14 - (B.bB - 14 - yL - 4) * u} r={3 + (k % 3)} fill="#fff" fillOpacity="0.55" stroke="#7dd3fc" strokeWidth="1.4" opacity={1 - Math.max(0, u - 0.85) * 6}/>; })}
             {grains.map(q => <polygon key={q.k} points={`${q.x},${q.y - q.r} ${q.x + q.r},${q.y} ${q.x},${q.y + q.r * 0.8} ${q.x - q.r},${q.y}`} fill="#fff" stroke={so.col} strokeWidth="1.6" strokeLinejoin="round" opacity={q.op}/>)}
           </g>
           <path d={bord} fill="none" stroke={STROKE} strokeWidth="3" strokeLinecap="round"/>
           <path d={`M${B.bx + 12} ${B.bB - B.bh + 10} L${B.bx + 17} ${B.bB - 18}`} stroke="#fff" strokeWidth="4" opacity="0.7" strokeLinecap="round"/>
         </g>
-        {vapeur && <g pointerEvents="none">{[0, 1, 2, 3, 4].map(i => { const x = B.bx + 30 + i * ((B.bw - 60) / 4), dy = ((phase * 14 + i * 23) % 60); return <path key={i} d={`M${x} ${yL - 6 - dy} q${6 * Math.sin(phase * 2 + i)} -9 0 -18 q${-6 * Math.sin(phase * 2 + i)} -9 0 -18`} stroke="#94a3b8" strokeWidth="3" fill="none" strokeLinecap="round" opacity={Math.max(0, 0.75 - dy / 80)}/>; })}</g>}
-        <text x={B.bx + B.bw / 2} y={B.bB - B.bh - 8} textAnchor="middle" fontSize={13.5 * fs} fontWeight="800" fill={so.col}>{so.formule}</text>
+        {vapeur && vide == null && <g pointerEvents="none">{[0, 1, 2, 3, 4].map(i => { const x = B.bx + 30 + i * ((B.bw - 60) / 4), dy = ((phase * 14 + i * 23) % 60); return <path key={i} d={`M${x} ${yL - 6 - dy} q${6 * Math.sin(phase * 2 + i)} -9 0 -18 q${-6 * Math.sin(phase * 2 + i)} -9 0 -18`} stroke="#94a3b8" strokeWidth="3" fill="none" strokeLinecap="round" opacity={Math.max(0, 0.75 - dy / 80)}/>; })}</g>}
+        <text x={B.bx + B.bw / 2} y={vide != null ? B.bB - B.bh + 18 : B.bB - B.bh - 8} textAnchor="middle" fontSize={13.5 * fs} fontWeight="800" fill={so.col}>{so.formule}</text>
         <text x={B.bx + B.bw / 2} y={B.bB + 58 * fs} textAnchor="middle" fontSize={12.5 * fs} fontWeight="700" fill="#334155">{M.gTxt(mEau)}{M.NB}g d’eau · {M.gTxt(m)}{M.NB}g de {so.formule}</text>
+        {vide != null && (() => {
+          const cx = B.bx + B.bw / 2, lidY = B.bB - B.bh - 6, yP = -50, xP = W - 96, gx = cx + 70, frac = clamp(vide / 101.3, 0, 1), th = Math.PI * (1 - frac), r = 22;
+          const L1 = lidY - 14 - yP, L2 = xP - cx;
+          return (
+            <g pointerEvents="none">
+              <path d={`M${cx} ${lidY - 12} V${yP} H${xP}`} fill="none" stroke="#64748b" strokeWidth="9" strokeLinejoin="round"/>
+              <path d={`M${cx} ${lidY - 12} V${yP} H${xP}`} fill="none" stroke="#e2e8f0" strokeWidth="5" strokeLinejoin="round"/>
+              {vapeur && [0, 1, 2, 3].map(i => { const u = ((phase * 0.5 + i * 1.57) % (2 * Math.PI)) / (2 * Math.PI), d = u * (L1 + L2), x = d < L1 ? cx : cx + d - L1, y = d < L1 ? lidY - 12 - d : yP; return <circle key={i} cx={x} cy={y} r="3" fill="#0ea5e9" opacity="0.85"/>; })}
+              <rect x={B.bx - 8} y={lidY} width={B.bw + 16} height="12" rx="4" fill="#64748b" stroke={STROKE} strokeWidth="2"/>
+              <rect x={cx - 7} y={lidY - 14} width="14" height="16" rx="3" fill="#94a3b8" stroke={STROKE} strokeWidth="2"/>
+              <rect x={xP} y={yP - 24} width="76" height="48" rx="9" fill="#475569" stroke={STROKE} strokeWidth="2"/>
+              <text x={xP + 38} y={yP - 3} textAnchor="middle" fontSize={11.5 * fs} fontWeight="800" fill="#fff">pompe</text>
+              <text x={xP + 38} y={yP + 12 * fs} textAnchor="middle" fontSize={11.5 * fs} fontWeight="800" fill="#fff">à vide</text>
+              <circle cx={gx} cy={yP} r={r + 2} fill="#fff" stroke={STROKE} strokeWidth="2.5"/>
+              <path d={`M${gx - r + 3} ${yP} A${r - 3} ${r - 3} 0 0 1 ${gx + r - 3} ${yP}`} fill="none" stroke="#cbd5e1" strokeWidth="4" strokeLinecap="round"/>
+              <path d={`M${gx - r + 3} ${yP} A${r - 3} ${r - 3} 0 0 1 ${gx + (r - 3) * Math.cos(th)} ${yP - (r - 3) * Math.sin(th)}`} fill="none" stroke="#0e7490" strokeWidth="4" strokeLinecap="round"/>
+              <line x1={gx} y1={yP} x2={gx + (r - 4) * Math.cos(th)} y2={yP - (r - 4) * Math.sin(th)} stroke="#dc2626" strokeWidth="2.6" strokeLinecap="round"/>
+              <circle cx={gx} cy={yP} r="3" fill={STROKE}/>
+              <text x={gx} y={yP + r + 18 * fs} textAnchor="middle" fontSize={13 * fs} fontWeight="800" fill="#0e7490">P = {Math.round(vide)}{M.NB}kPa</text>
+            </g>);
+        })()}
         {/* thermomètre */}
         <g>
           <rect x={B.bx + B.bw + 14} y={B.bB - 150} width="12" height="146" rx="6" fill="#fff" stroke={STROKE} strokeWidth="2"/>
@@ -132,5 +156,6 @@ export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touc
       </g>
       <text x={xc} y={G.yB + 50 * fs} textAnchor={ancre} fontSize={13.5 * fs} fontWeight="800" fill="#dc2626" pointerEvents="none">T = {Math.round(T)}{M.NB}°C</text>
       </g>}
+      </g>
     </svg>);
 }
