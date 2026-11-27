@@ -123,7 +123,7 @@ const phrase = (mol, lt, P) => {
 };
 export function VueTemps({ lt0, molFixe, onLt }) {
   const reduit = reduitMouvement();
-  const [molId, setMolId] = useState(molFixe ?? 'B'), [lt, setLt] = useState(lt0 ?? (reduit ? -9 : LT0)), [joue, setJoue] = useState(lt0 == null && !reduit), [sel, setSel] = useState(''), [invite, setInvite] = useState(true);
+  const [molId, setMolId] = useState(molFixe ?? 'B'), [lt, setLt] = useState(lt0 ?? (reduit ? -9 : LT0)), [joue, setJoue] = useState(false), [sel, setSel] = useState(''), [invite, setInvite] = useState(true);
   const mol = M.MOLS[molId], P = M.populations(mol, 10 ** lt), pos = useRef(lt0 ?? LT0);
   useEffect(() => { onLt?.(lt); }, [lt, onLt]);
   useEffect(() => {
@@ -133,7 +133,7 @@ export function VueTemps({ lt0, molFixe, onLt }) {
     id = requestAnimationFrame(f);
     return () => cancelAnimationFrame(id);
   }, [joue]);
-  const lancer = () => { if (joue) { setJoue(false); return; } pos.current = lt >= LT1 - 0.01 || lt <= LT0 + 0.01 ? LT0 : lt; if (pos.current === LT0) setLt(LT0); setJoue(true); };
+  const lancer = () => { if (joue) { setJoue(false); return; } pos.current = lt >= LT1 - 0.01 || lt <= LT0 + 0.01 ? LT0 : lt; if (pos.current === LT0) setLt(LT0); setInvite(false); setJoue(true); };
   const regler = l => { setJoue(false); setInvite(false); pos.current = l; setLt(l); };
   const pr = M.PROCESSUS.find(p => p.id === sel);
   const panneau = (n, t, enfant) => (<div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '8px 8px 4px' }}>
@@ -145,7 +145,8 @@ export function VueTemps({ lt0, molFixe, onLt }) {
       @media (prefers-reduced-motion: no-preference) { .fl-pulse { animation: fl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes fl-pulse { 50% { transform: scale(1.4); } } }
     `}</style>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-      <button onClick={lancer} aria-pressed={joue} style={styleBouton(joue, '#16a34a')}>{joue ? '⏸ Pause' : '▶ Flash à t = 0'}</button>
+      <button onClick={lancer} aria-pressed={joue} style={styleBouton(joue, '#16a34a')}>{joue ? '⏸ Pause' : lt > LT0 + 0.01 && lt < LT1 - 0.01 ? '▶ Reprendre' : '▶ Flash à t = 0'}</button>
+      <button onClick={() => { setJoue(false); setInvite(true); pos.current = LT0; setLt(LT0); }} disabled={lt <= LT0 + 0.01 && !joue} style={styleBouton(false, '#334155')}>↺ Revenir au début</button>
       {!molFixe && <div role="group" aria-label="Molécule" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
         <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Molécule</span>
         {[['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => { setMolId(k); setSel(''); }} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>)}

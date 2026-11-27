@@ -203,8 +203,8 @@ export function VueDispositif({ guide = null }) {
   const [comptage, setComptage] = useState(cp0), [compte, setCompte] = useState(COMPTE0), [lecture, setLecture] = useState(false), [ouvReg, setOuvReg] = useState(false);
   const mol = X.MOLS_T[molId], sigC = D.CONDITIONS[cond].sig, opt = { sig: sigC, fente }, pas = D.pasDe(sigC);
   const [lamF, setLamF] = useState(() => D.fixeDefaut(md0, X.MOLS_T[guide?.mol ?? 'A']));
-  const [acq, setAcq] = useState(() => (reduit && !cp0 ? { lamS: Math.max(SCAN[md0][0], Math.min(SCAN[md0][1], 350)), pts: plein(md0, D.pasDe(D.OPT0.sig)) } : { lamS: SCAN[md0][0], pts: {} }));
-  const [scan, setScan] = useState(!reduit && !cp0), [invite, setInvite] = useState(true);
+  const [acq, setAcq] = useState(() => ((reduit || !guide) && !cp0 ? { lamS: Math.max(SCAN[md0][0], Math.min(SCAN[md0][1], 350)), pts: plein(md0, D.pasDe(D.OPT0.sig)) } : { lamS: SCAN[md0][0], pts: {} }));
+  const [scan, setScan] = useState(!reduit && !cp0 && !!guide), [invite, setInvite] = useState(true), [enPause, setEnPause] = useState(false);
   const pos = useRef(SCAN[md0][0]), posAff = useRef(SCAN[md0][0]), drag = useRef(null);
   const onCompte = guide?.onCompte;
   useEffect(() => { onCompte?.(compte.n); }, [compte.n, onCompte]);
@@ -229,7 +229,7 @@ export function VueDispositif({ guide = null }) {
   const envoyerRef = useRef(envoyer);
   useEffect(() => { envoyerRef.current = envoyer; });
   useEffect(() => { if (!lecture || !comptage) return undefined; const id = setInterval(() => envoyerRef.current(1), 900); return () => clearInterval(id); }, [lecture, comptage]);
-  const enregistrer = (md = mode, s = sigC) => { const lo = SCAN[md][0], p = D.pasDe(s); if (reduit) { setAcq({ lamS: Math.min(SCAN[md][1], Math.max(lo, 350)), pts: plein(md, p) }); return; } pos.current = lo; posAff.current = lo; setAcq({ lamS: lo, pts: {} }); setScan(true); };
+  const enregistrer = (md = mode, s = sigC) => { const lo = SCAN[md][0], p = D.pasDe(s); if (reduit) { setAcq({ lamS: Math.min(SCAN[md][1], Math.max(lo, 350)), pts: plein(md, p) }); return; } pos.current = lo; posAff.current = lo; setEnPause(false); setAcq({ lamS: lo, pts: {} }); setScan(true); };
   const relancer = (md, s) => { setCompte(COMPTE0); setLecture(false); setScan(false); if (!comptage) enregistrer(md, s); };
   const choisirMode = (md, m = mol) => { setScan(false); setMode(md); setLamF(D.fixeDefaut(md, m)); setCompte(COMPTE0); setLecture(false); if (!comptage) enregistrer(md); };
   const choisirMol = id => { const m = X.MOLS_T[id]; setMolId(id); choisirMode(mode === 'ph' && !m.T ? 'em' : mode, m); };
@@ -302,7 +302,8 @@ export function VueDispositif({ guide = null }) {
           {[1, 100, 1000, 10000, ...(mode === 'ex' ? [100000] : [])].map(k => <button key={k} onClick={() => envoyer(k)} style={stylePetitBouton(false)}>{k === 1 ? '1 photon' : `× ${k.toLocaleString('fr-FR')}`}</button>)}
           <button onClick={() => setLecture(l => !l)} aria-pressed={lecture} style={stylePetitBouton(lecture, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Un par un'}</button>
           <button onClick={() => { setLecture(false); setCompte(COMPTE0); }} style={stylePetitBouton(false)}>Effacer</button></div>
-          : <button onClick={() => (scan ? setScan(false) : enregistrer())} aria-pressed={scan} style={styleBouton(scan, '#16a34a')}>{scan ? '⏸ Pause' : '▶ Enregistrer le spectre'}</button>}
+          : <><button onClick={() => { if (scan) { setScan(false); setEnPause(true); } else if (enPause) { setEnPause(false); setScan(true); } else enregistrer(); }} aria-pressed={scan} style={styleBouton(scan, '#16a34a')}>{scan ? '⏸ Pause' : enPause ? '▶ Reprendre' : '▶ Enregistrer le spectre'}</button>
+          <button onClick={() => enregistrer()} style={styleBouton(false, '#334155')}>↺ Recommencer</button></>}
       </div>
     </div>
     <div className="fl-et">{etapes.map((t, i) => <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '6px 8px', fontSize: 13.5, color: KIT.txt, lineHeight: 1.4 }}>
