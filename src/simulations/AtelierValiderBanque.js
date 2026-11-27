@@ -19,6 +19,7 @@ import { TSOL_VAL } from './tsolExos.js';
 import { FILT_VAL } from './filtreExos.js';
 import { GAB_VAL } from './gabExos.js';
 import { AMP_VAL } from './ampExos.js';
+import { BIOT_VAL } from './biotExos.js';
 import { CLP_VAL } from './chutePlaneExos.js';
 import { NWR_VAL } from './newtonRectExos.js';
 import { MTR_VAL } from './modesTransfertExos.js';
@@ -5237,6 +5238,7 @@ export const PLAUSIBLES = [
   ...FILT_VAL,
   ...GAB_VAL,
   ...AMP_VAL,
+  ...BIOT_VAL,
   ...ONDES1G_VAL,
   ...NUC2GT_VAL,
   ...MAT2GT_VAL,
