@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
@@ -25,10 +26,14 @@ const alea = l => l[Math.floor(Math.random() * l.length)];
 const nm = x => `${fr(x, Math.abs(x - Math.round(x)) < 0.05 ? 0 : 1)} nm`;
 
 // ---------- spectrogramme (intensité en fonction de la longueur d'onde) ----------
-function Spectro({ xmin = 200, xmax = 1000, courbe, courbe2, raies, etiq, curseur, compact, titre, w = 700 }) {
+function Spectro({ xmin = 200, xmax = 1000, courbe, courbe2, raies, etiq, curseur, compact, titre, w = 700, balai = null }) {
   const q = w >= 600 ? 1 : 0.5, H = compact ? 92 : 292, X0 = 46, X1 = w - 14, Y0 = compact ? 8 : 14, Y1 = compact ? 66 : 214;
   const X = x => X0 + (x - xmin) / (xmax - xmin) * (X1 - X0), Y = v => Y1 - v * (Y1 - Y0);
   const graduations = []; for (let x = Math.ceil(xmin / 100) * 100; x <= xmax; x += 100) graduations.push(x);
+  const lim = balai == null ? Infinity : balai;
+  if (courbe && balai != null) courbe = courbe.filter(([x]) => x <= lim);
+  if (courbe2 && balai != null) courbe2 = courbe2.filter(([x]) => x <= lim);
+  if (raies && balai != null) raies = raies.filter(([x]) => x <= lim);
   const bandes = []; for (let x = Math.max(xmin, 380); x < Math.min(xmax, 780); x += 5) bandes.push(x);
   return (
     <svg viewBox={`0 0 ${w} ${H}`} width="100%" role="img" aria-label={titre || 'Spectrogramme : intensité lumineuse en fonction de la longueur d’onde'} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
@@ -49,19 +54,24 @@ function Spectro({ xmin = 200, xmax = 1000, courbe, courbe2, raies, etiq, curseu
       {etiq && raies && raies.filter(([x]) => etiq.includes(x)).map(([x, v]) => <text key={`e${x}`} x={X(x)} y={Y(v) - 4} textAnchor="middle" fontSize={20 * q} fontWeight="700" fill="#0f172a" stroke="#fff" strokeWidth="3" paintOrder="stroke">{fr(x, 1)}</text>)}
       {curseur != null && curseur >= xmin && curseur <= xmax && <g><line x1={X(curseur)} y1={Y0} x2={X(curseur)} y2={Y1} stroke="#d55e00" strokeWidth="2" strokeDasharray="6 4"/>
         <text x={X(curseur) + (curseur > (xmin + xmax) * 0.8 ? -6 : 6)} y={Y0 + (compact ? 10 : 30)} textAnchor={curseur > (xmin + xmax) * 0.8 ? 'end' : 'start'} fontSize={24 * q} fontWeight="800" fill="#d55e00">{fr(curseur, 0)} nm</text></g>}
+      {balai != null && balai >= xmin && balai <= xmax && <line x1={X(balai)} y1={Y0} x2={X(balai)} y2={Y1} stroke="#f59e0b" strokeWidth="2.5"/>}
       {titre && compact && <text x={X1 - 4} y={Y0 + 12} textAnchor="end" fontSize={24.5 * q} fontWeight="800" fill="#0f172a">{titre}</text>}
     </svg>);
 }
 
 // ---------- ce que l'on voit sur l'écran (400–800 nm) ----------
-function Bande({ T, raies, nom }) {
+function Bande({ T, raies, nom, balai = null }) {
+  const lim = balai == null ? Infinity : balai;
+  if (raies) raies = raies.filter(([x]) => x <= lim);
   const xs = []; for (let x = 400; x < 780; x += 4) xs.push(x);
+  const xsV = xs.filter(x => x <= lim);
   let m = 0; if (T != null) for (const x of xs) m = Math.max(m, intensiteCorps(x, T));
   const lum = T != null ? Math.min(1, 0.25 + (T - 500) / 1500) : 1;
   return (
     <svg viewBox="0 0 700 64" width="100%" role="img" aria-label={`Spectre sur l’écran : ${nom || ''}`} style={{ display: 'block', borderRadius: 8, background: '#000' }}>
-      {T != null && T >= 500 && xs.map(x => <rect key={x} x={(x - 400) / 400 * 700} y="0" width="8" height="64" fill={css(rgbLambda(x + 2))} opacity={Math.min(1, Math.sqrt(intensiteCorps(x, T) / m)) * lum}/>)}
+      {T != null && T >= 500 && xsV.map(x => <rect key={x} x={(x - 400) / 400 * 700} y="0" width="8" height="64" fill={css(rgbLambda(x + 2))} opacity={Math.min(1, Math.sqrt(intensiteCorps(x, T) / m)) * lum}/>)}
       {raies && raies.filter(([x]) => x >= 400 && x <= 800).map(([x, v]) => <rect key={x} x={(x - 400) / 400 * 700 - 2} y="0" width="4" height="64" fill={css(rgbLambda(x))} opacity={0.45 + 0.55 * v}/>)}
+      {balai != null && balai >= 400 && balai <= 800 && <rect x={(balai - 400) / 400 * 700 - 1.5} y="0" width="3" height="64" fill="#f59e0b"/>}
       <text x="8" y="55" fontSize="26.5" fontWeight="700" fill="#fff" opacity="0.9" stroke="#000" strokeWidth="3" paintOrder="stroke">{nom}</text>
       <text x="692" y="55" fontSize="24" fill="#fff" opacity="0.8" textAnchor="end">400 nm → 800 nm</text>
     </svg>);
@@ -166,6 +176,9 @@ export function SimulationSpectres() {
   const [blanche, setBlanche] = useState(false);
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(7, true), balaiOn = enExplore && (LA.joue || LA.t > 0), fB = LA.t / 7;
+  const balaiChaud = balaiOn && atelier === 'chaud' ? 200 + fB * 800 : null, balaiDech = balaiOn && atelier === 'decharge' ? 340 + fB * 460 : null;
+  const aideBalai = enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>Lance le balayage : un trait orange parcourt les longueurs d’onde et le spectre se construit, de l’ultraviolet à l’infrarouge.</div><Commandes L={LA}/></div>;
   const g = gaz(G), etoile = ETOILES.find(e => e.id === Et);
   const Teff = atelier === 'etoiles' ? etoile.T : T;
 
@@ -265,8 +278,9 @@ export function SimulationSpectres() {
   const gazCache = enDefi && defi.type === 'gaz';
   const ChaudPanel = (
     <div>
-      <Spectro courbe={courbeCorps(T)}/>
-      <div style={{ marginTop: 6 }}><Bande T={T} nom="spectre sur l’écran"/></div>
+      <Spectro courbe={courbeCorps(T)} balai={balaiChaud}/>
+      <div style={{ marginTop: 6 }}><Bande T={T} nom="spectre sur l’écran" balai={balaiChaud}/></div>
+      {aideBalai}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 }}>
         <div style={{ width: 64, height: 64, borderRadius: '50%', background: css(couleurCorps(T).rgb), border: '3px solid #0f172a', flexShrink: 0 }} aria-hidden="true"/>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>Couleur perçue : <strong>{couleurCorps(T).nom}</strong><br/>Maximum du spectre : <strong>λ ≈ {nm(lambdaMax(T))}</strong>{lambdaMax(T) > 800 ? ' (infrarouge)' : lambdaMax(T) < 400 ? ' (ultraviolet)' : ' (visible)'}</div></div>
@@ -291,8 +305,9 @@ export function SimulationSpectres() {
   const DechargePanel = (
     <div>
       {blanche && <div style={{ marginBottom: 4 }}><Bande T={5700} nom="lumière blanche (lampe à incandescence)"/></div>}
-      <Bande raies={g.raies} nom={gazCache ? 'gaz inconnu' : `lampe à décharge : ${g.nom.toLowerCase()}`}/>
-      <div style={{ marginTop: 6 }}><Spectro xmin={340} xmax={800} raies={g.raies} curseur={cur}/></div>
+      <Bande raies={g.raies} nom={gazCache ? 'gaz inconnu' : `lampe à décharge : ${g.nom.toLowerCase()}`} balai={balaiDech}/>
+      <div style={{ marginTop: 6 }}><Spectro xmin={340} xmax={800} raies={g.raies} curseur={cur} balai={balaiDech}/></div>
+      {aideBalai}
       <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginTop: 8 }}>
         <div style={{ width: 52, height: 52, borderRadius: '50%', background: css(couleurLampe(g)), border: '3px solid #0f172a', flexShrink: 0 }} aria-hidden="true"/>
         <div style={{ fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>Couleur perçue de la lampe (approximative)<br/>{rep != null ? <>Curseur sur une raie : <strong>λ = {fr(rep, 1)} nm</strong></> : <span style={{ color: KIT.txt2 }}>Placez le curseur sur une raie pour lire sa longueur d’onde.</span>}</div></div>
