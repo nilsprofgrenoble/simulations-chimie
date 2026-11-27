@@ -10,9 +10,9 @@ const cadre = (aria, h, children) => (
     <rect x="4" y="4" width="292" height={h - 8} rx="14" fill="#f8fafc" stroke={K.clair}/>{children}
   </svg>);
 const E = id => M.ESPECES[id];
-const mini = (id, f, x, y, w, extra = {}) => { const e = E(id), xs = e.atomes.map(a => a.x), ys = e.atomes.map(a => a.y), W = Math.max(...xs) - Math.min(...xs) + 84, H = Math.max(...ys) - Math.min(...ys) + 70;
+const mini = (id, f, x, y, w, extra = {}) => { const e = E(id), xs = e.atomes.map(a => a.x), ys = e.atomes.map(a => a.y), W = Math.max(...xs) - Math.min(...xs) + 82, H = Math.max(...ys) - Math.min(...ys) + 70;
   return <SceneMes e={e} f={f} compact rogne pos={{ x, y, w, h: w * H / W }} {...extra}/>; };
-const hauteur = (id, w) => { const e = E(id), xs = e.atomes.map(a => a.x), ys = e.atomes.map(a => a.y); return w * (Math.max(...ys) - Math.min(...ys) + 70) / (Math.max(...xs) - Math.min(...xs) + 84); };
+const hauteur = (id, w) => { const e = E(id), xs = e.atomes.map(a => a.x), ys = e.atomes.map(a => a.y); return w * (Math.max(...ys) - Math.min(...ys) + 70) / (Math.max(...xs) - Math.min(...xs) + 82); };
 const t = (x, y, s, o = {}) => <text x={x} y={y} textAnchor={o.a || 'middle'} fontSize={o.size || 12.5} fontWeight={o.gras ? 800 : 400} fill={o.fill || K.txt}>{s}</text>;
 
 // Carte 1 : les formes mésomères
@@ -23,7 +23,7 @@ export function SvgFormesCarte() {
       {t(150, 26, 'Les formes mésomères', { size: 14.5, gras: true })}
       {mini('ethanoate', F[0], 6, 38, w, { arrows: M.coups(e, F[0])[0] })}
       {mini('ethanoate', F[1], 162, 38, w, { arrows: M.coups(e, F[1])[0] })}
-      <path d="M 141 78 L 159 78 M 141 78 l 5 -4 M 141 78 l 5 4 M 159 78 l -5 -4 M 159 78 l -5 4" stroke={K.txt} strokeWidth="2.2" fill="none" strokeLinecap="round"/>
+      <path d="M 144 80 L 156 80 M 144 80 l 4 -3 M 144 80 l 4 3 M 156 80 l -4 -3 M 156 80 l -4 3" stroke={K.txt} strokeWidth="2.2" fill="none" strokeLinecap="round"/>
       {t(150, 38 + h + 26, 'mêmes atomes, doublets déplacés', { gras: true, fill: OR })}
       {t(150, 38 + h + 46, 'le symbole ↔ n’est ni une réaction', {})}
       {t(150, 38 + h + 62, 'ni un équilibre : c’est la même espèce', {})}
@@ -43,13 +43,13 @@ export function SvgHybrideCarte() {
 }
 // Carte 3 : délocalisation dans un cation
 export function SvgCationCarte() {
-  const e = E('allyle'), F = M.formes(e), w = 132, h = hauteur('allyle', w);
-  return cadre('Cation allyle : le carbone chargé a une lacune ; les électrons de la double liaison se déplacent vers lui et la lacune passe sur l’autre carbone terminal.', 262,
+  const e = E('allyle'), F = M.formes(e), w = 144, h = hauteur('allyle', w);
+  return cadre('Cation allyle : le carbone chargé a une lacune ; les électrons de la double liaison se déplacent vers lui et la lacune passe sur l’autre carbone terminal.', 226,
     <g>
       {t(150, 26, 'Une charge + qui se déplace', { size: 14.5, gras: true })}
-      {mini('allyle', F[0], 6, 38, w, { arrows: M.coups(e, F[0])[0] })}
-      {mini('allyle', F[1], 162, 38, w, { arrows: M.coups(e, F[1])[0] })}
-      <path d="M 141 78 L 159 78 M 141 78 l 5 -4 M 141 78 l 5 4 M 159 78 l -5 -4 M 159 78 l -5 4" stroke={K.txt} strokeWidth="2.2" fill="none" strokeLinecap="round"/>
+      {mini('allyle', F[0], 0, 38, w, { arrows: M.coups(e, F[0])[0] })}
+      {mini('allyle', F[1], 156, 38, w, { arrows: M.coups(e, F[1])[0] })}
+      <path d="M 144 80 L 156 80 M 144 80 l 4 -3 M 144 80 l 4 3 M 156 80 l -4 -3 M 156 80 l -4 3" stroke={K.txt} strokeWidth="2.2" fill="none" strokeLinecap="round"/>
       {t(150, 38 + h + 26, 'lacune = carbone à 3 liaisons, 6 électrons', { fill: K.txt })}
       {t(150, 38 + h + 46, 'la charge + est partagée entre', { gras: true, fill: OR })}
       {t(150, 38 + h + 62, 'les deux carbones terminaux', { gras: true, fill: OR })}
