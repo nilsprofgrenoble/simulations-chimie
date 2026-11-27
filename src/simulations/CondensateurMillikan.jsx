@@ -4,6 +4,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi, avecIndices } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { FichePlaques, FicheUniforme, FicheForceElectrique, FichePoidsGoutte, FicheEquilibre, FicheMillikan } from "./CondensateurMillikanFiches";
 
 // ====================================================
@@ -220,7 +221,8 @@ export function SimulationCondensateurMillikan() {
   const [M, setM] = useState({ x: 0.5, y: 0.45 });            // position de M dans l’entrefer (fractions de la largeur et de la hauteur)
   const [aff, setAff] = useState({ grille: true, lignes: true });
   const [hypoOuv, setHypoOuv] = useState(false);
-  const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
+  const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(3.4, true), animG = enExplore && (LA.joue || LA.t > 0);
   const svgRef = useRef(null), glisse = useRef(false);
 
   // ---------- physique ----------
@@ -417,8 +419,15 @@ export function SimulationCondensateurMillikan() {
     return flecheV(x, y - dirE * lenE / 2, dirE, lenE, GRIS, 2, `g${a}${b}`);
   }));
   const sensTxtE = Ebas ? 'vers le bas' : 'vers le haut';
+  // exploration : la gouttelette est lâchée en M ; le mouvement (qualitatif) suit la résultante des forces
+  const rel = (Fy - P) / P, enRepos = equilibre || (Math.abs(rel) < 0.01);
+  let dyG = 0;
+  if (animG) {
+    const haut = Math.min(0, yH + ep + 16 - yM), bas = Math.max(0, yB - ep - 16 - yM), tt = Math.min(LA.t, 3);
+    dyG = enRepos ? 1.6 * Math.sin(2 * Math.PI * LA.t / 1.4) : Math.max(haut, Math.min(bas, -Math.sign(rel) * 0.5 * 130 * Math.min(1.5, Math.abs(rel)) * tt * tt));
+  }
   const goutte = (
-    <g>
+    <g transform={`translate(0 ${dyG.toFixed(2)})`}>
       {!cache.valeurs && U > 0 && <>{flecheV(xM - 30, yM - dirE * lenE / 2, dirE, lenE, VERT, 3.2, 'em')}{etiquetteVec(xM - 44, yM + 4, 'E', VERT, 'eem')}</>}
       {cache.fleches !== true && F > 0 && <>{flecheV(xM + 12, yM, Fhaut ? -1 : 1, lenF, ROUGE, 3.2, 'fm')}{etiquetteVec(xM + 28, yM + (Fhaut ? -lenF / 2 : lenF / 2) + 4, 'F', ROUGE, 'efm')}</>}
       {cache.fleches !== true && <>{flecheV(xM - 12, yM, 1, lenP, BLEU, 3.2, 'pm')}{etiquetteVec(xM - 27, yM + lenP / 2 + 4, 'P', BLEU, 'epm')}</>}
@@ -440,6 +449,7 @@ export function SimulationCondensateurMillikan() {
         <text x={XP1} y={Math.max(18, yH - 12)} fontSize="22" fontWeight="700" fill="#0f172a">U = {fmt(U, 0)} V</text>
         {U === 0 && <text x={W0 / 2} y={YC + 7} textAnchor="middle" fontSize="22" fontWeight="700" fill="#64748b">U = 0 : pas de champ</text>}
       </svg>
+      {enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>La gouttelette est lâchée en M : elle monte, descend ou reste en place selon la force résultante ({enRepos ? 'ici elle est en équilibre' : rel > 0 ? 'ici la force électrique l’emporte : elle monte' : 'ici le poids l’emporte : elle descend'}). Mouvement qualitatif.</div><Commandes L={LA}/></div>}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
         Cliquez ou faites glisser pour déplacer M. <span style={{ color: GRIS, fontWeight: 700 }}>Flèches grises</span> et <span style={{ color: BLEU, fontWeight: 700 }}>traits bleus</span> : le champ entre les plaques (hors de la zone entre les plaques, il n’est pas représenté).
         {' '}<span style={{ color: VERT, fontWeight: 700 }}>Vert</span> : le champ en M. <span style={{ color: ROUGE, fontWeight: 700 }}>Rouge</span> : la force électrique. <span style={{ color: BLEU, fontWeight: 700 }}>Bleu foncé</span> : le poids
