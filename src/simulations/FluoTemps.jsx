@@ -7,7 +7,9 @@ import { K, T } from "./schemaOutils";
 import * as M from "./fluoModele";
 import { couleurLam } from "./fluoDispositif";
 import { reduitMouvement } from "./hookHorloge";
-import { KIT, stylePetitBouton, styleBouton } from "../commun";
+import { KIT } from "../commun";
+import { Reglages, Segment, BarreAction } from "./FluoUI";
+import { stylePrincipal, styleSecondaire } from "./fluoStyles";
 
 const NB = ' ';
 const COL = { abs: '#7c3aed', fluo: '#15803d', phos: '#b91c1c', cis: '#c2410c', nr: '#64748b' };
@@ -215,7 +217,7 @@ function VueReel({ mol }) {
   const bandes = []; h.forEach((e, i) => { if (e.l && i < NS - 1) bandes.push(<rect key={i} x={x(i)} y="34" width={x(i + 1) - x(i) + 0.6} height="14" fill="#a78bfa"/>); });
   return (<div>
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-      <button onClick={bascule} aria-pressed={!lampe} style={styleBouton(!lampe, '#7c3aed')}>{lampe ? '⏹ Arrêter l’excitation' : '💡 Rallumer la lampe'}</button>
+      <button onClick={bascule} aria-pressed={!lampe} style={stylePrincipal(false, lampe ? '#7c3aed' : '#16a34a')}>{lampe ? '⏹ Arrêter l’excitation' : '💡 Rallumer la lampe'}</button>
       <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Vitesse réelle : une seconde à l’écran dure une seconde.</span></div>
     <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: '6.2em' }}>
       {lampe ? <>La lampe UV éclaire en continu : on voit la lampe et la lueur de fluorescence, qui est émise {B ? 'en même temps que' : 'tant que dure'} l’excitation{B ? ', avec une lueur de phosphorescence qui se met en place en une seconde environ' : ''}. Cliquez sur « Arrêter l’excitation ».</>
@@ -275,23 +277,16 @@ export function VueTemps({ lt0, molFixe, onLt }) {
       @media (min-width: 900px) { .fl-pr { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); } .fl-pt { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1.15fr); } }
       @media (prefers-reduced-motion: no-preference) { .fl-pulse { animation: fl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes fl-pulse { 50% { transform: scale(1.4); } } }
     `}</style>
-    {!molFixe && <div role="group" aria-label="Échelle de temps" style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center', marginBottom: 8 }}>
-      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Échelle de temps</span>
-      {[[false, 'Logarithmique (de 10⁻¹⁵ s à 10³ s)'], [true, 'Temps réel (lampe allumée)']].map(([r, l]) => <button key={l} onClick={() => { setJoue(false); setReel(r); }} aria-pressed={reel === r} style={stylePetitBouton(reel === r, '#334155')}>{l}</button>)}</div>}
-    {reel ? <>
-      {!molFixe && <div role="group" aria-label="Molécule" style={{ display: 'flex', gap: 4, alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Molécule</span>
-        {[['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => { setMolId(k); setSel(''); }} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>)}</div>}
-      <VueReel key={mol.id} mol={mol}/></> : <>
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
-      <button onClick={lancer} aria-pressed={joue} style={styleBouton(joue, '#16a34a')}>{joue ? '⏸ Pause' : lt > LT0 + 0.01 && lt < LT1 - 0.01 ? '▶ Reprendre' : '▶ Flash à t = 0'}</button>
-      <button onClick={() => { setJoue(false); setInvite(true); pos.current = LT0; setLt(LT0); }} disabled={lt <= LT0 + 0.01 && !joue} style={styleBouton(false, '#334155')}>↺ Revenir au début</button>
-      {!molFixe && <div role="group" aria-label="Molécule" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-        <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Molécule</span>
-        {[['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => { setMolId(k); setSel(''); }} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>)}
-      </div>}
-      <span style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, fontVariantNumeric: 'tabular-nums', minWidth: '9.5em' }}>t = {txtT(lt)}</span>
-    </div>
+    {!molFixe && <Reglages>
+      <Segment titre="Molécule" valeur={molId} options={[['A', 'A : fluorescente'], ['B', 'B : phosphorescente']]} onChange={k => { setMolId(k); setSel(''); }}/>
+      <Segment titre="Échelle de temps" valeur={reel} options={[[false, 'Logarithmique'], [true, 'Temps réel']]} onChange={r => { setJoue(false); setReel(r); }}/>
+    </Reglages>}
+    {reel ? <VueReel key={mol.id} mol={mol}/> : <>
+    <BarreAction>
+      <button onClick={lancer} aria-pressed={joue} style={stylePrincipal(joue)}>{joue ? '⏸ Pause' : lt > LT0 + 0.01 && lt < LT1 - 0.01 ? '▶ Reprendre' : '▶ Lancer le flash'}</button>
+      <button onClick={() => { setJoue(false); setInvite(true); pos.current = LT0; setLt(LT0); }} disabled={lt <= LT0 + 0.01 && !joue} style={{ ...styleSecondaire, opacity: lt <= LT0 + 0.01 && !joue ? 0.4 : 1 }}>↺ Revenir au début</button>
+      <span style={{ marginLeft: 'auto', fontSize: 15, fontWeight: 700, color: KIT.txt, fontVariantNumeric: 'tabular-nums', minWidth: '9.5em', textAlign: 'right' }}>t = {txtT(lt)}</span>
+    </BarreAction>
     <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: '4.4em' }}>
       {pr ? <><strong>{pr.nom}</strong> ({pr.duree}, {pr.radiatif ? 'avec' : 'sans'} photon) : {pr.desc}.</> : phrase(mol, lt, P)}</div>
     <div className="fl-pt">

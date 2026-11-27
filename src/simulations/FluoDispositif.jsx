@@ -8,7 +8,9 @@ import { K, T } from "./schemaOutils";
 import * as X from "./fluoTirages";
 import * as D from "./fluoDispositif";
 import { reduitMouvement } from "./hookHorloge";
-import { KIT, stylePetitBouton, styleBouton, Section } from "../commun";
+import { Reglages, Segment, BarreAction } from "./FluoUI";
+import { stylePrincipal, styleSecondaire } from "./fluoStyles";
+import { KIT, Section } from "../commun";
 
 const NB = ' ';
 const fr2 = v => v.toFixed(2).replace('.', ',').replace('-', '−');
@@ -216,7 +218,6 @@ function Spectre({ mode, mol, opt, lamS, lamF, grille, pts, comptage, compte, on
 }
 
 // ---------- vue complète ----------
-const groupe = (titre, enfant) => (<div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}><span style={{ fontSize: 13.5, color: KIT.txt2, fontWeight: 700, marginRight: 2 }}>{titre}</span>{enfant}</div>);
 // guide (parcours guidé) : { mode, mol, comptage, conditions, onCompte } ; les réglages non utiles à l'étape sont cachés
 export function VueDispositif({ guide = null }) {
   const reduit = reduitMouvement(), md0 = guide?.mode ?? 'abs', cp0 = !!guide?.comptage;
@@ -306,26 +307,29 @@ export function VueDispositif({ guide = null }) {
         .fl-pulse { animation: fl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes fl-pulse { 50% { transform: scale(1.6); } } }
     `}</style>
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
-      {!guide && <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {groupe('Spectre', MODES.map(([k, l]) => { const off = (k === 'ph' && !mol.T) || (k === 'abs' && comptage);
-          return <button key={k} onClick={() => choisirMode(k)} disabled={off} aria-pressed={mode === k} title={k === 'ph' && !mol.T ? 'Molécule B seulement' : k === 'abs' && comptage ? 'En absorption, on compare deux intensités : passez en « Intensité »' : undefined} style={{ ...stylePetitBouton(mode === k, '#16a34a'), opacity: off ? 0.45 : 1 }}>{l}</button>; }))}
-        {groupe('Molécule', [['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => choisirMol(k)} aria-pressed={molId === k} style={stylePetitBouton(molId === k, '#334155')}>{l}</button>))}
-      </div>}
-      {(!guide || guide.conditions) && (() => { const reg = <><div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {groupe('Échantillon', Object.values(D.CONDITIONS).map(c => <button key={c.id} onClick={() => choisirCond(c.id)} aria-pressed={cond === c.id} style={stylePetitBouton(cond === c.id, '#0f766e')}>{c.court}</button>))}
-        {groupe('Fentes', D.FENTES.map(f => <button key={f} onClick={() => choisirFente(f)} aria-pressed={fente === f} title="bande passante des monochromateurs" style={stylePetitBouton(fente === f, '#0f766e')}>{f}{NB}nm</button>))}
+      {!guide && <Reglages>
+        <Segment titre="Molécule" valeur={molId} options={[['A', 'A : fluorescente'], ['B', 'B : phosphorescente']]} onChange={choisirMol}/>
+        <Segment titre="Spectre à enregistrer" valeur={mode} onChange={choisirMode} options={MODES.map(([k, l]) => [k, k === 'ph' ? 'Phospho.' : l, (k === 'ph' && !mol.T) || (k === 'abs' && comptage),
+          k === 'ph' && !mol.T ? 'Molécule B seulement' : k === 'abs' && comptage ? 'En absorption, on compare deux intensités : choisissez « Intensité »' : undefined])}/>
+        <Segment titre="Mesure" valeur={comptage} onChange={choisirComptage} options={[[false, 'Intensité'], [true, 'Photon par photon']]}/>
+      </Reglages>}
+      {(!guide || guide.conditions) && (() => { const reg = <><div style={{ display: 'grid', gap: 8, gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+        <Segment titre="Échantillon" valeur={cond} onChange={choisirCond} options={Object.values(D.CONDITIONS).map(c => [c.id, c.court])}/>
+        <Segment titre="Fentes (bande passante)" valeur={fente} onChange={choisirFente} options={D.FENTES.map(f => [f, `${f}${NB}nm`])}/>
       </div>
       <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.45, marginTop: 4 }}>{D.CONDITIONS[cond].cause}{fente >= 10 && cond !== 'solution' ? ' Avec des fentes de 10 nm, l’appareil écrase une partie de cette structure : elle existe, mais on ne la voit plus.' : ''}</div></>;
         return guide ? <div>{reg}</div> : <Section titre={`Échantillon et appareil : ${D.CONDITIONS[cond].court} · fentes ${fente}${NB}nm`} ouvert={ouvReg} onBascule={() => setOuvReg(o => !o)}><div style={{ padding: '0 10px 8px' }}>{reg}</div></Section>; })()}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center' }}>
-        {!guide && groupe('Mesure', [[false, 'Intensité (balayage)'], [true, 'Compter les photons']].map(([c, l]) => <button key={l} onClick={() => choisirComptage(c)} aria-pressed={comptage === c} style={stylePetitBouton(comptage === c, '#334155')}>{l}</button>))}
-        {comptage ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-          {[1, 100, 1000, 10000, ...(mode === 'ex' ? [100000] : [])].map(k => <button key={k} onClick={() => envoyer(k)} style={stylePetitBouton(false)}>{k === 1 ? '1 photon' : `× ${k.toLocaleString('fr-FR')}`}</button>)}
-          <button onClick={() => setLecture(l => !l)} aria-pressed={lecture} style={stylePetitBouton(lecture, '#16a34a')}>{lecture ? '⏸ Pause' : '▶ Un par un'}</button>
-          <button onClick={() => { setLecture(false); setCompte(COMPTE0); }} style={stylePetitBouton(false)}>Effacer</button></div>
-          : <><button onClick={() => { if (scan) { setScan(false); setEnPause(true); } else if (enPause) { setEnPause(false); setScan(true); } else enregistrer(); }} aria-pressed={scan} style={styleBouton(scan, '#16a34a')}>{scan ? '⏸ Pause' : enPause ? '▶ Reprendre' : '▶ Enregistrer le spectre'}</button>
-          <button onClick={() => enregistrer()} style={styleBouton(false, '#334155')}>↺ Recommencer</button></>}
-      </div>
+      <BarreAction>
+        {comptage ? <>
+          <button onClick={() => setLecture(l => !l)} aria-pressed={lecture} style={stylePrincipal(lecture)}>{lecture ? '⏸ Pause' : '▶ Un photon à la fois'}</button>
+          <div role="group" aria-label="Envoyer des photons d’un coup" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 13, color: KIT.txt2 }}>d’un coup :</span>
+            <div style={{ display: 'flex', border: '1.5px solid #16a34a', borderRadius: 10, overflow: 'hidden' }}>
+              {[1, 100, 1000, 10000, ...(mode === 'ex' ? [100000] : [])].map((k, i) => <button key={k} onClick={() => envoyer(k)} style={{ minHeight: 38, padding: '4px 9px', border: 'none', borderLeft: i ? '1px solid #bbf7d0' : 'none', background: '#f0fdf4', color: '#166534', fontWeight: 700, fontSize: 13.5, cursor: 'pointer' }}>{k === 1 ? '1' : `× ${k.toLocaleString('fr-FR')}`}</button>)}</div></div>
+          <button onClick={() => { setLecture(false); setCompte(COMPTE0); }} style={styleSecondaire}>Effacer</button></>
+          : <><button onClick={() => { if (scan) { setScan(false); setEnPause(true); } else if (enPause) { setEnPause(false); setScan(true); } else enregistrer(); }} aria-pressed={scan} style={stylePrincipal(scan)}>{scan ? '⏸ Pause' : enPause ? '▶ Reprendre' : '▶ Enregistrer le spectre'}</button>
+          <button onClick={() => enregistrer()} style={styleSecondaire}>↺ Recommencer</button></>}
+      </BarreAction>
     </div>
     <div className="fl-et">{etapes.map((t, i) => <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: 10, padding: '6px 8px', fontSize: 13.5, color: KIT.txt, lineHeight: 1.4 }}>
       <span style={{ flex: '0 0 auto', width: 20, height: 20, lineHeight: '20px', borderRadius: 10, background: '#15803d', color: '#fff', textAlign: 'center', fontSize: 12, fontWeight: 700 }}>{i + 1}</span>{t}</div>)}</div>
