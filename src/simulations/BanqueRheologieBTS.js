@@ -1,6 +1,6 @@
-// Banque d'exercices « Rhéologie : épaississants associatifs ASE, HASE, HEUR » (BTS Métiers de la chimie, formulation).
+// Banque d’exercices « Rhéologie : épaississants associatifs ASE, HASE, HEUR » (BTS Métiers de la chimie, formulation).
 // Format du site (voir AtelierSituationsBanque.js) : un exercice = { id, domaine, niveau, titre, construire }.
-// Programme : « Propriétés rhéologiques : comment modifier les propriétés rhéologiques d'un produit ? »,
+// Programme : « Propriétés rhéologiques : comment modifier les propriétés rhéologiques d’un produit ? »,
 //   « additifs rhéologiques : épaississants », « identifier à partir de rhéogrammes les comportements rhéologiques ».
 //   rheo-famille, rheo-gant-crochet, rheo-thixol, rheo-coapur, rheo-3itt, rheo-ase, rheo-ecoulement, rheo-dose-forte, rheo-peintures
 // Les réponses numériques sont calculées par le modèle à partir des valeurs AFFICHÉES (donnée arrondie avant le calcul).

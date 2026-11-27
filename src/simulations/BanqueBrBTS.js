@@ -1,4 +1,4 @@
-// Banque d'exercices « Addition du dibrome sur un alcène » (BTS Métiers de la chimie).
+// Banque d’exercices « Addition du dibrome sur un alcène » (BTS Métiers de la chimie).
 // Compétences visées : test de la double liaison ; mécanisme par ion bromonium ; addition anti ; stéréospécificité.
 //   br-test, br-meca, br-stereo, br-cyclo
 import { ALCENES } from './brModele.js';
@@ -12,7 +12,7 @@ export const EXERCICES = [
     construire: () => {
       const c = tire([['le cyclohexène', true], ['le but-1-ène', true], ['l\'hexane', false], ['le cyclohexane', false]]);
       return {
-        enonce: `On ajoute quelques gouttes d'eau de dibrome (brune) à un échantillon de ${c[0]}. On agite.`,
+        enonce: `On ajoute quelques gouttes d’eau de dibrome (brune) à un échantillon de ${c[0]}. On agite.`,
         etapes: [
           { id: 'obs', titre: 'L\'observation', q: 'Qu\'observe-t-on ?',
             aide: 'Le dibrome s\'additionne sur une double liaison C=C ; sur un alcane, il ne réagit pas à froid et à l\'obscurité.',
@@ -58,7 +58,7 @@ export const EXERCICES = [
       const A = ALCENES[tire(['Z', 'E'])], z = A.cle === 'Z';
       return {
         schema: { type: 'br3d', alc: A.cle },
-        enonce: `On fait réagir le ${A.nom} avec Br₂. La réaction est une addition anti, et les deux faces de l'alcène sont attaquées avec la même probabilité. Le produit est le 2,3-dibromobutane (deux carbones asymétriques).`,
+        enonce: `On fait réagir le ${A.nom} avec Br₂. La réaction est une addition anti, et les deux faces de l’alcène sont attaquées avec la même probabilité. Le produit est le 2,3-dibromobutane (deux carbones asymétriques).`,
         etapes: [
           { id: 'res', titre: 'Le produit', q: 'Quel est le résultat stéréochimique ?',
             aide: z ? 'Chaque face conduit à un énantiomère.' : 'Les deux faces conduisent au même composé.',
@@ -83,7 +83,7 @@ export const EXERCICES = [
       const A = ALCENES.cyclo;
       return {
         schema: { type: 'br3d', alc: 'cyclo' },
-        enonce: `Le cyclohexène réagit avec Br₂ pour donner le ${A.produit}. L'addition est anti.`,
+        enonce: `Le cyclohexène réagit avec Br₂ pour donner le ${A.produit}. L’addition est anti.`,
         etapes: [
           { id: 'cfg', titre: 'La configuration relative', q: 'Quel stéréoisomère se forme ?',
             aide: 'Anti : les deux Br sont de part et d\'autre du plan moyen du cycle.',

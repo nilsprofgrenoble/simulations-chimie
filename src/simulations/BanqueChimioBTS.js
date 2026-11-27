@@ -1,5 +1,5 @@
-// Banque d'exercices « Chimiosélectivité » (BTS Métiers de la chimie).
-// Programme : « Sélectivité : chimiosélectivité… » ; « extraire d'un mécanisme les informations qui expliquent la formation d'un produit, des sous-produits ».
+// Banque d’exercices « Chimiosélectivité » (BTS Métiers de la chimie).
+// Programme : « Sélectivité : chimiosélectivité… » ; « extraire d’un mécanisme les informations qui expliquent la formation d’un produit, des sous-produits ».
 //   ch-groupe, ch-choisir, ch-perte, ch-paracetamol
 import { SUBSTRATS, bilan, nomGroupe } from './chimioModele.js';
 const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -17,10 +17,10 @@ export const EXERCICES = [
         etapes: [
           { id: 'qui', titre: 'Le groupe transformé', q: 'Quel groupe est transformé ?', aide: 'Comparez la réactivité des deux groupes vis-à-vis du réactif.',
             o: [V(`Le groupe ${nomGroupe(s, g)}`, b.R.pourquoi),
-              F(`Le groupe ${nomGroupe(s, autre)}`, `Ce groupe n'est pas attaqué dans ces conditions : ${b.R.pourquoi}`),
+              F(`Le groupe ${nomGroupe(s, autre)}`, `Ce groupe n’est pas attaqué dans ces conditions : ${b.R.pourquoi}`),
               F('Les deux groupes', 'Dans ces conditions, un seul des deux groupes réagit.')] },
           { id: 'prod', titre: 'Le produit', q: 'Quel est le produit obtenu ?', aide: 'Transformez uniquement le groupe concerné.',
-            o: [V(b.R.produit, `Le groupe ${nomGroupe(s, g)} est transformé ; l'autre est conservé.`),
+            o: [V(b.R.produit, `Le groupe ${nomGroupe(s, g)} est transformé ; l’autre est conservé.`),
               ...[...new Set(Object.values(S.reactifs).map(r => r.produit).filter(x => x !== b.R.produit && x !== 'aucune réaction notable'))].slice(0, 2).map(x => F(x, 'Ce produit correspond à un autre réactif ou à d\'autres conditions.')),
               F('Un produit où les deux groupes sont transformés', 'Dans ces conditions, un seul groupe réagit.')].slice(0, 3) },
           { id: 'chi', titre: 'Le qualificatif', q: 'Cette réaction est-elle chimiosélective ?', aide: 'Un seul groupe sur deux réagit-il ?',

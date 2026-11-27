@@ -1,29 +1,30 @@
 // ═══════════════════════════════════════════════════════════════════════════
-//  BANQUE D'EXERCICES « CONTRÔLE CINÉTIQUE ET THERMODYNAMIQUE » (BTS Métiers de la chimie)
+//  BANQUE D’EXERCICES « CONTRÔLE CINÉTIQUE ET THERMODYNAMIQUE » (BTS Métiers de la chimie)
 //  Même format que AtelierSituationsBanque.js. Les valeurs du modèle (énergies, facteur A) viennent de cinetModele.js,
 //  comme dans la simulation « Contrôle cinétique ou thermodynamique : addition de HBr sur le buta-1,3-diène ».
 //  Compétences visées (chimie organique, diènes conjugués, sélectivité) :
-//   • Écrire les produits d'addition 1,2 et 1,4 d'un diène conjugué (carbocation allylique, mésomérie)  → cinet-diene
-//   • Exploiter un profil d'énergie à deux voies : barrières, barrière inverse, stabilité des produits   → cinet-profil
+//   • Écrire les produits d’addition 1,2 et 1,4 d’un diène conjugué (carbocation allylique, mésomérie)  → cinet-diene
+//   • Exploiter un profil d’énergie à deux voies : barrières, barrière inverse, stabilité des produits   → cinet-profil
 //   • Distinguer contrôle cinétique et contrôle thermodynamique selon les conditions                    → cinet-conditions
-//   • Prévoir qualitativement la composition à l'équilibre (stabilité des produits, température)         → cinet-equilibre
+//   • Prévoir qualitativement la composition à l’équilibre (stabilité des produits, température)         → cinet-equilibre
 //   • Réversibilité : barrière inverse, température et durée                                             → cinet-arrhenius
 // ═══════════════════════════════════════════════════════════════════════════
 import { E } from './cinetModele.js';
 
+const moins = x => String(x).replace('-', '−'); // vrai signe moins dans les énergies
 const tire = t => t[Math.floor(Math.random() * t.length)];
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
 const DOM = 'Contrôle cinétique et thermodynamique (BTS)';
 
 export const EXERCICES = [
-  // ── C1 : les deux produits d'un diène conjugué ──
+  // ── C1 : les deux produits d’un diène conjugué ──
   {
     id: 'cinet-diene', domaine: DOM, niveau: 2, titre: 'Les deux produits d\'addition sur un diène conjugué',
     construire: () => {
       const X = tire([['HBr', 'brom', 'Br'], ['HCl', 'chlor', 'Cl']]);
       return {
-        enonce: `On fait réagir le buta-1,3-diène CH₂=CH–CH=CH₂ avec ${X[0]}. À l'étape 1, H⁺ se fixe sur le carbone C1 : on obtient le carbocation allylique CH₃–CH⁺–CH=CH₂ (numérotation du diène : C1 portant maintenant CH₃, charge + sur C2, double liaison C3=C4).`,
+        enonce: `On fait réagir le buta-1,3-diène CH₂=CH–CH=CH₂ avec ${X[0]}. À l’étape 1, H⁺ se fixe sur le carbone C1 : on obtient le carbocation allylique CH₃–CH⁺–CH=CH₂ (numérotation du diène : C1 portant maintenant CH₃, charge + sur C2, double liaison C3=C4).`,
         etapes: [
           { id: 'meso', titre: 'La délocalisation de la charge', q: 'Sur quels carbones la charge + peut-elle se trouver (formes mésomères) ?',
             aide: 'Le doublet de la double liaison C3=C4 peut se déplacer vers C2⁺ en créant une nouvelle double liaison C2=C3.',
@@ -32,12 +33,12 @@ export const EXERCICES = [
               F('Sur C1 ou sur C3', 'C1 est un groupe méthyle et C3 est au milieu du système conjugué : la charge ne s\'y place pas.')] },
           { id: 'p12', titre: 'L\'addition 1,2', q: `Quel est le produit si ${X[2]}⁻ se fixe sur C2 ?`,
             aide: `${X[2]} est lié à C2 ; la double liaison C3=C4 reste en place.`,
-            o: [V(`Le 3-${X[1]}obut-1-ène CH₃–CH(${X[2]})–CH=CH₂`, `${X[2]} est sur C2, la double liaison reste C3=C4 (terminale) : c'est l'addition 1,2.`),
+            o: [V(`Le 3-${X[1]}obut-1-ène CH₃–CH(${X[2]})–CH=CH₂`, `${X[2]} est sur C2, la double liaison reste C3=C4 (terminale) : c’est l’addition 1,2.`),
               F(`Le 1-${X[1]}obut-2-ène CH₃–CH=CH–CH₂${X[2]}`, `Ce produit correspond à une attaque sur C4 (addition 1,4), pas sur C2.`),
               F(`Le 2-${X[1]}obutane CH₃–CHBr–CH₂–CH₃`.replace('Br', X[2]), 'Ce produit serait saturé : il aurait fixé deux H, mais le diène n\'a fixé que H et ' + X[2] + '.')] },
           { id: 'p14', titre: 'L\'addition 1,4', q: `Quel est le produit si ${X[2]}⁻ se fixe sur C4 ?`,
-            aide: `${X[2]} est lié à C4 ; la double liaison s'est déplacée entre C2 et C3.`,
-            o: [V(`Le 1-${X[1]}obut-2-ène CH₃–CH=CH–CH₂${X[2]}`, `${X[2]} est sur C4 (extrémité), la double liaison se retrouve entre C2 et C3 : c'est l'addition 1,4.`),
+            aide: `${X[2]} est lié à C4 ; la double liaison s’est déplacée entre C2 et C3.`,
+            o: [V(`Le 1-${X[1]}obut-2-ène CH₃–CH=CH–CH₂${X[2]}`, `${X[2]} est sur C4 (extrémité), la double liaison se retrouve entre C2 et C3 : c’est l’addition 1,4.`),
               F(`Le 3-${X[1]}obut-1-ène CH₃–CH(${X[2]})–CH=CH₂`, `Ce produit correspond à une attaque sur C2 (addition 1,2).`),
               F(`Le 4-${X[1]}obut-1-ène`, 'Un 4-halogénobut-1-ène n\'aurait pas la bonne structure : H s\'est fixé sur C1 et le doublet de C3=C4 s\'est déplacé pour former la liaison C2=C3.')] },
         ],
@@ -46,14 +47,14 @@ export const EXERCICES = [
     },
   },
 
-  // ── C2 : lire un profil d'énergie ──
+  // ── C2 : lire un profil d’énergie ──
   {
     id: 'cinet-profil', domaine: DOM, niveau: 2, titre: 'Lire un profil à deux produits : barrières et stabilité',
     construire: () => {
       const Ec = tire([15, 20, 25]), a = tire([8, 10, 12]), b = a + tire([2, 3, 4]), P12 = tire([-55, -60, -65]), d = tire([5, 7, 9]), P14 = P12 - d;
       const ET2a = Ec + a, ET2b = Ec + b, inv12 = ET2a - P12, inv14 = ET2b - P14;
       return {
-        enonce: `Le carbocation allylique (énergie ${Ec} kJ·mol⁻¹, réactifs = 0) peut donner deux produits. Pour la voie 1,2, le sommet de la barrière (ET₂) est à ${ET2a} kJ·mol⁻¹ et le produit à ${P12} kJ·mol⁻¹. Pour la voie 1,4, ET₂ est à ${ET2b} kJ·mol⁻¹ et le produit à ${P14} kJ·mol⁻¹.`,
+        enonce: `Le carbocation allylique (énergie ${Ec} kJ·mol⁻¹, réactifs = 0) peut donner deux produits. Pour la voie 1,2, le sommet de la barrière (ET₂) est à ${ET2a} kJ·mol⁻¹ et le produit à ${moins(P12)} kJ·mol⁻¹. Pour la voie 1,4, ET₂ est à ${ET2b} kJ·mol⁻¹ et le produit à ${moins(P14)} kJ·mol⁻¹.`,
         etapes: [
           { id: 'ea', titre: 'La barrière de formation', q: 'Quelle est l\'énergie d\'activation de la formation du produit 1,2 à partir du carbocation ?',
             aide: 'Énergie du sommet ET₂ de la voie 1,2 moins énergie du carbocation.',
@@ -61,18 +62,18 @@ export const EXERCICES = [
             expl: `E_a = ${ET2a} − ${Ec} = ${a} kJ·mol⁻¹.` },
           { id: 'cin', titre: 'Le produit cinétique', q: 'Quel produit se forme le plus vite à partir du carbocation ?',
             aide: 'Comparez les barrières de formation : la plus basse est franchie le plus facilement.',
-            o: [V('Le produit 1,2', `Sa barrière (${a} kJ·mol⁻¹) est inférieure à celle du produit 1,4 (${b} kJ·mol⁻¹) : c'est le produit cinétique.`),
+            o: [V('Le produit 1,2', `Sa barrière (${a} kJ·mol⁻¹) est inférieure à celle du produit 1,4 (${b} kJ·mol⁻¹) : c’est le produit cinétique.`),
               F('Le produit 1,4', `Sa barrière (${b} kJ·mol⁻¹) est supérieure à celle du produit 1,2 (${a} kJ·mol⁻¹) : il se forme moins vite.`),
               F('Les deux à la même vitesse', 'Les deux barrières sont différentes : les vitesses le sont aussi.')] },
           { id: 'thermo', titre: 'Le produit thermodynamique', q: 'Quel produit est le plus stable ?',
             aide: 'Le produit le plus stable est celui dont l\'énergie est la plus basse.',
-            o: [V('Le produit 1,4', `${P14} kJ·mol⁻¹ est inférieur à ${P12} kJ·mol⁻¹ : le produit 1,4 est le plus stable (produit thermodynamique).`),
-              F('Le produit 1,2', `${P12} kJ·mol⁻¹ est supérieur à ${P14} kJ·mol⁻¹ : le produit 1,2 est moins stable.`),
+            o: [V('Le produit 1,4', `${moins(P14)} kJ·mol⁻¹ est inférieur à ${moins(P12)} kJ·mol⁻¹ : le produit 1,4 est le plus stable (produit thermodynamique).`),
+              F('Le produit 1,2', `${moins(P12)} kJ·mol⁻¹ est supérieur à ${moins(P14)} kJ·mol⁻¹ : le produit 1,2 est moins stable.`),
               F('Ils ont la même stabilité', 'Leurs énergies sont différentes.')] },
           { id: 'inv', titre: 'La barrière inverse', q: 'Quelle énergie faut-il fournir au produit 1,4 pour qu\'il redevienne le carbocation ?',
             aide: 'Énergie du sommet ET₂ de la voie 1,4 moins énergie du produit 1,4.',
             type: 'saisie', champs: [{ id: 'inv', lib: 'Barrière inverse (1,4 → carbocation)', u: 'kJ·mol⁻¹', vrai: inv14, tol: 0.02 }],
-            expl: `E = ${ET2b} − (${P14}) = ${inv14} kJ·mol⁻¹ (pour comparaison, celle du produit 1,2 vaut ${inv12} kJ·mol⁻¹ : la plus faible des deux, donc le produit 1,2 est le premier à se retransformer).` },
+            expl: `E = ${ET2b} − (${moins(P14)}) = ${inv14} kJ·mol⁻¹ (pour comparaison, celle du produit 1,2 vaut ${inv12} kJ·mol⁻¹ : la plus faible des deux, donc le produit 1,2 est le premier à se retransformer).` },
         ],
         retenir: ['Produit cinétique : barrière de formation la plus basse. Produit thermodynamique : énergie la plus basse. La barrière inverse (sommet − produit) mesure la facilité avec laquelle un produit se retransforme.'],
       };
@@ -110,20 +111,20 @@ export const EXERCICES = [
     },
   },
 
-  // ── C4 : composition à l'équilibre (lecture qualitative du profil) ──
+  // ── C4 : composition à l’équilibre (lecture qualitative du profil) ──
   {
     id: 'cinet-equilibre', domaine: DOM, niveau: 2, titre: 'Prévoir qualitativement la composition à l\'équilibre',
     construire: () => {
       const d = tire([4, 7, 12]), P12 = -60, P14 = P12 - d;
       return {
-        enonce: `Sous contrôle thermodynamique, les deux produits s'interconvertissent via le carbocation et le mélange atteint l'équilibre. Le produit 1,2 est à ${P12} kJ·mol⁻¹ et le produit 1,4 à ${P14} kJ·mol⁻¹ (réactifs = 0).`,
+        enonce: `Sous contrôle thermodynamique, les deux produits s’interconvertissent via le carbocation et le mélange atteint l’équilibre. Le produit 1,2 est à ${moins(P12)} kJ·mol⁻¹ et le produit 1,4 à ${moins(P14)} kJ·mol⁻¹ (réactifs = 0).`,
         etapes: [
           { id: 'maj', titre: 'Le produit majoritaire', q: 'Quel produit est majoritaire à l\'équilibre ?',
             aide: 'À l\'équilibre, le produit le plus stable domine.',
-            o: [V('Le produit 1,4', `Son énergie (${P14} kJ·mol⁻¹) est inférieure à celle du produit 1,2 (${P12} kJ·mol⁻¹) : c'est le plus stable.`),
-              F('Le produit 1,2', `Il est moins stable (${P12} kJ·mol⁻¹) que le produit 1,4 (${P14} kJ·mol⁻¹).`),
+            o: [V('Le produit 1,4', `Son énergie (${moins(P14)} kJ·mol⁻¹) est inférieure à celle du produit 1,2 (${moins(P12)} kJ·mol⁻¹) : c’est le plus stable.`),
+              F('Le produit 1,2', `Il est moins stable (${moins(P12)} kJ·mol⁻¹) que le produit 1,4 (${moins(P14)} kJ·mol⁻¹).`),
               F('Les deux en quantités égales', 'Leurs énergies sont différentes : l\'équilibre favorise le plus stable.')] },
-          { id: 'ecart', titre: 'L\'effet de l\'écart d\'énergie', q: `L'écart d'énergie entre les deux produits est de ${d} kJ·mol⁻¹. Si cet écart était plus grand, la proportion de produit 1,4 à l'équilibre serait …`,
+          { id: 'ecart', titre: 'L\'effet de l\'écart d\'énergie', q: `L’écart d’énergie entre les deux produits est de ${d} kJ·mol⁻¹. Si cet écart était plus grand, la proportion de produit 1,4 à l’équilibre serait …`,
             aide: 'Plus un produit est stable par rapport à l\'autre, plus il domine.',
             o: [V('plus élevée : le mélange serait plus sélectif', 'Un écart d\'énergie plus grand favorise davantage le produit le plus stable.'),
               F('plus faible', 'Un plus grand écart de stabilité accentue la domination du produit le plus stable.'),

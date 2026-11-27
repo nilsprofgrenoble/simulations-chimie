@@ -52,6 +52,9 @@ function SchemaEnIndice({ schema }) {
 }
 
 // ── Énoncé avec données cliquables ──
+// « 10^9 » → « 10⁹ » : vrais exposants dans les valeurs des énoncés
+const SUPX = { '-': '⁻', 0: '⁰', 1: '¹', 2: '²', 3: '³', 4: '⁴', 5: '⁵', 6: '⁶', 7: '⁷', 8: '⁸', 9: '⁹' };
+const expo = t => typeof t === 'string' ? t.replace(/10\^(-?\d+)/g, (_, e) => '10' + e.split('').map(c => SUPX[c]).join('')) : t;
 function Texte({ ex, sel, onToggle, marque }) {
   const style = id => {
     const m = marque ? marque(id) : null, choisi = sel.includes(id);
@@ -79,9 +82,9 @@ function Texte({ ex, sel, onToggle, marque }) {
     <div>
       {paragraphes.map((par, n) => (
         <p key={n} style={{ fontSize: 16, lineHeight: 2, color: KIT.txt, margin: '0 0 8px' }}>
-          {par.map((m, i) => typeof m === 'string' ? <span key={i}>{m}</span> : (
+          {par.map((m, i) => typeof m === 'string' ? <span key={i}>{expo(m)}</span> : (
             <button key={i} data-id={m.t} data-utile={ex.b.utiles.includes(m.t) ? 'true' : 'false'} aria-pressed={sel.includes(m.t)}
-              onClick={() => onToggle(m.t)} style={style(m.t)}>{ex.b.tokens[m.t].aff}</button>
+              onClick={() => onToggle(m.t)} style={style(m.t)}>{expo(ex.b.tokens[m.t].aff)}</button>
           ))}
         </p>
       ))}
@@ -182,8 +185,8 @@ export function ExerciceDonnees({ id, q, entete, navigation }) {
         {chk.sel && (
           <div>
             <Verdict ok={sb.ok}>{sb.ok ? 'Toutes les données utiles, et seulement elles.' : `${sb.mauvais.length ? `${sb.mauvais.length} donnée(s) inutile(s) choisie(s). ` : ''}${sb.manques.length ? `${sb.manques.length} donnée(s) utile(s) oubliée(s).` : ''}`}</Verdict>
-            {sb.mauvais.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="ko"/><b>{ex.b.tokens[id].aff}</b> ({ex.b.tokens[id].quoi}) : {(ex.b.raisons || {})[id] || 'cette donnée n’intervient pas dans le calcul demandé.'}</div>)}
-            {vu.sel && sb.manques.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="warn"/>À ne pas oublier : <b>{ex.b.tokens[id].aff}</b> ({ex.b.tokens[id].quoi}).</div>)}
+            {sb.mauvais.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="ko"/><b>{expo(ex.b.tokens[id].aff)}</b> ({ex.b.tokens[id].quoi}) : {(ex.b.raisons || {})[id] || 'cette donnée n’intervient pas dans le calcul demandé.'}</div>)}
+            {vu.sel && sb.manques.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="warn"/>À ne pas oublier : <b>{expo(ex.b.tokens[id].aff)}</b> ({ex.b.tokens[id].quoi}).</div>)}
             {!vu.sel && sb.manques.length > 0 && <div style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="warn"/>Il manque encore {sb.manques.length} donnée(s) utile(s).</div>}
           </div>)}
         {barre('sel', stages.indexOf('sel'))}
