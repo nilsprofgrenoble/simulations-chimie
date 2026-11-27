@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { reduitMouvement } from "./hookHorloge";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi, Curseur } from "../commun";
@@ -55,17 +56,18 @@ export function Equation({ r }) {
 
 // ---------- la scène : des jetons pour compter les quantités ----------
 const W = 392, X0 = 124, PAS = 20, GAP = 7, ECRAN_MAX = 420;
-function Scene({ r, n, k = null, avant = true, titreAvant = 'Avant', titreApres = 'Après', groupes = false, calc = false, etiq = false, energie = false, produitsSeuls = false }) {
+function Scene({ r, n, k = null, vivant = false, avant = true, titreAvant = 'Avant', titreApres = 'Après', groupes = false, calc = false, etiq = false, energie = false, produitsSeuls = false }) {
   const els = []; let y = 4;
   const b = bilan(r, n), jeton = r.jeton;
   const posX = (i, coef) => X0 + 11 + i * PAS + (groupes && coef > 1 ? Math.floor(i / coef) * GAP : 0);
   const titre = (t, yy) => <text key={`t${t}${yy}`} x="6" y={yy + 13} fontSize="13.5" fontWeight="800" fill={GRIS}>{t}</text>;
   // une ligne : étiquette, jetons (reste : quantité restante en jetons ; total : places à dessiner), quantité, et lignes d'aide
-  const ligne = (e, yy, { total, reste, fant, statut, calcul, couleur }) => {
+  const ligne = (e, yy, { total, reste, fant, statut, calcul, couleur, pop }) => {
     const h = 38 + (statut || calcul ? 16 : 0), nbSlots = Math.ceil(total - 1e-9), noeuds = [];
     for (let j = 0; j < nbSlots; j++) {
       const q = Math.max(0, Math.min(1, reste - j));
-      noeuds.push(<Jeton key={j} cx={posX(j, e.coef)} cy={yy + 17} forme={e.forme} couleur={couleur} frac={q > 1 - 1e-9 ? 1 : q} fantome={fant && q < 1e-9} cid={`s${yy}-${e.id}-${j}`}/>);
+      const jt = <Jeton key={j} cx={posX(j, e.coef)} cy={yy + 17} forme={e.forme} couleur={couleur} frac={q > 1 - 1e-9 ? 1 : q} fantome={fant && q < 1e-9} cid={`s${yy}-${e.id}-${j}`}/>;
+      noeuds.push(pop && vivant && j >= nbSlots - Math.max(1, e.coef || 1) ? <g key={`${j}-${nbSlots}`} className="rl-pop">{jt}</g> : jt);
     }
     if (groupes && e.coef > 1) {
       for (let g = 0; g < Math.floor(total / e.coef + 1e-9); g++) {
@@ -105,7 +107,7 @@ function Scene({ r, n, k = null, avant = true, titreAvant = 'Avant', titreApres 
     });
     r.produits.forEach((p, j) => {
       const t = fin.produits[j] / jeton;
-      const l = ligne(p, y, { total: t, reste: t, couleur: COULEURS[`p${j}`] });
+      const l = ligne(p, y, { total: t, reste: t, couleur: COULEURS[`p${j}`], pop: true });
       els.push(l.node); y += l.h;
     });
     if (energie && r.energie) {
@@ -382,7 +384,16 @@ export function SimulationReactifLimitant() {
   // ════════════════ EXPLORATION ════════════════
   const rE = reactionDe(ex.rId), bE = bilan(rE, ex.n), finE = Math.abs(ex.k - bE.rmin) < 1e-9;
   const pasE = rE.jeton, peutE = peutFaire(rE, ex.n, ex.k, pasE);      // un clic = un « pas » : 1 recette (méthane), 0,01 recette (calcaire, DBA : quantités en centièmes de mole)
-  const choisirReaction = id => { const r = reactionDe(id); setEx({ rId: id, n: r.n0.map(x => arrondi(x * r.jeton)), k: 0, methode: false }); };
+  const [auto, setAuto] = useState(false);
+  const incE = pasE * Math.max(1, Math.ceil(bE.rmin / pasE / 8));
+  useEffect(() => {
+    if (!auto) return undefined;
+    const id = setInterval(() => setEx(s => { const fin = bilan(reactionDe(s.rId), s.n).rmin; if (s.k >= fin - 1e-9) { setAuto(false); return s; } return { ...s, k: Math.min(fin, arrondi(s.k + incE)) }; }), 650);
+    return () => clearInterval(id);
+  }, [auto, incE]);
+  const toutFaire = () => { if (reduitMouvement()) setEx(s => ({ ...s, k: bE.rmin })); else setAuto(true); };
+  const choisirReaction = id => { setAuto(false); choisirReaction0(id); };
+  const choisirReaction0 = id => { const r = reactionDe(id); setEx({ rId: id, n: r.n0.map(x => arrondi(x * r.jeton)), k: 0, methode: false }); };
   const regler = (i, v) => setEx(s => ({ ...s, n: s.n.map((x, j) => (j === i ? arrondi(v) : x)), k: 0 }));
   const verdictE = finE ? (bE.stoechio ? 'Les deux réactifs sont entièrement consommés : on avait exactement les proportions de la recette.'
     : `Le réactif limitant est ${nomCourt(rE.reactifs[bE.limitants[0]])}. Il reste ${mol(rE, bE.restes[1 - bE.limitants[0]])} de ${nomCourt(rE.reactifs[1 - bE.limitants[0]])} (réactif en excès).`) : null;
@@ -391,7 +402,7 @@ export function SimulationReactifLimitant() {
     <div className="rl-ex">
       <div className="rl-sc">
         <Equation r={rE}/>
-        <Scene r={rE} n={ex.n} k={ex.k} titreAvant="Au départ" titreApres={finE ? 'À la fin' : 'En cours'} groupes={ex.methode} calc={ex.methode} etiq={finE} energie/>
+        <Scene r={rE} n={ex.n} k={ex.k} vivant titreAvant="Au départ" titreApres={finE ? 'À la fin' : 'En cours'} groupes={ex.methode} calc={ex.methode} etiq={finE} energie/>
         {verdictE && <div style={{ marginTop: 8, padding: '6px 10px', borderRadius: 10, background: '#f0fdf4', border: '1.5px solid #86efac', fontSize: 14.5, lineHeight: 1.5 }}><Pic n="ok"/>{verdictE}</div>}
       </div>
       <div className="rl-reg">
@@ -401,8 +412,8 @@ export function SimulationReactifLimitant() {
             {REACTIONS.map(r => <option key={r.id} value={r.id}>{r.nom}</option>)}</select>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
             <button onClick={() => setEx(s => ({ ...s, k: peutFaire(rE, s.n, s.k, pasE) ? arrondi(s.k + pasE) : s.k }))} disabled={!peutE} style={{ ...styleBouton(true, '#16a34a'), opacity: peutE ? 1 : 0.45 }}>{pasE === 1 ? 'Faire une recette' : `Faire ${fr(pasE, 2)} recette`}</button>
-            <button onClick={() => setEx(s => ({ ...s, k: bE.rmin }))} disabled={finE} style={{ ...styleBouton(true, '#4338ca'), opacity: finE ? 0.45 : 1 }}>Tout faire</button>
-            <button onClick={() => setEx(s => ({ ...s, k: 0 }))} style={styleBouton(false)}>↺ Recommencer</button>
+            <button onClick={toutFaire} disabled={finE || auto} style={{ ...styleBouton(true, '#4338ca'), opacity: finE || auto ? 0.45 : 1 }}>{auto ? 'En cours…' : 'Tout faire'}</button>
+            <button onClick={() => { setAuto(false); setEx(s => ({ ...s, k: 0 })); }} style={styleBouton(false)}>↺ Recommencer</button>
           </div>
           <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>{pasE === 1 ? 'Chaque clic réalise la recette une fois' : `Les quantités sont petites : chaque clic réalise seulement ${fr(pasE, 2)} recette (une petite partie de la recette)`} : les réactifs diminuent, les produits apparaissent. « Tout faire » va jusqu’à l’épuisement du limitant.</div>
           {!finE && !peutE && <div style={{ fontSize: 13, color: ORANGE, fontWeight: 700, marginTop: 4 }}>Il ne reste pas de quoi faire un pas entier : cliquez sur « Tout faire ».</div>}
@@ -469,6 +480,8 @@ export function SimulationReactifLimitant() {
       <style>{`
         .rl-l1 { display: grid; align-items: start; gap: 12px; margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
         .rl-l1.cote { grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr); }
+        @media (prefers-reduced-motion: no-preference) { .rl-pop { animation: rl-pop .5s ease-out; transform-box: fill-box; transform-origin: center; } }
+        @keyframes rl-pop { 0% { transform: scale(.2); opacity: 0; } 60% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); } }
         .rl-ex { display: grid; gap: 12px; align-items: start; grid-template-columns: minmax(0, 1fr); margin-bottom: 12px; }
         .rl-ex .rl-sc { grid-column: 1; grid-row: 1; }
         @media (min-width: 901px) { .rl-ex { grid-template-columns: minmax(0, 1.4fr) minmax(280px, 1fr); } .rl-ex .rl-reg { grid-column: 2; grid-row: 1; } }
