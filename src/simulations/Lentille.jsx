@@ -50,7 +50,6 @@ function Lunette({ L, normales, mince, foyers, ideale = false, w = 700, hauteurs
   return (
     <svg viewBox={`0 0 ${w} 330`} width="100%" role="img" aria-label="Rayons lumineux parallèles à l’axe optique traversant une lentille convergente" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="8" y1={AXE} x2={w - 8} y2={AXE} stroke="#0f172a" strokeWidth="1.5" strokeDasharray="10 5"/>
-      <text x={w - 12} y={AXE + 16} textAnchor="end" fontSize="24" fontWeight="700" fill="#0f172a">axe optique Δ</text>
       <polygon points={contourVerre(L)} fill="#7dd3fc" fillOpacity="0.45" stroke="#0369a1" strokeWidth="2.5"/>
       {lum && <polygon className="ln-verre" points={contourVerre(L)} fill="#fff" stroke="none"/>}
       <g opacity={op}>
@@ -80,7 +79,8 @@ function Lunette({ L, normales, mince, foyers, ideale = false, w = 700, hauteurs
         {legende && <line x1={G.xO} y1={AXE + 30} x2={fo.xF} y2={AXE + 30} stroke={C_F} strokeWidth="2"/>}</g>}
       <text x="14" y="26" fontSize="24.5" fontWeight="800" fill="#0f172a">faisceau de rayons parallèles à l’axe</text>
       {lum && <CouchePhotons chemins={chem} lum={{ ...lum, impact: false, k: kPhoton() }}/>}
-    </svg>);
+          <text x={w - 12} y={AXE + 16} textAnchor="end" fontSize="24" fontWeight="700" fill="#0f172a" stroke="#fff" strokeWidth="6" paintOrder="stroke">axe optique Δ</text>
+</svg>);
 }
 
 // ---------- banc d'optique (lentille mince, f′ en cm) ----------

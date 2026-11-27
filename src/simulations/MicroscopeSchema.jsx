@@ -19,7 +19,7 @@ const LV = 350, X1 = 190, KS = 6;
 export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, AB = 20, cotes = null, montre = {}, large = 740, label, lum = null, poignee = null, refSvg = null }) {
   const { inter = true, F2 = true, statut = true, theta = false, noms = true } = montre;
   const H0 = 5 + (clamp(AB, M.AB_MIN, M.AB_MAX) - M.AB_MIN) / (M.AB_MAX - M.AB_MIN) * 9;
-  const fk = etroit() ? 2.1 : 1, fs = 13.5 * fk, haut = (fk > 1 ? (cotes ? 440 : 400) : (cotes ? 285 : 260)) + (poignee ? 60 : 0), y0 = haut / 2;
+  const fk = etroit() ? 2.1 : 1, fs = 13.5 * fk, haut = (fk > 1 ? (cotes ? 440 : 400) : (cotes ? 285 : 260)) + (poignee ? (fk > 1 ? 95 : 60) : 0), y0 = haut / 2;
   const X2 = X1 + LV, f1v = 40 + 1.5 * f1, f2v = 40 + 1.6 * f2, qF = LV - f2v;
   const sv = clamp(s * KS, -60, Math.min(60, f2v - 22)), q = qF + sv, p = f1v * q / (q - f1v);
   const X0 = X1 - p, XA1 = X1 + q, XF2 = X2 - f2v, XE = X2 + f2v;
@@ -87,7 +87,7 @@ export function SchemaMicroscope({ s = 0, f1 = 10, f2 = 25, AB = 20, cotes = nul
         const b1 = [XRet, mapOk ? Y(yP) : Y(hh1 + o1 * (f2v + eLen))], b2 = [XRet, mapOk ? Y(yP) : Y(hh2 + o2 * (f2v + eLen))];
         return <CouchePhotons chemins={[{ c: COUL.rayon1, pts: [...r1, b1] }, { c: COUL.rayon2, pts: [...r2, b2] }]} lum={{ ...lum, k: fk > 1 ? 1.8 : 1 }}/>;
       })()}
-      {poignee && <Poignee x={X0} y={y0 + (fk > 1 ? 175 : 138)} g={fk > 1 ? 1.9 : 1} coul={COUL.obj} label="Molette : distance objet–objectif (en mm)" valeur={poignee.p} vmin={poignee.vmin} vmax={poignee.vmax} texte={`${fr(poignee.p, 2)} mm`} touche={poignee.touche} onToucher={poignee.onToucher} pas={0.05}
+      {poignee && <Poignee x={X0} y={y0 + (fk > 1 ? 207 : 138)} g={fk > 1 ? 1.9 : 1} coul={COUL.obj} label="Molette : distance objet–objectif (en mm)" valeur={poignee.p} vmin={poignee.vmin} vmax={poignee.vmax} texte={`${fr(poignee.p, 2)} mm`} touche={poignee.touche} onToucher={poignee.onToucher} pas={0.05}
         lire={e => {
           const r = refSvg.current.getBoundingClientRect(), x = (e.clientX - r.left) * large / r.width, pv = X1 - x;
           if (pv <= f1v + 1) return poignee.vmin;
