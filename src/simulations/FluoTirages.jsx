@@ -2,7 +2,7 @@
 // Rien n'est codé par la seule couleur : styles de trait (plein, tirets), hachures et noms écrits à côté des flèches.
 import { K, T } from "./schemaOutils";
 import * as X from "./fluoTirages";
-import { styleBouton, KIT } from "../commun";
+import { styleBouton, stylePetitBouton, KIT } from "../commun";
 
 const COL = { abs: '#7c3aed', fluo: '#15803d', phos: '#b91c1c', cis: '#c2410c', nr: '#64748b' };
 const NB = ' ';
@@ -78,5 +78,48 @@ export function CommandesTirages({ tir, couleur = '#16a34a' }) {
       <button onClick={() => { tir.setLecture(false); tir.effacer(); }} style={styleBouton(false)}>Effacer</button>
     </div>
     {tir.plein && <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6 }}>Maximum atteint ({X.MAX_PHOTONS.toLocaleString('fr-FR')} photons) : effacez pour recommencer.</div>}
+  </div>);
+}
+
+// ---------- vue d'exploration complète : réglages sur une ligne, diagramme et histogramme côte à côte ----------
+const nf = v => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '\u202f');
+export function VueTirages({ tir }) {
+  const t = tir.t, E = t.etat, mol = X.MOLS_T[t.mol], exc = t.mode === 'excitation';
+  const detectes = exc ? E.ex.reduce((a, b) => a + b, 0) : E.nFl + E.nPh;
+  const puce = (n, v) => <span key={n} style={{ display: 'inline-flex', gap: 6, alignItems: 'baseline', padding: '4px 10px', borderRadius: 999, background: '#f1f5f9', border: `1px solid ${KIT.bord}`, fontSize: 13.5, color: KIT.txt2 }}>{n}<strong style={{ color: KIT.txt, fontSize: 14.5 }}>{v}</strong></span>;
+  const panneau = (n, titre, enfant) => (<div style={{ background: '#fff', border: `1px solid ${KIT.bord}`, borderRadius: 12, padding: '8px 8px 4px' }}>
+    <div style={{ fontSize: 14, fontWeight: 700, color: KIT.txt, margin: '0 0 2px 4px' }}><span style={{ display: 'inline-block', width: 22, height: 22, lineHeight: '22px', borderRadius: 11, background: '#16a34a', color: '#fff', textAlign: 'center', fontSize: 13, marginRight: 6 }}>{n}</span>{titre}</div>{enfant}</div>);
+  const lam = exc ? t.lamEm : t.lamExc, [lo, hi, pas] = exc ? [380, 580, 5] : [300, 410, 1];
+  return (<div>
+    <style>{`.fl-ptr { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); } @media (min-width: 900px) { .fl-ptr { grid-template-columns: repeat(2, minmax(0, 1fr)); } }`}</style>
+    <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.5, marginBottom: 8 }}>Chaque photon envoyé est un tirage au hasard : absorbé ou non, puis émis par un chemin du diagramme. Chaque photon détecté ajoute un coup au spectre, qui se construit peu à peu.</div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 8 }}>
+      <div role="group" aria-label="Ce que l’on trace" style={{ display: 'flex', gap: 4 }}>
+        {[['emission', 'Spectre d’émission'], ['excitation', 'Spectre d’excitation']].map(([k, l]) => <button key={k} onClick={() => tir.regler({ mode: k })} aria-pressed={t.mode === k} style={stylePetitBouton(t.mode === k, '#16a34a')}>{l}</button>)}
+      </div>
+      <div role="group" aria-label="Molécule" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Molécule</span>
+        {[['A', 'A (fluo.)'], ['B', 'B (phospho.)']].map(([k, l]) => <button key={k} onClick={() => tir.regler({ mol: k, lamEm: Math.round(X.lamMaxEmission(X.MOLS_T[k]) / 5) * 5 })} aria-pressed={t.mol === k} style={stylePetitBouton(t.mol === k, '#334155')}>{l}</button>)}
+      </div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, color: KIT.txt, cursor: 'pointer' }}>
+        <input type="checkbox" checked={t.courbe} onChange={ev => tir.regler({ courbe: ev.target.checked })} style={{ width: 20, height: 20 }}/>courbe attendue</label>
+    </div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end', marginBottom: 10 }}>
+      <div style={{ flex: '1 1 260px', minWidth: 220 }}>
+        <label htmlFor="fl-vtl" style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>{exc ? `λ de détection : ${lam}${NB}nm (fenêtre ± ${X.FENETRE}${NB}nm)` : `λ d’excitation : ${lam}${NB}nm`}</label>
+        <input id="fl-vtl" type="range" min={lo} max={hi} step={pas} value={lam} onChange={ev => tir.regler(exc ? { lamEm: parseInt(ev.target.value, 10) } : { lamExc: parseInt(ev.target.value, 10) })} style={{ width: '100%', accentColor: '#16a34a' }}/>
+        <div style={{ fontSize: 12.5, color: KIT.txt2 }}>Le spectre est effacé à chaque changement.</div>
+      </div>
+      <div style={{ flex: '2 1 360px' }}><CommandesTirages tir={tir}/></div>
+    </div>
+    <div className="fl-ptr">
+      {panneau(1, 'Le dernier photon sur le diagramme', <SceneVibronique mol={mol} dernier={E.dernier}/>)}
+      {panneau(2, exc ? 'Spectre d’excitation (coups)' : 'Spectre d’émission (coups)', <SceneHistogramme etat={E} params={t} mol={mol} courbe={t.courbe}/>)}
+    </div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+      {puce('envoyés', nf(E.nEnv))}{puce('absorbés', `${nf(E.nAbs)}${E.nEnv ? ` (${Math.round(100 * E.nAbs / E.nEnv)}${NB}%)` : ''}`)}{puce('détectés', nf(detectes))}
+      {!exc && mol.T && puce('dont phosphorescence', nf(E.nPh))}{!exc && E.nAbs >= 30 && puce('fluorescence / absorbés', `${Math.round(100 * E.nFl / E.nAbs)}${NB}%`)}
+    </div>
+    <div aria-live="off" style={{ fontSize: 13.5, color: KIT.txt, lineHeight: 1.5, marginTop: 6 }}><strong>Dernier photon : </strong>{X.texteEvenement(E.dernier, exc ? 'excitation' : 'emission')}</div>
   </div>);
 }

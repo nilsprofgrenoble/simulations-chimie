@@ -1,5 +1,6 @@
 import * as D from './fluoDispositif.js';
 import * as X from './fluoTirages.js';
+import * as FM from './fluoModele.js';
 let n = 0, ko = 0;
 const ok = (c, m) => { n++; if (!c) { ko++; console.log('ÉCHEC :', m); } };
 const A = X.MOLS_T.A, B = X.MOLS_T.B;
@@ -41,5 +42,9 @@ ok(creux <= 1, 'bande d’émission : ' + creux + ' creux');
 const bAbs = D.courbe(A, 'abs', 0, 1); let creuxA = 0;
 for (let i = 1; i < bAbs.length - 1; i++) if (bAbs[i].s < bAbs[i - 1].s && bAbs[i].s < bAbs[i + 1].s && bAbs[i].s > 0.05) creuxA++;
 ok(creuxA <= 1, 'bande d’absorption : ' + creuxA + ' creux');
+// populations au cours du temps (vue « Le diagramme dans le temps »)
+for (const m of [FM.MOLS.A, FM.MOLS.B]) for (let l = -15; l <= 3; l += 0.1) { const p = FM.populations(m, 10 ** l), tot = p.chaud + p.S1 + p.T1 + p.S0;
+  ok(Math.abs(tot - 1) < 1e-9 && [p.chaud, p.S1, p.T1, p.S0, p.fluo, p.phos].every(v => v >= 0 && v <= 1 + 1e-12), `populations ${m.id} 10^${l.toFixed(1)}`); }
+ok(FM.populations(FM.MOLS.A, 1e-6).fluo < 0.01 && FM.populations(FM.MOLS.B, 0.1).phos > 0.8 && FM.populations(FM.MOLS.B, 10).phos < 0.01, 'durées');
 console.log(`${n - ko}/${n} vérifications réussies`);
 process.exit(ko ? 1 : 0);
