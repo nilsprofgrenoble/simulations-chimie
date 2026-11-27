@@ -35,6 +35,18 @@ export function coupe(pts, u) {
   return { pts: sortie, pointe: pts[pts.length - 1] };
 }
 
+// Photon dont la vitesse dépend du milieu : ns[i] = indice du milieu du segment i (vitesse c/n, donc durée ∝ longueur × n).
+export const tempsTotal = ch => ch.pts.slice(1).reduce((s, p, i) => s + Math.hypot(p[0] - ch.pts[i][0], p[1] - ch.pts[i][1]) * ch.ns[i], 0);
+export function posTemps(ch, t) {
+  let acc = 0;
+  for (let i = 1; i < ch.pts.length; i++) {
+    const a = ch.pts[i - 1], b = ch.pts[i], dt = Math.hypot(b[0] - a[0], b[1] - a[1]) * ch.ns[i - 1];
+    if (acc + dt >= t - 1e-9) { const f = dt > 0 ? (t - acc) / dt : 0; return [a[0] + f * (b[0] - a[0]), a[1] + f * (b[1] - a[1])]; }
+    acc += dt;
+  }
+  return ch.pts[ch.pts.length - 1];
+}
+
 // durée totale de la vue « pas à pas » pour n rayons
 export const dureePas = n => n * T_RAYON + T_FIN;
 // fraction (0..1) du rayon k tracée à l'instant t en vue « pas à pas »
@@ -89,14 +101,16 @@ export function CouchePhotons({ chemins, lum, prolongements = [] }) {
       </g>);
   }
   const u = (lum.t / T_BOUCLE) % 1, vol = Math.min(u / 0.8, 1), impact = u > 0.8 ? (u - 0.8) / 0.2 : 0;
+  const Tmax = Math.max(0, ...chemins.map(c => (c.ns ? tempsTotal(c) : 0)));
+  const place = (ch, v) => (ch.ns ? posTemps(ch, v * Tmax) : coupe(ch.pts, v).pointe);
   return (
     <g pointerEvents="none">
       {chemins.map((ch, k) => {
-        const { pointe } = coupe(ch.pts, vol);
+        const pointe = place(ch, vol);
         const fin = ch.pts[ch.pts.length - 1];
         return (
           <g key={k}>
-            {impact === 0 && [3, 2, 1].map(j => { const q = coupe(ch.pts, Math.max(0, vol - 0.035 * j)).pointe; return <circle key={j} cx={q[0]} cy={q[1]} r={(6.5 - j * 1.3) * k0} fill={ch.c} opacity={0.5 - j * 0.12}/>; })}
+            {impact === 0 && [3, 2, 1].map(j => { const q = place(ch, Math.max(0, vol - 0.035 * j)); return <circle key={j} cx={q[0]} cy={q[1]} r={(6.5 - j * 1.3) * k0} fill={ch.c} opacity={0.5 - j * 0.12}/>; })}
             {impact === 0 && <g><circle cx={pointe[0]} cy={pointe[1]} r={13 * k0} fill={ch.c} opacity="0.22"/><circle cx={pointe[0]} cy={pointe[1]} r={6.5 * k0} fill={ch.c} stroke="#fff" strokeWidth={2 * k0}/></g>}
             {impact > 0 && lum.impact !== false && <circle cx={fin[0]} cy={fin[1]} r={(5 + 20 * impact) * k0} fill="none" stroke={ch.c} strokeWidth={3 * k0} opacity={1 - impact}/>}
           </g>);
