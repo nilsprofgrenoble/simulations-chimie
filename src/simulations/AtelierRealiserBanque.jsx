@@ -2600,6 +2600,56 @@ function genBiotEE() {
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3], retenir: ['e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100 : 0 % pour un racémique, 100 % pour un énantiomère pur.', 'α = e.e. × α de l’énantiomère pur, au signe de l’énantiomère en excès.'] };
 }
+function genMesoFormelle() {
+  const CAS = [
+    { el: 'C', Z: 4, lp: 0, nl: 3, desc: 'un atome de carbone lié par trois liaisons simples, sans doublet non liant' }, { el: 'C', Z: 4, lp: 1, nl: 3, desc: 'un atome de carbone lié par trois liaisons simples, avec un doublet non liant' },
+    { el: 'N', Z: 5, lp: 0, nl: 4, desc: 'un atome d’azote engagé dans quatre liaisons (une double et deux simples), sans doublet non liant' }, { el: 'N', Z: 5, lp: 2, nl: 2, desc: 'un atome d’azote engagé dans deux liaisons simples, avec deux doublets non liants' },
+    { el: 'O', Z: 6, lp: 3, nl: 1, desc: 'un atome d’oxygène engagé dans une liaison simple, avec trois doublets non liants' }, { el: 'O', Z: 6, lp: 2, nl: 2, desc: 'un atome d’oxygène engagé dans une liaison double, avec deux doublets non liants' },
+    { el: 'C', Z: 4, lp: 0, nl: 4, desc: 'un atome de carbone engagé dans quatre liaisons (une double et deux simples), sans doublet non liant' },
+  ];
+  const c = tire(CAS), qf = c.Z - 2 * c.lp - c.nl, e = 2 * c.lp + 2 * c.nl, d = c.lp + c.nl;
+  const sg = v => (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v);
+  const intro = `Dans une écriture de Lewis, on observe ${c.desc}. Le nombre d’électrons de valence de l’atome isolé est ${c.Z}.`;
+  const q1 = { id: 'm0', type: 'num', q: <>Quel est le <b>nombre de doublets</b> (liants et non liants) autour de cet atome ?</>, unite: '', vrai: d, tolRel: 0.03, csMin: 1,
+    aide: 'Doublets = doublets non liants + nombre de liaisons (une double liaison compte pour 2 doublets liants).',
+    pieges: [[c.nl, 'Vous avez compté seulement les doublets liants.'], [c.lp, 'Vous avez compté seulement les doublets non liants.']].filter(pg => pg[0] !== d && pg[0] > 0),
+    expl: <>{c.lp} doublet{c.lp > 1 ? 's' : ''} non liant{c.lp > 1 ? 's' : ''} + {c.nl} doublet{c.nl > 1 ? 's' : ''} liant{c.nl > 1 ? 's' : ''} = <b>{d}</b>.</> };
+  const q2 = { id: 'm1', type: 'num', q: <>Combien d’<b>électrons</b> entourent cet atome (doublets liants et non liants) ?</>, unite: '', vrai: e, tolRel: 0.03, csMin: 1,
+    aide: 'Chaque doublet compte pour 2 électrons.',
+    pieges: [[d, 'Vous avez donné le nombre de doublets : multipliez par 2 pour avoir les électrons.']],
+    expl: <>{d} doublets × 2 = <b>{e}</b> électrons{e === 8 ? ' : l’octet est respecté' : ' : il manque des électrons pour l’octet (lacune)'}.</> };
+  const q3 = { id: 'm2', type: 'num', q: <>Quelle est la <b>charge formelle</b> de cet atome ? (avec son signe)</>, unite: 'e', vrai: qf === 0 ? 0 : qf, tolRel: 0.03, csMin: 1,
+    aide: 'Charge formelle = électrons de valence − 2 × (doublets non liants) − (nombre de liaisons).',
+    pieges: [[-qf, 'Le signe est à revoir : une charge formelle positive correspond à un atome qui a perdu des électrons par rapport à l’atome isolé.']].filter(pg => pg[0] !== qf),
+    expl: <>Charge formelle = {c.Z} − 2 × {c.lp} − {c.nl} = <b>{sg(qf)}</b>.</> };
+  const qs = qf === 0 ? [q1, q2] : [q1, q2, q3];
+  filtrer(qs);
+  return { intro, questions: qs, retenir: ['Charge formelle = électrons de valence − 2 × doublets non liants − nombre de liaisons.', 'Un atome C, N ou O a son octet quand il est entouré de 4 doublets (8 électrons).'] };
+}
+function genMesoHybride() {
+  const ESP = [
+    { nom: 'l’ion éthanoate CH₃COO⁻', skel: 'un atome de carbone lié à deux atomes d’oxygène : une liaison double C=O et une liaison simple C–O⁻', nO: 2, nF: 2, ordre: 1.5, qA: -0.5, at: 'un atome d’oxygène' },
+    { nom: 'l’ion nitrate NO₃⁻', skel: 'un atome d’azote lié à trois atomes d’oxygène : une liaison double N=O et deux liaisons simples N–O⁻', nO: 3, nF: 3, ordre: 4 / 3, qA: -2 / 3, at: 'un atome d’oxygène' },
+    { nom: 'l’ion carbonate CO₃²⁻', skel: 'un atome de carbone lié à trois atomes d’oxygène : une liaison double C=O et deux liaisons simples C–O⁻', nO: 3, nF: 3, ordre: 4 / 3, qA: -2 / 3, at: 'un atome d’oxygène' },
+    { nom: 'le cation allyle CH₂CHCH₂⁺', skel: 'trois atomes de carbone : une liaison double entre deux carbones, une liaison simple avec le troisième qui porte la charge +', nO: 2, nF: 2, ordre: 1.5, qA: 0.5, at: 'un des carbones terminaux' },
+  ];
+  const s = tire(ESP), g = v => FM.nbf(v, 2), sgn = v => (v > 0 ? '+' : '−') + g(Math.abs(v));
+  const intro = `On étudie ${s.nom}. Dans chaque écriture de Lewis : ${s.skel}. La double liaison peut se placer à ${s.nF} endroits équivalents.`;
+  const q1 = { id: 'h0', type: 'num', q: <>Combien de <b>formes mésomères équivalentes</b> peut-on écrire ?</>, unite: '', vrai: s.nF, tolRel: 0.03, csMin: 1,
+    aide: 'Comptez les positions possibles de la double liaison (ou de la charge) sans déplacer d’atome.',
+    pieges: [[s.nF === 2 ? 3 : 2, 'Comptez toutes les positions équivalentes de la double liaison.']],
+    expl: <><b>{s.nF}</b> formes mésomères équivalentes : la double liaison peut occuper {s.nF} positions.</> };
+  const q2 = { id: 'h1', type: 'num', q: <>Quel est l’<b>ordre moyen</b> d’une liaison qui est simple dans certaines écritures et double dans une seule ?</>, unite: '', vrai: s.ordre, tolRel: 0.04, csMin: 2,
+    aide: 'Ordre moyen = (somme des ordres de la liaison dans toutes les écritures) ÷ (nombre d’écritures).',
+    pieges: [[2, 'Vous avez pris la valeur d’une seule écriture (double) : faites la moyenne.'], [1, 'Vous avez pris la valeur d’une seule écriture (simple) : faites la moyenne.']],
+    expl: <>({s.nF - 1} × 1 + 1 × 2) ÷ {s.nF} = <b>{g(s.ordre)}</b>.</> };
+  const q3 = { id: 'h2', type: 'num', q: <>Quelle est la <b>charge moyenne</b> de {s.at} dans l’hybride (en e, avec son signe) ?</>, unite: 'e', vrai: s.qA, tolRel: 0.04, csMin: 2,
+    aide: 'Additionnez la charge de cet atome dans chaque écriture, puis divisez par le nombre d’écritures.',
+    pieges: [[-s.qA, 'Le signe est à revoir.'], [s.qA > 0 ? 1 : -1, 'Vous avez mis toute la charge sur un seul atome : dans l’hybride, elle est répartie.']],
+    expl: <>La charge moyenne vaut <b>{sgn(s.qA)}{NB}e</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Pour des formes équivalentes : ordre moyen et charge moyenne = moyenne simple sur toutes les écritures.', 'Dans l’hybride, la charge est répartie (δ) et les liaisons sont intermédiaires.'] };
+}
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
@@ -7089,6 +7139,8 @@ export const FAMILLES = [
   { id: 'amp-decalage', groupe: 'Formules', titre: 'Tension continue ajoutée : centrer un signal dans la plage du CAN (terminale STL)', gen: genAmpDecalage, domaine: 'Filtrage et amplification de tension' },
   { id: 'biot-alpha', groupe: 'Formules', titre: 'Loi de Biot : pouvoir rotatoire, dilution et concentration (terminale STL)', gen: genBiotAlpha, domaine: 'Pouvoir rotatoire et loi de Biot' },
   { id: 'biot-ee', groupe: 'Formules', titre: 'Mélange d’énantiomères : excès énantiomérique et pouvoir rotatoire (terminale STL)', gen: genBiotEE, domaine: 'Pouvoir rotatoire et loi de Biot' },
+  { id: 'meso-formelle', groupe: 'Formules', titre: 'Charge formelle et octet d’un atome dans une écriture de Lewis (terminale STL)', gen: genMesoFormelle, domaine: 'Mésomérie' },
+  { id: 'meso-hybride', groupe: 'Formules', titre: 'Hybride de résonance : formes, ordre de liaison et charge moyens (terminale STL)', gen: genMesoHybride, domaine: 'Mésomérie' },
   { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },
