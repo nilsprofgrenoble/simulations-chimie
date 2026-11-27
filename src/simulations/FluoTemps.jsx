@@ -261,7 +261,7 @@ export function VueTemps({ lt0, molFixe, onLt }) {
   useEffect(() => {
     if (!joue) return undefined;
     let id, last = null;
-    const f = ts => { if (last != null) { const l = Math.min(LT1, pos.current + Math.min(100, ts - last) / DUREE * (LT1 - LT0) / (1 + 6 * activite(mol, pos.current))); pos.current = l; const q = Math.round(l / PAS_LT) * PAS_LT; setLt(v => (v === q ? v : q)); if (l >= LT1) { setJoue(false); return; } } last = ts; id = requestAnimationFrame(f); };
+    const f = ts => { if (last != null) { const l = Math.min(LT1, pos.current + Math.min(100, ts - last) / DUREE * (LT1 - LT0) / (1 + 6 * activite(mol, pos.current) + 3 * M.populations(mol, 10 ** pos.current).flP)); pos.current = l; const q = Math.round(l / PAS_LT) * PAS_LT; setLt(v => (v === q ? v : q)); if (l >= LT1) { setJoue(false); return; } } last = ts; id = requestAnimationFrame(f); };
     id = requestAnimationFrame(f);
     return () => cancelAnimationFrame(id);
   }, [joue, mol]);
