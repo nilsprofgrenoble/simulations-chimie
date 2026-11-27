@@ -122,7 +122,12 @@ export function verifier(q, rep) {
   }
   return { ok: false, msg: q.refus || '' };
 }
-export const reponseAttendue = q => `${nb(q.vrai, q.csMin || q.csExact || 3)}${q.unite ? NB + q.unite : ''}`;
+// Réponse attendue : notation scientifique quand l'écriture décimale cacherait le nombre de chiffres significatifs (90000 J → 9,0 × 10⁴ J)
+export const reponseAttendue = q => {
+  const cs = q.csMin || q.csExact || 3, r = Number(q.vrai.toPrecision(cs)), e = r ? Math.floor(Math.log10(Math.abs(r))) : 0;
+  const txt = e >= 4 && cs <= e ? `${(r / Math.pow(10, e)).toFixed(cs - 1).replace('.', ',')}${NB}×${NB}10${sup(e)}` : nb(q.vrai, cs);
+  return `${txt}${q.unite ? NB + q.unite : ''}`;
+};
 
 // ──────────────────────── Famille 1 : changement d'unité simple ────────────────────────
 const SIMPLES = [
