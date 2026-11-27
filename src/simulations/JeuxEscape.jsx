@@ -4,17 +4,14 @@ import { useSession, estProf } from "../serveur";
 import { JEUX_VISIBLES, JEUX_PUBLICS } from "./jeuxVisibles";
 import { Emo } from "../Pictos";
 
-// Les trois jeux « hors menu » : escape games TSTL et histoire à choix BTS.
+// Les jeux « hors menu ».
 // Côté professeur : cartes avec lien direct. Côté élève : champ « code du jeu » (le code est donné par le professeur).
 // Le code n'est PAS une sécurité (il est lisible dans le code de la page) : il évite seulement que les élèves tombent dessus par hasard.
 const JEUX = [
-  { id: 79, code: 'KEPLER', nom: 'Mission Kepler', niveau: 'TSTL', icone: '🚀', texte: "Escape game spatial : enchaîne les épreuves (mécanique, ondes, signal…) pour sauver la mission. ~45 min." },
-  { id: 80, code: 'AQUA', nom: 'Mission Aqua', niveau: 'TSTL', icone: '💧', texte: "Mini escape game sur le transport des fluides (une seule séance, à tester en classe en priorité). ~20 min." },
   { id: 81, code: 'LABO', nom: 'Une journée au labo', niveau: 'BTS MDC', icone: '🧪', texte: "Histoire à choix : technicien·ne de R&D peinture le temps d'une journée (CCF4, remplacer la Vinnapas par l'Orgal). 10 fins, bilan par compétence. < 1 h." },
   { id: 113, code: 'PERCU', nom: 'Contre-typer la Percutaféine', niveau: 'BTS MDC', icone: '🧴', texte: "Histoire à choix : retrouver la formule d'un gel à la caféine, le fabriquer et le contrôler (TP de contre-typage). 6 fins, bilan par compétence. < 1 h." },
   { id: 290, code: 'LASER', nom: 'Laser Maze', niveau: '2GT · 1G', icone: '🔦', texte: "Jeu de puzzle : oriente miroirs, lame de verre et prisme pour envoyer le laser sur la cible (réflexion, réfraction, réflexion totale). 5 niveaux, démo." },
   { id: 291, code: 'URGENCE', nom: 'Urgence au labo : dilutions', niveau: '2GT · 1G', icone: '🧪', texte: "Scénario : un ballon s'emballe sous la paillasse. Prépare vite les bonnes solutions (pipette et fiole jaugées, calculatrice) avant l'explosion. 3 missions, démo." },
-  { id: 296, code: 'POMPIER', nom: 'Pompiers : de la lance à la pression', niveau: 'TSTL', icone: '🚒', texte: "Règle diamètre, longueur et débit du tuyau pour que la lance ait la bonne pression et éteigne le feu (Bernoulli, pertes de charge). 6 interventions, démo." },
 ];
 
 const lien = j => `${window.location.origin}${import.meta.env.BASE_URL}?sim=${j.id}`;
@@ -27,7 +24,7 @@ function JeuxProfCartes({ naviguer, liste }) {
   };
   return (
     <details data-jeux style={{ ...styleBoite, margin: '10px 0' }}>
-      <summary style={{ cursor: 'pointer', fontWeight: 800 }}>🎮 Jeux (escape games et histoire à choix)</summary>
+      <summary style={{ cursor: 'pointer', fontWeight: 800 }}>🎮 Jeux</summary>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 10, marginTop: 10 }}>
         {liste.map(j => (
           <div key={j.id} style={{ border: `1px solid ${'#d9d2c3'}`, borderRadius: 10, padding: '10px 12px', background: '#fff' }}>

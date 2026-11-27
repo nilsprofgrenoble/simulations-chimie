@@ -1,4 +1,3 @@
-import { missionEnCours } from "../mission";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useEffect } from "react";
 import { Frac, Formule, cardStyle, CarteParcours, useEtatPersistant, ORANGE_GUIDE, OngletExercices, avecIndices } from "../commun";
@@ -1921,9 +1920,7 @@ export function SimulationBernoulli({ plotlyReady }) {
           Circuit hydraulique et relation de Bernoulli
         </h2>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {missionEnCours(SIM_ID)
-            ? <button disabled title="Verrouillé pendant la mission : va directement au défi" style={{ ...btn(false, '#94a3b8'), opacity: 0.55, cursor: 'not-allowed' }}>🔒 Parcours guidé</button>
-            : <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>}
+          <button onClick={() => changerMode('guide')} style={btn(mode === 'guide', ORANGE_GUIDE)}><Pic n="compass"/>Parcours guidé</button>
           <button onClick={() => changerMode('explore')} style={btn(mode === 'explore', '#334155')}><Pic n="search"/>Exploration libre</button>
           <button onClick={() => changerMode('exercice')} style={btn(mode === 'exercice', '#0ea5e9')}><Pic n="target"/>Défi (exercices)</button>
           <OngletExercices />
