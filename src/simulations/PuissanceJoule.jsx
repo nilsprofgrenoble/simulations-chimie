@@ -104,6 +104,9 @@ export function SimulationPuissanceJoule() {
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
   const [anim, setAnim] = useState(() => !reduitMouvement()), ph = usePhase(enExplore && anim), mv = enExplore && anim ? ph : null;
+  const [regOuv, setRegOuv] = useState({});
+  // exploration : le réglage principal reste visible, les réglages fins se replient (le guidé garde tout visible)
+  const fins = (cle, resume, enfants) => enExplore ? <Section titre={`Réglages fins · ${resume}`} ouvert={!!regOuv[cle]} onBascule={() => setRegOuv(o => ({ ...o, [cle]: !o[cle] }))}>{enfants}</Section> : enfants;
   const commandeAnim = enExplore && <button type="button" onClick={() => setAnim(a => !a)} style={{ ...stylePetitBouton(false), marginTop: 6 }}>{anim ? '⏸ Arrêter le mouvement' : '▶ Voir le mouvement'}</button>;
   // grains de chaleur qui s'éloignent d'un point (dx, dy) : n grains, hauteur h
   const chaleur = (x0, w, y0, h, n, cle) => mv === null ? null : Array.from({ length: n }, (_, k) => { const f = ((mv * 0.45 + k / n) % 1); return <circle key={cle + k} cx={x0 + ((k * 0.618) % 1) * w} cy={y0 + f * h} r="4" fill={VERMILLON} opacity={(1 - f) * 0.85}/>; });
@@ -299,9 +302,9 @@ export function SimulationPuissanceJoule() {
       </svg>
       {commandeAnim}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginTop: 8 }}>
-        <Curseur nom="Résistance R" val={J.R} min={5} max={100} pas={1} set={v => setJ(j => ({ ...j, R: v }))} unite=" Ω"/>
         <Curseur nom="Intensité I" val={J.I} min={0.1} max={3} pas={0.1} set={v => setJ(j => ({ ...j, I: v }))} unite=" A"/>
-        <Curseur nom="Durée Δt" val={J.dt} min={1} max={600} pas={1} set={v => setJ(j => ({ ...j, dt: v }))} unite=" s"/></div>
+        {fins('joule', `R = ${J.R} Ω · Δt = ${J.dt} s`, <><Curseur nom="Résistance R" val={J.R} min={5} max={100} pas={1} set={v => setJ(j => ({ ...j, R: v }))} unite=" Ω"/>
+        <Curseur nom="Durée Δt" val={J.dt} min={1} max={600} pas={1} set={v => setJ(j => ({ ...j, dt: v }))} unite=" s"/></>)}</div>
       {carte('', <>
         <div>Tension : U = R × I = {J.R} × {fr(J.I, 1)} = <strong>{fr(Uj, 1)} V</strong></div>
         <div>P<sub>élec</sub> = U × I = {fr(Uj, 1)} × {fr(J.I, 1)} = <strong>{fr(Pj, 1)} W</strong> = R × I² = {J.R} × {fr(J.I, 1)}² ✔</div>
@@ -321,9 +324,9 @@ export function SimulationPuissanceJoule() {
       </svg>
       {commandeAnim}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginTop: 8 }}>
-        <Curseur nom="Puissance transportée P" val={L.P} min={10} max={200} pas={10} set={v => setL(l => ({ ...l, P: v }))} unite=" MW"/>
         <Curseur nom="Tension de la ligne U" val={L.U} min={20} max={400} pas={10} set={v => setL(l => ({ ...l, U: v }))} unite=" kV"/>
-        <Curseur nom="Longueur L" val={L.L} min={50} max={1000} pas={50} set={v => setL(l => ({ ...l, L: v }))} unite=" km"/></div>
+        {fins('ligne', `P = ${L.P} MW · L = ${L.L} km`, <><Curseur nom="Puissance transportée P" val={L.P} min={10} max={200} pas={10} set={v => setL(l => ({ ...l, P: v }))} unite=" MW"/>
+        <Curseur nom="Longueur L" val={L.L} min={50} max={1000} pas={50} set={v => setL(l => ({ ...l, L: v }))} unite=" km"/></>)}</div>
       {carte('', <>
         <div>Intensité : I = {avecIndices('frac(P|U)')} = {L.P}·10⁶ / {L.U}·10³ = <strong>{fr(IL, 0)} A</strong></div>
         <div>Pertes par effet Joule : P<sub>perdue</sub> = r × I² = {fr(rL, 0)} × {fr(IL, 0)}² = <strong>{fr(PjL, 2)} MW</strong>, soit <strong>{fr(pcL, 1)} %</strong> de la puissance transportée.</div>
@@ -346,10 +349,11 @@ export function SimulationPuissanceJoule() {
           <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 2 }}><span style={{ color: BLEU, fontWeight: 700 }}>● W<sub>élec</sub> = U·I·Δt</span> · <span style={{ color: VERMILLON, fontWeight: 700 }}>● Q = m·C·Δθ</span></div></div>
         <div>
           <Curseur nom="Temps t" val={Ca.t} min={0} max={540} pas={15} set={v => setCa(c => ({ ...c, t: v }))} unite=" s"/>
+          {fins('calo', `U = ${fr(Ca.U, 2)} V · I = ${fr(Ca.I, 2)} A · m = ${fr(Ca.m, 2)} kg`, <>
           <Curseur nom="Tension U" val={Ca.U} min={5} max={15} pas={0.01} set={v => setCa(c => ({ ...c, U: v }))} unite=" V"/>
           <Curseur nom="Intensité I" val={Ca.I} min={1} max={3} pas={0.01} set={v => setCa(c => ({ ...c, I: v }))} unite=" A"/>
           <Curseur nom="Masse d’eau m" val={Ca.m} min={0.1} max={0.4} pas={0.05} set={v => setCa(c => ({ ...c, m: v }))} unite=" kg" fmt={v => fr(v, 2)}/>
-          <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block', marginTop: 4 }}><input type="checkbox" checked={Ca.pertes} onChange={e => setCa(c => ({ ...c, pertes: e.target.checked }))}/> avec pertes (réaliste)</label></div></div>
+          <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block', marginTop: 4 }}><input type="checkbox" checked={Ca.pertes} onChange={e => setCa(c => ({ ...c, pertes: e.target.checked }))}/> avec pertes (réaliste)</label></>)}</div></div>
       {carte('', <>
         <div>t = {Ca.t} s : θ = <strong>{fr(ptC.th, 1)} °C</strong> (Δθ = {fr(ptC.th - 25.9, 1)} °C)</div>
         <div>W<sub>élec</sub> = U × I × Δt = {fr(Ca.U, 2)} × {fr(Ca.I, 2)} × {Ca.t} = <strong>{fr(ptC.W, 0)} J</strong></div>
