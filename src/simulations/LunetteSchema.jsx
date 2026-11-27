@@ -1,6 +1,7 @@
 import * as M from "./lunetteModele";
 import { FormeOeil, C } from "./oeilLoupeSchema";
 import { nbf } from "./Travail";
+import { CouchePhotons, Poignee } from "./lentilleMinceAnim";
 
 // Schéma de principe de la lunette astronomique : TSTL, simulation 120 et cartes « À retenir ».
 // Non à l'échelle (focales compressées, angles et A1B1 agrandis) mais géométriquement cohérent : les rayons sont tracés à travers deux lentilles minces
@@ -11,9 +12,9 @@ const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 export const COUL = { obj: '#0f172a', inter: '#b45309', rayon1: '#0072b2', rayon2: '#d55e00', ok: '#15803d', ko: '#dc2626', theta: '#7c3aed' };
 const X1 = 70, KS = 5;
 
-export function SchemaLunette({ d, f1 = 800, f2 = 20, theta0 = 2, oeil = 'normal', cotes = null, montre = {}, large = 700, label }) {
+export function SchemaLunette({ d, f1 = 800, f2 = 20, theta0 = 2, oeil = 'normal', cotes = null, montre = {}, large = 700, label, lum = null, poignee = null, refSvg = null }) {
   const { inter = true, F = true, statut = true, theta = false, noms = true } = montre;
-  const fk = etroit() ? 2.1 : 1, fs = 13.5 * fk, haut = fk > 1 ? (cotes ? 440 : 400) : (cotes ? 312 : 260), y0 = haut / 2 + (cotes ? 0 : 0);
+  const fk = etroit() ? 2.1 : 1, fs = 13.5 * fk, haut = (fk > 1 ? (cotes ? 440 : 400) : (cotes ? 312 : 260)) + (poignee ? 50 : 0), y0 = haut / 2 + (cotes ? 0 : 0);
   const f1v = 190 + 0.14 * f1, f2v = 40 + 1.6 * f2, e = M.ecart(d, f1, f2);
   const ev = clamp(e * KS, -f2v + 24, 60), X2 = X1 + f1v + f2v + ev, XA1 = X1 + f1v, XE = X2 + f2v;
   const a = 0.05 + (clamp(theta0, M.THETA_MIN, M.THETA_MAX) - M.THETA_MIN) / (M.THETA_MAX - M.THETA_MIN) * 0.09;   // pente (exagérée) des rayons issus de B0
@@ -39,7 +40,7 @@ export function SchemaLunette({ d, f1 = 800, f2 = 20, theta0 = 2, oeil = 'normal
     </g>);
   const halo = { paintOrder: 'stroke', stroke: '#fff', strokeWidth: 4, strokeLinejoin: 'round' };
   return (
-    <svg viewBox={`0 0 ${large} ${haut}`} role="img" aria-label={label || `Lunette astronomique : l’objectif de distance focale ${fr(f1, 0)} millimètres donne d’un objet à l’infini une image intermédiaire dans son plan focal image ; l’oculaire de distance focale ${fr(f2, 0)} millimètres la regarde comme une loupe`}
+    <svg ref={refSvg} viewBox={`0 0 ${large} ${haut}`} role="img" aria-label={label || `Lunette astronomique : l’objectif de distance focale ${fr(f1, 0)} millimètres donne d’un objet à l’infini une image intermédiaire dans son plan focal image ; l’oculaire de distance focale ${fr(f2, 0)} millimètres la regarde comme une loupe`}
       style={{ width: '100%', height: 'auto', display: 'block', background: '#fff', border: '1.5px solid #cbd5e1', borderRadius: 10 }}>
       <line x1="8" y1={y0} x2={large - 8} y2={y0} stroke="#94a3b8" strokeWidth="1.2" strokeDasharray="8 4"/>
       {/* foyers : F1′ (foyer image de l'objectif) et F2 (foyer objet de l'oculaire) */}
@@ -74,6 +75,13 @@ export function SchemaLunette({ d, f1 = 800, f2 = 20, theta0 = 2, oeil = 'normal
       {netOk && <circle cx={XRet} cy={Y(yP)} r="3.6" fill={COUL.ok} stroke="#fff" strokeWidth="1.2"/>}
       {theta && afo && <g><line x1={XE} y1={y0} x2={XE - 120} y2={Y(-chef * 120)} stroke={COUL.theta} strokeWidth="1.8" strokeDasharray="2 3"/>
         <text x={XE - 128} y={Y(-chef * 120) - 6} textAnchor="end" fontSize={fs + 2} fontWeight="800" fill={COUL.theta} style={halo}>θ₂</text></g>}
+      {lum && (() => {
+        const bout = [XRet, netOk ? Y(yP) : Y(y2a + o1 * (f2v + eLen))], bout2 = [XRet, netOk ? Y(yP) : Y(y2b + o2 * (f2v + eLen))];
+        return <CouchePhotons chemins={[{ c: COUL.rayon1, pts: [...r1, bout] }, { c: COUL.rayon2, pts: [...r2, bout2] }]} lum={{ ...lum, k: fk > 1 ? 1.8 : 1 }}/>;
+      })()}
+      {poignee && <Poignee x={X2} y={y0 + (fk > 1 ? 150 : 130)} g={fk > 1 ? 1.9 : 1} coul={C.foyer} label="Oculaire : distance O₁O₂ (en mm)" valeur={d} vmin={poignee.vmin} vmax={poignee.vmax} texte={`${fr(d, 1)} mm`} touche={poignee.touche} onToucher={poignee.onToucher} pas={1}
+        lire={e => { const r = refSvg.current.getBoundingClientRect(), x = (e.clientX - r.left) * large / r.width; return f1 + f2 + (x - (X1 + f1v + f2v)) / KS; }}
+        set={poignee.set} zones={[[X2 - 22 * (fk > 1 ? 1.9 : 1), y0 - 90, 44 * (fk > 1 ? 1.9 : 1), 180]]}/>}
       {statut && <text x={large / 2} y={fk > 1 ? 30 : 22} textAnchor="middle" fontSize={fs} fontWeight="800" fill={netOk ? COUL.ok : COUL.ko}>{fk > 1 ? court : txtStatut}</text>}
       <text x="12" y={haut - 10} fontSize={11 * (fk > 1 ? 1.9 : 1)} fontWeight="700" fill="#64748b">{fk > 1 ? 'schéma non à l’échelle' : 'schéma non à l’échelle : focales compressées, angles et image intermédiaire agrandis'}</text>
     </svg>);

@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, lireNombre, proche, ARetenir, Curseur, LigneMesure, IndiceDefi, avecIndices, indicesProfond } from "../commun";
 import { NB } from "./Distillation";
@@ -7,6 +7,8 @@ import { Pic } from "../Pictos";
 import { puces, nbf, tire } from "./Travail";
 import * as M from "./lunetteModele";
 import { SchemaLunette, COUL } from "./LunetteSchema";
+import { useHorloge, Commandes, T_BOUCLE } from "./lentilleMinceAnim";
+import { StyleAnim } from "./exploAnim";
 import { C } from "./oeilLoupeSchema";
 
 const SIM_ID = 120;
@@ -140,6 +142,17 @@ const FICHES = {
 // ====================================================
 //  COMPOSANT
 // ====================================================
+// exploration animée : photons le long des deux rayons (impact en un point de la rétine si l'image est nette), oculaire saisissable
+function SceneAnimee({ schema, vmin, vmax, setD }) {
+  const L = useHorloge(T_BOUCLE, true), [touche, setTouche] = useState(false), ref = useRef(null);
+  return (
+    <div><StyleAnim/>
+      <SchemaLunette {...schema} lum={{ t: L.t, mode: 'boucle' }} refSvg={ref} poignee={{ vmin, vmax, touche, onToucher: () => setTouche(true), set: v => setD(Math.round(Math.max(vmin, Math.min(vmax, v)))) }}/>
+      <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 2px', lineHeight: 1.45 }}>Saisissez l’<strong>oculaire</strong> (le rond <strong>↔</strong> sous la lentille de droite) et faites-le glisser : les photons arrivent au même point de la rétine quand l’image est nette.</div>
+      <Commandes L={L}/>
+    </div>);
+}
+
 export function SimulationLunette() {
   const [mode, setMode] = useState(() => modeOuverture('lunette-guide-v1'));
   useSignalerMode(mode);
@@ -353,8 +366,11 @@ export function SimulationLunette() {
   // ════════════════ SCÈNE ════════════════
   const scene = (
     <div style={{ ...styleBoite, ...cadre('scene') }}>
-      <SchemaLunette d={d} f1={f1} f2={f2} theta0={th} oeil={PE.oeil} cotes={enExplore && cotesOn ? { A1B1 } : null}
-        montre={{ inter: !enGuide || depuis('inter'), F: !enGuide || depuis('map-q') || idE === 'map', statut: !enGuide || depuis('map'), theta: enExplore || (enGuide && depuis('G')), noms: true }}/>
+      {(() => {
+        const schema = { d, f1, f2, theta0: th, oeil: PE.oeil, cotes: enExplore && cotesOn ? { A1B1 } : null,
+          montre: { inter: !enGuide || depuis('inter'), F: !enGuide || depuis('map-q') || idE === 'map', statut: !enGuide || depuis('map'), theta: enExplore || (enGuide && depuis('G')), noms: true } };
+        return enExplore ? <SceneAnimee schema={schema} vmin={f1 - 20} vmax={f1 + 55} setD={v => maj({ dg: v, df: 0 })}/> : <SchemaLunette {...schema}/>;
+      })()}
     </div>);
   const aEssayer = indicesProfond(
     <div style={styleBoite}>
