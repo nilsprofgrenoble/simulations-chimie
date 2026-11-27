@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, Curseur, LigneMesure, Frac, fmt, lireProgression, IndiceDefi } from "../commun";
 import { NB } from "./Distillation";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { Pic } from "../Pictos";
 import { FicheReciproques, FicheGravitationUniverselle, FicheLoiDistance, FicheCoulomb, FicheBilanInteractions } from "./DeuxCorpsFiches";
 
@@ -255,7 +256,8 @@ export function SimulationDeuxCorps() {
   const [p, setP] = useState(defauts('eleves'));
   const [aff, setAff] = useState({ u: false, double: false });
   const [hypoOuv, setHypoOuv] = useState(false);
-  const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi;
+  const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(2.4, true);
   const svgRef = useRef(null), glisse = useRef(false);
 
   const C = CAS[cas];
@@ -439,11 +441,16 @@ export function SimulationDeuxCorps() {
       <text x={x} y={YC + r + 18} textAnchor="middle" fontSize="20" fontWeight="700" fill="#0f172a">{nom}</text>
     </g>);
   const yBr = YC + 66;
+  // exploration : les deux corps bougent un peu (mouvement très exagéré) ; à force égale, le plus léger bouge le plus
+  const uMv = enExplore && !I.nul && (LA.joue || LA.t > 0) ? 0.5 - 0.5 * Math.cos(2 * Math.PI * LA.t / 2.4) : 0;
+  const amp = Math.max(0, Math.min(22, (xB - XA - C.rA - C.rB) * 0.35)), rapA = I.grav ? Math.min(1, I.mB / I.mA) : 1, rapB = I.grav ? Math.min(1, I.mA / I.mB) : 1;
+  const dxA = uMv * amp * rapA * (I.attr ? 1 : -1), dxB = -uMv * amp * rapB * (I.attr ? 1 : -1);
+  const tr = dx => ({ transform: `translate(${dx.toFixed(2)} 0)` });
   const fleches = !I.nul && <g>
-    {fleche(xB + sB * (C.rB + 3), YC, sB, LF, ROUGE, 3.2, 'fab')}
-    {etiquetteVec(xB + sB * (C.rB + 3 + LF / 2), YC - 16, 'F', 'A/B', ROUGE, 'efab')}
-    {fleche(XA - sB * (C.rA + 3), YC, -sB, LF, ORANGE, 3.2, 'fba')}
-    {etiquetteVec(XA - sB * (C.rA + 3 + LF / 2), YC - 16, 'F', 'B/A', ORANGE, 'efba')}
+    <g {...tr(dxB)}>{fleche(xB + sB * (C.rB + 3), YC, sB, LF, ROUGE, 3.2, 'fab')}
+    {etiquetteVec(xB + sB * (C.rB + 3 + LF / 2), YC - 16, 'F', 'A/B', ROUGE, 'efab')}</g>
+    <g {...tr(dxA)}>{fleche(XA - sB * (C.rA + 3), YC, -sB, LF, ORANGE, 3.2, 'fba')}
+    {etiquetteVec(XA - sB * (C.rA + 3 + LF / 2), YC - 16, 'F', 'B/A', ORANGE, 'efba')}</g>
   </g>;
   const xu = (XA + xB) / 2 - 28;
   const unitaire = aff.u && <g>{fleche(xu, yBr + 40, 1, 56, BLEU, 2.6, 'u')}{etiquetteVec(xu + 28, yBr + 66, 'u', 'A/B', BLEU, 'eu', 22)}</g>;
@@ -455,14 +462,15 @@ export function SimulationDeuxCorps() {
         onPointerUp={() => { glisse.current = false; }} onPointerCancel={() => { glisse.current = false; }}
         role="img" aria-label={`Deux corps, ${C.A} et ${C.B}, et les deux forces d’interaction qu’ils exercent l’un sur l’autre`}>
         {fleches}
-        {corps(XA, C.rA, colA, 'A', C.A, C.type === 'elec' ? signe(I.qA) : null)}
-        {corps(xB, C.rB, colB, 'B', C.B, C.type === 'elec' ? (cache.signeB ? '?' : signe(I.qB)) : null)}
+        <g {...tr(dxA)}>{corps(XA, C.rA, colA, 'A', C.A, C.type === 'elec' ? signe(I.qA) : null)}</g>
+        <g {...tr(dxB)}>{corps(xB, C.rB, colB, 'B', C.B, C.type === 'elec' ? (cache.signeB ? '?' : signe(I.qB)) : null)}</g>
         <g stroke="#0f172a" strokeWidth="1.6">
           <line x1={XA} y1={yBr} x2={xB} y2={yBr}/><line x1={XA} y1={yBr - 6} x2={XA} y2={yBr + 6}/><line x1={xB} y1={yBr - 6} x2={xB} y2={yBr + 6}/></g>
         <text x={(XA + xB) / 2} y={yBr - 7} textAnchor="middle" fontSize="21.5" fontWeight="700" fill="#0f172a">{cache.d ? 'd = ?' : `d = ${C.dTxt(I.d)}`}</text>
         {unitaire}
         {I.nul && <text x={W0 / 2} y={YC - 40} textAnchor="middle" fontSize="22.5" fontWeight="700" fill="#64748b">Une des charges est nulle : aucune force.</text>}
       </svg>
+      {enExplore && <div><div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Les deux corps se rapprochent ou s’écartent un instant (mouvement très exagéré, pour voir le sens des forces). À force égale, le plus léger bouge le plus.</div><Commandes L={LA}/></div>}
       <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 4, lineHeight: 1.5 }}>
         Cliquez ou faites glisser sur la scène pour changer la distance d. <span style={{ color: ROUGE, fontWeight: 700 }}>Rouge</span> : force exercée par A sur B.
         {' '}<span style={{ color: ORANGE, fontWeight: 700 }}>Orange</span> : force exercée par B sur A. Les deux flèches ont toujours la même longueur : elle n’est pas proportionnelle à la valeur de la force (les écarts atteignent plusieurs dizaines de puissances de 10).
