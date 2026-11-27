@@ -20,7 +20,7 @@ const SEUIL_CREATION_S = 10;      // une ligne n'est créée qu'après une actio
 const nouvelEtat = cle => ({ cle, id: null, creation: null, duree: 0, essais: 0, vues: 0, reussi: false, sale: false, dernier: Date.now(), echec: 0 });
 const pret = s => s.id != null || s.essais || s.vues || s.reussi || s.duree >= SEUIL_CREATION_S;
 
-// Date de la dernière réussite de chaque exercice ou défi (sur l'appareil) : la mission Kepler s'en sert pour ne compter que les réussites obtenues pendant la partie.
+// Date de la dernière réussite de chaque exercice ou défi (sur l'appareil).
 export const CLE_HORODATAGE = 'defi-horodatage-v1';
 function horodaterReussite(cle) {
   try {
@@ -147,7 +147,7 @@ export function modeOuverture(cleGuide) {
 function choisirMode(cleGuide) {
   try {
     const d = JSON.parse(window.sessionStorage.getItem('mode-demande') || 'null');
-    if (d && (d.mode === 'explore' || d.mode === 'defi') && Date.now() - d.t < 5000) return d.mode;   // « defi » : demandé par la mission Kepler (EscapeKepler)
+    if (d && (d.mode === 'explore' || d.mode === 'defi') && Date.now() - d.t < 5000) return d.mode;
   } catch { /* pas de demande */ }
   try {
     const brut = window.localStorage.getItem(cleGuide);

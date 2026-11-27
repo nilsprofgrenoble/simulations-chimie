@@ -11,8 +11,6 @@ import { EN_RECOLTE, finRecolte, capturerFigure, envoyerFigure } from "./fiches"
 import { SuiviTemps, nomsSim, simsCachees } from "./suivi";
 import { niveauxSim } from "./lectureSonore";
 import { ModeParDefaut } from "./ModeParDefaut";
-import CadreMission from "./CadreMission";
-import { missionEnCours } from "./mission";
 import { ProchaineEtape } from "./ProchaineEtape";
 import { EnTete } from "./EnTete";
 import { PiedDePage } from "./PiedDePage";
@@ -300,13 +298,10 @@ const SimulationClassement = paresseux(() => import("./simulations/Classement"),
 const JeuxMenu = paresseux(() => import("./simulations/JeuxEscape"), "JeuxMenu");
 const SimulationCompte = paresseux(() => import("./simulations/Compte"), "SimulationCompte");
 const SimulationSuiviProf = paresseux(() => import("./simulations/SuiviProf"), "SimulationSuiviProf");
-const SimulationEscapeKepler = paresseux(() => import("./simulations/EscapeKepler"), "SimulationEscapeKepler");
-const SimulationEscapeAqua = paresseux(() => import("./simulations/EscapeAqua"), "SimulationEscapeAqua");
 const SimulationHistoireLabo = paresseux(() => import("./simulations/HistoireLabo"), "SimulationHistoireLabo");
 const SimulationHistoirePercutafeine = paresseux(() => import("./simulations/HistoirePercutafeine"), "SimulationHistoirePercutafeine");
 const SimulationLaserMaze = paresseux(() => import("./simulations/JeuLaserMaze"), "SimulationLaserMaze");
 const SimulationCuisineDilution = paresseux(() => import("./simulations/JeuCuisineDilution"), "SimulationCuisineDilution");
-const SimulationPompier = paresseux(() => import("./simulations/JeuPompier"), "SimulationPompier");
 const SimulationGrapheur = paresseux(() => import("./simulations/Grapheur"), "SimulationGrapheur");
 
 // ============================================================
@@ -674,10 +669,6 @@ const SIMULATIONS = [
   { id:105, label:"Pour les enseignants", niveau:"COMPTE", icon:"🧑‍🏫", color:"#0b4f94", component: SimulationPourEnseignants },
   // Page hors menu : le modèle de la simulation 53 en détail (équations, valeurs, couples testés) ; ouverte depuis la simulation 53
   { id:219, label:"Solubilité et miscibilité : le modèle en détail", niveau:"COMPTE", icon:"📐", color:"#2a9d8f", component: SimulationModeleSolubilite },
-  // Escape game « Mission Kepler » : hors menu, ouvert par son lien (?sim=79)
-  { id:79, label:"Mission Kepler (escape game)", niveau:"COMPTE", icon:"🛰️", color:"#0a1530", component: SimulationEscapeKepler },
-  // Mini escape game « Mission Aqua » (chapitre Transport des fluides) : hors menu, ?sim=80
-  { id:80, label:"Mission Aqua (escape game)", niveau:"COMPTE", icon:"💧", color:"#0b2540", component: SimulationEscapeAqua },
   // Histoire à choix « Une journée au labo » (BTS, d'après le CCF4 : Vinnapas → Orgal) : hors menu, ?sim=81
   // Page d'accueil d'un chapitre (simulations + exercices par compétence) : ?sim=82&chap=<id d'un chapitre de chapitres.js>
   { id:103, label:"Mes fiches", niveau:"COMPTE", icon:"📇", color:"#be185d", component: SimulationFiches },
@@ -687,10 +678,9 @@ const SIMULATIONS = [
   { id:81, label:"Une journée au labo (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧪", color:"#0f766e", component: SimulationHistoireLabo },
   // Histoire à choix « Contre-typer la Percutaféine » (BTS, d'après le TP / CCF4 gel à la caféine) : hors menu, ?sim=113
   { id:113, label:"Contre-typage de la Percutaféine (histoire à choix, BTS)", niveau:"COMPTE", icon:"🧴", color:"#0f766e", component: SimulationHistoirePercutafeine },
-  // Jeux en démonstration (réservés à l'administrateur, comme Kepler et Aqua) : Laser Maze (optique) et Service en cuisine (dilutions) ; ?sim=290 et ?sim=291
+  // Jeux : Laser Maze (optique) et Urgence au labo (dilutions) ; ?sim=290 et ?sim=291
   { id:290, label:"Laser Maze (jeu, optique géométrique)", niveau:"COMPTE", icon:"🔦", color:"#0b4f94", component: SimulationLaserMaze },
   { id:291, label:"Urgence au labo : dilutions (jeu)", niveau:"COMPTE", icon:"🧪", color:"#c2410c", component: SimulationCuisineDilution },
-  { id:296, label:"Pompiers : de la lance à la pression (jeu)", niveau:"COMPTE", icon:"🚒", color:"#c2410c", component: SimulationPompier },
   // Grapheur (tableau → nuage de points → modèle → écarts → hypothèses) : outil hors menu, ouvert par son lien (?sim=124), en attendant la relecture de Nils
   { id:124, label:"Grapheur de mesures", niveau:"COMPTE", icon:"📈", color:"#1d4ed8", component: SimulationGrapheur },
   { id:146, label:"Tensioactifs : de la structure à la CMC", niveau:"BTS", icon:"🫧", color:"#0369a1", component: SimulationTensioactifs },
@@ -746,8 +736,8 @@ const MENUS_ENTETE = [
 ];
 // Tant que les jeux ne sont pas aboutis, seul l'administrateur (professeur admin) les voit : menu, cartes, liens directs. Les autres ne voient rien.
 import { JEUX_VISIBLES, JEUX_PUBLICS } from "./simulations/jeuxVisibles";
-const JEUX_IDS = [79, 80, 81, 113, 290, 291, 296];   // jeux : visibles seulement selon jeuxVisibles.js ; affichage immersif (sans en-tête ni pied de page), sauf les jeux clairs ci-dessous
-const JEUX_CLAIRS = [290, 291, 296];   // jeux « aux couleurs du site » : page ordinaire (en-tête, calculatrice, pied de page), pas de décor sombre
+const JEUX_IDS = [81, 113, 290, 291];   // jeux : visibles seulement selon jeuxVisibles.js ; affichage immersif (sans en-tête ni pied de page), sauf les jeux clairs ci-dessous
+const JEUX_CLAIRS = [290, 291];   // jeux « aux couleurs du site » : page ordinaire (en-tête, calculatrice, pied de page), pas de décor sombre
 // Outils en préparation : visibles seulement du professeur administrateur (menu « Outils » et lien direct). Liste dans src/brouillons.js (124 : Grapheur de mesures).
 import { OUTILS_BROUILLON } from "./brouillons";
 const OUTILS_ADMIN_IDS = OUTILS_BROUILLON;
@@ -984,17 +974,6 @@ export default function App() {
     if (viaCode) setOuvertureCode(n => n + 1);
     setActiveId(id);
   }
-
-  const mission = activeId > 0 ? missionEnCours(activeId) : null;
-  if (mission) return (
-    <>
-      <PictosSprite/>
-      <CadreMission mission={mission} naviguer={naviguer}>
-        <SuiviTemps simId={activeId} />
-        <div id="zone-simulation"><EnChargement><ActiveComponent key={`${activeId}-${ouvertureCode}`} plotlyReady={plotlyReady} naviguer={naviguer} /></EnChargement></div>
-      </CadreMission>
-      <ToastRecompense naviguer={naviguer} />
-    </>);
 
   if (JEUX_IDS.includes(activeId) && !JEUX_CLAIRS.includes(activeId)) return (
     <div style={{ ...styles.root, '--entete-h': '0px', background: FONDS_JEUX[activeId], color: '#e5e7eb' }} data-jeu-immersif>

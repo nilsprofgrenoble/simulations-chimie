@@ -2,7 +2,6 @@ import { Children, Fragment, cloneElement, isValidElement, useId, useState, useE
 import { createPortal } from "react-dom";
 import { compter } from "./stats";
 import { Pic } from "./Pictos";
-import { missionEnCours } from "./mission";
 import { chapitresDeSim, ouvrirExercicesDeSim, ouvrirFiches } from "./chapitres";
 import { OngletFiche } from "./FicheOnglet";
 import { noterFiche, EN_RECOLTE, EN_CONSULT, envoyerRecolte, estTermine, marquerTermine, noterProgres, capturerFigure, noterFigure, aFigure } from "./fiches";
@@ -822,14 +821,11 @@ export function OngletExercices({ simId: id }) {
 
 // Les trois boutons de mode, identiques sur toutes les pages
 export function BoutonsModes({ mode, setMode, modes = ['guide', 'explore', 'defi'] }) {
-  const enMission = !!missionEnCours(simDeLUrl());   // pendant une mission, le parcours guidé est verrouillé
   const simId = simDeLUrl();
   const def = { guide: [<><Pic n="compass"/>Parcours guidé</>, ORANGE_GUIDE], explore: [<><Pic n="search"/>Exploration libre</>, '#334155'], defi: [<><Pic n="target"/>Défi</>, '#0ea5e9'] };
   return (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-      {modes.map(m => m === 'guide' && enMission
-        ? <button key={m} disabled title="Verrouillé pendant la mission : va directement au défi" style={{ ...styleBouton(false, '#94a3b8'), opacity: 0.55, cursor: 'not-allowed' }}>🔒 Parcours guidé</button>
-        : <button key={m} onClick={() => { setMode(m); if (!window.__clicAuto) compter(`sim${Number.isFinite(simDeLUrl()) ? simDeLUrl() : '?'}:${m}`, `Simulation ${Number.isFinite(simDeLUrl()) ? simDeLUrl() : '?'} : mode ${m}`, true); }} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
+      {modes.map(m => <button key={m} onClick={() => { setMode(m); if (!window.__clicAuto) compter(`sim${Number.isFinite(simDeLUrl()) ? simDeLUrl() : '?'}:${m}`, `Simulation ${Number.isFinite(simDeLUrl()) ? simDeLUrl() : '?'} : mode ${m}`, true); }} style={styleBouton(mode === m, def[m][1])}>{def[m][0]}</button>)}
       {modes.includes('defi') && <OngletExercices simId={simId}/>}
     </div>
   );
