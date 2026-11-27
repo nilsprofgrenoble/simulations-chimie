@@ -24,17 +24,17 @@ const pct = v => `${v >= 0.995 ? 100 : v < 0.01 && v > 0 ? '< 1' : Math.round(10
 const NG = 60, LARG = 0.45;                                   // nombre de grains ; durée (en décades) d'une chute
 // places dans chaque tas (rang 0 = en bas à gauche) : 0 = haut de S₂, 1 = bas de S₁, 2 = T₁, 3 = S₀
 const ZONES = [k => [104 + (k % 14) * 6.4, 79 - Math.floor(k / 14) * 6.4], k => [104 + (k % 14) * 6.4, 147 - Math.floor(k / 14) * 6.4],
-  k => [262 + (k % 14) * 9.5, 196 - Math.floor(k / 14) * 6.4], k => [66 + (k % 24) * 13.8, 286 - Math.floor(k / 24) * 6.4]];
+  k => [262 + (k % 14) * 9.5, 196 - Math.floor(k / 14) * 6.4], k => [66 + (k % 24) * 13.8, 286 - Math.floor(k / 24) * 6.4], k => [66 + (k % 24) * 13.8, 286 - Math.floor(k / 24) * 6.4]];   // 4 : S₀ avant le flash
 // trajets : les grains descendent le long des flèches du diagramme
-const CHEMINS = { '01': [[150, 86], [150, 136]], '13': [[190, 156], [190, 282]], '12': [[208, 154], [250, 182]], '23': [[346, 204], [346, 282]] };
-const COUL_G = { '01': '#64748b', '13': COL.fluo, '12': COL.cis, '23': COL.phos };
+const CHEMINS = { '40': [[96, 280], [96, 70]], '01': [[150, 86], [150, 136]], '13': [[190, 156], [190, 282]], '12': [[208, 154], [250, 182]], '23': [[346, 204], [346, 282]] };
+const COUL_G = { '40': COL.abs, '01': '#64748b', '13': COL.fluo, '12': COL.cis, '23': COL.phos };
 const cacheG = {};
 function grains(mol) {
   if (cacheG[mol.id]) return cacheG[mol.id];
   let a = 7919 * (mol.id.charCodeAt(0) + 3); const u = () => { a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
   const phi = M.PHI_CIS[mol.id] ?? 0, g = [];
   for (let i = 0; i < NG; i++) {
-    const lr = -13 + u(), tx = 10 ** lr - mol.tauS1 * Math.log(1 - u()), st = [{ z: 0, t: -99 }, { z: 1, t: lr }];
+    const la = LT0 + 0.05 + 0.5 * u(), lr = -13 + u(), tx = 10 ** lr - mol.tauS1 * Math.log(1 - u()), st = [{ z: 4, t: -99 }, { z: 0, t: la }, { z: 1, t: lr }];
     if (mol.tauT1 && u() < phi) { st.push({ z: 2, t: Math.log10(tx) }); st.push({ z: 3, t: Math.log10(tx - mol.tauT1 * Math.log(1 - u())) }); }
     else st.push({ z: 3, t: Math.log10(tx) });
     g.push(st);
@@ -48,9 +48,9 @@ const surChemin = (pts, f) => { const L = []; let tot = 0; for (let i = 1; i < p
 function cibles(gr, lt) {
   const et = gr.map((st, i) => { let k = st.length - 1; while (k > 0 && lt < st[k].t) k--;
     return { i, z: st[k].z, ta: st[k].t, q: k ? Math.min(1, (lt - st[k].t) / LARG) : 1, tr: k ? `${st[k - 1].z}${st[k].z}` : '' }; });
-  const rang = []; [0, 1, 2, 3].forEach(z => et.filter(e => e.z === z).sort((a, b) => a.ta - b.ta || a.i - b.i).forEach((e, r) => { rang[e.i] = r; }));
+  const rang = []; [0, 1, 2, 3, 4].forEach(z => et.filter(e => e.z === z).sort((a, b) => a.ta - b.ta || a.i - b.i).forEach((e, r) => { rang[e.i] = r; }));
   return et.map(e => { const d = ZONES[e.z](rang[e.i]);
-    return e.q >= 1 ? { p: d, c: '#0f172a' } : { p: surChemin([...CHEMINS[e.tr], d], e.q * e.q), c: COUL_G[e.tr] }; });
+    return e.q >= 1 ? { p: d, c: '#0f172a' } : { p: surChemin([...CHEMINS[e.tr], d], e.tr === '40' ? 1 - (1 - e.q) * (1 - e.q) : e.q * e.q), c: COUL_G[e.tr] }; });
 }
 function useGrains(mol, lt, vif) {
   const refs = useRef([]), cur = useRef([]), ltR = useRef(lt), vifR = useRef(vif);
@@ -282,7 +282,7 @@ export function VueTemps({ lt0, molFixe, onLt }) {
       {panneau(2, 'L’échantillon', <Echantillon mol={mol} lt={lt} P={P}/>)}
       {panneau(3, 'Les émissions au cours du temps', <Courbes mol={mol} lt={lt} onLt={regler} invite={invite && !joue}/>)}
     </div>
-    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser l’instant t sur le graphique (une graduation = 1 000 fois plus de temps). Chaque grain noir du diagramme est une molécule excitée par le flash (60 sont représentées) : l’instant de son retour est tiré au hasard, et l’on voit les grains s’écouler le long des flèches : vers le bas de S₁, puis vers S₀ (en vert, fluorescence) ou vers T₁ (en orange) d’où ils retombent plus tard (en rouge, phosphorescence). Touchez un processus du diagramme pour sa définition.</div>
+    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser l’instant t sur le graphique (une graduation = 1 000 fois plus de temps). Chaque grain noir du diagramme est une molécule excitée par le flash (60 sont représentées, au repos dans S₀ avant le flash) : l’instant de son retour est tiré au hasard, et l’on voit les grains s’écouler le long des flèches : vers le bas de S₁, puis vers S₀ (en vert, fluorescence) ou vers T₁ (en orange) d’où ils retombent plus tard (en rouge, phosphorescence). Touchez un processus du diagramme pour sa définition.</div>
     </>}
   </div>);
 }
