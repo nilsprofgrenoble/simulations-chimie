@@ -4,6 +4,7 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
   BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, IndiceDefi, avecIndices } from "../commun";
 import { G, ASTRES, astre, gravite, forceGrav, fr, sci, PX_CM, ECHELLES, caracteristiques, conforme } from "./forcesModele";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { Schema, Fl, T, TV, GRIS, NOIR } from "./Travail";
 
 // ====================================================
@@ -112,10 +113,10 @@ function PlancheForce({ scene, vec, setVec, editable, echelle, fantome, aide = t
 // ---------- actions réciproques ----------
 // Les deux forces ont le même point de contact (le crochet entre A et B, ou les mains des patineurs) et des sens opposés.
 // montrer : false (aucune), 'une' (seulement la force que l'énoncé cite en premier) ou true (les deux forces)
-function Reciproques({ scene, F, mA, mB, montrer, masqueA = false }) {
+function Reciproques({ scene, F, mA, mB, montrer, masqueA = false, anim = null }) {
   const une = montrer === true || montrer === 'une', deux = montrer === true;
   if (scene === 'dyno') {
-    const L = F * 10, cy = 112, s = F * 5;                     // s : allongement du ressort (5 px par newton) ; L : flèche de force (1 cm ↔ 4 N)
+    const L = F * 10, cy = 112, s = F * 5 * (anim ? 0.88 + 0.12 * (0.5 - 0.5 * Math.cos(2 * Math.PI * anim.t / 4.4)) : 1);                     // s : allongement du ressort (5 px par newton) ; L : flèche de force (1 cm ↔ 4 N)
     const xA = 40, tipA = xA + 128 + s, xB = tipA + 30, tipB = xB + 128 + s, cx = tipA + 15, mainX = tipB + 16;
     const dyna = (x0, nom, aff) => {
       const px = x0 + 24 + s, n = 16, pts = Array.from({ length: n + 1 }, (_, i) => `${x0 + 4 + (px - x0 - 4) * i / n},${cy + (i === 0 || i === n ? 0 : i % 2 ? 9 : -9)}`).join(' ');
@@ -153,21 +154,23 @@ function Reciproques({ scene, F, mA, mB, montrer, masqueA = false }) {
   }
   const C = { x: 280, y: 124 }, L = F / 80 * PX_CM;
   const sA = 0.85 + (mA - 40) / 200, sB = 0.85 + (mB - 40) / 200;
-  const bonhomme = (x, s, nom, m) => {
-    const sol = 200, ph = sol - 50 * s, ts = sol - 95 * s;   // hanches, épaules
+  const u = anim ? Math.max(0, Math.min(1, (anim.t - 0.8) / 2.6)) : 0, K = 120, dA = -K * u * mB / (mA + mB), dB = K * u * mA / (mA + mB), sepa = u > 0.04;
+  const bonhomme = (x0, s, nom, m, dx = 0) => {
+    const x = x0 + dx, sol = 200, ph = sol - 50 * s, ts = sol - 95 * s;   // hanches, épaules
     return <g {...TRAIT}><circle cx={x} cy={ts - 16 * s} r={13 * s} fill="#fde68a"/><line x1={x} y1={ts - 3 * s} x2={x} y2={ph}/>
-      <line x1={x} y1={ph} x2={x - 16 * s} y2={sol}/><line x1={x} y1={ph} x2={x + 16 * s} y2={sol}/><line x1={x} y1={ts + 2} x2={C.x} y2={C.y}/>
+      <line x1={x} y1={ph} x2={x - 16 * s} y2={sol}/><line x1={x} y1={ph} x2={x + 16 * s} y2={sol}/><line x1={x} y1={ts + 2} x2={C.x + dx} y2={C.y}/>
       <text x={x} y={sol + 22} textAnchor="middle" fontSize="17" fontWeight="700" fill="#0f172a" stroke="none">{nom} ({m} kg)</text></g>;
   };
   return (
     <svg viewBox={`0 0 ${W} 232`} width="100%" role="img" aria-label="Deux patineurs en contact : A pousse B" style={{ maxWidth: 480, margin: '0 auto', display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="10" y1="200" x2="550" y2="200" stroke="#94a3b8" strokeWidth="3"/>
-      {bonhomme(205, sA, "A", mA)}{bonhomme(355, sB, "B", mB)}
-      <circle cx={C.x} cy={C.y} r="5" fill="#0f172a"/>
-      {une && <EtqF x={C.x + 8} y={70} c={FORCE} ind="A/B" suite={` = ${fr(F, 0)} N`}/>}
-      {deux && <EtqF x={C.x - 192} y={70} c={FORCE2} ind="B/A" suite={` = ${fr(F, 0)} N`}/>}
-      {une && <Fleche x={C.x} y={C.y} dx={L} dy={0} couleur={FORCE} ep={4.5}/>}
-      {deux && <Fleche x={C.x} y={C.y} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/>}
+      {bonhomme(205, sA, "A", mA, dA)}{bonhomme(355, sB, "B", mB, dB)}
+      {!sepa && <circle cx={C.x} cy={C.y} r="5" fill="#0f172a"/>}
+      {anim && sepa && <text x="10" y="62" fontSize="15" fill="#0f766e" fontWeight="700">Même force sur chacun, mais le plus léger va plus vite.</text>}
+      {!sepa && une && <EtqF x={C.x + 8} y={70} c={FORCE} ind="A/B" suite={` = ${fr(F, 0)} N`}/>}
+      {!sepa && deux && <EtqF x={C.x - 192} y={70} c={FORCE2} ind="B/A" suite={` = ${fr(F, 0)} N`}/>}
+      {!sepa && une && <Fleche x={C.x} y={C.y} dx={L} dy={0} couleur={FORCE} ep={4.5}/>}
+      {!sepa && deux && <Fleche x={C.x} y={C.y} dx={-L} dy={0} couleur={FORCE2} ep={4.5}/>}
       <text x="10" y="20" fontSize="16" fill="#334155">A pousse B : leurs mains se touchent au point noir.</text>
       <text x="10" y="40" fontSize="16" fill="#334155">Échelle : 1 cm ↔ 80 N</text>
     </svg>);
@@ -302,6 +305,7 @@ export function SimulationForcesVecteurs() {
   const [pw, setPw] = useState({ astre: 'terre', m: 1, h: 0 });
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(4.4, true), animR = enExplore && (LA.joue || LA.t > 0) ? LA : null;
   const atelierEff = enDefi ? (defi.type === 'poids' ? 'poids' : 'vecteur') : atelier;
 
   // situation d'un défi dans l'atelier « vecteur »
@@ -561,7 +565,8 @@ export function SimulationForcesVecteurs() {
           <select value={recip.scene} onChange={e => { const k = e.target.value; setRecip(r => ({ ...r, scene: k, F: k === 'dyno' ? 4 : 60 })); }} aria-label="Situation" style={{ width: '100%', minHeight: 42, padding: '6px 8px', fontSize: 14.5, borderRadius: 8, border: `1.5px solid ${KIT.bord}`, background: '#fff' }}>
             <option value="dyno">Deux dynamomètres</option><option value="patin">Deux patineurs</option></select></label>
         <label style={{ fontSize: 13.5, display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 42 }}><input type="checkbox" checked={recip.montrer === true} onChange={e => setRecip(r => ({ ...r, montrer: e.target.checked }))}/> Afficher les deux forces</label></div>}
-      <Reciproques scene={recip.scene} F={recip.F} mA={recip.mA} mB={recip.mB} montrer={recip.montrer} masqueA={enGuide && etapeCourante.id === 'recip1' && !(guide.reussies || {})[guide.etape]}/>
+      <Reciproques scene={recip.scene} F={recip.F} mA={recip.mA} mB={recip.mB} montrer={recip.montrer} masqueA={enGuide && etapeCourante.id === 'recip1' && !(guide.reussies || {})[guide.etape]} anim={animR}/>
+      {enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.5 }}>{recip.scene === 'dyno' ? 'Le ressort s’étire et se relâche un peu : les deux dynamomètres marquent toujours la même valeur.' : 'Après la poussée, les deux patineurs partent en sens contraire : la force est la même sur chacun, mais le plus léger va plus vite.'}</div><Commandes L={LA}/></div>}
       {enExplore && <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 8 }}>
         <label style={{ fontSize: 13.5, fontWeight: 600, flex: '1 1 200px' }}>{recip.scene === 'dyno' ? 'Force de la main sur B' : 'Force de A sur B'} : <strong>{fr(recip.F, recip.scene === 'dyno' ? 1 : 0)} N</strong>
           <input type="range" min={recip.scene === 'dyno' ? 0 : 10} max={recip.scene === 'dyno' ? 10 : 160} step={recip.scene === 'dyno' ? 0.5 : 10} value={recip.F} aria-label="Intensité de la force" onChange={e => setRecip(r => ({ ...r, F: +e.target.value }))} style={{ width: '100%' }}/></label>
