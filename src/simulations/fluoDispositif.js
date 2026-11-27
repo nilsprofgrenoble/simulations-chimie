@@ -1,7 +1,7 @@
 // Vue « Dispositif et spectre » de la simulation 301 : relie une transition du diagramme de Perrin-Jablonski, la place du détecteur
 // (dans l'axe : absorption ; à 90° : fluorescence et phosphorescence) et l'allure du spectre obtenu. Fonctions pures, testées par fluoDispositif.test.mjs.
 // Hypothèses : celles des tirages (fluoTirages.js) : structure vibronique schématique à 5 sous-niveaux, mêmes facteurs de Franck-Condon à l'absorption et à
-// l'émission, règle de Kasha, raies élargies de 0,05 eV, E(eV) × λ(nm) = 1243. Les courbes sont les spectres attendus (sans bruit) ; les photons animés sont
+// l'émission, règle de Kasha, bandes élargies de 0,14 eV (spectres en solution : les sous-niveaux de vibration ne sont plus résolus), E(eV) × λ(nm) = 1243. Les courbes sont les spectres attendus (sans bruit) ; les photons animés sont
 // des événements pseudo-aléatoires reproductibles (fonction de leur numéro). Le monochromateur de détection laisse passer ± FEN_MONO nm autour de sa longueur d'onde.
 import { gauss } from './fluoModele.js';
 import * as X from './fluoTirages.js';
@@ -20,15 +20,19 @@ export const lamsRaies = (mol, type) => (type === 'abs' ? X.raiesAbs(mol) : type
 export const fixeDefaut = (mode, mol) => (mode === 'ex' ? Math.round(lamsRaies(mol, 'fluo')[2]) : 350);
 export const modeValide = (mode, mol) => !(mode === 'ph' && !mol.T);
 
-// ---------- spectres attendus, intensités relatives (0 à 1) ----------
-export const absRel = (mol, lam) => X.pAbs(mol, Een(lam)) / X.P_ABS_MAX;
-const jac = l => X.HC / (l * l);
-const fluoNm = (mol, l) => mol.rend.fluo * X.pdfFluo(mol, Een(l)) * jac(l);
-const phosNm = (mol, l) => (mol.T ? mol.rend.cis * mol.T.phos * X.pdfPhos(mol, Een(l)) * jac(l) : 0);
-const emNm = (mol, l) => fluoNm(mol, l) + phosNm(mol, l);
-const fenetre = (mol, lam) => { let s = 0; for (let l = lam - FEN_MONO; l <= lam + FEN_MONO; l += 0.5) s += emNm(mol, l) * 0.5; return s; };
+// ---------- spectres attendus : BANDES (largeur 0,14 eV), intensités relatives (0 à 1) ----------
+export const SIGB = 0.14;
+const gE = (E, E0) => gauss(E, E0, SIGB);
+const densAbs = (mol, E) => X.raiesAbs(mol).reduce((s, E0, v) => s + X.FC[v] * gE(E, E0), 0);
+const pdfB = (raies, E) => raies.reduce((s, E0, v) => s + X.FC[v] * gE(E, E0) / (SIGB * Math.sqrt(2 * Math.PI)), 0);
 const cache = {};
 const maxi = (cle, f, lo, hi, pas = 1) => (cache[cle] ??= (() => { let m = 0; for (let l = lo; l <= hi; l += pas) m = Math.max(m, f(l)); return m; })());
+export const absRel = (mol, lam) => densAbs(mol, Een(lam)) / maxi(mol.id + 'abs', l => densAbs(mol, Een(l)), 250, 500, 0.5);
+const jac = l => X.HC / (l * l);
+const fluoNm = (mol, l) => mol.rend.fluo * pdfB(X.raiesFluo(mol), Een(l)) * jac(l);
+const phosNm = (mol, l) => (mol.T ? mol.rend.cis * mol.T.phos * pdfB(X.raiesPhos(mol), Een(l)) * jac(l) : 0);
+const emNm = (mol, l) => fluoNm(mol, l) + phosNm(mol, l);
+const fenetre = (mol, lam) => { let s = 0; for (let l = lam - FEN_MONO; l <= lam + FEN_MONO; l += 0.5) s += emNm(mol, l) * 0.5; return s; };
 // lamBal : longueur d'onde balayée ; fixe : longueur d'onde fixée (excitation pour 'em' et 'ph', détection pour 'ex')
 export function signal(mol, mode, lamBal, fixe) {
   if (mode === 'abs') return absRel(mol, lamBal);
@@ -41,40 +45,48 @@ export function courbe(mol, mode, fixe, pas = 2) {
   for (let l = lo; l <= hi + 1e-9; l += pas) out.push({ lam: l, s: signal(mol, mode, l, fixe) });
   return out;
 }
-// raies repérées sur la courbe : famille ('abs', 'fluo', 'phos'), sous-niveau v, longueur d'onde (nm)
-export function raiesCourbe(mol, mode) {
-  const [lo, hi] = DOMAINE[mode], fam = mode === 'abs' || mode === 'ex' ? ['abs'] : mode === 'em' ? ['fluo', 'phos'] : ['phos'], out = [];
-  for (const f of fam) lamsRaies(mol, f).forEach((lam, v) => { if (lam >= lo && lam <= hi) out.push({ fam: f, v, lam }); });
-  return out;
-}
 
-// ---------- transitions mises en valeur sur le diagramme ----------
-const TOL = 1.55 * X.SIG;                                    // une longueur d'onde « tombe sur » une raie à ± 1,55 σ (eV)
-const proche = (lams, lam) => { let k = -1, d = Infinity; lams.forEach((l, i) => { const e = Math.abs(Een(l) - Een(lam)); if (e < d) { d = e; k = i; } }); return d <= TOL ? k : -1; };
-// renvoie { abs, fluo, phos } : sous-niveau d'arrivée (v′ pour l'absorption, v pour l'émission), -1 si aucune transition n'est sélectionnée
+// ---------- transition dominante mise en valeur sur le diagramme (la plus proche de la longueur d'onde réglée) ----------
+const SEUIL_SIGNAL = 0.05;
+const proche = (lams, lam) => { let k = 0, d = Infinity; lams.forEach((l, i) => { const e = Math.abs(Een(l) - Een(lam)); if (e < d) { d = e; k = i; } }); return k; };
+// renvoie { abs, fluo, phos } : sous-niveau d'arrivée (v′ pour l'absorption, v pour l'émission), -1 si le signal est négligeable
 export function transitions(mol, mode, lamBal, fixe) {
+  const nul = { abs: -1, fluo: -1, phos: -1 };
+  if (signal(mol, mode, lamBal, fixe) < SEUIL_SIGNAL) return nul;
   const la = lamsRaies(mol, 'abs'), lf = lamsRaies(mol, 'fluo'), lp = lamsRaies(mol, 'phos');
-  if (mode === 'abs') return { abs: proche(la, lamBal), fluo: -1, phos: -1 };
-  if (mode === 'ex') { const a = proche(la, lamBal); return { abs: a, fluo: a >= 0 ? proche(lf, fixe) : -1, phos: -1 }; }
-  if (mode === 'ph') return { abs: -1, fluo: -1, phos: mol.T ? proche(lp, lamBal) : -1 };
-  const a = proche(la, fixe);
-  return { abs: a, fluo: a >= 0 ? proche(lf, lamBal) : -1, phos: mol.T && a >= 0 ? proche(lp, lamBal) : -1 };
+  if (mode === 'abs') return { ...nul, abs: proche(la, lamBal) };
+  if (mode === 'ex') return { ...nul, abs: proche(la, lamBal), fluo: proche(lf, fixe) };
+  if (mode === 'ph') return { ...nul, phos: proche(lp, lamBal) };
+  const phos = mol.T && phosNm(mol, lamBal) > fluoNm(mol, lamBal);
+  return { abs: proche(la, fixe), fluo: phos ? -1 : proche(lf, lamBal), phos: phos ? proche(lp, lamBal) : -1 };
 }
 
 // ---------- un photon animé : événement reproductible ----------
 const hash = (i, k) => { const s = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return s - Math.floor(s); };
 const tirerV = u => { let s = 0; for (let v = 0; v < X.NV; v++) { s += X.FC[v]; if (u < s) return v; } return X.NV - 1; };
+// un photon de longueur d'onde lamIn, tiré de façon reproductible (même modèle de bandes que les courbes)
+function photonBande(mol, lamIn, i) {
+  if (hash(i, 10) >= X.P_ABS_MAX * absRel(mol, lamIn)) return { absorbe: false };
+  const E = Een(lamIn), poids = X.raiesAbs(mol).map((E0, v) => X.FC[v] * gE(E, E0)), tot = poids.reduce((a, b) => a + b, 0);
+  let u = hash(i, 11) * tot, vAbs = 0; for (; vAbs < X.NV - 1; vAbs++) { u -= poids[vAbs]; if (u < 0) break; }
+  const g = () => Math.sqrt(-2 * Math.log(1 - hash(i, 14))) * Math.cos(2 * Math.PI * hash(i, 15)), r = hash(i, 12);
+  if (r < mol.rend.fluo) { const v = tirerV(hash(i, 13)); return { absorbe: true, vAbs, voie: 'fluo', v, Eem: mol.E00 - v * mol.hw + SIGB * g() }; }
+  if (r < mol.rend.fluo + mol.rend.cis) {
+    if (hash(i, 16) < mol.T.phos) { const v = tirerV(hash(i, 13)); return { absorbe: true, vAbs, voie: 'phos', v, Eem: mol.T.E00 - v * mol.hw + SIGB * g() }; }
+    return { absorbe: true, vAbs, voie: 'nrT' };
+  }
+  return { absorbe: true, vAbs, voie: 'nr' };
+}
 export function evenement(mol, mode, lamBal, fixe, i) {
   if (mode === 'ph') {
     if (!mol.T) return { absorbe: false, voie: null, passe: false, lamIn: null, lamOut: null, lamDet: lamBal };
     if (hash(i, 1) >= mol.T.phos) return { absorbe: true, voie: 'nrT', passe: false, lamIn: null, lamOut: null, lamDet: lamBal };
     const v = tirerV(hash(i, 2)), g = Math.sqrt(-2 * Math.log(1 - hash(i, 3))) * Math.cos(2 * Math.PI * hash(i, 4));
-    const lamOut = X.lamDe(mol.T.E00 - v * mol.hw + X.SIG * g);
+    const lamOut = X.lamDe(mol.T.E00 - v * mol.hw + SIGB * g);
     return { absorbe: true, voie: 'phos', v, lamIn: null, lamOut, lamDet: lamBal, passe: Math.abs(lamOut - lamBal) <= FEN_MONO };
   }
   const lamIn = mode === 'abs' || mode === 'ex' ? lamBal : fixe, lamDet = mode === 'ex' ? fixe : lamBal;
-  let k = 0; const ev = X.photon(mol, X.HC / lamIn, () => hash(i, 10 + k++));
-  const lamOut = ev.Eem ? X.lamDe(ev.Eem) : null;
+  const ev = photonBande(mol, lamIn, i), lamOut = ev.Eem ? X.lamDe(ev.Eem) : null;
   return { ...ev, lamIn, lamOut, lamDet, passe: mode === 'abs' ? !ev.absorbe : lamOut != null && Math.abs(lamOut - lamDet) <= FEN_MONO };
 }
 const NB = ' ', nm = l => `${Math.round(l)}${NB}nm`;
@@ -91,7 +103,6 @@ export function texteEvenement(ev, mode) {
   const em = ev.voie === 'fluo' ? `fluorescence (S₁ v′${NB}=${NB}0 → S₀ v${NB}=${NB}${ev.v})` : `croisement intersystème puis phosphorescence (T₁ → S₀ v${NB}=${NB}${ev.v})`;
   return `${abs}, ${em} à ${nm(ev.lamOut)} ; ${ev.passe ? `le monochromateur de détection (${nm(ev.lamDet)}) laisse passer ce photon : le détecteur le compte` : `le monochromateur de détection est réglé sur ${nm(ev.lamDet)} : il arrête ce photon`}`;
 }
-export { gauss };
 
 // ---------- défi : quel type de mesure faut-il choisir ? ----------
 const SITUATIONS = [

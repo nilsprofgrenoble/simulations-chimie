@@ -211,7 +211,7 @@ export function SimulationFluorescence() {
   const reglagesTirages = (
     <div style={styleBoite}>
       <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}>Tirages de photons</div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Chaque photon est un tirage au hasard : absorbé ou non, puis émis par un chemin du diagramme. Chaque photon détecté ajoute un coup au spectre.</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, lineHeight: 1.5 }}>Chaque photon est un tirage au hasard : absorbé ou non, puis émis par un chemin du diagramme. Chaque photon détecté ajoute un coup au spectre. Les pics sont volontairement très fins pour montrer la structure vibrationnelle ; en solution, ils se fondent en une bande (onglet « Du photon au spectre »).</div>
       {selecteur('fl-tm', 'Ce que l’on trace', te.t.mode, ev => te.regler({ mode: ev.target.value }), [{ id: 'emission', nom: 'Émission (λ d’excitation fixée)' }, { id: 'excitation', nom: 'Excitation (λ de détection fixée)' }])}
       {selecteur('fl-tmol', 'Molécule', te.t.mol, ev => te.regler({ mol: ev.target.value, lamEm: Math.round(X.lamMaxEmission(X.MOLS_T[ev.target.value]) / 5) * 5 }), Object.values(X.MOLS_T))}
       {excE ? curs('fl-tlem', `Longueur d’onde de détection : ${te.t.lamEm} nm (fenêtre ± ${X.FENETRE} nm)`, te.t.lamEm, 380, 580, 5, ev => te.regler({ lamEm: parseInt(ev.target.value, 10) }), 'Le spectre est effacé à chaque changement. Les photons d’excitation sont tirés entre 290 et 410 nm.')
@@ -232,21 +232,15 @@ export function SimulationFluorescence() {
     </div>);
   const pilules = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['spectres', 'Les spectres']].map(([k, l]) => <button key={k} onClick={() => { if (k === 'diagramme' || k === 'temps') te.setLecture(false); setEx(e => ({ ...e, onglet: k === 'spectres' && (e.onglet === 'tirages' || e.onglet === 'dispositif') ? e.onglet : k })); }} aria-pressed={k === 'spectres' ? ['spectres', 'tirages', 'dispositif'].includes(ex.onglet) : ex.onglet === k} style={stylePetitBouton(k === 'spectres' ? ['spectres', 'tirages', 'dispositif'].includes(ex.onglet) : ex.onglet === k, '#16a34a')}>{l}</button>)}
-    </div>);
-  const sousPilules = ['spectres', 'tirages', 'dispositif'].includes(ex.onglet) && (
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 10 }}>
-      <span style={{ fontSize: 13.5, color: KIT.txt2 }}>Afficher :</span>
-      {[['spectres', 'Spectres schématiques'], ['tirages', 'Tirages au hasard'], ['dispositif', 'Dispositif et spectre']].map(([k, l]) => <button key={k} onClick={() => { if (k === 'spectres') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#334155')}>{l}</button>)}
+      {[['diagramme', 'Le diagramme'], ['temps', 'Après l’arrêt'], ['dispositif', 'Du photon au spectre'], ['tirages', 'Tirages au hasard']].map(([k, l]) => <button key={k} onClick={() => { if (k !== 'tirages') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
     </div>);
   const voletScene = (
     <div style={styleBoite}>
-      {pilules}{sousPilules}
+      {pilules}
       {ex.onglet === 'dispositif' ? <VueDispositif/>
         : ex.onglet === 'diagramme' ? <SceneJablonski actif={aucun} durees/>
         : ex.onglet === 'temps' ? <><SceneJablonski actif={null} etat={M.etatDominant(mol, tE)}/><div style={{ height: 6 }}/><SceneEmission mol={mol} t={tE}/></>
-        : ex.onglet === 'tirages' ? <>{te.t.mode === 'emission' && <SceneVibronique mol={MT} dernier={te.t.etat.dernier}/>}{te.t.mode === 'emission' && <div style={{ height: 6 }}/>}<SceneHistogramme etat={te.t.etat} params={te.t} mol={MT} courbe={te.t.courbe}/></>
-        : <SceneSpectresFluo mol={mol}/>}
+        : <>{te.t.mode === 'emission' && <SceneVibronique mol={MT} dernier={te.t.etat.dernier}/>}{te.t.mode === 'emission' && <div style={{ height: 6 }}/>}<SceneHistogramme etat={te.t.etat} params={te.t} mol={MT} courbe={te.t.courbe}/></>}
     </div>);
   const mesuresEx = enExplore && ex.onglet !== 'dispositif' && (
     <div style={styleBoite}>
@@ -261,30 +255,24 @@ export function SimulationFluorescence() {
         <LigneMesure nom="Processus" valeur={pr.nom}/><LigneMesure nom="Durée typique" valeur={pr.duree}/>
         <LigneMesure nom="Photon émis ou absorbé" valeur={pr.radiatif ? 'oui' : 'non'}/><LigneMesure nom="Description" valeur={pr.desc}/></>
         : <LigneMesure nom="Processus" valeur="choisissez-en un"/>)
-      : ex.onglet === 'temps' ? <>
+      : <>
         <LigneMesure nom="Temps depuis la coupure" valeur={txtT(tE)}/><LigneMesure nom="État le plus peuplé" valeur={ST[M.etatDominant(mol, tE)]}/>
         <LigneMesure nom="Fluorescence" valeur={`${fr(100 * M.intensiteFluo(mol, tE), M.intensiteFluo(mol, tE) < 0.1 ? 3 : 0)}${NB}%`}/>
         <LigneMesure nom="Phosphorescence" valeur={mol.tauT1 ? `${fr(100 * M.intensitePhos(mol, tE) / 0.6, M.intensitePhos(mol, tE) < 0.06 ? 3 : 0)}${NB}%` : 'aucune'}/>
-        <LigneMesure nom="Lumière émise" valeur={M.classeEmission(mol, tE)}/></>
-      : <>
-        <LigneMesure nom="Maximum d’absorption" valeur={`${mol.lamAbs}${NB}nm (${fr(M.energie(mol.lamAbs), 2)}${NB}eV)`}/>
-        <LigneMesure nom="Maximum de fluorescence" valeur={`${mol.lamFluo}${NB}nm (${fr(M.energie(mol.lamFluo), 2)}${NB}eV)`}/>
-        <LigneMesure nom="Énergie perdue" valeur={`${fr(M.decalageStokes(mol.lamAbs, mol.lamFluo), 2)}${NB}eV`}/>
-        <LigneMesure nom="Part de l’énergie perdue" valeur={`${fr(100 * M.partPerdue(mol.lamAbs, mol.lamFluo), 0)}${NB}%`}/>
-        {mol.lamPhos && <LigneMesure nom="Maximum de phosphorescence" valeur={`${mol.lamPhos}${NB}nm (${fr(M.energie(mol.lamPhos), 2)}${NB}eV)`}/>}</>}
+        <LigneMesure nom="Lumière émise" valeur={M.classeEmission(mol, tE)}/></>}
     </div>);
   const aEssayer = (
     <ul style={liste}>
       <li>Diagramme : parcourez les processus. Lesquels émettent un photon ? Lesquels sont les plus rapides ?</li>
       <li>Après l’arrêt : avec la molécule A, à quel temps la lumière a-t-elle disparu ? Et avec la molécule B ?</li>
       <li>Après l’arrêt : avec B, cherchez l’intervalle de temps où l’on ne voit que la phosphorescence.</li>
-      <li>Spectres : comparez les deux molécules. Laquelle perd le plus d’énergie avant d’émettre ?</li>
+      <li>Du photon au spectre : choisissez « Absorption et émission superposées » et comparez les deux molécules. Laquelle perd le plus d’énergie avant d’émettre ?</li>
       <li>Tirages (émission) : envoyez 1 000 photons à 350 nm, puis à 331 nm. Les spectres d’émission diffèrent-ils ? Pourquoi ?</li>
       <li>Tirages : excitez à 375 nm, entre deux pics d’absorption. Que devient la part de photons absorbés ?</li>
       <li>Tirages (excitation) : détectez à 450 nm, puis à 420 nm (molécule B) : comparez les spectres d’excitation obtenus.</li>
-      <li>Dispositif et spectre : en émission puis en absorption, comparez la place du détecteur (à 90° ou dans l’axe) et lancez « Photon par photon ». Pourquoi ne mesure-t-on pas l’émission dans l’axe du faisceau ?</li>
-      <li>Dispositif et spectre : balayez le spectre d’émission de B, puis choisissez « Phosphorescence ». Quelle émission reste après l’arrêt de la lampe ?</li>
-      <li>Spectres : la phosphorescence de B est-elle à une longueur d’onde plus petite ou plus grande que sa fluorescence ? Que dit le diagramme ?</li>
+      <li>Du photon au spectre : en émission puis en absorption, comparez la place du détecteur (à 90° ou dans l’axe) et lancez « Photon par photon ». Pourquoi ne mesure-t-on pas l’émission dans l’axe du faisceau ?</li>
+      <li>Du photon au spectre : balayez le spectre d’émission de B, puis choisissez « Phosphorescence ». Quelle émission reste après l’arrêt de la lampe ?</li>
+      <li>Du photon au spectre : la phosphorescence de B est-elle à une longueur d’onde plus petite ou plus grande que sa fluorescence ? Que dit le diagramme ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -305,7 +293,7 @@ export function SimulationFluorescence() {
       <li><strong>Énergies</strong> : E(eV) × λ(nm) = 1243 (constantes arrondies). L’énergie du photon émis est assimilée à un écart entre niveaux, en négligeant la relaxation vibrationnelle dans l’état d’arrivée.</li>
       <li><strong>Spectres</strong> : allures gaussiennes schématiques, de largeur arbitraire ; les intensités relatives ne sont pas à l’échelle.</li>
       <li><strong>Tirages</strong> : modèle vibronique schématique à 5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon à l’absorption et à l’émission (spectres en image miroir) ; écart entre sous-niveaux 0,20 eV (A) ou 0,15 eV (B) ; raies élargies de 0,05 eV ; molécule initialement au niveau v = 0 de S₀ ; relaxation vibrationnelle complète avant émission (règle de Kasha) ; probabilité d’absorption au sommet d’une raie : 90 % ; rendements fixés (A : 70 % de fluorescence ; B : 15 % de fluorescence, 60 % de croisement intersystème, puis 55 % de phosphorescence). Les nombres de photons sont des tirages aléatoires : deux séries ne donnent jamais exactement le même spectre.</li>
-      <li><strong>Dispositif et spectre</strong> : montage schématique (lampe, monochromateurs de fente ± 6 nm, échantillon, détecteur) ; les courbes sont les spectres attendus, sans bruit, normalisés à 1 ; chaque photon animé est un tirage reproductible du même modèle que les tirages ; en phosphorescence, la molécule est supposée excitée avant l’arrêt de la lampe et la part de molécules dans T₁ n’est pas modélisée.</li>
+      <li><strong>Du photon au spectre</strong> : montage schématique (lampe, monochromateurs de fente ± 6 nm, échantillon, détecteur) ; les courbes sont les spectres attendus, sans bruit, normalisés à 1, en bandes de largeur 0,14 eV (spectres en solution) ; chaque photon animé est un tirage reproductible du même modèle que les tirages ; en phosphorescence, la molécule est supposée excitée avant l’arrêt de la lampe et la part de molécules dans T₁ n’est pas modélisée.</li>
       <li><strong>Hors modèle</strong> : désactivation non radiative S₁ → S₀ détaillée, extinction de fluorescence (quenching), effets de solvant, règles de sélection détaillées.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
