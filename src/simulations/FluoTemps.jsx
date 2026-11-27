@@ -21,9 +21,13 @@ const pct = v => `${v >= 0.995 ? 100 : v < 0.01 && v > 0 ? '< 1' : Math.round(10
 // ---------- grains : chaque molécule excitée est un grain dont l'instant de retour est tiré au hasard ----------
 // Tirage reproductible (graine = molécule) : relaxation entre 10⁻¹³ et 10⁻¹² s, sortie de S₁ de loi exponentielle (τ(S₁)),
 // puis croisement intersystème vers T₁ avec la probabilité PHI_CIS, sortie de T₁ de loi exponentielle (τ(T₁)).
-const NG = 60, LARG = 0.6;                                    // nombre de grains ; durée (en décades) d'une chute
-const ZONES = [(i) => [104 + (i % 14) * 6.2, 79 - Math.floor(i / 14) * 6.4], (i) => [104 + (i % 14) * 6.2, 147 - Math.floor(i / 14) * 6.4],
-  (i) => [262 + (i % 14) * 9.5, 196 - Math.floor(i / 14) * 6.4], (i) => [70 + (i % 24) * 13.5, 286 - Math.floor(i / 24) * 6.4]];   // S₂ (haut), bas de S₁, T₁, S₀
+const NG = 60, LARG = 0.45;                                   // nombre de grains ; durée (en décades) d'une chute
+// places dans chaque tas (rang 0 = en bas à gauche) : 0 = haut de S₂, 1 = bas de S₁, 2 = T₁, 3 = S₀
+const ZONES = [k => [104 + (k % 14) * 6.4, 79 - Math.floor(k / 14) * 6.4], k => [104 + (k % 14) * 6.4, 147 - Math.floor(k / 14) * 6.4],
+  k => [262 + (k % 14) * 9.5, 196 - Math.floor(k / 14) * 6.4], k => [66 + (k % 24) * 13.8, 286 - Math.floor(k / 24) * 6.4]];
+// trajets : les grains descendent le long des flèches du diagramme
+const CHEMINS = { '01': [[150, 86], [150, 136]], '13': [[190, 156], [190, 282]], '12': [[208, 154], [250, 182]], '23': [[346, 204], [346, 282]] };
+const COUL_G = { '01': '#64748b', '13': COL.fluo, '12': COL.cis, '23': COL.phos };
 const cacheG = {};
 function grains(mol) {
   if (cacheG[mol.id]) return cacheG[mol.id];
@@ -37,10 +41,35 @@ function grains(mol) {
   }
   return (cacheG[mol.id] = g);
 }
-const posGrain = (st, i, lt) => { let k = st.length - 1; while (k > 0 && lt < st[k].t) k--;
-  const [x1, y1] = ZONES[st[k].z](i); if (k === 0) return [x1, y1];
-  const [x0, y0] = ZONES[st[k - 1].z](i), q = Math.min(1, Math.max(0, (lt - st[k].t) / LARG)), e = q * q * (3 - 2 * q);
-  return [x0 + (x1 - x0) * e, y0 + (y1 - y0) * e]; };
+const surChemin = (pts, f) => { const L = []; let tot = 0; for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); L.push(d); tot += d; }
+  let r = f * tot; for (let i = 1; i < pts.length; i++) { if (r <= L[i - 1] || i === pts.length - 1) { const q = L[i - 1] ? Math.min(1, r / L[i - 1]) : 1; return [pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * q, pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * q]; } r -= L[i - 1]; }
+  return pts[pts.length - 1]; };
+// cible de chaque grain à l'instant lt : sa place dans le tas (les tas se tassent quand des grains partent), ou un point de sa chute (accélérée)
+function cibles(gr, lt) {
+  const et = gr.map((st, i) => { let k = st.length - 1; while (k > 0 && lt < st[k].t) k--;
+    return { i, z: st[k].z, ta: st[k].t, q: k ? Math.min(1, (lt - st[k].t) / LARG) : 1, tr: k ? `${st[k - 1].z}${st[k].z}` : '' }; });
+  const rang = []; [0, 1, 2, 3].forEach(z => et.filter(e => e.z === z).sort((a, b) => a.ta - b.ta || a.i - b.i).forEach((e, r) => { rang[e.i] = r; }));
+  return et.map(e => { const d = ZONES[e.z](rang[e.i]);
+    return e.q >= 1 ? { p: d, c: '#0f172a' } : { p: surChemin([...CHEMINS[e.tr], d], e.q * e.q), c: COUL_G[e.tr] }; });
+}
+function useGrains(mol, lt, vif) {
+  const refs = useRef([]), cur = useRef([]), ltR = useRef(lt), vifR = useRef(vif);
+  useEffect(() => { ltR.current = lt; vifR.current = vif; });
+  useEffect(() => {
+    const gr = grains(mol), red = reduitMouvement(); cur.current = []; let id, last = null;
+    const f = ts => {
+      const dt = last == null ? 1 : Math.min(0.1, (ts - last) / 1000); last = ts;
+      const v = vifR.current, l = v?.joue && v.pos ? v.pos.current : ltR.current, a = red ? 1 : 1 - Math.exp(-dt / 0.06);
+      cibles(gr, l).forEach(({ p: [x, y], c }, i) => { const el = refs.current[i]; if (!el) return; let g = cur.current[i];
+        if (!g) { g = cur.current[i] = { x, y, c: '' }; el.setAttribute('visibility', 'visible'); } else { g.x += (x - g.x) * a; g.y += (y - g.y) * a; }
+        el.setAttribute('transform', `translate(${g.x.toFixed(1)} ${g.y.toFixed(1)})`); if (g.c !== c) { g.c = c; el.setAttribute('fill', c); } });
+      id = requestAnimationFrame(f);
+    };
+    id = requestAnimationFrame(f);
+    return () => cancelAnimationFrame(id);
+  }, [mol]);
+  return refs;
+}
 
 // ---------- ① diagramme ----------
 const flV = (x, y1, y2, col, w, dash) => { const s = y2 < y1 ? 1 : -1;
@@ -48,7 +77,8 @@ const flV = (x, y1, y2, col, w, dash) => { const s = y2 < y1 ? 1 : -1;
 const ond = (x, y1, y2, col) => { let d = `M${x},${y1}`; const n = Math.max(2, Math.floor((y2 - y1) / 5)), dy = (y2 - y1) / n; for (let i = 1; i <= n; i++) d += ` L${x + (i % 2 ? 4 : -4)},${y1 + dy * i}`;
   return <><path d={d} fill="none" stroke={col} strokeWidth="2"/><polygon points={`${x},${y2 + 1} ${x - 4},${y2 - 7} ${x + 4},${y2 - 7}`} fill={col}/></>; };
 const niv = (x1, x2, y, k) => [0, 1, 2].map(i => <line key={k + i} x1={x1} x2={x2} y1={y - 10 * i} y2={y - 10 * i} stroke={i ? '#94a3b8' : '#0f172a'} strokeWidth={i ? 1.1 : 2.6}/>);
-function Diagramme({ mol, lt, P, sel, onSel }) {
+function Diagramme({ mol, lt, P, sel, onSel, vif }) {
+  const refsG = useGrains(mol, lt, vif);
   const B = !!mol.tauT1, actif = {
     absorption: lt < -13.5, rv: lt >= -14 && lt < -11.3, ci: lt >= -14 && lt < -11.3,
     fluo: lt >= -12.5 && P.fluo > 0.01, cis: B && lt >= -12.5 && P.fluo > 0.01, phos: B && lt >= -10 && P.phos > 0.01,
@@ -57,7 +87,6 @@ function Diagramme({ mol, lt, P, sel, onSel }) {
     return (<g key={id} opacity={on ? 1 : 0.22} style={{ cursor: 'pointer' }} onClick={() => onSel(sel === id ? '' : id)} role="button" tabIndex={0} aria-pressed={sel === id}
       aria-label={M.PROCESSUS.find(p => p.id === id).nom} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onSel(sel === id ? '' : id))}>
       {enfant}{lab}</g>); };
-  const gr = grains(mol);
   return (<svg role="img" viewBox="0 0 430 320" style={{ display: 'block', width: '100%' }}
     aria-label={`Diagramme de Perrin-Jablonski à t = ${txtT(lt)}. Molécules excitées : niveaux de vibration élevés ${pct(P.chaud)}, bas de S1 ${pct(P.S1)}${B ? `, T1 ${pct(P.T1)}` : ''}, revenues dans S0 ${pct(P.S0)}.`}>
     {T(10, 22, 'E', { size: 16, gras: true, anchor: 'start' })}<line x1="14" y1="300" x2="14" y2="34" stroke={K.gris} strokeWidth="1.4"/><polygon points="14,28 10,38 18,38" fill={K.gris}/>
@@ -72,7 +101,7 @@ function Diagramme({ mol, lt, P, sel, onSel }) {
     {g('fluo', <>{flV(190, 152, 288, COL.fluo, 4.2)}</>, T(198, 230, 'fluorescence', { size: 15, gras: true, fill: COL.fluo, anchor: 'start', halo: true }))}
     {B && g('cis', <><line x1="206" y1="152" x2="248" y2="178" stroke={COL.cis} strokeWidth="2.6" strokeDasharray="6 4"/><polygon points="254,182 241,180 247,170" fill={COL.cis}/></>, T(232, 152, 'CIS', { size: 14, gras: true, fill: COL.cis, anchor: 'start', halo: true }))}
     {B && g('phos', <>{flV(346, 202, 288, COL.phos, 4.2, '9 4')}</>, T(338, 256, 'phosphorescence', { size: 15, gras: true, fill: COL.phos, anchor: 'end', halo: true }))}
-    {gr.map((st, i) => { const [x, y] = posGrain(st, i, lt); return <circle key={i} className="fl-gr" cx="0" cy="0" r="2.9" fill="#0f172a" stroke="#fff" strokeWidth="1.2" style={{ transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)` }}/>; })}
+    {Array.from({ length: NG }, (_, i) => <circle key={`${mol.id}${i}`} ref={el => { refsG.current[i] = el; }} visibility="hidden" r="3.1" fill="#0f172a" stroke="#fff" strokeWidth="1.1"/>)}
   </svg>);
 }
 
@@ -225,7 +254,6 @@ export function VueTemps({ lt0, molFixe, onLt }) {
   return (<div>
     <style>{`
       .fl-pt { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
-      .fl-gr { transition: transform .35s ease-out; } @media (prefers-reduced-motion: reduce) { .fl-gr { transition: none; } }
       .fl-pr { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
       @media (min-width: 900px) { .fl-pr { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); } .fl-pt { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1.15fr); } }
       @media (prefers-reduced-motion: no-preference) { .fl-pulse { animation: fl-pulse 1.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes fl-pulse { 50% { transform: scale(1.4); } } }
@@ -250,11 +278,11 @@ export function VueTemps({ lt0, molFixe, onLt }) {
     <div role="status" aria-live="off" style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.45, marginBottom: 8, minHeight: '4.4em' }}>
       {pr ? <><strong>{pr.nom}</strong> ({pr.duree}, {pr.radiatif ? 'avec' : 'sans'} photon) : {pr.desc}.</> : phrase(mol, lt, P)}</div>
     <div className="fl-pt">
-      {panneau(1, 'Le diagramme de Perrin-Jablonski', <Diagramme mol={mol} lt={lt} P={P} sel={sel} onSel={setSel}/>)}
+      {panneau(1, 'Le diagramme de Perrin-Jablonski', <Diagramme mol={mol} lt={lt} P={P} sel={sel} onSel={setSel} vif={{ pos, joue }}/>)}
       {panneau(2, 'L’échantillon', <Echantillon mol={mol} lt={lt} P={P}/>)}
       {panneau(3, 'Les émissions au cours du temps', <Courbes mol={mol} lt={lt} onLt={regler} invite={invite && !joue}/>)}
     </div>
-    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser l’instant t sur le graphique (une graduation = 1 000 fois plus de temps). Chaque grain noir du diagramme est une molécule excitée par le flash (60 sont représentées) : l’instant de son retour est tiré au hasard, et l’on voit les grains « couler » de S₂ vers S₁, puis vers S₀ ou T₁. Touchez un processus du diagramme pour sa définition.</div>
+    <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 6, lineHeight: 1.5 }}>Faites glisser l’instant t sur le graphique (une graduation = 1 000 fois plus de temps). Chaque grain noir du diagramme est une molécule excitée par le flash (60 sont représentées) : l’instant de son retour est tiré au hasard, et l’on voit les grains s’écouler le long des flèches : vers le bas de S₁, puis vers S₀ (en vert, fluorescence) ou vers T₁ (en orange) d’où ils retombent plus tard (en rouge, phosphorescence). Touchez un processus du diagramme pour sa définition.</div>
     </>}
   </div>);
 }
