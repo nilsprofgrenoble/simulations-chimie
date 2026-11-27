@@ -15,8 +15,8 @@ export const PH_PAS = 0.1;
 export const N_IONS = 12, N_GRAINS = 16;
 
 const LAY = {
-  large: { W: 700, H: 440, bx: 215, bw: 270, bh: 165, bB: 212, dropY: 14, ax0: 40, ax1: 660, ya: 276, dy: 48, bar: 18, fs: 1, hy: 262 },
-  etroit: { W: 420, H: 560, bx: 62, bw: 296, bh: 180, bB: 250, dropY: 18, ax0: 22, ax1: 398, ya: 336, dy: 58, bar: 22, fs: 1.18, hy: 318 },
+  large: { W: 700, H: 510, bx: 215, bw: 270, bh: 165, bB: 282, dropY: 14, ax0: 40, ax1: 660, ya: 346, dy: 48, bar: 18, fs: 1, hy: 332 },
+  etroit: { W: 420, H: 640, bx: 62, bw: 296, bh: 180, bB: 330, dropY: 18, ax0: 22, ax1: 398, ya: 416, dy: 58, bar: 22, fs: 1.18, hy: 398 },
 };
 
 export function SceneHydroxydes({ cations, ph, setPh, etroit = false, touche = true, svgRef, aria, phase = 0, soude = false, barres = true, fenetre = false, chiffres = true, unSeul = false }) {
@@ -61,15 +61,28 @@ export function SceneHydroxydes({ cations, ph, setPh, etroit = false, touche = t
         <filter id={`${id}o`} x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#0f172a" floodOpacity="0.2"/></filter>
         {cs.map(({ cat }, i) => <linearGradient key={cat.id} id={`${id}g${i}`} x1="0" x2="1"><stop offset="0" stopColor={cat.colS} stopOpacity="0.25"/><stop offset="1" stopColor={cat.col} stopOpacity="0.95"/></linearGradient>)}
       </defs>
-      {/* pipette de soude */}
-      <g opacity={soude ? 1 : 0.55}>
-        <rect x={D.bx + D.bw / 2 - 7} y={D.dropY + 18} width="14" height="44" rx="3" fill="#fff" stroke={STROKE} strokeWidth="2"/>
-        <rect x={D.bx + D.bw / 2 - 5} y={D.dropY + 38} width="10" height="22" fill="#fde68a" opacity="0.9"/>
-        <path d={`M${D.bx + D.bw / 2 - 7} ${D.dropY + 62} L${D.bx + D.bw / 2 - 2} ${D.dropY + 76} L${D.bx + D.bw / 2 + 2} ${D.dropY + 76} L${D.bx + D.bw / 2 + 7} ${D.dropY + 62}`} fill="#fff" stroke={STROKE} strokeWidth="2"/>
-        <path d={`M${D.bx + D.bw / 2 - 11} ${D.dropY + 20} Q${D.bx + D.bw / 2} ${D.dropY - 8} ${D.bx + D.bw / 2 + 11} ${D.dropY + 20} Z`} fill="#dc2626" stroke={STROKE} strokeWidth="2"/>
-        <text x={D.bx + D.bw / 2 + 20} y={D.dropY + 52} fontSize={12.5 * fs} fontWeight="700" fill="#b45309">soude (HO⁻)</text>
-        {drop >= 0 && <ellipse cx={D.bx + D.bw / 2} cy={D.dropY + 80 + drop * (yL - D.dropY - 84)} rx="3.6" ry="5" fill="#f59e0b" opacity={1 - Math.max(0, drop - 0.85) * 6}/>}
-      </g>
+      {/* burette de soude : tube gradué, liquide qui baisse avec le pH, robinet qui s'ouvre, goutte qui tombe */}
+      {(() => {
+        const cx = D.bx + D.bw / 2, w = 8 * fs, y0 = 6, tipY = yL - 20, yS = tipY - 30 * fs, niv = clamp(0.96 - 0.55 * ph / 14, 0.3, 0.96), yLiq = yS - (yS - y0 - 10) * niv;
+        const ticks = []; for (let y = yS - 6, k = 0; y > y0 + 10; y -= 7, k++) ticks.push({ y, long: k % 5 === 0 });
+        return (
+          <g opacity={soude ? 1 : 0.8}>
+            <defs>
+              <linearGradient id={`${id}v`} x1="0" x2="1"><stop offset="0" stopColor="#e0f2fe" stopOpacity="0.9"/><stop offset="0.45" stopColor="#fff" stopOpacity="0.95"/><stop offset="1" stopColor="#bae6fd" stopOpacity="0.9"/></linearGradient>
+              <clipPath id={`${id}t`}><rect x={cx - w} y={y0} width={2 * w} height={yS - y0}/></clipPath>
+            </defs>
+            <rect x={cx - w} y={y0} width={2 * w} height={yS - y0} rx="2" fill={`url(#${id}v)`} stroke={STROKE} strokeWidth="2"/>
+            <g clipPath={`url(#${id}t)`}><rect x={cx - w} y={yLiq} width={2 * w} height={yS - yLiq} fill="#fcd34d" opacity="0.85"/><ellipse cx={cx} cy={yLiq} rx={w} ry="2.2" fill="#fbbf24" stroke="#d97706" strokeWidth="1"/><rect x={cx - w + 2.5} y={y0 + 2} width="2.4" height={yS - y0 - 4} rx="1.2" fill="#fff" opacity="0.7"/></g>
+            {ticks.map((t, i) => <line key={i} x1={cx - w} x2={cx - w - (t.long ? 8 : 4.5)} y1={t.y} y2={t.y} stroke="#475569" strokeWidth={t.long ? 1.6 : 1}/>)}
+            <rect x={cx - w - 2} y={y0 - 5} width={2 * w + 4} height="6" rx="2" fill="#94a3b8" stroke={STROKE} strokeWidth="1.4"/>
+            <rect x={cx - w - 5} y={yS} width={2 * w + 10} height={13 * fs} rx="3" fill="#64748b" stroke={STROKE} strokeWidth="1.6"/>
+            <g transform={`rotate(${soude ? 90 : 0} ${cx} ${yS + 6.5 * fs})`}><rect x={cx + w + 3} y={yS + 6.5 * fs - 3} width={15 * fs} height="6" rx="3" fill="#dc2626" stroke={STROKE} strokeWidth="1.2"/></g>
+            <path d={`M${cx - 4} ${yS + 13 * fs} L${cx - 4} ${yS + 13 * fs + 9} L${cx - 1.2} ${tipY} L${cx + 1.2} ${tipY} L${cx + 4} ${yS + 13 * fs + 9} L${cx + 4} ${yS + 13 * fs} Z`} fill={`url(#${id}v)`} stroke={STROKE} strokeWidth="1.6"/>
+            <text x={cx + w + 24 * fs} y={y0 + 26} fontSize={13 * fs} fontWeight="800" fill="#b45309">soude (HO⁻)</text>
+            <text x={cx + w + 24 * fs} y={y0 + 26 + 15 * fs} fontSize={11.5 * fs} fill="#64748b">burette graduée</text>
+            {drop >= 0 && <ellipse cx={cx} cy={tipY + 4 + drop * (yL - tipY - 8)} rx="3.4" ry="4.8" fill="#f59e0b" opacity={1 - Math.max(0, drop - 0.85) * 6}/>}
+          </g>);
+      })()}
       <rect x="0" y={D.bB} width={D.W} height="9" fill="#cbd5e1"/><rect x="0" y={D.bB + 9} width={D.W} height="3" fill="#94a3b8"/>
       <g filter={`url(#${id}o)`}>
         <g clipPath={`url(#${id}m)`}>

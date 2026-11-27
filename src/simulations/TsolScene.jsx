@@ -13,7 +13,10 @@ const spot = (k, s) => ({ u: ((k + 1) * (0.6180339887 + s * 0.137)) % 1, v: ((k 
 export const T_PAS = 1;
 export const N_IONS = 14, N_GRAINS = 18;
 
-function layout(etroit, becher) {
+function layout(etroit, becher, graphe = true) {
+  if (becher && !graphe) return etroit
+    ? { W: 420, H: 330, fs: 1.15, B: { bx: 60, bw: 290, bh: 190, bB: 250 }, G: { x0: 72, x1: 396, yT: 346, yB: 560 } }
+    : { W: 420, H: 370, fs: 1.05, B: { bx: 60, bw: 260, bh: 200, bB: 290 }, G: { x0: 72, x1: 396, yT: 346, yB: 560 } };
   if (becher) return etroit
     ? { W: 420, H: 640, fs: 1.15, B: { bx: 60, bw: 290, bh: 190, bB: 250 }, G: { x0: 72, x1: 396, yT: 346, yB: 560 } }
     : { W: 700, H: 380, fs: 1, B: { bx: 30, bw: 250, bh: 200, bB: 310 }, G: { x0: 402, x1: 672, yT: 46, yB: 290 } };
@@ -22,8 +25,8 @@ function layout(etroit, becher) {
     : { W: 700, H: 330, fs: 1, B: null, G: { x0: 80, x1: 672, yT: 36, yB: 260 } };
 }
 
-export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touche = true, svgRef, aria, phase = 0, dir = null, lecture = false, pointEtat = true, regions = true, becher = true }) {
-  const id = useId().replace(/:/g, ''), so = solide, { W, H, fs, B, G } = layout(etroit, becher);
+export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touche = true, svgRef, aria, phase = 0, dir = null, lecture = false, pointEtat = true, regions = true, becher = true, graphe = true, niveau = 1, vapeur = false, ecart = false }) {
+  const id = useId().replace(/:/g, ''), so = solide, { W, H, fs, B, G } = layout(etroit, becher, graphe);
   const xT = t => G.x0 + clamp(t, 0, 100) / 100 * (G.x1 - G.x0), yS = s => G.yB - clamp(s, 0, so.ymax) / so.ymax * (G.yB - G.yT);
   const e = M.etat(so, T, m, mEau), w = m / mEau * 100, sT = M.sol(so, T), xc = xT(T);
   const courbe = []; for (let t = 0; t <= 100; t += 2) courbe.push(`${xT(t).toFixed(1)},${yS(M.sol(so, t)).toFixed(1)}`);
@@ -33,7 +36,7 @@ export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touc
   const ions = [], grains = [];
   let yL = 0, reg = null, bord = '';
   if (B) {
-    yL = B.bB - B.bh + 26; reg = { x0: B.bx + 16, x1: B.bx + B.bw - 16, y0: yL + 18, y1: B.bB - 34 };
+    yL = B.bB - B.bh + 26 + (1 - clamp(niveau, 0.1, 1)) * (B.bh - 90); reg = { x0: B.bx + 16, x1: B.bx + B.bw - 16, y0: yL + 18, y1: B.bB - 34 };
     bord = `M${B.bx} ${B.bB - B.bh} L${B.bx + 6} ${B.bB - 4} Q${B.bx + 7} ${B.bB} ${B.bx + 14} ${B.bB} L${B.bx + B.bw - 14} ${B.bB} Q${B.bx + B.bw - 7} ${B.bB} ${B.bx + B.bw - 6} ${B.bB - 4} L${B.bx + B.bw} ${B.bB - B.bh}`;
     const fd = m > 0 ? e.dissous / m : 0, reste = N_IONS * fd;
     for (let k = 0; k < N_IONS; k++) { const op = clamp(reste - k, 0, 1); if (op > 0.02) ions.push({ k, op }); }
@@ -79,6 +82,7 @@ export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touc
           <path d={bord} fill="none" stroke={STROKE} strokeWidth="3" strokeLinecap="round"/>
           <path d={`M${B.bx + 12} ${B.bB - B.bh + 10} L${B.bx + 17} ${B.bB - 18}`} stroke="#fff" strokeWidth="4" opacity="0.7" strokeLinecap="round"/>
         </g>
+        {vapeur && <g pointerEvents="none">{[0, 1, 2, 3, 4].map(i => { const x = B.bx + 30 + i * ((B.bw - 60) / 4), dy = ((phase * 14 + i * 23) % 60); return <path key={i} d={`M${x} ${yL - 6 - dy} q${6 * Math.sin(phase * 2 + i)} -9 0 -18 q${-6 * Math.sin(phase * 2 + i)} -9 0 -18`} stroke="#94a3b8" strokeWidth="3" fill="none" strokeLinecap="round" opacity={Math.max(0, 0.75 - dy / 80)}/>; })}</g>}
         <text x={B.bx + B.bw / 2} y={B.bB - B.bh - 8} textAnchor="middle" fontSize={13.5 * fs} fontWeight="800" fill={so.col}>{so.formule}</text>
         <text x={B.bx + B.bw / 2} y={B.bB + 58 * fs} textAnchor="middle" fontSize={12.5 * fs} fontWeight="700" fill="#334155">{M.gTxt(mEau)}{M.NB}g d’eau · {M.gTxt(m)}{M.NB}g de {so.formule}</text>
         {/* thermomètre */}
@@ -89,6 +93,7 @@ export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touc
           <text x={B.bx + B.bw + 20} y={B.bB - 160} textAnchor="middle" fontSize={13 * fs} fontWeight="800" fill={`rgb(${rouge},60,${bleu})`}>{Math.round(T)}{M.NB}°C</text>
         </g>
       </g>}
+      {graphe && <g>
       {/* graphe de la solubilité */}
       <rect x={G.x0} y={G.yT} width={G.x1 - G.x0} height={G.yB - G.yT} fill="#fff" stroke="#e2e8f0"/>
       {regions && <g>
@@ -111,6 +116,7 @@ export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touc
         <circle cx={xc} cy={yS(sT)} r="5.5" fill="#fff" stroke={so.col} strokeWidth="3"/>
         <text x={G.x0 + 8} y={yS(sT) - 7} fontSize={13 * fs} fontWeight="800" fill={so.col}>s = {M.gTxt(sT)}</text>
       </g>}
+      {ecart && e.statut === 'depot' && <line x1={xc} x2={xc} y1={yS(sT)} y2={yS(w)} stroke="#dc2626" strokeWidth="4" strokeLinecap="round" pointerEvents="none"/>}
       {pointEtat && <g pointerEvents="none">
         <circle cx={xc} cy={yS(w)} r={9 * Math.max(1, fs * 0.9)} fill={couleurPt} opacity="0.25"/>
         <circle cx={xc} cy={yS(w)} r={6 * Math.max(1, fs * 0.9)} fill={couleurPt} stroke="#fff" strokeWidth="2"/>
@@ -125,5 +131,6 @@ export function SceneSolubilite({ solide, m, mEau, T, setT, etroit = false, touc
         {!touche && <circle className="xa-pulse" cx={xc} cy={G.yB} r={rayon + 5} fill="none" stroke="#dc2626" strokeWidth="3"/>}
       </g>
       <text x={xc} y={G.yB + 50 * fs} textAnchor={ancre} fontSize={13.5 * fs} fontWeight="800" fill="#dc2626" pointerEvents="none">T = {Math.round(T)}{M.NB}°C</text>
+      </g>}
     </svg>);
 }
