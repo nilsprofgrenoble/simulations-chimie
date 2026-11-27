@@ -1,5 +1,6 @@
 // Contrôle cinétique ou thermodynamique (BTS) : addition de HBr sur le buta-1,3-diène (produits 1,2 et 1,4).
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { reduitMouvement } from "./hookHorloge";
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { FicheAllylique, FicheStabiliteProduits, FicheCinetiqueBarrieres, FicheCinetique, FicheThermo, FicheComparaison } from "./CinetiqueThermoBTSFiches";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, LigneMesure, ARetenir, avecIndices, fmt, lireNombre, proche, IndiceDefi } from "../commun";
@@ -189,6 +190,13 @@ export function SimulationCinetiqueThermoBTS() {
   const [montrerE, setMontrerE] = useState(true);
   const [df, setDf] = useState(() => defi());
   const [hypoOuv, setHypoOuv] = useState(false);
+  const [lect, setLect] = useState(false);
+  // lecture animée (exploration) : le temps de réaction défile de 1 ms à 12 jours, en 8 s
+  useEffect(() => {
+    if (!lect || mode !== 'explore') return undefined;
+    const id = setInterval(() => setCurs(c => { if (c >= 1000) { setLect(false); return 1000; } return Math.min(1000, c + 6); }), 48);
+    return () => clearInterval(id);
+  }, [lect, mode]);
   const T = Tc + K, t = tempsDepuisCurseur(curs);
   const pts = useMemo(() => evolution(T), [T]);
   const c = composition(pts, t), g = regime(c, T);
@@ -204,7 +212,9 @@ export function SimulationCinetiqueThermoBTS() {
         <label style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Température : {Tc} °C ({nb(T, 0)} K)
           <input type="range" min={-80} max={80} step={1} value={Tc} onChange={e => setTc(+e.target.value)} aria-label="Température en degrés Celsius" style={{ width: '100%' }} /></label>
         <label style={{ fontSize: 14, fontWeight: 700, color: KIT.txt }}>Temps de réaction : {formatTemps(t)}
-          <input type="range" min={0} max={1000} step={1} value={curs} onChange={e => setCurs(+e.target.value)} aria-label="Temps de réaction (échelle logarithmique)" style={{ width: '100%' }} /></label>
+          <input type="range" min={0} max={1000} step={1} value={curs} onChange={e => { setLect(false); setCurs(+e.target.value); }} aria-label="Temps de réaction (échelle logarithmique)" style={{ width: '100%' }} /></label>
+        {mode === 'explore' && <div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>Lance la lecture : le temps défile de la milliseconde au jour et tu vois la composition évoluer (réactif, produit 1,2, produit 1,4).
+          <div style={{ marginTop: 6 }}><button onClick={() => { if (lect) setLect(false); else if (reduitMouvement()) setCurs(1000); else { if (curs >= 1000) setCurs(0); setLect(true); } }} style={stylePetitBouton(lect, KIT.accent || C14)}>{lect ? '⏸ Pause' : '▶ Rejouer la réaction'}</button></div></div>}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button onClick={() => regler(0, 10)} style={stylePetitBouton(false, C12)}>Cinétique (0 °C, 10 s)</button>
           <button onClick={() => regler(40, 10800)} style={stylePetitBouton(false, C14)}>Thermodynamique (40 °C, 3 h)</button>
