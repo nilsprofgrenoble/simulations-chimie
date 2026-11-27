@@ -5,6 +5,8 @@ import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton,
 import { Fiole } from "./solutionsVue";
 import { fr, TM, concFille, volumeMere, ECHELLE, PIPETTES, FIOLES, T_DAKIN, teinte } from "./solutionsModele";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
+import { pointsSurFil } from "./elecOutils";
 import { FDiluer, FFacteur, FMethodeV, FVerrerie, FEchelle, FBilanD } from "./DilutionSchemas";
 
 // ====================================================
@@ -30,8 +32,15 @@ const fg = (x) => fr(x, x < 0.01 ? 3 : 2);                 // g/L
 const fv = (x) => (Number.isInteger(x) ? String(x) : fr(x, 1));
 
 // ---------- scène : dilution ----------
-function SceneDilution({ D }) {
+const SEL = { width: '100%', minHeight: 42, padding: '6px 8px', borderRadius: 10, border: `1.5px solid ${KIT.bord}`, fontSize: 15, background: 'white', color: KIT.txt };
+const Choix = ({ nom, val, set, options }) => <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: KIT.txt2, marginBottom: 8 }}>{nom}<select value={val} onChange={e => set(e.target.value)} aria-label={nom} style={{ ...SEL, marginTop: 2 }}>{options.map(([k, l, off]) => <option key={k} value={k} disabled={!!off}>{l}</option>)}</select></label>;
+function SceneDilution({ D, anim = null }) {
   const tf = concFille(TM, D.Vm, D.Vf), F = D.Vm > 0 ? D.Vf / D.Vm : Infinity, m = TM * D.Vm;      // g/L × mL = mg
+  // rejeu (exploration) : 0–2,4 s on verse la solution mère, 2,4–6,4 s on ajoute de l'eau jusqu'au trait de jauge, puis pause
+  const t = anim ? anim.t : null, nm = Math.max(0.05, D.Vm / D.Vf), pA = t === null ? 1 : Math.min(1, t / 2.4), pB = t === null ? 1 : Math.max(0, Math.min(1, (t - 2.4) / 4));
+  const niv = t === null ? 1 : pB > 0 || t >= 6.4 ? nm + (1 - nm) * pB : nm * pA;
+  const cCur = t === null ? tf : TM * D.Vm / Math.max(1e-6, niv * D.Vf), alphaCur = t === null ? teinte(tf) : teinte(Math.min(TM, cCur));
+  const hPip = 34 * (1 - pA);
   return (
     <svg viewBox="0 0 560 300" width="100%" role="img" aria-label={`On prélève ${D.Vm} mL de solution mère que l’on complète à ${D.Vf} mL`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <defs><marker id="ft" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#334155"/></marker></defs>
@@ -39,11 +48,13 @@ function SceneDilution({ D }) {
       <path d="M14 56 L14 142 L106 142 L106 56" fill="none" stroke="#0f172a" strokeWidth="3"/>
       <text x="60" y="160" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#0f172a">Solution mère Sm</text>
       <g stroke="#0f172a" strokeWidth="2.5" fill="#e2e8f0"><rect x="55" y="22" width="10" height="82" rx="2"/><ellipse cx="60" cy="18" rx="9" ry="9" fill="#cbd5e1"/></g>
-      <rect x="56.5" y="70" width="7" height="34" fill={VIOLET} opacity={teinte(TM)}/>
+      <rect x="56.5" y={70 + 34 - hPip} width="7" height={hPip} fill={VIOLET} opacity={teinte(TM)}/>
       <text x="76" y="34" fontSize="12.5" fontWeight="700" fill="#0f172a">pipette : {fr(D.Vm, 1)} mL</text>
       <line x1="130" y1="104" x2="432" y2="104" stroke="#334155" strokeWidth="2.5" strokeDasharray="6 5" markerEnd="url(#ft)"/>
       <text x="281" y="94" textAnchor="middle" fontSize="12" fill="#334155">on verse V<tspan dy="3" fontSize="9">m</tspan><tspan dy="-3">, puis on complète à V</tspan><tspan dy="3" fontSize="9">f</tspan><tspan dy="-3"> avec de l’eau distillée</tspan></text>
-      <Fiole cx={455} niveau={1} couleur={VIOLET} alpha={teinte(tf)} pts={0} solide={0} volume={D.Vf} id="g"/>
+      <Fiole cx={455} niveau={niv} couleur={VIOLET} alpha={alphaCur} pts={0} solide={0} volume={D.Vf} id="g"/>
+      {t !== null && pA < 1 && t > 0.05 && pointsSurFil([[112, 104], [455, 104]], 150, t, 34).map(([x, y], k) => <circle key={'dm' + k} cx={x} cy={y + 3} r="4.5" fill={VIOLET} opacity="0.9"/>)}
+      {t !== null && pB > 0 && pB < 1 && pointsSurFil([[455, 0], [455, 26]], 60, t, 13).map(([x, y], k) => <circle key={'dw' + k} cx={x} cy={y} r="3.6" fill="#38bdf8" stroke="#fff" strokeWidth="0.8"/>)}
       <g fontSize="12.5" fill="#0f172a">
         <text x="14" y="188" fontWeight="800">Masse de soluté prélevée</text>
         <text x="14" y="206">m = t<tspan dy="3" fontSize="9">m</tspan><tspan dy="-3"> × V</tspan><tspan dy="3" fontSize="9">m</tspan><tspan dy="-3"> = 0,40 × {fr(D.Vm, 1)} = </tspan><tspan fontWeight="800">{fr(m, 1)} mg</tspan></text>
@@ -168,6 +179,7 @@ export function SimulationDilution() {
   const [voirT, setVoirT] = useState(false);
   const [hypoOuv, setHypoOuv] = useState(false);
   const enGuide = mode === 'guide', enDefi = mode === 'defi' && !!defi, enExplore = mode === 'explore';
+  const LA = useHorloge(7.6, true), animD = enExplore && (LA.joue || LA.t > 0) ? LA : null;
   const tf = concFille(TM, D.Vm, D.Vf);
   const juste = tableauJuste(tab);
 
@@ -241,12 +253,8 @@ export function SimulationDilution() {
   const verrerieTxt = PIPETTES.includes(D.Vm) ? `pipette jaugée de ${D.Vm} mL` : 'pas de pipette jaugée de ce volume : pipette graduée';
   const controlesDilution = (verrou) => (
     <div style={{ marginTop: 8 }}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Fiole jaugée :</span>
-        {FIOLES.map(v => <button key={v} onClick={() => setD(x => ({ ...x, Vf: v, Vm: Math.min(x.Vm, v) }))} style={stylePetitBouton(D.Vf === v, '#0b4f94')}>{v} mL</button>)}</div>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Pipette jaugée :</span>
-        {PIPETTES.map(v => <button key={v} onClick={() => setD(x => ({ ...x, Vm: v }))} disabled={v > D.Vf} style={{ ...stylePetitBouton(D.Vm === v, '#0b4f94'), opacity: v > D.Vf ? 0.4 : 1 }}>{v} mL</button>)}</div>
+      <Choix nom="Fiole jaugée" val={D.Vf} set={v => setD(x => ({ ...x, Vf: +v, Vm: Math.min(x.Vm, +v) }))} options={FIOLES.map(v => [v, `${v} mL`])}/>
+      <Choix nom="Pipette jaugée" val={PIPETTES.includes(D.Vm) ? D.Vm : ''} set={v => setD(x => ({ ...x, Vm: +v }))} options={[...(PIPETTES.includes(D.Vm) ? [] : [['', 'pipette graduée (volume libre)']]), ...PIPETTES.map(v => [v, `${v} mL`, v > D.Vf])]}/>
       {!verrou && <label style={{ fontSize: 13.5, fontWeight: 600, display: 'block' }}>ou pipette graduée (volume libre) : <strong>{fr(D.Vm, 1)} mL</strong>
         <input type="range" min="0.5" max={Math.min(D.Vf, 50)} step="0.5" value={Math.min(D.Vm, Math.min(D.Vf, 50))} aria-label="Volume prélevé en millilitres" onChange={e => setD(x => ({ ...x, Vm: +e.target.value }))} style={{ width: '100%' }}/></label>}
       <div style={{ fontSize: 13, color: KIT.txt2, marginTop: 2 }}>Verrerie : {verrerieTxt}</div>
@@ -263,10 +271,8 @@ export function SimulationDilution() {
   const defiRegler = enDefi && defi.type === 'regler', defiEnc = enDefi && defi.type === 'encadrer';
   const planche = (
     <div style={styleBoite}>
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8, alignItems: 'center' }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Atelier :</span>
-        {[['diluer', '🧪 Diluer'], ['tableau', '📋 Tableau de l’échelle'], ['echelle', '🎨 Échelle de teintes']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>
-      {atelier === 'diluer' && <><SceneDilution D={D}/>{controlesDilution(false)}</>}
+      <Choix nom="Atelier" val={atelier} set={setAtelier} options={[['diluer', '🧪 Diluer'], ['tableau', '📋 Tableau de l’échelle'], ['echelle', '🎨 Échelle de teintes']]}/>
+      {atelier === 'diluer' && <><SceneDilution D={D} anim={animD}/>{enExplore && <div style={{ marginTop: 6 }}><div style={{ fontSize: 12.5, color: KIT.txt2, lineHeight: 1.45 }}>Regardez la préparation : on verse la solution mère, puis on ajoute de l’eau jusqu’au trait de jauge. La couleur s’éclaircit : la solution est diluée.</div><Commandes L={LA}/></div>}{controlesDilution(false)}</>}
       {atelier === 'tableau' && <><Tableau tab={tab} setTab={setTab} verif={tabV} setVerif={setTabV}/>
         <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => setTabV(true)} style={styleBouton(true, '#16a34a')}>✓ Vérifier le tableau</button>
