@@ -2483,6 +2483,44 @@ function genFiltCoupure() {
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3], retenir: ['À fc : A = Amax ÷ √2 ≈ 0,7 × Amax.', 'Bande passante : fréquences pour lesquelles A ≥ 0,7 × Amax.'] };
 }
+function genGabFiltrage() {
+  const vdc = tire([1.3, 1.7, 2.3, 2.7]), a = tire([1.5, 2, 2.5, 3]), A = tire([0.1, 0.2, 0.25, 0.4, 0.5]), f = tire([2000, 5000, 20000]);
+  const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
+  const intro = `Un signal est la somme d’une composante continue de ${g1(vdc)}${NB}V et d’une sinusoïde de fréquence ${f / 1000}${NB}kHz et d’amplitude ${g1(a)}${NB}V. Il traverse un filtre passe-bas qui laisse passer la composante continue sans atténuation (A = 1 à 0${NB}Hz) ; à ${f / 1000}${NB}kHz, son facteur d’amplification est A = ${g(A)}.`;
+  const q1 = { id: 'g0', type: 'num', q: <>Quelle est l’<b>amplitude de la raie de sortie</b> à {f / 1000}{NB}kHz, en V ?</>, unite: 'V', vrai: a * A, tolRel: 0.03, csMin: 2,
+    aide: 'Raie de sortie = A × raie d’entrée.',
+    pieges: [[a, 'Vous avez donné l’amplitude de la raie d’entrée : la raie de sortie est multipliée par A.'], [A, 'Vous avez donné A, sans unité : l’amplitude de sortie est A × amplitude d’entrée.']],
+    expl: <>{g(A)} × {g1(a)} = <b>{g(a * A)}{NB}V</b>.</> };
+  const q2 = { id: 'g1', type: 'num', q: <>Quelle est la <b>valeur moyenne</b> du signal de sortie, en V ?</>, unite: 'V', vrai: vdc, tolRel: 0.03, csMin: 2,
+    aide: 'La valeur moyenne est la raie à 0 Hz ; le filtre la laisse passer avec A = 1.',
+    pieges: [[vdc * A, 'Vous avez multiplié la composante continue par A de la sinusoïde : à 0 Hz, le facteur d’amplification est 1.'], [a * A, 'Vous avez donné l’amplitude de la raie de sortie : la valeur moyenne est la raie à 0 Hz.']],
+    expl: <>La raie à 0 Hz est multipliée par A = 1 : la valeur moyenne reste <b>{g1(vdc)}{NB}V</b>.</> };
+  const q3 = { id: 'g2', type: 'num', q: <>Quelle est la <b>valeur maximale</b> de la tension de sortie, en V ?</>, unite: 'V', vrai: vdc + a * A, tolRel: 0.03, csMin: 2,
+    aide: 'Valeur maximale = valeur moyenne + amplitude de la sinusoïde de sortie.',
+    pieges: [[a * A, 'Vous avez donné seulement l’amplitude de la sinusoïde : il faut ajouter la valeur moyenne.'], [vdc + a, 'Vous avez utilisé l’amplitude d’entrée : la sinusoïde est atténuée par le filtre.']],
+    expl: <>{g1(vdc)} + {g(a * A)} = <b>{g(vdc + a * A)}{NB}V</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Le filtre multiplie chaque raie par A(f), y compris la raie à 0 Hz.', 'Valeur maximale = valeur moyenne + amplitude de la sinusoïde.'] };
+}
+function genGabCascade() {
+  const A1 = tire([0.8, 0.85, 0.9, 0.95]), A2 = tire([0.7, 0.8, 0.9, 0.95]), ue = tire([1.5, 2, 3, 4]), f = tire([1000, 2000, 5000]);
+  const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1), A = A1 * A2;
+  const intro = `Un passe-bande est obtenu en plaçant en cascade un passe-haut et un passe-bas. À ${f / 1000}${NB}kHz, le passe-haut seul a un facteur d’amplification A₁ = ${g(A1)} et le passe-bas seul A₂ = ${g(A2)}. On applique à l’entrée une tension sinusoïdale d’amplitude ${g1(ue)}${NB}V à cette fréquence.`;
+  const q1 = { id: 'c0', type: 'num', q: <>Quel est le <b>facteur d’amplification A</b> du passe-bande à cette fréquence ?</>, unite: '', vrai: A, tolRel: 0.03, csMin: 2,
+    aide: 'En cascade : A = A₁ × A₂.',
+    pieges: [[A1 + A2, 'Vous avez additionné A₁ et A₂ : en cascade, les facteurs d’amplification se multiplient.']],
+    expl: <>A = {g(A1)} × {g(A2)} = <b>{g(A)}</b>.</> };
+  const q2 = { id: 'c1', type: 'num', q: <>Quelle est l’<b>amplitude Us,max</b> de la sortie, en V ?</>, unite: 'V', vrai: A * ue, tolRel: 0.03, csMin: 2,
+    aide: 'Us,max = A × Ue,max.',
+    pieges: [[A, 'Vous avez donné A, sans unité : Us,max = A × Ue,max.'], [A1 * ue, 'Vous avez oublié le deuxième filtre : il faut utiliser A = A₁ × A₂.']],
+    expl: <>Us,max = {g(A)} × {g1(ue)} = <b>{g(A * ue)}{NB}V</b>.</> };
+  const q3 = { id: 'c2', type: 'num', q: <>De quel pourcentage l’amplitude est-elle <b>réduite</b> par le passe-bande ?</>, unite: '%', vrai: (1 - A) * 100, tolRel: 0.03, csMin: 2,
+    aide: 'Réduction = (1 − A) × 100.',
+    pieges: [[A * 100, 'Vous avez donné le pourcentage conservé (A × 100) : la réduction est ce qui est perdu.']],
+    expl: <>(1 − {g(A)}) × 100 = <b>{g1((1 - A) * 100)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Deux filtres en cascade : A = A₁ × A₂.', 'Un filtre passif atténue : A ≤ 1.'] };
+}
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
@@ -6966,6 +7004,8 @@ export const FAMILLES = [
   { id: 'ksq-melange', groupe: 'Formules', titre: 'Mélange de deux solutions : concentrations, Qr et précipitation (terminale STL)', gen: genKsqMelange, domaine: 'Ks, quotient de réaction et solubilité' },
   { id: 'hyd-seuil', groupe: 'Formules', titre: 'Hydroxyde : [HO⁻] et pH de début et de fin de précipitation (terminale STL)', gen: genHydSeuil, domaine: 'Précipitation des hydroxydes et pH' },
   { id: 'hyd-fenetre', groupe: 'Formules', titre: 'Séparer deux cations par le pH : fenêtre de séparation (terminale STL)', gen: genHydFenetre, domaine: 'Précipitation des hydroxydes et pH' },
+  { id: 'gab-filtrage', groupe: 'Formules', titre: 'Filtre passe-bas : raie de sortie et composante continue (terminale STL)', gen: genGabFiltrage, domaine: 'Filtrage et amplification de tension' },
+  { id: 'gab-cascade', groupe: 'Formules', titre: 'Passe-bande en cascade : facteur d’amplification (terminale STL)', gen: genGabCascade, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },
