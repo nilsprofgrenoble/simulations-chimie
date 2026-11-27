@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, proche, avecIndices, IndiceDefi } from "../commun";
 import { fr, MILIEUX, milieu, refraction, angleLimite, mesurerI2, pente, pecheur } from "./optiqueModele";
 import { Pic } from "../Pictos";
+import { CouchePhotons, useHorloge, Commandes, Poignee, T_BOUCLE } from "./lentilleMinceAnim";
+import { StyleAnim } from "./exploAnim";
 import { FicheVocabRef, FicheIndice, FicheLoi, FicheCalcAngle, FicheTotale, FicheBilanRef } from "./RefractionFiches";
 
 // ====================================================
@@ -32,7 +34,7 @@ function arc(cx, cy, r, a, haut, gauche) {   // arc de rayon r entre la normale 
   const x2 = cx + sgn * r * sin(a), y2 = cy + v * r * Math.cos(a * RAD);
   return `M ${cx} ${cy + v * r} A ${r} ${r} 0 0 ${(haut ? gauche : !gauche) ? 0 : 1} ${x2} ${y2}`;
 }
-function Interface({ n1, n2, i1, nom1, nom2, leg, masqueN, w = 560 }) {
+function Interface({ n1, n2, i1, nom1, nom2, leg, masqueN, w = 560, lum = null, refSvg = null, poignee = null }) {
   const cx = 280, cy = 170, L = 150, i2 = refraction(n1, n2, i1), lim = angleLimite(n1, n2);
   const pt = (a, s, v, l = L) => [cx + s * l * sin(a), cy + v * l * Math.cos(a * RAD)];
   const [xi, yi] = pt(i1, -1, -1), [xr, yr] = pt(i1, 1, -1), t = i2 != null ? pt(i2, 1, 1) : null;
@@ -41,7 +43,7 @@ function Interface({ n1, n2, i1, nom1, nom2, leg, masqueN, w = 560 }) {
   const refl = xr + 160 <= w - 6 ? { x: xr + 10, a: 'start', y: yr + 4 } : { x: Math.min(xr - 6, w - 8), a: 'end', y: yr - 10 };
   // textes de 21 à 24 unités : ≈ 10 à 11 px rendus quand le schéma occupe 260 px (téléphone) ; la figure reste plafonnée à 620 px sur ordinateur
   return (
-    <svg viewBox={`0 0 ${w} 340`} width="100%" role="img" aria-label={`Rayon lumineux passant de ${nom1} à ${nom2}, angle d’incidence ${i1} degrés`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 620, margin: '0 auto' }}>
+    <svg ref={refSvg} viewBox={`0 0 ${w} 340`} width="100%" role="img" aria-label={`Rayon lumineux passant de ${nom1} à ${nom2}, angle d’incidence ${i1} degrés`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10, maxWidth: 620, margin: '0 auto' }}>
       <rect x="0" y="0" width={w} height={cy} fill="#e0f2fe" opacity={0.1 + 0.25 * Math.min(1, (n1 - 1) / 1.4)}/>
       <rect x="0" y={cy} width={w} height={340 - cy} fill="#0072b2" opacity={0.06 + 0.2 * Math.min(1, (n2 - 1) / 1.4)}/>
       <line x1="10" y1={cy} x2={w - 10} y2={cy} stroke="#0f172a" strokeWidth="3"/>
@@ -65,7 +67,32 @@ function Interface({ n1, n2, i1, nom1, nom2, leg, masqueN, w = 560 }) {
         <text x={w - 14} y={cy - 10} textAnchor="end" fill="#0f172a">surface de séparation</text></g>}
       {!leg && <text x={refl.x} y={refl.y} fontSize="20" fontWeight="700" fill={C_REFL} textAnchor={refl.a}>rayon réfléchi</text>}
       {i2 == null && <g fontSize="22" fontWeight="800" fill={ORANGE} textAnchor="end"><text x={w - 14} y="232">Réflexion totale :</text><text x={w - 14} y="260">plus de rayon réfracté</text><text x={w - 14} y="288">(i₁ &gt; {fr(lim, 1)}°)</text></g>}
+      {lum && (() => {
+        const ch = [{ c: C_REF, pts: [[xi, yi], [cx, cy], t || [xr, yr]], ns: [n1, t ? n2 : n1] }, { c: C_REFL, pts: [[xi, yi], [cx, cy], [xr, yr]], ns: [n1, n1] }];
+        if (!t) ch.shift();
+        return <CouchePhotons chemins={ch} lum={{ ...lum, impact: false, k: lum.k }}/>;
+      })()}
+      {poignee && <Poignee x={xi} y={yi} g={poignee.g} coul={C_INC} label="Lampe : angle d’incidence i₁ (en degrés)" valeur={i1} vmin={0} vmax={89} texte={`${i1}°`} touche={poignee.touche} onToucher={poignee.onToucher} pas={1}
+        lire={e => { const r = refSvg.current.getBoundingClientRect(), x = (e.clientX - r.left) * w / r.width, y = (e.clientY - r.top) * 340 / r.height; return Math.max(0, Math.min(89, Math.round(Math.atan2(cx - x, cy - y) * 180 / Math.PI))); }}
+        set={v => poignee.set(Math.max(0, Math.min(89, Math.round(v))))}/>}
     </svg>);
+}
+
+// ---------- exploration animée : la lampe se saisit, la lumière circule (et ralentit dans le milieu le plus réfringent) ----------
+function InterfaceAnimee({ setI1, ...props }) {
+  const L = useHorloge(T_BOUCLE, true), [touche, setTouche] = useState(false), ref = useRef(null);
+  const etroit = typeof window !== 'undefined' && window.innerWidth < 600;
+  return (
+    <div><StyleAnim/>
+      <Interface {...props} lum={{ t: L.t, mode: 'boucle', k: etroit ? 1.8 : 1 }} refSvg={ref} poignee={{ g: etroit ? 1.9 : 1, touche, onToucher: () => setTouche(true), set: setI1 }}/>
+      <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 2px', lineHeight: 1.45 }}>Saisissez la <strong>lampe</strong> (le rond <strong>↔</strong> au bout du rayon) et faites-la tourner : la lumière suit. Dans un milieu d’indice plus grand, la lumière va plus lentement (n = c / v) : regardez le photon ralentir.</div>
+      <Commandes L={L}/>
+    </div>);
+}
+
+function PecheurAnime({ P }) {
+  const L = useHorloge(T_BOUCLE, true), etroit = typeof window !== 'undefined' && window.innerWidth < 600;
+  return (<div><Pecheur P={P} lum={{ t: L.t, mode: 'boucle', k: etroit ? 1.8 : 1 }}/><Commandes L={L}/></div>);
 }
 
 // ---------- graphique sin i₁ en fonction de sin i₂ ----------
@@ -85,7 +112,7 @@ function Graphe({ pts }) {
 }
 
 // ---------- le pêcheur et le poisson ----------
-function Pecheur({ P }) {
+function Pecheur({ P, lum = null }) {
   const S = 170, r = pecheur({ xf: P.xf, d: P.d, xe: 80, h: P.h }), eye = [80, S - P.h];
   const fish = (x, y, c, dash) => <g opacity={dash ? 0.9 : 1}><ellipse cx={x} cy={y} rx="20" ry="10" fill={dash ? 'none' : c} stroke={c} strokeWidth="2.5" strokeDasharray={dash ? '4 3' : ''}/><polygon points={`${x + 18},${y} ${x + 32},${y - 10} ${x + 32},${y + 10}`} fill={dash ? 'none' : c} stroke={c} strokeWidth="2.5" strokeDasharray={dash ? '4 3' : ''}/></g>;
   const pi = r.xp + 8 + 195 <= 556 ? { x: r.xp + 8, a: 'start' } : { x: r.xp - 8, a: 'end' };
@@ -101,6 +128,7 @@ function Pecheur({ P }) {
       <line x1={eye[0]} y1={eye[1]} x2={r.aimX} y2={S + P.d} stroke={C_INC} strokeWidth="2.5" strokeDasharray="7 5"/>
       {fish(r.aimX, S + P.d, C_INC, true)}{fish(P.xf, S + P.d, '#0f172a', false)}
       <circle cx={r.xp} cy={S} r="4.5" fill="#0f172a"/><text x={pi.x} y={S - 12} fontSize="22" fontWeight="700" fill="#0f172a" textAnchor={pi.a}>point d’incidence</text>
+      {lum && <CouchePhotons chemins={[{ c: C_REF, pts: [[P.xf, S + P.d], [r.xp, S], eye], ns: [1.33, 1] }]} lum={{ ...lum, impact: false }}/>}
     </svg>
     <div style={{ marginTop: 6, fontSize: 13.5, color: KIT.txt, lineHeight: 1.6 }}>
       <span style={{ color: C_REF, fontWeight: 800 }}>━ bleu</span> : trajet de la lumière (poisson → surface → œil) · <span style={{ color: '#0f172a', fontWeight: 800 }}>● noir</span> : poisson réel · <span style={{ color: C_INC, fontWeight: 800 }}>┅ orange</span> : visée (prolongement de la droite œil → surface) et endroit où elle arrive à la profondeur du poisson (poisson en pointillés).</div>
@@ -331,7 +359,7 @@ export function SimulationRefraction() {
         <span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Atelier :</span>
         {[['interface', '🔦 Rayon et surface'], ['mesure', '📏 Mesurer un indice (TP)'], ['pecheur', '🎣 Le pêcheur']].map(([k, l]) => <button key={k} onClick={() => setAtelier(k)} style={stylePetitBouton(atelier === k, '#16a34a')}>{l}</button>)}</div>
       {atelier === 'interface' && <>
-        <Interface n1={n1} n2={n2} i1={A.i1} nom1={milieu(A.m1).nom} nom2={milieu(A.m2).nom} leg={A.leg}/>
+        {enExplore ? <InterfaceAnimee n1={n1} n2={n2} i1={A.i1} nom1={milieu(A.m1).nom} nom2={milieu(A.m2).nom} leg={A.leg} setI1={v => setA(a => ({ ...a, i1: v }))}/> : <Interface n1={n1} n2={n2} i1={A.i1} nom1={milieu(A.m1).nom} nom2={milieu(A.m2).nom} leg={A.leg}/>}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Milieu 1 :</span>
           {MILIEUX.map(m => <button key={m.id} onClick={() => setA(a => ({ ...a, m1: m.id }))} style={stylePetitBouton(A.m1 === m.id, '#0b4f94')}>{m.nom}</button>)}</div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 4 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Milieu 2 :</span>
@@ -340,7 +368,7 @@ export function SimulationRefraction() {
         <div style={{ marginTop: 4, fontSize: 14.5, color: KIT.txt, lineHeight: 1.6 }}>n₁ × sin i₁ = {fr(n1, 2)} × {g3(sin(A.i1))} = <strong>{g3(n1 * sin(A.i1))}</strong>
           {refraction(n1, n2, A.i1) != null ? <> ; n₂ × sin i₂ = {fr(n2, 2)} × {g3(sin(refraction(n1, n2, A.i1)))} = <strong>{g3(n2 * sin(refraction(n1, n2, A.i1)))}</strong> (i₂ = {fr(refraction(n1, n2, A.i1), 1)}°)</> : <span style={{ color: ORANGE, fontWeight: 700 }}> ; pas d’angle i₂ possible (réflexion totale).</span>}</div></>}
       {atelier === 'mesure' && mesurePanel}
-      {atelier === 'pecheur' && <><Pecheur P={Pe}/><div style={{ marginTop: 8 }}>
+      {atelier === 'pecheur' && <>{enExplore ? <PecheurAnime P={Pe}/> : <Pecheur P={Pe}/>}<div style={{ marginTop: 8 }}>
         {curs('Profondeur du poisson', Pe.d, 40, 150, 5, v => setPe(p => ({ ...p, d: v })), ' cm')}{curs('Distance du poisson', Pe.xf, 220, 420, 10, v => setPe(p => ({ ...p, xf: v })), ' cm')}{curs('Hauteur de l’œil', Pe.h, 60, 150, 5, v => setPe(p => ({ ...p, h: v })), ' cm')}</div>
         <div style={{ marginTop: 4, fontSize: 14.5, color: KIT.txt }}>Angle dans l’eau : <strong>{fr(pecheur({ xf: Pe.xf, d: Pe.d, xe: 80, h: Pe.h }).tw, 1)}°</strong> ; dans l’air : <strong>{fr(pecheur({ xf: Pe.xf, d: Pe.d, xe: 80, h: Pe.h }).ta, 1)}°</strong>. La visée passe à <strong>{fr(Math.abs(pecheur({ xf: Pe.xf, d: Pe.d, xe: 80, h: Pe.h }).rate), 0)} cm</strong> du poisson réel.</div></>}
     </div>);
