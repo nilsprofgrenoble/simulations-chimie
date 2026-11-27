@@ -3152,5 +3152,17 @@
  "77:plausible:filt-val-amp": "VAL817",
  "77:plausible:filt-val-fc": "VAL818",
  "36:filt-amp": "REA230",
- "36:filt-coupure": "REA231"
+ "36:filt-coupure": "REA231",
+ "34:gab-sapp-raies.0": "SAPP699",
+ "34:gab-sapp-raies.1": "SAPP700",
+ "34:gab-sapp-cascade.0": "SAPP701",
+ "34:gab-sapp-cascade.1": "SAPP702",
+ "37:prevoir:gab-ana-spectre": "ANA1408",
+ "37:prevoir:gab-ana-continu": "ANA1409",
+ "37:prevoir:gab-ana-type": "ANA1410",
+ "37:prevoir:gab-ana-cascade": "ANA1411",
+ "77:plausible:gab-val-cascade": "VAL819",
+ "77:plausible:gab-val-gabarit": "VAL820",
+ "36:gab-filtrage": "REA232",
+ "36:gab-cascade": "REA233"
 }
