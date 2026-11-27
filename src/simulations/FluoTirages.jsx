@@ -34,8 +34,8 @@ export function SceneVibronique({ mol, dernier = null }) {
     {Array.from({ length: X.NV }, (_, v) => fl(246 + 14 * v, Y1 + 2, yS0(v) - 1, COL.fluo, ep(voie === 'fluo' && d.v === v), lit(voie === 'fluo' && d.v === v), null, 'f' + v))}
     {T(242, Y0 + 24, 'fluorescence', { anchor: 'start', size: 13, fill: COL.fluo, gras: true })}
     {aT && Array.from({ length: X.NV }, (_, v) => fl(134 + 12 * v, YT + 2, yS0(v) - 1, COL.phos, ep(voie === 'phos' && d.v === v), lit(voie === 'phos' && d.v === v), '6 3', 'p' + v))}
-    {aT && T(122, Y0 + 24, 'phosphorescence', { anchor: 'start', size: 13, fill: COL.phos, gras: true })}
-    {fl(226, Y1 + 3, yS0(4) - 3, COL.nr, ep(voie === 'nr', 1.6), lit(voie === 'nr'), '2 3', 'nr')}{T(214, 150, 'chaleur', { anchor: 'start', size: 13.5, fill: COL.nr, gras: true })}
+    {aT && T(130, Y0 + 24, 'phosphorescence', { anchor: 'start', size: 13, fill: COL.phos, gras: true })}
+    {fl(226, Y1 + 3, yS0(4) - 3, COL.nr, ep(voie === 'nr', 1.6), lit(voie === 'nr'), '2 3', 'nr')}{T(220, 150, 'chaleur', { anchor: 'end', size: 13.5, fill: COL.nr, gras: true })}
     {aT && fl(214, YT + 2, yS0(4) - 3, COL.nr, ep(voie === 'nrT', 1.6), lit(voie === 'nrT'), '2 3', 'nrt')}
     {T(8, 66, 'E', { anchor: 'start', size: 13, gras: true })}{T(22, 66, '(écarts non à l’échelle)', { anchor: 'start', size: 13.5, fill: K.gris })}
   </svg>);
