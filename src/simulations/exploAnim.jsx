@@ -173,3 +173,10 @@ export function Chips({ items }) {
         </div>))}
     </div>);
 }
+
+// Sur téléphone, le navigateur ignore touch-action sur les éléments SVG : sans ceci, glisser une poignée (œil, curseur dessiné…) fait défiler la page
+// et annule le geste. On bloque le défilement dès que le doigt se pose sur une poignée (classe xa-poignee).
+if (typeof document !== 'undefined' && !window.__xaPoignee) {
+  window.__xaPoignee = true;
+  document.addEventListener('touchstart', ev => { const t = ev.target; if (t && t.closest && t.closest('.xa-poignee')) ev.preventDefault(); }, { passive: false });
+}

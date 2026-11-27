@@ -73,10 +73,10 @@ export function LaserExplore({ ti, setTi }) {
         {[0, 5, 10, 15, 20].map(v => <g key={v}><line x1={xe(v)} y1="187" x2={xe(v)} y2="197" stroke="#94a3b8" strokeWidth="2"/><text x={xe(v)} y="210" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#cbd5e1">{v === 20 ? '20 m' : v}</text></g>)}
         <text x={Math.min(Math.max(xe(ti.L), 96), W - 96)} y="26" textAnchor="middle" fontSize="14" fontWeight="800" fill="#fde68a" stroke="#0f172a" strokeWidth="4" paintOrder="stroke">L = {nbf(ti.L, 1)}{NB}m · D = {nbf(D, 1)}{NB}mm</text>
         {/* œil : poignée */}
-        <rect x={x0 - 10} y={yC - 62} width={W - x0 - 20} height="124" fill="transparent" style={{ cursor: 'pointer', touchAction: 'none' }} onPointerDown={debut} onPointerMove={bouge} onPointerUp={fait} onPointerCancel={fait}/>
-        <g className="xa-poignee" role="slider" tabIndex={0} aria-label="Distance de l'œil au laser" aria-valuemin={0} aria-valuemax={20} aria-valuenow={ti.L} aria-valuetext={`${nbf(ti.L, 1)} mètre`}
+        <rect className="xa-poignee" x={x0 - 10} y={yC - 62} width={W - x0 - 20} height="124" fill="transparent" style={{ cursor: 'pointer', touchAction: 'none' }} onPointerDown={debut} onPointerMove={bouge} onPointerUp={fait} onPointerCancel={fait}/>
+        <g className="xa-poignee" data-poignee="1" role="slider" tabIndex={0} style={{ touchAction: 'none', cursor: 'grab' }} aria-label="Distance de l'œil au laser" aria-valuemin={0} aria-valuemax={20} aria-valuenow={ti.L} aria-valuetext={`${nbf(ti.L, 1)} mètre`}
           onPointerDown={debut} onPointerMove={bouge} onPointerUp={fait} onPointerCancel={fait} onKeyDown={clavier}>
-          <rect x={xe(ti.L) - 26} y={yC - 40} width="52" height="80" fill="transparent"/>
+          <rect x={xe(ti.L) - 34} y={yC - 52} width="68" height="104" fill="transparent" style={{ touchAction: 'none' }}/>
           <circle cx={xe(ti.L)} cy={yC} r={sur ? 36 : 30} fill={sur ? '#dc2626' : '#16a34a'} opacity="0.3"/>
           {!touche && <circle className="xa-pulse" cx={xe(ti.L)} cy={yC} r="30" fill="none" stroke="#fde047" strokeWidth="3"/>}
           <g className="xa-anneau" filter="url(#lax-ombre)"><ellipse cx={xe(ti.L)} cy={yC} rx="22" ry="15" fill="#fff" stroke={sur ? '#dc2626' : '#16a34a'} strokeWidth="3.5"/>
