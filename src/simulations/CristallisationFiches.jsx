@@ -200,3 +200,40 @@ export function FicheProcede() {
     </div>
   );
 }
+
+// ── Carte 7 : évaporer sous pression réduite ──
+export function FichePression() {
+  const bec = (x, bulles) => (
+    <g>
+      <path d={`M${x + 4} 120 L${x + 8} 176 Q${x + 9} 182 ${x + 18} 182 L${x + 102} 182 Q${x + 111} 182 ${x + 112} 176 L${x + 116} 120 Z`} fill="#bae6fd" opacity="0.7"/>
+      <path d={`M${x} 92 L${x + 8} 176 Q${x + 9} 182 ${x + 18} 182 L${x + 102} 182 Q${x + 111} 182 ${x + 112} 176 L${x + 120} 92`} fill="none" stroke="#334155" strokeWidth="3" strokeLinejoin="round"/>
+      {bulles.map(([a, b, r], i) => <circle key={i} cx={x + a} cy={b} r={r} fill="#fff" fillOpacity="0.7" stroke="#38bdf8" strokeWidth="1.8"/>)}
+    </g>);
+  const bulles = [[30, 160, 5], [60, 150, 6], [90, 164, 5], [48, 136, 4], [80, 138, 5]];
+  return (
+    <div>
+      <svg viewBox="0 0 400 236" style={svgStyle} role="img" aria-label="Deux béchers : sous la pression atmosphérique de 101 kilopascals, l’eau bout à 100 degrés ; sous une pression réduite de 20 kilopascals, produite par une pompe à vide, l’eau bout à 60 degrés">
+        <text x="100" y="20" textAnchor="middle" fontSize="15" fontWeight="800" fill={GRIS}>pression de l’air</text>
+        <text x="300" y="20" textAnchor="middle" fontSize="15" fontWeight="800" fill={BLEU}>pression réduite</text>
+        <text x="100" y="40" textAnchor="middle" fontSize="16" fontWeight="800" fill={GRIS}>101 kPa</text>
+        <text x="300" y="40" textAnchor="middle" fontSize="16" fontWeight="800" fill={BLEU}>20 kPa</text>
+        {bec(40, bulles)}
+        {bec(240, bulles)}
+        <rect x="234" y="86" width="132" height="11" rx="4" fill="#64748b" stroke="#334155" strokeWidth="2"/>
+        <rect x="293" y="68" width="14" height="19" rx="3" fill="#94a3b8" stroke="#334155" strokeWidth="2"/>
+        <path d="M300 68 V52 H350" fill="none" stroke="#64748b" strokeWidth="6"/>
+        <rect x="340" y="40" width="58" height="22" rx="6" fill="#475569"/>
+        <text x="369" y="56" textAnchor="middle" fontSize="14" fontWeight="800" fill="#fff">pompe</text>
+        <g stroke={ORANGE} strokeWidth="3" fill="none" strokeLinecap="round"><path d="M70 194 q5 -8 0 -14"/><path d="M100 194 q5 -8 0 -14"/><path d="M130 194 q5 -8 0 -14"/></g>
+        <text x="100" y="214" textAnchor="middle" fontSize="15" fontWeight="800" fill={ROUGE}>l’eau bout à 100 °C</text>
+        <text x="300" y="214" textAnchor="middle" fontSize="15" fontWeight="800" fill={BLEU}>l’eau bout à 60 °C</text>
+        <text x="200" y="231" textAnchor="middle" fontSize="13.5" fill={GRIS}>moins de pression, ébullition à plus basse température</text>
+      </svg>
+      <ul style={liste}>
+        <li>L’eau bout à 100 °C sous la pression atmosphérique (101 kPa) : <strong>baisser la pression</strong> fait bouillir l’eau à une température plus basse.</li>
+        <li>À 60 °C, il suffit d’une pression de <strong>20 kPa</strong>, obtenue avec une pompe à vide.</li>
+        <li>On évapore ainsi l’eau <strong>sans chauffer à 100 °C</strong> : le sel ne s’évapore pas, il reste dans le bécher.</li>
+      </ul>
+    </div>
+  );
+}
