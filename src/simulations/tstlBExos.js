@@ -160,7 +160,7 @@ export const TSTLB_ANA = [
 
   // ── Des ondes pour observer : résolution ──
   { id: 'obs-prev-resolution-lambda', domaine: 'Microscope', titre: 'Résolution d’un microscope et couleur de la lumière',
-    enonce: 'Le plus petit détail séparé par un microscope optique, limité par la diffraction, vaut d = 0,61 · λ / ON, où ON est l’ouverture numérique de l’objectif. On observe le même échantillon avec le même objectif, d’abord en lumière rouge (λ = 650 nm), puis en lumière bleue (λ = 450 nm).',
+    enonce: 'Le plus petit détail séparé par un microscope optique, limité par la diffraction, vaut d = 0,61 · frac(λ|ON), où ON est l’ouverture numérique de l’objectif. On observe le même échantillon avec le même objectif, d’abord en lumière rouge (λ = 650 nm), puis en lumière bleue (λ = 450 nm).',
     q: 'Avec la lumière bleue, le plus petit détail séparé est…', options: [
       V('plus petit : environ 0,7 fois celui de la lumière rouge', 'd est proportionnel à λ : 450 / 650 ≈ 0,69. Une longueur d’onde plus courte donne une meilleure résolution (détails plus fins séparés).'),
       F('plus grand : environ 1,4 fois celui de la lumière rouge', 'Rapport inversé : d est proportionnel à λ, donc plus petit quand λ diminue.'),
@@ -168,7 +168,7 @@ export const TSTLB_ANA = [
       F('nul : en lumière bleue, tous les détails sont séparés', 'La diffraction impose toujours une limite : d reste de l’ordre de la demi-longueur d’onde divisée par l’ouverture numérique, jamais nul.'),
     ] },
   { id: 'obs-prev-choix-objectif', domaine: 'Microscope', titre: 'Choisir un objectif d’après la fiche constructeur',
-    ...presenter({ contexte: 'La fiche d’un microscope donne ses objectifs ci-dessous. On observe en lumière verte (λ = 550 nm) et on veut séparer deux détails distants de 0,55 µm. Le plus petit détail séparé vaut d = 0,61 · λ / ON.', liste: [['Objectif ×10', 'ON = 0,25'], ['Objectif ×20', 'ON = 0,40'], ['Objectif ×40', 'ON = 0,65'], ['Objectif ×100 (immersion)', 'ON = 1,25']] }),
+    ...presenter({ contexte: 'La fiche d’un microscope donne ses objectifs ci-dessous. On observe en lumière verte (λ = 550 nm) et on veut séparer deux détails distants de 0,55 µm. Le plus petit détail séparé vaut d = 0,61 · frac(λ|ON).', liste: [['Objectif ×10', 'ON = 0,25'], ['Objectif ×20', 'ON = 0,40'], ['Objectif ×40', 'ON = 0,65'], ['Objectif ×100 (immersion)', 'ON = 1,25']] }),
     q: 'Quel est l’objectif le moins grossissant qui convient ?', options: [
       V('l’objectif ×40', 'Il faut d ≤ 0,55 µm. Comme λ = 0,55 µm, cela revient à 0,61 / ON ≤ 1, soit ON ≥ 0,61. Seuls les objectifs ×40 (0,65) et ×100 (1,25) conviennent : le moins grossissant est le ×40.'),
       F('l’objectif ×20', 'Avec ON = 0,40, d = 0,61 × 0,55 / 0,40 ≈ 0,84 µm : supérieur à 0,55 µm, les deux détails ne sont pas séparés.'),
@@ -318,7 +318,7 @@ export const TSTLB_VAL = [
   // ── Des ondes pour observer : résolution ──
   P({ id: 'obs-val-resolution', domaine: 'Microscope', niveau: 2, titre: 'Le grossissement ne suffit pas à tout voir', plausible: false,
     ...presenter({ contexte: 'Un élève observe un échantillon avec un microscope optique : objectif ×100 à immersion (ON = 1,25), oculaire ×10, lumière verte (λ = 550 nm).', suite: 'Il annonce qu’avec un grossissement total de ×1 000, il distingue deux détails séparés de 50 nm.' }),
-    reperes: [['Pouvoir de résolution', 'd = 0,61 · λ / ON : plus petit écart entre deux détails séparés, fixé par la diffraction'], ['Ordre de grandeur pour un microscope optique', 'de l’ordre de 0,2 µm']],
+    reperes: [['Pouvoir de résolution', 'd = 0,61 · frac(λ|ON) : plus petit écart entre deux détails séparés, fixé par la diffraction'], ['Ordre de grandeur pour un microscope optique', 'de l’ordre de 0,2 µm']],
     ver: 'd = 0,61 × 550 / 1,25 ≈ 270 nm : deux détails distants de 50 nm ne peuvent pas être séparés, quel que soit le grossissement. Un grossissement plus fort agrandit l’image mais ne permet pas de dépasser la limite imposée par la diffraction.',
     q2: 'Quel raisonnement est correct ?',
     options: [

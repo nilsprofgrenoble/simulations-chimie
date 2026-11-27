@@ -3039,20 +3039,20 @@ export const ENONCES = [
       const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions.\n\nLe volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
         '.\n\nLa burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '.\n\nOn élargit l’incertitude avec ', T('k'), ' (convention : niveau de confiance voisin de 95 % si les mesures sont indépendantes et suivent une loi normale, hypothèses faites ici ; un peu moins pour un petit nombre de mesures). '];
       const ur = p.res / Math.sqrt(6), pc = (Math.sqrt(1 + (ur / u) ** 2) - 1) * 100;   // deux lectures de burette, loi rectangulaire : u_res = r / (2√3) par lecture
-      const rRes0 = `La résolution de la burette est une autre source d’incertitude (type B) : pour deux lectures, u_res = r / √6 ≈ ${nb(ur, 3)} mL. Ajoutée en quadrature à u ≈ ${nb(u, 3)} mL, elle ne la modifierait que d’environ ${nb(pc, 1)} % : négligeable devant la dispersion, donc on se limite ici à l’incertitude de type A, u = s / √n.`;
-      const rRes = q === 0 ? rRes0 : q === 1 ? rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'on calcule U = k × u avec l’incertitude de type A seule.') : rRes0.replace('on se limite ici à l’incertitude de type A, u = s / √n.', 'l’intervalle x̄ ± U se calcule avec l’incertitude de type A seule.');
+      const rRes0 = `La résolution de la burette est une autre source d’incertitude (type B) : pour deux lectures, u_res = r / √6 ≈ ${nb(ur, 3)} mL. Ajoutée en quadrature à u ≈ ${nb(u, 3)} mL, elle ne la modifierait que d’environ ${nb(pc, 1)} % : négligeable devant la dispersion, donc on se limite ici à l’incertitude de type A, u = frac(s|sqrt(n)).`;
+      const rRes = q === 0 ? rRes0 : q === 1 ? rRes0.replace('on se limite ici à l’incertitude de type A, u = frac(s|sqrt(n)).', 'on calcule U = k × u avec l’incertitude de type A seule.') : rRes0.replace('on se limite ici à l’incertitude de type A, u = frac(s|sqrt(n)).', 'l’intervalle x̄ ± U se calcule avec l’incertitude de type A seule.');
       const rDur = 'La durée de la série n’intervient pas dans le calcul de l’incertitude.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’incertitude-type de type A, u, de la moyenne de la série ?'], utiles: ['s', 'n'],
         raisons: { xm: 'La valeur de la moyenne ne change pas l’incertitude : elle dépend de la dispersion et du nombre de mesures.', k: 'Le facteur d’élargissement sert pour l’incertitude élargie, pas pour l’incertitude-type.', res: rRes, dur: rDur },
         cherche: { bonne: 'L’incertitude-type u de la moyenne (en mL)', faux: ['L’incertitude élargie U (en mL)', 'L’incertitude relative u / x̄ (sans unité)', 'La variance de la série (en mL²)'] },
-        manque: null, solution: { txt: 'u = s / √n', val: u, u: 'mL' } };
+        manque: null, solution: { txt: 'u = frac(s|sqrt(n))', val: u, u: 'mL' } };
       if (q === 1) return { tokens, texte: [...debut, 'Quelle est l’incertitude élargie U associée à la moyenne de la série, obtenue à partir de l’incertitude-type de type A ?'], utiles: ['s', 'n', 'k'],
-        derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = s / √n', val: u, u: 'mL' }],
+        derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = frac(s|sqrt(n))', val: u, u: 'mL' }],
         raisons: { xm: 'La moyenne ne sert pas à calculer l’incertitude.', res: rRes, dur: rDur },
         cherche: { bonne: 'L’incertitude élargie U de la moyenne (en mL)', faux: ['L’incertitude-type u de la moyenne (en mL)', 'La borne basse x̄ − U de l’intervalle (en mL)', 'L’incertitude relative U / x̄ (en %)'] },
         manque: null, solution: { txt: 'U = k × u', val: U, u: 'mL' } };
       return { tokens, texte: [...debut, 'Quelle est la borne haute de l’intervalle x̄ ± U (x̄ : volume moyen de la série ; U : incertitude élargie associée à cette moyenne, obtenue à partir de l’incertitude-type de type A) ?'], utiles: ['xm', 's', 'n', 'k'],
-        derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = s / √n', val: u, u: 'mL' }, { id: 'U', nom: 'Incertitude élargie', expr: 'U = k × u', val: U, u: 'mL' }],
+        derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = frac(s|sqrt(n))', val: u, u: 'mL' }, { id: 'U', nom: 'Incertitude élargie', expr: 'U = k × u', val: U, u: 'mL' }],
         raisons: { res: rRes, dur: rDur },
         cherche: { bonne: 'La plus grande valeur de l’intervalle centré sur x̄ (en mL)', faux: ['La plus petite valeur de l’intervalle centré sur x̄ (en mL)', 'La demi-largeur de l’intervalle centré sur x̄ (en mL)', 'La largeur totale de l’intervalle centré sur x̄ (en mL)'] },
         manque: null, solution: { txt: 'x̄ + U', val: p.xm + U, u: 'mL' } };
@@ -4231,7 +4231,7 @@ export const ENONCES = [
         texte: [...debut, 'Quelle est l’incertitude-type de type A sur la durée moyenne ?'],
         utiles: ['s', 'N'], raisons: { ...raisons, a: 'Cette donnée sert à une évaluation de type B ; ici on dispose d’une série de mesures.' },
         cherche: { bonne: 'L’incertitude-type u de la moyenne, de type A (en s)', faux: ['La vitesse moyenne de la bille (en m/s)', 'L’incertitude de type B d’une mesure unique (en s)', 'La durée moyenne de chute (en s)'] },
-        manque: null, solution: { txt: 'u = s / √N', val: p.s / Math.sqrt(p.N), u: 's' } };
+        manque: null, solution: { txt: 'u = frac(s|sqrt(N))', val: p.s / Math.sqrt(p.N), u: 's' } };
       return { tokens, derivees: ['la demi-largeur est déjà donnée : aucun calcul préalable'],
         texte: ['Un autre élève ne chronomètre qu’une seule fois la chute d’une bille. La notice de son chronomètre, avec le temps de réaction de l’opérateur, indique une demi-largeur d’intervalle ', T('a'), '. La salle est à ', T('th'), ' ; l’élève a laissé tomber la bille de ', T('h'), '. Un premier élève, lui, avait obtenu avec 25 mesures un écart-type de ', T('s'), '. Quelle est l’incertitude-type de type B de la mesure unique ?'],
         utiles: ['a'], raisons: { ...raisons, s: 'Cet écart-type vient d’une autre série : il ne sert pas pour une mesure unique évaluée par les caractéristiques de l’instrument.' },
