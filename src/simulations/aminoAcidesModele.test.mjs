@@ -1,4 +1,5 @@
 import * as M from './aminoAcidesModele.js';
+import { QCM_PARCOURS as QQ } from './aminoAcidesQcm.js';
 let n = 0; const ok = (c, m) => { n++; if (!c) { console.error('ÉCHEC :', m); process.exit(1); } };
 const proche = (a, b, t = 1e-6) => Math.abs(a - b) <= t * Math.max(1, Math.abs(b));
 const gly = M.ACIDES.gly;
@@ -39,5 +40,11 @@ for (let i = 0; i < 20000; i++) {
   const e = M.tirageDefiZone(), L = Math.log10(e.p / (100 - e.p)), basApprox = Number((e.acide.pKa1 + L).toPrecision(2)), hautApprox = Number((e.acide.pKa2 - L).toPrecision(2));
   ok(Math.abs(basApprox - e.bas) <= 0.05 * e.bas && Math.abs(hautApprox - e.haut) <= 0.05 * e.haut, 'tolérance défi 2');
   ok(e.bas > e.acide.pKa1 && e.haut < e.acide.pKa2 && e.bas < e.haut, 'défi 2 zone');
+}
+// QCM du parcours : la bonne réponse (index 'bonne') n'est jamais la plus longue (égalité comprise) ni strictement la plus courte
+for (const [k, v] of Object.entries(QQ)) {
+  const L = v.options.map(o => [...o].length), b = L[v.bonne], autres = L.filter((_, i) => i !== v.bonne);
+  ok(b < Math.max(...autres), `QCM ${k} : la bonne est la plus longue`);
+  ok(b >= Math.min(...autres), `QCM ${k} : la bonne est strictement la plus courte`);
 }
 console.log('aminoAcidesModele : tous les tests passent (' + n + ' + 20 000 tirages)');

@@ -72,14 +72,12 @@ export function dureeMax(a, UG) {
 
 // ---------------- relations du programme (Q = I × Δt ; n(e⁻) = Q / F ; n(métal) = n(e⁻) / z) ----------------
 export const charge = (I, dt) => I * dt;                        // C (I en A, dt en s)
-export const nElectrons = Q => Q / F;                            // mol
 export const nMetal = (Q, z) => Q / (z * F);                     // mol
 export const dureePour = (Q, I) => Q / I;                        // s
 
 // ---------------- parcours guidé : pile zinc-cuivre de la sim 132, déjà utilisée (elle a débité 965 C) ----------------
 // Départ : [Zn²⁺] = 0,15 mol/L, [Cu²⁺] = 0,05 mol/L ; lames : zinc 1,7 g, cuivre 2,3 g (valeurs arrondies données à l'élève).
 export const ACCU_GUIDE = { g: { id: 'zn', c: 0.15, m: 1.7 }, d: { id: 'cu', c: 0.05, m: 2.3 } };
-export const Q_DEJA_DEBITEE = 965;   // C
 
 // ---------------- défis ----------------
 const tire = t => t[Math.floor(Math.random() * t.length)];
