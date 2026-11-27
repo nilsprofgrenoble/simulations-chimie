@@ -423,7 +423,8 @@ function ConduiteManometres({ vanne = false }) {
 }
 
 // ── Répartition ──
-const DESSINS = { cram3d: Cram3DExo, add3d: Add3DExo, br3d: Br3DExo, sn3d: Sn3DExo, cat3d: Cat3DExo, ...DESSINS_SECONDE, ...DESSINS_DONNEES, ...DESSINS_MECA, ...DESSINS_TSTLB, lunetteTG: TGPB.LunetteTG, rcSerie: TGPB.RcSerie, gazTG: TGPB.GazTG, thermoTG: TGPB.ThermoTG, pp1TG: TGPB.Pp1TG, terreTG: TGPB.TerreTG, photoTG: TGPB.PhotoTG, condoTG: TGPB.CondoTG, pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai, cuve: Cuve, tubeu: TubeU, venturi: Venturi, pompe: PompePuits, conduite: ConduiteManometres };
+import { DESSINS_LOT6 } from './SchemasLot6';
+const DESSINS = { cram3d: Cram3DExo, add3d: Add3DExo, br3d: Br3DExo, sn3d: Sn3DExo, cat3d: Cat3DExo, ...DESSINS_SECONDE, ...DESSINS_DONNEES, ...DESSINS_MECA, ...DESSINS_TSTLB, ...DESSINS_LOT6, lunetteTG: TGPB.LunetteTG, rcSerie: TGPB.RcSerie, gazTG: TGPB.GazTG, thermoTG: TGPB.ThermoTG, pp1TG: TGPB.Pp1TG, terreTG: TGPB.TerreTG, photoTG: TGPB.PhotoTG, condoTG: TGPB.CondoTG, pont: SchemaPont, chaine: ChaineMesure, courbe: Courbe, retard: Retard, arduino: Arduino, essai: Essai, cuve: Cuve, tubeu: TubeU, venturi: Venturi, pompe: PompePuits, conduite: ConduiteManometres };
 export function Visuel({ schema, revele = false }) {
   if (!schema) return null;
   const liste = Array.isArray(schema) ? schema : [schema];
