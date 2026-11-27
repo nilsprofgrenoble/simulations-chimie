@@ -92,3 +92,12 @@ export function texteEvenement(ev, mode) {
   return `${abs}, ${em} à ${nm(ev.lamOut)} ; ${ev.passe ? `le monochromateur de détection (${nm(ev.lamDet)}) laisse passer ce photon : le détecteur le compte` : `le monochromateur de détection est réglé sur ${nm(ev.lamDet)} : il arrête ce photon`}`;
 }
 export { gauss };
+
+// ---------- défi : quel type de mesure faut-il choisir ? ----------
+const SITUATIONS = [
+  { mode: 'abs', txt: 'Vous voulez savoir quelles longueurs d’onde l’échantillon absorbe.', expl: 'On compare la lumière avant et après l’échantillon : le détecteur est dans l’axe du faisceau et on balaie l’excitation.' },
+  { mode: 'em', txt: 'Vous éclairez l’échantillon à 350 nm et vous voulez connaître les longueurs d’onde des photons qu’il émet.', expl: 'Le détecteur est à 90° pour ne pas recevoir le faisceau : on fixe l’excitation et on balaie le monochromateur de détection.' },
+  { mode: 'ex', txt: 'Vous voulez savoir quelles longueurs d’onde d’excitation produisent de la fluorescence à 450 nm.', expl: 'On fixe la détection à 450 nm et on balaie l’excitation : le signal a l’allure du spectre d’absorption.' },
+  { mode: 'ph', txt: 'Vous voulez mesurer la lumière qui reste visible plusieurs secondes après avoir coupé la lampe.', expl: 'La fluorescence est éteinte : seule la phosphorescence (T₁ → S₀) subsiste, mesurée à 90° avec la lampe coupée.' },
+];
+export const tirageDefiDispositif = rnd => { const s = SITUATIONS[Math.floor(rnd() * SITUATIONS.length)]; return { kind: 'dispositif', txt: s.txt, rep: s.mode, expl: s.expl, nomRep: MODES.find(m => m.id === s.mode).nom }; };

@@ -9,9 +9,10 @@ import { SceneVibronique, SceneHistogramme, CommandesTirages } from "./FluoTirag
 import { useTirages } from "./fluoTiragesHook";
 import * as X from "./fluoTirages";
 import { VueDispositif } from "./FluoDispositif";
+import * as D from "./fluoDispositif";
 
 const SIM_ID = 301, CLE_GUIDE = 'fluo-guide-v1';
-declarerDefis(SIM_ID, [['stokes', 'Énergie perdue entre absorption et émission'], ['duree', 'Quelle lumière après l’arrêt ?']]);
+declarerDefis(SIM_ID, [['stokes', 'Énergie perdue entre absorption et émission'], ['duree', 'Quelle lumière après l’arrêt ?'], ['dispositif', 'Quelle mesure choisir ?']]);
 
 // ====================================================
 //  SIM 301 — FLUORESCENCE ET PHOSPHORESCENCE : DIAGRAMME DE PERRIN-JABLONSKI (BTS MDC, Analyse)
@@ -45,7 +46,7 @@ export function SimulationFluorescence() {
   const [ex, setEx] = useState({ onglet: 'diagramme', proc: '', mol: 'B', te: -9 });
   const tg = useTirages({}), te = useTirages({});
   const [ouv, setOuv] = useState({});
-  const [suiviS, noterS] = useCompteurDefi(), [suiviD, noterD] = useCompteurDefi();
+  const [suiviS, noterS] = useCompteurDefi(), [suiviD, noterD] = useCompteurDefi(), [suiviP, noterP] = useCompteurDefi();
   const [defi, setDefi] = useState(null), [typeDefi, setTypeDefi] = useState('stokes');
   const enGuide = mode === 'guide', enExplore = mode === 'explore', enDefi = mode === 'defi';
   const bascule = k => setOuv(o => ({ ...o, [k]: !o[k] }));
@@ -158,29 +159,34 @@ export function SimulationFluorescence() {
     </div> : null;
 
   // ---------- défis ----------
-  const nouveauDefi = kind => setDefi(kind === 'stokes' ? { ...M.tirageDefiStokes(Math.random), rep1: '', verifie: false } : { ...M.tirageDefiDuree(Math.random), rep1: '', verifie: false });
+  const nouveauDefi = kind => setDefi(kind === 'stokes' ? { ...M.tirageDefiStokes(Math.random), rep1: '', verifie: false } : kind === 'dispositif' ? { ...D.tirageDefiDispositif(Math.random), rep1: '', verifie: false } : { ...M.tirageDefiDuree(Math.random), rep1: '', verifie: false });
   const changerMode = md => { if (md === 'defi' && !defi) nouveauDefi(typeDefi); tg.setLecture(false); te.setLecture(false); setMode(md); };
   const choisirDefi = tp => { setTypeDefi(tp); nouveauDefi(tp); };
   const maj = f => setDefi(x => ({ ...x, ...f, verifie: false }));
   const verifier = () => {
     let ok;
     if (defi.kind === 'stokes') { ok = Math.abs(num2(defi.rep1) - defi.dE) <= 0.06 * defi.dE; noterS(ok); }
+    else if (defi.kind === 'dispositif') { ok = defi.rep1 === defi.rep; noterP(ok); }
     else { ok = defi.rep1 === defi.rep; noterD(ok); }
     setDefi(x => ({ ...x, verifie: true, ok }));
   };
   const voletDefi = defi && (
     <div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
-        {[['stokes', 'Énergie perdue'], ['duree', 'Quelle lumière ?']].map(([tp, l]) => <button key={tp} onClick={() => choisirDefi(tp)} aria-pressed={defi.kind === tp} style={stylePetitBouton(defi.kind === tp, '#16a34a')}>{l}</button>)}
+        {[['stokes', 'Énergie perdue'], ['duree', 'Quelle lumière ?'], ['dispositif', 'Quelle mesure ?']].map(([tp, l]) => <button key={tp} onClick={() => choisirDefi(tp)} aria-pressed={defi.kind === tp} style={stylePetitBouton(defi.kind === tp, '#16a34a')}>{l}</button>)}
       </div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.kind === 'stokes' ? 'Défi : l’énergie perdue avant l’émission' : 'Défi : quelle lumière après l’arrêt ?'}</div>
-      {defi.kind === 'stokes' ? <>
+      <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>{defi.kind === 'stokes' ? 'Défi : l’énergie perdue avant l’émission' : defi.kind === 'dispositif' ? 'Défi : quelle mesure choisir ?' : 'Défi : quelle lumière après l’arrêt ?'}</div>
+      {defi.kind === 'dispositif' ? <>
+        <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>{defi.txt} Quelle mesure faut-il réaliser (place du détecteur et réglage des monochromateurs) ?</div>
+        {selecteur('fl-d3', 'Type de spectre à enregistrer', defi.rep1, ev => maj({ rep1: ev.target.value }), D.MODES.map(m => ({ id: m.id, nom: m.nom })), 'Choisir…')}</>
+      : defi.kind === 'stokes' ? <>
         <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>Une molécule absorbe un photon de <strong>{defi.lamAbs}{NB}nm</strong> et fluoresce à <strong>{defi.lamEm}{NB}nm</strong>. Quelle énergie a été perdue entre l’absorption et l’émission ? (E(eV) × λ(nm) = 1243 ; 2 chiffres significatifs ; précision attendue : 6 %)</div>
         <div style={{ marginTop: 8 }}><label htmlFor="fl-d1" style={libelle}>Énergie perdue (eV)</label><input id="fl-d1" inputMode="decimal" value={defi.rep1} onChange={ev => maj({ rep1: ev.target.value })} style={{ ...selectStyle, maxWidth: 220 }} autoComplete="off"/></div></>
       : <>
         <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>Une molécule phosphorescente (fluorescence : durée de vie 2{NB}ns ; phosphorescence : 1{NB}s) est excitée, puis la lampe est coupée. On observe l’échantillon <strong>{defi.txt}</strong> après la coupure. On juge une émission visible tant que son intensité dépasse 1{NB}% de sa valeur initiale.</div>
         {selecteur('fl-d2', 'Quelle lumière observe-t-on ?', defi.rep1, ev => maj({ rep1: ev.target.value }), ['les deux', 'phosphorescence seule', 'aucune'].map(s => ({ id: s, nom: s })), 'Choisir…')}</>}
-      <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>{defi.kind === 'stokes'
+      <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>{defi.kind === 'dispositif' ? <>Dans l’axe, on voit ce qui n’est pas absorbé ; à 90°, on ne voit que la lumière émise. Demandez-vous ce qui est fixé et ce qui est balayé, et si la lampe est allumée.</>
+        : defi.kind === 'stokes'
         ? <>E = 1243 / λ pour chacun des deux photons, puis E(abs) − E(émis).</>
         : <>Intensité = exp(−t/τ) : une émission est visible tant que t est inférieur à environ 4,6 τ (1 %). Comparez t à 2{NB}ns puis à 1{NB}s.</>}</IndiceDefi></div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
@@ -189,7 +195,7 @@ export function SimulationFluorescence() {
       </div>
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>
         {defi.ok ? '✓ Correct. ' : '✗ Pas tout à fait. '}
-        {defi.kind === 'stokes' ? <>Réponse : {fr(defi.dE, 2)}{NB}eV.</> : <>Réponse : {defi.rep}.</>}
+        {defi.kind === 'stokes' ? <>Réponse : {fr(defi.dE, 2)}{NB}eV.</> : defi.kind === 'dispositif' ? <>Réponse : {defi.nomRep}. {defi.expl}</> : <>Réponse : {defi.rep}.</>}
       </div>}
     </div>);
   const finParcours = (
@@ -343,7 +349,7 @@ export function SimulationFluorescence() {
           </div>
         </div>
       </div>}
-      {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.kind}`} etat={defi.kind === 'stokes' ? suiviS : suiviD}/></div>}
+      {enDefi && defi && <div style={{ ...styleBoite, marginBottom: 12 }}>{voletDefi}<SuiviDefi cle={`${SIM_ID}:defi.${defi.kind}`} etat={defi.kind === 'stokes' ? suiviS : defi.kind === 'dispositif' ? suiviP : suiviD}/></div>}
       {enExplore && <>
         <div className={`fl-ex${ex.onglet === 'dispositif' ? ' pleine' : ''}`}>
           {voletScene}
