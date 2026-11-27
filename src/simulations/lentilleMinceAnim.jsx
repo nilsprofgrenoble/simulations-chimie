@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { reduitMouvement } from "./hookHorloge";
+import { styleBouton, stylePetitBouton } from "../commun";
 
 // ====================================================
 //  Animation de la lentille mince (sim 115) : lumière qui circule le long des trois rayons, tracé pas à pas.
@@ -97,7 +98,7 @@ export function CouchePhotons({ chemins, lum, prolongements = [] }) {
           <g key={k}>
             {impact === 0 && [3, 2, 1].map(j => { const q = coupe(ch.pts, Math.max(0, vol - 0.035 * j)).pointe; return <circle key={j} cx={q[0]} cy={q[1]} r={(6.5 - j * 1.3) * k0} fill={ch.c} opacity={0.5 - j * 0.12}/>; })}
             {impact === 0 && <g><circle cx={pointe[0]} cy={pointe[1]} r={13 * k0} fill={ch.c} opacity="0.22"/><circle cx={pointe[0]} cy={pointe[1]} r={6.5 * k0} fill={ch.c} stroke="#fff" strokeWidth={2 * k0}/></g>}
-            {impact > 0 && <circle cx={fin[0]} cy={fin[1]} r={(5 + 20 * impact) * k0} fill="none" stroke={ch.c} strokeWidth={3 * k0} opacity={1 - impact}/>}
+            {impact > 0 && lum.impact !== false && <circle cx={fin[0]} cy={fin[1]} r={(5 + 20 * impact) * k0} fill="none" stroke={ch.c} strokeWidth={3 * k0} opacity={1 - impact}/>}
           </g>);
       })}
     </g>);
@@ -114,3 +115,32 @@ export const ETAPES_PAS = (nature, nRayons) => {
     : 'Les rayons se coupent en B′ : c’est le sommet de l’image réelle.';
   return [...tous, [4, dernier]];
 };
+
+// Commandes de lecture de la lumière en boucle : pause / lecture et ralenti.
+export function Commandes({ L }) {
+  return (
+    <div style={{ marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+      <button type="button" onClick={() => L.setJoue(!L.joue)} style={{ ...styleBouton(true, L.joue ? '#475569' : '#0369a1'), minHeight: 40 }}>{L.joue ? '⏸ Pause' : '▶ Lecture'}</button>
+      {[[1, '×1'], [0.5, '×½'], [0.25, '×¼']].map(([v, l]) => <button key={v} type="button" onClick={() => L.setVit(v)} aria-pressed={L.vit === v} aria-label={`Vitesse ${l}`} style={{ ...stylePetitBouton(L.vit === v, '#0369a1'), minHeight: 40, minWidth: 44 }}>{l}</button>)}
+    </div>);
+}
+
+// Poignée saisissable dans une scène SVG (souris, doigt, flèches du clavier) : rond ↔ posé en (x, y), zones = autres rectangles sensibles [x, y, l, h].
+// lire(e) convertit un geste en valeur ; set(v) reçoit la valeur brute (à borner par l'appelant) ; g agrandit la poignée sur téléphone.
+export function Poignee({ x, y, g = 1, coul = '#0f172a', label, valeur, vmin, vmax, texte, touche, onToucher, lire, set, pas = 0.5, zones = [], orange = '#ea8a1a' }) {
+  return (
+    <g className="xa-poignee" tabIndex={0} role="slider" aria-label={label} aria-valuemin={vmin} aria-valuemax={vmax} aria-valuenow={valeur} aria-valuetext={texte}
+      onPointerDown={e => { e.currentTarget.setPointerCapture?.(e.pointerId); onToucher?.(); }}
+      onPointerMove={e => { if (e.currentTarget.hasPointerCapture?.(e.pointerId)) set(lire(e)); }}
+      onKeyDown={e => {
+        const k = e.shiftKey ? pas / 5 : pas;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); onToucher?.(); set(valeur + k); }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') { e.preventDefault(); onToucher?.(); set(valeur - k); }
+      }}>
+      {zones.map(([zx, zy, zw, zh], i) => <rect key={i} x={zx} y={zy} width={zw} height={zh} fill="transparent"/>)}
+      <rect x={x - 45 * g} y={y - 28 * g} width={90 * g} height={56 * g} fill="transparent"/>
+      {!touche && <circle className="xa-pulse" cx={x} cy={y} r={22 * g} fill="none" stroke={orange} strokeWidth={3 * g}/>}
+      <circle className="xa-anneau" cx={x} cy={y} r={14 * g} fill="#fff" stroke={coul} strokeWidth={3 * g}/>
+      <path d={`M${x - 8 * g} ${y}H${x + 8 * g}M${x - 8 * g} ${y}l${4 * g} ${-4 * g}M${x - 8 * g} ${y}l${4 * g} ${4 * g}M${x + 8 * g} ${y}l${-4 * g} ${-4 * g}M${x + 8 * g} ${y}l${-4 * g} ${4 * g}`} stroke={coul} strokeWidth={2 * g} fill="none" strokeLinecap="round"/>
+    </g>);
+}
