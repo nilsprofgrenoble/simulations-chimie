@@ -35,12 +35,13 @@ function geometrie(e, f) {
   return { P, info };
 }
 const pointSlot = (a, ang, dist) => [a.x + dist * Math.cos(rad(ang)), a.y + dist * Math.sin(rad(ang))];
-const distLp = a => 21 + (etiquette(a).length > 2 ? 9 : 0) + (etiquette(a).length === 2 ? 3 : 0);
+const distLp = a => 17 + (etiquette(a).length > 2 ? 9 : 0) + (etiquette(a).length === 2 ? 3 : 0);
 const milieu = (A, B) => [(A.x + B.x) / 2, (A.y + B.y) / 2];
 
-function Paire({ x, y, ang, r = 2.7, couleur = COUL.txt, ecart = 3.6 }) {
+// doublet non liant : un TRAIT (convention française), perpendiculaire à la direction atome → doublet
+function Paire({ x, y, ang, r = 2.7, couleur = COUL.txt, ecart = 7 }) {
   const px = -Math.sin(rad(ang)) * ecart, py = Math.cos(rad(ang)) * ecart;
-  return <g><circle cx={x + px} cy={y + py} r={r} fill={couleur}/><circle cx={x - px} cy={y - py} r={r} fill={couleur}/></g>;
+  return <line x1={x + px} y1={y + py} x2={x - px} y2={y - py} stroke={couleur} strokeWidth={r * 1.05} strokeLinecap="round"/>;
 }
 function Liaison({ A, B, n, pointille = 0, taille = 1 }) {
   const dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy), ux = dx / d, uy = dy / d, nx = -uy, ny = ux;

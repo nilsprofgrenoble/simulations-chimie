@@ -122,7 +122,7 @@ export function SimulationMes() {
   // ---------- étapes du parcours ----------
   const ETAPES = [
     { id: 'ecritures', titre: 'Une espèce, plusieurs écritures',
-      texte: <>Voici l’<strong>ion éthanoate</strong> CH₃COO⁻ en notation de <strong>Lewis</strong> : chaque trait est un doublet liant, chaque paire de points est un <strong>doublet non liant</strong>, et le cercle <strong>−</strong> est une <strong>charge formelle</strong>. Il existe une autre écriture de Lewis de cet ion. Cliquez sur le <strong>cercle orange pointillé</strong> (doublet de l’oxygène chargé) pour la faire apparaître.</>,
+      texte: <>Voici l’<strong>ion éthanoate</strong> CH₃COO⁻ en notation de <strong>Lewis</strong> : un trait entre deux atomes est un doublet liant, un trait posé contre un seul atome est un <strong>doublet non liant</strong>, et le cercle <strong>−</strong> est une <strong>charge formelle</strong>. Il existe une autre écriture de Lewis de cet ion. Cliquez sur le <strong>cercle orange pointillé</strong> (doublet de l’oxygène chargé) pour la faire apparaître.</>,
       tache: { type: 'action', ok: change('ethanoate'), consigne: change('ethanoate') ? '✓ Vous avez trouvé la deuxième écriture de l’ion éthanoate.' : 'Cliquez sur le cercle orange pointillé pour déplacer le doublet.' } },
     { id: 'atomes', titre: 'Qu’est-ce qui change ?',
       texte: <>Comparez les deux écritures de l’ion éthanoate (revenez de l’une à l’autre en recliquant sur le cercle orange). Elles décrivent <strong>la même espèce</strong> : on les appelle des <strong>formes mésomères</strong> (ou formes limites).</>,
@@ -133,7 +133,7 @@ export function SimulationMes() {
       texte: <>Pour passer d’une forme mésomère à l’autre, on dessine des <strong>flèches courbes</strong> : chacune part d’un doublet d’électrons et pointe vers l’endroit où il va. Les deux formes sont reliées par le symbole <strong>↔</strong>, qui ne représente <strong>ni une réaction ni un équilibre</strong> : c’est une seule espèce, écrite de deux façons.</>,
       tache: { type: 'qcm', q: 'Que représente une flèche courbe orange sur ce dessin ?', options: ['Le déplacement d’un atome d’oxygène', 'Une réaction chimique entre deux molécules', 'Le déplacement d’un doublet d’électrons', 'Un équilibre entre deux espèces différentes'], bonne: 2,
         expl: 'Une flèche courbe de mésomérie représente le déplacement d’un doublet d’électrons (jamais d’un atome). Les deux formes qu’elle relie sont deux écritures de la même espèce.',
-        indice: 'Chaque flèche part d’une paire de points (ou d’un trait) : que représente cette paire ?' } },
+        indice: 'Chaque flèche part d’un trait (doublet non liant ou liaison double) : que représente ce trait ?' } },
     { id: 'nitrate', titre: 'Compter les formes de l’ion nitrate',
       retenirTitre: 'À retenir : les formes mésomères', retenir: <><SvgFormesCarte/><ul style={ULS}>
         <li>Des <strong>formes mésomères</strong> sont des écritures de Lewis d’une même espèce : <strong>mêmes atomes</strong>, doublets et charges placés autrement.</li>
@@ -276,7 +276,7 @@ export function SimulationMes() {
   // ---------- hypothèses ----------
   const hypotheses = indicesProfond(
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Notation de Lewis</strong> : un trait est un doublet liant, deux points un doublet non liant. Les atomes d’hydrogène ne sont pas dessinés : ils sont notés dans le symbole (CH₃, NH₂…). Charge formelle = électrons de valence − (doublets non liants × 2) − nombre de liaisons.</li>
+      <li><strong>Notation de Lewis</strong> : un trait entre deux atomes est un doublet liant, un trait contre un seul atome est un doublet non liant. Les atomes d’hydrogène ne sont pas dessinés : ils sont notés dans le symbole (CH₃, NH₂…). Charge formelle = électrons de valence − (doublets non liants × 2) − nombre de liaisons.</li>
       <li><strong>Formes mésomères</strong> : elles ne diffèrent que par la place des doublets et des charges (pas des atomes), avec le même nombre d’électrons ; octet respecté pour C, N, O (sauf la lacune d’un carbone chargé +, à 6 électrons).</li>
       <li><strong>Hybride de résonance</strong> : pour des formes équivalentes, l’ordre de liaison et la charge d’un atome sont des moyennes simples sur toutes les écritures (poids égaux). Pour des formes de poids différents (éthanamide, ion énolate), aucune moyenne n’est calculée.</li>
       <li><strong>Forme la plus probable</strong> : critère qualitatif (moins de charges ; charge − sur l’atome le plus électronégatif). Les poids réels des formes ne sont pas calculés.</li>
