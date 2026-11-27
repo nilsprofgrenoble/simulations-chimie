@@ -266,12 +266,13 @@ export function SimulationFluorescence() {
       <li>Diagramme : parcourez les processus. Lesquels émettent un photon ? Lesquels sont les plus rapides ?</li>
       <li>Après l’arrêt : avec la molécule A, à quel temps la lumière a-t-elle disparu ? Et avec la molécule B ?</li>
       <li>Après l’arrêt : avec B, cherchez l’intervalle de temps où l’on ne voit que la phosphorescence.</li>
-      <li>Du photon au spectre : choisissez « Absorption et émission superposées » et comparez les deux molécules. Laquelle perd le plus d’énergie avant d’émettre ?</li>
+      <li>Du photon au spectre : en « Émission », comparez la bande enregistrée à la bande d’absorption (en pâle), pour les deux molécules. Laquelle perd le plus d’énergie avant d’émettre ?</li>
       <li>Tirages (émission) : envoyez 1 000 photons à 350 nm, puis à 331 nm. Les spectres d’émission diffèrent-ils ? Pourquoi ?</li>
       <li>Tirages : excitez à 410 nm, en bord de bande d’absorption. Que devient la part de photons absorbés ?</li>
       <li>Tirages (excitation) : détectez à 450 nm, puis à 420 nm (molécule B) : comparez les spectres d’excitation obtenus.</li>
-      <li>Du photon au spectre : en émission puis en absorption, comparez la place du détecteur (à 90° ou dans l’axe) et lancez « Photon par photon ». Pourquoi ne mesure-t-on pas l’émission dans l’axe du faisceau ?</li>
-      <li>Du photon au spectre : balayez le spectre d’émission de B, puis choisissez « Phosphorescence ». Quelle émission reste après l’arrêt de la lampe ?</li>
+      <li>Du photon au spectre : passez d’« Absorption » à « Émission » : quel détecteur sert ? Pourquoi ne mesure-t-on pas l’émission dans l’axe du faisceau ?</li>
+      <li>Du photon au spectre : en « Excitation », la courbe enregistrée suit-elle la bande d’absorption ? Pourquoi ?</li>
+      <li>Du photon au spectre : enregistrez le spectre d’émission de B, puis choisissez « Phosphorescence ». Quelle émission reste après l’arrêt de la lampe ?</li>
       <li>Du photon au spectre : la phosphorescence de B est-elle à une longueur d’onde plus petite ou plus grande que sa fluorescence ? Que dit le diagramme ?</li>
     </ul>);
   const retenirExplore = (
@@ -293,7 +294,7 @@ export function SimulationFluorescence() {
       <li><strong>Énergies</strong> : E(eV) × λ(nm) = 1243 (constantes arrondies). L’énergie du photon émis est assimilée à un écart entre niveaux, en négligeant la relaxation vibrationnelle dans l’état d’arrivée.</li>
       <li><strong>Spectres</strong> : allures gaussiennes schématiques, de largeur arbitraire ; les intensités relatives ne sont pas à l’échelle.</li>
       <li><strong>Tirages</strong> : modèle vibronique schématique à 5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon à l’absorption et à l’émission (spectres en image miroir) ; écart entre sous-niveaux 0,21 eV (A) ou 0,15 eV (B) ; chaque transition élargie en bande (écart-type 0,14 eV : en solution, les sous-niveaux de vibration ne sont pas résolus, on observe des bandes) ; molécule initialement au niveau v = 0 de S₀ ; relaxation vibrationnelle complète avant émission (règle de Kasha) ; probabilité d’absorption au sommet de la bande : 90 % ; rendements fixés (A : 70 % de fluorescence ; B : 15 % de fluorescence, 60 % de croisement intersystème, puis 55 % de phosphorescence). Les nombres de photons sont des tirages aléatoires : deux séries ne donnent jamais exactement le même spectre.</li>
-      <li><strong>Du photon au spectre</strong> : montage schématique (lampe, monochromateurs de fente ± 6 nm, échantillon, détecteur) ; les courbes sont les spectres attendus, sans bruit, normalisés à 1, en bandes de largeur 0,14 eV (spectres en solution) ; chaque photon animé est un tirage reproductible du même modèle que les tirages ; en phosphorescence, la molécule est supposée excitée avant l’arrêt de la lampe et la part de molécules dans T₁ n’est pas modélisée.</li>
+      <li><strong>Du photon au spectre</strong> : montage schématique vu de dessus (monochromateurs de fente ± 6 nm) ; diagramme d’énergie à l’échelle, la longueur de chaque flèche est l’énergie du photon (E = 1243 / λ) ; bandes de largeur 0,14 eV ; en absorption, absorbance maximale 0,8 (cuve de 1 cm) ; en fluorimétrie, solution diluée (A &lt; 0,1) : le signal est proportionnel à l’absorbance à λ d’excitation, d’où un spectre d’excitation qui a la forme de la bande d’absorption ; intensités relatives, sans bruit ; couleurs des faisceaux = couleurs réelles (UV représenté en violet) ; en phosphorescence, la population de T₁ à l’arrêt n’est pas modélisée.</li>
       <li><strong>Hors modèle</strong> : désactivation non radiative S₁ → S₀ détaillée, extinction de fluorescence (quenching), effets de solvant, règles de sélection détaillées.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);

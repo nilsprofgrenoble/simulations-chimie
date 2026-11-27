@@ -112,3 +112,17 @@ const SITUATIONS = [
   { mode: 'ph', txt: 'Vous voulez mesurer la lumière qui reste visible plusieurs secondes après avoir coupé la lampe.', expl: 'La fluorescence est éteinte : seule la phosphorescence (T₁ → S₀) subsiste, mesurée à 90° avec la lampe coupée.' },
 ];
 export const tirageDefiDispositif = rnd => { const s = SITUATIONS[Math.floor(rnd() * SITUATIONS.length)]; return { kind: 'dispositif', txt: s.txt, rep: s.mode, expl: s.expl, nomRep: MODES.find(m => m.id === s.mode).nom }; };
+
+// ---------- vue unifiée (montage, diagramme à l'échelle, spectre) ----------
+export const A_MAX = 0.8;                                         // absorbance au maximum de la bande (cuve de 1 cm), mesure d'absorption
+export const absorbance = (mol, lam) => A_MAX * absRel(mol, lam);
+export const emissionDominante = (mol, lam) => (mol.T && phosNm(mol, lam) > fluoNm(mol, lam) ? 'phos' : 'fluo');
+// couleur perçue d'une lumière de longueur d'onde lam (nm) ; l'UV, invisible, est représenté en violet
+export function couleurLam(lam, f = 0.82) {
+  if (lam < 380) return f < 0.8 ? '#7c3aed' : '#8b5cf6';
+  let r = 0, g = 0, b = 0;
+  if (lam < 440) { r = (440 - lam) / 60; b = 1; } else if (lam < 490) { g = (lam - 440) / 50; b = 1; } else if (lam < 510) { g = 1; b = (510 - lam) / 20; }
+  else if (lam < 580) { r = (lam - 510) / 70; g = 1; } else if (lam < 645) { r = 1; g = (645 - lam) / 65; } else r = 1;
+  const h = v => Math.round(255 * Math.min(1, Math.max(0, v)) * f).toString(16).padStart(2, '0');
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
