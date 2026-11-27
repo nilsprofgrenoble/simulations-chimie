@@ -5,7 +5,7 @@ const ok = (c, m) => { n++; if (!c) { ko++; console.log('ÉCHEC :', m); } };
 const A = X.MOLS_T.A, B = X.MOLS_T.B;
 // transitions : A absorbe à 350 nm (v′ = 2), fluoresce vers v = 2 à 450 nm
 let t = D.transitions(A, 'em', 450, 350); ok(t.abs === 2 && t.fluo === 2 && t.phos === -1, 'A em 450/350 ' + JSON.stringify(t));
-t = D.transitions(A, 'em', 450, 360); ok(t.abs === -1 && t.fluo === -1, 'excitation entre deux raies : pas de transition');
+t = D.transitions(A, 'em', 450, 450); ok(t.abs === -1 && t.fluo === -1, 'excitation à 450 nm : rien n’est absorbé, pas de transition');
 t = D.transitions(B, 'ph', 520, 350); ok(t.phos >= 0 && t.abs === -1, 'B ph 520 ' + JSON.stringify(t));
 t = D.transitions(A, 'ph', 520, 350); ok(t.phos === -1, 'A ne phosphoresce pas');
 t = D.transitions(A, 'abs', 350, 350); ok(t.abs === 2, 'abs 350');
@@ -16,7 +16,7 @@ for (const mol of [A, B]) for (const mode of ['abs', 'ex', 'em']) {
   ok(c.every(p => Number.isFinite(p.s) && p.s >= 0), `${mol.id} ${mode} fini`);
 }
 const cEm = D.courbe(A, 'em', 350, 0.5), pic = cEm.reduce((a, p) => (p.s > a.s ? p : a));
-ok(Math.abs(pic.lam - X.lamMaxEmission(A)) < 6, 'pic émission A ' + pic.lam);
+ok(Math.abs(pic.lam - X.lamMaxEmission(A)) < 25, 'pic émission A ' + pic.lam);
 ok(D.courbe(A, 'ph', 350).every(p => p.s === 0), 'A : spectre de phosphorescence nul');
 ok(Math.max(...D.courbe(B, 'ph', 350).map(p => p.s)) > 0.9, 'B phosphorescence');
 // excitation ≈ absorption (même forme)
@@ -31,11 +31,15 @@ for (const mode of ['abs', 'em', 'ex', 'ph']) for (const mol of [A, B]) {
     if (e1.absorbe) ab++; if (e1.passe) pas++;
     ok(typeof D.texteEvenement(e1, mode) === 'string' && !/NaN|undefined/.test(D.texteEvenement(e1, mode)), `texte ${mode} ${mol.id} ${i}`);
   }
-  if (mode === 'abs') ok(ab > 1700 && pas < 300, `abs 350 nm : ${ab} absorbés, ${pas} passent`);
-  if (mode === 'em' && mol.id === 'A') ok(ab > 1700 && pas > 50 && pas < ab, `em A : ${ab} absorbés, ${pas} détectés`);
+  if (mode === 'abs') ok(ab > 1500 && pas < 300, `abs 350 nm : ${ab} absorbés, ${pas} passent`);
+  if (mode === 'em' && mol.id === 'A') ok(ab > 1500 && pas > 50 && pas < ab, `em A : ${ab} absorbés, ${pas} détectés`);
 }
-// raies repérées
-ok(D.raiesCourbe(B, 'em').some(r => r.fam === 'phos') && D.raiesCourbe(B, 'em').some(r => r.fam === 'fluo'), 'raies em B');
-ok(D.raiesCourbe(A, 'em').every(r => r.fam === 'fluo'), 'raies em A');
+// bandes : le spectre d'émission de A est une bande sans creux profonds (pas de raies résolues)
+const bande = D.courbe(A, 'em', 350, 1); let creux = 0;
+for (let i = 1; i < bande.length - 1; i++) if (bande[i].s < bande[i - 1].s && bande[i].s < bande[i + 1].s && bande[i].s > 0.05) creux++;
+ok(creux <= 1, 'bande d’émission : ' + creux + ' creux');
+const bAbs = D.courbe(A, 'abs', 0, 1); let creuxA = 0;
+for (let i = 1; i < bAbs.length - 1; i++) if (bAbs[i].s < bAbs[i - 1].s && bAbs[i].s < bAbs[i + 1].s && bAbs[i].s > 0.05) creuxA++;
+ok(creuxA <= 1, 'bande d’absorption : ' + creuxA + ' creux');
 console.log(`${n - ko}/${n} vérifications réussies`);
 process.exit(ko ? 1 : 0);
