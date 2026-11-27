@@ -1,4 +1,5 @@
 import * as M from './electrolyseModele.js';
+import { QCM_PARCOURS as QQ } from './electrolyseQcm.js';
 let n = 0; const ok = (c, m) => { n++; if (!c) { console.error('ÉCHEC :', m); process.exit(1); } };
 const proche = (a, b, t = 1e-3) => Math.abs(a - b) <= t * Math.max(1e-9, Math.abs(b));
 const G = M.ACCU_GUIDE;
@@ -46,5 +47,11 @@ for (let k = 0; k < 4000; k++) {
   ok(Math.abs(d.UG - d.E) >= 0.25 && (d.sens === 'force') === (M.intensite(d.a, d.UG) > 0), 'défi sens');
   const q = M.tirageDefiQuantite();
   ok(q.nDep > 0 && q.nDep < 0.10 * 0.1 && q.mDiss < 2.0, 'défi quantité réaliste');
+}
+// QCM du parcours : la bonne réponse (index 'bonne') n'est jamais la plus longue (égalité comprise) ni strictement la plus courte
+for (const [k, v] of Object.entries(QQ)) {
+  const L = v.options.map(o => [...o].length), b = L[v.bonne], autres = L.filter((_, i) => i !== v.bonne);
+  ok(b < Math.max(...autres), `QCM ${k} : la bonne est la plus longue`);
+  ok(b >= Math.min(...autres), `QCM ${k} : la bonne est strictement la plus courte`);
 }
 console.log(`electrolyseModele : ${n} contrôles réussis`);

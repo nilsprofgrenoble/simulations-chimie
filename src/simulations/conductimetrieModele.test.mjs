@@ -1,4 +1,5 @@
 import * as M from './conductimetrieModele.js';
+import { QCM_PARCOURS as QQ } from './conductimetrieQcm.js';
 let n = 0; const ok = (c, m) => { n++; if (!c) { console.error('ÉCHEC :', m); process.exit(1); } };
 const proche = (a, b, t = 1e-6) => Math.abs(a - b) <= t * Math.max(1, Math.abs(b));
 // Kohlrausch : NaCl 1,0×10⁻² mol/L = 10 mol/m³ → (5,0 + 7,6) × 10 = 126 mS/m ; HCl 1,0×10⁻² → (35,0 + 7,6) × 10 = 426 mS/m
@@ -63,5 +64,11 @@ for (const an of ['hcl', 'hno3']) for (const cA of M.CONC_A) for (const eau of [
   ok(r.ecartes.every(q => Math.abs(q.VB - VE) < M.ZONE_ECARTEE), 'points écartés proches de V_E');
   ok(r.avant.concat(r.apres).every(q => Math.abs(q.VB - VE) >= M.ZONE_ECARTEE - 1e-9), 'points utilisés loin de V_E');
   ok(Math.abs(r.VEmod - VE) / VE <= 0.05, `V_E par deux droites ${an} ${cA} ${eau} : ${r.VEmod}`);
+}
+// QCM du parcours : la bonne réponse (index 'bonne') n'est jamais la plus longue (égalité comprise) ni strictement la plus courte
+for (const [k, v] of Object.entries(QQ)) {
+  const L = v.options.map(o => [...o].length), b = L[v.bonne], autres = L.filter((_, i) => i !== v.bonne);
+  ok(b < Math.max(...autres), `QCM ${k} : la bonne est la plus longue`);
+  ok(b >= Math.min(...autres), `QCM ${k} : la bonne est strictement la plus courte`);
 }
 console.log('conductimetrieModele : tous les tests passent (' + n + ' + 10 000 tirages ; écart maximal de lecture de V_E : ' + (100 * pire).toFixed(1) + ' %)');

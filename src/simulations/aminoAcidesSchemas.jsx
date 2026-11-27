@@ -111,9 +111,9 @@ export function SvgDomainesCarte() {
 
 // carte 3 : autour d'une frontière, rapport et pourcentages (couple 1)
 export function SvgRapportCarte() {
-  const lignes = [['pKA1 − 1', 100 / 11, '0,1'], ['pKA1', 50, '1'], ['pKA1 + 1', 1000 / 11, '10']], X0 = 100, L = 190;
+  const lignes = [['pKA1 − 1', 100 / 11, '0,1'], ['pKA1 + 1', 1000 / 11, '10']], X0 = 100, L = 190;
   return (
-    <svg viewBox="0 0 400 278" style={stl} role="img" aria-label="Autour de la frontière pKA1, le rapport de zwitterion sur cation vaut 10 puissance pH moins pKA1. À pKA1 moins 1 : 91 pour cent de cation et 9 pour cent de zwitterion ; à pKA1 : 50 et 50 ; à pKA1 plus 1 : 9 pour cent de cation et 91 pour cent de zwitterion. La lecture est la même autour de pKA2.">
+    <svg viewBox="0 0 400 226" style={stl} role="img" aria-label="Autour de la frontière pKA1, le rapport de zwitterion sur cation vaut 10 puissance pH moins pKA1. À pKA1 moins 1 : 91 pour cent de cation et 9 pour cent de zwitterion , et à pKA1 plus 1 : 9 pour cent de cation et 91 pour cent de zwitterion. La lecture est la même autour de pKA2.">
       <text x="200" y="22" fontSize="17" fontWeight="700" textAnchor="middle" fill={COL.txt}>Autour d’une frontière</text>
       <text x="14" y="48" fontSize="16" fontWeight="700" fill={COL.bleu}>■ cation</text><text x="110" y="48" fontSize="16" fontWeight="700" fill={COL.vert}>■ zwitterion</text>
       {lignes.map(([lab, z, r], i) => { const y = 64 + i * 52, w = L * z / 100, c = L - w;
@@ -126,8 +126,8 @@ export function SvgRapportCarte() {
           {w <= 50 && <text x={X0 + L - 4} y={y + 44} fontSize="16" textAnchor="end" fill={COL.vert}>{Math.round(z)} %</text>}
           <text x="392" y={y + 19} fontSize="16" fontWeight="700" textAnchor="end" fill={COL.gris}>rapport {r}</text>
         </g>; })}
-      <text x="14" y="248" fontSize="16" fill={COL.txt}>rapport zwitterion / cation = 10<tspan dy="-7" fontSize="15">pH − pKA1</tspan></text>
-      <text x="14" y="268" fontSize="16" fill={COL.txt}>même lecture autour de pK<Sb t="A2"/></text>
+      <text x="14" y="196" fontSize="16" fill={COL.txt}>rapport zwitterion / cation = 10<tspan dy="-7" fontSize="15">pH − pKA1</tspan></text>
+      <text x="14" y="216" fontSize="16" fill={COL.txt}>même lecture autour de pK<Sb t="A2"/></text>
     </svg>);
 }
 

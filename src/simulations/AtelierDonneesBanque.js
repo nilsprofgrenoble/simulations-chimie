@@ -1208,7 +1208,7 @@ export const ENONCES = [
         V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
         T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
       };
-      const debut = ['Pour la ', a.nom, ', les constantes d’acidité sont pKA1 = ', T('pKa1'), ' et pKA2 = ', T('pKa2'), '. La solution, de concentration totale ', T('C'), ' et de volume ', T('V'), ' à ', T('T'), ', a un pH imposé égal à ', T('pH'), '. '];
+      const debut = ['Pour ' + (/^[aeiouéè]/i.test(a.nom) ? 'l’' : 'la '), a.nom, ', les constantes d’acidité sont pKA1 = ', T('pKa1'), ' et pKA2 = ', T('pKa2'), '. La solution, de concentration totale ', T('C'), ' et de volume ', T('V'), ' à ', T('T'), ', a un pH imposé égal à ', T('pH'), '. '];
       const r = 10 ** (p.pH - p.pKa1);
       if (q === 0) return { tokens, derivees: ['[zwitterion] / [cation] = 10^(pH − pKA1)'], texte: [...debut, 'Quel est le rapport [zwitterion] / [cation] ?'],
         utiles: ['pKa1', 'pH'], raisons: { pKa2: 'pKA2 est trop éloigné du pH : près de pKA1, on lit seulement le couple cation / zwitterion.', C: 'La concentration totale ne change pas le rapport des deux formes : elle fixe seulement leurs valeurs.', V: 'Le volume n’intervient pas dans un rapport de deux concentrations.', T: 'La température est constante : elle suppose seulement que pKA garde sa valeur.' },
@@ -1233,7 +1233,7 @@ export const ENONCES = [
         V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
         T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
       };
-      const debut = ['Pour la ', a.nom, ', les constantes d’acidité sont pKA1 = ', T('pKa1'), ' et pKA2 = ', T('pKa2'), '. La solution, de concentration totale ', T('C'), ' et de volume ', T('V'), ' à ', T('T'), ', a un pH imposé égal à ', T('pH'), '. '];
+      const debut = ['Pour ' + (/^[aeiouéè]/i.test(a.nom) ? 'l’' : 'la '), a.nom, ', les constantes d’acidité sont pKA1 = ', T('pKa1'), ' et pKA2 = ', T('pKa2'), '. La solution, de concentration totale ', T('C'), ' et de volume ', T('V'), ' à ', T('T'), ', a un pH imposé égal à ', T('pH'), '. '];
       const r = 10 ** (p.pH - p.pKa2);
       if (q === 0) return { tokens, derivees: ['[anion] / [zwitterion] = 10^(pH − pKA2)'], texte: [...debut, 'Quel est le rapport [anion] / [zwitterion] ?'],
         utiles: ['pKa2', 'pH'], raisons: { pKa1: 'pKA1 est trop éloigné du pH : près de pKA2, on lit seulement le couple zwitterion / anion.', C: 'La concentration totale ne change pas le rapport des deux formes.', V: 'Le volume n’intervient pas dans un rapport de deux concentrations.', T: 'La température est constante : elle suppose seulement que pKA garde sa valeur.' },

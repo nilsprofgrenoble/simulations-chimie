@@ -187,8 +187,7 @@ export function SimulationConductimetrie() {
         <SvgDroitesCarte/>
         <Ul>
           <li>Au laboratoire : des points mesurés, non reliés, puis <strong>deux droites</strong> (pointillés) passant par les points alignés avant et après l’équivalence ; leur intersection donne V<sub>E</sub>.</li>
-          <li>On <strong>écarte les points proches de V<sub>E</sub></strong> : la courbe réelle s’y arrondit (réaction pas parfaitement totale, dilution, incertitude de mesure).</li>
-          <li>Différence avec le titrage pH-métrique : là, l’information est dans le saut de pH autour de V<sub>E</sub> ; ici, elle est dans les deux droites, <strong>loin</strong> de V<sub>E</sub>.</li>
+          <li>On <strong>écarte les points creux</strong> de la zone hachurée, au voisinage de V<sub>E</sub>. Différence avec le titrage pH-métrique : là, l’information est dans le saut de pH autour de V<sub>E</sub> ; ici, elle est dans les deux droites, <strong>loin</strong> de V<sub>E</sub>.</li>
           <li>Moyen de s’en souvenir : <strong>« en conductimétrie, on s’éloigne de l’équivalence pour la repérer »</strong>. Idée fausse : « V<sub>E</sub> est le point mesuré le plus bas ». Vrai : V<sub>E</sub> est à l’intersection des deux droites.</li>
         </Ul></>,
       texte: <>Au laboratoire, on ne trace pas une courbe continue : on mesure σ pour des volumes réguliers (points <strong>pleins</strong>) sans les relier, puis on modélise par <strong>deux droites en pointillés</strong>. Les points <strong>creux</strong>, dans la zone hachurée à moins de 2&nbsp;mL de V<sub>E</sub>, sont <strong>écartés</strong> du tracé.</>,
