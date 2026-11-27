@@ -97,8 +97,8 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
         {/* lentille mince */}
         <line x1={px(0)} y1={YA - 125} x2={px(0)} y2={YA + 125} stroke={COUL.lent} strokeWidth="4.5"/>
         <polygon points={`${px(0)},${YA - 132} ${px(0) - 8},${YA - 114} ${px(0) + 8},${YA - 114}`} fill={COUL.lent}/><polygon points={`${px(0)},${YA + 132} ${px(0) - 8},${YA + 114} ${px(0) + 8},${YA + 114}`} fill={COUL.lent}/>
-        <circle cx={px(0)} cy={YA} r="4" fill="#0f172a"/><text x={px(0) - 8} y={YA + 18} textAnchor="end" fontSize={13.5 * fl} fontWeight="800" fill="#0f172a">O</text>
-        {foyers && isFinite(f) && <g fontSize={14 * fl} fontWeight="800" fill={COUL.foyer}>
+        <circle cx={px(0)} cy={YA} r="4" fill="#0f172a"/><text x={px(0) - 8} y={YA + 18} textAnchor="end" fontSize={13.5 * fl} fontWeight="800" fill="#0f172a" stroke="#fff" strokeWidth="4" paintOrder="stroke">O</text>
+        {foyers && isFinite(f) && <g fontSize={14 * fl} fontWeight="800" fill={COUL.foyer} stroke="#fff" strokeWidth="4" paintOrder="stroke">
           <circle cx={px(f)} cy={YA} r="5.5" fill={COUL.foyer} stroke="#fff" strokeWidth="1.5"/><text x={px(f)} y={YA + 22} textAnchor="middle">F′</text>
           <circle cx={px(-f)} cy={YA} r="5.5" fill="#fff" stroke={COUL.foyer} strokeWidth="2.5"/><text x={px(-f)} y={YA + 22} textAnchor="middle">F</text></g>}
         {/* objet AB */}
@@ -106,12 +106,6 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
         <line x1={px(-d)} y1={YA} x2={px(-d)} y2={py(M.H_OBJ) + 6} stroke={COUL.obj} strokeWidth="4"/>{fleche(px(-d), py(M.H_OBJ), -90, COUL.obj, 8)}
         {etiquettes && <g fontSize={13.5 * fl} fontWeight="800" fill={COUL.obj}><text x={px(-d) + (px(-d) < 30 ? 8 : -6)} y={py(M.H_OBJ) - 6} textAnchor={px(-d) < 30 ? 'start' : 'end'}>B</text><text x={px(-d) + (px(-d) < 30 ? 8 : -6)} y={YA + 18} textAnchor={px(-d) < 30 ? 'start' : 'end'}>A</text></g>}
         {!signes && <text x={Math.max(px(-d), 30 + 24 * fl)} y={YA + 44 + 16 * (fl - 1)} textAnchor="middle" fontSize={12.5 * fl} fontWeight="700" fill={COUL.obj}>objet AB</text>}
-        {/* image calculée par les rayons */}
-        {(rayons || imageForcee) && aff && <g>
-          <line x1={px(im.OAp)} y1={YA} x2={px(im.OAp)} y2={YA - hImgPx} stroke={COUL.img} strokeWidth="3.5" strokeDasharray={im.nature === 'virtuelle' ? '6 4' : undefined}/>
-          {fleche(px(im.OAp), YA - hImgPx, hImgPx > 0 ? -90 : 90, COUL.img, 8)}
-          {etiquettes && <g fontSize={13.5 * fl} fontWeight="800" fill={COUL.img}><text x={px(im.OAp) + 8} y={YA - hImgPx + (hImgPx > 0 ? -4 : 14)}>B′</text><text x={px(im.OAp) + 8} y={YA + (hImgPx > 0 ? 18 : -6)}>A′</text></g>}
-          <text x={px(im.OAp)} y={YA - hImgPx + (hImgPx > 0 ? -22 - 24 * (fl - 1) : 32 + 24 * (fl - 1))} textAnchor="middle" fontSize={12.5 * fl} fontWeight="700" fill={COUL.img}>{im.nature === 'virtuelle' ? 'image virtuelle' : 'image réelle'}</text></g>}
         {/* écran */}
         {ecran && <g>
           <rect x={px(s) - 4} y={YA - 125} width="8" height="250" fill="#e2e8f0" stroke="#0f172a" strokeWidth="2"/>
@@ -120,6 +114,12 @@ function Banc({ d, f, s, rayons = false, foyers = false, regle = false, etiquett
             <line x1={px(s) + 8} y1={YA} x2={px(s) + 8} y2={YA - hImgPx} stroke={COUL.img} strokeWidth="4"/>{fleche(px(s) + 8, YA - hImgPx, hImgPx > 0 ? -90 : 90, COUL.img, 8)}</g>}
           {im.nature !== 'reelle' && <ellipse cx={px(s) + 8} cy={YA} rx="22" ry="34" fill="#fde68a" opacity="0.55" filter={`url(#lm-lueur-${identifiant})`}/>}
         </g>}
+        {/* image calculée par les rayons */}
+        {(rayons || imageForcee) && aff && <g>
+          <line x1={px(im.OAp)} y1={YA} x2={px(im.OAp)} y2={YA - hImgPx} stroke={COUL.img} strokeWidth="3.5" strokeDasharray={im.nature === 'virtuelle' ? '6 4' : undefined}/>
+          {fleche(px(im.OAp), YA - hImgPx, hImgPx > 0 ? -90 : 90, COUL.img, 8)}
+          {etiquettes && <g fontSize={13.5 * fl} fontWeight="800" fill={COUL.img} stroke="#fff" strokeWidth="4" paintOrder="stroke"><text x={px(im.OAp) + 8} y={YA - hImgPx + (hImgPx > 0 ? -4 : 14)}>B′</text><text x={px(im.OAp) + 8} y={YA + (hImgPx > 0 ? 18 : -6)}>A′</text></g>}
+          <text x={px(im.OAp)} y={YA - hImgPx + (hImgPx > 0 ? -22 - 24 * (fl - 1) : 32 + 24 * (fl - 1))} textAnchor="middle" fontSize={12.5 * fl} fontWeight="700" fill={COUL.img} stroke="#fff" strokeWidth="4" paintOrder="stroke">{im.nature === 'virtuelle' ? 'image virtuelle' : 'image réelle'}</text></g>}
         {signes && (() => {
           const cote = (x, y, nom, col, k) => {
             const v = x < 0 ? `−${cm(-x)}` : `+${cm(x)}`;

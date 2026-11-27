@@ -423,7 +423,10 @@ export function SimulationCondensateurMillikan() {
   const rel = (Fy - P) / P, enRepos = equilibre || (Math.abs(rel) < 0.01);
   let dyG = 0;
   if (animG) {
-    const haut = Math.min(0, yH + ep + 16 - yM), bas = Math.max(0, yB - ep - 16 - yM), tt = Math.min(LA.t, 3);
+    // marge = rayon de la goutte + longueur des flèches affichées, pour qu'aucune flèche ne touche une plaque
+    const fl = cache.fleches !== true, mE = !cache.valeurs && U > 0 ? lenE / 2 : 0;
+    const mHaut = 22 + Math.max(mE, fl && F > 0 && Fhaut ? lenF : 0), mBas = 22 + Math.max(mE, fl ? Math.max(lenP, F > 0 && !Fhaut ? lenF : 0) : 0);
+    const haut = Math.min(0, yH + ep + mHaut - yM), bas = Math.max(0, yB - ep - mBas - yM), tt = Math.min(LA.t, 3);
     dyG = enRepos ? 1.6 * Math.sin(2 * Math.PI * LA.t / 1.4) : Math.max(haut, Math.min(bas, -Math.sign(rel) * 0.5 * 130 * Math.min(1.5, Math.abs(rel)) * tt * tt));
   }
   const goutte = (
