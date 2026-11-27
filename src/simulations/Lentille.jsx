@@ -1,8 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSignalerMode, useSuivi, declarerDefis, modeOuverture } from "../suivi";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, ARetenir, ExempleResolu, lireProgression, lireNombre, avecIndices, IndiceDefi } from "../commun";
 import { fr, tracer, foyer, geometrie, PX_CM } from "./optiqueModele";
 import { Pic } from "../Pictos";
+import { CouchePhotons, useHorloge, Commandes, Poignee, T_BOUCLE } from "./lentilleMinceAnim";
+import { StyleAnim } from "./exploAnim";
 import { FicheRefLentille, FicheFoyer, FicheMince, FicheDependF, FicheBanc, FicheBilanLent } from "./LentilleFiches";
 
 // ====================================================
@@ -27,6 +29,7 @@ const AXE = 165, X0 = 190, H = 70;
 const FOCALES = [6, 8, 10, 12, 15, 20];
 const lentille = (type, n, R) => ({ type, n, R, H, x0: X0, next: 1 });
 const cm = x => fr(x, 1);
+const kPhoton = () => (typeof window !== 'undefined' && window.innerWidth < 600 ? 1.3 : 0.8);      // taille des photons : la scène est réduite à ~44 % sur téléphone, agrandie à ~140 % sur ordinateur
 
 function contourVerre(L) {
   const G = geometrie(L), pts = [];
@@ -34,17 +37,22 @@ function contourVerre(L) {
   for (let k = 30; k >= 0; k--) { const y = -H + 2 * H * k / 30; pts.push([L.type === 'plano' ? G.x1 : G.c2[0] + Math.sqrt(L.R * L.R - y * y), AXE - y]); }
   return pts.map(p => p.join(',')).join(' ');
 }
-function Lunette({ L, normales, mince, foyers, ideale = false, w = 700, hauteurs = [-60, -45, -30, -15, 15, 30, 45, 60], legende = true }) {
+function Lunette({ L, normales, mince, foyers, ideale = false, w = 700, hauteurs = [-60, -45, -30, -15, 15, 30, 45, 60], legende = true, lum = null }) {
   const G = geometrie(L), fo = foyer(L);
   const rayons = hauteurs.map(h => { const r = tracer(L, Math.abs(h)); return r && r.fin ? { h, r, s: Math.sign(h) } : null; }).filter(Boolean);
   const flecheD = (x, y, c) => <polygon points={`${x},${y} ${x - 11},${y - 5} ${x - 11},${y + 5}`} fill={c}/>;
   const op = mince ? 0.28 : 1;
   const hl = rayons.find(q => q.h === 60);
+  const chem = lum ? rayons.map(({ h, r, s }) => {
+    const [p0, q1, q2] = r.pts, d = ideale && fo ? (() => { const vx = fo.xF - q2[0], vy = -q2[1], l = Math.hypot(vx, vy); return [vx / l, vy / l]; })() : r.fin, t = (w - 10 - q2[0]) / d[0], fin = [q2[0] + t * d[0], q2[1] + t * d[1]];
+    return { c: C_RAY, pts: [[40, AXE - h], ...[p0, q1, q2, fin].map(([x, y]) => [x, AXE - s * y])] };
+  }) : [];
   return (
     <svg viewBox={`0 0 ${w} 330`} width="100%" role="img" aria-label="Rayons lumineux parallèles à l’axe optique traversant une lentille convergente" style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="8" y1={AXE} x2={w - 8} y2={AXE} stroke="#0f172a" strokeWidth="1.5" strokeDasharray="10 5"/>
       <text x={w - 12} y={AXE + 16} textAnchor="end" fontSize="24" fontWeight="700" fill="#0f172a">axe optique Δ</text>
       <polygon points={contourVerre(L)} fill="#7dd3fc" fillOpacity="0.45" stroke="#0369a1" strokeWidth="2.5"/>
+      {lum && <polygon className="ln-verre" points={contourVerre(L)} fill="#fff" stroke="none"/>}
       <g opacity={op}>
         {rayons.map(({ h, r, s }) => {
           const [p0, q1, q2] = r.pts, d = ideale && fo ? (() => { const vx = fo.xF - q2[0], vy = -q2[1], l = Math.hypot(vx, vy); return [vx / l, vy / l]; })() : r.fin, t = (w - 10 - q2[0]) / d[0], fin = [q2[0] + t * d[0], q2[1] + t * d[1]];
@@ -71,16 +79,17 @@ function Lunette({ L, normales, mince, foyers, ideale = false, w = 700, hauteurs
         {legende && <text x={(G.xO + fo.xF) / 2} y={AXE + 50} textAnchor="middle" fontSize="24.5" fill={C_F} stroke="#fff" strokeWidth="4" paintOrder="stroke">f′ = OF′ = {cm(fo.f)} cm</text>}
         {legende && <line x1={G.xO} y1={AXE + 30} x2={fo.xF} y2={AXE + 30} stroke={C_F} strokeWidth="2"/>}</g>}
       <text x="14" y="26" fontSize="24.5" fontWeight="800" fill="#0f172a">faisceau de rayons parallèles à l’axe</text>
+      {lum && <CouchePhotons chemins={chem} lum={{ ...lum, impact: false, k: kPhoton() }}/>}
     </svg>);
 }
 
 // ---------- banc d'optique (lentille mince, f′ en cm) ----------
 const PXB = 16, XL = 90, FEC = 28;
-function Banc({ f, s, reveler }) {
+function Banc({ f, s, reveler, lum = null, refSvg = null, poignee = null }) {
   const xs = XL + PXB * s, xf = XL + PXB * f, demi = Math.max(2, FEC * Math.abs(1 - s / f));
   const nette = Math.abs(s - f) <= 0.4;
   return (
-    <svg viewBox="0 0 700 330" width="100%" role="img" aria-label={`Banc d’optique : écran à ${cm(s)} cm de la lentille`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
+    <svg ref={refSvg} viewBox="0 0 700 330" width="100%" role="img" aria-label={`Banc d’optique : écran à ${cm(s)} cm de la lentille`} style={{ display: 'block', background: '#fff', border: `1.5px solid ${KIT.bord}`, borderRadius: 10 }}>
       <line x1="8" y1={AXE} x2="692" y2={AXE} stroke="#0f172a" strokeWidth="1.5" strokeDasharray="10 5"/>
       <line x1="30" y1="290" x2="690" y2="290" stroke="#0f172a" strokeWidth="3"/>
       {Array.from({ length: 38 }, (_, k) => k).map(k => <g key={k}><line x1={XL + PXB * k} y1="290" x2={XL + PXB * k} y2={k % 5 === 0 ? 304 : 298} stroke="#0f172a" strokeWidth="1.5"/>
@@ -90,14 +99,41 @@ function Banc({ f, s, reveler }) {
           <polygon points={`44,${AXE - h} 33,${AXE - h - 5} 33,${AXE - h + 5}`} fill={C_RAY}/></g>; })}
       <line x1={XL} y1={AXE - 62} x2={XL} y2={AXE + 62} stroke="#0369a1" strokeWidth="5"/>
       <polygon points={`${XL},${AXE - 70} ${XL - 7},${AXE - 56} ${XL + 7},${AXE - 56}`} fill="#0369a1"/><polygon points={`${XL},${AXE + 70} ${XL - 7},${AXE + 56} ${XL + 7},${AXE + 56}`} fill="#0369a1"/>
-      <text x="14" y={AXE + 102} fontSize="24" fontWeight="700" fill="#0369a1">lentille (f′ inconnue)</text>
+      <text x="14" y={AXE + 102} fontSize="24" fontWeight="700" fill="#0369a1">{poignee ? 'lentille' : 'lentille (f′ inconnue)'}</text>
       <line x1={xs} y1={AXE - 62} x2={xs} y2={AXE + 62} stroke="#0f172a" strokeWidth="2.5"/><rect x={xs} y={AXE - 62} width="9" height="124" fill="#e2e8f0" stroke="#0f172a" strokeWidth="2"/>
-      <rect x={xs - 2} y={AXE - demi} width="13" height={2 * demi} rx="3" fill="#fde047" stroke={C_RAY} strokeWidth="2"/>
+      <rect className={lum && nette ? 'ln-nette' : undefined} x={xs - 2} y={AXE - demi} width="13" height={2 * demi} rx="3" fill="#fde047" stroke={C_RAY} strokeWidth="2"/>
       <text x={xs + 4} y={AXE - 70} textAnchor="middle" fontSize="24" fontWeight="700">écran</text>
       <text x="14" y="28" fontSize="25" fontWeight="800" fill="#0f172a">Écran à s = {cm(s)} cm de la lentille</text>
       <text x="14" y="58" fontSize="23" fontWeight="700" fill={nette ? VERT : ORANGE}>Tache sur l’écran : {nette ? 'très petite, quasi un point' : demi > 18 ? 'grande' : 'moyenne'}</text>
       {reveler && <g><circle cx={xf} cy={AXE} r="6" fill={C_F} stroke="#fff" strokeWidth="1.5"/><text x={xf} y={AXE + 24} textAnchor="middle" fontSize="26.5" fontWeight="800" fill={C_F}>F′ : f′ = {cm(f)} cm</text></g>}
+      {lum && <CouchePhotons chemins={[-28, -14, 0, 14, 28].map(h => ({ c: C_RAY, pts: [[20, AXE - h], [XL, AXE - h], h === 0 ? [xs, AXE] : [xs, AXE - h * (1 - s / f)]] }))} lum={{ ...lum, k: kPhoton() }}/>}
+      {poignee && <g>
+        <line x1={xs + 4} y1={AXE + 62} x2={xs + 4} y2={262 - 14 * poignee.g} stroke="#475569" strokeWidth="3" strokeDasharray="5 4"/>
+        <Poignee x={xs + 4} y={262} g={poignee.g} coul="#475569" label="Écran (position s, en cm)" valeur={s} vmin={2} vmax={32} texte={`${cm(s)} cm`} touche={poignee.touche} onToucher={poignee.onToucher} pas={0.5}
+          lire={e => { const r = refSvg.current.getBoundingClientRect(); return ((e.clientX - r.left) * 700 / r.width - XL - 4) / PXB; }} set={poignee.set}
+          zones={[[xs - 30 * poignee.g, AXE - 62, 68 * poignee.g, 124]]}/>
+      </g>}
     </svg>);
+}
+
+// ---------- exploration animée : lumière qui circule, écran saisissable ----------
+const CSS_ANIM = `@media (prefers-reduced-motion: no-preference) {
+  .ln-verre { animation: ln-v 3.2s ease-in-out infinite; } @keyframes ln-v { 0%, 100% { opacity: 0; } 50% { opacity: .38; } }
+  .ln-nette { animation: ln-n 1.5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes ln-n { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.35); } }
+}`;
+function LunetteAnimee(props) {
+  const L = useHorloge(T_BOUCLE, true);
+  return (<div><style>{CSS_ANIM}</style><Lunette {...props} lum={{ t: L.t, mode: 'boucle' }}/><Commandes L={L}/></div>);
+}
+function BancAnime({ f, s, reveler, setS }) {
+  const L = useHorloge(T_BOUCLE, true), [touche, setTouche] = useState(false), ref = useRef(null);
+  const g = typeof window !== 'undefined' && window.innerWidth < 600 ? 1.9 : 1;
+  return (
+    <div><StyleAnim/><style>{CSS_ANIM}</style>
+      <Banc f={f} s={s} reveler={reveler} lum={{ t: L.t, mode: 'boucle' }} refSvg={ref} poignee={{ g, touche, onToucher: () => setTouche(true), set: v => setS(Math.round(Math.max(2, Math.min(32, v)) * 10) / 10) }}/>
+      <div style={{ fontSize: 13, color: KIT.txt2, margin: '8px 0 2px', lineHeight: 1.45 }}>Saisissez le rond <strong>↔</strong> sous l’<strong>écran</strong> pour le déplacer : la lumière suit.</div>
+      <Commandes L={L}/>
+    </div>);
 }
 
 // ---------- défis ----------
@@ -256,14 +292,14 @@ export function SimulationLentille() {
   const bascule = (label, cle) => <button onClick={() => setLe(l => ({ ...l, [cle]: !l[cle] }))} style={stylePetitBouton(Le[cle], '#334155')}>{Le[cle] ? '☑' : '☐'} {label}</button>;
   const bancPanel = (
     <div>
-      <Banc f={bancF} s={B.s} reveler={B.reveler && !enDefi}/>
+      {enExplore ? <BancAnime f={bancF} s={B.s} reveler={B.reveler} setS={v => setB(b => ({ ...b, s: v }))}/> : <Banc f={bancF} s={B.s} reveler={B.reveler && !enDefi}/>}
       <div style={{ marginTop: 8 }}>{curs('Position de l’écran s', B.s, 2, 32, 0.1, v => setB(b => ({ ...b, s: Math.round(v * 10) / 10 })), `${cm(B.s)} cm`)}</div>
       {!enDefi && <div style={{ marginTop: 6 }}><button onClick={() => setB(b => ({ ...b, reveler: !b.reveler }))} style={stylePetitBouton(B.reveler, '#334155')}>{B.reveler ? 'Cacher' : 'Révéler'} f′</button>
         {!enGuide && <button onClick={() => setB({ f: alea(FOCALES.filter(x => x !== B.f)), s: 5, reveler: false })} style={{ ...styleBouton(false), marginLeft: 6 }}><Pic n="refresh"/>Autre lentille</button>}</div>}
     </div>);
   const lentillePanel = (
     <div>
-      <Lunette L={L} normales={Le.normales} mince={Le.mince} foyers={Le.foyers} ideale={Le.ideale}/>
+      {enExplore ? <LunetteAnimee L={L} normales={Le.normales} mince={Le.mince} foyers={Le.foyers} ideale={Le.ideale}/> : <Lunette L={L} normales={Le.normales} mince={Le.mince} foyers={Le.foyers} ideale={Le.ideale}/>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}><span style={{ fontSize: 13, fontWeight: 700, color: KIT.txt2 }}>Lentille :</span>
         {[['plano', 'plan-convexe'], ['bi', 'biconvexe']].map(([k, l]) => <button key={k} onClick={() => setLe(x => ({ ...x, type: k }))} style={stylePetitBouton(Le.type === k, '#0b4f94')}>{l}</button>)}
         {bascule('normales', 'normales')}{bascule('foyers F, F′', 'foyers')}{bascule('schéma lentille mince', 'mince')}{bascule('lentille idéale (tous les rayons au foyer)', 'ideale')}</div>
