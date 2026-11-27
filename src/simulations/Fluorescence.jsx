@@ -5,7 +5,7 @@ import { Pic } from "../Pictos";
 import * as M from "./fluoModele";
 import { QCM } from "./fluoQcm";
 import { SceneJablonski, SceneEmission, SceneSpectresFluo, SvgCarteJablonski, SvgCarteTemps, SvgCarteBilanFluo } from "./FluoSchemas";
-import { SceneVibronique, SceneHistogramme, CommandesTirages, VueTirages } from "./FluoTirages";
+import { SceneVibronique, SceneHistogramme, CommandesTirages } from "./FluoTirages";
 import { useTirages } from "./fluoTiragesHook";
 import * as X from "./fluoTirages";
 import { VueDispositif } from "./FluoDispositif";
@@ -104,7 +104,7 @@ export function SimulationFluorescence() {
     { id: 'raies', titre: 'Pourquoi une bande large ?', focus: ['scene', 'curseur', 'mesures'],
       texte: <>Le spectre d’émission n’est pas une raie fine à une seule longueur d’onde : c’est une <strong>bande large</strong>. Complétez-le jusqu’à environ 500 photons si besoin, puis comparez sa largeur aux flèches de fluorescence du diagramme : la molécule retombe sur plusieurs sous-niveaux de vibration de S₀, donc tous les photons émis n’ont pas la même énergie. La courbe pointillée, qu’on peut afficher en exploration, montre ce que donnerait un très grand nombre de photons.</>,
       tache: { type: 'qcm', q: 'Pourquoi le spectre d’émission forme-t-il une bande large et non une raie unique ?', ...QCM.raies,
-        expl: 'La bande vient des retours de S₁ (bas du niveau) vers les différents sous-niveaux de vibration de S₀ : chaque retour émet un photon d’énergie différente. En solution, ces sous-niveaux sont trop proches et trop élargis pour qu’on distingue des pics : on observe une bande large.', indice: 'Comparez le nombre de flèches de fluorescence du diagramme et la largeur de la bande.' } },
+        expl: 'La bande rassemble les retours de S₁ (bas du niveau) vers les différents sous-niveaux de vibration de S₀ : chaque retour émet un photon d’énergie différente. En solution, chaque raie est en plus élargie par l’entourage de solvant, différent d’une molécule à l’autre, et une vraie molécule a de nombreux modes de vibration : les raies se fondent en une bande. Une molécule rigide dans un solvant apolaire, ou un gaz très froid, laisse voir la structure (exploration, « Du photon au spectre »).', indice: 'Comparez le nombre de flèches de fluorescence du diagramme et la largeur de la bande.' } },
     { id: 'kasha', titre: 'Et si l’on excite à une autre longueur d’onde ?', focus: ['scene', 'curseur', 'mesures'],
       texte: <>Les photons de 331{NB}nm sont plus énergétiques que ceux de 350{NB}nm : ils portent la molécule sur un autre sous-niveau de S₁. Envoyez 300 photons à 350{NB}nm, notez l’allure du spectre d’émission, puis changez la longueur d’onde d’excitation à 331{NB}nm (le spectre est effacé à chaque changement) et envoyez 300 photons. Observez les deux spectres.</>,
       tache: { type: 'qcm', q: 'Quand on change la longueur d’onde d’excitation (dans la bande d’absorption), le spectre d’émission…', ...QCM.kasha,
@@ -208,12 +208,12 @@ export function SimulationFluorescence() {
   // ---------- exploration : trois vues, chacune « tout visible d'un coup » ----------
   const pilules = (
     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      {[['temps', 'Le diagramme dans le temps'], ['dispositif', 'Du photon au spectre'], ['tirages', 'Photon par photon']].map(([k, l]) => <button key={k} onClick={() => { if (k !== 'tirages') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
+      {[['temps', 'Le diagramme dans le temps'], ['dispositif', 'Du photon au spectre']].map(([k, l]) => <button key={k} onClick={() => { if (k !== 'tirages') te.setLecture(false); setEx(e => ({ ...e, onglet: k })); }} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
     </div>);
   const voletScene = (
     <div style={styleBoite}>
       {pilules}
-      {ex.onglet === 'dispositif' ? <VueDispositif/> : ex.onglet === 'tirages' ? <VueTirages tir={te}/> : <VueTemps/>}
+      {ex.onglet === 'dispositif' ? <VueDispositif/> : <VueTemps/>}
     </div>);
   const aEssayer = (
     <ul style={liste}>
@@ -224,8 +224,9 @@ export function SimulationFluorescence() {
       <li>Du photon au spectre : en « Émission », comparez la flèche d’absorption et la flèche d’émission du diagramme. Laquelle est la plus longue ? Que devient l’énergie manquante ?</li>
       <li>Du photon au spectre : en « Excitation », la courbe enregistrée suit-elle la bande d’absorption ? Pourquoi ?</li>
       <li>Du photon au spectre : avec B, la phosphorescence est-elle à une longueur d’onde plus petite ou plus grande que la fluorescence ? Que dit le diagramme ?</li>
-      <li>Photon par photon : envoyez 1 000 photons à 350 nm, puis à 331 nm. Les spectres d’émission diffèrent-ils ? Pourquoi ?</li>
-      <li>Photon par photon : excitez à 410 nm, en bord de bande d’absorption. Que devient la part de photons absorbés ?</li>
+      <li>Du photon au spectre : passez en « Compter les photons », émission, et envoyez 1 000 photons. Le spectre compté rejoint-il la courbe ? Changez l’excitation : la forme change-t-elle ?</li>
+      <li>Du photon au spectre : passez de « Bande » à « Structure » puis à « Raies ». D’où viennent les pics ? Avec les raies, réglez les fentes à 10 nm : que voit l’appareil ?</li>
+      <li>Du photon au spectre : en « Excitation », regardez le graphique du haut pendant le balayage : la bande d’émission change-t-elle de forme ou seulement de hauteur ?</li>
     </ul>);
   const retenirExplore = (
     <ARetenir>
@@ -246,8 +247,8 @@ export function SimulationFluorescence() {
       <li><strong>Molécules A et B</strong> : schématiques. Durées de vie : S₁ 5 ns (A) ou 2 ns (B) ; T₁ 1 s (B). Décroissance exponentielle, émission jugée visible au-dessus de 1 % de l’intensité initiale.</li>
       <li><strong>Énergies</strong> : E(eV) × λ(nm) = 1243 (constantes arrondies). L’énergie du photon émis est assimilée à un écart entre niveaux, en négligeant la relaxation vibrationnelle dans l’état d’arrivée.</li>
       <li><strong>Spectres</strong> : allures gaussiennes schématiques, de largeur arbitraire ; les intensités relatives ne sont pas à l’échelle.</li>
-      <li><strong>Photon par photon</strong> : modèle vibronique schématique à 5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon à l’absorption et à l’émission (spectres en image miroir) ; écart entre sous-niveaux 0,21 eV (A) ou 0,15 eV (B) ; chaque transition élargie en bande (écart-type 0,14 eV : en solution, les sous-niveaux de vibration ne sont pas résolus, on observe des bandes) ; molécule initialement au niveau v = 0 de S₀ ; relaxation vibrationnelle complète avant émission (règle de Kasha) ; probabilité d’absorption au sommet de la bande : 90 % ; rendements fixés (A : 70 % de fluorescence ; B : 15 % de fluorescence, 60 % de croisement intersystème, puis 55 % de phosphorescence). Les nombres de photons sont des tirages aléatoires : deux séries ne donnent jamais exactement le même spectre.</li>
-      <li><strong>Du photon au spectre</strong> : montage schématique vu de dessus (monochromateurs de fente ± 6 nm) ; diagramme d’énergie à l’échelle, la longueur de chaque flèche est l’énergie du photon (E = 1243 / λ) ; bandes de largeur 0,14 eV ; en absorption, absorbance maximale 0,8 (cuve de 1 cm) ; en fluorimétrie, solution diluée (A &lt; 0,1) : le signal est proportionnel à l’absorbance à λ d’excitation, d’où un spectre d’excitation qui a la forme de la bande d’absorption ; intensités relatives, sans bruit ; couleurs des faisceaux = couleurs réelles (UV représenté en violet) ; en phosphorescence, la population de T₁ à l’arrêt n’est pas modélisée.</li>
+      <li><strong>Tirages du parcours guidé</strong> : modèle vibronique schématique à 5 sous-niveaux de vibration, mêmes facteurs de Franck-Condon à l’absorption et à l’émission (spectres en image miroir) ; écart entre sous-niveaux 0,21 eV (A) ou 0,15 eV (B) ; chaque transition élargie en bande (écart-type 0,14 eV : en solution, les sous-niveaux de vibration ne sont pas résolus, on observe des bandes) ; molécule initialement au niveau v = 0 de S₀ ; relaxation vibrationnelle complète avant émission (règle de Kasha) ; probabilité d’absorption au sommet de la bande : 90 % ; rendements fixés (A : 70 % de fluorescence ; B : 15 % de fluorescence, 60 % de croisement intersystème, puis 55 % de phosphorescence). Les nombres de photons sont des tirages aléatoires : deux séries ne donnent jamais exactement le même spectre.</li>
+      <li><strong>Du photon au spectre</strong> : montage schématique vu de dessus ; diagramme d’énergie à l’échelle (longueur de chaque flèche = énergie du photon, E = 1243 / λ). Un seul mode de vibration (en réalité, une molécule de N atomes en a 3N − 6). Largeur de chaque raie (écart-type) : 0,012 eV « gaz très froid », 0,05 eV « solvant apolaire, molécule rigide », 0,14 eV « solution usuelle » ; en solution, l’élargissement vient surtout de l’entourage de solvant, différent pour chaque molécule, et des nombreux modes de vibration ; l’agitation thermique y contribue indirectement (kT ≈ 0,025 eV). Fentes : le signal est la moyenne du spectre sur la bande passante (1, 5 ou 10 nm), intensités ramenées à la largeur de fente. Absorbance maximale 0,8 ; fluorimétrie en solution diluée (A &lt; 0,1, signal ∝ A). Comptage : en émission et en phosphorescence, un spectrographe à barrette de pixels compte chaque photon à sa longueur d’onde ; en excitation, la lampe envoie des longueurs d’onde au hasard et un coup est compté quand le photon émis passe la fenêtre de détection.</li>
       <li><strong>Hors modèle</strong> : désactivation non radiative S₁ → S₀ détaillée, extinction de fluorescence (quenching), effets de solvant, règles de sélection détaillées.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={!!ouv.hypo} onBascule={() => bascule('hypo')}>{hypotheses}</Section></div>);
