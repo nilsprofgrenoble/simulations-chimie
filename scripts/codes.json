@@ -3164,5 +3164,17 @@
  "77:plausible:gab-val-cascade": "VAL819",
  "77:plausible:gab-val-gabarit": "VAL820",
  "36:gab-filtrage": "REA232",
- "36:gab-cascade": "REA233"
+ "36:gab-cascade": "REA233",
+ "34:amp-sapp-gain.0": "SAPP703",
+ "34:amp-sapp-gain.1": "SAPP704",
+ "34:amp-sapp-plage.0": "SAPP705",
+ "34:amp-sapp-plage.1": "SAPP706",
+ "37:prevoir:amp-ana-ecretage": "ANA1412",
+ "37:prevoir:amp-ana-negatif": "ANA1413",
+ "37:prevoir:amp-ana-sat": "ANA1414",
+ "37:prevoir:amp-ana-continu": "ANA1415",
+ "77:plausible:amp-val-gain": "VAL821",
+ "77:plausible:amp-val-sat": "VAL822",
+ "36:amp-gain": "REA234",
+ "36:amp-decalage": "REA235"
 }

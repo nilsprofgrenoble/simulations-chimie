@@ -215,6 +215,7 @@ export const EXOS_DE_SIM = {
   312: [/(^|\.)tsol-/, /plausible\.tsol-/],
   316: [/(^|\.)filt-/, /plausible\.filt-/],
   317: [/(^|\.)gab-/, /plausible\.gab-/],
+  315: [/(^|\.)amp-/, /plausible\.amp-/],
   308: [/uvs-ana-ir-ester$/, /uvs-ana-oxydation$/, /plausible\.uvs-val-ir$/],
   307: [/uvs-ana-energie$/, /uvs-ana-lambdamax$/, /plausible\.uvs-val-energie$/, /plausible\.uvs-val-etalonnage$/, /(^|\.)uvs-sapp-/],
   270: [/(^|\.)fvi-/, /plausible\.fvi-/, /(^|\.)eul-/, /plausible\.eul-/],
