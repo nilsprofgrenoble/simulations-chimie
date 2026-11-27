@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { Formule, FormuleEnLigne, IndiceDefi, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
   BoutonsModes, ORANGE_GUIDE, Curseur, indicesProfond, lireNombre, proche } from "../commun";
 import { Pic } from "../Pictos";
+import { useHorloge, Commandes } from "./lentilleMinceAnim";
 import { puces } from "./Travail";
 import { FTemps, FTau, FSondes, FOscille, FDepass, FBilanRep } from "./ReponseSchemas";
 
@@ -111,7 +112,7 @@ function Lab({ x, y, pre, sub, post, fill, anchor = 'start', size = 12, bold }) 
   return <text x={x} y={y} fontSize={size} fill={fill} textAnchor={anchor} fontWeight={bold ? 700 : 400}>{pre}{sub && <tspan dy="3" fontSize={size - 3}>{sub}</tspan>}{post && <tspan dy={sub ? -3 : 0}>{post}</tspan>}</text>;
 }
 // c : calques {niveaux, delta, bande, t0, tR, entree, modele (τ ou null)} ; ctx : {y, grand, yU, tU}
-function Graphe({ s, an, bruit, c = {}, ctx }) {
+function Graphe({ s, an, bruit, c = {}, ctx, rejeu = null }) {
   const [cur, setCur] = useState(null);
   const tmax = fenetre(s, an), N = 320, pts = mesures(s, bruit, tmax, N);
   const vals = [s.ini, s.fin, an.ymax], amp = (bruit / 100) * an.aD * Math.sqrt(3);
@@ -177,7 +178,8 @@ function Graphe({ s, an, bruit, c = {}, ctx }) {
         <line x1={px(s.t0)} x2={px(an.t1)} y1={yTR} y2={yTR} stroke={C_TR} strokeWidth="2" markerStart="url(#rp-fl)" markerEnd="url(#rp-fl)"/>
         <Lab x={(px(s.t0) + px(an.t1)) / 2} y={yTR - 6} pre="t" sub="R" fill={C_TR} anchor="middle" size={14} bold/></g>}
 
-      {pts.map((p, i) => <circle key={i} cx={px(p.t)} cy={py(p.y)} r="1.7" fill={C_PTS}/>)}
+      {pts.filter(p => rejeu === null || p.t <= rejeu * tmax).map((p, i) => <circle key={i} cx={px(p.t)} cy={py(p.y)} r="1.7" fill={C_PTS}/>)}
+      {rejeu !== null && (() => { const vis = pts.filter(p => p.t <= rejeu * tmax), q = vis[vis.length - 1] || pts[0]; return <circle cx={px(q.t)} cy={py(q.y)} r="7" fill="#f59e0b" stroke="#0f172a" strokeWidth="2"/>; })()}
       {mod && <path d={chemin} fill="none" stroke={C_MOD} strokeWidth="2.2" strokeDasharray="7 4"/>}
       {eti.map((e, i) => <Lab key={i} x={W - MR + 6} y={ey[i]} pre={e.pre} sub={e.sub} post={e.post} fill={e.fill} size={14} bold/>)}
       {pc && <g pointerEvents="none">
@@ -260,6 +262,7 @@ export function SimulationReponse() {
   const [g1, setG1] = useEtatPersistant('reponse-guide-v1', VIDE), [g2, setG2] = useEtatPersistant('reponse-guide-p2', VIDE);
   const [parcBrut, setParc] = useEtatPersistant('reponse-parcours-choix', 1);
   const parc = parcBrut === 2 ? 2 : 1;
+  const LA = useHorloge(6.4, true), rejeuE = mode === 'explore' && (LA.joue || LA.t > 0) ? Math.min(1, LA.t / 5) : null;
   const guide = parc === 2 ? g2 : g1, setGuide = parc === 2 ? setG2 : setG1;
   const [rg, setRg] = useEtatPersistant('reponse-guide-reglage-v1', { tau: 3 });
   const [ck, setCk] = useState('ctn');
@@ -608,7 +611,8 @@ export function SimulationReponse() {
   const vueExplore = (
     <div style={{ ...styleBoite }}>
       <div style={{ fontWeight: 700, fontSize: 14, color: KIT.txt, marginBottom: 6 }}>{ctxE.nom}</div>
-      <Graphe s={sysE} an={anE} bruit={bruit} c={calE} ctx={ctxE}/>
+      <Graphe s={sysE} an={anE} bruit={bruit} c={calE} ctx={ctxE} rejeu={rejeuE}/>
+      <div style={{ fontSize: 12.5, color: KIT.txt2, marginTop: 6, lineHeight: 1.45 }}>Rejouez l’échelon : le rond orange suit la mesure au fil du temps (c’est le capteur qui répond).</div><Commandes L={LA}/>
       <LegendeGraphe modele={!!calE.modele}/>
     </div>
   );
