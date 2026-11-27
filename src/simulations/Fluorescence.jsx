@@ -7,6 +7,7 @@ import { QCM } from "./fluoQcm";
 import { SceneJablonski, SceneEmission, SvgCarteJablonski, SvgCarteTemps, SvgCarteBilanFluo } from "./FluoSchemas";
 import { VueDispositif } from "./FluoDispositif";
 import { VueTemps } from "./FluoTemps";
+import { Onglets } from "./FluoUI";
 import * as D from "./fluoDispositif";
 
 const SIM_ID = 301, CLE_GUIDE = 'fluo-guide-v1';
@@ -93,7 +94,7 @@ export function SimulationFluorescence() {
         expl: 'Deux secondes après l’arrêt, la fluorescence (durée de l’ordre de la nanoseconde) est éteinte depuis longtemps : une lueur persistante est de la phosphorescence.', indice: 'Comparez 2 s aux durées caractéristiques de chaque émission.' } },
     { id: 'tirem', titre: 'Un spectre d’émission, photon après photon', focus: ['scene', 'curseur', 'mesures'],
       texte: <>On compte maintenant les photons un par un. La lampe envoie des photons de 350{NB}nm sur la molécule A. Le hasard décide si chaque photon est absorbé ; la molécule perd de l’énergie par relaxation vibrationnelle (RV), puis émet un photon en retombant sur <strong>un sous-niveau de vibration de S₀ tiré au hasard</strong>. Ce photon traverse le réseau et tombe sur le pixel de sa longueur d’onde : le <strong>spectre d’émission</strong> se construit coup par coup. Envoyez d’abord quelques photons un par un et suivez leurs flèches sur le diagramme ②.</>,
-      tache: { type: 'action', ok: nbPh >= 100, label: 'Envoyer au moins 100 photons', faire: null, consigne: 'Envoyez au moins 100 photons avec les boutons « 1 photon » ou « × 100 »' } },
+      tache: { type: 'action', ok: nbPh >= 100, label: 'Envoyer au moins 100 photons', faire: null, consigne: 'Envoyez au moins 100 photons avec « Un photon à la fois » ou les boutons « d’un coup » (1, × 100…)' } },
     { id: 'raies', titre: 'Pourquoi une bande large ?', focus: ['scene', 'curseur', 'mesures'],
       texte: <>Complétez le spectre jusqu’à environ 2 000 photons : c’est une <strong>bande large</strong>, pas une raie unique. Essayez ensuite les réglages de l’échantillon : « Raies » (gaz très froid), « Structure » (molécule rigide, solvant apolaire) puis « Bande » (solution usuelle). Le comptage repart de zéro à chaque changement.</>,
       tache: { type: 'qcm', q: 'Pourquoi le spectre d’émission forme-t-il une bande large et non une raie unique ?', ...QCM.raies,
@@ -185,10 +186,8 @@ export function SimulationFluorescence() {
     </span>);
 
   // ---------- exploration : trois vues, chacune « tout visible d'un coup » ----------
-  const pilules = (
-    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
-      {[['temps', 'Le diagramme dans le temps'], ['dispositif', 'Du photon au spectre']].map(([k, l]) => <button key={k} onClick={() => setEx(e => ({ ...e, onglet: k }))} aria-pressed={ex.onglet === k} style={stylePetitBouton(ex.onglet === k, '#16a34a')}>{l}</button>)}
-    </div>);
+  const pilules = <Onglets valeur={ex.onglet === 'dispositif' ? 'dispositif' : 'temps'} onChange={k => setEx(e => ({ ...e, onglet: k }))}
+    options={[['temps', 'Dans le temps', 'après un flash, molécule par molécule'], ['dispositif', 'Du photon au spectre', 'l’appareil, la molécule, le spectre']]}/>;
   const voletScene = (
     <div style={styleBoite}>
       {pilules}
@@ -203,7 +202,7 @@ export function SimulationFluorescence() {
       <li>Du photon au spectre : en « Émission », comparez la flèche d’absorption et la flèche d’émission du diagramme. Laquelle est la plus longue ? Que devient l’énergie manquante ?</li>
       <li>Du photon au spectre : en « Excitation », la courbe enregistrée suit-elle la bande d’absorption ? Pourquoi ?</li>
       <li>Du photon au spectre : avec B, la phosphorescence est-elle à une longueur d’onde plus petite ou plus grande que la fluorescence ? Que dit le diagramme ?</li>
-      <li>Du photon au spectre : passez en « Compter les photons », émission, et envoyez 1 000 photons. Le spectre compté rejoint-il la courbe ? Changez l’excitation : la forme change-t-elle ?</li>
+      <li>Du photon au spectre : passez la mesure en « Photon par photon », spectre d’émission, et envoyez 1 000 photons. Le spectre compté rejoint-il la courbe ? Changez l’excitation : la forme change-t-elle ?</li>
       <li>Du photon au spectre : passez de « Bande » à « Structure » puis à « Raies ». D’où viennent les pics ? Avec les raies, réglez les fentes à 10 nm : que voit l’appareil ?</li>
       <li>Du photon au spectre : en « Excitation », regardez le graphique du haut pendant le balayage : la bande d’émission change-t-elle de forme ou seulement de hauteur ?</li>
     </ul>);
