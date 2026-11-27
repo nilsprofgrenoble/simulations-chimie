@@ -49,6 +49,8 @@ const emVrai = (mol, l, s) => emNm(mol, l, s) / maxSur(`e|${mol.id}|${s}`, x => 
 const phVrai = (mol, l, s) => (mol.T ? phosNm(mol, l, s) / maxSur(`p|${mol.id}|${s}`, x => phosNm(mol, x, s), 370, 660, pasDe(s) / 2) : 0);
 export const emRel = (mol, lam, opt = OPT0) => lisse(l => emVrai(mol, l, opt.sig), lam, opt.fente);       // forme de la bande d'émission (lampe allumée)
 export const phRel = (mol, lam, opt = OPT0) => lisse(l => phVrai(mol, l, opt.sig), lam, opt.fente);
+const flVrai = (mol, l, s) => fluoNm(mol, l, s) / maxSur(`f|${mol.id}|${s}`, x => fluoNm(mol, x, s), 370, 660, pasDe(s) / 2);
+export const fluoRel = (mol, lam, opt = OPT0) => lisse(l => flVrai(mol, l, opt.sig), lam, opt.fente);   // fluorescence seule
 // lamBal : longueur d'onde balayée ; fixe : longueur d'onde fixée (excitation pour 'em' et 'ph', détection pour 'ex')
 export function signal(mol, mode, lamBal, fixe, opt = OPT0) {
   if (mode === 'abs') return absRel(mol, lamBal, opt);
@@ -166,7 +168,7 @@ const memoF = new Map();
 export function forme(mol, quoi, opt = OPT0) {
   const cle = `${quoi}|${mol.id}|${opt.sig}|${opt.fente}`;
   if (memoF.has(cle)) return memoF.get(cle);
-  const [lo, hi] = quoi === 'abs' ? SCAN.abs : [370, 640], p = pasDe(opt.sig), f = quoi === 'abs' ? absRel : quoi === 'ph' ? phRel : emRel, out = [];
+  const [lo, hi] = quoi === 'abs' ? SCAN.abs : [370, 640], p = pasDe(opt.sig), f = quoi === 'abs' ? absRel : quoi === 'ph' ? phRel : quoi === 'fl' ? fluoRel : emRel, out = [];
   for (let l = lo; l <= hi + 1e-9; l += p) out.push({ lam: Math.round(l * 100) / 100, s: f(mol, l, opt) });
   if (memoF.size > 60) memoF.clear();
   memoF.set(cle, out);
