@@ -2521,6 +2521,46 @@ function genGabCascade() {
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3], retenir: ['Deux filtres en cascade : A = A₁ × A₂.', 'Un filtre passif atténue : A ≤ 1.'] };
 }
+function genAmpGain() {
+  let ue, A; do { ue = tire([2, 4, 5, 6, 8, 10]); A = tire([100, 200, 250, 400, 500]); } while (A === 5000 / ue);
+  const us = A * ue / 1000;
+  const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1), g0 = v => FM.nbf(v, 0);
+  const intro = `Un capteur délivre une tension qui varie de 0 à ${ue}${NB}mV. Elle est envoyée à un amplificateur à AOP de facteur d’amplification A = ${A}, puis à un convertisseur analogique-numérique qui lit de 0 à 5${NB}V.`;
+  const q1 = { id: 'm0', type: 'num', q: <>Quelle est la <b>valeur maximale Us,max</b> de la tension de sortie, en V ?</>, unite: 'V', vrai: us, tolRel: 0.03, csMin: 2,
+    aide: 'Us,max = A × Ue,max ; convertissez le résultat en volts.',
+    pieges: [[A * ue, 'Vous avez laissé le résultat en millivolts : il faut le convertir en volts (1 V = 1 000 mV).'], [ue / 1000, 'Vous avez donné Ue,max en volts : la sortie est multipliée par A.']],
+    expl: <>{A} × {ue}{NB}mV = {A * ue}{NB}mV = <b>{g(us)}{NB}V</b>.</> };
+  const q2 = { id: 'm1', type: 'num', q: <>Quel <b>pourcentage de la plage</b> du CAN (0 à 5{NB}V) le signal de sortie occupe-t-il ?</>, unite: '%', vrai: us / 5 * 100, tolRel: 0.03, csMin: 2,
+    aide: 'Pourcentage = Us,max ÷ 5 V × 100.',
+    pieges: [[us, 'Vous avez donné Us,max en volts : le pourcentage est Us,max ÷ 5 V × 100.'], [us / 5, 'Il manque le facteur 100 : une fraction de 0,2 correspond à 20 %.']],
+    expl: <>{g(us)} ÷ 5 × 100 = <b>{g0(us / 5 * 100)}{NB}%</b>.</> };
+  const q3 = { id: 'm2', type: 'num', q: <>Quel <b>facteur d’amplification</b> faudrait-il pour que Us,max atteigne exactement 5{NB}V ?</>, unite: '', vrai: 5000 / ue, tolRel: 0.03, csMin: 2,
+    aide: 'A = Us,max ÷ Ue,max, avec Ue,max converti en volts.',
+    pieges: [[5 / ue, 'Vous avez divisé 5 V par Ue,max exprimée en mV sans la convertir en volts.'], [A, 'Vous avez redonné le facteur d’amplification de l’énoncé.']],
+    expl: <>A = 5 ÷ {FM.nbf(ue / 1000, 3)} = <b>{g0(5000 / ue)}</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Us = A × Ue : penser à convertir les millivolts en volts.', 'Le CAN lit de 0 à 5 V : on règle A pour que Us,max soit proche de 5 V sans la dépasser.'] };
+}
+function genAmpDecalage() {
+  let ue, A, vdc, h;
+  do { ue = tire([4, 5, 8, 10, 12]); A = tire([100, 150, 200, 250, 300]); vdc = tire([2, 2.5, 3]); h = A * ue / 1000; } while (h < 0.6 || h > Math.min(vdc, 5 - vdc) - 0.2);
+  const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
+  const intro = `Un microphone délivre une tension alternative de −${ue}${NB}mV à +${ue}${NB}mV. Elle est multipliée par un amplificateur de facteur d’amplification A = ${A}, puis on lui ajoute une tension continue Vdc = ${g1(vdc)}${NB}V avant de l’envoyer à un CAN qui lit de 0 à 5${NB}V.`;
+  const q1 = { id: 'd0', type: 'num', q: <>Quelle est la <b>valeur maximale</b> de la tension envoyée au CAN, en V ?</>, unite: 'V', vrai: h + vdc, tolRel: 0.03, csMin: 2,
+    aide: 'Us,max = A × Ue,max + Vdc.',
+    pieges: [[h, 'Vous avez oublié d’ajouter la tension continue Vdc.'], [vdc + ue / 1000, 'Vous avez oublié de multiplier Ue,max par A.']],
+    expl: <>Us,max = {A} × {FM.nbf(ue / 1000, 3)} + {g1(vdc)} = {g(h)} + {g1(vdc)} = <b>{g(h + vdc)}{NB}V</b>.</> };
+  const q2 = { id: 'd1', type: 'num', q: <>Quelle est la <b>valeur minimale</b> de la tension envoyée au CAN, en V ?</>, unite: 'V', vrai: vdc - h, tolRel: 0.03, csMin: 2,
+    aide: 'Us,min = −A × Ue,max + Vdc.',
+    pieges: [[-h, 'Vous avez oublié d’ajouter la tension continue Vdc.'], [h + vdc, 'Vous avez donné la valeur maximale : le minimum se calcule avec −Ue,max.']],
+    expl: <>Us,min = −{g(h)} + {g1(vdc)} = <b>{g(vdc - h)}{NB}V</b>.</> };
+  const q3 = { id: 'd2', type: 'num', q: <>Quelle <b>amplitude maximale</b> pourrait avoir la sortie amplifiée sans sortir de la plage du CAN, avec cette tension continue ? (en V)</>, unite: 'V', vrai: Math.min(vdc, 5 - vdc), tolRel: 0.03, csMin: 2,
+    aide: 'Le signal oscille autour de Vdc : l’amplitude est limitée par le bord de la plage le plus proche (0 V ou 5 V).',
+    pieges: [[5, 'Vous avez donné la largeur de la plage : le signal oscille autour de Vdc, il ne peut pas aller aussi loin des deux côtés.']],
+    expl: <>Le bord le plus proche de {g1(vdc)}{NB}V est à {g1(Math.min(vdc, 5 - vdc))}{NB}V : l’amplitude maximale est <b>{g1(Math.min(vdc, 5 - vdc))}{NB}V</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Us = A × Ue + Vdc : la tension continue décale tout le signal.', 'Pour que tout le signal tienne dans la plage, Vdc − A × Ue,max ≥ 0 et Vdc + A × Ue,max ≤ 5 V.'] };
+}
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
@@ -7006,6 +7046,8 @@ export const FAMILLES = [
   { id: 'hyd-fenetre', groupe: 'Formules', titre: 'Séparer deux cations par le pH : fenêtre de séparation (terminale STL)', gen: genHydFenetre, domaine: 'Précipitation des hydroxydes et pH' },
   { id: 'gab-filtrage', groupe: 'Formules', titre: 'Filtre passe-bas : raie de sortie et composante continue (terminale STL)', gen: genGabFiltrage, domaine: 'Filtrage et amplification de tension' },
   { id: 'gab-cascade', groupe: 'Formules', titre: 'Passe-bande en cascade : facteur d’amplification (terminale STL)', gen: genGabCascade, domaine: 'Filtrage et amplification de tension' },
+  { id: 'amp-gain', groupe: 'Formules', titre: 'Amplificateur : tension de sortie et plage du CAN (terminale STL)', gen: genAmpGain, domaine: 'Filtrage et amplification de tension' },
+  { id: 'amp-decalage', groupe: 'Formules', titre: 'Tension continue ajoutée : centrer un signal dans la plage du CAN (terminale STL)', gen: genAmpDecalage, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },

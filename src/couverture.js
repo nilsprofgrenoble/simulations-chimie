@@ -135,7 +135,7 @@ export const COUVERTURE = [
     { th: 'Ondes', t: 'Transmettre l’information : câble, ondes en champ libre, fibre optique', e: 'avenir' },
     { th: 'Ondes', t: 'Stocker, lire et afficher l’information : supports optiques, cristaux liquides', e: 'avenir' },
     { th: 'Systèmes et procédés', t: 'Chaîne d’informations : capteur, conditionneur, convertisseur analogique-numérique', e: 'ok', chap: 'tstl-signaux' },
-    { th: 'Systèmes et procédés', t: 'Filtrage et amplification de tension', e: 'partiel', chap: 'tstl-signaux', reste: 'amplification par un montage à amplificateur opérationnel' },
+    { th: 'Systèmes et procédés', t: 'Filtrage et amplification de tension', e: 'ok', chap: 'tstl-signaux' },
     { th: 'Systèmes et procédés', t: 'Contrôle d’un système : champ magnétique, moteur pas à pas', e: 'ok', chap: 'tstl-controle' },
     { th: 'Systèmes et procédés', t: 'Régulation : TOR, proportionnelle, PI', e: 'ok', chap: 'tstl-regulation' },
     { th: 'Systèmes et procédés', t: 'Échangeurs, transferts thermiques et chaudières', e: 'ok', chap: 'tstl-thermique' },

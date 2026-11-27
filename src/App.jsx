@@ -265,6 +265,7 @@ const SimulationHyd = paresseux(() => import("./simulations/Hyd"), "SimulationHy
 const SimulationTsol = paresseux(() => import("./simulations/Tsol"), "SimulationTsol");
 const SimulationFiltre = paresseux(() => import("./simulations/Filtre"), "SimulationFiltre");
 const SimulationGab = paresseux(() => import("./simulations/Gab"), "SimulationGab");
+const SimulationAmp = paresseux(() => import("./simulations/Amp"), "SimulationAmp");
 const SimulationChuteVisqueuse = paresseux(() => import("./simulations/ChuteVisqueuseDuo"), "SimulationChuteVisqueuseDuo");
 const SimulationPenteXt = paresseux(() => import("./simulations/PenteXt"), "SimulationPenteXt");
 const SimulationVecteursVAStl = paresseux(() => import("./simulations/VecteursVAStl"), "SimulationVecteursVAStl");
@@ -721,6 +722,7 @@ const SIMULATIONS = [
   { id:312, label:"Chaud, froid : solubilité, température et recristallisation", niveau:"TSTL", icon:"🧊", color:"#b45309", component: SimulationTsol },
   { id:316, label:"Filtres passifs : passe-bas, passe-haut et fréquence de coupure", niveau:"TSTL", icon:"📶", color:"#0f766e", component: SimulationFiltre },
   { id:317, label:"Choisir un filtre : spectre, bande passante et gabarit", niveau:"TSTL", icon:"📊", color:"#7c3aed", component: SimulationGab },
+  { id:315, label:"Amplifier une tension : de quelques mV au CAN", niveau:"TSTL", icon:"📈", color:"#0891b2", component: SimulationAmp },
   { id:310, label:"Radioactivité : désintégrations, loi de décroissance et activité", niveau:"TSTL", icon:"☢️", color:"#b45309", component: SimulationRadPcm },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
