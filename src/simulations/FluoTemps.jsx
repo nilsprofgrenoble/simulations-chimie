@@ -28,7 +28,7 @@ const NG = 60, LARG = 0.35;                                   // nombre de grain
 // places dans chaque tas (rang 0 = en bas à gauche) : 0 = haut de S₂, 1 = bas de S₁, 2 = T₁, 3 = S₀
 const ZONES = [k => [104 + (k % 14) * 6.4, 79 - Math.floor(k / 14) * 6.4], k => [104 + (k % 14) * 6.4, 147 - Math.floor(k / 14) * 6.4],
   k => [262 + (k % 14) * 9.5, 196 - Math.floor(k / 14) * 6.4], k => [66 + (k % 24) * 13.8, 286 - Math.floor(k / 24) * 6.4], k => [66 + (k % 24) * 13.8, 286 - Math.floor(k / 24) * 6.4]];   // 4 : S₀ avant le flash
-// trajets : les grains descendent le long des flèches du diagramme
+// trajets : les grains suivent les flèches du diagramme (un grain = une molécule, sa hauteur = son état)
 const CHEMINS = { '40': [[96, 280], [96, 70]], '01': [[150, 86], [150, 136]], '13': [[190, 156], [190, 282]], '12': [[208, 154], [250, 182]], '23': [[346, 204], [346, 282]] };
 const COUL_G = { '40': COL.abs, '01': '#64748b', '13': COL.fluo, '12': COL.cis, '23': COL.phos };
 const cacheG = {};
@@ -186,13 +186,13 @@ function Courbes({ mol, lt, onLt, invite, vif }) {
 
 // ---------- vue complète ----------
 const phrase = (mol, lt, P) => {
-  if (lt < -13.5) return 'Le flash est absorbé en 10⁻¹⁵ s environ : les molécules montent dans des niveaux de vibration élevés de S₁ ou de S₂.';
-  if (lt < -11.5) return 'Relaxation vibrationnelle et conversion interne (≈ 10⁻¹² s) : les molécules descendent au bas de S₁ sans émettre de photon (chaleur cédée au solvant).';
+  if (lt < -13.5) return 'Le flash est absorbé en 10⁻¹⁵ s environ : les molécules passent dans un état excité (S₁ ou S₂), dans un sous-niveau de vibration élevé.';
+  if (lt < -11.5) return 'Relaxation vibrationnelle et conversion interne (≈ 10⁻¹² s) : les molécules perdent leur énergie de vibration (chaleur cédée au solvant) et se retrouvent au bas de S₁, sans émettre de photon.';
   const ns = `${Math.round(mol.tauS1 * 1e9)}${NB}ns`;
-  if (P.flF > 0.08) return `Les molécules quittent S₁ une à une, à des instants tirés au hasard (durée de vie ${ns}) : chacune qui descend vers S₀ émet un photon de fluorescence${mol.tauT1 ? ', les autres passent dans T₁ par croisement intersystème' : ''}.`;
+  if (P.flF > 0.08) return `Les molécules quittent S₁ une à une, à des instants tirés au hasard (durée de vie ${ns}) : chacune qui revient à l’état fondamental S₀ émet un photon de fluorescence${mol.tauT1 ? ', les autres passent dans T₁ par croisement intersystème' : ''}.`;
   if (P.S1 > 0.05) return `Les molécules attendent au bas de S₁ : chacune le quittera à un instant tiré au hasard, en moyenne au bout de ${ns}. Pour l’instant, presque aucune n’a émis.`;
   if (P.flP > 0.08) return `Les molécules quittent T₁ une à une : chacune émet un photon de phosphorescence. Le retour T₁ → S₀ change le spin, il est lent${lt > Math.log10(0.05) ? ' : on le voit à l’œil après l’arrêt du flash' : ''}.`;
-  if (P.T1 > 0.01) return 'La fluorescence est finie. Des molécules sont piégées dans T₁ et attendent : le retour T₁ → S₀ change le spin, il est lent.';
+  if (P.T1 > 0.01) return 'La fluorescence est finie. Des molécules sont restées dans l’état triplet T₁ et y attendent : le retour T₁ → S₀ change le spin, il est lent.';
   return 'Toutes les molécules sont revenues dans S₀ : l’échantillon n’émet plus rien.';
 };
 // ---------- temps réel : la lampe éclaire en continu, puis on l'arrête ----------

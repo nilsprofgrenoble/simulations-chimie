@@ -5,7 +5,7 @@ import { energieEV } from './lumMatModele.js';
 export const DUREES = { absorption: 1e-15, rv: 1e-12, ci: 1e-12, cis: 1e-8, fluo: 1e-9, phos: 1 };           // secondes (ordres de grandeur du cours ; phosphorescence 10⁻² à 10² s)
 export const PROCESSUS = [
   { id: 'absorption', nom: 'Absorption', duree: '10⁻¹⁵ s', radiatif: true, desc: 'un photon est absorbé : un électron passe à un état excité (S₁ ou S₂)' },
-  { id: 'rv', nom: 'Relaxation vibrationnelle (RV)', duree: '10⁻¹² s', radiatif: false, desc: 'la molécule descend les sous-niveaux de vibration en cédant de la chaleur au milieu' },
+  { id: 'rv', nom: 'Relaxation vibrationnelle (RV)', duree: '10⁻¹² s', radiatif: false, desc: 'la molécule perd son énergie de vibration, sous-niveau après sous-niveau, en cédant de la chaleur au milieu' },
   { id: 'ci', nom: 'Conversion interne (CI)', duree: '10⁻¹² s', radiatif: false, desc: 'passage de S₂ à S₁ sans émission de photon' },
   { id: 'fluo', nom: 'Fluorescence', duree: '10⁻⁹ s', radiatif: true, desc: 'retour de S₁ à S₀ avec émission d’un photon' },
   { id: 'cis', nom: 'Croisement intersystème (CIS)', duree: '10⁻⁸ s', radiatif: false, desc: 'passage de S₁ à T₁ avec inversion du spin, sans émission de photon' },
