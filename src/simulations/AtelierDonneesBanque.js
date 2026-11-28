@@ -24,6 +24,7 @@ import { AMP_SAPP } from './ampExos.js';
 import { BIOT_SAPP } from './biotExos.js';
 import { MESO_SAPP } from './mesoExos.js';
 import { STA_SAPP } from './staExos.js';
+import { OSL_SAPP } from './oslExos.js';
 import { CLP_SAPP } from "./chutePlaneExos.js";
 import { NWR_SAPP } from "./newtonRectExos.js";
 import { MTR_SAPP } from "./modesTransfertExos.js";
@@ -5653,6 +5654,7 @@ export const ENONCES = [
   ...BIOT_SAPP,
   ...MESO_SAPP,
   ...STA_SAPP,
+  ...OSL_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,

@@ -219,6 +219,7 @@ export const EXOS_DE_SIM = {
   318: [/(^|\.)biot-/, /plausible\.biot-/],
   319: [/(^|\.)meso-/, /plausible\.meso-/],
   320: [/(^|\.)sta-/, /plausible\.sta-/],
+  321: [/(^|\.)osl-/, /plausible\.osl-/],
   308: [/uvs-ana-ir-ester$/, /uvs-ana-oxydation$/, /plausible\.uvs-val-ir$/],
   307: [/uvs-ana-energie$/, /uvs-ana-lambdamax$/, /plausible\.uvs-val-energie$/, /plausible\.uvs-val-etalonnage$/, /(^|\.)uvs-sapp-/],
   270: [/(^|\.)fvi-/, /plausible\.fvi-/, /(^|\.)eul-/, /plausible\.eul-/],

@@ -1,6 +1,12 @@
 // Sous-thèmes des chapitres TSTL « Structure spatiale », « Réactions acido-basiques » (PCM), « Acides et bases », « Synthèse organique » et « Mesure et incertitudes » (SPCL), à intégrer dans SOUS_THEMES (src/sousThemes.js).
 // Même structure que SOUS_THEMES ; références = clés de progression des exercices (voir sousThemes.js).
 export default {
+  'tstl-ondes-oscillateurs': [
+    { id: 'grandeurs-oscillations', nom: 'Grandeur vibratoire, période, fréquence et amplitude', capacite: 'Identifier la grandeur vibratoire d’un système oscillant et caractériser des oscillations harmoniques (amplitude, période propre).',
+      refs: ['37:prevoir:osl-ana-grandeur', '37:prevoir:osl-ana-frequence', '77:plausible:osl-val-pseudoperiode', '34:osl-sapp-periode', '36:osl-periode'] },
+    { id: 'regimes-amortissement', nom: 'Régimes libres et amortissement', capacite: 'Caractériser les oscillations libres d’un système (pseudopériodiques, critiques, apériodiques) et le temps caractéristique d’amortissement ; comparer des oscillateurs mécanique et électrique.',
+      refs: ['37:prevoir:osl-ana-regime', '37:prevoir:osl-ana-resistance', '77:plausible:osl-val-critique', '34:osl-sapp-tau', '36:osl-tau'] },
+  ],
   'tstl-solubilite': [
     { id: 'ks-expression', nom: 'Équation de dissolution et expression de Ks', capacite: 'Écrire l’équation de dissolution d’un sel peu soluble et exprimer la constante Ks.',
       refs: ['37:prevoir:ksq-ana-expression', '34:ksq-sapp-solubilite'] },
