@@ -78,11 +78,13 @@ function etapesDe(fam, it) {
   ];
   const ecart = { id: 'ecart', type: 'num', titre: 'Calculer l’écart', q: `Calcule l’écart |x − x_ref| entre la mesure et la référence (en ${it.uEcart}).`, attendu: it.ecart, unite: it.uEcart,
     ok: v => { const x = lireNombre(v); return Number.isFinite(x) && proche(x, it.ecart, 0.03); },
+    msg: v => { const x = lireNombre(v); if (!Number.isFinite(x)) return 'Écris un nombre.'; if (x < 0 && proche(-x, it.ecart, 0.03)) return 'Un écart est positif : prends la valeur absolue de la différence.'; if (it.seuil != null && proche(x, it.seuil, 0.03)) return 'Tu as donné le seuil 2·u. Ici on demande seulement l’écart entre la mesure et la référence.'; if (it.seuil != null && proche(x, it.seuil / 2, 0.03)) return 'Tu as donné l’incertitude u. Ici on demande l’écart entre la mesure et la référence.'; return 'Refais la soustraction mesure − référence, avec la même unité pour les deux valeurs, puis ignore le signe.'; },
     expl: 'On soustrait les deux valeurs, sans tenir compte du signe.', aide: 'Soustrais la plus petite valeur de la plus grande, en gardant la même unité pour les deux.' };
   return [
     ecart,
     ...(it.uc != null ? [{ id: 'uc', type: 'num', titre: 'Composer les incertitudes', q: `Calcule l’incertitude composée u_c = √(u₁² + u₂²) (en ${it.uEcart}, arrondie à 2 chiffres).`, attendu: it.uc, unite: it.uEcart,
       ok: v => { const x = lireNombre(v); return Number.isFinite(x) && proche(x, it.uc, 0.03); },
+      msg: () => 'Élève chaque incertitude au carré, additionne les carrés, puis prends la racine : ce n’est pas la somme simple u₁ + u₂.',
       expl: 'On additionne les carrés des deux incertitudes puis on prend la racine carrée.', aide: 'Élève u₁ et u₂ au carré, additionne, puis touche √ sur la calculatrice.' }] : []),
     { id: 'verdict', type: 'qcm', fixe: true, titre: 'Comparer à 2·u', q: it.uc != null ? 'Compare l’écart à 2·u_c. Les deux valeurs sont-elles compatibles ?' : 'Compare l’écart à 2·u. La mesure est-elle compatible avec la référence ?',
       o: [['Compatible', it.compatible, it.expl], ['Non compatible', !it.compatible, it.expl]],
@@ -120,7 +122,7 @@ function ExerciceVal({ fam, it, entete, navigation, naviguer, suivantExo }) {
   const resultat = e => {
     const r = rep[e.id];
     if (e.type === 'qcm') return { ok: r != null && e.o[r][1], msg: r == null ? 'Choisis une réponse.' : '' };
-    return { ok: e.ok(r), msg: r == null || r === '' ? 'Écris une valeur.' : 'Vérifie ton calcul et l’unité.' };
+    return { ok: e.ok(r), msg: r == null || r === '' ? 'Écris une valeur.' : (e.msg ? e.msg(r) : 'Vérifie ton calcul et l’unité.') };
   };
   const fini = etapes.every(e => chk[e.id] && (resultat(e).ok || vu[e.id]));
   const reussi = etapes.every(e => chk[e.id] && resultat(e).ok);
