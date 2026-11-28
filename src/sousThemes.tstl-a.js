@@ -10,6 +10,10 @@ export default {
       refs: ['37:prevoir:ose-ana-equilibre', '37:prevoir:ose-ana-doubler', '37:prevoir:ose-ana-lc', '34:ose-sapp-ressort', '34:ose-sapp-vitesse', '36:ose-ressort'] },
     { id: 'pertes-entretien', nom: 'Pertes d’énergie et rôle d’un dispositif d’entretien', capacite: 'Interpréter l’amortissement par une dissipation d’énergie et expliquer le rôle d’un dispositif d’entretien qui compense les pertes.',
       refs: ['37:prevoir:ose-ana-chaleur', '77:plausible:ose-val-constante', '77:plausible:ose-val-entretien', '36:ose-entretien'] },
+    { id: 'resonance', nom: 'Oscillations forcées, régime permanent et résonance', capacite: 'Décrire un oscillateur forcé (régime transitoire, régime permanent) et identifier la résonance et la fréquence de résonance.',
+      refs: ['37:prevoir:osr-ana-frequence', '37:prevoir:osr-ana-resonance', '77:plausible:osr-val-frequence', '34:osr-sapp-propre', '36:osr-propre'] },
+    { id: 'facteur-qualite', nom: 'Largeur de bande, facteur de qualité et amortissement', capacite: 'Déterminer la largeur de bande et le facteur de qualité d’une résonance ; relier qualitativement Q à l’amortissement.',
+      refs: ['37:prevoir:osr-ana-amortissement', '37:prevoir:osr-ana-qualite', '77:plausible:osr-val-q', '34:osr-sapp-qualite', '36:osr-qualite'] },
   ],
   'tstl-solubilite': [
     { id: 'ks-expression', nom: 'Équation de dissolution et expression de Ks', capacite: 'Écrire l’équation de dissolution d’un sel peu soluble et exprimer la constante Ks.',

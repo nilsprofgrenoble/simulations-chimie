@@ -3239,5 +3239,17 @@
  "77:plausible:ose-val-constante": "VAL832",
  "77:plausible:ose-val-entretien": "VAL833",
  "36:ose-ressort": "REA244",
- "36:ose-entretien": "REA245"
+ "36:ose-entretien": "REA245",
+ "34:osr-sapp-qualite.0": "SAPP727",
+ "34:osr-sapp-qualite.1": "SAPP728",
+ "34:osr-sapp-propre.0": "SAPP729",
+ "34:osr-sapp-propre.1": "SAPP730",
+ "37:prevoir:osr-ana-frequence": "ANA1438",
+ "37:prevoir:osr-ana-resonance": "ANA1439",
+ "37:prevoir:osr-ana-amortissement": "ANA1440",
+ "37:prevoir:osr-ana-qualite": "ANA1441",
+ "77:plausible:osr-val-frequence": "VAL834",
+ "77:plausible:osr-val-q": "VAL835",
+ "36:osr-qualite": "REA246",
+ "36:osr-propre": "REA247"
 }

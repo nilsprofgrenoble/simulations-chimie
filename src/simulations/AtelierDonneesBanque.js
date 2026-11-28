@@ -26,6 +26,7 @@ import { MESO_SAPP } from './mesoExos.js';
 import { STA_SAPP } from './staExos.js';
 import { OSL_SAPP } from './oslExos.js';
 import { OSE_SAPP } from './oseExos.js';
+import { OSR_SAPP } from './osrExos.js';
 import { CLP_SAPP } from "./chutePlaneExos.js";
 import { NWR_SAPP } from "./newtonRectExos.js";
 import { MTR_SAPP } from "./modesTransfertExos.js";
@@ -5657,6 +5658,7 @@ export const ENONCES = [
   ...STA_SAPP,
   ...OSL_SAPP,
   ...OSE_SAPP,
+  ...OSR_SAPP,
   ...NUC2GT_SAPP,
   ...RHC_SAPP,
   ...ITT_SAPP,

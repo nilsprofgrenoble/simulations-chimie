@@ -740,6 +740,35 @@ export function OseLC({ resistance = false }) {
     </Cadre>);
 }
 
+// ── Oscillations forcées et résonance (simulation 323) : situations neutres, ni valeur ni résultat ──
+// Masse suspendue à un ressort, dont le support est animé par un moteur ; symboles facultatifs.
+export function OsrExcite({ symboles = false }) {
+  return (
+    <Cadre h={200} titre="Masse suspendue à un ressort dont le support est animé par un moteur">
+      <rect x="150" y="30" width="180" height="54" rx="9" fill="#f1f5f9" stroke={GRIS} strokeWidth="2.5" />
+      <circle cx="285" cy="57" r="19" fill="#fff" stroke={GRIS} strokeWidth="2.5" /><circle cx="285" cy="43" r="4" fill="#ea580c" />
+      <T x="200" y="64" s={17} c={GRIS}>moteur</T>
+      <rect x="40" y="96" width="120" height="10" rx="3" fill="#cbd5e1" stroke={GRIS} strokeWidth="2" />
+      <polyline points={Array.from({ length: 10 }, (_, i) => (i === 0 ? '100,106' : i === 9 ? '100,160' : `${i % 2 ? 86 : 114},${106 + (54 / 9) * i}`)).join(' ')} fill="none" stroke={ENCRE} strokeWidth="3" strokeLinejoin="round" />
+      <rect x="62" y="160" width="76" height="30" rx="7" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" /><T x="100" y="182" s={20} w="700">m</T>
+      <line x1="210" y1="96" x2="150" y2="96" stroke={GRIS} strokeWidth="2.5" strokeDasharray="5 4" />
+      <Fl x1="352" y1="120" x2="352" y2="76" /><Fl x1="352" y1="76" x2="352" y2="120" />
+      {symboles && <g><T x="184" y="140" s={17} c={GRIS}>excitateur : fréquence fe</T></g>}
+    </Cadre>);
+}
+// Courbe de résonance générique : axes sans valeur ; repères facultatifs (fres, bande).
+export function OsrCourbe({ bande = false, deux = false }) {
+  const p = (Q, h) => Array.from({ length: 70 }, (_, i) => { const f = 0.03 + i * 0.0495, a = 1 / Math.sqrt((1 - f * f) ** 2 + (f / Q) ** 2); return `${70 + f * 95},${(150 - Math.min(a / Q, 1) * h).toFixed(1)}`; }).join(' ');
+  return (
+    <Cadre h={200} titre="Courbe de résonance : amplitude en fonction de la fréquence d’excitation">
+      <line x1="70" y1="150" x2="440" y2="150" stroke={ENCRE} strokeWidth="2.5" /><line x1="70" y1="150" x2="70" y2="30" stroke={ENCRE} strokeWidth="2.5" />
+      <T x="255" y="184" s={16} c={GRIS}>fréquence d’excitation fe</T><T x="76" y="26" s={16} c={GRIS} a="start">amplitude</T>
+      <polyline points={p(8, 108)} fill="none" stroke={BLEU} strokeWidth="3.5" />
+      {deux && <polyline points={p(2.5, 108)} fill="none" stroke="#dc2626" strokeWidth="3.5" />}
+      {bande && <g><line x1="143" y1="84" x2="190" y2="84" stroke="#15803d" strokeWidth="3" /><T x="214" y="90" s={17} c="#15803d" w="700">Δf</T></g>}
+    </Cadre>);
+}
+
 export const DESSINS_LOT10 = {
   polymereTuyau: PolymereTuyau, planFlan: PlanFlan,
   mobile: Mobile, deuxReliefs: DeuxReliefs, virage: Virage, lancerDeuxAstres: LancerDeuxAstres,
@@ -752,5 +781,5 @@ export const DESSINS_LOT10 = {
   plaques: Plaques, blocTransparent: BlocTransparent, bruleurBecher: BruleurBecher, soleilTerre: SoleilTerre, looping: Looping, balance: Balance, reflux: Reflux,
   chuteLibre: ChuteLibre, projection: Projection, eprouvette: Eprouvette, piston: Piston, niveaux: Niveaux, comptageRadio: ComptageRadio, sonMicro: SonMicro,
   polarimetre: Polarimetre, capteurBain: CapteurBain,
-  oseChariot: OseChariot, oseLC: OseLC, oscRessort: OscRessort, oscRegle: OscRegle, oscPiston: OscPiston, oscAiguille: OscAiguille, oscRLC: OscRLC,
+  osrExcite: OsrExcite, osrCourbe: OsrCourbe, oseChariot: OseChariot, oseLC: OseLC, oscRessort: OscRessort, oscRegle: OscRegle, oscPiston: OscPiston, oscAiguille: OscAiguille, oscRLC: OscRLC,
 };

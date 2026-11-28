@@ -1,1109 +1,951 @@
 {
  "1": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=1\nCall log:\n\u001b[2m  - navi"
+  "schemas": 6
  },
  "2": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=2\nCall log:\n\u001b[2m  - navi"
+  "schemas": 6
  },
  "3": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 23,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=3\nCall log:\n\u001b[2m  - navi"
+  "schemas": 7
  },
  "4": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 42,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=4\nCall log:\n\u001b[2m  - navi"
+  "schemas": 7
  },
  "5": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=5\nCall log:\n\u001b[2m  - navi"
+  "debordent": 1,
+  "schemas": 5
  },
  "6": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=6\nCall log:\n\u001b[2m  - navi"
+  "schemas": 6
  },
  "7": {
-  "min": 99,
+  "min": 9.5,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=7\nCall log:\n\u001b[2m  - navi"
+  "schemas": 7
  },
  "8": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=8\nCall log:\n\u001b[2m  - navi"
+  "schemas": 5
  },
  "9": {
-  "min": 99,
-  "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=9\nCall log:\n\u001b[2m  - navi"
+  "min": 0,
+  "petits": 39,
+  "debordent": 1,
+  "schemas": 5
  },
  "10": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 48,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=10\nCall log:\n\u001b[2m  - nav"
+  "schemas": 7
  },
  "11": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 37,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=11\nCall log:\n\u001b[2m  - nav"
+  "schemas": 9
  },
  "12": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 21,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=12\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "13": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 32,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=13\nCall log:\n\u001b[2m  - nav"
+  "schemas": 10
  },
  "14": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 32,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=14\nCall log:\n\u001b[2m  - nav"
+  "schemas": 7
  },
  "15": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=15\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "16": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 54,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=16\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "17": {
-  "min": 99,
+  "min": 12,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=17\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "25": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 43,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=25\nCall log:\n\u001b[2m  - nav"
+  "schemas": 9
  },
  "26": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 21,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=26\nCall log:\n\u001b[2m  - nav"
+  "schemas": 4
  },
  "27": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 67,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=27\nCall log:\n\u001b[2m  - nav"
+  "schemas": 11
  },
  "28": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 45,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=28\nCall log:\n\u001b[2m  - nav"
+  "schemas": 11
  },
  "29": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 33,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=29\nCall log:\n\u001b[2m  - nav"
+  "schemas": 8
  },
  "30": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 20,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=30\nCall log:\n\u001b[2m  - nav"
+  "schemas": 8
  },
  "31": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 47,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=31\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "32": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 7,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=32\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "33": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 28,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=33\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "36": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=36\nCall log:\n\u001b[2m  - nav"
+  "schemas": 0
  },
  "37": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=37\nCall log:\n\u001b[2m  - nav"
+  "schemas": 0
  },
  "41": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=41\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "42": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=42\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "43": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=43\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "44": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 25,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=44\nCall log:\n\u001b[2m  - nav"
+  "schemas": 9
  },
  "45": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=45\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "46": {
-  "min": 99,
+  "min": 10.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=46\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "48": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=48\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "49": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=49\nCall log:\n\u001b[2m  - nav"
+  "debordent": 1,
+  "schemas": 5
  },
  "50": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=50\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "51": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 126,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=51\nCall log:\n\u001b[2m  - nav"
+  "schemas": 16
  },
  "52": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 34,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=52\nCall log:\n\u001b[2m  - nav"
+  "schemas": 9
  },
  "53": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 45,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=53\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "54": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 28,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=54\nCall log:\n\u001b[2m  - nav"
+  "schemas": 7
  },
  "55": {
-  "min": 99,
+  "min": 11.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=55\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "56": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=56\nCall log:\n\u001b[2m  - nav"
+  "schemas": 4
  },
  "57": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 35,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=57\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "58": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=58\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "59": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=59\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "60": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=60\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "61": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=61\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "62": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=62\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "63": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=63\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "64": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=64\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "65": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=65\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "66": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=66\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "67": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=67\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "68": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=68\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "69": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=69\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "70": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=70\nCall log:\n\u001b[2m  - nav"
+  "debordent": 1,
+  "schemas": 6
  },
  "71": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=71\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "72": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=72\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "73": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=73\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "74": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 27,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=74\nCall log:\n\u001b[2m  - nav"
+  "schemas": 9
  },
  "75": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=75\nCall log:\n\u001b[2m  - nav"
+  "debordent": 1,
+  "schemas": 6
  },
  "76": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=76\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "77": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=77\nCall log:\n\u001b[2m  - nav"
+  "schemas": 0
  },
  "78": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=78\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "83": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 31,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=83\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "84": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 60,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=84\nCall log:\n\u001b[2m  - nav"
+  "schemas": 11
  },
  "85": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=85\nCall log:\n\u001b[2m  - nav"
+  "schemas": 3
  },
  "86": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 30,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=86\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "87": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 42,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=87\nCall log:\n\u001b[2m  - nav"
+  "schemas": 11
  },
  "88": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 52,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=88\nCall log:\n\u001b[2m  - nav"
+  "schemas": 13
  },
  "89": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 23,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=89\nCall log:\n\u001b[2m  - nav"
+  "schemas": 9
  },
  "90": {
-  "min": 99,
+  "min": 9.5,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=90\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "91": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=91\nCall log:\n\u001b[2m  - nav"
+  "debordent": 1,
+  "schemas": 6
  },
  "92": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 20,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=92\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "93": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=93\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "94": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=94\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "95": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=95\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "96": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=96\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "97": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=97\nCall log:\n\u001b[2m  - nav"
+  "schemas": 6
  },
  "98": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=98\nCall log:\n\u001b[2m  - nav"
+  "schemas": 4
  },
  "99": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=99\nCall log:\n\u001b[2m  - nav"
+  "schemas": 5
  },
  "100": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=100\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "101": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=101\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "102": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 80,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=102\nCall log:\n\u001b[2m  - na"
+  "schemas": 8
  },
  "106": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 46,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=106\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "107": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=107\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "108": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=108\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "109": {
-  "min": 99,
+  "min": 13,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=109\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "111": {
-  "min": 99,
+  "min": 10.4,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=111\nCall log:\n\u001b[2m  - na"
+  "debordent": 2,
+  "schemas": 6
  },
  "112": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=112\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "114": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 25,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=114\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "115": {
-  "min": 99,
+  "min": 10.2,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=115\nCall log:\n\u001b[2m  - na"
+  "debordent": 2,
+  "schemas": 6
  },
  "116": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 31,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=116\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "117": {
-  "min": 99,
-  "petits": 0,
+  "min": 7.3,
+  "petits": 48,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=117\nCall log:\n\u001b[2m  - na"
+  "schemas": 7
  },
  "118": {
-  "min": 99,
-  "petits": 0,
+  "min": 8.1,
+  "petits": 52,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=118\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "119": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 32,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=119\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "120": {
-  "min": 99,
-  "petits": 0,
+  "min": 7.7,
+  "petits": 36,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=120\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "121": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=121\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "122": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 35,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=122\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "123": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 24,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=123\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "125": {
-  "min": 99,
+  "min": 13.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=125\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "126": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 14,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=126\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "127": {
-  "min": 99,
+  "min": 10,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=127\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 4
  },
  "128": {
-  "min": 99,
+  "min": 10.4,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=128\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "129": {
-  "min": 99,
+  "min": 13.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=129\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "130": {
-  "min": 99,
+  "min": 13.6,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=130\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 5
  },
  "131": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=131\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "132": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=132\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "133": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=133\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "134": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=134\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "135": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=135\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "136": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=136\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 6
  },
  "137": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=137\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "138": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=138\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "139": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=139\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "140": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=140\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "141": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=141\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "142": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=142\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "143": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=143\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "144": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=144\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "145": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=145\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "146": {
-  "min": 99,
-  "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=146\nCall log:\n\u001b[2m  - na"
+  "min": 6.9,
+  "petits": 31,
+  "debordent": 3,
+  "schemas": 7
  },
  "147": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=147\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "148": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=148\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "149": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=149\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "150": {
-  "min": 99,
+  "min": 13.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=150\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "151": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=151\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "152": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=152\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "153": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=153\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "154": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=154\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "155": {
-  "min": 99,
+  "min": 11.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=155\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "156": {
-  "min": 99,
+  "min": 12.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=156\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "157": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=157\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "158": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=158\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "159": {
-  "min": 99,
+  "min": 14.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=159\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "160": {
-  "min": 99,
+  "min": 13.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=160\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "161": {
-  "min": 99,
+  "min": 13.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=161\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "162": {
-  "min": 99,
+  "min": 12,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=162\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "163": {
-  "min": 99,
+  "min": 13.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=163\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "164": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=164\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "165": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=165\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "166": {
-  "min": 99,
+  "min": 10.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=166\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "167": {
-  "min": 99,
+  "min": 14,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=167\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "168": {
-  "min": 99,
+  "min": 11.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=168\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "169": {
-  "min": 99,
+  "min": 13.8,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=169\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "170": {
-  "min": 99,
+  "min": 13,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=170\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "171": {
-  "min": 99,
+  "min": 12.8,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=171\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "172": {
-  "min": 99,
+  "min": 12.8,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=172\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "173": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=173\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "174": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=174\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "175": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=175\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "176": {
-  "min": 99,
+  "min": 13.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=176\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "177": {
-  "min": 99,
+  "min": 14.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=177\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "178": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=178\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "179": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=179\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "180": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=180\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "181": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=181\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "182": {
   "min": 99,
@@ -1162,95 +1004,82 @@
   "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=189\nCall log:\n\u001b[2m  - na"
  },
  "190": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=190\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "191": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=191\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "192": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=192\nCall log:\n\u001b[2m  - na"
+  "schemas": 8
  },
  "193": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=193\nCall log:\n\u001b[2m  - na"
+  "schemas": 7
  },
  "194": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=194\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "195": {
-  "min": 99,
+  "min": 13.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=195\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "196": {
-  "min": 99,
+  "min": 13.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=196\nCall log:\n\u001b[2m  - na"
+  "schemas": 9
  },
  "197": {
-  "min": 99,
+  "min": 13.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=197\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "198": {
-  "min": 99,
+  "min": 13.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=198\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "199": {
-  "min": 99,
+  "min": 13.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=199\nCall log:\n\u001b[2m  - na"
+  "schemas": 9
  },
  "200": {
-  "min": 99,
+  "min": 13.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=200\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "201": {
-  "min": 99,
+  "min": 13.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=201\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 11
  },
  "202": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=202\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "203": {
   "min": 99,
@@ -1281,577 +1110,495 @@
   "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=211\nCall log:\n\u001b[2m  - na"
  },
  "212": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=212\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 5
  },
  "213": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=213\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "214": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=214\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "215": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=215\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "216": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=216\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "217": {
-  "min": 99,
+  "min": 13.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=217\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 5
  },
  "218": {
-  "min": 99,
+  "min": 13.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=218\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 3
  },
  "220": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=220\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "221": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=221\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "222": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=222\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "223": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=223\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "224": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=224\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "225": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=225\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "226": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=226\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "227": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=227\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "228": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=228\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "229": {
-  "min": 99,
+  "min": 11,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=229\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "230": {
-  "min": 99,
+  "min": 11,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=230\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "231": {
-  "min": 99,
+  "min": 11,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=231\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "232": {
-  "min": 99,
+  "min": 11,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=232\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "233": {
-  "min": 99,
+  "min": 11,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=233\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "234": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=234\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "235": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=235\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "236": {
   "min": 99,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=236\nCall log:\n\u001b[2m  - na"
+  "schemas": 0
  },
  "237": {
-  "min": 99,
+  "min": 11.4,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=237\nCall log:\n\u001b[2m  - na"
+  "schemas": 2
  },
  "238": {
-  "min": 99,
+  "min": 10.3,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=238\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "240": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=240\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "241": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=241\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "242": {
-  "min": 99,
+  "min": 14.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=242\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "243": {
-  "min": 99,
+  "min": 10.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=243\nCall log:\n\u001b[2m  - na"
+  "schemas": 2
  },
  "244": {
-  "min": 99,
+  "min": 10.3,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=244\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "245": {
-  "min": 99,
+  "min": 9.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=245\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "246": {
-  "min": 99,
+  "min": 9.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=246\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "247": {
-  "min": 99,
+  "min": 10.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=247\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "248": {
-  "min": 99,
+  "min": 11.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=248\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "249": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=249\nCall log:\n\u001b[2m  - na"
+  "schemas": 2
  },
  "250": {
-  "min": 99,
+  "min": 10.3,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=250\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "251": {
-  "min": 99,
+  "min": 10.3,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=251\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "255": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=255\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "256": {
-  "min": 99,
+  "min": 10.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=256\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "257": {
-  "min": 99,
+  "min": 10.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=257\nCall log:\n\u001b[2m  - na"
+  "schemas": 7
  },
  "258": {
-  "min": 99,
+  "min": 9.8,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=258\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "260": {
-  "min": 99,
+  "min": 9.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=260\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "261": {
-  "min": 99,
+  "min": 9.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=261\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "262": {
-  "min": 99,
+  "min": 10.3,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=262\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "263": {
-  "min": 99,
+  "min": 10.3,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=263\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "264": {
-  "min": 99,
+  "min": 10.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=264\nCall log:\n\u001b[2m  - na"
+  "schemas": 7
  },
  "265": {
-  "min": 99,
+  "min": 10.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=265\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "266": {
-  "min": 99,
+  "min": 10.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=266\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "267": {
-  "min": 99,
+  "min": 10.3,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=267\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 3
  },
  "268": {
-  "min": 99,
+  "min": 9.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=268\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "269": {
-  "min": 99,
+  "min": 9.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=269\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "292": {
-  "min": 99,
+  "min": 9.5,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=292\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "293": {
-  "min": 99,
+  "min": 9.5,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=293\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "294": {
-  "min": 99,
+  "min": 12.6,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=294\nCall log:\n\u001b[2m  - na"
+  "schemas": 1
  },
  "295": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=295\nCall log:\n\u001b[2m  - na"
+  "schemas": 1
  },
  "297": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=297\nCall log:\n\u001b[2m  - na"
+  "schemas": 1
  },
  "298": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=298\nCall log:\n\u001b[2m  - na"
+  "schemas": 1
  },
  "299": {
-  "min": 99,
+  "min": 9.9,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=299\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "300": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=300\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "301": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=301\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "302": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=302\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "303": {
-  "min": 99,
+  "min": 10.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=303\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "304": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=304\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "305": {
-  "min": 99,
-  "petits": 0,
+  "min": 8.8,
+  "petits": 2,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=305\nCall log:\n\u001b[2m  - na"
+  "schemas": 3
  },
  "306": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=306\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 4
  },
  "307": {
-  "min": 99,
+  "min": 10,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=307\nCall log:\n\u001b[2m  - na"
+  "debordent": 1,
+  "schemas": 6
  },
  "308": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=308\nCall log:\n\u001b[2m  - na"
+  "schemas": 7
  },
  "309": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=309\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "310": {
-  "min": 99,
-  "petits": 0,
+  "min": 0,
+  "petits": 41,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=310\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "311": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=311\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "312": {
-  "min": 99,
+  "min": 10.4,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=312\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "313": {
-  "min": 99,
+  "min": 10.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=313\nCall log:\n\u001b[2m  - na"
+  "schemas": 2
  },
  "314": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=314\nCall log:\n\u001b[2m  - na"
+  "schemas": 1
  },
  "315": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=315\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "316": {
-  "min": 99,
+  "min": 10.4,
   "petits": 0,
-  "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=316\nCall log:\n\u001b[2m  - na"
+  "debordent": 2,
+  "schemas": 5
  },
  "317": {
-  "min": 99,
+  "min": 11.7,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=317\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "318": {
-  "min": 99,
+  "min": 11.3,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=318\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "319": {
-  "min": 99,
-  "petits": 0,
+  "min": 8.9,
+  "petits": 1,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=319\nCall log:\n\u001b[2m  - na"
+  "schemas": 6
  },
  "320": {
-  "min": 99,
+  "min": 11.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=320\nCall log:\n\u001b[2m  - na"
+  "schemas": 5
  },
  "321": {
-  "min": 99,
+  "min": 11.2,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=321\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  },
  "322": {
-  "min": 99,
+  "min": 12.1,
   "petits": 0,
   "debordent": 0,
-  "schemas": 0,
-  "erreur": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:4173/?sim=322\nCall log:\n\u001b[2m  - na"
+  "schemas": 4
  }
 }
