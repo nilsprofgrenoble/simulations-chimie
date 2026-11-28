@@ -68,7 +68,7 @@ function ExerciceRea({ id, titre, detail, entete, navigation }) {
         {affichee && bon && r.note && <div style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}>{r.note}</div>}
         {affichee && !bon && !r.msg && !vu[q.id] && <div style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}>Pour trouver où ça coince, clique sur « voir le calcul pas à pas ».</div>}
         {affichee && !bon && r.msg && <div style={{ fontSize: 13.5, color: '#9a3412', background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 6, padding: '4px 8px', marginTop: 4 }}>{txtVec(avecIndices(r.msg))}</div>}
-        {((vu[q.id] && !bon) || (affichee && bon)) && <Correction>{q.type === 'num' && !bon ? <>Réponse attendue : <b>{reponseAttendue(q)}</b>. </> : null}{q.expl}</Correction>}
+        {((vu[q.id] && !bon) || (affichee && bon)) && <Correction>{q.type === 'num' && !bon ? <>Réponse attendue : <b>{reponseAttendue(q)}</b>. </> : null}{indicesProfond(q.expl)}</Correction>}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
           <button onClick={() => corriger(q.id)} style={styleBouton(true, '#16a34a')}>✓ Corriger</button>
           {!(affichee && bon) && <button onClick={() => { corriger(q.id, true); setVu(x => ({ ...x, [q.id]: true })); }}
@@ -83,7 +83,7 @@ function ExerciceRea({ id, titre, detail, entete, navigation }) {
     <div style={{ ...cardStyle, textAlign: 'left' }}>
       {entete}
       <h2 style={{ margin: '0 0 4px', fontSize: 19, color: KIT.txt, fontWeight: 800 }}>{titre}</h2>
-      {detail && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Tu calcules : {detail}.</div>}
+      {detail && <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10 }}>Tu calcules : {avecIndices(detail)}.</div>}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12 }}>
         {navigation}
         <button onClick={() => charger(choix)} style={stylePetitBouton(false)}>🎲 Autres valeurs</button>
