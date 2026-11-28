@@ -68,7 +68,7 @@ const epure = f => (p, q) => { const b = f(p, q); return { ...b, tokens: Object.
 const EC = 1.6e-19;
 export const CEL_SAPP = [
   {
-    id: 'chel-sapp-champ', domaine: DOM, titre: 'Deux armatures reliées à un générateur : valeur du champ', noms: ['Champ électrostatique entre les armatures', 'Champ si la distance est doublée'],
+    id: 'chel-sapp-champ', schema: () => ({ type: 'plaques' }), domaine: DOM, titre: 'Deux armatures reliées à un générateur : valeur du champ', noms: ['Champ électrostatique entre les armatures', 'Champ si la distance est doublée'],
     gen: () => ({ U: tire([60, 120, 150, 200, 300]), d: tire([1.5, 2.0, 3.0, 5.0]), T: tire([18, 20, 22]) }),
     build: epure((p, q) => {
       const tokens = {

@@ -98,7 +98,7 @@ export function Dilution({ mere = 'solution mère', eau = 'eau distillée' }) {
       <rect x="248" y="130" width="84" height="40" fill={CLAIR} opacity="0.8" />
       <line x1="262" y1="50" x2="318" y2="50" stroke={ROUGE} strokeWidth="2" /><T x="290" y="20" s={15} c={ROUGE}>trait de jauge</T>
       <T x="290" y="198" w="700" s={16}>fiole jaugée</T>
-      <Fl x1="400" y1="40" x2="400" y2="96" c={BLEU} /><T x="400" y="28" s={16} c={BLEU}>{eau}</T>
+      <Fl x1="390" y1="50" x2="326" y2="70" c={BLEU} /><T x="400" y="40" s={16} c={BLEU}>{eau}</T>
     </Cadre>);
 }
 
@@ -113,9 +113,9 @@ export function Titrage({ sonde = 'conductimètre', burette = 'réactif titrant'
       <path d="M140 160 L140 215 Q140 225 150 225 L250 225 Q260 225 260 215 L260 160" fill="none" stroke={GRIS} strokeWidth="3" />
       <rect x="142" y="185" width="116" height="38" fill={CLAIR} opacity="0.8" />
       <T x="200" y="252" w="700" s={16}>{becher}</T>
-      <rect x="297" y="40" width="20" height="110" rx="6" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" />
+      {sonde && <><rect x="297" y="40" width="20" height="110" rx="6" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" />
       <path d="M307 150 L307 170 L240 205" fill="none" stroke={GRIS} strokeWidth="4" />
-      <T x="330" y="90" s={16} a="start" w="700">{sonde}</T>
+      <T x="330" y="90" s={16} a="start" w="700">{sonde}</T></>}
       <ellipse cx="200" cy="232" rx="22" ry="4" fill="#94a3b8" /><T x="352" y="236" s={14} c={GRIS} a="end">agitateur</T>
     </Cadre>);
 }
@@ -185,14 +185,14 @@ export function PrismeLaser({ couleur = '#16a34a' }) {
 }
 
 // Lampe colorée, filtre, observateur.
-export function LampeFiltre({ lampe = 'lampe', filtre = 'filtre', couleurLampe = '#ef4444', couleurFiltre = '#22d3ee' }) {
+export function LampeFiltre({ observateur = true, lampe = 'lampe', filtre = 'filtre', couleurLampe = '#ef4444', couleurFiltre = '#22d3ee' }) {
   return (
     <Cadre h={170} titre={`${lampe}, ${filtre}, observateur`}>
       <circle cx="70" cy="80" r="30" fill={couleurLampe} fillOpacity="0.85" stroke={ENCRE} strokeWidth="2.5" /><T x="70" y="140" s={16} w="700">{lampe}</T>
       <Fl x1="110" y1="80" x2="200" y2="80" />
       <rect x="215" y="30" width="22" height="100" fill={couleurFiltre} fillOpacity="0.55" stroke={ENCRE} strokeWidth="2.5" /><T x="226" y="152" s={16} w="700">{filtre}</T>
-      <Fl x1="252" y1="80" x2="340" y2="80" />
-      <ellipse cx="400" cy="80" rx="34" ry="20" fill="#fff" stroke={ENCRE} strokeWidth="2.5" /><circle cx="400" cy="80" r="10" fill={ENCRE} /><T x="400" y="130" s={16} w="700">observateur</T>
+      {observateur && <><Fl x1="252" y1="80" x2="340" y2="80" />
+      <ellipse cx="400" cy="80" rx="34" ry="20" fill="#fff" stroke={ENCRE} strokeWidth="2.5" /><circle cx="400" cy="80" r="10" fill={ENCRE} /><T x="400" y="130" s={16} w="700">observateur</T></>}
     </Cadre>);
 }
 
@@ -221,12 +221,12 @@ export function CircuitSimple({ dipole = 'résistor', generateur = 'générateur
 // Panneau photovoltaïque éclairé par le soleil.
 export function PanneauSoleil() {
   return (
-    <Cadre h={170} titre="Un panneau photovoltaïque éclairé">
+    <Cadre h={190} titre="Un panneau photovoltaïque éclairé">
       <circle cx="70" cy="50" r="26" fill="#fde047" stroke="#ca8a04" strokeWidth="2.5" />
       {[0, 1, 2].map(i => <Fl key={i} x1={105 + i * 6} y1={60 + i * 22} x2={215 + i * 6} y2={90 + i * 22} c="#ca8a04" />)}
       <g transform="rotate(-18 330 110)"><rect x="250" y="90" width="150" height="46" fill="#1e3a8a" stroke={ENCRE} strokeWidth="2.5" />
         {[1, 2, 3].map(i => <line key={i} x1={250 + i * 37.5} y1="90" x2={250 + i * 37.5} y2="136" stroke="#93c5fd" strokeWidth="1.5" />)}</g>
-      <T x="330" y="162" s={16} w="700">panneau photovoltaïque</T>
+      <T x="330" y="184" s={16} w="700">panneau photovoltaïque</T>
     </Cadre>);
 }
 
@@ -266,13 +266,13 @@ export function CordeCapteurs() {
 }
 
 // Casserole d'eau qui bout / linge qui sèche : on nomme l'eau avant et après, sans en dire le nom du changement d'état.
-export function Casserole() {
+export function Casserole({ liquide = 'eau liquide chauffée' }) {
   return (
     <Cadre h={200} titre="Une casserole d'eau sur une plaque chauffante, avec de la buée au-dessus">
       <path d="M120 80 L120 150 L320 150 L320 80" fill="none" stroke={ENCRE} strokeWidth="3.5" /><rect x="122" y="110" width="196" height="38" fill={CLAIR} opacity="0.8" />
       <rect x="100" y="150" width="240" height="14" fill="#475569" />
       {[0, 1, 2].map(i => <path key={i} d={`M${170 + i * 50} 70 q-10 -16 0 -30 q10 -14 0 -28`} fill="none" stroke={GRIS} strokeWidth="2.5" />)}
-      <T x="220" y="190" s={16} w="700">eau liquide chauffée</T>
+      <T x="220" y="190" s={16} w="700">{liquide}</T>
     </Cadre>);
 }
 export function LingeFil() {
@@ -393,6 +393,180 @@ export function DeuxChariots() {
   return <Cadre h={160} titre="Deux chariots roulant à la même vitesse">{c(20, 'm', 70)}{c(90, '2 m', 100)}</Cadre>;
 }
 
+// ── Schémas pour les exercices « S’approprier » : situation et noms des objets, jamais de valeur ──
+
+// Condensateur plan : deux armatures reliées à un générateur ; la distance entre les armatures est nommée, pas chiffrée.
+export function Plaques({ objet = null }) {
+  return (
+    <Cadre h={200} titre="Deux armatures planes parallèles reliées à un générateur">
+      <rect x="130" y="40" width="220" height="12" fill="#94a3b8" stroke={ENCRE} strokeWidth="2" /><rect x="130" y="140" width="220" height="12" fill="#94a3b8" stroke={ENCRE} strokeWidth="2" />
+      <T x="368" y="50" s={15} a="start" c={GRIS}>armature</T><T x="368" y="150" s={15} a="start" c={GRIS}>armature</T>
+      <line x1="110" y1="52" x2="110" y2="140" stroke={ENCRE} strokeWidth="2" markerStart="url(#pt10)" markerEnd="url(#pt10)" /><T x="96" y="100" s={17} a="end">d</T>
+      <path d="M130 46 L60 46 L60 80 M60 112 L60 146 L130 146" fill="none" stroke={ENCRE} strokeWidth="2.5" />
+      <line x1="48" y1="80" x2="72" y2="80" stroke={ENCRE} strokeWidth="3" /><line x1="54" y1="92" x2="66" y2="92" stroke={ENCRE} strokeWidth="6" /><T x="48" y="186" s={15} c={GRIS} a="start">générateur</T>
+      {objet && <><circle cx="240" cy="96" r="12" fill="#fecaca" stroke={ROUGE} strokeWidth="2.5" /><T x="240" y="128" s={16} w="700">{objet}</T></>}
+    </Cadre>);
+}
+
+// Rayon lumineux qui traverse un bloc transparent.
+export function BlocTransparent({ milieu = 'bloc transparent' }) {
+  return (
+    <Cadre h={180} titre={`Un rayon lumineux traverse ${milieu}`}>
+      <rect x="170" y="40" width="140" height="100" fill={CLAIR} fillOpacity="0.6" stroke={BLEU} strokeWidth="2.5" /><T x="240" y="170" s={16} w="700">{milieu}</T>
+      <Fl x1="30" y1="90" x2="165" y2="90" c={ROUGE} /><Fl x1="315" y1="90" x2="450" y2="90" c={ROUGE} />
+      <line x1="170" y1="22" x2="310" y2="22" stroke={ENCRE} strokeWidth="2" markerStart="url(#pt10)" markerEnd="url(#pt10)" /><T x="240" y="16" s={15} c={GRIS}>épaisseur traversée</T>
+    </Cadre>);
+}
+
+// Brûleur sous un récipient d'eau.
+export function BruleurBecher({ contenu = 'eau' }) {
+  return (
+    <Cadre h={210} titre={`Un combustible brûle sous un récipient contenant de ${contenu}`}>
+      <path d="M170 30 L170 120 Q170 130 180 130 L300 130 Q310 130 310 120 L310 30" fill="none" stroke={GRIS} strokeWidth="3" /><rect x="172" y="70" width="136" height="58" fill={CLAIR} opacity="0.8" />
+      <T x="240" y="104" s={16} w="700">{contenu}</T>
+      <path d="M240 190 Q215 165 235 145 Q242 168 262 160 Q275 175 255 190 Z" fill="#fb923c" stroke="#c2410c" strokeWidth="2" /><T x="240" y="208" s={15} w="700">combustible qui brûle</T>
+    </Cadre>);
+}
+
+// Soleil, rayons, Terre : aucun flux chiffré.
+export function SoleilTerre() {
+  return (
+    <Cadre h={170} titre="Le Soleil envoie des rayons vers la Terre">
+      <circle cx="60" cy="85" r="38" fill="#fde047" stroke="#ca8a04" strokeWidth="2.5" /><T x="60" y="150" s={16} w="700">Soleil</T>
+      {[55, 85, 115].map(y => <Fl key={y} x1="115" y1={y} x2="330" y2={y} c="#ca8a04" />)}
+      <circle cx="400" cy="85" r="46" fill="#93c5fd" stroke={BLEU} strokeWidth="2.5" /><T x="400" y="160" s={16} w="700">Terre</T>
+    </Cadre>);
+}
+
+// Piste de looping : départ en hauteur, boucle circulaire, wagon.
+export function Looping() {
+  return (
+    <Cadre h={210} titre="Piste avec une boucle circulaire ; le wagon part d'une certaine hauteur">
+      <path d="M40 40 L150 170 L200 170" fill="none" stroke={GRIS} strokeWidth="4" />
+      <circle cx="270" cy="105" r="64" fill="none" stroke={GRIS} strokeWidth="4" />
+      <path d="M200 170 L460 170" stroke={GRIS} strokeWidth="4" />
+      <rect x="30" y="22" width="30" height="18" rx="4" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" transform="rotate(50 45 31)" /><T x="108" y="44" s={15} c={GRIS} a="start">départ</T>
+      <line x1="30" y1="170" x2="30" y2="40" stroke={ENCRE} strokeWidth="2" markerStart="url(#pt10)" markerEnd="url(#pt10)" /><T x="20" y="110" s={17} a="end">H</T>
+      <T x="270" y="200" s={15} c={GRIS}>boucle de rayon R</T>
+    </Cadre>);
+}
+
+// Balance avec une pièce.
+export function Balance() {
+  return (
+    <Cadre h={170} titre="Pesée d'une pièce sur une balance de précision">
+      <rect x="150" y="120" width="180" height="32" rx="6" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" /><rect x="200" y="128" width="80" height="16" rx="3" fill="#fff" stroke={GRIS} strokeWidth="1.5" />
+      <rect x="170" y="108" width="140" height="8" fill="#94a3b8" /><rect x="215" y="76" width="50" height="32" rx="5" fill="#fde68a" stroke="#b45309" strokeWidth="2.5" />
+      <T x="240" y="68" s={16} w="700">objet pesé</T><T x="240" y="168" s={15} c={GRIS}>balance de précision</T>
+    </Cadre>);
+}
+
+// Chauffage à reflux : ballon chauffé surmonté d'un réfrigérant vertical.
+export function Reflux() {
+  return (
+    <Cadre h={230} titre="Montage de chauffage à reflux : ballon chauffé et réfrigérant vertical">
+      <rect x="226" y="20" width="28" height="100" fill="#e0f2fe" stroke={GRIS} strokeWidth="2.5" /><T x="300" y="70" s={16} a="start" w="700">réfrigérant</T>
+      <Fl x1="206" y1="108" x2="226" y2="108" c={BLEU} w={2} /><Fl x1="274" y1="36" x2="296" y2="36" c={BLEU} w={2} />
+      <rect x="232" y="120" width="16" height="28" fill="none" stroke={GRIS} strokeWidth="3" />
+      <circle cx="240" cy="186" r="38" fill={CLAIR} fillOpacity="0.6" stroke={GRIS} strokeWidth="3" /><T x="240" y="190" s={14} w="700">mélange</T>
+      <path d="M200 226 L280 226" stroke="#475569" strokeWidth="8" /><T x="170" y="224" s={15} c={GRIS} a="end">chauffe-ballon</T>
+    </Cadre>);
+}
+
+// Chronophotographie d'une chute : positions successives d'une balle le long d'un axe vertical.
+export function ChuteLibre() {
+  return (
+    <Cadre h={230} titre="Positions successives d'une balle en chute libre">
+      <line x1="90" y1="20" x2="90" y2="210" stroke={ENCRE} strokeWidth="2" markerEnd="url(#pt10)" /><T x="104" y="214" s={15} a="start" c={GRIS}>axe vertical</T>
+      {[30, 62, 104, 160, 226].map((y, i) => i < 4 && <circle key={i} cx="170" cy={y} r="11" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" />)}
+      <T x="210" y="40" s={15} c={GRIS} a="start">positions à intervalles de temps égaux</T>
+    </Cadre>);
+}
+
+// Diapositive, lentille de projection, écran.
+export function Projection() {
+  return (
+    <Cadre h={190} titre="Un projecteur : diapositive, lentille, écran">
+      <rect x="40" y="60" width="10" height="70" fill="#fde68a" stroke="#b45309" strokeWidth="2.5" /><T x="45" y="156" s={15} w="700">diapositive</T>
+      <ellipse cx="190" cy="95" rx="12" ry="50" fill={CLAIR} stroke={BLEU} strokeWidth="3" /><T x="190" y="170" s={15} w="700">lentille</T>
+      <rect x="410" y="20" width="14" height="150" fill="#f8fafc" stroke={GRIS} strokeWidth="2.5" /><T x="417" y="186" s={15} w="700">écran</T>
+      <line x1="50" y1="95" x2="410" y2="95" stroke={GRIS} strokeWidth="1.5" strokeDasharray="6 5" />
+    </Cadre>);
+}
+
+// Éprouvette graduée contenant un liquide.
+export function Eprouvette({ liquide = 'liquide' }) {
+  return (
+    <Cadre h={230} titre={`Éprouvette graduée contenant ${liquide}`}>
+      <rect x="215" y="14" width="50" height="190" rx="6" fill="none" stroke={GRIS} strokeWidth="3" /><rect x="217" y="90" width="46" height="112" fill={CLAIR} opacity="0.8" />
+      {Array.from({ length: 9 }, (_, i) => <line key={i} x1="215" y1={30 + i * 20} x2={i % 2 ? 228 : 236} y2={30 + i * 20} stroke={GRIS} strokeWidth="2" />)}
+      <T x="285" y="130" s={16} a="start" w="700">{liquide}</T><T x="285" y="30" s={15} c={GRIS} a="start">graduations</T>
+    </Cadre>);
+}
+
+// Gaz enfermé sous un piston mobile.
+export function Piston({ gaz = 'gaz enfermé' }) {
+  return (
+    <Cadre h={190} titre={`Un ${gaz} sous un piston mobile`}>
+      <rect x="120" y="60" width="200" height="90" fill="none" stroke={GRIS} strokeWidth="3" /><rect x="124" y="64" width="190" height="82" fill={CLAIR} opacity="0.4" />
+      {[[160, 90], [210, 120], [260, 95], [290, 125]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="7" fill={BLEU} />)}
+      <rect x="316" y="62" width="14" height="86" fill="#94a3b8" stroke={ENCRE} strokeWidth="2" /><line x1="330" y1="105" x2="410" y2="105" stroke={ENCRE} strokeWidth="5" />
+      <T x="220" y="178" s={16} w="700">{gaz}</T><T x="370" y="90" s={15} c={GRIS}>piston</T>
+    </Cadre>);
+}
+
+// Deux niveaux d'énergie d'un atome et un photon : seuls les noms sont indiqués.
+export function Niveaux() {
+  return (
+    <Cadre h={210} titre="Deux niveaux d'énergie d'un atome et un photon absorbé">
+      <line x1="120" y1="40" x2="300" y2="40" stroke={ENCRE} strokeWidth="4" /><T x="316" y="46" s={17} a="start" w="700">niveau excité</T>
+      <line x1="120" y1="160" x2="300" y2="160" stroke={ENCRE} strokeWidth="4" /><T x="316" y="152" s={17} a="start" w="700">niveau</T><T x="316" y="172" s={17} a="start" w="700">fondamental</T>
+      <path d="M160 110 q10 -10 20 0 t20 0 t20 0 t20 0" fill="none" stroke={ROUGE} strokeWidth="3" /><T x="210" y="136" s={15} c={ROUGE}>photon absorbé</T>
+      <Fl x1="240" y1="150" x2="240" y2="52" c={BLEU} /><T x="256" y="100" s={15} c={BLEU} a="start">transition</T>
+    </Cadre>);
+}
+
+// Échantillon radioactif devant un détecteur.
+export function ComptageRadio() {
+  return (
+    <Cadre h={170} titre="Un échantillon radioactif devant un détecteur">
+      <circle cx="90" cy="85" r="30" fill="#fef08a" stroke="#a16207" strokeWidth="2.5" /><T x="90" y="140" s={16} w="700">échantillon</T>
+      {[-18, 0, 18].map(d => <Fl key={d} x1="130" y1={85 + d} x2="290" y2={85 + d * 1.4} c={GRIS} w={1.8} />)}
+      <rect x="300" y="40" width="100" height="90" rx="10" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" /><T x="350" y="90" s={16} w="700">détecteur</T>
+    </Cadre>);
+}
+
+// Haut-parleur et microphone.
+export function SonMicro() {
+  return (
+    <Cadre h={170} titre="Un haut-parleur émet un son capté par un microphone">
+      <path d="M60 60 L90 60 L130 30 L130 130 L90 100 L60 100 Z" fill="#e2e8f0" stroke={ENCRE} strokeWidth="2.5" /><T x="95" y="156" s={16} w="700">haut-parleur</T>
+      {[0, 1, 2].map(i => <path key={i} d={`M${160 + i * 30} ${60 - i * 8} Q${180 + i * 30} 80 ${160 + i * 30} ${100 + i * 8}`} fill="none" stroke={BLEU} strokeWidth="2.5" />)}
+      <circle cx="380" cy="80" r="22" fill="#e2e8f0" stroke={ENCRE} strokeWidth="2.5" /><line x1="380" y1="102" x2="380" y2="136" stroke={ENCRE} strokeWidth="4" /><T x="380" y="158" s={16} w="700">microphone</T>
+    </Cadre>);
+}
+
+// Polarimètre : source, tube contenant la solution, analyseur.
+export function Polarimetre() {
+  const b = (x, nom, c) => <g><rect x={x} y="50" width="86" height="60" rx="8" fill={c} stroke={ENCRE} strokeWidth="2.5" /><T x={x + 43} y="86" s={15} w="700">{nom}</T></g>;
+  return (
+    <Cadre h={160} titre="Polarimètre : source, tube de solution, analyseur">
+      {b(20, 'source', PAILLE)}{b(160, 'solution', '#dcfce7')}{b(300, 'analyseur', '#e0f2fe')}
+      <Fl x1="108" y1="80" x2="158" y2="80" /><Fl x1="248" y1="80" x2="298" y2="80" />
+      <T x="203" y="140" s={15} c={GRIS}>longueur du tube ℓ</T>
+    </Cadre>);
+}
+
+// Capteur plongé dans un bain.
+export function CapteurBain({ bain = 'bain' }) {
+  return (
+    <Cadre h={200} titre={`Un capteur de température plongé dans un ${bain}`}>
+      <path d="M150 60 L150 150 Q150 160 160 160 L320 160 Q330 160 330 150 L330 60" fill="none" stroke={GRIS} strokeWidth="3" /><rect x="152" y="90" width="176" height="68" fill={CLAIR} opacity="0.8" />
+      <rect x="226" y="14" width="18" height="90" rx="6" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" /><T x="262" y="50" s={16} a="start" w="700">capteur</T>
+      <T x="240" y="188" s={16} w="700">{bain}</T>
+    </Cadre>);
+}
+
 export const DESSINS_LOT10 = {
   mobile: Mobile, deuxReliefs: DeuxReliefs, virage: Virage, lancerDeuxAstres: LancerDeuxAstres,
   becher: Becher, dilution: Dilution, titrage: Titrage, lentilleLointain: LentilleLointain, microscope: Microscope,
@@ -401,4 +575,7 @@ export const DESSINS_LOT10 = {
   casserole: Casserole, lingeFil: LingeFil, refroidissement: Refroidissement, distillation: Distillation, plaqueCCM: PlaqueCCM,
   cisaillement: Cisaillement, coalescence: Coalescence, deuxLampesPeinture: DeuxLampesPeinture, chauffeEau: ChauffeEau,
   reservoirRegule: ReservoirRegule, deuxCharges: DeuxCharges, deuxChariots: DeuxChariots,
+  plaques: Plaques, blocTransparent: BlocTransparent, bruleurBecher: BruleurBecher, soleilTerre: SoleilTerre, looping: Looping, balance: Balance, reflux: Reflux,
+  chuteLibre: ChuteLibre, projection: Projection, eprouvette: Eprouvette, piston: Piston, niveaux: Niveaux, comptageRadio: ComptageRadio, sonMicro: SonMicro,
+  polarimetre: Polarimetre, capteurBain: CapteurBain,
 };

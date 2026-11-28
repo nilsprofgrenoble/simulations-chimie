@@ -100,7 +100,7 @@ export const UVS_SAPP = [
     }),
   },
   {
-    id: 'uvs-sapp-etalonnage', domaine: DOM, titre: 'Un dosage par étalonnage : concentration de la solution mère', noms: ['Concentration de la solution diluée', 'Concentration de la solution mère'],
+    id: 'uvs-sapp-etalonnage', schema: () => ({ type: 'spectrophotometre' }), domaine: DOM, titre: 'Un dosage par étalonnage : concentration de la solution mère', noms: ['Concentration de la solution diluée', 'Concentration de la solution mère'],
     gen: () => ({ k: tire([1500, 2000, 2500, 3000, 4000]), A: tire([0.30, 0.45, 0.60, 0.75, 0.90]), f: tire([5, 10, 20]), V: tire([5, 10, 25]) }),
     build: epure((p, q) => {
       const tokens = {

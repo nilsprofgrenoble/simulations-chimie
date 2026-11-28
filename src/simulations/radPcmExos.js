@@ -91,7 +91,7 @@ export const RPM_SAPP = [
     }),
   },
   {
-    id: 'rpm-sapp-activite', domaine: DOM, titre: 'Un échantillon radioactif : activité et comptage', noms: ['Activité', 'Nombre de désintégrations comptées'],
+    id: 'rpm-sapp-activite', schema: () => ({ type: 'comptageRadio' }), domaine: DOM, titre: 'Un échantillon radioactif : activité et comptage', noms: ['Activité', 'Nombre de désintégrations comptées'],
     gen: () => ({ th: tire([2, 4, 6, 8, 12]), N: tire([2.0e9, 4.0e9, 6.0e9, 8.0e9]), dt: tire([30, 60, 120]), m: tire([1.0, 2.5, 5.0]) }),
     build: epure((p, q) => {
       const tokens = {

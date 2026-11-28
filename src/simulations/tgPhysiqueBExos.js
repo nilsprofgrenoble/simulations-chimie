@@ -571,7 +571,7 @@ export const TGPB_SAPP = [
     },
   },
   {
-    id: 'ter-sapp-bilan', domaine: DOM_TRANSFERTS, titre: 'La Terre sans atmosphère', noms: ['Puissance solaire absorbée par mètre carré', 'Température d’équilibre'],
+    id: 'ter-sapp-bilan', schema: () => ({ type: 'soleilTerre' }), domaine: DOM_TRANSFERTS, titre: 'La Terre sans atmosphère', noms: ['Puissance solaire absorbée par mètre carré', 'Température d’équilibre'],
     gen: () => ({ A: tire([0.29, 0.30, 0.31, 0.35]), S0: tire([1361, 1360, 1370]), R: 6371, d: 150 }),
     build: (p, q) => {
       const tokens = {
@@ -595,7 +595,7 @@ export const TGPB_SAPP = [
     },
   },
   {
-    id: 'cel-sapp-seuil', domaine: DOM_PHOTONS, titre: 'Une cellule éclairée par une lampe', noms: ['Énergie d’un photon de la lampe', 'Longueur d’onde maximale absorbée'],
+    id: 'cel-sapp-seuil', schema: () => ({ type: 'lampeFiltre', observateur: false, lampe: 'lampe', filtre: 'cellule', couleurLampe: '#fde047', couleurFiltre: '#93c5fd' }), domaine: DOM_PHOTONS, titre: 'Une cellule éclairée par une lampe', noms: ['Énergie d’un photon de la lampe', 'Longueur d’onde maximale absorbée'],
     gen: () => ({ gap: tire([1.12, 1.12, 1.4, 1.5]), L: tire([450, 520, 600, 650]), P: tire([20, 40, 60]), S: tire([0.010, 0.015, 0.020]) }),
     build: (p, q) => {
       const tokens = {

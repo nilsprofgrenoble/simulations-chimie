@@ -106,7 +106,7 @@ export const PILP_SAPP = [
     }),
   },
   {
-    id: 'pilp-sapp-duree', domaine: DOM, titre: 'Une pile cuivre / zinc : durée de fonctionnement', noms: ['Quantité d’électricité', 'Durée de fonctionnement'],
+    id: 'pilp-sapp-duree', schema: () => ({ type: 'pileLampe', gauche: 'Zn', droite: 'Cu' }), domaine: DOM, titre: 'Une pile cuivre / zinc : durée de fonctionnement', noms: ['Quantité d’électricité', 'Durée de fonctionnement'],
     gen,
     build: epure((p, q) => {
       const tokens = toks(p);

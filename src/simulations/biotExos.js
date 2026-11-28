@@ -69,7 +69,7 @@ const epure = f => (p, q) => { const b = f(p, q); return { ...b, tokens: Object.
 const nbf = M.nbf;
 export const BIOT_SAPP = [
   {
-    id: 'biot-sapp-alpha', domaine: DOM, titre: 'Loi de Biot : pouvoir rotatoire et concentration', noms: ['Pouvoir rotatoire α', 'Concentration de la solution'],
+    id: 'biot-sapp-alpha', schema: () => ({ type: 'polarimetre' }), domaine: DOM, titre: 'Loi de Biot : pouvoir rotatoire et concentration', noms: ['Pouvoir rotatoire α', 'Concentration de la solution'],
     gen: () => { const sub = M.SUBS[tire(M.LISTE)], Lc = tire([10, 20, 25]), C = tire([0.04, 0.05, 0.08, 0.1, 0.12, 0.15, 0.2]); return { A: sub.A, M: sub.M, Lc, C, alpha: Math.round(sub.A * Lc / 10 * C * 100) / 100 }; },
     build: epure((p, q) => {
       const tokens = {
