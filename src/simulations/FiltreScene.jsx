@@ -2,6 +2,7 @@
 import { useId } from "react";
 import { coordSvg } from "./exploAnim";
 import * as M from "./filtreModele";
+import { FormuleSvg } from '../svgFrac';
 
 // ====================================================
 //  Scène animée de la simulation 316 : un générateur (GBF) envoie une tension sinusoïdale Ue dans un filtre RC ; l'oscilloscope montre Ue (bleu) et Us (orange) ;
@@ -136,7 +137,7 @@ export function SceneFiltre({ nature = 'bas', R = 220, C = 1, fc, f, setF, etroi
     grapheSvg = (
       <g>
         <rect x="4" y={G.yT - 50} width={W - 8} height={G.yB - G.yT + 110} rx="16" fill="#f8fafc" stroke={COUL.grille}/>
-        <text x={G.x0} y={G.yT - 30} fontSize={fz(13.5)} fontWeight="800" fill={COUL.txt}>{nomGraphe} = Us,max ÷ Ue,max, selon la fréquence f</text>
+        <FormuleSvg x={G.x0} y={G.yT - 30} s={fz(13.5)} w={800} c={COUL.txt} a="start" parts={[`${nomGraphe} = `, { h: 'Us,max', b: 'Ue,max' }, ', selon la fréquence f']} />
         {/* quadrillage */}
         {Array.from({ length: 11 }, (_, k) => <line key={`gy${k}`} x1={G.x0} x2={G.x1} y1={Y(k / 10)} y2={Y(k / 10)} stroke={k % 5 === 0 ? '#cbd5e1' : '#e8eef5'} strokeWidth="1"/>)}
         {decs.map(v => <line key={`gx${v}`} x1={X(v)} x2={X(v)} y1={G.yT} y2={G.yB} stroke="#cbd5e1" strokeWidth="1"/>)}

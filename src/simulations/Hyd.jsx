@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, lireNombre, IndiceDefi, indicesProfond } from "../commun";
+  BoutonsModes, lireNombre, IndiceDefi, indicesProfond , Frac } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./hydModele";
@@ -13,7 +13,7 @@ import { usePhase, reduitMouvement } from "./hookHorloge";
 
 // ====================================================
 // SIM 311 — « Précipitation sélective des hydroxydes selon le pH » (terminale STL, SPCL, Chimie et développement durable : solubilité).
-//  Une idée : un hydroxyde M(OH)n précipite quand [HO⁻] atteint (Ks ÷ c)^(1/n), c'est-à-dire à partir d'un pH précis ; deux cations se séparent si une « fenêtre » de pH existe entre la fin de précipitation du premier
+//  Une idée : un hydroxyde M(OH)n précipite quand [HO⁻] atteint frac(Ks|c)^(1/n), c'est-à-dire à partir d'un pH précis ; deux cations se séparent si une « fenêtre » de pH existe entre la fin de précipitation du premier
 //  (convention : 1,0×10⁻⁵ mol/L restant) et le début de précipitation du second.
 //  Capacités visées (jamais affichées à l'élève) : calculer le pH de début de précipitation d'un hydroxyde ; comparer des pH de précipitation pour prévoir l'ordre et la possibilité d'une séparation.
 //  Hors périmètre : effet de la température (sim 311), hydroxydes amphotères et complexes (négligés, annoncés dans les hypothèses).
@@ -86,9 +86,9 @@ export function SimulationHyd() {
     { id: 'ohseuil', titre: 'Quand l’hydroxyde commence-t-il à précipiter ?',
       texte: <>Une solution contient des ions Ni²⁺ à c = 1,0×10⁻²{NB}mol/L. On ajoute de la soude : l’hydroxyde de nickel(II) Ni(OH)₂(s) ⇌ Ni²⁺ + 2 HO⁻ (Ks = {sci1(NI.Ks)}) précipite dès que Qr atteint Ks, soit Ks = c × [HO⁻]². La concentration [HO⁻] à ce moment est la <strong>concentration de début de précipitation</strong>.</>,
       tache: { type: 'num', q: 'Calculez [HO⁻] au début de la précipitation (en mol/L, 2 chiffres significatifs).', unite: 'mol/L', vrai: OH_NI, tol: 0.05, affiche: v => sci1(v), cs: 2, carnet: false,
-        calcul: () => ['Ks = c × [HO⁻]² donc [HO⁻]² = Ks ÷ c = 1,6×10⁻¹⁶ ÷ 1,0×10⁻² = 1,6×10⁻¹⁴.', `[HO⁻] = √(1,6×10⁻¹⁴) = ${sci2(OH_NI)} mol/L, soit environ ${sci1(OH_NI)} mol/L.`],
-        pieges: [[NI.Ks / 0.01, 'Vous avez oublié la racine carrée : Ks = c × [HO⁻]², donc [HO⁻] = √(Ks ÷ c).'], [Math.sqrt(NI.Ks), 'Vous avez oublié de diviser Ks par la concentration c avant la racine.'], [NI.Ks * 0.01, 'On divise Ks par c (on ne multiplie pas).']],
-        expl: `[HO⁻] = √(Ks ÷ c) = √(1,6×10⁻¹⁶ ÷ 1,0×10⁻²) ≈ ${sci1(OH_NI)} mol/L.`, indice: 'Ks = c × [HO⁻]² : isolez [HO⁻]² = Ks ÷ c, puis prenez la racine carrée (1,6×10⁻¹⁴ = 16×10⁻¹⁵ ou 160×10⁻¹⁶ pour mieux manipuler).' } },
+        calcul: () => ['Ks = c × [HO⁻]² donc [HO⁻]² = frac(Ks|c) = frac(1,6×10⁻¹⁶|1,0×10⁻²) = 1,6×10⁻¹⁴.', `[HO⁻] = √(1,6×10⁻¹⁴) = ${sci2(OH_NI)} mol/L, soit environ ${sci1(OH_NI)} mol/L.`],
+        pieges: [[NI.Ks / 0.01, 'Vous avez oublié la racine carrée : Ks = c × [HO⁻]², donc [HO⁻] = √(frac(Ks|c)).'], [Math.sqrt(NI.Ks), 'Vous avez oublié de diviser Ks par la concentration c avant la racine.'], [NI.Ks * 0.01, 'On divise Ks par c (on ne multiplie pas).']],
+        expl: `[HO⁻] = √(frac(Ks|c)) = √(frac(1,6×10⁻¹⁶|1,0×10⁻²)) ≈ ${sci1(OH_NI)} mol/L.`, indice: 'Ks = c × [HO⁻]² : isolez [HO⁻]² = frac(Ks|c), puis prenez la racine carrée (1,6×10⁻¹⁴ = 16×10⁻¹⁵ ou 160×10⁻¹⁶ pour mieux manipuler).' } },
     { id: 'phdebut', titre: 'Du [HO⁻] au pH',
       texte: <>On a trouvé [HO⁻] = {sci1(OH_NI_AFF)}{NB}mol/L au début de la précipitation de Ni(OH)₂. Le pH se déduit de [HO⁻] par <strong>pH = 14 + log [HO⁻]</strong> (à 25 °C, car pH + pOH = 14 avec pOH = −log [HO⁻]). Remarquez la poignée rouge : elle règle le pH du bécher.</>,
       tache: { type: 'num', q: 'Calculez le pH de début de précipitation de Ni(OH)₂ (2 chiffres significatifs).', unite: '', vrai: PH_NI, tol: 0.02, affiche: v => nbf(v, 1), cs: 2, carnet: false,
@@ -96,15 +96,15 @@ export function SimulationHyd() {
         pieges: [[14 - PH_NI, `Vous avez calculé le pOH (−log [HO⁻] = ${nbf(14 - PH_NI, 1)}) : le pH vaut 14 − pOH.`], [-Math.log10(OH_NI_AFF) * -1, 'Le logarithme de [HO⁻] est négatif : il faut ajouter 14.']],
         expl: `pH = 14 + log (1,3×10⁻⁷) ≈ ${nbf(PH_NI, 1)}.`, indice: 'log (1,3×10⁻⁷) = log 1,3 + (−7) ≈ −6,9 : ajoutez 14. Une solution où précipite un hydroxyde est basique : pH supérieur à 7.' } },
     { id: 'exposant', titre: 'Quand l’exposant n’est pas 2',
-      texte: <>Pour le chrome(III), Cr(OH)₃(s) ⇌ Cr³⁺ + 3 HO⁻ avec Ks = {sci1(CR.Ks)} et c = 1,0×10⁻²{NB}mol/L : Ks = c × [HO⁻]³. Il faut donc une <strong>racine cubique</strong> : [HO⁻] = ∛(Ks ÷ c). Le pH se calcule ensuite comme avant.</>,
+      texte: <>Pour le chrome(III), Cr(OH)₃(s) ⇌ Cr³⁺ + 3 HO⁻ avec Ks = {sci1(CR.Ks)} et c = 1,0×10⁻²{NB}mol/L : Ks = c × [HO⁻]³. Il faut donc une <strong>racine cubique</strong> : [HO⁻] = ∛(<Frac haut={<>Ks</>} bas={<>c</>} />). Le pH se calcule ensuite comme avant.</>,
       tache: { type: 'num', q: 'Calculez le pH de début de précipitation de Cr(OH)₃ (2 chiffres significatifs).', unite: '', vrai: PH_CR, tol: 0.02, affiche: v => nbf(v, 1), cs: 2, carnet: false,
-        calcul: () => ['[HO⁻]³ = Ks ÷ c = 6,7×10⁻³¹ ÷ 1,0×10⁻² = 6,7×10⁻²⁹.', `[HO⁻] = ∛(6,7×10⁻²⁹) = ${sci2(M.ohSeuil(CR, 0.01))} mol/L ; pH = 14 + log [HO⁻] = ${nbf(PH_CR, 2)}, soit environ ${nbf(PH_CR, 1)}.`],
+        calcul: () => ['[HO⁻]³ = frac(Ks|c) = frac(6,7×10⁻³¹|1,0×10⁻²) = 6,7×10⁻²⁹.', `[HO⁻] = ∛(6,7×10⁻²⁹) = ${sci2(M.ohSeuil(CR, 0.01))} mol/L ; pH = 14 + log [HO⁻] = ${nbf(PH_CR, 2)}, soit environ ${nbf(PH_CR, 1)}.`],
         pieges: [[14 - PH_CR, 'Vous avez calculé le pOH : le pH vaut 14 − pOH.'], [M.phDe(Math.sqrt(CR.Ks / 0.01)), 'Vous avez pris une racine carrée : pour Cr(OH)₃, Ks = c × [HO⁻]³ demande une racine cubique.'], [M.phDe(Math.cbrt(CR.Ks)), 'Vous avez oublié de diviser Ks par c avant la racine cubique.']],
-        expl: `[HO⁻] = ∛(Ks ÷ c) = ∛(6,7×10⁻²⁹) ≈ ${sci1(M.ohSeuil(CR, 0.01))} mol/L ; pH = 14 + log [HO⁻] ≈ ${nbf(PH_CR, 1)}.`, indice: 'Ks ÷ c = 6,7×10⁻²⁹ = 67×10⁻³⁰ : la racine cubique d’une puissance de 10 multiple de 3 est facile. Puis pH = 14 + log [HO⁻].' } },
+        expl: `[HO⁻] = ∛(frac(Ks|c)) = ∛(6,7×10⁻²⁹) ≈ ${sci1(M.ohSeuil(CR, 0.01))} mol/L ; pH = 14 + log [HO⁻] ≈ ${nbf(PH_CR, 1)}.`, indice: 'frac(Ks|c) = 6,7×10⁻²⁹ = 67×10⁻³⁰ : la racine cubique d’une puissance de 10 multiple de 3 est facile. Puis pH = 14 + log [HO⁻].' } },
     { id: 'axe', titre: 'Qui précipite en premier ?',
       retenirTitre: 'À retenir : le pH de début de précipitation',
       retenir: <><SvgSeuilCarte/><ul style={ULS}>
-        <li>Pour M(OH)ₙ : <strong>Ks = [Mⁿ⁺] × [HO⁻]ⁿ</strong>, donc [HO⁻] de début = <strong>(Ks ÷ c)<sup>1/n</sup></strong> et <strong>pH = 14 + log [HO⁻]</strong>.</li>
+        <li>Pour M(OH)ₙ : <strong>Ks = [Mⁿ⁺] × [HO⁻]ⁿ</strong>, donc [HO⁻] de début = <strong><Frac haut={<>Ks</>} bas={<>c</>} /><sup>1/n</sup></strong> et <strong>pH = 14 + log [HO⁻]</strong>.</li>
         <li>L’exposant n est le coefficient de HO⁻ : racine carrée pour M(OH)₂, racine cubique pour M(OH)₃.</li>
         <li>Plus Ks est petit (à même concentration et même formule), plus le pH de début est bas.</li></ul></>,
       texte: <>Sur l’axe de pH, une barre colorée montre pour chaque cation la zone où il précipite : elle commence au pH de début de précipitation. Ici Cr³⁺ (violet) et Ni²⁺ (vert) sont chacun à 1,0×10⁻²{NB}mol/L. Faites glisser la poignée, ou ajoutez la soude, et regardez quel solide apparaît en premier.</>,
@@ -114,14 +114,14 @@ export function SimulationHyd() {
     { id: 'fin', titre: 'Quand a-t-on fini de précipiter ?',
       texte: <>La précipitation ne s’arrête pas d’un coup : plus le pH monte, plus il reste peu d’ions en solution. On convient qu’un cation est <strong>quasi totalement précipité</strong> quand il n’en reste que 1,0×10⁻⁵{NB}mol/L (c’est une convention, voir hypothèses). Le pH de fin de précipitation se calcule comme le pH de début, avec c = 1,0×10⁻⁵{NB}mol/L. Pour Mn(OH)₂ : Ks = {sci1(MN.Ks)}, n = 2.</>,
       tache: { type: 'num', q: 'Calculez le pH de fin de précipitation de Mn(OH)₂ (2 chiffres significatifs).', unite: '', vrai: PH_MN_FIN, tol: 0.02, affiche: v => nbf(v, 1), cs: 2, carnet: false,
-        calcul: () => ['[HO⁻]² = Ks ÷ c = 2×10⁻¹³ ÷ 1,0×10⁻⁵ = 2×10⁻⁸.', `[HO⁻] = √(2×10⁻⁸) = ${sci2(M.ohSeuil(MN, 1e-5))} mol/L ; pH = 14 + log [HO⁻] = ${nbf(PH_MN_FIN, 2)}, soit environ ${nbf(PH_MN_FIN, 1)}.`],
+        calcul: () => ['[HO⁻]² = frac(Ks|c) = frac(2×10⁻¹³|1,0×10⁻⁵) = 2×10⁻⁸.', `[HO⁻] = √(2×10⁻⁸) = ${sci2(M.ohSeuil(MN, 1e-5))} mol/L ; pH = 14 + log [HO⁻] = ${nbf(PH_MN_FIN, 2)}, soit environ ${nbf(PH_MN_FIN, 1)}.`],
         pieges: [[M.phDebut(MN, 0.01), 'Vous avez utilisé la concentration de départ (1,0×10⁻² mol/L) : pour la fin, c = 1,0×10⁻⁵ mol/L.'], [14 - PH_MN_FIN, 'Vous avez donné le pOH : le pH vaut 14 − pOH.'], [M.phDe(MN.Ks / 1e-5), 'Vous avez oublié la racine carrée : Ks = c × [HO⁻]².']],
-        expl: `[HO⁻] = √(Ks ÷ 1,0×10⁻⁵) = √(2×10⁻⁸) ≈ ${sci1(M.ohSeuil(MN, 1e-5))} mol/L ; pH ≈ ${nbf(PH_MN_FIN, 1)}.`, indice: 'Même méthode que pour le début, en remplaçant c par 1,0×10⁻⁵ mol/L : [HO⁻] = √(Ks ÷ 1,0×10⁻⁵), puis pH = 14 + log [HO⁻].' } },
+        expl: `[HO⁻] = √(frac(Ks|1,0×10⁻⁵)) = √(2×10⁻⁸) ≈ ${sci1(M.ohSeuil(MN, 1e-5))} mol/L ; pH ≈ ${nbf(PH_MN_FIN, 1)}.`, indice: 'Même méthode que pour le début, en remplaçant c par 1,0×10⁻⁵ mol/L : [HO⁻] = √(frac(Ks|1,0×10⁻⁵)), puis pH = 14 + log [HO⁻].' } },
     { id: 'fenetre', titre: 'Séparer deux cations',
       retenirTitre: 'À retenir : début et fin de précipitation',
       retenir: <><SvgFinCarte/><ul style={ULS}>
         <li>Au pH de début, la concentration de l’ion métallique commence à diminuer ; la précipitation est dite <strong>quasi totale</strong> quand il en reste 1,0×10⁻⁵ mol/L (convention).</li>
-        <li>Même méthode pour la fin : [HO⁻] = (Ks ÷ 1,0×10⁻⁵)<sup>1/n</sup>, puis pH = 14 + log [HO⁻].</li>
+        <li>Même méthode pour la fin : [HO⁻] = <Frac haut={<>Ks</>} bas={<>1,0×10⁻⁵</>} /><sup>1/n</sup>, puis pH = 14 + log [HO⁻].</li>
         <li>Plus n est grand, plus la concentration chute vite quand le pH augmente.</li></ul></>,
       texte: <>Pour Cr³⁺ et Ni²⁺ (1,0×10⁻²{NB}mol/L chacun), Cr(OH)₃ est quasi totalement précipité à pH {ph1(W_CRNI.lo)}, et Ni(OH)₂ commence à précipiter à pH {ph1(W_CRNI.hi)}. Pour <strong>séparer</strong> les deux cations, on cherche un pH où le premier est quasi totalement précipité (donc filtrable) alors que le second est encore entièrement dissous. Essayez plusieurs valeurs avec la poignée.</>,
       tache: { type: 'qcm', q: 'Quel pH permet de séparer Cr³⁺ de Ni²⁺ ?', options: ['pH 8,0', 'pH 4,0', 'pH 6,5', 'pH 9,5'], bonne: 2,
@@ -143,11 +143,11 @@ export function SimulationHyd() {
         <li><strong>Fenêtre</strong> = du pH de fin de précipitation du premier au pH de début du second.</li>
         <li>Fenêtre nette (plus d’une unité de pH) : séparation facile. Très étroite (moins de 0,3 unité) : inutilisable en pratique. Négative : <strong>chevauchement</strong>, séparation impossible.</li>
         <li>On choisit un pH au milieu de la fenêtre.</li></ul></>,
-      texte: <>Le pH de début dépend de la concentration c : [HO⁻] = √(Ks ÷ c) pour M(OH)₂. On dilue dix fois la solution d’ions Ni²⁺ de l’étape 2 : c = 1,0×10⁻³{NB}mol/L. Rappel : Ks(Ni(OH)₂) = {sci1(NI.Ks)} ; avec c = 1,0×10⁻²{NB}mol/L, le pH de début valait {ph1(PH_NI)}.</>,
+      texte: <>Le pH de début dépend de la concentration c : [HO⁻] = √(<Frac haut={<>Ks</>} bas={<>c</>} />) pour M(OH)₂. On dilue dix fois la solution d’ions Ni²⁺ de l’étape 2 : c = 1,0×10⁻³{NB}mol/L. Rappel : Ks(Ni(OH)₂) = {sci1(NI.Ks)} ; avec c = 1,0×10⁻²{NB}mol/L, le pH de début valait {ph1(PH_NI)}.</>,
       tache: { type: 'num', q: 'Calculez le pH de début de précipitation de Ni(OH)₂ pour c = 1,0×10⁻³ mol/L (2 chiffres significatifs).', unite: '', vrai: PH_NI_DIL, tol: 0.02, affiche: v => nbf(v, 1), cs: 2, carnet: false,
-        calcul: () => ['[HO⁻]² = Ks ÷ c = 1,6×10⁻¹⁶ ÷ 1,0×10⁻³ = 1,6×10⁻¹³.', `[HO⁻] = √(1,6×10⁻¹³) = ${sci2(M.ohSeuil(NI, 1e-3))} mol/L ; pH = 14 + log [HO⁻] = ${nbf(PH_NI_DIL, 2)}, soit environ ${nbf(PH_NI_DIL, 1)}.`],
+        calcul: () => ['[HO⁻]² = frac(Ks|c) = frac(1,6×10⁻¹⁶|1,0×10⁻³) = 1,6×10⁻¹³.', `[HO⁻] = √(1,6×10⁻¹³) = ${sci2(M.ohSeuil(NI, 1e-3))} mol/L ; pH = 14 + log [HO⁻] = ${nbf(PH_NI_DIL, 2)}, soit environ ${nbf(PH_NI_DIL, 1)}.`],
         pieges: [[PH_NI, 'Vous avez gardé la concentration de l’étape 2 (1,0×10⁻² mol/L) : ici c = 1,0×10⁻³ mol/L.'], [PH_NI - 0.5, 'Sens inversé : diluer diminue c, donc il faut plus de HO⁻ et le pH de début augmente.'], [14 - PH_NI_DIL, 'Vous avez donné le pOH : le pH vaut 14 − pOH.']],
-        expl: `[HO⁻] = √(1,6×10⁻¹³) ≈ ${sci1(M.ohSeuil(NI, 1e-3))} mol/L ; pH ≈ ${nbf(PH_NI_DIL, 1)} : dix fois plus dilué, le pH de début monte de 0,5 (1 ÷ n avec n = 2).`, indice: 'Même méthode qu’à l’étape 2 avec c = 1,0×10⁻³ mol/L : [HO⁻] = √(Ks ÷ c), puis pH = 14 + log [HO⁻].' } },
+        expl: `[HO⁻] = √(1,6×10⁻¹³) ≈ ${sci1(M.ohSeuil(NI, 1e-3))} mol/L ; pH ≈ ${nbf(PH_NI_DIL, 1)} : dix fois plus dilué, le pH de début monte de 0,5 (frac(1|n) avec n = 2).`, indice: 'Même méthode qu’à l’étape 2 avec c = 1,0×10⁻³ mol/L : [HO⁻] = √(frac(Ks|c)), puis pH = 14 + log [HO⁻].' } },
     { id: 'protocole', titre: 'Le protocole de séparation',
       texte: <>Pour séparer Cr³⁺ et Ni²⁺ au laboratoire (ou dans une usine de traitement de solutions métalliques), on ajoute la soude peu à peu en surveillant le pH avec un pH-mètre. Vous avez vu qu’un pH d’environ {ph1((W_CRNI.lo + W_CRNI.hi) / 2)} est dans la fenêtre. Il faut aussi récupérer le solide formé.</>,
       tache: { type: 'qcm', q: 'Dans quel ordre procède-t-on ?', options: ['on monte le pH jusqu’à 12, puis on filtre', 'on filtre d’abord, puis on ajoute la soude', 'on ajuste le pH dans la fenêtre, on filtre Cr(OH)₃, puis on remonte le pH pour précipiter Ni(OH)₂', 'on ajoute la soude à pH 4, puis on filtre Ni(OH)₂'], bonne: 2,
@@ -197,14 +197,14 @@ export function SimulationHyd() {
         <label style={{ ...lbl, display: 'block' }}>Votre pH
           <input type="text" inputMode="text" autoComplete="off" value={defi.rep} onChange={e => modifie({ rep: e.target.value })} aria-label="pH choisi" style={{ ...saisie, marginTop: 2 }}/></label>
         <div style={{ height: 8 }}/>
-        <IndiceDefi cache={false}>Calculez le pH de début de précipitation de chaque hydroxyde avec la concentration de l’énoncé : [HO⁻] = (Ks ÷ c)^(1/n), pH = 14 + log [HO⁻]. Le premier à précipiter est celui dont le pH de début est le plus bas : calculez aussi son pH de fin avec c = 1,0×10⁻⁵ mol/L. La fenêtre va de ce pH de fin au pH de début du second.</IndiceDefi>
+        <IndiceDefi cache={false}>Calculez le pH de début de précipitation de chaque hydroxyde avec la concentration de l’énoncé : [HO⁻] = <Frac haut={<>Ks</>} bas={<>c</>} />^(1/n), pH = 14 + log [HO⁻]. Le premier à précipiter est celui dont le pH de début est le plus bas : calculez aussi son pH de fin avec c = 1,0×10⁻⁵ mol/L. La fenêtre va de ce pH de fin au pH de début du second.</IndiceDefi>
       </> : <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : pH de début de précipitation de {cat.solide}</div>
         <div style={{ ...lbl, marginBottom: 8 }}>Une solution d’ions {cat.ion} à {sci1(defi.c)}{NB}mol/L reçoit de la soude (25{NB}°C). Équation : {cat.solide}(s) ⇌ {cat.ion} + {cat.n} HO⁻, Ks = {sci2(cat.Ks)}. Calculez le pH auquel l’hydroxyde commence à précipiter (une décimale).</div>
         <label style={{ ...lbl, display: 'block' }}>Votre pH
           <input type="text" inputMode="text" autoComplete="off" value={defi.rep} onChange={e => modifie({ rep: e.target.value })} aria-label="pH de début de précipitation" style={{ ...saisie, marginTop: 2 }}/></label>
         <div style={{ height: 8 }}/>
-        <IndiceDefi cache={false}>Ks = c × [HO⁻]{M.sup(cat.n)}, donc [HO⁻] = {cat.n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ c). Puis pH = 14 + log [HO⁻].</IndiceDefi>
+        <IndiceDefi cache={false}>Ks = c × [HO⁻]{M.sup(cat.n)}, donc [HO⁻] = {cat.n === 2 ? 'racine carrée' : 'racine cubique'} de frac(Ks|c). Puis pH = 14 + log [HO⁻].</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
         <button onClick={verifier} disabled={!defi.rep.trim()} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -217,10 +217,10 @@ export function SimulationHyd() {
       {defi.verifie && !defi.ok && defi.corr && <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1.5px solid #f59e0b', fontSize: 14, lineHeight: 1.6, color: KIT.txt }}>
         {sep ? (() => { const w = defi.w, P = w.premier, S = w.second; return <>
           <div>pH de début : {P.solide} {ph1(M.phDebut(P, w.cPremier))} ; {S.solide} {ph1(w.hi)} → {P.solide} précipite en premier.</div>
-          <div>pH de fin de {P.solide} : [HO⁻] = {P.n === 2 ? '√' : '∛'}(Ks ÷ 1,0×10⁻⁵) = {sci2(M.ohSeuil(P, M.C_FIN))} mol/L, soit pH <strong>{ph1(w.lo)}</strong>.</div>
+          <div>pH de fin de {P.solide} : [HO⁻] = {P.n === 2 ? '√' : '∛'}frac(Ks|1,0×10⁻⁵) = {sci2(M.ohSeuil(P, M.C_FIN))} mol/L, soit pH <strong>{ph1(w.lo)}</strong>.</div>
           <div>Fenêtre : de <strong>pH {ph1(w.lo)}</strong> à <strong>pH {ph1(w.hi)}</strong> : tout pH entre ces deux valeurs sépare les cations (au milieu : {ph1((w.lo + w.hi) / 2)}).</div></>; })()
           : <>
-          <div>[HO⁻]{M.sup(cat.n)} = Ks ÷ c = {sci2(cat.Ks)} ÷ {sci2(defi.c)} = {sci2(cat.Ks / defi.c)} → [HO⁻] = {sci2(defi.oh)} mol/L.</div>
+          <div>[HO⁻]{M.sup(cat.n)} = <Frac haut={<>Ks</>} bas={<>c</>} /> = <Frac haut={<>{sci2(cat.Ks)}</>} bas={<>{sci2(defi.c)}</>} /> = {sci2(cat.Ks / defi.c)} → [HO⁻] = {sci2(defi.oh)} mol/L.</div>
           <div>pH = 14 + log [HO⁻] = <strong>{nbf(defi.ph, 2)}</strong>, soit environ {nbf(defi.ph, 1)} (tolérance de 0,15 sur le pH).</div></>}
       </div>}
     </div>);
@@ -253,10 +253,10 @@ export function SimulationHyd() {
   const retenirExplore = (
     <Section titre="À retenir (idées et formules clés)" ouvert={ouv.retenir} onBascule={() => setOuv(o => ({ ...o, retenir: !o.retenir }))}>
       {indicesProfond(<ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.7 }}>
-        <li>M(OH)ₙ ⇌ Mⁿ⁺ + n HO⁻ ; Ks = [Mⁿ⁺] × [HO⁻]ⁿ ; début de précipitation : [HO⁻] = (Ks ÷ c)<sup>1/n</sup>, pH = 14 + log [HO⁻].</li>
+        <li>M(OH)ₙ ⇌ Mⁿ⁺ + n HO⁻ ; Ks = [Mⁿ⁺] × [HO⁻]ⁿ ; début de précipitation : [HO⁻] = <Frac haut={<>Ks</>} bas={<>c</>} /><sup>1/n</sup>, pH = 14 + log [HO⁻].</li>
         <li>Fin de précipitation (quasi totale) : même calcul avec c = 1,0×10⁻⁵ mol/L.</li>
         <li>Séparation possible si la fin du premier est à un pH plus bas que le début du second : fenêtre de pH entre les deux.</li>
-        <li>Diluer fait monter le pH de début de précipitation (de 1 ÷ n unité pour une dilution par 10).</li>
+        <li>Diluer fait monter le pH de début de précipitation (de <Frac haut={<>1</>} bas={<>n</>} /> unité pour une dilution par 10).</li>
       </ul>)}
     </Section>);
 

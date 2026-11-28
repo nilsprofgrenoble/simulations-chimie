@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, IndiceDefi , Frac } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./pilePcmModele";
@@ -15,7 +15,7 @@ declarerDefis(SIM_ID, [['polarite', 'Polarité, anode et sens des électrons d�
 // ====================================================
 //  SIM 305 — PILES : POLARITÉ, ÉQUATION DE FONCTIONNEMENT, QUANTITÉ D'ÉLECTRICITÉ (TSTL, enseignement PCM, séquence 4).
 //  Une seule idée : une pile convertit de l'énergie chimique en énergie électrique ; on lit sa polarité au voltmètre, on écrit l'équation de fonctionnement avec les couples,
-//  puis Q = n(e⁻) F et Δt = Q ÷ i. Capacités visées (jamais affichées) : schématiser une pile, polarité, anode/cathode, sens des porteurs, quantité d'électricité Q = n(e⁻) F, durée.
+//  puis Q = n(e⁻) F et Δt = frac(Q|i). Capacités visées (jamais affichées) : schématiser une pile, polarité, anode/cathode, sens des porteurs, quantité d'électricité Q = n(e⁻) F, durée.
 //  Aucune loi de Nernst ni potentiel standard (hors programme TSTL). Modèle : pilePcmModele.js (réutilise pileModele.js de la sim 132, TG, sans le modifier).
 //  Exploration animée : PilePcmExplore.jsx. Schémas : PilePcmSchemas.jsx.
 // ====================================================
@@ -103,7 +103,7 @@ export function SimulationPilePcm() {
         <SvgEquationCarte/>
         <ul style={puces}>
           <li>Pôle + : <strong>réduction</strong> à la cathode ; pôle − : <strong>oxydation</strong> à l’anode ; on égalise les électrons puis on additionne.</li>
-          <li>Les coefficients de l’équation donnent les proportions : <strong>n(A) ÷ α = n(e⁻) ÷ β</strong> pour un réactif A de coefficient α.</li>
+          <li>Les coefficients de l’équation donnent les proportions : <strong><Frac haut={<>n(A)</>} bas={<>α</>} /> = <Frac haut={<>n(e⁻)</>} bas={<>β</>} /></strong> pour un réactif A de coefficient α.</li>
           <li>Moyen de s’en souvenir : <strong>« les électrons s’annulent toujours »</strong>. Idée fausse : « on peut garder des électrons dans l’équation finale. » Vrai : l’équation de fonctionnement n’en contient pas.</li></ul></>,
       texte: <>Retour à la pile <strong>cuivre / zinc</strong>. Chaque demi-pile contient <strong>100 mL</strong> de solution à <strong>0,10 mol/L</strong> ; la lame de zinc pèse <strong>2,0 g</strong> (M(Zn) = 65,4 g/mol). Équation : <strong>Zn + Cu²⁺ → Zn²⁺ + Cu</strong>. Le réactif limitant est celui qui s’épuise le premier. Il y a <strong>0,010 mol</strong> d’ions Cu²⁺ et <strong>0,031 mol</strong> de zinc ; chaque Cu²⁺ ou chaque Zn échange <strong>2 électrons</strong>.</>,
       tache: { type: 'num', q: 'Quantité d’électrons n(e⁻) échangés quand la pile est usée, en mol', unite: 'mol', vrai: PG.ne, tol: 0.03, affiche: v => sci(v, 2), cs: 2,
@@ -118,20 +118,20 @@ export function SimulationPilePcm() {
       texte: <>La pile alimente un récepteur avec un courant d’intensité constante <strong>i = 20 mA</strong>. La charge débitée vérifie <strong>Q = i × Δt</strong>. On a <strong>Q = 1,9 × 10<sup>3</sup> C</strong> (valeur exacte 1 930 C). Attention : <strong>i doit être en ampères</strong>.</>,
       tache: { type: 'num', q: 'Durée de fonctionnement Δt, en heures (h)', unite: 'h', vrai: PG.duree_h, tol: 0.03, affiche: v => nbf(v, 1), cs: 2,
         pieges: [[PG.duree_s, 'Le résultat est en secondes : divisez par 3 600 pour avoir des heures.'], [1930 / 20 / 3600, 'Convertissez i en ampères : 20 mA = 0,020 A.']],
-        calcul: () => ['Δt = Q ÷ i = 1 930 ÷ 0,020 = 96 500 s.', '96 500 ÷ 3 600 ≈ 26,8 h ≈ 27 h.'], expl: 'Δt = 1 930 ÷ 0,020 = 96 500 s ≈ 26,8 h ≈ 27 h.', indice: 'Δt = Q ÷ i avec i = 0,020 A ; 1 h = 3 600 s.' } },
+        calcul: () => ['Δt = frac(Q|i) = frac(1 930|0,020) = 96 500 s.', 'frac(96 500|3 600) ≈ 26,8 h ≈ 27 h.'], expl: 'Δt = frac(1 930|0,020) = 96 500 s ≈ 26,8 h ≈ 27 h.', indice: 'Δt = frac(Q|i) avec i = 0,020 A ; 1 h = 3 600 s.' } },
     { id: 'serie', titre: 'Deux piles en série', focus: ['scene'],
       texte: <>On associe <strong>deux piles identiques en série</strong> (le pôle + de l’une relié au pôle − de l’autre), pour alimenter le même récepteur sous 20 mA. La même charge traverse les deux piles.</>,
       tache: { type: 'qcm', q: 'Pour l’association en série de deux piles identiques :', ...QCM.serie,
-        expl: 'Les tensions s’additionnent (2 × 1,10 V), mais la même charge traverse chaque pile : la durée de fonctionnement ne change pas.', indice: 'En série, le même courant traverse les deux piles : chacune débite la charge Q en Δt = Q ÷ i.' } },
+        expl: 'Les tensions s’additionnent (2 × 1,10 V), mais la même charge traverse chaque pile : la durée de fonctionnement ne change pas.', indice: 'En série, le même courant traverse les deux piles : chacune débite la charge Q en Δt = frac(Q|i).' } },
     { id: 'fin', titre: 'Bilan', focus: [],
       retenirTitre: 'À retenir : de la pile à la durée',
       retenir: <>
         <SvgQCarte/>
         <ul style={puces}>
-          <li>Du réactif limitant à la durée : <strong>n(e⁻) → Q = n(e⁻) × F → Δt = Q ÷ i</strong>, avec F = 96 500 C/mol et <strong>i en ampères</strong>.</li>
+          <li>Du réactif limitant à la durée : <strong>n(e⁻) → Q = n(e⁻) × F → Δt = <Frac haut={<>Q</>} bas={<>i</>} /></strong>, avec F = 96 500 C/mol et <strong>i en ampères</strong>.</li>
           <li>En série, les tensions s’additionnent mais <strong>la capacité Q et la durée ne changent pas</strong>.</li>
           <li>Moyen de s’en souvenir : <strong>« des moles aux coulombs, des coulombs aux secondes »</strong>. Idée fausse : « deux piles en série durent deux fois plus longtemps. » Vrai : elles durent autant, sous une tension double.</li></ul></>,
-      texte: <>Vous savez lire la polarité d’une pile au voltmètre, nommer l’anode et la cathode, écrire l’équation de fonctionnement, calculer la quantité d’électricité Q = n(e⁻) F et la durée de fonctionnement Δt = Q ÷ i. Explorez avec le voltmètre mobile, ou relevez les défis.</> },
+      texte: <>Vous savez lire la polarité d’une pile au voltmètre, nommer l’anode et la cathode, écrire l’équation de fonctionnement, calculer la quantité d’électricité Q = n(e⁻) F et la durée de fonctionnement Δt = <Frac haut={<>Q</>} bas={<>i</>} />. Explorez avec le voltmètre mobile, ou relevez les défis.</> },
   ];
   const hl = id => enGuide && ETAPES[Math.min(etape, ETAPES.length - 1)].focus.includes(id);
   const cadre = id => hl(id) ? { outline: `3px dashed ${ORANGE_GUIDE}`, outlineOffset: 3, borderRadius: 10 } : {};
@@ -180,13 +180,13 @@ export function SimulationPilePcm() {
       msgs.push(proche(t, dt, 0.06) ? 'Votre durée est cohérente avec VOTRE Q ; corrigez d’abord Q.'
         : proche(t, q / (x.I / 1000), 0.06) ? 'Vous avez donné la durée en secondes : divisez par 3 600 pour des heures.'
           : proche(t, q / x.I / 3600, 0.06) ? 'Convertissez i en ampères : divisez les milliampères par 1 000.'
-            : `Avec VOTRE Q = ${fr(Math.round(q))} C : Δt = Q ÷ i = ${fr(Math.round(q))} ÷ ${fr(x.I / 1000)} = ${fr(Math.round(q / (x.I / 1000)))} s, soit ${fr(dt.toFixed(1))} h. Votre valeur est ${t > dt ? 'trop grande' : 'trop petite'}.`);
+            : `Avec VOTRE Q = ${fr(Math.round(q))} C : Δt = frac(Q|i) = frac(${fr(Math.round(q))}|${fr(x.I / 1000)}) = ${fr(Math.round(q / (x.I / 1000)))} s, soit ${fr(dt.toFixed(1))} h. Votre valeur est ${t > dt ? 'trop grande' : 'trop petite'}.`);
     }
     return msgs;
   };
   const correction = () => defi.type === 'polarite'
     ? `Pôle + : électrode ${cote(defi.cotePlus)} (${nomM(defi.plus)}). Anode (pôle −) : électrode ${cote(defi.coteMoins)} (${nomM(defi.moins)}). Les électrons vont de l’anode vers la cathode, donc ${defi.coteMoins === 'g' ? 'de gauche vers droite' : 'de droite vers gauche'}.`
-    : `n(${M.METAUX[defi.plus].ion}) = ${nbf(defi.nIon, 4)} mol → n(e⁻) = ${nbf(defi.neIon, 4)} mol ; n(${nomM(defi.moins)}) = ${nbf(defi.nMet, 4)} mol → n(e⁻) = ${nbf(defi.neMet, 4)} mol. Réactif limitant : ${defi.limitant === 'ion' ? M.METAUX[defi.plus].ion : nomM(defi.moins)}, donc n(e⁻) = ${nbf(defi.ne, 4)} mol ; Q = n(e⁻) × F = ${nbf(defi.Q, 0)} C ; Δt = Q ÷ i = ${nbf(defi.dureeH, 1)} h.`;
+    : `n(${M.METAUX[defi.plus].ion}) = ${nbf(defi.nIon, 4)} mol → n(e⁻) = ${nbf(defi.neIon, 4)} mol ; n(${nomM(defi.moins)}) = ${nbf(defi.nMet, 4)} mol → n(e⁻) = ${nbf(defi.neMet, 4)} mol. Réactif limitant : ${defi.limitant === 'ion' ? M.METAUX[defi.plus].ion : nomM(defi.moins)}, donc n(e⁻) = ${nbf(defi.ne, 4)} mol ; Q = n(e⁻) × F = ${nbf(defi.Q, 0)} C ; Δt = frac(Q|i) = ${nbf(defi.dureeH, 1)} h.`;
   const selectDefi = (cle, nom, options, id) => (
     <div style={{ marginBottom: 8, fontSize: 14 }}>
       <label htmlFor={id} style={{ display: 'block', fontWeight: 700, color: KIT.txt2, marginBottom: 3 }}>{nom}</label>
@@ -218,7 +218,7 @@ export function SimulationPilePcm() {
         : <>
           <div style={{ ...lbl, marginBottom: 8 }}>Pile {nomM(defi.moins).toLowerCase()} / {nomM(defi.plus).toLowerCase()} : la lame de {nomM(defi.moins).toLowerCase()} de masse <strong>{fr(defi.m.toFixed(2))} g</strong> (M = {fr(M.METAUX[defi.moins].M)} g/mol) plonge dans sa solution ; l’autre demi-pile contient <strong>{fr(defi.V)} mL</strong> de solution d’ions {avecIndices(M.METAUX[defi.plus].ion)} à <strong>{fr(defi.c.toFixed(3))} mol/L</strong>. Équation : <strong>{avecIndices(M.equationTexte(defi.moins, defi.plus))}</strong>. Chaque {avecIndices(M.METAUX[defi.plus].ion)} capte {M.METAUX[defi.plus].z} e⁻ ; chaque atome de {nomM(defi.moins).toLowerCase()} en libère {M.METAUX[defi.moins].z}. La pile débite <strong>i = {defi.I} mA</strong> jusqu’à usure complète (F = 96 500 C/mol). Résultats avec 2 chiffres significatifs.</div>
           {champ('q', 'Quantité d’électricité Q', 'C', 'ppc-q')}{champ('t', 'Durée Δt', 'h', 'ppc-t')}
-          <IndiceDefi cache={false}>n = c × V (V en L) ou n = m ÷ M ; n(e⁻) = z × n pour chaque réactif, le plus petit l’emporte ; Q = n(e⁻) × F ; Δt = Q ÷ i (i en A), puis ÷ 3 600 pour des heures.</IndiceDefi>
+          <IndiceDefi cache={false}>n = c × V (V en L) ou n = <Frac haut={<>m</>} bas={<>M</>} /> ; n(e⁻) = z × n pour chaque réactif, le plus petit l’emporte ; Q = n(e⁻) × F ; Δt = <Frac haut={<>Q</>} bas={<>i</>} /> (i en A), puis divisez par 3 600 pour des heures.</IndiceDefi>
         </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="ppc-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -238,7 +238,7 @@ export function SimulationPilePcm() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Pile idéale</strong> : le courant i est constant jusqu’à épuisement du réactif limitant ; en réalité la tension baisse et la pile s’arrête plus tôt (résistance interne, concentrations qui changent).</li>
       <li><strong>Polarité</strong> : elle se lit au voltmètre (signe de la tension) ; aucune loi de Nernst ni potentiel standard n’est utilisé. Les valeurs de tension à vide affichées sont des données de la simulation.</li>
-      <li><strong>Quantité d’électricité</strong> Q = n(e⁻) F avec F = 96 500 C/mol ; Δt = Q ÷ i ; la réaction est supposée totale, un seul réactif limitant.</li>
+      <li><strong>Quantité d’électricité</strong> Q = n(e⁻) F avec F = 96 500 C/mol ; Δt = <Frac haut={<>Q</>} bas={<>i</>} /> ; la réaction est supposée totale, un seul réactif limitant.</li>
       <li><strong>Demi-piles</strong> : 100 mL de solution à 0,10 mol/L (sauf défi), lame de 2,0 g ; le pont salin ne contient que des ions spectateurs ; les ions du pont ne participent pas aux réactions aux électrodes.</li>
       <li><strong>Valeurs</strong> : masses, concentrations, volumes et intensités sont inventés pour la simulation ; les durées affichées (plusieurs heures) sont accélérées à l’écran.</li>
     </ul>);
@@ -260,7 +260,7 @@ export function SimulationPilePcm() {
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>Tension positive : borne V sur le pôle + ; anode = pôle − = oxydation ; cathode = pôle + = réduction</li>
         <li>Électrons : de l’anode vers la cathode, dans le fil ; cations du pont : vers la cathode</li>
-        <li>Q = n(e⁻) × F (F = 96 500 C/mol) ; Δt = Q ÷ i (i en A)</li>
+        <li>Q = n(e⁻) × F (F = 96 500 C/mol) ; Δt = <Frac haut={<>Q</>} bas={<>i</>} /> (i en A)</li>
       </ul>
     </ARetenir>);
 
@@ -279,7 +279,7 @@ export function SimulationPilePcm() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Piles : polarité, équation de fonctionnement et durée</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une <strong>pile</strong> transforme de l’énergie chimique en énergie électrique. On lit sa <strong>polarité</strong> au voltmètre, on écrit son <strong>équation de fonctionnement</strong>, puis on calcule la quantité d’électricité <strong>Q = n(e⁻) F</strong> et la <strong>durée</strong> Δt = Q ÷ i.</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Une <strong>pile</strong> transforme de l’énergie chimique en énergie électrique. On lit sa <strong>polarité</strong> au voltmètre, on écrit son <strong>équation de fonctionnement</strong>, puis on calcule la quantité d’électricité <strong>Q = n(e⁻) F</strong> et la <strong>durée</strong> Δt = <Frac haut={<>Q</>} bas={<>i</>} />.</div>
       {!enExplore && <div className={`ppc-l1${enGuide || enDefi ? ' cote' : ''}`}>
         {enGuide ? <div className="ppc-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : <div className="ppc-carte">{panneauHypo}</div>}
         <div className="ppc-main">

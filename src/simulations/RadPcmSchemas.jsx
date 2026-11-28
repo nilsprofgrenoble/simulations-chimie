@@ -2,6 +2,7 @@
 // sources d'activité en échelle logarithmique, protection, cartes « À retenir ».
 import { C } from './vecteursVASchemas';
 import * as M from './radPcmModele';
+import { FormuleSvg } from '../svgFrac';
 const stl = { userSelect: 'none', WebkitUserSelect: 'none', width: '100%', height: 'auto', display: 'block', margin: '0 auto 6px', background: '#fff', borderRadius: 8, border: `1px solid ${C.clair}` };
 const T = ({ x, y, children, c = C.encre, s = 14, w = 700, a = 'start' }) => <text x={x} y={y} fontSize={s} fontWeight={w} fill={c} textAnchor={a}>{children}</text>;
 const nbf = (v, d) => Number(v).toFixed(d).replace('.', ',');
@@ -81,7 +82,7 @@ const courbe = (R, f, xmax, n = 80) => Array.from({ length: n + 1 }, (_, i) => {
 
 // Décroissance de N / N0 : courbe de la loi (bleu), pas d'Euler (escalier orange), tirage au hasard (points gris), niveau N0/2, curseur d'instant.
 // opts : l (h⁻¹), tMax (h), yTicks, euler (Δt en h ou null), trace [{t, f}], niveau (fraction ou null), cursor (instant ou null), masqueCourbe (bool), points [{t, f}]
-export function GrapheDecroissance({ l = 0.12, tMax = 12, xStep = 2, ymax = 1, yTicks = [[0, '0'], [0.5, 'N₀ ÷ 2'], [1, 'N₀']], euler = null, trace = null, niveau = null, cursor = null, masqueCourbe = false, points = null, xLabel = 'temps t (h)', yLabel = 'N (noyaux)', maxWidth = 440, aria, svgRef = null, children = null }) {
+export function GrapheDecroissance({ l = 0.12, tMax = 12, xStep = 2, ymax = 1, yTicks = [[0, '0'], [0.5, 'N₀/2'], [1, 'N₀']], euler = null, trace = null, niveau = null, cursor = null, masqueCourbe = false, points = null, xLabel = 'temps t (h)', yLabel = 'N (noyaux)', maxWidth = 440, aria, svgRef = null, children = null }) {
   const xt = []; for (let t = 0; t <= tMax + 1e-9; t += xStep) xt.push([t, String(t).replace('.', ',')]);
   const R = repere({ xmax: tMax, xTicks: xt, yTicks, ymax, xLabel, yLabel });
   const esc = euler ? M.escalier(1, l, euler, tMax) : null;
@@ -225,7 +226,7 @@ export function SvgLoiCarte() {
         <T x={R.X(1) + 8} y={R.Y(0.5) - 6} s={12.5} c={C.orange}>N₀/2</T><T x={R.X(2) + 8} y={R.Y(0.25) - 6} s={12.5} c={C.orange}>N₀/4</T><T x={R.X(3) + 6} y={R.Y(0.125) - 6} s={12.5} c={C.orange}>N₀/8</T></g>
       <rect x="10" y="160" width="280" height="68" rx="10" fill="#f0fdf4" stroke="#86efac" strokeWidth="1.6"/>
       <T x="150" y="184" s={15} a="middle" c={C.encre}>N(t) = N₀ e^(−λt)</T>
-      <T x="150" y="206" s={15} a="middle" c={C.encre}>t½ = ln 2 ÷ λ</T>
+      <FormuleSvg x={150} y={206} s={15} w={700} c={C.encre} a="middle" parts={['t½ = ', { h: 'ln 2', b: 'λ' }]} />
       <T x="150" y="223" s={12.5} a="middle" c={C.gris} w={600}>λ et t½ en unités de temps inverses</T>
     </Cadre>);
 }

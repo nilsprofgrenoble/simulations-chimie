@@ -98,15 +98,15 @@ export function SimulationOsl() {
     { id: 'periode', titre: 'La période',
       texte: <>Un phénomène est <strong>périodique</strong> s’il se répète identique à lui-même à intervalles de temps réguliers. La <strong>période T</strong> est la plus petite durée au bout de laquelle le phénomène se reproduit ; elle se mesure en <strong>secondes</strong> (s). Sur le graphe, la flèche T joint deux maxima successifs.</>,
       tache: { type: 'num', q: 'Un oscillateur effectue 12 oscillations en 9,0 s. Quelle est sa période T ?', unite: 's', vrai: 0.75, tol: 0.03, affiche: v => nbs(v), cs: 2, carnet: false,
-        calcul: () => ['La période est la durée d’une oscillation : durée totale ÷ nombre d’oscillations.', 'T = 9,0 ÷ 12 = 0,75 s.'],
-        pieges: [[1.33, 'Vous avez calculé 12 ÷ 9,0 : c’est un nombre d’oscillations par seconde (la fréquence), pas une durée.'], [108, 'Vous avez multiplié : la période est la durée d’une seule oscillation, donc la durée totale divisée par le nombre d’oscillations.']],
-        expl: 'T = durée ÷ nombre d’oscillations = 9,0 s ÷ 12 = 0,75 s.', indice: 'La période est la durée d’une seule oscillation : divisez la durée totale par le nombre d’oscillations.' } },
+        calcul: () => ['La période est la durée d’une oscillation : durée totale divisée par le nombre d’oscillations.', 'T = frac(9,0|12) = 0,75 s.'],
+        pieges: [[1.33, 'Vous avez calculé frac(12|9,0) : c’est un nombre d’oscillations par seconde (la fréquence), pas une durée.'], [108, 'Vous avez multiplié : la période est la durée d’une seule oscillation, donc la durée totale divisée par le nombre d’oscillations.']],
+        expl: 'T = frac(durée|nombre d’oscillations) = frac(9,0 s|12) = 0,75 s.', indice: 'La période est la durée d’une seule oscillation : divisez la durée totale par le nombre d’oscillations.' } },
     { id: 'frequence', titre: 'La fréquence',
       texte: <>La <strong>fréquence f</strong> est le nombre d’oscillations par seconde ; elle s’exprime en <strong>hertz</strong> (Hz). Plus les oscillations sont rapides, plus la période est courte et plus la fréquence est grande : <strong>f = 1 / T</strong>.</>,
       tache: { type: 'num', q: 'Un autre oscillateur a pour période T = 0,40 s. Quelle est sa fréquence f ?', unite: 'Hz', vrai: 2.5, tol: 0.03, affiche: v => nbs(v, 1), cs: 2, carnet: false,
-        calcul: () => ['f = 1 ÷ T = 1 ÷ 0,40 s.', 'f = 2,5 Hz : 2,5 oscillations par seconde.'],
+        calcul: () => ['f = frac(1|T) = frac(1|0,40 s).', 'f = 2,5 Hz : 2,5 oscillations par seconde.'],
         pieges: [[0.4, 'C’est la valeur de la période : la fréquence est son inverse, f = 1 / T.'], [0.16, 'Vous avez multiplié 0,40 par lui-même : il faut diviser 1 par la période.']],
-        expl: 'f = 1 / T = 1 ÷ 0,40 s = 2,5 Hz.', indice: 'La fréquence est l’inverse de la période : f = 1 / T, avec T en secondes.' } },
+        expl: 'f = 1 / T = frac(1|0,40 s) = 2,5 Hz.', indice: 'La fréquence est l’inverse de la période : f = 1 / T, avec T en secondes.' } },
     { id: 'harmonique', titre: 'L’oscillateur harmonique',
       retenirTitre: 'À retenir : amplitude, période, fréquence', retenir: <><SvgGrandeursCarte/><ul style={ULS}>
         <li>La <strong>période T</strong> (en s) est la durée d’une oscillation.</li>
@@ -125,9 +125,9 @@ export function SimulationOsl() {
     { id: 'tau', titre: 'Le temps caractéristique d’amortissement',
       texte: <>L’amplitude diminue comme une exponentielle : <strong>A(t) = A₀ · e<sup>−t/τ</sup></strong>, où <strong>A₀</strong> est l’amplitude initiale et <strong>τ</strong> le <strong>temps caractéristique d’amortissement</strong> (repère orange sur le graphe). Au bout d’une durée τ, l’amplitude est divisée par e ≈ 2,72 : il en reste environ <strong>37 %</strong>. Plus τ est petit, plus l’amortissement est fort.</>,
       tache: { type: 'num', q: 'Un oscillateur a une amplitude initiale A₀ = 8,0 cm et un temps caractéristique τ = 2,0 s. Quelle est son amplitude à l’instant t = 2,0 s ?', unite: 'cm', vrai: 8 / Math.E, tol: 0.04, affiche: v => nbs(v, 1), cs: 2, carnet: false,
-        calcul: () => ['À t = τ : A = A₀ · e⁻¹ = A₀ ÷ e.', 'A = 8,0 ÷ 2,718 = 2,9 cm, soit environ 37 % de 8,0 cm.'],
-        pieges: [[4, 'Vous avez divisé par 2 : à t = τ, l’amplitude est divisée par e ≈ 2,72, pas par 2.'], [1.1, 'Vous avez calculé e⁻² : à t = τ, l’exposant est −1, car t ÷ τ = 1.']],
-        expl: 'À t = τ, A = A₀ ÷ e = 8,0 ÷ 2,72 ≈ 2,9 cm (environ 37 % de A₀).', indice: 'À t = τ, le rapport t / τ vaut 1 : A = A₀ · e⁻¹ = A₀ ÷ e, avec e ≈ 2,72.' } },
+        calcul: () => ['À t = τ : A = A₀ · e⁻¹ = frac(A₀|e).', 'A = frac(8,0|2,718) = 2,9 cm, soit environ 37 % de 8,0 cm.'],
+        pieges: [[4, 'Vous avez divisé par 2 : à t = τ, l’amplitude est divisée par e ≈ 2,72, pas par 2.'], [1.1, 'Vous avez calculé e⁻² : à t = τ, l’exposant est −1, car frac(t|τ) = 1.']],
+        expl: 'À t = τ, A = frac(A₀|e) = frac(8,0|2,72) ≈ 2,9 cm (environ 37 % de A₀).', indice: 'À t = τ, le rapport t / τ vaut 1 : A = A₀ · e⁻¹ = frac(A₀|e), avec e ≈ 2,72.' } },
     { id: 'critique', titre: 'Le régime critique',
       retenirTitre: 'À retenir : amortissement et temps caractéristique', retenir: <><SvgAmortCarte/><ul style={ULS}>
         <li>Pseudopériode ≈ période propre si l’amortissement est faible.</li>
@@ -206,11 +206,11 @@ export function SimulationOsl() {
         <label htmlFor="osl-per" style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2, marginBottom: 4 }}>Pseudopériode T (s)</label>
         <input id="osl-per" type="text" inputMode="decimal" value={defi.saisie} onChange={e => modifie({ saisie: e.target.value })} placeholder="ex. 1,3" style={{ font: 'inherit', fontSize: 16, padding: '8px 10px', minHeight: 42, borderRadius: 10, border: `1px solid ${KIT.bord}`, width: '100%', boxSizing: 'border-box' }}/>
       </div>
-      <IndiceDefi cache={false}>Repérez un maximum de départ, comptez par exemple 3 ou 4 oscillations jusqu’au maximum suivant, lisez la durée sur l’axe, puis divisez cette durée par le nombre d’oscillations comptées : T = durée ÷ nombre d’oscillations.</IndiceDefi>
+      <IndiceDefi cache={false}>Repérez un maximum de départ, comptez par exemple 3 ou 4 oscillations jusqu’au maximum suivant, lisez la durée sur l’axe, puis divisez cette durée par le nombre d’oscillations comptées : T = <Frac haut={<>durée</>} bas={<>nombre d’oscillations</>} />.</IndiceDefi>
       {boutons(verifierP, 'periode')}
       {defi.verifie && <div role="status" aria-live="polite" style={{ marginTop: 8, fontSize: 14, fontWeight: 700, lineHeight: 1.5, color: defi.ok ? '#15803d' : '#dc2626' }}>{defi.ok ? `✓ Correct : la pseudopériode vaut environ ${nbs(defi.d.Tp)} s.` : `✗ ${defi.r.msg}`}</div>}
       {defi.verifie && !defi.ok && defi.corr && (() => { const N = Math.max(2, Math.min(4, Math.floor(tFin / defi.d.Tp))); return (<div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1.5px solid #f59e0b', fontSize: 14, lineHeight: 1.6, color: KIT.txt }}>
-        Sur la courbe, {N} oscillations durent environ {nbs(N * defi.d.Tp, 1)} s : T = {nbs(N * defi.d.Tp, 1)} ÷ {N} ≈ <strong>{nbs(defi.d.Tp)} s</strong>. La fréquence correspondante est f = 1 / T ≈ {nbs(1 / defi.d.Tp)} Hz.</div>); })()}
+        Sur la courbe, {N} oscillations durent environ {nbs(N * defi.d.Tp, 1)} s : T = frac({nbs(N * defi.d.Tp, 1)}|{N}) ≈ <strong>{nbs(defi.d.Tp)} s</strong>. La fréquence correspondante est f = 1 / T ≈ {nbs(1 / defi.d.Tp)} Hz.</div>); })()}
     </div>);
   })();
 

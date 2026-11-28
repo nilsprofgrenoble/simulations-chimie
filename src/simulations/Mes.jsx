@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond , Frac } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./mesModele";
 import { SceneMes, useCoup } from "./MesScene";
@@ -152,9 +152,9 @@ export function SimulationMes() {
     { id: 'charge', titre: 'Une charge délocalisée',
       texte: <>Dans l’hybride, la charge <strong>−</strong> de l’ion éthanoate n’est pas sur un seul oxygène : elle est <strong>répartie</strong> (δ−). Pour des formes équivalentes, on obtient la charge moyenne d’un atome en <strong>additionnant sa charge dans chaque écriture, puis en divisant par le nombre d’écritures</strong> (la charge de l’ion est de −1 en tout, en unité de charge élémentaire e).</>,
       tache: { type: 'num', q: 'Quelle est la charge moyenne portée par chaque atome d’oxygène de l’ion éthanoate (en e) ?', unite: 'e', vrai: -0.5, tol: 0.03, affiche: v => nb(v, 2), cs: 2, carnet: false,
-        calcul: () => ['Dans la première écriture, un oxygène porte −1 et l’autre 0 ; dans la deuxième, c’est l’inverse.', 'Charge moyenne = (−1 + 0) ÷ 2 = −0,5 e pour chaque oxygène.'],
+        calcul: () => ['Dans la première écriture, un oxygène porte −1 et l’autre 0 ; dans la deuxième, c’est l’inverse.', 'Charge moyenne = frac(−1 + 0|2) = −0,5 e pour chaque oxygène.'],
         pieges: [[-1, 'Vous avez mis toute la charge sur un seul oxygène : dans l’hybride, elle est répartie sur les deux.'], [0.5, 'Le signe est à revoir : l’oxygène porte une charge négative (−).'], [-0.25, 'Vous avez divisé par 4. Il y a deux écritures : divisez la somme −1 + 0 par 2.']],
-        expl: 'Charge moyenne de chaque O = (−1 + 0) ÷ 2 = −0,5 e.', indice: 'Dans la première écriture un oxygène porte −1 et l’autre 0 ; dans la seconde, l’inverse. Faites la moyenne sur les deux écritures.' } },
+        expl: 'Charge moyenne de chaque O = frac(−1 + 0|2) = −0,5 e.', indice: 'Dans la première écriture un oxygène porte −1 et l’autre 0 ; dans la seconde, l’inverse. Faites la moyenne sur les deux écritures.' } },
     { id: 'allyle', titre: 'Un cation : le carbone à 6 électrons',
       retenirTitre: 'À retenir : l’hybride', retenir: <><SvgHybrideCarte/><ul style={ULS}>
         <li>La structure réelle est un <strong>hybride</strong> : une seule structure, intermédiaire entre toutes les formes.</li>
@@ -269,7 +269,7 @@ export function SimulationMes() {
         {defi.ok ? `✓ Correct : ${genre === 'ordre' ? 'ordre moyen' : 'charge moyenne'} = ${nb(defi.d.vrai, 2)}${genre === 'charge' ? ' e' : ''}.` : `✗ ${defi.r.msg}`}</div>}
       {defi.verifie && !defi.ok && defi.corr && <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1.5px solid #f59e0b', fontSize: 14, lineHeight: 1.6, color: KIT.txt }}>
         <div>Dans les {detail.length} écritures, {genre === 'ordre' ? `l’ordre de la liaison ${lien} vaut` : 'la charge de cet atome vaut'} : {detail.map(x => nb(x, 0)).join(' ; ')}.</div>
-        <div>Moyenne = ({detail.map(x => nb(x, 0)).join(' + ')}) ÷ {detail.length} = <strong>{nb(defi.d.vrai, 2)}</strong>.</div></div>}
+        <div>Moyenne = <Frac haut={<>{detail.map(x => nb(x, 0)).join(' + ')}</>} bas={<>{detail.length}</>} /> = <strong>{nb(defi.d.vrai, 2)}</strong>.</div></div>}
     </div>);
   })();
 

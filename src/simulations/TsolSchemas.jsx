@@ -1,6 +1,7 @@
 // Cartes « À retenir » de la simulation 312 (solubilité et température, recristallisation). viewBox de 300 de large, textes de 12,5 à 16, maxWidth 320.
 import { K, svgStyle } from "./schemaOutils";
 import * as M from "./tsolModele";
+import { FormuleSvg } from '../svgFrac';
 
 const cadre = (aria, h, children) => (
   <svg role="img" aria-label={aria} viewBox={`0 0 300 ${h}`} width="100%" style={{ ...svgStyle, maxWidth: 320 }}>
@@ -48,9 +49,9 @@ export function SvgRefroidCarte() {
     <text x="66" y="134" textAnchor="middle" fontSize="12.5" fontWeight="800" fill="#dc2626">T₁ (chaud)</text>
     <text x="234" y="134" textAnchor="middle" fontSize="12.5" fontWeight="800" fill="#0369a1">T₂ (froid)</text>
     <rect x="18" y="144" width="264" height="34" rx="9" fill="#fff" stroke="#b45309" strokeWidth="2"/>
-    <text x="150" y="166" textAnchor="middle" fontSize="14" fontWeight="800" fill={K.txt}>m = (s(T₁) − s(T₂)) × m(eau) ÷ 100</text>
+    <FormuleSvg x={150} y={166} s={14} w={800} c={K.txt} a="middle" parts={['m = ', { h: '(s(T₁) − s(T₂)) × m(eau)', b: '100' }]} />
     <text x="150" y="198" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#15803d">Exemple : NH₄Cl, 60 → 20 °C, 100 g d’eau</text>
-    <text x="150" y="218" textAnchor="middle" fontSize="12.5" fill={K.txt}>({M.nbf(s1, 1)} − {M.nbf(s2, 1)}) × 100 ÷ 100 = {M.nbf(s1 - s2, 0)} g</text>
+    <FormuleSvg x={150} y={220} s={12.5} w={400} c={K.txt} a="middle" parts={[{ h: `(${M.nbf(s1, 1)} − ${M.nbf(s2, 1)}) × 100`, b: '100' }, ` = ${M.nbf(s1 - s2, 0)} g`]} />
     <text x="150" y="240" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#b45309">s en g pour 100 g d’eau</text>
   </g>);
 }
@@ -62,14 +63,14 @@ export function SvgEauRendementCarte() {
     <text x="150" y="24" textAnchor="middle" fontSize="14.5" fontWeight="800" fill={K.txt}>Recristalliser : deux calculs</text>
     <rect x="16" y="36" width="268" height="86" rx="10" fill="#fff" stroke="#0369a1" strokeWidth="2"/>
     <text x="150" y="56" textAnchor="middle" fontSize="13" fontWeight="800" fill="#0369a1">Eau minimale (à chaud)</text>
-    <text x="150" y="78" textAnchor="middle" fontSize="14" fontWeight="800" fill={K.txt}>m(eau) = 100 × m(solide) ÷ s(T)</text>
+    <FormuleSvg x={150} y={78} s={14} w={800} c={K.txt} a="middle" parts={['m(eau) = ', { h: '100 × m(solide)', b: 's(T)' }]} />
     <text x="150" y="100" textAnchor="middle" fontSize="12.5" fill={K.txt}>30 g de NH₄Cl à 40 °C :</text>
-    <text x="150" y="116" textAnchor="middle" fontSize="12.5" fill={K.txt}>100 × 30 ÷ {M.nbf(s40, 1)} ≈ {M.nbf(M.eauMin(so, 30, 40), 0)} g d’eau</text>
+    <FormuleSvg x={150} y={118} s={12.5} w={400} c={K.txt} a="middle" parts={[{ h: '100 × 30', b: M.nbf(s40, 1) }, ` ≈ ${M.nbf(M.eauMin(so, 30, 40), 0)} g d’eau`]} />
     <rect x="16" y="134" width="268" height="86" rx="10" fill="#fff" stroke="#b45309" strokeWidth="2"/>
     <text x="150" y="154" textAnchor="middle" fontSize="13" fontWeight="800" fill="#b45309">Rendement (au refroidissement)</text>
-    <text x="150" y="176" textAnchor="middle" fontSize="14" fontWeight="800" fill={K.txt}>η = (s(T₁) − s(T₂)) ÷ s(T₁)</text>
+    <FormuleSvg x={150} y={176} s={14} w={800} c={K.txt} a="middle" parts={['η = ', { h: 's(T₁) − s(T₂)', b: 's(T₁)' }]} />
     <text x="150" y="198" textAnchor="middle" fontSize="12.5" fill={K.txt}>NH₄Cl, 60 → 20 °C :</text>
-    <text x="150" y="214" textAnchor="middle" fontSize="12.5" fill={K.txt}>{M.nbf(M.sol(so, 60) - M.sol(so, 20), 0)} ÷ {M.nbf(M.sol(so, 60), 1)} ≈ {M.nbf(r * 100, 0)} %</text>
+    <FormuleSvg x={150} y={216} s={12.5} w={400} c={K.txt} a="middle" parts={[{ h: M.nbf(M.sol(so, 60) - M.sol(so, 20), 0), b: M.nbf(M.sol(so, 60), 1) }, ` ≈ ${M.nbf(r * 100, 0)} %`]} />
     <text x="150" y="244" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#15803d">dissoudre à chaud, cristalliser à froid</text>
   </g>);
 }

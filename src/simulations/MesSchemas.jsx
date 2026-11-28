@@ -3,6 +3,7 @@
 import { K, svgStyle } from "./schemaOutils";
 import * as M from "./mesModele";
 import { SceneMes } from "./MesScene";
+import { FormuleSvg } from '../svgFrac';
 
 const OR = '#ea580c', VERT = '#15803d', ROUGE = '#b91c1c';
 const cadre = (aria, h, children) => (
@@ -32,13 +33,13 @@ export function SvgFormesCarte() {
 // Carte 2 : l'hybride de résonance
 export function SvgHybrideCarte() {
   const e = E('nitrate'), hy = M.hybride(e), w = 170, h = hauteur('nitrate', w), x0 = 65;
-  return cadre('Hybride de résonance de l’ion nitrate : les trois liaisons N–O sont identiques, de longueur intermédiaire, et la charge moins est répartie sur les trois atomes d’oxygène.', 276,
+  return cadre('Hybride de résonance de l’ion nitrate : les trois liaisons N–O sont identiques, de longueur intermédiaire, et la charge moins est répartie sur les trois atomes d’oxygène.', 296,
     <g>
       {t(150, 26, 'L’hybride : la structure réelle', { size: 14.5, gras: true })}
       {mini('nitrate', M.formeInit(e), x0, 34, w, { hybride: hy })}
-      {t(150, 34 + h + 20, 'ordre moyen N–O : (1 + 1 + 2) ÷ 3 = 1,33', { fill: K.txt })}
-      {t(150, 34 + h + 38, 'charge moyenne de O : (−1 − 1 + 0) ÷ 3 = −0,67', { fill: K.txt })}
-      {t(150, 34 + h + 58, 'formes équivalentes : moyenne simple', { gras: true, fill: OR })}
+      <FormuleSvg x={150} y={34 + h + 20} s={12.5} w={400} c={K.txt} a="middle" parts={['ordre moyen N–O : ', { h: '1 + 1 + 2', b: '3' }, ' = 1,33']} />
+      <FormuleSvg x={150} y={34 + h + 54} s={12.5} w={400} c={K.txt} a="middle" parts={['charge moyenne de O : ', { h: '−1 − 1 + 0', b: '3' }, ' = −0,67']} />
+      {t(150, 34 + h + 88, 'formes équivalentes : moyenne simple', { gras: true, fill: OR })}
     </g>);
 }
 // Carte 3 : délocalisation dans un cation

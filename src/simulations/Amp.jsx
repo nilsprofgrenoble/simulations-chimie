@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond , Frac } from "../commun";
 import { Pic } from "../Pictos";
 import * as A from "./ampModele";
 import { SceneAmp } from "./AmpScene";
@@ -148,7 +148,7 @@ export function SimulationAmp() {
       retenirTitre: 'À retenir : amplifier',
       retenir: <><SvgAmpliCarte/><ul style={ULS}>
         <li>L’amplificateur multiplie la tension : <strong>Us = A × Ue</strong>.</li>
-        <li>Le facteur d’amplification <strong>A = Us ÷ Ue</strong> n’a pas d’unité.</li>
+        <li>Le facteur d’amplification <strong>A = <Frac haut={<>Us</>} bas={<>Ue</>} /></strong> n’a pas d’unité.</li>
         <li>Attention aux unités : convertir les mV en V avant de comparer à la plage du CAN.</li></ul></>,
       texte: <>Pour bien exploiter le CAN, il faut que Us,max soit <strong>proche de 5{NB}V sans la dépasser</strong> : on demande que le signal occupe au moins 80 % de la plage, soit <strong>4{NB}V ≤ Us,max ≤ 5{NB}V</strong>. La tension du capteur va maintenant de 0 à Ue,max = 10{NB}mV. Faites glisser la poignée rouge à droite de l’écran de sortie : elle fixe le niveau maximal de Us, donc le facteur A (indiqué sur le schéma).</>,
       tache: { type: 'action', ok: okChoisir, consigne: okChoisir ? '✓ Us,max est entre 4 V et 5 V : la plage du CAN est bien remplie.' : 'Réglez A pour que le haut de la courbe soit entre 4 V et 5 V.', attente: okChoisir ? null : 'Réglez A pour que 4 V ≤ Us,max ≤ 5 V.' } },
@@ -173,11 +173,11 @@ export function SimulationAmp() {
         <li>Un AOP alimenté en ±12 V ne sort jamais plus de <strong>12 V en valeur absolue</strong>.</li>
         <li>Si A × Ue dépasse 12 V, la sortie <strong>sature</strong> : le signal est écrêté.</li>
         <li>Il faut donc éviter un facteur d’amplification trop grand.</li></ul></>,
-      texte: <>Avec un montage <strong>inverseur</strong>, la tension de sortie est <strong>retournée</strong> : le facteur d’amplification A est alors <strong>négatif</strong> (toujours A = Us ÷ Ue). Ici le capteur va de 0 à Ue,max = 10{NB}mV et la sortie descend de 0 jusqu’à Us,min = −2{NB}V.</>,
+      texte: <>Avec un montage <strong>inverseur</strong>, la tension de sortie est <strong>retournée</strong> : le facteur d’amplification A est alors <strong>négatif</strong> (toujours A = <Frac haut={<>Us</>} bas={<>Ue</>} />). Ici le capteur va de 0 à Ue,max = 10{NB}mV et la sortie descend de 0 jusqu’à Us,min = −2{NB}V.</>,
       tache: { type: 'num', q: 'Quelle est la valeur de A (sans unité, avec son signe) ?', unite: '', vrai: A_INV, tol: 0.03, affiche: v => nb(v, 0), cs: 2, carnet: false,
-        calcul: () => ['A = Us ÷ Ue, avec les mêmes unités : Ue,max = 10 mV = 0,010 V.', 'A = −2 V ÷ 0,010 V = −200.'],
-        pieges: [[200, 'Vous avez oublié le signe : la sortie est négative alors que l’entrée est positive, donc A est négatif.'], [-0.2, 'Vous avez divisé −2 V par 10 sans convertir 10 mV en volts (0,010 V).'], [-20, 'Vérifiez la conversion : 10 mV = 0,010 V, donc −2 ÷ 0,010 = −200.']],
-        expl: 'A = Us ÷ Ue = −2 V ÷ 0,010 V = −200 : le signe négatif indique que le signal est retourné.', indice: 'A = Us ÷ Ue : convertissez Ue,max en volts avant de diviser, et gardez le signe de Us.' } },
+        calcul: () => ['A = frac(Us|Ue), avec les mêmes unités : Ue,max = 10 mV = 0,010 V.', 'A = frac(−2 V|0,010 V) = −200.'],
+        pieges: [[200, 'Vous avez oublié le signe : la sortie est négative alors que l’entrée est positive, donc A est négatif.'], [-0.2, 'Vous avez divisé −2 V par 10 sans convertir 10 mV en volts (0,010 V).'], [-20, 'Vérifiez la conversion : 10 mV = 0,010 V, donc frac(−2|0,010) = −200.']],
+        expl: 'A = frac(Us|Ue) = frac(−2 V|0,010 V) = −200 : le signe négatif indique que le signal est retourné.', indice: 'A = frac(Us|Ue) : convertissez Ue,max en volts avant de diviser, et gardez le signe de Us.' } },
     { id: 'bipolaire', titre: 'Un signal alternatif : positif et négatif',
       texte: <>Beaucoup de capteurs, comme un microphone, délivrent une tension <strong>alternative</strong>, qui prend des valeurs positives <strong>et</strong> négatives. Ici, Ue varie de −8{NB}mV à +8{NB}mV et A = 250 : la sortie varie de −2{NB}V à +2{NB}V. Observez la courbe orange et la courbe rouge.</>,
       tache: { type: 'qcm', q: 'Que devient la partie négative du signal pour le CAN ?', options: ['Elle est perdue : le CAN lit 0 V pour toute tension négative', 'Elle est lue normalement, avec des valeurs négatives', 'Elle est lue comme une tension positive de même valeur', 'Elle est amplifiée une seconde fois par le CAN'], bonne: 0,
@@ -260,7 +260,7 @@ export function SimulationAmp() {
   // ---------- hypothèses ----------
   const hypotheses = indicesProfond(
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Amplificateur</strong> : l’AOP est traité comme une boîte noire idéale : Us = A × Ue + Vdc, avec A = Us ÷ Ue (A &gt; 0 pour un montage non inverseur, A &lt; 0 pour un montage inverseur). Les valeurs de A sont données avec 2 chiffres significatifs. Le calcul de A à partir des résistances du montage (A = −R₂ ÷ R₁ pour l’inverseur, A = 1 + R₂ ÷ R₁ pour le non inverseur) n’est pas utilisé ici.</li>
+      <li><strong>Amplificateur</strong> : l’AOP est traité comme une boîte noire idéale : Us = A × Ue + Vdc, avec A = <Frac haut={<>Us</>} bas={<>Ue</>} /> (A &gt; 0 pour un montage non inverseur, A &lt; 0 pour un montage inverseur). Les valeurs de A sont données avec 2 chiffres significatifs. Le calcul de A à partir des résistances du montage (A = −frac(R₂|R₁) pour l’inverseur, A = 1 + <Frac haut={<>R₂</>} bas={<>R₁</>} /> pour le non inverseur) n’est pas utilisé ici.</li>
       <li><strong>Saturation</strong> : la sortie est limitée à ±12 V, la tension d’alimentation. Un AOP réel sature un peu en dessous (vers ±10,5 à ±11 V selon le modèle) ; on garde ±12 V pour simplifier.</li>
       <li><strong>CAN</strong> : modèle idéal, il lit de 0 à 5 V ; une tension négative est lue 0 V et une tension supérieure à 5 V est lue 5 V. La résolution (nombre de bits) n’est pas étudiée ici. Le signal « occupe la plage » quand son amplitude crête à crête (entre son bas et son haut) est d’au moins 80 % de 5 V, soit 4 V : ce seuil est choisi pour l’activité.</li>
       <li><strong>Signal du capteur</strong> : sinusoïde de 1 kHz (choisie pour l’animation) ; la bande passante de l’amplificateur n’est pas limitante. Seules les amplitudes comptent : le déphasage n’est pas étudié.</li>
@@ -280,7 +280,7 @@ export function SimulationAmp() {
   const retenirExplore = (
     <Section titre="À retenir (idées et formules clés)" ouvert={ouv.retenir} onBascule={() => setOuv(o => ({ ...o, retenir: !o.retenir }))}>
       {indicesProfond(<ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.7 }}>
-        <li>Amplificateur : Us = A × Ue ; A = Us ÷ Ue, sans unité (A &lt; 0 pour un montage inverseur).</li>
+        <li>Amplificateur : Us = A × Ue ; A = <Frac haut={<>Us</>} bas={<>Ue</>} />, sans unité (A &lt; 0 pour un montage inverseur).</li>
         <li>Le CAN lit de 0 à 5 V : au-dessus, le signal est écrêté ; en dessous de 0 V, il est perdu.</li>
         <li>Pour remplir la plage : Us,max proche de 5 V (au moins 4 V) sans la dépasser.</li>
         <li>Pour un signal alternatif : Us = A × Ue + Vdc, avec Vdc au milieu de la plage (2,5 V).</li>

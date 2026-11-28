@@ -6041,7 +6041,7 @@ export const PLAUSIBLES = [
       F('il confond longueur d’onde et indice', 'Il ne parle pas d’indice. Son erreur est de croire cette radiation visible.'),
     ] }),
   P({ id: 'prisme2gt-val-angle-divise', domaine: 'Dispersion de la lumière (2GT)', niveau: 2, titre: 'Un angle de 30,7 ° dans le verre', plausible: false,
-    enonce: 'Un rayon rouge arrive sur le prisme avec un angle d’incidence i₁ = 50 °. Le verre a un indice de 1,63 pour le rouge. Un élève écrit : « i₂ = 50 ° ÷ 1,63 = 30,7 ° ».',
+    enonce: 'Un rayon rouge arrive sur le prisme avec un angle d’incidence i₁ = 50 °. Le verre a un indice de 1,63 pour le rouge. Un élève écrit : « i₂ = frac(50 °|1,63) = 30,7 ° ».',
     reperes: [['Loi de Snell-Descartes', 'sin i₁ = n × sin i₂'], ['sin 50 °', '0,766'], ['Résultat correct', 'i₂ ≈ 28,0 °']],
     ver: 'On ne divise pas les angles : ce sont les sinus qui sont reliés. sin i₂ = frac(0,766|1,63) = 0,470, donc i₂ ≈ 28,0 °. Le résultat 30,7 ° est faux.',
     q2: 'Quelle est l’erreur de l’élève ?',

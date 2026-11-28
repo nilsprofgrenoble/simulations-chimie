@@ -3,6 +3,7 @@
 //  Cartes : viewBox de 400, textes ≥ 16. Public daltonien : jamais la couleur seule (traits pleins / tirets, étiquettes).
 // ====================================================
 import { useId } from 'react';
+import { FormuleSvg } from '../svgFrac';
 
 const COL = { bleu: '#0369a1', vert: '#15803d', rouge: '#b91c1c', orange: '#b45309', gris: '#64748b', txt: '#0f172a', clair: '#cbd5e1' };
 const HALO = { stroke: '#fff', strokeWidth: 3.5, paintOrder: 'stroke' };
@@ -63,7 +64,7 @@ export function SvgEnergieCarte() {
       <Tx x={(gx(200) + gx(400)) / 2} y="132" ancre="middle" w={700} halo={false}>UV</Tx><Tx x={(gx(400) + gx(750)) / 2} y="132" ancre="middle" w={700} halo={false}>visible</Tx><Tx x={(gx(750) + gx(850)) / 2 + 2} y="132" ancre="middle" w={700} halo={false}>IR</Tx>
       <Tx x={gx(400)} y="154" ancre="middle" s={16} halo={false} c={COL.gris}>400</Tx><Tx x={gx(750)} y="154" ancre="middle" s={16} halo={false} c={COL.gris}>750 nm</Tx>
       <rect x="84" y="166" width="232" height="56" rx="12" fill="#eff6ff" stroke={COL.bleu} strokeWidth="2.5"/>
-      <Tx x="200" y="192" ancre="middle" s={22} w={700} halo={false}>E = h × c ÷ λ</Tx>
+      <FormuleSvg x={200} y={192} s={22} w={700} c={COL.txt} a="middle" parts={['E = ', { h: 'h × c', b: 'λ' }]} />
       <Tx x="200" y="214" ancre="middle" s={16} halo={false} c={COL.gris}>λ en m, E en J</Tx>
     </svg>);
 }
@@ -85,6 +86,6 @@ export function SvgEtalonnageCarte() {
       <circle cx={cx} cy={ax} r="6" fill="#fff" stroke={COL.orange} strokeWidth="3.5"/>
       <Tx x={x0 + 8} y={ax - 7} c={COL.orange} w={700}>A mesurée</Tx><Tx x={cx + 8} y={yb - 8} c={COL.orange} w={700}>c cherchée</Tx>
       <Tx x="62" y="62" c={COL.bleu} w={700} halo={false}>● 5 étalons</Tx><Tx x="62" y="86" halo={false}>A = k × c</Tx>
-      <Tx x="200" y="226" ancre="middle" s={16} halo={false} c={COL.gris}>c = A ÷ k</Tx>
+      <FormuleSvg x={200} y={226} s={16} w={400} c={COL.gris} a="middle" parts={['c = ', { h: 'A', b: 'k' }]} />
     </svg>);
 }
