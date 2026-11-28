@@ -3215,5 +3215,17 @@
  "77:plausible:sta-val-plan": "VAL828",
  "77:plausible:sta-val-tertiaire": "VAL829",
  "36:sta-electrons": "REA240",
- "36:sta-donneurs": "REA241"
+ "36:sta-donneurs": "REA241",
+ "34:osl-sapp-periode.0": "SAPP719",
+ "34:osl-sapp-periode.1": "SAPP720",
+ "34:osl-sapp-tau.0": "SAPP721",
+ "34:osl-sapp-tau.1": "SAPP722",
+ "37:prevoir:osl-ana-grandeur": "ANA1430",
+ "37:prevoir:osl-ana-frequence": "ANA1431",
+ "37:prevoir:osl-ana-regime": "ANA1432",
+ "37:prevoir:osl-ana-resistance": "ANA1433",
+ "77:plausible:osl-val-pseudoperiode": "VAL830",
+ "77:plausible:osl-val-critique": "VAL831",
+ "36:osl-periode": "REA242",
+ "36:osl-tau": "REA243"
 }

@@ -2703,6 +2703,45 @@ function genStaDonneurs() {
   filtrer(qs);
   return { intro, questions: qs, retenir: ['Carbocation : stabilisé par les donneurs, déstabilisé par les attracteurs.', 'Carbanion : stabilisé par les attracteurs, déstabilisé par les donneurs (ordre inversé).'] };
 }
+function genOslPeriode() {
+  const N = tire([8, 10, 12, 15, 20, 25, 30]);
+  let dt; do { dt = tire([6, 7.5, 9, 12, 15, 18, 24, 30]); } while (dt === N);
+  const T = dt / N, f = N / dt, n60 = 60 * f, g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
+  const intro = `Un oscillateur effectue ${N} oscillations complètes en ${g1(dt)}${NB}s (mesure faite sur la durée totale, de maximum à maximum).`;
+  const q1 = { id: 'p0', type: 'num', q: <>Quelle est la <b>période</b> T des oscillations, en s ?</>, unite: 's', vrai: T, tolRel: 0.03, csMin: 2,
+    aide: 'La période est la durée d’une seule oscillation : durée totale ÷ nombre d’oscillations.',
+    pieges: [[f, 'Vous avez calculé le nombre d’oscillations par seconde (la fréquence) : la période est la durée d’une oscillation.'], [dt * N, 'Vous avez multiplié : divisez la durée totale par le nombre d’oscillations.']],
+    expl: <>T = <Frac haut={<>{g1(dt)}</>} bas={<>{N}</>} /> = <b>{g(T)}{NB}s</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>Quelle est la <b>fréquence</b> f des oscillations, en Hz ?</>, unite: 'Hz', vrai: f, tolRel: 0.03, csMin: 2,
+    aide: 'La fréquence est le nombre d’oscillations par seconde : f = 1 ÷ T, ou nombre d’oscillations ÷ durée.',
+    pieges: [[T, 'Vous avez donné la période : la fréquence est son inverse, f = 1 / T.'], [N * dt, 'Vous avez multiplié : divisez le nombre d’oscillations par la durée.']],
+    expl: <>f = <Frac haut={<>{N}</>} bas={<>{g1(dt)}</>} /> = <b>{g(f)}{NB}Hz</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Combien d’<b>oscillations</b> cet oscillateur effectue-t-il en une minute (60 s) ?</>, unite: '', vrai: n60, tolRel: 0.03, csMin: 2,
+    aide: 'Nombre d’oscillations en 60 s = 60 × fréquence (en Hz).',
+    pieges: [[60 * T, 'Vous avez multiplié 60 par la période : il faut multiplier 60 s par la fréquence (oscillations par seconde).'], [f, 'Vous avez donné la fréquence : c’est le nombre d’oscillations en une seconde, pas en une minute.']],
+    expl: <>n = 60 × {g(f)} = <b>{g1(n60)}</b> oscillations.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['T = durée ÷ nombre d’oscillations ; f = 1 / T.', 'La période se mesure en secondes (s), la fréquence en hertz (Hz).'] };
+}
+function genOslTau() {
+  const A0 = tire([4, 5, 6, 8, 9, 10, 12]), tau = tire([1.5, 2, 2.5, 3, 4]), e = Math.E;
+  const A1 = A0 / e, A2 = A0 / (e * e), r3 = 100 / (e ** 3), g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
+  const intro = `L’amplitude d’un oscillateur faiblement amorti décroît comme A(t) = A₀ · exp(−t/τ), avec A₀ = ${g1(A0)}${NB}cm et τ = ${g1(tau)}${NB}s (on prendra e = 2,718).`;
+  const q1 = { id: 'u0', type: 'num', q: <>Quelle est l’<b>amplitude</b> à l’instant t = τ, en cm ?</>, unite: 'cm', vrai: A1, tolRel: 0.03, csMin: 2,
+    aide: 'À t = τ, t / τ = 1 : A = A₀ · e⁻¹ = A₀ ÷ e.',
+    pieges: [[A0 / 2, 'Vous avez divisé par 2 : l’amplitude est divisée par e ≈ 2,718 au bout d’une durée τ.'], [A2, 'Vous avez calculé pour t = 2τ : ici t / τ = 1.']],
+    expl: <>A = <Frac haut={<>{g1(A0)}</>} bas={<>2,718</>} /> = <b>{g(A1)}{NB}cm</b>.</> };
+  const q2 = { id: 'u1', type: 'num', q: <>Quelle est l’<b>amplitude</b> à l’instant t = 2τ, en cm ?</>, unite: 'cm', vrai: A2, tolRel: 0.03, csMin: 2,
+    aide: 'À t = 2τ, t / τ = 2 : A = A₀ · e⁻² = A₀ ÷ e².',
+    pieges: [[A1, 'Vous avez calculé pour t = τ : ici t / τ = 2, donc il faut diviser par e².'], [A0 / 4, 'Vous avez divisé par 4 : l’amplitude est divisée par e² ≈ 7,39.']],
+    expl: <>A = <Frac haut={<>{g1(A0)}</>} bas={<>2,718²</>} /> = <b>{g(A2)}{NB}cm</b>.</> };
+  const q3 = { id: 'u2', type: 'num', q: <>Quel <b>pourcentage</b> de l’amplitude initiale reste-t-il à l’instant t = 3τ ?</>, unite: '%', vrai: r3, tolRel: 0.04, csMin: 2,
+    aide: 'À t = 3τ : A / A₀ = e⁻³ ; multipliez par 100 pour obtenir un pourcentage.',
+    pieges: [[100 / (e * e), 'Vous avez calculé pour t = 2τ : ici t / τ = 3.'], [100 / 3, 'Vous avez divisé par 3 : l’amplitude est divisée par e³ ≈ 20,1.']],
+    expl: <>A / A₀ = e⁻³ = 0,0498, soit <b>{g1(r3)}{NB}%</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['À t = τ, l’amplitude est divisée par e : il reste environ 37 %.', 'Plus τ est petit, plus l’amortissement est fort.'] };
+}
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
@@ -7196,6 +7235,8 @@ export const FAMILLES = [
   { id: 'meso-hybride', groupe: 'Formules', titre: 'Hybride de résonance : formes, ordre de liaison et charge moyens (terminale STL)', gen: genMesoHybride, domaine: 'Mésomérie' },
   { id: 'sta-electrons', groupe: 'Formules', titre: 'Électrons, groupes d’électrons et charge formelle du carbone d’un intermédiaire (terminale STL)', gen: genStaElectrons, domaine: 'Stabilité des intermédiaires' },
   { id: 'sta-donneurs', groupe: 'Formules', titre: 'Indice de stabilité d’un carbocation et d’un carbanion : donneurs et attracteurs (terminale STL)', gen: genStaDonneurs, domaine: 'Stabilité des intermédiaires' },
+  { id: 'osl-periode', groupe: 'Formules', titre: 'Période et fréquence d’un oscillateur à partir d’une mesure de durée (terminale STL)', gen: genOslPeriode, domaine: 'Oscillations libres' },
+  { id: 'osl-tau', groupe: 'Formules', titre: 'Amplitude d’un oscillateur amorti : temps caractéristique τ (terminale STL)', gen: genOslTau, domaine: 'Oscillations libres' },
   { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },
