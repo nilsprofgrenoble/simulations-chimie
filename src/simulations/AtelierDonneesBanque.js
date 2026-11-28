@@ -4545,7 +4545,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Quantité de matière (2GT) : compter les entités et la mole
   {
-    id: 'mol2gt-balance', domaine: 'Quantité de matière (2GT)', titre: 'Un sac de petits objets à compter', noms: ['Nombre d’objets dans le sac', 'Nombre de paquets d’objets'],
+    id: 'mol2gt-balance', schema: () => ({ type: 'balance' }), domaine: 'Quantité de matière (2GT)', titre: 'Un sac de petits objets à compter', noms: ['Nombre d’objets dans le sac', 'Nombre de paquets d’objets'],
     gen: () => ({ o: tire(['lentille', 'riz', 'perle', 'coquillette']), N: tire([1000, 2000, 4000, 5000, 8000]), paquet: tire([100, 250, 500, 1000]), prix: tire([2.5, 3.2, 4.5]) }),
     build: (p, q) => {
       const o = QM2.objet(p.o), totG = Math.round(p.N * o.m * 1e6) / 1e6, aff = totG >= 1000 ? `${nb(totG / 1000)} kg` : `${nb(totG)} g`;
