@@ -42,7 +42,7 @@ export const RMNS_VAL = [
   P({ id: 'rmns-val-integration', domaine: DOM, niveau: 2, titre: 'Nombres de H déduits d’une intégration', plausible: false,
     enonce: 'Le spectre RMN ¹H d’un composé de formule brute C₄H₈O₂ présente trois signaux dont les paliers d’intégration mesurent 12 mm, 8 mm et 12 mm. Un élève conclut : « Les trois signaux correspondent à 6 H, 4 H et 6 H. »',
     reperes: [['Formule brute', 'C₄H₈O₂ (8 H)'], ['Paliers', '12 mm ; 8 mm ; 12 mm']],
-    ver: 'Hauteur totale : 32 mm ; nombre de H = 8 × 12 / 32 = 3, 8 × 8 / 32 = 2 et 8 × 12 / 32 = 3. Le total de l’élève (16 H) est le double de celui de la molécule.',
+    ver: 'Hauteur totale : 32 mm ; nombre de H = frac(8 × 12|32) = 3, frac(8 × 8|32) = 2 et frac(8 × 12|32) = 3. Le total de l’élève (16 H) est le double de celui de la molécule.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('la somme de ses nombres de H (16) dépasse celle de la molécule (8)', 'Les nombres de H des signaux s’additionnent pour donner le nombre total de H de la formule brute : ici 8, soit 3 H, 2 H et 3 H.'),

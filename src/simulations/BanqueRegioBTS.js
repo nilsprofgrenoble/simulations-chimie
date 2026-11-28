@@ -189,20 +189,20 @@ export const EXERCICES = [
       const EA = tire([85, 90, 95, 100]), d = tire([6, 8, 10, 12]), T = tire([273, 298, 323, 350]);
       const EB = EA + d, r = Math.exp(d * 1000 / (8.314 * T)), p = 100 * r / (1 + r);
       return {
-        enonce: `Pour un alcène dissymétrique, l’addition de HBr suit deux voies qui passent par deux carbocations différents. L’étape 1 est l’étape lente. Les énergies d’activation sont E_a(A) = ${EA} kJ·mol⁻¹ pour la voie A (produit A) et E_a(B) = ${EB} kJ·mol⁻¹ pour la voie B (produit B). La réaction est sous contrôle cinétique à T = ${T} K. Le rapport des vitesses des deux voies vaut v_A / v_B = exp[(E_a(B) − E_a(A)) / (R·T)], avec R = 8,314 J·mol⁻¹·K⁻¹.`,
+        enonce: `Pour un alcène dissymétrique, l’addition de HBr suit deux voies qui passent par deux carbocations différents. L’étape 1 est l’étape lente. Les énergies d’activation sont E_a(A) = ${EA} kJ·mol⁻¹ pour la voie A (produit A) et E_a(B) = ${EB} kJ·mol⁻¹ pour la voie B (produit B). La réaction est sous contrôle cinétique à T = ${T} K. Le rapport des vitesses des deux voies vaut frac(v_A|v_B) = exp[frac(E_a(B) − E_a(A)|R·T)], avec R = 8,314 J·mol⁻¹·K⁻¹.`,
         etapes: [
           { id: 'ecart', titre: 'L\'écart des barrières', q: 'Quelle est la différence E_a(B) − E_a(A) ?',
             aide: 'Soustrayez les deux énergies d\'activation (même unité : kJ·mol⁻¹).',
             type: 'saisie', champs: [{ id: 'ecart', lib: 'E_a(B) − E_a(A)', u: 'kJ·mol⁻¹', vrai: d, tol: 0.02 }],
             expl: `${EB} − ${EA} = ${d} kJ·mol⁻¹.` },
-          { id: 'rapport', titre: 'Le rapport des vitesses', q: `Calculez v_A / v_B à ${T} K.`,
+          { id: 'rapport', titre: 'Le rapport des vitesses', q: `Calculez frac(v_A|v_B) à ${T} K.`,
             aide: 'Convertissez l\'écart en J·mol⁻¹ avant de l\'utiliser avec R = 8,314 J·mol⁻¹·K⁻¹.',
-            type: 'saisie', champs: [{ id: 'r', lib: 'v_A / v_B', u: '', vrai: r, tol: 0.03 }],
-            expl: `v_A / v_B = exp(${d} × 1000 / (8,314 × ${T})) = exp(${nb(d * 1000 / (8.314 * T), 3)}) = ${nb(r, 1)}.` },
+            type: 'saisie', champs: [{ id: 'r', lib: 'frac(v_A|v_B)', u: '', vrai: r, tol: 0.03 }],
+            expl: `frac(v_A|v_B) = exp(${d} × 1000 / (8,314 × ${T})) = exp(${nb(d * 1000 / (8.314 * T), 3)}) = ${nb(r, 1)}.` },
           { id: 'pct', titre: 'La proportion du produit A', q: 'En déduire le pourcentage du produit A dans le mélange (contrôle cinétique).',
-            aide: 'Le produit A représente v_A / (v_A + v_B) = r / (1 + r) du mélange.',
+            aide: 'Le produit A représente frac(v_A|v_A + v_B) = frac(r|1 + r) du mélange.',
             type: 'saisie', champs: [{ id: 'pct', lib: 'Produit A', u: '%', vrai: p, tol: 0.015 }],
-            expl: `%A = 100 × r / (1 + r) = 100 × ${nb(r, 1)} / ${nb(1 + r, 1)} = ${nb(p, 1)} %.` },
+            expl: `%A = frac(100 × r|1 + r) = 100 × ${nb(r, 1)} / ${nb(1 + r, 1)} = ${nb(p, 1)} %.` },
           { id: 'temp', titre: 'L\'effet de la température', q: 'Si l\'on augmente la température, comment évolue la proportion du produit A ?',
             aide: 'Regardez la dépendance de exp(ΔE / RT) en T : T est au dénominateur de l\'exposant.',
             o: [V('Elle diminue : la réaction devient moins sélective', 'Quand T augmente, ΔE/RT diminue donc le rapport des vitesses se rapproche de 1 : les deux voies deviennent plus comparables.'),

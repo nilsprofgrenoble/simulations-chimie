@@ -41,7 +41,7 @@ export const GRV_VAL = [
   P({ id: 'grv-val-force', domaine: DOM, niveau: 1, titre: 'Force entre deux blocs : la distance au carré oubliée', plausible: false,
     enonce: 'Un élève calcule la force gravitationnelle entre deux blocs de 1 000 kg séparés de 2,0 m : « F = G × m_A × m_B ÷ d = 6,67×10⁻¹¹ × 1 000 × 1 000 ÷ 2,0 ≈ 3,3×10⁻⁵ N. »',
     reperes: [['Masses', '1 000 kg chacune'], ['Distance', '2,0 m'], ['G', '6,67×10⁻¹¹ N·m²·kg⁻²']],
-    ver: 'La distance doit être au carré : F = 6,67×10⁻¹¹ × 10⁶ ÷ 2,0² ≈ 1,7×10⁻⁵ N. Il a divisé par d au lieu de d².',
+    ver: 'La distance doit être au carré : F = 6,67×10⁻¹¹ × 10⁶ ÷ 2,0² ≈ 1,7×10⁻⁵ N. Il frac(a|d) au lieu de d².',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il a divisé par d et non par d² : F vaut 1,7×10⁻⁵ N environ', 'La formule contient d² : 2,0² = 4,0, d’où F ≈ 1,7×10⁻⁵ N.'),

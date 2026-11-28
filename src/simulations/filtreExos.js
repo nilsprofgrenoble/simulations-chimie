@@ -52,10 +52,10 @@ export const FILT_VAL = [
   P({ id: 'filt-val-fc', domaine: DOM, niveau: 2, titre: 'Lire la fréquence de coupure', plausible: false,
     enonce: 'La courbe A(f) d’un filtre passe-bas a un maximum Amax = 1. Un élève lit la fréquence de coupure là où A = 0,5 et trouve fc = 3,2 kHz.',
     reperes: [['Amax', '1'], ['Valeur de A utilisée', '0,5']],
-    ver: 'La fréquence de coupure correspond à A = Amax ÷ √2 ≈ 0,7 × Amax, soit 0,7 ici. Lire la courbe à A = 0,5 donne une fréquence plus grande que fc pour un passe-bas.',
+    ver: 'La fréquence de coupure correspond à A = Amax ÷ sqrt(2) ≈ 0,7 × Amax, soit 0,7 ici. Lire la courbe à A = 0,5 donne une fréquence plus grande que fc pour un passe-bas.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il a lu la courbe à A = 0,5 au lieu de A = 0,7', 'À la fréquence de coupure, A = Amax ÷ √2 ≈ 0,7 × Amax.'),
+      V('il a lu la courbe à A = 0,5 au lieu de A = 0,7', 'À la fréquence de coupure, A = Amax ÷ sqrt(2) ≈ 0,7 × Amax.'),
       F('il a oublié que le filtre est un passe-bas', 'La nature du filtre n’intervient pas dans la définition de fc.'),
       F('il aurait dû lire A = Amax', 'A = Amax est la valeur maximale, atteinte loin de la coupure, pas à fc.'),
     ] }),
@@ -95,13 +95,13 @@ export const FILT_SAPP = [
       const Ac = p.Amax * Math.SQRT1_2, usc = Ac * p.ue;
       const tokens = { Am: tok(`${p.Amax}`, 'Valeur maximale du facteur d’amplification', p.Amax, ''), ue: tok(`${M.nbf(p.ue, 1)} V`, 'Amplitude de la tension d’entrée', p.ue, 'V') };
       const debut = ['Un filtre a un facteur d’amplification maximal Amax = ', T('Am'), '. On lui applique une tension sinusoïdale d’amplitude Ue,max = ', T('ue'), '. '];
-      if (q === 0) return { tokens, derivees: ['A(fc) = Amax ÷ √2'], texte: [...debut, 'Quelle est la valeur de A à la fréquence de coupure fc ?'], utiles: ['Am'],
+      if (q === 0) return { tokens, derivees: ['A(fc) = Amax ÷ sqrt(2)'], texte: [...debut, 'Quelle est la valeur de A à la fréquence de coupure fc ?'], utiles: ['Am'],
         raisons: { ue: 'L’amplitude d’entrée ne sert pas pour cette question.' },
         cherche: { bonne: 'La valeur de A à la fréquence de coupure', faux: ['La fréquence de coupure fc', 'L’amplitude de la sortie à fc', 'La largeur de la bande passante'] },
-        manque: null, solution: { txt: 'A(fc) = Amax ÷ √2', val: Ac, u: '' } };
-      return { tokens, derivees: ['A(fc) = Amax ÷ √2', 'Us,max = A(fc) × Ue,max'], texte: [...debut, 'Quelle est l’amplitude de la tension de sortie à la fréquence de coupure ?'], utiles: ['Am', 'ue'],
+        manque: null, solution: { txt: 'A(fc) = Amax ÷ sqrt(2)', val: Ac, u: '' } };
+      return { tokens, derivees: ['A(fc) = Amax ÷ sqrt(2)', 'Us,max = A(fc) × Ue,max'], texte: [...debut, 'Quelle est l’amplitude de la tension de sortie à la fréquence de coupure ?'], utiles: ['Am', 'ue'],
         raisons: {}, cherche: { bonne: 'L’amplitude de la sortie à fc (en V)', faux: ['La valeur de A à fc', 'La fréquence de coupure fc', 'L’amplitude de la sortie à très basse fréquence'] },
-        manque: null, solution: { txt: 'Us,max = (Amax ÷ √2) × Ue,max', val: usc, u: 'V' } };
+        manque: null, solution: { txt: 'Us,max = (Amax ÷ sqrt(2)) × Ue,max', val: usc, u: 'V' } };
     }),
   },
 ];

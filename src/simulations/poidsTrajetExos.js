@@ -85,10 +85,10 @@ export const PDT_SAPP = [
         raisons: { L: 'La longueur du rail ne sert pas : le travail du poids ne dépend que des altitudes de départ et d’arrivée.' },
         cherche: { bonne: 'Le travail du poids du chariot (en J)', faux: ['La longueur de rail parcourue (en m)', 'La force exercée par le rail sur le chariot (en N)', 'L’altitude moyenne du chariot (en m)'] },
         manque: null, solution: { txt: 'W(P) = m × g × (zA − zB)', val: W, u: 'J' } };
-      return { tokens, derivees: ['ΔEc = somme des travaux', 'Ec = ½ × m × v²', 'v = √(2 × W ÷ m)'], texte: [...debut, 'Quelle est la vitesse du chariot en bas du rail, en m/s ?'], utiles: ['m', 'zA', 'zB', 'g'],
+      return { tokens, derivees: ['ΔEc = somme des travaux', 'Ec = ½ × m × v²', 'v = sqrt(2 × W ÷ m)'], texte: [...debut, 'Quelle est la vitesse du chariot en bas du rail, en m/s ?'], utiles: ['m', 'zA', 'zB', 'g'],
         raisons: { L: 'La longueur du rail ne sert pas : sans frottement, seul le travail du poids compte, et il ne dépend que des altitudes.' },
         cherche: { bonne: 'La vitesse du chariot en bas du rail (en m/s)', faux: ['L’énergie cinétique du chariot au départ (en J)', 'Le temps de descente du chariot (en s)', 'La force exercée par le rail sur le chariot (en N)'] },
-        manque: null, solution: { txt: 'v = √(2 × m × g × (zA − zB) ÷ m)', val: Math.sqrt(2 * W / p.m), u: 'm/s' } };
+        manque: null, solution: { txt: 'v = sqrt(2 × m × g × (zA − zB) ÷ m)', val: Math.sqrt(2 * W / p.m), u: 'm/s' } };
     }),
   },
   {

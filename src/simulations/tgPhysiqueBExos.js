@@ -220,7 +220,7 @@ export const TGPB_ANA = [
       F('elle augmente, car ces gaz émettent davantage de lumière visible vers le sol', 'Ils absorbent et réémettent surtout de l’infrarouge, pas de la lumière visible.'),
     ] },
   { id: 'ter-ana-planetes', domaine: DOM_TRANSFERTS, titre: 'Mars et Vénus : laquelle est la plus froide ?',
-    ...presenter({ contexte: 'On calcule la température d’équilibre de deux planètes sans atmosphère avec le même modèle : puissance absorbée par m² = (1 − A) × S₀ divisé par 4 ; puissance émise = σ × T⁴. Mars reçoit S₀ = 586 W·m⁻² et a pour albédo A = 0,25. Vénus, plus proche du Soleil, reçoit S₀ = 2601 W·m⁻² mais son albédo est A = 0,77.' }),
+    ...presenter({ contexte: 'On calcule la température d’équilibre de deux planètes sans atmosphère avec le même modèle : puissance absorbée par m² = frac((1 − A) × S₀|4) ; puissance émise = σ × T⁴. Mars reçoit S₀ = 586 W·m⁻² et a pour albédo A = 0,25. Vénus, plus proche du Soleil, reçoit S₀ = 2601 W·m⁻² mais son albédo est A = 0,77.' }),
     q: 'Quelle planète a la température d’équilibre la plus basse ?', options: [
       V('Mars : elle reçoit beaucoup moins de puissance du Soleil', 'P_abs vaut environ 110 W·m⁻² pour Mars et 150 W·m⁻² pour Vénus : Vénus absorbe plus malgré son albédo élevé, donc sa température d’équilibre (227 K) est plus haute que celle de Mars (210 K).'),
       F('Vénus : son albédo élevé réfléchit presque tout le rayonnement', 'L’albédo réduit la puissance absorbée, mais Vénus reçoit 4,4 fois plus de puissance : elle en absorbe encore 23 %, soit environ 150 W·m⁻², contre 110 pour Mars.'),
@@ -246,7 +246,7 @@ export const TGPB_ANA = [
   { id: 'cel-ana-chaleur', domaine: DOM_PHOTONS, titre: 'Une cellule chauffe au soleil',
     ...presenter({ contexte: 'Un module photovoltaïque de rendement 20 % est exposé au plein Soleil. En touchant sa surface, on constate qu’elle est nettement plus chaude que l’air ambiant.' }),
     q: 'Comment l’expliquer ?', options: [
-      V('les 80 % non convertis en électricité se retrouvent en chaleur', 'Le rendement η = P_él divisé par P_reçue vaut 0,20 : les pertes valent 80 % de la puissance reçue, essentiellement sous forme de chaleur.'),
+      V('les 80 % non convertis en électricité se retrouvent en chaleur', 'Le rendement η = frac(P_él|P_reçue) vaut 0,20 : les pertes valent 80 % de la puissance reçue, essentiellement sous forme de chaleur.'),
       F('le courant électrique produit chauffe la surface, car il circule dedans', 'La chaleur dégagée par le courant est faible ; la cause principale est la lumière absorbée qui n’est pas convertie en électricité.'),
       F('le module stocke la chaleur du Soleil comme une batterie', 'Un module photovoltaïque ne stocke pas l’énergie : il la convertit immédiatement ou la perd.'),
       F('le module a un rendement supérieur à 100 % : il crée de l’énergie', 'Un rendement est toujours inférieur à 100 % : un module ne peut pas fournir plus d’énergie qu’il n’en reçoit.'),
@@ -284,8 +284,8 @@ export const TGPB_REL = [
       contexte: 'Un condensateur se charge : la charge q de son armature A augmente au cours du temps. L’intensité i du courant est fléchée vers cette armature.', question: 'On cherche le lien entre i et q.' }),
     q: 'Quelle relation permet de répondre ?', options: [
       V('i = dq / dt', 'L’intensité est le débit de charges : la dérivée de q par rapport au temps. À intensité constante, q = i × Δt.'),
-      F('i = q × t / C', 'Cette expression n’a pas la dimension d’une intensité : i est une charge par unité de temps, soit dq divisé par dt.'),
-      F('i = q / C', 'q / C est une tension (u_C = q / C), pas une intensité.'),
+      F('i = frac(q × t|C)', 'Cette expression n’a pas la dimension d’une intensité : i est une charge par unité de temps, soit dq divisé par dt.'),
+      F('i = frac(q|C)', 'frac(q|C) est une tension (u_C = frac(q|C)), pas une intensité.'),
       F('i = dt / dq', 'Le rapport est inversé : l’intensité est la variation de charge par unité de temps (dq / dt).'),
     ] },
   { id: 'rc-rel-equation', domaine: DOM_RC, titre: 'Équation différentielle de la charge',
@@ -307,7 +307,7 @@ export const TGPB_REL = [
       F('C · dT/dt = h × S × T_ext', 'Le flux dépend de l’écart (T_ext − T) et non de T_ext seule : sinon il resterait non nul à l’équilibre.'),
     ] },
   { id: 'thm-rel-solution', domaine: DOM_THM, titre: 'Solution du refroidissement',
-    ...presenter({ contexte: 'La température d’un café vérifie τ · dT/dt + T = T_ext, avec τ = C / (h × S), la température T_ext de la pièce étant constante. Le café est à T₀ à l’instant initial.', question: 'On cherche l’expression de T(t).' }),
+    ...presenter({ contexte: 'La température d’un café vérifie τ · dT/dt + T = T_ext, avec τ = frac(C|h × S), la température T_ext de la pièce étant constante. Le café est à T₀ à l’instant initial.', question: 'On cherche l’expression de T(t).' }),
     q: 'Quelle expression est la solution ?', options: [
       V('T(t) = T_ext + (T₀ − T_ext) · exp(−t/τ)', 'La solution générale de l’équation différentielle du refroidissement s’écrit T = T_ext + A · exp(−t sur τ). La condition T(0) = T₀ donne A = T₀ − T_ext, et T tend vers T_ext.'),
       F('T(t) = T₀ · exp(−t/τ)', 'Cette fonction tend vers 0, et non vers T_ext : elle ne vérifie pas l’équation (le second membre T_ext est oublié).'),
@@ -325,7 +325,7 @@ export const TGPB_HYP = [
       V('Le condensateur est idéal : sa capacité C est constante et il ne fuit pas', 'La relation q = C × u_C est supposée valable à tout instant, sans courant de fuite.'),
       V('Le condensateur est déchargé à l’instant initial : u_C(0) = 0', 'C’est la condition initiale qui donne la forme E × (1 − exp(−t/τ)).'),
       V('La résistance des fils et de l’interrupteur est négligeable devant R', 'Sinon la résistance totale du circuit ne serait pas R.'),
-      F('L’intensité du courant est constante pendant la charge', 'i = (E − u_C) / R diminue au cours de la charge et tend vers 0.'),
+      F('L’intensité du courant est constante pendant la charge', 'i = frac(E − u_C|R) diminue au cours de la charge et tend vers 0.'),
       F('Des charges traversent l’isolant du condensateur', 'Les charges s’accumulent sur les armatures sans traverser l’isolant : c’est le principe du condensateur.'),
     ] },
   { id: 'gpf-hyp-modele', domaine: DOM_GPF, titre: 'Le modèle du gaz parfait : hypothèses',
@@ -352,13 +352,13 @@ export const TGPB_HYP = [
 // ───────────── VAL : plausible ? ─────────────
 export const TGPB_VAL = [
   P({ id: 'pho-val-energie-photon', domaine: DOM_PHOTONS, niveau: 2, titre: 'Énergie d’un photon vert, calculée par un élève', plausible: false,
-    ...presenter({ contexte: 'Un élève calcule l’énergie d’un photon de lumière verte, de longueur d’onde λ = 530 nm :', suite: '« E = h·c / λ = 6,63×10⁻³⁴ × 3,00×10⁸ / 530 = 3,8×10⁻²⁸ J ».' }),
+    ...presenter({ contexte: 'Un élève calcule l’énergie d’un photon de lumière verte, de longueur d’onde λ = 530 nm :', suite: '« E = frac(h·c|λ) = frac(6,63×10⁻³⁴ × 3,00×10⁸|530) = 3,8×10⁻²⁸ J ».' }),
     reperes: [['Énergie d’un photon visible', 'de l’ordre de 2 à 3 eV, soit environ 3×10⁻¹⁹ à 5×10⁻¹⁹ J'], ['Constantes', 'h = 6,63×10⁻³⁴ J·s ; c = 3,00×10⁸ m·s⁻¹'], ['Unité', 'λ doit être exprimée en mètres : 1 nm = 10⁻⁹ m']],
-    ver: 'La longueur d’onde n’a pas été convertie en mètres : avec λ = 530×10⁻⁹ m, E = 1,989×10⁻²⁵ / 530×10⁻⁹ = 3,75×10⁻¹⁹ J, soit environ 2,3 eV. Une énergie de 10⁻²⁸ J serait 10⁹ fois trop faible pour un photon visible.',
+    ver: 'La longueur d’onde n’a pas été convertie en mètres : avec λ = 530×10⁻⁹ m, E = frac(1,989×10⁻²⁵|530×10⁻⁹) = 3,75×10⁻¹⁹ J, soit environ 2,3 eV. Une énergie de 10⁻²⁸ J serait 10⁹ fois trop faible pour un photon visible.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
       V('λ a été utilisée en nm au lieu de m', 'Avec λ en mètres (530×10⁻⁹ m), E ≈ 3,75×10⁻¹⁹ J ≈ 2,3 eV : c’est un facteur 10⁹ d’écart.'),
-      F('il fallait multiplier h·c par λ au lieu de diviser', 'On trouverait environ 10⁻³¹ J : encore plus absurde. E = h·c / λ est la bonne relation.'),
+      F('il fallait multiplier h·c par λ au lieu de diviser', 'On trouverait environ 10⁻³¹ J : encore plus absurde. E = frac(h·c|λ) est la bonne relation.'),
       F('la valeur de la constante de Planck est fausse', 'h = 6,63×10⁻³⁴ J·s est correcte : l’erreur de 10⁹ vient de l’unité de λ.'),
     ] }),
   P({ id: 'pho-val-ec-ok', domaine: DOM_PHOTONS, niveau: 1, titre: 'Électrons éjectés d’une plaque de sodium', plausible: true,
@@ -374,22 +374,22 @@ export const TGPB_VAL = [
   P({ id: 'pho-val-rendement', domaine: DOM_PHOTONS, niveau: 2, titre: 'Rendement d’un panneau photovoltaïque', plausible: false,
     ...presenter({ contexte: 'Un panneau photovoltaïque reçoit une puissance lumineuse de 1 700 W et fournit une puissance électrique de 304 W. Un élève calcule :', suite: '« η = 1 700 / 304 = 5,6, soit un rendement de 560 % ».' }),
     reperes: [['Rendement', 'η = puissance utile / puissance reçue'], ['Un convertisseur réel', 'η est toujours inférieur à 1 (100 %)'], ['Panneaux du commerce', 'η de l’ordre de 15 à 22 %']],
-    ver: 'Un rendement ne peut pas dépasser 100 % : l’élève a inversé le rapport. η = 304 / 1 700 = 0,18, soit 18 %, valeur courante pour un panneau.',
+    ver: 'Un rendement ne peut pas dépasser 100 % : l’élève a inversé le rapport. η = frac(304|1) 700 = 0,18, soit 18 %, valeur courante pour un panneau.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il a divisé la puissance reçue par la puissance utile', 'η = P_utile / P_reçue = 304 / 1 700 ≈ 18 %.'),
+      V('il a divisé la puissance reçue par la puissance utile', 'η = frac(P_utile|P_reçue) = frac(304|1) 700 ≈ 18 %.'),
       F('il aurait dû convertir les watts en kilowatts', 'Les deux puissances sont en watts : l’unité se simplifie dans le rapport.'),
       F('rien : certains panneaux ont un rendement supérieur à 100 %', 'Aucun convertisseur ne fournit plus d’énergie qu’il n’en reçoit : le rendement reste inférieur à 100 %.'),
     ] }),
   P({ id: 'pho-val-rendement-ok', domaine: DOM_PHOTONS, niveau: 1, titre: 'Une cellule photovoltaïque de 1 m²', plausible: true,
     ...presenter({ contexte: 'Une cellule photovoltaïque de 1,0 m² est éclairée par un rayonnement de puissance surfacique 1 000 W·m⁻². Elle fournit 180 W. Un élève annonce : « η = 18 % ».' }),
     reperes: [['Puissance reçue', 'P_reçue = éclairement × surface'], ['Panneaux du commerce', 'η de l’ordre de 15 à 22 %'], ['Pertes', 'réflexion, photons d’énergie trop faible ou trop forte (chaleur)']],
-    ver: 'P_reçue = 1 000 × 1,0 = 1 000 W et η = 180 / 1 000 = 0,18 : 18 %, dans l’intervalle des panneaux du commerce.',
+    ver: 'P_reçue = 1 000 × 1,0 = 1 000 W et η = frac(180|1) 000 = 0,18 : 18 %, dans l’intervalle des panneaux du commerce.',
     q2: 'Que penser de cette annonce ?',
     options: [
-      V('cohérente : 180 / 1 000 = 18 %, valeur courante', 'Le calcul est correct et l’ordre de grandeur est celui des panneaux du commerce.'),
+      V('cohérente : frac(180|1) 000 = 18 %, valeur courante', 'Le calcul est correct et l’ordre de grandeur est celui des panneaux du commerce.'),
       F('incohérente : le rendement devrait être de 100 %, toute la lumière absorbée étant convertie', 'Une partie de la lumière est réfléchie, et une partie de l’énergie des photons est perdue en chaleur : η reste très inférieur à 100 %.'),
-      F('incohérente : il fallait diviser 1 000 par 180', 'Le rendement est le rapport de la puissance utile à la puissance reçue (180 / 1 000), pas l’inverse.'),
+      F('incohérente : il fallait diviser 1 000 par 180', 'Le rendement est le rapport de la puissance utile à la puissance reçue (frac(180|1) 000), pas l’inverse.'),
     ] }),
   P({ id: 'rc-val-debit-charges', domaine: DOM_RC, niveau: 2, titre: 'Charge accumulée par un courant constant', plausible: false,
     ...presenter({ contexte: 'Un courant constant d’intensité 0,50 mA charge un condensateur pendant 4,0 s. Un élève calcule la charge accumulée :', suite: '« q = i × Δt = 0,50 × 4,0 = 2,0 C ».' }),
@@ -412,7 +412,7 @@ export const TGPB_VAL = [
       F('incohérente : u_C devrait être nulle à t = τ', 'u_C tend vers 0 sans l’atteindre en un temps fini : à t = τ, il reste 37 % de E.'),
     ] }),
   P({ id: 'gpf-val-limites-co2', domaine: DOM_GPF, niveau: 3, titre: 'Dioxyde de carbone comprimé à 100 bar', plausible: false,
-    ...presenter({ contexte: 'Une bouteille de 1,0 L contient du dioxyde de carbone (M = 44 g·mol⁻¹) à 20 °C sous 100 bar. Un élève applique l’équation d’état du gaz parfait :', suite: '« n = P·V / (R·T) = 1,0×10⁷ × 1,0×10⁻³ / (8,314 × 293) = 4,1 mol, donc une masse de 180 g de gaz ».' }),
+    ...presenter({ contexte: 'Une bouteille de 1,0 L contient du dioxyde de carbone (M = 44 g·mol⁻¹) à 20 °C sous 100 bar. Un élève applique l’équation d’état du gaz parfait :', suite: '« n = frac(P·V|R·T) = frac(1,0×10⁷ × 1,0×10⁻³|8,314 × 293) = 4,1 mol, donc une masse de 180 g de gaz ».' }),
     reperes: [['À 20 °C', 'le dioxyde de carbone se liquéfie à partir de 57 bar environ'], ['Dioxyde de carbone liquide', 'masse volumique de l’ordre de 0,8 g·mL⁻¹']],
     ver: 'Le calcul est juste dans le modèle, mais le modèle ne s’applique pas : à 100 bar et 20 °C, le dioxyde de carbone est liquide (environ 0,8 kg dans 1 L), pas un gaz parfait. La valeur de 180 g est donc fausse d’un facteur environ 5.',
     q2: 'Que penser de ce résultat ?',
@@ -434,7 +434,7 @@ export const TGPB_VAL = [
   P({ id: 'tht-val-flux', domaine: DOM_TRANSFERTS, niveau: 2, titre: 'Flux thermique à travers un mur', plausible: false,
     ...presenter({ contexte: 'Un mur de résistance thermique R_th = 0,050 K·W⁻¹ sépare une pièce à 20 °C de l’extérieur à −5 °C. Un élève calcule le flux thermique :', suite: '« Φ = R_th × ΔT = 0,050 × 25 = 1,3 W ».' }),
     reperes: [['Relation', 'Φ = ΔT / R_th, avec R_th en K·W⁻¹'], ['Sens physique', 'plus R_th est grande, plus la paroi isole : le flux est plus faible'], ['Ordre de grandeur', 'le chauffage d’une pièce : quelques centaines de watts à quelques kW']],
-    ver: 'Le flux est inversement proportionnel à la résistance thermique : Φ = ΔT / R_th = 25 / 0,050 = 500 W. Avec la multiplication, un mur plus isolant laisserait passer plus de chaleur, ce qui est absurde.',
+    ver: 'Le flux est inversement proportionnel à la résistance thermique : Φ = ΔT / R_th = frac(25|0,050) = 500 W. Avec la multiplication, un mur plus isolant laisserait passer plus de chaleur, ce qui est absurde.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il a multiplié par R_th au lieu de diviser', 'Φ = ΔT / R_th = 500 W : plus R_th est grande, plus le flux est petit.'),
@@ -442,7 +442,7 @@ export const TGPB_VAL = [
       F('il aurait dû convertir ΔT en kelvins par 25 + 273', 'Un écart de température a la même valeur en °C et en K : aucune conversion n’est nécessaire.'),
     ] }),
   P({ id: 'ter-val-temperature', domaine: DOM_TRANSFERTS, niveau: 2, titre: 'Température d’équilibre de la Terre sans atmosphère', plausible: false,
-    ...presenter({ contexte: 'Pour une Terre sans atmosphère, la puissance absorbée par mètre carré de surface est (1 − A) × S₀ / 4 ; la puissance émise est σ × T⁴ (loi de Stefan-Boltzmann). Avec A = 0,30, S₀ = 1,36×10³ W·m⁻² et σ = 5,67×10⁻⁸ W·m⁻²·K⁻⁴, un élève écrit :', suite: '« T = racine quatrième de [(1 − A) × S₀ / (4σ)] = 255 °C ».' }),
+    ...presenter({ contexte: 'Pour une Terre sans atmosphère, la puissance absorbée par mètre carré de surface est frac((1 − A) × S₀|4) ; la puissance émise est σ × T⁴ (loi de Stefan-Boltzmann). Avec A = 0,30, S₀ = 1,36×10³ W·m⁻² et σ = 5,67×10⁻⁸ W·m⁻²·K⁻⁴, un élève écrit :', suite: '« T = racine quatrième de [frac((1 − A) × S₀|4σ)] = 255 °C ».' }),
     reperes: [['Température moyenne observée', 'environ 15 °C (288 K)'], ['Eau liquide', 'à 255 °C elle serait en vapeur (sous 1 bar)'], ['Conversion', 'T (K) = θ (°C) + 273']],
     ver: 'La loi de Stefan-Boltzmann donne T en kelvins : T ≈ 255 K, soit environ −18 °C. L’élève a donné l’unité °C au lieu de K. Ce résultat est inférieur à la température moyenne observée (15 °C) ; l’écart d’environ 33 K s’explique par l’effet de serre.',
     q2: 'Que penser de ce résultat ?',
@@ -464,7 +464,7 @@ export const TGPB_VAL = [
   P({ id: 'ter-val-mars', domaine: DOM_TRANSFERTS, niveau: 2, titre: 'Température d’équilibre de Mars', plausible: true,
     ...presenter({ contexte: 'Pour Mars sans atmosphère (S₀ = 586 W·m⁻², albédo A = 0,25), un élève calcule :', suite: '« P_abs = frac((1 − 0,25) × 586|4) ≈ 110 W·m⁻² ; T = racine quatrième de frac(110|5,67×10⁻⁸) ≈ 210 K ».' }),
     reperes: [['Température moyenne observée sur Mars', 'environ 210 K (−63 °C)'], ['Atmosphère de Mars', 'très ténue : effet de serre faible'], ['Terre sans atmosphère', 'environ 255 K']],
-    ver: 'P_abs = 0,75 × 586 divisé par 4 ≈ 110 W·m⁻² ; T⁴ = 110 divisé par 5,67×10⁻⁸ ≈ 1,9×10⁹ K⁴, d’où T ≈ 210 K. Ce résultat est proche de la température observée, ce qui est cohérent : l’atmosphère de Mars est trop ténue pour produire un effet de serre notable.',
+    ver: 'P_abs = frac(0,75 × 586|4) ≈ 110 W·m⁻² ; T⁴ = frac(110|5,67×10⁻⁸) ≈ 1,9×10⁹ K⁴, d’où T ≈ 210 K. Ce résultat est proche de la température observée, ce qui est cohérent : l’atmosphère de Mars est trop ténue pour produire un effet de serre notable.',
     q2: 'Quel raisonnement est correct ?',
     options: [
       V('Cohérent : Mars a peu d’effet de serre, donc T calculée ≈ T observée', 'L’atmosphère de Mars est très ténue : peu d’infrarouge est renvoyé vers le sol, et la température observée (210 K) est proche de celle du calcul.'),
@@ -472,7 +472,7 @@ export const TGPB_VAL = [
       F('Pas cohérent : il faut ajouter 33 K, l’écart de la Terre, à toute planète', 'L’écart de 33 K est propre à l’atmosphère terrestre ; il dépend de l’atmosphère de chaque planète et n’a aucune raison d’être le même sur Mars.'),
     ] }),
   P({ id: 'cel-val-longueur', domaine: DOM_PHOTONS, niveau: 2, titre: 'Longueur d’onde maximale du silicium : 1,1 mm ?', plausible: false,
-    ...presenter({ contexte: 'Pour le silicium (énergie seuil 1,12 eV), un élève calcule λ_max = h × c divisé par E_seuil :', suite: '« λ_max = 6,63×10⁻³⁴ × 3,00×10⁸ divisé par (1,12 × 1,60×10⁻¹⁹) = 1,11×10⁻³ m, soit 1,1 mm ».' }),
+    ...presenter({ contexte: 'Pour le silicium (énergie seuil 1,12 eV), un élève calcule λ_max = frac(h × c|E_seuil) :', suite: '« λ_max = frac(6,63×10⁻³⁴ × 3,00×10⁸|1,12 × 1,60×10⁻¹⁹) = 1,11×10⁻³ m, soit 1,1 mm ».' }),
     reperes: [['Longueurs d’onde du visible', 'de 400 à 800 nm environ'], ['Infrarouge proche', 'de 800 nm à quelques micromètres'], ['1 µm', '1000 nm = 10⁻⁶ m']],
     ver: 'Le calcul donne 1,11×10⁻⁶ m (et non 10⁻³ m) : c’est 1,11 µm, soit 1110 nm, dans l’infrarouge proche, juste après le visible. Un millimètre serait une onde bien plus longue que les micro-ondes, hors de propos pour une cellule.',
     q2: 'Que penser de ce résultat ?',
@@ -482,17 +482,17 @@ export const TGPB_VAL = [
       F('plausible : 1,11×10⁻³ m correspond bien à 1110 nm', '1,11×10⁻³ m vaut 1,11 mm, soit 1 110 000 nm ; 1110 nm correspond à 1,11×10⁻⁶ m.'),
     ] }),
   P({ id: 'cel-val-rendement', domaine: DOM_PHOTONS, niveau: 2, titre: 'Rendement d’une cellule : 18 % ?', plausible: true,
-    ...presenter({ contexte: 'Une cellule de surface 0,020 m² reçoit un éclairement de 1000 W·m⁻² et délivre U = 0,54 V avec I = 6,7 A. Un élève calcule :', suite: '« P_reçue = 1000 × 0,020 = 20 W ; P_él = 0,54 × 6,7 ≈ 3,6 W ; η = 3,6 divisé par 20 = 0,18, soit 18 % ».' }),
+    ...presenter({ contexte: 'Une cellule de surface 0,020 m² reçoit un éclairement de 1000 W·m⁻² et délivre U = 0,54 V avec I = 6,7 A. Un élève calcule :', suite: '« P_reçue = 1000 × 0,020 = 20 W ; P_él = 0,54 × 6,7 ≈ 3,6 W ; η = frac(3,6|20) = 0,18, soit 18 % ».' }),
     reperes: [['Rendement d’un module en silicium du commerce', 'environ 15 à 22 %'], ['Valeur maximale possible d’un rendement', 'inférieure à 100 %'], ['Éclairement du plein Soleil', 'environ 1000 W·m⁻²']],
-    ver: 'P_reçue = 20 W, P_él = 0,54 × 6,7 = 3,6 W, η = 3,6 divisé par 20 = 0,18 : le calcul est juste et le rendement est dans l’ordre de grandeur des cellules en silicium.',
+    ver: 'P_reçue = 20 W, P_él = 0,54 × 6,7 = 3,6 W, η = frac(3,6|20) = 0,18 : le calcul est juste et le rendement est dans l’ordre de grandeur des cellules en silicium.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('plausible : P_él divisée par P_reçue donne 18 %', 'η = P_él divisé par P_reçue (utile sur reçue) = 3,6 divisé par 20 = 18 % : cohérent avec les rendements des modules en silicium.'),
+      V('plausible : P_él divisée par P_reçue donne 18 %', 'η = frac(P_él|P_reçue) (utile sur reçue) = frac(3,6|20) = 18 % : cohérent avec les rendements des modules en silicium.'),
       F('pas plausible : un rendement aussi bas montre une cellule défectueuse', 'Les modules en silicium convertissent seulement 15 à 22 % de la lumière reçue : 18 % est normal.'),
       F('pas plausible : il fallait diviser la puissance reçue par la puissance électrique', 'Le rendement compare ce qui est utile (électrique) à ce qui est reçu : P_él au numérateur.'),
     ] }),
   P({ id: 'cel-val-puissance', domaine: DOM_PHOTONS, niveau: 2, titre: 'Puissance reçue par une cellule : 40 000 W ?', plausible: false,
-    ...presenter({ contexte: 'Une cellule de surface 0,020 m² est éclairée avec 800 W·m⁻². Un élève calcule :', suite: '« P_reçue = E divisé par S = 800 divisé par 0,020 = 40 000 W ».' }),
+    ...presenter({ contexte: 'Une cellule de surface 0,020 m² est éclairée avec 800 W·m⁻². Un élève calcule :', suite: '« P_reçue = frac(E|S) = frac(800|0,020) = 40 000 W ».' }),
     reperes: [['Puissance d’une ampoule de salon', 'environ 10 à 100 W'], ['Éclairement du plein Soleil', 'environ 1000 W·m⁻²'], ['Surface de la cellule', '0,020 m² (200 cm²)']],
     ver: 'L’éclairement est une puissance par mètre carré : on multiplie par la surface. P_reçue = 800 × 0,020 = 16 W, ordre de grandeur d’une petite ampoule. 40 000 W est la puissance d’un grand moteur, impossible pour 200 cm² de lumière.',
     q2: 'Que penser de ce résultat ?',
@@ -502,7 +502,7 @@ export const TGPB_VAL = [
       F('invraisemblable : il fallait ajouter E et S', 'Une puissance se calcule avec un produit (éclairement × surface), pas avec une somme.'),
     ] }),
   P({ id: 'phe-val-seuil-unite', domaine: DOM_PHOTONS, niveau: 2, titre: 'Fréquence seuil du potassium, calculée par un élève', plausible: false,
-    ...presenter({ contexte: 'Le travail d’extraction du potassium est W = 2,3 eV. Un élève calcule la fréquence seuil avec h = 6,63×10⁻³⁴ J·s :', suite: '« ν₀ = W / h = 2,3 / (6,63×10⁻³⁴) = 3,5×10³³ Hz ».' }),
+    ...presenter({ contexte: 'Le travail d’extraction du potassium est W = 2,3 eV. Un élève calcule la fréquence seuil avec h = 6,63×10⁻³⁴ J·s :', suite: '« ν₀ = W / h = frac(2,3|6,63×10⁻³⁴) = 3,5×10³³ Hz ».' }),
     reperes: [['Fréquences de la lumière visible', 'environ 4×10¹⁴ à 8×10¹⁴ Hz'], ['Conversion', '1 eV = 1,60×10⁻¹⁹ J'], ['Seuil d’un métal', 'ordre de grandeur de 10¹⁴ à 10¹⁵ Hz']],
     ver: 'Il faut convertir W en joules : W = 2,3 × 1,60×10⁻¹⁹ = 3,68×10⁻¹⁹ J, d’où ν₀ = 3,68×10⁻¹⁹ divisé par 6,63×10⁻³⁴ ≈ 5,5×10¹⁴ Hz. Un seuil de 10³³ Hz serait des milliards de fois au-dessus des fréquences du visible.',
     q2: 'Quelle erreur explique ce résultat ?',
@@ -567,7 +567,7 @@ export const TGPB_SAPP = [
       return { tokens, derivees: [{ id: 'Pr', nom: 'Puissance lumineuse reçue', expr: 'P_reçue = éclairement × surface', val: p.E * p.S, u: 'W' }, { id: 'Pe', nom: 'Puissance électrique fournie', expr: 'P_él = U × I', val: p.U * p.I, u: 'W' }],
         texte: [...debut, 'Quel est le rendement du panneau ?'], utiles: ['S', 'E', 'U', 'I'], raisons,
         cherche: { bonne: 'Le rendement η du panneau (en %)', faux: ['La puissance électrique fournie par le panneau (en W)', 'La puissance lumineuse reçue par le panneau (en W)', 'Les pertes sous forme de chaleur (en W)'] },
-        manque: null, solution: { txt: 'η = P_él / P_reçue = (U × I) / (éclairement × surface)', val: 100 * p.U * p.I / (p.E * p.S), u: '%' } };
+        manque: null, solution: { txt: 'η = frac(P_él|P_reçue) = frac(U × I|éclairement × surface)', val: 100 * p.U * p.I / (p.E * p.S), u: '%' } };
     },
   },
   {
@@ -586,12 +586,12 @@ export const TGPB_SAPP = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle puissance solaire la Terre absorbe-t-elle en moyenne par mètre carré de sa surface ?'], utiles: ['S0', 'A'],
         raisons: { sig: 'La constante de Stefan-Boltzmann sert à calculer la puissance émise, pas celle qui est absorbée.', R: rr, d: 'La distance est déjà prise en compte dans la valeur donnée de la puissance reçue par mètre carré.' },
         cherche: { bonne: 'La puissance solaire absorbée par mètre carré de surface terrestre (en W·m⁻²)', faux: ['La puissance solaire réfléchie par mètre carré (en W·m⁻²)', 'La température d’équilibre de la Terre (en K)', 'La puissance totale absorbée par la Terre (en W)'] },
-        manque: null, solution: { txt: 'P_abs = (1 − A) × S₀ divisé par 4 (disque de surface π R² éclairé, sphère de surface 4 π R²)', val: (1 - p.A) * p.S0 / 4, u: 'W·m⁻²' } };
+        manque: null, solution: { txt: 'P_abs = frac((1 − A) × S₀|4) (disque de surface π R² éclairé, sphère de surface 4 π R²)', val: (1 - p.A) * p.S0 / 4, u: 'W·m⁻²' } };
       const T4 = (1 - p.A) * p.S0 / 4 / 5.67e-8;
-      return { tokens, derivees: [{ id: 'Pa', nom: 'Puissance absorbée par mètre carré', expr: 'P_abs = (1 − A) × S₀ / 4', val: (1 - p.A) * p.S0 / 4, u: 'W·m⁻²' }],
+      return { tokens, derivees: [{ id: 'Pa', nom: 'Puissance absorbée par mètre carré', expr: 'P_abs = frac((1 − A) × S₀|4)', val: (1 - p.A) * p.S0 / 4, u: 'W·m⁻²' }],
         texte: [...debut, 'Quelle est la température d’équilibre de la Terre ?'], utiles: ['S0', 'A', 'sig'], raisons: { R: rr, d: 'La distance est déjà prise en compte dans la valeur donnée de la puissance reçue par mètre carré.' },
         cherche: { bonne: 'La température d’équilibre de la Terre (en K)', faux: ['La puissance solaire absorbée par mètre carré (en W·m⁻²)', 'La puissance solaire réfléchie par mètre carré (en W·m⁻²)', 'La puissance émise par la Terre entière (en W)'] },
-        manque: null, solution: { txt: 'σ × T⁴ = (1 − A) × S₀ divisé par 4, donc T = [(1 − A) × S₀ divisé par (4σ)] à la puissance 1/4', val: Math.pow(T4, 0.25), u: 'K' } };
+        manque: null, solution: { txt: 'σ × T⁴ = frac((1 − A) × S₀|4), donc T = [frac((1 − A) × S₀|4σ)] à la puissance 1/4', val: Math.pow(T4, 0.25), u: 'K' } };
     },
   },
   {
@@ -611,12 +611,12 @@ export const TGPB_SAPP = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’énergie d’un photon de la lumière de la lampe, en joules ?'], utiles: ['L', 'h', 'c'],
         raisons: { gap: 'L’énergie seuil sert à savoir si le photon est absorbé, pas à calculer son énergie.', ev: 'Le facteur de conversion ne servirait que pour exprimer l’énergie en eV ; ici elle est demandée en joules.', P: 'La puissance consommée par la lampe n’intervient pas dans l’énergie d’un seul photon.', S: 'La surface de la cellule n’intervient pas dans l’énergie d’un seul photon.' },
         cherche: { bonne: 'L’énergie d’un photon de la lumière de la lampe (en J)', faux: ['L’énergie seuil de la cellule (en J)', 'La puissance lumineuse reçue par la cellule (en W)', 'Le nombre de photons reçus par seconde'] },
-        manque: null, solution: { txt: 'E_ph = h × c divisé par λ (λ en mètres)', val: 6.63e-34 * 3.00e8 / (p.L * 1e-9), u: 'J' } };
+        manque: null, solution: { txt: 'E_ph = frac(h × c|λ) (λ en mètres)', val: 6.63e-34 * 3.00e8 / (p.L * 1e-9), u: 'J' } };
       return { tokens, derivees: [{ id: 'Es', nom: 'Énergie seuil en joules', expr: 'E_seuil = énergie seuil en eV × 1,60×10⁻¹⁹', val: p.gap * 1.60e-19, u: 'J' }],
         texte: [...debut, 'Quelle est la longueur d’onde maximale d’un photon que la cellule peut absorber, en nanomètres ?'], utiles: ['gap', 'ev', 'h', 'c'],
         raisons: { L: 'La longueur d’onde de la lampe ne sert pas à trouver la limite de la cellule.', P: 'La puissance de la lampe n’intervient pas dans la longueur d’onde maximale.', S: 'La surface de la cellule n’intervient pas dans la longueur d’onde maximale.' },
         cherche: { bonne: 'La longueur d’onde maximale absorbée par la cellule (en nm)', faux: ['La longueur d’onde de la lumière de la lampe (en nm)', 'L’énergie d’un photon de la lampe (en eV)', 'La puissance reçue par la cellule (en W)'] },
-        manque: null, solution: { txt: 'λ_max = h × c divisé par E_seuil (en joules)', val: 6.63e-34 * 3.00e8 / (p.gap * 1.60e-19) * 1e9, u: 'nm' } };
+        manque: null, solution: { txt: 'λ_max = frac(h × c|E_seuil) (en joules)', val: 6.63e-34 * 3.00e8 / (p.gap * 1.60e-19) * 1e9, u: 'nm' } };
     },
   },
   {
@@ -637,11 +637,11 @@ export const TGPB_SAPP = [
       const rs = { S: 'La surface éclairée ne change ni l’énergie d’un photon ni celle des électrons éjectés : elle ne sert pas dans ce calcul.', P: 'La puissance de la lampe fixe le nombre de photons par seconde, pas l’énergie de chacun.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’énergie d’un photon de cette lumière ?'], utiles: ['lam', 'h', 'c', 'e'], raisons: { ...rs, W: 'Le travail d’extraction sert à calculer l’énergie cinétique des électrons, pas l’énergie du photon.' },
         cherche: { bonne: 'L’énergie d’un photon de cette lumière (en eV)', faux: ['L’énergie cinétique maximale des électrons éjectés (en eV)', 'Le nombre de photons envoyés par seconde', 'La fréquence seuil du métal (en Hz)'] },
-        manque: null, solution: { txt: 'E = h × c divisé par λ, puis conversion en eV (division par 1,60×10⁻¹⁹ J)', val: E, u: 'eV' } };
-      return { tokens, derivees: [{ id: 'Eph', nom: 'Énergie d’un photon', expr: 'E = h × c / λ', val: E, u: 'eV' }],
+        manque: null, solution: { txt: 'E = frac(h × c|λ), puis conversion en eV (division par 1,60×10⁻¹⁹ J)', val: E, u: 'eV' } };
+      return { tokens, derivees: [{ id: 'Eph', nom: 'Énergie d’un photon', expr: 'E = frac(h × c|λ)', val: E, u: 'eV' }],
         texte: [...debut, 'Quelle est l’énergie cinétique maximale des électrons éjectés ?'], utiles: ['lam', 'h', 'c', 'e', 'W'], raisons: rs,
         cherche: { bonne: 'L’énergie cinétique maximale des électrons éjectés (en eV)', faux: ['L’énergie d’un photon de cette lumière (en eV)', 'La fréquence seuil du métal (en Hz)', 'Le nombre d’électrons éjectés par seconde'] },
-        manque: null, solution: { txt: 'E_c,max = h ν − W, avec h ν = h × c divisé par λ (en eV)', val: E - p.W, u: 'eV' } };
+        manque: null, solution: { txt: 'E_c,max = h ν − W, avec h ν = frac(h × c|λ) (en eV)', val: E - p.W, u: 'eV' } };
     },
   },
 ];

@@ -1,5 +1,5 @@
 // Exercices ANA, VAL et S'APP de la simulation 261 « Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne ». Préfixe : chh-.
-// Capacités visées (jamais affichées) : Epp = m g z ; conservation de Em sans frottement (v = √(2 g h)) ; théorème de l'énergie mécanique ΔEm = W(f) ; travail du poids ne dépendant que des altitudes.
+// Capacités visées (jamais affichées) : Epp = m g z ; conservation de Em sans frottement (v = sqrt(2 g h)) ; théorème de l'énergie mécanique ΔEm = W(f) ; travail du poids ne dépendant que des altitudes.
 const DOM = 'Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -9,14 +9,14 @@ const P = o => ({ ...o, verdict: VERDICT(o.plausible, o.ver) });
 export const CHH_ANA = [
   { id: 'chh-ana-masse', domaine: DOM, titre: 'Deux billes lâchées ensemble',
     enonce: 'Deux billes, l’une de 20 g et l’autre de 100 g, sont lâchées sans vitesse de la même hauteur au-dessus du sol. On néglige les frottements de l’air.', q: 'Comment se comparent leurs vitesses à l’arrivée au sol ?', options: [
-      V('elles sont égales : la masse n’intervient pas dans le résultat', 'm g h = ½ m v² : la masse se simplifie, v = √(2 g h) ne dépend que de la hauteur.'),
+      V('elles sont égales : la masse n’intervient pas dans le résultat', 'm g h = ½ m v² : la masse se simplifie, v = sqrt(2 g h) ne dépend que de la hauteur.'),
       F('la plus lourde arrive plus vite car son énergie potentielle est plus grande', 'Elle a plus d’énergie potentielle, mais aussi plus d’énergie cinétique à acquérir : la masse se simplifie.'),
       F('la plus légère arrive plus vite car elle est plus facile à accélérer', 'Le poids de la bille la plus légère est plus petit aussi : au final les deux vitesses sont égales.'),
       F('on ne peut pas répondre sans connaître la hauteur exacte', 'Pas besoin de la valeur de h : les deux billes partent de la même hauteur.'),
     ] },
   { id: 'chh-ana-hauteur', domaine: DOM, titre: 'Lâcher de plus haut',
     enonce: 'Un objet est lâché sans vitesse d’une hauteur h et arrive au sol à la vitesse v. On le lâche maintenant d’une hauteur 9 fois plus grande. On néglige les frottements.', q: 'Quelle est sa vitesse d’arrivée ?', options: [
-      V('3 v : v est proportionnelle à la racine de h', 'v = √(2 g h) : la hauteur est multipliée par 9, donc la vitesse par √9 = 3.'),
+      V('3 v : v est proportionnelle à la racine de h', 'v = sqrt(2 g h) : la hauteur est multipliée par 9, donc la vitesse par sqrt(9) = 3.'),
       F('9 v : la vitesse est proportionnelle à la hauteur', 'C’est l’énergie cinétique, proportionnelle à v², qui est proportionnelle à h.'),
       F('81 v : la vitesse est proportionnelle au carré de h', 'Il n’y a pas de carré de h : c’est v² qui est proportionnelle à h.'),
       F('v : la vitesse ne dépend pas de la hauteur', 'Le travail du poids m g h augmente avec h : l’énergie cinétique d’arrivée aussi.'),
@@ -41,10 +41,10 @@ export const CHH_VAL = [
   P({ id: 'chh-val-masse', domaine: DOM, niveau: 1, titre: 'Une vitesse d’arrivée de 98 m/s ?', plausible: false,
     enonce: 'Un élève calcule la vitesse d’arrivée d’une caisse de 10 kg lâchée sans vitesse d’une hauteur de 5,0 m : « m g h = ½ m v², donc v² = 2 g h = 2 × 9,8 × 5,0 = 98, donc v = 98 m/s. »',
     reperes: [['Masse', '10 kg'], ['Hauteur', '5,0 m'], ['g', '9,8 N/kg'], ['Ordre de grandeur', 'après 5 m de chute, la vitesse est de l’ordre de 10 m/s']],
-    ver: 'Le nombre 98 est v², pas v : il faut prendre la racine carrée, v = √98 ≈ 9,9 m/s. Une vitesse de 98 m/s (350 km/h) après 5 m de chute n’est pas plausible.',
+    ver: 'Le nombre 98 est v², pas v : il faut prendre la racine carrée, v = sqrt(98) ≈ 9,9 m/s. Une vitesse de 98 m/s (350 km/h) après 5 m de chute n’est pas plausible.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il a oublié la racine carrée : 98 est la valeur de v²', 'v² = 98 donne v = √98 ≈ 9,9 m/s.'),
+      V('il a oublié la racine carrée : 98 est la valeur de v²', 'v² = 98 donne v = sqrt(98) ≈ 9,9 m/s.'),
       F('il a oublié de diviser par la masse de la caisse', 'La masse se simplifie dans m g h = ½ m v² : elle ne doit pas intervenir.'),
       F('il a utilisé la mauvaise énergie : il fallait l’énergie cinétique', 'La conservation de Em relie bien m g h à ½ m v² : c’est correct.'),
     ] }),
@@ -80,10 +80,10 @@ export const CHH_SAPP = [
         raisons: { L: 'La longueur de la rampe n’intervient pas dans l’énergie potentielle.', t: 'La durée de la descente ne sert pas ici.' },
         cherche: { bonne: 'L’énergie potentielle de la caisse au départ (en J)', faux: ['L’énergie cinétique de la caisse au départ (en J)', 'Le travail de la force de frottement (en J)', 'La force exercée par la rampe sur la caisse (en N)'] },
         manque: null, solution: { txt: 'Epp = m × g × h', val: p.m * 9.8 * p.h, u: 'J' } };
-      return { tokens, derivees: ['Em = Ec + Epp est conservée : m g h = ½ m v²', 'v = √(2 × g × h)'], texte: [...debut, 'Quelle est la vitesse de la caisse en bas de la rampe, en m/s ?'], utiles: ['h'],
+      return { tokens, derivees: ['Em = Ec + Epp est conservée : m g h = ½ m v²', 'v = sqrt(2 × g × h)'], texte: [...debut, 'Quelle est la vitesse de la caisse en bas de la rampe, en m/s ?'], utiles: ['h'],
         raisons: { m: 'La masse se simplifie dans m g h = ½ m v² : elle ne change pas la vitesse.', L: 'Sans frottement, seule la hauteur compte, pas la longueur de la rampe.', t: 'La durée de la descente n’est pas nécessaire : l’énergie suffit.' },
         cherche: { bonne: 'La vitesse de la caisse en bas de la rampe (en m/s)', faux: ['L’accélération de la caisse (en m/s²)', 'L’énergie dissipée par la rampe (en J)', 'L’angle d’inclinaison de la rampe (en °)'] },
-        manque: null, solution: { txt: 'v = √(2 × g × h)', val: Math.sqrt(2 * 9.8 * p.h), u: 'm/s' } };
+        manque: null, solution: { txt: 'v = sqrt(2 × g × h)', val: Math.sqrt(2 * 9.8 * p.h), u: 'm/s' } };
     }),
   },
   {

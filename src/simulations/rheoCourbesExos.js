@@ -25,7 +25,7 @@ export const RHC_ANA = [
     ] },
   { id: 'rhc-ana-pseudo', domaine: DOM, titre: 'Gradient doublé pour un shampooing',
     enonce: 'Un shampooing est un fluide pseudoplastique, sans seuil d’écoulement. On double le gradient de vitesse, de 10 s⁻¹ à 20 s⁻¹.', q: 'Que peut-on prévoir pour τ et η ?', options: [
-      V('τ augmente, mais de moins du double ; η diminue', 'La courbe d’écoulement s’incurve vers le bas : τ augmente moins vite que γ̇, donc η = τ / γ̇ diminue.'),
+      V('τ augmente, mais de moins du double ; η diminue', 'La courbe d’écoulement s’incurve vers le bas : τ augmente moins vite que γ̇, donc η = frac(τ|γ)̇ diminue.'),
       F('τ est exactement doublée et η ne change pas', 'Ce serait le cas d’un fluide newtonien. Ici la viscosité dépend du gradient.'),
       F('τ est doublée et η est doublée aussi', 'Une viscosité qui augmente avec γ̇ est celle d’un rhéoépaississant, pas d’un pseudoplastique.'),
       F('τ diminue, car le shampooing devient plus fluide', 'C’est η qui diminue. La contrainte τ = η × γ̇ augmente quand même, car γ̇ augmente plus que η ne diminue.'),
@@ -64,12 +64,12 @@ export const RHC_ANA = [
 export const RHC_VAL = [
   P({ id: 'rhc-val-conversion', domaine: DOM, niveau: 1, titre: 'Viscosité d’une huile : unité', plausible: false,
     enonce: 'Un viscosimètre indique une contrainte de cisaillement τ = 25 Pa pour un gradient γ̇ = 2,0 s⁻¹. Un élève calcule la viscosité de l’huile et trouve η = 12 500 Pa·s.',
-    reperes: [['Définition', 'η = τ / γ̇'], ['Eau', 'environ 1 mPa·s'], ['Huile alimentaire', 'quelques dizaines de mPa·s'], ['Miel', 'environ 10 Pa·s']],
-    ver: 'η = 25 / 2,0 = 12,5 Pa·s, soit 12 500 mPa·s. L’élève a écrit le bon nombre avec la mauvaise unité : 12 500 Pa·s serait mille fois plus visqueux que le miel.',
+    reperes: [['Définition', 'η = frac(τ|γ)̇'], ['Eau', 'environ 1 mPa·s'], ['Huile alimentaire', 'quelques dizaines de mPa·s'], ['Miel', 'environ 10 Pa·s']],
+    ver: 'η = frac(25|2,0) = 12,5 Pa·s, soit 12 500 mPa·s. L’élève a écrit le bon nombre avec la mauvaise unité : 12 500 Pa·s serait mille fois plus visqueux que le miel.',
     q2: 'Quelle erreur explique le mieux ce résultat ?',
     options: [
       V('Il a écrit la valeur en mPa·s avec l’unité Pa·s', '12,5 Pa·s = 12 500 mPa·s : le nombre trouvé est correct en mPa·s.'),
-      F('Il a divisé γ̇ par τ au lieu de diviser τ par γ̇', '2,0 / 25 = 0,080 : ce n’est pas 12 500.'),
+      F('Il a divisé γ̇ par τ au lieu de diviser τ par γ̇', 'frac(2,0|25) = 0,080 : ce n’est pas 12 500.'),
       F('Il a multiplié τ par γ̇ au lieu de les diviser entre eux', '25 × 2,0 = 50 : ce n’est pas 12 500.'),
     ] }),
   P({ id: 'rhc-val-newtonienne', domaine: DOM, niveau: 2, titre: 'Peinture A : newtonienne ?', plausible: false,
@@ -84,11 +84,11 @@ export const RHC_VAL = [
     ] }),
   P({ id: 'rhc-val-thixo-ok', domaine: DOM, niveau: 2, titre: 'Peinture A : perte de viscosité', plausible: true,
     enonce: 'Pour la peinture A, à γ̇ = 1 s⁻¹, la viscosité vaut 18 290 mPa·s à la montée et 15 110 mPa·s à la descente. Un élève calcule une perte de 17 % et conclut que la peinture est thixotrope, mais faiblement.',
-    reperes: [['Perte relative', '(η montée − η descente) / η montée'], ['Thixotrope', 'courbe retour sous la courbe aller'], ['Ordre de grandeur', 'perte inférieure à 30 % : thixotropie modérée']],
-    ver: '(18 290 − 15 110) / 18 290 ≈ 0,174, soit 17 % : le calcul est correct. La viscosité est plus faible au retour, donc la peinture est bien thixotrope, avec une perte modérée.',
+    reperes: [['Perte relative', 'frac(η montée − η descente|η) montée'], ['Thixotrope', 'courbe retour sous la courbe aller'], ['Ordre de grandeur', 'perte inférieure à 30 % : thixotropie modérée']],
+    ver: 'frac(18 290 − 15 110|18) 290 ≈ 0,174, soit 17 % : le calcul est correct. La viscosité est plus faible au retour, donc la peinture est bien thixotrope, avec une perte modérée.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : (18 290 − 15 110) / 18 290 ≈ 17 %, descente sous la montée', 'La perte relative se calcule par rapport à la valeur de départ ; une descente plus basse que la montée signifie thixotrope.'),
+      V('Cohérent : frac(18 290 − 15 110|18) 290 ≈ 17 %, descente sous la montée', 'La perte relative se calcule par rapport à la valeur de départ ; une descente plus basse que la montée signifie thixotrope.'),
       F('Pas cohérent : la perte vaut 15 110 / 18 290 ≈ 83 % de la valeur de départ', 'Ce rapport est la part de viscosité conservée. La perte est le complément : 100 % − 83 % ≈ 17 %.'),
       F('Pas cohérent : une perte non nulle prouve que la peinture est newtonienne', 'Un newtonien aurait des courbes aller et retour superposées, donc aucune perte.'),
     ] }),
@@ -125,9 +125,9 @@ export const RHC_SAPP = [
       const debut = ['Un viscosimètre rotatif fait tourner un mobile à la vitesse ', T('N'), '. Pour ce mobile, γ̇ = ', T('k'), ' × N, avec N en tr/min. Le capteur indique un couple ', T('C'), ', ce qui correspond à une contrainte ', T('tau'), ' ; l’échantillon est à ', T('T'), '. '];
       if (q === 0) {
         return { tokens, derivees: [], texte: [...debut, 'Le gradient de vitesse imposé est ', T('g'), '. Quelle est la viscosité dynamique de l’échantillon ?'], utiles: ['tau', 'g'],
-          raisons: { N: 'La vitesse de rotation fixe le gradient, mais le gradient est déjà donné : on n’a pas besoin de N pour calculer η.', C: 'Le couple a déjà été converti en contrainte τ : on utilise τ, pas le couple.', T: 'La température ne figure pas dans la relation η = τ / γ̇.', k: 'Le coefficient sert à passer de N à γ̇ ; ici γ̇ est donné.' },
+          raisons: { N: 'La vitesse de rotation fixe le gradient, mais le gradient est déjà donné : on n’a pas besoin de N pour calculer η.', C: 'Le couple a déjà été converti en contrainte τ : on utilise τ, pas le couple.', T: 'La température ne figure pas dans la relation η = frac(τ|γ)̇.', k: 'Le coefficient sert à passer de N à γ̇ ; ici γ̇ est donné.' },
           cherche: { bonne: 'La viscosité dynamique de l’échantillon', faux: ['La contrainte de cisaillement qui correspond au couple', 'La vitesse de rotation à imposer', 'La viscosité cinématique de l’échantillon'] },
-          manque: null, solution: { txt: 'La viscosité est la contrainte divisée par le gradient : η = τ / γ̇', val: (p.tau / p.g) * 1000, u: 'mPa·s' } };
+          manque: null, solution: { txt: 'La viscosité est la contrainte divisée par le gradient : η = frac(τ|γ)̇', val: (p.tau / p.g) * 1000, u: 'mPa·s' } };
       }
       return { tokens, derivees: [], texte: [...debut, 'Quel gradient de vitesse le moteur impose-t-il à l’échantillon ?'], utiles: ['N', 'k'],
         raisons: { tau: 'La contrainte donne accès à la viscosité, pas au gradient imposé par le moteur.', C: 'Le couple mesuré dépend de l’échantillon ; le gradient est fixé par le moteur.', T: 'La température ne fixe pas le gradient imposé.' },
@@ -153,7 +153,7 @@ export const RHC_SAPP = [
       const raisons = { g: 'Le gradient est le même pour les deux viscosités comparées : il ne sert pas dans le calcul.', gmax: 'Le gradient maximal ne sert pas : on compare deux viscosités au même gradient.', dt: 'La durée des paliers ne figure pas dans le calcul de l’écart.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la perte relative de viscosité, en pourcentage de la valeur à la montée ?'], utiles: ['a', 'r'], raisons,
         cherche: { bonne: 'La perte relative de viscosité entre montée et descente', faux: ['Le temps de reconstruction de la structure', 'Le rapport des gradients maximal et minimal', 'La viscosité moyenne de la peinture'] },
-        manque: null, solution: { txt: 'La perte relative est (η montée − η descente) / η montée', val: ((p.a - p.r) / p.a) * 100, u: '%' } };
+        manque: null, solution: { txt: 'La perte relative est frac(η montée − η descente|η) montée', val: ((p.a - p.r) / p.a) * 100, u: '%' } };
       return { tokens, derivees: [], texte: [...debut, 'De combien la viscosité a-t-elle diminué entre la montée et la descente ?'], utiles: ['a', 'r'], raisons,
         cherche: { bonne: 'L’écart de viscosité entre montée et descente', faux: ['La somme des viscosités mesurées', 'Le gradient pour lequel la viscosité s’annule', 'La durée totale de la mesure'] },
         manque: null, solution: { txt: 'L’écart est la différence entre les deux viscosités : η montée − η descente', val: p.a - p.r, u: 'mPa·s' } };

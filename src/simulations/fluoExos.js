@@ -12,13 +12,13 @@ export function tirageStokes(tire) {
   const intro = `Une molécule absorbe un photon de longueur d’onde ${la}${NB}nm puis fluoresce à ${le}${NB}nm. On utilise E(eV) × λ(nm) = ${K}.`;
   const q1 = { id: 'fl0', type: 'num', unite: 'eV', vrai: Ea, tolRel: 0.05, csMin: 2,
     q: `Calculez l’énergie du photon absorbé (${la}${NB}nm), en eV (3 chiffres significatifs).`,
-    aide: 'E(eV) = 1243 / λ(nm).',
-    pieges: [[K / (la * 1e-3), 'Vous avez converti la longueur d’onde en micromètres alors que la relation donnée utilise les nanomètres.'], [Ee, 'C’est l’énergie du photon émis : on demande celle du photon absorbé (λ plus petite, énergie plus grande).'], [la / K, 'Vous avez inversé la relation : E = 1243 / λ.']],
+    aide: 'E(eV) = frac(1243|λ(nm)).',
+    pieges: [[K / (la * 1e-3), 'Vous avez converti la longueur d’onde en micromètres alors que la relation donnée utilise les nanomètres.'], [Ee, 'C’est l’énergie du photon émis : on demande celle du photon absorbé (λ plus petite, énergie plus grande).'], [la / K, 'Vous avez inversé la relation : E = frac(1243|λ).']],
     expl: `E(abs) = ${K} / ${la} ≈ ${d(Ea, 2)}${NB}eV.` };
   const q2 = { id: 'fl1', type: 'num', unite: 'eV', vrai: Ee, tolRel: 0.05, csMin: 2,
     q: `Calculez l’énergie du photon de fluorescence (${le}${NB}nm), en eV (3 chiffres significatifs).`,
-    aide: 'E(eV) = 1243 / λ(nm).',
-    pieges: [[Ea, 'C’est l’énergie du photon absorbé : utilisez la longueur d’onde de l’émission.'], [le / K, 'Vous avez inversé la relation : E = 1243 / λ.']],
+    aide: 'E(eV) = frac(1243|λ(nm)).',
+    pieges: [[Ea, 'C’est l’énergie du photon absorbé : utilisez la longueur d’onde de l’émission.'], [le / K, 'Vous avez inversé la relation : E = frac(1243|λ).']],
     expl: `E(émis) = ${K} / ${le} ≈ ${d(Ee, 2)}${NB}eV.` };
   const q3 = { id: 'fl2', type: 'num', unite: 'eV', vrai: dE, tolRel: 0.06, csMin: 2,
     q: `Avec E(abs) = ${d(Ear, 3)}${NB}eV et E(émis) = ${d(Eer, 3)}${NB}eV (valeurs données), quelle énergie est perdue par relaxation vibrationnelle avant l’émission ? (2 chiffres significatifs)`,

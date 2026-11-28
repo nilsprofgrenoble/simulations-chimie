@@ -105,10 +105,10 @@ export const FRM_SAPP = [
         raisons: { m: 'La masse ne sert pas pour ce bilan d’énergie : elle servira pour la vitesse.', dt: 'La durée ne sert pas : on utilise un bilan d’énergie.', H: 'La hauteur ne sert pas : les énergies sont déjà données.' },
         cherche: { bonne: 'L’énergie cinétique de la bille à cet instant (en J)', faux: ['La vitesse de la bille à cet instant (en m/s)', 'L’énergie interne gagnée par la bille (en J)', 'L’énergie potentielle perdue depuis le départ (en J)'] },
         manque: null, solution: { txt: 'Ec = Ep0 − Ep1', val: p.Ep0 - p.Ep1, u: 'J' } };
-      return { tokens, derivees: ['Ec = Ep départ − Ep instant', 'v = √(2 × Ec ÷ m)'], texte: [...debut, 'Quelle est sa vitesse à cet instant, en m/s ?'], utiles: ['m', 'Ep0', 'Ep1'],
+      return { tokens, derivees: ['Ec = Ep départ − Ep instant', 'v = sqrt(2 × Ec ÷ m)'], texte: [...debut, 'Quelle est sa vitesse à cet instant, en m/s ?'], utiles: ['m', 'Ep0', 'Ep1'],
         raisons: { dt: 'La durée ne sert pas : la vitesse se déduit de l’énergie cinétique.', H: 'La hauteur ne sert pas : les énergies sont déjà données.' },
         cherche: { bonne: 'La vitesse de la bille à cet instant (en m/s)', faux: ['L’énergie cinétique de la bille à cet instant (en J)', 'La hauteur de la bille à cet instant (en m)', 'L’accélération de la bille (en m/s²)'] },
-        manque: null, solution: { txt: 'v = √(2 Ec ÷ m)', val: Math.sqrt(2 * (p.Ep0 - p.Ep1) / p.m), u: 'm/s' } };
+        manque: null, solution: { txt: 'v = sqrt(2 Ec ÷ m)', val: Math.sqrt(2 * (p.Ep0 - p.Ep1) / p.m), u: 'm/s' } };
     }),
   },
 ];
