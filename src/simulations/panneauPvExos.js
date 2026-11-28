@@ -94,7 +94,7 @@ export const PVC_SAPP = [
     }),
   },
   {
-    id: 'pvc-sapp-eclair', domaine: DOM, titre: 'Courant et puissance à un autre éclairement', noms: ['Courant de court-circuit au nouvel éclairement', 'Puissance maximale au nouvel éclairement'],
+    id: 'pvc-sapp-eclair', schema: () => ({ type: 'panneauSoleil' }), domaine: DOM, titre: 'Courant et puissance à un autre éclairement', noms: ['Courant de court-circuit au nouvel éclairement', 'Puissance maximale au nouvel éclairement'],
     gen: () => ({ E1: tire([800, 900, 1000]), E2: tire([300, 400, 500, 600]), Icc: tire([96, 120, 150, 180, 240]), Pm: tire([0.25, 0.32, 0.4, 0.5, 0.6]), Uco: tire([1.8, 3.7, 5.5]) }),
     build: epure((p, q) => {
       const tokens = {

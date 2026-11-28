@@ -109,7 +109,7 @@ const dNom = nom => (/^[aeiouyhéèêâîôû]/i.test(nom) ? 'd’' : 'de ') + n
 export const ENONCES = [
   // ───────────────────────────── 0. Projecteur de diapositives (1G : lentille mince)
   {
-    id: 'lum1-projecteur', domaine: 'Lentille mince', titre: 'Un projecteur de diapositives', noms: ['Position de l’écran', 'Hauteur de l’image'],
+    id: 'lum1-projecteur', schema: () => ({ type: 'projection' }), domaine: 'Lentille mince', titre: 'Un projecteur de diapositives', noms: ['Position de l’écran', 'Hauteur de l’image'],
     gen: () => { const f = tire([80, 100, 120]), k = tire([1.2, 1.3, 1.5]); return { f, d: Math.round(f * k / 10), AB: tire([24, 36]), P: tire([150, 250]) }; },
     build: (p, q) => {
       const f = p.f / 1000, d = p.d / 100, OA = -d, OAp = 1 / (1 / f + 1 / OA), gam = OAp / OA, AB = p.AB / 1000;
@@ -190,7 +190,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── 1G : ondes mécaniques périodiques, une onde sur une corde
   {
-    id: 'ond1g-periode-corde', domaine: 'Ondes mécaniques périodiques', titre: 'Une onde sur une corde', noms: ['Longueur d’onde de l’onde', 'Célérité de l’onde'],
+    id: 'ond1g-periode-corde', schema: () => ({ type: 'cordeCapteurs' }), domaine: 'Ondes mécaniques périodiques', titre: 'Une onde sur une corde', noms: ['Longueur d’onde de l’onde', 'Célérité de l’onde'],
     gen: () => { const [c, f] = tire([[2, 4], [2, 5], [2.5, 5], [4, 5], [3, 5], [2, 2], [1, 2]]); return { c, f, A: tire([1.5, 2, 3]), Lc: tire([2.5, 3, 4]), m: tire([120, 200, 250]) }; },
     build: (p, q) => {
       const lam = p.c / p.f, Tp = 1 / p.f;
@@ -522,7 +522,7 @@ export const ENONCES = [
     }),
   },
   {
-    id: 'mol1g-conc-dilution', domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Une solution à préparer par dilution', noms: ['Concentration de la solution fille', 'Volume de solution mère à prélever'],
+    id: 'mol1g-conc-dilution', schema: () => ({ type: 'dilution', mere: 'solution mère', eau: 'eau distillée' }), domaine: 'Concentration en quantité de matière : dissolution et dilution', titre: 'Une solution à préparer par dilution', noms: ['Concentration de la solution fille', 'Volume de solution mère à prélever'],
     gen: () => { const d = tire(CD.dilutionsPossibles()); return { ...d, id: tire(['nacl', 'glucose', 'saccharose', 'cacl2']), b: tire([50, 100, 150]), th: tire([20, 25]) }; },
     build: epure((p, q) => {
       const s = CD.soluteDe(p.id), f = CD.formuleSolute(s);
@@ -549,7 +549,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Dissolution d'un solide ionique (1G) : équation et concentration des ions
   {
-    id: 'diss1g-sapp-solution', domaine: 'Dissolution d’un solide ionique : équation et concentration des ions', titre: 'Une solution de solide ionique à préparer', noms: ['Concentration en soluté apporté', 'Concentration effective d’un ion'],
+    id: 'diss1g-sapp-solution', schema: () => ({ type: 'becher', gauche: 'solide ionique + eau', soluteGauche: true }), domaine: 'Dissolution d’un solide ionique : équation et concentration des ions', titre: 'Une solution de solide ionique à préparer', noms: ['Concentration en soluté apporté', 'Concentration effective d’un ion'],
     gen: () => {
       const s = tire(DM.SELS), M = DM.masseMolaire(s), V = tire([100, 250, 500]), c = tire([0.050, 0.100, 0.200, 0.500]);
       return { id: s.id, V, m: Number((c * V / 1000 * M).toPrecision(3)), th: tire([20, 25]), mF: tire([62.4, 78.4, 85.3]), ion: tire(['cat', 'an']) };
@@ -704,7 +704,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'predo-sapp-beer', domaine: 'pH, pKa et diagramme de prédominance', titre: 'Spectrophotométrie d’un indicateur coloré', noms: ['Concentration de la forme basique', 'pKa de l’indicateur'],
+    id: 'predo-sapp-beer', schema: () => ({ type: 'spectrophotometre' }), domaine: 'pH, pKa et diagramme de prédominance', titre: 'Spectrophotométrie d’un indicateur coloré', noms: ['Concentration de la forme basique', 'pKa de l’indicateur'],
     gen: () => { const u = PRE.tirageIndicateur(); return { ...u, lam: tire([520, 560, 590, 620]) }; },
     build: (p, q) => {
       const tokens = {
@@ -774,7 +774,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'ab-acf-sapp-dilution', domaine: 'Acides et bases', titre: 'Diluer une solution d’acide fort', noms: ['Concentration après dilution', 'pH après dilution'],
+    id: 'ab-acf-sapp-dilution', schema: () => ({ type: 'dilution', mere: 'acide fort', eau: 'eau distillée' }), domaine: 'Acides et bases', titre: 'Diluer une solution d’acide fort', noms: ['Concentration après dilution', 'pH après dilution'],
     gen: () => { for (;;) { const f = tire([10, 20, 50, 100]), Vp = tire([5, 10, 20]); if (f * Vp <= 1000) return { C: tire([0.05, 0.1, 0.2]), Vp, Vf: f * Vp }; } },
     build: (p, q) => {
       const C1 = p.C * p.Vp / p.Vf, pH = -Math.log10(C1);
@@ -1442,7 +1442,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'acd-sapp-pente', domaine: 'Allure d’une courbe de titrage conductimétrique', titre: 'Acide fort et base forte : variation de σ avant et après l’équivalence', noms: ['Variation de σ par mL versé avant l’équivalence', 'Variation de σ par mL versé après l’équivalence'],
+    id: 'acd-sapp-pente', schema: () => ({ type: 'titrage', sonde: 'conductimètre', burette: 'base forte', becher: 'acide fort' }), domaine: 'Allure d’une courbe de titrage conductimétrique', titre: 'Acide fort et base forte : variation de σ avant et après l’équivalence', noms: ['Variation de σ par mL versé avant l’équivalence', 'Variation de σ par mL versé après l’équivalence'],
     gen: () => ({ cas: tire(['acide', 'base']), cA: tire([0.020, 0.030, 0.040, 0.050]), cB: tire([0.100, 0.200]), eau: tire([150, 180, 190]) }),
     build: (p, q) => {
       const Vt = 20.0 + p.eau, acide = p.cas === 'acide', pas = p.cB * 1000 / Vt;
@@ -1775,7 +1775,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'tix-sapp-concentration', domaine: 'Titrage indirect', titre: 'Titrage indirect : concentration de l’eau de Javel', noms: ['Concentration de la solution diluée', 'Concentration de l’eau de Javel du commerce'],
+    id: 'tix-sapp-concentration', schema: () => ({ type: 'titrage', sonde: '', burette: 'thiosulfate', becher: 'eau de Javel + iodure' }), domaine: 'Titrage indirect', titre: 'Titrage indirect : concentration de l’eau de Javel', noms: ['Concentration de la solution diluée', 'Concentration de l’eau de Javel du commerce'],
     gen: () => ({ cB: tire([0.0500, 0.0800, 0.1000]), VA: tire([20, 25]), Ve: tire([8.6, 9.8, 11.4, 12.6, 14.2, 16.4]), dil: tire([10, 20]) }),
     build: (p, q) => {
       const nI2 = p.cB * p.Ve / 2, cA = nI2 / p.VA, c0 = p.dil * cA, cs = x => String(x).replace('.', ',');
@@ -1891,7 +1891,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Mouvement circulaire (TG, sim 167) : repère de Frenet, accélération
   {
-    id: 'fre-sapp-circ', domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Accélération d’un point en mouvement circulaire', noms: ['Accélération d’un point en mouvement circulaire uniforme', 'Norme de l’accélération en mouvement circulaire non uniforme'],
+    id: 'fre-sapp-circ', schema: () => ({ type: 'virage' }), domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Accélération d’un point en mouvement circulaire', noms: ['Accélération d’un point en mouvement circulaire uniforme', 'Norme de l’accélération en mouvement circulaire non uniforme'],
     gen: () => {
       // on écarte les tirages où a_n seule, a_t seule ou leur somme donnerait la norme à 8 % près (réponse fausse acceptée par la tolérance)
       const MV = [2.0, 3.0, 4.0, 5.0], MR = [1.5, 2.0, 2.5, 4.0], MA = [1.5, 2.0, 3.0], ok = [];
@@ -1996,7 +1996,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Circuit RC (TG, sim 174) : temps caractéristique et intensité initiale
   {
-    id: 'rc-sapp-circuit', domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Un condensateur dans un montage de laboratoire', noms: ['Temps caractéristique du circuit', 'Intensité au début de la charge'],
+    id: 'rc-sapp-circuit', schema: () => ({ type: 'circuitSimple', dipole: 'condensateur', generateur: 'générateur' }), domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Un condensateur dans un montage de laboratoire', noms: ['Temps caractéristique du circuit', 'Intensité au début de la charge'],
     gen: () => ({ E: tire([3, 5, 6, 9, 12]), R: tire([1, 2.2, 4.7, 10, 22, 47]), C: tire([0.47, 1, 4.7, 10, 22, 47, 100]), L: tire([15, 25, 40]), T: tire([19, 21, 23]) }),
     build: (p, q) => {
       const tokens = {
@@ -2147,7 +2147,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Incertitudes-types composées et comparaison à une référence (TG, sim 185)
   {
-    id: 'icc-sapp-resistance', domaine: 'Incertitudes-types composées et comparaison à une valeur de référence', titre: 'Incertitude sur la résistance d’un conducteur ohmique', noms: ['Incertitude relative de la résistance', 'Incertitude-type de la résistance'],
+    id: 'icc-sapp-resistance', schema: () => ({ type: 'circuitSimple', dipole: 'conducteur ohmique', generateur: 'générateur' }), domaine: 'Incertitudes-types composées et comparaison à une valeur de référence', titre: 'Incertitude sur la résistance d’un conducteur ohmique', noms: ['Incertitude relative de la résistance', 'Incertitude-type de la résistance'],
     gen: () => ({ U: tire([3.50, 4.58, 5.20, 6.30, 7.40, 9.10]), uU: tire([0.02, 0.03, 0.05, 0.10]), I: tire([25.0, 32.5, 45.1, 52.0, 68.4, 85.0]), uI: tire([0.3, 0.5, 0.8, 1.0]), th: tire([19, 21, 23]), L: tire([0.5, 1.0, 1.5]) }),
     build: (p, q) => {
       const R = 1000 * p.U / p.I, rel = Math.sqrt((p.uU / p.U) ** 2 + (p.uI / p.I) ** 2);
@@ -2190,7 +2190,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Particule chargée dans un condensateur plan (TG, sim 176) : champ entre les plaques, accélération
   {
-    id: 'cpl-sapp-particule', domaine: 'Particule chargée dans un condensateur plan', titre: 'Une particule entre dans un condensateur plan', noms: ['Champ électrique entre les plaques', 'Accélération de la particule'],
+    id: 'cpl-sapp-particule', schema: () => ({ type: 'plaques', objet: 'particule chargée' }), domaine: 'Particule chargée dans un condensateur plan', titre: 'Une particule entre dans un condensateur plan', noms: ['Champ électrique entre les plaques', 'Accélération de la particule'],
     gen: () => {
       const pa = tire([{ nom: 'un électron', z: -1, m: 9.11e-31, v: [1.0e7, 2.0e7, 3.0e7] }, { nom: 'un proton', z: 1, m: 1.67e-27, v: [2.0e5, 5.0e5, 1.0e6] }, { nom: 'un ion sodium Na⁺', z: 1, m: 3.82e-26, v: [5.0e4, 1.0e5, 2.0e5] }]);
       return { pa, U: tire([200, 300, 400, 500, 800, 1000]), d: tire([1.0, 1.5, 2.0]), L: tire([4.0, 5.0, 6.0, 8.0]), v0: tire(pa.v), T: tire([19, 21, 23]) };
@@ -2251,7 +2251,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Vecteurs vitesse et accélération (TG, sim 166) : dériver la position x(t) d’un mobile
   {
-    id: 'vac-sapp-derivee', domaine: 'Vecteurs vitesse et accélération', titre: 'Dériver la position d’un chariot', noms: ['Vitesse à une date donnée', 'Accélération du chariot'],
+    id: 'vac-sapp-derivee', schema: () => ({ type: 'mobile', objet: 'chariot', sol: 'rail' }), domaine: 'Vecteurs vitesse et accélération', titre: 'Dériver la position d’un chariot', noms: ['Vitesse à une date donnée', 'Accélération du chariot'],
     gen: () => {
       // on écarte les tirages où une réponse fausse classique (B seul, vitesse moyenne, position, 2C, constante A non annulée) tomberait à 12 % de la bonne
       for (;;) {
@@ -2421,7 +2421,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'titph-compo', domaine: 'Titrage pH-métrique', titre: 'Composition en cours de titrage', noms: ['Acide restant', 'Excès de soude'],
+    id: 'titph-compo', schema: () => ({ type: 'titrage', sonde: 'conductimètre', burette: 'soude', becher: 'acide' }), domaine: 'Titrage pH-métrique', titre: 'Composition en cours de titrage', noms: ['Acide restant', 'Excès de soude'],
     gen: () => ({ CA: tire([0.050, 0.080, 0.100]), VA: tire([10.0, 20.0]), T: tire([20, 25, 30]), Ka: tire([3.75, 4.2, 4.8]) }),
     build: (p, q) => {
       const CB = 0.100, n0 = p.CA * p.VA, VE = n0 / CB;
@@ -2501,7 +2501,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'microsc-mise-au-point-reglage', domaine: 'Microscope', titre: 'Un étudiant règle son microscope', noms: ['Position de l’image intermédiaire', 'Grandissement de l’objectif'],
+    id: 'microsc-mise-au-point-reglage', schema: () => ({ type: 'microscope', lumiere: 'lumière blanche' }), domaine: 'Microscope', titre: 'Un étudiant règle son microscope', noms: ['Position de l’image intermédiaire', 'Grandissement de l’objectif'],
     gen: () => ({ f1: tire([20, 10, 8]), f2: tire([25, 20, 50]), grad: tire([4, 6, 8]), nom: tire([100, 200, 300]) }),
     build: (p, q) => {
       const D = 160, g = D / p.f1, O1A1 = p.f1 + D;
@@ -2923,7 +2923,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'premord', domaine: 'Régulation', titre: 'Réponse d’un capteur de température (1er ordre)', noms: ['Temps de réponse à 5 %', 'Température lue après une durée t'],
+    id: 'premord', schema: () => ({ type: 'capteurBain' }), domaine: 'Régulation', titre: 'Réponse d’un capteur de température (1er ordre)', noms: ['Temps de réponse à 5 %', 'Température lue après une durée t'],
     gen: () => {
       const tau = tire([15, 20, 30, 40]), k = tire([1, 2, 4]);   // jamais t = 3τ : ce serait la réponse du temps de réponse à 5 %
       return { tau, T0: tire([15, 20, 25]), Tf: tire([60, 80, 100]), t: tau * k, res: tire([0.1, 0.5]), m: tire([12, 15, 20]) };
@@ -2993,7 +2993,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Évaporation et cristallisation
   {
-    id: 'cristal', domaine: 'Évaporation et cristallisation', titre: 'Refroidir une solution saturée de nitrate de potassium', noms: ['Masse dissoute à 60 °C', 'Masse de cristaux obtenue'],
+    id: 'cristal', schema: () => ({ type: 'refroidissement' }), domaine: 'Évaporation et cristallisation', titre: 'Refroidir une solution saturée de nitrate de potassium', noms: ['Masse dissoute à 60 °C', 'Masse de cristaux obtenue'],
     gen: () => ({ me: tire([100, 150, 200, 250]), s60: tire([108, 110, 112]), s20: tire([31, 32, 33]), dur: tire([30, 45, 60]), mb: tire([80, 120, 150]) }),
     build: (p, q) => {
       const tokens = {
@@ -3170,7 +3170,7 @@ export const ENONCES = [
 
   // ───────────────────────────── Mouvement et vitesse (seconde)
   {
-    id: 'trajet', domaine: 'Mouvement et vitesse', titre: 'Un trajet en train', noms: ['Vitesse moyenne du train', 'Durée d’un autre trajet'],
+    id: 'trajet', schema: () => ({ type: 'mobile', objet: 'train', sol: 'rail' }), domaine: 'Mouvement et vitesse', titre: 'Un trajet en train', noms: ['Vitesse moyenne du train', 'Durée d’un autre trajet'],
     gen: () => { const v = tire([80, 100, 120, 150]), dur = tire([90, 120, 150, 180]), h0 = tire([7, 8, 9, 14]), m0 = tire([0, 15, 30, 45]);
       return { v, dur, h0, m0, d: v * dur / 60, pass: tire([180, 240, 320, 410]), prix: tire([24, 32, 45]) }; },
     build: (p, q) => {
@@ -3261,7 +3261,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'electro', domaine: 'Interactions et champs', titre: 'Interaction électrostatique', noms: ['Force entre deux charges', 'Force dans un champ uniforme'],
+    id: 'electro', schema: () => ({ type: 'plaques', objet: 'particule chargée' }), domaine: 'Interactions et champs', titre: 'Interaction électrostatique', noms: ['Force entre deux charges', 'Force dans un champ uniforme'],
     gen: () => ({ q1: tire([2, 4, 5]), q2: tire([3, 6, 8]), d: tire([2, 4, 5]), U: tire([100, 200, 300]), e: tire([2, 4, 5]), q: tire([2, 5, 10]), mp: tire([20, 50, 100]) }),
     build: (p, q) => {
       const tokens = {};
@@ -3373,7 +3373,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'chute2', domaine: 'Forces et principe d’inertie', titre: 'Une chronophotographie de chute libre', noms: ['Vitesse de la bille en M₃', 'Variation de vitesse entre deux photos'],
+    id: 'chute2', schema: () => ({ type: 'chuteLibre' }), domaine: 'Forces et principe d’inertie', titre: 'Une chronophotographie de chute libre', noms: ['Vitesse de la bille en M₃', 'Variation de vitesse entre deux photos'],
     gen: () => { const tau = tire([0.10, 0.20, 0.25]); return { tau, d: Math.round(39.2 * tau * tau * 100) / 100, H: Math.round(313.6 * tau * tau * 10) / 10, m: tire([20, 50, 100]),
       v1: Math.round(29.4 * tau * 100) / 100, v2: Math.round(39.2 * tau * 100) / 100 }; },
     build: (p, q) => {
@@ -3423,7 +3423,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'ohm2', domaine: 'Circuits électriques', titre: 'Un résistor dans un circuit', noms: ['Tension aux bornes du résistor', 'Intensité du courant'],
+    id: 'ohm2', schema: () => ({ type: 'circuitSimple', dipole: 'résistor', generateur: 'générateur' }), domaine: 'Circuits électriques', titre: 'Un résistor dans un circuit', noms: ['Tension aux bornes du résistor', 'Intensité du courant'],
     gen: () => ({ R: tire([1.0, 2.2, 4.7]), I: tire([1, 2]), Rm: tire([470, 1000, 2200]), U: tire([3, 6, 9]), L: tire([20, 40]) }),
     build: (p, q) => {
       if (q === 0) {
@@ -3445,7 +3445,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'indice2', domaine: 'Lumière', titre: 'Indice de réfraction et vitesse de la lumière', noms: ['Indice de réfraction', 'Vitesse de la lumière dans le milieu'],
+    id: 'indice2', schema: () => ({ type: 'blocTransparent', milieu: 'un bloc transparent' }), domaine: 'Lumière', titre: 'Indice de réfraction et vitesse de la lumière', noms: ['Indice de réfraction', 'Vitesse de la lumière dans le milieu'],
     gen: () => ({ milieu: tire([['un bloc de verre', 200000, 1.5, [2, 5, 10]], ['un bloc de verre crown', 197000, 1.52, [2, 5, 10]], ['une cuve remplie d’eau', 225000, 1.33, [5, 10, 20]], ['un diamant', 124000, 2.42, [0.5, 1]]]) }),
     build: (p, q) => {
       const [obj, vkm, n, eps] = p.milieu, ep = tire(eps);
@@ -3541,7 +3541,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'ener2', domaine: 'Énergie électrique', titre: 'Énergie et effet Joule', noms: ['Énergie consommée', 'Puissance dissipée par effet Joule'],
+    id: 'ener2', schema: () => ({ type: 'circuitSimple', dipole: 'conducteur ohmique', generateur: 'générateur' }), domaine: 'Énergie électrique', titre: 'Énergie et effet Joule', noms: ['Énergie consommée', 'Puissance dissipée par effet Joule'],
     gen: () => ({ P: tire([800, 1500, 2000]), dmin: tire([15, 30, 45, 90]), prix: 0.25, R: tire([1.0, 2.2, 4.7]), I: tire([1, 2, 5]), L: tire([6, 9, 12]) }),
     build: (p, q) => {
       if (q === 0) {
@@ -3563,7 +3563,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'meca2', domaine: 'Mécanique', titre: 'Énergie cinétique et travail', noms: ['Énergie cinétique', 'Travail d’une force'],
+    id: 'meca2', schema: () => ({ type: 'mobile', objet: 'chariot', sol: 'rail' }), domaine: 'Mécanique', titre: 'Énergie cinétique et travail', noms: ['Énergie cinétique', 'Travail d’une force'],
     gen: () => { const [mt, L] = tire([[0.8, 3.6], [0.95, 3.8], [1.1, 4.0], [1.2, 4.2], [1.35, 4.4], [1.5, 4.6]]); let F; do F = tire([0.5, 0.8, 1.2, 1.5, 2, 3]); while (F === mt);   // F ≠ m : deux données de même valeur se confondraient
     return { mt, L, v: tire([36, 54, 72, 90, 108, 126]), F, d: tire([50, 80, 120, 200, 300]), a: tire([0, 30, 45, 60]) }; },
     build: (p, q) => {
@@ -3850,7 +3850,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Ondes (TSTL) : diffraction, interférences, réseaux
   {
-    id: 'ondDiffraction', domaine: 'Ondes', titre: 'Largeur d’une fente par diffraction', noms: ['Angle d’ouverture', 'Largeur de la fente'],
+    id: 'ondDiffraction', schema: () => ({ type: 'diffraction', obstacle: 'fente' }), domaine: 'Ondes', titre: 'Largeur d’une fente par diffraction', noms: ['Angle d’ouverture', 'Largeur de la fente'],
     gen: () => { const lam = tire([532, 633, 650]), a = tire([40, 50, 60, 80, 100]), D = tire([1.5, 2.0, 2.5, 3.0]); return { lam, a, D, L: Math.round(2 * lam * 1e-9 * D / (a * 1e-6) * 1e4) / 10, P: tire([1, 5]) }; },
     build: (p, q) => {
       const tokens = {
@@ -4240,7 +4240,7 @@ export const ENONCES = [
     }),
   },
   {
-    id: 'mes1g-sapp-instrument', domaine: 'Mesure et incertitudes (1G)', titre: 'Un volume lu sur une éprouvette graduée', noms: ['Incertitude-type de type B d’une lecture unique'],
+    id: 'mes1g-sapp-instrument', schema: () => ({ type: 'eprouvette', liquide: 'liquide' }), domaine: 'Mesure et incertitudes (1G)', titre: 'Un volume lu sur une éprouvette graduée', noms: ['Incertitude-type de type B d’une lecture unique'],
     gen: () => ({ grad: tire([1, 2, 5]), V: tire([34, 46, 62, 78]), th: tire([19, 21, 23]), M: tire([20, 30]), mL: tire([0.5, 1.0]) }),
     build: epure((p, q) => {
       const a = p.grad / 2;
@@ -4259,7 +4259,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Couleurs (1G) : radiations renvoyées ou absorbées par un objet
   {
-    id: 'coul1g-sapp-objet', domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Un objet éclairé par une lampe colorée', noms: ['Nombre de radiations renvoyées par l’objet éclairé en lumière colorée', 'Nombre de radiations absorbées par l’objet en lumière blanche'],
+    id: 'coul1g-sapp-objet', schema: () => ({ type: 'lampeFiltre', lampe: 'lampe colorée', filtre: 'objet', couleurLampe: '#fde047', couleurFiltre: '#a7f3d0' }), domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Un objet éclairé par une lampe colorée', noms: ['Nombre de radiations renvoyées par l’objet éclairé en lumière colorée', 'Nombre de radiations absorbées par l’objet en lumière blanche'],
     gen: () => ({ o: tire(CL.OBJETS.filter(o => !['papier', 'ardoise'].includes(o.id))), l: tire(CL.LUMIERES.filter(l => l.id !== 'blanche')), P: tire([20, 40, 60, 100]), d: tire([0.5, 1.0, 2.0]), t: tire([5, 10, 15]) }),
     build: epure((p, q) => {
       const nObj = CL.bandesPresentes(p.o.v).length, nLum = CL.bandesPresentes(p.l.v).length, communes = CL.bandesPresentes(CL.traverse(p.l.v, p.o.v)).length;
@@ -4288,7 +4288,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Combustions (1G) : énergie molaire de réaction et pouvoir calorifique
   {
-    id: 'comb1g-sapp-combustion', domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Un combustible à étudier', noms: ['Énergie molaire de réaction estimée', 'Pouvoir calorifique estimé'],
+    id: 'comb1g-sapp-combustion', schema: () => ({ type: 'bruleurBecher', contenu: 'eau' }), domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Un combustible à étudier', noms: ['Énergie molaire de réaction estimée', 'Pouvoir calorifique estimé'],
     gen: () => {
       const c = tire(CMB.COMBUSTIBLES);
       return { id: c.id, th: tire([15, 20, 25]), P: tire([1.0, 1.2]), m: tire([10, 25, 50]) };
@@ -4396,7 +4396,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Fluide au repos : pression, force pressante et loi de Mariotte (1G)
   {
-    id: 'fl1g-pression-sapp-piston', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Un gaz qui pousse sur un piston', noms: ['Force pressante exercée par le gaz sur le piston', 'Pression du gaz enfermé'],
+    id: 'fl1g-pression-sapp-piston', schema: () => ({ type: 'piston' }), domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Un gaz qui pousse sur un piston', noms: ['Force pressante exercée par le gaz sur le piston', 'Pression du gaz enfermé'],
     gen: () => ({ P: tire([1.2, 1.5, 2.0, 2.5]), S: tire([2.0, 4.0, 5.0, 6.0, 8.0]), V: tire([20, 30, 40, 50]), th: tire([18, 20, 22]), m: tire([8, 12, 15]) }),
     build: epure((p, q) => {
       const F = p.P * p.S * 10;
@@ -4517,7 +4517,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Niveaux d'énergie (1G) : absorption d'un photon par un atome fictif (sim 165) : écart d'énergie et longueur d'onde
   {
-    id: 'niv1g-sapp-transition', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Un atome qui absorbe un photon', noms: ['Énergie du photon absorbé', 'Longueur d’onde du photon absorbé'],
+    id: 'niv1g-sapp-transition', schema: () => ({ type: 'niveaux' }), domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Un atome qui absorbe un photon', noms: ['Énergie du photon absorbé', 'Longueur d’onde du photon absorbé'],
     gen: () => ({ Ei: tire([-9.0, -7.5, -6.0]), g: tire([1.8, 2.4, 3.0]), P: tire([5, 10, 20]), U: tire([1.2, 1.5, 2.0]), t: tire([10, 20, 30]) }),
     build: epure((p, q) => {
       const d1 = x => (x < 0 ? '−' : '') + Math.abs(x).toFixed(1).replace('.', ',');
@@ -4727,7 +4727,7 @@ export const ENONCES = [
     }),
   },
   {
-    id: 'syn2gt-sapp-duree', domaine: 'Synthèse et reflux (2GT)', titre: 'Les durées d’un chauffage à reflux', noms: ['Durée totale de la manipulation', 'Durée de refroidissement et de chauffage en heures'],
+    id: 'syn2gt-sapp-duree', schema: () => ({ type: 'reflux' }), domaine: 'Synthèse et reflux (2GT)', titre: 'Les durées d’un chauffage à reflux', noms: ['Durée totale de la manipulation', 'Durée de refroidissement et de chauffage en heures'],
     gen: () => ({ tp: tire([20, 30, 40]), tc: tire([30, 45, 60, 90]), tr: tire([15, 30]), V: tire([10, 15, 20]), T: tire([90, 100, 110]) }),
     build: epure((p, q) => {
       const tokens = {
@@ -4817,7 +4817,7 @@ export const ENONCES = [
     }),
   },
   {
-    id: 'etat2gt-sapp-ethanol', domaine: 'Changement d’état (2GT)', titre: 'Un flacon d’éthanol qui se vaporise', noms: ['Énergie pour vaporiser l’éthanol', 'Énergie cédée par la vapeur qui se liquéfie'],
+    id: 'etat2gt-sapp-ethanol', schema: () => ({ type: 'casserole', liquide: 'éthanol liquide' }), domaine: 'Changement d’état (2GT)', titre: 'Un flacon d’éthanol qui se vaporise', noms: ['Énergie pour vaporiser l’éthanol', 'Énergie cédée par la vapeur qui se liquéfie'],
     gen: () => ({ m: tire([20, 40, 50, 80, 120, 150]), th: tire([18, 20, 22]), t: tire([10, 15, 30]) }),
     build: epure((p, q) => {
       const c = ETM.corps('ethanol'), Lv = c.Lvap, Lf = c.Lfus;
@@ -4963,7 +4963,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Diffraction d'une onde : angle caractéristique (TG, sim 181)
   {
-    id: 'dif-sapp-fente', domaine: 'Diffraction d’une onde : angle caractéristique', titre: 'Un laser éclaire une fente fine', noms: ['Angle caractéristique de diffraction', 'Largeur de la tache centrale'],
+    id: 'dif-sapp-fente', schema: () => ({ type: 'diffraction', obstacle: 'fente' }), domaine: 'Diffraction d’une onde : angle caractéristique', titre: 'Un laser éclaire une fente fine', noms: ['Angle caractéristique de diffraction', 'Largeur de la tache centrale'],
     gen: () => ({ lam: tire([405, 532, 633, 650]), a: tire([50, 80, 100, 150]), D: tire([1.5, 2.0, 3.0]), P: tire([1, 5, 30]), d: tire([20, 30, 50]) }),
     build: (p, q) => {
       const tokens = {
@@ -5101,7 +5101,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Niveau sonore et dangers de l'exposition (2GT, sim 192) : repérer les données utiles
   {
-    id: 'son2gt-niv-sapp-ecart', domaine: 'Niveau sonore (2GT)', titre: 'Deux sons mesurés : combien de fois plus intense ?', noms: ['Écart de niveau entre les deux sons', 'Nombre de fois plus intense'],
+    id: 'son2gt-niv-sapp-ecart', schema: () => ({ type: 'sonMicro' }), domaine: 'Niveau sonore (2GT)', titre: 'Deux sons mesurés : combien de fois plus intense ?', noms: ['Écart de niveau entre les deux sons', 'Nombre de fois plus intense'],
     gen: () => { const A = tire([30, 40, 50, 60]), delta = tire([20, 30, 40]); return { A, B: A + delta, delta, prix: tire([29, 39, 49]), t: tire([10, 20, 30]) }; },
     build: (p, q) => {
       const tokens = {
@@ -5149,7 +5149,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Mesure : incertitude-type et résultat (2GT, sim 194) : repérer les données utiles
   {
-    id: 'mes2gt-inc-sapp-incertitude', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Une série de pesées : incertitude-type et nombre de mesures', noms: ['Incertitude-type de la moyenne', 'Nombre de mesures pour diviser u par 2'],
+    id: 'mes2gt-inc-sapp-incertitude', schema: () => ({ type: 'balance' }), domaine: 'Incertitude-type et résultat (2GT)', titre: 'Une série de pesées : incertitude-type et nombre de mesures', noms: ['Incertitude-type de la moyenne', 'Nombre de mesures pour diviser u par 2'],
     gen: () => { const id = tire(['piece', 'chute', 'concentration', 'longueur']), ss = { piece: [0.08, 0.1, 0.12, 0.15], chute: [0.05, 0.06, 0.08], concentration: [0.2, 0.25, 0.3], longueur: [0.2, 0.25, 0.3] };
       return { id, s: tire(ss[id]), n: tire([4, 9, 16, 25, 36]), prix: tire([12, 25, 40]), duree: tire([15, 20, 30]) }; },
     build: (p, q) => {
@@ -5573,7 +5573,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Corps pur ou mélange (2GT, sim 196) : écart avec une référence, zone de la vraie température
   {
-    id: 'pur2gt-sapp-flacon', domaine: 'Corps purs et mélanges (2GT)', titre: 'Un flacon de solvant sans étiquette', noms: ['Écart avec la référence', 'Plus haute valeur possible de la température'],
+    id: 'pur2gt-sapp-flacon', schema: () => ({ type: 'becher', gauche: 'solvant' }), domaine: 'Corps purs et mélanges (2GT)', titre: 'Un flacon de solvant sans étiquette', noms: ['Écart avec la référence', 'Plus haute valeur possible de la température'],
     gen: () => { const id = tire(['acetone', 'ethanol', 'cyclohexane', 'eau']), prec = tire([0.5, 1, 1, 2]), ref = PUR.CORPS[id].Tvap; return { id, prec, lue: Math.round((ref + tire([-0.6, -0.4, -0.2, 0.2, 0.4, 0.6]) * prec) * 10) / 10, m: tire([20, 30, 50, 80, 120]), v: tire([50, 100, 250]) }; },
     build: epure((p, q) => {
       const c = PUR.CORPS[p.id], ref = c.Tvap;
@@ -5730,7 +5730,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Gaz parfait (TG, sim 215) : pression d'un gaz enfermé, masse volumique
   {
-    id: 'gpf-sapp-ballon', domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'Un récipient de gaz de laboratoire', noms: ['Pression du gaz', 'Masse volumique du gaz'],
+    id: 'gpf-sapp-ballon', schema: () => ({ type: 'piston', gaz: 'gaz dans un récipient' }), domaine: 'Gaz parfait : équation d’état et limites du modèle', titre: 'Un récipient de gaz de laboratoire', noms: ['Pression du gaz', 'Masse volumique du gaz'],
     gen: () => ({ n: tire([0.20, 0.50, 1.00, 2.00]), V: tire([5, 10, 20]), th: tire([17, 20, 27]), g: tire([{ nom: 'dioxygène', M: 32.0 }, { nom: 'diazote', M: 28.0 }, { nom: 'dioxyde de carbone', M: 44.0 }]), mR: tire([0.35, 0.50, 0.80]), P: tire([1.0, 2.0, 3.0, 5.0]), prix: tire([12, 18, 25]) }),
     build: (p, q) => {
       const Mtok = tok(`${nb(p.g.M, 1)} g·mol⁻¹`, `Masse molaire du ${p.g.nom}`, p.g.M, 'g·mol⁻¹'), THtok = tok(`${p.th} °C`, 'Température du gaz', p.th, '°C');
@@ -5807,7 +5807,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Poussée d'Archimède (TG, sim 213) : poussée sur un flotteur à l'équilibre ou sur un cube maintenu immergé
   {
-    id: 'arc-sapp-flotteur', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Un cube de bois dans un bassin', noms: ['Poussée sur le cube qui flotte', 'Poussée sur le cube maintenu immergé'],
+    id: 'arc-sapp-flotteur', schema: () => ({ type: 'cubeImmerge' }), domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Un cube de bois dans un bassin', noms: ['Poussée sur le cube qui flotte', 'Poussée sur le cube maintenu immergé'],
     gen: () => ({ rhoB: tire([500, 600, 700, 750]), V: tire([200, 500, 800, 1000]), rhoE: tire([1000, 1030]), th: tire([12, 15, 18, 22]), h: tire([40, 50, 60, 80]) }),
     build: (p, q) => {
       const tokens = {

@@ -68,7 +68,7 @@ const epure = f => (p, q) => { const b = f(p, q); return { ...b, tokens: Object.
 const vir = x => String(Number(Number(x).toPrecision(3))).replace('.', ',');
 export const FRM_SAPP = [
   {
-    id: 'frm-sapp-glisse', domaine: DOM, titre: 'Bloc qui ralentit sur un sol horizontal : énergie cinétique et énergie interne', noms: ['Énergie cinétique initiale', 'Énergie interne gagnée'],
+    id: 'frm-sapp-glisse', schema: () => ({ type: 'mobile', objet: 'bloc', sol: 'sol' }), domaine: DOM, titre: 'Bloc qui ralentit sur un sol horizontal : énergie cinétique et énergie interne', noms: ['Énergie cinétique initiale', 'Énergie interne gagnée'],
     gen: () => { let v0, v1; do { v0 = tire([3, 4, 5, 6]); v1 = tire([1, 2, 3]); } while (v1 >= v0); return { m: tire([1.0, 2.0, 3.0, 4.0]), v0, v1, d: tire([2.0, 3.0, 5.0, 8.0]), dt: tire([1.5, 2.0, 3.0]) }; },
     build: epure((p, q) => {
       const tokens = {

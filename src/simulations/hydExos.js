@@ -75,7 +75,7 @@ const CONCS_SAPP = [0.0010, 0.0050, 0.010, 0.050];
 const nom = n => (n === 2 ? 'racine carrée' : 'racine cubique');
 export const HYD_SAPP = [
   {
-    id: 'hyd-sapp-seuil', domaine: DOM, titre: 'Début de précipitation d’un hydroxyde : [HO⁻] puis pH', noms: ['Concentration en HO⁻ de début de précipitation', 'pH de début de précipitation'],
+    id: 'hyd-sapp-seuil', schema: () => ({ type: 'becher', gauche: 'ions métalliques' }), domaine: DOM, titre: 'Début de précipitation d’un hydroxyde : [HO⁻] puis pH', noms: ['Concentration en HO⁻ de début de précipitation', 'pH de début de précipitation'],
     gen: () => ({ cat: tire(M.ORDRE), c: tire(CONCS_SAPP) }),
     build: epure((p, q) => {
       const cat = C[p.cat], oh = M.ohSeuil(cat, p.c), ph = M.phDe(oh);

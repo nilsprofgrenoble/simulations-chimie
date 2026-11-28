@@ -86,7 +86,7 @@ export const LPG_SAPP = [
     }),
   },
   {
-    id: 'lpg-sapp-hmin', domaine: DOM, titre: 'Franchir le looping : vitesse minimale et hauteur de départ', noms: ['Vitesse minimale au sommet du looping', 'Hauteur minimale de départ'],
+    id: 'lpg-sapp-hmin', schema: () => ({ type: 'looping' }), domaine: DOM, titre: 'Franchir le looping : vitesse minimale et hauteur de départ', noms: ['Vitesse minimale au sommet du looping', 'Hauteur minimale de départ'],
     gen: () => ({ m: tire([150, 200, 300, 500]), R: tire([2, 3, 4, 5, 6]), L: tire([20, 30, 40]) }),
     build: epure((p, q) => {
       const tokens = {

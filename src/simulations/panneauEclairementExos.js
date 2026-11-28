@@ -93,7 +93,7 @@ export const PVE_SAPP = [
     }),
   },
   {
-    id: 'pve-sapp-panneau', domaine: DOM, titre: 'Puissance fournie par un panneau éclairé', noms: ['Puissance lumineuse reçue', 'Puissance électrique fournie'],
+    id: 'pve-sapp-panneau', schema: () => ({ type: 'panneauSoleil' }), domaine: DOM, titre: 'Puissance fournie par un panneau éclairé', noms: ['Puissance lumineuse reçue', 'Puissance électrique fournie'],
     gen: () => ({ phi: tire([200, 300, 400, 500]), d: tire([0.4, 0.5, 0.6, 0.8, 1.0]), S: tire([25, 37.5, 50, 75]), eta: tire([12, 14, 15, 16, 18]), L: tire([0.8, 1.0, 1.2]) }),
     build: epure((p, q) => {
       const tokens = {
