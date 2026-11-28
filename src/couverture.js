@@ -123,7 +123,7 @@ export const COUVERTURE = [
     { th: 'Ondes', t: 'Ondes stationnaires et modes propres', e: 'avenir' },
     { th: 'Ondes', t: 'Ondes électromagnétiques : spectre, laser, rayonnement d’un corps', e: 'avenir' },
     { th: 'Ondes', t: 'Réfraction, réflexion totale et mesure d’un indice', e: 'partiel', chap: 'tstl-distillation', reste: 'lois de Snell-Descartes, angle limite et réflexion totale' },
-    { th: 'Ondes', t: 'Polarisation et activité optique : loi de Biot', e: 'avenir' },
+    { th: 'Ondes', t: 'Polarisation et activité optique : loi de Biot', e: 'ok', chap: 'tstl-synthese-organique' },
     { th: 'Ondes', t: 'Diffraction des ondes', e: 'ok', chap: 'tstl-ondes' },
     { th: 'Ondes', t: 'Interférences et réseaux', e: 'ok', chap: 'tstl-ondes' },
     { th: 'Ondes', t: 'Effet Doppler', e: 'ok', chap: 'tstl-ondes' },
