@@ -5745,9 +5745,9 @@ export const ENONCES = [
       }
       const tokens = { P: tok(`${nb(p.P, 1)} bar`, 'Pression du gaz', p.P, 'bar'), th: THtok, M: Mtok, V: tok(`${p.V} L`, 'Volume du récipient', p.V, 'L'), prix: tok(`${p.prix} €`, 'Prix de la recharge de gaz', p.prix, '€') };
       return { tokens, derivees: [], texte: ['Une recharge de ', p.g.nom, ' (masse molaire ', T('M'), ') coûte ', T('prix'), '. Le gaz, à ', T('th'), ' sous ', T('P'), ', occupe un récipient de ', T('V'), '. Quelle est la masse volumique du gaz ?'], utiles: ['P', 'th', 'M'],
-        raisons: { V: 'La masse volumique d’un gaz parfait, ρ = frac(P × M|R) × T, ne dépend pas de la taille du récipient.', prix: 'Le prix de la recharge n’a aucun rapport avec les propriétés physiques du gaz.' },
+        raisons: { V: 'La masse volumique d’un gaz parfait, ρ = frac(P × M|R × T), ne dépend pas de la taille du récipient.', prix: 'Le prix de la recharge n’a aucun rapport avec les propriétés physiques du gaz.' },
         cherche: { bonne: 'La masse volumique ρ du gaz (en kg·m⁻³)', faux: ['La quantité de matière de gaz (en mol)', 'La masse de gaz contenue dans le récipient (en g)', 'Le volume molaire du gaz (en L·mol⁻¹)'] },
-        manque: null, solution: { txt: 'ρ = frac(P × M|R) × T, avec P en Pa, M en kg·mol⁻¹, T en K', val: p.P * 1e5 * p.g.M * 1e-3 / (8.314 * (p.th + 273.15)), u: 'kg·m⁻³' } };
+        manque: null, solution: { txt: 'ρ = frac(P × M|R × T), avec P en Pa, M en kg·mol⁻¹, T en K', val: p.P * 1e5 * p.g.M * 1e-3 / (8.314 * (p.th + 273.15)), u: 'kg·m⁻³' } };
     },
   },
   // ───────────────────────────── Premier principe (TG, sim 216) : variation d'énergie interne, température finale
