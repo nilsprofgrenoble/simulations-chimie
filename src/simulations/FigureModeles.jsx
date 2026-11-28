@@ -1,5 +1,9 @@
 import { KIT } from "../commun";
 
+// Nom de grandeur dans un texte SVG : « R_p » s'écrit avec un vrai indice (tspan abaissé).
+const nomSvg = (s) => { const m = /^(.*?)_(.+)$/.exec(String(s)); return m ? <>{m[1]}<tspan dy="3" fontSize="9">{m[2]}</tspan><tspan dy="-3"></tspan></> : s; };
+
+
 // Figure de l'atelier « Valider » (exercices « quel modèle choisir ? ») : points de mesure et courbes de deux modèles, sur et au-delà de la plage mesurée.
 //   fig : { xnom, xunite, ynom, yunite, x: [min, max, pas], y: [min, max, pas], plage: [xmin, xmax], mesures: [[x, y]…], modeles: [{ nom, f, tireté? }] }
 const COUL = ['#15803d', '#c2410c'];
@@ -22,8 +26,8 @@ export function FigureModeles({ fig }) {
         <line x1={L} y1={T} x2={L} y2={T + H} stroke="#334155" strokeWidth="1.5"/>
         {fig.modeles.map((m, k) => <path key={m.nom} d={courbe(m.f)} fill="none" stroke={COUL[k]} strokeWidth="2.2" strokeDasharray={k ? '6 4' : undefined}/>)}
         {fig.mesures.map(([x, y], i) => <circle key={i} cx={X(x)} cy={Y(y)} r="3.8" fill="#0f172a"/>)}
-        <text x={L + W / 2} y={VH - 5} fontSize="12" textAnchor="middle" fontWeight="700" fill="#0f172a">{fig.xnom} ({fig.xunite})</text>
-        <text x={12} y={T + H / 2} fontSize="12" textAnchor="middle" fontWeight="700" fill="#0f172a" transform={`rotate(-90 12 ${T + H / 2})`}>{fig.ynom} ({fig.yunite})</text>
+        <text x={L + W / 2} y={VH - 5} fontSize="12" textAnchor="middle" fontWeight="700" fill="#0f172a">{nomSvg(fig.xnom)} ({fig.xunite})</text>
+        <text x={12} y={T + H / 2} fontSize="12" textAnchor="middle" fontWeight="700" fill="#0f172a" transform={`rotate(-90 12 ${T + H / 2})`}>{nomSvg(fig.ynom)} ({fig.yunite})</text>
       </svg>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 13, color: KIT.txt, padding: '2px 8px 4px' }}>
         <span><span style={{ color: '#0f172a' }}>●</span> mesures (zone grisée = plage mesurée)</span>
