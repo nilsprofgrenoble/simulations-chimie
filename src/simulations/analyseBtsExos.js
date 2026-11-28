@@ -145,7 +145,7 @@ const ANA_TIT = [
       F('Le précipité de chlorure d’argent vient de se dissoudre sous l’action des chromates', 'AgCl ne se redissout pas : la couleur vient d’un second précipité.'),
       F('Les ions chromate ont réagi les premiers avec Ag⁺, puis les chlorures ont commencé à réagir', 'Dans les conditions données, AgCl précipite en premier.'),
     ] },
-  { id: 'tit-prec-conduct', domaine: TIT, titre: 'Conductivité pendant un titrage par précipitation',
+  { id: 'tit-prec-conduct', schema: { type: 'titrage', sonde: 'conductimètre', burette: 'nitrate d’argent', becher: 'chlorure de sodium' }, domaine: TIT, titre: 'Conductivité pendant un titrage par précipitation',
     enonce: 'On titre une solution de chlorure de sodium (Na⁺ + Cl⁻) par du nitrate d’argent concentré (Ag⁺ + NO₃⁻), en suivant σ. AgCl précipite ; on néglige la dilution. Les ions Cl⁻ et NO₃⁻ ont des conductivités molaires ioniques voisines.', q: 'Comment évolue σ avant l’équivalence ?', options: [
       V('Elle varie peu : chaque Cl⁻ consommé est remplacé par un NO₃⁻ de conductivité voisine', 'Ag⁺ forme AgCl avec Cl⁻, alors que NO₃⁻ apparaît dans la solution : l’échange est neutre.'),
       F('Elle chute fortement : les ions Ag⁺ et Cl⁻ disparaissent de la solution en même temps', 'Ag⁺ et Cl⁻ disparaissent, mais NO₃⁻ est ajouté en même quantité.'),
@@ -199,7 +199,7 @@ const ANA_CHR = [
       F('A migre plus loin que B : un composé polaire est entraîné facilement par l’éluant', 'Avec un éluant peu polaire, c’est l’inverse.'),
       F('A et B migrent à la même hauteur, car le solvant impose la vitesse de tous', 'Les composés se séparent grâce à des affinités différentes.'),
     ] },
-  { id: 'chr-ccm-temoin', domaine: CHR, titre: 'Identifier par comparaison à un témoin',
+  { id: 'chr-ccm-temoin', schema: { type: 'plaqueCCM' }, domaine: CHR, titre: 'Identifier par comparaison à un témoin',
     enonce: 'Un produit de synthèse et un témoin du produit attendu ont le même rapport frontal dans un éluant donné, sur la même plaque.', q: 'Que peut-on conclure ?', options: [
       V('Probablement identiques ; on confirme avec un autre éluant', 'Deux espèces différentes peuvent avoir le même Rf dans un éluant donné.'),
       F('Identiques avec certitude : un même Rf dans un éluant prouve la même espèce', 'Un seul éluant ne suffit pas.'),

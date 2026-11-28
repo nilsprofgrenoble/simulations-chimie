@@ -159,7 +159,7 @@ export const TSTLB_ANA = [
     ] },
 
   // ── Des ondes pour observer : résolution ──
-  { id: 'obs-prev-resolution-lambda', domaine: 'Microscope', titre: 'Résolution d’un microscope et couleur de la lumière',
+  { id: 'obs-prev-resolution-lambda', schema: { type: 'microscope', lumiere: 'lumière bleue ou rouge' }, domaine: 'Microscope', titre: 'Résolution d’un microscope et couleur de la lumière',
     enonce: 'Le plus petit détail séparé par un microscope optique, limité par la diffraction, vaut d = 0,61 · frac(λ|ON), où ON est l’ouverture numérique de l’objectif. On observe le même échantillon avec le même objectif, d’abord en lumière rouge (λ = 650 nm), puis en lumière bleue (λ = 450 nm).',
     q: 'Avec la lumière bleue, le plus petit détail séparé est…', options: [
       V('plus petit : environ 0,7 fois celui de la lumière rouge', 'd est proportionnel à λ : frac(450|650) ≈ 0,69. Une longueur d’onde plus courte donne une meilleure résolution (détails plus fins séparés).'),

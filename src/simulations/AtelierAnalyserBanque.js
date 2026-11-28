@@ -362,7 +362,7 @@ export const PROBLEMES = [
     retenir: ['Remplissage avec une sortie ouverte : Δt = ΔV / (Q_entrée − Q_sortie).'],
   },
   {
-    id: 'chauffeeau', domaine: 'Transferts thermiques', titre: 'Le chauffe-eau sera-t-il prêt le matin ?',
+    id: 'chauffeeau', schema: { type: 'chauffeEau' }, domaine: 'Transferts thermiques', titre: 'Le chauffe-eau sera-t-il prêt le matin ?',
     enonce: 'Un chauffe-eau électrique de 200 L, alimenté en 230 V, possède une résistance de 2,2 kW. Il doit chauffer l’eau de 15 °C à 60 °C pendant les 8 heures creuses de la nuit (tarif 0,20 € le kWh). La résistance est-elle assez puissante ?',
     cherche: { q: 'Quelle grandeur faut-il déterminer pour répondre ?', options: [
       V('La durée de chauffe, pour la comparer à 8 h', 'On peut aussi comparer l’énergie nécessaire à l’énergie fournie en 8 h : c’est équivalent.'),
@@ -1204,7 +1204,7 @@ export const RELATIONS = [
       F('F = frac(G·(m₁ + m₂)|d²)', 'Les masses se multiplient, elles ne s’additionnent pas.'),
       F('F = frac(k·q₁·q₂|d²)', 'C’est la loi de Coulomb (charges électriques). Ici il n’y a que des masses.'),
     ] },
-  { id: 'ch-coulomb', domaine: 'Interactions et champs', titre: 'Force entre deux charges',
+  { id: 'ch-coulomb', schema: { type: 'deuxCharges' }, domaine: 'Interactions et champs', titre: 'Force entre deux charges',
     enonce: 'Deux petites sphères portent des charges q₁ et q₂ connues, et leurs centres sont séparés d’une distance d connue. On les assimile à des charges ponctuelles, placées dans le vide (ou dans l’air). On cherche la valeur de la force électrostatique entre elles.', q: 'Quelle relation permet de répondre ?', options: [
       V('F = k·|q₁·q₂| / d²', 'C’est la loi de Coulomb : la force est proportionnelle au produit des charges et inversement proportionnelle au carré de la distance.'),
       F('F = frac(G·m₁·m₂|d²)', 'C’est la loi de la gravitation (masses). Ici on connaît des charges, pas des masses.'),
@@ -1233,7 +1233,7 @@ export const RELATIONS = [
       F('η = frac(x × V_récupéré|V_mélange)', 'On a multiplié le volume récupéré par x au lieu de le comparer à x × V_mélange : on trouverait 3,2 %, résultat absurde.'),
       F('η = frac(x × V_mélange|V_récupéré)', 'Rapport inversé : on trouverait 125 %, un rendement supérieur à 100 % est impossible.'),
     ] },
-  { id: 'enrichissement', domaine: 'Distillation', titre: 'Qui s’enrichit dans la vapeur ?',
+  { id: 'enrichissement', schema: { type: 'distillation' }, domaine: 'Distillation', titre: 'Qui s’enrichit dans la vapeur ?',
     enonce: 'Dans un mélange eau–éthanol chauffé à pression atmosphérique, on veut prévoir quel constituant est plus abondant dans la vapeur que dans le liquide (éthanol : 78 °C ; eau : 100 °C).',
     q: 'Quelle idée permet de répondre ?', options: [
       V('Le constituant le plus volatil (ébullition la plus basse) s’enrichit dans la vapeur', 'C’est le principe de la distillation : la vapeur est plus riche en éthanol que le liquide.'),
@@ -2111,7 +2111,7 @@ export const PREVOIR = [
       F('inchangé', 'Il dépend de la quantité d’éthanol présente au départ.'),
       F('divisé par 2', 'Sens inversé : un mélange plus riche donne plus d’éthanol.'),
     ] },
-  { id: 'crist-eau', domaine: 'Évaporation et cristallisation', titre: 'Deux fois plus d’eau avant refroidissement',
+  { id: 'crist-eau', schema: { type: 'refroidissement' }, domaine: 'Évaporation et cristallisation', titre: 'Deux fois plus d’eau avant refroidissement',
     enonce: 'On double la masse d’eau de la solution saturée à 60 °C, puis on la refroidit à 20 °C comme avant.', q: 'La masse de cristaux obtenus est…', options: [
       V('doublée', 'm_cristaux = frac((s₆₀ − s₂₀) × m_eau|100) est proportionnelle à m_eau.'),
       F('inchangée', 'Elle dépend de la masse d’eau, donc de la quantité de soluté dissous au départ.'),
@@ -2124,7 +2124,7 @@ export const PREVOIR = [
       F('plus petite', 'Sens inversé : la solubilité plus faible laisse moins de soluté en solution.'),
       F('inchangée', 'La solubilité à 0 °C n’est pas la même : la masse de cristaux change.'),
     ] },
-  { id: 'soutirage-double', domaine: 'Régulation', titre: 'Soutirage doublé',
+  { id: 'soutirage-double', schema: { type: 'reservoirRegule' }, domaine: 'Régulation', titre: 'Soutirage doublé',
     enonce: 'Dans une régulation de niveau proportionnelle, le soutirage Q_p double (même gain K_p, même pompe).', q: 'L’écart statique est…', options: [
       V('doublé', 'écart = frac(Q_p / Q_max × 100|K_p) est proportionnel à Q_p.'),
       F('inchangé', 'Il dépend de la commande nécessaire, donc du soutirage.'),
@@ -2250,7 +2250,7 @@ export const PREVOIR = [
       F('4 N', 'C’est la longueur en cm : il faut la convertir avec l’échelle (1 cm ↔ 5 N).'),
       F('0,8 N', 'On a divisé 4 par 5 au lieu de multiplier : 1 cm vaut 5 N, donc 4 cm valent 4 fois plus.'),
     ] },
-  { id: 'frc-glissement-arret', domaine: 'Forces et principe d’inertie', titre: 'Une caisse qui s’arrête',
+  { id: 'frc-glissement-arret', schema: { type: 'mobile', objet: 'caisse', sol: 'sol' }, domaine: 'Forces et principe d’inertie', titre: 'Une caisse qui s’arrête',
     enonce: 'Une caisse lancée sur un sol horizontal glisse, puis finit par s’arrêter.', q: 'Pourquoi la caisse s’arrête-t-elle ?', options: [
       F('Plus aucune force ne s’exerce sur elle', 'Sans force (ou avec des forces qui se compensent), la vitesse resterait constante : c’est une force qui arrête la caisse.'),
       F('Elle a épuisé la force donnée au lancement', 'Une force n’est pas une réserve qui s’use : le lancement est terminé, seul le frottement agit ensuite sur le mouvement.'),
@@ -2369,7 +2369,7 @@ export const PREVOIR = [
       F('identique, puisque le volume est le même', 'Le volume est le même, mais la masse de sel dissous change : t = m / V change aussi.'),
       F('2 fois plus petite que celle de la 1re', 'Plus de soluté dans le même volume : la concentration augmente, elle ne diminue pas.'),
     ] },
-  { id: 'sol-volume-double', domaine: 'Solutions et concentration', titre: 'Un volume deux fois plus grand',
+  { id: 'sol-volume-double', schema: { type: 'becher', gauche: 'solution 1', droite: 'solution 2' }, domaine: 'Solutions et concentration', titre: 'Un volume deux fois plus grand',
     enonce: 'On dissout 10 g de sucre dans une solution de 250 mL, puis 10 g de sucre dans une solution de 500 mL.', q: 'La concentration en masse de la 2e solution est…', options: [
       V('2 fois plus petite que celle de la 1re', 't = m / V : la même masse dans un volume deux fois plus grand donne une solution deux fois moins concentrée.'),
       F('2 fois plus grande que celle de la 1re', 'C’est l’inverse : le volume est au dénominateur, un volume plus grand diminue la concentration.'),
@@ -2445,7 +2445,7 @@ export const PREVOIR = [
       F('4 fois plus grande', 'La relation est une proportionnalité simple (I = U/R), pas un carré.'),
       F('inchangée', 'U = R·I : si U double et R reste constante, I double.'),
     ] },
-  { id: 'cir-ohm-resistance-double', domaine: 'Circuits électriques', titre: 'Doubler la résistance',
+  { id: 'cir-ohm-resistance-double', schema: { type: 'circuitSimple', dipole: 'résistor', generateur: 'générateur' }, domaine: 'Circuits électriques', titre: 'Doubler la résistance',
     enonce: 'Un générateur impose une tension constante de 6 V. On remplace un résistor de 100 Ω par un résistor de 200 Ω.', q: 'L’intensité du courant est…', options: [
       V('2 fois plus petite, car R est doublée', 'I = frac(U|R) : à U constante, une résistance 2 fois plus grande donne une intensité 2 fois plus petite.'),
       F('2 fois plus grande, car R est doublée', 'C’est l’inverse : une plus grande résistance freine davantage le courant.'),
@@ -2809,7 +2809,7 @@ export const PREVOIR = [
       F('[A⁻] vaut le double de [AH]', 'Un rapport 2 correspondrait à pH − pKa = 0,3 environ, pas à pH = pKa.'),
       F('Il n’y a plus d’acide AH, il est entièrement transformé en A⁻', 'La transformation n’est jamais totale pour un acide faible : à pH = pKa, il reste autant de AH que de A⁻.'),
     ] },
-  { id: 'ab-tamp-ana-dilution', domaine: 'Acides et bases', titre: 'Diluer une solution tampon 10 fois',
+  { id: 'ab-tamp-ana-dilution', schema: { type: 'dilution', mere: 'solution tampon', eau: 'eau distillée' }, domaine: 'Acides et bases', titre: 'Diluer une solution tampon 10 fois',
     enonce: 'Une solution tampon, de pH 4,8, est diluée 10 fois avec de l’eau distillée.', q: 'Que devient son pH ?', options: [
       V('Il reste pratiquement égal à 4,8', 'Les concentrations de AH et de A⁻ sont divisées par 10 toutes les deux : leur rapport ne change pas, donc le pH non plus (le pouvoir tampon, lui, diminue).'),
       F('Il est divisé par 10', 'Le pH ne se divise pas comme une concentration : il dépend du rapport des deux formes, pas de leur valeur.'),
@@ -3166,7 +3166,7 @@ export const PREVOIR = [
       V('une coalescence : fusion irréversible des gouttes', 'Les gouttes ont fusionné en grosses gouttes, puis l’huile s’est séparée : c’est irréversible, malgré l’agitation.'),
       F('rien d’anormal : une crème a toujours un peu d’huile libre', 'De l’huile libre signale une émulsion qui se déstabilise.'),
     ] },
-  { id: 'inst-ana-coal-volume', domaine: 'Instabilités des émulsions', titre: 'Huit gouttes qui n’en font plus qu’une',
+  { id: 'inst-ana-coal-volume', schema: { type: 'coalescence', n: 8 }, domaine: 'Instabilités des émulsions', titre: 'Huit gouttes qui n’en font plus qu’une',
     enonce: 'Huit gouttes d’huile identiques, de rayon 2 µm, fusionnent en une seule goutte sphérique. Le volume d’huile est conservé.', q: 'Quel est le rayon de la goutte obtenue ?', options: [
       V('4 µm : le rayon est doublé', 'Le volume est multiplié par 8 et V est proportionnel à r³ : le rayon est multiplié par 8^(1/3) = 2, soit 4 µm.'),
       F('16 µm', 'Le rayon n’est pas multiplié par 8 : le volume l’est, et r varie comme la racine cubique du volume.'),
@@ -3494,7 +3494,7 @@ export const PREVOIR = [
       V('mouiller parfaitement la lame (angle de contact nul)', 'La force est alors γ × p ; sinon il faudrait la corriger par cos θ.'),
       F('ne pas du tout mouiller la lame, pour qu’elle flotte', 'Un angle supérieur à 90° ferait repousser la lame et fausserait la mesure.'),
     ] },
-  { id: 'angc-ana-tensioactif', domaine: 'Mouillage : tension superficielle, angle de contact, tension critique', titre: 'Encre et tensioactif',
+  { id: 'angc-ana-tensioactif', schema: { type: 'goutteAngle' }, domaine: 'Mouillage : tension superficielle, angle de contact, tension critique', titre: 'Encre et tensioactif',
     enonce: 'Une encre à base d’eau forme sur un film de polyéthylène une goutte avec un angle de contact de 60°. On y ajoute un tensioactif et l’angle diminue.', q: 'Quelle est la cause principale de cette diminution ?', options: [
       V('la tension superficielle de l’encre diminue et se rapproche de la tension critique du film', 'Plus γ de l’encre est proche de γc, plus cos θ se rapproche de 1 : l’angle diminue.'),
       F('le tensioactif augmente la tension critique du polyéthylène', 'Le tensioactif agit sur le liquide ; la tension critique du film ne change pas.'),
@@ -3804,7 +3804,7 @@ export const PREVOIR = [
       V('une cuve en quartz, transparente dans l’UV', 'Le quartz laisse passer l’UV dès 190 nm environ : il convient à toute la plage 200 à 800 nm.'),
       F('n’importe quelle cuve, la matière ne joue aucun rôle', 'La cuve est traversée par la lumière : si elle absorbe à la longueur d’onde de mesure, A est faussée.'),
     ] },
-  { id: 'app-ana-lampe', domaine: 'Spectrophotomètre UV-visible : appareil, cuve et blanc', titre: 'Les lampes d’un spectrophotomètre',
+  { id: 'app-ana-lampe', schema: { type: 'spectrophotometre' }, domaine: 'Spectrophotomètre UV-visible : appareil, cuve et blanc', titre: 'Les lampes d’un spectrophotomètre',
     enonce: 'Un spectrophotomètre balaie les longueurs d’onde de 200 à 800 nm. Une seule lampe ne couvre pas tout ce domaine avec une intensité suffisante.', q: 'Quelle est la solution adoptée ?', options: [
       F('une lampe au tungstène-halogène seule, très intense dans l’UV', 'La lampe au tungstène-halogène est peu intense sous 350 nm environ.'),
       F('une lampe au deutérium seule, utilisée jusqu’à 800 nm', 'La lampe au deutérium émet surtout dans l’UV, jusqu’à 400 nm environ.'),
@@ -4105,7 +4105,7 @@ export const PREVOIR = [
       F('la constance des couleurs', 'La constance des couleurs est la capacité du cerveau à garder une même couleur perçue malgré la lampe.'),
       V('le métamérisme', 'Deux surfaces de même couleur sous un illuminant, de couleurs différentes sous un autre : ce sont des métamères.'),
     ] },
-  { id: 'mtm-ana-controle', domaine: 'Couleur : éclairage, réflectance et métamérisme', titre: 'Éviter le métamérisme',
+  { id: 'mtm-ana-controle', schema: { type: 'deuxLampesPeinture' }, domaine: 'Couleur : éclairage, réflectance et métamérisme', titre: 'Éviter le métamérisme',
     enonce: 'Un formulateur règle la teinte d’une peinture en cabine, sous la lumière du jour D65 : l’écart avec la cible est nul. Le client, qui utilise la peinture sous des lampes à incandescence, se plaint d’une teinte différente.', q: 'Quelle est la meilleure précaution ?', options: [
       F('contrôler l’écart sous la seule lumière du jour, avec un appareil plus précis', 'Un appareil plus précis ne change rien : le problème vient de l’illuminant, pas de la précision.'),
       F('augmenter l’épaisseur de la peinture pour renforcer la teinte', 'L’épaisseur change l’opacité, pas la sensibilité de la teinte à l’illuminant.'),
@@ -4362,7 +4362,7 @@ export const PREVOIR = [
       F('inchangée', 'La masse est inchangée, mais Ec dépend aussi de la vitesse : si v double, Ec change.'),
       V('multipliée par 4', 'Ec = ½·m·v² : avec 2v, Ec′ = ½·m·(2v)² = 4 × ½·m·v².'),
     ] },
-  { id: 'mec-ec-masse', domaine: 'Mécanique', titre: 'Énergie cinétique et masse doublée',
+  { id: 'mec-ec-masse', schema: { type: 'deuxChariots' }, domaine: 'Mécanique', titre: 'Énergie cinétique et masse doublée',
     enonce: 'Deux chariots roulent à la même vitesse : l’un de masse m, l’autre de masse 2 m. Ec = ½ × m × v².', q: 'L’énergie cinétique du chariot le plus massif est…', options: [
       V('2 fois plus grande', 'Ec est proportionnelle à la masse : masse × 2, Ec × 2.'),
       F('4 fois plus grande', 'C’est v qui est au carré, pas m.'),
@@ -4850,7 +4850,7 @@ export const PREVOIR = [
       F('la conductivité de l’eau pure s’ajoute à celle des ions', 'L’eau pure a une conductivité de l’ordre de 0,005 mS·m⁻¹, négligeable ici, et elle augmenterait σ au lieu de la diminuer.'),
       F('la température de la solution a certainement varié', 'Rien n’indique une variation de température : l’écart vient du domaine de validité de la loi (solution diluée).'),
     ] },
-  { id: 'cdt-ana-dilution', domaine: 'Conductimétrie : conductivité et titrage', titre: 'Pourquoi diluer avant un titrage conductimétrique',
+  { id: 'cdt-ana-dilution', schema: { type: 'titrage', sonde: 'conductimètre', burette: 'soude', becher: 'acide chlorhydrique + eau' }, domaine: 'Conductimétrie : conductivité et titrage', titre: 'Pourquoi diluer avant un titrage conductimétrique',
     enonce: 'Avant de titrer 20,0 mL d’acide chlorhydrique par de la soude, on ajoute 180 mL d’eau distillée dans le bécher, bien que cette eau ne change ni la quantité d’acide ni le volume équivalent.', q: 'Quel est l’intérêt de cette dilution ?', options: [
       V('le volume total varie peu et la solution reste diluée', 'Le volume ajouté de soude (20 mL au plus) est petit devant 200 mL : la dilution due à la burette est faible, les segments de la courbe sont presque des droites et la loi de Kohlrausch reste valable.'),
       F('elle augmente la quantité d’acide, donc le volume équivalent', 'L’eau ne contient pas d’acide : la quantité de matière d’acide, donc le volume équivalent, est inchangée.'),
@@ -4892,7 +4892,7 @@ export const PREVOIR = [
       F('elle diminue, car le précipité se redissout dans la solution d’argent versée', 'Le précipité reste au fond du bécher ; sa quantité ne varie plus, elle ne diminue pas dans le cadre du programme.'),
       F('elle continue d’augmenter, mais plus lentement qu’avant l’équivalence', 'La précipitation s’arrête net quand le dernier Cl⁻ a réagi : elle ne se poursuit pas, même lentement.'),
     ] },
-  { id: 'cdp-ana-concentre', domaine: 'Titrage conductimétrique par précipitation', titre: 'Dosage sans eau ajoutée : solution trop concentrée',
+  { id: 'cdp-ana-concentre', schema: { type: 'titrage', sonde: 'conductimètre', burette: 'solution titrante', becher: 'eau à doser' }, domaine: 'Titrage conductimétrique par précipitation', titre: 'Dosage sans eau ajoutée : solution trop concentrée',
     enonce: 'Un élève dose 20,0 mL d’une eau à 3,0×10⁻² mol/L en chlorure de sodium sans ajouter d’eau : au départ, [Na⁺] = [Cl⁻] = 30 mol·m⁻³. Il calcule σ avec la loi de Kohlrausch σ = Σ λ × c.', q: 'Que peut-on prévoir pour la conductivité mesurée ?', options: [
       V('plus faible que la somme calculée : solution trop concentrée', 'Au-delà d’environ 10 mol·m⁻³, les interactions entre ions deviennent importantes et σ mesurée est inférieure à Σ λ × c : la loi n’est valable que pour une solution diluée.'),
       F('égale à la somme calculée, car la loi de Kohlrausch est exacte pour tout sel', 'La loi n’est valable que pour des solutions diluées ; à 30 mol·m⁻³, on est hors du domaine de validité.'),
@@ -5194,7 +5194,7 @@ export const PREVOIR = [
       F('celle du second est quatre fois plus petite', 'a varie comme frac(1|R), pas comme frac(1|R²) : doubler R divise a par 2 seulement.'),
       F('elles sont égales : a ne dépend que de v', 'a = frac(v²|R) dépend aussi du rayon : à même vitesse, l’accélération est plus grande dans un virage serré.'),
     ] },
-  { id: 'fre-ana-freinage', domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Une voiture qui freine dans un virage',
+  { id: 'fre-ana-freinage', schema: { type: 'virage' }, domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Une voiture qui freine dans un virage',
     enonce: 'Une voiture parcourt un virage circulaire en freinant : la norme de sa vitesse diminue régulièrement. On décrit son accélération dans le repère de Frenet.', q: 'Quelle description du vecteur accélération est correcte ?', options: [
       V('une coordonnée tangentielle négative et une normale dirigée vers le centre', 'a_t = frac(dv|dt) < 0 (sens opposé au mouvement) ; a_n = frac(v²|R) > 0, dirigée vers le centre tant que v n’est pas nulle.'),
       F('seulement une coordonnée tangentielle, dans le sens opposé au mouvement', 'La direction de la vitesse change aussi (virage) : a_n = frac(v²|R) n’est pas nulle, il y a une coordonnée vers le centre.'),
@@ -5365,7 +5365,7 @@ export const PREVOIR = [
       F('vec(v) est horizontal ; vec(a) est nul, car la balle n’accélère plus', 'Au sommet, la composante verticale de la vitesse passe de positive à négative : elle varie encore, donc vec(a) = vec(g) n’est pas nul. Le poids n’est jamais compensé en vol.'),
     ] },
   { id: 'pes-ana-lune', domaine: 'Mouvement dans un champ de pesanteur uniforme', titre: 'Le même lancer sur la Lune',
-    ...presenter({ contexte: 'Un astronaute lance une balle depuis le sol, avec une vitesse initiale de norme v_0 sous un angle α, d’abord sur Terre, puis sur la Lune (sans atmosphère), en refaisant exactement le même lancer. Pour un tir depuis le sol, la portée s’écrit P = frac(v_0² sin 2α|g).', liste: [['Pesanteur sur Terre', 'g = 9,8 m/s²'], ['Pesanteur sur la Lune', 'g = 1,6 m/s²']] }), q: 'Que devient la portée sur la Lune ?', options: [
+    ...presenter({ schema: { type: 'lancerDeuxAstres' }, contexte: 'Un astronaute lance une balle depuis le sol, avec une vitesse initiale de norme v_0 sous un angle α, d’abord sur Terre, puis sur la Lune (sans atmosphère), en refaisant exactement le même lancer. Pour un tir depuis le sol, la portée s’écrit P = frac(v_0² sin 2α|g).', liste: [['Pesanteur sur Terre', 'g = 9,8 m/s²'], ['Pesanteur sur la Lune', 'g = 1,6 m/s²']] }), q: 'Que devient la portée sur la Lune ?', options: [
       V('elle est environ 6 fois plus grande', 'P = frac(v_0² sin 2α|g) : v_0 et α sont inchangés et g est / environ 6 (frac(9,8|1,6)), donc la portée est multipliée par environ 6.'),
       F('elle est environ 6 fois plus petite', 'C’est l’inverse : g apparaît au dénominateur de P. Sur la Lune, la pesanteur est plus faible, la balle retombe moins vite et va plus loin.'),
       F('elle ne change pas, car v_0 et α ne changent pas', 'v_0 et α sont les mêmes, mais g n’est pas le même : il figure dans l’expression de P, et la portée dépend de la valeur du champ de pesanteur.'),
@@ -6194,7 +6194,7 @@ export const PREVOIR = [
     ] },
   // ── Ondes (TSTL) : diffraction, interférences, réseaux ──
   { id: 'ond-diffraction-fente', domaine: 'Ondes', titre: 'Fente deux fois plus étroite',
-    ...presenter({ contexte: 'Un faisceau laser traverse une fente fine et verticale, puis forme une figure de diffraction sur un écran.', liste: [['Largeur de la fente', 'divisée par 2'], ['Longueur d’onde et distance fente-écran', 'inchangées']] }), q: 'La largeur L de la tache centrale sur l’écran (entre ses deux premières extinctions) est…', options: [
+    ...presenter({ schema: { type: 'diffraction', obstacle: 'fente' }, contexte: 'Un faisceau laser traverse une fente fine et verticale, puis forme une figure de diffraction sur un écran.', liste: [['Largeur de la fente', 'divisée par 2'], ['Longueur d’onde et distance fente-écran', 'inchangées']] }), q: 'La largeur L de la tache centrale sur l’écran (entre ses deux premières extinctions) est…', options: [
       V('multipliée par 2', 'La largeur de la tache centrale vaut L = frac(2·λ·D|a) : elle est inversement proportionnelle à la largeur a de la fente. Fente 2 fois plus étroite, figure 2 fois plus étalée.'),
       F('divisée par 2', 'Sens inversé : plus la fente est étroite, plus la lumière s’étale. La figure s’élargit quand l’ouverture diminue.'),
       F('inchangée', 'La largeur de la tache dépend de la largeur de la fente : L = frac(2·λ·D|a).'),
@@ -6536,7 +6536,7 @@ export const PREVOIR = [
       F('il reste immobile tant que la bosse passe', 'Le point M subit la perturbation : il monte puis redescend quand la bosse arrive en M.'),
       F('il glisse vers la source puis revient', 'Un point de la corde ne se déplace pas le long de la corde : son mouvement est perpendiculaire à la direction de propagation.'),
     ] },
-  { id: 'ond1g-celerite-retard-distance', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Le retard quand on écarte les capteurs',
+  { id: 'ond1g-celerite-retard-distance', schema: { type: 'cordeCapteurs' }, domaine: 'Ondes mécaniques : célérité et retard', titre: 'Le retard quand on écarte les capteurs',
     enonce: 'Sur une corde, deux capteurs distants de 2,0 m enregistrent la même bosse avec un retard de 0,40 s. Sans rien changer à la corde, on écarte les capteurs à 4,0 m l’un de l’autre.', q: 'Que devient le retard entre les deux capteurs ?', options: [
       V('il double, il vaut 0,80 s', 'Dans un même milieu la célérité ne change pas : c = d ÷ Δt. La distance double, donc la durée double aussi (Δt = d ÷ c).'),
       F('il reste égal à 0,40 s', 'Le retard dépend de la distance : la perturbation doit parcourir deux fois plus de chemin à la même célérité.'),
@@ -6858,7 +6858,7 @@ export const PREVOIR = [
       V('noir : le vert reçu est absorbé, rien n’est renvoyé vers l’œil', 'La lumière diffusée ne contient que des radiations reçues. Le ballon n’en diffuse aucune parmi celles que la lampe envoie : il paraît noir (dans le modèle idéal ; un vrai ballon paraîtrait très sombre).'),
       F('cyan : le vert de la lampe s’ajoute au bleu que le ballon diffuse', 'La lampe n’envoie pas de bleu : le ballon n’a pas de bleu à diffuser, et il absorbe le vert reçu.'),
     ] },
-  { id: 'coul1g-ana-filtre-cyan-rouge', domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Un filtre cyan devant une lampe rouge',
+  { id: 'coul1g-ana-filtre-cyan-rouge', schema: { type: 'lampeFiltre', lampe: 'lampe rouge', filtre: 'filtre cyan', couleurLampe: '#ef4444', couleurFiltre: '#22d3ee' }, domaine: 'Couleurs : synthèses additive et soustractive, couleur des objets', titre: 'Un filtre cyan devant une lampe rouge',
     enonce: 'Un filtre cyan laisse passer le vert et le bleu, et absorbe le rouge. On le place devant une lampe qui n’émet que de la lumière rouge, dans une pièce sans autre lumière.', q: 'Que voit-on de l’autre côté du filtre ?', options: [
       F('du cyan : un filtre donne sa couleur à toute lumière qui le traverse', 'Un filtre ne fabrique pas de lumière : il ne laisse passer que des radiations qu’il reçoit, ici seulement du rouge.'),
       V('du noir : le filtre absorbe entièrement la lumière rouge de la lampe', 'La lampe n’envoie que du rouge, et le filtre cyan absorbe le rouge : aucune radiation ne ressort.'),
@@ -7639,7 +7639,7 @@ export const PREVOIR = [
       F('les deux de la même façon : la diffraction ne dépend pas de la fréquence', 'La diffraction dépend de frac(λ|a), et λ dépend de la fréquence : les deux sons ne sont pas diffractés de la même façon.'),
       F('aucun des deux : un son ne peut jamais contourner une porte', 'Un son contourne bien une porte quand λ est comparable à a ou plus grande : c’est justement ce qui permet d’entendre sans voir.'),
     ] },
-  { id: 'you-ana-trous', domaine: 'Trous d’Young et interfrange', titre: 'On rapproche les deux trous',
+  { id: 'you-ana-trous', schema: { type: 'diffraction', obstacle: 'deux trous' }, domaine: 'Trous d’Young et interfrange', titre: 'On rapproche les deux trous',
     enonce: 'Un laser éclaire deux trous très fins distants de a ; on observe des franges d’interférences sur un écran placé à la distance D. On remplace la plaque par une autre dont les trous sont deux fois plus rapprochés (a est divisée par 2), sans rien changer d’autre (même laser, même D).', q: 'Que devient l’interfrange i ?', options: [
       V('i est multipliée par 2 : les franges sont plus écartées', 'L’interfrange i = frac(λ × D|a) est inversement proportionnelle à a : si a est divisée par 2, i est multipliée par 2.'),
       F('i est divisée par 2 : les franges se resserrent autour du centre', 'C’est le sens inverse : i = frac(λ × D|a) augmente quand a diminue (trous rapprochés, franges écartées).'),
@@ -8033,7 +8033,7 @@ export const PREVOIR = [
       F('un mélange hétérogène, car il contient plusieurs métaux', 'Hétérogène veut dire qu’on distingue plusieurs matières à l’œil nu. Ici, l’alliage paraît uniforme : il est homogène.'),
     ] },
   // ───────────────────────────── Dispersion par un prisme (2GT, sim 201) : laser, ordre des déviations, verre sans dispersion, lampe à vapeur, sortie du verre
-  { id: 'prisme2gt-ana-laser', domaine: 'Dispersion de la lumière (2GT)', titre: 'Un laser vert dans un prisme',
+  { id: 'prisme2gt-ana-laser', schema: { type: 'prismeLaser' }, domaine: 'Dispersion de la lumière (2GT)', titre: 'Un laser vert dans un prisme',
     enonce: 'Un laser vert, de longueur d’onde 532 nm, éclaire un prisme de verre. Un écran est placé derrière le prisme. On a vu qu’un faisceau de lumière blanche donne sur l’écran une bande de toutes les couleurs.', q: 'Que voit-on sur l’écran avec le laser ?', options: [
       V('une seule tache verte, déviée par le prisme', 'Le laser n’émet qu’une couleur : le prisme la dévie mais ne peut pas la séparer en plusieurs couleurs. On voit une seule tache, verte.'),
       F('une bande de couleurs, du rouge au violet', 'Une bande de couleurs vient d’une lumière blanche, qui contient plusieurs couleurs. Un laser n’en contient qu’une.'),
@@ -8260,7 +8260,7 @@ export const PREVOIR = [
       F('inchangée : l’air enfermé garde exactement la même masse qu’avant', 'La masse est constante, mais la masse volumique est une masse par unité de volume : V change, donc ρ aussi.'),
       F('multipliée par 9 : la masse volumique varie comme l’inverse de V²', 'ρ = m / V : elle est inversement proportionnelle à V (et non à V²) ; diviser V par 3 multiplie ρ par 3.'),
     ] },
-  { id: 'fl1g-micro-temperature', domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Que traduit la température d’un gaz ?',
+  { id: 'fl1g-micro-temperature', schema: { type: 'gazChauffe' }, domaine: 'Fluide au repos : pression et loi de Mariotte', titre: 'Que traduit la température d’un gaz ?',
     enonce: 'On chauffe un gaz enfermé dans un récipient : sa température augmente.', q: 'À l’échelle microscopique, cette élévation de température correspond à…', options: [
       V('des entités qui s’agitent davantage, en moyenne plus vite', 'La température est liée à l’agitation des entités : plus elle est élevée, plus la vitesse moyenne des entités est grande.'),
       F('des entités qui grossissent et occupent plus de place', 'Les entités gardent la même taille ; c’est leur agitation qui augmente, pas leur dimension.'),
@@ -8368,7 +8368,7 @@ export const PREVOIR = [
       F('la pression est plus grande sur la face du haut, plus proche de la surface', 'La pression augmente avec la profondeur, donc elle est plus grande sur la face du bas, plus profonde.'),
     ] },
   { id: 'arc-ana-coule', domaine: 'Poussée d’Archimède : origine, expression et flottaison', titre: 'Un cube moins dense que l’eau',
-    ...presenter({ contexte: 'Un cube plein est maintenu entièrement immergé dans l’eau douce, puis lâché sans vitesse initiale.', liste: [['Masse volumique du cube', '800 kg·m⁻³'], ['Masse volumique de l’eau', '1 000 kg·m⁻³']] }),
+    ...presenter({ schema: { type: 'cubeImmerge' }, contexte: 'Un cube plein est maintenu entièrement immergé dans l’eau douce, puis lâché sans vitesse initiale.', liste: [['Masse volumique du cube', '800 kg·m⁻³'], ['Masse volumique de l’eau', '1 000 kg·m⁻³']] }),
     q: 'Que se passe-t-il quand on le lâche ?', options: [
       V('il remonte, puis flotte avec 80 % de son volume immergé', 'Entièrement immergé, il subit une poussée Π = ρ_eau V g supérieure à son poids ρ_cube V g : il remonte. À l’équilibre, Π = P donne V_immergé = frac(800|1 000) V = 0,80 V.'),
       F('il coule : son poids dépasse celui du volume d’eau déplacé', 'Un cube de masse volumique 800 kg·m⁻³ est plus léger que le même volume d’eau (1 000 kg·m⁻³) : la poussée l’emporte sur son poids.'),

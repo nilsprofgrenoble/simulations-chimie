@@ -21,7 +21,7 @@ export const NWR_ANA = [
       F('elle reste la même : la somme des forces n’a pas changé', 'L’accélération dépend aussi de la masse : a = ΣF ÷ m.'),
       F('elle est divisée par 9, car elle varie comme 1/m²', 'La masse intervient à la puissance 1 dans a = ΣF ÷ m.'),
     ] },
-  { id: 'nwr-ana-ralenti', domaine: DOM, titre: 'Un chariot qui ralentit',
+  { id: 'nwr-ana-ralenti', schema: { type: 'mobile', objet: 'chariot', sol: 'rail' }, domaine: DOM, titre: 'Un chariot qui ralentit',
     enonce: 'Un chariot se déplace vers la droite sur un rail horizontal. Sa vitesse diminue peu à peu, sans que sa trajectoire change (elle reste rectiligne).', q: 'Dans quel sens est dirigée la somme des forces qui s’exercent sur lui ?', options: [
       V('vers la gauche, à l’opposé du mouvement', 'La vitesse diminue : l’accélération, de même sens que ΣF, est vers la gauche.'),
       F('vers la droite, dans le sens du mouvement', 'Dans le sens du mouvement, la vitesse augmenterait.'),

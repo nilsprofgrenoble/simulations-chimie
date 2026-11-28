@@ -21,7 +21,7 @@ export const FRM_ANA = [
       F('elle est multipliée par 6, car il faut doubler le facteur ½', 'Le facteur ½ est une constante ; il ne change pas le rapport. Le rapport est 3² = 9.'),
       F('elle ne change pas, car la masse du chariot ne change pas', 'Ec dépend de la masse et de la vitesse : la vitesse change, donc Ec aussi.'),
     ] },
-  { id: 'frm-ana-frottement', domaine: DOM, titre: 'Un patineur qui s’arrête',
+  { id: 'frm-ana-frottement', schema: { type: 'mobile', objet: 'patineur', sol: 'glace' }, domaine: DOM, titre: 'Un patineur qui s’arrête',
     enonce: 'Un patineur glisse sur la glace puis s’arrête sans que personne ne le touche, à cause des frottements. On étudie le système « patineur, glace et air ».', q: 'Que peut-on dire de l’énergie totale de ce système ?', options: [
       V('elle est constante : Ec diminue et U augmente d’autant', 'Le système n’échange rien avec l’extérieur : Etot = Ec + Ep + U est constante. L’énergie cinétique perdue devient de l’énergie interne.'),
       F('elle diminue, car l’énergie cinétique du patineur a disparu', 'Ec n’a pas disparu : elle est devenue de l’énergie interne. Etot ne varie pas.'),
