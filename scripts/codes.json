@@ -3227,5 +3227,17 @@
  "77:plausible:osl-val-pseudoperiode": "VAL830",
  "77:plausible:osl-val-critique": "VAL831",
  "36:osl-periode": "REA242",
- "36:osl-tau": "REA243"
+ "36:osl-tau": "REA243",
+ "34:ose-sapp-ressort.0": "SAPP723",
+ "34:ose-sapp-ressort.1": "SAPP724",
+ "34:ose-sapp-vitesse.0": "SAPP725",
+ "34:ose-sapp-vitesse.1": "SAPP726",
+ "37:prevoir:ose-ana-equilibre": "ANA1434",
+ "37:prevoir:ose-ana-doubler": "ANA1435",
+ "37:prevoir:ose-ana-chaleur": "ANA1436",
+ "37:prevoir:ose-ana-lc": "ANA1437",
+ "77:plausible:ose-val-constante": "VAL832",
+ "77:plausible:ose-val-entretien": "VAL833",
+ "36:ose-ressort": "REA244",
+ "36:ose-entretien": "REA245"
 }

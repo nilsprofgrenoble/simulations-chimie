@@ -6,6 +6,10 @@ export default {
       refs: ['37:prevoir:osl-ana-grandeur', '37:prevoir:osl-ana-frequence', '77:plausible:osl-val-pseudoperiode', '34:osl-sapp-periode', '36:osl-periode'] },
     { id: 'regimes-amortissement', nom: 'Régimes libres et amortissement', capacite: 'Caractériser les oscillations libres d’un système (pseudopériodiques, critiques, apériodiques) et le temps caractéristique d’amortissement ; comparer des oscillateurs mécanique et électrique.',
       refs: ['37:prevoir:osl-ana-regime', '37:prevoir:osl-ana-resistance', '77:plausible:osl-val-critique', '34:osl-sapp-tau', '36:osl-tau'] },
+    { id: 'echanges-energie', nom: 'Échanges d’énergie : Ep, Ec et conservation de l’énergie mécanique', capacite: 'Décrire les échanges d’énergie dans un oscillateur mécanique (énergies potentielle élastique et cinétique) et dans un circuit LC ; exploiter la conservation de l’énergie mécanique en l’absence de frottements.',
+      refs: ['37:prevoir:ose-ana-equilibre', '37:prevoir:ose-ana-doubler', '37:prevoir:ose-ana-lc', '34:ose-sapp-ressort', '34:ose-sapp-vitesse', '36:ose-ressort'] },
+    { id: 'pertes-entretien', nom: 'Pertes d’énergie et rôle d’un dispositif d’entretien', capacite: 'Interpréter l’amortissement par une dissipation d’énergie et expliquer le rôle d’un dispositif d’entretien qui compense les pertes.',
+      refs: ['37:prevoir:ose-ana-chaleur', '77:plausible:ose-val-constante', '77:plausible:ose-val-entretien', '36:ose-entretien'] },
   ],
   'tstl-solubilite': [
     { id: 'ks-expression', nom: 'Équation de dissolution et expression de Ks', capacite: 'Écrire l’équation de dissolution d’un sel peu soluble et exprimer la constante Ks.',

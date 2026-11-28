@@ -268,6 +268,7 @@ const SimulationBiot = paresseux(() => import("./simulations/Biot"), "Simulation
 const SimulationMes = paresseux(() => import("./simulations/Mes"), "SimulationMes");
 const SimulationSta = paresseux(() => import("./simulations/Sta"), "SimulationSta");
 const SimulationOsl = paresseux(() => import("./simulations/Osl"), "SimulationOsl");
+const SimulationOse = paresseux(() => import("./simulations/Ose"), "SimulationOse");
 const SimulationChuteVisqueuse = paresseux(() => import("./simulations/ChuteVisqueuseDuo"), "SimulationChuteVisqueuseDuo");
 const SimulationPenteXt = paresseux(() => import("./simulations/PenteXt"), "SimulationPenteXt");
 const SimulationVecteursVAStl = paresseux(() => import("./simulations/VecteursVAStl"), "SimulationVecteursVAStl");
@@ -721,6 +722,7 @@ const SIMULATIONS = [
   { id:319, label:"Mésomérie : délocaliser un doublet", niveau:"TSTL", icon:"🔀", color:"#7c3aed", component: SimulationMes },
   { id:320, label:"Stabilité des intermédiaires et produit majoritaire", niveau:"TSTL", icon:"⚖️", color:"#7c3aed", component: SimulationSta },
   { id:321, label:"Oscillations libres : période, amortissement et régimes", niveau:"TSTL", icon:"〰️", color:"#0369a1", component: SimulationOsl },
+  { id:322, label:"Énergie d’un oscillateur et entretien des oscillations", niveau:"TSTL", icon:"🔋", color:"#7c3aed", component: SimulationOse },
   { id:310, label:"Radioactivité : désintégrations, loi de décroissance et activité", niveau:"TSTL", icon:"☢️", color:"#b45309", component: SimulationRadPcm },
 ];
 SIMULATIONS.forEach(s => { nomsSim[s.id] = s.label; niveauxSim[s.id] = s.niveau; if (s.niveau === 'COMPTE') simsCachees.add(s.id); });
