@@ -10,13 +10,13 @@ export const GRV_ANA = [
   { id: 'grv-ana-reciproque', domaine: DOM, titre: 'Un satellite et la Terre',
     enonce: 'Un satellite de 500 kg tourne autour de la Terre. La Terre exerce sur lui une force gravitationnelle de valeur F.', q: 'Que peut-on dire de la force exercée par le satellite sur la Terre ?', options: [
       V('elle a la même valeur F, mais dirigée en sens opposé', 'Les forces d’interaction gravitationnelle entre deux corps ont la même valeur et des sens opposés.'),
-      F('elle est beaucoup plus petite, car le satellite est léger', 'La valeur G × m_A × m_B ÷ d² est la même pour les deux corps : seul leur effet diffère.'),
+      F('elle est beaucoup plus petite, car le satellite est léger', 'La valeur frac(G × m_A × m_B|d²) est la même pour les deux corps : seul leur effet diffère.'),
       F('elle est nulle : seule la Terre attire le satellite', 'L’interaction est réciproque : le satellite attire aussi la Terre.'),
       F('elle a la valeur F, et le même sens que la force sur le satellite', 'Les deux forces sont dirigées chacune vers l’autre corps : les sens sont opposés.'),
     ] },
   { id: 'grv-ana-distance', domaine: DOM, titre: 'Trois fois plus loin',
     enonce: 'Deux astéroïdes s’attirent avec une force gravitationnelle de valeur F. On éloigne l’un de l’autre de façon à tripler la distance qui les sépare (les masses ne changent pas).', q: 'Que devient la valeur de la force ?', options: [
-      V('elle est divisée par 9 : F varie en 1/d², donc elle devient un neuvième', 'F = G × m_A × m_B ÷ d² : si d est multipliée par 3, F est divisée par 3² = 9.'),
+      V('elle est divisée par 9 : F varie en 1/d², donc elle devient un neuvième', 'F = frac(G × m_A × m_B|d²) : si d est multipliée par 3, F est divisée par 3² = 9.'),
       F('elle est divisée par 3 : F est inversement proportionnelle à d', 'La distance intervient au carré dans la formule.'),
       F('elle est multipliée par 3 : plus la distance est grande, plus F est grande', 'F diminue quand la distance augmente.'),
       F('elle ne change pas : seules les masses comptent dans la formule', 'La distance d intervient dans la valeur de la force.'),
@@ -30,7 +30,7 @@ export const GRV_ANA = [
     ] },
   { id: 'grv-ana-altitude', domaine: DOM, titre: 'En orbite basse',
     enonce: 'Un satellite est en orbite à 400 km d’altitude, soit une distance au centre de la Terre un peu plus grande que le rayon terrestre (6 400 km). On compare l’intensité de pesanteur g à cette altitude et sur le sol.', q: 'Comment se comparent ces deux valeurs ?', options: [
-      V('un peu plus petite à 400 km, sans jamais être nulle là-haut', 'g = G M ÷ (R + h)² diminue légèrement quand h augmente, mais reste proche de 9,8 N/kg.'),
+      V('un peu plus petite à 400 km, sans jamais être nulle là-haut', 'g = frac(G M|R + h)² diminue légèrement quand h augmente, mais reste proche de 9,8 N/kg.'),
       F('nulle à 400 km : le satellite est en apesanteur', 'La gravitation agit encore : l’apesanteur apparente vient du mouvement, pas de l’absence de g.'),
       F('exactement la même, car 400 km est très petit devant la Terre', 'La valeur est un peu plus petite : environ 89 % de la valeur au sol.'),
       F('plus grande à 400 km, car on est plus près du ciel', 'g diminue quand la distance au centre augmente.'),
@@ -39,9 +39,9 @@ export const GRV_ANA = [
 
 export const GRV_VAL = [
   P({ id: 'grv-val-force', domaine: DOM, niveau: 1, titre: 'Force entre deux blocs : la distance au carré oubliée', plausible: false,
-    enonce: 'Un élève calcule la force gravitationnelle entre deux blocs de 1 000 kg séparés de 2,0 m : « F = G × m_A × m_B ÷ d = 6,67×10⁻¹¹ × 1 000 × 1 000 ÷ 2,0 ≈ 3,3×10⁻⁵ N. »',
+    enonce: 'Un élève calcule la force gravitationnelle entre deux blocs de 1 000 kg séparés de 2,0 m : « F = frac(G × m_A × m_B|d) = frac(6,67×10⁻¹¹ × 1 000 × 1 000|2,0) ≈ 3,3×10⁻⁵ N. »',
     reperes: [['Masses', '1 000 kg chacune'], ['Distance', '2,0 m'], ['G', '6,67×10⁻¹¹ N·m²·kg⁻²']],
-    ver: 'La distance doit être au carré : F = 6,67×10⁻¹¹ × 10⁶ ÷ 2,0² ≈ 1,7×10⁻⁵ N. Il frac(a|d) au lieu de d².',
+    ver: 'La distance doit être au carré : F = frac(6,67×10⁻¹¹ × 10⁶|2,0²) ≈ 1,7×10⁻⁵ N. Il frac(a|d) au lieu de d².',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il a divisé par d et non par d² : F vaut 1,7×10⁻⁵ N environ', 'La formule contient d² : 2,0² = 4,0, d’où F ≈ 1,7×10⁻⁵ N.'),
@@ -77,14 +77,14 @@ export const GRV_SAPP = [
       };
       const debut = ['Deux blocs de masses ', T('m1'), ' et ', T('m2'), ' sont séparés de ', T('d'), ' (centre à centre) dans un local à ', T('c'), '. G = 6,67×10⁻¹¹ N·m²·kg⁻². '];
       const F0 = GC * p.m1 * p.m2 / (p.d * p.d) * 1e6;
-      if (q === 0) return { tokens, derivees: ['F = G × m_A × m_B ÷ d²'], texte: [...debut, 'Quelle est la valeur de la force gravitationnelle entre les deux blocs, en µN ?'], utiles: ['m1', 'm2', 'd'],
+      if (q === 0) return { tokens, derivees: ['F = frac(G × m_A × m_B|d²)'], texte: [...debut, 'Quelle est la valeur de la force gravitationnelle entre les deux blocs, en µN ?'], utiles: ['m1', 'm2', 'd'],
         raisons: { c: 'La température du local n’intervient pas dans la force gravitationnelle.' },
         cherche: { bonne: 'La valeur de la force gravitationnelle (en µN)', faux: ['Le poids du premier bloc (en N)', 'L’intensité de pesanteur à la surface d’un bloc (en N/kg)', 'La masse totale des deux blocs (en kg)'] },
-        manque: null, solution: { txt: 'F = G × m_A × m_B ÷ d²', val: F0, u: 'µN' } };
-      return { tokens, derivees: ['F′ = G × m_A × m_B ÷ (2 d)²', 'F′ = F ÷ 4'], texte: [...debut, 'On double la distance entre les blocs. Quelle est la nouvelle valeur de la force, en µN ?'], utiles: ['m1', 'm2', 'd'],
+        manque: null, solution: { txt: 'F = frac(G × m_A × m_B|d²)', val: F0, u: 'µN' } };
+      return { tokens, derivees: ['F′ = frac(G × m_A × m_B|2 d)²', 'F′ = frac(F|4)'], texte: [...debut, 'On double la distance entre les blocs. Quelle est la nouvelle valeur de la force, en µN ?'], utiles: ['m1', 'm2', 'd'],
         raisons: { c: 'La température du local n’intervient pas dans la force gravitationnelle.' },
         cherche: { bonne: 'La valeur de la force après doublement de la distance (en µN)', faux: ['La valeur de la force avant le déplacement (en µN)', 'La variation de la distance (en m)', 'Le poids d’un bloc (en N)'] },
-        manque: null, solution: { txt: 'F′ = G × m_A × m_B ÷ (2 d)²', val: F0 / 4, u: 'µN' } };
+        manque: null, solution: { txt: 'F′ = frac(G × m_A × m_B|2 d)²', val: F0 / 4, u: 'µN' } };
     }),
   },
   {
@@ -97,14 +97,14 @@ export const GRV_SAPP = [
       };
       const debut = ['Une planète a pour masse ', T('M'), ' et pour rayon ', T('R'), '. Un objet de masse ', T('m'), ' est posé à sa surface ; un satellite orbite à ', T('h'), ' d’altitude. G = 6,67×10⁻¹¹ N·m²·kg⁻². '];
       const g = GC * p.M * 1e23 / ((p.R * 1e6) ** 2);
-      if (q === 0) return { tokens, derivees: ['g = G × M ÷ R²'], texte: [...debut, 'Quelle est l’intensité de pesanteur à la surface de la planète, en N/kg ?'], utiles: ['M', 'R'],
+      if (q === 0) return { tokens, derivees: ['g = frac(G × M|R²)'], texte: [...debut, 'Quelle est l’intensité de pesanteur à la surface de la planète, en N/kg ?'], utiles: ['M', 'R'],
         raisons: { m: 'La masse de l’objet n’intervient pas dans g.', h: 'L’altitude du satellite ne sert pas pour la surface.' },
         cherche: { bonne: 'L’intensité de pesanteur à la surface (en N/kg)', faux: ['Le poids de l’objet à la surface (en N)', 'L’intensité de pesanteur à l’altitude du satellite (en N/kg)', 'La force exercée par l’objet sur la planète (en N)'] },
-        manque: null, solution: { txt: 'g = G × M ÷ R²', val: g, u: 'N/kg' } };
-      return { tokens, derivees: ['g = G × M ÷ R²', 'P = m × g'], texte: [...debut, 'Quel est le poids de l’objet à la surface de la planète, en N ?'], utiles: ['M', 'R', 'm'],
+        manque: null, solution: { txt: 'g = frac(G × M|R²)', val: g, u: 'N/kg' } };
+      return { tokens, derivees: ['g = frac(G × M|R²)', 'P = m × g'], texte: [...debut, 'Quel est le poids de l’objet à la surface de la planète, en N ?'], utiles: ['M', 'R', 'm'],
         raisons: { h: 'L’altitude du satellite ne sert pas pour la surface.' },
         cherche: { bonne: 'Le poids de l’objet à la surface (en N)', faux: ['L’intensité de pesanteur à la surface (en N/kg)', 'La masse de l’objet sur Terre (en kg)', 'La force exercée par la planète sur le satellite (en N)'] },
-        manque: null, solution: { txt: 'P = m × G × M ÷ R²', val: p.m * g, u: 'N' } };
+        manque: null, solution: { txt: 'P = frac(m × G × M|R²)', val: p.m * g, u: 'N' } };
     }),
   },
 ];

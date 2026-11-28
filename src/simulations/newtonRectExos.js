@@ -16,10 +16,10 @@ export const NWR_ANA = [
     ] },
   { id: 'nwr-ana-masse', domaine: DOM, titre: 'Même poussée, chariot trois fois plus lourd',
     enonce: 'Un chariot, soumis à une certaine somme des forces horizontale, a une accélération donnée. On le remplace par un chariot trois fois plus lourd, soumis à la même somme des forces.', q: 'Que devient la valeur de l’accélération ?', options: [
-      V('elle est divisée par 3 : a = ΣF ÷ m', 'ΣF = m a : à ΣF constante, a est inversement proportionnelle à m.'),
+      V('elle est divisée par 3 : a = frac(ΣF|m)', 'ΣF = m a : à ΣF constante, a est inversement proportionnelle à m.'),
       F('elle est multipliée par 3, car la masse est multipliée par 3', 'C’est l’inverse : plus la masse est grande, plus l’accélération est petite.'),
-      F('elle reste la même : la somme des forces n’a pas changé', 'L’accélération dépend aussi de la masse : a = ΣF ÷ m.'),
-      F('elle est divisée par 9, car elle varie comme 1/m²', 'La masse intervient à la puissance 1 dans a = ΣF ÷ m.'),
+      F('elle reste la même : la somme des forces n’a pas changé', 'L’accélération dépend aussi de la masse : a = frac(ΣF|m).'),
+      F('elle est divisée par 9, car elle varie comme 1/m²', 'La masse intervient à la puissance 1 dans a = frac(ΣF|m).'),
     ] },
   { id: 'nwr-ana-ralenti', schema: { type: 'mobile', objet: 'chariot', sol: 'rail' }, domaine: DOM, titre: 'Un chariot qui ralentit',
     enonce: 'Un chariot se déplace vers la droite sur un rail horizontal. Sa vitesse diminue peu à peu, sans que sa trajectoire change (elle reste rectiligne).', q: 'Dans quel sens est dirigée la somme des forces qui s’exercent sur lui ?', options: [
@@ -39,13 +39,13 @@ export const NWR_ANA = [
 
 export const NWR_VAL = [
   P({ id: 'nwr-val-acc', domaine: DOM, niveau: 1, titre: 'Accélération d’un chariot : le frottement oublié', plausible: false,
-    enonce: 'Un chariot de masse 2,0 kg est poussé vers la droite par une force de 10 N ; le rail exerce un frottement de 4 N vers la gauche. Un élève écrit : « ΣF = 10 N, donc a = ΣF ÷ m = 10 ÷ 2,0 = 5,0 m/s². »',
+    enonce: 'Un chariot de masse 2,0 kg est poussé vers la droite par une force de 10 N ; le rail exerce un frottement de 4 N vers la gauche. Un élève écrit : « ΣF = 10 N, donc a = frac(ΣF|m) = frac(10|2,0) = 5,0 m/s². »',
     reperes: [['Masse m', '2,0 kg'], ['Poussée F', '10 N vers la droite'], ['Frottement f', '4 N vers la gauche']],
-    ver: 'ΣF = 10 − 4 = 6 N, donc a = 6 ÷ 2,0 = 3,0 m/s². L’élève a oublié le frottement dans la somme des forces.',
+    ver: 'ΣF = 10 − 4 = 6 N, donc a = frac(6|2,0) = 3,0 m/s². L’élève a oublié le frottement dans la somme des forces.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il a oublié le frottement : ΣF = 10 − 4 = 6 N et a = 3,0 m/s²', 'Le frottement s’oppose à la poussée : il diminue la somme des forces.'),
-      F('il aurait dû multiplier ΣF par la masse : a = 10 × 2,0 = 20 m/s²', 'La relation est a = ΣF ÷ m : on divise par la masse.'),
+      F('il aurait dû multiplier ΣF par la masse : a = 10 × 2,0 = 20 m/s²', 'La relation est a = frac(ΣF|m) : on divise par la masse.'),
       F('il a oublié le poids du chariot dans la somme des forces horizontales', 'Le poids est vertical et compensé par la réaction : il n’intervient pas ici.'),
     ] }),
   P({ id: 'nwr-val-inertie', domaine: DOM, niveau: 2, titre: 'Un chariot lancé sans frottement', plausible: true,
@@ -76,14 +76,14 @@ export const NWR_SAPP = [
       };
       const debut = ['Un chariot de masse ', T('m'), ' glisse sur un rail horizontal de longueur ', T('L'), '. Il est poussé vers la droite par une force de ', T('F'), ' ; le rail exerce un frottement de ', T('f'), ' vers la gauche. '];
       const a0 = (p.F - p.f) / p.m;
-      if (q === 0) return { tokens, derivees: ['ΣF = F − f', 'a = ΣF ÷ m'], texte: [...debut, 'Quelle est l’accélération du chariot, en m/s² ?'], utiles: ['m', 'F', 'f'],
+      if (q === 0) return { tokens, derivees: ['ΣF = F − f', 'a = frac(ΣF|m)'], texte: [...debut, 'Quelle est l’accélération du chariot, en m/s² ?'], utiles: ['m', 'F', 'f'],
         raisons: { L: 'La longueur du rail ne sert pas pour calculer l’accélération.' },
         cherche: { bonne: 'L’accélération du chariot (en m/s²)', faux: ['La somme des forces sur le chariot (en N)', 'La vitesse du chariot après 1 s (en m/s)', 'La masse du chariot (en kg)'] },
-        manque: null, solution: { txt: 'a = (F − f) ÷ m', val: a0, u: 'm/s²' } };
-      return { tokens, derivees: ['ΣF = F − f', 'a′ = ΣF ÷ (2 m)'], texte: [...debut, 'On remplace le chariot par un autre de masse double, avec les mêmes forces. Quelle est la nouvelle accélération, en m/s² ?'], utiles: ['m', 'F', 'f'],
+        manque: null, solution: { txt: 'a = frac(F − f|m)', val: a0, u: 'm/s²' } };
+      return { tokens, derivees: ['ΣF = F − f', 'a′ = frac(ΣF|2 m)'], texte: [...debut, 'On remplace le chariot par un autre de masse double, avec les mêmes forces. Quelle est la nouvelle accélération, en m/s² ?'], utiles: ['m', 'F', 'f'],
         raisons: { L: 'La longueur du rail ne sert pas pour calculer l’accélération.' },
         cherche: { bonne: 'L’accélération du chariot de masse double (en m/s²)', faux: ['L’accélération du premier chariot (en m/s²)', 'La somme des forces sur le nouveau chariot (en N)', 'La masse du nouveau chariot (en kg)'] },
-        manque: null, solution: { txt: 'a′ = (F − f) ÷ (2 m)', val: a0 / 2, u: 'm/s²' } };
+        manque: null, solution: { txt: 'a′ = frac(F − f|2 m)', val: a0 / 2, u: 'm/s²' } };
     }),
   },
   {

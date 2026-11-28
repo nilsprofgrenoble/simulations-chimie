@@ -9,14 +9,14 @@ const P = o => ({ ...o, verdict: VERDICT(o.plausible, o.ver) });
 export const DFR_ANA = [
   { id: 'dfr-ana-vitesse', domaine: DOM, titre: 'Deux voitures, deux vitesses',
     enonce: 'Deux voitures identiques, aux freins identiques, roulent sur la même route horizontale : la première à 50 km/h, la seconde à 100 km/h. Chacune freine jusqu’à l’arrêt avec la même force de freinage constante.', q: 'Comment se comparent leurs distances d’arrêt ?', options: [
-      V('la distance de la seconde est 4 fois plus grande', 'Théorème de l’énergie cinétique : d = ½ m v² ÷ F. La distance est proportionnelle au carré de la vitesse : doubler la vitesse multiplie d par 4.'),
+      V('la distance de la seconde est 4 fois plus grande', 'Théorème de l’énergie cinétique : d = ½ frac(m v²|F). La distance est proportionnelle au carré de la vitesse : doubler la vitesse multiplie d par 4.'),
       F('celle de la seconde est 2 fois plus grande', 'Ce serait vrai si la distance était proportionnelle à la vitesse ; or c’est le carré de la vitesse qui intervient.'),
       F('elles sont égales : seules les freins déterminent la distance', 'La force est la même, mais l’énergie cinétique à dissiper dépend de la vitesse.'),
       F('celle de la seconde est 8 fois plus grande', 'L’énergie cinétique est proportionnelle à v², pas à v³.'),
     ] },
   { id: 'dfr-ana-masse', domaine: DOM, titre: 'Distance d’arrêt d’un camion chargé',
     enonce: 'Un camion a une masse 4 fois plus grande qu’une voiture. Les deux roulent à la même vitesse sur une route horizontale et freinent avec la même force de freinage constante.', q: 'Comment se compare la distance d’arrêt du camion à celle de la voiture ?', options: [
-      V('elle est 4 fois plus grande : 4 fois plus d’énergie à dissiper', 'd = ½ m v² ÷ F : à v et F fixés, d est proportionnelle à la masse.'),
+      V('elle est 4 fois plus grande : 4 fois plus d’énergie à dissiper', 'd = ½ frac(m v²|F) : à v et F fixés, d est proportionnelle à la masse.'),
       F('elle est 2 fois plus grande, car la masse intervient en racine carrée', 'Aucune racine carrée n’intervient : d est proportionnelle à m.'),
       F('elle est égale, car la vitesse et la force sont les mêmes', 'Les deux véhicules n’ont pas la même énergie cinétique : le plus lourd en a 4 fois plus.'),
       F('elle est 16 fois plus grande, car la masse intervient au carré', 'La masse n’est pas au carré dans Ec = ½ m v² : c’est la vitesse.'),
@@ -39,19 +39,19 @@ export const DFR_ANA = [
 
 export const DFR_VAL = [
   P({ id: 'dfr-val-conv', domaine: DOM, niveau: 1, titre: 'Une distance d’arrêt calculée en km/h', plausible: false,
-    enonce: 'Un élève calcule : « Une voiture de 1 000 kg roule à 90 km/h et freine avec une force constante de 8 000 N. d = ½ × m × v² ÷ F = ½ × 1 000 × 90² ÷ 8 000 ≈ 506 m. »',
+    enonce: 'Un élève calcule : « Une voiture de 1 000 kg roule à 90 km/h et freine avec une force constante de 8 000 N. d = ½ × frac(m × v²|F) = ½ × frac(1 000 × 90²|8 000) ≈ 506 m. »',
     reperes: [['Masse', '1 000 kg'], ['Vitesse', '90 km/h'], ['Force de freinage', '8 000 N'], ['Ordre de grandeur', 'un freinage à 90 km/h demande quelques dizaines de mètres']],
-    ver: 'La vitesse doit être convertie en m/s : 90 km/h = 25 m/s. Alors d = ½ × 1 000 × 25² ÷ 8 000 ≈ 39 m. Une distance de 506 m n’est pas plausible pour une voiture.',
+    ver: 'La vitesse doit être convertie en m/s : 90 km/h = 25 m/s. Alors d = ½ × frac(1 000 × 25²|8 000) ≈ 39 m. Une distance de 506 m n’est pas plausible pour une voiture.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il n’a pas converti la vitesse de km/h en m/s dans son calcul', 'v = 90 ÷ 3,6 = 25 m/s ; avec la valeur en km/h le résultat est environ 13 fois trop grand.'),
+      V('il n’a pas converti la vitesse de km/h en m/s dans son calcul', 'v = frac(90|3,6) = 25 m/s ; avec la valeur en km/h le résultat est environ 13 fois trop grand.'),
       F('il a oublié que la distance est proportionnelle à la masse', 'La masse apparaît bien dans son calcul.'),
-      F('il a utilisé la mauvaise formule : il fallait v au lieu de v²', 'La formule d = ½ m v² ÷ F est la bonne : l’erreur porte sur l’unité de v.'),
+      F('il a utilisé la mauvaise formule : il fallait v au lieu de v²', 'La formule d = ½ frac(m v²|F) est la bonne : l’erreur porte sur l’unité de v.'),
     ] }),
   P({ id: 'dfr-val-cycliste', domaine: DOM, niveau: 2, titre: 'Un cycliste qui freine', plausible: true,
-    enonce: 'Un élève calcule : « Un cycliste et son vélo ont une masse de 90 kg et roulent à 18 km/h. Ils freinent avec une force constante de 300 N : d = ½ × 90 × 5² ÷ 300 ≈ 3,8 m. »',
+    enonce: 'Un élève calcule : « Un cycliste et son vélo ont une masse de 90 kg et roulent à 18 km/h. Ils freinent avec une force constante de 300 N : d = ½ × frac(90 × 5²|300) ≈ 3,8 m. »',
     reperes: [['Masse', '90 kg'], ['Vitesse', '18 km/h = 5,0 m/s'], ['Force de freinage', '300 N'], ['Ordre de grandeur', 'un cycliste s’arrête en quelques mètres à 18 km/h']],
-    ver: 'La vitesse a été convertie (18 ÷ 3,6 = 5,0 m/s) : Ec = ½ × 90 × 5² ≈ 1 125 J, d = 1 125 ÷ 300 ≈ 3,8 m. Le résultat est de l’ordre de grandeur attendu : l’élève a raison.',
+    ver: 'La vitesse a été convertie (frac(18|3,6) = 5,0 m/s) : Ec = ½ × 90 × 5² ≈ 1 125 J, d = frac(1 125|300) ≈ 3,8 m. Le résultat est de l’ordre de grandeur attendu : l’élève a raison.',
     q2: 'Que deviendrait la distance si le cycliste roulait à 36 km/h, avec la même force ?',
     options: [
       V('environ 15 m : la distance est 4 fois plus grande', 'La vitesse double : la distance est multipliée par 4.'),
@@ -79,14 +79,14 @@ export const DFR_SAPP = [
         L: tok(`${String(p.L).replace('.', ',')} m`, 'Longueur de la voiture', p.L, 'm'),
       };
       const debut = ['Une voiture de masse ', T('m'), ' et de longueur ', T('L'), ' roule à la vitesse ', T('v'), ' sur une route droite et horizontale. Elle freine jusqu’à l’arrêt avec une force de freinage constante de valeur ', T('F'), '. '];
-      if (q === 0) return { tokens, derivees: ['v (en m/s) = v (en km/h) ÷ 3,6', 'Ec = ½ × m × v²'], texte: [...debut, 'Quelle est l’énergie cinétique de la voiture avant le freinage, en joules ?'], utiles: ['m', 'v'],
+      if (q === 0) return { tokens, derivees: ['v (en m/s) = frac(v (en km/h)|3,6)', 'Ec = ½ × m × v²'], texte: [...debut, 'Quelle est l’énergie cinétique de la voiture avant le freinage, en joules ?'], utiles: ['m', 'v'],
         raisons: { F: 'La force de freinage ne sert pas pour une énergie cinétique.', L: 'La longueur de la voiture ne joue aucun rôle ici.' },
         cherche: { bonne: 'L’énergie cinétique de la voiture avant le freinage (en J)', faux: ['Le travail de la force de freinage (en J)', 'La distance parcourue pendant le freinage (en m)', 'La durée du freinage (en s)'] },
         manque: null, solution: { txt: 'Ec = ½ × m × v² avec v en m/s', val: Ec, u: 'J' } };
-      return { tokens, derivees: ['v (en m/s) = v (en km/h) ÷ 3,6', 'ΔEc = somme des travaux : 0 − Ec = − F × d', 'd = Ec ÷ F'], texte: [...debut, 'Quelle est la distance d’arrêt, en mètres ?'], utiles: ['m', 'v', 'F'],
+      return { tokens, derivees: ['v (en m/s) = frac(v (en km/h)|3,6)', 'ΔEc = somme des travaux : 0 − Ec = − F × d', 'd = frac(Ec|F)'], texte: [...debut, 'Quelle est la distance d’arrêt, en mètres ?'], utiles: ['m', 'v', 'F'],
         raisons: { L: 'La longueur de la voiture ne joue aucun rôle dans la distance d’arrêt.' },
         cherche: { bonne: 'La distance d’arrêt de la voiture (en m)', faux: ['La durée du freinage (en s)', 'L’énergie dissipée par les freins (en J)', 'La vitesse de la voiture à mi-distance (en m/s)'] },
-        manque: null, solution: { txt: 'd = ½ × m × v² ÷ F', val: Ec / p.F, u: 'm' } };
+        manque: null, solution: { txt: 'd = ½ × frac(m × v²|F)', val: Ec / p.F, u: 'm' } };
     }),
   },
   {
@@ -105,10 +105,10 @@ export const DFR_SAPP = [
         raisons: { D: 'La distance disponible ne sert pas pour calculer l’énergie cinétique.', tr: 'Le temps de réaction concerne l’avant-freinage : il ne change pas l’énergie à dissiper.' },
         cherche: { bonne: 'L’énergie cinétique à dissiper (en J)', faux: ['La distance d’arrêt avec une force donnée (en m)', 'Le travail du poids pendant le freinage (en J)', 'La durée du freinage (en s)'] },
         manque: null, solution: { txt: 'Ec = ½ × m × v²', val: Ec, u: 'J' } };
-      return { tokens, derivees: ['ΔEc = somme des travaux : 0 − Ec = − F × D', 'F = Ec ÷ D'], texte: [...debut, 'Quelle force de freinage minimale permet de s’arrêter juste avant l’obstacle, en newtons ?'], utiles: ['m', 'v', 'D'],
+      return { tokens, derivees: ['ΔEc = somme des travaux : 0 − Ec = − F × D', 'F = frac(Ec|D)'], texte: [...debut, 'Quelle force de freinage minimale permet de s’arrêter juste avant l’obstacle, en newtons ?'], utiles: ['m', 'v', 'D'],
         raisons: { tr: 'Le temps de réaction est déjà écoulé au début du freinage : il ne change pas la force nécessaire.' },
         cherche: { bonne: 'La force de freinage minimale (en N)', faux: ['L’énergie cinétique du véhicule (en J)', 'La durée du freinage (en s)', 'La puissance développée par les freins (en W)'] },
-        manque: null, solution: { txt: 'F = ½ × m × v² ÷ D', val: Ec / p.D, u: 'N' } };
+        manque: null, solution: { txt: 'F = ½ × frac(m × v²|D)', val: Ec / p.D, u: 'N' } };
     }),
   },
 ];

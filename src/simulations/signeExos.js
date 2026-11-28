@@ -83,10 +83,10 @@ export const SGN_SAPP = [
         raisons: { m: 'La masse ne sert pas pour la variation d’énergie : elle servira pour la température.', c: 'La capacité thermique ne sert pas pour ce bilan.', dt: 'La durée ne sert pas : on cherche une énergie, pas une puissance.' },
         cherche: { bonne: 'La variation d’énergie interne du bloc (en J)', faux: ['La variation de température du bloc (en K)', 'La puissance du transfert thermique (en W)', 'L’énergie cédée à l’air (en J)'] },
         manque: null, solution: { txt: 'ΔU = W − Q (Q cédé)', val: p.W - p.Q, u: 'J' } };
-      return { tokens, derivees: ['ΔU = W + Q, avec W reçu (+) et Q cédé (−)', 'ΔT = ΔU ÷ (m × c)'], texte: [...debut, 'La capacité thermique massique du cuivre vaut ', T('c'), '. Quelle est la variation de température du bloc, en kelvins ?'], utiles: ['W', 'Q', 'm', 'c'],
+      return { tokens, derivees: ['ΔU = W + Q, avec W reçu (+) et Q cédé (−)', 'ΔT = frac(ΔU|m × c)'], texte: [...debut, 'La capacité thermique massique du cuivre vaut ', T('c'), '. Quelle est la variation de température du bloc, en kelvins ?'], utiles: ['W', 'Q', 'm', 'c'],
         raisons: { dt: 'La durée ne sert pas : on cherche une variation de température, pas une puissance.' },
         cherche: { bonne: 'La variation de température du bloc (en K)', faux: ['La variation d’énergie interne du bloc (en J)', 'La puissance du travail électrique (en W)', 'L’énergie cédée à l’air (en J)'] },
-        manque: null, solution: { txt: 'ΔT = (W − Q) ÷ (m c)', val: (p.W - p.Q) / (p.m * p.c), u: 'K' } };
+        manque: null, solution: { txt: 'ΔT = frac(W − Q|m c)', val: (p.W - p.Q) / (p.m * p.c), u: 'K' } };
     }),
   },
   {
@@ -104,10 +104,10 @@ export const SGN_SAPP = [
         raisons: { m: 'La masse du bloc ne sert pas pour le transfert reçu par l’air.', W: 'Le travail est reçu par le bloc, pas par l’air.', dt: 'La durée ne sert pas : on cherche une énergie, pas une puissance.' },
         cherche: { bonne: 'Le transfert thermique reçu par l’air (en J, valeur algébrique)', faux: ['Le transfert thermique cédé par le bloc (en J, valeur algébrique)', 'La puissance du transfert (en W)', 'La variation d’énergie interne du bloc (en J)'] },
         manque: null, solution: { txt: 'Q reçu par l’air = + Q cédé par le bloc', val: p.Q, u: 'J' } };
-      return { tokens, derivees: ['P = |Q| ÷ Δt'], texte: [...debut, 'Quelle est la puissance de ce transfert thermique, en watts ?'], utiles: ['Q', 'dt'],
+      return { tokens, derivees: ['P = frac(∣Q∣|Δt)'], texte: [...debut, 'Quelle est la puissance de ce transfert thermique, en watts ?'], utiles: ['Q', 'dt'],
         raisons: { m: 'La masse du bloc ne sert pas pour cette puissance.', W: 'Le travail reçu par le bloc ne sert pas : on étudie le transfert thermique.' },
         cherche: { bonne: 'La puissance du transfert thermique (en W)', faux: ['Le transfert thermique reçu par l’air (en J)', 'La variation d’énergie interne du bloc (en J)', 'La puissance du travail électrique (en W)'] },
-        manque: null, solution: { txt: 'P = |Q| ÷ Δt', val: p.Q / p.dt, u: 'W' } };
+        manque: null, solution: { txt: 'P = frac(∣Q∣|Δt)', val: p.Q / p.dt, u: 'W' } };
     }),
   },
 ];

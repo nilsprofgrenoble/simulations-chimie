@@ -31,7 +31,7 @@ export const PILP_ANA = [
     ] },
   { id: 'pilp-ana-intensite', domaine: DOM, titre: 'Débiter plus fort : capacité et durée',
     enonce: 'Une pile contient des quantités fixées de réactifs. Elle alimente un récepteur avec un courant constant de 20 mA jusqu’à son usure complète. On répète l’expérience avec une pile identique, neuve, mais avec un récepteur qui impose 100 mA.', q: 'Avec 100 mA, par rapport à 20 mA :', options: [
-      V('la quantité d’électricité Q est la même et la durée est divisée par 5', 'Q = n(e⁻) F ne dépend que des réactifs ; Δt = Q ÷ i est 5 fois plus petite quand i est 5 fois plus grand.'),
+      V('la quantité d’électricité Q est la même et la durée est divisée par 5', 'Q = n(e⁻) F ne dépend que des réactifs ; Δt = frac(Q|i) est 5 fois plus petite quand i est 5 fois plus grand.'),
       F('la quantité d’électricité Q est multipliée par 5 et la durée est la même', 'Les réactifs sont les mêmes : la charge totale disponible ne change pas.'),
       F('la quantité d’électricité Q et la durée sont multipliées par 5', 'Un courant plus intense épuise plus vite la pile : la durée diminue.'),
       F('la quantité d’électricité Q est divisée par 5 et la durée est la même', 'Q est fixée par le réactif limitant, pas par l’intensité du courant.'),
@@ -54,10 +54,10 @@ export const PILP_VAL = [
     options: [
       V('il oublie les 2 électrons échangés par ion Cu²⁺ : n(e⁻) = 2 n(Cu²⁺)', 'La demi-équation Cu²⁺ + 2 e⁻ → Cu montre 2 électrons par ion réduit : Q vaut 1 930 C.'),
       F('le réactif limitant est le zinc et non les ions Cu²⁺ de la solution', 'Le zinc est en large excès : le réactif limitant est bien Cu²⁺.'),
-      F('il doit diviser par F plutôt que multiplier : Q = n(e⁻) ÷ F, en coulombs', 'La relation est Q = n(e⁻) × F, comme le fait l’élève.'),
+      F('il doit diviser par F plutôt que multiplier : Q = frac(n(e⁻)|F), en coulombs', 'La relation est Q = n(e⁻) × F, comme le fait l’élève.'),
     ] }),
   P({ id: 'pilp-val-duree', domaine: DOM, niveau: 1, titre: 'Durée de fonctionnement d’une pile', plausible: true,
-    enonce: 'Une pile peut débiter une quantité d’électricité Q = 1,2 × 10³ C. Elle alimente un récepteur avec un courant constant i = 50 mA. Un élève calcule : « Δt = Q ÷ i = 1 200 ÷ 0,050 = 24 000 s, soit 24 000 ÷ 3 600 = 6,7 h. »',
+    enonce: 'Une pile peut débiter une quantité d’électricité Q = 1,2 × 10³ C. Elle alimente un récepteur avec un courant constant i = 50 mA. Un élève calcule : « Δt = frac(Q|i) = frac(1 200|0,050) = 24 000 s, soit frac(24 000|3 600) = 6,7 h. »',
     reperes: [['Quantité d’électricité Q', '1,2 × 10³ C'], ['Intensité i', '50 mA']],
     ver: 'Le calcul est correct : i = 50 mA = 0,050 A ; Δt = 24 000 s ≈ 6,7 h.',
     q2: 'Pourquoi l’élève divise-t-il par 0,050 et non par 50 ?',
@@ -95,11 +95,11 @@ export const PILP_SAPP = [
       const tokens = toks(p);
       const nIon = p.c * p.V / 1000, nZn = p.m / MZN, ne = 2 * Math.min(nIon, nZn);
       const debut = ['Une pile est formée d’une demi-pile contenant ', T('V'), ' de solution d’ions cuivre (II) à ', T('c'), ' et d’une lame de zinc de masse ', T('m'), '. Équation de fonctionnement : Zn + Cu²⁺ → Zn²⁺ + Cu (chaque ion Cu²⁺ et chaque atome Zn échangent 2 électrons). La pile débite jusqu’à usure complète ; M(Zn) = ', T('M'), ', tension à vide ', T('U'), ', ', T('I'), ' débités. '];
-      if (q === 0) return { tokens, derivees: ['n(Cu²⁺) = c V', 'n(Zn) = m ÷ M', 'n(e⁻) = 2 × n du réactif limitant'], texte: [...debut, 'Quelle quantité d’électrons n(e⁻) cette pile peut-elle échanger, en mol ?'], utiles: ['V', 'c', 'm', 'M'],
+      if (q === 0) return { tokens, derivees: ['n(Cu²⁺) = c V', 'n(Zn) = frac(m|M)', 'n(e⁻) = 2 × n du réactif limitant'], texte: [...debut, 'Quelle quantité d’électrons n(e⁻) cette pile peut-elle échanger, en mol ?'], utiles: ['V', 'c', 'm', 'M'],
         raisons: { U: 'La tension à vide ne sert pas à calculer une quantité de matière.', I: 'L’intensité ne change pas la quantité d’électrons échangés.', F: 'F sert à passer de n(e⁻) à Q, pas ici.' },
         cherche: { bonne: 'La quantité d’électrons échangés (en mol)', faux: ['La quantité d’électricité (en C)', 'La durée de fonctionnement (en h)', 'La quantité de zinc oxydé (en mol)'] },
         manque: null, solution: { txt: 'n(e⁻) = 2 × n(réactif limitant)', val: ne, u: 'mol' } };
-      return { tokens, derivees: ['n(Cu²⁺) = c V', 'n(Zn) = m ÷ M', 'n(e⁻) = 2 × n du réactif limitant', 'Q = n(e⁻) F'], texte: [...debut, 'Quelle quantité d’électricité Q cette pile peut-elle débiter, en C ? (F = ', T('F'), ')'], utiles: ['V', 'c', 'm', 'M', 'F'],
+      return { tokens, derivees: ['n(Cu²⁺) = c V', 'n(Zn) = frac(m|M)', 'n(e⁻) = 2 × n du réactif limitant', 'Q = n(e⁻) F'], texte: [...debut, 'Quelle quantité d’électricité Q cette pile peut-elle débiter, en C ? (F = ', T('F'), ')'], utiles: ['V', 'c', 'm', 'M', 'F'],
         raisons: { U: 'La tension à vide ne sert pas à calculer Q.', I: 'L’intensité ne change pas Q (elle fixe seulement la durée).' },
         cherche: { bonne: 'La quantité d’électricité débitée (en C)', faux: ['La quantité d’électrons échangés (en mol)', 'La durée de fonctionnement (en h)', 'L’énergie électrique fournie (en J)'] },
         manque: null, solution: { txt: 'Q = n(e⁻) × F', val: ne * 96500, u: 'C' } };
@@ -112,14 +112,14 @@ export const PILP_SAPP = [
       const tokens = toks(p);
       const nIon = p.c * p.V / 1000, nZn = p.m / MZN, ne = 2 * Math.min(nIon, nZn), Q = ne * 96500;
       const debut = ['Une pile est formée d’une demi-pile contenant ', T('V'), ' de solution d’ions cuivre (II) à ', T('c'), ' et d’une lame de zinc de masse ', T('m'), '. Équation de fonctionnement : Zn + Cu²⁺ → Zn²⁺ + Cu (2 électrons échangés par ion Cu²⁺ ou par atome Zn). M(Zn) = ', T('M'), ', F = ', T('F'), ', tension à vide ', T('U'), '. La pile débite un courant constant de ', T('I'), ' jusqu’à usure complète. '];
-      if (q === 0) return { tokens, derivees: ['n(Cu²⁺) = c V', 'n(Zn) = m ÷ M', 'n(e⁻) = 2 × n du réactif limitant', 'Q = n(e⁻) F'], texte: [...debut, 'Quelle quantité d’électricité Q la pile débite-t-elle, en C ?'], utiles: ['V', 'c', 'm', 'M', 'F'],
+      if (q === 0) return { tokens, derivees: ['n(Cu²⁺) = c V', 'n(Zn) = frac(m|M)', 'n(e⁻) = 2 × n du réactif limitant', 'Q = n(e⁻) F'], texte: [...debut, 'Quelle quantité d’électricité Q la pile débite-t-elle, en C ?'], utiles: ['V', 'c', 'm', 'M', 'F'],
         raisons: { U: 'La tension à vide ne sert pas à calculer Q.', I: 'L’intensité ne change pas Q ; elle servira pour la durée.' },
         cherche: { bonne: 'La quantité d’électricité débitée (en C)', faux: ['La durée de fonctionnement (en h)', 'La quantité d’électrons échangés (en mol)', 'L’énergie électrique fournie (en J)'] },
         manque: null, solution: { txt: 'Q = n(e⁻) × F', val: Q, u: 'C' } };
-      return { tokens, derivees: ['n(e⁻) = 2 × n du réactif limitant', 'Q = n(e⁻) F', 'Δt = Q ÷ i'], texte: [...debut, 'Quelle est la durée de fonctionnement Δt, en heures ?'], utiles: ['V', 'c', 'm', 'M', 'F', 'I'],
+      return { tokens, derivees: ['n(e⁻) = 2 × n du réactif limitant', 'Q = n(e⁻) F', 'Δt = frac(Q|i)'], texte: [...debut, 'Quelle est la durée de fonctionnement Δt, en heures ?'], utiles: ['V', 'c', 'm', 'M', 'F', 'I'],
         raisons: { U: 'La tension à vide ne sert pas pour la durée.' },
         cherche: { bonne: 'La durée de fonctionnement (en h)', faux: ['La quantité d’électricité débitée (en C)', 'La quantité d’électrons échangés (en mol)', 'La puissance de la pile (en W)'] },
-        manque: null, solution: { txt: 'Δt = Q ÷ i', val: Q / (p.I / 1000) / 3600, u: 'h' } };
+        manque: null, solution: { txt: 'Δt = frac(Q|i)', val: Q / (p.I / 1000) / 3600, u: 'h' } };
     }),
   },
 ];

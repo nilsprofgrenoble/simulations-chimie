@@ -830,7 +830,7 @@ export const PROBLEMES = [
     relations: { options: [
       V('f = frac(n|60) × N : pas par seconde = (tours par seconde) × (pas par tour)', 'n/60 donne les tours par seconde, qu’on multiplie par le nombre de pas d’un tour.'),
       V('f doit rester inférieure ou égale à la fréquence maximale', 'Au-delà, le rotor n’a pas le temps de suivre le champ et perd des pas.'),
-      F('f = frac(n × 60|N)', 'On a converti les tr/min dans le mauvais sens (× 60 au lieu de ÷ 60).'),
+      F('f = frac(n × 60|N)', 'On a converti les tr/min dans le mauvais sens (× 60 au lieu de diviser par 60).'),
       F('f = frac(n|N)', 'Il manque la conversion des minutes en secondes.'),
       F('f = frac(360|N)', 'Cela donne l’angle d’un pas, pas une fréquence.'),
     ] },
@@ -875,7 +875,7 @@ export const PROBLEMES = [
       ['masse 40 g', false, 'La masse de l’aimant est contenue dans la valeur de son champ.'],
     ],
     relations: { options: [
-      V('B(r₂) = B(r₁) × (frac(r₁|r₂))³', 'Le champ décroît en 1/r³ : distance × 2, champ ÷ 8.'),
+      V('B(r₂) = B(r₁) × frac(r₁|r₂)³', 'Le champ décroît en 1/r³ : distance × 2, champ divisé par 8.'),
       V('tan α = frac(B_aimant|B_Terre) (champs perpendiculaires)', 'L’aiguille se place selon le champ total ; sa déviation par rapport au nord suit la boussole des tangentes.'),
       F('B(r₂) = B(r₁) × (frac(r₁|r₂))²', 'C’est une loi en 1/r² (champ d’une charge ponctuelle), pas celle d’un aimant.'),
       F('B(r₂) = frac(B(r₁) × r₁|r₂)', 'Cela supposerait une décroissance en 1/r.'),
@@ -902,7 +902,7 @@ export const PROBLEMES = [
       F('α ≈ 63°', 'On a utilisé une décroissance en 1/r² (40 µT) au lieu de 1/r³ (20 µT).'),
       F('α ≈ 83°', 'On a gardé le champ de l’aimant à 10 cm (160 µT) : il faut le réduire pour 20 cm.'),
     ] },
-    retenir: ['Champ d’un aimant : décroissance en 1/r³ (distance × 2 ⇒ champ ÷ 8).', 'Deux champs perpendiculaires : tan α = frac(B_aimant|B_Terre).'],
+    retenir: ['Champ d’un aimant : décroissance en 1/r³ (distance × 2 ⇒ champ divisé par 8).', 'Deux champs perpendiculaires : tan α = frac(B_aimant|B_Terre).'],
   },
 
   {
@@ -2556,10 +2556,10 @@ export const PREVOIR = [
     ] },
   { id: 'ond1g-periode-frequence-lambda', domaine: 'Ondes mécaniques périodiques', titre: 'On double la fréquence de la source',
     enonce: 'Une source secoue l’extrémité d’une corde et crée une onde sinusoïdale qui se propage le long de la corde. La tension de la corde ne change pas pendant l’expérience. On double la fréquence de la source.', q: 'Que devient la longueur d’onde λ ?', options: [
-      V('elle est divisée par 2, car c ne change pas et λ = c ÷ f', 'La célérité c est imposée par la corde, donc elle ne change pas. Comme λ = c × T = c ÷ f, doubler f divise λ par 2 : les crêtes sont deux fois plus rapprochées.'),
-      F('elle est multipliée par 2, car f est plus grande', 'C’est l’inverse : λ = c ÷ f diminue quand la fréquence augmente (la période est divisée par 2).'),
+      V('elle est divisée par 2, car c ne change pas et λ = frac(c|f)', 'La célérité c est imposée par la corde, donc elle ne change pas. Comme λ = c × T = frac(c|f), doubler f divise λ par 2 : les crêtes sont deux fois plus rapprochées.'),
+      F('elle est multipliée par 2, car f est plus grande', 'C’est l’inverse : λ = frac(c|f) diminue quand la fréquence augmente (la période est divisée par 2).'),
       F('elle ne change pas, car la corde est la même', 'La corde fixe la célérité c, pas la longueur d’onde. Comme λ = c × T et que T change, λ change aussi.'),
-      F('on ne peut pas savoir, car il faudrait connaître l’amplitude de l’onde', 'L’amplitude ne joue aucun rôle dans λ = c ÷ f : avec c inchangée et f doublée, on peut conclure sans la connaître.'),
+      F('on ne peut pas savoir, car il faudrait connaître l’amplitude de l’onde', 'L’amplitude ne joue aucun rôle dans λ = frac(c|f) : avec c inchangée et f doublée, on peut conclure sans la connaître.'),
     ] },
   { id: 'ond1g-periode-milieu', domaine: 'Ondes mécaniques périodiques', titre: 'Une onde change de corde',
     enonce: 'Une onde sinusoïdale de fréquence 5 Hz est produite par une source. Elle se propage d’abord le long d’une corde peu tendue, puis on remplace cette corde par une corde très tendue : la célérité de l’onde y est plus grande. La source est la même.', q: 'Que devient l’onde dans la corde très tendue ?', options: [
@@ -2570,15 +2570,15 @@ export const PREVOIR = [
     ] },
   { id: 'ond1g-periode-phase-opposition', domaine: 'Ondes mécaniques périodiques', titre: 'Deux points de la corde distants de 30 cm',
     enonce: 'Une onde sinusoïdale de longueur d’onde λ = 20 cm se propage le long d’une corde. Deux points M et N de la corde sont distants de 30 cm. On enregistre y en fonction de t pour chacun des deux points. (Question de prolongement : le programme de première ne cite pas explicitement la notion d’opposition de phase.)', q: 'Comment se comparent les deux courbes enregistrées ?', options: [
-      V('l’une monte quand l’autre descend (opposition)', '30 cm = 1,5 λ = λ + λ ÷ 2. Une distance égale à un nombre entier de longueurs d’onde, plus une demi-longueur d’onde, donne des mouvements exactement opposés.'),
+      V('l’une monte quand l’autre descend (opposition)', '30 cm = 1,5 λ = λ + frac(λ|2). Une distance égale à un nombre entier de longueurs d’onde, plus une demi-longueur d’onde, donne des mouvements exactement opposés.'),
       F('les deux courbes sont identiques (points en phase)', 'Il y aurait phase pour une distance multiple de λ (20 cm, 40 cm…), pas pour 30 cm = 1,5 λ.'),
-      F('les deux courbes sont décalées d’un quart de période', 'Un décalage d’un quart de période correspond à une distance de λ ÷ 4 (plus un nombre entier de λ), soit 5 cm, 25 cm… et non 30 cm.'),
+      F('les deux courbes sont décalées d’un quart de période', 'Un décalage d’un quart de période correspond à une distance de frac(λ|4) (plus un nombre entier de λ), soit 5 cm, 25 cm… et non 30 cm.'),
       F('les deux points n’oscillent pas avec la même période', 'Les deux points oscillent avec la même période, car ils reçoivent la même onde : leurs courbes se comparent, avec un décalage dans le temps.'),
     ] },
   { id: 'ond1g-periode-lecture-T', domaine: 'Ondes mécaniques périodiques', titre: 'Lire la période sur un enregistrement',
     schema: { type: 'onde', cas: 'enregistrement', n: 3 },
     enonce: 'On enregistre le mouvement d’un point d’une corde au passage d’une onde sinusoïdale. Le graphique y(t) montre exactement 3 oscillations complètes entre l’instant t = 0 et l’instant t = 1,5 s.', q: 'Quelle est la période T de l’onde ?', options: [
-      V('0,50 s, soit une fréquence de 2,0 Hz', 'Trois motifs complets en 1,5 s : chacun dure T = 1,5 ÷ 3 = 0,50 s, et f = 1 ÷ T = 2,0 Hz.'),
+      V('0,50 s, soit une fréquence de 2,0 Hz', 'Trois motifs complets en 1,5 s : chacun dure T = frac(1,5|3) = 0,50 s, et f = frac(1|T) = 2,0 Hz.'),
       F('4,5 s, soit une fréquence de 0,22 Hz', 'Vous avez multiplié 3 par 1,5 : la durée d’un seul motif est la durée totale divisée par le nombre de motifs.'),
       F('1,5 s, soit une fréquence d’environ 0,67 Hz', '1,5 s est la durée totale de l’enregistrement, qui contient 3 motifs : la période est la durée d’un seul motif.'),
       F('3,0 s, soit une fréquence de 0,33 Hz', 'Cette valeur correspond à la durée de 6 motifs. Ici 3 motifs durent 1,5 s, donc un seul dure 0,50 s.'),
@@ -2762,21 +2762,21 @@ export const PREVOIR = [
       F('les trois pareil : la concentration est la même, donc α aussi', 'À même concentration, α dépend du pKa : plus Ka est grand, plus α est grand.'),
     ] },
   { id: 'dissoc-ana-majoritaire', domaine: 'Acide faible, coefficient de dissociation et Ka', titre: 'Quelle forme est majoritaire ?',
-    enonce: 'Pour une solution d’un acide faible AH de concentration en soluté apporté C₀ = 0,10 mol/L, on détermine un coefficient de dissociation α = 0,030.', q: 'Quelle espèce du couple frac(AH|A⁻) est majoritaire dans la solution ?', options: [
+    enonce: 'Pour une solution d’un acide faible AH de concentration en soluté apporté C₀ = 0,10 mol/L, on détermine un coefficient de dissociation α = 0,030.', q: 'Quelle espèce du couple AH / A⁻ est majoritaire dans la solution ?', options: [
       V('AH : seulement 3 % des molécules ont réagi', 'α = [A⁻] divisé par C₀ = 0,030 : [A⁻] vaut 3 % de C₀, donc [AH] = C₀ − [A⁻] vaut 97 % de C₀.'),
       F('A⁻ : la réaction produit des ions, qui dominent', 'Seules 3 molécules sur 100 ont réagi : A⁻ est minoritaire.'),
       F('les deux en quantités égales : c’est un équilibre', 'Un équilibre n’impose pas des quantités égales : ici α = 0,030 montre un net déséquilibre en faveur de AH.'),
       F('on ne peut pas savoir sans connaître le pKa de l’acide', 'La conservation de la matière suffit : [AH] = C₀ − [A⁻] = C₀ × (1 − α).'),
     ] },
   { id: 'predo-ana-ph-monte', domaine: 'pH, pKa et diagramme de prédominance', titre: 'Monter le pH d’une unité',
-    enonce: 'Dans une solution, le couple acide/base frac(AH|A⁻) a un pKa de 6,0 et le pH est imposé à 5,0 (pKa − 1). On augmente le pH de 1 unité pour atteindre 6,0, sans changer la concentration totale du couple.', q: 'Que devient le rapport [A⁻] sur [AH] ?', options: [
+    enonce: 'Dans une solution, le couple acide/base AH / A⁻ a un pKa de 6,0 et le pH est imposé à 5,0 (pKa − 1). On augmente le pH de 1 unité pour atteindre 6,0, sans changer la concentration totale du couple.', q: 'Que devient le rapport [A⁻] sur [AH] ?', options: [
       V('il est multiplié par 10 : de 0,1 il passe à 1', 'rapport = 10^(pH − pKa) : à pH = pKa − 1 il vaut 10^(−1) = 0,1, à pH = pKa il vaut 10^0 = 1. Une unité de pH correspond à un facteur 10.'),
       F('il est augmenté de 1 : de 0,1 il passe à 1,1', 'Le pH est une échelle logarithmique : une unité de pH multiplie le rapport par 10, elle ne l’augmente pas de 1.'),
       F('il ne change pas : le pKa est le même', 'Le pKa est constant, mais le rapport dépend de pH − pKa : il change quand le pH change.'),
       F('il est divisé par 10 : l’acide devient plus concentré', 'En montant le pH, c’est la base qui gagne : [A⁻] augmente par rapport à [AH], le rapport est multiplié.'),
     ] },
   { id: 'predo-ana-predomine', domaine: 'pH, pKa et diagramme de prédominance', titre: 'Quelle forme prédomine ?',
-    enonce: 'Le couple acide/base frac(AH|A⁻) a un pKa de 4,0. On prépare trois solutions du couple de pH respectifs 2,0 ; 4,0 et 6,0, à la même concentration totale.', q: 'Dans quel ordre croissant classe-t-on les valeurs du rapport [A⁻] sur [AH] des trois solutions ?', options: [
+    enonce: 'Le couple acide/base AH / A⁻ a un pKa de 4,0. On prépare trois solutions du couple de pH respectifs 2,0 ; 4,0 et 6,0, à la même concentration totale.', q: 'Dans quel ordre croissant classe-t-on les valeurs du rapport [A⁻] sur [AH] des trois solutions ?', options: [
       V('pH 2,0 puis pH 4,0 puis pH 6,0', 'Le rapport vaut 10^(pH − pKa) : 0,01 à pH 2,0 ; 1 à pH 4,0 ; 100 à pH 6,0. Il augmente avec le pH.'),
       F('pH 6,0 puis pH 4,0 puis pH 2,0', 'Le sens est inversé : plus le pH est grand, plus la base A⁻ prédomine, donc plus le rapport [A⁻] sur [AH] est grand.'),
       F('pH 4,0 puis pH 2,0 puis pH 6,0', 'À pH = pKa le rapport vaut 1, valeur intermédiaire : il est plus petit que 1 en milieu plus acide.'),
@@ -2804,7 +2804,7 @@ export const PREVOIR = [
       F('n’importe lequel : il suffit d’ajuster les quantités des deux formes', 'On peut toujours calculer un rapport, mais loin du pKa il sort de la zone 0,1 à 10 : le mélange ne résiste plus aux ajouts.'),
     ] },
   { id: 'ab-pred-ana-egal', domaine: 'Acides et bases', titre: 'Quand le pH est égal au pKa',
-    enonce: 'Dans une solution, le pH est exactement égal au pKa du couple frac(AH|A⁻).', q: 'Que peut-on dire des concentrations des deux formes ?', options: [
+    enonce: 'Dans une solution, le pH est exactement égal au pKa du couple AH / A⁻.', q: 'Que peut-on dire des concentrations des deux formes ?', options: [
       V('[AH] = [A⁻] : à pH = pKa, les deux formes sont en quantités égales', 'Le rapport [A⁻] sur [AH] vaut 10 puissance (pH − pKa), soit 10⁰ = 1 : les deux concentrations sont égales.'),
       F('[AH] est majoritaire, car c’est l’acide qui a été introduit', 'Ce qui a été introduit ne décide pas : seul l’écart pH − pKa fixe la forme majoritaire.'),
       F('[A⁻] vaut le double de [AH]', 'Un rapport 2 correspondrait à pH − pKa = 0,3 environ, pas à pH = pKa.'),
@@ -2874,7 +2874,7 @@ export const PREVOIR = [
       F('celui de pH 6 : le plus proche de l’eau neutre dissout le mieux', 'Le pH 6 est inférieur à pKa1 = 6,35 : CO₂,H₂O y prédomine encore, le total y reste faible.'),
     ] },
   { id: 'extrac-ana-acide', domaine: 'Extraction acide-base : choix du pH', titre: 'Extraire un acide en jouant sur le pH',
-    enonce: 'Une solution aqueuse contient de l’acide benzoïque, HA (couple frac(HA|A⁻), pKa = 4,2). On veut l’extraire dans un solvant organique non miscible à l’eau, dans lequel seule la forme neutre se dissout.', q: 'Comment faut-il régler le pH de la phase aqueuse ?', options: [
+    enonce: 'Une solution aqueuse contient de l’acide benzoïque, HA (couple HA / A⁻, pKa = 4,2). On veut l’extraire dans un solvant organique non miscible à l’eau, dans lequel seule la forme neutre se dissout.', q: 'Comment faut-il régler le pH de la phase aqueuse ?', options: [
       V('l’acidifier : pH bien inférieur au pKa, HA prédomine', 'La forme neutre est HA, qui prédomine pour un pH inférieur au pKa : en dessous de 2,2, plus de 99 % de l’acide est sous forme HA et passe dans l’organique.'),
       F('la rendre basique : A⁻ passe mieux dans l’organique', 'A⁻ est un ion : il reste dans l’eau. En milieu basique, l’acide est transformé en A⁻ et n’est pas extrait.'),
       F('ne rien changer : le pH n’agit pas sur le partage', 'Le pH fixe la part de HA (neutre) et de A⁻ (ion) : il change beaucoup la quantité extraite.'),
@@ -3028,7 +3028,7 @@ export const PREVOIR = [
       F('les ions de l’eau forment des liaisons ioniques avec la tête de la molécule', 'Une liaison ionique demande des groupes chargés ; la tête d’un non ionique interagit avec l’eau par des liaisons hydrogène.'),
     ] },
   { id: 'chtens-ana-emulsion', domaine: 'Charge des tensioactifs selon le pH', titre: 'Émulsion stabilisée par un savon',
-    enonce: 'Une émulsion d’huile dans l’eau est stabilisée à pH 9 par du palmitate de sodium (pKa du couple frac(COOH|COO)⁻ voisin de 4,8) : les gouttes sont entourées de têtes COO⁻ qui les repoussent. On acidifie l’émulsion jusqu’à pH 3.', q: 'Que risque-t-il de se passer ?', options: [
+    enonce: 'Une émulsion d’huile dans l’eau est stabilisée à pH 9 par du palmitate de sodium (pKa du couple COOH / COO⁻ voisin de 4,8) : les gouttes sont entourées de têtes COO⁻ qui les repoussent. On acidifie l’émulsion jusqu’à pH 3.', q: 'Que risque-t-il de se passer ?', options: [
       V('les têtes deviennent COOH : plus de répulsion, les gouttes peuvent fusionner', 'La stabilité venait de la répulsion entre gouttes chargées : à pH 3, bien en dessous du pKa, la charge a disparu et la coalescence est possible.'),
       F('les gouttes se repoussent davantage, car le milieu acide ajoute des charges +', 'Le milieu acide supprime la charge − des têtes COO⁻ ; il n’ajoute pas de charge + à la goutte.'),
       F('rien ne change : la charge de la tête d’un tensioactif ne dépend pas du pH', 'Pour un carboxylate, la charge dépend du pH ; seules les charges permanentes (sulfate, ammonium quaternaire) n’en dépendent pas.'),
@@ -3143,7 +3143,7 @@ export const PREVOIR = [
     enonce: 'Une lotion H/E forme sa couche de crème en 2 jours. On ajoute à sa phase aqueuse un épaississant qui multiplie par 10 la viscosité de cette phase. Le reste ne change pas.', q: 'Au bout de combien de temps environ la crème se forme-t-elle ?', options: [
       F('au bout de 2 jours : l’épaississant ne change pas la masse volumique', 'La vitesse de Stokes dépend aussi de la viscosité de la phase continue, pas seulement des masses volumiques.'),
       F('au bout de 0,2 jour : une phase plus épaisse fait monter plus vite', 'Une phase continue plus visqueuse freine les gouttes : la montée est plus lente.'),
-      V('au bout de 20 jours : v est divisée par 10', 'v est inversement proportionnelle à η : η × 10 donne v ÷ 10, donc une durée × 10.'),
+      V('au bout de 20 jours : v est divisée par 10', 'v est inversement proportionnelle à η : η × 10 donne frac(v|10), donc une durée × 10.'),
       F('au bout de 200 jours : la vitesse est divisée par 10 puis par 10', 'La viscosité intervient une seule fois au dénominateur : la durée est multipliée par 10, pas par 100.'),
     ] },
   { id: 'inst-ana-sedimentation', domaine: 'Instabilités des émulsions', titre: 'Une émulsion E/H qui se dépose au fond',
@@ -3234,7 +3234,7 @@ export const PREVOIR = [
     enonce: 'On veut un mélange de HLB 8,0 avec du Tween 80 (HLB 15,0) et du Span 80 (HLB 4,3).', q: 'Quelle fraction massique de Tween 80 faut-il ?', options: [
       F('environ 65 %, la fraction de Span 80', 'C’est la part de Span 80 ; la question demande celle du Tween 80.'),
       F('environ 53 %, la position de 8 entre 0 et 15', 'La proportion se calcule entre 4,3 et 15,0 et non entre 0 et 15.'),
-      V('environ 35 %', 'x = (8,0 − 4,3) ÷ (15,0 − 4,3) = 3,7 ÷ 10,7 ≈ 0,35.'),
+      V('environ 35 %', 'x = frac(8,0 − 4,3|15,0 − 4,3) = frac(3,7|10,7) ≈ 0,35.'),
       F('environ 50 %, car 8 est proche du milieu de l’échelle HLB', 'Un mélange moitié-moitié donne 9,65 : pour viser 8,0 il faut moins de Tween 80.'),
     ] },
   { id: 'hlb-ana-hors-portee', domaine: 'HLB requis et mélange d’émulsifiants', titre: 'Une cible que le mélange ne peut atteindre',
@@ -3598,7 +3598,7 @@ export const PREVOIR = [
   { id: 'tern-ana-pourcent', domaine: 'Microémulsions : lire un diagramme ternaire', titre: 'Passer des masses aux teneurs',
     enonce: 'Pour placer un mélange sur un diagramme ternaire, on le prépare avec 30 g d’eau, 50 g de toluène et 20 g de mélange SDS + butanol.', q: 'Quelles teneurs massiques faut-il lire sur les côtés du triangle ?', options: [
       F('3 % d’eau, 5 % de toluène et 2 % de mélange actif', 'La masse totale est de 100 g : les masses en grammes sont déjà les pourcentages.'),
-      V('30 % d’eau, 50 % de toluène, 20 % de mélange actif', 'Teneur = masse du constituant ÷ masse totale (100 g).'),
+      V('30 % d’eau, 50 % de toluène, 20 % de mélange actif', 'Teneur = frac(masse du constituant|masse totale) (100 g).'),
       F('50 % d’eau, 30 % de toluène et 20 % de mélange actif', 'Eau et toluène sont intervertis : l’eau représente 30 g sur 100 g.'),
       F('33 % de chaque constituant, car il y en a trois', 'Les teneurs dépendent des masses mises en jeu, pas du nombre de constituants.'),
     ] },
@@ -4283,7 +4283,7 @@ export const PREVOIR = [
     ] },
   { id: 'ene-haute-tension', domaine: 'Énergie électrique', titre: 'Transport à haute tension',
     enonce: 'Une ligne de résistance R transporte une puissance P = U × I. Pour la même puissance transportée, on multiplie la tension U par 10.', q: 'Les pertes par effet Joule dans la ligne (R × I²) sont…', options: [
-      V('divisées par 100', 'P = U × I constante : U × 10 donne I ÷ 10. Les pertes R I² sont alors divisées par 10² = 100.'),
+      V('divisées par 100', 'P = U × I constante : U × 10 donne frac(I|10). Les pertes R I² sont alors divisées par 10² = 100.'),
       F('divisées par 10', 'I est au carré dans R I² : le facteur est 10² = 100.'),
       F('multipliées par 10', 'Une tension plus grande réduit le courant, donc les pertes.'),
       F('inchangées, puisque la puissance transportée est la même', 'La puissance transportée est la même, mais les pertes dépendent de I², qui diminue.'),
@@ -4405,14 +4405,14 @@ export const PREVOIR = [
     ] },
   { id: 'mec-pointage-echelle', domaine: 'Mécanique', titre: 'Des pixels aux mètres',
     enonce: 'Sur une image d’un film, un étalon de 0,30 m mesure 150 pixels. Une distance entre deux points pointés mesure 400 pixels sur la même image (même plan).', q: 'Cette distance vaut…', options: [
-      V('0,80 m', 'échelle = 0,30 m ÷ 150 px = 0,0020 m/px ; 400 px × 0,0020 m/px = 0,80 m.'),
+      V('0,80 m', 'échelle = frac(0,30 m|150) px = 0,0020 m/px ; 400 px × 0,0020 m/px = 0,80 m.'),
       F('120 m', 'Vous avez multiplié 400 par la longueur de l’étalon (0,30) puis par 1000 : il faut multiplier par l’échelle en m/px.'),
-      F('2,0 × 10⁵ m', 'Vous avez inversé l’échelle (150 ÷ 0,30 = 500 px/m) et multiplié : l’échelle est en mètres par pixel.'),
+      F('2,0 × 10⁵ m', 'Vous avez inversé l’échelle (frac(150|0,30) = 500 px/m) et multiplié : l’échelle est en mètres par pixel.'),
       F('0,0020 m', 'C’est la valeur d’un pixel (l’échelle), pas celle de 400 pixels.'),
     ] },
   { id: 'mec-pointage-vitesse', domaine: 'Mécanique', titre: 'Vitesse par différence centrée',
     enonce: 'Un mobile est filmé à 25 images par seconde (τ = 0,040 s entre deux images). Sur le pointage, la distance M(i−1)M(i+1) vaut 0,12 m.', q: 'La vitesse au point M(i) vaut environ…', options: [
-      V('1,5 m·s⁻¹', 'v ≈ M(i−1)M(i+1) ÷ (2τ) = 0,12 ÷ 0,080 = 1,5 m·s⁻¹ : la distance couvre deux intervalles de temps.'),
+      V('1,5 m·s⁻¹', 'v ≈ M(i−1)frac(M(i+1)|2τ) = frac(0,12|0,080) = 1,5 m·s⁻¹ : la distance couvre deux intervalles de temps.'),
       F('3,0 m·s⁻¹', 'Vous avez divisé par τ : M(i−1)M(i+1) correspond à deux intervalles, donc il faut diviser par 2τ.'),
       F('0,75 m·s⁻¹', 'Vous avez divisé par 4τ : le dénominateur est 2τ = 0,080 s.'),
       F('0,0048 m·s⁻¹', 'Vous avez multiplié la distance par τ au lieu de diviser : une vitesse est une distance divisée par une durée.'),
@@ -4426,8 +4426,8 @@ export const PREVOIR = [
     ] },
   { id: 'syn-limitant', domaine: 'Synthèse et rendement', titre: 'Masses égales, quantités différentes',
     enonce: 'On mélange 2,0 g d’un réactif A (M = 100 g·mol⁻¹) et 2,0 g d’un réactif B (M = 50 g·mol⁻¹) pour la réaction A + B → C (coefficients 1 et 1).', q: 'Le réactif limitant est…', options: [
-      V('A, car n(A) = 20 mmol est inférieure à n(B) = 40 mmol', 'n = m ÷ M : n(A) = 2,0 ÷ 100 = 20 mmol et n(B) = 2,0 ÷ 50 = 40 mmol. Avec des coefficients égaux, le plus petit n est limitant : A.'),
-      F('B, car sa masse molaire est la plus petite', 'La masse molaire seule ne décide pas : il faut calculer les quantités de matière n = m ÷ M.'),
+      V('A, car n(A) = 20 mmol est inférieure à n(B) = 40 mmol', 'n = frac(m|M) : n(A) = frac(2,0|100) = 20 mmol et n(B) = frac(2,0|50) = 40 mmol. Avec des coefficients égaux, le plus petit n est limitant : A.'),
+      F('B, car sa masse molaire est la plus petite', 'La masse molaire seule ne décide pas : il faut calculer les quantités de matière n = frac(m|M).'),
       F('aucun des deux, car les masses sont égales', 'Ce sont les quantités de matière qui comptent, pas les masses : ici n(A) ≠ n(B).'),
       F('B, car on en a introduit davantage en quantité de matière', 'B est bien en plus grande quantité (40 mmol), mais c’est ce qui en fait le réactif en excès, pas le limitant.'),
     ] },
@@ -4468,16 +4468,16 @@ export const PREVOIR = [
     ] },
   { id: 'syn-rendement-reference', domaine: 'Synthèse et rendement', titre: 'Rendement : par rapport à quelle quantité ?',
     enonce: 'Dans une synthèse A + B → C (coefficients 1, 1), on introduit n(A) = 20 mmol et n(B) = 40 mmol. À la fin, on obtient 15 mmol de C.', q: 'Pour calculer le rendement, on compare les 15 mmol obtenues à…', options: [
-      V('la quantité maximale de C permise par A, le limitant : 20 mmol', 'Le rendement compare la quantité obtenue à la quantité maximale que la transformation peut donner, fixée par le réactif limitant (A) : 15 ÷ 20 = 75 %.'),
+      V('la quantité maximale de C permise par A, le limitant : 20 mmol', 'Le rendement compare la quantité obtenue à la quantité maximale que la transformation peut donner, fixée par le réactif limitant (A) : frac(15|20) = 75 %.'),
       F('la quantité de B, le réactif introduit en excès : 40 mmol', 'Le réactif en excès ne limite pas la formation de C : il ne fixe pas la quantité maximale attendue.'),
       F('la somme des quantités de réactifs introduits : 20 + 40 = 60 mmol', 'On ne divise pas par la quantité totale de réactifs : la quantité maximale de C est fixée par le réactif limitant seul.'),
       F('la quantité de A qui n’a pas réagi à la fin : 5 mmol', 'Le rendement se rapporte à ce qui était possible au départ, pas à ce qu’il reste à la fin.'),
     ] },
   { id: 'ccm-rf', domaine: 'Synthèse et rendement', titre: 'Une plaque plus haute change-t-elle le rapport frontal ?',
     enonce: 'Sur une première plaque de CCM, le front de l’éluant est à 5,0 cm de la ligne de dépôt et une tache à 2,0 cm. On refait la même élution, avec le même éluant, la même silice et la même température, sur une plaque deux fois plus haute : le front arrive à 10,0 cm.', q: 'Où se trouve alors la tache et que devient son rapport frontal Rf ?', options: [
-      V('vers 4,0 cm, et Rf reste inchangé à 0,40', 'Dans les mêmes conditions, l’espèce et le front montent proportionnellement : d double avec D, donc Rf = d ÷ D est inchangé (0,40).'),
+      V('vers 4,0 cm, et Rf reste inchangé à 0,40', 'Dans les mêmes conditions, l’espèce et le front montent proportionnellement : d double avec D, donc Rf = frac(d|D) est inchangé (0,40).'),
       F('toujours à 2,0 cm, et Rf est divisé par deux', 'Dans les mêmes conditions, l’espèce suit l’éluant : si le front monte deux fois plus haut, la tache aussi. Elle ne reste pas à 2,0 cm.'),
-      F('vers 4,0 cm, et Rf double (0,80) comme la distance', 'La tache double bien sa distance, mais le front aussi : le rapport d ÷ D ne change pas.'),
+      F('vers 4,0 cm, et Rf double (0,80) comme la distance', 'La tache double bien sa distance, mais le front aussi : le rapport frac(d|D) ne change pas.'),
       F('vers 7,0 cm, car la plaque a 5,0 cm de plus et la tache aussi', 'Les distances ne s’ajoutent pas : elles sont proportionnelles. Le front double (5,0 → 10,0 cm), donc la tache aussi (2,0 → 4,0 cm), et non 2,0 + 5,0 cm.'),
     ] },
   { id: 'ccm-comparer', domaine: 'Synthèse et rendement', titre: 'Lire une CCM de produit brut',
@@ -5572,24 +5572,24 @@ export const PREVOIR = [
     ] },
   { id: 'ely-ana-intensite', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Doubler l’intensité',
     ...presenter({ contexte: 'On dépose du cuivre sur une cathode par électrolyse. On admet que tout le courant sert au dépôt de cuivre.', liste: [['Première expérience', '0,50 A pendant 20 min'], ['Seconde expérience', '1,0 A pendant 20 min']] }), q: 'La masse de cuivre déposé…', options: [
-      V('double, car la charge passée double', 'Q = I × Δt double ; n(e⁻) = Q ÷ F double, donc la quantité de cuivre déposé et sa masse doublent aussi.'),
+      V('double, car la charge passée double', 'Q = I × Δt double ; n(e⁻) = frac(Q|F) double, donc la quantité de cuivre déposé et sa masse doublent aussi.'),
       F('ne change pas, car la durée est la même', 'La durée est la même, mais l’intensité double : il passe deux fois plus d’électrons.'),
       F('est divisée par deux, car le courant va plus vite', 'Plus d’intensité signifie plus de charge passée en un même temps, donc plus de métal déposé.'),
-      F('quadruple, car Q et n(e⁻) doublent', 'Q et n(e⁻) doublent ensemble : n(e⁻) = Q ÷ F. La masse ne double qu’une fois.'),
+      F('quadruple, car Q et n(e⁻) doublent', 'Q et n(e⁻) doublent ensemble : n(e⁻) = frac(Q|F). La masse ne double qu’une fois.'),
     ] },
   { id: 'ely-ana-qr', domaine: 'Électrolyse : forcer le sens d’évolution', titre: 'Le quotient de réaction pendant une électrolyse',
-    enonce: 'La réaction Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s) a pour constante K ≈ 10³⁷. On impose avec un générateur la transformation inverse : du zinc se dépose et du cuivre se dissout.', q: 'Pendant l’électrolyse, Qr = [Zn²⁺] ÷ [Cu²⁺]…', options: [
+    enonce: 'La réaction Zn(s) + Cu²⁺(aq) → Zn²⁺(aq) + Cu(s) a pour constante K ≈ 10³⁷. On impose avec un générateur la transformation inverse : du zinc se dépose et du cuivre se dissout.', q: 'Pendant l’électrolyse, Qr = frac([Zn²⁺]|[Cu²⁺])…', options: [
       V('diminue : il s’éloigne de la valeur de K', '[Zn²⁺] diminue et [Cu²⁺] augmente : Qr diminue et s’éloigne de K, ce qui n’est possible qu’avec l’énergie du générateur.'),
       F('augmente : il se rapproche de la valeur de K', 'C’est ce qui se passe quand la pile débite spontanément ; ici la transformation est inverse.'),
       F('reste égal à K pendant toute l’électrolyse', 'Qr = K correspond à l’équilibre ; ici le système en est très loin et s’en éloigne encore.'),
       F('ne change pas, car K ne dépend que de T', 'K ne dépend que de la température, mais Qr dépend des concentrations, qui changent.'),
     ] },
   { id: 'ir-nombre-onde', domaine: 'Chimie organique', titre: 'Longueur d’onde doublée, nombre d’onde ?',
-    enonce: 'Un spectre infrarouge est tracé en fonction du nombre d’onde σ = 1 ÷ λ (σ en cm⁻¹, λ en cm). Une première radiation a pour longueur d’onde 5,0 µm ; une seconde a pour longueur d’onde 10 µm.', q: 'Par rapport à la première, le nombre d’onde de la seconde est…', options: [
-      V('divisé par 2 : σ varie en sens inverse de λ', 'σ = 1 ÷ λ : quand λ double, σ est divisé par 2 (de 2000 cm⁻¹ à 1000 cm⁻¹).'),
+    enonce: 'Un spectre infrarouge est tracé en fonction du nombre d’onde σ = frac(1|λ) (σ en cm⁻¹, λ en cm). Une première radiation a pour longueur d’onde 5,0 µm ; une seconde a pour longueur d’onde 10 µm.', q: 'Par rapport à la première, le nombre d’onde de la seconde est…', options: [
+      V('divisé par 2 : σ varie en sens inverse de λ', 'σ = frac(1|λ) : quand λ double, σ est divisé par 2 (de 2000 cm⁻¹ à 1000 cm⁻¹).'),
       F('multiplié par 2 : σ est proportionnel à λ', 'σ est l’inverse de λ, pas proportionnel à λ : plus la longueur d’onde est grande, plus le nombre d’onde est petit.'),
-      F('inchangé : seul le milieu traversé modifie σ', 'σ ne dépend que de λ par σ = 1 ÷ λ : si λ change, σ change.'),
-      F('divisé par 4 : σ varie comme l’inverse du carré de λ', 'La relation est σ = 1 ÷ λ, sans carré : doubler λ divise σ par 2 seulement.'),
+      F('inchangé : seul le milieu traversé modifie σ', 'σ ne dépend que de λ par σ = frac(1|λ) : si λ change, σ change.'),
+      F('divisé par 4 : σ varie comme l’inverse du carré de λ', 'La relation est σ = frac(1|λ), sans carré : doubler λ divise σ par 2 seulement.'),
     ] },
   { id: 'ir-alcool-cetone', domaine: 'Chimie organique', titre: 'Alcool ou cétone ?',
     enonce: 'Le spectre IR d’un liquide pur montre une bande large et forte vers 3300 cm⁻¹ et aucune bande vers 1700 cm⁻¹.', q: 'Ce composé est sans doute…', options: [
@@ -6539,17 +6539,17 @@ export const PREVOIR = [
     ] },
   { id: 'ond1g-celerite-retard-distance', schema: { type: 'cordeCapteurs' }, domaine: 'Ondes mécaniques : célérité et retard', titre: 'Le retard quand on écarte les capteurs',
     enonce: 'Sur une corde, deux capteurs distants de 2,0 m enregistrent la même bosse avec un retard de 0,40 s. Sans rien changer à la corde, on écarte les capteurs à 4,0 m l’un de l’autre.', q: 'Que devient le retard entre les deux capteurs ?', options: [
-      V('il double, il vaut 0,80 s', 'Dans un même milieu la célérité ne change pas : c = d ÷ Δt. La distance double, donc la durée double aussi (Δt = d ÷ c).'),
+      V('il double, il vaut 0,80 s', 'Dans un même milieu la célérité ne change pas : c = frac(d|Δt). La distance double, donc la durée double aussi (Δt = frac(d|c)).'),
       F('il reste égal à 0,40 s', 'Le retard dépend de la distance : la perturbation doit parcourir deux fois plus de chemin à la même célérité.'),
       F('il est divisé par 2, il vaut 0,20 s', 'C’est l’inverse : plus la distance est grande, plus le retard est grand (à célérité constante).'),
       F('il devient quatre fois plus grand', 'Le retard est proportionnel à la distance (et non à son carré) : doubler d double Δt.'),
     ] },
   { id: 'ond1g-celerite-milieu', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Le même son dans l’air puis dans l’eau',
     enonce: 'Un claquement est produit à une extrémité d’un long tube rempli d’air ; un microphone à l’autre extrémité mesure la durée de propagation du son. On refait la même expérience avec le même tube, rempli d’eau cette fois.', q: 'Que devient la durée de propagation ?', options: [
-      V('elle diminue : le son se propage plus vite dans l’eau', 'Dans l’eau la célérité du son (environ 1 500 m/s) est supérieure à celle dans l’air (340 m/s). La distance est la même : Δt = d ÷ c est plus petit.'),
-      F('elle augmente : le son se propage moins vite dans l’eau', 'C’est l’inverse : la célérité du son est plus grande dans l’eau que dans l’air, donc la durée diminue (Δt = d ÷ c).'),
+      V('elle diminue : le son se propage plus vite dans l’eau', 'Dans l’eau la célérité du son (environ 1 500 m/s) est supérieure à celle dans l’air (340 m/s). La distance est la même : Δt = frac(d|c) est plus petit.'),
+      F('elle augmente : le son se propage moins vite dans l’eau', 'C’est l’inverse : la célérité du son est plus grande dans l’eau que dans l’air, donc la durée diminue (Δt = frac(d|c)).'),
       F('elle ne change pas : seule la source du son compte ici', 'La célérité dépend du milieu de propagation, pas de la source : changer de milieu change la durée.'),
-      F('elle ne change pas : la distance parcourue est la même', 'La distance est la même, mais la célérité change avec le milieu : Δt = d ÷ c change donc aussi.'),
+      F('elle ne change pas : la distance parcourue est la même', 'La distance est la même, mais la célérité change avec le milieu : Δt = frac(d|c) change donc aussi.'),
     ] },
   { id: 'ond1g-celerite-vitesse-point', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Célérité et vitesse d’un point de la corde',
     enonce: 'Une onde avance sur une corde avec une célérité c = 5,0 m/s. Un élève affirme : « le point M de la corde se déplace à 5,0 m/s vers la droite ».', q: 'Que penser de cette affirmation ?', options: [
@@ -6560,10 +6560,10 @@ export const PREVOIR = [
     ] },
   { id: 'ond1g-celerite-premiere-station', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Quelle station enregistre le séisme en premier ?',
     enonce: 'Un séisme superficiel se produit à un endroit donné. Trois stations sismiques A, B et C sont situées respectivement à 45 km, 30 km et 80 km de ce lieu. Les ondes se propagent à la même célérité dans toutes les directions.', q: 'Dans quel ordre les stations enregistrent-elles l’onde ?', options: [
-      V('B (30 km), puis A (45 km), puis C (80 km)', 'À célérité constante, Δt = d ÷ c : la durée est proportionnelle à la distance, donc la station la plus proche enregistre en premier.'),
+      V('B (30 km), puis A (45 km), puis C (80 km)', 'À célérité constante, Δt = frac(d|c) : la durée est proportionnelle à la distance, donc la station la plus proche enregistre en premier.'),
       F('C (80 km), puis A (45 km), puis B (30 km)', 'C’est l’ordre inverse : plus la station est loin, plus l’onde met de temps à l’atteindre.'),
-      F('A (45 km), puis C (80 km), puis B (30 km)', 'L’ordre ne suit pas la distance : la durée Δt = d ÷ c augmente avec d.'),
-      F('les trois en même temps, car la célérité est la même', 'La célérité est la même, mais les distances diffèrent : Δt = d ÷ c est plus grand pour la station la plus éloignée.'),
+      F('A (45 km), puis C (80 km), puis B (30 km)', 'L’ordre ne suit pas la distance : la durée Δt = frac(d|c) augmente avec d.'),
+      F('les trois en même temps, car la célérité est la même', 'La célérité est la même, mais les distances diffèrent : Δt = frac(d|c) est plus grand pour la station la plus éloignée.'),
     ] },
   { id: 'ond1g-celerite-secouer-plus-fort', domaine: 'Ondes mécaniques : célérité et retard', titre: 'Secouer la corde plus fort',
     enonce: 'Une bosse se propage sur une corde et met 0,50 s pour aller d’un capteur à l’autre. On recommence en secouant la corde plus vigoureusement : la bosse est deux fois plus haute. La corde n’a pas changé.', q: 'Que devient la durée de propagation entre les deux capteurs ?', options: [
@@ -6911,8 +6911,8 @@ export const PREVOIR = [
     ] },
   { id: 'comb1g-ana-equation-butane', domaine: 'Combustions : énergie de réaction et énergies de liaison', titre: 'Combustion du butane : combien de CO₂ et de H₂O ?',
     enonce: 'On brûle complètement 1 mol de butane C₄H₁₀ (gaz des briquets) avec du dioxygène ; les produits sont le dioxyde de carbone CO₂ et l’eau H₂O. On cherche les quantités de produits, avant d’écrire l’équation complète.', q: 'Pour 1 mol de butane brûlé, il se forme…', options: [
-      V('4 mol de CO₂ et 5 mol de H₂O', 'Les 4 atomes de carbone donnent 4 CO₂ ; les 10 atomes d’hydrogène donnent 10 ÷ 2 = 5 H₂O (2 atomes H par molécule d’eau).'),
-      F('4 mol de CO₂ et 10 mol de H₂O', 'Les 10 atomes H se répartissent par deux dans chaque H₂O : 10 ÷ 2 = 5 H₂O, pas 10.'),
+      V('4 mol de CO₂ et 5 mol de H₂O', 'Les 4 atomes de carbone donnent 4 CO₂ ; les 10 atomes d’hydrogène donnent frac(10|2) = 5 H₂O (2 atomes H par molécule d’eau).'),
+      F('4 mol de CO₂ et 10 mol de H₂O', 'Les 10 atomes H se répartissent par deux dans chaque H₂O : frac(10|2) = 5 H₂O, pas 10.'),
       F('10 mol de CO₂ et 4 mol de H₂O', 'Les nombres sont inversés : le carbone (4 atomes) donne CO₂, l’hydrogène (10 atomes) donne H₂O.'),
       F('4 mol de CO₂ et 4 mol de H₂O', 'Il ne faut pas oublier les atomes d’hydrogène : 10 atomes H donnent 5 H₂O, pas 4.'),
     ] },
@@ -6999,31 +6999,31 @@ export const PREVOIR = [
   // ───────────────────────────── Lumière (1G) : domaines spectraux et énergie d'un photon (sim 164)
   { id: 'phot1g-ana-lambda-nu', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Une fréquence dix fois plus grande',
     enonce: 'Une onde électromagnétique se propage dans le vide. On la remplace par une autre onde dont la fréquence est dix fois plus grande.', q: 'Que devient la longueur d’onde ?', options: [
-      F('elle est multipliée par 10 : une fréquence plus grande donne une longueur d’onde plus grande', 'C’est l’inverse : λ = c ÷ ν. Comme c ne change pas dans le vide, quand ν est multipliée par 10, λ est divisée par 10.'),
-      F('elle ne change pas : les deux ondes se propagent à la même célérité', 'La célérité c est la même, mais λ = c ÷ ν dépend de la fréquence : si ν change, λ change aussi.'),
-      V('elle est divisée par 10 : la célérité c ne change pas, donc λ = c ÷ ν diminue', 'c reste égale à 3,00 × 10⁸ m·s⁻¹ dans le vide : pour ν multipliée par 10, λ = c ÷ ν est divisée par 10.'),
-      F('elle est divisée par 100 : la longueur d’onde varie comme le carré de la fréquence', 'Il n’y a pas de carré : λ = c ÷ ν est inversement proportionnelle à ν, donc divisée par 10 seulement.'),
+      F('elle est multipliée par 10 : une fréquence plus grande donne une longueur d’onde plus grande', 'C’est l’inverse : λ = frac(c|ν). Comme c ne change pas dans le vide, quand ν est multipliée par 10, λ est divisée par 10.'),
+      F('elle ne change pas : les deux ondes se propagent à la même célérité', 'La célérité c est la même, mais λ = frac(c|ν) dépend de la fréquence : si ν change, λ change aussi.'),
+      V('elle est divisée par 10 : la célérité c ne change pas, donc λ = frac(c|ν) diminue', 'c reste égale à 3,00 × 10⁸ m·s⁻¹ dans le vide : pour ν multipliée par 10, λ = frac(c|ν) est divisée par 10.'),
+      F('elle est divisée par 100 : la longueur d’onde varie comme le carré de la fréquence', 'Il n’y a pas de carré : λ = frac(c|ν) est inversement proportionnelle à ν, donc divisée par 10 seulement.'),
     ] },
   { id: 'phot1g-ana-photon-uv', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Un photon ultraviolet et un photon rouge',
     enonce: 'On compare un photon ultraviolet (λ = 300 nm) et un photon rouge (λ = 700 nm), émis dans le vide.', q: 'Que peut-on dire de leurs énergies ?', options: [
-      V('le photon ultraviolet a l’énergie la plus grande : sa fréquence est plus élevée', 'E = h·ν = h·c ÷ λ : à la plus petite longueur d’onde correspond la plus grande fréquence, donc la plus grande énergie.'),
-      F('le photon rouge a l’énergie la plus grande : sa longueur d’onde est la plus grande', 'C’est l’inverse : E = h·c ÷ λ diminue quand λ augmente.'),
+      V('le photon ultraviolet a l’énergie la plus grande : sa fréquence est plus élevée', 'E = h·ν = frac(h·c|λ) : à la plus petite longueur d’onde correspond la plus grande fréquence, donc la plus grande énergie.'),
+      F('le photon rouge a l’énergie la plus grande : sa longueur d’onde est la plus grande', 'C’est l’inverse : E = frac(h·c|λ) diminue quand λ augmente.'),
       F('leurs énergies sont égales : tous les photons de lumière portent la même énergie', 'Un photon porte l’énergie h·ν : elle dépend de la fréquence, donc de la couleur du rayonnement.'),
       F('on ne peut pas comparer : l’énergie ne dépend que de la puissance de la source', 'La puissance change le nombre de photons émis chaque seconde, pas l’énergie d’un seul photon.'),
     ] },
   { id: 'phot1g-ana-puissance-photon', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Deux lasers verts de puissances différentes',
     enonce: 'Deux pointeurs laser émettent la même lumière verte (532 nm). Le laser B est deux fois plus puissant que le laser A.', q: 'Comment se comparent l’énergie d’un photon émis par A et celle d’un photon émis par B ?', options: [
       F('celle d’un photon de B est deux fois plus grande, car B est plus puissant', 'La puissance dépend du nombre de photons émis chaque seconde. L’énergie d’un photon, E = h·ν, ne dépend que de la fréquence, ici la même.'),
-      V('elles sont égales : les deux photons ont la même longueur d’onde, donc la même fréquence', 'E = h·ν = h·c ÷ λ : même longueur d’onde, donc même énergie par photon. Le laser B émet simplement plus de photons chaque seconde.'),
+      V('elles sont égales : les deux photons ont la même longueur d’onde, donc la même fréquence', 'E = h·ν = frac(h·c|λ) : même longueur d’onde, donc même énergie par photon. Le laser B émet simplement plus de photons chaque seconde.'),
       F('celle d’un photon de B est deux fois plus petite : l’énergie se partage entre plus de photons', 'L’énergie d’un photon est fixée par sa fréquence ; elle ne se « partage » pas quand les photons sont plus nombreux.'),
       F('on ne peut pas les comparer : il faudrait connaître la durée d’émission', 'La durée n’intervient pas : l’énergie d’un photon ne dépend que de sa fréquence.'),
     ] },
   { id: 'phot1g-ana-ordre-longueurs', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Radio FM, wifi et télécommande',
     enonce: 'On compare trois ondes de la vie courante : la radio FM (100 MHz), le wifi (2,4 GHz) et la télécommande d’un téléviseur (infrarouge, environ 3 × 10¹⁴ Hz).', q: 'Dans quel ordre se classent-elles, de la plus grande à la plus petite longueur d’onde ?', options: [
-      F('télécommande, wifi, radio FM : plus la fréquence est grande, plus λ est grande', 'C’est l’ordre inverse : λ = c ÷ ν diminue quand ν augmente.'),
+      F('télécommande, wifi, radio FM : plus la fréquence est grande, plus λ est grande', 'C’est l’ordre inverse : λ = frac(c|ν) diminue quand ν augmente.'),
       F('wifi, radio FM, télécommande : le wifi est une onde plus « large » que la radio', 'Le wifi a une fréquence plus grande que la radio FM, donc une longueur d’onde plus petite : environ 12 cm contre environ 3 m.'),
       F('radio FM, télécommande, wifi : l’infrarouge est une onde « longue », comme la chaleur', 'L’infrarouge de la télécommande a une fréquence bien plus grande que le wifi, donc une longueur d’onde plus petite (environ 1 µm).'),
-      V('radio FM, wifi, télécommande : les fréquences augmentent, donc λ = c ÷ ν diminue', 'Les fréquences vérifient 100 MHz < 2,4 GHz < 3 × 10¹⁴ Hz, donc λ ≈ 3 m > 12 cm > 1 µm.'),
+      V('radio FM, wifi, télécommande : les fréquences augmentent, donc λ = frac(c|ν) diminue', 'Les fréquences vérifient 100 MHz < 2,4 GHz < 3 × 10¹⁴ Hz, donc λ ≈ 3 m > 12 cm > 1 µm.'),
     ] },
   { id: 'phot1g-ana-echelle-log', domaine: 'Domaines spectraux et énergie d’un photon', titre: 'Deux distances sur une échelle logarithmique',
     enonce: 'Sur l’échelle logarithmique du spectre, on mesure la distance entre les graduations « 1 mm » et « 1 µm », puis la distance entre « 1 µm » et « 1 nm ».', q: 'Comment se comparent ces deux distances ?', options: [
@@ -7078,14 +7078,14 @@ export const PREVOIR = [
   // ───────────────────────────── Niveaux d'énergie : absorption, émission et spectres de raies (1G, sim 165)
   { id: 'niv1g-ana-ecart-lambda', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Deux transitions, deux longueurs d’onde',
     enonce: 'Dans le diagramme d’un atome, la transition A relie deux niveaux séparés de 3,0 eV et la transition B deux niveaux séparés de 1,0 eV. Un atome effectue chaque transition en émettant un photon.', q: 'Que peut-on dire des longueurs d’onde des deux photons ?', options: [
-      F('celle de A est plus grande, car son écart d’énergie est plus grand', 'C’est l’inverse : λ = h·c ÷ ΔE, donc plus l’écart d’énergie est grand, plus la longueur d’onde est petite.'),
-      F('elles sont égales, car les deux photons se propagent à la même célérité', 'La célérité est la même, mais λ = c ÷ ν dépend de la fréquence, donc de l’énergie ΔE = h·ν du photon.'),
+      F('celle de A est plus grande, car son écart d’énergie est plus grand', 'C’est l’inverse : λ = frac(h·c|ΔE), donc plus l’écart d’énergie est grand, plus la longueur d’onde est petite.'),
+      F('elles sont égales, car les deux photons se propagent à la même célérité', 'La célérité est la même, mais λ = frac(c|ν) dépend de la fréquence, donc de l’énergie ΔE = h·ν du photon.'),
       F('celle de A est trois fois plus grande, car 3,0 eV est trois fois 1,0 eV', 'Il ne s’agit pas d’une proportionnalité directe : λ est inversement proportionnelle à ΔE.'),
-      V('celle de A est trois fois plus petite : λ varie en sens inverse de ΔE', 'λ = h·c ÷ ΔE : un écart trois fois plus grand donne une longueur d’onde trois fois plus petite.'),
+      V('celle de A est trois fois plus petite : λ varie en sens inverse de ΔE', 'λ = frac(h·c|ΔE) : un écart trois fois plus grand donne une longueur d’onde trois fois plus petite.'),
     ] },
   { id: 'niv1g-ana-emission-absorption', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Aller, puis revenir',
     enonce: 'Un atome au niveau fondamental absorbe un photon de longueur d’onde 450 nm et passe au niveau E₂. Il revient ensuite directement au fondamental en émettant un photon.', q: 'Quelle est la longueur d’onde du photon émis ?', options: [
-      V('égale à 450 nm : l’écart E₂ − E₀ est le même à l’aller et au retour', 'ΔE = |E₂ − E₀| est le même à l’aller et au retour, donc λ = h·c ÷ ΔE aussi : c’est la raison pour laquelle les raies noires et colorées coïncident.'),
+      V('égale à 450 nm : l’écart E₂ − E₀ est le même à l’aller et au retour', 'ΔE = ∣E₂ − E₀∣ est le même à l’aller et au retour, donc λ = frac(h·c|ΔE) aussi : c’est la raison pour laquelle les raies noires et colorées coïncident.'),
       F('plus grande que 450 nm : une partie de l’énergie a été perdue en route', 'Dans ce modèle, l’atome revient au même niveau : l’écart d’énergie est identique, donc le photon émis a la même énergie.'),
       F('plus petite que 450 nm : l’atome excité est plus énergétique', 'L’atome retrouve exactement son énergie de départ : il ne peut pas émettre plus que ce qu’il a absorbé.'),
       F('impossible à dire : il faudrait connaître la durée passée au niveau E₂', 'La durée dans l’état excité n’intervient pas dans l’énergie du photon émis, qui ne dépend que des deux niveaux.'),
@@ -7109,7 +7109,7 @@ export const PREVOIR = [
       F('les deux photons ont la même énergie, car les deux raies viennent du même gaz', 'L’énergie d’un photon dépend de sa fréquence : 450 nm et 650 nm ne donnent pas la même énergie.'),
       F('le photon rouge a la plus grande énergie, car sa raie est plus brillante', 'La brillance renseigne sur le nombre de photons reçus, pas sur l’énergie de chacun.'),
       F('on ne peut rien dire, car la brillance change l’énergie de chaque photon', 'L’énergie de chaque photon est fixée par λ, que la raie soit brillante ou faible.'),
-      V('le photon bleu a la plus grande énergie : λ plus petite, donc ΔE plus grande', 'ΔE = h·c ÷ λ : la plus petite longueur d’onde correspond au photon le plus énergétique. La brillance dépend du nombre de photons.'),
+      V('le photon bleu a la plus grande énergie : λ plus petite, donc ΔE plus grande', 'ΔE = frac(h·c|λ) : la plus petite longueur d’onde correspond au photon le plus énergétique. La brillance dépend du nombre de photons.'),
     ] },
   { id: 'niv1g-ana-niveaux-negatifs', domaine: 'Niveaux d’énergie : absorption, émission et spectres de raies', titre: 'Des énergies négatives dans un diagramme',
     enonce: 'Le diagramme de l’atome d’hydrogène donne les énergies −13,6 eV, −3,40 eV, −1,51 eV, … Dans ce diagramme, le zéro de l’énergie correspond à l’ionisation de l’atome. Un atome passe du niveau −13,6 eV au niveau −3,40 eV.', q: 'Que se passe-t-il ?', options: [
@@ -7120,39 +7120,39 @@ export const PREVOIR = [
     ] },
   // ───────────── Quantité de matière (2GT) : compter les entités et la mole
   { id: 'mol2gt-masse-double', domaine: 'Quantité de matière (2GT)', titre: 'Deux bols de lentilles',
-    enonce: 'Un bol A contient 30 g de lentilles et un bol B en contient 60 g. Toutes les lentilles sont identiques. On rappelle que le nombre d’objets est N = m ÷ m_entité.', q: 'Le bol B contient…', options: [
-      V('deux fois plus de lentilles que le bol A', 'La masse d’une lentille est la même : si la masse du tas double, le nombre de lentilles double (N = m ÷ m_entité).'),
+    enonce: 'Un bol A contient 30 g de lentilles et un bol B en contient 60 g. Toutes les lentilles sont identiques. On rappelle que le nombre d’objets est N = frac(m|m_entité).', q: 'Le bol B contient…', options: [
+      V('deux fois plus de lentilles que le bol A', 'La masse d’une lentille est la même : si la masse du tas double, le nombre de lentilles double (N = frac(m|m_entité)).'),
       F('le même nombre de lentilles que le bol A', 'Les deux bols n’ont pas la même masse de lentilles, donc pas le même nombre : N dépend de la masse m du tas.'),
       F('deux fois moins de lentilles que le bol A', 'C’est l’inverse : une masse plus grande contient plus de lentilles (N est proportionnel à m).'),
       F('trente lentilles de plus que le bol A : 60 − 30 = 30', 'La différence de masse (30 g) n’est pas un nombre de lentilles : il faut la diviser par la masse d’une lentille.'),
     ] },
   { id: 'mol2gt-objet-leger', domaine: 'Quantité de matière (2GT)', titre: 'Même masse, objets différents',
-    enonce: 'On pèse 100 g de lentilles (une lentille pèse 0,050 g) et 100 g de coquillettes (une coquillette pèse 0,50 g). On rappelle N = m ÷ m_entité.', q: 'Le tas qui contient le plus d’objets est…', options: [
-      V('celui de lentilles : environ 10 fois plus d’objets', 'N(lentilles) = 100 ÷ 0,050 = 2000 et N(coquillettes) = 100 ÷ 0,50 = 200. À masse égale, plus un objet est léger, plus il y en a.'),
+    enonce: 'On pèse 100 g de lentilles (une lentille pèse 0,050 g) et 100 g de coquillettes (une coquillette pèse 0,50 g). On rappelle N = frac(m|m_entité).', q: 'Le tas qui contient le plus d’objets est…', options: [
+      V('celui de lentilles : environ 10 fois plus d’objets', 'N(lentilles) = frac(100|0,050) = 2000 et N(coquillettes) = frac(100|0,50) = 200. À masse égale, plus un objet est léger, plus il y en a.'),
       F('celui de coquillettes : elles sont plus grosses', 'Une coquillette est plus grosse et plus lourde : il en faut moins pour atteindre 100 g.'),
-      F('aucun : les deux tas ont la même masse, donc le même nombre d’objets', 'Même masse ne veut pas dire même nombre d’objets : N = m ÷ m_entité dépend aussi de la masse d’un objet.'),
-      F('celui de lentilles, mais seulement 2 fois plus d’objets', 'Le rapport des masses d’un objet est 0,50 ÷ 0,050 = 10, pas 2 : il y a 10 fois plus de lentilles.'),
+      F('aucun : les deux tas ont la même masse, donc le même nombre d’objets', 'Même masse ne veut pas dire même nombre d’objets : N = frac(m|m_entité) dépend aussi de la masse d’un objet.'),
+      F('celui de lentilles, mais seulement 2 fois plus d’objets', 'Le rapport des masses d’un objet est frac(0,50|0,050) = 10, pas 2 : il y a 10 fois plus de lentilles.'),
     ] },
   { id: 'mol2gt-comparer-n', domaine: 'Quantité de matière (2GT)', titre: 'Deux échantillons d’eau : quelle quantité de matière ?',
-    enonce: 'Un échantillon A contient 3,01 × 10²³ molécules d’eau ; un échantillon B en contient 1,204 × 10²⁴. On rappelle n = N ÷ N_A.', q: 'La quantité de matière de B est…', options: [
-      V('quatre fois celle de A', '1,204 × 10²⁴ = 12,04 × 10²³ : B contient 12,04 ÷ 3,01 = 4 fois plus de molécules que A, donc n est 4 fois plus grande (N_A est le même).'),
+    enonce: 'Un échantillon A contient 3,01 × 10²³ molécules d’eau ; un échantillon B en contient 1,204 × 10²⁴. On rappelle n = frac(N|N_A).', q: 'La quantité de matière de B est…', options: [
+      V('quatre fois celle de A', '1,204 × 10²⁴ = 12,04 × 10²³ : B contient frac(12,04|3,01) = 4 fois plus de molécules que A, donc n est 4 fois plus grande (N_A est le même).'),
       F('plus petite que celle de A, car 1,204 est plus petit que 3,01', 'Il faut aussi comparer les puissances de 10 : 10²⁴ est 10 fois plus grand que 10²³. Écrit avec 10²³, B vaut 12,04 × 10²³, bien plus que 3,01 × 10²³.'),
-      F('la même que celle de A, car ce sont toutes deux des molécules d’eau', 'La nature de l’entité ne fixe pas n : c’est le nombre N de molécules qui compte (n = N ÷ N_A), et B en contient plus que A.'),
-      F('dix fois celle de A, car 10²⁴ = 10 × 10²³', 'La puissance de 10 donne bien un facteur 10, mais il faut aussi comparer les nombres devant : 1,204 est 2,5 fois plus petit que 3,01. Au total : 10 ÷ 2,5 = 4.'),
+      F('la même que celle de A, car ce sont toutes deux des molécules d’eau', 'La nature de l’entité ne fixe pas n : c’est le nombre N de molécules qui compte (n = frac(N|N_A)), et B en contient plus que A.'),
+      F('dix fois celle de A, car 10²⁴ = 10 × 10²³', 'La puissance de 10 donne bien un facteur 10, mais il faut aussi comparer les nombres devant : 1,204 est 2,5 fois plus petit que 3,01. Au total : frac(10|2,5) = 4.'),
     ] },
   { id: 'mol2gt-meme-masse-atomes', domaine: 'Quantité de matière (2GT)', titre: 'Aluminium ou cuivre ?',
-    enonce: 'On pèse 10 g d’aluminium et 10 g de cuivre. Un atome d’aluminium pèse 4,48 × 10⁻²⁶ kg et un atome de cuivre 1,06 × 10⁻²⁵ kg. On rappelle N = m ÷ m_entité.', q: 'Le morceau qui contient le plus d’atomes est…', options: [
-      V('l’aluminium : ses atomes sont plus légers', 'À masse égale, plus l’atome est léger, plus il y en a : le rapport est 1,06 × 10⁻²⁵ ÷ 4,48 × 10⁻²⁶ ≈ 2,4, soit environ 2,4 fois plus d’atomes d’aluminium.'),
-      F('le cuivre : ses atomes sont plus lourds, donc il y en a plus', 'C’est l’inverse : des atomes plus lourds sont moins nombreux pour une même masse (N = m ÷ m_entité).'),
+    enonce: 'On pèse 10 g d’aluminium et 10 g de cuivre. Un atome d’aluminium pèse 4,48 × 10⁻²⁶ kg et un atome de cuivre 1,06 × 10⁻²⁵ kg. On rappelle N = frac(m|m_entité).', q: 'Le morceau qui contient le plus d’atomes est…', options: [
+      V('l’aluminium : ses atomes sont plus légers', 'À masse égale, plus l’atome est léger, plus il y en a : le rapport est frac(1,06 × 10⁻²⁵|4,48 × 10⁻²⁶) ≈ 2,4, soit environ 2,4 fois plus d’atomes d’aluminium.'),
+      F('le cuivre : ses atomes sont plus lourds, donc il y en a plus', 'C’est l’inverse : des atomes plus lourds sont moins nombreux pour une même masse (N = frac(m|m_entité)).'),
       F('aucun : 10 g contiennent toujours autant d’atomes, quel que soit le métal', 'C’est vrai pour une mole (6,02 × 10²³ atomes), pas pour une même masse : les atomes n’ont pas la même masse.'),
-      F('le cuivre : 10⁻²⁵ est plus grand que 10⁻²⁶, donc N est plus grand', 'Une masse d’atome plus grande donne un nombre d’atomes plus petit : la masse d’un atome est au dénominateur de N = m ÷ m_entité.'),
+      F('le cuivre : 10⁻²⁵ est plus grand que 10⁻²⁶, donc N est plus grand', 'Une masse d’atome plus grande donne un nombre d’atomes plus petit : la masse d’un atome est au dénominateur de N = frac(m|m_entité).'),
     ] },
   { id: 'mol2gt-molecule-legere', domaine: 'Quantité de matière (2GT)', titre: 'Dihydrogène ou dioxygène ?',
     enonce: 'On pèse 2,0 g de dihydrogène H₂ et 2,0 g de dioxygène O₂. Une molécule de H₂ pèse 3,34 × 10⁻²⁷ kg et une molécule de O₂ pèse 5,32 × 10⁻²⁶ kg.', q: 'Le gaz qui contient le plus de molécules est…', options: [
-      V('le dihydrogène : environ 16 fois plus de molécules', 'Une molécule de H₂ est environ 16 fois plus légère (5,32 × 10⁻²⁶ ÷ 3,34 × 10⁻²⁷ ≈ 15,9) : pour une même masse, il y en a 16 fois plus.'),
-      F('le dioxygène : sa molécule est plus lourde', 'Une molécule plus lourde est moins nombreuse pour une même masse : N = m ÷ m_entité.'),
+      V('le dihydrogène : environ 16 fois plus de molécules', 'Une molécule de H₂ est environ 16 fois plus légère (frac(5,32 × 10⁻²⁶|3,34 × 10⁻²⁷) ≈ 15,9) : pour une même masse, il y en a 16 fois plus.'),
+      F('le dioxygène : sa molécule est plus lourde', 'Une molécule plus lourde est moins nombreuse pour une même masse : N = frac(m|m_entité).'),
       F('les deux autant : H₂ et O₂ ont chacune 2 atomes', 'Le nombre d’atomes par molécule ne suffit pas : c’est la masse d’une molécule qui compte, et celle de O₂ est bien plus grande.'),
-      F('le dihydrogène : environ 160 fois plus de molécules, car 10⁻²⁷ et 10⁻²⁶ sont différents', 'Il faut diviser aussi les nombres : (5,32 ÷ 3,34) × (10⁻²⁶ ÷ 10⁻²⁷) = 1,59 × 10 ≈ 16, et non 160.'),
+      F('le dihydrogène : environ 160 fois plus de molécules, car 10⁻²⁷ et 10⁻²⁶ sont différents', 'Il faut diviser aussi les nombres : frac(5,32|3,34) × frac(10⁻²⁶|10⁻²⁷) = 1,59 × 10 ≈ 16, et non 160.'),
     ] },
   { id: 'mol2gt-ion-electron', domaine: 'Quantité de matière (2GT)', titre: 'Un atome de sodium et son ion',
     enonce: 'Un atome de sodium Na perd un électron et devient l’ion sodium Na⁺. La masse d’un électron est environ 1 800 fois plus petite que celle d’un proton.', q: 'La masse de l’ion Na⁺, comparée à celle de l’atome Na, est…', options: [
@@ -7163,17 +7163,17 @@ export const PREVOIR = [
     ] },
   // ───────────── Signal sonore (2GT) : période, fréquence, hauteur, timbre, amplitude
   { id: 'son2gt-per-ana-periode-double', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'Une période deux fois plus longue',
-    enonce: 'Un son a une période de 2 ms. On règle le générateur pour que sa période devienne 4 ms. On rappelle f = 1 ÷ T.', q: 'La fréquence du nouveau signal est…', options: [
-      V('deux fois plus petite : T et f sont inverses', 'f = 1 ÷ T : si T double, f est divisée par 2 (de 500 Hz à 250 Hz).'),
+    enonce: 'Un son a une période de 2 ms. On règle le générateur pour que sa période devienne 4 ms. On rappelle f = frac(1|T).', q: 'La fréquence du nouveau signal est…', options: [
+      V('deux fois plus petite : T et f sont inverses', 'f = frac(1|T) : si T double, f est divisée par 2 (de 500 Hz à 250 Hz).'),
       F('deux fois plus grande, puisque T a doublé aussi', 'T et f varient en sens contraire : une période plus longue veut dire moins de motifs par seconde.'),
       F('la même : seule la forme du signal a changé ici', 'La fréquence dépend uniquement de la période : si T change, f change.'),
-      F('plus petite de 2 Hz, car la période a augmenté de 2 ms', 'On ne retranche pas : f = 1 ÷ T est une relation d’inverse, pas de différence.'),
+      F('plus petite de 2 Hz, car la période a augmenté de 2 ms', 'On ne retranche pas : f = frac(1|T) est une relation d’inverse, pas de différence.'),
     ] },
   { id: 'son2gt-per-ana-aigu-grave', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'Quel son est le plus aigu ?',
     enonce: 'Deux sons sont enregistrés. Le son A a une période de 2 ms et le son B une période de 5 ms.', q: 'Le son le plus aigu est…', options: [
       V('le son A : sa période est plus courte', 'Plus la fréquence est grande, plus le son est aigu. A : f = 500 Hz ; B : f = 200 Hz.'),
       F('le son B : sa période est la plus longue des deux', 'Une période plus longue veut dire une fréquence plus petite, donc un son plus grave.'),
-      F('les deux : la hauteur ne dépend pas de la période', 'La hauteur dépend de la fréquence, donc de la période (f = 1 ÷ T).'),
+      F('les deux : la hauteur ne dépend pas de la période', 'La hauteur dépend de la fréquence, donc de la période (f = frac(1|T)).'),
       F('le son B : 5 est plus grand que 2, donc plus aigu', 'Une grande valeur de T donne une petite fréquence : le son est plus grave, pas plus aigu.'),
     ] },
   { id: 'son2gt-per-ana-timbre', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'La même note, deux instruments',
@@ -7191,8 +7191,8 @@ export const PREVOIR = [
       F('la fréquence : le son fort est plus aigu aussi', 'Fort et aigu sont deux choses différentes : la fréquence ne change pas avec le volume.'),
     ] },
   { id: 'son2gt-per-ana-ultrason', domaine: 'Signal sonore : période et fréquence (2GT)', titre: 'La période d’un ultrason',
-    enonce: 'Un ultrason a une fréquence supérieure à 20 kHz. On rappelle f = 1 ÷ T, et un son audible a une fréquence comprise entre 20 Hz et 20 kHz.', q: 'Comparée à celle d’un son audible, la période d’un ultrason est…', options: [
-      V('plus courte : T est l’inverse de f, et f est grande', 'Une fréquence supérieure à 20 000 Hz donne une période inférieure à 1 ÷ 20 000 = 0,05 ms, plus courte que celle des sons audibles.'),
+    enonce: 'Un ultrason a une fréquence supérieure à 20 kHz. On rappelle f = frac(1|T), et un son audible a une fréquence comprise entre 20 Hz et 20 kHz.', q: 'Comparée à celle d’un son audible, la période d’un ultrason est…', options: [
+      V('plus courte : T est l’inverse de f, et f est grande', 'Une fréquence supérieure à 20 000 Hz donne une période inférieure à frac(1|20 000) = 0,05 ms, plus courte que celle des sons audibles.'),
       F('plus longue : un ultrason a une grande fréquence', 'Grande fréquence veut dire beaucoup de motifs par seconde, donc des motifs très courts.'),
       F('la même : seule l’amplitude change', 'Un ultrason ne se distingue pas par l’amplitude mais par la fréquence, donc par la période.'),
       F('impossible à comparer : un ultrason n’a pas de période', 'Un ultrason est un signal périodique comme les autres : il a une période, très courte.'),
@@ -7399,10 +7399,10 @@ export const PREVOIR = [
     ] },
   { id: 'etat2gt-ana-corps', domaine: 'Changement d’état (2GT)', titre: 'Vaporiser de l’eau ou de l’éthanol',
     enonce: 'On vaporise la même masse d’eau, puis d’éthanol. L’énergie massique de vaporisation de l’eau est 2 260 kJ/kg ; celle de l’éthanol est 840 kJ/kg.', q: 'Quelle comparaison des énergies est correcte ?', options: [
-      V('l’eau demande environ 2,7 fois plus d’énergie que l’éthanol', 'À masse égale, E = m × L : le rapport des énergies est celui des L, 2 260 ÷ 840 ≈ 2,7. L’eau demande plus d’énergie.'),
+      V('l’eau demande environ 2,7 fois plus d’énergie que l’éthanol', 'À masse égale, E = m × L : le rapport des énergies est celui des L, frac(2 260|840) ≈ 2,7. L’eau demande plus d’énergie.'),
       F('l’éthanol demande environ 2,7 fois plus d’énergie que l’eau', 'Le rapport est inversé : c’est l’eau qui a la plus grande valeur de L, donc qui demande plus d’énergie.'),
       F('les deux demandent la même énergie, car la masse est la même', 'À masse égale, l’énergie dépend encore du corps par L : les valeurs de L sont différentes, les énergies aussi.'),
-      F('l’eau demande 2 260 fois plus d’énergie que l’éthanol', 'Ce sont les valeurs de L qu’on compare : leur rapport est 2 260 ÷ 840, soit environ 2,7, pas 2 260.'),
+      F('l’eau demande 2 260 fois plus d’énergie que l’éthanol', 'Ce sont les valeurs de L qu’on compare : leur rapport est frac(2 260|840), soit environ 2,7, pas 2 260.'),
     ] },
   // ───────────────────────────── Image réelle et grandissement avec une lentille convergente (2GT, sim 199)
   { id: 'img2gt-ana-rayon-parallele', domaine: 'Image par une lentille (2GT)', titre: 'Le rayon parallèle à l’axe',
@@ -7435,8 +7435,8 @@ export const PREVOIR = [
     ] },
   { id: 'img2gt-ana-grandissement', domaine: 'Image par une lentille (2GT)', titre: 'Une image deux fois plus loin que l’objet',
     enonce: 'Un objet est à 12\u00a0cm d’une lentille convergente. Son image se forme sur un écran placé à 24\u00a0cm de la lentille.', q: 'Comparée à l’objet, l’image est…', options: [
-      V('deux fois plus grande et renversée', 'Le grandissement est OA′ ÷ OA = 24 ÷ 12 = 2 : l’image est deux fois plus grande. C’est une image réelle sur un écran, donc renversée.'),
-      F('deux fois plus petite et renversée', 'C’est l’inverse : OA′ est plus grand que OA, donc le grandissement OA′ ÷ OA est plus grand que 1 et l’image est plus grande.'),
+      V('deux fois plus grande et renversée', 'Le grandissement est frac(OA′|OA) = frac(24|12) = 2 : l’image est deux fois plus grande. C’est une image réelle sur un écran, donc renversée.'),
+      F('deux fois plus petite et renversée', 'C’est l’inverse : OA′ est plus grand que OA, donc le grandissement frac(OA′|OA) est plus grand que 1 et l’image est plus grande.'),
       F('deux fois plus grande et droite', 'La taille est bonne, mais une image réelle, qu’on reçoit sur un écran, est renversée.'),
       F('de la même taille que l’objet et renversée', 'L’image n’a la même taille que l’objet que si OA′ est égal à OA, ce qui n’est pas le cas ici (24\u00a0cm et 12\u00a0cm).'),
     ] },
@@ -7507,16 +7507,16 @@ export const PREVOIR = [
     ] },
   { id: 'rl2gt-proportions-exactes', domaine: 'Réactif limitant (2GT)', titre: 'Les proportions exactes de la recette',
     enonce: 'On mélange 3 mol de méthane et 6 mol de dioxygène. L’équation est CH₄ + 2 O₂ → CO₂ + 2 H₂O. La transformation est totale.', q: 'Que reste-t-il de réactifs à la fin ?', options: [
-      V('plus rien : les deux sont épuisés', '3 mol de CH₄ permettent 3 recettes ; 6 mol de O₂ aussi (6 ÷ 2) : les deux réactifs sont limitants, ils disparaissent ensemble.'),
+      V('plus rien : les deux sont épuisés', '3 mol de CH₄ permettent 3 recettes ; 6 mol de O₂ aussi frac(6|2) : les deux réactifs sont limitants, ils disparaissent ensemble.'),
       F('du méthane, car il y en a le moins', 'Le nombre de moles ne suffit pas : il faut diviser par le coefficient. Ici, les deux permettent 3 recettes.'),
       F('du dioxygène, car il y en a le plus', 'Les 6 mol de dioxygène sont exactement ce qu’il faut pour 3 mol de méthane (2 × 3).'),
       F('3 mol de dioxygène', 'Pour 3 recettes, il faut 2 × 3 = 6 mol de dioxygène : tout est consommé.'),
     ] },
   { id: 'rl2gt-plus-petit', domaine: 'Réactif limitant (2GT)', titre: 'Le réactif dont on a le moins est-il limitant ?',
     enonce: 'Pour la recette 2 A + B → C, on mélange 4 mol de A et 3 mol de B. Un élève affirme : « B est le réactif limitant, car il y en a le moins (3 mol < 4 mol). »', q: 'Que penser de cette affirmation ?', options: [
-      V('Elle est fausse : A permet 2 recettes, B en permet 3', 'On divise chaque quantité par son coefficient : A : 4 ÷ 2 = 2 recettes ; B : 3 ÷ 1 = 3 recettes. Le plus petit est 2 : A est limitant, bien qu’il y en ait plus de moles.'),
+      V('Elle est fausse : A permet 2 recettes, B en permet 3', 'On divise chaque quantité par son coefficient : A : frac(4|2) = 2 recettes ; B : frac(3|1) = 3 recettes. Le plus petit est 2 : A est limitant, bien qu’il y en ait plus de moles.'),
       F('Elle est juste : 3 mol < 4 mol, donc B est limitant', 'Ce raccourci est faux : le coefficient dans l’équation compte.'),
-      F('Elle est fausse : le limitant est celui dont on a le plus (4 mol)', 'Ce n’est pas non plus une règle : on compare quantité ÷ coefficient pour chaque réactif.'),
+      F('Elle est fausse : le limitant est celui dont on a le plus (4 mol)', 'Ce n’est pas non plus une règle : on compare frac(quantité|coefficient) pour chaque réactif.'),
       F('Elle est juste, car B a le plus petit coefficient (1 < 2)', 'On ne compare pas les coefficients : on divise chaque quantité par son coefficient.'),
     ] },
   { id: 'rl2gt-double-limitant', domaine: 'Réactif limitant (2GT)', titre: 'On double le réactif limitant',
@@ -7545,7 +7545,7 @@ export const PREVOIR = [
     enonce: 'Un sonomètre indique 50 dB dans une pièce, puis 60 dB dans la pièce voisine. Repère : + 10 dB correspond à une intensité environ 10 fois plus grande.', q: 'L’intensité du son dans la pièce voisine est…', options: [
       V('environ 10 fois plus grande', 'Un écart de 10 dB correspond à une intensité environ 10 fois plus grande : l’échelle des dB « multiplie ».'),
       F('environ 10 % plus grande, comme + 10 dB', 'Confusion fréquente : + 10 dB ne veut pas dire + 10 %. Chaque tranche de 10 dB multiplie l’intensité par 10.'),
-      F('environ 1,2 fois plus grande, car 60 ÷ 50 = 1,2', 'On ne divise pas les niveaux en dB : on compte les tranches de 10 dB, chacune multipliant l’intensité par 10.'),
+      F('environ 1,2 fois plus grande, car frac(60|50) = 1,2', 'On ne divise pas les niveaux en dB : on compte les tranches de 10 dB, chacune multipliant l’intensité par 10.'),
       F('la même : seuls les dB affichés changent', 'Un niveau plus élevé correspond toujours à une intensité plus grande.'),
     ] },
   { id: 'son2gt-niv-ana-deux-sources', domaine: 'Niveau sonore (2GT)', titre: 'Une seconde perceuse',
@@ -7729,10 +7729,10 @@ export const PREVOIR = [
     ] },
   { id: 'son2gt-emis-ana-retard-double', domaine: 'Son : émission et propagation (2GT)', titre: 'Deux spectateurs d’un feu d’artifice',
     enonce: 'Deux spectateurs regardent le même feu d’artifice. A est à 340 m et B est à 680 m. On rappelle que dans l’air le son va à environ 340 m/s et que la lumière arrive tout de suite.', q: 'Comparé au retard du bruit pour A, le retard pour B est…', options: [
-      V('deux fois plus grand : 2,0 s pour B contre 1,0 s pour A, car d est doublée', 'B est deux fois plus loin et le son va à la même vitesse : il met deux fois plus de temps (Δt = d ÷ v : 680 ÷ 340 = 2,0 s).'),
+      V('deux fois plus grand : 2,0 s pour B contre 1,0 s pour A, car d est doublée', 'B est deux fois plus loin et le son va à la même vitesse : il met deux fois plus de temps (Δt = frac(d|v) : frac(680|340) = 2,0 s).'),
       F('le même : 1,0 s pour A comme pour B', 'La vitesse est la même, mais la distance à parcourir n’est pas la même : le retard dépend de la distance.'),
       F('deux fois plus petit : 0,50 s pour B contre 1,0 s pour A, car B est plus loin', 'Plus on est loin, plus le son a de chemin à faire : le retard augmente.'),
-      F('quatre fois plus grand : 4,0 s pour B contre 1,0 s pour A', 'Le retard est proportionnel à la distance (Δt = d ÷ v) : doubler d double Δt, pas plus.'),
+      F('quatre fois plus grand : 4,0 s pour B contre 1,0 s pour A', 'Le retard est proportionnel à la distance (Δt = frac(d|v)) : doubler d double Δt, pas plus.'),
     ] },
   { id: 'son2gt-emis-ana-eclairs', domaine: 'Son : émission et propagation (2GT)', titre: 'Deux éclairs pendant un orage',
     enonce: 'Pendant un orage, un premier éclair est suivi du tonnerre 3,0 s plus tard. Quelques minutes après, un second éclair est suivi du tonnerre 9,0 s plus tard. On rappelle que dans l’air le son va à environ 340 m/s et que la lumière arrive tout de suite.', q: 'Par rapport au premier éclair, le second a frappé…', options: [
@@ -7800,7 +7800,7 @@ export const PREVOIR = [
     ] },
   // ───────────────────────────── Mesure : incertitude-type et résultat (2GT, sim 194)
   { id: 'mes2gt-inc-ana-plus-de-mesures', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Une bille chronométrée : combien de mesures pour u trois fois plus petite ?',
-    enonce: 'Un élève chronomètre 4 fois la chute d’une bille et obtient u = 0,06 s. Il voudrait u = 0,02 s, soit 3 fois plus petite, avec le même chronomètre et la même méthode. Rappel : u = s ÷ sqrt(n).', q: 'Combien de mesures doit-il faire en tout ?', options: [
+    enonce: 'Un élève chronomètre 4 fois la chute d’une bille et obtient u = 0,06 s. Il voudrait u = 0,02 s, soit 3 fois plus petite, avec le même chronomètre et la même méthode. Rappel : u = frac(s|sqrt(n)).', q: 'Combien de mesures doit-il faire en tout ?', options: [
       V('36 mesures, soit 9 fois plus qu’avant', 'Pour diviser u par 3, il faut diviser sqrt(n) par 3, donc multiplier n par 3 × 3 = 9 : 4 × 9 = 36. Vérification : sqrt(36) = 6, soit 3 fois sqrt(4) = 2.'),
       F('12 mesures, soit 3 fois plus qu’au début', 'Avec 12 mesures, sqrt(n) est multiplié par sqrt(3) ≈ 1,7 seulement : u est divisée par 1,7, pas par 3.'),
       F('16 mesures, soit 4 fois plus qu’au début', 'Quatre fois plus de mesures divise u par 2, pas par 3.'),
@@ -7808,7 +7808,7 @@ export const PREVOIR = [
     ] },
   { id: 'mes2gt-inc-ana-meilleur-instrument', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Une balance plus précise',
     enonce: 'On pèse 9 fois la même pièce avec une balance au dixième de gramme, puis 9 fois avec une balance au centième de gramme, dont les mesures sont plus resserrées autour de la moyenne.', q: 'Par rapport à la première série, l’incertitude-type u de la seconde est…', options: [
-      V('plus petite, car s est plus petit', 'Les mesures sont plus resserrées : l’écart-type s est plus petit. Avec le même nombre de mesures, u = s ÷ sqrt(n) est plus petite.'),
+      V('plus petite, car s est plus petit', 'Les mesures sont plus resserrées : l’écart-type s est plus petit. Avec le même nombre de mesures, u = frac(s|sqrt(n)) est plus petite.'),
       F('la même, car le nombre de mesures est le même', 'u dépend de s autant que de n : si s diminue, u diminue aussi.'),
       F('plus grande, car la balance affiche plus de chiffres', 'Afficher plus de chiffres ne rend pas u plus grande : ce qui compte est l’éparpillement des mesures, ici plus faible.'),
       F('impossible à comparer : même moyenne', 'On compare les éparpillements : une même moyenne n’empêche pas deux incertitudes-types différentes.'),
@@ -7821,14 +7821,14 @@ export const PREVOIR = [
       F('une incertitude-type de 0,15 g : u mesure le décalage', 'u mesure l’éparpillement des mesures, pas leur décalage : elle ne détecte pas un décalage constant.'),
     ] },
   { id: 'mes2gt-inc-ana-moins-de-mesures', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Cent mesures, puis vingt-cinq',
-    enonce: 'Une série de 100 mesures de masse donne u = 0,03 g. On refait une série avec le même instrument, mais seulement 25 mesures. Rappel : u = s ÷ sqrt(n).', q: 'La nouvelle incertitude-type u sera environ…', options: [
+    enonce: 'Une série de 100 mesures de masse donne u = 0,03 g. On refait une série avec le même instrument, mais seulement 25 mesures. Rappel : u = frac(s|sqrt(n)).', q: 'La nouvelle incertitude-type u sera environ…', options: [
       V('deux fois plus grande, soit 0,06 g', '4 fois moins de mesures : sqrt(n) est divisé par 2 (sqrt(25) = 5 au lieu de sqrt(100) = 10), donc u est multipliée par 2.'),
       F('quatre fois plus grande, soit 0,12 g', 'On multiplie u par 2 seulement (sqrt(4) = 2), pas par 4.'),
       F('la même : 0,03 g, l’instrument est identique', 'Avec moins de mesures, la moyenne est moins bien connue : u augmente.'),
       F('quatre fois plus petite, soit 0,0075 g', 'C’est le sens inverse : avec moins de mesures, u augmente.'),
     ] },
   { id: 'mes2gt-inc-ana-conclusion-change', domaine: 'Incertitude-type et résultat (2GT)', titre: 'Plus de mesures, une autre conclusion',
-    enonce: 'Une première série donne (12,3 ± 0,5) s et la valeur de référence est 11,9 s : la référence est dans la zone, le résultat est compatible. On refait 25 fois plus de mesures avec le même chronomètre ; la moyenne reste 12,3 s. Rappel : u = s ÷ sqrt(n).', q: 'Avec la nouvelle série, la conclusion sera probablement…', options: [
+    enonce: 'Une première série donne (12,3 ± 0,5) s et la valeur de référence est 11,9 s : la référence est dans la zone, le résultat est compatible. On refait 25 fois plus de mesures avec le même chronomètre ; la moyenne reste 12,3 s. Rappel : u = frac(s|sqrt(n)).', q: 'Avec la nouvelle série, la conclusion sera probablement…', options: [
       V('pas compatible : la zone est devenue plus étroite', '25 fois plus de mesures : u est divisée par sqrt(25) = 5, soit 0,1 s. La zone va de 12,2 s à 12,4 s : la référence 11,9 s est maintenant loin en dehors. Si la référence reste hors de la zone malgré beaucoup de mesures, il faut penser à une erreur systématique (instrument décalé).'),
       F('toujours compatible, car la moyenne n’a pas changé', 'La moyenne est la même, mais u a beaucoup diminué : la zone est plus étroite et la référence en sort.'),
       F('impossible à dire : plus de mesures ne change jamais la zone des valeurs', 'Plus de mesures réduit u, donc la zone : la conclusion peut changer, c’est même l’intérêt de mesurer plus.'),
@@ -8299,9 +8299,9 @@ export const PREVOIR = [
     ] },
   { id: 'ene-ordres-comparer', domaine: 'Énergie électrique', titre: 'Une lampe LED et un radiateur',
     ...presenter({ contexte: 'On compare deux appareils domestiques qui fonctionnent chacun pendant une heure.', liste: [['Lampe LED', 'environ 10 W'], ['Radiateur électrique', 'environ 2 kW']] }), q: 'L’énergie consommée par le radiateur est environ…', options: [
-      V('200 fois plus grande que celle de la lampe', 'E = P × Δt, à durée égale : 2 000 W ÷ 10 W = 200. L’énergie est proportionnelle à la puissance.'),
+      V('200 fois plus grande que celle de la lampe', 'E = P × Δt, à durée égale : frac(2 000 W|10 W) = 200. L’énergie est proportionnelle à la puissance.'),
       F('20 fois plus grande que celle de la lampe', 'Il faut comparer 2 kW = 2 000 W à 10 W : le rapport est 200, pas 20.'),
-      F('2 000 fois plus grande que celle de la lampe', 'On a oublié de convertir : 2 kW = 2 000 W, et 2 000 ÷ 10 = 200 (et non 2 000 ÷ 1).'),
+      F('2 000 fois plus grande que celle de la lampe', 'On a oublié de convertir : 2 kW = 2 000 W, et frac(2 000|10) = 200 (et non frac(2 000|1)).'),
       F('la même : la durée de fonctionnement est la même', 'La durée est la même, mais la puissance est 200 fois plus grande : l’énergie aussi.'),
     ] },
   { id: 'mec-deltav-virage', domaine: 'Mécanique', titre: 'Variation du vecteur vitesse dans un virage',
@@ -8338,7 +8338,7 @@ export const PREVOIR = [
       V('3 fois plus grand en valeur absolue, et toujours négatif', 'W = − f × d : f est constante, W est proportionnelle à d. Sur 6 m, il vaut 3 fois celui sur 2 m, et reste négatif (frottement opposé au déplacement).'),
       F('3 fois plus grand en valeur absolue, mais positif', 'Le frottement est opposé au déplacement (angle de 180°) : son travail est négatif quelle que soit la distance.'),
       F('le même, puisque la valeur de la force est constante', 'La force est constante, mais le travail W = − f × d dépend aussi de la distance parcourue.'),
-      F('9 fois plus grand en valeur absolue, car 3 × 3 = 9', 'Le travail est proportionnel à la distance d (et non à d²) : 6 m ÷ 2 m = 3.'),
+      F('9 fois plus grand en valeur absolue, car 3 × 3 = 9', 'Le travail est proportionnel à la distance d (et non à d²) : frac(6 m|2 m) = 3.'),
     ] },
   { id: 'mec-em-identifier', domaine: 'Mécanique', titre: 'Quelle situation conserve l’énergie mécanique ?',
     enonce: 'On étudie le système {bille} dans quatre situations.', q: 'L’énergie mécanique (Ec + Epp) de la bille se conserve dans…', options: [

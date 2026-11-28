@@ -14,7 +14,7 @@ export const KSQ_ANA = [
       V('Ks = [Ag⁺]² × [CO₃²⁻]', 'Chaque concentration est élevée à la puissance de son coefficient : 2 pour Ag⁺, 1 pour CO₃²⁻ ; le solide n’y figure pas.'),
       F('Ks = [Ag⁺] × [CO₃²⁻]', 'Le coefficient 2 de Ag⁺ doit figurer en exposant.'),
       F('Ks = 2 [Ag⁺] × [CO₃²⁻]', 'Le coefficient stœchiométrique est un exposant, pas un facteur.'),
-      F('Ks = [Ag⁺]² × [CO₃²⁻] ÷ [Ag₂CO₃]', 'Le solide n’intervient pas dans l’expression de Ks.'),
+      F('Ks = frac([Ag⁺]² × [CO₃²⁻]|[Ag₂CO₃])', 'Le solide n’intervient pas dans l’expression de Ks.'),
     ] },
   { id: 'ksq-ana-sens', domaine: DOM, titre: 'Précipité ou non ?',
     enonce: 'On mélange deux solutions d’ions Cu⁺ et I⁻ dans de l’eau. Juste après le mélange, le quotient de réaction vaut Qr = 5×10⁻¹⁴. Pour CuI(s) ⇌ Cu⁺ + I⁻, la constante vaut Ks = 1,27×10⁻¹² à 25 °C.', q: 'Que se passe-t-il ?', options: [
@@ -43,7 +43,7 @@ export const KSQ_VAL = [
   P({ id: 'ksq-val-comparer', domaine: DOM, niveau: 2, titre: 'Ks et solubilité de deux sels', plausible: false,
     enonce: 'Un élève compare Ag₂CO₃ (Ks = 8,1×10⁻¹²) et SrCO₃ (Ks = 7×10⁻¹⁰) : « Le Ks de Ag₂CO₃ est plus petit que celui de SrCO₃, donc Ag₂CO₃ est moins soluble que SrCO₃. »',
     reperes: [['Ks de Ag₂CO₃', '8,1×10⁻¹²'], ['Ks de SrCO₃', '7×10⁻¹⁰']],
-    ver: 'Les formules diffèrent (Ag₂CO₃ : Ks = 4 s³ ; SrCO₃ : Ks = s²). s(Ag₂CO₃) = ∛(8,1×10⁻¹² ÷ 4) ≈ 1,3×10⁻⁴ mol/L, s(SrCO₃) = sqrt(7×10⁻¹⁰) ≈ 2,6×10⁻⁵ mol/L : Ag₂CO₃ est environ cinq fois plus soluble.',
+    ver: 'Les formules diffèrent (Ag₂CO₃ : Ks = 4 s³ ; SrCO₃ : Ks = s²). s(Ag₂CO₃) = ∛(frac(8,1×10⁻¹²|4)) ≈ 1,3×10⁻⁴ mol/L, s(SrCO₃) = sqrt(7×10⁻¹⁰) ≈ 2,6×10⁻⁵ mol/L : Ag₂CO₃ est environ cinq fois plus soluble.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il compare des Ks de formules différentes : il faut comparer les s', 'Avec des stœchiométries différentes, Ks et s ne se classent pas dans le même ordre.'),
@@ -82,11 +82,11 @@ export const KSQ_SAPP = [
         c2: tok(`${sc(p.c2)} mol/L`, `Concentration de la solution d’ions ${s.anion}`, p.c2, 'mol/L'), V2: tok(`${p.V2} mL`, `Volume de la solution d’ions ${s.anion}`, p.V2, 'mL'),
       };
       const debut = ['On mélange ', T('V1'), ' d’une solution d’ions ', s.cation, ' à ', T('c1'), ' et ', T('V2'), ' d’une solution d’ions ', s.anion, ' à ', T('c2'), '. Équation de dissolution : ', T('eq'), ', avec Ks = ', T('Ks'), '. '];
-      if (q === 0) return { tokens, derivees: [`c (${s.cation}) après mélange = c1 × V1 ÷ (V1 + V2)`], texte: [...debut, 'Quelle est la concentration des ions ', s.cation, ' juste après le mélange, en mol/L ?'], utiles: ['c1', 'V1', 'V2'],
+      if (q === 0) return { tokens, derivees: [`c (${s.cation}) après mélange = frac(c1 × V1|V1 + V2)`], texte: [...debut, 'Quelle est la concentration des ions ', s.cation, ' juste après le mélange, en mol/L ?'], utiles: ['c1', 'V1', 'V2'],
         raisons: { c2: `La concentration de l’autre solution ne sert pas pour les ions ${s.cation}.`, Ks: 'Ks ne sert pas à calculer une concentration après dilution.', eq: 'L’équation n’intervient pas dans une dilution.' },
         cherche: { bonne: `La concentration en ions ${s.cation} après mélange (en mol/L)`, faux: ['Le quotient de réaction Qr', 'La solubilité du sel (en mol/L)', 'La quantité d’ions du mélange (en mol)'] },
-        manque: null, solution: { txt: `c (${s.cation}) = c1 × V1 ÷ (V1 + V2)`, val: m.c1, u: 'mol/L' } };
-      return { tokens, derivees: [`c (${s.cation}) = c1 × V1 ÷ (V1 + V2)`, `c (${s.anion}) = c2 × V2 ÷ (V1 + V2)`, 'Qr = produit des concentrations à la puissance des coefficients'], texte: [...debut, 'Quel est le quotient de réaction Qr juste après le mélange ?'], utiles: ['c1', 'V1', 'c2', 'V2', 'eq'],
+        manque: null, solution: { txt: `c (${s.cation}) = frac(c1 × V1|V1 + V2)`, val: m.c1, u: 'mol/L' } };
+      return { tokens, derivees: [`c (${s.cation}) = frac(c1 × V1|V1 + V2)`, `c (${s.anion}) = frac(c2 × V2|V1 + V2)`, 'Qr = produit des concentrations à la puissance des coefficients'], texte: [...debut, 'Quel est le quotient de réaction Qr juste après le mélange ?'], utiles: ['c1', 'V1', 'c2', 'V2', 'eq'],
         raisons: { Ks: 'Ks sert ensuite à comparer Qr, pas à le calculer.' },
         cherche: { bonne: 'Le quotient de réaction Qr juste après le mélange', faux: ['La solubilité du sel (en mol/L)', 'La constante Ks du sel', 'La masse de précipité formée (en g)'] },
         manque: null, solution: { txt: `Qr = [${s.cation}]${s.a > 1 ? sup(s.a) : ''} × [${s.anion}]${s.b > 1 ? sup(s.b) : ''}`, val: Q, u: '' } };
@@ -104,7 +104,7 @@ export const KSQ_SAPP = [
       if (q === 0) return { tokens, derivees: [`s : Ks = ${s.a === 1 && s.b === 1 ? 's²' : '4 s³'}`], texte: [...debut, 'Quelle est la solubilité s de ce sel, en mol/L ?'], utiles: ['eq', 'Ks'],
         raisons: { M: 'La masse molaire sert seulement à passer de mol/L à g/L.', th: 'La température est celle de la table de Ks : elle ne sert pas dans le calcul.' },
         cherche: { bonne: 'La solubilité s (en mol/L)', faux: ['La solubilité en g/L', 'La concentration saturée de l’ion le plus concentré (en mol/L)', 'Le quotient de réaction Qr'] },
-        manque: null, solution: { txt: s.a === 1 && s.b === 1 ? 's = sqrt(Ks)' : 's = ∛(Ks ÷ 4)', val: so, u: 'mol/L' } };
+        manque: null, solution: { txt: s.a === 1 && s.b === 1 ? 's = sqrt(Ks)' : 's = ∛(frac(Ks|4))', val: so, u: 'mol/L' } };
       return { tokens, derivees: [`s (mol/L) : Ks = ${s.a === 1 && s.b === 1 ? 's²' : '4 s³'}`, 's (g/L) = s (mol/L) × M'], texte: [...debut, 'La masse molaire du sel est ', T('M'), '. Quelle est la solubilité s de ce sel, en g/L ?'], utiles: ['eq', 'Ks', 'M'],
         raisons: { th: 'La température est celle de la table de Ks : elle ne sert pas dans le calcul.' },
         cherche: { bonne: 'La solubilité en g/L', faux: ['La solubilité en mol/L', 'La masse de sel pour 100 mL de solution (en g)', 'La concentration massique de l’ion cation (en g/L)'] },

@@ -328,7 +328,7 @@ export const TSTLB_VAL = [
     ] }),
   P({ id: 'obs-val-afm', domaine: 'Microscope', niveau: 1, titre: 'Microscope optique ou microscope à force atomique ?', plausible: false,
     ...presenter({ contexte: 'Un élève compare deux instruments : un microscope optique (pouvoir de résolution de l’ordre de 0,2 µm) et un microscope à force atomique, ou AFM (pouvoir de résolution de l’ordre du nanomètre).', suite: 'Il annonce que l’AFM distingue des détails environ un million de fois plus petits que ceux du microscope optique.' }),
-    reperes: [['Conversions', '1 µm = 10³ nm ; 1 mm = 10⁶ nm'], ['Rapport de deux résolutions', 'résolution du microscope optique ÷ résolution de l’AFM, dans la même unité']],
+    reperes: [['Conversions', '1 µm = 10³ nm ; 1 mm = 10⁶ nm'], ['Rapport de deux résolutions', 'frac(résolution du microscope optique|résolution de l’AFM), dans la même unité']],
     ver: '0,2 µm = 200 nm : le rapport avec 1 nm est de l’ordre de 200, pas de 10⁶. Un facteur un million correspondrait à un microscope optique qui ne séparerait que des détails d’un millimètre.',
     q2: 'Quelle erreur explique ce résultat ?',
     options: [

@@ -39,19 +39,19 @@ export const LCV_ANA = [
 
 export const LCV_VAL = [
   P({ id: 'lcv-val-hmax', domaine: DOM, niveau: 1, titre: 'Hauteur atteinte par une balle lancée', plausible: false,
-    enonce: 'Un élève lance une balle verticalement à 10 m/s, sans frottement. Il écrit : « Au sommet Ec = 0 et Em est constante, donc ½ m v0² = m g h, soit h = v0² ÷ (2 g) = 100 ÷ (2 × 0,98) ≈ 51 m. »',
+    enonce: 'Un élève lance une balle verticalement à 10 m/s, sans frottement. Il écrit : « Au sommet Ec = 0 et Em est constante, donc ½ m v0² = m g h, soit h = frac(v0²|2 g) = frac(100|2 × 0,98) ≈ 51 m. »',
     reperes: [['Vitesse de lancement', '10 m/s'], ['g', '9,8 N/kg'], ['Ordre de grandeur', 'un lancer à la main monte de quelques mètres']],
-    ver: 'Le raisonnement est juste, mais g a été pris égal à 0,98 au lieu de 9,8 : h = 100 ÷ (2 × 9,8) ≈ 5,1 m. Une balle lancée à la main à 10 m/s ne monte pas à 51 m. L’affirmation n’est pas plausible.',
+    ver: 'Le raisonnement est juste, mais g a été pris égal à 0,98 au lieu de 9,8 : h = frac(100|2 × 9,8) ≈ 5,1 m. Une balle lancée à la main à 10 m/s ne monte pas à 51 m. L’affirmation n’est pas plausible.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il a écrit g = 0,98 au lieu de 9,8 N/kg dans son calcul de h', 'Avec g = 9,8 N/kg : h = 100 ÷ 19,6 ≈ 5,1 m.'),
+      V('il a écrit g = 0,98 au lieu de 9,8 N/kg dans son calcul de h', 'Avec g = 9,8 N/kg : h = frac(100|19,6) ≈ 5,1 m.'),
       F('il a oublié que l’énergie cinétique vaut ½ m v² et non m v²', 'Il a bien utilisé ½ m v0² = m g h.'),
       F('il a utilisé la conservation de Em alors qu’il y a un frottement', 'L’énoncé précise qu’on néglige les frottements : Em se conserve.'),
     ] }),
   P({ id: 'lcv-val-perte', domaine: DOM, niveau: 2, titre: 'Énergie perdue avec le frottement de l’air', plausible: true,
     enonce: 'Un élève mesure qu’une balle lancée vers le haut à 12 m/s revient à son point de départ à 10 m/s à cause du frottement de l’air. Il en conclut : « Son énergie mécanique a diminué d’environ 30 %. »',
-    reperes: [['Au lancement (z = 0)', 'Em = Ec = ½ m × 12²'], ['Au retour (z = 0)', 'Em = Ec = ½ m × 10²'], ['Rapport des carrés', '10² ÷ 12² ≈ 0,69']],
-    ver: 'Les altitudes de départ et d’arrivée sont les mêmes : Em est égale à Ec aux deux instants. Em passe de ½ m × 144 à ½ m × 100, soit 100 ÷ 144 ≈ 69 % de sa valeur initiale : elle a diminué d’environ 31 %. L’élève a raison.',
+    reperes: [['Au lancement (z = 0)', 'Em = Ec = ½ m × 12²'], ['Au retour (z = 0)', 'Em = Ec = ½ m × 10²'], ['Rapport des carrés', 'frac(10²|12²) ≈ 0,69']],
+    ver: 'Les altitudes de départ et d’arrivée sont les mêmes : Em est égale à Ec aux deux instants. Em passe de ½ m × 144 à ½ m × 100, soit frac(100|144) ≈ 69 % de sa valeur initiale : elle a diminué d’environ 31 %. L’élève a raison.',
     q2: 'Pourquoi l’énergie perdue n’est-elle pas de 17 % (la baisse de la vitesse) ?',
     options: [
       V('parce que Ec est proportionnelle au carré de la vitesse', 'Ec = ½ m v² : une vitesse qui baisse de 17 % fait baisser Ec d’environ 31 %.'),
@@ -84,9 +84,9 @@ export const LCV_SAPP = [
         cherche: { bonne: 'L’énergie cinétique de la balle au lancement (en J)', faux: ['L’énergie potentielle de pesanteur au sommet (en J)', 'La force exercée par la main sur la balle (en N)', 'L’altitude maximale atteinte (en m)'] },
         manque: null, solution: { txt: 'Ec = ½ × m × v0²', val: 0.5 * p.m * p.v0 * p.v0, u: 'J' } };
       return { tokens, derivees: ['sans frottement, Em est constante', 'au sommet v = 0 donc Ec = 0', 'm × g × h = ½ × m × v0²'], texte: [...debut, 'Quelle est l’altitude maximale atteinte par la balle, en mètres ?'], utiles: ['v0', 'g'],
-        raisons: { m: 'La masse se simplifie : m × g × h = ½ × m × v0² donne h = v0² ÷ (2 g).', tm: 'La durée de la montée ne sert pas : l’énergie suffit.' },
+        raisons: { m: 'La masse se simplifie : m × g × h = ½ × m × v0² donne h = frac(v0²|2 g).', tm: 'La durée de la montée ne sert pas : l’énergie suffit.' },
         cherche: { bonne: 'L’altitude maximale atteinte par la balle (en m)', faux: ['La vitesse de la balle au retour au sol (en m/s)', 'L’énergie cinétique de la balle au sommet (en J)', 'Le travail du poids sur la montée (en J)'] },
-        manque: null, solution: { txt: 'h = v0² ÷ (2 × g)', val: p.v0 * p.v0 / (2 * G), u: 'm' } };
+        manque: null, solution: { txt: 'h = frac(v0²|2 × g)', val: p.v0 * p.v0 / (2 * G), u: 'm' } };
     }),
   },
   {
@@ -108,7 +108,7 @@ export const LCV_SAPP = [
       return { tokens, derivees: ['énergie dissipée = |W(f)|', 'W(f) = − f × distance parcourue', 'distance parcourue = 2 × h'], texte: [...debut, 'Quelle est la valeur moyenne de la force de frottement, en newtons ?'], utiles: ['m', 'v0', 'v1', 'h'],
         raisons: {},
         cherche: { bonne: 'La valeur moyenne de la force de frottement (en N)', faux: ['Le poids de la balle (en N)', 'La durée du vol (en s)', 'L’énergie dissipée pendant la montée seule (en J)'] },
-        manque: null, solution: { txt: 'f = ½ × m × (v0² − v1²) ÷ (2 × h)', val: dE / (2 * p.h), u: 'N' } };
+        manque: null, solution: { txt: 'f = ½ × frac(m × (v0² − v1²)|2 × h)', val: dE / (2 * p.h), u: 'N' } };
     }),
   },
 ];

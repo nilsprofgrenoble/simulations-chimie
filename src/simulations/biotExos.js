@@ -16,7 +16,7 @@ export const BIOT_ANA = [
       F('il double et change de signe : α = −8,0°', 'Le signe de α dépend du composé (dextrogyre ou lévogyre), pas de la longueur de la cuve.'),
     ] },
   { id: 'biot-ana-dilution', domaine: DOM, titre: 'Diluer une solution',
-    enonce: 'Une solution d’un énantiomère pur, de concentration C, donne α = −12° dans une cuve donnée. On la dilue avec de l’eau pour obtenir une solution de concentration C ÷ 4, puis on mesure dans la même cuve.', q: 'Quel pouvoir rotatoire mesure-t-on ?', options: [
+    enonce: 'Une solution d’un énantiomère pur, de concentration C, donne α = −12° dans une cuve donnée. On la dilue avec de l’eau pour obtenir une solution de concentration frac(C|4), puis on mesure dans la même cuve.', q: 'Quel pouvoir rotatoire mesure-t-on ?', options: [
       F('α = −48° : la dilution augmente la rotation', 'Diluer diminue la quantité de molécules traversées : |α| diminue.'),
       F('α = +3,0° : la dilution change le sens de rotation', 'La dilution ne change pas le sens de rotation du composé : α reste négatif.'),
       F('α = 0° : une solution diluée n’est plus active', 'Une solution diluée reste optiquement active : |α| est seulement plus petit.'),
@@ -52,11 +52,11 @@ export const BIOT_VAL = [
   P({ id: 'biot-val-ee', domaine: DOM, niveau: 2, titre: 'Un excès énantiomérique annoncé', plausible: false,
     enonce: 'Une synthèse fournit un mélange contenant 70 % de l’énantiomère (+) et 30 % de l’énantiomère (−). Le chimiste annonce : « l’excès énantiomérique de mon produit est de 70 % ».',
     reperes: [['Énantiomère (+)', '70 %'], ['Énantiomère (−)', '30 %']],
-    ver: 'e.e. = |70 − 30| ÷ (70 + 30) × 100 = 40 %. La valeur de 70 % est la proportion du (+), pas l’excès énantiomérique.',
+    ver: 'e.e. = frac(∣70 − 30∣|70 + 30) × 100 = 40 %. La valeur de 70 % est la proportion du (+), pas l’excès énantiomérique.',
     q2: 'Quelle est l’erreur du chimiste ?',
     options: [
       F('un excès énantiomérique ne peut pas s’exprimer en pourcentage', 'L’excès énantiomérique s’exprime bien en pourcentage : 0 % pour un racémique, 100 % pour un énantiomère pur.'),
-      V('il a donné la proportion du (+) au lieu de la différence entre les deux énantiomères', 'L’excès est |n₊ − n₋| ÷ (n₊ + n₋) × 100 = 40 % : on soustrait la part de (−).'),
+      V('il a donné la proportion du (+) au lieu de la différence entre les deux énantiomères', 'L’excès est frac(∣n₊ − n₋∣|n₊ + n₋) × 100 = 40 % : on soustrait la part de (−).'),
       F('il aurait dû multiplier par le pouvoir rotatoire spécifique', 'Le pouvoir rotatoire n’intervient pas dans la définition de l’excès énantiomérique.'),
     ] }),
 ];
@@ -80,8 +80,8 @@ export const BIOT_SAPP = [
       return q === 0
         ? { tokens, derivees: ['α = [α] × L × C'], texte: ['Un énantiomère dextrogyre pur, de pouvoir rotatoire spécifique ', T('A'), ' et de masse molaire ', T('Mm'), ', est dissous à la concentration ', T('C'), '. La solution est placée à ', T('temp'), ' dans une cuve de longueur ', T('L'), '. Quel pouvoir rotatoire α mesure-t-on ?'], utiles: ['A', 'L', 'C'],
           raisons, cherche: { bonne: 'Le pouvoir rotatoire α de la solution (en °)', faux: ['La concentration de la solution', 'La longueur de la cuve', 'Le pouvoir rotatoire spécifique du composé'] }, manque: null, solution: { txt: '[α] × L × C', val: p.A * p.Lc / 10 * p.C, u: '°' } }
-        : { tokens, derivees: ['C = α ÷ ([α] × L)'], texte: ['Un énantiomère dextrogyre pur, de pouvoir rotatoire spécifique ', T('A'), ' et de masse molaire ', T('Mm'), ', est dissous. La solution est placée à ', T('temp'), ' dans une cuve de longueur ', T('L'), ' et le polarimètre indique ', T('alpha'), '. Quelle est la concentration massique de la solution ?'], utiles: ['alpha', 'A', 'L'],
-          raisons, cherche: { bonne: 'La concentration massique de la solution (en g/mL)', faux: ['Le pouvoir rotatoire α de la solution', 'La longueur de la cuve', 'La masse molaire du composé'] }, manque: null, solution: { txt: 'α ÷ ([α] × L)', val: p.alpha / (p.A * p.Lc / 10), u: 'g/mL' } };
+        : { tokens, derivees: ['C = frac(α|[α] × L)'], texte: ['Un énantiomère dextrogyre pur, de pouvoir rotatoire spécifique ', T('A'), ' et de masse molaire ', T('Mm'), ', est dissous. La solution est placée à ', T('temp'), ' dans une cuve de longueur ', T('L'), ' et le polarimètre indique ', T('alpha'), '. Quelle est la concentration massique de la solution ?'], utiles: ['alpha', 'A', 'L'],
+          raisons, cherche: { bonne: 'La concentration massique de la solution (en g/mL)', faux: ['Le pouvoir rotatoire α de la solution', 'La longueur de la cuve', 'La masse molaire du composé'] }, manque: null, solution: { txt: 'frac(α|[α] × L)', val: p.alpha / (p.A * p.Lc / 10), u: 'g/mL' } };
     }),
   },
   {
@@ -94,10 +94,10 @@ export const BIOT_SAPP = [
         L: tok(`${nbf(p.L, 1)} dm`, 'Longueur de la cuve', p.L, 'dm'), C: tok(`${nbf(p.C, 2)} g/mL`, 'Concentration totale', p.C, 'g/mL'),
       };
       return q === 0
-        ? { tokens, derivees: ['e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100'], texte: ['Un mélange contient ', T('np'), ' de l’énantiomère (+) et ', T('nm'), ' de l’énantiomère (−), dissous dans ', T('V'), ' de solution. Quel est l’excès énantiomérique du mélange ?'], utiles: ['np', 'nm'],
-          raisons: { V: 'Le volume de solution n’intervient pas : l’excès compare seulement les quantités des deux énantiomères.' }, cherche: { bonne: 'L’excès énantiomérique du mélange (en %)', faux: ['Le pouvoir rotatoire du mélange', 'La concentration de l’énantiomère (+)', 'Le volume de solution'] }, manque: null, solution: { txt: '|n₊ − n₋| ÷ (n₊ + n₋) × 100', val: p.ee, u: '%' } }
-        : { tokens, derivees: ['e.e. = |α| ÷ |α pur| × 100'], texte: ['L’énantiomère (+) pur donne ', T('apur'), ' dans une cuve de ', T('L'), ', à la concentration ', T('C'), '. Un mélange des deux énantiomères, placé dans la même cuve à la même concentration totale, donne ', T('amel'), '. Quel est l’excès énantiomérique du mélange ?'], utiles: ['apur', 'amel'],
-          raisons: { L: 'La longueur de la cuve est la même pour les deux mesures : elle se simplifie dans le rapport.', C: 'La concentration totale est la même pour les deux mesures : elle se simplifie dans le rapport.' }, cherche: { bonne: 'L’excès énantiomérique du mélange (en %)', faux: ['Le pouvoir rotatoire spécifique du composé', 'La concentration de l’énantiomère (+)', 'La longueur de la cuve'] }, manque: null, solution: { txt: '|α| ÷ |α pur| × 100', val: p.amel / p.apur * 100, u: '%' } };
+        ? { tokens, derivees: ['e.e. = frac(∣n₊ − n₋∣|n₊ + n₋) × 100'], texte: ['Un mélange contient ', T('np'), ' de l’énantiomère (+) et ', T('nm'), ' de l’énantiomère (−), dissous dans ', T('V'), ' de solution. Quel est l’excès énantiomérique du mélange ?'], utiles: ['np', 'nm'],
+          raisons: { V: 'Le volume de solution n’intervient pas : l’excès compare seulement les quantités des deux énantiomères.' }, cherche: { bonne: 'L’excès énantiomérique du mélange (en %)', faux: ['Le pouvoir rotatoire du mélange', 'La concentration de l’énantiomère (+)', 'Le volume de solution'] }, manque: null, solution: { txt: 'frac(∣n₊ − n₋∣|n₊ + n₋) × 100', val: p.ee, u: '%' } }
+        : { tokens, derivees: ['e.e. = frac(∣α∣|∣α pur∣) × 100'], texte: ['L’énantiomère (+) pur donne ', T('apur'), ' dans une cuve de ', T('L'), ', à la concentration ', T('C'), '. Un mélange des deux énantiomères, placé dans la même cuve à la même concentration totale, donne ', T('amel'), '. Quel est l’excès énantiomérique du mélange ?'], utiles: ['apur', 'amel'],
+          raisons: { L: 'La longueur de la cuve est la même pour les deux mesures : elle se simplifie dans le rapport.', C: 'La concentration totale est la même pour les deux mesures : elle se simplifie dans le rapport.' }, cherche: { bonne: 'L’excès énantiomérique du mélange (en %)', faux: ['Le pouvoir rotatoire spécifique du composé', 'La concentration de l’énantiomère (+)', 'La longueur de la cuve'] }, manque: null, solution: { txt: 'frac(∣α∣|∣α pur∣) × 100', val: p.amel / p.apur * 100, u: '%' } };
     }),
   },
 ];

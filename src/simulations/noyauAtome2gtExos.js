@@ -12,7 +12,7 @@ export const NOY2GT_ANA = [
   { id: 'noy2gt-ana-masse', domaine: DOM, titre: 'Ce que pèsent les électrons du sodium',
     enonce: 'Un atome de sodium contient 11 protons, 12 neutrons et 11 électrons. On compare la masse de l’atome entier à celle de son seul noyau.', q: 'De combien l’atome pèse-t-il plus que son noyau ?', options: [
       V('de moins de 0,1\u00a0% : presque rien', 'Un électron est environ 1\u00a0800 fois plus léger qu’un nucléon : les 11 électrons ajoutent environ 0,03\u00a0% à la masse du noyau (23 nucléons). L’atome pèse presque autant que son noyau.'),
-      F('d’environ 48\u00a0% : 11 particules de plus', 'On aurait 11 ÷ 23 ≈ 48\u00a0% si un électron pesait autant qu’un nucléon. Or il pèse 1\u00a0800 fois moins : l’ajout est minuscule.'),
+      F('d’environ 48\u00a0% : 11 particules de plus', 'On aurait frac(11|23) ≈ 48\u00a0% si un électron pesait autant qu’un nucléon. Or il pèse 1\u00a0800 fois moins : l’ajout est minuscule.'),
       F('d’environ 1\u00a0800 fois : les électrons sont lourds', 'C’est le rapport inversé : un électron est 1\u00a0800 fois plus léger qu’un nucléon, et non plus lourd.'),
       F('de 100\u00a0000 fois : le nuage est immense', 'Le nombre 100\u00a0000 compare des tailles, pas des masses. Le nuage est grand, mais sa masse est minuscule.'),
     ] },
@@ -25,10 +25,10 @@ export const NOY2GT_ANA = [
     ] },
   { id: 'noy2gt-ana-echelle', domaine: DOM, titre: 'Un atome agrandi jusqu’à un stade',
     enonce: 'On agrandit un atome et son noyau avec le même facteur, jusqu’à ce que l’atome ait la taille d’un stade de 100\u00a0m. Rappel : l’atome est 100\u00a0000 fois plus large que son noyau.', q: 'Quelle serait alors la taille du noyau agrandi ?', options: [
-      V('environ 1\u00a0mm : un grain de sable', '100\u00a0m ÷ 100\u00a0000 = 0,001\u00a0m = 1\u00a0mm : le noyau serait un grain de sable au centre d’un stade.'),
-      F('environ 1\u00a0cm : une bille', '1\u00a0cm serait 10 fois trop grand : 100\u00a0m ÷ 100\u00a0000 = 0,001\u00a0m, soit 1\u00a0mm, et non 1\u00a0cm.'),
-      F('environ 10\u00a0cm : une balle', 'On aurait 10\u00a0cm en divisant par 1\u00a0000 seulement. Le rapport est 100\u00a0000 : 100\u00a0m ÷ 100\u00a0000 = 1\u00a0mm.'),
-      F('environ 0,01\u00a0mm : une poussière fine', 'Ce serait 100 fois trop petit : 100\u00a0m ÷ 100\u00a0000 = 0,001\u00a0m = 1\u00a0mm.'),
+      V('environ 1\u00a0mm : un grain de sable', 'frac(100\u00a0m|100\u00a0000) = 0,001\u00a0m = 1\u00a0mm : le noyau serait un grain de sable au centre d’un stade.'),
+      F('environ 1\u00a0cm : une bille', '1\u00a0cm serait 10 fois trop grand : frac(100\u00a0m|100\u00a0000) = 0,001\u00a0m, soit 1\u00a0mm, et non 1\u00a0cm.'),
+      F('environ 10\u00a0cm : une balle', 'On aurait 10\u00a0cm en divisant par 1\u00a0000 seulement. Le rapport est 100\u00a0000 : frac(100\u00a0m|100\u00a0000) = 1\u00a0mm.'),
+      F('environ 0,01\u00a0mm : une poussière fine', 'Ce serait 100 fois trop petit : frac(100\u00a0m|100\u00a0000) = 0,001\u00a0m = 1\u00a0mm.'),
     ] },
   { id: 'noy2gt-ana-element', domaine: DOM, titre: 'Ce qui fait un noyau de carbone',
     enonce: 'Le carbone est un élément chimique : tous ses atomes se ressemblent par leur noyau.', q: 'Qu’est-ce qui permet d’affirmer qu’un noyau est un noyau de carbone ?', options: [
@@ -59,9 +59,9 @@ export const NOY2GT_VAL = [
       F('il pense que le noyau est plus grand', 'Le noyau est au centre de l’atome et bien plus petit que lui : il est contenu dans l’atome.'),
     ] }),
   P({ id: 'noy2gt-val-rapport-masses', domaine: DOM, niveau: 2, titre: 'Proton et électron', plausible: true,
-    enonce: 'Un élève calcule : « 1,67\u00a0×\u00a010⁻²⁷\u00a0kg ÷ (9,11\u00a0×\u00a010⁻³¹\u00a0kg) ≈ 1,8\u00a0×\u00a010³ : l’électron est environ 1\u00a0800 fois plus léger que le proton ».',
+    enonce: 'Un élève calcule : « frac(1,67\u00a0×\u00a010⁻²⁷\u00a0kg|9,11\u00a0×\u00a010⁻³¹\u00a0kg) ≈ 1,8\u00a0×\u00a010³ : l’électron est environ 1\u00a0800 fois plus léger que le proton ».',
     reperes: [['Proton', '1,67\u00a0×\u00a010⁻²⁷\u00a0kg'], ['Électron', '9,11\u00a0×\u00a010⁻³¹\u00a0kg'], ['Règle', 'on divise les nombres, puis on soustrait les nombres du haut : −27 − (−31) = 4']],
-    ver: '1,67 ÷ 9,11 ≈ 0,183 et 10⁻²⁷ ÷ 10⁻³¹ = 10⁴ : on obtient 0,183\u00a0×\u00a010⁴ ≈ 1,8\u00a0×\u00a010³. Le résultat est juste.',
+    ver: 'frac(1,67|9,11) ≈ 0,183 et frac(10⁻²⁷|10⁻³¹) = 10⁴ : on obtient 0,183\u00a0×\u00a010⁴ ≈ 1,8\u00a0×\u00a010³. Le résultat est juste.',
     q2: 'Pourquoi ce résultat est-il vraisemblable ?',
     options: [
       V('un électron est très léger devant un proton', 'Le proton pèse environ 10³ fois plus que l’électron : le quotient 1,8\u00a0×\u00a010³ est un grand nombre, comme on s’y attend.'),
@@ -76,7 +76,7 @@ export const NOY2GT_VAL = [
     options: [
       V('il additionne au lieu de soustraire', 'Les protons font partie des nucléons : on retire Z à A, 23 − 11 = 12 neutrons.'),
       F('il prend A pour le nombre de neutrons', 'Avec cette erreur, il aurait répondu 23 neutrons, pas 34. Son résultat vient d’une addition : 23 + 11 = 34.'),
-      F('il divise A par Z', 'Avec cette erreur, il aurait trouvé 23 ÷ 11 ≈ 2,1, pas 34. Son résultat vient de l’addition 23 + 11.'),
+      F('il divise A par Z', 'Avec cette erreur, il aurait trouvé frac(23|11) ≈ 2,1, pas 34. Son résultat vient de l’addition 23 + 11.'),
     ] }),
   P({ id: 'noy2gt-val-charge-helium', domaine: DOM, niveau: 2, titre: 'La charge du noyau d’hélium', plausible: false,
     enonce: 'Le noyau d’hélium s’écrit ⁴₂He. Un élève calcule sa charge : « il y a 4 nucléons, donc 4 × 1,60\u00a0×\u00a010⁻¹⁹\u00a0C = 6,4\u00a0×\u00a010⁻¹⁹\u00a0C ».',
@@ -148,10 +148,10 @@ export const NOY2GT_SAPP = [
       const debut = ['Un atome contenant ', T('Z'), ' (un nucléon pèse ', T('m'), ') a une taille de ', T('atome'), ' ; son noyau mesure ', T('noyau'), '. On agrandit l’atome et son noyau avec le même facteur. '];
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'L’atome agrandi mesure ', T('D'), '. Quelle est la taille du noyau agrandi ?'], utiles: ['atome', 'noyau', 'D'], raisons,
         cherche: { bonne: 'La taille du noyau agrandi (en mm)', faux: ['Le facteur d’agrandissement exact (sans unité)', 'La masse du noyau agrandi (en kg)', 'La taille de l’atome non agrandi (en m)'] },
-        manque: null, solution: { txt: 'taille du noyau agrandi = D × (noyau ÷ atome)', val: p.D * 1e-2, u: 'mm' } };
+        manque: null, solution: { txt: 'taille du noyau agrandi = D × (frac(noyau|atome))', val: p.D * 1e-2, u: 'mm' } };
       return { tokens, derivees: [], texte: [...debut, 'Le noyau agrandi mesure ', T('d'), '. Quelle est la taille de l’atome agrandi ?'], utiles: ['atome', 'noyau', 'd'], raisons,
         cherche: { bonne: 'La taille de l’atome agrandi (en m)', faux: ['La taille du noyau avant agrandissement (en m)', 'Le nombre de protons de l’atome', 'La masse de l’atome agrandi (en kg)'] },
-        manque: null, solution: { txt: 'taille de l’atome agrandi = d × (atome ÷ noyau)', val: p.d * 1e-3 * 1e5, u: 'm' } };
+        manque: null, solution: { txt: 'taille de l’atome agrandi = d × (frac(atome|noyau))', val: p.d * 1e-3 * 1e5, u: 'm' } };
     }),
   },
 ];

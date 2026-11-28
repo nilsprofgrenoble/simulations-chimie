@@ -9,16 +9,16 @@ const P = o => ({ ...o, verdict: VERDICT(o.plausible, o.ver) });
 export const CEL_ANA = [
   { id: 'chel-ana-polarite', domaine: DOM, titre: 'On inverse le générateur',
     enonce: 'Deux armatures planes parallèles sont reliées à un générateur : l’armature de gauche est positive, celle de droite négative. On inverse les branchements du générateur (même tension) : la gauche devient négative, la droite positive.', q: 'Que devient le champ électrostatique entre les armatures ?', options: [
-      V('même valeur, mais dirigé de la droite vers la gauche', 'Le champ va de l’armature + vers l’armature − ; la valeur U ÷ d est inchangée.'),
+      V('même valeur, mais dirigé de la droite vers la gauche', 'Le champ va de l’armature + vers l’armature − ; la valeur frac(U|d) est inchangée.'),
       F('nul, car les charges se compensent', 'Les armatures sont toujours chargées : le champ existe encore.'),
       F('de valeur opposée, donc négative, et toujours dirigé vers la droite', 'Une valeur de champ est positive ; c’est le sens qui s’inverse.'),
       F('inchangé : il est toujours dirigé de la gauche vers la droite', 'Le sens du champ suit la polarité des armatures : de + vers −.'),
     ] },
   { id: 'chel-ana-distance', domaine: DOM, titre: 'Des armatures trois fois plus proches',
     enonce: 'Deux armatures planes sont reliées à un générateur qui maintient la tension U. On rapproche les armatures pour que leur distance devienne trois fois plus petite.', q: 'Que devient la valeur du champ entre les armatures ?', options: [
-      V('elle est multipliée par 3 : E = U ÷ d avec d divisée par 3', 'E est inversement proportionnelle à d : d trois fois plus petite, E trois fois plus grande.'),
-      F('elle est divisée par 3, car on rapproche les armatures l’une de l’autre', 'E = U ÷ d augmente quand d diminue.'),
-      F('elle est multipliée par 9, car E dépend du carré de la distance d', 'La distance intervient à la puissance 1 dans E = U ÷ d (le carré est celui de la gravitation).'),
+      V('elle est multipliée par 3 : E = frac(U|d) avec d divisée par 3', 'E est inversement proportionnelle à d : d trois fois plus petite, E trois fois plus grande.'),
+      F('elle est divisée par 3, car on rapproche les armatures l’une de l’autre', 'E = frac(U|d) augmente quand d diminue.'),
+      F('elle est multipliée par 9, car E dépend du carré de la distance d', 'La distance intervient à la puissance 1 dans E = frac(U|d) (le carré est celui de la gravitation).'),
       F('elle ne change pas : la tension reste la même', 'E dépend de U et de d : si d change, E change.'),
     ] },
   { id: 'chel-ana-signe', domaine: DOM, titre: 'Un ion négatif entre les armatures',
@@ -30,7 +30,7 @@ export const CEL_ANA = [
     ] },
   { id: 'chel-ana-position', domaine: DOM, titre: 'Près d’une armature ou au milieu',
     enonce: 'Une particule chargée est placée successivement près de l’armature positive, puis au milieu des armatures, puis près de l’armature négative (loin des bords). La tension et la distance restent les mêmes.', q: 'Comment se comparent les valeurs de la force électrostatique aux trois endroits ?', options: [
-      V('elles sont égales : le champ est uniforme entre les armatures', 'Le champ E = U ÷ d est le même en tout point, donc F = |q| E aussi.'),
+      V('elles sont égales : le champ est uniforme entre les armatures', 'Le champ E = frac(U|d) est le même en tout point, donc F = ∣q∣ E aussi.'),
       F('la force est plus grande près de l’armature positive', 'Le champ n’est pas plus fort près d’une armature : il est uniforme.'),
       F('la force est plus grande au milieu, plus petite près des armatures', 'Entre deux armatures planes, il n’y a pas de zone privilégiée.'),
       F('la force est plus grande près de l’armature négative', 'La valeur du champ ne dépend pas de la position entre les armatures.'),
@@ -39,13 +39,13 @@ export const CEL_ANA = [
 
 export const CEL_VAL = [
   P({ id: 'chel-val-champ', domaine: DOM, niveau: 1, titre: 'Champ entre deux armatures : l’unité de distance', plausible: false,
-    enonce: 'Un élève calcule le champ entre deux armatures distantes de 2,0 cm, entre lesquelles la tension est 200 V : « E = U ÷ d = 200 ÷ 2,0 = 100 V/m. »',
-    reperes: [['Tension U', '200 V'], ['Distance d', '2,0 cm'], ['Relation', 'E = U ÷ d (d en mètres)']],
-    ver: 'd = 2,0 cm = 0,020 m, donc E = 200 ÷ 0,020 = 1,0×10⁴ V/m. L’élève a oublié de convertir d en mètres.',
+    enonce: 'Un élève calcule le champ entre deux armatures distantes de 2,0 cm, entre lesquelles la tension est 200 V : « E = frac(U|d) = frac(200|2,0) = 100 V/m. »',
+    reperes: [['Tension U', '200 V'], ['Distance d', '2,0 cm'], ['Relation', 'E = frac(U|d) (d en mètres)']],
+    ver: 'd = 2,0 cm = 0,020 m, donc E = frac(200|0,020) = 1,0×10⁴ V/m. L’élève a oublié de convertir d en mètres.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il n’a pas converti d en mètres : E vaut 1,0×10⁴ V/m', 'Avec d = 0,020 m, E = 200 ÷ 0,020 = 1,0×10⁴ V/m.'),
-      F('il aurait dû multiplier U par d au lieu de diviser', 'La relation est E = U ÷ d : on divise la tension par la distance.'),
+      V('il n’a pas converti d en mètres : E vaut 1,0×10⁴ V/m', 'Avec d = 0,020 m, E = frac(200|0,020) = 1,0×10⁴ V/m.'),
+      F('il aurait dû multiplier U par d au lieu de diviser', 'La relation est E = frac(U|d) : on divise la tension par la distance.'),
       F('il a oublié que le champ dépend du signe de la charge placée entre les armatures', 'Le champ E ne dépend que de U et de d ; c’est la force qui dépend de q.'),
     ] }),
   P({ id: 'chel-val-force', domaine: DOM, niveau: 2, titre: 'Force sur un ion entre deux armatures', plausible: true,
@@ -76,14 +76,14 @@ export const CEL_SAPP = [
       };
       const debut = ['Deux armatures planes parallèles, distantes de ', T('d'), ', sont reliées aux bornes d’un générateur qui impose la tension ', T('U'), '. La salle est à ', T('T'), '. '];
       const E0 = p.U / (p.d / 100) / 1e3;
-      if (q === 0) return { tokens, derivees: ['E = U ÷ d', 'd en mètres : d = distance en cm ÷ 100'], texte: [...debut, 'Quelle est la valeur du champ électrostatique entre les armatures, en kV/m ?'], utiles: ['U', 'd'],
+      if (q === 0) return { tokens, derivees: ['E = frac(U|d)', 'd en mètres : d = frac(distance en cm|100)'], texte: [...debut, 'Quelle est la valeur du champ électrostatique entre les armatures, en kV/m ?'], utiles: ['U', 'd'],
         raisons: { T: 'La température de la salle n’intervient pas dans la valeur du champ.' },
         cherche: { bonne: 'La valeur du champ électrostatique entre les armatures (en kV/m)', faux: ['La force sur une particule placée entre les armatures (en N)', 'La charge portée par une armature (en C)', 'La tension entre les armatures (en V)'] },
-        manque: null, solution: { txt: 'E = U ÷ d', val: E0, u: 'kV/m' } };
-      return { tokens, derivees: ['E′ = U ÷ (2 d)', 'E′ = E ÷ 2'], texte: [...debut, 'On double la distance entre les armatures, sans changer la tension. Quelle est la nouvelle valeur du champ, en kV/m ?'], utiles: ['U', 'd'],
+        manque: null, solution: { txt: 'E = frac(U|d)', val: E0, u: 'kV/m' } };
+      return { tokens, derivees: ['E′ = frac(U|2 d)', 'E′ = frac(E|2)'], texte: [...debut, 'On double la distance entre les armatures, sans changer la tension. Quelle est la nouvelle valeur du champ, en kV/m ?'], utiles: ['U', 'd'],
         raisons: { T: 'La température de la salle n’intervient pas dans la valeur du champ.' },
         cherche: { bonne: 'La valeur du champ après doublement de la distance (en kV/m)', faux: ['La valeur du champ avant le déplacement (en kV/m)', 'La variation de la distance (en cm)', 'La nouvelle tension entre les armatures (en V)'] },
-        manque: null, solution: { txt: 'E′ = U ÷ (2 d)', val: E0 / 2, u: 'kV/m' } };
+        manque: null, solution: { txt: 'E′ = frac(U|2 d)', val: E0 / 2, u: 'kV/m' } };
     }),
   },
   {
@@ -99,7 +99,7 @@ export const CEL_SAPP = [
         raisons: { d: 'La distance entre les armatures ne sert pas : le champ est déjà donné.', T: 'La température de la salle n’intervient pas dans la force.' },
         cherche: { bonne: 'La valeur de la force sur l’ion (en 10⁻¹⁵ N)', faux: ['La tension entre les armatures (en V)', 'Le poids de l’ion (en N)', 'La valeur du champ (en kV/m)'] },
         manque: null, solution: { txt: 'F = |q| × E', val: p.n * EC * p.E * 1e3 * 1e15, u: '×10⁻¹⁵ N' } };
-      return { tokens, derivees: ['E = U ÷ d', 'U = E × d, d en mètres'], texte: [...debut, 'Quelle est la tension entre les armatures, en V ?'], utiles: ['E', 'd'],
+      return { tokens, derivees: ['E = frac(U|d)', 'U = E × d, d en mètres'], texte: [...debut, 'Quelle est la tension entre les armatures, en V ?'], utiles: ['E', 'd'],
         raisons: { n: 'La charge de l’ion ne sert pas pour trouver la tension : le champ est donné.', T: 'La température de la salle n’intervient pas.' },
         cherche: { bonne: 'La tension entre les armatures (en V)', faux: ['La force sur l’ion (en N)', 'La charge de l’ion (en C)', 'La valeur du champ (en kV/m)'] },
         manque: null, solution: { txt: 'U = E × d', val: p.E * 1e3 * p.d / 100, u: 'V' } };
