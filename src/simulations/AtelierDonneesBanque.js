@@ -2147,7 +2147,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Incertitudes-types composées et comparaison à une référence (TG, sim 185)
   {
-    id: 'icc-sapp-resistance', schema: () => ({ type: 'circuitSimple', dipole: 'conducteur ohmique', generateur: 'générateur' }), domaine: 'Incertitudes-types composées et comparaison à une valeur de référence', titre: 'Incertitude sur la résistance d’un conducteur ohmique', noms: ['Incertitude relative de la résistance', 'Incertitude-type de la résistance'],
+    id: 'icc-sapp-resistance', schema: () => ({ type: 'circuitSimple', dipole: 'conducteur ohmique', generateur: 'générateur', appareils: true }), domaine: 'Incertitudes-types composées et comparaison à une valeur de référence', titre: 'Incertitude sur la résistance d’un conducteur ohmique', noms: ['Incertitude relative de la résistance', 'Incertitude-type de la résistance'],
     gen: () => ({ U: tire([3.50, 4.58, 5.20, 6.30, 7.40, 9.10]), uU: tire([0.02, 0.03, 0.05, 0.10]), I: tire([25.0, 32.5, 45.1, 52.0, 68.4, 85.0]), uI: tire([0.3, 0.5, 0.8, 1.0]), th: tire([19, 21, 23]), L: tire([0.5, 1.0, 1.5]) }),
     build: (p, q) => {
       const R = 1000 * p.U / p.I, rel = Math.sqrt((p.uU / p.U) ** 2 + (p.uI / p.I) ** 2);
