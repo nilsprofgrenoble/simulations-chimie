@@ -185,8 +185,8 @@ export function ExerciceDonnees({ id, q, entete, navigation }) {
         {chk.sel && (
           <div>
             <Verdict ok={sb.ok}>{sb.ok ? 'Toutes les données utiles, et seulement elles.' : `${sb.mauvais.length ? `${sb.mauvais.length} donnée(s) inutile(s) choisie(s). ` : ''}${sb.manques.length ? `${sb.manques.length} donnée(s) utile(s) oubliée(s).` : ''}`}</Verdict>
-            {sb.mauvais.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="ko"/><b>{expo(ex.b.tokens[id].aff)}</b> ({ex.b.tokens[id].quoi}) : {(ex.b.raisons || {})[id] || 'cette donnée n’intervient pas dans le calcul demandé.'}</div>)}
-            {vu.sel && sb.manques.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="warn"/>À ne pas oublier : <b>{expo(ex.b.tokens[id].aff)}</b> ({ex.b.tokens[id].quoi}).</div>)}
+            {sb.mauvais.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="ko"/><b>{avecIndices(expo(ex.b.tokens[id].aff))}</b> ({avecIndices(ex.b.tokens[id].quoi)}) : {avecIndices((ex.b.raisons || {})[id] || 'cette donnée n’intervient pas dans le calcul demandé.')}</div>)}
+            {vu.sel && sb.manques.map(id => <div key={id} style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="warn"/>À ne pas oublier : <b>{avecIndices(expo(ex.b.tokens[id].aff))}</b> ({avecIndices(ex.b.tokens[id].quoi)}).</div>)}
             {!vu.sel && sb.manques.length > 0 && <div style={{ fontSize: 13.5, color: '#9a3412', marginTop: 4 }}><Pic n="warn"/>Il manque encore {sb.manques.length} donnée(s) utile(s).</div>}
           </div>)}
         {barre('sel', stages.indexOf('sel'))}
