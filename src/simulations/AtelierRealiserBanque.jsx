@@ -343,12 +343,12 @@ const FORMULES = [
       gen: () => { const Q = alea(2, 90, 3) * 1e3, m = alea(0.2, 5, 3), c = tire([4180, 2100, 900, 385]); return { donnees: [['Q', Q, 'J'], ['m', m, 'kg'], ['c', c, 'J·kg⁻¹·K⁻¹']], vrai: Q / (m * c), calc: <Frac haut={nb(Q)} bas={`${nb(m)} × ${nb(c)}`}/> }; }, hom: null },
   ] },
   { nom: 'v = sqrt(2·g·h)', iso: [
-    { cible: 'h', bonne: 'h = frac(v²|2·g)', faux: ['h = frac(v|2·g)', 'h = sqrt(f)rac(v|2·g)', 'h = frac(2·g|v²)'], unite: 'm',
+    { cible: 'h', bonne: 'h = frac(v²|2·g)', faux: ['h = frac(v|2·g)', 'h = frac(sqrt(v)|2·g)', 'h = frac(2·g|v²)'], unite: 'm',
       gen: () => { const v = alea(0.8, 9, 3); return { donnees: [['v', v, 'm·s⁻¹'], ['g', 9.81, 'm·s⁻²']], vrai: v * v / (2 * 9.81), calc: <Frac haut={`${nb(v)}²`} bas="2 × 9,81"/> }; }, hom: null },
   ] },
 ];
 const symJSX = s => { const [a, b] = s.split('_'); return b ? <>{a}<sub>{b}</sub></> : a; };
-const exprJSX = s => s.split(/(\b[A-Za-zΔρεℓ]+_[A-Za-z]+)/).map((p, i) => (p.includes('_') ? <span key={i}>{symJSX(p)}</span> : p));
+const exprJSX = s => (/frac\(|sqrt\(/.test(s) ? avecIndices(s) : s.split(/(\b[A-Za-zΔρεℓ]+_[A-Za-z]+)/).map((p, i) => (p.includes('_') ? <span key={i}>{symJSX(p)}</span> : p)));
 function genIsoler() {
   const f = tire(FORMULES), iso = tire(f.iso), g = iso.gen();
   const opts = melange([iso.bonne, ...melange(iso.faux).slice(0, 2)]);
@@ -357,7 +357,7 @@ function genIsoler() {
     aide: 'Faites la même opération des deux côtés du signe égal, une opération à la fois. Vérifiez en remplaçant par des nombres simples.',
     expl: <>{exprJSX(f.nom)} donne <b>{exprJSX(iso.bonne)}</b>.</> };
   const q2 = { id: 'i1', type: 'num', q: <>Application numérique : {g.donnees.map(([s, v, u], i) => <span key={i}>{i ? ' ; ' : ''}{symJSX(s)} = <b>{nb(v, Math.min(4, Math.max(2, csDe(v))))}{u ? NB + u : ''}</b></span>)}. Calculez <b>{symJSX(iso.cible)}</b>.</>, unite: iso.unite, vrai: g.vrai, csMin: 3,
-    aide: `Utilisez l’expression trouvée : ${iso.bonne.replace(/_/g, '')}. Gardez au moins 3 chiffres significatifs.`,
+    aide: `Utilisez l’expression trouvée : ${iso.bonne}. Gardez au moins 3 chiffres significatifs.`,
     expl: <>{symJSX(iso.cible)} = {g.calc} = <b>{avecU(g.vrai, iso.unite)}</b>.</> };
   const qs = [q1, q2];
   if (iso.hom) {
@@ -6285,7 +6285,7 @@ function genIncertitudesTG() {
   let U2, I2, uU2, uI2, a2, b2;
   do { U2 = tire([3.50, 4.58, 5.20, 6.30, 7.40, 9.10]); I2 = tire([25.0, 32.5, 45.1, 52.0, 68.4, 85.0]); uU2 = tire([0.02, 0.03, 0.05, 0.10]); uI2 = tire([0.3, 0.5, 0.8, 1.0]); a2 = uU2 / U2; b2 = uI2 / I2; } while (Math.min(a2, b2) / Math.max(a2, b2) < 0.4 || Math.max(a2, b2) > 0.05);
   const R2 = 1000 * U2 / I2, rel2 = Math.sqrt(a2 * a2 + b2 * b2), uR = R2 * rel2;
-  const q2 = { id: 'ic1', type: 'num', q: <>Pour mesurer une résistance, on relève <b>U = {d(U2, 2)}{NB}V</b> avec <b>u(U) = {d(uU2, 2)}{NB}V</b> et <b>I = {d(I2, 1)}{NB}mA</b> avec <b>u(I) = {d(uI2, 1)}{NB}mA</b> ; les mesures sont indépendantes. On calcule R = {frs('frac(U|I)')}. Pour un quotient, la formule fournie est {frs('frac(u(R)|R) = {avecIndices(`sqrt(frac(u(U)|U)² + frac(u(I)|I)²)`)}')}. Calculez u(R), en Ω (2 chiffres significatifs).</>, unite: 'Ω', vrai: uR, tolRel: 0.05, csMin: 2,
+  const q2 = { id: 'ic1', type: 'num', q: <>Pour mesurer une résistance, on relève <b>U = {d(U2, 2)}{NB}V</b> avec <b>u(U) = {d(uU2, 2)}{NB}V</b> et <b>I = {d(I2, 1)}{NB}mA</b> avec <b>u(I) = {d(uI2, 1)}{NB}mA</b> ; les mesures sont indépendantes. On calcule R = {frs('frac(U|I)')}. Pour un quotient, la formule fournie est {frs('frac(u(R)|R) = sqrt(frac(u(U)|U)² + frac(u(I)|I)²)')}. Calculez u(R), en Ω (2 chiffres significatifs).</>, unite: 'Ω', vrai: uR, tolRel: 0.05, csMin: 2,
     aide: 'Calculez les deux incertitudes relatives (u divisée par la valeur), composez-les en quadrature, puis multipliez par R. Convertissez I en A (ou U en mV) pour obtenir R en Ω.',
     pieges: [[R2 * (a2 + b2), 'Vous avez additionné les incertitudes relatives : elles se composent en quadrature (racine de la somme des carrés).'], [R2 * Math.max(a2, b2), 'Vous n’avez gardé que la plus grande incertitude relative : les deux interviennent.'], [rel2, 'C’est l’incertitude relative : multipliez-la par R pour obtenir u(R) en Ω.']],
     expl: <>R = {frs('frac(U|I)')} = {d(R2, 1)}{NB}Ω ; {frs('frac(u(U)|U)')} = {d(a2 * 100, 2)}{NB}% et {frs('frac(u(I)|I)')} = {d(b2 * 100, 2)}{NB}% ; {frs('frac(u(R)|R)')} = {avecIndices(`sqrt(${d(a2 * 100, 2)}² + {d(b2 * 100, 2)}})`)}{NB}% = {d(rel2 * 100, 2)}{NB}% ; u(R) = {d(R2, 1)} × {d(rel2, 4)} = <b>{d(uR, 2)}{NB}Ω</b>.</> };
@@ -6296,7 +6296,7 @@ function genIncertitudesTG() {
     m3 = Number((rhoT * Math.PI * d3 * d3 * h3 / 4).toFixed(1)); um3 = tire([0.03, 0.05, 0.10]); ud3 = tire([0.01, 0.02, 0.03, 0.05]); uh3 = tire([0.01, 0.02, 0.03, 0.05]);
     G3 = 4 * m3 / (Math.PI * d3 * d3 * h3); ra = um3 / m3; rb = 2 * ud3 / d3; rc = uh3 / h3; rel3 = Math.sqrt(ra * ra + rb * rb + rc * rc); uG3 = G3 * rel3;
   } while (Math.max(ra, rb, rc) < 0.004 || Math.min(rb, rc) / Math.max(rb, rc) < 0.35 || rel3 > 0.05);
-  const q3 = { id: 'ic2', type: 'num', q: <>On mesure un cylindre : masse <b>m = {d(m3, 1)}{NB}g</b> (<b>u(m) = {d(um3, 2)}{NB}g</b>), diamètre <b>d = {d(d3, 2)}{NB}cm</b> (<b>u(d) = {d(ud3, 2)}{NB}cm</b>) et hauteur <b>h = {d(h3, 2)}{NB}cm</b> (<b>u(h) = {d(uh3, 2)}{NB}cm</b>), mesures indépendantes. Sa masse volumique est ρ = {frs('frac(4 m|π d² h)')}. La formule fournie est {frs('frac(u(ρ)|ρ) = {avecIndices(`sqrt(frac(u(m)|m)² + (2 frac(u(d)|d))² + frac(u(h)|h)²)`)}')} : le facteur 2 vient de l’exposant de d. Calculez u(ρ), en g/cm³ (2 chiffres significatifs).</>, unite: 'g/cm³', vrai: uG3, tolRel: 0.05, csMin: 2,
+  const q3 = { id: 'ic2', type: 'num', q: <>On mesure un cylindre : masse <b>m = {d(m3, 1)}{NB}g</b> (<b>u(m) = {d(um3, 2)}{NB}g</b>), diamètre <b>d = {d(d3, 2)}{NB}cm</b> (<b>u(d) = {d(ud3, 2)}{NB}cm</b>) et hauteur <b>h = {d(h3, 2)}{NB}cm</b> (<b>u(h) = {d(uh3, 2)}{NB}cm</b>), mesures indépendantes. Sa masse volumique est ρ = {frs('frac(4 m|π d² h)')}. La formule fournie est {frs('frac(u(ρ)|ρ) = sqrt(frac(u(m)|m)² + (2 frac(u(d)|d))² + frac(u(h)|h)²)')} : le facteur 2 vient de l’exposant de d. Calculez u(ρ), en g/cm³ (2 chiffres significatifs).</>, unite: 'g/cm³', vrai: uG3, tolRel: 0.05, csMin: 2,
     aide: 'Calculez ρ, puis les trois termes : u(m) sur m, 2 u(d) sur d, u(h) sur h. Composez-les en quadrature et multipliez par ρ.',
     pieges: [[G3 * Math.sqrt(ra * ra + (rb / 2) ** 2 + rc * rc), 'Vous avez oublié le facteur 2 : d est élevé au carré dans ρ, son incertitude relative compte deux fois.'], [G3 * (ra + rb + rc), 'Vous avez additionné les incertitudes relatives : elles se composent en quadrature.'], [rel3, 'C’est l’incertitude relative : multipliez-la par ρ pour obtenir u(ρ) en g/cm³.']],
     expl: <>ρ = {frs('frac(4 m|π d² h)')} = {frs(`frac(4 × ${d(m3, 1)}|π × ${d(d3, 2)}² × ${d(h3, 2)})`)} = {d(G3, 3)}{NB}g/cm³ ; les trois termes valent {d(ra * 100, 2)}{NB}%, {d(rb * 100, 2)}{NB}% et {d(rc * 100, 2)}{NB}% ; {frs('frac(u(ρ)|ρ)')} = {d(rel3 * 100, 2)}{NB}% ; u(ρ) = {d(G3, 3)} × {d(rel3, 4)} = <b>{d(uG3, 3)}{NB}g/cm³</b> (hypothèses : mesures indépendantes, incertitudes relatives petites).</> };
@@ -6310,7 +6310,7 @@ function genIncertitudesTG() {
     expl: <>Écart = |{d(x4, ctx.dec)} − {d(ctx.ref, ctx.dec)}| = {d(Math.abs(x4 - ctx.ref), ctx.dec)}{NB}{ctx.unite} ; z = {frs(`frac(${d(Math.abs(x4 - ctx.ref), ctx.dec)}|${d(u4, ctx.dec)})`)} = <b>{d(z4, 2)}</b>, {z4 < 2 ? 'inférieur au seuil usuel 2 : résultat compatible avec la référence (convention d’usage)' : 'supérieur au seuil usuel 2 : écart à discuter (le seuil est une convention)'}.</> };
   [q1, q2, q3, q4].forEach(tolOk);
   return { intro: 'Incertitudes-types composées et comparaison à une valeur de référence : différence de deux pesées, quotient U/I, masse volumique d’un cylindre (exposant 2) et quotient z de comparaison.', questions: [q1, q2, q3, q4],
-    retenir: ['Somme ou différence de grandeurs indépendantes : u(G) = sqrt(u(x)² + u(y)²) ; produit ou quotient : frac(u(G)|G) = {avecIndices(`sqrt(frac(u(x)|x)² + frac(u(y)|y)²)`)}, un exposant p multipliant l’incertitude relative correspondante.', 'Les incertitudes se composent en quadrature, jamais en les additionnant ; le plus grand terme domine : c’est lui qu’il faut réduire pour améliorer le protocole.', 'Comparaison à une référence : z = frac(écart|u(m)), avec écart = |m_mes − m_ref| ; z < 2 : compatible, sinon à discuter. Le seuil 2 est une convention d’usage.'] };
+    retenir: ['Somme ou différence de grandeurs indépendantes : u(G) = sqrt(u(x)² + u(y)²) ; produit ou quotient : frac(u(G)|G) = sqrt(frac(u(x)|x)² + frac(u(y)|y)²), un exposant p multipliant l’incertitude relative correspondante.', 'Les incertitudes se composent en quadrature, jamais en les additionnant ; le plus grand terme domine : c’est lui qu’il faut réduire pour améliorer le protocole.', 'Comparaison à une référence : z = frac(écart|u(m)), avec écart = |m_mes − m_ref| ; z < 2 : compatible, sinon à discuter. Le seuil 2 est une convention d’usage.'] };
 }
 
 // ───────── Diffraction d'une onde : angle caractéristique (TG, sim 181) ─────────
@@ -7368,7 +7368,7 @@ export const FAMILLES = [
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'rl2gt-calcul', groupe: 'Formules', titre: 'Réactif limitant : nombre de recettes, quantité restante et quantité formée (2GT)', gen: genReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
   { id: 'rl2gt-masse', groupe: 'Formules', titre: 'Réactif limitant avec une masse : n = m ÷ M, limitant et quantité restante (2GT)', gen: genMasseReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
-  { id: 'mes2gt-inc-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, incertitude-type u = s ÷ {avecIndices(`sqrt(n)`)}, arrondis, nombre de mesures et compatibilité avec une référence (2GT)', gen: genMesureInc2GT, domaine: 'Incertitude-type et résultat (2GT)' },
+  { id: 'mes2gt-inc-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, incertitude-type u = s ÷ √n, arrondis, nombre de mesures et compatibilité avec une référence (2GT)', gen: genMesureInc2GT, domaine: 'Incertitude-type et résultat (2GT)' },
   { id: 'son2gt-niv-calcul', groupe: 'Formules', titre: 'Niveau sonore : écart en dB, facteurs ×10 et ×2, durée repère d’exposition (2GT)', gen: genNiveauSonore2GT, domaine: 'Niveau sonore (2GT)' },
   { id: 'mes2gt-var-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, effectif d’une classe, 10 intervalles ÷ 10, rapport de dispersions, valeur manquante (2GT)', gen: genMesureVar2GT, domaine: 'Variabilité de la mesure (2GT)' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
