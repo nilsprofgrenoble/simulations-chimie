@@ -86,10 +86,10 @@ export const MTR_SAPP = [
         raisons: { dt: 'La durée ne sert pas pour une énergie : elle servira pour la puissance.', d: 'La distance ne sert pas : on connaît les deux vitesses.' },
         cherche: { bonne: 'Le travail reçu par le chariot (en J, valeur algébrique)', faux: ['La puissance du transfert par travail (en W)', 'La force exercée sur le chariot (en N)', 'L’énergie cinétique initiale du chariot (en J)'] },
         manque: null, solution: { txt: 'W = ½ m v1² − ½ m v0²', val: W, u: 'J' } };
-      return { tokens, derivees: ['ΔEc = somme des travaux', 'P = |W| ÷ Δt'], texte: [...debut, 'Quelle est la puissance du transfert par travail, en watts ?'], utiles: ['m', 'v0', 'v1', 'dt'],
+      return { tokens, derivees: ['ΔEc = somme des travaux', 'P = frac(∣W∣|Δt)'], texte: [...debut, 'Quelle est la puissance du transfert par travail, en watts ?'], utiles: ['m', 'v0', 'v1', 'dt'],
         raisons: { d: 'La distance ne sert pas : la puissance est une énergie divisée par une durée.' },
         cherche: { bonne: 'La puissance du transfert par travail (en W)', faux: ['Le travail reçu par le chariot (en J)', 'La force exercée sur le chariot (en N)', 'La variation de vitesse du chariot (en m/s)'] },
-        manque: null, solution: { txt: 'P = |W| ÷ Δt', val: Math.abs(W) / p.dt, u: 'W' } };
+        manque: null, solution: { txt: 'P = frac(∣W∣|Δt)', val: Math.abs(W) / p.dt, u: 'W' } };
     }),
   },
   {
@@ -108,10 +108,10 @@ export const MTR_SAPP = [
         raisons: { dt: 'La durée ne sert pas pour une énergie.', d: 'La distance ne sert pas : on utilise la vitesse atteinte.' },
         cherche: { bonne: 'L’énergie reçue par le chariot par travail (en J)', faux: ['La puissance de la poussée (en W)', 'La force de poussée (en N)', 'L’énergie cédée à l’air (en J)'] },
         manque: null, solution: { txt: 'W = ½ m v²', val: W, u: 'J' } };
-      return { tokens, derivees: ['W = ½ m v² (départ à l’arrêt)', 'P = |W| ÷ Δt'], texte: [...debut, 'Quelle est la puissance moyenne du transfert par travail, en watts ?'], utiles: ['m', 'v', 'dt'],
+      return { tokens, derivees: ['W = ½ m v² (départ à l’arrêt)', 'P = frac(∣W∣|Δt)'], texte: [...debut, 'Quelle est la puissance moyenne du transfert par travail, en watts ?'], utiles: ['m', 'v', 'dt'],
         raisons: { d: 'La distance ne sert pas : la puissance est une énergie divisée par une durée.' },
         cherche: { bonne: 'La puissance moyenne du transfert par travail (en W)', faux: ['L’énergie reçue par le chariot (en J)', 'La force de poussée (en N)', 'L’accélération du chariot (en m/s²)'] },
-        manque: null, solution: { txt: 'P = (½ m v²) ÷ Δt', val: W / p.dt, u: 'W' } };
+        manque: null, solution: { txt: 'P = frac(½ m v²|Δt)', val: W / p.dt, u: 'W' } };
     }),
   },
 ];

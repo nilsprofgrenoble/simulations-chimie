@@ -20,7 +20,7 @@ export const OEIL2GT_ANA = [
     ] },
   { id: 'oeil2gt-ana-distance', domaine: DOM, titre: 'Un poteau trois fois plus loin',
     enonce: 'Un œil normal regarde un poteau à 20 m : son image nette sur la rétine mesure environ 3,4 mm. Le poteau est ensuite regardé à 60 m, trois fois plus loin. La rétine reste à 17 mm de la lentille.', q: 'La hauteur de l’image sur la rétine devient…', options: [
-      V('environ 1,1 mm, trois fois plus petite', 'A′B′ = AB × OA′ ÷ OA : AB et OA′ ne changent pas, OA est multiplié par 3 : A′B′ est divisée par 3, 3,4 ÷ 3 ≈ 1,1 mm.'),
+      V('environ 1,1 mm, trois fois plus petite', 'A′B′ = frac(AB × OA′|OA) : AB et OA′ ne changent pas, OA est multiplié par 3 : A′B′ est divisée par 3, frac(3,4|3) ≈ 1,1 mm.'),
       F('environ 10 mm, trois fois plus grande', 'Plus l’objet est loin, plus son image est petite : la hauteur est divisée par 3 et non multipliée.'),
       F('toujours 3,4 mm, car la rétine ne bouge pas', 'La rétine est fixe, mais la hauteur de l’image dépend de la distance de l’objet : OA est multiplié par 3, donc A′B′ est divisée par 3.'),
       F('environ 0,38 mm, neuf fois plus petite', 'La hauteur est divisée par le même nombre que la distance est multipliée (3), et non par son carré (9).'),
@@ -41,19 +41,19 @@ export const OEIL2GT_ANA = [
     ] },
   { id: 'oeil2gt-ana-deux-arbres', domaine: DOM, titre: 'Deux arbres de tailles différentes',
     enonce: 'Un œil normal regarde deux arbres alignés avec lui. Le premier mesure 6 m et se trouve à 50 m ; le second mesure 12 m et se trouve à 100 m.', q: 'Comparez les hauteurs des deux images sur la rétine.', options: [
-      V('les deux images ont exactement la même hauteur', 'A′B′ = AB × OA′ ÷ OA. Les deux rapports AB ÷ OA valent 6 ÷ 50 = 12 ÷ 100 = 0,12 : les images sont identiques, environ 2,0 mm.'),
+      V('les deux images ont exactement la même hauteur', 'A′B′ = frac(AB × OA′|OA). Les deux rapports frac(AB|OA) valent frac(6|50) = frac(12|100) = 0,12 : les images sont identiques, environ 2,0 mm.'),
       F('l’image du second arbre est deux fois plus grande', 'Le second arbre est deux fois plus grand, mais aussi deux fois plus loin : les deux effets se compensent.'),
       F('l’image du second arbre est deux fois plus petite', 'La distance double, mais la hauteur de l’arbre double aussi : l’image ne change pas.'),
-      F('l’image du premier arbre est quatre fois plus grande', 'Aucun des deux rapports n’est multiplié par 4 : les rapports hauteur ÷ distance sont égaux.'),
+      F('l’image du premier arbre est quatre fois plus grande', 'Aucun des deux rapports n’est multiplié par 4 : les rapports frac(hauteur|distance) sont égaux.'),
     ] },
 ];
 
 // ───────────── VAL : plausible ? ─────────────
 export const OEIL2GT_VAL = [
   P({ id: 'oeil2gt-val-image-arbre', domaine: DOM, niveau: 1, titre: 'L’image d’un arbre sur la rétine', plausible: false,
-    enonce: 'Un élève calcule la hauteur de l’image sur la rétine d’un arbre de 6,0 m à 50 m, avec OA′ = 17 mm : « A′B′ = 6 000 × 17 ÷ 50 = 2 040 mm ».',
+    enonce: 'Un élève calcule la hauteur de l’image sur la rétine d’un arbre de 6,0 m à 50 m, avec OA′ = 17 mm : « A′B′ = frac(6 000 × 17|50) = 2 040 mm ».',
     reperes: [['Rétine', 'à 17 mm de la lentille ; l’œil mesure environ 24 mm'], ['Arbre', 'AB = 6 000 mm ; OA = 50 m = 50 000 mm'], ['Image', 'plus petite que l’objet, car OA′ est bien plus petit que OA']],
-    ver: 'Une image de 2 040 mm (plus de 2 m) ne tiendrait pas dans un œil de 24 mm. Il faut convertir OA en mm : A′B′ = 6 000 × 17 ÷ 50 000 ≈ 2,0 mm.',
+    ver: 'Une image de 2 040 mm (plus de 2 m) ne tiendrait pas dans un œil de 24 mm. Il faut convertir OA en mm : A′B′ = frac(6 000 × 17|50 000) ≈ 2,0 mm.',
     q2: 'Quelle erreur explique le mieux son résultat ?',
     options: [
       V('il n’a pas converti 50 m en mm', 'AB est en mm mais OA reste en m : les longueurs ne sont pas dans la même unité, le résultat est 1 000 fois trop grand.'),
@@ -72,11 +72,11 @@ export const OEIL2GT_VAL = [
     ] }),
   P({ id: 'oeil2gt-val-bougie-taille', domaine: DOM, niveau: 2, titre: 'L’image d’une bougie à 25 cm', plausible: true,
     enonce: 'Une bougie de 4,0 cm est à 25 cm d’un œil normal, qui accommode : l’image est nette. Un élève trouve : « A′B′ ≈ 2,7 mm, renversée ».',
-    reperes: [['Rétine', 'à OA′ = 17 mm de la lentille'], ['Bougie', 'AB = 40 mm ; OA = 250 mm'], ['Règle', 'A′B′ ÷ AB = OA′ ÷ OA : le rapport est 17 ÷ 250, environ 0,07']],
-    ver: '40 × 17 ÷ 250 ≈ 2,7 mm : l’image est environ 15 fois plus petite que la bougie (0,07 × 40 mm ≈ 2,7 mm), et renversée. Le résultat est cohérent.',
+    reperes: [['Rétine', 'à OA′ = 17 mm de la lentille'], ['Bougie', 'AB = 40 mm ; OA = 250 mm'], ['Règle', 'frac(A′B′|AB) = frac(OA′|OA) : le rapport est frac(17|250), environ 0,07']],
+    ver: 'frac(40 × 17|250) ≈ 2,7 mm : l’image est environ 15 fois plus petite que la bougie (0,07 × 40 mm ≈ 2,7 mm), et renversée. Le résultat est cohérent.',
     q2: 'Pourquoi ce résultat est-il vraisemblable ?',
     options: [
-      V('l’objet est bien plus loin que la rétine : image petite', 'OA = 250 mm est bien plus grand que OA′ = 17 mm : le rapport OA′ ÷ OA est petit, donc l’image est petite.'),
+      V('l’objet est bien plus loin que la rétine : image petite', 'OA = 250 mm est bien plus grand que OA′ = 17 mm : le rapport frac(OA′|OA) est petit, donc l’image est petite.'),
       F('l’image d’un objet proche est toujours plus grande que l’objet', 'Avec la rétine à 17 mm et l’objet à 250 mm, le rapport est inférieur à 1 : l’image est plus petite.'),
       F('une image sur la rétine mesure toujours environ 3 mm', 'La hauteur dépend de l’objet et de sa distance : 2,7 mm n’est pas une valeur universelle.'),
     ] }),
@@ -126,10 +126,10 @@ export const OEIL2GT_SAPP = [
       const debut = ['Un œil normal est modélisé par une lentille convergente et un écran. Sa longueur totale est ', T('hOeil'), ' et sa pupille mesure ', T('pup'), '. '];
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'La rétine est à ', T('OAp'), ' de la lentille. Il regarde un arbre de ', T('AB'), ', situé à ', T('D'), ', et l’image est nette. Quelle est la hauteur de l’image sur la rétine ?'], utiles: ['AB', 'D', 'OAp'], raisons,
         cherche: { bonne: 'La hauteur de l’image sur la rétine (en mm)', faux: ['La distance entre l’arbre et son image (en m)', 'La hauteur de la pupille nécessaire (en mm)', 'La longueur de l’œil qui donne une image nette (en mm)'] },
-        manque: null, solution: { txt: 'Thalès : A′B′ = AB × OA′ ÷ OA, avec AB et OA dans la même unité', val: p.AB * 17 / p.D, u: 'mm' } };
+        manque: null, solution: { txt: 'Thalès : A′B′ = frac(AB × OA′|OA), avec AB et OA dans la même unité', val: p.AB * 17 / p.D, u: 'mm' } };
       return { tokens, derivees: [], texte: [...debut, 'La rétine est à ', T('OAp'), ' de la lentille. Un arbre est vu nettement : son image sur la rétine mesure ', T('Ap'), ' et l’arbre mesure ', T('AB'), '. À quelle distance de l’œil se trouve-t-il ?'], utiles: ['AB', 'Ap', 'OAp'], raisons,
         cherche: { bonne: 'La distance de l’arbre à l’œil (en m)', faux: ['La hauteur de l’image sur la rétine (en mm)', 'La distance focale du cristallin (en mm)', 'La largeur de la pupille (en mm)'] },
-        manque: null, solution: { txt: 'Thalès : OA = AB × OA′ ÷ A′B′ (m), avec A′B′ et OA′ en mm', val: p.D, u: 'm' } };
+        manque: null, solution: { txt: 'Thalès : OA = frac(AB × OA′|A′B′) (m), avec A′B′ et OA′ en mm', val: p.D, u: 'm' } };
     }),
   },
   {
@@ -148,10 +148,10 @@ export const OEIL2GT_SAPP = [
       const debut = ['Un élève regarde une bougie avec un œil normal qui accommode : le cristallin a une distance focale ', T('f'), ' et la pupille mesure ', T('pup'), '. L’image est nette sur la rétine, à ', T('OAp'), ' de la lentille. '];
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'La bougie mesure ', T('AB'), ' et se trouve à ', T('D'), ' de la lentille. Quelle est la hauteur de l’image sur la rétine ?'], utiles: ['AB', 'D', 'OAp'], raisons,
         cherche: { bonne: 'La hauteur de l’image sur la rétine (en mm)', faux: [`La distance focale nécessaire à ${p.D / 10}\u00a0cm (en mm)`, 'Le diamètre de la tache floue (en mm)', 'La distance de la bougie à son image (en cm)'] },
-        manque: null, solution: { txt: 'Thalès : A′B′ = AB × OA′ ÷ OA, avec la distance convertie en mm', val: p.AB * 17 / p.D, u: 'mm' } };
+        manque: null, solution: { txt: 'Thalès : A′B′ = frac(AB × OA′|OA), avec la distance convertie en mm', val: p.AB * 17 / p.D, u: 'mm' } };
       return { tokens, derivees: [], texte: [...debut, 'L’image de la bougie mesure ', T('Ap'), ' et la bougie est à ', T('D'), ' de la lentille. Quelle est la hauteur de la bougie ?'], utiles: ['Ap', 'D', 'OAp'], raisons,
         cherche: { bonne: 'La hauteur de la bougie (en mm)', faux: ['La hauteur de l’image sur la rétine (en mm)', 'La distance entre la rétine et la lentille (en mm)', 'La distance focale du cristallin au repos (en mm)'] },
-        manque: null, solution: { txt: 'Thalès : AB = A′B′ × OA ÷ OA′, avec la distance convertie en mm', val: p.AB, u: 'mm' } };
+        manque: null, solution: { txt: 'Thalès : AB = frac(A′B′ × OA|OA′), avec la distance convertie en mm', val: p.AB, u: 'mm' } };
     }),
   },
 ];

@@ -199,7 +199,7 @@ export function questions(g) {
     Q.push({ id: 'ech', comp: 1, type: 'num', q: `Sur l’axe ${ax === x ? 'horizontal' : 'vertical'}, que vaut un petit carreau (la plus petite graduation) ?`, unite: ax.u, vrai: ax.minor, tol: ax.minor * 0.02,
       pieges: [[ax.major, `C’est l’écart entre deux grandes graduations (${nb(ax.major)}). Combien de petits carreaux y a-t-il entre elles ? (${ax.div})`]],
       aide: 'Repérez deux grandes graduations voisines, puis comptez les petits carreaux qui les séparent.', marques: [],
-      expl: `Entre deux grandes graduations (${nb(ax.major)}), il y a ${ax.div} petits carreaux : ${nb(ax.major)} ÷ ${ax.div} = ${nb(ax.minor)}.` }); }
+      expl: `Entre deux grandes graduations (${nb(ax.major)}), il y a ${ax.div} petits carreaux : frac(${nb(ax.major)}|${ax.div}) = ${nb(ax.minor)}.` }); }
   // 3. lecture directe
   const bornes = (a, lo, hi) => { const n = Math.round((a.max - a.min) / a.minor); return a.min + a.minor * Math.max(1, Math.round(n * (lo + (hi - lo) * rnd()))); };
   { let x0 = bornes(x, 0.2, 0.8);

@@ -108,16 +108,16 @@ export const MAT2GT_ANA = [
   // ── Composition d'un mélange, composition de l'air
   { id: 'mat2gt-ana-air-volume', domaine: PUR, titre: 'Le dioxygène dans l’air d’une pièce',
     enonce: 'L’air contient environ 4/5 de diazote et 1/5 de dioxygène en volume. Une pièce contient 50 m³ d’air.', q: 'Quel est environ le volume de dioxygène dans la pièce ?', options: [
-      V('environ 10 m³', 'Le dioxygène représente environ 1/5 de l’air : 50 ÷ 5 = 10 m³.'),
+      V('environ 10 m³', 'Le dioxygène représente environ 1/5 de l’air : frac(50|5) = 10 m³.'),
       F('environ 40 m³', '40 m³ correspond à 4/5 de l’air : c’est le volume de diazote, pas celui de dioxygène.'),
-      F('environ 2,5 m³', '2,5 m³ vient de 50 ÷ 20 : on a pris 20 comme diviseur alors que 20 % = 1/5, soit 50 ÷ 5 = 10 m³.'),
+      F('environ 2,5 m³', '2,5 m³ vient de frac(50|20) : on a pris 20 comme diviseur alors que 20 % = 1/5, soit frac(50|5) = 10 m³.'),
       F('environ 250 m³', 'Un morceau d’un mélange ne peut pas dépasser le volume total (50 m³). On a multiplié par 5 au lieu de diviser.'),
     ] },
   { id: 'mat2gt-ana-comp-massique', domaine: PUR, titre: 'Le pourcentage de sel dans un mélange',
     enonce: 'On mélange 30 g de sel fin et 70 g de sable. Le mélange pèse donc 100 g.', q: 'Quel est le pourcentage en masse de sel dans ce mélange ?', options: [
-      V('30 %', 'Pourcentage en masse = masse de sel ÷ masse du mélange = 30 ÷ 100 = 0,30, soit 30 %.'),
-      F('70 %', '70 % est le pourcentage de sable (70 ÷ 100), pas celui du sel.'),
-      F('43 %', '43 % vient de 30 ÷ 70 : on a divisé par la masse de sable. Il faut diviser par la masse du mélange entier (100 g).'),
+      V('30 %', 'Pourcentage en masse = frac(masse de sel|masse du mélange) = frac(30|100) = 0,30, soit 30 %.'),
+      F('70 %', '70 % est le pourcentage de sable frac(70|100), pas celui du sel.'),
+      F('43 %', '43 % vient de frac(30|70) : on a divisé par la masse de sable. Il faut diviser par la masse du mélange entier (100 g).'),
       F('3 %', '3 % serait 3 g de sel pour 100 g de mélange : on s’est trompé d’un facteur 10 dans la division.'),
     ] },
 
@@ -131,7 +131,7 @@ export const MAT2GT_ANA = [
     ] },
   { id: 'mat2gt-ana-rho-ou-t', domaine: SOL, titre: 'Masse volumique ou concentration en masse ?',
     enonce: 'Une solution de sel contient 20 g de sel dissous dans 1,0 L de solution. Sa masse volumique est 1,01 g·mL⁻¹, soit 1 010 g·L⁻¹.', q: 'Quelle grandeur vaut 20 g·L⁻¹ ?', options: [
-      V('la concentration en masse du sel', 'La concentration en masse compare la masse du soluté seul au volume de solution : 20 g ÷ 1,0 L = 20 g·L⁻¹.'),
+      V('la concentration en masse du sel', 'La concentration en masse compare la masse du soluté seul au volume de solution : frac(20 g|1,0 L) = 20 g·L⁻¹.'),
       F('la masse volumique de la solution', 'La masse volumique compare la masse de toute la solution (eau et sel) à son volume : ici 1 010 g·L⁻¹.'),
       F('la masse volumique du sel solide', 'Le sel solide n’est pas en cause : 20 g·L⁻¹ concerne le sel dissous dans la solution, pas le solide.'),
       F('la masse de la solution par litre d’eau', 'La grandeur 20 g·L⁻¹ compte la masse de sel seule, et le volume est celui de la solution, pas celui de l’eau.'),

@@ -40,14 +40,14 @@ export const AMP_ANA = [
 
 export const AMP_VAL = [
   P({ id: 'amp-val-gain', domaine: DOM, niveau: 2, titre: 'Calcul d’un facteur d’amplification', plausible: false,
-    enonce: 'Un capteur délivre une tension maximale Ue,max = 5 mV. À la sortie d’un amplificateur, on mesure Us,max = 2 V. Un élève calcule A = Ue ÷ Us = 0,0025 et affirme que l’amplificateur « amplifie bien la tension ».',
+    enonce: 'Un capteur délivre une tension maximale Ue,max = 5 mV. À la sortie d’un amplificateur, on mesure Us,max = 2 V. Un élève calcule A = frac(Ue|Us) = 0,0025 et affirme que l’amplificateur « amplifie bien la tension ».',
     reperes: [['Ue,max', '5 mV'], ['Us,max', '2 V']],
-    ver: 'A = Us ÷ Ue = 2 V ÷ 0,005 V = 400. L’élève a inversé le rapport : un facteur de 0,0025, inférieur à 1, correspondrait à un montage qui atténue.',
+    ver: 'A = frac(Us|Ue) = frac(2 V|0,005 V) = 400. L’élève a inversé le rapport : un facteur de 0,0025, inférieur à 1, correspondrait à un montage qui atténue.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il a divisé Ue par Us au lieu de diviser Us par Ue', 'A = Us ÷ Ue : le facteur d’amplification compare la sortie à l’entrée, ici 400.'),
-      F('il a oublié de convertir les millivolts en volts', 'Les unités sont bien converties : 0,005 ÷ 2 = 0,0025 ; le défaut est l’inversion du rapport.'),
-      F('il aurait dû multiplier Us par Ue', 'On ne multiplie pas : A = Us ÷ Ue.'),
+      V('il a divisé Ue par Us au lieu de diviser Us par Ue', 'A = frac(Us|Ue) : le facteur d’amplification compare la sortie à l’entrée, ici 400.'),
+      F('il a oublié de convertir les millivolts en volts', 'Les unités sont bien converties : frac(0,005|2) = 0,0025 ; le défaut est l’inversion du rapport.'),
+      F('il aurait dû multiplier Us par Ue', 'On ne multiplie pas : A = frac(Us|Ue).'),
     ] }),
   P({ id: 'amp-val-sat', domaine: DOM, niveau: 2, titre: 'Une sortie qui dépasse l’alimentation', plausible: false,
     enonce: 'Un capteur délivre une tension de −20 mV à +20 mV. Un amplificateur à AOP alimenté en ±12 V a un facteur d’amplification A = 1 000, et on ajoute une tension continue Vdc = 2,5 V. Un élève annonce : « la tension de sortie varie de −17,5 V à +22,5 V ».',
@@ -78,8 +78,8 @@ export const AMP_SAPP = [
       };
       const raisons = { alim: 'La tension d’alimentation limite la sortie (saturation) mais ne sert pas au calcul demandé.', f: 'La fréquence du signal ne sert pas au calcul du facteur d’amplification.', us: 'On demande justement la tension de sortie : elle n’est pas donnée.' };
       return q === 0
-        ? { tokens, derivees: ['A = Us ÷ Ue'], texte: ['Un capteur délivre une tension de valeur maximale ', T('ue'), ', de fréquence ', T('f'), '. À la sortie d’un amplificateur à AOP alimenté en ', T('alim'), ', on mesure une tension de valeur maximale ', T('us'), '. Quel est le facteur d’amplification A de l’amplificateur ?'], utiles: ['ue', 'us'],
-          raisons: { alim: raisons.alim, f: raisons.f }, cherche: { bonne: 'Le facteur d’amplification de l’amplificateur (sans unité)', faux: ['La tension maximale de sortie', 'La tension d’alimentation de l’AOP', 'La fréquence du signal'] }, manque: null, solution: { txt: 'A = Us,max ÷ Ue,max', val: p.us / (p.ue / 1000), u: '' } }
+        ? { tokens, derivees: ['A = frac(Us|Ue)'], texte: ['Un capteur délivre une tension de valeur maximale ', T('ue'), ', de fréquence ', T('f'), '. À la sortie d’un amplificateur à AOP alimenté en ', T('alim'), ', on mesure une tension de valeur maximale ', T('us'), '. Quel est le facteur d’amplification A de l’amplificateur ?'], utiles: ['ue', 'us'],
+          raisons: { alim: raisons.alim, f: raisons.f }, cherche: { bonne: 'Le facteur d’amplification de l’amplificateur (sans unité)', faux: ['La tension maximale de sortie', 'La tension d’alimentation de l’AOP', 'La fréquence du signal'] }, manque: null, solution: { txt: 'A = frac(Us,max|Ue,max)', val: p.us / (p.ue / 1000), u: '' } }
         : { tokens, derivees: ['Us = A × Ue'], texte: ['Un amplificateur à AOP alimenté en ', T('alim'), ' a un facteur d’amplification A = ', T('A'), '. Le capteur délivre une tension de valeur maximale ', T('ue'), ', de fréquence ', T('f'), '. Quelle est la tension maximale de sortie ?'], utiles: ['A', 'ue'],
           raisons: { alim: raisons.alim, f: raisons.f }, cherche: { bonne: 'La tension maximale de sortie (en V)', faux: ['Le facteur d’amplification de l’amplificateur', 'La tension d’alimentation de l’AOP', 'La fréquence du signal'] }, manque: null, solution: { txt: 'Us,max = A × Ue,max', val: p.A * p.ue / 1000, u: 'V' } };
     }),
@@ -98,7 +98,7 @@ export const AMP_SAPP = [
       const rf = 'La fréquence du signal ne sert pas à ce calcul.';
       return q === 0
         ? { tokens, derivees: ['Us,max = A × Ue,max', 'Us,max ≤ 5 V'], texte: ['Un capteur délivre une tension de 0 à ', T('ue'), ', de fréquence ', T('f'), '. Le CAN lit de 0 à ', T('plage'), '. Quel facteur d’amplification maximal peut-on choisir pour que la tension de sortie ne dépasse pas la plage du CAN ?'], utiles: ['ue', 'plage'],
-          raisons: { f: rf }, cherche: { bonne: 'Le facteur d’amplification maximal (sans unité)', faux: ['La tension maximale de sortie', 'La tension continue à ajouter', 'La fréquence maximale du signal'] }, manque: null, solution: { txt: 'A = 5 V ÷ Ue,max', val: 5 / (p.ue / 1000), u: '' } }
+          raisons: { f: rf }, cherche: { bonne: 'Le facteur d’amplification maximal (sans unité)', faux: ['La tension maximale de sortie', 'La tension continue à ajouter', 'La fréquence maximale du signal'] }, manque: null, solution: { txt: 'A = frac(5 V|Ue,max)', val: 5 / (p.ue / 1000), u: '' } }
         : { tokens, derivees: ['Us = A × Ue + Vdc'], texte: ['Un capteur délivre une tension alternative de −', T('ue'), ' à +', T('ue'), ', de fréquence ', T('f'), '. Un amplificateur de facteur d’amplification A = ', T('A'), ' lui est associé, et un montage sommateur ajoute une tension continue ', T('vdc'), '. Quelle est la valeur maximale de la tension de sortie ?'], utiles: ['ue', 'A', 'vdc'],
           raisons: { f: rf }, cherche: { bonne: 'La valeur maximale de la tension de sortie (en V)', faux: ['La valeur minimale de la tension de sortie', 'Le facteur d’amplification de l’amplificateur', 'La fréquence du signal de sortie'] }, manque: null, solution: { txt: 'Us,max = A × Ue,max + Vdc', val: p.A * p.ue / 1000 + p.vdc, u: 'V' } };
     }),

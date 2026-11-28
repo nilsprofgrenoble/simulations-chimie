@@ -42,7 +42,7 @@ export const UVS_VAL = [
   P({ id: 'uvs-val-energie', domaine: DOM, niveau: 2, titre: 'Énergie d’un photon visible', plausible: false,
     enonce: 'Un photon visible a une longueur d’onde de 500 nm. Un élève calcule son énergie : « E = h frac(c|λ) = frac(6,63×10⁻³⁴ × 3,00×10⁸|500) = 4,0×10⁻²⁸ J. »',
     reperes: [['Constante de Planck', 'h = 6,63×10⁻³⁴ J·s'], ['Célérité de la lumière', 'c = 3,00×10⁸ m/s']],
-    ver: 'Avec λ = 5,00×10⁻⁷ m : E = 1,99×10⁻²⁵ ÷ 5,00×10⁻⁷ = 4,0×10⁻¹⁹ J, soit environ 2,5 eV : 10⁹ fois plus que le résultat de l’élève.',
+    ver: 'Avec λ = 5,00×10⁻⁷ m : E = frac(1,99×10⁻²⁵|5,00×10⁻⁷) = 4,0×10⁻¹⁹ J, soit environ 2,5 eV : 10⁹ fois plus que le résultat de l’élève.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il n’a pas converti λ en mètres : 500 nm = 5,00×10⁻⁷ m', 'La relation E = h frac(c|λ) exige λ en mètres pour obtenir E en joules.'),
@@ -93,10 +93,10 @@ export const UVS_SAPP = [
         raisons: { A: 'L’absorbance ne sert pas à convertir une longueur d’onde.', },
         cherche: { bonne: 'La longueur d’onde (en m)', faux: ['La fréquence du rayonnement (en Hz)', 'L’énergie d’un photon (en eV)', 'La concentration du colorant (en mol/L)'] },
         manque: null, solution: { txt: 'λ = λ(nm) × 10⁻⁹', val: p.lam * 1e-9, u: 'm' } };
-      return { tokens, derivees: ['λ (en m) = λ (en nm) × 10⁻⁹', 'E = h frac(c|λ) (en J)', 'E (en eV) = E (en J) ÷ 1,60×10⁻¹⁹'], texte: [...debut, 'Les constantes utiles sont ', T('h'), ', ', T('c'), ' et ', T('e'), '. Quelle est l’énergie d’un photon de ce rayonnement, en eV ?'], utiles: ['lam', 'h', 'c', 'e'],
+      return { tokens, derivees: ['λ (en m) = λ (en nm) × 10⁻⁹', 'E = h frac(c|λ) (en J)', 'E (en eV) = frac(E (en J)|1,60×10⁻¹⁹)'], texte: [...debut, 'Les constantes utiles sont ', T('h'), ', ', T('c'), ' et ', T('e'), '. Quelle est l’énergie d’un photon de ce rayonnement, en eV ?'], utiles: ['lam', 'h', 'c', 'e'],
         raisons: { A: 'L’absorbance ne change pas l’énergie d’un photon.' },
         cherche: { bonne: 'L’énergie d’un photon (en eV)', faux: ['La concentration du colorant (en mol/L)', 'La fréquence du rayonnement (en Hz)', 'L’énergie totale absorbée par la solution (en J)'] },
-        manque: null, solution: { txt: 'E = h frac(c|λ), puis ÷ 1,60×10⁻¹⁹', val: H * C / (p.lam * 1e-9) / E, u: 'eV' } };
+        manque: null, solution: { txt: 'E = h frac(c|λ), puis diviser par 1,60×10⁻¹⁹', val: H * C / (p.lam * 1e-9) / E, u: 'eV' } };
     }),
   },
   {
@@ -109,14 +109,14 @@ export const UVS_SAPP = [
       };
       const c = p.A / p.k;
       const debut = ['La droite d’étalonnage d’un colorant est A = k c, avec k = ', T('k'), '. Une solution mère est diluée ', T('f'), ' (prise d’essai de ', T('V'), '). La solution diluée a pour absorbance ', T('A'), '. '];
-      if (q === 0) return { tokens, derivees: ['c = A ÷ k'], texte: [...debut, 'Quelle est la concentration de la solution diluée, en mol/L ?'], utiles: ['k', 'A'],
+      if (q === 0) return { tokens, derivees: ['c = frac(A|k)'], texte: [...debut, 'Quelle est la concentration de la solution diluée, en mol/L ?'], utiles: ['k', 'A'],
         raisons: { f: 'Le facteur de dilution ne sert qu’ensuite, pour remonter à la solution mère.', V: 'Le volume de la prise d’essai ne change pas une concentration : seul le facteur de dilution compte.' },
         cherche: { bonne: 'La concentration de la solution diluée (en mol/L)', faux: ['La concentration de la solution mère (en mol/L)', 'La quantité de matière de la prise d’essai (en mol)', 'Le facteur de dilution'] },
-        manque: null, solution: { txt: 'c = A ÷ k', val: c, u: 'mol/L' } };
-      return { tokens, derivees: ['c (diluée) = A ÷ k', 'c (mère) = c (diluée) × facteur de dilution'], texte: [...debut, 'Quelle est la concentration de la solution mère, en mol/L ?'], utiles: ['k', 'A', 'f'],
+        manque: null, solution: { txt: 'c = frac(A|k)', val: c, u: 'mol/L' } };
+      return { tokens, derivees: ['c (diluée) = frac(A|k)', 'c (mère) = c (diluée) × facteur de dilution'], texte: [...debut, 'Quelle est la concentration de la solution mère, en mol/L ?'], utiles: ['k', 'A', 'f'],
         raisons: { V: 'Le volume de la prise d’essai ne change pas une concentration : seul le facteur de dilution compte.' },
         cherche: { bonne: 'La concentration de la solution mère (en mol/L)', faux: ['La concentration de la solution diluée (en mol/L)', 'La quantité de colorant dans la prise d’essai (en mol)', 'L’absorbance de la solution mère'] },
-        manque: null, solution: { txt: 'c (mère) = (A ÷ k) × facteur de dilution', val: c * p.f, u: 'mol/L' } };
+        manque: null, solution: { txt: 'c (mère) = frac(A|k) × facteur de dilution', val: c * p.f, u: 'mol/L' } };
     }),
   },
 ];

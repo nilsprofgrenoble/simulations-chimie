@@ -92,10 +92,10 @@ export const RMNS_SAPP = [
         raisons: { N: 'Le nombre total de H ne sert pas à additionner les hauteurs.', nu: 'La fréquence du spectromètre ne sert pas à additionner les hauteurs.', d: 'Le déplacement chimique ne sert pas à additionner des hauteurs.' },
         cherche: { bonne: 'La hauteur totale des paliers (en mm)', faux: ['Le nombre de H du premier signal', 'La multiplicité du premier signal', 'Le déplacement chimique du premier signal'] },
         manque: null, solution: { txt: 'H = h₁ + h₂ + h₃', val: H, u: 'mm' } };
-      return { tokens, derivees: ['H = h₁ + h₂ + h₃', 'nombre de H = N × h ÷ H'], texte: [...debut, 'Le signal étudié est celui à ', T('d'), ', de palier ', T('h' + p.i), '. Combien de H ce signal représente-t-il ?'], utiles: ['N', ...ht],
+      return { tokens, derivees: ['H = h₁ + h₂ + h₃', 'nombre de H = frac(N × h|H)'], texte: [...debut, 'Le signal étudié est celui à ', T('d'), ', de palier ', T('h' + p.i), '. Combien de H ce signal représente-t-il ?'], utiles: ['N', ...ht],
         raisons: { nu: 'La fréquence du spectromètre ne sert pas à compter les H.', d: 'Le déplacement chimique sert à repérer le signal, pas à compter ses H.' },
         cherche: { bonne: 'Le nombre de H du signal (nombre entier)', faux: ['La multiplicité du signal', 'Le type de proton d’après la banque de données', 'La hauteur totale des paliers (en mm)'] },
-        manque: null, solution: { txt: 'nombre de H = N × h ÷ H', val: x.n, u: 'H' } };
+        manque: null, solution: { txt: 'nombre de H = frac(N × h|H)', val: x.n, u: 'H' } };
     }),
   },
 ];

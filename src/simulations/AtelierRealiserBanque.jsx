@@ -422,7 +422,7 @@ function genFonctions() {
           expl: <>(r₁ / r₂)³ = ({r1} / {r2})³ = {nb(r1 / r2, 3)}³ = <b>{nb(fac, 3)}</b>.</> },
         { id: 'f1', type: 'num', q: <>En déduire le champ de l’aimant à {r2}{NB}cm.</>, unite: 'µT', vrai: B2, csMin: 3, aide: 'Multipliez le champ à r₁ par le facteur obtenu.',
           expl: <>B(r₂) = {B1} × {nb(fac, 3)} = <b>{avecU(B2, 'µT')}</b>.</> },
-      ], retenir: ['Distance × 2 ⇒ champ ÷ 8 (loi en 1/r³).', 'Les puissances s’appliquent à la fraction entière : (frac(r₁|r₂))³.', 'Une grandeur qui décroît très vite avec la distance perd son effet à quelques longueurs de l’aimant.'] }; },
+      ], retenir: ['Distance × 2 ⇒ champ divisé par 8 (loi en 1/r³).', 'Les puissances s’appliquent à la fraction entière : frac(r₁|r₂)³.', 'Une grandeur qui décroît très vite avec la distance perd son effet à quelques longueurs de l’aimant.'] }; },
     () => { const n = tire([4, 9, 16, 25, 36]), s = alea(0.2, 0.9, 2), u = s / Math.sqrt(n);
       return { intro: <>On répète n = {n} fois une mesure ; l’écart-type expérimental est s = {nb(s, 2)}{NB}mL. L’incertitude-type de la moyenne est u = s / {avecIndices(`sqrt(n)`)}.</>, questions: [
         { id: 'f0', type: 'num', q: <>Calculez {avecIndices(`sqrt(n)`)} pour n = <b>{n}</b>.</>, unite: '', vrai: Math.sqrt(n), csMin: 2, aide: 'Touche « √ » de la calculatrice.', expl: <>{avecIndices(`sqrt(${n})`)} = <b>{nb(Math.sqrt(n), 2)}</b>.</> },
@@ -547,8 +547,8 @@ function genOndCelerite() {
   const [milieu, d, dt] = tire([['un matériau', 34, 1], ['un matériau', 51, 1.5], ['un matériau', 75, 0.5], ['un matériau', 150, 1], ['un matériau', 60, 0.5], ['un matériau', 64, 0.2], ['un matériau', 48, 0.2], ['un matériau', 40, 0.5], ['un matériau', 59, 0.1], ['un matériau', 118, 0.2]]);
   const c = d * 10 / dt;                                        // m/s : d (cm) → m, Δt (ms) → s
   const q1 = { id: 'o0', type: 'num', q: <>Deux capteurs, distants de <b>{d}{NB}cm</b>, détectent le même signal sonore dans {milieu} avec un retard de <b>{nb(dt, 2)}{NB}ms</b>. Calculez la célérité c du son, en <b>m/s</b>.</>, unite: 'm/s', vrai: c, csMin: 2,
-    aide: 'c = d ÷ Δt. Convertissez d en mètres (1 cm = 0,01 m) et Δt en secondes (1 ms = 0,001 s) avant de diviser.',
-    pieges: [[c / 10, 'Vous avez divisé directement des cm par des ms : 1 cm/ms = 10 m/s. Convertissez d en m et Δt en s.'], [dt / d * 10, 'Vous avez calculé Δt ÷ d : la célérité est d ÷ Δt.']],
+    aide: 'c = frac(d|Δt). Convertissez d en mètres (1 cm = 0,01 m) et Δt en secondes (1 ms = 0,001 s) avant de diviser.',
+    pieges: [[c / 10, 'Vous avez divisé directement des cm par des ms : 1 cm/ms = 10 m/s. Convertissez d en m et Δt en s.'], [dt / d * 10, 'Vous avez calculé frac(Δt|d) : la célérité est frac(d|Δt).']],
     expl: <>d = {d}{NB}cm = {dec(d / 100)}{NB}m et Δt = {nb(dt, 2)}{NB}ms = {dec(dt / 1000)}{NB}s, donc c = <Frac haut={<>d</>} bas={<>Δt</>} /> = <b>{avecU(c, 'm/s', 3)}</b>.</> };
   const dtO = tire([2, 3, 4, 5, 7, 8, 10]), dkm = 0.34 * dtO;
   const q2 = { id: 'o1', type: 'num', q: <>Un éclair est vu, puis le tonnerre est entendu <b>{dtO}{NB}s</b> plus tard. La célérité du son dans l’air est c = 340{NB}m/s ; la lumière arrive quasi instantanément. Calculez la distance de l’éclair, en <b>km</b>.</>, unite: 'km', vrai: dkm, csMin: 2, tolRel: 0.05,
@@ -562,12 +562,12 @@ function genOndCelerite() {
     expl: <>Distance parcourue : c × Δt = 1 500 × {dec(dtE / 1000)} = {dec(2 * H)}{NB}m (aller-retour), donc profondeur = <b>{avecU(H, 'm', 2)}</b>.</> };
   const k = tire([1, 2, 3, 5, 10]), dA = Number((5.9 * k).toFixed(1));
   const q4 = { id: 'o3', type: 'num', q: <>Dans l’acier, la célérité du son est c = 5{NB}900{NB}m/s. Un signal parcourt une barre d’acier de <b>{dec(dA)}{NB}m</b>. Calculez la durée de propagation Δt, en <b>ms</b>.</>, unite: 'ms', vrai: k, csMin: 1,
-    aide: 'Δt = d ÷ c en secondes, puis multipliez par 1 000 pour obtenir des millisecondes.',
-    pieges: [[k / 1000, 'Ce résultat est en secondes : multipliez par 1 000 pour l’exprimer en ms.'], [5900 / dA, 'Vous avez divisé c par d : la durée est d ÷ c.']],
+    aide: 'Δt = frac(d|c) en secondes, puis multipliez par 1 000 pour obtenir des millisecondes.',
+    pieges: [[k / 1000, 'Ce résultat est en secondes : multipliez par 1 000 pour l’exprimer en ms.'], [5900 / dA, 'Vous avez divisé c par d : la durée est frac(d|c).']],
     expl: <>Δt = <Frac haut={<>d</>} bas={<>c</>} /> = <Frac haut={<>{dec(dA)}</>} bas={<>5 900</>} /> = {dec(k / 1000)}{NB}s, soit <b>{avecU(k, 'ms', 2)}</b>.</> };
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 0.03 * Math.abs(q.vrai)); });
   return { intro: 'Ondes mécaniques : célérité, retard et distance, avec les conversions d’unités.', questions: [q1, q2, q3, q4],
-    retenir: ['Célérité : c = d ÷ Δt (distance en m, durée en s, célérité en m/s).', 'Distance parcourue : d = c × Δt ; durée de propagation : Δt = d ÷ c.', 'Un écho fait un aller-retour : profondeur = c × Δt ÷ 2.', 'Convertir avant de calculer : 1 cm = 0,01 m ; 1 ms = 0,001 s ; 1 km = 1 000 m.', 'La célérité dépend du milieu : air ≈ 340 m/s, eau ≈ 1 500 m/s, acier ≈ 5 900 m/s.'] };
+    retenir: ['Célérité : c = frac(d|Δt) (distance en m, durée en s, célérité en m/s).', 'Distance parcourue : d = c × Δt ; durée de propagation : Δt = frac(d|c).', 'Un écho fait un aller-retour : profondeur = frac(c × Δt|2).', 'Convertir avant de calculer : 1 cm = 0,01 m ; 1 ms = 0,001 s ; 1 km = 1 000 m.', 'La célérité dépend du milieu : air ≈ 340 m/s, eau ≈ 1 500 m/s, acier ≈ 5 900 m/s.'] };
 }
 
 // ──────────────────────── Famille « Lentille mince » (1re spécialité) ────────────────────────
@@ -603,25 +603,25 @@ function genOndesPeriode() {
   const q1 = { id: 'o0', type: 'num', q: <>Sur l’enregistrement du mouvement d’un point d’une corde, on compte <b>{n1} oscillations complètes</b> en <b>{nb(dt1, 2)}{NB}s</b>. Calculez la période T de l’onde, en <b>s</b>.</>, unite: 's', vrai: T1, csMin: 2,
     aide: 'La période est la durée d’UNE oscillation : divisez la durée totale par le nombre d’oscillations.',
     pieges: [[dt1 * n1, 'Vous avez multiplié : la durée d’une seule oscillation est plus courte que la durée totale, donc il faut diviser.'], [n1 / dt1, 'Vous avez calculé le nombre d’oscillations par seconde (la fréquence) : la période est son inverse.'], [dt1, 'Vous avez gardé la durée totale : elle contient ' + n1 + ' oscillations.']],
-    expl: <>T = durée ÷ nombre d’oscillations = <Frac haut={<>{nb(dt1, 2)}</>} bas={<>{n1}</>} /> = <b>{avecU(T1, 's', 2)}</b>.</> };
+    expl: <>T = frac(durée|nombre d’oscillations) = <Frac haut={<>{nb(dt1, 2)}</>} bas={<>{n1}</>} /> = <b>{avecU(T1, 's', 2)}</b>.</> };
   const Tms = tire([100, 200, 250, 400, 500]), f2 = 1000 / Tms;
   const q2 = { id: 'o1', type: 'num', q: <>Un point de la corde effectue une oscillation complète en <b>{Tms}{NB}ms</b>. Calculez la fréquence f de l’onde, en <b>Hz</b>.</>, unite: 'Hz', vrai: f2, csMin: 2,
-    aide: 'Convertissez d’abord la période en secondes (1 ms = 10⁻³ s), puis prenez l’inverse : f = 1 ÷ T.',
-    pieges: [[1 / Tms, 'Vous avez gardé la période en millisecondes : il faut la convertir en secondes (1 ms = 10⁻³ s) avant de prendre l’inverse.'], [Tms / 1000, 'Vous avez donné la période en secondes : la fréquence est son inverse, f = 1 ÷ T.']],
+    aide: 'Convertissez d’abord la période en secondes (1 ms = 10⁻³ s), puis prenez l’inverse : f = frac(1|T).',
+    pieges: [[1 / Tms, 'Vous avez gardé la période en millisecondes : il faut la convertir en secondes (1 ms = 10⁻³ s) avant de prendre l’inverse.'], [Tms / 1000, 'Vous avez donné la période en secondes : la fréquence est son inverse, f = frac(1|T).']],
     expl: <>T = {Tms} ms = {nb(Tms / 1000, 2)} s ; f = <Frac haut={<>1</>} bas={<>T</>} /> = <Frac haut={<>1</>} bas={<>{nb(Tms / 1000, 2)}</>} /> = <b>{avecU(f2, 'Hz', 2)}</b>.</> };
   const fk = tire([0.5, 1.0, 2.0, 4.0]), lamcm = 340 / (fk * 1000) * 100;
   const q3 = { id: 'o2', type: 'num', q: <>Un haut-parleur émet un son de fréquence <b>{nb(fk, 2)}{NB}kHz</b>. La célérité du son dans l’air est <b>340{NB}m/s</b>. Calculez la longueur d’onde λ du son, en <b>cm</b>.</>, unite: 'cm', vrai: lamcm, csMin: 2,
-    aide: 'Convertissez la fréquence en hertz (1 kHz = 10³ Hz), utilisez λ = c ÷ f (c’est λ = c × T avec T = 1 ÷ f), puis convertissez le résultat de m en cm.',
-    pieges: [[lamcm / 100, 'Votre résultat est en mètres : la réponse est demandée en centimètres (1 m = 100 cm).'], [340 * fk * 1000 * 100, 'Vous avez multiplié c par f : la longueur d’onde est c ÷ f.'], [340 / fk * 100, 'Vous avez gardé la fréquence en kHz : convertissez-la en Hz (× 10³) avant de diviser.']],
+    aide: 'Convertissez la fréquence en hertz (1 kHz = 10³ Hz), utilisez λ = frac(c|f) (c’est λ = c × T avec T = frac(1|f)), puis convertissez le résultat de m en cm.',
+    pieges: [[lamcm / 100, 'Votre résultat est en mètres : la réponse est demandée en centimètres (1 m = 100 cm).'], [340 * fk * 1000 * 100, 'Vous avez multiplié c par f : la longueur d’onde est frac(c|f).'], [340 / fk * 100, 'Vous avez gardé la fréquence en kHz : convertissez-la en Hz (× 10³) avant de diviser.']],
     expl: <>f = {nb(fk, 2)} kHz = {fk * 1000} Hz ; λ = <Frac haut={<>c</>} bas={<>f</>} /> = <Frac haut={<>340</>} bas={<>{fk * 1000}</>} /> = {String(Number((lamcm / 100).toPrecision(3))).replace('.', ',')} m = <b>{avecU(lamcm, 'cm', 2)}</b>.</> };
   const [lc, tm] = tire([[12, 40], [20, 50], [24, 80], [15, 50], [20, 80], [24, 60]]), c4 = lc / 100 / (tm / 1000);
   const q4 = { id: 'o3', type: 'num', q: <>Sur une photo de la corde, deux crêtes voisines sont distantes de <b>{lc}{NB}cm</b>. Sur l’enregistrement d’un point, deux sommets successifs sont séparés de <b>{tm}{NB}ms</b>. Calculez la célérité c de l’onde, en <b>m/s</b>.</>, unite: 'm/s', vrai: c4, csMin: 2,
-    aide: 'Pendant une période, l’onde parcourt une longueur d’onde : c = λ ÷ T. Convertissez λ en m (1 cm = 10⁻² m) et T en s (1 ms = 10⁻³ s) avant de diviser.',
-    pieges: [[lc / (tm / 1000), 'Vous avez gardé λ en cm : le résultat est alors en cm/s ; convertissez λ en mètres pour obtenir des m/s.'], [lc / tm, 'Les unités ne sont pas converties (cm et ms) : λ doit être en m et T en s.'], [(tm / 1000) / (lc / 100), 'Vous avez divisé T par λ : la célérité est λ ÷ T.'], [lc / 100 * (tm / 1000), 'Vous avez multiplié λ par T : il faut diviser.']],
+    aide: 'Pendant une période, l’onde parcourt une longueur d’onde : c = frac(λ|T). Convertissez λ en m (1 cm = 10⁻² m) et T en s (1 ms = 10⁻³ s) avant de diviser.',
+    pieges: [[lc / (tm / 1000), 'Vous avez gardé λ en cm : le résultat est alors en cm/s ; convertissez λ en mètres pour obtenir des m/s.'], [lc / tm, 'Les unités ne sont pas converties (cm et ms) : λ doit être en m et T en s.'], [(tm / 1000) / (lc / 100), 'Vous avez divisé T par λ : la célérité est frac(λ|T).'], [lc / 100 * (tm / 1000), 'Vous avez multiplié λ par T : il faut diviser.']],
     expl: <>λ = {lc} cm = {nb(lc / 100, 2)} m ; T = {tm} ms = {nb(tm / 1000, 2)} s ; c = <Frac haut={<>λ</>} bas={<>T</>} /> = <Frac haut={<>{nb(lc / 100, 2)}</>} bas={<>{nb(tm / 1000, 2)}</>} /> = <b>{avecU(c4, 'm/s', 2)}</b>.</> };
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 0.03 * Math.abs(q.vrai)); });      // un piège égal (ou presque) à la bonne réponse n'a pas de sens
   return { intro: 'Ondes mécaniques périodiques : période, fréquence, longueur d’onde et célérité, avec les conversions d’unités.', questions: [q1, q2, q3, q4],
-    retenir: ['Période T (en s) : durée d’une oscillation complète ; fréquence f = 1 ÷ T (en Hz).', 'Longueur d’onde λ : distance parcourue par l’onde pendant une période, donc c = λ ÷ T et λ = c × T = c ÷ f.', 'Convertir AVANT de calculer : ms → s (× 10⁻³), kHz → Hz (× 10³), cm → m (× 10⁻²).', 'La source impose T ; le milieu impose c ; λ en résulte.'] };
+    retenir: ['Période T (en s) : durée d’une oscillation complète ; fréquence f = frac(1|T) (en Hz).', 'Longueur d’onde λ : distance parcourue par l’onde pendant une période, donc c = frac(λ|T) et λ = c × T = frac(c|f).', 'Convertir AVANT de calculer : ms → s (× 10⁻³), kHz → Hz (× 10³), cm → m (× 10⁻²).', 'La source impose T ; le milieu impose c ; λ en résulte.'] };
 }
 
 // ──────────────────────── Familles « L'œil et la loupe » (terminale STL) ────────────────────────
@@ -638,7 +638,7 @@ function genOeilAccomm() {
     expl: <>θ ≈ AB / D = {AB} / {Dmm} = {nb(AB / Dmm, 3)} rad = <b>{avecU(th, 'mrad', 2)}</b>.</> };
   const ok = 0.10 / Dmm >= 3e-4, o3 = melange(['oui : θ est supérieur ou égal à ε ≈ 0,3 mrad', 'non : θ est inférieur à ε ≈ 0,3 mrad', 'oui : l’œil accommode et sépare tout', 'on ne peut pas savoir']);
   const bonne3 = ok ? 'oui : θ est supérieur ou égal à ε ≈ 0,3 mrad' : 'non : θ est inférieur à ε ≈ 0,3 mrad';
-  const q3 = { id: 'o2', type: 'qcm', q: <>Deux traits sont séparés de 0,10{NB}mm. Le pouvoir séparateur de l’œil est ε ≈ 3×10⁻⁴{NB}rad = 0,3{NB}mrad. À {D}{NB}cm, l’œil les voit-il séparés ? (θ = 0,10 ÷ {Dmm} = {nb(0.10 / Dmm * 1000, 2)} mrad)</>, options: o3, bonne: o3.indexOf(bonne3),
+  const q3 = { id: 'o2', type: 'qcm', q: <>Deux traits sont séparés de 0,10{NB}mm. Le pouvoir séparateur de l’œil est ε ≈ 3×10⁻⁴{NB}rad = 0,3{NB}mrad. À {D}{NB}cm, l’œil les voit-il séparés ? (θ = <Frac haut={<>0,10</>} bas={<>{Dmm}</>} /> = {nb(0.10 / Dmm * 1000, 2)} mrad)</>, options: o3, bonne: o3.indexOf(bonne3),
     aide: 'Deux détails sont séparés si l’angle θ qui les sépare est au moins égal à ε.',
     expl: <>θ = {nb(0.10 / Dmm * 1000, 2)} mrad {ok ? '≥' : '<'} 0,3 mrad : {ok ? 'les traits sont vus séparés.' : 'les traits se confondent ; pour les séparer, il faut se rapprocher (au mieux 25 cm) ou utiliser un instrument.'}</> };
   [q1, q2].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) / Math.abs(q.vrai) > 1e-3); });
@@ -994,13 +994,13 @@ function genQuantiteMatiere1G() {
   const e5 = QM.espece(tire(['ethanol', 'acetone', 'cyclohexane', 'acideEthanoique'])), M5 = QM.masseMolaire(e5), V5 = tire([10.0, 20.0, 25.0, 50.0]), m5 = e5.rho * V5, n5 = m5 / M5;
   const q5 = { id: 'm4', type: 'num', q: <>On prélève <b>{nb(V5, 3)}{NB}mL</b> de {e5.nom} {QM.formuleTexte(e5)}, de masse volumique <b>ρ = {nb(e5.rho, 3)}{NB}g/mL</b> et de masse molaire M = {nb(M5, 3)}{NB}g/mol. Calculez la quantité de matière prélevée, en <b>mol</b>.</>, unite: 'mol', vrai: n5, csMin: 3, tolRel: 0.01,
     aide: 'La masse se déduit du volume : m = ρ × V (en g). Puis n = frac(m|M).',
-    pieges: [[m5, 'C’est la masse m = ρ × V : il reste à la diviser par M pour obtenir n.'], [V5 / M5, 'Il manque la masse volumique : il faut passer du volume à la masse, m = ρ × V.'], [e5.rho * M5 / V5, 'La relation est n = ρ × V ÷ M, pas ρ × M ÷ V.']],
+    pieges: [[m5, 'C’est la masse m = ρ × V : il reste à la diviser par M pour obtenir n.'], [V5 / M5, 'Il manque la masse volumique : il faut passer du volume à la masse, m = ρ × V.'], [e5.rho * M5 / V5, 'La relation est n = frac(ρ × V|M), pas frac(ρ × M|V).']],
     expl: <>m = ρ × V = {nb(e5.rho, 3)} × {nb(V5, 3)} = {nb(m5, 3)}{NB}g ; n = {nb(m5, 3)} / {nb(M5, 3)} = <b>{avecU(n5, 'mol', 3)}</b>.</> };
   const e6 = QM.espece(tire(['ethanol', 'acetone', 'acideEthanoique', 'cyclohexane'])), M6 = QM.masseMolaire(e6), Me6 = QM.masseMolaire(QM.espece('eau')), ma6 = tire([9.0, 18.0, 27.0, 36.0]), mb6 = tire([10.0, 20.0, 23.0, 30.0]);
   const na6 = ma6 / Me6, nb6 = mb6 / M6, x6 = 100 * na6 / (na6 + nb6);
   const q6 = { id: 'm5', type: 'num', q: <>Un mélange liquide contient <b>{nb(ma6, 3)}{NB}g d’eau</b> (M = {nb(Me6, 3)}{NB}g/mol) et <b>{nb(mb6, 3)}{NB}g de {e6.nom}</b> {QM.formuleTexte(e6)} (M = {nb(M6, 3)}{NB}g/mol). Calculez le pourcentage de molécules d’eau parmi toutes les molécules du mélange (part en nombre de molécules), en <b>%</b>.</>, unite: '%', vrai: x6, csMin: 2, tolRel: 0.01,
-    aide: 'Calculez n pour chaque constituant (n = frac(m|M)), puis la part de l’eau : n(eau) ÷ (n(eau) + n({e6.nom})). Le nombre de molécules est proportionnel à n.'.replace('{e6.nom}', e6.nom),
-    pieges: [[100 * ma6 / (ma6 + mb6), 'C’est la part en masse : le nombre de molécules est proportionnel à la quantité de matière n = frac(m|M), pas à la masse.'], [100 * na6 / nb6, 'Vous avez comparé n(eau) à n(' + e6.nom + ') : il faut la part de l’eau dans le total, n(eau) ÷ (n(eau) + n(' + e6.nom + ')).'], [100 * na6 / (na6 + nb6) / 100, 'Le résultat est demandé en pourcentage : multipliez la fraction par 100.']],
+    aide: 'Calculez n pour chaque constituant (n = frac(m|M)), puis la part de l’eau : frac(n(eau)|n(eau) + n({e6.nom})). Le nombre de molécules est proportionnel à n.'.replace('{e6.nom}', e6.nom),
+    pieges: [[100 * ma6 / (ma6 + mb6), 'C’est la part en masse : le nombre de molécules est proportionnel à la quantité de matière n = frac(m|M), pas à la masse.'], [100 * na6 / nb6, 'Vous avez comparé n(eau) à n(' + e6.nom + ') : il faut la part de l’eau dans le total, frac(n(eau)|n(eau) + n(' + e6.nom + ')).'], [100 * na6 / (na6 + nb6) / 100, 'Le résultat est demandé en pourcentage : multipliez la fraction par 100.']],
     expl: <>n(eau) = {nb(ma6, 3)} / {nb(Me6, 3)} = {nb(na6, 3)}{NB}mol ; n({e6.nom}) = {nb(mb6, 3)} / {nb(M6, 3)} = {nb(nb6, 3)}{NB}mol ; part de l’eau = {nb(na6, 3)} / ({nb(na6, 3)} + {nb(nb6, 3)}) = <b>{avecU(x6, '%', 3)}</b>.</> };
   [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Quantité de matière : masse molaire d’une espèce, puis n à partir d’une masse, du volume d’un gaz (volume molaire) ou du volume d’un liquide (masse volumique), puis composition d’un mélange.', questions: [q1, q2, q3, q4, q5, q6],
@@ -1055,13 +1055,13 @@ function genLewis1G() {
     expl: <>{[...new Set(e1.atomes)].map(a => { const k = e1.atomes.filter(x => x === a).length; return `${k > 1 ? k + ' × ' : ''}${LW.valenceAtome(a)} (${a})`; }).join(' + ')} = {S1}{e1.q !== 0 ? <> ; charge {e1.q > 0 ? '+' : '−'}{Math.abs(e1.q)} : n<sub>T</sub> = {S1} {e1.q > 0 ? '−' : '+'} {Math.abs(e1.q)} = <b>{n1}</b></> : <> : n<sub>T</sub> = <b>{n1}</b></>} électrons.</> };
   const e2 = tire(prog.filter(e => LW.nD(e) > 0 && e.id !== e1.id)), n2 = LW.nD(e2), T2 = LW.nT(e2);
   const q2 = { id: 'lw1', type: 'num', q: <>Combien de <b>doublets d’électrons</b> n<sub>D</sub> faut-il répartir dans <b>{e2.nom} {e2.formule}</b> ? Numéros atomiques : {ZTxt(e2)}.</>, unite: 'doublets', vrai: n2, csMin: String(n2).length, tolRel: 0,
-    aide: 'D’abord n_T (électrons de valence de tous les atomes, corrigés de la charge), puis n_D = n_T ÷ 2 : un doublet contient deux électrons.',
+    aide: 'D’abord n_T (électrons de valence de tous les atomes, corrigés de la charge), puis n_D = frac(n_T|2) : un doublet contient deux électrons.',
     pieges: [[T2, 'C’est le nombre d’électrons n_T : un doublet contient deux électrons, il faut diviser par 2.'], [(somme(e2) + e2.q) / 2, 'La charge est appliquée à l’envers : un cation a perdu des électrons, un anion en a gagné.']].concat(e2.q !== 0 ? [[somme(e2) / 2, 'Vous avez oublié la charge de l’ion dans le comptage de n_T.']] : []),
     expl: <>n<sub>T</sub> = {T2} électrons ; n<sub>D</sub> = <Frac haut={<>{T2}</>} bas={<>2</>} /> = <b>{n2}</b> doublets.</> };
   const ent3 = LW.ENTITES_PROGRAMME.filter(e => { const r = LW.structureRef(e); return r.lp.reduce((t, x) => t + x, 0) > 0 && e.id !== e1.id; });
   const e3 = tire(ent3), r3 = LW.structureRef(e3), liants3 = r3.liens.reduce((t, x) => t + x, 0), nd3 = LW.nD(e3), lp3 = nd3 - liants3;
   const q3 = { id: 'lw2', type: 'num', q: <>Le schéma de Lewis de <b>{e3.nom} {e3.formule}</b> comporte <b>{liants3} doublet{liants3 > 1 ? 's' : ''} liant{liants3 > 1 ? 's' : ''}</b> (une liaison double compte pour deux doublets). Combien de <b>doublets non liants</b> comporte-t-il ? Numéros atomiques : {ZTxt(e3)}.</>, unite: 'doublets', vrai: lp3, csMin: String(lp3).length, tolRel: 0,
-    aide: 'Le nombre total de doublets est n_D = n_T ÷ 2. Les doublets non liants sont ceux qui ne sont pas liants : n_D moins les doublets liants.',
+    aide: 'Le nombre total de doublets est n_D = frac(n_T|2). Les doublets non liants sont ceux qui ne sont pas liants : n_D moins les doublets liants.',
     pieges: [[nd3, 'C’est le nombre total de doublets n_D : il faut en retirer les doublets liants.'], [liants3, 'C’est le nombre de doublets liants : on demande les doublets non liants, ceux qui restent.'], [nd3 + liants3, 'Il faut retirer les doublets liants du total, pas les ajouter.']],
     expl: <>n<sub>T</sub> = {LW.nT(e3)}, donc n<sub>D</sub> = {nd3} doublets ; doublets non liants = {nd3} − {liants3} = <b>{lp3}</b>.</> };
   const ent4 = [['H3Op', 0], ['HOm', 1], ['NH4p', 0], ['Clm', 0], ['O2m', 0]].map(([id, k]) => [LW.entite(id), k]);
@@ -1072,7 +1072,7 @@ function genLewis1G() {
     expl: <>Électrons de valence de {a4} seul : {v4} ; électrons possédés dans l’entité : {b4} + 2 × {l4} = {b4 + 2 * l4} ; charge = {v4} − {b4 + 2 * l4} = <b>{c4 > 0 ? '+' : c4 < 0 ? '−' : ''}{Math.abs(c4)}</b>.</> };
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
   return { intro: 'Schéma de Lewis : nombre total d’électrons de valence, nombre de doublets, doublets non liants et charge portée par un atome.', questions: [q1, q2, q3, q4],
-    retenir: ['n_T = somme des électrons de valence des atomes seuls − charge de l’entité ; n_D = n_T ÷ 2.', 'Doublets non liants = n_D − doublets liants (une liaison double compte pour 2, une triple pour 3).', 'Charge d’un atome = électrons de valence seul − (liaisons + 2 × doublets non liants).'] };
+    retenir: ['n_T = somme des électrons de valence des atomes seuls − charge de l’entité ; n_D = frac(n_T|2).', 'Doublets non liants = n_D − doublets liants (une liaison double compte pour 2, une triple pour 3).', 'Charge d’un atome = électrons de valence seul − (liaisons + 2 × doublets non liants).'] };
 }
 
 // ───────────── Oxydo-réduction (1G) : électrons échangés, coefficients de l'équation, quantités de réactifs et de produits ─────────────
@@ -1101,15 +1101,15 @@ function genRedox1G() {
   const nR = donnee(n => n * cO3 / cR3), nO3 = nR * cO3 / cR3;
   const q3 = { id: 'rx2', type: 'num', q: <>On étudie la réaction entre <b>{RX.texte(red3)}</b> (réducteur) et <b>{RX.texte(ox3)}</b> (oxydant). {couples(r3, t3)} Une quantité <b>{nb(nR, 2)}{NB}mmol</b> de {RX.texte(red3)} réagit. D’après l’équation de réaction (plus petits coefficients entiers), quelle quantité de <b>{RX.texte(ox3)}</b> est consommée, en <b>mmol</b> ?</>, unite: 'mmol', vrai: nO3, csMin: 2, tolRel: 0.01,
     aide: 'Établis d’abord l’équation de réaction : les coefficients de l’oxydant et du réducteur donnent le rapport de leurs quantités consommées (n(oxydant) / coefficient de l’oxydant = n(réducteur) / coefficient du réducteur).',
-    pieges: garde(nO3, [[nR, 'Tu as supposé autant d’oxydant que de réducteur : le rapport des quantités est celui des coefficients de l’équation.'], [nR * cR3 / cO3, 'Le rapport est inversé : n(oxydant) = n(réducteur) × coefficient de l’oxydant ÷ coefficient du réducteur.'], [nR * cO3, 'Il faut aussi diviser par le coefficient du réducteur : frac(n(oxydant)|c(oxydant)) = frac(n(réducteur)|c(réducteur)).']]),
-    expl: <>Équation : {RX.equationTxt(r3, false)}. n({RX.texte(ox3)}) = n({RX.texte(red3)}) × {cO3} ÷ {cR3} = <Frac haut={<>{nb(nR, 2)} × {cO3}</>} bas={<>{cR3}</>} /> = <b>{avecU(nO3, 'mmol', 2)}</b>.</> };
+    pieges: garde(nO3, [[nR, 'Tu as supposé autant d’oxydant que de réducteur : le rapport des quantités est celui des coefficients de l’équation.'], [nR * cR3 / cO3, 'Le rapport est inversé : n(oxydant) = frac(n(réducteur) × coefficient de l’oxydant|coefficient du réducteur).'], [nR * cO3, 'Il faut aussi diviser par le coefficient du réducteur : frac(n(oxydant)|c(oxydant)) = frac(n(réducteur)|c(réducteur)).']]),
+    expl: <>Équation : {RX.equationTxt(r3, false)}. n({RX.texte(ox3)}) = <Frac haut={<>n({RX.texte(red3)}) × {cO3}</>} bas={<>{cR3}</>} /> = <Frac haut={<>{nb(nR, 2)} × {cO3}</>} bas={<>{cR3}</>} /> = <b>{avecU(nO3, 'mmol', 2)}</b>.</> };
   // 4. quantité d'un produit formé à partir d'une quantité d'oxydant consommée
   const t4 = tire(TRS), r4 = RX.equationDe(t4), ox4 = RX.COUPLES[t4.couple1][0], cO4 = r4.reactifs.find(([id]) => id === ox4)[1];
   const prods = r4.produits.filter(([id]) => id !== 'H2O'), [idP, cP] = tire(prods), nO4 = donnee(n => n * cP / cO4), nP = nO4 * cP / cO4;
   const q4 = { id: 'rx3', type: 'num', q: <>On étudie la réaction entre <b>{RX.texte(RX.COUPLES[t4.couple2][1])}</b> (réducteur) et <b>{RX.texte(ox4)}</b> (oxydant). {couples(r4, t4)} Une quantité <b>{nb(nO4, 2)}{NB}mmol</b> de {RX.texte(ox4)} est consommée. D’après l’équation de réaction (plus petits coefficients entiers), quelle quantité de <b>{RX.texte(idP)}</b> se forme, en <b>mmol</b> ?</>, unite: 'mmol', vrai: nP, csMin: 2, tolRel: 0.01,
     aide: 'Établis d’abord l’équation de réaction : n(produit) / coefficient du produit = n(oxydant) / coefficient de l’oxydant.',
-    pieges: garde(nP, [[nO4, 'Tu as supposé autant de produit que d’oxydant consommé : le rapport des quantités est celui des coefficients de l’équation.'], [nO4 * cO4 / cP, 'Le rapport est inversé : n(produit) = n(oxydant) × coefficient du produit ÷ coefficient de l’oxydant.'], [nO4 * cP, 'Il faut aussi diviser par le coefficient de l’oxydant : frac(n(produit)|c(produit)) = frac(n(oxydant)|c(oxydant)).']]),
-    expl: <>Équation : {RX.equationTxt(r4, false)}. n({RX.texte(idP)}) = n({RX.texte(ox4)}) × {cP} ÷ {cO4} = <Frac haut={<>{nb(nO4, 2)} × {cP}</>} bas={<>{cO4}</>} /> = <b>{avecU(nP, 'mmol', 2)}</b>.</> };
+    pieges: garde(nP, [[nO4, 'Tu as supposé autant de produit que d’oxydant consommé : le rapport des quantités est celui des coefficients de l’équation.'], [nO4 * cO4 / cP, 'Le rapport est inversé : n(produit) = n(oxydant) × frac(coefficient du produit|coefficient de l’oxydant).'], [nO4 * cP, 'Il faut aussi diviser par le coefficient de l’oxydant : frac(n(produit)|c(produit)) = frac(n(oxydant)|c(oxydant)).']]),
+    expl: <>Équation : {RX.equationTxt(r4, false)}. n({RX.texte(idP)}) = <Frac haut={<>n({RX.texte(ox4)}) × {cP}</>} bas={<>{cO4}</>} /> = <Frac haut={<>{nb(nO4, 2)} × {cP}</>} bas={<>{cO4}</>} /> = <b>{avecU(nP, 'mmol', 2)}</b>.</> };
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
   return { intro: 'Oxydo-réduction : électrons échangés, coefficients de l’équation de réaction, et quantités de réactifs et de produits reliées par les coefficients.', questions: [q1, q2, q3, q4],
     retenir: ['Électrons échangés : plus petit multiple commun des nombres d’électrons des deux demi-équations ; ils disparaissent de l’équation de réaction.', 'Coefficient d’une espèce dans l’équation = multiplicateur de sa demi-équation × son coefficient dans cette demi-équation (après simplification).', 'Les quantités consommées ou formées sont dans le rapport des coefficients de l’équation : n(A) / coefficient(A) = n(B) / coefficient(B).'] };
@@ -1157,12 +1157,12 @@ function genSynthese1G() {
   const nLim = Math.min(n1, n2), limitantEstA = n1 < n2, mTh = nLim / 1000 * M3;
   const donnees = <>La synthèse de l’aspirine suit la transformation acide salicylique + anhydride éthanoïque → aspirine + acide éthanoïque (coefficients tous égaux à 1). Données : M(acide salicylique) = <b>{nb(M1, 4)}{NB}g/mol</b> ; M(anhydride éthanoïque) = <b>{nb(M2, 4)}{NB}g/mol</b>, de masse volumique <b>{nb(rho2, 3)}{NB}g/mL</b> ; M(aspirine) = <b>{nb(M3, 4)}{NB}g/mol</b>. On introduit <b>{avecU(m1, 'g', 2)}</b> d’acide salicylique et <b>{avecU(V2, 'mL', 2)}</b> d’anhydride éthanoïque.</>;
   const q1 = { id: 'sy0', type: 'num', q: <>{donnees} Calculez la quantité de matière d’acide salicylique introduite, en <b>mmol</b>.</>, unite: 'mmol', vrai: n1, csMin: 3, tolRel: 0.01,
-    aide: 'n = m ÷ M, avec m en g et M en g/mol : le résultat est en mol ; 1 mol = 1000 mmol.',
-    pieges: [[n1 / 1000, 'Ce résultat est en mol : le résultat est demandé en mmol (× 1000).'], [m1 * M1, 'On divise la masse par la masse molaire, on ne les multiplie pas : n = m ÷ M.'], [M1 / m1, 'Le rapport est inversé : n = m ÷ M.']],
+    aide: 'n = frac(m|M), avec m en g et M en g/mol : le résultat est en mol ; 1 mol = 1000 mmol.',
+    pieges: [[n1 / 1000, 'Ce résultat est en mol : le résultat est demandé en mmol (× 1000).'], [m1 * M1, 'On divise la masse par la masse molaire, on ne les multiplie pas : n = frac(m|M).'], [M1 / m1, 'Le rapport est inversé : n = frac(m|M).']],
     expl: <>n = <Frac haut={<>m</>} bas={<>M</>} /> = <Frac haut={<>{nb(m1, 2)}</>} bas={<>{nb(M1, 4)}</>} /> = {nb(n1 / 1000, 3)}{NB}mol = <b>{avecU(n1, 'mmol', 3)}</b>.</> };
   const q2 = { id: 'sy1', type: 'num', q: <>{donnees} Calculez la quantité de matière d’anhydride éthanoïque introduite, en <b>mmol</b>.</>, unite: 'mmol', vrai: n2, csMin: 3, tolRel: 0.01,
-    aide: 'Le liquide est mesuré en volume : sa masse est m = ρ × V, puis n = m ÷ M ; 1 mol = 1000 mmol.',
-    pieges: [[V2 / M2 * 1000, 'Le volume ne se divise pas directement par la masse molaire : il faut d’abord la masse m = ρ × V.'], [rho2 * V2 / M2, 'Ce résultat est en mol : le résultat est demandé en mmol (× 1000).'], [V2 * M2 / rho2, 'Le calcul est faux : m = ρ × V puis n = m ÷ M.']],
+    aide: 'Le liquide est mesuré en volume : sa masse est m = ρ × V, puis n = frac(m|M) ; 1 mol = 1000 mmol.',
+    pieges: [[V2 / M2 * 1000, 'Le volume ne se divise pas directement par la masse molaire : il faut d’abord la masse m = ρ × V.'], [rho2 * V2 / M2, 'Ce résultat est en mol : le résultat est demandé en mmol (× 1000).'], [V2 * M2 / rho2, 'Le calcul est faux : m = ρ × V puis n = frac(m|M).']],
     expl: <>m = ρ × V = {nb(rho2, 3)} × {nb(V2, 2)} = {nb(rho2 * V2, 3)}{NB}g ; n = <Frac haut={<>m</>} bas={<>M</>} /> = <Frac haut={<>{nb(rho2 * V2, 3)}</>} bas={<>{nb(M2, 4)}</>} /> = <b>{avecU(n2, 'mmol', 3)}</b>.</> };
   const q3 = { id: 'sy2', type: 'num', q: <>{donnees} Les quantités introduites sont n(acide salicylique) = {nb(n1, 3)}{NB}mmol et n(anhydride éthanoïque) = {nb(n2, 3)}{NB}mmol. La transformation est supposée totale. Calculez la masse maximale d’aspirine que l’on peut obtenir (masse théorique), en <b>g</b>.</>, unite: 'g', vrai: mTh, csMin: 3, tolRel: 0.01,
     aide: 'Les coefficients valent tous 1 : le réactif limitant est celui dont la quantité de matière est la plus petite ; n(aspirine) maximale = n(réactif limitant), puis m = n × M.',
@@ -1170,12 +1170,12 @@ function genSynthese1G() {
     expl: <>Réactif limitant : {limitantEstA ? 'l’acide salicylique' : 'l’anhydride éthanoïque'} ({nb(nLim, 3)}{NB}mmol, la plus petite quantité). n(aspirine) max = {nb(nLim, 3)}{NB}mmol ; m<sub>th</sub> = n × M = {nb(nLim / 1000, 3)} × {nb(M3, 4)} = <b>{avecU(mTh, 'g', 3)}</b>.</> };
   const r = tire([0.55, 0.62, 0.70, 0.78, 0.85, 0.92]), mExp = Number((mTh * r).toPrecision(3)), R = mExp / mTh * 100;
   const q4 = { id: 'sy3', type: 'num', q: <>On forme au maximum <b>{avecU(mTh, 'g', 3)}</b> d’aspirine (masse théorique). Après filtration, lavage et séchage, on récupère <b>{avecU(mExp, 'g', 3)}</b> d’aspirine. Calculez le rendement de la synthèse, en <b>%</b>.</>, unite: '%', vrai: R, csMin: 2, tolRel: 0.02,
-    aide: 'Rendement = masse obtenue ÷ masse théorique (même unité), puis × 100 pour l’exprimer en pourcentage.',
-    pieges: [[mTh / mExp * 100, 'Le rapport est inversé : c’est la masse obtenue divisée par la masse théorique (un rendement ne dépasse pas 100 %).'], [R / 100, 'Ce résultat est un rapport : le rendement est demandé en pourcentage (× 100).'], [(mTh - mExp) / mTh * 100, 'Ce résultat est la perte, pas le rendement : R = m obtenue ÷ m théorique.']],
+    aide: 'Rendement = frac(masse obtenue|masse théorique) (même unité), puis × 100 pour l’exprimer en pourcentage.',
+    pieges: [[mTh / mExp * 100, 'Le rapport est inversé : c’est la masse obtenue divisée par la masse théorique (un rendement ne dépasse pas 100 %).'], [R / 100, 'Ce résultat est un rapport : le rendement est demandé en pourcentage (× 100).'], [(mTh - mExp) / mTh * 100, 'Ce résultat est la perte, pas le rendement : R = frac(m obtenue|m théorique).']],
     expl: <>R = <Frac haut={<>m<sub>exp</sub></>} bas={<>m<sub>th</sub></>} /> = <Frac haut={<>{nb(mExp, 3)}</>} bas={<>{nb(mTh, 3)}</>} /> = {nb(R / 100, 3)} soit <b>{avecU(R, '%', 2)}</b>.</> };
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai && Math.abs(x - q.vrai) > Math.max(q.tolRel * 1.5, 0.02) * Math.abs(q.vrai)); });
   return { intro: 'Synthèse de l’aspirine : quantités de matière des réactifs, réactif limitant, masse théorique et rendement.', questions: [q1, q2, q3, q4],
-    retenir: ['n = m ÷ M pour un solide ; pour un liquide mesuré en volume, m = ρ × V puis n = m ÷ M.', 'Avec des coefficients égaux à 1, le réactif limitant est celui de plus petite quantité de matière : il fixe la quantité maximale de produit.', 'Rendement = masse obtenue ÷ masse théorique (× 100 pour des %) ; il ne peut pas dépasser 100 %.'] };
+    retenir: ['n = frac(m|M) pour un solide ; pour un liquide mesuré en volume, m = ρ × V puis n = frac(m|M).', 'Avec des coefficients égaux à 1, le réactif limitant est celui de plus petite quantité de matière : il fixe la quantité maximale de produit.', 'Rendement = frac(masse obtenue|masse théorique) (× 100 pour des %) ; il ne peut pas dépasser 100 %.'] };
 }
 
 // ───────────── Fluide au repos (1G) : force pressante F = P·S, pression, loi de Mariotte, ballon en altitude, test de la loi ─────────────
@@ -1233,13 +1233,13 @@ function genPhoton1G() {
   const C = 3.00e8, H = 6.63e-34, EV = 1.60e-19;
   const lamNm = tire([405, 450, 532, 589, 633, 650]), nuTHz = C / (lamNm * 1e-9) / 1e12;
   const q1 = { id: 'ph0', type: 'num', q: <>Une lumière de longueur d’onde <b>λ = {lamNm}{NB}nm</b> se propage dans le vide (c = 3,00{NB}×{NB}10⁸{NB}m·s⁻¹). Calculez sa fréquence ν, en <b>THz</b> (1 THz = 10¹² Hz).</>, unite: 'THz', vrai: nuTHz, tolRel: 0.01, csMin: 3,
-    aide: 'Convertissez λ en mètres (1 nm = 10⁻⁹ m), calculez ν = c ÷ λ en hertz, puis convertissez en THz (÷ 10¹²).',
-    pieges: [[nuTHz * 1e12, 'Votre résultat est en hertz : la réponse est demandée en THz (1 THz = 10¹² Hz).'], [nuTHz * 1e3, 'Votre résultat est en GHz : 1 THz = 1 000 GHz.'], [C / lamNm / 1e12, 'La longueur d’onde n’a pas été convertie en mètres (1 nm = 10⁻⁹ m).'], [(lamNm * 1e-9 / C) / 1e12, 'Vous avez calculé λ ÷ c : la fréquence est c ÷ λ.']],
+    aide: 'Convertissez λ en mètres (1 nm = 10⁻⁹ m), calculez ν = frac(c|λ) en hertz, puis convertissez en THz (diviser par 10¹²).',
+    pieges: [[nuTHz * 1e12, 'Votre résultat est en hertz : la réponse est demandée en THz (1 THz = 10¹² Hz).'], [nuTHz * 1e3, 'Votre résultat est en GHz : 1 THz = 1 000 GHz.'], [C / lamNm / 1e12, 'La longueur d’onde n’a pas été convertie en mètres (1 nm = 10⁻⁹ m).'], [(lamNm * 1e-9 / C) / 1e12, 'Vous avez calculé frac(λ|c) : la fréquence est frac(c|λ).']],
     expl: <>λ = {lamNm} nm = {nb(lamNm * 1e-9, 3)} m ; ν = <Frac haut={<>c</>} bas={<>λ</>} /> = <Frac haut={<>3,00 × 10⁸</>} bas={<>{nb(lamNm * 1e-9, 3)}</>} /> = {nb(C / (lamNm * 1e-9), 3)} Hz = <b>{avecU(nuTHz, 'THz', 3)}</b>.</> };
   const nuGHz = tire([1.5, 2.0, 3.0, 5.0, 6.0, 10, 12, 30]), lamCm = C / (nuGHz * 1e9) * 100;
   const q2 = { id: 'ph1', type: 'num', q: <>Un émetteur envoie une onde de fréquence <b>ν = {nb(nuGHz, 2)}{NB}GHz</b> dans le vide. Calculez sa longueur d’onde λ, en <b>cm</b>.</>, unite: 'cm', vrai: lamCm, tolRel: 0.01, csMin: 2,
-    aide: 'Convertissez ν en hertz (1 GHz = 10⁹ Hz), calculez λ = c ÷ ν en mètres, puis convertissez en centimètres (× 100).',
-    pieges: [[lamCm / 100, 'Votre résultat est en mètres : la réponse est demandée en centimètres (1 m = 100 cm).'], [C / nuGHz * 100, 'La fréquence n’a pas été convertie en hertz (1 GHz = 10⁹ Hz).'], [nuGHz * 1e9 / C * 100, 'Vous avez calculé ν ÷ c : la longueur d’onde est c ÷ ν.'], [lamCm * 10, 'Vérifiez la conversion de mètres en centimètres : 1 m = 100 cm.']],
+    aide: 'Convertissez ν en hertz (1 GHz = 10⁹ Hz), calculez λ = frac(c|ν) en mètres, puis convertissez en centimètres (× 100).',
+    pieges: [[lamCm / 100, 'Votre résultat est en mètres : la réponse est demandée en centimètres (1 m = 100 cm).'], [C / nuGHz * 100, 'La fréquence n’a pas été convertie en hertz (1 GHz = 10⁹ Hz).'], [nuGHz * 1e9 / C * 100, 'Vous avez calculé frac(ν|c) : la longueur d’onde est frac(c|ν).'], [lamCm * 10, 'Vérifiez la conversion de mètres en centimètres : 1 m = 100 cm.']],
     expl: <>ν = {nb(nuGHz, 2)} GHz = {nb(nuGHz * 1e9, 2)} Hz ; λ = <Frac haut={<>c</>} bas={<>ν</>} /> = <Frac haut={<>3,00 × 10⁸</>} bas={<>{nb(nuGHz * 1e9, 2)}</>} /> = {nb(lamCm / 100, 2)} m = <b>{avecU(lamCm, 'cm', 2)}</b>.</> };
   const nuT3 = tire([430, 500, 564, 650, 750]), E3 = H * nuT3 * 1e12;
   const q3 = { id: 'ph2', type: 'num', q: <>Un photon a pour fréquence <b>ν = {nuT3}{NB}THz</b>. Calculez son énergie E = h·ν, en <b>joules</b> (h = 6,63{NB}×{NB}10⁻³⁴{NB}J·s ; 1 THz = 10¹² Hz).</>, unite: 'J', vrai: E3, tolRel: 0.01, csMin: 3,
@@ -1250,22 +1250,22 @@ function genPhoton1G() {
   const q4 = { id: 'ph3', type: 'num', q: <>Un photon a une énergie <b>E = {nb(eJ, 3)} × 10⁻¹⁹{NB}J</b>. Exprimez cette énergie en <b>électronvolts</b> (1 eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'eV', vrai: eV4, tolRel: 0.01, csMin: 3,
     aide: 'Pour passer des joules aux électronvolts, divisez par 1,60 × 10⁻¹⁹.',
     pieges: [[eJ * 1e-19, 'Vous avez gardé l’énergie en joules : divisez par 1,60 × 10⁻¹⁹ J/eV pour obtenir des eV.'], [eJ * 1.60 * 1e-38, 'Vous avez multiplié au lieu de diviser : un photon vaut quelques eV, pas 10⁻³⁸.'], [1.60 / eJ, 'Vous avez divisé 1,60 par l’énergie : c’est l’énergie qu’on divise par 1,60 × 10⁻¹⁹.']],
-    expl: <>E(eV) = E(J) ÷ 1,60 × 10⁻¹⁹ = <Frac haut={<>{nb(eJ, 3)} × 10⁻¹⁹</>} bas={<>1,60 × 10⁻¹⁹</>} /> = <b>{avecU(eV4, 'eV', 3)}</b>.</> };
+    expl: <>E(eV) = <Frac haut={<>E(J)</>} bas={<>1,60 × 10⁻¹⁹</>} /> = <Frac haut={<>{nb(eJ, 3)} × 10⁻¹⁹</>} bas={<>1,60 × 10⁻¹⁹</>} /> = <b>{avecU(eV4, 'eV', 3)}</b>.</> };
   const eV5 = tire([1.65, 1.90, 2.10, 2.50, 3.10, 3.50]), lam5 = H * C / (eV5 * EV) * 1e9;
   const q5 = { id: 'ph4', type: 'num', q: <>Un photon a une énergie <b>E = {nb(eV5, 3)}{NB}eV</b>. Calculez sa longueur d’onde λ dans le vide, en <b>nm</b> (h = 6,63{NB}×{NB}10⁻³⁴{NB}J·s ; c = 3,00{NB}×{NB}10⁸{NB}m·s⁻¹ ; 1 eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'nm', vrai: lam5, tolRel: 0.01, csMin: 3,
-    aide: 'Convertissez E en joules (× 1,60 × 10⁻¹⁹), calculez λ = h × c ÷ E en mètres, puis convertissez en nm (× 10⁹).',
-    pieges: [[lam5 * 1e-9, 'Votre résultat est en mètres : la réponse est demandée en nanomètres (1 m = 10⁹ nm).'], [H * C / eV5 * 1e9, 'L’énergie n’a pas été convertie en joules (E = ' + nb(eV5, 3) + ' eV = ' + nb(eV5 * EV, 3) + ' J).'], [eV5 * EV / (H * C) * 1e9, 'Vous avez inversé la relation : λ = h × c ÷ E.']],
+    aide: 'Convertissez E en joules (× 1,60 × 10⁻¹⁹), calculez λ = frac(h × c|E) en mètres, puis convertissez en nm (× 10⁹).',
+    pieges: [[lam5 * 1e-9, 'Votre résultat est en mètres : la réponse est demandée en nanomètres (1 m = 10⁹ nm).'], [H * C / eV5 * 1e9, 'L’énergie n’a pas été convertie en joules (E = ' + nb(eV5, 3) + ' eV = ' + nb(eV5 * EV, 3) + ' J).'], [eV5 * EV / (H * C) * 1e9, 'Vous avez inversé la relation : λ = frac(h × c|E).']],
     expl: <>E = {nb(eV5, 3)} eV = {nb(eV5 * EV, 3)} J ; λ = <Frac haut={<>h × c</>} bas={<>E</>} /> = <Frac haut={<>6,63 × 10⁻³⁴ × 3,00 × 10⁸</>} bas={<>{nb(eV5 * EV, 3)}</>} /> = {nb(lam5 * 1e-9, 3)} m = <b>{avecU(lam5, 'nm', 3)}</b>.</> };
   const it = PH.tirerDomaine(Math.random), idx = PH.DOMAINES.findIndex(d => d.id === it.dom);
   const voisins = PH.DOMAINES.map((d, i) => ({ d, i })).filter(x => x.i !== idx).sort((a, b) => Math.abs(a.i - idx) - Math.abs(b.i - idx)).slice(0, 3).map(x => x.d.nom);
   const opts = melange([PH.domaine(it.dom).nom, ...voisins]);
   const bornesTxt = 'radio : λ > 30 cm ; micro-ondes : 1 mm à 30 cm ; infrarouge : 780 nm à 1 mm ; visible : 400 à 780 nm ; ultraviolet : 10 à 400 nm ; rayons X : 10 pm à 10 nm ; rayons gamma : λ < 10 pm';
-  const q6 = { id: 'ph5', type: 'qcm', q: <>Une onde électromagnétique dans le vide a pour caractéristique <b>{it.txt}</b>. Dans quel domaine du spectre se trouve-t-elle ? (Repères conventionnels : {bornesTxt}. Pour une fréquence, calculez d’abord λ = c ÷ ν.)</>, options: opts, bonne: opts.indexOf(PH.domaine(it.dom).nom),
-    aide: 'Convertissez en mètres (ou calculez λ = c ÷ ν si on donne la fréquence), puis comparez aux bornes des domaines.',
+  const q6 = { id: 'ph5', type: 'qcm', q: <>Une onde électromagnétique dans le vide a pour caractéristique <b>{it.txt}</b>. Dans quel domaine du spectre se trouve-t-elle ? (Repères conventionnels : {bornesTxt}. Pour une fréquence, calculez d’abord λ = <Frac haut={<>c</>} bas={<>ν</>} />.)</>, options: opts, bonne: opts.indexOf(PH.domaine(it.dom).nom),
+    aide: 'Convertissez en mètres (ou calculez λ = frac(c|ν) si on donne la fréquence), puis comparez aux bornes des domaines.',
     expl: <>Ici, λ ≈ {PH.lambdaTexte(it.lam, 2)} : {PH.domaine(it.dom).borne}, c’est le domaine <b>{PH.domaine(it.dom).nom}</b>.</> };
   [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 0.03 * Math.abs(q.vrai)); });
-  return { intro: 'Lumière : domaine d’une onde, longueur d’onde et fréquence (λ = c ÷ ν), énergie d’un photon E = h·ν, joules et électronvolts (dans le vide).', questions: [q6, q1, q2, q3, q4, q5],
-    retenir: ['Domaines : radio, micro-ondes, infrarouge, visible (400 à 780 nm), ultraviolet, X, gamma, du plus grand λ au plus petit (bornes conventionnelles).', 'Dans le vide : λ = c ÷ ν avec c = 3,00 × 10⁸ m·s⁻¹ ; convertir AVANT de calculer (nm → m : × 10⁻⁹ ; GHz → Hz : × 10⁹).', 'Énergie d’un photon : E = h·ν = h·c ÷ λ, avec h = 6,63 × 10⁻³⁴ J·s.', 'Joules et électronvolts : E(J) = E(eV) × 1,60 × 10⁻¹⁹ ; plus ν est grande (λ petite), plus E est grande.'] };
+  return { intro: 'Lumière : domaine d’une onde, longueur d’onde et fréquence (λ = frac(c|ν)), énergie d’un photon E = h·ν, joules et électronvolts (dans le vide).', questions: [q6, q1, q2, q3, q4, q5],
+    retenir: ['Domaines : radio, micro-ondes, infrarouge, visible (400 à 780 nm), ultraviolet, X, gamma, du plus grand λ au plus petit (bornes conventionnelles).', 'Dans le vide : λ = frac(c|ν) avec c = 3,00 × 10⁸ m·s⁻¹ ; convertir AVANT de calculer (nm → m : × 10⁻⁹ ; GHz → Hz : × 10⁹).', 'Énergie d’un photon : E = h·ν = frac(h·c|λ), avec h = 6,63 × 10⁻³⁴ J·s.', 'Joules et électronvolts : E(J) = E(eV) × 1,60 × 10⁻¹⁹ ; plus ν est grande (λ petite), plus E est grande.'] };
 }
 
 // ──────────────────────── Famille « Niveaux d'énergie : absorption, émission et spectres de raies » (1G, sim 165) ────────────────────────
@@ -1286,13 +1286,13 @@ function genNiveaux1G() {
   // q3 : longueur d'onde du photon absorbé ou émis
   const g3 = tire([0.80, 1.20, 1.55, 1.90, 2.30, 2.80, 3.40, 4.50, 6.20, 8.00, 10.2]), lam3 = H * C / (g3 * EV) * 1e9;
   const q3 = { id: 'nv2', type: 'num', q: <>L’écart entre deux niveaux d’un atome vaut <b>ΔE = {nb(g3, 3)}{NB}eV</b>. Calculez la longueur d’onde λ du photon absorbé ou émis lors de cette transition, en <b>nm</b> (h = 6,63{NB}×{NB}10⁻³⁴{NB}J·s ; c = 3,00{NB}×{NB}10⁸{NB}m·s⁻¹ ; 1{NB}eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'nm', vrai: lam3, tolRel: 0.02, csMin: 3,
-    aide: 'Convertissez ΔE en joules (× 1,60 × 10⁻¹⁹), calculez λ = h × c ÷ ΔE en mètres, puis convertissez en nm (× 10⁹).',
-    pieges: [[lam3 * 1e-9, 'Votre résultat est en mètres : la réponse est demandée en nanomètres (1 m = 10⁹ nm).'], [H * C / g3 * 1e9, 'L’énergie n’a pas été convertie en joules (ΔE = ' + nb(g3 * EV, 3) + ' J).'], [g3 * EV / (H * C) * 1e9, 'Vous avez inversé la relation : λ = h × c ÷ ΔE.']],
+    aide: 'Convertissez ΔE en joules (× 1,60 × 10⁻¹⁹), calculez λ = frac(h × c|ΔE) en mètres, puis convertissez en nm (× 10⁹).',
+    pieges: [[lam3 * 1e-9, 'Votre résultat est en mètres : la réponse est demandée en nanomètres (1 m = 10⁹ nm).'], [H * C / g3 * 1e9, 'L’énergie n’a pas été convertie en joules (ΔE = ' + nb(g3 * EV, 3) + ' J).'], [g3 * EV / (H * C) * 1e9, 'Vous avez inversé la relation : λ = frac(h × c|ΔE).']],
     expl: <>ΔE = {nb(g3, 3)} eV = {nb(g3 * EV, 3)} J ; λ = <Frac haut={<>h × c</>} bas={<>ΔE</>} /> = <Frac haut={<>6,63 × 10⁻³⁴ × 3,00 × 10⁸</>} bas={<>{nb(g3 * EV, 3)}</>} /> = {nb(lam3 * 1e-9, 3)} m = <b>{avecU(lam3, 'nm', 3)}</b>.</> };
   // q4 : niveau d'arrivée après absorption d'un photon de longueur d'onde donnée
   const Ei = tire([0, 1.20, 2.10, 3.00]), lam4 = tire([650, 500, 420, 365, 300]), dE4 = H * C / (lam4 * 1e-9) / EV, Ef = Ei + dE4;
   const q4 = { id: 'nv3', type: 'num', q: <>Un atome au niveau d’énergie <b>E<sub>i</sub> = {nb(Ei, 3)}{NB}eV</b> absorbe un photon de longueur d’onde <b>{lam4}{NB}nm</b>. Calculez l’énergie E<sub>f</sub> du niveau atteint, en <b>eV</b> (h = 6,63{NB}×{NB}10⁻³⁴{NB}J·s ; c = 3,00{NB}×{NB}10⁸{NB}m·s⁻¹ ; 1{NB}eV = 1,60{NB}×{NB}10⁻¹⁹{NB}J).</>, unite: 'eV', vrai: Ef, tolRel: 0.02, csMin: 3,
-    aide: 'Calculez d’abord l’énergie du photon : ΔE = h × c ÷ λ en joules, puis en eV. L’atome gagne cette énergie : E_f = E_i + ΔE.',
+    aide: 'Calculez d’abord l’énergie du photon : ΔE = frac(h × c|λ) en joules, puis en eV. L’atome gagne cette énergie : E_f = E_i + ΔE.',
     pieges: [[Ei - dE4, 'Le photon est absorbé : l’énergie de l’atome augmente, E_f = E_i + ΔE (et non E_i − ΔE).'], [dE4, 'C’est l’énergie du photon : il faut ensuite l’ajouter à l’énergie du niveau de départ.'], [Ef * EV, 'Votre résultat est en joules : la réponse est demandée en eV.']],
     expl: <>ΔE = <Frac haut={<>h × c</>} bas={<>λ</>} /> = {nb(dE4 * EV, 3)} J = {nb(dE4, 3)} eV ; E<sub>f</sub> = E<sub>i</sub> + ΔE = {nb(Ei, 3)} + {nb(dE4, 3)} = <b>{avecU(Ef, 'eV', 3)}</b>.</> };
   // q5 : nombre de raies d'émission d'un gaz dont les atomes sont excités au plus haut niveau (toutes les transitions entre niveaux comptées)
@@ -1306,13 +1306,13 @@ function genNiveaux1G() {
   const voisins = PH.DOMAINES.map((d, i) => ({ d, i })).filter(x => x.i !== idx).sort((a, b) => Math.abs(a.i - idx) - Math.abs(b.i - idx)).slice(0, 3).map(x => x.d.nom);
   const opts = melange([d6.nom, ...voisins]);
   const bornesTxt = 'infrarouge : 780 nm à 1 mm ; visible : 400 à 780 nm ; ultraviolet : 10 à 400 nm ; rayons X : 10 pm à 10 nm ; micro-ondes : 1 mm à 30 cm';
-  const q6 = { id: 'nv5', type: 'qcm', q: <>Un atome émet un photon d’énergie <b>ΔE = {nb(g6, 3)}{NB}eV</b>. Dans quel domaine du spectre se trouve-t-il ? (Repères conventionnels : {bornesTxt}. Calculez d’abord λ = h × c ÷ ΔE.)</>, options: opts, bonne: opts.indexOf(d6.nom),
-    aide: 'Convertissez ΔE en joules, calculez λ = h × c ÷ ΔE, puis comparez λ aux bornes des domaines.',
+  const q6 = { id: 'nv5', type: 'qcm', q: <>Un atome émet un photon d’énergie <b>ΔE = {nb(g6, 3)}{NB}eV</b>. Dans quel domaine du spectre se trouve-t-il ? (Repères conventionnels : {bornesTxt}. Calculez d’abord λ = <Frac haut={<>h × c</>} bas={<>ΔE</>} />.)</>, options: opts, bonne: opts.indexOf(d6.nom),
+    aide: 'Convertissez ΔE en joules, calculez λ = frac(h × c|ΔE), puis comparez λ aux bornes des domaines.',
     expl: <>λ = <Frac haut={<>h × c</>} bas={<>ΔE</>} /> ≈ {PH.lambdaTexte(lam6, 3)} : {d6.borne}, c’est le domaine <b>{d6.nom}</b>.</> };
   [q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > 0.04 * Math.abs(q.vrai)); });
   q5.pieges = q5.pieges.filter(([x]) => x !== nr);
-  return { intro: 'Niveaux d’énergie : écart entre deux niveaux, ΔE = h·ν = h·c ÷ λ, joules et électronvolts, niveau atteint, nombre de raies d’émission, domaine d’un photon (atome isolé, diagrammes simplifiés).', questions: [q1, q2, q3, q4, q5, q6],
-    retenir: ['Un atome isolé n’a que des énergies bien précises (niveaux) ; la valeur du zéro est un choix, seuls les écarts comptent.', 'Photon absorbé ou émis : ΔE = |E_f − E_i| = h·ν = h·c ÷ λ, avec ΔE en joules (1 eV = 1,60 × 10⁻¹⁹ J) et λ en mètres, puis en nm.', 'Absorption : E_f = E_i + ΔE. Émission : E_f = E_i − ΔE.', 'Avec n niveaux, toutes les transitions entre niveaux donnent n(n − 1)/2 raies d’émission ; l’absorption d’un gaz froid ne part que du fondamental.'] };
+  return { intro: 'Niveaux d’énergie : écart entre deux niveaux, ΔE = h·ν = frac(h·c|λ), joules et électronvolts, niveau atteint, nombre de raies d’émission, domaine d’un photon (atome isolé, diagrammes simplifiés).', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['Un atome isolé n’a que des énergies bien précises (niveaux) ; la valeur du zéro est un choix, seuls les écarts comptent.', 'Photon absorbé ou émis : ΔE = ∣E_f − E_i∣ = h·ν = frac(h·c|λ), avec ΔE en joules (1 eV = 1,60 × 10⁻¹⁹ J) et λ en mètres, puis en nm.', 'Absorption : E_f = E_i + ΔE. Émission : E_f = E_i − ΔE.', 'Avec n niveaux, toutes les transitions entre niveaux donnent n(n − 1)/2 raies d’émission ; l’absorption d’un gaz froid ne part que du fondamental.'] };
 }
 
 function genCouleurs1G() {
@@ -1374,7 +1374,7 @@ function genConcentration1G() {
   const [s4, M4] = choisir(0.5), Cm4 = Number((tire([0.050, 0.100, 0.200, 0.500]) * M4).toPrecision(3)), c4 = Cm4 / M4;
   const q4 = { id: 'c3', type: 'num', q: <>Une solution de {s4.nom} {CD.formuleSolute(s4)} (M = {nb(M4, 3)}{NB}g/mol) a une concentration en masse <b>C<sub>m</sub> = {nb(Cm4, 3)}{NB}g/L</b>. Calculez sa concentration en quantité de matière, en <b>mol/L</b>.</>, unite: 'mol/L', vrai: c4, csMin: 3, tolRel: 0.01,
     aide: 'Un litre de solution contient C_m grammes de soluté : à combien de moles correspondent-ils ? (c = frac(C_m|M))',
-    pieges: [[Cm4 * M4, 'On divise C_m par M, on ne les multiplie pas : g/L ÷ g/mol = mol/L.'], [M4 / Cm4, 'Le rapport est inversé : c = frac(C_m|M).'], [c4 / 1000, 'Aucune conversion de volume n’est nécessaire : C_m est déjà « par litre ».']],
+    pieges: [[Cm4 * M4, 'On divise C_m par M, on ne les multiplie pas : frac(g/L|g/mol) = mol/L.'], [M4 / Cm4, 'Le rapport est inversé : c = frac(C_m|M).'], [c4 / 1000, 'Aucune conversion de volume n’est nécessaire : C_m est déjà « par litre ».']],
     expl: <>c = C<sub>m</sub> / M = {nb(Cm4, 3)} / {nb(M4, 3)} = <b>{avecU(c4, 'mol/L', 3)}</b>.</> };
   const d5 = tire(CD.dilutionsPossibles()), [s5] = choisir(d5.c0);
   const q5 = { id: 'c4', type: 'num', q: <>On prépare <b>{d5.V1}{NB}mL</b> de solution fille de {s5.nom} {CD.formuleSolute(s5)} à <b>{nb(d5.c1, 3)}{NB}mol/L</b>, par dilution d’une solution mère à <b>{nb(d5.c0, 3)}{NB}mol/L</b>. Calculez le volume de solution mère à prélever, en <b>mL</b>.</>, unite: 'mL', vrai: d5.V0, csMin: 3, tolRel: 0.01,
@@ -1406,15 +1406,15 @@ function genStatique1G() {
   const l1 = tire(liqs), h1 = l1.id === 'mercure' ? tire([0.25, 0.40, 0.55, 0.70]) : tire([2.0, 3.5, 5.0, 7.5, 12.0, 18.0]), Pa1 = tire([1000, 1013, 1020]);
   const P1 = Pa1 + l1.rho * G9 * h1 / 100;
   const q1 = { id: 'f1', type: 'num', q: <>Un manomètre est plongé à <b>{nb(h1, 3)}{NB}m</b> de profondeur dans un liquide à l’air libre ({l1.nom.toLowerCase()}, ρ = {l1.aff}{NB}kg·m⁻³ ; g = 9,81{NB}N·kg⁻¹). La pression à la surface est P<sub>atm</sub> = {nb(Pa1, 4)}{NB}hPa. Quelle pression <b>absolue</b> indique-t-il, en <b>hPa</b> ?</>, unite: 'hPa', vrai: P1, csMin: 4, tolRel: 0.01,
-    aide: 'P = P_atm + ρ·g·h : calculez ρ·g·h en pascals, convertissez en hPa (÷ 100), puis ajoutez P_atm.',
-    pieges: [[l1.rho * G9 * h1 / 100, 'Vous avez calculé seulement la partie due au liquide : le manomètre mesure la pression absolue, il faut ajouter P_atm.'], [P1 * 100, 'Le résultat est demandé en hPa : 1 hPa = 100 Pa.'], [Pa1 + l1.rho * G9 * h1, 'Convertissez ρ·g·h de pascals en hPa (÷ 100) avant d’ajouter P_atm, donnée en hPa.']],
+    aide: 'P = P_atm + ρ·g·h : calculez ρ·g·h en pascals, convertissez en hPa (diviser par 100), puis ajoutez P_atm.',
+    pieges: [[l1.rho * G9 * h1 / 100, 'Vous avez calculé seulement la partie due au liquide : le manomètre mesure la pression absolue, il faut ajouter P_atm.'], [P1 * 100, 'Le résultat est demandé en hPa : 1 hPa = 100 Pa.'], [Pa1 + l1.rho * G9 * h1, 'Convertissez ρ·g·h de pascals en hPa (diviser par 100) avant d’ajouter P_atm, donnée en hPa.']],
     expl: <>ρ·g·h = {l1.aff} × 9,81 × {nb(h1, 3)} = {avecU(l1.rho * G9 * h1, 'Pa', 3)} = {avecU(l1.rho * G9 * h1 / 100, 'hPa', 3)} ; P = P<sub>atm</sub> + ρ·g·h = {nb(Pa1, 4)} + {nb(l1.rho * G9 * h1 / 100, 3)} = <b>{avecU(P1, 'hPa', 4)}</b>.</> };
   // q2 : profondeur à partir d'une pression absolue lue (hPa entiers)
   const l2 = tire(liqs), h2v = l2.id === 'mercure' ? tire([0.30, 0.50, 0.65]) : tire([3.0, 4.5, 6.0, 9.0, 15.0]), Pa2 = tire([1000, 1013, 1020]), P2 = Math.round(Pa2 + l2.rho * G9 * h2v / 100), h2 = (P2 - Pa2) * 100 / (l2.rho * G9);
   const q2 = { id: 'f2', type: 'num', q: <>Dans un liquide à l’air libre ({l2.nom.toLowerCase()}, ρ = {l2.aff}{NB}kg·m⁻³ ; g = 9,81{NB}N·kg⁻¹), un manomètre indique la pression absolue <b>{nb(P2, 4)}{NB}hPa</b> ; à la surface, P<sub>atm</sub> = {nb(Pa2, 4)}{NB}hPa. À quelle profondeur est-il, en <b>m</b> ?</>, unite: 'm', vrai: h2, csMin: 3, tolRel: 0.01,
     aide: 'Seule la différence P − P_atm est due au liquide : h = frac(P − P_atm|ρ·g), avec des pressions en pascals.',
     pieges: [[P2 * 100 / (l2.rho * G9), 'Il faut retrancher P_atm : seule la différence P − P_atm est due au liquide.'], [h2 / 100, 'Convertissez les hPa en Pa (× 100) avant de diviser par ρ·g.'], [(P2 - Pa2) / (l2.rho * G9), 'Convertissez les hPa en Pa (× 100) avant de diviser par ρ·g.']],
-    expl: <>P − P<sub>atm</sub> = {nb(P2, 4)} − {nb(Pa2, 4)} = {nb(P2 - Pa2, 3)}{NB}hPa = {avecU((P2 - Pa2) * 100, 'Pa', 3)} ; h = (P − P<sub>atm</sub>) / (ρ·g) = {nb((P2 - Pa2) * 100, 3)} ÷ ({l2.aff} × 9,81) = <b>{avecU(h2, 'm', 3)}</b>.</> };
+    expl: <>P − P<sub>atm</sub> = {nb(P2, 4)} − {nb(Pa2, 4)} = {nb(P2 - Pa2, 3)}{NB}hPa = {avecU((P2 - Pa2) * 100, 'Pa', 3)} ; h = (P − P<sub>atm</sub>) / (ρ·g) = <Frac haut={<>{nb((P2 - Pa2) * 100, 3)}</>} bas={<>{l2.aff} × 9,81</>} /> = <b>{avecU(h2, 'm', 3)}</b>.</> };
   // q3 : force sur un bouchon (pression due au liquide seule)
   const hb = tire([1.0, 1.5, 2.0, 2.5, 3.0, 4.0]), Sb = tire([10, 20, 25, 40, 50]), F3 = 1000 * G9 * hb * Sb * 1e-4;
   const q3 = { id: 'f3', type: 'num', q: <>Un réservoir d’eau (ρ = 1,00{NB}×{NB}10³{NB}kg·m⁻³ ; g = 9,81{NB}N·kg⁻¹) est ouvert à l’air libre. Un bouchon de surface <b>S = {Sb}{NB}cm²</b> ferme un trou de la paroi, à <b>{nb(hb, 3)}{NB}m</b> sous la surface. Sur l’autre face, l’air pousse le bouchon avec P<sub>atm</sub> : la force nette est créée par la pression due à l’eau, P<sub>eau</sub> − P<sub>atm</sub> = ρ·g·h. Quelle est la norme de cette force nette, en <b>N</b> ?</>, unite: 'N', vrai: F3, csMin: 3, tolRel: 0.01,
@@ -1431,7 +1431,7 @@ function genStatique1G() {
   // q5 : pression absolue en bar à une profondeur donnée dans l'eau (ordre de grandeur)
   const h5 = tire([10, 20, 30, 40, 50]), P5 = 1.013 + 1000 * G9 * h5 / 1e5;
   const q5 = { id: 'f5', type: 'num', q: <>Un plongeur est à <b>{h5}{NB}m</b> de profondeur dans l’eau d’un lac (ρ = 1,00{NB}×{NB}10³{NB}kg·m⁻³ ; g = 9,81{NB}N·kg⁻¹ ; 1{NB}bar = 10⁵{NB}Pa). À la surface, P<sub>atm</sub> = 1,013{NB}bar. Quelle pression absolue subit-il, en <b>bar</b> ?</>, unite: 'bar', vrai: P5, csMin: 3, tolRel: 0.01,
-    aide: 'ρ·g·h en pascals, conversion en bar (÷ 10⁵), puis ajout de P_atm.',
+    aide: 'ρ·g·h en pascals, conversion en bar (diviser par 10⁵), puis ajout de P_atm.',
     pieges: [[1000 * G9 * h5 / 1e5, 'Vous avez calculé seulement la partie due à l’eau : le manomètre du plongeur mesure la pression absolue, il faut ajouter P_atm.'], [P5 * 1e5, 'Le résultat est demandé en bar : 1 bar = 10⁵ Pa.'], [1.013 + 1000 * G9 * h5 / 1e4, 'Convertissez correctement : 1 bar = 10⁵ Pa, donc on divise des pascals par 10⁵.']],
     expl: <>ρ·g·h = 1,00 × 10³ × 9,81 × {h5} = {avecU(1000 * G9 * h5, 'Pa', 3)} = {nb(1000 * G9 * h5 / 1e5, 3)}{NB}bar ; P = 1,013 + {nb(1000 * G9 * h5 / 1e5, 3)} = <b>{avecU(P5, 'bar', 3)}</b>.</> };
   [q0, q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
@@ -1523,7 +1523,7 @@ function genCombustion1G() {
     expl: <>Σ D(rompues) = {ent(R)} kJ/mol ; Σ D(formées) = {ent(F)} kJ/mol ; E<sub>r</sub> = {ent(R)} − {ent(F)} = <b>{sg(Er)}{NB}kJ/mol</b> (estimation : énergies moyennes, phase gazeuse).</> };
   // q4 : écart relatif avec la valeur de référence
   const q4 = { id: 'c4', type: 'num', q: <>L’énergie molaire de réaction estimée de la combustion du {c.nom} est E<sub>r</sub> = <b>{sg(Er)}{NB}kJ/mol</b> ; la valeur de référence tabulée, pour la même réaction (gaz), est <b>{sg(c.ref)}{NB}kJ/mol</b>. Calculez l’écart relatif entre l’estimation et la référence, en <b>%</b>.</>, unite: '%', vrai: CM.ecartRelatif(c) * 100, csMin: 2, tolRel: 0.06,
-    aide: 'Écart relatif = |estimation − référence| ÷ |référence|, puis ×100 pour l’exprimer en pourcentage.',
+    aide: 'Écart relatif = frac(∣estimation − référence∣|∣référence∣), puis ×100 pour l’exprimer en pourcentage.',
     pieges: [[CM.ecartRelatif(c), 'Le rapport est donné en pourcentage : multipliez par 100.'], [Math.abs(Er - c.ref), 'C’est l’écart absolu en kJ/mol : divisez-le par la référence et exprimez en %.']],
     expl: <>|{sg(Er)} − ({sg(c.ref)})| = {ent(Er - c.ref)} kJ/mol ; écart relatif = <Frac haut={<>{ent(Er - c.ref)}</>} bas={<>{ent(c.ref)}</>} /> = {nb(CM.ecartRelatif(c), 3)}, soit <b>{avecU(CM.ecartRelatif(c) * 100, '%', 2)}</b>. Un écart de quelques % est normal : les énergies de liaison sont des moyennes.</> };
   // q5 : énergie libérée par une masse donnée
@@ -1534,12 +1534,12 @@ function genCombustion1G() {
     expl: <>n = m / M = <Frac haut={<>{nb(m5, 3)}</>} bas={<>{nb(M, 3)}</>} /> = {nb(m5 / M, 3)}{NB}mol ; énergie = n × |E<sub>r</sub>| = {nb(m5 / M, 3)} × {ent(Er)} = <b>{avecU(Q5, 'kJ', 3)}</b>.</> };
   // q6 : pouvoir calorifique
   const q6 = { id: 'c6', type: 'num', q: <>Pour le {c.nom} {c.f}, l’énergie molaire de réaction estimée est E<sub>r</sub> = <b>{sg(Er)}{NB}kJ/mol</b> et la masse molaire est <b>M = {nb(M, 3)}{NB}g/mol</b>. Calculez son pouvoir calorifique estimé, en <b>MJ/kg</b> (1 kJ/g = 1 MJ/kg).</>, unite: 'MJ/kg', vrai: CM.pouvoirCalorifique(c), csMin: 3, tolRel: 0.01,
-    aide: 'PC = |E_r| ÷ M : des kJ par mole divisés par des g par mole donnent des kJ/g, soit des MJ/kg.',
+    aide: 'PC = frac(∣E_r∣|M) : des kJ par mole divisés par des g par mole donnent des kJ/g, soit des MJ/kg.',
     pieges: [[-Er, 'C’est l’énergie par mole : divisez par la masse molaire pour obtenir l’énergie par gramme.'], [-Er * M, 'On divise par la masse molaire, on ne multiplie pas.'], [CM.pouvoirCalorifique(c) * 1000, 'Facteur 1000 : 1 kJ/g = 1 MJ/kg, il n’y a pas de conversion à faire.']],
-    expl: <>PC = |E<sub>r</sub>| ÷ M = <Frac haut={<>{ent(Er)}</>} bas={<>{nb(M, 3)}</>} /> = {nb(CM.pouvoirCalorifique(c), 3)}{NB}kJ/g, soit <b>{avecU(CM.pouvoirCalorifique(c), 'MJ/kg', 3)}</b>.</> };
+    expl: <>PC = <Frac haut={<>|E<sub>r</sub>|</>} bas={<>M</>} /> = <Frac haut={<>{ent(Er)}</>} bas={<>{nb(M, 3)}</>} /> = {nb(CM.pouvoirCalorifique(c), 3)}{NB}kJ/g, soit <b>{avecU(CM.pouvoirCalorifique(c), 'MJ/kg', 3)}</b>.</> };
   [q1, q2, q3, q4, q5, q6].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Combustions : équation équilibrée, énergie de rupture et de formation des liaisons, énergie molaire de réaction estimée, écart avec la référence, énergie libérée et pouvoir calorifique.', questions: [q0, q1, q2, q3, q4, q5, q6],
-    retenir: ['Équilibrer dans l’ordre C, H, O ; un alcool apporte déjà un atome O.', 'E_r ≈ Σ D(rompues) − Σ D(formées) ; E_r < 0 : exothermique ; estimation avec des énergies moyennes, en phase gazeuse.', 'Pouvoir calorifique : PC = |E_r| ÷ M, en kJ/g = MJ/kg ; énergie libérée par une masse m : (frac(m|M)) × |E_r|.'] };
+    retenir: ['Équilibrer dans l’ordre C, H, O ; un alcool apporte déjà un atome O.', 'E_r ≈ Σ D(rompues) − Σ D(formées) ; E_r < 0 : exothermique ; estimation avec des énergies moyennes, en phase gazeuse.', 'Pouvoir calorifique : PC = frac(∣E_r∣|M), en kJ/g = MJ/kg ; énergie libérée par une masse m : frac(m|M) × ∣E_r∣.'] };
 }
 
 // ───────────── Équation de réaction (2GT) : équation ajustée, proportions, atomes dans « n formules », charge des produits ─────────────
@@ -1566,7 +1566,7 @@ function genEquation2GT() {
   } while (vrai1 % 10 === 0 && vrai1 >= 10);
   const e1 = EQM.ESPECES[ids(r1)[i1]], f1 = EQM.ESPECES[ids(r1)[j1]];
   const q1 = { id: 'e1', type: 'num', q: <>La transformation « {r1.titre.toLowerCase()} » a pour équation ajustée <b>{eq(r1, c1)}</b>. On fait réagir <b>{N1} {EQM.nomEntites(ids(r1)[i1])}</b> {e1.f}, et l’on suppose que tout réagit. Combien de <b>{EQM.nomEntites(ids(r1)[j1])}</b> {f1.f} se forment ?{EQM.ESPECES[ids(r1)[i1]].id === 'CaCO3' ? ' (CaCO₃ est un solide ionique : sa formule donne l’unité qui se répète.)' : ''}</>, unite: EQM.nomEntites(ids(r1)[j1]), vrai: vrai1, csMin: String(vrai1).length, tolRel: 0,
-    aide: 'Les coefficients sont des proportions : cherchez par quel nombre il faut multiplier la réaction (N ÷ coefficient du réactif), puis multipliez le coefficient de l’espèce demandée.',
+    aide: 'Les coefficients sont des proportions : cherchez par quel nombre il faut multiplier la réaction (frac(N|coefficient du réactif)), puis multipliez le coefficient de l’espèce demandée.',
     pieges: [[N1, 'C’est le nombre de départ : il faut utiliser les coefficients de l’équation pour passer d’une espèce à l’autre.'], [k1, 'C’est le nombre de fois que la réaction se produit : multipliez-le par le coefficient de l’espèce demandée.'], [N1 + c1[j1], 'Les proportions se multiplient, elles ne s’additionnent pas.'], [c1[j1], 'C’est le coefficient de l’équation, pour une seule réaction : la réaction se produit plusieurs fois.']],
     expl: <><Frac haut={<>La réaction se produit {N1}</>} bas={<>{c1[i1]}</>} /> = {k1} fois ; l’équation donne {c1[j1]} {f1.f} par réaction : {k1} × {c1[j1]} = <b>{vrai1}</b> {EQM.nomEntites(ids(r1)[j1])}.</> };
   // q2 : atomes dans « n formules »
@@ -1597,7 +1597,7 @@ function genPrisme2GT() {
   // q0 : angle i₂ dans le verre (loi de Snell-Descartes, air → verre)
   const nm0 = tire([400, 700]), n0 = nm0 === 400 ? NV : NR, c0 = nm0 === 400 ? 'violet' : 'rouge', i10 = tire([50, 55, 60, 65, 70, 75]), v0 = PRISME2GT.angleRefracte(i10, n0);
   const q0 = { id: 'g0', type: 'num', q: <>Un rayon <b>{c0}</b> ({nm0}{NB}nm) arrive sur la première face d’un prisme avec un angle d’incidence <b>i₁{NB}={NB}{i10}{NB}°</b>. L’indice du verre pour cette couleur est <b>n{NB}={NB}{prismeFR(n0, 2)}</b>. Quel est l’angle <b>i₂</b> dans le verre ? Donnez le résultat en <b>°</b>.</>, unite: '°', vrai: v0, tolRel: PRISME2GT.TOL_ANGLE,
-    aide: 'Loi de Snell-Descartes, air vers verre : sin i₂ = sin i₁ ÷ n. Calculez sin i₁ (calculatrice en degrés), divisez par n, puis appliquez sin⁻¹.',
+    aide: 'Loi de Snell-Descartes, air vers verre : sin i₂ = frac(sin i₁|n). Calculez sin i₁ (calculatrice en degrés), divisez par n, puis appliquez sin⁻¹.',
     pieges: [[PRISME2GT.angleRefracte(i10, nm0 === 400 ? NR : NV), 'Vous avez pris l’indice de l’autre couleur : ici n est celui de la couleur indiquée.'], [i10 / n0, 'On ne divise pas les angles : ce sont les sinus qui sont reliés.'], [PRISME2GT.sinus(i10) / n0, 'C’est sin i₂ : il faut encore appliquer sin⁻¹ pour obtenir l’angle.']],
     expl: <>sin i₂ = <Frac haut={<>sin {i10}°</>} bas={<>{prismeFR(n0, 2)}</>} /> = {prismeFR(PRISME2GT.sinus(i10) / n0, 3)}, donc i₂ = <b>{prismeFR(v0, 1)}{NB}°</b>.</> };
   // q1 : angle i₄ dans l'air à la sortie
@@ -1624,12 +1624,12 @@ function genPrisme2GT() {
   // q4 : indice du verre pour une couleur, à partir de i₁ et i₂ mesurés
   const nm4 = tire([400, 450, 550, 700]), n4 = PRISME2GT.indiceTable(nm4), i14 = tire([50, 60, 70]), i24 = Math.round(PRISME2GT.angleRefracte(i14, n4) * 10) / 10, v4 = PRISME2GT.sinus(i14) / PRISME2GT.sinus(i24);
   const q4 = { id: 'g4', type: 'num', q: <>Un rayon de {nm4}{NB}nm arrive sur le prisme avec <b>i₁{NB}={NB}{i14}{NB}°</b> et se réfracte avec <b>i₂{NB}={NB}{prismeFR(i24, 1)}{NB}°</b>. Quel est l’indice <b>n</b> du verre pour cette couleur ? Donnez le résultat avec 3 chiffres significatifs.</>, vrai: v4, tolRel: 0.006, csMin: 3, unite: '',
-    aide: 'Loi de Snell-Descartes : n = sin i₁ ÷ sin i₂ (l’air a pour indice 1,00). Calculez les deux sinus séparément, puis divisez.',
-    pieges: [[i14 / i24, 'On ne divise pas les angles : il faut diviser les sinus.'], [PRISME2GT.sinus(i24) / PRISME2GT.sinus(i14), 'Vous avez inversé : n = sin i₁ ÷ sin i₂.']],
+    aide: 'Loi de Snell-Descartes : n = frac(sin i₁|sin i₂) (l’air a pour indice 1,00). Calculez les deux sinus séparément, puis divisez.',
+    pieges: [[i14 / i24, 'On ne divise pas les angles : il faut diviser les sinus.'], [PRISME2GT.sinus(i24) / PRISME2GT.sinus(i14), 'Vous avez inversé : n = frac(sin i₁|sin i₂).']],
     expl: <>n = <Frac haut={<>sin {i14}°</>} bas={<>sin {prismeFR(i24, 1)}°</>} /> = <Frac haut={<>{prismeFR(PRISME2GT.sinus(i14), 3)}</>} bas={<>{prismeFR(PRISME2GT.sinus(i24), 3)}</>} /> ≈ <b>{prismeFR(v4, 2)}</b>.</> };
   [q0, q1, q2, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.03, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Dispersion par un prisme : angle dans le verre, angle de sortie, écart de déviation, laser le plus dévié, indice d’une couleur.', questions: [q0, q1, q2, q3, q4],
-    retenir: ['Air vers verre : sin i₂ = sin i₁ ÷ n ; verre vers air : sin i₄ = n × sin i₃ (on relie toujours les sinus, jamais les angles).', 'Plus l’indice du verre est grand, plus le rayon est dévié : le violet (indice le plus grand) est le plus dévié, le rouge le moins.', 'Un écart de déviation est une différence de deux angles ; l’indice se calcule avec n = sin i₁ ÷ sin i₂.'] };
+    retenir: ['Air vers verre : sin i₂ = frac(sin i₁|n) ; verre vers air : sin i₄ = n × sin i₃ (on relie toujours les sinus, jamais les angles).', 'Plus l’indice du verre est grand, plus le rayon est dévié : le violet (indice le plus grand) est le plus dévié, le rouge le moins.', 'Un écart de déviation est une différence de deux angles ; l’indice se calcule avec n = frac(sin i₁|sin i₂).'] };
 }
 
 // ───────────── Corps pur ou mélange (2GT) : palier ou non, lecture d'une température d'ébullition, écart, compatibilité, identification, zone de la vraie température ─────────────
@@ -1694,7 +1694,7 @@ const OEIL2GT_OBJETS = [
   { art: 'un clocher', sit: 'situé', de: 'd’un clocher', AB: [15, 20, 25, 30], D: [100, 150, 200, 300] },
   { art: 'une personne', sit: 'située', de: 'd’une personne', AB: [1.6, 1.7, 1.8], D: [10, 12, 15, 20, 25] },
 ];
-// couple (AB, D) tiré avec des rayons peu inclinés : AB ÷ OA ≤ 0,16 (hypothèse de la simulation) ; AB et D en m
+// couple (AB, D) tiré avec des rayons peu inclinés : frac(AB|OA) ≤ 0,16 (hypothèse de la simulation) ; AB et D en m
 export const oeil2gtPaire = o => { for (let k = 0; k < 500; k++) { const AB = tire(o.AB), D = tire(o.D); if (AB / D <= 0.16) return [AB, D]; } return [o.AB[0], o.D[o.D.length - 1]]; };
 const oeil2gtDist = x => Number(x).toLocaleString('fr-FR', { maximumFractionDigits: 0 }).replace(/\s/g, NB);       // distances entières, espace insécable à partir de 1 000
 // Options d'une question : la bonne réponse n'est jamais la plus longue
@@ -1707,20 +1707,20 @@ function genOeil2GT() {
   const o0 = tire(OEIL2GT_OBJETS), [AB0, D0] = oeil2gtPaire(o0), v0 = AB0 * OAP / D0;
   const q0 = { id: 'g0', type: 'num', q: <>Un œil normal (la rétine est à <b>OA′ = 17{NB}mm</b> de la lentille) regarde {o0.art} de <b>AB = {nb(AB0, 2)}{NB}m</b> {o0.sit} à <b>OA = {oeil2gtDist(D0)}{NB}m</b>. L’image est nette sur la rétine. Quelle est la hauteur A′B′ de l’image ? Donnez le résultat en <b>mm</b>.</>,
     unite: 'mm', vrai: v0, csMin: 2, tolRel: 0.06,
-    aide: 'Thalès : A′B′ = AB × OA′ ÷ OA. Mettez AB et OA dans la même unité (1 m = 1 000 mm) ; OA′ est en mm.',
+    aide: 'Thalès : A′B′ = frac(AB × OA′|OA). Mettez AB et OA dans la même unité (1 m = 1 000 mm) ; OA′ est en mm.',
     pieges: [[v0 * 1000, 'Facteur 1 000 : AB et OA doivent être dans la même unité, et OA′ est en mm.'], [v0 / 1000, 'Le résultat est 1 000 fois trop petit : tout est en mètres, sauf OA′ qui est en mm.'], [OAP, 'C’est OA′, la distance lentille-rétine. La hauteur de l’image se calcule avec Thalès.'], [AB0 * D0 / OAP, 'On multiplie par OA′ et on divise par OA : l’image est plus petite que l’objet.']],
-    expl: <>A′B′ = <Frac haut={<>AB × OA′</>} bas={<>OA</>} /> = <Frac haut={<>{nb(AB0, 2)} × 17</>} bas={<>{oeil2gtDist(D0)}</>} /> = <b>{avecU(v0, 'mm', 2)}</b> (le rapport AB ÷ OA ne dépend pas de l’unité si AB et OA sont dans la même).</> };
+    expl: <>A′B′ = <Frac haut={<>AB × OA′</>} bas={<>OA</>} /> = <Frac haut={<>{nb(AB0, 2)} × 17</>} bas={<>{oeil2gtDist(D0)}</>} /> = <b>{avecU(v0, 'mm', 2)}</b> (le rapport <Frac haut={<>AB</>} bas={<>OA</>} /> ne dépend pas de l’unité si AB et OA sont dans la même).</> };
   const o1 = tire(OEIL2GT_OBJETS), [AB1, D1] = oeil2gtPaire(o1), Ap1 = Number((AB1 * OAP / D1).toPrecision(2)), v1 = Ap1 * D1 / OAP;
   const q1 = { id: 'g1', type: 'num', q: <>Un œil normal (<b>OA′ = 17{NB}mm</b>) regarde {o1.art} {o1.sit} à <b>OA = {oeil2gtDist(D1)}{NB}m</b>. L’image sur la rétine mesure <b>A′B′ = {nb(Ap1, 2)}{NB}mm</b>. Quelle est la hauteur AB de l’objet ? Donnez le résultat en <b>m</b>.</>,
     unite: 'm', vrai: v1, csMin: 2, tolRel: 0.06,
-    aide: 'A′B′ ÷ AB = OA′ ÷ OA, donc AB = A′B′ × OA ÷ OA′ : calculez avec A′B′ et OA′ en mm, OA en m, le résultat sort en m.',
+    aide: 'frac(A′B′|AB) = frac(OA′|OA), donc AB = frac(A′B′ × OA|OA′) : calculez avec A′B′ et OA′ en mm, OA en m, le résultat sort en m.',
     pieges: [[Ap1, 'C’est la hauteur de l’image, pas celle de l’objet : l’objet est beaucoup plus grand.'], [Ap1 * OAP / D1, 'On multiplie par OA et on divise par OA′ : l’objet est plus grand que son image.'], [v1 * 1000, 'Facteur 1 000 : A′B′ et OA′ sont en mm, OA en m, et le résultat est en m.']],
     expl: <>AB = <Frac haut={<>A′B′ × OA</>} bas={<>OA′</>} /> = <Frac haut={<>{nb(Ap1, 2)} × {oeil2gtDist(D1)}</>} bas={<>17</>} /> = <b>{avecU(v1, 'm', 2)}</b> (A′B′ et OA′ en mm se simplifient, OA reste en m).</> };
   const o2 = tire(OEIL2GT_OBJETS), [AB2, D2] = oeil2gtPaire(o2), Ap2 = Number((AB2 * OAP / D2).toPrecision(2)), v2 = AB2 * OAP / Ap2;
   const q2 = { id: 'g2', type: 'num', q: <>Un œil normal (<b>OA′ = 17{NB}mm</b>) regarde {o2.art} de <b>AB = {nb(AB2, 2)}{NB}m</b>. L’image nette sur la rétine mesure <b>A′B′ = {nb(Ap2, 2)}{NB}mm</b>. À quelle distance OA de l’œil se trouve l’objet ? Donnez le résultat en <b>m</b>.</>,
     unite: 'm', vrai: v2, csMin: 2, tolRel: 0.06,
-    aide: 'A′B′ ÷ AB = OA′ ÷ OA, donc OA = AB × OA′ ÷ A′B′ : AB en m, OA′ et A′B′ en mm, le résultat sort en m.',
-    pieges: [[AB2 * Ap2 / OAP, 'Le rapport est à l’envers : OA = AB × OA′ ÷ A′B′ (l’objet est loin, la distance est grande).'], [AB2, 'C’est la hauteur de l’objet, pas sa distance.'], [v2 * 1000, 'Facteur 1 000 : OA′ et A′B′ sont en mm, AB en m, et le résultat est en m.']],
+    aide: 'frac(A′B′|AB) = frac(OA′|OA), donc OA = frac(AB × OA′|A′B′) : AB en m, OA′ et A′B′ en mm, le résultat sort en m.',
+    pieges: [[AB2 * Ap2 / OAP, 'Le rapport est à l’envers : OA = frac(AB × OA′|A′B′) (l’objet est loin, la distance est grande).'], [AB2, 'C’est la hauteur de l’objet, pas sa distance.'], [v2 * 1000, 'Facteur 1 000 : OA′ et A′B′ sont en mm, AB en m, et le résultat est en m.']],
     expl: <>OA = <Frac haut={<>AB × OA′</>} bas={<>A′B′</>} /> = <Frac haut={<>{nb(AB2, 2)} × 17</>} bas={<>{nb(Ap2, 2)}</>} /> = <b>{avecU(v2, 'm', 2)}</b>.</> };
   const o3 = tire(OEIL2GT_OBJETS), [AB3, D3] = oeil2gtPaire(o3), k3 = tire([2, 3, 4, 5]), Ap3 = Number((AB3 * OAP / D3).toPrecision(2)), v3 = Ap3 / k3;
   const q3 = { id: 'g3', type: 'num', q: <>À <b>{oeil2gtDist(D3)}{NB}m</b> de l’œil, l’image nette {o3.de} sur la rétine mesure <b>{nb(Ap3, 2)}{NB}mm</b>. Quelle est la hauteur de l’image du même objet quand il est à <b>{oeil2gtDist(D3 * k3)}{NB}m</b> ? Donnez le résultat en <b>mm</b>.</>,
@@ -1729,7 +1729,7 @@ function genOeil2GT() {
     pieges: [[Ap3, 'C’est l’image de l’objet à la première distance : plus loin, l’image est plus petite.'], [Ap3 * k3, 'Plus l’objet est loin, plus l’image est petite : on divise, on ne multiplie pas.'], [Ap3 / (k3 * k3), 'La hauteur de l’image est divisée par le même nombre que la distance est multipliée, pas par son carré.']],
     expl: <>La distance est multipliée par {k3} : l’image est {k3} fois plus petite, <Frac haut={<>{nb(Ap3, 2)}</>} bas={<>{k3}</>} /> = <b>{avecU(v3, 'mm', 2)}</b>.</> };
   // q4 : image nette ou floue (œil normal au repos : f′ = 17,0 mm)
-  // objets proches : une bougie de 4,0 cm ; objets lointains : une bougie à 6 m ou 10 m, ou un arbre de 6,0 m à 50, 100 ou 200 m (rayons peu inclinés : AB ÷ OA ≤ 0,16)
+  // objets proches : une bougie de 4,0 cm ; objets lointains : une bougie à 6 m ou 10 m, ou un arbre de 6,0 m à 50, 100 ou 200 m (rayons peu inclinés : frac(AB|OA) ≤ 0,16)
   const proche = tire([true, false]), S4 = proche ? { obj: 'la bougie', D: tire([250, 300, 400, 600, 1000]) } : tire([{ obj: 'la bougie', D: 6000 }, { obj: 'la bougie', D: 10000 }, { obj: 'l’arbre', D: 50000 }, { obj: 'l’arbre', D: 100000 }, { obj: 'l’arbre', D: 200000 }]), D4 = S4.D;
   const txtD4 = D4 >= 1000 ? `${nb(D4 / 1000, 2)}${NB}m` : `${nb(D4 / 10, 2)}${NB}cm`;
   const bonne4 = proche ? 'floue : formée derrière la rétine' : 'nette : formée sur la rétine';
@@ -1748,7 +1748,7 @@ function genOeil2GT() {
     expl: <>La bougie se {plusPres ? 'rapproche' : 'éloigne'} : le cristallin {plusPres ? 'se bombe davantage, donc f′ diminue' : 'se relâche, donc f′ augmente'}. La rétine reste à 17{NB}mm. Réponse : <b>{bonne5}</b>.</> };
   [q0, q1, q2, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'L’œil réduit (lentille convergente et écran à 17 mm) : hauteur de l’image par Thalès, hauteur de l’objet, distance, proportionnalité, image nette ou floue et accommodation.', questions: [q0, q1, q2, q3, q4, q5],
-    retenir: ['Œil réduit : une lentille convergente et un écran (la rétine) à OA′ = 17 mm ; l’image est réelle et renversée.', 'Thalès : A′B′ ÷ AB = OA′ ÷ OA, avec des longueurs dans la même unité ; deux fois plus loin, une image deux fois plus petite.', 'Cristallin au repos (f′ = 17,0 mm) : objet loin net, objet proche flou ; en accommodant, le cristallin se bombe et f′ diminue.'] };
+    retenir: ['Œil réduit : une lentille convergente et un écran (la rétine) à OA′ = 17 mm ; l’image est réelle et renversée.', 'Thalès : frac(A′B′|AB) = frac(OA′|OA), avec des longueurs dans la même unité ; deux fois plus loin, une image deux fois plus petite.', 'Cristallin au repos (f′ = 17,0 mm) : objet loin net, objet proche flou ; en accommodant, le cristallin se bombe et f′ diminue.'] };
 }
 // ───────────── Le noyau de l’atome (2GT) : neutrons d’après ZAX, nombre de masse, charge du noyau, masse du noyau, atome agrandi, écriture ZAX ─────────────
 const NOY2GT_SANS_EGAL = NOYAU2GT.ELEMENTS.filter(e => e.Z >= 3 && e.N !== e.Z);        // q0 : jamais autant de neutrons que de protons (une valeur recopiée de l'écriture serait juste par hasard)
@@ -1821,7 +1821,7 @@ function genEtat2GT() {
   const c2 = tire(NOMS), ch2 = tire(CH4), L2 = ETM.L(c2, ch2), m2 = tire(ETAT2GT_MASSES), E2 = ETM.arrondiSig(ETM.energie(m2, L2), 2), v2 = E2 / L2, nom2 = ETM.corps(c2);
   const q2 = { id: 'g2', type: 'num', q: <>Un échantillon {nom2.du} (corps pur) échange <b>{nb(E2, 2)}{NB}kJ</b> lors de la {ETM.changement(ch2).nom}. L’énergie massique de changement d’état est <b>L = {nb(L2, 3)}{NB}kJ/kg</b>. Quelle masse {nom2.du} change d’état ? Donnez le résultat en <b>kg</b>.</>,
     unite: 'kg', vrai: v2, csMin: 2, tolRel: 0.06,
-    aide: 'E = m × L, donc m = E ÷ L : divisez l’énergie (kJ) par L (kJ/kg) pour obtenir des kg.',
+    aide: 'E = m × L, donc m = frac(E|L) : divisez l’énergie (kJ) par L (kJ/kg) pour obtenir des kg.',
     pieges: [[E2, 'C’est l’énergie, pas la masse : divisez-la par L.'], [E2 * L2, 'On divise l’énergie par L, on ne multiplie pas.'], [L2, 'C’est la valeur de L : la masse se calcule avec l’énergie échangée.']],
     expl: <>m = <Frac haut={<>E</>} bas={<>L</>} /> = <Frac haut={<>{nb(E2, 2)}</>} bas={<>{nb(L2, 3)}</>} /> = <b>{avecU(v2, 'kg', 2)}</b>.</> };
   // q3 : masse en grammes à convertir
@@ -1930,19 +1930,19 @@ function genImage2GT() {
   const q0 = { id: 'g0', type: 'qcm', q: <>Un rayon lumineux issu du sommet B d’un objet <b>{r0.debut}</b>. Que fait ce rayon après la lentille convergente ?</>, options: opts0, bonne: opts0.indexOf(r0.bon),
     aide: 'Il y a trois rayons particuliers : parallèle à l’axe, par le centre O, par le foyer F. Repérez lequel est décrit ici, puis rappelez-vous son trajet après la lentille.',
     expl: <>{r0.id === 'par' ? 'Un rayon parallèle à l’axe ressort en passant par le foyer image F′.' : r0.id === 'centre' ? 'Au centre, la lentille est très mince : le rayon n’est pas dévié.' : 'Un rayon qui passe par le foyer objet F ressort parallèlement à l’axe.'} Réponse : <b>{r0.bon}</b>.</> };
-  // q1 : hauteur de l'image, A′B′ = AB × OA′ ÷ OA
+  // q1 : hauteur de l'image, A′B′ = frac(AB × OA′|OA)
   const d1 = img2gtTirer(() => { const AB = tire([1.5, 2, 3, 4, 5]), OA = tire([8, 10, 12, 15, 20, 24, 30]), OAp = tire([6, 8, 10, 12, 15, 18, 20]), v = AB * OAp / OA;
-    return { AB, OA, OAp, vrai: v, donnees: [AB, OA, OAp], pieges: [[AB, 'C’est la hauteur de l’objet. L’image n’a pas la même taille : multipliez par OA′ ÷ OA.'], [AB * OA / OAp, 'Vous avez divisé à l’envers : c’est OA′ (l’image) divisé par OA (l’objet).'], [OAp / OA, 'C’est le grandissement, sans unité. Multipliez-le par la hauteur AB de l’objet pour obtenir A′B′.']] }; }, tol);
+    return { AB, OA, OAp, vrai: v, donnees: [AB, OA, OAp], pieges: [[AB, 'C’est la hauteur de l’objet. L’image n’a pas la même taille : multipliez par frac(OA′|OA).'], [AB * OA / OAp, 'Vous avez divisé à l’envers : c’est OA′ (l’image) divisé par OA (l’objet).'], [OAp / OA, 'C’est le grandissement, sans unité. Multipliez-le par la hauteur AB de l’objet pour obtenir A′B′.']] }; }, tol);
   const q1 = { id: 'g1', type: 'num', q: <>Un objet AB de <b>{nb(d1.AB, 2)}{NB}cm</b> de haut est à <b>OA{NB}={NB}{nb(d1.OA, 2)}{NB}cm</b> d’une lentille convergente. Son image se forme, nette, sur un écran à <b>OA′{NB}={NB}{nb(d1.OAp, 2)}{NB}cm</b> de la lentille. Quelle est la hauteur A′B′ de l’image ? Donnez le résultat en <b>cm</b>.</>,
     unite: 'cm', vrai: d1.vrai, csMin: 2, tolRel: tol, donnees: d1.donnees,
-    aide: 'Grandissement = OA′ ÷ OA (théorème de Thalès). Hauteur de l’image = grandissement × hauteur de l’objet.',
+    aide: 'Grandissement = frac(OA′|OA) (théorème de Thalès). Hauteur de l’image = grandissement × hauteur de l’objet.',
     pieges: d1.pieges, expl: <>Grandissement = <Frac haut={<>OA′</>} bas={<>OA</>} /> = <Frac haut={<>{nb(d1.OAp, 2)}</>} bas={<>{nb(d1.OA, 2)}</>} /> = {nb(d1.OAp / d1.OA, 3)}. A′B′ = {nb(d1.OAp / d1.OA, 3)} × {nb(d1.AB, 2)} = <b>{avecU(d1.vrai, 'cm', 2)}</b>.</> };
   // q2 : grandissement à partir des hauteurs
   const d2 = img2gtTirer(() => { const AB = tire([2, 3, 4, 5]), g = tire([0.25, 0.4, 0.5, 0.6, 1.5, 2, 2.5, 3, 4]), Ai = AB * g;
-    return { AB, Ai, vrai: g, donnees: [AB, Ai], pieges: [[AB / Ai, 'Vous avez divisé à l’envers : le grandissement est la taille de l’image divisée par la taille de l’objet.'], [Ai, 'C’est la hauteur de l’image. Il faut la diviser par la hauteur de l’objet.'], [AB * Ai, 'On divise, on ne multiplie pas : grandissement = A′B′ ÷ AB.']] }; }, tol);
+    return { AB, Ai, vrai: g, donnees: [AB, Ai], pieges: [[AB / Ai, 'Vous avez divisé à l’envers : le grandissement est la taille de l’image divisée par la taille de l’objet.'], [Ai, 'C’est la hauteur de l’image. Il faut la diviser par la hauteur de l’objet.'], [AB * Ai, 'On divise, on ne multiplie pas : grandissement = frac(A′B′|AB).']] }; }, tol);
   const q2 = { id: 'g2', type: 'num', q: <>Un objet AB de <b>{nb(d2.AB, 2)}{NB}cm</b> de haut donne, sur un écran, une image A′B′ de <b>{nb(d2.Ai, 2)}{NB}cm</b>. Quel est le grandissement ? (sans unité)</>,
     unite: '', vrai: d2.vrai, csMin: 2, tolRel: tol, donnees: d2.donnees,
-    aide: 'Grandissement = taille de l’image ÷ taille de l’objet = A′B′ ÷ AB. Il n’a pas d’unité.',
+    aide: 'Grandissement = frac(taille de l’image|taille de l’objet) = frac(A′B′|AB). Il n’a pas d’unité.',
     pieges: d2.pieges, expl: <>Grandissement = <Frac haut={<>A′B′</>} bas={<>AB</>} /> = <Frac haut={<>{nb(d2.Ai, 2)}</>} bas={<>{nb(d2.AB, 2)}</>} /> = <b>{nb(d2.vrai, 2)}</b> : l’image est {d2.vrai < 1 ? 'plus petite' : 'plus grande'} que l’objet.</> };
   // q3 : distances en cm et en m, grandissement
   const d3 = img2gtTirer(() => { const OA = tire([10, 12, 15, 20, 25]), m = tire([0.5, 0.6, 0.8, 1.2, 1.5, 2.0]), v = m * 100 / OA;
@@ -1956,18 +1956,18 @@ function genImage2GT() {
     return { g, OA, vrai: v, donnees: [g, OA], pieges: [[OA / g, 'On multiplie le grandissement par OA, on ne divise pas : OA′ = grandissement × OA.'], [OA, 'C’est la distance de l’objet. L’image n’est pas à la même distance (le grandissement n’est pas 1).'], [g, 'C’est le grandissement, sans unité. Multipliez-le par OA pour avoir OA′ en cm.']] }; }, tol);
   const q4 = { id: 'g4', type: 'num', q: <>L’image mesure <b>{nb(d4.g, 2)} fois</b> la taille de l’objet : le grandissement vaut <b>{nb(d4.g, 2)}</b>. L’objet est à <b>OA{NB}={NB}{nb(d4.OA, 2)}{NB}cm</b> de la lentille. À quelle distance OA′ de la lentille se forme l’image ? Donnez le résultat en <b>cm</b>.</>,
     unite: 'cm', vrai: d4.vrai, csMin: 2, tolRel: tol, donnees: d4.donnees,
-    aide: 'Grandissement = OA′ ÷ OA, donc OA′ = grandissement × OA.',
+    aide: 'Grandissement = frac(OA′|OA), donc OA′ = grandissement × OA.',
     pieges: d4.pieges, expl: <>Grandissement = <Frac haut={<>OA′</>} bas={<>OA</>} />, donc OA′ = {nb(d4.g, 2)} × {nb(d4.OA, 2)} = <b>{avecU(d4.vrai, 'cm', 2)}</b>.</> };
   // q5 : hauteur de l'objet à partir de l'image et du grandissement
   const d5 = img2gtTirer(() => { const AB = tire([2, 3, 4, 5, 6]), g = tire([0.25, 0.4, 0.5, 2, 2.5, 4]), Ai = AB * g;
     return { AB, g, Ai, vrai: AB, donnees: [g, Ai], pieges: [[Ai * g, 'On divise la hauteur de l’image par le grandissement, on ne les multiplie pas.'], [Ai, 'C’est la hauteur de l’image. Divisez-la par le grandissement pour avoir celle de l’objet.'], [g, 'C’est le grandissement, sans unité : divisez la hauteur de l’image par ce nombre.']] }; }, tol);
   const q5 = { id: 'g5', type: 'num', q: <>Sur un écran, une image de <b>{nb(d5.Ai, 2)}{NB}cm</b> de haut a été formée. Le grandissement vaut <b>{nb(d5.g, 2)}</b>. Quelle est la hauteur AB de l’objet ? Donnez le résultat en <b>cm</b>.</>,
     unite: 'cm', vrai: d5.vrai, csMin: 2, tolRel: tol, donnees: d5.donnees,
-    aide: 'Grandissement = A′B′ ÷ AB, donc AB = A′B′ ÷ grandissement.',
-    pieges: d5.pieges, expl: <>AB = A′B′ ÷ grandissement = <Frac haut={<>{nb(d5.Ai, 2)}</>} bas={<>{nb(d5.g, 2)}</>} /> = <b>{avecU(d5.vrai, 'cm', 2)}</b>.</> };
+    aide: 'Grandissement = frac(A′B′|AB), donc AB = frac(A′B′|grandissement).',
+    pieges: d5.pieges, expl: <>AB = <Frac haut={<>A′B′</>} bas={<>grandissement</>} /> = <Frac haut={<>{nb(d5.Ai, 2)}</>} bas={<>{nb(d5.g, 2)}</>} /> = <b>{avecU(d5.vrai, 'cm', 2)}</b>.</> };
   [q1, q2, q3, q4, q5].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * tol) * Math.abs(q.vrai)); });
   return { intro: 'Image par une lentille convergente : trois rayons particuliers, hauteur de l’image, grandissement par les tailles et par les distances (Thalès), conversion des centimètres et des mètres.', questions: [q0, q1, q2, q3, q4, q5],
-    retenir: ['Trois rayons particuliers : parallèle à l’axe (il ressort par F′), par le centre O (il n’est pas dévié), par le foyer F (il ressort parallèle à l’axe).', 'Grandissement = A′B′ ÷ AB = OA′ ÷ OA (théorème de Thalès) : sans unité ; moins de 1, image plus petite ; plus de 1, image plus grande.', 'Les deux distances doivent être dans la même unité avant de diviser.'] };
+    retenir: ['Trois rayons particuliers : parallèle à l’axe (il ressort par F′), par le centre O (il n’est pas dévié), par le foyer F (il ressort parallèle à l’axe).', 'Grandissement = frac(A′B′|AB) = frac(OA′|OA) (théorème de Thalès) : sans unité ; moins de 1, image plus petite ; plus de 1, image plus grande.', 'Les deux distances doivent être dans la même unité avant de diviser.'] };
 }
 // ───────────── Tests chimiques (2GT) : réactif et observation d’un test, lecture d’une observation, nombre de tests, durée des tests, deux espèces en même temps ─────────────
 const TEST2GT_REACTIF = { eau: 'sulfate de cuivre anhydre', co2: 'eau de chaux', o2: 'une braise', h2: 'une flamme' };
@@ -2047,14 +2047,14 @@ function genCcm2GT() {
   const F0 = tire(CCM2GT_FRONTS), d0 = dist1(F0, tire(CCM2GT_RF)), r0 = d0 / F0, s0 = tire(CCM2GT_SITU);
   const q0 = { id: 'c0', type: 'num', q: <>Sur une plaque de CCM, la tache {s0.de} a parcouru <b>{nbc(d0)}{NB}cm</b> depuis la ligne de dépôt. Le front de l’éluant a parcouru <b>{nbc(F0)}{NB}cm</b> depuis la même ligne. Calculez le rapport frontal R<sub>f</sub> de cette tache (sans unité).</>,
     unite: '', vrai: r0, csMin: 2, tolRel: 0.06,
-    aide: 'Rf = distance parcourue par la tache ÷ distance parcourue par le front, toutes deux mesurées depuis la ligne de dépôt. Le résultat est entre 0 et 1, sans unité.',
+    aide: 'Rf = frac(distance parcourue par la tache|distance parcourue par le front), toutes deux mesurées depuis la ligne de dépôt. Le résultat est entre 0 et 1, sans unité.',
     pieges: [[d0 * F0, 'On divise les deux distances, on ne les multiplie pas.'], [F0 / d0, 'Le rapport est inversé : la distance de la tache est au numérateur, celle du front au dénominateur.'], [d0, 'C’est la distance de la tache, pas le rapport : divisez-la par celle du front.']],
     expl: <>R<sub>f</sub> = <Frac haut={<>{nbc(d0)}</>} bas={<>{nbc(F0)}</>} /> = <b>{nb(r0, 2)}</b>. Une tache ne dépasse jamais le front : R<sub>f</sub> est toujours inférieur à 1.</> };
   // q1 : distance parcourue par la tache à partir de Rf
   const F1 = tire(CCM2GT_FRONTS), r1 = tire(CCM2GT_RF), v1 = r1 * F1, s1 = tire(CCM2GT_SITU);
   const q1 = { id: 'c1', type: 'num', q: <>Sur une plaque, {s1.de} a un rapport frontal R<sub>f</sub> = <b>{nbc(r1)}</b>. Le front de l’éluant a parcouru <b>{nbc(F1)}{NB}cm</b> depuis la ligne de dépôt. Quelle distance la tache a-t-elle parcourue ? Donnez le résultat en <b>cm</b>.</>,
     unite: 'cm', vrai: v1, csMin: 2, tolRel: 0.06,
-    aide: 'Rf = distance de la tache ÷ distance du front, donc distance de la tache = Rf × distance du front.',
+    aide: 'Rf = frac(distance de la tache|distance du front), donc distance de la tache = Rf × distance du front.',
     pieges: [[r1 / F1, 'On multiplie Rf par la distance du front, on ne divise pas.'], [F1 / r1, 'Vous avez divisé la distance du front par Rf : la distance de la tache est plus petite que celle du front.'], [F1, 'C’est la distance parcourue par le front : la tache est restée en arrière, d’un facteur Rf.']],
     expl: <>Distance de la tache = R<sub>f</sub> × distance du front = {nbc(r1)} × {nbc(F1)} = <b>{avecU(v1, 'cm', 2)}</b>.</> };
   // q2 : tache lue en millimètres, front en centimètres
@@ -2068,8 +2068,8 @@ function genCcm2GT() {
   const F3 = tire(CCM2GT_FRONTS), r3 = tire(CCM2GT_RF), d3 = dist1(F3, r3), v3 = d3 / r3, s3 = tire(CCM2GT_SITU);
   const q3 = { id: 'c3', type: 'num', q: <>Pour {s3.de}, on sait que R<sub>f</sub> = <b>{nbc(r3)}</b> avec l’éluant utilisé. Sur une nouvelle plaque, la tache de cette espèce est à <b>{nbc(d3)}{NB}cm</b> de la ligne de dépôt. Quelle distance le front a-t-il parcourue ? Donnez le résultat en <b>cm</b>.</>,
     unite: 'cm', vrai: v3, csMin: 2, tolRel: 0.07,
-    aide: 'distance de la tache = Rf × distance du front, donc distance du front = distance de la tache ÷ Rf.',
-    pieges: [[d3 * r3, 'On divise la distance de la tache par Rf, on ne les multiplie pas.'], [r3 / d3, 'Le rapport est inversé : distance du front = distance de la tache ÷ Rf.'], [d3, 'C’est la distance de la tache : le front est plus haut, puisque Rf est inférieur à 1.']],
+    aide: 'distance de la tache = Rf × distance du front, donc distance du front = frac(distance de la tache|Rf).',
+    pieges: [[d3 * r3, 'On divise la distance de la tache par Rf, on ne les multiplie pas.'], [r3 / d3, 'Le rapport est inversé : distance du front = frac(distance de la tache|Rf).'], [d3, 'C’est la distance de la tache : le front est plus haut, puisque Rf est inférieur à 1.']],
     expl: <>Distance du front = <Frac haut={<>{nbc(d3)}</>} bas={<>{nbc(r3)}</>} /> = <b>{avecU(v3, 'cm', 2)}</b>.</> };
   // q4 : écart de hauteur en millimètres entre deux taches lues en centimètres
   const h4 = tire([2.4, 2.7, 3.1, 3.6, 4.2, 4.8]), e4 = tire(CCM2GT_ECARTS), h4b = Math.round((h4 + e4) * 10) / 10, v4 = Math.round(e4 * 10);
@@ -2087,7 +2087,7 @@ function genCcm2GT() {
     expl: <>{mem ? 'Les deux taches sont à la même hauteur : c’est compatible avec la même espèce, mais deux espèces différentes peuvent migrer pareil dans un éluant. Pour confirmer, on change d’éluant.' : `L’écart est de ${Math.round(e5 * 10)}\u00a0mm, bien plus que la précision de lecture (1\u00a0mm) : les hauteurs diffèrent, donc les espèces sont différentes.`}</> };
   [q0, q1, q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); });
   return { intro: 'Chromatographie sur couche mince : rapport frontal (complément), distance parcourue par une tache ou par le front, conversion des millimètres en centimètres, écart de hauteur et conclusion d’une comparaison.', questions: [q0, q1, q2, q3, q4, q5],
-    retenir: ['Rf = distance parcourue par la tache ÷ distance parcourue par le front, depuis la ligne de dépôt : entre 0 et 1, sans unité (complément, non exigé en Seconde).', 'Mettre les deux distances dans la même unité avant de diviser (1\u00a0cm = 10\u00a0mm).', 'Même hauteur : compatible avec la même espèce, sans preuve ; hauteurs différentes : espèces différentes.'] };
+    retenir: ['Rf = frac(distance parcourue par la tache|distance parcourue par le front), depuis la ligne de dépôt : entre 0 et 1, sans unité (complément, non exigé en Seconde).', 'Mettre les deux distances dans la même unité avant de diviser (1\u00a0cm = 10\u00a0mm).', 'Même hauteur : compatible avec la même espèce, sans preuve ; hauteurs différentes : espèces différentes.'] };
 }
 // ───────────── Synthèse et reflux (2GT) : masse et volume d’un liquide (masse volumique), débit et durée de l’eau du réfrigérant ─────────────
 const SYN2GT_LIQ = [
@@ -2111,8 +2111,8 @@ function genSynthese2GT() {
   const l1 = tire(SYN2GT_LIQ.slice(1)), m1 = tire([8.1, 10, 12, 16, 20, 25]), V1 = m1 / l1.rho;
   const q1 = { id: 's1', type: 'num', q: <>Pour la synthèse, il faut <b>{nbc(m1)}{NB}g</b> {l1.n} (<b>ρ = {RHO(l1)}{NB}g/mL</b>). Quel volume faut-il mesurer à l’éprouvette, en millilitres ?</>,
     unite: 'mL', vrai: V1, csMin: 2, tolRel: 0.06,
-    aide: 'ρ = m ÷ V, donc V = m ÷ ρ : on cherche combien de millilitres pèsent cette masse.',
-    pieges: [[m1 * l1.rho, 'On divise la masse par la masse volumique, on ne la multiplie pas.'], [m1, 'C’est la masse en grammes : le volume en mL s’obtient en divisant par ρ.'], [l1.rho / m1, 'Le rapport est inversé : V = m ÷ ρ.']],
+    aide: 'ρ = frac(m|V), donc V = frac(m|ρ) : on cherche combien de millilitres pèsent cette masse.',
+    pieges: [[m1 * l1.rho, 'On divise la masse par la masse volumique, on ne la multiplie pas.'], [m1, 'C’est la masse en grammes : le volume en mL s’obtient en divisant par ρ.'], [l1.rho / m1, 'Le rapport est inversé : V = frac(m|ρ).']],
     expl: <>V = <Frac haut={<>m</>} bas={<>ρ</>} /> = <Frac haut={<>{nbc(m1)}</>} bas={<>{nb(l1.rho, 3)}</>} /> = <b>{avecU(V1, 'mL', 2)}</b>.</> };
   // q2 : lire le volume du mélange réactionnel dans un protocole, puis choisir la capacité du ballon
   const Va = tire([10, 12, 15, 20]), Vb = tire([8, 10, 12, 15]), v2 = 2 * (Va + Vb);
@@ -2125,19 +2125,19 @@ function genSynthese2GT() {
   const l3 = tire(SYN2GT_LIQ), V3 = tire([10, 20, 25, 40, 50]), m3 = Math.round(l3.rho * V3 * 10) / 10, r3 = m3 / V3;
   const q3 = { id: 's3', type: 'num', q: <>À l’éprouvette, on mesure <b>{V3}{NB}mL</b> d’un liquide incolore ; la balance indique <b>{nbc(m3, 3)}{NB}g</b> de liquide. Calculez sa masse volumique, en g/mL.</>,
     unite: 'g/mL', vrai: r3, csMin: 2, tolRel: 0.06,
-    aide: 'ρ = masse ÷ volume : la masse de 1 mL de liquide.',
-    pieges: [[V3 / m3, 'Le rapport est inversé : ρ = masse ÷ volume.'], [m3 * V3, 'On divise la masse par le volume, on ne les multiplie pas.'], [m3, 'C’est la masse totale : divisez-la par le nombre de millilitres.']],
+    aide: 'ρ = frac(masse|volume) : la masse de 1 mL de liquide.',
+    pieges: [[V3 / m3, 'Le rapport est inversé : ρ = frac(masse|volume).'], [m3 * V3, 'On divise la masse par le volume, on ne les multiplie pas.'], [m3, 'C’est la masse totale : divisez-la par le nombre de millilitres.']],
     expl: <>ρ = <Frac haut={<>m</>} bas={<>V</>} /> = <Frac haut={<>{nbc(m3, 3)}</>} bas={<>{V3}</>} /> = <b>{avecU(r3, 'g/mL', 2)}</b>.</> };
   // q4 : identification d'un liquide à partir de ρ (la bonne réponse n'est jamais l'option la plus longue : l'ester, nommé le plus longuement, n'est jamais la bonne réponse)
   const LIQ4 = [['l’acide éthanoïque', 1.05], ['l’alcool isoamylique', 0.81], ['l’acétate d’isoamyle (l’arôme)', 0.88], ['le dichlorométhane', 1.33]];
   const k4 = tire([0, 1, 3]), rho4 = LIQ4[k4][1], m4 = Math.round(rho4 * 20 * 10) / 10, noms4 = LIQ4.map(x => x[0]), opts4 = melange(noms4);
   const q4 = { id: 's4', type: 'qcm', q: <>On mesure <b>20{NB}mL</b> d’un liquide incolore et on trouve une masse de <b>{nbc(m4, 3)}{NB}g</b>. Données : ρ(acide éthanoïque) = 1,05{NB}g/mL ; ρ(alcool isoamylique) = 0,81{NB}g/mL ; ρ(acétate d’isoamyle) = 0,88{NB}g/mL ; ρ(dichlorométhane) = 1,33{NB}g/mL. De quel liquide s’agit-il ?</>,
     options: opts4, bonne: opts4.indexOf(noms4[k4]),
-    aide: 'Calculez ρ = m ÷ V pour ce liquide et comparez-la aux valeurs données.',
+    aide: 'Calculez ρ = frac(m|V) pour ce liquide et comparez-la aux valeurs données.',
     expl: <>ρ = <Frac haut={<>{nbc(m4, 3)}</>} bas={<>20</>} /> = {nb(m4 / 20, 3)}{NB}g/mL : c’est la masse volumique de {noms4[k4]}. Les masses volumiques données sont assez différentes pour choisir sans hésiter ici.</> };
   [q0, q1, q2, q3].forEach(filtre);
   return { intro: 'Synthèse et reflux : masse et volume d’un liquide à prélever (masse volumique), capacité du ballon d’après un protocole et identification d’un liquide.', questions: [q0, q1, q2, q3, q4],
-    retenir: ['Masse volumique : ρ = m ÷ V, en g/mL ; m = ρ × V et V = m ÷ ρ.', 'Pour choisir un ballon : volume total du mélange, puis la règle du protocole (au plus la moitié de la capacité).', 'Les valeurs de l’exercice sont fournies : aucune n’est à retenir par cœur.'] };
+    retenir: ['Masse volumique : ρ = frac(m|V), en g/mL ; m = ρ × V et V = frac(m|ρ).', 'Pour choisir un ballon : volume total du mélange, puis la règle du protocole (au plus la moitié de la capacité).', 'Les valeurs de l’exercice sont fournies : aucune n’est à retenir par cœur.'] };
 }
 // ───────────── Équilibre chimique (TG) : Qr, K, taux d’avancement final, Qr après un ajout ─────────────
 function genEquilibreTG() {
@@ -2383,11 +2383,11 @@ function genKsqMelange() {
   const c1S = KQ.sciNb(d.c1, 2), c2S = KQ.sciNb(d.c2, 2), m1S = KQ.sciNb(m.c1, 2), m2S = KQ.sciNb(m.c2, 2), KsS = KQ.sciNb(d.Ks, 2);
   const intro = `On mélange ${d.V1}${NB}mL d’une solution d’ions ${s.cation} à ${c1S}${NB}mol/L et ${d.V2}${NB}mL d’une solution d’ions ${s.anion} à ${c2S}${NB}mol/L (volumes additifs). Équilibre de dissolution : ${eqKsq(s)}, avec Ks = ${KsS} à 25${NB}°C.`;
   const q1 = { id: 'm0', type: 'num', q: <>Quelle est la concentration des ions <b>{s.cation}</b> juste après le mélange, en mol/L (2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: m.c1, tolRel: 0.05, csMin: 2,
-    aide: `Dilution : c finale = c de départ × V de la solution ÷ volume total (${d.V1} + ${d.V2} = ${d.Vt} mL).`,
+    aide: `Dilution : c finale = frac(c de départ × V de la solution|volume total) (${d.V1} + ${d.V2} = ${d.Vt} mL).`,
     pieges: [[d.c1, 'Vous n’avez pas tenu compte de la dilution : le volume total est la somme des deux volumes.'], [d.c1 * d.V1 / d.V2, 'Le volume au dénominateur est le volume total (somme des deux), pas celui de l’autre solution.']],
     expl: <>[{s.cation}] = <Frac haut={<>{c1S} × {d.V1}</>} bas={<>{d.Vt}</>} /> = <b>{m1S}{NB}mol/L</b>.</> };
   const q2 = { id: 'm1', type: 'num', q: <>Quelle est la concentration des ions <b>{s.anion}</b> juste après le mélange, en mol/L (2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: m.c2, tolRel: 0.05, csMin: 2,
-    aide: `Même méthode : c2 × V2 ÷ (V1 + V2) avec V2 = ${d.V2} mL.`,
+    aide: `Même méthode : frac(c2 × V2|V1 + V2) avec V2 = ${d.V2} mL.`,
     pieges: [[d.c2, 'Vous n’avez pas tenu compte de la dilution : le volume total est la somme des deux volumes.'], [d.c2 * d.V2 / d.V1, 'Le volume au dénominateur est le volume total (somme des deux), pas celui de l’autre solution.']],
     expl: <>[{s.anion}] = <Frac haut={<>{c2S} × {d.V2}</>} bas={<>{d.Vt}</>} /> = <b>{m2S}{NB}mol/L</b>.</> };
   const q3 = { id: 'm2', type: 'num', q: <>Avec [{s.cation}] = {m1S}{NB}mol/L et [{s.anion}] = {m2S}{NB}mol/L, calculez le quotient de réaction <b>Qr</b> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: d.q, tolRel: 0.08, csMin: 2,
@@ -2399,7 +2399,7 @@ function genKsqMelange() {
     expl: <>Qr ≈ {KQ.sciNb(d.q, 2)} est {prec ? 'supérieur' : 'inférieur'} à Ks = {KsS} (rapport {ratio >= 10 || ratio < 0.1 ? KQ.sciNb(ratio, 1) : nbF(ratio, 2)}) : {prec ? 'un précipité se forme jusqu’à ce que Qr = Ks.' : 'il n’y a pas de précipité, la solution n’est pas saturée.'}</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['Après un mélange : concentration = c de départ × V ÷ volume total.', 'Qr = produit des concentrations à la puissance des coefficients (même expression que Ks).', 'Qr > Ks : précipité ; Qr < Ks : pas de précipité ; Qr = Ks : solution saturée.'] };
+    retenir: ['Après un mélange : concentration = frac(c de départ × V|volume total).', 'Qr = produit des concentrations à la puissance des coefficients (même expression que Ks).', 'Qr > Ks : précipité ; Qr < Ks : pas de précipité ; Qr = Ks : solution saturée.'] };
 }
 
 // ---------- Hydroxydes (CDD) : pH de début et de fin de précipitation, fenêtre de séparation (sim 310) ----------
@@ -2410,15 +2410,15 @@ function genHydSeuil() {
   const cS = HY.sciNb(c, 1), KsS = HY.sciNb(cat.Ks, 2), ohS = HY.sciNb(oh, 2);
   const intro = `Une solution contient des ions ${cat.ion} à ${cS}${NB}mol/L. On y ajoute de la soude, à 25${NB}°C. Équation : ${eqHyd(cat)}, avec Ks = ${KsS}. On considère la précipitation quasi totale quand il reste 1,0×10⁻⁵${NB}mol/L d’ions ${cat.ion}.`;
   const q1 = { id: 'h0', type: 'num', q: <>Quelle est la concentration en ions <b>HO⁻</b> au début de la précipitation de {cat.solide}, en mol/L (2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: oh, tolRel: 0.05, csMin: 2,
-    aide: `Ks = [${cat.ion}] × [HO⁻]${HY.sup(n)} : [HO⁻] = ${n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ c).`,
-    pieges: [[cat.Ks / c, `Vous avez oublié la ${n === 2 ? 'racine carrée' : 'racine cubique'} : Ks = c × [HO⁻]${HY.sup(n)}, donc [HO⁻] = (Ks ÷ c)^(1/${n}).`], [Math.pow(cat.Ks, 1 / n), 'Vous avez oublié de diviser Ks par la concentration c de l’ion métallique.']],
+    aide: `Ks = [${cat.ion}] × [HO⁻]${HY.sup(n)} : [HO⁻] = ${n === 2 ? 'racine carrée' : 'racine cubique'} de frac(Ks|c).`,
+    pieges: [[cat.Ks / c, `Vous avez oublié la ${n === 2 ? 'racine carrée' : 'racine cubique'} : Ks = c × [HO⁻]${HY.sup(n)}, donc [HO⁻] = frac(Ks|c)^(1/${n}).`], [Math.pow(cat.Ks, 1 / n), 'Vous avez oublié de diviser Ks par la concentration c de l’ion métallique.']],
     expl: <>[HO⁻]{HY.sup(n)} = <Frac haut={<>Ks</>} bas={<>c</>} /> = {HY.sciNb(cat.Ks / c, 2)}, donc [HO⁻] = <b>{ohS}{NB}mol/L</b>.</> };
   const q2 = { id: 'h1', type: 'num', q: <>En déduire le <b>pH de début de précipitation</b> (pH = 14 + log [HO⁻]).</>, unite: '', vrai: ph, tolRel: 0.02, csMin: 2,
     aide: 'pH = 14 + log [HO⁻] (à 25 °C, pH + pOH = 14).',
     pieges: [[14 - ph, `Vous avez donné le pOH (${phNb(14 - ph)}) : le pH vaut 14 − pOH.`], [HY.phDe(cat.Ks / c), 'Vous avez oublié la racine : utilisez la valeur de [HO⁻] calculée à la question précédente.']],
     expl: <>pH = 14 + log ({ohS}) ≈ <b>{phNb(ph)}</b>.</> };
   const q3 = { id: 'h2', type: 'num', q: <>Quel est le <b>pH de fin de précipitation</b> (il reste 1,0×10⁻⁵{NB}mol/L d’ions {cat.ion}) ?</>, unite: '', vrai: phF, tolRel: 0.02, csMin: 2,
-    aide: `Même méthode avec c = 1,0×10⁻⁵ mol/L : [HO⁻] = ${n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ 1,0×10⁻⁵), puis pH = 14 + log [HO⁻].`,
+    aide: `Même méthode avec c = 1,0×10⁻⁵ mol/L : [HO⁻] = ${n === 2 ? 'racine carrée' : 'racine cubique'} de frac(Ks|1,0×10⁻⁵), puis pH = 14 + log [HO⁻].`,
     pieges: [[ph, 'Vous avez redonné le pH de début : pour la fin, remplacez c par 1,0×10⁻⁵ mol/L.'], [14 - phF, 'Vous avez donné le pOH : le pH vaut 14 − pOH.']],
     expl: <>[HO⁻] = {n === 2 ? '√' : '∛'}({HY.sciNb(cat.Ks / HY.C_FIN, 2)}) = {HY.sciNb(HY.ohSeuil(cat, HY.C_FIN), 2)}{NB}mol/L, donc pH ≈ <b>{phNb(phF)}</b>.</> };
   const regimes = [[ph - 0.8, 0], [(ph + phF) / 2, 1], [phF + 0.5, 2]], [phT, rg] = tire(regimes);
@@ -2426,7 +2426,7 @@ function genHydSeuil() {
     aide: `Comparez ce pH au pH de début (${phNb(ph)}) et au pH de fin (${phNb(phF)}) de précipitation.`,
     expl: <>pH de début {phNb(ph)}, pH de fin {phNb(phF)} : à pH {phNb(phT)}, {rg === 0 ? 'on est avant le début, rien ne précipite.' : rg === 1 ? 'on est entre le début et la fin, la précipitation est en cours.' : 'on est au-delà de la fin, la précipitation est quasi totale.'}</> };
   filtrer([q1, q2, q3]);
-  return { intro, questions: [q1, q2, q3, q4], retenir: ['[HO⁻] de début = (Ks ÷ c)^(1/n) ; pH = 14 + log [HO⁻].', 'Fin de précipitation : même calcul avec c = 1,0×10⁻⁵ mol/L.', 'Plus la solution est diluée, plus le pH de début est élevé.'] };
+  return { intro, questions: [q1, q2, q3, q4], retenir: ['[HO⁻] de début = frac(Ks|c)^(1/n) ; pH = 14 + log [HO⁻].', 'Fin de précipitation : même calcul avec c = 1,0×10⁻⁵ mol/L.', 'Plus la solution est diluée, plus le pH de début est élevé.'] };
 }
 function genHydFenetre() {
   const a = tire(HY.ORDRE); let b = tire(HY.ORDRE); while (b === a) b = tire(HY.ORDRE);
@@ -2434,11 +2434,11 @@ function genHydFenetre() {
   const cat4 = !w.ok ? 3 : w.largeur < HY.LARGEUR_MIN ? 2 : w.largeur < 1 ? 1 : 0;
   const intro = `Une solution contient des ions ${P.ion} à ${HY.sciNb(w.cPremier, 1)}${NB}mol/L et des ions ${S.ion} à ${HY.sciNb(w.cSecond, 1)}${NB}mol/L. On veut les séparer en précipitant l’un en hydroxyde par ajout de soude, à 25${NB}°C. Ks(${P.solide}) = ${HY.sciNb(P.Ks, 2)} ; Ks(${S.solide}) = ${HY.sciNb(S.Ks, 2)}. Précipitation quasi totale : il reste 1,0×10⁻⁵${NB}mol/L d’ions.`;
   const q1 = { id: 'f0', type: 'num', q: <>Quel est le <b>pH de fin de précipitation</b> de {P.solide} ?</>, unite: '', vrai: HY.phFin(P), tolRel: 0.02, csMin: 2,
-    aide: `[HO⁻] = ${P.n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ 1,0×10⁻⁵), puis pH = 14 + log [HO⁻].`,
+    aide: `[HO⁻] = ${P.n === 2 ? 'racine carrée' : 'racine cubique'} de frac(Ks|1,0×10⁻⁵), puis pH = 14 + log [HO⁻].`,
     pieges: [[HY.phDebut(P, w.cPremier), 'Vous avez calculé le pH de début : pour la fin, utilisez 1,0×10⁻⁵ mol/L à la place de la concentration de départ.'], [14 - HY.phFin(P), 'Vous avez donné le pOH : le pH vaut 14 − pOH.']],
     expl: <>pH de fin = 14 + log ({P.n === 2 ? '√' : '∛'}({HY.sciNb(P.Ks / HY.C_FIN, 2)})) ≈ <b>{phNb(HY.phFin(P))}</b>.</> };
   const q2 = { id: 'f1', type: 'num', q: <>Quel est le <b>pH de début de précipitation</b> de {S.solide} ?</>, unite: '', vrai: w.hi, tolRel: 0.02, csMin: 2,
-    aide: `[HO⁻] = ${S.n === 2 ? 'racine carrée' : 'racine cubique'} de (Ks ÷ c) avec c = ${HY.sciNb(w.cSecond, 1)} mol/L, puis pH = 14 + log [HO⁻].`,
+    aide: `[HO⁻] = ${S.n === 2 ? 'racine carrée' : 'racine cubique'} de frac(Ks|c) avec c = ${HY.sciNb(w.cSecond, 1)} mol/L, puis pH = 14 + log [HO⁻].`,
     pieges: [[HY.phFin(S), 'Vous avez calculé le pH de fin : pour le début, utilisez la concentration de départ de la solution.'], [14 - w.hi, 'Vous avez donné le pOH : le pH vaut 14 − pOH.']],
     expl: <>pH de début = 14 + log ({S.n === 2 ? '√' : '∛'}({HY.sciNb(S.Ks / w.cSecond, 2)})) ≈ <b>{phNb(w.hi)}</b>.</> };
   const q3 = { id: 'f2', type: 'qcm', q: <>Peut-on séparer {P.ion} et {S.ion} par le pH ?</>, options: ['Oui : la fenêtre de pH dépasse une unité', 'Oui, mais la fenêtre est étroite (entre 0,3 et 1 unité)', 'Non en pratique : la fenêtre est plus étroite que 0,3 unité', 'Non : les deux zones de précipitation se chevauchent'], bonne: cat4,
@@ -2452,8 +2452,8 @@ function genFiltAmp() {
   const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
   const intro = `Un filtre RC passif est alimenté par une tension sinusoïdale de fréquence ${f}${NB}Hz. À l’oscilloscope, on mesure Ue,max = ${ue}${NB}V et Us,max = ${g(us)}${NB}V.`;
   const q1 = { id: 'a0', type: 'num', q: <>Quel est le <b>facteur d’amplification</b> A du filtre à cette fréquence ?</>, unite: '', vrai: A, tolRel: 0.03, csMin: 2,
-    aide: 'A = Us,max ÷ Ue,max (rapport des amplitudes, sans unité).',
-    pieges: [[us, 'Vous avez donné Us,max (en V) : A est le rapport Us,max ÷ Ue,max, sans unité.'], [1 / A, 'Vous avez calculé Ue,max ÷ Us,max, à l’envers : un filtre passif atténue, donc A ≤ 1.']],
+    aide: 'A = frac(Us,max|Ue,max) (rapport des amplitudes, sans unité).',
+    pieges: [[us, 'Vous avez donné Us,max (en V) : A est le rapport frac(Us,max|Ue,max), sans unité.'], [1 / A, 'Vous avez calculé frac(Ue,max|Us,max), à l’envers : un filtre passif atténue, donc A ≤ 1.']],
     expl: <>A = <Frac haut={<>{g(us)}</>} bas={<>{ue}</>} /> = <b>{g(A)}</b>.</> };
   const q2 = { id: 'a1', type: 'num', q: <>De quel pourcentage l’amplitude du signal est-elle <b>réduite</b> par le filtre à cette fréquence ?</>, unite: '%', vrai: (1 - A) * 100, tolRel: 0.03, csMin: 2,
     aide: 'Réduction = (1 − A) × 100.',
@@ -2464,7 +2464,7 @@ function genFiltAmp() {
     pieges: [[A, 'Vous avez donné A, sans unité : Us,max′ = A × Ue,max′.'], [us, 'Vous avez repris la sortie précédente : l’entrée a changé, la sortie aussi.']],
     expl: <>Us,max′ = {g(A)} × {g1(ue2)} = <b>{g(us2)}{NB}V</b>.</> };
   filtrer([q1, q2, q3]);
-  return { intro, questions: [q1, q2, q3], retenir: ['A = Us,max ÷ Ue,max, sans unité, A ≤ 1 pour un filtre passif.', 'À fréquence fixée, A est constant : Us,max = A × Ue,max.'] };
+  return { intro, questions: [q1, q2, q3], retenir: ['A = frac(Us,max|Ue,max), sans unité, A ≤ 1 pour un filtre passif.', 'À fréquence fixée, A est constant : Us,max = A × Ue,max.'] };
 }
 function genFiltCoupure() {
   const Amax = tire([1, 2, 5]), nat = tire(['bas', 'haut']), fc = tire([300, 800, 1500, 3000]), ue = tire([0.5, 1, 2, 3]);
@@ -2474,19 +2474,19 @@ function genFiltCoupure() {
   const nb = Ar.filter(a => a >= 0.7 * Amax).length, Ac = Amax / Math.SQRT2, usc = Ac * ue;
   const intro = `On mesure le facteur d’amplification d’un filtre pour cinq fréquences : ${fr.map((x, i) => `${x}${NB}Hz → A = ${g(Ar[i])}`).join(' ; ')}. Le facteur d’amplification maximal est Amax = ${Amax}. On applique une tension d’amplitude Ue,max = ${g1(ue)}${NB}V.`;
   const q1 = { id: 'c0', type: 'num', q: <>Quelle est la valeur de A à la <b>fréquence de coupure</b> fc ?</>, unite: '', vrai: Ac, tolRel: 0.03, csMin: 2,
-    aide: 'À fc : A = Amax ÷ sqrt(2) ≈ 0,7 × Amax.',
-    pieges: [[Amax, 'Amax est la valeur maximale de A : à fc, A vaut Amax ÷ sqrt(2).'], [Amax / 2, 'Vous avez divisé par 2 : à fc, A = Amax ÷ sqrt(2) ≈ 0,7 × Amax.']],
+    aide: 'À fc : A = frac(Amax|sqrt(2)) ≈ 0,7 × Amax.',
+    pieges: [[Amax, 'Amax est la valeur maximale de A : à fc, A vaut frac(Amax|sqrt(2)).'], [Amax / 2, 'Vous avez divisé par 2 : à fc, A = frac(Amax|sqrt(2)) ≈ 0,7 × Amax.']],
     expl: <>A(fc) = <Frac haut={<>{Amax}</>} bas={<>{avecIndices(`sqrt(2)`)}</>} /> = <b>{g(Ac)}</b>.</> };
   const q2 = { id: 'c1', type: 'num', q: <>Combien de ces cinq fréquences sont dans la <b>bande passante</b> du filtre ?</>, unite: '', vrai: nb, tolRel: 0, csMin: 1,
     aide: 'Bande passante : A ≥ 0,7 × Amax. Comptez les fréquences du tableau pour lesquelles A atteint ce seuil.',
     pieges: [[5 - nb, 'Vous avez compté les fréquences atténuées : on demande celles qui sont dans la bande passante.']],
     expl: <>Seuil : 0,7 × {Amax} = {g(0.7 * Amax)}. Il y a <b>{nb}</b> fréquence{nb > 1 ? 's' : ''} avec A au moins égal à ce seuil.</> };
   const q3 = { id: 'c2', type: 'num', q: <>Quelle est l’amplitude de la tension de sortie <b>à la fréquence de coupure</b>, en V ?</>, unite: 'V', vrai: usc, tolRel: 0.03, csMin: 2,
-    aide: 'Us,max = A(fc) × Ue,max, avec A(fc) = Amax ÷ sqrt(2).',
-    pieges: [[Amax * ue, 'Vous avez utilisé Amax : à fc, A = Amax ÷ sqrt(2).']],
+    aide: 'Us,max = A(fc) × Ue,max, avec A(fc) = frac(Amax|sqrt(2)).',
+    pieges: [[Amax * ue, 'Vous avez utilisé Amax : à fc, A = frac(Amax|sqrt(2)).']],
     expl: <>Us,max = {g(Ac)} × {g1(ue)} = <b>{g(usc)}{NB}V</b>.</> };
   filtrer([q1, q2, q3]);
-  return { intro, questions: [q1, q2, q3], retenir: ['À fc : A = Amax ÷ sqrt(2) ≈ 0,7 × Amax.', 'Bande passante : fréquences pour lesquelles A ≥ 0,7 × Amax.'] };
+  return { intro, questions: [q1, q2, q3], retenir: ['À fc : A = frac(Amax|sqrt(2)) ≈ 0,7 × Amax.', 'Bande passante : fréquences pour lesquelles A ≥ 0,7 × Amax.'] };
 }
 function genGabFiltrage() {
   const vdc = tire([1.3, 1.7, 2.3, 2.7]), a = tire([1.5, 2, 2.5, 3]), A = tire([0.1, 0.2, 0.25, 0.4, 0.5]), f = tire([2000, 5000, 20000]);
@@ -2536,11 +2536,11 @@ function genAmpGain() {
     pieges: [[A * ue, 'Vous avez laissé le résultat en millivolts : il faut le convertir en volts (1 V = 1 000 mV).'], [ue / 1000, 'Vous avez donné Ue,max en volts : la sortie est multipliée par A.']],
     expl: <>{A} × {ue}{NB}mV = {A * ue}{NB}mV = <b>{g(us)}{NB}V</b>.</> };
   const q2 = { id: 'm1', type: 'num', q: <>Quel <b>pourcentage de la plage</b> du CAN (0 à 5{NB}V) le signal de sortie occupe-t-il ?</>, unite: '%', vrai: us / 5 * 100, tolRel: 0.03, csMin: 2,
-    aide: 'Pourcentage = Us,max ÷ 5 V × 100.',
-    pieges: [[us, 'Vous avez donné Us,max en volts : le pourcentage est Us,max ÷ 5 V × 100.'], [us / 5, 'Il manque le facteur 100 : une fraction de 0,2 correspond à 20 %.']],
+    aide: 'Pourcentage = frac(Us,max|5 V) × 100.',
+    pieges: [[us, 'Vous avez donné Us,max en volts : le pourcentage est frac(Us,max|5 V) × 100.'], [us / 5, 'Il manque le facteur 100 : une fraction de 0,2 correspond à 20 %.']],
     expl: <><Frac haut={<>{g(us)}</>} bas={<>5 × 100</>} /> = <b>{g0(us / 5 * 100)}{NB}%</b>.</> };
   const q3 = { id: 'm2', type: 'num', q: <>Quel <b>facteur d’amplification</b> faudrait-il pour que Us,max atteigne exactement 5{NB}V ?</>, unite: '', vrai: 5000 / ue, tolRel: 0.03, csMin: 2,
-    aide: 'A = Us,max ÷ Ue,max, avec Ue,max converti en volts.',
+    aide: 'A = frac(Us,max|Ue,max), avec Ue,max converti en volts.',
     pieges: [[5 / ue, 'Vous avez divisé 5 V par Ue,max exprimée en mV sans la convertir en volts.'], [A, 'Vous avez redonné le facteur d’amplification de l’énoncé.']],
     expl: <>A = <Frac haut={<>5</>} bas={<>{FM.nbf(ue / 1000, 3)}</>} /> = <b>{g0(5000 / ue)}</b>.</> };
   filtrer([q1, q2, q3]);
@@ -2579,11 +2579,11 @@ function genBiotAlpha() {
     pieges: [[alpha, 'Vous avez redonné la valeur avant dilution : α diminue quand C diminue.'], [alpha * 2, 'Vous avez multiplié par 2 : une dilution diminue α.']],
     expl: <>α est proportionnel à C : α = <Frac haut={<>{g(alpha)}</>} bas={<>2</>} /> = <b>+{g(alpha / 2)}{NB}°</b>.</> };
   const q3 = { id: 'b2', type: 'num', q: <>Dans la même cuve, une autre solution du même énantiomère pur donne α = +{g(a2)}{NB}°. Quelle est sa <b>concentration</b>, en g/mL ?</>, unite: 'g/mL', vrai: C2, tolRel: 0.03, csMin: 2,
-    aide: 'C = α ÷ ([α] × L), avec L en décimètres.',
-    pieges: [[a2 / A, 'Vous avez oublié de diviser par la longueur L de la cuve : C = α ÷ ([α] × L).'], [a2 / (A * Lc), 'Vous avez utilisé L en centimètres : convertissez-la en décimètres.']],
-    expl: <>C = {g(a2)} ÷ ({A} × {g1(L)}) = <b>{g(C2)}{NB}g/mL</b>.</> };
+    aide: 'C = frac(α|[α] × L), avec L en décimètres.',
+    pieges: [[a2 / A, 'Vous avez oublié de diviser par la longueur L de la cuve : C = frac(α|[α] × L).'], [a2 / (A * Lc), 'Vous avez utilisé L en centimètres : convertissez-la en décimètres.']],
+    expl: <>C = <Frac haut={<>{g(a2)}</>} bas={<>{A} × {g1(L)}</>} /> = <b>{g(C2)}{NB}g/mL</b>.</> };
   filtrer([q1, q2, q3]);
-  return { intro, questions: [q1, q2, q3], retenir: ['α = [α] × L × C : L en décimètres, C en g/mL.', 'α est proportionnel à L et à C ; pour retrouver C : C = α ÷ ([α] × L).'] };
+  return { intro, questions: [q1, q2, q3], retenir: ['α = [α] × L × C : L en décimètres, C en g/mL.', 'α est proportionnel à L et à C ; pour retrouver C : C = frac(α|[α] × L).'] };
 }
 function genBiotEE() {
   const A = tire([44, 50, 60]), L = tire([1, 2]), C = tire([0.1, 0.2]), apur = A * L * C, ee = tire([20, 40, 50, 60, 80]), s = tire([1, -1]);
@@ -2591,9 +2591,9 @@ function genBiotEE() {
   const g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1), g0 = v => FM.nbf(v, 0), sgn = v => (v > 0 ? '+' : '−') + g(Math.abs(v));
   const intro = `Un mélange des deux énantiomères d’un composé chiral (pouvoir rotatoire spécifique ±${A}${NB}°·dm⁻¹·g⁻¹·mL pour chacun des énantiomères purs) contient ${g0(maj)}${NB}% de l’énantiomère ${sg} et ${g0(mino)}${NB}% de l’énantiomère ${autre}. Il est placé dans une cuve de ${L * 10}${NB}cm, à la concentration totale C = ${g1(C)}${NB}g/mL.`;
   const q1 = { id: 'e0', type: 'num', q: <>Quel est l’<b>excès énantiomérique</b> du mélange, en % ?</>, unite: '%', vrai: ee, tolRel: 0.03, csMin: 2,
-    aide: 'e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100.',
+    aide: 'e.e. = frac(∣n₊ − n₋∣|n₊ + n₋) × 100.',
     pieges: [[maj, 'Vous avez donné la proportion de l’énantiomère majoritaire. L’excès est la différence entre les deux proportions.'], [ee / 100, 'Votre valeur est une fraction : multipliez par 100 pour l’exprimer en %.']],
-    expl: <>e.e. = |{g0(maj)} − {g0(mino)}| ÷ 100 × 100 = <b>{g0(ee)}{NB}%</b>.</> };
+    expl: <>e.e. = <Frac haut={<>|{g0(maj)} − {g0(mino)}|</>} bas={<>100</>} /> × 100 = <b>{g0(ee)}{NB}%</b>.</> };
   const q2 = { id: 'e1', type: 'num', q: <>Quel pouvoir rotatoire <b>α</b> mesure-t-on pour ce mélange, en ° (avec son signe) ?</>, unite: '°', vrai: s * ee / 100 * apur, tolRel: 0.03, csMin: 2,
     aide: 'α = e.e. × α de l’énantiomère pur, avec le signe de l’énantiomère en excès. α pur = [α] × L × C (L en dm).',
     pieges: [[s * apur, 'Vous avez donné α de l’énantiomère pur : le mélange tourne moins, d’un facteur e.e.'], [-s * ee / 100 * apur, 'Le signe de α est celui de l’énantiomère en excès.']],
@@ -2603,7 +2603,7 @@ function genBiotEE() {
     pieges: [[C * maj / 100, 'Vous avez donné la concentration de l’énantiomère majoritaire.'], [C * ee / 100, 'Vous avez multiplié par l’excès énantiomérique, qui n’est pas la proportion de l’énantiomère minoritaire.']],
     expl: <><Frac haut={<>{g1(C)} × {g0(mino)}</>} bas={<>100</>} /> = <b>{FM.nbf(C * mino / 100, 3)}{NB}g/mL</b>.</> };
   filtrer([q1, q2, q3]);
-  return { intro, questions: [q1, q2, q3], retenir: ['e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100 : 0 % pour un racémique, 100 % pour un énantiomère pur.', 'α = e.e. × α de l’énantiomère pur, au signe de l’énantiomère en excès.'] };
+  return { intro, questions: [q1, q2, q3], retenir: ['e.e. = frac(∣n₊ − n₋∣|n₊ + n₋) × 100 : 0 % pour un racémique, 100 % pour un énantiomère pur.', 'α = e.e. × α de l’énantiomère pur, au signe de l’énantiomère en excès.'] };
 }
 function genMesoFormelle() {
   const CAS = [
@@ -2645,9 +2645,9 @@ function genMesoHybride() {
     pieges: [[s.nF === 2 ? 3 : 2, 'Comptez toutes les positions équivalentes de la double liaison.']],
     expl: <><b>{s.nF}</b> formes mésomères équivalentes : la double liaison peut occuper {s.nF} positions.</> };
   const q2 = { id: 'h1', type: 'num', q: <>Quel est l’<b>ordre moyen</b> d’une liaison qui est simple dans certaines écritures et double dans une seule ?</>, unite: '', vrai: s.ordre, tolRel: 0.04, csMin: 2,
-    aide: 'Ordre moyen = (somme des ordres de la liaison dans toutes les écritures) ÷ (nombre d’écritures).',
+    aide: 'Ordre moyen = frac(somme des ordres de la liaison dans toutes les écritures|nombre d’écritures).',
     pieges: [[2, 'Vous avez pris la valeur d’une seule écriture (double) : faites la moyenne.'], [1, 'Vous avez pris la valeur d’une seule écriture (simple) : faites la moyenne.']],
-    expl: <>({s.nF - 1} × 1 + 1 × 2) ÷ {s.nF} = <b>{g(s.ordre)}</b>.</> };
+    expl: <><Frac haut={<>{s.nF - 1} × 1 + 1 × 2</>} bas={<>{s.nF}</>} /> = <b>{g(s.ordre)}</b>.</> };
   const q3 = { id: 'h2', type: 'num', q: <>Quelle est la <b>charge moyenne</b> de {s.at} dans l’hybride (en e, avec son signe) ?</>, unite: 'e', vrai: s.qA, tolRel: 0.04, csMin: 2,
     aide: 'Additionnez la charge de cet atome dans chaque écriture, puis divisez par le nombre d’écritures.',
     pieges: [[-s.qA, 'Le signe est à revoir.'], [s.qA > 0 ? 1 : -1, 'Vous avez mis toute la charge sur un seul atome : dans l’hybride, elle est répartie.']],
@@ -2709,11 +2709,11 @@ function genOslPeriode() {
   const T = dt / N, f = N / dt, n60 = 60 * f, g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
   const intro = `Un oscillateur effectue ${N} oscillations complètes en ${g1(dt)}${NB}s (mesure faite sur la durée totale, de maximum à maximum).`;
   const q1 = { id: 'p0', type: 'num', q: <>Quelle est la <b>période</b> T des oscillations, en s ?</>, unite: 's', vrai: T, tolRel: 0.03, csMin: 2,
-    aide: 'La période est la durée d’une seule oscillation : durée totale ÷ nombre d’oscillations.',
+    aide: 'La période est la durée d’une seule oscillation : frac(durée totale|nombre d’oscillations).',
     pieges: [[f, 'Vous avez calculé le nombre d’oscillations par seconde (la fréquence) : la période est la durée d’une oscillation.'], [dt * N, 'Vous avez multiplié : divisez la durée totale par le nombre d’oscillations.']],
     expl: <>T = <Frac haut={<>{g1(dt)}</>} bas={<>{N}</>} /> = <b>{g(T)}{NB}s</b>.</> };
   const q2 = { id: 'p1', type: 'num', q: <>Quelle est la <b>fréquence</b> f des oscillations, en Hz ?</>, unite: 'Hz', vrai: f, tolRel: 0.03, csMin: 2,
-    aide: 'La fréquence est le nombre d’oscillations par seconde : f = 1 ÷ T, ou nombre d’oscillations ÷ durée.',
+    aide: 'La fréquence est le nombre d’oscillations par seconde : f = frac(1|T), ou frac(nombre d’oscillations|durée).',
     pieges: [[T, 'Vous avez donné la période : la fréquence est son inverse, f = 1 / T.'], [N * dt, 'Vous avez multiplié : divisez le nombre d’oscillations par la durée.']],
     expl: <>f = <Frac haut={<>{N}</>} bas={<>{g1(dt)}</>} /> = <b>{g(f)}{NB}Hz</b>.</> };
   const q3 = { id: 'p2', type: 'num', q: <>Combien d’<b>oscillations</b> cet oscillateur effectue-t-il en une minute (60 s) ?</>, unite: '', vrai: n60, tolRel: 0.03, csMin: 2,
@@ -2721,18 +2721,18 @@ function genOslPeriode() {
     pieges: [[60 * T, 'Vous avez multiplié 60 par la période : il faut multiplier 60 s par la fréquence (oscillations par seconde).'], [f, 'Vous avez donné la fréquence : c’est le nombre d’oscillations en une seconde, pas en une minute.']],
     expl: <>n = 60 × {g(f)} = <b>{g1(n60)}</b> oscillations.</> };
   filtrer([q1, q2, q3]);
-  return { intro, questions: [q1, q2, q3], retenir: ['T = durée ÷ nombre d’oscillations ; f = 1 / T.', 'La période se mesure en secondes (s), la fréquence en hertz (Hz).'] };
+  return { intro, questions: [q1, q2, q3], retenir: ['T = frac(durée|nombre d’oscillations) ; f = 1 / T.', 'La période se mesure en secondes (s), la fréquence en hertz (Hz).'] };
 }
 function genOslTau() {
   const A0 = tire([4, 5, 6, 8, 9, 10, 12]), tau = tire([1.5, 2, 2.5, 3, 4]), e = Math.E;
   const A1 = A0 / e, A2 = A0 / (e * e), r3 = 100 / (e ** 3), g = v => FM.nbf(v, 2), g1 = v => FM.nbf(v, 1);
   const intro = `L’amplitude d’un oscillateur faiblement amorti décroît comme A(t) = A₀ · exp(−t/τ), avec A₀ = ${g1(A0)}${NB}cm et τ = ${g1(tau)}${NB}s (on prendra e = 2,718).`;
   const q1 = { id: 'u0', type: 'num', q: <>Quelle est l’<b>amplitude</b> à l’instant t = τ, en cm ?</>, unite: 'cm', vrai: A1, tolRel: 0.03, csMin: 2,
-    aide: 'À t = τ, t / τ = 1 : A = A₀ · e⁻¹ = A₀ ÷ e.',
+    aide: 'À t = τ, t / τ = 1 : A = A₀ · e⁻¹ = frac(A₀|e).',
     pieges: [[A0 / 2, 'Vous avez divisé par 2 : l’amplitude est divisée par e ≈ 2,718 au bout d’une durée τ.'], [A2, 'Vous avez calculé pour t = 2τ : ici t / τ = 1.']],
     expl: <>A = <Frac haut={<>{g1(A0)}</>} bas={<>2,718</>} /> = <b>{g(A1)}{NB}cm</b>.</> };
   const q2 = { id: 'u1', type: 'num', q: <>Quelle est l’<b>amplitude</b> à l’instant t = 2τ, en cm ?</>, unite: 'cm', vrai: A2, tolRel: 0.03, csMin: 2,
-    aide: 'À t = 2τ, t / τ = 2 : A = A₀ · e⁻² = A₀ ÷ e².',
+    aide: 'À t = 2τ, t / τ = 2 : A = A₀ · e⁻² = frac(A₀|e²).',
     pieges: [[A1, 'Vous avez calculé pour t = τ : ici t / τ = 2, donc il faut diviser par e².'], [A0 / 4, 'Vous avez divisé par 4 : l’amplitude est divisée par e² ≈ 7,39.']],
     expl: <>A = <Frac haut={<>{g1(A0)}</>} bas={<>2,718²</>} /> = <b>{g(A2)}{NB}cm</b>.</> };
   const q3 = { id: 'u2', type: 'num', q: <>Quel <b>pourcentage</b> de l’amplitude initiale reste-t-il à l’instant t = 3τ ?</>, unite: '%', vrai: r3, tolRel: 0.04, csMin: 2,
@@ -2747,34 +2747,34 @@ function genTsolCristal() {
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
   const intro = `On prépare une solution saturée de chlorure d’ammonium NH₄Cl dans ${mEau}${NB}g d’eau à ${T1}${NB}°C, puis on la refroidit à ${T2}${NB}°C. Solubilité de NH₄Cl (en g pour 100 g d’eau) : ${g(s1)}${NB}g à ${T1}${NB}°C et ${g(s2)}${NB}g à ${T2}${NB}°C.`;
   const q1 = { id: 't0', type: 'num', q: <>Quelle masse de NH₄Cl est <b>dissoute</b> dans la solution saturée à {T1}{NB}°C, en g ?</>, unite: 'g', vrai: m1, tolRel: 0.03, csMin: 2,
-    aide: 'La solubilité est donnée pour 100 g d’eau : m = s × m(eau) ÷ 100.',
-    pieges: [[s1, `Vous avez donné la solubilité pour 100 g d’eau : il y a ici ${mEau}${NB}g d’eau, multipliez par ${mEau} ÷ 100.`]],
+    aide: 'La solubilité est donnée pour 100 g d’eau : m = frac(s × m(eau)|100).',
+    pieges: [[s1, `Vous avez donné la solubilité pour 100 g d’eau : il y a ici ${mEau}${NB}g d’eau, multipliez par frac(${mEau}|100).`]],
     expl: <>m = <Frac haut={<>{g(s1)} × {mEau}</>} bas={<>100</>} /> = <b>{g(m1)}{NB}g</b>.</> };
   const q2 = { id: 't1', type: 'num', q: <>Quelle masse de NH₄Cl reste <b>dissoute</b> à {T2}{NB}°C dans ces {mEau}{NB}g d’eau, en g ?</>, unite: 'g', vrai: m2, tolRel: 0.03, csMin: 2,
     aide: 'Même calcul avec la solubilité à la température finale.',
-    pieges: [[m1, `Vous avez repris la masse dissoute à ${T1}${NB}°C : à ${T2}${NB}°C c’est la solubilité de cette température qui compte.`], [s2, `Vous avez donné la solubilité pour 100 g d’eau : multipliez par ${mEau} ÷ 100.`]],
+    pieges: [[m1, `Vous avez repris la masse dissoute à ${T1}${NB}°C : à ${T2}${NB}°C c’est la solubilité de cette température qui compte.`], [s2, `Vous avez donné la solubilité pour 100 g d’eau : multipliez par frac(${mEau}|100).`]],
     expl: <>m = <Frac haut={<>{g(s2)} × {mEau}</>} bas={<>100</>} /> = <b>{g(m2)}{NB}g</b>.</> };
   const q3 = { id: 't2', type: 'num', q: <>Quelle masse de <b>cristaux</b> se dépose pendant le refroidissement, en g ?</>, unite: 'g', vrai: cr, tolRel: 0.03, csMin: 2,
     aide: 'Cristaux = masse dissoute à chaud − masse qui reste dissoute à froid.',
-    pieges: [[m1, 'Vous avez donné la masse dissoute à chaud : les cristaux sont ce qui ne reste plus dissous à froid.'], [m2, 'Vous avez donné la masse qui reste dissoute à froid : les cristaux sont la différence avec la masse dissoute à chaud.'], [s1 - s2, `Vous avez calculé pour 100 g d’eau : multipliez par ${mEau} ÷ 100.`]],
+    pieges: [[m1, 'Vous avez donné la masse dissoute à chaud : les cristaux sont ce qui ne reste plus dissous à froid.'], [m2, 'Vous avez donné la masse qui reste dissoute à froid : les cristaux sont la différence avec la masse dissoute à chaud.'], [s1 - s2, `Vous avez calculé pour 100 g d’eau : multipliez par frac(${mEau}|100).`]],
     expl: <>{g(m1)} − {g(m2)} = <b>{g(cr)}{NB}g</b> de cristaux.</> };
-  const q4 = { id: 't3', type: 'num', q: <>Quel est le <b>rendement théorique</b> de la recristallisation (masse de cristaux ÷ masse dissoute à chaud), en % ?</>, unite: '%', vrai: eta, tolRel: 0.03, csMin: 2,
-    aide: 'η = (s(T₁) − s(T₂)) ÷ s(T₁), ou cristaux ÷ masse dissoute à chaud.',
+  const q4 = { id: 't3', type: 'num', q: <>Quel est le <b>rendement théorique</b> de la recristallisation (frac(masse de cristaux|masse dissoute à chaud)), en % ?</>, unite: '%', vrai: eta, tolRel: 0.03, csMin: 2,
+    aide: 'η = frac(s(T₁) − s(T₂)|s)(T₁), ou frac(cristaux|masse dissoute à chaud).',
     pieges: [[(s1 - s2) / s2 * 100, 'Vous avez divisé par la solubilité à froid : on divise par la masse dissoute à chaud, au départ.']],
     expl: <>η = <Frac haut={<>{g(cr)}</>} bas={<>{g(m1)}</>} /> ≈ <b>{TS.nbf(eta, 0)}{NB}%</b>.</> };
   filtrer([q1, q2, q3, q4]);
-  return { intro, questions: [q1, q2, q3, q4], retenir: ['Solubilité s : masse maximale dissoute dans 100 g d’eau.', 'Cristaux = (s(T₁) − s(T₂)) × m(eau) ÷ 100.', 'η = (s(T₁) − s(T₂)) ÷ s(T₁).'] };
+  return { intro, questions: [q1, q2, q3, q4], retenir: ['Solubilité s : masse maximale dissoute dans 100 g d’eau.', 'Cristaux = frac((s(T₁) − s(T₂)) × m(eau)|100).', 'η = frac(s(T₁) − s(T₂)|s)(T₁).'] };
 }
 function genTsolEau() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20]), m = tire([40, 60, 80, 120, 150]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), eau = 100 * m / s1, reste = s2 * eau / 100, cr = m - reste, g = v => TS.nbf(v, 1);
   const intro = `On purifie ${m}${NB}g de chlorure d’ammonium impur par recristallisation : dissolution à ${T1}${NB}°C dans le minimum d’eau, puis refroidissement à ${T2}${NB}°C. Solubilité de NH₄Cl (en g pour 100 g d’eau) : ${g(s1)}${NB}g à ${T1}${NB}°C et ${g(s2)}${NB}g à ${T2}${NB}°C.`;
   const q1 = { id: 'e0', type: 'num', q: <>Quelle est la masse d’<b>eau minimale</b> nécessaire pour dissoudre tout le solide à {T1}{NB}°C, en g ?</>, unite: 'g', vrai: eau, tolRel: 0.03, csMin: 2,
-    aide: 'm(eau) = 100 × m(solide) ÷ s(T₁) : plus s est grande, moins il faut d’eau.',
+    aide: 'm(eau) = frac(100 × m(solide)|s)(T₁) : plus s est grande, moins il faut d’eau.',
     pieges: [[m * s1 / 100, 'Vous avez multiplié par s au lieu de diviser : plus s est grande, moins il faut d’eau.'], [m / s1, 'Vous avez oublié le facteur 100 : s est donnée pour 100 g d’eau.']],
     expl: <>m(eau) = <Frac haut={<>100 × {m}</>} bas={<>{g(s1)}</>} /> = <b>{g(eau)}{NB}g</b>.</> };
   const q2 = { id: 'e1', type: 'num', q: <>Quelle masse de NH₄Cl reste <b>dissoute</b> dans cette eau à {T2}{NB}°C, en g ?</>, unite: 'g', vrai: reste, tolRel: 0.03, csMin: 2,
-    aide: 'm dissoute à froid = s(T₂) × m(eau) ÷ 100, avec la masse d’eau de la question précédente.',
+    aide: 'm dissoute à froid = frac(s(T₂) × m(eau)|100), avec la masse d’eau de la question précédente.',
     pieges: [[s2, 'Vous avez donné la solubilité pour 100 g d’eau : utilisez la masse d’eau calculée avant.'], [s2 * m / 100, 'Vous avez utilisé la masse de solide au lieu de la masse d’eau.']],
     expl: <>m = <Frac haut={<>{g(s2)} × {g(eau)}</>} bas={<>100</>} /> = <b>{g(reste)}{NB}g</b>.</> };
   const q3 = { id: 'e2', type: 'num', q: <>Quelle masse de <b>cristaux purs</b> récupère-t-on en refroidissant à {T2}{NB}°C, en g ?</>, unite: 'g', vrai: cr, tolRel: 0.03, csMin: 2,
@@ -2782,7 +2782,7 @@ function genTsolEau() {
     pieges: [[reste, 'Vous avez donné la masse qui reste en solution : les cristaux sont ce qui n’y reste pas.'], [m, 'Vous avez redonné la masse de départ : une partie du solide reste dissous à froid.']],
     expl: <>{m} − {g(reste)} = <b>{g(cr)}{NB}g</b>.</> };
   filtrer([q1, q2, q3]);
-  return { intro, questions: [q1, q2, q3], retenir: ['m(eau) minimale = 100 × m(solide) ÷ s(T).', 'Ce qui reste dissous à froid : s(T₂) × m(eau) ÷ 100.', 'Dissoudre à chaud dans le minimum d’eau, cristalliser à froid.'] };
+  return { intro, questions: [q1, q2, q3], retenir: ['m(eau) minimale = frac(100 × m(solide)|s)(T).', 'Ce qui reste dissous à froid : frac(s(T₂) × m(eau)|100).', 'Dissoudre à chaud dans le minimum d’eau, cristalliser à froid.'] };
 }
 // ---------- Acides et bases (CDD) : pH d'un acide, pKa et prédominance, tampon ----------
 const dist10 = v => v.every((x, i) => v.every((y, j) => i === j || Math.abs(x - y) > 0.1 * Math.max(Math.abs(x), Math.abs(y))));
@@ -2845,7 +2845,7 @@ function genAbPredRapport() {
     if (dist10([r, cA, cAH]) || k > 500) break;
   }
   const rs = sig2(r), pK = nbF(pKa, 1), pHs = nbF(pH, 1), Cs = nbF(C, 2);
-  const intro = `Une solution de pH ${pHs} contient le couple frac(AH|A⁻) (pKa = ${pK}) à la concentration totale [AH] + [A⁻] = ${Cs}${NB}mol/L, à 25${NB}°C.`;
+  const intro = `Une solution de pH ${pHs} contient le couple AH / A⁻ (pKa = ${pK}) à la concentration totale [AH] + [A⁻] = ${Cs}${NB}mol/L, à 25${NB}°C.`;
   const q1 = { id: 'r0', type: 'num', q: <>Calculez le rapport <b>{avecIndices('frac([A⁻]|[AH])')}</b> (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: r, tolRel: 0.05, csMin: 2,
     aide: 'Rapport = 10^(pH − pKa) (touche 10ˣ).',
     pieges: [[pH - pKa, 'C’est pH − pKa, le logarithme du rapport : il faut prendre 10 puissance cette valeur.'], [1 / r, 'Le rapport est inversé : on demande la base sur l’acide.']],
@@ -2869,7 +2869,7 @@ function genAbPredPka() {
     if (dist10([lr, pk2, pk2 + 2]) || k > 500) break;
   }
   const pk = pH - Math.log10(r), pHs = nbF(pH, 2), rs = sig2(r);
-  const intro = `Dans une solution de pH ${pHs}, on mesure le rapport ${rs} entre la concentration de A⁻ et celle de AH (couple frac(AH|A⁻), à 25${NB}°C).`;
+  const intro = `Dans une solution de pH ${pHs}, on mesure le rapport ${rs} entre la concentration de A⁻ et celle de AH (couple AH / A⁻, à 25${NB}°C).`;
   const q1 = { id: 'p0', type: 'num', q: <>Calculez <b>log</b> du rapport {rs} (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: lr, tolRel: 0.05, csMin: 2,
     aide: 'Touche log de la calculatrice : log(r).',
     pieges: [[r, 'C’est le rapport lui-même ; il faut en prendre le logarithme.'], [-lr, 'Le signe est inversé : log d’un nombre inférieur à 1 est négatif.']],
@@ -2893,7 +2893,7 @@ function genAbTampMelange() {
     if ((r > 0.2 && r < 5 && Math.abs(r - 1) > 0.1 && dist10([nAH, nA, r, pKa + Math.log10(r)])) || k > 500) break;
   }
   const pK = nbF(pKa, 1), pH = pKa + Math.log10(r), rs = sig2(r);
-  const intro = `On mélange ${V1}${NB}mL d’une solution de AH à ${nbF(C1, 2)}${NB}mol/L et ${V2}${NB}mL d’une solution de A⁻ (sel de sodium) à ${nbF(C2, 2)}${NB}mol/L. Le pKa du couple frac(AH|A⁻) vaut ${pK} (25${NB}°C).`;
+  const intro = `On mélange ${V1}${NB}mL d’une solution de AH à ${nbF(C1, 2)}${NB}mol/L et ${V2}${NB}mL d’une solution de A⁻ (sel de sodium) à ${nbF(C2, 2)}${NB}mol/L. Le pKa du couple AH / A⁻ vaut ${pK} (25${NB}°C).`;
   const q1 = { id: 'm0', type: 'num', q: <>Quelle quantité de matière de <b>AH</b> introduit-on ? (en mmol, 2 chiffres significatifs ; 1{NB}mol/L × 1{NB}mL = 1{NB}mmol)</>, unite: 'mmol', vrai: nAH, tolRel: 0.05, csMin: 2,
     aide: 'n = C × V : avec C en mol/L et V en mL, n est en mmol.',
     pieges: [[nA, 'C’est la quantité de A⁻ ; on demande celle de AH.'], [nAH / 1000, 'C en mol/L × V en mL donne directement des mmol : pas de division par 1 000.']],
@@ -2917,7 +2917,7 @@ function genAbTampAjout() {
     if ((Math.abs(r2 - 1) > 0.1 && dist10([nA2, nAH2, r2, pKa + Math.log10(r2), nA, nAH])) || k > 800) break;
   }
   const pK = nbF(pKa, 1), pH = pKa + Math.log10(r2), pH0 = pKa + Math.log10(nA / nAH), rs = sig2(r2), ion = acide ? 'H₃O⁺' : 'HO⁻';
-  const intro = `Un tampon du couple frac(AH|A⁻) (pKa = ${pK}, à 25${NB}°C) contient ${nbF(nA, 1)}${NB}mmol de A⁻ et ${nbF(nAH, 1)}${NB}mmol de AH. On y ajoute ${nbF(x, 1)}${NB}mmol d’ions ${ion} (${acide ? 'acide fort' : 'base forte'}), qui réagissent totalement.`;
+  const intro = `Un tampon du couple AH / A⁻ (pKa = ${pK}, à 25${NB}°C) contient ${nbF(nA, 1)}${NB}mmol de A⁻ et ${nbF(nAH, 1)}${NB}mmol de AH. On y ajoute ${nbF(x, 1)}${NB}mmol d’ions ${ion} (${acide ? 'acide fort' : 'base forte'}), qui réagissent totalement.`;
   const q1 = { id: 'e0', type: 'num', q: <>Calculez la quantité de <b>A⁻</b> après la réaction (en mmol, 2 chiffres significatifs).</>, unite: 'mmol', vrai: nA2, tolRel: 0.05, csMin: 2,
     aide: acide ? 'H₃O⁺ consomme A⁻ : n(A⁻) final = n(A⁻) − quantité ajoutée.' : 'HO⁻ forme A⁻ à partir de AH : n(A⁻) final = n(A⁻) + quantité ajoutée.',
     pieges: [[acide ? nA + x : nA - x, 'Le sens est inversé : ' + (acide ? 'un acide consomme la base A⁻.' : 'une base forme A⁻.')], [nA, 'La quantité de A⁻ a changé.']],
@@ -3028,21 +3028,21 @@ function genPvEclair() {
   const E1 = tire([800, 900, 1000]), E2 = tire([200, 300, 400, 500, 600]), Icc1 = tire([96, 120, 150, 180, 240]), Pm1 = tire([0.25, 0.32, 0.4, 0.5, 0.6]);
   const k = pvCs2(E2 / E1), I2 = Icc1 * k, P2 = Pm1 * k;
   const intro = `Un panneau photovoltaïque, maintenu à température constante, est éclairé avec E₁ = ${E1}${NB}W/m². On mesure un courant de court-circuit Icc₁ = ${Icc1}${NB}mA et une puissance maximale Pmax₁ = ${nbF(Pm1, 2)}${NB}W. On éclaire ensuite le panneau avec E₂ = ${E2}${NB}W/m². On admet que Icc et Pmax sont proportionnels à l’éclairement.`;
-  const q1 = { id: 'k0', type: 'num', q: <>Calculez le rapport <b>E₂ ÷ E₁</b> des éclairements (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: E2 / E1, tolRel: 0.03, csMin: 2,
+  const q1 = { id: 'k0', type: 'num', q: <>Calculez le rapport <b><Frac haut={<>E₂</>} bas={<>E₁</>} /></b> des éclairements (sans unité, 2 chiffres significatifs).</>, unite: '', vrai: E2 / E1, tolRel: 0.03, csMin: 2,
     aide: 'Divisez le nouvel éclairement E₂ par le premier, E₁.',
     pieges: [[E1 / E2, 'Le rapport est inversé : on demande E₂ divisé par E₁.'], [E1 - E2, 'Ce n’est pas une différence : il faut diviser E₂ par E₁.']],
     expl: <><Frac haut={<>E₂</>} bas={<>E₁</>} /> = <Frac haut={<>{E2}</>} bas={<>{E1}</>} /> = <b>{nbF(k, 2)}</b>.</> };
-  const q2 = { id: 'k1', type: 'num', q: <>Avec E₂ ÷ E₁ = {nbF(k, 2)}, calculez le <b>courant de court-circuit</b> Icc₂ (en mA, 2 chiffres significatifs).</>, unite: 'mA', vrai: I2, tolRel: 0.05, csMin: 2,
-    aide: 'Icc est proportionnel à E : Icc₂ = Icc₁ × (E₂ ÷ E₁).',
+  const q2 = { id: 'k1', type: 'num', q: <><Frac haut={<>Avec E₂</>} bas={<>E₁</>} /> = {nbF(k, 2)}, calculez le <b>courant de court-circuit</b> Icc₂ (en mA, 2 chiffres significatifs).</>, unite: 'mA', vrai: I2, tolRel: 0.05, csMin: 2,
+    aide: 'Icc est proportionnel à E : Icc₂ = Icc₁ × frac(E₂|E₁).',
     pieges: [[Icc1 / k, 'Le rapport est inversé : l’éclairement diminue, donc Icc diminue.'], [Icc1, 'Icc dépend de l’éclairement : elle doit changer quand E change.']],
     expl: <>Icc₂ = {Icc1} × {nbF(k, 2)} = <b>{pvFmt(I2)}{NB}mA</b>.</> };
-  const q3 = { id: 'k2', type: 'num', q: <>Avec E₂ ÷ E₁ = {nbF(k, 2)}, estimez la <b>puissance maximale</b> Pmax₂ (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P2, tolRel: 0.05, csMin: 2,
-    aide: 'On admet Pmax proportionnelle à E : Pmax₂ = Pmax₁ × (E₂ ÷ E₁).',
+  const q3 = { id: 'k2', type: 'num', q: <><Frac haut={<>Avec E₂</>} bas={<>E₁</>} /> = {nbF(k, 2)}, estimez la <b>puissance maximale</b> Pmax₂ (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P2, tolRel: 0.05, csMin: 2,
+    aide: 'On admet Pmax proportionnelle à E : Pmax₂ = Pmax₁ × frac(E₂|E₁).',
     pieges: [[Pm1 / k, 'Le rapport est inversé : l’éclairement diminue, donc Pmax diminue.'], [Pm1, 'Pmax dépend de l’éclairement : elle doit changer quand E change.']],
     expl: <>Pmax₂ = {nbF(Pm1, 2)} × {nbF(k, 2)} = <b>{pvFmt(P2)}{NB}W</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Icc est proportionnel à l’éclairement : Icc₂ = Icc₁ × E₂ ÷ E₁.', 'Pmax suit à peu près l’éclairement ; la tension à vide Uco varie très peu.'] };
+    retenir: ['Icc est proportionnel à l’éclairement : Icc₂ = frac(Icc₁ × E₂|E₁).', 'Pmax suit à peu près l’éclairement ; la tension à vide Uco varie très peu.'] };
 }
 // ---------- Panneau photovoltaïque : rendement et bilan énergétique (TSTL, PCM) ----------
 function genPvRendement() {
@@ -3059,7 +3059,7 @@ function genPvRendement() {
     aide: 'Convertissez I en ampères (1 mA = 0,001 A) puis multipliez par U.',
     pieges: [[U * I, 'I est en milliampères : le produit donne des milliwatts. Convertissez I en ampères pour obtenir des watts.']],
     expl: <>Pél = U × I = {nbF(U, 1)} × {nbF(I / 1000, 3)} = <b>{pvFmt(U * I / 1000)}{NB}W</b>.</> };
-  const q3 = { id: 'r2', type: 'num', q: <>Avec Plum = {pvFmt(Plum)}{NB}W et Pél = {pvFmt(Pel)}{NB}W, calculez le <b>rendement</b> η = Pél ÷ Plum (en %, 2 chiffres significatifs).</>, unite: '%', vrai: eta, tolRel: 0.05, csMin: 2,
+  const q3 = { id: 'r2', type: 'num', q: <>Avec Plum = {pvFmt(Plum)}{NB}W et Pél = {pvFmt(Pel)}{NB}W, calculez le <b>rendement</b> η = <Frac haut={<>Pél</>} bas={<>Plum</>} /> (en %, 2 chiffres significatifs).</>, unite: '%', vrai: eta, tolRel: 0.05, csMin: 2,
     aide: 'η = puissance électrique divisée par puissance lumineuse, puis multipliez par 100 pour des %.',
     pieges: [[eta / 100, 'Ce rapport est une fraction : multipliez par 100 pour un pourcentage.'], [100 * Plum / Pel, 'Le rapport est inversé : η = Pél divisé par Plum.']],
     expl: <>η = <Frac haut={<>{pvFmt(Pel)}</>} bas={<>{pvFmt(Plum)}</>} /> = {nbF(eta / 100, 3)} soit <b>{pvFmt(eta)}{NB}%</b>.</> };
@@ -3069,19 +3069,19 @@ function genPvRendement() {
     expl: <>pertes = {pvFmt(Plum)} − {pvFmt(Pel)} = <b>{pvFmt(pert)}{NB}W</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['Plum = E × S (S en m²) ; Pél = U × I (I en A).', 'Rendement η = Pél ÷ Plum (en %) ; pertes = Plum − Pél.'] };
+    retenir: ['Plum = E × S (S en m²) ; Pél = U × I (I en A).', 'Rendement η = frac(Pél|Plum) (en %) ; pertes = Plum − Pél.'] };
 }
 function genPvDimension() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   const Pel = tire([1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0]), etaP = tire([12, 14, 15, 16, 18]), E = tire([600, 700, 800, 900, 1000]);
   const Plum = Pel / (etaP / 100), S = Plum / E * 1e4, Pel2 = Pel / 2;
   const intro = `On veut alimenter un appareil qui demande une puissance électrique Pél = ${nbF(Pel, 1)}${NB}W avec un panneau photovoltaïque de rendement η = ${etaP}${NB}% (soit ${nbF(etaP / 100, 2)}), éclairé avec E = ${E}${NB}W/m².`;
-  const q1 = { id: 'd0', type: 'num', q: <>Calculez la <b>puissance lumineuse</b> Plum = Pél ÷ η que le panneau doit recevoir (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: Plum, tolRel: 0.05, csMin: 2,
+  const q1 = { id: 'd0', type: 'num', q: <>Calculez la <b>puissance lumineuse</b> Plum = <Frac haut={<>Pél</>} bas={<>η</>} /> que le panneau doit recevoir (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: Plum, tolRel: 0.05, csMin: 2,
     aide: 'Divisez Pél par le rendement écrit en nombre décimal (15 % = 0,15).',
     pieges: [[Pel * etaP / 100, 'Ce produit est Pél × η. Pour retrouver la lumière reçue, il faut diviser par η.'], [Pel / etaP, 'Le rendement doit être en nombre décimal : divisez par 0,15 et non par 15.']],
     expl: <>Plum = <Frac haut={<>{nbF(Pel, 1)}</>} bas={<>{nbF(etaP / 100, 2)}</>} /> = <b>{pvFmt(Plum)}{NB}W</b>.</> };
   const q2 = { id: 'd1', type: 'num', q: <>Avec Plum = {pvFmt(Plum)}{NB}W, calculez la <b>surface S</b> du panneau (en cm², 2 chiffres significatifs).</>, unite: 'cm²', vrai: S, tolRel: 0.05, csMin: 2,
-    aide: 'S = Plum ÷ E donne des m² ; multipliez par 10 000 pour des cm².',
+    aide: 'S = frac(Plum|E) donne des m² ; multipliez par 10 000 pour des cm².',
     pieges: [[S / 1e4, 'Cette valeur est en m² : multipliez par 10 000 pour des cm².'], [Plum * E, 'Il faut diviser Plum par E, pas les multiplier.']],
     expl: <>S = <Frac haut={<>{pvFmt(Plum)}</>} bas={<>{E}</>} /> = {nbF(Plum / E, 4)}{NB}m² = <b>{pvFmt(S)}{NB}cm²</b>.</> };
   const q3 = { id: 'd2', type: 'num', q: <>Le rendement restant le même, l’éclairement est divisé par 2 (E = {E / 2}{NB}W/m²) sur le même panneau. Quelle <b>puissance électrique</b> fournit-il (en W, 2 chiffres significatifs) ?</>, unite: 'W', vrai: Pel2, tolRel: 0.05, csMin: 2,
@@ -3090,7 +3090,7 @@ function genPvDimension() {
     expl: <>Plum est divisée par 2, donc Pél = <Frac haut={<>{nbF(Pel, 1)}</>} bas={<>2</>} /> = <b>{pvFmt(Pel2)}{NB}W</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Plum = Pél ÷ η (η en nombre décimal), puis S = Plum ÷ E.', 'À rendement constant, Pél varie comme l’éclairement.'] };
+    retenir: ['Plum = frac(Pél|η) (η en nombre décimal), puis S = frac(Plum|E).', 'À rendement constant, Pél varie comme l’éclairement.'] };
 }
 // ---------- Panneau photovoltaïque : éclairement et distance à la source (TSTL, PCM) ----------
 function genPveEclairement() {
@@ -3102,17 +3102,17 @@ function genPveEclairement() {
     aide: 'S = 4 × π × d², avec d en mètres.',
     pieges: [[2 * Math.PI * d * d, 'Il faut multiplier par 4π, pas par 2π.'], [4 * Math.PI * d, 'La distance est au carré : surface = 4π × d × d.'], [Math.PI * d * d, 'N’oubliez pas le facteur 4 : surface = 4πd².']],
     expl: <>4π × {nbF(d, 1)}² = <b>{pvFmt(S)}{NB}m²</b>.</> };
-  const q2 = { id: 'e1', type: 'num', q: <>Avec une surface de {pvFmt(S)}{NB}m², calculez l’<b>éclairement</b> E = Φ ÷ surface (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
+  const q2 = { id: 'e1', type: 'num', q: <>Avec une surface de {pvFmt(S)}{NB}m², calculez l’<b>éclairement</b> E = frac(Φ|surface) (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
     aide: 'Divisez le flux par la surface de la sphère.',
-    pieges: [[phi * S, 'Il faut diviser le flux par la surface, pas les multiplier.'], [S / phi, 'Le rapport est inversé : E = Φ ÷ S.']],
+    pieges: [[phi * S, 'Il faut diviser le flux par la surface, pas les multiplier.'], [S / phi, 'Le rapport est inversé : E = frac(Φ|S).']],
     expl: <>E = <Frac haut={<>{phi}</>} bas={<>{pvFmt(S)}</>} /> = <b>{pvFmt(E)}{NB}W/m²</b>.</> };
   const q3 = { id: 'e2', type: 'num', q: <>On éloigne le capteur à d′ = {nbF(k * d, 1)}{NB}m, soit {k} fois plus loin. Quel est le nouvel <b>éclairement</b> (en W/m², 2 chiffres significatifs) ?</>, unite: 'W/m²', vrai: E2, tolRel: 0.05, csMin: 2,
-    aide: 'Calculez la nouvelle surface 4πd′², puis E = Φ ÷ S′ ; ou divisez E par le carré du facteur d’éloignement.',
+    aide: 'Calculez la nouvelle surface 4πd′², puis E = frac(Φ|S′) ; ou divisez E par le carré du facteur d’éloignement.',
     pieges: [[E / k, `L’éclairement varie comme 1/d², pas comme 1/d : divisez par ${k}² = ${k * k}.`], [E * k, 'Plus loin de la source, l’éclairement diminue.']],
     expl: <>E′ = <Frac haut={<>{pvFmt(E)}</>} bas={<>{k}²</>} /> = <b>{pvFmt(E2)}{NB}W/m²</b> (la surface de la sphère est multipliée par {k * k}).</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Surface de la sphère = 4πd² (d en m) ; E = Φ ÷ (4πd²).', 'Distance × k : éclairement ÷ k².'] };
+    retenir: ['Surface de la sphère = 4πd² (d en m) ; E = frac(Φ|4πd²).', 'Distance × k : éclairement divisé par k².'] };
 }
 function genPveDistance() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3125,21 +3125,21 @@ function genPveDistance() {
   }
   const part = 100 * Plum / phi;
   const intro = `Une source lumineuse ponctuelle émet un flux Φ = ${phi}${NB}W dans toutes les directions. On veut qu’un panneau photovoltaïque de surface S = ${nbF(Scm2, Scm2 % 1 ? 1 : 0)}${NB}cm² et de rendement η = ${etaP}${NB}%, placé face à la source, fournisse une puissance électrique Pél = ${nbF(Pel, Pel < 0.1 ? 3 : 2)}${NB}W.`;
-  const q1 = { id: 'p0', type: 'num', q: <>Calculez l’<b>éclairement</b> nécessaire E = Pél ÷ (η × S) (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
-    aide: 'Convertissez S en m² (1 cm² = 0,0001 m²) et η en nombre décimal ; la puissance lumineuse reçue est Pél ÷ η, et E = Plum ÷ S.',
+  const q1 = { id: 'p0', type: 'num', q: <>Calculez l’<b>éclairement</b> nécessaire E = <Frac haut={<>Pél</>} bas={<>η × S</>} /> (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
+    aide: 'Convertissez S en m² (1 cm² = 0,0001 m²) et η en nombre décimal ; la puissance lumineuse reçue est frac(Pél|η), et E = frac(Plum|S).',
     pieges: [[Pel / (etaP / 100 * Scm2), 'La surface est restée en cm² : convertissez-la en m² (1 cm² = 0,0001 m²).'], [Pel / (etaP * Scm2 / 1e4), 'Le rendement doit être en nombre décimal (15 % = 0,15).']],
     expl: <>Plum = <Frac haut={<>Pél</>} bas={<>η</>} /> = {pvFmt(Plum)}{NB}W ; E = <Frac haut={<>Plum</>} bas={<>S</>} /> = <Frac haut={<>{pvFmt(Plum)}</>} bas={<>{nbF(Scm2 / 1e4, 5)}</>} /> = <b>{pvFmt(E)}{NB}W/m²</b>.</> };
-  const q2 = { id: 'p1', type: 'num', q: <>Avec E = {pvFmt(E)}{NB}W/m², calculez la <b>distance</b> d à laquelle placer le panneau : d = {avecIndices(`sqrt(Φ ÷ (4πE))`)} (en m, 2 chiffres significatifs).</>, unite: 'm', vrai: d, tolRel: 0.05, csMin: 2,
-    aide: 'Calculez d’abord 4πd² = Φ ÷ E, puis d², puis prenez la racine carrée.',
-    pieges: [[d * d, 'Vous avez donné d² : prenez la racine carrée.'], [phi / (4 * Math.PI * E), 'Vous avez donné d² : prenez la racine carrée pour obtenir d.'], [Math.sqrt(phi / E), 'Il manque le facteur 4π : 4πd² = Φ ÷ E.']],
+  const q2 = { id: 'p1', type: 'num', q: <>Avec E = {pvFmt(E)}{NB}W/m², calculez la <b>distance</b> d à laquelle placer le panneau : d = {avecIndices(`sqrt(frac(Φ|4πE))`)} (en m, 2 chiffres significatifs).</>, unite: 'm', vrai: d, tolRel: 0.05, csMin: 2,
+    aide: 'Calculez d’abord 4πd² = frac(Φ|E), puis d², puis prenez la racine carrée.',
+    pieges: [[d * d, 'Vous avez donné d² : prenez la racine carrée.'], [phi / (4 * Math.PI * E), 'Vous avez donné d² : prenez la racine carrée pour obtenir d.'], [Math.sqrt(phi / E), 'Il manque le facteur 4π : 4πd² = frac(Φ|E).']],
     expl: <>4πd² = <Frac haut={<>{phi}</>} bas={<>{pvFmt(E)}</>} /> = {nbF(phi / E, 2)}{NB}m² ; d² = {nbF(phi / E / (4 * Math.PI), 4)}{NB}m² ; d = <b>{pvFmt(d)}{NB}m</b>.</> };
-  const q3 = { id: 'p2', type: 'num', q: <>Quelle <b>part du flux émis</b> Φ atteint le panneau ? Calculez Plum ÷ Φ avec Plum = {pvFmt(Plum)}{NB}W (en %, 2 chiffres significatifs).</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
+  const q3 = { id: 'p2', type: 'num', q: <>Quelle <b>part du flux émis</b> Φ atteint le panneau ? Calculez <Frac haut={<>Plum</>} bas={<>Φ</>} /> avec Plum = {pvFmt(Plum)}{NB}W (en %, 2 chiffres significatifs).</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
     aide: 'Divisez la puissance lumineuse reçue par le flux émis, puis multipliez par 100.',
-    pieges: [[part / 100, 'Ce rapport est une fraction : multipliez par 100 pour un pourcentage.'], [100 * phi / Plum, 'Le rapport est inversé : part = Plum ÷ Φ.']],
+    pieges: [[part / 100, 'Ce rapport est une fraction : multipliez par 100 pour un pourcentage.'], [100 * phi / Plum, 'Le rapport est inversé : part = frac(Plum|Φ).']],
     expl: <><Frac haut={<>Plum</>} bas={<>Φ</>} /> = <Frac haut={<>{pvFmt(Plum)}</>} bas={<>{phi}</>} /> = <b>{pvFmt(part)}{NB}%</b> : presque toute la lumière émise passe à côté du panneau.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['E = Pél ÷ (η × S), puis d = sqrt(Φ ÷ (4πE)).', 'Part reçue = Plum ÷ Φ : petite, car la lumière part dans toutes les directions.'] };
+    retenir: ['E = frac(Pél|η × S), puis d = sqrt(frac(Φ|4πE)).', 'Part reçue = frac(Plum|Φ) : petite, car la lumière part dans toutes les directions.'] };
 }
 // ---------- Laser : éclairement, énergie reçue et sécurité (TSTL, PCM) ----------
 function genLasEclairement() {
@@ -3147,33 +3147,33 @@ function genLasEclairement() {
   const phiMw = tire([1, 2, 3, 4, 5, 8]), D = tire([1, 1.5, 2, 2.5, 3]);
   const Smm = Math.PI * D * D / 4, E = phiMw / 1000 / (Smm * 1e-6), rap = E / 10;
   const intro = `Un laser émet un faisceau visible de section circulaire, de diamètre D = ${nbF(D, D % 1 ? 1 : 0)}${NB}mm, avec un flux φ = ${phiMw}${NB}mW. Pour l’œil, la norme de référence impose un éclairement inférieur ou égal à 10${NB}W/m² quand l’exposition dure plus de 0,25${NB}s.`;
-  const q1 = { id: 'l0', type: 'num', q: <>Calculez la <b>section du faisceau</b> S = πD² ÷ 4 (en mm², 2 chiffres significatifs).</>, unite: 'mm²', vrai: Smm, tolRel: 0.05, csMin: 2,
-    aide: 'S = π × D² ÷ 4, avec D en mm : le résultat est en mm².',
-    pieges: [[Math.PI * D * D, 'Il faut diviser par 4 : S = πD² ÷ 4.'], [Math.PI * D, 'Le diamètre est au carré : S = π × D × D ÷ 4.'], [Math.PI * D * D / 2, 'Le facteur est 1/4, pas 1/2 : S = πD² ÷ 4.']],
+  const q1 = { id: 'l0', type: 'num', q: <>Calculez la <b>section du faisceau</b> S = <Frac haut={<>πD²</>} bas={<>4</>} /> (en mm², 2 chiffres significatifs).</>, unite: 'mm²', vrai: Smm, tolRel: 0.05, csMin: 2,
+    aide: 'S = frac(π × D²|4), avec D en mm : le résultat est en mm².',
+    pieges: [[Math.PI * D * D, 'Il faut diviser par 4 : S = frac(πD²|4).'], [Math.PI * D, 'Le diamètre est au carré : S = frac(π × D × D|4).'], [Math.PI * D * D / 2, 'Le facteur est 1/4, pas 1/2 : S = frac(πD²|4).']],
     expl: <>S = <Frac haut={<>π × {nbF(D, D % 1 ? 1 : 0)}²</>} bas={<>4</>} /> = <b>{pvFmt(Smm)}{NB}mm²</b>.</> };
-  const q2 = { id: 'l1', type: 'num', q: <>Avec S = {pvFmt(Smm)}{NB}mm², calculez l’<b>éclairement</b> E = φ ÷ S (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
+  const q2 = { id: 'l1', type: 'num', q: <>Avec S = {pvFmt(Smm)}{NB}mm², calculez l’<b>éclairement</b> E = <Frac haut={<>φ</>} bas={<>S</>} /> (en W/m², 2 chiffres significatifs).</>, unite: 'W/m²', vrai: E, tolRel: 0.05, csMin: 2,
     aide: 'Convertissez le flux en watts (1 mW = 0,001 W) et la section en m² (1 mm² = 10⁻⁶ m²), puis divisez.',
     pieges: [[phiMw / Smm, 'Le flux est resté en mW et la section en mm² : convertissez en W et en m² avant de diviser.'], [phiMw / 1000 / Smm, 'La section est restée en mm² : convertissez-la en m² (1 mm² = 10⁻⁶ m²).'], [phiMw * 1e-3 * Smm * 1e-6, 'Il faut diviser le flux par la section, pas les multiplier.']],
     expl: <>φ = {phiMw}{NB}mW = {nbF(phiMw / 1000, 3)}{NB}W ; S = {pvFmt(Smm)}{NB}mm² = {pvFmt(Smm * 1e-6)}{NB}m² ; E = <Frac haut={<>φ</>} bas={<>S</>} /> = <b>{pvFmt(E)}{NB}W/m²</b>.</> };
   const q3 = { id: 'l2', type: 'num', q: <>Par quel <b>facteur</b> cet éclairement dépasse-t-il la limite de 10{NB}W/m² ? (2 chiffres significatifs)</>, unite: 'fois', vrai: rap, tolRel: 0.05, csMin: 2,
     aide: 'Divisez l’éclairement du faisceau par l’éclairement maximal permis.',
-    pieges: [[10 / E, 'Le rapport est inversé : facteur = E ÷ 10.'], [E - 10, 'Il faut un rapport (une division), pas une différence.']],
+    pieges: [[10 / E, 'Le rapport est inversé : facteur = frac(E|10).'], [E - 10, 'Il faut un rapport (une division), pas une différence.']],
     expl: <>facteur = <Frac haut={<>E</>} bas={<>10</>} /> = <Frac haut={<>{pvFmt(E)}</>} bas={<>10</>} /> = <b>{pvFmt(rap)}</b> : le faisceau est bien au-dessus de la limite.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Section S = πD² ÷ 4 (D en mm : S en mm², 1 mm² = 10⁻⁶ m²) ; E = φ ÷ S.', 'Un faisceau mince concentre le flux : E bien plus grand que la limite pour l’œil.'] };
+    retenir: ['Section S = frac(πD²|4) (D en mm : S en mm², 1 mm² = 10⁻⁶ m²) ; E = frac(φ|S).', 'Un faisceau mince concentre le flux : E bien plus grand que la limite pour l’œil.'] };
 }
 function genLasEnergie() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
   const phi = tire([0.5, 1, 2, 5]), Q = tire([0.1, 0.2, 0.5, 1, 2]), k = tire([2, 4, 5]);
   const dt = Q / phi, phi2 = k * phi, E10 = phi * 10;
   const intro = `Un laser de gravure délivre un flux φ = ${nbF(phi, phi % 1 ? 1 : 0)}${NB}W sur la pièce. Pour marquer un motif, la pièce doit recevoir une énergie Q = ${nbF(Q, Q % 1 ? 1 : 0)}${NB}J.`;
-  const q1 = { id: 'g0', type: 'num', q: <>Calculez la <b>durée d’exposition</b> Δt = Q ÷ φ (en s, 2 chiffres significatifs).</>, unite: 's', vrai: dt, tolRel: 0.05, csMin: 2,
-    aide: 'Q = φ × Δt, donc Δt = Q ÷ φ (Q en J, φ en W, Δt en s).',
-    pieges: [[phi / Q, 'Le rapport est inversé : Δt = Q ÷ φ.'], [Q * phi, 'Il faut diviser l’énergie par le flux, pas les multiplier.']],
+  const q1 = { id: 'g0', type: 'num', q: <>Calculez la <b>durée d’exposition</b> Δt = <Frac haut={<>Q</>} bas={<>φ</>} /> (en s, 2 chiffres significatifs).</>, unite: 's', vrai: dt, tolRel: 0.05, csMin: 2,
+    aide: 'Q = φ × Δt, donc Δt = frac(Q|φ) (Q en J, φ en W, Δt en s).',
+    pieges: [[phi / Q, 'Le rapport est inversé : Δt = frac(Q|φ).'], [Q * phi, 'Il faut diviser l’énergie par le flux, pas les multiplier.']],
     expl: <>Δt = <Frac haut={<>Q</>} bas={<>φ</>} /> = <Frac haut={<>{nbF(Q, Q % 1 ? 1 : 0)}</>} bas={<>{nbF(phi, phi % 1 ? 1 : 0)}</>} /> = <b>{pvFmt(dt)}{NB}s</b>.</> };
   const q2 = { id: 'g1', type: 'num', q: <>On remplace le laser par un laser de flux {k} fois plus grand ({nbF(phi2, 1)}{NB}W). Quelle <b>durée</b> suffit maintenant pour déposer la même énergie ? (en s, 2 chiffres significatifs)</>, unite: 's', vrai: Q / phi2, tolRel: 0.05, csMin: 2,
-    aide: 'Même énergie Q, nouveau flux : Δt = Q ÷ φ.',
+    aide: 'Même énergie Q, nouveau flux : Δt = frac(Q|φ).',
     pieges: [[dt * k, `Un flux plus grand demande une durée plus courte : divisez par ${k}, ne multipliez pas.`]],
     expl: <>Δt = <Frac haut={<>{nbF(Q, Q % 1 ? 1 : 0)}</>} bas={<>{nbF(phi2, 1)}</>} /> = <b>{pvFmt(Q / phi2)}{NB}s</b> : {k} fois plus court.</> };
   const q3 = { id: 'g2', type: 'num', q: <>Avec le laser de départ ({nbF(phi, phi % 1 ? 1 : 0)}{NB}W) allumé en continu pendant 10{NB}s, quelle <b>énergie</b> la pièce reçoit-elle ? (en J, 2 chiffres significatifs)</>, unite: 'J', vrai: E10, tolRel: 0.05, csMin: 2,
@@ -3182,7 +3182,7 @@ function genLasEnergie() {
     expl: <>Q = φ × Δt = {nbF(phi, phi % 1 ? 1 : 0)} × 10 = <b>{pvFmt(E10)}{NB}J</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Q = φ × Δt ; Δt = Q ÷ φ (J, W, s).', 'Flux ×k à énergie égale : durée ÷k.'] };
+    retenir: ['Q = φ × Δt ; Δt = frac(Q|φ) (J, W, s).', 'Flux ×k à énergie égale : durée divisée par k.'] };
 }
 // ---------- Batterie : énergie disponible et durée de fonctionnement (TSTL, PCM) ----------
 function genBatEnergie() {
@@ -3211,21 +3211,21 @@ function genBatDuree() {
   const U = tire([6, 12]), Qs = tire([2.5, 4, 5, 7, 8]), Pw = tire([5, 10, 15, 20]), k = tire([2, 3]);
   const I = Pw / U, dt = Qs / I, dt2 = Qs / (k * I);
   const intro = `Un accumulateur de tension ${U}${NB}V et de capacité ${nbF(Qs, Qs % 1 ? 1 : 0)}${NB}Ah alimente un récepteur de puissance ${Pw}${NB}W.`;
-  const q1 = { id: 'd0', type: 'num', q: <>Calculez l’<b>intensité</b> I = P ÷ U du courant débité (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
-    aide: 'I = P ÷ U : puissance en W divisée par tension en V, le résultat est en A.',
-    pieges: [[U / Pw, 'Le rapport est inversé : I = P ÷ U.'], [Pw * U, 'Il faut diviser la puissance par la tension, pas les multiplier.']],
+  const q1 = { id: 'd0', type: 'num', q: <>Calculez l’<b>intensité</b> I = <Frac haut={<>P</>} bas={<>U</>} /> du courant débité (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
+    aide: 'I = frac(P|U) : puissance en W divisée par tension en V, le résultat est en A.',
+    pieges: [[U / Pw, 'Le rapport est inversé : I = frac(P|U).'], [Pw * U, 'Il faut diviser la puissance par la tension, pas les multiplier.']],
     expl: <>I = <Frac haut={<>{Pw}</>} bas={<>{U}</>} /> = <b>{pvFmt(I)}{NB}A</b>.</> };
-  const q2 = { id: 'd1', type: 'num', q: <>Avec I = {pvFmt(I)}{NB}A, calculez la <b>durée de fonctionnement</b> Δt = Qs ÷ I (en h, 2 chiffres significatifs).</>, unite: 'h', vrai: dt, tolRel: 0.05, csMin: 2,
-    aide: 'Δt = Qs ÷ I : capacité en Ah divisée par intensité en A, le résultat est en h.',
-    pieges: [[Qs * I, 'Il faut diviser la capacité par l’intensité, pas les multiplier.'], [I / Qs, 'Le rapport est inversé : Δt = Qs ÷ I.']],
+  const q2 = { id: 'd1', type: 'num', q: <>Avec I = {pvFmt(I)}{NB}A, calculez la <b>durée de fonctionnement</b> Δt = <Frac haut={<>Qs</>} bas={<>I</>} /> (en h, 2 chiffres significatifs).</>, unite: 'h', vrai: dt, tolRel: 0.05, csMin: 2,
+    aide: 'Δt = frac(Qs|I) : capacité en Ah divisée par intensité en A, le résultat est en h.',
+    pieges: [[Qs * I, 'Il faut diviser la capacité par l’intensité, pas les multiplier.'], [I / Qs, 'Le rapport est inversé : Δt = frac(Qs|I).']],
     expl: <>Δt = <Frac haut={<>{nbF(Qs, Qs % 1 ? 1 : 0)}</>} bas={<>{pvFmt(I)}</>} /> = <b>{pvFmt(dt)}{NB}h</b>.</> };
   const q3 = { id: 'd2', type: 'num', q: <>On remplace le récepteur par un récepteur {k} fois plus puissant ({k * Pw}{NB}W), sous la même tension. Quelle est la nouvelle <b>durée</b> ? (en h, 2 chiffres significatifs)</>, unite: 'h', vrai: dt2, tolRel: 0.05, csMin: 2,
-    aide: 'Même batterie : Δt = Qs ÷ I, avec une intensité plus grande.',
+    aide: 'Même batterie : Δt = frac(Qs|I), avec une intensité plus grande.',
     pieges: [[dt * k, `Un récepteur plus puissant demande plus de courant : la durée est divisée par ${k}, pas multipliée.`]],
     expl: <>Δt = <Frac haut={<>{nbF(Qs, Qs % 1 ? 1 : 0)}</>} bas={<>{pvFmt(k * I)}</>} /> = <b>{pvFmt(dt2)}{NB}h</b> : {k} fois plus courte.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['I = P ÷ U ; Δt = Qs ÷ I = E ÷ P (h, Ah, A, Wh, W).', 'Puissance ×k : intensité ×k et durée ÷k.'] };
+    retenir: ['I = frac(P|U) ; Δt = frac(Qs|I) = frac(E|P) (h, Ah, A, Wh, W).', 'Puissance ×k : intensité ×k et durée divisée par k.'] };
 }
 // ---------- Effet Joule : puissance, énergie thermique et pertes (TSTL, PCM) ----------
 function genJoulePuissance() {
@@ -3236,9 +3236,9 @@ function genJoulePuissance() {
     I = U / R; Pw = U * U / R; W = Pw * dt * 60; P2 = 4 * Pw;
   } while (new Set([I, Pw, W / 1000, P2].map(v => Number(v.toPrecision(3)))).size < 4);
   const intro = `Un résistor chauffant de résistance R = ${R}${NB}Ω est branché sur une source de tension U = ${U}${NB}V pendant ${dt}${NB}minutes.`;
-  const q1 = { id: 'j0', type: 'num', q: <>Calculez l’<b>intensité</b> I = U ÷ R du courant (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
-    aide: 'Loi d’Ohm : I = U ÷ R (U en V, R en Ω, I en A).',
-    pieges: [[R / U, 'Le rapport est inversé : I = U ÷ R.'], [R * U, 'Il faut diviser la tension par la résistance, pas les multiplier.']],
+  const q1 = { id: 'j0', type: 'num', q: <>Calculez l’<b>intensité</b> I = <Frac haut={<>U</>} bas={<>R</>} /> du courant (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
+    aide: 'Loi d’Ohm : I = frac(U|R) (U en V, R en Ω, I en A).',
+    pieges: [[R / U, 'Le rapport est inversé : I = frac(U|R).'], [R * U, 'Il faut diviser la tension par la résistance, pas les multiplier.']],
     expl: <>I = <Frac haut={<>{U}</>} bas={<>{R}</>} /> = <b>{pvFmt(I)}{NB}A</b>.</> };
   const q2 = { id: 'j1', type: 'num', q: <>Avec I = {pvFmt(I)}{NB}A, calculez la <b>puissance</b> P = U × I dissipée (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: Pw, tolRel: 0.05, csMin: 2,
     aide: 'P = U × I : tension en V multipliée par intensité en A.',
@@ -3254,7 +3254,7 @@ function genJoulePuissance() {
     expl: <>P = <Frac haut={<>{2 * U}²</>} bas={<>{R}</>} /> = <b>{pvFmt(P2)}{NB}W</b> : 4 fois plus grande.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['I = U ÷ R ; P = U × I = R × I² ; W = P × Δt (Δt en s).', 'Tension ×2 à R constante : puissance ×4.'] };
+    retenir: ['I = frac(U|R) ; P = U × I = R × I² ; W = P × Δt (Δt en s).', 'Tension ×2 à R constante : puissance ×4.'] };
 }
 function genJouleCable() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3265,25 +3265,25 @@ function genJouleCable() {
   } while (new Set([I, pert, part, pert2].map(v => Number(v.toPrecision(3)))).size < 4);
   const rs = nbF(r, 1);
   const intro = `Un appareil de puissance ${Pw}${NB}W est alimenté sous une tension de ${U}${NB}V par un câble de résistance r = ${rs}${NB}Ω.`;
-  const q1 = { id: 'c0', type: 'num', q: <>Calculez l’<b>intensité</b> I = P ÷ U dans le câble (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
-    aide: 'I = P ÷ U : puissance en W divisée par tension en V.',
-    pieges: [[U / Pw, 'Le rapport est inversé : I = P ÷ U.'], [Pw * U, 'Il faut diviser la puissance par la tension, pas les multiplier.']],
+  const q1 = { id: 'c0', type: 'num', q: <>Calculez l’<b>intensité</b> I = <Frac haut={<>P</>} bas={<>U</>} /> dans le câble (en A, 2 chiffres significatifs).</>, unite: 'A', vrai: I, tolRel: 0.05, csMin: 2,
+    aide: 'I = frac(P|U) : puissance en W divisée par tension en V.',
+    pieges: [[U / Pw, 'Le rapport est inversé : I = frac(P|U).'], [Pw * U, 'Il faut diviser la puissance par la tension, pas les multiplier.']],
     expl: <>I = <Frac haut={<>{Pw}</>} bas={<>{U}</>} /> = <b>{pvFmt(I)}{NB}A</b>.</> };
   const q2 = { id: 'c1', type: 'num', q: <>Avec I = {pvFmt(I)}{NB}A, calculez la <b>puissance perdue</b> r × I² par effet Joule dans le câble (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: pert, tolRel: 0.08, csMin: 2,
     aide: 'Pertes = r × I² : calculez I² d’abord.',
     pieges: [[r * I, 'Le carré de l’intensité a été oublié : pertes = r × I².'], [r * I * 2, 'L’intensité est au carré (I × I), pas multipliée par 2.']],
     expl: <>pertes = {rs} × {pvFmt(I)}² = <b>{pvFmt(pert)}{NB}W</b>.</> };
   const q3 = { id: 'c2', type: 'num', q: <>Quelle <b>part</b> de la puissance de l’appareil ces pertes représentent-elles ? (en %, 2 chiffres significatifs)</>, unite: '%', vrai: part, tolRel: 0.08, csMin: 2,
-    aide: 'Part en % = pertes ÷ puissance de l’appareil × 100.',
+    aide: 'Part en % = frac(pertes|puissance de l’appareil) × 100.',
     pieges: [[pert / Pw, 'C’est une fraction : multipliez par 100 pour un pourcentage.']],
     expl: <>part = <Frac haut={<>{pvFmt(pert)}</>} bas={<>{Pw} × 100</>} /> = <b>{pvFmt(part)}{NB}%</b>.</> };
   const q4 = { id: 'c3', type: 'num', q: <>La tension est multipliée par {k} (même appareil, même puissance, même câble). Quelles sont les nouvelles <b>pertes</b> ? (en W, 2 chiffres significatifs)</>, unite: 'W', vrai: pert2, tolRel: 0.08, csMin: 2,
-    aide: `I = P ÷ U est divisée par ${k} ; les pertes r × I² sont divisées par ${k}².`,
+    aide: `I = frac(P|U) est divisée par ${k} ; les pertes r × I² sont divisées par ${k}².`,
     pieges: [[pert / k, `Les pertes sont proportionnelles à I², donc divisées par ${k}² = ${k * k}, pas par ${k}.`]],
     expl: <>pertes = <Frac haut={<>{pvFmt(pert)}</>} bas={<>{k * k}</>} /> = <b>{pvFmt(pert2)}{NB}W</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['I = P ÷ U ; pertes = r × I² ; part = pertes ÷ P × 100.', 'Tension ×k à puissance égale : pertes ÷ k².'] };
+    retenir: ['I = frac(P|U) ; pertes = r × I² ; part = frac(pertes|P) × 100.', 'Tension ×k à puissance égale : pertes divisées par k².'] };
 }
 // ---------- Chaîne énergétique et rendement d'un convertisseur (TSTL, PCM) ----------
 function genChaineRendement() {
@@ -3295,8 +3295,8 @@ function genChaineRendement() {
   } while (new Set([100 * eta, Pd, Er, Qd].map(v => Number(v.toPrecision(3)))).size < 4);
   const intro = `Un moteur de treuil reçoit une puissance électrique de ${Pr}${NB}W et cède une puissance mécanique utile de ${pvFmt(Pu)}${NB}W, pendant ${dt}${NB}minutes.`;
   const q1 = { id: 'r0', type: 'num', q: <>Calculez le <b>rendement</b> η du moteur (en %, 2 chiffres significatifs).</>, unite: '%', vrai: 100 * eta, tolRel: 0.05, csMin: 2,
-    aide: 'η = puissance utile ÷ puissance reçue, puis multipliez par 100.',
-    pieges: [[100 * Pd / Pr, 'Cette valeur est la part dissipée ; le rendement compare la puissance utile à la puissance reçue.'], [100 * Pr / Pu, 'Le rapport est inversé : η = utile ÷ reçue, et il ne dépasse pas 100 %.']],
+    aide: 'η = frac(puissance utile|puissance reçue), puis multipliez par 100.',
+    pieges: [[100 * Pd / Pr, 'Cette valeur est la part dissipée ; le rendement compare la puissance utile à la puissance reçue.'], [100 * Pr / Pu, 'Le rapport est inversé : η = frac(utile|reçue), et il ne dépasse pas 100 %.']],
     expl: <>η = <Frac haut={<>{pvFmt(Pu)}</>} bas={<>{Pr}</>} /> = {nbF(eta, 2)} soit <b>{pvFmt(100 * eta)}{NB}%</b>.</> };
   const q2 = { id: 'r1', type: 'num', q: <>Calculez la <b>puissance dissipée</b> par transfert thermique (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: Pd, tolRel: 0.05, csMin: 2,
     aide: 'Puissance dissipée = puissance reçue − puissance utile.',
@@ -3312,7 +3312,7 @@ function genChaineRendement() {
     expl: <>{pvFmt(Pd)} × {dt * 60} = {pvFmt(Pd * dt * 60)}{NB}J = <b>{pvFmt(Qd)}{NB}kJ</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['η = utile ÷ reçue ; reçue = utile + dissipée (puissances ou énergies).', 'Énergie = puissance × durée (en secondes).'] };
+    retenir: ['η = frac(utile|reçue) ; reçue = utile + dissipée (puissances ou énergies).', 'Énergie = puissance × durée (en secondes).'] };
 }
 function genChaineSerie() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3327,7 +3327,7 @@ function genChaineSerie() {
     pieges: [[50 * (e1 + e2), 'Les rendements ne se moyennent pas : ils se multiplient.'], [100 * (e1 + e2), 'Les rendements ne s’additionnent pas : ils se multiplient.']],
     expl: <>η = {nbF(e1, 2)} × {nbF(e2, 2)} = {nbF(eT, 3)} soit <b>{pvFmt(100 * eT)}{NB}%</b>.</> };
   const q2 = { id: 's1', type: 'num', q: <>Quelle énergie électrique faut-il fournir au chargeur ? (en kJ, 2 chiffres significatifs)</>, unite: 'kJ', vrai: Er, tolRel: 0.08, csMin: 2,
-    aide: 'énergie reçue = énergie utile ÷ rendement global.',
+    aide: 'énergie reçue = frac(énergie utile|rendement global).',
     pieges: [[Eu * eT, 'Il faut diviser l’énergie utile par le rendement, pas la multiplier : on doit fournir plus que l’énergie utile.'], [Eu / e1, 'Vous n’avez tenu compte que du chargeur ; utilisez le rendement global.']],
     expl: <>Er = <Frac haut={<>{Eu}</>} bas={<>{nbF(eT, 3)}</>} /> = <b>{pvFmt(Er)}{NB}kJ</b>.</> };
   const q3 = { id: 's2', type: 'num', q: <>Quelle énergie est dissipée au total par transfert thermique ? (en kJ, 2 chiffres significatifs)</>, unite: 'kJ', vrai: Qd, tolRel: 0.08, csMin: 2,
@@ -3335,12 +3335,12 @@ function genChaineSerie() {
     pieges: [[Er + Eu, 'Il faut soustraire l’énergie utile à l’énergie reçue, pas les additionner.']],
     expl: <>{pvFmt(Er)} − {Eu} = <b>{pvFmt(Qd)}{NB}kJ</b>.</> };
   const q4 = { id: 's3', type: 'num', q: <>Quelle énergie le moteur reçoit-il du chargeur ? (en kJ, 2 chiffres significatifs)</>, unite: 'kJ', vrai: Em, tolRel: 0.08, csMin: 2,
-    aide: 'Le moteur cède l’énergie utile ; il reçoit énergie utile ÷ rendement du moteur.',
+    aide: 'Le moteur cède l’énergie utile ; il reçoit frac(énergie utile|rendement du moteur).',
     pieges: [[Eu * e2, 'Il faut diviser l’énergie utile par le rendement du moteur, pas la multiplier.']],
     expl: <>Em = <Frac haut={<>{Eu}</>} bas={<>{nbF(e2, 2)}</>} /> = <b>{pvFmt(Em)}{NB}kJ</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['En série : η = η₁ × η₂ ; reçue = utile ÷ η.', 'L’énergie dissipée est la différence reçue − utile.'] };
+    retenir: ['En série : η = η₁ × η₂ ; reçue = frac(utile|η).', 'L’énergie dissipée est la différence reçue − utile.'] };
 }
 // ---------- Conservation de l'énergie : bilan et signe des transferts (TSTL, PCM) ----------
 function genSigneBloc() {
@@ -3356,20 +3356,20 @@ function genSigneBloc() {
     pieges: [[W + Q, 'Le transfert thermique est cédé par le bloc : il est négatif, il faut le soustraire.'], [W, 'Il faut aussi tenir compte du transfert thermique cédé à l’air.'], [-dU, 'Le signe est inversé : le bloc reçoit plus qu’il ne cède, ΔU est positive.']],
     expl: <>ΔU = (+{W}) + (−{Q}) = <b>+{dU}{NB}J</b>.</> };
   const q2 = { id: 'b1', type: 'num', q: <>Calculez la <b>variation de température ΔT</b> du bloc (en K, 2 chiffres significatifs).</>, unite: 'K', vrai: dT, tolRel: 0.05, csMin: 2,
-    aide: 'ΔU = m × c × ΔT, donc ΔT = ΔU ÷ (m × c).',
+    aide: 'ΔU = m × c × ΔT, donc ΔT = frac(ΔU|m × c).',
     pieges: [[dU / m, 'Il faut aussi diviser par la capacité thermique massique c.'], [dU / 385, 'Il faut aussi diviser par la masse m du bloc.'], [(W + Q) / (m * 385), 'Votre calcul utilise W + |Q| : le transfert thermique cédé se soustrait.']],
-    expl: <>ΔT = {dU} ÷ ({nbF(m, 2)} × 385) = <b>{pvFmt(dT)}{NB}K</b>.</> };
+    expl: <>ΔT = <Frac haut={<>{dU}</>} bas={<>{nbF(m, 2)} × 385</>} /> = <b>{pvFmt(dT)}{NB}K</b>.</> };
   const q3 = { id: 'b2', type: 'num', q: <>Calculez la <b>puissance du transfert thermique</b> cédé à l’air (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P, tolRel: 0.05, csMin: 2,
-    aide: 'P = |Q| ÷ Δt, avec Δt en secondes : une puissance est toujours positive.',
+    aide: 'P = frac(∣Q∣|Δt), avec Δt en secondes : une puissance est toujours positive.',
     pieges: [[Q * dt, 'Il faut diviser l’énergie par la durée, pas la multiplier.'], [-P, 'Une puissance est positive : on utilise la valeur absolue de l’énergie.']],
     expl: <>P = <Frac haut={<>{Q}</>} bas={<>{dt}</>} /> = <b>{pvFmt(P)}{NB}W</b>.</> };
   const q4 = { id: 'b3', type: 'num', q: <>Quelle <b>part du travail électrique reçu</b> est cédée à l’air ? (en %, 2 chiffres significatifs)</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
-    aide: 'Part = |Q| ÷ W, puis multipliez par 100 pour un pourcentage.',
+    aide: 'Part = frac(∣Q∣|W), puis multipliez par 100 pour un pourcentage.',
     pieges: [[Q / W, 'Multipliez le rapport par 100 pour l’avoir en pourcentage.'], [100 * W / Q, 'Le rapport est inversé : on compare l’énergie cédée à l’énergie reçue.']],
     expl: <><Frac haut={<>{Q}</>} bas={<>{W}</>} /> = {nbF(Q / W, 2)} soit <b>{pvFmt(part)}{NB}%</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['ΔE = somme algébrique des transferts : reçu (+), cédé (−).', 'ΔU = m × c × ΔT (sans changement d’état) ; P = |E| ÷ Δt.'] };
+    retenir: ['ΔE = somme algébrique des transferts : reçu (+), cédé (−).', 'ΔU = m × c × ΔT (sans changement d’état) ; P = frac(∣E∣|Δt).'] };
 }
 function genSigneFour() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3393,9 +3393,9 @@ function genSigneFour() {
     pieges: [[W + Q, 'Le transfert thermique est cédé : il est négatif, il faut le soustraire.'], [-dU, 'Le signe est inversé : la plaque reçoit plus qu’elle ne cède, ΔU est positive.']],
     expl: <>ΔU = {pvFmt(W)} − {pvFmt(Q)} = <b>{pvFmt(dU)}{NB}kJ</b>.</> };
   const q4 = { id: 'f3', type: 'num', q: <>Calculez la <b>variation de température ΔT</b> de la plaque (en K, 2 chiffres significatifs).</>, unite: 'K', vrai: dT, tolRel: 0.05, csMin: 2,
-    aide: 'ΔU = m × c × ΔT, donc ΔT = ΔU ÷ (m × c) ; ΔU en joules (1 kJ = 1 000 J).',
+    aide: 'ΔU = m × c × ΔT, donc ΔT = frac(ΔU|m × c) ; ΔU en joules (1 kJ = 1 000 J).',
     pieges: [[dU / (m * c), 'ΔU est restée en kilojoules : convertissez-la en joules.'], [1000 * dU / c, 'Il faut aussi diviser par la masse m de la plaque.']],
-    expl: <>ΔT = {pvFmt(1000 * dU)} ÷ ({m} × {c}) = <b>{pvFmt(dT)}{NB}K</b>.</> };
+    expl: <>ΔT = <Frac haut={<>{pvFmt(1000 * dU)}</>} bas={<>{m} × {c}</>} /> = <b>{pvFmt(dT)}{NB}K</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['ΔU = W + Q : reçu (+), cédé (−) ; ΔU = m × c × ΔT.', 'Énergie = puissance × durée (en secondes).'] };
@@ -3422,7 +3422,7 @@ function genFormesGlisse() {
     pieges: [[Ec0, 'Le bloc garde une énergie cinétique finale : il faut la retirer.'], [Ec1, 'Cette valeur est l’énergie cinétique finale ; ΔU est l’énergie cinétique perdue.'], [-dU, 'Le signe est inversé : l’énergie interne augmente, ΔU est positive.'], [0.5 * m * (v0 - v1) ** 2, 'On ne soustrait pas les vitesses : on soustrait les énergies cinétiques.']],
     expl: <>ΔU = {pvFmt(Ec0)} − {pvFmt(Ec1)} = <b>{pvFmt(dU)}{NB}J</b>.</> };
   const q4 = { id: 'g3', type: 'num', q: <>Quelle <b>part de l’énergie cinétique initiale</b> est convertie en énergie interne ? (en %, 2 chiffres significatifs)</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
-    aide: 'Part = ΔU ÷ Ec initiale, puis multipliez par 100.',
+    aide: 'Part = frac(ΔU|Ec) initiale, puis multipliez par 100.',
     pieges: [[dU / Ec0, 'Multipliez le rapport par 100 pour l’avoir en pourcentage.'], [100 * Ec1 / Ec0, 'Cette valeur est la part d’énergie cinétique qui reste ; on cherche la part convertie.']],
     expl: <><Frac haut={<>{pvFmt(dU)}</>} bas={<>{pvFmt(Ec0)}</>} /> = {nbF(dU / Ec0, 2)} soit <b>{pvFmt(part)}{NB}%</b>.</> };
   filtrer([q1, q2, q3, q4]);
@@ -3442,15 +3442,15 @@ function genFormesChute() {
     pieges: [[Ep0 + Ep1, 'L’énergie potentielle a diminué : on soustrait, on n’additionne pas.'], [Ep1, 'Cette valeur est l’énergie potentielle restante ; Ec = Ep départ − Ep instant.']],
     expl: <>Ec = {Ep0} − {Ep1} = <b>{pvFmt(Ec)}{NB}J</b>.</> };
   const q2 = { id: 'c1', type: 'num', q: <>Calculez la <b>vitesse</b> de la bille à cet instant (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: v, tolRel: 0.05, csMin: 2,
-    aide: 'Ec = ½ × m × v², donc v = sqrt(2 × Ec ÷ m).',
-    pieges: [[Math.sqrt(Ec / m), 'Il manque le facteur 2 : v = sqrt(2 × Ec ÷ m).'], [2 * Ec / m, 'Il faut prendre la racine carrée : v = sqrt(2 × Ec ÷ m).']],
-    expl: <>v = {avecIndices(`sqrt(2 × ${pvFmt(Ec)} ÷ ${nbF(m, 1)})`)} = <b>{pvFmt(v)}{NB}m/s</b>.</> };
+    aide: 'Ec = ½ × m × v², donc v = sqrt(frac(2 × Ec|m)).',
+    pieges: [[Math.sqrt(Ec / m), 'Il manque le facteur 2 : v = sqrt(frac(2 × Ec|m)).'], [2 * Ec / m, 'Il faut prendre la racine carrée : v = sqrt(frac(2 × Ec|m)).']],
+    expl: <>v = {avecIndices(`sqrt(frac(2 × ${pvFmt(Ec)}|${nbF(m, 1)}))`)} = <b>{pvFmt(v)}{NB}m/s</b>.</> };
   const q3 = { id: 'c2', type: 'num', q: <>Calculez la <b>vitesse de la bille au moment d’arriver au sol</b> (en m/s, 2 chiffres significatifs).</>, unite: 'm/s', vrai: vsol, tolRel: 0.05, csMin: 2,
-    aide: 'Au sol, Ep = 0 : toute l’énergie potentielle de départ est devenue cinétique ; puis v = sqrt(2 × Ec ÷ m).',
-    pieges: [[v, 'Cette valeur est la vitesse à l’instant intermédiaire ; au sol, toute l’énergie potentielle est convertie.'], [Math.sqrt(Ep0 / m), 'Il manque le facteur 2 : v = sqrt(2 × Ec ÷ m).']],
-    expl: <>Ec au sol = {Ep0} J ; v = {avecIndices(`sqrt(2 × ${Ep0} ÷ ${nbF(m, 1)})`)} = <b>{pvFmt(vsol)}{NB}m/s</b>.</> };
+    aide: 'Au sol, Ep = 0 : toute l’énergie potentielle de départ est devenue cinétique ; puis v = sqrt(frac(2 × Ec|m)).',
+    pieges: [[v, 'Cette valeur est la vitesse à l’instant intermédiaire ; au sol, toute l’énergie potentielle est convertie.'], [Math.sqrt(Ep0 / m), 'Il manque le facteur 2 : v = sqrt(frac(2 × Ec|m)).']],
+    expl: <>Ec au sol = {Ep0} J ; v = {avecIndices(`sqrt(frac(2 × ${Ep0}|${nbF(m, 1)}))`)} = <b>{pvFmt(vsol)}{NB}m/s</b>.</> };
   const q4 = { id: 'c3', type: 'num', q: <>Quelle <b>part de l’énergie potentielle de départ</b> est convertie en énergie cinétique à cet instant ? (en %, 2 chiffres significatifs)</>, unite: '%', vrai: part, tolRel: 0.05, csMin: 2,
-    aide: 'Part = Ec ÷ Ep départ, puis multipliez par 100.',
+    aide: 'Part = frac(Ec|Ep) départ, puis multipliez par 100.',
     pieges: [[Ec / Ep0, 'Multipliez le rapport par 100 pour l’avoir en pourcentage.'], [100 * Ep1 / Ep0, 'Cette valeur est la part d’énergie potentielle qui reste ; on cherche la part convertie.']],
     expl: <><Frac haut={<>{pvFmt(Ec)}</>} bas={<>{Ep0}</>} /> = {nbF(Ec / Ep0, 2)} soit <b>{pvFmt(part)}{NB}%</b>.</> };
   filtrer([q1, q2, q3, q4]);
@@ -3479,12 +3479,12 @@ function genModesFreine() {
     pieges: [[-W, 'Le signe est inversé : le chariot ralentit, son énergie cinétique diminue, le travail est négatif.'], [-Ec0, 'Il faut tenir compte de l’énergie cinétique qui reste au chariot.'], [Ec1, 'Cette valeur est l’énergie cinétique finale ; le travail est la variation d’énergie cinétique.']],
     expl: <>W = {pvFmt(Ec1)} − {pvFmt(Ec0)} = <b>{pvFmt(W)}{NB}J</b>.</> };
   const q4 = { id: 'f3', type: 'num', q: <>Calculez la <b>puissance du transfert</b> par travail (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P, tolRel: 0.05, csMin: 2,
-    aide: 'P = |W| ÷ Δt : une puissance est toujours positive.',
+    aide: 'P = frac(∣W∣|Δt) : une puissance est toujours positive.',
     pieges: [[-P, 'Une puissance est positive : on utilise la valeur absolue du travail.'], [Math.abs(W) * dt, 'Il faut diviser l’énergie par la durée, pas la multiplier.']],
     expl: <>P = <Frac haut={<>{pvFmt(Math.abs(W))}</>} bas={<>{dt}</>} /> = <b>{pvFmt(P)}{NB}W</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['ΔEc = somme des travaux ; un chariot qui ralentit cède de l’énergie : W < 0.', 'P = |W| ÷ Δt, toujours positive.'] };
+    retenir: ['ΔEc = somme des travaux ; un chariot qui ralentit cède de l’énergie : W < 0.', 'P = frac(∣W∣|Δt), toujours positive.'] };
 }
 function genModesDepart() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3499,7 +3499,7 @@ function genModesDepart() {
     pieges: [[m * v * v, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v, 'La vitesse doit être élevée au carré.']],
     expl: <>W = ½ × {m} × {v}² = <b>{pvFmt(W)}{NB}J</b>.</> };
   const q2 = { id: 'd1', type: 'num', q: <>Calculez la <b>puissance moyenne</b> du transfert par travail (en W, 2 chiffres significatifs).</>, unite: 'W', vrai: P, tolRel: 0.05, csMin: 2,
-    aide: 'P = |W| ÷ Δt.',
+    aide: 'P = frac(∣W∣|Δt).',
     pieges: [[W * dt, 'Il faut diviser l’énergie par la durée, pas la multiplier.']],
     expl: <>P = <Frac haut={<>{pvFmt(W)}</>} bas={<>{dt}</>} /> = <b>{pvFmt(P)}{NB}W</b>.</> };
   const q3 = { id: 'd2', type: 'num', q: <>Si la vitesse atteinte était <b>deux fois plus grande</b>, quel travail faudrait-il fournir ? (en J, 2 chiffres significatifs)</>, unite: 'J', vrai: Wd, tolRel: 0.05, csMin: 2,
@@ -3507,12 +3507,12 @@ function genModesDepart() {
     pieges: [[2 * W, 'Ec est proportionnelle au carré de la vitesse : le facteur est 4, pas 2.']],
     expl: <>W = 4 × {pvFmt(W)} = <b>{pvFmt(Wd)}{NB}J</b>.</> };
   const q4 = { id: 'd3', type: 'num', q: <>Si le même travail était fourni en <b>deux fois plus de temps</b>, quelle serait la puissance ? (en W, 2 chiffres significatifs)</>, unite: 'W', vrai: Pd, tolRel: 0.05, csMin: 2,
-    aide: 'P = |W| ÷ Δt : doubler la durée divise la puissance par 2.',
+    aide: 'P = frac(∣W∣|Δt) : doubler la durée divise la puissance par 2.',
     pieges: [[2 * P, 'Une durée plus longue donne une puissance plus faible : on divise.']],
     expl: <>P = <Frac haut={<>{pvFmt(P)}</>} bas={<>2</>} /> = <b>{pvFmt(Pd)}{NB}W</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['Ec = ½ × m × v² : doubler la vitesse multiplie Ec par 4.', 'P = |W| ÷ Δt : à énergie égale, une durée double divise la puissance par 2.'] };
+    retenir: ['Ec = ½ × m × v² : doubler la vitesse multiplie Ec par 4.', 'P = frac(∣W∣|Δt) : à énergie égale, une durée double divise la puissance par 2.'] };
 }
 // ---------- Travail du poids selon le trajet et frottement sur un aller-retour (TSTL, PCM) ----------
 function genPdtPoids() {
@@ -3566,9 +3566,9 @@ function genPdtFrott() {
     pieges: [[Ec0, 'Le frottement a retiré de l’énergie : l’énergie cinétique a diminué.'], [Ec0 - f * L, 'Le palet fait un aller et un retour : le frottement agit sur 2 × L.']],
     expl: <>Ec = {pvFmt(Ec0)} + ({pvFmt(Wf)}) = <b>{pvFmt(Ec1)}{NB}J</b>.</> };
   const q4 = { id: 'f3', type: 'num', q: <>Quelle est la <b>vitesse du palet à son retour</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v1, tolRel: 0.05, csMin: 2,
-    aide: 'Ec = ½ × m × v², donc v = sqrt(2 × Ec ÷ m).',
-    pieges: [[v0, 'C’est la vitesse au lancement : le frottement l’a fait diminuer.'], [Ec1 / m, 'Il faut doubler l’énergie et prendre la racine : v = sqrt(2 Ec ÷ m).']],
-    expl: <>v = {avecIndices(`sqrt(2 × ${pvFmt(Ec1)} ÷ ${z(m)})`)} = <b>{pvFmt(v1)}{NB}m/s</b>.</> };
+    aide: 'Ec = ½ × m × v², donc v = sqrt(frac(2 × Ec|m)).',
+    pieges: [[v0, 'C’est la vitesse au lancement : le frottement l’a fait diminuer.'], [Ec1 / m, 'Il faut doubler l’énergie et prendre la racine : v = sqrt(frac(2 Ec|m)).']],
+    expl: <>v = {avecIndices(`sqrt(frac(2 × ${pvFmt(Ec1)}|${z(m)}))`)} = <b>{pvFmt(v1)}{NB}m/s</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Le travail du frottement est toujours négatif et proportionnel à la distance parcourue, aller et retour compris.', 'Sur un aller-retour horizontal, seul le frottement fait varier l’énergie cinétique.'] };
@@ -3590,15 +3590,15 @@ function genLcvEnergie() {
   const q2 = { id: 'l1', type: 'num', q: <>Quelle est l’<b>altitude maximale</b> atteinte par la balle (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: h, tolRel: 0.05, csMin: 2,
     aide: 'Au sommet Ec = 0 et Em = Epp = m × g × z<sub>max</sub> ; Em est égale à l’énergie cinétique du lancement.',
     pieges: [[Ec0 / m, 'Il manque la valeur de g : Epp = m × g × z.'], [Ec0 / g, 'Il manque la masse de la balle : Epp = m × g × z.']],
-    expl: <>z<sub>max</sub> = Em ÷ (m g) = {pvFmt(Ec0)} ÷ ({f(m.toFixed(2))} × 9,8) = <b>{pvFmt(h)}{NB}m</b>.</> };
+    expl: <>z<sub>max</sub> = <Frac haut={<>E<sub>m</sub></>} bas={<>m g</>} /> = <Frac haut={<>{pvFmt(Ec0)}</>} bas={<>{f(m.toFixed(2))} × 9,8</>} /> = <b>{pvFmt(h)}{NB}m</b>.</> };
   const q3 = { id: 'l2', type: 'num', q: <>Calculez l’<b>énergie cinétique à l’altitude z = {f(z)}{NB}m</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: EcZ, tolRel: 0.05, csMin: 2,
     aide: 'Em = Ec + Epp reste constante : Ec = Em − m × g × z.',
     pieges: [[m * g * z, 'Cette valeur est l’énergie potentielle Epp ; l’énergie cinétique est Em − Epp.'], [Ec0, 'C’est l’énergie mécanique : il faut en retirer l’énergie potentielle.']],
     expl: <>Ec = {pvFmt(Ec0)} − {f(m.toFixed(2))} × 9,8 × {f(z)} = <b>{pvFmt(EcZ)}{NB}J</b>.</> };
   const q4 = { id: 'l3', type: 'num', q: <>Quelle est la <b>vitesse de la balle à cette altitude</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vZ, tolRel: 0.05, csMin: 2,
-    aide: 'Ec = ½ × m × v², donc v = sqrt(2 × Ec ÷ m).',
-    pieges: [[v0, 'C’est la vitesse au lancement : elle a diminué depuis.'], [EcZ / m, 'Il faut doubler l’énergie et prendre la racine : v = sqrt(2 Ec ÷ m).']],
-    expl: <>v = {avecIndices(`sqrt(2 × ${pvFmt(EcZ)} ÷ ${f(m.toFixed(2))})`)} = <b>{pvFmt(vZ)}{NB}m/s</b>.</> };
+    aide: 'Ec = ½ × m × v², donc v = sqrt(frac(2 × Ec|m)).',
+    pieges: [[v0, 'C’est la vitesse au lancement : elle a diminué depuis.'], [EcZ / m, 'Il faut doubler l’énergie et prendre la racine : v = sqrt(frac(2 Ec|m)).']],
+    expl: <>v = {avecIndices(`sqrt(frac(2 × ${pvFmt(EcZ)}|${f(m.toFixed(2))}))`)} = <b>{pvFmt(vZ)}{NB}m/s</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['Sans frottement, Em = Ec + Epp est constante : Ec = Em − m × g × z.', 'Au sommet, v = 0 : toute l’énergie est potentielle, Epp = m × g × z<sub>max</sub> = ½ m v<sub>0</sub>².'] };
@@ -3622,13 +3622,13 @@ function genLcvFrott() {
     pieges: [[dE, 'Le signe est inversé : le frottement retire de l’énergie, son travail est négatif.']],
     expl: <>W(f) = ΔEm = <b>{pvFmt(Wf)}{NB}J</b>.</> };
   const q3 = { id: 'g2', type: 'num', q: <>Quelle <b>part de l’énergie mécanique initiale</b> a été dissipée (en %, 2 chiffres significatifs) ?</>, unite: '%', vrai: pc, tolRel: 0.05, csMin: 2,
-    aide: 'Part dissipée = énergie dissipée ÷ énergie mécanique au lancement (= ½ m v₀²), × 100.',
+    aide: 'Part dissipée = frac(énergie dissipée|énergie mécanique au lancement) (= ½ m v₀²), × 100.',
     pieges: [[100 * (v0 - v1) / v0, 'Ec est proportionnelle au carré de la vitesse : il faut comparer les énergies, pas les vitesses.']],
     expl: <><Frac haut={<>{pvFmt(dE)}</>} bas={<>{pvFmt(0.5 * m * v0 * v0)} × 100</>} /> = <b>{pvFmt(pc)}{NB}%</b>.</> };
   const q4 = { id: 'g3', type: 'num', q: <>Quelle est la <b>valeur moyenne de la force de frottement</b> (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: fm, tolRel: 0.08, csMin: 2,
     aide: 'W(f) = − f × distance parcourue ; la balle monte de h puis redescend de h : distance = 2 × h.',
     pieges: [[dE / h, 'La balle parcourt la hauteur à la montée et à la descente : la distance vaut 2 × h.']],
-    expl: <>f = {pvFmt(dE)} ÷ (2 × {f(h.toFixed(1))}) = <b>{pvFmt(fm)}{NB}N</b>.</> };
+    expl: <>f = <Frac haut={<>{pvFmt(dE)}</>} bas={<>2 × {f(h.toFixed(1))}</>} /> = <b>{pvFmt(fm)}{NB}N</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
     retenir: ['ΔEm = W(f) < 0 : avec frottement, l’énergie mécanique diminue de l’énergie dissipée.', 'Ec est proportionnelle à v² : une vitesse qui baisse de 17 % fait baisser Ec d’environ 31 %.'] };
@@ -3645,11 +3645,11 @@ function genDfrArret() {
   const sp = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   const intro = `Une voiture de masse ${sp(m)}${NB}kg roule à ${vk}${NB}km/h sur une route droite et horizontale. Elle freine jusqu’à l’arrêt : seule la force de freinage, constante et de valeur ${sp(F)}${NB}N, travaille. On étudie le système « la voiture ».`;
   const q1 = { id: 'a0', type: 'num', q: <>Calculez l’<b>énergie cinétique de la voiture avant le freinage</b> (en J, 2 chiffres significatifs).</>, unite: 'J', vrai: Ec, tolRel: 0.05, csMin: 2,
-    aide: 'Convertissez d’abord la vitesse en m/s (÷ 3,6), puis Ec = ½ × m × v².',
+    aide: 'Convertissez d’abord la vitesse en m/s (diviser par 3,6), puis Ec = ½ × m × v².',
     pieges: [[0.5 * m * vk * vk, 'La vitesse doit être convertie de km/h en m/s avant de calculer.'], [m * v * v, 'Il manque le facteur ½ : Ec = ½ × m × v².']],
     expl: <>v = <Frac haut={<>{vk}</>} bas={<>3,6</>} /> = {pvFmt(v)}{NB}m/s ; Ec = ½ × {sp(m)} × {pvFmt(v)}² = <b>{pvFmt(Ec)}{NB}J</b>.</> };
   const q2 = { id: 'a1', type: 'num', q: <>Quelle est la <b>distance d’arrêt</b> (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: d, tolRel: 0.05, csMin: 2,
-    aide: 'ΔEc = somme des travaux : 0 − Ec = − F × d, donc d = Ec ÷ F.',
+    aide: 'ΔEc = somme des travaux : 0 − Ec = − F × d, donc d = frac(Ec|F).',
     pieges: [[Ec / (2 * F), 'Le facteur ½ est déjà compris dans l’énergie cinétique : ne le comptez pas deux fois.'], [Ec * F, 'Le travail de la force de freinage vaut − F × d : la distance s’obtient en divisant Ec par F.']],
     expl: <>d = <Frac haut={<>{pvFmt(Ec)}</>} bas={<>{sp(F)}</>} /> = <b>{pvFmt(d)}{NB}m</b>.</> };
   const q3 = { id: 'a2', type: 'num', q: <>Quel est le <b>travail de la force de freinage</b> pendant tout le freinage (en J, avec son signe, 2 chiffres significatifs) ?</>, unite: 'J', vrai: -Ec, tolRel: 0.05, csMin: 2,
@@ -3662,7 +3662,7 @@ function genDfrArret() {
     expl: <>d = 4 × {pvFmt(d)} = <b>{pvFmt(d2)}{NB}m</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['Le théorème de l’énergie cinétique donne la distance d’arrêt : d = ½ m v² ÷ F (v en m/s).', 'Doubler la vitesse multiplie la distance d’arrêt par 4.'] };
+    retenir: ['Le théorème de l’énergie cinétique donne la distance d’arrêt : d = ½ frac(m v²|F) (v en m/s).', 'Doubler la vitesse multiplie la distance d’arrêt par 4.'] };
 }
 function genDfrForce() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3678,16 +3678,16 @@ function genDfrForce() {
     pieges: [[m * v * v, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v, 'La vitesse doit être élevée au carré.']],
     expl: <>Ec = ½ × {sp(m)} × {v}² = <b>{pvFmt(Ec)}{NB}J</b>.</> };
   const q2 = { id: 'b1', type: 'num', q: <>Quelle est la <b>force de freinage minimale</b> qui permet de s’arrêter juste avant l’obstacle (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: F, tolRel: 0.05, csMin: 2,
-    aide: '0 − Ec = − F × D, donc F = Ec ÷ D.',
-    pieges: [[Ec * D, 'Le travail de la force de freinage vaut − F × D : la force s’obtient en divisant Ec par D.'], [m * v / D, 'Cette expression n’est pas homogène à une force : utilisez l’énergie cinétique, Ec ÷ D.']],
+    aide: '0 − Ec = − F × D, donc F = frac(Ec|D).',
+    pieges: [[Ec * D, 'Le travail de la force de freinage vaut − F × D : la force s’obtient en divisant Ec par D.'], [m * v / D, 'Cette expression n’est pas homogène à une force : utilisez l’énergie cinétique, frac(Ec|D).']],
     expl: <>F = <Frac haut={<>{pvFmt(Ec)}</>} bas={<>{D}</>} /> = <b>{pvFmt(F)}{NB}N</b>.</> };
   const q3 = { id: 'b2', type: 'num', q: <>Le véhicule est chargé : sa masse devient {sp(m2)}{NB}kg, à la même vitesse. Quelle force de freinage faut-il pour s’arrêter sur la même distance (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: F2, tolRel: 0.05, csMin: 2,
-    aide: 'À v et D fixés, F = ½ m v² ÷ D est proportionnelle à la masse.',
+    aide: 'À v et D fixés, F = ½ frac(m v²|D) est proportionnelle à la masse.',
     pieges: [[F, 'La masse a doublé : l’énergie à dissiper a doublé, donc la force aussi.'], [4 * F, 'La masse intervient à la puissance 1 dans Ec, pas au carré.']],
     expl: <>F = 2 × {pvFmt(F)} = <b>{pvFmt(F2)}{NB}N</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Pour s’arrêter sur une distance D, il faut F = ½ m v² ÷ D : plus la masse est grande, plus la force nécessaire l’est.', 'Le travail de la force de freinage est négatif : il fait passer l’énergie cinétique à zéro.'] };
+    retenir: ['Pour s’arrêter sur une distance D, il faut F = ½ frac(m v²|D) : plus la masse est grande, plus la force nécessaire l’est.', 'Le travail de la force de freinage est négatif : il fait passer l’énergie cinétique à zéro.'] };
 }
 // ---------- Chute d’une hauteur h : vitesse d’arrivée et force de frottement moyenne (TSTL, PCM) ----------
 function genChhVitesse() {
@@ -3730,7 +3730,7 @@ function genChhFrott() {
     pieges: [[dE / h, 'Le frottement agit sur la longueur L de la rampe, pas sur la hauteur h.']],
     expl: <>f = <Frac haut={<>{pvFmt(dE)}</>} bas={<>{L}</>} /> = <b>{pvFmt(f)}{NB}N</b>.</> };
   const q4 = { id: 'w3', type: 'num', q: <>Quelle <b>part de l’énergie initiale</b> a été dissipée (en %, 2 chiffres significatifs) ?</>, unite: '%', vrai: pc, tolRel: 0.05, csMin: 2,
-    aide: 'Part dissipée = énergie dissipée ÷ énergie du départ (Epp), × 100.',
+    aide: 'Part dissipée = frac(énergie dissipée|énergie du départ) (Epp), × 100.',
     pieges: [[100 * dE / Ec, 'Il faut diviser par l’énergie du départ, Epp, pas par l’énergie d’arrivée.']],
     expl: <><Frac haut={<>{pvFmt(dE)}</>} bas={<>{pvFmt(Ep)} × 100</>} /> = <b>{pvFmt(pc)}{NB}%</b>.</> };
   filtrer([q1, q2, q3, q4]);
@@ -3769,7 +3769,7 @@ function genLpgHmin() {
     pieges: [[g * R, 'Il manque la racine carrée : v = sqrt(g × R).'], [Math.sqrt(2 * g * R), 'Il n’y a pas de facteur 2 dans la condition de contact : v = sqrt(g × R).']],
     expl: <>v = {avecIndices(`sqrt(9,8 × ${R})`)} = <b>{pvFmt(vmin)}{NB}m/s</b>.</> };
   const q2 = { id: 'h1', type: 'num', q: <>Quelle est la <b>hauteur minimale de départ</b> pour passer le looping (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: H, tolRel: 0.05, csMin: 2,
-    aide: 'm g H = m g (2R) + ½ m v², avec v² = g R : H = 2R + R ÷ 2.',
+    aide: 'm g H = m g (2R) + ½ m v², avec v² = g R : H = 2R + frac(R|2).',
     pieges: [[2 * R, 'À cette hauteur le wagon arrive au sommet avec une vitesse nulle : il faut aussi l’énergie cinétique ½ m v².'], [vmin * vmin / (2 * g), 'C’est seulement la hauteur correspondant à la vitesse minimale ; il faut ajouter l’altitude du sommet, 2R.']],
     expl: <>H = <Frac haut={<>2 × {R} + {R}</>} bas={<>2</>} /> = <b>{pvFmt(H)}{NB}m</b>.</> };
   const q3 = { id: 'h2', type: 'num', q: <>Quelle serait la <b>hauteur minimale de départ</b> pour un looping de rayon <b>deux fois plus grand</b> (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: H2, tolRel: 0.05, csMin: 2,
@@ -3792,16 +3792,16 @@ function genFlpHauteur() {
     pieges: [[m * v * v, 'Il manque le facteur ½ : Ec = ½ × m × v².'], [0.5 * m * v, 'La vitesse est au carré dans Ec = ½ × m × v².']],
     expl: <>Ec = ½ × {fr(m)} × {v}² = <b>{pvFmt(Ec)}{NB}J</b>.</> };
   const q2 = { id: 'f1', type: 'num', q: <>Quelle est la <b>hauteur maximale</b> atteinte par la bille (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: h, tolRel: 0.05, csMin: 2,
-    aide: 'Em conservée : ½ m v² = m g h, donc h = v² ÷ (2 g).',
-    pieges: [[v * v / g, 'Il manque le facteur 2 : h = v² ÷ (2 × g).'], [Math.sqrt(2 * g * v), 'La hauteur est v² ÷ (2 g), sans racine.']],
-    expl: <>h = {v}² ÷ (2 × 9,8) = <b>{pvFmt(h)}{NB}m</b>.</> };
+    aide: 'Em conservée : ½ m v² = m g h, donc h = frac(v²|2 g).',
+    pieges: [[v * v / g, 'Il manque le facteur 2 : h = frac(v²|2 × g).'], [Math.sqrt(2 * g * v), 'La hauteur est frac(v²|2 g), sans racine.']],
+    expl: <>h = <Frac haut={<>{v}²</>} bas={<>2 × 9,8</>} /> = <b>{pvFmt(h)}{NB}m</b>.</> };
   const q3 = { id: 'f2', type: 'num', q: <>Quelle <b>distance</b> la bille parcourt-elle <b>sur la rampe</b> avant de s’arrêter (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: L, tolRel: 0.05, csMin: 2,
     aide: 'La hauteur atteinte h et la distance L sur la rampe sont liées par h = L × sin α.',
-    pieges: [[h, 'C’est la hauteur atteinte ; la distance sur la rampe inclinée est plus grande : L = h ÷ sin α.'], [h * Math.sin(a * Math.PI / 180), 'Il faut diviser par sin α, pas multiplier : L = h ÷ sin α.']],
+    pieges: [[h, 'C’est la hauteur atteinte ; la distance sur la rampe inclinée est plus grande : L = frac(h|sin α).'], [h * Math.sin(a * Math.PI / 180), 'Il faut diviser par sin α, pas multiplier : L = frac(h|sin α).']],
     expl: <>L = <Frac haut={<>{pvFmt(h)}</>} bas={<>sin {a}°</>} /> = <b>{pvFmt(L)}{NB}m</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Sans frottement, la hauteur atteinte est h = v² ÷ (2 g), sans la masse ni l’angle.', 'La distance parcourue sur la rampe est L = h ÷ sin α.'] };
+    retenir: ['Sans frottement, la hauteur atteinte est h = frac(v²|2 g), sans la masse ni l’angle.', 'La distance parcourue sur la rampe est L = frac(h|sin α).'] };
 }
 function genFlpVmin() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3817,9 +3817,9 @@ function genFlpVmin() {
     pieges: [[2 * g * h, 'Il manque la racine carrée : v² = 2 g h.'], [Math.sqrt(g * h), 'Il manque le facteur 2 : v² = 2 × g × h.']],
     expl: <>v = {avecIndices(`sqrt(2 × 9,8 × ${fr(h)})`)} = <b>{pvFmt(v1)}{NB}m/s</b>.</> };
   const q2 = { id: 'v1', type: 'num', q: <>La rampe exerce maintenant une force de frottement constante de <b>{fr(f)}{NB}N</b>. Quelle est la <b>vitesse d’éjection minimale</b> pour atteindre le haut (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v2, tolRel: 0.05, csMin: 2,
-    aide: '½ m v² = m g h + f × L, avec L = h ÷ sin α la distance parcourue sur la rampe.',
-    pieges: [[v1, 'C’est la vitesse sans frottement : il faut ajouter l’énergie dissipée f × L.'], [Math.sqrt(2 * g * h + 2 * f * h / m), 'Le frottement agit sur la distance L = h ÷ sin α le long de la rampe, pas sur la hauteur h.']],
-    expl: <>L = <Frac haut={<>{fr(h)}</>} bas={<>sin {a}°</>} /> = {pvFmt(L)}{NB}m ; v = {avecIndices(`sqrt(2 × 9,8 × ${fr(h)} + 2 × ${fr(f)} × ${pvFmt(L)} ÷ ${fr(m)})`)} = <b>{pvFmt(v2)}{NB}m/s</b>.</> };
+    aide: '½ m v² = m g h + f × L, avec L = frac(h|sin α) la distance parcourue sur la rampe.',
+    pieges: [[v1, 'C’est la vitesse sans frottement : il faut ajouter l’énergie dissipée f × L.'], [Math.sqrt(2 * g * h + 2 * f * h / m), 'Le frottement agit sur la distance L = frac(h|sin α) le long de la rampe, pas sur la hauteur h.']],
+    expl: <>L = <Frac haut={<>{fr(h)}</>} bas={<>sin {a}°</>} /> = {pvFmt(L)}{NB}m ; v = {avecIndices(`sqrt(2 × 9,8 × ${fr(h)} + frac(2 × ${fr(f)} × ${pvFmt(L)}|${fr(m)}))`)} = <b>{pvFmt(v2)}{NB}m/s</b>.</> };
   const q3 = { id: 'v2', type: 'num', q: <>Sans frottement, la bille est éjectée à <b>{v0}{NB}m/s</b>. Quelle est sa <b>vitesse en haut de la rampe</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v3, tolRel: 0.05, csMin: 2,
     aide: '½ m v0² = m g h + ½ m v², donc v = sqrt(v0² − 2 g h).',
     pieges: [[v0, 'C’est la vitesse d’éjection : en montant de h, la bille a perdu de la vitesse.'], [Math.sqrt(v0 * v0 - g * h), 'Il manque le facteur 2 : v² = v0² − 2 × g × h.']],
@@ -3836,9 +3836,9 @@ function genPxtDroite() {
   const fr = x => String(x).replace('.', ',');
   const intro = `Un chariot se déplace à vitesse constante sur un rail. Sur la droite de sa position x en fonction du temps, on lit : x = ${fr(x1)}${NB}m à la date ${t1}${NB}s et x = ${fr(x2)}${NB}m à la date ${t2}${NB}s.`;
   const q1 = { id: 'p0', type: 'num', q: <>Quelle est la <b>coordonnée de la vitesse</b> du chariot, avec son signe (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v, tolRel: 0.05, csMin: 2,
-    aide: 'La vitesse est la pente de la droite : v = (x₂ − x₁) ÷ (t₂ − t₁).',
+    aide: 'La vitesse est la pente de la droite : v = frac(x₂ − x₁|t₂ − t₁).',
     pieges: [[(x2 - x1) / t2, 'La durée est t₂ − t₁, pas la date t₂ seule.'], [-v, 'Vérifiez le signe : il est celui de x₂ − x₁.']],
-    expl: <>v = ({fr(x2)} − {fr(x1)}) ÷ ({t2} − {t1}) = <b>{pvFmt(v)}{NB}m/s</b>.</> };
+    expl: <>v = <Frac haut={<>{fr(x2)} − {fr(x1)}</>} bas={<>{t2} − {t1}</>} /> = <b>{pvFmt(v)}{NB}m/s</b>.</> };
   const q2 = { id: 'p1', type: 'num', q: <>Quelle est la <b>distance parcourue</b> par le chariot entre les dates {t1}{NB}s et {t2}{NB}s (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: Math.abs(x2 - x1), tolRel: 0.05, csMin: 2,
     aide: 'La distance est la valeur absolue de la variation de position |x₂ − x₁|.',
     pieges: [[x2, 'C’est la position à la date t₂, pas la distance parcourue.']],
@@ -3849,7 +3849,7 @@ function genPxtDroite() {
     expl: <>x = {fr(x2)} + ({pvFmt(v)}) × ({t3} − {t2}) = <b>{pvFmt(x3)}{NB}m</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['La vitesse d’un mouvement uniforme est la pente de la droite x(t) : v = Δx ÷ Δt.', 'Le signe de v dit dans quel sens le mobile se déplace sur l’axe.'] };
+    retenir: ['La vitesse d’un mouvement uniforme est la pente de la droite x(t) : v = frac(Δx|Δt).', 'Le signe de v dit dans quel sens le mobile se déplace sur l’axe.'] };
 }
 function genPxtCorde() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3859,7 +3859,7 @@ function genPxtCorde() {
   const fr = x2 => String(x2).replace('.', ',');
   const intro = `La position d’un mobile sur un rail est x(t) = ${fr((a / 2).toFixed(2))} t² + ${b} t (x en m, t en s).`;
   const q1 = { id: 'c0', type: 'num', q: <>Quelle est la <b>vitesse moyenne</b> du mobile entre les dates {t0}{NB}s et {t0 + dt}{NB}s (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vm, tolRel: 0.05, csMin: 2,
-    aide: 'Calculez x aux deux dates, puis (x₂ − x₁) ÷ (t₂ − t₁).',
+    aide: 'Calculez x aux deux dates, puis frac(x₂ − x₁|t₂ − t₁).',
     pieges: [[vi, 'C’est la vitesse à la date t₀ (pente de la tangente) : ici on demande la vitesse moyenne (pente de la corde).']],
     expl: <>x({t0}) = {pvFmt(x(t0))}{NB}m, x({t0 + dt}) = {pvFmt(x(t0 + dt))}{NB}m ; v moyenne = <b>{pvFmt(vm)}{NB}m/s</b>.</> };
   const q2 = { id: 'c1', type: 'num', q: <>Quelle est la <b>vitesse à la date {t0}{NB}s</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vi, tolRel: 0.05, csMin: 2,
@@ -3878,8 +3878,8 @@ function genGrvForce() {
   const fr = x => String(x).replace('.', ',');
   const intro = `Deux blocs de masses ${m1}${NB}kg et ${m2}${NB}kg sont séparés de ${d}${NB}m (centre à centre). G = 6,67×10⁻¹¹${NB}N·m²·kg⁻².`;
   const q1 = { id: 'g0', type: 'num', q: <>Quelle est la <b>valeur de la force gravitationnelle</b> entre les deux blocs (en µN, 2 chiffres significatifs) ?</>, unite: 'µN', vrai: F, tolRel: 0.05, csMin: 2,
-    aide: 'F = G × m_A × m_B ÷ d². Le résultat est en N : multipliez par 10⁶ pour l’exprimer en µN.',
-    pieges: [[F * d, 'La distance doit être élevée au carré : F = G × m_A × m_B ÷ d².'], [F / 1e6, 'Le résultat est en N : 1 N = 10⁶ µN.']],
+    aide: 'F = frac(G × m_A × m_B|d²). Le résultat est en N : multipliez par 10⁶ pour l’exprimer en µN.',
+    pieges: [[F * d, 'La distance doit être élevée au carré : F = frac(G × m_A × m_B|d²).'], [F / 1e6, 'Le résultat est en N : 1 N = 10⁶ µN.']],
     expl: <>F = <Frac haut={<>6,67×10⁻¹¹ × {m1} × {m2}</>} bas={<>{d}²</>} /> = <b>{pvFmt(F)}{NB}µN</b>.</> };
   const q2 = { id: 'g1', type: 'num', q: <>On <b>double la distance</b> entre les blocs. Quelle est la nouvelle valeur de la force (en µN, 2 chiffres significatifs) ?</>, unite: 'µN', vrai: F2, tolRel: 0.05, csMin: 2,
     aide: 'F varie comme 1/d² : doubler d divise F par 4.',
@@ -3891,7 +3891,7 @@ function genGrvForce() {
     expl: <>F′ = 3 × {pvFmt(F)} = <b>{pvFmt(F3)}{NB}µN</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['F = G × m_A × m_B ÷ d² : proportionnelle aux masses, inversement proportionnelle au carré de la distance.', 'Les deux forces d’interaction ont la même valeur et des sens opposés.'] };
+    retenir: ['F = frac(G × m_A × m_B|d²) : proportionnelle aux masses, inversement proportionnelle au carré de la distance.', 'Les deux forces d’interaction ont la même valeur et des sens opposés.'] };
 }
 function genGrvPoids() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3900,20 +3900,20 @@ function genGrvPoids() {
   while (g < 1.5 || new Set([g, P, g2].map(x => Number(x.toPrecision(2)))).size < 3);
   const intro = `Une planète a pour masse ${M}×10²³${NB}kg et pour rayon ${R}×10⁶${NB}m. G = 6,67×10⁻¹¹${NB}N·m²·kg⁻².`;
   const q1 = { id: 'p0', type: 'num', q: <>Quelle est l’<b>intensité de pesanteur à la surface</b> de la planète (en N/kg, 2 chiffres significatifs) ?</>, unite: 'N/kg', vrai: g, tolRel: 0.05, csMin: 2,
-    aide: 'g = G × M ÷ R², avec M en kg et R en m.',
-    pieges: [[GG * M * 1e23 / (R * 1e6), 'Le rayon doit être élevé au carré : g = G × M ÷ R².']],
-    expl: <>g = 6,67×10⁻¹¹ × {M}×10²³ ÷ ({R}×10⁶)² = <b>{pvFmt(g)}{NB}N/kg</b>.</> };
+    aide: 'g = frac(G × M|R²), avec M en kg et R en m.',
+    pieges: [[GG * M * 1e23 / (R * 1e6), 'Le rayon doit être élevé au carré : g = frac(G × M|R²).']],
+    expl: <>g = 6,67×10⁻¹¹ × {M}<Frac haut={<>×10²³</>} bas={<>{R}×10⁶</>} />² = <b>{pvFmt(g)}{NB}N/kg</b>.</> };
   const q2 = { id: 'p1', type: 'num', q: <>Quel est le <b>poids d’un objet de {m}{NB}kg</b> posé à la surface (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: P, tolRel: 0.05, csMin: 2,
     aide: 'P = m × g.',
     pieges: [[g, 'C’est l’intensité de pesanteur g : le poids est P = m × g.'], [m / g, 'Il faut multiplier la masse par g, pas la diviser.']],
     expl: <>P = {m} × {pvFmt(g)} = <b>{pvFmt(P)}{NB}N</b>.</> };
   const q3 = { id: 'p2', type: 'num', q: <>Quelle est l’<b>intensité de pesanteur à une altitude égale au rayon</b> de la planète (distance au centre : 2 R), en N/kg (2 chiffres significatifs) ?</>, unite: 'N/kg', vrai: g2, tolRel: 0.05, csMin: 2,
-    aide: 'g = G × M ÷ (distance au centre)² : la distance au centre est doublée.',
+    aide: 'g = frac(G × M|(distance au centre)²) : la distance au centre est doublée.',
     pieges: [[g / 2, 'La distance est au carré : doubler la distance divise g par 4, pas par 2.']],
     expl: <>g′ = <Frac haut={<>g</>} bas={<>2²</>} /> = <Frac haut={<>{pvFmt(g)}</>} bas={<>4</>} /> = <b>{pvFmt(g2)}{NB}N/kg</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['g = G × M ÷ R² à la surface ; g diminue quand on s’éloigne du centre.', 'Le poids est P = m × g ; la masse ne change pas d’un astre à l’autre.'] };
+    retenir: ['g = frac(G × M|R²) à la surface ; g diminue quand on s’éloigne du centre.', 'Le poids est P = m × g ; la masse ne change pas d’un astre à l’autre.'] };
 }
 function genNwrAcc() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3927,16 +3927,16 @@ function genNwrAcc() {
     pieges: [[F + f, 'Le frottement est de sens opposé à la poussée : on le soustrait au lieu de l’ajouter.'], [F, 'N’oubliez pas le frottement : ΣF = F − f.']],
     expl: <>ΣF = {F} − {f} = <b>{pvFmt(S)}{NB}N</b>, vers la droite.</> };
   const q2 = { id: 'n1', type: 'num', q: <>Quelle est l’<b>accélération</b> du chariot (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: a, tolRel: 0.05, csMin: 2,
-    aide: 'ΣF = m a, donc a = ΣF ÷ m, avec ΣF en N et m en kg.',
-    pieges: [[F / m, 'Utilisez la somme des forces ΣF, pas la poussée seule.'], [S * m, 'On divise ΣF par la masse : a = ΣF ÷ m.']],
+    aide: 'ΣF = m a, donc a = frac(ΣF|m), avec ΣF en N et m en kg.',
+    pieges: [[F / m, 'Utilisez la somme des forces ΣF, pas la poussée seule.'], [S * m, 'On divise ΣF par la masse : a = frac(ΣF|m).']],
     expl: <>a = <Frac haut={<>ΣF</>} bas={<>m</>} /> = <Frac haut={<>{pvFmt(S)}</>} bas={<>{fr(m.toFixed(1))}</>} /> = <b>{pvFmt(a)}{NB}m/s²</b>.</> };
   const q3 = { id: 'n2', type: 'num', q: <>On remplace le chariot par un chariot de <b>masse double</b>, soumis aux mêmes forces. Quelle est la nouvelle accélération (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: a2, tolRel: 0.05, csMin: 2,
-    aide: 'a = ΣF ÷ m : doubler la masse divise a par 2.',
+    aide: 'a = frac(ΣF|m) : doubler la masse divise a par 2.',
     pieges: [[a * 2, 'Une masse plus grande donne une accélération plus petite : a est divisée par 2.'], [a / 4, 'La masse n’est pas au carré : a est divisée par 2, pas par 4.']],
     expl: <>a′ = <Frac haut={<>a</>} bas={<>2</>} /> = <Frac haut={<>{pvFmt(a)}</>} bas={<>2</>} /> = <b>{pvFmt(a2)}{NB}m/s²</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['ΣF = F − f sur l’axe horizontal (le poids et la réaction se compensent) ; a = ΣF ÷ m.', 'À même somme des forces, une masse double donne une accélération deux fois plus petite.'] };
+    retenir: ['ΣF = F − f sur l’axe horizontal (le poids et la réaction se compensent) ; a = frac(ΣF|m).', 'À même somme des forces, une masse double donne une accélération deux fois plus petite.'] };
 }
 function genNwrFrott() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3954,12 +3954,12 @@ function genNwrFrott() {
     pieges: [[F + S, 'Le frottement s’oppose à la poussée : f = F − ΣF (et non F + ΣF).'], [S, 'ΣF = m a est la somme des forces ; le frottement est ce qui manque : f = F − ΣF.']],
     expl: <>f = F − ΣF = {fr(F)} − {pvFmt(S)} = <b>{pvFmt(f)}{NB}N</b>.</> };
   const q3 = { id: 'n2', type: 'num', q: <>On <b>supprime le frottement</b> (même poussée). Quelle serait l’accélération du chariot (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: a0, tolRel: 0.05, csMin: 2,
-    aide: 'Sans frottement, ΣF = F : a = F ÷ m.',
-    pieges: [[a, 'Sans frottement, la somme des forces est la poussée seule : a = F ÷ m.']],
+    aide: 'Sans frottement, ΣF = F : a = frac(F|m).',
+    pieges: [[a, 'Sans frottement, la somme des forces est la poussée seule : a = frac(F|m).']],
     expl: <>a = <Frac haut={<>F</>} bas={<>m</>} /> = <Frac haut={<>{fr(F)}</>} bas={<>{fr(m.toFixed(1))}</>} /> = <b>{pvFmt(a0)}{NB}m/s²</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['ΣF = m a ; sur l’axe horizontal, ΣF = F − f.', 'Sans frottement, toute la poussée sert à accélérer le chariot : a = F ÷ m.'] };
+    retenir: ['ΣF = m a ; sur l’axe horizontal, ΣF = F − f.', 'Sans frottement, toute la poussée sert à accélérer le chariot : a = frac(F|m).'] };
 }
 function genFviVlim() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3973,8 +3973,8 @@ function genFviVlim() {
     pieges: [[m / 9.8, 'On multiplie la masse par g : P = m g.']],
     expl: <>P = m g = {fr(m.toFixed(1))} × 9,8 = <b>{pvFmt(Pw)}{NB}N</b>.</> };
   const q2 = { id: 'v1', type: 'num', q: <>Quelle est la <b>vitesse limite</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vl, tolRel: 0.05, csMin: 2,
-    aide: 'En régime permanent f = P : k v_lim = m g, donc v_lim = m g ÷ k.',
-    pieges: [[m / k, 'C’est la constante de temps m ÷ k : il manque g, v_lim = m g ÷ k.'], [Pw * k, 'On divise par k : v_lim = m g ÷ k.']],
+    aide: 'En régime permanent f = P : k v_lim = m g, donc v_lim = frac(m g|k).',
+    pieges: [[m / k, 'C’est la constante de temps frac(m|k) : il manque g, v_lim = frac(m g|k).'], [Pw * k, 'On divise par k : v_lim = frac(m g|k).']],
     expl: <>v_lim = <Frac haut={<>m g</>} bas={<>k</>} /> = <Frac haut={<>{pvFmt(Pw)}</>} bas={<>{fr(k.toFixed(1))}</>} /> = <b>{pvFmt(vl)}{NB}m/s</b>.</> };
   const q3 = { id: 'v2', type: 'num', q: <>À un instant du régime transitoire, la vitesse vaut la moitié de la vitesse limite. Quelle est alors la <b>valeur du frottement</b> (en N, 2 chiffres significatifs) ?</>, unite: 'N', vrai: f2, tolRel: 0.05, csMin: 2,
     aide: 'f = k v : si v est divisée par 2, f est la moitié de f = P (valeur en régime permanent).',
@@ -3982,7 +3982,7 @@ function genFviVlim() {
     expl: <>f = k v = {fr(k.toFixed(1))} × {pvFmt(vl / 2)} = <b>{pvFmt(f2)}{NB}N</b> (la moitié du poids).</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Régime permanent : f = P, soit k v_lim = m g, donc v_lim = m g ÷ k.', 'f = k v : le frottement est proportionnel à la vitesse.'] };
+    retenir: ['Régime permanent : f = P, soit k v_lim = m g, donc v_lim = frac(m g|k).', 'f = k v : le frottement est proportionnel à la vitesse.'] };
 }
 function genFviTau() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -3992,20 +3992,20 @@ function genFviTau() {
   const fr = x => String(x).replace('.', ',');
   const intro = `Un objet de masse ${fr(m.toFixed(1))}${NB}kg est lâché sans vitesse dans un fluide visqueux. Le frottement vaut f = k v avec k = ${fr(k.toFixed(1))}${NB}kg/s ; g = 9,8${NB}N/kg ; on néglige la poussée d’Archimède.`;
   const q1 = { id: 't0', type: 'num', q: <>Quelle est la <b>constante de temps</b> τ (en s, 2 chiffres significatifs) ?</>, unite: 's', vrai: tau, tolRel: 0.05, csMin: 2,
-    aide: 'τ = m ÷ k, avec m en kg et k en kg/s.',
-    pieges: [[k / m, 'Le quotient est inversé : τ = m ÷ k.']],
+    aide: 'τ = frac(m|k), avec m en kg et k en kg/s.',
+    pieges: [[k / m, 'Le quotient est inversé : τ = frac(m|k).']],
     expl: <>τ = <Frac haut={<>m</>} bas={<>k</>} /> = <Frac haut={<>{fr(m.toFixed(1))}</>} bas={<>{fr(k.toFixed(1))}</>} /> = <b>{pvFmt(tau)}{NB}s</b>.</> };
   const q2 = { id: 't1', type: 'num', q: <>On considère le régime permanent atteint au bout de 5 τ. Quelle est la <b>durée du régime transitoire</b> (en s, 2 chiffres significatifs) ?</>, unite: 's', vrai: t5, tolRel: 0.05, csMin: 2,
     aide: 'Durée ≈ 5 τ.',
     pieges: [[tau, 'C’est τ : la durée du régime transitoire est 5 τ.']],
     expl: <>5 τ = 5 × {pvFmt(tau)} = <b>{pvFmt(t5)}{NB}s</b>.</> };
   const q3 = { id: 't2', type: 'num', q: <>Quelle est la <b>vitesse à la date t = τ</b> (en m/s, 2 chiffres significatifs) ? À cette date, la vitesse atteint 63 % de la vitesse limite.</>, unite: 'm/s', vrai: v63, tolRel: 0.05, csMin: 2,
-    aide: 'Calculez v_lim = m g ÷ k, puis multipliez par 0,63.',
+    aide: 'Calculez v_lim = frac(m g|k), puis multipliez par 0,63.',
     pieges: [[m * 9.8 / k, 'C’est v_lim : à t = τ la vitesse n’atteint que 63 % de v_lim.']],
     expl: <>v_lim = <Frac haut={<>{fr(m.toFixed(1))} × 9,8</>} bas={<>{fr(k.toFixed(1))}</>} /> = {pvFmt(m * 9.8 / k)} m/s ; v(τ) = 0,63 × {pvFmt(m * 9.8 / k)} = <b>{pvFmt(v63)}{NB}m/s</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['τ = m ÷ k ; le régime permanent est atteint au bout d’environ 5 τ.', 'À t = τ, la vitesse atteint 63 % de la vitesse limite v_lim = m g ÷ k.'] };
+    retenir: ['τ = frac(m|k) ; le régime permanent est atteint au bout d’environ 5 τ.', 'À t = τ, la vitesse atteint 63 % de la vitesse limite v_lim = frac(m g|k).'] };
 }
 function genEulLimite() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4019,16 +4019,16 @@ function genEulLimite() {
     pieges: [[m * 9.8, 'C’est le poids de l’objet : la poussée est le poids du fluide déplacé, m_f g.']],
     expl: <>Π = m_f g = {fr(mf.toFixed(1))} × 9,8 = <b>{pvFmt(Pi)}{NB}N</b>.</> };
   const q2 = { id: 'l1', type: 'num', q: <>Quelle est l’<b>accélération à l’instant du lâcher</b> (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: A, tolRel: 0.05, csMin: 2,
-    aide: 'À t = 0, f = 0 : m a = m g − m_f g, soit A = g (1 − m_f ÷ m).',
-    pieges: [[9.8, 'Il faut tenir compte de la poussée : A = g (1 − m_f ÷ m).']],
-    expl: <>A = g (1 − m_f ÷ m) = 9,8 × (1 − {fr(mf.toFixed(1))} ÷ {fr(m.toFixed(1))}) = <b>{pvFmt(A)}{NB}m/s²</b>.</> };
+    aide: 'À t = 0, f = 0 : m a = m g − m_f g, soit A = g (1 − frac(m_f|m)).',
+    pieges: [[9.8, 'Il faut tenir compte de la poussée : A = g (1 − frac(m_f|m)).']],
+    expl: <>A = g (1 − <Frac haut={<>m_f</>} bas={<>m</>} />) = 9,8 × (1 − <Frac haut={<>{fr(mf.toFixed(1))}</>} bas={<>{fr(m.toFixed(1))}</>} />) = <b>{pvFmt(A)}{NB}m/s²</b>.</> };
   const q3 = { id: 'l2', type: 'num', q: <>Quelle est la <b>vitesse limite</b> (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: vl, tolRel: 0.05, csMin: 2,
     aide: 'En régime permanent : k v_lim = (m − m_f) g.',
-    pieges: [[m * 9.8 / k, 'Il faut retrancher la poussée : v_lim = (m − m_f) g ÷ k.']],
-    expl: <>v_lim = (m − m_f) g ÷ k = ({fr(m.toFixed(1))} − {fr(mf.toFixed(1))}) × 9,8 ÷ {fr(k.toFixed(1))} = <b>{pvFmt(vl)}{NB}m/s</b>.</> };
+    pieges: [[m * 9.8 / k, 'Il faut retrancher la poussée : v_lim = frac((m − m_f) g|k).']],
+    expl: <>v_lim = <Frac haut={<>(m − m_f) g</>} bas={<>k</>} /> = <Frac haut={<>({fr(m.toFixed(1))} − {fr(mf.toFixed(1))}) × 9,8</>} bas={<>{fr(k.toFixed(1))}</>} /> = <b>{pvFmt(vl)}{NB}m/s</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['Poids − poussée − frottement : m dv/dt = m g − m_f g − k v.', 'A = g (1 − m_f ÷ m) ; v_lim = (m − m_f) g ÷ k.'] };
+    retenir: ['Poids − poussée − frottement : m dv/dt = m g − m_f g − k v.', 'A = g (1 − frac(m_f|m)) ; v_lim = frac((m − m_f) g|k).'] };
 }
 function genEulPas() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4038,16 +4038,16 @@ function genEulPas() {
   const fr = x => String(x).replace('.', ',');
   const intro = `Un objet de masse ${fr(m.toFixed(1))}${NB}kg est lâché sans vitesse dans un fluide ; masse de fluide déplacé m_f = ${fr(mf.toFixed(1))}${NB}kg, frottement f = k v avec k = ${fr(k.toFixed(1))}${NB}kg/s, g = 9,8${NB}N/kg. On calcule la vitesse par la méthode d’Euler avec un pas Δt = ${fr(dt.toFixed(2))}${NB}s.`;
   const q1 = { id: 'e0', type: 'num', q: <>Quelle est l’<b>accélération initiale</b> A (en m/s², 2 chiffres significatifs) ?</>, unite: 'm/s²', vrai: A, tolRel: 0.05, csMin: 2,
-    aide: 'A = g (1 − m_f ÷ m).',
-    pieges: [[9.8, 'Il faut tenir compte de la poussée : A = g (1 − m_f ÷ m).']],
-    expl: <>A = 9,8 × (1 − {fr(mf.toFixed(1))} ÷ {fr(m.toFixed(1))}) = <b>{pvFmt(A)}{NB}m/s²</b>.</> };
+    aide: 'A = g (1 − frac(m_f|m)).',
+    pieges: [[9.8, 'Il faut tenir compte de la poussée : A = g (1 − frac(m_f|m)).']],
+    expl: <>A = 9,8 × (1 − <Frac haut={<>{fr(mf.toFixed(1))}</>} bas={<>{fr(m.toFixed(1))}</>} />) = <b>{pvFmt(A)}{NB}m/s²</b>.</> };
   const q2 = { id: 'e1', type: 'num', q: <>Quelle est la <b>vitesse v₁</b> à la date t = Δt (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v1, tolRel: 0.05, csMin: 2,
     aide: 'v₁ = v₀ + A × Δt avec v₀ = 0.',
     pieges: [[A / dt, 'On multiplie l’accélération par le pas : v₁ = A × Δt.']],
     expl: <>v₁ = 0 + {pvFmt(A)} × {fr(dt.toFixed(2))} = <b>{pvFmt(v1)}{NB}m/s</b>.</> };
-  const q3 = { id: 'e2', type: 'num', q: <>Quelle est l’<b>accélération a₁</b> à la date Δt (en m/s², 2 chiffres significatifs) ? On a τ = m ÷ k.</>, unite: 'm/s²', vrai: a1, tolRel: 0.05, csMin: 2,
-    aide: 'a₁ = A − v₁ ÷ τ avec τ = m ÷ k.',
-    pieges: [[A, 'L’accélération a changé : on retranche v₁ ÷ τ.']],
+  const q3 = { id: 'e2', type: 'num', q: <>Quelle est l’<b>accélération a₁</b> à la date Δt (en m/s², 2 chiffres significatifs) ? On a τ = <Frac haut={<>m</>} bas={<>k</>} />.</>, unite: 'm/s²', vrai: a1, tolRel: 0.05, csMin: 2,
+    aide: 'a₁ = A − frac(v₁|τ) avec τ = frac(m|k).',
+    pieges: [[A, 'L’accélération a changé : on retranche frac(v₁|τ).']],
     expl: <>τ = <Frac haut={<>{fr(m.toFixed(1))}</>} bas={<>{fr(k.toFixed(1))}</>} /> = {pvFmt(tau)} s ; a₁ = <Frac haut={<>{pvFmt(A)} − {pvFmt(v1)}</>} bas={<>{pvFmt(tau)}</>} /> = <b>{pvFmt(a1)}{NB}m/s²</b>.</> };
   const q4 = { id: 'e3', type: 'num', q: <>Quelle est la <b>vitesse v₂</b> à la date 2 Δt (en m/s, 2 chiffres significatifs) ?</>, unite: 'm/s', vrai: v2, tolRel: 0.06, csMin: 2,
     aide: 'v₂ = v₁ + a₁ × Δt.',
@@ -4055,7 +4055,7 @@ function genEulPas() {
     expl: <>v₂ = {pvFmt(v1)} + {pvFmt(a1)} × {fr(dt.toFixed(2))} = <b>{pvFmt(v2)}{NB}m/s</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['Euler : a_i = A − v_i ÷ τ puis v_(i+1) = v_i + a_i Δt.', 'Un pas petit devant τ donne une approximation fidèle de la solution exacte.'] };
+    retenir: ['Euler : a_i = A − frac(v_i|τ) puis v_(i+1) = v_i + a_i Δt.', 'Un pas petit devant τ donne une approximation fidèle de la solution exacte.'] };
 }
 function genPileCapacite() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4072,20 +4072,20 @@ function genPileCapacite() {
     pieges: [[c * Vm, 'Convertissez le volume en litres : n = c × V avec V en L.']],
     expl: <>n({k.ion}) = c × V = {fr(c.toFixed(2))} × {fr((Vm / 1000).toFixed(3))} = <b>{pvFmt(nIon)}{NB}mol</b>.</> };
   const q2 = { id: 'pc1', type: 'num', q: <>Quelle est la <b>quantité de {a.nom.toLowerCase()}</b> (en mol, 2 chiffres significatifs) ?</>, unite: 'mol', vrai: nMet, tolRel: 0.05, csMin: 2,
-    aide: 'n = m ÷ M.',
-    pieges: [[m * a.M, 'On divise la masse par la masse molaire : n = m ÷ M.']],
+    aide: 'n = frac(m|M).',
+    pieges: [[m * a.M, 'On divise la masse par la masse molaire : n = frac(m|M).']],
     expl: <>n({a.nom.toLowerCase()}) = <Frac haut={<>m</>} bas={<>M</>} /> = <Frac haut={<>{fr(m.toFixed(1))}</>} bas={<>{fr(a.M)}</>} /> = <b>{pvFmt(nMet)}{NB}mol</b>.</> };
   const q3 = { id: 'pc2', type: 'num', q: <>Quelle est la <b>quantité d’électricité Q</b> que la pile peut débiter (en C, 2 chiffres significatifs) ?</>, unite: 'C', vrai: Q, tolRel: 0.06, csMin: 2,
     aide: 'n(e⁻) = z × n pour chaque réactif ; le plus petit n(e⁻) est celui du réactif limitant ; Q = n(e⁻) × F.',
     pieges: [[(PILP_METAUX[C].z * nIon === ne ? PILP_METAUX[A].z * nMet : PILP_METAUX[C].z * nIon) * 96500, 'Vous avez pris l’autre réactif : le réactif limitant donne le plus petit n(e⁻).'], [Q / (ne === PILP_METAUX[C].z * nIon ? k.z : a.z), 'Il manque le nombre d’électrons échangés par ion ou par atome : n(e⁻) = z × n.']],
     expl: <>n(e⁻) possible : {k.z} × {pvFmt(nIon)} = {pvFmt(k.z * nIon)} mol (ions) ou {a.z} × {pvFmt(nMet)} = {pvFmt(a.z * nMet)} mol ({a.nom.toLowerCase()}) ; le plus petit l’emporte : n(e⁻) = {pvFmt(ne)} mol ; Q = n(e⁻) × F = <b>{pvFmt(Q)}{NB}C</b>.</> };
   const q4 = { id: 'pc3', type: 'num', q: <>Quelle est la <b>durée de fonctionnement</b> Δt (en heures, 2 chiffres significatifs) ?</>, unite: 'h', vrai: dt, tolRel: 0.08, csMin: 2,
-    aide: 'Δt = Q ÷ i avec i en ampères, puis ÷ 3 600 pour des heures.',
-    pieges: [[Q / (I / 1000), 'Le résultat est en secondes : divisez par 3 600 pour avoir des heures.'], [Q / I / 3600, 'Convertissez i en ampères : mA ÷ 1 000.']],
+    aide: 'Δt = frac(Q|i) avec i en ampères, puis diviser par 3 600 pour des heures.',
+    pieges: [[Q / (I / 1000), 'Le résultat est en secondes : divisez par 3 600 pour avoir des heures.'], [Q / I / 3600, 'Convertissez i en ampères : frac(mA|1) 000.']],
     expl: <>Δt = <Frac haut={<>Q</>} bas={<>i</>} /> = <Frac haut={<>{pvFmt(Q)}</>} bas={<>{fr((I / 1000).toFixed(3))}</>} /> = {pvFmt(Q / (I / 1000))} s, soit <b>{pvFmt(dt)}{NB}h</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['n(e⁻) = z × n du réactif limitant ; Q = n(e⁻) × F, avec F = 96 500 C/mol.', 'Δt = Q ÷ i, avec i en ampères ; ÷ 3 600 pour des heures.'] };
+    retenir: ['n(e⁻) = z × n du réactif limitant ; Q = n(e⁻) × F, avec F = 96 500 C/mol.', 'Δt = frac(Q|i), avec i en ampères ; diviser par 3 600 pour des heures.'] };
 }
 function genRmnIntegration() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4105,19 +4105,19 @@ function genRmnIntegration() {
     expl: <>H = {h.map(v => fr(v.toFixed(1))).join(' + ')} = <b>{fr(H.toFixed(1))}{NB}mm</b>.</> };
   const nH = i => m.N * h[i] / H;
   const q2 = { id: 'ri1', type: 'num', q: <>Combien de H représente le <b>signal à {fr(m.liste[i1].d.toFixed(2))}{NB}ppm</b> ? (nombre entier)</>, unite: 'H', vrai: m.liste[i1].n, tolRel: 0.001, csMin: 1,
-    aide: 'nombre de H = N × h ÷ H ; arrondissez à l’entier le plus proche.',
-    pieges: [[h[i1], 'Ce n’est pas la hauteur : nombre de H = N × h ÷ H.'], [h[i1] / H, 'Il faut multiplier par N (le nombre total de H de la molécule).']],
+    aide: 'nombre de H = frac(N × h|H) ; arrondissez à l’entier le plus proche.',
+    pieges: [[h[i1], 'Ce n’est pas la hauteur : nombre de H = frac(N × h|H).'], [h[i1] / H, 'Il faut multiplier par N (le nombre total de H de la molécule).']],
     expl: <>nombre de H = <Frac haut={<>N × h</>} bas={<>H</>} /> = <Frac haut={<>{m.N} × {fr(h[i1].toFixed(1))}</>} bas={<>{fr(H.toFixed(1))}</>} /> = {fr(nH(i1).toFixed(2))}, soit <b>{m.liste[i1].n}{NB}H</b>.</> };
   const q3 = { id: 'ri2', type: 'num', q: <>Combien de H représente le <b>signal à {fr(m.liste[i2].d.toFixed(2))}{NB}ppm</b> ? (nombre entier)</>, unite: 'H', vrai: m.liste[i2].n, tolRel: 0.001, csMin: 1,
-    aide: 'nombre de H = N × h ÷ H ; arrondissez à l’entier le plus proche.',
-    pieges: [[h[i2], 'Ce n’est pas la hauteur : nombre de H = N × h ÷ H.'], [h[i2] / H, 'Il faut multiplier par N (le nombre total de H de la molécule).']],
+    aide: 'nombre de H = frac(N × h|H) ; arrondissez à l’entier le plus proche.',
+    pieges: [[h[i2], 'Ce n’est pas la hauteur : nombre de H = frac(N × h|H).'], [h[i2] / H, 'Il faut multiplier par N (le nombre total de H de la molécule).']],
     expl: <>nombre de H = <Frac haut={<>N × h</>} bas={<>H</>} /> = <Frac haut={<>{m.N} × {fr(h[i2].toFixed(1))}</>} bas={<>{fr(H.toFixed(1))}</>} /> = {fr(nH(i2).toFixed(2))}, soit <b>{m.liste[i2].n}{NB}H</b>.</> };
   const q4 = { id: 'ri3', type: 'num', q: <>Le signal à {fr(m.liste[i3].d.toFixed(2))}{NB}ppm est un <b>{RMNS_MULT[m.liste[i3].mult]}</b> : combien de <b>H voisins</b> n le groupe a-t-il ?</>, unite: 'H', vrai: m.liste[i3].nv, tolRel: 0.001, csMin: 1,
     aide: 'Un signal de n + 1 raies correspond à n H voisins.', pieges: [[m.liste[i3].nv + 1, 'Le nombre de raies vaut n + 1 : le nombre de H voisins est une unité de moins.']],
     expl: <>Un {RMNS_MULT[m.liste[i3].mult]} compte {m.liste[i3].nv + 1} raies : n + 1 = {m.liste[i3].nv + 1}, donc <b>n = {m.liste[i3].nv}</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['Nombre de H d’un signal = N × h ÷ H (H : hauteur totale des paliers ; N : nombre total de H).', 'n H voisins donnent un signal de n + 1 raies.'] };
+    retenir: ['Nombre de H d’un signal = frac(N × h|H) (H : hauteur totale des paliers ; N : nombre total de H).', 'n H voisins donnent un signal de n + 1 raies.'] };
 }
 // UV-visible et IR (terminale STL) : énergie d'un photon (E = h c / λ) ; droite d'étalonnage et concentration.
 function genUvEnergie() {
@@ -4129,11 +4129,11 @@ function genUvEnergie() {
   const don = `h = 6,63×10⁻³⁴${NB}J·s ; c = 3,00×10⁸${NB}m·s⁻¹ ; 1${NB}eV = 1,60×10⁻¹⁹${NB}J`;
   const intro = `Un colorant absorbe un rayonnement monochromatique de longueur d’onde λ = ${lam}${NB}nm dans le vide. Données : ${don}.`;
   const q1 = { id: 'ue0', type: 'num', q: <>Quelle est la <b>fréquence ν</b> de ce rayonnement (en 10¹⁴{NB}Hz, 3 chiffres significatifs) ?</>, unite: '×10¹⁴ Hz', vrai: nu / 1e14, tolRel: 0.02, csMin: 3,
-    aide: 'ν = c ÷ λ, avec λ en mètres (1 nm = 10⁻⁹ m).',
-    pieges: [[C / lam / 1e14, 'Vous n’avez pas converti λ en mètres : 1 nm = 10⁻⁹ m.'], [C * lam * 1e-9 / 1e14, 'La fréquence est c ÷ λ (et non c × λ).']],
-    expl: <>ν = <Frac haut={<>c</>} bas={<>λ</>} /> = {fr('3,00×10⁸')} ÷ ({lam}×10⁻⁹) = <b>{nbF(nu / 1e14, 2)}×10¹⁴{NB}Hz</b>.</> };
+    aide: 'ν = frac(c|λ), avec λ en mètres (1 nm = 10⁻⁹ m).',
+    pieges: [[C / lam / 1e14, 'Vous n’avez pas converti λ en mètres : 1 nm = 10⁻⁹ m.'], [C * lam * 1e-9 / 1e14, 'La fréquence est frac(c|λ) (et non c × λ).']],
+    expl: <>ν = <Frac haut={<>c</>} bas={<>λ</>} /> = <Frac haut={<>{fr('3,00×10⁸')}</>} bas={<>{lam}×10⁻⁹</>} /> = <b>{nbF(nu / 1e14, 2)}×10¹⁴{NB}Hz</b>.</> };
   const q2 = { id: 'ue1', type: 'num', q: <>Quelle est l’<b>énergie E d’un photon</b> de ce rayonnement (en 10⁻¹⁹{NB}J, 3 chiffres significatifs) ?</>, unite: '×10⁻¹⁹ J', vrai: EJ / 1e-19, tolRel: 0.02, csMin: 3,
-    aide: 'E = h × ν, ou E = h × c ÷ λ, avec λ en mètres.',
+    aide: 'E = h × ν, ou E = frac(h × c|λ), avec λ en mètres.',
     pieges: [[EJ * 1e9 / 1e-19, 'Vous n’avez pas converti λ en mètres : 1 nm = 10⁻⁹ m.'], [EJ / EV / 1e-19, 'Vous avez donné E en eV : ici, la réponse est attendue en 10⁻¹⁹ J.']],
     expl: <>E = h × ν = 6,63×10⁻³⁴ × {nbF(nu / 1e14, 2)}×10¹⁴ = <b>{nbF(EJ / 1e-19, 2)}×10⁻¹⁹{NB}J</b>.</> };
   const q3 = { id: 'ue2', type: 'num', q: <>Exprimez cette énergie en <b>électronvolts</b> (3 chiffres significatifs).</>, unite: 'eV', vrai: Eev, tolRel: 0.02, csMin: 3,
@@ -4143,10 +4143,10 @@ function genUvEnergie() {
   const q4 = { id: 'ue3', type: 'num', q: <>On remplace ce rayonnement par un rayonnement de longueur d’onde <b>{2 * lam}{NB}nm</b> (le double). Quelle est l’énergie d’un photon de ce nouveau rayonnement (en eV, 3 chiffres significatifs) ?</>, unite: 'eV', vrai: Eev / 2, tolRel: 0.02, csMin: 3,
     aide: 'E est inversement proportionnelle à λ : si λ double, E est divisée par 2.',
     pieges: [[Eev * 2, 'Plus la longueur d’onde est grande, plus l’énergie du photon est petite : E est divisée par 2, pas multipliée.'], [Eev, 'E dépend de λ : si λ double, E change.']],
-    expl: <>E′ = h c ÷ (2λ) = <Frac haut={<>E</>} bas={<>2</>} /> = <Frac haut={<>{nbF(Eev, 2)}</>} bas={<>2</>} /> = <b>{nbF(Eev / 2, 2)}{NB}eV</b>.</> };
+    expl: <>E′ = <Frac haut={<>h c</>} bas={<>2λ</>} /> = <Frac haut={<>E</>} bas={<>2</>} /> = <Frac haut={<>{nbF(Eev, 2)}</>} bas={<>2</>} /> = <b>{nbF(Eev / 2, 2)}{NB}eV</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['E = h × ν = h × c ÷ λ, avec λ en mètres et E en joules.', '1 eV = 1,60×10⁻¹⁹ J : E (eV) = E (J) ÷ 1,60×10⁻¹⁹.', 'Plus la longueur d’onde est courte, plus le photon est énergétique (UV > visible > IR).'] };
+    retenir: ['E = h × ν = frac(h × c|λ), avec λ en mètres et E en joules.', '1 eV = 1,60×10⁻¹⁹ J : E (eV) = frac(E (J)|1,60×10⁻¹⁹).', 'Plus la longueur d’onde est courte, plus le photon est énergétique (UV > visible > IR).'] };
 }
 function genUvEtalonnage() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4165,12 +4165,12 @@ function genUvEtalonnage() {
   const lignes = cs.map((c, i) => `${fr(c.toFixed(1))}${NB}mg/L → A = ${fr(A[i].toFixed(3))}`).join(' ; ');
   const intro = `Pour doser un colorant par spectrophotométrie à sa longueur d’onde d’absorption maximale, on mesure l’absorbance de cinq solutions étalons : ${lignes}. La droite d’étalonnage passe par l’origine : A = k × c. Une solution mère est diluée ${F} fois ; la solution diluée a une absorbance A = ${fr(Ax.toFixed(3))}. La solution mère a un volume de ${Vm}${NB}mL.`;
   const q1 = { id: 'ee0', type: 'num', q: <>Quel est le <b>coefficient directeur k</b> de la droite d’étalonnage (en L/mg, 2 chiffres significatifs) ? On utilise le premier et le dernier étalon.</>, unite: 'L/mg', vrai: k, tolRel: 0.05, csMin: 2,
-    aide: 'k = (A₅ − A₁) ÷ (c₅ − c₁), avec c en mg/L : on obtient k en L/mg.',
-    pieges: [[1 / k, 'Vous avez calculé c ÷ A : le coefficient directeur est A ÷ c (variation de A divisée par variation de c).'], [(A[4] - A[0]), 'Il faut diviser la variation d’absorbance par la variation de concentration.']],
-    expl: <>k = ({fr(A[4].toFixed(3))} − {fr(A[0].toFixed(3))}) ÷ ({fr(cs[4].toFixed(1))} − {fr(cs[0].toFixed(1))}) = <b>{nbF(k, 3)}{NB}L/mg</b>.</> };
+    aide: 'k = frac(A₅ − A₁|c₅ − c₁), avec c en mg/L : on obtient k en L/mg.',
+    pieges: [[1 / k, 'Vous avez calculé frac(c|A) : le coefficient directeur est frac(A|c) (variation de A divisée par variation de c).'], [(A[4] - A[0]), 'Il faut diviser la variation d’absorbance par la variation de concentration.']],
+    expl: <>k = <Frac haut={<>{fr(A[4].toFixed(3))} − {fr(A[0].toFixed(3))}</>} bas={<>{fr(cs[4].toFixed(1))} − {fr(cs[0].toFixed(1))}</>} /> = <b>{nbF(k, 3)}{NB}L/mg</b>.</> };
   const q2 = { id: 'ee1', type: 'num', q: <>Quelle est la <b>concentration de la solution diluée</b> (en mg/L, 2 chiffres significatifs) ?</>, unite: 'mg/L', vrai: cd, tolRel: 0.06, csMin: 2,
-    aide: 'A = k × c, donc c = A ÷ k.',
-    pieges: [[Ax * k, 'Il faut diviser l’absorbance par k : c = A ÷ k.'], [cm, 'Vous avez déjà tenu compte de la dilution : ici on demande la concentration de la solution diluée.']],
+    aide: 'A = k × c, donc c = frac(A|k).',
+    pieges: [[Ax * k, 'Il faut diviser l’absorbance par k : c = frac(A|k).'], [cm, 'Vous avez déjà tenu compte de la dilution : ici on demande la concentration de la solution diluée.']],
     expl: <>c′ = <Frac haut={<>A</>} bas={<>k</>} /> = <Frac haut={<>{fr(Ax.toFixed(3))}</>} bas={<>{nbF(k, 3)}</>} /> = <b>{nbF(cd, 1)}{NB}mg/L</b>. Cette valeur est bien comprise entre les étalons extrêmes ({fr(cs[0].toFixed(1))} et {fr(cs[4].toFixed(1))}{NB}mg/L).</> };
   const q3 = { id: 'ee2', type: 'num', q: <>Quelle est la <b>concentration de la solution mère</b> (en mg/L, 2 chiffres significatifs) ?</>, unite: 'mg/L', vrai: cm, tolRel: 0.06, csMin: 2,
     aide: 'La solution mère est F fois plus concentrée que la solution diluée.',
@@ -4182,7 +4182,7 @@ function genUvEtalonnage() {
     expl: <>m = c × V = {pvFmt(cm, 1)} × {Vm}×10⁻³ = <b>{pvFmt(mm, 1)}{NB}mg</b>.</> };
   filtrer([q1, q2, q3, q4]);
   return { intro, questions: [q1, q2, q3, q4],
-    retenir: ['Droite d’étalonnage : A = k × c ; k est la pente de la droite A en fonction de c.', 'On lit A de la solution inconnue ; c = A ÷ k, à condition que A soit dans la gamme des étalons.', 'Concentration de la solution mère = concentration de la solution diluée × facteur de dilution.'] };
+    retenir: ['Droite d’étalonnage : A = k × c ; k est la pente de la droite A en fonction de c.', 'On lit A de la solution inconnue ; c = frac(A|k), à condition que A soit dans la gamme des étalons.', 'Concentration de la solution mère = concentration de la solution diluée × facteur de dilution.'] };
 }
 function genPileSerie() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4200,12 +4200,12 @@ function genPileSerie() {
     pieges: [[n * Q, 'En série, la même charge traverse chaque pile : Q ne s’additionne pas.']],
     expl: <>La même charge traverse chaque pile : <b>{Q}{NB}C</b> pour chacune.</> };
   const q3 = { id: 'ps2', type: 'num', q: <>Quelle est la <b>durée de fonctionnement</b> de l’association (en heures, 2 chiffres significatifs) ?</>, unite: 'h', vrai: dt, tolRel: 0.06, csMin: 2,
-    aide: 'Δt = Q ÷ i avec i en ampères ; ÷ 3 600 pour des heures.',
+    aide: 'Δt = frac(Q|i) avec i en ampères ; diviser par 3 600 pour des heures.',
     pieges: [[n * dt, 'La durée ne se multiplie pas par le nombre de piles : chacune débite la même charge Q.'], [Q / (I / 1000), 'Le résultat est en secondes : divisez par 3 600 pour des heures.']],
     expl: <>Δt = <Frac haut={<>Q</>} bas={<>i</>} /> = <Frac haut={<>{Q}</>} bas={<>{fr((I / 1000).toFixed(3))}</>} /> = {pvFmt(Q / (I / 1000))} s, soit <b>{pvFmt(dt)}{NB}h</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['En série : tensions additionnées, même charge Q traversant chaque pile.', 'Durée : Δt = Q ÷ i, inchangée par l’association en série.'] };
+    retenir: ['En série : tensions additionnées, même charge Q traversant chaque pile.', 'Durée : Δt = frac(Q|i), inchangée par l’association en série.'] };
 }
 function genRadLoi() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4216,20 +4216,20 @@ function genRadLoi() {
   while (Math.abs(t / th - Math.round(t / th)) < 0.1 || t / th > 6 || t / th < 0.5 || new Set([l, Nr, tf].map(x => Number(x.toPrecision(2)))).size < 3);
   const intro = `Un échantillon contient ${sci(N0, 2)} noyaux d’un noyau radioactif de demi-vie ${th}${NB}h au départ (instant t = 0). On suppose qu’aucun noyau radioactif n’est ajouté ni formé par ailleurs (pas de filiation) ; ln 2 = 0,693.`;
   const q1 = { id: 'rl0', type: 'num', q: <>Quelle est la <b>constante de désintégration λ</b> (en h⁻¹, 2 chiffres significatifs) ?</>, unite: 'h⁻¹', vrai: l, tolRel: 0.03, csMin: 2,
-    aide: 'λ = ln 2 ÷ t½.',
-    pieges: [[th / Math.LN2, 'On divise ln 2 par t½ : λ = ln 2 ÷ t½, pas l’inverse.'], [1 / th, 'Il manque ln 2 : λ = ln 2 ÷ t½.']],
+    aide: 'λ = frac(ln 2|t½).',
+    pieges: [[th / Math.LN2, 'On divise ln 2 par t½ : λ = frac(ln 2|t½), pas l’inverse.'], [1 / th, 'Il manque ln 2 : λ = frac(ln 2|t½).']],
     expl: <>λ = <Frac haut={<>ln 2</>} bas={<>t½</>} /> = <Frac haut={<>0,693</>} bas={<>{th}</>} /> = <b>{pvFmt(l)}{NB}h⁻¹</b>.</> };
   const q2 = { id: 'rl1', type: 'num', q: <>Combien reste-t-il de noyaux radioactifs au bout de <b>{t}{NB}h</b> (en noyaux, 2 chiffres significatifs) ?</>, unite: 'noyaux', vrai: Nr, tolRel: 0.04, csMin: 2,
     aide: 'N(t) = N₀ exp(−λt), avec λ en h⁻¹ et t en h.',
-    pieges: [[N0 * Math.exp(-t / th), 'Il faut λ = ln 2 ÷ t½ dans l’exponentielle, pas 1 ÷ t½.'], [N0 - N0 * l * t, 'La décroissance est exponentielle : N = N₀ exp(−λt), pas une droite.'], [N0 * (1 - Math.exp(-l * t)), 'Cela correspond aux noyaux désintégrés ; il reste N₀ exp(−λt).']],
+    pieges: [[N0 * Math.exp(-t / th), 'Il faut λ = frac(ln 2|t½) dans l’exponentielle, pas frac(1|t½).'], [N0 - N0 * l * t, 'La décroissance est exponentielle : N = N₀ exp(−λt), pas une droite.'], [N0 * (1 - Math.exp(-l * t)), 'Cela correspond aux noyaux désintégrés ; il reste N₀ exp(−λt).']],
     expl: <>N = N₀ e<sup>−λt</sup> = {sci(N0, 2)} × e<sup>−{pvFmt(l)} × {t}</sup> = <b>{sci(Nr, 2)}{NB}noyaux</b>.</> };
   const q3 = { id: 'rl2', type: 'num', q: <>Au bout de quelle durée ne reste-t-il que <b>{fr(Math.round(f * 100))}{NB}%</b> des noyaux initiaux (en h, 2 chiffres significatifs) ?</>, unite: 'h', vrai: tf, tolRel: 0.04, csMin: 2,
-    aide: 'N ÷ N₀ = exp(−λt) donne t = ln(N₀ ÷ N) ÷ λ.',
-    pieges: [[th * Math.log(1 / f), 'Il faut diviser par λ : t = ln(N₀ ÷ N) ÷ λ, et non multiplier par t½ sans ln 2.'], [Math.log(1 / f) * l, 'On divise ln(N₀ ÷ N) par λ.']],
-    expl: <>t = ln(1 ÷ {fr(f)}) ÷ λ = <Frac haut={<>{pvFmt(Math.log(1 / f))}</>} bas={<>{pvFmt(l)}</>} /> = <b>{pvFmt(tf)}{NB}h</b>.</> };
+    aide: 'frac(N|N₀) = exp(−λt) donne t = frac(ln(frac(N₀|N))|λ).',
+    pieges: [[th * Math.log(1 / f), 'Il faut diviser par λ : t = frac(ln(frac(N₀|N))|λ), et non multiplier par t½ sans ln 2.'], [Math.log(1 / f) * l, 'On divise ln(frac(N₀|N)) par λ.']],
+    expl: <>t = <Frac haut={<>ln(<Frac haut={<>1</>} bas={<>{fr(f)}</>} />)</>} bas={<>λ</>} /> = <Frac haut={<>{pvFmt(Math.log(1 / f))}</>} bas={<>{pvFmt(l)}</>} /> = <b>{pvFmt(tf)}{NB}h</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['λ = ln 2 ÷ t½ ; N(t) = N₀ exp(−λt) ; t = ln(N₀ ÷ N) ÷ λ.', 'Après n demi-vies, il reste N₀ ÷ 2ⁿ.'] };
+    retenir: ['λ = frac(ln 2|t½) ; N(t) = N₀ exp(−λt) ; t = frac(ln(frac(N₀|N))|λ).', 'Après n demi-vies, il reste frac(N₀|2ⁿ).'] };
 }
 function genRadActivite() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4239,9 +4239,9 @@ function genRadActivite() {
   while (Math.abs(t / th - Math.round(t / th)) < 0.1 || t / th > 5 || new Set([A0, At, n].map(x => Number(x.toPrecision(2)))).size < 3);
   const intro = `Un échantillon contient ${sci(N, 2)} noyaux radioactifs de demi-vie ${th}${NB}h à l’instant t = 0 (ln 2 = 0,693 ; 1 h = 3 600 s). Un compteur idéal détecte toutes les désintégrations.`;
   const q1 = { id: 'ra0', type: 'num', q: <>Quelle est l’<b>activité initiale A₀</b> de l’échantillon (en Bq, 2 chiffres significatifs) ?</>, unite: 'Bq', vrai: A0, tolRel: 0.03, csMin: 2,
-    aide: 'A = λ N avec λ en s⁻¹ : λ = ln 2 ÷ (t½ en secondes).',
+    aide: 'A = λ N avec λ en s⁻¹ : λ = frac(ln 2|t½ en secondes).',
     pieges: [[(Math.LN2 / th) * N, 'λ doit être en s⁻¹ : convertissez la demi-vie en secondes (× 3 600) avant de calculer A = λ N.'], [ls * N * 3600, 'Vous avez des désintégrations par heure : A en Bq est par seconde.']],
-    expl: <>λ = ln 2 ÷ ({th} × 3 600) = {sci(ls, 2)}{NB}s⁻¹ ; A₀ = λ N = <b>{sci(A0, 2)}{NB}Bq</b>.</> };
+    expl: <>λ = <Frac haut={<>ln 2</>} bas={<>{th} × 3 600</>} /> = {sci(ls, 2)}{NB}s⁻¹ ; A₀ = λ N = <b>{sci(A0, 2)}{NB}Bq</b>.</> };
   const q2 = { id: 'ra1', type: 'num', q: <>Quelle est l’<b>activité au bout de {t}{NB}h</b> (en Bq, 2 chiffres significatifs) ?</>, unite: 'Bq', vrai: At, tolRel: 0.05, csMin: 2,
     aide: 'A(t) = A₀ exp(−λt) : λ et t dans la même unité de temps.',
     pieges: [[A0 * Math.exp(-ls * t), 'λ est en s⁻¹ : exprimez aussi t en secondes (× 3 600).'], [A0 / 2 ** Math.floor(t / th), 'La durée n’est pas un nombre entier de demi-vies : utilisez A(t) = A₀ exp(−λt).']],
@@ -4265,16 +4265,16 @@ function genClpSommet() {
     pieges: [[v0 * Math.cos(a * RAD), 'C’est la composante horizontale v₀ cos α : la composante verticale utilise le sinus.']],
     expl: <>v₀ᵧ = {v0} × sin {a}° = <b>{pvFmt(vy)}{NB}m/s</b>.</> };
   const q2 = { id: 'c1', type: 'num', q: <>Quelle est la <b>durée de la montée</b> jusqu’au sommet (en s, 2 chiffres significatifs) ?</>, unite: 's', vrai: tS, tolRel: 0.05, csMin: 2,
-    aide: 'Au sommet vᵧ = 0 : t_S = v₀ᵧ ÷ g.',
-    pieges: [[vy * 9.8, 'On divise v₀ᵧ par g : t_S = v₀ᵧ ÷ g.'], [v0 / 9.8, 'Utilisez la composante verticale v₀ᵧ et non la vitesse initiale v₀.']],
+    aide: 'Au sommet vᵧ = 0 : t_S = frac(v₀ᵧ|g).',
+    pieges: [[vy * 9.8, 'On divise v₀ᵧ par g : t_S = frac(v₀ᵧ|g).'], [v0 / 9.8, 'Utilisez la composante verticale v₀ᵧ et non la vitesse initiale v₀.']],
     expl: <>t_S = <Frac haut={<>v₀ᵧ</>} bas={<>g</>} /> = <Frac haut={<>{pvFmt(vy)}</>} bas={<>9,8</>} /> = <b>{pvFmt(tS)}{NB}s</b>.</> };
   const q3 = { id: 'c2', type: 'num', q: <>Quelle est la <b>hauteur maximale</b> atteinte (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: H, tolRel: 0.05, csMin: 2,
-    aide: 'H = v₀ᵧ² ÷ (2 g).',
-    pieges: [[vy * vy / 9.8, 'Il manque le facteur 2 : H = v₀ᵧ² ÷ (2 g).'], [vy / 19.6, 'v₀ᵧ doit être élevée au carré : H = v₀ᵧ² ÷ (2 g).']],
-    expl: <>H = v₀ᵧ² ÷ (2 g) = <Frac haut={<>{pvFmt(vy)}²</>} bas={<>19,6</>} /> = <b>{pvFmt(H)}{NB}m</b>.</> };
+    aide: 'H = frac(v₀ᵧ²|2 g).',
+    pieges: [[vy * vy / 9.8, 'Il manque le facteur 2 : H = frac(v₀ᵧ²|2 g).'], [vy / 19.6, 'v₀ᵧ doit être élevée au carré : H = frac(v₀ᵧ²|2 g).']],
+    expl: <>H = <Frac haut={<>v₀ᵧ²</>} bas={<>2 g</>} /> = <Frac haut={<>{pvFmt(vy)}²</>} bas={<>19,6</>} /> = <b>{pvFmt(H)}{NB}m</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['v₀ᵧ = v₀ sin α ; au sommet vᵧ = 0, donc t_S = v₀ᵧ ÷ g.', 'H = v₀ᵧ² ÷ (2 g) : la hauteur ne dépend pas de la masse.'] };
+    retenir: ['v₀ᵧ = v₀ sin α ; au sommet vᵧ = 0, donc t_S = frac(v₀ᵧ|g).', 'H = frac(v₀ᵧ²|2 g) : la hauteur ne dépend pas de la masse.'] };
 }
 function genClpPortee() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4287,7 +4287,7 @@ function genClpPortee() {
     pieges: [[v0 * Math.sin(a * RAD), 'C’est la composante verticale v₀ sin α : la composante horizontale utilise le cosinus.']],
     expl: <>vₓ = {v0} × cos {a}° = <b>{pvFmt(vx)}{NB}m/s</b>.</> };
   const q2 = { id: 'c1', type: 'num', q: <>Quelle est la <b>durée du vol</b> (en s, 2 chiffres significatifs) ?</>, unite: 's', vrai: tv, tolRel: 0.05, csMin: 2,
-    aide: 'Durée du vol = 2 t_S, avec t_S = v₀ sin α ÷ g.',
+    aide: 'Durée du vol = 2 t_S, avec t_S = frac(v₀ sin α|g).',
     pieges: [[tv / 2, 'C’est la durée de la montée : la durée du vol est le double.']],
     expl: <>Durée = <Frac haut={<>2 v₀ sin α</>} bas={<>g</>} /> = <Frac haut={<>2 × {v0} × sin {a}°</>} bas={<>9,8</>} /> = <b>{pvFmt(tv)}{NB}s</b>.</> };
   const q3 = { id: 'c2', type: 'num', q: <>Quelle est la <b>portée</b> du tir (en m, 2 chiffres significatifs) ?</>, unite: 'm', vrai: D, tolRel: 0.05, csMin: 2,
@@ -4296,7 +4296,7 @@ function genClpPortee() {
     expl: <>D = vₓ × durée = {pvFmt(vx)} × {pvFmt(tv)} = <b>{pvFmt(D)}{NB}m</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['vₓ = v₀ cos α est constante ; la durée du vol est 2 t_S.', 'D = vₓ × 2 t_S = v₀² sin(2α) ÷ g.'] };
+    retenir: ['vₓ = v₀ cos α est constante ; la durée du vol est 2 t_S.', 'D = vₓ × 2 t_S = frac(v₀² sin(2α)|g).'] };
 }
 function genCelChamp() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4306,11 +4306,11 @@ function genCelChamp() {
   const fr = x => String(x).replace('.', ',');
   const intro = `Deux armatures planes parallèles, distantes de ${fr(dcm)}${NB}cm, sont reliées aux bornes d’un générateur qui impose la tension ${U}${NB}V.`;
   const q1 = { id: 'c0', type: 'num', q: <>Quelle est la <b>valeur du champ électrostatique</b> entre les armatures (en kV/m, 2 chiffres significatifs) ?</>, unite: 'kV/m', vrai: E, tolRel: 0.05, csMin: 2,
-    aide: 'E = U ÷ d, avec d en mètres (1 cm = 0,01 m). Le résultat est en V/m : divisez par 1 000 pour les kV/m.',
+    aide: 'E = frac(U|d), avec d en mètres (1 cm = 0,01 m). Le résultat est en V/m : divisez par 1 000 pour les kV/m.',
     pieges: [[E * 10, 'La distance doit être en mètres avant de diviser : 1 cm = 0,01 m.'], [E * 1e3, 'Ce résultat est en V/m : 1 kV/m = 1 000 V/m.']],
     expl: <>E = <Frac haut={<>U</>} bas={<>d</>} /> = <Frac haut={<>{U}</>} bas={<>{fr(dcm / 100)}</>} /> = <b>{pvFmt(E)}{NB}kV/m</b>.</> };
   const q2 = { id: 'c1', type: 'num', q: <>On <b>double la distance</b> entre les armatures, la tension restant la même. Quelle est la nouvelle valeur du champ (en kV/m, 2 chiffres significatifs) ?</>, unite: 'kV/m', vrai: E2, tolRel: 0.05, csMin: 2,
-    aide: 'E = U ÷ d : doubler d divise E par 2.',
+    aide: 'E = frac(U|d) : doubler d divise E par 2.',
     pieges: [[E / 4, 'La distance n’est pas au carré : doubler d divise E par 2, pas par 4.']],
     expl: <>E′ = <Frac haut={<>E</>} bas={<>2</>} /> = <Frac haut={<>{pvFmt(E)}</>} bas={<>2</>} /> = <b>{pvFmt(E2)}{NB}kV/m</b>.</> };
   const q3 = { id: 'c2', type: 'num', q: <>Revenons à la distance de {fr(dcm)}{NB}cm et <b>triplons la tension</b>. Quelle est la nouvelle valeur du champ (en kV/m, 2 chiffres significatifs) ?</>, unite: 'kV/m', vrai: E3, tolRel: 0.05, csMin: 2,
@@ -4319,7 +4319,7 @@ function genCelChamp() {
     expl: <>E′ = 3 × {pvFmt(E)} = <b>{pvFmt(E3)}{NB}kV/m</b>.</> };
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3],
-    retenir: ['E = U ÷ d : champ uniforme entre deux armatures planes, de l’armature + vers l’armature −.', 'E est proportionnelle à U et inversement proportionnelle à d.'] };
+    retenir: ['E = frac(U|d) : champ uniforme entre deux armatures planes, de l’armature + vers l’armature −.', 'E est proportionnelle à U et inversement proportionnelle à d.'] };
 }
 function genCelForce() {
   const tire = t => t[Math.floor(Math.random() * t.length)];
@@ -4606,7 +4606,7 @@ function genTamponTG() {
     retenir: ['n(H₃O⁺) versé = C × V ; il est consommé par la base A⁻ du tampon : n(A⁻) diminue et n(AH) augmente de la même quantité.', 'Le rapport frac(n(A⁻)|n(AH)) change peu si l’ajout est modéré, donc le pH aussi : pH = pK_A + log (frac(n(A⁻)|n(AH))).', 'Un tampon est épuisé quand toute la base A⁻ (ajout d’acide) ou tout l’acide AH (ajout de base) est consommé.'] };
 }
 
-// Pile (TG, sim 132) : quantités initiales, réactif limitant, capacité Q = n(e⁻) × F et durée de fonctionnement Δt = Q ÷ I (commentaire)
+// Pile (TG, sim 132) : quantités initiales, réactif limitant, capacité Q = n(e⁻) × F et durée de fonctionnement Δt = frac(Q|I) (commentaire)
 export function genPileTG() {
   let t;
   do {
@@ -4747,7 +4747,7 @@ function genConductimetrieTG() {
   const c2 = tire([0.0020, 0.0030, 0.0040, 0.0060]), sm = Math.round(S * c2 * 1000 * 10) / 10, cc = sm / S / 1000;
   const q2 = { id: 'k1', type: 'num', q: <>Pour la même espèce, on mesure σ = <b>{nb(sm, 3)}{NB}mS·m⁻¹</b>. Calculez la concentration du soluté (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: cc, tolRel: 0.05, csMin: 2,
     aide: 'c = frac(σ|λ(cation) + λ(anion)) donne c en mol·m⁻³ ; divisez par 1 000 pour obtenir des mol/L.',
-    pieges: [[sm / S, 'Ce résultat est en mol·m⁻³ ; convertissez-le en mol/L (÷ 1 000).'], [sm / sel.lc / 1000, 'Il faut diviser par la somme des deux λ, pas par celui du cation seul.'], [sm * S / 1000, 'Le rapport est inversé : on divise σ par la somme des λ.']],
+    pieges: [[sm / S, 'Ce résultat est en mol·m⁻³ ; convertissez-le en mol/L (diviser par 1 000).'], [sm / sel.lc / 1000, 'Il faut diviser par la somme des deux λ, pas par celui du cation seul.'], [sm * S / 1000, 'Le rapport est inversé : on divise σ par la somme des λ.']],
     expl: <>c = {avecIndices(`frac(σ|λ(cation) + λ(anion))`)} = {avecIndices(`frac(${nb(sm, 3)}|${nb(sel.lc, 2)} + ${nb(sel.la, 2)})`)} = {nb(sm / S, 3)}{NB}mol·m⁻³ = <b>{sci(cc, 2)}{NB}mol/L</b>.</> };
   const VA = 20.0, cB = 0.100, VE = tire([8.0, 12.0, 14.0, 15.0, 16.0]), cA = cB * VE / VA;
   const q3 = { id: 'k2', type: 'num', q: <>On titre <b>{nb(VA, 3)}{NB}mL</b> d’acide chlorhydrique, dilué dans de l’eau, par de la soude à <b>{nb(cB, 3)}{NB}mol/L</b>. La courbe σ = f(V) présente une rupture de pente pour V = <b>{nb(VE, 2)}{NB}mL</b>. Calculez la concentration de l’acide (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: cA, tolRel: 0.05, csMin: 2,
@@ -4829,7 +4829,7 @@ function genConstanteAcideTSTL() {
   const L = 35.0 + ac.lA, sig = Number((L * x0 * 1000).toPrecision(3)), x = sig / L / 1000, HA = c - x, K = x * x / HA, tau = 100 * x / c;
   const intro = <>Une solution d’{ac.nom} ({ac.f}), de concentration apportée c = <b>{kcSci(c)}{NB}mol/L</b>, a une conductivité σ = <b>{nb(sig, 3)}{NB}mS·m⁻¹</b> à 25 °C. Données : λ(H₃O⁺) = <b>35,0</b> et λ({ac.base}) = <b>{nb(ac.lA, 3)}</b> mS·m²·mol⁻¹ ; on néglige les ions HO⁻.</>;
   const q1 = { id: 'k0', type: 'num', q: <>{intro} Calculez la concentration en ions H₃O⁺ à l’équilibre (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: x, tolRel: 0.05, csMin: 2,
-    aide: 'σ = (λ(H₃O⁺) + λ(A⁻)) × [H₃O⁺] : isolez [H₃O⁺] (en mol·m⁻³), puis convertissez en mol/L (÷ 1 000).',
+    aide: 'σ = (λ(H₃O⁺) + λ(A⁻)) × [H₃O⁺] : isolez [H₃O⁺] (en mol·m⁻³), puis convertissez en mol/L (diviser par 1 000).',
     pieges: [[x * 1000, 'Votre résultat est en mol·m⁻³ : divisez par 1 000 pour obtenir des mol/L.'], [sig / 35.0 / 1000, 'Il faut diviser par la somme λ(H₃O⁺) + λ(A⁻) : les deux ions conduisent le courant.'], [sig * L / 1000, 'Il faut diviser σ par la somme des λ, non la multiplier.']],
     expl: <>[H₃O⁺] = σ / (λ(H₃O⁺) + λ({ac.base})) = {nb(sig, 3)} / {nb(L, 4)} = {nb(sig / L, 3)}{NB}mol·m⁻³ = <b>{kcSci(x)}{NB}mol/L</b>.</> };
   const q2 = { id: 'k1', type: 'num', q: <>{intro} On a trouvé [H₃O⁺] = [{ac.base}] = <b>{kcSci(x)}{NB}mol/L</b>. Calculez la concentration en acide {ac.f} restant à l’équilibre (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: HA, tolRel: 0.05, csMin: 2,
@@ -4846,7 +4846,7 @@ function genConstanteAcideTSTL() {
     expl: <>τ = x / c = {kcSci(x)} / {kcSci(c)} = <b>{nb(tau, 2)}{NB}%</b>.</> };
   [q1, q2, q3, q4].forEach(kcTol);
   return { intro: 'Acide faible : de la conductivité à la concentration en ions, à l’acide restant, à la constante K et au taux d’avancement final.', questions: [q1, q2, q3, q4],
-    retenir: ['[H₃O⁺] = [A⁻] = x = frac(σ|λ(H₃O⁺) + λ(A⁻)), en mol·m⁻³ puis ÷ 1 000 pour obtenir des mol/L.', 'Tableau d’avancement : [HA] = c − x.', 'K = frac(x²|c − x), sans unité.', 'τ = frac(x|c) : part des molécules introduites qui ont réagi.'] };
+    retenir: ['[H₃O⁺] = [A⁻] = x = frac(σ|λ(H₃O⁺) + λ(A⁻)), en mol·m⁻³ puis diviser par 1 000 pour obtenir des mol/L.', 'Tableau d’avancement : [HA] = c − x.', 'K = frac(x²|c − x), sans unité.', 'τ = frac(x|c) : part des molécules introduites qui ont réagi.'] };
 }
 function genKaTauTSTL() {
   const ac = KC_AC[tire(['HCOOH', 'C2H5COOH'])], c = tire([0.0030, 0.0060, 0.012, 0.025, 0.040]), Kt = 10 ** -ac.pKa, x0 = (-Kt + Math.sqrt(Kt * Kt + 4 * Kt * c)) / 2;
@@ -4854,7 +4854,7 @@ function genKaTauTSTL() {
   const intro = <>On étudie l’{ac.nom} ({ac.f}) à 25 °C, de concentration apportée c = <b>{kcSci(c)}{NB}mol/L</b> ; son taux d’avancement final vaut <b>{nb(tau, 2)}{NB}%</b>. Données : λ(H₃O⁺) = <b>35,0</b> et λ({ac.base}) = <b>{nb(ac.lA, 3)}</b> mS·m²·mol⁻¹ ; on néglige les ions HO⁻.</>;
   const q1 = { id: 't0', type: 'num', q: <>{intro} Calculez la concentration en ions H₃O⁺ à l’équilibre (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: x, tolRel: 0.05, csMin: 2,
     aide: 'τ = frac(x|c), donc x = τ × c (τ en fraction : 6,5 % = 0,065).',
-    pieges: [[tau * c, 'Le taux est en pourcentage : écrivez-le en fraction (÷ 100) avant de multiplier par c.'], [c / (tau / 100), 'Il faut multiplier c par τ, non diviser.'], [tau / 100, 'Il faut multiplier par c : x = τ × c.']],
+    pieges: [[tau * c, 'Le taux est en pourcentage : écrivez-le en fraction (diviser par 100) avant de multiplier par c.'], [c / (tau / 100), 'Il faut multiplier c par τ, non diviser.'], [tau / 100, 'Il faut multiplier par c : x = τ × c.']],
     expl: <>x = τ × c = {nb(tau / 100, 4)} × {kcSci(c)} = <b>{kcSci(x)}{NB}mol/L</b>.</> };
   const q2 = { id: 't1', type: 'num', q: <>{intro} Dans la solution, [H₃O⁺] = [{ac.base}] = <b>{kcSci(x)}{NB}mol/L</b>. Calculez la conductivité σ de la solution (en mS·m⁻¹, 2 chiffres significatifs).</>, unite: 'mS·m⁻¹', vrai: sig, tolRel: 0.05, csMin: 2,
     aide: 'σ = (λ(H₃O⁺) + λ(A⁻)) × [H₃O⁺], avec [H₃O⁺] en mol·m⁻³ (1 mol/L = 1 000 mol·m⁻³).',
@@ -4976,7 +4976,7 @@ function genDosageEtalonnageTSTLBase() {
     expl: <>c(X′) = G′ / a = {nbF(G, 3)} / {nbF(a, 3)} = <b>{nb(cL, 2)}{NB}mmol/L</b>.</> };
   const q2 = { id: 'd1', type: 'num', q: <>{intro} Quelle est la concentration de la solution à doser X (en mol/L, 2 chiffres significatifs) ?</>, unite: 'mol/L', vrai: cX, tolRel: 0.03, csMin: 2,
     aide: 'Calculez c(X′) = frac(G′|a), puis c(X) = F × c(X′), et convertissez en mol/L (1 mol/L = 1 000 mmol/L).',
-    pieges: [[F * cL, 'Valeur en mmol/L : on demande des mol/L (÷ 1 000).'], [cL / 1000, 'Vous avez oublié le facteur de dilution F : c(X′) n’est pas c(X).'], [cL / F / 1000, 'Vous avez divisé par F : X est plus concentrée que X′, il faut multiplier.']],
+    pieges: [[F * cL, 'Valeur en mmol/L : on demande des mol/L (diviser par 1 000).'], [cL / 1000, 'Vous avez oublié le facteur de dilution F : c(X′) n’est pas c(X).'], [cL / F / 1000, 'Vous avez divisé par F : X est plus concentrée que X′, il faut multiplier.']],
     expl: <>c(X) = F × c(X′) = {F} × {nb(cL, 2)} = {nb(F * cL, 3)} mmol/L, soit <b>{nb(cX, 2)}{NB}mol/L</b>.</> };
   const q3 = { id: 'd2', type: 'num', q: <>Une solution à doser Y est annoncée à environ <b>{nbF(cAppr, 2)}{NB}mol/L</b>. Les étalons vont de 2 à 10 mmol/L. Quel facteur de dilution F faut-il choisir pour que la solution diluée soit à environ <b>5,0{NB}mmol/L</b>, au milieu de la gamme (sans unité) ?</>, unite: '', vrai: Fc, tolRel: 0.03, csMin: 2,
     aide: 'c(Y′) = frac(c(Y)|F) : isolez F après avoir converti c(Y) en mmol/L (1 mol/L = 1 000 mmol/L).',
@@ -5345,7 +5345,7 @@ function genEtalonnageTG() {
   const F = tire([10, 20, 25, 50]);
   const q4 = { id: 'e3', type: 'num', q: <>La solution diluée précédente, de concentration <b>{nb(cd, 2)}{NB}mmol/L</b>, provient d’une solution de départ diluée <b>{F}{NB}fois</b>. Calculez la concentration de la solution de départ (en mol/L, 2 chiffres significatifs).</>, unite: 'mol/L', vrai: F * cd / 1000, tolRel: 0.05, csMin: 2,
     aide: 'c(solution de départ) = F × c(solution diluée), puis 1 mmol/L = 10⁻³ mol/L.',
-    pieges: [[cd / F / 1000, 'Vous avez divisé par F : la solution de départ est plus concentrée, il faut multiplier.'], [F * cd, 'Ce résultat est en mmol/L ; convertissez-le en mol/L (÷ 1 000).'], [cd / 1000, 'Il manque le facteur de dilution : c(S) = F × c(S′).']],
+    pieges: [[cd / F / 1000, 'Vous avez divisé par F : la solution de départ est plus concentrée, il faut multiplier.'], [F * cd, 'Ce résultat est en mmol/L ; convertissez-le en mol/L (diviser par 1 000).'], [cd / 1000, 'Il manque le facteur de dilution : c(S) = F × c(S′).']],
     expl: <>c(S) = F × c(S′) = {F} × {nb(cd, 3)} = {nb(F * cd, 3)}{NB}mmol/L = <b>{sci(F * cd / 1000, 2)}{NB}mol/L</b>.</> };
   [q1, q2, q3, q4].forEach(tolOk);
   return { intro: 'Dosage conductimétrique par étalonnage : constante de cellule, conductivité, lecture sur la droite d’étalonnage et dilution.', questions: [q1, q2, q3, q4],
@@ -5380,8 +5380,8 @@ function genFrenetTG() {
   const C5 = []; [36, 54, 72, 90, 108].forEach(k => [50, 80, 100, 200, 250].forEach(R => { const a = (k / 3.6) ** 2 / R; if (a >= 1 && a <= 5.0) C5.push([k, R]); }));
   const [vk, R5] = tire(C5), ms = vk / 3.6, a5 = ms * ms / R5;
   const q5 = { id: 'fr4', type: 'num', q: <>Une voiture roule à vitesse de norme constante <b>{nb(vk, 3)}{NB}km/h</b> dans un virage circulaire de rayon <b>{nb(R5, 3)}{NB}m</b>. Calculez la norme de son accélération (en m/s², 2 chiffres significatifs).</>, unite: 'm/s²', vrai: a5, tolRel: 0.05, csMin: 2,
-    aide: 'Convertissez d’abord la vitesse en m/s (÷ 3,6), puis a = v² divisée par R.',
-    pieges: [[vk * vk / R5, 'La vitesse n’est pas convertie : il faut des m/s (÷ 3,6) avant de calculer v².'], [ms / R5, 'Il faut v au carré, divisée par R.'], [vk / (3.6 * 3.6) / R5, 'Vous avez converti sans mettre v au carré : c’est (v en m/s)² qu’il faut.'], [ms * ms * R5, 'Le rayon est au dénominateur.']],
+    aide: 'Convertissez d’abord la vitesse en m/s (diviser par 3,6), puis a = v² divisée par R.',
+    pieges: [[vk * vk / R5, 'La vitesse n’est pas convertie : il faut des m/s (diviser par 3,6) avant de calculer v².'], [ms / R5, 'Il faut v au carré, divisée par R.'], [vk / (3.6 * 3.6) / R5, 'Vous avez converti sans mettre v au carré : c’est (v en m/s)² qu’il faut.'], [ms * ms * R5, 'Le rayon est au dénominateur.']],
     expl: <>v = <Frac haut={<>{nb(vk, 3)}</>} bas={<>3,6</>} /> = {nb(ms, 3)}{NB}m/s ; a = {avecIndices(`frac(v²|R)`)} = {avecIndices(`frac(${nb(ms, 3)}²|${nb(R5, 3)})`)} = <b>{nb(a5, 3)}{NB}m/s²</b>.</> };
   [q1, q2, q3, q4, q5].forEach(tolOk);
   return { intro: 'Mouvement circulaire : coordonnées de l’accélération dans le repère de Frenet, mouvement uniforme et non uniforme.', questions: [q1, q2, q3, q4, q5],
@@ -5778,7 +5778,7 @@ function genPhotoTG() {
   let m5, l5, E5, Ec5;
   for (;;) { m5 = tire(METAUX); l5 = tire([200, 220, 250, 280, 300, 320, 350, 400, 430, 450]); E5 = eV(l5); Ec5 = E5 - m5[1]; if (Ec5 >= 0.6 && E5 <= 6.3) break; }
   const q5 = { id: 'phe4', type: 'num', q: <>Une plaque de {m5[0].replace(/^le /, '')} (<b>W = {f(m5[1], 1)}{NB}eV</b>) est éclairée par une lumière de longueur d’onde <b>λ = {l5}{NB}nm</b>. Calculez l’énergie cinétique maximale E<sub>c,max</sub> des électrons éjectés (en eV, 2 chiffres significatifs). Données : {donnees}.</>, unite: 'eV', vrai: Ec5, tolRel: 0.10, csMin: 2,
-    aide: 'D’abord l’énergie du photon : E = frac(h × c|λ) (λ en mètres), convertie en eV (÷ 1,60×10⁻¹⁹) ; puis E_c,max = E − W.',
+    aide: 'D’abord l’énergie du photon : E = frac(h × c|λ) (λ en mètres), convertie en eV (diviser par 1,60×10⁻¹⁹) ; puis E_c,max = E − W.',
     pieges: [[E5, 'Il reste à retrancher le travail d’extraction : E_c,max = h ν − W.'], [E5 * EE, 'Vous avez gardé l’énergie du photon en joules : convertissez en eV puis retranchez W.'], [E5 + m5[1], 'W se retranche, il ne s’ajoute pas : E_c,max = h ν − W.']],
     expl: <>E = {avecIndices(`frac(6,63×10⁻³⁴ × 3,00×10⁸|${l5}×10⁻⁹)`)} = {f(E5, 2)} eV ; E<sub>c,max</sub> = {f(E5, 2)} − {f(m5[1], 1)} = <b>{f(Ec5, 2)}{NB}eV</b>. Gardez un chiffre de plus dans le calcul intermédiaire.</> };
   [q1, q2, q3, q4, q5].forEach(tolOk);
@@ -6789,7 +6789,7 @@ function genQuantiteMatiere2GT() {
   // q3 : de N à n (N est donné avec 10²³ ou 10²⁴)
   const n3 = tire([0.25, 0.50, 1.5, 2.5, 3.0]), N3 = n3 * QM2.NA, e3 = dec(N3), a3 = Number((N3 / Math.pow(10, e3)).toPrecision(3)), N3a = a3 * Math.pow(10, e3), vrai3 = N3a / QM2.NA;
   const q3 = filtre({ id: 'k2', type: 'num', q: <>Un échantillon contient <b>N = {ecr(a3, e3)}</b> entités. Quelle est sa quantité de matière, en <b>mol</b> ? (N<sub>A</sub> = 6,02 × 10²³ mol⁻¹)</>, unite: 'mol', vrai: vrai3, csMin: 2, tolRel: 0.01,
-    aide: 'n = N ÷ N_A. Si N est écrit avec 10²⁴, écrivez-le d’abord avec 10²³ (1 × 10²⁴ = 10 × 10²³) avant de diviser.',
+    aide: 'n = frac(N|N_A). Si N est écrit avec 10²⁴, écrivez-le d’abord avec 10²³ (1 × 10²⁴ = 10 × 10²³) avant de diviser.',
     pieges: [[a3 / 6.02, 'Vous avez divisé les nombres sans tenir compte de la différence des puissances de 10 (10²⁴ = 10 × 10²³).'], [a3 * 6.02, 'Vous avez multiplié : pour passer de N à n, on divise par N_A.']],
     expl: <>N = {ecr(a3, e3)} = {nb(N3a / 1e23, 4)} × 10²³ ; n = <Frac haut={<>N</>} bas={<>N<sub>A</sub></>} /> = <Frac haut={<>{nb(N3a / 1e23, 4)}</>} bas={<>6,02</>} /> = <b>{avecU(vrai3, 'mol', 3)}</b>.</> });
   // q4 : masse d'une molécule
@@ -6810,19 +6810,19 @@ function genQuantiteMatiere2GT() {
   // q6 : quantité de matière correspondante (N est redonné, arrondi à 3 chiffres significatifs)
   const a6 = Number((N5 / Math.pow(10, x5)).toPrecision(3)), N6 = a6 * Math.pow(10, x5), n6 = N6 / QM2.NA, x6 = dec(n6);
   const q6 = filtre({ id: 'k5', type: 'num', q: <>Ce même échantillon contient <b>N = {ecr(a6, x5)}</b> {nom5}. Quelle est sa quantité de matière, en mol ? Écrivez le nombre qui multiplie 10{sup(x6)}.</>, unite: `× 10${sup(x6)} mol`, vrai: n6 / Math.pow(10, x6), csMin: 2, tolRel: 0.05,
-    refus: 'Pas tout à fait. Vérifiez : n = N ÷ N_A ; divisez les nombres, puis soustrayez les puissances de 10 ; écrivez le résultat avec la puissance de 10 demandée.',
-    aide: 'n = N ÷ N_A avec N_A = 6,02 × 10²³ mol⁻¹. Divisez les nombres, puis les puissances de 10 (on soustrait les nombres écrits en haut du 10).',
-    pieges: [[a6 / 6.02, 'Vous avez divisé les nombres sans tenir compte de la différence des puissances de 10 : vérifiez 10' + sup(x5) + ' ÷ 10²³.'], [a6 * 6.02, 'Vous avez multiplié : pour passer de N à n, on divise par N_A.']],
-    expl: <>n = <Frac haut={<>N</>} bas={<>N<sub>A</sub></>} /> = {ecr(a6, x5)} ÷ (6,02 × 10²³) = <b>{ecr(n6 / Math.pow(10, x6), x6)}{NB}mol</b>.</> });
+    refus: 'Pas tout à fait. Vérifiez : n = frac(N|N_A) ; divisez les nombres, puis soustrayez les puissances de 10 ; écrivez le résultat avec la puissance de 10 demandée.',
+    aide: 'n = frac(N|N_A) avec N_A = 6,02 × 10²³ mol⁻¹. Divisez les nombres, puis les puissances de 10 (on soustrait les nombres écrits en haut du 10).',
+    pieges: [[a6 / 6.02, 'Vous avez divisé les nombres sans tenir compte de la différence des puissances de 10 : vérifiez 10' + sup(x5) + ' divisé par 10²³.'], [a6 * 6.02, 'Vous avez multiplié : pour passer de N à n, on divise par N_A.']],
+    expl: <>n = <Frac haut={<>N</>} bas={<>N<sub>A</sub></>} /> = <Frac haut={<>{ecr(a6, x5)}</>} bas={<>6,02 × 10²³</>} /> = <b>{ecr(n6 / Math.pow(10, x6), x6)}{NB}mol</b>.</> });
   return { intro: 'Compter des entités : avec une balance, avec la mole, puis pour des atomes et des molécules. Les calculs utilisent les puissances de 10 : écrivez toujours les unités.', questions: [q1, q2, q3, q4, q5, q6],
-    retenir: ['Objets identiques : N = m ÷ masse d’un objet (même unité pour les deux masses).', 'N = n × N_A et n = N ÷ N_A, avec N_A = 6,02 × 10²³ mol⁻¹.', 'Masse d’une entité = somme des masses de ses atomes (mêmes puissances de 10 pour additionner).', 'Échantillon : masse en kg, puis N = m ÷ masse d’une entité, puis n = N ÷ N_A.'] };
+    retenir: ['Objets identiques : N = frac(m|masse d’un objet) (même unité pour les deux masses).', 'N = n × N_A et n = frac(N|N_A), avec N_A = 6,02 × 10²³ mol⁻¹.', 'Masse d’une entité = somme des masses de ses atomes (mêmes puissances de 10 pour additionner).', 'Échantillon : masse en kg, puis N = frac(m|masse d’une entité), puis n = frac(N|N_A).'] };
 }
 
 // ───────────── Signal sonore (2GT) : période, fréquence, conversions ms ↔ s, domaines ─────────────
 function genSon2GT() {
   const filtre = q => {
     q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.01)) * Math.abs(q.vrai));
-    // décalages de virgule (×10, ÷10, ×1 000, ÷1 000…) : message simple, sans vocabulaire de puissances de 10
+    // décalages de virgule (×10, diviser par 10, ×1 000, diviser par 1 000…) : message simple, sans vocabulaire de puissances de 10
     for (const k of [1, 2, 3, 4, 5, 6]) for (const sg of [1, -1]) {
       const v = q.vrai * Math.pow(10, sg * k);
       if (!q.pieges.some(([x]) => Math.abs(x - v) <= Math.abs(v) * 0.01)) q.pieges.push([v, 'Votre résultat est décalé de plusieurs rangs (virgule mal placée) : revoyez la conversion des unités (1 ms = 0,001 s ; 1 kHz = 1 000 Hz).']);
@@ -6840,38 +6840,38 @@ function genSon2GT() {
   const T2 = tire([3, 6, 8, 12, 15, 25, 40]), s2 = T2 / 1000;
   const q2 = filtre({ id: 'p1', type: 'num', q: <>Une période vaut <b><i>T</i> = {T2}{NB}ms</b>. Exprimez-la en <b>secondes</b>.</>, unite: 's', vrai: s2, csMin: 1, tolRel: 0.01,
     aide: '1 ms = 0,001 s : on divise par 1 000 (la virgule recule de trois rangs).',
-    pieges: [[T2 * 1000, 'Vous avez multiplié par 1 000 : une milliseconde est plus petite qu’une seconde, on divise.'], [T2 / 100, 'La virgule doit reculer de trois rangs (÷ 1 000), pas de deux.'], [T2 / 10000, 'La virgule recule de trois rangs (÷ 1 000), pas de quatre.']],
+    pieges: [[T2 * 1000, 'Vous avez multiplié par 1 000 : une milliseconde est plus petite qu’une seconde, on divise.'], [T2 / 100, 'La virgule doit reculer de trois rangs (diviser par 1 000), pas de deux.'], [T2 / 10000, 'La virgule recule de trois rangs (diviser par 1 000), pas de quatre.']],
     expl: <>{T2} ms = <Frac haut={<>{T2}</>} bas={<>1 000</>} /> = <b>{L(s2)}{NB}s</b>.</> });
   // q3 : f à partir de T en s
   const T3 = tire([0.002, 0.004, 0.005, 0.008, 0.01, 0.02, 0.0025, 0.0004]), f3 = 1 / T3;
   const q3 = filtre({ id: 'p2', type: 'num', q: <>Un son a une période <b><i>T</i> = {L(T3)}{NB}s</b>. Quelle est sa fréquence <i>f</i>, en <b>Hz</b> ?</>, unite: 'Hz', vrai: f3, csMin: 1, tolRel: 0.01,
-    aide: 'f = 1 ÷ T, avec T en secondes : combien de fois T « rentre » dans 1 s ?',
-    pieges: [[T3, 'Vous avez recopié T : la fréquence est son inverse, f = 1 ÷ T.'], [f3 / 1000, 'Vérifiez : T est déjà en secondes, pas en millisecondes.']],
+    aide: 'f = frac(1|T), avec T en secondes : combien de fois T « rentre » dans 1 s ?',
+    pieges: [[T3, 'Vous avez recopié T : la fréquence est son inverse, f = frac(1|T).'], [f3 / 1000, 'Vérifiez : T est déjà en secondes, pas en millisecondes.']],
     expl: <>f = <Frac haut={<>1</>} bas={<>T</>} /> = <Frac haut={<>1</>} bas={<>{L(T3)}</>} /> = <b>{L(f3)}{NB}Hz</b>.</> });
   // q4 : T à partir de f
   const f4 = tire([100, 125, 200, 250, 400, 500, 1000, 2000]), T4 = 1000 / f4;
   const q4 = filtre({ id: 'p3', type: 'num', q: <>Un son a une fréquence <b><i>f</i> = {L(f4)}{NB}Hz</b>. Quelle est sa période <i>T</i>, en <b>ms</b> ?</>, unite: 'ms', vrai: T4, csMin: 1, tolRel: 0.01,
-    aide: 'T = 1 ÷ f donne T en secondes : multipliez par 1 000 pour avoir des ms.',
-    pieges: [[1 / f4, 'C’est la période en secondes : demandée en ms, multipliez par 1 000.'], [f4 / 1000, 'Diviser f par 1 000 ne donne pas la période : T est l’inverse de f, T = 1 ÷ f (en secondes, puis × 1 000 pour les ms).']],
+    aide: 'T = frac(1|f) donne T en secondes : multipliez par 1 000 pour avoir des ms.',
+    pieges: [[1 / f4, 'C’est la période en secondes : demandée en ms, multipliez par 1 000.'], [f4 / 1000, 'Diviser f par 1 000 ne donne pas la période : T est l’inverse de f, T = frac(1|f) (en secondes, puis × 1 000 pour les ms).']],
     expl: <>T = <Frac haut={<>1</>} bas={<>{L(f4)}</>} /> = {L(1 / f4)} s = <b>{L(T4)}{NB}ms</b>.</> });
   // q5 : f en kHz à partir de T en ms
   const T5 = tire([0.02, 0.025, 0.04, 0.05, 0.1, 0.2, 0.5]), f5 = 1 / T5;
   const q5 = filtre({ id: 'p4', type: 'num', q: <>Un signal a une période <b><i>T</i> = {L(T5)}{NB}ms</b>. Quelle est sa fréquence <i>f</i>, en <b>kHz</b> ? (1{NB}kHz = 1 000{NB}Hz)</>, unite: 'kHz', vrai: f5, csMin: 1, tolRel: 0.01,
-    aide: 'Passez T en secondes (÷ 1 000), calculez f = 1 ÷ T en Hz, puis divisez par 1 000 pour avoir des kHz. Astuce : 1 ÷ (T en ms) donne directement des kHz.',
-    pieges: [[f5 * 1000, 'C’est la fréquence en Hz : demandée en kHz, divisez par 1 000.'], [1 / (T5 / 1000) / 1e6, 'Vérifiez la conversion de T en secondes (÷ 1 000) avant de calculer 1 ÷ T.']],
+    aide: 'Passez T en secondes (diviser par 1 000), calculez f = frac(1|T) en Hz, puis divisez par 1 000 pour avoir des kHz. Astuce : frac(1|T en ms) donne directement des kHz.',
+    pieges: [[f5 * 1000, 'C’est la fréquence en Hz : demandée en kHz, divisez par 1 000.'], [1 / (T5 / 1000) / 1e6, 'Vérifiez la conversion de T en secondes (diviser par 1 000) avant de calculer frac(1|T).']],
     expl: <>T = {L(T5)} ms = {L(T5 / 1000)} s ; f = <Frac haut={<>1</>} bas={<>{L(T5 / 1000)}</>} /> = {L(f5 * 1000)} Hz = <b>{L(f5)}{NB}kHz</b>.</> });
   // q6 : domaine
   const T6 = tire([100, 200, 0.02, 0.025, 1, 5, 0.5]), f6 = 1000 / T6, d6 = SS2.domaine(f6);
   const bonne6 = { infrason: 'un infrason (inaudible)', audible: 'un son audible', ultrason: 'un ultrason (inaudible)' }[d6];
   const opts6 = melange(['un infrason (inaudible)', 'un son audible', 'un ultrason (inaudible)', 'un son impossible à classer']);
   const q6 = { id: 'p5', type: 'qcm', q: <>Un son a une période <b><i>T</i> = {L(T6)}{NB}ms</b>. Sachant que l’oreille entend de 20{NB}Hz à 20{NB}kHz, ce son est…</>, options: opts6, bonne: opts6.indexOf(bonne6),
-    aide: 'Calculez f = 1 000 ÷ T (T en ms, f en Hz), puis comparez à 20 Hz et à 20 000 Hz.',
+    aide: 'Calculez f = frac(1 000|T) (T en ms, f en Hz), puis comparez à 20 Hz et à 20 000 Hz.',
     expl: <>f = <Frac haut={<>1 000</>} bas={<>{L(T6)}</>} /> = {L(f6)} Hz : {d6 === 'audible' ? 'entre 20 Hz et 20 000 Hz, le son est audible' : d6 === 'infrason' ? 'en dessous de 20 Hz, c’est un infrason' : 'au-dessus de 20 000 Hz, c’est un ultrason'}.</> };
   return { intro: 'Période et fréquence d’un son : lire une période sur plusieurs motifs, convertir les ms en s, passer de T à f et de f à T, puis reconnaître un son audible, un infrason ou un ultrason.', questions: [q1, q2, q3, q4, q5, q6],
-    retenir: ['T = Δt ÷ N : durée de plusieurs motifs divisée par leur nombre.', '1 ms = 0,001 s ; 1 kHz = 1 000 Hz.', 'f = 1 ÷ T (T en s, f en Hz) et T = 1 ÷ f ; avec T en ms, f (Hz) = 1 000 ÷ T et f (kHz) = 1 ÷ T.', 'Audible : de 20 Hz à 20 kHz ; infrason en dessous, ultrason au-dessus.'] };
+    retenir: ['T = frac(Δt|N) : durée de plusieurs motifs divisée par leur nombre.', '1 ms = 0,001 s ; 1 kHz = 1 000 Hz.', 'f = frac(1|T) (T en s, f en Hz) et T = frac(1|f) ; avec T en ms, f (Hz) = frac(1 000|T) et f (kHz) = frac(1|T).', 'Audible : de 20 Hz à 20 kHz ; infrason en dessous, ultrason au-dessus.'] };
 }
 
-// ───────────── Le son : émission et propagation (2GT) : vitesse = distance ÷ retard, distance, retard, conversions m/s ↔ km/h ─────────────
+// ───────────── Le son : émission et propagation (2GT) : vitesse = frac(distance|retard), distance, retard, conversions m/s ↔ km/h ─────────────
 function genSonEmission2GT() {
   const filtre = q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
   const TOL = 0.05;                                                  // 2 chiffres significatifs : un arrondi correct reste accepté
@@ -6880,8 +6880,8 @@ function genSonEmission2GT() {
   let d1, v0, dt1, v1;
   do { d1 = tire([17, 34, 51, 68, 85, 102]); v0 = tire([300, 310, 320, 360, 370, 380]); dt1 = SON2.arrondiSig(d1 / v0, 2); v1 = d1 / dt1; } while (Math.abs(v1 - 340) / v1 < 0.04);
   const q1 = filtre({ id: 's0', type: 'num', q: <>Deux micros sont distants de <b>{d1}{NB}m</b>. Un chronomètre affiche <b>{nb(dt1, 2)}{NB}s</b> entre le passage du son devant le premier micro puis devant le second. Quelle est la vitesse du son ?</>, unite: 'm/s', vrai: v1, csMin: 2, tolRel: 0.02,
-    aide: 'v = d ÷ Δt, avec d en mètres et Δt en secondes. Donnez le résultat avec 2 chiffres significatifs.',
-    pieges: [[340, 'Vous avez recopié 340 m/s, la valeur connue de la vitesse du son dans l’air. Calculez avec les données de cet énoncé : v = d ÷ Δt.'], [dt1 / d1, 'La division est à l’envers : on divise la distance par la durée.'], [d1 * dt1, 'Vous avez multiplié : une vitesse est une distance divisée par une durée.']],
+    aide: 'v = frac(d|Δt), avec d en mètres et Δt en secondes. Donnez le résultat avec 2 chiffres significatifs.',
+    pieges: [[340, 'Vous avez recopié 340 m/s, la valeur connue de la vitesse du son dans l’air. Calculez avec les données de cet énoncé : v = frac(d|Δt).'], [dt1 / d1, 'La division est à l’envers : on divise la distance par la durée.'], [d1 * dt1, 'Vous avez multiplié : une vitesse est une distance divisée par une durée.']],
     expl: <>v = <Frac haut={<>d</>} bas={<>Δt</>} /> = <Frac haut={<>{d1}</>} bas={<>{nb(dt1, 2)}</>} /> ≈ <b>{avecU(v1, 'm/s', 2)}</b>.</> });
   // q2 : distance parcourue par le son (v = 340 m/s), en mètres
   const dt2 = tire([0.50, 1.5, 2.0, 3.5, 4.0]), d2 = SON2.V_AIR * dt2;
@@ -6898,7 +6898,7 @@ function genSonEmission2GT() {
   // q4 : retard du bruit d'un feu d'artifice
   const dk4 = tire([0.68, 1.02, 1.7, 2.5, 3.4]), t4 = dk4 * 1000 / SON2.V_AIR;
   const q4 = filtre({ id: 's3', type: 'num', q: <>Un feu d’artifice explose à <b>{nb(dk4, 2)}{NB}km</b> de vous. Le son va à <b>340{NB}m/s</b> ; la lumière arrive tout de suite. Au bout de combien de temps entendez-vous le bruit ? Répondez en secondes.</>, unite: 's', vrai: t4, csMin: 2, tolRel: TOL,
-    aide: 'Δt = d ÷ v. Convertissez d en mètres (1 km = 1 000 m), puis divisez par 340 m/s.',
+    aide: 'Δt = frac(d|v). Convertissez d en mètres (1 km = 1 000 m), puis divisez par 340 m/s.',
     pieges: [[dk4 / SON2.V_AIR, 'Vous avez oublié de convertir les kilomètres en mètres : 1 km = 1 000 m.'], [dk4 * 1000 * SON2.V_AIR, 'Vous avez multiplié : pour trouver une durée, on divise la distance par la vitesse.']],
     expl: <>Δt = <Frac haut={<>d</>} bas={<>v</>} /> = <Frac haut={<>{nb(dk4 * 1000, 3)}</>} bas={<>340</>} /> = <b>{avecU(t4, 's', 2)}</b>.</> });
   // q5 : m/s → km/h
@@ -6910,7 +6910,7 @@ function genSonEmission2GT() {
   // q6 : km/h → m/s
   const k6 = tire([36, 72, 130, 300, 900]), v6 = SON2.msDepuisKmh(k6);
   const q6 = filtre({ id: 's5', type: 'num', q: <>Une vitesse vaut <b>{k6}{NB}km/h</b>. Exprimez-la en m/s.</>, unite: 'm/s', vrai: v6, csMin: 2, tolRel: TOL,
-    aide: 'De km/h à m/s, on divise par 3,6 (1 km/h = 1 000 m ÷ 3 600 s).',
+    aide: 'De km/h à m/s, on divise par 3,6 (1 km/h = frac(1 000 m|3 600 s)).',
     pieges: [[k6 * 3.6, 'Vous avez multiplié par 3,6. De km/h à m/s, on divise : le nombre de m/s est plus petit que le nombre de km/h.']],
     expl: <><Frac haut={<>{k6}</>} bas={<>3,6</>} /> = <b>{avecU(v6, 'm/s', 2)}</b>.</> });
   // q7 : un véhicule va-t-il plus vite que le son ?
@@ -6919,10 +6919,10 @@ function genSonEmission2GT() {
   const opts7 = melange([bonne7, plusVite ? 'non : il va moins vite que le son' : 'oui : il va plus vite que le son', 'on ne peut pas comparer deux vitesses données dans des unités différentes', 'oui : il va exactement à la vitesse du son']);
   const ms7 = uu === 'm/s' ? vv : SON2.msDepuisKmh(vv);
   const q7 = { id: 's6', type: 'qcm', q: <>Un avion vole à <b>{vv}{NB}{uu}</b>. Dans l’air, le son va à <b>340{NB}m/s</b>, soit environ 1 200{NB}km/h. L’avion va-t-il plus vite que le son ?</>, options: opts7, bonne: opts7.indexOf(bonne7),
-    aide: 'Écrivez les deux vitesses dans la même unité : soit en m/s (km/h ÷ 3,6), soit en km/h (m/s × 3,6).',
-    expl: <>{uu === 'km/h' ? <>{vv} km/h ÷ 3,6 ≈ {nb(ms7, 2)} m/s</> : <>{vv} m/s × 3,6 = {nb(SON2.kmhDepuisMs(vv), 2)} km/h</>}, à comparer à 340 m/s ≈ 1 200 km/h : l’avion va {plusVite ? 'plus' : 'moins'} vite que le son.</> };
-  return { intro: 'Le son : vitesse = distance ÷ durée, distance et retard, conversions entre m/s et km/h. Écrivez toujours les unités : d en m, Δt en s, v en m/s.', questions: [q1, q2, q3, q4, q5, q6, q7],
-    retenir: ['Vitesse du son dans l’air : environ 340 m/s à 20 °C ; v = d ÷ Δt, d = v × Δt, Δt = d ÷ v (d en m, Δt en s).', 'Éclair et tonnerre : la lumière arrive tout de suite, le retard vient du son (3 s ≈ 1 km).', 'm/s → km/h : × 3,6 ; km/h → m/s : ÷ 3,6. Pour comparer deux vitesses, même unité.'] };
+    aide: 'Écrivez les deux vitesses dans la même unité : soit en m/s frac(km/h|3,6), soit en km/h (m/s × 3,6).',
+    expl: <>{uu === 'km/h' ? <><Frac haut={<>{vv} km/h</>} bas={<>3,6</>} /> ≈ {nb(ms7, 2)} m/s</> : <>{vv} m/s × 3,6 = {nb(SON2.kmhDepuisMs(vv), 2)} km/h</>}, à comparer à 340 m/s ≈ 1 200 km/h : l’avion va {plusVite ? 'plus' : 'moins'} vite que le son.</> };
+  return { intro: 'Le son : vitesse = frac(distance|durée), distance et retard, conversions entre m/s et km/h. Écrivez toujours les unités : d en m, Δt en s, v en m/s.', questions: [q1, q2, q3, q4, q5, q6, q7],
+    retenir: ['Vitesse du son dans l’air : environ 340 m/s à 20 °C ; v = frac(d|Δt), d = v × Δt, Δt = frac(d|v) (d en m, Δt en s).', 'Éclair et tonnerre : la lumière arrive tout de suite, le retard vient du son (3 s ≈ 1 km).', 'm/s → km/h : × 3,6 ; km/h → m/s : diviser par 3,6. Pour comparer deux vitesses, même unité.'] };
 }
 
 // ───────────── Puissances de 10 et écriture scientifique (2GT) ─────────────
@@ -6943,21 +6943,21 @@ function genPuissances2GT() {
     expl: <>{nb(a2, 2)} × 10{sup(p2)} g = {nb(a2, 2)} × 10{sup(p2)} × 10⁻³ kg = {nb(a2, 2)} × 10{sup(p2 - 3)} kg : la puissance de 10 est <b>10{sup(p2 - 3)}</b>, donc le nombre qui manque est <b>{p2 - 3}</b>.</> });
   // s3 : diviser deux nombres en écriture scientifique
   const [pp, qq] = tire([[-5, -26], [22, 23], [24, 23], [-4, -26], [-3, -26]]), a3 = tire([3.0, 6.0, 7.5, 9.0]), b3 = tire([2.0, 2.5, 3.0, 5.0]), r3 = a3 / b3;
-  const q3 = filtre({ id: 's2', type: 'num', q: <>Calculez {nb(a3, 2)} × 10{sup(pp)} ÷ ({nb(b3, 2)} × 10{sup(qq)}). Écrivez le nombre qui multiplie 10{sup(pp - qq)}.</>, unite: `× 10${sup(pp - qq)}`, vrai: r3, csMin: 2, tolRel: 0.01,
+  const q3 = filtre({ id: 's2', type: 'num', q: <>Calculez <Frac haut={<>{nb(a3, 2)} × 10{sup(pp)}</>} bas={<>{nb(b3, 2)} × 10{sup(qq)}</>} />. Écrivez le nombre qui multiplie 10{sup(pp - qq)}.</>, unite: `× 10${sup(pp - qq)}`, vrai: r3, csMin: 2, tolRel: 0.01,
     aide: 'On divise les nombres entre eux, et les puissances de 10 entre elles (on soustrait les nombres écrits en haut du 10).',
     pieges: [[a3 * b3, 'Vous avez multiplié : ici on divise.'], [b3 / a3, 'La division est à l’envers : le premier nombre est au numérateur.']],
-    expl: <>({nb(a3, 2)} ÷ {nb(b3, 2)}) × 10{sup(pp)} ÷ 10{sup(qq)} = <b>{nb(r3, 3)} × 10{sup(pp - qq)}</b> (puissance de 10 : {pp} − ({qq}) = {pp - qq}).</> });
+    expl: <><Frac haut={<>{nb(a3, 2)}</>} bas={<>{nb(b3, 2)}</>} /> × <Frac haut={<>10{sup(pp)}</>} bas={<>10{sup(qq)}</>} /> = <b>{nb(r3, 3)} × 10{sup(pp - qq)}</b> (puissance de 10 : {pp} − ({qq}) = {pp - qq}).</> });
   // s4 : additionner avec deux puissances de 10 différentes
   const a4 = tire([3.34, 5.01, 6.68]), b4 = tire([2.66, 1.99, 2.33]), v4 = a4 / 10 + b4;
   const q4 = filtre({ id: 's3', type: 'num', q: <>Une molécule contient des atomes dont les masses sont {nb(a4, 3)} × 10⁻²⁷{NB}kg et {nb(b4, 3)} × 10⁻²⁶{NB}kg. Calculez la somme des deux masses. Écrivez le nombre qui multiplie 10⁻²⁶{NB}kg.</>, unite: '× 10⁻²⁶ kg', vrai: v4, csMin: 2, tolRel: 0.01,
-    aide: 'Pour additionner, il faut la même puissance de 10 : a × 10⁻²⁷ = (a ÷ 10) × 10⁻²⁶. Additionnez ensuite les nombres.',
+    aide: 'Pour additionner, il faut la même puissance de 10 : a × 10⁻²⁷ = frac(a|10) × 10⁻²⁶. Additionnez ensuite les nombres.',
     pieges: [[a4 + b4, 'Vous avez additionné les nombres sans tenir compte des puissances de 10 (10⁻²⁷ et 10⁻²⁶ sont différentes).'], [b4, 'Il manque la première masse : la somme comprend les deux termes.']],
     expl: <>{nb(a4, 3)} × 10⁻²⁷ = {nb(a4 / 10, 3)} × 10⁻²⁶ ; {nb(a4 / 10, 3)} + {nb(b4, 3)} = <b>{nb(v4, 3)}</b>, soit {nb(v4, 3)} × 10⁻²⁶ kg.</> });
   return { intro: 'Écriture scientifique et puissances de 10 : de petits calculs pour être à l’aise avec les masses d’atomes et le nombre d’Avogadro.', questions: [q1, q2, q3, q4],
     retenir: ['Écriture scientifique : un nombre entre 1 et 10, multiplié par une puissance de 10 (négative pour un petit nombre).', 'Multiplier : on additionne les nombres écrits en haut du 10 ; diviser : on les soustrait.', 'Additionner : il faut d’abord la même puissance de 10.', '1 g = 10⁻³ kg.'] };
 }
 
-// ───────────── Réactif limitant (2GT) : nombre de recettes (quantité ÷ coefficient), quantité restante, quantité formée ─────────────
+// ───────────── Réactif limitant (2GT) : nombre de recettes (frac(quantité|coefficient)), quantité restante, quantité formée ─────────────
 const RL_NOMS = { CH4: 'le méthane', O2: 'le dioxygène', CaCO3: 'le calcaire', 'H+': 'les ions H⁺', benzald: 'le benzaldéhyde', acetone: 'l’acétone', DBA: 'la DBA', 'Ca2+': 'les ions calcium', CO2: 'le dioxyde de carbone', H2O: 'l’eau' };
 const RL_DE = { CH4: 'de méthane', O2: 'de dioxygène', CaCO3: 'de calcaire', 'H+': 'd’ions H⁺', benzald: 'de benzaldéhyde', acetone: 'd’acétone', DBA: 'de DBA', 'Ca2+': 'd’ions calcium', CO2: 'de dioxyde de carbone', H2O: 'd’eau' };
 const fm = x => (x >= 10 ? String(Math.round(x)) : nb(x, Math.round(x * 100) % 10 !== 0 ? 3 : 2));   // masse en g : 3 chiffres significatifs si besoin (3,18 g)
@@ -6987,7 +6987,7 @@ function rlQcmLimitant(t, id, enonce) {
   const b = t.b;
   return { id, type: 'qcm', q: enonce, options: opts, bonne: opts.indexOf(bonne),
     aide: 'Pour chaque réactif, divisez la quantité de matière par son coefficient dans l’équation : le plus petit résultat désigne le réactif limitant.',
-    expl: <>{r.reactifs.map((e, i) => <span key={i}>{RL_NOMS[e.id]} : {nb(t.n[i], 2)}{NB}÷{NB}{e.coef} = {nb(b.rec[i], 2)}{NB}recette{b.rec[i] > 1 ? 's' : ''}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est {nb(b.rmin, 2)} : {nomsR[iLim]} est le réactif limitant.</> };
+    expl: <>{r.reactifs.map((e, i) => <span key={i}>{RL_NOMS[e.id]} : <Frac haut={<>{nb(t.n[i], 2)}</>} bas={<>{e.coef}</>} /> = {nb(b.rec[i], 2)}{NB}recette{b.rec[i] > 1 ? 's' : ''}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est {nb(b.rmin, 2)} : {nomsR[iLim]} est le réactif limitant.</> };
 }
 function genReactifLimitant2GT() {
   const t = rlTirage(false), { r, n, b, iLim, iEx, j } = t;
@@ -6997,7 +6997,7 @@ function genReactifLimitant2GT() {
   const q2 = { id: 'rl1', type: 'num', q: <>Même mélange : {nb(n[0], 2)}{NB}mol {RL_DE[r.reactifs[0].id]} et {nb(n[1], 2)}{NB}mol {RL_DE[r.reactifs[1].id]}. Pour chaque réactif, divisez la quantité de matière par son coefficient. Quel est le <b>nombre de recettes réalisées</b> par la transformation (le plus petit des deux résultats) ?</>, unite: 'recettes', vrai: b.rmin, csMin: 2, tolRel: 0.01,
     aide: `Divisez chaque quantité de matière par son coefficient dans l’équation ${RL.equationTexte(r)} : le plus petit résultat est le nombre de recettes réalisées.`,
     pieges: rlPieges(b.rmin, [[b.rec[iEx], 'C’est le nombre de recettes permises par le réactif en excès : le réactif limitant en permet moins, et c’est lui qui décide.'], [n[iLim], 'Vous avez gardé la quantité de matière du limitant sans la diviser par son coefficient.'], [n[iEx], 'C’est la quantité de matière de l’autre réactif : il faut diviser chaque quantité par son coefficient et garder le plus petit résultat.']]),
-    expl: <>{r.reactifs.map((e, i) => <span key={i}>{nb(n[i], 2)}{NB}÷{NB}{e.coef} = {nb(b.rec[i], 2)}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est <b>{nb(b.rmin, 2)}{NB}recette{b.rmin > 1 ? 's' : ''}</b>.</> };
+    expl: <>{r.reactifs.map((e, i) => <span key={i}><Frac haut={<>{nb(n[i], 2)}</>} bas={<>{e.coef}</>} /> = {nb(b.rec[i], 2)}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est <b>{nb(b.rmin, 2)}{NB}recette{b.rmin > 1 ? 's' : ''}</b>.</> };
   const q3 = { id: 'rl2', type: 'num', q: <>Même mélange, avec {nb(b.rmin, 2)} recette{b.rmin > 1 ? 's' : ''} réalisée{b.rmin > 1 ? 's' : ''}. Quelle quantité de matière {RL_DE[r.reactifs[iEx].id]} (réactif en excès) reste-t-il à la fin, en <b>mol</b> ?</>, unite: 'mol', vrai: b.restes[iEx], csMin: 2, tolRel: 0.01,
     aide: `Le réactif en excès perd (coefficient × nombre de recettes). Calculez ce qui est consommé, puis retirez-le de la quantité de départ.`,
     pieges: rlPieges(b.restes[iEx], [[n[iEx], 'C’est la quantité de départ : une partie du réactif a été consommée.'], [n[iEx] - b.rmin, cEx > 1 ? 'Vous avez retiré le nombre de recettes sans le multiplier par le coefficient : il faut retirer (coefficient × nombre de recettes).' : 'Vérifiez la soustraction : quantité de départ − coefficient × nombre de recettes.'], [cEx * b.rmin, 'C’est la quantité consommée, pas celle qui reste : il faut la retirer de la quantité de départ.'], [b.rmin, 'C’est le nombre de recettes : il faut le multiplier par le coefficient, puis le retirer de la quantité de départ.']]),
@@ -7008,31 +7008,31 @@ function genReactifLimitant2GT() {
     expl: <>{pr.coef}{NB}×{NB}{nb(b.rmin, 2)} = <b>{avecU(b.produits[j], 'mol', 2)}</b> {RL_DE[pr.id]}.</> };
   [q2, q3, q4].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
   return { intro: 'Réactif limitant : nombre de recettes, quantité de réactif restante et quantité de produit formée (transformation totale).', questions: [q1, q2, q3, q4],
-    retenir: ['Pour chaque réactif : quantité ÷ coefficient = nombre de recettes ; le plus petit résultat désigne le réactif limitant.', 'Quantité restante d’un réactif = quantité de départ − coefficient × nombre de recettes (nulle pour le limitant).', 'Quantité de produit formée = coefficient du produit × nombre de recettes.'] };
+    retenir: ['Pour chaque réactif : frac(quantité|coefficient) = nombre de recettes ; le plus petit résultat désigne le réactif limitant.', 'Quantité restante d’un réactif = quantité de départ − coefficient × nombre de recettes (nulle pour le limitant).', 'Quantité de produit formée = coefficient du produit × nombre de recettes.'] };
 }
 
-// Variante : la quantité de matière d'un réactif est d'abord à calculer à partir de sa masse (n = m ÷ M, masse molaire donnée)
+// Variante : la quantité de matière d'un réactif est d'abord à calculer à partir de sa masse (n = frac(m|M), masse molaire donnée)
 const RL_M = { methane: 16, calcaire: 100, dba: 106 };
 function genMasseReactifLimitant2GT() {
   const t = rlTirage(true), { r, n, b, iLim, iEx } = t, M = RL_M[r.id], m = Number((n[0] * M).toPrecision(3)), cEx = r.reactifs[iEx].coef;
   const nomA = r.reactifs[0], nomB = r.reactifs[1];
   const donnees = <>On fait réagir <b>{fm(m)}{NB}g</b> {RL_DE[nomA.id]} (masse molaire : <b>M{NB}={NB}{M}{NB}g·mol⁻¹</b>) et <b>{nb(n[1], 2)}{NB}mol</b> {RL_DE[nomB.id]}, selon l’équation {rlEquation(r)}. La transformation est totale.</>;
-  const q1 = { id: 'rm0', type: 'num', q: <>{donnees} Calculez la quantité de matière {RL_DE[nomA.id]} au départ (n = m ÷ M), en <b>mol</b>.</>, unite: 'mol', vrai: n[0], csMin: 2, tolRel: 0.01,
-    aide: 'La quantité de matière est la masse divisée par la masse molaire : n = m ÷ M (m en g, M en g/mol).',
-    pieges: rlPieges(n[0], [[m * M, 'Vous avez multiplié la masse par la masse molaire : il faut la diviser (n = m ÷ M).'], [M / m, 'Vous avez divisé la masse molaire par la masse : c’est n = m ÷ M.'], [m, 'C’est la masse en grammes : il faut la diviser par la masse molaire pour obtenir une quantité de matière.']]),
+  const q1 = { id: 'rm0', type: 'num', q: <>{donnees} Calculez la quantité de matière {RL_DE[nomA.id]} au départ (n = <Frac haut={<>m</>} bas={<>M</>} />), en <b>mol</b>.</>, unite: 'mol', vrai: n[0], csMin: 2, tolRel: 0.01,
+    aide: 'La quantité de matière est la masse divisée par la masse molaire : n = frac(m|M) (m en g, M en g/mol).',
+    pieges: rlPieges(n[0], [[m * M, 'Vous avez multiplié la masse par la masse molaire : il faut la diviser (n = frac(m|M)).'], [M / m, 'Vous avez divisé la masse molaire par la masse : c’est n = frac(m|M).'], [m, 'C’est la masse en grammes : il faut la diviser par la masse molaire pour obtenir une quantité de matière.']]),
     expl: <>n = <Frac haut={<>{fm(m)}{NB}g</>} bas={<>{M}{NB}g·mol⁻¹</>} /> = <b>{avecU(n[0], 'mol', 2)}</b>.</> };
   const opts = (() => { const noms = r.reactifs.map(e => RL_NOMS[e.id]), liste = [noms[iLim], noms[1 - iLim], 'les deux à la fois', 'aucun des deux : tout est consommé']; return { liste, bonne: noms[iLim] }; })();
   const o2 = melange(opts.liste);
   const q2 = { id: 'rm1', type: 'qcm', q: <>La quantité de matière {RL_DE[nomA.id]} est donc {nb(n[0], 2)}{NB}mol ; il y a aussi {nb(n[1], 2)}{NB}mol {RL_DE[nomB.id]}. Quel est le réactif limitant ?</>, options: o2, bonne: o2.indexOf(opts.bonne),
     aide: 'Pour chaque réactif, divisez la quantité de matière par son coefficient dans l’équation : le plus petit résultat désigne le réactif limitant.',
-    expl: <>{r.reactifs.map((e, i) => <span key={i}>{RL_NOMS[e.id]} : {nb(n[i], 2)}{NB}÷{NB}{e.coef} = {nb(b.rec[i], 2)}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est {nb(b.rmin, 2)} : {RL_NOMS[r.reactifs[iLim].id]} est limitant.</> };
+    expl: <>{r.reactifs.map((e, i) => <span key={i}>{RL_NOMS[e.id]} : <Frac haut={<>{nb(n[i], 2)}</>} bas={<>{e.coef}</>} /> = {nb(b.rec[i], 2)}{i === 0 ? ' ; ' : '. '}</span>)}Le plus petit est {nb(b.rmin, 2)} : {RL_NOMS[r.reactifs[iLim].id]} est limitant.</> };
   const q3 = { id: 'rm2', type: 'num', q: <>{nb(b.rmin, 2)} recette{b.rmin > 1 ? 's' : ''} sont réalisées. Quelle quantité de matière {RL_DE[r.reactifs[iEx].id]} (réactif en excès) reste-t-il à la fin, en <b>mol</b> ?</>, unite: 'mol', vrai: b.restes[iEx], csMin: 2, tolRel: 0.01,
     aide: 'Quantité restante = quantité de départ − coefficient × nombre de recettes.',
     pieges: rlPieges(b.restes[iEx], [[n[iEx], 'C’est la quantité de départ : une partie du réactif a été consommée.'], [n[iEx] - b.rmin, cEx > 1 ? 'Il faut retirer (coefficient × nombre de recettes), pas seulement le nombre de recettes.' : 'Vérifiez la soustraction.'], [cEx * b.rmin, 'C’est la quantité consommée, pas celle qui reste.']]),
     expl: <>{nb(n[iEx], 2)} − {cEx}{NB}×{NB}{nb(b.rmin, 2)} = <b>{avecU(b.restes[iEx], 'mol', 2)}</b>.</> };
   [q1, q3].forEach(q => { q.pieges = q.pieges.filter(([x]) => isFinite(x) && x !== q.vrai); });
-  return { intro: 'Réactif limitant avec une masse : n = m ÷ M, puis quantité ÷ coefficient et quantité restante (transformation totale).', questions: [q1, q2, q3],
-    retenir: ['n = m ÷ M : on convertit d’abord la masse en quantité de matière.', 'Pour chaque réactif : quantité ÷ coefficient ; le plus petit résultat désigne le limitant.', 'Reste du réactif en excès = quantité de départ − coefficient × nombre de recettes.'] };
+  return { intro: 'Réactif limitant avec une masse : n = frac(m|M), puis frac(quantité|coefficient) et quantité restante (transformation totale).', questions: [q1, q2, q3],
+    retenir: ['n = frac(m|M) : on convertit d’abord la masse en quantité de matière.', 'Pour chaque réactif : frac(quantité|coefficient) ; le plus petit résultat désigne le limitant.', 'Reste du réactif en excès = quantité de départ − coefficient × nombre de recettes.'] };
 }
 
 // ───────────── Niveau sonore et dangers de l'exposition (2GT, sim 192) : écarts en dB, facteurs ×10 et ×2, durées repères ─────────────
@@ -7068,7 +7068,7 @@ function genNiveauSonore2GT() {
   const L5 = tire([91, 94, 97, 100]), D5 = SN.dureeRepere(L5), k5 = tire([0.5, 2, 3, 4]), T5 = k5 * D5;
   const q5 = filtre({ id: 'k4', type: 'num', q: <>Un élève passe <b>{SN.formatDuree(T5)}</b> dans une salle où le niveau est de <b>{L5}{NB}dB</b>. À ce niveau, la durée repère est de <b>{SN.formatDuree(D5)}</b>. La durée passée dans la salle représente combien de fois la durée repère ?</>, unite: 'fois', vrai: k5, csMin: 1, tolRel: 0.01,
     aide: 'Divisez la durée passée dans la salle par la durée repère (même unité pour les deux). Un résultat plus grand que 1 veut dire que le repère est dépassé.',
-    pieges: [[1 / k5, 'La division est à l’envers : on divise la durée passée par la durée repère.'], [T5 - D5, 'Vous avez fait une différence (en minutes). On cherche un rapport : durée passée ÷ durée repère.']],
+    pieges: [[1 / k5, 'La division est à l’envers : on divise la durée passée par la durée repère.'], [T5 - D5, 'Vous avez fait une différence (en minutes). On cherche un rapport : frac(durée passée|durée repère).']],
     expl: <><Frac haut={<>{nb(T5, 3)}{NB}min</>} bas={<>{nb(D5, 3)}{NB}min</>} /> = <b>{nb(k5, 2)}</b>. {k5 > 1 ? 'Le repère est dépassé.' : 'On reste dans la durée repère.'}</> });
   return { intro: 'Niveau sonore : écarts en dB, facteurs d’intensité (× 10 pour + 10 dB, × 2 pour + 3 dB) et durées repères d’exposition. Les règles sont des repères d’ordre de grandeur, pas des formules exactes.', questions: [q1, q2, q3, q4, q5],
     retenir: ['Un écart de niveau se calcule par une différence ; + 10 dB correspond à une intensité environ 10 fois plus grande (on multiplie les intensités, jamais les niveaux).', 'Deux sources identiques : intensité × 2, soit environ + 3 dB ; quatre sources : environ + 6 dB.', 'À partir de 85 dB, on compare la durée d’exposition à la durée repère du niveau (repères indicatifs de prévention, pas des seuils médicaux exacts).'] };
@@ -7142,10 +7142,10 @@ function genMesureVar2GT() {
     pieges: [[m5, 'Vous avez recopié la moyenne : la cinquième valeur est celle qui complète la somme.'], [5 * m5, 'Vous avez calculé la somme des cinq valeurs : il faut en retirer les quatre valeurs connues.'], [4 * m5 - som4, 'Vous avez multiplié la moyenne par 4 : il y a cinq valeurs en tout, donc la somme vaut 5 fois la moyenne.']],
     expl: <>Somme des cinq valeurs : 5 × {mvFr(m5, S5.d)} = {mvFr(5 * m5, S5.d)}. Somme des quatre valeurs connues : {mvFr(som4, S5.d)}. Cinquième valeur : {mvFr(5 * m5, S5.d)} − {mvFr(som4, S5.d)} = <b>{mvFr(x5, S5.d)}{NB}{S5.u}</b>.</> });
   return { intro: 'Mesure : moyenne d’une série, effectif d’une classe d’histogramme, mesure de 10 intervalles d’un coup et comparaison de deux dispersions. Les valeurs sont fictives : les ordres de grandeur sont réalistes, pas les mesures.', questions: [q1, q2, q3, q4, q5],
-    retenir: ['Moyenne = somme des valeurs ÷ nombre de valeurs ; elle est toujours comprise entre la plus petite et la plus grande valeur.', 'Histogramme : la hauteur d’une barre est le nombre de valeurs de la classe ; la borne de gauche est incluse, celle de droite exclue.', 'Plusieurs intervalles chronométrés d’un coup, puis divisés, donnent une série moins dispersée ; l’écart-type mesure la largeur d’une série : le plus grand écart-type est celui de la série la plus étalée.'] };
+    retenir: ['Moyenne = frac(somme des valeurs|nombre de valeurs) ; elle est toujours comprise entre la plus petite et la plus grande valeur.', 'Histogramme : la hauteur d’une barre est le nombre de valeurs de la classe ; la borne de gauche est incluse, celle de droite exclue.', 'Plusieurs intervalles chronométrés d’un coup, puis divisés, donnent une série moins dispersée ; l’écart-type mesure la largeur d’une série : le plus grand écart-type est celui de la série la plus étalée.'] };
 }
 
-// ───────────── Mesure : incertitude-type et résultat (2GT, sim 194) : moyenne, u = s ÷ {avecIndices(`sqrt(n)`)}, arrondis, nombre de mesures, compatibilité ─────────────
+// ───────────── Mesure : incertitude-type et résultat (2GT, sim 194) : moyenne, u = frac(s|{avecIndices(`sqrt(n)`)}), arrondis, nombre de mesures, compatibilité ─────────────
 function genMesureInc2GT() {
   const filtre = q => { q.pieges = (q.pieges || []).filter(([x]) => isFinite(x) && Math.abs(x - q.vrai) > Math.max(0.02, 1.5 * (q.tolRel ?? 0.006)) * Math.abs(q.vrai)); return q; };
   const premier = x => { const e = Math.floor(Math.log10(x) + 1e-12); return Math.floor(x / Math.pow(10, e) + 1e-9); };
@@ -7158,11 +7158,11 @@ function genMesureInc2GT() {
   const q1 = filtre({ id: 'm0', type: 'num', q: <>On mesure 5 fois {sit.mesurande} (instrument : {instr.nom}). Les mesures, en {un}, sont : <b>{v1.map(x => MI2.fmt(x, instr.dec)).join(' ; ')}</b>. Quelle est la moyenne ?</>, unite: un, vrai: m1, tolRel: 0.5 * instr.res / m1, csMin: nbCS(MI2.fmt(m1, instr.dec)),
     aide: 'Additionnez les cinq mesures, puis divisez la somme par le nombre de mesures (5).',
     pieges: [[som, 'C’est la somme des mesures : il faut la diviser par 5.'], [som / 4, 'Vous avez divisé par 4 : il y a cinq mesures.'], [v1[0], 'C’est seulement la première mesure : la moyenne tient compte des cinq.']],
-    expl: <>({v1.map(x => MI2.fmt(x, instr.dec)).join(' + ')}) ÷ 5 = <Frac haut={<>{MI2.fmt(som, instr.dec + 2)}</>} bas={<>5</>} /> = <b>{MI2.fmt(m1, instr.dec + 2)}{NB}{un}</b>.</> });
-  // q2 : u = s ÷ {avecIndices(`sqrt(n)`)} (s avec 2 chiffres significatifs, n dans une liste)
+    expl: <><Frac haut={<>{v1.map(x => MI2.fmt(x, instr.dec)).join(' + ')}</>} bas={<>5</>} /> = <Frac haut={<>{MI2.fmt(som, instr.dec + 2)}</>} bas={<>5</>} /> = <b>{MI2.fmt(m1, instr.dec + 2)}{NB}{un}</b>.</> });
+  // q2 : u = frac(s|{avecIndices(`sqrt(n)`)}) (s avec 2 chiffres significatifs, n dans une liste)
   const s2 = Number((instr.sigma * tire([0.8, 1, 1.25, 1.6])).toPrecision(2)), n2 = tire([4, 9, 10, 16, 20, 25, 36, 50, 100]), u2 = s2 / Math.sqrt(n2);
   const q2 = filtre({ id: 'm1', type: 'num', q: <>Une série de <b>{n2} mesures</b> de {sit.mesurande} a un écart-type <b>s = {MI2.fmt(s2, instr.dec + 1)}{NB}{un}</b>. Calculez l’incertitude-type u de la moyenne, en {un}, sans l’arrondir : gardez les chiffres de la calculatrice (au moins 3 chiffres significatifs).</>, unite: un, vrai: u2, tolRel: 0.05,
-    aide: 'u = s ÷ sqrt(n) : calculez d’abord la racine carrée du nombre de mesures (touche √), puis divisez s par ce nombre.',
+    aide: 'u = frac(s|sqrt(n)) : calculez d’abord la racine carrée du nombre de mesures (touche √), puis divisez s par ce nombre.',
     pieges: [[s2, 'C’est la valeur de s : il reste à la diviser par sqrt(n).'], [s2 / n2, 'Vous avez divisé par n au lieu de sqrt(n).'], [s2 * Math.sqrt(n2), 'Vous avez multiplié par sqrt(n) au lieu de diviser.']],
     expl: <>{avecIndices(`sqrt(${n2})`)} = {nb(Math.sqrt(n2), 4)} ; u = <Frac haut={<>s</>} bas={<>{avecIndices(`sqrt(n)`)}</>} /> = <Frac haut={<>{MI2.fmt(s2, instr.dec + 1)}</>} bas={<>{nb(Math.sqrt(n2), 4)}</>} /> = <b>{trois(u2)}{NB}{un}</b> (calcul fait sans arrondir {avecIndices(`sqrt(n)`)}).</> });
   // q3 : arrondir u (1 chiffre significatif, par excès ; 2 si le premier chiffre est 1)
@@ -7186,7 +7186,7 @@ function genMesureInc2GT() {
   // q5 : nombre de mesures pour diviser u par k
   const n5 = tire([4, 9, 16, 25]), k5 = tire([2, 3, 5]);
   const q5 = { id: 'm4', type: 'num', q: <>Une série de <b>{n5} mesures</b> donne une incertitude-type u. On veut une incertitude <b>{k5} fois plus petite</b>, avec le même instrument et le même protocole. Combien de mesures faut-il faire en tout ?</>, unite: 'mesures', vrai: n5 * k5 * k5, tolRel: 0,
-    aide: 'u = s ÷ sqrt(n) : pour diviser u par k, il faut diviser par k à sqrt(n), donc multiplier n par k × k.',
+    aide: 'u = frac(s|sqrt(n)) : pour diviser u par k, il faut diviser par k à sqrt(n), donc multiplier n par k × k.',
     pieges: [[n5 * k5, `Vous avez multiplié n par ${k5} seulement : il faut le multiplier par ${k5} × ${k5} = ${k5 * k5}.`], [n5 / (k5 * k5), 'Avec moins de mesures, u augmenterait : il en faut plus.']],
     expl: <>Diviser u par {k5} demande {k5 * k5} fois plus de mesures : {n5} × {k5 * k5} = <b>{n5 * k5 * k5}</b> mesures (vérification : {avecIndices(`sqrt(${n5 * k5 * k5})`)} = {k5 * Math.sqrt(n5)}, soit {k5} fois {avecIndices(`sqrt(${n5})`)}).</> };
   // q6 : compatible ou pas ? (cas limites écartés)
@@ -7196,8 +7196,8 @@ function genMesureInc2GT() {
     options: ordre6.map(i => opts6[i]), bonne: ordre6.indexOf(dc.cas === 'compatible' ? 0 : 1),
     aide: 'Calculez la zone de m − u à m + u : la référence est-elle dedans, ou nettement en dehors ?',
     expl: <>La zone va de {MI2.fmt(dc.m - dc.u, dc.d)} à {MI2.fmt(dc.m + dc.u, dc.d)}{NB}{dc.sit.unite} ; la référence {MI2.fmt(dc.sit.ref, 2)}{NB}{dc.sit.unite} est {dc.cas === 'compatible' ? <b>dans la zone : compatible</b> : <b>loin en dehors : pas compatible</b>}.</> };
-  return { intro: 'Incertitude-type : moyenne, u = s ÷ sqrt(n), arrondi de u et de la valeur, nombre de mesures, compatibilité avec une référence. Valeurs simulées (fictives).', questions: [q1, q2, q3, q4, q5, q6],
-    retenir: ['u = s ÷ sqrt(n) : pour diviser u par 2, il faut 4 fois plus de mesures (par k : k × k fois plus).', 'Résultat : (valeur ± u) unité ; u sur 1 chiffre significatif, arrondie vers le haut (2 si le premier est 1) ; la valeur s’arrête à la même décimale.', 'Compatible : la référence est dans la zone de m − u à m + u ; nettement en dehors : pas compatible. u ne détecte pas un instrument décalé.'] };
+  return { intro: 'Incertitude-type : moyenne, u = frac(s|sqrt(n)), arrondi de u et de la valeur, nombre de mesures, compatibilité avec une référence. Valeurs simulées (fictives).', questions: [q1, q2, q3, q4, q5, q6],
+    retenir: ['u = frac(s|sqrt(n)) : pour diviser u par 2, il faut 4 fois plus de mesures (par k : k × k fois plus).', 'Résultat : (valeur ± u) unité ; u sur 1 chiffre significatif, arrondie vers le haut (2 si le premier est 1) ; la valeur s’arrête à la même décimale.', 'Compatible : la référence est dans la zone de m − u à m + u ; nettement en dehors : pas compatible. u ne détecte pas un instrument décalé.'] };
 }
 
 export const FAMILLES = [
@@ -7289,7 +7289,7 @@ export const FAMILLES = [
   { id: 'pxt-corde', groupe: 'Formules', titre: 'Vitesse moyenne (corde) et vitesse à une date (tangente) (terminale STL)', gen: genPxtCorde, domaine: 'Lire une vitesse sur un graphique x(t)' },
   { id: 'grv-force', groupe: 'Formules', titre: 'Force gravitationnelle entre deux blocs : valeur, distance, masse (terminale STL)', gen: genGrvForce, domaine: 'Gravitation et poids' },
   { id: 'grv-poids', groupe: 'Formules', titre: 'Intensité de pesanteur et poids sur une planète (terminale STL)', gen: genGrvPoids, domaine: 'Gravitation et poids' },
-  { id: 'chel-champ', groupe: 'Formules', titre: 'Champ électrostatique entre deux armatures : E = U ÷ d (terminale STL)', gen: genCelChamp, domaine: 'Champ et force électrostatiques' },
+  { id: 'chel-champ', groupe: 'Formules', titre: 'Champ électrostatique entre deux armatures : E = frac(U|d) (terminale STL)', gen: genCelChamp, domaine: 'Champ et force électrostatiques' },
   { id: 'chel-force', groupe: 'Formules', titre: 'Force sur une particule chargée entre deux armatures : F = |q| E (terminale STL)', gen: genCelForce, domaine: 'Champ et force électrostatiques' },
   { id: 'nwr-acc', groupe: 'Formules', titre: 'Somme des forces et accélération d’un chariot : ΣF = m a (terminale STL)', gen: genNwrAcc, domaine: 'Bilan des forces et lois de Newton' },
   { id: 'nwr-frott', groupe: 'Formules', titre: 'Frottement d’après l’accélération mesurée : ΣF = m a (terminale STL)', gen: genNwrFrott, domaine: 'Bilan des forces et lois de Newton' },
@@ -7408,10 +7408,10 @@ export const FAMILLES = [
   { id: 'you-calcul', groupe: 'Formules', titre: 'Trous d’Young : différence de chemin, interfrange, distance entre les trous, longueur d’onde et position des franges (TG)', gen: genYoungTG, domaine: 'Trous d’Young et interfrange' },
   { id: 'vac-calcul', groupe: 'Formules', titre: 'Vecteurs vitesse et accélération : coordonnées approchées et dérivées de x(t) (TG)', gen: genVecteursVATG, domaine: 'Vecteurs vitesse et accélération' },
   { id: 'rl2gt-calcul', groupe: 'Formules', titre: 'Réactif limitant : nombre de recettes, quantité restante et quantité formée (2GT)', gen: genReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
-  { id: 'rl2gt-masse', groupe: 'Formules', titre: 'Réactif limitant avec une masse : n = m ÷ M, limitant et quantité restante (2GT)', gen: genMasseReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
-  { id: 'mes2gt-inc-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, incertitude-type u = s ÷ √n, arrondis, nombre de mesures et compatibilité avec une référence (2GT)', gen: genMesureInc2GT, domaine: 'Incertitude-type et résultat (2GT)' },
+  { id: 'rl2gt-masse', groupe: 'Formules', titre: 'Réactif limitant avec une masse : n = frac(m|M), limitant et quantité restante (2GT)', gen: genMasseReactifLimitant2GT, domaine: 'Réactif limitant (2GT)' },
+  { id: 'mes2gt-inc-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, incertitude-type u = frac(s|sqrt(n)), arrondis, nombre de mesures et compatibilité avec une référence (2GT)', gen: genMesureInc2GT, domaine: 'Incertitude-type et résultat (2GT)' },
   { id: 'son2gt-niv-calcul', groupe: 'Formules', titre: 'Niveau sonore : écart en dB, facteurs ×10 et ×2, durée repère d’exposition (2GT)', gen: genNiveauSonore2GT, domaine: 'Niveau sonore (2GT)' },
-  { id: 'mes2gt-var-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, effectif d’une classe, 10 intervalles ÷ 10, rapport de dispersions, valeur manquante (2GT)', gen: genMesureVar2GT, domaine: 'Variabilité de la mesure (2GT)' },
+  { id: 'mes2gt-var-calcul', groupe: 'Formules', titre: 'Mesure : moyenne, effectif d’une classe, 10 intervalles divisés par 10, rapport de dispersions, valeur manquante (2GT)', gen: genMesureVar2GT, domaine: 'Variabilité de la mesure (2GT)' },
   { id: 'pil-calcul', groupe: 'Formules', titre: 'Pile : réactif limitant, capacité électrique et durée de fonctionnement (TG)', gen: genPileTG, domaine: 'Piles : fonctionnement et capacité' },
   { id: 'ely-calcul', groupe: 'Formules', titre: 'Électrolyse : charge passée, électrons échangés, métal déposé et durée (TG)', gen: genElectrolyseTG, domaine: 'Électrolyse : forcer le sens d’évolution' },
   { id: 'opt-calcul', groupe: 'Formules', titre: 'Optimiser une synthèse : rendement, quotient de réaction Qr, retrait d’un produit et ajout de réactif (TG)', gen: genOptimisationTG, domaine: 'Optimisation d’une étape de synthèse : vitesse et rendement' },

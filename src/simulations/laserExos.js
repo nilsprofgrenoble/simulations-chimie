@@ -11,14 +11,14 @@ const P = o => ({ ...o, verdict: VERDICT(o.plausible, o.ver) });
 export const LAS_ANA = [
   { id: 'las-ana-diametre', domaine: DOM, titre: 'Un faisceau deux fois plus fin',
     enonce: 'Un laser émet un flux constant. Son faisceau, de section circulaire, est rendu deux fois plus fin (son diamètre est divisé par 2) à l’aide d’un système optique, sans perte de flux.', q: 'Comment évolue l’éclairement du faisceau sur un écran ?', options: [
-      V('il est multiplié par 4, car la surface du faisceau est divisée par 4', 'La surface d’un disque varie comme le carré du diamètre : diamètre ÷ 2, surface ÷ 4. Le même flux sur une surface 4 fois plus petite multiplie l’éclairement par 4.'),
+      V('il est multiplié par 4, car la surface du faisceau est divisée par 4', 'La surface d’un disque varie comme le carré du diamètre : diamètre divisé par 2, surface divisée par 4. Le même flux sur une surface 4 fois plus petite multiplie l’éclairement par 4.'),
       F('il est multiplié par 2, car le diamètre est divisé par 2', 'La surface dépend du carré du diamètre, pas du diamètre : l’éclairement est multiplié par 2² = 4, pas par 2.'),
       F('il ne change pas, car le flux du laser est resté le même', 'Le flux est le même, mais il est concentré sur une surface plus petite : l’éclairement, lui, augmente.'),
       F('il est divisé par 4, car le faisceau est plus fin et transporte moins de lumière', 'Le flux est inchangé (aucune perte) : c’est la surface qui est divisée par 4, donc l’éclairement qui est multiplié par 4.'),
     ] },
   { id: 'las-ana-flux', domaine: DOM, titre: 'Un laser trois fois plus puissant',
     enonce: 'Un faisceau laser de section constante éclaire la peau pendant 0,5 s. On remplace le laser par un modèle de même faisceau, dont le flux est trois fois plus grand, et on garde la même durée d’exposition.', q: 'Que deviennent l’éclairement et l’énergie reçue par la peau ?', options: [
-      V('tous deux sont multipliés par 3, car ils sont proportionnels au flux', 'E = φ ÷ S et Q = φ × Δt : à section et durée fixées, E et Q sont proportionnels au flux φ, donc multipliés par 3.'),
+      V('tous deux sont multipliés par 3, car ils sont proportionnels au flux', 'E = frac(φ|S) et Q = φ × Δt : à section et durée fixées, E et Q sont proportionnels au flux φ, donc multipliés par 3.'),
       F('l’éclairement est multiplié par 3 mais l’énergie reçue ne change pas, car la durée est la même', 'Q = φ × Δt : si φ triple et Δt reste le même, l’énergie reçue triple aussi.'),
       F('tous deux sont multipliés par 9, car le flux intervient au carré', 'Le flux n’est pas élevé au carré : E et Q sont proportionnels à φ, donc multipliés par 3.'),
       F('l’éclairement ne change pas, car la section du faisceau est la même', 'L’éclairement est le flux divisé par la section : à section égale, il est multiplié par 3 si le flux triple.'),
@@ -43,8 +43,8 @@ export const LAS_ANA = [
 export const LAS_VAL = [
   P({ id: 'las-val-section', domaine: DOM, niveau: 1, titre: 'Éclairement d’un faisceau de 3 mW', plausible: true,
     enonce: 'Un laser émet un flux de 3,0 mW dans un faisceau de diamètre 2,0 mm. Un élève calcule une section d’environ 3,1 mm², puis un éclairement d’environ 950 W/m².',
-    reperes: [['Flux φ', '3,0 mW = 0,0030 W'], ['Diamètre D', '2,0 mm'], ['Section S = π D² ÷ 4', '≈ 3,14 mm² = 3,14·10⁻⁶ m²'], ['E = φ ÷ S', '≈ 955 W/m²']],
-    ver: 'S = π × 2,0² ÷ 4 ≈ 3,14 mm² = 3,14·10⁻⁶ m² ; E = 0,0030 ÷ 3,14·10⁻⁶ ≈ 955 W/m². La valeur de l’élève est cohérente : elle est plausible.',
+    reperes: [['Flux φ', '3,0 mW = 0,0030 W'], ['Diamètre D', '2,0 mm'], ['Section S = frac(π D²|4)', '≈ 3,14 mm² = 3,14·10⁻⁶ m²'], ['E = frac(φ|S)', '≈ 955 W/m²']],
+    ver: 'S = frac(π × 2,0²|4) ≈ 3,14 mm² = 3,14·10⁻⁶ m² ; E = frac(0,0030|3,14·10⁻⁶) ≈ 955 W/m². La valeur de l’élève est cohérente : elle est plausible.',
     q2: 'On remplace le faisceau par un faisceau de même flux mais de diamètre 1,0 mm. Que devient l’éclairement ?',
     options: [
       V('il est multiplié par 4, soit environ 3 800 W/m², car la section est divisée par 4', 'Le diamètre est divisé par 2, la section par 4 : E = 955 × 4 ≈ 3 800 W/m².'),
@@ -82,14 +82,14 @@ export const LAS_SAPP = [
         ph: tok(`${virg(p.ph, 1)} W`, 'Puissance électrique consommée par le laser', p.ph, 'W'),
       };
       const debut = ['Un laser de longueur d’onde ', T('lam'), ' consomme une puissance électrique de ', T('ph'), '. Il émet un faisceau de section circulaire, de diamètre ', T('D'), ', de flux énergétique ', T('phi'), '. '];
-      if (q === 0) return { tokens, derivees: ['section = π D² ÷ 4'], texte: [...debut, 'Quelle est la section du faisceau ?'], utiles: ['D'],
+      if (q === 0) return { tokens, derivees: ['section = frac(π D²|4)'], texte: [...debut, 'Quelle est la section du faisceau ?'], utiles: ['D'],
         raisons: { phi: 'Le flux sert à calculer l’éclairement, pas la section du faisceau.', lam: 'La longueur d’onde ne sert pas dans ce calcul.', ph: 'La puissance consommée par le laser ne sert pas dans ce calcul.' },
         cherche: { bonne: 'La section du faisceau (en mm²)', faux: ['L’éclairement du faisceau (en W/m²)', 'L’énergie reçue en une seconde (en J)', 'Le périmètre du faisceau (en mm)'] },
-        manque: null, solution: { txt: 'section = π D² ÷ 4', val: Math.PI * p.D ** 2 / 4, u: 'mm²' } };
-      return { tokens, derivees: ['flux en watts : valeur en mW ÷ 1000', 'section en m² : valeur en mm² × 10⁻⁶', 'E = φ ÷ S'], texte: [...debut, 'Quel est l’éclairement du faisceau ?'], utiles: ['phi', 'D'],
+        manque: null, solution: { txt: 'section = frac(π D²|4)', val: Math.PI * p.D ** 2 / 4, u: 'mm²' } };
+      return { tokens, derivees: ['flux en watts : frac(valeur en mW|1000)', 'section en m² : valeur en mm² × 10⁻⁶', 'E = frac(φ|S)'], texte: [...debut, 'Quel est l’éclairement du faisceau ?'], utiles: ['phi', 'D'],
         raisons: { lam: 'La longueur d’onde ne sert pas dans ce calcul.', ph: 'La puissance consommée n’est pas le flux du faisceau, qui est donné.' },
         cherche: { bonne: 'L’éclairement du faisceau (en W/m²)', faux: ['La section du faisceau (en mm²)', 'La puissance consommée par le laser (en W)', 'L’énergie reçue en une seconde (en J)'] },
-        manque: null, solution: { txt: 'E = φ ÷ (π D² ÷ 4), avec φ en W et D en m', val: (p.phi / 1000) / (Math.PI * (p.D / 1000) ** 2 / 4), u: 'W/m²' } };
+        manque: null, solution: { txt: 'E = frac(φ|frac(π D²|4)), avec φ en W et D en m', val: (p.phi / 1000) / (Math.PI * (p.D / 1000) ** 2 / 4), u: 'W/m²' } };
     }),
   },
   {
@@ -104,14 +104,14 @@ export const LAS_SAPP = [
         t: tok(`${virg(p.t, 1)} s`, 'Durée pendant laquelle le laser est resté allumé hier', p.t, 's'),
       };
       const debut = ['Un faisceau laser visible, de section circulaire, a un diamètre de ', T('D'), ' et un flux de ', T('phi'), '. Une norme fournit pour l’œil : ', T('H'), ' (durée inférieure ou égale à 0,25 s) et ', T('Em'), ' (durée supérieure à 0,25 s). Le laser est resté allumé ', T('t'), ' hier. '];
-      if (q === 0) return { tokens, derivees: ['section = π D² ÷ 4', 'E = φ ÷ S, avec φ en W et S en m²'], texte: [...debut, 'Quel est l’éclairement du faisceau ?'], utiles: ['phi', 'D'],
+      if (q === 0) return { tokens, derivees: ['section = frac(π D²|4)', 'E = frac(φ|S), avec φ en W et S en m²'], texte: [...debut, 'Quel est l’éclairement du faisceau ?'], utiles: ['phi', 'D'],
         raisons: { H: 'L’exposition maximale permise sert à comparer, pas à calculer l’éclairement du faisceau.', Em: 'L’éclairement maximal permis sert à comparer, pas à calculer l’éclairement du faisceau.', t: 'La durée d’allumage de la veille ne sert pas dans ce calcul.' },
         cherche: { bonne: 'L’éclairement du faisceau (en W/m²)', faux: ['La section du faisceau (en mm²)', 'L’énergie reçue pendant la durée d’allumage (en J)', 'La durée maximale d’exposition (en ms)'] },
-        manque: null, solution: { txt: 'E = φ ÷ (π D² ÷ 4), avec φ en W et D en m', val: (p.phi / 1000) / (Math.PI * (p.D / 1000) ** 2 / 4), u: 'W/m²' } };
-      return { tokens, derivees: ['E = φ ÷ S', 'Δt max = H ÷ E (exposition ≤ 0,25 s)'], texte: [...debut, 'Quelle est la durée maximale d’exposition de l’œil à ce faisceau, pour une durée inférieure ou égale à 0,25 s ?'], utiles: ['phi', 'D', 'H'],
+        manque: null, solution: { txt: 'E = frac(φ|frac(π D²|4)), avec φ en W et D en m', val: (p.phi / 1000) / (Math.PI * (p.D / 1000) ** 2 / 4), u: 'W/m²' } };
+      return { tokens, derivees: ['E = frac(φ|S)', 'Δt max = frac(H|E) (exposition ≤ 0,25 s)'], texte: [...debut, 'Quelle est la durée maximale d’exposition de l’œil à ce faisceau, pour une durée inférieure ou égale à 0,25 s ?'], utiles: ['phi', 'D', 'H'],
         raisons: { Em: 'L’éclairement maximal permis concerne les durées supérieures à 0,25 s, pas ce cas.', t: 'La durée d’allumage de la veille ne sert pas dans ce calcul.' },
         cherche: { bonne: 'La durée maximale d’exposition de l’œil (en ms)', faux: ['L’éclairement du faisceau (en W/m²)', 'L’énergie reçue par l’œil pendant la veille (en J)', 'La section du faisceau (en mm²)'] },
-        manque: null, solution: { txt: 'Δt max = H ÷ E, avec E = φ ÷ (π D² ÷ 4)', val: 2.5 / ((p.phi / 1000) / (Math.PI * (p.D / 1000) ** 2 / 4)) * 1000, u: 'ms' } };
+        manque: null, solution: { txt: 'Δt max = frac(H|E), avec E = frac(φ|frac(π D²|4))', val: 2.5 / ((p.phi / 1000) / (Math.PI * (p.D / 1000) ** 2 / 4)) * 1000, u: 'ms' } };
     }),
   },
 ];

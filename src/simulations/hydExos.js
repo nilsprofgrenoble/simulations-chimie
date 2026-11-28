@@ -28,7 +28,7 @@ export const HYD_ANA = [
     enonce: 'Une solution d’ions Ni²⁺ à 0,010 mol/L commence à précipiter sous forme de Ni(OH)₂ à un pH donné quand on ajoute de la soude. On refait l’expérience avec la même solution diluée dix fois.', q: 'Comment évolue le pH de début de précipitation ?', options: [
       V('il augmente : il faut plus de HO⁻', 'Dans Ks = c × [HO⁻]², c diminue, donc [HO⁻] doit augmenter : le pH de début augmente (ici de 0,5 unité).'),
       F('il diminue, car la solution est moins concentrée', 'Moins d’ions Ni²⁺ nécessitent plus d’ions HO⁻ pour atteindre Ks : le pH de début augmente.'),
-      F('il ne change pas : Ks est une constante', 'Ks est constant, mais [HO⁻] de début dépend de la concentration c : [HO⁻]² = Ks ÷ c.'),
+      F('il ne change pas : Ks est une constante', 'Ks est constant, mais [HO⁻] de début dépend de la concentration c : [HO⁻]² = frac(Ks|c).'),
       F('il devient égal à 7, car l’eau est neutre', 'L’eau ajoutée dilue les ions mais ne fixe pas le pH de précipitation, qui dépend de Ks et de c.'),
     ] },
   { id: 'hyd-ana-fenetre', domaine: DOM, titre: 'Séparer par le pH ?',
@@ -48,17 +48,17 @@ export const HYD_VAL = [
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il a calculé le pOH, il faut ensuite 14 − pOH', 'Le calcul donne −log [HO⁻] = pOH ; le pH vaut 14 − pOH.'),
-      F('il a oublié que [HO⁻] se calcule avec une racine carrée', 'La concentration [HO⁻] donnée est déjà correcte (racine carrée de Ks ÷ c) : l’erreur est dans le passage à pH.'),
+      F('il a oublié que [HO⁻] se calcule avec une racine carrée', 'La concentration [HO⁻] donnée est déjà correcte (racine carrée de frac(Ks|c)) : l’erreur est dans le passage à pH.'),
       F('il a oublié de diviser Ks par la concentration', 'La valeur de [HO⁻] donnée tient déjà compte de c : l’erreur est dans le calcul du pH.'),
     ] }),
   P({ id: 'hyd-val-racine', domaine: DOM, niveau: 2, titre: 'Début de précipitation de Cr(OH)₃', plausible: false,
-    enonce: 'Pour des ions Cr³⁺ à 0,010 mol/L, un élève écrit : « Ks = [Cr³⁺] × [HO⁻]³ = 6,7×10⁻³¹, donc [HO⁻]² = Ks ÷ c = 6,7×10⁻²⁹, [HO⁻] = 8,2×10⁻¹⁵ mol/L, pH = 14 + log (8,2×10⁻¹⁵) = −0,1. »',
+    enonce: 'Pour des ions Cr³⁺ à 0,010 mol/L, un élève écrit : « Ks = [Cr³⁺] × [HO⁻]³ = 6,7×10⁻³¹, donc [HO⁻]² = frac(Ks|c) = 6,7×10⁻²⁹, [HO⁻] = 8,2×10⁻¹⁵ mol/L, pH = 14 + log (8,2×10⁻¹⁵) = −0,1. »',
     reperes: [['Ks de Cr(OH)₃', '6,7×10⁻³¹'], ['Concentration de Cr³⁺', '0,010 mol/L']],
-    ver: 'Avec l’exposant 3, [HO⁻]³ = Ks ÷ c = 6,7×10⁻²⁹, donc [HO⁻] = ∛(6,7×10⁻²⁹) ≈ 4,1×10⁻¹⁰ mol/L et pH ≈ 4,6. Un pH négatif est impossible quand on ajoute de la base à une solution.',
+    ver: 'Avec l’exposant 3, [HO⁻]³ = frac(Ks|c) = 6,7×10⁻²⁹, donc [HO⁻] = ∛(6,7×10⁻²⁹) ≈ 4,1×10⁻¹⁰ mol/L et pH ≈ 4,6. Un pH négatif est impossible quand on ajoute de la base à une solution.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il a pris une racine carrée au lieu d’une racine cubique', 'Ks = c × [HO⁻]³ : [HO⁻] = ∛(Ks ÷ c), pas √.'),
-      F('il n’a pas divisé Ks par la concentration de Cr³⁺', 'La division par c est bien faite dans son calcul (Ks ÷ c = 6,7×10⁻²⁹) : l’erreur est sur l’exposant.'),
+      V('il a pris une racine carrée au lieu d’une racine cubique', 'Ks = c × [HO⁻]³ : [HO⁻] = ∛(frac(Ks|c)), pas √.'),
+      F('il n’a pas divisé Ks par la concentration de Cr³⁺', 'La division par c est bien faite dans son calcul (frac(Ks|c) = 6,7×10⁻²⁹) : l’erreur est sur l’exposant.'),
       F('il a utilisé pH = 14 − log [HO⁻] au lieu de pH = 14 + log [HO⁻]', 'La relation pH = 14 + log [HO⁻] est bien celle qu’il a écrite : l’erreur est dans [HO⁻].'),
     ] }),
 ];
@@ -87,8 +87,8 @@ export const HYD_SAPP = [
       if (q === 0) return { tokens, derivees: [`[HO⁻] de début : Ks = c × [HO⁻]${M.sup(cat.n)}`], texte: [...debut, 'Quelle est la concentration en ions HO⁻ au début de la précipitation, en mol/L ?'], utiles: ['eq', 'Ks', 'c'],
         raisons: { Ke: 'Le produit ionique de l’eau ne sert que pour passer de [HO⁻] au pH.', oh: 'C’est la grandeur cherchée.' },
         cherche: { bonne: 'La concentration en HO⁻ au début de la précipitation (en mol/L)', faux: ['Le pH de début de précipitation', 'La concentration restante en ions Mⁿ⁺ en fin de précipitation', 'La solubilité de l’hydroxyde dans l’eau pure'] },
-        manque: null, solution: { txt: `[HO⁻] = ${nom(cat.n)} de (Ks ÷ c)`, val: oh, u: 'mol/L' } };
-      return { tokens, derivees: [`[HO⁻] = ${cat.n === 2 ? '√' : '∛'}(Ks ÷ c)`, 'pH = 14 + log [HO⁻]'], texte: [...debut, 'La concentration en ions HO⁻ au début de la précipitation vaut ', T('oh'), '. Quel est le pH de début de précipitation ? (pH = 14 + log [HO⁻], pKe = ', T('Ke'), ')'], utiles: ['oh', 'Ke'],
+        manque: null, solution: { txt: `[HO⁻] = ${nom(cat.n)} de frac(Ks|c)`, val: oh, u: 'mol/L' } };
+      return { tokens, derivees: [`[HO⁻] = ${cat.n === 2 ? '√' : '∛'}frac(Ks|c)`, 'pH = 14 + log [HO⁻]'], texte: [...debut, 'La concentration en ions HO⁻ au début de la précipitation vaut ', T('oh'), '. Quel est le pH de début de précipitation ? (pH = 14 + log [HO⁻], pKe = ', T('Ke'), ')'], utiles: ['oh', 'Ke'],
         raisons: { eq: 'L’équation a servi à écrire [HO⁻] : elle ne sert plus pour le pH.', Ks: 'Ks a servi à calculer [HO⁻], donnée ici.', c: 'La concentration a servi à calculer [HO⁻], donnée ici.' },
         cherche: { bonne: 'Le pH de début de précipitation', faux: ['Le pOH de début de précipitation', 'La concentration en HO⁻ de fin de précipitation', 'Le pH de fin de précipitation'] },
         manque: null, solution: { txt: 'pH = 14 + log [HO⁻]', val: ph, u: '' } };
@@ -108,11 +108,11 @@ export const HYD_SAPP = [
       if (q === 0) return { tokens, derivees: [`[HO⁻] de fin : Ks = [${P1.ion}] × [HO⁻]${M.sup(P1.n)} avec [${P1.ion}] = 1,0×10⁻⁵ mol/L`, 'pH = 14 + log [HO⁻]'], texte: [...debut, 'Un hydroxyde est considéré comme quasi totalement précipité quand il reste ', T('cf'), ' d’ions métalliques. Quel est le pH de fin de précipitation de ', P1.solide, ' ?'], utiles: ['eq1', 'Ks1', 'cf'],
         raisons: { c1: 'La concentration de départ ne sert pas : la fin de précipitation est définie par la concentration restante donnée.', eq2: 'Le second hydroxyde sert pour l’autre borne de la fenêtre.', Ks2: 'Le Ks du second hydroxyde sert pour l’autre borne de la fenêtre.', c2: 'La concentration du second cation sert pour l’autre borne de la fenêtre.' },
         cherche: { bonne: `Le pH de fin de précipitation de ${P1.solide}`, faux: [`Le pH de début de précipitation de ${P1.solide}`, `Le pH de début de précipitation de ${S2.solide}`, 'La largeur de la fenêtre de séparation (en unités de pH)'] },
-        manque: null, solution: { txt: `pH = 14 + log ${nom(P1.n)} de (Ks ÷ 1,0×10⁻⁵)`, val: M.phFin(P1), u: '' } };
-      return { tokens, derivees: [`[HO⁻] de début de ${S2.solide} = ${S2.n === 2 ? '√' : '∛'}(Ks ÷ c)`, 'pH = 14 + log [HO⁻]'], texte: [...debut, 'Quel est le pH de début de précipitation de ', S2.solide, ' ?'], utiles: ['eq2', 'Ks2', 'c2'],
+        manque: null, solution: { txt: `pH = 14 + log ${nom(P1.n)} de frac(Ks|1,0×10⁻⁵)`, val: M.phFin(P1), u: '' } };
+      return { tokens, derivees: [`[HO⁻] de début de ${S2.solide} = ${S2.n === 2 ? '√' : '∛'}frac(Ks|c)`, 'pH = 14 + log [HO⁻]'], texte: [...debut, 'Quel est le pH de début de précipitation de ', S2.solide, ' ?'], utiles: ['eq2', 'Ks2', 'c2'],
         raisons: { eq1: 'Le premier hydroxyde donne l’autre borne de la fenêtre.', Ks1: 'Le Ks du premier hydroxyde donne l’autre borne de la fenêtre.', c1: 'La concentration du premier cation donne l’autre borne de la fenêtre.', cf: 'La concentration de fin de précipitation concerne le premier hydroxyde.' },
         cherche: { bonne: `Le pH de début de précipitation de ${S2.solide}`, faux: [`Le pH de fin de précipitation de ${S2.solide}`, `Le pH de début de précipitation de ${P1.solide}`, 'La largeur de la fenêtre de séparation (en unités de pH)'] },
-        manque: null, solution: { txt: `pH = 14 + log ${nom(S2.n)} de (Ks ÷ c)`, val: M.phDebut(S2, c2), u: '' } };
+        manque: null, solution: { txt: `pH = 14 + log ${nom(S2.n)} de frac(Ks|c)`, val: M.phDebut(S2, c2), u: '' } };
     }),
   },
 ];

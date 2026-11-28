@@ -9,14 +9,14 @@ const P = o => ({ ...o, verdict: VERDICT(o.plausible, o.ver) });
 export const FLP_ANA = [
   { id: 'flp-ana-masse', domaine: DOM, titre: 'Deux billes sur la même rampe',
     enonce: 'Un lanceur éjecte au pied d’une rampe inclinée, avec la même vitesse, une bille de 50 g puis une bille de 150 g. On néglige les frottements et la rampe est assez haute pour que les billes s’arrêtent avant son sommet.', q: 'Comment se comparent les hauteurs maximales atteintes ?', options: [
-      V('elles sont égales : la masse se simplifie dans le bilan', 'Ec en bas = Epp en haut : ½ m v² = m g h, donc h = v² ÷ (2 g), indépendante de la masse.'),
+      V('elles sont égales : la masse se simplifie dans le bilan', 'Ec en bas = Epp en haut : ½ m v² = m g h, donc h = frac(v²|2 g), indépendante de la masse.'),
       F('la bille de 150 g monte plus haut, car elle a plus d’énergie', 'Elle a plus d’énergie cinétique, mais aussi un poids plus grand à soulever : la masse se simplifie.'),
       F('la bille de 50 g monte plus haut, car elle est plus légère' , 'Plus légère, elle a aussi moins d’énergie cinétique : les deux effets se compensent exactement.'),
       F('on ne peut pas savoir sans l’angle de la rampe', 'Sans frottement, la hauteur atteinte ne dépend pas de l’angle de la rampe.'),
     ] },
   { id: 'flp-ana-vitesse', domaine: DOM, titre: 'Éjecter deux fois plus vite',
     enonce: 'Une bille éjectée à la vitesse v0 sur une rampe très haute monte jusqu’à une hauteur h avant de s’arrêter. On néglige les frottements. On l’éjecte maintenant à la vitesse 2 v0.', q: 'Quelle hauteur atteint-elle ?', options: [
-      V('quatre fois plus haut : h varie comme le carré de la vitesse v0', 'h = v0² ÷ (2 g) : si v0 double, v0² est multiplié par 4.'),
+      V('quatre fois plus haut : h varie comme le carré de la vitesse v0', 'h = frac(v0²|2 g) : si v0 double, v0² est multiplié par 4.'),
       F('deux fois plus haut : la hauteur est proportionnelle à la vitesse', 'L’énergie cinétique ½ m v² est proportionnelle au carré de la vitesse.'),
       F('la même hauteur : elle ne dépend que de la masse de la bille', 'Elle dépend de v0 et pas de la masse.'),
       F('quatre fois plus haut seulement si la rampe est inclinée à 45°', 'Le résultat est le même pour toutes les inclinaisons sans frottement.'),
@@ -39,12 +39,12 @@ export const FLP_ANA = [
 
 export const FLP_VAL = [
   P({ id: 'flp-val-hauteur', domaine: DOM, niveau: 1, titre: 'Hauteur atteinte : une masse oubliée', plausible: false,
-    enonce: 'Un élève calcule la hauteur maximale atteinte par une bille éjectée à 3,0 m/s sur une rampe très haute, sans frottement : « ½ v0² = g h, donc h = v0² ÷ g = 9,0 ÷ 9,8 ≈ 0,92 m. »',
+    enonce: 'Un élève calcule la hauteur maximale atteinte par une bille éjectée à 3,0 m/s sur une rampe très haute, sans frottement : « ½ v0² = g h, donc h = frac(v0²|g) = frac(9,0|9,8) ≈ 0,92 m. »',
     reperes: [['Vitesse d’éjection', '3,0 m/s'], ['g', '9,8 N/kg'], ['Ordre de grandeur', 'une bille éjectée à 3 m/s monte de quelques dizaines de centimètres']],
-    ver: 'De ½ v0² = g h on tire h = v0² ÷ (2 g) = 9,0 ÷ 19,6 ≈ 0,46 m : le facteur 2 du dénominateur a été oublié.',
+    ver: 'De ½ v0² = g h on tire h = frac(v0²|2 g) = frac(9,0|19,6) ≈ 0,46 m : le facteur 2 du dénominateur a été oublié.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il a oublié le facteur 2 : h = v0² ÷ (2 × g) = 0,46 m', '½ v0² = g h donne h = v0² ÷ (2 g) = 0,46 m.'),
+      V('il a oublié le facteur 2 : h = frac(v0²|2 × g) = 0,46 m', '½ v0² = g h donne h = frac(v0²|2 g) = 0,46 m.'),
       F('il a oublié de multiplier par la masse de la bille ici', 'La masse se simplifie des deux côtés : elle n’intervient pas.'),
       F('il aurait dû tenir compte de l’angle de la rampe', 'Sans frottement la hauteur atteinte ne dépend pas de l’angle.'),
     ] }),
@@ -55,7 +55,7 @@ export const FLP_VAL = [
     q2: 'Pourquoi la longueur de la rampe n’est-elle pas utile ?',
     options: [
       V('sans frottement, seule la variation d’altitude compte dans l’énergie', 'L’énergie potentielle de pesanteur ne dépend que de l’altitude.'),
-      F('la longueur de la rampe est toujours égale à sa hauteur', 'Une rampe inclinée est plus longue que sa hauteur : L = h ÷ sin α.'),
+      F('la longueur de la rampe est toujours égale à sa hauteur', 'Une rampe inclinée est plus longue que sa hauteur : L = frac(h|sin α).'),
       F('la bille arrive en haut avec une vitesse qui ne dépend pas de la longueur', 'Ce n’est pas la raison : ici on cherche la vitesse d’éjection.'),
     ] }),
 ];
@@ -80,10 +80,10 @@ export const FLP_SAPP = [
         raisons: { a: 'L’angle de la rampe n’intervient pas dans l’énergie cinétique.', d: 'La durée de la poussée ne sert pas ici.' },
         cherche: { bonne: 'L’énergie cinétique de la bille à l’éjection (en J)', faux: ['La hauteur maximale atteinte (en m)', 'La force exercée par le lanceur (en N)', 'La longueur parcourue sur la rampe (en m)'] },
         manque: null, solution: { txt: 'Ec = ½ × m × v²', val: 0.5 * p.m * p.v * p.v, u: 'J' } };
-      return { tokens, derivees: ['½ m v² = m g h', 'h = v² ÷ (2 × g)'], texte: [...debut, 'Quelle est la hauteur maximale atteinte par la bille, en m ?'], utiles: ['v'],
+      return { tokens, derivees: ['½ m v² = m g h', 'h = frac(v²|2 × g)'], texte: [...debut, 'Quelle est la hauteur maximale atteinte par la bille, en m ?'], utiles: ['v'],
         raisons: { m: 'La masse se simplifie dans la conservation de l’énergie.', a: 'Sans frottement, la hauteur ne dépend pas de l’angle de la rampe.', d: 'La durée de la poussée ne sert pas ici.' },
         cherche: { bonne: 'La hauteur maximale atteinte par la bille (en m)', faux: ['L’énergie cinétique à l’éjection (en J)', 'La longueur parcourue sur la rampe (en m)', 'Le temps de montée (en s)'] },
-        manque: null, solution: { txt: 'h = v² ÷ (2 × g)', val: p.v * p.v / (2 * 9.8), u: 'm' } };
+        manque: null, solution: { txt: 'h = frac(v²|2 × g)', val: p.v * p.v / (2 * 9.8), u: 'm' } };
     }),
   },
   {

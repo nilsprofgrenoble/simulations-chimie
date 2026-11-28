@@ -1,6 +1,6 @@
 // Exercices ANA (prévoir sans calculer), VAL (plausible ?) et S'APP (repérer les données utiles) de la simulation 229 « Éclairement et distance à la source » (TSTL, PCM, Énergie et ondes).
 // Préfixe d'identifiants : pve- ; domaine : « Panneau photovoltaïque : éclairement et distance à la source ». Branchés dans AtelierAnalyserBanque.js, AtelierValiderBanque.js et AtelierDonneesBanque.js ; les familles REA sont dans AtelierRealiserBanque.jsx.
-// Capacités visées (jamais affichées) : relation entre flux énergétique et éclairement (E = Φ ÷ S) ; effectuer le bilan énergétique d'un panneau photovoltaïque ; estimer un rendement. Aucune situation du Moodle : valeurs inventées.
+// Capacités visées (jamais affichées) : relation entre flux énergétique et éclairement (E = frac(Φ|S)) ; effectuer le bilan énergétique d'un panneau photovoltaïque ; estimer un rendement. Aucune situation du Moodle : valeurs inventées.
 const DOM = 'Panneau photovoltaïque : éclairement et distance à la source';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -18,7 +18,7 @@ export const PVE_ANA = [
     ] },
   { id: 'pve-ana-flux', domaine: DOM, titre: 'Une source deux fois plus puissante',
     enonce: 'Un panneau photovoltaïque est placé à 60 cm d’une petite source lumineuse qui émet de façon uniforme dans toutes les directions. On remplace la source par une autre, de même taille, dont le flux lumineux émis est deux fois plus grand. Le panneau ne bouge pas.', q: 'Comment évolue l’éclairement reçu par le panneau ?', options: [
-      V('il est multiplié par 2, car l’éclairement est proportionnel au flux', 'E = Φ ÷ (4πd²) : à distance fixée, l’éclairement est proportionnel au flux émis Φ. Φ double, donc E double.'),
+      V('il est multiplié par 2, car l’éclairement est proportionnel au flux', 'E = frac(Φ|4πd²) : à distance fixée, l’éclairement est proportionnel au flux émis Φ. Φ double, donc E double.'),
       F('il est multiplié par 4, car le flux est élevé au carré dans la formule', 'Le carré porte sur la distance, pas sur le flux : E est simplement proportionnel à Φ.'),
       F('il ne change pas, car la distance entre la source et le panneau est la même', 'La distance est la même, mais le flux émis est plus grand : l’éclairement augmente proportionnellement.'),
       F('il est divisé par 2, car la lumière est plus étalée', 'Rien n’est plus étalé : la surface de la sphère est la même, la puissance qui la traverse double.'),
@@ -43,8 +43,8 @@ export const PVE_ANA = [
 export const PVE_VAL = [
   P({ id: 'pve-val-correct', domaine: DOM, niveau: 1, titre: 'Éclairement à 1,5 m d’une source de 200 W', plausible: true,
     enonce: 'Une source lumineuse ponctuelle émet un flux de 200 W de façon uniforme dans toutes les directions. Un élève place un capteur à 1,5 m de la source, face à elle, et lit un éclairement de 7,0 W/m².',
-    reperes: [['Flux émis Φ', '200 W'], ['Distance d', '1,5 m'], ['Surface de la sphère 4πd²', '≈ 28 m²'], ['E = Φ ÷ (4πd²)', '≈ 7,1 W/m²']],
-    ver: '4πd² = 4π × 1,5² ≈ 28,3 m² ; E = 200 ÷ 28,3 ≈ 7,1 W/m². La valeur lue (7,0 W/m²) est cohérente avec le calcul : elle est plausible.',
+    reperes: [['Flux émis Φ', '200 W'], ['Distance d', '1,5 m'], ['Surface de la sphère 4πd²', '≈ 28 m²'], ['E = frac(Φ|4πd²)', '≈ 7,1 W/m²']],
+    ver: '4πd² = 4π × 1,5² ≈ 28,3 m² ; E = frac(200|28,3) ≈ 7,1 W/m². La valeur lue (7,0 W/m²) est cohérente avec le calcul : elle est plausible.',
     q2: 'On rapproche le capteur à 0,75 m, c’est-à-dire deux fois plus près. Que devient l’éclairement ?',
     options: [
       V('il est multiplié par 4, soit environ 28 W/m², car d est divisée par 2', 'La distance est divisée par 2 : la surface de la sphère est divisée par 4, donc E est multiplié par 4 : 4 × 7,1 ≈ 28 W/m².'),
@@ -53,7 +53,7 @@ export const PVE_VAL = [
     ] }),
   P({ id: 'pve-val-loi', domaine: DOM, niveau: 2, titre: 'Éclairement à trois distances différentes', plausible: false,
     enonce: 'Un élève mesure l’éclairement d’une même source ponctuelle, sans changer son orientation. À 1,0 m il lit 8,0 W/m². À 3,0 m il lit 2,7 W/m². Il conclut : « l’éclairement est inversement proportionnel à la distance ».',
-    reperes: [['E à 1,0 m', '8,0 W/m²'], ['E à 3,0 m (mesuré)', '2,7 W/m²'], ['Rapport des distances', '3'], ['E attendu à 3,0 m avec 1/d²', '8,0 ÷ 9 ≈ 0,89 W/m²']],
+    reperes: [['E à 1,0 m', '8,0 W/m²'], ['E à 3,0 m (mesuré)', '2,7 W/m²'], ['Rapport des distances', '3'], ['E attendu à 3,0 m avec 1/d²', 'frac(8,0|9) ≈ 0,89 W/m²']],
     ver: 'Pour une source ponctuelle, E est inversement proportionnel au carré de d : en passant de 1,0 m à 3,0 m, E est divisé par 3² = 9, soit environ 0,89 W/m². La valeur 2,7 W/m² correspondrait à une division par 3 seulement : elle n’est pas plausible pour une source ponctuelle (elle suppose une loi en 1/d).',
     q2: 'Quelle cause d’écart est la plus probable ?',
     options: [
@@ -86,10 +86,10 @@ export const PVE_SAPP = [
         raisons: { phi: 'Le flux sert à calculer l’éclairement, pas la surface de la sphère.', V: 'La tension d’alimentation ne sert pas dans ce calcul.', T: 'La température de la salle ne sert pas dans ce calcul.' },
         cherche: { bonne: 'La surface de la sphère de rayon d (en m²)', faux: ['L’éclairement au niveau du capteur (en W/m²)', 'Le volume de la sphère (en m³)', 'La puissance consommée par la source (en W)'] },
         manque: null, solution: { txt: 'surface = 4π d²', val: 4 * Math.PI * p.d ** 2, u: 'm²' } };
-      return { tokens, derivees: ['surface de la sphère = 4π d²', 'éclairement : E = Φ ÷ (surface de la sphère)'], texte: [...debut, 'Quel est l’éclairement au niveau du capteur ?'], utiles: ['phi', 'd'],
+      return { tokens, derivees: ['surface de la sphère = 4π d²', 'éclairement : E = frac(Φ|surface de la sphère)'], texte: [...debut, 'Quel est l’éclairement au niveau du capteur ?'], utiles: ['phi', 'd'],
         raisons: { V: 'La tension d’alimentation ne donne pas le flux lumineux émis, qui est donné.', T: 'La température de la salle ne sert pas dans ce calcul.' },
         cherche: { bonne: 'L’éclairement au niveau du capteur (en W/m²)', faux: ['La surface de la sphère (en m²)', 'La puissance électrique consommée (en W)', 'La puissance lumineuse reçue par un panneau (en W)'] },
-        manque: null, solution: { txt: 'E = Φ ÷ (4π d²)', val: p.phi / (4 * Math.PI * p.d ** 2), u: 'W/m²' } };
+        manque: null, solution: { txt: 'E = frac(Φ|4π d²)', val: p.phi / (4 * Math.PI * p.d ** 2), u: 'W/m²' } };
     }),
   },
   {
@@ -104,14 +104,14 @@ export const PVE_SAPP = [
         L: tok(`${virg(p.L, 1)} m`, 'Longueur du banc sur lequel est posé le panneau', p.L, 'm'),
       };
       const debut = ['Une source lumineuse ponctuelle émet un flux de ', T('phi'), ' de façon uniforme dans toutes les directions. Un panneau photovoltaïque de surface ', T('S'), ' et de rendement ', T('eta'), ' est posé sur un banc de ', T('L'), ' de long, face à la source, à ', T('d'), ' d’elle. '];
-      if (q === 0) return { tokens, derivees: ['S en m² : S = valeur en cm² ÷ 10 000', 'éclairement : E = Φ ÷ (4π d²) ; Plum = E × S'], texte: [...debut, 'Quelle puissance lumineuse le panneau reçoit-il ?'], utiles: ['phi', 'd', 'S'],
+      if (q === 0) return { tokens, derivees: ['S en m² : S = frac(valeur en cm²|10 000)', 'éclairement : E = frac(Φ|4π d²) ; Plum = E × S'], texte: [...debut, 'Quelle puissance lumineuse le panneau reçoit-il ?'], utiles: ['phi', 'd', 'S'],
         raisons: { eta: 'Le rendement sert à la puissance électrique fournie, pas à la puissance lumineuse reçue.', L: 'La longueur du banc ne sert pas dans ce calcul.' },
         cherche: { bonne: 'La puissance lumineuse reçue par le panneau (en W)', faux: ['La puissance électrique fournie par le panneau (en W)', 'L’éclairement au niveau du panneau (en W/m²)', 'La part du flux émis qui n’atteint pas le panneau (en %)'] },
-        manque: null, solution: { txt: 'Plum = Φ ÷ (4π d²) × S, avec S en m²', val: p.phi / (4 * Math.PI * p.d ** 2) * p.S / 1e4, u: 'W' } };
-      return { tokens, derivees: ['S en m² : S = valeur en cm² ÷ 10 000', 'rendement en nombre décimal : η = valeur en % ÷ 100', 'Plum = Φ ÷ (4π d²) × S ; Pél = η × Plum'], texte: [...debut, 'Quelle puissance électrique le panneau fournit-il ?'], utiles: ['phi', 'd', 'S', 'eta'],
+        manque: null, solution: { txt: 'Plum = frac(Φ|4π d²) × S, avec S en m²', val: p.phi / (4 * Math.PI * p.d ** 2) * p.S / 1e4, u: 'W' } };
+      return { tokens, derivees: ['S en m² : S = frac(valeur en cm²|10 000)', 'rendement en nombre décimal : η = frac(valeur en %|100)', 'Plum = frac(Φ|4π d²) × S ; Pél = η × Plum'], texte: [...debut, 'Quelle puissance électrique le panneau fournit-il ?'], utiles: ['phi', 'd', 'S', 'eta'],
         raisons: { L: 'La longueur du banc ne sert pas dans ce calcul.' },
         cherche: { bonne: 'La puissance électrique fournie par le panneau (en W)', faux: ['La puissance lumineuse reçue par le panneau (en W)', 'La puissance perdue par le panneau (en W)', 'L’éclairement au niveau du panneau (en W/m²)'] },
-        manque: null, solution: { txt: 'Pél = η × Φ ÷ (4π d²) × S, avec S en m² et η en nombre décimal', val: p.eta / 100 * p.phi / (4 * Math.PI * p.d ** 2) * p.S / 1e4, u: 'W' } };
+        manque: null, solution: { txt: 'Pél = frac(η × Φ|4π d²) × S, avec S en m² et η en nombre décimal', val: p.eta / 100 * p.phi / (4 * Math.PI * p.d ** 2) * p.S / 1e4, u: 'W' } };
     }),
   },
 ];

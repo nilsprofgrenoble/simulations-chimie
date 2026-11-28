@@ -49,7 +49,7 @@ export const CHH_VAL = [
       F('il a utilisé la mauvaise énergie : il fallait l’énergie cinétique', 'La conservation de Em relie bien m g h à ½ m v² : c’est correct.'),
     ] }),
   P({ id: 'chh-val-frott', domaine: DOM, niveau: 2, titre: 'Frottement moyen sur une piste', plausible: true,
-    enonce: 'Un élève calcule : « Un skieur de 60 kg part sans vitesse du haut d’une piste de 100 m de long et de 20 m de dénivellation. Il arrive en bas à 15 m/s. ΔEm = ½ × 60 × 15² − 60 × 9,8 × 20 = 6 750 − 11 760 = −5 010 J, donc f = 5 010 ÷ 100 ≈ 50 N. »',
+    enonce: 'Un élève calcule : « Un skieur de 60 kg part sans vitesse du haut d’une piste de 100 m de long et de 20 m de dénivellation. Il arrive en bas à 15 m/s. ΔEm = ½ × 60 × 15² − 60 × 9,8 × 20 = 6 750 − 11 760 = −5 010 J, donc f = frac(5 010|100) ≈ 50 N. »',
     reperes: [['Masse', '60 kg'], ['Longueur de la piste', '100 m'], ['Dénivellation', '20 m'], ['Vitesse en bas', '15 m/s'], ['Ordre de grandeur', 'un frottement de quelques dizaines de newtons pour un skieur']],
     ver: 'ΔEm = Em(bas) − Em(haut) = W(f) : Em(bas) = Ec = 6 750 J et Em(haut) = Epp = 11 760 J. Le frottement dissipe 5 010 J sur 100 m (la longueur parcourue, pas la dénivellation) : f ≈ 50 N. Le résultat est plausible.',
     q2: 'Pourquoi divise-t-on l’énergie dissipée par 100 m et non par 20 m ?',
@@ -100,10 +100,10 @@ export const CHH_SAPP = [
         raisons: { L: 'La longueur de la rampe sert plus tard, pour la force moyenne.', t: 'La durée de la descente ne sert pas ici.' },
         cherche: { bonne: 'L’énergie dissipée par le frottement (en J)', faux: ['L’énergie potentielle au départ (en J)', 'La force de frottement moyenne (en N)', 'L’énergie cinétique en bas de la rampe (en J)'] },
         manque: null, solution: { txt: 'énergie dissipée = m × g × h − ½ × m × v²', val: ok ? Ep - Ec : 0, u: 'J' } };
-      return { tokens, derivees: ['énergie dissipée = Epp(haut) − Ec(bas)', 'W(f) = − f × L, donc f = énergie dissipée ÷ L'], texte: [...debut, 'Quelle est la valeur moyenne de la force de frottement, en newtons ?'], utiles: ['m', 'h', 'vR', 'L'],
+      return { tokens, derivees: ['énergie dissipée = Epp(haut) − Ec(bas)', 'W(f) = − f × L, donc f = frac(énergie dissipée|L)'], texte: [...debut, 'Quelle est la valeur moyenne de la force de frottement, en newtons ?'], utiles: ['m', 'h', 'vR', 'L'],
         raisons: { t: 'La durée de la descente n’est pas nécessaire : l’énergie suffit.' },
         cherche: { bonne: 'La force de frottement moyenne (en N)', faux: ['L’énergie dissipée (en J)', 'La puissance dissipée (en W)', 'Le travail du poids (en J)'] },
-        manque: null, solution: { txt: 'f = (m × g × h − ½ × m × v²) ÷ L', val: ok ? (Ep - Ec) / p.L : 0, u: 'N' } };
+        manque: null, solution: { txt: 'f = frac(m × g × h − ½ × m × v²|L)', val: ok ? (Ep - Ec) / p.L : 0, u: 'N' } };
     }),
   },
 ];

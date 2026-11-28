@@ -49,7 +49,7 @@ export const ITT_ANA = [
 export const ITT_VAL = [
   P({ id: 'itt-val-pourcent', domaine: DOM, niveau: 1, titre: 'Régénération : valeur et unité', plausible: false,
     enonce: 'Pour la peinture A, ηref = 16 210 mPa·s et η = 13 810 mPa·s 80 s après le début de l’intervalle 3. Un élève calcule 13 810 / 16 210 = 0,85 et écrit : « régénération de 0,85 % ».',
-    reperes: [['Régénération (M1)', 'η ÷ ηref × 100'], ['Régénération complète', '100 %'], ['Valeur obtenue', '0,85 : une fraction']],
+    reperes: [['Régénération (M1)', 'frac(η|ηref) × 100'], ['Régénération complète', '100 %'], ['Valeur obtenue', '0,85 : une fraction']],
     ver: 'Le rapport vaut bien 0,85, mais c’est une fraction : en pourcentage, la régénération est de 85 %. Écrire 0,85 % décrirait une peinture quasi non régénérée.',
     q2: 'Quelle erreur explique le résultat annoncé ?',
     options: [
@@ -69,11 +69,11 @@ export const ITT_VAL = [
     ] }),
   P({ id: 'itt-val-pente', domaine: DOM, niveau: 2, titre: 'Pente de remontée de la viscosité', plausible: true,
     enonce: 'Pour la peinture A, la viscosité passe de 3 730 mPa·s à t = 47,6 s à 11 750 mPa·s à t = 66,7 s. Un élève calcule une pente de 420 mPa·s/s.',
-    reperes: [['Pente (M3)', 'Δη ÷ Δt'], ['Δη', '11 750 − 3 730 = 8 020 mPa·s'], ['Δt', '66,7 − 47,6 = 19,1 s']],
-    ver: '8 020 ÷ 19,1 ≈ 420 mPa·s/s : le calcul est correct, en mPa·s par seconde.',
+    reperes: [['Pente (M3)', 'frac(Δη|Δt)'], ['Δη', '11 750 − 3 730 = 8 020 mPa·s'], ['Δt', '66,7 − 47,6 = 19,1 s']],
+    ver: 'frac(8 020|19,1) ≈ 420 mPa·s/s : le calcul est correct, en mPa·s par seconde.',
     q2: 'Quel raisonnement est correct ?',
     options: [
-      V('Cohérent : 8 020 ÷ 19,1 ≈ 420 mPa·s par seconde', 'La pente est la variation de viscosité divisée par la durée.'),
+      V('Cohérent : frac(8 020|19,1) ≈ 420 mPa·s par seconde', 'La pente est la variation de viscosité divisée par la durée.'),
       F('Pas cohérent : la pente vaut 8 020 mPa·s, sans division', 'Une pente est un rapport : il faut diviser Δη par Δt.'),
       F('Pas cohérent : une pente de viscosité ne peut pas être positive', 'Pendant la régénération, η augmente : la pente est positive.'),
     ] }),
@@ -108,7 +108,7 @@ export const ITT_SAPP = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Dans l’intervalle 3, on mesure η = ', T('eta'), '. Quelle est la régénération en % de la viscosité de référence ?'], utiles: ['ref', 'eta'],
         raisons: { ...raisons, cible: 'Le pourcentage visé sert pour le temps de régénération (M2), pas pour M1.', tAbs: 'L’instant lu ne sert pas à calculer un pourcentage à partir d’une viscosité déjà mesurée.', d12: 'Le début de l’intervalle 3 sert à compter un temps, pas un pourcentage.' },
         cherche: { bonne: 'La régénération (M1) en pourcentage de ηref', faux: ['Le temps nécessaire pour atteindre 50 % de ηref', 'La pente de la courbe de viscosité', 'Le gradient de vitesse de l’intervalle 3'] },
-        manque: null, solution: { txt: 'Régénération = η ÷ ηref × 100', val: (p.eta / p.ref) * 100, u: '%' } };
+        manque: null, solution: { txt: 'Régénération = frac(η|ηref) × 100', val: (p.eta / p.ref) * 100, u: '%' } };
       return { tokens, derivees: [], texte: [...debut, 'La viscosité atteint ', T('cible'), ' de ηref à l’instant ', T('tAbs'), ' sur l’axe ; l’intervalle 3 commence à ', T('d12'), '. Quel est le temps de régénération depuis le début de l’intervalle 3 ?'], utiles: ['tAbs', 'd12'],
         raisons: { ...raisons, ref: 'La viscosité de référence a servi à repérer l’instant ; il est déjà donné.', eta: 'Aucune viscosité n’est utile : l’instant est déjà lu.', cible: 'Le pourcentage a déjà servi à repérer l’instant sur la courbe.' },
         cherche: { bonne: 'Le temps de régénération (M2) depuis le début de l’intervalle 3', faux: ['La régénération en pourcentage à 80 s', 'La pente de la courbe de viscosité', 'La durée de l’intervalle 2'] },
@@ -128,7 +128,7 @@ export const ITT_SAPP = [
       const raisons = { gb: 'Le gradient est le même sur toute la fenêtre : il ne sert pas au calcul de la pente.', ref: 'ηref sert aux méthodes M1 et M2, pas à la pente M3.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la pente moyenne de la courbe de viscosité sur cette fenêtre ?'], utiles: ['e1', 'e2', 't1', 't2'], raisons,
         cherche: { bonne: 'La pente de remontée de la viscosité (M3)', faux: ['La régénération en pourcentage de ηref', 'Le temps pour atteindre 25 % de ηref', 'La viscosité de référence'] },
-        manque: null, solution: { txt: 'Pente = Δη ÷ Δt', val: (p.e2 - p.e1) / (p.t2 - p.t1), u: 'mPa·s/s' } };
+        manque: null, solution: { txt: 'Pente = frac(Δη|Δt)', val: (p.e2 - p.e1) / (p.t2 - p.t1), u: 'mPa·s/s' } };
       return { tokens, derivees: [], texte: [...debut, 'De combien la viscosité a-t-elle augmenté sur cette fenêtre ?'], utiles: ['e1', 'e2'], raisons: { ...raisons, t1: 'Les instants servent à calculer une durée, pas une variation de viscosité.', t2: 'Les instants servent à calculer une durée, pas une variation de viscosité.' },
         cherche: { bonne: 'La variation de viscosité entre les deux instants', faux: ['La pente moyenne de la courbe', 'La durée de la fenêtre', 'La part de ηref retrouvée'] },
         manque: null, solution: { txt: 'Variation = η finale − η initiale', val: p.e2 - p.e1, u: 'mPa·s' } };

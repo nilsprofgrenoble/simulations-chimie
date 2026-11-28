@@ -16,8 +16,8 @@ export const JOU_ANA = [
     ] },
   { id: 'jou-ana-tension', domaine: DOM, titre: 'Une tension deux fois plus petite',
     enonce: 'Un résistor de résistance constante est branché sur une source de tension. On remplace la source par une autre dont la tension est deux fois plus petite.', q: 'Que devient la puissance dissipée par effet Joule dans le résistor ?', options: [
-      V('elle est divisée par 4 : I est divisée par 2, donc R × I² par 4', 'Avec R constante, I = U ÷ R est divisée par 2 ; P = R × I² est donc divisée par 2² = 4 (ou P = U² ÷ R).'),
-      F('elle est divisée par 2, car la tension utilisée est divisée par 2', 'La puissance dépend du carré de la tension (P = U² ÷ R) : elle est divisée par 4.'),
+      V('elle est divisée par 4 : I est divisée par 2, donc R × I² par 4', 'Avec R constante, I = frac(U|R) est divisée par 2 ; P = R × I² est donc divisée par 2² = 4 (ou P = frac(U²|R)).'),
+      F('elle est divisée par 2, car la tension utilisée est divisée par 2', 'La puissance dépend du carré de la tension (P = frac(U²|R)) : elle est divisée par 4.'),
       F('elle ne change pas, car la résistance du résistor est la même', 'La résistance est la même, mais le courant et donc la puissance diminuent : P est divisée par 4.'),
       F('elle est multipliée par 2, car I diminue', 'Si I diminue, P = R × I² diminue aussi : elle est divisée par 4.'),
     ] },
@@ -30,7 +30,7 @@ export const JOU_ANA = [
     ] },
   { id: 'jou-ana-ligne', domaine: DOM, titre: 'Transporter la même puissance sous dix fois plus de tension',
     enonce: 'Une installation transporte une puissance donnée dans un câble de résistance r. On décide de la transporter sous une tension dix fois plus grande, à la même puissance.', q: 'Que deviennent l’intensité dans le câble et les pertes par effet Joule ?', options: [
-      V('l’intensité est divisée par 10 et les pertes par 100', 'P = U × I : à puissance égale, U × 10 donne I ÷ 10. Les pertes r × I² sont alors divisées par 10² = 100.'),
+      V('l’intensité est divisée par 10 et les pertes par 100', 'P = U × I : à puissance égale, U × 10 donne frac(I|10). Les pertes r × I² sont alors divisées par 10² = 100.'),
       F('l’intensité est divisée par 10 et les pertes aussi', 'Les pertes sont proportionnelles à I² : si I est divisée par 10, elles sont divisées par 100.'),
       F('l’intensité ne change pas et les pertes sont divisées par 10', 'Pour une puissance donnée, P = U × I : si la tension est multipliée par 10, l’intensité est divisée par 10.'),
       F('l’intensité est multipliée par 10 et les pertes par 100', 'C’est l’inverse : à puissance égale, une tension plus grande demande un courant plus petit.'),
@@ -78,14 +78,14 @@ export const JOU_SAPP = [
         Tmax: tok(`${p.Tmax} °C`, 'Température maximale supportée par le résistor', p.Tmax, '°C'),
       };
       const debut = ['Un résistor chauffant de résistance ', T('R'), ' et de masse ', T('m'), ' supporte au maximum ', T('Tmax'), '. Il est branché sur une source de tension ', T('U'), '. '];
-      if (q === 0) return { tokens, derivees: ['I = U ÷ R'], texte: [...debut, 'Quelle est l’intensité du courant dans le résistor ?'], utiles: ['U', 'R'],
+      if (q === 0) return { tokens, derivees: ['I = frac(U|R)'], texte: [...debut, 'Quelle est l’intensité du courant dans le résistor ?'], utiles: ['U', 'R'],
         raisons: { m: 'La masse ne sert pas dans ce calcul.', Tmax: 'La température maximale ne sert pas dans ce calcul.' },
         cherche: { bonne: 'L’intensité du courant (en A)', faux: ['La puissance dissipée (en W)', 'L’énergie dégagée en une minute (en J)', 'La résistance du résistor (en Ω)'] },
-        manque: null, solution: { txt: 'I = U ÷ R', val: p.U / p.R, u: 'A' } };
-      return { tokens, derivees: ['I = U ÷ R', 'P = U × I (ou P = U² ÷ R)'], texte: [...debut, 'Quelle est la puissance dissipée par effet Joule ?'], utiles: ['U', 'R'],
+        manque: null, solution: { txt: 'I = frac(U|R)', val: p.U / p.R, u: 'A' } };
+      return { tokens, derivees: ['I = frac(U|R)', 'P = U × I (ou P = frac(U²|R))'], texte: [...debut, 'Quelle est la puissance dissipée par effet Joule ?'], utiles: ['U', 'R'],
         raisons: { m: 'La masse ne sert pas dans ce calcul.', Tmax: 'La température maximale ne sert pas dans ce calcul.' },
         cherche: { bonne: 'La puissance dissipée (en W)', faux: ['L’intensité du courant (en A)', 'L’énergie dégagée en une minute (en J)', 'La température atteinte (en °C)'] },
-        manque: null, solution: { txt: 'P = U² ÷ R', val: p.U * p.U / p.R, u: 'W' } };
+        manque: null, solution: { txt: 'P = frac(U²|R)', val: p.U * p.U / p.R, u: 'W' } };
     }),
   },
   {
@@ -103,7 +103,7 @@ export const JOU_SAPP = [
         raisons: { R: 'La résistance ne sert pas ici : la puissance est donnée.', m: 'La masse ne sert pas dans ce calcul.' },
         cherche: { bonne: 'L’énergie thermique dégagée (en J)', faux: ['L’intensité du courant (en A)', 'La puissance dissipée (en W)', 'La température atteinte (en °C)'] },
         manque: null, solution: { txt: 'W = P × Δt, avec Δt en s', val: p.P * p.dt * 60, u: 'J' } };
-      return { tokens, derivees: ['durée en h = durée en min ÷ 60', 'W (Wh) = P × Δt'], texte: [...debut, 'Quelle énergie thermique dégage-t-il, en wattheures ?'], utiles: ['P', 'dt'],
+      return { tokens, derivees: ['durée en h = frac(durée en min|60)', 'W (Wh) = P × Δt'], texte: [...debut, 'Quelle énergie thermique dégage-t-il, en wattheures ?'], utiles: ['P', 'dt'],
         raisons: { R: 'La résistance ne sert pas ici : la puissance est donnée.', m: 'La masse ne sert pas dans ce calcul.' },
         cherche: { bonne: 'L’énergie thermique dégagée (en Wh)', faux: ['L’énergie thermique dégagée (en J)', 'La puissance dissipée (en W)', 'La durée de fonctionnement (en h)'] },
         manque: null, solution: { txt: 'W = P × Δt, avec Δt en h', val: p.P * p.dt / 60, u: 'Wh' } };

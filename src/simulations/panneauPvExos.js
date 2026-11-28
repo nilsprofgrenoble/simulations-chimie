@@ -26,10 +26,10 @@ export const PVC_ANA = [
     ] },
   { id: 'pvc-ana-ideale', domaine: DOM, titre: 'Source idéale ou panneau sur une faible résistance',
     enonce: 'On branche une résistance de 2 Ω successivement sur une source idéale de tension de 3 V, puis sur un panneau photovoltaïque éclairé dont la tension à vide est voisine de 3,7 V et le courant de court-circuit égal à 200 mA.', q: 'Que peut-on dire des intensités débitées ?', options: [
-      V('la source idéale débite 1,5 A, le panneau au plus environ 200 mA', 'Source idéale : I = U ÷ R = 3 ÷ 2 = 1,5 A. Le panneau ne peut pas dépasser son courant de court-circuit : il n’impose pas sa tension.'),
+      V('la source idéale débite 1,5 A, le panneau au plus environ 200 mA', 'Source idéale : I = frac(U|R) = frac(3|2) = 1,5 A. Le panneau ne peut pas dépasser son courant de court-circuit : il n’impose pas sa tension.'),
       F('les deux débitent 1,5 A, car leurs tensions sont voisines', 'Le courant du panneau est limité à Icc = 200 mA : il ne peut pas atteindre 1,5 A, quelle que soit sa tension à vide.'),
       F('le panneau débite davantage, car sa tension à vide est plus élevée', 'Sur 2 Ω, le courant du panneau est limité à environ 200 mA, bien en dessous des 1,5 A de la source idéale.'),
-      F('les deux débitent 200 mA : une source idéale est limitée aussi', 'Une source idéale ne limite pas le courant : elle maintient sa tension, donc I = U ÷ R = 1,5 A sur 2 Ω.'),
+      F('les deux débitent 200 mA : une source idéale est limitée aussi', 'Une source idéale ne limite pas le courant : elle maintient sa tension, donc I = frac(U|R) = 1,5 A sur 2 Ω.'),
     ] },
   { id: 'pvc-ana-eclair', schema: { type: 'panneauSoleil' }, domaine: DOM, titre: 'Un éclairement divisé par deux',
     enonce: 'Un panneau photovoltaïque est éclairé sous 800 W/m² ; on relève son courant de court-circuit et sa tension à vide. On diminue l’éclairement jusqu’à 400 W/m², la température restant la même.', q: 'Que deviennent ces deux grandeurs ?', options: [
@@ -85,12 +85,12 @@ export const PVC_SAPP = [
       };
       const debut = ['Un panneau photovoltaïque de ', T('S'), ', éclairé avec ', T('E'), ' et maintenu à ', T('T'), ', alimente une résistance. Un voltmètre indique ', T('U'), ' aux bornes du panneau et un ampèremètre indique ', T('I'), '. '];
       const raisons = { E: 'L’éclairement donne la puissance lumineuse reçue par mètre carré ; il ne sert pas à calculer la puissance électrique à partir de U et I.', S: 'La surface du panneau ne sert pas ici : elle servirait à calculer la puissance lumineuse reçue.', T: 'La température ne sert pas dans le calcul à partir des mesures de U et de I.' };
-      if (q === 0) return { tokens, derivees: ['I en ampères : I = valeur en mA ÷ 1000'], texte: [...debut, 'Quelle puissance électrique le panneau fournit-il ?'], utiles: ['U', 'I'], raisons,
+      if (q === 0) return { tokens, derivees: ['I en ampères : I = frac(valeur en mA|1000)'], texte: [...debut, 'Quelle puissance électrique le panneau fournit-il ?'], utiles: ['U', 'I'], raisons,
         cherche: { bonne: 'La puissance électrique fournie (en W)', faux: ['La résistance de la charge (en Ω)', 'La puissance lumineuse reçue par le panneau (en W)', 'L’énergie fournie pendant une heure (en Wh)'] },
         manque: null, solution: { txt: 'P = U × I, avec I en ampères', val: p.U * p.I / 1000, u: 'W' } };
-      return { tokens, derivees: ['I en ampères : I = valeur en mA ÷ 1000'], texte: [...debut, 'Quelle est la valeur de la résistance de la charge ?'], utiles: ['U', 'I'], raisons,
+      return { tokens, derivees: ['I en ampères : I = frac(valeur en mA|1000)'], texte: [...debut, 'Quelle est la valeur de la résistance de la charge ?'], utiles: ['U', 'I'], raisons,
         cherche: { bonne: 'La résistance R de la charge (en Ω)', faux: ['La puissance électrique fournie (en W)', 'Le courant de court-circuit du panneau (en mA)', 'La tension à vide du panneau (en V)'] },
-        manque: null, solution: { txt: 'loi d’Ohm : R = U ÷ I, avec I en ampères', val: p.U / (p.I / 1000), u: 'Ω' } };
+        manque: null, solution: { txt: 'loi d’Ohm : R = frac(U|I), avec I en ampères', val: p.U / (p.I / 1000), u: 'Ω' } };
     }),
   },
   {
@@ -106,14 +106,14 @@ export const PVC_SAPP = [
         T: tok('25 °C', 'Température du panneau', 25, '°C'),
       };
       const debut = ['Un panneau photovoltaïque, maintenu à ', T('T'), ', est éclairé avec ', T('E1'), '. On mesure un courant de court-circuit de ', T('Icc'), ', une tension à vide de ', T('Uco'), ' et une puissance maximale de ', T('Pm'), '. On éclaire ensuite le panneau avec ', T('E2'), '. On admet que le courant de court-circuit et la puissance maximale sont proportionnels à l’éclairement. '];
-      if (q === 0) return { tokens, derivees: ['rapport des éclairements : E2 ÷ E1'], texte: [...debut, 'Quel est alors le courant de court-circuit ?'], utiles: ['E1', 'E2', 'Icc'],
+      if (q === 0) return { tokens, derivees: ['rapport des éclairements : frac(E2|E1)'], texte: [...debut, 'Quel est alors le courant de court-circuit ?'], utiles: ['E1', 'E2', 'Icc'],
         raisons: { Pm: 'La puissance maximale ne sert pas à trouver le courant de court-circuit.', Uco: 'La tension à vide varie très peu avec l’éclairement et ne sert pas pour trouver le courant.', T: 'La température reste la même : elle n’intervient pas dans le calcul.' },
         cherche: { bonne: 'Le courant de court-circuit à E2 (en mA)', faux: ['La tension à vide à E2 (en V)', 'La puissance maximale à E2 (en W)', 'Le rendement du panneau (en %)'] },
-        manque: null, solution: { txt: 'Icc2 = Icc1 × E2 ÷ E1', val: p.Icc * p.E2 / p.E1, u: 'mA' } };
-      return { tokens, derivees: ['rapport des éclairements : E2 ÷ E1'], texte: [...debut, 'Quelle puissance maximale peut-on espérer ?'], utiles: ['E1', 'E2', 'Pm'],
+        manque: null, solution: { txt: 'Icc2 = frac(Icc1 × E2|E1)', val: p.Icc * p.E2 / p.E1, u: 'mA' } };
+      return { tokens, derivees: ['rapport des éclairements : frac(E2|E1)'], texte: [...debut, 'Quelle puissance maximale peut-on espérer ?'], utiles: ['E1', 'E2', 'Pm'],
         raisons: { Icc: 'Le courant de court-circuit ne sert pas pour passer d’une puissance maximale à l’autre : on utilise le rapport des éclairements.', Uco: 'La tension à vide ne sert pas ici : on admet que la puissance maximale est proportionnelle à l’éclairement.', T: 'La température reste la même : elle n’intervient pas dans le calcul.' },
         cherche: { bonne: 'La puissance maximale à E2 (en W)', faux: ['Le courant de court-circuit à E2 (en mA)', 'La tension à vide à E2 (en V)', 'La résistance qui donne cette puissance (en Ω)'] },
-        manque: null, solution: { txt: 'Pmax2 = Pmax1 × E2 ÷ E1', val: p.Pm * p.E2 / p.E1, u: 'W' } };
+        manque: null, solution: { txt: 'Pmax2 = frac(Pmax1 × E2|E1)', val: p.Pm * p.E2 / p.E1, u: 'W' } };
     }),
   },
 ];

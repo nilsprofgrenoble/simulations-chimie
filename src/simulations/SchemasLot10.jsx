@@ -634,6 +634,82 @@ export function PlanFlan() {
     </Cadre>);
 }
 
+
+// ── Oscillateurs (simulation 321) : situations neutres, ni valeur ni résultat ──
+const chemin = (f, t0, t1, n = 120, x0 = 0, ex = 1, y0 = 0, ey = 1) => Array.from({ length: n + 1 }, (_, i) => { const t = t0 + (t1 - t0) * i / n; return `${i ? 'L' : 'M'}${(x0 + ex * t).toFixed(1)} ${(y0 - ey * f(t)).toFixed(1)}`; }).join(' ');
+const zigzag = (x, y1, y2, n = 7, a = 11) => { let d = `M${x} ${y1}`; const pas = (y2 - y1) / (n + 1); d += ` L${x} ${y1 + pas * 0.5}`; for (let i = 0; i < n; i++) d += ` L${x + (i % 2 ? -a : a)} ${y1 + pas * (i + 1)}`; return d + ` L${x} ${y1 + pas * (n + 0.5)} L${x} ${y2}`; };
+
+// Masse au bout d'un ressort (avec amortisseur facultatif) et, à droite, un enregistrement x(t) facultatif.
+export function OscRessort({ amort = false, courbe = null }) {
+  const gx = 290, gy = 100, ech = 24;
+  const f = courbe === 'mesure' ? (t => Math.cos(2 * Math.PI * t) * Math.exp(-0.07 * t)) : (t => Math.exp(-0.38 * t) * Math.cos(2 * Math.PI * t * 0.9));
+  const dur = courbe === 'mesure' ? 5 : 6.2, sx = courbe === 'mesure' ? 30 : 28;
+  return (
+    <Cadre h={210} titre="Masse au bout d’un ressort et enregistrement de sa position en fonction du temps">
+      <rect x="40" y="14" width="130" height="10" fill="#e2e8f0" stroke={GRIS} strokeWidth="1.5" />
+      {[0, 1, 2, 3, 4, 5, 6, 7].map(i => <line key={i} x1={48 + i * 16} y1="24" x2={40 + i * 16} y2="14" stroke={GRIS} strokeWidth="1.5" />)}
+      <path d={zigzag(80, 24, 100)} fill="none" stroke={ENCRE} strokeWidth="3" />
+      <rect x="55" y="100" width="50" height="38" rx="6" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" /><T x="80" y="125" w="700">m</T>
+      {amort && <g><rect x="132" y="24" width="22" height="46" rx="3" fill="#e0f2fe" stroke={GRIS} strokeWidth="2" /><line x1="143" y1="46" x2="143" y2="119" stroke={GRIS} strokeWidth="3" /><rect x="133" y="119" width="20" height="6" fill={GRIS} /></g>}
+      <line x1="30" y1="119" x2="165" y2="119" stroke={GRIS} strokeWidth="1.5" strokeDasharray="6 5" />
+      <T x="30" y="150" s={14} c={GRIS} a="start">position d’équilibre</T>
+      <Fl x1="30" y1="104" x2="30" y2="134" />
+      {amort && <T x="143" y="96" s={14} c={GRIS}>amortisseur</T>}
+      {courbe && <g>
+        <Fl x1={gx - 6} y1={gy} x2="470" y2={gy} /><Fl x1={gx} y1="190" x2={gx} y2="10" />
+        <T x="466" y={gy + 20} s={15} c={GRIS} a="end" w="700">t</T><T x={gx + 10} y="20" s={15} c={GRIS} a="start" w="700">x</T>
+        <path d={chemin(f, 0, dur, 160, gx, sx, gy, 70)} fill="none" stroke={BLEU} strokeWidth="3" />
+        {courbe === 'amortie' && <><path d={chemin(t => Math.exp(-0.38 * t), 0, dur, 60, gx, sx, gy, 70)} fill="none" stroke={ROUGE} strokeWidth="2" strokeDasharray="6 5" /><T x={gx + 118} y={gy - 54} s={14} c={ROUGE} a="start">enveloppe</T></>}
+        {courbe === 'mesure' && <><line x1={gx} y1={gy + 36} x2={gx} y2={gy + 56} stroke={ENCRE} strokeWidth="1.5" /><line x1={gx + 5 * sx} y1={gy + 36} x2={gx + 5 * sx} y2={gy + 56} stroke={ENCRE} strokeWidth="1.5" /><line x1={gx} y1={gy + 46} x2={gx + 5 * sx} y2={gy + 46} stroke={ENCRE} strokeWidth="2" markerStart="url(#pt10)" markerEnd="url(#pt10)" /><T x={gx + 2.5 * sx} y={gy + 70} s={14} c={ENCRE}>durée de la mesure</T></>}
+      </g>}
+    </Cadre>);
+}
+
+// Règle plate serrée dans un étau.
+export function OscRegle() {
+  return (
+    <Cadre h={170} titre="Règle plate serrée par une extrémité dans un étau">
+      <rect x="40" y="70" width="64" height="70" rx="4" fill="#e2e8f0" stroke={GRIS} strokeWidth="2" /><T x="72" y="112" s={15} w="700">étau</T>
+      <path d="M104 100 Q230 100 380 52" fill="none" stroke={BLEU} strokeWidth="1.8" strokeDasharray="6 5" /><path d="M104 100 Q230 100 380 148" fill="none" stroke={BLEU} strokeWidth="1.8" strokeDasharray="6 5" />
+      <rect x="104" y="95" width="276" height="10" rx="2" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" />
+      <Fl x1="410" y1="100" x2="410" y2="56" /><Fl x1="410" y1="100" x2="410" y2="144" />
+      <T x="240" y="82" s={15} c={GRIS}>règle plate</T><T x="300" y="164" s={14} c={GRIS}>position de repos : règle droite</T>
+    </Cadre>);
+}
+
+// Piston de petit moteur relié à un vilebrequin.
+export function OscPiston() {
+  return (
+    <Cadre h={170} titre="Piston dans un cylindre, relié à un vilebrequin">
+      <rect x="60" y="50" width="170" height="70" rx="4" fill="#f1f5f9" stroke={GRIS} strokeWidth="2.5" /><rect x="120" y="54" width="34" height="62" rx="3" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" />
+      <line x1="154" y1="85" x2="320" y2="85" stroke={ENCRE} strokeWidth="4" /><circle cx="350" cy="85" r="34" fill="#fff" stroke={ENCRE} strokeWidth="2.5" /><circle cx="350" cy="85" r="5" fill={ENCRE} />
+      <Fl x1="100" y1="140" x2="190" y2="140" /><Fl x1="190" y1="140" x2="100" y2="140" />
+      <T x="145" y="40" s={15} c={GRIS}>cylindre</T><T x="137" y="162" s={14} c={GRIS}>piston : mouvement d’aller-retour</T><T x="350" y="140" s={15} c={GRIS}>vilebrequin</T>
+    </Cadre>);
+}
+
+// Aiguille d'un appareil de mesure analogique.
+export function OscAiguille() {
+  return (
+    <Cadre h={190} titre="Cadran d’un appareil de mesure analogique avec son aiguille">
+      <path d="M90 160 A150 150 0 0 1 390 160" fill="#fefce8" stroke={ENCRE} strokeWidth="2.5" />
+      {Array.from({ length: 11 }, (_, i) => { const a = Math.PI * (1 - i / 10); return <line key={i} x1={240 + 134 * Math.cos(a)} y1={160 - 134 * Math.sin(a)} x2={240 + 148 * Math.cos(a)} y2={160 - 148 * Math.sin(a)} stroke={ENCRE} strokeWidth="2" />; })}
+      <line x1="240" y1="160" x2="320" y2="62" stroke={ROUGE} strokeWidth="4" strokeLinecap="round" /><circle cx="240" cy="160" r="9" fill={ENCRE} />
+      <T x="352" y="36" s={15} c={ROUGE} a="start" w="700">aiguille</T><T x="240" y="182" s={15} c={GRIS}>échelle graduée</T>
+    </Cadre>);
+}
+
+// Circuit RLC série.
+export function OscRLC() {
+  return (
+    <Cadre h={190} titre="Circuit série comprenant une résistance, une bobine et un condensateur">
+      <path d="M110 40 L200 40 M290 40 L370 40 L370 62 M370 128 L370 150 L110 150 L110 98 M110 80 L110 40" fill="none" stroke={ENCRE} strokeWidth="2.5" />
+      <rect x="200" y="28" width="90" height="24" fill="#fff" stroke={ENCRE} strokeWidth="2.5" /><T x="245" y="20" s={16} w="700">résistance R</T>
+      <path d="M370 62 q18 8 0 16 q18 8 0 16 q18 8 0 16 q18 8 0 16" fill="none" stroke={ENCRE} strokeWidth="2.5" /><T x="398" y="100" s={16} a="start" w="700">bobine L</T>
+      <line x1="88" y1="80" x2="132" y2="80" stroke={ENCRE} strokeWidth="3" /><line x1="88" y1="98" x2="132" y2="98" stroke={ENCRE} strokeWidth="3" /><T x="110" y="176" s={16} w="700">condensateur C</T>
+    </Cadre>);
+}
+
 export const DESSINS_LOT10 = {
   polymereTuyau: PolymereTuyau, planFlan: PlanFlan,
   mobile: Mobile, deuxReliefs: DeuxReliefs, virage: Virage, lancerDeuxAstres: LancerDeuxAstres,
@@ -646,4 +722,5 @@ export const DESSINS_LOT10 = {
   plaques: Plaques, blocTransparent: BlocTransparent, bruleurBecher: BruleurBecher, soleilTerre: SoleilTerre, looping: Looping, balance: Balance, reflux: Reflux,
   chuteLibre: ChuteLibre, projection: Projection, eprouvette: Eprouvette, piston: Piston, niveaux: Niveaux, comptageRadio: ComptageRadio, sonMicro: SonMicro,
   polarimetre: Polarimetre, capteurBain: CapteurBain,
+  oscRessort: OscRessort, oscRegle: OscRegle, oscPiston: OscPiston, oscAiguille: OscAiguille, oscRLC: OscRLC,
 };

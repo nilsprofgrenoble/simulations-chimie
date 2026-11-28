@@ -151,7 +151,7 @@ export const NUC2GT_SAPP = [
         manque: null, solution: { txt: 'Total = nombre de fissions × neutrons libérés par fission', val: tot, u: 'neutrons' } };
       return { tokens, derivees: [], texte: [...debut, 'Au total, ', T('tot'), ' neutrons sont libérés par des fissions identiques. Combien de fissions ont eu lieu ?'], utiles: ['n', 'tot'], raisons: { ...raisons, k: 'Le nombre de fissions est justement ce que l’on cherche.' },
         cherche: { bonne: 'Le nombre de fissions qui ont eu lieu', faux: ['Le nombre de noyaux d’uranium en tout', 'Le nombre de neutrons libérés par fission', 'Le nombre de neutrons reçus par l’uranium'] },
-        manque: null, solution: { txt: 'Nombre de fissions = neutrons libérés en tout ÷ neutrons libérés par fission', val: p.k, u: 'fissions' } };
+        manque: null, solution: { txt: 'Nombre de fissions = frac(neutrons libérés en tout|neutrons libérés par fission)', val: p.k, u: 'fissions' } };
     }),
   },
 ];

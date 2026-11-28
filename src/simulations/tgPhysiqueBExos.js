@@ -25,8 +25,8 @@ export const TGPB_ANA = [
   { id: 'lun-ana-identifier', domaine: DOM_LUN, titre: 'Quelle lentille pour l’objectif ?',
     ...presenter({ contexte: 'On veut construire une lunette astronomique afocale qui grossit, avec deux lentilles minces convergentes.', liste: [['Lentille L₁', 'distance focale 800 mm'], ['Lentille L₂', 'distance focale 40 mm']] }),
     q: 'Quel rôle donner à chaque lentille ?', options: [
-      V('L₁ est l’objectif, L₂ est l’oculaire', 'Le grossissement G est le rapport de la distance focale de l’objectif à celle de l’oculaire : pour G > 1, l’objectif est la lentille de plus grande distance focale (L₁), tournée vers l’astre. G = 800 ÷ 40 = 20.'),
-      F('L₂ est l’objectif, L₁ est l’oculaire', 'On trouverait G = 40 ÷ 800 = 0,05 : l’angle sous lequel on voit l’astre serait divisé par 20, la lunette ne grossirait pas.'),
+      V('L₁ est l’objectif, L₂ est l’oculaire', 'Le grossissement G est le rapport de la distance focale de l’objectif à celle de l’oculaire : pour G > 1, l’objectif est la lentille de plus grande distance focale (L₁), tournée vers l’astre. G = frac(800|40) = 20.'),
+      F('L₂ est l’objectif, L₁ est l’oculaire', 'On trouverait G = frac(40|800) = 0,05 : l’angle sous lequel on voit l’astre serait divisé par 20, la lunette ne grossirait pas.'),
       F('les deux rôles sont interchangeables : G reste le même', 'G est le rapport de f′_obj à f′_oc : échanger les lentilles inverse ce rapport, et donc G.'),
       F('l’objectif est la lentille la plus proche de l’œil', 'C’est l’oculaire qui est près de l’œil ; l’objectif est tourné vers l’astre observé.'),
     ] },

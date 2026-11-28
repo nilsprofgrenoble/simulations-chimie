@@ -10,16 +10,16 @@ const P = o => ({ ...o, verdict: VERDICT(o.plausible, o.ver) });
 export const BAT_ANA = [
   { id: 'bat-ana-capacite', domaine: DOM, titre: 'Une batterie de capacité double',
     enonce: 'Deux accumulateurs ont la même tension. Le second a une capacité deux fois plus grande que le premier. On les branche l’un après l’autre sur la même lampe, qui demande toujours la même intensité.', q: 'Comparée à celle du premier, comment est la durée de fonctionnement du second ?', options: [
-      V('elle est deux fois plus longue, car la durée vaut Qs ÷ I et Qs a doublé', 'La durée est le rapport capacité ÷ intensité : à intensité égale, une capacité double donne une durée double.'),
+      V('elle est deux fois plus longue, car la durée vaut frac(Qs|I) et Qs a doublé', 'La durée est le rapport frac(capacité|intensité) : à intensité égale, une capacité double donne une durée double.'),
       F('elle est deux fois plus courte, car une batterie plus grosse se vide plus vite', 'La capacité est la quantité d’électricité stockée : plus elle est grande, plus la batterie dure, à intensité égale.'),
-      F('elle est identique, car les deux batteries ont la même tension', 'La tension ne donne pas la durée : c’est le rapport capacité ÷ intensité qui la fixe, et la capacité a doublé.'),
-      F('elle est quatre fois plus longue, car la capacité intervient au carré', 'La durée est proportionnelle à la capacité (Δt = Qs ÷ I), pas à son carré : elle double.'),
+      F('elle est identique, car les deux batteries ont la même tension', 'La tension ne donne pas la durée : c’est le rapport frac(capacité|intensité) qui la fixe, et la capacité a doublé.'),
+      F('elle est quatre fois plus longue, car la capacité intervient au carré', 'La durée est proportionnelle à la capacité (Δt = frac(Qs|I)), pas à son carré : elle double.'),
     ] },
   { id: 'bat-ana-puissance', domaine: DOM, titre: 'Un récepteur trois fois plus puissant',
     enonce: 'Un accumulateur de tension constante alimente d’abord une lampe de puissance P. On la remplace par une lampe de puissance 3P, sous la même tension.', q: 'Comment évoluent l’intensité du courant débité et la durée de fonctionnement ?', options: [
-      V('l’intensité est multipliée par 3 et la durée est divisée par 3', 'I = P ÷ U : à tension égale, trois fois plus de puissance donne trois fois plus d’intensité. Δt = Qs ÷ I est alors divisée par 3.'),
+      V('l’intensité est multipliée par 3 et la durée est divisée par 3', 'I = frac(P|U) : à tension égale, trois fois plus de puissance donne trois fois plus d’intensité. Δt = frac(Qs|I) est alors divisée par 3.'),
       F('l’intensité est multipliée par 3 et la durée aussi', 'Plus l’intensité est grande, plus la batterie se vide vite : la durée est divisée par 3, pas multipliée.'),
-      F('l’intensité ne change pas, seule la durée est divisée par 3', 'I = P ÷ U : si P triple sous la même tension, l’intensité triple.'),
+      F('l’intensité ne change pas, seule la durée est divisée par 3', 'I = frac(P|U) : si P triple sous la même tension, l’intensité triple.'),
       F('l’intensité est divisée par 3 et la durée est multipliée par 3', 'C’est l’inverse : une lampe plus puissante demande plus de courant, donc la batterie dure moins longtemps.'),
     ] },
   { id: 'bat-ana-tension', domaine: DOM, titre: 'Même capacité, tension double',
@@ -45,19 +45,19 @@ export const BAT_VAL = [
     ver: 'E = 5,0 × 12 = 60 Wh ; 60 × 3 600 = 216 000 J ≈ 2,2 × 10⁵ J. La valeur de l’élève est cohérente : elle est plausible.',
     q2: 'On branche un récepteur de 15 W sur cet accumulateur. Quelle est la durée de fonctionnement ?',
     options: [
-      V('environ 4 h, car Δt = E ÷ P = 60 Wh ÷ 15 W', 'Δt = E ÷ P = 60 Wh ÷ 15 W = 4,0 h.'),
-      F('environ 15 h, car on multiplie la puissance par la capacité', 'Qs × P n’est pas une durée : Δt = E ÷ P = 60 ÷ 15 = 4 h.'),
-      F('environ 0,25 h, car Δt = P ÷ E = 15 ÷ 60', 'Le rapport est inversé : Δt = E ÷ P = 60 ÷ 15 = 4,0 h.'),
+      V('environ 4 h, car Δt = frac(E|P) = frac(60 Wh|15 W)', 'Δt = frac(E|P) = frac(60 Wh|15 W) = 4,0 h.'),
+      F('environ 15 h, car on multiplie la puissance par la capacité', 'Qs × P n’est pas une durée : Δt = frac(E|P) = frac(60|15) = 4 h.'),
+      F('environ 0,25 h, car Δt = frac(P|E) = frac(15|60)', 'Le rapport est inversé : Δt = frac(E|P) = frac(60|15) = 4,0 h.'),
     ] }),
   P({ id: 'bat-val-duree', domaine: DOM, niveau: 2, titre: 'Durée de fonctionnement d’un accumulateur', plausible: false,
-    enonce: 'Un accumulateur de capacité 2,0 Ah alimente un récepteur qui demande 0,50 A. Un élève écrit : « Δt = I ÷ Qs = 0,50 ÷ 2,0 = 0,25 h, soit 15 minutes ».',
+    enonce: 'Un accumulateur de capacité 2,0 Ah alimente un récepteur qui demande 0,50 A. Un élève écrit : « Δt = frac(I|Qs) = frac(0,50|2,0) = 0,25 h, soit 15 minutes ».',
     reperes: [['Unité de la capacité', 'l’ampère-heure : 1 Ah = 1 A débité pendant 1 h'], ['Ordre de grandeur', 'un récepteur qui consomme 0,5 A vide une batterie de quelques ampères-heures en plusieurs heures']],
-    ver: 'La durée est Δt = Qs ÷ I = 2,0 ÷ 0,50 = 4,0 h. L’élève a inversé le rapport : 15 minutes est 16 fois trop court. Ce n’est pas plausible : un courant de 0,50 A pendant 4 h transporte bien 2,0 Ah.',
+    ver: 'La durée est Δt = frac(Qs|I) = frac(2,0|0,50) = 4,0 h. L’élève a inversé le rapport : 15 minutes est 16 fois trop court. Ce n’est pas plausible : un courant de 0,50 A pendant 4 h transporte bien 2,0 Ah.',
     q2: 'Quelle est la cause de l’écart ?',
     options: [
-      V('le rapport est inversé : il fallait diviser la capacité par l’intensité', 'Δt = Qs ÷ I (capacité divisée par intensité), pas I ÷ Qs.'),
+      V('le rapport est inversé : il fallait diviser la capacité par l’intensité', 'Δt = frac(Qs|I) (capacité divisée par intensité), pas frac(I|Qs).'),
       F('la capacité aurait dû être convertie en coulombs avant le calcul de la durée', 'En ampères-heures, divisée par des ampères, elle donne directement des heures : aucune conversion n’est nécessaire.'),
-      F('la durée d’une batterie ne se calcule pas avec l’intensité du courant', 'Si : Δt = Qs ÷ I relie la capacité, l’intensité et la durée de fonctionnement.'),
+      F('la durée d’une batterie ne se calcule pas avec l’intensité du courant', 'Si : Δt = frac(Qs|I) relie la capacité, l’intensité et la durée de fonctionnement.'),
     ] }),
 ];
 
@@ -81,14 +81,14 @@ export const BAT_SAPP = [
         Imax: tok(`${p.Imax} A`, 'Courant de décharge maximal permis par la fiche technique', p.Imax, 'A'),
       };
       const debut = ['La fiche technique d’un accumulateur indique : tension nominale ', T('U'), ', capacité ', T('Qs'), ', masse ', T('m'), ', courant de décharge maximal ', T('Imax'), '. Il alimente un récepteur de puissance ', T('P'), '. '];
-      if (q === 0) return { tokens, derivees: ['I = P ÷ U'], texte: [...debut, 'Quelle est l’intensité du courant débité ?'], utiles: ['P', 'U'],
+      if (q === 0) return { tokens, derivees: ['I = frac(P|U)'], texte: [...debut, 'Quelle est l’intensité du courant débité ?'], utiles: ['P', 'U'],
         raisons: { Qs: 'La capacité sert à calculer la durée, pas l’intensité.', m: 'La masse ne sert pas dans ce calcul.', Imax: 'Le courant maximal permis est une limite : il ne donne pas le courant réellement débité.' },
         cherche: { bonne: 'L’intensité du courant débité (en A)', faux: ['La durée de fonctionnement (en h)', 'L’énergie disponible (en Wh)', 'La puissance de l’accumulateur (en W)'] },
-        manque: null, solution: { txt: 'I = P ÷ U', val: p.P / p.U, u: 'A' } };
-      return { tokens, derivees: ['I = P ÷ U', 'Δt = Qs ÷ I'], texte: [...debut, 'Quelle est la durée de fonctionnement de l’accumulateur ?'], utiles: ['P', 'U', 'Qs'],
+        manque: null, solution: { txt: 'I = frac(P|U)', val: p.P / p.U, u: 'A' } };
+      return { tokens, derivees: ['I = frac(P|U)', 'Δt = frac(Qs|I)'], texte: [...debut, 'Quelle est la durée de fonctionnement de l’accumulateur ?'], utiles: ['P', 'U', 'Qs'],
         raisons: { m: 'La masse ne sert pas dans ce calcul.', Imax: 'Le courant maximal permis est une limite : il ne sert pas à calculer la durée.' },
         cherche: { bonne: 'La durée de fonctionnement (en h)', faux: ['L’intensité du courant débité (en A)', 'L’énergie disponible (en Wh)', 'La charge débitée en une heure (en C)'] },
-        manque: null, solution: { txt: 'Δt = Qs ÷ I, avec I = P ÷ U', val: p.Qs / (p.P / p.U), u: 'h' } };
+        manque: null, solution: { txt: 'Δt = frac(Qs|I), avec I = frac(P|U)', val: p.Qs / (p.P / p.U), u: 'h' } };
     }),
   },
   {
