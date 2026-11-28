@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useRef } from "react";
+import { memo, useMemo, useRef } from "react";
 import { coordSvg } from "./exploAnim";
 import * as M from "./osrModele";
 
@@ -21,7 +21,7 @@ function zig(x, y1, y2, n = 9, amp = 13) {
 export function SceneExcitee({ x, y, fe, tour, afficheMoteur = true, aria }) {
   const ys = YS - y * ECH, ym = YM - x * ECH;
   return (
-    <svg viewBox="0 0 300 264" role="img" aria-label={aria} style={{ width: '100%', display: 'block' }}>
+    <svg viewBox="0 0 300 264" role="img" aria-label={aria} style={{ width: '100%', display: 'block', aspectRatio: '300 / 264', overflow: 'hidden', overflowAnchor: 'none' }}>
       <defs>
         <linearGradient id="osr-masse" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#38bdf8"/><stop offset="1" stopColor="#0369a1"/></linearGradient>
       </defs>
@@ -45,18 +45,18 @@ export function SceneExcitee({ x, y, fe, tour, afficheMoteur = true, aria }) {
 }
 
 // Courbe de résonance : amplitude du régime permanent en fonction de la fréquence d'excitation. Cliquer ou glisser règle la fréquence.
-export function CourbeReso({ f0, Q, fe, onPick, montrer = { marque: true, res: false, bande: false }, etroit = false, aria }) {
+function CourbeResoBrute({ f0, Q, fe, onPick, montrer = { marque: true, res: false, bande: false }, etroit = false, aria }) {
   const ref = useRef(null), F = etroit ? 1.25 : 1;
   const X0 = 40, W = 340, Y0 = 232, H = 190, fM = M.REGLAGES.fMax, Am = M.ampMax(f0, Q) * 1.12;
   const tx = f => X0 + W * f / fM, ty = A => Y0 - Math.min(A, Am) * H / Am;
-  const pts = []; for (let f = 0.02; f <= fM + 1e-9; f += 0.02) pts.push(`${tx(f).toFixed(1)},${ty(M.amp(f, f0, Q)).toFixed(1)}`);
-  const fr = M.fRes(f0, Q), b = M.bande(f0, Q), Ae = M.amp(fe, f0, Q);
+  const pts = useMemo(() => { const t = []; for (let f = 0.02; f <= fM + 1e-9; f += 0.02) t.push(`${(X0 + W * f / fM).toFixed(1)},${(Y0 - Math.min(M.amp(f, f0, Q), Am) * H / Am).toFixed(1)}`); return t; }, [f0, Q, fM, Am]);
+  const fr = useMemo(() => M.fRes(f0, Q), [f0, Q]), b = useMemo(() => M.bande(f0, Q), [f0, Q]), Ae = M.amp(fe, f0, Q);
   const pick = ev => { if (!onPick || !ref.current) return; const { X } = coordSvg(ref.current, ev); onPick(Math.max(0.2, Math.min(fM, Math.round((fM * (X - X0) / W) / 0.02) * 0.02))); };
   const dn = ev => { ev.currentTarget.setPointerCapture(ev.pointerId); pick(ev); };
   const mv = ev => { if (ev.buttons) pick(ev); };
   const ticks = []; for (let f = 0; f <= fM + 1e-9; f += 1) ticks.push(f);
   return (
-    <svg ref={ref} viewBox="0 0 420 270" role="img" aria-label={aria || 'Courbe de résonance : amplitude des oscillations en fonction de la fréquence d’excitation.'} style={{ width: '100%', display: 'block', touchAction: 'none', cursor: onPick ? 'pointer' : 'default' }} onPointerDown={dn} onPointerMove={mv}>
+    <svg ref={ref} viewBox="0 0 420 270" role="img" aria-label={aria || 'Courbe de résonance : amplitude des oscillations en fonction de la fréquence d’excitation.'} style={{ width: '100%', display: 'block', touchAction: 'pan-y', cursor: onPick ? 'pointer' : 'default' }} onPointerDown={dn} onPointerMove={mv}>
       <rect x={X0} y="28" width={W} height={Y0 - 28} rx="6" fill="#fafcff" stroke="#e2e8f0"/>
       {ticks.map(f => <g key={f}><line x1={tx(f)} x2={tx(f)} y1="28" y2={Y0} stroke="#e2e8f0"/><text x={tx(f)} y={Y0 + 18 * F} textAnchor="middle" fontSize={13 * F} fill={GRIS}>{f}</text></g>)}
       <text x={X0 + W / 2} y={Y0 + 36 * F} textAnchor="middle" fontSize={13 * F} fill={GRIS}>fréquence d’excitation (Hz)</text>
@@ -72,6 +72,8 @@ export function CourbeReso({ f0, Q, fe, onPick, montrer = { marque: true, res: f
       {montrer.marque && <g><line x1={tx(fe)} x2={tx(fe)} y1={ty(Ae)} y2={Y0} stroke={ORANGE} strokeWidth="1.6" strokeDasharray="4 3"/><circle cx={tx(fe)} cy={ty(Ae)} r="7" fill={ORANGE} stroke="#fff" strokeWidth="2.5"/></g>}
     </svg>);
 }
+
+export const CourbeReso = memo(CourbeResoBrute);
 
 // Jauge d'amplitude (défi 1) : barre simple, sans échelle graduée ni valeur du maximum.
 export function JaugeAmplitude({ A, aria }) {

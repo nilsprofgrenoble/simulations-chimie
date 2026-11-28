@@ -1,5 +1,5 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
-import { useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond, Frac } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./osrModele";
@@ -33,22 +33,24 @@ const DEF = {
 function PanneauReso({ cfg, onEvent, f0 = f0Scene, Qfixe = null, complet = false, onFe, jauge = false, fe0 = 0.8 }) {
   const [fe, setFe] = useState(fe0), [iQ, setIQ] = useState(2);
   const racine = useRef(null), etroit = useEtroit(racine, 640);
-  const L = useLecture(1e6, true);
+  const L = useLecture(1e6, true), demarrer = L.demarrer;
   const Q = Qfixe ?? M.QS[iQ], t = L.t, x = M.pos(t, fe, f0, Q), y = M.support(t, fe), tour = 2 * Math.PI * fe * t;
   const A = M.amp(fe, f0, Q), Am = M.ampMax(f0, Q);
   const evts = (f, q) => { if (!onEvent) return; onEvent('fe'); if (M.amp(f, f0, q) >= 0.9 * M.ampMax(f0, q)) onEvent('pic'); if (q <= 4) onEvent('qpetit'); if (q >= 10) onEvent('qgrand'); };
-  const changerFe = v => { const f = Math.max(0.2, Math.min(M.REGLAGES.fMax, Math.round(v * 50) / 50)); setFe(f); L.demarrer(); evts(f, Q); onFe && onFe(f); };
+  const evtsRef = useRef(null); evtsRef.current = evts;
+  const changerFe = useCallback(v => { const f = Math.max(0.2, Math.min(M.REGLAGES.fMax, Math.round(v * 50) / 50)); setFe(f); demarrer(); evtsRef.current(f, Q); onFe && onFe(f); }, [Q, onFe, demarrer]);
   const changerQ = i => { setIQ(i); L.demarrer(); evts(fe, M.QS[i]); };
   const nom = ['amortissement fort', 'amortissement moyen', 'amortissement faible', 'amortissement très faible'];
   const aria = `Une masse suspendue à un ressort oscille verticalement : le support du ressort est animé par un moteur à ${nbs(fe, 2)} hertz.`;
   const b = M.bande(f0, Q);
   const courbe = cfg.courbe || complet;
+  const montrer = useMemo(() => ({ marque: true, res: !!(cfg.res || complet), bande: !!(cfg.bande || complet) }), [cfg.res, cfg.bande, complet]);
   return (
-    <div ref={racine}>
+    <div ref={racine} style={{ overflowAnchor: 'none' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'flex-start' }}>
         <div style={{ ...styleBoite, flex: '1 1 250px', minWidth: 0, padding: 6, maxWidth: 360 }}><SceneExcitee x={x} y={y} fe={fe} tour={tour} aria={aria}/></div>
         {courbe && <div style={{ ...styleBoite, flex: '1 1 300px', minWidth: 0, padding: 6 }}>
-          <CourbeReso f0={f0} Q={Q} fe={fe} onPick={changerFe} montrer={{ marque: true, res: !!(cfg.res || complet), bande: !!(cfg.bande || complet) }} etroit={etroit}/>
+          <CourbeReso f0={f0} Q={Q} fe={fe} onPick={changerFe} montrer={montrer} etroit={etroit}/>
           <div style={{ fontSize: 13, color: KIT.txt2, padding: '0 4px 2px' }}>Touchez la courbe pour choisir la fréquence d’excitation.</div>
         </div>}
       </div>
