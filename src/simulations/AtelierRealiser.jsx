@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { CHAPITRES } from "../chapitres";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, attrTest, lireProgression } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, ARetenir, avecIndices, indicesProfond, attrTest, lireProgression } from "../commun";
 import { ParcoursCompetence, FilAriane } from "../ParcoursCompetence";
 import { SEL_VIDE, lireSelection, ecrireSelection } from "../selectionParcours";
 import { sanitiser } from "../parcoursCommun";
@@ -45,7 +45,7 @@ function ExerciceRea({ id, titre, detail, entete, navigation }) {
     const affichee = !!chk[q.id], r = resultat(q), bon = r.ok;
     return (
       <div key={q.id} data-q={q.id} style={styleBoite}>
-        <div style={{ fontWeight: 700, fontSize: 14.5, color: KIT.txt, marginBottom: 6, lineHeight: 1.6 }}>{i + 1}. {q.q}</div>
+        <div style={{ fontWeight: 700, fontSize: 14.5, color: KIT.txt, marginBottom: 6, lineHeight: 1.6 }}>{i + 1}. {indicesProfond(q.q)}</div>
         {q.type === 'trace' ? (
           <TraceCourbe q={q} val={rep[q.id]} resultat={affichee && !bon ? r : null} solution={!!vu[q.id] && !bon}
             onChange={v => { setRep(x => ({ ...x, [q.id]: v })); setChk(c => ({ ...c, [q.id]: false })); }}/>

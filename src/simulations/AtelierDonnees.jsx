@@ -1,6 +1,6 @@
 import CodeExo from '../CodeExo';
 import { useState } from "react";
-import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, avecIndices, attrTest } from "../commun";
+import { cardStyle, KIT, styleBouton, stylePetitBouton, styleBoite, ORANGE_GUIDE, lireNombre, proche, avecIndices, indicesProfond, attrTest } from "../commun";
 import { useSuivi } from "../suivi";
 import { ENONCES, nouvelEnonce, melange, nb } from "./AtelierDonneesBanque";
 import { SITUATIONS } from "./AtelierSituationsBanque";
@@ -82,9 +82,9 @@ function Texte({ ex, sel, onToggle, marque }) {
     <div>
       {paragraphes.map((par, n) => (
         <p key={n} style={{ fontSize: 16, lineHeight: 2, color: KIT.txt, margin: '0 0 8px' }}>
-          {par.map((m, i) => typeof m === 'string' ? <span key={i}>{expo(m)}</span> : (
+          {par.map((m, i) => typeof m === 'string' ? <span key={i}>{avecIndices(expo(m))}</span> : (
             <button key={i} data-id={m.t} data-utile={ex.b.utiles.includes(m.t) ? 'true' : 'false'} aria-pressed={sel.includes(m.t)}
-              onClick={() => onToggle(m.t)} style={style(m.t)}>{expo(ex.b.tokens[m.t].aff)}</button>
+              onClick={() => onToggle(m.t)} style={style(m.t)}>{avecIndices(expo(ex.b.tokens[m.t].aff))}</button>
           ))}
         </p>
       ))}
@@ -95,10 +95,10 @@ function Texte({ ex, sel, onToggle, marque }) {
 }
 
 const Verdict = ({ ok, children }) => (
-  <div role="status" style={{ fontSize: 14, marginTop: 6, fontWeight: 700, color: ok ? '#15803d' : '#b91c1c' }}>{ok ? '✅ ' : '❌ '}{children}</div>
+  <div role="status" style={{ fontSize: 14, marginTop: 6, fontWeight: 700, color: ok ? '#15803d' : '#b91c1c' }}>{ok ? '✅ ' : '❌ '}{indicesProfond(children)}</div>
 );
 const Correction = ({ children }) => (
-  <div style={{ fontSize: 13.5, marginTop: 6, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', color: KIT.txt }}>{children}</div>
+  <div style={{ fontSize: 13.5, marginTop: 6, background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 6, padding: '6px 8px', color: KIT.txt }}>{indicesProfond(children)}</div>
 );
 
 // Les deux types d'exercices (énoncés à données cliquables, situations à étapes) partagent la même liste de choix
@@ -247,11 +247,11 @@ export function ExerciceDonnees({ id, q, entete, navigation }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
           {propositions(ex.b.manque, ex.graine + 7).map(o => (
             <button key={o} data-ok={attrTest(o === ex.b.manque.bonne ? 'true' : 'false')} onClick={() => { setRep(r => ({ ...r, manque: o })); setChk(c => ({ ...c, manque: false })); }}
-              style={{ ...styleBouton(rep.manque === o, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{o}</button>
+              style={{ ...styleBouton(rep.manque === o, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{avecIndices(o)}</button>
           ))}
         </div>
         {chk.manque && <Verdict ok={okEtape.manque}>{okEtape.manque ? 'Exact.' : 'Pas encore : demandez-vous ce que la formule utilisée exige et que l’énoncé ne fournit pas.'}</Verdict>}
-        {vu.manque && <Correction>{ex.b.manque.bonne}. {ex.b.manque.expl}</Correction>}
+        {vu.manque && <Correction>{avecIndices(ex.b.manque.bonne)}. {avecIndices(ex.b.manque.expl)}</Correction>}
         {barre('manque', stages.indexOf('manque'))}
       </div>),
   };
