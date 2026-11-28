@@ -2742,6 +2742,44 @@ function genOslTau() {
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3], retenir: ['À t = τ, l’amplitude est divisée par e : il reste environ 37 %.', 'Plus τ est petit, plus l’amortissement est fort.'] };
 }
+function genOseRessort() {
+  const k = tire([20, 25, 40, 50, 80, 100]), xc = tire([2, 3, 4, 5, 6, 8]), m = tire([0.2, 0.25, 0.5, 1]);
+  const x = xc / 100, Ep = 0.5 * k * x * x, EpmJ = Ep * 1000, v = Math.sqrt(2 * Ep / m), Ec = 0.75 * EpmJ, g = d => FM.nbf(d, 2), g1 = d => FM.nbf(d, 1);
+  const intro = `Un chariot de masse m = ${FM.nbf(m, 2)}${NB}kg est relié à un ressort de raideur k = ${k}${NB}N/m. On l’écarte de x₀ = ${xc}${NB}cm de sa position d’équilibre, puis on le lâche sans vitesse (frottements négligeables).`;
+  const q1 = { id: 'r0', type: 'num', q: <>Quelle est l’<b>énergie potentielle élastique</b> du ressort au moment du lâcher, en mJ ?</>, unite: 'mJ', vrai: EpmJ, tolRel: 0.03, csMin: 2,
+    aide: 'Ep = ½ k x², avec x en mètres ; 1 J = 1 000 mJ.',
+    pieges: [[2 * EpmJ, 'Vous avez oublié le facteur ½ : Ep = ½ k x².'], [EpmJ * 1e4, 'Vous avez gardé x en centimètres : convertissez-le en mètres avant de calculer.'], [EpmJ / 1000, 'Vous avez donné la valeur en joules : le résultat est demandé en millijoules.']],
+    expl: <>x₀ = {g(x)}{NB}m ; Ep = <Frac haut={<>1</>} bas={<>2</>} /> × {k} × {g(x)}² = <b>{g1(EpmJ)}{NB}mJ</b>.</> };
+  const q2 = { id: 'r1', type: 'num', q: <>Quelle est la <b>vitesse maximale</b> du chariot (au passage par l’équilibre), en m/s ?</>, unite: 'm/s', vrai: v, tolRel: 0.03, csMin: 2,
+    aide: 'Sans frottements, toute l’énergie est cinétique à l’équilibre : ½ m v² = Ep, donc v = sqrt(frac(2 × Ep|m)).',
+    pieges: [[2 * Ep / m, 'Vous avez oublié la racine carrée : v² = frac(2 × Ep|m), donc v = sqrt(frac(2 × Ep|m)).'], [Math.sqrt(Ep / m), 'Vous avez oublié le facteur 2 : ½ m v² = Ep donne v² = frac(2 × Ep|m).']],
+    expl: <>½ m v² = Ep, donc v = <span style={{ whiteSpace: 'nowrap' }}>√(<Frac haut={<>2 × {g(Ep)}</>} bas={<>{g(m)}</>} />)</span> = <b>{g(v)}{NB}m/s</b>.</> };
+  const q3 = { id: 'r2', type: 'num', q: <>Quelle est l’<b>énergie cinétique</b> du chariot lorsqu’il se trouve à x₀/2 de sa position d’équilibre, en mJ ?</>, unite: 'mJ', vrai: Ec, tolRel: 0.03, csMin: 2,
+    aide: 'Em = Ep(x₀) se conserve. À x₀/2, Ep est divisée par 4 : Ec = Em − Ep.',
+    pieges: [[EpmJ / 2, 'Vous avez divisé l’énergie par 2 : Ep varie comme x², donc elle est divisée par 4 quand x est divisé par 2.'], [EpmJ / 4, 'Vous avez donné l’énergie potentielle à x₀/2 : l’énergie cinétique est ce qui reste de l’énergie mécanique.']],
+    expl: <>Ep(x₀/2) = <Frac haut={<>{g1(EpmJ)}</>} bas={<>4</>} /> = {g1(EpmJ / 4)}{NB}mJ ; Ec = {g1(EpmJ)} − {g1(EpmJ / 4)} = <b>{g1(Ec)}{NB}mJ</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Ep = ½ k x² (x en mètres) ; Ec = ½ m v².', 'Sans frottements, Em = Ec + Ep reste constante : Ep max donne Ec = 0, et inversement.'] };
+}
+function genOseEntretien() {
+  const E0 = tire([20, 40, 50, 80, 100, 200]), p = tire([5, 10, 20, 25]), T = tire([0.5, 0.8, 1, 1.25, 2]);
+  const perte = E0 * p / 100, P = perte / T, E1 = E0 - perte, g = d => FM.nbf(d, 2), g1 = d => FM.nbf(d, 1);
+  const intro = `Un oscillateur a une énergie mécanique initiale E₀ = ${E0}${NB}mJ. À cause des frottements, il en dissipe ${p}${NB}% pendant la première période, de durée T = ${g(T)}${NB}s.`;
+  const q1 = { id: 'e0', type: 'num', q: <>Quelle <b>énergie</b> est dissipée pendant cette première période, en mJ ?</>, unite: 'mJ', vrai: perte, tolRel: 0.03, csMin: 2,
+    aide: `Énergie dissipée = ${p} % de E₀ : multipliez E₀ par frac(${p}|100).`,
+    pieges: [[E0 - perte, 'Vous avez donné l’énergie restante : la question porte sur l’énergie dissipée.'], [E0 * p, 'Vous avez oublié de diviser par 100 : un pourcentage se divise par 100 avant de multiplier.']],
+    expl: <>Edissipée = {E0} × <Frac haut={<>{p}</>} bas={<>100</>} /> = <b>{g1(perte)}{NB}mJ</b>.</> };
+  const q2 = { id: 'e1', type: 'num', q: <>Quelle est l’<b>énergie mécanique restante</b> à la fin de cette période, en mJ ?</>, unite: 'mJ', vrai: E1, tolRel: 0.03, csMin: 2,
+    aide: 'Em = E₀ − énergie dissipée.',
+    pieges: [[E0 + perte, 'Vous avez additionné : les frottements font diminuer l’énergie mécanique.'], [perte, 'Vous avez donné l’énergie dissipée : la question porte sur l’énergie restante.']],
+    expl: <>Em = {E0} − {g1(perte)} = <b>{g1(E1)}{NB}mJ</b>.</> };
+  const q3 = { id: 'e2', type: 'num', q: <>Quelle <b>puissance moyenne</b> doit fournir un dispositif d’entretien pour compenser exactement ces pertes, en mW ?</>, unite: 'mW', vrai: P, tolRel: 0.03, csMin: 2,
+    aide: 'P = frac(énergie apportée par période|durée d’une période) ; mJ divisé par s donne des mW.',
+    pieges: [[perte * T, 'Vous avez multiplié l’énergie par la durée : la puissance est l’énergie divisée par la durée.'], [P / 1000, 'Vous avez converti en watts : le résultat est demandé en mW (1 mJ/s = 1 mW).']],
+    expl: <>P = <Frac haut={<>{g1(perte)}{NB}mJ</>} bas={<>{g(T)}{NB}s</>} /> = <b>{g(P)}{NB}mW</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Avec des frottements : Em diminue, Em = E₀ − énergie dissipée.', 'L’entretien compense les pertes : P = frac(énergie dissipée par période|période).'] };
+}
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
@@ -7237,6 +7275,8 @@ export const FAMILLES = [
   { id: 'sta-donneurs', groupe: 'Formules', titre: 'Indice de stabilité d’un carbocation et d’un carbanion : donneurs et attracteurs (terminale STL)', gen: genStaDonneurs, domaine: 'Stabilité des intermédiaires' },
   { id: 'osl-periode', groupe: 'Formules', titre: 'Période et fréquence d’un oscillateur à partir d’une mesure de durée (terminale STL)', gen: genOslPeriode, domaine: 'Oscillations libres' },
   { id: 'osl-tau', groupe: 'Formules', titre: 'Amplitude d’un oscillateur amorti : temps caractéristique τ (terminale STL)', gen: genOslTau, domaine: 'Oscillations libres' },
+  { id: 'ose-ressort', groupe: 'Formules', titre: 'Énergie d’un chariot relié à un ressort : Ep, Ec et conservation (terminale STL)', gen: genOseRessort, domaine: 'Énergie d’un oscillateur' },
+  { id: 'ose-entretien', groupe: 'Formules', titre: 'Pertes d’énergie et puissance d’entretien d’un oscillateur (terminale STL)', gen: genOseEntretien, domaine: 'Énergie d’un oscillateur' },
   { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },

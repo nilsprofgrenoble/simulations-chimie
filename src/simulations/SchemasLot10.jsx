@@ -705,8 +705,38 @@ export function OscRLC() {
     <Cadre h={190} titre="Circuit série comprenant une résistance, une bobine et un condensateur">
       <path d="M110 40 L200 40 M290 40 L370 40 L370 62 M370 128 L370 150 L110 150 L110 98 M110 80 L110 40" fill="none" stroke={ENCRE} strokeWidth="2.5" />
       <rect x="200" y="28" width="90" height="24" fill="#fff" stroke={ENCRE} strokeWidth="2.5" /><T x="245" y="20" s={16} w="700">résistance R</T>
-      <path d="M370 62 q18 8 0 16 q18 8 0 16 q18 8 0 16 q18 8 0 16" fill="none" stroke={ENCRE} strokeWidth="2.5" /><T x="398" y="100" s={16} a="start" w="700">bobine L</T>
-      <line x1="88" y1="80" x2="132" y2="80" stroke={ENCRE} strokeWidth="3" /><line x1="88" y1="98" x2="132" y2="98" stroke={ENCRE} strokeWidth="3" /><T x="110" y="176" s={16} w="700">condensateur C</T>
+      <path d="M370 62 q18 8 0 16 q18 8 0 16 q18 8 0 16 q18 8 0 16" fill="none" stroke={ENCRE} strokeWidth="2.5" /><T x="396" y="100" s={18} a="start" w="700">bobine L</T>
+      <line x1="88" y1="80" x2="132" y2="80" stroke={ENCRE} strokeWidth="3" /><line x1="88" y1="98" x2="132" y2="98" stroke={ENCRE} strokeWidth="3" /><T x="130" y="178" s={18} w="700">condensateur C</T>
+    </Cadre>);
+}
+
+
+// ── Énergie d'un oscillateur (simulation 322) : situations neutres, ni valeur ni résultat ──
+// Chariot sur un rail, relié à un ressort (amortisseur facultatif) ; symboles k, m, x facultatifs.
+export function OseChariot({ amort = false, symboles = false }) {
+  return (
+    <Cadre h={190} titre="Chariot sur un rail, relié à un ressort fixé à un mur">
+      <rect x="30" y="40" width="16" height="104" fill="#e2e8f0" stroke={GRIS} strokeWidth="2" />
+      <polyline points={Array.from({ length: 11 }, (_, i) => (i === 0 ? '46,104' : i === 10 ? '200,104' : `${46 + 8 + (146 / 9.5) * (i - 0.5)},${104 + (i % 2 ? -11 : 11)}`)).join(' ')} fill="none" stroke={ENCRE} strokeWidth="3" strokeLinejoin="round" />
+      <rect x="200" y="82" width="90" height="46" rx="8" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" /><T x="245" y="113" s={22} w="700">m</T>
+      <circle cx="222" cy="136" r="7" fill={GRIS} /><circle cx="268" cy="136" r="7" fill={GRIS} />
+      <line x1="46" y1="144" x2="440" y2="144" stroke={ENCRE} strokeWidth="3" />
+      {amort && <g><rect x="46" y="56" width="70" height="16" rx="4" fill="#e0f2fe" stroke={GRIS} strokeWidth="2" /><polyline points="116,64 232,64 232,82" fill="none" stroke={GRIS} strokeWidth="3.5" /><T x="112" y="50" s={16} c={GRIS}>amortisseur</T></g>}
+      <line x1="245" y1="62" x2="245" y2="158" stroke={GRIS} strokeWidth="1.5" strokeDasharray="6 5" />
+      <T x="245" y="178" s={16} c={GRIS}>position d’équilibre</T>
+      {symboles && <g><T x="120" y="130" s={20} w="700" a="middle">k</T><Fl x1="245" y1="170" x2="318" y2="170" /><T x="338" y="177" s={20} w="700">x</T></g>}
+    </Cadre>);
+}
+
+// Circuit LC série (bobine et condensateur), sans valeur.
+export function OseLC({ resistance = false }) {
+  return (
+    <Cadre h={190} titre="Circuit comprenant une bobine et un condensateur en série">
+      <path d="M110 40 L370 40 L370 62 M370 118 L370 150 L110 150 L110 98 M110 80 L110 40" fill="none" stroke={ENCRE} strokeWidth="2.5" />
+      <path d="M370 62 q18 8 0 14 q18 8 0 14 q18 8 0 14 q18 8 0 14" fill="none" stroke={ENCRE} strokeWidth="2.5" /><T x="396" y="100" s={18} a="start" w="700">bobine L</T>
+      <line x1="88" y1="80" x2="132" y2="80" stroke={ENCRE} strokeWidth="3" /><line x1="88" y1="98" x2="132" y2="98" stroke={ENCRE} strokeWidth="3" /><T x="130" y="178" s={18} w="700">condensateur C</T>
+      <Fl x1="200" y1="28" x2="280" y2="28" /><T x="240" y="18" s={17} c={GRIS}>courant i</T>
+      {resistance && <g><rect x="190" y="143" width="80" height="14" fill="#fff" stroke={ENCRE} strokeWidth="2.5" /></g>}
     </Cadre>);
 }
 
@@ -722,5 +752,5 @@ export const DESSINS_LOT10 = {
   plaques: Plaques, blocTransparent: BlocTransparent, bruleurBecher: BruleurBecher, soleilTerre: SoleilTerre, looping: Looping, balance: Balance, reflux: Reflux,
   chuteLibre: ChuteLibre, projection: Projection, eprouvette: Eprouvette, piston: Piston, niveaux: Niveaux, comptageRadio: ComptageRadio, sonMicro: SonMicro,
   polarimetre: Polarimetre, capteurBain: CapteurBain,
-  oscRessort: OscRessort, oscRegle: OscRegle, oscPiston: OscPiston, oscAiguille: OscAiguille, oscRLC: OscRLC,
+  oseChariot: OseChariot, oseLC: OseLC, oscRessort: OscRessort, oscRegle: OscRegle, oscPiston: OscPiston, oscAiguille: OscAiguille, oscRLC: OscRLC,
 };
