@@ -24,6 +24,7 @@ import { MESO_ANA } from './mesoExos.js';
 import { STA_ANA } from './staExos.js';
 import { OSL_ANA } from './oslExos.js';
 import { OSE_ANA } from './oseExos.js';
+import { OSR_ANA } from './osrExos.js';
 import { CLP_ANA } from './chutePlaneExos.js';
 import { NWR_ANA } from './newtonRectExos.js';
 import { MTR_ANA } from './modesTransfertExos.js';
@@ -7354,6 +7355,7 @@ export const PREVOIR = [
   ...STA_ANA,
   ...OSL_ANA,
   ...OSE_ANA,
+  ...OSR_ANA,
   ...ONDES1G_ANA,
   ...NUC2GT_ANA,
   ...MAT2GT_ANA,

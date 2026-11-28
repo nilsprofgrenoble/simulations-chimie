@@ -2780,6 +2780,42 @@ function genOseEntretien() {
   filtrer([q1, q2, q3]);
   return { intro, questions: [q1, q2, q3], retenir: ['Avec des frottements : Em diminue, Em = E₀ − énergie dissipée.', 'L’entretien compense les pertes : P = frac(énergie dissipée par période|période).'] };
 }
+function genOsrQualite() {
+  const fr = tire([5, 8, 10, 12, 20, 25]), Q = tire([5, 8, 10, 16, 20]), df = Math.round(fr / Q * 100) / 100, Qv = fr / df, Q2 = 2 * Qv, g = d => FM.nbf(d, 2), g1 = d => FM.nbf(d, 1);
+  const intro = `La courbe de résonance d’un oscillateur présente un maximum à la fréquence fres = ${g1(fr)}${NB}Hz. Sa largeur de bande, mesurée à l’amplitude maximale divisée par √2, est Δf = ${g(df)}${NB}Hz.`;
+  const q1 = { id: 'q0', type: 'num', q: <>Quel est le <b>facteur de qualité Q</b> de cette résonance ?</>, unite: '', vrai: Qv, tolRel: 0.03, csMin: 2,
+    aide: 'Q = frac(fres|Δf) ; Q n’a pas d’unité.',
+    pieges: [[1 / Qv, 'Vous avez inversé le rapport : Q = fres divisée par Δf.'], [fr * df, 'Vous avez multiplié : Q est le quotient frac(fres|Δf).']],
+    expl: <>Q = <Frac haut={<>{g1(fr)}{NB}Hz</>} bas={<>{g(df)}{NB}Hz</>} /> = <b>{FM.nbf(Qv, 1)}</b>.</> };
+  const q2 = { id: 'q1', type: 'num', q: <>On modifie l’oscillateur pour doubler son facteur de qualité, sans changer fres. Quelle est la nouvelle <b>largeur de bande</b>, en Hz ?</>, unite: 'Hz', vrai: df / 2, tolRel: 0.03, csMin: 2,
+    aide: 'Δf = frac(fres|Q) : si Q double, Δf est divisée par 2.',
+    pieges: [[df * 2, 'Vous avez doublé Δf : Q est inversement proportionnel à Δf, donc Δf est divisée par 2.'], [df, 'Δf change : Q est inversement proportionnel à Δf à fres constante.']],
+    expl: <>Δf′ = <Frac haut={<>{g1(fr)}{NB}Hz</>} bas={<>{FM.nbf(Q2, 1)}</>} /> = <b>{g(df / 2)}{NB}Hz</b>.</> };
+  const q3 = { id: 'q2', type: 'num', q: <>Avec le facteur de qualité initial, quelle serait la largeur de bande pour une fréquence de résonance <b>trois fois plus grande</b>, en Hz ?</>, unite: 'Hz', vrai: 3 * df, tolRel: 0.03, csMin: 2,
+    aide: 'Δf = frac(fres|Q) : à Q constant, Δf est proportionnelle à fres.',
+    pieges: [[df / 3, 'Vous avez divisé par 3 : à Q constant, Δf est proportionnelle à fres.'], [df, 'Δf change avec fres : Δf = frac(fres|Q).']],
+    expl: <>Δf″ = <Frac haut={<>{g1(3 * fr)}{NB}Hz</>} bas={<>{FM.nbf(Qv, 1)}</>} /> = <b>{g(3 * df)}{NB}Hz</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['Q = frac(fres|Δf), sans unité.', 'Pic étroit : Δf petite, Q grand ; amortissement faible.'] };
+}
+function genOsrPropre() {
+  const T0 = tire([0.2, 0.25, 0.4, 0.5, 0.8, 1.25]), Q = tire([8, 10, 15, 20, 40]), f0 = 1 / T0, df = f0 / Q, g = d => FM.nbf(d, 2);
+  const intro = `Un oscillateur peu amorti a une période propre T₀ = ${g(T0)}${NB}s et un facteur de qualité Q = ${Q}. On l’excite avec un moteur à fréquence réglable.`;
+  const q1 = { id: 'p0', type: 'num', q: <>Quelle est sa <b>fréquence propre f₀</b>, en Hz ?</>, unite: 'Hz', vrai: f0, tolRel: 0.03, csMin: 2,
+    aide: 'f₀ = frac(1|T₀), avec T₀ en secondes.',
+    pieges: [[T0, 'Vous avez donné la période : la fréquence est l’inverse de la période.'], [f0 * 60, 'Vous avez converti en oscillations par minute : le résultat est demandé en hertz.']],
+    expl: <>f₀ = <Frac haut={<>1</>} bas={<>{g(T0)}{NB}s</>} /> = <b>{g(f0)}{NB}Hz</b>.</> };
+  const q2 = { id: 'p1', type: 'num', q: <>À quelle fréquence faut-il exciter l’oscillateur pour obtenir la <b>résonance</b>, en Hz (amortissement faible) ?</>, unite: 'Hz', vrai: f0, tolRel: 0.05, csMin: 2,
+    aide: 'Amortissement faible : fres ≈ f₀.',
+    pieges: [[T0, 'Vous avez donné la période propre : la fréquence de résonance est voisine de la fréquence propre f₀.'], [f0 * Q, 'Vous avez multiplié par Q : fres est voisine de f₀, sans facteur Q.']],
+    expl: <>fres ≈ f₀ = <b>{g(f0)}{NB}Hz</b>.</> };
+  const q3 = { id: 'p2', type: 'num', q: <>Quelle est la <b>largeur de bande Δf</b> de cette résonance, en Hz ?</>, unite: 'Hz', vrai: df, tolRel: 0.05, csMin: 2,
+    aide: 'Q = frac(fres|Δf), donc Δf = frac(fres|Q), avec fres ≈ f₀.',
+    pieges: [[f0 * Q, 'Vous avez multiplié : Δf = frac(fres|Q).'], [Q / f0, 'Vous avez inversé le rapport : Δf = frac(fres|Q).']],
+    expl: <>Δf = <Frac haut={<>{g(f0)}{NB}Hz</>} bas={<>{Q}</>} /> = <b>{g(df)}{NB}Hz</b>.</> };
+  filtrer([q1, q2, q3]);
+  return { intro, questions: [q1, q2, q3], retenir: ['f₀ = frac(1|T₀) ; amortissement faible : fres ≈ f₀.', 'Δf = frac(fres|Q).'] };
+}
 function genTsolCristal() {
   const so = TS.SOLIDES.nh4cl, T1 = tire([60, 80, 100]), T2 = tire([0, 20, 40]), mEau = tire([150, 200, 250, 400, 500]);
   const s1 = TS.sol(so, T1), s2 = TS.sol(so, T2), m1 = s1 * mEau / 100, m2 = s2 * mEau / 100, cr = m1 - m2, eta = (s1 - s2) / s1 * 100, g = v => TS.nbf(v, 1);
@@ -7277,6 +7313,8 @@ export const FAMILLES = [
   { id: 'osl-tau', groupe: 'Formules', titre: 'Amplitude d’un oscillateur amorti : temps caractéristique τ (terminale STL)', gen: genOslTau, domaine: 'Oscillations libres' },
   { id: 'ose-ressort', groupe: 'Formules', titre: 'Énergie d’un chariot relié à un ressort : Ep, Ec et conservation (terminale STL)', gen: genOseRessort, domaine: 'Énergie d’un oscillateur' },
   { id: 'ose-entretien', groupe: 'Formules', titre: 'Pertes d’énergie et puissance d’entretien d’un oscillateur (terminale STL)', gen: genOseEntretien, domaine: 'Énergie d’un oscillateur' },
+  { id: 'osr-qualite', groupe: 'Formules', titre: 'Facteur de qualité et largeur de bande d’une résonance (terminale STL)', gen: genOsrQualite, domaine: 'Oscillations forcées et résonance' },
+  { id: 'osr-propre', groupe: 'Formules', titre: 'Fréquence de résonance d’un oscillateur peu amorti et largeur de bande (terminale STL)', gen: genOsrPropre, domaine: 'Oscillations forcées et résonance' },
   { id: 'filt-amp', groupe: 'Formules', titre: 'Filtre : facteur d’amplification et amplitude de sortie (terminale STL)', gen: genFiltAmp, domaine: 'Filtrage et amplification de tension' },
   { id: 'filt-coupure', groupe: 'Formules', titre: 'Filtre : fréquence de coupure et bande passante (terminale STL)', gen: genFiltCoupure, domaine: 'Filtrage et amplification de tension' },
   { id: 'tsol-cristal', groupe: 'Formules', titre: 'Refroidir une solution saturée : masses dissoute et déposée, rendement (terminale STL)', gen: genTsolCristal, domaine: 'Solubilité, température et recristallisation' },
