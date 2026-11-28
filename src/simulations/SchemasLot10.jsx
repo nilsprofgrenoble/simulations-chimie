@@ -14,16 +14,40 @@ const Fl = ({ x1, y1, x2, y2, c = ENCRE, w = 2.5 }) => <line x1={x1} y1={y1} x2=
 // Mobile qui avance sur un sol (horizontal ou en montée) : seul le sens du mouvement est indiqué.
 export function Mobile({ objet = 'chariot', sol = 'rail', pente = false }) {
   const a = pente ? -14 : 0;
+  const roue = (x) => <g><circle cx={x} cy="126" r="9" fill={ENCRE} /><circle cx={x} cy="126" r="3.5" fill="#fff" /></g>;
+  let corps;
+  if (objet === 'train') {
+    corps = <>
+      <rect x="120" y="86" width="90" height="38" rx="5" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" /><rect x="214" y="86" width="90" height="38" rx="5" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" />
+      <path d="M308 124 L308 94 Q308 84 322 84 L350 84 Q366 90 372 108 L372 124 Z" fill="#93c5fd" stroke={BLEU} strokeWidth="2.5" /><rect x="326" y="90" width="22" height="14" rx="2" fill="#fff" stroke={BLEU} strokeWidth="1.5" />
+      {[132, 192, 226, 286, 326, 354].map(x => <g key={x}><circle cx={x} cy="127" r="7" fill={ENCRE} /></g>)}
+      {[134, 160, 236, 262].map(x => <rect key={x} x={x} y="96" width="16" height="12" rx="2" fill="#fff" stroke={BLEU} strokeWidth="1.5" />)}
+      <T x="212" y="76" w="700">{objet}</T></>;
+  } else if (objet === 'véhicule' || objet === 'voiture') {
+    corps = <>
+      <path d="M170 124 L170 104 Q170 96 180 94 L204 92 L222 72 Q226 68 232 68 L262 68 Q268 68 272 74 L288 92 L308 96 Q314 98 314 106 L314 124 Z" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" strokeLinejoin="round" />
+      <path d="M228 74 L216 92 L250 92 L250 74 Z M256 74 L256 92 L284 92 L270 74 Z" fill="#fff" stroke={BLEU} strokeWidth="1.5" />
+      {roue(204)}{roue(282)}<T x="242" y="58" w="700">{objet}</T></>;
+  } else if (objet === 'caisse') {
+    corps = <>
+      <rect x="190" y="76" width="100" height="50" fill="#fcd9a8" stroke="#b45309" strokeWidth="2.5" />
+      <line x1="190" y1="76" x2="290" y2="126" stroke="#b45309" strokeWidth="1.5" /><line x1="290" y1="76" x2="190" y2="126" stroke="#b45309" strokeWidth="1.5" />
+      <T x="240" y="66" w="700">{objet}</T></>;
+  } else {
+    corps = <>
+      <rect x="190" y="82" width="100" height="44" rx="6" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" />
+      <circle cx="210" cy="128" r="7" fill={ENCRE} /><circle cx="270" cy="128" r="7" fill={ENCRE} />
+      <T x="240" y="112" w="700">{objet}</T></>;
+  }
   return (
     <Cadre h={170} titre={`${objet} en mouvement vers la droite sur un ${sol}`}>
       <g transform={`rotate(${a} 240 130)`}>
-        <rect x="30" y="130" width="420" height="22" fill={sol === 'glace' ? '#e0f2fe' : '#e2e8f0'} stroke={GRIS} />
-        <T x="240" y="147" s={15} c={GRIS}>{sol}</T>
-        <rect x="190" y="82" width="100" height="44" rx="6" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" />
-        <circle cx="210" cy="128" r="7" fill={ENCRE} /><circle cx="270" cy="128" r="7" fill={ENCRE} />
-        <T x="240" y="112" w="700">{objet}</T>
-        <Fl x1="300" y1="64" x2="400" y2="64" />
-        <T x="350" y="52" s={15} c={GRIS}>mouvement</T>
+        <rect x="30" y="130" width="420" height="22" fill={sol === 'glace' ? '#e0f2fe' : sol === 'route' ? '#cbd5e1' : '#e2e8f0'} stroke={GRIS} />
+        {sol === 'route' && <line x1="40" y1="141" x2="440" y2="141" stroke="#fff" strokeWidth="2.5" strokeDasharray="18 12" />}
+        <T x="240" y="148" s={15} c={GRIS}>{sol === 'route' ? '' : sol}</T>
+        {corps}
+        <Fl x1="330" y1="40" x2="430" y2="40" />
+        <T x="380" y="28" s={15} c={GRIS}>mouvement</T>
       </g>
     </Cadre>);
 }
@@ -47,14 +71,16 @@ export function DeuxReliefs() {
 }
 
 // Virage circulaire : trajectoire, repère de Frenet (tangent et normal), sans aucun vecteur accélération.
-export function Virage() {
+export function Virage({ point = false }) {
   return (
-    <Cadre h={220} titre="Voiture dans un virage circulaire, repère de Frenet">
+    <Cadre h={220} titre={point ? 'Point matériel sur une trajectoire circulaire, repère de Frenet' : 'Voiture dans un virage circulaire, repère de Frenet'}>
       <path d="M60 190 A170 170 0 0 1 400 190" fill="none" stroke={GRIS} strokeWidth="3" strokeDasharray="8 6" />
-      <circle cx="230" cy="190" r="4" fill={GRIS} /><T x="230" y="212" s={15} c={GRIS}>centre du virage</T>
-      <g transform="translate(150 70) rotate(-35)"><rect x="-26" y="-12" width="52" height="24" rx="6" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" /></g>
+      <circle cx="230" cy="190" r="4" fill={GRIS} /><T x="230" y="212" s={15} c={GRIS}>{point ? 'centre O du cercle' : 'centre du virage'}</T>
+      {point
+        ? <><circle cx="150" cy="70" r="8" fill={BLEU} stroke={ENCRE} strokeWidth="2" /><T x="128" y="92" s={17} a="end" w="700">M</T></>
+        : <g transform="translate(150 70) rotate(-35)"><rect x="-26" y="-12" width="52" height="24" rx="6" fill={CLAIR} stroke={BLEU} strokeWidth="2.5" /></g>}
       <Fl x1="150" y1="70" x2="214" y2="58" /><T x="224" y="62" s={17} a="start">tangent</T>
-      <Fl x1="150" y1="70" x2="170" y2="118" /><T x="180" y="132" s={17} a="start">normal</T>
+      <Fl x1="150" y1="70" x2="170" y2="118" /><T x="184" y="128" s={17} a="start">normal</T>
     </Cadre>);
 }
 
@@ -116,7 +142,7 @@ export function Titrage({ sonde = 'conductimètre', burette = 'réactif titrant'
       {sonde && <><rect x="297" y="40" width="20" height="110" rx="6" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" />
       <path d="M307 150 L307 170 L240 205" fill="none" stroke={GRIS} strokeWidth="4" />
       <T x="330" y="90" s={16} a="start" w="700">{sonde}</T></>}
-      <ellipse cx="200" cy="232" rx="22" ry="4" fill="#94a3b8" /><T x="352" y="236" s={14} c={GRIS} a="end">agitateur</T>
+      <ellipse cx="200" cy="232" rx="22" ry="4" fill="#94a3b8" /><T x="238" y="238" s={14} c={GRIS} a="start">agitateur</T>
     </Cadre>);
 }
 
@@ -376,12 +402,13 @@ export function ReservoirRegule() {
 }
 
 // Deux charges ponctuelles séparées d'une distance.
-export function DeuxCharges() {
+export function DeuxCharges({ objet = null }) {
   return (
-    <Cadre h={140} titre="Deux charges ponctuelles séparées par une distance">
+    <Cadre h={objet ? 170 : 140} titre={objet ? `Deux ${objet}s chargées séparées par une distance` : 'Deux charges ponctuelles séparées par une distance'}>
       <circle cx="130" cy="60" r="22" fill="#fee2e2" stroke={ROUGE} strokeWidth="2.5" /><T x="130" y="67" s={18} w="700">q₁</T>
       <circle cx="350" cy="60" r="22" fill="#dbeafe" stroke={BLEU} strokeWidth="2.5" /><T x="350" y="67" s={18} w="700">q₂</T>
-      <line x1="130" y1="108" x2="350" y2="108" stroke={ENCRE} strokeWidth="2" markerStart="url(#pt10)" markerEnd="url(#pt10)" /><T x="240" y="130" s={17}>d</T>
+      {objet && <><T x="130" y="104" s={15} c={GRIS}>{objet} 1</T><T x="350" y="104" s={15} c={GRIS}>{objet} 2</T></>}
+      <line x1="130" y1={objet ? 126 : 108} x2="350" y2={objet ? 126 : 108} stroke={ENCRE} strokeWidth="2" markerStart="url(#pt10)" markerEnd="url(#pt10)" /><T x="240" y={objet ? 150 : 130} s={17}>distance d entre les centres</T>
     </Cadre>);
 }
 
@@ -452,12 +479,15 @@ export function Looping() {
 }
 
 // Balance avec une pièce.
-export function Balance() {
+export function Balance({ objet = 'objet pesé', lot = false }) {
   return (
-    <Cadre h={170} titre="Pesée d'une pièce sur une balance de précision">
+    <Cadre h={170} titre={lot ? `${objet} posé sur une balance` : 'Pesée d\'une pièce sur une balance de précision'}>
       <rect x="150" y="120" width="180" height="32" rx="6" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" /><rect x="200" y="128" width="80" height="16" rx="3" fill="#fff" stroke={GRIS} strokeWidth="1.5" />
-      <rect x="170" y="108" width="140" height="8" fill="#94a3b8" /><rect x="215" y="76" width="50" height="32" rx="5" fill="#fde68a" stroke="#b45309" strokeWidth="2.5" />
-      <T x="240" y="68" s={16} w="700">objet pesé</T><T x="240" y="168" s={15} c={GRIS}>balance de précision</T>
+      <rect x="170" y="108" width="140" height="8" fill="#94a3b8" />
+      {lot
+        ? <><path d="M200 108 Q196 76 218 66 L262 66 Q284 76 280 108 Z" fill="#fde68a" stroke="#b45309" strokeWidth="2.5" />{[[222, 92], [240, 98], [258, 92], [232, 84], [250, 84]].map(([x, y], i) => <ellipse key={i} cx={x} cy={y} rx="6" ry="3.5" fill="#d97706" />)}</>
+        : <rect x="215" y="76" width="50" height="32" rx="5" fill="#fde68a" stroke="#b45309" strokeWidth="2.5" />}
+      <T x="240" y="56" s={16} w="700">{objet}</T><T x="240" y="168" s={15} c={GRIS}>balance de précision</T>
     </Cadre>);
 }
 
@@ -567,7 +597,36 @@ export function CapteurBain({ bain = 'bain' }) {
     </Cadre>);
 }
 
+// Polymère : tuyau en coupe et chaîne de motifs répétés (aucune valeur).
+export function PolymereTuyau() {
+  return (
+    <Cadre h={210} titre="Un tuyau en polymère et, agrandie, une chaîne de motifs répétés">
+      <rect x="30" y="30" width="420" height="44" rx="22" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" /><ellipse cx="52" cy="52" rx="10" ry="16" fill="#fff" stroke={GRIS} strokeWidth="2" /><T x="240" y="58" s={16} w="700">tuyau</T>
+      <path d="M200 76 L150 112 M280 76 L330 112" stroke={GRIS} strokeWidth="1.5" strokeDasharray="5 4" fill="none" />
+      <g stroke={ENCRE} strokeWidth="2.5" fill="none" strokeLinecap="round">
+        <polyline points="30,150 60,150 78,134 100,150 130,150 148,134 170,150 200,150 218,134 240,150 270,150 288,134 310,150 340,150 358,134 380,150 394,150" />
+      </g>
+      <path d="M92 166 L92 182 L248 182 L248 166" fill="none" stroke={BLEU} strokeWidth="2.5" /><T x="170" y="202" s={16} c={BLEU} w="700">motif (se répète)</T>
+      <path d="M402 142 Q414 150 402 158" fill="none" stroke={ENCRE} strokeWidth="2.5" /><T x="420" y="154" s={15} a="start" w="700">chaîne</T>
+    </Cadre>);
+}
+
+// Plan factoriel : facteurs à deux niveaux, essai, réponse mesurée (aucune valeur).
+export function PlanFlan() {
+  const niv = (y, nom) => <g><rect x="8" y={y} width="152" height="34" rx="8" fill="#fff" stroke={GRIS} strokeWidth="2" /><T x="84" y={y + 22} s={15} w="700">{nom}</T></g>;
+  return (
+    <Cadre h={190} titre="Plan factoriel : des facteurs à deux niveaux, des essais de cuisson, une réponse mesurée">
+      {niv(20, 'facteur A (−1 / +1)')}{niv(66, 'facteur B (−1 / +1)')}{niv(112, '… autres facteurs')}
+      <Fl x1="166" y1="90" x2="204" y2="90" />
+      <path d="M206 74 L286 74 L278 122 Q276 134 264 134 L228 134 Q216 134 214 122 Z" fill="#a16207" stroke="#78350f" strokeWidth="2.5" /><ellipse cx="246" cy="74" rx="40" ry="9" fill="#78350f" stroke="#78350f" strokeWidth="2" />
+      <T x="246" y="160" s={16} w="700">un essai : un flan cuit</T>
+      <Fl x1="296" y1="90" x2="344" y2="90" />
+      <rect x="350" y="62" width="116" height="56" rx="10" fill={PAILLE} stroke={ENCRE} strokeWidth="2.5" /><T x="408" y="86" s={15} w="700">réponse</T><T x="408" y="106" s={15} c={GRIS}>mesurée</T>
+    </Cadre>);
+}
+
 export const DESSINS_LOT10 = {
+  polymereTuyau: PolymereTuyau, planFlan: PlanFlan,
   mobile: Mobile, deuxReliefs: DeuxReliefs, virage: Virage, lancerDeuxAstres: LancerDeuxAstres,
   becher: Becher, dilution: Dilution, titrage: Titrage, lentilleLointain: LentilleLointain, microscope: Microscope,
   diffraction: Diffraction, laserCible: LaserCible, prismeLaser: PrismeLaser, lampeFiltre: LampeFiltre, spectrophotometre: Spectrophotometre,

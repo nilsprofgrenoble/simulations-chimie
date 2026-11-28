@@ -1891,7 +1891,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Mouvement circulaire (TG, sim 167) : repère de Frenet, accélération
   {
-    id: 'fre-sapp-circ', schema: () => ({ type: 'virage' }), domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Accélération d’un point en mouvement circulaire', noms: ['Accélération d’un point en mouvement circulaire uniforme', 'Norme de l’accélération en mouvement circulaire non uniforme'],
+    id: 'fre-sapp-circ', schema: () => ({ type: 'virage', point: true }), domaine: 'Mouvement circulaire et repère de Frenet', titre: 'Accélération d’un point en mouvement circulaire', noms: ['Accélération d’un point en mouvement circulaire uniforme', 'Norme de l’accélération en mouvement circulaire non uniforme'],
     gen: () => {
       // on écarte les tirages où a_n seule, a_t seule ou leur somme donnerait la norme à 8 % près (réponse fausse acceptée par la tolérance)
       const MV = [2.0, 3.0, 4.0, 5.0], MR = [1.5, 2.0, 2.5, 4.0], MA = [1.5, 2.0, 3.0], ok = [];
@@ -1996,7 +1996,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Circuit RC (TG, sim 174) : temps caractéristique et intensité initiale
   {
-    id: 'rc-sapp-circuit', schema: () => ({ type: 'circuitSimple', dipole: 'condensateur', generateur: 'générateur' }), domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Un condensateur dans un montage de laboratoire', noms: ['Temps caractéristique du circuit', 'Intensité au début de la charge'],
+    id: 'rc-sapp-circuit', schema: () => ({ type: 'rcSerie', i: false, uC: false }), domaine: 'Circuit RC : charge et décharge d’un condensateur', titre: 'Un condensateur dans un montage de laboratoire', noms: ['Temps caractéristique du circuit', 'Intensité au début de la charge'],
     gen: () => ({ E: tire([3, 5, 6, 9, 12]), R: tire([1, 2.2, 4.7, 10, 22, 47]), C: tire([0.47, 1, 4.7, 10, 22, 47, 100]), L: tire([15, 25, 40]), T: tire([19, 21, 23]) }),
     build: (p, q) => {
       const tokens = {
@@ -2421,7 +2421,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'titph-compo', schema: () => ({ type: 'titrage', sonde: 'conductimètre', burette: 'soude', becher: 'acide' }), domaine: 'Titrage pH-métrique', titre: 'Composition en cours de titrage', noms: ['Acide restant', 'Excès de soude'],
+    id: 'titph-compo', schema: () => ({ type: 'titrage', sonde: 'pH-mètre', burette: 'soude', becher: 'acide' }), domaine: 'Titrage pH-métrique', titre: 'Composition en cours de titrage', noms: ['Acide restant', 'Excès de soude'],
     gen: () => ({ CA: tire([0.050, 0.080, 0.100]), VA: tire([10.0, 20.0]), T: tire([20, 25, 30]), Ka: tire([3.75, 4.2, 4.8]) }),
     build: (p, q) => {
       const CB = 0.100, n0 = p.CA * p.VA, VE = n0 / CB;
@@ -3261,7 +3261,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'electro', schema: () => ({ type: 'plaques', objet: 'particule chargée' }), domaine: 'Interactions et champs', titre: 'Interaction électrostatique', noms: ['Force entre deux charges', 'Force dans un champ uniforme'],
+    id: 'electro', schema: () => ({ type: 'deuxCharges', objet: 'bille' }), domaine: 'Interactions et champs', titre: 'Interaction électrostatique', noms: ['Force entre deux charges', 'Force dans un champ uniforme'],
     gen: () => ({ q1: tire([2, 4, 5]), q2: tire([3, 6, 8]), d: tire([2, 4, 5]), U: tire([100, 200, 300]), e: tire([2, 4, 5]), q: tire([2, 5, 10]), mp: tire([20, 50, 100]) }),
     build: (p, q) => {
       const tokens = {};
@@ -3541,7 +3541,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'ener2', schema: () => ({ type: 'circuitSimple', dipole: 'conducteur ohmique', generateur: 'générateur' }), domaine: 'Énergie électrique', titre: 'Énergie et effet Joule', noms: ['Énergie consommée', 'Puissance dissipée par effet Joule'],
+    id: 'ener2', schema: () => ({ type: 'circuitSimple', dipole: 'four électrique', generateur: 'prise secteur' }), domaine: 'Énergie électrique', titre: 'Énergie et effet Joule', noms: ['Énergie consommée', 'Puissance dissipée par effet Joule'],
     gen: () => ({ P: tire([800, 1500, 2000]), dmin: tire([15, 30, 45, 90]), prix: 0.25, R: tire([1.0, 2.2, 4.7]), I: tire([1, 2, 5]), L: tire([6, 9, 12]) }),
     build: (p, q) => {
       if (q === 0) {
@@ -3563,7 +3563,7 @@ export const ENONCES = [
     },
   },
   {
-    id: 'meca2', schema: () => ({ type: 'mobile', objet: 'chariot', sol: 'rail' }), domaine: 'Mécanique', titre: 'Énergie cinétique et travail', noms: ['Énergie cinétique', 'Travail d’une force'],
+    id: 'meca2', schema: () => ({ type: 'mobile', objet: 'véhicule', sol: 'route' }), domaine: 'Mécanique', titre: 'Énergie cinétique et travail', noms: ['Énergie cinétique', 'Travail d’une force'],
     gen: () => { const [mt, L] = tire([[0.8, 3.6], [0.95, 3.8], [1.1, 4.0], [1.2, 4.2], [1.35, 4.4], [1.5, 4.6]]); let F; do F = tire([0.5, 0.8, 1.2, 1.5, 2, 3]); while (F === mt);   // F ≠ m : deux données de même valeur se confondraient
     return { mt, L, v: tire([36, 54, 72, 90, 108, 126]), F, d: tire([50, 80, 120, 200, 300]), a: tire([0, 30, 45, 60]) }; },
     build: (p, q) => {
@@ -4121,7 +4121,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Plans d'expériences (BTS) : plan factoriel 2^k, flan au chocolat
   {
-    id: 'pfac-flan', domaine: 'Plans', titre: 'Un plan factoriel sur un flan au chocolat', noms: ['Nombre d’essais du plan complet', 'Coefficient d’un facteur'],
+    id: 'pfac-flan', schema: () => ({ type: 'planFlan' }), domaine: 'Plans', titre: 'Un plan factoriel sur un flan au chocolat', noms: ['Nombre d’essais du plan complet', 'Coefficient d’un facteur'],
     gen: () => {
       const c = tire([{ nom: 'la recette végétale (+1)', nomm: 'la recette animale (−1)', rep: 'la note moyenne du jury', mp: 2.375, mm: 6.25, d: 3 },
         { nom: 'la température de 102 °C (+1)', nomm: 'la température de 75 °C (−1)', rep: 'la viscosité moyenne', mp: 5309.5, mm: 1486.25, d: 2 }]);
@@ -4344,7 +4344,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Familles fonctionnelles et polymères (TG, sim 173) : masse molaire du motif, nombre de motifs d'une chaîne de PVC
   {
-    id: 'pol-sapp-pvc', domaine: 'Familles fonctionnelles et polymères', titre: 'Une chaîne de PVC dans un tuyau', noms: ['Masse molaire du motif', 'Nombre de motifs d’une chaîne'],
+    id: 'pol-sapp-pvc', schema: () => ({ type: 'polymereTuyau' }), domaine: 'Familles fonctionnelles et polymères', titre: 'Une chaîne de PVC dans un tuyau', noms: ['Masse molaire du motif', 'Nombre de motifs d’une chaîne'],
     gen: () => ({ n: tire([800, 1000, 1600, 2000, 3200]), d: tire([32, 40, 50]), L: tire([1.0, 2.0, 3.0]), prix: tire([4, 6, 9]) }),
     build: (p, q) => {
       const M = p.n * 62.5;
@@ -4545,7 +4545,7 @@ export const ENONCES = [
   },
   // ───────────────────────────── Quantité de matière (2GT) : compter les entités et la mole
   {
-    id: 'mol2gt-balance', schema: () => ({ type: 'balance' }), domaine: 'Quantité de matière (2GT)', titre: 'Un sac de petits objets à compter', noms: ['Nombre d’objets dans le sac', 'Nombre de paquets d’objets'],
+    id: 'mol2gt-balance', schema: () => ({ type: 'balance', objet: 'sac de petits objets', lot: true }), domaine: 'Quantité de matière (2GT)', titre: 'Un sac de petits objets à compter', noms: ['Nombre d’objets dans le sac', 'Nombre de paquets d’objets'],
     gen: () => ({ o: tire(['lentille', 'riz', 'perle', 'coquillette']), N: tire([1000, 2000, 4000, 5000, 8000]), paquet: tire([100, 250, 500, 1000]), prix: tire([2.5, 3.2, 4.5]) }),
     build: (p, q) => {
       const o = QM2.objet(p.o), totG = Math.round(p.N * o.m * 1e6) / 1e6, aff = totG >= 1000 ? `${nb(totG / 1000)} kg` : `${nb(totG)} g`;
