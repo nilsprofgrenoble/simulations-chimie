@@ -37,7 +37,7 @@ export const RHC_ANA = [
       F('Il s’écoule comme un fluide newtonien, mais plus lentement', 'Un newtonien n’a pas de seuil : il s’écoule dès que la contrainte n’est plus nulle.'),
       F('Il s’écoule de plus en plus vite, car il est rhéofluidifiant', 'Le caractère rhéofluidifiant joue quand le produit s’écoule déjà. Sous le seuil, rien ne coule.'),
     ] },
-  { id: 'rhc-ana-thixo', domaine: DOM, titre: 'Une contrainte plus faible à la descente',
+  { id: 'rhc-ana-thixo', schema: { type: 'cisaillement' }, domaine: DOM, titre: 'Une contrainte plus faible à la descente',
     enonce: 'On mesure la contrainte de cisaillement d’une crème en montant γ̇ de 1 à 300 s⁻¹, puis en le redescendant de 300 à 1 s⁻¹. Pour chaque gradient, la contrainte à la descente est plus faible qu’à la montée.', q: 'Quel comportement est mis en évidence ?', options: [
       V('Thixotrope : la structure détruite se reforme lentement', 'Le cisaillement détruit la structure ; elle ne se reconstruit pas instantanément : la viscosité est plus faible au retour.'),
       F('Rhéoépaississant : le cisaillement épaissit la crème', 'Un rhéoépaississant aurait une viscosité qui augmente avec γ̇. Ici, c’est l’effet de l’histoire du produit qui est visible.'),

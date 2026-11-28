@@ -103,7 +103,7 @@ export const ONDES1G_ANA = [
       F('laisser l’écran à sa place : l’image reste nette à 15 cm', 'La position de l’image dépend de celle de l’objet : si OA change, OA′ change aussi (relation de conjugaison).'),
       F('éloigner l’écran jusqu’à 30 cm : l’image se forme à 30 cm', 'Cette valeur correspond à un objet placé à 15 cm de la lentille, pas à 20 cm.'),
     ] },
-  { id: 'lum1-focale-objet-lointain', domaine: D_LEN, titre: 'Estimer f′ avec un objet très éloigné',
+  { id: 'lum1-focale-objet-lointain', schema: { type: 'lentilleLointain' }, domaine: D_LEN, titre: 'Estimer f′ avec un objet très éloigné',
     enonce: 'Pour estimer la distance focale d’une lentille mince convergente, on forme sur un écran l’image nette d’un objet très éloigné (un arbre à plusieurs centaines de mètres), puis on mesure la distance entre la lentille et l’écran.',
     q: 'Que représente, à peu près, la distance mesurée ?', options: [
       V('la distance focale f′ de la lentille', 'Pour un objet très éloigné, 1/OA est presque nul : la relation 1/OA′ − 1/OA = 1/f′ donne OA′ ≈ f′. L’image se forme (presque) dans le plan focal image.'),

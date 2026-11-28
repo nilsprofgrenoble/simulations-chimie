@@ -28,7 +28,7 @@ export const DFR_ANA = [
       F('poids : nul ; réaction normale : résistant ; force de freinage : résistant', 'La réaction normale est perpendiculaire à la route : son travail est nul.'),
       F('poids : nul ; réaction normale : nulle ; force de freinage : nul, car la voiture finit immobile', 'Le travail se calcule sur tout le déplacement : F est opposée au déplacement pendant tout le freinage.'),
     ] },
-  { id: 'dfr-ana-pente', domaine: DOM, titre: 'Freiner dans une montée',
+  { id: 'dfr-ana-pente', schema: { type: 'deuxReliefs' }, domaine: DOM, titre: 'Freiner dans une montée',
     enonce: 'Une voiture roule à vitesse donnée et freine avec une force de freinage constante, d’abord sur une route horizontale, puis dans une montée, sur la même vitesse et avec la même force.', q: 'Comment se compare la distance d’arrêt dans la montée à celle sur route horizontale ?', options: [
       V('plus petite : le poids s’oppose au mouvement et aide à freiner', 'Dans une montée, le travail du poids est résistant : il s’ajoute à celui de la force de freinage. L’énergie cinétique s’épuise sur une distance plus courte.'),
       F('elle est plus grande : la route inclinée augmente la distance', 'L’inclinaison, en montée, ajoute un travail résistant du poids : elle raccourcit la distance.'),

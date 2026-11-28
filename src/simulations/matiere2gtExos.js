@@ -212,7 +212,7 @@ export const MAT2GT_ANA = [
       F('solidification : H₂O(l) → H₂O(s)', 'La solidification est le passage du liquide au solide : ici on part d’un gaz et on arrive à un liquide.'),
       F('liquéfaction : H₂O(l) → H₂O(g)', 'Le nom est le bon, mais l’équation est écrite à l’envers : l’état de départ est le gaz (g).'),
     ] },
-  { id: 'mat2gt-ana-vie-courante', domaine: ETAT, titre: 'Le linge qui sèche',
+  { id: 'mat2gt-ana-vie-courante', schema: { type: 'lingeFil' }, domaine: ETAT, titre: 'Le linge qui sèche',
     enonce: 'Du linge mouillé sèche sur un fil : l’eau liquide passe à l’état gazeux, sans que l’eau bouille.', q: 'Quel changement d’état a lieu ?', options: [
       V('la vaporisation : de liquide à gaz', 'Le passage de l’état liquide à l’état gazeux s’appelle la vaporisation : elle peut avoir lieu sans ébullition.'),
       F('la sublimation : de solide à gaz', 'Il n’y a pas de solide au départ : l’eau du linge est liquide. La sublimation est le passage direct du solide au gaz.'),
@@ -256,7 +256,7 @@ export const MAT2GT_ANA = [
       F('B : le solide devient liquide en changeant d’état', 'C’est une transformation physique : H₂O(s) → H₂O(l) est la fusion de la glace. Les molécules restent H₂O.'),
       F('D : le sel se sépare en ions dans l’eau, en se dissolvant', 'Une dissolution est une transformation physique : les noyaux des atomes sont intacts.'),
     ] },
-  { id: 'mat2gt-ana-nature-physique', domaine: NUC, titre: 'Une casserole d’eau qui bout',
+  { id: 'mat2gt-ana-nature-physique', schema: { type: 'casserole' }, domaine: NUC, titre: 'Une casserole d’eau qui bout',
     enonce: 'Une casserole d’eau bout : on écrit H₂O(l) → H₂O(g).', q: 'Quelle est la nature de cette transformation ?', options: [
       V('physique : les molécules H₂O restent les mêmes', 'Seul l’état de l’eau change : les molécules sont les mêmes avant et après. C’est une transformation physique (un changement d’état).'),
       F('chimique : l’eau devient une autre espèce chimique', 'Dans une transformation chimique, des espèces disparaissent et d’autres apparaissent. Ici la vapeur est de l’eau : H₂O des deux côtés.'),

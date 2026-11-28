@@ -31,7 +31,7 @@ export const PVC_ANA = [
       F('le panneau débite davantage, car sa tension à vide est plus élevée', 'Sur 2 Ω, le courant du panneau est limité à environ 200 mA, bien en dessous des 1,5 A de la source idéale.'),
       F('les deux débitent 200 mA : une source idéale est limitée aussi', 'Une source idéale ne limite pas le courant : elle maintient sa tension, donc I = U ÷ R = 1,5 A sur 2 Ω.'),
     ] },
-  { id: 'pvc-ana-eclair', domaine: DOM, titre: 'Un éclairement divisé par deux',
+  { id: 'pvc-ana-eclair', schema: { type: 'panneauSoleil' }, domaine: DOM, titre: 'Un éclairement divisé par deux',
     enonce: 'Un panneau photovoltaïque est éclairé sous 800 W/m² ; on relève son courant de court-circuit et sa tension à vide. On diminue l’éclairement jusqu’à 400 W/m², la température restant la même.', q: 'Que deviennent ces deux grandeurs ?', options: [
       V('Icc est divisé par 2, alors que Uco ne baisse que de quelques pour cent', 'Icc est proportionnel à l’éclairement. Uco varie comme le logarithme de l’éclairement : diviser E par 2 ne la diminue que de quelques pour cent.'),
       F('Icc et Uco sont tous deux divisés par 2, comme l’éclairement', 'Seul le courant de court-circuit est proportionnel à l’éclairement ; la tension à vide en dépend très peu.'),

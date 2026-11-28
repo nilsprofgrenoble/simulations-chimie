@@ -23,7 +23,7 @@ export const LAS_ANA = [
       F('tous deux sont multipliés par 9, car le flux intervient au carré', 'Le flux n’est pas élevé au carré : E et Q sont proportionnels à φ, donc multipliés par 3.'),
       F('l’éclairement ne change pas, car la section du faisceau est la même', 'L’éclairement est le flux divisé par la section : à section égale, il est multiplié par 3 si le flux triple.'),
     ] },
-  { id: 'las-ana-duree', domaine: DOM, titre: 'Une exposition deux fois plus longue',
+  { id: 'las-ana-duree', schema: { type: 'laserCible' }, domaine: DOM, titre: 'Une exposition deux fois plus longue',
     enonce: 'Un faisceau laser de flux constant éclaire une cible pendant 2,0 s. On le laisse allumé 4,0 s au lieu de 2,0 s, sans rien changer d’autre.', q: 'Que deviennent l’éclairement de la cible et l’énergie qu’elle reçoit ?', options: [
       V('l’éclairement reste le même, l’énergie reçue est multipliée par 2', 'L’éclairement ne dépend que du flux et de la section. L’énergie Q = φ × Δt est proportionnelle à la durée : elle double.'),
       F('l’éclairement est multiplié par 2, l’énergie reçue aussi', 'L’éclairement est une puissance par unité de surface : il ne dépend pas de la durée.'),
