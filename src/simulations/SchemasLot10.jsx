@@ -120,11 +120,11 @@ export function Dilution({ mere = 'solution mère', eau = 'eau distillée' }) {
       <rect x="52" y="100" width="76" height="58" fill={CLAIR} opacity="0.8" />
       <T x="90" y="190" w="700" s={16}>{mere}</T>
       <Fl x1="150" y1="120" x2="215" y2="120" />
-      <path d="M270 30 L270 80 L240 160 Q236 172 250 172 L330 172 Q344 172 340 160 L310 80 L310 30" fill="none" stroke={GRIS} strokeWidth="3" />
-      <rect x="248" y="130" width="84" height="40" fill={CLAIR} opacity="0.8" />
-      <line x1="262" y1="50" x2="318" y2="50" stroke={ROUGE} strokeWidth="2" /><T x="290" y="20" s={15} c={ROUGE}>trait de jauge</T>
-      <T x="290" y="198" w="700" s={16}>fiole jaugée</T>
-      <Fl x1="390" y1="50" x2="326" y2="70" c={BLEU} /><T x="400" y="40" s={16} c={BLEU}>{eau}</T>
+      <path d="M282 20 L282 84 Q244 96 244 134 Q244 172 290 172 Q336 172 336 134 Q336 96 298 84 L298 20" fill="none" stroke={GRIS} strokeWidth="3" />
+      <path d="M247 136 Q247 168 290 168 Q333 168 333 136 Z" fill={CLAIR} opacity="0.8" />
+      <line x1="278" y1="44" x2="302" y2="44" stroke={ROUGE} strokeWidth="2" /><T x="268" y="49" s={15} a="end" c={ROUGE}>trait de jauge</T>
+      <T x="290" y="196" w="700" s={16}>fiole jaugée</T>
+      <Fl x1="372" y1="58" x2="308" y2="30" c={BLEU} /><T x="470" y="84" s={16} a="end" c={BLEU}>{eau}</T>
     </Cadre>);
 }
 
@@ -142,7 +142,7 @@ export function Titrage({ sonde = 'conductimètre', burette = 'réactif titrant'
       {sonde && <><rect x="297" y="40" width="20" height="110" rx="6" fill="#e2e8f0" stroke={GRIS} strokeWidth="2.5" />
       <path d="M307 150 L307 170 L240 205" fill="none" stroke={GRIS} strokeWidth="4" />
       <T x="330" y="90" s={16} a="start" w="700">{sonde}</T></>}
-      <ellipse cx="200" cy="232" rx="22" ry="4" fill="#94a3b8" /><T x="238" y="238" s={14} c={GRIS} a="start">agitateur</T>
+      <ellipse cx="200" cy="232" rx="22" ry="4" fill="#94a3b8" /><T x="270" y="236" s={14} c={GRIS} a="start">barreau aimanté</T>
     </Cadre>);
 }
 
@@ -234,13 +234,22 @@ export function Spectrophotometre() {
 }
 
 // Circuit simple : générateur et dipôle(s) en boucle, sans aucune valeur.
-export function CircuitSimple({ dipole = 'résistor', generateur = 'générateur' }) {
+export function CircuitSimple({ dipole = 'résistor', generateur = 'générateur', appareils = false }) {
+  const d = /condensateur/.test(dipole) ? 'c' : /lampe/.test(dipole) ? 'l' : 'r';
   return (
-    <Cadre h={190} titre={`Circuit : ${generateur} et ${dipole} en série`}>
-      <rect x="60" y="40" width="360" height="110" rx="4" fill="none" stroke={ENCRE} strokeWidth="2.5" />
-      <rect x="40" y="70" width="40" height="50" fill="#fff" /><line x1="52" y1="82" x2="52" y2="108" stroke={ENCRE} strokeWidth="3" /><line x1="68" y1="72" x2="68" y2="118" stroke={ENCRE} strokeWidth="5" />
-      <T x="20" y="172" s={15} a="start" c={GRIS}>{generateur}</T>
-      <rect x="330" y="26" width="64" height="28" fill="#fff" stroke={ENCRE} strokeWidth="2.5" /><T x="362" y="82" s={16} w="700">{dipole}</T>
+    <Cadre h={190} titre={`Circuit : ${generateur} et ${dipole} en série${appareils ? ', ampèremètre en série et voltmètre en dérivation' : ''}`}>
+      <g fill="none" stroke={ENCRE} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="60,88 60,56 205,56" /><polyline points="275,56 420,56 420,150 60,150 60,112" />
+        {d === 'r' && <rect x="205" y="42" width="70" height="28" fill="#fff" />}
+        {d === 'c' && <><line x1="236" y1="38" x2="236" y2="74" strokeWidth="4" /><line x1="250" y1="38" x2="250" y2="74" strokeWidth="4" /><line x1="205" y1="56" x2="236" y2="56" /><line x1="250" y1="56" x2="275" y2="56" /></>}
+        {d === 'l' && <><circle cx="240" cy="56" r="20" fill="#fff" /><line x1="226" y1="42" x2="254" y2="70" /><line x1="254" y1="42" x2="226" y2="70" /></>}
+        <line x1="46" y1="88" x2="74" y2="88" strokeWidth="4" /><line x1="53" y1="112" x2="67" y2="112" strokeWidth="6" />
+        {appareils && <><circle cx="420" cy="103" r="15" fill="#fff" /><polyline points="170,56 170,22 207,22" /><polyline points="273,22 310,22 310,56" /><circle cx="240" cy="22" r="15" fill="#fff" /></>}
+      </g>
+      {appareils && <><T x="420" y="109" s={16} w="700">A</T><T x="240" y="28" s={16} w="700">V</T></>}
+      <T x="70" y="84" s={16} a="start" c={ROUGE} w="700">+</T><T x="70" y="126" s={16} a="start" c={BLEU} w="700">−</T>
+      <T x="240" y="104" s={16} w="700">{dipole}</T>
+      <T x="60" y="176" s={15} c={GRIS}>{generateur}</T>
     </Cadre>);
 }
 
@@ -551,7 +560,7 @@ export function Niveaux() {
     <Cadre h={210} titre="Deux niveaux d'énergie d'un atome et un photon absorbé">
       <line x1="120" y1="40" x2="300" y2="40" stroke={ENCRE} strokeWidth="4" /><T x="316" y="46" s={17} a="start" w="700">niveau excité</T>
       <line x1="120" y1="160" x2="300" y2="160" stroke={ENCRE} strokeWidth="4" /><T x="316" y="152" s={17} a="start" w="700">niveau</T><T x="316" y="172" s={17} a="start" w="700">fondamental</T>
-      <path d="M160 110 q10 -10 20 0 t20 0 t20 0 t20 0" fill="none" stroke={ROUGE} strokeWidth="3" /><T x="210" y="136" s={15} c={ROUGE}>photon absorbé</T>
+      <path d="M130 100 q10 -10 20 0 t20 0 t20 0 t20 0" fill="none" stroke={ROUGE} strokeWidth="3" /><T x="170" y="126" s={15} c={ROUGE}>photon absorbé</T>
       <Fl x1="240" y1="150" x2="240" y2="52" c={BLEU} /><T x="256" y="100" s={15} c={BLEU} a="start">transition</T>
     </Cadre>);
 }
