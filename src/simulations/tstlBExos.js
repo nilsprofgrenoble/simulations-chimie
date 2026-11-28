@@ -134,7 +134,7 @@ export const TSTLB_ANA = [
   { id: 'crist-prev-evaporation', domaine: 'Évaporation et cristallisation', titre: 'Concentrer un jus par évaporation',
     ...presenter({ contexte: 'Un jus sucré, non saturé, contient 10 % de sucre en masse. On le concentre dans un évaporateur en éliminant la moitié de sa masse sous forme de vapeur d’eau. Le sucre ne s’évapore pas et aucun cristal n’apparaît.' }),
     q: 'La fraction massique en sucre du jus concentré est…', options: [
-      V('20 %', 'Pour 100 kg de jus, il y a 10 kg de sucre. Après évaporation de 50 kg, il reste 50 kg de jus et toujours 10 kg de sucre : 10 / 50 = 20 %.'),
+      V('20 %', 'Pour 100 kg de jus, il y a 10 kg de sucre. Après évaporation de 50 kg, il reste 50 kg de jus et toujours 10 kg de sucre : frac(10|50) = 20 %.'),
       F('15 %', 'La fraction ne s’additionne pas : on ne peut pas ajouter 5 % à 10 %. Il faut diviser la masse de sucre (inchangée, 10 kg) par la nouvelle masse totale (50 kg).'),
       F('10 %', 'La fraction massique ne changerait pas si l’on retirait du jus entier ; ici on retire seulement de l’eau, donc le sucre se concentre.'),
       F('5 %', 'Ce serait le résultat d’une dilution (masse totale doublée), pas d’une évaporation.'),
@@ -162,7 +162,7 @@ export const TSTLB_ANA = [
   { id: 'obs-prev-resolution-lambda', domaine: 'Microscope', titre: 'Résolution d’un microscope et couleur de la lumière',
     enonce: 'Le plus petit détail séparé par un microscope optique, limité par la diffraction, vaut d = 0,61 · frac(λ|ON), où ON est l’ouverture numérique de l’objectif. On observe le même échantillon avec le même objectif, d’abord en lumière rouge (λ = 650 nm), puis en lumière bleue (λ = 450 nm).',
     q: 'Avec la lumière bleue, le plus petit détail séparé est…', options: [
-      V('plus petit : environ 0,7 fois celui de la lumière rouge', 'd est proportionnel à λ : 450 / 650 ≈ 0,69. Une longueur d’onde plus courte donne une meilleure résolution (détails plus fins séparés).'),
+      V('plus petit : environ 0,7 fois celui de la lumière rouge', 'd est proportionnel à λ : frac(450|650) ≈ 0,69. Une longueur d’onde plus courte donne une meilleure résolution (détails plus fins séparés).'),
       F('plus grand : environ 1,4 fois celui de la lumière rouge', 'Rapport inversé : d est proportionnel à λ, donc plus petit quand λ diminue.'),
       F('identique : il ne dépend que de l’objectif', 'La résolution dépend aussi de la longueur d’onde, par la diffraction : d est proportionnel à λ.'),
       F('nul : en lumière bleue, tous les détails sont séparés', 'La diffraction impose toujours une limite : d reste de l’ordre de la demi-longueur d’onde divisée par l’ouverture numérique, jamais nul.'),
@@ -170,18 +170,18 @@ export const TSTLB_ANA = [
   { id: 'obs-prev-choix-objectif', domaine: 'Microscope', titre: 'Choisir un objectif d’après la fiche constructeur',
     ...presenter({ contexte: 'La fiche d’un microscope donne ses objectifs ci-dessous. On observe en lumière verte (λ = 550 nm) et on veut séparer deux détails distants de 0,55 µm. Le plus petit détail séparé vaut d = 0,61 · frac(λ|ON).', liste: [['Objectif ×10', 'ON = 0,25'], ['Objectif ×20', 'ON = 0,40'], ['Objectif ×40', 'ON = 0,65'], ['Objectif ×100 (immersion)', 'ON = 1,25']] }),
     q: 'Quel est l’objectif le moins grossissant qui convient ?', options: [
-      V('l’objectif ×40', 'Il faut d ≤ 0,55 µm. Comme λ = 0,55 µm, cela revient à 0,61 / ON ≤ 1, soit ON ≥ 0,61. Seuls les objectifs ×40 (0,65) et ×100 (1,25) conviennent : le moins grossissant est le ×40.'),
-      F('l’objectif ×20', 'Avec ON = 0,40, d = 0,61 × 0,55 / 0,40 ≈ 0,84 µm : supérieur à 0,55 µm, les deux détails ne sont pas séparés.'),
+      V('l’objectif ×40', 'Il faut d ≤ 0,55 µm. Comme λ = 0,55 µm, cela revient à frac(0,61|ON) ≤ 1, soit ON ≥ 0,61. Seuls les objectifs ×40 (0,65) et ×100 (1,25) conviennent : le moins grossissant est le ×40.'),
+      F('l’objectif ×20', 'Avec ON = 0,40, d = frac(0,61 × 0,55|0,40) ≈ 0,84 µm : supérieur à 0,55 µm, les deux détails ne sont pas séparés.'),
       F('l’objectif ×10', 'Avec ON = 0,25, d ≈ 1,3 µm : très au-dessus de 0,55 µm.'),
       F('l’objectif ×100', 'Il convient (d ≈ 0,27 µm), mais ce n’est pas le moins grossissant : le ×40 suffit déjà (d ≈ 0,52 µm).'),
     ] },
   { id: 'obs-prev-lunette-diametre', domaine: 'Lunette astronomique', titre: 'Diamètre de l’objectif et résolution d’une lunette',
-    enonce: 'Le plus petit angle séparable par une lunette, limité par la diffraction, vaut θ_min = 1,22 · λ / D, où D est le diamètre de l’objectif. Un astronome remplace l’objectif de sa lunette par un objectif de même longueur focale mais de diamètre deux fois plus grand, et observe à la même longueur d’onde.',
+    enonce: 'Le plus petit angle séparable par une lunette, limité par la diffraction, vaut θ_min = frac(1,22 · λ|D), où D est le diamètre de l’objectif. Un astronome remplace l’objectif de sa lunette par un objectif de même longueur focale mais de diamètre deux fois plus grand, et observe à la même longueur d’onde.',
     q: 'Le plus petit angle séparable devient…', options: [
       V('deux fois plus petit : des détails plus fins sont séparés', 'θ_min est inversement proportionnel à D : si D double, θ_min est divisé par 2.'),
       F('deux fois plus grand : les détails sont moins bien séparés', 'Sens inversé : un objectif plus large diffracte moins la lumière, donc sépare de plus petits angles.'),
       F('quatre fois plus petit, car il dépend du carré de D, pas de D', 'La relation donnée est en 1/D, pas en 1/D² : le facteur est 2.'),
-      F('inchangé : il ne dépend que de la longueur d’onde', 'D intervient aussi dans la relation : θ_min = 1,22 · λ / D.'),
+      F('inchangé : il ne dépend que de la longueur d’onde', 'D intervient aussi dans la relation : θ_min = frac(1,22 · λ|D).'),
     ] },
 ];
 
@@ -190,26 +190,26 @@ export const TSTLB_REL = [
   { id: 'therm-rel-chaudiere', domaine: 'Transferts thermiques', titre: 'Débit de gaz d’une chaudière',
     enonce: 'Une chaudière au gaz doit transmettre 120 kW de puissance thermique à l’eau d’un circuit de chauffage. Son rendement est de 90 %. Le pouvoir calorifique inférieur (PCI) du gaz vaut 36 MJ·m⁻³. On cherche le débit volumique de gaz à brûler.',
     q: 'Quelle relation permet de répondre ?', options: [
-      V('q_gaz = P_utile / (η × PCI)', 'La puissance utile est une fraction η de la puissance de combustion q_gaz × PCI : P_utile = η × q_gaz × PCI. Ici q_gaz = 120×10³ / (0,90 × 36×10⁶) ≈ 3,7×10⁻³ m³·s⁻¹, soit environ 13 m³·h⁻¹.'),
-      F('q_gaz = P_utile × (1 − η) / PCI', 'Cette expression ne donnerait que la puissance perdue, convertie en débit de gaz, et non le débit nécessaire.'),
-      F('q_gaz = (P_utile × η) / PCI', 'Multiplier par le rendement donne un débit trop faible : avec des pertes, il faut brûler plus de gaz que si le rendement était de 100 %, pas moins.'),
-      F('q_gaz = P_utile / PCI', 'Juste seulement pour un rendement de 100 % : ici, 10 % de l’énergie du gaz est perdue, donc le débit est sous-estimé.'),
+      V('q_gaz = frac(P_utile|η × PCI)', 'La puissance utile est une fraction η de la puissance de combustion q_gaz × PCI : P_utile = η × q_gaz × PCI. Ici q_gaz = frac(120×10³|0,90 × 36×10⁶) ≈ 3,7×10⁻³ m³·s⁻¹, soit environ 13 m³·h⁻¹.'),
+      F('q_gaz = frac(P_utile × (1 − η)|PCI)', 'Cette expression ne donnerait que la puissance perdue, convertie en débit de gaz, et non le débit nécessaire.'),
+      F('q_gaz = frac(P_utile × η|PCI)', 'Multiplier par le rendement donne un débit trop faible : avec des pertes, il faut brûler plus de gaz que si le rendement était de 100 %, pas moins.'),
+      F('q_gaz = frac(P_utile|PCI)', 'Juste seulement pour un rendement de 100 % : ici, 10 % de l’énergie du gaz est perdue, donc le débit est sous-estimé.'),
     ] },
   { id: 'therm-rel-dimensionner', domaine: 'Transferts thermiques', titre: 'Surface d’un échangeur à dimensionner',
     enonce: 'On veut dimensionner un échangeur eau–eau : il doit transférer une puissance thermique P de 80 kW. Le coefficient global d’échange K vaut 800 W·m⁻²·K⁻¹. L’écart de température moyen entre les deux fluides, calculé avec la formule fournie, est ΔT_ml = 25 K. On cherche la surface d’échange S.',
     q: 'Quelle relation permet de répondre ?', options: [
-      V('S = P / (K × ΔT_ml)', 'La puissance échangée vaut P = K × S × ΔT_ml, d’où S = P / (K × ΔT_ml) = 80 000 / (800 × 25) = 4,0 m².'),
+      V('S = frac(P|K × ΔT_ml)', 'La puissance échangée vaut P = K × S × ΔT_ml, d’où S = frac(P|K × ΔT_ml) = 80 000 / (800 × 25) = 4,0 m².'),
       F('S = P × K × ΔT_ml', 'Ce produit n’a pas la dimension d’une surface : S doit diminuer quand K ou ΔT_ml augmentent (échange plus efficace).'),
       F('S = K × ΔT_ml / P', 'C’est l’inverse de la bonne relation : cette expression donnerait une surface qui diminue quand la puissance à transférer augmente.'),
-      F('S = P / (K × (θ_ce − θ_fe))', 'Ici θ_ce − θ_fe est l’écart entre les entrées des deux fluides. Ce n’est pas l’écart moyen ΔT_ml, seul à intervenir dans P = K × S × ΔT_ml.'),
+      F('S = frac(P|(K × (θ_ce − θ_fe)))', 'Ici θ_ce − θ_fe est l’écart entre les entrées des deux fluides. Ce n’est pas l’écart moyen ΔT_ml, seul à intervenir dans P = K × S × ΔT_ml.'),
     ] },
   { id: 'dist-rel-fractions', domaine: 'Distillation', titre: 'Fraction molaire d’un mélange eau–éthanol',
     enonce: 'On mélange 100 g d’éthanol (M = 46 g·mol⁻¹) et 100 g d’eau (M = 18 g·mol⁻¹). On cherche la fraction molaire x de l’éthanol dans le mélange liquide.',
     q: 'Quelle relation permet de répondre ?', options: [
-      V('x = n_éthanol / (n_éthanol + n_eau), avec n = m / M', 'La fraction molaire est la quantité de matière du constituant rapportée à la quantité totale : n_éthanol = 100 / 46 ≈ 2,2 mol ; n_eau = 100 / 18 ≈ 5,6 mol ; x ≈ 0,28.'),
-      F('x = m_éthanol / (m_éthanol + m_eau), avec des masses en grammes', 'C’est la fraction massique (ici 0,50), pas la fraction molaire : elle ne tient pas compte des masses molaires, très différentes (46 et 18 g·mol⁻¹).'),
-      F('x = n_éthanol / n_eau', 'C’est le rapport des quantités de matière de deux constituants (≈ 0,39), pas une fraction du total : une fraction vaut au plus 1.'),
-      F('x = M_éthanol / (M_éthanol + M_eau)', 'Elle ne dépend que des masses molaires : elle donnerait la même valeur quelle que soit la composition du mélange.'),
+      V('x = frac(n_éthanol|n_éthanol + n_eau), avec n = frac(m|M)', 'La fraction molaire est la quantité de matière du constituant rapportée à la quantité totale : n_éthanol = frac(100|46) ≈ 2,2 mol ; n_eau = frac(100|18) ≈ 5,6 mol ; x ≈ 0,28.'),
+      F('x = frac(m_éthanol|m_éthanol + m_eau), avec des masses en grammes', 'C’est la fraction massique (ici 0,50), pas la fraction molaire : elle ne tient pas compte des masses molaires, très différentes (46 et 18 g·mol⁻¹).'),
+      F('x = frac(n_éthanol|n_eau)', 'C’est le rapport des quantités de matière de deux constituants (≈ 0,39), pas une fraction du total : une fraction vaut au plus 1.'),
+      F('x = frac(M_éthanol|M_éthanol + M_eau)', 'Elle ne dépend que des masses molaires : elle donnerait la même valeur quelle que soit la composition du mélange.'),
     ] },
 ];
 
@@ -251,7 +251,7 @@ export const TSTLB_VAL = [
   // ── Transferts thermiques et machines thermiques ──
   P({ id: 'therm-val-isolant', domaine: 'Transferts thermiques', niveau: 1, titre: 'Classer des matériaux selon leur pouvoir isolant', plausible: false,
     ...presenter({ contexte: 'Un élève doit classer trois matériaux, du plus isolant au moins isolant, d’après leur conductivité thermique.', liste: [['Laine de verre', 'λ = 0,040 W·m⁻¹·K⁻¹'], ['Béton', 'λ = 1,4 W·m⁻¹·K⁻¹'], ['Acier', 'λ = 50 W·m⁻¹·K⁻¹']], suite: 'Il écrit : « Le meilleur isolant est l’acier, puis le béton, puis la laine de verre, car leur conductivité thermique est de plus en plus petite. »' }),
-    reperes: [['Conductivité thermique λ', 'mesure la facilité avec laquelle un matériau conduit la chaleur'], ['Résistance thermique d’une paroi plane', 'R = e / (λ·S) : à épaisseur et surface fixées, plus λ est grand, plus R est petit'], ['Repère', 'les métaux conduisent très bien la chaleur ; l’air immobile la conduit très mal']],
+    reperes: [['Conductivité thermique λ', 'mesure la facilité avec laquelle un matériau conduit la chaleur'], ['Résistance thermique d’une paroi plane', 'R = frac(e|λ·S) : à épaisseur et surface fixées, plus λ est grand, plus R est petit'], ['Repère', 'les métaux conduisent très bien la chaleur ; l’air immobile la conduit très mal']],
     ver: 'Un bon isolant a une conductivité thermique faible : il laisse peu passer la chaleur. L’ordre correct est donc la laine de verre (0,040), puis le béton (1,4), puis l’acier (50), excellent conducteur et très mauvais isolant.',
     q2: 'Quelle erreur explique ce classement ?',
     options: [
@@ -270,7 +270,7 @@ export const TSTLB_VAL = [
       F('Il a utilisé L_v à la place de c dans son calcul de puissance', 'L_v à la place de c donnerait environ 630 kW, pas 93 kW.'),
     ] }),
   P({ id: 'therm-val-echangeur-surface', domaine: 'Transferts thermiques', niveau: 1, titre: 'Surface d’échange d’un échangeur de 80 kW', plausible: false,
-    ...presenter({ contexte: 'Un échangeur doit transférer 80 kW avec un coefficient global d’échange K = 800 W·m⁻²·K⁻¹ et un écart de température moyen de 25 K.', suite: 'Un élève calcule la surface d’échange S = P / (K × ΔT_ml) et trouve S = 4,0×10⁻³ m².' }),
+    ...presenter({ contexte: 'Un échangeur doit transférer 80 kW avec un coefficient global d’échange K = 800 W·m⁻²·K⁻¹ et un écart de température moyen de 25 K.', suite: 'Un élève calcule la surface d’échange S = frac(P|K × ΔT_ml) et trouve S = 4,0×10⁻³ m².' }),
     reperes: [['Surface d’un échangeur à plaques industriel', 'quelques mètres carrés'], ['Une feuille A4', '6×10⁻² m²'], ['Unité de K', 'W·m⁻²·K⁻¹ : la puissance doit donc être en watts']],
     ver: '4,0×10⁻³ m² font 40 cm², moins qu’une feuille A4 : c’est absurde pour 80 kW. En convertissant 80 kW = 80 000 W, on obtient S = 80 000 / (800 × 25) = 4,0 m². L’élève a gardé la puissance en kW.',
     q2: 'Quelle erreur explique ce résultat ?',
@@ -280,7 +280,7 @@ export const TSTLB_VAL = [
       F('Il a multiplié P par K × ΔT_ml au lieu de diviser', 'Ce produit donnerait un résultat énorme (de l’ordre de 10⁹), pas 4,0×10⁻³ m².'),
     ] }),
   P({ id: 'therm-val-cop', domaine: 'Machines thermiques', niveau: 2, titre: 'Un COP de 3 : est-ce possible ?', plausible: true,
-    ...presenter({ contexte: 'Une pompe à chaleur chauffe une maison. Pendant une heure, son compresseur consomme 2,0 kWh d’énergie électrique, et elle fournit 6,0 kWh d’énergie thermique au circuit de chauffage.', suite: 'Un élève calcule le coefficient de performance COP = 6,0 / 2,0 = 3,0.' }),
+    ...presenter({ contexte: 'Une pompe à chaleur chauffe une maison. Pendant une heure, son compresseur consomme 2,0 kWh d’énergie électrique, et elle fournit 6,0 kWh d’énergie thermique au circuit de chauffage.', suite: 'Un élève calcule le coefficient de performance COP = frac(6,0|2,0) = 3,0.' }),
     reperes: [['COP d’une pompe à chaleur', 'rapport entre l’énergie thermique fournie à la source chaude et l’énergie reçue (travail du compresseur)'], ['Conservation de l’énergie', 'énergie fournie à la source chaude = travail + chaleur prélevée à la source froide'], ['Ordre de grandeur', 'COP des pompes à chaleur de chauffage : de 2 à 5']],
     ver: 'Le COP de 3,0 est dans l’ordre de grandeur habituel. La conservation de l’énergie est respectée : 6,0 = 2,0 + 4,0 ; les 4,0 kWh manquants sont prélevés à l’air extérieur (source froide). La machine ne crée pas d’énergie, elle la déplace.',
     q2: 'Quel raisonnement est correct ?',
@@ -295,7 +295,7 @@ export const TSTLB_VAL = [
   P({ id: 'crist-val-evaporation-debit', domaine: 'Évaporation et cristallisation', niveau: 2, titre: 'Débit d’eau évaporée dans un évaporateur', plausible: false,
     ...presenter({ contexte: 'Un évaporateur concentre un jus sucré en continu, sans cristallisation.', liste: [['Jus entrant', '1 000 kg·h⁻¹, à 12 % de sucre en masse'], ['Concentré sortant', '60 % de sucre en masse']], suite: 'Un élève calcule le débit d’eau évaporée et trouve 200 kg·h⁻¹.' }),
     reperes: [['Le sucre ne s’évapore pas', 'son débit massique est le même à l’entrée et dans le concentré'], ['Bilan sur la masse totale', 'entrée = concentré + vapeur d’eau']],
-    ver: 'Sucre : 0,12 × 1 000 = 120 kg·h⁻¹. Concentré : 120 / 0,60 = 200 kg·h⁻¹. Eau évaporée : 1 000 − 200 = 800 kg·h⁻¹. Le résultat de l’élève (200) est le débit de concentré, pas celui de l’eau évaporée.',
+    ver: 'Sucre : 0,12 × 1 000 = 120 kg·h⁻¹. Concentré : frac(120|0,60) = 200 kg·h⁻¹. Eau évaporée : 1 000 − 200 = 800 kg·h⁻¹. Le résultat de l’élève (200) est le débit de concentré, pas celui de l’eau évaporée.',
     q2: 'Quelle erreur explique ce résultat ?',
     options: [
       V('Il a donné le débit de concentré, pas celui de la vapeur d’eau', 'Le débit de concentré vaut bien 200 kg·h⁻¹ ; l’eau évaporée est la différence avec le débit d’entrée.'),
@@ -306,8 +306,8 @@ export const TSTLB_VAL = [
   // ── Distillation ──
   P({ id: 'dist-val-fractions', domaine: 'Distillation', niveau: 2, titre: 'Fraction molaire ou fraction massique ?', plausible: false,
     ...presenter({ contexte: 'On prépare un mélange eau–éthanol de 50 g d’éthanol et 50 g d’eau (50 % d’éthanol en masse). Le diagramme binaire disponible est tracé en fraction molaire.', suite: 'Un élève lit le diagramme à x = 0,50 pour déterminer la température d’ébullition de ce mélange.' }),
-    reperes: [['Masses molaires', 'éthanol 46 g·mol⁻¹ ; eau 18 g·mol⁻¹'], ['Fraction molaire', 'x = n_éthanol / (n_éthanol + n_eau), avec n = m / M']],
-    ver: '50 g d’éthanol font 1,09 mol et 50 g d’eau font 2,78 mol : x = 1,09 / 3,87 ≈ 0,28. L’élève a pris la fraction massique (0,50) pour la fraction molaire. L’eau, plus légère par mole, est bien plus nombreuse en quantité de matière.',
+    reperes: [['Masses molaires', 'éthanol 46 g·mol⁻¹ ; eau 18 g·mol⁻¹'], ['Fraction molaire', 'x = frac(n_éthanol|n_éthanol + n_eau), avec n = frac(m|M)']],
+    ver: '50 g d’éthanol font 1,09 mol et 50 g d’eau font 2,78 mol : x = frac(1,09|3,87) ≈ 0,28. L’élève a pris la fraction massique (0,50) pour la fraction molaire. L’eau, plus légère par mole, est bien plus nombreuse en quantité de matière.',
     q2: 'Quelle erreur explique ce choix de x = 0,50 ?',
     options: [
       V('Il a confondu fraction massique et fraction molaire', 'Les deux fractions ne coïncident que si les masses molaires sont égales, ce qui n’est pas le cas.'),
@@ -319,7 +319,7 @@ export const TSTLB_VAL = [
   P({ id: 'obs-val-resolution', domaine: 'Microscope', niveau: 2, titre: 'Le grossissement ne suffit pas à tout voir', plausible: false,
     ...presenter({ contexte: 'Un élève observe un échantillon avec un microscope optique : objectif ×100 à immersion (ON = 1,25), oculaire ×10, lumière verte (λ = 550 nm).', suite: 'Il annonce qu’avec un grossissement total de ×1 000, il distingue deux détails séparés de 50 nm.' }),
     reperes: [['Pouvoir de résolution', 'd = 0,61 · frac(λ|ON) : plus petit écart entre deux détails séparés, fixé par la diffraction'], ['Ordre de grandeur pour un microscope optique', 'de l’ordre de 0,2 µm']],
-    ver: 'd = 0,61 × 550 / 1,25 ≈ 270 nm : deux détails distants de 50 nm ne peuvent pas être séparés, quel que soit le grossissement. Un grossissement plus fort agrandit l’image mais ne permet pas de dépasser la limite imposée par la diffraction.',
+    ver: 'd = frac(0,61 × 550|1,25) ≈ 270 nm : deux détails distants de 50 nm ne peuvent pas être séparés, quel que soit le grossissement. Un grossissement plus fort agrandit l’image mais ne permet pas de dépasser la limite imposée par la diffraction.',
     q2: 'Quel raisonnement est correct ?',
     options: [
       V('La limite est fixée par la diffraction (d ≈ 270 nm), pas par le grossissement', 'Au-delà de cette limite, l’image est plus grande mais n’est pas plus détaillée.'),

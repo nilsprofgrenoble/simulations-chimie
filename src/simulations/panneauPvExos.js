@@ -54,7 +54,7 @@ export const PVC_VAL = [
     ] }),
   P({ id: 'pvc-val-eclair', domaine: DOM, niveau: 2, titre: 'Courant et tension à deux éclairements', plausible: true,
     enonce: 'Un élève mesure sur un petit panneau, sous 1000 W/m² : Icc = 120 mA et Uco = 4,1 V. Sous 500 W/m², il trouve Icc = 61 mA et Uco = 3,9 V. Il conclut : « le courant a été divisé par 2, alors que la tension à vide a à peine changé ».',
-    reperes: [['Rapport des éclairements', '500 divisé par 1000 = 0,5'], ['Rapport des courants', '61 divisé par 120 ≈ 0,51'], ['Rapport des tensions', '3,9 divisé par 4,1 ≈ 0,95']],
+    reperes: [['Rapport des éclairements', 'frac(500|1000) = 0,5'], ['Rapport des courants', '61 divisé par 120 ≈ 0,51'], ['Rapport des tensions', '3,9 divisé par 4,1 ≈ 0,95']],
     ver: 'Le rapport des courants (0,51) est voisin de celui des éclairements (0,5) : Icc est proportionnel à E. Le rapport des tensions (0,95) est proche de 1 : Uco varie très peu. La conclusion est plausible.',
     q2: 'Pourquoi la tension à vide varie-t-elle si peu avec l’éclairement ?',
     options: [

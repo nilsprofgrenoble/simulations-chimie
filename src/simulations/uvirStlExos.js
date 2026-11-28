@@ -10,10 +10,10 @@ const P = o => ({ ...o, verdict: VERDICT(o.plausible, o.ver) });
 export const UVS_ANA = [
   { id: 'uvs-ana-energie', domaine: DOM, titre: 'Quel photon est le plus énergétique ?',
     enonce: 'Trois rayonnements monochromatiques sont émis par un spectrophotomètre : un rayonnement ultraviolet de longueur d’onde 250 nm, un rayonnement visible de 600 nm et un rayonnement infrarouge de 5 000 nm.', q: 'Lequel transporte les photons les plus énergétiques ?', options: [
-      V('l’ultraviolet à 250 nm, de longueur d’onde la plus courte', 'E = h c / λ : l’énergie d’un photon est inversement proportionnelle à la longueur d’onde.'),
+      V('l’ultraviolet à 250 nm, de longueur d’onde la plus courte', 'E = h frac(c|λ) : l’énergie d’un photon est inversement proportionnelle à la longueur d’onde.'),
       F('l’infrarouge à 5 000 nm, car sa longueur d’onde est la plus grande', 'C’est l’inverse : plus λ est grande, moins le photon est énergétique.'),
       F('le visible à 600 nm, car c’est le seul rayonnement perçu par l’œil', 'La perception par l’œil ne mesure pas l’énergie des photons.'),
-      F('aucun en particulier, car ils ont tous la même célérité dans le vide', 'La célérité est la même, mais E = h c / λ dépend de la longueur d’onde.'),
+      F('aucun en particulier, car ils ont tous la même célérité dans le vide', 'La célérité est la même, mais E = h frac(c|λ) dépend de la longueur d’onde.'),
     ] },
   { id: 'uvs-ana-ir-ester', domaine: DOM, titre: 'Identifier un composé avec un spectre IR',
     enonce: 'Le spectre IR d’un liquide pur présente une bande fine et intense vers 1 740 cm⁻¹ et aucune bande large entre 2 500 et 3 600 cm⁻¹. Données : O–H d’un alcool 3 200–3 600 cm⁻¹ (large) ; O–H d’un acide carboxylique 2 500–3 200 cm⁻¹ (très large) ; C=O d’un ester 1 730–1 750 cm⁻¹.', q: 'Quelle structure est compatible avec ce spectre ?', options: [
@@ -40,19 +40,19 @@ export const UVS_ANA = [
 
 export const UVS_VAL = [
   P({ id: 'uvs-val-energie', domaine: DOM, niveau: 2, titre: 'Énergie d’un photon visible', plausible: false,
-    enonce: 'Un photon visible a une longueur d’onde de 500 nm. Un élève calcule son énergie : « E = h c / λ = 6,63×10⁻³⁴ × 3,00×10⁸ / 500 = 4,0×10⁻²⁸ J. »',
+    enonce: 'Un photon visible a une longueur d’onde de 500 nm. Un élève calcule son énergie : « E = h frac(c|λ) = frac(6,63×10⁻³⁴ × 3,00×10⁸|500) = 4,0×10⁻²⁸ J. »',
     reperes: [['Constante de Planck', 'h = 6,63×10⁻³⁴ J·s'], ['Célérité de la lumière', 'c = 3,00×10⁸ m/s']],
     ver: 'Avec λ = 5,00×10⁻⁷ m : E = 1,99×10⁻²⁵ ÷ 5,00×10⁻⁷ = 4,0×10⁻¹⁹ J, soit environ 2,5 eV : 10⁹ fois plus que le résultat de l’élève.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
-      V('il n’a pas converti λ en mètres : 500 nm = 5,00×10⁻⁷ m', 'La relation E = h c / λ exige λ en mètres pour obtenir E en joules.'),
-      F('la relation correcte est E = h λ / c et non E = h c / λ', 'E = h c / λ est la bonne relation : l’énergie diminue quand λ augmente.'),
+      V('il n’a pas converti λ en mètres : 500 nm = 5,00×10⁻⁷ m', 'La relation E = h frac(c|λ) exige λ en mètres pour obtenir E en joules.'),
+      F('la relation correcte est E = h frac(λ|c) et non E = h frac(c|λ)', 'E = h frac(c|λ) est la bonne relation : l’énergie diminue quand λ augmente.'),
       F('un photon visible a une énergie de l’ordre de 10⁻²⁸ J, donc le résultat est bon', 'Un photon visible porte environ 10⁻¹⁹ J (quelques eV).'),
     ] }),
   P({ id: 'uvs-val-etalonnage', domaine: DOM, niveau: 2, titre: 'Dosage hors de la gamme d’étalonnage', plausible: false,
-    enonce: 'Une droite d’étalonnage A = k c est tracée avec des solutions de concentrations 0,10 à 0,50 mmol/L, dont les absorbances vont de 0,20 à 1,00 (k = 2,0 L/mmol). Une solution inconnue donne A = 2,4. Un élève calcule : « c = A / k = 2,4 / 2,0 = 1,2 mmol/L. »',
+    enonce: 'Une droite d’étalonnage A = k c est tracée avec des solutions de concentrations 0,10 à 0,50 mmol/L, dont les absorbances vont de 0,20 à 1,00 (k = 2,0 L/mmol). Une solution inconnue donne A = 2,4. Un élève calcule : « c = frac(A|k) = frac(2,4|2,0) = 1,2 mmol/L. »',
     reperes: [['Gamme d’étalonnage', '0,10 à 0,50 mmol/L'], ['k', '2,0 L/mmol'], ['A mesurée', '2,4']],
-    ver: 'Le calcul c = A / k est exact, mais A = 2,4 est bien au-delà de la gamme d’étalonnage (1,00 au plus) : la proportionnalité n’est pas vérifiée. Il faut diluer la solution pour que son absorbance soit dans la gamme.',
+    ver: 'Le calcul c = frac(A|k) est exact, mais A = 2,4 est bien au-delà de la gamme d’étalonnage (1,00 au plus) : la proportionnalité n’est pas vérifiée. Il faut diluer la solution pour que son absorbance soit dans la gamme.',
     q2: 'Que doit faire l’élève ?',
     options: [
       V('diluer la solution, puis mesurer de nouveau l’absorbance', 'On travaille avec une absorbance comprise dans la gamme d’étalonnage, puis on tient compte de la dilution.'),
@@ -93,10 +93,10 @@ export const UVS_SAPP = [
         raisons: { A: 'L’absorbance ne sert pas à convertir une longueur d’onde.', },
         cherche: { bonne: 'La longueur d’onde (en m)', faux: ['La fréquence du rayonnement (en Hz)', 'L’énergie d’un photon (en eV)', 'La concentration du colorant (en mol/L)'] },
         manque: null, solution: { txt: 'λ = λ(nm) × 10⁻⁹', val: p.lam * 1e-9, u: 'm' } };
-      return { tokens, derivees: ['λ (en m) = λ (en nm) × 10⁻⁹', 'E = h c / λ (en J)', 'E (en eV) = E (en J) ÷ 1,60×10⁻¹⁹'], texte: [...debut, 'Les constantes utiles sont ', T('h'), ', ', T('c'), ' et ', T('e'), '. Quelle est l’énergie d’un photon de ce rayonnement, en eV ?'], utiles: ['lam', 'h', 'c', 'e'],
+      return { tokens, derivees: ['λ (en m) = λ (en nm) × 10⁻⁹', 'E = h frac(c|λ) (en J)', 'E (en eV) = E (en J) ÷ 1,60×10⁻¹⁹'], texte: [...debut, 'Les constantes utiles sont ', T('h'), ', ', T('c'), ' et ', T('e'), '. Quelle est l’énergie d’un photon de ce rayonnement, en eV ?'], utiles: ['lam', 'h', 'c', 'e'],
         raisons: { A: 'L’absorbance ne change pas l’énergie d’un photon.' },
         cherche: { bonne: 'L’énergie d’un photon (en eV)', faux: ['La concentration du colorant (en mol/L)', 'La fréquence du rayonnement (en Hz)', 'L’énergie totale absorbée par la solution (en J)'] },
-        manque: null, solution: { txt: 'E = h c / λ, puis ÷ 1,60×10⁻¹⁹', val: H * C / (p.lam * 1e-9) / E, u: 'eV' } };
+        manque: null, solution: { txt: 'E = h frac(c|λ), puis ÷ 1,60×10⁻¹⁹', val: H * C / (p.lam * 1e-9) / E, u: 'eV' } };
     }),
   },
   {

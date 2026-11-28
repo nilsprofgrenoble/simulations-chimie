@@ -20,7 +20,7 @@ export const BIOT_ANA = [
       F('α = −48° : la dilution augmente la rotation', 'Diluer diminue la quantité de molécules traversées : |α| diminue.'),
       F('α = +3,0° : la dilution change le sens de rotation', 'La dilution ne change pas le sens de rotation du composé : α reste négatif.'),
       F('α = 0° : une solution diluée n’est plus active', 'Une solution diluée reste optiquement active : |α| est seulement plus petit.'),
-      V('α = −3,0° : α est proportionnel à C', 'α = [α] × L × C est proportionnel à C : C divisée par 4, α divisé par 4.'),
+      V('α = −3,0° : α est proportionnel à C', 'α = [α] × L × C est proportionnel à C : C divisée par 4, frac(α|4).'),
     ] },
   { id: 'biot-ana-racemique', domaine: DOM, titre: 'Un mélange à parts égales',
     enonce: 'On dissout 0,10 mol d’un énantiomère (+) et 0,10 mol de son énantiomère (−) dans un solvant inactif, puis on place la solution dans un polarimètre.', q: 'Quel est le pouvoir rotatoire de ce mélange ?', options: [

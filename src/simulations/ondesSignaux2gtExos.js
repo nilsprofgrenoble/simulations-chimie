@@ -68,8 +68,8 @@ export const OSG2GT_ANA = [
     enonce: 'Le schéma donne la caractéristique tension-courant, U = f(I), de deux dipôles A et B. L’un des deux est un résistor ohmique, l’autre est une lampe à filament.',
     q: 'Quelle courbe correspond au résistor ohmique ?', options: [
       V('la courbe A : une droite qui passe par l’origine', 'Pour un résistor ohmique, U = R × I : U et I sont proportionnelles, donc la caractéristique est une droite qui passe par l’origine (R est la pente).'),
-      F('la courbe B : elle monte de plus en plus vite', 'Quand la courbe n’est pas une droite, U et I ne sont pas proportionnelles : le rapport U / I change, ce n’est pas un résistor ohmique (c’est la lampe, dont la résistance augmente en chauffant).'),
-      F('les deux, car U augmente avec I dans les deux cas', 'Que U augmente avec I ne suffit pas : il faut que U / I reste constant, donc que la courbe soit une droite qui passe par l’origine.'),
+      F('la courbe B : elle monte de plus en plus vite', 'Quand la courbe n’est pas une droite, U et I ne sont pas proportionnelles : le rapport frac(U|I) change, ce n’est pas un résistor ohmique (c’est la lampe, dont la résistance augmente en chauffant).'),
+      F('les deux, car U augmente avec I dans les deux cas', 'Que U augmente avec I ne suffit pas : il faut que frac(U|I) reste constant, donc que la courbe soit une droite qui passe par l’origine.'),
       F('on ne peut pas savoir sans connaître la valeur de R', 'La valeur de R n’est pas nécessaire : c’est la forme de la courbe (droite qui passe par l’origine ou non) qui permet de reconnaître un résistor ohmique.'),
     ] },
   { id: 'cir2gt-ana-point', domaine: CIR, titre: 'Lire le point de fonctionnement',

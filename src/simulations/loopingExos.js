@@ -1,5 +1,5 @@
 // Exercices ANA, VAL et S'APP de la simulation 262 « Looping : vitesse en chaque point et hauteur minimale de départ ». Préfixe : lpg-.
-// Capacités visées (jamais affichées) : conservation de Em (vitesse en un point d'après l'altitude, indépendante de la masse) ; condition de contact au sommet ADMISE (v ≥ √(g R)).
+// Capacités visées (jamais affichées) : conservation de Em (vitesse en un point d'après l'altitude, indépendante de la masse) ; condition de contact au sommet ADMISE (v ≥ sqrt(g R)).
 const DOM = 'Looping : vitesse en chaque point et hauteur minimale de départ';
 const V = (t, e) => [t, true, e];
 const F = (t, e) => [t, false, e];
@@ -29,9 +29,9 @@ export const LPG_ANA = [
       F('elle est identique : la masse et la hauteur H n’ont pas changé', 'Le rayon change l’altitude du sommet, donc la vitesse au sommet.'),
     ] },
   { id: 'lpg-ana-hmin', domaine: DOM, titre: 'Doubler le rayon du looping',
-    enonce: 'Pour passer un looping de rayon R, un wagon doit partir au moins d’une hauteur H minimale (on néglige les frottements et on admet que la vitesse au sommet doit être au moins √(g R)).', q: 'Quelle hauteur minimale faut-il pour passer un looping de rayon 2 R ?', options: [
+    enonce: 'Pour passer un looping de rayon R, un wagon doit partir au moins d’une hauteur H minimale (on néglige les frottements et on admet que la vitesse au sommet doit être au moins sqrt(g R)).', q: 'Quelle hauteur minimale faut-il pour passer un looping de rayon 2 R ?', options: [
       V('le double : H minimale est proportionnelle à R, car H = 2,5 R', 'H minimale = 2R + R/2 : ½ m v² = ½ m g R au sommet, plus l’énergie potentielle m g (2R). Elle est proportionnelle à R.'),
-      F('quatre fois plus : la vitesse minimale dépend de R au carré', 'La vitesse minimale √(gR) est proportionnelle à √R, et H minimale à R.'),
+      F('quatre fois plus : la vitesse minimale dépend de R au carré', 'La vitesse minimale sqrt(gR) est proportionnelle à sqrt(R), et H minimale à R.'),
       F('la même : le wagon aura plus de vitesse dans un plus grand looping', 'Plus grand looping, sommet plus haut : il faut partir de plus haut.'),
       F('le double plus un peu, car la vitesse au sommet doit rester non nulle', 'Cette vitesse non nulle est déjà comprise dans le calcul : H minimale = 2,5 R exactement.'),
     ] },
@@ -39,9 +39,9 @@ export const LPG_ANA = [
 
 export const LPG_VAL = [
   P({ id: 'lpg-val-sommet', domaine: DOM, niveau: 1, titre: 'Vitesse au sommet : une altitude oubliée', plausible: false,
-    enonce: 'Un élève calcule la vitesse au sommet d’un looping de rayon 3,0 m pour un wagon lâché sans vitesse d’une hauteur de 12 m : « m g H = ½ m v², donc v = √(2 g H) = √(2 × 9,8 × 12) ≈ 15 m/s. » Le wagon est à 6,0 m d’altitude au sommet.',
+    enonce: 'Un élève calcule la vitesse au sommet d’un looping de rayon 3,0 m pour un wagon lâché sans vitesse d’une hauteur de 12 m : « m g H = ½ m v², donc v = sqrt(2 g H) = sqrt(2 × 9,8 × 12) ≈ 15 m/s. » Le wagon est à 6,0 m d’altitude au sommet.',
     reperes: [['g', '9,8 N/kg']],
-    ver: 'Au sommet, le wagon a déjà gagné 6,0 m d’altitude : m g H = m g (2R) + ½ m v², donc v = √(2 g (H − 2R)) = √(2 × 9,8 × 6,0) ≈ 11 m/s. Les 15 m/s sont la vitesse au point le plus bas.',
+    ver: 'Au sommet, le wagon a déjà gagné 6,0 m d’altitude : m g H = m g (2R) + ½ m v², donc v = sqrt(2 g (H − 2R)) = sqrt(2 × 9,8 × 6,0) ≈ 11 m/s. Les 15 m/s sont la vitesse au point le plus bas.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il a oublié l’énergie potentielle que le wagon a au sommet', 'Au sommet Epp = m g (2R) n’est pas nulle : il faut H − 2R dans la formule.'),
@@ -49,12 +49,12 @@ export const LPG_VAL = [
       F('il a mal utilisé la conservation de l’énergie : elle ne s’applique pas dans un looping', 'La conservation de Em s’applique : l’erreur porte sur l’altitude utilisée.'),
     ] }),
   P({ id: 'lpg-val-hmin', domaine: DOM, niveau: 2, titre: 'Hauteur minimale pour un looping de 4 m de rayon', plausible: true,
-    enonce: 'Un élève écrit : « Pour un looping de rayon 4,0 m, la vitesse minimale au sommet est √(g R) = √(9,8 × 4,0) ≈ 6,3 m/s. Le sommet est à 8,0 m : m g H = m g × 8,0 + ½ m × 6,3², donc H = 8,0 + 6,3² ÷ (2 × 9,8) = 10 m. »',
-    reperes: [['Rayon', '4,0 m'], ['Vitesse minimale au sommet (admise)', '√(g R) ≈ 6,3 m/s'], ['Altitude du sommet', '8,0 m'], ['Ordre de grandeur', 'H minimale est de l’ordre de 2,5 fois le rayon']],
+    enonce: 'Un élève écrit : « Pour un looping de rayon 4,0 m, la vitesse minimale au sommet est sqrt(g R) = sqrt(9,8 × 4,0) ≈ 6,3 m/s. Le sommet est à 8,0 m : m g H = m g × 8,0 + ½ m × 6,3², donc H = 8,0 + 6,3² ÷ (2 × 9,8) = 10 m. »',
+    reperes: [['Rayon', '4,0 m'], ['Vitesse minimale au sommet (admise)', 'sqrt(g R) ≈ 6,3 m/s'], ['Altitude du sommet', '8,0 m'], ['Ordre de grandeur', 'H minimale est de l’ordre de 2,5 fois le rayon']],
     ver: 'H = 2R + R ÷ 2 = 2,5 R = 10 m pour R = 4,0 m : le calcul est juste.',
     q2: 'Pourquoi la hauteur minimale n’est-elle pas simplement 2 R = 8,0 m ?',
     options: [
-      V('il faut encore une vitesse au moins égale à √(g R) au sommet', 'Au sommet Ec n’est pas nulle : il faut apporter l’énergie ½ m g R en plus de m g (2R).'),
+      V('il faut encore une vitesse au moins égale à sqrt(g R) au sommet', 'Au sommet Ec n’est pas nulle : il faut apporter l’énergie ½ m g R en plus de m g (2R).'),
       F('le frottement de l’air dissipe une partie de l’énergie', 'Les frottements sont négligés dans ce calcul : ce n’est pas la raison.'),
       F('le wagon doit revenir au sol avec une énergie cinétique nulle', 'Le problème ne s’intéresse qu’au passage du sommet.'),
     ] }),
@@ -75,14 +75,14 @@ export const LPG_SAPP = [
         R: tok(`${p.R} m`, 'Rayon du looping', p.R, 'm'), t: tok(`${p.t} s`, 'Durée de la montée jusqu’au départ', p.t, 's'),
       };
       const debut = ['Un wagon de masse ', T('m'), ' est lâché sans vitesse d’une hauteur ', T('H'), ' au-dessus du point le plus bas d’un looping circulaire de rayon ', T('R'), '. La remontée au point de départ a duré ', T('t'), '. On néglige les frottements, g = 9,8 N/kg, origine des altitudes au point le plus bas. '];
-      if (q === 0) return { tokens, derivees: ['Em conservée : m g H = ½ m v²', 'v = √(2 × g × H)'], texte: [...debut, 'Quelle est la vitesse du wagon au point le plus bas, en m/s ?'], utiles: ['H'],
+      if (q === 0) return { tokens, derivees: ['Em conservée : m g H = ½ m v²', 'v = sqrt(2 × g × H)'], texte: [...debut, 'Quelle est la vitesse du wagon au point le plus bas, en m/s ?'], utiles: ['H'],
         raisons: { m: 'La masse se simplifie dans la conservation de l’énergie.', R: 'Au point le plus bas z = 0 : le rayon du looping n’intervient pas.', t: 'La durée de la remontée ne sert pas ici.' },
         cherche: { bonne: 'La vitesse du wagon au point le plus bas (en m/s)', faux: ['L’énergie cinétique du wagon au sommet (en J)', 'La hauteur minimale de départ (en m)', 'La force exercée par le rail au sommet (en N)'] },
-        manque: null, solution: { txt: 'v = √(2 × g × H)', val: Math.sqrt(2 * 9.8 * p.H), u: 'm/s' } };
-      return { tokens, derivees: ['altitude du sommet z = 2 × R', 'm g H = m g (2R) + ½ m v²', 'v = √(2 × g × (H − 2 × R))'], texte: [...debut, 'Quelle est la vitesse du wagon au sommet du looping, en m/s ?'], utiles: ['H', 'R'],
+        manque: null, solution: { txt: 'v = sqrt(2 × g × H)', val: Math.sqrt(2 * 9.8 * p.H), u: 'm/s' } };
+      return { tokens, derivees: ['altitude du sommet z = 2 × R', 'm g H = m g (2R) + ½ m v²', 'v = sqrt(2 × g × (H − 2 × R))'], texte: [...debut, 'Quelle est la vitesse du wagon au sommet du looping, en m/s ?'], utiles: ['H', 'R'],
         raisons: { m: 'La masse se simplifie dans la conservation de l’énergie.', t: 'La durée de la remontée ne sert pas ici.' },
         cherche: { bonne: 'La vitesse du wagon au sommet du looping (en m/s)', faux: ['La vitesse du wagon au point le plus bas (en m/s)', 'L’énergie potentielle au départ (en J)', 'La durée du parcours du looping (en s)'] },
-        manque: null, solution: { txt: 'v = √(2 × g × (H − 2 × R))', val: Math.sqrt(2 * 9.8 * (p.H - 2 * p.R)), u: 'm/s' } };
+        manque: null, solution: { txt: 'v = sqrt(2 × g × (H − 2 × R))', val: Math.sqrt(2 * 9.8 * (p.H - 2 * p.R)), u: 'm/s' } };
     }),
   },
   {
@@ -92,11 +92,11 @@ export const LPG_SAPP = [
       const tokens = {
         m: tok(`${p.m} kg`, 'Masse du wagon', p.m, 'kg'), R: tok(`${p.R} m`, 'Rayon du looping', p.R, 'm'), L: tok(`${p.L} m`, 'Longueur de la pente d’accès', p.L, 'm'),
       };
-      const debut = ['Un wagon de masse ', T('m'), ' part sans vitesse en haut d’une pente de longueur ', T('L'), ' qui mène à un looping circulaire de rayon ', T('R'), '. On néglige les frottements, g = 9,8 N/kg ; on admet que le wagon reste en contact avec le rail au sommet si sa vitesse y est au moins √(g × R). '];
-      if (q === 0) return { tokens, derivees: ['v minimale au sommet = √(g × R)'], texte: [...debut, 'Quelle est la vitesse minimale au sommet du looping, en m/s ?'], utiles: ['R'],
+      const debut = ['Un wagon de masse ', T('m'), ' part sans vitesse en haut d’une pente de longueur ', T('L'), ' qui mène à un looping circulaire de rayon ', T('R'), '. On néglige les frottements, g = 9,8 N/kg ; on admet que le wagon reste en contact avec le rail au sommet si sa vitesse y est au moins sqrt(g × R). '];
+      if (q === 0) return { tokens, derivees: ['v minimale au sommet = sqrt(g × R)'], texte: [...debut, 'Quelle est la vitesse minimale au sommet du looping, en m/s ?'], utiles: ['R'],
         raisons: { m: 'La vitesse minimale ne dépend pas de la masse.', L: 'La longueur de la pente n’intervient pas dans cette condition.' },
         cherche: { bonne: 'La vitesse minimale au sommet du looping (en m/s)', faux: ['La hauteur minimale de départ (en m)', 'L’énergie cinétique au point le plus bas (en J)', 'Le temps de passage du looping (en s)'] },
-        manque: null, solution: { txt: 'v minimale = √(g × R)', val: Math.sqrt(9.8 * p.R), u: 'm/s' } };
+        manque: null, solution: { txt: 'v minimale = sqrt(g × R)', val: Math.sqrt(9.8 * p.R), u: 'm/s' } };
       return { tokens, derivees: ['m g H = m g (2R) + ½ m v²', 'avec v² = g × R : H = 2 × R + R ÷ 2 = 2,5 × R'], texte: [...debut, 'Quelle est la hauteur minimale de départ, au-dessus du point le plus bas, en mètres ?'], utiles: ['R'],
         raisons: { m: 'La masse se simplifie dans la conservation de l’énergie.', L: 'Sans frottement, seule la hauteur compte, pas la longueur de la pente.' },
         cherche: { bonne: 'La hauteur minimale de départ (en m)', faux: ['La vitesse du wagon au point le plus bas (en m/s)', 'Le travail du poids sur tout le parcours (en J)', 'La durée de la descente (en s)'] },

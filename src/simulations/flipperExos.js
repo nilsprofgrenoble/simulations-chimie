@@ -49,9 +49,9 @@ export const FLP_VAL = [
       F('il aurait dû tenir compte de l’angle de la rampe', 'Sans frottement la hauteur atteinte ne dépend pas de l’angle.'),
     ] }),
   P({ id: 'flp-val-vmin', domaine: DOM, niveau: 2, titre: 'Vitesse minimale pour une rampe de 0,50 m', plausible: true,
-    enonce: 'Un élève écrit : « La rampe monte à 0,50 m de hauteur. Sans frottement, ½ m v0² = m g h, donc v0 = √(2 g h) = √(2 × 9,8 × 0,50) ≈ 3,1 m/s. On n’a pas besoin de la longueur de la rampe. »',
+    enonce: 'Un élève écrit : « La rampe monte à 0,50 m de hauteur. Sans frottement, ½ m v0² = m g h, donc v0 = sqrt(2 g h) = sqrt(2 × 9,8 × 0,50) ≈ 3,1 m/s. On n’a pas besoin de la longueur de la rampe. »',
     reperes: [['Hauteur de la rampe', '0,50 m'], ['g', '9,8 N/kg'], ['Ordre de grandeur', 'quelques m/s pour monter de quelques dizaines de centimètres']],
-    ver: 'v0 = √(2 × 9,8 × 0,50) = √9,8 ≈ 3,1 m/s : le calcul est juste, la longueur de la rampe n’intervient pas sans frottement.',
+    ver: 'v0 = sqrt(2 × 9,8 × 0,50) = sqrt(9,8) ≈ 3,1 m/s : le calcul est juste, la longueur de la rampe n’intervient pas sans frottement.',
     q2: 'Pourquoi la longueur de la rampe n’est-elle pas utile ?',
     options: [
       V('sans frottement, seule la variation d’altitude compte dans l’énergie', 'L’énergie potentielle de pesanteur ne dépend que de l’altitude.'),
@@ -95,15 +95,15 @@ export const FLP_SAPP = [
         v: tok(`${p.v} m/s`, 'Vitesse d’éjection réelle', p.v, 'm/s'), a: tok(`${p.a} °`, 'Angle de la rampe', p.a, '°'),
       };
       const debut = ['Une bille de masse ', T('m'), ' est éjectée au pied d’une rampe inclinée de ', T('a'), ' dont le haut est à la hauteur ', T('h'), '. On néglige les frottements, g = 9,8 N/kg. '];
-      if (q === 0) return { tokens, derivees: ['½ m v² = m g h', 'v minimale = √(2 × g × h)'], texte: [...debut, 'Quelle est la vitesse d’éjection minimale pour atteindre le haut de la rampe, en m/s ?'], utiles: ['h'],
+      if (q === 0) return { tokens, derivees: ['½ m v² = m g h', 'v minimale = sqrt(2 × g × h)'], texte: [...debut, 'Quelle est la vitesse d’éjection minimale pour atteindre le haut de la rampe, en m/s ?'], utiles: ['h'],
         raisons: { m: 'La masse se simplifie dans la conservation de l’énergie.', a: 'Sans frottement, seule la hauteur compte, pas l’inclinaison.', v: 'Ici on cherche la vitesse minimale, pas la vitesse réelle.' },
         cherche: { bonne: 'La vitesse d’éjection minimale (en m/s)', faux: ['La hauteur maximale atteinte (en m)', 'L’énergie cinétique de la bille en haut (en J)', 'La longueur de la rampe (en m)'] },
-        manque: null, solution: { txt: 'v minimale = √(2 × g × h)', val: Math.sqrt(2 * 9.8 * p.h), u: 'm/s' } };
+        manque: null, solution: { txt: 'v minimale = sqrt(2 × g × h)', val: Math.sqrt(2 * 9.8 * p.h), u: 'm/s' } };
       const tk2 = { ...tokens }; const texte = ['Une bille de masse ', T('m'), ' est éjectée à la vitesse ', T('v'), ' au pied d’une rampe inclinée de ', T('a'), ' dont le haut est à la hauteur ', T('h'), '. On néglige les frottements, g = 9,8 N/kg. Quelle est la vitesse de la bille en haut de la rampe, en m/s ?'];
-      return { tokens: tk2, derivees: ['Em conservée : ½ m v0² = m g h + ½ m v²', 'v = √(v0² − 2 × g × h)'], texte, utiles: ['v', 'h'],
+      return { tokens: tk2, derivees: ['Em conservée : ½ m v0² = m g h + ½ m v²', 'v = sqrt(v0² − 2 × g × h)'], texte, utiles: ['v', 'h'],
         raisons: { m: 'La masse se simplifie dans la conservation de l’énergie.', a: 'Sans frottement, l’inclinaison n’intervient pas.' },
         cherche: { bonne: 'La vitesse de la bille en haut de la rampe (en m/s)', faux: ['La vitesse d’éjection minimale (en m/s)', 'La perte d’énergie mécanique (en J)', 'La longueur de la rampe (en m)'] },
-        manque: null, solution: { txt: 'v = √(v0² − 2 × g × h)', val: Math.sqrt(p.v * p.v - 2 * 9.8 * p.h), u: 'm/s' } };
+        manque: null, solution: { txt: 'v = sqrt(v0² − 2 × g × h)', val: Math.sqrt(p.v * p.v - 2 * 9.8 * p.h), u: 'm/s' } };
     }),
   },
 ];

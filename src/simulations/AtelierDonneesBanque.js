@@ -132,7 +132,7 @@ export const ENONCES = [
         utiles: ['f', 'd', 'AB'],
         raisons: { P: 'La puissance de la lampe donne la luminosité de l’image, pas sa taille.' },
         cherche: { bonne: 'La hauteur algébrique A′B′ de l’image (en m)', faux: ['La position OA′ de l’image (en m)', 'La vergence C de la lentille (en δ)', 'Le grandissement γ de la lentille (sans unité)'] },
-        manque: null, solution: { txt: 'A′B′ = γ × AB avec γ = OA′ / OA', val: gam * AB, u: 'm' } };
+        manque: null, solution: { txt: 'A′B′ = γ × AB avec γ = frac(OA′|OA)', val: gam * AB, u: 'm' } };
     },
   },
   // ───────────────────────────── Ondes mécaniques (1G) : le sondeur d'un bateau (écho)
@@ -249,7 +249,7 @@ export const ENONCES = [
         utiles: ['fe', 'c', 'v'],
         raisons: { L: 'La longueur du rail ne joue pas dans l’effet Doppler.', m: 'La masse du chariot n’intervient pas dans le décalage de fréquence.' },
         cherche: { bonne: 'Le décalage Doppler δf (en Hz)', faux: ['La vitesse v du chariot (en m/s)', 'La fréquence reçue f_r (en Hz)', 'La durée du trajet sur le rail (en s)'] },
-        manque: null, solution: { txt: 'δf = f_e × v / c (v très inférieure à c)', val: p.fe * p.v / c, u: 'Hz' } };
+        manque: null, solution: { txt: 'δf = frac(f_e × v|c) (v très inférieure à c)', val: p.fe * p.v / c, u: 'Hz' } };
     },
   },
   // ───────────────────────────── Effet Doppler (TG) : un laser sur un chariot
@@ -266,14 +266,14 @@ export const ENONCES = [
       };
       const debut = ['Une diode laser de puissance ', T('P'), ' est fixée sur un chariot de masse ', T('m'), ' qui roule à vitesse constante vers un récepteur fixe. La lumière émise a pour longueur d’onde ', T('lam'),
         ' ; la célérité de la lumière est ', T('c'), '. La vitesse du chariot est très inférieure à celle de la lumière. '];
-      const derivees = [{ id: 'fe', nom: 'Fréquence émise f_e', expr: 'f_e = c / λ', val: fe, u: 'Hz' }];
+      const derivees = [{ id: 'fe', nom: 'Fréquence émise f_e', expr: 'f_e = frac(c|λ)', val: fe, u: 'Hz' }];
       if (q === 0) {
         tokens.v = tok(`${nb(p.v, 1)} m/s`, 'Vitesse du chariot', p.v, 'm·s⁻¹');
         return { tokens, derivees, texte: [...debut, 'Le chariot roule à ', T('v'), '. Quel décalage Doppler observe-t-on sur la fréquence de la lumière reçue ?'],
           utiles: ['lam', 'c', 'v'],
           raisons: { P: 'La puissance du laser donne l’intensité lumineuse, pas la fréquence : elle n’intervient pas dans le décalage.', m: 'La masse du chariot n’intervient pas dans le décalage de fréquence.' },
           cherche: { bonne: 'Le décalage Doppler δf (en Hz)', faux: ['La fréquence émise f_e uniquement (en Hz)', 'La vitesse du chariot (en m/s)', 'Le décalage relatif δf / f_e (sans unité)'] },
-          manque: null, solution: { txt: 'f_e = c / λ puis δf = f_e × v / c', val: df, u: 'Hz' } };
+          manque: null, solution: { txt: 'f_e = frac(c|λ) puis δf = frac(f_e × v|c)', val: df, u: 'Hz' } };
       }
       const dfAff = Number((df / 1e6).toFixed(2));
       tokens.df = tok(`${nb(dfAff, 2)} MHz`, 'Décalage Doppler mesuré sur la lumière reçue', dfAff * 1e6, 'Hz');
@@ -281,7 +281,7 @@ export const ENONCES = [
         utiles: ['lam', 'c', 'df'],
         raisons: { P: 'La puissance du laser n’intervient pas dans le décalage de fréquence.', m: 'La masse du chariot n’intervient pas dans le décalage de fréquence.' },
         cherche: { bonne: 'La vitesse v du chariot (en m/s)', faux: ['La fréquence émise f_e (en Hz)', 'La fréquence reçue f_r (en Hz)', 'L’énergie d’un photon (en J)'] },
-        manque: null, solution: { txt: 'f_e = c / λ puis v = c × δf / f_e', val: c * dfAff * 1e6 / fe, u: 'm/s' } };
+        manque: null, solution: { txt: 'f_e = frac(c|λ) puis v = c × δf / f_e', val: c * dfAff * 1e6 / fe, u: 'm/s' } };
     },
   },
   // ───────────────────────────── Cinétique (TG) : vitesse volumique et loi d’ordre 1
@@ -302,14 +302,14 @@ export const ENONCES = [
         return { tokens, derivees: ['Δc = c₂ − c₁', 'Δt = t₂ − t₁'], texte: [...debut, 'La concentration du réactif vaut ', T('c1'), ' à l’instant ', T('t1'), ' et ', T('c2'), ' à l’instant ', T('t2'), '. Quelle est la vitesse volumique moyenne de disparition du réactif entre ces deux instants ?'],
           utiles: ['c1', 'c2', 't1', 't2'], raisons,
           cherche: { bonne: 'La vitesse volumique moyenne de disparition v (en mol·L⁻¹·min⁻¹)', faux: ['La constante de vitesse k (en min⁻¹)', 'Le temps de demi-réaction (en min)', 'La quantité de réactif consommée (en mol)'] },
-          manque: null, solution: { txt: 'v = −Δc / Δt = (c₁ − c₂) / (t₂ − t₁)', val: (p.c1 - p.c2) / (p.t2 - p.t1), u: 'mol·L⁻¹·min⁻¹' } };
+          manque: null, solution: { txt: 'v = −Δc / Δt = frac(c₁ − c₂|t₂ − t₁)', val: (p.c1 - p.c2) / (p.t2 - p.t1), u: 'mol·L⁻¹·min⁻¹' } };
       }
       tokens.p1 = tok(`${nb(p.c1, 3)} mol/L`, 'Concentration du produit au premier instant', p.c1, 'mol·L⁻¹');
       tokens.p2 = tok(`${nb(p.c1 + p.c1 - p.c2, 3)} mol/L`, 'Concentration du produit au second instant', p.c1 + p.c1 - p.c2, 'mol·L⁻¹');
       return { tokens, derivees: ['Δc = c₂ − c₁', 'Δt = t₂ − t₁'], texte: [...debut, 'La concentration d’un produit vaut ', T('p1'), ' à l’instant ', T('t1'), ' et ', T('p2'), ' à l’instant ', T('t2'), '. Quelle est la vitesse volumique moyenne d’apparition de ce produit entre ces deux instants ?'],
         utiles: ['p1', 'p2', 't1', 't2'], raisons,
         cherche: { bonne: 'La vitesse volumique moyenne d’apparition v (en mol·L⁻¹·min⁻¹)', faux: ['La constante de vitesse k (en min⁻¹)', 'Le temps de demi-réaction (en min)', 'La quantité de produit formée (en mol)'] },
-        manque: null, solution: { txt: 'v = Δc / Δt = (c₂ − c₁) / (t₂ − t₁)', val: (p.c1 - p.c2) / (p.t2 - p.t1), u: 'mol·L⁻¹·min⁻¹' } };
+        manque: null, solution: { txt: 'v = Δc / Δt = frac(c₂ − c₁|t₂ − t₁)', val: (p.c1 - p.c2) / (p.t2 - p.t1), u: 'mol·L⁻¹·min⁻¹' } };
     },
   },
   {
@@ -321,18 +321,18 @@ export const ENONCES = [
       const raisons = { T: 'La température est constante pendant le suivi : elle fixe la valeur de k mais ne sert pas à la calculer ici.', V: 'Le volume du mélange n’intervient pas dans le calcul de k.' };
       if (q === 0) {
         const l2 = Number((p.l1 - p.k * p.t2).toFixed(2));
-        tokens.l1 = tok(`${nb(p.l1, 2)}`, 'ln(c / c°) à t = 0', p.l1, ''); tokens.l2 = tok(`${nb(l2, 2)}`, 'ln(c / c°) au second instant', l2, ''); tokens.t2 = tok(`${p.t2},0 min`, 'Second instant', p.t2, 'min');
-        return { tokens, derivees: ['pente = Δ ln(c / c°) / Δt'], texte: [...debut, 'Sur le graphique de ln(c / c°) en fonction du temps, la droite passe par le point (0 ; ', T('l1'), ') et par le point (', T('t2'), ' ; ', T('l2'), '). Quelle est la constante de vitesse k ?'],
+        tokens.l1 = tok(`${nb(p.l1, 2)}`, 'ln(frac(c|c°)) à t = 0', p.l1, ''); tokens.l2 = tok(`${nb(l2, 2)}`, 'ln(frac(c|c°)) au second instant', l2, ''); tokens.t2 = tok(`${p.t2},0 min`, 'Second instant', p.t2, 'min');
+        return { tokens, derivees: ['pente = Δ ln(frac(c|c°)) / Δt'], texte: [...debut, 'Sur le graphique de ln(frac(c|c°)) en fonction du temps, la droite passe par le point (0 ; ', T('l1'), ') et par le point (', T('t2'), ' ; ', T('l2'), '). Quelle est la constante de vitesse k ?'],
           utiles: ['l1', 'l2', 't2'], raisons,
           cherche: { bonne: 'La constante de vitesse k (en min⁻¹), opposée de la pente de la droite', faux: ['La vitesse volumique v (en mol·L⁻¹·min⁻¹)', 'La concentration initiale c₀ (en mol/L)', 'Le temps de demi-réaction (en min)'] },
-          manque: null, solution: { txt: 'k = −pente = −(l₂ − l₁) / t₂', val: (p.l1 - l2) / p.t2, u: 'min⁻¹' } };
+          manque: null, solution: { txt: 'k = −pente = −frac(l₂ − l₁|t₂)', val: (p.l1 - l2) / p.t2, u: 'min⁻¹' } };
       }
       const v = Number((p.kv * p.c).toFixed(2));
       tokens.c = tok(`${p.c},0 mmol/L`, 'Concentration à un instant', p.c, 'mmol·L⁻¹'); tokens.v = tok(`${nb(v, 2)} mmol·L⁻¹·min⁻¹`, 'Vitesse volumique de disparition au même instant', v, 'mmol·L⁻¹·min⁻¹');
       return { tokens, derivees: [], texte: [...debut, 'À un instant donné, la concentration du réactif est ', T('c'), ' et la vitesse volumique de disparition vaut ', T('v'), '. Quelle est la constante de vitesse k ?'],
         utiles: ['c', 'v'], raisons,
         cherche: { bonne: 'La constante de vitesse k (en min⁻¹)', faux: ['Le temps de demi-réaction (en min)', 'La concentration initiale c₀ (en mol/L)', 'La pente de la tangente à la courbe c(t)'] },
-        manque: null, solution: { txt: 'k = v / c', val: v / p.c, u: 'min⁻¹' } };
+        manque: null, solution: { txt: 'k = frac(v|c)', val: v / p.c, u: 'min⁻¹' } };
     },
   },
   // ───────────────────────────── Radioactivité (TG) : activité et datation
@@ -357,7 +357,7 @@ export const ENONCES = [
       return { tokens, derivees: ['t½ en secondes : t½ × 86 400 s par jour'], texte: [...debut, 'La demi-vie de l’iode 131 vaut ', T('th'), '. On veut calculer sa constante radioactive λ, en s⁻¹.'],
         utiles: ['th'], raisons: { ...raisons, N0: 'λ est une caractéristique du noyau : elle ne dépend pas du nombre de noyaux de l’échantillon.' },
         cherche: { bonne: 'La constante radioactive λ (en s⁻¹)', faux: ['L’activité initiale A₀ (en Bq)', 'Le nombre de noyaux restant après une demi-vie', 'L’âge de l’échantillon (en années)'] },
-        manque: null, solution: { txt: 'λ = ln 2 / t½, avec t½ converti en secondes', val: Math.LN2 / (p.th * 86400), u: 's⁻¹' } };
+        manque: null, solution: { txt: 'λ = frac(ln 2|t½), avec t½ converti en secondes', val: Math.LN2 / (p.th * 86400), u: 's⁻¹' } };
     },
   },
   {
@@ -374,16 +374,16 @@ export const ENONCES = [
       if (q === 0) {
         tokens.N0 = tok(`${sciR(p.N0)} noyaux`, 'Nombre de noyaux de carbone 14 dans un échantillon vivant de même masse', p.N0, '');
         tokens.N = tok(`${sciR(p.N)} noyaux`, 'Nombre de noyaux de carbone 14 mesuré dans l’échantillon', p.N, '');
-        return { tokens, derivees: ['nombre de demi-vies : n tel que N₀ / N = 2ⁿ'], texte: [...debut, 'Un échantillon vivant de même masse contient ', T('N0'), ' de carbone 14 ; on en mesure ', T('N'), ' dans l’échantillon. Quel est l’âge de l’échantillon ?'],
+        return { tokens, derivees: ['nombre de demi-vies : n tel que frac(N₀|N) = 2ⁿ'], texte: [...debut, 'Un échantillon vivant de même masse contient ', T('N0'), ' de carbone 14 ; on en mesure ', T('N'), ' dans l’échantillon. Quel est l’âge de l’échantillon ?'],
           utiles: ['th', 'N0', 'N'], raisons,
           cherche: { bonne: 'L’âge de l’échantillon (en années)', faux: ['La constante radioactive λ (en s⁻¹)', 'L’activité de l’échantillon (en Bq)', 'Le nombre de noyaux disparus (en nombre de noyaux)'] },
-          manque: null, solution: { txt: 'N₀ / N = 2ⁿ, âge = n × t½', val: p.n * 5730, u: 'ans' } };
+          manque: null, solution: { txt: 'frac(N₀|N) = 2ⁿ, âge = n × t½', val: p.n * 5730, u: 'ans' } };
       }
       tokens.f = tok(`${p.f} %`, 'Pourcentage de carbone 14 restant par rapport à un échantillon vivant', p.f, '%');
-      return { tokens, derivees: ['λ = ln 2 / t½', 'rapport N₀ / N = 100 / pourcentage restant'], texte: [...debut, 'On mesure ', T('f'), ' du carbone 14 d’un échantillon vivant. Quel est l’âge de l’échantillon ?'],
+      return { tokens, derivees: ['λ = frac(ln 2|t½)', 'rapport frac(N₀|N) = 100 / pourcentage restant'], texte: [...debut, 'On mesure ', T('f'), ' du carbone 14 d’un échantillon vivant. Quel est l’âge de l’échantillon ?'],
         utiles: ['th', 'f'], raisons,
         cherche: { bonne: 'L’âge de l’échantillon (en années)', faux: ['La constante radioactive λ (en s⁻¹)', 'L’activité de l’échantillon (en Bq)', 'Le nombre de noyaux disparus (en nombre de noyaux)'] },
-        manque: null, solution: { txt: 't = (t½ / ln 2) × ln(N₀ / N)', val: (5730 / Math.LN2) * Math.log(100 / p.f), u: 'ans' } };
+        manque: null, solution: { txt: 't = (t½ / ln 2) × ln(frac(N₀|N))', val: (5730 / Math.LN2) * Math.log(100 / p.f), u: 'ans' } };
     },
   },
   // ───────────────────────────── Quantité de matière (1G) : masse molaire, volume molaire
@@ -403,13 +403,13 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: ['masse en grammes : m (mg) ÷ 1000'], texte: [...debut, 'Quelle est la quantité de matière de paracétamol dans le comprimé ?'],
         utiles: ['m', 'M'], raisons,
         cherche: { bonne: 'La quantité de matière n de paracétamol (en mol)', faux: ['La masse molaire du paracétamol (en g/mol)', 'La concentration du paracétamol dans le verre (en mol/L)', 'Le nombre de molécules de paracétamol, sans passer par n'] },
-        manque: null, solution: { txt: 'n = m / M, avec m converti en grammes', val: n, u: 'mol' } };
+        manque: null, solution: { txt: 'n = frac(m|M), avec m converti en grammes', val: n, u: 'mol' } };
       tokens.NA = tok('6,02 × 10²³ mol⁻¹', 'Constante d’Avogadro', QM.NA, 'mol⁻¹');
-      return { tokens, derivees: ['masse en grammes : m (mg) ÷ 1000', { id: 'n', nom: 'Quantité de matière de paracétamol', expr: 'n = m / M', val: n, u: 'mol' }],
+      return { tokens, derivees: ['masse en grammes : m (mg) ÷ 1000', { id: 'n', nom: 'Quantité de matière de paracétamol', expr: 'n = frac(m|M)', val: n, u: 'mol' }],
         texte: [...debut, 'On donne la constante d’Avogadro ', T('NA'), '. Combien de molécules de paracétamol le comprimé contient-il ?'],
         utiles: ['m', 'M', 'NA'], raisons,
         cherche: { bonne: 'Le nombre N de molécules de paracétamol', faux: ['La quantité de matière n de paracétamol (en mol)', 'La masse d’une seule molécule de paracétamol (en g)', 'La masse molaire du paracétamol (en g/mol)'] },
-        manque: null, solution: { txt: 'N = n × N_A, avec n = m / M', val: n * QM.NA, u: 'molécules' } };
+        manque: null, solution: { txt: 'N = n × N_A, avec n = frac(m|M)', val: n * QM.NA, u: 'molécules' } };
     },
   },
   {
@@ -427,13 +427,13 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000'], texte: [...debut, 'Quelle est la quantité de matière de gaz dans le ballon ?'],
         utiles: ['V', 'Vm'], raisons: { mB: 'La masse du ballon vide ne dit rien sur la quantité de gaz qu’il contient.', th: 'La température est déjà prise en compte dans la valeur de V_m donnée.' },
         cherche: { bonne: 'La quantité de matière n de gaz (en mol)', faux: ['La masse molaire du gaz (en g/mol)', 'La masse totale du ballon rempli (en g)', 'La masse volumique du gaz (en g/L)'] },
-        manque: null, solution: { txt: 'n = V / V_m, avec V converti en litres', val: n, u: 'mol' } };
+        manque: null, solution: { txt: 'n = frac(V|V_m), avec V converti en litres', val: n, u: 'mol' } };
       tokens.M = tok(`${nb(M, 1)} g/mol`, `Masse molaire du ${e.nom}`, M, 'g/mol');
-      return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de gaz', expr: 'n = V / V_m', val: n, u: 'mol' }],
+      return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de gaz', expr: 'n = frac(V|V_m)', val: n, u: 'mol' }],
         texte: [...debut, 'La masse molaire du ', e.nom, ' est ', T('M'), '. Quelle est la masse de gaz contenue dans le ballon (sans le ballon) ?'],
         utiles: ['V', 'Vm', 'M'], raisons: { mB: 'On demande la masse du gaz seul : la masse du ballon vide ne sert pas.', th: 'La température est déjà prise en compte dans la valeur de V_m donnée.' },
         cherche: { bonne: 'La masse m de gaz dans le ballon (en g)', faux: ['La masse totale du ballon rempli de gaz (en g)', 'La quantité de matière de gaz (en mol)', 'La masse volumique du gaz (en g/L)'] },
-        manque: null, solution: { txt: 'm = n × M, avec n = V / V_m', val: n * M, u: 'g' } };
+        manque: null, solution: { txt: 'm = n × M, avec n = frac(V|V_m)', val: n * M, u: 'g' } };
     },
   },
   // ───────────────────────────── Schéma de Lewis (1G) : électrons de valence et doublets
@@ -478,11 +478,11 @@ export const ENONCES = [
       };
       const raisons = { mE: 'La masse de l’emballage ne fait pas partie du savon : elle ne sert pas pour la quantité de matière de savon.', Te: 'La température de l’eau de lavage n’intervient pas dans le calcul d’une quantité de matière à partir d’une masse.' };
       const debut = ['Un savon est constitué de ', nom, ' de sodium, de formule semi-développée ', formule, ' ; sa masse molaire est ', T('M'), '. '];
-      if (q === 0) return { tokens, derivees: [{ id: 'n', nom: 'Quantité de matière de savon', expr: 'n = m / M', val: p.m / M, u: 'mol' }],
+      if (q === 0) return { tokens, derivees: [{ id: 'n', nom: 'Quantité de matière de savon', expr: 'n = frac(m|M)', val: p.m / M, u: 'mol' }],
         texte: [...debut, 'Un pain de savon pur pèse ', T('m'), ', dans un emballage de ', T('mE'), ' ; il sert à laver dans une eau à ', T('Te'), '. Quelle quantité de matière de savon contient-il ?'],
         utiles: ['m', 'M'], raisons,
         cherche: { bonne: 'La quantité de matière n de savon (en mol)', faux: ['La masse molaire du savon (en g/mol)', 'Le nombre d’atomes de carbone de l’ion carboxylate', 'La concentration du savon dans l’eau de lavage (en mol/L)'] },
-        manque: null, solution: { txt: 'n = m / M', val: p.m / M, u: 'mol' } };
+        manque: null, solution: { txt: 'n = frac(m|M)', val: p.m / M, u: 'mol' } };
       return { tokens, derivees: [],
         texte: [...debut, 'On veut préparer un lot qui contient ', T('nT'), ' de savon. Le savon est livré dans un emballage de ', T('mE'), ', et l’eau de lavage est à ', T('Te'), '. Quelle masse de savon faut-il peser ?'],
         utiles: ['nT', 'M'], raisons,
@@ -509,11 +509,11 @@ export const ENONCES = [
         mF: tok(`${nb(p.mF, 1)} g`, 'Masse de la fiole jaugée vide', p.mF, 'g'),
       };
       const raisons = { th: 'La température ne change pas la quantité de matière de soluté à dissoudre dans ce modèle de solution idéale.', mF: 'La masse de la fiole vide ne sert pas : seule la masse de soluté compte.' };
-      if (q === 0) return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = m / M', val: p.m / M, u: 'mol' }],
+      if (q === 0) return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = frac(m|M)', val: p.m / M, u: 'mol' }],
         texte: ['Pour préparer une solution aqueuse de ', s.nom, ' ', f, ', on pèse ', T('m'), ' de solide ; sa masse molaire est ', T('M'), '. Le solide est dissous dans une fiole jaugée de ', T('V'), ', complétée jusqu’au trait de jauge. La fiole vide pèse ', T('mF'), ' et le laboratoire est à ', T('th'), '. Quelle est la concentration de la solution préparée ?'],
         utiles: ['m', 'M', 'V'], raisons,
         cherche: { bonne: 'La concentration c de la solution (en mol/L)', faux: ['La masse molaire du soluté (en g/mol)', 'La masse volumique de la solution (en g/L)', 'La quantité de matière d’eau dans la fiole (en mol)'] },
-        manque: null, solution: { txt: 'c = n / V, avec n = m / M et V converti en litres', val: p.m / M / (p.V / 1000), u: 'mol/L' } };
+        manque: null, solution: { txt: 'c = frac(n|V), avec n = frac(m|M) et V converti en litres', val: p.m / M / (p.V / 1000), u: 'mol/L' } };
       return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000'],
         texte: ['On veut préparer une solution aqueuse de ', s.nom, ' ', f, ' de concentration ', T('c'), ' dans une fiole jaugée de ', T('V'), '. La masse molaire du soluté est ', T('M'), ' ; la fiole vide pèse ', T('mF'), ' et le laboratoire est à ', T('th'), '. Quelle masse de solide faut-il peser ?'],
         utiles: ['c', 'V', 'M'], raisons,
@@ -539,12 +539,12 @@ export const ENONCES = [
         texte: ['Une solution mère de ', s.nom, ' ', f, ' a pour concentration ', T('c0'), '. On en verse ', T('b'), ' dans un bécher, on y prélève ', T('V0'), ' à la pipette jaugée et on les place dans une fiole jaugée de ', T('V1'), ', complétée jusqu’au trait de jauge à ', T('th'), '. Quelle est la concentration de la solution fille ?'],
         utiles: ['c0', 'V0', 'V1'], raisons,
         cherche: { bonne: 'La concentration c de la solution fille (en mol/L)', faux: ['Le facteur de dilution (sans unité)', 'La concentration en masse de la solution mère (en g/L)', 'Le volume d’eau à ajouter (en mL)'] },
-        manque: null, solution: { txt: 'c_fille = c_mère × V_mère / V_fille (la quantité de soluté se conserve)', val: p.c0 * p.V0 / p.V1, u: 'mol/L' } };
+        manque: null, solution: { txt: 'c_fille = frac(c_mère × V_mère|V_fille) (la quantité de soluté se conserve)', val: p.c0 * p.V0 / p.V1, u: 'mol/L' } };
       return { tokens, derivees: ['les volumes peuvent rester en mL : ils se simplifient dans le rapport'],
         texte: ['À partir d’une solution mère de ', s.nom, ' ', f, ' de concentration ', T('c0'), ', on veut préparer ', T('V1'), ' de solution fille de concentration ', T('c1'), ', dans une fiole jaugée, à ', T('th'), '. On dispose d’un bécher contenant ', T('b'), ' de solution mère. Quel volume de solution mère faut-il prélever ?'],
         utiles: ['c0', 'c1', 'V1'], raisons,
         cherche: { bonne: 'Le volume de solution mère à prélever (en mL)', faux: ['Le volume d’eau distillée à ajouter (en mL)', 'La quantité de matière d’eau dans la fiole (en mol)', 'Le facteur de dilution (sans unité)'] },
-        manque: null, solution: { txt: 'V_mère = c_fille × V_fille / c_mère', val: p.c1 * p.V1 / p.c0, u: 'mL' } };
+        manque: null, solution: { txt: 'V_mère = frac(c_fille × V_fille|c_mère)', val: p.c1 * p.V1 / p.c0, u: 'mL' } };
     }),
   },
   // ───────────────────────────── Dissolution d'un solide ionique (1G) : équation et concentration des ions
@@ -566,18 +566,18 @@ export const ENONCES = [
       const raisons = { th: 'La température ne change pas la quantité de matière de soluté dans ce modèle de solution idéale.', mF: 'La masse de la fiole vide ne sert pas : seule la masse de soluté dissous compte.' };
       const c = p.m / M / (p.V / 1000);
       const debut = ['On dissout ', T('m'), ' de ', s.nom, ' ', s.f, ' anhydre (solide ionique, de masse molaire ', T('M'), ') dans une fiole jaugée de ', T('V'), ', complétée jusqu’au trait de jauge. La fiole vide pèse ', T('mF'), ' et le laboratoire est à ', T('th'), '. '];
-      if (q === 0) return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = m / M', val: p.m / M, u: 'mol' }],
+      if (q === 0) return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = frac(m|M)', val: p.m / M, u: 'mol' }],
         texte: [...debut, 'Quelle est la concentration en soluté apporté de la solution ?'],
         utiles: ['m', 'M', 'V'], raisons,
         cherche: { bonne: 'La concentration c en soluté apporté (en mol/L)', faux: ['La concentration en masse de la solution (en g/L)', 'La concentration effective d’un seul ion (en mol/L)', 'Le volume d’eau versé dans la fiole (en mL)'] },
-        manque: null, solution: { txt: 'c = n / V, avec n = m / M et V converti en litres', val: c, u: 'mol/L' } };
-      return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = m / M', val: p.m / M, u: 'mol' }, { id: 'c', nom: 'Concentration en soluté apporté', expr: 'c = n / V', val: c, u: 'mol/L' }],
+        manque: null, solution: { txt: 'c = frac(n|V), avec n = frac(m|M) et V converti en litres', val: c, u: 'mol/L' } };
+      return { tokens, derivees: ['volume en litres : V (mL) ÷ 1000', { id: 'n', nom: 'Quantité de matière de soluté', expr: 'n = frac(m|M)', val: p.m / M, u: 'mol' }, { id: 'c', nom: 'Concentration en soluté apporté', expr: 'c = frac(n|V)', val: c, u: 'mol/L' }],
         texte: [...debut, 'Le solide est formé d’ions ', s.cat.s, ' et ', s.an.s, '. Quelle est la concentration effective en ions ', I.s, ' dans la solution ?'],
         utiles: ['m', 'M', 'V'], raisons,
         cherche: { bonne: `La concentration [${I.s}] de l’ion ${I.s} (en mol/L)`, faux: ['La concentration c en soluté apporté (en mol/L)', 'La quantité de matière de soluté dissous (en mol)', 'La concentration totale de tous les ions (en mol/L)'] },
         manque: { bonne: 'Il manque la relation entre [ion] et c, à écrire avec l’équation de dissolution', faux: ['Il manque la solubilité du solide dans l’eau', 'Il manque la masse volumique de la solution', 'Il manque le volume de la solution'],
-          expl: `La masse, la masse molaire et le volume donnent c = n / V, mais la concentration effective de l’ion vaut [${I.s}] = coefficient × c : cette relation s’écrit avec l’équation de dissolution ${DM.equation(s)}, que l’énoncé ne donne pas (il donne seulement les ions). Le coefficient de ${I.s} est ${I.nu}.` },
-        solution: { txt: `[${I.s}] = ${I.nu} × c, avec c = n / V et n = m / M`, val: I.nu * c, u: 'mol/L' } };
+          expl: `La masse, la masse molaire et le volume donnent c = frac(n|V), mais la concentration effective de l’ion vaut [${I.s}] = coefficient × c : cette relation s’écrit avec l’équation de dissolution ${DM.equation(s)}, que l’énoncé ne donne pas (il donne seulement les ions). Le coefficient de ${I.s} est ${I.nu}.` },
+        solution: { txt: `[${I.s}] = ${I.nu} × c, avec c = frac(n|V) et n = frac(m|M)`, val: I.nu * c, u: 'mol/L' } };
     }),
   },
   // ───────────────────────────── Équilibre chimique (TG) : Qr, K, taux d'avancement final
@@ -598,14 +598,14 @@ export const ENONCES = [
         return { tokens, derivees: [], texte: [...debut, 'Dans un mélange, [CH₃COOH] = ', T('a'), ', [HCOO⁻] = ', T('b'), ', [CH₃COO⁻] = ', T('c'), ' et [HCOOH] = ', T('d'), '. Quel est le quotient de réaction du mélange ?'],
           utiles: ['a', 'b', 'c', 'd'], raisons: { K: rK, V: rV },
           cherche: { bonne: 'Le quotient de réaction Qr (sans unité)', faux: ['La constante d’équilibre K', 'Le taux d’avancement final τ', 'L’avancement maximal (en mol)'] },
-          manque: null, solution: { txt: 'Qr = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻])', val: p.c * p.d / (p.a * p.b), u: '' } };
+          manque: null, solution: { txt: 'Qr = frac([CH₃COO⁻] × [HCOOH]|[CH₃COOH] × [HCOO⁻])', val: p.c * p.d / (p.a * p.b), u: '' } };
       }
       tokens.c0 = tok(`${nb(p.c0, 3)} mol/L`, 'Concentration initiale de CH₃COOH et de HCOO⁻ (identiques, sans produit au départ)', p.c0, 'mol/L');
       tokens.cf = tok(`${nb(p.cf, 3)} mol/L`, 'Concentration de CH₃COO⁻ à l’état final', p.cf, 'mol/L');
       return { tokens, derivees: ['avancement maximal : x_max = c₀ × V (réactif limitant), avancement final : x_f = [CH₃COO⁻] × V'], texte: [...debut, 'On part de ', T('c0'), ' de CH₃COOH et de HCOO⁻, sans produit. À l’état final, [CH₃COO⁻] = ', T('cf'), '. Quel est le taux d’avancement final ?'],
-        utiles: ['c0', 'cf'], raisons: { K: rK, V: 'Le volume se simplifie : τ = x_f / x_max = ([CH₃COO⁻] × V) / (c₀ × V).' },
+        utiles: ['c0', 'cf'], raisons: { K: rK, V: 'Le volume se simplifie : τ = frac(x_f|x_max) = frac([CH₃COO⁻] × V|c₀ × V).' },
         cherche: { bonne: 'Le taux d’avancement final τ (sans unité)', faux: ['Le quotient de réaction à l’état final', 'La concentration finale en CH₃COOH (en mol/L)', 'L’avancement final x_f (en mol)'] },
-        manque: null, solution: { txt: 'τ = x_f / x_max = [CH₃COO⁻]_f / c₀', val: p.cf / p.c0, u: '' } };
+        manque: null, solution: { txt: 'τ = frac(x_f|x_max) = [CH₃COO⁻]_f / c₀', val: p.cf / p.c0, u: '' } };
     },
   },
   {
@@ -624,11 +624,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la constante d’équilibre K de cette réaction ?'],
         utiles: ['af', 'bf', 'cf', 'df'], raisons: { T: 'La température est constante : elle n’intervient pas dans le calcul, elle indique seulement que K ne change pas.', ai: 'À l’état final, K = Qr : seules les concentrations finales servent ; les concentrations initiales donnent un Qr de départ, qui n’est pas K.', bi: 'Les concentrations initiales ne donnent pas K : à l’état final, K = Qr calculé avec la composition finale.', ci: 'Les concentrations initiales ne donnent pas K : à l’état final, K = Qr calculé avec la composition finale.', di: 'Les concentrations initiales ne donnent pas K : à l’état final, K = Qr calculé avec la composition finale.' },
         cherche: { bonne: 'La constante d’équilibre K (sans unité)', faux: ['Le quotient de réaction au départ', 'Le taux d’avancement final', 'La température d’équilibre'] },
-        manque: null, solution: { txt: 'K = Qr à l’état final = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻]), concentrations finales', val: (fin[2] * fin[3]) / (fin[0] * fin[1]), u: '' } };
+        manque: null, solution: { txt: 'K = Qr à l’état final = frac([CH₃COO⁻] × [HCOOH]|[CH₃COOH] × [HCOO⁻]), concentrations finales', val: (fin[2] * fin[3]) / (fin[0] * fin[1]), u: '' } };
       return { tokens, derivees: [], texte: [...debut, 'Quel est le quotient de réaction du mélange au départ (pour prévoir son sens d’évolution) ?'],
         utiles: ['ai', 'bi', 'ci', 'di'], raisons: { T: 'La température est constante : elle n’intervient pas dans le calcul de Qr.', af: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', bf: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', cf: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.', df: 'L’état final est celui où Qr = K : il ne sert pas à prévoir le sens d’évolution du mélange de départ.' },
         cherche: { bonne: 'Le quotient de réaction Qr du mélange de départ (sans unité)', faux: ['La constante d’équilibre K', 'Le quotient de réaction à l’état final', 'Le taux d’avancement final'] },
-        manque: null, solution: { txt: 'Qr = ([CH₃COO⁻] × [HCOOH]) / ([CH₃COOH] × [HCOO⁻]), concentrations initiales', val: (c0 * d0) / (a0 * b0), u: '' } };
+        manque: null, solution: { txt: 'Qr = frac([CH₃COO⁻] × [HCOOH]|[CH₃COOH] × [HCOO⁻]), concentrations initiales', val: (c0 * d0) / (a0 * b0), u: '' } };
     },
   },
   // ───────────────────────────── Acide faible (TSTL, PCM) : coefficient de dissociation, conservation de la matière, Ka, pKa
@@ -667,11 +667,11 @@ export const ENONCES = [
       const debut = ['Un acide faible AH, de masse molaire ', T('M'), ', est dissous dans l’eau à ', T('T'), ' avec une concentration en soluté apporté de ', T('C'), '. Le pH-mètre indique ', T('pH'), '. '];
       const h = 10 ** -p.pH, Ka = h * h / (p.C - h);
       const raisons = { M: 'La masse molaire sert à convertir une masse en quantité de matière : ici la concentration est déjà donnée.', T: 'La température est constante : elle n’intervient pas dans le calcul, elle indique seulement que Ka garde sa valeur.' };
-      if (q === 0) return { tokens, derivees: ['[A⁻] = [H₃O⁺] = 10^(−pH) ; [AH] = C₀ − [H₃O⁺]'], texte: [...debut, 'Quelle est la constante d’acidité Ka du couple AH / A⁻ ?'],
+      if (q === 0) return { tokens, derivees: ['[A⁻] = [H₃O⁺] = 10^(−pH) ; [AH] = C₀ − [H₃O⁺]'], texte: [...debut, 'Quelle est la constante d’acidité Ka du couple frac(AH|A⁻) ?'],
         utiles: ['C', 'pH'], raisons,
         cherche: { bonne: 'La constante d’acidité Ka (sans unité)', faux: ['Le coefficient de dissociation α (sans unité)', 'Le pKa du couple (sans unité)', 'La concentration en acide restant [AH] (en mol/L)'] },
         manque: null, solution: { txt: 'Ka = [H₃O⁺]² divisé par (C₀ − [H₃O⁺]), avec [H₃O⁺] = 10^(−pH)', val: Ka, u: '' } };
-      return { tokens, derivees: ['[A⁻] = [H₃O⁺] = 10^(−pH) ; [AH] = C₀ − [H₃O⁺] ; Ka'], texte: [...debut, 'Quel est le pKa du couple AH / A⁻ ?'],
+      return { tokens, derivees: ['[A⁻] = [H₃O⁺] = 10^(−pH) ; [AH] = C₀ − [H₃O⁺] ; Ka'], texte: [...debut, 'Quel est le pKa du couple frac(AH|A⁻) ?'],
         utiles: ['C', 'pH'], raisons,
         cherche: { bonne: 'Le pKa du couple, pKa = −log Ka (sans unité)', faux: ['La constante d’acidité Ka du couple (sans unité)', 'Le pH de la solution (sans unité)', 'Le coefficient de dissociation α (sans unité)'] },
         manque: null, solution: { txt: 'pKa = −log Ka, après calcul de Ka = [H₃O⁺]² divisé par (C₀ − [H₃O⁺])', val: -Math.log10(Ka), u: '' } };
@@ -684,13 +684,13 @@ export const ENONCES = [
     build: (p, q) => {
       const cp = PRE.COUPLES[p.id];
       const tokens = {
-        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple AH / A⁻', cp.pKa, ''),
+        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple frac(AH|A⁻)', cp.pKa, ''),
         pH: tok(`${nb(p.pH, 2)}`, 'pH de la solution (imposé par un tampon)', p.pH, ''),
         C: tok(`${nb(p.C, 3)} mol/L`, 'Concentration totale du couple [AH] + [A⁻]', p.C, 'mol/L'),
         V: tok(`${p.V} mL`, 'Volume de la solution', p.V, 'mL'),
         T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
       };
-      const debut = ['Une solution de volume ', T('V'), ', à ', T('T'), ', contient un couple acide/base AH / A⁻ de pKa ', T('pKa'), ', avec une concentration totale ', T('C'), '. Son pH est imposé à ', T('pH'), '. '];
+      const debut = ['Une solution de volume ', T('V'), ', à ', T('T'), ', contient un couple acide/base frac(AH|A⁻) de pKa ', T('pKa'), ', avec une concentration totale ', T('C'), '. Son pH est imposé à ', T('pH'), '. '];
       const r = 10 ** (p.pH - cp.pKa), A = p.C * r / (1 + r);
       const raisons = { V: 'Le volume ne change pas les concentrations : il n’intervient pas dans le calcul.', T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le rapport [A⁻] sur [AH] des concentrations des deux formes ?'],
@@ -734,13 +734,13 @@ export const ENONCES = [
     build: (p, q) => {
       const cp = TMP.COUPLES[p.id], r = 10 ** (p.pH - cp.pKa);
       const tokens = {
-        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple AH / A⁻', cp.pKa, ''),
+        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple frac(AH|A⁻)', cp.pKa, ''),
         pH: tok(`${nb(p.pH, 1)}`, 'pH visé pour le tampon', p.pH, ''),
         V: tok(`${p.V} mL`, 'Volume de tampon à préparer', p.V, 'mL'),
         C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration commune des deux solutions de départ', p.C, 'mol/L'),
         T: tok(`${p.T} °C`, 'Température de travail', p.T, '°C'),
       };
-      const debut = ['On veut préparer un volume ', T('V'), ' de solution tampon de pH ', T('pH'), ', à ', T('T'), ', avec le couple acide/base AH / A⁻ de pKa ', T('pKa'), ', en mélangeant une solution de AH et une solution de A⁻ (sel de sodium), toutes deux de même concentration ', T('C'), '. '];
+      const debut = ['On veut préparer un volume ', T('V'), ' de solution tampon de pH ', T('pH'), ', à ', T('T'), ', avec le couple acide/base frac(AH|A⁻) de pKa ', T('pKa'), ', en mélangeant une solution de AH et une solution de A⁻ (sel de sodium), toutes deux de même concentration ', T('C'), '. '];
       const raisons = { T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.', C: 'Les deux solutions ont la même concentration : le rapport des quantités est le rapport des volumes, la valeur de la concentration ne sert pas.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel doit être le rapport n(A⁻) sur n(AH) des quantités de matière à mélanger ?'],
         utiles: ['pKa', 'pH'], raisons: { ...raisons, V: 'Le volume ne change pas le rapport des quantités : il intervient seulement pour répartir les volumes.' },
@@ -749,7 +749,7 @@ export const ENONCES = [
       return { tokens, derivees: ['rapport n(A⁻) sur n(AH) = 10^(pH − pKa) = rapport des volumes'], texte: [...debut, 'Quel volume de la solution de A⁻ faut-il prélever ?'],
         utiles: ['pKa', 'pH', 'V'], raisons,
         cherche: { bonne: 'Le volume de la solution de A⁻ à prélever (en mL)', faux: ['Le volume de la solution de AH à prélever (en mL)', 'Le rapport n(A⁻) sur n(AH) (sans unité)', 'La quantité de matière de A⁻ (en mmol)'] },
-        manque: null, solution: { txt: 'V(A⁻) = V × r divisé par (1 + r), avec r = 10^(pH − pKa)', val: p.V * r / (1 + r), u: 'mL' } };
+        manque: null, solution: { txt: 'V(A⁻) = frac(V × r|1 + r), avec r = 10^(pH − pKa)', val: p.V * r / (1 + r), u: 'mL' } };
     },
   },
   {
@@ -758,7 +758,7 @@ export const ENONCES = [
     build: (p, q) => {
       const pH = AB.pHAcideFaibleApprox(p.C, p.pKa);
       const tokens = {
-        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple AH / A⁻', p.pKa, ''),
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple frac(AH|A⁻)', p.pKa, ''),
         C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration de la solution', p.C, 'mol/L'),
         V: tok(`${p.V} mL`, 'Volume de solution préparé', p.V, 'mL'),
         T: tok('25 °C', 'Température de la solution', 25, '°C'),
@@ -786,10 +786,10 @@ export const ENONCES = [
       };
       const debut = ['On prélève ', T('Vp'), ' d’une solution d’acide fort de concentration ', T('C'), ', puis on complète avec de l’eau distillée dans une fiole jaugée de ', T('Vf'), ', à ', T('T'), '. '];
       const raisons = { T: 'La température est constante : elle ne change pas le calcul.' };
-      if (q === 0) return { tokens, derivees: ['facteur de dilution = Vf divisé par Vp'], texte: [...debut, 'Quelle est la concentration de la solution diluée ?'], utiles: ['C', 'Vp', 'Vf'], raisons,
+      if (q === 0) return { tokens, derivees: ['facteur de dilution = frac(Vf|Vp)'], texte: [...debut, 'Quelle est la concentration de la solution diluée ?'], utiles: ['C', 'Vp', 'Vf'], raisons,
         cherche: { bonne: 'La concentration après dilution (en mol/L)', faux: ['Le facteur de dilution (sans unité)', 'Le pH de la solution diluée (sans unité)', 'La quantité d’acide prélevée (en mmol)'] },
-        manque: null, solution: { txt: 'C′ = C × Vp divisé par Vf', val: C1, u: 'mol/L' } };
-      return { tokens, derivees: ['concentration après dilution C′ = C × Vp divisé par Vf'], texte: [...debut, 'Quel est le pH de la solution diluée ?'], utiles: ['C', 'Vp', 'Vf'], raisons,
+        manque: null, solution: { txt: 'C′ = frac(C × Vp|Vf)', val: C1, u: 'mol/L' } };
+      return { tokens, derivees: ['concentration après dilution C′ = frac(C × Vp|Vf)'], texte: [...debut, 'Quel est le pH de la solution diluée ?'], utiles: ['C', 'Vp', 'Vf'], raisons,
         cherche: { bonne: 'Le pH de la solution diluée (sans unité)', faux: ['La concentration après dilution (en mol/L)', 'Le pH de la solution mère (sans unité)', 'Le facteur de dilution (sans unité)'] },
         manque: null, solution: { txt: 'pH = −log C′ (acide fort, réaction totale)', val: pH, u: '' } };
     },
@@ -800,19 +800,19 @@ export const ENONCES = [
     build: (p, q) => {
       const r = 10 ** (p.pH - p.pKa);
       const tokens = {
-        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple AH / A⁻', p.pKa, ''),
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple frac(AH|A⁻)', p.pKa, ''),
         pH: tok(`${nb(p.pH, 1)}`, 'pH de la solution', p.pH, ''),
         C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration totale en AH et A⁻', p.C, 'mol/L'),
         T: tok('25 °C', 'Température de la solution', 25, '°C'),
       };
-      const debut = ['Dans une solution de pH ', T('pH'), ', le couple AH / A⁻ de pKa ', T('pKa'), ' est présent à la concentration totale ', T('C'), ' (à ', T('T'), '). '];
+      const debut = ['Dans une solution de pH ', T('pH'), ', le couple frac(AH|A⁻) de pKa ', T('pKa'), ' est présent à la concentration totale ', T('C'), ' (à ', T('T'), '). '];
       const raisons = { T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le rapport [A⁻] sur [AH] ?'], utiles: ['pKa', 'pH'], raisons: { ...raisons, C: 'Un rapport de concentrations ne dépend pas de la concentration totale.' },
         cherche: { bonne: 'Le rapport [A⁻] sur [AH] (sans unité)', faux: ['La concentration en A⁻ (en mol/L)', 'Le pourcentage de forme basique (en %)', 'La différence pH − pKa (sans unité)'] },
         manque: null, solution: { txt: '[A⁻] sur [AH] = 10^(pH − pKa)', val: r, u: '' } };
       return { tokens, derivees: ['rapport [A⁻] sur [AH] = 10^(pH − pKa)'], texte: [...debut, 'Quel pourcentage du couple est sous la forme basique A⁻ ?'], utiles: ['pKa', 'pH'], raisons: { ...raisons, C: 'Un pourcentage ne dépend pas de la concentration totale.' },
         cherche: { bonne: 'Le pourcentage de forme basique A⁻ (en %)', faux: ['Le rapport [A⁻] sur [AH] (sans unité)', 'La concentration en A⁻ (en mol/L)', 'Le pourcentage de forme acide AH (en %)'] },
-        manque: null, solution: { txt: 'pourcentage de A⁻ = 100 × r divisé par (1 + r), avec r = 10^(pH − pKa)', val: 100 * r / (1 + r), u: '%' } };
+        manque: null, solution: { txt: 'pourcentage de A⁻ = frac(100 × r|1 + r), avec r = 10^(pH − pKa)', val: 100 * r / (1 + r), u: '%' } };
     },
   },
   {
@@ -821,7 +821,7 @@ export const ENONCES = [
     build: (p, q) => {
       const r = 10 ** (p.pH - p.pKa), cA = p.C * r / (1 + r), cAH = p.C / (1 + r);
       const tokens = {
-        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple AH / A⁻', p.pKa, ''),
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple frac(AH|A⁻)', p.pKa, ''),
         pH: tok(`${nb(p.pH, 1)}`, 'pH de la solution', p.pH, ''),
         C: tok(`${nb(p.C, 2)} mol/L`, 'Concentration totale en AH et A⁻', p.C, 'mol/L'),
         V: tok(`${p.V} mL`, 'Volume de la solution', p.V, 'mL'),
@@ -830,10 +830,10 @@ export const ENONCES = [
       const raisons = { V: 'Le volume ne change pas les concentrations, qui sont déjà données.' };
       if (q === 0) return { tokens, derivees: ['rapport r = [A⁻] sur [AH] = 10^(pH − pKa)'], texte: [...debut, 'Quelle est la concentration de la forme basique A⁻ ?'], utiles: ['pKa', 'pH', 'C'], raisons,
         cherche: { bonne: 'La concentration en A⁻ (en mol/L)', faux: ['La concentration en AH (en mol/L)', 'Le rapport [A⁻] sur [AH] (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)'] },
-        manque: null, solution: { txt: '[A⁻] = C × r divisé par (1 + r)', val: cA, u: 'mol/L' } };
+        manque: null, solution: { txt: '[A⁻] = frac(C × r|1 + r)', val: cA, u: 'mol/L' } };
       return { tokens, derivees: ['rapport r = [A⁻] sur [AH] = 10^(pH − pKa)'], texte: [...debut, 'Quelle est la concentration de la forme acide AH ?'], utiles: ['pKa', 'pH', 'C'], raisons,
         cherche: { bonne: 'La concentration en AH (en mol/L)', faux: ['La concentration en A⁻ (en mol/L)', 'Le rapport [A⁻] sur [AH] (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)'] },
-        manque: null, solution: { txt: '[AH] = C divisé par (1 + r)', val: cAH, u: 'mol/L' } };
+        manque: null, solution: { txt: '[AH] = frac(C|1 + r)', val: cAH, u: 'mol/L' } };
     },
   },
   {
@@ -842,7 +842,7 @@ export const ENONCES = [
     build: (p, q) => {
       const r = (p.C2 * p.V2) / (p.C1 * p.V1);
       const tokens = {
-        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple AH / A⁻', p.pKa, ''),
+        pKa: tok(`${nb(p.pKa, 1)}`, 'pKa du couple frac(AH|A⁻)', p.pKa, ''),
         C1: tok(`${nb(p.C1, 2)} mol/L`, 'Concentration de la solution d’acide AH', p.C1, 'mol/L'),
         V1: tok(`${p.V1} mL`, 'Volume de solution d’acide AH', p.V1, 'mL'),
         C2: tok(`${nb(p.C2, 2)} mol/L`, 'Concentration de la solution de base A⁻', p.C2, 'mol/L'),
@@ -853,10 +853,10 @@ export const ENONCES = [
       const raisons = { T: 'La température est constante : elle indique seulement que le pKa garde sa valeur.' };
       if (q === 0) return { tokens, derivees: ['n(AH) = C₁ × V₁', 'n(A⁻) = C₂ × V₂'], texte: [...debut, 'Quel est le rapport n(A⁻) sur n(AH) dans le mélange ?'], utiles: ['C1', 'V1', 'C2', 'V2'], raisons: { ...raisons, pKa: 'Le pKa ne sert pas pour un rapport de quantités de matière.' },
         cherche: { bonne: 'Le rapport n(A⁻) sur n(AH) (sans unité)', faux: ['Le pH du mélange (sans unité)', 'La quantité de matière de AH (en mmol)', 'Le volume total du mélange (en mL)'] },
-        manque: null, solution: { txt: 'rapport = C₂ × V₂ divisé par (C₁ × V₁)', val: r, u: '' } };
+        manque: null, solution: { txt: 'rapport = frac(C₂ × V₂|C₁ × V₁)', val: r, u: '' } };
       return { tokens, derivees: ['n(AH) = C₁ × V₁', 'n(A⁻) = C₂ × V₂', 'rapport n(A⁻) sur n(AH)'], texte: [...debut, 'Quel est le pH du mélange ?'], utiles: ['pKa', 'C1', 'V1', 'C2', 'V2'], raisons,
         cherche: { bonne: 'Le pH du mélange (sans unité)', faux: ['Le rapport n(A⁻) sur n(AH) (sans unité)', 'Le pKa du couple (sans unité)', 'La concentration en ions H₃O⁺ (en mol/L)'] },
-        manque: null, solution: { txt: 'pH = pKa + log(n(A⁻) divisé par n(AH))', val: p.pKa + Math.log10(r), u: '' } };
+        manque: null, solution: { txt: 'pH = pKa + log(frac(n(A⁻)|n(AH)))', val: p.pKa + Math.log10(r), u: '' } };
     },
   },
   {
@@ -865,7 +865,7 @@ export const ENONCES = [
     build: (p, q) => {
       const cp = TMP.COUPLES[p.id], b = TMP.bilan({ nA: p.nA, nAH: p.nAH, nAcide: p.sens === 'acide' ? p.x : 0, nBase: p.sens === 'base' ? p.x : 0 });
       const tokens = {
-        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple AH / A⁻', cp.pKa, ''),
+        pKa: tok(`${nb(cp.pKa, 1)}`, 'pKa du couple frac(AH|A⁻)', cp.pKa, ''),
         nA: tok(`${nb(p.nA, 1)} mmol`, 'Quantité de base A⁻ dans le tampon', p.nA, 'mmol'),
         nAH: tok(`${nb(p.nAH, 1)} mmol`, 'Quantité d’acide AH dans le tampon', p.nAH, 'mmol'),
         x: tok(`${nb(p.x, 1)} mmol`, p.sens === 'acide' ? 'Quantité d’ions H₃O⁺ ajoutée (acide fort)' : 'Quantité d’ions HO⁻ ajoutée (base forte)', p.x, 'mmol'),
@@ -942,18 +942,18 @@ export const ENONCES = [
       const e = EXT.ESPECES[p.e], acide = e.type === 'acide', al = EXT.alpha(e, p.pH), D = e.K * al, Vo = p.r * p.Ve;
       const tokens = {
         K: tok(`${e.K}`, 'Coefficient de partage de la forme neutre', e.K, ''),
-        pKa: tok(`${nb(e.pKa, 1)}`, acide ? 'pKa du couple HA / A⁻' : 'pKa du couple BH⁺ / B', e.pKa, ''),
+        pKa: tok(`${nb(e.pKa, 1)}`, acide ? 'pKa du couple frac(HA|A⁻)' : 'pKa du couple BH⁺ / B', e.pKa, ''),
         pH: tok(`${nb(p.pH, 1)}`, 'pH de la phase aqueuse', p.pH, ''),
         Ve: tok(`${p.Ve} mL`, 'Volume de phase aqueuse', p.Ve, 'mL'),
         Vo: tok(`${Vo} mL`, 'Volume de solvant organique', Vo, 'mL'),
       };
-      const debut = [SUJET_EXT[e.id], ' (', acide ? 'couple HA / A⁻' : 'couple BH⁺ / B', ', pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' d’un solvant organique non miscible. Le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
+      const debut = [SUJET_EXT[e.id], ' (', acide ? 'couple frac(HA|A⁻)' : 'couple BH⁺ / B', ', pKa = ', T('pKa'), ') est dans ', T('Ve'), ' d’eau dont le pH est maintenu à ', T('pH'), '. On l’extrait avec ', T('Vo'), ' d’un solvant organique non miscible. Le coefficient de partage de sa forme neutre est K = ', T('K'), '. '];
       const raisons = { Ve: 'Les volumes ne servent que pour la part extraite : ils n’interviennent pas dans α.', Vo: 'Les volumes ne servent que pour la part extraite : ils n’interviennent pas dans α.' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle fraction du composé est sous forme neutre dans la phase aqueuse ?'],
         utiles: ['pKa', 'pH'], raisons: { ...raisons, K: 'Le coefficient de partage K intervient pour D, pas pour la fraction α.' },
         cherche: { bonne: 'La fraction α de forme neutre (sans unité)', faux: ['Le rapport de distribution D (sans unité)', 'La part extraite dans l’organique (en %)', 'Le volume de solvant à utiliser (en mL)'] },
-        manque: null, solution: { txt: acide ? 'α = 1 divisé par (1 + 10^(pH − pKa))' : 'α = 1 divisé par (1 + 10^(pKa − pH))', val: al, u: '' } };
-      return { tokens, derivees: [acide ? 'α = 1 divisé par (1 + 10^(pH − pKa))' : 'α = 1 divisé par (1 + 10^(pKa − pH))'], texte: [...debut, 'Quel est le rapport de distribution D du composé ?'],
+        manque: null, solution: { txt: acide ? 'α = frac(1|1 + 10^(pH − pKa))' : 'α = frac(1|1 + 10^(pKa − pH))', val: al, u: '' } };
+      return { tokens, derivees: [acide ? 'α = frac(1|1 + 10^(pH − pKa))' : 'α = frac(1|1 + 10^(pKa − pH))'], texte: [...debut, 'Quel est le rapport de distribution D du composé ?'],
         utiles: ['K', 'pKa', 'pH'], raisons,
         cherche: { bonne: 'Le rapport de distribution D (sans unité)', faux: ['La fraction α de forme neutre (sans unité)', 'La part extraite dans l’organique (en %)', 'Le coefficient de partage K (sans unité)'] },
         manque: null, solution: { txt: 'D = K × α', val: D, u: '' } };
@@ -966,7 +966,7 @@ export const ENONCES = [
       const e = EXT.ESPECES[p.e], acide = e.type === 'acide', D = e.K * EXT.alpha(e, p.pH), Vo = p.r * p.Ve;
       const tokens = {
         K: tok(`${e.K}`, 'Coefficient de partage de la forme neutre', e.K, ''),
-        pKa: tok(`${nb(e.pKa, 1)}`, acide ? 'pKa du couple HA / A⁻' : 'pKa du couple BH⁺ / B', e.pKa, ''),
+        pKa: tok(`${nb(e.pKa, 1)}`, acide ? 'pKa du couple frac(HA|A⁻)' : 'pKa du couple BH⁺ / B', e.pKa, ''),
         pH: tok(`${nb(p.pH, 1)}`, 'pH de la phase aqueuse', p.pH, ''),
         Ve: tok(`${p.Ve} mL`, 'Volume de phase aqueuse', p.Ve, 'mL'),
         Vo: tok(`${Vo} mL`, 'Volume de solvant organique à chaque contact', Vo, 'mL'),
@@ -975,11 +975,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: ['D = K × α, avec α la fraction de forme neutre', 'r = Vorg divisé par Veau'], texte: [...debut, 'Quelle part du composé est extraite en un seul contact ?'],
         utiles: ['K', 'pKa', 'pH', 'Ve', 'Vo'], raisons: {},
         cherche: { bonne: 'La part extraite en un contact (en %)', faux: ['Le rapport de distribution D (sans unité)', 'La part restant dans l’eau (en %)', 'La fraction α de forme neutre (sans unité)'] },
-        manque: null, solution: { txt: 'extrait = D × r divisé par (1 + D × r)', val: 100 * EXT.fractionExtraite(D, p.r), u: '%' } };
+        manque: null, solution: { txt: 'extrait = frac(D × r|1 + D × r)', val: 100 * EXT.fractionExtraite(D, p.r), u: '%' } };
       return { tokens, derivees: ['D = K × α, avec α la fraction de forme neutre', 'r = Vorg divisé par Veau'], texte: [...debut, 'On recommence deux fois avec du solvant neuf. Quelle part reste dans l’eau ?'],
         utiles: ['K', 'pKa', 'pH', 'Ve', 'Vo'], raisons: {},
         cherche: { bonne: 'La part restant dans l’eau après deux extractions (en %)', faux: ['La part extraite au total (en %)', 'La part restant dans l’eau après une seule extraction (en %)', 'Le rapport de distribution D (sans unité)'] },
-        manque: null, solution: { txt: 'reste = (1 divisé par (1 + D × r)) au carré', val: 100 * EXT.resteApres(D, p.r, 2), u: '%' } };
+        manque: null, solution: { txt: 'reste = (frac(1|1 + D × r)) au carré', val: 100 * EXT.resteApres(D, p.r, 2), u: '%' } };
     },
   },
   {
@@ -1115,7 +1115,7 @@ export const ENONCES = [
         V: tok(`${p.V} mL`, 'Volume de solution', p.V, 'mL'),
         T: tok(`${p.T} °C`, 'Température de la solution', p.T, '°C'),
       };
-      const debut = ['Un couple acide-base AH / A⁻ de pKA égal à ', T('pKa'), ' est en solution à pH = ', T('pH'), ' ; sa concentration totale (AH + A⁻) est ', T('C'), ', dans un volume de ', T('V'), ' à ', T('T'), '. '];
+      const debut = ['Un couple acide-base frac(AH|A⁻) de pKA égal à ', T('pKa'), ' est en solution à pH = ', T('pH'), ' ; sa concentration totale (AH + A⁻) est ', T('C'), ', dans un volume de ', T('V'), ' à ', T('T'), '. '];
       const r = 10 ** (p.pH - p.pKa);
       if (q === 0) return { tokens, derivees: ['frac([A⁻]|[AH]) = 10^(pH − pK_A)'], texte: [...debut, 'Quel est le rapport frac([A⁻]|[AH]) ?'],
         utiles: ['pKa', 'pH'], raisons: { C: 'La concentration totale ne change pas le rapport des deux formes : elle fixe seulement leurs valeurs.', V: 'Le volume n’intervient pas dans le rapport de deux concentrations.', T: 'La température est constante : elle n’intervient pas dans le calcul, elle suppose que pKA garde sa valeur.' },
@@ -1147,7 +1147,7 @@ export const ENONCES = [
       return { tokens, derivees: ['r = frac([In⁻]|[HIn]) = 10^(pH − pK_A)'], texte: [...debut, 'Quel est le pourcentage de la forme basique In⁻ ?'],
         utiles: ['pKa', 'pH'], raisons: { mi: 'Le nombre de gouttes ne modifie pas la proportion entre les deux formes.', V: 'Le volume n’intervient pas dans un pourcentage.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
         cherche: { bonne: 'Le pourcentage de forme basique In⁻ (en %)', faux: ['Le rapport frac([In⁻]|[HIn]) (sans unité)', 'Le pourcentage de la forme acide HIn (en %)', 'Le pH de début de virage (sans unité)'] },
-        manque: null, solution: { txt: '% In⁻ = 100 × r / (1 + r), avec r = 10^(pH − pK_A)', val: 100 * r / (1 + r), u: '%' } };
+        manque: null, solution: { txt: '% In⁻ = frac(100 × r|1 + r), avec r = 10^(pH − pK_A)', val: 100 * r / (1 + r), u: '%' } };
     },
   },
   // ───────────────────────────── Solution tampon (TG) : ajout d'acide, composition à préparer
@@ -1189,13 +1189,13 @@ export const ENONCES = [
       };
       const debut = ['On veut préparer ', T('V'), ' d’un tampon de pH ', T('pH'), ' avec un couple acide-base de pKA égal à ', T('pKa'), '. On introduit ', T('nAH'), ' d’acide faible AH ; la base conjuguée A⁻ est disponible en solution à ', T('Cs'), '. '];
       const r = 10 ** (p.pH - p.pKa);
-      if (q === 0) return { tokens, derivees: ['n(A⁻) / n(AH) = 10^(pH − pKA)'], texte: [...debut, 'Quel rapport n(A⁻) / n(AH) faut-il réaliser ?'],
+      if (q === 0) return { tokens, derivees: ['frac(n(A⁻)|n(AH)) = 10^(pH − pKA)'], texte: [...debut, 'Quel rapport frac(n(A⁻)|n(AH)) faut-il réaliser ?'],
         utiles: ['pKa', 'pH'], raisons: { nAH: 'La quantité d’acide fixe la valeur de n(A⁻), mais pas le rapport demandé.', V: 'Le volume ne change pas un rapport de quantités de matière.', Cs: 'La concentration de la solution de base n’intervient pas dans le rapport.' },
-        cherche: { bonne: 'Le rapport n(A⁻) / n(AH) (sans unité)', faux: ['La quantité de A⁻ à introduire (en mmol)', 'Le volume de solution de base à verser (en mL)', 'La concentration de AH dans le tampon (en mol/L)'] },
-        manque: null, solution: { txt: 'n(A⁻) / n(AH) = 10^(pH − pKA)', val: r, u: '' } };
+        cherche: { bonne: 'Le rapport frac(n(A⁻)|n(AH)) (sans unité)', faux: ['La quantité de A⁻ à introduire (en mmol)', 'Le volume de solution de base à verser (en mL)', 'La concentration de AH dans le tampon (en mol/L)'] },
+        manque: null, solution: { txt: 'frac(n(A⁻)|n(AH)) = 10^(pH − pKA)', val: r, u: '' } };
       return { tokens, derivees: ['n(A⁻) = n(AH) × 10^(pH − pKA)'], texte: [...debut, 'Quelle quantité de base A⁻ faut-il introduire ?'],
         utiles: ['pKa', 'pH', 'nAH'], raisons: { V: 'Le volume du tampon ne change pas le rapport des quantités ni n(A⁻).', Cs: 'La concentration de la solution de base ne sert qu’à convertir n(A⁻) en volume, ce que l’on ne demande pas ici.' },
-        cherche: { bonne: 'La quantité de base A⁻ à introduire (en mmol)', faux: ['Le rapport n(A⁻) / n(AH) (sans unité)', 'Le volume de solution de base à verser (en mL)', 'La concentration de A⁻ dans le tampon (en mol/L)'] },
+        cherche: { bonne: 'La quantité de base A⁻ à introduire (en mmol)', faux: ['Le rapport frac(n(A⁻)|n(AH)) (sans unité)', 'Le volume de solution de base à verser (en mL)', 'La concentration de A⁻ dans le tampon (en mol/L)'] },
         manque: null, solution: { txt: 'n(A⁻) = n(AH) × 10^(pH − pKA)', val: p.nAH * r, u: 'mmol' } };
     },
   },
@@ -1219,10 +1219,10 @@ export const ENONCES = [
         utiles: ['pKa1', 'pH'], raisons: { pKa2: 'pKA2 est trop éloigné du pH : près de pKA1, on lit seulement le couple cation / zwitterion.', C: 'La concentration totale ne change pas le rapport des deux formes : elle fixe seulement leurs valeurs.', V: 'Le volume n’intervient pas dans un rapport de deux concentrations.', T: 'La température est constante : elle suppose seulement que pKA garde sa valeur.' },
         cherche: { bonne: 'Le rapport [zwitterion] / [cation] (sans unité)', faux: ['La concentration du zwitterion (en mol/L)', 'Le pourcentage de cation (en %)', 'Le pH de la solution (sans unité)'] },
         manque: null, solution: { txt: '[zwitterion] / [cation] = 10^(pH − pKA1)', val: r, u: '' } };
-      return { tokens, derivees: ['% cation = 100 / (1 + r) avec r = 10^(pH − pKA1)'], texte: [...debut, 'Quel pourcentage de l’acide α-aminé est sous forme de cation ? (la forme anionique est négligeable à ce pH)'],
+      return { tokens, derivees: ['% cation = frac(100|1 + r) avec r = 10^(pH − pKA1)'], texte: [...debut, 'Quel pourcentage de l’acide α-aminé est sous forme de cation ? (la forme anionique est négligeable à ce pH)'],
         utiles: ['pKa1', 'pH'], raisons: { pKa2: 'pKA2 est trop éloigné du pH : l’anion est négligeable, on ne lit que le couple 1.', C: 'Un pourcentage ne dépend pas de la concentration totale.', V: 'Le volume ne change pas une proportion.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
         cherche: { bonne: 'Le pourcentage de cation (en %)', faux: ['Le rapport [zwitterion] / [cation] (sans unité)', 'La concentration du cation (en mol/L)', 'Le pourcentage d’anion (en %)'] },
-        manque: null, solution: { txt: '% cation = 100 / (1 + r), avec r = 10^(pH − pKA1)', val: 100 / (1 + r), u: '%' } };
+        manque: null, solution: { txt: '% cation = frac(100|1 + r), avec r = 10^(pH − pKA1)', val: 100 / (1 + r), u: '%' } };
     },
   },
   {
@@ -1244,10 +1244,10 @@ export const ENONCES = [
         utiles: ['pKa2', 'pH'], raisons: { pKa1: 'pKA1 est trop éloigné du pH : près de pKA2, on lit seulement le couple zwitterion / anion.', C: 'La concentration totale ne change pas le rapport des deux formes.', V: 'Le volume n’intervient pas dans un rapport de deux concentrations.', T: 'La température est constante : elle suppose seulement que pKA garde sa valeur.' },
         cherche: { bonne: 'Le rapport [anion] / [zwitterion] (sans unité)', faux: ['La concentration de l’anion (en mol/L)', 'Le pourcentage de zwitterion (en %)', 'Le pH de la solution (sans unité)'] },
         manque: null, solution: { txt: '[anion] / [zwitterion] = 10^(pH − pKA2)', val: r, u: '' } };
-      return { tokens, derivees: ['[anion] = C × r / (1 + r) avec r = 10^(pH − pKA2)'], texte: [...debut, 'Quelle est la concentration de l’anion ? (la forme cationique est négligeable à ce pH)'],
+      return { tokens, derivees: ['[anion] = frac(C × r|1 + r) avec r = 10^(pH − pKA2)'], texte: [...debut, 'Quelle est la concentration de l’anion ? (la forme cationique est négligeable à ce pH)'],
         utiles: ['pKa2', 'pH', 'C'], raisons: { pKa1: 'pKA1 est trop éloigné du pH : le cation est négligeable, on ne lit que le couple 2.', V: 'Le volume ne change pas les concentrations : il n’intervient pas ici.', T: 'La température est constante : elle n’intervient pas dans le calcul.' },
         cherche: { bonne: 'La concentration de l’anion (en mol/L)', faux: ['Le rapport [anion] / [zwitterion] (sans unité)', 'La concentration en ions oxonium (en mol/L)', 'Le pourcentage d’anion (en %)'] },
-        manque: null, solution: { txt: '[anion] = C × r / (1 + r), avec r = 10^(pH − pKA2)', val: p.C * r / (1 + r), u: 'mol/L' } };
+        manque: null, solution: { txt: '[anion] = frac(C × r|1 + r), avec r = 10^(pH − pKA2)', val: p.C * r / (1 + r), u: 'mol/L' } };
     },
   },
   // ───────────────────────────── Conductimétrie (TG, sim 135) : conductivité d’une solution et titrage conductimétrique
@@ -1272,7 +1272,7 @@ export const ENONCES = [
       return { tokens, derivees: [{ id: 'som', nom: 'Somme des conductivités ioniques molaires', expr: 'λ(cation) + λ(anion)', val: somme, u: 'mS·m²·mol⁻¹' }], texte: [...debut, 'La conductivité mesurée vaut ', T('sigma'), ' ; le volume de solution est ', T('V'), '. Quelle est la concentration du soluté ?'],
         utiles: ['lc', 'la', 'sigma'], raisons: { V: 'Le volume ne change pas une concentration : on la déduit de σ et des conductivités ioniques molaires.' },
         cherche: { bonne: 'La concentration du soluté (en mol/L)', faux: ['La conductivité de la solution (en mS·m⁻¹)', 'La quantité de soluté dissous (en mmol)', 'La conductivité ionique molaire de la solution (en mS·m²·mol⁻¹)'] },
-        manque: null, solution: { txt: 'c = σ / (λ(cation) + λ(anion)) = en mol·m⁻³, soit en mol/L après division par 1 000', val: sigma / somme / 1000, u: 'mol/L' } };
+        manque: null, solution: { txt: 'c = frac(σ|λ(cation) + λ(anion)) = en mol·m⁻³, soit en mol/L après division par 1 000', val: sigma / somme / 1000, u: 'mol/L' } };
     },
   },
   {
@@ -1289,7 +1289,7 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [{ id: 'nHO', nom: 'Quantité d’ions HO⁻ versée à l’équivalence', expr: 'n(HO⁻) = cB × VE', val: p.cB * p.VE, u: 'mmol' }], texte: [...debut, 'Quelle est la concentration cA de l’acide ?'],
         utiles: ['VA', 'cB', 'VE'], raisons: { eau: 'L’eau ajoutée dilue l’acide mais ne change pas sa quantité de matière : elle ne sert pas au calcul de cA.' },
         cherche: { bonne: 'La concentration cA de l’acide (en mol/L)', faux: ['La quantité d’acide titré (en mmol)', 'La concentration de la solution de soude (en mol/L)', 'La concentration de l’acide après dilution (en mol/L)'] },
-        manque: null, solution: { txt: 'cA = cB × VE / VA (quantités égales à l’équivalence)', val: p.cB * p.VE / p.VA, u: 'mol/L' } };
+        manque: null, solution: { txt: 'cA = cB × frac(VE|VA) (quantités égales à l’équivalence)', val: p.cB * p.VE / p.VA, u: 'mol/L' } };
       return { tokens, derivees: [], texte: [...debut, 'Quelle quantité d’ions HO⁻ a-t-on versée à l’équivalence ?'],
         utiles: ['cB', 'VE'], raisons: { VA: 'La prise d’essai sert à calculer la concentration de l’acide, pas la quantité de HO⁻ versée.', eau: 'L’eau de dilution ne contient pas d’ions HO⁻ : elle n’intervient pas.' },
         cherche: { bonne: 'La quantité n(HO⁻) versée (en mmol)', faux: ['La concentration en ions HO⁻ dans le bécher (en mol/L)', 'La quantité d’ions H₃O⁺ restants (en mmol)', 'Le volume équivalent (en mL)'] },
@@ -1341,7 +1341,7 @@ export const ENONCES = [
       return { tokens, derivees: [{ id: 'nres', nom: 'Quantité d’ions HO⁻ restants', expr: 'n(HO⁻) = cB × VB − cA × VA', val: reste, u: 'mmol' }, { id: 'Vt', nom: 'Volume total du bécher', expr: 'VA + volume d’eau + VB', val: Vt, u: 'mL' }], texte: [...debut, 'Quelle est la concentration en ions HO⁻ dans le bécher ?'],
         utiles: ['cA', 'VA', 'eau', 'cB', 'VB'], raisons: {},
         cherche: { bonne: 'La concentration en HO⁻ (en mol/L)', faux: ['La quantité d’ions HO⁻ restants (en mmol)', 'La concentration de la soude versée (en mol/L)', 'La concentration en ions Na⁺ (en mol/L)'] },
-        manque: null, solution: { txt: '[HO⁻] = (cB × VB − cA × VA) / (VA + volume d’eau + VB) ; mmol / mL = mol/L', val: reste / Vt, u: 'mol/L' } };
+        manque: null, solution: { txt: '[HO⁻] = frac(cB × VB − cA × VA|VA + volume d’eau + VB) ; mmol / mL = mol/L', val: reste / Vt, u: 'mol/L' } };
     },
   },
   {
@@ -1379,10 +1379,10 @@ export const ENONCES = [
         Vt: tok(`${Vt} mL`, 'Volume de la solution dans le bécher (prise d’essai de 20,0 mL et eau), supposé constant', Vt, 'mL'),
       };
       const debut = ['On dose les ions chlorure de ', T('cA'), ' d’une prise d’essai de 20,0 mL (cation spectateur ', p.cat[0], ') par du nitrate d’argent à ', T('cB'), '. Le bécher contient ', T('Vt'), ' de solution, volume supposé constant. Données : λ(', p.cat[0], ') = ', T('lc'), ', λ(NO₃⁻) = ', T('lN'), ', λ(Ag⁺) = ', T('lA'), '. '];
-      if (q === 0) return { tokens, derivees: [{ id: 'cm', nom: 'Concentration des ions spectateurs à l’équivalence', expr: 'cA × 20,0 / Vt × 1 000', val: p.cA * VA / Vt * 1000, u: 'mol·m⁻³' }], texte: [...debut, 'Quelle est la conductivité σ à l’équivalence ?'],
+      if (q === 0) return { tokens, derivees: [{ id: 'cm', nom: 'Concentration des ions spectateurs à l’équivalence', expr: 'cA × frac(20,0|Vt) × 1 000', val: p.cA * VA / Vt * 1000, u: 'mol·m⁻³' }], texte: [...debut, 'Quelle est la conductivité σ à l’équivalence ?'],
         utiles: ['lc', 'lN', 'cA', 'Vt'], raisons: { lA: 'À l’équivalence, il ne reste plus d’ions Ag⁺ en excès : leur contribution est nulle.', cB: 'La concentration du titrant fixe le volume équivalent, pas la concentration des ions spectateurs dans le bécher.' },
         cherche: { bonne: 'La conductivité σ à l’équivalence (en mS·m⁻¹)', faux: ['La conductivité σ au départ (en mS·m⁻¹)', 'La concentration des ions spectateurs (en mol/L)', 'La variation de σ par mL versé (en mS·m⁻¹ par mL)'] },
-        manque: null, solution: { txt: 'σ = (λ(cation) + λ(NO₃⁻)) × [cation], avec [cation] = [NO₃⁻] = cA × 20,0 / Vt en mol·m⁻³', val: (p.cat[1] + lNO3) * p.cA * VA / Vt * 1000, u: 'mS·m⁻¹' } };
+        manque: null, solution: { txt: 'σ = (λ(cation) + λ(NO₃⁻)) × [cation], avec [cation] = [NO₃⁻] = cA × frac(20,0|Vt) en mol·m⁻³', val: (p.cat[1] + lNO3) * p.cA * VA / Vt * 1000, u: 'mS·m⁻¹' } };
       return { tokens, derivees: [], texte: [...debut, 'De combien σ augmente-t-elle par mL de nitrate d’argent versé, après l’équivalence ?'],
         utiles: ['lA', 'lN', 'cB', 'Vt'], raisons: { lc: 'Après l’équivalence, la quantité du cation spectateur ne change plus : il ne contribue pas à la variation de σ.', cA: 'La concentration en chlorure fixe le volume équivalent, pas la pente après l’équivalence.' },
         cherche: { bonne: 'La variation de σ par mL versé (en mS·m⁻¹ par mL)', faux: ['La conductivité σ à l’équivalence (en mS·m⁻¹)', 'La quantité d’ions Ag⁺ versée par mL (en mmol)', 'La concentration en ions Ag⁺ dans le bécher (en mol/L)'] },
@@ -1411,7 +1411,7 @@ export const ENONCES = [
         utiles: ['sig', 'lH', 'lA'], raisons: { c: 'La concentration apportée ne sert pas à trouver [H₃O⁺] : elle se déduit de σ et des λ.', pKa: 'Le pKa est une valeur tabulée : on ne s’en sert pas pour exploiter la mesure de σ.' },
         cherche: { bonne: 'La concentration en H₃O⁺ (en mol/L)', faux: ['La concentration en acide restant (en mol/L)', 'La constante d’équilibre K (sans unité)', 'Le taux d’avancement final (en %)'] },
         manque: null, solution: { txt: 'σ = (λ(H₃O⁺) + λ(A⁻)) × [H₃O⁺] ; [H₃O⁺] en mol·m⁻³, puis ÷ 1 000 pour obtenir des mol/L', val: x, u: 'mol/L' } };
-      return { tokens, derivees: [...der, { id: 'x', nom: 'Concentration en ions H₃O⁺ à l’équilibre', expr: 'σ / (λ(H₃O⁺) + λ(A⁻))', val: x, u: 'mol/L' }], texte: [...debut, 'Quelle est la concentration en acide HA restant à l’équilibre ?'],
+      return { tokens, derivees: [...der, { id: 'x', nom: 'Concentration en ions H₃O⁺ à l’équilibre', expr: 'frac(σ|λ(H₃O⁺) + λ(A⁻))', val: x, u: 'mol/L' }], texte: [...debut, 'Quelle est la concentration en acide HA restant à l’équilibre ?'],
         utiles: ['sig', 'lH', 'lA', 'c'], raisons: { pKa: 'Le pKa n’intervient pas dans un bilan de matière : il se compare à la valeur de K calculée.' },
         cherche: { bonne: 'La concentration en acide restant HA (en mol/L)', faux: ['La concentration en ions H₃O⁺ (en mol/L)', 'La concentration apportée c (en mol/L)', 'La constante d’équilibre K (sans unité)'] },
         manque: null, solution: { txt: '[HA] = c − [H₃O⁺] (tableau d’avancement : chaque H₃O⁺ formé a consommé une molécule HA)', val: p.c - x, u: 'mol/L' } };
@@ -1434,11 +1434,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [{ id: 'HA', nom: 'Concentration en acide restant', expr: 'c − x', val: p.c - p.x, u: 'mol/L' }], texte: [...debut, 'Quelle est la constante d’équilibre K de la réaction de l’acide avec l’eau ?'],
         utiles: ['x', 'c'], raisons: { V: 'K se calcule avec des concentrations : le volume de la solution n’intervient pas.' },
         cherche: { bonne: 'La constante d’équilibre K (sans unité)', faux: ['Le taux d’avancement final (en %)', 'La concentration en acide restant (en mol/L)', 'La quantité de matière d’acide introduite (en mmol)'] },
-        manque: null, solution: { txt: 'K = [A⁻] × [H₃O⁺] / [HA] = x² / (c − x)', val: p.x * p.x / (p.c - p.x), u: '' } };
+        manque: null, solution: { txt: 'K = [A⁻] × [H₃O⁺] / [HA] = frac(x²|c − x)', val: p.x * p.x / (p.c - p.x), u: '' } };
       return { tokens, derivees: [], texte: [...debut, 'Quel est le taux d’avancement final de la réaction ?'],
         utiles: ['x', 'c'], raisons: { V: 'Le taux d’avancement est un rapport de deux concentrations : le volume se simplifie.' },
         cherche: { bonne: 'Le taux d’avancement final τ (en %)', faux: ['La constante d’équilibre K (sans unité)', 'La concentration en acide restant (en mol/L)', 'La quantité d’ions formés (en mmol)'] },
-        manque: null, solution: { txt: 'τ = x / c, multiplié par 100 pour l’exprimer en pourcentage', val: 100 * p.x / p.c, u: '%' } };
+        manque: null, solution: { txt: 'τ = frac(x|c), multiplié par 100 pour l’exprimer en pourcentage', val: 100 * p.x / p.c, u: '%' } };
     },
   },
   {
@@ -1520,11 +1520,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le facteur de dilution F de la solution à doser ?'],
         utiles: ['Vp', 'Vf'], raisons: { a: 'Le coefficient directeur sert à lire la concentration sur la droite, pas à calculer le facteur de dilution.', G: 'La conductance sert à lire la concentration de X′, pas à calculer F.', k: 'La constante de cellule est déjà contenue dans le coefficient directeur a.', T: 'La température est la même pour tous : elle n’intervient pas dans le calcul de F.' },
         cherche: { bonne: 'Le facteur de dilution F (sans unité)', faux: ['La concentration de la solution diluée X′ (en mmol/L)', 'Le volume d’eau ajouté dans la fiole (en mL)', 'La concentration de la solution à doser X (en mmol/L)'] },
-        manque: null, solution: { txt: 'F = Vf / Vp', val: F, u: '' } };
-      return { tokens, derivees: [{ id: 'F', nom: 'Facteur de dilution', expr: 'Vf / Vp', val: F, u: '' }, { id: 'cD', nom: 'Concentration de la solution diluée X′ lue sur la droite', expr: 'G / a', val: cL, u: 'mmol/L' }], texte: [...debut, 'Quelle est la concentration de la solution à doser X (en mmol/L) ?'],
+        manque: null, solution: { txt: 'F = frac(Vf|Vp)', val: F, u: '' } };
+      return { tokens, derivees: [{ id: 'F', nom: 'Facteur de dilution', expr: 'frac(Vf|Vp)', val: F, u: '' }, { id: 'cD', nom: 'Concentration de la solution diluée X′ lue sur la droite', expr: 'G / a', val: cL, u: 'mmol/L' }], texte: [...debut, 'Quelle est la concentration de la solution à doser X (en mmol/L) ?'],
         utiles: ['Vp', 'Vf', 'a', 'G'], raisons: { k: 'La constante de cellule est déjà contenue dans le coefficient directeur a : on n’en a pas besoin.', T: 'La température est la même pour tous : elle n’intervient pas dans le calcul.' },
         cherche: { bonne: 'La concentration de la solution à doser X (en mmol/L)', faux: ['La concentration de la solution diluée X′ (en mmol/L)', 'Le facteur de dilution (sans unité)', 'La constante de cellule (en m⁻¹)'] },
-        manque: null, solution: { txt: 'c(X′) = G / a, puis c(X) = F × c(X′) avec F = Vf / Vp', val: F * cL, u: 'mmol/L' } };
+        manque: null, solution: { txt: 'c(X′) = frac(G|a), puis c(X) = F × c(X′) avec F = frac(Vf|Vp)', val: F * cL, u: 'mmol/L' } };
     },
   },
   {
@@ -1544,11 +1544,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration de l’étalon préparé (en mmol/L) ?'],
         utiles: ['c0', 'Vp', 'Vf'], raisons: { G: 'La conductance est une mesure faite sur l’étalon : elle ne sert pas à calculer sa concentration par dilution.', k: 'La constante de cellule relie G à la conductivité, pas la concentration au protocole de dilution.', T: 'La température n’intervient pas dans le calcul d’une dilution.' },
         cherche: { bonne: 'La concentration de l’étalon (en mmol/L)', faux: ['Le facteur de dilution (sans unité)', 'La conductivité de l’étalon (en mS·m⁻¹)', 'La quantité de matière prélevée (en µmol)'] },
-        manque: null, solution: { txt: 'c₀ × Vp = c × Vf, donc c = c₀ × Vp / Vf', val: p.c, u: 'mmol/L' } };
-      return { tokens, derivees: [{ id: 'c', nom: 'Concentration de l’étalon', expr: 'c₀ × Vp / Vf', val: p.c, u: 'mmol/L' }], texte: [...debut, 'Quel est le coefficient directeur a de la droite d’étalonnage G = a × c (en mS par mmol/L), en supposant que la droite passe par l’origine ?'],
+        manque: null, solution: { txt: 'c₀ × Vp = c × Vf, donc c = frac(c₀ × Vp|Vf)', val: p.c, u: 'mmol/L' } };
+      return { tokens, derivees: [{ id: 'c', nom: 'Concentration de l’étalon', expr: 'frac(c₀ × Vp|Vf)', val: p.c, u: 'mmol/L' }], texte: [...debut, 'Quel est le coefficient directeur a de la droite d’étalonnage G = a × c (en mS par mmol/L), en supposant que la droite passe par l’origine ?'],
         utiles: ['c0', 'Vp', 'Vf', 'G'], raisons: { k: 'La constante de cellule est déjà incluse dans la conductance mesurée : le coefficient directeur se calcule directement avec G et c.', T: 'La température est la même pour tous les points : elle n’intervient pas dans le calcul de a.' },
         cherche: { bonne: 'Le coefficient directeur a de la droite d’étalonnage (en mS par mmol/L)', faux: ['La concentration de l’étalon (en mmol/L)', 'La conductivité de l’étalon (en mS·m⁻¹)', 'La constante de cellule (en m⁻¹)'] },
-        manque: null, solution: { txt: 'a = G / c : la droite passe par l’origine et par le point de l’étalon', val: a, u: 'mS par mmol/L' } };
+        manque: null, solution: { txt: 'a = frac(G|c) : la droite passe par l’origine et par le point de l’étalon', val: a, u: 'mS par mmol/L' } };
     },
   },
   {
@@ -1569,11 +1569,11 @@ export const ENONCES = [
       if (q === 0) return { tokens: { c: tokens.c, E0: tokens.E0, n: tokens.n, T: tokens.T, V: tokens.V }, derivees: [{ id: 'lg', nom: `Logarithme décimal de la concentration en ${D.ox}`, expr: 'log c', val: lg, u: '' }], texte: [...debut, 'La concentration en ', D.ox, ' est ', T('c'), ' (nombre d’électrons : ', T('n'), '). Quel est le potentiel du couple (en V) ?'],
         utiles: ['c', 'E0', 'n'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation de Nernst, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas dans le potentiel : E dépend des concentrations, pas des quantités.' },
         cherche: { bonne: 'Le potentiel E du couple (en V)', faux: ['La tension aux bornes d’une pile (en V) lorsqu’elle débite', 'Le potentiel standard du couple (en V)', 'La concentration de la solution (en mol/L)'] },
-        manque: null, solution: { txt: 'E = E° + (0,06 / n) × log c (le métal solide vaut 1)', val: E, u: 'V' } };
-      return { tokens: { Em: tokens.Em, E0: tokens.E0, n: tokens.n, T: tokens.T, V: tokens.V }, derivees: [{ id: 'lg', nom: `Logarithme décimal de la concentration en ${D.ox}`, expr: '(E − E°) × n / 0,06', val: lgM, u: '' }], texte: [...debut, 'La tension mesurée vaut ', T('Em'), ' (nombre d’électrons : ', T('n'), '). Quelle est la concentration en ', D.ox, ' de la solution (en mol/L) ?'],
+        manque: null, solution: { txt: 'E = E° + (frac(0,06|n)) × log c (le métal solide vaut 1)', val: E, u: 'V' } };
+      return { tokens: { Em: tokens.Em, E0: tokens.E0, n: tokens.n, T: tokens.T, V: tokens.V }, derivees: [{ id: 'lg', nom: `Logarithme décimal de la concentration en ${D.ox}`, expr: 'frac((E − E°) × n|0,06)', val: lgM, u: '' }], texte: [...debut, 'La tension mesurée vaut ', T('Em'), ' (nombre d’électrons : ', T('n'), '). Quelle est la concentration en ', D.ox, ' de la solution (en mol/L) ?'],
         utiles: ['Em', 'E0', 'n'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation de Nernst, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : E dépend de la concentration, pas du volume.' },
         cherche: { bonne: `La concentration en ${D.ox} (en mol/L)`, faux: ['Le logarithme de la concentration (sans unité)', 'Le potentiel standard du couple (en V)', 'La quantité de matière d’ions dans le bécher (en mmol)'] },
-        manque: null, solution: { txt: 'log c = (E − E°) × n / 0,06, puis c = 10^(log c)', val: cM, u: 'mol/L' } };
+        manque: null, solution: { txt: 'log c = frac((E − E°) × n|0,06), puis c = 10^(log c)', val: cM, u: 'mol/L' } };
     },
   },
   {
@@ -1593,11 +1593,11 @@ export const ENONCES = [
       if (q === 0) return { tokens: { cOx: tokens.cOx, cRed: tokens.cRed, E0: tokens.E0, n: tokens.n, S: tokens.S }, derivees: [{ id: 'r', nom: 'Rapport [Fe³⁺] / [Fe²⁺]', expr: '[Fe³⁺] / [Fe²⁺]', val: p.ratio, u: '' }], texte: [...debut, 'La solution contient [Fe³⁺] = ', T('cOx'), ' et [Fe²⁺] = ', T('cRed'), '. Quel est le potentiel du couple (en V) ?'],
         utiles: ['cOx', 'cRed', 'E0', 'n'], raisons: { S: 'La surface de l’électrode n’intervient pas : à vide, aucun courant ne passe et E ne dépend que des concentrations.' },
         cherche: { bonne: 'Le potentiel E du couple (en V)', faux: ['La différence entre les concentrations des deux ions (en mol/L)', 'Le potentiel standard du couple (en V)', 'L’intensité du courant à vide (en mA)'] },
-        manque: null, solution: { txt: 'E = E° + (0,06 / n) × log([Fe³⁺] / [Fe²⁺])', val: E, u: 'V' } };
-      return { tokens: { Em: tokens.Em, E0: tokens.E0, n: tokens.n, S: tokens.S }, derivees: [{ id: 'lr', nom: 'Logarithme décimal du rapport', expr: '(E − E°) × n / 0,06', val: (Em - E0) / 0.06, u: '' }], texte: [...debut, 'La tension mesurée vaut ', T('Em'), '. Quel est le rapport [Fe³⁺] / [Fe²⁺] dans la solution (sans unité) ?'],
+        manque: null, solution: { txt: 'E = E° + (frac(0,06|n)) × log([Fe³⁺] / [Fe²⁺])', val: E, u: 'V' } };
+      return { tokens: { Em: tokens.Em, E0: tokens.E0, n: tokens.n, S: tokens.S }, derivees: [{ id: 'lr', nom: 'Logarithme décimal du rapport', expr: 'frac((E − E°) × n|0,06)', val: (Em - E0) / 0.06, u: '' }], texte: [...debut, 'La tension mesurée vaut ', T('Em'), '. Quel est le rapport [Fe³⁺] / [Fe²⁺] dans la solution (sans unité) ?'],
         utiles: ['Em', 'E0', 'n'], raisons: { S: 'La surface de l’électrode n’intervient pas : à vide, aucun courant ne passe et E ne dépend que des concentrations.' },
         cherche: { bonne: 'Le rapport [Fe³⁺] / [Fe²⁺] (sans unité)', faux: ['Le logarithme de ce rapport (sans unité)', 'La concentration en Fe³⁺ (en mol/L)', 'Le potentiel standard du couple (en V)'] },
-        manque: null, solution: { txt: 'log([Fe³⁺] / [Fe²⁺]) = (E − E°) × n / 0,06, puis le rapport = 10^(ce logarithme)', val: rM, u: '' } };
+        manque: null, solution: { txt: 'log([Fe³⁺] / [Fe²⁺]) = frac((E − E°) × n|0,06), puis le rapport = 10^(ce logarithme)', val: rM, u: '' } };
     },
   },
   {
@@ -1619,11 +1619,11 @@ export const ENONCES = [
       if (q === 0) return { tokens: { E1: tokens.E1, E2: tokens.E2, n1: tokens.n1, n2: tokens.n2, T: tokens.T, V: tokens.V }, derivees: [{ id: 'N', nom: 'Nombre d’électrons échangés dans l’équation écrite', expr: 'ppcm(n₁, n₂)', val: P.N, u: '' }], texte: [...debut, 'Quel est le logarithme décimal log K de la constante d’équilibre de cette réaction (sans unité) ?'],
         utiles: ['E1', 'E2', 'n1', 'n2'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : K ne dépend que des potentiels standards et de l’équation.' },
         cherche: { bonne: 'Le logarithme décimal de la constante d’équilibre (sans unité)', faux: ['Le quotient de réaction à l’état initial (sans unité)', 'Le potentiel d’un couple dans la solution (en V)', 'La quantité d’électrons échangés (en mmol)'] },
-        manque: null, solution: { txt: 'N = ppcm(n₁, n₂) ; log K = N × (E°₁ − E°₂) / 0,06', val: P.logK, u: '' } };
+        manque: null, solution: { txt: 'N = ppcm(n₁, n₂) ; log K = frac(N × (E°₁ − E°₂)|0,06)', val: P.logK, u: '' } };
       return { tokens: { lk: tokens.lk, N: tokens.N, T: tokens.T, V: tokens.V }, derivees: [{ id: 'lk0', nom: 'Produit de log K par 0,06', expr: 'log K × 0,06', val: lkM * 0.06, u: '' }], texte: [`Dans un bécher de `, T('V'), `, à `, T('T'), `, la réaction ${SEV.equationTexte(P, false)} (`, T('N'), ` échangés) a pour logarithme de constante d’équilibre log K = `, T('lk'), `. Quel est l’écart E°₁ − E°₂ entre les potentiels standards des deux couples (en V) ?`],
         utiles: ['lk', 'N'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : K ne dépend que des potentiels et de l’équation.' },
         cherche: { bonne: 'L’écart des potentiels standards E°₁ − E°₂ (en V)', faux: ['La constante d’équilibre K (sans unité)', 'Le potentiel d’un couple dans la solution (en V)', 'Le nombre d’électrons échangés (sans unité)'] },
-        manque: null, solution: { txt: 'E°₁ − E°₂ = 0,06 × log K / N', val: dE, u: 'V' } };
+        manque: null, solution: { txt: 'E°₁ − E°₂ = 0,06 × frac(log K|N)', val: dE, u: 'V' } };
     },
   },
   {
@@ -1654,8 +1654,8 @@ export const ENONCES = [
         manque: null, solution: { txt: 'Qr = [produits]^coef / [réactifs]^coef (les solides valent 1)', val: Math.pow(10, lq), u: '' } };
       return { tokens: { lk: tokens.lk, N: tokens.N, Qr: tokens.Qr, T: tokens.T, V: tokens.V }, derivees: [{ id: 'rap', nom: 'Logarithme décimal de K / Qr', expr: 'log K − log Qr', val: lkM - Math.log10(QrM), u: '' }], texte: [...debut, `Le quotient de réaction du système vaut Qr = `, T('Qr'), `. Quelle est la différence E₁ − E₂ entre les potentiels de Nernst des deux couples (en V, avec son signe) ?`],
         utiles: ['lk', 'N', 'Qr'], raisons: { T: 'La température fixe le coefficient 0,06 de la relation, mais n’est pas une donnée du calcul.', V: 'Le volume de solution n’intervient pas : E₁ − E₂ dépend de K et de Qr.' },
-        cherche: { bonne: 'La différence E₁ − E₂ des potentiels de Nernst (en V)', faux: ['La constante d’équilibre K (sans unité)', 'Le potentiel standard d’un couple (en V)', 'Le rapport Qr / K (sans unité)'] },
-        manque: null, solution: { txt: 'E₁ − E₂ = (0,06 / N) × log(K / Qr)', val: dE, u: 'V' } };
+        cherche: { bonne: 'La différence E₁ − E₂ des potentiels de Nernst (en V)', faux: ['La constante d’équilibre K (sans unité)', 'Le potentiel standard d’un couple (en V)', 'Le rapport frac(Qr|K) (sans unité)'] },
+        manque: null, solution: { txt: 'E₁ − E₂ = (frac(0,06|N)) × log(frac(K|Qr))', val: dE, u: 'V' } };
     },
   },
   // ───────────────────────────── Équations d'oxydo-réduction en milieu acide ou basique (TSTL, sim 294)
@@ -1725,11 +1725,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la pente dE/dV entre ces deux points (méthode de la dérivée) ?'], utiles: ['E1', 'E2', 'V1', 'V2'],
         raisons: { cB: 'La concentration du titrant n’intervient pas dans la pente entre deux mesures.', ref: 'Le potentiel de référence est le même aux deux points : il n’intervient pas dans la variation de E.' },
         cherche: { bonne: 'La pente dE/dV entre les deux points (en V/mL)', faux: ['Le potentiel moyen entre les deux points (en V)', 'La quantité de cérium(IV) versée entre les deux points (en mmol)', 'Le volume équivalent du dosage (en mL)'] },
-        manque: null, solution: { txt: 'dE/dV ≈ (E₂ − E₁) / (V₂ − V₁)', val: pente, u: 'V/mL' } };
+        manque: null, solution: { txt: 'dE/dV ≈ frac(E₂ − E₁|V₂ − V₁)', val: pente, u: 'V/mL' } };
       return { tokens, derivees: [], texte: [...debut, 'À quel volume moyen associe-t-on cette pente, pour tracer la courbe dérivée ?'], utiles: ['V1', 'V2'],
         raisons: { E1: 'Le volume moyen ne dépend que des volumes versés.', E2: 'Le volume moyen ne dépend que des volumes versés.', cB: 'La concentration du titrant n’intervient pas dans le volume moyen.', ref: 'Le potentiel de référence n’intervient pas dans le volume moyen.' },
         cherche: { bonne: 'Le volume moyen de l’intervalle (en mL)', faux: ['Le volume équivalent du dosage (en mL)', 'Le volume de la prise d’essai (en mL)', 'L’écart entre les deux volumes versés (en mL)'] },
-        manque: null, solution: { txt: 'V moyen = (V₁ + V₂) / 2', val: Vm, u: 'mL' } };
+        manque: null, solution: { txt: 'V moyen = frac(V₁ + V₂|2)', val: Vm, u: 'mL' } };
     },
   },
   {
@@ -1750,7 +1750,7 @@ export const ENONCES = [
       return { tokens, derivees: [{ id: 'nB', nom: 'Quantité de cérium(IV) versée', expr: 'c_B × V_E', val: nB, u: 'mmol' }], texte: [...debut, 'Quelle est la concentration de la solution de fer(II) ?'], utiles: ['cB', 'Ve', 'VA', 'rap'],
         raisons: { Eref: 'Le potentiel de référence n’intervient pas dans le calcul d’une concentration.', E0: 'Le potentiel standard ne sert pas à calculer une concentration.' },
         cherche: { bonne: 'La concentration c_A de la solution de fer(II) (en mol/L)', faux: ['La quantité de fer(II) dosée (en mmol)', 'La concentration du cérium(IV) à l’équivalence (en mol/L)', 'Le volume de fer(II) à prélever (en mL)'] },
-        manque: null, solution: { txt: 'c_A = c_B × V_E / V_A', val: cA, u: 'mol/L' } };
+        manque: null, solution: { txt: 'c_A = frac(c_B × V_E|V_A)', val: cA, u: 'mol/L' } };
     },
   },
   {
@@ -1767,11 +1767,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de diiode a-t-on dosée ?'], utiles: ['cB', 'Ve', 'rap'],
         raisons: { VA: 'Le volume d’eau de Javel prélevé intervient pour la concentration, pas pour la quantité de diiode.', rap1: 'Ce rapport relie ensuite le diiode aux ions ClO⁻ de l’eau de Javel.' },
         cherche: { bonne: 'La quantité de diiode dosée à l’équivalence (en mmol)', faux: ['La quantité de thiosulfate versée à l’équivalence (en mmol)', 'La concentration de l’eau de Javel diluée (en mol/L)', 'Le volume de diiode formé (en mL)'] },
-        manque: null, solution: { txt: 'n(I₂) = c_B × V_E / 2', val: nI2, u: 'mmol' } };
-      return { tokens, derivees: [{ id: 'nI2', nom: 'Quantité de diiode dosée', expr: 'c_B × V_E / 2', val: nI2, u: 'mmol' }], texte: [...debut, 'Quelle quantité d’ions hypochlorite contenait la prise d’essai ?'], utiles: ['cB', 'Ve', 'rap', 'rap1'],
+        manque: null, solution: { txt: 'n(I₂) = frac(c_B × V_E|2)', val: nI2, u: 'mmol' } };
+      return { tokens, derivees: [{ id: 'nI2', nom: 'Quantité de diiode dosée', expr: 'frac(c_B × V_E|2)', val: nI2, u: 'mmol' }], texte: [...debut, 'Quelle quantité d’ions hypochlorite contenait la prise d’essai ?'], utiles: ['cB', 'Ve', 'rap', 'rap1'],
         raisons: { VA: 'Le volume prélevé servira pour la concentration, pas pour la quantité d’ions hypochlorite.' },
         cherche: { bonne: 'La quantité d’ions ClO⁻ dans la prise d’essai (en mmol)', faux: ['La quantité d’ions iodure introduits en excès (en mmol)', 'La concentration en ions ClO⁻ de la prise d’essai (en mol/L)', 'La quantité de thiosulfate versée (en mmol)'] },
-        manque: null, solution: { txt: 'n(ClO⁻) = n(I₂) = c_B × V_E / 2', val: nI2, u: 'mmol' } };
+        manque: null, solution: { txt: 'n(ClO⁻) = n(I₂) = frac(c_B × V_E|2)', val: nI2, u: 'mmol' } };
     },
   },
   {
@@ -1789,8 +1789,8 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration en ions ClO⁻ de la solution diluée ?'], utiles: ['cB', 'Ve', 'VA', 'rap', 'rap1'],
         raisons: { dil: 'La dilution intervient ensuite, pour passer à l’eau de Javel du commerce.' },
         cherche: { bonne: 'La concentration c_A de la solution diluée (en mol/L)', faux: ['La concentration de l’eau de Javel du commerce (en mol/L)', 'La quantité de thiosulfate versée (en mmol)', 'La concentration du diiode formé dans l’erlenmeyer (en mol/L)'] },
-        manque: null, solution: { txt: 'c_A = c_B × V_E / (2 × V_A)', val: cA, u: 'mol/L' } };
-      return { tokens, derivees: [{ id: 'cA', nom: 'Concentration de la solution diluée', expr: 'c_B × V_E / (2 × V_A)', val: cA, u: 'mol/L' }], texte: [...debut, 'Quelle est la concentration en ions ClO⁻ de l’eau de Javel du commerce ?'], utiles: ['cB', 'Ve', 'VA', 'rap', 'rap1', 'dil'],
+        manque: null, solution: { txt: 'c_A = frac(c_B × V_E|2 × V_A)', val: cA, u: 'mol/L' } };
+      return { tokens, derivees: [{ id: 'cA', nom: 'Concentration de la solution diluée', expr: 'frac(c_B × V_E|2 × V_A)', val: cA, u: 'mol/L' }], texte: [...debut, 'Quelle est la concentration en ions ClO⁻ de l’eau de Javel du commerce ?'], utiles: ['cB', 'Ve', 'VA', 'rap', 'rap1', 'dil'],
         raisons: {},
         cherche: { bonne: 'La concentration c₀ de l’eau de Javel du commerce (en mol/L)', faux: ['La concentration de la solution diluée (en mol/L)', 'La quantité d’ions ClO⁻ dans la prise d’essai (en mmol)', 'Le volume d’eau de Javel à prélever (en mL)'] },
         manque: null, solution: { txt: 'c₀ = dilution × c_A', val: c0, u: 'mol/L' } };
@@ -1840,7 +1840,7 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [{ id: 'nB', nom: 'Quantité de permanganate versée', expr: 'c_B × V_E', val: p.cB * p.Ve, u: 'mmol' }, { id: 'nA', nom: 'Quantité d’eau oxygénée dosée', expr: '5/2 × n(MnO₄⁻)', val: 2.5 * p.cB * p.Ve, u: 'mmol' }], texte: [...debut, 'Quelle est la concentration de l’eau oxygénée diluée, c_A ?'],
         utiles: ['cB', 'Ve', 'rap', 'VA'], raisons: { dil: 'La dilution intervient ensuite, pour passer à l’eau oxygénée du commerce.', T: 'La température n’intervient pas dans ce calcul.' },
         cherche: { bonne: 'La concentration c_A de l’eau oxygénée diluée (en mol/L)', faux: ['La concentration c_0 de l’eau oxygénée du commerce (en mol/L)', 'La quantité d’eau oxygénée dosée (en mmol)', 'Le titre massique de l’eau oxygénée diluée (en g/L)'] },
-        manque: null, solution: { txt: 'c_A = (5/2 × c_B × V_E) / V_A', val: cA, u: 'mol/L' } };
+        manque: null, solution: { txt: 'c_A = frac(5/2 × c_B × V_E|V_A)', val: cA, u: 'mol/L' } };
       return { tokens, derivees: [], texte: [...debut, 'On a calculé c_A = ', T('cA'), '. Quelle est la concentration de l’eau oxygénée du désinfectant ?'], utiles: ['cA', 'dil'],
         raisons: { cB: 'La concentration en permanganate a déjà servi à calculer c_A.', Ve: 'Le volume équivalent a déjà servi à calculer c_A.', VA: 'Le volume prélevé a déjà servi à calculer c_A.', rap: 'Le rapport des coefficients a déjà servi à calculer c_A.', T: 'La température n’intervient pas dans ce calcul.' },
         cherche: { bonne: 'La concentration c_0 de l’eau oxygénée du commerce (en mol/L)', faux: ['La concentration c_A de l’eau oxygénée diluée (en mol/L)', 'La quantité d’eau oxygénée dosée (en mmol)', 'La concentration du permanganate (en mol/L)'] },
@@ -1862,7 +1862,7 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'La cellule plonge dans une solution étalon de conductivité ', T('sE'), ' : elle affiche ', T('Ge'), '. Avec la même cellule, une autre solution affiche ', T('Gx'), '. Quelle est la constante de la cellule ?'],
         utiles: ['sE', 'Ge'], raisons: { Gx: 'La conductance de la solution étudiée ne sert pas à étalonner la cellule : l’étalonnage utilise la solution de conductivité connue.' },
         cherche: { bonne: 'La constante de cellule k (en m⁻¹)', faux: ['La conductivité de la solution étudiée (en mS·m⁻¹)', 'La concentration de la solution étudiée (en mmol/L)', 'La conductance de la cellule dans l’air (en mS)'] },
-        manque: null, solution: { txt: 'k = σ(étalon) / G(étalon) (des mS·m⁻¹ divisés par des mS donnent des m⁻¹)', val: 141 / p.Ge, u: 'm⁻¹' } };
+        manque: null, solution: { txt: 'k = frac(σ(étalon)|G(étalon)) (des mS·m⁻¹ divisés par des mS donnent des m⁻¹)', val: 141 / p.Ge, u: 'm⁻¹' } };
       return { tokens, derivees: [], texte: [...debut, 'La cellule, de constante ', T('k'), ', plonge dans une solution étalon de conductivité ', T('sE'), ' (conductance ', T('Ge'), ') puis dans une solution à étudier. Cette dernière affiche ', T('Gx'), '. Quelle est sa conductivité ?'],
         utiles: ['k', 'Gx'], raisons: { sE: 'La conductivité de l’étalon a déjà servi à déterminer k : elle ne sert pas à calculer celle de la solution étudiée.', Ge: 'La conductance de l’étalon a déjà servi à déterminer k : elle n’intervient plus.' },
         cherche: { bonne: 'La conductivité σ de la solution étudiée (en mS·m⁻¹)', faux: ['La constante de cellule k (en m⁻¹)', 'La concentration de la solution étudiée (en mmol/L)', 'La conductance de la solution à 25 °C (en mS)'] },
@@ -1882,11 +1882,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'La solution diluée affiche ', T('G'), ', mesurée avec la même cellule. Le facteur de dilution est ', T('F'), '. Quelle est la concentration de la solution diluée ?'],
         utiles: ['a', 'G'], raisons: { F: 'Le facteur de dilution sert à remonter à la solution de départ, pas à lire la concentration de la solution diluée.' },
         cherche: { bonne: 'La concentration de la solution diluée (en mmol/L)', faux: ['La concentration de la solution de départ (en mol/L)', 'La conductivité de la solution diluée (en mS·m⁻¹)', 'La constante de la cellule (en m⁻¹)'] },
-        manque: null, solution: { txt: 'c = G / a (G en mS, a en mS par mmol/L, donc c en mmol/L)', val: p.G / p.a, u: 'mmol/L' } };
-      return { tokens, derivees: [{ id: 'cd', nom: 'Concentration de la solution diluée', expr: 'c′ = G / a', val: p.G / p.a, u: 'mmol/L' }], texte: [...debut, 'La solution étudiée a été diluée ', T('F'), ' fois ; la solution diluée affiche ', T('G'), '. Quelle est la concentration de la solution de départ ?'],
+        manque: null, solution: { txt: 'c = frac(G|a) (G en mS, a en mS par mmol/L, donc c en mmol/L)', val: p.G / p.a, u: 'mmol/L' } };
+      return { tokens, derivees: [{ id: 'cd', nom: 'Concentration de la solution diluée', expr: 'c′ = frac(G|a)', val: p.G / p.a, u: 'mmol/L' }], texte: [...debut, 'La solution étudiée a été diluée ', T('F'), ' fois ; la solution diluée affiche ', T('G'), '. Quelle est la concentration de la solution de départ ?'],
         utiles: ['a', 'G', 'F'], raisons: {},
         cherche: { bonne: 'La concentration de la solution de départ (en mol/L)', faux: ['La concentration de la solution diluée (en mmol/L)', 'La conductance de la solution de départ (en mS)', 'La quantité de soluté dans la solution diluée (en mmol)'] },
-        manque: null, solution: { txt: 'c(S) = F × G / a, en mmol/L, puis ÷ 1 000 pour obtenir des mol/L', val: p.F * p.G / p.a / 1000, u: 'mol/L' } };
+        manque: null, solution: { txt: 'c(S) = frac(F × G|a), en mmol/L, puis ÷ 1 000 pour obtenir des mol/L', val: p.F * p.G / p.a / 1000, u: 'mol/L' } };
     },
   },
   // ───────────────────────────── Mouvement circulaire (TG, sim 167) : repère de Frenet, accélération
@@ -1915,7 +1915,7 @@ export const ENONCES = [
       return { tokens, derivees: [{ id: 'an', nom: 'Coordonnée normale de l’accélération', expr: 'a_n = frac(v²|R)', val: p.v * p.v / p.R, u: 'm/s²' }], texte: [...debut, 'À l’instant étudié, le point accélère : sa vitesse vaut ', T('v'), ', et la variation de sa vitesse par unité de temps vaut ', T('at'), ', sur un cercle de rayon ', T('R'), '. Sa masse est ', T('m'), '. Quelle est la norme de son accélération ?'],
         utiles: ['v', 'R', 'at'], raisons: { m: 'La masse n’intervient pas dans les coordonnées de l’accélération.' },
         cherche: { bonne: 'La norme de l’accélération a (en m/s²)', faux: ['La coordonnée normale a_n seule (en m/s²)', 'La coordonnée tangentielle a_t seule (en m/s²)', 'La vitesse angulaire (en rad/s)'] },
-        manque: null, solution: { txt: 'a_t = frac(dv|dt) ; a_n = frac(v²|R) ; a = √(a_t² + a_n²)', val: Math.hypot(p.at, p.v * p.v / p.R), u: 'm/s²' } };
+        manque: null, solution: { txt: 'a_t = frac(dv|dt) ; a_n = frac(v²|R) ; a = sqrt(a_t² + a_n²)', val: Math.hypot(p.at, p.v * p.v / p.R), u: 'm/s²' } };
     },
   },
   // ───────────────────────────── Spectroscopie UV-visible (TG, sim 169) : dosage d'un colorant par la loi de Beer-Lambert
@@ -2142,7 +2142,7 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'Quelle est la norme de la vitesse du projectile à l’arrivée au sol ?'],
         utiles: ['v0', 'h', 'g'], raisons: { m: 'La masse se simplifie dans le théorème de l’énergie cinétique : la vitesse d’arrivée n’en dépend pas.', alpha: 'Le théorème de l’énergie cinétique ne dépend pas de la direction du lancer, seulement de v_0 et de la dénivelée.', tv: 'On n’a pas besoin de la durée du vol : le théorème de l’énergie cinétique relie directement les vitesses et la dénivelée.' },
         cherche: { bonne: 'La norme v_f de la vitesse à l’arrivée (en m/s)', faux: ['La composante verticale de la vitesse initiale (en m/s)', 'La variation d’énergie cinétique (en J)', 'La vitesse moyenne du vol (en m/s)'] },
-        manque: null, solution: { txt: 'frac(1|2) m v_f² − frac(1|2) m v_0² = m g h, donc v_f = √(v_0² + 2 g h)', val: vf, u: 'm/s' } };
+        manque: null, solution: { txt: 'frac(1|2) m v_f² − frac(1|2) m v_0² = m g h, donc v_f = sqrt(v_0² + 2 g h)', val: vf, u: 'm/s' } };
     },
   },
   // ───────────────────────────── Incertitudes-types composées et comparaison à une référence (TG, sim 185)
@@ -2164,11 +2164,11 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: ['frac(u(U)|U) et frac(u(I)|I) : incertitudes relatives de chaque grandeur'], texte: [...debut, 'Quelle est l’incertitude relative de la résistance, c’est-à-dire u(R) rapportée à R ?'],
         utiles: ['U', 'uU', 'I', 'uI'], raisons,
         cherche: { bonne: 'L’incertitude relative de R (en %)', faux: ['La résistance R du conducteur (en Ω)', 'L’incertitude relative sur la tension seule (en %)', 'La puissance dissipée dans le conducteur (en W)'] },
-        manque: null, solution: { txt: 'frac(u(R)|R) = √(frac(u(U)|U)² + frac(u(I)|I)²)', val: 100 * rel, u: '%' } };
+        manque: null, solution: { txt: 'frac(u(R)|R) = sqrt(frac(u(U)|U)² + frac(u(I)|I)²)', val: 100 * rel, u: '%' } };
       return { tokens, derivees: ['R = frac(U|I) : valeur calculée de la résistance', 'frac(u(R)|R) : incertitude relative, composée avec la formule du quotient'], texte: [...debut, 'Quelle est l’incertitude-type u(R) de la résistance ?'],
         utiles: ['U', 'uU', 'I', 'uI'], raisons,
         cherche: { bonne: 'L’incertitude-type u(R) de R (en Ω)', faux: ['L’incertitude relative de la résistance (en %)', 'La résistance R du conducteur (en Ω)', 'L’incertitude-type u(I) de l’intensité (en A)'] },
-        manque: null, solution: { txt: 'u(R) = R × √(frac(u(U)|U)² + frac(u(I)|I)²)', val: R * rel, u: 'Ω' } };
+        manque: null, solution: { txt: 'u(R) = R × sqrt(frac(u(U)|U)² + frac(u(I)|I)²)', val: R * rel, u: 'Ω' } };
     },
   },
   {
@@ -2411,13 +2411,13 @@ export const ENONCES = [
         return { tokens, derivees: [], texte: [...debut, 'Le maximum de la dérivée du pH est obtenu pour un volume de soude ', T('VE'), '. Quelle est la concentration de la solution d’acide ?'],
           utiles: ['CB', 'VA', 'VE'], raisons,
           cherche: { bonne: 'La concentration C_A de l’acide (en mol/L)', faux: ['La quantité de soude versée (en mmol)', 'Le pH à l’équivalence', 'La constante K de la réaction de titrage'] },
-          manque: null, solution: { txt: 'C_A × V_A = C_B × V_E, donc C_A = C_B × V_E / V_A', val: CB * VEaff / p.VA, u: 'mol/L' } };
+          manque: null, solution: { txt: 'C_A × V_A = C_B × V_E, donc C_A = frac(C_B × V_E|V_A)', val: CB * VEaff / p.VA, u: 'mol/L' } };
       }
       tokens.CA = tok(`${nb(p.CA, 3)} mol/L`, 'Concentration annoncée sur l’étiquette', p.CA, 'mol·L⁻¹');
       return { tokens, derivees: [], texte: [...debut, 'L’étiquette annonce une concentration ', T('CA'), '. Quel volume de soude doit-on verser pour atteindre l’équivalence ?'],
         utiles: ['CB', 'VA', 'CA'], raisons,
         cherche: { bonne: 'Le volume équivalent V_E (en mL)', faux: ['Le pH à l’équivalence', 'La quantité d’acide restant à V_E (en mmol)', 'Le volume d’eau à ajouter'] },
-        manque: null, solution: { txt: 'V_E = C_A × V_A / C_B', val: VE, u: 'mL' } };
+        manque: null, solution: { txt: 'V_E = frac(C_A × V_A|C_B)', val: VE, u: 'mL' } };
     },
   },
   {
@@ -2471,7 +2471,7 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'Le détail observé mesure ', T('AB'), ' de haut. Sous quel angle le philatéliste voit-il ce détail à travers la loupe ?'],
         utiles: ['f', 'AB'], raisons: { prix: 'Le prix n’intervient pas dans la physique de la loupe.', dm: 'La distance minimale de vision distincte sert pour l’œil nu, pas pour l’image à l’infini donnée par la loupe.' },
         cherche: { bonne: 'Le diamètre apparent θ′ de l’image (en rad)', faux: ['Le grossissement G de la loupe (sans unité)', 'La position OA′ de l’image (en m)', 'La hauteur A′B′ de l’image (en m)'] },
-        manque: null, solution: { txt: 'θ′ ≈ AB / f′ (petits angles)', val: thp, u: 'rad' } };
+        manque: null, solution: { txt: 'θ′ ≈ frac(AB|f′) (petits angles)', val: thp, u: 'rad' } };
     },
   },
   // ───────────────────────────── 0 ter. Observation au microscope (TSTL)
@@ -2497,7 +2497,7 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'Le détail observé mesure ', T('AB'), '. Quelle est la taille de l’image intermédiaire qu’en donne l’objectif ?'],
         utiles: ['f1', 'D', 'AB'], raisons: { f2: 'L’oculaire n’intervient pas dans la taille de l’image intermédiaire.', dm: 'La distance minimale de vision distincte sert pour l’œil nu, pas pour l’image donnée par l’objectif.', prix: 'Le prix n’intervient pas dans la physique du microscope.' },
         cherche: { bonne: 'La taille A₁B₁ de l’image intermédiaire (en mm)', faux: ['Le grossissement G du microscope (sans unité)', 'Le diamètre apparent θ₂ de l’image définitive (en rad)', 'La distance objet–objectif (en mm)'] },
-        manque: null, solution: { txt: 'A₁B₁ = |γ₁| × AB = (Δ / f₁′) × AB', val: A1B1, u: 'mm' } };
+        manque: null, solution: { txt: 'A₁B₁ = |γ₁| × AB = (frac(Δ|f₁′)) × AB', val: A1B1, u: 'mm' } };
     },
   },
   {
@@ -2520,7 +2520,7 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'Quel est le grandissement de l’objectif ?'],
         utiles: ['f1', 'D'], raisons: { f2: 'L’oculaire n’intervient pas dans le grandissement de l’objectif.', nom: 'La masse du microscope n’intervient pas.' },
         cherche: { bonne: 'Le grandissement γ₁ de l’objectif (sans unité, avec son signe)', faux: ['Le grossissement G du microscope (sans unité)', 'La distance O₁A₁ (en m)', 'La vergence de l’objectif (en δ)'] },
-        manque: null, solution: { txt: 'γ₁ = −Δ / f₁′', val: -g, u: '' } };
+        manque: null, solution: { txt: 'γ₁ = −frac(Δ|f₁′)', val: -g, u: '' } };
     },
   },
   // ───────────────────────────── 0 quater. Lunette astronomique (TSTL)
@@ -2538,7 +2538,7 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'De combien l’angle sous lequel il voit l’astre est-il multiplié grâce à la lunette ?'],
         utiles: ['f1', 'f2'], raisons: { D: 'Le diamètre de l’objectif joue sur la luminosité et la résolution, pas sur le grossissement.' },
         cherche: { bonne: 'Le grossissement G de la lunette (sans unité)', faux: ['La distance O₁O₂ entre les lentilles (en m)', 'La taille A₁B₁ de l’image intermédiaire (en m)', 'Le diamètre apparent θ₂ de l’image (en rad)'] },
-        manque: null, solution: { txt: 'G = f₁′ / f₂′', val: G, u: '' } };
+        manque: null, solution: { txt: 'G = frac(f₁′|f₂′)', val: G, u: '' } };
       tokens.th = tok(`${p.th} mrad`, 'Diamètre apparent de l’astre', p.th / 1000, 'rad');
       return { tokens, derivees: [], texte: [...debut, 'L’astre a un diamètre apparent de ', T('th'), '. Quelle est la taille de l’image intermédiaire formée par l’objectif ?'],
         utiles: ['f1', 'th'], raisons: { f2: 'L’oculaire n’intervient pas dans la taille de l’image intermédiaire.', D: 'Le diamètre de l’objectif ne change pas la taille de l’image intermédiaire.' },
@@ -2565,7 +2565,7 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'L’astre a un diamètre apparent de ', T('th'), '. Sous quel angle voit-il l’image définitive ?'],
         utiles: ['f1', 'f2', 'th'], raisons: { m: 'La masse de l’oculaire n’intervient pas.' },
         cherche: { bonne: 'Le diamètre apparent θ₂ de l’image définitive (en rad)', faux: ['Le grossissement G de la lunette (sans unité)', 'La taille A₁B₁ de l’image intermédiaire (en m)', 'La distance O₁O₂ (en m)'] },
-        manque: null, solution: { txt: 'θ₂ = G × θ₀ = (f₁′ / f₂′) × θ₀', val: th2 / 1000, u: 'rad' } };
+        manque: null, solution: { txt: 'θ₂ = G × θ₀ = (frac(f₁′|f₂′)) × θ₀', val: th2 / 1000, u: 'rad' } };
     },
   },
   // ───────────────────────────── 0 quinquies. Chiralité et configuration R/S (TSTL, PCM)
@@ -2705,10 +2705,10 @@ export const ENONCES = [
       if (q === 0) return { tokens, texte: [...debut, 'Quelle est la vitesse moyenne de l’eau dans la conduite ?'],
         utiles: ['D', 'Q'],
         raisons: { Pel: 'La puissance de la pompe n’intervient pas dans la relation entre débit, section et vitesse.', Lc: 'La longueur de la conduite compte pour les pertes de charge (frottements), pas pour la vitesse de l’eau.' },
-        derivees: [{ id: 'S', nom: 'Section S de la conduite', expr: 'S = π·D² / 4', val: S, u: 'm²' }],
+        derivees: [{ id: 'S', nom: 'Section S de la conduite', expr: 'S = frac(π·D²|4)', val: S, u: 'm²' }],
         cherche: { bonne: 'La vitesse moyenne v de l’eau (en m·s⁻¹)', faux: ['Le débit massique de l’eau (en kg·s⁻¹)', 'La perte de charge dans la conduite (en Pa)', 'La puissance hydraulique de la pompe (en W)'] },
         manque: null,
-        solution: { txt: 'v = Q / S', val: (p.Q / 3600) / S, u: 'm·s⁻¹' } };
+        solution: { txt: 'v = frac(Q|S)', val: (p.Q / 3600) / S, u: 'm·s⁻¹' } };
       tokens.tdur = tok('1 heure', 'Durée', 3600, 's');
       return { tokens, texte: [...debut, 'Quelle masse d’eau la pompe refoule-t-elle en ', T('tdur'), ' ?'],
         utiles: ['Q', 'tdur'],
@@ -2749,11 +2749,11 @@ export const ENONCES = [
         raisons: { mc: 'La masse du comprimé servirait à calculer un pourcentage en masse, pas la concentration de S₀.', M: 'La masse molaire servirait à passer d’une quantité de matière à une masse : ce n’est pas demandé ici.',
           Vf: 'Le volume de la fiole servirait à calculer la quantité de matière totale ; la concentration, elle, se déduit du titrage de la prise.', pH: 'La zone de virage sert à choisir l’indicateur, pas à calculer une concentration.' },
         cherche: { bonne: 'La concentration c₀ en AH de S₀ (en mol·L⁻¹)', faux: ['La masse d’acide AH dans le comprimé (en g)', 'La quantité de matière de soude versée (en mol)', 'Le pourcentage en masse d’acide dans le comprimé'] },
-        solution: { txt: 'c₀ = c_B·V_E / V_A', val: c0, u: 'mol·L⁻¹' } };
+        solution: { txt: 'c₀ = frac(c_B·V_E|V_A)', val: c0, u: 'mol·L⁻¹' } };
       return { tokens, texte, utiles: ['Vf', 'VA', 'cB', 'VE', 'M'], derivees: [], manque,
         raisons: { mc: 'La masse du comprimé entier n’intervient pas : on cherche la masse d’acide, qu’on déduit de la concentration, du volume de la fiole et de la masse molaire.', pH: 'La zone de virage sert à choisir l’indicateur, pas à calculer une masse.' },
         cherche: { bonne: 'La masse m d’acide AH dans le comprimé (en g)', faux: ['La concentration c₀ en AH de S₀ (en mol·L⁻¹)', 'Le pourcentage en masse d’acide dans le comprimé', 'La quantité de matière de soude versée (en mol)'] },
-        solution: { txt: 'm = c₀·V_f·M avec c₀ = c_B·V_E / V_A', val: c0 * (p.Vf / 1000) * p.M, u: 'g' } };
+        solution: { txt: 'm = c₀·V_f·M avec c₀ = frac(c_B·V_E|V_A)', val: c0 * (p.Vf / 1000) * p.M, u: 'g' } };
     },
   },
   // ───────────────────────────── 4. CAN (transmission de signaux numériques)
@@ -2783,7 +2783,7 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees, texte: [...debut, 'Quel est le quantum q du CAN (le plus petit écart de tension qu’il distingue) ?'], utiles: ['n', 'vmin', 'vmax'],
         raisons: { sens: 'La sensibilité du capteur sert à convertir une tension en température, pas à calculer le quantum du CAN.', fe: 'La fréquence d’échantillonnage fixe le nombre de mesures par seconde, pas la finesse de la numérisation.' },
         cherche: { bonne: 'Le quantum q du convertisseur (en V)', faux: ['La plus petite variation de température détectable (en °C)', 'La durée minimale entre deux mesures successives (en s)', 'Le nombre de valeurs numériques que le CAN peut fournir (sans unité)'] },
-        manque: null, solution: { txt: 'q = (V_max − V_min) / (2^n − 1)', val: qt, u: 'V' } };
+        manque: null, solution: { txt: 'q = frac(V_max − V_min|2^n − 1)', val: qt, u: 'V' } };
       return { tokens, texte: [...debut, 'Quelle est la plus petite variation de température que cette chaîne de mesure peut détecter ?'], utiles: ['sens', 'n', 'vmin', 'vmax'],
         derivees: [...derivees, { id: 'q', nom: 'Quantum q du CAN', expr: 'q = étendue / (2^n − 1)', val: qt, u: 'V' }],
         raisons: { fe: 'La fréquence d’échantillonnage fixe le nombre de mesures par seconde, pas la plus petite variation détectable.' },
@@ -2825,7 +2825,7 @@ export const ENONCES = [
         cherche: { bonne: 'La température de sortie de l’eau froide (en °C)', faux: ['La puissance thermique cédée par l’eau chaude (en W)', 'La variation de température de l’eau chaude (en K)', 'La température moyenne dans l’échangeur (en °C)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la capacité thermique massique de l’eau', 'Il manque la température d’entrée de l’eau froide', 'Il ne manque que la surface d’échange'],
           expl: `Tout est dans l’énoncé : la capacité thermique massique de l’eau (${tokens.c.aff}), le débit de l’eau froide (${tokens.qf.aff}) et sa température d’entrée (${tokens.Tfe.aff}). Les pertes étant négligées, la puissance reçue par l’eau froide est celle que cède l’eau chaude (P_reçue = P_cédée) : ni la surface d’échange ni le coefficient U ne sont nécessaires.` },
-        solution: { txt: 'T_sortie,froid = T_entrée,froid + P / (q_m,froid · c)', val: p.Tfe + P / (p.qf * 4180), u: '°C' } };
+        solution: { txt: 'T_sortie,froid = T_entrée,froid + frac(P|q_m,froid · c)', val: p.Tfe + P / (p.qf * 4180), u: '°C' } };
     },
   },
   // ───────────────────────────── 6. Beer-Lambert (spectrophotométrie)
@@ -2845,7 +2845,7 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est la concentration en ions permanganate de la solution (en mol·L⁻¹), en supposant la solution assez diluée pour que la loi de Beer-Lambert soit vérifiée ?'], utiles: ['A', 'l', 'eps'],
         raisons: { lam: 'La longueur d’onde est déjà « contenue » dans la valeur de ε donnée pour cette longueur d’onde.', theta: 'La température n’apparaît pas dans la loi de Beer-Lambert (son effet éventuel sur ε est négligé ici).' },
         cherche: { bonne: 'La concentration c en ions permanganate (en mol·L⁻¹)', faux: ['La transmittance T de la solution (en %)', 'La concentration en masse de permanganate (en g·L⁻¹)', 'La quantité de matière de permanganate dans la cuve (en mol)'] },
-        manque: null, solution: { txt: 'c = A / (ε·ℓ)', val: p.A / (p.eps * p.l), u: 'mol·L⁻¹' } };
+        manque: null, solution: { txt: 'c = frac(A|ε·ℓ)', val: p.A / (p.eps * p.l), u: 'mol·L⁻¹' } };
       return { tokens, derivees: [], texte: [...debut, 'Quelle est la transmittance de la solution, c’est-à-dire la proportion de la lumière incidente qui la traverse (en %) ?'], utiles: ['A'],
         raisons: { lam: 'La longueur d’onde n’intervient pas pour passer de l’absorbance à la transmittance.', l: 'La largeur de la cuve est déjà prise en compte dans l’absorbance mesurée.',
           eps: 'ε et ℓ relient l’absorbance à la concentration ; ici on passe directement de A à T.', theta: 'La température n’intervient pas dans la relation entre absorbance et transmittance.' },
@@ -2874,7 +2874,7 @@ export const ENONCES = [
           expl: `La relation fondamentale de l’hydrostatique, P = P_atm + ρ·g·h, fait intervenir g, que l’énoncé ne donne pas (g = 9,81 N·kg⁻¹ sur Terre). Contrairement à π, g n’est pas une constante mathématique : elle dépend de l’astre, donc l’énoncé doit la préciser. La masse volumique (${tokens.rho.aff}), la hauteur d’eau (${tokens.h.aff}) et la pression atmosphérique (${tokens.Patm.aff}) y figurent bien ; la viscosité n’intervient pas pour un fluide au repos.` },
         solution: { txt: 'P_fond − P_atm = ρ·g·h  (ΔP = ρ·g·Δz), donc P_fond = P_atm + ρ·g·h', val: p.Patm * 100 + p.rho * 9.81 * p.h, u: 'Pa' } };
       return { tokens, texte: [...debut, 'Quelle est la masse d’eau contenue dans le réservoir ?'], utiles: ['rho', 'h', 'D'],
-        derivees: [{ id: 'S', nom: 'Section S du réservoir', expr: 'S = π·D² / 4', val: S, u: 'm²' }, { id: 'V', nom: 'Volume V d’eau', expr: 'V = S × h', val: S * p.h, u: 'm³' }],
+        derivees: [{ id: 'S', nom: 'Section S du réservoir', expr: 'S = frac(π·D²|4)', val: S, u: 'm²' }, { id: 'V', nom: 'Volume V d’eau', expr: 'V = S × h', val: S * p.h, u: 'm³' }],
         raisons: { Patm: 'La pression atmosphérique ne change pas la masse d’eau contenue.' },
         cherche: { bonne: 'La masse m d’eau contenue dans le réservoir (en kg)', faux: ['La pression absolue au fond du réservoir (en Pa)', 'Le poids de l’eau (en N)', 'Le débit d’eau nécessaire pour remplir le réservoir (en m³·s⁻¹)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la masse volumique de l’eau', 'Il manque le diamètre du réservoir', 'Il ne manque que l’intensité de la pesanteur g'],
@@ -2905,16 +2905,16 @@ export const ENONCES = [
         cherche: { bonne: 'La commande Y envoyée à la pompe (en %)', faux: ['Le niveau de liquide en régime permanent (en m)', 'L’écart entre la consigne et le niveau (en m)', 'La durée de vidange du réservoir sans pompe (en h)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le débit maximal de la pompe', 'Il manque le débit de soutirage', 'Il ne manque que la masse volumique du liquide'],
           expl: `Tout est dans l’énoncé : le débit maximal de la pompe (${tokens.Qmax.aff} pour 100 %) et le débit de soutirage (${tokens.Qp.aff}). En régime permanent, le niveau est stable, donc le débit de la pompe est égal au soutirage : Y/100 × Q_max = Q_p. La masse volumique n’intervient pas : les deux débits sont déjà des débits volumiques.` },
-        solution: { txt: 'Y = Q_p / Q_max × 100', val: Y, u: '%' } };
+        solution: { txt: 'Y = frac(Q_p|Q_max) × 100', val: Y, u: '%' } };
       if (q === 1) return { tokens, texte: [...debut, 'Quel est l’écart statique, c’est-à-dire l’écart (consigne − niveau) qui subsiste en régime permanent ?'], utiles: ['Qmax', 'Qp', 'Kp'],
-        derivees: [{ id: 'Y', nom: 'Commande nécessaire', expr: 'Y = Q_p / Q_max × 100', val: Y, u: '%' }],
+        derivees: [{ id: 'Y', nom: 'Commande nécessaire', expr: 'Y = frac(Q_p|Q_max) × 100', val: Y, u: '%' }],
         raisons: { S: rS, hc: 'L’écart ne dépend pas de la valeur de la consigne, seulement de la commande à fournir et du gain.', Ti: rTi },
         cherche: { bonne: 'L’écart statique entre la consigne et le niveau (en m)', faux: ['La commande Y (en %)', 'Le niveau de liquide (en m)', 'Le temps pour atteindre le régime permanent (en h)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le gain proportionnel du régulateur', 'Il manque le débit maximal de la pompe', 'Il ne manque que la hauteur du réservoir'],
-          expl: `Tout est dans l’énoncé : le gain K_p (${tokens.Kp.aff}), ainsi que le débit maximal de la pompe (${tokens.Qmax.aff}) et le débit de soutirage (${tokens.Qp.aff}) qui donnent la commande Y. Le régulateur ne fournit Y que s’il y a un écart : écart = Y / K_p. La hauteur du réservoir n’intervient pas.` },
-        solution: { txt: 'écart = Y / K_p', val: e, u: 'm' } };
+          expl: `Tout est dans l’énoncé : le gain K_p (${tokens.Kp.aff}), ainsi que le débit maximal de la pompe (${tokens.Qmax.aff}) et le débit de soutirage (${tokens.Qp.aff}) qui donnent la commande Y. Le régulateur ne fournit Y que s’il y a un écart : écart = frac(Y|K_p). La hauteur du réservoir n’intervient pas.` },
+        solution: { txt: 'écart = frac(Y|K_p)', val: e, u: 'm' } };
       return { tokens, texte: [...debut, 'Quel est le niveau du liquide en régime permanent ?'], utiles: ['Qmax', 'Qp', 'Kp', 'hc'],
-        derivees: [{ id: 'Y', nom: 'Commande nécessaire', expr: 'Y = Q_p / Q_max × 100', val: Y, u: '%' }, { id: 'e', nom: 'Écart statique', expr: 'écart = Y / K_p', val: e, u: 'm' }],
+        derivees: [{ id: 'Y', nom: 'Commande nécessaire', expr: 'Y = frac(Q_p|Q_max) × 100', val: Y, u: '%' }, { id: 'e', nom: 'Écart statique', expr: 'écart = frac(Y|K_p)', val: e, u: 'm' }],
         raisons: { S: rS, Ti: rTi },
         cherche: { bonne: 'Le niveau H en régime permanent (en m)', faux: ['L’écart statique (en m)', 'La commande Y (en %)', 'Le volume de liquide contenu dans le réservoir (en m³)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la consigne de niveau', 'Il manque le gain proportionnel du régulateur', 'Il ne manque que le débit de soutirage'],
@@ -2981,14 +2981,14 @@ export const ENONCES = [
         cherche: { bonne: 'Le volume d’éthanol présent dans le mélange initial (en mL)', faux: ['Le volume d’éthanol récupéré dans le distillat (en mL)', 'Le rendement de la distillation, part d’éthanol récupérée (en %)', 'La masse d’éthanol présente dans le mélange initial (en g)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le volume du mélange initial', 'Il manque la proportion d’éthanol dans le mélange', 'Il ne manque que la masse volumique de l’éthanol'],
           expl: `Tout est dans l’énoncé : le volume du mélange (${tokens.V.aff}) et sa proportion d’éthanol en volume (${tokens.x.aff}). Un pourcentage en volume s’applique à un volume : V_éthanol = x × V. Aucune masse volumique n’est nécessaire.` },
-        solution: { txt: 'V_éthanol = (x / 100) × V', val: Vi, u: 'mL' } };
+        solution: { txt: 'V_éthanol = (frac(x|100)) × V', val: Vi, u: 'mL' } };
       return { tokens, texte: [...debut, 'Quel est le rendement de la distillation (volume d’éthanol récupéré par rapport au volume d’éthanol présent) ?'], utiles: ['V', 'x', 'Vd', 'y'],
-        derivees: [{ id: 'Vi', nom: 'Volume d’éthanol présent au départ', expr: 'V_i = V × x / 100', val: Vi, u: 'mL' }, { id: 'Vr', nom: 'Volume d’éthanol dans le distillat', expr: 'V_r = V_distillat × y / 100', val: Vr, u: 'mL' }],
+        derivees: [{ id: 'Vi', nom: 'Volume d’éthanol présent au départ', expr: 'V_i = frac(V × x|100)', val: Vi, u: 'mL' }, { id: 'Vr', nom: 'Volume d’éthanol dans le distillat', expr: 'V_r = frac(V_distillat × y|100)', val: Vr, u: 'mL' }],
         raisons: { P: rPuis, Te: rTemp },
         cherche: { bonne: 'Le rendement : éthanol récupéré / éthanol présent (en %)', faux: ['Le rendement : volume de distillat / volume de mélange initial (en %)', 'Le volume d’éthanol récupéré dans le distillat (en mL)', 'Le volume d’éthanol non récupéré dans le distillat (en mL)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le volume de distillat recueilli', 'Il manque la proportion d’éthanol dans le distillat', 'Il ne manque que la masse volumique de l’éthanol'],
           expl: `Tout est dans l’énoncé : pour l’éthanol présent au départ, le volume du mélange (${tokens.V.aff}) et sa proportion d’éthanol (${tokens.x.aff}) ; pour l’éthanol récupéré, le volume de distillat (${tokens.Vd.aff}) et sa proportion d’éthanol (${tokens.y.aff}). Ces quantités d’éthanol se calculent à partir de volumes et de pourcentages en volume (aucune masse volumique n’est nécessaire) ; le rendement est leur rapport.` },
-        solution: { txt: 'η = V_r / V_i × 100', val: Vr / Vi * 100, u: '%' } };
+        solution: { txt: 'η = frac(V_r|V_i) × 100', val: Vr / Vi * 100, u: '%' } };
     },
   },
   // ───────────────────────────── Évaporation et cristallisation
@@ -3012,9 +3012,9 @@ export const ENONCES = [
         cherche: { bonne: 'La masse de nitrate de potassium dissoute à 60 °C (en g)', faux: ['La masse de cristaux formés au refroidissement (en g)', 'La masse de nitrate de potassium encore dissoute à 20 °C (en g)', 'La masse totale de solution (en g)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la masse d’eau de la solution', 'Il manque la solubilité du nitrate de potassium à 60 °C', 'Il ne manque que la masse molaire du nitrate de potassium'],
           expl: `Tout est dans l’énoncé : la masse d’eau (${tokens.me.aff}) et la solubilité à 60 °C (${tokens.s60.aff}). La solubilité est proportionnelle à la masse d’eau : on ramène la valeur donnée « pour 100 g d’eau » à la masse d’eau de l’énoncé. La masse molaire n’intervient pas : on raisonne en masses.` },
-        solution: { txt: 'm_dissoute(60 °C) = s₆₀ × m_eau / 100', val: m60, u: 'g' } };
+        solution: { txt: 'm_dissoute(60 °C) = frac(s₆₀ × m_eau|100)', val: m60, u: 'g' } };
       return { tokens, texte: [...debut, 'On suppose que la solution est de nouveau saturée à 20 °C et qu’il n’y a pas d’évaporation. Quelle masse de cristaux obtient-on à 20 °C ?'], utiles: ['me', 's60', 's20'],
-        derivees: [{ id: 'm60', nom: 'Masse dissoute à 60 °C', expr: 'm₆₀ = s₆₀ × m_eau / 100', val: m60, u: 'g' }, { id: 'm20', nom: 'Masse encore dissoute à 20 °C', expr: 'm₂₀ = s₂₀ × m_eau / 100', val: m20, u: 'g' }],
+        derivees: [{ id: 'm60', nom: 'Masse dissoute à 60 °C', expr: 'm₆₀ = frac(s₆₀ × m_eau|100)', val: m60, u: 'g' }, { id: 'm20', nom: 'Masse encore dissoute à 20 °C', expr: 'm₂₀ = frac(s₂₀ × m_eau|100)', val: m20, u: 'g' }],
         raisons: { mb: rB, dur: rD },
         cherche: { bonne: 'La masse de cristaux formés au refroidissement (en g)', faux: ['La masse de nitrate de potassium dissoute à 60 °C (en g)', 'La masse de nitrate de potassium encore dissoute à 20 °C (en g)', 'La masse totale de solution à 60 °C (en g)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque la solubilité du nitrate de potassium à 20 °C', 'Il manque la masse d’eau de la solution', 'Il ne manque que la masse volumique de la solution'],
@@ -3039,17 +3039,17 @@ export const ENONCES = [
       const debut = ['On répète ', T('n'), ' fois le titrage d’une même solution, dans les mêmes conditions.\n\nLe volume équivalent moyen est ', T('xm'), ' et l’écart-type expérimental de la série vaut ', T('s'),
         '.\n\nLa burette (numérique) a une résolution de ', T('res'), ' ; la série a duré ', T('dur'), '.\n\nOn élargit l’incertitude avec ', T('k'), ' (convention : niveau de confiance voisin de 95 % si les mesures sont indépendantes et suivent une loi normale, hypothèses faites ici ; un peu moins pour un petit nombre de mesures). '];
       const ur = p.res / Math.sqrt(6), pc = (Math.sqrt(1 + (ur / u) ** 2) - 1) * 100;   // deux lectures de burette, loi rectangulaire : u_res = r / (2√3) par lecture
-      const rRes0 = `La résolution de la burette est une autre source d’incertitude (type B) : pour deux lectures, u_res = r / √6 ≈ ${nb(ur, 3)} mL. Ajoutée en quadrature à u ≈ ${nb(u, 3)} mL, elle ne la modifierait que d’environ ${nb(pc, 1)} % : négligeable devant la dispersion, donc on se limite ici à l’incertitude de type A, u = frac(s|sqrt(n)).`;
+      const rRes0 = `La résolution de la burette est une autre source d’incertitude (type B) : pour deux lectures, u_res = frac(r|sqrt(6)) ≈ ${nb(ur, 3)} mL. Ajoutée en quadrature à u ≈ ${nb(u, 3)} mL, elle ne la modifierait que d’environ ${nb(pc, 1)} % : négligeable devant la dispersion, donc on se limite ici à l’incertitude de type A, u = frac(s|sqrt(n)).`;
       const rRes = q === 0 ? rRes0 : q === 1 ? rRes0.replace('on se limite ici à l’incertitude de type A, u = frac(s|sqrt(n)).', 'on calcule U = k × u avec l’incertitude de type A seule.') : rRes0.replace('on se limite ici à l’incertitude de type A, u = frac(s|sqrt(n)).', 'l’intervalle x̄ ± U se calcule avec l’incertitude de type A seule.');
       const rDur = 'La durée de la série n’intervient pas dans le calcul de l’incertitude.';
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’incertitude-type de type A, u, de la moyenne de la série ?'], utiles: ['s', 'n'],
         raisons: { xm: 'La valeur de la moyenne ne change pas l’incertitude : elle dépend de la dispersion et du nombre de mesures.', k: 'Le facteur d’élargissement sert pour l’incertitude élargie, pas pour l’incertitude-type.', res: rRes, dur: rDur },
-        cherche: { bonne: 'L’incertitude-type u de la moyenne (en mL)', faux: ['L’incertitude élargie U (en mL)', 'L’incertitude relative u / x̄ (sans unité)', 'La variance de la série (en mL²)'] },
+        cherche: { bonne: 'L’incertitude-type u de la moyenne (en mL)', faux: ['L’incertitude élargie U (en mL)', 'L’incertitude relative frac(u|x̄) (sans unité)', 'La variance de la série (en mL²)'] },
         manque: null, solution: { txt: 'u = frac(s|sqrt(n))', val: u, u: 'mL' } };
       if (q === 1) return { tokens, texte: [...debut, 'Quelle est l’incertitude élargie U associée à la moyenne de la série, obtenue à partir de l’incertitude-type de type A ?'], utiles: ['s', 'n', 'k'],
         derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = frac(s|sqrt(n))', val: u, u: 'mL' }],
         raisons: { xm: 'La moyenne ne sert pas à calculer l’incertitude.', res: rRes, dur: rDur },
-        cherche: { bonne: 'L’incertitude élargie U de la moyenne (en mL)', faux: ['L’incertitude-type u de la moyenne (en mL)', 'La borne basse x̄ − U de l’intervalle (en mL)', 'L’incertitude relative U / x̄ (en %)'] },
+        cherche: { bonne: 'L’incertitude élargie U de la moyenne (en mL)', faux: ['L’incertitude-type u de la moyenne (en mL)', 'La borne basse x̄ − U de l’intervalle (en mL)', 'L’incertitude relative frac(U|x̄) (en %)'] },
         manque: null, solution: { txt: 'U = k × u', val: U, u: 'mL' } };
       return { tokens, texte: [...debut, 'Quelle est la borne haute de l’intervalle x̄ ± U (x̄ : volume moyen de la série ; U : incertitude élargie associée à cette moyenne, obtenue à partir de l’incertitude-type de type A) ?'], utiles: ['xm', 's', 'n', 'k'],
         derivees: [{ id: 'u', nom: 'Incertitude-type de la moyenne', expr: 'u = frac(s|sqrt(n))', val: u, u: 'mL' }, { id: 'U', nom: 'Incertitude élargie', expr: 'U = k × u', val: U, u: 'mL' }],
@@ -3111,7 +3111,7 @@ export const ENONCES = [
         cherche: { bonne: 'L’angle d’un pas (en °)', faux: ['La vitesse de rotation (en tr/min)', 'La fréquence des pas (en Hz)', 'Le nombre de tours effectués'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le nombre de pas pour faire un tour complet', 'Il manque le nombre de pas commandés par le programme', 'Il ne manque que la masse du rotor'],
           expl: `Tout est dans l’énoncé : le rotor fait ${tokens.N.aff}. Un tour complet fait 360° et se décompose en N pas égaux. Le nombre de pas commandés (${tokens.Np.aff}) est aussi donné, mais il ne sert pas pour l’angle d’un seul pas.` },
-        solution: { txt: 'α = 360° / N', val: 360 / p.N, u: '°' } };
+        solution: { txt: 'α = frac(360°|N)', val: 360 / p.N, u: '°' } };
       if (q === 1) return { tokens, derivees: [], texte: [...debut, 'Combien de pas le moteur fait-il par seconde ?'], utiles: ['D'],
         raisons: { N: 'Le nombre de pas par tour ne change pas le nombre de pas par seconde.', Np: 'Le nombre total de pas ne donne pas le rythme auquel ils s’enchaînent.', U: rU, R: rR },
         cherche: { bonne: 'La fréquence des pas (en pas par seconde)', faux: ['La vitesse de rotation (en tr/min)', 'La durée totale du programme (en s)', 'L’angle d’un pas (en °)'] },
@@ -3124,11 +3124,11 @@ export const ENONCES = [
         cherche: { bonne: 'La vitesse de rotation n (en tr/min)', faux: ['La fréquence des pas (en Hz)', 'Le nombre de tours effectués', 'L’angle tourné en un pas (en °)'] },
         manque: { bonne: 'Il ne manque aucune donnée pour ce calcul', faux: ['Il manque le nombre de pas pour faire un tour complet', 'Il manque l’attente entre deux pas dans le programme', 'Il ne manque que le courant dans les bobines'],
           expl: `Tout est dans l’énoncé : l’attente entre deux pas (${tokens.D.aff}) et le nombre de pas par tour (${tokens.N.aff}). f = 1 000 / D pas par seconde ; ÷ N pas par tour = f/N tours par seconde ; × 60 (1 min = 60 s) pour passer en tours par minute.` },
-        solution: { txt: 'n = 60 × f / N', val: 60 * f / p.N, u: 'tr/min' } };
+        solution: { txt: 'n = frac(60 × f|N)', val: 60 * f / p.N, u: 'tr/min' } };
       return { tokens, derivees: [], texte: [...debut, 'Combien de tours le rotor fait-il au total ?'], utiles: ['N', 'Np'],
         raisons: { D: 'Le délai fixe la vitesse, pas le nombre de tours : il change seulement la durée.', U: 'La tension ne change pas le nombre de tours : il ne dépend que du nombre de pas commandés et du nombre de pas par tour.', R: 'La résistance des bobines ne change pas le nombre de tours : il ne dépend que du nombre de pas commandés et du nombre de pas par tour.' },
         cherche: { bonne: 'Le nombre de tours effectués', faux: ['La vitesse de rotation (en tr/min)', 'La durée du programme (en s)', 'L’angle d’un pas (en °)'] },
-        manque: null, solution: { txt: 'tours = N_p / N', val: p.Np / p.N, u: 'tours' } };
+        manque: null, solution: { txt: 'tours = frac(N_p|N)', val: p.Np / p.N, u: 'tours' } };
     },
   },
   {
@@ -3155,16 +3155,16 @@ export const ENONCES = [
         raisons: { r1: rr1, r2: rr2, T: rT },
         cherche: { bonne: 'L’intensité du champ magnétique total (en µT)', faux: ['L’angle de déviation de l’aiguille (en °)', 'Le champ de l’aimant à la distance r₂ (en µT)', 'Le champ total à la distance r₂ (en µT)'] },
         manque: null,
-        solution: { txt: 'B = √(B_T² + B_a²) (les deux champs sont perpendiculaires : côtés d’un triangle rectangle)', val: Bt, u: 'µT' } };
+        solution: { txt: 'B = sqrt(B_T² + B_a²) (les deux champs sont perpendiculaires : côtés d’un triangle rectangle)', val: Bt, u: 'µT' } };
       if (q === 1) return { tokens, derivees: [], texte: [...debut, 'De quel angle l’aiguille de la boussole dévie-t-elle par rapport au nord ?'], utiles: ['BT', 'Ba'],
         raisons: { r1: rr1, r2: rr2, T: rT },
         cherche: { bonne: 'L’angle de déviation α de l’aiguille (en °)', faux: ['L’intensité du champ total (en µT)', 'Le champ de l’aimant à la distance r₂ (en µT)', 'L’angle entre le champ de l’aimant et le champ de la Terre (en °)'] },
         manque: null,
-        solution: { txt: 'α = arctan(B_a / B_T) (l’aiguille se place selon le champ total : tan α = B_a / B_T)', val: Math.atan(p.Ba / p.BT) * 180 / Math.PI, u: '°' } };
+        solution: { txt: 'α = arctan(frac(B_a|B_T)) (l’aiguille se place selon le champ total : tan α = frac(B_a|B_T))', val: Math.atan(p.Ba / p.BT) * 180 / Math.PI, u: '°' } };
       return { tokens, derivees: [], texte: [...debut, 'Quel est le champ de l’aimant lorsque la boussole est à la distance r₂ ?'], utiles: ['Ba', 'r1', 'r2'],
         raisons: { BT: 'Le champ de la Terre ne dépend pas de la distance à l’aimant, et on cherche le champ de l’aimant seul.', T: rT },
         cherche: { bonne: 'Le champ magnétique de l’aimant à la distance r₂ (en µT)', faux: ['Le champ magnétique total à la distance r₂ (en µT)', 'La déviation de l’aiguille de la boussole à r₂ (en °)', 'La variation du champ de l’aimant entre r₁ et r₂ (en µT)'] },
-        manque: null, solution: { txt: 'B₂ = B_a × (r₁ / r₂)³', val: p.Ba * (p.r1 / p.r2) ** 3, u: 'µT' } };
+        manque: null, solution: { txt: 'B₂ = B_a × (frac(r₁|r₂))³', val: p.Ba * (p.r1 / p.r2) ** 3, u: 'µT' } };
     },
   },
 
@@ -3196,7 +3196,7 @@ export const ENONCES = [
         utiles: ['v', 'd'],
         raisons: { dep: 'L’heure de départ permettrait de calculer l’heure d’arrivée, mais on demande seulement la durée.', pass: 'Le nombre de passagers ne change pas la durée du trajet.', prix: 'Le prix du billet n’a aucun rapport avec la durée.' },
         cherche: { bonne: 'La durée Δt de ce trajet du train (en h)', faux: ['L’heure d’arrivée du train (en h)', 'La vitesse du train à l’arrivée (en km·h⁻¹)', 'L’accélération du train au départ (en m·s⁻²)'] },
-        manque: null, solution: { txt: 'Δt = d / v', val: p.dur / 60, u: 'h' } };
+        manque: null, solution: { txt: 'Δt = frac(d|v)', val: p.dur / 60, u: 'h' } };
     },
   },
   {
@@ -3245,7 +3245,7 @@ export const ENONCES = [
           utiles: ['G', 'm1', 'm2', 'd'],
           raisons: { an: 'L’année de lancement n’intervient pas dans la loi de la gravitation.' },
           cherche: { bonne: 'La force gravitationnelle F entre les deux satellites (en N)', faux: ['Le champ de gravitation créé par un satellite (en N·kg⁻¹)', 'Le poids d’un satellite sur la Terre (en N)', 'La force exercée par la Terre sur un satellite (en N)'] },
-          manque: null, solution: { txt: 'F = G·m₁·m₂ / d²', val: p.G * p.m1 * p.m2 * 1e6 / (p.d * p.d), u: 'N' } };
+          manque: null, solution: { txt: 'F = frac(G·m₁·m₂|d²)', val: p.G * p.m1 * p.m2 * 1e6 / (p.d * p.d), u: 'N' } };
       }
       tokens.M = tok(`${sci(p.M)} × 10${p.ex === 23 ? '²³' : '²⁴'} kg`, 'Masse de la planète', p.M * Math.pow(10, p.ex), 'kg');
       tokens.R = tok(`${p.R} km`, 'Rayon de la planète', p.R * 1000, 'm');
@@ -3257,7 +3257,7 @@ export const ENONCES = [
         utiles: ['G', 'M', 'R', 'h'],
         raisons: { m: 'Le champ de gravitation créé par la planète ne dépend pas de la masse de la sonde qui s’y trouve.' },
         cherche: { bonne: 'Le champ de gravitation g créé par la planète (en N·kg⁻¹)', faux: ['La force de gravitation subie par la sonde (en N)', 'L’intensité de la pesanteur à la surface de la planète (en N·kg⁻¹)', 'La distance d du point au centre de la planète (en m)'] },
-        manque: null, solution: { txt: 'g = G·M / d², avec d = R + h', val: p.G * p.M * Math.pow(10, p.ex) / Math.pow((p.R + p.h) * 1000, 2), u: 'N·kg⁻¹' } };
+        manque: null, solution: { txt: 'g = frac(G·M|d²), avec d = R + h', val: p.G * p.M * Math.pow(10, p.ex) / Math.pow((p.R + p.h) * 1000, 2), u: 'N·kg⁻¹' } };
     },
   },
   {
@@ -3419,7 +3419,7 @@ export const ENONCES = [
         utiles: ['dm', 'v'],
         raisons: { m: 'La masse du cycliste n’intervient pas : on cherche une durée à partir d’une distance et d’une vitesse.' },
         cherche: { bonne: 'La durée Δt du trajet (en s)', faux: ['L’accélération moyenne du cycliste (en m·s⁻²)', 'La distance parcourue en 10 s à cette vitesse (en m)', 'L’énergie cinétique du cycliste (en J)'] },
-        manque: null, solution: { txt: 'Δt = d / v (v convertie en m·s⁻¹)', val: p.dm / (p.v / 3.6), u: 's' } };
+        manque: null, solution: { txt: 'Δt = frac(d|v) (v convertie en m·s⁻¹)', val: p.dm / (p.v / 3.6), u: 's' } };
     },
   },
   {
@@ -3441,7 +3441,7 @@ export const ENONCES = [
         utiles: ['U', 'Rm'],
         raisons: { L: 'La longueur du fil n’intervient pas dans la loi d’Ohm (et la résistance de ce fil est négligeable devant celle du résistor).' },
         cherche: { bonne: 'Le courant électrique dans le résistor (en mA)', faux: ['La puissance reçue par le résistor (en W)', 'L’énergie reçue par le résistor en 1 min (en J)', 'La charge traversant le résistor en 1 min (en C)'] },
-        manque: null, solution: { txt: 'I = U / R (R en Ω, I d’abord en A puis en mA)', val: p.U / p.Rm * 1000, u: 'mA' } };
+        manque: null, solution: { txt: 'I = frac(U|R) (R en Ω, I d’abord en A puis en mA)', val: p.U / p.Rm * 1000, u: 'mA' } };
     },
   },
   {
@@ -3457,7 +3457,7 @@ export const ENONCES = [
           utiles: ['c', 'v'],
           raisons: { ep: 'L’épaisseur traversée n’intervient pas dans l’indice (elle servirait à calculer une durée de traversée).' },
           cherche: { bonne: 'L’indice de réfraction n du milieu (sans unité)', faux: ['La longueur d’onde de la lumière dans le milieu (en nm)', 'La durée de la traversée du milieu (en s)', 'L’angle de réfraction (en °)'] },
-          manque: null, solution: { txt: 'n = c / v (v convertie en m·s⁻¹)', val: 3.0e8 / (vkm * 1000), u: '' } };
+          manque: null, solution: { txt: 'n = frac(c|v) (v convertie en m·s⁻¹)', val: 3.0e8 / (vkm * 1000), u: '' } };
       }
       tokens.n = tok(`n = ${nb(n, 2)}`, 'Indice de réfraction du milieu', n, '');
       return { tokens, derivees: [],
@@ -3465,7 +3465,7 @@ export const ENONCES = [
         utiles: ['c', 'n'],
         raisons: { ep: 'L’épaisseur traversée n’intervient pas : la vitesse dépend seulement de l’indice du milieu.' },
         cherche: { bonne: 'La vitesse v de la lumière dans le milieu (en m·s⁻¹)', faux: ['La durée de la traversée du milieu (en s)', 'La longueur d’onde de la lumière dans le milieu (en nm)', 'La fréquence de la lumière (en Hz)'] },
-        manque: null, solution: { txt: 'v = c / n', val: 3.0e8 / n, u: 'm·s⁻¹' } };
+        manque: null, solution: { txt: 'v = frac(c|n)', val: 3.0e8 / n, u: 'm·s⁻¹' } };
     },
   },
   {
@@ -3482,7 +3482,7 @@ export const ENONCES = [
           utiles: ['n1', 'n2', 'i1'],
           raisons: { lam: 'Les indices sont déjà donnés pour cette radiation : la longueur d’onde n’apparaît pas dans la loi n₁ sin i₁ = n₂ sin i₂.' },
           cherche: { bonne: 'L’angle de réfraction i₂ dans le second milieu (en °)', faux: ['L’angle de réflexion (en °)', 'La déviation i₁ − i₂ du rayon (en °)', 'La vitesse de la lumière dans le second milieu (en m·s⁻¹)'] },
-          manque: null, solution: { txt: 'sin i₂ = n₁ × sin i₁ / n₂ ; on en déduit i₂ avec la touche sin⁻¹ de la calculatrice (mode degrés)', val: p.i2, u: '°' } };
+          manque: null, solution: { txt: 'sin i₂ = n₁ × sin frac(i₁|n₂) ; on en déduit i₂ avec la touche sin⁻¹ de la calculatrice (mode degrés)', val: p.i2, u: '°' } };
       }
       tokens.i2 = tok(`${nb(p.i2, 1)}°`, 'Angle de réfraction', p.i2, '°');
       return { tokens, derivees: [],
@@ -3523,12 +3523,12 @@ export const ENONCES = [
       if (q === 0) {
         tokens.m = tok(`${p.m} g`, 'Masse de soluté pesée', p.m, 'g');
         tokens.Vf = tok(`${p.Vf} mL`, 'Volume de la solution (fiole jaugée)', p.Vf / 1000, 'L');
-        return { tokens, derivees: [{ id: 'n', nom: 'Quantité de matière n de soluté', expr: 'n = m / M', val: p.m / p.M, u: 'mol' }],
+        return { tokens, derivees: [{ id: 'n', nom: 'Quantité de matière n de soluté', expr: 'n = frac(m|M)', val: p.m / p.M, u: 'mol' }],
           texte: ['On dissout ', T('m'), ' de ' + p.nom + ' (', T('M'), ') dans environ ', T('Ve'), ' d’eau, puis on complète à ', T('Vf'), ' avec de l’eau distillée dans une fiole jaugée. La température de la solution est de ', T('T'), '. Quelle est la concentration en quantité de matière du soluté dans la solution (en mol·L⁻¹) ?'],
           utiles: ['m', 'M', 'Vf'],
-          raisons: { Ve: 'C’est le volume d’eau versé au début : la solution finale a le volume de la fiole jaugée.', T: 'La température n’est pas une donnée de la formule c = n / V.' },
+          raisons: { Ve: 'C’est le volume d’eau versé au début : la solution finale a le volume de la fiole jaugée.', T: 'La température n’est pas une donnée de la formule c = frac(n|V).' },
           cherche: { bonne: 'La concentration c en quantité de matière (en mol·L⁻¹)', faux: ['La quantité de matière n de soluté (en mol)', 'La concentration en masse t du soluté (en g·L⁻¹)', 'La solubilité du soluté dans l’eau (en g·L⁻¹)'] },
-          manque: null, solution: { txt: 'c = n / V avec n = m / M (V converti en L)', val: p.m / p.M / (p.Vf / 1000), u: 'mol·L⁻¹' } };
+          manque: null, solution: { txt: 'c = frac(n|V) avec n = frac(m|M) (V converti en L)', val: p.m / p.M / (p.Vf / 1000), u: 'mol·L⁻¹' } };
       }
       tokens.c = tok(`${nb(p.c, 2)} mol·L⁻¹`, 'Concentration souhaitée', p.c, 'mol·L⁻¹');
       tokens.Vf = tok(`${p.Vf} mL`, 'Volume de solution à préparer', p.Vf / 1000, 'L');
@@ -3617,12 +3617,12 @@ export const ENONCES = [
         raisons: { Veau: rEau, P: 'La puissance de chauffe détermine l’énergie dépensée, pas la quantité d’huile extraite.', t: 'La durée de distillation n’apparaît pas dans un rapport de masses.', T: rT, rho: 'La masse volumique servirait à passer d’une masse à un volume : ici on compare deux masses.', Vh: rHyd },
         cherche: { bonne: 'Le rendement massique : masse d’huile / masse de fleurs fraîches (en %)', faux: ['La teneur en huile de l’hydrolat : masse d’huile / volume d’hydrolat (en g·L⁻¹)', 'La masse d’huile obtenue par litre d’eau chargée (en g·L⁻¹)', 'Le volume d’huile essentielle recueillie (en mL)'] },
         manque: null,
-        solution: { txt: 'η = m_huile / m_fleurs × 100', val: p.mh / (p.mp * 1000) * 100, u: '%' } };
+        solution: { txt: 'η = frac(m_huile|m_fleurs) × 100', val: p.mh / (p.mp * 1000) * 100, u: '%' } };
       if (q === 1) return { tokens, derivees: [], texte: [...debut, 'Quel volume occupe l’huile essentielle recueillie dans l’essencier ?'], utiles: ['mh', 'rho'],
         raisons: { mp: rMp, Veau: rEau, P: 'La puissance de chauffe n’a aucun lien avec le volume d’huile recueillie.', t: 'La durée de distillation n’intervient pas dans le calcul d’un volume à partir d’une masse.', T: rT, Vh: rHyd },
         cherche: { bonne: 'Le volume d’huile essentielle recueillie (en mL)', faux: ['La masse d’huile essentielle recueillie (en g)', 'Le volume total du distillat, huile et hydrolat (en L)', 'La masse volumique de l’hydrolat (en g·mL⁻¹)'] },
         manque: null,
-        solution: { txt: 'V = m_huile / ρ', val: p.mh / p.rho, u: 'mL' } };
+        solution: { txt: 'V = frac(m_huile|ρ)', val: p.mh / p.rho, u: 'mL' } };
       return { tokens, texte: [...debut, 'Quelle énergie électrique a été dépensée, en moyenne, pour obtenir un gramme d’huile essentielle ?'], utiles: ['P', 't', 'mh'],
         derivees: [{ id: 'E', nom: 'Énergie électrique dépensée E', expr: 'E = P × Δt', val: p.P * p.t, u: 'kWh' }],
         raisons: { mp: rMp, Veau: rEau, T: rT, rho: 'La masse volumique de l’huile ne sert pas à calculer une énergie.', Vh: rHyd },
@@ -3652,22 +3652,22 @@ export const ENONCES = [
       const rTher = 'Les caractéristiques thermiques de l’évaporateur (surface, pression de chauffe, température) fixent la puissance et la vitesse d’évaporation, pas le bilan de matière.';
       const rW2 = 'La teneur du sirop de sortie sert à calculer ce qui sort, pas la quantité de saccharose qui entre.';
       const rThermique = { S: rTher, Pv: rTher, th: rTher };
-      const dQs = { id: 'qs', nom: 'Débit massique de saccharose (le même à l’entrée et à la sortie)', expr: 'q_saccharose = q₁ × w₁ / 100', val: qs, u: 't·h⁻¹' };
-      const dQ2 = { id: 'q2', nom: 'Débit massique de sirop de sortie', expr: 'q₂ = q_saccharose / (w₂ / 100)', val: q2, u: 't·h⁻¹' };
+      const dQs = { id: 'qs', nom: 'Débit massique de saccharose (le même à l’entrée et à la sortie)', expr: 'q_saccharose = frac(q₁ × w₁|100)', val: qs, u: 't·h⁻¹' };
+      const dQ2 = { id: 'q2', nom: 'Débit massique de sirop de sortie', expr: 'q₂ = frac(q_saccharose|w₂ / 100)', val: q2, u: 't·h⁻¹' };
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est le débit massique de saccharose qui entre dans l’évaporateur ?'], utiles: ['q1', 'w1'],
         raisons: { w2: rW2, ...rThermique },
         cherche: { bonne: 'Le débit massique de saccharose dans le jus d’entrée (en t·h⁻¹)', faux: ['Le débit massique d’eau dans le jus d’entrée (en t·h⁻¹)', 'Le débit massique de sirop à la sortie (en t·h⁻¹)', 'Le débit massique d’eau évaporée (en t·h⁻¹)'] },
-        manque: null, solution: { txt: 'q_saccharose = q₁ × w₁ / 100', val: qs, u: 't·h⁻¹' } };
+        manque: null, solution: { txt: 'q_saccharose = frac(q₁ × w₁|100)', val: qs, u: 't·h⁻¹' } };
       if (q === 1) return { tokens, derivees: [dQs, dQ2], texte: [...debut, 'Quel est le débit massique d’eau évaporée ?'], utiles: ['q1', 'w1', 'w2'],
         raisons: rThermique,
         cherche: { bonne: 'Le débit massique d’eau évaporée (en t·h⁻¹)', faux: ['Le débit massique de sirop à la sortie (en t·h⁻¹)', 'Le débit massique de saccharose dans le jus (en t·h⁻¹)', 'Le débit massique d’eau contenue dans le jus d’entrée (en t·h⁻¹)'] },
-        manque: null, solution: { txt: 'q_évaporée = q₁ − q₂, avec q₂ = q₁ × w₁ / w₂', val: qe, u: 't·h⁻¹' } };
+        manque: null, solution: { txt: 'q_évaporée = q₁ − q₂, avec q₂ = frac(q₁ × w₁|w₂)', val: qe, u: 't·h⁻¹' } };
       tokens.dur = tok(`${p.dur} heures`, 'Durée de fonctionnement de la campagne', p.dur, 'h');
       return { tokens, derivees: [dQs, dQ2, { id: 'qe', nom: 'Débit massique d’eau évaporée', expr: 'q_évaporée = q₁ − q₂', val: qe, u: 't·h⁻¹' }],
         texte: [...debut, 'L’évaporateur fonctionne sans interruption pendant ', T('dur'), '. Quelle masse d’eau a-t-il évaporée pendant cette durée ?'], utiles: ['q1', 'w1', 'w2', 'dur'],
         raisons: rThermique,
         cherche: { bonne: 'La masse d’eau évaporée pendant la durée de fonctionnement (en t)', faux: ['Le débit massique d’eau évaporée (en t·h⁻¹)', 'La masse de sirop produite pendant la durée de fonctionnement (en t)', 'La masse de jus traitée pendant la durée de fonctionnement (en t)'] },
-        manque: null, solution: { txt: 'm_évaporée = (q₁ − q₁ × w₁ / w₂) × durée', val: qe * p.dur, u: 't' } };
+        manque: null, solution: { txt: 'm_évaporée = (q₁ − frac(q₁ × w₁|w₂)) × durée', val: qe * p.dur, u: 't' } };
     },
   },
   // ───────────────────────────── Transport des fluides : statique des fluides (capteur de pression, cuve d’huile)
@@ -3697,16 +3697,16 @@ export const ENONCES = [
         derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P_rel = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }],
         raisons: { th: rTh, Vc: rVc, Patm: rPatm },
         cherche: { bonne: 'La hauteur h d’huile au-dessus du capteur (en m)', faux: ['La pression absolue au fond de la cuve (en Pa)', 'Le volume d’huile contenu dans la cuve (en m³)', 'La masse d’huile contenue dans la cuve (en kg)'] },
-        manque: null, solution: { txt: 'h = P_rel / (ρ·g), avec P_rel en pascals', val: Prel / (p.rho * p.g), u: 'm' } };
+        manque: null, solution: { txt: 'h = frac(P_rel|ρ·g), avec P_rel en pascals', val: Prel / (p.rho * p.g), u: 'm' } };
       if (q === 1) {
         tokens.d = tok(`${p.d} mm`, 'Diamètre de la trappe de vidange', p.d / 1000, 'm');
         return { tokens, texte: [...debut, 'Une trappe de vidange horizontale, de forme circulaire et de diamètre ', T('d'), ', est située au fond de la cuve, à la hauteur du capteur ; sous la trappe, l’air est à la pression atmosphérique. Le poids de la trappe est négligé. Quelle est la valeur de la force pressante résultante qui s’exerce sur la trappe ?'],
           utiles: ['P', 'd'],
-          derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P_rel = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }, { id: 'S', nom: 'Section S de la trappe', expr: 'S = π·d² / 4', val: Math.PI * (p.d / 1000) ** 2 / 4, u: 'm²' }],
+          derivees: [{ id: 'Pa', nom: 'Pression relative en pascals', expr: 'P_rel = P(en bar) × 10⁵   (1 bar = 10⁵ Pa)', val: Prel, u: 'Pa' }, { id: 'S', nom: 'Section S de la trappe', expr: 'S = frac(π·d²|4)', val: Math.PI * (p.d / 1000) ** 2 / 4, u: 'm²' }],
           raisons: { rho: rRhoG, g: rRhoG, th: rTh, Vc: 'Le volume de la cuve ne donne pas la force sur la trappe : celle-ci ne dépend que de la pression au fond et de la surface de la trappe.',
             Patm: 'La pression atmosphérique s’exerce aussi sous la trappe : elle se compense, et le capteur la retranche déjà. Seule la pression relative compte.' },
           cherche: { bonne: 'La force pressante résultante F sur la trappe (en N)', faux: ['La pression relative exercée sur la trappe (en Pa)', 'Le poids de l’huile contenue dans la cuve (en N)', 'La force pressante exercée par la seule atmosphère sur la trappe (en N)'] },
-          manque: null, solution: { txt: 'F = P_rel × S, avec S = π·d² / 4', val: Prel * Math.PI * (p.d / 1000) ** 2 / 4, u: 'N' } };
+          manque: null, solution: { txt: 'F = P_rel × S, avec S = frac(π·d²|4)', val: Prel * Math.PI * (p.d / 1000) ** 2 / 4, u: 'N' } };
       }
       tokens.dh = tok(`${nb(p.dh, 1)} m`, 'Baisse du niveau d’huile', p.dh, 'm');
       return { tokens, texte: [...debut, 'Pendant la vidange, le niveau d’huile baisse de ', T('dh'), ' (la masse volumique de l’huile ne change pas). De combien diminue la pression indiquée par le capteur ?'],
@@ -3757,8 +3757,8 @@ export const ENONCES = [
         raisons: { Pm: rPm, Bmax: rB, th: 'La température ne permettrait de lire la masse volumique d’une saumure dans une table qu’avec sa concentration, qui n’est pas donnée : elle ne remplace pas la donnée manquante.' },
         cherche: { bonne: 'Le débit volumique q_V de la pompe (en m³·h⁻¹)', faux: ['Le débit massique de la pompe (en kg·s⁻¹)', 'La masse volumique de la saumure (en kg·m⁻³)', 'Le volume de saumure recueilli (en m³)'] },
         manque: { bonne: 'Il manque la masse volumique de la saumure', faux: ['Il manque la durée de remplissage', 'Il manque la masse du fût vide', 'Il ne manque aucune donnée pour ce calcul'],
-          expl: `Pour passer d’un débit massique à un débit volumique, il faut la masse volumique : q_V = q_m / ρ. L’énoncé ne la donne pas, et ne donne pas non plus le volume recueilli. Elle peut se mesurer en lisant le volume sur le fût et en calculant ρ = m / V. La masse du fût vide (${tokens.mv.aff}), la masse finale (${tokens.mt.aff}) et la durée (${tokens.dt.aff}) y figurent bien : elles donnent le débit massique.` },
-        solution: { txt: `q_V = q_m / ρ (ici ρ = ${nb(p.rho)} kg·m⁻³, valeur à mesurer ; 1 m³·s⁻¹ = 3 600 m³·h⁻¹)`, val: Qm / p.rho * 3600, u: 'm³·h⁻¹' } };
+          expl: `Pour passer d’un débit massique à un débit volumique, il faut la masse volumique : q_V = frac(q_m|ρ). L’énoncé ne la donne pas, et ne donne pas non plus le volume recueilli. Elle peut se mesurer en lisant le volume sur le fût et en calculant ρ = m / V. La masse du fût vide (${tokens.mv.aff}), la masse finale (${tokens.mt.aff}) et la durée (${tokens.dt.aff}) y figurent bien : elles donnent le débit massique.` },
+        solution: { txt: `q_V = frac(q_m|ρ) (ici ρ = ${nb(p.rho)} kg·m⁻³, valeur à mesurer ; 1 m³·s⁻¹ = 3 600 m³·h⁻¹)`, val: Qm / p.rho * 3600, u: 'm³·h⁻¹' } };
     },
   },
   // ───────────────────────────── Transport des fluides : conservation du débit dans une réduction de section
@@ -3786,8 +3786,8 @@ export const ENONCES = [
       const rP = 'Pour un liquide incompressible en régime permanent, la conservation du débit ne fait pas intervenir la pression (celle-ci intervient dans le bilan d’énergie de Bernoulli).';
       const rL = 'La longueur de la conduite joue sur les pertes de charge, pas sur le lien entre débit, section et vitesse.';
       const rTh = 'La température n’intervient pas ici : l’eau est supposée incompressible, sa masse volumique est constante.';
-      const dS1 = { id: 'S1', nom: 'Section S₁ de la conduite amont', expr: 'S₁ = π·D₁² / 4', val: S1, u: 'm²' };
-      const dS2 = { id: 'S2', nom: 'Section S₂ de la conduite étroite', expr: 'S₂ = π·D₂² / 4', val: S2, u: 'm²' };
+      const dS1 = { id: 'S1', nom: 'Section S₁ de la conduite amont', expr: 'S₁ = frac(π·D₁²|4)', val: S1, u: 'm²' };
+      const dS2 = { id: 'S2', nom: 'Section S₂ de la conduite étroite', expr: 'S₂ = frac(π·D₂²|4)', val: S2, u: 'm²' };
       if (q === 0) return { tokens, derivees: [dS1], texte: [...debut, 'Quel est le débit volumique de l’eau dans la conduite ?'], utiles: ['D1', 'v1'],
         raisons: { th: rTh, L: rL, P1: rP, D2: 'Le diamètre de la conduite plus étroite sert à calculer la vitesse dans cette partie, pas le débit, qui est le même dans toute la conduite.' },
         cherche: { bonne: 'Le débit volumique Q_V de l’eau (en m³·h⁻¹)', faux: ['La vitesse moyenne de l’eau dans la conduite étroite (en m·s⁻¹)', 'Le débit massique de l’eau (en kg·s⁻¹)', 'La section de la conduite amont (en m²)'] },
@@ -3795,13 +3795,13 @@ export const ENONCES = [
       if (q === 1) return { tokens, derivees: [dS1, dS2], texte: [...debut, 'Quelle est la vitesse moyenne de l’eau dans la conduite étroite ?'], utiles: ['D1', 'v1', 'D2'],
         raisons: { th: rTh, L: rL, P1: rP },
         cherche: { bonne: 'La vitesse moyenne v₂ de l’eau dans la conduite étroite (en m·s⁻¹)', faux: ['Le débit volumique de l’eau dans la conduite étroite (en m³·h⁻¹)', 'La pression de l’eau dans la conduite étroite (en bar)', 'Le rapport S₁/S₂ des sections (sans unité)'] },
-        manque: null, solution: { txt: 'Q_V = v₁·S₁ = v₂·S₂, donc v₂ = v₁·S₁ / S₂', val: p.v1 * S1 / S2, u: 'm·s⁻¹' } };
+        manque: null, solution: { txt: 'Q_V = v₁·S₁ = v₂·S₂, donc v₂ = frac(v₁·S₁|S₂)', val: p.v1 * S1 / S2, u: 'm·s⁻¹' } };
       tokens.Vr = tok(`${p.Vr} m³`, 'Volume du bassin à remplir', p.Vr, 'm³');
       return { tokens, derivees: [dS1, { id: 'Q', nom: 'Débit volumique de l’eau', expr: 'Q_V = v₁ × S₁', val: Q, u: 'm³·s⁻¹' }],
         texte: [...debut, 'Toute cette eau est envoyée dans un bassin vide de volume ', T('Vr'), '. Quelle est la durée nécessaire pour le remplir ?'], utiles: ['D1', 'v1', 'Vr'],
         raisons: { th: rTh, L: rL, P1: rP, D2: 'Le diamètre de la conduite plus étroite n’intervient pas : le débit est le même dans les deux conduites, on le calcule avec la conduite dont on connaît la vitesse.' },
         cherche: { bonne: 'La durée de remplissage du bassin (en h)', faux: ['Le débit volumique de l’eau (en m³·h⁻¹)', 'La masse d’eau contenue dans le bassin plein (en kg)', 'La vitesse moyenne de l’eau dans la conduite étroite (en m·s⁻¹)'] },
-        manque: null, solution: { txt: 't = V_bassin / Q_V, avec Q_V = v₁ × S₁', val: p.Vr / Q / 3600, u: 'h' } };
+        manque: null, solution: { txt: 't = frac(V_bassin|Q_V), avec Q_V = v₁ × S₁', val: p.Vr / Q / 3600, u: 'h' } };
     },
   },
   // ───────────────────────────── Transport des fluides : bilan d’énergie, puissance hydraulique et rendement d’une pompe
@@ -3866,12 +3866,12 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’angle d’ouverture θ de la figure ?'], utiles: ['L', 'D'],
         raisons: { lam: 'La longueur d’onde servira ensuite à relier θ à la largeur de la fente, mais elle n’intervient pas pour obtenir θ à partir de la géométrie.', P: rP },
         cherche: { bonne: 'L’angle d’ouverture θ de la figure (en rad)', faux: ['La largeur a de la fente (en µm)', 'La largeur L de la tache centrale (en mm)', 'La longueur d’onde λ du laser (en nm)'] },
-        manque: null, solution: { txt: 'θ = L / (2D)', val: theta, u: 'rad' } };
+        manque: null, solution: { txt: 'θ = frac(L|2D)', val: theta, u: 'rad' } };
       return { tokens, texte: [...debut, 'Quelle est la largeur a de la fente ?'], utiles: ['lam', 'L', 'D'],
-        derivees: [{ id: 'theta', nom: 'Angle d’ouverture', expr: 'θ = L / (2D)', val: theta, u: 'rad' }],
+        derivees: [{ id: 'theta', nom: 'Angle d’ouverture', expr: 'θ = frac(L|2D)', val: theta, u: 'rad' }],
         raisons: { P: rP },
         cherche: { bonne: 'La largeur a de la fente (en µm)', faux: ['L’angle d’ouverture θ de la figure (en rad)', 'La largeur L de la tache centrale (en mm)', 'La longueur d’onde λ du laser (en nm)'] },
-        manque: null, solution: { txt: 'a = λ / θ = 2λD / L', val: p.lam * 1e-9 / theta * 1e6, u: 'µm' } };
+        manque: null, solution: { txt: 'a = frac(λ|θ) = 2λD / L', val: p.lam * 1e-9 / theta * 1e6, u: 'µm' } };
     },
   },
   {
@@ -3898,12 +3898,12 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quel est l’interfrange i (distance entre deux franges brillantes consécutives) ?'], utiles: ['X', 'N'],
         raisons: { lam: 'La longueur d’onde permettrait de calculer l’interfrange si l était connue ; ici l’interfrange est mesurée directement sur l’écran.', a: rA, D: 'La distance fentes-écran ne sert pas à mesurer une distance déjà relevée sur l’écran.' },
         cherche: { bonne: 'L’interfrange i (en mm)', faux: ['La distance l entre les deux fentes (en µm)', 'La distance X divisée par le nombre N de franges (en mm)', 'La longueur d’onde λ du laser (en nm)'] },
-        manque: null, solution: { txt: 'i = X / (N − 1) : N franges délimitent N − 1 interfranges', val: i, u: 'mm' } };
+        manque: null, solution: { txt: 'i = frac(X|N − 1) : N franges délimitent N − 1 interfranges', val: i, u: 'mm' } };
       return { tokens, texte: [...debut, 'Quelle est la distance l entre les deux fentes ?'], utiles: ['lam', 'D', 'X', 'N'],
-        derivees: [{ id: 'i', nom: 'Interfrange', expr: 'i = X / (N − 1)', val: i, u: 'mm' }],
+        derivees: [{ id: 'i', nom: 'Interfrange', expr: 'i = frac(X|N − 1)', val: i, u: 'mm' }],
         raisons: { a: rA },
         cherche: { bonne: 'La distance l entre les deux fentes (en µm)', faux: ['L’interfrange i (en mm)', 'La largeur a de chaque fente (en µm)', 'La distance D entre les fentes et l’écran (en m)'] },
-        manque: null, solution: { txt: 'l = λ·D / i', val: p.lam * 1e-9 * p.D / (i * 1e-3) * 1e6, u: 'µm' } };
+        manque: null, solution: { txt: 'l = frac(λ·D|i)', val: p.lam * 1e-9 * p.D / (i * 1e-3) * 1e6, u: 'µm' } };
     },
   },
   {
@@ -3927,14 +3927,14 @@ export const ENONCES = [
       if (q === 0) return { tokens: { D: tokens.D, x1: tokens.x1, P: tokens.P }, derivees: [], texte: [...entete, 'Le laser a une puissance ', T('P'), '. La tache d’ordre 1 est à ', T('x1'), ' de la tache centrale (ordre 0). Quel est l’angle de déviation θ₁ de l’ordre 1 (en degré) ? '],
         utiles: ['x1', 'D'], raisons: { P: rP },
         cherche: { bonne: 'L’angle de déviation θ₁ de l’ordre 1 (en degré)', faux: ['Le pas a du réseau (en µm)', 'La distance x₁ entre les deux taches (en cm)', 'Le sinus de l’angle θ₁ (sans unité)'] },
-        manque: null, solution: { txt: 'tan θ₁ = x₁ / D, donc θ₁ = arctan(x₁ / D)', val: th * 180 / Math.PI, u: '°' } };
-      if (q === 1) return { tokens: { lam: tokens.lam, D: tokens.D, x1: tokens.x1, P: tokens.P }, texte: [...entete, 'Le laser a une longueur d’onde ', T('lam'), ' et une puissance ', T('P'), '. La tache d’ordre 1 est à ', T('x1'), ' de la tache centrale (ordre 0). Quel est le pas a du réseau, sachant que sin θ₁ = λ / a pour l’ordre 1 ? '],
-        utiles: ['lam', 'x1', 'D'], derivees: [{ id: 'th', nom: 'Angle de déviation de l’ordre 1', expr: 'θ₁ = arctan(x₁ / D)', val: th * 180 / Math.PI, u: '°' }],
+        manque: null, solution: { txt: 'tan θ₁ = frac(x₁|D), donc θ₁ = arctan(frac(x₁|D))', val: th * 180 / Math.PI, u: '°' } };
+      if (q === 1) return { tokens: { lam: tokens.lam, D: tokens.D, x1: tokens.x1, P: tokens.P }, texte: [...entete, 'Le laser a une longueur d’onde ', T('lam'), ' et une puissance ', T('P'), '. La tache d’ordre 1 est à ', T('x1'), ' de la tache centrale (ordre 0). Quel est le pas a du réseau, sachant que sin θ₁ = frac(λ|a) pour l’ordre 1 ? '],
+        utiles: ['lam', 'x1', 'D'], derivees: [{ id: 'th', nom: 'Angle de déviation de l’ordre 1', expr: 'θ₁ = arctan(frac(x₁|D))', val: th * 180 / Math.PI, u: '°' }],
         raisons: { P: rP },
         cherche: { bonne: 'Le pas a du réseau (en µm)', faux: ['L’angle de déviation θ₁ de l’ordre 1 (en degré)', 'Le nombre de traits par millimètre du réseau (en mm⁻¹)', 'La longueur d’onde λ du laser (en nm)'] },
         manque: null, solution: { txt: 'a = λ / sin θ₁', val: p.lam * 1e-9 / s1 * 1e6, u: 'µm' } };
-      return { tokens: { n: tokens.n, D: tokens.D, x1: tokens.x1, P: tokens.P }, texte: [...entete, 'Le réseau comporte ', T('n'), '. Le laser a une puissance ', T('P'), ' ; sa longueur d’onde est inconnue. La tache d’ordre 1 est à ', T('x1'), ' de la tache centrale (ordre 0). Quelle est la longueur d’onde λ du laser, sachant que sin θ₁ = λ / a pour l’ordre 1 ? '],
-        utiles: ['n', 'x1', 'D'], derivees: [{ id: 'a', nom: 'Pas du réseau', expr: 'a = 1 / n', val: 1e3 / p.n, u: 'µm' }, { id: 'th', nom: 'Angle de déviation de l’ordre 1', expr: 'θ₁ = arctan(x₁ / D)', val: th * 180 / Math.PI, u: '°' }],
+      return { tokens: { n: tokens.n, D: tokens.D, x1: tokens.x1, P: tokens.P }, texte: [...entete, 'Le réseau comporte ', T('n'), '. Le laser a une puissance ', T('P'), ' ; sa longueur d’onde est inconnue. La tache d’ordre 1 est à ', T('x1'), ' de la tache centrale (ordre 0). Quelle est la longueur d’onde λ du laser, sachant que sin θ₁ = frac(λ|a) pour l’ordre 1 ? '],
+        utiles: ['n', 'x1', 'D'], derivees: [{ id: 'a', nom: 'Pas du réseau', expr: 'a = frac(1|n)', val: 1e3 / p.n, u: 'µm' }, { id: 'th', nom: 'Angle de déviation de l’ordre 1', expr: 'θ₁ = arctan(frac(x₁|D))', val: th * 180 / Math.PI, u: '°' }],
         raisons: { P: rP },
         cherche: { bonne: 'La longueur d’onde λ du laser (en nm)', faux: ['Le pas a du réseau (en µm)', 'L’angle de déviation θ₁ de l’ordre 1 (en degré)', 'La fréquence du laser (en Hz)'] },
         manque: null, solution: { txt: 'λ = a·sin θ₁', val: 1e3 / p.n * s1 * 1e3, u: 'nm' } };
@@ -3963,7 +3963,7 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'Une interface entre deux organes se trouve à ', T('d'), ' de la sonde. Quel retard présente l’écho de cette interface par rapport à l’émission ?'],
         utiles: ['v', 'd'], raisons,
         cherche: { bonne: 'Le retard Δt de l’écho (en µs)', faux: ['La profondeur de l’interface (en cm)', 'La période des ultrasons émis (en µs)', 'La vitesse de l’écho au retour (en m/s)'] },
-        manque: null, solution: { txt: 'Δt = 2d / v : l’impulsion fait un aller-retour', val: 2 * p.d * 1e-2 / p.v * 1e6, u: 'µs' } };
+        manque: null, solution: { txt: 'Δt = frac(2d|v) : l’impulsion fait un aller-retour', val: 2 * p.d * 1e-2 / p.v * 1e6, u: 'µs' } };
     },
   },
   {
@@ -3983,17 +3983,17 @@ export const ENONCES = [
       const debut = ['On prépare une solution tampon en dissolvant ', T('m1'), ' d’acide éthanoïque et ', T('m2'), ' d’éthanoate de sodium dans de l’eau, pour obtenir un volume ', T('V'), ' de solution. Le pKa du couple acide éthanoïque / ion éthanoate vaut ', T('pKa'), ' à 25 °C. Les masses molaires sont : ', T('Mh'), ' pour l’acide éthanoïque et ', T('Mn'), ' pour l’éthanoate de sodium. Ce dernier coûte ', T('prix'), '. '];
       const rP = 'Le prix n’a aucune influence sur la grandeur cherchée.';
       if (q === 0) return { tokens, derivees: [
-          { id: 'nAH', nom: 'Quantité d’acide éthanoïque', expr: 'n(AH) = m₁ / M(AH)', val: nAH, u: 'mol' },
-          { id: 'nA', nom: 'Quantité d’ion éthanoate', expr: 'n(A⁻) = m₂ / M(A⁻)', val: nA, u: 'mol' }],
+          { id: 'nAH', nom: 'Quantité d’acide éthanoïque', expr: 'n(AH) = frac(m₁|M(AH))', val: nAH, u: 'mol' },
+          { id: 'nA', nom: 'Quantité d’ion éthanoate', expr: 'n(A⁻) = frac(m₂|M(A⁻))', val: nA, u: 'mol' }],
         texte: [...debut, 'Quel est le pH du tampon ?'], utiles: ['m1', 'm2', 'pKa', 'Mh', 'Mn'],
-        raisons: { V: 'Le pH ne dépend que du rapport [A⁻] / [AH], égal à n(A⁻) / n(AH) : le volume se simplifie.', prix: rP },
+        raisons: { V: 'Le pH ne dépend que du rapport [A⁻] / [AH], égal à frac(n(A⁻)|n(AH)) : le volume se simplifie.', prix: rP },
         cherche: { bonne: 'Le pH du tampon', faux: ['La concentration en acide éthanoïque (en mol·L⁻¹)', 'La concentration en ion éthanoate (en mol·L⁻¹)', 'La quantité de matière totale (en mol)'] },
-        manque: null, solution: { txt: 'pH = pKa + log(n(A⁻) / n(AH))', val: ph, u: '' } };
+        manque: null, solution: { txt: 'pH = pKa + log(frac(n(A⁻)|n(AH)))', val: ph, u: '' } };
       return { tokens, texte: [...debut, 'Quelle est la concentration en ion éthanoate dans la solution ?'], utiles: ['m2', 'Mn', 'V'],
-        derivees: [{ id: 'nA', nom: 'Quantité d’ion éthanoate', expr: 'n(A⁻) = m₂ / M(A⁻)', val: nA, u: 'mol' }],
+        derivees: [{ id: 'nA', nom: 'Quantité d’ion éthanoate', expr: 'n(A⁻) = frac(m₂|M(A⁻))', val: nA, u: 'mol' }],
         raisons: { m1: 'La masse d’acide éthanoïque sert à calculer [AH] et le pH, pas [A⁻].', pKa: 'Le pKa sert à calculer un pH, pas une concentration.', Mh: 'Cette masse molaire sert à calculer la quantité d’acide, qui n’intervient pas ici.', prix: rP },
         cherche: { bonne: 'La concentration en ion éthanoate (en mol·L⁻¹)', faux: ['La concentration en acide éthanoïque (en mol·L⁻¹)', 'Le pH du tampon', 'La quantité de matière d’ion éthanoate (en mol)'] },
-        manque: null, solution: { txt: '[A⁻] = n(A⁻) / V', val: nA / (p.V * 1e-3), u: 'mol/L' } };
+        manque: null, solution: { txt: '[A⁻] = frac(n(A⁻)|V)', val: nA / (p.V * 1e-3), u: 'mol/L' } };
     },
   },
   {
@@ -4021,15 +4021,15 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle quantité de matière d’ester a-t-on obtenue ?'], utiles: ['m', 'Me'],
         raisons: { Va: 'Les volumes de réactifs servent à calculer la quantité maximale d’ester, pas la quantité obtenue.', Vb: 'Les volumes de réactifs servent à calculer la quantité maximale d’ester, pas la quantité obtenue.', ra: 'Cette masse volumique sert à calculer la quantité d’acide, qui n’intervient pas ici.', rb: 'Cette masse volumique sert à calculer la quantité d’alcool, qui n’intervient pas ici.', Ma: 'Cette masse molaire sert à calculer la quantité d’acide, qui n’intervient pas ici.', Mb: 'Cette masse molaire sert à calculer la quantité d’alcool, qui n’intervient pas ici.', t: rT },
         cherche: { bonne: 'La quantité de matière d’ester obtenue (en mol)', faux: ['Le rendement de la synthèse (en %)', 'La quantité maximale d’ester (en mol)', 'La masse maximale d’ester (en g)'] },
-        manque: null, solution: { txt: 'n(ester) = m / M(ester)', val: ne, u: 'mol' } };
+        manque: null, solution: { txt: 'n(ester) = frac(m|M(ester))', val: ne, u: 'mol' } };
       return { tokens, texte: [...debut, 'Quel est le rendement de la synthèse ?'], utiles: ['Va', 'Vb', 'ra', 'rb', 'Ma', 'Mb', 'm', 'Me'],
         derivees: [
-          { id: 'na', nom: 'Quantité d’acide', expr: 'n(acide) = ρ·V / M', val: na, u: 'mol' },
-          { id: 'nb', nom: 'Quantité d’alcool', expr: 'n(alcool) = ρ·V / M', val: nb_, u: 'mol' },
-          { id: 'ne', nom: 'Quantité d’ester obtenue', expr: 'n(ester) = m / M', val: ne, u: 'mol' }],
+          { id: 'na', nom: 'Quantité d’acide', expr: 'n(acide) = frac(ρ·V|M)', val: na, u: 'mol' },
+          { id: 'nb', nom: 'Quantité d’alcool', expr: 'n(alcool) = frac(ρ·V|M)', val: nb_, u: 'mol' },
+          { id: 'ne', nom: 'Quantité d’ester obtenue', expr: 'n(ester) = frac(m|M)', val: ne, u: 'mol' }],
         raisons: { t: rT },
         cherche: { bonne: 'Le rendement de la synthèse (en %)', faux: ['La quantité d’ester obtenue (en mol)', 'La masse maximale d’ester (en g)', 'La constante d’équilibre K de la réaction'] },
-        manque: null, solution: { txt: 'η = n(ester obtenu) / n(réactif limitant)', val: ne / nlim * 100, u: '%' } };
+        manque: null, solution: { txt: 'η = frac(n(ester obtenu)|n(réactif limitant))', val: ne / nlim * 100, u: '%' } };
     },
   },
   // ───────────────────────────── pH et concentration en ions oxonium (TG)
@@ -4073,16 +4073,16 @@ export const ENONCES = [
       const raisons = { duree: 'La durée d’agitation n’intervient pas dans le calcul du facteur de dilution ni du pH.', prix: 'Le prix du matériel n’intervient pas dans le calcul.' };
       if (q === 0) {
         tokens.pH0 = tok(nb(p.pH0, 2), 'pH de la solution avant dilution', p.pH0, '');
-        return { tokens, derivees: [{ id: 'F', nom: 'Facteur de dilution F', expr: 'F = V₂ / V₁', val: F, u: '' }], texte: [...debut, 'Avant la dilution, le pH de la solution vaut ', T('pH0'), '. Quel est le pH de la solution diluée ?'],
+        return { tokens, derivees: [{ id: 'F', nom: 'Facteur de dilution F', expr: 'F = frac(V₂|V₁)', val: F, u: '' }], texte: [...debut, 'Avant la dilution, le pH de la solution vaut ', T('pH0'), '. Quel est le pH de la solution diluée ?'],
           utiles: ['pH0', 'V1', 'V2'], raisons,
           cherche: { bonne: 'Le pH de la solution diluée', faux: ['Le facteur de dilution F', 'La concentration en ions oxonium avant dilution (en mol/L)', 'Le volume d’eau ajouté (en mL)'] },
-          manque: null, solution: { txt: 'pH final = pH initial + log F, avec F = V₂ / V₁', val: p.pH0 + Math.log10(F), u: '' } };
+          manque: null, solution: { txt: 'pH final = pH initial + log F, avec F = frac(V₂|V₁)', val: p.pH0 + Math.log10(F), u: '' } };
       }
       tokens.pH0 = tok(nb(p.pH0, 2), 'pH de la solution avant dilution', p.pH0, '');
       return { tokens, derivees: [], texte: [...debut, 'Le pH de la solution avant dilution vaut ', T('pH0'), '. Quel est le facteur de dilution ?'],
         utiles: ['V1', 'V2'], raisons: { ...raisons, pH0: 'Le facteur de dilution ne dépend que des volumes prélevé et final, pas du pH.' },
         cherche: { bonne: 'Le facteur de dilution F (sans unité)', faux: ['Le pH de la solution diluée', 'La concentration finale en ions oxonium (en mol/L)', 'Le volume d’eau ajouté (en mL)'] },
-        manque: null, solution: { txt: 'F = V₂ / V₁', val: F, u: '' } };
+        manque: null, solution: { txt: 'F = frac(V₂|V₁)', val: F, u: '' } };
     },
   },
   // ───────────────────────────── Plans d'expériences (BTS) : plan de mélange, rouge à lèvres
@@ -4106,17 +4106,17 @@ export const ENONCES = [
         texte: [...debut, 'On veut décrire la composition par les fractions massiques. Quelle est la fraction de cire d’abeille ?'],
         utiles: ['mA', 'mB', 'mC'],
         raisons: { T: 'La température de coulée ne change pas la composition du mélange.' },
-        cherche: { bonne: 'La fraction massique x_C de cire d’abeille (sans unité)', faux: ['La masse totale des corps gras (en g)', 'Le rapport m_C / m_B (sans unité)', 'La masse de cire d’abeille à ajouter (en g)'] },
-        manque: null, solution: { txt: 'x_C = m_C / (m_A + m_B + m_C)', val: xC, u: '' } };
+        cherche: { bonne: 'La fraction massique x_C de cire d’abeille (sans unité)', faux: ['La masse totale des corps gras (en g)', 'Le rapport frac(m_C|m_B) (sans unité)', 'La masse de cire d’abeille à ajouter (en g)'] },
+        manque: null, solution: { txt: 'x_C = frac(m_C|m_A + m_B + m_C)', val: xC, u: '' } };
       tokens.yA = tok(`${p.yA}`, 'Note du jury pour A pur (sur 10)', p.yA, '');
       tokens.yB = tok(`${p.yB}`, 'Note du jury pour B pur (sur 10)', p.yB, '');
       tokens.yAB = tok(`${p.yAB}`, 'Note du jury pour le mélange à parts égales de A et B (sur 10)', p.yAB, '');
-      return { tokens, derivees: [{ id: 'moy', nom: 'Moyenne des notes de A et B purs', expr: '(y_A + y_B) / 2', val: (p.yA + p.yB) / 2, u: '' }],
+      return { tokens, derivees: [{ id: 'moy', nom: 'Moyenne des notes de A et B purs', expr: 'frac(y_A + y_B|2)', val: (p.yA + p.yB) / 2, u: '' }],
         texte: ['Le jury note les mélanges sur 10. La cire de candelilla seule (A) obtient ', T('yA'), ', l’huile de ricin seule (B) obtient ', T('yB'), ', et le mélange à parts égales de A et B obtient ', T('yAB'), '. La formule de référence utilise ', T('mA'), ' de A, ', T('mB'), ' de B et ', T('mC'), ' de C, coulés à ', T('T'), '. On cherche l’écart au milieu pour savoir si A et B interagissent.'],
         utiles: ['yA', 'yB', 'yAB'],
         raisons: { mA: 'Les masses de la formule de référence donnent sa composition ; l’écart au milieu n’utilise que les trois notes.', mB: 'Les masses de la formule de référence donnent sa composition ; l’écart au milieu n’utilise que les trois notes.', mC: 'Les masses de la formule de référence donnent sa composition ; l’écart au milieu n’utilise que les trois notes.', T: 'La température de coulée est la même pour tous les essais : elle n’intervient pas.' },
         cherche: { bonne: 'L’écart au milieu : note du mélange moins moyenne des notes des deux corps purs (en points)', faux: ['La moyenne des trois notes (en points)', 'La somme des notes de A et de B (en points)', 'Le rapport de la note du mélange à celle de A (sans unité)'] },
-        manque: null, solution: { txt: 'écart = y_AB − (y_A + y_B) / 2', val: ecart, u: '' } };
+        manque: null, solution: { txt: 'écart = y_AB − frac(y_A + y_B|2)', val: ecart, u: '' } };
     },
   },
   // ───────────────────────────── Plans d'expériences (BTS) : plan factoriel 2^k, flan au chocolat
@@ -4147,7 +4147,7 @@ export const ENONCES = [
         utiles: ['mp', 'mm'],
         raisons: { k: 'Le nombre de facteurs ne sert pas : le coefficient se calcule à partir des deux moyennes.', niv: 'Le nombre de niveaux (2) est déjà pris en compte dans le codage −1 / +1.', duree: 'La durée de cuisson est identique pour tous les essais.' },
         cherche: { bonne: 'Le coefficient du facteur : demi-écart entre les deux moyennes', faux: ['L’effet total du facteur : écart entre les deux moyennes', 'La moyenne générale de tous les essais', 'Le nombre d’essais du plan'] },
-        manque: null, solution: { txt: 'a = (Moy⁺ − Moy⁻) / 2', val: a, u: '' } };
+        manque: null, solution: { txt: 'a = frac(Moy⁺ − Moy⁻|2)', val: a, u: '' } };
     },
   },
   // ───────────────────────────── Géométrie, électronégativité et polarité (1G)
@@ -4227,7 +4227,7 @@ export const ENONCES = [
       };
       const raisons = { xb: 'La durée moyenne sert à écrire le résultat, pas à calculer l’incertitude-type.', h: 'La hauteur de chute ne change pas la façon d’évaluer l’incertitude-type.', th: 'La température de la salle n’intervient pas dans l’évaluation de l’incertitude-type.' };
       const debut = ['Un élève laisse tomber une bille d’une hauteur de ', T('h'), ' dans une salle à ', T('th'), '. Il chronomètre la chute à la main en faisant ', T('N'), ' dans les mêmes conditions : la durée moyenne est ', T('xb'), ' et l’écart-type expérimental de la série est ', T('s'), '. '];
-      if (q === 0) return { tokens, derivees: ['√N : racine carrée du nombre de mesures'],
+      if (q === 0) return { tokens, derivees: ['sqrt(N) : racine carrée du nombre de mesures'],
         texte: [...debut, 'Quelle est l’incertitude-type de type A sur la durée moyenne ?'],
         utiles: ['s', 'N'], raisons: { ...raisons, a: 'Cette donnée sert à une évaluation de type B ; ici on dispose d’une série de mesures.' },
         cherche: { bonne: 'L’incertitude-type u de la moyenne, de type A (en s)', faux: ['La vitesse moyenne de la bille (en m/s)', 'L’incertitude de type B d’une mesure unique (en s)', 'La durée moyenne de chute (en s)'] },
@@ -4236,7 +4236,7 @@ export const ENONCES = [
         texte: ['Un autre élève ne chronomètre qu’une seule fois la chute d’une bille. La notice de son chronomètre, avec le temps de réaction de l’opérateur, indique une demi-largeur d’intervalle ', T('a'), '. La salle est à ', T('th'), ' ; l’élève a laissé tomber la bille de ', T('h'), '. Un premier élève, lui, avait obtenu avec 25 mesures un écart-type de ', T('s'), '. Quelle est l’incertitude-type de type B de la mesure unique ?'],
         utiles: ['a'], raisons: { ...raisons, s: 'Cet écart-type vient d’une autre série : il ne sert pas pour une mesure unique évaluée par les caractéristiques de l’instrument.' },
         cherche: { bonne: 'L’incertitude-type de type B de la mesure unique (en s)', faux: ['L’incertitude-type de type A de la moyenne (en s)', 'La hauteur de chute (en m)', 'La durée moyenne de chute (en s)'] },
-        manque: null, solution: { txt: 'u = a / √3 (loi uniforme sur ± a)', val: p.a / Math.sqrt(3), u: 's' } };
+        manque: null, solution: { txt: 'u = frac(a|sqrt(3)) (loi uniforme sur ± a)', val: p.a / Math.sqrt(3), u: 's' } };
     }),
   },
   {
@@ -4254,7 +4254,7 @@ export const ENONCES = [
         texte: ['Un élève lit une seule fois le volume d’eau dans une éprouvette graduée : le niveau est à ', T('V'), '. Deux graduations successives sont séparées de ', T('grad'), ' ; on admet que la valeur vraie est située dans l’intervalle d’une demi-graduation de part et d’autre de la lecture, avec la même probabilité en tout point (loi uniforme). La salle est à ', T('th'), ' et l’eau avait été pesée : ', T('M'), '. Quelle est l’incertitude-type de type B de cette lecture ?'],
         utiles: ['grad'], raisons: { V: 'Le volume lu donne la valeur mesurée, pas son incertitude-type.', th: 'La température de la salle n’intervient pas dans cette évaluation de type B.', M: 'La masse d’eau ne sert pas à évaluer l’incertitude-type de la lecture.' },
         cherche: { bonne: 'L’incertitude-type de type B de la lecture (en mL)', faux: ['L’incertitude-type de type A d’une série (en mL)', 'La masse volumique de l’eau (en g/mL)', 'Le volume lu (en mL)'] },
-        manque: null, solution: { txt: 'u = a / √3 avec a = graduation / 2', val: a / Math.sqrt(3), u: 'mL' } };
+        manque: null, solution: { txt: 'u = frac(a|sqrt(3)) avec a = graduation / 2', val: a / Math.sqrt(3), u: 'mL' } };
     }),
   },
   // ───────────────────────────── Couleurs (1G) : radiations renvoyées ou absorbées par un objet
@@ -4487,7 +4487,7 @@ export const ENONCES = [
         texte: ['Une piscine d’eau douce, de masse volumique ', T('rho'), ', contient un volume ', T('V'), ' d’eau à ', T('th'), ' ; la surface de l’eau mesure ', T('S'), '. Un manomètre posé sous la surface indique la pression absolue ', T('P'), '. À la surface, la pression est ', T('Patm'), ' et l’intensité de la pesanteur vaut ', T('g'), '. À quelle profondeur se trouve-t-il ?'],
         utiles: ['rho', 'g', 'P', 'Patm'], raisons,
         cherche: { bonne: 'La profondeur h du manomètre (en m)', faux: ['La pression relative en surface (en hPa)', 'Le volume d’eau situé au-dessus du manomètre (en m³)', 'La masse volumique de l’eau (en kg·m⁻³)'] },
-        manque: null, solution: { txt: 'h = (P − P_atm) / (ρ·g)', val: (p.P - p.Patm) * 100 / (1000 * 9.81), u: 'm' } };
+        manque: null, solution: { txt: 'h = frac(P − P_atm|ρ·g)', val: (p.P - p.Patm) * 100 / (1000 * 9.81), u: 'm' } };
     }),
   },
   // ───────────────────────────── Satellites et lois de Kepler (TG, sim 177) : période et vitesse d'un satellite en orbite circulaire
@@ -5166,8 +5166,8 @@ export const ENONCES = [
       if (q === 0) return { tokens, derivees: [], texte: [...debut, 'Quelle est l’incertitude-type u de la moyenne ?'],
         utiles: ['s', 'n'], raisons,
         cherche: { bonne: 'L’incertitude-type u de la moyenne (dans l’unité de la mesure)', faux: ['L’écart entre la moyenne et la valeur de référence', 'Le nombre de mesures à ajouter', 'Le prix d’une mesure (en €)'] },
-        manque: null, solution: { txt: 'u = frac(s|√n)', val: u, u: un } };
-      return { tokens, derivees: [{ id: 'u', nom: 'Incertitude-type actuelle', expr: 'u = frac(s|√n)', val: u, u: un }], texte: [...debut, 'Combien de mesures faudrait-il faire en tout pour que u soit deux fois plus petite, avec le même instrument et le même protocole ?'],
+        manque: null, solution: { txt: 'u = frac(s|sqrt(n))', val: u, u: un } };
+      return { tokens, derivees: [{ id: 'u', nom: 'Incertitude-type actuelle', expr: 'u = frac(s|sqrt(n))', val: u, u: un }], texte: [...debut, 'Combien de mesures faudrait-il faire en tout pour que u soit deux fois plus petite, avec le même instrument et le même protocole ?'],
         utiles: ['n'], raisons: { ...raisons, s: 'Déjà utilisé pour calculer u : pour la diviser par 2, il suffit de savoir que cela demande 4 fois plus de mesures.' },
         cherche: { bonne: 'Le nombre total de mesures à faire (sans unité)', faux: ['Le nombre de mesures à ajouter à la série', 'La nouvelle incertitude-type (dans l’unité de la mesure)', 'Le temps nécessaire pour refaire l’expérience (en min)'] },
         manque: null, solution: { txt: 'diviser u par 2 demande 4 fois plus de mesures : n × 4', val: 4 * p.n, u: 'mesures' } };
@@ -5739,13 +5739,13 @@ export const ENONCES = [
         return { tokens, derivees: [], texte: ['Un récipient rigide de ', T('V'), ' et de masse ', T('mR'), ' à vide contient ', T('n'), ' de ', p.g.nom, ' (masse molaire ', T('M'), ') à ', T('th'), '. Quelle est la pression du gaz ?'], utiles: ['n', 'V', 'th'],
           raisons: { M: 'La masse molaire sert à passer de la quantité de matière à la masse : elle n’intervient pas dans P × V = n × R × T.', mR: 'La masse du récipient vide ne dit rien sur le gaz qu’il contient : elle n’intervient pas dans le calcul de la pression.' },
           cherche: { bonne: 'La pression P du gaz piégé (en bar)', faux: ['La masse volumique du gaz (en kg·m⁻³)', 'La masse de gaz (en g)', 'Le volume molaire du gaz (en L·mol⁻¹)'] },
-          manque: null, solution: { txt: 'P = n × R × T divisé par V, en unités SI, puis converti en bar', val: p.n * 8.314 * (p.th + 273.15) / (p.V * 1e-3) / 1e5, u: 'bar' } };
+          manque: null, solution: { txt: 'P = frac(n × R × T|V), en unités SI, puis converti en bar', val: p.n * 8.314 * (p.th + 273.15) / (p.V * 1e-3) / 1e5, u: 'bar' } };
       }
       const tokens = { P: tok(`${nb(p.P, 1)} bar`, 'Pression du gaz', p.P, 'bar'), th: THtok, M: Mtok, V: tok(`${p.V} L`, 'Volume du récipient', p.V, 'L'), prix: tok(`${p.prix} €`, 'Prix de la recharge de gaz', p.prix, '€') };
       return { tokens, derivees: [], texte: ['Une recharge de ', p.g.nom, ' (masse molaire ', T('M'), ') coûte ', T('prix'), '. Le gaz, à ', T('th'), ' sous ', T('P'), ', occupe un récipient de ', T('V'), '. Quelle est la masse volumique du gaz ?'], utiles: ['P', 'th', 'M'],
-        raisons: { V: 'La masse volumique d’un gaz parfait, ρ = P × M divisé par R × T, ne dépend pas de la taille du récipient.', prix: 'Le prix de la recharge n’a aucun rapport avec les propriétés physiques du gaz.' },
+        raisons: { V: 'La masse volumique d’un gaz parfait, ρ = frac(P × M|R) × T, ne dépend pas de la taille du récipient.', prix: 'Le prix de la recharge n’a aucun rapport avec les propriétés physiques du gaz.' },
         cherche: { bonne: 'La masse volumique ρ du gaz (en kg·m⁻³)', faux: ['La quantité de matière de gaz (en mol)', 'La masse de gaz contenue dans le récipient (en g)', 'Le volume molaire du gaz (en L·mol⁻¹)'] },
-        manque: null, solution: { txt: 'ρ = P × M divisé par R × T, avec P en Pa, M en kg·mol⁻¹, T en K', val: p.P * 1e5 * p.g.M * 1e-3 / (8.314 * (p.th + 273.15)), u: 'kg·m⁻³' } };
+        manque: null, solution: { txt: 'ρ = frac(P × M|R) × T, avec P en Pa, M en kg·mol⁻¹, T en K', val: p.P * 1e5 * p.g.M * 1e-3 / (8.314 * (p.th + 273.15)), u: 'kg·m⁻³' } };
     },
   },
   // ───────────────────────────── Premier principe (TG, sim 216) : variation d'énergie interne, température finale
@@ -5762,7 +5762,7 @@ export const ENONCES = [
       return { tokens, derivees: [], texte: [...debut, 'Quelle est la température finale du liquide ? (pas de changement d’état)'], utiles: ['m', 'c', 'th', 'Q', 'W'],
         raisons: { d: 'La durée ne sert pas : les énergies Q et W reçues sont données directement.' },
         cherche: { bonne: 'La température finale du liquide (en °C)', faux: ['La variation de température ΔT du liquide (en K)', 'La variation d’énergie interne ΔU du liquide (en kJ)', 'La capacité thermique C du liquide (en J·K⁻¹)'] },
-        manque: null, solution: { txt: 'θ_f = θ_i + (W + Q) divisé par (m × c), énergies en J', val: p.th + (p.W + p.Q) * 1000 / (p.m * p.g.c), u: '°C' } };
+        manque: null, solution: { txt: 'θ_f = θ_i + frac(W + Q|m × c), énergies en J', val: p.th + (p.W + p.Q) * 1000 / (p.m * p.g.c), u: '°C' } };
     },
   },
   {
@@ -5902,13 +5902,13 @@ export const ENONCES = [
         U2: tok(`${nb(p.U2, 2)} V`, 'Tension aux bornes de la pile, second point', p.U2, 'V'),
         C: tok(`${nb(p.C)} mAh`, 'Capacité de la pile', p.C, 'mAh'),
       };
-      const rI = { id: 'r', nom: 'Résistance interne r de la pile', expr: 'r = (U₁ − U₂) / (I₂ − I₁)', val: p.r, u: 'Ω' };
+      const rI = { id: 'r', nom: 'Résistance interne r de la pile', expr: 'r = frac(U₁ − U₂|I₂ − I₁)', val: p.r, u: 'Ω' };
       const raisons = { C: 'La capacité de la pile (charge stockée) ne sert pas à déterminer sa force électromotrice ni sa résistance interne.' };
       const debut = ['Une pile réelle est modélisée par U = E − r × I. Quand elle débite ', T('I1'), ', la tension à ses bornes vaut ', T('U1'), ' ; quand elle débite ', T('I2'), ', elle vaut ', T('U2'), '. La pile a une capacité de ', T('C'), '. '];
       if (q === 0) return { tokens, derivees: [{ id: 'dU', nom: 'Écart de tension U₁ − U₂', expr: 'ΔU = U₁ − U₂', val: p.U1 - p.U2, u: 'V' }, { id: 'dI', nom: 'Écart d’intensité I₂ − I₁', expr: 'ΔI = I₂ − I₁', val: (p.I2 - p.I1) / 1000, u: 'A' }],
         texte: [...debut, 'Quelle est la résistance interne r de la pile ?'], utiles: ['I1', 'U1', 'I2', 'U2'], raisons,
         cherche: { bonne: 'La résistance interne r de la pile (en Ω)', faux: ['La force électromotrice E de la pile (en V)', 'La puissance fournie par la pile (en W)', 'La durée de fonctionnement de la pile (en h)'] },
-        manque: null, solution: { txt: 'r = (U₁ − U₂) / (I₂ − I₁)', val: p.r, u: 'Ω' } };
+        manque: null, solution: { txt: 'r = frac(U₁ − U₂|I₂ − I₁)', val: p.r, u: 'Ω' } };
       return { tokens, derivees: [rI],
         texte: [...debut, 'Quelle est la force électromotrice E de la pile ?'], utiles: ['I1', 'U1', 'I2', 'U2'], raisons,
         cherche: { bonne: 'La force électromotrice E de la pile (en V)', faux: ['La résistance interne r de la pile (en Ω)', 'La tension de la pile pour I = 1 A (en V)', 'La charge stockée dans la pile (en C)'] },

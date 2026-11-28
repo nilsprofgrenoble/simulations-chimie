@@ -32,7 +32,7 @@ export const KSQ_ANA = [
     ] },
   { id: 'ksq-ana-comparer', domaine: DOM, titre: 'Comparer deux sels de même formule',
     enonce: 'Les sels SrCO₃ (Ks = 7×10⁻¹⁰) et CuI (Ks = 1,27×10⁻¹²) ont la même forme de formule : un cation et un anion de coefficients 1, SrCO₃(s) ⇌ Sr²⁺ + CO₃²⁻ et CuI(s) ⇌ Cu⁺ + I⁻.', q: 'Quel est le plus soluble dans l’eau ?', options: [
-      V('SrCO₃ : même forme d’équation et Ks plus grand', 'Pour une même forme d’équation, s = √Ks : la solubilité et Ks varient dans le même sens.'),
+      V('SrCO₃ : même forme d’équation et Ks plus grand', 'Pour une même forme d’équation, s = sqrt(K)s : la solubilité et Ks varient dans le même sens.'),
       F('CuI : son Ks est le plus petit', 'Un Ks plus petit correspond à une solubilité plus petite, pas plus grande.'),
       F('ils sont aussi solubles : ils contiennent chacun un cation et un anion', 'Leurs Ks diffèrent de plus de deux ordres de grandeur : les solubilités diffèrent.'),
       F('on ne peut pas savoir : il faut connaître leurs masses molaires', 'La masse molaire sert à passer de mol/L à g/L, pas à comparer des solubilités en mol/L.'),
@@ -43,7 +43,7 @@ export const KSQ_VAL = [
   P({ id: 'ksq-val-comparer', domaine: DOM, niveau: 2, titre: 'Ks et solubilité de deux sels', plausible: false,
     enonce: 'Un élève compare Ag₂CO₃ (Ks = 8,1×10⁻¹²) et SrCO₃ (Ks = 7×10⁻¹⁰) : « Le Ks de Ag₂CO₃ est plus petit que celui de SrCO₃, donc Ag₂CO₃ est moins soluble que SrCO₃. »',
     reperes: [['Ks de Ag₂CO₃', '8,1×10⁻¹²'], ['Ks de SrCO₃', '7×10⁻¹⁰']],
-    ver: 'Les formules diffèrent (Ag₂CO₃ : Ks = 4 s³ ; SrCO₃ : Ks = s²). s(Ag₂CO₃) = ∛(8,1×10⁻¹² ÷ 4) ≈ 1,3×10⁻⁴ mol/L, s(SrCO₃) = √(7×10⁻¹⁰) ≈ 2,6×10⁻⁵ mol/L : Ag₂CO₃ est environ cinq fois plus soluble.',
+    ver: 'Les formules diffèrent (Ag₂CO₃ : Ks = 4 s³ ; SrCO₃ : Ks = s²). s(Ag₂CO₃) = ∛(8,1×10⁻¹² ÷ 4) ≈ 1,3×10⁻⁴ mol/L, s(SrCO₃) = sqrt(7×10⁻¹⁰) ≈ 2,6×10⁻⁵ mol/L : Ag₂CO₃ est environ cinq fois plus soluble.',
     q2: 'Quelle est l’erreur de l’élève ?',
     options: [
       V('il compare des Ks de formules différentes : il faut comparer les s', 'Avec des stœchiométries différentes, Ks et s ne se classent pas dans le même ordre.'),
@@ -104,7 +104,7 @@ export const KSQ_SAPP = [
       if (q === 0) return { tokens, derivees: [`s : Ks = ${s.a === 1 && s.b === 1 ? 's²' : '4 s³'}`], texte: [...debut, 'Quelle est la solubilité s de ce sel, en mol/L ?'], utiles: ['eq', 'Ks'],
         raisons: { M: 'La masse molaire sert seulement à passer de mol/L à g/L.', th: 'La température est celle de la table de Ks : elle ne sert pas dans le calcul.' },
         cherche: { bonne: 'La solubilité s (en mol/L)', faux: ['La solubilité en g/L', 'La concentration saturée de l’ion le plus concentré (en mol/L)', 'Le quotient de réaction Qr'] },
-        manque: null, solution: { txt: s.a === 1 && s.b === 1 ? 's = √Ks' : 's = ∛(Ks ÷ 4)', val: so, u: 'mol/L' } };
+        manque: null, solution: { txt: s.a === 1 && s.b === 1 ? 's = sqrt(K)s' : 's = ∛(Ks ÷ 4)', val: so, u: 'mol/L' } };
       return { tokens, derivees: [`s (mol/L) : Ks = ${s.a === 1 && s.b === 1 ? 's²' : '4 s³'}`, 's (g/L) = s (mol/L) × M'], texte: [...debut, 'La masse molaire du sel est ', T('M'), '. Quelle est la solubilité s de ce sel, en g/L ?'], utiles: ['eq', 'Ks', 'M'],
         raisons: { th: 'La température est celle de la table de Ks : elle ne sert pas dans le calcul.' },
         cherche: { bonne: 'La solubilité en g/L', faux: ['La solubilité en mol/L', 'La masse de sel pour 100 mL de solution (en g)', 'La concentration massique de l’ion cation (en g/L)'] },

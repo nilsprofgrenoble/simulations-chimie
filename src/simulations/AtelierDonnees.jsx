@@ -173,7 +173,7 @@ export function ExerciceDonnees({ id, q, entete, navigation }) {
               style={{ ...styleBouton(rep.cherche === o, '#0ea5e9'), textAlign: 'left', padding: '6px 10px' }}>{avecIndices(o)}</button>
           ))}
         </div>
-        {chk.cherche && <Verdict ok={okEtape.cherche}>{okEtape.cherche ? 'Oui, c’est bien la grandeur cherchée.' : messageCherche(rep.cherche, ex.b.cherche.bonne)}</Verdict>}
+        {chk.cherche && <Verdict ok={okEtape.cherche}>{okEtape.cherche ? 'Oui, c’est bien la grandeur cherchée.' : avecIndices(messageCherche(rep.cherche, ex.b.cherche.bonne))}</Verdict>}
         {vu.cherche && <Correction>Réponse : {avecIndices(ex.b.cherche.bonne)}</Correction>}
         {barre('cherche', stages.indexOf('cherche'))}
       </div>),
