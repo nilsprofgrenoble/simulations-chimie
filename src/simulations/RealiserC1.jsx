@@ -2,6 +2,10 @@ import { useRef } from "react";
 import { Visuel } from "./SchemasC1";
 import { KIT, stylePetitBouton } from "../commun";
 
+// Nom de grandeur dans un texte SVG : « R_p » s'écrit avec un vrai indice (tspan abaissé).
+const nomSvg = (s) => { const m = /^(.*?)_(.+)$/.exec(String(s)); return m ? <>{m[1]}<tspan dy="3" fontSize="9">{m[2]}</tspan><tspan dy="-3"></tspan></> : s; };
+
+
 // ====================================================
 //  Exercices « Réaliser » du chapitre « Transmission de signaux numériques » (capteur, conditionneur, CAN) :
 //    • R1 — tracer une courbe à partir d'un tableau de valeurs (composant TraceCourbe)
@@ -108,8 +112,8 @@ export function TraceCourbe({ q, val, onChange, resultat, solution }) {
               {k % 2 === 0 && <text x={L + k * W / 10} y={T + H + 15} fontSize="11" textAnchor="middle" fill="#334155">{grad(k * sx)}</text>}
               {k % 2 === 0 && <text x={L - 6} y={T + H - k * H / 10 + 4} fontSize="11" textAnchor="end" fill="#334155">{grad(k * sy)}</text>}
             </g>)}
-            <text x={L + W / 2} y={VH - 6} fontSize="12" textAnchor="middle" fill="#0f172a" fontWeight="700">{q.xnom} ({q.xunite})</text>
-            <text x={12} y={T + H / 2} fontSize="12" textAnchor="middle" fill="#0f172a" fontWeight="700" transform={`rotate(-90 12 ${T + H / 2})`}>{q.ynom} ({q.yunite})</text>
+            <text x={L + W / 2} y={VH - 6} fontSize="12" textAnchor="middle" fill="#0f172a" fontWeight="700">{nomSvg(q.xnom)} ({q.xunite})</text>
+            <text x={12} y={T + H / 2} fontSize="12" textAnchor="middle" fill="#0f172a" fontWeight="700" transform={`rotate(-90 12 ${T + H / 2})`}>{nomSvg(q.ynom)} ({q.yunite})</text>
             {complet && <path d={cheminLisse(pts.map(([x, y]) => [px(x), py(y)]))} fill="none" stroke={solution ? '#15803d' : '#2563eb'} strokeWidth="2" opacity="0.85"/>}
             {pts.map(([x, y], i) => <g key={i}>
               <circle cx={px(x)} cy={py(y)} r="5.5" fill={solution ? '#15803d' : mal.includes(i + 1) ? '#dc2626' : '#2563eb'} stroke="white" strokeWidth="1.5"/>
