@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, lireNombre, IndiceDefi, indicesProfond } from "../commun";
+  BoutonsModes, lireNombre, IndiceDefi, indicesProfond , Frac } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./ksqModele";
@@ -62,7 +62,7 @@ function SceneGuide({ sc, aria }) {
       <ScenePrecipitation sel={sc.sel} lc1={sc.lc1} lc2={sc.lc2} f={f} ph={ph} etroit={etroit} svgRef={svgRef} aria={aria} solo={!!sc.solo}/>
       {sc.verser && <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8, flexWrap: 'wrap' }}>
         <button type="button" onClick={L.joue ? () => L.setJoue(false) : L.demarrer} style={{ ...styleBouton(true, BLEU), minHeight: 44 }}>{L.joue ? '⏸ Pause' : L.fin ? '↻ Rejouer' : '▶ Verser'}</button>
-        <span style={{ fontSize: 13.5, color: KIT.txt2, flex: '1 1 200px', lineHeight: 1.45 }}>On verse les deux solutions l’une sur l’autre : suivez les ions et la jauge Qr ÷ Ks.</span>
+        <span style={{ fontSize: 13.5, color: KIT.txt2, flex: '1 1 200px', lineHeight: 1.45 }}>On verse les deux solutions l’une sur l’autre : suivez les ions et la jauge <Frac haut={<>Qr</>} bas={<>Ks</>} />.</span>
       </div>}
     </div>);
 }
@@ -93,7 +93,7 @@ export function SimulationKsq() {
         indice: 'Vérifiez deux choses : le nombre d’atomes de chaque élément, puis la charge totale (elle doit rester nulle).' } },
     { id: 'ks', titre: 'La constante Ks',
       texte: <>À l’équilibre, le produit des concentrations des ions dissous, chacune élevée à la puissance de son coefficient dans l’équation, est une constante (à une température donnée) : le <strong>produit de solubilité Ks</strong>, sans unité. Le solide n’apparaît pas dans l’expression. Par exemple, pour la dissolution CaF₂(s) ⇌ Ca²⁺ + 2 F⁻ :</>,
-      tache: { type: 'qcm', q: 'Quelle est l’expression de Ks pour CaF₂ ?', options: ['Ks = [Ca²⁺] × [F⁻]', 'Ks = [Ca²⁺] × [F⁻]² ÷ [CaF₂]', 'Ks = [Ca²⁺] × 2 [F⁻]', 'Ks = [Ca²⁺] × [F⁻]²'], bonne: 3,
+      tache: { type: 'qcm', q: 'Quelle est l’expression de Ks pour CaF₂ ?', options: ['Ks = [Ca²⁺] × [F⁻]', 'Ks = frac([Ca²⁺] × [F⁻]²|[CaF₂])', 'Ks = [Ca²⁺] × 2 [F⁻]', 'Ks = [Ca²⁺] × [F⁻]²'], bonne: 3,
         expl: 'Chaque concentration est élevée à la puissance du coefficient de l’ion : 1 pour Ca²⁺ (non écrit) et 2 pour F⁻. Le solide n’intervient pas. Les crochets [ ] désignent la concentration en mol/L.',
         indice: 'Le coefficient stœchiométrique d’un ion devient son exposant. Le solide est absent de l’expression.' } },
     { id: 'valeurKs', titre: 'Calculer Ks à partir de concentrations',
@@ -114,16 +114,16 @@ export function SimulationKsq() {
         pieges: [[1e-6, 'Vous avez oublié l’exposant 2 de [F⁻] : Qr = [Ca²⁺] × [F⁻]².'], [2e-6, 'Le coefficient 2 est un exposant, pas un facteur multiplicatif.'], [1e-3 * 3e-3, 'Élevez [F⁻] au carré avant de multiplier.']],
         expl: `Qr = [Ca²⁺] × [F⁻]² = 1,0×10⁻³ × (1,0×10⁻³)² = ${sci1(QR_A)}.`, indice: 'Même expression que Ks : [Ca²⁺] × [F⁻]². Calculez (1,0×10⁻³)² d’abord.' } },
     { id: 'comparer', titre: 'Comparer Qr à Ks',
-      texte: <>On compare Qr à la constante Ks : ici Ks(CaF₂) = 4,0×10⁻¹¹ et Qr = {sci1(QR_A)}. Cliquez sur <strong>« Verser »</strong> : on mélange deux solutions d’ions pour obtenir ces concentrations (chaque ion est dilué par le mélange). Regardez les ions, le solide et la jauge Qr ÷ Ks.</>,
+      texte: <>On compare Qr à la constante Ks : ici Ks(CaF₂) = 4,0×10⁻¹¹ et Qr = {sci1(QR_A)}. Cliquez sur <strong>« Verser »</strong> : on mélange deux solutions d’ions pour obtenir ces concentrations (chaque ion est dilué par le mélange). Regardez les ions, le solide et la jauge <Frac haut={<>Qr</>} bas={<>Ks</>} />.</>,
       tache: { type: 'qcm', q: 'Que se passe-t-il quand on réalise ce mélange ?', options: ['rien : Qr n’est pas égal à Ks, donc le mélange reste limpide', 'un précipité se forme jusqu’à ce que Qr soit égal à Ks', 'un précipité se forme car Qr est inférieur à Ks', 'il n’y a pas de précipité, car Qr est supérieur à Ks'], bonne: 1,
         expl: `Qr = ${sci1(QR_A)} est plus grand que Ks = 4,0×10⁻¹¹ : la solution est « trop concentrée » en ions. Du solide se forme (précipitation), ce qui diminue les concentrations en ions, jusqu’à ce que Qr = Ks : la solution est alors saturée.`,
         indice: 'Si Qr est plus grand que Ks, il y a trop d’ions dissous : où vont-ils ?' } },
     { id: 'melange', titre: 'Mélanger deux solutions',
       texte: <>On mélange 10,0{NB}mL d’une solution d’ions Sr²⁺ à 1,0×10⁻³{NB}mol/L et 10,0{NB}mL d’une solution d’ions CO₃²⁻ à 1,0×10⁻³{NB}mol/L. Le volume total est 20,0{NB}mL : chaque ion est dilué. On a Ks(SrCO₃) = 7×10⁻¹⁰. Cliquez sur « Verser » pour observer ce mélange.</>,
       tache: { type: 'num', q: 'Calculez Qr juste après le mélange (2 chiffres significatifs).', unite: '', vrai: QR_B, tol: 0.05, affiche: v => sci1(v), cs: 2, carnet: false,
-        calcul: () => ['Dilution : [Sr²⁺] = 1,0×10⁻³ × 10,0 ÷ 20,0 = 5,0×10⁻⁴ mol/L ; de même [CO₃²⁻] = 5,0×10⁻⁴ mol/L.', `Qr = [Sr²⁺] × [CO₃²⁻] = 5,0×10⁻⁴ × 5,0×10⁻⁴ = ${sci1(QR_B)}.`],
+        calcul: () => ['Dilution : [Sr²⁺] = frac(1,0×10⁻³ × 10,0|20,0) = 5,0×10⁻⁴ mol/L ; de même [CO₃²⁻] = 5,0×10⁻⁴ mol/L.', `Qr = [Sr²⁺] × [CO₃²⁻] = 5,0×10⁻⁴ × 5,0×10⁻⁴ = ${sci1(QR_B)}.`],
         pieges: [[1e-6, 'Vous avez utilisé les concentrations des solutions de départ : après le mélange, chaque ion est dilué (volume total 20,0 mL).'], [1e-3, 'Qr est un produit de deux concentrations, pas une seule concentration.'], [2.5e-4 * 2, 'Qr est un produit, pas une somme.']],
-        expl: `Après mélange : [Sr²⁺] = [CO₃²⁻] = 5,0×10⁻⁴ mol/L ; Qr = 5,0×10⁻⁴ × 5,0×10⁻⁴ = ${sci1(QR_B)}.`, indice: 'Concentration après mélange = concentration de départ × V de la solution ÷ volume total (20,0 mL). Puis Qr = [Sr²⁺] × [CO₃²⁻].' } },
+        expl: `Après mélange : [Sr²⁺] = [CO₃²⁻] = 5,0×10⁻⁴ mol/L ; Qr = 5,0×10⁻⁴ × 5,0×10⁻⁴ = ${sci1(QR_B)}.`, indice: 'Concentration après mélange = concentration de départ × V de la solution, le tout divisé par le volume total (20,0 mL). Puis Qr = [Sr²⁺] × [CO₃²⁻].' } },
     { id: 'dilue', titre: 'Quand il n’y a pas de précipité',
       texte: <>La jauge a tranché pour SrCO₃ : Qr = {sci1(QR_B)} est bien plus grand que Ks = 7×10⁻¹⁰, il y a précipitation. Autre mélange : des ions Ag⁺ et I⁻ très dilués. Après mélange, [Ag⁺] = [I⁻] = 2,0×10⁻⁹{NB}mol/L, donc Qr = {sci1(QR_C)}. Pour AgI, Ks = 1,5×10⁻¹⁶. Cliquez sur « Verser » pour observer.</>,
       tache: { type: 'qcm', q: 'Que se passe-t-il pour ce mélange ?', options: ['un précipité se forme, car Qr est très petit', 'il n’y a pas de précipité : Qr est inférieur à Ks, la solution n’est pas saturée', 'la solution est saturée, car Qr est très proche de zéro', 'il n’y a pas de précipité, car Qr est supérieur à Ks'], bonne: 1,
@@ -143,13 +143,13 @@ export function SimulationKsq() {
     { id: 'solu2', titre: 'Un sel de formule AB₂',
       texte: <>Pour CaF₂(s) ⇌ Ca²⁺ + 2 F⁻, chaque formule dissoute donne un ion Ca²⁺ et <strong>deux</strong> ions F⁻ : [Ca²⁺] = s et [F⁻] = 2 s. Ks = [Ca²⁺] × [F⁻]² = s × (2 s)² = 4 s³. On donne Ks(CaF₂) = 4,0×10⁻¹¹.{FS_12}</>,
       tache: { type: 'num', q: 'Calculez la solubilité s de CaF₂, en mol/L (2 chiffres significatifs).', unite: 'mol/L', vrai: S_CAF2, tol: 0.05, affiche: v => sci1(v), cs: 2, carnet: false,
-        calcul: () => ['Ks = 4 s³ donc s³ = Ks ÷ 4 = 4,0×10⁻¹¹ ÷ 4 = 1,0×10⁻¹¹.', `s = ∛(1,0×10⁻¹¹) = ${sci2(S_CAF2)} mol/L, soit environ ${sci1(S_CAF2)} mol/L.`],
-        pieges: [[Math.cbrt(4e-11), 'Vous avez oublié de diviser Ks par 4 : Ks = 4 s³.'], [Math.sqrt(4e-11), 'Pour un sel AB₂, Ks = 4 s³ : il faut une racine cubique, pas carrée.'], [1e-11, 'Vous avez calculé Ks ÷ 4 sans prendre la racine cubique.']],
-        expl: `Ks = 4 s³ donc s = ∛(Ks ÷ 4) = ∛(1,0×10⁻¹¹) ≈ ${sci1(S_CAF2)} mol/L.`, indice: 'Ks = s × (2 s)² = 4 s³. Isolez s³ = Ks ÷ 4, puis prenez la racine cubique (touche ∛ ou puissance 1/3).' } },
+        calcul: () => ['Ks = 4 s³ donc s³ = frac(Ks|4) = frac(4,0×10⁻¹¹|4) = 1,0×10⁻¹¹.', `s = ∛(1,0×10⁻¹¹) = ${sci2(S_CAF2)} mol/L, soit environ ${sci1(S_CAF2)} mol/L.`],
+        pieges: [[Math.cbrt(4e-11), 'Vous avez oublié de diviser Ks par 4 : Ks = 4 s³.'], [Math.sqrt(4e-11), 'Pour un sel AB₂, Ks = 4 s³ : il faut une racine cubique, pas carrée.'], [1e-11, 'Vous avez calculé frac(Ks|4) sans prendre la racine cubique.']],
+        expl: `Ks = 4 s³ donc s = ∛(frac(Ks|4)) = ∛(1,0×10⁻¹¹) ≈ ${sci1(S_CAF2)} mol/L.`, indice: 'Ks = s × (2 s)² = 4 s³. Isolez s³ = frac(Ks|4), puis prenez la racine cubique (touche ∛ ou puissance 1/3).' } },
     { id: 'piege', titre: 'Quel sel est le plus soluble ?',
       retenirTitre: 'À retenir : solubilité s et Ks',
       retenir: <><SvgSolubiliteCarte/><ul style={ULS}>
-        <li>Sel de formule 1 : 1 (comme CuI) : <strong>s = √Ks</strong>. Sel 1 : 2 ou 2 : 1 (comme CaF₂ ou Ag₂CO₃) : <strong>s = ∛(Ks ÷ 4)</strong>.</li>
+        <li>Sel de formule 1 : 1 (comme CuI) : <strong>s = √Ks</strong>. Sel 1 : 2 ou 2 : 1 (comme CaF₂ ou Ag₂CO₃) : <strong>s = ∛(<Frac haut={<>Ks</>} bas={<>4</>} />)</strong>.</li>
         <li>On part de l’équation : chaque ion a pour concentration son coefficient × s, puis on écrit Ks.</li>
         <li>Pour passer de mol/L à g/L : <strong>multiplier par la masse molaire</strong> (g/mol).</li></ul></>,
       texte: <>On veut comparer deux sels : CaF₂ (Ks = 4,0×10⁻¹¹ ; s = {sci1(S_CAF2)}{NB}mol/L, d’après l’étape précédente) et SrCO₃ (Ks = 7×10⁻¹⁰). La solubilité de SrCO₃, sel de formule 1 : 1, vaut s = √Ks.</>,
@@ -159,9 +159,9 @@ export function SimulationKsq() {
     { id: 'gl', titre: 'De mol/L à g/L',
       texte: <>On exprime souvent une solubilité en g/L. Pour le carbonate d’argent Ag₂CO₃(s) ⇌ 2 Ag⁺ + CO₃²⁻ (Ks = 8,1×10⁻¹²), on a [Ag⁺] = 2 s et [CO₃²⁻] = s, donc Ks = (2 s)² × s = 4 s³. La masse molaire de Ag₂CO₃ est 275,8{NB}g/mol.</>,
       tache: { type: 'num', q: 'Quelle est la solubilité de Ag₂CO₃ en g/L (2 chiffres significatifs) ?', unite: 'g/L', vrai: GL_AG2, tol: 0.05, affiche: v => sci1(v), cs: 2, carnet: false,
-        calcul: () => ['Ks = 4 s³ donc s = ∛(Ks ÷ 4) = ∛(8,1×10⁻¹² ÷ 4) = ∛(2,0×10⁻¹²) ≈ ' + sci2(S_AG2) + ' mol/L.', `Solubilité en g/L = s × M = ${sci2(S_AG2)} × 275,8 = ${sci2(GL_AG2)} g/L, soit environ ${sci1(GL_AG2)} g/L.`],
+        calcul: () => ['Ks = 4 s³ donc s = ∛(frac(Ks|4)) = ∛(frac(8,1×10⁻¹²|4)) = ∛(2,0×10⁻¹²) ≈ ' + sci2(S_AG2) + ' mol/L.', `Solubilité en g/L = s × M = ${sci2(S_AG2)} × 275,8 = ${sci2(GL_AG2)} g/L, soit environ ${sci1(GL_AG2)} g/L.`],
         pieges: [[S_AG2, 'Vous avez donné s en mol/L : multipliez par la masse molaire (275,8 g/mol) pour obtenir des g/L.'], [Math.cbrt(8.1e-12) * 275.8, 'Vous avez oublié de diviser Ks par 4 : Ks = 4 s³.'], [S_AG2 / 275.8, 'Pour passer de mol/L à g/L, on multiplie par la masse molaire (on ne divise pas).']],
-        expl: `s = ∛(Ks ÷ 4) ≈ ${sci2(S_AG2)} mol/L ; en g/L : s × M ≈ ${sci2(S_AG2)} × 275,8 ≈ ${sci1(GL_AG2)} g/L.`, indice: 'Calculez d’abord s en mol/L avec Ks = 4 s³, puis multipliez par la masse molaire : g/L = mol/L × g/mol.' } },
+        expl: `s = ∛(frac(Ks|4)) ≈ ${sci2(S_AG2)} mol/L ; en g/L : s × M ≈ ${sci2(S_AG2)} × 275,8 ≈ ${sci1(GL_AG2)} g/L.`, indice: 'Calculez d’abord s en mol/L avec Ks = 4 s³, puis multipliez par la masse molaire : g/L = mol/L × g/mol.' } },
     { id: 'bilan', titre: 'Le bilan',
       retenirTitre: 'À retenir : comparer les solubilités, pas les Ks',
       retenir: <><SvgPiegeKsCarte/><ul style={ULS}>
@@ -211,7 +211,7 @@ export function SimulationKsq() {
         <div role="radiogroup" aria-label="Conclusion" style={{ display: 'flex', flexDirection: 'column', gap: 6, margin: '10px 0' }}>
           {[['oui', 'Un précipité se forme'], ['non', 'Pas de précipité (la solution n’est pas saturée)']].map(([v, l]) => <button key={v} role="radio" aria-checked={defi.verdictRep === v} onClick={() => modifie({ verdictRep: v })} style={{ ...stylePetitBouton(defi.verdictRep === v, BLEU), textAlign: 'left', padding: '8px 10px', minHeight: 44 }}>{l}</button>)}
         </div>
-        <IndiceDefi cache={false}>Concentrations après mélange : c × V ÷ (V₁ + V₂) pour chaque ion. Puis Qr avec les exposants de l’équation, et comparaison à Ks : Qr &gt; Ks, précipité ; Qr &lt; Ks, pas de précipité.</IndiceDefi>
+        <IndiceDefi cache={false}>Concentrations après mélange : <Frac haut={<>c × V</>} bas={<>V₁ + V₂</>} /> pour chaque ion. Puis Qr avec les exposants de l’équation, et comparaison à Ks : Qr &gt; Ks, précipité ; Qr &lt; Ks, pas de précipité.</IndiceDefi>
       </> : <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : quelle est la valeur de Ks de {sel.f} ?</div>
         <div style={{ ...lbl, marginBottom: 8 }}>On mesure la solubilité de {sel.nom} ({sel.f}) à 25{NB}°C : <strong>{sci1(defi.sgL)}{NB}g/L</strong>. Masse molaire : {nbf(sel.M, 1)}{NB}g/mol. Équation : {sel.f}(s) ⇌ {sel.a > 1 ? sel.a + ' ' : ''}{sel.cation} + {sel.b > 1 ? sel.b + ' ' : ''}{sel.anion}. Retrouvez Ks (écrivez par exemple 4,0×10⁻¹¹ ou 4,0e-11 ; gardez 3 chiffres significatifs dans vos calculs intermédiaires).</div>
@@ -232,10 +232,10 @@ export function SimulationKsq() {
       </div>}
       {defi.verifie && !defi.ok && defi.corr && <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1.5px solid #f59e0b', fontSize: 14, lineHeight: 1.6, color: KIT.txt }}>
         {prec ? <>
-          <div>Concentrations après mélange : [{sel.cation}] = {sci1(defi.c1)} × {defi.V1} ÷ {defi.Vt} = {sci2(defi.m.c1)}{NB}mol/L ; [{sel.anion}] = {sci1(defi.c2)} × {defi.V2} ÷ {defi.Vt} = {sci2(defi.m.c2)}{NB}mol/L.</div>
+          <div>Concentrations après mélange : [{sel.cation}] = <Frac haut={<>{sci1(defi.c1)} × {defi.V1}</>} bas={<>{defi.Vt}</>} /> = {sci2(defi.m.c1)}{NB}mol/L ; [{sel.anion}] = <Frac haut={<>{sci1(defi.c2)} × {defi.V2}</>} bas={<>{defi.Vt}</>} /> = {sci2(defi.m.c2)}{NB}mol/L.</div>
           <div>Qr = [{sel.cation}]{sel.a > 1 ? M.sup(sel.a) : ''} × [{sel.anion}]{sel.b > 1 ? M.sup(sel.b) : ''} ≈ <strong>{sci2(defi.q)}</strong> ; Ks = {sci2(defi.Ks)} : {defi.verdict === 'precipite' ? 'Qr > Ks, un précipité se forme.' : 'Qr < Ks, pas de précipité.'} (tolérance de 10 % sur Qr)</div></>
           : <>
-          <div>s = {sci1(defi.sgL)} ÷ {nbf(sel.M, 1)} = {sci2(defi.s)}{NB}mol/L ; [{sel.cation}] = {sel.a > 1 ? sel.a + ' × ' : ''}s = {sci2(sel.a * defi.s)}{NB}mol/L ; [{sel.anion}] = {sel.b > 1 ? sel.b + ' × ' : ''}s = {sci2(sel.b * defi.s)}{NB}mol/L.</div>
+          <div>s = <Frac haut={<>{sci1(defi.sgL)}</>} bas={<>{nbf(sel.M, 1)}</>} /> = {sci2(defi.s)}{NB}mol/L ; [{sel.cation}] = {sel.a > 1 ? sel.a + ' × ' : ''}s = {sci2(sel.a * defi.s)}{NB}mol/L ; [{sel.anion}] = {sel.b > 1 ? sel.b + ' × ' : ''}s = {sci2(sel.b * defi.s)}{NB}mol/L.</div>
           <div>Ks = [{sel.cation}]{sel.a > 1 ? M.sup(sel.a) : ''} × [{sel.anion}]{sel.b > 1 ? M.sup(sel.b) : ''} ≈ <strong>{sci2(defi.Ks)}</strong> (tolérance de {nbf(defi.tol * 100, 0)} % : l’arrondi de la solubilité est amplifié par les exposants).</div></>}
       </div>}
     </div>);
@@ -258,7 +258,7 @@ export function SimulationKsq() {
   const aEssayer = (
     <Section titre="À essayer (questions pour explorer)" ouvert={ouv.essayer} onBascule={() => setOuv(o => ({ ...o, essayer: !o.essayer }))}>
       {indicesProfond(<ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.6 }}>
-        <li>Pour CaF₂, baissez peu à peu les deux concentrations : à partir de quelle valeur de Qr ÷ Ks n’y a-t-il plus de précipité ?</li>
+        <li>Pour CaF₂, baissez peu à peu les deux concentrations : à partir de quelle valeur de <Frac haut={<>Qr</>} bas={<>Ks</>} /> n’y a-t-il plus de précipité ?</li>
         <li>Faites glisser une seule poignée (cation, puis anion) : lequel des deux ions a le plus d’effet sur Qr pour CaF₂ ? Pourquoi ?</li>
         <li>Choisissez Ag₂CO₃ puis CaF₂ : une même hausse de concentration d’un ion change Qr de combien de décades ? Reliez à l’exposant.</li>
         <li>Après précipitation, la jauge se place sur Qr = Ks : changez de sel, la solution saturée garde-t-elle les mêmes concentrations ?</li>
@@ -270,7 +270,7 @@ export function SimulationKsq() {
       {indicesProfond(<ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.7 }}>
         <li>Équilibre de dissolution : sel(s) ⇌ ions ; Ks = produit des concentrations des ions, chacune à la puissance de son coefficient.</li>
         <li>Qr : même expression avec les concentrations du moment ; Qr &lt; Ks : pas de précipité ; Qr = Ks : saturée ; Qr &gt; Ks : précipitation jusqu’à Qr = Ks.</li>
-        <li>Sel 1 : 1, s = √Ks ; sel 1 : 2 ou 2 : 1, s = ∛(Ks ÷ 4) ; g/L = mol/L × masse molaire.</li>
+        <li>Sel 1 : 1, s = √Ks ; sel 1 : 2 ou 2 : 1, s = ∛(<Frac haut={<>Ks</>} bas={<>4</>} />) ; g/L = mol/L × masse molaire.</li>
         <li>On compare des solubilités, pas des Ks, si les formules diffèrent. Un ion commun diminue la solubilité.</li>
       </ul>)}
     </Section>);

@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, ARetenir, LigneMesure, IndiceDefi, Curseur, indicesProfond } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, ARetenir, LigneMesure, IndiceDefi, Curseur, indicesProfond , Frac } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./irTabModele";
@@ -76,27 +76,27 @@ export function SimulationIrStl() {
   // ---------- étapes du parcours ----------
   const ETAPES = [
     { id: 'sigma', titre: 'Nombre d’onde et longueur d’onde',
-      texte: <>En spectroscopie infrarouge, on caractérise un rayonnement par son <strong>nombre d’onde</strong> σ, inverse de la longueur d’onde : <strong>σ = 1 ÷ λ</strong>, exprimé en cm⁻¹ (λ en cm). Un spectromètre balaie l’infrarouge moyen, d’environ 2,5 à 25{NB}µm. On étudie un rayonnement de longueur d’onde <strong>λ = 5,00{NB}µm</strong>.</>,
+      texte: <>En spectroscopie infrarouge, on caractérise un rayonnement par son <strong>nombre d’onde</strong> σ, inverse de la longueur d’onde : <strong>σ = <Frac haut={<>1</>} bas={<>λ</>} /></strong>, exprimé en cm⁻¹ (λ en cm). Un spectromètre balaie l’infrarouge moyen, d’environ 2,5 à 25{NB}µm. On étudie un rayonnement de longueur d’onde <strong>λ = 5,00{NB}µm</strong>.</>,
       tache: { type: 'num', q: 'Quel est le nombre d’onde σ de ce rayonnement, en cm⁻¹ ?', unite: 'cm⁻¹', vrai: 2000, tol: 0.02, affiche: v => mil(v), cs: 3, carnet: 'Nombre d’onde σ du rayonnement',
         calcul: () => ['λ = 5,00 µm = 5,00×10⁻⁴ cm (1 µm = 10⁻⁴ cm).', 'σ = frac(1|λ) = frac(1|5,00×10⁻⁴) = 2,00×10³ cm⁻¹ = 2000 cm⁻¹.'],
-        pieges: [[0.2, 'Vous avez calculé 1 ÷ λ avec λ en µm : cela donne des µm⁻¹. Convertissez λ en cm (1 µm = 10⁻⁴ cm) avant de calculer 1 ÷ λ.'], [5e-4, 'Vous avez donné λ en cm : le nombre d’onde est l’inverse de la longueur d’onde.']],
-        expl: 'σ = frac(1|λ) = frac(1|5,00×10⁻⁴ cm) = 2000 cm⁻¹.', indice: 'Convertissez d’abord λ en centimètres (1 µm = 10⁻⁴ cm), puis calculez σ = 1 ÷ λ.' } },
+        pieges: [[0.2, 'Vous avez calculé frac(1|λ) avec λ en µm : cela donne des µm⁻¹. Convertissez λ en cm (1 µm = 10⁻⁴ cm) avant de calculer frac(1|λ).'], [5e-4, 'Vous avez donné λ en cm : le nombre d’onde est l’inverse de la longueur d’onde.']],
+        expl: 'σ = frac(1|λ) = frac(1|5,00×10⁻⁴ cm) = 2000 cm⁻¹.', indice: 'Convertissez d’abord λ en centimètres (1 µm = 10⁻⁴ cm), puis calculez σ = frac(1|λ).' } },
     { id: 'energie', titre: 'Énergie d’un photon infrarouge',
-      texte: <>Un rayonnement de longueur d’onde λ est fait de photons d’énergie <strong>E = h × c ÷ λ</strong>, avec h = 6,63×10⁻³⁴{NB}J·s, c = 3,00×10⁸{NB}m/s, λ en mètres, et 1{NB}eV = 1,60×10⁻¹⁹{NB}J. Reprenez le rayonnement de longueur d’onde λ = 5,00{NB}µm (σ = 2000{NB}cm⁻¹).</>,
+      texte: <>Un rayonnement de longueur d’onde λ est fait de photons d’énergie <strong>E = <Frac haut={<>h × c</>} bas={<>λ</>} /></strong>, avec h = 6,63×10⁻³⁴{NB}J·s, c = 3,00×10⁸{NB}m/s, λ en mètres, et 1{NB}eV = 1,60×10⁻¹⁹{NB}J. Reprenez le rayonnement de longueur d’onde λ = 5,00{NB}µm (σ = 2000{NB}cm⁻¹).</>,
       tache: { type: 'num', q: 'Quelle est l’énergie E d’un photon de ce rayonnement, en eV (3 chiffres significatifs) ?', unite: 'eV', vrai: E5, tol: 0.03, affiche: v => nbf(v, 3), cs: 3, carnet: 'Énergie d’un photon IR',
         calcul: () => ['λ = 5,00 µm = 5,00×10⁻⁶ m.', `E = frac(h × c|λ) = frac(6,63×10⁻³⁴ × 3,00×10⁸|5,00×10⁻⁶) = ${sci(EJ5, 2)} J.`, `E = frac(${sci(EJ5, 2)}|1,60×10⁻¹⁹) = ${nbf(E5, 3)} eV.`],
         pieges: [[EJ5 / 1e-20, 'Vous avez donné E en 10⁻²⁰ J : divisez par 1,60×10⁻¹⁹ J pour obtenir des électronvolts.'], [E5 * 1e6, 'Vous n’avez pas converti λ en mètres : 1 µm = 10⁻⁶ m.']],
-        expl: `E = frac(h × c|λ) = ${sci(EJ5, 2)} J = ${nbf(E5, 3)} eV.`, indice: 'Convertissez λ en mètres (1 µm = 10⁻⁶ m), calculez E = h × c ÷ λ en joules, puis divisez par 1,60×10⁻¹⁹ pour les eV.' } },
+        expl: `E = frac(h × c|λ) = ${sci(EJ5, 2)} J = ${nbf(E5, 3)} eV.`, indice: 'Convertissez λ en mètres (1 µm = 10⁻⁶ m), calculez E = frac(h × c|λ) en joules, puis divisez par 1,60×10⁻¹⁹ pour les eV.' } },
     { id: 'vibration', titre: 'Une liaison qui vibre',
       retenirTitre: 'À RETENIR : LE PHOTON INFRAROUGE',
       retenir: <><SvgEnergieCarte/><ul style={ULS}>
-        <li>Nombre d’onde <strong>σ = 1 ÷ λ</strong> (cm⁻¹) ; énergie d’un photon <strong>E = h × c ÷ λ</strong>. Un photon IR est bien moins énergétique qu’un photon visible ou UV.</li>
+        <li>Nombre d’onde <strong>σ = <Frac haut={<>1</>} bas={<>λ</>} /></strong> (cm⁻¹) ; énergie d’un photon <strong>E = <Frac haut={<>h × c</>} bas={<>λ</>} /></strong>. Un photon IR est bien moins énergétique qu’un photon visible ou UV.</li>
         <li>Exemple : à λ = 5,00 µm (σ = 2000 cm⁻¹), E ≈ {nbf(E5, 2)} eV, contre environ 3 eV dans le visible bleu : le photon IR fait <strong>vibrer</strong> les liaisons, le photon UV-visible fait changer d’état les électrons.</li>
-        <li>Moyen de s’en souvenir : <strong>« grand nombre d’onde, grande énergie »</strong>. Idée fausse : « une grande longueur d’onde, c’est plus d’énergie ». Vrai : l’énergie varie en 1 ÷ λ.</li></ul></>,
+        <li>Moyen de s’en souvenir : <strong>« grand nombre d’onde, grande énergie »</strong>. Idée fausse : « une grande longueur d’onde, c’est plus d’énergie ». Vrai : l’énergie varie en <Frac haut={<>1</>} bas={<>λ</>} />.</li></ul></>,
       texte: <>Un photon infrarouge n’a pas assez d’énergie pour modifier les électrons d’une molécule, mais il peut mettre ses <strong>liaisons en vibration</strong> : on peut les imaginer comme deux atomes reliés par un ressort. Une liaison absorbe les photons dont l’énergie correspond à sa vibration : cela donne une <strong>bande d’absorption</strong>, à un nombre d’onde σ propre à chaque liaison. Choisissez la liaison C–H, puis la liaison C=O, et comparez la vibration et la position de la bande.</>,
       tache: { type: 'qcm', q: 'Les photons absorbés par la liaison C–H (σ ≈ 2950 cm⁻¹) sont, par rapport à ceux de la liaison C=O (σ ≈ 1715 cm⁻¹)…', ...QCM_VIB,
-        expl: `Comme E = h × c ÷ λ et σ = 1 ÷ λ, l’énergie d’un photon est proportionnelle à σ : environ ${nbf(energieEv(1e7 / 2950), 2)} eV pour C–H contre ${nbf(energieEv(1e7 / 1715), 2)} eV pour C=O. Le grand nombre d’onde de C–H correspond à une vibration plus rapide (atome H léger) et à des photons plus énergétiques.`,
-        indice: 'Rappelez-vous E = h × c ÷ λ et σ = 1 ÷ λ : quand σ augmente, que fait E ?' } },
+        expl: `Comme E = frac(h × c|λ) et σ = frac(1|λ), l’énergie d’un photon est proportionnelle à σ : environ ${nbf(energieEv(1e7 / 2950), 2)} eV pour C–H contre ${nbf(energieEv(1e7 / 1715), 2)} eV pour C=O. Le grand nombre d’onde de C–H correspond à une vibration plus rapide (atome H léger) et à des photons plus énergétiques.`,
+        indice: 'Rappelez-vous E = frac(h × c|λ) et σ = frac(1|λ) : quand σ augmente, que fait E ?' } },
     { id: 'lire', titre: 'Lire la position d’une bande',
       retenirTitre: 'À RETENIR : UNE LIAISON QUI VIBRE',
       retenir: <><SvgVibrationCarte/><ul style={ULS}>
@@ -268,7 +268,7 @@ export function SimulationIrStl() {
       <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 6 }}>Valeurs à la position du repère orange.</div>
       <LigneMesure nom="Nombre d’onde σ" valeur={`${mil(ex.curs)}${NB}cm⁻¹`} couleur={COL.orange}/>
       <LigneMesure nom={`Longueur d’onde λ (µm) = frac(10${NB}000|σ)`} valeur={`${nbf(M.longueurOnde(ex.curs), 2)}${NB}µm`}/>
-      <LigneMesure nom="Énergie d’un photon E = h c ÷ λ" valeur={`${nbf(energieEv(1e7 / ex.curs), 3)}${NB}eV`}/>
+      <LigneMesure nom="Énergie d’un photon E = frac(h c|λ)" valeur={`${nbf(energieEv(1e7 / ex.curs), 3)}${NB}eV`}/>
       <LigneMesure nom={`T (${mol1.nom})`} valeur={`${nbf(T1, 0)}${NB}%`}/>
       {mol2 && <LigneMesure nom={`T (${mol2.nom})`} valeur={`${nbf(T2, 0)}${NB}%`}/>}
       <div role="status" aria-live="polite" style={{ fontSize: 14, color: KIT.txt, marginTop: 8, lineHeight: 1.5 }}>
@@ -385,7 +385,7 @@ export function SimulationIrStl() {
         <h2 style={{ margin: 0, fontSize: 18, color: KIT.txt, fontWeight: 700 }}>Spectroscopie infrarouge : énergie des photons, bandes et structures</h2>
         <BoutonsModes mode={mode} setMode={changerMode}/>
       </div>
-      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Du <strong>photon infrarouge</strong> (σ = 1 ÷ λ, E = h c ÷ λ) au <strong>spectre</strong> : lire les bandes avec un tableau de données pour identifier un groupe caractéristique, puis une espèce chimique, et confirmer une transformation.</div>
+      <div style={{ fontSize: 13.5, color: KIT.txt2, marginBottom: 10, lineHeight: 1.5 }}>Du <strong>photon infrarouge</strong> (σ = <Frac haut={<>1</>} bas={<>λ</>} />, E = <Frac haut={<>h c</>} bas={<>λ</>} />) au <strong>spectre</strong> : lire les bandes avec un tableau de données pour identifier un groupe caractéristique, puis une espèce chimique, et confirmer une transformation.</div>
       {!enExplore && <div className="irt-l1 cote">
         {enGuide ? <div className="irt-carte"><CarteParcours etapes={ETAPES} etat={guide} setEtat={setGuide} fin={finParcours}/></div> : enDefi ? <div className="irt-carte">{panneauHypo}</div> : null}
         <div className="irt-main">

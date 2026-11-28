@@ -1,6 +1,7 @@
 // Cartes « À retenir » de la simulation 309 (Ks, Qr, solubilité). viewBox de 300 de large, textes de 12,5 à 16, maxWidth 320.
 import { K, T, svgStyle } from "./schemaOutils";
 import * as M from "./ksqModele";
+import { FormuleSvg } from '../svgFrac';
 
 const cadre = (aria, h, children) => (
   <svg role="img" aria-label={aria} viewBox={`0 0 300 ${h}`} width="100%" style={{ ...svgStyle, maxWidth: 320 }}>
@@ -52,7 +53,7 @@ export function SvgSolubiliteCarte() {
     <rect x="12" y="116" width="276" height="100" rx="10" fill="#fff" stroke={K.clair}/>
     {T(150, 136, 'Sel 1 : 2  (ex. CaF₂)', { size: 13, gras: true, fill: AN })}
     <text x="150" y="158" textAnchor="middle" fontSize="14" fill={K.txt}>[Ca²⁺] = s et [F⁻] = 2 s</text>
-    <text x="150" y="182" textAnchor="middle" fontSize="16" fontWeight="800" fill={K.txt}>Ks = 4 s³  donc  s = ∛(Ks ÷ 4)</text>
+    <FormuleSvg x={150} y={182} s={16} w={800} c={K.txt} a="middle" parts={['Ks = 4 s³  donc  s = ∛(', { h: 'Ks', b: '4' }, ')']} />
     <text x="150" y="203" textAnchor="middle" fontSize="12.5" fill={K.gris}>{`Ks = ${M.sciNb(ca.Ks, 2)} : s ≈ ${M.sciNb(M.solubilite(ca), 1)} mol/L`}</text>
   </g>);
 }

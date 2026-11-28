@@ -1,6 +1,7 @@
 // Cartes « À retenir » de la simulation 311 (hydroxydes, pH, fenêtre de séparation). viewBox de 300 de large, textes de 12,5 à 16, maxWidth 320.
 import { K, T, svgStyle } from "./schemaOutils";
 import * as M from "./hydModele";
+import { FormuleSvg } from '../svgFrac';
 
 const cadre = (aria, h, children) => (
   <svg role="img" aria-label={aria} viewBox={`0 0 300 ${h}`} width="100%" style={{ ...svgStyle, maxWidth: 320 }}>
@@ -25,7 +26,7 @@ export function SvgSeuilCarte() {
     <rect x="22" y="42" width="256" height="34" rx="9" fill="#fff" stroke={K.bleu} strokeWidth="2"/>
     <text x="150" y="65" textAnchor="middle" fontSize="15" fontWeight="800" fill={K.txt}>Ks = [Mⁿ⁺] × [HO⁻]ⁿ</text>
     <path d="M150 80 L150 94 M144 90 L150 96 L156 90" stroke="#334155" strokeWidth="2" fill="none"/>
-    <text x="150" y="116" textAnchor="middle" fontSize="15" fontWeight="800" fill={K.txt}>[HO⁻] = ⁿ√(Ks ÷ c)</text>
+    <FormuleSvg x={150} y={116} s={15} w={800} c={K.txt} a="middle" parts={['[HO⁻] = ⁿ√(', { h: 'Ks', b: 'c' }, ')']} />
     <path d="M150 122 L150 134 M144 130 L150 136 L156 130" stroke="#334155" strokeWidth="2" fill="none"/>
     <rect x="62" y="140" width="176" height="30" rx="8" fill="#fff" stroke="#dc2626" strokeWidth="2"/>
     <text x="150" y="161" textAnchor="middle" fontSize="15" fontWeight="800" fill="#dc2626">pH = 14 + log [HO⁻]</text>
@@ -73,10 +74,10 @@ export function SvgPiegeHydCarte() {
   const Ni = C.Ni, a = M.phDebut(Ni, 0.01), b = M.phDebut(Ni, 0.001);
   return cadre('Pièges classiques : confondre pOH et pH, oublier la racine d’ordre n, oublier de diviser Ks par la concentration ; diluer dix fois une solution de nickel fait monter le pH de début de précipitation de un demi', 240, <g>
     <text x="150" y="26" textAnchor="middle" fontSize="13" fontWeight="800" fill={K.txt}>Trois pièges à éviter</text>
-    {[['pH ≠ pOH', 'pH = 14 − pOH, avec pOH = −log [HO⁻]'], ['racine d’ordre n', 'Ks = c × [HO⁻]ⁿ : n = 2 → √, n = 3 → ∛'], ['diviser Ks par c', '[HO⁻] = ⁿ√(Ks ÷ c), pas ⁿ√Ks']].map(([t, s], i) => { const y = 38 + i * 44;
+    {[['pH ≠ pOH', 'pH = 14 − pOH, avec pOH = −log [HO⁻]'], ['racine d’ordre n', 'Ks = c × [HO⁻]ⁿ : n = 2 → √, n = 3 → ∛'], ['diviser Ks par c', '[HO⁻] = ⁿ√(Ks / c), pas ⁿ√Ks']].map(([t, s], i) => { const y = 38 + i * 44;
       return (<g key={t}><rect x="16" y={y} width="268" height="38" rx="9" fill="#fff" stroke="#fecaca"/><text x="28" y={y + 16} fontSize="12.5" fontWeight="800" fill="#b91c1c">✗ {t}</text><text x="28" y={y + 32} fontSize="12" fill={K.txt}>{s}</text></g>); })}
     <text x="150" y="186" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#15803d">Plus c’est dilué, plus le pH de début monte</text>
     <text x="150" y="206" textAnchor="middle" fontSize="12.5" fill={K.txt}>{Ni.solide} à 0,010 mol/L : pH {M.phTxt(a)}</text>
-    <text x="150" y="224" textAnchor="middle" fontSize="12.5" fill={K.txt}>à 0,0010 mol/L : pH {M.phTxt(b)} (+ 1 ÷ n = 0,5)</text>
+    <text x="150" y="224" textAnchor="middle" fontSize="12.5" fill={K.txt}>à 0,0010 mol/L : pH {M.phTxt(b)} (+ 1/n = 0,5)</text>
   </g>);
 }

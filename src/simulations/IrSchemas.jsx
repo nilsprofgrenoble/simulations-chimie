@@ -1,4 +1,5 @@
 // Schémas des cartes « À retenir » de la simulation 111 (spectroscopie infrarouge). viewBox de 300, texte de 12,5.
+import { FormuleSvg } from '../svgFrac';
 const GRIS = '#475569', BLEU = '#0b4f94', ORANGE = '#c2410c', VERT = '#15803d', ROUGE = '#b91c1c', ENCRE = '#0f172a';
 const svgStyle = { width: '100%', maxWidth: 320, height: 'auto', display: 'block', margin: '0 auto 6px' };
 const T = ({ x, y, children, a = 'start', c = ENCRE, w = 400 }) => <text x={x} y={y} textAnchor={a} fontSize="12.5" fontWeight={w} fill={c}>{children}</text>;
@@ -19,7 +20,7 @@ export const FPrincipe = () => (
     <rect x="96" y="20" width="80" height="52" rx="8" fill="#e0f2fe" stroke={BLEU} strokeWidth="2.5"/><T x={136} y={51} a="middle" c={BLEU} w={700}>échantillon</T>
     <line x1="184" y1="46" x2="250" y2="46" stroke={ORANGE} strokeWidth="2" strokeDasharray="6 4"/><polygon points="262,46 250,39 250,53" fill={ORANGE}/>
     <T x={50} y={34} a="middle" c={ORANGE} w={800}>I₀</T><T x={226} y={34} a="middle" c={ORANGE} w={800}>I</T>
-    <T x={150} y={100} a="middle" c={ENCRE} w={700}>T = I ÷ I₀ (en %)</T><T x={150} y={120} a="middle" c={GRIS}>absorbé = 100 % − T</T>
+    <FormuleSvg x={150} y={100} s={12.5} w={700} c={ENCRE} a="middle" parts={['T = ', { h: 'I', b: 'I₀' }, ' (en %)']} /><T x={150} y={120} a="middle" c={GRIS}>absorbé = 100 % − T</T>
   </Svg>);
 
 export const FAxes = () => (

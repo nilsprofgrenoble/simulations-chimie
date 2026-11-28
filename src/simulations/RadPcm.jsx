@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, IndiceDefi } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, avecIndices, lireNombre, proche, ARetenir, IndiceDefi , Frac } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./radPcmModele";
@@ -120,49 +120,49 @@ export function SimulationRadPcm() {
       tache: { type: 'qcm', q: 'Par analogie avec une réaction d’ordre 1, la constante de désintégration λ joue le rôle de :', ...QCM.analogie,
         expl: 'N joue le rôle de [A] et λ celui de k : la décroissance radioactive est un phénomène « d’ordre 1 ».', indice: 'Compare dN/dt = −λ N et d[A]/dt = −k [A] : qui correspond à qui ?' } },
     { id: 'demi', titre: 'Le temps de demi-vie', focus: ['scene'],
-      texte: <>Le <strong>temps de demi-vie t½</strong> est la durée au bout de laquelle la <strong>moitié</strong> des noyaux initiaux s’est désintégrée : N(t½) = N₀ ÷ 2. Sur la courbe du noyau fictif R, déplace le curseur d’instant jusqu’au point où la courbe coupe le niveau N₀ ÷ 2 (pointillés orange).</>,
+      texte: <>Le <strong>temps de demi-vie t½</strong> est la durée au bout de laquelle la <strong>moitié</strong> des noyaux initiaux s’est désintégrée : N(t½) = <Frac haut={<>N₀</>} bas={<>2</>} />. Sur la courbe du noyau fictif R, déplace le curseur d’instant jusqu’au point où la courbe coupe le niveau <Frac haut={<>N₀</>} bas={<>2</>} /> (pointillés orange).</>,
       tache: { type: 'num', q: 'Demi-vie t½ du noyau R lue sur la courbe, en heures', unite: 'h', vrai: M.thDe(PG.lamR), tol: 0.10, affiche: v => nbf(v, 1), cs: 2,
-        pieges: [[12, 'Lisez l’instant où N est égal à N₀ ÷ 2, pas la fin de la courbe.']],
-        calcul: () => ['La courbe est à N₀ ÷ 2 pour t ≈ 5,8 h.', 'On le vérifiera : t½ = ln 2 ÷ λ = 0,693 ÷ 0,12 ≈ 5,8 h.'], expl: 'La courbe coupe N₀ ÷ 2 pour t ≈ 5,8 h.', indice: 'Cherche l’abscisse du point d’intersection avec la ligne pointillée.' } },
+        pieges: [[12, 'Lisez l’instant où N est égal à frac(N₀|2), pas la fin de la courbe.']],
+        calcul: () => ['La courbe est à frac(N₀|2) pour t ≈ 5,8 h.', 'On le vérifiera : t½ = frac(ln 2|λ) = frac(0,693|0,12) ≈ 5,8 h.'], expl: 'La courbe coupe frac(N₀|2) pour t ≈ 5,8 h.', indice: 'Cherche l’abscisse du point d’intersection avec la ligne pointillée.' } },
     { id: 'lambda', titre: 'Relier λ et t½', focus: ['scene'],
-      texte: <>La condition N(t½) = N₀ ÷ 2 donne N₀ e<sup>−λ t½</sup> = N₀ ÷ 2, soit <strong>λ = ln 2 ÷ t½</strong> (λ et t½ dans des unités de temps inverses). Vérification pour R : ln 2 ÷ 5,8 h ≈ 0,12 h⁻¹. Un autre noyau fictif, <strong>S</strong>, a une demi-vie de <strong>8,0 h</strong>.</>,
+      texte: <>La condition N(t½) = <Frac haut={<>N₀</>} bas={<>2</>} /> donne N₀ e<sup>−λ t½</sup> = <Frac haut={<>N₀</>} bas={<>2</>} />, soit <strong>λ = <Frac haut={<>ln 2</>} bas={<>t½</>} /></strong> (λ et t½ dans des unités de temps inverses). Vérification pour R : <Frac haut={<>ln 2</>} bas={<>5,8 h</>} /> ≈ 0,12 h⁻¹. Un autre noyau fictif, <strong>S</strong>, a une demi-vie de <strong>8,0 h</strong>.</>,
       tache: { type: 'num', q: 'Constante de désintégration λ du noyau S, en h⁻¹', unite: 'h⁻¹', vrai: PG.lamS, tol: 0.03, affiche: v => nbf(v, 3), cs: 2,
-        pieges: [[8 / M.LN2, 'On divise ln 2 par t½ : λ = ln 2 ÷ t½, pas l’inverse.'], [1 / 8, 'Il faut ln 2 : λ = ln 2 ÷ t½, pas 1 ÷ t½.']],
-        calcul: () => ['λ = ln 2 ÷ t½ = 0,693 ÷ 8,0 h.', 'λ ≈ 0,087 h⁻¹.'], expl: 'λ = ln 2 ÷ 8,0 = 0,0866 h⁻¹ ≈ 0,087 h⁻¹.', indice: 'λ = ln 2 ÷ t½ avec ln 2 ≈ 0,693.' } },
+        pieges: [[8 / M.LN2, 'On divise ln 2 par t½ : λ = frac(ln 2|t½), pas l’inverse.'], [1 / 8, 'Il faut ln 2 : λ = frac(ln 2|t½), pas frac(1|t½).']],
+        calcul: () => ['λ = frac(ln 2|t½) = frac(0,693|8,0 h).', 'λ ≈ 0,087 h⁻¹.'], expl: 'λ = frac(ln 2|8,0) = 0,0866 h⁻¹ ≈ 0,087 h⁻¹.', indice: 'λ = frac(ln 2|t½) avec ln 2 ≈ 0,693.' } },
     { id: 'activite', titre: 'L’activité', focus: ['scene'],
       retenirTitre: 'À retenir : la loi de décroissance',
       retenir: <>
         <SvgLoiCarte/>
         <ul style={puces}>
           <li><strong>N(t) = N₀ e<sup>−λt</sup></strong> : solution de dN/dt = −λ N, comme [A](t) = [A]₀ e<sup>−kt</sup> en cinétique d’ordre 1.</li>
-          <li><strong>t½ = ln 2 ÷ λ</strong> : après chaque demi-vie, il reste la moitié des noyaux (N₀ ÷ 2, N₀ ÷ 4, N₀ ÷ 8…).</li>
+          <li><strong>t½ = <Frac haut={<>ln 2</>} bas={<>λ</>} /></strong> : après chaque demi-vie, il reste la moitié des noyaux (<Frac haut={<>N₀</>} bas={<>2</>} />, <Frac haut={<>N₀</>} bas={<>4</>} />, <Frac haut={<>N₀</>} bas={<>8</>} />…).</li>
           <li>Moyen de s’en souvenir : <strong>« la moitié, puis la moitié de la moitié »</strong>. Idée fausse : « après deux demi-vies, plus rien ne reste. » Vrai : il reste le quart des noyaux.</li></ul></>,
       texte: <>L’<strong>activité</strong> A d’un échantillon est le nombre de désintégrations <strong>par seconde</strong> : <strong>A = −dN/dt = λ N</strong>. Son unité est le <strong>becquerel</strong> : 1 Bq = 1 désintégration par seconde. Pour obtenir des Bq, λ doit être en <strong>s⁻¹</strong>. Un échantillon contient <strong>2,0 × 10<sup>9</sup></strong> noyaux S (t½ = 8,0 h ; λ = 0,087 h⁻¹).</>,
       tache: { type: 'num', q: 'Activité A de l’échantillon, en becquerels (Bq)', unite: 'Bq', vrai: PG.A_S, tol: 0.03, affiche: v => sci(v, 2), cs: 2,
-        pieges: [[PG.lamS * 2e9, 'λ est en h⁻¹ : cela donne des désintégrations par heure. Convertissez λ en s⁻¹ (÷ 3 600) pour obtenir des Bq.']],
-        calcul: () => ['λ = 0,0866 h⁻¹ ÷ 3 600 = 2,4 × 10^−5 s⁻¹.', 'A = λ N = 2,4 × 10^−5 × 2,0 × 10^9 ≈ 4,8 × 10^4 Bq.'], expl: 'A = λ N = (0,0866 ÷ 3 600) × 2,0 × 10^9 ≈ 4,8 × 10^4 Bq.', indice: 'A = λ N avec λ en s⁻¹ : 1 h = 3 600 s.' } },
+        pieges: [[PG.lamS * 2e9, 'λ est en h⁻¹ : cela donne des désintégrations par heure. Convertissez λ en s⁻¹ (diviser par 3 600) pour obtenir des Bq.']],
+        calcul: () => ['λ = frac(0,0866 h⁻¹|3 600) = 2,4 × 10^−5 s⁻¹.', 'A = λ N = 2,4 × 10^−5 × 2,0 × 10^9 ≈ 4,8 × 10^4 Bq.'], expl: 'A = λ N = frac(0,0866|3 600) × 2,0 × 10^9 ≈ 4,8 × 10^4 Bq.', indice: 'A = λ N avec λ en s⁻¹ : 1 h = 3 600 s.' } },
     { id: 'comptage', titre: 'Mesurer une activité', focus: ['scene'],
-      texte: <>Un <strong>compteur</strong> détecte les désintégrations : on lit le nombre n de désintégrations comptées pendant une durée Δt, et <strong>A ≈ n ÷ Δt</strong>. Les désintégrations étant aléatoires, n fluctue : plus on compte longtemps (n grand), plus la mesure est précise. L’activité suit la même loi que N : <strong>A(t) = A₀ e<sup>−λt</sup></strong>, divisée par 2 à chaque demi-vie. Ici, le compteur a enregistré <strong>1 440 désintégrations en 60 s</strong>.</>,
+      texte: <>Un <strong>compteur</strong> détecte les désintégrations : on lit le nombre n de désintégrations comptées pendant une durée Δt, et <strong>A ≈ <Frac haut={<>n</>} bas={<>Δt</>} /></strong>. Les désintégrations étant aléatoires, n fluctue : plus on compte longtemps (n grand), plus la mesure est précise. L’activité suit la même loi que N : <strong>A(t) = A₀ e<sup>−λt</sup></strong>, divisée par 2 à chaque demi-vie. Ici, le compteur a enregistré <strong>1 440 désintégrations en 60 s</strong>.</>,
       tache: { type: 'num', q: 'Activité mesurée, en Bq', unite: 'Bq', vrai: PG.A_compte, tol: 0.02, affiche: v => nbf(v, 0), cs: 2,
-        pieges: [[1440, 'Divisez par la durée de comptage : A = n ÷ Δt.'], [1440 * 60, 'On divise le nombre de désintégrations par la durée : A = n ÷ Δt.']],
-        calcul: () => ['A = n ÷ Δt = 1 440 ÷ 60.', 'A = 24 Bq.'], expl: 'A = n ÷ Δt = 1 440 ÷ 60 = 24 Bq.', indice: 'A est un nombre de désintégrations par seconde.' } },
+        pieges: [[1440, 'Divisez par la durée de comptage : A = frac(n|Δt).'], [1440 * 60, 'On divise le nombre de désintégrations par la durée : A = frac(n|Δt).']],
+        calcul: () => ['A = frac(n|Δt) = frac(1 440|60).', 'A = 24 Bq.'], expl: 'A = frac(n|Δt) = frac(1 440|60) = 24 Bq.', indice: 'A est un nombre de désintégrations par seconde.' } },
     { id: 'ln', titre: 'Modéliser par une droite', focus: ['scene'],
       retenirTitre: 'À retenir : l’activité',
       retenir: <>
         <SvgActiviteCarte/>
         <ul style={puces}>
           <li><strong>A = λ N</strong>, en becquerels (1 Bq = 1 désintégration par seconde) : λ doit être en s⁻¹.</li>
-          <li>L’activité décroît comme N : <strong>A(t) = A₀ e<sup>−λt</sup></strong>, divisée par 2 à chaque demi-vie ; un compteur donne A ≈ n ÷ Δt.</li>
+          <li>L’activité décroît comme N : <strong>A(t) = A₀ e<sup>−λt</sup></strong>, divisée par 2 à chaque demi-vie ; un compteur donne A ≈ <Frac haut={<>n</>} bas={<>Δt</>} />.</li>
           <li>Moyen de s’en souvenir : <strong>« Bq = par seconde »</strong>. Idée fausse : « une activité élevée signifie une demi-vie longue. » Vrai : A = λ N, un noyau de demi-vie courte a un λ grand.</li></ul></>,
       texte: <>Pour <strong>modéliser</strong> des mesures, on trace <strong>ln A</strong> en fonction de t : comme ln A = ln A₀ − λ t, les points s’alignent sur une <strong>droite de pente −λ</strong>. Pour un noyau fictif T, un compteur donne <strong>A = 1 200 Bq</strong> à t = 0 et <strong>A = 730 Bq</strong> à t = <strong>10 h</strong>.</>,
       tache: { type: 'num', q: 'Constante de désintégration λ du noyau T, en h⁻¹', unite: 'h⁻¹', vrai: PG.lamT, tol: 0.04, affiche: v => nbf(v, 3), cs: 2,
-        pieges: [[Math.log10(1200 / 730) / 10, 'Utilisez le logarithme népérien ln (touche ln), pas log.'], [(1200 - 730) / 10, 'La pente se calcule avec ln A : λ = ln(A₀ ÷ A) ÷ t.']],
-        calcul: () => ['λ = [ln(1 200) − ln(730)] ÷ 10 h = ln(1 200 ÷ 730) ÷ 10.', 'λ ≈ 0,497 ÷ 10 ≈ 0,050 h⁻¹ (t½ = ln 2 ÷ λ ≈ 14 h).'], expl: 'λ = ln(1 200 ÷ 730) ÷ 10 ≈ 0,050 h⁻¹.', indice: 'Pente de la droite : (ln A₁ − ln A₀) ÷ t = −λ.' } },
+        pieges: [[Math.log10(1200 / 730) / 10, 'Utilisez le logarithme népérien ln (touche ln), pas log.'], [(1200 - 730) / 10, 'La pente se calcule avec ln A : λ = frac(ln(frac(A₀|A))|t).']],
+        calcul: () => ['λ = frac(ln(1 200) − ln(730)|10 h) = frac(ln(frac(1 200|730))|10).', 'λ ≈ frac(0,497|10) ≈ 0,050 h⁻¹ (t½ = frac(ln 2|λ) ≈ 14 h).'], expl: 'λ = frac(ln(frac(1 200|730))|10) ≈ 0,050 h⁻¹.', indice: 'Pente de la droite : frac(ln A₁ − ln A₀|t) = −λ.' } },
     { id: 'sources', titre: 'Comparer des sources', focus: ['scene'],
       texte: <>L’activité varie énormément d’une source à l’autre, des objets naturels (banane, eau de mer, roche, corps humain) aux sources artificielles (détecteur de fumée, radiothérapie). On les compare sur une <strong>échelle logarithmique</strong> : chaque graduation vaut 1 000 fois plus que la précédente. Valeurs : ordres de grandeur arrondis. Un détecteur de fumée a une activité de <strong>3 × 10<sup>4</sup> Bq</strong>, une banane de <strong>15 Bq</strong>.</>,
       tache: { type: 'num', q: 'Combien de fois l’activité du détecteur de fumée dépasse-t-elle celle de la banane ?', unite: 'fois', vrai: 3e4 / 15, tol: 0.05, affiche: v => sci(v, 1), cs: 1,
         pieges: [[15 / 3e4, 'Le détecteur est plus actif : divisez la plus grande activité par la plus petite.']],
-        calcul: () => ['Rapport = 3 × 10^4 ÷ 15.', 'Rapport = 2 × 10^3 : le détecteur est 2 000 fois plus actif.'], expl: '3 × 10^4 ÷ 15 = 2 × 10^3.', indice: 'Rapport = plus grande activité ÷ plus petite activité.' } },
+        calcul: () => ['Rapport = frac(3 × 10^4|15).', 'Rapport = 2 × 10^3 : le détecteur est 2 000 fois plus actif.'], expl: 'frac(3 × 10^4|15) = 2 × 10^3.', indice: 'Rapport = plus grande activité divisée par la plus petite activité.' } },
     { id: 'protection', titre: 'Se protéger', focus: ['scene'],
       texte: <>Pour se protéger des rayonnements, on agit sur trois facteurs : la <strong>distance</strong> (s’éloigner de la source), l’<strong>écran</strong> (adapté au rayonnement) et la <strong>durée</strong> d’exposition. Les rayonnements α, β et γ ne traversent pas la matière de la même façon. Essaie les écrans devant une source qui émet un rayonnement β.</>,
       tache: { type: 'qcm', q: 'Pour arrêter un rayonnement β, un écran suffisant est :', ...QCM.protection,
@@ -247,18 +247,18 @@ export function SimulationRadPcm() {
     }
     const th = lireNombre(x.reps.th), t = lireNombre(x.reps.t);
     if (!Number.isFinite(th) || !Number.isFinite(t)) return ['Écrivez deux nombres (virgule ou point) : t½ en heures et la durée en heures.'];
-    if (!proche(th, x.th, M.tolDefi.th)) msgs.push(`Cherchez l’instant où l’activité est divisée par 2 (environ ${fr(Math.round(x.A0 / 2))} Bq), en interpolant entre deux mesures, ou utilisez λ = ln(A₀ ÷ A) ÷ t avec deux points éloignés puis t½ = ln 2 ÷ λ. Votre valeur est ${th > x.th ? 'trop grande' : 'trop petite'}.`);
+    if (!proche(th, x.th, M.tolDefi.th)) msgs.push(`Cherchez l’instant où l’activité est divisée par 2 (environ ${fr(Math.round(x.A0 / 2))} Bq), en interpolant entre deux mesures, ou utilisez λ = frac(ln(frac(A₀|A))|t) avec deux points éloignés puis t½ = frac(ln 2|λ). Votre valeur est ${th > x.th ? 'trop grande' : 'trop petite'}.`);
     if (!proche(t, x.duree, M.tolDefi.duree)) {
       const lm = M.lambdaDe(th), tm = Math.log(1 / x.seuil) / lm;
       msgs.push(proche(t, tm, 0.06) ? 'Votre durée est cohérente avec VOTRE demi-vie ; corrigez d’abord t½.'
-        : `Avec VOTRE t½ = ${fr(th)} h : λ = ln 2 ÷ ${fr(th)} = ${fr(lm.toFixed(3))} h⁻¹ ; il reste ${fr(Math.round(x.seuil * 100))} % quand t = ln(1 ÷ ${fr(x.seuil)}) ÷ λ = ${fr(tm.toFixed(1))} h. Votre valeur est ${t > tm ? 'trop grande' : 'trop petite'}.`);
+        : `Avec VOTRE t½ = ${fr(th)} h : λ = frac(ln 2|${fr(th)}) = ${fr(lm.toFixed(3))} h⁻¹ ; il reste ${fr(Math.round(x.seuil * 100))} % quand t = frac(ln(frac(1|${fr(x.seuil)}))|λ) = ${fr(tm.toFixed(1))} h. Votre valeur est ${t > tm ? 'trop grande' : 'trop petite'}.`);
     }
     return msgs;
   };
   const correction = () => {
     const x = defi;
     if (x.type === 'equation') { const n = x.nucl; return `${M.equation(n)} : ${NOM_DEFI[n.mode]}. Σ A : ${n.A} = ${n.fils.A} + ${M.PART[n.mode].A} ; Σ Z : ${n.Z} = ${n.fils.Z} + ${M.PART[n.mode].Z < 0 ? '(−1)' : M.PART[n.mode].Z}.`; }
-    return `t½ = ${fr(x.th)} h (l’activité est divisée par 2 toutes les ${fr(x.th)} h). λ = ln 2 ÷ ${fr(x.th)} = ${fr(x.l.toFixed(3))} h⁻¹ ; l’activité vaut ${fr(Math.round(x.seuil * 100))} % de A₀ quand t = ln(1 ÷ ${fr(x.seuil)}) ÷ λ = ${fr(x.duree.toFixed(1))} h.`;
+    return `t½ = ${fr(x.th)} h (l’activité est divisée par 2 toutes les ${fr(x.th)} h). λ = frac(ln 2|${fr(x.th)}) = ${fr(x.l.toFixed(3))} h⁻¹ ; l’activité vaut ${fr(Math.round(x.seuil * 100))} % de A₀ quand t = frac(ln(frac(1|${fr(x.seuil)}))|λ) = ${fr(x.duree.toFixed(1))} h.`;
   };
   const ChampTexte = (cle, nom, unite, id) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 14 }}>
@@ -295,7 +295,7 @@ export function SimulationRadPcm() {
             <tbody><tr><th style={{ padding: '3px 8px', border: `1px solid ${KIT.bord}`, background: '#f1f5f9' }}>t (h)</th>{defi.pts.map(p => <td key={p.t} style={{ padding: '3px 8px', border: `1px solid ${KIT.bord}`, textAlign: 'center' }}>{p.t}</td>)}</tr>
               <tr><th style={{ padding: '3px 8px', border: `1px solid ${KIT.bord}`, background: '#f1f5f9' }}>A (Bq)</th>{defi.pts.map(p => <td key={p.t} style={{ padding: '3px 8px', border: `1px solid ${KIT.bord}`, textAlign: 'center' }}>{fr(p.A)}</td>)}</tr></tbody></table></div>
           {ChampTexte('th', 'Demi-vie t½', 'h', 'rpm-th')}{ChampTexte('t', `Durée pour atteindre ${fr(Math.round(defi.seuil * 100))} % de A₀`, 'h', 'rpm-t')}
-          <IndiceDefi cache={false}>t½ : durée pour que A soit divisée par 2 (ou λ = ln(A₀ ÷ A) ÷ t avec deux points, puis t½ = ln 2 ÷ λ). Durée : A = A₀ e^(−λt) donne t = ln(A₀ ÷ A) ÷ λ, avec A ÷ A₀ = {fr(defi.seuil)}.</IndiceDefi>
+          <IndiceDefi cache={false}>t½ : durée pour que A soit divisée par 2 (ou λ = <Frac haut={<>ln(<Frac haut={<>A₀</>} bas={<>A</>} />)</>} bas={<>t</>} /> avec deux points, puis t½ = <Frac haut={<>ln 2</>} bas={<>λ</>} />). Durée : A = A₀ e^(−λt) donne t = <Frac haut={<>ln(<Frac haut={<>A₀</>} bas={<>A</>} />)</>} bas={<>λ</>} />, avec <Frac haut={<>A</>} bas={<>A₀</>} /> = {fr(defi.seuil)}.</IndiceDefi>
         </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         <button id="rpm-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -315,7 +315,7 @@ export function SimulationRadPcm() {
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Hasard et moyenne</strong> : tous les noyaux d’un même type sont identiques et indépendants ; chacun a la même probabilité λ dt de se désintégrer pendant dt, quel que soit son âge. La loi N(t) = N₀ e<sup>−λt</sup> décrit la <strong>valeur moyenne</strong> : pour peu de noyaux, le nombre réel s’en écarte.</li>
       <li><strong>Calcul pas à pas</strong> : ΔN ≈ −λ N Δt est une approximation qui s’améliore quand Δt diminue ; à la limite Δt → 0, on retrouve dN = −λ N dt. Le calcul exact donne N = N₀ e<sup>−λt</sup>.</li>
-      <li><strong>Activité</strong> : A = λ N, en Bq si λ est en s⁻¹ ; le compteur est supposé idéal (il détecte toutes les désintégrations) et A ≈ n ÷ Δt, avec une fluctuation de l’ordre de √n sur n.</li>
+      <li><strong>Activité</strong> : A = λ N, en Bq si λ est en s⁻¹ ; le compteur est supposé idéal (il détecte toutes les désintégrations) et A ≈ <Frac haut={<>n</>} bas={<>Δt</>} />, avec une fluctuation de l’ordre de √n sur n.</li>
       <li><strong>Un seul noyau radioactif</strong> : les noyaux fils sont supposés non radioactifs (pas de filiation) pendant l’étude.</li>
       <li><strong>Équations nucléaires</strong> : α = ⁴₂He, β⁻ = électron ⁰₋₁e, β⁺ = positon ⁰₊₁e ; le (anti)neutrino ⁰₀ν n’est pas nécessaire aux comptes de A et de Z et n’est écrit que dans l’exploration.</li>
       <li><strong>Protection et sources</strong> : les niveaux d’exposition de l’exploration sont qualitatifs ; les activités des sources sont des ordres de grandeur arrondis, et les écrans donnés sont les plus usuels (une épaisseur suffisante est nécessaire).</li>
@@ -342,7 +342,7 @@ export function SimulationRadPcm() {
     <ARetenir>
       <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
         <li>Σ A et Σ Z se conservent ; α : A − 4 et Z − 2 ; β⁻ : Z + 1 ; β⁺ : Z − 1 ; γ : noyau inchangé</li>
-        <li>dN = −λ N dt ; N(t) = N₀ e^(−λt) ; t½ = ln 2 ÷ λ</li>
+        <li>dN = −λ N dt ; N(t) = N₀ e^(−λt) ; t½ = <Frac haut={<>ln 2</>} bas={<>λ</>} /></li>
         <li>A = λ N (Bq, avec λ en s⁻¹) ; A(t) = A₀ e^(−λt) ; protection : distance, écran, durée</li>
       </ul>
     </ARetenir>);

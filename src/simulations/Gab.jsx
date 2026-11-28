@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond , Frac } from "../commun";
 import { Pic } from "../Pictos";
 import * as G from "./gabModele";
 import { SceneGab } from "./GabScene";
@@ -290,8 +290,8 @@ export function SimulationGab() {
   // ---------- hypothèses ----------
   const hypotheses = indicesProfond(
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
-      <li><strong>Spectre</strong> : chaque raie représente une sinusoïde (fréquence, amplitude) ; la composante continue est la raie à 0 Hz, égale à la valeur moyenne du signal. Les signaux sont des sommes de sinusoïdes avec des phases fixées arbitrairement : le déphasage n’est pas étudié. Le spectre du signal triangulaire est limité à ses 5 premières raies (1, 3, 5, 7 et 9 fois la fréquence), amplitude 8 × a ÷ (π² n²).</li>
-      <li><strong>Filtres</strong> : filtres RC du premier ordre idéaux (sans charge). Passe-bas : A = 1 ÷ √(1 + (f ÷ fc)²). Passe-haut : A = (f ÷ fc) ÷ √(1 + (f ÷ fc)²). Ces formules servent à tracer les courbes ; elles ne sont pas exigibles : on exploite la courbe. La fréquence de coupure est celle où A = Amax ÷ √2 ≈ 0,707 × Amax.</li>
+      <li><strong>Spectre</strong> : chaque raie représente une sinusoïde (fréquence, amplitude) ; la composante continue est la raie à 0 Hz, égale à la valeur moyenne du signal. Les signaux sont des sommes de sinusoïdes avec des phases fixées arbitrairement : le déphasage n’est pas étudié. Le spectre du signal triangulaire est limité à ses 5 premières raies (1, 3, 5, 7 et 9 fois la fréquence), amplitude <Frac haut={<>8 × a</>} bas={<>π² n²</>} />.</li>
+      <li><strong>Filtres</strong> : filtres RC du premier ordre idéaux (sans charge). Passe-bas : A = <Frac haut={<>1</>} bas={<>√(1 + <Frac haut={<>f</>} bas={<>fc</>} />²)</>} />. Passe-haut : A = <Frac haut={<><Frac haut={<>f</>} bas={<>fc</>} /></>} bas={<>√(1 + <Frac haut={<>f</>} bas={<>fc</>} />²)</>} />. Ces formules servent à tracer les courbes ; elles ne sont pas exigibles : on exploite la courbe. La fréquence de coupure est celle où A = <Frac haut={<>Amax</>} bas={<>√2</>} /> ≈ 0,707 × Amax.</li>
       <li><strong>Passe-bande</strong> : cascade idéale d’un passe-haut (fc1) et d’un passe-bas (fc2), A = A₁ × A₂. En réalité, le deuxième filtre charge le premier et le produit n’est qu’approché ; le modèle l’ignore.</li>
       <li><strong>Coupe-bande</strong> : modèle simplifié, deux filtres en parallèle (passe-bas de fréquence fc1 et passe-haut de fréquence fc2, fc1 &lt; fc2), amplitudes additionnées et plafonnées à 1. Il sert à illustrer la forme du gabarit, pas à dimensionner un vrai circuit.</li>
       <li><strong>Gabarit</strong> : les seuils A ≥ 0,9 (raie utile) et A ≤ 0,1 (parasite) sont des valeurs choisies pour l’activité ; un cahier des charges réel donne ses propres seuils. Avec des filtres du premier ordre, il faut un grand écart entre la raie utile et le parasite (au moins un facteur 20 environ) ; sinon il faudrait un filtre d’ordre supérieur (hors programme).</li>

@@ -102,5 +102,5 @@ export function diagPrevoir(d, x) {
   if (Math.abs(err) <= 0.15) return { ok: true, msg: '' };
   if (x > d.ue * 1.001) return { ok: false, msg: `Us,max ne peut pas dépasser Ue,max = ${nbf(d.ue, 1)}${NB}V : un filtre passif n’amplifie pas (A ≤ 1).` };
   if (Math.abs(x - d.A) / d.A < 0.15 && d.ue !== 1) return { ok: false, msg: 'Vous avez donné le facteur d’amplification A, sans unité. Us,max = A × Ue,max : multipliez A par l’amplitude de la tension d’entrée.' };
-  return { ok: false, msg: `Votre valeur correspond à A = ${gTxt(x / d.ue)} (Us,max ÷ Ue,max) : à ${fTxt(d.f)}, la courbe est plus ${err < 0 ? 'haute' : 'basse'}. Relisez A sur la courbe (grille de 0,1), puis calculez Us,max = A × Ue,max.` };
+  return { ok: false, msg: `Votre valeur correspond à A = ${gTxt(x / d.ue)} (frac(Us,max|Ue,max)) : à ${fTxt(d.f)}, la courbe est plus ${err < 0 ? 'haute' : 'basse'}. Relisez A sur la courbe (grille de 0,1), puis calculez Us,max = A × Ue,max.` };
 }

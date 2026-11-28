@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, lireNombre, IndiceDefi, indicesProfond } from "../commun";
+  BoutonsModes, lireNombre, IndiceDefi, indicesProfond , Frac } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./tsolModele";
 import { SvgSatCarte, SvgRefroidCarte, SvgEauRendementCarte, SvgSensCarte } from "./TsolSchemas";
@@ -113,31 +113,31 @@ export function SimulationTsol() {
     { id: 'refroid', titre: 'Refroidir une solution saturée',
       texte: <>On prépare une solution saturée de NH₄Cl dans 200{NB}g d’eau à 80{NB}°C, puis on la laisse refroidir à 20{NB}°C. Solubilité de NH₄Cl : s(80{NB}°C) = {nb(S80, 1)}{NB}g et s(20{NB}°C) = {nb(S20, 1)}{NB}g pour 100{NB}g d’eau. Lancez « Refroidir » : le surplus cristallise.</>,
       tache: { type: 'num', q: 'Quelle masse de cristaux se dépose entre 80 °C et 20 °C (en g) ?', unite: 'g', vrai: CRIST_5, tol: 0.03, affiche: v => nb(v, 1), cs: 3, carnet: false,
-        calcul: () => ['Masse dissoute à 80 °C : 65,6 × 200 ÷ 100 = 131,2 g.', 'Masse qui reste dissoute à 20 °C : 37,2 × 200 ÷ 100 = 74,4 g.', `Cristaux : 131,2 − 74,4 = ${nb(CRIST_5, 1)}${NB}g.`],
-        pieges: [[S80 - S20, 'Vous avez calculé la masse pour 100 g d’eau : il y a ici 200 g d’eau, multipliez par 200 ÷ 100 = 2.'], [S80 * 2, 'Vous avez donné la masse dissoute à 80 °C : les cristaux sont la différence avec ce qui reste dissous à 20 °C.'], [S20 * 2, 'Vous avez donné la masse qui reste dissoute à 20 °C : les cristaux sont la différence avec la masse dissoute à 80 °C.']],
-        expl: `Cristaux = (${nb(S80, 1)} − ${nb(S20, 1)}) × 200 ÷ 100 = ${nb(CRIST_5, 1)}${NB}g.`, indice: 'Masse de cristaux = (s(80 °C) − s(20 °C)) × m(eau) ÷ 100, avec m(eau) = 200 g.' } },
+        calcul: () => ['Masse dissoute à 80 °C : frac(65,6 × 200|100) = 131,2 g.', 'Masse qui reste dissoute à 20 °C : frac(37,2 × 200|100) = 74,4 g.', `Cristaux : 131,2 − 74,4 = ${nb(CRIST_5, 1)}${NB}g.`],
+        pieges: [[S80 - S20, 'Vous avez calculé la masse pour 100 g d’eau : il y a ici 200 g d’eau, multipliez par frac(200|100) = 2.'], [S80 * 2, 'Vous avez donné la masse dissoute à 80 °C : les cristaux sont la différence avec ce qui reste dissous à 20 °C.'], [S20 * 2, 'Vous avez donné la masse qui reste dissoute à 20 °C : les cristaux sont la différence avec la masse dissoute à 80 °C.']],
+        expl: `Cristaux = frac((${nb(S80, 1)} − ${nb(S20, 1)}) × 200|100) = ${nb(CRIST_5, 1)}${NB}g.`, indice: 'Masse de cristaux = frac((s(80 °C) − s(20 °C)) × m(eau)|100), avec m(eau) = 200 g.' } },
     { id: 'eaumin', titre: 'Le minimum d’eau',
       retenirTitre: 'À retenir : masse de cristaux au refroidissement',
       retenir: <><SvgRefroidCarte/><ul style={ULS}>
-        <li>Solution saturée à T₁ refroidie à T₂ : <strong>m(cristaux) = (s(T₁) − s(T₂)) × m(eau) ÷ 100</strong>.</li>
-        <li>La différence s(T₁) − s(T₂) est donnée pour 100 g d’eau : on multiplie par m(eau) ÷ 100.</li>
+        <li>Solution saturée à T₁ refroidie à T₂ : <strong>m(cristaux) = <Frac haut={<>(s(T₁) − s(T₂)) × m(eau)</>} bas={<>100</>} /></strong>.</li>
+        <li>La différence s(T₁) − s(T₂) est donnée pour 100 g d’eau : on multiplie par <Frac haut={<>m(eau)</>} bas={<>100</>} />.</li>
         <li>Plus l’écart entre les deux solubilités est grand, plus il se dépose de cristaux.</li></ul></>,
       texte: <>Pour purifier un solide par recristallisation, on le dissout à chaud dans le <strong>minimum d’eau</strong> : la solution est alors tout juste saturée. On veut dissoudre 50{NB}g de NH₄Cl à 60{NB}°C, où s = {nb(S60, 1)}{NB}g pour 100{NB}g d’eau.</>,
       tache: { type: 'num', q: 'Quelle masse d’eau minimale faut-il (en g) ?', unite: 'g', vrai: EAU_6, tol: 0.03, affiche: v => nb(v, 1), cs: 3, carnet: false,
-        calcul: () => ['100 g d’eau dissolvent au plus 55,2 g de NH₄Cl à 60 °C.', `Pour 50 g : m(eau) = 100 × 50 ÷ 55,2 = ${nb(EAU_6, 1)}${NB}g.`],
+        calcul: () => ['100 g d’eau dissolvent au plus 55,2 g de NH₄Cl à 60 °C.', `Pour 50 g : m(eau) = frac(100 × 50|55,2) = ${nb(EAU_6, 1)}${NB}g.`],
         pieges: [[50 * S60 / 100, 'Vous avez multiplié par s au lieu de diviser : plus s est grande, moins il faut d’eau.'], [50 / S60, 'Vous avez oublié le facteur 100 : s est donnée pour 100 g d’eau.']],
-        expl: `m(eau) = 100 × 50 ÷ ${nb(S60, 1)} ≈ ${nb(EAU_6, 1)}${NB}g.`, indice: 'Règle de trois : 100 g d’eau dissolvent 55,2 g ; combien de grammes d’eau pour 50 g ?' } },
+        expl: `m(eau) = frac(100 × 50|${nb(S60, 1)}) ≈ ${nb(EAU_6, 1)}${NB}g.`, indice: 'Règle de trois : 100 g d’eau dissolvent 55,2 g ; combien de grammes d’eau pour 50 g ?' } },
     { id: 'rendement', titre: 'Le rendement de la recristallisation',
       texte: <>Le <strong>rendement</strong> η est le rapport de la masse de cristaux récupérée à la masse de solide dissoute à chaud. On dissout du NH₄Cl dans le minimum d’eau à 80{NB}°C (s = {nb(S80, 1)}{NB}g pour 100{NB}g d’eau), puis on refroidit jusqu’à 0{NB}°C (s = {nb(S0, 1)}{NB}g pour 100{NB}g d’eau). La masse d’eau se simplifie dans le rapport.</>,
       tache: { type: 'num', q: 'Quel est le rendement théorique η (en %) ?', unite: '%', vrai: ETA_7, tol: 0.03, affiche: v => nb(v, 0), cs: 2, carnet: false,
-        calcul: () => ['η = (s(80 °C) − s(0 °C)) ÷ s(80 °C) = (65,6 − 29,4) ÷ 65,6.', `η = ${nb(M.rendement(NH, 80, 0), 3)} soit environ ${nb(ETA_7, 0)}${NB}%.`],
+        calcul: () => ['η = frac(s(80 °C) − s(0 °C)|s)(80 °C) = frac(65,6 − 29,4|65,6).', `η = ${nb(M.rendement(NH, 80, 0), 3)} soit environ ${nb(ETA_7, 0)}${NB}%.`],
         pieges: [[(S80 - S0) / S0 * 100, 'Vous avez divisé par la solubilité à froid : on divise par la masse dissoute à chaud, au départ.'], [M.rendement(NH, 80, 0), 'Exprimez le rendement en pourcentage : multipliez le rapport par 100.']],
-        expl: `η = (${nb(S80, 1)} − ${nb(S0, 1)}) ÷ ${nb(S80, 1)} ≈ ${nb(ETA_7, 0)}${NB}%.`, indice: 'η = masse de cristaux ÷ masse dissoute à chaud = (s(T₁) − s(T₂)) ÷ s(T₁), puis ×100 pour un pourcentage.' } },
+        expl: `η = frac(${nb(S80, 1)} − ${nb(S0, 1)}|${nb(S80, 1)}) ≈ ${nb(ETA_7, 0)}${NB}%.`, indice: 'η = masse de cristaux divisée par la masse dissoute à chaud = frac(s(T₁) − s(T₂)|s)(T₁), puis ×100 pour un pourcentage.' } },
     { id: 'decroit', titre: 'Et si c’était l’inverse ?',
       retenirTitre: 'À retenir : eau minimale et rendement',
       retenir: <><SvgEauRendementCarte/><ul style={ULS}>
-        <li><strong>m(eau) minimale = 100 × m(solide) ÷ s(T)</strong> : à chaud, s est grande, il faut peu d’eau.</li>
-        <li><strong>η = (s(T₁) − s(T₂)) ÷ s(T₁)</strong> : rendement théorique de la recristallisation (rapport de la masse de cristaux à la masse dissoute à chaud).</li>
+        <li><strong>m(eau) minimale = <Frac haut={<>100 × m(solide)</>} bas={<>s</>} />(T)</strong> : à chaud, s est grande, il faut peu d’eau.</li>
+        <li><strong>η = <Frac haut={<>s(T₁) − s(T₂)</>} bas={<>s</>} />(T₁)</strong> : rendement théorique de la recristallisation (rapport de la masse de cristaux à la masse dissoute à chaud).</li>
         <li>On dissout à chaud dans le minimum d’eau, on cristallise à froid.</li></ul></>,
       texte: <>Le carbonate de lithium Li₂CO₃ se comporte autrement : sa solubilité <strong>diminue</strong> quand la température augmente (s = {nb(M.sol(LI, 20), 2)}{NB}g pour 100{NB}g d’eau à 20{NB}°C, {nb(M.sol(LI, 80), 2)}{NB}g à 80{NB}°C). On dissout 1,2{NB}g de Li₂CO₃ dans 100{NB}g d’eau à 20{NB}°C : la solution n’est pas saturée. Lancez « Chauffer ».</>,
       tache: { type: 'qcm', q: 'Que se passe-t-il quand on chauffe cette solution jusqu’à 80 °C ?', options: ['elle reste non saturée : chauffer dissout toujours plus', 'des cristaux de Li₂CO₃ apparaissent', 'la solution se dilue', 'rien : la solubilité ne dépend pas de T'], bonne: 1,
@@ -198,14 +198,14 @@ export function SimulationTsol() {
         <label style={{ ...lbl, display: 'block' }}>Masse de cristaux (g)
           <input type="text" inputMode="text" autoComplete="off" value={defi.rep} onChange={e => modifie({ rep: e.target.value })} aria-label="masse de cristaux en grammes" style={{ ...saisie, marginTop: 2 }}/></label>
         <div style={{ height: 8 }}/>
-        <IndiceDefi cache={false}>Lisez s({defi.T1}{NB}°C) et s({defi.T2}{NB}°C) sur la courbe : ce sont des masses pour 100 g d’eau. Cristaux = (s(T₁) − s(T₂)) × m(eau) ÷ 100.</IndiceDefi>
+        <IndiceDefi cache={false}>Lisez s({defi.T1}{NB}°C) et s({defi.T2}{NB}°C) sur la courbe : ce sont des masses pour 100 g d’eau. Cristaux = <Frac haut={<>(s(T₁) − s(T₂)) × m(eau)</>} bas={<>100</>} />.</IndiceDefi>
       </> : <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : le minimum d’eau</div>
         <div style={{ ...lbl, marginBottom: 8 }}>On veut dissoudre {defi.m}{NB}g de chlorure d’ammonium à {defi.T}{NB}°C dans le minimum d’eau. <strong>Lisez</strong> la solubilité sur la courbe (poignée rouge, grille de 10{NB}g) et calculez la masse d’eau minimale, en g (tolérance de lecture 12{NB}%).</div>
         <label style={{ ...lbl, display: 'block' }}>Masse d’eau minimale (g)
           <input type="text" inputMode="text" autoComplete="off" value={defi.rep} onChange={e => modifie({ rep: e.target.value })} aria-label="masse d’eau minimale en grammes" style={{ ...saisie, marginTop: 2 }}/></label>
         <div style={{ height: 8 }}/>
-        <IndiceDefi cache={false}>Lisez s({defi.T}{NB}°C) sur la courbe (g pour 100 g d’eau), puis m(eau) = 100 × m(solide) ÷ s.</IndiceDefi>
+        <IndiceDefi cache={false}>Lisez s({defi.T}{NB}°C) sur la courbe (g pour 100 g d’eau), puis m(eau) = <Frac haut={<>100 × m(solide)</>} bas={<>s</>} />.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
         <button onClick={verifier} disabled={!defi.rep.trim()} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -218,10 +218,10 @@ export function SimulationTsol() {
       {defi.verifie && !defi.ok && defi.corr && <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1.5px solid #f59e0b', fontSize: 14, lineHeight: 1.6, color: KIT.txt }}>
         {cr ? <>
           <div>Lectures : s({defi.T1}{NB}°C) ≈ {nb(defi.s1, 1)}{NB}g et s({defi.T2}{NB}°C) ≈ {nb(defi.s2, 1)}{NB}g pour 100{NB}g d’eau.</div>
-          <div>Cristaux = ({nb(defi.s1, 1)} − {nb(defi.s2, 1)}) × {defi.mEau} ÷ 100 = <strong>{nb(defi.vrai, 1)}{NB}g</strong> (tolérance : de {nb(defi.vrai * 0.88, 0)} à {nb(defi.vrai * 1.12, 0)}{NB}g).</div></>
+          <div>Cristaux = <Frac haut={<>({nb(defi.s1, 1)} − {nb(defi.s2, 1)}) × {defi.mEau}</>} bas={<>100</>} /> = <strong>{nb(defi.vrai, 1)}{NB}g</strong> (tolérance : de {nb(defi.vrai * 0.88, 0)} à {nb(defi.vrai * 1.12, 0)}{NB}g).</div></>
           : <>
           <div>Lecture : s({defi.T}{NB}°C) ≈ {nb(defi.s, 1)}{NB}g pour 100{NB}g d’eau.</div>
-          <div>m(eau) = 100 × {defi.m} ÷ {nb(defi.s, 1)} = <strong>{nb(defi.vrai, 1)}{NB}g</strong> (tolérance : de {nb(defi.vrai * 0.88, 0)} à {nb(defi.vrai * 1.12, 0)}{NB}g).</div></>}
+          <div>m(eau) = <Frac haut={<>100 × {defi.m}</>} bas={<>{nb(defi.s, 1)}</>} /> = <strong>{nb(defi.vrai, 1)}{NB}g</strong> (tolérance : de {nb(defi.vrai * 0.88, 0)} à {nb(defi.vrai * 1.12, 0)}{NB}g).</div></>}
       </div>}
     </div>);
   })();
@@ -234,7 +234,7 @@ export function SimulationTsol() {
       <li><strong>Interpolation</strong> : entre deux températures tabulées, s est supposée varier linéairement (écart inférieur à 1 % avec les tables à pas de 10 °C).</li>
       <li><strong>Équilibre</strong> : on suppose la cristallisation immédiate dès que la limite est dépassée (pas de sursaturation ; en pratique le dépôt peut tarder), et le solide pur, sans impuretés ni autre ion en solution.</li>
       <li><strong>Masses</strong> : 1 g d’eau pour 1 mL ; la masse d’eau est constante (pas d’évaporation). Les masses de cristaux sont théoriques : on ignore les pertes à la filtration et l’eau retenue.</li>
-      <li><strong>Rendement</strong> : défini comme masse de cristaux ÷ masse dissoute à chaud (rendement théorique de la recristallisation par variation de température).</li>
+      <li><strong>Rendement</strong> : défini comme masse de cristaux divisée par la masse dissoute à chaud (rendement théorique de la recristallisation par variation de température).</li>
       <li><strong>Sens de variation</strong> : relation qualitative entre s(T) et le caractère endothermique ou exothermique de la dissolution ; aucun calcul de Ks(T) (loi de Van’t Hoff hors périmètre).</li>
       <li><strong>Lecture graphique</strong> : tolérance de 8 % au parcours et de 12 % aux défis ; résultats à 2 ou 3 chiffres significatifs.</li>
       <li><strong>Animation</strong> : nombre d’ions et de cristaux proportionnel aux masses dissoute et déposée (qualitatif) ; les couleurs sont schématiques.</li>
@@ -254,8 +254,8 @@ export function SimulationTsol() {
     <Section titre="À retenir (idées et formules clés)" ouvert={ouv.retenir} onBascule={() => setOuv(o => ({ ...o, retenir: !o.retenir }))}>
       {indicesProfond(<ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.7 }}>
         <li>Solubilité s : masse maximale dissoute dans 100 g d’eau à T ; au-delà, solution saturée et dépôt de cristaux.</li>
-        <li>Cristaux = (s(T₁) − s(T₂)) × m(eau) ÷ 100 pour une solution saturée à T₁ portée à T₂.</li>
-        <li>m(eau) minimale = 100 × m(solide) ÷ s(T) ; rendement η = (s(T₁) − s(T₂)) ÷ s(T₁).</li>
+        <li>Cristaux = <Frac haut={<>(s(T₁) − s(T₂)) × m(eau)</>} bas={<>100</>} /> pour une solution saturée à T₁ portée à T₂.</li>
+        <li>m(eau) minimale = <Frac haut={<>100 × m(solide)</>} bas={<>s</>} />(T) ; rendement η = <Frac haut={<>s(T₁) − s(T₂)</>} bas={<>s</>} />(T₁).</li>
         <li>Dissolution endothermique : s augmente avec T ; exothermique : s diminue avec T.</li>
       </ul>)}
     </Section>);

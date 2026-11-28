@@ -85,10 +85,10 @@ function VuePopulation({ ex, setEx }) {
       <div className="xa-ctrl" style={{ maxWidth: 920, margin: '0 auto 10px', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
         <Seg label="Nombre de noyaux au départ" valeur={n} onChange={v => change('n', v)} options={[[10, '10'], [100, '100'], [1000, '1 000']]}/>
         <Seg label="Demi-vie du noyau (h)" valeur={th} onChange={v => change('th', v)} options={[[2, '2 h'], [6, '6 h'], [12, '12 h']]}/>
-        <Seg label="Calcul pas à pas (Δt)" valeur={dtRel} onChange={v => setEx(x => ({ ...x, dtRel: v }))} options={[[0, 'aucun'], [2, 't½ ÷ 2'], [4, 't½ ÷ 4'], [8, 't½ ÷ 8']]}/>
+        <Seg label="Calcul pas à pas (Δt)" valeur={dtRel} onChange={v => setEx(x => ({ ...x, dtRel: v }))} options={[[0, 'aucun'], [2, 't½/2'], [4, 't½/4'], [8, 't½/8']]}/>
       </div>
       <PointsNoyaux n={n} instants={instants} t={t} maxWidth={etroit ? 440 : 520} hauteur={n === 1000 ? 150 : 110} aria={`${n} noyaux : ${nRest} intacts (bleu) et ${n - nRest} désintégrés (gris), à l’instant ${nbf(t, 1)} heures.`}/>
-      <GrapheDecroissance l={l} tMax={tMax} xStep={tMax / 4 >= 3 ? tMax / 4 : tMax / 4} trace={jeu ? trace.filter(p => p.t <= t) : null} euler={dt} cursor={jeu ? t : null} yTicks={[[0, '0'], [0.5, 'N₀ ÷ 2'], [1, 'N₀']]} maxWidth={etroit ? 440 : 520}
+      <GrapheDecroissance l={l} tMax={tMax} xStep={tMax / 4 >= 3 ? tMax / 4 : tMax / 4} trace={jeu ? trace.filter(p => p.t <= t) : null} euler={dt} cursor={jeu ? t : null} yTicks={[[0, '0'], [0.5, 'N₀/2'], [1, 'N₀']]} maxWidth={etroit ? 440 : 520}
         aria={`Courbe de décroissance de N divisé par N zéro, demi-vie ${th} heures : loi exponentielle en bleu, tirage au hasard en gris${dt ? ', pas d’Euler en orange' : ''}.`}/>
       <div role="status" aria-live="polite" style={{ minHeight: 44, margin: '8px auto 0', maxWidth: 920, fontSize: 15, lineHeight: 1.5, color: KIT.txt2 }}>{message}</div>
       <BarreLecture L={L} tFin={T_POP} libelle="▶ Lancer"/>
@@ -98,7 +98,7 @@ function VuePopulation({ ex, setEx }) {
       <Chips items={[['Instant', `${nbf(t, 1)}${NB}h`, '#0f172a'], ['Noyaux intacts', `${nRest}`, '#1d4ed8'], ['Loi : N₀ e^(−λt)', `${nbf(nTheo, n >= 100 ? 0 : 1)}`, '#15803d'], ['λ', `${nbf(l, 3)}${NB}h⁻¹`, '#b45309']]}/>
       <div style={{ ...styleBoite, maxWidth: 920, margin: '10px auto 0' }}>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 4 }}>Mesures</div>
-        <LigneMesure nom="Constante de désintégration λ = ln 2 ÷ t½" valeur={`${nbf(l, 3)}${NB}h⁻¹`} couleur="#b45309"/>
+        <LigneMesure nom="Constante de désintégration λ = frac(ln 2|t½)" valeur={`${nbf(l, 3)}${NB}h⁻¹`} couleur="#b45309"/>
         <LigneMesure nom="Activité à cet instant : λ N (loi)" valeur={`${nbf(l * nTheo, n >= 100 ? 1 : 2)}${NB}désint./h, soit ${nbf(l * nTheo / 3600, 3)}${NB}Bq`} couleur="#15803d"/>
         {dt && <LigneMesure nom={`Pas d’Euler : ΔN = −λ N Δt avec Δt = ${nbf(dt, 2)} h`} valeur="courbe orange" couleur={COL.rouge}/>}
         <div style={{ marginTop: 6, fontSize: 14, color: KIT.txt2, lineHeight: 1.5 }}>Chaque noyau a la même probabilité λ dt de se désintégrer pendant dt, quel que soit son âge. L’orange (pas d’Euler) se rapproche de la loi quand Δt diminue.</div>
@@ -174,21 +174,21 @@ export function EulerGuide({ l = M.PG.lamR }) {
     <div>
       <Seg label="Durée du pas Δt" valeur={dt} onChange={setDt} options={[[4, '4 h'], [2, '2 h'], [1, '1 h'], [0.5, '0,5 h']]}/>
       <div style={{ height: 8 }}/>
-      <GrapheDecroissance l={l} tMax={12} euler={dt} yTicks={[[0, '0'], [0.5, 'N₀ ÷ 2'], [1, 'N₀']]} maxWidth={440} aria={`Courbe de décroissance du noyau R en bleu et calcul pas à pas en orange, avec des pas de ${nbf(dt, 1)} heure.`}/>
+      <GrapheDecroissance l={l} tMax={12} euler={dt} yTicks={[[0, '0'], [0.5, 'N₀/2'], [1, 'N₀']]} maxWidth={440} aria={`Courbe de décroissance du noyau R en bleu et calcul pas à pas en orange, avec des pas de ${nbf(dt, 1)} heure.`}/>
       <Chips items={[['Pas Δt', `${nbf(dt, 1)}${NB}h`, '#b45309'], ['Écart avec la loi à 12 h', `${ecart >= 0 ? '+' : '−'}${nbf(Math.abs(ecart), 1)}${NB}%`, ecart === 0 ? '#15803d' : '#b91c1c']]}/>
     </div>);
 }
-// Courbe de décroissance ; curseur d'instant ; niveau N₀ ÷ 2 optionnel ; yLabel : 'N' ou 'A'
+// Courbe de décroissance ; curseur d'instant ; niveau N₀/2 optionnel ; yLabel : 'N' ou 'A'
 export function CourbeGuide({ l, niveau = false, curseur = false, tMax = 12, grandeur = 'N', marque = null }) {
   const [t, setT] = useState(0), f = Math.exp(-l * t);
   return (
     <div>
-      <GrapheDecroissance l={l} tMax={tMax} niveau={niveau ? 0.5 : null} cursor={curseur ? t : marque} yLabel={grandeur === 'N' ? 'N (noyaux)' : 'A (Bq)'} yTicks={[[0, '0'], [0.5, grandeur === 'N' ? 'N₀ ÷ 2' : 'A₀ ÷ 2'], [1, grandeur === 'N' ? 'N₀' : 'A₀']]} maxWidth={440}
+      <GrapheDecroissance l={l} tMax={tMax} niveau={niveau ? 0.5 : null} cursor={curseur ? t : marque} yLabel={grandeur === 'N' ? 'N (noyaux)' : 'A (Bq)'} yTicks={[[0, '0'], [0.5, grandeur === 'N' ? 'N₀/2' : 'A₀/2'], [1, grandeur === 'N' ? 'N₀' : 'A₀']]} maxWidth={440}
         aria={`Courbe de décroissance exponentielle de ${grandeur} en fonction du temps${niveau ? ', avec le niveau moitié en pointillés orange' : ''}.`}/>
       {curseur && <div style={{ marginTop: 6 }}>
         <label style={{ display: 'block', fontSize: 13.5, fontWeight: 700, color: KIT.txt2 }}>Instant t = {nbf(t, 1)}{NB}h
           <input type="range" min={0} max={tMax} step={0.1} value={t} aria-label="Instant t en heures" onChange={e => setT(Number(e.target.value))} style={{ width: '100%', minHeight: 32 }}/></label>
-        <Chips items={[['Instant t', `${nbf(t, 1)}${NB}h`, '#7c3aed'], ['N ÷ N₀', `${nbf(f, 2)}`, '#1d4ed8']]}/>
+        <Chips items={[['Instant t', `${nbf(t, 1)}${NB}h`, '#7c3aed'], ['N/N₀', `${nbf(f, 2)}`, '#1d4ed8']]}/>
       </div>}
     </div>);
 }

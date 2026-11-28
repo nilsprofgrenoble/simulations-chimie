@@ -1,6 +1,7 @@
 // Cartes « À retenir » de la simulation 318 (sens de rotation, loi de Biot, mélange racémique, excès énantiomérique, bilan).
 // viewBox de 300 de large, textes de 12 à 16, maxWidth 320.
 import { K, svgStyle } from "./schemaOutils";
+import { FormuleSvg } from '../svgFrac';
 
 const PLUS = '#c2410c', MOINS = '#0f766e', LUM = '#ca8a04', VIOLET = '#7c3aed', BLEU = '#2563eb';
 const cadre = (aria, h, children) => (
@@ -81,7 +82,7 @@ export function SvgEECarte() {
   return cadre('Excès énantiomérique : e.e. égale la valeur absolue de la différence des quantités des deux énantiomères, divisée par leur somme, fois 100. Pour 70 % de plus et 30 % de moins, e.e. vaut 40 pour cent.', 272, <g>
     <text x="150" y="26" textAnchor="middle" fontSize="14.5" fontWeight="800" fill={K.txt}>L’excès énantiomérique</text>
     <rect x="30" y="38" width="240" height="42" rx="12" fill="#fff" stroke={LUM} strokeWidth="2.6"/>
-    <text x="150" y="65" textAnchor="middle" fontSize="15.5" fontWeight="800" fill={K.txt}>e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100</text>
+    <FormuleSvg x={150} y={65} s={15.5} w={800} c={K.txt} a="middle" parts={['e.e. = ', { h: '|n₊ − n₋|', b: 'n₊ + n₋' }, ' × 100']} />
     <rect x={x0} y="98" width={w * pp} height="28" rx="8" fill={PLUS} opacity="0.85"/>
     <rect x={x0 + w * pp} y="98" width={w * (1 - pp)} height="28" rx="8" fill={MOINS} opacity="0.85"/>
     <text x={x0 + w * pp / 2} y="117" textAnchor="middle" fontSize="13" fontWeight="800" fill="#fff">70 % (+)</text>
@@ -105,11 +106,11 @@ export function SvgBilanBiotCarte() {
     <path d="M 170 80 L 220 112" stroke="#64748b" strokeWidth="2.4" fill="none" strokeLinecap="round"/><polygon points="224,115 212,113 218,104" fill="#64748b"/>
     <rect x="14" y="120" width="132" height="92" rx="12" fill="#fff" stroke={MOINS} strokeWidth="2.4"/>
     <text x="80" y="142" textAnchor="middle" fontSize="12.5" fontWeight="800" fill={MOINS}>énantiomère pur</text>
-    <text x="80" y="166" textAnchor="middle" fontSize="13.5" fontWeight="800" fill={K.txt}>C = α ÷ ([α]·L)</text>
+    <FormuleSvg x={80} y={166} s={13.5} w={800} c={K.txt} a="middle" parts={['C = ', { h: 'α', b: '[α]·L' }]} />
     <text x="80" y="188" textAnchor="middle" fontSize="12.5" fill={K.txt}>(valeur absolue de α)</text>
     <rect x="154" y="120" width="132" height="92" rx="12" fill="#fff" stroke={PLUS} strokeWidth="2.4"/>
     <text x="220" y="142" textAnchor="middle" fontSize="12.5" fontWeight="800" fill={PLUS}>mélange</text>
-    <text x="220" y="166" textAnchor="middle" fontSize="13.5" fontWeight="800" fill={K.txt}>e.e. = |α| ÷ |α pur|</text>
+    <FormuleSvg x={220} y={166} s={13.5} w={800} c={K.txt} a="middle" parts={['e.e. = ', { h: '|α|', b: '|α pur|' }]} />
     <text x="220" y="188" textAnchor="middle" fontSize="12.5" fill={K.txt}>× 100 (en %)</text>
     <text x="150" y="238" textAnchor="middle" fontSize="12.5" fill={K.txt}>Le signe de α dit quel énantiomère est en excès.</text>
   </g>);

@@ -1,6 +1,7 @@
 // Cartes « À retenir » de la simulation 316 (filtres RC passe-bas et passe-haut). viewBox de 300 de large, textes de 12,5 à 16, maxWidth 320.
 import { K, svgStyle } from "./schemaOutils";
 import * as M from "./filtreModele";
+import { FormuleSvg } from '../svgFrac';
 
 const BLEU = '#2563eb', ORANGE = '#ea580c', TEAL = '#0f766e', VIOLET = '#7c3aed';
 const cadre = (aria, h, children) => (
@@ -60,9 +61,9 @@ export function SvgAmplCarte() {
     <text x={x0 + 8} y="56" fontSize="12.5" fontWeight="800" fill={BLEU}>Ue,max</text>
     <text x={x0 + 92} y="56" fontSize="12.5" fontWeight="800" fill={ORANGE}>Us,max</text>
     <rect x="30" y="156" width="240" height="38" rx="10" fill="#fff" stroke={TEAL} strokeWidth="2"/>
-    <text x="150" y="181" textAnchor="middle" fontSize="16" fontWeight="800" fill={K.txt}>A = Us,max ÷ Ue,max</text>
+    <FormuleSvg x={150} y={181} s={16} w={800} c={K.txt} a="middle" parts={['A = ', { h: 'Us,max', b: 'Ue,max' }]} />
     <text x="150" y="212" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#15803d">Exemple : Ue,max = 3,0 V ; Us,max = 1,5 V</text>
-    <text x="150" y="231" textAnchor="middle" fontSize="12.5" fill={K.txt}>A = 1,5 ÷ 3,0 = 0,50 (sans unité)</text>
+    <FormuleSvg x={150} y={233} s={12.5} w={400} c={K.txt} a="middle" parts={['A = ', { h: '1,5', b: '3,0' }, ' = 0,50 (sans unité)']} />
     <text x="150" y="249" textAnchor="middle" fontSize="12.5" fontWeight="700" fill={K.txt}>filtre passif : il atténue, donc A ≤ 1</text>
   </g>);
 }
@@ -86,7 +87,7 @@ export function SvgFcCarte() {
     <text x={X(1)} y={yB + 17} textAnchor="middle" fontSize="13" fontWeight="800" fill={ORANGE}>fc</text>
     <text x={x0 - 6} y={yT + 4} textAnchor="end" fontSize="13" fontWeight="800" fill="#334155">A</text><text x={x1} y={yB + 17} textAnchor="end" fontSize="12.5" fill="#334155">f</text>
     <rect x="20" y="180" width="260" height="34" rx="10" fill="#fff" stroke={ORANGE} strokeWidth="2"/>
-    <text x="150" y="202" textAnchor="middle" fontSize="14" fontWeight="800" fill={K.txt}>A(fc) = Amax ÷ √2 ≈ 0,7 × Amax</text>
+    <FormuleSvg x={150} y={202} s={14} w={800} c={K.txt} a="middle" parts={['A(fc) = ', { h: 'Amax', b: '√2' }, ' ≈ 0,7 × Amax']} />
     <text x="150" y="236" textAnchor="middle" fontSize="12.5" fontWeight="700" fill="#15803d">à fc, l’amplitude est réduite d’environ 30 %</text>
   </g>);
 }
@@ -150,7 +151,7 @@ export function SvgRCCarte() {
     {ligne(148, '1 kΩ', fc2, '#b45309', 'b')}
     <rect x="18" y="222" width="264" height="30" rx="10" fill="#fff" stroke={TEAL} strokeWidth="2"/>
     <text x="150" y="242" textAnchor="middle" fontSize="13.5" fontWeight="800" fill={K.txt}>R × C plus grand → fc plus petite</text>
-    <text x="150" y="274" textAnchor="middle" fontSize="12.5" fill={K.txt}>repère : fc = 1 ÷ (2π × R × C)</text>
+    <FormuleSvg x={150} y={272} s={12.5} w={400} c={K.txt} a="middle" parts={['repère : fc = ', { h: '1', b: '2π × R × C' }]} />
     <text x="150" y="291" textAnchor="middle" fontSize="12" fill="#64748b">(R en Ω, C en F, fc en Hz)</text>
   </g>);
 }

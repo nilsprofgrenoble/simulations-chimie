@@ -1,6 +1,7 @@
 // Cartes « À retenir » de la simulation 315 (amplifier, plage du CAN, saturation, décalage par une tension continue, chaîne complète).
 // viewBox de 300 de large, textes de 12 à 16, maxWidth 320.
 import { K, svgStyle } from "./schemaOutils";
+import { FormuleSvg } from '../svgFrac';
 
 const BLEU = '#2563eb', ORANGE = '#ea580c', VERT = '#15803d', ROUGE = '#dc2626', VIOLET = '#7c3aed', AMBRE = '#b45309';
 const cadre = (aria, h, children) => (
@@ -29,7 +30,7 @@ export function SvgAmpliCarte() {
     <polyline points={sinus(222, 282, 78, 30, 1.5)} fill="none" stroke={ORANGE} strokeWidth="2.8" strokeLinecap="round"/>
     <text x="252" y="124" textAnchor="middle" fontSize="13" fontWeight="800" fill={ORANGE}>Us</text>
     <rect x="42" y="136" width="216" height="40" rx="12" fill="#fff" stroke={ORANGE} strokeWidth="2.4"/>
-    <text x="150" y="162" textAnchor="middle" fontSize="16" fontWeight="800" fill={K.txt}>A = Us ÷ Ue</text>
+    <FormuleSvg x={150} y={162} s={16} w={800} c={K.txt} a="middle" parts={['A = ', { h: 'Us', b: 'Ue' }]} />
     <text x="150" y="196" textAnchor="middle" fontSize="12.5" fill={K.txt}>A n’a pas d’unité (Us et Ue en même unité)</text>
     <text x="150" y="216" textAnchor="middle" fontSize="12.5" fontWeight="700" fill={VERT}>ex. : 3 mV × 250 = 750 mV = 0,75 V</text>
   </g>);

@@ -1,6 +1,6 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
-import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond } from "../commun";
+import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section, BoutonsModes, IndiceDefi, indicesProfond , Frac } from "../commun";
 import { Pic } from "../Pictos";
 import * as B from "./biotModele";
 import { SceneBiot } from "./BiotScene";
@@ -146,7 +146,7 @@ export function SimulationBiot() {
     { id: 'unite', titre: 'L’unité de [α]',
       texte: <>Dans la loi de Biot, α s’exprime en degrés (°), L en dm et C en g/mL. Le facteur <strong>[α]</strong> doit donc compenser ces unités pour que le produit [α] × L × C soit bien en degrés.</>,
       tache: { type: 'qcm', q: 'Quelle est l’unité du pouvoir rotatoire spécifique [α] ?', options: ['le degré (°)', '°·cm⁻¹·g⁻¹·mL', 'g·mL⁻¹·dm⁻¹', '°·dm⁻¹·g⁻¹·mL'], bonne: 3,
-        expl: '[α] = α ÷ (L × C) : (°) ÷ (dm × g/mL) = °·dm⁻¹·g⁻¹·mL.', indice: 'Isolez [α] : [α] = α ÷ (L × C), puis écrivez l’unité de ce quotient.' } },
+        expl: '[α] = frac(α|L × C) : frac(°|dm × g/mL) = °·dm⁻¹·g⁻¹·mL.', indice: 'Isolez [α] : [α] = frac(α|L × C), puis écrivez l’unité de ce quotient.' } },
     { id: 'longueur', titre: 'α est proportionnel à L',
       retenirTitre: 'À retenir : la loi de Biot',
       retenir: <><SvgBiotCarte/><ul style={ULS}>
@@ -158,9 +158,9 @@ export function SimulationBiot() {
     { id: 'concentration', titre: 'Retrouver la concentration',
       texte: <>La cuve mesure <strong>L = 20 cm</strong> et contient une solution d’un seul énantiomère : le carvone dextrogyre, de pouvoir rotatoire spécifique <strong>[α] = +60 °·dm⁻¹·g⁻¹·mL</strong>. La concentration C est inconnue. Le polarimètre indique <strong>α = +9,6°</strong>.</>,
       tache: { type: 'num', q: 'Quelle est la concentration C de la solution (en g/mL) ?', unite: 'g/mL', vrai: 0.08, tol: 0.03, affiche: v => nb(v, 3), cs: 2, carnet: false,
-        calcul: () => ['On isole C : C = α ÷ ([α] × L), avec L = 20 cm = 2,0 dm.', 'C = 9,6 ÷ (60 × 2,0) = 0,080 g/mL.'],
-        pieges: [[0.008, 'Vous avez utilisé L = 20 (en cm) : convertissez-la en décimètres (2,0 dm).'], [0.16, 'Vous avez oublié de diviser par la longueur L de la cuve : C = α ÷ ([α] × L).'], [12.5, 'Vous avez inversé le quotient : C = α ÷ ([α] × L).']],
-        expl: 'C = α ÷ ([α] × L) = 9,6 ÷ (60 × 2,0) = 0,080 g/mL.', indice: 'La loi de Biot α = [α] × L × C donne C = α ÷ ([α] × L). Convertissez L en dm.' } },
+        calcul: () => ['On isole C : C = frac(α|[α] × L), avec L = 20 cm = 2,0 dm.', 'C = frac(9,6|60 × 2,0) = 0,080 g/mL.'],
+        pieges: [[0.008, 'Vous avez utilisé L = 20 (en cm) : convertissez-la en décimètres (2,0 dm).'], [0.16, 'Vous avez oublié de diviser par la longueur L de la cuve : C = frac(α|[α] × L).'], [12.5, 'Vous avez inversé le quotient : C = frac(α|[α] × L).']],
+        expl: 'C = frac(α|[α] × L) = frac(9,6|60 × 2,0) = 0,080 g/mL.', indice: 'La loi de Biot α = [α] × L × C donne C = frac(α|[α] × L). Convertissez L en dm.' } },
     { id: 'melange', titre: 'Un mélange de deux énantiomères',
       texte: <>Une solution peut contenir <strong>les deux énantiomères</strong> d’un composé : le (+) (dextrogyre) et le (−) (lévogyre), de même |[α]| mais de signes opposés. Leurs rotations <strong>s’ajoutent</strong> : positive pour le (+), négative pour le (−). Camphre, L = 2,0 dm, concentration totale C = 0,10 g/mL. Faites glisser le <strong>curseur de composition</strong> (poignée violette) et réglez-le pour que <strong>α = 0°</strong>.</>,
       tache: { type: 'action', ok: okRacemique, consigne: okRacemique ? '✓ α = 0° : le plan de polarisation n’a pas tourné.' : 'Réglez la composition pour que α = 0°.' } },
@@ -175,21 +175,21 @@ export function SimulationBiot() {
         <li><strong>Mélange racémique</strong> : autant de (+) que de (−).</li>
         <li>Les rotations opposées <strong>se compensent</strong> : α = 0.</li>
         <li>Le mélange est <strong>optiquement inactif</strong>, mais il contient bien les deux énantiomères.</li></ul></>,
-      texte: <>Quand un énantiomère est plus abondant que l’autre, on mesure ce déséquilibre par l’<strong>excès énantiomérique</strong> : <strong>e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100</strong>, où n₊ et n₋ sont les quantités de matière (en mol) des énantiomères (+) et (−). Il vaut 0 % pour un racémique et 100 % pour un énantiomère pur. Ici, le mélange contient <strong>85 % de (+)</strong> et <strong>15 % de (−)</strong>.</>,
+      texte: <>Quand un énantiomère est plus abondant que l’autre, on mesure ce déséquilibre par l’<strong>excès énantiomérique</strong> : <strong>e.e. = <Frac haut={<>∣n₊ − n₋∣</>} bas={<>n₊ + n₋</>} /> × 100</strong>, où n₊ et n₋ sont les quantités de matière (en mol) des énantiomères (+) et (−). Il vaut 0 % pour un racémique et 100 % pour un énantiomère pur. Ici, le mélange contient <strong>85 % de (+)</strong> et <strong>15 % de (−)</strong>.</>,
       tache: { type: 'num', q: 'Quel est l’excès énantiomérique e.e. de ce mélange (en %) ?', unite: '%', vrai: 70, tol: 0.03, affiche: v => nb(v, 0), cs: 2, carnet: false,
-        calcul: () => ['e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100, avec 85 % et 15 % du total.', 'e.e. = |85 − 15| ÷ (85 + 15) × 100 = 70 %.'],
+        calcul: () => ['e.e. = frac(∣n₊ − n₋∣|n₊ + n₋) × 100, avec 85 % et 15 % du total.', 'e.e. = frac(∣85 − 15∣|85 + 15) × 100 = 70 %.'],
         pieges: [[85, 'Vous avez donné le pourcentage de (+). L’excès est la différence entre les deux pourcentages, divisée par leur somme.'], [0.7, 'Votre valeur est une fraction : multipliez par 100 pour l’exprimer en %.'], [30, 'Vous avez donné 2 × 15. Il faut la différence |85 − 15| = 70, divisée par la somme 100.']],
-        expl: 'e.e. = |85 − 15| ÷ (85 + 15) × 100 = 70 %.', indice: 'Calculez la différence en valeur absolue des deux pourcentages, divisez par leur somme, puis multipliez par 100.' } },
+        expl: 'e.e. = frac(∣85 − 15∣|85 + 15) × 100 = 70 %.', indice: 'Calculez la différence en valeur absolue des deux pourcentages, divisez par leur somme, puis multipliez par 100.' } },
     { id: 'alphaee', titre: 'Trouver e.e. avec le polarimètre',
-      texte: <>On ne connaît pas toujours la composition : on la déduit de α. Une solution de menthol à <strong>C = 0,20 g/mL</strong>, dans une cuve de <strong>L = 1,0 dm</strong>, donne <strong>α = −6,0°</strong>. Le même menthol, <strong>énantiomère (−) pur</strong> et à la même concentration, donnerait <strong>α = −10,0°</strong> (loi de Biot : −50 × 1,0 × 0,20). Comme α est proportionnel à l’excès : <strong>e.e. = |α| ÷ |α de l’énantiomère pur| × 100</strong>.</>,
+      texte: <>On ne connaît pas toujours la composition : on la déduit de α. Une solution de menthol à <strong>C = 0,20 g/mL</strong>, dans une cuve de <strong>L = 1,0 dm</strong>, donne <strong>α = −6,0°</strong>. Le même menthol, <strong>énantiomère (−) pur</strong> et à la même concentration, donnerait <strong>α = −10,0°</strong> (loi de Biot : −50 × 1,0 × 0,20). Comme α est proportionnel à l’excès : <strong>e.e. = <Frac haut={<>∣α∣</>} bas={<>∣α de l’énantiomère pur∣</>} /> × 100</strong>.</>,
       tache: { type: 'num', q: 'Quel est l’excès énantiomérique e.e. de ce mélange (en %) ?', unite: '%', vrai: 60, tol: 0.03, affiche: v => nb(v, 0), cs: 2, carnet: false,
-        calcul: () => ['e.e. = |α| ÷ |α pur| × 100 = 6,0 ÷ 10,0 × 100.', 'e.e. = 60 %, avec le (−) en excès (α est négatif).'],
-        pieges: [[0.6, 'Votre valeur est une fraction : multipliez par 100 pour l’exprimer en %.'], [40, 'Vous avez calculé (10,0 − 6,0) ÷ 10,0 : l’excès se lit directement dans le rapport |α| ÷ |α pur|.'], [-60, 'L’excès énantiomérique est toujours positif : le signe de α indique seulement quel énantiomère est en excès.']],
-        expl: 'e.e. = 6,0 ÷ 10,0 × 100 = 60 % : le mélange contient 80 % de (−) et 20 % de (+).', indice: 'Divisez la valeur absolue de α mesuré par la valeur absolue de α de l’énantiomère pur, puis multipliez par 100.' } },
+        calcul: () => ['e.e. = frac(∣α∣|∣α pur∣) × 100 = frac(6,0|10,0) × 100.', 'e.e. = 60 %, avec le (−) en excès (α est négatif).'],
+        pieges: [[0.6, 'Votre valeur est une fraction : multipliez par 100 pour l’exprimer en %.'], [40, 'Vous avez calculé frac(10,0 − 6,0|10,0) : l’excès se lit directement dans le rapport frac(∣α∣|∣α pur∣).'], [-60, 'L’excès énantiomérique est toujours positif : le signe de α indique seulement quel énantiomère est en excès.']],
+        expl: 'e.e. = frac(6,0|10,0) × 100 = 60 % : le mélange contient 80 % de (−) et 20 % de (+).', indice: 'Divisez la valeur absolue de α mesuré par la valeur absolue de α de l’énantiomère pur, puis multipliez par 100.' } },
     { id: 'complet', titre: 'Préparer un mélange d’e.e. donné',
       retenirTitre: 'À retenir : l’excès énantiomérique',
       retenir: <><SvgEECarte/><ul style={ULS}>
-        <li><strong>e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100</strong>.</li>
+        <li><strong>e.e. = <Frac haut={<>∣n₊ − n₋∣</>} bas={<>n₊ + n₋</>} /> × 100</strong>.</li>
         <li>0 % pour un racémique, 100 % pour un énantiomère pur.</li>
         <li><strong>α = e.e. × α</strong> de l’énantiomère pur (au signe de l’énantiomère en excès).</li></ul></>,
       texte: <>Camphre, L = 2,0 dm, C = 0,10 g/mL. Faites glisser le <strong>curseur de composition</strong> pour préparer un mélange dont l’<strong>excès énantiomérique est de 50 %</strong>, avec le <strong>(+) en excès</strong>. Vérifiez la valeur de α affichée.</>,
@@ -202,8 +202,8 @@ export function SimulationBiot() {
     { id: 'bilan', titre: 'Le bilan',
       retenirTitre: 'À retenir : du polarimètre au résultat',
       retenir: <><SvgBilanBiotCarte/><ul style={ULS}>
-        <li>Pour un énantiomère pur : <strong>C = |α| ÷ ([α] × L)</strong> (L en dm).</li>
-        <li>Pour un mélange : <strong>e.e. = |α| ÷ |α pur| × 100</strong>.</li>
+        <li>Pour un énantiomère pur : <strong>C = <Frac haut={<>∣α∣</>} bas={<>[α] × L</>} /></strong> (L en dm).</li>
+        <li>Pour un mélange : <strong>e.e. = <Frac haut={<>∣α∣</>} bas={<>∣α pur∣</>} /> × 100</strong>.</li>
         <li>Le signe de α indique quel énantiomère est en excès.</li></ul></>,
       texte: <>Vous savez lire un pouvoir rotatoire (sens, signe), appliquer la loi de Biot (α = [α] × L × C, avec L en dm), expliquer qu’un mélange racémique est inactif et calculer un excès énantiomérique à partir de α. La suite : explorer librement, ou relever les défis.</>,
       tache: null },
@@ -241,12 +241,12 @@ export function SimulationBiot() {
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : retrouver la concentration</div>
         <div style={{ ...lbl, marginBottom: 8 }}>Une solution d’un seul énantiomère de <strong>{s.nom}</strong>, de pouvoir rotatoire spécifique <strong>[α] = {sg > 0 ? '+' : '−'}{s.A}{NB}°·dm⁻¹·g⁻¹·mL</strong>, est placée dans une cuve de <strong>{nb(defi.L * 10, 0)}{NB}cm</strong>. Le polarimètre indique <strong>α = {B.fmtDeg(defi.alpha, 2)}°</strong>. Calculez la concentration C de la solution, en g/mL.</div>
         <div style={{ ...lbl, marginBottom: 8 }}>C = {champ('g/mL')}</div>
-        <IndiceDefi cache={false}>La loi de Biot α = [α] × L × C donne C = α ÷ ([α] × L). Convertissez la longueur de la cuve en décimètres (1 dm = 10 cm) avant de calculer.</IndiceDefi>
+        <IndiceDefi cache={false}>La loi de Biot α = [α] × L × C donne C = <Frac haut={<>α</>} bas={<>[α] × L</>} />. Convertissez la longueur de la cuve en décimètres (1 dm = 10 cm) avant de calculer.</IndiceDefi>
       </> : <>
         <div style={{ fontSize: 15, fontWeight: 700, color: KIT.txt, marginBottom: 6 }}><Pic n="target"/>Défi : excès énantiomérique d’un mélange</div>
         <div style={{ ...lbl, marginBottom: 8 }}>Un mélange des deux énantiomères du <strong>{s.nom}</strong> ([α] = ±{s.A}{NB}°·dm⁻¹·g⁻¹·mL pour les énantiomères purs) est placé dans une cuve de <strong>{nb(defi.L * 10, 0)}{NB}cm</strong>, à la concentration totale <strong>C = {nb(defi.C, 2)}{NB}g/mL</strong>. Le polarimètre indique <strong>α = {B.fmtDeg(defi.alpha, 2)}°</strong>. Calculez l’excès énantiomérique du mélange, en %.</div>
         <div style={{ ...lbl, marginBottom: 8 }}>e.e. = {champ('%')}</div>
-        <IndiceDefi cache={false}>Calculez d’abord α de l’énantiomère pur avec la loi de Biot (|[α]| × L × C, L en dm), puis e.e. = |α| ÷ |α pur| × 100.</IndiceDefi>
+        <IndiceDefi cache={false}>Calculez d’abord α de l’énantiomère pur avec la loi de Biot (∣[α]∣ × L × C, L en dm), puis e.e. = <Frac haut={<>∣α∣</>} bas={<>∣α pur∣</>} /> × 100.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
         <button id="bx-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -259,10 +259,10 @@ export function SimulationBiot() {
       {defi.verifie && !defi.ok && defi.corr && <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1.5px solid #f59e0b', fontSize: 14, lineHeight: 1.6, color: KIT.txt }}>
         {dC ? <>
           <div>L = {nb(defi.L * 10, 0)} cm = {nb(defi.L, 1)} dm.</div>
-          <div>C = |α| ÷ ([α] × L) = {nb(Math.abs(defi.alpha), 2)} ÷ ({s.A} × {nb(defi.L, 1)}) = <strong>{nb(defi.vrai, 3)} g/mL</strong>.</div></>
+          <div>C = <Frac haut={<>∣α∣</>} bas={<>[α] × L</>} /> = <Frac haut={<>{nb(Math.abs(defi.alpha), 2)}</>} bas={<>{s.A} × {nb(defi.L, 1)}</>} /> = <strong>{nb(defi.vrai, 3)} g/mL</strong>.</div></>
           : <>
           <div>α de l’énantiomère pur : {s.A} × {nb(defi.L, 1)} × {nb(defi.C, 2)} = {nb(aP, 2)}°.</div>
-          <div>e.e. = |α| ÷ |α pur| × 100 = {nb(Math.abs(defi.alpha), 2)} ÷ {nb(aP, 2)} × 100 = <strong>{nb(defi.vrai, 0)} %</strong>, avec le ({defi.signe > 0 ? '+' : '−'}) en excès.</div></>}
+          <div>e.e. = <Frac haut={<>∣α∣</>} bas={<>∣α pur∣</>} /> × 100 = <Frac haut={<>{nb(Math.abs(defi.alpha), 2)}</>} bas={<>{nb(aP, 2)}</>} /> × 100 = <strong>{nb(defi.vrai, 0)} %</strong>, avec le ({defi.signe > 0 ? '+' : '−'}) en excès.</div></>}
       </div>}
     </div>);
   })();
@@ -274,7 +274,7 @@ export function SimulationBiot() {
       <li><strong>Valeurs de [α]</strong> : camphre ±44, menthol ±50, carvone ±60 °·dm⁻¹·g⁻¹·mL. Ce sont des valeurs indicatives arrondies pour la simulation (les valeurs de la littérature dépendent du solvant et des conditions de mesure).</li>
       <li><strong>Énantiomères</strong> : les deux énantiomères d’un composé ont des pouvoirs rotatoires spécifiques opposés. Pour un mélange, les pouvoirs rotatoires s’additionnent : α = α₊ + α₋ (solution diluée, sans interaction entre les énantiomères).</li>
       <li><strong>Polarimètre</strong> : lecture idéale à 0,01° près (le polarimètre de Laurent, à demi-ombre, n’est pas étudié). Dans le dessin, le plan tourne proportionnellement à la distance parcourue dans la cuve ; la lumière est supposée monochromatique.</li>
-      <li><strong>Excès énantiomérique</strong> : e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100, calculé à partir des quantités de matière ; pour deux énantiomères de même masse molaire, il est égal à |C₊ − C₋| ÷ (C₊ + C₋) × 100.</li>
+      <li><strong>Excès énantiomérique</strong> : e.e. = <Frac haut={<>∣n₊ − n₋∣</>} bas={<>n₊ + n₋</>} /> × 100, calculé à partir des quantités de matière ; pour deux énantiomères de même masse molaire, il est égal à <Frac haut={<>∣C₊ − C₋∣</>} bas={<>C₊ + C₋</>} /> × 100.</li>
     </ul>);
   const panneauHypo = (<div style={styleBoite}><Section titre="Hypothèses de travail" ouvert={hypoOuv} onBascule={() => setHypoOuv(o => !o)}>{hypotheses}</Section></div>);
   const aEssayer = (
@@ -293,7 +293,7 @@ export function SimulationBiot() {
         <li>Dextrogyre (+) : le plan tourne vers la droite, α &gt; 0. Lévogyre (−) : vers la gauche, α &lt; 0.</li>
         <li>Loi de Biot : α = [α] × L × C (L en dm, C en g/mL, [α] en °·dm⁻¹·g⁻¹·mL).</li>
         <li>Mélange racémique : autant de (+) que de (−), α = 0, e.e. = 0 %.</li>
-        <li>e.e. = |n₊ − n₋| ÷ (n₊ + n₋) × 100 = |α| ÷ |α de l’énantiomère pur| × 100.</li>
+        <li>e.e. = <Frac haut={<>∣n₊ − n₋∣</>} bas={<>n₊ + n₋</>} /> × 100 = <Frac haut={<>∣α∣</>} bas={<>∣α de l’énantiomère pur∣</>} /> × 100.</li>
         <li>Un carbocation plan donne les deux énantiomères en quantités égales : mélange racémique.</li>
       </ul>)}
     </Section>);

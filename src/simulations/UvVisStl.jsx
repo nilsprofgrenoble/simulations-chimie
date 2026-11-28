@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState } from "react";
 import { Formule, cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, LigneMesure, IndiceDefi, Curseur, indicesProfond } from "../commun";
+  BoutonsModes, ORANGE_GUIDE, lireNombre, ARetenir, LigneMesure, IndiceDefi, Curseur, indicesProfond , Frac } from "../commun";
 import { NB } from "./Distillation";
 import { Pic } from "../Pictos";
 import * as M from "./uvVisStlModele";
@@ -100,7 +100,7 @@ export function SimulationUvVisibleStl() {
       tache: { type: 'num', q: `Quelle est l’énergie E d’un photon absorbé au maximum (λ_max = ${lmax(U)} nm), en eV (3 chiffres significatifs) ?`, unite: 'eV', vrai: E0, tol: 0.03, affiche: v => nbs(v, 3), cs: 3, carnet: 'Énergie d’un photon absorbé',
         calcul: () => [`λ = ${lmax(U)} nm = ${nbf(lmax(U) / 100, 2)}×10⁻⁷ m.`, `E = frac(h × c|λ) = frac(6,63×10⁻³⁴ × 3,00×10⁸|${nbf(lmax(U) / 100, 2)}×10⁻⁷) = ${sci(EJ0, 2)} J.`, `E = frac(${sci(EJ0, 2)}|1,60×10⁻¹⁹) = ${nbs(E0, 3)} eV.`],
         pieges: [[EJ0 / 1e-19, 'Vous avez donné E en 10⁻¹⁹ J : divisez par 1,60×10⁻¹⁹ J pour obtenir des électronvolts.'], [E0 * 1e9, 'Vous n’avez pas converti λ en mètres : 1 nm = 10⁻⁹ m.']],
-        expl: `E = frac(h × c|λ) = ${sci(EJ0, 2)} J = ${nbs(E0, 3)} eV.`, indice: 'Convertissez d’abord λ en mètres (1 nm = 10⁻⁹ m), calculez E en joules avec E = h × c ÷ λ, puis divisez par 1,60×10⁻¹⁹ pour passer aux électronvolts.' } },
+        expl: `E = frac(h × c|λ) = ${sci(EJ0, 2)} J = ${nbs(E0, 3)} eV.`, indice: 'Convertissez d’abord λ en mètres (1 nm = 10⁻⁹ m), calculez E en joules avec E = frac(h × c|λ), puis divisez par 1,60×10⁻¹⁹ pour passer aux électronvolts.' } },
     { id: 'identifier', titre: 'Identifier une espèce avec des valeurs tabulées', focus: ['scene', 'table'],
       retenirTitre: 'À RETENIR : L’ÉNERGIE D’UN PHOTON',
       retenir: <>
@@ -132,27 +132,27 @@ export function SimulationUvVisibleStl() {
       retenir: <>
         <SvgBeerCarte/>
         <ul style={ULS}>
-          <li>Loi de Beer-Lambert : {FBeer}A sans unité ; ε en {U_EPS} ; l en cm ; c en mol/L. On en tire c = frac(A|ε × l).</li>
+          <li>Loi de Beer-Lambert : {FBeer}A sans unité ; ε en {U_EPS} ; l en cm ; c en mol/L. On en tire c = <Frac haut={<>A</>} bas={<>ε × l</>} />.</li>
           <li>On travaille à <strong>λ_max</strong> : A y est la plus grande, donc la mesure est la plus sensible. ε ne dépend que de l’espèce et de λ, pas de c.</li>
           <li>Moyen de s’en souvenir : <strong>« A proportionnelle à c : si c double, A double »</strong>. Idée fausse : « ε change quand on dilue ». Vrai : ε est la même ; c’est A qui change.</li>
         </ul></>,
       texte: <>Pour doser la tartrazine d’un sirop, on prépare cinq <strong>solutions étalons</strong> de concentrations connues et on mesure leur absorbance à λ_max = {lmax(U)}{NB}nm, dans la même cuve de 1,00{NB}cm (tableau ci-dessous). D’après la loi de Beer-Lambert, A est proportionnelle à c : A = k × c, et la droite passe par l’origine. Calculez le <strong>coefficient directeur k</strong> avec le premier et le dernier étalon.</>,
       tache: { type: 'num', q: 'Quel est le coefficient directeur k de la droite d’étalonnage, en L/µmol (2 chiffres significatifs) ?', unite: 'L/µmol', vrai: G.k, tol: 0.06, affiche: v => nbs(v, 2), cs: 2, carnet: 'Coefficient directeur k',
         calcul: () => [`k = frac(A₅ − A₁|c₅ − c₁) = frac(${nbf(G.pts[4].A, 3)} − ${nbf(G.pts[0].A, 3)}|${G.cs[4]} − ${G.cs[0]}) = ${nbs(G.k, 3)} L/µmol.`, 'A n’a pas d’unité ; c est en µmol/L : k s’exprime en L/µmol.'],
-        pieges: [[1 / G.k, 'Vous avez calculé c ÷ A : le coefficient directeur est la variation de A divisée par la variation de c.'], [G.pts[4].A - G.pts[0].A, `Divisez la variation d’absorbance par la variation de concentration (${G.cs[4]} − ${G.cs[0]} = ${G.cs[4] - G.cs[0]} µmol/L).`]],
-        expl: `k = frac(${nbf(G.pts[4].A, 3)} − ${nbf(G.pts[0].A, 3)}|${G.cs[4]} − ${G.cs[0]}) = ${nbs(G.k, 3)} L/µmol.`, indice: 'k = variation de A ÷ variation de c, entre le premier étalon (8 µmol/L) et le dernier (40 µmol/L) : relevez leurs absorbances dans le tableau.' } },
+        pieges: [[1 / G.k, 'Vous avez calculé frac(c|A) : le coefficient directeur est la variation de A divisée par la variation de c.'], [G.pts[4].A - G.pts[0].A, `Divisez la variation d’absorbance par la variation de concentration (${G.cs[4]} − ${G.cs[0]} = ${G.cs[4] - G.cs[0]} µmol/L).`]],
+        expl: `k = frac(${nbf(G.pts[4].A, 3)} − ${nbf(G.pts[0].A, 3)}|${G.cs[4]} − ${G.cs[0]}) = ${nbs(G.k, 3)} L/µmol.`, indice: 'k = variation de A divisée par la variation de c, entre le premier étalon (8 µmol/L) et le dernier (40 µmol/L) : relevez leurs absorbances dans le tableau.' } },
     { id: 'droite', titre: 'Lire une concentration sur la droite', focus: ['graphe'],
       texte: <>Un tableur trace les cinq points (A en fonction de c) et la droite passant par l’origine : son équation est <strong>A = {nbs(KAJ, 3)} × c</strong> (c en µmol/L). Un sirop jaune, non dilué, est mesuré dans les mêmes conditions : <strong>A = {nbf(G.Ax, 3)}</strong>. Le point orange et les pointillés montrent comment on lit c sur la droite ; on peut aussi le calculer.</>,
       tache: { type: 'num', q: 'Quelle est la concentration c de la tartrazine dans le sirop, en µmol/L (2 chiffres significatifs) ?', unite: 'µmol/L', vrai: C7, tol: 0.08, affiche: v => nbs(v, 2), cs: 2, carnet: 'Concentration c du sirop',
         calcul: () => [`A = k × c, donc c = frac(A|k) = frac(${nbf(G.Ax, 3)}|${nbs(KAJ, 3)}) = ${nbs(C7, 2)} µmol/L.`, 'La valeur de A est dans la gamme des étalons (de 0,2 à 1,1 environ) : on peut utiliser la droite.'],
-        pieges: [[G.Ax * KAJ, 'Il faut diviser A par k : c = A ÷ k.'], [C7 * 1e-6, 'Vous avez donné c en mol/L : l’énoncé demande des µmol/L (1 µmol/L = 10⁻⁶ mol/L).']],
+        pieges: [[G.Ax * KAJ, 'Il faut diviser A par k : c = frac(A|k).'], [C7 * 1e-6, 'Vous avez donné c en mol/L : l’énoncé demande des µmol/L (1 µmol/L = 10⁻⁶ mol/L).']],
         expl: `c = frac(A|k) = frac(${nbf(G.Ax, 3)}|${nbs(KAJ, 3)}) = ${nbs(C7, 2)} µmol/L.`, indice: 'A = k × c : isolez c. Vous pouvez aussi lire sur le graphique l’abscisse du point orange (ordonnée A), mais le calcul est plus précis.' } },
     { id: 'limite', titre: 'Les limites de la loi de Beer-Lambert', focus: ['graphe'],
       retenirTitre: 'À RETENIR : LA DROITE D’ÉTALONNAGE',
       retenir: <>
         <SvgEtalonnageCarte/>
         <ul style={ULS}>
-          <li>On mesure A de plusieurs solutions étalons (c connues) à λ_max : les points sont alignés avec l’origine, A = k × c. Pour un échantillon, on mesure A, puis <strong>c = A ÷ k</strong> (ou lecture sur la droite).</li>
+          <li>On mesure A de plusieurs solutions étalons (c connues) à λ_max : les points sont alignés avec l’origine, A = k × c. Pour un échantillon, on mesure A, puis <strong>c = <Frac haut={<>A</>} bas={<>k</>} /></strong> (ou lecture sur la droite).</li>
           <li>Exemple de la simulation : k = {nbs(KAJ, 3)} L/µmol ; un sirop d’absorbance {nbf(G.Ax, 3)} a la concentration trouvée à l’étape précédente.</li>
           <li>Moyen de s’en souvenir : <strong>« on mesure A, on lit c sur la droite »</strong>. Idée fausse : « il suffit d’un seul étalon ». Vrai : plusieurs étalons permettent de vérifier l’alignement et d’encadrer la valeur de l’échantillon.</li>
         </ul></>,
@@ -171,7 +171,7 @@ export function SimulationUvVisibleStl() {
         calcul: () => [`À λ_max = ${lmax(G.espB)} nm : A = ${nbf(G.AB, 3)} (valeur lue), dans la gamme des étalons.`, `c′ = frac(A|k) = frac(${nbf(G.AB, 3)}|${nbs(G.kB, 3)}) = ${nbs(CBp, 3)} µmol/L (solution diluée).`, `La boisson est ${G.FB} fois plus concentrée : c = ${G.FB} × c′ = ${nbs(CB, 2)} µmol/L.`],
         pieges: [[CBp, 'Vous avez donné la concentration de la solution diluée : multipliez par le facteur de dilution ' + G.FB + '.'], [CB * 1e-6, 'Vous avez donné c en mol/L : l’énoncé demande des µmol/L.'], [CBp / G.FB, 'Il faut multiplier par ' + G.FB + ' (pas diviser) : la boisson initiale est plus concentrée que la solution diluée.']],
         expl: `c′ = frac(A|k) = ${nbs(CBp, 3)} µmol/L ; c = ${G.FB} × c′ = ${nbs(CB, 2)} µmol/L.`,
-        indice: 'D’abord c′ de la solution diluée avec c′ = A ÷ k, puis la boisson initiale est ' + G.FB + ' fois plus concentrée : c = ' + G.FB + ' × c′.' } },
+        indice: 'D’abord c′ de la solution diluée avec c′ = frac(A|k), puis la boisson initiale est ' + G.FB + ' fois plus concentrée : c = ' + G.FB + ' × c′.' } },
     { id: 'bilan', titre: 'Bilan', focus: [],
       retenirTitre: 'À RETENIR : DOMAINE DE VALIDITÉ',
       retenir: <>
@@ -203,10 +203,10 @@ export function SimulationUvVisibleStl() {
     if (d.rep.trim() === '' || !isFinite(x)) return 'Ce n’est pas un nombre : écrivez la concentration en chiffres (la virgule est acceptée).';
     if (d.F > 1 && Math.abs(x - att / d.F) <= 0.1 * att / d.F) return `Vous avez donné la concentration de la solution diluée : l’échantillon a été dilué ${d.F} fois, multipliez par ${d.F}.`;
     if (d.F > 1 && Math.abs(x - att * d.F) <= 0.1 * att * d.F) return `Vous avez multiplié deux fois par ${d.F} ou divisé au lieu de multiplier : la solution initiale est ${d.F} fois plus concentrée que la solution mesurée.`;
-    if (Math.abs(x - d.Ax) <= 0.05 * d.Ax) return 'Vous avez recopié l’absorbance. Calculez d’abord k = variation de A ÷ variation de c, puis c = A ÷ k.';
-    if (Math.abs(x - d.Ax * d.k * d.F) <= 0.1 * d.Ax * d.k * d.F) return 'Il faut diviser A par k (c = A ÷ k) et non la multiplier.';
+    if (Math.abs(x - d.Ax) <= 0.05 * d.Ax) return 'Vous avez recopié l’absorbance. Calculez d’abord k = variation de A divisée par la variation de c, puis c = frac(A|k).';
+    if (Math.abs(x - d.Ax * d.k * d.F) <= 0.1 * d.Ax * d.k * d.F) return 'Il faut diviser A par k (c = frac(A|k)) et non la multiplier.';
     if (Math.abs(x * 1000 - att) <= 0.1 * att || Math.abs(x / 1000 - att) <= 0.1 * att) return 'Vérifiez l’unité : les concentrations du tableau sont en µmol/L, la réponse aussi.';
-    return x < att ? 'Votre valeur est trop petite : refaites k avec le premier et le dernier étalon (k = ΔA ÷ Δc), puis c = A ÷ k, sans oublier la dilution.' : 'Votre valeur est trop grande : refaites k avec le premier et le dernier étalon (k = ΔA ÷ Δc), puis c = A ÷ k, sans oublier la dilution.';
+    return x < att ? 'Votre valeur est trop petite : refaites k avec le premier et le dernier étalon (k = frac(ΔA|Δc)), puis c = frac(A|k), sans oublier la dilution.' : 'Votre valeur est trop grande : refaites k avec le premier et le dernier étalon (k = frac(ΔA|Δc)), puis c = frac(A|k), sans oublier la dilution.';
   };
   const lbl = { fontSize: 14, color: KIT.txt, lineHeight: 1.5 };
   const menu = { font: 'inherit', fontSize: 15, padding: '8px 10px', minHeight: 42, borderRadius: 10, border: `1px solid ${KIT.bord}`, background: '#fff', color: KIT.txt, width: '100%', boxSizing: 'border-box' };
@@ -255,7 +255,7 @@ export function SimulationUvVisibleStl() {
           <input value={defi.rep} aria-label="c" onKeyDown={e => e.key === 'Enter' && document.getElementById('uv-verif')?.click()} onChange={e => setDefi(d => ({ ...d, rep: e.target.value, verifie: false, corr: false }))} inputMode="decimal"
             style={{ width: 100, padding: '5px 8px', borderRadius: 6, border: `1.5px solid ${defi.verifie ? (defi.ok ? '#15803d' : '#dc2626') : KIT.bord}`, fontSize: 14 }}/><span>µmol/L</span>
         </div>
-        <IndiceDefi cache={false}>Calculez le coefficient directeur k = variation de A ÷ variation de c entre le premier et le dernier étalon, puis c = A ÷ k, puis multipliez par le facteur de dilution s’il y en a un.</IndiceDefi>
+        <IndiceDefi cache={false}>Calculez le coefficient directeur k = variation de A divisée par la variation de c entre le premier et le dernier étalon, puis c = <Frac haut={<>A</>} bas={<>k</>} />, puis multipliez par le facteur de dilution s’il y en a un.</IndiceDefi>
       </>}
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
         <button id="uv-verif" onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>
@@ -269,8 +269,8 @@ export function SimulationUvVisibleStl() {
       </div>}
       {defi.type === 'etalonnage' && defi.corr && !defi.ok && <div style={{ marginTop: 8, padding: '8px 10px', borderRadius: 8, background: '#fffbeb', border: '1.5px solid #f59e0b', fontSize: 14, lineHeight: 1.6, color: KIT.txt }}>
         <>
-          <div>k = (A₅ − A₁) ÷ (c₅ − c₁) = ({nbf(defi.pts[4].A, 3)} − {nbf(defi.pts[0].A, 3)}) ÷ ({nbs(defi.pts[4].c, 3)} − {nbs(defi.pts[0].c, 3)}) ≈ {nbs(defi.kDeuxPoints, 3)} L/µmol (le tableur ajusté donne {nbs(defi.k, 3)}).</div>
-          <div>c{defi.F > 1 ? '′' : ''} = A ÷ k = {nbf(defi.Ax, 3)} ÷ {nbs(defi.k, 3)} = {nbs(defi.Ax / defi.k, 3)} µmol/L{defi.F > 1 ? ` ; c = ${defi.F} × c′ = ${nbs(defi.attendue, 3)} µmol/L` : ''}.</div>
+          <div>k = <Frac haut={<>A₅ − A₁</>} bas={<>c₅ − c₁</>} /> = <Frac haut={<>{nbf(defi.pts[4].A, 3)} − {nbf(defi.pts[0].A, 3)}</>} bas={<>{nbs(defi.pts[4].c, 3)} − {nbs(defi.pts[0].c, 3)}</>} /> ≈ {nbs(defi.kDeuxPoints, 3)} L/µmol (le tableur ajusté donne {nbs(defi.k, 3)}).</div>
+          <div>c{defi.F > 1 ? '′' : ''} = frac(A|k) = frac({nbf(defi.Ax, 3)}|{nbs(defi.k, 3)}) = {nbs(defi.Ax / defi.k, 3)} µmol/L{defi.F > 1 ? ` ; c = ${defi.F} × c′ = ${nbs(defi.attendue, 3)} µmol/L` : ''}.</div>
           <div>Valeur attendue : environ <strong>{nbs(defi.attendue, 2)} µmol/L</strong> (à 8 % près).</div></>
       </div>}
     </div>);
@@ -282,7 +282,7 @@ export function SimulationUvVisibleStl() {
       <li><strong>Solutions étalons</strong> préparées et mesurées dans les mêmes conditions que l’échantillon (même cuve, même longueur d’onde λ_max) ; droite d’étalonnage passant par l’origine, A = k × c. Les absorbances des étalons sont affichées à 3 décimales, avec une petite dispersion de mesure (environ 1 %) dans le défi.</li>
       <li><strong>Loi de Beer-Lambert</strong> A = ε × l × c, avec ε constante (indépendante de c), <strong>lumière monochromatique</strong>, solution <strong>diluée</strong>, soluté sans réaction avec le solvant : domaine de validité A ≲ 1,5 à 2 (les étalons restent sous A ≈ 1,1).</li>
       <li><strong>Écart à la linéarité au-delà de ce domaine</strong> : il est simulé par un modèle simple (0,3 % de lumière parasite atteint le détecteur). C’est un modèle de la simulation, pas une loi du programme.</li>
-      <li><strong>Énergie d’un photon</strong> : E = h × c ÷ λ avec h = 6,63×10⁻³⁴ J·s, c = 3,00×10⁸ m/s et 1 eV = 1,60×10⁻¹⁹ J (valeurs arrondies, imposées dans les énoncés).</li>
+      <li><strong>Énergie d’un photon</strong> : E = <Frac haut={<>h × c</>} bas={<>λ</>} /> avec h = 6,63×10⁻³⁴ J·s, c = 3,00×10⁸ m/s et 1 eV = 1,60×10⁻¹⁹ J (valeurs arrondies, imposées dans les énoncés).</li>
       <li><strong>Valeurs tabulées typiques</strong> : λ_max et ε sont des ordres de grandeur de tables ; ils varient un peu avec le solvant et le pH. Les spectres sont modélisés par des bandes gaussiennes : leur allure est réaliste, pas exacte.</li>
       <li><strong>Résultats</strong> demandés à 2 ou 3 chiffres significatifs, avec une marge de 3 à 8 % selon la question (lecture, arrondis, ajustement du tableur).</li>
       <li><strong>Hors périmètre</strong> : mélange de plusieurs espèces absorbantes ; spectroscopie IR (simulation voisine) et RMN.</li>
@@ -426,7 +426,7 @@ export function SimulationUvVisibleStl() {
         <ul style={{ margin: 0, paddingLeft: 18, lineHeight: 1.7 }}>
           <li>Spectre A = f(λ) : empreinte d’une espèce ; λ_max la caractérise (à comparer aux valeurs tabulées)</li>
           <li>Couleur vue = complémentaire de la couleur absorbée ; une espèce incolore peut absorber dans l’UV</li>
-          <li>Beer-Lambert : A = ε × l × c, c = frac(A|ε × l) ; on travaille à λ_max</li>
+          <li>Beer-Lambert : A = ε × l × c, c = <Frac haut={<>A</>} bas={<>ε × l</>} /> ; on travaille à λ_max</li>
           <li>Domaine de validité : solution diluée, lumière monochromatique, pas de réaction avec le solvant, A ≲ 1,5 à 2</li>
           <li>Si A est trop grande : diluer d’un facteur F connu, mesurer, puis c = F × c′</li>
         </ul>

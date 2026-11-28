@@ -181,7 +181,7 @@ export function SimulationInfrarouge() {
         <div style={{ fontSize: 14, color: KIT.txt, lineHeight: 1.6, marginBottom: 6 }}>Un spectre IR présente une bande à <strong>σ = {defi.sigma}{NB}cm⁻¹</strong>. À quelle liaison l’attribuer ?</div>
         {selecteur('ir-d2', 'Liaison', defi.rep1, ev => maj({ rep1: ev.target.value }), defi.choix.map(l => ({ id: l.id, nom: l.nom })), 'Choisir…')}</>}
       <div style={{ marginTop: 8 }}><IndiceDefi cache={false}>{defi.kind === 'hooke'
-        ? <>μ = m₁·m₂/(m₁ + m₂) en u, à convertir en kg ; σ = √(k/μ) / (2π·c) en m⁻¹, puis en cm⁻¹ (÷ 100).</>
+        ? <>μ = m₁·m₂/(m₁ + m₂) en u, à convertir en kg ; σ = √(k/μ) / (2π·c) en m⁻¹, puis en cm⁻¹ (diviser par 100).</>
         : <>Au-dessus de 1500 cm⁻¹ : O–H et N–H vers 3400 à 3600, C–H vers 2950, C≡C vers 2200, C=O vers 1715. Les liaisons légères (H) et rigides (multiples) absorbent haut.</>}</IndiceDefi></div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
         <button onClick={verifier} style={styleBouton(true, '#15803d')}>Vérifier</button>

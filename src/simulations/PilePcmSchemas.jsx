@@ -113,10 +113,10 @@ const Ar = ({ y }) => <g><line x1="150" y1={y} x2="150" y2={y + 16} stroke={C.gr
 export function SvgQCarte() {
   return (
     <Cadre h={246} aria="De la composition de la pile à la durée de fonctionnement : réactif limitant, quantité d'électrons n(e⁻), quantité d'électricité Q égale n(e⁻) fois F, durée Δt égale Q divisé par i.">
-      <Bloc x={30} y={10} w={240} t="réactif limitant : n(A) ÷ α = n(e⁻) ÷ β"/>
+      <Bloc x={30} y={10} w={240} t="réactif limitant : n(A)/α = n(e⁻)/β"/>
       <Ar y={52}/><Bloc x={30} y={76} w={240} t="Q = n(e⁻) × F" c="#fef3c7" s={C.orange}/>
-      <Ar y={118}/><Bloc x={30} y={142} w={240} t="Δt = Q ÷ i" c="#dcfce7" s={C.vert}/>
+      <Ar y={118}/><Bloc x={30} y={142} w={240} t="Δt = Q/i" c="#dcfce7" s={C.vert}/>
       <T x="150" y="212" s={13} a="middle" c={C.gris}>F = 96 500 C/mol ; i en ampères (A)</T>
-      <T x="150" y="233" s={13} a="middle" c={C.gris}>Δt en secondes : ÷ 3 600 pour des heures</T>
+      <T x="150" y="233" s={13} a="middle" c={C.gris}>Δt en s : diviser par 3 600 pour des h</T>
     </Cadre>);
 }

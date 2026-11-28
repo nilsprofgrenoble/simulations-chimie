@@ -1,7 +1,7 @@
 import { useSignalerMode, declarerDefis, useCompteurDefi, SuiviDefi, modeOuverture } from "../suivi";
 import { useState, useRef } from "react";
 import { cardStyle, CarteParcours, useEtatPersistant, KIT, styleBouton, stylePetitBouton, styleBoite, Section,
-  BoutonsModes, lireNombre, IndiceDefi, indicesProfond } from "../commun";
+  BoutonsModes, lireNombre, IndiceDefi, indicesProfond , Frac } from "../commun";
 import { Pic } from "../Pictos";
 import * as M from "./filtreModele";
 import { SceneFiltre } from "./FiltreScene";
@@ -146,21 +146,21 @@ export function SimulationFiltre() {
   // ---------- étapes du parcours ----------
   const ETAPES = [
     { id: 'signal', titre: 'Lire une tension sinusoïdale',
-      texte: <>Un <strong>générateur basses fréquences (GBF)</strong> envoie une tension sinusoïdale Ue dans un circuit appelé <strong>filtre</strong>. L’oscilloscope affiche Ue (courbe bleue) en fonction du temps. Son amplitude, c’est-à-dire sa valeur maximale, est Ue,max = 2,0{NB}V. Sa <strong>période</strong> T est la durée d’une oscillation complète ; sa <strong>fréquence</strong> est f = 1 ÷ T. Sur l’écran, 1{NB}carreau vaut 1{NB}V à la verticale et 200{NB}µs à l’horizontale (base de temps).</>,
+      texte: <>Un <strong>générateur basses fréquences (GBF)</strong> envoie une tension sinusoïdale Ue dans un circuit appelé <strong>filtre</strong>. L’oscilloscope affiche Ue (courbe bleue) en fonction du temps. Son amplitude, c’est-à-dire sa valeur maximale, est Ue,max = 2,0{NB}V. Sa <strong>période</strong> T est la durée d’une oscillation complète ; sa <strong>fréquence</strong> est f = <Frac haut={<>1</>} bas={<>T</>} />. Sur l’écran, 1{NB}carreau vaut 1{NB}V à la verticale et 200{NB}µs à l’horizontale (base de temps).</>,
       tache: { type: 'num', q: 'Quelle est la fréquence f de la tension Ue (en Hz) ?', unite: 'Hz', vrai: 1000, tol: 0.08, affiche: v => nb(v, 0), cs: 2, carnet: false,
-        calcul: () => ['Une période occupe 5 carreaux de 200 µs : T = 5 × 200 µs = 1 000 µs = 1,0 ms.', 'f = 1 ÷ T = 1 ÷ 0,0010 s = 1 000 Hz.'],
-        pieges: [[1, 'Vous avez donné la période en ms. La fréquence est l’inverse de la période : f = 1 ÷ T.'], [0.001, 'Vous avez donné la période en secondes. La fréquence est l’inverse de la période : f = 1 ÷ T.'], [200, '200 est la durée d’un carreau (en µs). Comptez les carreaux d’une période (de sommet à sommet) pour obtenir T, puis f = 1 ÷ T.']],
-        expl: 'T = 5 × 200 µs = 1,0 ms, donc f = 1 ÷ T = 1 000 Hz.', indice: 'Comptez les carreaux entre deux sommets successifs de la courbe bleue, multipliez par la durée d’un carreau (200 µs) pour obtenir T, puis calculez f = 1 ÷ T.' } },
+        calcul: () => ['Une période occupe 5 carreaux de 200 µs : T = 5 × 200 µs = 1 000 µs = 1,0 ms.', 'f = frac(1|T) = frac(1|0,0010 s) = 1 000 Hz.'],
+        pieges: [[1, 'Vous avez donné la période en ms. La fréquence est l’inverse de la période : f = frac(1|T).'], [0.001, 'Vous avez donné la période en secondes. La fréquence est l’inverse de la période : f = frac(1|T).'], [200, '200 est la durée d’un carreau (en µs). Comptez les carreaux d’une période (de sommet à sommet) pour obtenir T, puis f = frac(1|T).']],
+        expl: 'T = 5 × 200 µs = 1,0 ms, donc f = frac(1|T) = 1 000 Hz.', indice: 'Comptez les carreaux entre deux sommets successifs de la courbe bleue, multipliez par la durée d’un carreau (200 µs) pour obtenir T, puis calculez f = frac(1|T).' } },
     { id: 'lire', titre: 'Mesurer le facteur d’amplification',
-      texte: <>La tension traverse maintenant le filtre. En sortie, on observe la tension Us (courbe orange), d’amplitude Us,max. L’effet du filtre se mesure par son <strong>facteur d’amplification</strong> A = Us,max ÷ Ue,max, un nombre sans unité. On garde f = 1{NB}000{NB}Hz et Ue,max = 2,0{NB}V. Les deux voies ont le même calibre (1{NB}V par carreau) ; l’axe central porte des graduations de 0,2{NB}V.</>,
+      texte: <>La tension traverse maintenant le filtre. En sortie, on observe la tension Us (courbe orange), d’amplitude Us,max. L’effet du filtre se mesure par son <strong>facteur d’amplification</strong> A = <Frac haut={<>Us,max</>} bas={<>Ue,max</>} />, un nombre sans unité. On garde f = 1{NB}000{NB}Hz et Ue,max = 2,0{NB}V. Les deux voies ont le même calibre (1{NB}V par carreau) ; l’axe central porte des graduations de 0,2{NB}V.</>,
       tache: { type: 'num', q: 'Lisez Us,max sur l’oscilloscope, puis calculez A à 1 000 Hz.', unite: '', vrai: A_1K, tol: 0.10, affiche: v => nb(v, 2), cs: 2, carnet: false,
-        calcul: () => [`La courbe orange atteint environ ${nb(US_1K, 1)} carreau, soit Us,max ≈ ${nb(US_1K, 1)} V.`, `A = Us,max ÷ Ue,max = ${nb(US_1K, 1)} ÷ 2,0 = ${nb(A_1K, 2)} (valeur exacte du modèle : ${nb(A_1K, 2)}).`],
-        pieges: [[US_1K, 'Vous avez donné Us,max (une tension en volts). Le facteur d’amplification est le rapport Us,max ÷ Ue,max, sans unité.'], [1 / A_1K, 'Vous avez calculé Ue,max ÷ Us,max, à l’envers. Ici le filtre atténue : A = Us,max ÷ Ue,max est inférieur à 1.']],
-        expl: `Us,max ≈ ${nb(US_1K, 1)} V, donc A = ${nb(US_1K, 1)} ÷ 2,0 ≈ ${nb(A_1K, 2)}.`, indice: 'Mesurez la hauteur du sommet de la courbe orange au-dessus de l’axe central, en carreaux (1 carreau = 1 V), puis divisez par Ue,max = 2,0 V.' } },
+        calcul: () => [`La courbe orange atteint environ ${nb(US_1K, 1)} carreau, soit Us,max ≈ ${nb(US_1K, 1)} V.`, `A = frac(Us,max|Ue,max) = frac(${nb(US_1K, 1)}|2,0) = ${nb(A_1K, 2)} (valeur exacte du modèle : ${nb(A_1K, 2)}).`],
+        pieges: [[US_1K, 'Vous avez donné Us,max (une tension en volts). Le facteur d’amplification est le rapport frac(Us,max|Ue,max), sans unité.'], [1 / A_1K, 'Vous avez calculé frac(Ue,max|Us,max), à l’envers. Ici le filtre atténue : A = frac(Us,max|Ue,max) est inférieur à 1.']],
+        expl: `Us,max ≈ ${nb(US_1K, 1)} V, donc A = frac(${nb(US_1K, 1)}|2,0) ≈ ${nb(A_1K, 2)}.`, indice: 'Mesurez la hauteur du sommet de la courbe orange au-dessus de l’axe central, en carreaux (1 carreau = 1 V), puis divisez par Ue,max = 2,0 V.' } },
     { id: 'releve', titre: 'Relever A à plusieurs fréquences',
       retenirTitre: 'À retenir : le facteur d’amplification',
       retenir: <><SvgAmplCarte/><ul style={ULS}>
-        <li><strong>A = Us,max ÷ Ue,max</strong> : rapport des amplitudes de sortie et d’entrée, sans unité.</li>
+        <li><strong>A = <Frac haut={<>Us,max</>} bas={<>Ue,max</>} /></strong> : rapport des amplitudes de sortie et d’entrée, sans unité.</li>
         <li>Un filtre passif n’amplifie pas : <strong>A ≤ 1</strong>.</li>
         <li>A dépend de la fréquence f du signal d’entrée.</li></ul></>,
       texte: <>Pour savoir comment le filtre se comporte, on relève A pour plusieurs fréquences, comme en TP : une par décade, de 10{NB}Hz à 100{NB}kHz. Placez la poignée rouge sur l’axe des fréquences (échelle logarithmique : chaque graduation multiplie f par 10) ou utilisez les boutons, puis cliquez sur « Relever ce point » : le tableau se remplit et le point se marque sur le graphe.</>,
@@ -171,7 +171,7 @@ export function SimulationFiltre() {
         expl: 'A est proche de 1 aux basses fréquences (10 Hz, 100 Hz) et devient très petit aux hautes fréquences (10 kHz, 100 kHz) : le filtre laisse passer les basses fréquences, c’est un passe-bas.',
         indice: 'Regardez A à 10 Hz et à 100 kHz : à quelles fréquences le signal passe-t-il presque sans atténuation ?' } },
     { id: 'fc', titre: 'La fréquence de coupure',
-      texte: <>Le filtre est un circuit RC : une résistance R = 220{NB}Ω en série et un condensateur C = 1{NB}µF relié à la masse. On note <strong>Amax</strong> la valeur maximale de A (ici Amax = 1). La <strong>fréquence de coupure</strong> fc est la fréquence pour laquelle A = Amax ÷ √2 ≈ 0,7 × Amax : c’est la limite entre « laissé passer » et « atténué ». Le trait orange pointillé est tracé à A = 0,7.</>,
+      texte: <>Le filtre est un circuit RC : une résistance R = 220{NB}Ω en série et un condensateur C = 1{NB}µF relié à la masse. On note <strong>Amax</strong> la valeur maximale de A (ici Amax = 1). La <strong>fréquence de coupure</strong> fc est la fréquence pour laquelle A = <Frac haut={<>Amax</>} bas={<>√2</>} /> ≈ 0,7 × Amax : c’est la limite entre « laissé passer » et « atténué ». Le trait orange pointillé est tracé à A = 0,7.</>,
       tache: { type: 'num', q: 'Déterminez la fréquence de coupure fc de ce filtre (en Hz).', unite: 'Hz', vrai: FC1, tol: 0.12, affiche: v => nb(v, 0), cs: 2, carnet: false,
         calcul: () => ['On cherche la fréquence pour laquelle A = 0,7 × Amax = 0,7 × 1 = 0,7.', `On place la poignée là où la courbe coupe le trait orange : f ≈ ${nb(FC1_ARR, 0)} Hz.`],
         pieges: [[0.7, 'Le nombre 0,7 est la valeur de A à la coupure. On demande la fréquence correspondante, en hertz.'], [1, 'Le nombre 1 est la valeur maximale de A. La fréquence de coupure est celle pour laquelle A vaut 0,7.']],
@@ -179,7 +179,7 @@ export function SimulationFiltre() {
     { id: 'haut', titre: 'Et si on échange R et C ?',
       retenirTitre: 'À retenir : la fréquence de coupure',
       retenir: <><SvgFcCarte/><ul style={ULS}>
-        <li><strong>fc</strong> est la fréquence pour laquelle A = Amax ÷ √2 ≈ 0,7 × Amax.</li>
+        <li><strong>fc</strong> est la fréquence pour laquelle A = <Frac haut={<>Amax</>} bas={<>√2</>} /> ≈ 0,7 × Amax.</li>
         <li>On la lit là où la courbe coupe la ligne A = 0,7 × Amax.</li>
         <li>Passe-bas : A proche de Amax en dessous de fc. Passe-haut : au-dessus de fc.</li></ul></>,
       texte: <>On échange maintenant la place de R et de C : le condensateur est en série et la résistance est reliée à la masse, avec les mêmes valeurs (R = 220{NB}Ω, C = 1{NB}µF). Déplacez la poignée et observez la courbe.</>,
@@ -216,7 +216,7 @@ export function SimulationFiltre() {
       retenirTitre: 'À retenir : R et C fixent fc',
       retenir: <><SvgRCCarte/><ul style={ULS}>
         <li>Plus le produit <strong>R × C</strong> est grand, plus fc est petite.</li>
-        <li>Repère : fc = 1 ÷ (2π × R × C), avec R en ohms et C en farads.</li>
+        <li>Repère : fc = <Frac haut={<>1</>} bas={<>2π × R × C</>} />, avec R en ohms et C en farads.</li>
         <li>En changeant R ou C, on déplace la courbe A(f) vers les basses ou les hautes fréquences.</li></ul></>,
       texte: <>Le filtre est connu : on peut prévoir sa sortie sans refaire de mesure. On envoie dans le passe-bas (R = 220{NB}Ω, C = 1{NB}µF) une tension d’amplitude Ue,max = 2,0{NB}V à la fréquence f = 2{NB}000{NB}Hz. Lisez A sur la courbe (graduations de 0,1), puis calculez Us,max = A × Ue,max.</>,
       tache: { type: 'num', q: 'Quelle est l’amplitude Us,max de la tension de sortie (en V) ?', unite: 'V', vrai: US_2K, tol: 0.12, affiche: v => nb(v, 2), cs: 2, carnet: false,
@@ -224,7 +224,7 @@ export function SimulationFiltre() {
         pieges: [[A_2K, 'Vous avez donné A, qui n’a pas d’unité. L’amplitude de sortie est Us,max = A × Ue,max.'], [2, 'À 2 000 Hz le filtre atténue : Us,max est inférieure à Ue,max = 2,0 V.']],
         expl: `Us,max = A × Ue,max = ${nb(A_2K, 2)} × 2,0 ≈ ${nb(US_2K, 2)} V.`, indice: 'Lisez la hauteur du point rouge sur l’axe vertical (c’est A), puis multipliez par 2,0 V.' } },
     { id: 'bilan', titre: 'Le bilan',
-      texte: <>Vous savez mesurer le facteur d’amplification A = Us,max ÷ Ue,max, tracer A en fonction de la fréquence, reconnaître un filtre passe-bas ou passe-haut, lire sa fréquence de coupure (A = 0,7 × Amax) et sa bande passante, et prévoir l’amplitude de la sortie. En exploration, choisissez le montage, R et C, puis balayez la fréquence. Dans les défis, vous caractérisez un filtre inconnu (nature et fc), puis vous prévoyez une amplitude de sortie.</>,
+      texte: <>Vous savez mesurer le facteur d’amplification A = <Frac haut={<>Us,max</>} bas={<>Ue,max</>} />, tracer A en fonction de la fréquence, reconnaître un filtre passe-bas ou passe-haut, lire sa fréquence de coupure (A = 0,7 × Amax) et sa bande passante, et prévoir l’amplitude de la sortie. En exploration, choisissez le montage, R et C, puis balayez la fréquence. Dans les défis, vous caractérisez un filtre inconnu (nature et fc), puis vous prévoyez une amplitude de sortie.</>,
       tache: null },
   ];
 
@@ -293,8 +293,8 @@ export function SimulationFiltre() {
   const hypotheses = indicesProfond(
     <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13.5, color: KIT.txt, lineHeight: 1.5 }}>
       <li><strong>Filtres RC du premier ordre</strong>, composants idéaux, sans charge à la sortie : on néglige la résistance de sortie du générateur et la résistance d’entrée de l’oscilloscope. En TP, ces éléments et la tolérance des composants (5 ou 10 %) écartent un peu les mesures des valeurs idéales.</li>
-      <li><strong>Facteur d’amplification</strong> : A = Us,max ÷ Ue,max, calculé à partir des amplitudes de deux sinusoïdes de même fréquence. Les formules A = 1 ÷ √(1 + (f ÷ fc)²) pour le passe-bas et A = (f ÷ fc) ÷ √(1 + (f ÷ fc)²) pour le passe-haut, avec fc = 1 ÷ (2πRC), servent à tracer la courbe ; elles ne sont pas exigibles : on exploite la courbe.</li>
-      <li><strong>Fréquence de coupure</strong> : A = Amax ÷ √2 ≈ 0,707 × Amax (ici Amax = 1), ce qui correspond à un gain G = 20 log A de −3 dB (affiché pour repère en exploration, non exigé). La <strong>bande passante</strong> est l’ensemble des fréquences pour lesquelles A ≥ 0,707 × Amax.</li>
+      <li><strong>Facteur d’amplification</strong> : A = <Frac haut={<>Us,max</>} bas={<>Ue,max</>} />, calculé à partir des amplitudes de deux sinusoïdes de même fréquence. Les formules A = <Frac haut={<>1</>} bas={<>√(1 + <Frac haut={<>f</>} bas={<>fc</>} />²)</>} /> pour le passe-bas et A = <Frac haut={<><Frac haut={<>f</>} bas={<>fc</>} /></>} bas={<>√(1 + <Frac haut={<>f</>} bas={<>fc</>} />²)</>} /> pour le passe-haut, avec fc = <Frac haut={<>1</>} bas={<>2πRC</>} />, servent à tracer la courbe ; elles ne sont pas exigibles : on exploite la courbe.</li>
+      <li><strong>Fréquence de coupure</strong> : A = <Frac haut={<>Amax</>} bas={<>√2</>} /> ≈ 0,707 × Amax (ici Amax = 1), ce qui correspond à un gain G = 20 log A de −3 dB (affiché pour repère en exploration, non exigé). La <strong>bande passante</strong> est l’ensemble des fréquences pour lesquelles A ≥ 0,707 × Amax.</li>
       <li><strong>Oscilloscope</strong> : Ue,max = 2,0 V dans le parcours, calibre 1 V par carreau sur les deux voies ; la base de temps est choisie parmi 1 – 2 – 5 pour que la période occupe 2 à 5 carreaux. Les charges du circuit et la courbe défilent à une vitesse lente, indépendante de la fréquence réelle (animation qualitative).</li>
       <li><strong>Déphasage</strong> : la sortie est décalée dans le temps par rapport à l’entrée (retard pour le passe-bas, avance pour le passe-haut) ; ce décalage est dessiné mais n’est pas étudié.</li>
       <li><strong>Lecture graphique</strong> : tolérance de 10 à 12 % au parcours et dans la boîte noire, de 15 % pour Us,max ; la courbe a une échelle de fréquence logarithmique.</li>
@@ -314,10 +314,10 @@ export function SimulationFiltre() {
   const retenirExplore = (
     <Section titre="À retenir (idées et formules clés)" ouvert={ouv.retenir} onBascule={() => setOuv(o => ({ ...o, retenir: !o.retenir }))}>
       {indicesProfond(<ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: KIT.txt, lineHeight: 1.7 }}>
-        <li>Facteur d’amplification : A = Us,max ÷ Ue,max (sans unité, A ≤ 1 pour un filtre passif).</li>
+        <li>Facteur d’amplification : A = <Frac haut={<>Us,max</>} bas={<>Ue,max</>} /> (sans unité, A ≤ 1 pour un filtre passif).</li>
         <li>Passe-bas : laisse passer les basses fréquences. Passe-haut : laisse passer les hautes fréquences.</li>
-        <li>Fréquence de coupure fc : A = Amax ÷ √2 ≈ 0,7 × Amax. Bande passante : fréquences pour lesquelles A ≥ 0,7 × Amax.</li>
-        <li>R × C plus grand : fc plus petite (repère : fc = 1 ÷ (2πRC)).</li>
+        <li>Fréquence de coupure fc : A = <Frac haut={<>Amax</>} bas={<>√2</>} /> ≈ 0,7 × Amax. Bande passante : fréquences pour lesquelles A ≥ 0,7 × Amax.</li>
+        <li>R × C plus grand : fc plus petite (repère : fc = <Frac haut={<>1</>} bas={<>2πRC</>} />).</li>
       </ul>)}
     </Section>);
 
